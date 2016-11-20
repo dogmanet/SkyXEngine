@@ -1,0 +1,1180 @@
+#include "IFont.h"
+#include "utils.h"
+#include <math.h>
+
+#include FT_BITMAP_H
+
+namespace GUI
+{
+
+	void imageCopy(byte * dst, byte * src, int dstwidth, int dstheight, int srcwidth, int srcheight, int posX, int posY, int bpp)
+	{
+		for(int x = 0; x < srcwidth; x++)
+		{
+			for(int y = 0; y < srcheight; y++)
+			{
+				for(int c = 0; c < bpp; c++)
+				{
+					UINT db = (dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c;
+					UINT sb = (srcheight - y - 1) * srcwidth * bpp + x * bpp + c;
+					dst[db] = max(src[sb], dst[db]);
+					if((dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c >= dstwidth * dstheight * bpp)
+					{
+						wprintf(L"%d\n", (dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c);
+					}
+				}
+			}
+		}
+	}
+	void IFont::Save()
+	{
+		if(!m_bHasBeenChanged)
+		{
+			return;
+		}
+		m_bHasBeenChanged = false;
+		FILE * pF;
+		StringW file = StringW(GetGUI()->GetResourceDir()) + L"/fonts/" + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW(m_style) + L".sxf";
+		_wfopen_s(&pF, file.c_str(), L"wb");
+		if(!pF)
+		{
+			wprintf(L"[Error]: Unable to open \"%s\" file to writing\n", file.c_str());
+			return;
+		}
+		fwrite(&m_header, sizeof(SXFheader), 1, pF);
+		UINT c = 0;
+		for(UINT i = 0; i < m_chars.size(); i++)
+		{
+			if(m_chars[i].id != 0)
+			{
+				fwrite(&m_chars[i], sizeof(CharDesc), 1, pF);
+				c++;
+			}
+		}
+		UINT w, h;
+		byte * data;
+		for(UINT i = 0; i < m_vpTextures.size(); i++)
+		{
+			w = m_vpTextures[i]->GetWidth();
+			h = m_vpTextures[i]->GetHeight();
+			data = m_ppTextures[i];
+			fwrite(&w, sizeof(w), 1, pF);
+			fwrite(&h, sizeof(h), 1, pF);
+			fwrite(data, sizeof(byte), w * h * 4, pF);
+		}
+		// TODO: write font textures
+		fclose(pF);
+	}
+
+	CPFCHAR IFont::GetChar(UINT id)
+	{
+		CPFCHAR ch = &m_chars[id];
+		if(ch->id == 0)
+		{
+			LoadChar(id);
+			ch = &m_chars[id];
+		}
+		return(ch);
+	}
+
+	void IFont::LoadFTfontFace()
+	{
+		if(!m_pFTfontFace)
+		{
+			StringW suf;
+			switch(m_style)
+			{
+			case STYLE_BOLD:
+				suf = L"bd";
+				break;
+			case STYLE_ITALIC:
+				suf = L"i";
+				break;
+			case STYLE_BOLD_ITALIC:
+				suf = L"bi";
+				break;
+			}
+			StringW file = StringW(GetGUI()->GetResourceDir()) + L"/fonts/" + m_szFontName + suf + L".ttf";
+			String _f;
+			for(UINT i = 0; i < file.length(); i++)
+			{
+				_f += (char)file[i];
+			}
+			if(FT_New_Face(IFontManager::RequestFT(), _f.c_str(), 0, &m_pFTfontFace))
+			{
+				wprintf(L"Unable to load \"%s\" font\n", file.c_str());
+				if(m_style != STYLE_NONE)
+				{
+					file = StringW(GetGUI()->GetResourceDir()) + L"/fonts/" + m_szFontName + L".ttf";
+					_f = "";
+					for(UINT i = 0; i < file.length(); i++)
+					{
+						_f += (char)file[i];
+					}
+					if(FT_New_Face(IFontManager::RequestFT(), _f.c_str(), 0, &m_pFTfontFace))
+					{
+						wprintf(L"Unable to load \"%s\" font\n", file.c_str());
+					}
+					else
+					{
+						m_bEmulateBold = 0 != (m_style & STYLE_BOLD);
+						m_bEmulateItalic = 0 != (m_style & STYLE_ITALIC);
+					}
+				}
+			}
+			FT_Set_Pixel_Sizes(m_pFTfontFace, 0, m_iFontSize);
+		}
+	}
+
+	void IFont::Load(const WCHAR * szFont, UINT size, STYLE style)
+	{
+		m_style = style;
+		FreeFTfontFace();
+		m_iFontSize = size;
+		m_szFontName = szFont;
+		m_bEmulateBold = false;
+		m_bEmulateItalic = false;
+
+		StringW file = StringW(GetGUI()->GetResourceDir()) + L"/fonts/" + m_szFontName + L"_" + StringW((int)size) + L"+" + StringW((int)style) + L".sxf";
+
+		FILE * pF;
+		_wfopen_s(&pF, file.c_str(), L"rb");
+		if(!pF)
+		{
+			wprintf(L"[Warning]: Unable to open \"%s\" file to reading\nGenerating font\n", file.c_str());
+			GenerateBase();
+			m_header.size = size;
+			return;
+		}
+
+		fread(&m_header, sizeof(SXFheader), 1, pF);
+		CharDesc cd;
+		for(int i = 0; i < m_header.charCount; i++)
+		{
+			fread(&cd, sizeof(CharDesc), 1, pF);
+			m_chars[cd.id] = cd;
+		}
+		UINT w, h;
+		byte * data;
+		for(int i = 0; i < m_header.texCount; i++)
+		{
+			fread(&w, sizeof(w), 1, pF);
+			fread(&h, sizeof(h), 1, pF);
+			data = new byte[w * h * 4];
+			fread(data, sizeof(byte), w * h * 4, pF);
+			m_ppTextures.push_back(data);
+
+			ITexture * tex = ITextureManager::CreateTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"#" + StringW((int)(m_vpTextures.size() - 1)), w, h, 4);
+			tex->LoadFromMem(data);
+			m_vpTextures.push_back(tex);
+		}
+		//LoadFTfontFace();
+		fclose(pF);
+	}
+
+	void IFont::GenerateBase()
+	{
+		static StringW s = L" qwertyuiop[]asdfghjkl;'zxcvbnm,./`1234567890-=\\~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ÈˆÛÍÂÌ„¯˘Áı˙Ù˚‚‡ÔÓÎ‰Ê˝ˇ˜ÒÏËÚ¸·˛…÷” ≈Õ√ÿŸ«’⁄‘€¬¿œ–ŒÀƒ∆›ﬂ◊—Ã»“‹¡ﬁ∏®	";
+		for(UINT i = 0; i < s.length(); i++)
+		{
+			AddChar(s[i]);
+		}
+		Regen();
+	}
+
+	void IFont::Regen()
+	{
+		for(UINT i = 0; i < m_vpTextures.size(); i++)
+		{
+			ITextureManager::UnloadTexture(m_vpTextures[i]);
+		}
+		for(UINT i = 0; i < m_ppTextures.size(); i++)
+		{
+			SX_SAFE_DELETE_A(m_ppTextures[i]);
+		}
+		m_vpTextures.clear();
+		m_ppTextures.clear();
+		m_chars.clear();
+		//TODO: Chear caches
+		LoadFTfontFace();
+		if(!m_pFTfontFace)
+		{
+			return;
+		}
+		FT_GlyphSlot g = m_pFTfontFace->glyph;
+		m_chars.clear();
+		Array<chardata> list;
+		//m_pFTfontFace->
+		if(m_bEmulateItalic)
+		{
+			FT_Matrix m = {
+				0x10000L, 0x04000L,
+				0, 0x10000L
+			};
+
+			FT_Set_Transform(m_pFTfontFace, &m, NULL);
+		}
+		for(UINT i = 0; i < m_szFontChars.length(); ++i)
+		{
+			if(m_szFontChars[i] != L'\t')
+			{
+				if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | (m_iFontSize > 13 ? FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT : FT_LOAD_TARGET_MONO)))
+				//if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT))
+				{
+					continue;
+				}
+			}
+			else
+			{
+				if(FT_Load_Char(m_pFTfontFace, L' ', FT_LOAD_RENDER))
+				{
+					continue;
+				}
+				//g->bitmap.width *= 4;
+				g->advance.x *= 4;
+			}
+			chardata d;
+			d.w = g->bitmap.width;
+			d.h = g->bitmap.rows;
+			d.xa = g->advance.x;
+			d.xo = g->bitmap_left;
+			d.yo = g->bitmap_top;
+			//g->metrics.
+			d.x = 0;
+			d.y = 0;
+			d.like = 0;
+			d.ins = false;
+			d.data = new byte[d.w * d.h * 4];
+			int cc = 0;
+			FT_Bitmap * bitmap = &g->bitmap;
+			if(g->bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+			{
+				FT_Bitmap tempbitmap;
+				FT_Bitmap_New(&tempbitmap);
+				FT_Bitmap_Convert(IFontManager::RequestFT(), bitmap, &tempbitmap, 1);
+				bitmap = &tempbitmap;
+				byte * buf = tempbitmap.buffer;
+				for(UINT i = 0; i<tempbitmap.rows*tempbitmap.pitch; i++)
+				{
+					if(*buf > 0) *buf = 255;
+					buf++;
+				}
+			}
+			for(int y = bitmap->rows - 1; y >= 0; --y)
+			{
+				for(UINT i = 0; i < bitmap->width; ++i)
+				{
+					unsigned char c = bitmap->buffer[y * bitmap->width + i];
+					d.data[cc] = 255;
+					cc++;
+					d.data[cc] = 255;
+					cc++;
+					d.data[cc] = 255;
+					cc++;
+					d.data[cc] = c;
+					//d.data[cc] = 255;
+					cc++;
+				}
+			}
+
+			FT_Bitmap_Done(IFontManager::RequestFT(), bitmap);
+			
+			d.c = m_szFontChars[i]; // FIXME: Fix for two 32bit chars
+			for(UINT ii = 0; ii < list.size(); ii++)
+			{
+				if(!list[ii].like && imageEqual(list[ii], d))
+				{
+					d.like = list[ii].c;
+				}
+			}
+			list.push_back(d);
+		}
+
+		//
+		UTILS::quickSortR(&list[0], list.size());
+
+		int ss = 0;
+		for(UINT i = 0; i < list.size(); i++)
+		{
+			if(!list[i].like)
+			{
+				ss += (list[i].w + 2 + (m_bEmulateBold ? 1 : 0)) * (list[i].h + 2);
+			}
+		}
+		int s = sqrt((float)ss);
+		int pow2 = 1;
+		while(pow2 <= s)
+		{
+			pow2 *= 2;
+		}
+		int width = pow2;
+		int height = pow2;
+
+		if(height / 2 * width > ss)
+		{
+			height /= 2;
+			if(!Place(list, width, height))
+			{
+				height *= 2;
+				if(width / 2 * height > ss)
+				{
+					width /= 2;
+					if(!Place(list, width, height))
+					{
+						width *= 2;
+						Place(list, width, height);
+					}
+				}
+				else
+				{
+					Place(list, width, height);
+				}
+			}
+		}
+		else
+		{
+			if(width / 2 * height > ss)
+			{
+				width /= 2;
+				if(!Place(list, width, height))
+				{
+					width *= 2;
+					Place(list, width, height);
+				}
+			}
+			else
+			{
+				Place(list, width, height);
+			}
+		}
+
+		for(UINT i = 0; i < list.size(); i++)
+		{
+			if(list[i].like)
+			{
+				for(UINT j = 0; j < list.size(); j++)
+				{
+					if(list[j].c == list[i].like && !list[j].like)
+					{
+						list[i].x = list[j].x;
+						list[i].y = list[j].y;
+					}
+				}
+			}
+		}
+
+		wprintf(L"%dx%d\n", width, height);
+
+		byte * image = new byte[width*height * 4];
+		memset(image, 0, sizeof(byte) * width*height * 4);
+
+
+		int count = 0;
+		m_chars.clear();
+		CharDesc cd;
+		for(UINT i = 0; i < list.size(); i++)
+		{
+		//	wprintf(L"%d %d %d %d  %d %d\n", list[i].w, list[i].h, list[i].x, list[i].y, list[i].w + list[i].x, list[i].h + list[i].y);
+			
+			imageCopy(image, list[i].data, width, height, list[i].w, list[i].h, list[i].x, list[i].y, 4);
+			if(m_bEmulateBold)
+			{
+				imageCopy(image, list[i].data, width, height, list[i].w, list[i].h, list[i].x + 1, list[i].y, 4);
+			}
+			count++;
+			//cd.
+			
+			cd.height = list[i].h + 1;
+			cd.width = list[i].w + (m_bEmulateBold ? 1 : 0);
+			cd.theight = (float)cd.height / (float)height;
+			cd.twidth = (float)cd.width / (float)width;
+			cd.id = list[i].c;
+			cd.x = list[i].x;
+			cd.y = (height - list[i].y - cd.height);
+			cd.tx = (float)cd.x / (float)width;
+			cd.ty = ((float)cd.y + 1.0f) / (float)height;
+			cd.xadvantage = list[i].xa >> 6;
+			cd.xoffset = list[i].xo;
+			cd.yoffset = m_iFontSize - list[i].yo - 15.0f / 72.0f * (float)m_iFontSize;
+			m_chars[cd.id] = cd;
+		}
+
+		ITexture * tex = ITextureManager::CreateTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4);
+		tex->LoadFromMem(image);
+		//SX_SAFE_DELETE_A(image);
+		for(UINT i = 0; i < list.size(); i++)
+		{
+			SX_SAFE_DELETE_A(list[i].data);
+		}
+
+		m_vpTextures.push_back(tex);
+		m_ppTextures.push_back(image);
+		m_header.texCount = 1; // FIXME: allow multiple textures
+		m_header.charCount = list.size();
+		m_bHasBeenChanged = true;
+		Save(); // TODO: Find better place to call that
+
+		// TODO: Add rebuild handler to call Layout on the document
+	}
+
+	bool IFont::Place(Array<chardata> &list, int width, int height)
+	{
+		int x = 0;
+		int y = 0;
+		bool fl = true;
+
+		for(UINT i = 0; i < list.size(); i++)
+		{
+			if(list[i].like)
+			{
+				continue;
+			}
+			if(x + list[i].w + (m_bEmulateBold ? 1 : 0) >= width)
+			{
+				x = 0;
+				fl = false;
+			}
+			bool a = true;
+			y = 0;
+			bool dd = false;
+			int yy = 0;
+			do
+			{
+				if(dd)
+				{
+					x++;
+				}
+				yy = 0;
+				for(UINT j = 0; j < list.size(); j++)
+				{
+					if(!list[j].ins)
+					{
+						continue;
+					}
+					if((x >= list[j].x - 1 && x < (list[j].x + list[j].w)) || (x + list[i].w >= list[j].x && x + list[i].w < (list[j].w + list[j].x)))
+					{
+						yy = list[j].y + list[j].h > yy ? list[j].y + list[j].h : yy;
+					}
+				}
+				dd = true;
+			}
+			while(yy + list[i].h >= height && x + list[i].w < width);
+			if(x + list[i].w > width && yy + list[i].h >= height)
+			{
+				for(UINT h = 0; h < list.size(); h++)
+				{
+					list[h].ins = false;
+				}
+				return(false);
+			}
+			y = yy;
+			y++;
+			x++;
+			list[i].x = x;
+			list[i].y = y;
+			list[i].ins = true;
+			x += list[i].w;
+		}
+		return(true);
+	}
+
+	void IFont::LoadChar(UINT id)
+	{
+		AddChar(id);
+		Regen();
+	}
+
+	CPITexture IFont::GetTexture(UINT i)
+	{
+		if(m_vpTextures.size() <= i)
+		{
+			return(NULL);
+		}
+		return(m_vpTextures[i]);
+	}
+
+	void IFont::AddChar(WCHAR c, bool full)
+	{
+		if(m_szFontChars.find(c) == (UINT)-1)
+		{
+			m_szFontChars += c;
+			if(full)
+			{
+				const symRange * rg = GetSymRange(c);
+				if(rg)
+				{
+					for(UINT i = rg->start; i < rg->end; i++)
+					{
+						AddChar(i, false);
+					}
+				}
+			}
+		}
+	}
+
+	IFont::~IFont()
+	{
+		FreeFTfontFace();
+	}
+
+	void IFont::FreeFTfontFace()
+	{
+		if(m_pFTfontFace)
+		{
+			FT_Done_Face(m_pFTfontFace);
+		}
+	}
+
+	bool IFont::imageEqual(const chardata & a, const chardata & b)
+	{
+		if(a.w != b.w || a.h != b.h)
+		{
+			return(false);
+		}
+		for(int i = 0; i < a.w * a.h * 4; i++)
+		{
+			if(a.data[i] != b.data[i])
+			{
+				return(false);
+			}
+		}
+		return(true);
+	}
+
+	const IFont::symRange * IFont::GetSymRange(UINT sym)
+	{
+		static symRange table[] = {
+			{0x0000, 0x001F},
+			{0x0020, 0x007F},
+			{0x0080, 0x00FF},
+			{0x0100, 0x017F},
+			{0x0180, 0x024F},
+			{0x0250, 0x02AF},
+			{0x02B0, 0x02FF},
+			{0x0300, 0x036F},
+			{0x0370, 0x03FF},
+			{0x0400, 0x04FF},
+			{0x0500, 0x052F},
+			{0x0530, 0x058F},
+			{0x0590, 0x05FF},
+			{0x0600, 0x06FF},
+			{0x0700, 0x074F},
+			{0x0750, 0x077F},
+			{0x0780, 0x07BF},
+			{0x07C0, 0x07FF},
+			{0x0800, 0x083F},
+			{0x0840, 0x085F},
+			{0x08A0, 0x08FF},
+			{0x0900, 0x097F},
+			{0x0980, 0x09FF},
+			{0x0A00, 0x0A7F},
+			{0x0A80, 0x0AFF},
+			{0x0B00, 0x0B7F},
+			{0x0B80, 0x0BFF},
+			{0x0C00, 0x0C7F},
+			{0x0C80, 0x0CFF},
+			{0x0D00, 0x0D7F},
+			{0x0D80, 0x0DFF},
+			{0x0E00, 0x0E7F},
+			{0x0E80, 0x0EFF},
+			{0x0F00, 0x0FFF},
+			{0x1000, 0x109F},
+			{0x10A0, 0x10FF},
+			{0x1100, 0x11FF},
+			{0x1200, 0x137F},
+			{0x1380, 0x139F},
+			{0x13A0, 0x13FF},
+			{0x1400, 0x167F},
+			{0x1680, 0x169F},
+			{0x16A0, 0x16FF},
+			{0x1700, 0x171F},
+			{0x1720, 0x173F},
+			{0x1740, 0x175F},
+			{0x1760, 0x177F},
+			{0x1780, 0x17FF},
+			{0x1800, 0x18AF},
+			{0x18B0, 0x18FF},
+			{0x1900, 0x194F},
+			{0x1950, 0x197F},
+			{0x1980, 0x19DF},
+			{0x19E0, 0x19FF},
+			{0x1A00, 0x1A1F},
+			{0x1A20, 0x1AAF},
+			{0x1AB0, 0x1AFF},
+			{0x1B00, 0x1B7F},
+			{0x1B80, 0x1BBF},
+			{0x1BC0, 0x1BFF},
+			{0x1C00, 0x1C4F},
+			{0x1C50, 0x1C7F},
+			{0x1CC0, 0x1CCF},
+			{0x1CD0, 0x1CFF},
+			{0x1D00, 0x1D7F},
+			{0x1D80, 0x1DBF},
+			{0x1DC0, 0x1DFF},
+			{0x1E00, 0x1EFF},
+			{0x1F00, 0x1FFF},
+			{0x2000, 0x206F},
+			{0x2070, 0x209F},
+			{0x20A0, 0x20CF},
+			{0x20D0, 0x20FF},
+			{0x2100, 0x214F},
+			{0x2150, 0x218F},
+			{0x2190, 0x21FF},
+			{0x2200, 0x22FF},
+			{0x2300, 0x23FF},
+			{0x2400, 0x243F},
+			{0x2440, 0x245F},
+			{0x2460, 0x24FF},
+			{0x2500, 0x257F},
+			{0x2580, 0x259F},
+			{0x25A0, 0x25FF},
+			{0x2600, 0x26FF},
+			{0x2700, 0x27BF},
+			{0x27C0, 0x27EF},
+			{0x27F0, 0x27FF},
+			{0x2800, 0x28FF},
+			{0x2900, 0x297F},
+			{0x2980, 0x29FF},
+			{0x2A00, 0x2AFF},
+			{0x2B00, 0x2BFF},
+			{0x2C00, 0x2C5F},
+			{0x2C60, 0x2C7F},
+			{0x2C80, 0x2CFF},
+			{0x2D00, 0x2D2F},
+			{0x2D30, 0x2D7F},
+			{0x2D80, 0x2DDF},
+			{0x2DE0, 0x2DFF},
+			{0x2E00, 0x2E7F},
+			{0x2E80, 0x2EFF},
+			{0x2F00, 0x2FDF},
+			{0x2FF0, 0x2FFF},
+			{0x3000, 0x303F},
+			{0x3040, 0x309F},
+			{0x30A0, 0x30FF},
+			{0x3100, 0x312F},
+			{0x3130, 0x318F},
+			{0x3190, 0x319F},
+			{0x31A0, 0x31BF},
+			{0x31C0, 0x31EF},
+			{0x31F0, 0x31FF},
+			{0x3200, 0x32FF},
+			{0x3300, 0x33FF},
+			{0x3400, 0x4DB5},
+			{0x4DC0, 0x4DFF},
+			{0x4E00, 0x9FCC},
+			{0xA000, 0xA48F},
+			{0xA490, 0xA4CF},
+			{0xA4D0, 0xA4FF},
+			{0xA500, 0xA63F},
+			{0xA640, 0xA69F},
+			{0xA6A0, 0xA6FF},
+			{0xA700, 0xA71F},
+			{0xA720, 0xA7FF},
+			{0xA800, 0xA82F},
+			{0xA830, 0xA83F},
+			{0xA840, 0xA87F},
+			{0xA880, 0xA8DF},
+			{0xA8E0, 0xA8FF},
+			{0xA900, 0xA92F},
+			{0xA930, 0xA95F},
+			{0xA960, 0xA97F},
+			{0xA980, 0xA9DF},
+			{0xA9E0, 0xA9FF},
+			{0xAA00, 0xAA5F},
+			{0xAA60, 0xAA7F},
+			{0xAA80, 0xAADF},
+			{0xAAE0, 0xAAFF},
+			{0xAB00, 0xAB2F},
+			{0xAB30, 0xAB6F},
+			{0xABC0, 0xABFF},
+			{0xAC00, 0xD7A3},
+			{0xD7B0, 0xD7FF},
+			{0xD800, 0xDB7F},
+			{0xDB80, 0xDBFF},
+			{0xDC00, 0xDFFF},
+			{0xE000, 0xF8FF},
+			{0xF900, 0xFAFF},
+			{0xFB00, 0xFB4F},
+			{0xFB50, 0xFDFF},
+			{0xFE00, 0xFE0F},
+			{0xFE10, 0xFE1F},
+			{0xFE20, 0xFE2F},
+			{0xFE30, 0xFE4F},
+			{0xFE50, 0xFE6F},
+			{0xFE70, 0xFEFF},
+			{0xFF00, 0xFFEF},
+			{0xFFF0, 0xFFFF},
+			{0x10000, 0x1007F},
+			{0x10080, 0x100FF},
+			{0x10100, 0x1013F},
+			{0x10140, 0x1018F},
+			{0x10190, 0x101CF},
+			{0x101D0, 0x101FF},
+			{0x10280, 0x1029F},
+			{0x102A0, 0x102DF},
+			{0x102E0, 0x102FF},
+			{0x10300, 0x1032F},
+			{0x10330, 0x1034F},
+			{0x10350, 0x1037F},
+			{0x10380, 0x1039F},
+			{0x103A0, 0x103DF},
+			{0x10400, 0x1044F},
+			{0x10450, 0x1047F},
+			{0x10480, 0x104AF},
+			{0x10500, 0x1052F},
+			{0x10530, 0x1056F},
+			{0x10600, 0x1077F},
+			{0x10800, 0x1083F},
+			{0x10840, 0x1085F},
+			{0x10860, 0x1087F},
+			{0x10880, 0x108AF},
+			{0x10900, 0x1091F},
+			{0x10920, 0x1093F},
+			{0x10980, 0x1099F},
+			{0x109A0, 0x109FF},
+			{0x10A00, 0x10A5F},
+			{0x10A60, 0x10A7F},
+			{0x10A80, 0x10A9F},
+			{0x10AC0, 0x10AFF},
+			{0x10B00, 0x10B3F},
+			{0x10B40, 0x10B5F},
+			{0x10B60, 0x10B7F},
+			{0x10B80, 0x10BAF},
+			{0x10C00, 0x10C4F},
+			{0x10E60, 0x10E7F},
+			{0x11000, 0x1107F},
+			{0x11080, 0x110CF},
+			{0x110D0, 0x110FF},
+			{0x11100, 0x1114F},
+			{0x11150, 0x1117F},
+			{0x11180, 0x111DF},
+			{0x111E0, 0x111FF},
+			{0x11200, 0x1124F},
+			{0x112B0, 0x112FF},
+			{0x11300, 0x1137F},
+			{0x11480, 0x114DF},
+			{0x11580, 0x115FF},
+			{0x11600, 0x1165F},
+			{0x11680, 0x116CF},
+			{0x118A0, 0x118FF},
+			{0x11AC0, 0x11AFF},
+			{0x12000, 0x123FF},
+			{0x12400, 0x1247F},
+			{0x13000, 0x1342F},
+			{0x16800, 0x16A3F},
+			{0x16A40, 0x16A6F},
+			{0x16AD0, 0x16AFF},
+			{0x16B00, 0x16B8F},
+			{0x16F00, 0x16F9F},
+			{0x1B000, 0x1B0FF},
+			{0x1BC00, 0x1BC9F},
+			{0x1BCA0, 0x1BCAF},
+			{0x1D000, 0x1D0FF},
+			{0x1D100, 0x1D1FF},
+			{0x1D200, 0x1D24F},
+			{0x1D300, 0x1D35F},
+			{0x1D360, 0x1D37F},
+			{0x1D400, 0x1D7FF},
+			{0x1E800, 0x1E8DF},
+			{0x1EE00, 0x1EEFF},
+			{0x1F000, 0x1F02F},
+			{0x1F030, 0x1F09F},
+			{0x1F0A0, 0x1F0FF},
+			{0x1F100, 0x1F1FF},
+			{0x1F200, 0x1F2FF},
+			{0x1F300, 0x1F5FF},
+			{0x1F600, 0x1F64F},
+			{0x1F650, 0x1F67F},
+			{0x1F680, 0x1F6FF},
+			{0x1F700, 0x1F77F},
+			{0x1F780, 0x1F7FF},
+			{0x1F800, 0x1F8FF},
+
+			{0, 0} // table end
+		};
+
+		UINT i = 0;
+		while(table[i].end != 0)
+		{
+			if(table[i].start <= sym && table[i].end >= sym)
+			{
+				return(&table[i]);
+			}
+			i++;
+		}
+		return(NULL);
+	}
+
+	void IFont::GetStringMetrics(const StringW & str, UINT * width, UINT * height, UINT * vertexCount, UINT * indexCount, UINT * strCount, char_rects * pcr)
+	{
+		UINT w = 0;
+		UINT _w = 0;
+		UINT h = m_iFontSize;
+		UINT vc = 0;
+		UINT ic = 0;
+		UINT lc = 1;
+
+		const CharDesc * cd;
+		RECT cr;
+		cr.top = 0;
+		cr.bottom = m_iFontSize;
+		if(pcr)
+		{
+			cr.top += pcr->iYoffs;
+			cr.bottom += pcr->iYoffs;
+		}
+		for(UINT i = 0, l = str.length(); i < l; i++)
+		{
+			cd = GetChar((UINT)str[i]);
+			if(!iswspace(str[i]))
+			{
+				vc += 4;
+				ic += 6;
+			}
+			if(str[i] == L'\n')
+			{
+				lc++;
+				w = max(w, _w);
+				_w = 0;
+				cr.top += m_iFontSize;
+				cr.bottom += m_iFontSize;
+
+				if(pcr)
+				{
+					pcr->pResArray->push_back(cr);
+				}
+			}
+			else
+			{
+				if(pcr)
+				{
+					cr.left = _w + pcr->iXoffs;
+					cr.right = _w + pcr->iXoffs + cd->xadvantage;
+					pcr->pResArray->push_back(cr);
+				}
+
+				_w += cd->xadvantage;
+				
+			}
+		}
+		w = max(w, _w);
+		if(width)
+		{
+			*width = w;
+		}
+		if(height)
+		{
+			*height = h;
+		}
+		if(vertexCount)
+		{
+			*vertexCount = vc;
+		}
+		if(indexCount)
+		{
+			*indexCount = ic;
+		}
+		if(strCount)
+		{
+			*strCount = lc;
+		}
+	}
+
+	void IFont::BuildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IDirect3DVertexBuffer9 ** ppVertexBuffer, IDirect3DIndexBuffer9 ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth, UINT iFirstShift, UINT * pStrWidth)
+	{
+		UINT iIndexCount;
+		UINT iVertexCount;
+		UINT lineCount;
+		UINT iWidth;
+		GetStringMetrics(str, &iWidth, NULL, &iVertexCount, &iIndexCount, &lineCount);
+		if(pStrWidth)
+		{
+			*pStrWidth = iWidth;
+		}
+		if(iAreaWidth > iWidth)
+		{
+			iWidth = iAreaWidth;
+		}
+
+		
+
+		Array<float2_t> alx;
+		alx.reserve(lineCount);
+
+		
+
+		UINT lc = 0;
+		if(decoration & DECORATION_UNDERLINE)
+		{
+			lc++;
+		}
+		if(decoration & DECORATION_OVERLINE)
+		{
+			lc++;
+		}
+		if(decoration & DECORATION_LINE_THROUGH)
+		{
+			lc++;
+		}
+		UINT ilineIndexCount = lc * lineCount * 6;
+
+		iIndexCount += ilineIndexCount;
+		iVertexCount += lc * lineCount * 4;
+
+		vertex * pVB = new vertex[iVertexCount];
+		UINT * pIB = new UINT[iIndexCount];
+
+		UINT CV = 0,
+			CI = 0;
+
+		float cx = 0.0f;
+		float cy = 0.0f;
+		CPFCHAR cd;
+		UINT sv = 0;
+
+		bool bFirstLine = true;
+		for(UINT i = 0, l = str.length(); i < l; i++)
+		{
+			cd = GetChar((UINT)str[i]);
+
+			if(!iswspace(str[i]))
+			{
+				pIB[CI] = CV + 0; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 2; CI++;
+
+				pIB[CI] = CV + 2; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 3; CI++;
+
+				/*
+				
+				0--1
+				| /|
+				|/ |
+				2--3
+
+				*/
+
+				pVB[CV].Pos = float3_t(cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset, cy + (float)cd->yoffset, 0.0f);
+				pVB[CV].Tex = float2_t(cd->tx, cd->ty + cd->theight);
+				CV++;
+				pVB[CV].Pos = float3_t(cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset + (float)cd->width, cy + (float)cd->yoffset, 0.0f);
+				pVB[CV].Tex = float2_t(cd->tx + cd->twidth, cd->ty + cd->theight);
+				CV++;
+				pVB[CV].Pos = float3_t(cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset, cy + cd->height + (float)cd->yoffset, 0.0f);
+				pVB[CV].Tex = float2_t(cd->tx, cd->ty);
+				CV++;
+				pVB[CV].Pos = float3_t(cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset + (float)cd->width, cy + cd->height + (float)cd->yoffset, 0.0f);
+				pVB[CV].Tex = float2_t(cd->tx + cd->twidth, cd->ty);
+				CV++;
+
+			//	pVB[CV] = {{cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset, cy + (float)cd->yoffset, 0.0f}, {cd->tx, cd->ty + cd->theight}}; CV++;
+			//	pVB[CV] = {{cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset + (float)cd->width, cy + (float)cd->yoffset, 0.0f}, {cd->tx + cd->twidth, cd->ty + cd->theight}}; CV++;
+			//	pVB[CV] = {{cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset, cy + cd->height + (float)cd->yoffset, 0.0f}, {cd->tx, cd->ty}}; CV++;
+			//	pVB[CV] = {{cx + (bFirstLine ? (float)iFirstShift : 0) + (float)cd->xoffset + (float)cd->width, cy + cd->height + (float)cd->yoffset, 0.0f}, {cd->tx + cd->twidth, cd->ty}}; CV++;
+			}
+
+			
+			if(str[i] == L'\n')
+			{
+				bFirstLine = false;
+				alx.push_back(float2_t(cx, cy));
+				cy += m_iFontSize;
+				float delta = 0.0f;
+				if(textAlign == TEXT_ALIGN_RIGHT)
+				{
+					delta = iWidth - cx;
+				}
+				if(textAlign == TEXT_ALIGN_CENTER)
+				{
+					delta = (iWidth - cx) * 0.5f;
+				}
+				for(UINT j = sv; j < CV; j++)
+				{
+					pVB[j].Pos.x += delta;
+				}
+				cx = 0.0f;
+				sv = CV;
+			}
+			else
+			{
+				cx += (float)cd->xadvantage;
+			}
+		}
+		if(cx != 0.0f)
+		{
+			alx.push_back(float2_t(cx, cy));
+			cy += m_iFontSize;
+			float delta = 0.0f;
+			if(textAlign == TEXT_ALIGN_RIGHT)
+			{
+				delta = iWidth - cx;
+			}
+			if(textAlign == TEXT_ALIGN_CENTER)
+			{
+				delta = (iWidth - cx) * 0.5f;
+			}
+			for(UINT j = sv; j < CV; j++)
+			{
+				pVB[j].Pos.x += delta;
+			}
+			cx = 0.0f;
+			sv = CV;
+		}
+		float lineHeight = 1.0f;
+		for(UINT i = 0; i < lineCount; i++)
+		{
+			if(decoration & DECORATION_OVERLINE)
+			{
+				pIB[CI] = CV + 0; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 2; CI++;
+
+				pIB[CI] = CV + 2; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 3; CI++;
+
+				pVB[CV].Pos = float3_t(0.0f, alx[i].y, 0.0f);
+				pVB[CV].Tex = float2_t(0.0f, 1.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(alx[i].x, alx[i].y, 0.0f);
+				pVB[CV].Tex = float2_t(1.0f, 1.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(0.0f, alx[i].y + lineHeight, 0.0f);
+				pVB[CV].Tex = float2_t(0.0f, 0.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(alx[i].x, alx[i].y + lineHeight, 0.0f);
+				pVB[CV].Tex = float2_t(1.0f, 0.0f);
+				CV++;
+
+			//	pVB[CV] = {{0.0f, alx[i].y, 0.0f}, {0.0f, 1.0f}}; CV++;
+			//	pVB[CV] = {{alx[i].x, alx[i].y, 0.0f}, {1.0f, 1.0f}}; CV++;
+			//	pVB[CV] = {{0.0f, alx[i].y + lineHeight, 0.0f}, {0.0f, 0.0f}}; CV++;
+			//	pVB[CV] = {{alx[i].x, alx[i].y + lineHeight, 0.0f}, {1.0f, 0.0f}}; CV++;
+			}
+			if(decoration & DECORATION_UNDERLINE)
+			{
+				pIB[CI] = CV + 0; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 2; CI++;
+
+				pIB[CI] = CV + 2; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 3; CI++;
+
+				pVB[CV].Pos = float3_t(0.0f, alx[i].y + (float)m_iFontSize - lineHeight, 0.0f);
+				pVB[CV].Tex = float2_t(0.0f, 1.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(alx[i].x, alx[i].y + (float)m_iFontSize - lineHeight, 0.0f);
+				pVB[CV].Tex = float2_t(1.0f, 1.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(0.0f, alx[i].y + (float)m_iFontSize, 0.0f);
+				pVB[CV].Tex = float2_t(0.0f, 0.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(alx[i].x, alx[i].y + (float)m_iFontSize, 0.0f);
+				pVB[CV].Tex = float2_t(1.0f, 0.0f);
+				CV++;
+
+			//	pVB[CV] = {{0.0f, alx[i].y + (float)m_iFontSize - lineHeight, 0.0f}, {0.0f, 1.0f}}; CV++;
+			//	pVB[CV] = {{alx[i].x, alx[i].y + (float)m_iFontSize - lineHeight, 0.0f}, {1.0f, 1.0f}}; CV++;
+			//	pVB[CV] = {{0.0f, alx[i].y + (float)m_iFontSize, 0.0f}, {0.0f, 0.0f}}; CV++;
+			//	pVB[CV] = {{alx[i].x, alx[i].y + (float)m_iFontSize, 0.0f}, {1.0f, 0.0f}}; CV++;
+			}
+			if(decoration & DECORATION_LINE_THROUGH)
+			{
+				pIB[CI] = CV + 0; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 2; CI++;
+
+				pIB[CI] = CV + 2; CI++;
+				pIB[CI] = CV + 1; CI++;
+				pIB[CI] = CV + 3; CI++;
+
+				pVB[CV].Pos = float3_t(0.0f, alx[i].y + (float)m_iFontSize * 0.5f, 0.0f);
+				pVB[CV].Tex = float2_t(0.0f, 1.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(alx[i].x, alx[i].y + (float)m_iFontSize * 0.5f, 0.0f);
+				pVB[CV].Tex = float2_t(1.0f, 1.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(0.0f, alx[i].y + lineHeight + (float)m_iFontSize * 0.5f, 0.0f);
+				pVB[CV].Tex = float2_t(0.0f, 0.0f);
+				CV++;
+				pVB[CV].Pos = float3_t(alx[i].x, alx[i].y + lineHeight + (float)m_iFontSize * 0.5f, 0.0f);
+				pVB[CV].Tex = float2_t(1.0f, 0.0f);
+				CV++;
+
+			//	pVB[CV] = {{0.0f, alx[i].y + (float)m_iFontSize * 0.5f, 0.0f}, {0.0f, 1.0f}}; CV++;
+			//	pVB[CV] = {{alx[i].x, alx[i].y + (float)m_iFontSize * 0.5f, 0.0f}, {1.0f, 1.0f}}; CV++;
+			//	pVB[CV] = {{0.0f, alx[i].y + lineHeight + (float)m_iFontSize * 0.5f, 0.0f}, {0.0f, 0.0f}}; CV++;
+			//	pVB[CV] = {{alx[i].x, alx[i].y + lineHeight + (float)m_iFontSize * 0.5f, 0.0f}, {1.0f, 0.0f}}; CV++;
+			}
+		}
+		VOID * pData;
+		GetGUI()->GetDevice()->CreateVertexBuffer(sizeof(vertex) * iVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, ppVertexBuffer, 0);
+		if(!FAILED((*ppVertexBuffer)->Lock(0, sizeof(vertex) * iVertexCount, (void**)&pData, 0)))
+		{
+			memcpy(pData, pVB, sizeof(vertex) * iVertexCount);
+			(*ppVertexBuffer)->Unlock();
+		}
+
+		GetGUI()->GetDevice()->CreateIndexBuffer(sizeof(UINT) * iIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, ppIndexBuffer, 0);
+		if(!FAILED((*ppIndexBuffer)->Lock(0, sizeof(UINT) * iIndexCount, (void**)&pData, 0)))
+		{
+			memcpy(pData, pIB, sizeof(UINT) * iIndexCount);
+			(*ppIndexBuffer)->Unlock();
+		}
+
+		SX_SAFE_DELETE_A(pVB);
+		SX_SAFE_DELETE_A(pIB);
+
+		if(vertexCount)
+		{
+			*vertexCount = iVertexCount;
+		}
+		if(indexCount)
+		{
+			*indexCount = iIndexCount - ilineIndexCount;
+		}
+		if(lineIndexCount)
+		{
+			*lineIndexCount = ilineIndexCount;
+		}
+	}
+
+	AssotiativeArray<StringW, IFont> IFontManager::m_mFonts;
+
+	IFont * IFontManager::GetFont(const WCHAR * szName, UINT size, IFont::STYLE style)
+	{
+		StringW n = StringW(szName) + L"_" + StringW((int)size) + L"+" + StringW((int)style);
+		if(!m_mFonts.KeyExists(n))
+		{
+			m_mFonts[n].Load(szName, size, style);
+		}
+		return(&m_mFonts[n]);
+	}
+
+	FT_Library IFontManager::m_pFT = NULL;
+
+	FT_Library IFontManager::RequestFT()
+	{
+		if(!m_pFT)
+		{
+			if(FT_Init_FreeType(&m_pFT))
+			{
+				wprintf(L"Failed to initialise FreeType library\n");
+				return(NULL);
+			}
+		}
+		return(m_pFT);
+	}
+
+	void IFontManager::Release()
+	{
+		if(m_pFT)
+		{
+			FT_Done_FreeType(m_pFT);
+			m_pFT = NULL;
+		}
+	}
+};
