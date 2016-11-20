@@ -50,22 +50,7 @@ namespace GUI
 				m_pRenderFrame(NULL),
 				m_bEditable(false),
 				m_bFocusable(false)
-			{
-				onClick = NULL;
-				onMouseDown = NULL;
-				onMouseUp = NULL;
-				onMouseOver = NULL;
-				onMouseOut = NULL;
-				onKeyDown = NULL;
-				onKeyUp = NULL;
-				onKeyPress = NULL;
-				onScroll = NULL;
-				onMouseMove = NULL;
-				onMouseWheelUp = NULL;
-				onMouseWheelDown = NULL;
-				onFocus = NULL;
-				onBlur = NULL;
-			};
+			{};
 			~CDOMnode();
 			void AppendChild(IDOMnode * pEl, bool regen = true);
 			void RemoveChild(IDOMnode * pEl, bool regen = true);
@@ -190,21 +175,6 @@ namespace GUI
 			void DispatchClientEvent(IEvent ev, bool * preventDefault);
 
 			static void ApplyCSSrules(const CSS::ICSSstyle * style, CDOMnode * pNode);
-
-			GUI_CALLBACK onClick;
-			GUI_CALLBACK onMouseDown;
-			GUI_CALLBACK onMouseUp;
-			GUI_CALLBACK onMouseOver;
-			GUI_CALLBACK onMouseOut;
-			GUI_CALLBACK onKeyDown;
-			GUI_CALLBACK onKeyUp;
-			GUI_CALLBACK onKeyPress;
-			GUI_CALLBACK onScroll;
-			GUI_CALLBACK onMouseMove;
-			GUI_CALLBACK onMouseWheelUp;
-			GUI_CALLBACK onMouseWheelDown;
-			GUI_CALLBACK onFocus;
-			GUI_CALLBACK onBlur;
 
 		protected:
 			IDOMnode * m_pParent;

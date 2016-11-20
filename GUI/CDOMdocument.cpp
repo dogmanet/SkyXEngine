@@ -212,25 +212,6 @@ namespace GUI
 		void CDOMnode::DispatchClientEvent(IEvent ev, bool * preventDefault)
 		{
 			ev.propagate = true;
-#define GEVT_DPTC(TYPE, name) case TYPE: if(name){name(&ev);} break;
-			switch(ev.type)
-			{
-				GEVT_DPTC(GUI_EVENT_TYPE_CLICK, onClick);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEDOWN, onMouseDown);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEUP, onMouseUp);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEENTER, onMouseOver);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSELEAVE, onMouseOut);
-				GEVT_DPTC(GUI_EVENT_TYPE_KEYDOWN, onKeyDown);
-				GEVT_DPTC(GUI_EVENT_TYPE_KEYUP, onKeyUp);
-				GEVT_DPTC(GUI_EVENT_TYPE_KEYPRESS, onKeyPress);
-				//GEVT_DPTC(GUI_EVENT_TYPE_SCROLL, onScroll);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEMOVE, onMouseMove);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEWHEELUP, onMouseWheelUp);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEWHEELDOWN, onMouseWheelDown);
-				GEVT_DPTC(GUI_EVENT_TYPE_FOCUS, onFocus);
-				GEVT_DPTC(GUI_EVENT_TYPE_BLUR, onBlur);
-#undef GEVT_DPTC
-			}
 			StringW cmd;
 			switch(ev.type)
 			{
@@ -978,63 +959,6 @@ namespace GUI
 				//m_pDocument->IndexSetId(m_iDOMid, this);
 			}
 
-
-			else if(name == L"onclick")
-			{
-				onClick = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"mousedown")
-			{
-				onMouseDown = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onmouseup")
-			{
-				onMouseUp = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onmouseover")
-			{
-				onMouseOver = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onmouseout")
-			{
-				onMouseOut = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onkeydown")
-			{
-				onKeyDown = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onkeyup")
-			{
-				onKeyUp = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onkeypress")
-			{
-				onKeyPress = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onscroll")
-			{
-				onScroll = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onmousemove")
-			{
-				onMouseMove = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onmousewheelup")
-			{
-				onMouseWheelUp = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onmousewheeldown")
-			{
-				onMouseWheelDown = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onfocus")
-			{
-				onFocus = GetGUI()->GetCallbackByName(value);
-			}
-			else if(name == L"onblur")
-			{
-				onBlur = GetGUI()->GetCallbackByName(value);
-			}
 			m_mAttributes[name] = value;
 		}
 
