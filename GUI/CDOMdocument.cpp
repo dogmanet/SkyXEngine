@@ -215,21 +215,21 @@ namespace GUI
 			StringW cmd;
 			switch(ev.type)
 			{
-#define GEVT_DPTC(TYPE, name) case TYPE: cmd = GetAttribute(name); break;
-				GEVT_DPTC(GUI_EVENT_TYPE_CLICK, "click");
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEDOWN, "mousedown");
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEUP, "mouseup");
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEENTER, "mouseover");
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSELEAVE, "mouseout");
-				GEVT_DPTC(GUI_EVENT_TYPE_KEYDOWN, "keydown");
-				GEVT_DPTC(GUI_EVENT_TYPE_KEYUP, "keyup");
-				GEVT_DPTC(GUI_EVENT_TYPE_KEYPRESS, "keypress");
+#define GEVT_DPTC(TYPE, name) case TYPE: cmd = GetAttribute(L"on" name); break;
+				GEVT_DPTC(GUI_EVENT_TYPE_CLICK, L"click");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEDOWN, L"mousedown");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEUP, L"mouseup");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEENTER, L"mouseover");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSELEAVE, L"mouseout");
+				GEVT_DPTC(GUI_EVENT_TYPE_KEYDOWN, L"keydown");
+				GEVT_DPTC(GUI_EVENT_TYPE_KEYUP, L"keyup");
+				GEVT_DPTC(GUI_EVENT_TYPE_KEYPRESS, L"keypress");
 				//GEVT_DPTC(GUI_EVENT_TYPE_SCROLL, onScroll);
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEMOVE, "mousemove");
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEWHEELUP, "mousewheelup");
-				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEWHEELDOWN, "mousewheeldown");
-				GEVT_DPTC(GUI_EVENT_TYPE_FOCUS, "focus");
-				GEVT_DPTC(GUI_EVENT_TYPE_BLUR, "blur");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEMOVE, L"mousemove");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEWHEELUP, L"mousewheelup");
+				GEVT_DPTC(GUI_EVENT_TYPE_MOUSEWHEELDOWN, L"mousewheeldown");
+				GEVT_DPTC(GUI_EVENT_TYPE_FOCUS, L"focus");
+				GEVT_DPTC(GUI_EVENT_TYPE_BLUR, L"blur");
 			}
 			if(cmd.length())
 			{
