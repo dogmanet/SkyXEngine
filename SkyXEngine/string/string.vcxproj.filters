@@ -18,12 +18,12 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="string.cpp">
+    <ClCompile Include="..\..\source\string\string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="string.h">
+    <ClInclude Include="..\..\source\string\string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

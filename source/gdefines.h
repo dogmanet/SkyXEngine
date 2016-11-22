@@ -1,4 +1,5 @@
-
+#ifndef gdefines_H
+#define gdefines_H
 //макрос экспорта/ипорта из библиотек
 #if !defined(SX_LIB_API)
 	#if defined(SX_EXE)
@@ -68,7 +69,7 @@ typedef void (*report_func) (int level,const char* format,...);
 
 //дефолтовая функция вывода отладочной информации
 //!!!ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ
-void def_report(int level, const char* format, ...)
+inline void def_report(int level, const char* format, ...)
 {
 	AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
@@ -83,7 +84,7 @@ void def_report(int level, const char* format, ...)
 
 //парсинг строки (имени файла) str на имя папки path и имя файла name
 //str = test_file_1.ex - path = test, name = file_1.ex
-bool ParseStrPathName(const char* str, char* path, char* name)
+inline bool ParseStrPathName(const char* str, char* path, char* name)
 {
 	bool IsTruePath = false;
 	//обрезаем имя текстуры и папку
@@ -102,4 +103,5 @@ bool ParseStrPathName(const char* str, char* path, char* name)
 	return IsTruePath;
 }
 
+#endif
 #endif

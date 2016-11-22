@@ -148,7 +148,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		CleanupDevice();
 		return(0);
 	}
-	pGui = pfnGUIInit(g_pd3dDevice, "../data/gui", g_hWnd);
+	pGui = pfnGUIInit(g_pd3dDevice, "./gamesource/gui", g_hWnd);
 	pGui->RegisterCallback("on_exit", cbExit);
 	pGui->RegisterCallback("on_cancel", cbCancel);
 	pGui->RegisterCallback("exit_prompt", cbExitPrompt);
