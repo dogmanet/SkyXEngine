@@ -1,0 +1,185 @@
+<html onkeyup="exit_prompt">
+	<head>
+		<link type="text/css" rel="stylesheet" href="game.css"/>
+		<link type="text/css" rel="stylesheet" href="main_menu.css"/>
+	</head>
+	<body>
+		<div id="background">
+			<div id="top_line">
+				<div id="logo">
+					S.I.P
+				</div>
+				
+				<div class="top_button">
+					Магазин
+				</div>
+				<div class="top_button">
+					Склад
+				</div>
+				<div class="top_button">
+					Данные
+				</div>
+				
+				<div class="top_right">
+					<div class="top_button">
+						Помощь
+					</div>
+					<div class="top_button">
+						Настройки
+					</div>
+					<div class="top_button" onclick="exit_prompt">
+						Выход
+					</div>
+				</div>
+			</div>
+			<div id="main_wrapper">
+				<div id="match_wrapper">
+					<div id="match_tbl_wrp">
+						<div class="match_tbl_hdr tbl_row">
+							<div class="col1">Статус</div>
+							<div class="col2">Карта</div>
+							<div class="col3">Режим</div>
+							<div class="col4">Игроки</div>
+						</div>
+						<div id="match_tbl_data">
+							<div class="tbl_row">
+								<div class="col1">Игра</div>
+								<div class="col2">Карта 1</div>
+								<div class="col3">Захват</div>
+								<div class="col4">124</div>
+							</div>
+							<div class="tbl_row active">
+								<div class="col1">Ожидание</div>
+								<div class="col2">Название карты</div>
+								<div class="col3">Захват</div>
+								<div class="col4">17</div>
+							</div>
+							<div class="tbl_row">
+								<div class="col1">Запуск</div>
+								<div class="col2">Полигон</div>
+								<div class="col3">Командный бой</div>
+								<div class="col4">55</div>
+							</div>
+						</div>
+						<div id="match_tbl_foot">
+							<div id="m_refresh" class="m_btn">Обновить</div>
+							<div id="m_filters" class="m_btn">Фильтры</div>
+							<div id="m_create" class="m_btn">Создать</div>
+						</div>
+					</div>
+					<div id="match_info_wrp">
+						<div id="map_img"><div>Название карты</div></div>
+						<div id="map_info">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut libero eros, pulvinar in interdum ut, pretium sit amet eros. </div>
+						<div id="map_join">Подключиться</div>
+					</div>
+				</div>
+				<div id="chatbox_wrapper">
+					<div id="chat_friends">
+						<div id="chat_f_header">
+							Друзья
+						</div>
+						
+						<div id="chat_f_list">
+							<div class="friend">Имя первое</div>
+							<div class="friend">Имя1</div>
+							<div class="friend">Имя2</div>
+							<div class="friend">Имя3</div>
+							<div class="friend">Имя54</div>
+							<div class="friend">Имя 5</div>
+							<div class="friend">Имя 6</div>
+							<div class="friend">Имя 7</div>
+							<div class="friend">Имя 8</div>
+							<div class="friend">Имя 9</div>
+							<div class="friend">Имя 0</div>
+							<div class="friend">Имя 11</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя 12</div>
+							<div class="friend">Имя последнее</div>
+						</div>
+					</div>
+					<div id="chat_block">
+						<div id="thdr_holder" class="tabs_header">
+							<div onclick="main_tab" tab="news">Новости</div>
+							<div onclick="main_tab" tab="chat" class="active">Чат</div>
+						</div>
+						<div id="tabs_holder" class="tabs_content">
+							<!-- Новости вкладка -->
+							<div name="news" class="news_tab" style="visibility: hidden;">
+								<p>Новости</p>
+								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut libero eros, pulvinar in interdum ut, pretium sit amet eros. Duis tempus pretium erat ut consequat. Curabitur blandit augue vitae ipsum pulvinar, non gravida lorem facilisis. Donec vitae sollicitudin odio. Maecenas in ultricies justo, eu vehicula ante. Sed sed sapien at est vestibulum pretium. Fusce sodales sit amet magna vitae pellentesque. Sed et felis augue. Phasellus nec tempor ligula. </p>
+							</div>
+							
+							<!-- Чат вкладка -->
+							<div name="chat">
+								<div id="chat_panel">
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg mine"><span>Имя</span>: Текст сообщения</div>
+									<div class="chat_msg"><span>Имя</span>: Текст сообщения</div>
+								</div>
+								<div id="chat_input_block">
+									<input type="text" />
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="userinfo_wrapper">
+					<div id="udata_name">D-AIRY</div>
+					<div id="udata_balance_intl">128 чего-нибудь</div>
+					<div class="udata_balance_real">
+						<div id="udata_balance_real">142<span class="rub">₽</span></div>
+						<div id="udata_balance_add" onclick="prompt_pay">Пополнить счет</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

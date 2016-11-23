@@ -161,9 +161,9 @@ namespace GUI
 
 			void IRenderFrame::ResetLayout(bool first)
 			{
-				if(m_pParent && m_pParent->HasFixedSize() && IsLastChild())
+				if(m_pParent && m_pParent->HasFixedSize()/* && !this->HasFixedSize()*/ && IsLastChild())
 				{
-					if(m_pParent->m_iTopPos < m_iHeight)
+					if(m_pParent->m_iTopPos <= m_iHeight)
 					{
 						m_pParent->m_iTopPos = 0;
 						m_pParent->m_iScrollTopMax = 0;
@@ -513,7 +513,7 @@ namespace GUI
 				m_iHeight = h;
 			}
 
-			UINT IRenderFrame::Layout()
+			UINT IRenderFrame::Layout(bool changed)
 			{
 				TextClear();
 				UINT h = 0;
@@ -539,7 +539,7 @@ namespace GUI
 							int xDelta = ctr ? (GetContentWidth() - curXpos) / 2 : GetContentWidth() - curXpos;
 							for(UINT ii = 0; ii < m_pChilds.size(); ii++)
 							{
-								if(m_pChilds[ii]->GetYpos() == curY&&m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
+								if(m_pChilds[ii]->GetYpos() == curY&&m_pChilds[ii]->GetNode() && m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
 								{
 									m_pChilds[ii]->SetXpos(xDelta + m_pChilds[ii]->GetXpos());
 								}
@@ -552,7 +552,7 @@ namespace GUI
 					int xDelta = ctr ? (GetContentWidth() - curXpos) / 2 : GetContentWidth() - curXpos;
 					for(UINT ii = 0; ii < m_pChilds.size(); ii++)
 					{
-						if(m_pChilds[ii]->GetYpos() == curY && m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
+						if(m_pChilds[ii]->GetYpos() == curY && m_pChilds[ii]->GetNode() && m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
 						{
 							m_pChilds[ii]->SetXpos(xDelta + m_pChilds[ii]->GetXpos());
 						}
@@ -580,7 +580,7 @@ namespace GUI
 					//m_iTopPos += p;
 				}
 				h += TextFixUp();
-				if(m_pParent && m_pParent->HasFixedSize() && IsLastChild())
+				if(m_pParent && m_pParent->HasFixedSize() && changed && IsLastChild())
 				{
 					m_pParent->m_iTopPos += h;
 					m_pParent->m_iScrollTopMax += h;
@@ -1016,7 +1016,7 @@ namespace GUI
 
 			}
 
-			UINT IRenderBlock::Layout()
+			UINT IRenderBlock::Layout(bool changed)
 			{
 				bool bChanged = !HasFixedSize();
 				m_bHasFixedSize = false;
@@ -1117,7 +1117,7 @@ namespace GUI
 				}
 				if(!IsFreezzed())
 				{
-					UINT height = BaseClass::Layout();
+					UINT height = BaseClass::Layout(bChanged);
 					UINT hNew = height
 						+ style->margin_top->GetPX(height)
 						+ style->margin_bottom->GetPX(height)
@@ -1541,7 +1541,7 @@ namespace GUI
 			{
 			}
 
-			UINT IRenderAnonymousBlock::Layout()
+			UINT IRenderAnonymousBlock::Layout(bool changed)
 			{
 				m_iXpos = m_pParent->GetContentLeft();
 				m_iYpos = m_pParent->GetContentTop();
@@ -1563,7 +1563,7 @@ namespace GUI
 			{
 			}
 
-			UINT IRenderInlineBlock::Layout()
+			UINT IRenderInlineBlock::Layout(bool changed)
 			{
 				bool bChanged = !HasFixedSize();
 				m_bHasFixedSize = true;
@@ -1894,7 +1894,7 @@ namespace GUI
 			{
 			}
 
-			UINT IRenderInline::Layout()
+			UINT IRenderInline::Layout(bool changed)
 			{
 				m_iXpos = m_pParent->GetContentLeft();
 				m_iYpos = m_pParent->GetContentTop();
@@ -1920,7 +1920,7 @@ namespace GUI
 				SetText(((IDOMnodeText*)pNode)->GetText());
 			}
 
-			UINT IRenderText::Layout()
+			UINT IRenderText::Layout(bool changed)
 			{
 				IRenderFrame * pBlock = m_pParent;
 				while(pBlock->GetNode() && pBlock->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE)
@@ -2198,7 +2198,7 @@ namespace GUI
 				m_bInSelection = false;
 			}
 
-			UINT IRenderTextNew::Layout()
+			UINT IRenderTextNew::Layout(bool changed)
 			{
 				SetText(((IDOMnodeText*)m_pNode)->GetText());
 				((IDOMnodeText*)m_pNode)->SetText(m_szClearText);
@@ -2712,7 +2712,7 @@ namespace GUI
 				
 			}
 
-			UINT IRenderImageBlock::Layout()
+			UINT IRenderImageBlock::Layout(bool changed)
 			{
 				static UINT nIMG = CDOMnode::GetNodeIdByName(L"img");
 				static UINT nVIDEO = CDOMnode::GetNodeIdByName(L"video");
@@ -2792,7 +2792,7 @@ namespace GUI
 
 
 
-			UINT IRenderImageInlineBlock::Layout()
+			UINT IRenderImageInlineBlock::Layout(bool changed)
 			{
 				static UINT nIMG = CDOMnode::GetNodeIdByName(L"img");
 				static UINT nVIDEO = CDOMnode::GetNodeIdByName(L"video");

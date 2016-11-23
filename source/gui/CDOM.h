@@ -176,6 +176,20 @@ namespace GUI
 
 			static void ApplyCSSrules(const CSS::ICSSstyle * style, CDOMnode * pNode);
 
+
+
+			void ClassAdd(const StringW & cls);
+			//void ClassAdd(UINT cls);
+
+			void ClassRemove(const StringW & cls);
+			//void ClassRemove(UINT cls);
+
+			void ClassToggle(const StringW & cls, int set = -1);
+			//void ClassToggle(UINT cls, int set = -1);
+
+			BOOL ClassExists(const StringW & cls);
+			//BOOL ClassExists(UINT cls);
+
 		protected:
 			IDOMnode * m_pParent;
 			IDOMnode * m_pPrevSibling;

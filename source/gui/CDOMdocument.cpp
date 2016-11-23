@@ -899,7 +899,7 @@ namespace GUI
 				while(true)
 				{
 					pos = cls.find(L" ");
-					if(pos != (UINT)(-1))
+					if(pos != ~0)
 					{
 						if(pos != 0)
 						{
@@ -962,6 +962,8 @@ namespace GUI
 			m_mAttributes[name] = value;
 		}
 
+
+
 		void CDOMnode::AppendChild(IDOMnode * _pEl, bool regen)
 		{
 			CDOMnode * pEl = (CDOMnode*)_pEl;
@@ -1002,6 +1004,44 @@ namespace GUI
 				}
 			}
 		}
+
+		void CDOMnode::ClassAdd(const StringW & cls)
+		{
+			this->SetAttribute(L"class", this->GetAttribute(L"class")+L" "+cls);
+
+		}
+		/*void CDOMnode::ClassAdd(UINT cls)
+		{
+
+		}*/
+
+		void CDOMnode::ClassRemove(const StringW & cls)
+		{
+			//@TODO: Implement me
+		}
+		/*void CDOMnode::ClassRemove(UINT cls)
+		{
+
+		}*/
+
+		void CDOMnode::ClassToggle(const StringW & cls, int set)
+		{
+			//@TODO: Implement me
+		}
+		/*void CDOMnode::ClassToggle(UINT cls, int set = -1)
+		{
+
+		}*/
+
+		BOOL CDOMnode::ClassExists(const StringW & cls)
+		{
+			//@TODO: Implement me
+			return(FALSE);
+		}
+		/*BOOL CDOMnode::ClassExists(UINT cls)
+		{
+
+		}*/
 
 		void CDOMnode::RemoveChild(IDOMnode * _pEl, bool regen)
 		{
@@ -1460,7 +1500,7 @@ namespace GUI
 		{
 			//Render::IRenderFrame * pLayoutBlock = rf->GetParent();
 			Render::IRenderFrame * pLayoutBlock = rf;
-			while(pLayoutBlock && pLayoutBlock->GetParent() && !pLayoutBlock->HasFixedSize() && !pLayoutBlock->IsOutOfFlow() && !(pLayoutBlock->GetParent()->HasFixedSize() && pLayoutBlock->IsLastChild()))
+			while(pLayoutBlock && pLayoutBlock->GetParent() && !pLayoutBlock->HasFixedSize() && !pLayoutBlock->IsOutOfFlow() && !(pLayoutBlock->GetParent()->HasFixedSize() && pLayoutBlock->IsLastChild() && !pLayoutBlock->GetNode()->IsTextNode()))
 			{
 				pLayoutBlock = pLayoutBlock->GetParent();
 			}

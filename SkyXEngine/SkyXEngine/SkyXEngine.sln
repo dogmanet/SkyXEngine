@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyXEngine", "SkyXEngine\SkyXEngine.vcxproj", "{2EB4FB89-B7A7-4D1B-9D26-B6BF2017B272}"
 EndProject
@@ -25,7 +25,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxcore", "..\sxcore\sxcore.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Script4Game", "..\Script4Game\Script4Game.vcxproj", "{16806687-914C-4EA4-86B9-ADFA9B98DE72}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "..\SXGUI\SXGUI.vcxproj", "{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "string", "..\string\string.vcxproj", "{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "..\gui\gui.vcxproj", "{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "guitest", "..\..\source\guitest\guitest.vcxproj", "{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,12 +111,24 @@ Global
 		{16806687-914C-4EA4-86B9-ADFA9B98DE72}.Release|Win32.ActiveCfg = Release|Win32
 		{16806687-914C-4EA4-86B9-ADFA9B98DE72}.Release|Win32.Build.0 = Release|Win32
 		{16806687-914C-4EA4-86B9-ADFA9B98DE72}.Release|x64.ActiveCfg = Release|Win32
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}.Debug|Win32.Build.0 = Debug|Win32
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}.Debug|x64.ActiveCfg = Debug|Win32
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}.Release|Win32.ActiveCfg = Release|Win32
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}.Release|Win32.Build.0 = Release|Win32
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}.Release|x64.ActiveCfg = Release|Win32
 		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}.Debug|Win32.Build.0 = Debug|Win32
 		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}.Debug|x64.ActiveCfg = Debug|Win32
 		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}.Release|Win32.ActiveCfg = Release|Win32
 		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}.Release|Win32.Build.0 = Release|Win32
 		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}.Release|x64.ActiveCfg = Release|Win32
+		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Debug|Win32.Build.0 = Debug|Win32
+		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Debug|x64.ActiveCfg = Debug|Win32
+		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Release|Win32.ActiveCfg = Release|Win32
+		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Release|Win32.Build.0 = Release|Win32
+		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

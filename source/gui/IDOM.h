@@ -50,6 +50,16 @@ namespace GUI
 
 			virtual void DispatchEvent(IEvent & ev) = 0;
 			virtual void DispatchClientEvent(IEvent ev, bool * preventDefault) = 0;
+
+			virtual void UpdateStyles() = 0;
+
+			virtual void ClassAdd(const StringW & cls) = 0;
+
+			virtual void ClassRemove(const StringW & cls) = 0;
+
+			virtual void ClassToggle(const StringW & cls, int set = -1) = 0;
+
+			virtual BOOL ClassExists(const StringW & cls) = 0;
 		};
 
 

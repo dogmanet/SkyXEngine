@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title> Border</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	</head>
+	<body>
+		<canvas id="c" width="1366" height="768"></canvas>
+		<div style="display: inline-block; border: 1px solid #FF0000; border-top-color: #00FF00; border-bottom-color: #0000FF; width: 300px; height: 300px;" id="s"></div>
+		<div> t: <input type="text" id="t" value="200" onkeyup="u()" /></div>
+		<div> l: <input type="text" id="l" value="100" onkeyup="u()" /></div>
+		<div> r: <input type="text" id="r" value="250" onkeyup="u()" /></div>
+		<div> r1: <input type="text" id="r1" value="250" onkeyup="u()" /></div>
+		<div> r2: <input type="text" id="r2" value="250" onkeyup="u()" /></div>
+		<div> r3: <input type="text" id="r3" value="250" onkeyup="u()" /></div>
+		<div> b: <input type="text" id="b" value="200" onkeyup="u()" /></div>
+		<div> rt: <input type="text" id="rt" value="100" onkeyup="u()" /></div>
+		<div><button onclick="u()">Update</button></div>
+		<script type="text/javascript">
+
+var ctx = c.getContext('2d');
+	ctx.translate(10, 10)
+
+var DrawIndexed = function(vertices, indices, style){
+	var ctx = c.getContext('2d');
+	ctx.strokeStyle = style;
+	ctx.fillStyle = style;
+	for(var i = 0; i < indices.length; i += 3){
+		ctx.beginPath();
+		ctx.moveTo(vertices[indices[i]].x, vertices[indices[i]].y);
+		ctx.lineTo(vertices[indices[i + 1]].x, vertices[indices[i + 1]].y);
+		ctx.lineTo(vertices[indices[i + 2]].x, vertices[indices[i + 2]].y);
+		ctx.lineTo(vertices[indices[i]].x, vertices[indices[i]].y);
+		//ctx.stroke();
+		ctx.fill();
+	}
+};
+
+var BufferMake = function(tl, idx1, tr, idx2, br){
+	var tlr = {
+		ib: [],
+		vb: []
+	};
+	
+	var VC = 0;
+	for(var i = 0; i < tl.vb[idx1].length; i++){
+		tlr.vb.push(tl.vb[idx1][i]);
+	}
+	for(var i = 0; i < tl.ib[idx1].length; i++){
+		tlr.ib.push(tl.ib[idx1][i]);
+	}
+	VC += tl.vb[idx1].length;
+	for(var i = 0; i < tr.vb[idx2].length; i++){
+		tlr.vb.push(tr.vb[idx2][i]);
+	}
+	for(var i = 0; i < tr.ib[idx2].length; i++){
+		tlr.ib.push(tr.ib[idx2][i] + VC);
+	}
+	VC += tr.vb[0].length;
+	for(var i = 0; i < br.vb.length; i++){
+		tlr.vb.push(br.vb[i]);
+	}
+	for(var i = 0; i < br.ib.length; i++){
+		tlr.ib.push(VC + br.ib[i]);
+	}
+	
+	return(tlr);
+};	
+
+var u = function(){
+	f(parseInt(t.value), parseInt(l.value), parseInt(r.value), parseInt(b.value), parseInt(rt.value), parseInt(r1.value), parseInt(r2.value), parseInt(r3.value));
+};
+var f = function(t, l, r, bt, rt, r1, r2, r3){
+	var ctx = c.getContext('2d');
+//	ctx.translate(10, 10)
+	
+	window.pVB = [];
+	
+	window.pIB = [];
+	
+	var w = 150;
+	var h = 30;
+	
+//	return;
+	s.style.borderTopWidth = t+'px';
+	s.style.borderLeftWidth = l+'px';
+	s.style.borderBottomWidth = bt+'px';
+	s.style.borderRightWidth = rt+'px';
+	s.style.borderTopLeftRadius = r+'px';
+	s.style.borderBottomLeftRadius = r1+'px';
+	s.style.borderTopRightRadius = r2+'px';
+	s.style.borderBottomRightRadius = r3+'px';
+	
+	var ctx = c.getContext('2d');
+	ctx.clearRect(-10, -10, 1000, 1000)
+	var PI = Math.PI;
+
+	var minr = Math.min((h + t + bt) / 2, (w + l + rt) / 2);
+	r = Math.min(r, minr);
+	console.log('r= '+r);
+	var tl = BuildCut(t, l, r);
+	r1 = Math.min(r1, minr);
+	r2 = Math.min(r2, minr);
+	r3 = Math.min(r3, minr);
+	var bl = BuildCut(bt, l, r1);
+	for(var j = 0; j < 2; j++){
+		for(var i = 0; i < bl.vb[j].length; i++){
+			bl.vb[j][i].y = -bl.vb[j][i].y + bt + t + h;
+		}
+	}
+	for(var i = 0; i < bl.br.length; i++){
+		bl.br[i].y = -bl.br[i].y + bt + t + h;
+	}
+	var tr = BuildCut(t, rt, r2);
+	for(var j = 0; j < 2; j++){
+		for(var i = 0; i < tr.vb[j].length; i++){
+			<!-- bl.vb[i].y = -bl.vb[i].y + bt + t + h; -->
+			tr.vb[j][i].x = -tr.vb[j][i].x + l + rt + w;
+		}
+	}
+	for(var i = 0; i < tr.br.length; i++){
+		<!-- bl.vb[i].y = -bl.vb[i].y + bt + t + h; -->
+		tr.br[i].x = -tr.br[i].x + l + rt + w;
+	}
+	var br = BuildCut(bt, rt, r3);
+	for(var j = 0; j < 2; j++){
+		for(var i = 0; i < br.vb[j].length; i++){
+			br.vb[j][i].y = -br.vb[j][i].y + bt + t + h;
+			br.vb[j][i].x = -br.vb[j][i].x + l + rt + w;
+		}	
+	}
+	for(var i = 0; i < br.br.length; i++){
+		br.br[i].y = -br.br[i].y + bt + t + h;
+		br.br[i].x = -br.br[i].x + l + rt + w;
+	}
+
+	
+	var tlr = BufferMake(tl, 0, tr, 0, {ib: [0,1,2,0,2,3], vb: [tl.br[0], tl.br[2], tr.br[2], tr.br[0]]});
+	var blr = BufferMake(bl, 0, br, 0, {ib: [0,1,2,0,2,3], vb: [bl.br[2], bl.br[0], br.br[0], br.br[2]]});
+	var ltb = BufferMake(tl, 1, bl, 1, {ib: [0,1,2,0,2,3], vb: [tl.br[1], bl.br[1], bl.br[3], tl.br[3]]});
+	var rtb = BufferMake(tr, 1, br, 1, {ib: [0,1,2,0,2,3], vb: [tr.br[3], br.br[3], br.br[1], tr.br[1]]});
+
+	DrawIndexed(tlr.vb, tlr.ib, '#00FF00');
+	DrawIndexed(blr.vb, blr.ib, '#0000FF');
+	DrawIndexed(ltb.vb, ltb.ib, '#FF0000');
+	DrawIndexed(rtb.vb, rtb.ib, '#FF0000');
+}
+
+var BuildCut = function(t, l, r){
+	var pVB = [[],[]];
+	var pIB = [[],[]];
+	
+	var borders = [];
+	
+	var x1 = l * r / (t + l);
+	var y1 = r - x1;
+	
+	var y2 = -(l * t - r*r) / ((r - t) * l / t + r - l);
+	var x2 = y2 * l / t;
+	
+	var ctx = c.getContext('2d');
+/*	ctx.beginPath();
+	ctx.moveTo(x1, y1);
+	ctx.lineTo(x2, y2);
+	ctx.stroke();
+	
+	
+	
+	ctx.beginPath();
+	ctx.moveTo(0, r);
+	ctx.lineTo(0, 1000);
+	ctx.stroke();
+	
+	ctx.beginPath();
+	ctx.moveTo(r, 0);
+	ctx.lineTo(1000, 0);
+	ctx.stroke();
+	
+	ctx.beginPath();
+	ctx.moveTo(l, r);
+	ctx.lineTo(l, 1000);
+	ctx.stroke();
+	
+	ctx.beginPath();
+	ctx.moveTo(r, t);
+	ctx.lineTo(1000, t);
+	ctx.stroke();
+	
+	ctx.beginPath();
+	ctx.moveTo(l, r);
+	ctx.lineTo(r, t);
+	ctx.stroke();
+	
+	ctx.beginPath();
+	ctx.moveTo(r, 0);
+	ctx.lineTo(0, r);
+	ctx.stroke();*/
+	
+	borders.push({x: r, y: 0});
+	borders.push({x: 0, y: r});
+	
+	pVB[0].push({x: x1, y: y1});
+	pVB[0].push({x: r, y: 0});
+	
+	pVB[1].push({x: x1, y: y1});
+	pVB[1].push({x: 0, y: r});
+	
+	pIB[0].push(0);
+	pIB[0].push(1);
+	pIB[0].push(2);
+	pIB[0].push(2);
+	pIB[0].push(1);
+	pIB[0].push(3);
+	
+	pIB[1].push(0);
+	pIB[1].push(1);
+	pIB[1].push(2);
+	pIB[1].push(2);
+	pIB[1].push(1);
+	pIB[1].push(3);
+	
+	if(r > t && r > l){		
+		pVB[0].push({x: x2, y: y2});
+		pVB[0].push({x: r, y: t});
+		
+		pVB[1].push({x: x2, y: y2});
+		pVB[1].push({x: l, y: r});
+		
+		borders.push({x: r, y: t});
+		borders.push({x: l, y: r});
+	}else{
+		pVB[0].push({x: l, y: t});
+		pVB[0].push({x: l, y: t});
+		
+		pVB[1].push({x: l, y: t});
+		pVB[1].push({x: l, y: t});
+
+		borders.push({x: l, y: t});
+		borders.push({x: l, y: t});
+		if(r > 0){
+		}
+	}
+	
+	
+	
+	
+	
+	return({vb: pVB, ib: pIB, br: borders});
+}
+
+var BuildRadius = function(t, l, r){
+	var pVB = [[],[]];
+	var pIB = [[],[]];
+
+	var PI = Math.PI;
+
+	var c1 = (2 * r * (l + t) - /* + */ 2 * r * Math.sqrt((l + t) * (l + t) - (l * l + t * t))) / (2 * (l * l + t * t));
+	
+	var x1 = l * c1;
+	var y1 = t * c1;
+	
+	var f1 = PI + Math.atan((y1 - r) / (x1 - r));
+	
+
+	var c2 = (-Math.sqrt((-2 * l*l * r*t - 2 * l * r*r*r + 8 * l * r*r * t - 2 * l *r*t * t - 2 * r*r*r * t) * (-2 * l*l * r*t - 2 * l * r*r*r + 8 * l * r*r * t - 2 * l * r * t*t - 2 * r*r*r * t) - 4 * (2 * l*l * r * t - l*l * t*t - 4 * l * r*r * t + 2 * l * r * t*t + r*r*r*r) * (l*l * r*r - 2 * l*l * r * t + 2 * l*l * t*t - 2 * l * r * t*t + r*r * t*t)) + 2 * l*l * r * t + 2 * l * r*r*r - 8 * l * r*r * t + 2 * l * r * t*t + 2 * r*r*r * t) / (2 * (l*l * r*r - 2 * l*l * r * t + 2 * l*l * t*t - 2 * l * r * t*t + r*r*t * t));
+
+	var x2 = l * c2;
+	var y2 = t * c2;
+	
+	var a = r - l;
+	var b = r - t;
+	
+	var f2 = PI + Math.atan((y2 - r) / (x2 - r));
+	f2 = 2 * PI -Math.acos((x2 - r) / a);
+	if(f2 > 2 * PI){
+		f2 -= 2 * PI;
+	}
+	if(f1 < PI){
+		f1 += PI;
+	}
+	//f2 = -Math.asin((y2 - r) / b);
+	console.log('c='+c1+' x='+x1+' y='+y1+' f='+f1);
+	console.log('c= '+c2+' x='+x2+' y='+y2+' f='+f2);
+	
+	
+	var steps = 2 + parseInt(r / 20);
+	console.log('steps='+steps);
+	var borders = [];
+	var add = [0,0];
+	
+	if(r > 0){
+		var _stp = (3 * PI / 2 - f1) / steps;
+		pVB[0].push({x: x1, y: y1});
+		for(i = 1; i <= steps; i++){
+			var f = i * _stp + f1;
+			var x = r * Math.cos(f);
+			var y = r * Math.sin(f);
+			pVB[0].push({x: x + r, y: y + r});
+			if(i == steps){
+				borders.push({x: x + r, y: y + r});
+			}
+		}
+		/*if(l > r){
+			pVB.push({x: l, y: 0});
+			add[0] = 1;
+		}*/
+		
+		//ctx.moveTo(x1, y1);
+		_stp = (f1 - PI) / steps;
+		pVB[1].push({x: x1, y: y1});
+		for(i = steps - 1; i >= 0; i--){
+			var f = i * _stp + PI;
+			var x = r * Math.cos(f);
+			var y = r * Math.sin(f);
+			pVB[1].push({x: x + r, y: y + r});
+			if(i == 0){
+				borders.push({x: x + r, y: y + r});
+			}
+		}
+		
+	}else{
+		borders.push({x: 0, y: 0});
+		borders.push({x: 0, y: 0});
+	}
+	
+	if(r > t && r > l){
+	
+		pVB[0].push({x: x2, y: y2});
+		var _stp = (3 * PI / 2 - f2) / steps;
+		for(i = 1; i <= steps; i++){
+			var f = i * _stp + f2;
+			var x = a * Math.cos(f) + r;
+			var y = b * Math.sin(f) + r;
+			pVB[0].push({x: x, y: y});
+			if(i == steps){
+				borders.push({x: x, y: y});
+			}
+		}
+		
+
+		pVB[1].push({x: x2, y: y2});
+		var _stp = (f2 - PI) / steps;
+		for(i = steps - 1; i >= 0; i--){
+			var f = i * _stp + PI;
+			var x = a * Math.cos(f) + r;
+			var y = b * Math.sin(f) + r;
+			pVB[1].push({x: x, y: y});
+			if(i == 0){
+				borders.push({x: x, y: y});
+			}
+		}
+		
+		var CV = steps + 1;
+		for(var i = 0; i < steps; i++){
+			pIB[0].push(i);
+			pIB[0].push(i + 1);
+			pIB[0].push(i + CV);
+			
+			pIB[0].push(i + CV);
+			pIB[0].push(i + CV + 1);
+			pIB[0].push(i + 1);
+			
+			pIB[1].push(i);
+			pIB[1].push(i + 1);
+			pIB[1].push(i + CV);
+			
+			pIB[1].push(i + CV);
+			pIB[1].push(i + CV + 1);
+			pIB[1].push(i + 1);
+		}
+	}else{
+		borders.push({x: l, y: t});
+		borders.push({x: l, y: t});
+		if(r > 0){
+			pVB[0].push({x: l, y: t});
+			pVB[1].push({x: l, y: t});
+			var CV = 0;
+			for(var i = 0; i < steps; i++){
+				pIB[0].push(CV + i);
+				pIB[0].push(CV + i + 1);
+				pIB[0].push(steps + 1);
+				
+				pIB[1].push(CV + i);
+				pIB[1].push(CV + i + 1);
+				pIB[1].push(steps + 1);
+			}
+		}
+	}
+	
+	
+	
+	
+	//DrawIndexed(pVB, pIB, '#000000');
+	
+	return({vb: pVB, ib: pIB, br: borders});
+}
+
+f(200, 100, 250, 200, 100, 250, 250, 250);
+
+		</script>
+	</body>
+</html>
