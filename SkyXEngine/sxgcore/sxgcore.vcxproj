@@ -25,7 +25,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -41,14 +41,17 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\project\engine\source;$(IncludePath);$(DXSDK_DIR)\Include</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)\lib\x86;D:\project\engine\libs;$(LibraryPath)</LibraryPath>
-    <SourcePath>D:\project\engine\source;$(SourcePath);$(DXSDK_DIR)\Include</SourcePath>
-    <OutDir>D:\project\engine\build\</OutDir>
+    <IncludePath>../../source;$(IncludePath);../../sdks/dx9sdk/Include</IncludePath>
+    <LibraryPath>../../sdks/dx9sdk/Lib;../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../source;$(SourcePath);$(DXSDK_DIR)\Include</SourcePath>
+    <OutDir>../../build/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>../../source;$(IncludePath);../../sdks/dx9sdk/Include</IncludePath>
+    <LibraryPath>../../sdks/dx9sdk/Lib;../../libs;$(LibraryPath)</LibraryPath>
+    <OutDir>../../build/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -62,7 +65,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>D:\project\engine\libs\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
@@ -75,12 +78,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXGCORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <ImportLibrary>../../libs/$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

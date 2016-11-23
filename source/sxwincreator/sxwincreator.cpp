@@ -20,7 +20,7 @@
 
 #include <core\\Array.h>
 #include <SXGUIWinApi\sxgui.h>
-#include <D:\project\engine\SkyXEngine\SXWinCreator\resource.h>
+#include <../SkyXEngine/SXWinCreator/resource.h>
 
 
 #include <Shlwapi.h>

@@ -74,7 +74,7 @@ void runqq()
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-	ISXFile* tmpfile = Core_OpFile("D:\\project\\engine\\build\\log.txt", SXFILE_TEXT);
+	ISXFile* tmpfile = Core_OpFile("./log.txt", SXFILE_TEXT);
 
 	int arg1 = 147;
 	float arg2;
