@@ -82,6 +82,7 @@ public:
 	{
 		//this->AllocSize = arr.AllocSize;
 		//this->Size = arr.Size;
+		this->resize(arr.Size);
 			for(int i = arr.Size - 1; i >= 0; i--)
 			{
 				(*this)[i] = arr[i];
