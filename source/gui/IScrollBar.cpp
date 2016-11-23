@@ -13,7 +13,9 @@ namespace GUI
 				m_eDir(_dir),
 				m_iScrollMax(0),
 				m_iScrollCur(0),
-				m_iLength(0)
+				m_iLength(0),
+				m_bDragging(false),
+				m_iDragPos(0)
 			{
 			}
 

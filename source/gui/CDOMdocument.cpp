@@ -2,6 +2,8 @@
 #include "CDOMdocument.h"
 #include "ITEXT.h"
 
+#include "IScrollBar.h"
+
 #define SCROLL_SPEED 32
 #define SCROLL_SPEED_MAX 64
 
@@ -268,6 +270,10 @@ namespace GUI
 			if(ev.preventDefault)
 			{
 				return;
+			}
+			if(this->m_pRenderFrame->m_pScrollBarVert)
+			{
+				this->m_pRenderFrame->m_pScrollBarVert->DispatchEvent(ev);
 			}
 			switch(ev.type)
 			{

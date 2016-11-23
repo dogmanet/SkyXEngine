@@ -33,6 +33,10 @@ namespace GUI
 				int m_iScrollCur;
 				int m_iLength;
 				SCROLLBAR_DIR m_eDir;
+
+				bool m_bDragging;
+				int m_iDragPos;
+				int m_iScrollStart;
 			};
 		};
 	};
