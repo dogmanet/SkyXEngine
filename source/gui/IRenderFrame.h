@@ -35,7 +35,7 @@ namespace GUI
 				IRenderFrame(CDOMnode * pNode, IRenderFrame * pRootNode);
 				~IRenderFrame();
 
-				virtual UINT Layout();
+				virtual UINT Layout(bool changed=true);
 				virtual void Render(UINT lvl);
 
 				struct renderElement
@@ -293,7 +293,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderBlock, IRenderFrame);
 			public:
 				IRenderBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 			};
 
@@ -302,7 +302,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderAnonymousBlock, IRenderFrame);
 			public:
 				IRenderAnonymousBlock(IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 			};
 
@@ -312,7 +312,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderInlineBlock, IRenderFrame);
 			public:
 				IRenderInlineBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 			};
 
@@ -321,7 +321,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderInline, IRenderFrame);
 			public:
 				IRenderInline(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 			};
 
@@ -330,7 +330,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderText, IRenderFrame);
 			public:
 				IRenderText(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 
 			protected:
@@ -353,7 +353,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderTextNew, IRenderFrame);
 			public:
 				IRenderTextNew(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 
 				UINT GetCaretPos();
@@ -407,7 +407,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderImageBlock, IRenderBlock);
 			public:
 				IRenderImageBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 			};
 
@@ -416,7 +416,7 @@ namespace GUI
 				DECLARE_CLASS(IRenderImageInlineBlock, IRenderInlineBlock);
 			public:
 				IRenderImageInlineBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
-				UINT Layout();
+				UINT Layout(bool changed = true);
 				void Render(UINT lvl);
 			};
 		};

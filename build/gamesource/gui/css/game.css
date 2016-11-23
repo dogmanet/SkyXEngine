@@ -208,6 +208,8 @@ body
 	border-bottom-color: #00000066;
 	border-bottom-width: 1px;
 	
+	display: block;
+	
 	color: #ccc;
 	
 	font-name: cour;

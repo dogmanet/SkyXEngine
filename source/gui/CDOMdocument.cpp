@@ -1460,7 +1460,7 @@ namespace GUI
 		{
 			//Render::IRenderFrame * pLayoutBlock = rf->GetParent();
 			Render::IRenderFrame * pLayoutBlock = rf;
-			while(pLayoutBlock && pLayoutBlock->GetParent() && !pLayoutBlock->HasFixedSize() && !pLayoutBlock->IsOutOfFlow() && !(pLayoutBlock->GetParent()->HasFixedSize() && pLayoutBlock->IsLastChild()))
+			while(pLayoutBlock && pLayoutBlock->GetParent() && !pLayoutBlock->HasFixedSize() && !pLayoutBlock->IsOutOfFlow() && !(pLayoutBlock->GetParent()->HasFixedSize() && pLayoutBlock->IsLastChild() && !pLayoutBlock->GetNode()->IsTextNode()))
 			{
 				pLayoutBlock = pLayoutBlock->GetParent();
 			}
