@@ -1,0 +1,151 @@
+[JobWindow]
+classname = JobWindow
+NameJobWnd = JobWindow
+textwnd = JobWindow
+left = 100
+top = 250
+Width = 910
+Height = 378
+ColorBK = 14474460
+MenuWindow = 0
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 0
+
+[elem_0]
+SysClassName = msctls_progress32
+SXClassName = SXGUIProgressBar
+Name = ProgressBar1
+left = 105
+top = 78
+Width = 100
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_1]
+SysClassName = Button
+SXClassName = SXGUIRadioButton
+Name = RadioButton1
+CaptionElement = RadioButton1
+left = 254
+top = 78
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_2]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static1
+CaptionElement = Static1
+left = 404
+top = 45
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_3]
+SysClassName = msctls_trackbar32
+SXClassName = SXGUITrackBar
+Name = TrackBar1
+left = 557
+top = 41
+Width = 100
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_4]
+SysClassName = msctls_statusbar32
+SXClassName = SXGUIStatusBar
+Name = StatusBar1
+left = 0
+top = 322
+Width = 894
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_5]
+SysClassName = ToolbarWindow32
+SXClassName = SXGUIToolBar
+Name = ToolBar1
+left = 286
+top = 196
+Width = 100
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_6]
+SysClassName = msctls_updown32
+SXClassName = SXGUIUpDown
+Name = UpDown1
+left = 59
+top = 202
+Width = 15
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_7]
+SysClassName = Window1
+SXClassName = SXGUIBaseWnd
+Name = Window1
+CaptionElement = Window1
+left = 498
+top = 93
+Width = 200
+Height = 200
+ColorBK = 13158600
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1

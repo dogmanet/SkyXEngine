@@ -45,6 +45,7 @@ public:
 	bool KeyExists(const char* section, const char* key, bool acceptIncludes = false);
 
 	void Release();
+	void Clear();
 
 	AssotiativeArray<String, section> * GetSections();
 
@@ -74,7 +75,7 @@ protected:
 	int WriteFile(const String & name, String section, String key, const String & val);
 	
 
-	int Parse(const String & file);
+	int Parse(const char* file);
 
 	int ParseInclude(String & file, const String & dir);
 

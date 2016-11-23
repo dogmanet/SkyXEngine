@@ -8,6 +8,16 @@
 //#include <core\\sxcore.cpp>
 //#include <fstream>
 #include <gdefines.h>
+
+/*
+#if defined(_DEBUG)
+#pragma comment(lib, "sxcore_d.lib")
+#else
+#pragma comment(lib, "sxcore.lib")
+#endif*/
+#include <core\\sxcore.cpp>
+
+
 #include <core\\Array.h>
 #include <SXGUIWinApi\sxgui.h>
 #include <D:\project\engine\SkyXEngine\SXWinCreator\resource.h>

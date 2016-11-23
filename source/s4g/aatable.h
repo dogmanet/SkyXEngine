@@ -21,6 +21,26 @@ public:
 		//return tmpval;
 	}
 
+	inline void Del(UINT key)
+	{
+			if (key > ((UINT)-1) - 128)
+			{
+				_asm
+				{
+					int 3;
+				};
+			}
+			else if (key < Arr.size())
+				Arr.erase(key);
+	}
+
+	inline void Del(const char* name)
+	{
+		long tmpkey = GetKey(name);
+			if (tmpkey != -1)
+				Arr.erase(tmpkey);
+	}
+
 	inline T* & operator[](UINT key)
 	{
 			if(key > ((UINT)-1) - 128)

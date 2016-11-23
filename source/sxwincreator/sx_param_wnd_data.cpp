@@ -896,30 +896,33 @@ void SXUpdateParam::SetMenuWindow()
 void SaveFile(const char* path)
 {
 	FILE* file = 0;
-	file = fopen(path,"wb");
+	file = fopen(path,"w");
 
-	//записываем версию формата
+	/*//записываем версию формата
 	DWORD Version = 1;
 	fwrite(&Version,sizeof(DWORD),1,file);
-	//запись количества сохраненных файлов
+	//запись количества сохраненных файлов*/
 	WORD CountSave = SXMainWndElem::CreateElements.size();
-	fwrite(&CountSave,sizeof(WORD),1,file);
+	/*fwrite(&CountSave,sizeof(WORD),1,file);
 
 	//для статистики, количества созданных и у даленных элементов
 	fwrite(&SXMainWndElem::CountCreateNewElem,sizeof(WORD),1,file);
-	fwrite(&SXMainWndElem::CountDeleteElem,sizeof(WORD),1,file);
+	fwrite(&SXMainWndElem::CountDeleteElem,sizeof(WORD),1,file);*/
 
 	//записываем sys class, sx class, caption
 	//{
+	fprintf(file, "[JobWindow]\n");
 	char classname[32];
 	GetClassName(SXMainWndElem::JobMainWnd->GetHWND(),classname,31);
-	fwrite(classname,1,strlen(classname)+1,file);
-	char sxclassname[] = "SXGUIBaseWnd\0";
-	fwrite(sxclassname,1,strlen(sxclassname)+1,file);
-	fwrite(SXMainWndElem::NameJobWnd,1,strlen(SXMainWndElem::NameJobWnd)+1,file);
+	fprintf(file, "classname = %s\n", classname);
+	//char sxclassname[] = "ISXGUIBaseWnd\0";
+	//fprintf(file, "classname2 = %s", sxclassname);
+	//fwrite(SXMainWndElem::NameJobWnd,1,strlen(SXMainWndElem::NameJobWnd)+1,file);
+	fprintf(file, "NameJobWnd = %s\n", SXMainWndElem::NameJobWnd);
 	char textwnd[256];
 	SXMainWndElem::JobMainWnd->GetText(textwnd,255);
-	fwrite(textwnd,1,strlen(textwnd)+1,file);
+	//fwrite(textwnd,1,strlen(textwnd)+1,file);
+	fprintf(file, "textwnd = %s\n", textwnd);
 	
 	//}
 
@@ -928,12 +931,17 @@ void SaveFile(const char* path)
 	RECT GClientRect;
 	long Width,Height;
 	SXMainWndElem::JobMainWnd->GetClientRect(&GClientRect);
-	fwrite(&GClientRect.left,sizeof(long),1,file);
-	fwrite(&GClientRect.top,sizeof(long),1,file);
+
+	fprintf(file, "left = %d\n", GClientRect.left);
+	fprintf(file, "top = %d\n", GClientRect.top);
+	//fwrite(&GClientRect.left,sizeof(long),1,file);
+	//fwrite(&GClientRect.top,sizeof(long),1,file);
 	Width = GClientRect.right - GClientRect.left;
 	Height = GClientRect.bottom - GClientRect.top;
-	fwrite(&Width,sizeof(long),1,file);
-	fwrite(&Height,sizeof(long),1,file);
+	//fwrite(&Width,sizeof(long),1,file);
+	//fwrite(&Height,sizeof(long),1,file);
+	fprintf(file, "Width = %d\n", Width);
+	fprintf(file, "Height = %d\n", Height);
 	//}
 
 	char FontName[256];
@@ -948,28 +956,34 @@ void SaveFile(const char* path)
 	//записываем задний фон
 	//{
 	ColorBK = SXMainWndElem::JobMainWnd->GetColorBrush();
-	fwrite(&ColorBK,sizeof(DWORD),1,file);
+	//fwrite(&ColorBK,sizeof(DWORD),1,file);
+	fprintf(file, "ColorBK = %d\n", ColorBK);
 	//}
 
 	//записываем использование меню
 	bool MenuWindow = (SXMainWndElem::CheckBoxParamWinMenu->GetCheck() == 1) ? true : false;
-	fwrite(&MenuWindow,sizeof(bool),1,file);
+	//fwrite(&MenuWindow,sizeof(bool),1,file);
+	fprintf(file, "MenuWindow = %d\n", MenuWindow);
 
 	//записываем информацию о подсказках
 	//{
 	bool HintVisible = SXMainWndElem::JobMainWnd->ShowHint();
-	fwrite(&HintVisible,sizeof(bool),1,file);
+	//fwrite(&HintVisible,sizeof(bool),1,file);
+	fprintf(file, "HintVisible = %d\n", HintVisible);
 	char HintText[1024];
 	HintText[0] = 0;
 	SXMainWndElem::JobMainWnd->GetHintText(HintText);
-	fwrite(HintText,1,strlen(HintText)+1,file);
+	//fwrite(HintText,1,strlen(HintText)+1,file);
+	fprintf(file, "HintText = %s\n", HintText);
 	//}
 
 	//параметры видимости и действительности
 	bool Visible = SXMainWndElem::JobMainWnd->Visible();
-	fwrite(&Visible,sizeof(bool),1,file);
+	//fwrite(&Visible,sizeof(bool),1,file);
+	fprintf(file, "Visible = %d\n", Visible);
 	bool Enable = SXMainWndElem::JobMainWnd->Enable();
-	fwrite(&Enable,sizeof(bool),1,file);
+	//fwrite(&Enable,sizeof(bool),1,file);
+	fprintf(file, "Enable = %d\n", Enable);
 
 	//char SysClassName[32];
 	//char SXClassName[32];
@@ -978,29 +992,26 @@ void SaveFile(const char* path)
 			char CaptionElement[256];
 			CaptionElement[0] = 0;
 
-				/*if(
+			fprintf(file, "\n[elem_%d]\n", i);
+			fprintf(file, "SysClassName = %s\n", SXMainWndElem::CreateElements[i]->SysClassName);
+			fprintf(file, "SXClassName = %s\n", SXMainWndElem::CreateElements[i]->SXClassName);
+			fprintf(file, "Name = %s\n", SXMainWndElem::CreateElements[i]->Name);
+
+				if(
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,UPDOWN_CLASS) != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TRACKBAR_CLASS) != 0 && 
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,PROGRESS_CLASS) != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TOOLBARCLASSNAME) != 0 &&
-					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0
+					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 && 
+					strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0
 					)
-				{*/
+				{
 					ISXGUITextual* textual = dynamic_cast<ISXGUITextual*>(SXMainWndElem::CreateElements[i]->Object);
 					textual->GetText(CaptionElement,256);
-				//}
-			//sprintf(SysClassName,"%s",SXMainWndElem::CreateElements[i]->SysClassName);
-			//sprintf(SXClassName,"%s",SXMainWndElem::CreateElements[i]->SXClassName);
-			//записываем sys class, sx class, caption
-			//{
-			fwrite(SXMainWndElem::CreateElements[i]->SysClassName,1,strlen(SXMainWndElem::CreateElements[i]->SysClassName)+1,file);
-			fwrite(SXMainWndElem::CreateElements[i]->SXClassName,1,strlen(SXMainWndElem::CreateElements[i]->SXClassName)+1,file);
-			fwrite(SXMainWndElem::CreateElements[i]->Name,1,strlen(SXMainWndElem::CreateElements[i]->Name)+1,file);
-
-			fwrite(CaptionElement,1,strlen(CaptionElement)+1,file);
-			//}
+					fprintf(file, "CaptionElement = %s\n", CaptionElement);
+			}
 
 			//записываем позицию и размеры
 			//{
@@ -1008,12 +1019,18 @@ void SaveFile(const char* path)
 			Width = Height = 0;
 
 			SXMainWndElem::CreateElements[i]->Object->GetClientRect(&GClientRect);
-			fwrite(&GClientRect.left,sizeof(long),1,file);
-			fwrite(&GClientRect.top,sizeof(long),1,file);
+			//fwrite(&GClientRect.left,sizeof(long),1,file);
+			//fwrite(&GClientRect.top,sizeof(long),1,file);
+
+			fprintf(file, "left = %d\n", GClientRect.left);
+			fprintf(file, "top = %d\n", GClientRect.top);
+
 			Width = GClientRect.right - GClientRect.left;
 			Height = GClientRect.bottom - GClientRect.top;
-			fwrite(&Width,sizeof(long),1,file);
-			fwrite(&Height,sizeof(long),1,file);
+			//fwrite(&Width,sizeof(long),1,file);
+			//fwrite(&Height,sizeof(long),1,file);
+			fprintf(file, "Width = %d\n", Width);
+			fprintf(file, "Height = %d\n", Height);
 			//}
 
 			/*char FontName[256];
@@ -1057,14 +1074,22 @@ void SaveFile(const char* path)
 							StrikeOut = LogFont.lfStrikeOut == 1 ? true : false;
 						}
 
-					fwrite(FontName,1,strlen(FontName)+1,file);
+					/*fwrite(FontName,1,strlen(FontName)+1,file);
 					fwrite(&WidthFont,sizeof(long),1,file);
 					fwrite(&HeightFont,sizeof(long),1,file);
 					fwrite(&WeightFont,sizeof(long),1,file);
 
 					fwrite(&Italic,sizeof(bool),1,file);
 					fwrite(&Underline,sizeof(bool),1,file);
-					fwrite(&StrikeOut,sizeof(bool),1,file);
+					fwrite(&StrikeOut,sizeof(bool),1,file);*/
+
+						fprintf(file, "FontName = %s\n", FontName);
+						fprintf(file, "WidthFont = %d\n", WidthFont);
+						fprintf(file, "HeightFont = %d\n", HeightFont);
+						fprintf(file, "WeightFont = %d\n", WeightFont);
+						fprintf(file, "Italic = %d\n", Italic);
+						fprintf(file, "Underline = %d\n", Underline);
+						fprintf(file, "StrikeOut = %d\n", StrikeOut);
 				}
 
 			ColorText = ColorTextBK = ColorBK = 0;
@@ -1084,10 +1109,13 @@ void SaveFile(const char* path)
 					ColorTextBK = SXMainWndElem::CreateElements[i]->Object->GetColorTextBk();
 					//ColorText = SXColorText.GetColor();
 					//ColorTextBK = SXColorTextBK.GetColor();
-					fwrite(&ColorText,sizeof(DWORD),1,file);
-					fwrite(&ColorTextBK,sizeof(DWORD),1,file);
+					//fwrite(&ColorText,sizeof(DWORD),1,file);
+					//fwrite(&ColorTextBK,sizeof(DWORD),1,file);
+					fprintf(file, "ColorText = %d\n", ColorText);
+					fprintf(file, "ColorTextBK = %d\n", ColorTextBK);
 					TransparentTextBK = SXMainWndElem::CreateElements[i]->Object->GetTransparentTextBk();
-					fwrite(&TransparentTextBK,sizeof(bool),1,file);
+					//fwrite(&TransparentTextBK,sizeof(bool),1,file);
+					fprintf(file, "TransparentTextBK = %d\n", TransparentTextBK);
 				}
 
 			//записываем задний фон
@@ -1104,25 +1132,30 @@ void SaveFile(const char* path)
 				{
 					ColorBK = SXMainWndElem::CreateElements[i]->Object->GetColorBrush();
 					//ColorBK = SXColorBK.GetColor();
-					fwrite(&ColorBK,sizeof(DWORD),1,file);
+					//fwrite(&ColorBK,sizeof(DWORD),1,file);
+					fprintf(file, "ColorBK = %d\n", ColorBK);
 				}
 			//}
 
 			//записываем информацию о подсказках
 			//{
 			bool HintVisible = SXMainWndElem::CreateElements[i]->Object->ShowHint();
-			fwrite(&HintVisible,sizeof(bool),1,file);
+			//fwrite(&HintVisible,sizeof(bool),1,file);
+			fprintf(file, "HintVisible = %d\n", HintVisible);
 			char HintText[1024];
 			HintText[0] = 0;
 			SXMainWndElem::CreateElements[i]->Object->GetHintText(HintText);
-			fwrite(HintText,1,strlen(HintText)+1,file);
+			//fwrite(HintText,1,strlen(HintText)+1,file);
+			fprintf(file, "HintText = %s\n", HintText);
 			//}
 
 			//параметры видимости и действительности
 			bool Visible = SXMainWndElem::CreateElements[i]->Object->Visible();
-			fwrite(&Visible,sizeof(bool),1,file);
+			//fwrite(&Visible,sizeof(bool),1,file);
+			fprintf(file, "Visible = %d\n", Visible);
 			bool Enable = SXMainWndElem::CreateElements[i]->Object->Enable();
-			fwrite(&Enable,sizeof(bool),1,file);
+			//fwrite(&Enable,sizeof(bool),1,file);
+			fprintf(file, "Enable = %d\n", Enable);
 
 				if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") == 0)
 				{
@@ -1130,7 +1163,8 @@ void SaveFile(const char* path)
 					PathForImg[0] = 0;
 					ISXGUIButtonImg* tmpImgButton = dynamic_cast<ISXGUIButtonImg*>(SXMainWndElem::CreateElements[i]->Object);
 					tmpImgButton->GetPathForImg(PathForImg);
-					fwrite(PathForImg,1,strlen(PathForImg)+1,file);
+					//fwrite(PathForImg,1,strlen(PathForImg)+1,file);
+					fprintf(file, "PathForImg = %s\n", PathForImg);
 				}
 		}
 
@@ -1139,32 +1173,41 @@ void SaveFile(const char* path)
 
 void LoadFile(const char* path)
 {
-	FILE* file = 0;
-	file = fopen(path,"rb");
+	/*FILE* file = 0;
+	file = fopen(path,"r");
 	DWORD Version;
 	fread(&Version,sizeof(DWORD),1,file);
 	WORD CountSave;
 	fread(&CountSave,sizeof(WORD),1,file);
 
 	fread(&SXMainWndElem::CountCreateNewElem,sizeof(WORD),1,file);
-	fread(&SXMainWndElem::CountDeleteElem,sizeof(WORD),1,file);
+	fread(&SXMainWndElem::CountDeleteElem,sizeof(WORD),1,file);*/
+
+	FILE * fp = fopen(path, "rb");
+
+	ISXLConfig* tmpconfig = Core_OpLConfig(path);
 
 	char CaptionElement[256];
 	CaptionElement[0] = 0;
 
 	char classname[256];
-	fscanf(file,"%[^\0]",classname);
-	fseek(file,1,SEEK_CUR);
+	//fscanf(file,"%[^\0]",classname);
+	sprintf(classname,"%s",tmpconfig->GetKey("JobWindow", "classname"));
+	//fseek(file,1,SEEK_CUR);
 	char sxclassname[256];
-	fscanf(file,"%[^\0]",sxclassname);
-	fseek(file,1,SEEK_CUR);
+	//fscanf(file,"%[^\0]",sxclassname);
+	//fseek(file,1,SEEK_CUR);
+	sprintf(sxclassname, "%s", tmpconfig->GetKey("JobWindow", "sxclassname"));
 
-	fscanf(file,"%[^\0]",SXMainWndElem::NameJobWnd);
+	/*fscanf(file,"%[^\0]",SXMainWndElem::NameJobWnd);
 	fseek(file,1,SEEK_CUR);
 	fscanf(file,"%[^\0]",CaptionElement);
-	fseek(file,1,SEEK_CUR);
+	fseek(file,1,SEEK_CUR);*/
 
-	SXMainWndElem::JobMainWnd->SetText(CaptionElement);
+	sprintf(SXMainWndElem::NameJobWnd, "%s", tmpconfig->GetKey("JobWindow", "sxclassname"));
+	sprintf(CaptionElement, "%s", tmpconfig->GetKey("JobWindow", "sxclassname"));
+
+	/*SXMainWndElem::JobMainWnd->SetText(CaptionElement);
 	RECT GClientRect;
 	long Width,Height;
 	fread(&GClientRect.left,sizeof(long),1,file);
@@ -1480,7 +1523,7 @@ void LoadFile(const char* path)
 			InvalidateRect(SXMainWndElem::CreateElements[e]->Object->GetHWND(),0,1);
 		}
 		
-	InvalidateRect(SXMainWndElem::JobMainWnd->GetHWND(),0,TRUE);
+	InvalidateRect(SXMainWndElem::JobMainWnd->GetHWND(),0,TRUE);*/
 }
 
 

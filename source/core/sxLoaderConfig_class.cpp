@@ -12,6 +12,7 @@
 SXLoaderConfig::SXLoaderConfig()
 {
 	ErrorFile = "";
+	BaseFile = "";
 }
 
 /*SXLoaderConfig::SXLoaderConfig(const char * file)
@@ -59,11 +60,11 @@ String SXLoaderConfig::BaseName(String dir)
 	}
 }
 
-int SXLoaderConfig::Parse(const String & file)
+int SXLoaderConfig::Parse(const char* file)
 {
-	Release();
-	BaseFile = file;
-	FILE * fp = fopen(file.c_str(), "rb");
+	Clear();
+	BaseFile = String(file);
+	FILE * fp = fopen(file, "rb");
 		if(!fp)
 		{
 			return -1;
@@ -749,8 +750,14 @@ bool SXLoaderConfig::KeyExists(const char * section, const char * key, bool acce
 
 void SXLoaderConfig::Release()
 {
+	this->Clear();
+	mem_del(this);
+}
+
+void SXLoaderConfig::Clear()
+{
 	int size = m_vIncludes.size();
-	for(int i = 0; i < size; ++i)
+	for (int i = 0; i < size; ++i)
 	{
 		mem_release_delete(m_vIncludes[i].pParser);
 	}
@@ -758,8 +765,6 @@ void SXLoaderConfig::Release()
 	m_mFinalValues.clear();
 	m_mSections.clear();
 	BaseFile = "\0";
-
-	mem_del(this);
 }
 
 AssotiativeArray<String, SXLoaderConfig::section> * SXLoaderConfig::GetSections()

@@ -79,8 +79,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>D:\project\engine\source;$(IncludePath)</IncludePath>
-    <SourcePath>D:\project\engine\source;$(SourcePath)</SourcePath>
+    <IncludePath>../../source;$(IncludePath)</IncludePath>
+    <SourcePath>../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

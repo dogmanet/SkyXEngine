@@ -3,19 +3,19 @@
 
 enum s4g_vm_command
 {
-	mc_halt = -1,
-	mc_fetch,//положить на вершину стека значение переменной
-	mc_fetch_get,
-	mc_store,//сохранить в переменной значение с вершины стека
-	mc_push,//положить на вершину стека
-	mc_pop,//удалить значение с вершины стека
+	mc_halt = -1,	//остановить текущее выполнение
+	mc_fetch,		//положить на вершину стека значение переменной
+	mc_fetch_get,	//получить значение из таблицы, если предыдущим вызовом был mc_fetch
+	mc_store,		//сохранить в переменной значение с вершины стека
+	mc_push,		//положить на вершину стека
+	mc_pop,			//удалить значение с вершины стека
 	mc_add,
 	mc_sub,
 	mc_mul,
 	mc_div,
-	mc_new_table,
-	mc_add_in_table,
-	mc_call,
+	mc_new_table,	//создать таблицу
+	mc_add_in_table,//добавить в таблицу
+	mc_call,		//вызов функции
 };
 
 #include <s4g\s4g_compiler.h>
@@ -23,7 +23,7 @@ enum s4g_vm_command
 class s4g_vm
 {
 public:
-	s4g_vm(){vgvars = new s4g_value();vgvars->set_table(&gvars);}
+	s4g_vm(){ vgvars = new s4g_value(); vgvars->init_table(&gvars); }
 
 	int run(Stack<s4g_command>* commands,s4g_table* vars);
 
