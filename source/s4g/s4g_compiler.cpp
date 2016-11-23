@@ -62,6 +62,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			gen(mc_new_table);
 			printf("create_new_table\n");
 			compile2(node->op1);
+			compile2(node->op2);
 		}
 		else if(node->type == _add_in_table)
 		{
@@ -154,7 +155,7 @@ int s4g_compiler::compile2(s4g_node* node)
 				while(tmpnode->op1 && tmpnode->op1->value)
 				{
 					//countarg++;
-					sf->args.push(tmpnode->op1->value->get_string());
+					sf->args.push(tmpnode->op1->value->get_str());
 					tmpnode = tmpnode->op1;
 				}
 			Stack<s4g_command>* tmpcomms = comms;
@@ -163,7 +164,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			printf("---\n");
 			comms = tmpcomms;
 			s4g_value* tval = new s4g_value();
-			tval->set_s_function(sf);
+			tval->init_s_func(sf);
 			gen(mc_push,tval);
 			printf("push\n");
 			//compile2(node->op3);
@@ -179,7 +180,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					compile2(tmpnode->op1);
 					tmpnode = tmpnode->op2;
 				}
-			gen(mc_call,new s4g_value(countarg));
+				gen(mc_call, cr_val_long(countarg));
 			printf("call\n");
 			compile2(node->op3);
 		}

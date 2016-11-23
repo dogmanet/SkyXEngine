@@ -910,7 +910,7 @@ void LoadResult()
 		if(GetOpenFileName(&ofn) == TRUE)
 		{
 			CreateNew(false);
-			LoadFile(szFileTitle);
+			LoadFile(szFileName);
 			SXMainWndElem::IsLoadedEl = true;
 		}
 	SXMainWndElem::MainWnd->Enable(true);

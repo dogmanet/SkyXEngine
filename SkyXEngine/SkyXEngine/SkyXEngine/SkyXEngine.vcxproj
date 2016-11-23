@@ -41,9 +41,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\project\engine\source;$(IncludePath);$(DXSDK_DIR)\Include</IncludePath>
+    <IncludePath>../../../source;$(IncludePath);$(DXSDK_DIR)\Include</IncludePath>
     <LibraryPath>D:\project\engine\libs;$(LibraryPath);$(DXSDK_DIR)\Lib\x86</LibraryPath>
-    <SourcePath>D:\project\engine\source;$(SourcePath);$(DXSDK_DIR)\Include</SourcePath>
+    <SourcePath>../../../source;$(SourcePath);$(DXSDK_DIR)\Include</SourcePath>
     <OutDir>D:\project\engine\build\</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>

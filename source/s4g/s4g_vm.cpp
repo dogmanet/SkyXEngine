@@ -5,7 +5,7 @@ inline void s4g_vm::com_fetch(s4g_value* val)
 {
 		if(val)
 		{
-			const char* str = val->get_string().c_str();
+			const char* str = val->get_str().c_str();
 				if(strcmp(str,"_g") == 0)
 					execute.push(vgvars);
 				else
@@ -17,7 +17,7 @@ inline void s4g_vm::com_fetch(s4g_value* val)
 						else
 						{
 							int qwert = 0;
-							curr_vars->add_value(str);
+							curr_vars->add_s(str);
 							execute.push((curr_vars->gets(str)));
 						}
 				}
@@ -63,14 +63,14 @@ inline void s4g_vm::com_fetch_get(s4g_value* val)
 
 		if(tval->get_type() == t_string)
 		{
-			const char* str = tval->get_string().c_str();
+			const char* str = tval->get_str().c_str();
 				if(ttable->is_exists_s(str))
 				{
 					execute.push((ttable->gets(str)));
 				}
 				else
 				{
-					ttable->add_value(str);
+					ttable->add_s(str);
 					s4g_value* tval2 = ttable->gets(str);
 					execute.push((ttable->gets(str)));
 				}
@@ -85,7 +85,7 @@ inline void s4g_vm::com_fetch_get(s4g_value* val)
 				else
 				{
 					int qwert = 0;
-					ttable->add_key_null(num);
+					ttable->add_n(num);
 					s4g_value* tval2 = ttable->getn(num);
 					execute.push((ttable->getn(num)));
 				}
@@ -111,11 +111,15 @@ inline void s4g_vm::com_add_in_table()
 {
 	s4g_table* tt = execute.get(execute.count()-1)->get_table();
 	s4g_value* val = (execute.get(execute.count()));
-	tt->add_value(0,val);
+	tt->add_val(val);
 }
 
 inline void s4g_vm::com_call(s4g_value* val)
 {
+	/*s4g_table* ttype = gvars.gets("ttable")->get_table();
+	s4g_value* tval1 = ttype->gets("x");
+	s4g_value* tval2 = ttype->gets("y");*/
+
 	long countarg = val->get_long();
 	s4g_value* tvalfunc = execute.get(execute.count()-countarg);
 		if(tvalfunc->get_type() == t_sfunc)
@@ -127,7 +131,7 @@ inline void s4g_vm::com_call(s4g_value* val)
 						for(int i=0;i<countarg;i++)
 						{
 							tval = execute.get(execute.count()-((countarg-i)-1));
-							csfunc->vars.add_value(csfunc->args.get(i+1).c_str(),tval);
+							csfunc->vars.add_val_s(csfunc->args.get(i+1).c_str(),tval);
 						}
 				}
 			execute.pop(countarg+1);
@@ -149,7 +153,7 @@ inline void s4g_vm::com_call(s4g_value* val)
 
 inline void s4g_vm::com_new_table()
 {
-	execute.push(new s4g_value(t_table));
+	execute.push(cr_val_table_null());
 }
 
 int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
@@ -210,14 +214,14 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 								if(s2->get_type() == t_int)
 								{
 									long num2 = s2->get_long();
-									execute.push(new s4g_value(+num2));
+									execute.push(cr_val_long(num2));
 								}
 						}
 						else
 						{
 							long num1 = s1->get_long();
 							long num2 = s2->get_long();
-							execute.push(new s4g_value(num1+num2));
+							execute.push(cr_val_long(num1 + num2));
 						}
 					
 					pc++;
@@ -232,14 +236,14 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 								if(s2->get_type() == t_int)
 								{
 									long num2 = s2->get_long();
-									execute.push(new s4g_value(-num2));
+									execute.push(cr_val_long(-num2));
 								}
 						}
 						else
 						{
 							long num1 = s1->get_long();
 							long num2 = s2->get_long();
-							execute.push(new s4g_value(num1-num2));
+							execute.push(cr_val_long(num1 - num2));
 						}
 					pc++;
 				}
@@ -248,7 +252,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 					long num1 = execute.get(execute.count()-1)->get_long();
 					long num2 = execute.get(execute.count()-0)->get_long();
 					execute.pop(2);
-					execute.push(new s4g_value(num1 * num2));
+					execute.push(cr_val_long(num1 * num2));
 					pc++;
 				}
 				else if(op == mc_div)
@@ -256,7 +260,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 					long num1 = execute.get(execute.count()-1)->get_long();
 					long num2 = execute.get(execute.count()-0)->get_long();
 					execute.pop(2);
-					execute.push(new s4g_value(num1 / num2));
+					execute.push(cr_val_long(num1 / num2));
 					pc++;
 				}
 
@@ -285,6 +289,11 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 		}
 
 	s4g_table* ttype = vars->gets("ttable")->get_table();
+	//s4g_value* tval1 = ttype->gets("x");
+	//s4g_value* tval2 = ttype->gets("y");
+	/*long num1 = ttype->gets("x")->get_long();
+	long num2 = ttype->gets("y")->get_long();*/
+
 	s4g_value* tval0 = vars->gets("c");
 		if(tval0->get_type() == t_int)
 		{

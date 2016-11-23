@@ -30,7 +30,7 @@ const char s4g_key_bool[][S4G_MAX_LEN_KEY_WORD_DEF] = {
 const char s4g_key_preproc[][S4G_MAX_LEN_KEY_WORD_DEF] = {
 "include",
 "define",
-"undef"
+"undef",
 "if",
 "ifdef",
 "defined",

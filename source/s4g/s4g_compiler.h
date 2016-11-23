@@ -3,8 +3,6 @@
 #define s4g_compiler_h
 #pragma once
 
-/*#define asdasd(d,
-b) */
 
 struct s4g_command
 {

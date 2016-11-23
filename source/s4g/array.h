@@ -69,6 +69,13 @@ public:
 				memcpy(&this->Data[key], &this->Data[key + 1], sizeof(T) * (this->Size - key - 1));
 				this->Size--;
 			}
+			else
+			{
+				_asm
+				{
+					int 3;
+				};
+			}
 	}
 
 	Array & operator=(T* arr)
