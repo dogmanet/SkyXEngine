@@ -85,7 +85,7 @@ body
 	top: 0;
 	left: 0;
 	right: 0;
-	bottom: 255px;
+	bottom: 295px;
 }
 
 #chatbox_wrapper
@@ -93,6 +93,16 @@ body
 	background-color: #FFFFFF33;
 	position: absolute;
 	height: 250px;
+	left: 0;
+	right: 0;
+	bottom: 43px;
+}
+
+#userinfo_wrapper
+{
+	background-color: #FFFFFF33;
+	position: absolute;
+	height: 40px;
 	left: 0;
 	right: 0;
 	bottom: 0;
@@ -327,7 +337,7 @@ body
 	border-bottom-width: 3px;
 }
 
-.match_tbl_hdr .tbl_row div
+.match_tbl_hdr.tbl_row div
 {
 	padding-top: 10px;
 	font-size: 20px;
@@ -459,4 +469,68 @@ body
 .m_btn:active
 {
 	background-color: #00FF0033;
+}
+
+#userinfo_wrapper
+{
+	font-size: 20px;
+}
+
+#udata_name
+{
+	display: inline-block;
+	height: 100%;
+	width: 33%;
+	color: #FF7F00;
+	font-weight: bold;
+	padding: 8px;
+}
+
+#udata_balance_intl
+{
+	display: inline-block;
+	height: 100%;
+	text-align: center;
+	width: 34%;
+	padding: 8px;
+}
+
+.udata_balance_real
+{
+	display: inline-block;
+	height: 100%;
+	text-align: right;
+	width: 33%;
+	padding: 8px;
+	font-name: calibri;
+}
+.udata_balance_real div
+{
+	display: inline-block;
+	height: 100%;
+}
+
+#udata_balance_real
+{
+	padding: 3px;
+}
+
+#udata_balance_add
+{
+	background-color: #FF7F00;
+	border-top-left-radius: 15px;
+	border-bottom-left-radius: 15px;
+	border-top-left-method: cut;
+	border-bottom-left-method: cut;
+	padding: 2px 10px;
+}
+
+#udata_balance_add:hover
+{
+	background-color: #FFBF40;
+}
+
+#udata_balance_add:active
+{
+	background-color: #AF3F00;
 }

@@ -27,7 +27,7 @@
 					<div class="top_button">
 						Настройки
 					</div>
-					<div class="top_button">
+					<div class="top_button" onclick="exit_prompt">
 						Выход
 					</div>
 				</div>
@@ -107,11 +107,11 @@
 						</div>
 					</div>
 					<div id="chat_block">
-						<div class="tabs_header">
-							<div onclick="main_tab news">Новости</div>
-							<div onclick="main_tab chat" class="active">Чат</div>
+						<div id="thdr_holder" class="tabs_header">
+							<div onclick="main_tab" tab="news">Новости</div>
+							<div onclick="main_tab" tab="chat" class="active">Чат</div>
 						</div>
-						<div class="tabs_content">
+						<div id="tabs_holder" class="tabs_content">
 							<!-- Новости вкладка -->
 							<div name="news" class="news_tab" style="visibility: hidden;">
 								<p>Новости</p>
@@ -169,6 +169,14 @@
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+				<div id="userinfo_wrapper">
+					<div id="udata_name">D-AIRY</div>
+					<div id="udata_balance_intl">128 чего-нибудь</div>
+					<div class="udata_balance_real">
+						<div id="udata_balance_real">142<span class="rub">₽</span></div>
+						<div id="udata_balance_add" onclick="prompt_pay">Пополнить счет</div>
 					</div>
 				</div>
 			</div>

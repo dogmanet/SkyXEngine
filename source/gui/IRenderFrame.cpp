@@ -539,7 +539,7 @@ namespace GUI
 							int xDelta = ctr ? (GetContentWidth() - curXpos) / 2 : GetContentWidth() - curXpos;
 							for(UINT ii = 0; ii < m_pChilds.size(); ii++)
 							{
-								if(m_pChilds[ii]->GetYpos() == curY&&m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
+								if(m_pChilds[ii]->GetYpos() == curY&&m_pChilds[ii]->GetNode() && m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
 								{
 									m_pChilds[ii]->SetXpos(xDelta + m_pChilds[ii]->GetXpos());
 								}
@@ -552,7 +552,7 @@ namespace GUI
 					int xDelta = ctr ? (GetContentWidth() - curXpos) / 2 : GetContentWidth() - curXpos;
 					for(UINT ii = 0; ii < m_pChilds.size(); ii++)
 					{
-						if(m_pChilds[ii]->GetYpos() == curY && m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
+						if(m_pChilds[ii]->GetYpos() == curY && m_pChilds[ii]->GetNode() && m_pChilds[ii]->GetNode()->GetStyle()->display->GetInt() == CSS::ICSSproperty::DISPLAY_INLINE_BLOCK)
 						{
 							m_pChilds[ii]->SetXpos(xDelta + m_pChilds[ii]->GetXpos());
 						}

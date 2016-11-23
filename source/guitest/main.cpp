@@ -15,6 +15,8 @@
 #include <io.h>
 #include <fcntl.h>
 
+#include <Shellapi.h>
+
 #ifndef _SX_D3D9_H_
 #	define _SX_D3D9_H_
 #	ifdef _DEBUG
@@ -91,9 +93,64 @@ void cbCancel(GUI::IEvent * ev)
 
 void cbExitPrompt(GUI::IEvent * ev)
 {
-	if(ev->key == KEY_ESCAPE)
+	if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 	{
 		pGui->MessageBox(L"Вы действительно хотите выйти?", L"", L"Да", L"on_exit", L"Нет", L"on_cancel", NULL);
+	}
+}
+
+void cbPayPrompt(GUI::IEvent * ev)
+{
+	pGui->MessageBox(L"Пополнение баланса", L"Для пополнения баланса будет открыто окно браузера<br/>Продолжить?", L"Да", L"go_pay", L"Нет", L"on_cancel", NULL);
+}
+
+void cbPayGo(GUI::IEvent * ev)
+{
+	pGui->PopDesktop();
+	ShellExecute(NULL, L"open", L"http://sip-game.su/balance", NULL, NULL, SW_SHOW);
+}
+
+
+
+
+
+void cbSetTab(GUI::IEvent * ev)
+{
+	static GUI::DOM::IDOMnode * pHolder = pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"tabs_holder");
+	if(!pHolder)
+	{
+		return;
+	}
+
+	
+	static GUI::DOM::IDOMnode * pHdr = pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"thdr_holder");
+	if(!pHdr)
+	{
+		return;
+	}
+
+	for(UINT i = 0, l = pHdr->GetChilds()->size(); i < l; ++i)
+	{
+		GUI::DOM::IDOMnode * pNode = pHdr->GetChilds()[0][i];
+		pNode->SetAttribute(L"class", L"");
+		pNode->UpdateStyles();
+	}
+
+	StringW tab = ev->target->GetAttribute(L"tab");
+	ev->target->SetAttribute(L"class", L"active");
+
+	for(UINT i = 0, l = pHolder->GetChilds()->size(); i < l; ++i)
+	{
+		GUI::DOM::IDOMnode * pNode = pHolder->GetChilds()[0][i];
+		if(tab == pNode->GetAttribute(L"name"))
+		{
+			pNode->GetStyleSelf()->visibility->Set(GUI::CSS::ICSSproperty::VISIBILITY_VISIBLE);
+		}
+		else
+		{
+			pNode->GetStyleSelf()->visibility->Set(GUI::CSS::ICSSproperty::VISIBILITY_HIDDEN);
+		}
+		pNode->UpdateStyles();
 	}
 }
 
@@ -152,6 +209,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	pGui->RegisterCallback("on_exit", cbExit);
 	pGui->RegisterCallback("on_cancel", cbCancel);
 	pGui->RegisterCallback("exit_prompt", cbExitPrompt);
+	pGui->RegisterCallback("main_tab", cbSetTab);
+	pGui->RegisterCallback("prompt_pay", cbPayPrompt);
+	pGui->RegisterCallback("go_pay", cbPayGo);
+	
+	
 	
 
 	pDesk = pGui->CreateDesktopA("main_menu", "main_menu.html");

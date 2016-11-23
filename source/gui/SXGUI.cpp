@@ -552,7 +552,19 @@ namespace GUI
 		}
 		DOM::IDOMdocument * doc = dp->GetDocument();
 		doc->GetElementById(L"mb_title")->SetText(title, TRUE);
-		doc->GetElementById(L"mb_text")->SetText(text, TRUE);
+		DOM::IDOMnode * pText = doc->GetElementById(L"mb_text");// ->SetText(text, TRUE);
+
+		while(pText->GetChilds()->size())
+		{
+			pText->RemoveChild((*(pText->GetChilds()))[0]);
+		}
+
+		DOM::IDOMnodeCollection newText = dp->CreateFromText(text);
+		for(UINT i = 0, l = newText.size(); i < l; i++)
+		{
+			pText->AppendChild(newText[i]);
+		}
+
 		DOM::IDOMnode * pBtns = doc->GetElementById(L"mb_buttons");
 
 		while(pBtns->GetChilds()->size())
