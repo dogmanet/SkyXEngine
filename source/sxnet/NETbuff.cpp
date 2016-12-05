@@ -84,13 +84,15 @@ namespace NET
 
 	const StringW & NETbuff::readPString()
 	{
-		m_wsTmp = L"";
+		Array<WCHAR> tmp;
 		WCHAR c;
 		while(!this->ifEnd() && (c = this->readChar()))
 		{
-			m_wsTmp += c;
+			tmp.push_back(c);
 		}
-
+		tmp.push_back(0);
+		m_wsTmp.Reserve(tmp.size());
+		memcpy(&m_wsTmp[0], &tmp[0], tmp.size() * sizeof(WCHAR));
 		return(m_wsTmp);
 	}
 
@@ -161,13 +163,14 @@ namespace NET
 	}
 	const StringW & NETbuff::readString(UINT len)
 	{
-		m_wsTmp = L"";
-
+		Array<WCHAR> tmp;
 		while(len-- && !this->ifEnd())
 		{
-			m_wsTmp += this->readChar();
+			tmp.push_back(this->readChar());
 		}
-
+		tmp.push_back(0);
+		m_wsTmp.Reserve(tmp.size());
+		memcpy(&m_wsTmp[0], &tmp[0], tmp.size() * sizeof(WCHAR));
 		return(m_wsTmp);
 
 	}
@@ -305,12 +308,16 @@ namespace NET
 	}
 	const StringW & NETbuff::readBitPString()
 	{
-		m_wsTmp = L"";
 		WCHAR c;
+		Array<WCHAR> tmp;
 		while((c = this->readBitChar()))
 		{
-			m_wsTmp += c;
+			tmp.push_back(c);
 		}
+		tmp.push_back(0);
+
+		m_wsTmp.Reserve(tmp.size());
+		memcpy(&m_wsTmp[0], &tmp[0], tmp.size() * sizeof(WCHAR));
 
 		return(m_wsTmp);
 	}
