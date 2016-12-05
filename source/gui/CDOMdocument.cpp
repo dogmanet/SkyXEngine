@@ -209,6 +209,14 @@ namespace GUI
 			}
 		}
 
+		const StringW & CDOMnode::GetText()
+		{
+			if(m_vChilds.size() && m_vChilds[0]->IsTextNode())
+			{
+				return(((IDOMnodeText*)(m_vChilds[0]))->GetText());
+			}
+		}
+
 //#define GEVT_DPTC(TYPE, name) case TYPE: if(name){(name->isUnicode ? name->fnptrW(&ev, 0, NULL) : name->fnptr(&ev, 0, NULL));} break;
 
 		void CDOMnode::DispatchClientEvent(IEvent ev, bool * preventDefault)
@@ -532,6 +540,21 @@ namespace GUI
 									((IDOMnodeText*)(m_vChilds[0]))->DeleteChar(ev.key == KEY_BACKSPACE);
 								}
 								break;
+
+							case KEY_TAB:
+								if(m_bIgnHotkeys)
+								{
+
+									break;
+								}
+
+							case KEY_ENTER:
+								if(m_bIgnHotkeys)
+								{
+
+									break;
+								}
+
 							default:
 								((IDOMnodeText*)(m_vChilds[0]))->DeleteSelection();
 								((IDOMnodeText*)(m_vChilds[0]))->InsertChar(ev.key);
@@ -1006,7 +1029,7 @@ namespace GUI
 				if(pNewRF)
 				{
 					GetRenderFrame()->AddChild(pNewRF);
-					GetDocument()->AddReflowItem(pNewRF);
+					GetDocument()->AddReflowItem(pNewRF, true);
 				}
 			}
 		}
@@ -1061,6 +1084,15 @@ namespace GUI
 						GetDocument()->RequestFocus(GetDocument()->GetElementsByTag(L"body")[0][0]);
 					}
 					m_pDocument->IndexUnsetNode(pEl);
+					m_pDocument->IndexUnsetId(pEl->m_iDOMid);
+					for(UINT j = 0; j < pEl->m_vDOMcls.size(); j++)
+					{
+						m_pDocument->IndexUnsetClass(pEl->m_vDOMcls[j], pEl);
+					}
+					for(UINT k = 0; k < CSS::ICSSrule::PSEUDOCLASS_COUNT; k++)
+					{
+						pEl->RemovePseudoclass(1 << k);
+					}
 					while(pEl->m_vChilds.size() > 0)
 					{
 						pEl->RemoveChild(pEl->m_vChilds[0], false);
@@ -1391,6 +1423,7 @@ namespace GUI
 					else
 					{
 						m_UpdateStyleQueue.erase(i);
+						--l;
 						--i;
 					}
 				}
@@ -1502,10 +1535,10 @@ namespace GUI
 			return(node);
 		}
 
-		void CDOMdocument::AddReflowItem(Render::IRenderFrame * rf)
+		void CDOMdocument::AddReflowItem(Render::IRenderFrame * rf, bool forceParent)
 		{
 			//Render::IRenderFrame * pLayoutBlock = rf->GetParent();
-			Render::IRenderFrame * pLayoutBlock = rf;
+			Render::IRenderFrame * pLayoutBlock = forceParent ? rf->GetParent() : rf;
 			while(pLayoutBlock && pLayoutBlock->GetParent() && !pLayoutBlock->HasFixedSize() && !pLayoutBlock->IsOutOfFlow() && !(pLayoutBlock->GetParent()->HasFixedSize() && pLayoutBlock->IsLastChild() && !pLayoutBlock->GetNode()->IsTextNode()))
 			{
 				pLayoutBlock = pLayoutBlock->GetParent();

@@ -31,7 +31,7 @@ namespace GUI
 
 		DOM::IDOMnode * GetFocus();
 
-		DOM::IDOMnodeCollection CreateFromText(const StringW & html);
+		const DOM::IDOMnodeCollection & CreateFromText(const StringW & html);
 
 		void Release();
 
@@ -49,6 +49,8 @@ namespace GUI
 
 		DOM::IDOMnode * m_pFocusedNode;
 		DOM::IDOMnode * m_pHoveredNode;
+
+		DOM::IDOMnodeCollection m_cTmpNodes;
 	};
 };
 

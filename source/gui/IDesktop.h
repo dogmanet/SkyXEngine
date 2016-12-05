@@ -41,7 +41,7 @@ namespace GUI
 
 		virtual DOM::IDOMnode * GetFocus() = 0;
 
-		virtual DOM::IDOMnodeCollection CreateFromText(const StringW & html) = 0;
+		virtual const DOM::IDOMnodeCollection & CreateFromText(const StringW & html) = 0;
 
 		virtual void Release() = 0;
 	};

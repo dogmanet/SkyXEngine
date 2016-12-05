@@ -55,27 +55,28 @@ namespace GUI
 		return(&m_txFinal);
 	}
 
-	DOM::IDOMnodeCollection CDesktop::CreateFromText(const StringW & html)
+	const DOM::IDOMnodeCollection & CDesktop::CreateFromText(const StringW & html)
 	{
 		DOM::IHTMLparser p;
 		p.SetDocument(GetDocument());
 		UINT next = 0;
 		int cur;
 		DOM::IDOMnode * root;
-		DOM::IDOMnodeCollection c;
+		//DOM::IDOMnodeCollection c;
+		m_cTmpNodes.clear();
 		do
 		{
 			root = p.CreateFromString(html.c_str() + next, &cur);
 			next += cur;
-			c.push_back(root);
+			m_cTmpNodes.push_back(root);
 		}
 		while(next < html.length());
-		return(c);
+		return(m_cTmpNodes);
 	}
 
 	void CDesktop::DispatchEvent(IEvent ev)
 	{
-		__try
+		//__try
 		{
 
 			bool IsMouseEvent = (ev.type == GUI_EVENT_TYPE_MOUSEUP)
@@ -171,7 +172,7 @@ namespace GUI
 			switch(ev.type)
 			{
 			case GUI_EVENT_TYPE_MOUSEMOVE:
-				ev.target = pTarget;
+				ev.currentTarget = ev.target = pTarget;
 				ev.offsetX = ev.clientX - rc.left;
 				ev.offsetY = ev.clientY - rc.top;
 				pTarget->DispatchEvent(ev);
@@ -179,7 +180,7 @@ namespace GUI
 
 			case GUI_EVENT_TYPE_MOUSEDOWN:
 				//		wprintf(L"%d x %d\n", ev.clientX, ev.clientY);
-				ev.target = pTarget;
+				ev.currentTarget = ev.target = pTarget;
 				ev.offsetX = ev.clientX - rc.left;
 				ev.offsetY = ev.clientY - rc.top;
 				//		wprintf(L"EL: x: %d, y: %d, \nEV: x: %d, y: %d\n\n", rc.left, rc.top, ev.clientX, ev.clientY);
@@ -187,7 +188,7 @@ namespace GUI
 				break;
 
 			case GUI_EVENT_TYPE_MOUSEUP:
-				ev.target = pTarget;
+				ev.currentTarget = ev.target = pTarget;
 				ev.offsetX = ev.clientX - rc.left;
 				ev.offsetY = ev.clientY - rc.top;
 				pTarget->DispatchEvent(ev);
@@ -220,17 +221,17 @@ namespace GUI
 				//		wprintf(L"%d x %d\n", ev.clientX, ev.clientY);
 				ev.offsetX = ev.clientX - rc.left;
 				ev.offsetY = ev.clientY - rc.top;
-				ev.target = pTarget;
+				ev.currentTarget = ev.target = pTarget;
 				pTarget->DispatchEvent(ev);
 				break;
 			}
 
 		}
-		__except(EXCEPTION_EXECUTE_HANDLER)
+		//__except(EXCEPTION_EXECUTE_HANDLER)
 		{
-			OutputDebugStringA("EXCEPTION_EXECUTE_HANDLER");
+		//	OutputDebugStringA("EXCEPTION_EXECUTE_HANDLER");
 		}
-		OutputDebugStringA("endtry\n");
+		//OutputDebugStringA("endtry\n");
 	}
 
 	DOM::IDOMdocument * CDesktop::GetDocument()

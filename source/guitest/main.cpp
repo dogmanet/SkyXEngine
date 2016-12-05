@@ -17,6 +17,8 @@
 
 #include <Shellapi.h>
 
+#include <sxnet/INET.h>
+
 #ifndef _SX_D3D9_H_
 #	define _SX_D3D9_H_
 #	ifdef _DEBUG
@@ -37,6 +39,13 @@
 
 #include <gui/guimain.h>
 
+#define C2M_RQ_PROFILE 6
+#define C2M_RQ_GAMELIST 7
+#define C2M_RQ_FRIENDLIST 8
+
+#define M2C_PROFILE 5
+
+
 HRESULT InitWindow(HINSTANCE hInstance, int nCmSXhow);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 HRESULT InitDevice();
@@ -50,6 +59,8 @@ IDirect3DSwapChain9 * g_pSwapChain = NULL;
 IDirect3DDevice9 * g_pd3dDevice = NULL;
 
 GUI::IGUI * pGui;
+NET::INET * pNET;
+NET::IMasterClient * pMC;
 
 GUI::IDesktop * pDesk;
 
@@ -110,8 +121,172 @@ void cbPayGo(GUI::IEvent * ev)
 	ShellExecute(NULL, L"open", L"http://sip-game.su/balance", NULL, NULL, SW_SHOW);
 }
 
+void cbGameListRefresh(GUI::IEvent * ev)
+{
+	NET::INETbuff * buf = pNET->CreateBuffer();
+	buf->writeInt8(C2M_RQ_GAMELIST);
+
+	pMC->SendMessage(buf);
+
+	pNET->ReleaseBuffer(buf);
+}
+
+void LoadClientInfo()
+{
+	wprintf(L"Load client profile\n");
+	NET::INETbuff * buf = pNET->CreateBuffer();
+	buf->writeInt8(C2M_RQ_PROFILE);
+	buf->writeInt8(C2M_RQ_GAMELIST);
+	buf->writeInt8(C2M_RQ_FRIENDLIST);
+
+	pMC->SendMessage(buf);
+
+	pNET->ReleaseBuffer(buf);
+	//C2M_RQ_PROFILE 
+}
+
+Array<StringW> g_glMaps;
+Array<StringW> g_glMapImgs;
+Array<StringW> g_glMapDescs;
+
+void evtGameList(const JSON * data)
+{
+	const JSON_ARRAY * list =& data->GetArray();
+	const JSON_OBJECT * obj;
+
+	GUI::DOM::IDOMnode * pRows = pDesk->GetDocument()->GetElementById(L"match_tbl_data");
+	while(pRows->GetChilds()->size())
+	{
+		pRows->RemoveChild((*(pRows->GetChilds()))[0]);
+	}
 
 
+	
+	StringW html;
+
+	for(UINT i = 0, l = list->size(); i < l; ++i)
+	{
+		obj = &list[0][i]->GetObject();
+		g_glMaps[i] = (*obj)[L"map"]->GetString();
+		g_glMapDescs[i] = (*obj)[L"map_desc"]->GetString();
+		g_glMapImgs[i] = (*obj)[L"map_img"]->GetString();
+		html = StringW(L"<div onclick=\"game_select\" value=\"") + (int)i + L"\" class=\"tbl_row gl_item\">"
+			L"<div class=\"col1\">" + (*obj)[L"status"]->GetString() + L"</div>"
+			L"<div class=\"col2\">" + (*obj)[L"map"]->GetString() + L"</div>"
+			L"<div class=\"col3\">" + (*obj)[L"mode"]->GetString() + L"</div>"
+			L"<div class=\"col4\">" + (*obj)[L"players"]->GetString() + L"</div>"
+			L"</div>";
+		GUI::DOM::IDOMnode * pNewNode = pDesk->CreateFromText(html)[0];
+		pRows->AppendChild(pNewNode);
+	}
+}
+
+void cbGameListSelect(GUI::IEvent * ev)
+{
+	const GUI::DOM::IDOMnodeCollection * list = pDesk->GetDocument()->GetElementsByClass(L"gl_item");
+	for(UINT i = 0, l = list->size(); i < l; ++i)
+	{
+		list[0][i]->SetAttribute(L"class", L"tbl_row gl_item");
+		list[0][i]->UpdateStyles();
+	}
+	ev->currentTarget->SetAttribute(L"class", L"tbl_row gl_item active");
+	int i = ev->currentTarget->GetAttribute(L"value").ToInt();
+	pDesk->GetDocument()->GetElementById(L"map_name")->SetText(g_glMaps[i], TRUE);
+	pDesk->GetDocument()->GetElementById(L"map_info")->SetText(g_glMapDescs[i], TRUE);
+	GUI::DOM::IDOMnode * pNode = pDesk->GetDocument()->GetElementById(L"map_img");
+	pNode->GetStyleSelf()->background_image->Set(StringW(L"/maps/") + g_glMapImgs[i]);
+	pNode->UpdateStyles();
+}
+
+void cbOnLogin(UINT p, const StringW & token)
+{
+	GUI::DOM::IDOMnode * pNode = pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"l_error");
+	switch(p)
+	{
+	case NET::MSL_SUCCESS:
+		pGui->SetActiveDesktopW(L"main_menu");
+		{
+			FILE * f = fopen("./token.bin", "wb");
+			fwrite(token.c_str(), sizeof(WCHAR), token.length(), f);
+			fclose(f);
+		}
+	case NET::MSL_ACCEPTOKEN:
+		LoadClientInfo();
+		break;
+	case NET::MSL_BADPASS:
+		if(pNode)
+		{
+			pNode->SetText(L"Неверный логин или пароль, проверьте данные и повторите ввод", TRUE);
+			pNode->GetStyleSelf()->visibility->Set(GUI::CSS::ICSSproperty::VISIBILITY_VISIBLE);
+			pNode->UpdateStyles();
+		}
+		break;
+	case NET::MSL_ERROR:
+		if(pNode)
+		{
+			pNode->SetText(L"Произошла ошибка, попробуйте позже", TRUE);
+			pNode->GetStyleSelf()->visibility->Set(GUI::CSS::ICSSproperty::VISIBILITY_VISIBLE);
+			pNode->UpdateStyles();
+		}
+		break;
+	case NET::MSL_BADTOKEN:
+		pGui->SetActiveDesktopW(L"main_login");
+		break;
+	}
+}
+
+void doLogin()
+{
+	StringW lgn = pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"l_login")->GetText();
+	StringW pass = pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"l_passwd")->GetText();
+	GUI::DOM::IDOMnode * pNode = pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"l_error");
+	pNode->GetStyleSelf()->visibility->Set(GUI::CSS::ICSSproperty::VISIBILITY_HIDDEN);
+	pNode->UpdateStyles();
+	//wprintf(L"Login: %s\nPass: %s\n", lgn.c_str(), pass.c_str());
+
+	pMC->Login(lgn, pass);
+}
+
+//lgn_lgn
+void cbLgnLgn(GUI::IEvent * ev)
+{
+	if(ev->key == KEY_TAB || ev->key == KEY_ENTER)
+	{
+		pGui->GetActiveDesktop()->RequestFocus(
+			pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"l_passwd")
+			);
+	}
+}
+//lgn_pass
+void cbLgnPass(GUI::IEvent * ev)
+{
+	if(ev->key == KEY_TAB)
+	{
+		pGui->GetActiveDesktop()->RequestFocus(
+			pGui->GetActiveDesktop()->GetDocument()->GetElementById(L"l_signin")
+			);
+	}
+
+	if(ev->key == KEY_ENTER)
+	{
+		doLogin();
+	}
+}
+//l_signin
+void cbSignIn(GUI::IEvent * ev)
+{
+	doLogin();
+}
+
+void cbM2C_PROFILE(BYTE msg, NET::INETbuff * buf, NET::IMasterClient * mc)
+{
+	StringW username = buf->readPString();
+	int balance = buf->readInt32();
+
+	pDesk->GetDocument()->GetElementById(L"udata_name")->SetText(username, TRUE);
+	pDesk->GetDocument()->GetElementById(L"udata_balance_real")->SetText(balance, TRUE);
+	//udata_balance_real
+}
 
 
 void cbSetTab(GUI::IEvent * ev)
@@ -212,16 +387,76 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	pGui->RegisterCallback("main_tab", cbSetTab);
 	pGui->RegisterCallback("prompt_pay", cbPayPrompt);
 	pGui->RegisterCallback("go_pay", cbPayGo);
-	
-	
+	pGui->RegisterCallback("lgn_lgn", cbLgnLgn);
+	pGui->RegisterCallback("lgn_pass", cbLgnPass);
+	pGui->RegisterCallback("lgn_signin", cbSignIn);
+	pGui->RegisterCallback("gl_refresh", cbGameListRefresh);
+	pGui->RegisterCallback("game_select", cbGameListSelect);
+
 	
 
 	pDesk = pGui->CreateDesktopA("main_menu", "main_menu.html");
-	pGui->SetActiveDesktop(pDesk);
+	GUI::IDesktop * pLgnDesk = pGui->CreateDesktopA("main_login", "sys/login.html");
+
+	StringW authToken;
+
+	FILE * f = fopen("./token.bin", "rb");
+	if(f)
+	{
+		//fwrite(token.c_str(), sizeof(WCHAR), token.length(), f);
+		fseek(f, 0, SEEK_END);
+		int len = ftell(f);
+		fseek(f, 0, SEEK_SET);
+		WCHAR * str = new WCHAR[len+1];
+		str[fread(str, sizeof(WCHAR), len / sizeof(WCHAR), f)] = 0;
+		authToken = str;
+		delete[] str;
+		fclose(f);
+		pGui->SetActiveDesktop(pDesk);
+	}
+	else
+	{
+		pGui->SetActiveDesktop(pLgnDesk);
+	}
+
+	
+	
+	
+	hDLL = LoadLibrary(L"sxnet.dll");
+	if(!hDLL)
+	{
+		MessageBoxW(NULL, L"Ошибка загрузки sxnet.dll", L"Ошибка", MB_OK);
+		CleanupDevice();
+		return(0);
+	}
+
+	NET::PFNINITINSTANCE pfnInitNetwork;
+	pfnInitNetwork = (NET::PFNINITINSTANCE)GetProcAddress(hDLL, "InitInstance");
+
+	if(!pfnInitNetwork)
+	{
+		MessageBoxW(NULL, L"Не найдена точка входа в процедуру InitInstance в библиотеке sxnet.dll", L"Ошибка", MB_OK);
+		CleanupDevice();
+		return(0);
+	}
+	pNET = pfnInitNetwork();
+
+
+	pMC = pNET->CreateMasterClient();
+	pMC->SetAuthToken(authToken);
+	pMC->SetLoginCallback(cbOnLogin);
+
+	pMC->RegisterMessage(M2C_PROFILE, cbM2C_PROFILE);
+
+	pMC->AddEvent(L"sx/slist", evtGameList);
+
+	//pMC->Connect("ds-servers.com");
+	pMC->Connect("wss://ds-servers.com/registry");
+	//pMC->RegisterMessage(4, 
 
 	while(WM_QUIT != msg.message)
 	{
-		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -229,6 +464,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 		//g_fpctext.Render();
 		pGui->Update();
 		pGui->Syncronize();
+		pNET->Update();
+		pNET->Syncronize();
 		Render();
 	}
 
@@ -310,8 +547,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case KEY_F5:
-			pDesk->Release();
-			pDesk = pGui->CreateDesktopA("main_menu", "main_menu.html");
+			//pDesk->Release();
+			//pDesk = pGui->CreateDesktopA("main_menu", "main_menu.html");
+			pDesk = pGui->CreateDesktopA("main_login", "sys/login.html");
 			pGui->SetActiveDesktop(pDesk);
 			break;
 		case KEY_ESCAPE:

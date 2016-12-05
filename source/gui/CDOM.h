@@ -49,7 +49,8 @@ namespace GUI
 				m_pseudoclasses(0),
 				m_pRenderFrame(NULL),
 				m_bEditable(false),
-				m_bFocusable(false)
+				m_bFocusable(false),
+				m_bIgnHotkeys(false)
 			{};
 			~CDOMnode();
 			void AppendChild(IDOMnode * pEl, bool regen = true);
@@ -72,6 +73,8 @@ namespace GUI
 			static UINT GetNodeIdByName(const StringW & tag);
 
 			void SetText(const StringW & text, BOOL build = FALSE);
+			const StringW & GetText();
+
 
 			static IDOMnode * CreateNode(const wchar_t * tag)
 			{
@@ -216,6 +219,8 @@ namespace GUI
 			bool m_bToggleOnly;
 			bool m_bEditable;
 			bool m_bFocusable;
+
+			bool m_bIgnHotkeys;
 
 			bool m_bDelegateEvents;
 		};

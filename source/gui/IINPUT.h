@@ -17,6 +17,7 @@ namespace GUI
 			{
 				m_bEditable = true;
 				m_bFocusable = true;
+				m_bIgnHotkeys = true;
 			}
 		};
 	};
