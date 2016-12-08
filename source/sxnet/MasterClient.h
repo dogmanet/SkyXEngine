@@ -37,7 +37,9 @@ namespace NET
 			MCS_SECURING,
 			MCS_SECURED,
 			MCS_HANDSHAKE,
-			MCS_READY
+			MCS_READY,
+			MCS_DISCONNECTING,
+			MCS_FREEING
 		};
 
 		enum WS_OPCODE
@@ -129,6 +131,8 @@ namespace NET
 		Array<StringW> m_vEventIds;
 
 		void ReSub();
+
+		BOOL m_bReconnect;
 
 		static void fnM2C_MSG(BYTE msg, INETbuff * buf, IMasterClient* mc);
 		static void fnM2C_SUBID(BYTE msg, INETbuff * buf, IMasterClient* mc);

@@ -1,10 +1,10 @@
 
 #include <stdio.h>
 #include <memory.h>
-#include <errno.h>
 #include <sys/types.h>
 
 #if defined(_LINUX) || defined(_MAC)
+#include <errno.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -14,7 +14,8 @@
 
 
 
-
+//#define LOG(t, ...) printf("L: " t "\n", __VA_ARGS__)
+#define LOG(t, ...) 
 
 #include "MasterClient.h"
 #include "NETbuff.h"
@@ -24,6 +25,12 @@
 #define CHK_NULL(x) /*if ((x)==NULL) exit (1)*/
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); }
+
+#if defined(_WINDOWS)
+#	define errno WSAGetLastError()
+#	define EINPROGRESS WSAEINPROGRESS
+#	define EWOULDBLOCK WSAEWOULDBLOCK
+#endif
 
 namespace NET
 {
@@ -94,6 +101,18 @@ namespace NET
 		m_pMessages[M2C_MSG] = fnM2C_MSG;
 		m_pMessages[M2C_SUBID] = fnM2C_SUBID;
 		m_pMessages[M2C_LOGIN] = fnM2C_LOGIN;
+
+
+#if defined(_WINDOWS)
+		WSADATA wsaData;
+		if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+		{
+			printf("WSAStartup failed!\n");
+		}
+#endif
+
+		SSLeay_add_ssl_algorithms();
+		SSL_load_error_strings();
 	}
 
 	void MasterClient::DispatchMessage(INETbuff * buf)
@@ -135,6 +154,7 @@ namespace NET
 
 	void MasterClient::Connect(const char * srv)
 	{
+		LOG("connect");
 		int err;
 		struct sockaddr_in sa;
 		X509*    server_cert;
@@ -148,19 +168,7 @@ namespace NET
 			m_pSrv = new char[strlen(srv) + 1];
 			strcpy(m_pSrv, srv);
 		}
-
-#if defined(_WINDOWS)
-		WSADATA wsaData;
-		if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-		{
-			printf("WSAStartup failed!\n");
-		}
-#endif
-
-		SSLeay_add_ssl_algorithms();
-		meth = SSLv23_client_method();
-		SSL_load_error_strings();
-		m_pSslCtx = SSL_CTX_new(meth);                        CHK_NULL(m_pSslCtx);
+		
 
 		//CHK_SSL(err);
 
@@ -187,22 +195,25 @@ namespace NET
 		sa.sin_port = htons(443);          /* Server Port number */
 
 		err = connect(m_sock, (struct sockaddr*) &sa, sizeof(sa));
-		
+		LOG("connect returns %d, errno= %d", err, errno);
 		if(err < 0)
 		{
-			if(errno == EINPROGRESS || errno == 0)
+			if(errno == EINPROGRESS || errno == EWOULDBLOCK)
 			{
 				m_state = MCS_CONNECTING;
+				LOG("S=MCS_CONNECTING");
 			}
 			else
 			{
 				CHK_ERR(err, "connect");
 				m_state = MCS_DISCONNECTED;
+				LOG("S=MCS_DISCONNECTED");
 			}
 		}
 		if(err == 0)
 		{
 			m_state = MCS_CONNECTED;
+			LOG("S=MCS_CONNECTED");
 		}
 		return;
 #if 0
@@ -309,6 +320,30 @@ namespace NET
 		{
 		case MCS_CONNECTING:
 			{
+				fd_set fd;
+				FD_ZERO(&fd);
+				FD_SET(m_sock, &fd);
+
+				struct timeval tv;
+				tv.tv_sec = 0;
+				tv.tv_usec = 0;
+
+				// check if the socket is connected
+
+#if defined(_WINDOWS)
+				if(select(1, NULL, &fd, NULL, &tv) == SOCKET_ERROR)
+#else
+				if(select(m_sock + 1, NULL, &fd, NULL, &tv) < 0)
+#endif
+				{
+					perror("select");
+					return;
+				}
+				if(!FD_ISSET(m_sock, &fd))
+				{
+					return;
+				}
+
 				int result_len = sizeof(err);
 				if(getsockopt(m_sock, SOL_SOCKET, SO_ERROR, (char*)&err, &result_len) < 0)
 				{
@@ -316,26 +351,35 @@ namespace NET
 					// error, fail somehow, close socket
 					return;
 				}
+				LOG("SO_ERROR= %d", err);
 				if(err != 0)
 				{
 					/* socket has a non zero error status */
 					fprintf(stderr, "socket error: %s\n", strerror(err));
 				}
+
+				const SSL_METHOD *meth;
+				meth = SSLv23_client_method();
+				m_pSslCtx = SSL_CTX_new(meth);                        CHK_NULL(m_pSslCtx);
+
 				m_pSsl = SSL_new(m_pSslCtx);                         CHK_NULL(ssl);
 				SSL_set_fd(m_pSsl, m_sock);
 				SSL_set_tlsext_host_name(m_pSsl, "ds-servers.com");
 				m_state = MCS_CONNECTED;
+				LOG("S=MCS_CONNECTED");
 			}
 			break;
 
 		case MCS_CONNECTED:
 			
 			err = SSL_connect(m_pSsl);
+			LOG("SSL_connect= %d", err);
 			if(err < 0)
 			{
 				err = SSL_get_error(m_pSsl, err);
 				if((err != SSL_ERROR_WANT_READ) && (err != SSL_ERROR_WANT_WRITE))
 					Disconnect(MSDISCONNECT_ERROR);
+				LOG("SSL_get_error= %d", err);
 				//Sleep(100);
 				//err = SSL_connect(m_pSsl);                     CHK_SSL(err);
 				ERR_print_errors_fp(stderr);
@@ -343,6 +387,7 @@ namespace NET
 			else if(err != 0)
 			{
 				m_state = MCS_SECURING;
+				LOG("S=MCS_SECURING");
 			}
 			break;
 
@@ -367,6 +412,7 @@ namespace NET
 			X509_free(server_cert);
 
 			m_state = MCS_SECURED;
+			LOG("S=MCS_SECURED");
 			break;
 
 		case MCS_SECURED:
@@ -385,6 +431,7 @@ namespace NET
 			{
 
 				m_state = MCS_HANDSHAKE;
+				LOG("S=MCS_HANDSHAKE");
 			}
 			else
 			{
@@ -406,6 +453,7 @@ namespace NET
 			//	buf[err] = '\0';
 			//	printf("Got %d chars:'%s'\n", err, buf);
 				m_state = MCS_READY;
+				LOG("S=MCS_READY");
 			}
 			else
 			{
@@ -415,7 +463,6 @@ namespace NET
 			
 		case MCS_READY:
 			err = SSL_read(m_pSsl, buf, sizeof(buf) - 1);
-			BYTE * pBuf = (BYTE*)buf;
 			if(err < 0)
 			{
 				err = SSL_get_error(m_pSsl, err);
@@ -425,6 +472,7 @@ namespace NET
 			}
 			else if(err > 0)
 			{
+				BYTE * pBuf = (BYTE*)buf;
 				while(err > 0)
 				{
 					if(m_inMsgState == INM_NONE || m_inMsgState == INM_NEXT)
@@ -519,6 +567,10 @@ namespace NET
 							DispatchMessage(m_pBuf);
 							break;
 
+						case WSOP_CLOSE:
+							Disconnect(MSDISCONNECT_REMOTE);
+							return;
+
 						default:
 							printf("WSOP_%d\n", m_wsOP);
 							break;
@@ -526,14 +578,44 @@ namespace NET
 						m_pBuf->setBuf(NULL, 0);
 					}
 				}
-				m_state = MCS_READY;
 			}
 			else
 			{
 				Disconnect(MSDISCONNECT_ERROR);
+				return;
 			}
 			_SendMessage();
 			break;
+
+		case MCS_DISCONNECTING:
+			err = SSL_shutdown(m_pSsl);
+			if(err < 0)
+			{
+				err = SSL_get_error(m_pSsl, err);
+				if((err != SSL_ERROR_WANT_READ) && (err != SSL_ERROR_WANT_WRITE))
+					Disconnect(MSDISCONNECT_FORCE);
+				ERR_print_errors_fp(stderr);
+			}
+			else
+			{
+				m_state = MCS_FREEING;
+				LOG("S=MCS_FREEING");
+			}
+			break;
+
+		case MCS_FREEING:
+			closesocket(m_sock);
+			SSL_free(m_pSsl);
+			SSL_CTX_free(m_pSslCtx);
+
+			m_state = MCS_DISCONNECTED;
+			LOG("S=MCS_DISCONNECTED");
+			break;
+
+		case MCS_DISCONNECTED:
+			Connect(m_pSrv);
+			ReSub();
+			return;
 		}
 		/*
 		//read from net
@@ -606,23 +688,47 @@ namespace NET
 
 	void MasterClient::Disconnect(UINT how)
 	{
-		SSL_shutdown(m_pSsl);  /* send SSL/TLS close_notify */
+		m_bReconnect = FALSE;
+		m_state = MCS_DISCONNECTING;
+		LOG("S=MCS_DISCONNECTING");
 
-		/* Clean up. */
+		switch(how)
+		{
+		case MSDISCONNECT_CLEAN:
+			LOG("Disconnect(MSDISCONNECT_CLEAN)");
+			break;
 
-		closesocket(m_sock);
-		SSL_free(m_pSsl);
-		SSL_CTX_free(m_pSslCtx);
+		case MSDISCONNECT_ERROR:
+			LOG("Disconnect(MSDISCONNECT_ERROR)");
+			break;
+
+		case MSDISCONNECT_REMOTE:
+			LOG("Disconnect(MSDISCONNECT_REMOTE)");
+			break;
+
+		case MSDISCONNECT_FORCE:
+			LOG("Disconnect(MSDISCONNECT_FORCE)");
+			break;
+
+		}
+
+		if(how == MSDISCONNECT_FORCE)
+		{
+			m_state = MCS_FREEING;
+			LOG("S=MCS_FREEING");
+		}
+
+		m_inMsgState = INM_NONE;
 
 		if(m_pfnDisconnect)
 		{
 			m_pfnDisconnect(how);
 		}
-		m_state = MCS_DISCONNECTED;
+		//m_state = MCS_DISCONNECTED;
+		//LOG("S=MCS_DISCONNECTED");
 		if(how != MSDISCONNECT_CLEAN)
 		{
-			Connect(m_pSrv);
-			ReSub();
+			m_bReconnect = TRUE;
 		}
 	}
 

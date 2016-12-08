@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\sxnet\CJSON.cpp" />
+    <ClCompile Include="..\..\source\sxnet\dllmain.cpp" />
     <ClCompile Include="..\..\source\sxnet\INETservice.cpp" />
     <ClCompile Include="..\..\source\sxnet\MasterClient.cpp" />
     <ClCompile Include="..\..\source\sxnet\NET.cpp" />
