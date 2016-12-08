@@ -9,30 +9,31 @@
 //#include <fstream>
 #include <gdefines.h>
 
-/*
+
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
 #else
 #pragma comment(lib, "sxcore.lib")
-#endif*/
-#include <core\\sxcore.cpp>
+#endif
+#include <core\\sxcore.h>
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxguiwinapi_d.lib")
+#else
+#pragma comment(lib, "sxguiwinapi.lib")
+#endif
+#include <SXGUIWinApi\sxguielements.h>
 
 #include <core\\Array.h>
-#include <SXGUIWinApi\sxgui.h>
 #include <D:\project\engine\SkyXEngine\SXWinCreator\resource.h>
 
 
 #include <Shlwapi.h>
 #include <Shellapi.h>
 #pragma comment(lib, "Shlwapi.lib")
-//#pragma comment(lib, "sxguiwinapi_d.lib")
-/*#pragma comment(lib, "Shell32.lib")
-#pragma comment(lib, "user32.lib")
-//#pragma comment(lib, "Msimg32.lib")
-#pragma comment(lib, "Gdi32.lib")*/
+
 #pragma comment(lib, "Comctl32.lib")
-//#pragma comment(lib, "Comdlg32.lib")
+
 
 #define SX_SAFE_DELETE_A
 #define SX_SAFE_DELETE

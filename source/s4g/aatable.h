@@ -7,18 +7,60 @@ class AATable
 {
 public:
 	AATable(){}
+	~AATable()
+	{
+		for (int i = 0; i < Arr.size(); i++)
+		{
+			mem_delete(Arr[i]);
+		}
+	}
 
 	inline void Add(T* data)
 	{
 		DWORD tmpsize = Arr.size();
 		AATDesc* tmpaa = new AATDesc();
 		tmpaa->Name[0] = 0;
-		tmpaa->Value = new T();
-		memcpy(tmpaa->Value,data,sizeof(s4g_value));
+		tmpaa->Value = data;
+		//memcpy(tmpaa->Value,data,sizeof(s4g_value));
 		Arr.push_back(tmpaa);
-		//T* tmpval = Arr[tmpsize]->Value;
-		//strcpy(Arr[tmpsize]->Name,"\0");
-		//return tmpval;
+	}
+
+	inline void Add(const char* name, T* data)
+	{
+		long tmpkey = GetKey(name);
+		if (tmpkey != -1)
+			Arr[tmpkey]->Value = data;
+		else
+		{
+			DWORD tmpsize = Arr.size();
+			AATDesc* tmpaa = new AATDesc();
+			tmpaa->Value = data;
+			strcpy(tmpaa->Name, name);
+			Arr.push_back(tmpaa);
+			//Arr[tmpsize]->Value = data;
+		}
+	}
+
+	inline void Add(UINT key, T* data)
+	{
+		if (key > ((UINT)-1) - 128)
+		{
+			_asm
+			{
+				int 3;
+			};
+		}
+		else if (key < Arr.size())
+			Arr[key]->Value = data;
+		else
+		{
+			DWORD tmpsize = Arr.size();
+			AATDesc* tmpaa = new AATDesc();
+			tmpaa->Value = data;
+			tmpaa->Name[0] = 0;
+			Arr.push_back(tmpaa);
+			//Arr[tmpsize]->Value = data;
+		}
 	}
 
 	inline void Del(UINT key)
@@ -104,6 +146,12 @@ public:
 					}
 			}
 		return false;
+	}
+
+	inline const char* GetNameID(long id)
+	{
+		if (id < Arr.size() && id >= 0 && Arr[id])
+			return Arr[id]->Name;
 	}
 
 	inline long GetSize()

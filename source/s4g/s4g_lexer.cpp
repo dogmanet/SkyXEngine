@@ -384,37 +384,21 @@ inline void s4g_scan_string(const char* sstr, char* dstr)
 		}
 	}
 }
-
-inline void s4g_scan_list_string(const char* sstr, char dstr[64][64])
+/*
+inline int s4g_is_marg(const char* sstr, char* dstr)
 {
-	int k = 0;
-	int t = 0;
-	//bool islastdel = false;
-	for (int i = 0; i<strlen(sstr); i++)
+	long count_amarg = sizeof(s4g_key_syms_marg) / S4G_MAX_LEN_KEY_WORD_DEF;
+	for (int i = 0; i<count_amarg; i++)
 	{
-		if (s4g_is_char_str(sstr[i]) || s4g_is_char_num(sstr[i]))
+		if (strcmp(s4g_key_syms_marg[i], sstr) == 0)
 		{
-			dstr[t][k] = sstr[i];
-			k++;
-		}
-		else if (sstr[i] == ',')
-		{
-			dstr[t][k] = 0;
-			k = 0;
-			t++;
-			//islastdel = true;
-		}
-		else if (sstr[i] == ' ' || sstr[i] == '\t')
-		{
-
-		}
-		else
-		{
-			dstr[t][k] = 0;
-			break;
+			strcpy(dstr, s4g_key_syms_marg[i]);
+			return i;
 		}
 	}
-}
+	return -1;
+}*/
+
 
 inline void s4g_scan_litstring(const char* sstr, char* dstr)
 {
@@ -579,6 +563,68 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_null, -1, curr_id_file);
 				numcursym += strlen(s4g_key_words[0]);
 				break;
+			}
+			else if (str[numcursym] == '.' && str[numcursym+1] == '.' && str[numcursym+2] == '.')
+			{
+				tmplex = new s4g_lexeme("...", numcurstr, s4g_lexeme_type::marg, -1, curr_id_file);
+				numcursym += 3;
+				break;
+			}
+			else if (tmpc == '$')
+			{
+				numcursym++;
+				tmpc = str[numcursym];
+				if (s4g_is_char_str(tmpc))
+				{
+					s4g_scan_string(str + numcursym, tmpword);
+					if ((tmpid = s4g_is_key_word(tmpword)) == -1)
+						tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
+					else
+					{
+						sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+						return 0;
+					}
+					numcursym += strlen(tmpword);
+					break;
+				}
+				else if (s4g_is_char_num(tmpc))
+				{
+					s4g_scan_num(str + numcursym, tmpword);
+					numcursym += strlen(tmpword);
+					//если есть точка в строке значит это float
+					if (strstr(tmpword, "."))
+					{
+						sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+						return 0;
+					}
+					else
+					{
+						int slen = strlen(tmpword) - 1;
+						if (tmpword[slen] == 'u')
+							tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_uint_cr, -1, curr_id_file);
+						else if (tmpword[slen] == 'f')
+						{
+							sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+							return 0;
+						}
+						else
+							tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_int_cr, -1, curr_id_file);
+					}
+
+					break;
+				}
+				else if (tmpc == '"')
+				{
+					s4g_scan_litstring(str + numcursym, tmpword);
+					tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
+					numcursym += strlen(tmpword) + 2;
+					break;
+				}
+				else
+				{
+					sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+					return 0;
+				}
 			}
 			//иначе если текущий символ является буквой
 			else if (s4g_is_char_str(tmpc))
@@ -1106,22 +1152,36 @@ s4g_lexeme* s4g_arr_lex::get_curr()
 {
 	if (curr_num >= 0 && curr_num < ArrLexs.size())
 		return (ArrLexs[curr_num]);
+	else
+		return 0;
 }
 
 s4g_lexeme* s4g_arr_lex::get_next()
 {
-	curr_num++;
-	if (curr_num >= 0 && curr_num < ArrLexs.size())
+	//curr_num++;
+	if (curr_num + 1 >= 0 && curr_num + 1 < ArrLexs.size())
+	{
+		curr_num++;
 		return (ArrLexs[curr_num]);
+	}
 	else
+	{
+		curr_num = ArrLexs.size();
 		return 0;
+	}
 }
 
 s4g_lexeme* s4g_arr_lex::get_prev()
 {
-	curr_num--;
-	if (curr_num >= 0 && curr_num < ArrLexs.size())
+	//curr_num--;
+	if (curr_num - 1 >= 0 && curr_num - 1 < ArrLexs.size())
+	{
+		curr_num--;
 		return (ArrLexs[curr_num]);
+	}
 	else
+	{
+		curr_num = 0;
 		return 0;
+	}
 }

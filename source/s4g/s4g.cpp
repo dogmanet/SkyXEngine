@@ -7,278 +7,197 @@
 s4g_main::s4g_main()
 {
 	arr_lex = new s4g_arr_lex();
+	gc = new s4g_gc();
 	gnode = 0;
 	bst = new s4g_builder_syntax_tree();
 	bst->arr_lex = arr_lex;
+	bst->gc = gc;
 	commands = new Stack<s4g_command>();
 	compiler = new s4g_compiler();
-	vmachine = new s4g_vm();
+	compiler->gc = gc;
+	vmachine = new s4g_vm(gc);
+	vmachine->arr_lex = arr_lex;
+	vmachine->gc = gc;
+	vmachine->s4gm = this;
 	strerror[0] = 0;
 }
 
 
-s4g_value::s4g_value()
+s4g_value::s4g_value(long lexid)
 {
-	data = 0;
-	cr_null();
+	//data = 0;
+	//cr_null(lexid);
+	nlexid = lexid;
+	typedata = 0;
+	isdelete = false;
+	//CountRef = 1;
 }
 
 s4g_value::~s4g_value()
 {
-	mem_delete(data);
-}
-
-inline void s4g_value::cr_null()
-{
-	mem_delete(data);
-	type = t_null;
-}
-
-inline void s4g_value::cr_nn()
-{
-	mem_delete(data);
-	type = t_nn;
-}
-
-inline s4g_type s4g_value::get_type()
-{
-	return type;
-}
-
-inline void s4g_value::cr_value(s4g_value* val)
-{
-	mem_delete(data);
-
-	if (val->get_type() == t_null)
-		cr_null();
-	else if (val->get_type() == t_table)
-		init_table(val->get_table());
-	else if (val->get_type() == t_string)
-		init_str(val->get_str().c_str());
-	else if (val->get_type() == t_float)
-		init_float(val->get_float());
-	else if (val->get_type() == t_int)
-		init_long(val->get_long());
-	else if (val->get_type() == t_bool)
-		init_bool(val->get_bool());
-	else if (val->get_type() == t_sfunc)
-		init_s_func(val->get_s_func());
-	else if (val->get_type() == t_nn)
-		cr_nn();
-}
-
-inline void s4g_value::set_value(s4g_value* val)
-{
-	mem_delete(data);
-	data = val->data;
-	type = val->get_type();
-}
-
-void s4g_value::init_long(long num)
-{
-	long* tmpdata = 0;
-	mem_delete(data);
-
-	tmpdata = new long;
-	*tmpdata = num;
-	data = tmpdata;
-	type = t_int;
-}
-
-inline void s4g_value::cr_table()
-{
-	mem_delete(data);
-	data = new s4g_table();
-	type = t_table;
-}
-
-inline void s4g_value::init_table(s4g_table* tt)
-{
-	mem_delete(data);
-	data = new s4g_table;
-	data = tt;
-	type = t_table;
-}
-
-inline void s4g_value::init_s_func(s4g_s_function* func)
-{
-	mem_delete(data);
-	data = new s4g_s_function;
-	data = func;
-	type = t_sfunc;
-}
-
-inline void s4g_value::init_c_func(s4g_c_function func)
-{
-	mem_delete(data);
-	data = new s4g_c_function;
-	data = func;
-	type = t_cfunc;
-}
-
-inline void s4g_value::init_str(const char* str)
-{
-	mem_delete(data);
-
-	data = new String(str);
-	type = t_string;
-}
-
-inline void s4g_value::init_float(double num)
-{
-	mem_delete(data);
-	double* tmpdata = new double;
-	*tmpdata = num;
-	data = tmpdata;
-	type = t_float;
-}
-
-inline void s4g_value::init_bool(int bf)
-{
-	mem_delete(data);
-	bool* tmpdata = new bool;
-	*tmpdata = bf;
-	data = tmpdata;
-	type = t_bool;
+	//mem_delete(data);
 }
 
 
-long s4g_value::get_long()
+inline long s4g_gc::GetNewIDVal()
 {
-	return *(long*)data;
-}
-
-double s4g_value::get_float()
-{
-	return *(double*)data;
-}
-
-int s4g_value::get_bool()
-{
-	return *(bool*)data;
-}
-
-String & s4g_value::get_str()
-{
-	return *(String*)data;
-}
-
-inline s4g_table* s4g_value::get_table()
-{
-	return (s4g_table*)data;
-}
-
-inline s4g_s_function* s4g_value::get_s_func()
-{
-	return (s4g_s_function*)data;
-}
-
-inline s4g_c_function s4g_value::get_c_func()
-{
-	return (s4g_c_function)data;
-}
-
-
-
-//////////////
-
-inline s4g_value* cr_val_null()
-{
-	return new s4g_value();
-}
-
-inline s4g_value* cr_val_table_null()
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->cr_table();
-	return tmpval;
-}
-
-inline s4g_value* cr_val_long(long num)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_long(num);
-	return tmpval;
-}
-
-inline s4g_value* cr_val_float(float num)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_float(num);
-	return tmpval;
-}
-
-inline s4g_value* cr_val_bool(bool bf)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_bool(bf);
-	return tmpval;
-}
-
-inline s4g_value* cr_val_str(const char* str)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_str(str);
-	return tmpval;
-}
-
-inline s4g_value* cr_val_table(s4g_table* tt)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_table(tt);
-	return tmpval;
-}
-
-inline s4g_value* cr_val_s_func(s4g_s_function* func)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_s_func(func);
-	return tmpval;
-}
-
-inline s4g_value* cr_val_c_func(s4g_c_function func)
-{
-	s4g_value* tmpval = new s4g_value();
-	tmpval->init_c_func(func);
-	return tmpval;
-}
-
-inline s4g_value* cr_val(int _type, const char* _val)
-{
-	s4g_value* tmpval = new s4g_value();
-
-	if (_val)
+	for (int i = 0; i < arrvar.size(); i++)
 	{
-		if (_type == t_int)
-		{
-			tmpval->init_long(atol(_val));
-		}
-		else if (_type == t_string)
-		{
-			tmpval->init_str(_val);
-		}
-		else if (_type == t_table)
-		{
-			tmpval->cr_table();
-		}
-		else if (_type == t_nn)
-		{
-			tmpval->cr_nn();
-		}
+		if (arrvar[i] == 0)
+			return i;
+	}
+	return -1;
+}
+
+inline long s4g_gc::GetNewIDData()
+{
+	for (int i = 0; i < arrdata.size(); i++)
+	{
+		if (arrdata[i] == 0)
+			return i;
+	}
+	return -1;
+}
+
+inline s4g_value* s4g_gc::cr_val_null(long lexid)
+{ 
+	long tmpidval = GetNewIDVal();
+	s4g_value* tval = new s4g_value(lexid);
+	tval->typedata = typedata;
+	if (tmpidval >= 0)
+	{
+		arrvar[tmpidval] = tval;
+		tval->idvar = tmpidval;
 	}
 	else
 	{
-		if (_type == t_table)
-		{
-			tmpval->cr_table();
-		}
-		else if (_type == t_nn)
-		{
-			tmpval->cr_nn();
-		}
+		tval->idvar = arrvar.size();
+		arrvar.push_back(tval);
 	}
+
+	long tmpiddata = GetNewIDData();
+	s4g_data* tdata = new s4g_data();
+	tdata->typedata = typedata;
+
+	if (tmpiddata >= 0)
+	{
+		arrdata[tmpiddata] = tdata;
+		tval->iddata = tmpiddata;
+	}
+	else
+	{
+		tval->iddata = arrdata.size();
+		arrdata.push_back(tdata);
+	}
+
+	return tval;
+};
+
+inline s4g_value* s4g_gc::cr_val_table_null(long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+	arrdata[tmpval->iddata]->data = new s4g_table();
+	arrdata[tmpval->iddata]->type = t_table;
+	return tmpval; 
+};
+
+inline s4g_value* s4g_gc::cr_val_int(s4g_int num, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+	s4g_int* tmpvv = new s4g_int;
+	*tmpvv = num;
+	arrdata[tmpval->iddata]->data = tmpvv;
+	arrdata[tmpval->iddata]->type = t_int;
+	return tmpval; 
+};
+
+inline s4g_value* s4g_gc::cr_val_uint(s4g_uint num, long lexid)
+{
+	s4g_value* tmpval = cr_val_null(lexid);
+	s4g_uint* tmpvv = new s4g_uint;
+	*tmpvv = num;
+	arrdata[tmpval->iddata]->data = tmpvv;
+	arrdata[tmpval->iddata]->type = t_int;
 	return tmpval;
 }
+
+inline s4g_value* s4g_gc::cr_val_float(s4g_float num, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+	s4g_float* tmpvv = new s4g_float;
+	*tmpvv = num;
+	arrdata[tmpval->iddata]->data = tmpvv;
+	arrdata[tmpval->iddata]->type = t_float;
+	return tmpval; 
+};
+
+inline s4g_value* s4g_gc::cr_val_bool(s4g_bool bf, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+	s4g_bool* tmpvv = new s4g_bool;
+	*tmpvv = bf;
+	arrdata[tmpval->iddata]->data = tmpvv;
+	arrdata[tmpval->iddata]->type = t_bool;
+	return tmpval; 
+};
+
+inline s4g_value* s4g_gc::cr_val_str(const char* str, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+	String* tmpvv = new String(str);
+	arrdata[tmpval->iddata]->data = tmpvv;
+	arrdata[tmpval->iddata]->type = t_string;
+	return tmpval;
+};
+
+inline s4g_value* s4g_gc::cr_val_table(s4g_table* tt, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+	
+	arrdata[tmpval->iddata]->data = tt;
+	arrdata[tmpval->iddata]->type = t_table;
+	return tmpval;
+};
+
+inline s4g_value* s4g_gc::cr_val_s_func(s4g_s_function* func, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+
+	arrdata[tmpval->iddata]->data = func;
+	arrdata[tmpval->iddata]->type = t_sfunc;
+	return tmpval;
+};
+
+inline s4g_value* s4g_gc::cr_val_c_func(s4g_c_function func, long lexid)
+{ 
+	s4g_value* tmpval = cr_val_null(lexid);
+
+	arrdata[tmpval->iddata]->data = func;
+	arrdata[tmpval->iddata]->type = t_cfunc;
+	return tmpval;
+};
+
+inline s4g_value* s4g_gc::cr_val_nn(long lexid)
+{
+	s4g_value* tmpval = cr_val_null(lexid);
+
+	arrdata[tmpval->iddata]->data = 0;
+	arrdata[tmpval->iddata]->type = t_nn;
+	return tmpval;
+}
+
+void s4g_gc::c_val(s4g_value* dest, s4g_value* src, bool incr)
+{
+	arrdata[dest->iddata]->ref--;
+	
+	long tmpdestref = arrdata[dest->iddata]->ref;
+	dest->iddata = src->iddata;
+	if (incr)
+	arrdata[src->iddata]->ref++;
+
+	long tmpsrcref = arrdata[src->iddata]->ref;
+}
+
 
 //////////////
 
@@ -308,10 +227,7 @@ s4g_value* s4g_table::getn(DWORD id)
 		{
 			return arr_value[id-1];
 		}
-		/*else if(id < 0 && abs(id)-1 < arr_value.GetSize())
-		{
-			return arr_value[arr_value.GetSize()+id];
-		}*/
+		
 		else if(id-1 >= arr_value.GetSize())
 		{
 			return arr_value[id-1];
@@ -321,179 +237,305 @@ s4g_value* s4g_table::getn(DWORD id)
 
 //
 
-void s4g_table::set_val_s(const char* name, s4g_value* val)
+void s4g_table::add_val_s(const char* name, s4g_value* val, long lexid)
 {
-	arr_value[name]->set_value(val);
+	arr_value.Add(name,val);
 }
 
-void s4g_table::add_val_s(const char* name, s4g_value* val)
+inline void s4g_table::add_val_n(long num, s4g_value* val, long lexid)
 {
-	arr_value[name]->cr_value(val);
+	arr_value.Add(num, val);
 }
 
-//
 
-inline void s4g_table::set_val_n(long num, s4g_value* val)
-{
-	arr_value[num]->set_value(val);
-}
-
-inline void s4g_table::add_val_n(long num, s4g_value* val)
-{
-	arr_value[num]->cr_value(val);
-}
-
-inline void s4g_table::set_val(s4g_value* val)
-{
-	arr_value[arr_value.GetSize()]->set_value(val);
-}
-
-inline void s4g_table::add_val(s4g_value* val)
+inline void s4g_table::add_val(s4g_value* val, long lexid)
 {
 	arr_value.Add(val);
 }
 
-//
-
-void s4g_table::add_s(const char* name,long val)
+inline long s4g_table::size()
 {
-	arr_value[name] = cr_val_long(val);
+	return arr_value.GetSize();
 }
 
-void s4g_table::add_s(const char* name,double val)
+inline const char* s4g_table::get_name_id(long id)
 {
-	arr_value[name] = cr_val_float(val);
+	return arr_value.GetNameID(id);
 }
 
-void s4g_table::add_s(const char* name,const char* val)
+///////////////////////
+
+inline s4g_value* s4g_gc::cr_val(int _type, const char* _val, long lexid)
 {
-	arr_value[name] = cr_val_str(val);
+	s4g_value* tmpval = 0;// new s4g_value();
+
+	if (_val)
+	{
+		if (_type == t_int)
+		{
+			tmpval = cr_val_int(atol(_val), lexid);
+		}
+		else if (_type == t_string)
+		{
+			tmpval = cr_val_str(_val, lexid);
+		}
+		else if (_type == t_table)
+		{
+			tmpval = cr_val_table_null(lexid);
+		}
+		else if (_type == t_nn)
+		{
+			tmpval = cr_val_nn(lexid);
+		}
+	}
+	else
+	{
+		if (_type == t_table)
+		{
+			tmpval = cr_val_table_null(lexid);
+		}
+		else if (_type == t_nn)
+		{
+			tmpval = cr_val_nn(lexid);
+		}
+	}
+	return tmpval;
 }
 
-void s4g_table::add_s(const char* name,bool val)
-{
-	arr_value[name] = cr_val_bool(val);
+s4g_data::s4g_data()
+{ 
+	data = 0; 
+	ref = 0;
+	type = t_null;
+	typedata = 0;
 }
 
-void s4g_table::add_s(const char* name, s4g_s_function* val)
-{
-	arr_value[name] = cr_val_s_func(val);
+s4g_data::~s4g_data()
+{ 
+
 }
 
-void s4g_table::add_s(const char* name, s4g_c_function val)
+///////////////////////
+
+s4g_gc::s4g_gc()
 {
-	arr_value[name] = cr_val_c_func(val);
+	typedata = 1;
 }
 
-void s4g_table::add_s(const char* name,s4g_table* val)
+inline s4g_int s4g_gc::get_int(s4g_value* val)
 {
-	arr_value[name] = cr_val_table(val);
+	return *(s4g_int*)(arrdata[val->iddata]->data);
 }
 
-void s4g_table::add_s(const char* name)
+inline s4g_uint s4g_gc::get_uint(s4g_value* val)
 {
-	arr_value[name] = new s4g_value();
+	return *(s4g_uint*)(arrdata[val->iddata]->data);;
+}
+inline s4g_float s4g_gc::get_float(s4g_value* val)
+{
+	return *(s4g_float*)(arrdata[val->iddata]->data);;
+}
+inline const char* s4g_gc::get_str(s4g_value* val)
+{
+	return ((String*)(arrdata[val->iddata]->data))->c_str();
+}
+inline s4g_table* s4g_gc::get_table(s4g_value* val)
+{
+	return (s4g_table*)(arrdata[val->iddata]->data);
+}
+inline s4g_s_function* s4g_gc::get_s_func(s4g_value* val)
+{
+	return (s4g_s_function*)(arrdata[val->iddata]->data);
+}
+inline s4g_c_function s4g_gc::get_c_func(s4g_value* val)
+{
+	return (s4g_c_function)(arrdata[val->iddata]->data);
+}
+inline s4g_bool s4g_gc::get_bool(s4g_value* val)
+{
+	return *(s4g_bool*)(arrdata[val->iddata]->data);
 }
 
-void s4g_table::add_t_s(const char* name)
+inline s4g_type s4g_gc::get_type(s4g_value* val)
 {
-	arr_value[name] = cr_val_table_null();
+	return arrdata[val->iddata]->type;
 }
 
-//
 
-void s4g_table::add_n(long num, long val)
+void s4g_gc::clear()
 {
-	arr_value[num] = cr_val_long(val);
+	int qwert = 0;
+
+	for (int i = 0; i < oldarrcontexts.size(); i++)
+	{
+		if (oldarrcontexts[i] != 0)
+		{
+			s4g_context* tmpctx = oldarrcontexts[i];
+			mem_delete(oldarrcontexts[i]->table);
+			mem_delete(oldarrcontexts[i]);
+		}
+	}
+
+	int countdeldata = 0;
+	for (int i = 0; i < arrdata.size(); i++)
+	{
+		if (arrdata[i] != 0)
+		{
+			s4g_type ttype0 = arrdata[i]->type;
+			s4g_data* ttmmpp = arrdata[i];
+			if (arrdata[i] && arrdata[i]->typedata == 0 && arrdata[i]->ref < 1)
+			{
+				s4g_type ttype = arrdata[i]->type;
+
+				if (ttype == t_table)
+				{
+					s4g_table* ttable = (s4g_table*)arrdata[i]->data;
+					mem_delete(ttable);
+				}
+				else if (ttype == t_sfunc)
+				{
+					s4g_s_function* tsf = (s4g_s_function*)arrdata[i]->data;
+					mem_delete(tsf);
+				}
+				else if (ttype == t_int)
+				{
+					s4g_int* tint = (s4g_int*)arrdata[i]->data;
+					mem_delete(tint);
+				}
+				else if (ttype == t_uint)
+				{
+					s4g_uint* tuint = (s4g_uint*)arrdata[i]->data;
+					mem_delete(tuint);
+				}
+				else if (ttype == t_float)
+				{
+					s4g_float* tfloat = (s4g_float*)arrdata[i]->data;
+					mem_delete(tfloat);
+				}
+				else if (ttype == t_bool)
+				{
+					s4g_bool* tbool = (s4g_bool*)arrdata[i]->data;
+					mem_delete(tbool);
+				}
+				else if (ttype == t_string)
+				{
+					String* tstr = (String*)arrdata[i]->data;
+					mem_delete(tstr);
+				}
+				
+				mem_delete(arrdata[i]);
+
+				countdeldata++;
+			}
+		}
+	}
+
+	int countdelvar = 0;
+	for (int i = 0; i < arrvar.size(); i++)
+	{
+		if (arrvar[i] != 0)
+		{
+			
+			if (arrdata[arrvar[i]->iddata] == 0 || (arrvar[i]->typedata == 0 && arrdata[arrvar[i]->iddata]->ref < 1) || (arrvar[i]->isdelete && arrvar[i]->typedata == 0))
+			{
+				s4g_value* tmpdata = arrvar[i];
+				mem_delete(arrvar[i]);
+				
+				countdelvar++;
+			}
+		}
+	}
+	
+	oldarrcontexts.clear();
 }
 
-void s4g_table::add_n(long num, double val)
+long s4g_gc::add_new_context(s4g_table** tt)
 {
-	arr_value[num] = cr_val_float(val);
+	s4g_context* tcontext = new s4g_context();
+	tcontext->valid = true;
+	tcontext->table = new s4g_table();
+	arrcurrcontexts.push_back(tcontext);
+	*tt = tcontext->table;
+	return arrcurrcontexts.size() - 1;
 }
 
-void s4g_table::add_n(long num, const char* val)
+long s4g_gc::add_context(s4g_table* tt)
 {
-	arr_value[num] = cr_val_str(val);
+	s4g_context* tcontext = new s4g_context();
+	tcontext->valid = true;
+	tcontext->table = tt;
+	arrcurrcontexts.push_back(tcontext);
+	return arrcurrcontexts.size() - 1;
 }
 
-void s4g_table::add_n(long num, bool val)
+void s4g_gc::remove_context(long id)
 {
-	arr_value[num] = cr_val_bool(val);
+	if (id < arrcurrcontexts.size() && id >= 0)
+	{
+		mem_delete(arrcurrcontexts[id]);
+		arrcurrcontexts.erase(id);
+	}
 }
 
-void s4g_table::add_n(long num, s4g_s_function* val)
+void s4g_gc::activate_prev(long lastidctx)
 {
-	arr_value[num] = cr_val_s_func(val);
+	long tmplastidctx = lastidctx;
+	if (tmplastidctx == -1)
+		tmplastidctx = 1;
+	for (int i = lastidctx; i < arrcurrcontexts.size(); i++)
+	{
+		arrcurrcontexts[i]->valid = true;
+	}
 }
 
-void s4g_table::add_n(long num, s4g_c_function val)
+long s4g_gc::deactivate_prev()
 {
-	arr_value[num] = cr_val_c_func(val);
+	for (int i = arrcurrcontexts.size() - 1; i >= 0; i--)
+	{
+		if (arrcurrcontexts[i]->valid)
+			arrcurrcontexts[i]->valid = false;
+		else
+			return i;
+	}
+	return 0;
 }
 
-void s4g_table::add_n(long num, s4g_table* val)
+void s4g_gc::del_context(long id)
 {
-	arr_value[num] = cr_val_table(val);
+	if (id < arrcurrcontexts.size() && id >= 0)
+	{
+		oldarrcontexts.push_back(arrcurrcontexts[id]);
+		arrcurrcontexts.erase(id);
+	}
 }
 
-void s4g_table::add_n(long num)
+inline long s4g_gc::ctx_is_exists_s(const char* str, s4g_value** val)
 {
-	arr_value[num] = new s4g_value();
+	for (int i = arrcurrcontexts.size() - 1; i >= 0; i--)
+	{
+		s4g_table* tt = arrcurrcontexts[i]->table;
+		if (arrcurrcontexts[i]->valid && arrcurrcontexts[i]->table && arrcurrcontexts[i]->table->is_exists_s(str))
+		{
+			if (val)
+			{
+				*val = arrcurrcontexts[i]->table->gets(str);
+			}
+			return i;
+		}
+	}
+	return -1;
 }
 
-void s4g_table::add_t_n(long num)
+inline void s4g_gc::set_td_data(s4g_value* val, int td)
 {
-	arr_value[num] = cr_val_table_null();
+	if (val && val->iddata >= 0 && val->iddata < arrdata.size() && arrdata[val->iddata])
+		arrdata[val->iddata]->typedata = td;
 }
 
-//
-
-void s4g_table::add(long val)
+inline void s4g_gc::set_ctx_for_del(s4g_context* ctx)
 {
-	arr_value.Add(cr_val_long(val));
+	oldarrcontexts.push_back(ctx);
 }
-
-void s4g_table::add(double val)
-{
-	arr_value.Add(cr_val_float(val));
-}
-
-void s4g_table::add(const char* val)
-{
-	arr_value.Add(cr_val_str(val));
-}
-
-void s4g_table::add(bool val)
-{
-	arr_value.Add(cr_val_bool(val));
-}
-
-void s4g_table::add(s4g_s_function* val)
-{
-	arr_value.Add(cr_val_s_func(val));
-}
-
-void s4g_table::add(s4g_c_function val)
-{
-	arr_value.Add(cr_val_c_func(val));
-}
-
-void s4g_table::add(s4g_table* val)
-{
-	arr_value.Add(cr_val_table(val));
-}
-
-void s4g_table::add()
-{
-	arr_value.Add(new s4g_value());
-}
-
-void s4g_table::add_t()
-{
-	arr_value.Add(cr_val_table_null());
-}
-
 
 ///////////////////////
 
@@ -510,6 +552,7 @@ int s4g_load_file(s4g_main* s4gm,const char* file)
 			sprintf(s4gm->strerror,"%s",s4gm->arr_lex->strerror);
 			return status;
 		}
+		s4gm->gc->typedata = 1;
 	//status = s4gm->prep->run_pp(s4gm->stdpath);
 	s4gm->gnode = s4gm->bst->s4g_gen_tree();
 		if(s4gm->bst->status != 0)
@@ -518,34 +561,29 @@ int s4g_load_file(s4g_main* s4gm,const char* file)
 			return s4gm->bst->status;
 		}
 	s4gm->compiler->compile(s4gm->gnode,s4gm->commands);
-	s4gm->vmachine->run(s4gm->commands,&(s4gm->vmachine->gvars));
+	s4gm->gc->typedata = 0;
+	long tmpcount = 0;
+	while (true)
+	{
+		status = s4gm->vmachine->run(s4gm->commands, (s4gm->vmachine->gvars));
+		if (status != 0)
+		{
+			sprintf(s4gm->strerror, "%s", s4gm->vmachine->strerror);
+			return status;
+		}
+		s4gm->gc->clear();
+		tmpcount++;
+	}
+
 	return 0;
 }
 
-void s4g_push_c_func(s4g_vm* vm,s4g_c_function func)
+void s4g_push_c_func(s4g_main* sm, s4g_c_function func)
 {
-	s4g_value* tval = new s4g_value();
-	tval->init_c_func(func);
-	vm->execute.push(tval);
+	sm->vmachine->execute.push(sm->vmachine->gc->cr_val_c_func(func, -5));
 }
 
-void s4g_store(s4g_vm* vm,const char* name)
+void s4g_store_g(s4g_main* sm, const char* name, s4g_c_function func)
 {
-	s4g_table* ttable = &(vm->gvars);
-			
-		if(ttable->is_exists_s(name))
-		{
-			vm->execute.push((ttable->gets(name)));
-		}
-		else
-		{
-			int qwert = 0;
-			ttable->add_s(name);
-			vm->execute.push((ttable->gets(name)));
-		}
-
-	s4g_value* tvalue = vm->execute.get(vm->execute.count());
-	s4g_value* tvalue2 = vm->execute.get(vm->execute.count()-1);
-	memcpy(tvalue,tvalue2,sizeof(s4g_value));			
-	vm->execute.pop(2);
+	sm->vmachine->gvars->add_val_s(name, sm->vmachine->gc->cr_val_c_func(func, -5), -5);
 }
