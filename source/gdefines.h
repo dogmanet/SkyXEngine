@@ -27,26 +27,7 @@ struct IBaseObject
 
 #endif
 
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef unsigned int size_t;
-typedef int BOOL;
-typedef unsigned char BYTE;
-
-#if defined(_WINDOWS)
-#define dbg_break _asm { int 3 }
-#else
-#define dbg_break asm("int $3");
-#endif
-
-#define mem_del(obj) delete obj;
-#define mem_delete(obj) delete obj;obj=0;
-#define mem_delete_a(obj) delete[] obj;obj=0;
-#define mem_release(obj) obj->Release();
-#define mem_release_del(obj) obj->Release(); obj = 0;
-#define mem_release_delete(obj) obj->Release();mem_delete(obj)
-#define mem_free(a) free(a)
-#define mem_alloc(a) malloc(a)
+#include "sxtypes.h"
 
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);
 
@@ -71,8 +52,10 @@ typedef void (*report_func) (int level,const char* format,...);
 //!!!блеярн мее б ъдпн/ондяхярелс мсфмн нропюбкърэ ябнч
 inline void def_report(int level, const char* format, ...)
 {
+#if defined(_WINDOWS)
 	AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
+#endif
 	char buf[4096];
 	int strl = sizeof(buf);
 	format_str(buf, format);

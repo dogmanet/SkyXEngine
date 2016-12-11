@@ -41,14 +41,17 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>D:\project\engine\build\</OutDir>
+    <OutDir>../../build/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>D:\project\engine\source;$(IncludePath)</IncludePath>
+    <IncludePath>../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../sdks/dx9sdk/Include</IncludePath>
     <SourcePath>D:\project\engine\source;$(SourcePath)</SourcePath>
-    <LibraryPath>D:\project\engine\libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);$(DXSDK_DIR)\Lib\x86</LibraryPath>
+    <LibraryPath>../../libs;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../sdks/dx9sdk/Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../sdks/dx9sdk/Include</IncludePath>
+    <LibraryPath>../../libs;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../sdks/dx9sdk/Lib</LibraryPath>
+    <OutDir>../../build/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -62,7 +65,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>D:\project\engine\libs\$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
@@ -75,12 +78,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXSOUND_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <ImportLibrary>../../libs/$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -4,6 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyXEngine", "SkyXEngine\SkyXEngine.vcxproj", "{2EB4FB89-B7A7-4D1B-9D26-B6BF2017B272}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8B306633-7C89-4FD5-9EBA-5A52B9E02919} = {8B306633-7C89-4FD5-9EBA-5A52B9E02919}
+		{3C61314A-0A75-435C-BC7F-C5D6FECE91FD} = {3C61314A-0A75-435C-BC7F-C5D6FECE91FD}
+		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F} = {8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}
+		{42E61DA0-45EF-4CF2-91B5-7538034F6D07} = {42E61DA0-45EF-4CF2-91B5-7538034F6D07}
+		{D6D828D8-791A-44F0-904D-C05B7432005C} = {D6D828D8-791A-44F0-904D-C05B7432005C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxinput", "..\sxinput\sxinput.vcxproj", "{8B306633-7C89-4FD5-9EBA-5A52B9E02919}"
 EndProject
@@ -14,6 +21,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libvorbisfile_static", "..\..\source\libvorbis\win32\VS2010\libvorbisfile\libvorbisfile_static.vcxproj", "{CEBDE98B-A6AA-46E6-BC79-FAAF823DB9EC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxsound", "..\sxsound\sxsound.vcxproj", "{42E61DA0-45EF-4CF2-91B5-7538034F6D07}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3A214E06-B95E-4D61-A291-1F8DF2EC10FD} = {3A214E06-B95E-4D61-A291-1F8DF2EC10FD}
+		{CEBDE98B-A6AA-46E6-BC79-FAAF823DB9EC} = {CEBDE98B-A6AA-46E6-BC79-FAAF823DB9EC}
+		{15CBFEFF-7965-41F5-B4E2-21E8795C9159} = {15CBFEFF-7965-41F5-B4E2-21E8795C9159}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxgcore", "..\sxgcore\sxgcore.vcxproj", "{3C61314A-0A75-435C-BC7F-C5D6FECE91FD}"
 EndProject
@@ -28,8 +40,19 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "string", "..\string\string.vcxproj", "{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "..\gui\gui.vcxproj", "{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A} = {B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "guitest", "..\..\source\guitest\guitest.vcxproj", "{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8AA0585B-D6E4-46B4-9183-3BACD5B9D47F} = {8AA0585B-D6E4-46B4-9183-3BACD5B9D47F}
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02} = {60DE7B9F-0830-48EA-9732-6F7E290DDE02}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxnet", "..\sxnet\sxnet.vcxproj", "{60DE7B9F-0830-48EA-9732-6F7E290DDE02}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxms", "..\sxms\sxms.vcxproj", "{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +152,18 @@ Global
 		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Release|Win32.ActiveCfg = Release|Win32
 		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Release|Win32.Build.0 = Release|Win32
 		{E31BEF34-E6E1-456F-B40B-42E75CFD0C73}.Release|x64.ActiveCfg = Release|Win32
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02}.Debug|Win32.ActiveCfg = Debug|Win32
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02}.Debug|Win32.Build.0 = Debug|Win32
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02}.Debug|x64.ActiveCfg = Debug|Win32
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02}.Release|Win32.ActiveCfg = Release|Win32
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02}.Release|Win32.Build.0 = Release|Win32
+		{60DE7B9F-0830-48EA-9732-6F7E290DDE02}.Release|x64.ActiveCfg = Release|Win32
+		{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}.Debug|Win32.Build.0 = Debug|Win32
+		{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}.Debug|x64.ActiveCfg = Debug|Win32
+		{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}.Release|Win32.ActiveCfg = Release|Win32
+		{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}.Release|Win32.Build.0 = Release|Win32
+		{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

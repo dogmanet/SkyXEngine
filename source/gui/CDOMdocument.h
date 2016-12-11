@@ -88,7 +88,7 @@ namespace GUI
 			void RequestFocus(IDOMnode * pn);
 			IDOMnode * GetFocus();
 
-			void AddReflowItem(Render::IRenderFrame * rf);
+			void AddReflowItem(Render::IRenderFrame * rf, bool forceParent=false);
 			void Reflow();
 
 		protected:

@@ -24,6 +24,7 @@ namespace GUI
 			virtual IDOMnode * ParentNode() = 0;
 
 			virtual void SetText(const StringW & text, BOOL build=FALSE) = 0;
+			virtual const StringW & GetText() = 0;
 
 			virtual bool IsTextNode() = 0;
 
