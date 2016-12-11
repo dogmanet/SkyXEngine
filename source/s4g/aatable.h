@@ -159,6 +159,11 @@ public:
 		return Arr.size();
 	}
 
+	inline void reserve(int count)
+	{
+		Arr.reserve(count);
+	}
+
 protected:
 	struct AATDesc
 	{

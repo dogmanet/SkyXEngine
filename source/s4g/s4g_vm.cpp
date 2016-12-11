@@ -313,10 +313,13 @@ inline int s4g_vm::com_call(s4g_value* val)
 				}
 			execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
 
-			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
-			s4g_command commm = curr_comm->get(id_curr_com - 1);
-			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid - 1);
-			callstack.push(s4g_call_data(curr_comm, curr_vars, cfetchget, cfetchgetarg, cfetchpushstore, id_curr_com, lastidctx, idnewctx, idexternctx, tmplexs->str));
+			if (curr_comm)
+			{
+				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
+				s4g_command commm = curr_comm->get(id_curr_com - 1);
+				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid - 1);
+				callstack.push(s4g_call_data(curr_comm, curr_vars, cfetchget, cfetchgetarg, cfetchpushstore, id_curr_com, lastidctx, idnewctx, idexternctx, tmplexs->str));
+			}
 
 			//устанавилваем новое окружение и новые конмады
 			curr_vars = new_ctx;
@@ -617,7 +620,8 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 						break;	//иначе останавливаем выполнение
 				}
 		}
-
+	curr_vars = 0;
+	curr_comm = 0;
 	//s4g_table* ttype = gc->get_table(vars->gets("ttable"));
 		if (gvars->is_exists_s("ttable"))
 		{

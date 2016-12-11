@@ -263,6 +263,11 @@ inline const char* s4g_table::get_name_id(long id)
 	return arr_value.GetNameID(id);
 }
 
+inline void s4g_table::reserve(int count_elem)
+{
+	arr_value.reserve(count_elem);
+}
+
 ///////////////////////
 
 inline s4g_value* s4g_gc::cr_val(int _type, const char* _val, long lexid)
@@ -553,7 +558,7 @@ int s4g_load_file(s4g_main* s4gm,const char* file)
 			return status;
 		}
 		s4gm->gc->typedata = 1;
-	//status = s4gm->prep->run_pp(s4gm->stdpath);
+
 	s4gm->gnode = s4gm->bst->s4g_gen_tree();
 		if(s4gm->bst->status != 0)
 		{
@@ -562,7 +567,7 @@ int s4g_load_file(s4g_main* s4gm,const char* file)
 		}
 	s4gm->compiler->compile(s4gm->gnode,s4gm->commands);
 	s4gm->gc->typedata = 0;
-	long tmpcount = 0;
+	/*long tmpcount = 0;
 	while (true)
 	{
 		status = s4gm->vmachine->run(s4gm->commands, (s4gm->vmachine->gvars));
@@ -573,17 +578,204 @@ int s4g_load_file(s4g_main* s4gm,const char* file)
 		}
 		s4gm->gc->clear();
 		tmpcount++;
-	}
+	}*/
 
 	return 0;
 }
 
-void s4g_push_c_func(s4g_main* sm, s4g_c_function func)
+int s4g_call(s4g_main* s4gm, int narg)
 {
-	sm->vmachine->execute.push(sm->vmachine->gc->cr_val_c_func(func, -5));
+	int curr_status = 0;
+	if (s4gm->vmachine->execute.count() > 0)
+	{
+		if (curr_status = s4gm->vmachine->com_call(s4gm->gc->cr_val_int((s4g_int)narg, -3)) != 0)
+			return curr_status;
+		curr_status = s4gm->vmachine->run(s4gm->vmachine->curr_comm, (s4gm->vmachine->curr_vars));
+	}
+	else 
+	{
+		if (narg == 0)
+			curr_status = s4gm->vmachine->run(s4gm->commands, (s4gm->vmachine->gvars));
+		else
+		{
+			sprintf(s4gm->strerror, "call api function s4g_call, arg #2 assign '%d' but stack execute is free ... this is error",narg);
+		}
+	}
+	return curr_status;
 }
 
-void s4g_store_g(s4g_main* sm, const char* name, s4g_c_function func)
+
+void s4g_push_table_null(s4g_main* s4gm, int count_elem)
 {
-	sm->vmachine->gvars->add_val_s(name, sm->vmachine->gc->cr_val_c_func(func, -5), -5);
+	s4g_value* ttable = s4gm->vmachine->gc->cr_val_table_null(-5);
+	s4g_table* tt = s4gm->vmachine->gc->get_table(ttable);
+	tt->reserve(count_elem);
+	s4gm->vmachine->execute.push(ttable);
+}
+
+void s4g_push_c_func(s4g_main* s4gm, s4g_c_function func)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_c_func(func, -5));
+}
+
+void s4g_push_int(s4g_main* s4gm, s4g_int num)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_int(num, -5));
+}
+
+void s4g_push_uint(s4g_main* s4gm, s4g_uint num)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_uint(num, -5));
+}
+
+void s4g_push_float(s4g_main* s4gm, s4g_float num)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_float(num, -5));
+}
+
+void s4g_push_str(s4g_main* s4gm, const char* str)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_str(str, -5));
+}
+
+void s4g_push_bool(s4g_main* s4gm, s4g_bool bf)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_bool(bf, -5));
+}
+
+void s4g_push_null(s4g_main* s4gm)
+{
+	s4gm->vmachine->execute.push(s4gm->vmachine->gc->cr_val_null(-5));
+}
+
+void s4g_store_g(s4g_main* s4gm, const char* name)
+{
+	if (s4gm->vmachine->execute.count() >= 1)
+	{
+		s4g_value* tval = s4gm->vmachine->execute.get(-1);
+		s4gm->vmachine->gvars->add_val_s(name, tval, -5);
+		s4gm->vmachine->execute.pop(1);
+	}
+}
+
+void s4g_store(s4g_main* s4gm, int index, const char* name)
+{
+	if (s4gm->vmachine->execute.count() >= index)
+	{
+		s4g_value* tval = s4gm->vmachine->execute.get(index);
+		if (s4gm->gc->get_type(tval) == t_table)
+		{
+			s4g_table* ttable = s4gm->gc->get_table(tval);
+			ttable->add_val_s(name, s4gm->vmachine->execute.get(-1), -5);
+			s4gm->vmachine->execute.pop(1);
+		}
+		else
+		{
+
+		}
+	}
+}
+
+
+void s4g_get_g(s4g_main* s4gm, const char* name)
+{
+	s4g_value* tval = s4gm->vmachine->gvars->gets(name);
+	s4gm->vmachine->execute.push(tval);
+}
+
+void s4g_get(s4g_main* s4gm, int index, const char* name)
+{
+	if (s4gm->vmachine->execute.count() >= index)
+	{
+		s4g_value* tval = s4gm->vmachine->execute.get(index);
+		if (s4gm->gc->get_type(tval) == t_table)
+		{
+			s4g_table* ttable = s4gm->gc->get_table(tval);
+			s4g_value* tval2 = ttable->gets(name);
+			s4gm->vmachine->execute.push(tval2);
+		}
+		else
+		{
+
+		}
+	}
+}
+
+
+int s4g_is_int(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_int ? 1 : 0);
+}
+
+int s4g_is_uint(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_uint ? 1 : 0);
+}
+
+int s4g_is_float(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_float ? 1 : 0);
+}
+
+int s4g_is_str(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_string ? 1 : 0);
+}
+
+int s4g_is_bool(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_bool ? 1 : 0);
+}
+
+int s4g_is_c_func(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_cfunc ? 1 : 0);
+}
+
+int s4g_is_s_func(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_sfunc ? 1 : 0);
+}
+
+int s4g_is_table(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_table ? 1 : 0);
+}
+
+int s4g_is_null(s4g_main* s4gm, int index)
+{
+	return (s4g_get_type(s4gm, index) == t_null ? 1 : 0);
+}
+
+
+s4g_type s4g_get_type(s4g_main* s4gm, int index)
+{
+	if (s4gm->vmachine->execute.count() >= index)
+	{
+		return s4gm->gc->get_type(s4gm->vmachine->execute.get(index));
+	}
+	else
+		return (s4g_type)- 1;
+}
+
+
+s4g_int s4g_sget_int(s4g_main* s4gm, int index)
+{
+	if (s4gm->vmachine->execute.count() >= index)
+	{
+		return s4gm->gc->get_int(s4gm->vmachine->execute.get(index));
+	}
+	else
+		return -1;
+}
+
+
+void s4g_pop(s4g_main* s4gm, int count)
+{
+	s4gm->vmachine->execute.pop(count);
+}
+
+int s4g_gettop(s4g_main* s4gm)
+{
+	return s4gm->vmachine->execute.count();
 }

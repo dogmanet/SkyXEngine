@@ -1,4 +1,5 @@
 #include "IScrollBarSimple.h"
+#include "IRenderFrame.h"
 
 namespace GUI
 {
@@ -72,6 +73,33 @@ namespace GUI
 
 			void IScrollBarSimple::DispatchEvent(IEvent & ev)
 			{
+				if(m_eDir == SCROLLBAR_DIR_VERTICAL && KeyMap::KeyState(KEY_LBUTTON))
+				{
+					if(ev.type == GUI_EVENT_TYPE_MOUSEMOVE)
+					{
+						if(!m_bDragging)
+						{
+							if(ev.offsetX > (int)m_pParent->GetContentWidth() - GetWidth())
+							{
+								m_bDragging = true;
+								m_iDragPos = ev.clientY;
+								m_iScrollStart = m_iScrollCur;
+							}
+						}
+						else
+						{
+							int P = 4; // Padding 4px
+							int S = m_iLength * (m_iLength - P) / m_iScrollMax;
+
+							int delta = ev.clientY - m_iDragPos;
+							m_pParent->SetScrollTop(m_iScrollStart + delta * m_iScrollMax / (m_iLength - 2 * P - S));
+						}
+					}
+				}
+				else
+				{
+					m_bDragging = false;
+				}
 				//do nothing now
 			}
 

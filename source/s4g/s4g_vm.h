@@ -84,6 +84,7 @@ public:
 		vgvars = gc->cr_val_table(gvars, -2); 
 		strerror[0] = 0; error = 0;
 		cfetchpushstore = 0;
+		curr_vars = 0;
 	}
 
 	int run(Stack<s4g_command>* commands,s4g_table* vars);

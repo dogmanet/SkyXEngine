@@ -117,6 +117,8 @@ public:
 	inline long size();						//размер таблицы в элементах
 	inline const char* get_name_id(long id);//получить имя по id
 
+	inline void reserve(int count_elem);
+
 protected:
 	AATable<s4g_value> arr_value;
 };
@@ -209,9 +211,46 @@ struct s4g_context
 //////
 
 s4g_main* s4g_init();
+void s4g_kill(s4g_main* s4gm);
 
-void s4g_push_c_func(s4g_main* sm,s4g_c_function func);
-void s4g_store_g(s4g_main* sm, const char* name, s4g_c_function func);
+int s4g_call_gc(s4g_main* s4gm);
+
+
+void s4g_push_table_null(s4g_main* s4gm,int count_elem);
+void s4g_push_c_func(s4g_main* s4gm, s4g_c_function func);
+void s4g_push_int(s4g_main* s4gm, s4g_int num);
+void s4g_push_uint(s4g_main* s4gm, s4g_uint num);
+void s4g_push_float(s4g_main* s4gm, s4g_float num);
+void s4g_push_str(s4g_main* s4gm, const char* str);
+void s4g_push_bool(s4g_main* s4gm, s4g_bool bf);
+void s4g_push_null(s4g_main* s4gm);
+
+void s4g_store_g(s4g_main* s4gm, const char* name);
+void s4g_store(s4g_main* s4gm, int index, const char* name);
+
+
+void s4g_get_g(s4g_main* s4gm, const char* name);
+void s4g_get(s4g_main* s4gm, int index, const char* name);
+
+
+int s4g_is_int(s4g_main* s4gm, int index);
+int s4g_is_uint(s4g_main* s4gm, int index);
+int s4g_is_float(s4g_main* s4gm, int index);
+int s4g_is_str(s4g_main* s4gm, int index);
+int s4g_is_bool(s4g_main* s4gm, int index);
+int s4g_is_c_func(s4g_main* s4gm, int index);
+int s4g_is_s_func(s4g_main* s4gm, int index);
+int s4g_is_table(s4g_main* s4gm, int index);
+int s4g_is_null(s4g_main* s4gm, int index);
+
+s4g_type s4g_get_type(s4g_main* s4gm, int index);
+
+s4g_int s4g_sget_int(s4g_main* s4gm, int index);
+
+void s4g_pop(s4g_main* s4gm,int count);
+int s4g_gettop(s4g_main* s4gm);
+
+
+int s4g_call(s4g_main* s4gm, int narg);
 
 int s4g_load_file(s4g_main* s4gm,const char* file);
-//int s4g_call(s4g_machine* sm,int narg,int result);

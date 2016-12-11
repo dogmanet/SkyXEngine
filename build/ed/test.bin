@@ -1,7 +1,7 @@
 [JobWindow]
-classname = JobWindow
-NameJobWnd = JobWindow
-textwnd = JobWindow
+SysClassName = JobWindow
+Name = JobWindow
+CaptionElement = JobWindow
 left = 100
 top = 250
 Width = 910
@@ -14,11 +14,12 @@ Visible = 1
 Enable = 0
 
 [elem_0]
-SysClassName = msctls_progress32
-SXClassName = SXGUIProgressBar
-Name = ProgressBar1
-left = 105
-top = 78
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button1
+CaptionElement = Button1
+left = 51
+top = 37
 Width = 100
 Height = 20
 HintVisible = 0
@@ -27,37 +28,26 @@ Visible = 1
 Enable = 1
 
 [elem_1]
-SysClassName = Button
-SXClassName = SXGUIRadioButton
-Name = RadioButton1
-CaptionElement = RadioButton1
-left = 254
-top = 78
-Width = 100
-Height = 20
-FontName = MS Shell Dlg
-WidthFont = 0
-HeightFont = -11
-WeightFont = 400
-Italic = 0
-Underline = 0
-StrikeOut = 0
-ColorText = 0
-ColorTextBK = 16777215
-TransparentTextBK = 1
-ColorBK = 16777215
+SysClassName = SXGUIBUTTONIMG
+SXClassName = SXGUIButtonImg
+Name = ImgButton1
+left = 210
+top = 45
+Width = 24
+Height = 24
 HintVisible = 0
 HintText = 
 Visible = 1
 Enable = 1
+PathForImg = 
 
 [elem_2]
-SysClassName = Static
-SXClassName = SXGUIStatic
-Name = Static1
-CaptionElement = Static1
-left = 404
-top = 45
+SysClassName = Edit
+SXClassName = SXGUIEdit
+Name = Edit1
+CaptionElement = Edit1
+left = 260
+top = 29
 Width = 100
 Height = 20
 FontName = MS Shell Dlg
@@ -77,11 +67,134 @@ Visible = 1
 Enable = 1
 
 [elem_3]
-SysClassName = msctls_trackbar32
-SXClassName = SXGUITrackBar
-Name = TrackBar1
-left = 557
-top = 41
+SysClassName = Button
+SXClassName = SXGUICheckBox
+Name = CheckBox1
+CaptionElement = CheckBox1
+left = 440
+top = 54
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_4]
+SysClassName = ComboBox
+SXClassName = SXGUIComboBox
+Name = ComboBox1
+left = 605
+top = 45
+Width = 100
+Height = 21
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_5]
+SysClassName = Button
+SXClassName = SXGUIGroupBox
+Name = GroupBox1
+CaptionElement = GroupBox1
+left = 46
+top = 116
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_6]
+SysClassName = ListBox
+SXClassName = SXGUIListBox
+Name = ListBox1
+left = 186
+top = 121
+Width = 100
+Height = 93
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_7]
+SysClassName = Edit
+SXClassName = SXGUIMemo
+Name = Memo1
+CaptionElement = Memo1
+left = 359
+top = 154
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_8]
+SysClassName = msctls_progress32
+SXClassName = SXGUIProgressBar
+Name = ProgressBar1
+left = 510
+top = 147
 Width = 100
 Height = 20
 HintVisible = 0
@@ -89,7 +202,70 @@ HintText =
 Visible = 1
 Enable = 1
 
-[elem_4]
+[elem_9]
+SysClassName = Button
+SXClassName = SXGUIRadioButton
+Name = RadioButton1
+CaptionElement = RadioButton1
+left = 661
+top = 138
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_10]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static1
+CaptionElement = Static1
+left = 62
+top = 250
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_11]
+SysClassName = msctls_trackbar32
+SXClassName = SXGUITrackBar
+Name = TrackBar1
+left = 207
+top = 260
+Width = 100
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_12]
 SysClassName = msctls_statusbar32
 SXClassName = SXGUIStatusBar
 Name = StatusBar1
@@ -109,12 +285,12 @@ HintText =
 Visible = 1
 Enable = 1
 
-[elem_5]
+[elem_13]
 SysClassName = ToolbarWindow32
 SXClassName = SXGUIToolBar
 Name = ToolBar1
-left = 286
-top = 196
+left = 492
+top = 234
 Width = 100
 Height = 20
 HintVisible = 0
@@ -122,12 +298,12 @@ HintText =
 Visible = 1
 Enable = 1
 
-[elem_6]
+[elem_14]
 SysClassName = msctls_updown32
 SXClassName = SXGUIUpDown
 Name = UpDown1
-left = 59
-top = 202
+left = 346
+top = 241
 Width = 15
 Height = 20
 HintVisible = 0
@@ -135,13 +311,13 @@ HintText =
 Visible = 1
 Enable = 1
 
-[elem_7]
+[elem_15]
 SysClassName = Window1
 SXClassName = SXGUIBaseWnd
 Name = Window1
 CaptionElement = Window1
-left = 498
-top = 93
+left = 641
+top = 107
 Width = 200
 Height = 200
 ColorBK = 13158600
