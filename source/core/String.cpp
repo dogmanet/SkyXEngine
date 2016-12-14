@@ -336,7 +336,6 @@
 			Release();
 		}
 
-
 		void String::Release()
 		{
 			SX_SAFE_DELETE_A(string);

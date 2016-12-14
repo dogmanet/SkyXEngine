@@ -1,4 +1,5 @@
 
+#define S4G_MAX_LEN_TYPE_NAME 64
 #define S4G_MAX_LEN_VAR_NAME 64
 #define S4G_MAX_LEN_STR_IN_FILE 1024
 
@@ -12,6 +13,13 @@
 #define S4G_MAX_CALL 200	//максимальное количество вызовов (рекурсивны и вложенных)
 #define S4G_GLOBAL_NM "_g"	//обращение в скрипте к глобальному пространству имен
 #define S4G_MARG "args"
+
+#define S4G_NOTICE 0
+#define S4G_WARNING 1
+#define S4G_ERROR 2
+
+//тип функции вывода информации и обработки ошибок
+typedef void(*s4g_report_func) (int level, const char* name_ss, const char* format, ...);
 
 //настраиваемые типы
 #define s4g_int long
@@ -27,6 +35,7 @@ typedef int(*s4g_c_function) (s4g_main* vm);
 //все типы данных которые могут быть использованы в скриптах
 enum s4g_type
 {
+	t_none = -1,
 	t_null = 0,
 	t_table = 1,
 	t_string = 2,
@@ -35,9 +44,25 @@ enum s4g_type
 	t_uint = 5,
 	t_bool = 6,
 	t_user_data = 7, //unsupported
-	t_cfunc = 8,	//unsupported
+	t_cfunc = 8,	
 	t_sfunc = 9,
-	t_nn = 10,
+	t_nnull = 10,	//цифра 0, вставляется в выражения с унарным минусом
+};
+
+//строковое представление типов
+const char s4g_str_type[][S4G_MAX_LEN_TYPE_NAME] = {
+"none",
+"null",
+"table",
+"string",
+"float",
+"int",
+"uint",
+"bool",
+"user_data",
+"cfunc",
+"sfunc",
+"nnull"
 };
 
 extern class s4g_arr_lex;
@@ -53,11 +78,12 @@ extern struct s4g_s_function;
 extern struct s4g_context;
 extern class s4g_gc;
 
+#define S4G_PRE_COND(retval) if (!s4gm){s4g_report(2, "!!!", "script system is not init, api function [%s]",__FUNCTION__);	return retval;}
 
 //основа взаимоествия
 struct s4g_main
 {
-	s4g_main();
+	s4g_main(const char* _name);
 	s4g_arr_lex* arr_lex;	//лексический анализатор
 	s4g_node* gnode;		//построенное аст
 	s4g_builder_syntax_tree* bst;	//строитель аст
@@ -66,6 +92,7 @@ struct s4g_main
 	s4g_vm* vmachine;				//виртуальная машина
 	s4g_gc* gc;						//сборщик мусора
 	char strerror[1024];			//сообщение об ошибке
+	char name[S4G_MAX_LEN_VAR_NAME];
 };
 
 //представление данных
@@ -209,13 +236,20 @@ struct s4g_context
 };
 
 //////
+//возвращает строковое представление типа tt в str_type
+void s4g_get_str_type(s4g_type tt, char* str_type);
 
-s4g_main* s4g_init();
-void s4g_kill(s4g_main* s4gm);
+s4g_main* s4g_init(const char* name);//инициализируем скриптовую систему
+void s4g_kill(s4g_main* s4gm);//завершаем работу скриптовой системы
+int s4g_load_file(s4g_main* s4gm, const char* file);//загрузить скрипт из файла
 
-int s4g_call_gc(s4g_main* s4gm);
+void s4g_set_rf(s4g_report_func rf);
 
+//вызываем сборку мусора, mls - количество млсек которое будет работать сборщик, если 0 то соберет весь мусор
+//возвращает количество занимаемой памяти
+int s4g_call_gc(s4g_main* s4gm,DWORD mls=0);
 
+//функции для вставки на вершину стека значения
 void s4g_push_table_null(s4g_main* s4gm,int count_elem);
 void s4g_push_c_func(s4g_main* s4gm, s4g_c_function func);
 void s4g_push_int(s4g_main* s4gm, s4g_int num);
@@ -225,14 +259,19 @@ void s4g_push_str(s4g_main* s4gm, const char* str);
 void s4g_push_bool(s4g_main* s4gm, s4g_bool bf);
 void s4g_push_null(s4g_main* s4gm);
 
-void s4g_store_g(s4g_main* s4gm, const char* name);
-void s4g_store(s4g_main* s4gm, int index, const char* name);
+//функции сохранения в пространства имен
+//после сохранения функция выталкивает сохраненное значение с вершины стека
+void s4g_store_g(s4g_main* s4gm, const char* name); //в глобальном пространстве, name имя которое будет присвоено значению на вершине стека
+void s4g_store(s4g_main* s4gm, int index, const char* name);// index в стеке должна быть таблица, name имя переменной, а значение берется с вершины стека
+//table(stack[index])[name] = stack[-1];
 
+//получить значения
+//после получения, функция ложит на вершину стека полученное значение
+void s4g_get_g(s4g_main* s4gm, const char* name);	//из глобального, name - имя переменной значение которой берем
+void s4g_get(s4g_main* s4gm, int index, const char* name);// index в стеке должна быть таблица, name имя переменной
+//stack.push(table(stack[index])[name]);
 
-void s4g_get_g(s4g_main* s4gm, const char* name);
-void s4g_get(s4g_main* s4gm, int index, const char* name);
-
-
+//является ли значение переменной в стеке по номеру index типом? 0 нет, 1 да
 int s4g_is_int(s4g_main* s4gm, int index);
 int s4g_is_uint(s4g_main* s4gm, int index);
 int s4g_is_float(s4g_main* s4gm, int index);
@@ -243,14 +282,39 @@ int s4g_is_s_func(s4g_main* s4gm, int index);
 int s4g_is_table(s4g_main* s4gm, int index);
 int s4g_is_null(s4g_main* s4gm, int index);
 
+//возвращает тип значения переменной по номеру в стеке index
 s4g_type s4g_get_type(s4g_main* s4gm, int index);
 
+//возвращает приведенное к определнному типу значнеие перменной по номеру index в стеке
 s4g_int s4g_sget_int(s4g_main* s4gm, int index);
+s4g_uint s4g_sget_uint(s4g_main* s4gm, int index);
+s4g_float s4g_sget_float(s4g_main* s4gm, int index);
+s4g_bool s4g_sget_bool(s4g_main* s4gm, int index);
+const char* s4g_sget_str(s4g_main* s4gm, int index);
+s4g_c_function s4g_sget_cfunc(s4g_main* s4gm, int index);
 
-void s4g_pop(s4g_main* s4gm,int count);
-int s4g_gettop(s4g_main* s4gm);
+void s4g_pop(s4g_main* s4gm,int count);//выталкивает из стека count значений
+int s4g_gettop(s4g_main* s4gm);	//количество элементов в стеке, и есесно номер вершины стека
 
-
+//вызов функции, narg - количество аргументов
+//сначала в стек ложится сама вызываемая функция, затем аргументы если есть и только потом эта функция
+//если narg == 0 и s4g_gettop - narg в стеке не функция то ошибка
 int s4g_call(s4g_main* s4gm, int narg);
 
-int s4g_load_file(s4g_main* s4gm,const char* file);
+int s4g_cfcount_arg(s4g_main* s4gm);	//количество аргументов которые были переданы функции
+
+//преобразование аргументац функции к типам и их возвращение
+//если narg == 1 то значит функция вернет первый аргумент и так далее
+s4g_int s4g_cfget_int(s4g_main* s4gm, int narg);
+s4g_uint s4g_cfget_uint(s4g_main* s4gm, int narg);
+s4g_float s4g_cfget_float(s4g_main* s4gm, int narg);
+s4g_bool s4g_cfget_bool(s4g_main* s4gm, int narg);
+const char* s4g_cfget_str(s4g_main* s4gm, int narg);
+s4g_c_function s4g_cfget_cfunc(s4g_main* s4gm, int narg);
+
+int s4g_cfis_int(s4g_main* s4gm, int narg);
+int s4g_cfis_uint(s4g_main* s4gm, int narg);
+int s4g_cfis_float(s4g_main* s4gm, int narg);
+int s4g_cfis_bool(s4g_main* s4gm, int narg);
+int s4g_cfis_str(s4g_main* s4gm, int narg);
+int s4g_cfis_cfunc(s4g_main* s4gm, int narg);

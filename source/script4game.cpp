@@ -20,6 +20,13 @@ WORD countrecurs = 0;
 
 int testcf(s4g_main* _s4gm)
 {
+	int countarg =  s4g_cfcount_arg(_s4gm);
+	long a2 = s4g_cfget_int(s4gm, 2);
+	float a3 = s4g_cfget_float(s4gm, 3);
+	UINT a4 = s4g_cfget_uint(s4gm, 4);
+	bool a5 = s4g_cfget_bool(s4gm, 5);
+	const char* a6 = s4g_cfget_str(s4gm, 6);
+	s4g_c_function a7 = s4g_cfget_cfunc(s4gm, 7);
 	return 0;
 }
 
@@ -36,7 +43,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	freopen("CONIN$", "rt", stdin);
 
 
-	LuaState = luaL_newstate();
+	/*LuaState = luaL_newstate();
 
 	luaL_openlibs(LuaState);
 	
@@ -74,22 +81,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	int lcs = lua_gettop(LuaState);
 	time2 = timeGetTime() - time2;
 	int qwert2 = 0;
-	
+	*/
 
 
 
-	s4gm = s4g_init();
-	//s4g_store_g(s4gm, "testcf", testcf);
+	s4gm = s4g_init("");
+	s4g_push_c_func(s4gm, testcf);
+	s4g_store_g(s4gm, "testcf");
 	//DWORD ttime = timeGetTime();
 	
-	int status = s4g_load_file(s4gm,"D:\\project\\engine\\SkyXEngine\\SkyXEngine\\Debug\\test.script");
+	int status = s4g_load_file(s4gm,"D:/project/engine/SkyXEngine/SkyXEngine/Debug/test.script");
 	if (s4g_call(s4gm, 0) != 0)
 	{
 
 	}
 	
 
-	DWORD time = timeGetTime();
+	/*DWORD time = timeGetTime();
 	for (int i = 0; i < counttt; i++)
 	{
 		s4g_get_g(s4gm, "testcall");
@@ -107,7 +115,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 	time = timeGetTime() - time;
 	int qwert = 0;
-	
+	*/
 	MessageBox(0,s4gm->strerror,0,0);
 	
 

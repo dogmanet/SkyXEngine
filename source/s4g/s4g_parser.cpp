@@ -285,9 +285,15 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 			lex_get_next0(tmplexs);
 			return node;
 		}
+		else if (tmplexs->type == word_uint)
+		{
+			s4g_node* node = new s4g_node(_uint, curr_lexid, gc->cr_val(t_uint, tmplexs->str, curr_lexid));
+			lex_get_next0(tmplexs);
+			return node;
+		}
 		else if (tmplexs->type == word_bool)
 		{
-			s4g_node* node = new s4g_node(_bool, curr_lexid, gc->cr_val(_bool, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_bool, curr_lexid, gc->cr_val(t_bool, tmplexs->str, curr_lexid));
 			lex_get_next0(tmplexs);
 			return node;
 		}
@@ -348,7 +354,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										else
 										{
 											//вставляем универсальную цифру 0
-											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nn, 0, curr_lexid)));
+											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, curr_lexid)));
 										}
 								}
 
@@ -366,7 +372,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										else 
 										{
 											//вставляем универсальную цифру 0
-											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nn, 0, curr_lexid)));
+											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, curr_lexid)));
 										}
 								}
 

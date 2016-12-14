@@ -339,12 +339,12 @@ inline int s4g_is_boolean(const char* sstr, char* dstr)
 
 inline bool s4g_is_char_str(const char sym)
 {
-	return (((sym >= 65 && sym <= 90) || (sym >= 97 && sym <= 122) || sym == 95) ? true : false);
+	return (sym >= 'a' && sym <= 'z') || (sym >= 'A' && sym <= 'Z') || sym == '_';
 }
 
 inline bool s4g_is_char_num_or_point(const char sym)
 {
-	return ((s4g_is_char_num(sym) || s4g_is_char_point(sym)) ? true : false);
+	return s4g_is_char_num(sym) || s4g_is_char_point(sym);
 }
 
 inline bool s4g_is_char_num(const char sym)
@@ -489,15 +489,15 @@ s4g_arr_lex::s4g_arr_lex()
 s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* curr_num_str)
 {
 	s4g_lexeme* tmplex = 0;
-	long lenfile = strlen(str);	//размер всего файла с кодом
 	long numcursym = 0;	//текущий номер символа
 	long numcurstr = *curr_num_str;	//текущий номер строки
-	char tmpword[64];
+	char tmpword[S4G_MAX_LEN_VAR_NAME];
 	int typecomment = 0; //текущий тип комментария, 0 - нет, 1 - однострочный, 2 - многострочный
 	int tmpid = -1;
-	while (numcursym <= lenfile)
+	while (true)
 	{
-		memset(tmpword, 0, 64);
+		tmpword[0] = 0;
+		//memset(tmpword, 0, S4G_MAX_LEN_VAR_NAME);
 		char tmpc = str[numcursym];
 		//если текущий сивол новая строка
 		if (tmpc == '\n')
@@ -746,13 +746,15 @@ int s4g_arr_lex::read(const char* file)
 	}
 	char pathforfile[1024];
 	int len = strlen(file);
-	while (file[len--] != '\\')
+	while (len >= 0)
 	{
-		if (file[len - 1] == '\\')
+		len--;
+		if (file[len] == '\\' || file[len] == '/')
 		{
-			//len--;
+			//
 			memcpy(pathforfile, file, len);
 			pathforfile[len] = 0;
+			break;
 		}
 	}
 
@@ -859,7 +861,7 @@ int s4g_arr_lex::read(const char* file)
 											if (!tmplex3)
 											{
 												//внезапный конец файла, а мы еще не закончили считывание аргументов
-												sprintf(strerror, "[%s]:%d - vnezapno end of file in define", ArrFiles[tmplex2->fileid], tmplex2->numstr);
+												sprintf(strerror, "[%s]:%d - unexpected end of file in define", ArrFiles[tmplex2->fileid], tmplex2->numstr);
 												return -1;
 											}
 

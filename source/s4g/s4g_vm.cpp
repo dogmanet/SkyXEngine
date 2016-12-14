@@ -14,28 +14,28 @@ inline int s4g_vm::com_fetch(s4g_value* val, bool is_cr)
 				{
 					s4g_value* tmpval = 0;
 					long idctx = -1;
-					if ((idctx = gc->ctx_is_exists_s(str, &tmpval)) != -1)
+						if ((idctx = gc->ctx_is_exists_s(str, &tmpval)) != -1)
 						{
-							/*if (is_cr)
+							if (is_cr)
 							{
 								error = -1;
 								s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 								sprintf(this->strerror, "[%s]:%d - value '%s' is exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 								return error;
-							}*/
+							}
 							//s4g_value* tmpval = curr_vars->gets(str);
 							s4g_type tt1 = gc->get_type(tmpval);
 							execute.push(tmpval);
 						}
 						else
 						{
-							/*if (!is_cr)
+							if (!is_cr)
 							{
 								error = -1;
 								s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 								sprintf(this->strerror, "[%s]:%d - value '%s' is not exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 								return error;
-							}*/
+							}
 
 
 							tmpval = gc->cr_val_null(val->nlexid);
@@ -47,7 +47,10 @@ inline int s4g_vm::com_fetch(s4g_value* val, bool is_cr)
 		}
 		else
 		{
-			int qwert = 0;
+			error = -1;
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+			sprintf(this->strerror, "[%s]:%d - error of vm, fetch without arg", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+			return error;
 		}
 	return 0;
 }
@@ -63,22 +66,31 @@ inline int s4g_vm::com_fetch_get(s4g_value* val, bool is_cr)
 			s4g_type ttype = gc->get_type(execute.get(execute.count()-counttop));
 				if(ttype == t_table)
 					ttable = gc->get_table(execute.get(execute.count() - counttop));
+				else
+				{
+					error = -1;
+					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+					char strtype[12];
+					s4g_get_str_type(ttype, strtype);
+					sprintf(this->strerror, "[%s]:%d - value '%s' expected table but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
+					return error;
+				}
+				/*
 				//если предыдущей командой было либо fetch либо fetch_get
 				//то значит мы ложили на стек таблицу, однако это оказалось не так
 				else if(cfetchget)	//error
 					int qwert = 0;
 				else
-					ttable = curr_vars;
-
-				/*String str;
-				if (ttype == t_string)
-				{
-					str = execute.get(execute.count() - counttop)->get_str();
-					int qwert = 0;
-				}*/
+					ttable = curr_vars;*/
 		}
 		else
-			ttable = curr_vars;
+		{
+			error = -1;
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+			sprintf(this->strerror, "[%s]:%d - address to the table '%s', but the stack is empty", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+			return error;
+			//ttable = curr_vars;
+		}
 			
 	s4g_value* tval = 0;
 
@@ -101,25 +113,25 @@ inline int s4g_vm::com_fetch_get(s4g_value* val, bool is_cr)
 			const char* str = gc->get_str(tval);
 				if(ttable->is_exists_s(str))
 				{
-					/*if (is_cr)
+					if (is_cr)
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 						sprintf(this->strerror, "[%s]:%d - key number '%s' is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return error;
-					}*/
+					}
 					s4g_value* tmpval = ttable->gets(str);
 					execute.push(tmpval);
 				}
 				else
 				{
-					/*if (!is_cr)
+					if (!is_cr)
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 						sprintf(this->strerror, "[%s]:%d - key number '%s' is not exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return error;
-					}*/
+					}
 					s4g_value* tmpval = gc->cr_val_null(tval->nlexid);
 					ttable->add_val_s(str, tmpval, tval->nlexid);
 					//ttable->add_null_s(str, tval->nlexid);
@@ -132,25 +144,25 @@ inline int s4g_vm::com_fetch_get(s4g_value* val, bool is_cr)
 			long num = gc->get_int(tval);
 				if(ttable->is_exists_n(num))
 				{
-					/*if (is_cr)
+					if (is_cr)
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 						sprintf(this->strerror, "[%s]:%d - key number %d is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, num);
 						return error;
-					}*/
+					}
 					s4g_value* tmpval = ttable->getn(num);
 					execute.push(tmpval);
 				}
 				else
 				{
-					/*if (!is_cr)
+					if (!is_cr)
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 						sprintf(this->strerror, "[%s]:%d - key number %d is not exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, num);
 						return error;
-					}*/
+					}
 					s4g_value* tmpval = gc->cr_val_null(tval->nlexid);
 					ttable->add_val_n(num, tmpval, tval->nlexid);
 					//int qwert = 0;
@@ -158,6 +170,15 @@ inline int s4g_vm::com_fetch_get(s4g_value* val, bool is_cr)
 					//s4g_value* tval2 = ttable->getn(num);
 					execute.push((ttable->getn(num)));
 				}
+		}
+		else
+		{
+			error = -1;
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+			char strtype[12];
+			s4g_get_str_type(gc->get_type(tval), strtype);
+			sprintf(this->strerror, "[%s]:%d - data type '%s' is unresolved address in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
+			return error;
 		}
 	return 0;
 }
@@ -333,8 +354,10 @@ inline int s4g_vm::com_call(s4g_value* val)
 		//иначе если у нас с(++) функция
 		else if (gc->get_type(tvalfunc) == t_cfunc)
 		{
+			CurrCountArg = countarg;
 			s4g_c_function tcfunc = (gc->get_c_func(tvalfunc));
 			(tcfunc)(s4gm);
+			CurrCountArg = -1;
 		}
 		//иначе у нас не функция
 		else
@@ -343,7 +366,9 @@ inline int s4g_vm::com_call(s4g_value* val)
 			s4g_command commm = curr_comm->get(id_curr_com - 1);
 			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid - 1);
 			error = -1;
-			sprintf(this->strerror, "[%s]:%d - called value '%s is not function", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+			char strtype[12];
+			s4g_get_str_type(gc->get_type(tvalfunc), strtype);
+			sprintf(this->strerror, "[%s]:%d - called value '%s' is not function, this is '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
 			return error;
 		}
 	return 0;
@@ -364,7 +389,7 @@ inline int s4g_vm::com_add()
 	s4g_value* s1 = execute.get(execute.count() - 1);
 	s4g_value* s2 = execute.get(execute.count());
 	execute.pop(2);
-	if (gc->get_type(s1) == t_nn)
+	if (gc->get_type(s1) == t_nnull)
 	{
 		if (gc->get_type(s2) == t_int)
 		{
@@ -386,7 +411,7 @@ inline int s4g_vm::com_sub()
 	s4g_value* s1 = execute.get(execute.count() - 1);
 	s4g_value* s2 = execute.get(execute.count());
 	execute.pop(2);
-	if (gc->get_type(s1) == t_nn)
+	if (gc->get_type(s1) == t_nnull)
 	{
 		if (gc->get_type(s2) == t_int)
 		{
@@ -571,7 +596,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 						//иначе выдаем ошибку о превышении нормы
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - stack overflow", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+						sprintf(this->strerror, "[%s]:%d - stack overflow, limit = %d", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, S4G_MAX_CALL);
 						return error;
 					}
 					
@@ -623,7 +648,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 	curr_vars = 0;
 	curr_comm = 0;
 	//s4g_table* ttype = gc->get_table(vars->gets("ttable"));
-		if (gvars->is_exists_s("ttable"))
+		/*if (gvars->is_exists_s("ttable"))
 		{
 			s4g_table* ttype = gc->get_table(gvars->gets("ttable"));
 			s4g_value* tvar0 = ttype->gets("a");
@@ -633,7 +658,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 				long num = gc->get_int(tvar0);
 				int qwert = 0;
 			}
-		}
+		}*/
 
 		if (gvars->is_exists_s("q"))
 		{
@@ -646,7 +671,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 			}
 		}
 
-		if (gvars->is_exists_s("b"))
+		/*if (gvars->is_exists_s("b"))
 		{
 			s4g_value* tvar1 = gvars->gets("b");
 			if (gc->get_type(tvar1) == t_int)
@@ -664,7 +689,7 @@ int s4g_vm::run(Stack<s4g_command>* commands,s4g_table* vars)
 				long num = gc->get_int(tvar2);
 				int qwert = 0;
 			}
-		}
+		}*/
 	
 	return error;
 }

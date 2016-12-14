@@ -85,6 +85,7 @@ public:
 		strerror[0] = 0; error = 0;
 		cfetchpushstore = 0;
 		curr_vars = 0;
+		CurrCountArg = -1;
 	}
 
 	int run(Stack<s4g_command>* commands,s4g_table* vars);
@@ -124,6 +125,8 @@ public:
 	bool cfetchget;		//была ли предыдущая команда либо fetch либо fetch_get
 	bool cfetchgetarg;	//была ли предыдущая команда fetch_get с аргументом или без
 	int cfetchpushstore;//следовалаи комбинаци fetch push store, если да то значит = 3, нужно для com_store
+
+	int CurrCountArg;
 
 	Stack<s4g_call_data> callstack;	//стэк вызовов с сохраненным предыдущим состоянием
 };

@@ -150,6 +150,12 @@ int s4g_compiler::compile2(s4g_node* node)
 			printf("push\n");
 			compile2(node->op3);
 		}
+		else if (node->type == _float)
+		{
+			gen(mc_push, node->value, node->lexid);
+			printf("push\n");
+			compile2(node->op3);
+		}
 		else if (node->type == _bool)
 		{
 			gen(mc_push, node->value, node->lexid);

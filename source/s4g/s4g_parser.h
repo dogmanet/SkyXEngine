@@ -328,7 +328,7 @@ public:
 	Array<String> ArrFiles;
 	Array<String> ArrPathForFiles;
 	int curr_id_file;// = ArrFiles.size()-1;
-	DWORD curr_num;
+	long curr_num;
 };
 
 #define bst_iferr(cond,text,...) if(cond) {this->status = -1; sprintf(this->error, text, ...); return 0;)
