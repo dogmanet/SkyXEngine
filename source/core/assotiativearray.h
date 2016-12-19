@@ -18,6 +18,7 @@
 template<typename SX_KEYTYPE, typename SX_VALTYPE>
 class AssotiativeArray
 {
+public:
 	struct Node
 	{
 		Node * Parent;
@@ -27,23 +28,30 @@ class AssotiativeArray
 		SX_KEYTYPE Key;
 		SX_VALTYPE * Val;
 	};
-
+	mutable Node * TmpNode;
+private:
 	unsigned int Size_;
 	Node * RootNode;
 
+
 	Node * TreeSearch(const SX_KEYTYPE & key) const
 	{
+		if(TmpNode && TmpNode->Key == key)
+		{
+			return(TmpNode);
+		}
 		Node * tmpCurNode = this->RootNode;
 
 			while(tmpCurNode)
 			{
 					if(tmpCurNode->Key == key)
 					{
+						TmpNode = tmpCurNode;
 						return(tmpCurNode);
 					}
 				tmpCurNode = tmpCurNode->Key < key ? tmpCurNode->Right : tmpCurNode->Left;
 			}
-
+		TmpNode = NULL;
 		return(NULL);
 	}
 	void TreeRotateLeft(Node * node)
@@ -589,12 +597,12 @@ public:
 	};
 */
 
-	AssotiativeArray():RootNode(NULL), Size_(0)
+	AssotiativeArray():RootNode(NULL), Size_(0),TmpNode(NULL)
 	{
 		//printf("AssotiativeArray()\n");
 	}
 
-	AssotiativeArray(const AssotiativeArray & a):RootNode(NULL), Size_(0)
+	AssotiativeArray(const AssotiativeArray & a):RootNode(NULL), Size_(0),TmpNode(NULL)
 	{
 		for(AssotiativeArray<SX_KEYTYPE, SX_VALTYPE>::Iterator i = a.begin(); i; i++)
 		{
@@ -618,7 +626,9 @@ public:
 
 	bool KeyExists(const SX_KEYTYPE & key) const
 	{
-		return(TreeSearch(key) != NULL);
+		TmpNode = TreeSearch(key);
+		//tmpNode
+		return(TmpNode != NULL);
 	}
 
 	AssotiativeArray & operator=(const AssotiativeArray & a)
@@ -641,25 +651,25 @@ public:
 
 	SX_VALTYPE & operator[](const SX_KEYTYPE & key)
 	{
-		Node * tmpNode = TreeSearch(key);
-			if(!tmpNode)
+		TmpNode = TreeSearch(key);
+			if(!TmpNode)
 			{
 				//SX_VALTYPE tmpVal = {0};
-				tmpNode = TreeInsert(key);
+				TmpNode = TreeInsert(key);
 			}
-		return(*tmpNode->Val);
+		return(*TmpNode->Val);
 	}
 
 	const SX_VALTYPE & operator[](const SX_KEYTYPE & key) const
 	{
-		Node * tmpNode = TreeSearch(key);
-		return(*tmpNode->Val);
+		TmpNode = TreeSearch(key);
+		return(*TmpNode->Val);
 	}
 
 	const SX_VALTYPE * at(const SX_KEYTYPE & key) const
 	{
-		Node * tmpNode = TreeSearch(key);
-		return(tmpNode ? tmpNode->Val : NULL);
+		TmpNode = TreeSearch(key);
+		return(TmpNode ? TmpNode->Val : NULL);
 	}
 
 	void Insert(const SX_KEYTYPE & key, const SX_VALTYPE & val);
