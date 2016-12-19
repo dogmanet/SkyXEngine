@@ -278,6 +278,15 @@ public:
 		return(tmpNewNode);
 	}
 
+	T * GetAt(int page, int offset)
+	{
+		if(!memblocks[page].mem[offset].IsFree)
+		{
+			return(memblocks[page].mem[offset].data);
+		}
+		return(NULL);
+	}
+
 	void Delete(T * pointer)
 	{
 		//find cell

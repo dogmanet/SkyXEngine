@@ -3,7 +3,7 @@
 
 #include <core\MemAlloc.h>
 
-template <typename T>
+template <typename T, int pageSize=256>
 class Stack
 {
 	struct StackNode
@@ -12,7 +12,7 @@ class Stack
 		T data;
 	};
 
-	MemAlloc<StackNode> Data;
+	MemAlloc<StackNode, pageSize> Data;
 	int SP;
 
 	StackNode * CurrentNode;
@@ -72,6 +72,21 @@ public:
 	bool IsEmpty()
 	{
 		return(this->SP == 0);
+	}
+
+	T * GetAt(int id)
+	{
+		if(id < 0)
+		{
+			id += this->SP;
+		}
+		if(id < 0 || id >= this->SP)
+		{
+			return(NULL);
+		}
+		int page = id / pageSize;
+		int pageOffset = id % pageSize;
+		return(Data.GetAt(page, pageOffset));
 	}
 };
 
