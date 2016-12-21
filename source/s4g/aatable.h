@@ -1,6 +1,8 @@
-#ifndef SX_AssotiativeArray_H
-#define SX_AssotiativeArray_H
+#ifndef SX_AATABLE_H
+#define SX_AATABLE_H
 
+#include <string/string.h>
+#include <core/assotiativearray.h>
 
 template<typename T>
 class AATable
@@ -9,7 +11,7 @@ public:
 	AATable(){}
 	~AATable()
 	{
-		for (int i = 0; i < Arr.size(); i++)
+		for(int i = 0; i < Arr.size(); i++)
 		{
 			mem_delete(Arr[i]);
 		}
@@ -19,7 +21,7 @@ public:
 	{
 		DWORD tmpsize = Arr.size();
 		AATDesc* tmpaa = new AATDesc();
-		tmpaa->Name[0] = 0;
+		tmpaa->Name = NULL;
 		tmpaa->Value = data;
 		//memcpy(tmpaa->Value,data,sizeof(s4g_value));
 		Arr.push_back(tmpaa);
@@ -32,12 +34,12 @@ public:
 			Arr[tmpkey]->Value = data;
 		else
 		{
-			//DWORD tmpsize = Arr.size();
+			DWORD tmpsize = Arr.size();
 			AATDesc* tmpaa = new AATDesc();
 			tmpaa->Value = data;
-			strcpy(tmpaa->Name, name);
+			Keys[name] = Arr.size();
+			tmpaa->Name = Keys.TmpNode->Key.c_str();
 			Arr.push_back(tmpaa);
-			//Arr[tmpsize]->Value = data;
 		}
 	}
 
@@ -57,9 +59,8 @@ public:
 			DWORD tmpsize = Arr.size();
 			AATDesc* tmpaa = new AATDesc();
 			tmpaa->Value = data;
-			tmpaa->Name[0] = 0;
+			tmpaa->Name = NULL;
 			Arr.push_back(tmpaa);
-			//Arr[tmpsize]->Value = data;
 		}
 	}
 
@@ -72,39 +73,44 @@ public:
 					int 3;
 				};
 			}
-			else if (key < Arr.size())
+			else if(key < Arr.size())
+			{
+				Keys[Arr[key]->Name] = -1;
 				Arr.erase(key);
+			}
 	}
 
 	inline void Del(const char* name)
 	{
 		long tmpkey = GetKey(name);
-			if (tmpkey != -1)
+			if(tmpkey != -1)
+			{
 				Arr.erase(tmpkey);
+				Keys[name] = -1;
+			}
 	}
 
 	inline T* & operator[](UINT key)
 	{
-		DWORD tmpsize = Arr.size();
-			if (key < tmpsize)
-				return(Arr[key]->Value);
-			else if (key >((UINT)-1) - 128)
+			if(key > ((UINT)-1) - 128)
 			{
 				_asm
 				{
 					int 3;
 				};
 			}
+			else if(key < Arr.size())
+				return(Arr[key]->Value);
 			else
 			{
-				
+				DWORD tmpsize = Arr.size();
 				AATDesc* tmpaa = new AATDesc();
 				tmpaa->Value = new T();
-				tmpaa->Name[0] = 0;
+				tmpaa->Name = NULL;
 				Arr.push_back(tmpaa);
-				//T* tmpval = Arr[tmpsize]->Value;
+				T* tmpval = Arr[tmpsize]->Value;
 				//strcpy(Arr[tmpsize]->Name,name);
-				return Arr[tmpsize]->Value;
+				return tmpval;
 			}
 	}
 
@@ -118,54 +124,32 @@ public:
 				DWORD tmpsize = Arr.size();
 				AATDesc* tmpaa = new AATDesc();
 				tmpaa->Value = new T();
+				Keys[name] = Arr.size();
+				tmpaa->Name = Keys.TmpNode->Key.c_str();
 				Arr.push_back(tmpaa);
-				T* tmpval = Arr[tmpsize]->Value;
-				strcpy(Arr[tmpsize]->Name,name);
-				return tmpval;
+				return Arr[tmpsize]->Value;
 			}
 	}
 
 	inline long GetKey(const char* name)
 	{
-			for(long i=0;i<Arr.size();i++)
+			if(Keys.KeyExists(name))
 			{
-					if (strcmp(Arr.GetKeyOC(i)->Name, name) == 0)
-					{
-						return i;
-					}
+				return(Keys[name]);
 			}
 		return -1;
 	}
 
 	inline bool IsExists(const char* name)
 	{
-			for(long i=0;i<Arr.size();i++)
-			{
-					if(strcmp(Arr[i]->Name,name) == 0)
-					{
-						return true;
-					}
-			}
-		return false;
-	}
-
-	inline long IsExists2(const char* name, T** val)
-	{
-		for (long i = 0; i<Arr.size(); i++)
-		{
-			if (strcmp(Arr.GetKeyOC(i)->Name, name) == 0)
-			{
-				*val = Arr.GetKeyOC(i)->Value;
-				return i;
-			}
-		}
-		return -1;
+		return(Keys.KeyExists(name));
 	}
 
 	inline const char* GetNameID(long id)
 	{
-		if (id < Arr.size() && id >= 0 && Arr[id])
-			return Arr[id]->Name;
+			if(id < Arr.size() && id >= 0 && Arr[id])
+				return Arr[id]->Name;
+		return(NULL);
 	}
 
 	inline long GetSize()
@@ -181,11 +165,13 @@ public:
 protected:
 	struct AATDesc
 	{
-		char Name[S4G_MAX_LEN_VAR_NAME];
+		//char Name[S4G_MAX_LEN_VAR_NAME];
+		const char * Name;
 		T* Value;
 	};
 
 	Array<AATDesc*> Arr;
+	AssotiativeArray<String, long> Keys;
 };
 
 #endif

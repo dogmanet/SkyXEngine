@@ -1,6 +1,6 @@
 
 #pragma once 
-#include <core\string.cpp>
+#include <string/string.cpp>
 #include <s4g\s4g.h>
 #include <s4g\s4g_parser.cpp>
 
