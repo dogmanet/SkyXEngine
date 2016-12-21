@@ -5,7 +5,14 @@
 	Внимание:
 		Элемент массива не имеет гарантированного расположения в памяти.
 */
+template <typename T, int BlockSize = 16>
+class Stack;
 
+template <typename T, int BlockSize = 16>
+class MemAllocator;
+
+template<typename T, int BlockSize = 16>
+class StackRegister;
 
 template<typename T, int BlockSize=16>
 class Array
@@ -104,11 +111,7 @@ public:
 	{
 		if(key > ((UINT)-1) - 128)
 		{
-			/*_asm
-			{
-				int 3;
-			};*/
-			//SkyXEngine::Core::InError("exit in array");
+			
 		}
 			if(key >= this->Size)
 			{
@@ -122,31 +125,15 @@ public:
 		return(Data[key]);
 	}
 
-	inline T & GetKey(UINT key,const char* strfile=__FILE__,int sdtrsdtr=__LINE__)
+
+	inline T & GetKeyOC(UINT key)
 	{
-			if(key > ((UINT)-1) - 128)
-			{
-				/*_asm
-				{
-					int 3;
-				};*/
-				//SkyXEngine::Core::InError("exit in array [%s:%d]",strfile,sdtrsdtr);
-			}
-			if(key >= this->Size)
-			{
-					if(key >= this->AllocSize)
-					{
-						Realloc(max(this->AllocSize, key) + BlockSize);
-					}
-				ConstructInterval(this->Size, key);
-				this->Size = key + 1;
-			}
 		return(Data[key]);
 	}
 
-	inline T & GetKeyN(UINT key)
+	inline void SetKeyOC(UINT key, T& val)
 	{
-		return(Data[key]);
+		Data[key] = val;
 	}
 
 	inline const T & operator[](UINT key) const
@@ -185,8 +172,16 @@ public:
 		Alloc();
 	}
 
-private:
+	inline UINT GetAllocSize()
+	{
+		return AllocSize;
+	}
 
+//protected:
+	friend MemAllocator<T, BlockSize>;
+	friend Stack<T,BlockSize>;
+	friend StackRegister<T, BlockSize>;
+	
 	void Alloc()
 	{
 		Realloc(BlockSize);

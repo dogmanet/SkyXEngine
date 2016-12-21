@@ -32,7 +32,7 @@ public:
 			Arr[tmpkey]->Value = data;
 		else
 		{
-			DWORD tmpsize = Arr.size();
+			//DWORD tmpsize = Arr.size();
 			AATDesc* tmpaa = new AATDesc();
 			tmpaa->Value = data;
 			strcpy(tmpaa->Name, name);
@@ -85,25 +85,26 @@ public:
 
 	inline T* & operator[](UINT key)
 	{
-			if(key > ((UINT)-1) - 128)
+		DWORD tmpsize = Arr.size();
+			if (key < tmpsize)
+				return(Arr[key]->Value);
+			else if (key >((UINT)-1) - 128)
 			{
 				_asm
 				{
 					int 3;
 				};
 			}
-			else if(key < Arr.size())
-				return(Arr[key]->Value);
 			else
 			{
-				DWORD tmpsize = Arr.size();
+				
 				AATDesc* tmpaa = new AATDesc();
 				tmpaa->Value = new T();
 				tmpaa->Name[0] = 0;
 				Arr.push_back(tmpaa);
-				T* tmpval = Arr[tmpsize]->Value;
+				//T* tmpval = Arr[tmpsize]->Value;
 				//strcpy(Arr[tmpsize]->Name,name);
-				return tmpval;
+				return Arr[tmpsize]->Value;
 			}
 	}
 
@@ -128,7 +129,7 @@ public:
 	{
 			for(long i=0;i<Arr.size();i++)
 			{
-					if(strcmp(Arr[i]->Name,name) == 0)
+					if (strcmp(Arr.GetKeyOC(i)->Name, name) == 0)
 					{
 						return i;
 					}
@@ -146,6 +147,19 @@ public:
 					}
 			}
 		return false;
+	}
+
+	inline long IsExists2(const char* name, T** val)
+	{
+		for (long i = 0; i<Arr.size(); i++)
+		{
+			if (strcmp(Arr.GetKeyOC(i)->Name, name) == 0)
+			{
+				*val = Arr.GetKeyOC(i)->Value;
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	inline const char* GetNameID(long id)

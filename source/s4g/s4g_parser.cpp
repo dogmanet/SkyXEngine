@@ -166,7 +166,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 		if(tmplexs->type == word_user)
 		{
 			//создаем тип нода - переменная со значением
-			s4g_node* node = new s4g_node(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
 			s4g_node* tmpnode = node;
 			bool isnext = true;
 			//начинаем цикл проверки - а не обращение ли это к элемента таблицы
@@ -179,12 +179,12 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 							lex_get_next0(tmplexs);
 								if(tmplexs->type == word_user)
 								{
-									tmpnode->op1 = new s4g_node(_get, curr_lexid, 0, new s4g_node(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid)), new s4g_node(_empty, curr_lexid));
+									tmpnode->op1 = new s4g_node(_get, curr_lexid, 0, new s4g_node(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/)), new s4g_node(_empty, curr_lexid));
 									tmpnode = tmpnode->op1->op2;
 								}
 								else if (tmplexs->type == word_user_cr)
 								{
-									tmpnode->op1 = new s4g_node(_get_cr, curr_lexid, 0, new s4g_node(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid)), new s4g_node(_empty, curr_lexid));
+									tmpnode->op1 = new s4g_node(_get_cr, curr_lexid, 0, new s4g_node(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/)), new s4g_node(_empty, curr_lexid));
 									tmpnode = tmpnode->op1->op2;
 								}
 								else
@@ -241,59 +241,59 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 		}
 		else if (tmplexs->type == word_user_cr)
 		{
-			s4g_node* node = new s4g_node(_crvar, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_crvar, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы пустое значение
 		else if(tmplexs->type == word_null)
 		{
-			s4g_node* node = new s4g_node(_null, curr_lexid, gc->cr_val_null(curr_lexid));
+			s4g_node* node = new s4g_node(_null, curr_lexid, gc->cr_val_null(/*curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы строка
 		else if(tmplexs->type == word_string)
 		{
-			s4g_node* node = new s4g_node(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_string_cr)
 		{
-			s4g_node* node = new s4g_node(_string_cr, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_string_cr, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы число с плавающей запятой
 		else if(tmplexs->type == word_float)
 		{
-			s4g_node* node = new s4g_node(_float, curr_lexid, gc->cr_val(t_float, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_float, curr_lexid, gc->cr_val(t_float, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы целочисленное значение
 		else if(tmplexs->type == word_int)
 		{
-			s4g_node* node = new s4g_node(_int, curr_lexid, gc->cr_val(t_int, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_int, curr_lexid, gc->cr_val(t_int, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_int_cr)
 		{
-			s4g_node* node = new s4g_node(_int_cr, curr_lexid, gc->cr_val(t_int, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_int_cr, curr_lexid, gc->cr_val(t_int, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_uint)
 		{
-			s4g_node* node = new s4g_node(_uint, curr_lexid, gc->cr_val(t_uint, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_uint, curr_lexid, gc->cr_val(t_uint, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_bool)
 		{
-			s4g_node* node = new s4g_node(_bool, curr_lexid, gc->cr_val(t_bool, tmplexs->str, curr_lexid));
+			s4g_node* node = new s4g_node(_bool, curr_lexid, gc->cr_val(t_bool, tmplexs->str/*, curr_lexid*/));
 			lex_get_next0(tmplexs);
 			return node;
 		}
@@ -354,7 +354,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										else
 										{
 											//вставляем универсальную цифру 0
-											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, curr_lexid)));
+											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nnull, 0/*, curr_lexid*/)));
 										}
 								}
 
@@ -372,7 +372,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										else 
 										{
 											//вставляем универсальную цифру 0
-											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, curr_lexid)));
+											stack_var.push(new s4g_node(_numnull, curr_lexid, gc->cr_val(t_nnull, 0/*, curr_lexid*/)));
 										}
 								}
 
@@ -632,11 +632,11 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 								//если мы еще не ушли внутрь нода
 								if(node->value == 0)
 								{
-									tmpnode->value = gc->cr_val(t_string, tmplexs->str, curr_lexid);
+									tmpnode->value = gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/);
 								}
 								else
 								{
-									tmpnode->op1 = new s4g_node(_arg, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid));
+									tmpnode->op1 = new s4g_node(_arg, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
 									tmpnode = tmpnode->op1;
 								}
 
@@ -689,7 +689,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 {
 	s4g_lexeme* lex_get_curr0(tmplexs);
-	s4g_node* node = new s4g_node(_create_table, curr_lexid, gc->cr_val_null(curr_lexid));
+	s4g_node* node = new s4g_node(_create_table, curr_lexid, gc->cr_val_null(/*curr_lexid*/));
 	s4g_node* tmpnode = node;
 	int type_last = -1;
 	listread = false;
@@ -936,7 +936,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr()
 							}
 							else if ((type_last == 0 || type_last == -1) && tmplexs->type == word_user)
 							{
-								tmpop = new s4g_node(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str, curr_lexid));
+								tmpop = new s4g_node(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
 								type_last = 1;
 								if (extern_data)
 								{

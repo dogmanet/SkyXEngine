@@ -79,7 +79,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					tmpnode = tmpnode->op2;
 				}
 
-				gen(mc_mstore, gc->cr_val_int(countvar, -2), node->lexid);
+				gen(mc_mstore, gc->cr_val_int(countvar/*, -2*/), node->lexid);
 				printf("mstore\n");
 			}
 			else
@@ -286,14 +286,22 @@ int s4g_compiler::compile2(s4g_node* node)
 			Stack<s4g_command>* tmpcomms = comms;
 			printf("---\n");
 			compile(node->op2,&(sf->commands));
+			s4g_vm_command ccoomm = sf->commands.get(-1).command;
+			if (ccoomm != mc_halt)
+				sf->commands.push(s4g_command(mc_halt, 0, -5));
 			printf("---\n");
 			comms = tmpcomms;
+
+			/*if (sf->commands.count() == 0)
+				sf->commands.push(s4g_command(mc_halt, 0, -3));*/
 			
-			gen(mc_push, gc->cr_val_s_func(sf, -3), node->lexid);
+			gen(mc_push, gc->cr_val_s_func(sf/*, -3*/), node->lexid);
 			printf("push\n");
 		}
 		else if(node->type == _call)
 		{
+			gen(mc_precall, /*gc->cr_val_int(countarg, -2),*/0, node->lexid);
+			printf("precall\n");
 			compile2(node->op1);	//ложим на вершину стека функцию
 			long countarg = 0;		//
 			s4g_node* tmpnode = node->op3;
@@ -303,7 +311,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					compile2(tmpnode->op1);
 					tmpnode = tmpnode->op2;
 				}
-				gen(mc_call, gc->cr_val_int(countarg, -2), node->lexid);
+				gen(mc_call, /*gc->cr_val_int(countarg, -2),*/0, node->lexid);
 			printf("call\n");
 		}
 		else if(node->type == _return)
@@ -315,6 +323,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					compile2(tmpnode->op1);
 					tmpnode = tmpnode->op2;
 				}
-				gen(mc_halt, 0, node->lexid);
+			gen(mc_halt, 0, node->lexid);
+			printf("halt\n");
 		}
 }

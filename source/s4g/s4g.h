@@ -6,13 +6,34 @@
 #define mem_delete(data) delete data;data = 0;
 #define mem_delete_a(data) delete[] data;data = 0;
 
+#include <core\MemAlloc.h>
 #include <s4g\array.h>
 #include <s4g\stack.h>
 #include <s4g\aatable.h>
 
-#define S4G_MAX_CALL 200	//максимальное количество вызовов (рекурсивны и вложенных)
+
+#define S4G_MAX_CALL 200	//максимальное количество вызовов (рекурсивных и вложенных)
 #define S4G_GLOBAL_NM "_g"	//обращение в скрипте к глобальному пространству имен
 #define S4G_MARG "args"
+#define S4G_RESERVE_STACK_EXE 10000
+#define S4G_ADD_MEM_CONTEXTS 16
+
+#define S4G_RESERVE_VALUE 10000
+#define S4G_RESERVE_VALUE_MEM 10000
+
+#define S4G_RESERVE_DATA 10000
+#define S4G_RESERVE_DATA_MEM 10000
+
+#define S4G_RESERVE_CONTEXTS 100
+#define S4G_RESERVE_CONTEXTS_MEM 100
+
+#define S4G_RESERVE_INT_MEM 10000
+#define S4G_RESERVE_UINT_MEM 10000
+#define S4G_RESERVE_FLOAT_MEM 10000
+#define S4G_RESERVE_BOOL_MEM 10000
+#define S4G_RESERVE_STRING_MEM 10000
+#define S4G_RESERVE_SFUNC_MEM 10000
+#define S4G_RESERVE_TABLE_MEM 10000
 
 #define S4G_NOTICE 0
 #define S4G_WARNING 1
@@ -78,9 +99,9 @@ extern struct s4g_s_function;
 extern struct s4g_context;
 extern class s4g_gc;
 
-#define S4G_PRE_COND(retval) if (!s4gm){s4g_report(2, "!!!", "script system is not init, api function [%s]",__FUNCTION__);	return retval;}
+#define S4G_PRE_COND(retval) if (s4gm == 0){s4g_report(2, "!!!", "script system is not init, api function [%s]",__FUNCTION__);	return retval;}
 
-//основа взаимоествия
+//основа взаимодествия
 struct s4g_main
 {
 	s4g_main(const char* _name);
@@ -109,12 +130,12 @@ struct s4g_data
 //переменная
 struct s4g_value
 {
-	s4g_value(long lexid = -1);
+	s4g_value(/*long lexid = -1*/);
 	~s4g_value();
 	
 	bool isdelete;	//можно ли удалять переменную
 	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
-	long nlexid;	//идентификатор лексемы которая сгенерировала создание переменной
+	//long nlexid;	//идентификатор лексемы которая сгенерировала создание переменной
 	long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
 	long idvar;		//идентификатор этой переменной в массиве управляемым сборщиком мусора
 };
@@ -137,9 +158,12 @@ public:
 	inline bool is_exists_s(const char* str);	//существует ли переменная с данным именем
 	inline bool is_exists_n(DWORD key);	//существует ли переменная по указанному ключу
 
-	inline void add_val_s(const char* name, s4g_value* val, long lexid);	//добавить переменную и присовить ей имя в текущей таблице
-	inline void add_val_n(long num, s4g_value* val, long lexid);			//добавить переменную по ключу
-	inline void add_val(s4g_value* val, long lexid);						//добавить переменную в конец таблицы
+	inline long is_exists_s2(const char* str,s4g_value** tval);	//существует ли переменная с данным именем
+	inline bool is_exists_n2(DWORD key, s4g_value** tval);	//существует ли переменная по указанному ключу
+
+	inline void add_val_s(const char* name, s4g_value* val/*, long lexid*/);	//добавить переменную и присовить ей имя в текущей таблице
+	inline void add_val_n(long num, s4g_value* val/*, long lexid*/);			//добавить переменную по ключу
+	inline void add_val(s4g_value* val/*, long lexid*/);						//добавить переменную в конец таблицы
 
 	inline long size();						//размер таблицы в элементах
 	inline const char* get_name_id(long id);//получить имя по id
@@ -150,25 +174,37 @@ protected:
 	AATable<s4g_value> arr_value;
 };
 
+
+
 //сборщик мусора
 class s4g_gc
 {
 public:
 	s4g_gc();
 
+#define def_cr_val_null(tval) \
+	tval = MemValue.Alloc(); \
+	tval->typedata = typedata; \
+	stack_push(arrvar,tval); \
+	tval->idvar = arrvar.count_obj; \
+	s4g_data* tdata = MemData.Alloc(); \
+	tdata->typedata = typedata; \
+	tval->iddata = arrdata.count_obj; \
+	stack_push(arrdata,tdata);
+
 	//создание переменных
-	inline s4g_value* cr_val_null(long lexid);
-	inline s4g_value* cr_val_table_null(long lexid);
-	inline s4g_value* cr_val_int(s4g_int num, long lexid);
-	inline s4g_value* cr_val_uint(s4g_uint num, long lexid);
-	inline s4g_value* cr_val_float(s4g_float num, long lexid);
-	inline s4g_value* cr_val_bool(s4g_bool bf, long lexid);
-	inline s4g_value* cr_val_str(const char* str, long lexid);
-	inline s4g_value* cr_val_table(s4g_table* tt, long lexid);
-	inline s4g_value* cr_val_s_func(s4g_s_function* func, long lexid);
-	inline s4g_value* cr_val_c_func(s4g_c_function func, long lexid);
-	inline s4g_value* cr_val(int _type, const char* _val, long lexid);	//создать переменную из _val с типом _type
-	inline s4g_value* cr_val_nn(long lexid);	//создать цифру 0 (для случаев кода: -123 будет 0-123)
+	inline s4g_value* cr_val_null();
+	inline s4g_value* cr_val_table_null();
+	inline s4g_value* cr_val_int(s4g_int num);
+	inline s4g_value* cr_val_uint(s4g_uint num);
+	inline s4g_value* cr_val_float(s4g_float num);
+	inline s4g_value* cr_val_bool(s4g_bool bf);
+	inline s4g_value* cr_val_str(const char* str);
+	inline s4g_value* cr_val_table(s4g_table* tt);
+	inline s4g_value* cr_val_s_func(s4g_s_function* func);
+	inline s4g_value* cr_val_c_func(s4g_c_function func);
+	inline s4g_value* cr_val(int _type, const char* _val);	//создать переменную из _val с типом _type
+	inline s4g_value* cr_val_nn();	//создать цифру 0 (для случаев кода: -123 будет 0-123)
 
 	inline void c_val(s4g_value* dest, s4g_value* src, bool incr = true);	//присвоить dest данные из src
 	inline void set_td_data(s4g_value* val, int td);	//присвоить данным на которые ссылается перменные тип для сборщика
@@ -186,6 +222,7 @@ public:
 	inline s4g_type get_type(s4g_value* val);	//получить тип переменной
 
 	//работа с контекстами
+	inline void add_mem_contexts();
 	inline long add_new_context(s4g_table** tt);	//создать и добавить новый контекст, возвращает id контекста, а в tt записывает указатель на таблицу
 	inline long add_context(s4g_table* tt);			//добавить контекст основанный на таблице, возвращает id добавленного контекста
 	inline void activate_prev(long lastidctx);		//активирует предыдущие контексты до lastidctx (это значение было получено при вызове deactivate_prev)
@@ -205,24 +242,38 @@ public:
 	//парсер и компилер создают данные которые не удаляются, машина в большинстве случаев создает данные подлежащие удалению
 
 protected:
-	inline long GetNewIDVal();	//получить свободный ключ для записи переменной, если нет свободных мест то вернуть -1
-	inline long GetNewIDData();	//получить свободный ключ для записи значения, если нет свободных мест то вернуть -1
-	Array<s4g_value*> arrvar;	//массив переменных
-	Array<s4g_data*> arrdata;	//массив данных
-	Array<s4g_context*> oldarrcontexts;	//массив контекстов которые уже свое отработали и нуждаются в удалении
-	Array<s4g_context*> arrcurrcontexts;//массив подключенных в данный момент контекстов
+	
+	Stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;	//массив переменных
+	Stack<s4g_data*, S4G_RESERVE_DATA> arrdata;	//массив данных
+	Stack<s4g_context*, 1024> oldarrcontexts;	//массив контекстов которые уже свое отработали и нуждаются в удалении
+	Stack<s4g_context*, S4G_RESERVE_CONTEXTS> arrcurrcontexts;//массив подключенных в данный момент контекстов
+	long curr_num_top_ctx = 0;
+	
+	MemAlloc<s4g_value, S4G_RESERVE_VALUE_MEM> MemValue;
+	MemAlloc<s4g_data, S4G_RESERVE_DATA_MEM> MemData;
+
+	MemAlloc<s4g_context, S4G_RESERVE_CONTEXTS_MEM> MemCtx;
+
+	MemAlloc<s4g_int, S4G_RESERVE_INT_MEM> MemInt;
+	MemAlloc<s4g_uint, S4G_RESERVE_UINT_MEM> MemUInt;
+	MemAlloc<s4g_float, S4G_RESERVE_FLOAT_MEM> MemFloat;
+	MemAlloc<s4g_bool, S4G_RESERVE_BOOL_MEM> MemBool;
+	MemAlloc<String, S4G_RESERVE_STRING_MEM> MemString;
+	MemAlloc<s4g_s_function, S4G_RESERVE_SFUNC_MEM> MemSFunc;
+	MemAlloc<s4g_table, S4G_RESERVE_TABLE_MEM> MemTable;
 };
 
 //тип функция
 struct s4g_s_function
 {
-	s4g_s_function(){ externs = 0; ismarg = false; }
+	s4g_s_function(){ externs = 0; ismarg = false; countstack = -1; }
 	~s4g_s_function(){ mem_delete(externs); }
 	s4g_table* externs;	//подстановка переменных и предыдщуего контекста
 	Stack<String> externs_strs;	//имена переменных для подстановки из предыдущего контекста
 	Stack<String> args;	//имена аргументов
 	Stack<s4g_command> commands; //опкод
 	bool ismarg; //принимает ли функция перенное количество аргументов?
+	int countstack;
 };
 
 //контекст содержащий в себе все переменные текущего исполнения
@@ -250,40 +301,41 @@ void s4g_set_rf(s4g_report_func rf);
 int s4g_call_gc(s4g_main* s4gm,DWORD mls=0);
 
 //функции для вставки на вершину стека значения
-void s4g_push_table_null(s4g_main* s4gm,int count_elem);
-void s4g_push_c_func(s4g_main* s4gm, s4g_c_function func);
-void s4g_push_int(s4g_main* s4gm, s4g_int num);
-void s4g_push_uint(s4g_main* s4gm, s4g_uint num);
-void s4g_push_float(s4g_main* s4gm, s4g_float num);
-void s4g_push_str(s4g_main* s4gm, const char* str);
-void s4g_push_bool(s4g_main* s4gm, s4g_bool bf);
-void s4g_push_null(s4g_main* s4gm);
+void s4g_spush_table_null(s4g_main* s4gm,int count_elem);
+void s4g_spush_c_func(s4g_main* s4gm, s4g_c_function func);
+void s4g_spush_int(s4g_main* s4gm, s4g_int num);
+void s4g_spush_uint(s4g_main* s4gm, s4g_uint num);
+void s4g_spush_float(s4g_main* s4gm, s4g_float num);
+void s4g_spush_str(s4g_main* s4gm, const char* str);
+void s4g_spush_bool(s4g_main* s4gm, s4g_bool bf);
+void s4g_spush_null(s4g_main* s4gm);
+void s4g_spush_precall(s4g_main* s4gm);
 
 //функции сохранения в пространства имен
 //после сохранения функция выталкивает сохраненное значение с вершины стека
-void s4g_store_g(s4g_main* s4gm, const char* name); //в глобальном пространстве, name имя которое будет присвоено значению на вершине стека
-void s4g_store(s4g_main* s4gm, int index, const char* name);// index в стеке должна быть таблица, name имя переменной, а значение берется с вершины стека
+void s4g_sstore_g(s4g_main* s4gm, const char* name); //в глобальном пространстве, name имя которое будет присвоено значению на вершине стека
+void s4g_sstore(s4g_main* s4gm, int index, const char* name);// index в стеке должна быть таблица, name имя переменной, а значение берется с вершины стека
 //table(stack[index])[name] = stack[-1];
 
 //получить значения
 //после получения, функция ложит на вершину стека полученное значение
-void s4g_get_g(s4g_main* s4gm, const char* name);	//из глобального, name - имя переменной значение которой берем
-void s4g_get(s4g_main* s4gm, int index, const char* name);// index в стеке должна быть таблица, name имя переменной
+void s4g_sget_g(s4g_main* s4gm, const char* name);	//из глобального, name - имя переменной значение которой берем
+void s4g_sget(s4g_main* s4gm, int index, const char* name);// index в стеке должна быть таблица, name имя переменной
 //stack.push(table(stack[index])[name]);
 
 //является ли значение переменной в стеке по номеру index типом? 0 нет, 1 да
-int s4g_is_int(s4g_main* s4gm, int index);
-int s4g_is_uint(s4g_main* s4gm, int index);
-int s4g_is_float(s4g_main* s4gm, int index);
-int s4g_is_str(s4g_main* s4gm, int index);
-int s4g_is_bool(s4g_main* s4gm, int index);
-int s4g_is_c_func(s4g_main* s4gm, int index);
-int s4g_is_s_func(s4g_main* s4gm, int index);
-int s4g_is_table(s4g_main* s4gm, int index);
-int s4g_is_null(s4g_main* s4gm, int index);
+int s4g_sis_int(s4g_main* s4gm, int index);
+int s4g_sis_uint(s4g_main* s4gm, int index);
+int s4g_sis_float(s4g_main* s4gm, int index);
+int s4g_sis_str(s4g_main* s4gm, int index);
+int s4g_sis_bool(s4g_main* s4gm, int index);
+int s4g_sis_c_func(s4g_main* s4gm, int index);
+int s4g_sis_s_func(s4g_main* s4gm, int index);
+int s4g_sis_table(s4g_main* s4gm, int index);
+int s4g_sis_null(s4g_main* s4gm, int index);
 
 //возвращает тип значения переменной по номеру в стеке index
-s4g_type s4g_get_type(s4g_main* s4gm, int index);
+s4g_type s4g_sget_type(s4g_main* s4gm, int index);
 
 //возвращает приведенное к определнному типу значнеие перменной по номеру index в стеке
 s4g_int s4g_sget_int(s4g_main* s4gm, int index);
@@ -293,13 +345,13 @@ s4g_bool s4g_sget_bool(s4g_main* s4gm, int index);
 const char* s4g_sget_str(s4g_main* s4gm, int index);
 s4g_c_function s4g_sget_cfunc(s4g_main* s4gm, int index);
 
-void s4g_pop(s4g_main* s4gm,int count);//выталкивает из стека count значений
-int s4g_gettop(s4g_main* s4gm);	//количество элементов в стеке, и есесно номер вершины стека
+void s4g_spop(s4g_main* s4gm,int count);//выталкивает из стека count значений
+int s4g_sgettop(s4g_main* s4gm);	//количество элементов в стеке, и есесно номер вершины стека
 
 //вызов функции, narg - количество аргументов
 //сначала в стек ложится сама вызываемая функция, затем аргументы если есть и только потом эта функция
 //если narg == 0 и s4g_gettop - narg в стеке не функция то ошибка
-int s4g_call(s4g_main* s4gm, int narg);
+void s4g_call(s4g_main* s4gm, bool call_func = false);
 
 int s4g_cfcount_arg(s4g_main* s4gm);	//количество аргументов которые были переданы функции
 

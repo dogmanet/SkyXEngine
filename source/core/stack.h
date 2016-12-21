@@ -69,6 +69,21 @@ public:
 		//return(NULL);
 	}
 
+	void pop(int countpop)
+	{
+		for (int i = 0; i < countpop; ++i)
+		{
+			if (SP)
+			{
+				StackNode * tmp = this->CurrentNode;
+				CurrentNode = this->CurrentNode->Parent;
+				this->SP--;
+				T data = tmp->data;
+				Data.Delete(tmp);
+			}
+		}
+	}
+
 	bool IsEmpty()
 	{
 		return(this->SP == 0);
@@ -87,6 +102,28 @@ public:
 		int page = id / pageSize;
 		int pageOffset = id % pageSize;
 		return(Data.GetAt(page, pageOffset));
+	}
+
+	T get(int id)
+	{
+		if (id < 0)
+		{
+			id += this->SP;
+		}
+		--id;
+		if (id < 0 || id >= this->SP)
+		{
+			return(NULL);
+		}
+
+		int page = id / pageSize;
+		int pageOffset = id % pageSize;
+		return(*Data.GetAt(page, pageOffset));
+	}
+
+	inline int count()
+	{
+		return SP;
 	}
 };
 

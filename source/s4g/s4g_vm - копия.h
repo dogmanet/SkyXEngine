@@ -35,7 +35,7 @@ struct s4g_call_data
 		cfetchget = cfetchgetarg = false;
 		cfetchpushstore = 0;
 		id_curr_com = lastidctx = idnewctx = idexternctx = -1;
-		namef[0] = 0;
+		namef = "";
 	}
 
 	s4g_call_data(
@@ -59,8 +59,7 @@ struct s4g_call_data
 		lastidctx = _lastidctx;
 		idnewctx = _idnewctx;
 		idexternctx = _idexternctx;
-		if (_namef)
-			strcpy(namef,_namef);
+		namef = _namef;
 	}
 
 	Stack<s4g_command>* coms;	//команды выполнения
@@ -73,7 +72,7 @@ struct s4g_call_data
 	long idnewctx;
 	long idexternctx;
 
-	char namef[S4G_MAX_LEN_VAR_NAME];	// имя функции которая вызвалась и спровоцировала сохранение текущего состяния
+	String namef;	// имя функции которая вызвалась и спровоцировала сохранение текущего состяния
 };
 
 class s4g_vm
@@ -112,13 +111,10 @@ public:
 		arropf[mc_mul] = &s4g_vm::com_mul;
 		arropf[mc_div] = &s4g_vm::com_div;
 
-		for (int i = 0; i < S4G_MAX_CALL; i++)
-		{
+		/*for (int i = 0; i < 16; i++)
 			callstack.push(new s4g_call_data());
-			int qwert = 0;
-		}
 
-		callstack.init_size(0);
+		callstack.csize = 0;*/
 	}
 
 	int run(Stack<s4g_command>* commands,s4g_table* vars);
@@ -155,7 +151,7 @@ public:
 	s4g_table* gvars;	//глобальное пространство имен _g
 	s4g_value* vgvars;	//переменная хранящая в себе глобальнео пространство имен
 	s4g_table* curr_vars;	//текущее установленное пространство имен, есл выполняется функция то пространство имен функции
-	Stack<s4g_value*, S4G_RESERVE_STACK_EXE> execute;	//стек выполнения команд
+	Stack<s4g_value*,102400> execute;	//стек выполнения команд
 
 	int error;	//есть ли ошибка? -1 есть, остальное все в норме
 	char strerror[1024];	//строка ошибки
