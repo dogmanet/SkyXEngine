@@ -240,8 +240,7 @@ public:
 						{
 							AllocBlock();
 						}
-						tmpNewNode = Alloc();
-						break;
+						return(Alloc());
 					}
 				}
 			}
@@ -257,7 +256,7 @@ public:
 			{
 				AllocBlock();
 			}
-			tmpNewNode = Alloc();
+			return(Alloc());
 		}
 		tmpNewNode = new (tmpNewNode)T;
 		return(tmpNewNode);
