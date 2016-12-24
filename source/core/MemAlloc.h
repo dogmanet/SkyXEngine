@@ -24,9 +24,6 @@ class MemAlloc
 {
 	struct MemCell
 	{
-		MemCell():IsFree(0x80000000)
-		{
-		}
 		UINT IsFree;
 		T data;
 	};
@@ -43,7 +40,7 @@ public:
 	MemAlloc():memblocks(NULL), NumCurBlock(0), NumCurBlockCount(0)
 	{
 		//printf("MemAlloc()\n");
-		AllocBlock(sizeof(MemCell) * SizeBlock);
+		AllocBlock();
 	}
 
 	MemAlloc(const MemAlloc & al)
@@ -57,9 +54,9 @@ public:
 		{
 			this->memblocks[i].size = al.memblocks[i].size;
 			this->memblocks[i].pos = al.memblocks[i].pos;
-			this->memblocks[i].mem = (MemCell*)malloc(al.memblocks[i].size);
+			this->memblocks[i].mem = (MemCell*)malloc(al.memblocks[i].size * sizeof(MemCell));
 			//SX_DBG_NEW(al.memblocks[i].size, this->memblocks[i].mem);
-			for(int j = 0; j < al.memblocks[i].size / sizeof(MemCell); j++)
+			for(int j = 0; j < al.memblocks[i].size; j++)
 			{
 				this->memblocks[i].mem[j].IsFree = al.memblocks[i].mem[j].IsFree;
 				this->memblocks[i].mem[j].data = al.memblocks[i].mem[j].data;
@@ -74,9 +71,9 @@ public:
 		{
 			if(this->memblocks[i].mem)
 			{
-				for(int j = 0; j < this->memblocks[i].size / sizeof(MemCell); j++)
+				for(int j = 0; j < this->memblocks[i].size; j++)
 				{
-					if(!this->memblocks[i].mem[j].IsFree)
+					if(!(this->memblocks[i].mem[j].IsFree & 0x80000000))
 					{
 						this->memblocks[i].mem[j].data.~T();
 					}
@@ -103,12 +100,12 @@ public:
 			}
 			else
 			{
-				this->memblocks[i].mem = new MemCell[al.memblocks[i].size / sizeof(MemCell)];
+				this->memblocks[i].mem = (MemCell*)malloc(al.memblocks[i].size * sizeof(MemCell));
 				//SX_DBG_NEW(al.memblocks[i].size, this->memblocks[i].mem);
-				for(int j = 0; (unsigned int)j < al.memblocks[i].size / sizeof(MemCell); j++)
+				for(int j = 0; (unsigned int)j < al.memblocks[i].size; j++)
 				{
 					this->memblocks[i].mem[j].IsFree = al.memblocks[i].mem[j].IsFree;
-					if(!al.memblocks[i].mem[j].IsFree)
+					if(!(al.memblocks[i].mem[j].IsFree & 0x80000000))
 					{
 						this->memblocks[i].mem[j].data = al.memblocks[i].mem[j].data;
 					}
@@ -126,7 +123,7 @@ public:
 		{
 			if(this->memblocks[i].mem)
 			{
-				for(int j = 0; j < this->memblocks[i].size / sizeof(MemCell); j++)
+				for(int j = 0; j < this->memblocks[i].size; j++)
 				{
 					if(!(this->memblocks[i].mem[j].IsFree & 0x80000000))
 					{
@@ -149,7 +146,7 @@ public:
 		{
 			if(this->memblocks[i].mem)
 			{
-				for(int j = 0; j < this->memblocks[i].size / sizeof(MemCell); j++)
+				for(int j = 0; j < this->memblocks[i].size; j++)
 				{
 					if(!(this->memblocks[i].mem[j].IsFree & 0x80000000))
 					{
@@ -163,10 +160,10 @@ public:
 		mem_delete_a(this->memblocks);
 		this->NumCurBlockCount = 0;
 		this->NumCurBlock = 0;
-		AllocBlock(sizeof(MemCell) * 256);
+		AllocBlock();
 	}
 
-	void AllocBlock(int size)
+	void AllocBlock(UINT size = SizeBlock)
 	{
 		MemBlock * tmpMB = this->memblocks;
 
@@ -181,13 +178,19 @@ public:
 		memset(this->memblocks + (NumCurBlockCount - 256), 0, 256 * sizeof(MemBlock));
 		mem_delete_a(tmpMB);
 
+		
+		FillCurrentBlock(size);
+	}
+
+	__forceinline void FillCurrentBlock(UINT size = SizeBlock)
+	{
 		if(!this->memblocks[NumCurBlock].mem)
 		{
-			this->memblocks[NumCurBlock].mem = (MemCell*)mem_alloc(size);
+			this->memblocks[NumCurBlock].mem = (MemCell*)mem_alloc(size * sizeof(MemCell));
 			//SX_DBG_NEW(size * sizeof(MemCell), this->memblocks[NumCurBlock].mem);
-			for(int i = 0; i < size / sizeof(MemCell); i++)
+			for(int i = 0; i < size; i++)
 			{
-				this->memblocks[NumCurBlock].mem[i].IsFree = 0x80000000 | NumCurBlock;
+				this->memblocks[NumCurBlock].mem[i].IsFree = 0x80000000 | (i + 1);
 			}
 			this->memblocks[NumCurBlock].size = size;
 		}
@@ -198,30 +201,30 @@ public:
 		T * tmpNewNode = NULL;
 		if(!NumCurBlockCount)
 		{
-			AllocBlock(SizeBlock * sizeof(MemCell));
+			AllocBlock();
 		}
-		if(this->memblocks[NumCurBlock].pos + sizeof(MemCell) < this->memblocks[NumCurBlock].size)
+		if(this->memblocks[NumCurBlock].pos < this->memblocks[NumCurBlock].size)
 		{
-			MemCell * mc = ((MemCell*)((uintptr_t)this->memblocks[NumCurBlock].mem + this->memblocks[NumCurBlock].pos));
+			MemCell * mc = &(this->memblocks[NumCurBlock].mem[this->memblocks[NumCurBlock].pos]);
 			if(mc->IsFree & 0x80000000)
 			{
-				mc->IsFree = mc->IsFree & 0x7FFFFFFF;
+				this->memblocks[NumCurBlock].pos = mc->IsFree & 0x7FFFFFFF;
+				mc->IsFree = NumCurBlock;
 				tmpNewNode = &(mc->data);
-				this->memblocks[NumCurBlock].pos += sizeof(MemCell);
 			}
 			else // find next free cell
 			{
 				while(true)
 				{
-					this->memblocks[NumCurBlock].pos += sizeof(MemCell);
-					if(this->memblocks[NumCurBlock].pos + sizeof(MemCell) < this->memblocks[NumCurBlock].size)
+					++this->memblocks[NumCurBlock].pos;
+					if(this->memblocks[NumCurBlock].pos < this->memblocks[NumCurBlock].size)
 					{
-						mc = ((MemCell*)((uintptr_t)this->memblocks[NumCurBlock].mem + this->memblocks[NumCurBlock].pos));
+						mc = &(this->memblocks[NumCurBlock].mem[this->memblocks[NumCurBlock].pos]);
 						if(mc->IsFree)
 						{
+							this->memblocks[NumCurBlock].pos = mc->IsFree & 0x7FFFFFFF;
+							mc->IsFree = NumCurBlock;
 							tmpNewNode = &(mc->data);
-							mc->IsFree = mc->IsFree & 0x7FFFFFFF;
-							this->memblocks[NumCurBlock].pos += sizeof(MemCell);
 							break;
 						}
 					}
@@ -231,24 +234,14 @@ public:
 						NumCurBlock++;
 						if(NumCurBlock < NumCurBlockCount)
 						{
-							if(!this->memblocks[NumCurBlock].mem)
-							{
-								this->memblocks[NumCurBlock].mem = (MemCell*)mem_alloc(sizeof(MemCell)* SizeBlock);
-								for(int i = 0; i < SizeBlock; i++)
-								{
-									this->memblocks[NumCurBlock].mem[i].IsFree = 0x80000000 | NumCurBlock;
-								}
-								//SX_DBG_NEW(SizeBlock * sizeof(MemCell), this->memblocks[NumCurBlock].mem);
-								this->memblocks[NumCurBlock].size = sizeof(MemCell) * SizeBlock;
-								tmpNewNode = Alloc();
-							}
+							FillCurrentBlock();
 						}
 						else
 						{
-							AllocBlock(sizeof(MemCell) * SizeBlock);
-							tmpNewNode = Alloc();
-							break;
+							AllocBlock();
 						}
+						tmpNewNode = Alloc();
+						break;
 					}
 				}
 			}
@@ -258,22 +251,13 @@ public:
 			NumCurBlock++;
 			if(NumCurBlock < NumCurBlockCount)
 			{
-				if(!this->memblocks[NumCurBlock].mem)
-				{
-					this->memblocks[NumCurBlock].mem = (MemCell*)mem_alloc(sizeof(MemCell) * SizeBlock);
-					for(int i = 0; i < SizeBlock; i++)
-					{
-						this->memblocks[NumCurBlock].mem[i].IsFree = 0x80000000 | NumCurBlock;
-					}
-					this->memblocks[NumCurBlock].size = sizeof(MemCell) * SizeBlock;
-				}
-				tmpNewNode = Alloc();
+				FillCurrentBlock();
 			}
 			else
 			{
-				AllocBlock(SizeBlock * sizeof(MemCell));
-				tmpNewNode = Alloc();
+				AllocBlock();
 			}
+			tmpNewNode = Alloc();
 		}
 		tmpNewNode = new (tmpNewNode)T;
 		return(tmpNewNode);
@@ -294,18 +278,26 @@ public:
 		//mark cell as free
 
 		UINT * bnum = (UINT*)((intptr_t)pointer - sizeof(UINT));
-		UINT idx = ((intptr_t)bnum - (intptr_t)memblocks[*bnum].mem) / sizeof(MemCell);
+		UINT blockID = *bnum;
+		UINT curPos = ((intptr_t)bnum - (intptr_t)memblocks[blockID].mem) / sizeof(MemCell);
 
 		pointer->~T();
-		if(memblocks[*bnum].pos > idx * sizeof(MemCell))
+
+		if(NumCurBlock > blockID)
 		{
-			memblocks[*bnum].pos = idx * sizeof(MemCell);
+			NumCurBlock = blockID;
 		}
-		if(NumCurBlock > *bnum)
+		if(memblocks[blockID].pos > curPos)
 		{
-			NumCurBlock = *bnum;
+			*bnum = memblocks[blockID].pos | 0x80000000;
+			memblocks[blockID].pos = curPos;
 		}
-		*bnum = *bnum | 0x80000000;
+		else
+		{
+			MemCell * mc = &(memblocks[blockID].mem[memblocks[blockID].pos]);
+			*bnum = mc->IsFree;
+			mc->IsFree = curPos | 0x80000000;
+		}
 	}
 
 	void Delete(void * ptr)
