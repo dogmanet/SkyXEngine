@@ -12,7 +12,7 @@ template <typename T, int BlockSize = 16>
 class MemAllocator;
 
 template<typename T, int BlockSize = 16>
-class StackRegister;
+class s4g_stack_register;
 
 class s4g_table;
 class s4g_gc;
@@ -183,7 +183,7 @@ public:
 protected:
 	friend MemAllocator<T, BlockSize>;
 	friend s4g_stack<T, BlockSize>;
-	friend StackRegister<T, BlockSize>;
+	friend s4g_stack_register<T, BlockSize>;
 	friend s4g_table;
 	friend s4g_gc;
 	void Alloc()

@@ -174,7 +174,7 @@ public:
 	bool cfetchgetarg;	//была ли предыдущая команда fetch_get с аргументом или без
 	int cfetchpushstore;//следовалаи комбинаци fetch push store, если да то значит = 3, нужно для com_store
 
-	StackRegister<int,10240> sr;
+	s4g_stack_register<int, 10240> sr;
 	int CurrCountArg;
 	long precall;
 	s4g_stack<s4g_call_data*> callstack;	//стэк вызовов с сохраненным предыдущим состоянием

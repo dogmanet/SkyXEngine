@@ -18,8 +18,8 @@
 #define S4G_RESERVE_STACK_EXE 10000
 #define S4G_ADD_MEM_CONTEXTS 16
 
-#define S4G_RESERVE_VALUE 100000
-#define S4G_RESERVE_VALUE_MEM 100000
+#define S4G_RESERVE_VALUE 10000
+#define S4G_RESERVE_VALUE_MEM 10000
 
 #define S4G_RESERVE_DATA 100000
 #define S4G_RESERVE_DATA_MEM 100000
@@ -27,7 +27,7 @@
 #define S4G_RESERVE_CONTEXTS 100
 #define S4G_RESERVE_CONTEXTS_MEM 100
 
-#define S4G_RESERVE_INT_MEM 100000
+#define S4G_RESERVE_INT_MEM 10000
 #define S4G_RESERVE_UINT_MEM 10000
 #define S4G_RESERVE_FLOAT_MEM 10000
 #define S4G_RESERVE_BOOL_MEM 10000
@@ -248,13 +248,13 @@ public:
 	inline long ctx_is_exists_s(const char* str, s4g_value** val);	
 	
 	//запустить сборку мусора
-	void clear(DWORD mls);
-	void resort();
+	inline void clear(DWORD mls);
+	inline void resort();
 
 	int typedata;	//тип создаваемых данных, 0 - если больше не нужны то удалть, 1 - не удалять
 	//парсер и компилер создают данные которые не удаляются, машина в большинстве случаев создает данные подлежащие удалению
 
-protected:
+//protected:
 	
 	s4g_stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;	//массив переменных
 	s4g_stack<s4g_data*, S4G_RESERVE_DATA> arrdata;	//массив данных
@@ -274,6 +274,9 @@ protected:
 	MemAlloc<String, S4G_RESERVE_STRING_MEM> MemString;
 	MemAlloc<s4g_s_function, S4G_RESERVE_SFUNC_MEM> MemSFunc;
 	MemAlloc<s4g_table, S4G_RESERVE_TABLE_MEM> MemTable;
+
+	long count_nd_data;
+	long count_nd_value;
 };
 
 //тип функция

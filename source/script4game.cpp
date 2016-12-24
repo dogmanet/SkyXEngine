@@ -70,22 +70,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		lua_getfield(LuaState, LUA_GLOBALSINDEX, "testcall");
 		lua_pushnumber(LuaState, 2);
 		lua_pushnumber(LuaState, 7);
-		if (lua_pcall(LuaState, 2, 1,0) != 0)	//!!!Run-time Lua error
+		lua_call(LuaState, 2, 1);
+		/*if (lua_pcall(LuaState, 2, 1,0) != 0)	//!!!Run-time Lua error
 		{
 		char errorfmt[1024];
 		const char* error = lua_tostring(LuaState, -1);
 		sprintf(errorfmt, "File generator error: %s:%d\n%s", __FILE__, __LINE__, error);
+		MessageBox(0, errorfmt, 0, 0);
 		return -1;
-		}
+		}*/
 		//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	}
+	lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	time2 = timeGetTime() - time2;
 	int lcs = lua_gettop(LuaState);
 	int qwert2 = 0;
 	
 	//lua_pushnumber
 
-
+	
 	s4gm = s4g_init("");
 	//s4g_spush_c_func(s4gm, testcf);
 	//s4g_sstore_g(s4gm, "testcf");
@@ -101,7 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		s4g_spush_precall(s4gm);
 		s4g_sget_g(s4gm, "testcall");
 		s4g_spush_int(s4gm, 2);
-		s4g_spush_int(s4gm, 7);
+		//s4g_spush_int(s4gm, 7);
 		s4g_call(s4gm,true);
 
 		//s4g_call(s4gm);
@@ -111,21 +114,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			sprintf(s4gm->strerror, "%s", s4gm->vmachine->strerror);
 			return status;
 		}
-		//s4g_call_gc(s4gm, 0);
+		s4g_call_gc(s4gm, 0);
 		//s4gm->gc->resort();
 		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	}
-	s4g_int tnum = s4g_sget_int(s4gm, -1);
+	//s4g_int tnum = s4g_sget_int(s4gm, -1);
+	s4g_call_gc(s4gm, 0);
+	//s4gm->gc->resort();
 	time = timeGetTime() - time;
 	int qwert = 0;
 
-	time = timeGetTime();
+	/*time = timeGetTime();
 	s4g_call_gc(s4gm, 0);
 	s4gm->gc->resort();
-	time = timeGetTime() - time;
-	
-	MessageBox(0,s4gm->strerror,0,0);
+	time = timeGetTime() - time;*/
+	char texttime[64];
+	sprintf(texttime, "lua = %d | s4g = %d", time2,time);
+	MessageBox(0, texttime, 0, 0);
 	
 
 	

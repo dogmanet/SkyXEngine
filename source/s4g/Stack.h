@@ -1,5 +1,5 @@
-#ifndef SX_Stack2_H
-#define SX_Stack2_H
+#ifndef s4g_stack_h
+#define s4g_stack_h
 
 #define stack_pop(stack,count)\
 {\
@@ -143,10 +143,10 @@ public:
 };
 
 template<typename T, int BlockSize = 16>
-class StackRegister
+class s4g_stack_register
 {
 public:
-	StackRegister(){
+	s4g_stack_register(){
 		last_free = 0;
 	}
 
