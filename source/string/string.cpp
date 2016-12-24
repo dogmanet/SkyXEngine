@@ -119,8 +119,7 @@ String::String(String && other)
 {
 	//SAFE_DELETE_A(string);
 	string = other.string;
-	other.string = new char[1];
-	other.string[0] = 0;
+	other.string = NULL;
 }
 
 String::~String()
