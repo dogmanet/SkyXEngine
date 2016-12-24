@@ -77,6 +77,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		sprintf(errorfmt, "File generator error: %s:%d\n%s", __FILE__, __LINE__, error);
 		return -1;
 		}
+		//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	}
 	time2 = timeGetTime() - time2;
 	int lcs = lua_gettop(LuaState);
@@ -86,40 +87,43 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 	s4gm = s4g_init("");
-	/*s4g_spush_c_func(s4gm, testcf);
-	s4g_sstore_g(s4gm, "testcf");*/
-	//DWORD ttime = timeGetTime();
+	//s4g_spush_c_func(s4gm, testcf);
+	//s4g_sstore_g(s4gm, "testcf");
 	
 	int status = s4g_load_file(s4gm,"D:/project/engine/SkyXEngine/SkyXEngine/Debug/test.script");
-	//s4g_call(s4gm);
-	s4gm->vmachine->run(s4gm->commands, (s4gm->vmachine->gvars));
-	//s4g_table* ttt = new s4g_table();
+	
+	s4g_call(s4gm);
+	
+	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
 	for (int i = 0; i < counttt; i++)
 	{
-		//s4gm->gc->cr_val_int((s4g_int)3, -3);
-		//s4gm->gc->cr_val_int((s4g_int)3, -3);
 		s4g_spush_precall(s4gm);
 		s4g_sget_g(s4gm, "testcall");
 		s4g_spush_int(s4gm, 2);
 		s4g_spush_int(s4gm, 7);
-		//stack_push(s4gm->vmachine->execute, s4gm->vmachine->gc->cr_val_int(2));
-		//stack_push(s4gm->vmachine->execute, s4gm->vmachine->gc->cr_val_int(7));
-		//s4g_spush_int(s4gm, 9);
-		//s4g_spush_int(s4gm, 10);
 		s4g_call(s4gm,true);
-		//s4g_call(s4gm, 0);
 
+		//s4g_call(s4gm);
+		
 		if (s4gm->vmachine->error != 0)
 		{
 			sprintf(s4gm->strerror, "%s", s4gm->vmachine->strerror);
 			return status;
 		}
+		//s4g_call_gc(s4gm, 0);
+		//s4gm->gc->resort();
+		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	}
-	//s4g_int tnum = s4g_sget_int(s4gm, -1);
+	s4g_int tnum = s4g_sget_int(s4gm, -1);
 	time = timeGetTime() - time;
 	int qwert = 0;
+
+	time = timeGetTime();
+	s4g_call_gc(s4gm, 0);
+	s4gm->gc->resort();
+	time = timeGetTime() - time;
 	
 	MessageBox(0,s4gm->strerror,0,0);
 	

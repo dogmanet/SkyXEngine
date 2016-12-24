@@ -7,7 +7,7 @@ void s4g_compiler::gen(s4g_vm_command comm, s4g_value* val, long _lexid)
 	//printf("%s\n",comm.c_str());
 };
 
-int s4g_compiler::compile(s4g_node* node,Stack<s4g_command> * commands)
+int s4g_compiler::compile(s4g_node* node, s4g_stack<s4g_command> * commands)
 {
 	comms = commands;
 	return compile2(node);
@@ -282,13 +282,17 @@ int s4g_compiler::compile2(s4g_node* node)
 						sf->externs->add_val_s(str, tmpval, -2);*/
 						tmpnode = tmpnode->op1;
 					}
+					sf->main_extern = 0;
 				}
-			Stack<s4g_command>* tmpcomms = comms;
+			s4g_stack<s4g_command>* tmpcomms = comms;
 			printf("---\n");
 			compile(node->op2,&(sf->commands));
-			s4g_vm_command ccoomm = sf->commands.get(-1).command;
-			if (ccoomm != mc_halt)
-				sf->commands.push(s4g_command(mc_halt, 0, -5));
+			if (sf->commands.count_obj > 0)
+			{
+				s4g_vm_command ccoomm = sf->commands.get(-1).command;
+				if (ccoomm != mc_halt)
+					sf->commands.push(s4g_command(mc_halt, 0, -5));
+			}
 			printf("---\n");
 			comms = tmpcomms;
 

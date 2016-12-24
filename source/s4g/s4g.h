@@ -18,16 +18,16 @@
 #define S4G_RESERVE_STACK_EXE 10000
 #define S4G_ADD_MEM_CONTEXTS 16
 
-#define S4G_RESERVE_VALUE 10000
-#define S4G_RESERVE_VALUE_MEM 10000
+#define S4G_RESERVE_VALUE 100000
+#define S4G_RESERVE_VALUE_MEM 100000
 
-#define S4G_RESERVE_DATA 10000
-#define S4G_RESERVE_DATA_MEM 10000
+#define S4G_RESERVE_DATA 100000
+#define S4G_RESERVE_DATA_MEM 100000
 
 #define S4G_RESERVE_CONTEXTS 100
 #define S4G_RESERVE_CONTEXTS_MEM 100
 
-#define S4G_RESERVE_INT_MEM 10000
+#define S4G_RESERVE_INT_MEM 100000
 #define S4G_RESERVE_UINT_MEM 10000
 #define S4G_RESERVE_FLOAT_MEM 10000
 #define S4G_RESERVE_BOOL_MEM 10000
@@ -108,7 +108,7 @@ struct s4g_main
 	s4g_arr_lex* arr_lex;	//лексический анализатор
 	s4g_node* gnode;		//построенное аст
 	s4g_builder_syntax_tree* bst;	//строитель аст
-	Stack<s4g_command>* commands;	//массив с байт кодом
+	s4g_stack<s4g_command>* commands;	//массив с байт кодом
 	s4g_compiler* compiler;			//компилятор
 	s4g_vm* vmachine;				//виртуальная машина
 	s4g_gc* gc;						//сборщик мусора
@@ -125,19 +125,22 @@ struct s4g_data
 	int ref;	//количество ссылающихся переменных на эти данные
 	s4g_type type;	//тип хранимый в data
 	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
+	long iddata;
 };
 
 //переменная
 struct s4g_value
 {
-	s4g_value(/*long lexid = -1*/);
+	s4g_value();
 	~s4g_value();
 	
 	bool isdelete;	//можно ли удалять переменную
 	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
-	//long nlexid;	//идентификатор лексемы которая сгенерировала создание переменной
 	long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
 	long idvar;		//идентификатор этой переменной в массиве управляемым сборщиком мусора
+
+	//только для внутреннего использования!!!
+	s4g_data* pdata;
 };
 
 //таблица
@@ -145,25 +148,23 @@ class s4g_table
 {
 public:
 	s4g_table();
-	~s4g_table()
-	{
-		for (int i = 0; i < arr_value.GetSize(); i++)
-		{
-			arr_value[i]->isdelete = true;
-		}
-	}
+	~s4g_table();
 
-	inline s4g_value* getn(DWORD key);		//получить переменную по порядковому номеру
+	inline void clear();
+
+	inline s4g_value* getn(long key);			//получить переменную по порядковому номеру
 	inline s4g_value* gets(const char* str);	//получить переменную по строке
-	inline bool is_exists_s(const char* str);	//существует ли переменная с данным именем
-	inline bool is_exists_n(DWORD key);	//существует ли переменная по указанному ключу
+	inline int is_exists_s(const char* str);	//существует ли переменная с данным именем
+	inline bool is_exists_n(long key);			//существует ли переменная по указанному ключу
 
 	inline long is_exists_s2(const char* str,s4g_value** tval);	//существует ли переменная с данным именем
-	inline bool is_exists_n2(DWORD key, s4g_value** tval);	//существует ли переменная по указанному ключу
+	inline bool is_exists_n2(long key, s4g_value** tval);	//существует ли переменная по указанному ключу
 
-	inline void add_val_s(const char* name, s4g_value* val/*, long lexid*/);	//добавить переменную и присовить ей имя в текущей таблице
-	inline void add_val_n(long num, s4g_value* val/*, long lexid*/);			//добавить переменную по ключу
-	inline void add_val(s4g_value* val/*, long lexid*/);						//добавить переменную в конец таблицы
+	inline long get_key(const char* name);
+
+	inline void add_val_s(const char* name, s4g_value* val);	//добавить переменную и присовить ей имя в текущей таблице
+	inline void add_val_n(long num, s4g_value* val);			//добавить переменную по ключу
+	inline void add_val(s4g_value* val);						//добавить переменную в конец таблицы
 
 	inline long size();						//размер таблицы в элементах
 	inline const char* get_name_id(long id);//получить имя по id
@@ -171,7 +172,14 @@ public:
 	inline void reserve(int count_elem);
 
 protected:
-	AATable<s4g_value> arr_value;
+	struct table_desc
+	{
+		char Name[S4G_MAX_LEN_VAR_NAME];
+		s4g_value* Value;
+	};
+	long count_obj;
+	Array<table_desc*> Arr;
+	MemAlloc<table_desc, 16> Mem;
 };
 
 
@@ -182,15 +190,17 @@ class s4g_gc
 public:
 	s4g_gc();
 
-#define def_cr_val_null(tval) \
+#define def_cr_val_null(tval,tdata) \
 	tval = MemValue.Alloc(); \
 	tval->typedata = typedata; \
-	stack_push(arrvar,tval); \
+	arrvar.push(tval); \
 	tval->idvar = arrvar.count_obj; \
-	s4g_data* tdata = MemData.Alloc(); \
+	tdata = MemData.Alloc(); \
 	tdata->typedata = typedata; \
 	tval->iddata = arrdata.count_obj; \
-	stack_push(arrdata,tdata);
+	tdata->iddata = arrdata.count_obj; \
+	tval->pdata = tdata; \
+	arrdata.push(tdata);
 
 	//создание переменных
 	inline s4g_value* cr_val_null();
@@ -201,6 +211,7 @@ public:
 	inline s4g_value* cr_val_bool(s4g_bool bf);
 	inline s4g_value* cr_val_str(const char* str);
 	inline s4g_value* cr_val_table(s4g_table* tt);
+	inline s4g_value* cr_val_s_func();
 	inline s4g_value* cr_val_s_func(s4g_s_function* func);
 	inline s4g_value* cr_val_c_func(s4g_c_function func);
 	inline s4g_value* cr_val(int _type, const char* _val);	//создать переменную из _val с типом _type
@@ -227,7 +238,8 @@ public:
 	inline long add_context(s4g_table* tt);			//добавить контекст основанный на таблице, возвращает id добавленного контекста
 	inline void activate_prev(long lastidctx);		//активирует предыдущие контексты до lastidctx (это значение было получено при вызове deactivate_prev)
 	inline long deactivate_prev();					//деактивировать все предыдущие контексты, возвращает номер контекста который деактивирован последним
-	inline void del_context(long id);				//пометить контекст как ненужный и при сборке мусора снести все с него
+	inline void del_top_context(bool clear);				//пометить контекст как ненужный и при сборке мусора снести все с него
+	inline void clear_context(long id);
 	inline void remove_context(long id);			//пометить контекст как не нужный и при сборке удалить только контекст но не его данные
 	inline void set_ctx_for_del(s4g_context* ctx);	//добавить контекст для удаления
 
@@ -236,17 +248,18 @@ public:
 	inline long ctx_is_exists_s(const char* str, s4g_value** val);	
 	
 	//запустить сборку мусора
-	void clear();
+	void clear(DWORD mls);
+	void resort();
 
 	int typedata;	//тип создаваемых данных, 0 - если больше не нужны то удалть, 1 - не удалять
 	//парсер и компилер создают данные которые не удаляются, машина в большинстве случаев создает данные подлежащие удалению
 
 protected:
 	
-	Stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;	//массив переменных
-	Stack<s4g_data*, S4G_RESERVE_DATA> arrdata;	//массив данных
-	Stack<s4g_context*, 1024> oldarrcontexts;	//массив контекстов которые уже свое отработали и нуждаются в удалении
-	Stack<s4g_context*, S4G_RESERVE_CONTEXTS> arrcurrcontexts;//массив подключенных в данный момент контекстов
+	s4g_stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;	//массив переменных
+	s4g_stack<s4g_data*, S4G_RESERVE_DATA> arrdata;	//массив данных
+	s4g_stack<s4g_context*, 1024> delarrcontexts;	//массив контекстов которые уже свое отработали и нуждаются в удалении
+	s4g_stack<s4g_context*, S4G_RESERVE_CONTEXTS> arrcurrcontexts;//массив подключенных в данный момент контекстов
 	long curr_num_top_ctx = 0;
 	
 	MemAlloc<s4g_value, S4G_RESERVE_VALUE_MEM> MemValue;
@@ -266,22 +279,24 @@ protected:
 //тип функция
 struct s4g_s_function
 {
-	s4g_s_function(){ externs = 0; ismarg = false; countstack = -1; }
-	~s4g_s_function(){ mem_delete(externs); }
+	s4g_s_function(){ externs = 0; ismarg = false; main_extern = 0; }
+	~s4g_s_function(){ /*mem_delete(externs);*/ }
+	s4g_value* externs_val;
 	s4g_table* externs;	//подстановка переменных и предыдщуего контекста
-	Stack<String> externs_strs;	//имена переменных для подстановки из предыдущего контекста
-	Stack<String> args;	//имена аргументов
-	Stack<s4g_command> commands; //опкод
+	s4g_stack<String> externs_strs;	//имена переменных для подстановки из предыдущего контекста
+	int main_extern;
+	s4g_stack<String> args;	//имена аргументов
+	s4g_stack<s4g_command> commands; //опкод
 	bool ismarg; //принимает ли функция перенное количество аргументов?
-	int countstack;
 };
 
 //контекст содержащий в себе все переменные текущего исполнения
 struct s4g_context
 {
-	s4g_context(){ table = 0; valid = false; }
+	s4g_context(){ table = 0; valid = false; oldtable = 0; }
 	~s4g_context() {}
 	s4g_table* table;	//таблица с переменными
+	s4g_table* oldtable;	//таблица с переменными
 	bool valid;			//рабочий ли контекст в данный момент?
 	//это нужно в случе когда вызывается функция, вызываемая блокирует все предыдущие контексты, после отработки разблокирует
 };

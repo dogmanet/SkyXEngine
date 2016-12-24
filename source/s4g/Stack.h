@@ -1,66 +1,19 @@
 #ifndef SX_Stack2_H
 #define SX_Stack2_H
 
-template <typename T, int BlockSize = 16>
-class MemAllocator
-{
-public:
-	MemAllocator()
-	{ 
-		count_alloc = 0;
-		for (int i = 0; i < BlockSize; ++i)
-		{
-			Arr[i] = Mem.Alloc();
-		}
-	}
-
-	T* Alloc()
-	{
-		if (count_alloc < Arr.Size/* size()*/)
-		{
-			++count_alloc;
-			return Arr.Data[count_alloc-1];
-		}
-		else
-		{
-			int tmpcb = Arr.Size/*size()*/;
-			int tmpce = tmpcb + BlockSize;
-			Arr.resize(tmpce);
-			for (int i = tmpcb; i < tmpce; ++i)
-			{
-				Arr.Data[i] = Mem.Alloc();
-			}
-
-			++count_alloc;
-			return Arr.Data[count_alloc - 1];
-		}
-	}
-
-//protected:
-	long count_alloc;
-	MemAlloc<T, 10240> Mem;
-	Array<T*, BlockSize> Arr;
-};
-
-
-#define stack_push(stack,val)\
-	if (stack.Arr.AllocSize > stack.count_obj) \
-		stack.Arr.Data[stack.count_obj] = val; \
-	else \
-		stack.Arr[stack.count_obj] = val; \
-	++stack.count_obj;
-
 #define stack_pop(stack,count)\
+{\
 	if (count > stack.count_obj)\
 		stack.count_obj = 0; \
-	else \
-		stack.count_obj -= count;
+	else\
+		stack.count_obj -= count; \
+}
 
 template <typename T, int BlockSize = 16>
-class Stack
+class s4g_stack
 {
 public:
-	Stack(){ count_obj = 0; Arr.resize(BlockSize); }
+	s4g_stack(){ count_obj = 0; Arr.resize(BlockSize); }
 
 	inline void init_size(long csize)
 	{
@@ -72,7 +25,10 @@ public:
 		if (Arr.AllocSize > count_obj)
 			Arr.Data[count_obj] = val;
 		else
+		{
+			Arr.resize(Arr.AllocSize + BlockSize);
 			Arr[count_obj] = val;
+		}
 		++count_obj;
 	}
 
@@ -81,7 +37,10 @@ public:
 		if (Arr.AllocSize > count_obj)
 			Arr.Data[count_obj] = val;
 		else
+		{
+			Arr.resize(Arr.AllocSize + BlockSize);
 			Arr[count_obj] = val;
+		}
 		++count_obj;
 	}
 
@@ -129,12 +88,10 @@ public:
 
 	inline T & operator[](int id)
 	{
-		if (id ==-1)
-		{
-			int qwert = 0;
-		}
 		if (id >= 0 && id < count_obj)
 		{
+			if (!Arr.Data[id])
+				int qwert = 0;
 			return Arr.Data[id];
 		}
 		else if (id < 0)
@@ -173,6 +130,11 @@ public:
 	inline long size()
 	{
 		return count_obj;
+	}
+
+	inline void clear()
+	{
+		Arr.clear();
 	}
 
 //protected:

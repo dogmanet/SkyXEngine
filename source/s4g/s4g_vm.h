@@ -39,7 +39,7 @@ struct s4g_call_data
 	}
 
 	s4g_call_data(
-		Stack<s4g_command>* _coms, 
+		s4g_stack<s4g_command>* _coms,
 		s4g_table* _vars, 
 		bool _cfetchget, 
 		bool _cfetchgetarg, 
@@ -63,7 +63,7 @@ struct s4g_call_data
 			strcpy(namef,_namef);
 	}
 
-	Stack<s4g_command>* coms;	//команды выполнения
+	s4g_stack<s4g_command>* coms;	//команды выполнения
 	s4g_table* vars;			//таблица с переменными (окружение)
 	bool cfetchget;				
 	bool cfetchgetarg;	
@@ -121,7 +121,7 @@ public:
 		callstack.init_size(0);
 	}
 
-	int run(Stack<s4g_command>* commands,s4g_table* vars);
+	int run(s4g_stack<s4g_command>* commands, s4g_table* vars);
 
 	//функции для исполнения байт кода
 	inline void com_fetch(/*s4g_value* val, bool is_cr*/);
@@ -149,13 +149,13 @@ public:
 	typedef void(s4g_vm::*opfunc) ();
 	opfunc arropf[18];
 
-	Stack<s4g_command>* curr_comm;
+	s4g_stack<s4g_command>* curr_comm;
 	long id_curr_com;
 
 	s4g_table* gvars;	//глобальное пространство имен _g
 	s4g_value* vgvars;	//переменная хранящая в себе глобальнео пространство имен
 	s4g_table* curr_vars;	//текущее установленное пространство имен, есл выполняется функция то пространство имен функции
-	Stack<s4g_value*, S4G_RESERVE_STACK_EXE> execute;	//стек выполнения команд
+	s4g_stack<s4g_value*, S4G_RESERVE_STACK_EXE> execute;	//стек выполнения команд
 
 	int error;	//есть ли ошибка? -1 есть, остальное все в норме
 	char strerror[1024];	//строка ошибки
@@ -177,5 +177,5 @@ public:
 	StackRegister<int,10240> sr;
 	int CurrCountArg;
 	long precall;
-	Stack<s4g_call_data*> callstack;	//стэк вызовов с сохраненным предыдущим состоянием
+	s4g_stack<s4g_call_data*> callstack;	//стэк вызовов с сохраненным предыдущим состоянием
 };

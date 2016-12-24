@@ -304,8 +304,8 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 {
 	s4g_lexeme* lex_get_curr0(tmplexs);
-	Stack<s4g_node*> stack_var;
-	Stack<s4g_node*> stack_op;
+	s4g_stack<s4g_node*> stack_var;
+	s4g_stack<s4g_node*> stack_op;
 	s4g_node* node = 0;
 	s4g_node* tmpnode = 0;
 	s4g_node* tmpnode2 = 0;

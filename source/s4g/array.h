@@ -6,13 +6,16 @@
 		Элемент массива не имеет гарантированного расположения в памяти.
 */
 template <typename T, int BlockSize = 16>
-class Stack;
+class s4g_stack;
 
 template <typename T, int BlockSize = 16>
 class MemAllocator;
 
 template<typename T, int BlockSize = 16>
 class StackRegister;
+
+class s4g_table;
+class s4g_gc;
 
 template<typename T, int BlockSize=16>
 class Array
@@ -177,11 +180,12 @@ public:
 		return AllocSize;
 	}
 
-//protected:
+protected:
 	friend MemAllocator<T, BlockSize>;
-	friend Stack<T,BlockSize>;
+	friend s4g_stack<T, BlockSize>;
 	friend StackRegister<T, BlockSize>;
-	
+	friend s4g_table;
+	friend s4g_gc;
 	void Alloc()
 	{
 		Realloc(BlockSize);
