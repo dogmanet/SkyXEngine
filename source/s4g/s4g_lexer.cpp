@@ -400,32 +400,45 @@ inline int s4g_is_marg(const char* sstr, char* dstr)
 }*/
 
 
-inline void s4g_scan_litstring(const char* sstr, char* dstr)
+inline void s4g_scan_litstring(const char* cur, char* dstr, int & len)
 {
-	int k = 0;
-	for (int i = 1; i<strlen(sstr); i++)
+	++cur;
+	while(*cur && *cur != '"')
 	{
-		if (sstr[i] != '"' || (i > 0 && sstr[i - 1] == '\\'))
+		if(*cur == '\\')
 		{
-			if (sstr[i] != '\\')
+			++cur; ++len;
+			switch(*cur)
 			{
-				dstr[k] = sstr[i];
-				k++;
+			case L'"':
+			case L'\\':
+			case L'/':
+				*dstr++ = *cur;
+				break;
+			case L'b':
+				*dstr++ = L'\b';
+				break;
+			case L'f':
+				*dstr++ = L'\f';
+				break;
+			case L'n':
+				*dstr++ = L'\n';
+				break;
+			case L'r':
+				*dstr++ = L'\r';
+				break;
+			case L't':
+				*dstr++ = L'\t';
+				break;
 			}
 		}
-		/*else if(i > 0 && sstr[i-1] == '\\' && sstr[i] == '"')
-		{
-		dstr[k] = sstr[i];
-		dstr[k+1] = sstr[i+1];
-		i++;
-		k++;
-		}*/
 		else
 		{
-			dstr[k] = 0;
-			break;
+			*dstr++ = *cur;
 		}
+		++cur; ++len;
 	}
+	*dstr = 0;
 }
 
 inline int s4g_scan_num(const char* sstr, char* dstr)
@@ -547,9 +560,10 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			//если текущий символ пользовательская строка
 			else if (tmpc == '"')
 			{
-				s4g_scan_litstring(str + numcursym, tmpword);
+				int len = 0;
+				s4g_scan_litstring(str + numcursym, tmpword, len);
 				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string, -1, curr_id_file);
-				numcursym += strlen(tmpword) + 2;
+				numcursym += len + 2;
 				break;
 			}
 			else if ((tmpid = s4g_is_boolean(str + numcursym, tmpword)) != -1)
@@ -615,9 +629,10 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				}
 				else if (tmpc == '"')
 				{
-					s4g_scan_litstring(str + numcursym, tmpword);
+					int len = 0;
+					s4g_scan_litstring(str + numcursym, tmpword, len);
 					tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
-					numcursym += strlen(tmpword) + 2;
+					numcursym += len + 2;
 					break;
 				}
 				else
@@ -799,7 +814,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 			if (tmplex->type == word_prep)
 			{
 				//если это инклюд (подключение файла)
-				if (tmplex->id == 0)
+				if(tmplex->id == S4GLPP_INCLUDE)
 				{
 					s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
 					if (tmplex2->type == word_string)
@@ -812,8 +827,42 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						curr_id_file = tmp_curr_id_file;
 					}
 				}
+				else if(tmplex->id == S4GLPP_LINE)
+				{
+					s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
+					if(tmplex2->type != word_int)
+					{
+						sprintf(strerror, "[%s]:%d - #line expected a line number, found [%s]", ArrFiles[tmplex2->fileid], tmplex2->numstr, tmplex2->str);
+						return -1;
+					}
+					sscanf(tmplex2->str, "%d", &numcurstr);
+					LexPool.Delete(tmplex2);
+
+					tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
+					if(tmplex2->type != word_string)
+					{
+						sprintf(strerror, "[%s]:%d - #line expected a string containing the filename, found [%s]", ArrFiles[tmplex2->fileid], tmplex2->numstr, tmplex2->str);
+						return -1;
+					}
+					int idx = -1;
+					for(int ci = 0, cl = ArrFiles.size(); ci < cl; ++ci)
+					{
+						if(!strcmp(ArrFiles[ci].c_str(), tmplex2->str))
+						{
+							idx = ci;
+							break;
+						}
+					}
+					if(idx < 0)
+					{
+						idx = ArrFiles.size();
+						ArrFiles.push_back(tmplex2->str);
+					}
+					curr_id_file = idx;
+					LexPool.Delete(tmplex2);
+				}
 				//если это дефайн
-				else if (tmplex->id == 1)
+				else if(tmplex->id == S4GLPP_DEFINE)
 				{
 					//считываем имя
 					s4g_lexeme* tmpnamedef = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
@@ -991,7 +1040,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 					}
 					int wqert = 0;
 				}
-				else if (tmplex->id == 2)
+				else if(tmplex->id == S4GLPP_UNDEF)
 				{
 					s4g_lexeme* tmpnamedef = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
 						if (ArrDefines.IsExists(tmpnamedef->str))
@@ -1003,7 +1052,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						}
 				}
 				//иначе если лексема не имеет идентификатора то это подстановка пользовательского дефайна
-				else if (tmplex->id == -1)
+				else if(tmplex->id == S4GLPP_USER)
 				{
 					//если дефайн существует
 					if (ArrDefines.IsExists(tmplex->str))

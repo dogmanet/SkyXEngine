@@ -38,6 +38,22 @@ const char s4g_key_preproc[][S4G_MAX_LEN_KEY_WORD_DEF] = {
 "elif",
 "else",
 "end",
+"line"
+};
+
+enum S4GLPP
+{
+	S4GLPP_USER = -1,
+	S4GLPP_INCLUDE = 0,
+	S4GLPP_DEFINE,
+	S4GLPP_UNDEF,
+	S4GLPP_IF,
+	S4GLPP_IFDEF,
+	S4GLPP_DEFINED,
+	S4GLPP_ELIF,
+	S4GLPP_ELSE,
+	S4GLPP_END,
+	S4GLPP_LINE
 };
 
 const char s4g_key_setcompiler[][S4G_MAX_LEN_KEY_WORD_DEF] = {
