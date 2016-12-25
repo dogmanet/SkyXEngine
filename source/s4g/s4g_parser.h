@@ -1,6 +1,6 @@
 
-extern "C"
-{
+#ifndef s4g_parser_h
+#define s4g_parser_h
 
 #define S4G_MAX_LEN_KEY_WORD_DEF 9
 #define S4G_MAX_LEN_SYM 4
@@ -138,7 +138,7 @@ struct s4g_lexeme
 {
 	s4g_lexeme(){}
 	s4g_lexeme(const char* _str, long _numstr, int _type, int _id, int _idfile){ strcpy(str, _str); numstr = _numstr, type = _type; id = _id; fileid = _idfile; }
-	char str[64];	//строковое представление лексемы
+	char str[S4G_MAX_LEN_TYPE_NAME];	//строковое представление лексемы
 	long numstr;	//номер строки на которой находится лексема
 	int type;		//тип лексемы
 	int id;			//порядковый номер лексемы из массива слов к которому она относится
@@ -310,7 +310,7 @@ class s4g_arr_lex
 {
 public:
 	s4g_arr_lex();
-	int read(const char* file);
+	int read(const char* file_str,bool isfile=true);
 	int gen_lexs(const char* str,Array<s4g_lexeme*>* arr_lexs,bool is_def);
 	s4g_lexeme* get(DWORD num);
 	DWORD get_curr_num();
@@ -378,4 +378,5 @@ char error[1024];//строка с описанием ошибки
 s4g_arr_lex* arr_lex;
 s4g_gc* gc;
 };
-}
+
+#endif

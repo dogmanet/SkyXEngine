@@ -1,8 +1,6 @@
 
 #ifndef s4g_compiler_h
 #define s4g_compiler_h
-#pragma once
-
 
 struct s4g_command
 {
@@ -12,8 +10,6 @@ struct s4g_command
 	s4g_value* arg;
 	long lexid;
 };
-
-//#define gen(comm,val) commands.push(s4g_command(comm,val))
 
 class s4g_compiler
 {

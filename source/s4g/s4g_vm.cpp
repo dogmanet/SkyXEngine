@@ -10,55 +10,40 @@ inline void s4g_vm::com_fetch()
 		if (strcmp(str, S4G_GLOBAL_NM) == 0)
 		{
 			execute.push(vgvars);
-			//stack_push(execute, vgvars);
 		}
 		else
 		{
-					s4g_value* tmpval = 0;
-					long idctx = -1;
-						if ((idctx = gc->ctx_is_exists_s(str, &tmpval)) != -1)
-						{
-							/*if (is_cr)
-							{
-								error = -1;
-								s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-								sprintf(this->strerror, "[%s]:%d - value '%s' is exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-								return;
-							}*/
-							//s4g_value* tmpval = curr_vars->gets(str);
-							//s4g_type tt1 = gc->get_type(tmpval);
-							execute.push(tmpval);
-							//stack_push(execute, tmpval);
-						}
-						else
-						{
-							/*if (!is_cr)
-							{
-								error = -1;
-								s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-								sprintf(this->strerror, "[%s]:%d - value '%s' is not exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-								return;
-							}*/
+			s4g_value* tmpval = 0;
+			long idctx = -1;
+				if ((idctx = gc->ctx_is_exists_s(str, &tmpval)) != -1)
+				{
+					/*if (is_cr)
+					{
+						error = -1;
+						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+						sprintf(this->strerror, "[%s]:%d - value '%s' is exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return;
+					}*/
 
-
-							tmpval = gc->cr_val_null();
-							curr_vars->add_val_s(str, tmpval);
-							//s4g_value* tmpval2 = curr_vars->gets(str);
-							execute.push(tmpval);
-							//stack_push(execute, tmpval);
-						}
+					execute.push(tmpval);
 				}
-		/*}
-		else
-		{
-			error = -1;
-			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-			sprintf(this->strerror, "[%s]:%d - error of vm, fetch without arg", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
-			return;
-		}*/
-	//return 0;
+				else
+				{
+					/*if (!is_cr)
+					{
+						error = -1;
+						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+						sprintf(this->strerror, "[%s]:%d - value '%s' is not exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return;
+					}*/
 
-	cfetchget = 1;
+					tmpval = gc->cr_val_null(str);
+					curr_vars->add_val_s(str, tmpval);
+					execute.push(tmpval);
+				}
+		}
+
+	cfetchget = 0;
 }
 
 inline void s4g_vm::com_fetch_get()
@@ -66,8 +51,12 @@ inline void s4g_vm::com_fetch_get()
 	bool  is_cr = (op == mc_fetch_get_cr);
 	
 	int counttop = 1;
-		if (arg)
-			counttop = 0;
+	s4g_value* tval = 0;
+	if (arg)
+	{
+		counttop = 0;
+		tval = arg;
+	}
 	s4g_table* ttable = 0;
 		if(execute.count() >= 1+counttop)
 		{
@@ -76,11 +65,25 @@ inline void s4g_vm::com_fetch_get()
 					ttable = gc->get_table(execute.get(execute.count() - counttop));
 				else
 				{
+					char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+					char tmpstr[S4G_MAX_LEN_TYPE_NAME];
+
+					if (curr_comm)
+					{
+						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+						strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+						sprintf(tmpstr, "%d", tmplexs->numstr);
+					}
+					else
+					{
+						strcpy(tmpfile, "#user");
+						sprintf(tmpstr, "#user");
+					}
+
 					error = -1;
-					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-					char strtype[12];
-					s4g_get_str_type(ttype, strtype);
-					sprintf(this->strerror, "[%s]:%d - value '%s' expected table but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
+					char strtype[S4G_MAX_LEN_TYPE_NAME];
+					s4g_get_str_type(gc->get_type(tval), strtype);
+					sprintf(this->strerror, "[%s]:%s - value '%s' expected table but got %s", tmpfile, tmpstr, tval->name, strtype);
 					return;
 				}
 				/*
@@ -93,18 +96,29 @@ inline void s4g_vm::com_fetch_get()
 		}
 		else
 		{
+			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+			char tmpstr[S4G_MAX_LEN_TYPE_NAME];
+
+			if (curr_comm)
+			{
+				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+				sprintf(tmpstr, "%d", tmplexs->numstr);
+			}
+			else
+			{
+				strcpy(tmpfile, "#user");
+				sprintf(tmpstr, "#user");
+			}
+
 			error = -1;
-			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-			sprintf(this->strerror, "[%s]:%d - address to the table '%s', but the stack is empty", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+			sprintf(this->strerror, "[%s]:%s - address to the table '%s', but the stack is empty", tmpfile, tmpstr, tval->name);
 			return;
-			//ttable = curr_vars;
 		}
 			
-	s4g_value* tval = 0;
+	
 
-		if (arg)
-			tval = arg;
-		else
+		if (!arg)
 		{
 			tval = execute.get(execute.count());
 			//execute.pop(1);
@@ -114,7 +128,7 @@ inline void s4g_vm::com_fetch_get()
 		//если предыдущей командой было либо fetch либо fetch_get
 		//то значит мы ложили на стек таблицу, а теперь берем значение из этой таблицы и саму таблицу выталкиваем из стека
 		//ложа на вершину значение из таблицы
-		if(cfetchget == 1)
+		if (cfetchget == 1 || (oldop == mc_push && cfetchget == 2))
 			stack_pop(execute, 1);
 	s4g_value* tmpval = 0;
 	s4g_type ttype = gc->get_type(tval);
@@ -136,9 +150,8 @@ inline void s4g_vm::com_fetch_get()
 						sprintf(this->strerror, "[%s]:%d - key number '%s' is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}*/
-					//s4g_value* tmpval = ttable->gets(str);
+
 					execute.push(tmpval);
-					//stack_push(execute, tmpval);
 				}
 				else
 				{
@@ -150,26 +163,34 @@ inline void s4g_vm::com_fetch_get()
 						return;
 					}*/
 					
-					tmpval = gc->cr_val_null(/*tval->nlexid*/);
-					ttable->add_val_s(str, tmpval/*, tval->nlexid*/);
-					//ttable->add_null_s(str, tval->nlexid);
-					//s4g_value* tval2 = ttable->gets(str);
+					tmpval = gc->cr_val_null(str);
+					ttable->add_val_s(str, tmpval);
 					execute.push(tmpval);
-					//stack_push(execute, tmpval);
 				}
 		}
 		else
 		{
-			error = -1;
-			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-			char strtype[12];
-			s4g_get_str_type(gc->get_type(tval), strtype);
-			sprintf(this->strerror, "[%s]:%d - data type '%s' is unresolved address in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
-			//return error;
-		}
-	//return 0;
+			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+			char tmpstr[S4G_MAX_LEN_TYPE_NAME];
 
-	cfetchget = 1;
+			if (curr_comm)
+			{
+				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+				sprintf(tmpstr, "%d", tmplexs->numstr);
+			}
+			else
+			{
+				strcpy(tmpfile, "#user");
+				sprintf(tmpstr, "#user");
+			}
+
+			error = -1;
+			sprintf(this->strerror, "[%s]:%s - data type '%s' is unresolved address in table", tmpfile, tmpstr, tmpval->name);
+			return;
+		}
+
+	cfetchget = 0;
 	cfetchgetarg = (arg == 0);
 }
 
@@ -183,16 +204,14 @@ inline void s4g_vm::com_store()
 		s4g_s_function* sf = gc->get_s_func(tvalue);
 		if (sf->externs_strs.count() > 0 && !sf->externs)
 		{
-			s4g_value* newsfval = gc->cr_val_s_func();
+			s4g_value* newsfval = gc->cr_val_s_func(tvalue2->name);
 			s4g_s_function* newsf = gc->get_s_func(newsfval);
 			newsf->args = sf->args;
 			newsf->commands = sf->commands;
-			if (sf->externs_strs.size() == 0)
-				int qwert = 0;
 			newsf->externs_strs = sf->externs_strs;
 			newsf->ismarg = sf->ismarg;
 			newsf->main_extern = ++sf->main_extern;
-			newsf->externs_val = gc->cr_val_table_null();// new s4g_table();
+			newsf->externs_val = gc->cr_val_table_null();
 			newsf->externs_val->typedata = 1;
 			newsf->externs = gc->get_table(newsf->externs_val);
 			gc->set_td_data(newsf->externs_val,1);
@@ -203,7 +222,7 @@ inline void s4g_vm::com_store()
 				const char* str = newsf->externs_strs.get(i).c_str();
 				if ((tmpid = curr_vars->is_exists_s(str)) != -1)
 				{
-					s4g_value* tmpval = gc->cr_val_null();
+					s4g_value* tmpval = gc->cr_val_null(str);
 					//tmpval->isdelete = false;
 					gc->c_val(tmpval, curr_vars->getn(tmpid+1),false);
 					//tmpval->typedata = 1;
@@ -219,12 +238,6 @@ inline void s4g_vm::com_store()
 			int qwert = 0;
 		}
 	}
-
-	//s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-	/*char strtype[12];
-	s4g_get_str_type(gc->get_type(tval), strtype);
-	sprintf(this->strerror, "[%s]:%d - data type '%s' is unresolved address in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
-	*/
 
 	gc->c_val(tvalue2, tvalue);
 	
@@ -302,10 +315,23 @@ inline void s4g_vm::com_call()
 	//если количество вызовов не превысело установленный лимит
 	if (S4G_MAX_CALL <= callstack.count())
 	{
-		//иначе выдаем ошибку о превышении нормы
+		char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+		char tmpstr[S4G_MAX_LEN_TYPE_NAME];
+
+		if (curr_comm)
+		{
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+			strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+			sprintf(tmpstr, "%d", tmplexs->numstr);
+		}
+		else
+		{
+			strcpy(tmpfile, "#user");
+			sprintf(tmpstr, "#user");
+		}
+
 		error = -1;
-		s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-		sprintf(this->strerror, "[%s]:%d - stack overflow, limit = %d", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, S4G_MAX_CALL);
+		sprintf(this->strerror, "[%s]:%s - stack overflow, limit = %d", tmpfile, tmpstr, S4G_MAX_CALL);
 		return;
 	}
 
@@ -351,37 +377,32 @@ inline void s4g_vm::com_call()
 						//записываем на сколько хватает аргументов
 						for (int i = 0; i<tmpargs; i++)
 						{
-							tval2 = gc->cr_val_null();
+							//tval2 = gc->cr_val_null();
 							tval = execute.get(execute.count_obj - ((countarg - i) - 1));
-							gc->c_val(tval2, tval, false);
+							//gc->c_val(tval2, tval, false);
 							//const char* tmpstr = csfunc->args.get(i + 1).c_str();
-							new_ctx->add_val_s(csfunc->args.get(i + 1).c_str(), tval2);
+							new_ctx->add_val_s(csfunc->args.get(i + 1).c_str(), tval);
 						}
 
 						//если есть еще аргументы и у нас следущий аргмент это мультиаргумент
-						/*if (countarg > tmpargs && csfunc->ismarg)
+						if (countarg > tmpargs && csfunc->ismarg)
 						{
-							s4g_table* tablemarg = new s4g_table();
 								for (int i = tmpargs; i<countarg; i++)
 								{
 									//tval2 = gc->cr_val_null();
 									tval = execute.get(execute.count_obj - ((countarg - i) - 1));
 									//gc->c_val(tval2, tval,false);
-									tablemarg->add_val(tval);
+									csfunc->margtable->add_val(tval);
 								}
-								s4g_value* tmarg = gc->cr_val_table(tablemarg);
-							new_ctx->add_val_s(S4G_MARG, tmarg);
-						}*/
+							
+							new_ctx->add_val_s(S4G_MARG, csfunc->marg_val);
+						}
 				}
 			//execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
 			stack_pop(execute, countarg + 1);
-			if (curr_comm)
-			{
+
 				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
-				s4g_command commm = curr_comm->get(id_curr_com);
-				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
-				//callstack.push(s4g_call_data(curr_comm, curr_vars, cfetchget, cfetchgetarg, cfetchpushstore, id_curr_com, lastidctx, idnewctx, idexternctx, tmplexs->str));
-				s4g_call_data* tmpcd = callstack.get((callstack.count_obj != 0 ? callstack.count_obj : 1));
+				s4g_call_data* tmpcd = callstack.get((callstack.count_obj != 0 ? callstack.count_obj+1 : 1));
 				tmpcd->coms = curr_comm;
 				tmpcd->vars = curr_vars;
 				tmpcd->cfetchget = cfetchget;
@@ -391,27 +412,14 @@ inline void s4g_vm::com_call()
 				tmpcd->idnewctx = idnewctx;
 				tmpcd->lastidctx = lastidctx;
 				tmpcd->id_curr_com = id_curr_com;
-				strcpy(tmpcd->namef, tmplexs->str);
-			}
-			else
-			{
-				s4g_call_data* tmpcd = callstack.get((callstack.count_obj != 0 ? callstack.count_obj : 1));
-				tmpcd->coms = 0;
-				tmpcd->vars = 0;
-				tmpcd->cfetchget = false;
-				tmpcd->cfetchgetarg = false;
-				tmpcd->cfetchpushstore = 0;
-				tmpcd->idexternctx = idexternctx;
-				tmpcd->idnewctx = idnewctx;
-				tmpcd->lastidctx = lastidctx;
-				tmpcd->id_curr_com = 0;
-			}
+				strcpy(tmpcd->namef, tvalfunc->name);
+
 
 			//устанавилваем новое окружение и новые конмады
 			curr_vars = new_ctx;
 			curr_comm = &(csfunc->commands);
 
-			cfetchget = false;
+			cfetchget = 3;
 			cfetchgetarg = false;
 			cfetchpushstore = 0;
 			id_curr_com = 0;
@@ -427,19 +435,29 @@ inline void s4g_vm::com_call()
 		//иначе у нас не функция
 		else
 		{
-			//выдаем ошибку
-			s4g_command commm = curr_comm->get(id_curr_com - 1);
-			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid - 1);
+			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+			char tmpstr[S4G_MAX_LEN_TYPE_NAME];
+			
+			if (curr_comm)
+			{
+				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+				sprintf(tmpstr, "%d", tmplexs->numstr);
+			}
+			else
+			{
+				strcpy(tmpfile, "#user");
+				sprintf(tmpstr, "#user");
+			}
+
 			error = -1;
-			char strtype[12];
+			char strtype[S4G_MAX_LEN_TYPE_NAME];
 			s4g_get_str_type(gc->get_type(tvalfunc), strtype);
-			sprintf(this->strerror, "[%s]:%d - called value '%s' is not function, this is '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
-			//return error;
+			sprintf(this->strerror, "[%s]:%s - called value '%s' is not function, this is '%s'", tmpfile, tmpstr, tvalfunc->name, strtype);
 		}
-	//return 0;
 }
 
-inline void s4g_vm::com_new_table(/*s4g_value* val*/)
+inline void s4g_vm::com_new_table()
 {
 	s4g_value* ttable = gc->cr_val_table_null();
 	execute.push(ttable);
@@ -447,68 +465,288 @@ inline void s4g_vm::com_new_table(/*s4g_value* val*/)
 
 inline void s4g_vm::com_add()
 {
-	s4g_value* s1 = execute.get(execute.count() - 1);
-	s4g_value* s2 = execute.get(execute.count());
-	execute.pop(2);
-	if (gc->get_type(s1) == t_nnull)
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute,2);
+
+	if (ttype1 == t_nnull)
 	{
-		if (gc->get_type(s2) == t_int)
+		if (ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
 		{
-			long num2 = gc->get_int(s2);
-			execute.push(gc->cr_val_int(num2/*, s2->nlexid*/));
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
 		}
 	}
 	else
 	{
-		long num1 = gc->get_int(s1);
-		long num2 = gc->get_int(s2);
-		execute.push(gc->cr_val_int(num1 + num2/*, s1->nlexid*/));
+		if (ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_int(num1 + gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_int(num1 + gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_int(num1 + gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		if (ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_uint(num1 + gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_uint(num1 + gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_uint(num1 + gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		if (ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_float(num1 + gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_float(num1 + gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_float(num1 + gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
 	}
-	//return 0;
 }
 
 inline void s4g_vm::com_sub()
 {
-	s4g_value* s1 = execute.get(execute.count() - 1);
-	s4g_value* s2 = execute.get(execute.count());
-	execute.pop(2);
-	if (gc->get_type(s1) == t_nnull)
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if (ttype1 == t_nnull)
 	{
-		if (gc->get_type(s2) == t_int)
+		if (ttype2 == t_int)
+			execute.push(gc->cr_val_int(-gc->get_int(s2)));
+		else if (ttype2 == t_float)
+			execute.push(gc->cr_val_float(-gc->get_float(s2)));
+		else if (ttype2 == t_uint)
 		{
-			long num2 = gc->get_int(s2);
-			execute.push(gc->cr_val_int(-num2/*, s2->nlexid*/));
+			S4G_VM_OP_ARIF_ERROR_UNSUN_UNRES;
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
 		}
 	}
 	else
 	{
-		long num1 = gc->get_int(s1);
-		long num2 = gc->get_int(s2);
-		execute.push(gc->cr_val_int(num1 - num2/*, s1->nlexid*/));
+		if (ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_int(num1 - gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_int(num1 - gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_int(num1 - gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		if (ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_uint(num1 - gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_uint(num1 - gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_uint(num1 - gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		if (ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_float(num1 - gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_float(num1 - gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_float(num1 - gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
 	}
-	//return 0;
 }
 
 inline void s4g_vm::com_mul()
 {
-	s4g_value* s1 = execute.get(execute.count() - 1);
-	s4g_value* s2 = execute.get(execute.count());
-	long num1 = gc->get_int(execute.get(execute.count() - 1));
-	long num2 = gc->get_int(execute.get(execute.count() - 0));
-	execute.pop(2);
-	execute.push(gc->cr_val_int(num1 * num2/*, s1->nlexid*/));
-	//return 0;
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+		if (ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_int(num1 * gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_int(num1 * gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_int(num1 * gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		if (ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_uint(num1 * gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_uint(num1 * gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_uint(num1 * gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		if (ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if (ttype2 == t_int)
+				execute.push(gc->cr_val_float(num1 * gc->get_int(s2)));
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_float(num1 * gc->get_uint(s2)));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_float(num1 * gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
 }
 
 inline void s4g_vm::com_div()
 {
-	s4g_value* s1 = execute.get(execute.count() - 1);
-	s4g_value* s2 = execute.get(execute.count());
-	long num1 = gc->get_int(execute.get(execute.count() - 1));
-	long num2 = gc->get_int(execute.get(execute.count() - 0));
-	execute.pop(2);
-	execute.push(gc->cr_val_int(num1 / num2/*, s1->nlexid*/));
-	//return 0;
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if (ttype1 == t_int)
+	{
+		s4g_int num1 = gc->get_int(s1);
+
+		if (ttype2 == t_int)
+			execute.push(gc->cr_val_int(num1 / gc->get_int(s2)));
+		else if (ttype2 == t_uint)
+			execute.push(gc->cr_val_int(num1 / gc->get_uint(s2)));
+		else if (ttype2 == t_float)
+			execute.push(gc->cr_val_int(num1 / gc->get_float(s2)));
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+
+	if (ttype1 == t_uint)
+	{
+		s4g_uint num1 = gc->get_uint(s1);
+
+		if (ttype2 == t_int)
+			execute.push(gc->cr_val_uint(num1 / gc->get_int(s2)));
+		else if (ttype2 == t_uint)
+			execute.push(gc->cr_val_uint(num1 / gc->get_uint(s2)));
+		else if (ttype2 == t_float)
+			execute.push(gc->cr_val_uint(num1 / gc->get_float(s2)));
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+
+	if (ttype1 == t_float)
+	{
+		s4g_float num1 = gc->get_float(s1);
+
+		if (ttype2 == t_int)
+			execute.push(gc->cr_val_float(num1 / gc->get_int(s2)));
+		else if (ttype2 == t_uint)
+			execute.push(gc->cr_val_float(num1 / gc->get_uint(s2)));
+		else if (ttype2 == t_float)
+			execute.push(gc->cr_val_float(num1 / gc->get_float(s2)));
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		S4G_VM_OP_ARIF_ERROR_TYPE1;
+	}
 }
 
 inline void s4g_vm::com_halt()
@@ -521,27 +759,20 @@ inline void s4g_vm::com_halt()
 	}
 	else
 		runexe = false;	//останавливаем выполнение
-	//return 0;
 }
 
 inline void s4g_vm::com_push()
 {
 	if (cfetchget == 1)
 		--cfetchget;
-	/*if ((oldop == mc_fetch || oldop == mc_fetch_cr) && cfetchpushstore == 0)
-		cfetchpushstore++;*/
-	/*else if (cfetchpushstore == 1)
-		cfetchpushstore++;*/
+
 	execute.push(arg);
-	//stack_push(execute, arg);
-	//return 0;
 }
 
 inline void s4g_vm::com_pop()
 {
 	//execute.pop(1);
 	stack_pop(execute, 1);
-	//return 0;
 }
 
 inline void s4g_vm::com_retprev()
@@ -572,7 +803,6 @@ inline void s4g_vm::com_retprev()
 
 	if (!curr_comm)
 		runexe = false;
-	//return 0;
 }
 
 ///////
@@ -584,8 +814,7 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	curr_vars = vars;
 	op = mc_halt;
 	arg = 0;
-	//long pc = 1;
-	cfetchget = false;
+	cfetchget = 3;
 	cfetchgetarg = false;
 	runexe = true;
 	val_end = -1;
@@ -595,8 +824,6 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 			op = curr_comm->get(id_curr_com).command;
 			arg = curr_comm->get(id_curr_com).arg;
 			
-			/*if ((this->*(arropf[op]))() != 0)
-				return -1;*/
 			(this->*(arropf[op]))();
 			if (error != 0)
 				return -1;
@@ -605,64 +832,27 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 			cfetchget++;
 			oldop = op;
 		}
+
+	//обнуляем текущую таблицу для записи и стек с командами
 	curr_vars = 0;
 	curr_comm = 0;
+
+	cfetchget = 3;
+	cfetchgetarg = false;
+	cfetchpushstore = 0;
 
 	if (sr.count() > 0)
 	{
 		com_retprev();
 	}
-	//s4g_table* ttype = gc->get_table(vars->gets("ttable"));
-		/*if (gvars->is_exists_s("ttable"))
-		{
-			s4g_table* ttype = gc->get_table(gvars->gets("ttable"));
-			s4g_value* tvar0 = ttype->gets("a");
-			s4g_type type0 = gc->get_type(tvar0);
-			if (gc->get_type(tvar0) == t_int)
-			{
-				long num = gc->get_int(tvar0);
-				int qwert = 0;
-			}
-		}*/
 
-		/*if (gvars->is_exists_s("q"))
+		/*if (gvars->is_exists_s("a") != -1)
 		{
-			s4g_value* tvar1 = gvars->gets("q");
+			s4g_value* tvar1 = gvars->gets("a");
 			s4g_type type1 = gc->get_type(tvar1);
 			if (gc->get_type(tvar1) == t_int)
 			{
 				long num = gc->get_int(tvar1);
-				int qwert = 0;
-			}
-		}*/
-
-		/*if (gvars->is_exists_s("q2"))
-		{
-			s4g_value* tvar1 = gvars->gets("q2");
-			s4g_type type1 = gc->get_type(tvar1);
-			if (gc->get_type(tvar1) == t_int)
-			{
-				long num = gc->get_int(tvar1);
-				int qwert = 0;
-			}
-		}*/
-
-		/*if (gvars->is_exists_s("b"))
-		{
-			s4g_value* tvar1 = gvars->gets("b");
-			if (gc->get_type(tvar1) == t_int)
-			{
-				long num = gc->get_int(tvar1);
-				int qwert = 0;
-			}
-		}
-
-		if (gvars->is_exists_s("c"))
-		{
-			s4g_value* tvar2 = gvars->gets("c");
-			if (gc->get_type(tvar2) == t_int)
-			{
-				long num = gc->get_int(tvar2);
 				int qwert = 0;
 			}
 		}*/

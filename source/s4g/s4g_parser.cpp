@@ -1,5 +1,4 @@
 
-#pragma once
 #include <s4g\s4g_parser.h>
 
 #include <s4g\s4g_vm.cpp>
@@ -487,7 +486,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 								{
 										if(tmptypeop == _group_b)
 										{
-											stack_op.push(new s4g_node((s4g_type_op)tmptypeop));
+											stack_op.push(new s4g_node((s4g_type_op)tmptypeop, curr_lexid));
 										}
 										else if(s4g_get_priority((s4g_type_op)tmptypeop) <= s4g_get_priority(stack_op.get(stack_op.count())->type))
 										{
@@ -495,17 +494,17 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 											s4g_node* qwert = stack_op.get(stack_op.count());
 											stack_var.push(qwert/*stack_op.get(stack_op.count())*/);
 											stack_op.pop(1);
-											stack_op.push(new s4g_node((s4g_type_op)tmptypeop));
+											stack_op.push(new s4g_node((s4g_type_op)tmptypeop, curr_lexid));
 										}
 										else
 										{
 											//помещаем
-											stack_op.push(new s4g_node((s4g_type_op)tmptypeop));
+											stack_op.push(new s4g_node((s4g_type_op)tmptypeop, curr_lexid));
 										}
 								}
 								//иначе стек пуст и у нас какая-то операция
 								else
-									stack_op.push(new s4g_node((s4g_type_op)tmptypeop));
+									stack_op.push(new s4g_node((s4g_type_op)tmptypeop, curr_lexid));
 						}
 						//иначе у нас неопределенная операция
 						else
@@ -596,7 +595,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 {
 	s4g_lexeme* lex_get_curr0(tmplexs);
-	s4g_node* node = new s4g_node(_arg);
+	s4g_node* node = new s4g_node(_arg, curr_lexid);
 	s4g_node* tmpnode = node;
 	s4g_node* tmpnode2 = 0;
 	Array<String> arrarg;

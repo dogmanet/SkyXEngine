@@ -736,47 +736,55 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 	return tmplex;
 }
 
-int s4g_arr_lex::read(const char* file)
+int s4g_arr_lex::read(const char* file_str, bool isfile)
 {
-	FILE* ffile;
-
-	if (!(ffile = fopen(file, "rt")))
-	{
-		//return -1;
-	}
 	char pathforfile[1024];
-	int len = strlen(file);
-	while (len >= 0)
+	String AllFile;
+
+	if (isfile)
 	{
-		len--;
-		if (file[len] == '\\' || file[len] == '/')
+		FILE* ffile;
+
+		if (!(ffile = fopen(file_str, "rt")))
 		{
-			//
-			memcpy(pathforfile, file, len);
-			pathforfile[len] = 0;
-			break;
+			return -1;
 		}
+		
+		int len = strlen(file_str);
+		while (len >= 0)
+		{
+			len--;
+			if (file_str[len] == '\\' || file_str[len] == '/')
+			{
+				//
+				memcpy(pathforfile, file_str, len);
+				pathforfile[len] = 0;
+				break;
+			}
+		}
+
+		ArrFiles.push_back(file_str);
+		char text[S4G_MAX_LEN_STR_IN_FILE];
+
+		while (!feof(ffile))
+		{
+			text[0] = 0;
+			fgets(text, 1024, ffile);
+			AllFile += text;
+		}
+
+		fclose(ffile);
 	}
-
-	ArrFiles.push_back(file);
-	curr_id_file = ArrFiles.size() - 1;
-	String AllFile, str, str2, str3;
-	char tmpvar[64];
-	char tmpoperator[64];
-	char tmpval[64];
-
-	long tmppos1, tmppos2, tmppos3;
-
-	char text[S4G_MAX_LEN_STR_IN_FILE];
-
-	while (!feof(ffile))
+	else
 	{
-		text[0] = 0;
-		fgets(text, 1024, ffile);
-		AllFile += text;
+		AllFile = file_str;
+		char user_str[256];
+		pathforfile[0] = 0;
+		sprintf(user_str, "user str #%d", ArrFiles.size());
+		ArrFiles.push_back(user_str);
 	}
 
-	fclose(ffile);
+	curr_id_file = ArrFiles.size() - 1;
 
 	long numcursym = 0;
 	long numcurstr = 1;

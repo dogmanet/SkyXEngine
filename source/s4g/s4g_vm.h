@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef s4g_vm_h
+#define s4g_vm_h
 
 enum s4g_vm_command
 {
@@ -23,6 +24,31 @@ enum s4g_vm_command
 	mc_call,		//вызов функции
 };
 
+#define S4G_VM_OP_ARIF_ERROR_TYPE1 \
+	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);\
+	error = -1;\
+	char strtype[12];\
+	s4g_get_str_type(ttype1, strtype);\
+	sprintf(this->strerror, "[%s]:%d - '%s' expected number but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);\
+	return;
+
+#define S4G_VM_OP_ARIF_ERROR_TYPE2 \
+	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com-1).lexid); \
+	error = -1; \
+	char strtype[12]; \
+	s4g_get_str_type(ttype2, strtype); \
+	sprintf(this->strerror, "[%s]:%d - '%s' expected number but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
+	return;
+
+#define S4G_VM_OP_ARIF_ERROR_UNSUN_UNRES \
+	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid); \
+	error = -1; \
+	char strtype[12]; \
+	s4g_get_str_type(ttype2, strtype); \
+	sprintf(this->strerror, "[%s]:%d - '%s' unary symbol is unresolved to '%s' type", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
+	return;
+
+
 #include <s4g\s4g_compiler.h>
 
 //структура описывающая сохраненное предыдущее состояние при вызове функции и содержащее имя вызыванной функции
@@ -32,7 +58,8 @@ struct s4g_call_data
 	{
 		coms = 0;
 		vars = 0;
-		cfetchget = cfetchgetarg = false;
+		cfetchget = 3;
+		cfetchgetarg = false;
 		cfetchpushstore = 0;
 		id_curr_com = lastidctx = idnewctx = idexternctx = -1;
 		namef[0] = 0;
@@ -41,7 +68,7 @@ struct s4g_call_data
 	s4g_call_data(
 		s4g_stack<s4g_command>* _coms,
 		s4g_table* _vars, 
-		bool _cfetchget, 
+		int _cfetchget,
 		bool _cfetchgetarg, 
 		int _cfetchpushstore, 
 		long _id_curr_com, 
@@ -65,7 +92,7 @@ struct s4g_call_data
 
 	s4g_stack<s4g_command>* coms;	//команды выполнения
 	s4g_table* vars;			//таблица с переменными (окружение)
-	bool cfetchget;				
+	int cfetchget;				
 	bool cfetchgetarg;	
 	int cfetchpushstore;
 	long id_curr_com;
@@ -84,7 +111,7 @@ public:
 	{ 
 		gc = _gc;  
 		gc->add_new_context(&gvars); 
-		vgvars = gc->cr_val_table(gvars/*, -2*/); 
+		vgvars = gc->cr_val_table(gvars); 
 		strerror[0] = 0; error = 0;
 		cfetchpushstore = 0;
 		curr_vars = 0;
@@ -124,15 +151,15 @@ public:
 	int run(s4g_stack<s4g_command>* commands, s4g_table* vars);
 
 	//функции для исполнения байт кода
-	inline void com_fetch(/*s4g_value* val, bool is_cr*/);
-	inline void com_fetch_get(/*s4g_value* val, bool is_cr*/);
+	inline void com_fetch();
+	inline void com_fetch_get();
 	inline void com_store();
 	inline void com_end();
-	inline void com_mstore(/*s4g_value* arg, int val_end*/);
+	inline void com_mstore();
 	inline void com_add_in_table();
 	inline void com_precall();
 	inline void com_call();
-	inline void com_new_table(/*s4g_value* val*/);
+	inline void com_new_table();
 
 	inline void com_retprev();	//возвращаем предыдущее состояние машины, в случае когда функция отработала все свои команды
 
@@ -174,8 +201,10 @@ public:
 	bool cfetchgetarg;	//была ли предыдущая команда fetch_get с аргументом или без
 	int cfetchpushstore;//следовалаи комбинаци fetch push store, если да то значит = 3, нужно для com_store
 
-	s4g_stack_register<int, 10240> sr;
+	s4g_stack_register<int, S4G_MAX_CALL+1> sr;
 	int CurrCountArg;
 	long precall;
 	s4g_stack<s4g_call_data*> callstack;	//стэк вызовов с сохраненным предыдущим состоянием
 };
+
+#endif

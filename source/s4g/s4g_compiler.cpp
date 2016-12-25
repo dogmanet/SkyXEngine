@@ -195,16 +195,16 @@ int s4g_compiler::compile2(s4g_node* node)
 					node->op1->type = _int;
 				}
 
-				compile2(node->op1);
+				//compile2(node->op1);
 
 				if (iscr)
 				{
-					gen(mc_fetch_get_cr, 0, node->lexid);
+					gen(mc_fetch_get_cr, node->op1->value, node->lexid);
 					printf("fetch_get_cr\n");
 				}
 				else
 				{
-					gen(mc_fetch_get, 0, node->lexid);
+					gen(mc_fetch_get, node->op1->value, node->lexid);
 					printf("fetch_get\n");
 				}
 			compile2(node->op3);
@@ -266,6 +266,11 @@ int s4g_compiler::compile2(s4g_node* node)
 						if (tmpnode && tmpnode->op1 && tmpnode->op1->type == _marg)
 						{
 							sf->ismarg = true;
+							sf->marg_val = gc->cr_val_table_null();
+							sf->marg_val->isdelete = false;
+							sf->marg_val->typedata = 1;
+							sf->marg_val->pdata->typedata = 1;
+							sf->margtable = gc->get_table(sf->marg_val);
 							break;
 						}	
 				}

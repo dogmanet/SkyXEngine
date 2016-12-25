@@ -12,6 +12,17 @@
 #pragma comment(lib, "winmm.lib")
 #include <LuaJIT-2.0.3\src\lua.hpp>
 #include <s4g\s4g.cpp>
+#include <s4g\s4g_api.cpp>
+
+char* exestr = "testcall = function (a1,a2)\
+			   asdf2 = 10;\
+			   //asdf2 + _g.asdf;\n\
+			   end;\
+			   a = 10;\
+			   function asdf(a1)\
+			   a1 = 15;\
+			   end;\
+			   testcall2(a); ";
 
 s4g_main* s4gm = 0;
 lua_State* LuaState = 0;
@@ -47,7 +58,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	luaL_openlibs(LuaState);
 	
-	int status2 = luaL_dofile(LuaState, "D:\\project\\engine\\SkyXEngine\\SkyXEngine\\Debug\\test.script");//luaL_dofile(L, file);
+	int status2 = luaL_dofile(LuaState, "D:\\project\\engine\\SkyXEngine\\SkyXEngine\\Debug\\lua.script");//luaL_dofile(L, file);
 	
 
 	if (status2)
@@ -81,6 +92,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}*/
 		//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	}
+	//time2 = timeGetTime();
 	lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	time2 = timeGetTime() - time2;
 	int lcs = lua_gettop(LuaState);
@@ -93,18 +105,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//s4g_spush_c_func(s4gm, testcf);
 	//s4g_sstore_g(s4gm, "testcf");
 	
-	int status = s4g_load_file(s4gm,"D:/project/engine/SkyXEngine/SkyXEngine/Debug/test.script");
+	int status = s4g_load_file(s4gm, "D:/project/engine/SkyXEngine/SkyXEngine/Debug/s4g.script");
+	//status = s4g_load_str(s4gm, exestr);
 	
 	s4g_call(s4gm);
 	
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
+	int qwerty = 0;
 	for (int i = 0; i < counttt; i++)
 	{
+		//s4g_spush_precall(s4gm,)
 		s4g_spush_precall(s4gm);
 		s4g_sget_g(s4gm, "testcall");
 		s4g_spush_int(s4gm, 2);
-		//s4g_spush_int(s4gm, 7);
+		s4g_spush_int(s4gm, 7);
 		s4g_call(s4gm,true);
 
 		//s4g_call(s4gm);
@@ -114,21 +129,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			sprintf(s4gm->strerror, "%s", s4gm->vmachine->strerror);
 			return status;
 		}
-		s4g_call_gc(s4gm, 0);
+		++qwerty;
+		if (qwerty >= 100)
+		{
+			s4g_call_gc(s4gm, 0);
+			qwerty = 0;
+		}
 		//s4gm->gc->resort();
 		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	}
 	//s4g_int tnum = s4g_sget_int(s4gm, -1);
+	//time = timeGetTime();
 	s4g_call_gc(s4gm, 0);
 	//s4gm->gc->resort();
 	time = timeGetTime() - time;
 	int qwert = 0;
 
-	/*time = timeGetTime();
-	s4g_call_gc(s4gm, 0);
-	s4gm->gc->resort();
-	time = timeGetTime() - time;*/
+	//time = timeGetTime();
+	//s4g_call_gc(s4gm, 0);
+	//s4gm->gc->resort();
+	//time = timeGetTime() - time;
 	char texttime[64];
 	sprintf(texttime, "lua = %d | s4g = %d", time2,time);
 	MessageBox(0, texttime, 0, 0);

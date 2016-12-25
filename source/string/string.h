@@ -64,7 +64,7 @@ public:
 
 	~String();
 
-	void Release();
+	inline void Release();
 
 	////////////////////////////////////
 	//�������� �������� �����
@@ -201,42 +201,42 @@ public:
 	bool operator!=(const bool &	bf) const;
 
 	//////////////////////////////////////
-	char & operator[](const unsigned long & num);
-	const char & operator[](const unsigned long & num) const;
+	inline char & operator[](const unsigned long & num);
+	inline const char & operator[](const unsigned long & num) const;
 	//////////////////////////////////////
 
-	unsigned long length() const;
-	unsigned long find(const char & c, unsigned long pos = 0) const;
-	unsigned long find(const char * str, unsigned long pos = 0) const;
-	unsigned long find(const String & str, unsigned long pos = 0) const;
+	inline unsigned long length() const;
+	inline unsigned long find(const char & c, unsigned long pos = 0) const;
+	inline unsigned long find(const char * str, unsigned long pos = 0) const;
+	inline unsigned long find(const String & str, unsigned long pos = 0) const;
 
-	unsigned long find_last_of(const char & c, unsigned long pos = 0) const;
-	unsigned long find_last_of(const char * str, unsigned long pos = 0) const;
-	unsigned long find_last_of(const String & str, unsigned long pos = 0) const;
+	inline unsigned long find_last_of(const char & c, unsigned long pos = 0) const;
+	inline unsigned long find_last_of(const char * str, unsigned long pos = 0) const;
+	inline unsigned long find_last_of(const String & str, unsigned long pos = 0) const;
 
-	unsigned long Replace(const char * str, const char * replace, unsigned long pos);
-	unsigned long Replace(const String & str, const String & replace, unsigned long pos);
+	inline unsigned long Replace(const char * str, const char * replace, unsigned long pos);
+	inline unsigned long Replace(const String & str, const String & replace, unsigned long pos);
 
-	unsigned long ReplaceAll(const char * str, const char * replace);
-	unsigned long ReplaceAll(const String & str, const String & replace);
+	inline unsigned long ReplaceAll(const char * str, const char * replace);
+	inline unsigned long ReplaceAll(const String & str, const String & replace);
 
 	//char * SubStr(unsigned long pos, unsigned long lenght); // ��� ������ �� �����
-	String substr(unsigned long pos, unsigned long lenght = 0) const;
-	unsigned int Delete(unsigned long pos, unsigned long lenght);
+	inline String substr(unsigned long pos, unsigned long lenght = 0) const;
+	inline unsigned int Delete(unsigned long pos, unsigned long lenght);
 
-	String trim();
+	inline String trim();
 
-	const char * c_str() const;
+	inline const char * c_str() const;
 
-	void Reserve(int length);
+	inline void Reserve(int length);
 
-	int		ToInt() const;
-	long	ToLongInt() const;
-	unsigned long	ToUnsLongInt() const;
-	double	ToDouble() const;
-	bool	ToBool() const;
+	inline int		ToInt() const;
+	inline long	ToLongInt() const;
+	inline unsigned long	ToUnsLongInt() const;
+	inline double	ToDouble() const;
+	inline bool	ToBool() const;
 
-	operator StringW() const;
+	inline operator StringW() const;
 
 protected:
 	char * string;
@@ -403,8 +403,8 @@ public:
 	bool operator!=(const bool &	bf) const;
 
 	//////////////////////////////////////
-	WCHAR & operator[](const unsigned long & num);
-	const WCHAR & operator[](const unsigned long & num) const;
+	inline WCHAR & operator[](const unsigned long & num);
+	inline const WCHAR & operator[](const unsigned long & num) const;
 	//////////////////////////////////////
 
 	void insert(unsigned int pos, const WCHAR * data);
@@ -428,19 +428,19 @@ public:
 	StringW substr(unsigned long pos, unsigned long lenght = 0) const;
 	unsigned int Delete(unsigned long pos, unsigned long lenght);
 
-	StringW trim();
+	inline StringW trim();
 
-	const WCHAR * c_str() const;
+	inline const WCHAR * c_str() const;
 
-	void Reserve(int length);
+	inline void Reserve(int length);
 
-	int		ToInt() const;
-	long	ToLongInt() const;
-	unsigned long	ToUnsLongInt() const;
-	double	ToDouble() const;
-	bool	ToBool() const;
+	inline int		ToInt() const;
+	inline long	ToLongInt() const;
+	inline unsigned long	ToUnsLongInt() const;
+	inline double	ToDouble() const;
+	inline bool	ToBool() const;
 
-	operator String() const;
+	inline operator String() const;
 
 protected:
 	WCHAR * string;

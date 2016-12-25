@@ -37,7 +37,7 @@ public:
 			}
 	}
 
-	void resize(UINT NewSize)
+	inline void resize(UINT NewSize)
 	{
 		Realloc(NewSize);
 		//ConstructInterval(this->Size, key);
@@ -48,7 +48,7 @@ public:
 		this->Size = NewSize;
 	}
 
-	void reserve(UINT size)
+	inline void reserve(UINT size)
 	{
 		Realloc(size);
 	}
@@ -63,7 +63,7 @@ public:
 		(*this)[this->Size] = data;
 	}
 
-	void erase(UINT key)
+	inline void erase(UINT key)
 	{
 			/*if(key < 0)
 			{
@@ -88,7 +88,7 @@ public:
 			}
 	}
 
-	Array & operator=(T* arr)
+	inline Array & operator=(T* arr)
 	{
 		//this->AllocSize = arr.AllocSize;
 		//this->Size = arr.Size;
@@ -99,7 +99,7 @@ public:
 		return(*this);
 	}
 
-	Array & operator=(const Array<T, BlockSize> & arr)
+	inline Array & operator=(const Array<T, BlockSize> & arr)
 	{
 		//this->AllocSize = arr.AllocSize;
 		//this->Size = arr.Size;
@@ -162,7 +162,7 @@ public:
 		free(Data);
 	}
 
-	void clear()
+	inline void clear()
 	{
 			if(Size)
 			{
@@ -186,12 +186,12 @@ protected:
 	friend s4g_stack_register<T, BlockSize>;
 	friend s4g_table;
 	friend s4g_gc;
-	void Alloc()
+	inline void Alloc()
 	{
 		Realloc(BlockSize);
 	}
 
-	void Realloc(UINT NewSize)
+	inline void Realloc(UINT NewSize)
 	{
 		T * tmpData = (T*)malloc(sizeof(T) * NewSize);
 		memcpy(tmpData, this->Data, min(NewSize, this->Size) * sizeof(T));
@@ -207,7 +207,7 @@ protected:
 		free(tmpDel);
 	}
 
-	void ConstructInterval(UINT start, UINT end)
+	inline void ConstructInterval(UINT start, UINT end)
 	{
 		//this->Data + start = new(this->Data + start) T[end - start + 1];
 			for(UINT i = start; i <= end; i++)
@@ -216,7 +216,7 @@ protected:
 			}
 	}
 
-	void DestructInterval(UINT start, UINT end)
+	inline void DestructInterval(UINT start, UINT end)
 	{
 			for(UINT i = start; i <= end; i++)
 			{
