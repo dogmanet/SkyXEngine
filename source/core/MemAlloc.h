@@ -197,7 +197,7 @@ public:
 	}
 
 	template<typename... Args>
-	T * Alloc(Args... args)
+	T * Alloc(Args&&... args)
 	{
 		T * tmpNewNode = NULL;
 		if(!NumCurBlockCount)
