@@ -196,7 +196,8 @@ public:
 		}
 	}
 
-	T * Alloc()
+	template<typename... Args>
+	T * Alloc(Args... args)
 	{
 		T * tmpNewNode = NULL;
 		if(!NumCurBlockCount)
@@ -240,7 +241,7 @@ public:
 						{
 							AllocBlock();
 						}
-						return(Alloc());
+						return(Alloc(args...));
 					}
 				}
 			}
@@ -256,9 +257,9 @@ public:
 			{
 				AllocBlock();
 			}
-			return(Alloc());
+			return(Alloc(args...));
 		}
-		tmpNewNode = new (tmpNewNode)T;
+		tmpNewNode = new (tmpNewNode)T(args...);
 		return(tmpNewNode);
 	}
 
