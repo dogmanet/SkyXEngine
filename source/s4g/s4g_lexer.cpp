@@ -535,7 +535,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				tmpid = s4g_is_key_word_pp(tmpword);
 				//if((tmpid = s4g_is_key_word_pp(tmpword)) != -1)
 				//{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_prep, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_prep, tmpid, curr_id_file);
 				numcursym += strlen(tmpword) + 1;
 				break;
 				//}
@@ -548,25 +548,25 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			else if (tmpc == '"')
 			{
 				s4g_scan_litstring(str + numcursym, tmpword);
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_string, -1, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string, -1, curr_id_file);
 				numcursym += strlen(tmpword) + 2;
 				break;
 			}
 			else if ((tmpid = s4g_is_boolean(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_bool, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_bool, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			else if (s4g_is_null(str + numcursym))
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_null, -1, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_null, -1, curr_id_file);
 				numcursym += strlen(s4g_key_words[0]);
 				break;
 			}
 			else if (str[numcursym] == '.' && str[numcursym+1] == '.' && str[numcursym+2] == '.')
 			{
-				tmplex = new s4g_lexeme("...", numcurstr, s4g_lexeme_type::marg, -1, curr_id_file);
+				tmplex = LexPool.Alloc("...", numcurstr, s4g_lexeme_type::marg, -1, curr_id_file);
 				numcursym += 3;
 				break;
 			}
@@ -578,7 +578,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				{
 					s4g_scan_string(str + numcursym, tmpword);
 					if ((tmpid = s4g_is_key_word(tmpword)) == -1)
-						tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
 					else
 					{
 						sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
@@ -601,14 +601,14 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 					{
 						int slen = strlen(tmpword) - 1;
 						if (tmpword[slen] == 'u')
-							tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_uint_cr, -1, curr_id_file);
+							tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_uint_cr, -1, curr_id_file);
 						else if (tmpword[slen] == 'f')
 						{
 							sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
 							return 0;
 						}
 						else
-							tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_int_cr, -1, curr_id_file);
+							tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_int_cr, -1, curr_id_file);
 					}
 
 					break;
@@ -616,7 +616,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				else if (tmpc == '"')
 				{
 					s4g_scan_litstring(str + numcursym, tmpword);
-					tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
+					tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
 					numcursym += strlen(tmpword) + 2;
 					break;
 				}
@@ -631,9 +631,9 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			{
 				s4g_scan_string(str + numcursym, tmpword);
 				if ((tmpid = s4g_is_key_word(tmpword)) != -1)
-					tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_key, tmpid, curr_id_file);
+					tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_key, tmpid, curr_id_file);
 				else
-					tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_user, -1, curr_id_file);
+					tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_user, -1, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
@@ -644,16 +644,16 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				numcursym += strlen(tmpword);
 				//если есть точка в строке значит это float
 				if (strstr(tmpword, "."))
-					tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_float, -1, curr_id_file);
+					tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_float, -1, curr_id_file);
 				else
 				{
 					int slen = strlen(tmpword) - 1;
 					if (tmpword[slen] == 'u')
-						tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_uint, -1, curr_id_file);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_uint, -1, curr_id_file);
 					else if (tmpword[slen] == 'f')
-						tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_float, -1, curr_id_file);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_float, -1, curr_id_file);
 					else
-						tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::word_int, -1, curr_id_file);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_int, -1, curr_id_file);
 				}
 
 				break;
@@ -661,56 +661,56 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			//если текуща€ лексема относитс€ к логическим 
 			else if ((tmpid = s4g_is_syms_logic(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_logic, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_logic, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к арифметическим операци€м с приравниванием
 			else if ((tmpid = s4g_is_syms_arif_assign(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_arif_assign, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_arif_assign, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к арифметическим
 			else if ((tmpid = s4g_is_syms_arif(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_arif, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_arif, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к разделител€м
 			else if ((tmpid = s4g_is_delimiter(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_delimiter, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_delimiter, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к присваивател€м
 			else if ((tmpid = s4g_is_assign(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_assign, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_assign, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к созданию таблицы
 			else if ((tmpid = s4g_is_table_create(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_table_create, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_table_create, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к обращению к элементу таблицы
 			else if ((tmpid = s4g_is_table_elem(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_table_elem, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_table_elem, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
 			//если текуща€ лексема относитс€ к группировке/вызову функции
 			else if ((tmpid = s4g_is_syms_group(str + numcursym, tmpword)) != -1)
 			{
-				tmplex = new s4g_lexeme(tmpword, numcurstr, s4g_lexeme_type::sym_group, tmpid, curr_id_file);
+				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_group, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
 				break;
 			}
@@ -739,6 +739,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 int s4g_arr_lex::read(const char* file_str, bool isfile)
 {
 	char pathforfile[1024];
+	pathforfile[0] = 0;
 	String AllFile;
 
 	if (isfile)
@@ -779,7 +780,6 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	{
 		AllFile = file_str;
 		char user_str[256];
-		pathforfile[0] = 0;
 		sprintf(user_str, "user str #%d", ArrFiles.size());
 		ArrFiles.push_back(user_str);
 	}
@@ -820,7 +820,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 					//если им€ дефайна пользовательское слово а не ключевое
 					if (tmpnamedef->type == word_user)
 					{
-						s4g_define* tmpdef = new s4g_define;
+						s4g_define* tmpdef = (s4g_define*)alloca(sizeof(s4g_define));
 						sprintf(tmpdef->name, "%s", tmpnamedef->str);
 						long tmpoldnsym = numcursym;
 						s4g_lexeme* tmplexg = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
@@ -833,7 +833,8 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 							if (tmplexg->type == sym_group && tmplexg->id == 0 && numcursym - tmpoldnsym == strlen(s4g_key_syms_group[0]))
 							{
 								//удал€ем за ненадобностью лексему скобки
-								mem_delete(tmplexg);
+								LexPool.Delete(tmplexg);
+								tmplexg = NULL;
 								while (1)
 								{
 									s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
@@ -877,13 +878,15 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 											if (tmplex3->type == sym_group && tmplex3->id == 1)
 											{
 												//удал€ем ее и прерываем цикл
-												mem_delete(tmplex3);
+												LexPool.Delete(tmplex3);
+												tmplex3 = NULL;
 												break;
 											}
 											//если эта лексема зап€та€
 											else if (tmplex3->type == sym_delimiter && tmplex3->id == 1)
 											{
-												mem_delete(tmplex3);
+												LexPool.Delete(tmplex3);
+												tmplex3 = NULL;
 											}
 											//иначе это друга€ лексема, а это ошибка
 											else
@@ -922,7 +925,8 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 							else
 							{
 								//удал€ем эту лексему
-								mem_delete(tmplexg);
+								LexPool.Delete(tmplexg);
+								tmplexg = NULL;
 								//переводим назад данные на считывание предыд
 								numcursym = tmpoldnsym;
 							}
@@ -968,7 +972,8 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 								else
 								{
 									//удал€ем лексему
-									mem_delete(tmplex2);
+									LexPool.Delete(tmplex2);
+									tmplex2 = NULL;
 									//и переводим назад значени€, на предыдущю лексему
 									numcurstr = oldnstr;
 									numcursym = oldnsym;
@@ -992,7 +997,9 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						if (ArrDefines.IsExists(tmpnamedef->str))
 						{
 							ArrDefines.Del(tmpnamedef->str);
-							mem_delete(tmpnamedef);
+
+							LexPool.Delete(tmpnamedef);
+							tmpnamedef = NULL;
 						}
 				}
 				//иначе если лексема не имеет идентификатора то это подстановка пользовательского дефайна

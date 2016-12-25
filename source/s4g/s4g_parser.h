@@ -329,6 +329,7 @@ public:
 	Array<String> ArrPathForFiles;
 	int curr_id_file;// = ArrFiles.size()-1;
 	long curr_num;
+	MemAlloc<s4g_lexeme> LexPool;
 };
 
 #define bst_iferr(cond,text,...) if(cond) {this->status = -1; sprintf(this->error, text, ...); return 0;)
