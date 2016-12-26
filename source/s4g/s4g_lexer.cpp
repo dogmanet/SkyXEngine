@@ -1,4 +1,4 @@
-
+#include "s4g_preprocessor.h"
 
 int s4g_parse_str_is_exists(const char* str)
 {
@@ -539,7 +539,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			numcursym += strlen(s4g_key_syms_comment_ms[1]);
 		}
 		//если мы не в комментарии и текущий символ не пробел и не табул€ци€
-		else if (typecomment == 0 && !(tmpc == ' ' || tmpc == '\t'))
+		else if (typecomment == 0 && !isspace(tmpc))
 		{
 			//если у нас команда дл€ препроцессора
 			if (tmpc == '#')
@@ -731,7 +731,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			}
 			else if (tmpc == 0)
 			{
-				numcursym++;
+				break;
 			}
 			else
 			{
@@ -757,17 +757,19 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	pathforfile[0] = 0;
 	String AllFile;
 
+	s4g_preprocessor preproc;
+
 	if (isfile)
 	{
 		FILE* ffile;
 
-		if (!(ffile = fopen(file_str, "rt")))
+		if(!(ffile = fopen(file_str, "rb")))
 		{
 			return -1;
 		}
 		
 		int len = strlen(file_str);
-		while (len >= 0)
+		while(len >= 0)
 		{
 			len--;
 			if (file_str[len] == '\\' || file_str[len] == '/')
@@ -779,15 +781,20 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 			}
 		}
 
+		if(pathforfile[0])
+		{
+			preproc.AddIncPath(pathforfile);
+		}
+
 		ArrFiles.push_back(file_str);
 		char text[S4G_MAX_LEN_STR_IN_FILE];
 
-		while (!feof(ffile))
-		{
-			text[0] = 0;
-			fgets(text, 1024, ffile);
-			AllFile += text;
-		}
+		int size;
+		fseek(ffile, 0, SEEK_END);
+		size = ftell(ffile);
+		fseek(ffile, 0, SEEK_SET);
+		AllFile.Reserve(size + 1);
+		AllFile[fread((void*)(AllFile.c_str()), 1, size, ffile)] = 0;
 
 		fclose(ffile);
 	}
@@ -800,6 +807,13 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	}
 
 	curr_id_file = ArrFiles.size() - 1;
+
+	AllFile = preproc.Process(AllFile.c_str(), file_str);
+	if(preproc.IsError())
+	{
+		sprintf(strerror, "%s", preproc.GetError());
+		return -1;
+	}
 
 	long numcursym = 0;
 	long numcurstr = 1;
@@ -814,7 +828,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 			if (tmplex->type == word_prep)
 			{
 				//если это инклюд (подключение файла)
-				if(tmplex->id == S4GLPP_INCLUDE)
+				/*if(tmplex->id == S4GLPP_INCLUDE)
 				{
 					s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
 					if (tmplex2->type == word_string)
@@ -827,7 +841,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						curr_id_file = tmp_curr_id_file;
 					}
 				}
-				else if(tmplex->id == S4GLPP_LINE)
+				else */if(tmplex->id == S4GLPP_LINE)
 				{
 					s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
 					if(tmplex2->type != word_int)
@@ -836,6 +850,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						return -1;
 					}
 					sscanf(tmplex2->str, "%d", &numcurstr);
+					--numcurstr;
 					LexPool.Delete(tmplex2);
 
 					tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
@@ -862,7 +877,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 					LexPool.Delete(tmplex2);
 				}
 				//если это дефайн
-				else if(tmplex->id == S4GLPP_DEFINE)
+				/*else if(tmplex->id == S4GLPP_DEFINE)
 				{
 					//считываем им€
 					s4g_lexeme* tmpnamedef = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
@@ -1171,7 +1186,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						sprintf(strerror, "[%s]:%d - define [%s] is not exists", ArrFiles[tmplex->fileid], tmplex->numstr, tmplex->str);
 						return -1;
 					}
-				}
+				}*/
 			}
 			//иначе считанна€ лексема это код
 			else

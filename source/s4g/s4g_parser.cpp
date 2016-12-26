@@ -1,9 +1,10 @@
 
-#include <s4g\s4g_parser.h>
+#include <s4g/s4g_parser.h>
 
-#include <s4g\s4g_vm.cpp>
-#include <s4g\s4g_compiler.cpp>
-#include <s4g\s4g_lexer.cpp>
+#include <s4g/s4g_vm.cpp>
+#include <s4g/s4g_compiler.cpp>
+#include <s4g/s4g_lexer.cpp>
+#include <s4g/s4g_preprocessor.cpp>
 
 
 ///////////////
