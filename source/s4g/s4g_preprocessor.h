@@ -20,7 +20,7 @@ public:
 	const char * GetError();
 	bool IsError();
 
-protected:
+//protected:
 	struct _define
 	{
 		Array<String> vArgs;

@@ -497,6 +497,7 @@ inline int s4g_is_key_word_pp(const char* str)
 s4g_arr_lex::s4g_arr_lex()
 {
 	curr_num = -1;
+	iscreatevar = false;
 }
 
 s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* curr_num_str)
@@ -574,7 +575,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			}
 			else if (s4g_is_null(str + numcursym))
 			{
-				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_null, -1, curr_id_file);
+				tmplex = LexPool.Alloc("null", numcurstr, s4g_lexeme_type::word_null, -1, curr_id_file);
 				numcursym += strlen(s4g_key_words[0]);
 				break;
 			}
@@ -592,7 +593,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				{
 					s4g_scan_string(str + numcursym, tmpword);
 					if ((tmpid = s4g_is_key_word(tmpword)) == -1)
-						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, (iscreatevar ? s4g_lexeme_type::word_user_cr : s4g_lexeme_type::word_user), -1, curr_id_file);
 					else
 					{
 						sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
@@ -615,14 +616,14 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 					{
 						int slen = strlen(tmpword) - 1;
 						if (tmpword[slen] == 'u')
-							tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_uint_cr, -1, curr_id_file);
+							tmplex = LexPool.Alloc(tmpword, numcurstr, (iscreatevar ? s4g_lexeme_type::word_uint_cr : s4g_lexeme_type::word_uint), -1, curr_id_file);
 						else if (tmpword[slen] == 'f')
 						{
 							sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
 							return 0;
 						}
 						else
-							tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_int_cr, -1, curr_id_file);
+							tmplex = LexPool.Alloc(tmpword, numcurstr, (iscreatevar ? s4g_lexeme_type::word_int_cr : s4g_lexeme_type::word_int), -1, curr_id_file);
 					}
 
 					break;
@@ -809,6 +810,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	curr_id_file = ArrFiles.size() - 1;
 
 	AllFile = preproc.Process(AllFile.c_str(), file_str);
+	iscreatevar = preproc.isDefined("S4G_CREATE_VAR");
 	if(preproc.IsError())
 	{
 		sprintf(strerror, "%s", preproc.GetError());
@@ -827,21 +829,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 			//если тип лексемы относится к препроцессору
 			if (tmplex->type == word_prep)
 			{
-				//если это инклюд (подключение файла)
-				/*if(tmplex->id == S4GLPP_INCLUDE)
-				{
-					s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-					if (tmplex2->type == word_string)
-					{
-						char newpath[1024];
-						sprintf(newpath, "%s%s", pathforfile, tmplex2->str);
-						int  tmp_curr_id_file = curr_id_file;
-						if (read(newpath) == -1)
-							return -1;
-						curr_id_file = tmp_curr_id_file;
-					}
-				}
-				else */if(tmplex->id == S4GLPP_LINE)
+				if(tmplex->id == S4GLPP_LINE)
 				{
 					s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
 					if(tmplex2->type != word_int)
@@ -876,317 +864,6 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 					curr_id_file = idx;
 					LexPool.Delete(tmplex2);
 				}
-				//если это дефайн
-				/*else if(tmplex->id == S4GLPP_DEFINE)
-				{
-					//считываем имя
-					s4g_lexeme* tmpnamedef = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-					//если имя дефайна пользовательское слово а не ключевое
-					if (tmpnamedef->type == word_user)
-					{
-						s4g_define* tmpdef = (s4g_define*)alloca(sizeof(s4g_define));
-						sprintf(tmpdef->name, "%s", tmpnamedef->str);
-						long tmpoldnsym = numcursym;
-						s4g_lexeme* tmplexg = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-						//если у нас не конец файла
-						if (tmplexg)
-						{
-							long oldnstr = numcurstr;
-
-							//если у нас открывающая скобка
-							if (tmplexg->type == sym_group && tmplexg->id == 0 && numcursym - tmpoldnsym == strlen(s4g_key_syms_group[0]))
-							{
-								//удаляем за ненадобностью лексему скобки
-								LexPool.Delete(tmplexg);
-								tmplexg = NULL;
-								while (1)
-								{
-									s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-									//ели мы все еще находимся в зоне дефайна
-									if (oldnstr == numcurstr)
-									{
-										//если считали лексему и она является пользовательским словом
-										if (tmplex2 && tmplex2->type == word_user)
-										{
-											//проверяем на уникальность имя нового аргумента
-											bool is_arg_unic = true;
-											for (int i = 0; i<tmpdef->arg.size(); i++)
-											{
-												if (tmpdef->arg[i] == tmplex2->str)
-												{
-													is_arg_unic = false;
-													break;
-												}
-											}
-
-											//если аргумент не уникальный выдаем ошибку
-											if (!is_arg_unic)
-											{
-												sprintf(strerror, "[%s]:%d - none unic argument [%s] in define", ArrFiles[tmplex2->fileid], tmplex2->numstr, tmplex2->str);
-												return -1;
-											}
-
-											tmpdef->arg.push_back(tmplex2->str); //записываем имя аргумента
-											//считываем следующую лексему
-											s4g_lexeme* tmplex3 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-
-											//если лексему не удалось считать то это конец файла
-											if (!tmplex3)
-											{
-												//внезапный конец файла, а мы еще не закончили считывание аргументов
-												sprintf(strerror, "[%s]:%d - unexpected end of file in define", ArrFiles[tmplex2->fileid], tmplex2->numstr);
-												return -1;
-											}
-
-											//если эта лексема закрывающая скобка
-											if (tmplex3->type == sym_group && tmplex3->id == 1)
-											{
-												//удаляем ее и прерываем цикл
-												LexPool.Delete(tmplex3);
-												tmplex3 = NULL;
-												break;
-											}
-											//если эта лексема запятая
-											else if (tmplex3->type == sym_delimiter && tmplex3->id == 1)
-											{
-												LexPool.Delete(tmplex3);
-												tmplex3 = NULL;
-											}
-											//иначе это другая лексема, а это ошибка
-											else
-											{
-
-												sprintf(strerror, "[%s]:%d - unresolved lexeme [%s] in define, ojidal delimiter or dest zakriv skobky", ArrFiles[tmplex3->fileid], tmplex3->numstr, tmplex3->str);
-												return -1;
-											}
-										}
-										//иначе ошибка
-										else // error
-										{
-											if (!tmplex2)
-											{
-												//внезапный конец файла, а мы еще не закончили считывание аргументов
-												sprintf(strerror, "[%s]:%d - vnezapno end of file in define", ArrFiles[tmplex2->fileid], tmplex2->numstr);
-												return -1;
-											}
-											else if (tmplex2 && tmplex2->type != word_user)
-											{
-												//тип лексемы-аргумента не пользовательское слово
-												sprintf(strerror, "[%s]:%d - unresolved word [%s] in define", ArrFiles[tmplex2->fileid], tmplex2->numstr, tmplex2->str);
-												return -1;
-											}
-										}
-									}
-									//иначе мы еще не закрыли скобку и перешли на другую строку - ошибка
-									else
-									{
-										sprintf(strerror, "[%s]:%d - unresolved perehod in new string for define argument", ArrFiles[tmplex2->fileid], tmplex2->numstr);
-										return -1;
-									}
-								}
-							}
-							//иначе мы считали лексему кода дефайна
-							else
-							{
-								//удаляем эту лексему
-								LexPool.Delete(tmplexg);
-								tmplexg = NULL;
-								//переводим назад данные на считывание предыд
-								numcursym = tmpoldnsym;
-							}
-
-							//записыаем лексемы в дефайн
-							while (1)
-							{
-								long oldnsym = numcursym;
-								s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-								//если мы еще читаем лексемы относящиеся к дефайну
-								if (oldnstr == numcurstr)
-								{
-									if (tmplex2)
-									{
-										//если у дефайна нет аргументов
-										if (tmpdef->arg.size() > 0)
-										{
-											bool tmp_l_is_w = false;	//является ли лексема аргументом дефайна
-											for (int i = 0; i<tmpdef->arg.size(); i++)
-											{
-												//если лексема дефайна является аргументом дефайна
-												if (tmpdef->arg[i] == tmplex2->str)
-												{
-													//то записываем с указанием к какому аргументу относится лексема
-													tmpdef->lexs.push_back(s4g_def_lex_arg(tmplex2, i));
-													tmp_l_is_w = true;
-													break;
-												}
-											}
-
-											//если лексема дефайна не является аргументом дефайна
-											if (!tmp_l_is_w)
-												tmpdef->lexs.push_back(s4g_def_lex_arg(tmplex2, -1));
-										}
-										//если нет аргументов
-										else //то просто записываем
-											tmpdef->lexs.push_back(s4g_def_lex_arg(tmplex2, -1));
-									}
-									else
-										break;
-								}
-								//иначе мы читаем лексемы кода
-								else
-								{
-									//удаляем лексему
-									LexPool.Delete(tmplex2);
-									tmplex2 = NULL;
-									//и переводим назад значения, на предыдущю лексему
-									numcurstr = oldnstr;
-									numcursym = oldnsym;
-									break;
-								}
-							}
-						}
-						memcpy(ArrDefines[tmpdef->name], tmpdef, sizeof(s4g_define));
-					}
-					
-					else //error
-					{
-						sprintf(strerror, "[%s]:%d - unresolved use key word in define [%s]", ArrFiles[tmpnamedef->fileid], tmpnamedef->numstr, tmpnamedef->str);
-						return -1;
-					}
-					int wqert = 0;
-				}
-				else if(tmplex->id == S4GLPP_UNDEF)
-				{
-					s4g_lexeme* tmpnamedef = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-						if (ArrDefines.IsExists(tmpnamedef->str))
-						{
-							ArrDefines.Del(tmpnamedef->str);
-
-							LexPool.Delete(tmpnamedef);
-							tmpnamedef = NULL;
-						}
-				}
-				//иначе если лексема не имеет идентификатора то это подстановка пользовательского дефайна
-				else if(tmplex->id == S4GLPP_USER)
-				{
-					//если дефайн существует
-					if (ArrDefines.IsExists(tmplex->str))
-					{
-						s4g_define* tmpdef = ArrDefines[tmplex->str];
-						//если дефайн не функция
-						if (tmpdef->arg.size() == 0)
-						{
-							//просто вставляем все лексемы дефайна
-							for (int i = 0; i<tmpdef->lexs.size(); i++)
-							{
-								//заменяя id файла на id текущей лексемы и номер стркои на текущую лексему
-								s4g_lexeme* tmpll = tmpdef->lexs[i].lexeme;
-								tmpll->fileid = tmplex->fileid;
-								tmpll->numstr = tmplex->numstr;
-								ArrLexs.push_back(tmpll);
-							}
-						}
-						//иначе дефайн с аргументами
-						else
-						{
-							s4g_lexeme* tmplex3 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-							//если при подстановке дефайна следует открывающая скобка
-							if (tmplex3->type == sym_group && tmplex3->id == 0)
-							{
-								//все в норме, считываем аргументы
-								Array<Array<s4g_lexeme*>> tmplexss;
-								int tmphowarg = 0;
-								while (1)
-								{
-									s4g_lexeme* tmplex2 = r_get_lexeme(AllFile.c_str() + numcursym, &numcursym, &numcurstr);
-
-									//если не удалось считать лексему то скорее всего конец файла
-									if (!tmplex2) //error
-									{
-										sprintf(strerror, "[%s]:%d - неожиданный конец файла при считываниии аргументов дефайна [%s]", ArrFiles[tmplex->fileid], tmplex->numstr, tmplex->str);
-										return -1;
-									}
-
-									//если лексема это разделитель аргументов
-									if (tmplex2->type == sym_delimiter && tmplex2->id == 1)
-									{
-										//если мы хоть что-то считали в аргумент
-										if (tmplexss[tmphowarg].size() > 0)
-											tmphowarg++;	//подтверждаем считывание аргумента
-										//иначе мы ничего не считали а получили разделитель аргументов
-										else //error
-										{
-											sprintf(strerror, "[%s]:%d - ничего не считано в [%d] аргумент дефайна [%s]", ArrFiles[tmplex->fileid], tmplex->numstr, tmphowarg, tmplex->str);
-											return -1;
-										}
-
-										//если количество считанных аргументов больше либо равно количеству аргументов
-										if (tmphowarg >= tmpdef->arg.size())	//error
-										{
-											sprintf(strerror, "[%s]:%d - больше аргументов в дефайне [%s] либо лишняя запятая", ArrFiles[tmplex->fileid], tmplex->numstr, tmphowarg, tmplex->str);
-											return -1;
-										}
-									}
-									//иначе если считаная лексема это закрывающая скобка
-									else if (tmplex2->type == sym_group && tmplex2->id == 1)
-									{
-										//подтвеждаем считывание аргумента и останалвиваем цикл считывания
-										tmphowarg++;
-										break;
-									}
-									//иначе лексема является составляющей аргумента
-									else
-									{
-										//добавляем лексему к аргументу
-										tmplexss[tmphowarg].push_back(tmplex2);
-									}
-								}
-
-								//если количество аргументов дефайна не равно колиеству считанных лексем
-								if (tmphowarg != tmpdef->arg.size())	//error
-								{
-									sprintf(strerror, "[%s]:%d - в дефайне [%s] всего аргументов [%d], а считано [%d]", ArrFiles[tmplex->fileid], tmplex->numstr, tmphowarg, tmplex->str, tmpdef->arg.size(), tmphowarg);
-									return -1;
-								}
-								//иначе все в норме
-								else
-								{
-									//подставляем лексемы из дефайна
-									for (int i = 0; i<tmpdef->lexs.size(); i++)
-									{
-										//получаем номер аргумента
-										int numarg = tmpdef->lexs[i].num_arg;
-										//если лексема не является аргументом
-										if (numarg == -1)
-											ArrLexs.push_back(tmpdef->lexs[i].lexeme);	//просто подставляем
-										//иначе лексема является аргументом
-										else
-										{
-											//заменяем лексему дефайна на лексемы аргумента
-											for (int k = 0; k<tmplexss[tmpdef->lexs[i].num_arg].size(); k++)
-											{
-												s4g_lexeme* ttl = tmplexss[tmpdef->lexs[i].num_arg][k];
-												ArrLexs.push_back(ttl);
-											}
-										}
-									}
-								}
-							}
-							//при подстановке дефайна не следует открывающая скобка, выдаем ошибку
-							else // error
-							{
-								sprintf(strerror, "[%s]:%d - in define expected otkr skob but get [%s]", ArrFiles[tmplex->fileid], tmplex->numstr, tmplex3->str);
-								return -1;
-							}
-						}
-					}
-					//иначе дефайна нет, подставить нечего, выдаем ошибку
-					else
-					{
-						sprintf(strerror, "[%s]:%d - define [%s] is not exists", ArrFiles[tmplex->fileid], tmplex->numstr, tmplex->str);
-						return -1;
-					}
-				}*/
 			}
 			//иначе считанная лексема это код
 			else

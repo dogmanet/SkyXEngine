@@ -424,7 +424,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										//если в стеке операций чтото есть
 										if(stack_op.count() > 0)
 										{
-												if (stack_op.get(stack_op.count())->type == _group_b)
+												if (stack_op.get(stack_op.count()-1)->type == _group_b)
 												{
 													status = -1;
 													sprintf(this->error, "[%s]:%d - unresolved  null expression ()", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
@@ -435,7 +435,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 												while(stack_op.count() > 0)
 												{
 														//если последняя операция в стеке открывающая скобка
-														if(stack_op.get(stack_op.count())->type == _group_b)
+														if(stack_op.get(stack_op.count()-1)->type == _group_b)
 														{
 															//выталкиваем ее из стека и завершаем цикл
 															stack_op.pop(1);
@@ -444,7 +444,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 														}
 														else
 														{
-															s4g_node* qwert = stack_op.get(stack_op.count());
+															s4g_node* qwert = stack_op.get(stack_op.count()-1);
 															stack_var.push(qwert);
 															stack_op.pop(1);
 														}
@@ -489,10 +489,10 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										{
 											stack_op.push(new s4g_node((s4g_type_op)tmptypeop, curr_lexid));
 										}
-										else if(s4g_get_priority((s4g_type_op)tmptypeop) <= s4g_get_priority(stack_op.get(stack_op.count())->type))
+										else if(s4g_get_priority((s4g_type_op)tmptypeop) <= s4g_get_priority(stack_op.get(stack_op.count()-1)->type))
 										{
 											//выталкиваем
-											s4g_node* qwert = stack_op.get(stack_op.count());
+											s4g_node* qwert = stack_op.get(stack_op.count()-1);
 											stack_var.push(qwert/*stack_op.get(stack_op.count())*/);
 											stack_op.pop(1);
 											stack_op.push(new s4g_node((s4g_type_op)tmptypeop, curr_lexid));
@@ -554,7 +554,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 				//и записываем все эти операции в переменные
 				for(int i=0;i<stack_op.count();i++)
 				{
-					s4g_node* tmtm = stack_op.get(stack_op.count()-i);
+					s4g_node* tmtm = stack_op.get((stack_op.count()-i)-1);
 					
 						//если у нас встретилась открывающая скобка то значит мы ее не закрыли
 						if(tmtm->type == _group_b)	//error
@@ -571,22 +571,22 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 		//если количество считанных термов больше нуля то записываем первый считанный в основной нод
 		if(stack_var.count() > 0)
 		{
-			node = stack_var.get(1);
+			node = stack_var.get(0);
 		}
 
 		//если всетаки считали более одного терма то скорее всего у нас какое то выражение
 		//подготавливаемся к циклу записи
 		if(stack_var.count() > 1)
 		{
-			s4g_node* tmtm = stack_var.get(2);
-			node->op3 = stack_var.get(2);	//заталкиваем третий нод, ибо в первом ноде может быть обращение к элементам таблицы, а во втором аргументы для вызова функции!!!
+			s4g_node* tmtm = stack_var.get(1);
+			node->op3 = stack_var.get(1);	//заталкиваем третий нод, ибо в первом ноде может быть обращение к элементам таблицы, а во втором аргументы для вызова функции!!!
 			tmpnode = node->op3;
 		}
 
 		for(int i=1;i<stack_var.count();i++)
 		{
-			s4g_node* tmtm = stack_var.get(i+1);
-			tmpnode->op3 = stack_var.get(i+1);//заталкиваем третий нод, ибо в первом ноде может быть обращение к элементам таблицы, а во втором аргументы для вызова функции!!!
+			s4g_node* tmtm = stack_var.get(i);
+			tmpnode->op3 = stack_var.get(i);//заталкиваем третий нод, ибо в первом ноде может быть обращение к элементам таблицы, а во втором аргументы для вызова функции!!!
 			tmpnode = tmpnode->op3;
 		}
 

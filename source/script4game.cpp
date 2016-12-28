@@ -11,8 +11,12 @@
 #include <vector>
 #pragma comment(lib, "winmm.lib")
 #include <LuaJIT-2.0.3\src\lua.hpp>
-#include <s4g\s4g.cpp>
-#include <s4g\s4g_api.cpp>
+#include <s4g\s4g.h>
+/*#include <s4g\s4g_main.cpp>
+#include <s4g\s4g_api.cpp>*/
+#include <s4g\s4g_stdlib.h>
+
+#pragma comment(lib, "s4g.lib")
 
 char* exestr = "testcall = function (a1,a2)\
 			   asdf2 = 10;\
@@ -81,15 +85,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		lua_getfield(LuaState, LUA_GLOBALSINDEX, "testcall");
 		lua_pushnumber(LuaState, 2);
 		lua_pushnumber(LuaState, 7);
-		lua_call(LuaState, 2, 1);
-		/*if (lua_pcall(LuaState, 2, 1,0) != 0)	//!!!Run-time Lua error
+		//lua_call(LuaState, 2, 1);
+		if (lua_pcall(LuaState, 2, 1,0) != 0)	//!!!Run-time Lua error
 		{
 		char errorfmt[1024];
 		const char* error = lua_tostring(LuaState, -1);
 		sprintf(errorfmt, "File generator error: %s:%d\n%s", __FILE__, __LINE__, error);
 		MessageBox(0, errorfmt, 0, 0);
 		return -1;
-		}*/
+		}
 		//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	}
 	//time2 = timeGetTime();
@@ -102,6 +106,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	
 	s4gm = s4g_init("");
+	s4g_export_stdlib(s4gm);
 	//s4g_spush_c_func(s4gm, testcf);
 	//s4g_sstore_g(s4gm, "testcf");
 	
@@ -113,7 +118,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
 	int qwerty = 0;
-	for (int i = 0; i < counttt; i++)
+	for (;;/* int i = 0; i < counttt; i++*/)
 	{
 		//s4g_spush_precall(s4gm,)
 		s4g_spush_precall(s4gm);
@@ -124,15 +129,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 		//s4g_call(s4gm);
 		
-		if (s4gm->vmachine->error != 0)
+		/*if (s4gm->vmachine->error != 0)
 		{
 			sprintf(s4gm->strerror, "%s", s4gm->vmachine->strerror);
 			return status;
-		}
+		}*/
+		s4g_spop(s4gm, 1);
 		++qwerty;
-		if (qwerty >= 100)
+		if (qwerty >= 1000)
 		{
-			s4g_call_gc(s4gm, 0);
+			s4g_call_gc(s4gm);
+			
 			qwerty = 0;
 		}
 		//s4gm->gc->resort();
@@ -141,7 +148,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 	//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	//time = timeGetTime();
-	s4g_call_gc(s4gm, 0);
+	//s4g_call_gc(s4gm, 0);
 	//s4gm->gc->resort();
 	time = timeGetTime() - time;
 	int qwert = 0;
@@ -151,7 +158,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//s4gm->gc->resort();
 	//time = timeGetTime() - time;
 	char texttime[64];
-	sprintf(texttime, "lua = %d | s4g = %d", time2,time);
+	sprintf(texttime, "lua = %d | s4g = %d", time2, time);
 	MessageBox(0, texttime, 0, 0);
 	
 

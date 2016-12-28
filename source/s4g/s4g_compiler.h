@@ -15,7 +15,7 @@ class s4g_compiler
 {
 public:
 	s4g_compiler(){}
-	void gen(s4g_vm_command comm,s4g_value* val,long _lexid = -1);
+	inline void gen(s4g_vm_command comm,s4g_value* val,long _lexid = -1);
 	int compile(s4g_node* node, s4g_stack<s4g_command> * commands);
 	int compile2(s4g_node* node);
 //protected:

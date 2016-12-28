@@ -54,13 +54,13 @@ public:
 
 	inline T& get(int id)
 	{
-		if (id - 1 >= 0 && id - 1 < count_obj)
+		if (id >= 0 && id < count_obj)
 		{
-			return Arr.Data[id - 1];
+			return Arr.Data[id];
 		}
 		else if (id < 0)
 		{
-			if (abs(id) - 1 < count_obj)
+			if (count_obj + id < count_obj)
 			{
 				return Arr.Data[count_obj + id];
 			}
@@ -69,15 +69,15 @@ public:
 				s4g_breakpoint;
 			}
 		}
-		else if (id > count_obj && id <= Arr.AllocSize)
+		else if (id >= count_obj && id <= Arr.AllocSize)
 		{
-			count_obj = id;
-			return Arr.Data[id - 1];
+			count_obj = id+1;
+			return Arr.Data[id];
 		}
 		else  if (id > Arr.AllocSize)
 		{
 			Arr.resize(Arr.AllocSize + BlockSize);
-			return Arr[id - 1];
+			return Arr[id];
 		}
 		else
 		{
@@ -93,7 +93,7 @@ public:
 		}
 		else if (id < 0)
 		{
-			if (abs(id) < count_obj)
+			if (count_obj + id < count_obj)
 			{
 				return Arr.Data[count_obj + id];
 			}

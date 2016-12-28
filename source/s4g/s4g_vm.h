@@ -2,6 +2,8 @@
 #ifndef s4g_vm_h
 #define s4g_vm_h
 
+
+
 enum s4g_vm_command
 {
 	mc_halt = 0,	//остановить текущее выполнение
@@ -20,7 +22,7 @@ enum s4g_vm_command
 	mc_div,			//-1 / 0
 	mc_new_table,	//создать таблицу и положить на вершину стека
 	mc_add_in_table,//добавить в таблицу котоаря лежит на вершине
-	mc_precall,
+	mc_precall,		//сообщение о том что вскоре будет вызвана функция, записать в первый свободный регистр размер стека
 	mc_call,		//вызов функции
 };
 
@@ -29,7 +31,7 @@ enum s4g_vm_command
 	error = -1;\
 	char strtype[12];\
 	s4g_get_str_type(ttype1, strtype);\
-	sprintf(this->strerror, "[%s]:%d - '%s' expected number but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);\
+	sprintf(this->strerror, "[%s]:%d - attempt to perform arithmetic on arg #1 '%s' (a '%s' value)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);\
 	return;
 
 #define S4G_VM_OP_ARIF_ERROR_TYPE2 \
@@ -37,7 +39,7 @@ enum s4g_vm_command
 	error = -1; \
 	char strtype[12]; \
 	s4g_get_str_type(ttype2, strtype); \
-	sprintf(this->strerror, "[%s]:%d - '%s' expected number but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
+	sprintf(this->strerror, "[%s]:%d - attempt to perform arithmetic on arg #2 '%s' (a '%s' value)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
 	return;
 
 #define S4G_VM_OP_ARIF_ERROR_UNSUN_UNRES \
@@ -109,13 +111,12 @@ public:
 	
 	s4g_vm(s4g_gc* _gc)
 	{ 
-		gc = _gc;  
+		gc = _gc; 
 		gc->add_new_context(&gvars); 
 		vgvars = gc->cr_val_table(gvars); 
 		strerror[0] = 0; error = 0;
 		cfetchpushstore = 0;
 		curr_vars = 0;
-		CurrCountArg = -1;
 		runexe = false;
 
 		arropf[mc_halt] = &s4g_vm::com_halt;
@@ -176,6 +177,13 @@ public:
 	typedef void(s4g_vm::*opfunc) ();
 	opfunc arropf[18];
 
+	const char* get_curr_file(char* str=0);
+	long get_curr_str(char* str = 0);
+	const char* get_curr_func(char* str = 0);
+
+	String strstacktrace;
+	const char* stack_trace();
+
 	s4g_stack<s4g_command>* curr_comm;
 	long id_curr_com;
 
@@ -194,16 +202,15 @@ public:
 	s4g_vm_command oldop;
 	s4g_vm_command op;
 	s4g_value* arg;
-	long val_end;
-	bool runexe;
-	
+	long val_end;		//
+	bool runexe;		//можно ли выполнять код (внутренее использование)
+	s4g_stack<s4g_value*, 64> stackarg;
+
 	int cfetchget;		//была ли предыдущая команда либо fetch либо fetch_get
 	bool cfetchgetarg;	//была ли предыдущая команда fetch_get с аргументом или без
-	int cfetchpushstore;//следовалаи комбинаци fetch push store, если да то значит = 3, нужно для com_store
+	int cfetchpushstore;//следовала ли комбинаци fetch push store, если да то значит = 3, нужно для com_store
 
-	s4g_stack_register<int, S4G_MAX_CALL+1> sr;
-	int CurrCountArg;
-	long precall;
+	s4g_stack_register<int, S4G_MAX_CALL+1> sr;//стек регистров, хранит размер стека исполнения на момент добавления значения в регистр
 	s4g_stack<s4g_call_data*> callstack;	//стэк вызовов с сохраненным предыдущим состоянием
 };
 
