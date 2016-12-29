@@ -2,8 +2,6 @@
 #ifndef s4g_vm_h
 #define s4g_vm_h
 
-
-
 enum s4g_vm_command
 {
 	mc_halt = 0,	//остановить текущее выполнение
@@ -58,26 +56,12 @@ struct s4g_call_data
 {
 	s4g_call_data()
 	{
-		coms = 0;
-		vars = 0;
-		cfetchget = 3;
-		cfetchgetarg = false;
-		cfetchpushstore = 0;
-		id_curr_com = lastidctx = idnewctx = idexternctx = -1;
-		namef[0] = 0;
+		coms = 0;vars = 0;cfetchget = 3;cfetchgetarg = false;cfetchpushstore = 0;
+		id_curr_com = lastidctx = idnewctx = idexternctx = -1;namef[0] = 0;
 	}
-
-	s4g_call_data(
-		s4g_stack<s4g_command>* _coms,
-		s4g_table* _vars, 
-		int _cfetchget,
-		bool _cfetchgetarg, 
-		int _cfetchpushstore, 
-		long _id_curr_com, 
-		long _lastidctx, 
-		long _idnewctx,
-		long _idexternctx,
-		const char* _namef)
+	
+	s4g_call_data(s4g_stack<s4g_command>* _coms, s4g_table* _vars, int _cfetchget, bool _cfetchgetarg, int _cfetchpushstore, 
+					long _id_curr_com, long _lastidctx, long _idnewctx,long _idexternctx, const char* _namef)
 	{
 		coms = _coms;
 		vars = _vars;
@@ -92,8 +76,10 @@ struct s4g_call_data
 			strcpy(namef,_namef);
 	}
 
+	~s4g_call_data(){}
+
 	s4g_stack<s4g_command>* coms;	//команды выполнения
-	s4g_table* vars;			//таблица с переменными (окружение)
+	s4g_table* vars;				//таблица с переменными (окружение)
 	int cfetchget;				
 	bool cfetchgetarg;	
 	int cfetchpushstore;
@@ -109,45 +95,8 @@ class s4g_vm
 {
 public:
 	
-	s4g_vm(s4g_gc* _gc)
-	{ 
-		gc = _gc; 
-		gc->add_new_context(&gvars); 
-		vgvars = gc->cr_val_table(gvars); 
-		strerror[0] = 0; error = 0;
-		cfetchpushstore = 0;
-		curr_vars = 0;
-		runexe = false;
-
-		arropf[mc_halt] = &s4g_vm::com_halt;
-		arropf[mc_fetch_get] = &s4g_vm::com_fetch_get;
-		arropf[mc_fetch_get_cr] = &s4g_vm::com_fetch_get;
-		arropf[mc_fetch] = &s4g_vm::com_fetch;
-		arropf[mc_fetch_cr] = &s4g_vm::com_fetch;
-		arropf[mc_store] = &s4g_vm::com_store;
-		arropf[mc_end] = &s4g_vm::com_end;
-		arropf[mc_mstore] = &s4g_vm::com_mstore;
-
-		arropf[mc_new_table] = &s4g_vm::com_new_table;
-		arropf[mc_add_in_table] = &s4g_vm::com_add_in_table;
-		arropf[mc_push] = &s4g_vm::com_push;
-		arropf[mc_pop] = &s4g_vm::com_pop;
-		arropf[mc_precall] = &s4g_vm::com_precall;
-		arropf[mc_call] = &s4g_vm::com_call;
-		
-		arropf[mc_add] = &s4g_vm::com_add;
-		arropf[mc_sub] = &s4g_vm::com_sub;
-		arropf[mc_mul] = &s4g_vm::com_mul;
-		arropf[mc_div] = &s4g_vm::com_div;
-
-		for (int i = 0; i < S4G_MAX_CALL; i++)
-		{
-			callstack.push(new s4g_call_data());
-			int qwert = 0;
-		}
-
-		callstack.init_size(0);
-	}
+	s4g_vm(s4g_gc* _gc);
+	~s4g_vm();
 
 	int run(s4g_stack<s4g_command>* commands, s4g_table* vars);
 
@@ -188,7 +137,7 @@ public:
 	long id_curr_com;
 
 	s4g_table* gvars;	//глобальное пространство имен _g
-	s4g_value* vgvars;	//переменная хранящая в себе глобальнео пространство имен
+	s4g_value* vgvars;	//переменная хранящая в себе глобальное пространство имен
 	s4g_table* curr_vars;	//текущее установленное пространство имен, есл выполняется функция то пространство имен функции
 	s4g_stack<s4g_value*, S4G_RESERVE_STACK_EXE> execute;	//стек выполнения команд
 

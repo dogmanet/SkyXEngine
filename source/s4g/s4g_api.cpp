@@ -191,28 +191,47 @@ void s4g_spush_value(s4g_main* s4gm, s4g_value* val)
 	s4gm->vmachine->execute.push(val);
 }
 
-void s4g_sstore_g(s4g_main* s4gm, const char* name)
-{
-	S4G_PRE_COND(s4gm);
-
-	if (s4gm->vmachine->execute.count() >= 1)
-	{
-		s4g_value* tval = s4gm->vmachine->execute.get(-1);
-		s4gm->vmachine->gvars->add_val_s(name, tval/*, -5*/);
-		s4gm->vmachine->execute.pop(1);
-	}
-	else
-	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "stack is empty, api function [%s]", __FUNCTION__);
-	}
-}
-
 void s4g_sstore(s4g_main* s4gm, int index, const char* name)
 {
 	S4G_PRE_COND(s4gm);
 
-	if (s4gm->vmachine->execute.count() >= index)
+	if (index == S4G_NM_GLOBAL)
 	{
+		if (s4gm->vmachine->execute.count() >= 1)
+		{
+			s4g_value* tval = s4gm->vmachine->execute.get(-1);
+			strcpy(tval->name, name);
+			s4gm->vmachine->gvars->add_val_s(name, tval);
+			s4gm->vmachine->execute.pop(1);
+		}
+		else
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "stack is empty, api function [%s]", __FUNCTION__);
+		}
+	}
+	else if (index == S4G_NM_SYS)
+	{
+		int qwert = 0;
+		if (s4gm->vmachine->execute.count() > 0)
+		{
+			s4g_value* tval = s4gm->vmachine->execute.get(-1);
+			strcpy(tval->name, name);
+			s4gm->gc->add_in_const_ctx(name, tval);
+			s4gm->vmachine->execute.pop(1);
+		}
+		else
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "stack is empty, api function [%s]", __FUNCTION__);
+		}
+	}
+	else if (index >= 0)
+	{
+		if (s4gm->vmachine->execute.count() >= index)
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', size stack '%d', api function [%s]", index, s4gm->vmachine->execute.count(), __FUNCTION__);
+			return;
+		}
+
 		s4g_value* tval = s4gm->vmachine->execute.get(index);
 		if (s4gm->gc->get_type(tval) == t_table)
 		{
@@ -229,30 +248,46 @@ void s4g_sstore(s4g_main* s4gm, int index, const char* name)
 	}
 	else
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "stack is empty, api function [%s]", __FUNCTION__);
+		s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', api function [%s]", index, __FUNCTION__);
 	}
 }
 
-
-void s4g_sget_g(s4g_main* s4gm, const char* name)
-{
-	S4G_PRE_COND(s4gm);
-
-	s4g_value* tval = s4gm->vmachine->gvars->gets(name);
-	if (!tval)
-	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "var '%s' is not found in global, api function [%s]", name, __FUNCTION__);
-		return;
-	}
-	s4gm->vmachine->execute.push(tval);
-}
 
 void s4g_sget(s4g_main* s4gm, int index, const char* name)
 {
 	S4G_PRE_COND(s4gm);
 
-	if (s4gm->vmachine->execute.count() >= index)
+	if (index == S4G_NM_GLOBAL)
 	{
+		s4g_value* tval = s4gm->vmachine->gvars->gets(name);
+		if (!tval)
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "var '%s' is not found in global, api function [%s]", name, __FUNCTION__);
+			return;
+		}
+		s4gm->vmachine->execute.push(tval);
+	}
+	else if (index == S4G_NM_SYS)
+	{
+		s4g_value* tval = s4gm->gc->get_out_const_ctx(name);
+		if (tval)
+		{
+			s4gm->vmachine->execute.push(tval);
+		}
+		else
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "var '%s' is not found in sys_ctx, api function [%s]", name, __FUNCTION__);
+			return;
+		}
+	}
+	else if (index >= 0)
+	{
+		if (s4gm->vmachine->execute.count() >= index)
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', size stack '%d', api function [%s]", index, s4gm->vmachine->execute.count(), __FUNCTION__);
+			return;
+		}
+
 		s4g_value* tval = s4gm->vmachine->execute.get(index);
 		if (s4gm->gc->get_type(tval) == t_table)
 		{
@@ -272,7 +307,7 @@ void s4g_sget(s4g_main* s4gm, int index, const char* name)
 	}
 	else
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "stack is empty, api function [%s]", __FUNCTION__);
+		s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', api function [%s]", index, __FUNCTION__);
 	}
 }
 
@@ -700,13 +735,6 @@ const char* s4g_cfget_str_type(s4g_main* s4gm, int narg, char* str)
 }
 
 /////////////
-
-void s4g_ctx_add(s4g_main* s4gm, int index)
-{
-	//s4gm->vmachine->execute.get(index);
-	s4g_table* tt = (s4g_table*)s4g_sget_pdata(s4gm, index);
-	s4gm->gc->add_const_context(tt);
-}
 
 const char* s4g_value_name(s4g_value* value)
 {

@@ -2,8 +2,48 @@
 #pragma once 
 
 #include "s4g_main.h"
+#include "s4g_parser.cpp"
 
 #define S4G_PRE_COND(s4gm, retval) if (s4gm == 0){s4g_gen_msg(s4gm, S4G_ERROR, "!!!", "script system is not init, api function [%s]",__FUNCTION__);	return retval;}
+
+s4g_main::s4g_main(const char* _name)
+{
+	arr_lex = new s4g_arr_lex();
+	gc = new s4g_gc();
+	gc->s4gm = this;
+	gnode = 0;
+	bst = new s4g_builder_syntax_tree();
+	bst->arr_lex = arr_lex;
+	bst->gc = gc;
+	commands = new s4g_stack<s4g_command>();
+	compiler = new s4g_compiler();
+	compiler->gc = gc;
+	vmachine = new s4g_vm(gc);
+	vmachine->arr_lex = arr_lex;
+	vmachine->gc = gc;
+	vmachine->s4gm = this;
+	strerror[0] = 0;
+
+	
+	if (_name)
+		strcpy(name, _name);
+	else
+		name[0] = 0;
+}
+
+s4g_main::~s4g_main()
+{
+	mem_delete(arr_lex);
+	mem_delete(gc);
+	mem_delete(gnode);
+	mem_delete(bst);
+	commands->Arr.clear();
+	mem_delete(commands);
+	mem_delete(compiler);
+	mem_delete(vmachine);
+}
+
+/////////
 
 const char* s4g_get_str_type(s4g_type tt, char* str_type)
 {
@@ -39,61 +79,6 @@ const char* s4g_get_str_type(s4g_type tt, char* str_type)
 		return s4g_str_type[((int)tt) + 1];
 	else
 		return "#errortype";
-}
-
-void s4g_report(s4g_main* s4gm, int level, const char* name_ss, const char* format, ...)
-{
-#if defined(_WINDOWS)
-	AllocConsole();
-	freopen("CONOUT$", "wt", stdout);
-#endif
-	char buf[4096];
-	va_list va; 
-	va_start(va, format); 
-	vsprintf_s(buf, sizeof(buf), format, va);
-	va_end(va);
-
-	if (level == 0)
-		fprintf(stdout, "s4g %s notice: %s\n", name_ss, buf);
-	else if (level == 1)
-		fprintf(stdout, "s4g %s warning: %s\n", name_ss, buf);
-	else
-	{
-		fprintf(stdout, "s4g %s error: %s\n", name_ss, buf);
-		Sleep(50000);
-		exit(1);
-	}
-}
-
-s4g_report_func s4g_rf = s4g_report;
-
-
-#include "s4g_parser.cpp"
-
-
-s4g_main::s4g_main(const char* _name)
-{
-	arr_lex = new s4g_arr_lex();
-	gc = new s4g_gc();
-	gc->s4gm = this;
-	gnode = 0;
-	bst = new s4g_builder_syntax_tree();
-	bst->arr_lex = arr_lex;
-	bst->gc = gc;
-	commands = new s4g_stack<s4g_command>();
-	compiler = new s4g_compiler();
-	compiler->gc = gc;
-	vmachine = new s4g_vm(gc);
-	vmachine->arr_lex = arr_lex;
-	vmachine->gc = gc;
-	vmachine->s4gm = this;
-	strerror[0] = 0;
-
-	
-	if (_name)
-		strcpy(name, _name);
-	else
-		name[0] = 0;
 }
 
 void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...)
@@ -595,6 +580,7 @@ inline s4g_value* s4g_gc::cr_val(int _type, const char* _val, const char* name)
 
 s4g_gc::s4g_gc()
 {
+	id_const_ctx = 0;
 	s4gm = 0;
 	typedata = 1;
 	curr_num_top_ctx = 0;
@@ -626,6 +612,21 @@ s4g_gc::s4g_gc()
 	bffalsedata->iddata = arrdata.count_obj;
 	bffalsedata->iddata = arrdata.count_obj;
 	arrdata.push(bffalsedata);
+
+	add_const_context();
+}
+
+s4g_gc::~s4g_gc()
+{
+	arrvar.Arr.clear();
+	arrdata.Arr.clear();
+	arrcurrcontexts.Arr.clear();
+	MemValue.clear();
+	MemData.clear();
+	MemCtx.clear();
+	MemString.clear();
+	MemSFunc.clear();
+	MemTable.clear();
 }
 
 inline s4g_int s4g_gc::get_int(s4g_value* val)
@@ -697,44 +698,50 @@ inline s4g_type s4g_gc::get_type(s4g_value* val)
 	return val->pdata->type;
 }
 
-#define def_gc_clear_del_data(tmpdata)\
-if (tmpdata->type == t_table)\
-{\
-	MemTable.Delete((s4g_table*)tmpdata->data.p);\
-}\
-else if (tmpdata->type == t_string)\
-{\
-	MemString.Delete((String*)tmpdata->data.p); \
-}\
-else if (tmpdata->type == t_sfunc)\
-{\
-	s4g_s_function* tsf = (s4g_s_function*)tmpdata->data.p;\
-	if (tsf->externs)\
-	{\
-		for (int k = 0; k < tsf->externs->size(); ++k)\
-		{\
-			s4g_value* tmpval = tsf->externs->getn(k);\
-			tmpval->isdelete = true;\
-			if (tmpval->iddata < arrdata.count_obj && arrdata.Arr.Data[tmpval->iddata])\
-			{\
-				--(arrdata.Arr.Data[tmpval->iddata]->ref);\
-			}\
-		}\
-	}\
-	tsf->args.clear();\
-	tsf->commands.clear();\
-	tsf->externs_strs.clear();\
-	tsf->externs->clear();\
-	if (tsf->externs_val && tsf->externs_val->iddata < arrdata.count_obj)\
-	{\
-		--(arrdata.Arr.Data[tsf->externs_val->iddata]->ref);\
-		tsf->externs_val->typedata = 0;\
-		tsf->externs_val->isdelete = true;\
-		set_td_data(tsf->externs_val, 0);\
-	}\
-	MemSFunc.Delete(tsf);\
-}
+inline void s4g_gc::del_data(s4g_data* tdata)
+{
+	if (tdata)
+	{
+		if (tdata->type == t_table)
+			MemTable.Delete((s4g_table*)tdata->data.p);
+		else if (tdata->type == t_string)
+			MemString.Delete((String*)tdata->data.p);
+		else if (tdata->type == t_sfunc)
+		{
+			s4g_s_function* tsf = (s4g_s_function*)tdata->data.p;
+			if (tsf->externstable)
+			{
+				for (int k = 0; k < tsf->externstable->size(); ++k)
+				{
+					s4g_value* tmpval = tsf->externstable->getn(k);
+					tmpval->isdelete = true;
+					if (tmpval->iddata < arrdata.count_obj && arrdata.Arr.Data[tmpval->iddata])
+					{
+						--(arrdata.Arr.Data[tmpval->iddata]->ref);
+					}
+				}
+			}
 
+			tsf->args.clear();
+			tsf->commands.clear();
+			tsf->externs_strs.clear();
+			tsf->externstable->clear();
+
+			if (tsf->externs_val && tsf->externs_val->iddata < arrdata.count_obj)
+			{
+				--(arrdata.Arr.Data[tsf->externs_val->iddata]->ref);
+				tsf->externs_val->typedata = 0;
+				tsf->externs_val->isdelete = true;
+				set_td_data(tsf->externs_val, 0);
+			}
+
+			MemSFunc.Delete(tsf);
+		}
+
+		arrdata.Arr.Data[tdata->iddata] = 0;
+		MemData.Delete(tdata);
+	}
+}
 
 void s4g_gc::clear()
 {
@@ -753,12 +760,9 @@ void s4g_gc::clear()
 			
 			if (tmpdata && tmpdata->typedata == 0 && tmpdata->ref < 1)
 			{
-				def_gc_clear_del_data(tmpdata);
-				MemData.Delete(tmpdata);
-				arrdata.Arr.Data[i] = 0;
-				
+				del_data(tmpdata);
 				++countdeldata;
-				tmpdata = 0;
+				//tmpdata = 0;
 			}
 
 			if (tmpdata == 0)
@@ -771,9 +775,9 @@ void s4g_gc::clear()
 					tmpdata = arrdata.Arr.Data[posend - k];
 					if (tmpdata && tmpdata->typedata == 0 && tmpdata->ref < 1)
 					{
-						def_gc_clear_del_data(tmpdata);
-						MemData.Delete(tmpdata);
-						arrdata.Arr.Data[posend - k] = 0;
+						del_data(tmpdata);
+						/*MemData.Delete(tmpdata);
+						arrdata.Arr.Data[posend - k] = 0;*/
 						
 						++countdeldata;
 						posend2 = (posend - k);
@@ -868,30 +872,41 @@ inline void s4g_gc::add_mem_contexts()
 	}
 }
 
-inline void s4g_gc::add_const_context(s4g_table* tt)
+inline void s4g_gc::add_const_context()
 {
 	s4g_context* tcontext = 0;
 	if (curr_num_top_ctx >= arrcurrcontexts.count_obj)
 	{
 		add_mem_contexts();
 	}
-
-	for (int i = 0; i < tt->size(); i++)
-	{
-		s4g_value* tval = tt->getn(i);
-		tval->typedata = 1;
-		tval->isdelete = false;
-		tval->pdata->typedata = 1;
-	}
-
+	id_const_ctx = curr_num_top_ctx;
 	tcontext = arrcurrcontexts[curr_num_top_ctx];
-
 	tcontext->valid = 2;
-	tcontext->oldtable = tcontext->table;
-	tcontext->table = tt;
 
 	++curr_num_top_ctx;
-	//return curr_num_top_ctx - 1;
+}
+
+inline bool s4g_gc::add_in_const_ctx(const char* name, s4g_value* val)
+{
+	if (id_const_ctx != -1)
+	{
+		arrcurrcontexts[id_const_ctx]->table->add_val_s(name, val);
+		return true;
+	}
+
+	return false;
+}
+
+inline s4g_value* s4g_gc::get_out_const_ctx(const char* name)
+{
+	if (id_const_ctx != -1)
+	{
+		s4g_value* tval = 0;
+		arrcurrcontexts[id_const_ctx]->table->is_exists_s2(name, &tval);
+		return tval;
+	}
+
+	return 0;
 }
 
 long s4g_gc::add_new_context(s4g_table** tt, int status_valid)
@@ -937,10 +952,10 @@ void s4g_gc::remove_context(long id)
 {
 	if (id < arrcurrcontexts.count_obj && id >= 0)
 	{
-		if (arrcurrcontexts[id]->oldtable)
+		if (arrcurrcontexts.Arr.Data[id]->oldtable)
 		{
-			arrcurrcontexts[id]->table = arrcurrcontexts[id]->oldtable;
-			arrcurrcontexts[id]->oldtable = 0;
+			arrcurrcontexts.Arr.Data[id]->table = arrcurrcontexts.Arr.Data[id]->oldtable;
+			arrcurrcontexts.Arr.Data[id]->oldtable = 0;
 		}
 	}
 }
@@ -1008,11 +1023,6 @@ inline void s4g_gc::set_td_data(s4g_value* val, int td)
 {
 	if (val && val->iddata >= 0 && val->iddata < arrdata.size() && arrdata[val->iddata])
 		arrdata[val->iddata]->typedata = td;
-}
-
-inline void s4g_gc::set_ctx_for_del(s4g_context* ctx)
-{
-	delarrcontexts.push(ctx);
 }
 
 ///////////////////////

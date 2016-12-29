@@ -1,6 +1,53 @@
 
 #include "s4g_vm.h"
 
+s4g_vm::s4g_vm(s4g_gc* _gc)
+{
+	gc = _gc;
+	gc->add_new_context(&gvars);
+	vgvars = gc->cr_val_table(gvars);
+	strerror[0] = 0; error = 0;
+	cfetchpushstore = 0;
+	curr_vars = 0;
+	runexe = false;
+
+	arropf[mc_halt] = &s4g_vm::com_halt;
+	arropf[mc_fetch_get] = &s4g_vm::com_fetch_get;
+	arropf[mc_fetch_get_cr] = &s4g_vm::com_fetch_get;
+	arropf[mc_fetch] = &s4g_vm::com_fetch;
+	arropf[mc_fetch_cr] = &s4g_vm::com_fetch;
+	arropf[mc_store] = &s4g_vm::com_store;
+	arropf[mc_end] = &s4g_vm::com_end;
+	arropf[mc_mstore] = &s4g_vm::com_mstore;
+
+	arropf[mc_new_table] = &s4g_vm::com_new_table;
+	arropf[mc_add_in_table] = &s4g_vm::com_add_in_table;
+	arropf[mc_push] = &s4g_vm::com_push;
+	arropf[mc_pop] = &s4g_vm::com_pop;
+	arropf[mc_precall] = &s4g_vm::com_precall;
+	arropf[mc_call] = &s4g_vm::com_call;
+
+	arropf[mc_add] = &s4g_vm::com_add;
+	arropf[mc_sub] = &s4g_vm::com_sub;
+	arropf[mc_mul] = &s4g_vm::com_mul;
+	arropf[mc_div] = &s4g_vm::com_div;
+
+	for (int i = 0; i < S4G_MAX_CALL; i++)
+	{
+		callstack.push(new s4g_call_data());
+		int qwert = 0;
+	}
+
+	callstack.init_size(0);
+}
+
+s4g_vm::~s4g_vm()
+{
+	execute.Arr.clear();
+	stackarg.Arr.clear();
+	callstack.Arr.clear();
+}
+
 inline void s4g_vm::com_fetch()
 {
 	bool is_cr = (op == mc_fetch_cr);
@@ -179,7 +226,7 @@ inline void s4g_vm::com_store()
 	if (gc->get_type(tvalue) == t_sfunc)
 	{
 		s4g_s_function* sf = gc->get_s_func(tvalue);
-		if (sf->externs_strs.count() > 0 && !sf->externs)
+		if (sf->externs_strs.count() > 0 && !sf->externstable)
 		{
 			s4g_value* newsfval = gc->cr_val_s_func(tvalue2->name);
 			s4g_s_function* newsf = gc->get_s_func(newsfval);
@@ -189,7 +236,7 @@ inline void s4g_vm::com_store()
 			newsf->ismarg = sf->ismarg;
 			newsf->externs_val = gc->cr_val_table_null();
 			newsf->externs_val->typedata = 1;
-			newsf->externs = gc->get_table(newsf->externs_val);
+			newsf->externstable = gc->get_table(newsf->externs_val);
 			gc->set_td_data(newsf->externs_val,1);
 
 			long tmpid = -1;
@@ -204,7 +251,7 @@ inline void s4g_vm::com_store()
 					//tmpval->typedata = 1;
 					//gc->set_td_data(tmpval,1);
 
-					newsf->externs->add_val_s(str, tmpval);
+					newsf->externstable->add_val_s(str, tmpval);
 				}
 			}
 			tvalue = newsfval;
@@ -330,9 +377,9 @@ inline void s4g_vm::com_call()
 
 			long idexternctx = -1;
 			//если у нас есть подставляемые значения из другого констекста
-			if (csfunc->externs)
+			if (csfunc->externstable)
 			{
-				idexternctx = gc->add_context(csfunc->externs);	//то устанавливаем контекст
+				idexternctx = gc->add_context(csfunc->externstable);	//то устанавливаем контекст
 			}
 
 			s4g_table* new_ctx = 0;

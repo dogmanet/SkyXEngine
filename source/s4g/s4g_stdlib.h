@@ -624,122 +624,116 @@ int s4g_std_issfunc(s4g_main* s4gm)
 
 void s4g_export_stdlib(s4g_main* s4gm)
 {
-	s4g_spush_table_null(s4gm,16);
-	int index = s4g_sgettop(s4gm)-1;
 	s4g_spush_c_func(s4gm, s4g_std_format_str);
-	s4g_sstore(s4gm, index, "format_str");
+	s4g_sstore(s4gm, S4G_NM_SYS, "format_str");
 
 	s4g_spush_c_func(s4gm, s4g_std_print);
-	s4g_sstore(s4gm, index, "print");
+	s4g_sstore(s4gm, S4G_NM_SYS, "print");
 
 	s4g_spush_c_func(s4gm, s4g_std_assert);
-	s4g_sstore(s4gm, index, "assert");
+	s4g_sstore(s4gm, S4G_NM_SYS, "assert");
 
 	s4g_spush_c_func(s4gm, s4g_std_strlen);
-	s4g_sstore(s4gm, index, "strlen");
+	s4g_sstore(s4gm, S4G_NM_SYS, "strlen");
 
 	s4g_spush_c_func(s4gm, s4g_std_tablen);
-	s4g_sstore(s4gm, index, "tablen");
+	s4g_sstore(s4gm, S4G_NM_SYS, "tablen");
 
 	s4g_spush_c_func(s4gm, s4g_std_call_gc);
-	s4g_sstore(s4gm, index, "call_gc");
+	s4g_sstore(s4gm, S4G_NM_SYS, "call_gc");
 
 	s4g_spush_c_func(s4gm, s4g_std_unpack);
-	s4g_sstore(s4gm, index, "unpack");
+	s4g_sstore(s4gm, S4G_NM_SYS, "unpack");
 
 	s4g_spush_c_func(s4gm, s4g_std_toint);
-	s4g_sstore(s4gm, index, "toint");
+	s4g_sstore(s4gm, S4G_NM_SYS, "toint");
 
 	s4g_spush_c_func(s4gm, s4g_std_touint);
-	s4g_sstore(s4gm, index, "touint");
+	s4g_sstore(s4gm, S4G_NM_SYS, "touint");
 
 	s4g_spush_c_func(s4gm, s4g_std_tofloat);
-	s4g_sstore(s4gm, index, "tofloat");
+	s4g_sstore(s4gm, S4G_NM_SYS, "tofloat");
 
 	s4g_spush_c_func(s4gm, s4g_std_tobool);
-	s4g_sstore(s4gm, index, "tobool");
+	s4g_sstore(s4gm, S4G_NM_SYS, "tobool");
 
 	s4g_spush_c_func(s4gm, s4g_std_tostring);
-	s4g_sstore(s4gm, index, "tostring");
+	s4g_sstore(s4gm, S4G_NM_SYS, "tostring");
 
 
 	s4g_spush_c_func(s4gm, s4g_std_type);
-	s4g_sstore(s4gm, index, "type");
+	s4g_sstore(s4gm, S4G_NM_SYS, "type");
 
 	s4g_spush_c_func(s4gm, s4g_std_str_type);
-	s4g_sstore(s4gm, index, "str_type");
+	s4g_sstore(s4gm, S4G_NM_SYS, "str_type");
 
 
 	s4g_spush_c_func(s4gm, s4g_std_isnull);
-	s4g_sstore(s4gm, index, "isnull");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isnull");
 
 	s4g_spush_c_func(s4gm, s4g_std_isnum);
-	s4g_sstore(s4gm, index, "isnum");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isnum");
 
 	s4g_spush_c_func(s4gm, s4g_std_isint);
-	s4g_sstore(s4gm, index, "isint");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isint");
 
 	s4g_spush_c_func(s4gm, s4g_std_isuint);
-	s4g_sstore(s4gm, index, "isuint");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isuint");
 
 	s4g_spush_c_func(s4gm, s4g_std_isfloat);
-	s4g_sstore(s4gm, index, "isfloat");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isfloat");
 
 	s4g_spush_c_func(s4gm, s4g_std_isbool);
-	s4g_sstore(s4gm, index, "isbool");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isbool");
 
 	s4g_spush_c_func(s4gm, s4g_std_isstring);
-	s4g_sstore(s4gm, index, "isstring");
+	s4g_sstore(s4gm, S4G_NM_SYS, "isstring");
 
 	s4g_spush_c_func(s4gm, s4g_std_istable);
-	s4g_sstore(s4gm, index, "istable");
+	s4g_sstore(s4gm, S4G_NM_SYS, "istable");
 
 	s4g_spush_c_func(s4gm, s4g_std_ispdata);
-	s4g_sstore(s4gm, index, "ispdata");
+	s4g_sstore(s4gm, S4G_NM_SYS, "ispdata");
 
 	s4g_spush_c_func(s4gm, s4g_std_iscfunc);
-	s4g_sstore(s4gm, index, "iscfunc");
+	s4g_sstore(s4gm, S4G_NM_SYS, "iscfunc");
 
 	s4g_spush_c_func(s4gm, s4g_std_issfunc);
-	s4g_sstore(s4gm, index, "issfunc");
+	s4g_sstore(s4gm, S4G_NM_SYS, "issfunc");
 
 
 	s4g_spush_int(s4gm, t_null);
-	s4g_sstore(s4gm, index, "t_null");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_null");
 
 	s4g_spush_int(s4gm, t_table);
-	s4g_sstore(s4gm, index, "t_table");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_table");
 
 	s4g_spush_int(s4gm, t_string);
-	s4g_sstore(s4gm, index, "t_string");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_string");
 
 	s4g_spush_int(s4gm, t_float);
-	s4g_sstore(s4gm, index, "t_float");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_float");
 
 	s4g_spush_int(s4gm, t_int);
-	s4g_sstore(s4gm, index, "t_int");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_int");
 
 	s4g_spush_int(s4gm, t_uint);
-	s4g_sstore(s4gm, index, "t_uint");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_uint");
 
 	s4g_spush_int(s4gm, t_bool);
-	s4g_sstore(s4gm, index, "t_bool");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_bool");
 
 	s4g_spush_int(s4gm, t_pdata);
-	s4g_sstore(s4gm, index, "t_pdata");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_pdata");
 
 	s4g_spush_int(s4gm, t_cfunc);
-	s4g_sstore(s4gm, index, "t_cfunc");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_cfunc");
 
 	s4g_spush_int(s4gm, t_sfunc);
-	s4g_sstore(s4gm, index, "t_sfunc");
+	s4g_sstore(s4gm, S4G_NM_SYS, "t_sfunc");
 
 	s4g_spush_str(s4gm, "s4g 0.0");
-	s4g_sstore(s4gm, index, "_version");
-
-
-	s4g_ctx_add(s4gm, index);
-	s4g_spop(s4gm, 1);
+	s4g_sstore(s4gm, S4G_NM_SYS, "_version");
 }
 
 #endif

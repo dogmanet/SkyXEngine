@@ -1,22 +1,6 @@
+
 #include "s4g_preprocessor.h"
 
-int s4g_parse_str_is_exists(const char* str)
-{
-	return 1;
-}
-
-void s4g_output_error(const char* format, ...)
-{
-	va_list va;
-	char buf[4096];
-	va_start(va, format);
-	vsprintf_s(buf, 4096, format, va);
-	va_end(va);
-	MessageBox(0, buf, 0, MB_OK | MB_ICONSTOP | MB_SYSTEMMODAL);
-	exit(0);
-}
-
-/////////
 
 inline int s4g_is_syms_arif(const char* sstr, char* dstr)
 {
@@ -513,6 +497,12 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 		tmpword[0] = 0;
 		//memset(tmpword, 0, S4G_MAX_LEN_VAR_NAME);
 		char tmpc = str[numcursym];
+
+		if (tmpc == 0)
+		{
+			break;
+		}
+
 		//если текущий сивол новая строка
 		if (tmpc == '\n')
 		{
@@ -728,10 +718,6 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			{
 				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::sym_group, tmpid, curr_id_file);
 				numcursym += strlen(tmpword);
-				break;
-			}
-			else if (tmpc == 0)
-			{
 				break;
 			}
 			else

@@ -12,11 +12,11 @@
 #pragma comment(lib, "winmm.lib")
 #include <LuaJIT-2.0.3\src\lua.hpp>
 #include <s4g\s4g.h>
-/*#include <s4g\s4g_main.cpp>
-#include <s4g\s4g_api.cpp>*/
+#include <s4g\s4g_main.cpp>
+#include <s4g\s4g_api.cpp>
 #include <s4g\s4g_stdlib.h>
 
-#pragma comment(lib, "s4g.lib")
+//#pragma comment(lib, "s4g.lib")
 
 char* exestr = "testcall = function (a1,a2)\
 			   asdf2 = 10;\
@@ -118,11 +118,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
 	int qwerty = 0;
-	for (;;/* int i = 0; i < counttt; i++*/)
+	for ( int i = 0; i < counttt; i++)
 	{
 		//s4g_spush_precall(s4gm,)
 		s4g_spush_precall(s4gm);
-		s4g_sget_g(s4gm, "testcall");
+		s4g_sget(s4gm, S4G_NM_GLOBAL, "testcall");
 		s4g_spush_int(s4gm, 2);
 		s4g_spush_int(s4gm, 7);
 		s4g_call(s4gm,true);
