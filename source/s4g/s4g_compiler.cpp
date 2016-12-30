@@ -183,18 +183,23 @@ int s4g_compiler::compile2(s4g_node* node)
 					node->op1->type = _int;
 				}
 
-				//compile2(node->op1);
-
-				if (iscr)
+				if (node->op1->type == _var)
 				{
-					gen(mc_fetch_get_cr, node->op1->value, node->lexid);
-					printf("fetch_get_cr\n");
+					compile2(node->op1);
 				}
-				else
-				{
-					gen(mc_fetch_get, node->op1->value, node->lexid);
-					printf("fetch_get\n");
-				}
+				/*else
+				{*/
+					if (iscr)
+					{
+						gen(mc_fetch_get_cr, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);
+						printf("fetch_get_cr\n");
+					}
+					else
+					{
+						gen(mc_fetch_get, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);
+						printf("fetch_get\n");
+					}
+				//}
 			compile2(node->op2);
 			compile2(node->op3);
 		}

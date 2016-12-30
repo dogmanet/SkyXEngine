@@ -421,6 +421,8 @@ inline s4g_value* s4g_gc::cr_val_bool(s4g_bool bf, const char* name)
 		tmpval->pdata = arrdata.Arr[S4G_GC_KEY_BFALSE];
 	}
 
+	tmpval->pdata->type = t_bool;
+
 	if (name)
 		strcpy(tmpval->name, name);
 	else
