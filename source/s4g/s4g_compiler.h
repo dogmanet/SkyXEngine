@@ -23,6 +23,18 @@ public:
 //protected:
 	s4g_stack<s4g_command,16>* comms;
 	s4g_gc* gc;
+	struct _cyctl
+	{
+		int addr;
+		enum
+		{
+			BREAK,
+			CONTINUE
+		}
+		type;
+	};
+	s4g_stack<Array<_cyctl>> cyctls_bak;
+	Array<_cyctl> cyctls;
 };
 
 #endif 
