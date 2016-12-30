@@ -2,12 +2,28 @@
 #ifndef s4g_h
 #define s4g_h
 
-#include <s4g\s4g_conf.h>
-#include <core\MemAlloc.h>
-#include <s4g\array.h>
-#include <s4g\s4g_stack.h>
-#include <s4g\aatable.h>
+extern "C"
+{
 
+#include "string.cpp"
+#include <limits.h>
+
+#define S4G_VERSION "0.9"
+#define S4G_COPYRIGHT "Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017"
+#define S4G_SITE "s4g.su"
+
+//чтобы использовать скрипты прямо в приложении ничего дополнительно объявлять не надо
+//для экспорта в dll необходимо объявить S4G_BUILD_DLL и S4G_DLL
+//для импорта из dll необходимо объявить S4G_BUILD_DLL и S4G_EXE
+#if defined(S4G_BUILD_DLL)
+	#if defined(S4G_EXE)
+	#define S4G_API __declspec (dllimport)
+	#elif defined(S4G_DLL)
+	#define S4G_API  __declspec (dllexport)
+	#endif
+#else
+#define S4G_API extern
+#endif
 
 //все типы данных которые могут быть использованы в скриптах
 enum s4g_type
@@ -26,6 +42,92 @@ enum s4g_type
 	t_nnull = 10,	//цифра 0, вставляется в выражения с унарным минусом
 };
 
+struct s4g_main;	//основа взаимодействия между с(++) и скриптами
+struct s4g_value;	//переменная-значение
+struct s4g_table;	//таблица
+
+//const
+#define S4G_MAX_LEN_TYPE_NAME 64	//максимальная длина имени типа
+#define S4G_MAX_LEN_VAR_NAME 64		//максимальная длина имени переменной
+#define S4G_MAX_LEN_STR_IN_FILE 1024//максимальная длина загружаемого файла
+
+#define S4G_MAX_CALL 1000	//максимальное количество вызовов (рекурсивных и вложенных)
+#define S4G_GLOBAL_NM "_g"	//обращение в скрипте к глобальному пространству имен
+#define S4G_MARG "args"		//таблица для обращения к аргументам в случае если функция принимает неопределенное количество аргументов
+
+//резер элементов - непосредственный резерв для стека хранящего определенные элементы
+//резерв памяти элементов - резерв выделяемой памяти для создания новых элементов
+//(для всех резервов): на это же количество будет увеличиваться дополнительный резерв в случе превышения предыдущего резерва
+
+#define S4G_RESERVE_STACK_EXE 1000	//резерв элементов для стека исполнения
+
+#define S4G_RESERVE_VALUE 10000		//резерв элементов для переменных
+#define S4G_RESERVE_VALUE_MEM 10000	//резерв памяти элементов для переменных
+
+#define S4G_RESERVE_DATA 10000		//резерв элементов для данных
+#define S4G_RESERVE_DATA_MEM 10000	//резерв памяти элементов для данных
+
+#define S4G_RESERVE_CONTEXTS 100	//резерв элементов для контекстов
+#define S4G_ADD_MEM_CONTEXTS 16		//количество создаваемых контекстов на каждый случай нехватки
+#define S4G_RESERVE_CONTEXTS_MEM 100//резерв памяти элементов для контекстов
+
+#define S4G_RESERVE_STRING_MEM 1000	//резерв памяти элементов для строк
+
+#define S4G_RESERVE_SFUNC_MEM 1000	//резерв памяти элементов для скриптовых функций
+
+#define S4G_RESERVE_TABLE_MEM 1000	//резерв памяти элементов для таблиц
+#define S4G_RESERVE_TABLE_ELEM 8	//на сколько элементов будет резервироваться место в таблицах
+
+//уровни сообщений
+#define S4G_NOTICE 0	//уведомление
+#define S4G_WARNING 1	//предупреждение
+#define S4G_ERROR 2		//ошибка
+
+//принудительная точка остановки при любой сборке проекта (для отладки)
+#define s4g_breakpoint _asm { int 3 }
+
+//настраиваемые типы
+#define s4g_int long
+#define s4g_uint unsigned long
+#define s4g_float float
+#define s4g_bool short int
+#define s4g_pdata void*
+
+//тип си(++) функции
+//если функция возвращает значение меньше нуля то значит произошла ошибка и машина остановит выполнение кода
+//все остальные значения (>0) не имеют смысла
+typedef int(*s4g_c_function) (s4g_main* vm);
+
+//тип функции вывода информации и обработки ошибок
+typedef void(*s4g_report_func) (s4g_main* s4gm, int level, const char* name_ss, const char* format, ...);
+
+//стандартная функция выдачи сообщений (заменяема посредством api)
+void s4g_report(s4g_main* s4gm, int level, const char* name_ss, const char* format, ...)
+{
+#if defined(_WINDOWS)
+	AllocConsole();
+	freopen("CONOUT$", "wt", stdout);
+#endif
+	char buf[4096];
+	va_list va;
+	va_start(va, format);
+	vsprintf_s(buf, sizeof(buf), format, va);
+	va_end(va);
+
+	if (level == 0)
+		fprintf(stdout, "s4g %s notice: %s\n", name_ss, buf);
+	else if (level == 1)
+		fprintf(stdout, "s4g %s warning: %s\n", name_ss, buf);
+	else
+	{
+		fprintf(stdout, "s4g %s error: %s\n", name_ss, buf);
+		Sleep(50000);
+		exit(1);
+	}
+}
+
+s4g_report_func s4g_rf = s4g_report;
+
 //строковое представление типов
 const char s4g_str_type[][S4G_MAX_LEN_TYPE_NAME] = {
 "none",
@@ -42,235 +144,141 @@ const char s4g_str_type[][S4G_MAX_LEN_TYPE_NAME] = {
 "nnull"
 };
 
-extern class s4g_arr_lex;
-extern struct s4g_node;
-extern struct s4g_builder_syntax_tree;
-extern class s4g_compiler;
+/////
 
-extern class s4g_table;
-extern class s4g_value;
-extern struct s4g_command;
-extern struct s4g_s_function;
-extern struct s4g_context;
-extern class s4g_gc;
-extern class s4g_vm;
+#define S4G_NM_GLOBAL INT_MIN	//глобальное пространство имен
+#define S4G_NM_SYS INT_MIN+1		//языковое/системное простраство имен
+//глобальнео простарство имен доступно из локальных контекстов только через _g (как объявлено в S4G_GLOBAL_NM), в глобальном все пишется напрямую в него
+//языковое/системное простраство имен доступно напрямую при любом контексте, поэтому в этоя зыковое простарство можно экспортировать все что необходимо для прямого использования внутри скриптов
 
-#define S4G_COND_TYPE1(val,retval) if (!val){s4g_report(2, "!!!", "value is not init, api function [%s]",__FUNCTION__);	return retval;}
-#define S4G_COND_TYPE2(val,retval) if (!val->pdata){s4g_report(2, "!!!", "value is has not data, api function [%s]",__FUNCTION__);	return retval;}
-#define S4G_COND_TYPE_12(val,retval) S4G_COND_TYPE1(val,retval) S4G_COND_TYPE2(val,retval)
+//возвращает строковое представление типа tt в str_type
+S4G_API const char* s4g_get_str_type(s4g_type tt, char* str_type = 0);
 
-//основа взаимодествия
-struct s4g_main
-{
-	s4g_main(const char* _name);
-	s4g_arr_lex* arr_lex;	//лексический анализатор
-	s4g_node* gnode;		//построенное аст
-	s4g_builder_syntax_tree* bst;	//строитель аст
-	s4g_stack<s4g_command>* commands;	//массив с байт кодом
-	s4g_compiler* compiler;			//компилятор
-	s4g_vm* vmachine;				//виртуальная машина
-	s4g_gc* gc;						//сборщик мусора
-	char strerror[1024];			//сообщение об ошибке
-	char name[S4G_MAX_LEN_VAR_NAME];
-};
+S4G_API s4g_main* s4g_init(const char* name);//инициализируем скриптовую систему
+S4G_API void s4g_kill(s4g_main* s4gm);//завершаем работу скриптовой системы
+S4G_API int s4g_load_file(s4g_main* s4gm, const char* file);//загрузить скрипт из файла
+S4G_API int s4g_load_str(s4g_main* s4gm, const char* str);//загрузить скрипт из строки
 
-//представление данных
-struct s4g_data
-{
-	s4g_data();
-	~s4g_data();
-	void* data;	//указатель на хранимые данные
-	int ref;	//количество ссылающихся переменных на эти данные
-	s4g_type type;	//тип хранимый в data
-	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
-	long iddata;	//ключ по которому можно обратится к массиву arrdata и найти эту структуру
-};
+S4G_API void s4g_set_rf(s4g_report_func rf);	//установить новую функцию выдачи сообщений
+S4G_API void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...);	//генерировать сообщение
 
-//переменная
-struct s4g_value
-{
-	s4g_value();
-	~s4g_value();
-	
-	bool isdelete;	//можно ли удалять переменную
-	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
-	long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
-	long idvar;		//идентификатор этой переменной в массиве управляемым сборщиком мусора
-	char name[S4G_MAX_LEN_VAR_NAME];
-	//только для внутреннего использования!!!
-	s4g_data* pdata;
-};
+//вызываем сборку мусора, возвращает количество занимаемой памяти
+S4G_API int s4g_call_gc(s4g_main* s4gm);
 
-//таблица
-class s4g_table
-{
-public:
-	s4g_table();
-	~s4g_table();
+/*
+С(++) => stack
+*/
 
-	inline void clear();	//очистить таблицу
+//функции для вставки на вершину стека значения
+S4G_API void s4g_spush_table_null(s4g_main* s4gm, int count_elem);
+S4G_API void s4g_spush_c_func(s4g_main* s4gm, s4g_c_function func);
+S4G_API void s4g_spush_int(s4g_main* s4gm, s4g_int num);
+S4G_API void s4g_spush_uint(s4g_main* s4gm, s4g_uint num);
+S4G_API void s4g_spush_float(s4g_main* s4gm, s4g_float num);
+S4G_API void s4g_spush_str(s4g_main* s4gm, const char* str);
+S4G_API void s4g_spush_bool(s4g_main* s4gm, s4g_bool bf);
+S4G_API void s4g_spush_pdata(s4g_main* s4gm, s4g_pdata pdata);
+S4G_API void s4g_spush_null(s4g_main* s4gm);
+S4G_API void s4g_spush_precall(s4g_main* s4gm);
+S4G_API void s4g_spush_value(s4g_main* s4gm, s4g_value* val);
 
-	inline s4g_value* getn(long key);			//получить переменную по порядковому номеру
-	inline s4g_value* gets(const char* str);	//получить переменную по строке
-	inline int is_exists_s(const char* str);	//существует ли переменная с данным именем
-	inline bool is_exists_n(long key);			//существует ли переменная по указанному ключу
+/*
+stack => script
+*/
 
-	inline long is_exists_s2(const char* str,s4g_value** tval);	//существует ли переменная с данным именем
-	inline bool is_exists_n2(long key, s4g_value** tval);	//существует ли переменная по указанному ключу
+//функция сохранения в пространство имен
+//после сохранения функция выталкивает сохраненное значение с вершины стека
+S4G_API void s4g_sstore(s4g_main* s4gm, int index, const char* name);
+//index в стеке должна быть таблица, либо S4G_NM_GLOBAL если идет сохранеие в глобальное пространство, либо S4G_NM_SYS если в языковое/системное
+//name имя переменной, а значение берется с вершины стека
+//table(stack[index])[name] = stack[-1];
 
-	inline long get_key(const char* name);
+//получить значения
+//после получения, функция ложит на вершину стека полученное значение
+S4G_API void s4g_sget(s4g_main* s4gm, int index, const char* name);
+//index в стеке должна быть таблица, либо S4G_NM_GLOBAL если берется из глобального пространства, либо S4G_NM_SYS если из языкового/системного
+//name имя переменной, а значение берется с вершины стека
+//stack.push(table(stack[index])[name]);
 
-	inline void add_val_s(const char* name, s4g_value* val);	//добавить переменную и присовить ей имя в текущей таблице
-	inline void add_val_n(long num, s4g_value* val);			//добавить переменную по ключу
-	inline void add_val(s4g_value* val);						//добавить переменную в конец таблицы
+/*
+stack => C(++)
+*/
 
-	inline long size();						//размер таблицы в элементах
-	inline const char* get_name_id(long id);//получить имя по id
+//является ли значение переменной в стеке по номеру index типом? 0 нет, 1 да
+S4G_API int s4g_sis_int(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_uint(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_float(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_str(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_bool(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_c_func(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_s_func(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_table(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_pdata(s4g_main* s4gm, int index);
+S4G_API int s4g_sis_null(s4g_main* s4gm, int index);
 
-	inline void reserve(int count_elem);
+//возвращает тип значения переменной по номеру в стеке index
+S4G_API s4g_type s4g_sget_type(s4g_main* s4gm, int index);
 
-protected:
-	struct table_desc
-	{
-		char Name[S4G_MAX_LEN_VAR_NAME];
-		s4g_value* Value;
-	};
-	long count_obj;
-	Array<table_desc*> Arr;
-	MemAlloc<table_desc, 16> Mem;
-};
+//возвращает приведенное к определнному типу значнеие перменной по номеру index в стеке
+S4G_API s4g_int s4g_sget_int(s4g_main* s4gm, int index);
+S4G_API s4g_uint s4g_sget_uint(s4g_main* s4gm, int index);
+S4G_API s4g_float s4g_sget_float(s4g_main* s4gm, int index);
+S4G_API s4g_bool s4g_sget_bool(s4g_main* s4gm, int index);
+S4G_API const char* s4g_sget_str(s4g_main* s4gm, int index);
+S4G_API s4g_c_function s4g_sget_cfunc(s4g_main* s4gm, int index);
+S4G_API s4g_pdata s4g_sget_pdata(s4g_main* s4gm, int index);
+
+S4G_API void s4g_spop(s4g_main* s4gm, int count);	//выталкивает из стека count значений
+S4G_API int s4g_sgettop(s4g_main* s4gm);			//количество элементов в стеке, и есесно номер вершины стека
 
 
+//вызов функции/исполнения скрипта
+//сначала в стек ложится сама вызываемая функция, затем аргументы если есть и только потом s4g_call
+S4G_API void s4g_call(s4g_main* s4gm, bool call_func = false);
 
-//сборщик мусора
-class s4g_gc
-{
-public:
-	s4g_gc();
+/*
+script => C(++) function
+*/
 
-#define def_cr_val_null(tval,tdata,name) \
-	tval = MemValue.Alloc(); \
-	tval->typedata = typedata; \
-	if (name)\
-		strcpy(tval->name, name);\
-	else\
-		strcpy(tval->name, "#");\
-	arrvar.push(tval); \
-	tval->idvar = arrvar.count_obj; \
-	tdata = MemData.Alloc(); \
-	tdata->typedata = typedata; \
-	tval->iddata = arrdata.count_obj; \
-	tdata->iddata = arrdata.count_obj; \
-	tval->pdata = tdata; \
-	arrdata.push(tdata);
+S4G_API int s4g_cfcount_arg(s4g_main* s4gm);				//количество аргументов которые были переданы функции
+S4G_API s4g_value* s4g_cfget_arg(s4g_main* s4gm, int narg);	//возвращает s4g_value значения аргумента
 
-	//создание переменных
-	inline s4g_value* cr_val_null(const char* name=0);
-	inline s4g_value* cr_val_pdata(s4g_pdata pdata,const char* name = 0);
-	inline s4g_value* cr_val_table_null(const char* name = 0);
-	inline s4g_value* cr_val_int(s4g_int num, const char* name = 0);
-	inline s4g_value* cr_val_uint(s4g_uint num, const char* name = 0);
-	inline s4g_value* cr_val_float(s4g_float num, const char* name = 0);
-	inline s4g_value* cr_val_bool(s4g_bool bf, const char* name = 0);
-	inline s4g_value* cr_val_str(const char* str, const char* name = 0);
-	inline s4g_value* cr_val_table(s4g_table* tt, const char* name = 0);
-	inline s4g_value* cr_val_s_func(const char* name = 0);
-	inline s4g_value* cr_val_s_func(s4g_s_function* func, const char* name = 0);
-	inline s4g_value* cr_val_c_func(s4g_c_function func, const char* name = 0);
-	inline s4g_value* cr_val(int _type, const char* _val, const char* name = 0);	//создать переменную из _val с типом _type
-	inline s4g_value* cr_val_nn();	//создать цифру 0 (для случаев кода: -123 будет 0-123)
+//преобразование аргумента функции к типам и их возвращение
+//если narg == 1 то значит функция вернет первый аргумент и так далее
+S4G_API s4g_int s4g_cfget_int(s4g_main* s4gm, int narg);
+S4G_API s4g_uint s4g_cfget_uint(s4g_main* s4gm, int narg);
+S4G_API s4g_float s4g_cfget_float(s4g_main* s4gm, int narg);
+S4G_API s4g_bool s4g_cfget_bool(s4g_main* s4gm, int narg);
+S4G_API const char* s4g_cfget_str(s4g_main* s4gm, int narg);
+S4G_API s4g_c_function s4g_cfget_cfunc(s4g_main* s4gm, int narg);
+S4G_API s4g_pdata s4g_cfget_pdata(s4g_main* s4gm, int narg);
 
-	inline void c_val(s4g_value* dest, s4g_value* src, bool incr = true);	//присвоить dest данные из src
-	inline void set_td_data(s4g_value* val, int td);	//присвоить данным на которые ссылается перменные тип для сборщика
+//является ли значение аргумента функции по номеру narg (нумерация с 1) типом? 0 нет, 1 да
+S4G_API int s4g_cfis_null(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_int(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_uint(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_float(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_bool(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_str(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_table(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_cfunc(s4g_main* s4gm, int narg);
+S4G_API int s4g_cfis_pdata(s4g_main* s4gm, int narg);
 
-	//получить значения из пременных
-	inline s4g_int get_int(s4g_value* val);
-	inline s4g_uint get_uint(s4g_value* val);
-	inline s4g_float get_float(s4g_value* val);
-	inline const char* get_str(s4g_value* val);
-	inline s4g_table* get_table(s4g_value* val);
-	inline s4g_s_function* get_s_func(s4g_value* val);
-	inline s4g_c_function get_c_func(s4g_value* val);
-	inline s4g_bool get_bool(s4g_value* val);
-	inline s4g_pdata get_pdata(s4g_value* val);
+S4G_API s4g_type s4g_cfget_type(s4g_main* s4gm, int narg);	//возвращает тип аргумента
+S4G_API const char* s4g_cfget_str_type(s4g_main* s4gm, int narg, char* str = 0);//возвращает строковое в предствление типа аргумента
 
-	inline s4g_type get_type(s4g_value* val);	//получить тип переменной
 
-	//работа с контекстами
-	inline void add_mem_contexts();
-	inline long add_new_context(s4g_table** tt);	//создать и добавить новый контекст, возвращает id контекста, а в tt записывает указатель на таблицу
-	inline long add_context(s4g_table* tt);			//добавить контекст основанный на таблице, возвращает id добавленного контекста
-	inline void activate_prev(long lastidctx);		//активирует предыдущие контексты до lastidctx (это значение было получено при вызове deactivate_prev)
-	inline long deactivate_prev();					//деактивировать все предыдущие контексты, возвращает номер контекста который деактивирован последним
-	inline void del_top_context(bool clear);				//пометить контекст как ненужный и при сборке мусора снести все с него
-	inline void clear_context(long id);
-	inline void remove_context(long id);			//пометить контекст как не нужный и при сборке удалить только контекст но не его данные
-	inline void set_ctx_for_del(s4g_context* ctx);	//добавить контекст для удаления
+//DEBUG
 
-	//существует ли переменная с именем str во всех предыдущих контекстах
-	//если да то возвращает id контекста в котором найдено, в val записывает указатель на переменную
-	inline long ctx_is_exists_s(const char* str, s4g_value** val);	
-	
-	//запустить сборку мусора
-	void clear(DWORD mls);
-	inline void begin_of_const_data();
-	inline void end_of_const_data();
+S4G_API const char* s4g_value_name(s4g_value* value);			//возвращает имя переменной
+S4G_API long s4g_table_size(s4g_table* ttable);					//возвращает размер таблицы
+S4G_API s4g_value* s4g_table_get(s4g_table* ttable, long key);	//возвращает s4g_value* которая располагается в таблице по ключу key, если есть, иначе 0
 
-	int typedata;	//тип создаваемых данных, 0 - если больше не нужны то удалть, 1 - не удалять
-	//парсер и компилер создают данные которые не удаляются, машина в большинстве случаев создает данные подлежащие удалению
+S4G_API const char* s4g_stack_trace(s4g_main* s4gm);	//возвращает строку с текстом результата трассировки стека вызовов
 
-protected:
-	
-	s4g_stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;	//массив переменных
-	s4g_stack<s4g_data*, S4G_RESERVE_DATA> arrdata;	//массив данных
-	s4g_stack<s4g_context*, 1024> delarrcontexts;	//массив контекстов которые уже свое отработали и нуждаются в удалении
-	s4g_stack<s4g_context*, S4G_RESERVE_CONTEXTS> arrcurrcontexts;//массив подключенных в данный момент контекстов
-	long curr_num_top_ctx = 0;
-	
-	MemAlloc<s4g_value, S4G_RESERVE_VALUE_MEM> MemValue;
-	MemAlloc<s4g_data, S4G_RESERVE_DATA_MEM> MemData;
+S4G_API const char* s4g_dbg_get_curr_file(s4g_main* s4gm, char* str = 0);	//возвращает путь до файла скрипта который выполняется в данный момент (если str то записывает в него)
+S4G_API long s4g_dbg_get_curr_str(s4g_main* s4gm, char* str = 0);			//возвращает номер строки файла скрипта который выполняется в данный момент (если str то записывает в него)
+S4G_API const char* s4g_dbg_get_curr_func(s4g_main* s4gm, char* str = 0);	//возвращает функцию которая выполняется в данный момент (если str то записывает в него)
 
-	MemAlloc<s4g_context, S4G_RESERVE_CONTEXTS_MEM> MemCtx;
-
-	MemAlloc<s4g_int, S4G_RESERVE_INT_MEM> MemInt;
-	MemAlloc<s4g_uint, S4G_RESERVE_UINT_MEM> MemUInt;
-	MemAlloc<s4g_float, S4G_RESERVE_FLOAT_MEM> MemFloat;
-	MemAlloc<s4g_bool, S4G_RESERVE_BOOL_MEM> MemBool;
-	MemAlloc<String, S4G_RESERVE_STRING_MEM> MemString;
-	MemAlloc<s4g_s_function, S4G_RESERVE_SFUNC_MEM> MemSFunc;
-	MemAlloc<s4g_table, S4G_RESERVE_TABLE_MEM> MemTable;
-
-	long count_nd_data;
-	long count_nd_value;
-};
-
-//тип функция
-struct s4g_s_function
-{
-	s4g_s_function(){ externs = 0; ismarg = false; main_extern = 0; marg_val = 0; margtable = 0; }
-	~s4g_s_function(){ /*mem_delete(externs);*/ }
-	s4g_value* externs_val;
-	s4g_table* externs;	//подстановка переменных и предыдщуего контекста
-	s4g_stack<String> externs_strs;	//имена переменных для подстановки из предыдущего контекста
-	int main_extern;
-	s4g_stack<String> args;	//имена аргументов
-	s4g_stack<s4g_command> commands; //опкод
-	bool ismarg; //принимает ли функция перенное количество аргументов?
-	s4g_value* marg_val;
-	s4g_table* margtable;	//подстановка переменных и предыдщуего контекста
-};
-
-//контекст содержащий в себе все переменные текущего исполнения
-struct s4g_context
-{
-	s4g_context(){ table = 0; valid = false; oldtable = 0; }
-	~s4g_context() {}
-	s4g_table* table;	//таблица с переменными
-	s4g_table* oldtable;	//таблица с переменными
-	bool valid;			//рабочий ли контекст в данный момент?
-	//это нужно в случе когда вызывается функция, вызываемая блокирует все предыдущие контексты, после отработки разблокирует
-};
-
-//////
-
+}
 #endif

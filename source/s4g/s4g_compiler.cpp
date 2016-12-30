@@ -1,10 +1,9 @@
 
-#include <s4g\s4g_compiler.h>
+#include "s4g_compiler.h"
 
-void s4g_compiler::gen(s4g_vm_command comm, s4g_value* val, long _lexid)
+inline void s4g_compiler::gen(s4g_vm_command comm, s4g_value* val, long _lexid)
 {
 	comms->push(s4g_command(comm, val, _lexid));
-	//printf("%s\n",comm.c_str());
 };
 
 int s4g_compiler::compile(s4g_node* node, s4g_stack<s4g_command> * commands)
@@ -47,7 +46,7 @@ int s4g_compiler::compile2(s4g_node* node)
 				tmpnode = tmpnode->op2;
 			}
 
-			long countval = 0;		//
+			long countval = 0;	
 			tmpnode = node->op2;
 			while (tmpnode)
 			{
@@ -55,11 +54,6 @@ int s4g_compiler::compile2(s4g_node* node)
 				//compile2(tmpnode);
 				tmpnode = tmpnode->op2;
 			}
-
-			/*if (countval == 1 && node->op1 && node->op1->op2 && node->op1->op2->type == _call)
-			{
-				countval = 2;
-			}*/
 
 			if (countvar > 1 || node->op2->type == _call)
 			{
@@ -117,12 +111,6 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _add_in_table)
 		{
-			//gen(mc_push,node->op1->value);
-			//printf("push\n");
-			//gen(mc_push,node->op2->value);
-			
-			//gen(mc_pop);
-			//printf("pop\n");
 			compile2(node->op1);
 			gen(mc_add_in_table,0, node->lexid);
 			printf("add_in_table\n");
@@ -207,6 +195,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					gen(mc_fetch_get, node->op1->value, node->lexid);
 					printf("fetch_get\n");
 				}
+			compile2(node->op2);
 			compile2(node->op3);
 		}
 		else if (node->type == _get_cr)
@@ -260,7 +249,6 @@ int s4g_compiler::compile2(s4g_node* node)
 			s4g_node* tmpnode = node;
 				while(tmpnode->op1 && tmpnode->op1->value)
 				{
-					//countarg++;
 						sf->args.push(gc->get_str(tmpnode->op1->value));
 						tmpnode = tmpnode->op1;
 						if (tmpnode && tmpnode->op1 && tmpnode->op1->type == _marg)
@@ -277,17 +265,13 @@ int s4g_compiler::compile2(s4g_node* node)
 			tmpnode = node->op3;
 				if (tmpnode)
 				{
-					/*s4g_value* tmpvaltt = gc->cr_val_table_null(-2);
-					sf->externs = gc->get_table(tmpvaltt);*/
 					while (tmpnode)
 					{
 						const char* str = gc->get_str(tmpnode->value);
 						sf->externs_strs.push(str);
-						/*s4g_value* tmpval = gc->cr_val_null(-2);
-						sf->externs->add_val_s(str, tmpval, -2);*/
+						
 						tmpnode = tmpnode->op1;
 					}
-					sf->main_extern = 0;
 				}
 			s4g_stack<s4g_command>* tmpcomms = comms;
 			printf("---\n");
@@ -300,16 +284,13 @@ int s4g_compiler::compile2(s4g_node* node)
 			}
 			printf("---\n");
 			comms = tmpcomms;
-
-			/*if (sf->commands.count() == 0)
-				sf->commands.push(s4g_command(mc_halt, 0, -3));*/
 			
 			gen(mc_push, gc->cr_val_s_func(sf/*, -3*/), node->lexid);
 			printf("push\n");
 		}
 		else if(node->type == _call)
 		{
-			gen(mc_precall, /*gc->cr_val_int(countarg, -2),*/0, node->lexid);
+			gen(mc_precall, 0, node->lexid);
 			printf("precall\n");
 			compile2(node->op1);	//ложим на вершину стека функцию
 			long countarg = 0;		//
@@ -320,7 +301,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					compile2(tmpnode->op1);
 					tmpnode = tmpnode->op2;
 				}
-				gen(mc_call, /*gc->cr_val_int(countarg, -2),*/0, node->lexid);
+				gen(mc_call, 0, node->lexid);
 			printf("call\n");
 		}
 		else if(node->type == _return)
@@ -328,7 +309,6 @@ int s4g_compiler::compile2(s4g_node* node)
 			s4g_node* tmpnode = node;
 				while(tmpnode)
 				{
-					//countarg++;
 					compile2(tmpnode->op1);
 					tmpnode = tmpnode->op2;
 				}

@@ -1,5 +1,76 @@
 
-#include <s4g\s4g_vm.h>
+#include "s4g_vm.h"
+
+s4g_vm::s4g_vm(s4g_gc* _gc)
+{
+	gc = _gc;
+	gc->add_new_context(&gvars);
+	vgvars = gc->cr_val_table(gvars);
+	strerror[0] = 0; error = 0;
+	cfetchpushstore = 0;
+	curr_vars = 0;
+	runexe = false;
+
+#define GEN_OP(op) arropf[mc_ ## op] = &s4g_vm::com_ ## op;
+	GEN_OP(halt)
+	GEN_OP(fetch_get)
+	GEN_OP(fetch)
+	GEN_OP(store)
+	GEN_OP(end)
+	GEN_OP(mstore)
+	arropf[mc_fetch_get_cr] = &s4g_vm::com_fetch_get;
+	arropf[mc_fetch_cr] = &s4g_vm::com_fetch;
+
+	GEN_OP(new_table)
+	GEN_OP(add_in_table)
+	GEN_OP(push)
+	GEN_OP(pop)
+	GEN_OP(precall)
+	GEN_OP(call)
+
+	GEN_OP(add)
+	GEN_OP(sub)
+	GEN_OP(mul)
+	GEN_OP(div)
+
+	GEN_OP(jz)
+	GEN_OP(jnz)
+	GEN_OP(jmp)
+
+	GEN_OP(mod)
+	GEN_OP(log_and)
+	GEN_OP(log_or)
+	GEN_OP(bit_xor)
+	GEN_OP(bit_not)
+	GEN_OP(bit_shiftr)
+	GEN_OP(bit_shiftl)
+	GEN_OP(log_neqt)
+	GEN_OP(log_eq)
+	GEN_OP(log_neq)
+	GEN_OP(log_ge)
+	GEN_OP(log_le)
+	GEN_OP(log_gt)
+	GEN_OP(log_lt)
+	GEN_OP(log_not)
+	GEN_OP(log_eqt)
+	GEN_OP(bit_and)
+	GEN_OP(bit_or)
+#undef GEN_OP
+	for (int i = 0; i < S4G_MAX_CALL; i++)
+	{
+		callstack.push(new s4g_call_data());
+		int qwert = 0;
+	}
+
+	callstack.init_size(0);
+}
+
+s4g_vm::~s4g_vm()
+{
+	execute.Arr.clear();
+	stackarg.Arr.clear();
+	callstack.Arr.clear();
+}
 
 inline void s4g_vm::com_fetch()
 {
@@ -58,27 +129,19 @@ inline void s4g_vm::com_fetch_get()
 		tval = arg;
 	}
 	s4g_table* ttable = 0;
-		if(execute.count() >= 1+counttop)
+		if(execute.count_obj >= 1+counttop)
 		{
-			s4g_type ttype = gc->get_type(execute.get(execute.count()-counttop));
+			s4g_type ttype = gc->get_type(execute.get((execute.count_obj - counttop) - 1));
 				if(ttype == t_table)
-					ttable = gc->get_table(execute.get(execute.count() - counttop));
+					ttable = gc->get_table(execute.get((execute.count_obj - counttop) - 1));
 				else
 				{
 					char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
 					char tmpstr[S4G_MAX_LEN_TYPE_NAME];
 
-					if (curr_comm)
-					{
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
 						strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
 						sprintf(tmpstr, "%d", tmplexs->numstr);
-					}
-					else
-					{
-						strcpy(tmpfile, "#user");
-						sprintf(tmpstr, "#user");
-					}
 
 					error = -1;
 					char strtype[S4G_MAX_LEN_TYPE_NAME];
@@ -99,17 +162,10 @@ inline void s4g_vm::com_fetch_get()
 			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
 			char tmpstr[S4G_MAX_LEN_TYPE_NAME];
 
-			if (curr_comm)
-			{
 				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
 				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
 				sprintf(tmpstr, "%d", tmplexs->numstr);
-			}
-			else
-			{
-				strcpy(tmpfile, "#user");
-				sprintf(tmpstr, "#user");
-			}
+
 
 			error = -1;
 			sprintf(this->strerror, "[%s]:%s - address to the table '%s', but the stack is empty", tmpfile, tmpstr, tval->name);
@@ -120,7 +176,7 @@ inline void s4g_vm::com_fetch_get()
 
 		if (!arg)
 		{
-			tval = execute.get(execute.count());
+			tval = execute.get(execute.count_obj-1);
 			//execute.pop(1);
 			stack_pop(execute, 1);
 		}
@@ -173,17 +229,9 @@ inline void s4g_vm::com_fetch_get()
 			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
 			char tmpstr[S4G_MAX_LEN_TYPE_NAME];
 
-			if (curr_comm)
-			{
 				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
 				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
 				sprintf(tmpstr, "%d", tmplexs->numstr);
-			}
-			else
-			{
-				strcpy(tmpfile, "#user");
-				sprintf(tmpstr, "#user");
-			}
 
 			error = -1;
 			sprintf(this->strerror, "[%s]:%s - data type '%s' is unresolved address in table", tmpfile, tmpstr, tmpval->name);
@@ -196,13 +244,13 @@ inline void s4g_vm::com_fetch_get()
 
 inline void s4g_vm::com_store()
 {
-	s4g_value* tvalue = execute.get(execute.count());
-	s4g_value* tvalue2 = execute.get(execute.count()-1);
+	s4g_value* tvalue = execute.get(execute.count_obj - 1);
+	s4g_value* tvalue2 = execute.get(execute.count_obj - 2);
 	
 	if (gc->get_type(tvalue) == t_sfunc)
 	{
 		s4g_s_function* sf = gc->get_s_func(tvalue);
-		if (sf->externs_strs.count() > 0 && !sf->externs)
+		if (sf->externs_strs.count() > 0 && !sf->externstable)
 		{
 			s4g_value* newsfval = gc->cr_val_s_func(tvalue2->name);
 			s4g_s_function* newsf = gc->get_s_func(newsfval);
@@ -210,34 +258,29 @@ inline void s4g_vm::com_store()
 			newsf->commands = sf->commands;
 			newsf->externs_strs = sf->externs_strs;
 			newsf->ismarg = sf->ismarg;
-			newsf->main_extern = ++sf->main_extern;
 			newsf->externs_val = gc->cr_val_table_null();
 			newsf->externs_val->typedata = 1;
-			newsf->externs = gc->get_table(newsf->externs_val);
+			newsf->externstable = gc->get_table(newsf->externs_val);
 			gc->set_td_data(newsf->externs_val,1);
 
 			long tmpid = -1;
-			for (int i = 1; i <= newsf->externs_strs.count(); i++)
+			for (int i = 0; i <= newsf->externs_strs.count(); i++)
 			{
 				const char* str = newsf->externs_strs.get(i).c_str();
 				if ((tmpid = curr_vars->is_exists_s(str)) != -1)
 				{
 					s4g_value* tmpval = gc->cr_val_null(str);
 					//tmpval->isdelete = false;
-					gc->c_val(tmpval, curr_vars->getn(tmpid+1),false);
+					gc->c_val(tmpval, curr_vars->getn(tmpid),false);
 					//tmpval->typedata = 1;
 					//gc->set_td_data(tmpval,1);
 
-					newsf->externs->add_val_s(str, tmpval);
+					newsf->externstable->add_val_s(str, tmpval);
 				}
 			}
 			tvalue = newsfval;
 		}
-		else if (sf->externs_strs.count() > 0 && sf->externs)
-		{
-			int qwert = 0;
 		}
-	}
 
 	gc->c_val(tvalue2, tvalue);
 	
@@ -263,17 +306,17 @@ inline void s4g_vm::com_store()
 
 inline void s4g_vm::com_end()
 {
-	val_end = execute.count();
+	val_end = execute.count_obj-1;
 }
 
 inline void s4g_vm::com_mstore()
 {
 	long keyval = val_end;
-	if (keyval == 0)
-		keyval = 1;
+	if (keyval == -1)
+		keyval = 0;
 
 	long countvar = gc->get_int(arg);
-	long beginkeyvar = execute.count() - (countvar - 1);
+	long beginkeyvar = (execute.count_obj - (countvar - 1)) - 1;
 	if (beginkeyvar - keyval > countvar)
 		beginkeyvar = keyval + countvar;
 
@@ -282,7 +325,7 @@ inline void s4g_vm::com_mstore()
 		if (keyval < beginkeyvar)
 		{
 			
-			s4g_value* s1 = execute.get(execute.count() - (countvar - 1));
+			s4g_value* s1 = execute.get((execute.count_obj - (countvar - 1)) - 1);
 			s4g_value* s2 = execute.get(keyval);
 
 			gc->c_val(s1,s2);
@@ -300,14 +343,14 @@ inline void s4g_vm::com_mstore()
 
 inline void s4g_vm::com_add_in_table()
 {
-	s4g_table* tt = gc->get_table(execute.get(execute.count() - 1));
-	s4g_value* val = (execute.get(execute.count()));
+	s4g_table* tt = gc->get_table(execute.get(execute.count_obj - 2));
+	s4g_value* val = (execute.get(execute.count_obj - 1));
 	tt->add_val(val);
 }
 
 inline void s4g_vm::com_precall()
 {
-	sr.setn_first_free(execute.count());
+	sr.setn_first_free(execute.count_obj);
 }
 
 inline void s4g_vm::com_call()
@@ -335,17 +378,20 @@ inline void s4g_vm::com_call()
 		return;
 	}
 
-	int startpos = sr.getv_last_unfree()+1;
-	long countarg = execute.count_obj - startpos;	//получаем количество аргументов
+	int startpos = sr.getv_last_unfree();
+	long countarg = (execute.count_obj - startpos)-1;	//получаем количество аргументов
 
 	s4g_value* tvalfunc = execute.get(startpos);//в стеке лежит переменная ссылающаяся на функцию
 	s4g_type ttype =  gc->get_type(tvalfunc);
 		//если тип скриптовая функция
 		if (ttype == t_sfunc)
 		{
-			s4g_s_function* csfunc = gc->get_s_func(execute.get(execute.count_obj - countarg));
-			if (csfunc->commands.count() == 0)
+			s4g_s_function* csfunc = gc->get_s_func(execute.get(startpos));
+
+			//если функция не содержит кода, либо из кода там только halt
+			if (csfunc->commands.count() <= 1)
 			{
+				//закачиваем работу с этой функцией
 				sr.free_last_unfree();
 				//execute.pop(countarg + 1); // выталкиваем из стека все что относилось к функции
 				stack_pop(execute, countarg + 1);
@@ -355,14 +401,13 @@ inline void s4g_vm::com_call()
 
 			long idexternctx = -1;
 			//если у нас есть подставляемые значения из другого констекста
-			if (csfunc->externs)
+			if (csfunc->externstable)
 			{
-				idexternctx = gc->add_context(csfunc->externs);	//то устанавливаем контекст*/
+				idexternctx = gc->add_context(csfunc->externstable);	//то устанавливаем контекст
 			}
 
 			s4g_table* new_ctx = 0;
 			long idnewctx = gc->add_new_context(&new_ctx);	//создаем новый контекст
-			
 			
 				//если аргументы есть
 				if(countarg > 0)
@@ -375,22 +420,22 @@ inline void s4g_vm::com_call()
 						tmpargs = csfunc->args.count_obj;
 
 						//записываем на сколько хватает аргументов
-						for (int i = 0; i<tmpargs; i++)
+						for (int i = 0; i<tmpargs; ++i)
 						{
 							//tval2 = gc->cr_val_null();
-							tval = execute.get(execute.count_obj - ((countarg - i) - 1));
+							tval = execute.get((execute.count_obj - ((countarg - i) - 1))-1);
 							//gc->c_val(tval2, tval, false);
 							//const char* tmpstr = csfunc->args.get(i + 1).c_str();
-							new_ctx->add_val_s(csfunc->args.get(i + 1).c_str(), tval);
+							new_ctx->add_val_s(csfunc->args.get(i).c_str(), tval);
 						}
 
 						//если есть еще аргументы и у нас следущий аргмент это мультиаргумент
 						if (countarg > tmpargs && csfunc->ismarg)
 						{
-								for (int i = tmpargs; i<countarg; i++)
+								for (int i = tmpargs; i<countarg; ++i)
 								{
 									//tval2 = gc->cr_val_null();
-									tval = execute.get(execute.count_obj - ((countarg - i) - 1));
+									tval = execute.get((execute.count_obj - ((countarg - i) - 1) - 1));
 									//gc->c_val(tval2, tval,false);
 									csfunc->margtable->add_val(tval);
 								}
@@ -402,7 +447,7 @@ inline void s4g_vm::com_call()
 			stack_pop(execute, countarg + 1);
 
 				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
-				s4g_call_data* tmpcd = callstack.get((callstack.count_obj != 0 ? callstack.count_obj+1 : 1));
+			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
 				tmpcd->coms = curr_comm;
 				tmpcd->vars = curr_vars;
 				tmpcd->cfetchget = cfetchget;
@@ -414,7 +459,6 @@ inline void s4g_vm::com_call()
 				tmpcd->id_curr_com = id_curr_com;
 				strcpy(tmpcd->namef, tvalfunc->name);
 
-
 			//устанавилваем новое окружение и новые конмады
 			curr_vars = new_ctx;
 			curr_comm = &(csfunc->commands);
@@ -422,15 +466,38 @@ inline void s4g_vm::com_call()
 			cfetchget = 3;
 			cfetchgetarg = false;
 			cfetchpushstore = 0;
-			id_curr_com = 0;
+			id_curr_com = -1;
 		}
 		//иначе если у нас с(++) функция
 		else if (ttype == t_cfunc)
 		{
-			CurrCountArg = countarg;
+			//CurrCountArg = countarg;
+			for (int i = 0; i < countarg; i++)
+			{
+				s4g_value* tval = execute.get((execute.count_obj - ((countarg - i) - 1)) - 1);
+				stackarg.push(tval);
+			}
 			s4g_c_function tcfunc = (gc->get_c_func(tvalfunc));
-			(tcfunc)(s4gm);
-			CurrCountArg = -1;
+			stack_pop(execute, countarg + 1);
+
+			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
+			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
+			tmpcd->coms = curr_comm;
+			tmpcd->vars = curr_vars;
+			tmpcd->cfetchget = cfetchget;
+			tmpcd->cfetchgetarg = cfetchgetarg;
+			tmpcd->cfetchpushstore = cfetchpushstore;
+			tmpcd->idexternctx = -1;
+			tmpcd->idnewctx = -1;
+			tmpcd->lastidctx = -1;
+			tmpcd->id_curr_com = -1;
+			strcpy(tmpcd->namef, tvalfunc->name);
+
+			error = (tcfunc)(s4gm);
+
+			--callstack.count_obj;
+			sr.free_last_unfree();
+			stackarg.count_obj = 0;
 		}
 		//иначе у нас не функция
 		else
@@ -465,8 +532,8 @@ inline void s4g_vm::com_new_table()
 
 inline void s4g_vm::com_add()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -495,6 +562,12 @@ inline void s4g_vm::com_add()
 				execute.push(gc->cr_val_int(num1 + gc->get_uint(s2)));
 			else if (ttype2 == t_float)
 				execute.push(gc->cr_val_int(num1 + gc->get_float(s2)));
+			else if (ttype2 == t_string)
+			{
+				s4g_int num2;
+				sscanf(gc->get_str(s2), "%i", &num2);
+				execute.push(gc->cr_val_int(num1 + num2));
+			}
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -511,6 +584,12 @@ inline void s4g_vm::com_add()
 				execute.push(gc->cr_val_uint(num1 + gc->get_uint(s2)));
 			else if (ttype2 == t_float)
 				execute.push(gc->cr_val_uint(num1 + gc->get_float(s2)));
+			else if (ttype2 == t_string)
+			{
+				s4g_uint num2;
+				sscanf(gc->get_str(s2), "%u", &num2);
+				execute.push(gc->cr_val_uint(num1 + num2));
+			}
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -527,6 +606,34 @@ inline void s4g_vm::com_add()
 				execute.push(gc->cr_val_float(num1 + gc->get_uint(s2)));
 			else if (ttype2 == t_float)
 				execute.push(gc->cr_val_float(num1 + gc->get_float(s2)));
+			else if (ttype2 == t_string)
+			{
+				s4g_float num2;
+				sscanf(gc->get_str(s2), "%f", &num2);
+				execute.push(gc->cr_val_float(num1 + num2));
+			}
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if (ttype1 == t_string)
+		{
+			String str = gc->get_str(s1);
+
+			if (ttype2 == t_int)
+			{
+				execute.push(gc->cr_val_str((str + gc->get_int(s2)).c_str()));
+			}
+			else if (ttype2 == t_uint)
+				execute.push(gc->cr_val_str((str + gc->get_uint(s2)).c_str()));
+			else if (ttype2 == t_float)
+				execute.push(gc->cr_val_str((str + gc->get_float(s2)).c_str()));
+			else if (ttype2 == t_string)
+				execute.push(gc->cr_val_str((str + gc->get_str(s2)).c_str()));
+			else if (ttype2 == t_bool)
+				execute.push(gc->cr_val_str((str + gc->get_bool(s2)).c_str()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -541,8 +648,8 @@ inline void s4g_vm::com_add()
 
 inline void s4g_vm::com_sub()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -588,11 +695,29 @@ inline void s4g_vm::com_sub()
 			s4g_uint num1 = gc->get_uint(s1);
 
 			if (ttype2 == t_int)
-				execute.push(gc->cr_val_uint(num1 - gc->get_int(s2)));
+			{
+				s4g_int num2 = gc->get_int(s2);
+				if (num2 > num1)
+					execute.push(gc->cr_val_int(num1 - num2));
+				else
+					execute.push(gc->cr_val_uint(num1 - num2));
+			}
 			else if (ttype2 == t_uint)
-				execute.push(gc->cr_val_uint(num1 - gc->get_uint(s2)));
+			{
+				s4g_uint num2 = gc->get_uint(s2);
+				if (num2 > num1)
+					execute.push(gc->cr_val_int(num1 - num2));
+				else
+					execute.push(gc->cr_val_uint(num1 - num2));
+			}
 			else if (ttype2 == t_float)
-				execute.push(gc->cr_val_uint(num1 - gc->get_float(s2)));
+			{
+				s4g_float num2 = gc->get_float(s2);
+				if (num2 > num1)
+					execute.push(gc->cr_val_int(num1 - num2));
+				else
+					execute.push(gc->cr_val_uint(num1 - num2));
+			}
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -623,8 +748,8 @@ inline void s4g_vm::com_sub()
 
 inline void s4g_vm::com_mul()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -687,8 +812,8 @@ inline void s4g_vm::com_mul()
 
 inline void s4g_vm::com_div()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -777,8 +902,7 @@ inline void s4g_vm::com_pop()
 
 inline void s4g_vm::com_retprev()
 {
-	int curr_count_cs = callstack.count();
-	s4g_call_data* tmpcd = callstack.get(curr_count_cs);
+	s4g_call_data* tmpcd = callstack.get(callstack.count_obj - 1);
 	//возвращаем предыдущее состояние машины, до момента вызова скриптовой функции
 	curr_comm = tmpcd->coms;
 	curr_vars = tmpcd->vars;
@@ -807,7 +931,7 @@ inline void s4g_vm::com_retprev()
 
 inline void s4g_vm::com_jz()
 {
-	s4g_value* s = execute.get(execute.count_obj);
+	s4g_value* s = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype = gc->get_type(s);
 
@@ -853,7 +977,7 @@ inline void s4g_vm::com_jz()
 
 inline void s4g_vm::com_jnz()
 {
-	s4g_value* s = execute.get(execute.count_obj);
+	s4g_value* s = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype = gc->get_type(s);
 
@@ -904,8 +1028,8 @@ inline void s4g_vm::com_jmp()
 
 inline void s4g_vm::com_mod()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -963,8 +1087,8 @@ inline void s4g_vm::com_mod()
 
 inline void s4g_vm::com_log_and()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1059,8 +1183,8 @@ inline void s4g_vm::com_log_and()
 
 inline void s4g_vm::com_log_or()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1149,8 +1273,8 @@ inline void s4g_vm::com_log_or()
 
 inline void s4g_vm::com_log_eq()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1225,8 +1349,8 @@ inline void s4g_vm::com_log_eq()
 
 inline void s4g_vm::com_log_neq()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1301,8 +1425,8 @@ inline void s4g_vm::com_log_neq()
 
 inline void s4g_vm::com_log_ge()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1377,8 +1501,8 @@ inline void s4g_vm::com_log_ge()
 
 inline void s4g_vm::com_log_le()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1453,8 +1577,8 @@ inline void s4g_vm::com_log_le()
 
 inline void s4g_vm::com_log_gt()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1529,8 +1653,8 @@ inline void s4g_vm::com_log_gt()
 
 inline void s4g_vm::com_log_lt()
 {
-	s4g_value* s1 = execute.get(execute.count_obj - 1);
-	s4g_value* s2 = execute.get(execute.count_obj);
+	s4g_value* s1 = execute.get(execute.count_obj - 2);
+	s4g_value* s2 = execute.get(execute.count_obj - 1);
 
 	s4g_type ttype1 = gc->get_type(s1);
 	s4g_type ttype2 = gc->get_type(s2);
@@ -1619,7 +1743,7 @@ GEN_OP_STUB(bit_or)
 int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 {
 	curr_comm = commands;
-	id_curr_com = 1;
+	id_curr_com = 0;
 	curr_vars = vars;
 	op = mc_halt;
 	arg = 0;
@@ -1627,14 +1751,14 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	cfetchgetarg = false;
 	runexe = true;
 	val_end = -1;
-	precall = -1;
-		while (runexe && id_curr_com <= curr_comm->count())
+
+		while (runexe && id_curr_com < curr_comm->count())
 		{
 			op = curr_comm->get(id_curr_com).command;
 			arg = curr_comm->get(id_curr_com).arg;
 			
 			(this->*(arropf[op]))();
-			if (error != 0)
+			if (error < 0)
 				return -1;
 			id_curr_com++;
 			cfetchpushstore++;
@@ -1645,7 +1769,7 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	//обнуляем текущую таблицу для записи и стек с командами
 	curr_vars = 0;
 	curr_comm = 0;
-
+	id_curr_com = -1;
 	cfetchget = 3;
 	cfetchgetarg = false;
 	cfetchpushstore = 0;
@@ -1667,4 +1791,105 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 		}*/
 	
 	return error;
+}
+
+const char* s4g_vm::stack_trace()
+{
+	strstacktrace = "";
+	char tmpplace[S4G_MAX_CALL+2];
+	sprintf(tmpplace, "");
+	char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+	char tmpstr[S4G_MAX_LEN_TYPE_NAME];
+		for (int i = 0; i < callstack.count_obj; i++)
+		{
+			if (callstack[i]->coms)
+			{
+				s4g_lexeme* tmplexs = this->arr_lex->get(callstack[i]->coms->get(callstack[i]->id_curr_com).lexid - 1);
+				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+				sprintf(tmpstr, "%d", tmplexs->numstr);
+			}
+			else
+			{
+				strcpy(tmpfile, "#user");
+				sprintf(tmpstr, "#user");
+			}
+
+			strstacktrace += tmpplace;
+			strstacktrace += callstack[i]->namef;
+			strstacktrace += "[";
+			strstacktrace += tmpfile;
+			strstacktrace += ":";
+			strstacktrace += tmpstr;
+			strstacktrace += "]\n";
+			//sprintf(str + strlen(str), "%s%s\n", tmpplace, callstack[i]->namef);
+			sprintf(tmpplace + strlen(tmpplace), " ");
+		}
+
+	return strstacktrace.c_str();
+}
+
+const char* s4g_vm::get_curr_file(char* str)
+{
+		if (!curr_comm && id_curr_com <= -1)
+		{
+			if (str)
+				sprintf(str, "#endexe");
+			return "#endexe";
+		}
+
+		if (curr_comm)
+		{
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+			if (str)
+				strcpy(str, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+
+			return arr_lex->ArrFiles[tmplexs->fileid].c_str();
+		}
+		else
+		{
+			if (str)
+				strcpy(str, "#user");
+
+			return "#user";
+		}
+}
+
+long s4g_vm::get_curr_str(char* str)
+{
+		if (!curr_comm && id_curr_com <= -1)
+		{
+			if (str)
+				sprintf(str, "#endexe");
+			return -1;
+		}
+
+		if (curr_comm)
+		{
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+			if (str)
+				sprintf(str, "%d", tmplexs->numstr);
+			return tmplexs->numstr;
+		}
+		else
+		{
+			if (str)
+				sprintf(str, "#user");
+			return -1;
+		}
+}
+
+const char* s4g_vm::get_curr_func(char* str)
+{
+	if (callstack.count_obj > 0 && callstack[-1]->coms)
+	{
+		if (str)
+			strcpy(str, callstack[-1]->namef);
+		return callstack[-1]->namef;
+	}
+	else
+	{
+		if (str)
+			strcpy(str, "#nonefunc");
+		return "#nonefunc";
+	}
 }

@@ -663,12 +663,12 @@ public:
 	char strerror[1024];
 //protected:
 	Array<s4g_lexeme*> ArrLexs;
-	AATable<s4g_define> ArrDefines;
 	Array<String> ArrFiles;
 	Array<String> ArrPathForFiles;
 	int curr_id_file;// = ArrFiles.size()-1;
 	long curr_num;
 	MemAlloc<s4g_lexeme> LexPool;
+	bool iscreatevar;
 };
 
 #define bst_iferr(cond,text,...) if(cond) {this->status = -1; sprintf(this->error, text, ...); return 0;)
