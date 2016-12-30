@@ -83,20 +83,20 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 
 					s4g_node* head_func = s4g_get_function_def_head();
 					bst_cond_er(this);
-					this->overend--;
-					
-					s4g_node* body_func = s4g_gen_statement();
+					//this->overend--;
+					lex_get_curr0(tmplexs);
+					s4g_node* body_func = s4g_read_block();// s4g_gen_statement();
 					
 					bst_cond_er(this);
 					lex_get_curr0(tmplexs);
 						//если текущая лексема не означает завершение операции end
-						if(!(arr_lex->get_curr_num() < arr_lex->get_count() && tmplexs->type == word_key && tmplexs->id == 2)) //error
+						/*if(!(arr_lex->get_curr_num() < arr_lex->get_count() && tmplexs->type == word_key && tmplexs->id == 2)) //error
 						{
 							status = -1;
 							sprintf(this->error,"[%s]:%d - not found end for funcion",this->arr_lex->ArrFiles[sfunclex->fileid],sfunclex->numstr);
 							return 0;
-						}
-					lex_get_next(tmplexs);
+						}*/
+					//lex_get_next(tmplexs);
 					s4g_node* nfunc = NodePool.Alloc(_function, funclexid, (s4g_value*)0, head_func, body_func);
 					isender = oldisender;
 					return NodePool.Alloc(_expr, funclexid, (s4g_value*)0, NodePool.Alloc(_set, funclexid, (s4g_value*)0, name_func, nfunc), NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, s4g_gen_statement()));
@@ -117,7 +117,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				{
 					bool oldisender = isender;
 					isender = false;
-					this->overend--;
+					//this->overend--;
 					lex_get_next0(tmplexs);
 					if(tmplexs->type != sym_group || tmplexs->id != 0)
 					{
@@ -138,17 +138,18 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						return(0);
 					}
 					lex_get_next0(tmplexs);
-					tmpnode->op2 = s4g_gen_statement();	//и считываем то что if
+					tmpnode->op2 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что if
 					lex_get_curr(tmplexs);
 					if(tmplexs->type == word_key && tmplexs->id == 10)
 					{
 						lex_get_next0(tmplexs);
-						tmpnode->op3 = s4g_gen_statement();	//и считываем то что else
+						tmpnode->op3 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что else
 					}
 					lex_get_next0(tmplexs);
 					bst_cond_er(this);
 					if(tmplexs)
 					{
+						lex_get_prev0(tmplexs);
 						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, s4g_gen_statement());
 					}
 					return tmpnode;
@@ -170,7 +171,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						--dowhile;
 						bool oldisender = isender;
 						isender = false;
-						this->overend--;
+						//this->overend--;
 						lex_get_next0(tmplexs);
 						if(tmplexs->type != sym_group || tmplexs->id != 0)
 						{
@@ -191,8 +192,8 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 							return(0);
 						}
 						lex_get_next0(tmplexs);
-						tmpnode->op2 = s4g_gen_statement();	//и считываем то что while
-						lex_get_next0(tmplexs);
+						tmpnode->op2 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что while
+						lex_get_curr0(tmplexs);
 						bst_cond_er(this);
 						if(tmplexs)
 						{
@@ -206,7 +207,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				{
 					bool oldisender = isender;
 					isender = false;
-					this->overend--;
+					//this->overend--;
 					lex_get_next0(tmplexs);
 					if(tmplexs->type != sym_group || tmplexs->id != 0)
 					{
@@ -256,8 +257,8 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 					lex_get_next0(tmplexs);
 
 					isender = oldisender;
-					s4g_node* expt_body = s4g_gen_statement();
-					lex_get_next0(tmplexs);
+					s4g_node* expt_body = s4g_read_block(); //s4g_gen_statement();
+					lex_get_curr0(tmplexs);
 					bst_cond_er(this);
 					s4g_node* tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, expt_init,
 						NodePool.Alloc(_for, curr_lexid, (s4g_value*)0, expt_cond, expt_body, expt_step)
@@ -266,6 +267,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 					lex_get_next0(tmplexs);
 					if(tmplexs)
 					{
+						lex_get_prev0(tmplexs);
 						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, s4g_gen_statement());
 					}
 
@@ -309,6 +311,23 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 							return NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, s4g_gen_statement());
 				}
 		}
+		else if (tmplexs->type == sym_table_create && tmplexs->id == 1)
+		{
+			this->overend++;
+			//если мы не искали энд но нашли значит он здесь лишний
+			if (this->overend > 0)
+			{
+				status = -1;
+				sprintf(this->error, "[%s]:%d - not found operation for end", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+			}
+			return 0;
+		}
+		else if (tmplexs->type == sym_table_create && tmplexs->id == 0)
+		{
+			node = s4g_read_block();
+			if (node && node->op2)
+				node->op2->op1 = s4g_gen_statement();
+		}
 		//иначе у считываем выражение
 		else
 		{
@@ -340,6 +359,35 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 		}
 	
 	return node;
+}
+
+s4g_node* s4g_builder_syntax_tree::s4g_read_block()
+{
+	s4g_lexeme* lex_get_curr0(tmplexs);
+	if (tmplexs->type == sym_table_create && tmplexs->id == 0)
+	{
+		overend--;
+		lex_get_next(tmplexs);
+		s4g_node* node = s4g_gen_statement();
+		bst_cond_er(this);
+		lex_get_curr0(tmplexs);
+
+		if (!(tmplexs->type == sym_table_create && tmplexs->id == 1))
+		{
+			status = -1;
+			sprintf(this->error, "[%s]:%d - not found operation for end", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+		}
+		lex_get_next(tmplexs);
+		//s4g_node* tmpnode = s4g_gen_statement();
+		//node->op2->op1 = tmpnode;
+		return node;
+	}
+	else
+	{
+		status = -1;
+		sprintf(this->error, "[%s]:%d - expected begin block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+		return 0;
+	}
 }
 
 s4g_node* s4g_builder_syntax_tree::s4g_get_term()
@@ -1043,14 +1091,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr()
 {
 	s4g_lexeme* lex_get_curr0(tmplexs);
 
-		//если текущий токен - создание таблицы
-		if(tmplexs->type == sym_table_create && tmplexs->id == 0)
-		{
-			lex_get_next(tmplexs);
-			s4g_node* tmpnode = s4g_get_table();
-			bst_cond_er(this);
-			return tmpnode;
-		}
+		
 	s4g_node* node = s4g_get_op();
 	s4g_node* tmpnode = 0;
 	s4g_node* tmpnode2 = 0;
