@@ -952,7 +952,7 @@ inline void s4g_vm::com_jz()
 		jmp = gc->get_float(s) == 0.0f;
 		break;
 	case t_bool:
-		jmp = gc->get_bool(s);
+		jmp = !gc->get_bool(s);
 		break;
 	case t_pdata:
 		jmp = gc->get_pdata(s) == NULL;
@@ -962,7 +962,7 @@ inline void s4g_vm::com_jz()
 		break;
 	default:
 		{
-			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid);
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 			error = -1;
 			char strtype[12];
 			s4g_get_str_type(ttype, strtype);
@@ -998,7 +998,7 @@ inline void s4g_vm::com_jnz()
 		jmp = gc->get_float(s) == 0.0f;
 		break;
 	case t_bool:
-		jmp = gc->get_bool(s);
+		jmp = !gc->get_bool(s);
 		break;
 	case t_pdata:
 		jmp = gc->get_pdata(s) == NULL;
