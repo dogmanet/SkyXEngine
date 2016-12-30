@@ -419,19 +419,19 @@ struct s4g_node
 				out += "t_table";
 				break;
 			case t_string:
-				out += *(char**)(value->pdata->data);
+				out += (String*)(value->pdata->data.p);
 				break;
 			case t_float:
-				out += *(float*)(value->pdata->data);
+				out += value->pdata->data.f;
 				break;
 			case t_int:
-				out += *(int*)(value->pdata->data);
+				out += value->pdata->data.i;
 				break;
 			case t_uint:
-				out += (DWORD)*(unsigned*)(value->pdata->data);
+				out += (DWORD)(value->pdata->data.ui);
 				break;
 			case t_bool:
-				out += *(bool*)(value->pdata->data);
+				out += value->pdata->data.b;
 				break;
 			case t_pdata:
 				out += "t_pdata";

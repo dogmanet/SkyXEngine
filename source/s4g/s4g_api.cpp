@@ -2,37 +2,6 @@
 
 #define S4G_PRE_COND(s4gm, retval) if (s4gm == 0){s4g_gen_msg(s4gm, S4G_ERROR, "!!!", "script system is not init, api function [%s]",__FUNCTION__);	return retval;}
 
-void s4g_get_str_type(s4g_type tt, char* str_type)
-{
-	if (str_type)
-	{
-		if (tt == t_none)
-			strcpy(str_type, s4g_str_type[0]);
-		else if (tt == t_null)
-			strcpy(str_type, s4g_str_type[1]);
-		else if (tt == t_table)
-			strcpy(str_type, s4g_str_type[2]);
-		else if (tt == t_string)
-			strcpy(str_type, s4g_str_type[3]);
-		else if (tt == t_float)
-			strcpy(str_type, s4g_str_type[4]);
-		else if (tt == t_int)
-			strcpy(str_type, s4g_str_type[5]);
-		else if (tt == t_uint)
-			strcpy(str_type, s4g_str_type[6]);
-		else if (tt == t_bool)
-			strcpy(str_type, s4g_str_type[7]);
-		else if (tt == t_pdata)
-			strcpy(str_type, s4g_str_type[8]);
-		else if (tt == t_cfunc)
-			strcpy(str_type, s4g_str_type[9]);
-		else if (tt == t_sfunc)
-			strcpy(str_type, s4g_str_type[10]);
-		else if (tt == t_nnull)
-			strcpy(str_type, s4g_str_type[11]);
-	}
-}
-
 s4g_main* s4g_init(const char* name)
 {
 	return new s4g_main(name);
