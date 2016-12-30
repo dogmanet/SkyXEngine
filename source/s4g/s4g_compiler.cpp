@@ -325,7 +325,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			//insert jz to op3
 			compile2(node->op2);
 			int endpos = comms->count();
-			comms[0][startpos].arg = (s4g_value*)(endpos - startpos - 1);
+			comms[0][startpos].arg = (s4g_value*)(endpos - startpos - (node->op3 ? 0 : 1));
 			//insert jmp to end
 			if(node->op3)
 			{
