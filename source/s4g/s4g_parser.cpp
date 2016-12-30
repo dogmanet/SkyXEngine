@@ -386,7 +386,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 							bst_cond_er(this);
 							lex_get_curr0(tmplexs);
 							//lex_get_prev0(tmplexs);
-							return NodePool.Alloc(_call, funccallidlex, (s4g_value*)0, node, (s4g_node*)0, args);
+							return NodePool.Alloc(_call, funccallidlex, (s4g_value*)0, node, args, (s4g_node*)0);
 						}
 						//иначе у нас нет обращения к элементам таблицы
 						else 

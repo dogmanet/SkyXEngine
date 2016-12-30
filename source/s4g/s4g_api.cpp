@@ -98,14 +98,14 @@ void s4g_call(s4g_main* s4gm, bool call_func)
 		if (s4gm->vmachine->execute.count() > 0)
 		{
 			s4gm->vmachine->com_call();
-			if (s4gm->vmachine->error != 0)
+			if (s4gm->vmachine->error < 0)
 			{
 				s4g_gen_msg(s4gm, S4G_ERROR, s4gm->vmachine->strerror);
 				return;
 			}
 
 			s4gm->vmachine->run(s4gm->vmachine->curr_comm, (s4gm->vmachine->curr_vars));
-			if (s4gm->vmachine->error != 0)
+			if (s4gm->vmachine->error < 0)
 			{
 				s4g_gen_msg(s4gm, S4G_ERROR, s4gm->vmachine->strerror);
 			}
@@ -114,7 +114,7 @@ void s4g_call(s4g_main* s4gm, bool call_func)
 	else
 	{
 		s4gm->vmachine->run(s4gm->commands, (s4gm->vmachine->gvars));
-		if (s4gm->vmachine->error != 0)
+		if (s4gm->vmachine->error < 0)
 		{
 			s4g_gen_msg(s4gm, S4G_ERROR, s4gm->vmachine->strerror);
 		}

@@ -294,7 +294,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			printf("precall\n");
 			compile2(node->op1);	//ложим на вершину стека функцию
 			long countarg = 0;		//
-			s4g_node* tmpnode = node->op3;
+			s4g_node* tmpnode = node->op2;
 				while(tmpnode->op1)
 				{
 					countarg++;
@@ -303,6 +303,7 @@ int s4g_compiler::compile2(s4g_node* node)
 				}
 				gen(mc_call, 0, node->lexid);
 			printf("call\n");
+			compile2(node->op3);
 		}
 		else if(node->type == _return)
 		{

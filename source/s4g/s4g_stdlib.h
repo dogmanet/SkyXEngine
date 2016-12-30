@@ -413,25 +413,25 @@ int s4g_std_tostring(s4g_main* s4gm)
 	if (ttype == t_int)
 	{
 		s4g_int tval = s4g_cfget_int(s4gm, 1);
-		sprintf(tmpstr, "%i", tmpstr);
+		sprintf(tmpstr, "%i", tval);
 		s4g_spush_str(s4gm, tmpstr);
 	}
 	else if (ttype == t_uint)
 	{
 		s4g_uint tval = s4g_cfget_uint(s4gm, 1);
-		sprintf(tmpstr, "%u", tmpstr);
+		sprintf(tmpstr, "%u", tval);
 		s4g_spush_str(s4gm, tmpstr);
 	}
 	else if (ttype == t_float)
 	{
 		s4g_float tval = s4g_cfget_float(s4gm, 1);
-		sprintf(tmpstr, "%f", tmpstr);
+		sprintf(tmpstr, "%f", tval);
 		s4g_spush_str(s4gm, tmpstr);
 	}
 	else if (ttype == t_bool)
 	{
 		s4g_bool tval = s4g_cfget_float(s4gm, 1);
-		sprintf(tmpstr, "%d", tmpstr);
+		sprintf(tmpstr, "%d", tval);
 		s4g_spush_str(s4gm, tmpstr);
 	}
 	else if (ttype == t_string)
