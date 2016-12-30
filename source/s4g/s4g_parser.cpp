@@ -238,7 +238,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						{
 							status = -1;
 							sprintf(this->error, "[%s]:%d - none end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
-		}
+						}
 						return 0;
 					}
 					lex_get_next0(tmplexs);
@@ -274,6 +274,28 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				else if(tmplexs->id == S4GLKW_DO)
 				{
 					++dowhile;
+				}
+				else if(tmplexs->id == S4GLKW_BREAK)
+				{
+					lex_get_next0(tmplexs);
+					if(tmplexs->type != sym_delimiter || tmplexs->id != 0)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return(0);
+					}
+					return NodePool.Alloc(_break, curr_lexid, (s4g_value*)0, s4g_gen_statement());
+				}
+				else if(tmplexs->id == S4GLKW_CONTINUE)
+				{
+					lex_get_next0(tmplexs);
+					if(tmplexs->type != sym_delimiter || tmplexs->id != 0)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return(0);
+					}
+					return NodePool.Alloc(_continue, curr_lexid, (s4g_value*)0, s4g_gen_statement());
 				}
 		}
 		//разделитель

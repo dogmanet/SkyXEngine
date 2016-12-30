@@ -330,7 +330,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			//insert jz to op3
 			compile2(node->op2);
 			int endpos = comms->count();
-			comms[0][startpos].arg = (s4g_value*)(endpos - startpos);
+			comms[0][startpos].arg = (s4g_value*)(endpos - startpos - 1);
 			//insert jmp to end
 			if(node->op3)
 			{
@@ -344,6 +344,9 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _while)
 		{
+			cyctls_bak.push(cyctls);
+			cyctls.clear();
+
 			int startpos = comms->count();
 			compile2(node->op1);
 			int jzpos = comms->count();
@@ -354,19 +357,57 @@ int s4g_compiler::compile2(s4g_node* node)
 			gen(mc_jmp, (s4g_value*)(startpos - comms->count() - 1), node->lexid);
 			printf("jmp\n");
 			comms[0][jzpos].arg = (s4g_value*)(comms->count() - jzpos - 1);
+
+			for(int i = 0, l = cyctls.size(); i < l; ++i)
+			{
+				int addr = 0;
+				switch(cyctls[i].type)
+				{
+				case _cyctl::BREAK:
+					addr = comms->count() - cyctls[i].addr - 1;
+					break;
+				case _cyctl::CONTINUE:
+					addr = startpos - cyctls[i].addr - 1;
+					break;
+				}
+				comms[0][cyctls[i].addr].arg = (s4g_value*)addr;
+			}
+			cyctls = cyctls_bak.get(cyctls_bak.count_obj - 1);
+			cyctls_bak.pop(1);
 		}
 		else if(node->type == _for)
 		{
+			cyctls_bak.push(cyctls);
+			cyctls.clear();
+
 			int startpos = comms->count();
 			compile2(node->op1);
 			int jzpos = comms->count();
 			gen(mc_jz, 0, node->lexid);
 			printf("jz\n");
 			compile2(node->op2);
+			int steppos = comms->count();
 			compile2(node->op3);
 			gen(mc_jmp, (s4g_value*)(startpos - comms->count() - 1), node->lexid);
 			printf("jmp\n");
 			comms[0][jzpos].arg = (s4g_value*)(comms->count() - jzpos - 1);
+
+			for(int i = 0, l = cyctls.size(); i < l; ++i)
+			{
+				int addr = 0;
+				switch(cyctls[i].type)
+				{
+				case _cyctl::BREAK:
+					addr = comms->count() - cyctls[i].addr - 1;
+					break;
+				case _cyctl::CONTINUE:
+					addr = steppos - cyctls[i].addr - 1;
+					break;
+				}
+				comms[0][cyctls[i].addr].arg = (s4g_value*)addr;
+			}
+			cyctls = cyctls_bak.get(cyctls_bak.count_obj - 1);
+			cyctls_bak.pop(1);
 			//cond
 			//jz: end
 			//{
@@ -375,6 +416,20 @@ int s4g_compiler::compile2(s4g_node* node)
 			//jmp: cond
 			//}
 			//end
+		}
+		else if(node->type == _break)
+		{
+			gen(mc_jmp, 0, node->lexid);
+			printf("jmp\n");
+			cyctls.push_back({comms->count() - 1, _cyctl::BREAK});
+			compile2(node->op1);
+		}
+		else if(node->type == _continue)
+		{
+			gen(mc_jmp, 0, node->lexid);
+			printf("jmp\n");
+			cyctls.push_back({comms->count() - 1, _cyctl::CONTINUE});
+			compile2(node->op1);
 		}
 #define GEN_OP(op) \
 		else if(node->type == _ ## op)\

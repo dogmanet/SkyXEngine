@@ -20,6 +20,8 @@ const char s4g_key_words[][S4G_MAX_LEN_KEY_WORD_DEF] = {
 "for",		//11
 "while",	//12
 "do",		//13
+"break",
+"continue"
 };
 
 enum S4GLKW
@@ -37,7 +39,9 @@ enum S4GLKW
 	S4GLKW_ELSE,
 	S4GLKW_FOR,
 	S4GLKW_WHILE,
-	S4GLKW_DO
+	S4GLKW_DO,
+	S4GLKW_BREAK,
+	S4GLKW_CONTINUE
 };
 
 const char s4g_key_bool[][S4G_MAX_LEN_KEY_WORD_DEF] = {
@@ -290,7 +294,10 @@ enum s4g_type_op
 	_log_neqt,
 	_log_eqt,
 	_log_and,
-	_log_or
+	_log_or,
+
+	_break,
+	_continue,
 };
 
 const s4g_type_op s4g_aop_map[] = {
@@ -419,7 +426,20 @@ struct s4g_node
 				out += "t_table";
 				break;
 			case t_string:
-				out += (String*)(value->pdata->data.p);
+				{
+					String * _str = (String*)(value->pdata->data.p);
+					for(int i = 0; i < _str->length(); ++i)
+					{
+						if(_str[0][i] == '\n')
+						{
+							out += "\\n";
+						}
+						else
+						{
+							out += _str[0][i];
+						}
+					}
+				}
 				break;
 			case t_float:
 				out += value->pdata->data.f;
@@ -541,6 +561,8 @@ struct s4g_node
 		case _log_eqt:return("_log_eqt");
 		case _log_and:return("_log_and");
 		case _log_or:return("_log_or");
+		case _break:return("_break");
+		case _continue:return("_continue");
 		default:return("UNKNOWN");
 		}
 	}
