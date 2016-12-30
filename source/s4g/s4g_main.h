@@ -28,8 +28,8 @@ class s4g_vm;
 const char* s4g_get_str_type(s4g_type tt, char* str_type);
 void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...);
 
-#define S4G_COND_TYPE1(s4gm, val,retval) if (!val){s4g_gen_msg(s4gm, S4G_ERROR, "!!!", "value is not init, api function [%s]",__FUNCTION__);	return retval;}
-#define S4G_COND_TYPE2(s4gm, val,retval) if (!val->pdata){s4g_gen_msg(s4gm, S4G_ERROR, "!!!", "value is has not data, api function [%s]",__FUNCTION__);	return retval;}
+#define S4G_COND_TYPE1(s4gm, val,retval) if (!val){s4g_gen_msg(s4gm, S4G_ERROR, "value is not init, api function [%s]",__FUNCTION__);	return retval;}
+#define S4G_COND_TYPE2(s4gm, val,retval) if (!val->pdata){s4g_gen_msg(s4gm, S4G_ERROR, "value is has not data, api function [%s]",__FUNCTION__);	return retval;}
 #define S4G_COND_TYPE_12(s4gm, val,retval) S4G_COND_TYPE1(s4gm, val,retval) S4G_COND_TYPE2(s4gm, val,retval)
 
 //основа взаимодествия
