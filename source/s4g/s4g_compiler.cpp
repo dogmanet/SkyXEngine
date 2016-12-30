@@ -335,4 +335,86 @@ int s4g_compiler::compile2(s4g_node* node)
 			gen(mc_halt, 0, node->lexid);
 			printf("halt\n");
 		}
+		else if(node->type == _if)
+		{
+			compile2(node->op1);
+			int startpos = comms->count();
+			gen(mc_jz, 0, node->lexid);
+			printf("jz\n");
+			//insert jz to op3
+			compile2(node->op2);
+			int endpos = comms->count();
+			comms[0][startpos].arg = (s4g_value*)(endpos - startpos);
+			//insert jmp to end
+			if(node->op3)
+			{
+				startpos = comms->count();
+				gen(mc_jmp, 0, node->lexid);
+				printf("jmp\n");
+				compile2(node->op3);
+				endpos = comms->count();
+				comms[0][startpos].arg = (s4g_value*)(endpos - startpos - 1);
+			}
+		}
+		else if(node->type == _while)
+		{
+			int startpos = comms->count();
+			compile2(node->op1);
+			int jzpos = comms->count();
+			gen(mc_jz, 0, node->lexid);
+			printf("jz\n");
+			compile2(node->op2);
+
+			gen(mc_jmp, (s4g_value*)(startpos - comms->count() - 1), node->lexid);
+			printf("jmp\n");
+			comms[0][jzpos].arg = (s4g_value*)(comms->count() - jzpos - 1);
+		}
+		else if(node->type == _for)
+		{
+			int startpos = comms->count();
+			compile2(node->op1);
+			int jzpos = comms->count();
+			gen(mc_jz, 0, node->lexid);
+			printf("jz\n");
+			compile2(node->op2);
+			compile2(node->op3);
+			gen(mc_jmp, (s4g_value*)(startpos - comms->count() - 1), node->lexid);
+			printf("jmp\n");
+			comms[0][jzpos].arg = (s4g_value*)(comms->count() - jzpos - 1);
+			//cond
+			//jz: end
+			//{
+			//body
+			//step
+			//jmp: cond
+			//}
+			//end
+		}
+#define GEN_OP(op) \
+		else if(node->type == _ ## op)\
+		{\
+			gen(mc_ ## op, 0, node->lexid);\
+			printf(#op "\n");\
+			compile2(node->op3);\
+		}
+
+		GEN_OP(mod)
+		GEN_OP(log_and)
+		GEN_OP(log_or)
+		GEN_OP(bit_xor)
+		GEN_OP(bit_not)
+		GEN_OP(bit_shiftr)
+		GEN_OP(bit_shiftl)
+		GEN_OP(log_neqt)
+		GEN_OP(log_eq)
+		GEN_OP(log_neq)
+		GEN_OP(log_ge)
+		GEN_OP(log_le)
+		GEN_OP(log_gt)
+		GEN_OP(log_lt)
+		GEN_OP(log_not)
+		GEN_OP(log_eqt)
+		GEN_OP(bit_and)
+		GEN_OP(bit_or)
+#undef GEN_OP
 }

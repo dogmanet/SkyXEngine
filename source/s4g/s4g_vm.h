@@ -22,6 +22,37 @@ enum s4g_vm_command
 	mc_add_in_table,//добавить в таблицу котоаря лежит на вершине
 	mc_precall,
 	mc_call,		//вызов функции
+
+	//переход относительный
+	mc_jz,
+	mc_jnz,
+	mc_jmp,
+
+	//переход абсолютный
+	//mc_jza,
+	//mc_jnza,
+	//mc_jmpa,
+
+	mc_mod,
+	mc_log_and,
+	mc_log_or,
+	mc_bit_xor,
+	mc_bit_not,
+	mc_bit_shiftr,
+	mc_bit_shiftl,
+	mc_log_neqt,
+	mc_log_eq,
+	mc_log_neq,
+	mc_log_ge,
+	mc_log_le,
+	mc_log_gt,
+	mc_log_lt,
+	mc_log_not,
+	mc_log_eqt,
+	mc_bit_and,
+	mc_bit_or,
+
+	mc_last
 };
 
 #define S4G_VM_OP_ARIF_ERROR_TYPE1 \
@@ -118,26 +149,55 @@ public:
 		CurrCountArg = -1;
 		runexe = false;
 
-		arropf[mc_halt] = &s4g_vm::com_halt;
-		arropf[mc_fetch_get] = &s4g_vm::com_fetch_get;
+#define GEN_OP(op) arropf[mc_ ## op] = &s4g_vm::com_ ## op;
+		GEN_OP(halt)
+		GEN_OP(fetch_get)
+		GEN_OP(fetch)
+		GEN_OP(store)
+		GEN_OP(end)
+		GEN_OP(mstore)
 		arropf[mc_fetch_get_cr] = &s4g_vm::com_fetch_get;
-		arropf[mc_fetch] = &s4g_vm::com_fetch;
 		arropf[mc_fetch_cr] = &s4g_vm::com_fetch;
-		arropf[mc_store] = &s4g_vm::com_store;
-		arropf[mc_end] = &s4g_vm::com_end;
-		arropf[mc_mstore] = &s4g_vm::com_mstore;
 
-		arropf[mc_new_table] = &s4g_vm::com_new_table;
-		arropf[mc_add_in_table] = &s4g_vm::com_add_in_table;
-		arropf[mc_push] = &s4g_vm::com_push;
-		arropf[mc_pop] = &s4g_vm::com_pop;
-		arropf[mc_precall] = &s4g_vm::com_precall;
-		arropf[mc_call] = &s4g_vm::com_call;
-		
-		arropf[mc_add] = &s4g_vm::com_add;
-		arropf[mc_sub] = &s4g_vm::com_sub;
-		arropf[mc_mul] = &s4g_vm::com_mul;
-		arropf[mc_div] = &s4g_vm::com_div;
+		GEN_OP(new_table)
+		GEN_OP(add_in_table)
+		GEN_OP(push)
+		GEN_OP(pop)
+		GEN_OP(precall)
+		GEN_OP(call)
+
+		GEN_OP(add)
+		GEN_OP(sub)
+		GEN_OP(mul)
+		GEN_OP(div)
+
+		GEN_OP(jz)
+		GEN_OP(jnz)
+		GEN_OP(jmp)
+
+		GEN_OP(mod)
+		GEN_OP(log_and)
+		GEN_OP(log_or)
+		GEN_OP(bit_xor)
+		GEN_OP(bit_not)
+		GEN_OP(bit_shiftr)
+		GEN_OP(bit_shiftl)
+		GEN_OP(log_neqt)
+		GEN_OP(log_eq)
+		GEN_OP(log_neq)
+		GEN_OP(log_ge)
+		GEN_OP(log_le)
+		GEN_OP(log_gt)
+		GEN_OP(log_lt)
+		GEN_OP(log_not)
+		GEN_OP(log_eqt)
+		GEN_OP(bit_and)
+		GEN_OP(bit_or)
+#undef GEN_OP
+
+		//arropf[mc_jza] = &s4g_vm::com_jza;
+		//arropf[mc_jnza] = &s4g_vm::com_jnza;
+		//arropf[mc_jmpa] = &s4g_vm::com_jmpa;
 
 		for (int i = 0; i < S4G_MAX_CALL; i++)
 		{
@@ -171,10 +231,39 @@ public:
 	inline void com_halt();
 	inline void com_push();
 	inline void com_pop();
+
+	inline void com_jz();
+	inline void com_jnz();
+	inline void com_jmp();
+
+#define GEN_OP(op) inline void com_ ## op();
+	GEN_OP(mod)
+	GEN_OP(log_and)
+	GEN_OP(log_or)
+	GEN_OP(bit_xor)
+	GEN_OP(bit_not)
+	GEN_OP(bit_shiftr)
+	GEN_OP(bit_shiftl)
+	GEN_OP(log_neqt)
+	GEN_OP(log_eq)
+	GEN_OP(log_neq)
+	GEN_OP(log_ge)
+	GEN_OP(log_le)
+	GEN_OP(log_gt)
+	GEN_OP(log_lt)
+	GEN_OP(log_not)
+	GEN_OP(log_eqt)
+	GEN_OP(bit_and)
+	GEN_OP(bit_or)
+#undef GEN_OP
+
+	//inline void com_jza();
+	//inline void com_jnza();
+	//inline void com_jmpa();
 	//
 
 	typedef void(s4g_vm::*opfunc) ();
-	opfunc arropf[18];
+	opfunc arropf[mc_last];
 
 	s4g_stack<s4g_command>* curr_comm;
 	long id_curr_com;

@@ -501,7 +501,7 @@ inline void s4g_vm::com_add()
 			}
 		}
 
-		if (ttype1 == t_uint)
+		else if(ttype1 == t_uint)
 		{
 			s4g_uint num1 = gc->get_uint(s1);
 
@@ -517,7 +517,7 @@ inline void s4g_vm::com_add()
 			}
 		}
 
-		if (ttype1 == t_float)
+		else if(ttype1 == t_float)
 		{
 			s4g_float num1 = gc->get_float(s1);
 
@@ -583,7 +583,7 @@ inline void s4g_vm::com_sub()
 			}
 		}
 
-		if (ttype1 == t_uint)
+		else if(ttype1 == t_uint)
 		{
 			s4g_uint num1 = gc->get_uint(s1);
 
@@ -599,7 +599,7 @@ inline void s4g_vm::com_sub()
 			}
 		}
 
-		if (ttype1 == t_float)
+		else if(ttype1 == t_float)
 		{
 			s4g_float num1 = gc->get_float(s1);
 
@@ -648,7 +648,7 @@ inline void s4g_vm::com_mul()
 			}
 		}
 
-		if (ttype1 == t_uint)
+		else if(ttype1 == t_uint)
 		{
 			s4g_uint num1 = gc->get_uint(s1);
 
@@ -664,7 +664,7 @@ inline void s4g_vm::com_mul()
 			}
 		}
 
-		if (ttype1 == t_float)
+		else if(ttype1 == t_float)
 		{
 			s4g_float num1 = gc->get_float(s1);
 
@@ -712,7 +712,7 @@ inline void s4g_vm::com_div()
 		}
 	}
 
-	if (ttype1 == t_uint)
+	else if(ttype1 == t_uint)
 	{
 		s4g_uint num1 = gc->get_uint(s1);
 
@@ -728,7 +728,7 @@ inline void s4g_vm::com_div()
 		}
 	}
 
-	if (ttype1 == t_float)
+	else if(ttype1 == t_float)
 	{
 		s4g_float num1 = gc->get_float(s1);
 
@@ -805,6 +805,815 @@ inline void s4g_vm::com_retprev()
 		runexe = false;
 }
 
+inline void s4g_vm::com_jz()
+{
+	s4g_value* s = execute.get(execute.count_obj);
+
+	s4g_type ttype = gc->get_type(s);
+
+	stack_pop(execute, 1);
+	bool jmp = false;
+	switch(ttype)
+	{
+	case t_nnull:
+		jmp = true;
+		break;
+	case t_int:
+		jmp = gc->get_int(s) == 0;
+		break;
+	case t_uint:
+		jmp = gc->get_uint(s) == 0;
+		break;
+	case t_float:
+		jmp = gc->get_float(s) == 0.0f;
+		break;
+	case t_bool:
+		jmp = gc->get_bool(s);
+		break;
+	case t_pdata:
+		jmp = gc->get_pdata(s) == NULL;
+		break;
+	case t_string:
+		jmp = gc->get_str(s)[0] == 0;
+		break;
+	default:
+		{
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid);
+			error = -1;
+			char strtype[12];
+			s4g_get_str_type(ttype, strtype);
+			sprintf(this->strerror, "[%s]:%d - '%s' expected boolable but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
+		}
+	}
+	if(jmp)
+	{
+		id_curr_com += (int)arg;
+	}
+}
+
+inline void s4g_vm::com_jnz()
+{
+	s4g_value* s = execute.get(execute.count_obj);
+
+	s4g_type ttype = gc->get_type(s);
+
+	stack_pop(execute, 1);
+	bool jmp = false;
+	switch(ttype)
+	{
+	case t_nnull:
+		jmp = true;
+		break;
+	case t_int:
+		jmp = gc->get_int(s) == 0;
+		break;
+	case t_uint:
+		jmp = gc->get_uint(s) == 0;
+		break;
+	case t_float:
+		jmp = gc->get_float(s) == 0.0f;
+		break;
+	case t_bool:
+		jmp = gc->get_bool(s);
+		break;
+	case t_pdata:
+		jmp = gc->get_pdata(s) == NULL;
+		break;
+	case t_string:
+		jmp = gc->get_str(s)[0] == 0;
+		break;
+	default:
+		{
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid);
+			error = -1;
+			char strtype[12];
+			s4g_get_str_type(ttype, strtype);
+			sprintf(this->strerror, "[%s]:%d - '%s' expected boolable but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);
+		}
+	}
+	if(!jmp)
+	{
+		id_curr_com += (int)arg;
+	}
+}
+
+inline void s4g_vm::com_jmp()
+{
+	id_curr_com += (int)arg;
+}
+
+inline void s4g_vm::com_mod()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_int(num1 % gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_int(num1 % gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_int(num1 % (int)gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_uint(num1 % gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_uint(num1 % gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_uint(num1 % (int)gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+inline void s4g_vm::com_log_and()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	switch(ttype1)
+	{
+	case t_nnull:
+		execute.push(gc->cr_val_bool(false));
+		return;
+	case t_int:
+		if(gc->get_int(s1) == 0)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_uint:
+		if(gc->get_uint(s1) == 0)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_float:
+		if(gc->get_float(s1) == 0.0f)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_bool:
+		if(!gc->get_bool(s1))
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_string:
+		if(gc->get_str(s1)[0] == 0)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	}
+	switch(ttype2)
+	{
+	case t_nnull:
+		execute.push(gc->cr_val_bool(false));
+		return;
+	case t_int:
+		if(gc->get_int(s2) == 0)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_uint:
+		if(gc->get_uint(s2) == 0)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_float:
+		if(gc->get_float(s2) == 0.0f)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_bool:
+		if(!gc->get_bool(s2))
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	case t_string:
+		if(gc->get_str(s2)[0] == 0)
+		{
+			execute.push(gc->cr_val_bool(false));
+			return;
+		}
+		break;
+	}
+	execute.push(gc->cr_val_bool(true));
+}
+
+inline void s4g_vm::com_log_or()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	switch(ttype1)
+	{
+	case t_int:
+		if(gc->get_int(s1) != 0)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_uint:
+		if(gc->get_uint(s1) != 0)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_float:
+		if(gc->get_float(s1) != 0.0f)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_bool:
+		if(gc->get_bool(s1))
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_string:
+		if(gc->get_str(s1)[0] != 0)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	}
+	switch(ttype2)
+	{
+	case t_int:
+		if(gc->get_int(s2) != 0)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_uint:
+		if(gc->get_uint(s2) != 0)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_float:
+		if(gc->get_float(s2) != 0.0f)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_bool:
+		if(gc->get_bool(s2))
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	case t_string:
+		if(gc->get_str(s2)[0] != 0)
+		{
+			execute.push(gc->cr_val_bool(true));
+			return;
+		}
+		break;
+	}
+	execute.push(gc->cr_val_bool(false));
+}
+
+inline void s4g_vm::com_log_eq()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 == gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 == gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 == gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 == gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 == gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 == gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 == gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 == gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 == gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+inline void s4g_vm::com_log_neq()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 != gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 != gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 != gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 != gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 != gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 != gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 != gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 != gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 != gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+inline void s4g_vm::com_log_ge()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 >= gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+inline void s4g_vm::com_log_le()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 <= gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+inline void s4g_vm::com_log_gt()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 > gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 > gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 > gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 > gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 > gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 > gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 > gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 > gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 > gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+inline void s4g_vm::com_log_lt()
+{
+	s4g_value* s1 = execute.get(execute.count_obj - 1);
+	s4g_value* s2 = execute.get(execute.count_obj);
+
+	s4g_type ttype1 = gc->get_type(s1);
+	s4g_type ttype2 = gc->get_type(s2);
+
+	//execute.pop(2);
+	stack_pop(execute, 2);
+
+	if(ttype1 == t_nnull)
+	{
+		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
+			execute.push(s2);
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE2;
+		}
+	}
+	else
+	{
+		if(ttype1 == t_int)
+		{
+			s4g_int num1 = gc->get_int(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 < gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 < gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 < gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_uint)
+		{
+			s4g_uint num1 = gc->get_uint(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 < gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 < gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 < gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+
+		else if(ttype1 == t_float)
+		{
+			s4g_float num1 = gc->get_float(s1);
+
+			if(ttype2 == t_int)
+				execute.push(gc->cr_val_bool(num1 < gc->get_int(s2)));
+			else if(ttype2 == t_uint)
+				execute.push(gc->cr_val_bool(num1 < gc->get_uint(s2)));
+			else if(ttype2 == t_float)
+				execute.push(gc->cr_val_bool(num1 < gc->get_float(s2)));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2;
+			}
+		}
+		else
+		{
+			S4G_VM_OP_ARIF_ERROR_TYPE1;
+		}
+	}
+}
+
+#define GEN_OP_STUB(op) inline void s4g_vm::com_ ## op (){}
+GEN_OP_STUB(bit_xor)
+GEN_OP_STUB(bit_not)
+GEN_OP_STUB(bit_shiftr)
+GEN_OP_STUB(bit_shiftl)
+GEN_OP_STUB(log_neqt)
+GEN_OP_STUB(log_not)
+GEN_OP_STUB(log_eqt)
+GEN_OP_STUB(bit_and)
+GEN_OP_STUB(bit_or)
+#undef GEN_OP_STUB
 ///////
 
 int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)

@@ -793,8 +793,10 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 		fseek(ffile, 0, SEEK_END);
 		size = ftell(ffile);
 		fseek(ffile, 0, SEEK_SET);
-		AllFile.Reserve(size + 1);
-		AllFile[fread((void*)(AllFile.c_str()), 1, size, ffile)] = 0;
+		AllFile.Reserve(size + 2);
+		fread((void*)(AllFile.c_str()), 1, size, ffile);
+		AllFile[size] = '\n';
+		AllFile[size + 1] = 0;
 
 		fclose(ffile);
 	}

@@ -11,16 +11,33 @@ const char s4g_key_words[][S4G_MAX_LEN_KEY_WORD_DEF] = {
 "end",		//2
 "return",	//3
 "extern",	//4
-"if",		//
-"and",		//
-"or",		//
-"then",		//
-"elseif",	//
-"else",		//
-"for",		//
-"while",	//
-"do",		//
+"if",		//5
+"and",		//6 ///<?
+"or",		//7 ///<?
+"then",		//8 ///<?
+"elseif",	//9 ///<?
+"else",		//10
+"for",		//11
+"while",	//12
+"do",		//13
+};
 
+enum S4GLKW
+{
+	S4GLKW_NULL = 0,
+	S4GLKW_FUNCTION,
+	S4GLKW_END,
+	S4GLKW_RETURN,
+	S4GLKW_EXTERN,
+	S4GLKW_IF,
+	S4GLKW_AND,
+	S4GLKW_OR,
+	S4GLKW_THEN,
+	S4GLKW_ELSEIF,
+	S4GLKW_ELSE,
+	S4GLKW_FOR,
+	S4GLKW_WHILE,
+	S4GLKW_DO
 };
 
 const char s4g_key_bool[][S4G_MAX_LEN_KEY_WORD_DEF] = {
@@ -81,7 +98,7 @@ const char s4g_key_syms_table_op[][S4G_MAX_LEN_SYM] = {
 };
 
 const char s4g_key_syms_logic[][S4G_MAX_LEN_SYM] = {
-"!","==","!=",">","<",">=","<="
+	"emt"
 };
 
 const char s4g_key_syms_assign[][S4G_MAX_LEN_SYM] = {
@@ -97,11 +114,59 @@ const char s4g_key_syms_marg[][S4G_MAX_LEN_SYM] = {
 };
 
 const char s4g_key_syms_arif[][S4G_MAX_LEN_SYM] = {
-"+","-","*","/"
+	"+",
+	"-", 
+	"*", 
+	"/", 
+	"%",
+	"&&", 
+	"||", 
+	"^", 
+	"~", 
+	">>",
+	"<<", 
+	"!==",
+	"==", 
+	"!=",
+	">=",
+	"<=",
+	">", 
+	"<", 
+	"!",
+	"===", 
+	"&", 
+	"|"
+};
+
+enum S4GLAO
+{
+	S4GLAO_ADD = 0,
+	S4GLAO_SUB,
+	S4GLAO_MUL,
+	S4GLAO_DIV,
+	S4GLAO_MOD,
+	S4GLAO_LOG_AND,
+	S4GLAO_LOG_OR,
+	S4GLAO_BIT_XOR,
+	S4GLAO_BIT_NOT,
+	S4GLAO_BIT_SHIFTR,
+	S4GLAO_BIT_SHIFTL,
+	S4GLAO_LOG_NEQT,
+	S4GLAO_LOG_EQ,
+	S4GLAO_LOG_NEQ,
+	S4GLAO_LOG_GE,
+	S4GLAO_LOG_LE,
+	S4GLAO_LOG_GT,
+	S4GLAO_LOG_LT,
+	S4GLAO_LOG_NOT,
+	S4GLAO_LOG_EQT,
+	S4GLAO_BIT_AND,
+	S4GLAO_BIT_OR
 };
 
 const char s4g_key_syms_arif_assign[][S4G_MAX_LEN_SYM] = {
 "++","--","+=","-=","*=","/="
+,"%=",">>=","<<=","&=","|=","^="
 };
 
 //однострочный комментарий
@@ -119,7 +184,15 @@ const char s4g_key_syms_comment_ms[][S4G_MAX_LEN_SYM] = {
 const int s4g_prioritet_op[] = {
 10,// ()
 20,// + -
-30,// * /
+30,// * / %
+19,// << >>
+18,// < <= > >=
+17,//== !=
+16,//&
+15,//^
+14,//|
+13,//&&
+12,//||
 };
 
 //перечисление типов создаваемых лексем
@@ -153,10 +226,13 @@ enum s4g_lexeme_type
 struct s4g_lexeme
 {
 	s4g_lexeme(){}
-	s4g_lexeme(const char* _str, long _numstr, int _type, int _id, int _idfile){ strcpy(str, _str); numstr = _numstr, type = _type; id = _id; fileid = _idfile; }
+	s4g_lexeme(const char* _str, long _numstr, s4g_lexeme_type _type, int _id, int _idfile)
+	{
+		strcpy(str, _str); numstr = _numstr, type = _type; id = _id; fileid = _idfile;
+	}
 	char str[S4G_MAX_LEN_TYPE_NAME];	//строковое представление лексемы
 	long numstr;	//номер строки на которой находится лексема
-	int type;		//тип лексемы
+	s4g_lexeme_type type;		//тип лексемы
 	int id;			//порядковый номер лексемы из массива слов к которому она относится
 	int fileid;		//порядковый номер файла
 };
@@ -191,29 +267,124 @@ enum s4g_type_op
 	_return,		//возвращение значений
 	_create_table,	//создание таблицы
 	_add_in_table,	//добавление в таблицу
+
+	_if,
+	_while,
+	_for,
+
+	_mod,
+	_bit_and,
+	_bit_or,
+	_bit_xor,
+	_bit_not,
+	_bit_shiftr,
+	_bit_shiftl,
+
+	_log_not,
+	_log_eq,
+	_log_neq,
+	_log_gt,
+	_log_lt,
+	_log_ge,
+	_log_le,
+	_log_neqt,
+	_log_eqt,
+	_log_and,
+	_log_or
+};
+
+const s4g_type_op s4g_aop_map[] = {
+	_add, //S4GLAO_ADD = 0,
+	_sub, //S4GLAO_SUB,
+	_mul, //S4GLAO_MUL,
+	_div, //S4GLAO_DIV,
+	_mod, //S4GLAO_MOD,
+	_log_and, //S4GLAO_LOG_AND,
+	_log_or, //S4GLAO_LOG_OR,
+	_bit_xor, //S4GLAO_BIT_XOR,
+	_bit_not, //S4GLAO_BIT_NOT,
+	_bit_shiftr, //S4GLAO_BIT_SHIFTR,
+	_bit_shiftl, //S4GLAO_BIT_SHIFTL,
+	_log_neqt, //S4GLAO_LOG_NEQT,
+	_log_eq, //S4GLAO_LOG_EQ,
+	_log_neq, //S4GLAO_LOG_NEQ,
+	_log_ge, //S4GLAO_LOG_GE,
+	_log_le, //S4GLAO_LOG_LE,
+	_log_gt, //S4GLAO_LOG_GT,
+	_log_lt, //S4GLAO_LOG_LT,
+	_log_not, //S4GLAO_LOG_NOT,
+	_log_eqt, //S4GLAO_LOG_EQT,
+	_bit_and, //S4GLAO_BIT_AND,
+	_bit_or, //S4GLAO_BIT_OR,
 };
 
 //вычисление приоритетов операции
 int s4g_get_priority(s4g_type_op op)
 {
-		if(op == _add || op == _sub)
-			return s4g_prioritet_op[1];
-		else if(op == _mul || op == _div)
-			return s4g_prioritet_op[2];
-		else if(op == _group_b || op == _group_e)
-			return s4g_prioritet_op[0];
-		else
-			return -1;
+	switch(op)
+	{
+	case _bit_not:
+		return 32;
+
+	case _log_not:
+		return 31;
+
+	case _mul: 
+	case _div: 
+	case _mod:
+		return 30;
+
+	case _add:
+	case _sub:
+		return 20;
+
+	case _bit_shiftr:
+	case _bit_shiftl:
+		return 19;
+
+	case _log_gt:
+	case _log_ge:
+	case _log_lt:
+	case _log_le:
+		return 18;
+
+	case _log_eq:
+	case _log_eqt:
+	case _log_neq:
+	case _log_neqt:
+		return 17;
+
+	case _bit_and:
+		return 16;
+
+	case _bit_xor:
+		return 15;
+
+	case _bit_or:
+		return 14;
+
+	case _log_and:
+		return 13;
+
+	case _log_or:
+		return 12;
+
+	case _group_b: 
+	case _group_e:
+		return 10;
+
+	default:
+		return -1;
+	}
 }
 
 //нод, ключевой объект в абстрактном синтаксическом дереве
 struct s4g_node
 {
-	s4g_node()
+	s4g_node(s4g_type_op _type = _begin, long _lexid = -1, s4g_value* _value = 0, s4g_node* _op1 = 0, s4g_node* _op2 = 0, s4g_node* _op3 = 0)
 	{
-		type = _begin; value = 0; op1 = op2 = op3 = 0; lexid = -1;
+		type = _type; lexid = _lexid; value = _value; op1 = _op1; op2 = _op2; op3 = _op3;
 	}
-	s4g_node(s4g_type_op _type, long _lexid = -1, s4g_value* _value = 0, s4g_node* _op1 = 0, s4g_node* _op2 = 0, s4g_node* _op3 = 0){ type = _type; lexid = _lexid; value = _value; op1 = _op1; op2 = _op2; op3 = _op3; }
 	s4g_type_op type;	//тип нода
 	long lexid;
 	s4g_value* value;	//значение если надо
@@ -222,6 +393,158 @@ struct s4g_node
 	s4g_node* op1;	
 	s4g_node* op2;
 	s4g_node* op3;
+
+#if defined(_DEBUG)
+	String Dump()
+	{
+		String out = "{type:'";
+		out += TypeStr(type);
+		out += "'";
+
+		out += ",value:";
+		if(value)
+		{
+			out += "{name:'";
+			out += value->name;
+			out += "',value:'";
+			switch(value->pdata->type)
+			{
+			case t_none:
+				out += "t_none";
+				break;
+			case t_null:
+				out += "t_null";
+				break;
+			case t_table:
+				out += "t_table";
+				break;
+			case t_string:
+				out += *(char**)(value->pdata->data);
+				break;
+			case t_float:
+				out += *(float*)(value->pdata->data);
+				break;
+			case t_int:
+				out += *(int*)(value->pdata->data);
+				break;
+			case t_uint:
+				out += (DWORD)*(unsigned*)(value->pdata->data);
+				break;
+			case t_bool:
+				out += *(bool*)(value->pdata->data);
+				break;
+			case t_pdata:
+				out += "t_pdata";
+				break;
+			case t_cfunc:
+				out += "t_cfunc";
+				break;
+			case t_sfunc:
+				out += "t_sfunc";
+				break;
+			case t_nnull:
+				out += "0";
+				break;
+			}
+			out += "'}";
+		}
+		else
+		{
+			out += "null";
+		}
+
+		out += ",op1:";
+		if(op1)
+		{
+			out += op1->Dump();
+		}
+		else
+		{
+			out += "null";
+		}
+
+		out += ",op2:";
+		if(op2)
+		{
+			out += op2->Dump();
+		}
+		else
+		{
+			out += "null";
+		}
+
+		out += ",op3:";
+		if(op3)
+		{
+			out += op3->Dump();
+		}
+		else
+		{
+			out += "null";
+		}
+		out += "}";
+		return(out);
+	}
+	const char * TypeStr(s4g_type_op t)
+	{
+		switch(t)
+		{
+		case _begin:return("_begin");
+		case _empty:return("_empty");
+		case _expr:return("_expr");
+		case _var:return("_var");
+		case _crvar:return("_crvar");
+		case _null:return("_null");
+		case _float:return("_float");
+		case _int:return("_int");
+		case _int_cr:return("_int_cr");
+		case _uint:return("_uint");
+		case _uint_cr:return("_uint_cr");
+		case _string:return("_string");
+		case _string_cr:return("_string_cr");
+		case _function:return("_function");
+		case _numnull:return("_numnull");
+		case _arg:return("_arg");
+		case _marg:return("_marg");
+		case _set:return("_set");
+		case _sett:return("_sett");
+		case _get:return("_get");
+		case _get_cr:return("_get_cr");
+		case _call:return("_call");
+		case _add:return("_add");
+		case _sub:return("_sub");
+		case _mul:return("_mul");
+		case _div:return("_div");
+		case _group_b:return("_group_b");
+		case _group_e:return("_group_e");
+		case _return:return("_return");
+		case _create_table:return("_create_table");
+		case _add_in_table:return("_add_in_table");
+		case _if:return("_if");
+		case _while:return("_while");
+		case _for:return("_for"); 
+		case _mod:return("_mod");
+		case _bit_and:return("_bit_and");
+		case _bit_or:return("_bit_or");
+		case _bit_xor:return("_bit_xor");
+		case _bit_not:return("_bit_not");
+		case _bit_shiftr:return("_bit_shiftr");
+		case _bit_shiftl:return("_bit_shiftl");
+		case _log_not:return("_log_not");
+		case _log_eq:return("_log_eq");
+		case _log_neq:return("_log_neq");
+		case _log_gt:return("_log_gt");
+		case _log_lt:return("_log_lt");
+		case _log_ge:return("_log_ge");
+		case _log_le:return("_log_le");
+		case _log_neqt:return("_log_neqt");
+		case _log_eqt:return("_log_eqt");
+		case _log_and:return("_log_and");
+		case _log_or:return("_log_or");
+		default:return("UNKNOWN");
+		}
+	}
+#endif
 };
 //type == _expr:
 	//op1 - выражение, 
@@ -371,29 +694,31 @@ return 0; \
 //строитель абстрактного синтаксического дерева
 struct s4g_builder_syntax_tree
 {
-s4g_builder_syntax_tree(){ status = 0; error[0] = 0; overend = 0; overge = 0; listread = true; readcall = true; isender = true; }
+	s4g_builder_syntax_tree(){status = 0; error[0] = 0; overend = 0; overge = 0; listread = true; readcall = true; isender = true; dowhile = 0;}
 
-s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
+	s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
 
-s4g_node* s4g_gen_statement();//считывание главных инструкций
-s4g_node* s4g_get_ret_vals();		//считывание возвращаемых значений
-s4g_node* s4g_get_arg_call_func();	//считывание аргументов при вызове функции
-s4g_node* s4g_get_function_def_head();	//считывание аргументов при создании функции
-s4g_node* s4g_get_term();	//считывание термов
-s4g_node* s4g_get_op();		//считывание операций
-s4g_node* s4g_get_expr();	//считывание выражений
-s4g_node* s4g_get_table();	//считывание содержимого создаваемой таблицы
+	s4g_node* s4g_gen_statement();//считывание главных инструкций
+	s4g_node* s4g_get_ret_vals();		//считывание возвращаемых значений
+	s4g_node* s4g_get_arg_call_func();	//считывание аргументов при вызове функции
+	s4g_node* s4g_get_function_def_head();	//считывание аргументов при создании функции
+	s4g_node* s4g_get_term();	//считывание термов
+	s4g_node* s4g_get_op();		//считывание операций
+	s4g_node* s4g_get_expr();	//считывание выражений
+	s4g_node* s4g_get_table();	//считывание содержимого создаваемой таблицы
 
-bool isender;	//если список лексем закончился то можно ли завершить построение?
-bool listread;	//можем ли мы считывать списки переменны/значений или они уже считываются (то есть false)?
-bool readcall;	//можем ли мы считывать вызов функции, или сейчас считывается объявление функции (то есть false)?
-int overend;	//если 0 значит все в норме, если более 0 то лишний энд, если меньше 0 то значит мы ищем энды в количестве abs(overend)
-int overge;		//инкрементируя мы говорим что считываем вызов функции и если считывание выражения найден лишнюю закрывающую скобку то она принадлежит вызову (тада декрементирует)
-int status;		//текущий статус, 0 - все норм, все другое это ошибка
-char error[1024];//строка с описанием ошибки
+	bool isender;	//если список лексем закончился то можно ли завершить построение?
+	bool listread;	//можем ли мы считывать списки переменны/значений или они уже считываются (то есть false)?
+	bool readcall;	//можем ли мы считывать вызов функции, или сейчас считывается объявление функции (то есть false)?
+	int overend;	//если 0 значит все в норме, если более 0 то лишний энд, если меньше 0 то значит мы ищем энды в количестве abs(overend)
+	int overge;		//инкрементируя мы говорим что считываем вызов функции и если считывание выражения найден лишнюю закрывающую скобку то она принадлежит вызову (тада декрементирует)
+	int status;		//текущий статус, 0 - все норм, все другое это ошибка
+	int dowhile;    //кол-во открытых do
+	char error[1024];//строка с описанием ошибки
 
-s4g_arr_lex* arr_lex;
-s4g_gc* gc;
+	s4g_arr_lex* arr_lex;
+	s4g_gc* gc;
+	MemAlloc<s4g_node> NodePool;
 };
 
 #endif

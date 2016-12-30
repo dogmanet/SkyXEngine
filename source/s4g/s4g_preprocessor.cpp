@@ -236,7 +236,10 @@ String s4g_preprocessor::Process(const char * src, const char * file)
 	for(int i = 0; i < len; ++i)
 	{
 		char ch = src[i];
-
+		if(ch == '\r')
+		{
+			continue;
+		}
 		if(ch == '\n')
 		{
 			++line;
@@ -432,11 +435,14 @@ String s4g_preprocessor::Process(const char * src, const char * file)
 
 			}
 		}
-		else if((ch == '\n' || ch == '\r') && cp != '\\')
+		else if((ch == '\n'/* || ch == '\r'*/) && cp != '\\')
 		{
 			out.push_back(ch);
 		}
-		cp = ch;
+		if(ch != '\r')
+		{
+			cp = ch;
+		}
 	}
 
 	String _out;
@@ -984,8 +990,10 @@ String s4g_preprocessor::GetInclude(const String & name, String * outPath)
 			size = ftell(pf);
 			fseek(pf, 0, SEEK_SET);
 			String s;
-			s.Reserve(size + 1);
-			s[fread((void*)(s.c_str()), 1, size, pf)] = 0;
+			s.Reserve(size + 2);
+			fread((void*)(s.c_str()), 1, size, pf);
+			s[size] = '\n';
+			s[size + 1] = 0;
 			m_mIncludes[name] = {s, path};
 			fclose(pf);
 			if(outPath)
