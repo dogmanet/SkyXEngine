@@ -720,7 +720,7 @@ struct s4g_builder_syntax_tree
 
 	s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
 
-	s4g_node* s4g_gen_statement();//считывание главных инструкций
+	s4g_node* s4g_gen_statement(bool one=false);//считывание главных инструкций
 	s4g_node* s4g_read_block();
 	s4g_node* s4g_get_ret_vals();		//считывание возвращаемых значений
 	s4g_node* s4g_get_arg_call_func();	//считывание аргументов при вызове функции
