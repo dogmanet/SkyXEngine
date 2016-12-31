@@ -431,6 +431,13 @@ int s4g_compiler::compile2(s4g_node* node)
 			cyctls.push_back({comms->count() - 1, _cyctl::CONTINUE});
 			compile2(node->op1);
 		}
+		else if(node->type == _chain)
+		{
+			for(int i = 0, l = node->ops.size(); i < l; ++i)
+			{
+				compile2(node->ops[i]);
+			}
+		}
 #define GEN_OP(op) \
 		else if(node->type == _ ## op)\
 		{\

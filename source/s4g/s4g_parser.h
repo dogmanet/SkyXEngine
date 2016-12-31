@@ -298,6 +298,8 @@ enum s4g_type_op
 
 	_break,
 	_continue,
+
+	_chain,
 };
 
 const s4g_type_op s4g_aop_map[] = {
@@ -401,6 +403,8 @@ struct s4g_node
 	s4g_node* op2;
 	s4g_node* op3;
 
+	Array<s4g_node*> ops;
+
 #if defined(_DEBUG)
 	String Dump()
 	{
@@ -502,6 +506,18 @@ struct s4g_node
 		{
 			out += "null";
 		}
+		for(int i = 0, l = ops.size(); i < l; ++i)
+		{
+			out += String(",ops") + i + ":";
+			if(ops[i])
+			{
+				out += ops[i]->Dump();
+			}
+			else
+			{
+				out += "null";
+			}
+		}
 		out += "}";
 		return(out);
 	}
@@ -563,6 +579,7 @@ struct s4g_node
 		case _log_or:return("_log_or");
 		case _break:return("_break");
 		case _continue:return("_continue");
+		case _chain:return("_chain");
 		default:return("UNKNOWN");
 		}
 	}
