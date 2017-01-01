@@ -104,6 +104,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\source\s4g\s4g_main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\source\s4g\s4g_parser.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -125,9 +129,11 @@
     <ClInclude Include="..\..\source\s4g\s4g_api.h" />
     <ClInclude Include="..\..\source\s4g\s4g_compiler.h" />
     <ClInclude Include="..\..\source\s4g\s4g_conf.h" />
+    <ClInclude Include="..\..\source\s4g\s4g_main.h" />
     <ClInclude Include="..\..\source\s4g\s4g_parser.h" />
     <ClInclude Include="..\..\source\s4g\s4g_preprocessor.h" />
     <ClInclude Include="..\..\source\s4g\s4g_stack.h" />
+    <ClInclude Include="..\..\source\s4g\s4g_stdlib.h" />
     <ClInclude Include="..\..\source\s4g\s4g_vm.h" />
     <ClInclude Include="..\..\source\s4g\Stack.h" />
   </ItemGroup>

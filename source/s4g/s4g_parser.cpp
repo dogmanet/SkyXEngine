@@ -9,7 +9,7 @@
 
 ///////////////
 
-s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
+s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 {
 	 s4g_lexeme* lex_get_curr0(tmplexs);
 	
@@ -34,7 +34,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 					bst_cond_er(this);
 					listread = true;
 					isender = oldisender;
-					tmpnode->op3 = s4g_gen_statement();	//и считываем то что после return
+					tmpnode->op3 = one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement();	//и считываем то что после return
 					bst_cond_er(this);
 					return tmpnode;
 				}
@@ -140,7 +140,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 					lex_get_next0(tmplexs);
 					tmpnode->op2 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что if
 					lex_get_curr(tmplexs);
-					if(tmplexs->type == word_key && tmplexs->id == 10)
+					if(tmplexs && tmplexs->type == word_key && tmplexs->id == S4GLKW_ELSE)
 					{
 						lex_get_next0(tmplexs);
 						tmpnode->op3 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что else
@@ -286,7 +286,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return(0);
 					}
-					return NodePool.Alloc(_break, curr_lexid, (s4g_value*)0, s4g_gen_statement());
+					return NodePool.Alloc(_break, curr_lexid, (s4g_value*)0, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 				}
 				else if(tmplexs->id == S4GLKW_CONTINUE)
 				{
@@ -297,7 +297,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return(0);
 					}
-					return NodePool.Alloc(_continue, curr_lexid, (s4g_value*)0, s4g_gen_statement());
+					return NodePool.Alloc(_continue, curr_lexid, (s4g_value*)0, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 				}
 		}
 		//разделитель
@@ -308,7 +308,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				{
 					lex_get_next0(tmplexs);
 						if (tmplexs)
-							return NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, s4g_gen_statement());
+							return NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 				}
 		}
 		else if (tmplexs->type == sym_table_create && tmplexs->id == 1)
@@ -329,7 +329,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				node->op2->op1 = s4g_gen_statement();
 		}
 		//иначе у считываем выражение
-		else
+		else if(one)
 		{
 			bool oldisender = isender;
 			isender = false;
@@ -350,12 +350,23 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				else
 				{
 					lex_get_next0(tmplexs);
-					if (tmplexs)
+					if(tmplexs/* && !one*/)
 					{
-						node->op2 = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, s4g_gen_statement());
+						node->op2 = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 						bst_cond_er(this);
 					}
 				}
+		}
+		else
+		{
+			s4g_node * outNode = NodePool.Alloc(_chain, curr_lexid, (s4g_value*)0);
+			s4g_node * tmpNode;
+			while((tmpNode = s4g_gen_statement(true)))
+			{
+				lex_get_curr0(tmplexs);
+				outNode->ops.push_back(tmpNode);
+			}
+			return(outNode);
 		}
 	
 	return node;
@@ -384,9 +395,13 @@ s4g_node* s4g_builder_syntax_tree::s4g_read_block()
 	}
 	else
 	{
-		status = -1;
-		sprintf(this->error, "[%s]:%d - expected begin block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-		return 0;
+		s4g_node* node = s4g_gen_statement(true);
+		bst_cond_er(this);
+		//lex_get_curr0(tmplexs);
+		return(node);
+		//status = -1;
+		//sprintf(this->error, "[%s]:%d - expected begin block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+		//return 0;
 	}
 }
 

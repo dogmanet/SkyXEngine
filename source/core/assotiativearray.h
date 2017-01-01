@@ -15,7 +15,7 @@
 #endif
 
 
-template<typename SX_KEYTYPE, typename SX_VALTYPE>
+template<typename SX_KEYTYPE, typename SX_VALTYPE, bool searchCache=false>
 class AssotiativeArray
 {
 public:
@@ -36,7 +36,7 @@ private:
 
 	Node * TreeSearch(const SX_KEYTYPE & key) const
 	{
-		if(TmpNode && TmpNode->Key == key)
+		if(searchCache && TmpNode && TmpNode->Key == key)
 		{
 			return(TmpNode);
 		}
@@ -624,9 +624,13 @@ public:
 		Release();
 	}
 
-	bool KeyExists(const SX_KEYTYPE & key) const
+	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode=NULL) const
 	{
 		TmpNode = TreeSearch(key);
+		if(pNode)
+		{
+			*pNode = TmpNode;
+		}
 		//tmpNode
 		return(TmpNode != NULL);
 	}
