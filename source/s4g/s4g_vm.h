@@ -18,6 +18,10 @@ enum s4g_vm_command
 	mc_sub,			//-1 - 0
 	mc_mul,			//-1 * 0
 	mc_div,			//-1 / 0
+	mc_preincr,
+	mc_predecr,
+	mc_postincr,
+	mc_postdecr,
 	mc_new_table,	//создать таблицу и положить на вершину стека
 	mc_add_in_table,//добавить в таблицу котоаря лежит на вершине
 	mc_precall,		//сообщение о том что вскоре будет вызвана функция, записать в первый свободный регистр размер стека
@@ -77,6 +81,14 @@ enum s4g_vm_command
 	char strtype[12]; \
 	s4g_get_str_type(ttype2, strtype); \
 	sprintf(this->strerror, "[%s]:%d - '%s' unary symbol is unresolved to '%s' type", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
+	return;
+
+#define S4G_VM_OP_ARIF_INCR_DECR_ERR \
+	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid); \
+	error = -1; \
+	char strtype[12]; \
+	s4g_get_str_type(ttype, strtype); \
+	sprintf(this->strerror, "[%s]:%d - '%s' expected number type, but got '%s' type", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
 	return;
 
 
@@ -182,6 +194,12 @@ public:
 	//inline void com_jnza();
 	//inline void com_jmpa();
 	//
+
+	inline void com_preincr();
+	inline void com_postincr();
+
+	inline void com_predecr();
+	inline void com_postdecr();
 
 	typedef void(s4g_vm::*opfunc) ();
 	opfunc arropf[mc_last];

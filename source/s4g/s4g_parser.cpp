@@ -398,7 +398,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 		if(tmplexs->type == word_user)
 		{
 			//создаем тип нода - переменная со значением
-			s4g_node* node = NodePool.Alloc(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			s4g_node* tmpnode = node;
 			bool isnext = true;
 			//начинаем цикл проверки - а не обращение ли это к элемента таблицы
@@ -411,12 +411,12 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 							lex_get_next0(tmplexs);
 								if(tmplexs->type == word_user)
 								{
-									tmpnode->op1 = NodePool.Alloc(_get, curr_lexid, (s4g_value*)0, NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/)), NodePool.Alloc(_empty, curr_lexid));
+									tmpnode->op1 = NodePool.Alloc(_get, curr_lexid, (s4g_value*)0, NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)), NodePool.Alloc(_empty, curr_lexid));
 									tmpnode = tmpnode->op1->op2;
 								}
 								else if (tmplexs->type == word_user_cr)
 								{
-									tmpnode->op1 = NodePool.Alloc(_get_cr, curr_lexid, (s4g_value*)0, NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/)), NodePool.Alloc(_empty, curr_lexid));
+									tmpnode->op1 = NodePool.Alloc(_get_cr, curr_lexid, (s4g_value*)0, NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)), NodePool.Alloc(_empty, curr_lexid));
 									tmpnode = tmpnode->op1->op2;
 								}
 								else
@@ -473,59 +473,59 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 		}
 		else if (tmplexs->type == word_user_cr)
 		{
-			s4g_node* node = NodePool.Alloc(_crvar, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_crvar, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы пустое значение
 		else if(tmplexs->type == word_null)
 		{
-			s4g_node* node = NodePool.Alloc(_null, curr_lexid, gc->cr_val_null(/*curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_null, curr_lexid, gc->cr_val_null(0, S4G_GC_TYPE_VAR_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы строка
 		else if(tmplexs->type == word_string)
 		{
-			s4g_node* node = NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_string_cr)
 		{
-			s4g_node* node = NodePool.Alloc(_string_cr, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_string_cr, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы число с плавающей запятой
 		else if(tmplexs->type == word_float)
 		{
-			s4g_node* node = NodePool.Alloc(_float, curr_lexid, gc->cr_val(t_float, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_float, curr_lexid, gc->cr_val(t_float, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		//если тип лексемы целочисленное значение
 		else if(tmplexs->type == word_int)
 		{
-			s4g_node* node = NodePool.Alloc(_int, curr_lexid, gc->cr_val(t_int, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_int, curr_lexid, gc->cr_val(t_int, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_int_cr)
 		{
-			s4g_node* node = NodePool.Alloc(_int_cr, curr_lexid, gc->cr_val(t_int, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_int_cr, curr_lexid, gc->cr_val(t_int, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_uint)
 		{
-			s4g_node* node = NodePool.Alloc(_uint, curr_lexid, gc->cr_val(t_uint, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_uint, curr_lexid, gc->cr_val(t_uint, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
 		else if (tmplexs->type == word_bool)
 		{
-			s4g_node* node = NodePool.Alloc(_bool, curr_lexid, gc->cr_val(t_bool, tmplexs->str/*, curr_lexid*/));
+			s4g_node* node = NodePool.Alloc(_bool, curr_lexid, gc->cr_val(t_bool, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 			lex_get_next0(tmplexs);
 			return node;
 		}
@@ -548,7 +548,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 	bool donable = tmplexs->type == sym_group && tmplexs->id == 0;
 	long curr_num_lex = arr_lex->get_curr_num();
 	int pareth = 0;
-	int how_type_next = -2;	//-1 - sym_arif, 0 - sym_group (, 1 - sym_group ), 2 - числа
+	int how_type_next = -4;	//-3 - sym_arif_assign ++ , -2 - sym_arif_assign -- , -1 - sym_arif, 0 - sym_group (, 1 - sym_group ), 2 - числа
 		while(1)
 		{
 			lex_get_curr0(tmplexs);
@@ -562,6 +562,13 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 				//если тип текущей лексемы арифметический либо это скобки
 				if(tmplexs->type == sym_arif || tmplexs->type == sym_group)
 				{
+					if (how_type_next == -3 || how_type_next == -2)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - unexpected sequence arifmetic assignation and arifmetic operation", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return 0;
+					}
+
 					locallistread = false;
 					//определяем тип будущего нода
 					int tmptypeop = -1;
@@ -576,7 +583,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 								}
 
 								//если мы только начали анализировать выражение
-								if(how_type_next == -2)
+								if(how_type_next == -4)
 								{
 										//и первым арифметическим выражением встречаем не -
 										if(tmplexs->id != 1)	//error
@@ -589,7 +596,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										else
 										{
 											//вставляем универсальную цифру 0
-											stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0/*, curr_lexid*/)));
+											stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)));
 										}
 								}
 
@@ -607,7 +614,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 										else 
 										{
 											//вставляем универсальную цифру 0
-											stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0/*, curr_lexid*/)));
+											stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)));
 										}
 								}
 
@@ -635,7 +642,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 								else if(tmplexs->id == 1)
 								{
 									--pareth;
-										if (how_type_next == -2)
+										if (how_type_next == -4)
 										{
 											status = -1;
 											sprintf(this->error, "[%s]:%d - unresolved begin for expression [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
@@ -768,9 +775,76 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 							sprintf(this->error,"[%s]:%d - Invalid sequence of terms to each other",this->arr_lex->ArrFiles[tmplexs->fileid],tmplexs->numstr);
 							return 0;
 						}
+						//иначе у нас пре инкремент/декремент
+						else if (how_type_next == -3 || how_type_next == -2)
+						{
+							s4g_node* tmpnode2 = tmpnode;
+							if (tmpnode2->op1 && tmpnode2->op1->type == _get)
+								tmpnode2 = tmpnode2->op1;
+							while (tmpnode2->op2 && tmpnode2->op2->op1 && tmpnode2->op2->op1->type == _get)
+							{
+								tmpnode2 = tmpnode2->op2->op1;
+							}
+							if (tmpnode == tmpnode2)
+								tmpnode2->type = (how_type_next == -3 ? _var_preincr : _var_predecr);
+							else
+								tmpnode2->type = (how_type_next == -3 ? _get_preincr : _get_predecr);
+
+							int qwer = 0;
+						}
 					
 					stack_var.push(tmpnode);
 					how_type_next = 2;
+				}
+				else if (tmplexs->type == sym_arif_assign)
+				{
+					if (how_type_next == -1)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - unexpected sequence arifmetic operation and arifmetic assignation", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return 0;
+					}
+
+					if (how_type_next == -3 || how_type_next == -2)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - expected 'number', but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return 0;
+					}
+
+					if (how_type_next == 2 && (tmplexs->id == 0 || tmplexs->id == 1))
+					{
+						s4g_node* tmpnode = stack_var.get(-1);
+						s4g_node* tmpnode2 = tmpnode;
+						if (tmpnode2->op1 && tmpnode2->op1->type == _get)
+							tmpnode2 = tmpnode2->op1;
+						while (tmpnode2->op2 && tmpnode2->op2->op1 && tmpnode2->op2->op1->type == _get)
+						{
+							tmpnode2 = tmpnode2->op2->op1;
+						}
+						if (tmpnode == tmpnode2)
+							tmpnode2->type = (tmplexs->id == 0 ? _var_postincr : _var_postdecr);
+						else
+							tmpnode2->type = (tmplexs->id == 0 ? _get_postincr : _get_postdecr);
+						int qwert = 0;
+						how_type_next = 2;
+						
+					}
+					else
+					{
+						if (tmplexs->id == 0)
+							how_type_next = -3;
+						else if (tmplexs->id == 1)
+							how_type_next = -2;
+						else
+						{
+							status = -1;
+							sprintf(this->error, "[%s]:%d - unknown sequence of arithmetic assignation '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+							return 0;
+						}
+					}
+
+					lex_get_next(tmplexs);
 				}
 				//иначе у нас не операция и не терм
 				else
@@ -879,11 +953,11 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 								//если мы еще не ушли внутрь нода
 								if(node->value == 0)
 								{
-									tmpnode->value = gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/);
+									tmpnode->value = gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
 								}
 								else
 								{
-									tmpnode->op1 = NodePool.Alloc(_arg, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
+									tmpnode->op1 = NodePool.Alloc(_arg, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 									tmpnode = tmpnode->op1;
 								}
 
@@ -936,7 +1010,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 {
 	s4g_lexeme* lex_get_curr0(tmplexs);
-	s4g_node* node = NodePool.Alloc(_create_table, curr_lexid, gc->cr_val_null(/*curr_lexid*/));
+	s4g_node* node = NodePool.Alloc(_create_table, curr_lexid, gc->cr_val_null(0,S4G_GC_TYPE_VAR_SYS));
 	s4g_node* tmpnode = node;
 	int type_last = -1;
 	listread = false;
@@ -1176,7 +1250,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr()
 							}
 							else if ((type_last == 0 || type_last == -1) && tmplexs->type == word_user)
 							{
-								tmpop = NodePool.Alloc(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str/*, curr_lexid*/));
+								tmpop = NodePool.Alloc(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 								type_last = 1;
 								if (extern_data)
 								{

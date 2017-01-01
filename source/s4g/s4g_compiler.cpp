@@ -73,7 +73,7 @@ int s4g_compiler::compile2(s4g_node* node)
 					tmpnode = tmpnode->op2;
 				}
 
-				gen(mc_mstore, gc->cr_val_int(countvar/*, -2*/), node->lexid);
+				gen(mc_mstore, gc->cr_val_int(countvar, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS), node->lexid);
 				printf("mstore\n");
 			}
 			else
@@ -164,7 +164,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			compile2(node->op3);
 		}
 		
-		else if(node->type == _get)
+		else if (node->type == _get || node->type == _get_preincr || node->type == _get_predecr || node->type == _get_postincr || node->type == _get_postdecr)
 		{
 			bool iscr = false;
 				if (node->op1->type == _crvar)
@@ -186,6 +186,8 @@ int s4g_compiler::compile2(s4g_node* node)
 				if (node->op1->type == _var)
 				{
 					compile2(node->op1);
+					/*if (node->type == _get_incr)
+						gen(mc_fetch_get, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);*/
 				}
 				/*else
 				{*/
@@ -200,6 +202,17 @@ int s4g_compiler::compile2(s4g_node* node)
 						printf("fetch_get\n");
 					}
 				//}
+
+				if (node->type == _get_preincr)
+					gen(mc_preincr, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);
+				else if (node->type == _get_postincr)
+					gen(mc_postincr, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);
+
+				if (node->type == _get_predecr)
+					gen(mc_predecr, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);
+				else if (node->type == _get_postdecr)
+					gen(mc_postdecr, (node->op1->type == _var ? 0 : node->op1->value), node->lexid);
+
 			compile2(node->op2);
 			compile2(node->op3);
 		}
@@ -217,6 +230,42 @@ int s4g_compiler::compile2(s4g_node* node)
 			compile2(node->op1);
 			compile2(node->op3);
 		}
+		else if (node->type == _var_preincr || node->type == _var_postincr || node->type == _var_predecr || node->type == _var_postdecr)
+		{
+			gen(mc_fetch, node->value, node->lexid);
+			printf("fetch\n");
+			if (node->type == _var_preincr)
+			{
+				gen(mc_preincr, 0, node->lexid);
+				printf("preincr\n");
+			}
+			else if (node->type == _var_postincr)
+			{
+				gen(mc_postincr, 0, node->lexid);
+				printf("postincr\n");
+			}
+			else if (node->type == _var_predecr)
+			{
+				gen(mc_predecr, 0, node->lexid);
+				printf("predecr\n");
+			}
+			else if (node->type == _var_postdecr)
+			{
+				gen(mc_postdecr, 0, node->lexid);
+				printf("postdecr\n");
+			}
+			compile2(node->op1);
+			compile2(node->op3);
+		}
+		/*else if (node->type == _var_decr)
+		{
+			gen(mc_fetch, node->value, node->lexid);
+			printf("fetch\n");
+			gen(mc_decr, 0, node->lexid);
+			printf("decr\n");
+			compile2(node->op1);
+			compile2(node->op3);
+		}*/
 		else if (node->type == _crvar)
 		{
 			gen(mc_fetch_cr, node->value, node->lexid);
@@ -259,10 +308,10 @@ int s4g_compiler::compile2(s4g_node* node)
 						if (tmpnode && tmpnode->op1 && tmpnode->op1->type == _marg)
 						{
 							sf->ismarg = true;
-							sf->marg_val = gc->cr_val_table_null();
-							sf->marg_val->isdelete = false;
-							sf->marg_val->typedata = 1;
-							sf->marg_val->pdata->typedata = 1;
+							sf->marg_val = gc->cr_val_table_null(0,S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
+							//sf->marg_val->isdelete = false;
+							//sf->marg_val->typedata = 1;
+							sf->marg_val->pdata->typedata = S4G_GC_TYPE_DATA_SYS;
 							sf->margtable = gc->get_table(sf->marg_val);
 							break;
 						}	
@@ -290,7 +339,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			printf("---\n");
 			comms = tmpcomms;
 			
-			gen(mc_push, gc->cr_val_s_func(sf/*, -3*/), node->lexid);
+			gen(mc_push, gc->cr_val_s_func(sf, 0, S4G_GC_TYPE_VAR_SYS), node->lexid);
 			printf("push\n");
 		}
 		else if(node->type == _call)

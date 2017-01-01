@@ -5,7 +5,7 @@ s4g_vm::s4g_vm(s4g_gc* _gc)
 {
 	gc = _gc;
 	gc->add_new_context(&gvars);
-	vgvars = gc->cr_val_table(gvars);
+	vgvars = gc->cr_val_table(gvars, S4G_GLOBAL_NM, S4G_GC_TYPE_VAR_SYS);
 	strerror[0] = 0; error = 0;
 	cfetchpushstore = 0;
 	curr_vars = 0;
@@ -32,6 +32,11 @@ s4g_vm::s4g_vm(s4g_gc* _gc)
 	GEN_OP(sub)
 	GEN_OP(mul)
 	GEN_OP(div)
+
+	GEN_OP(preincr)
+	GEN_OP(postincr)
+	GEN_OP(predecr)
+	GEN_OP(postdecr)
 
 	GEN_OP(jz)
 	GEN_OP(jnz)
@@ -139,13 +144,14 @@ inline void s4g_vm::com_fetch_get()
 					char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
 					char tmpstr[S4G_MAX_LEN_TYPE_NAME];
 
-						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
-						strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
-						sprintf(tmpstr, "%d", tmplexs->numstr);
+					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+					strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+					sprintf(tmpstr, "%d", tmplexs->numstr);
 
+					s4g_value* tval = execute.get((execute.count_obj - counttop) - 1);
 					error = -1;
 					char strtype[S4G_MAX_LEN_TYPE_NAME];
-					s4g_get_str_type(gc->get_type(tval), strtype);
+					s4g_get_str_type(ttype, strtype);
 					sprintf(this->strerror, "[%s]:%s - value '%s' expected table but got %s", tmpfile, tmpstr, tval->name, strtype);
 					return;
 				}
@@ -258,10 +264,10 @@ inline void s4g_vm::com_store()
 			newsf->commands = sf->commands;
 			newsf->externs_strs = sf->externs_strs;
 			newsf->ismarg = sf->ismarg;
-			newsf->externs_val = gc->cr_val_table_null();
-			newsf->externs_val->typedata = 1;
+			newsf->externs_val = gc->cr_val_table_null(0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
+			//newsf->externs_val->typedata = 1;
 			newsf->externstable = gc->get_table(newsf->externs_val);
-			gc->set_td_data(newsf->externs_val,1);
+			//gc->set_td_data(newsf->externs_val, S4G_GC_TYPE_DATA_SYS);
 
 			long tmpid = -1;
 			for (int i = 0; i <= newsf->externs_strs.count(); i++)
@@ -526,8 +532,244 @@ inline void s4g_vm::com_call()
 
 inline void s4g_vm::com_new_table()
 {
-	s4g_value* ttable = gc->cr_val_table_null();
+	s4g_value* ttable = gc->cr_val_table_null(S4G_GC_TYPE_VAR_FREE);
 	execute.push(ttable);
+}
+
+inline void s4g_vm::com_preincr()
+{
+	s4g_value* tval = execute.get(execute.count_obj - 1);
+	s4g_type ttype = gc->get_type(tval);
+	if (ttype == t_int)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			++(tval->pdata->data.i);
+		}
+		else
+		{
+			--(tval->pdata->ref);
+			tval->pdata = gc->cr_dara_int((tval->pdata->data.i) + 1, S4G_GC_TYPE_DATA_PRIVATE);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->ref = 1;
+			//tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_uint)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			++(tval->pdata->data.ui);
+		}
+		else
+		{
+			--(tval->pdata->ref);
+			tval->pdata = gc->cr_dara_uint((tval->pdata->data.ui) + 1, S4G_GC_TYPE_DATA_PRIVATE);
+			tval->iddata = tval->pdata->iddata;
+			//tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_float)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			++(tval->pdata->data.f);
+		}
+		else
+		{
+			--(tval->pdata->ref);
+			tval->pdata = gc->cr_dara_float((tval->pdata->data.f) + 1.0, S4G_GC_TYPE_DATA_PRIVATE);
+			tval->iddata = tval->pdata->iddata;
+			//tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else
+	{
+		S4G_VM_OP_ARIF_INCR_DECR_ERR;
+	}
+}
+
+inline void s4g_vm::com_postincr()
+{
+	s4g_value* tval = execute.get(execute.count_obj - 1);
+	s4g_type ttype = gc->get_type(tval);
+	if (ttype == t_int)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			++(tval->pdata->data.i);
+
+			/*stack_pop(execute, 1);
+			--(tval->pdata->ref);
+			s4g_value* tval2 = gc->cr_val_int(tval->pdata->data.i, tval->name);
+			execute.push(tval2);
+			++(tval->pdata->data.i);*/
+		}
+		else
+		{
+			--(tval->pdata->ref);
+
+			stack_pop(execute, 1);
+			s4g_value* tval2 = gc->cr_val2(tval);
+			--(tval2->pdata->ref);
+			execute.push(tval2);
+
+			tval->pdata = gc->cr_dara_int((tval->pdata->data.i) + 1, S4G_GC_TYPE_DATA_PRIVATE);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->ref = 1;
+		}
+	}
+	/*else if (ttype == t_uint)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			++(tval->pdata->data.ui);
+		}
+		else
+		{
+			stack_pop(execute, 1);
+			--(tval->pdata->ref);
+			s4g_value* tval2 = gc->cr_val(tval);
+			execute.push(tval2);
+			tval->pdata = gc->cr_dara_uint((tval->pdata->data.ui) + 1);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_float)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			++(tval->pdata->data.ui);
+		}
+		else
+		{
+			stack_pop(execute, 1);
+			--(tval->pdata->ref);
+			s4g_value* tval2 = gc->cr_val(tval);
+			execute.push(tval2);
+			tval->pdata = gc->cr_dara_float((tval->pdata->data.f) + 1.0);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}*/
+	else
+	{
+		S4G_VM_OP_ARIF_INCR_DECR_ERR;
+	}
+}
+
+inline void s4g_vm::com_predecr()
+{
+	/*s4g_value* tval = execute.get(execute.count_obj - 1);
+	s4g_type ttype = gc->get_type(tval);
+	if (ttype == t_int)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			--(tval->pdata->data.i);
+		}
+		else
+		{
+			--(tval->pdata->ref);
+			tval->pdata = gc->cr_dara_int((tval->pdata->data.i) - 1);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_uint)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			--(tval->pdata->data.ui);
+		}
+		else
+		{
+			--(tval->pdata->ref);
+			tval->pdata = gc->cr_dara_uint((tval->pdata->data.ui) - 1);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_float)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			--(tval->pdata->data.f);
+		}
+		else
+		{
+			--(tval->pdata->ref);
+			tval->pdata = gc->cr_dara_float((tval->pdata->data.f) - 1.0);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else
+	{
+		S4G_VM_OP_ARIF_INCR_DECR_ERR;
+	}*/
+}
+
+inline void s4g_vm::com_postdecr()
+{
+	/*s4g_value* tval = execute.get(execute.count_obj - 1);
+	s4g_type ttype = gc->get_type(tval);
+	if (ttype == t_int)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			--(tval->pdata->data.i);
+		}
+		else
+		{
+			stack_pop(execute, 1);
+			--(tval->pdata->ref);
+			s4g_value* tval2 = gc->cr_val(tval);
+			execute.push(tval2);
+			tval->pdata = gc->cr_dara_int((tval->pdata->data.i) - 1);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_uint)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			--(tval->pdata->data.ui);
+		}
+		else
+		{
+			stack_pop(execute, 1);
+			--(tval->pdata->ref);
+			s4g_value* tval2 = gc->cr_val(tval);
+			execute.push(tval2);
+			tval->pdata = gc->cr_dara_uint((tval->pdata->data.ui) - 1);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else if (ttype == t_float)
+	{
+		if (tval->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
+		{
+			--(tval->pdata->data.ui);
+		}
+		else
+		{
+			stack_pop(execute, 1);
+			--(tval->pdata->ref);
+			s4g_value* tval2 = gc->cr_val(tval);
+			execute.push(tval2);
+			tval->pdata = gc->cr_dara_float((tval->pdata->data.f) - 1.0);
+			tval->iddata = tval->pdata->iddata;
+			tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
+		}
+	}
+	else
+	{
+		S4G_VM_OP_ARIF_INCR_DECR_ERR;
+	}*/
 }
 
 inline void s4g_vm::com_add()
@@ -1778,14 +2020,17 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	{
 		com_retprev();
 	}
-
-		/*if (gvars->is_exists_s("a") != -1)
+	
+		/*if (gvars->is_exists_s("ttable") != -1)
 		{
-			s4g_value* tvar1 = gvars->gets("a");
+			s4g_value* tvar1 = gvars->gets("ttable");
 			s4g_type type1 = gc->get_type(tvar1);
-			if (gc->get_type(tvar1) == t_int)
+			
+			if (gc->get_type(tvar1) == t_table)
 			{
-				long num = gc->get_int(tvar1);
+				s4g_table* ttable = gc->get_table(tvar1);
+				s4g_value* t1 = ttable->gets("1");
+				//long num = gc->get_int(tvar1);
 				int qwert = 0;
 			}
 		}*/

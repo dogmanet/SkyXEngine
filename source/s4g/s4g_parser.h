@@ -249,6 +249,10 @@ enum s4g_type_op
 	
 	_expr,	//выражение
 	_var,	//переменная
+	_var_preincr,
+	_var_predecr,
+	_var_postincr,
+	_var_postdecr,
 	_crvar,	//создаваемая переменная
 
 	//ноды содержащие в себе значения с типами
@@ -260,6 +264,10 @@ enum s4g_type_op
 	_set,	//присваивание
 	_sett,	//присваивание в таблице
 	_get,	//получение переменной
+	_get_preincr,
+	_get_predecr,
+	_get_postincr,
+	_get_postdecr,
 	_get_cr,//создание и получение переменной 
 	_call,	//вызов функции
 	_add,//+

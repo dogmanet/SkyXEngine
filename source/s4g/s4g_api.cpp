@@ -36,7 +36,6 @@ int s4g_load_file(s4g_main* s4gm, const char* file)
 		sprintf(s4gm->strerror, "%s", s4gm->arr_lex->strerror);
 		return status;
 	}
-	s4gm->gc->typedata = 1;
 
 	s4gm->gnode = s4gm->bst->s4g_gen_tree();
 #if defined(_DEBUG)
@@ -74,7 +73,6 @@ int s4g_load_str(s4g_main* s4gm, const char* str)
 		sprintf(s4gm->strerror, "%s", s4gm->arr_lex->strerror);
 		return status;
 	}
-	s4gm->gc->typedata = 1;
 
 	s4gm->gnode = s4gm->bst->s4g_gen_tree();
 	if (s4gm->bst->status != 0)

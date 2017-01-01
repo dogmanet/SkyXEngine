@@ -9,6 +9,14 @@
 #include "array.h"
 #include "s4g_stack.h"
 
+#define S4G_GC_TYPE_DATA_FREE 0		//простые публичные данные
+#define S4G_GC_TYPE_DATA_PRIVATE 1	//приватные данные, доступны только одной переменной
+#define S4G_GC_TYPE_DATA_SYS 2		//системные публичные данные (созданные при парсинге и компилировании)
+
+#define S4G_GC_TYPE_VAR_DEL -1	//переменная подлежит удалению
+#define S4G_GC_TYPE_VAR_FREE 0	//простая переменная
+#define S4G_GC_TYPE_VAR_SYS 1	//системная перменная
+
 //ключи доступа к основным данным
 #define S4G_GC_KEY_NULL 0	//null
 #define S4G_GC_KEY_BTRUE 1	//bool true
@@ -75,7 +83,6 @@ struct s4g_value
 	s4g_value();
 	~s4g_value();
 
-	bool isdelete;	//можно ли удалять переменную
 	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
 	long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
 	long idvar;		//идентификатор этой переменной в массиве управляемым сборщиком мусора
@@ -131,17 +138,15 @@ public:
 	s4g_gc();
 	~s4g_gc();
 
-#define def_cr_val_null(tval,tdata,name) \
+#define def_cr_val_null(tval,tdata,val_name) \
 	tval = MemValue.Alloc(); \
-	tval->typedata = typedata; \
-	if (name)\
-	strcpy(tval->name, name); \
-else\
-	strcpy(tval->name, "#"); \
+	if (val_name)\
+		strcpy(tval->name, val_name); \
+	else\
+		strcpy(tval->name, "#"); \
 	tval->idvar = arrvar.count_obj; \
 	arrvar.push(tval); \
 	tdata = MemData.Alloc(); \
-	tdata->typedata = typedata; \
 	tval->iddata = arrdata.count_obj; \
 	tdata->iddata = arrdata.count_obj; \
 	tval->pdata = tdata; \
@@ -149,20 +154,27 @@ else\
 
 	//создание переменных
 	//name - имя переменной если надо
-	inline s4g_value* cr_val_null(const char* name = 0);
-	inline s4g_value* cr_val_pdata(s4g_pdata pdata, const char* name = 0);
-	inline s4g_value* cr_val_table_null(const char* name = 0);
-	inline s4g_value* cr_val_int(s4g_int num, const char* name = 0);
-	inline s4g_value* cr_val_uint(s4g_uint num, const char* name = 0);
-	inline s4g_value* cr_val_float(s4g_float num, const char* name = 0);
-	inline s4g_value* cr_val_bool(s4g_bool bf, const char* name = 0);
-	inline s4g_value* cr_val_str(const char* str, const char* name = 0);
-	inline s4g_value* cr_val_table(s4g_table* tt, const char* name = 0);
-	inline s4g_value* cr_val_s_func(const char* name = 0);
-	inline s4g_value* cr_val_s_func(s4g_s_function* func, const char* name = 0);
-	inline s4g_value* cr_val_c_func(s4g_c_function func, const char* name = 0);
-	inline s4g_value* cr_val(int _type, const char* _val, const char* name = 0);	//создать переменную из _val с типом _type
+	inline s4g_value* cr_val_null(const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* cr_val_pdata(s4g_pdata pdata, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* cr_val_table_null(const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_value* cr_val_int(s4g_int num, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_value* cr_val_uint(s4g_uint num, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_value* cr_val_float(s4g_float num, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_value* cr_val_bool(s4g_bool bf, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* cr_val_str(const char* str, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_value* cr_val_table(s4g_table* tt, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* cr_val_s_func(const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_value* cr_val_s_func(s4g_s_function* func, const char* name = 0,int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* cr_val_c_func(s4g_c_function func, const char* name = 0,int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* cr_val(int _type, const char* _val, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);	//создать переменную из _val с типом _type
 	inline s4g_value* cr_val_nn();	//создать цифру 0 (для случаев кода: -123 будет 0-123)
+
+	inline s4g_value* cr_val2(s4g_value* val, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE, bool copy_data = false);
+
+	inline s4g_data* cr_dara(s4g_data* tdata, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_data* cr_dara_int(s4g_int num, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_data* cr_dara_uint(s4g_uint num, int td_data = S4G_GC_TYPE_DATA_FREE);
+	inline s4g_data* cr_dara_float(s4g_float num, int td_data = S4G_GC_TYPE_DATA_FREE);
 
 	inline void c_val(s4g_value* dest, s4g_value* src, bool incr = true);	//присвоить dest данные из src, incr - увеличивать ли счетчик ссылок на src
 	inline void set_td_data(s4g_value* val, int td);	//присвоить данным на которые ссылается перменная тип для сборщика
@@ -200,12 +212,9 @@ else\
 	//запустить сборку мусора
 	inline void del_data(s4g_data* tdata);
 	void clear();
-
+	void resort();
 	inline void begin_of_const_data();	//старт создания константных значений (при загрузке скрипта)
 	inline void end_of_const_data();	//окончание создания константных значений (окончание загрузки скрипта)
-
-	int typedata;	//тип создаваемых данных, 0 - если больше не нужны то удалть, 1 - не удалять
-	//парсер и компилер создают данные которые не удаляются, машина в большинстве случаев создает данные подлежащие удалению
 
 protected:
 	friend class s4g_main;
