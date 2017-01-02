@@ -106,7 +106,7 @@ s4g_value::s4g_value()
 	typedata = 0;
 	//isdelete = false;
 	pdata = 0;
-	strcpy(name, "#");
+	*(short*)name = '\0#';
 }
 
 s4g_value::~s4g_value()
@@ -337,6 +337,42 @@ inline void s4g_table::reserve(int count_elem)
 	Mem.AllocBlock(count_elem);
 }
 
+s4g_value * s4g_table::cr_if_not_exists(const char * name, s4g_gc * gc)
+{
+	IndexNode node;
+	long tmpkey = -1;
+	if(NameIndex.KeyExists(item_name(name), &node, true))
+	{
+		tmpkey = *node->Val;
+		return(Arr.Data[tmpkey]->Value);
+	}
+	s4g_value * val = gc->cr_val_null(name);
+	
+	if(count_obj < Arr.Size)
+	{
+		//Arr.Data[count_obj]->Value->isdelete = true;
+
+		node->Key.SetName(name);
+		*node->Val = count_obj;
+		Arr.Data[count_obj]->name = &(node->Key);
+		Arr.Data[count_obj]->Value = val;
+		++count_obj;
+	}
+	else
+	{
+		table_desc* tmpaa = Mem.Alloc();
+		tmpaa->Value = val;
+
+		*node->Val = count_obj;
+		node->Key.SetName(name);
+		tmpaa->name = &(node->Key);
+
+		Arr.push_back(tmpaa);
+		++count_obj;
+	}
+	return(val);
+}
+
 ///////////////////////
 
 inline s4g_value* s4g_gc::cr_val2(s4g_value* val, int td_val, int td_data, bool copy_data)
@@ -426,7 +462,7 @@ inline s4g_value* s4g_gc::cr_val_null(const char* name, int td_val)
 	if (name)
 		strcpy(tval->name, name);
 	else
-		strcpy(tval->name, "#");
+		*(short*)tval->name = '\0#';
 	return tval;
 };
 
@@ -521,12 +557,10 @@ inline s4g_value* s4g_gc::cr_val_bool(s4g_bool bf, const char* name, int td_val)
 		tmpval->pdata = arrdata.Arr[S4G_GC_KEY_BFALSE];
 	}
 
-	tmpval->pdata->type = t_bool;
-
 	if (name)
 		strcpy(tmpval->name, name);
 	else
-		strcpy(tmpval->name, "#");
+		*(short*)tmpval->name = '\0#';
 
 	return tmpval;
 };
@@ -713,21 +747,20 @@ s4g_gc::s4g_gc()
 	nulldata->typedata = 1;
 	nulldata->data.b = 0;
 	nulldata->iddata = arrdata.count_obj;
-	nulldata->iddata = arrdata.count_obj;
 	arrdata.push(nulldata);
 
 	s4g_data* bftruedata = MemData.Alloc();
 	bftruedata->typedata = 1;
 	bftruedata->data.b = true;
 	bftruedata->iddata = arrdata.count_obj;
-	bftruedata->iddata = arrdata.count_obj;
+	bftruedata->type = t_bool;
 	arrdata.push(bftruedata);
 
 	s4g_data* bffalsedata = MemData.Alloc();
 	bffalsedata->typedata = 1;
 	bffalsedata->data.b = false;
 	bffalsedata->iddata = arrdata.count_obj;
-	bffalsedata->iddata = arrdata.count_obj;
+	bffalsedata->type = t_bool;
 	arrdata.push(bffalsedata);
 
 	add_const_context();

@@ -120,6 +120,7 @@ public:
 
 	inline void reserve(int count_elem);	//зарезервировать место в таблице под count_elem ключей
 
+	inline s4g_value * cr_if_not_exists(const char* str, s4g_gc * gc);
 protected:
 	struct item_name
 	{

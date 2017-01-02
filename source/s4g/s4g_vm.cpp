@@ -203,32 +203,34 @@ inline void s4g_vm::com_fetch_get()
 			else if (ttype == t_int)
 				str = ltoa(gc->get_int(tval), str2,10);
 			
-				if (ttable->is_exists_s2(str, &tmpval) != -1)
+			/*if (ttable->is_exists_s2(str, &tmpval) != -1)
+			{
+				/*if (is_cr)
 				{
-					/*if (is_cr)
-					{
-						error = -1;
-						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - key number '%s' is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-						return;
-					}*/
+					error = -1;
+					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+					sprintf(this->strerror, "[%s]:%d - key number '%s' is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+					return;
+				}* /
 
-					execute.push(tmpval);
-				}
-				else
+				//execute.push(tmpval);
+			}
+			else
+			{
+				/*if (!is_cr)
 				{
-					/*if (!is_cr)
-					{
-						error = -1;
-						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - key number '%s' is not exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-						return;
-					}*/
+					error = -1;
+					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+					sprintf(this->strerror, "[%s]:%d - key number '%s' is not exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+					return;
+				}* /
 					
-					tmpval = gc->cr_val_null(str);
-					ttable->add_val_s(str, tmpval);
-					execute.push(tmpval);
-				}
+				tmpval = gc->cr_val_null(str);
+				ttable->add_val_s(str, tmpval);
+				//
+			}*/
+			tmpval = ttable->cr_if_not_exists(str, gc);
+			execute.push(tmpval);
 		}
 		else
 		{
@@ -1993,18 +1995,19 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	cfetchgetarg = false;
 	runexe = true;
 	val_end = -1;
-
+	s4g_command * currCom;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
-			op = curr_comm->get(id_curr_com).command;
-			arg = curr_comm->get(id_curr_com).arg;
+			currCom = &(curr_comm->get(id_curr_com));
+			op = currCom->command;
+			arg = currCom->arg;
 			
 			(this->*(arropf[op]))();
 			if (error < 0)
 				return -1;
-			id_curr_com++;
-			cfetchpushstore++;
-			cfetchget++;
+			++id_curr_com;
+			++cfetchpushstore;
+			++cfetchget;
 			oldop = op;
 		}
 
