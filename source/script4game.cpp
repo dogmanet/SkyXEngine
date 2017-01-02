@@ -76,17 +76,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		//exit(0);
 	}
 
-	int counttt = 100000;
+	int counttt = 1;
 	
 	DWORD time2 = timeGetTime();
 	for (int i = 0; i < counttt; i++)
 	{
 		//lua_call(LuaState, 0, 0);
 		lua_getfield(LuaState, LUA_GLOBALSINDEX, "testcall");
-		lua_pushnumber(LuaState, 2);
-		lua_pushnumber(LuaState, 7);
+		//lua_pushnumber(LuaState, 2);
+		//lua_pushnumber(LuaState, 7);
 		//lua_call(LuaState, 2, 1);
-		if (lua_pcall(LuaState, 2, 1,0) != 0)	//!!!Run-time Lua error
+		if (lua_pcall(LuaState, 0, 0,0) != 0)	//!!!Run-time Lua error
 		{
 		char errorfmt[1024];
 		const char* error = lua_tostring(LuaState, -1);
@@ -118,14 +118,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
 	int qwerty = 0;
-	for (;; /*int i = 0; i < counttt; i++*/)
+	for (int i = 0; i < counttt; i++)
 	{
 		//s4g_spush_precall(s4gm,)
-		/*s4g_spush_precall(s4gm);
+		s4g_spush_precall(s4gm);
 		s4g_sget(s4gm, S4G_NM_GLOBAL, "testcall");
-		s4g_spush_int(s4gm, 2);
-		s4g_spush_int(s4gm, 7);*/
-		s4g_call(s4gm);
+		//s4g_spush_int(s4gm, 2);
+		//s4g_spush_int(s4gm, 7);
+		s4g_call(s4gm,true);
 
 		//s4g_call(s4gm);
 		
@@ -135,12 +135,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			return status;
 		}*/
 		//s4g_spop(s4gm, 1);
-		++qwerty;
-		/*if (qwerty >= 1000)
-		{*/
+		/*++qwerty;
+		if (qwerty >= 10000)
+		{
 			s4g_call_gc(s4gm);
 			
-			/*qwerty = 0;
+			qwerty = 0;
 		}*/
 		//s4gm->gc->resort();
 		//tmpcount++;
@@ -148,7 +148,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 	//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	//time = timeGetTime();
-	//s4g_call_gc(s4gm, 0);
+	s4g_call_gc(s4gm);
 	//s4gm->gc->resort();
 	time = timeGetTime() - time;
 	int qwert = 0;

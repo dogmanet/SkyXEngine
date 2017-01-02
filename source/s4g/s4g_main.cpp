@@ -103,8 +103,7 @@ void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...)
 
 s4g_value::s4g_value()
 {
-	typedata = 0;
-	//isdelete = false;
+	typedata = S4G_GC_TYPE_VAR_FREE;
 	pdata = 0;
 	strcpy(name, "#");
 }
@@ -118,7 +117,7 @@ s4g_data::s4g_data()
 {
 	ref = 0;
 	type = t_null;
-	typedata = 0;
+	typedata = S4G_GC_TYPE_DATA_FREE;
 	iddata = -1;
 }
 
@@ -136,12 +135,6 @@ s4g_table::s4g_table()
 
 s4g_table::~s4g_table()
 {
-	/*for (int i = 0; i < count_obj; i++)
-	{
-		if (Arr[i]->Value)
-			Arr[i]->Value->isdelete = true;
-	}*/
-
 	clear();
 	Arr.clear();
 	Mem.clear();
@@ -153,7 +146,6 @@ inline void s4g_table::clear()
 	for (int i = 0; i < count_obj; ++i)
 	{
 		tmpval = Arr.Data[i]->Value;
-		//tmpval->isdelete = true;
 		if (tmpval && tmpval->typedata != S4G_GC_TYPE_VAR_SYS)
 			tmpval->typedata = S4G_GC_TYPE_VAR_DEL;
 		if (tmpval && tmpval->pdata)
@@ -255,7 +247,6 @@ inline void s4g_table::add_val_s(const char* name, s4g_value* val)
 		Arr.Data[tmpkey]->Value = val;
 	else if (count_obj < Arr.Size)
 	{
-		//Arr.Data[count_obj]->Value->isdelete = true;
 		strcpy(Arr.Data[count_obj]->Name, name);
 		Arr.Data[count_obj]->Value = val;
 		++count_obj;
@@ -278,12 +269,10 @@ inline void s4g_table::add_val_n(long num, s4g_value* val)
 	}
 	else if (num <= count_obj)
 	{
-		//Arr.Data[num]->Value->isdelete = true;
 		Arr.Data[num]->Value = val;
 	}
 	else if (num <= Arr.Size)
 	{
-		//Arr.Data[num]->Value->isdelete = true;
 		Arr.Data[num]->Value = val;
 	}
 	else
@@ -354,7 +343,6 @@ inline s4g_value* s4g_gc::cr_val2(s4g_value* val, int td_val, int td_data, bool 
 		strcpy(tval->name, val->name); 
 		tval->idvar = arrvar.count_obj;
 		arrvar.push(tval); 
-		tval->iddata = val->iddata; 
 		tval->pdata = val->pdata;
 	}
 
@@ -416,7 +404,7 @@ inline s4g_value* s4g_gc::cr_val_null(const char* name, int td_val)
 	tval->typedata = td_val;
 	tval->idvar = arrvar.count_obj;
 	arrvar.push(tval);
-	tval->iddata = S4G_GC_KEY_NULL;
+	
 	tval->pdata = arrdata.Arr[S4G_GC_KEY_NULL];
 	if (name)
 		strcpy(tval->name, name);
@@ -428,7 +416,7 @@ inline s4g_value* s4g_gc::cr_val_null(const char* name, int td_val)
 inline s4g_value* s4g_gc::cr_val_pdata(s4g_pdata pdata, const char* name, int td_val)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->data.p = pdata;
@@ -440,7 +428,7 @@ inline s4g_value* s4g_gc::cr_val_pdata(s4g_pdata pdata, const char* name, int td
 inline s4g_value* s4g_gc::cr_val_table_null(const char* name, int td_val, int td_data)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
@@ -453,12 +441,10 @@ inline s4g_value* s4g_gc::cr_val_table_null(const char* name, int td_val, int td
 inline s4g_value* s4g_gc::cr_val_int(s4g_int num, const char* name, int td_val, int td_data)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
-	/*s4g_int* tmpvv = MemInt.Alloc();
-	*tmpvv = num;*/
 
 	tdata->data.i = num;
 	tdata->type = t_int;
@@ -469,12 +455,11 @@ inline s4g_value* s4g_gc::cr_val_int(s4g_int num, const char* name, int td_val, 
 inline s4g_value* s4g_gc::cr_val_uint(s4g_uint num, const char* name, int td_val, int td_data)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
-	/*s4g_uint* tmpvv = MemUInt.Alloc();
-	*tmpvv = num;*/
+
 	tdata->data.ui = num;
 	tdata->type = t_uint;
 	tmpval->pdata = tdata;
@@ -484,12 +469,11 @@ inline s4g_value* s4g_gc::cr_val_uint(s4g_uint num, const char* name, int td_val
 inline s4g_value* s4g_gc::cr_val_float(s4g_float num, const char* name, int td_val, int td_data)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
-	/*s4g_float* tmpvv = MemFloat.Alloc();
-	*tmpvv = num;*/
+
 	tdata->data.f = num;
 	tdata->type = t_float;
 	tmpval->pdata = tdata;
@@ -507,16 +491,12 @@ inline s4g_value* s4g_gc::cr_val_bool(s4g_bool bf, const char* name, int td_val)
 
 	if (bf)
 	{
-		tmpval->iddata = S4G_GC_KEY_BTRUE;
 		tmpval->pdata = arrdata.Arr[S4G_GC_KEY_BTRUE];
 	}
 	else
 	{
-		tmpval->iddata = S4G_GC_KEY_BFALSE;
 		tmpval->pdata = arrdata.Arr[S4G_GC_KEY_BFALSE];
 	}
-
-	tmpval->pdata->type = t_bool;
 
 	if (name)
 		strcpy(tmpval->name, name);
@@ -526,14 +506,20 @@ inline s4g_value* s4g_gc::cr_val_bool(s4g_bool bf, const char* name, int td_val)
 	return tmpval;
 };
 
+inline s4g_value* s4g_gc::get_bool(bool bf)
+{
+	//s4g_value* tmpval = arrvar.Arr.Data[(bf ? S4G_GC_KEY_BTRUE : S4G_GC_KEY_BFALSE)];
+	return arrvar.Arr.Data[(bf ? S4G_GC_KEY_BTRUE : S4G_GC_KEY_BFALSE)];
+}
+
 inline s4g_value* s4g_gc::cr_val_str(const char* str, const char* name, int td_val, int td_data)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
-	String* tmpvv = /*new String(str);*/ MemString.Alloc();
+	String* tmpvv = MemString.Alloc();
 	*tmpvv = str;
 	tdata->data.p = tmpvv;
 	tdata->type = t_string;
@@ -544,7 +530,7 @@ inline s4g_value* s4g_gc::cr_val_str(const char* str, const char* name, int td_v
 inline s4g_value* s4g_gc::cr_val_table(s4g_table* tt, const char* name, int td_val)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->data.p = tt;
@@ -556,7 +542,7 @@ inline s4g_value* s4g_gc::cr_val_table(s4g_table* tt, const char* name, int td_v
 inline s4g_value* s4g_gc::cr_val_s_func(const char* name, int td_val, int td_data)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
@@ -570,7 +556,7 @@ inline s4g_value* s4g_gc::cr_val_s_func(const char* name, int td_val, int td_dat
 inline s4g_value* s4g_gc::cr_val_s_func(s4g_s_function* func, const char* name, int td_val)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->data.p = func;
@@ -582,7 +568,7 @@ inline s4g_value* s4g_gc::cr_val_s_func(s4g_s_function* func, const char* name, 
 inline s4g_value* s4g_gc::cr_val_c_func(s4g_c_function func, const char* name, int td_val)
 {
 	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
+	s4g_value* tmpval = 0;
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->data.p = func;
@@ -593,50 +579,47 @@ inline s4g_value* s4g_gc::cr_val_c_func(s4g_c_function func, const char* name, i
 
 inline s4g_value* s4g_gc::cr_val_nn()
 {
-	s4g_data* tdata = 0;
-	s4g_value* tmpval = 0;// cr_val_null();
-	char* name = 0;
-	def_cr_val_null(tmpval, tdata, name);
+	s4g_value* tmpval = MemValue.Alloc();
 
-	//tdata->data = 0;
-	tdata->type = t_nnull;
-	tmpval->pdata = tdata;
+	tmpval->idvar = arrvar.count_obj;
+	arrvar.push(tmpval);
+
+	tmpval->pdata = arrdata.Arr[S4G_GC_KEY_NNULL];
+	strcpy(tmpval->name, "#");
 	return tmpval;
 }
 
 inline void s4g_gc::c_val(s4g_value* dest, s4g_value* src, bool incr)
 {
-	if (dest->iddata >= arrdata.count_obj || src->iddata >= arrdata.count_obj || arrdata.Arr.Data[dest->iddata] == 0 || arrdata.Arr.Data[src->iddata] == 0)
+	if (dest->pdata == 0 && src->pdata == 0)
 	{
 		s4g_breakpoint;
 		return;
 	}
 
-	--(arrdata.Arr.Data[dest->iddata]->ref);
+	--(dest->pdata->ref);
 
 	//если данные источника приватные
 	if (src->pdata->typedata == S4G_GC_TYPE_DATA_PRIVATE)
 	{
 		//создаем копию данных 
 		dest->pdata = cr_dara(src->pdata, S4G_GC_TYPE_DATA_FREE);
-		dest->iddata = dest->pdata->iddata;
 		if (incr)
 			++(dest->pdata->ref);
 	}
 	else
 	{
 		//иначе данные публичные
-		dest->iddata = src->iddata;
 		dest->pdata = src->pdata;
 
 		if (incr)
-			++(arrdata.Arr.Data[src->iddata]->ref);
+			++(src->pdata->ref);
 	}
 }
 
 inline s4g_value* s4g_gc::cr_val(int _type, const char* _val, const char* name, int td_val, int td_data)
 {
-	s4g_value* tmpval = 0;// new s4g_value();
+	s4g_value* tmpval = 0;
 
 	if (_val)
 	{
@@ -704,26 +687,71 @@ s4g_gc::s4g_gc()
 		arrcurrcontexts.push_back(tcontext);
 	}
 
+	s4g_value* nullval = MemValue.Alloc();
+	nullval->typedata = S4G_GC_TYPE_VAR_SYS;
+	nullval->idvar = arrvar.count_obj;
+	strcpy(nullval->name, "__null");
+	arrvar.push(nullval);
+
 	s4g_data* nulldata = MemData.Alloc();
-	nulldata->typedata = 1;
+	nulldata->typedata = S4G_GC_TYPE_DATA_SYS;
 	nulldata->data.b = 0;
 	nulldata->iddata = arrdata.count_obj;
-	nulldata->iddata = arrdata.count_obj;
+	nulldata->type = t_null;
 	arrdata.push(nulldata);
 
+	nullval->pdata = nulldata;
+
+	//////////
+
+	s4g_value* bftrueval = MemValue.Alloc();
+	bftrueval->typedata = S4G_GC_TYPE_VAR_SYS;
+	bftrueval->idvar = arrvar.count_obj;
+	strcpy(bftrueval->name, "__true");
+	arrvar.push(bftrueval);
+
 	s4g_data* bftruedata = MemData.Alloc();
-	bftruedata->typedata = 1;
+	bftruedata->typedata = S4G_GC_TYPE_DATA_SYS;
 	bftruedata->data.b = true;
 	bftruedata->iddata = arrdata.count_obj;
-	bftruedata->iddata = arrdata.count_obj;
+	bftruedata->type = t_bool;
 	arrdata.push(bftruedata);
 
+	bftrueval->pdata = bftruedata;
+
+	//////////
+
+	s4g_value* bffalseval = MemValue.Alloc();
+	bffalseval->typedata = S4G_GC_TYPE_VAR_SYS;
+	bffalseval->idvar = arrvar.count_obj;
+	strcpy(bffalseval->name, "__false");
+	arrvar.push(bffalseval);
+
 	s4g_data* bffalsedata = MemData.Alloc();
-	bffalsedata->typedata = 1;
+	bffalsedata->typedata = S4G_GC_TYPE_DATA_SYS;
 	bffalsedata->data.b = false;
 	bffalsedata->iddata = arrdata.count_obj;
-	bffalsedata->iddata = arrdata.count_obj;
+	bffalsedata->type = t_bool;
 	arrdata.push(bffalsedata);
+
+	bffalseval->pdata = bffalsedata;
+
+	///////////
+
+	s4g_value* nnullval = MemValue.Alloc();
+	nnullval->typedata = S4G_GC_TYPE_VAR_SYS;
+	nnullval->idvar = arrvar.count_obj;
+	strcpy(nnullval->name, "__nnull");
+	arrvar.push(nnullval);
+
+	s4g_data* nnulldata = MemData.Alloc();
+	nnulldata->typedata = S4G_GC_TYPE_DATA_SYS;
+	nnulldata->iddata = arrdata.count_obj;
+	nnulldata->type = t_nnull;
+	arrdata.push(bffalsedata);
+
+	nnullval->pdata = nnulldata;
+
 
 	add_const_context();
 }
@@ -829,9 +857,9 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 					//tmpval->isdelete = true;
 					if (tmpval->typedata != S4G_GC_TYPE_VAR_SYS)
 						tmpval->typedata = S4G_GC_TYPE_VAR_DEL;
-					if (tmpval->iddata < arrdata.count_obj && arrdata.Arr.Data[tmpval->iddata])
+					if (tmpval->pdata/*tmpval->iddata < arrdata.count_obj && arrdata.Arr.Data[tmpval->iddata]*/)
 					{
-						--(arrdata.Arr.Data[tmpval->iddata]->ref);
+						--(/*arrdata.Arr.Data[tmpval->iddata]->ref*/tmpval->pdata);
 					}
 				}
 			}
@@ -841,9 +869,9 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 			tsf->externs_strs.clear();
 			tsf->externstable->clear();
 
-			if (tsf->externs_val && tsf->externs_val->iddata < arrdata.count_obj)
+			if (tsf->externs_val && tsf->externs_val->pdata /*tsf->externs_val->iddata < arrdata.count_obj*/)
 			{
-				--(arrdata.Arr.Data[tsf->externs_val->iddata]->ref);
+				--(tsf->externs_val->pdata->ref);
 
 				if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)
 					tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;
@@ -877,22 +905,24 @@ if (tsf->externstable)\
 for (int k = 0; k < tsf->externstable->size(); ++k)\
 {\
 	s4g_value* tmpval = tsf->externstable->getn(k); \
-	tmpval->typedata = S4G_GC_TYPE_VAR_DEL;\
-if (tmpval->iddata < arrdata.count_obj && arrdata.Arr.Data[tmpval->iddata])\
-{\
-	--(arrdata.Arr.Data[tmpval->iddata]->ref); \
-}\
+	if (tmpval->typedata != S4G_GC_TYPE_VAR_SYS)\
+		tmpval->typedata = S4G_GC_TYPE_VAR_DEL;\
+	if (tmpval->pdata)\
+	{\
+		--(tmpval->pdata);\
+	}\
 }\
 }\
 	tsf->args.clear(); \
 	tsf->commands.clear(); \
 	tsf->externs_strs.clear(); \
 	tsf->externstable->clear(); \
-if (tsf->externs_val && tsf->externs_val->iddata < arrdata.count_obj)\
+if (tsf->externs_val && tsf->externs_val->pdata)\
 {\
-	--(arrdata.Arr.Data[tsf->externs_val->iddata]->ref); \
+	--(tsf->externs_val->pdata->ref); \
 	tsf->externs_val->typedata = 0; \
-	/*tsf->externs_val->isdelete = true;*/tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL; \
+	if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)\
+		tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;\
 	set_td_data(tsf->externs_val, 0); \
 }\
 	MemSFunc.Delete(tsf); \
@@ -975,10 +1005,10 @@ void s4g_gc::clear()
 				++countdelvar;
 				tmpval = 0;
 			}
-			else if (tmpval)
+			/*else if (tmpval)
 			{
 				tmpval->iddata = tmpval->pdata->iddata;
-			}
+			}*/
 
 			if (tmpval == 0)
 			{
@@ -1007,7 +1037,7 @@ void s4g_gc::clear()
 						arrvar.Arr.Data[i] = tmpval;
 						arrvar.Arr.Data[i]->idvar = i;
 						posend2 = (posend - k);
-						tmpval->iddata = tmpval->pdata->iddata;
+						//tmpval->iddata = tmpval->pdata->iddata;
 						break;
 					}
 				}
@@ -1020,61 +1050,6 @@ void s4g_gc::clear()
 	arrvar.count_obj = posend2;
 
 	//resort();
-}
-
-void s4g_gc::resort()
-{
-	long posbegin = 0;
-	long posend = arrdata.count_obj;
-
-	for (long i = count_nd_data; i < posend; ++i)
-	{
-		s4g_data* td1 = arrdata.Arr.Data[i];
-		if (arrdata.Arr.Data[i] == 0)
-		{
-			for (long k = posend - 1; k > 0 && k >= i; --k)
-			{
-				s4g_data* td2 = arrdata.Arr.Data[k];
-				if (arrdata.Arr.Data[k] != 0)
-				{
-					s4g_data* tdata = arrdata.Arr.Data[k];
-					arrdata.Arr.Data[i] = tdata;
-					arrdata.Arr.Data[i]->iddata = i;
-					posend = k + 1;
-					break;
-				}
-				else
-					--posend;
-			}
-		}
-	}
-
-	arrdata.count_obj = posend;
-
-	/*posbegin = 0;
-	posend = arrvar.count_obj;
-	for (long i = count_nd_value; i < posend; ++i)
-	{
-		if (arrvar.Arr.Data[i] == 0)
-		{
-			for (long k = posend - 1; k >= 0 && k > i; --k)
-			{
-				if (arrvar.Arr.Data[k] != 0)
-				{
-					arrvar.Arr.Data[i] = arrvar.Arr.Data[k];
-					arrvar.Arr.Data[i]->idvar = i;
-					if (arrvar.Arr.Data[i]->pdata)
-						arrvar.Arr.Data[i]->iddata = arrvar.Arr.Data[i]->pdata->iddata;
-					posend = k + 1;
-					break;
-				}
-				else
-					--posend;
-			}
-		}
-	}
-
-	arrvar.count_obj = posend;*/
 }
 
 inline void s4g_gc::begin_of_const_data()
@@ -1249,8 +1224,8 @@ inline long s4g_gc::ctx_is_exists_s(const char* str, s4g_value** val)
 
 inline void s4g_gc::set_td_data(s4g_value* val, int td)
 {
-	if (val && val->iddata >= 0 && val->iddata < arrdata.size() && arrdata[val->iddata])
-		arrdata[val->iddata]->typedata = td;
+	if (val && val->pdata/*val->iddata >= 0 && val->iddata < arrdata.size() && arrdata[val->iddata]*/)
+		val->pdata->typedata = td;
 }
 
 ///////////////////////

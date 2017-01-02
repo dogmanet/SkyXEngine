@@ -32,6 +32,16 @@ public:
 		++count_obj;
 	}
 
+	inline void push_r(T val)
+	{
+		if (count_obj > 0)
+		{
+			Arr.Data[count_obj - 1] = val;
+		}
+		else
+			push(val);
+	}
+
 	inline void push_back(T val)
 	{
 		if (Arr.AllocSize > count_obj)

@@ -392,10 +392,10 @@ inline void s4g_vm::com_call()
 		//если тип скриптовая функция
 		if (ttype == t_sfunc)
 		{
-			s4g_s_function* csfunc = gc->get_s_func(execute.get(startpos));
+			s4g_s_function* csfunc = gc->get_s_func(tvalfunc);
 
 			//если функция не содержит кода, либо из кода там только halt
-			if (csfunc->commands.count() <= 1)
+			if (csfunc->commands.count_obj <= 1)
 			{
 				//закачиваем работу с этой функцией
 				sr.free_last_unfree();
@@ -452,18 +452,18 @@ inline void s4g_vm::com_call()
 			//execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
 			stack_pop(execute, countarg + 1);
 
-				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
+			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
 			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
-				tmpcd->coms = curr_comm;
-				tmpcd->vars = curr_vars;
-				tmpcd->cfetchget = cfetchget;
-				tmpcd->cfetchgetarg = cfetchgetarg;
-				tmpcd->cfetchpushstore = cfetchpushstore;
-				tmpcd->idexternctx = idexternctx;
-				tmpcd->idnewctx = idnewctx;
-				tmpcd->lastidctx = lastidctx;
-				tmpcd->id_curr_com = id_curr_com;
-				strcpy(tmpcd->namef, tvalfunc->name);
+			tmpcd->coms = curr_comm;
+			tmpcd->vars = curr_vars;
+			tmpcd->cfetchget = cfetchget;
+			tmpcd->cfetchgetarg = cfetchgetarg;
+			tmpcd->cfetchpushstore = cfetchpushstore;
+			tmpcd->idexternctx = idexternctx;
+			tmpcd->idnewctx = idnewctx;
+			tmpcd->lastidctx = lastidctx;
+			tmpcd->id_curr_com = id_curr_com;
+			strcpy(tmpcd->namef, tvalfunc->name);
 
 			//устанавилваем новое окружение и новые конмады
 			curr_vars = new_ctx;
@@ -477,18 +477,17 @@ inline void s4g_vm::com_call()
 		//иначе если у нас с(++) функция
 		else if (ttype == t_cfunc)
 		{
-			//CurrCountArg = countarg;
 			for (int i = 0; i < countarg; i++)
 			{
-				s4g_value* tval = execute.get((execute.count_obj - ((countarg - i) - 1)) - 1);
-				stackarg.push(tval);
+				//s4g_value* tval = execute.get((execute.count_obj - ((countarg - i) - 1)) - 1);
+				stackarg.push(execute.get((execute.count_obj - ((countarg - i) - 1)) - 1));
 			}
 			s4g_c_function tcfunc = (gc->get_c_func(tvalfunc));
 			stack_pop(execute, countarg + 1);
 
 			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
 			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
-			tmpcd->coms = curr_comm;
+			/*tmpcd->coms = curr_comm;
 			tmpcd->vars = curr_vars;
 			tmpcd->cfetchget = cfetchget;
 			tmpcd->cfetchgetarg = cfetchgetarg;
@@ -496,7 +495,7 @@ inline void s4g_vm::com_call()
 			tmpcd->idexternctx = -1;
 			tmpcd->idnewctx = -1;
 			tmpcd->lastidctx = -1;
-			tmpcd->id_curr_com = -1;
+			tmpcd->id_curr_com = -1;*/
 			strcpy(tmpcd->namef, tvalfunc->name);
 
 			error = (tcfunc)(s4gm);
@@ -550,7 +549,7 @@ inline void s4g_vm::com_preincr()
 		{
 			--(tval->pdata->ref);
 			tval->pdata = gc->cr_dara_int((tval->pdata->data.i) + 1, S4G_GC_TYPE_DATA_PRIVATE);
-			tval->iddata = tval->pdata->iddata;
+			//tval->iddata = tval->pdata->iddata;
 			tval->pdata->ref = 1;
 			//tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
 		}
@@ -565,7 +564,7 @@ inline void s4g_vm::com_preincr()
 		{
 			--(tval->pdata->ref);
 			tval->pdata = gc->cr_dara_uint((tval->pdata->data.ui) + 1, S4G_GC_TYPE_DATA_PRIVATE);
-			tval->iddata = tval->pdata->iddata;
+			//tval->iddata = tval->pdata->iddata;
 			//tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
 		}
 	}
@@ -579,7 +578,7 @@ inline void s4g_vm::com_preincr()
 		{
 			--(tval->pdata->ref);
 			tval->pdata = gc->cr_dara_float((tval->pdata->data.f) + 1.0, S4G_GC_TYPE_DATA_PRIVATE);
-			tval->iddata = tval->pdata->iddata;
+			//tval->iddata = tval->pdata->iddata;
 			//tval->pdata->typedata = S4G_GC_TYPE_DATA_PRIVATE;
 		}
 	}
@@ -615,7 +614,7 @@ inline void s4g_vm::com_postincr()
 			execute.push(tval2);
 
 			tval->pdata = gc->cr_dara_int((tval->pdata->data.i) + 1, S4G_GC_TYPE_DATA_PRIVATE);
-			tval->iddata = tval->pdata->iddata;
+			//tval->iddata = tval->pdata->iddata;
 			tval->pdata->ref = 1;
 		}
 	}
@@ -1181,7 +1180,7 @@ inline void s4g_vm::com_jz()
 	bool jmp = false;
 	switch(ttype)
 	{
-	case t_nnull:
+	case t_null:
 		jmp = true;
 		break;
 	case t_int:
@@ -1227,7 +1226,7 @@ inline void s4g_vm::com_jnz()
 	bool jmp = false;
 	switch(ttype)
 	{
-	case t_nnull:
+	case t_null:
 		jmp = true;
 		break;
 	case t_int:
@@ -1279,17 +1278,6 @@ inline void s4g_vm::com_mod()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
@@ -1324,7 +1312,6 @@ inline void s4g_vm::com_mod()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 inline void s4g_vm::com_log_and()
@@ -1340,7 +1327,7 @@ inline void s4g_vm::com_log_and()
 
 	switch(ttype1)
 	{
-	case t_nnull:
+	case t_null:
 		execute.push(gc->cr_val_bool(false));
 		return;
 	case t_int:
@@ -1381,7 +1368,7 @@ inline void s4g_vm::com_log_and()
 	}
 	switch(ttype2)
 	{
-	case t_nnull:
+	case t_null:
 		execute.push(gc->cr_val_bool(false));
 		return;
 	case t_int:
@@ -1524,17 +1511,9 @@ inline void s4g_vm::com_log_eq()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
+	if ((ttype1 != t_null && ttype2 == t_null) || (ttype1 == t_null && ttype2 != t_null))
+		execute.push(gc->cr_val_bool(false));
+
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
@@ -1586,7 +1565,6 @@ inline void s4g_vm::com_log_eq()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 inline void s4g_vm::com_log_neq()
@@ -1600,17 +1578,6 @@ inline void s4g_vm::com_log_neq()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
@@ -1662,7 +1629,6 @@ inline void s4g_vm::com_log_neq()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 inline void s4g_vm::com_log_ge()
@@ -1676,17 +1642,6 @@ inline void s4g_vm::com_log_ge()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
@@ -1738,7 +1693,6 @@ inline void s4g_vm::com_log_ge()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 inline void s4g_vm::com_log_le()
@@ -1752,17 +1706,6 @@ inline void s4g_vm::com_log_le()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
@@ -1814,7 +1757,6 @@ inline void s4g_vm::com_log_le()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 inline void s4g_vm::com_log_gt()
@@ -1828,17 +1770,6 @@ inline void s4g_vm::com_log_gt()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
@@ -1890,7 +1821,6 @@ inline void s4g_vm::com_log_gt()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 inline void s4g_vm::com_log_lt()
@@ -1904,27 +1834,16 @@ inline void s4g_vm::com_log_lt()
 	//execute.pop(2);
 	stack_pop(execute, 2);
 
-	if(ttype1 == t_nnull)
-	{
-		if(ttype2 == t_int || ttype2 == t_uint || ttype2 == t_float)
-			execute.push(s2);
-		else
-		{
-			S4G_VM_OP_ARIF_ERROR_TYPE2;
-		}
-	}
-	else
-	{
 		if(ttype1 == t_int)
 		{
 			s4g_int num1 = gc->get_int(s1);
 
-			if(ttype2 == t_int)
-				execute.push(gc->cr_val_bool(num1 < gc->get_int(s2)));
+			if (ttype2 == t_int)
+				execute.push_r(gc->get_bool(num1 < gc->get_int(s2)));
 			else if(ttype2 == t_uint)
-				execute.push(gc->cr_val_bool(num1 < gc->get_uint(s2)));
+				execute.push_r(gc->get_bool(num1 < gc->get_uint(s2)));
 			else if(ttype2 == t_float)
-				execute.push(gc->cr_val_bool(num1 < gc->get_float(s2)));
+				execute.push_r(gc->get_bool(num1 < gc->get_float(s2)));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -1936,11 +1855,11 @@ inline void s4g_vm::com_log_lt()
 			s4g_uint num1 = gc->get_uint(s1);
 
 			if(ttype2 == t_int)
-				execute.push(gc->cr_val_bool(num1 < gc->get_int(s2)));
+				execute.push(gc->get_bool(num1 < gc->get_int(s2)));
 			else if(ttype2 == t_uint)
-				execute.push(gc->cr_val_bool(num1 < gc->get_uint(s2)));
+				execute.push(gc->get_bool(num1 < gc->get_uint(s2)));
 			else if(ttype2 == t_float)
-				execute.push(gc->cr_val_bool(num1 < gc->get_float(s2)));
+				execute.push(gc->get_bool(num1 < gc->get_float(s2)));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -1952,11 +1871,11 @@ inline void s4g_vm::com_log_lt()
 			s4g_float num1 = gc->get_float(s1);
 
 			if(ttype2 == t_int)
-				execute.push(gc->cr_val_bool(num1 < gc->get_int(s2)));
+				execute.push(gc->get_bool(num1 < gc->get_int(s2)));
 			else if(ttype2 == t_uint)
-				execute.push(gc->cr_val_bool(num1 < gc->get_uint(s2)));
+				execute.push(gc->get_bool(num1 < gc->get_uint(s2)));
 			else if(ttype2 == t_float)
-				execute.push(gc->cr_val_bool(num1 < gc->get_float(s2)));
+				execute.push(gc->get_bool(num1 < gc->get_float(s2)));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2;
@@ -1966,7 +1885,6 @@ inline void s4g_vm::com_log_lt()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-	}
 }
 
 #define GEN_OP_STUB(op) inline void s4g_vm::com_ ## op (){}
@@ -2002,9 +1920,9 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 			(this->*(arropf[op]))();
 			if (error < 0)
 				return -1;
-			id_curr_com++;
-			cfetchpushstore++;
-			cfetchget++;
+			++id_curr_com;
+			++cfetchpushstore;
+			++cfetchget;
 			oldop = op;
 		}
 

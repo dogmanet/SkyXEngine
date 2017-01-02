@@ -93,7 +93,7 @@ void s4g_call(s4g_main* s4gm, bool call_func)
 
 	if (call_func)
 	{
-		if (s4gm->vmachine->execute.count() > 0)
+		if (s4gm->vmachine->execute.count_obj > 0)
 		{
 			s4gm->vmachine->com_call();
 			if (s4gm->vmachine->error < 0)
