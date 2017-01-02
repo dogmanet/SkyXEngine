@@ -248,7 +248,7 @@ private:
 		node->IsBlack = true;
 	}
 
-	Node * TreeInsert(const SX_KEYTYPE & key)
+	Node * TreeInsert(const SX_KEYTYPE & key, bool * found = NULL)
 	{
 		Node * tmpCur;
 		Node * tmpParent;
@@ -263,6 +263,10 @@ private:
 						//tmpCur->Val = val;
 						//memcpy(tmpCur->Val, &val, sizeof(SX_VALTYPE));
 						//*tmpNode->Val = val;
+						if(found)
+						{
+							*found = true;
+						}
 						return(tmpCur);
 					}
 				tmpParent = tmpCur;
@@ -624,15 +628,25 @@ public:
 		Release();
 	}
 
-	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode=NULL) const
+	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode = NULL) const
 	{
 		TmpNode = TreeSearch(key);
 		if(pNode)
 		{
 			*pNode = TmpNode;
 		}
-		//tmpNode
 		return(TmpNode != NULL);
+	}
+
+	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode=NULL, bool create=false) 
+	{
+		bool found = !create;
+		TmpNode = create ? TreeInsert(key, &found) : TreeSearch(key);
+		if(pNode)
+		{
+			*pNode = TmpNode;
+		}
+		return(TmpNode != NULL && found);
 	}
 
 	AssotiativeArray & operator=(const AssotiativeArray & a)

@@ -105,7 +105,7 @@ s4g_value::s4g_value()
 {
 	typedata = S4G_GC_TYPE_VAR_FREE;
 	pdata = 0;
-	strcpy(name, "#");
+	*(short*)name = '\0#';
 }
 
 s4g_value::~s4g_value()
@@ -152,18 +152,16 @@ inline void s4g_table::clear()
 			--(tmpval->pdata->ref);
 	}
 	count_obj = 0;
+	NameIndex.clear();
 }
 
 inline int s4g_table::is_exists_s(const char* str)
 {
-	for (long i = 0; i<count_obj; i++)
+	IndexNode node;
+	if(NameIndex.KeyExists(item_name(str), &node))
 	{
-		char* tmpstr = Arr.Data[i]->Name;
-		if (strcmp(Arr.Data[i]->Name, str) == 0)
-		{
-			return i;
+		return(*node->Val);
 		}
-	}
 	return -1;
 }
 
@@ -174,14 +172,12 @@ inline bool s4g_table::is_exists_n(long key)
 
 inline long s4g_table::is_exists_s2(const char* str, s4g_value** tval)
 {
-	for (long i = 0; i<count_obj; i++)
+	IndexNode node;
+	if(NameIndex.KeyExists(item_name(str), &node))
 	{
-		if (strcmp(Arr.Data[i]->Name, str) == 0)
-		{
-			*tval = Arr.Data[i]->Value;
-			return i;
+		*tval = Arr.Data[*node->Val]->Value;
+		return(*node->Val);
 		}
-	}
 	return -1;
 }
 
@@ -198,13 +194,11 @@ inline bool s4g_table::is_exists_n2(long key, s4g_value** tval)
 
 inline s4g_value* s4g_table::gets(const char* str)
 {
-	for (long i = 0; i<count_obj; ++i)
+	IndexNode node;
+	if(NameIndex.KeyExists(item_name(str), &node))
 	{
-		if (strcmp(Arr.Data[i]->Name, str) == 0)
-		{
-			return Arr.Data[i]->Value;
+		return(Arr.Data[*node->Val]->Value);
 		}
-	}
 	return 0;
 }
 
@@ -230,24 +224,32 @@ inline s4g_value* s4g_table::getn(long id)
 
 inline long s4g_table::get_key(const char* name)
 {
-	for (long i = 0; i<count_obj; ++i)
+	IndexNode node;
+	if(NameIndex.KeyExists(item_name(name), &node))
 	{
-		if (strcmp(Arr.Data[i]->Name, name) == 0)
-		{
-			return i;
+		return(*node->Val);
 		}
-	}
 	return -1;
 }
 
 inline void s4g_table::add_val_s(const char* name, s4g_value* val)
 {
-	long tmpkey = get_key(name);
+	IndexNode node;
+	long tmpkey = -1;
+	if(NameIndex.KeyExists(item_name(name), &node, true))
+	{
+		tmpkey = *node->Val;
+	}
+
 	if (tmpkey != -1)
 		Arr.Data[tmpkey]->Value = val;
 	else if (count_obj < Arr.Size)
 	{
-		strcpy(Arr.Data[count_obj]->Name, name);
+		//Arr.Data[count_obj]->Value->isdelete = true;
+
+		node->Key.SetName(name);
+		*node->Val = count_obj;
+		Arr.Data[count_obj]->name = &(node->Key);
 		Arr.Data[count_obj]->Value = val;
 		++count_obj;
 	}
@@ -255,7 +257,11 @@ inline void s4g_table::add_val_s(const char* name, s4g_value* val)
 	{
 		table_desc* tmpaa = Mem.Alloc();
 		tmpaa->Value = val;
-		strcpy(tmpaa->Name, name);
+
+		*node->Val = count_obj;
+		node->Key.SetName(name);
+		tmpaa->name = &(node->Key);
+
 		Arr.push_back(tmpaa);
 		++count_obj;
 	}
@@ -289,7 +295,7 @@ inline void s4g_table::add_val(s4g_value* val)
 {
 	if (count_obj < Arr.Size)
 	{
-		Arr.Data[count_obj]->Name[0] = 0;
+		Arr.Data[count_obj]->name = NULL;
 		Arr.Data[count_obj]->Value = val;
 		++count_obj;
 	}
@@ -309,8 +315,8 @@ inline long s4g_table::size()
 
 inline const char* s4g_table::get_name_id(long id)
 {
-	if (id < count_obj && id >= 0 && Arr.Data[id])
-		return Arr.Data[id]->Name;
+	if(id < count_obj && id >= 0 && Arr.Data[id] && Arr.Data[id]->name)
+		return Arr.Data[id]->name->GetName();
 	else
 		return 0;
 }
@@ -319,6 +325,42 @@ inline void s4g_table::reserve(int count_elem)
 {
 	Arr.reserve(count_elem);
 	Mem.AllocBlock(count_elem);
+}
+
+s4g_value * s4g_table::cr_if_not_exists(const char * name, s4g_gc * gc)
+{
+	IndexNode node;
+	long tmpkey = -1;
+	if(NameIndex.KeyExists(item_name(name), &node, true))
+	{
+		tmpkey = *node->Val;
+		return(Arr.Data[tmpkey]->Value);
+	}
+	s4g_value * val = gc->cr_val_null(name);
+	
+	if(count_obj < Arr.Size)
+	{
+		//Arr.Data[count_obj]->Value->isdelete = true;
+
+		node->Key.SetName(name);
+		*node->Val = count_obj;
+		Arr.Data[count_obj]->name = &(node->Key);
+		Arr.Data[count_obj]->Value = val;
+		++count_obj;
+	}
+	else
+	{
+		table_desc* tmpaa = Mem.Alloc();
+		tmpaa->Value = val;
+
+		*node->Val = count_obj;
+		node->Key.SetName(name);
+		tmpaa->name = &(node->Key);
+
+		Arr.push_back(tmpaa);
+		++count_obj;
+	}
+	return(val);
 }
 
 ///////////////////////
@@ -409,7 +451,7 @@ inline s4g_value* s4g_gc::cr_val_null(const char* name, int td_val)
 	if (name)
 		strcpy(tval->name, name);
 	else
-		strcpy(tval->name, "#");
+		*(short*)tval->name = '\0#';
 	return tval;
 };
 
@@ -501,7 +543,7 @@ inline s4g_value* s4g_gc::cr_val_bool(s4g_bool bf, const char* name, int td_val)
 	if (name)
 		strcpy(tmpval->name, name);
 	else
-		strcpy(tmpval->name, "#");
+		*(short*)tmpval->name = '\0#';
 
 	return tmpval;
 };
@@ -906,11 +948,11 @@ for (int k = 0; k < tsf->externstable->size(); ++k)\
 {\
 	s4g_value* tmpval = tsf->externstable->getn(k); \
 	if (tmpval->typedata != S4G_GC_TYPE_VAR_SYS)\
-		tmpval->typedata = S4G_GC_TYPE_VAR_DEL;\
+	tmpval->typedata = S4G_GC_TYPE_VAR_DEL;\
 	if (tmpval->pdata)\
-	{\
+{\
 		--(tmpval->pdata);\
-	}\
+}\
 }\
 }\
 	tsf->args.clear(); \

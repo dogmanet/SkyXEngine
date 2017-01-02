@@ -203,7 +203,7 @@ inline void s4g_vm::com_fetch_get()
 			else if (ttype == t_int)
 				str = ltoa(gc->get_int(tval), str2,10);
 			
-				if (ttable->is_exists_s2(str, &tmpval) != -1)
+			/*if (ttable->is_exists_s2(str, &tmpval) != -1)
 				{
 					/*if (is_cr)
 					{
@@ -211,9 +211,9 @@ inline void s4g_vm::com_fetch_get()
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 						sprintf(this->strerror, "[%s]:%d - key number '%s' is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
-					}*/
+				}* /
 
-					execute.push(tmpval);
+				//execute.push(tmpval);
 				}
 				else
 				{
@@ -223,13 +223,15 @@ inline void s4g_vm::com_fetch_get()
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 						sprintf(this->strerror, "[%s]:%d - key number '%s' is not exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
-					}*/
+				}* /
 					
 					tmpval = gc->cr_val_null(str);
 					ttable->add_val_s(str, tmpval);
+				//
+			}*/
+			tmpval = ttable->cr_if_not_exists(str, gc);
 					execute.push(tmpval);
 				}
-		}
 		else
 		{
 			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
@@ -452,18 +454,18 @@ inline void s4g_vm::com_call()
 			//execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
 			stack_pop(execute, countarg + 1);
 
-			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
+				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
 			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
-			tmpcd->coms = curr_comm;
-			tmpcd->vars = curr_vars;
-			tmpcd->cfetchget = cfetchget;
-			tmpcd->cfetchgetarg = cfetchgetarg;
-			tmpcd->cfetchpushstore = cfetchpushstore;
-			tmpcd->idexternctx = idexternctx;
-			tmpcd->idnewctx = idnewctx;
-			tmpcd->lastidctx = lastidctx;
-			tmpcd->id_curr_com = id_curr_com;
-			strcpy(tmpcd->namef, tvalfunc->name);
+				tmpcd->coms = curr_comm;
+				tmpcd->vars = curr_vars;
+				tmpcd->cfetchget = cfetchget;
+				tmpcd->cfetchgetarg = cfetchgetarg;
+				tmpcd->cfetchpushstore = cfetchpushstore;
+				tmpcd->idexternctx = idexternctx;
+				tmpcd->idnewctx = idnewctx;
+				tmpcd->lastidctx = lastidctx;
+				tmpcd->id_curr_com = id_curr_com;
+				strcpy(tmpcd->namef, tvalfunc->name);
 
 			//устанавилваем новое окружение и новые конмады
 			curr_vars = new_ctx;
@@ -1312,7 +1314,7 @@ inline void s4g_vm::com_mod()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 inline void s4g_vm::com_log_and()
 {
@@ -1565,7 +1567,7 @@ inline void s4g_vm::com_log_eq()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 inline void s4g_vm::com_log_neq()
 {
@@ -1629,7 +1631,7 @@ inline void s4g_vm::com_log_neq()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 inline void s4g_vm::com_log_ge()
 {
@@ -1693,7 +1695,7 @@ inline void s4g_vm::com_log_ge()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 inline void s4g_vm::com_log_le()
 {
@@ -1757,7 +1759,7 @@ inline void s4g_vm::com_log_le()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 inline void s4g_vm::com_log_gt()
 {
@@ -1821,7 +1823,7 @@ inline void s4g_vm::com_log_gt()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 inline void s4g_vm::com_log_lt()
 {
@@ -1885,7 +1887,7 @@ inline void s4g_vm::com_log_lt()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1;
 		}
-}
+	}
 
 #define GEN_OP_STUB(op) inline void s4g_vm::com_ ## op (){}
 GEN_OP_STUB(bit_xor)
@@ -1911,11 +1913,12 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	cfetchgetarg = false;
 	runexe = true;
 	val_end = -1;
-
+	s4g_command * currCom;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
-			op = curr_comm->get(id_curr_com).command;
-			arg = curr_comm->get(id_curr_com).arg;
+			currCom = &(curr_comm->get(id_curr_com));
+			op = currCom->command;
+			arg = currCom->arg;
 			
 			(this->*(arropf[op]))();
 			if (error < 0)
