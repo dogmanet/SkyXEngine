@@ -150,7 +150,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 					if(tmplexs)
 					{
 						lex_get_prev0(tmplexs);
-						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, s4g_gen_statement());
+						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 					}
 					return tmpnode;
 				}
@@ -197,7 +197,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						bst_cond_er(this);
 						if(tmplexs)
 						{
-							tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, s4g_gen_statement());
+							tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 						}
 						++dowhile;
 						return tmpnode;
@@ -268,7 +268,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 					if(tmplexs)
 					{
 						lex_get_prev0(tmplexs);
-						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, s4g_gen_statement());
+						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 					}
 
 					return(tmpnode);
@@ -380,8 +380,8 @@ s4g_node* s4g_builder_syntax_tree::s4g_read_block()
 		overend--;
 		lex_get_next(tmplexs);
 		s4g_node* node = s4g_gen_statement();
-		bst_cond_er(this);
 		lex_get_curr0(tmplexs);
+		bst_cond_er(this);
 
 		if (!(tmplexs->type == sym_table_create && tmplexs->id == 1))
 		{
