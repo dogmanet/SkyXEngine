@@ -150,7 +150,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 					if(tmplexs)
 					{
 						lex_get_prev0(tmplexs);
-						tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
+						tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 					}
 					return tmpnode;
 				}
@@ -197,7 +197,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						bst_cond_er(this);
 						if(tmplexs)
 						{
-							tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
+							tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 						}
 						++dowhile;
 						return tmpnode;
@@ -257,10 +257,12 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 					lex_get_next0(tmplexs);
 
 					isender = oldisender;
+
 					s4g_node* expt_body = s4g_read_block(); //s4g_gen_statement();
+
 					lex_get_curr0(tmplexs);
 					bst_cond_er(this);
-					s4g_node* tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, expt_init,
+					s4g_node* tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, expt_init,
 						NodePool.Alloc(_for, curr_lexid, (s4g_value*)0, expt_cond, expt_body, expt_step)
 						);
 
@@ -324,9 +326,17 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 		}
 		else if (tmplexs->type == sym_table_create && tmplexs->id == 0)
 		{
-			node = s4g_read_block();
-			if (node && node->op2)
-				node->op2->op1 = s4g_gen_statement();
+			s4g_node* tmpnode = s4g_read_block();
+			if (tmpnode)
+			{
+				node = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode);
+				if (node && node->op2)
+					node->op2->op1 = one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement();
+			}
+			else
+			{
+				NodePool.Delete(tmpnode);
+			}
 		}
 		//иначе у считываем выражение
 		else if(one)

@@ -62,7 +62,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	luaL_openlibs(LuaState);
 	
-	int status2 = luaL_dofile(LuaState, "D:\\project\\engine\\SkyXEngine\\SkyXEngine\\Debug\\lua.script");//luaL_dofile(L, file);
+	int status2 = luaL_loadfile(LuaState, "D:\\project\\engine\\SkyXEngine\\SkyXEngine\\Debug\\lua.script");//luaL_dofile(L, file);
 	
 
 	if (status2)
@@ -79,10 +79,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	int counttt = 100;
 	
 	DWORD time2 = timeGetTime();
-	for (int i = 0; i < counttt; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		//lua_call(LuaState, 0, 0);
-		lua_getfield(LuaState, LUA_GLOBALSINDEX, "testcall");
+		//lua_getfield(LuaState, LUA_GLOBALSINDEX, "testcall");
 		//lua_pushnumber(LuaState, 2);
 		//lua_pushnumber(LuaState, 7);
 		//lua_call(LuaState, 2, 1);
@@ -97,7 +97,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	}
 	//time2 = timeGetTime();
-	lua_gc(LuaState, LUA_GCCOLLECT, 0);
+	//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	time2 = timeGetTime() - time2;
 	int lcs = lua_gettop(LuaState);
 	int qwert2 = 0;
@@ -113,12 +113,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	int status = s4g_load_file(s4gm, "D:/project/engine/SkyXEngine/SkyXEngine/Debug/s4g.script");
 	//status = s4g_load_str(s4gm, exestr);
 	
-	s4g_call(s4gm);
+	
 	
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
-	int qwerty = 0;
-	for (int i = 0; i < counttt; i++)
+	s4g_call(s4gm);
+	/*int qwerty = 0;
+	for (;;)// int i = 0; i < counttt; i++)
 	{
 		//s4g_spush_precall(s4gm,)
 		s4g_spush_precall(s4gm);
@@ -129,14 +130,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 		//s4g_call(s4gm);
 		
-		/*if (s4gm->vmachine->error != 0)
-		{
-			sprintf(s4gm->strerror, "%s", s4gm->vmachine->strerror);
-			return status;
-		}*/
+		
 		//s4g_spop(s4gm, 1);
 		++qwerty;
-		if (qwerty >= 50)
+		if (qwerty >= 10)
 		{
 			s4g_call_gc(s4gm);
 			
@@ -145,7 +142,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		//s4gm->gc->resort();
 		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);
-	}
+	}*/
 	//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	//time = timeGetTime();
 	//s4g_call_gc(s4gm);

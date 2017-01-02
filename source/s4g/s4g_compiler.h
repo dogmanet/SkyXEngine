@@ -15,12 +15,13 @@ struct s4g_command
 class s4g_compiler
 {
 public:
-	s4g_compiler(){ gc = 0; comms = 0; }
+	s4g_compiler(){ gc = 0; comms = 0; oldop = (s4g_type_op)0; }
 	~s4g_compiler(){}
 	inline void gen(s4g_vm_command comm,s4g_value* val,long _lexid = -1);
 	int compile(s4g_node* node, s4g_stack<s4g_command> * commands);
 	int compile2(s4g_node* node);
 //protected:
+	s4g_type_op oldop;
 	s4g_stack<s4g_command,16>* comms;
 	s4g_gc* gc;
 	struct _cyctl

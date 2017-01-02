@@ -14,6 +14,9 @@ int s4g_compiler::compile(s4g_node* node, s4g_stack<s4g_command> * commands)
 
 int s4g_compiler::compile2(s4g_node* node)
 {
+	//if (node->type != _empty)
+		//oldop = node->type;
+
 		if(!node)
 			return 0;
 
@@ -31,8 +34,15 @@ int s4g_compiler::compile2(s4g_node* node)
 		else if(node->type == _expr)
 		{
 			compile2(node->op1);
-			gen(mc_pop, 0, node->lexid);
-			printf("pop\n");
+			if ((*comms)[-1].command != mc_call)
+			{
+				gen(mc_pop, 0, node->lexid);
+				printf("pop\n");
+			}
+			else
+			{
+				int qwert = 0;
+			}
 			compile2(node->op2);	//empty
 		}
 		else if(node->type == _set)
@@ -429,6 +439,9 @@ int s4g_compiler::compile2(s4g_node* node)
 			cyctls_bak.push(cyctls);
 			cyctls.clear();
 
+			gen(mc_pop, 0, node->lexid);
+			printf("pop\n");
+
 			int startpos = comms->count();
 			compile2(node->op1);
 			int jzpos = comms->count();
@@ -437,6 +450,8 @@ int s4g_compiler::compile2(s4g_node* node)
 			compile2(node->op2);
 			int steppos = comms->count();
 			compile2(node->op3);
+			gen(mc_pop, 0, node->lexid);
+			printf("pop\n");
 			gen(mc_jmp, (s4g_value*)(startpos - comms->count() - 1), node->lexid);
 			printf("jmp\n");
 			comms[0][jzpos].arg = (s4g_value*)(comms->count() - jzpos - 1);
@@ -465,6 +480,20 @@ int s4g_compiler::compile2(s4g_node* node)
 			//jmp: cond
 			//}
 			//end
+		}
+		else if (node->type == _block)
+		{
+			gen(mc_block_new, 0, node->lexid);
+			printf("block_new\n");
+			compile2(node->op1);
+			compile2(node->op2);
+			compile2(node->op3);
+			gen(mc_block_del, 0, node->lexid);
+			printf("block_del\n");
+			/*gen(mc_jmp, 0, node->lexid);
+			printf("jmp\n");
+			cyctls.push_back({ comms->count() - 1, _cyctl::BREAK });
+			compile2(node->op1);*/
 		}
 		else if(node->type == _break)
 		{

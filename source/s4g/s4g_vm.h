@@ -27,6 +27,9 @@ enum s4g_vm_command
 	mc_precall,		//сообщение о том что вскоре будет вызвана функция, записать в первый свободный регистр размер стека
 	mc_call,		//вызов функции
 
+	mc_block_new,
+	mc_block_del,
+
 	//переход относительный
 	mc_jz,
 	mc_jnz,
@@ -197,6 +200,8 @@ public:
 	//inline void com_jmpa();
 	//
 
+	inline void com_block_new();
+	inline void com_block_del();
 	inline void com_preincr();
 	inline void com_postincr();
 
@@ -216,22 +221,7 @@ public:
 	s4g_stack<s4g_command>* curr_comm;
 	long id_curr_com;
 
-	const char* str;
-	char str2[S4G_MAX_LEN_VAR_NAME];
-	s4g_value* tvalfunc;
-	s4g_value* tmpval;
-	s4g_value* tvalue;
-	s4g_value* tvalue2;
-	s4g_type ttype;
-	long idctx;
-	s4g_s_function* csfunc;
-	s4g_c_function tcfunc;
-	s4g_call_data* tmpcd;
-	bool is_cr;
-	s4g_table* ttable;
-	bool jmp;
-
-	s4g_command * currCom;
+	
 	s4g_table* gvars;	//глобальное пространство имен _g
 	s4g_value* vgvars;	//переменная хранящая в себе глобальное пространство имен
 	s4g_table* curr_vars;	//текущее установленное пространство имен, есл выполняется функция то пространство имен функции
@@ -257,6 +247,25 @@ public:
 
 	s4g_stack_register<int, S4G_MAX_CALL+1> sr;//стек регистров, хранит размер стека исполнения на момент добавления значения в регистр
 	s4g_stack<s4g_call_data*> callstack;	//стэк вызовов с сохраненным предыдущим состоянием
+
+	s4g_stack<s4g_call_data*> blockstack;	//стэк вызовов с сохраненным предыдущим состоянием
+
+	//рабочие данные
+	const char* str;
+	char str2[S4G_MAX_LEN_VAR_NAME];
+	s4g_value* tvalfunc;
+	s4g_value* tmpval;
+	s4g_value* tvalue;
+	s4g_value* tvalue2;
+	s4g_type ttype;
+	long idctx;
+	s4g_s_function* csfunc;
+	s4g_c_function tcfunc;
+	s4g_call_data* tmpcd;
+	bool is_cr;
+	s4g_table* ttable;
+	bool jmp;
+	s4g_command * currCom;
 };
 
 #endif

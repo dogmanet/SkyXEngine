@@ -256,7 +256,7 @@ public:
 	//запустить сборку мусора
 	inline void del_data(s4g_data* tdata);
 	void clear();
-	void resort();
+
 	inline void begin_of_const_data();	//старт создания константных значений (при загрузке скрипта)
 	inline void end_of_const_data();	//окончание создания константных значений (окончание загрузки скрипта)
 

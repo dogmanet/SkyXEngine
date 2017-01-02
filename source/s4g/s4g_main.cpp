@@ -987,12 +987,11 @@ void s4g_gc::clear()
 			
 			if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 			{
-				def_gc_clear_del_data(tmpdata);
+				del_data(tmpdata);
 				MemData.Delete(tmpdata);
 				arrdata.Arr.Data[i] = 0;
 				tmpdata = arrdata.Arr.Data[i];
 				++countdeldata;
-				//tmpdata = 0;
 			}
 
 			if (tmpdata == 0)
@@ -1001,7 +1000,6 @@ void s4g_gc::clear()
 				{
 					if (i == (posend - k))
 					{
-						//arrdata.Arr.Data[i];
 						posend2 = i;
 						break;
 					}
@@ -1009,7 +1007,7 @@ void s4g_gc::clear()
 					tmpdata = arrdata.Arr.Data[posend - k];
 					if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 					{
-						def_gc_clear_del_data(tmpdata);
+						del_data(tmpdata);
 						MemData.Delete(tmpdata);
 						arrdata.Arr.Data[posend - k] = 0;
 						tmpdata = arrdata.Arr.Data[i];
@@ -1040,17 +1038,13 @@ void s4g_gc::clear()
 	for (long i = count_nd_value; i < posend; ++i)
 	{
 		tmpval = arrvar.Arr.Data[i];
-		if (tmpval && (/*arrdata.Arr.Data[tmpval->iddata]*/tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && /*.Arr.Data[tmpval->iddata]*/tmpval->pdata->ref < 1) /*|| (tmpval->isdelete && tmpval->typedata == 0)*/))
+		if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 			{
 				MemValue.Delete(tmpval);
 				arrvar.Arr.Data[i] = 0;
 				++countdelvar;
 				tmpval = 0;
 			}
-			/*else if (tmpval)
-			{
-				tmpval->iddata = tmpval->pdata->iddata;
-			}*/
 
 			if (tmpval == 0)
 			{
@@ -1062,7 +1056,7 @@ void s4g_gc::clear()
 						break;
 					}
 					tmpval = arrvar.Arr.Data[posend - k];
-					if (tmpval && (/*arrdata.Arr.Data[tmpval->iddata]*/tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && /*arrdata.Arr.Data[tmpval->iddata]*/tmpval->pdata->ref < 1) /*|| (tmpval->isdelete && tmpval->typedata == 0)*/))
+					if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 					{
 						MemValue.Delete(tmpval);
 						arrvar.Arr.Data[posend - k] = 0;
@@ -1079,7 +1073,6 @@ void s4g_gc::clear()
 						arrvar.Arr.Data[i] = tmpval;
 						arrvar.Arr.Data[i]->idvar = i;
 						posend2 = (posend - k);
-						//tmpval->iddata = tmpval->pdata->iddata;
 						break;
 					}
 				}
@@ -1091,7 +1084,6 @@ void s4g_gc::clear()
 
 	arrvar.count_obj = posend2;
 
-	//resort();
 }
 
 inline void s4g_gc::begin_of_const_data()

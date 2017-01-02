@@ -77,11 +77,6 @@ enum S4GLPP
 	S4GLPP_LINE
 };
 
-const char s4g_key_setcompiler[][S4G_MAX_LEN_KEY_WORD_DEF] = {
-"ginf",
-"crd"
-};
-
 const char s4g_key_syms_del[][S4G_MAX_LEN_SYM] = {
 ";",//разделитель операций
 ","	//разделитель аргументов
@@ -254,6 +249,8 @@ enum s4g_type_op
 	_var_postincr,
 	_var_postdecr,
 	_crvar,	//создаваемая переменная
+
+	_block,
 
 	//ноды содержащие в себе значения с типами
 	_null,_float, _int, _int_cr, _uint, _uint_cr, _bool,  _string, _string_cr, 

@@ -29,16 +29,16 @@ extern "C"
 enum s4g_type
 {
 	t_none = -1,
-	t_null = 0,
-	t_table = 1,
-	t_string = 2,
-	t_float = 3,
-	t_int = 4,
-	t_uint = 5,
-	t_bool = 6,
-	t_pdata = 7, 
-	t_cfunc = 8,	
-	t_sfunc = 9,
+	t_null = 0,		//пустое значение
+	t_table = 1,	//таблица (ассоциативный массив)
+	t_string = 2,	//строковое значение (пользовательская строка)
+	t_float = 3,	//число с плавающей запятой
+	t_int = 4,		//знаковое целое десятичное число
+	t_uint = 5,		//знаковое целое десятичное число
+	t_bool = 6,		//логическое значение
+	t_pdata = 7,	//указатель на пользовательские данные
+	t_cfunc = 8,	//с(++) функция
+	t_sfunc = 9,	//скриптовая функция
 	t_nnull = 10,	//цифра 0, вставляется в выражения с унарным минусом
 };
 
@@ -52,6 +52,7 @@ struct s4g_table;	//таблица
 #define S4G_MAX_LEN_STR_IN_FILE 1024//максимальная длина загружаемого файла
 
 #define S4G_MAX_CALL 1000	//максимальное количество вызовов (рекурсивных и вложенных)
+#define S4G_MAX_ENCLOSURE 100	//максимальное количество вложенных блоков
 #define S4G_GLOBAL_NM "_g"	//обращение в скрипте к глобальному пространству имен
 #define S4G_MARG "args"		//таблица для обращения к аргументам в случае если функция принимает неопределенное количество аргументов
 
@@ -280,5 +281,11 @@ S4G_API const char* s4g_dbg_get_curr_file(s4g_main* s4gm, char* str = 0);	//возв
 S4G_API long s4g_dbg_get_curr_str(s4g_main* s4gm, char* str = 0);			//возвращает номер строки файла скрипта который выполняется в данный момент (если str то записывает в него)
 S4G_API const char* s4g_dbg_get_curr_func(s4g_main* s4gm, char* str = 0);	//возвращает функцию которая выполняется в данный момент (если str то записывает в него)
 
+
+//Pre Process
+
+S4G_API bool s4g_pp_is_def(s4g_main* s4gm, const char* name_def);
+S4G_API bool s4g_pp_def(s4g_main* s4gm, const char* name_def, const char* val);
+S4G_API bool s4g_pp_undef(s4g_main* s4gm, const char* name_def);
 }
 #endif

@@ -4,7 +4,10 @@
 #define stack_pop(stack,count)\
 {\
 	if (count > stack.count_obj)\
+	{\
+		/*s4g_breakpoint;*/ \
 		stack.count_obj = 0; \
+	}\
 	else\
 		stack.count_obj -= count; \
 }
