@@ -262,6 +262,7 @@ public:
 
 protected:
 	friend class s4g_main;
+	friend class s4g_vm;
 	s4g_main* s4gm;
 
 	s4g_stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;//массив переменных

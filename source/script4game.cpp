@@ -76,7 +76,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		//exit(0);
 	}
 
-	int counttt = 1;
+	int counttt = 100;
 	
 	DWORD time2 = timeGetTime();
 	for (int i = 0; i < counttt; i++)
@@ -135,20 +135,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			return status;
 		}*/
 		//s4g_spop(s4gm, 1);
-		/*++qwerty;
-		if (qwerty >= 10000)
+		++qwerty;
+		if (qwerty >= 50)
 		{
 			s4g_call_gc(s4gm);
 			
 			qwerty = 0;
-		}*/
+		}
 		//s4gm->gc->resort();
 		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	}
 	//s4g_int tnum = s4g_sget_int(s4gm, -1);
 	//time = timeGetTime();
-	s4g_call_gc(s4gm);
+	//s4g_call_gc(s4gm);
 	//s4gm->gc->resort();
 	time = timeGetTime() - time;
 	int qwert = 0;

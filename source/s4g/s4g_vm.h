@@ -59,35 +59,35 @@ enum s4g_vm_command
 	mc_last
 };
 
-#define S4G_VM_OP_ARIF_ERROR_TYPE1 \
+#define S4G_VM_OP_ARIF_ERROR_TYPE1(tval1) \
 	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);\
 	error = -1;\
 	char strtype[12];\
-	s4g_get_str_type(ttype1, strtype);\
+	s4g_get_str_type(tval1->pdata->type, strtype); \
 	sprintf(this->strerror, "[%s]:%d - attempt to perform arithmetic on arg #1 '%s' (a '%s' value)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype);\
 	return;
 
-#define S4G_VM_OP_ARIF_ERROR_TYPE2 \
+#define S4G_VM_OP_ARIF_ERROR_TYPE2(tval2) \
 	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com-1).lexid); \
 	error = -1; \
 	char strtype[12]; \
-	s4g_get_str_type(ttype2, strtype); \
+	s4g_get_str_type(tval2->pdata->type, strtype); \
 	sprintf(this->strerror, "[%s]:%d - attempt to perform arithmetic on arg #2 '%s' (a '%s' value)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
 	return;
 
-#define S4G_VM_OP_ARIF_ERROR_UNSUN_UNRES \
+#define S4G_VM_OP_ARIF_ERROR_UNSUN_UNRES(tval2) \
 	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid); \
 	error = -1; \
 	char strtype[12]; \
-	s4g_get_str_type(ttype2, strtype); \
+	s4g_get_str_type(tval2->pdata->type, strtype); \
 	sprintf(this->strerror, "[%s]:%d - '%s' unary symbol is unresolved to '%s' type", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
 	return;
 
-#define S4G_VM_OP_ARIF_INCR_DECR_ERR \
+#define S4G_VM_OP_ARIF_INCR_DECR_ERR(tval) \
 	s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com - 1).lexid); \
 	error = -1; \
 	char strtype[12]; \
-	s4g_get_str_type(ttype, strtype); \
+	s4g_get_str_type(tval->pdata->type, strtype); \
 	sprintf(this->strerror, "[%s]:%d - '%s' expected number type, but got '%s' type", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str, strtype); \
 	return;
 
@@ -100,11 +100,11 @@ struct s4g_call_data
 	s4g_call_data()
 	{
 		coms = 0;vars = 0;cfetchget = 3;cfetchgetarg = false;cfetchpushstore = 0;
-		id_curr_com = lastidctx = idnewctx = idexternctx = -1;namef[0] = 0;
+		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0;//namef[0] = 0;
 	}
 
 	s4g_call_data(s4g_stack<s4g_command>* _coms, s4g_table* _vars, int _cfetchget, bool _cfetchgetarg, int _cfetchpushstore, 
-					long _id_curr_com, long _lastidctx, long _idnewctx,long _idexternctx, const char* _namef)
+			long _id_curr_com, long _lastidctx, long _idnewctx, long _idexternctx, s4g_value* _valf)
 	{
 		coms = _coms;
 		vars = _vars;
@@ -115,8 +115,9 @@ struct s4g_call_data
 		lastidctx = _lastidctx;
 		idnewctx = _idnewctx;
 		idexternctx = _idexternctx;
-		if (_namef)
-			strcpy(namef,_namef);
+		_valf = valf;
+		/*if (_namef)
+			strcpy(namef,_namef);*/
 	}
 
 	~s4g_call_data(){}
@@ -131,7 +132,8 @@ struct s4g_call_data
 	long idnewctx;
 	long idexternctx;
 
-	char namef[S4G_MAX_LEN_VAR_NAME];	// имя функции которая вызвалась и спровоцировала сохранение текущего состяния
+	s4g_value* valf;
+	//char namef[S4G_MAX_LEN_VAR_NAME];	// имя функции которая вызвалась и спровоцировала сохранение текущего состяния
 };
 
 class s4g_vm
@@ -214,6 +216,22 @@ public:
 	s4g_stack<s4g_command>* curr_comm;
 	long id_curr_com;
 
+	const char* str;
+	char str2[S4G_MAX_LEN_VAR_NAME];
+	s4g_value* tvalfunc;
+	s4g_value* tmpval;
+	s4g_value* tvalue;
+	s4g_value* tvalue2;
+	s4g_type ttype;
+	long idctx;
+	s4g_s_function* csfunc;
+	s4g_c_function tcfunc;
+	s4g_call_data* tmpcd;
+	bool is_cr;
+	s4g_table* ttable;
+	bool jmp;
+
+	s4g_command * currCom;
 	s4g_table* gvars;	//глобальное пространство имен _g
 	s4g_value* vgvars;	//переменная хранящая в себе глобальное пространство имен
 	s4g_table* curr_vars;	//текущее установленное пространство имен, есл выполняется функция то пространство имен функции
