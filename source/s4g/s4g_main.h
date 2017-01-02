@@ -8,6 +8,7 @@
 #include "MemAlloc.h"
 #include "array.h"
 #include "s4g_stack.h"
+#include <core/assotiativearray.h>
 
 #define S4G_GC_TYPE_DATA_FREE 0		//простые публичные данные
 #define S4G_GC_TYPE_DATA_PRIVATE 1	//приватные данные, доступны только одной переменной
@@ -120,14 +121,54 @@ public:
 	inline void reserve(int count_elem);	//зарезервировать место в таблице под count_elem ключей
 
 protected:
+	struct item_name
+	{
+		mutable char Name[S4G_MAX_LEN_VAR_NAME];
+		mutable const char * tmpName;
+		bool operator==(const item_name & str) const
+		{
+			return(strcmp(tmpName ? tmpName : Name, str.tmpName ? str.tmpName : str.Name) == 0);
+		}
+
+		bool operator<(const item_name & str) const
+		{
+			return(strcmp(tmpName ? tmpName : Name, str.tmpName ? str.tmpName : str.Name) < 0);
+		}
+
+		void SetName(const char * str)const 
+		{
+			strcpy(Name, str);
+			tmpName = NULL;
+		}
+
+		const char * GetName() const
+		{
+			return(tmpName ? tmpName : Name);
+		}
+
+		item_name(const char * str)
+		{
+			tmpName = str;
+			Name[0] = 0;
+		}
+
+		item_name()
+		{
+			tmpName = NULL;
+			Name[0] = 0;
+		}
+	};
 	struct table_desc
 	{
-		char Name[S4G_MAX_LEN_VAR_NAME];
+		const item_name * name;
 		s4g_value* Value;
 	};
 	long count_obj;
 	Array<table_desc*, S4G_RESERVE_TABLE_ELEM> Arr;
 	MemAlloc<table_desc, S4G_RESERVE_TABLE_ELEM> Mem;
+	typedef AssotiativeArray<item_name, long> IndexType;
+	typedef const IndexType::Node * IndexNode;
+	IndexType NameIndex;
 };
 
 

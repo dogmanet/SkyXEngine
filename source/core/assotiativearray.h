@@ -624,7 +624,17 @@ public:
 		Release();
 	}
 
-	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode=NULL) const
+	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode = NULL) const
+	{
+		TmpNode = TreeSearch(key);
+		if(pNode)
+		{
+			*pNode = TmpNode;
+		}
+		return(TmpNode != NULL);
+	}
+
+	bool KeyExists(const SX_KEYTYPE & key, const Node ** pNode=NULL, bool create=false) 
 	{
 		TmpNode = TreeSearch(key);
 		if(pNode)
@@ -632,6 +642,10 @@ public:
 			*pNode = TmpNode;
 		}
 		//tmpNode
+		if(!TmpNode && create)
+		{
+			*pNode = TreeInsert(key);
+		}
 		return(TmpNode != NULL);
 	}
 
