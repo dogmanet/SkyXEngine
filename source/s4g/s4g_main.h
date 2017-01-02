@@ -126,34 +126,34 @@ protected:
 	{
 		mutable char Name[S4G_MAX_LEN_VAR_NAME];
 		mutable const char * tmpName;
-		bool operator==(const item_name & str) const
+		__forceinline bool operator==(const item_name & str) const
 		{
 			return(strcmp(tmpName ? tmpName : Name, str.tmpName ? str.tmpName : str.Name) == 0);
 		}
 
-		bool operator<(const item_name & str) const
+		__forceinline bool operator<(const item_name & str) const
 		{
 			return(strcmp(tmpName ? tmpName : Name, str.tmpName ? str.tmpName : str.Name) < 0);
 		}
 
-		void SetName(const char * str)const 
+		__forceinline void SetName(const char * str)const
 		{
 			strcpy(Name, str);
 			tmpName = NULL;
 		}
 
-		const char * GetName() const
+		__forceinline const char * GetName() const
 		{
 			return(tmpName ? tmpName : Name);
 		}
 
-		item_name(const char * str)
+		__forceinline item_name(const char * str)
 		{
 			tmpName = str;
 			Name[0] = 0;
 		}
 
-		item_name()
+		__forceinline item_name()
 		{
 			tmpName = NULL;
 			Name[0] = 0;
