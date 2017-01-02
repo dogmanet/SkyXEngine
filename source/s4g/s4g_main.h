@@ -22,6 +22,7 @@
 #define S4G_GC_KEY_NULL 0	//null
 #define S4G_GC_KEY_BTRUE 1	//bool true
 #define S4G_GC_KEY_BFALSE 2	//bool false
+#define S4G_GC_KEY_NNULL 3	//nnull
 
 class s4g_arr_lex;
 struct s4g_node;
@@ -85,7 +86,7 @@ struct s4g_value
 	~s4g_value();
 
 	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
-	long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
+	//long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
 	long idvar;		//идентификатор этой переменной в массиве управляемым сборщиком мусора
 	char name[S4G_MAX_LEN_VAR_NAME];
 	//только для внутреннего использования!!!
@@ -189,7 +190,7 @@ public:
 	tval->idvar = arrvar.count_obj; \
 	arrvar.push(tval); \
 	tdata = MemData.Alloc(); \
-	tval->iddata = arrdata.count_obj; \
+	/*tval->iddata = arrdata.count_obj;*/ \
 	tdata->iddata = arrdata.count_obj; \
 	tval->pdata = tdata; \
 	arrdata.push(tdata);
@@ -211,6 +212,7 @@ public:
 	inline s4g_value* cr_val(int _type, const char* _val, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);	//создать переменную из _val с типом _type
 	inline s4g_value* cr_val_nn();	//создать цифру 0 (для случаев кода: -123 будет 0-123)
 
+	inline s4g_value* get_bool(bool bf);
 	inline s4g_value* cr_val2(s4g_value* val, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE, bool copy_data = false);
 
 	inline s4g_data* cr_dara(s4g_data* tdata, int td_data = S4G_GC_TYPE_DATA_FREE);
