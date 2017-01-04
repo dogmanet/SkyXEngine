@@ -624,23 +624,38 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 								//если предыдущий тип был арифметической операцией
 								if(how_type_next == -1)	//error
 								{
-									status = -1;
-									sprintf(this->error,"[%s]:%d - Invalid sequence of arithmetic operations one after the other",this->arr_lex->ArrFiles[tmplexs->fileid],tmplexs->numstr);
-									return 0;
+									if(!(
+										tmplexs->id == S4GLAO_BIT_NOT
+										|| tmplexs->id == S4GLAO_LOG_NOT
+										))
+									{
+										status = -1;
+										sprintf(this->error, "[%s]:%d - Invalid sequence of arithmetic operations one after the other", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+										return 0;
+									}
+									else
+									{
+										//вставляем универсальную цифру 0
+										stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)));
+									}
 								}
 
 								//если мы только начали анализировать выражение
 								if(how_type_next == -4)
 								{
 										//и первым арифметическим выражением встречаем не -
-										if(tmplexs->id != 1)	//error
+										if(!(
+											tmplexs->id == S4GLAO_SUB
+											|| tmplexs->id == S4GLAO_BIT_NOT
+											|| tmplexs->id == S4GLAO_LOG_NOT
+											))	//error
 										{
 											status = -1;
 											sprintf(this->error,"[%s]:%d - illegal inderection",this->arr_lex->ArrFiles[tmplexs->fileid],tmplexs->numstr);
 											return 0;
 										}
 										//иначе
-										else
+										else/* if(tmplexs->id == S4GLAO_SUB)*/
 										{
 											//вставляем универсальную цифру 0
 											stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)));
@@ -651,28 +666,24 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 								if(how_type_next == 0)
 								{
 										//и следующая арифметическая операция не -
-										if(tmplexs->id != 1)	//error
+										if(!(
+											tmplexs->id == S4GLAO_SUB
+											|| tmplexs->id == S4GLAO_BIT_NOT
+											|| tmplexs->id == S4GLAO_LOG_NOT
+											))	//error
 										{
 											status = -1;
 											sprintf(this->error,"[%s]:%d - illegal inderection",this->arr_lex->ArrFiles[tmplexs->fileid],tmplexs->numstr);
 											return 0;
 										}
 										//иначе
-										else 
+										else/* if(tmplexs->id == S4GLAO_SUB)*/
 										{
 											//вставляем универсальную цифру 0
 											stack_var.push(NodePool.Alloc(_numnull, curr_lexid, gc->cr_val(t_nnull, 0, 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)));
 										}
 								}
 
-								/*if(tmplexs->id == 0)
-									tmptypeop = _add;
-								else if(tmplexs->id == 1)
-									tmptypeop = _sub;
-								else if(tmplexs->id == 2)
-									tmptypeop = _mul;
-								else if(tmplexs->id == 3)
-									tmptypeop = _div;*/
 								tmptypeop = s4g_aop_map[tmplexs->id];
 
 							how_type_next = -1;

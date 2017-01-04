@@ -236,11 +236,11 @@ inline void s4g_vm::com_fetch_get()
 		//ложа на вершину значение из таблицы
 		if (cfetchget == 1 || (oldop == mc_push && cfetchget == 2))
 			stack_pop(execute, 1);
-
+	
 		if(currCom->second_data == 1)
 		{
-			if (tmpval->pdata->type == t_string || tmpval->pdata->type == t_int || tmpval->pdata->type == t_uint)
-			{
+		if (tmpval->pdata->type == t_string || tmpval->pdata->type == t_int || tmpval->pdata->type == t_uint)
+		{
 				long index = -1;
 				if (tmpval->pdata->type == t_string)
 					index = atol(((String*)tmpval->pdata->data.p)->c_str());
@@ -541,7 +541,7 @@ inline void s4g_vm::com_call()
 			//execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
 			stack_pop(execute, countarg + 1);
 
-			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
+				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
 			tmpcd = callstack.get(callstack.count_obj);
 			tmpcd->coms = curr_comm;
 			tmpcd->vars = curr_vars;
@@ -994,9 +994,9 @@ inline void s4g_vm::com_sub()
 	if (tvalue->pdata->type == t_nnull)
 	{
 		if (tvalue2->pdata->type == t_int)
-			execute.push(gc->cr_val_int(-tvalue->pdata->data.i));
+			execute.push(gc->cr_val_int(-tvalue2->pdata->data.i));
 		else if (tvalue2->pdata->type == t_float)
-			execute.push(gc->cr_val_float(-tvalue->pdata->data.f));
+			execute.push(gc->cr_val_float(-tvalue2->pdata->data.f));
 		else if (tvalue2->pdata->type == t_uint)
 		{
 			S4G_VM_OP_ARIF_ERROR_UNSUN_UNRES(tvalue2);
@@ -1290,7 +1290,7 @@ inline void s4g_vm::com_jz()
 	}
 	if(jmp)
 	{
-		id_curr_com += (int)arg;
+		id_curr_com += (long)arg;
 	}
 }
 
@@ -1334,13 +1334,13 @@ inline void s4g_vm::com_jnz()
 	}
 	if(!jmp)
 	{
-		id_curr_com += (int)arg;
+		id_curr_com += (long)arg;
 	}
 }
 
 inline void s4g_vm::com_jmp()
 {
-	id_curr_com += (int)arg;
+	id_curr_com += (long)arg;
 }
 
 inline void s4g_vm::com_mod()
@@ -1571,8 +1571,11 @@ inline void s4g_vm::com_log_eq()
 	//execute.pop(2);
 	stack_pop(execute, 1);
 
-	if ((tvalue->pdata->type != t_null && tvalue2->pdata->type == t_null) || (tvalue->pdata->type == t_null && tvalue2->pdata->type != t_null))
+	if((tvalue->pdata->type != t_null && tvalue2->pdata->type == t_null) || (tvalue->pdata->type == t_null && tvalue2->pdata->type != t_null))
+	{
 		execute.push_r(gc->get_bool(false));
+		return;
+	}
 
 		if (tvalue->pdata->type == t_int)
 		{
@@ -1581,7 +1584,9 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.i == tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(tvalue->pdata->data.i == tvalue2->pdata->data.f));
+				execute.push_r(gc->get_bool(num1 == tvalue2->pdata->data.f));
+			else if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == num1));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1595,7 +1600,9 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.ui == tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(tvalue->pdata->data.ui == tvalue2->pdata->data.f));
+				execute.push_r(gc->get_bool(num1 == tvalue2->pdata->data.f));
+			else if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == num1));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1609,9 +1616,30 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f == tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(tvalue->pdata->data.f == tvalue2->pdata->data.f));
+				execute.push_r(gc->get_bool(num1 == tvalue2->pdata->data.f));
+			else if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == num1));
 			else
 			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
+			}
+		}
+		else if(tvalue->pdata->type == t_bool)
+		{
+			s4g_bool num1 = tvalue->pdata->data.b;
+
+			if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.b));
+			//else if(num1)
+			//	execute.push_r(gc->get_bool(false));
+			else if(tvalue2->pdata->type == t_int)
+				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.i));
+			else if(tvalue2->pdata->type == t_uint)
+				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.ui));
+			else if(tvalue2->pdata->type == t_float)
+				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.f));
+		else
+		{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
 			}
 		}
@@ -1636,7 +1664,9 @@ inline void s4g_vm::com_log_neq()
 			else if (tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.i != tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(tvalue->pdata->data.i != tvalue2->pdata->data.f));
+				execute.push_r(gc->get_bool(num1 != tvalue2->pdata->data.f));
+			else if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !num1));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1650,7 +1680,9 @@ inline void s4g_vm::com_log_neq()
 			else if (tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.ui != tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(tvalue->pdata->data.ui != tvalue2->pdata->data.f));
+				execute.push_r(gc->get_bool(num1 != tvalue2->pdata->data.f));
+			else if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !num1));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1664,7 +1696,28 @@ inline void s4g_vm::com_log_neq()
 			else if (tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f != tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(tvalue->pdata->data.f != tvalue2->pdata->data.f));
+				execute.push_r(gc->get_bool(num1 != tvalue2->pdata->data.f));
+			else if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !num1));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
+			}
+		}
+		else if(tvalue->pdata->type == t_bool)
+		{
+			s4g_bool num1 = tvalue->pdata->data.b;
+
+			if(tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!num1 != !tvalue2->pdata->data.b));
+			//else if(num1)
+			//	execute.push_r(gc->get_bool(true));
+			else if(tvalue2->pdata->type == t_int)
+				execute.push_r(gc->get_bool(!num1 != !tvalue2->pdata->data.i));
+			else if(tvalue2->pdata->type == t_uint)
+				execute.push_r(gc->get_bool(!num1 != !tvalue2->pdata->data.ui));
+			else if(tvalue2->pdata->type == t_float)
+				execute.push_r(gc->get_bool(!num1 != !tvalue2->pdata->data.f));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1824,7 +1877,7 @@ inline void s4g_vm::com_log_gt()
 
 		else if (tvalue->pdata->type == t_float)
 		{
-			s4g_float num1 = gc->get_float(tvalue);
+			s4g_float num1 = tvalue->pdata->data.f;
 
 			if (tvalue2->pdata->type == t_int)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f > tvalue2->pdata->data.i));
@@ -1896,18 +1949,432 @@ inline void s4g_vm::com_log_lt()
 		{
 			S4G_VM_OP_ARIF_ERROR_TYPE1(tvalue);
 		}
+}
+
+inline void s4g_vm::com_log_not()
+{
+	tvalue = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_null:
+		execute.push_r(gc->get_bool(true));
+		return;
+	case t_int:
+		execute.push_r(gc->get_bool(tvalue->pdata->data.i == 0));
+		return;
+	case t_uint:
+		execute.push_r(gc->get_bool(tvalue->pdata->data.ui == 0));
+		return;
+	case t_float:
+		execute.push_r(gc->get_bool(tvalue->pdata->data.f == 0.0f));
+		return;
+	case t_bool:
+		execute.push_r(gc->get_bool(!tvalue->pdata->data.b));
+		return;
+	case t_string:
+		execute.push_r(gc->get_bool((*(String*)(tvalue->pdata->data.p))[0] == 0));
+		return;
+	}
+	execute.push_r(gc->get_bool(false));
+}
+
+inline void s4g_vm::com_bit_not()
+{
+	tvalue = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+		execute.push_r(gc->cr_val_int(~tvalue->pdata->data.i));
+		return;
+	case t_uint:
+		execute.push_r(gc->cr_val_uint(~tvalue->pdata->data.ui));
+		return;
+	case t_float:
+		execute.push_r(gc->cr_val_int(~((s4g_int)tvalue->pdata->data.f)));
+		return;
+	}
+	S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue)
 	}
 
+inline void s4g_vm::com_bit_xor()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i ^ tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i ^ tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i ^ ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_uint:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui ^ tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_uint(tvalue->pdata->data.ui ^ tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui ^ ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_float:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) ^ tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) ^ tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) ^ ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	}
+	S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue)
+}
+
+inline void s4g_vm::com_bit_and()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i & tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i & tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i & ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_uint:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui & tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_uint(tvalue->pdata->data.ui & tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui & ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_float:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) & tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) & tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) & ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	}
+	S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue)
+}
+
+inline void s4g_vm::com_bit_or()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i | tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i | tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i | ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_uint:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui | tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_uint(tvalue->pdata->data.ui | tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui | ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_float:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) | tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) | tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) | ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	}
+	S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue)
+}
+
+inline void s4g_vm::com_bit_shiftr()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i >> tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i >> tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i >> ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_uint:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui >> tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_uint(tvalue->pdata->data.ui >> tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui >> ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_float:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) >> tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) >> tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) >> ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	}
+	S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue)
+}
+
+inline void s4g_vm::com_bit_shiftl()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	stack_pop(execute, 1);
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i << tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i << tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.i << ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_uint:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui << tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_uint(tvalue->pdata->data.ui << tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(tvalue->pdata->data.ui << ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	case t_float:
+		switch(tvalue2->pdata->type)
+		{
+		case t_int:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) << tvalue2->pdata->data.i));
+			return;
+		case t_uint:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) << tvalue2->pdata->data.ui));
+			return;
+		case t_float:
+			execute.push_r(gc->cr_val_int(((s4g_int)tvalue->pdata->data.f) << ((s4g_int)tvalue2->pdata->data.f)));
+			return;
+		default:
+			S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue2)
+		}
+		return;
+	}
+	S4G_VM_OP_ARIF_INCR_DECR_ERR(tvalue)
+}
+
+inline void s4g_vm::com_log_eqt()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	//execute.pop(2);
+	stack_pop(execute, 1);
+
+	if(tvalue->pdata->type != tvalue2->pdata->type)
+	{
+		execute.push_r(gc->get_bool(false));
+		return;
+	}
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+	case t_uint:
+	case t_float:
+		execute.push_r(gc->get_bool(tvalue->pdata->data.ui == tvalue2->pdata->data.ui));
+		return;
+	case t_bool:
+		execute.push_r(gc->get_bool(!tvalue->pdata->data.b == !tvalue2->pdata->data.b));
+		return;
+	case t_string:
+		execute.push_r(gc->get_bool(*(String*)tvalue->pdata->data.p == *(String*)tvalue2->pdata->data.p));
+		return;
+	}
+
+	S4G_VM_OP_ARIF_ERROR_TYPE1(tvalue);
+}
+
+inline void s4g_vm::com_log_neqt()
+{
+	tvalue = execute.get(execute.count_obj - 2);
+	tvalue2 = execute.get(execute.count_obj - 1);
+
+	//execute.pop(2);
+	stack_pop(execute, 1);
+
+	if(tvalue->pdata->type != tvalue2->pdata->type)
+	{
+		execute.push_r(gc->get_bool(true));
+		return;
+	}
+
+	switch(tvalue->pdata->type)
+	{
+	case t_int:
+	case t_uint:
+	case t_float:
+		execute.push_r(gc->get_bool(tvalue->pdata->data.ui != tvalue2->pdata->data.ui));
+		return;
+	case t_bool:
+		execute.push_r(gc->get_bool(!tvalue->pdata->data.b != !tvalue2->pdata->data.b));
+		return;
+	case t_string:
+		execute.push_r(gc->get_bool(*(String*)tvalue->pdata->data.p != *(String*)tvalue2->pdata->data.p));
+		return;
+	}
+
+	S4G_VM_OP_ARIF_ERROR_TYPE1(tvalue);
+}
+
+
 #define GEN_OP_STUB(op) inline void s4g_vm::com_ ## op (){}
-GEN_OP_STUB(bit_xor)
-GEN_OP_STUB(bit_not)
-GEN_OP_STUB(bit_shiftr)
-GEN_OP_STUB(bit_shiftl)
-GEN_OP_STUB(log_neqt)
-GEN_OP_STUB(log_not)
-GEN_OP_STUB(log_eqt)
-GEN_OP_STUB(bit_and)
-GEN_OP_STUB(bit_or)
+//GEN_OP_STUB(log_neqt)
+//GEN_OP_STUB(log_eqt)
 #undef GEN_OP_STUB
 ///////
 
