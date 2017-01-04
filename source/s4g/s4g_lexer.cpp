@@ -481,7 +481,7 @@ inline int s4g_is_key_word_pp(const char* str)
 s4g_arr_lex::s4g_arr_lex()
 {
 	curr_num = -1;
-	iscreatevar = false;
+	strerror[0] = 0;
 }
 
 s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* curr_num_str)
@@ -577,58 +577,70 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			}
 			else if (tmpc == '$')
 			{
+				s4g_lexeme* tmplexs = 0;
+				if (ArrLexs.size() > 0)
+					tmplexs = ArrLexs[ArrLexs.size() - 1];
+
 				numcursym++;
 				tmpc = str[numcursym];
 				if (s4g_is_char_str(tmpc))
 				{
 					s4g_scan_string(str + numcursym, tmpword);
 					if ((tmpid = s4g_is_key_word(tmpword)) == -1)
-						tmplex = LexPool.Alloc(tmpword, numcurstr, (iscreatevar ? s4g_lexeme_type::word_user_cr : s4g_lexeme_type::word_user), -1, curr_id_file);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
 					else
 					{
-						sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+						sprintf(strerror, "[%s]:%d - unresolved using of key word '%s' for create a new element", ArrFiles[curr_id_file], numcurstr, tmpword);
 						return 0;
 					}
 					numcursym += strlen(tmpword);
 					break;
 				}
-				else if (s4g_is_char_num(tmpc))
+				else if (tmplexs && tmplexs->type == sym_table_elem)
 				{
-					s4g_scan_num(str + numcursym, tmpword);
-					numcursym += strlen(tmpword);
-					//если есть точка в строке значит это float
-					if (strstr(tmpword, "."))
+					if (s4g_is_char_num(tmpc))
 					{
-						sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
-						return 0;
-					}
-					else
-					{
-						int slen = strlen(tmpword) - 1;
-						if (tmpword[slen] == 'u')
-							tmplex = LexPool.Alloc(tmpword, numcurstr, (iscreatevar ? s4g_lexeme_type::word_uint_cr : s4g_lexeme_type::word_uint), -1, curr_id_file);
-						else if (tmpword[slen] == 'f')
+						s4g_scan_num(str + numcursym, tmpword);
+						numcursym += strlen(tmpword);
+						//если есть точка в строке значит это float
+						if (strstr(tmpword, "."))
 						{
-							sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+							sprintf(strerror, "[%s]:%d - '%s' is float type this is unresolved for create a new element", ArrFiles[curr_id_file], numcurstr, tmpword);
 							return 0;
 						}
 						else
-							tmplex = LexPool.Alloc(tmpword, numcurstr, (iscreatevar ? s4g_lexeme_type::word_int_cr : s4g_lexeme_type::word_int), -1, curr_id_file);
-					}
+						{
+							int slen = strlen(tmpword) - 1;
+							if (tmpword[slen] == 'u')
+								tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_uint_cr, -1, curr_id_file);
+							else if (tmpword[slen] == 'f')
+							{
+								sprintf(strerror, "[%s]:%d - '%s' is float type this is unresolved for create a new element", ArrFiles[curr_id_file], numcurstr, tmpword);
+								return 0;
+							}
+							else
+								tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_int_cr, -1, curr_id_file);
+						}
 
-					break;
-				}
-				else if (tmpc == '"')
-				{
-					int len = 0;
-					s4g_scan_litstring(str + numcursym, tmpword, len);
-					tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
-					numcursym += len + 2;
-					break;
+						break;
+					}
+					else if (tmpc == '"')
+					{
+						int len = 0;
+						s4g_scan_litstring(str + numcursym, tmpword, len);
+						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
+						numcursym += len + 2;
+						break;
+					}
+					else
+					{
+						sprintf(strerror, "[%s]:%d - '%s' unresolved type for create a new element in table", ArrFiles[curr_id_file], numcurstr, tmpword);
+						return 0;
+					}
 				}
 				else
 				{
-					sprintf(strerror, "[%s]:%d - !!!!!!!!!!!!!!!!!!!!", ArrFiles[curr_id_file], numcurstr, tmpc);
+					sprintf(strerror, "[%s]:%d - '$' unresolved notation to this lexeme", ArrFiles[curr_id_file], numcurstr);
 					return 0;
 				}
 			}
@@ -798,7 +810,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	curr_id_file = ArrFiles.size() - 1;
 
 	AllFile = preproc.Process(AllFile.c_str(), file_str);
-	iscreatevar = preproc.isDefined("S4G_CREATE_VAR");
+	s4gm->create_var = preproc.isDefined(S4G_CREATE_VAR);
 	if(preproc.IsError())
 	{
 		sprintf(strerror, "%s", preproc.GetError());
@@ -858,7 +870,12 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 				ArrLexs.push_back(tmplex);
 		}
 		else
-			break;
+		{
+			if (strerror[0] == 0)
+				break;
+			else
+				return -1;
+		}
 	}
 
 	/*ffile = fopen((String(file)+".tmp").c_str(), "wt");

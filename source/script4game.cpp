@@ -118,8 +118,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
 	s4g_call(s4gm);
-	/*int qwerty = 0;
-	for (;;)// int i = 0; i < counttt; i++)
+	int qwerty = 0;
+	/*for (;;)// int i = 0; i < counttt; i++)
 	{
 		//s4g_spush_precall(s4gm,)
 		s4g_spush_precall(s4gm);

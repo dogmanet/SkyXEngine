@@ -188,7 +188,7 @@ int s4g_std_tablen(s4g_main* s4gm)
 	}
 	else
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #1 string, but got '%s'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), s4g_cfget_str_type(s4gm, 1));
+		s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #1 table, but got '%s'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), s4g_cfget_str_type(s4gm, 1));
 		return -1;
 	}
 
