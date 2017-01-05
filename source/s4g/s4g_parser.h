@@ -5,6 +5,8 @@
 #define S4G_MAX_LEN_KEY_WORD_DEF 9
 #define S4G_MAX_LEN_SYM 4
 
+#include "s4g_preprocessor.h"
+
 const char s4g_key_words[][S4G_MAX_LEN_KEY_WORD_DEF] = {
 "null",		//0
 "function",	//1
