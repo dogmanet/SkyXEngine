@@ -1,7 +1,11 @@
 
 #include "s4g_compiler.h"
 
-#define def_printf(format,...) printf(format,__VA_ARGS__);
+#ifdef S4G_NPRINT_OPS
+#	define def_printf(format,...) 
+#else
+#	define def_printf(format,...) printf(format,__VA_ARGS__);
+#endif
 
 inline void s4g_compiler::gen(s4g_vm_command comm, s4g_value* val, long _lexid, long _second_data)
 {

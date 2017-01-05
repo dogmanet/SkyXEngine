@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SkyXEngine", "SkyXEngine\SkyXEngine.vcxproj", "{2EB4FB89-B7A7-4D1B-9D26-B6BF2017B272}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -55,6 +55,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxms", "..\sxms\sxms.vcxproj", "{E6B8186A-7526-4CC3-B4D5-247C3D1CB794}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "s4g", "..\s4g\s4g\s4g.vcxproj", "{72628B30-2B57-43D3-A2E5-B6262D312A70}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "s4g_launcher", "..\s4g_launcher\s4g_launcher.vcxproj", "{D923C9F2-44BF-4B3E-8A16-556C11090520}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -172,8 +174,17 @@ Global
 		{72628B30-2B57-43D3-A2E5-B6262D312A70}.Release|Win32.ActiveCfg = Release|Win32
 		{72628B30-2B57-43D3-A2E5-B6262D312A70}.Release|Win32.Build.0 = Release|Win32
 		{72628B30-2B57-43D3-A2E5-B6262D312A70}.Release|x64.ActiveCfg = Release|Win32
+		{D923C9F2-44BF-4B3E-8A16-556C11090520}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D923C9F2-44BF-4B3E-8A16-556C11090520}.Debug|Win32.Build.0 = Debug|Win32
+		{D923C9F2-44BF-4B3E-8A16-556C11090520}.Debug|x64.ActiveCfg = Debug|Win32
+		{D923C9F2-44BF-4B3E-8A16-556C11090520}.Release|Win32.ActiveCfg = Release|Win32
+		{D923C9F2-44BF-4B3E-8A16-556C11090520}.Release|Win32.Build.0 = Release|Win32
+		{D923C9F2-44BF-4B3E-8A16-556C11090520}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
