@@ -757,9 +757,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	char pathforfile[1024];
 	pathforfile[0] = 0;
 	String AllFile;
-
-	s4g_preprocessor preproc;
-
+	
 	if (isfile)
 	{
 		FILE* ffile;

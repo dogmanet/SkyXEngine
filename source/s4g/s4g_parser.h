@@ -715,6 +715,7 @@ public:
 	long curr_num;
 	MemAlloc<s4g_lexeme> LexPool;
 	s4g_main* s4gm;
+	s4g_preprocessor preproc;
 };
 
 #define bst_iferr(cond,text,...) if(cond) {this->status = -1; sprintf(this->error, text, ...); return 0;)

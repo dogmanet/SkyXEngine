@@ -795,3 +795,22 @@ const char* s4g_dbg_get_curr_func(s4g_main* s4gm, char* str)
 	S4G_PRE_COND(s4gm, 0);
 	return s4gm->vmachine->get_curr_func(str);
 }
+
+/////////////
+
+bool s4g_pp_is_def(s4g_main* s4gm, const char* name_def)
+{
+	return(s4gm->arr_lex->preproc.isDefined(name_def));
+}
+bool s4g_pp_def(s4g_main* s4gm, const char* def_str)
+{
+	s4gm->arr_lex->preproc.Define(def_str);
+}
+bool s4g_pp_undef(s4g_main* s4gm, const char* name_def)
+{
+	s4gm->arr_lex->preproc.Undef(name_def);
+}
+bool s4g_pp_add_inc_path(s4g_main* s4gm, const char* path)
+{
+	s4gm->arr_lex->preproc.AddIncPath(path);
+}
