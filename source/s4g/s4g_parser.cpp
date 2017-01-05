@@ -451,10 +451,31 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 								}
 						}
 						//иначе если лексема относится к считыванию из таблицы [
-						else if(tmplexs->type == sym_table_elem && tmplexs->id == 0)
+						else if ((tmplexs->type == sym_table_elem && tmplexs->id == 0) || (tmplexs->type == sym_table_elem && tmplexs->id == 3))
 						{
+							int isnumelem = 0;
+							if (tmplexs->type == sym_table_elem && tmplexs->id == 3)
+							{
+								lex_get_next0(tmplexs);
+								if (!(tmplexs->type == sym_table_elem && tmplexs->id == 0))
+								{
+									//error
+								}
+								else
+								{
+									isnumelem = 1;
+								}
+							}
 							lex_get_next0(tmplexs);
-							tmpnode->op1 = NodePool.Alloc(_get, curr_lexid, (s4g_value*)0, s4g_get_expr(), NodePool.Alloc(_empty, curr_lexid));
+
+							//если у нас добавление в конец таблицы []
+							if (tmplexs->type == sym_table_elem && tmplexs->id == 1)
+							{
+								tmpnode->op1 = NodePool.Alloc(_append_table, curr_lexid);
+								break;
+							}
+
+							tmpnode->op1 = NodePool.Alloc(_get, curr_lexid, (s4g_value*)isnumelem, s4g_get_expr(), NodePool.Alloc(_empty, curr_lexid));
 							tmpnode = tmpnode->op1->op2;
 
 							lex_get_curr0(tmplexs);
@@ -481,7 +502,8 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 							bst_cond_er(this);
 							lex_get_curr0(tmplexs);
 							//lex_get_prev0(tmplexs);
-							return NodePool.Alloc(_call, funccallidlex, (s4g_value*)0, node, args, (s4g_node*)0);
+							node->op2 = args;
+							return NodePool.Alloc(_call, funccallidlex, (s4g_value*)0, node, (s4g_node*)0, (s4g_node*)0);
 						}
 						//иначе у нас нет обращения к элементам таблицы
 						else 
@@ -828,6 +850,25 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 
 							int qwer = 0;
 						}
+
+						if (how_type_next == 0 && tmpnode->type == _call)
+						{
+							lex_get_curr(tmplexs);
+							if (tmplexs->type == sym_group && tmplexs->id == 1)
+							{
+								if (stack_op.count_obj > 0)
+								{
+									s4g_node* tmptmpnode = stack_op.get(-1);
+									if (tmptmpnode->type == _group_b)
+									{
+										tmpnode->value = (s4g_value*)1;
+										lex_get_next(tmplexs);
+										stack_op.pop(1);
+									}
+								}
+							}
+						}
+
 					
 					stack_var.push(tmpnode);
 					how_type_next = 2;
@@ -1075,6 +1116,14 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 				else if(!(tmplexs->type == sym_delimiter && tmplexs->id == 1))
 				{
 					s4g_node* tmpnode2 = s4g_get_expr();
+					//если добавление по ключу
+					if (tmpnode2->op2 && tmpnode2->op2->type == _call && tmpnode2->op2->value == 0)
+						tmpnode2->op2->value = (s4g_value*)1;	//устанавливаем необходимость контроля возврата одного аргумента
+
+					//если простое добавление в конец
+					if (tmpnode2 && tmpnode2->type == _call && tmpnode2->value == 0)
+						tmpnode2->value = (s4g_value*)1; //устанавливаем необходимость контроля возврата одного аргумента
+
 					lex_get_curr0(tmplexs);
 					bst_cond_er(this);
 						if(tmpnode2->type != _set)

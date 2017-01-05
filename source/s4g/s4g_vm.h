@@ -24,6 +24,7 @@ enum s4g_vm_command
 	mc_postdecr,
 	mc_new_table,	//создать таблицу и положить на вершину стека
 	mc_add_in_table,//добавить в таблицу котоаря лежит на вершине
+	mc_append_table,//добавить новый элемент в конец таблицы и положить его на вершину
 	mc_precall,		//сообщение о том что вскоре будет вызвана функция, записать в первый свободный регистр размер стека
 	mc_call,		//вызов функции
 
@@ -103,11 +104,11 @@ struct s4g_call_data
 	s4g_call_data()
 	{
 		coms = 0;vars = 0;cfetchget = 3;cfetchgetarg = false;cfetchpushstore = 0;
-		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0;//namef[0] = 0;
+		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0; stack_size = -1;//namef[0] = 0;
 	}
 
 	s4g_call_data(s4g_stack<s4g_command>* _coms, s4g_table* _vars, int _cfetchget, bool _cfetchgetarg, int _cfetchpushstore, 
-			long _id_curr_com, long _lastidctx, long _idnewctx, long _idexternctx, s4g_value* _valf)
+				long _id_curr_com, long _lastidctx, long _idnewctx, long _idexternctx, long _stack_size, s4g_value* _valf)
 	{
 		coms = _coms;
 		vars = _vars;
@@ -118,6 +119,7 @@ struct s4g_call_data
 		lastidctx = _lastidctx;
 		idnewctx = _idnewctx;
 		idexternctx = _idexternctx;
+		stack_size = _stack_size;
 		_valf = valf;
 		/*if (_namef)
 			strcpy(namef,_namef);*/
@@ -126,7 +128,7 @@ struct s4g_call_data
 	~s4g_call_data(){}
 
 	s4g_stack<s4g_command>* coms;	//команды выполнения
-	s4g_table* vars;				//таблица с переменными (окружение)
+	s4g_table* vars;				//таблица с переменными (окружением)
 	int cfetchget;				
 	bool cfetchgetarg;	
 	int cfetchpushstore;
@@ -134,7 +136,7 @@ struct s4g_call_data
 	long lastidctx;
 	long idnewctx;
 	long idexternctx;
-
+	long stack_size;
 	s4g_value* valf;
 	//char namef[S4G_MAX_LEN_VAR_NAME];	// имя функции которая вызвалась и спровоцировала сохранение текущего состяния
 };
@@ -155,6 +157,7 @@ public:
 	inline void com_end();
 	inline void com_mstore();
 	inline void com_add_in_table();
+	inline void com_append_table();
 	inline void com_precall();
 	inline void com_call();
 	inline void com_new_table();

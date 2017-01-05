@@ -8,7 +8,9 @@
 
 s4g_main::s4g_main(const char* _name)
 {
+	create_var = 1;
 	arr_lex = new s4g_arr_lex();
+	arr_lex->s4gm = this;
 	gc = new s4g_gc();
 	gc->s4gm = this;
 	gnode = 0;
@@ -175,7 +177,8 @@ inline long s4g_table::is_exists_s2(const char* str, s4g_value** tval)
 	IndexNode node;
 	if(NameIndex.KeyExists(item_name(str), &node))
 	{
-		*tval = Arr.Data[*node->Val]->Value;
+		if (tval)
+			*tval = Arr.Data[*node->Val]->Value;
 		return(*node->Val);
 		}
 	return -1;
@@ -185,7 +188,8 @@ inline bool s4g_table::is_exists_n2(long key, s4g_value** tval)
 {
 	if (key >= 0 && key < count_obj)
 	{
-		*tval = Arr.Data[key]->Value;
+		if (tval)
+			*tval = Arr.Data[key]->Value;
 		return true;
 	}
 
@@ -454,6 +458,11 @@ inline s4g_value* s4g_gc::cr_val_null(const char* name, int td_val)
 		*(short*)tval->name = '\0#';
 	return tval;
 };
+
+inline s4g_value* s4g_gc::get_val_null()
+{
+	return arrvar[S4G_GC_KEY_NULL];
+}
 
 inline s4g_value* s4g_gc::cr_val_pdata(s4g_pdata pdata, const char* name, int td_val)
 {

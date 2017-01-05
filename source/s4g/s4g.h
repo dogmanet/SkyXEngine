@@ -46,6 +46,8 @@ struct s4g_main;	//основа взаимодействия между с(++) и скриптами
 struct s4g_value;	//переменная-значение
 struct s4g_table;	//таблица
 
+#define S4G_CREATE_VAR "S4G_CREATE_VAR"
+
 //const
 #define S4G_MAX_LEN_TYPE_NAME 64	//максимальная длина имени типа
 #define S4G_MAX_LEN_VAR_NAME 64		//максимальная длина имени переменной
@@ -77,7 +79,7 @@ struct s4g_table;	//таблица
 #define S4G_RESERVE_SFUNC_MEM 1000	//резерв памяти элементов для скриптовых функций
 
 #define S4G_RESERVE_TABLE_MEM 1000	//резерв памяти элементов для таблиц
-#define S4G_RESERVE_TABLE_ELEM 8	//на сколько элементов будет резервироваться место в таблицах
+#define S4G_RESERVE_TABLE_ELEM 16	//на сколько элементов будет резервироваться место в таблицах
 
 //уровни сообщений
 #define S4G_NOTICE 0	//уведомление

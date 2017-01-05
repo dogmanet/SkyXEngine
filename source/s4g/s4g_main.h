@@ -56,6 +56,7 @@ struct s4g_main
 	s4g_gc* gc;						//сборщик мусора
 	char strerror[1024];			//сообщение об ошибке
 	char name[S4G_MAX_LEN_VAR_NAME];
+	int create_var;
 };
 
 //представление данных
@@ -198,6 +199,7 @@ public:
 	//создание переменных
 	//name - имя переменной если надо
 	inline s4g_value* cr_val_null(const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE);
+	inline s4g_value* get_val_null();
 	inline s4g_value* cr_val_pdata(s4g_pdata pdata, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE);
 	inline s4g_value* cr_val_table_null(const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);
 	inline s4g_value* cr_val_int(s4g_int num, const char* name = 0, int td_val = S4G_GC_TYPE_VAR_FREE, int td_data = S4G_GC_TYPE_DATA_FREE);

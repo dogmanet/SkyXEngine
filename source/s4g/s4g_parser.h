@@ -93,7 +93,8 @@ const char s4g_key_syms_table_create[][S4G_MAX_LEN_SYM] = {
 
 const char s4g_key_syms_table_op[][S4G_MAX_LEN_SYM] = {
 "[","]",//начало конец обращение к элементу таблицы по строке
-"."		//обращение к элементу таблицы по имени
+".",	//обращение к элементу таблицы по имени
+":"		//доступ по числовому индексу как к массиву, после следует [num]
 };
 
 const char s4g_key_syms_logic[][S4G_MAX_LEN_SYM] = {
@@ -276,6 +277,7 @@ enum s4g_type_op
 	_return,		//возвращение значений
 	_create_table,	//создание таблицы
 	_add_in_table,	//добавление в таблицу
+	_append_table,
 
 	_if,
 	_while,
@@ -712,7 +714,7 @@ public:
 	int curr_id_file;// = ArrFiles.size()-1;
 	long curr_num;
 	MemAlloc<s4g_lexeme> LexPool;
-	bool iscreatevar;
+	s4g_main* s4gm;
 };
 
 #define bst_iferr(cond,text,...) if(cond) {this->status = -1; sprintf(this->error, text, ...); return 0;)
