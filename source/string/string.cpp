@@ -1,4 +1,5 @@
-﻿#include <string.h>
+﻿
+#include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #if defined(_LINUX) || defined(_MAC)
@@ -12,7 +13,7 @@
 #	include <Windows.h>
 #endif
 
-#include <string/string.h>
+#include "string.h"
 
 #if defined(_WINDOWS)
 #	pragma warning(disable:4996)
@@ -2387,10 +2388,10 @@ void StringW::insert(UINT pos, const WCHAR * data)
 }
 
 
-bool operator<(const StringW & a, const StringW & b)
+/*bool operator<(const StringW & a, const StringW & b)
 {
 	return(wcscmp(a.c_str(), b.c_str()) < 0);
-}
+}*/
 
 String::operator StringW() const
 {
@@ -2427,7 +2428,7 @@ void StringW::Reserve(int length)
 	SAFE_DELETE_A(string);
 	string = new WCHAR[length + 1];
 }
-
+/*
 StringW operator+(const WCHAR * a, const StringW & b)
 {
 	return(StringW(a) + b);
@@ -2435,7 +2436,7 @@ StringW operator+(const WCHAR * a, const StringW & b)
 StringW operator+(const StringW & a, const WCHAR * b)
 {
 	return(a + StringW(b));
-}
+}*/
 
 
 /*

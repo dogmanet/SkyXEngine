@@ -11,10 +11,6 @@ typedef unsigned short WORD;
 typedef unsigned int UINT;
 #endif
 
-#if !defined(_BUILD_STR_LIB) && defined(_WINDOWS)
-#	pragma comment(lib, "string.lib")
-#endif
-
 #ifndef SAFE_DELETE_A
 #define SAFE_DELETE_A(p) if(p)\
 	{\
@@ -30,16 +26,6 @@ typedef unsigned int UINT;
 		(p) = NULL;\
 	}
 #endif
-
-//#include "defines.h"
-//#include <cstdio>
-/*
-unsigned long SXStrFind(char* src_str, char *str, unsigned long pos);
-unsigned long SXStrReplace(char* src_str, char *str, char *replace, unsigned long pos);
-unsigned long SXStrReplaceAll(char* src_str, char *str, char *replace);
-char * SXStrSubStr(char* src_str, unsigned long pos, unsigned long lenght);
-char * SXStrDelete(char* src_str, unsigned long pos, unsigned long lenght);
-*/
 
 
 class StringW;
@@ -446,9 +432,9 @@ protected:
 	WCHAR * string;
 };
 
-bool operator<(const StringW & a, const StringW & b);
+/*bool operator<(const StringW & a, const StringW & b);
 
 StringW operator+(const WCHAR * a, const StringW & b);
-StringW operator+(const StringW & a, const WCHAR * b);
+StringW operator+(const StringW & a, const WCHAR * b);*/
 
 #endif

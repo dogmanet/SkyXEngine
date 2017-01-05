@@ -21,8 +21,46 @@ void s4g_kill(s4g_main* s4gm)
 
 int s4g_call_gc(s4g_main* s4gm)
 {
+	S4G_PRE_COND(s4gm, -1);
 	s4gm->gc->clear();
 	return 0;
+}
+
+long s4g_gc_mem_busy(s4g_main* s4gm)
+{
+	S4G_PRE_COND(s4gm, -1);
+	return s4gm->gc->get_count_mem_busy();
+}
+
+long s4g_gc_mem_allocated(s4g_main* s4gm)
+{
+	S4G_PRE_COND(s4gm, -1);
+	return s4gm->gc->get_count_mem_allocated();
+}
+
+s4g_value* s4g_gcget_null(s4g_main* s4gm)
+{
+	S4G_PRE_COND(s4gm, 0);
+	return s4gm->gc->get_val_null();
+
+}
+
+s4g_value* s4g_gcget_bool(s4g_main* s4gm, bool bf)
+{
+	S4G_PRE_COND(s4gm, 0);
+	return s4gm->gc->get_bool(bf);
+}
+
+s4g_value* s4g_gcget_true(s4g_main* s4gm)
+{
+	S4G_PRE_COND(s4gm, 0);
+	return s4gm->gc->get_bool(true);
+}
+
+s4g_value* s4g_gcget_false(s4g_main* s4gm)
+{
+	S4G_PRE_COND(s4gm, 0);
+	return s4gm->gc->get_bool(false);
 }
 
 int s4g_load_file(s4g_main* s4gm, const char* file)
@@ -765,7 +803,7 @@ long s4g_table_size(s4g_table* ttable)
 s4g_value* s4g_table_get(s4g_table* ttable, long key)
 {
 	if (ttable && key < ttable->size())
-		ttable->getn(key);
+		return ttable->getn(key);
 
 	return 0;
 }

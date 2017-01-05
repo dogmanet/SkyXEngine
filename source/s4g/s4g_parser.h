@@ -711,7 +711,7 @@ public:
 	Array<s4g_lexeme*> ArrLexs;
 	Array<String> ArrFiles;
 	Array<String> ArrPathForFiles;
-	int curr_id_file;// = ArrFiles.size()-1;
+	int curr_id_file;
 	long curr_num;
 	MemAlloc<s4g_lexeme> LexPool;
 	s4g_main* s4gm;
@@ -745,7 +745,7 @@ struct s4g_builder_syntax_tree
 	s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
 
 	s4g_node* s4g_gen_statement(bool one=false);//считывание главных инструкций
-	s4g_node* s4g_read_block();
+	s4g_node* s4g_read_block();			//считывает блок выражений
 	s4g_node* s4g_get_ret_vals();		//считывание возвращаемых значений
 	s4g_node* s4g_get_arg_call_func();	//считывание аргументов при вызове функции
 	s4g_node* s4g_get_function_def_head();	//считывание аргументов при создании функции

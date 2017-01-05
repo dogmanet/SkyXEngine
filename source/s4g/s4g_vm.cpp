@@ -527,6 +527,7 @@ inline void s4g_vm::com_call()
 						//если есть еще аргументы и у нас следущий аргмент это мультиаргумент
 						if (countarg > tmpargs && csfunc->ismarg)
 						{
+							csfunc->margtable->clear();
 								for (int i = tmpargs; i<countarg; ++i)
 								{
 									//tval2 = gc->cr_val_null();

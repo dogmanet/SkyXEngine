@@ -1271,5 +1271,55 @@ inline void s4g_gc::set_td_data(s4g_value* val, int td)
 		val->pdata->typedata = td;
 }
 
+inline long s4g_gc::get_count_mem_busy()
+{
+	long tmpcount = 0;
+	UsageStats us;
+	MemValue.GetMemUsage(&us);
+	tmpcount += us.ulAllocMem;
+
+	MemData.GetMemUsage(&us);
+	tmpcount += us.ulAllocMem;
+
+	MemCtx.GetMemUsage(&us);
+	tmpcount += us.ulAllocMem;
+
+	MemString.GetMemUsage(&us);
+	tmpcount += us.ulAllocMem;
+
+	MemSFunc.GetMemUsage(&us);
+	tmpcount += us.ulAllocMem;
+
+	MemTable.GetMemUsage(&us);
+	tmpcount += us.ulAllocMem;
+
+	return tmpcount;
+}
+
+inline long s4g_gc::get_count_mem_allocated()
+{
+	long tmpcount = 0;
+	UsageStats us;
+	MemValue.GetMemUsage(&us);
+	tmpcount += us.ulSysMem;
+
+	MemData.GetMemUsage(&us);
+	tmpcount += us.ulSysMem;
+
+	MemCtx.GetMemUsage(&us);
+	tmpcount += us.ulSysMem;
+
+	MemString.GetMemUsage(&us);
+	tmpcount += us.ulSysMem;
+
+	MemSFunc.GetMemUsage(&us);
+	tmpcount += us.ulSysMem;
+
+	MemTable.GetMemUsage(&us);
+	tmpcount += us.ulSysMem;
+
+	return tmpcount;
+}
+
 ///////////////////////
 
