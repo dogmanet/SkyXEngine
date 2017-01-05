@@ -386,8 +386,9 @@ inline int s4g_is_marg(const char* sstr, char* dstr)
 
 inline void s4g_scan_litstring(const char* cur, char* dstr, int & len)
 {
+	char stop = *cur;
 	++cur;
-	while(*cur && *cur != '"')
+	while(*cur && *cur != stop)
 	{
 		if(*cur == '\\')
 		{
@@ -395,6 +396,7 @@ inline void s4g_scan_litstring(const char* cur, char* dstr, int & len)
 			switch(*cur)
 			{
 			case L'"':
+			case L'\'':
 			case L'\\':
 			case L'/':
 				*dstr++ = *cur;
@@ -549,7 +551,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				//}
 			}
 			//если текущий символ пользовательская строка
-			else if (tmpc == '"')
+			else if(tmpc == '"' || tmpc == '\'')
 			{
 				int len = 0;
 				s4g_scan_litstring(str + numcursym, tmpword, len);
@@ -755,9 +757,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 	char pathforfile[1024];
 	pathforfile[0] = 0;
 	String AllFile;
-
-	s4g_preprocessor preproc;
-
+	
 	if (isfile)
 	{
 		FILE* ffile;
