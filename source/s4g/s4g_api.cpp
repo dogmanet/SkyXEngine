@@ -838,17 +838,21 @@ const char* s4g_dbg_get_curr_func(s4g_main* s4gm, char* str)
 
 bool s4g_pp_is_def(s4g_main* s4gm, const char* name_def)
 {
+	S4G_PRE_COND(s4gm, 0);
 	return(s4gm->arr_lex->preproc.isDefined(name_def));
 }
 void s4g_pp_def(s4g_main* s4gm, const char* def_str)
 {
+	S4G_PRE_COND(s4gm);
 	s4gm->arr_lex->preproc.Define(def_str);
 }
 void s4g_pp_undef(s4g_main* s4gm, const char* name_def)
 {
+	S4G_PRE_COND(s4gm);
 	s4gm->arr_lex->preproc.Undef(name_def);
 }
 void s4g_pp_add_inc_path(s4g_main* s4gm, const char* path)
 {
+	S4G_PRE_COND(s4gm);
 	s4gm->arr_lex->preproc.AddIncPath(path);
 }

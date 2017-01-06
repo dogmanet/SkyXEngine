@@ -400,7 +400,8 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE prevInstance,PSTR cmdLine,int s
 
 	SXMainWndElem::MainWnd = SXGUICrBaseWnd(
 							"SkyX Windows Creator","SkyX Windows Creator",0,
-							0,0,0,wrect.right,150,
+							0,
+							wrect.left, wrect.top, wrect.right, 150,
 							0,0,CreateSolidBrush(RGB(220,220,220)),
 							0,CS_HREDRAW | CS_VREDRAW,WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,
 							0,WndProcAllDefault);
@@ -426,7 +427,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE prevInstance,PSTR cmdLine,int s
 
 	SXMainWndElem::ParamWnd = SXGUICrBaseWnd(
 							"ParamWnd","ParamWnd",0,
-							0,wrect.right-256,160,256,wrect.bottom-160,
+							0, wrect.right - 256, wrect.top+160, 256, wrect.bottom - 160,
 							0,0,CreateSolidBrush(RGB(220,220,220)),
 							WS_EX_TOOLWINDOW,CS_HREDRAW | CS_VREDRAW,WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED,
 							0,WndProcAllDefault);

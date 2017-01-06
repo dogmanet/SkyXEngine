@@ -1,6 +1,6 @@
 
 #include <core\\AssotiativeArray.h>
-#include <core\\string.cpp>
+#include <string\\string.cpp>
 #include <core\\sxLoaderConfig_class.h>
 #pragma once
 /*
