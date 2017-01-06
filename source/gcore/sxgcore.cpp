@@ -21,12 +21,14 @@ IDirect3DDevice9* DXDevice = 0;
 D3DPRESENT_PARAMETERS D3DAPP;
 IDirect3D9* d3d9 = 0;
 
+#include <string\string.cpp>
 #include <gcore\shader.cpp>
 #include <gcore\creatortextures.cpp>
 #include <gcore\loadertextures.cpp>
 #include <gcore\baseobject.cpp>
 #include <gcore\workmodel.cpp>
 #include <gcore\camera.cpp>
+#include <gcore\\loader_static.cpp>
 
 #define SXGCORE_VERSION 1
 
@@ -291,6 +293,14 @@ void SGCore_LoadTexUpdate(DWORD id)
 	return MTextures->Update(id);
 }
 
+IDirect3DTexture9* SGCore_GetTex(DWORD id)
+{
+	if (!DXDevice || !MTextures)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+
+	return MTextures->GetTexture(id);
+}
+
 void SGCore_LoadTexLoadTextures()
 {
 	if (!DXDevice || !MTextures)
@@ -481,3 +491,11 @@ ISXBound* SXGCore_CrBound()
 {
 	return new SXBound();
 }
+
+//////////////////////
+
+ISXCamera* SGCore_CrCamera()
+{
+	return new Camera();
+}
+

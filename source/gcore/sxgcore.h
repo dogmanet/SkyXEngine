@@ -11,6 +11,8 @@
 #pragma comment(lib, "DxErr9.lib")
 #pragma comment(lib, "d3dx9.lib")
 
+#include <gcore\ModelFile.h>
+
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
@@ -59,6 +61,8 @@ SX_LIB_API DWORD SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex);
 SX_LIB_API DWORD SGCore_LoadTexUpdateN(const char* name);		//перезагрузить текстуру name (поставить в очередь)
 SX_LIB_API void SGCore_LoadTexUpdate(DWORD id);
 
+SX_LIB_API IDirect3DTexture9*SGCore_GetTex(DWORD id);
+
 SX_LIB_API void SGCore_LoadTexLoadTextures();	//загрузка всех текстур поставленных в очередь
 
 //////////////
@@ -76,6 +80,29 @@ SX_LIB_API void SGCore_RTOnResetDevice();
 
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char* text);
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(DWORD num);
+
+///////////
+
+struct DataStaticModel
+{
+	/*DataStaticModel();
+	DataStaticModel(DataStaticModel& dsm);
+	~DataStaticModel();*/
+	
+	IDirect3DVertexBuffer9* VertexBuffer;
+	IDirect3DIndexBuffer9* IndexBuffer;
+	vertex_static* ArrVertBuf;
+	DWORD* ArrIndBuf;
+	char** ArrTextures;
+	DWORD SubsetCount;
+	UINT* StartIndex;
+	UINT* IndexCount;
+	UINT* StartVertex;
+	UINT* VertexCount;
+};
+
+SX_LIB_API void SGCore_LoadStaticModel(const char* file, DataStaticModel* data);
+SX_LIB_API void SGCore_SaveStaticModel(const char* file, DataStaticModel* data);
 
 ///////////
 
@@ -265,7 +292,7 @@ protected:
 	float AngleUpDown, AngleRightLeft, AngleRoll;
 };
 
-SX_LIB_API ISXCamera* SGCore_CrCamera();
+ ISXCamera* SGCore_CrCamera();
 
 ////////
 /*

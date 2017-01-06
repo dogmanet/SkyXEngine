@@ -7,6 +7,7 @@
 #include <ctime>
 #pragma comment(lib, "winmm.lib")
 #include <gdefines.h>
+//#include <string\string.cpp>
 #if defined(_DEBUG)
 #pragma comment(lib, "sxinput_d.lib")
 #else
@@ -16,6 +17,9 @@
 #include <core\\array.h>
 #include <handler_out_log.cpp>
 //#include <core\\sxcore.cpp>
+
+#define SM_D3D_CONVERSIONS
+
 #include <sxmath.h>
 
 
@@ -25,8 +29,8 @@
 #pragma comment(lib, "sxsound.lib")
 #endif
 #include <sound\\sxsound.h>
-
-/*#if defined(_DEBUG)
+/*
+#if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
@@ -38,7 +42,7 @@
 #else
 #pragma comment(lib, "sxcore.lib")
 #endif
-#include <core\\sxcore.cpp>
+#include <core\\sxcore.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxguiwinapi_d.lib")
@@ -47,123 +51,158 @@
 #endif
 #include <sxguiwinapi\\sxguielements.h>
 
+#include <geom\\static_geom.cpp>
 
-/*
-class WndMsgTask : public SXTask
+
+StaticGeom* Geometry = 0;
+ISXCamera* ObjCamera = 0;
+D3DXMATRIX Projection;
+
+
+//обработка вводы информации с клавиатуры
+void UpdateInputKeyBoard(DWORD timeDelta)
 {
-public:
-	WndMsgTask() : SXTask(BACKGROUND_SYNC | REPEATING)
-	{
-	}
-	~WndMsgTask()
-	{
-	}
+	//обработка ходьбы
+	if (::GetAsyncKeyState('W') & 0x8000f)
+		ObjCamera->PosFrontBack(float(timeDelta) * 0.001f);
 
-	void run()
-	{
-		Sleep(1000);
-	}
+	if (::GetAsyncKeyState('S') & 0x8000f)
+		ObjCamera->PosFrontBack(-float(timeDelta) * 0.001f);
 
-};*/
+	if (::GetAsyncKeyState('A') & 0x8000f)
+		ObjCamera->PosFrontBack(-float(timeDelta) * 0.001f);
 
-void runqq()
+	if (::GetAsyncKeyState('D') & 0x8000f)
+		ObjCamera->PosFrontBack(float(timeDelta) * 0.001f);
+
+	//крен камеры
+	if (::GetAsyncKeyState('Q') & 0x8000f)
+		ObjCamera->Roll(0.2f);
+
+	if (::GetAsyncKeyState('E') & 0x8000f)
+		ObjCamera->Roll(-0.2f);
+}
+
+//обработка движени€ мыши вправо и влево
+void UpdateInputMouseRotate(DWORD timeDelta)
 {
-	Sleep(1000);
+	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
+	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+	POINT p;
+	GetCursorPos(&p);
+	POINT centr;
+	centr.x = cx; centr.y = cy;
+
+	if (cx != UINT(p.x))
+	{
+		ObjCamera->RotRightLeft(float(timeDelta) * 0.001f * float(int(p.x - cx)));
+		//SetCursorPos(centr.x,cy);
+	}
+
+	if (cy != UINT(p.y))
+	{
+		ObjCamera->RotUpDown(float(timeDelta) * 0.001f * float(int(p.y - cy)));
+		//SetCursorPos(cx,centr.y);
+	}
+}
+
+//обработка движени€ мыши вверх вниз
+void UpdateInputMouseUpDown(DWORD timeDelta)
+{
+	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
+	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+	POINT p;
+	GetCursorPos(&p);
+	POINT centr;
+	centr.x = cx; centr.y = cy;
+
+	if (cy != UINT(p.y))
+	{
+		ObjCamera->PosUpDown(float(timeDelta) * 0.001f * float(-int(p.y - cy)));
+		//SetCursorPos(cx,centr.y);
+	}
+}
+
+//центрирвоание курсора мыши
+void CentererCursor()
+{
+	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
+	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+	SetCursorPos(cx, cy);
 }
 
 
+int Render(DWORD timeDelta)
+{
+	DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x569874, 1.0f, 0);//очистка  буфера цвета и буфера глубины
+	DXDevice->BeginScene();//подготовка к рисованию
+
+	//обработка перемещени€/вращени€
+	if (GetAsyncKeyState(VK_LCONTROL))
+	{
+		static bool IsFirstLBM = false;
+		static bool IsFirstRBM = false;
+
+		static bool IsSFirstLBM = false;
+		static bool IsSFirstRBM = false;
+
+		UpdateInputKeyBoard(timeDelta);
+
+		//еси нажата лева€ кнопка мыши то можно вращать
+		if (GetAsyncKeyState(VK_LBUTTON))
+		{
+			//если не первый раз нажата Ћ ћ то совершаем действие
+			if (IsFirstLBM)
+				UpdateInputMouseRotate(timeDelta);
+			//иначе просто говорим что впервые и устанавливаем курсор в центр
+			else
+				IsFirstLBM = true;
+			CentererCursor();
+		}
+		//если нажата права€ кнопка мыши то можно поднимать и опускать камеру
+		else if (GetAsyncKeyState(VK_RBUTTON))
+		{
+			if (IsFirstRBM)
+				UpdateInputMouseUpDown(timeDelta);
+			else
+				IsFirstRBM = true;
+			CentererCursor();
+		}
+		else
+		{
+			IsFirstLBM = false;
+			IsFirstRBM = false;
+		}
+	}
+
+	DXDevice->SetTransform(D3DTS_WORLD, &(SMMatrixIdentity().operator D3DXMATRIX()));
+
+	//установка видовой матрицы из камеры дл€ применени€ перемещени€/вращени€
+	float4x4 view;
+	ObjCamera->GetViewMatrix(&view);
+	DXDevice->SetTransform(D3DTS_VIEW, &(view.operator D3DXMATRIX()));
+
+	//установка матрицы проекции
+	DXDevice->SetTransform(D3DTS_PROJECTION, &Projection);
+
+	Geometry->Render();
+
+	DXDevice->EndScene();	//заканчиваем отрисовку
+	DXDevice->Present(0, 0, 0, 0);	//выводим картинку в окно
+	return 1;
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-	ISXFile* tmpfile = Core_OpFile("./log.txt", SXFILE_TEXT);
-
-	int arg1 = 147;
-	float arg2;
-	int arg3;
-
-	tmpfile->ReadT("%d%f%d", &arg1, &arg2, &arg3);
-	/*SXTaskManager * pTaskManager = new SXTaskManager();
-
-	///ƒобавл€ем задачи 
-	pTaskManager->add(runqq);
-	pTaskManager->add(runqq);
-
-	//pTaskManager->add(SXTaskManager::TaskPtr(new WndMsgTask()));
-
-
-
-
-	/// ƒобавл€ем задачу обработки сообщений windows
-	//pTaskManager->add(SXTaskManager::TaskPtr(new WndMsgTask(this)));
-	/// «апускаем выполнение
-	pTaskManager->start();*/
-	ISXLConfig* tmpconfig = Core_OpLConfig("D:\\project\\builds\\build_22_04_2016\\gamesource\\configs\\camera_fly\\test.cf");
-	const char* tmpstr = tmpconfig->GetSectionName(0);
-	Core_0Create("qqq", true);
-	Core_MTaskAdd(runqq);
-	Core_MTaskStart();
-	//CreateElements[1]->Object;
 	srand((unsigned int)time(0));
-	SXGUIRegClass::RegButtonImg();
-	//memcpy(test2, test3, sizeof(test2));
-	//test2::release = test3::release;
-	//test2::method1 = test3::method1;
 	ISXGUIBaseWnd* tmpwin = SXGUICrBaseWnd("SkyLandEditor", "SkyLandEditor", 0, 0, 273, 131, 657, 585, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0);
-	//tmpwin->SetColorBrush(255, 0, 0);
-	tmpwin->SetText("qqqqqqqqqqqqqqqqqqqqqqqqq");
-	SXGUIBaseHandlers::InitHandlerMsg(tmpwin);
-	ISXGUIButtonImg* ImgNew = SXGUICrButtonImgEx("D:\\project\\engine\\old source\\SkyX Engine source\\sxwincreator\\ресурсы\\меню\\new.bmp", 3, 1, 30, 30, RGB(255, 0, 110), RGB(220, 220, 220), tmpwin->GetHWND(), 0, 0);
-	ImgNew->InitCallBack();
-	ImgNew->Visible(true);
-	ImgNew->AlphaColor = RGB(200, 100, 100);
-	ImgNew->BkColor = RGB(250, 0, 0);
-	/*ImgNew->EnableBf = true;
-	ImgNew->EnableState = true;*/
-	//SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(0, 0);
-	//ISXGUIStatic* tst = SXCreateStatic("3d модель:", 3, 5, 65, 15, tmpwin->GetHWND(), 0, 0);
-	ISXGUIButton* tbut = SXGUICrButton("...", 300, 5, 25, 15, 0, tmpwin->GetHWND(), 0, 0);
-	//SSound_0Create("test", 0, false);
-	//SSound_Play(0);
-	InitOutLog();
-	//SSInput_Dbg_Set(printflog);
-	//SSInput_0Create("test", 0, false);
-	//SSInput_Update();
-	
+	SGCore_0Create("qq", tmpwin->GetHWND(), 800, 600, true, 0, false);
+	D3DXMatrixPerspectiveFovLH(&Projection, D3DX_PI * 0.5f, 800.0 / 600.0, 0.05f, 1000.0f);
+	Geometry = new StaticGeom();
+	Geometry->AddModel("D:\\project\\engine\\build\\gamesource\\meshes\\rinok\\rinok\\land.dse");
 
-	float2 WidthHeight(800, 600);
-	WNDCLASSEX wcex;
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = DefWindowProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = GetModuleHandle(0);
-	wcex.hIcon = NULL;
-	wcex.hCursor = 0;
-	wcex.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = "test";
-	wcex.hIconSm = 0;
-
-	RegisterClassEx(&wcex);
-
-	RECT rc = { 0, 0, WidthHeight.x, WidthHeight.y };
-	AdjustWindowRect(&rc, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
-
-	HWND hwnd3d3 = CreateWindowEx(
-		0,
-		"test",
-		"test",
-		WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-		0, 0,
-		rc.right - rc.left, rc.bottom - rc.top,
-		0, 0,
-		GetModuleHandle(0),
-		0);
-
-	ShowWindow(hwnd3d3, SW_SHOW);
-
-		SGCore_0Create("qwert", hwnd3d3, WidthHeight.x, WidthHeight.y, true, 0, true);
-		IDirect3DDevice9* DXDevice = SGCore_GetDXDevice();
+	DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	ObjCamera = SGCore_CrCamera();
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
@@ -185,13 +224,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 					DWORD currTime  = timeGetTime();
 					DWORD timeDelta = (currTime - lastTime);
-					timeDelta = (timeDelta + TimeCCadr) / 2;
-					//SkyXEngine::Core::Render::MainRender(timeDelta);
 
-					DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-						0x569874, 1.0f, 0);
-					DXDevice->Present(0, 0, 0, 0); // показ вторичного буфера
-
+					Render(timeDelta);
 
 					TimeCCadr = timeDelta;
 					TimeStart = TimeThis;

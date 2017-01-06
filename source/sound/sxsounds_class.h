@@ -7,11 +7,11 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dsound.lib")
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) || defined(DEBUG)
 #pragma comment(lib, "libogg_static_d.lib")
 #pragma comment(lib, "libvorbis_static_d.lib")
 #pragma comment(lib, "libvorbisfile_static_d.lib")
-#elif
+#else
 #pragma comment(lib, "libogg_static.lib")
 #pragma comment(lib, "libvorbis_static.lib")
 #pragma comment(lib, "libvorbisfile_static.lib")

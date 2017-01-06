@@ -28,6 +28,9 @@
     <Filter Include="sxguiwinapi">
       <UniqueIdentifier>{d9f37b16-a9dd-404d-9e18-1059327963ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sxgeom">
+      <UniqueIdentifier>{3afc7347-d83b-4388-bfd6-a3f83bce2963}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\handler_out_log.cpp">
@@ -151,6 +154,12 @@
       <Filter>sxgcore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\baseobject.cpp">
+      <Filter>sxgcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\static_geom.cpp">
+      <Filter>sxgeom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gcore\loader_static.cpp">
       <Filter>sxgcore</Filter>
     </ClCompile>
   </ItemGroup>
@@ -279,6 +288,12 @@
       <Filter>sxguiwinapi</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\baseobject.h">
+      <Filter>sxgcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\geom\static_geom.h">
+      <Filter>sxgeom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gcore\ModelFile.h">
       <Filter>sxgcore</Filter>
     </ClInclude>
   </ItemGroup>
