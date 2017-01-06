@@ -1,0 +1,14 @@
+--TEST--
+Simple If/ElseIf/Else Test
+--FILE--
+$a=1; 
+
+if(a==0) {
+	print("bad");
+} else if(a==3) {
+	print("bad");
+} else {
+	print("good");
+}
+--EXPECT--
+good

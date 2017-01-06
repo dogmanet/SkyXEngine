@@ -1,0 +1,1 @@
+s4g_runtest.exe -d %~dp0 -e %~dp0..\..\..\SkyXEngine\SkyXEngine\Debug\s4g_launcher.exe -o %~dp0failed

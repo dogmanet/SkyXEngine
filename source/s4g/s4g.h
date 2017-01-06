@@ -124,7 +124,9 @@ void s4g_report(s4g_main* s4gm, int level, const char* name_ss, const char* form
 	else
 	{
 		fprintf(stdout, "s4g %s error: %s\n", name_ss, buf);
+#ifndef S4G_FASTFAIL
 		Sleep(50000);
+#endif
 		exit(1);
 	}
 }

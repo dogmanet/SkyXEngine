@@ -1,0 +1,10 @@
+--TEST--
+Simple While Loop Test
+--FILE--
+$a=1; 
+while (a<10) {
+	print(tostring(a));
+	a++;
+}
+--EXPECT--
+123456789
