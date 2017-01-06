@@ -149,7 +149,7 @@ if(0)
       ++j;
       print("this isn't supposed to be displayed\n");
     }
-  } elseif (0) {
+  } else if (0) {
     j++;
     print("this definitely shouldn't be displayed\n");
   } else {
@@ -160,14 +160,14 @@ if(0)
   j=i++;  /* this should set i to 1, but shouldn't change j (it's assigned i's previous values, zero) */
   print("this should be displayed. should be:  i=1, j=0.  is:  i="+tostring(i)+", j="+tostring(j)+"\n");
   if (1) {
-    j += ++i;  /* ++$i --> $i==2,  $j += 2 --> $j==2 */
+    j =j+ ++i;  /* ++$i --> $i==2,  $j += 2 --> $j==2 */
     if (0) {
-      j += 40;
+      j =j+ 40;
       if (1) {
-        i += 50;
+        i =i+ 50;
         print("damn, this shouldn't be displayed\n");
       } else {
-        j += 20;
+        j =i+ 20;
         print("this shouldn't be displayed either\n");
       }
     } else if (1) {
@@ -178,7 +178,7 @@ if(0)
         print(tostring($i++)+" "+tostring(j)+"\n");
       }
     }
-  } elseif (0) {
+  } else if (0) {
     print("this definitely shouldn't be displayed\n");
   } else {
     print("and this too shouldn't be displayed\n");
