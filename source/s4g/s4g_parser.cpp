@@ -145,11 +145,11 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						lex_get_next0(tmplexs);
 						tmpnode->op3 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что else
 					}
-					lex_get_next0(tmplexs);
+					//lex_get_next0(tmplexs);
 					bst_cond_er(this);
-					if(tmplexs)
+					//if(tmplexs)
 					{
-						lex_get_prev0(tmplexs);
+					//	lex_get_prev0(tmplexs);
 						tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 					}
 					return tmpnode;
@@ -195,7 +195,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						tmpnode->op2 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что while
 						lex_get_curr0(tmplexs);
 						bst_cond_er(this);
-						if(tmplexs)
+						//if(tmplexs)
 						{
 							tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 						}
@@ -332,10 +332,6 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 				node = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode);
 				if (node && node->op2)
 					node->op2->op1 = one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement();
-			}
-			else
-			{
-				NodePool.Delete(tmpnode);
 			}
 		}
 		//иначе у считываем выражение
@@ -1361,10 +1357,12 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr()
 						}
 					}
 
-					this->overend--;
-					s4g_node* body_func = s4g_gen_statement();
+					//this->overend--;
+					//s4g_node* body_func = s4g_gen_statement();
+					s4g_node* body_func = s4g_read_block();
 					bst_cond_er(this);
 					lex_get_curr0(tmplexs);
+					/*
 					bst_cond_eof(tmplexs);
 						//если текущая лексема не означает завершение операции end
 						if(!(arr_lex->get_curr_num() < arr_lex->get_count() && tmplexs->type == word_key && tmplexs->id == 2)) //error
@@ -1373,7 +1371,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr()
 							sprintf(this->error,"[%s]:%d - not found end for funcion",this->arr_lex->ArrFiles[sfunclex->fileid],sfunclex->numstr);
 							return 0;
 						}
-					lex_get_next0(tmplexs);
+					lex_get_next0(tmplexs);*/
 					s4g_node* nfunc = NodePool.Alloc(_function, cfunclexid, (s4g_value*)0, head_func, body_func, extern_data);
 					return NodePool.Alloc(_set, cfunclexid - 1, (s4g_value*)0, name_func, nfunc);
 				}
