@@ -225,7 +225,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						if(status == 0)
 						{
 							status = -1;
-							sprintf(this->error, "[%s]:%d - none end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						}
 						return 0;
 					}
@@ -238,7 +238,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						if(status == 0)
 						{
 							status = -1;
-							sprintf(this->error, "[%s]:%d - none end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						}
 						return 0;
 					}
@@ -349,7 +349,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						if(status == 0)
 						{
 							status = -1;
-							sprintf(this->error,"[%s]:%d - none end for expression",this->arr_lex->ArrFiles[tmplexs->fileid],tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						}
 					return 0;
 				}
