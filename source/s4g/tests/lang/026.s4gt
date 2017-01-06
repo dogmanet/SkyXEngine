@@ -1,0 +1,7 @@
+--TEST--
+Testing string scanner confirmance
+--FILE--
+print("\"\t\\'" + '\n\\\'a\\\b\\');
+--EXPECT--
+"	\'
+\'a\\

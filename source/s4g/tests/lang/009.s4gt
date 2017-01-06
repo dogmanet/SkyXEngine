@@ -1,0 +1,10 @@
+--TEST--
+Testing function parameter passing
+--FILE--
+function test(a,b)
+{
+	print(tostring(a+b));	
+}
+test(1,2);
+--EXPECT--
+3

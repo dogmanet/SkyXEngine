@@ -25,7 +25,7 @@
 #include <SXGUIWinApi\sxguielements.h>
 
 #include <core\\Array.h>
-#include <D:\project\engine\SkyXEngine\SXWinCreator\resource.h>
+#include <../SkyXEngine/SXWinCreator/resource.h>
 
 
 #include <Shlwapi.h>

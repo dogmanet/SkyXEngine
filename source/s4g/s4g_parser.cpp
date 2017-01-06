@@ -138,11 +138,11 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						lex_get_next0(tmplexs);
 						tmpnode->op3 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что else
 					}
-					lex_get_next0(tmplexs);
+					//lex_get_next0(tmplexs);
 					bst_cond_er(this);
-					if(tmplexs)
+					//if(tmplexs)
 					{
-						lex_get_prev0(tmplexs);
+					//	lex_get_prev0(tmplexs);
 						tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 					}
 					return tmpnode;
@@ -188,7 +188,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						tmpnode->op2 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что while
 						lex_get_curr0(tmplexs);
 						bst_cond_er(this);
-						if(tmplexs)
+						//if(tmplexs)
 						{
 							tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
 						}
@@ -218,7 +218,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						if(status == 0)
 						{
 							status = -1;
-							sprintf(this->error, "[%s]:%d - none end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						}
 						return 0;
 					}
@@ -231,7 +231,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						if(status == 0)
 						{
 							status = -1;
-							sprintf(this->error, "[%s]:%d - none end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						}
 						return 0;
 					}
@@ -326,10 +326,6 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 				if (node && node->op2)
 					node->op2->op1 = one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement();
 			}
-			else
-			{
-				NodePool.Delete(tmpnode);
-			}
 		}
 		//иначе у считываем выражение
 		else if(one)
@@ -346,7 +342,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement(bool one)
 						if(status == 0)
 						{
 							status = -1;
-							sprintf(this->error,"[%s]:%d - none end for expression",this->arr_lex->ArrFiles[tmplexs->fileid],tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						}
 					return 0;
 				}

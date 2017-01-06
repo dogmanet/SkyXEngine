@@ -1,0 +1,7 @@
+--TEST--
+Testing user-defined function in included file
+--FILE--
+#include "016.inc"
+MyFunc("Hello");
+--EXPECT--
+Hello
