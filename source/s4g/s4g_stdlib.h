@@ -118,7 +118,10 @@ int s4g_std_print(s4g_main* s4gm)
 	S4G_STDLIB_COND_ARG(s4gm, countarg, 1);
 
 		if (s4g_cfis_str(s4gm, 1))
+		{
+			const char* str = s4g_cfget_str(s4gm, 1);
 			printf(s4g_cfget_str(s4gm, 1));
+		}
 		else
 		{
 			s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #1 string, but got '%s'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), s4g_cfget_str_type(s4gm, 1));
@@ -185,6 +188,56 @@ int s4g_std_tablen(s4g_main* s4gm)
 	{
 		s4g_table* tt = (s4g_table*)s4g_cfget_pdata(s4gm, 1);
 		s4g_spush_int(s4gm, s4g_table_size(tt));
+	}
+	else
+	{
+		s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #1 table, but got '%s'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), s4g_cfget_str_type(s4gm, 1));
+		return -1;
+	}
+
+	return 1;
+}
+
+int s4g_std_tabgetkey(s4g_main* s4gm)
+{
+	int countarg = s4g_cfcount_arg(s4gm);
+
+	S4G_STDLIB_COND_ARG(s4gm, countarg, 1);
+
+	if (s4g_cfis_table(s4gm, 1))
+	{
+		s4g_table* tt = (s4g_table*)s4g_cfget_pdata(s4gm, 1);
+		s4g_int num = -1;
+		if (s4g_cfis_int(s4gm, 2))
+		{
+			num = s4g_cfget_int(s4gm, 2);
+		}
+		else if (s4g_cfis_str(s4gm, 2))
+		{
+			String str = s4g_cfget_int(s4gm, 2);
+			num = str.ToLongInt();
+		}
+		else
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #2 int, but got '%s'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), s4g_cfget_str_type(s4gm, 2));
+			return -1;
+		}
+
+		if (num < 0)
+		{
+			s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #2 valid index, but got '%d'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), num);
+			return -1;
+		}
+
+		if (num >= 0)
+		{
+			s4g_value* val = s4g_table_get(tt, num);
+			if (!val)
+			{
+				val = s4g_gcget_null(s4gm);
+			}
+			s4g_spush_str(s4gm, val->name);
+		}
 	}
 	else
 	{
@@ -430,7 +483,7 @@ int s4g_std_tostring(s4g_main* s4gm)
 	}
 	else if (ttype == t_bool)
 	{
-		s4g_bool tval = s4g_cfget_float(s4gm, 1);
+		s4g_bool tval = s4g_cfget_bool(s4gm, 1);
 		sprintf(tmpstr, "%d", tval);
 		s4g_spush_str(s4gm, tmpstr);
 	}
@@ -638,6 +691,9 @@ void s4g_export_stdlib(s4g_main* s4gm)
 
 	s4g_spush_c_func(s4gm, s4g_std_tablen);
 	s4g_sstore(s4gm, S4G_NM_SYS, "tablen");
+
+	s4g_spush_c_func(s4gm, s4g_std_tabgetkey);
+	s4g_sstore(s4gm, S4G_NM_SYS, "tabgetkey");
 
 	s4g_spush_c_func(s4gm, s4g_std_call_gc);
 	s4g_sstore(s4gm, S4G_NM_SYS, "call_gc");

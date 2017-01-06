@@ -1,6 +1,8 @@
 #ifndef s4g_stack_h
 #define s4g_stack_h
 
+#include <core/array.h>
+
 #define stack_pop(stack,count)\
 {\
 	if (count > stack.count_obj)\

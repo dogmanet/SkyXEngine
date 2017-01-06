@@ -19,6 +19,14 @@
 #	pragma GCC diagnostic ignored "-Wsign-compare"
 #endif
 
+struct UsageStats
+{
+	UINT uAllocCount; // количество занятых элементов
+	UINT uFreeCount; // количество свободных элементов
+	ULONG ulSysMem; // Количество выделенной у системы памяти
+	ULONG ulAllocMem; //Количество занятой элементами памяти
+};
+
 template <typename T, int SizeBlock = 256>
 class MemAlloc
 {
@@ -30,13 +38,15 @@ class MemAlloc
 	struct MemBlock
 	{
 		MemCell * mem;
-		unsigned int size;
-		unsigned int pos;
+		UINT size;
+		UINT pos;
+		UINT used;
 	};
 	MemBlock * memblocks;
 	int NumCurBlock;
 	int NumCurBlockCount;
 public:
+	
 	MemAlloc():memblocks(NULL), NumCurBlock(0), NumCurBlockCount(0)
 	{
 		//printf("MemAlloc()\n");
@@ -160,7 +170,7 @@ public:
 		mem_delete_a(this->memblocks);
 		this->NumCurBlockCount = 0;
 		this->NumCurBlock = 0;
-		AllocBlock();
+		//AllocBlock();
 	}
 
 	void AllocBlock(UINT size = SizeBlock)
@@ -259,6 +269,7 @@ public:
 			}
 			return(Alloc(args...));
 		}
+		++this->memblocks[NumCurBlock].used;
 		tmpNewNode = new (tmpNewNode)T(args...);
 		return(tmpNewNode);
 	}
@@ -280,7 +291,7 @@ public:
 		UINT * bnum = (UINT*)((intptr_t)pointer - sizeof(UINT));
 		UINT blockID = *bnum;
 		UINT curPos = ((intptr_t)bnum - (intptr_t)memblocks[blockID].mem) / sizeof(MemCell);
-
+		--this->memblocks[blockID].used;
 		pointer->~T();
 
 		if(NumCurBlock > blockID)
@@ -303,6 +314,18 @@ public:
 	void Delete(void * ptr)
 	{
 		Delete((T*)ptr);
+	}
+
+	void GetMemUsage(UsageStats * us)
+	{
+		memset(us, 0, sizeof(UsageStats));
+		for(int i = 0; i < this->NumCurBlockCount; i++)
+		{
+			us->uAllocCount += this->memblocks[i].used;
+			us->uFreeCount += this->memblocks[i].size - this->memblocks[i].used;
+		}
+		us->ulAllocMem = us->uAllocCount * sizeof(T);
+		us->ulSysMem = (us->uAllocCount + us->uFreeCount) * sizeof(T) + NumCurBlockCount * sizeof(MemBlock);
 	}
 };
 

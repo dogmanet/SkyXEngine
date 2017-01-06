@@ -5,9 +5,9 @@
 #define mem_delete(data) delete data;data = 0;
 #define mem_delete_a(data) delete[] data;data = 0;
 
-#include "MemAlloc.h"
-#include "array.h"
 #include "s4g_stack.h"
+#include <core/MemAlloc.h>
+#include <core/array.h>
 #include <core/assotiativearray.h>
 
 #define S4G_GC_TYPE_DATA_FREE 0		//простые публичные данные
@@ -123,7 +123,7 @@ public:
 	inline void reserve(int count_elem);	//зарезервировать место в таблице под count_elem ключей
 
 	inline s4g_value * cr_if_not_exists(const char* str, s4g_gc * gc);
-protected:
+//protected:
 	struct item_name
 	{
 		mutable char Name[S4G_MAX_LEN_VAR_NAME];
@@ -261,6 +261,9 @@ public:
 
 	inline void begin_of_const_data();	//старт создания константных значений (при загрузке скрипта)
 	inline void end_of_const_data();	//окончание создания константных значений (окончание загрузки скрипта)
+
+	inline long get_count_mem_busy();
+	inline long get_count_mem_allocated();
 
 protected:
 	friend class s4g_main;

@@ -2,18 +2,21 @@
 #define Array_H
 
 /*
-	пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ:
-		пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
+	Внимание:
+		Элемент массива не имеет гарантированного расположения в памяти.
 */
 
-#include <new>
+#ifdef s4g_stack_h
+template <typename T, int BlockSize = 16>
+class s4g_stack;
 
-#ifdef _DBG_MEM
-#	undef new
+template<typename T, int BlockSize = 16>
+class s4g_stack_register;
 #endif
 
-#ifndef dbg_break
-#define dbg_break
+#ifdef s4g_h
+class s4g_table;
+class s4g_gc;
 #endif
 
 template<typename T, int BlockSize=16>
@@ -36,7 +39,7 @@ public:
 			}
 	}
 
-	void resize(UINT NewSize)
+	inline void resize(UINT NewSize)
 	{
 		Realloc(NewSize);
 		//ConstructInterval(this->Size, key);
@@ -47,22 +50,22 @@ public:
 		this->Size = NewSize;
 	}
 
-	void reserve(UINT size)
+	inline void reserve(UINT size)
 	{
 		Realloc(size);
 	}
 
-	UINT size() const
+	inline UINT size() const
 	{
 		return(Size);
 	}
 
-	void push_back(const T & data)
+	inline void push_back(const T & data)
 	{
 		(*this)[this->Size] = data;
 	}
 
-	void erase(UINT key)
+	inline void erase(UINT key)
 	{
 			/*if(key < 0)
 			{
@@ -78,13 +81,30 @@ public:
 				memcpy(&this->Data[key], &this->Data[key + 1], sizeof(T) * (this->Size - key - 1));
 				this->Size--;
 			}
+			else
+			{
+				_asm
+				{
+					int 3;
+				};
+			}
 	}
 
-	Array & operator=(const Array<T, BlockSize> & arr)
+	inline Array & operator=(T* arr)
 	{
 		//this->AllocSize = arr.AllocSize;
 		//this->Size = arr.Size;
-		this->resize(arr.Size);
+			/*for(int i = arr.Size - 1; i >= 0; i--)
+			{
+				(*this)[i] = arr[i];
+			}*/
+		return(*this);
+	}
+
+	inline Array & operator=(const Array<T, BlockSize> & arr)
+	{
+		//this->AllocSize = arr.AllocSize;
+		//this->Size = arr.Size;
 			for(int i = arr.Size - 1; i >= 0; i--)
 			{
 				(*this)[i] = arr[i];
@@ -92,11 +112,11 @@ public:
 		return(*this);
 	}
 
-	T & operator[](UINT key)
+	inline T & operator[](UINT key)
 	{
 		if(key > ((UINT)-1) - 128)
 		{
-			dbg_break
+			
 		}
 			if(key >= this->Size)
 			{
@@ -110,11 +130,26 @@ public:
 		return(Data[key]);
 	}
 
-	const T & operator[](UINT key) const
+
+	inline T & GetKeyOC(UINT key)
+	{
+		return(Data[key]);
+	}
+
+	inline void SetKeyOC(UINT key, T& val)
+	{
+		Data[key] = val;
+	}
+
+	inline const T & operator[](UINT key) const
 	{
 			if(key >= this->Size)
 			{
-				dbg_break
+				/*_asm
+				{
+					int 3;
+				};*/
+				//SkyXEngine::Core::InError("exit in array");
 			}
 		return(Data[key]);
 	}
@@ -129,7 +164,7 @@ public:
 		free(Data);
 	}
 
-	void clear()
+	inline void clear()
 	{
 			if(Size)
 			{
@@ -142,14 +177,28 @@ public:
 		Alloc();
 	}
 
-private:
+	inline UINT GetAllocSize()
+	{
+		return AllocSize;
+	}
 
-	void Alloc()
+protected:
+
+#ifdef s4g_stack_h
+	friend s4g_stack<T, BlockSize>;
+	friend s4g_stack_register<T, BlockSize>;
+#endif
+
+#ifdef s4g_h
+	friend s4g_table;
+	friend s4g_gc;
+#endif
+	inline void Alloc()
 	{
 		Realloc(BlockSize);
 	}
 
-	void Realloc(UINT NewSize)
+	inline void Realloc(UINT NewSize)
 	{
 		T * tmpData = (T*)malloc(sizeof(T) * NewSize);
 		memcpy(tmpData, this->Data, min(NewSize, this->Size) * sizeof(T));
@@ -165,7 +214,7 @@ private:
 		free(tmpDel);
 	}
 
-	void ConstructInterval(UINT start, UINT end)
+	inline void ConstructInterval(UINT start, UINT end)
 	{
 		//this->Data + start = new(this->Data + start) T[end - start + 1];
 			for(UINT i = start; i <= end; i++)
@@ -174,7 +223,7 @@ private:
 			}
 	}
 
-	void DestructInterval(UINT start, UINT end)
+	inline void DestructInterval(UINT start, UINT end)
 	{
 			for(UINT i = start; i <= end; i++)
 			{
@@ -187,10 +236,6 @@ private:
 	UINT Size;
 	UINT AllocSize;
 };
-
-#ifdef _DBG_MEM
-#	define new DS_NEW
-#endif
 
 
 #endif

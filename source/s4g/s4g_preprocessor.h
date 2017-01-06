@@ -3,7 +3,7 @@
 
 #include <sxtypes.h>
 #include <string/string.h>
-#include "array.h"
+#include <core/array.h>
 #include <core/assotiativearray.h>
 
 class s4g_preprocessor

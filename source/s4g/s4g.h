@@ -5,7 +5,7 @@
 extern "C"
 {
 
-#include "string.cpp"
+#include <string/string.cpp>
 #include <limits.h>
 
 #define S4G_VERSION "0.9"
@@ -152,7 +152,7 @@ const char s4g_str_type[][S4G_MAX_LEN_TYPE_NAME] = {
 /////
 
 #define S4G_NM_GLOBAL INT_MIN	//глобальное пространство имен
-#define S4G_NM_SYS INT_MIN+1		//языковое/системное простраство имен
+#define S4G_NM_SYS INT_MIN+1	//языковое/системное простраство имен
 //глобальнео простарство имен доступно из локальных контекстов только через _g (как объявлено в S4G_GLOBAL_NM), в глобальном все пишется напрямую в него
 //языковое/системное простраство имен доступно напрямую при любом контексте, поэтому в этоя зыковое простарство можно экспортировать все что необходимо для прямого использования внутри скриптов
 
@@ -170,6 +170,14 @@ S4G_API void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...);	//
 //вызываем сборку мусора, возвращает количество занимаемой памяти
 S4G_API int s4g_call_gc(s4g_main* s4gm);
 
+S4G_API long s4g_gc_mem_busy(s4g_main* s4gm);		//количество занятой памяти
+S4G_API long s4g_gc_mem_allocated(s4g_main* s4gm);
+
+//возвращают константные значения (константные для сборщика и машины и внутренней системы), то есть значения которые не копируются
+s4g_value* s4g_gcget_null(s4g_main* s4gm);
+s4g_value* s4g_gcget_bool(s4g_main* s4gm,bool bf);
+s4g_value* s4g_gcget_true(s4g_main* s4gm);
+s4g_value* s4g_gcget_false(s4g_main* s4gm);
 /*
 С(++) => stack
 */
