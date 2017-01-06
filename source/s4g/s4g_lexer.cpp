@@ -626,7 +626,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 
 						break;
 					}
-					else if (tmpc == '"')
+					else if(tmpc == '"' || tmpc == '\'')
 					{
 						int len = 0;
 						s4g_scan_litstring(str + numcursym, tmpword, len);
