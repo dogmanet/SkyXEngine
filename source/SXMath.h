@@ -41,7 +41,7 @@ void operator delete[](void* ptr)\
 #define sign2(x) (x >= 0 ? 1 : -1)
 #define SMToRadian(degree)((degree)*(SM_PI / 180.0f))
 
-inline float GetRandomFloat(float lowBound, float highBound)
+inline float randf(float lowBound, float highBound)
 {
 	if( lowBound >= highBound ) // bad input
 		return lowBound;

@@ -100,10 +100,10 @@ struct ISXGUIControl : public IBaseObject
 	//virtual WNDPROC GetOldProc() = 0;
 
 	WNDPROC OldProc;
-
 protected:
 	HWND ParentHandle;
 	HWND WindowHandle;
+	
 };
 
 
@@ -339,6 +339,7 @@ SX_LIB_API ISXGUIButton* SXGUICrButton(const char* caption, WORD x, WORD y, WORD
 /////
 
 SX_LIB_API LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+SX_LIB_API LRESULT WndProcGroupBoxPaint(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #define SXGUI_BI_POS_FREE			0
 #define SXGUI_BI_POS_MOUSE_MOVE		1
@@ -622,13 +623,13 @@ SX_LIB_API ISXGUITrackBar* SXGUICrTrackBar(const char* caption, WORD x, WORD y, 
 #define SXGUI_SB_ALIGN_RS_PERCENT	1
 #define SXGUI_SB_ALIGN_RS_PROP		2
 //!!! проверить код, там чето не лады с выделением памяти
-struct ISXGUIStatusBar : public virtual ISXGUIComponent
+struct ISXGUIStatusBar : public virtual ISXGUITextual
 {
 	virtual ~ISXGUIStatusBar(){}
 	virtual bool SetCountParts(WORD count, int *arr) = 0;
 	virtual WORD GetCountParts(int **arr) = 0;
 	virtual bool SetTextParts(WORD pos, const char* text) = 0;
-	virtual const char* GetTextParts(WORD pos) = 0;
+	virtual int GetTextParts(WORD pos, char* text) = 0;
 
 	virtual void Update() = 0;
 	virtual void UpdateSize() = 0;
@@ -820,4 +821,6 @@ namespace SXGUIRegClass
 	SX_LIB_API bool RegButtonImg();
 	//класс тулбара
 	SX_LIB_API bool RegToolBar();
+
+	SX_LIB_API bool RegGroupBox();
 };

@@ -44,6 +44,7 @@ long SXInput::Init(HWND hwnd, HINSTANCE hinst)
 			else
 				return SX_INPUT_ERR_CDI_NONE_ERR;
 		}
+	return 0;
 }
 
 SXInput::~SXInput()
@@ -55,8 +56,6 @@ SXInput::~SXInput()
 
 long SXInput::InitKeyboard(HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev)
 {
-	IDirectInputDevice8 *DIDevice = *dev;
-
 	HWND CurrWnd = GetForegroundWindow();
 	int MyTID = GetCurrentThreadId();
 	int CurrTID = GetWindowThreadProcessId(CurrWnd,0);
@@ -66,27 +65,27 @@ long SXInput::InitKeyboard(HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDev
 	AttachThreadInput(MyTID, CurrTID, FALSE);
 
 	/////////////////////
-
-		if(FAILED(DirectInput->CreateDevice(GUID_SysKeyboard,&DIDevice, NULL)))
+	HRESULT hr = 0;
+		if (FAILED(hr = DirectInput->CreateDevice(GUID_SysKeyboard, dev, NULL)))
 		{
 			return SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD;
 		}
 
-		if(FAILED(DIDevice->SetDataFormat(&c_dfDIKeyboard))) 
+		if (FAILED(hr = (*dev)->SetDataFormat(&c_dfDIKeyboard)))
 		{
-			DIDevice->Release();
+			(*dev)->Release();
 			return SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD;
 		}
 
-		if(FAILED(DIDevice->SetCooperativeLevel(hwnd,DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY))) 
+		if (FAILED(hr = (*dev)->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY)))
 		{
-			DIDevice->Release();
+			(*dev)->Release();
 			return SX_INPUT_ERR_COOPERATIVE_KEYBOARD;
 		}
 
-		if(FAILED(DIDevice->Acquire())) 
+		if (FAILED(hr = (*dev)->Acquire()))
 		{
-			DIDevice->Release();
+			(*dev)->Release();
 			return SX_INPUT_ERR_ACQUIRE_KEYBOARD;
 		}
 
@@ -95,8 +94,6 @@ long SXInput::InitKeyboard(HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDev
 
 long SXInput::InitMouse(HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev)
 {
-	IDirectInputDevice8 *DIDevice = *dev;
-
 	HWND CurrWnd = GetForegroundWindow();
 	int MyTID = GetCurrentThreadId();
 	int CurrTID = GetWindowThreadProcessId(CurrWnd,0);
@@ -105,26 +102,26 @@ long SXInput::InitMouse(HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice
 	SetForegroundWindow(hwnd);
 	AttachThreadInput(MyTID, CurrTID, FALSE);
 
-		if(FAILED(DirectInput->CreateDevice(GUID_SysMouse,&DIDevice, NULL)))
+		if (FAILED(DirectInput->CreateDevice(GUID_SysMouse, dev, NULL)))
 		{
 			return SX_INPUT_ERR_CREATE_DEVICE_MOUSE;
 		}
 
-		if(FAILED(DIDevice->SetDataFormat(&c_dfDIMouse))) 
+		if (FAILED((*dev)->SetDataFormat(&c_dfDIMouse)))
 		{
-			DIDevice->Release();
+			(*dev)->Release();
 			return SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE;
 		}
 
-		if(FAILED(DIDevice->SetCooperativeLevel(hwnd,DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY))) 
+		if (FAILED((*dev)->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY)))
 		{
-			DIDevice->Release();
+			(*dev)->Release();
 			return SX_INPUT_ERR_COOPERATIVE_MOUSE;
 		}
 
-		if(FAILED(DIDevice->Acquire())) 
+		if (FAILED((*dev)->Acquire()))
 		{
-			DIDevice->Release();
+			(*dev)->Release();
 			return SX_INPUT_ERR_ACQUIRE_MOUSE;
 		}
 

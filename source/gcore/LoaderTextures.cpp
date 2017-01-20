@@ -293,7 +293,7 @@ void LoaderTextures::LoadTextures()
 											)))
 										{
 											//ArrTextures.push_back(tex);
-											reportf(-1, "%s - \tnot found texture [%s_%s]\n", Arr[i].Path, Arr[i].ArrNames[k], gen_msg_location);
+											reportf(-1, "%s - \tnot found texture [%s_%s]\n", gen_msg_location, Arr[i].Path, Arr[i].ArrNames[k]);
 										}
 										else
 										{

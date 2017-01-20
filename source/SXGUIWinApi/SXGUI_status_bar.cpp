@@ -91,9 +91,9 @@ bool SXGUIStatusBar::SetCountParts(WORD count,int *arr)
 void SXGUIStatusBar::ComCoef()
 {
 	WORD GWidth = 0;
-	RECT *rect = new RECT;
-	::GetClientRect(this->GetHWND(),rect);
-	GWidth = rect->right;
+	RECT rect;
+	::GetClientRect(this->GetHWND(),&rect);
+	GWidth = rect.right;
 	float OnePercent = 100.0 / float(GWidth);
 
 	delete[] ArrCoef;
@@ -130,18 +130,12 @@ WORD SXGUIStatusBar::GetCountParts(int **arr)
 	return CountParts;
 }
 
-const char* SXGUIStatusBar::GetTextParts(WORD pos)
+int SXGUIStatusBar::GetTextParts(WORD pos,char* text)
 {
-	WORD CountSym = SendMessage(this->GetHWND(),SB_GETTEXTLENGTH,pos,0);
-	const char* text = new const char[CountSym];
-		if(!SendMessage(this->GetHWND(),SB_GETTEXT,pos,(LPARAM)text))
-		{
-			delete[] text;
-			text = 0;
-			return 0;
-		}
-		else
-			return text;
+	//WORD CountSym = SendMessage(this->GetHWND(),SB_GETTEXTLENGTH,pos,0);
+	if (!SendMessage(this->GetHWND(), SB_GETTEXT, pos, (LPARAM)text))
+		return 0;
+	return 1;
 }
 
 void SXGUIStatusBar::Update()

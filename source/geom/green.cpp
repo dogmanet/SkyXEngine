@@ -1,1231 +1,1331 @@
 
-#pragma once
-
-namespace SkyXEngine
-{
-namespace Graphics
-{
-namespace ThreeD
-{
+#include <geom\\green.h>
 
 Green::Green()
 {
-	DataLod[0] = 0;
-	DataLod[1] = 0;
-	DataLod[2] = 0;
+	//для растиетльности (с хардварным инстансингом)
+	//{
+	D3DVERTEXELEMENT9 InstanceGreen[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 1, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+		D3DDECL_END()
+	};
 
-	sprintf(Paths[0],"%s","0");
-	sprintf(Paths[1],"%s","0");
-	sprintf(Paths[2],"%s","0");
+	Green::DXDevice->CreateVertexDeclaration(InstanceGreen, &VertexDeclarationGreen);
 
-	ArrIDTex = 0;
-	/*ArrIDTex[0] = 0;
-	ArrIDTex[1] = 0;
-	ArrIDTex[2] = 0;*/
+	Green::DXDevice->CreateVertexBuffer(
+		GREEN_MAX_ELEM_IN_DIP * sizeof(float)* 6,
+		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+		0,
+		D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
+		&TransVertBuf,
+		0);
 
-	ArrMaterials = 0;
-	/*ArrMaterials[0] = 0;
-	ArrMaterials[1] = 0;
-	ArrMaterials[2] = 0;*/
-
-	AllCountPoly[0] = 0;
-	AllCountPoly[1] = 0;
-	AllCountPoly[2] = 0;
-
-	AllCountVertex[0] = 0;
-	AllCountVertex[1] = 0;
-	AllCountVertex[2] = 0;
-
-	AllCountGreen = 0;
-	AllTrans = 0;
-
-	CountGrassInVert = 50000;
-
-	SplitsIDs = 0;
-	SplitsIDsRender = 0;
-
-	IDMaterailFreeRenderGreenColor = Core::Data::MaterialsManager->GetID("mtrl_default_green_color");
-	IDMaterailFreeRenderGReenShadowCube = Core::Data::MaterialsManager->GetID("mtrl_default_green_cube_shadow");
-	IDMaterailFreeRenderGreenShadowDirectPSSM = Core::Data::MaterialsManager->GetID("mtrl_default_green_pssm_direct_shadow");
+	IRSData tmparr;
+	ArrComFor.push_back(tmparr);
 }
 
 Green::~Green()
 {
-	nmem_delete_a(AllTrans);
+	ArrComFor.clear();
 
-	nmem_delete(DataLod[0]);
-	nmem_delete(DataLod[1]);
-	nmem_delete(DataLod[2]);
+	for (long i = 0; i < ArrModels.size(); ++i)
+	{
+		mem_delete(ArrModels[i]);
+	}
 
-	nmem_delete(ArrSegments);
-	ndx_release(TransVertBuf);
-
-	nmem_delete_a(ArrMaterials)
-	/*nmem_delete_a(ArrMaterials[0]);
-	nmem_delete_a(ArrMaterials[1]);
-	nmem_delete_a(ArrMaterials[2]);*/
-
-	nmem_delete_a(ArrIDTex);
-	/*nmem_delete_a(ArrIDTex[0]);
-	nmem_delete_a(ArrIDTex[1]);
-	nmem_delete_a(ArrIDTex[2]);*/
+	ArrModels.clear();
+	mem_release(TransVertBuf);
+	mem_release(VertexDeclarationGreen);
 }
+
+Green::Model::Model()
+{
+	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
+	AllCountGreen = 0;
+	SplitsIDs = 0;
+	SplitsIDsRender = 0;
+	ArrSplits = 0;
+	AllTrans = 0;
+	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
+}
+
+Green::Model::~Model()
+{
+	mem_delete(ArrSplits);
+	mem_delete(AllTrans);
+	mem_delete(ArrLod[0]);
+	mem_delete(ArrLod[1]);
+	mem_delete(ArrLod[2]);
+}
+
+Green::Segment::Segment()
+{
+	for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; ++i)
+	{
+		Splits[i] = 0;
+		SortId[i] = -1;
+	}
+
+	Data = 0;
+	CountAllGreen = 0;
+	BoundVolumeSys = 0;
+	BoundVolumeP = 0;
+	ID = -1;
+	SID = -1;
+	BFNonEnd = false;
+}
+
+Green::Segment::~Segment()
+{
+	for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
+		mem_delete(Splits[i]);
+	mem_delete_a(Data);
+
+	mem_release_del(BoundVolumeSys);
+	mem_release_del(BoundVolumeP);
+}
+
+Green::Lod::Lod()
+{
+
+}
+
+Green::Lod::~Lod()
+{
+	idstex.clear();
+}
+
+Green::InfoRenderSegments::InfoRenderSegments()
+{
+	Arr = 0; Count = 0; CountCom = 0;
+}
+
+Green::InfoRenderSegments::~InfoRenderSegments()
+{
+	mem_delete_a(Arr);
+}
+
+Green::IRSData::IRSData()
+{
+	queue.clear();
+	arr.clear();
+}
+
+Green::IRSData::~IRSData()
+{
+
+}
+
 
 void Green::OnLostDevice()
 {
-	ndx_release(TransVertBuf);
+	mem_release(TransVertBuf);
 }
 
 void Green::OnResetDevice()
 {
-	Core::Data::Device->CreateVertexBuffer(
-											CountGrassInVert * sizeof(float)*6,
-											D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-											0,
-											D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
-											&TransVertBuf,
-											0);
+	Green::DXDevice->CreateVertexBuffer(
+		GREEN_MAX_ELEM_IN_DIP * sizeof(float)* 6,
+		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+		0,
+		D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
+		&TransVertBuf,
+		0);
 }
 
-void Green::Init(DWORD id_model,const char* path_mask,float count_max)
+void Green::Load(const char* path, const char* lod1, const char* lod2, const char* path_bin_mask, DWORD count_object_in_split)
 {
-		if(id_model >= 0 && id_model < SkyXEngine::Core::Data::Level::ArrStaticModel->GetCount())
-		{
-			IDMeshIn = id_model;
-			float3 tmpmin,tmpmax;
-			SkyXEngine::Core::Data::Level::ArrStaticModel->Arr[id_model]->ArrSegments->BoundVolumeP.GetMinMax(&tmpmin,&tmpmax);
+	/*if (!path)
+		return;*/
 
-			IDTexMask = SkyXEngine::Core::Data::LoadedTextures->AddName(path_mask);
-			SkyXEngine::Core::Data::LoadedTextures->LoadTextures();
+	Model* tmpnewmpdel = new Model();
+	tmpnewmpdel->ArrLod[0] = new Lod();
+	tmpnewmpdel->ArrLod[1] = new Lod();
+	tmpnewmpdel->ArrLod[2] = new Lod();
 
-			CountMaxInPixel = count_max;
+	SGCore_LoadStaticModel(path, &tmpnewmpdel->ArrLod[0]->model);
 
-			float WidthLand = tmpmax.x - tmpmin.x;
-			float HeightLand = tmpmax.z - tmpmin.z;
+	char tmppathtex[1024];
+	for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model.SubsetCount; ++i)
+	{
+		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model.ArrTextures[i]);
+		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+	}
 
-			D3DSURFACE_DESC desc;
-			SkyXEngine::Core::Data::LoadedTextures->GetTexture(IDTexMask)->GetLevelDesc(0,&desc);
+	SGCore_LoadStaticModel(lod1, &tmpnewmpdel->ArrLod[1]->model);
 
-			D3DLOCKED_RECT LockedRect;
+	for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model.SubsetCount; ++i)
+	{
+		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+	}
 
-			SkyXEngine::Core::Data::LoadedTextures->GetTexture(IDTexMask)->LockRect(0,&LockedRect,0,0);
-			DWORD* tmpColor = (DWORD*)LockedRect.pBits;
+	SGCore_LoadStaticModel(lod2, &tmpnewmpdel->ArrLod[2]->model);
 
-			AllCountGreen = 0;
-			DWORD tmpUnAllCountGreen = 0;
-			std::vector<float3_t> arrpos;
-			//printf("\tStart cycle for compute position ...\n");
-			DWORD MaxAlpha = 0;
-				for(DWORD x=0;x<desc.Width;x++)
-				{
-						for(DWORD y=0;y<desc.Height;y++)
-						{
-							DWORD alpha = (tmpColor[y*desc.Width + x] >> 24);
-							float AlphaColor = 1.f/255.f * (float)alpha;
-								if(alpha > 0)
-								{
-									//позиция пикселя на ландшафте
-									float PosInLandX = SMLerpf(tmpmin.x,tmpmax.x,float(x+1)/float(desc.Width));//WidthLand * ((float(x)/float(desc.Width))-0.5f);
-									float PosInLandY = SMLerpf(tmpmax.z,tmpmin.z,float(y+1)/float(desc.Height));//HeightLand * ((float(y)/float(desc.Height))-0.5f);
+	for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model.SubsetCount; ++i)
+	{
+		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+	}
 
-									float3_t tmp2 = float3(PosInLandX,0,PosInLandY);
 
-									float OneEdX = WidthLand / float(desc.Width);
-									float OneEdY = HeightLand / float(desc.Height);
-								
-									//int tmpcountgreen = lerp(0,10,(float(alpha)*CountMaxInPixel)/255.f);//int(floor(float(float(alpha)*CountMaxInPixel*100)/2550.f));
-										//расчет позиций объектов на квадратный метр
-										for(int i=0;i<int(floor(float(float(alpha)*CountMaxInPixel*100)/2550.f));i++)
-										{
-											float3 tmp(tmp2.x,0,tmp2.z);
-											bool isintersect = true;
-
-											tmp.x = (tmp2.x - OneEdX*0.5f) + SMRndf(0.0,OneEdX*0.5f);//(float(rand()%OneEdX*0.5f);
-											tmp.z = (tmp2.z - OneEdY*0.5f) + SMRndf(0.0,OneEdY*0.5f);//(float(rand()%OneEdY*0.5f);
-
-											isintersect = SkyXEngine::Core::Data::Level::ArrStaticModel->GetIntersectedRayY(id_model,&tmp);
-												if(isintersect)
-												{
-													arrpos.push_back(tmp);
-													
-													AllCountGreen++;
-												}
-												else
-												{
-													tmpUnAllCountGreen++;
-												}
-										}
-								}
-						}
-				}
-
-			SkyXEngine::Core::Data::LoadedTextures->GetTexture(IDTexMask)->UnlockRect(0);
-
-			//printf("\tCompute position is completed, start rewrite ...\n");
-			nmem_delete_a(AllTrans);
-
-			AllTrans = new GreenDataVertex[AllCountGreen];
-
-				for(DWORD i=0;i<AllCountGreen;i++)
-				{
-					AllTrans[i].Position = arrpos[i];
-					AllTrans[i].TexCoord.x = 1.f + (float(rand()%100)/100.f);
-					AllTrans[i].TexCoord.y = D3DXToRadian(float(rand()%360));
-					AllTrans[i].TexCoord.z = (float(rand()%200)/100.f) - 1.f;
-				}
-			arrpos.clear();
-			//printf("{green} Ok, mask is writed, AllCountGreen = %d\n",AllCountGreen);
-		}
-}
-
-void Green::LoadOne(const char* path)
-{
-	/*int lod = 0;  
-	nmem_delete(DataLod[lod]);
-	DataLod[lod] = new Core::Loaders::DataStaticModel;
-
-	LoadStaticModel(path, DataLod[lod]);
-
-		for(DWORD i=0;i<DataLod[lod]->SubsetCount;i++)
-		{
-			DWORD* indeces;
-			DataLod[lod]->IndexBuffer->Lock(0, 0, (void**)&indeces, 0);
-
-			Core::OptimizeMesh::OptimizeIndecesInSubsetDword(indeces+DataLod[lod]->StartIndex[i],DataLod[lod]->IndexCount[i]/3,DataLod[lod]->VertexCount[i]);
-
-			DataLod[lod]->IndexBuffer->Unlock();
-		}
-
-	nmem_delete_a(ArrIDTex[lod]);
-	ArrIDTex[lod] = new DWORD[DataLod[lod]->SubsetCount];
-
-	nmem_delete_a(ArrMaterials[lod]);
-	ArrMaterials[lod] = new DWORD[DataLod[lod]->SubsetCount];
-
-	AllCountPoly[lod] = 0;
-	AllCountVertex[lod] = 0;
-		for(DWORD i=0;i<DataLod[lod]->SubsetCount;i++)
-		{
-			char tmptex[256];
-			sprintf(tmptex,"%s.dds",DataLod[lod]->ArrTextures[i]);
-			ArrIDTex[lod][i] = SkyXEngine::Core::Data::LoadedTextures->AddName(tmptex);
-			AllCountPoly[lod] += DataLod[lod]->IndexCount[i] / 3;
-			AllCountVertex[lod] += DataLod[lod]->VertexCount[i];
-
-			ArrMaterials[lod][i] = SkyXEngine::Core::Data::MaterialsManager->Load(tmptex,1);
-		}
-	sprintf(Paths[lod],"%s",path);*/
-
-	Load(path,0);
-	Load(path,1);
-	Load(path,2);
-
-	nmem_delete_a(AllTrans);
-	AllTrans = new GreenDataVertex[1];
-	AllTrans[0].Position = float3_t(0,0,0);
-	AllTrans[0].TexCoord.x = 1.f + (float(rand()%100)/100.f);
-	AllTrans[0].TexCoord.y = D3DXToRadian(float(rand()%360));
-	AllTrans[0].TexCoord.z = (float(rand()%200)/100.f) - 1.f;
-
-	AllCountGreen = 1;
-	CountGrassInVert = AllCountGreen+1;
-
-	Segmentation(1);
-	IsGrass = false;
-}
-
-void Green::Load(const char* path,int lod)
-{
-		if(lod < 3 && lod >= 0 && StrValidate(path))
-		{
-			//ищем загружена ли эта модель уже в один из лодов
-			//если да то копируем данные из нее в нужный лод
-			bool IsExist = false;
-				for(int i=0;i<3;i++)
-				{
-						if(lod != i && strcmp(path,Paths[lod]) == 0)
-						{
-							memcpy(DataLod[lod],DataLod[i],sizeof(Graphics::ThreeD::DataStaticModel));
-							//memcpy(ArrIDTex[lod],ArrIDTex[i],sizeof(DWORD) * DataLod[i]->SubsetCount);
-
-							AllCountPoly[lod] = AllCountPoly[i];
-							AllCountVertex[lod] = AllCountVertex[i];
-							sprintf(Paths[lod],"%s",path);
-							IsExist = true;
-							break;
-						}
-				}
-				
-				//если не существует то грузим
-				if(!IsExist)
-				{
-					nmem_delete(DataLod[lod]);
-					DataLod[lod] = new Graphics::ThreeD::DataStaticModel;
-
-					LoadStaticModel(path, DataLod[lod]);
-
-						for(DWORD i=0;i<DataLod[lod]->SubsetCount;i++)
-						{
-							DWORD* indeces;
-							DataLod[lod]->IndexBuffer->Lock(0, 0, (void**)&indeces, 0);
-
-							Core::OptimizeMesh::OptimizeIndecesInSubsetDword(indeces+DataLod[lod]->StartIndex[i],DataLod[lod]->IndexCount[i]/3,DataLod[lod]->VertexCount[i]);
-
-							DataLod[lod]->IndexBuffer->Unlock();
-						}
-
-						if(lod == 0)
-						{
-							nmem_delete_a(ArrIDTex);
-							ArrIDTex = new DWORD[DataLod[lod]->SubsetCount];
-
-							nmem_delete_a(ArrMaterials);
-							ArrMaterials = new DWORD[DataLod[lod]->SubsetCount];
-						}
-
-					AllCountPoly[lod] = 0;
-					AllCountVertex[lod] = 0;
-						for(DWORD i=0;i<DataLod[lod]->SubsetCount;i++)
-						{
-								if(lod == 0)
-								{
-									char tmptex[256];
-									sprintf(tmptex,"%s.dds",DataLod[lod]->ArrTextures[i]);
-									ArrIDTex[i] = SkyXEngine::Core::Data::LoadedTextures->AddName(tmptex);
-									ArrMaterials[i] = SkyXEngine::Core::Data::MaterialsManager->Load(tmptex,1);
-								}
-							AllCountPoly[lod] += DataLod[lod]->IndexCount[i] / 3;
-							AllCountVertex[lod] += DataLod[lod]->VertexCount[i];
-
-							
-						}
-					sprintf(Paths[lod],"%s",path);
-				}
-		}
-}
-
-void Green::LoadBinMask(const char* path)
-{
 	FILE* file = 0;
-	file = fopen(path,"rb");
+	file = fopen(path_bin_mask, "rb");
 
 	char HeaderFile[13];
 
-	//fscanf(file,"%s",HeaderFile);
-	fread(HeaderFile,13,1,file);
+	fread(HeaderFile, 13, 1, file);
 
-		if(strcmp(HeaderFile,"sxgreentrans") == 0)
-		{
-			fread(&AllCountGreen,sizeof(DWORD),1,file);
-			AllTrans = new GreenDataVertex[AllCountGreen];
-			fread(AllTrans,sizeof(GreenDataVertex),AllCountGreen,file);
-		}
-	CountGrassInVert = AllCountGreen+1;
+	if (strcmp(HeaderFile, "sxgreentrans") == 0)
+	{
+		fread(&tmpnewmpdel->AllCountGreen, sizeof(DWORD), 1, file);
+		tmpnewmpdel->AllTrans = new DataVertex[tmpnewmpdel->AllCountGreen];
+		fread(tmpnewmpdel->AllTrans, sizeof(DataVertex), tmpnewmpdel->AllCountGreen, file);
+	}
+	//CountGrassInVert = mpnewmpdel->AllCountGreen + 1;
 	fclose(file);
+
+	PreSegmentation(tmpnewmpdel, count_object_in_split);
+	//currSplitsIDs = 0;
+	//currSplitsIDsRender = 0;
+	SetSplitID(tmpnewmpdel->ArrSplits, &tmpnewmpdel->SplitsIDs, &tmpnewmpdel->SplitsIDsRender);
+	//tmpnewmpdel->SplitsIDs = currSplitsIDs;
+	//tmpnewmpdel->SplitsIDsRender = currSplitsIDsRender;
+
+	/*InfoRenderSegments* tmpirs = new InfoRenderSegments();
+	tmpirs->Count = tmpnewmpdel->SplitsIDsRender;
+	tmpirs->Arr = new Segment*[tmpnewmpdel->SplitsIDsRender];
+	tmpirs->CountCom = 0;*/
+
+	ArrModels.push_back(tmpnewmpdel);
+	AddModelInArrCom(ArrModels.size()-1);
 }
 
-void Green::Segmentation(DWORD count_object_in_split)
+void Green::PreSegmentation(Model* model, DWORD count_object_in_split)
 {
-		//если загружен только первый лод то значит ето трава
-		if(DataLod[0] != 0 && (!DataLod[1] && !DataLod[2]))
-			IsGrass = true;
-		else
-			IsGrass = false;
+	model->ArrSplits = new Segment();
 
-	CountObjectInSegment = count_object_in_split;
-	Core::Data::Device->CreateVertexBuffer(
-											CountGrassInVert * sizeof(float)*6,
-											D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-											0,
-											D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
-											&TransVertBuf,
-											0);
-	
-	ArrSegments = new Segment();
+	float3 tmpMin, tmpMax;
+	float3 tmpMin2, tmpMax2;
+	model->ArrSplits->BoundVolumeSys = SGCore_CrBound();
+	SGCore_FCompBoundBox(model->ArrLod[0]->model.VertexBuffer, &(model->ArrSplits->BoundVolumeSys), model->ArrLod[0]->model.AllVertexCount, sizeof(vertex_static));
 
-	float3 tmpMin,tmpMax;
-	float3 tmpMin2,tmpMax2;
-	Core::WorkModel::ComputeBoundingBox(DataLod[0]->VertexBuffer,&(ArrSegments->BoundVolumeSys),AllCountVertex[0],sizeof(Graphics::ThreeD::vertex_static));
+	model->ArrSplits->BoundVolumeSys->GetMinMax(&tmpMin2, &tmpMax2);
+	model->BBMax = tmpMax2 * 2.f;
+	model->BBMin = tmpMin2 * 2.f;
+	tmpMin = model->AllTrans[0].Position;
+	tmpMax = model->AllTrans[0].Position;
 
-	ArrSegments->BoundVolumeSys.GetMinMax(&tmpMin2,&tmpMax2); 
-	BBMax = tmpMax2 * 2.f;
-	BBMin = tmpMin2 * 2.f;
-	tmpMin = AllTrans[0].Position;
-	tmpMax = AllTrans[0].Position;
+	for (DWORD i = 0; i<model->AllCountGreen; i++)
+	{
+		if (model->AllTrans[i].Position.x > tmpMax.x)
+			tmpMax.x = model->AllTrans[i].Position.x;
 
-		for(DWORD i=0;i<AllCountGreen;i++)
-		{
-				if(AllTrans[i].Position.x > tmpMax.x)
-					tmpMax.x = AllTrans[i].Position.x;
+		if (model->AllTrans[i].Position.y > tmpMax.y)
+			tmpMax.y = model->AllTrans[i].Position.y;
 
-				if(AllTrans[i].Position.y > tmpMax.y)
-					tmpMax.y = AllTrans[i].Position.y;
-
-				if(AllTrans[i].Position.z > tmpMax.z)
-					tmpMax.z = AllTrans[i].Position.z;
+		if (model->AllTrans[i].Position.z > tmpMax.z)
+			tmpMax.z = model->AllTrans[i].Position.z;
 
 
-				if(AllTrans[i].Position.x < tmpMin.x)
-					tmpMin.x = AllTrans[i].Position.x;
+		if (model->AllTrans[i].Position.x < tmpMin.x)
+			tmpMin.x = model->AllTrans[i].Position.x;
 
-				if(AllTrans[i].Position.y < tmpMin.y)
-					tmpMin.y = AllTrans[i].Position.y;
+		if (model->AllTrans[i].Position.y < tmpMin.y)
+			tmpMin.y = model->AllTrans[i].Position.y;
 
-				if(AllTrans[i].Position.z < tmpMin.z)
-					tmpMin.z = AllTrans[i].Position.z;
-		}
+		if (model->AllTrans[i].Position.z < tmpMin.z)
+			tmpMin.z = model->AllTrans[i].Position.z;
+	}
 
-	tmpMax.x += BBMax.x;
-	tmpMax.y += BBMax.y;
-	tmpMax.z += BBMax.z;
+	tmpMax.x += model->BBMax.x;
+	tmpMax.y += model->BBMax.y;
+	tmpMax.z += model->BBMax.z;
 
-	tmpMin.x += BBMin.x;
-	tmpMin.y += BBMin.y;
-	tmpMin.z += BBMin.z;
+	tmpMin.x += model->BBMin.x;
+	tmpMin.y += model->BBMin.y;
+	tmpMin.z += model->BBMin.z;
 
 	float tmpX = tmpMax.x - tmpMin.x;
 	float tmpY = tmpMax.y - tmpMin.y;
 	float tmpZ = tmpMax.z - tmpMin.z;
 
-	ArrSegments->BoundVolumeP.SetMinMax(&tmpMin,&tmpMax);
-	SkyXEngine::Core::WorkModel::CreateBoundingBoxMesh(&tmpMin,&tmpMax,&(ArrSegments->BoundBox));
+	model->ArrSplits->BoundVolumeP = SGCore_CrBound();
+	model->ArrSplits->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+	//SkyXEngine::Core::WorkModel::CreateBoundingBoxMesh(&tmpMin, &tmpMax, &(model->ArrSplits->BoundBox));
 
-		//выравниваем по квадрату
-		if(tmpX > tmpZ)
+	//выравниваем по квадрату
+	if (tmpX > tmpZ)
+	{
+		tmpZ = tmpX - tmpZ;
+		tmpZ /= 2.f;
+		tmpMax.z += tmpZ;
+		tmpMin.z -= tmpZ;
+	}
+	else if (tmpZ > tmpX)
+	{
+		tmpX = tmpZ - tmpX;
+		tmpX /= 2.f;
+		tmpMax.x += tmpX;
+		tmpMin.x -= tmpX;
+	}
+
+	model->ArrSplits->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+
+	model->ArrSplits->CountAllGreen = model->AllCountGreen;
+	model->ArrSplits->Data = new DataVertex[model->AllCountGreen];
+	memcpy(model->ArrSplits->Data, model->AllTrans, sizeof(DataVertex)* model->AllCountGreen);
+
+	if (model->ArrSplits->CountAllGreen > 0 && model->ArrSplits->CountAllGreen > count_object_in_split)
+	{
+		model->ArrSplits->BFNonEnd = true;
+		CycleSegmentation(model->ArrSplits, model, count_object_in_split);
+	}
+	else
+	{
+		model->ArrSplits->BFNonEnd = false;
+	}
+}
+
+void Green::CycleSegmentation(Segment* Split, Model* mesh, DWORD count_object_in_split)
+{
+	Array<Segment*> queue;
+	long tmpcount = 0;
+	queue.push_back(Split);
+
+	while (queue.size())
+	{
+		if (queue[0]->BFNonEnd)
 		{
-			tmpZ = tmpX - tmpZ;
-			tmpZ /= 2.f;
-			tmpMax.z += tmpZ;
-			tmpMin.z -= tmpZ;
-		}
-		else if(tmpZ > tmpX)
-		{
-			tmpX = tmpZ - tmpX;
-			tmpX /= 2.f;
-			tmpMax.x += tmpX;
-			tmpMin.x -= tmpX;
+			Segmentation(queue[0], mesh, count_object_in_split);
+
+			for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; i++)
+			{
+				if (queue[0]->Splits[i])
+					queue.push_back(queue[0]->Splits[i]);
+			}
 		}
 
-	ArrSegments->BoundVolumeSys.SetMinMax(&tmpMin,&tmpMax);
+		queue.erase(0);
+		++tmpcount;
+	}
+}
+
+void Green::Segmentation(Segment* Split, Model* mesh, DWORD count_object_in_split)
+{
+	Array<DWORD> ArrPoly[4];
+
+	for (int i = 0; i<4; i++)
+		Split->Splits[i] = new Segment();
+
+	ISXBound* ArrBound[4];
+	for (int i = 0; i < 4; ++i)
+		ArrBound[i] = SGCore_CrBound();
+
+	SGCore_0ComBoundBoxArr4(Split->BoundVolumeSys, (ArrBound));
+
+	for (int i = 0; i<4; i++)
+	{
+		Split->Splits[i]->BoundVolumeSys = ArrBound[i];
+		Split->Splits[i]->BoundVolumeP = ArrBound[i];
+	}
+
+	bool *tmp_arr_mesh_poly = new bool[Split->CountAllGreen];
+	for (DWORD i = 0; i<Split->CountAllGreen; i++)
+		tmp_arr_mesh_poly[i] = true;
+
+	DWORD tmpCountNonIn = 0;
+	float3 tmpMin, tmpMax;
+	for (WORD i = 0; i<4; i++)
+	{
+		Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(Split->Splits[i]->BoundBox));
+
+		for (DWORD j = 0; j<Split->CountAllGreen; j++)
+		{
+			//если позици¤ провер¤емого полигона находитьс¤ в пределах ограничивающего паралелепипеда
+			if (
+				(long(tmpMax.x * 1000) >= long(Split->Data[j].Position.x * 1000) && long(tmpMin.x * 1000) <= long(Split->Data[j].Position.x * 1000))
+				&&
+				(long(tmpMax.z * 1000) >= long(Split->Data[j].Position.z * 1000) && long(tmpMin.z * 1000) <= long(Split->Data[j].Position.z * 1000))
+				&&
+				tmp_arr_mesh_poly[j]
+				)
+			{
+				//записываем вершины в массив
+				ArrPoly[i].push_back(j);
+				//полигон использваон, т.е. зан¤т
+				tmp_arr_mesh_poly[j] = false;
+				tmpCountNonIn++;
+			}
+		}
+	}
+
+
+	for (int i = 0; i<4; i++)
+	{
+		Split->Splits[i]->CountAllGreen = ArrPoly[i].size();
+
+		if (Split->Splits[i]->CountAllGreen > 0)
+		{
+			Split->Splits[i]->Data = new DataVertex[Split->Splits[i]->CountAllGreen];
+
+			float3 comMax = Split->Data[ArrPoly[i][0]].Position;
+			float3 comMin = Split->Data[ArrPoly[i][0]].Position;
+
+			for (DWORD k = 0; k<ArrPoly[i].size(); k++)
+			{
+				Split->Splits[i]->Data[k] = Split->Data[ArrPoly[i][k]];
+
+				if (Split->Data[ArrPoly[i][k]].Position.y > comMax.y)
+					comMax.y = Split->Data[ArrPoly[i][k]].Position.y;
+
+				if (Split->Data[ArrPoly[i][k]].Position.y < comMin.y)
+					comMin.y = Split->Data[ArrPoly[i][k]].Position.y;
+
+
+				if (Split->Data[ArrPoly[i][k]].Position.x > comMax.x)
+					comMax.x = Split->Data[ArrPoly[i][k]].Position.x;
+
+				if (Split->Data[ArrPoly[i][k]].Position.x < comMin.x)
+					comMin.x = Split->Data[ArrPoly[i][k]].Position.x;
+
+
+				if (Split->Data[ArrPoly[i][k]].Position.z > comMax.z)
+					comMax.z = Split->Data[ArrPoly[i][k]].Position.z;
+
+				if (Split->Data[ArrPoly[i][k]].Position.z < comMin.z)
+					comMin.z = Split->Data[ArrPoly[i][k]].Position.z;
+			}
+
+			Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+			tmpMax.y = comMax.y + mesh->BBMax.y;
+			tmpMin.y = comMin.y + mesh->BBMin.y;
+
+			Split->Splits[i]->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+
+			tmpMax.x = comMax.x + mesh->BBMax.x;
+			tmpMax.y = comMax.y + mesh->BBMax.y;
+			tmpMax.z = comMax.z + mesh->BBMax.z;
+
+			tmpMin.x = comMin.x + mesh->BBMin.x;
+			tmpMin.y = comMin.y + mesh->BBMin.y;
+			tmpMin.z = comMin.z + mesh->BBMin.z;
+
+			Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+
+			ArrPoly[i].clear();
+		}
+
+		if (Split->Splits[i]->CountAllGreen > 0 && Split->Splits[i]->CountAllGreen > count_object_in_split)
+			Split->Splits[i]->BFNonEnd = true;
+		else if (Split->Splits[i]->CountAllGreen <= 0)
+		{
+			mem_delete(Split->Splits[i]);
+		}
+		else
+			Split->Splits[i]->BFNonEnd = false;
+	}
+
+	mem_delete_a(Split->Data);
+	mem_delete_a(tmp_arr_mesh_poly);
+}
+
+void Green::SetSplitID(Segment* Split, long* SplitsIDs, long* SplitsIDsRender)
+{
+	Array<Segment*, GREEN_DEFAULT_RESERVE_COM> queue;
+	long tmpcount = 0;
+	queue.push_back(Split);
+
+	while (queue.size())
+	{
+		SetSplitID2(queue[0], SplitsIDs, SplitsIDsRender, &queue);
+
+		queue.erase(0);
+		++tmpcount;
+	}
+}
+
+void Green::SetSplitID2(Segment* Split, long* SplitsIDs, long* SplitsIDsRender, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue)
+{
+	if (Split && Split->BFNonEnd)
+	{
+		Split->ID = (*SplitsIDs);
+		++(*SplitsIDs);
+		for (int i = 0; i<4; i++)
+			queue->push_back(Split->Splits[i]);
+	}
+	else if (Split)
+	{
+		Split->ID = (*SplitsIDs);
+		++(*SplitsIDs);
+		++(*SplitsIDsRender);
+	}
+}
+
+void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, long id_arr)
+{
+	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 	
-	ArrSegments->CountAllPoly = AllCountGreen;
-	ArrSegments->GreenData = new GreenDataVertex[AllCountGreen];
-	memcpy(ArrSegments->GreenData,AllTrans,sizeof(GreenDataVertex) * AllCountGreen);
+	DWORD tmpcount = 0;
+	DWORD* tmpcountcom = 0;
+	Segment** tmpsegments = 0;
+	for (int i = 0; i < ArrModels.size(); ++i)
+	{
+		tmpcount = ArrComFor[id_arr].arr[i]->Count;
+		ArrComFor[id_arr].arr[i]->CountCom = 0;
+		tmpcountcom = &(ArrComFor[id_arr].arr[i]->CountCom);
+		tmpsegments = ArrComFor[id_arr].arr[i]->Arr;
+		
+		ArrComFor[id_arr].queue.clear();
+		long tmpcount = 0;
+		ArrComFor[id_arr].queue.push_back(ArrModels[i]->ArrSplits);
 
-		if(ArrSegments->CountAllPoly > 0 && ArrSegments->CountAllPoly > CountObjectInSegment)
+		while (ArrComFor[id_arr].queue.size())
 		{
-			ArrSegments->BFNonEnd = true;
-			CycleSegmentation(ArrSegments);
+			ComRecArrIndeces(frustum, tmpsegments, tmpcountcom, ArrComFor[id_arr].queue[0], viewpos, &ArrComFor[id_arr].queue, tmpcount);
+
+			ArrComFor[id_arr].queue.erase(0);
+			++tmpcount;
+		}
+	}
+}
+
+void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, DWORD curr_splits_ids_render)
+{
+	float3 jcenter;
+	float jradius;
+	comsegment->BoundVolumeP->GetSphere(&jcenter, &jradius);
+
+	if (comsegment->CountAllGreen > 0 && frustum->SphereInFrustum(&jcenter, jradius))
+	{
+			if (comsegment->BFNonEnd)
+			{
+				if (Green::UseSortFrontToBackSplits)
+				{
+					for (int q = 0; q<GREEN_COUNT_TYPE_SEGMENTATION; ++q)
+					{
+						comsegment->SortId[q] = -1;
+						if (comsegment->Splits[q])
+						{
+							comsegment->Splits[q]->BoundVolumeP->GetSphere(&jcenter, &jradius);
+							comsegment->Splits[q]->DistForCamera = SMVector3Length2((jcenter - (*viewpos))) - jradius*jradius;
+						}
+					}
+
+					float pl1, pl2;
+					int tmpCountGreater = 0;
+					for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; ++i)
+					{
+						if (comsegment->Splits[i])
+						{
+							tmpCountGreater = 0;
+							pl1 = comsegment->Splits[i]->DistForCamera;
+
+							for (int k = 0; k<GREEN_COUNT_TYPE_SEGMENTATION; ++k)
+							{
+								if (comsegment->Splits[k])
+								{
+									pl2 = comsegment->Splits[k]->DistForCamera;
+
+									if (i != k && pl2 >= pl1)
+										++tmpCountGreater;
+								}
+							}
+
+							bool tmpisnend = true;
+							while (tmpisnend)
+							{
+								if (comsegment->SortId[tmpCountGreater] == -1)
+								{
+									comsegment->SortId[tmpCountGreater] = i;
+									tmpisnend = false;
+								}
+								else
+									--tmpCountGreater;
+							}
+						}
+					}
+
+					for (int j = 0; j<GREEN_COUNT_TYPE_SEGMENTATION; ++j)
+					{
+						if (comsegment->SortId[(GREEN_COUNT_TYPE_SEGMENTATION - 1) - j] != -1 && comsegment->Splits[comsegment->SortId[(GREEN_COUNT_TYPE_SEGMENTATION-1) - j]])
+							queue->push_back(comsegment->Splits[comsegment->SortId[(GREEN_COUNT_TYPE_SEGMENTATION-1) - j]]);
+					}
+				}
+				else
+				{
+					for (int j = 0; j < GREEN_COUNT_TYPE_SEGMENTATION; ++j)
+					{
+						if (comsegment->Splits[j])
+							queue->push_back(comsegment->Splits[j]);
+					}
+				}
+			}
+			else
+			{
+				if ((*count) < curr_splits_ids_render)
+				{
+					arrsplits[(*count)] = comsegment;
+					comsegment->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
+					(*count)++;
+				}
+			}
+	}
+}
+
+void Green::GPURender2(DWORD timeDelta,long nm, int lod)
+{
+	//если есть что к отрисовке
+	if (RTCountDrawObj)
+	{
+		Green::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | RTCountDrawObj));
+
+		Green::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
+		Green::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(DataVertex));
+
+		Green::DXDevice->SetStreamSource(0, ArrModels[nm]->ArrLod[lod]->model.VertexBuffer, 0, sizeof(vertex_static));
+		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model.IndexBuffer);
+		Green::DXDevice->SetVertexDeclaration(VertexDeclarationGreen);
+
+
+		Green::DXDevice->GetTransform(D3DTS_WORLD2, &mat);
+
+		if (ArrModels[nm]->TypeGreen == GREEN_TYPE_TREE)
+		{
+			SGCore_ShaderBind(0, GData::IDShaderVSRenderGreenTree);
+			SGCore_ShaderBind(1, GData::IDShaderPSRenderGreenTree);
+
+			SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenTree, "WorldViewProjection", &mat);
 		}
 		else
 		{
-			ArrSegments->BFNonEnd = false;
+			SGCore_ShaderBind(0, GData::IDShaderVSRenderGreenGrass);
+			SGCore_ShaderBind(1, GData::IDShaderPSRenderGreenTree);
+
+			SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "WorldViewProjection", &mat);
+			SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "DistBeginEndLessening", &float2_t(Green::BeginEndLessening, Green::DistLods.x));
 		}
 
-	SplitsIDs = 0;
-	SplitsIDsRender = 0;
-	SetSplitID(ArrSegments);
+		jCountIndex = 0;
+		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model.SubsetCount; i++)
+		{
+
+
+			Green::DXDevice->SetTexture(0, SGCore_GetTex(ArrModels[nm]->ArrLod[lod]->idstex[i]));
+			Green::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model.VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model.IndexCount[i] / 3);
+			jCountIndex += ArrModels[nm]->ArrLod[lod]->model.IndexCount[i];
+		}
+
+		SGCore_ShaderUnBind();
+
+		Green::DXDevice->SetStreamSourceFreq(0, 1);
+		Green::DXDevice->SetStreamSourceFreq(1, 1);
+	}
 }
 
-void Green::CycleSegmentation(Segment* SplitingMesh)
+void Green::GPURender(DWORD timeDelta,long id_arr)
 {
-		if(SplitingMesh->BFNonEnd)
+	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
+
+	for (int nm = 0; nm < ArrModels.size(); ++nm)
+	{
+		jarrsplits = ArrComFor[id_arr].arr[nm]->Arr;
+		jcount = ArrComFor[id_arr].arr[nm]->CountCom;
+
+		for (int lod = 0; lod < GREEN_COUNT_LOD; ++lod)
 		{
-			SecondSeparated(SplitingMesh);
-				for(int i=0;i<4;i++)
+			if (ArrModels[nm]->ArrLod[lod])
+			{
+				RTGPUArrVerteces = 0;
+				TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+				RTCountDrawObj = 0;
+
+				for (DWORD i = 0; i < jcount; i++)
 				{
-						if(SplitingMesh->SplitMeshes[i])
-							CycleSegmentation(SplitingMesh->SplitMeshes[i]);
-				}
-		}
-}
+					if (jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
+					{
+						//error
+					}
+					if (RTCountDrawObj + jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
+					{
+						TransVertBuf->Unlock();
+						GPURender2(timeDelta, nm, lod);
+						TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+						RTCountDrawObj = 0;
+					}
 
-void Green::SecondSeparated(Segment* SplitingMesh)
-{
-	Array<DWORD> ArrPoly[4];
-	
-		for(int i=0;i<4;i++)
-			SplitingMesh->SplitMeshes[i] = new Segment();
-
-	SkyXEngine::Graphics::ThreeD::Bound ArrBound[4];
-
-	Core::WorkModel::ComputeBoundingBoxArr4(&(SplitingMesh->BoundVolumeSys),(ArrBound));
-		for(int i=0;i<4;i++)
-		{
-			SplitingMesh->SplitMeshes[i]->BoundVolumeSys = ArrBound[i];
-			SplitingMesh->SplitMeshes[i]->BoundVolumeP = ArrBound[i];
-		}
-
-	bool *tmp_arr_mesh_poly = new bool[SplitingMesh->CountAllPoly];
-		for(DWORD i=0;i<SplitingMesh->CountAllPoly;i++)
-			tmp_arr_mesh_poly[i] = true;
-
-	DWORD tmpCountNonIn = 0;
-	float3 tmpMin,tmpMax;
-		for(WORD i=0;i<4;i++)
-		{
-			SplitingMesh->SplitMeshes[i]->BoundVolumeSys.GetMinMax(&tmpMin,&tmpMax);
-			SkyXEngine::Core::WorkModel::CreateBoundingBoxMesh(&tmpMin,&tmpMax,&(SplitingMesh->SplitMeshes[i]->BoundBox));
-
-				for(DWORD j=0;j<SplitingMesh->CountAllPoly;j++)
-				{
-						//если позиция проверяемого полигона находиться в пределах ограничивающего паралелепипеда
-						if(
-							(long(tmpMax.x * 1000) >= long(SplitingMesh->GreenData[j].Position.x * 1000) && long(tmpMin.x * 1000) <= long(SplitingMesh->GreenData[j].Position.x * 1000))
-							&& 
-							(long(tmpMax.z * 1000) >= long(SplitingMesh->GreenData[j].Position.z * 1000) && long(tmpMin.z * 1000) <= long(SplitingMesh->GreenData[j].Position.z * 1000))
-							 &&
-							tmp_arr_mesh_poly[j]
-						  )
+					if (
+						//распределение по дистанции есесно и по лодам
+						(
+						(lod == 0 && jarrsplits[i]->DistForCamera <= Green::DistLods.x) ||
+						(lod == 1 && jarrsplits[i]->DistForCamera <= Green::DistLods.y && jarrsplits[i]->DistForCamera > Green::DistLods.x) ||
+						(lod == 2 && jarrsplits[i]->DistForCamera > Green::DistLods.y)
+						)
+						)
+					{
+						//если это не трава
+						if (!(lod == 0 && ArrModels[nm]->TypeGreen == GREEN_TYPE_TREE))
 						{
-							//записываем вершины в массив
-							ArrPoly[i].push_back(j);
-							//полигон использваон, т.е. занят
-							tmp_arr_mesh_poly[j] = false;
-							tmpCountNonIn++;
+							memcpy(RTGPUArrVerteces + (RTCountDrawObj),
+								jarrsplits[i]->Data,
+								jarrsplits[i]->CountAllGreen * sizeof(DataVertex));
+
+							RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 						}
-				}
-		}
-
-
-		for(int i=0;i<4;i++)
-		{
-			SplitingMesh->SplitMeshes[i]->CountAllPoly = ArrPoly[i].size();
-
-				if(SplitingMesh->SplitMeshes[i]->CountAllPoly > 0)
-				{
-					SplitingMesh->SplitMeshes[i]->GreenData = new GreenDataVertex[SplitingMesh->SplitMeshes[i]->CountAllPoly];
-
-					float3 comMax = SplitingMesh->GreenData[ArrPoly[i][0]].Position;
-					float3 comMin = SplitingMesh->GreenData[ArrPoly[i][0]].Position;
-
-						for(DWORD k=0;k<ArrPoly[i].size();k++)
+						//иначе это трава, а ее по особенному рисуем
+						else
 						{
-								SplitingMesh->SplitMeshes[i]->GreenData[k] = SplitingMesh->GreenData[ArrPoly[i][k]];
+							if (Green::CurrentFreqGrass == 100)
+							{
+								memcpy(RTGPUArrVerteces + (RTCountDrawObj),
+									jarrsplits[i]->Data,
+									jarrsplits[i]->CountAllGreen * sizeof(DataVertex));
 
-									if(SplitingMesh->GreenData[ArrPoly[i][k]].Position.y > comMax.y)
-										comMax.y = SplitingMesh->GreenData[ArrPoly[i][k]].Position.y;
-
-									if(SplitingMesh->GreenData[ArrPoly[i][k]].Position.y < comMin.y)
-										comMin.y = SplitingMesh->GreenData[ArrPoly[i][k]].Position.y;
-
-
-									if(SplitingMesh->GreenData[ArrPoly[i][k]].Position.x > comMax.x)
-										comMax.x = SplitingMesh->GreenData[ArrPoly[i][k]].Position.x;
-
-									if(SplitingMesh->GreenData[ArrPoly[i][k]].Position.x < comMin.x)
-										comMin.x = SplitingMesh->GreenData[ArrPoly[i][k]].Position.x;
-
-
-									if(SplitingMesh->GreenData[ArrPoly[i][k]].Position.z > comMax.z)
-										comMax.z = SplitingMesh->GreenData[ArrPoly[i][k]].Position.z;
-
-									if(SplitingMesh->GreenData[ArrPoly[i][k]].Position.z < comMin.z)
-										comMin.z = SplitingMesh->GreenData[ArrPoly[i][k]].Position.z;
+								RTCountDrawObj += jarrsplits[i]->CountAllGreen;
+							}
+							else
+							{
+								float percent = float(Green::CurrentFreqGrass) / 100.f;
+								float newCount = ((float)jarrsplits[i]->CountAllGreen * percent);
+								float step = float(jarrsplits[i]->CountAllGreen) / newCount;
+								UINT lastCP = 0;
+								for (float k = 0; k < jarrsplits[i]->CountAllGreen; k += step)
+								{
+									UINT curCP = (int)floor(k + 0.5);;
+									if (curCP > lastCP)
+									{
+										memcpy(RTGPUArrVerteces + RTCountDrawObj, jarrsplits[i]->Data + curCP, sizeof(DataVertex));
+										RTCountDrawObj += 1;
+										lastCP = curCP;
+									}
+								}
+							}
 						}
-
-					SplitingMesh->SplitMeshes[i]->BoundVolumeSys.GetMinMax(&tmpMin,&tmpMax);
-					tmpMax.y = comMax.y + BBMax.y;
-					tmpMin.y = comMin.y + BBMin.y;
-
-					SplitingMesh->SplitMeshes[i]->BoundVolumeSys.SetMinMax(&tmpMin,&tmpMax);
-
-					tmpMax.x = comMax.x + BBMax.x;
-					tmpMax.y = comMax.y + BBMax.y;
-					tmpMax.z = comMax.z + BBMax.z;
-
-					tmpMin.x = comMin.x + BBMin.x;
-					tmpMin.y = comMin.y + BBMin.y;
-					tmpMin.z = comMin.z + BBMin.z;
-
-					SplitingMesh->SplitMeshes[i]->BoundVolumeP.SetMinMax(&tmpMin,&tmpMax);
-
-					ArrPoly[i].clear();
+					}
 				}
 
-				if(SplitingMesh->SplitMeshes[i]->CountAllPoly > 0 && SplitingMesh->SplitMeshes[i]->CountAllPoly > CountObjectInSegment)
-					SplitingMesh->SplitMeshes[i]->BFNonEnd = true;
-				else if(SplitingMesh->SplitMeshes[i]->CountAllPoly <= 0)
+				TransVertBuf->Unlock();
+
+				GPURender2(timeDelta, nm, lod);
+			}
+		}
+	}
+}
+
+void Green::Init(StaticGeom* geom, const char* name,
+	const char* path_mask, 
+	float count_max, 
+	const char* path, const char* lod1, const char* lod2, 
+	DWORD count_object_in_split)
+{
+	if (geom->GetCountModel() > 0 && def_str_validate(path))
+	{
+		Model* tmpnewmpdel = new Model();
+		sprintf(tmpnewmpdel->Name, name);
+		tmpnewmpdel->MaskName = path_mask;
+		tmpnewmpdel->ArrLod[0] = new Lod();
+		tmpnewmpdel->ArrLod[1] = 0;
+		tmpnewmpdel->ArrLod[2] = 0;
+
+		char tmppath[1024];
+		sprintf(tmppath, "%s%s", Green::StdPath, path);
+
+		SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[0]->model);
+		tmpnewmpdel->ArrLod[0]->path = path;
+		char tmppathtex[1024];
+		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model.SubsetCount; ++i)
+		{
+			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model.ArrTextures[i]);
+			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+		}
+
+		if (def_str_validate(lod1))
+		{
+			if (stricmp(path, lod1) == 0)
+				tmpnewmpdel->ArrLod[1] = tmpnewmpdel->ArrLod[0];
+			else
+			{
+				tmpnewmpdel->ArrLod[1] = new Lod();
+				sprintf(tmppath, "%s%s", Green::StdPath, lod1);
+				tmpnewmpdel->ArrLod[1]->path = lod1;
+				SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[1]->model);
+
+				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model.SubsetCount; ++i)
 				{
-					nmem_delete(SplitingMesh->SplitMeshes[i]);
+					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 				}
-				else
-					SplitingMesh->SplitMeshes[i]->BFNonEnd = false;
+			}
 		}
 
-	nmem_delete_a(SplitingMesh->GreenData);
-	nmem_delete_a(tmp_arr_mesh_poly);
-}
-
-void Green::SetSplitID(Segment* SplitingMesh)
-{
-		if(SplitingMesh && SplitingMesh->BFNonEnd)
+		if (def_str_validate(lod2))
 		{
-			SplitingMesh->ID = SplitsIDs;
-			SplitsIDs++;
-				for(int i=0;i<4;i++)
-					SetSplitID(SplitingMesh->SplitMeshes[i]);
-		}
-		else if(SplitingMesh)
-		{
-				//if(SplitingMesh->CountAllPoly > 0)
-				//{
-					SplitingMesh->ID = SplitsIDs;
-					SplitsIDs++;
-					SplitsIDsRender++;
-				//}
-				//else
-					//SplitingMesh = 0;//nmem_delete(SplitingMesh);
-		}
-}
+			if (stricmp(path, lod2) == 0)
+				tmpnewmpdel->ArrLod[2] = tmpnewmpdel->ArrLod[0];
+			else if (stricmp(lod1, lod2) == 0)
+				tmpnewmpdel->ArrLod[2] = tmpnewmpdel->ArrLod[1];
+			else
+			{
+				tmpnewmpdel->ArrLod[2] = new Lod();
+				sprintf(tmppath, "%s%s", Green::StdPath, lod2);
+				tmpnewmpdel->ArrLod[2]->path = lod2;
+				SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[2]->model);
 
-void Green::CPUFillingArrIndeces(Core::ControllMoving::Frustum* frustum,Segment** arrsplits,DWORD *count,bool is_camera)
-{
-	ComRecArrIndeces(frustum,arrsplits,count,ArrSegments,is_camera);
-}
-
-void Green::ComRecArrIndeces(Core::ControllMoving::Frustum* frustum,Segment** arrsplits,DWORD *count,Segment* comsegment,bool is_camera)
-{
-	comsegment->BoundVolumeP.GetSphere(&jcenter,&jradius);
-		if(comsegment->CountAllPoly > 0 && frustum->SphereInFrustum(&jcenter,jradius) )
-		{
-			//comsegment->BoundVolumeP.GetMinMax(&jmin,&jmax);
-				//if(frustum->BoxInFrustum(&jmin,&jmax))
+				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model.SubsetCount; ++i)
 				{
-				if(comsegment->BFNonEnd)
+					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+				}
+			}
+		}
+
+		if (!lod1 && !lod2)
+			tmpnewmpdel->TypeGreen = GREEN_TYPE_GRASS;
+		else
+			tmpnewmpdel->TypeGreen = GREEN_TYPE_TREE;
+
+		float3 tmpmin, tmpmax;
+		geom->GetMinMax(&tmpmin, &tmpmax);
+
+		DWORD IDTexMask = SGCore_LoadTexAddName(path_mask);
+		SGCore_LoadTexLoadTextures();
+
+		float CountMaxInPixel = count_max;
+
+		float WidthLand = tmpmax.x - tmpmin.x;
+		float HeightLand = tmpmax.z - tmpmin.z;
+
+		D3DSURFACE_DESC desc;
+		SGCore_GetTex(IDTexMask)->GetLevelDesc(0, &desc);
+
+		D3DLOCKED_RECT LockedRect;
+
+		SGCore_GetTex(IDTexMask)->LockRect(0, &LockedRect, 0, 0);
+		DWORD* tmpColor = (DWORD*)LockedRect.pBits;
+
+		DWORD tmpUnAllCountGreen = 0;
+		Array<float3_t, GREEN_DEFAULT_RESERVE_GEN> arrpos;
+		
+		DWORD MaxAlpha = 0;
+		DWORD alpha;
+		float AlphaColor;
+		float PosInLandX;
+		float PosInLandY;
+
+		float3_t tmp2;
+
+		float OneEdX;
+		float OneEdY;
+
+		float3 tmppos2;
+		bool isintersect;
+
+		for (DWORD x = 0; x<desc.Width; ++x)
+		{
+			for (DWORD y = 0; y<desc.Height; ++y)
+			{
+				alpha = (tmpColor[y*desc.Width + x] >> 24);
+				AlphaColor = 1.f / 255.f * (float)alpha;
+				if (alpha > 0)
 				{
-						if(Core::Data::Settings::IsUseSortFrontToBack)
+					//позици¤ пиксел¤ на ландшафте
+					PosInLandX = lerpf(tmpmin.x, tmpmax.x, float(x + 1) / float(desc.Width));
+					PosInLandY = lerpf(tmpmax.z, tmpmin.z, float(y + 1) / float(desc.Height));
+
+					tmp2 = float3_t(PosInLandX, 0, PosInLandY);
+
+					OneEdX = WidthLand / float(desc.Width);
+					OneEdY = HeightLand / float(desc.Height);
+
+					//int tmpcountgreen = lerp(0,10,(float(alpha)*CountMaxInPixel)/255.f);//int(floor(float(float(alpha)*CountMaxInPixel*100)/2550.f));
+					//расчет позиций объектов на квадратный метр
+					for (int i = 0; i<int(floor(float(float(alpha)*CountMaxInPixel * 100) / 2550.f)); ++i)
+					{
+						tmppos2 = float3(tmp2.x, 100, tmp2.z);
+						isintersect = true;
+
+						tmppos2.x = (tmp2.x - OneEdX*0.5f) + randf(0.0, OneEdX);
+						tmppos2.z = (tmp2.z - OneEdY*0.5f) + randf(0.0, OneEdY);
+
+						isintersect = geom->GetIntersectedRayY(&tmppos2);
+						if (isintersect)
 						{
-								for(int q=0;q<4;q++)
-								{
-									comsegment->SortId[q] = -1;
-										if(comsegment->SplitMeshes[q])
-										{
-											comsegment->SplitMeshes[q]->BoundVolumeP.GetSphere(&jcenter,&jradius);
-											comsegment->SplitMeshes[q]->DistForCamera = SMVector3Length2((jcenter - Core::Data::ConstCurrentCameraPosition)) - jradius*jradius;
-										}
-								}
+							arrpos.push_back(tmppos2);
 
-							float pl1,pl2;
-							DWORD tmpCountGreater = 0;
-								for(DWORD i=0;i<4;i++)
-								{
-										if(comsegment->SplitMeshes[i])
-										{
-											tmpCountGreater = 0;
-											pl1 = comsegment->SplitMeshes[i]->DistForCamera;
-
-												for(DWORD k=0;k<4;k++)
-												{
-														if(comsegment->SplitMeshes[k])
-														{
-															pl2 = comsegment->SplitMeshes[k]->DistForCamera;
-
-																if(i != k && pl2 >= pl1)
-																	tmpCountGreater++;
-														}
-												}
-
-											bool tmpisnend = true;
-												while(tmpisnend)
-												{
-														if(comsegment->SortId[tmpCountGreater] == -1)
-														{
-															comsegment->SortId[tmpCountGreater] = i;
-															tmpisnend = false;
-														}
-														else
-															tmpCountGreater--;
-												}
-										}
-								}
-
-								for(int j=0;j<4;j++)
-								{
-										if(comsegment->SortId[3-j] != -1 && comsegment->SplitMeshes[comsegment->SortId[3-j]])
-											ComRecArrIndeces(frustum,arrsplits,count,comsegment->SplitMeshes[comsegment->SortId[3-j]],is_camera);
-								}
+							++tmpnewmpdel->AllCountGreen;
 						}
 						else
 						{
-								for(int j=0;j<4;j++)
-								{
-										if(comsegment->SplitMeshes[j])
-											ComRecArrIndeces(frustum,arrsplits,count,comsegment->SplitMeshes[j],is_camera);
-								}
+							++tmpUnAllCountGreen;
 						}
+					}
 				}
-				else
-				{
-						if(is_camera)
-							comsegment->DistForCamera = SMVector3Length((jcenter - Core::Data::ConstCurrentCameraPosition)) - jradius;
-
-						if(comsegment->DistForCamera < 0)
-							comsegment->DistForCamera = 0;
-
-						if((*count) < SplitsIDsRender)
-						{
-							arrsplits[(*count)] = comsegment;
-
-								if(is_camera)
-									arrsplits[(*count)]->IsRenderForCamera = true;
-								else
-									arrsplits[(*count)]->IsRenderFor = true;
-								
-							(*count)++;
-						}
-				}
-				}
+			}
 		}
+
+		SGCore_GetTex(IDTexMask)->UnlockRect(0);
+
+		tmpnewmpdel->AllTrans = new DataVertex[tmpnewmpdel->AllCountGreen];
+
+		for (DWORD i = 0; i<tmpnewmpdel->AllCountGreen; i++)
+		{
+			tmpnewmpdel->AllTrans[i].Position = arrpos[i];
+			tmpnewmpdel->AllTrans[i].TexCoord.x = 1.f + (float(rand() % 100) / 100.f);
+			tmpnewmpdel->AllTrans[i].TexCoord.y = D3DXToRadian(float(rand() % 360));
+			tmpnewmpdel->AllTrans[i].TexCoord.z = (float(rand() % 200) / 100.f) - 1.f;
+		}
+		arrpos.clear();
+
+
+		PreSegmentation(tmpnewmpdel, count_object_in_split);
+		//currSplitsIDs = 0;
+		//currSplitsIDsRender = 0;
+		SetSplitID(tmpnewmpdel->ArrSplits, &tmpnewmpdel->SplitsIDs, &tmpnewmpdel->SplitsIDsRender);
+		//tmpnewmpdel->SplitsIDs = currSplitsIDs;
+		//tmpnewmpdel->SplitsIDsRender = currSplitsIDsRender;
+
+		ArrModels.push_back(tmpnewmpdel);
+		AddModelInArrCom(ArrModels.size() - 1);
+	}
+	else
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING,"not found static geometry in level!!!");
+	}
 }
 
-
-void Green::GPURender(Segment** arrsplits,DWORD count,int lod,bool ismaterial,bool is_camera,int how_shader,float3* lightpos,bool is_selected)
+void Green::Save(const char* path)
 {
-		if(lod == 0 || IsOrder)
-			IsOrder = true;
+	FILE* file = fopen(path, "wb");
 
-	//!!!ОПТИМИЗИРОВАТЬ ПО RTCountDrawObj И ПРОЧИМ КОЛИЧЕСТВАМ
-		if(lod < 3 && DataLod[lod])
+	long countmodel = ArrModels.size();
+	fwrite(&countmodel, sizeof(long), 1, file);
+
+	for (long i = 0; i < ArrModels.size(); ++i)
+	{
+		fwrite(&ArrModels[i]->TypeGreen, sizeof(int), 1, file);
+
+		long tmpstrlen = strlen(ArrModels[i]->Name);
+		fwrite(&tmpstrlen, sizeof(long), 1, file);
+		fwrite(ArrModels[i]->Name, sizeof(char), tmpstrlen, file);
+
+		tmpstrlen = ArrModels[i]->MaskName.length();
+		fwrite(&tmpstrlen, sizeof(long), 1, file);
+		fwrite(ArrModels[i]->MaskName.c_str(), sizeof(char), tmpstrlen, file);
+
+		if (ArrModels[i]->TypeGreen == GREEN_TYPE_GRASS)
 		{
-			GreenDataVertex* RTGPUArrVerteces;
-			TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
-			RTCountDrawObj = 0;
-
-				for(DWORD i=0;i<count;i++)
-				{
-						if((is_camera ? arrsplits[i]->IsRenderForCamera : arrsplits[i]->IsRenderFor) &&	//если рисуем для камеры и указано что рисуем либо не для камеры и тоже указано
-							(IsOrder && (	//распределение по дистанции есесн ои по лодам
-											(lod == 0 && arrsplits[i]->DistForCamera < Core::Data::Settings::DistFor1SplitGreen) || 
-											(lod == 1 && arrsplits[i]->DistForCamera < Core::Data::Settings::DistFor2SplitGreen && arrsplits[i]->DistForCamera > Core::Data::Settings::DistFor1SplitGreen) || 
-											(lod == 2 && arrsplits[i]->DistForCamera > Core::Data::Settings::DistFor2SplitGreen)
-										) || !IsOrder
-							) &&
-							RTCountDrawObj + arrsplits[i]->CountAllPoly < CountGrassInVert)	//если мы заполнили не весь масиив
-						{
-								//если это не трава
-								if(!(lod == 0 && DataLod[lod+1] == 0 && DataLod[lod+2] == 0))
-								{
-									memcpy(RTGPUArrVerteces+(RTCountDrawObj),
-									arrsplits[i]->GreenData,
-									arrsplits[i]->CountAllPoly * sizeof(GreenDataVertex));
-																	
-									RTCountDrawObj += arrsplits[i]->CountAllPoly;
-								}
-								//иначе это трава, а ее по особенному рисуем
-								else
-								{
-										if(Core::Data::Settings::CurrentFreqGrass == 100)
-										{
-											memcpy(RTGPUArrVerteces+(RTCountDrawObj),
-											arrsplits[i]->GreenData,
-											arrsplits[i]->CountAllPoly * sizeof(GreenDataVertex));
-																					
-											RTCountDrawObj += arrsplits[i]->CountAllPoly;
-										}
-										else
-										{
-											float percent = float(Core::Data::Settings::CurrentFreqGrass)/100.f; //10%
-											float newCount = ((float)arrsplits[i]->CountAllPoly * percent);
-											float step = float(arrsplits[i]->CountAllPoly) / newCount;
-											UINT lastCP = 0;
-												for(float k = 0; k < arrsplits[i]->CountAllPoly; k += step)
-												{
-													UINT curCP = (int)floor(k + 0.5);;
-														if(curCP > lastCP)
-														{
-															memcpy(RTGPUArrVerteces+RTCountDrawObj,arrsplits[i]->GreenData+curCP,sizeof(GreenDataVertex));
-															RTCountDrawObj += 1;
-															lastCP = curCP;
-														}
-												}
-										}
-								}
-						}
-				}
-
-			
-			TransVertBuf->Unlock();
-
-				//если есть что к отрисовке
-				if(RTCountDrawObj)
-				{
-					Core::Data::Device->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | RTCountDrawObj) );
-					
-					Core::Data::Device->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1) );
-					Core::Data::Device->SetStreamSource(1, TransVertBuf, 0,  sizeof(GreenDataVertex) );
-
-					SkyXEngine::Core::Data::Device->SetStreamSource(0, DataLod[lod]->VertexBuffer, 0, sizeof(Graphics::ThreeD::vertex_static));
-					SkyXEngine::Core::Data::Device->SetIndices(DataLod[lod]->IndexBuffer);
-					SkyXEngine::Core::Data::Device->SetVertexDeclaration(SkyXEngine::Graphics::ThreeD::VertexDeclarationGreen);
-								
-					DWORD tmpCountIndex = 0;
-						for(DWORD i=0;i<DataLod[lod]->SubsetCount;i++)
-						{
-								if((
-									(SkyXEngine::Core::Data::Settings::IsComEditors && //если обработка редакторная
-										(SkyXEngine::Core::Data::Settings::EditorsTypeRenderSubset == 0 ||	//если рисуем все подгруппы
-										(SkyXEngine::Core::Data::Settings::EditorsTypeRenderSubset == 1 &&	//если рисуем выделенную подгруппу 
-										i == SkyXEngine::Core::Data::Settings::EditorsSelectedSubset) ||	//и если текущая подгруппа есть выделенная
-										(SkyXEngine::Core::Data::Settings::EditorsTypeRenderSubset == 2 &&	//если рисуем все кроме выделенной подгруппы 
-										i != SkyXEngine::Core::Data::Settings::EditorsSelectedSubset))) ||	//и если текущая подгруппа не есть выделенная
-									!SkyXEngine::Core::Data::Settings::IsComEditors	//если обработка не редакторная
-									))
-								{
-										if(ismaterial)
-										{
-											SkyXEngine::Core::Data::MaterialsManager->Render(this->ArrMaterials[i],&(SMMatrixIdentity()),0);
-												if(/*this->IsGrass && */Core::Data::MaterialsManager->GetMaterial(this->ArrMaterials[i])->PreShaderVS != -1)
-													Core::Data::ShadersManager->SetValueRegisterF(
-																									0,
-																									Core::Data::MaterialsManager->GetMaterial(this->ArrMaterials[i])->PreShaderVS,
-																									"DistBeginEndLessening",
-																									&float2(Core::Data::Settings::DistBeginLesseningGrass,Core::Data::Settings::DistFor1SplitGreen));
-											//DistBeginEndLessening
-										}
-										else
-										{
-												if(how_shader == 0)
-													SkyXEngine::Core::Data::MaterialsManager->Render(IDMaterailFreeRenderGreenColor,&(SMMatrixIdentity()),0);
-												else if(how_shader == 1)
-													SkyXEngine::Core::Data::MaterialsManager->Render(IDMaterailFreeRenderGreenShadowDirectPSSM,&(SMMatrixIdentity()),0);
-												else if(how_shader == 2)
-													SkyXEngine::Core::Data::MaterialsManager->Render(IDMaterailFreeRenderGReenShadowCube,&(SMMatrixIdentity()),0);
-											SkyXEngine::Core::Data::MaterialsManager->SetMainTexture(0,this->ArrMaterials[i]);
-										}
-									
-										if(is_selected)
-											SkyXEngine::Core::Data::Device->SetTexture(0,SkyXEngine::Core::Data::LoadedTextures->GetTexture(Core::Data::EngineID::Tex_FreeSelectedMesh));
-
-									SkyXEngine::Core::Data::Device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, DataLod[lod]->VertexCount[i], tmpCountIndex, DataLod[lod]->IndexCount[i] / 3);
-									tmpCountIndex += DataLod[lod]->IndexCount[i];
-									SkyXEngine::Core::Data::Statistics::CountPolyGreen += (DataLod[lod]->IndexCount[i] / 3) * RTCountDrawObj;
-									SkyXEngine::Core::Data::Statistics::CountDips += 1;
-								}
-						}
-
-					Core::Data::ShadersManager->UnBind();
-
-					Core::Data::Device->SetStreamSourceFreq(0,1);
-					Core::Data::Device->SetStreamSourceFreq(1,1);
-				}
-
-				//если сейчас рисовали 0 лод и первый есть либо рисовали первый и вторйо есть
-				if((lod == 0 && DataLod[1]) || (lod == 1 && DataLod[2]))
-				{
-					lod++;
-					GPURender(arrsplits,count,lod,ismaterial,is_camera);
-				}
-
-					//если второй лод то прекращаем отрисовку
-					if(lod == 2)
-						IsOrder = false;
-
-				/*if(1)
-				{
-					Core::Data::Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-					Core::Data::Device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-					Core::Data::ShadersManager->UnBind();
-					Core::Data::Device->SetTexture(0,0);
-					ArrSegments->BoundBox->DrawSubset(0);
-					/*ArrSegments->SplitMeshes[0]->BoundBox->DrawSubset(0);
-					ArrSegments->SplitMeshes[1]->BoundBox->DrawSubset(0);
-					ArrSegments->SplitMeshes[2]->BoundBox->DrawSubset(0);
-					ArrSegments->SplitMeshes[3]->BoundBox->DrawSubset(0);*/
-
-					/*Core::Data::Device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-					Core::Data::Device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-				}*/
+			tmpstrlen = strlen(ArrModels[i]->ArrLod[0]->path.c_str());
+			fwrite(&tmpstrlen, sizeof(long), 1, file);
+			fwrite(ArrModels[i]->ArrLod[0]->path.c_str(), sizeof(char), tmpstrlen, file);
 		}
 		else
-			Core::InLog("!!! invalide number lod of the green");
-}
-
-////////////////////////
-
-ManagerGreen::ManagerGreen()
-{
-	IsSelectedMesh = false;
-}
-
-ManagerGreen::~ManagerGreen()
-{
-		for(DWORD i=0;i<Arr.size();i++)
 		{
-			nmem_delete(Arr[i]);
-			nmem_delete_a(ArrComForCamera[i]->Arr);
-			nmem_delete(ArrComForCamera[i]);
+			for (int k = 0; k < GREEN_COUNT_LOD; ++k)
+			{
+				tmpstrlen = ArrModels[i]->ArrLod[k]->path.length();
+				fwrite(&tmpstrlen, sizeof(long), 1, file);
+				fwrite(ArrModels[i]->ArrLod[k]->path.c_str(), sizeof(char), tmpstrlen, file);
+			}
 		}
+		
+		fwrite(&ArrModels[i]->BBMin.x, sizeof(float), 1, file);
+		fwrite(&ArrModels[i]->BBMin.y, sizeof(float), 1, file);
+		fwrite(&ArrModels[i]->BBMin.z, sizeof(float), 1, file);
 
-		for(DWORD i=0;i<ArrFrustums.size();i++)
+		fwrite(&ArrModels[i]->BBMax.x, sizeof(float), 1, file);
+		fwrite(&ArrModels[i]->BBMax.y, sizeof(float), 1, file);
+		fwrite(&ArrModels[i]->BBMax.z, sizeof(float), 1, file);
+
+		fwrite(&ArrModels[i]->AllCountGreen, sizeof(DWORD), 1, file);
+		fwrite(&ArrModels[i]->AllTrans, sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
+
+		Array<Segment*> queue;
+		long tmpcount = 0;
+		queue.push_back(ArrModels[i]->ArrSplits);
+
+		while (queue.size())
 		{
-				for(DWORD k=0;k<Arr.size();k++)
-				{
-					nmem_delete(ArrFrustums[i][k]);
-				}
-		}
+			SaveSplit(queue[0], file, &queue);
 
-	Arr.clear();
-	ArrComForCamera.clear();
-	ArrFrustums.clear();
+			queue.erase(0);
+			++tmpcount;
+		}
+	}
+
+	fclose(file);
 }
 
-void ManagerGreen::OnLostDevice()
+void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 {
-		for(DWORD i=0;i<Arr.size();i++)
+	float3 jmin, jmax;
+	Split->BoundVolumeSys->GetMinMax(&jmin, &jmax);
+	fwrite(&jmin.x, sizeof(float), 1, file);
+	fwrite(&jmin.y, sizeof(float), 1, file);
+	fwrite(&jmin.z, sizeof(float), 1, file);
+
+	fwrite(&jmax.x, sizeof(float), 1, file);
+	fwrite(&jmax.y, sizeof(float), 1, file);
+	fwrite(&jmax.z, sizeof(float), 1, file);
+
+	Split->BoundVolumeP->GetMinMax(&jmin, &jmax);
+	fwrite(&jmin.x, sizeof(float), 1, file);
+	fwrite(&jmin.y, sizeof(float), 1, file);
+	fwrite(&jmin.z, sizeof(float), 1, file);
+
+	fwrite(&jmax.x, sizeof(float), 1, file);
+	fwrite(&jmax.y, sizeof(float), 1, file);
+	fwrite(&jmax.z, sizeof(float), 1, file);
+
+	fwrite(&Split->CountAllGreen, sizeof(DWORD), 1, file);
+
+	fwrite(&Split->BFNonEnd, sizeof(bool), 1, file);
+
+	if (Split->BFNonEnd)
+	{
+		bool isexists = true;
+		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
 		{
-			Arr[i]->OnLostDevice();
+			if (Split->Splits[i])
+			{
+				isexists = true;
+				fwrite(&isexists, sizeof(bool), 1, file);
+				queue->push_back(Split->Splits[i]);
+			}
+			else
+			{
+				isexists = false;
+				fwrite(&isexists, sizeof(bool), 1, file);
+			}
+
+			isexists = true;
 		}
+	}
+	else
+	{
+		fwrite(Split->Data, sizeof(DataVertex), Split->CountAllGreen, file);
+	}
 }
 
-void ManagerGreen::OnResetDevice()
+void Green::Load(const char* path)
 {
-		for(DWORD i=0;i<Arr.size();i++)
+	FILE* file = fopen(path, "rb");
+
+	char tmpstr[3][1024];
+	tmpstr[0][0] = 0;
+	tmpstr[1][0] = 0;
+	tmpstr[2][0] = 0;
+	char tmppath[1024];
+	char tmpNameMask[1024];
+
+	long countmodel;
+	fread(&countmodel, sizeof(long), 1, file);
+
+	for (long i = 0; i < countmodel; ++i)
+	{
+		tmpstr[0][0] = tmpstr[1][0] = tmpstr[2][0] = 0;
+		Model* tmpmodel = new Model();
+		fread(&tmpmodel->TypeGreen, sizeof(int), 1, file);
+
+		long tmpstrlen;// = strlen(ArrModels[i]->Name);
+		fread(&tmpstrlen, sizeof(long), 1, file);
+		fread(tmpNameMask, sizeof(char), tmpstrlen, file);
+		tmpNameMask[tmpstrlen] = 0;
+		sprintf(tmpmodel->Name,"%s",tmpNameMask);
+
+		//tmpstrlen = ArrModels[i]->MaskName.length();
+		fread(&tmpstrlen, sizeof(long), 1, file);
+		fread(tmpNameMask, sizeof(char), tmpstrlen, file);
+		tmpNameMask[tmpstrlen] = 0;
+		tmpmodel->MaskName = tmpNameMask;
+
+		if (tmpmodel->TypeGreen == GREEN_TYPE_GRASS)
 		{
-			Arr[i]->OnResetDevice();
+			//sprintf(tmpstr[0], "%s", Green::StdPath);
+			//long tmpstrlen;
+			fread(&tmpstrlen, sizeof(long), 1, file);
+			fread(tmpstr[0], sizeof(char), tmpstrlen, file);
+			tmpstr[0][tmpstrlen] = 0;
 		}
-}
-
-void ManagerGreen::AddOne(const char* path)
-{
-	Green* tmpGreen = new Green();
-	tmpGreen->LoadOne(path);
-	/*tmpGreen->Load(lod1,1);
-	tmpGreen->Load(lod2,2);
-	tmpGreen->Init(id_model,path_mask,count_max);*/
-	//tmpGreen->Segmentation(1);
-
-	Arr.push_back(tmpGreen);
-
-	InfoRenderSegments* tmpIRS = new InfoRenderSegments();
-	tmpIRS->Count = tmpGreen->GetCountSplits();
-	tmpIRS->Arr = new Segment*[tmpGreen->GetCountSplits()];
-	tmpIRS->CountCom = 0;
-
-	ArrComForCamera.push_back(tmpIRS);
-
-		for(DWORD i=0;i<ArrFrustums.size();i++)
-		{
-			InfoRenderSegments* tmpIRS2 = new InfoRenderSegments();
-			tmpIRS2->Count = tmpGreen->GetCountSplitsRender();
-			tmpIRS2->Arr = new Segment*[tmpGreen->GetCountSplitsRender()];
-			tmpIRS2->CountCom = 0;
-
-			ArrFrustums[i].push_back(tmpIRS2);
-		}
-}
-
-void ManagerGreen::Gen(DWORD id_model,float count_max,const char* path,DWORD count_object_in_segment,const char* lod1,const char* lod2,const char* path_mask)
-{
-	Green* tmpGreen = new Green();
-	tmpGreen->Load(path,0);
-	tmpGreen->Load(lod1,1);
-	tmpGreen->Load(lod2,2);
-	tmpGreen->Init(id_model,path_mask,count_max);
-	tmpGreen->Segmentation(count_object_in_segment);
-
-	Arr.push_back(tmpGreen);
-
-	InfoRenderSegments* tmpIRS = new InfoRenderSegments();
-	tmpIRS->Count = tmpGreen->GetCountSplits();
-	tmpIRS->Arr = new Segment*[tmpGreen->GetCountSplits()];
-	tmpIRS->CountCom = 0;
-
-	ArrComForCamera.push_back(tmpIRS);
-
-		for(DWORD i=0;i<ArrFrustums.size();i++)
-		{
-			InfoRenderSegments* tmpIRS2 = new InfoRenderSegments();
-			tmpIRS2->Count = tmpGreen->GetCountSplitsRender();
-			tmpIRS2->Arr = new Segment*[tmpGreen->GetCountSplitsRender()];
-			tmpIRS2->CountCom = 0;
-
-			ArrFrustums[i].push_back(tmpIRS2);
-		}
-}
-
-void ManagerGreen::Add(const char* path,DWORD count_object_in_segment,const char* lod1,const char* lod2,const char* path_bin_mask)
-{
-	Green* tmpGreen = new Green();
-	tmpGreen->Load(path,0);
-	tmpGreen->Load(lod1,1);
-	tmpGreen->Load(lod2,2);
-	tmpGreen->LoadBinMask(path_bin_mask);
-	tmpGreen->Segmentation(count_object_in_segment);
-
-	Arr.push_back(tmpGreen);
-
-	InfoRenderSegments* tmpIRS = new InfoRenderSegments();
-	tmpIRS->Count = tmpGreen->GetCountSplitsRender();
-	tmpIRS->Arr = new Segment*[tmpGreen->GetCountSplitsRender()];
-	tmpIRS->CountCom = 0;
-
-	ArrComForCamera.push_back(tmpIRS);
-
-		for(DWORD i=0;i<ArrFrustums.size();i++)
-		{
-			InfoRenderSegments* tmpIRS2 = new InfoRenderSegments();
-			tmpIRS2->Count = tmpGreen->GetCountSplitsRender();
-			tmpIRS2->Arr = new Segment*[tmpGreen->GetCountSplitsRender()];
-			tmpIRS2->CountCom = 0;
-
-			ArrFrustums[i].push_back(tmpIRS2);
-		}
-}
-
-DWORD ManagerGreen::AddFrustum()
-{
-	UINT id = ArrFrustums.size();
-	Array<InfoRenderSegments*> tmpArr;
-	ArrFrustums.push_back(tmpArr);
-	return id;
-}
-
-void ManagerGreen::AllComForCamera(float3* campos)
-{
-	float4x4 mat = Core::Data::View * Core::Data::Projection;
-	float3 sizemapdepth = float3(Core::Data::WidthHeight.x * Core::Data::CoefSizeOC,Core::Data::WidthHeight.y * Core::Data::CoefSizeOC,Core::Data::NearFar.y);
-	float tmpdepth;
-	int tmpkey;
-	float tmpmaxdepth = 0;
-	DWORD sizewarrdepth = Core::Data::WidthHeight.x * Core::Data::CoefSizeOC;
-	DWORD sizeharrdepth = Core::Data::WidthHeight.y * Core::Data::CoefSizeOC;
-	PosBBScreen res;
-		for(DWORD i=0;i<Arr.size();i++)
-		{
-			ArrComForCamera[i]->CountCom = 0;
-			Arr[i]->CPUFillingArrIndeces(Core::Data::ObjCamera->ObjFrustum,ArrComForCamera[i]->Arr,&(ArrComForCamera[i]->CountCom),true);
-			DWORD tmptmp = ArrComForCamera[i]->CountCom;
-				for(DWORD k=0;k<ArrComForCamera[i]->CountCom;k++)
-				{
-					ArrComForCamera[i]->Arr[k]->BoundVolumeP.GetPosBBScreen(&res,campos,&sizemapdepth,&mat);
-					ArrComForCamera[i]->Arr[k]->IsRenderForCamera = false;
-						
-					tmpdepth = Core::Data::CurrentMaxDepth2;
-						if(tmpdepth > res.mindepth*Core::Data::NearFar.y)
-						{
-								if(res.x < 0 && res.x + res.width > 0)
-								{
-									res.width = res.width + res.x;
-									res.x = 0;
-								}
-
-								if(res.y < 0 && res.y + res.height > 0)
-								{
-									res.height = res.height + res.y;
-									res.y = 0;
-								}
-
-								if(res.IsIn)
-									ArrComForCamera[i]->Arr[k]->IsRenderForCamera = true;
-								else if(res.maxdepth > 0.f )
-								{
-										for(int x=res.x;x<res.width+res.x;x++)
-										{
-												for(int y=res.y;y<res.height+res.y;y++)
-												{
-													tmpkey = ((y) * sizewarrdepth) + (x);
-													tmpdepth = Core::Data::ArrDepthOC[tmpkey];
-																						
-														if(tmpdepth >= res.mindepth)
-														{
-															x=res.width+res.x;
-															y=res.height+res.y;
-															ArrComForCamera[i]->Arr[k]->IsRenderForCamera = true;
-														}
-												}
-										}
-								}
-						}
-				}
-		}
-}
-
-void ManagerGreen::AllCom(Core::ControllMoving::Frustum* frustum,DWORD id,bool comgrass)
-{
-		if(id >= 0 && id < ArrFrustums.size())
-		{
-				for(DWORD i=0;i<Arr.size();i++)
-				{
-					ArrFrustums[id][i]->CountCom = 0;
-						if((comgrass && Arr[i]->IsGrass) || !(Arr[i]->IsGrass))
-							Arr[i]->CPUFillingArrIndeces(frustum,ArrFrustums[id][i]->Arr,&(ArrFrustums[id][i]->CountCom),false);
-				}
-		}
-}
-
-void ManagerGreen::RenderForCamera(DWORD timeDelta)
-{
-
-		for(DWORD i=0;i<ArrComForCamera.size();i++)
-		{
-				if(/*Arr[i]->ArrSegments->IsRenderForCamera*/ArrComForCamera[i]->CountCom > 0)
-					Arr[i]->GPURender(ArrComForCamera[i]->Arr,ArrComForCamera[i]->CountCom,0,true,true,0,0,(NumSelModel == i && SkyXEngine::Core::Data::Settings::EditorsIsSelectedGreen ? true : false));
-		}
-}
-
-void ManagerGreen::AllRender(DWORD id,DWORD timeDelta,bool ismaterial,bool comgrass,int lod,int how_shader,float3* lightpos)
-{
-		if(id >= 0 && id < ArrFrustums.size())
-		{
-				for(DWORD i=0;i<Arr.size();i++)
-				{
-					Segment** tmpsegment = ArrFrustums[id][i]->Arr;
-					DWORD tmpcount = ArrFrustums[id][i]->CountCom;
-
-						if(ArrFrustums[id][i]->CountCom)
-						{
-								if((comgrass && Arr[i]->IsGrass) || !(Arr[i]->IsGrass))
-								{
-									Arr[i]->GPURender(
-										ArrFrustums[id][i]->Arr,
-										ArrFrustums[id][i]->CountCom,
-										lod,ismaterial,false,how_shader,lightpos);
-								}
-						}
-				}
-		}
-}
-
-inline DWORD ManagerGreen::GetCount()
-{
-	return Arr.size();
-}
-
-void ManagerGreen::Delete(DWORD id)
-{
-		if(id >= 0 && id < Arr.size())
-		{
-			nmem_delete(Arr[id]);
-			Arr.erase(id);
-
-			nmem_delete(ArrComForCamera[id]);
-			ArrComForCamera.erase(id);
-
-				for(DWORD i=0;i<ArrFrustums.size();i++)
-				{
-					nmem_delete(ArrFrustums[i][id]);
-					ArrFrustums[i].erase(id);
-				}
-		}
-}
-
-void ManagerGreen::Clear()
-{
-		for(int i=0;i<Arr.size();i++)
-		{
-			this->Delete(0);
-		}
-}
-
-DWORD ManagerGreen::GetAllCountObjectGen()
-{
-	DWORD AllCount = 0;
-
-		for(int i=0;i<Arr.size();i++)
-			AllCount += Arr[i]->AllCountGreen;
-
-	return AllCount;
-}
-
-DWORD ManagerGreen::GetAllCountSplits()
-{
-	DWORD AllCount = 0;
-
-		for(int i=0;i<Arr.size();i++)
-			AllCount += Arr[i]->SplitsIDs;
-
-	return AllCount;
-}
-
-DWORD ManagerGreen::GetAllCountRenderSplits()
-{
-	DWORD AllCount = 0;
-
-		for(int i=0;i<Arr.size();i++)
-			AllCount += Arr[i]->SplitsIDsRender;
-
-	return AllCount;
-}
-
-inline DWORD ManagerGreen::GetSelected()
-{
-	return NumSelModel;
-}
-
-inline void ManagerGreen::SetSelected(DWORD id)
-{
-	NumSelModel = id;
-	SkyXEngine::Core::Data::Level::ArrStaticModel->SetSelected(SkyXEngine::Core::Data::Level::ArrStaticModel->GetSelected());
-}
-
-inline bool ManagerGreen::GetSelectedMesh()
-{
-	return IsSelectedMesh;
-}
-
-inline void ManagerGreen::SetSelectedMesh(bool is_sel)
-{
-		/*if(IsSelectedMesh)
-			SkyXEngine::Core::Data::EngineID::Tex_SelectedMesh = this->GetTexMask(NumSelModel);*/
-	IsSelectedMesh = is_sel;
-}
-
-inline DWORD ManagerGreen::GetTexMask(DWORD id)
-{
-		if(id >= 0 && id < Arr.size())
-			return Arr[id]->IDTexMask;
 		else
-			return -1;
-}
-
-inline DWORD ManagerGreen::GetMeshIn(DWORD id)
-{
-		if(id >= 0 && id < Arr.size())
-			return Arr[id]->IDMeshIn;
-		else
-			return -1;
-}
-
-inline void ManagerGreen::GetLodPath(DWORD id,char* text,int type)
-{
-		if(id >= 0 && id < Arr.size() && type >= 0 && type < 3)
-			sprintf(text,"%s",Arr[id]->Paths[type]);
-}
-
-inline DWORD ManagerGreen::GetCountObjectInSplit(DWORD id)
-{
-		if(id >= 0 && id < Arr.size())
-			return Arr[id]->CountObjectInSegment;
-}
-
-inline DWORD ManagerGreen::IsLods(DWORD id)
-{
-		if(id >= 0 && id < Arr.size())
 		{
-				if(!Arr[id]->DataLod[1] && !Arr[id]->DataLod[2])
-					return false;
-				else
-					return true;
+			for (int k = 0; k < GREEN_COUNT_LOD; ++k)
+			{
+				//sprintf(tmpstr[k], "%s", Green::StdPath);
+				//long tmpstrlen;
+				fread(&tmpstrlen, sizeof(long), 1, file);
+				fread(tmpstr[k], sizeof(char), tmpstrlen, file);
+				tmpstr[k][tmpstrlen] = 0;
+			}
 		}
-	return false;
-}
 
-inline DWORD ManagerGreen::GetCountGreen(DWORD id)
-{
-		if(id >= 0 && id < Arr.size())
-			return Arr[id]->AllCountGreen;
-}
+		
+		tmpmodel->ArrLod[0] = new Lod();
+		tmpmodel->ArrLod[1] = 0;
+		tmpmodel->ArrLod[2] = 0;
 
-inline void ManagerGreen::GetPosTrans(DWORD id,GreenDataVertex* data)
-{
-		if(id >= 0 && id < Arr.size())
+		sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[0]);
+		SGCore_LoadStaticModel(tmppath, &tmpmodel->ArrLod[0]->model);
+		tmpmodel->ArrLod[0]->path = tmpstr[0];
+		char tmppathtex[1024];
+		for (int k = 0; k < tmpmodel->ArrLod[0]->model.SubsetCount; ++k)
 		{
-			memcpy(data,Arr[id]->AllTrans,sizeof(GreenDataVertex)*Arr[id]->AllCountGreen);
+			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model.ArrTextures[k]);
+			tmpmodel->ArrLod[0]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
 		}
+
+		if (tmpstr[1][0])
+		{
+			if (stricmp(tmpstr[0], tmpstr[1]) == 0)
+				tmpmodel->ArrLod[1] = tmpmodel->ArrLod[0];
+			else
+			{
+				tmpmodel->ArrLod[1] = new Lod();
+				tmpmodel->ArrLod[1]->path = tmpstr[1];
+				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[1]);
+				SGCore_LoadStaticModel(tmpstr[1], &tmpmodel->ArrLod[1]->model);
+
+				for (int k = 0; k < tmpmodel->ArrLod[1]->model.SubsetCount; ++k)
+				{
+					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model.ArrTextures[k]);
+					tmpmodel->ArrLod[1]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
+				}
+			}
+		}
+
+		if (tmpstr[2][0])
+		{
+			if (stricmp(tmpstr[0], tmpstr[2]) == 0)
+				tmpmodel->ArrLod[2] = tmpmodel->ArrLod[0];
+			else if (stricmp(tmpstr[1], tmpstr[2]) == 0)
+				tmpmodel->ArrLod[2] = tmpmodel->ArrLod[1];
+			else
+			{
+				tmpmodel->ArrLod[2] = new Lod();
+				tmpmodel->ArrLod[2]->path = tmpstr[2];
+				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[2]);
+				SGCore_LoadStaticModel(tmppath, &tmpmodel->ArrLod[2]->model);
+
+				for (int k = 0; k < tmpmodel->ArrLod[2]->model.SubsetCount; ++k)
+				{
+					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model.ArrTextures[k]);
+					tmpmodel->ArrLod[2]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
+				}
+			}
+		}
+
+		fread(&tmpmodel->BBMin.x, sizeof(float), 1, file);
+		fread(&tmpmodel->BBMin.y, sizeof(float), 1, file);
+		fread(&tmpmodel->BBMin.z, sizeof(float), 1, file);
+
+		fread(&tmpmodel->BBMax.x, sizeof(float), 1, file);
+		fread(&tmpmodel->BBMax.y, sizeof(float), 1, file);
+		fread(&tmpmodel->BBMax.z, sizeof(float), 1, file);
+
+		fread(&tmpmodel->AllCountGreen, sizeof(DWORD), 1, file);
+		tmpmodel->AllTrans = new DataVertex[tmpmodel->AllCountGreen];
+		fread(tmpmodel->AllTrans, sizeof(DataVertex), tmpmodel->AllCountGreen, file);
+
+		Array<Segment**> queue;
+		long tmpcount = 0;
+		queue.push_back(&(tmpmodel->ArrSplits));
+
+		while (queue.size())
+		{
+			LoadSplit(queue[0], file, &queue);
+
+			queue.erase(0);
+			++tmpcount;
+		}
+
+
+		//currSplitsIDs = 0;
+		//currSplitsIDsRender = 0;
+		SetSplitID(tmpmodel->ArrSplits, &tmpmodel->SplitsIDs, &tmpmodel->SplitsIDsRender);
+		//tmpmodel->SplitsIDs = currSplitsIDs;
+		//tmpmodel->SplitsIDsRender = currSplitsIDsRender;
+
+		ArrModels.push_back(tmpmodel);
+		AddModelInArrCom(ArrModels.size() - 1);
+		/*InfoRenderSegments* tmpirs = new InfoRenderSegments();
+		tmpirs->Count = tmpmodel->SplitsIDsRender;
+		tmpirs->Arr = new Segment*[tmpmodel->SplitsIDsRender];
+		tmpirs->CountCom = 0;
+
+		ArrComForCamera.push_back(tmpirs);*/
+	}
+
+	fclose(file);
 }
 
-};
-};
-};
+void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
+{
+	(*Split) = new Segment();
+	float3 jmin, jmax;
+	fread(&jmin.x, sizeof(float), 1, file);
+	fread(&jmin.y, sizeof(float), 1, file);
+	fread(&jmin.z, sizeof(float), 1, file);
+
+	fread(&jmax.x, sizeof(float), 1, file);
+	fread(&jmax.y, sizeof(float), 1, file);
+	fread(&jmax.z, sizeof(float), 1, file);
+
+	(*Split)->BoundVolumeSys = SGCore_CrBound();
+	(*Split)->BoundVolumeSys->SetMinMax(&jmin, &jmax);
+
+
+	fread(&jmin.x, sizeof(float), 1, file);
+	fread(&jmin.y, sizeof(float), 1, file);
+	fread(&jmin.z, sizeof(float), 1, file);
+
+	fread(&jmax.x, sizeof(float), 1, file);
+	fread(&jmax.y, sizeof(float), 1, file);
+	fread(&jmax.z, sizeof(float), 1, file);
+
+	(*Split)->BoundVolumeP = SGCore_CrBound();
+	(*Split)->BoundVolumeP->SetMinMax(&jmin, &jmax);
+
+	fread(&(*Split)->CountAllGreen, sizeof(DWORD), 1, file);
+
+	fread(&(*Split)->BFNonEnd, sizeof(bool), 1, file);
+
+	if ((*Split)->BFNonEnd)
+	{
+		bool isexists = false;
+
+		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
+		{
+			fread(&isexists, sizeof(bool), 1, file);
+			if (isexists)
+				queue->push_back(&((*Split)->Splits[i]));
+
+			isexists = false;
+		}
+	}
+	else
+	{
+		(*Split)->Data = new DataVertex[(*Split)->CountAllGreen];
+		
+		fread((*Split)->Data, sizeof(DataVertex)*(*Split)->CountAllGreen, 1, file);
+	}
+}
+
+long Green::AddArrForCom()
+{
+	IRSData ttmpdata;
+	for (long i = 0; i < ArrModels.size(); ++i)
+	{
+		InfoRenderSegments* tmpirs = new InfoRenderSegments();
+		tmpirs->Count = ArrModels[i]->SplitsIDsRender;
+		tmpirs->Arr = new Segment*[ArrModels[i]->SplitsIDsRender];
+		tmpirs->CountCom = 0;
+		ttmpdata.arr.push_back(tmpirs);
+	}
+
+	ArrComFor.push_back(ttmpdata);
+
+	return ArrComFor.size() - 1;
+}
+
+void Green::DelArrForCom(long id_arr)
+{
+	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
+
+	for (long i = 0; i < ArrModels.size(); ++i)
+	{
+		mem_delete_a(ArrComFor[id_arr].arr[i]->Arr);
+	}
+
+	ArrComFor.erase(id_arr);
+}
+
+void Green::AddModelInArrCom(long id_model)
+{
+	GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
+	
+	for (long i = 0; i < ArrComFor.size(); ++i)
+	{
+		InfoRenderSegments* tmpirs = new InfoRenderSegments();
+		tmpirs->Count = ArrModels[id_model]->SplitsIDsRender;
+		tmpirs->Arr = new Segment*[ArrModels[id_model]->SplitsIDsRender];
+		tmpirs->CountCom = 0;
+		ArrComFor[i].arr.push_back(tmpirs);
+	}
+}
+
+void Green::DelModelInArrCom(long id_model)
+{
+	GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
+
+	for (long i = 0; i < ArrComFor.size(); ++i)
+	{
+		mem_delete_a(ArrComFor[i].arr[id_model]->Arr);
+		ArrComFor[i].arr.erase(id_model);
+	}
+}
+
+long Green::GetCountGreen()
+{
+	return ArrModels.size();
+}
+
+char* Green::GetGreenName(long id)
+{
+	if (id < ArrModels.size())
+		return ArrModels[id]->Name;
+
+	return 0;
+}
+
+inline long Green::GetGreenCountGen(long id)
+{
+	if (id < ArrModels.size())
+		return ArrModels[id]->AllCountGreen;
+
+	return -1;
+}
+
+inline int Green::GetGreenTypeCountGen(long id)
+{
+	if (id < ArrModels.size())
+		return ArrModels[id]->TypeGreen;
+
+	return -1;
+}
+
+inline const char* Green::GetGreenModel(long id)
+{
+	if (id < ArrModels.size())
+		return ArrModels[id]->ArrLod[0]->path.c_str();
+
+	return 0;
+}
+
+inline const char* Green::GetGreenLod1(long id)
+{
+	if (id < ArrModels.size() && ArrModels[id]->ArrLod[1])
+		return ArrModels[id]->ArrLod[1]->path.c_str();
+
+	return 0;
+}
+
+inline const char* Green::GetGreenLod2(long id)
+{
+	if (id < ArrModels.size() && ArrModels[id]->ArrLod[2])
+		return ArrModels[id]->ArrLod[2]->path.c_str();
+
+	return 0;
+}
+
+inline const char* Green::GetGreenMask(long id)
+{
+	if (id < ArrModels.size())
+		return ArrModels[id]->MaskName.c_str();
+
+	return 0;
+}

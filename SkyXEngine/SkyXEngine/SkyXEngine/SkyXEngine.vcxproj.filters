@@ -31,6 +31,9 @@
     <Filter Include="sxgeom">
       <UniqueIdentifier>{3afc7347-d83b-4388-bfd6-a3f83bce2963}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{f7259bcc-1323-4780-aaa7-715635423394}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\handler_out_log.cpp">
@@ -161,6 +164,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\loader_static.cpp">
       <Filter>sxgcore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\green.cpp">
+      <Filter>sxgeom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\render_func.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\camera_update.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\handler_dx_func.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +310,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\ModelFile.h">
       <Filter>sxgcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\geom\green.h">
+      <Filter>sxgeom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\gdata.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\render_func.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\camera_update.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

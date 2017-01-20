@@ -15,7 +15,7 @@
 #define SXGUI_SB_ALIGN_RS_PERCENT	1
 #define SXGUI_SB_ALIGN_RS_PROP		2
 
-class SXGUIStatusBar : public SXGUIComponent, public virtual ISXGUIStatusBar
+class SXGUIStatusBar : public SXGUITextual, public virtual ISXGUIStatusBar
 {
 public:
 	SXGUIStatusBar();
@@ -26,7 +26,7 @@ public:
 	bool SetCountParts(WORD count,int *arr);
 	WORD GetCountParts(int **arr);
 	bool SetTextParts(WORD pos,const char* text);
-	const char* GetTextParts(WORD pos);
+	int GetTextParts(WORD pos, char* text);
 
 	void Update();
 	void UpdateSize();

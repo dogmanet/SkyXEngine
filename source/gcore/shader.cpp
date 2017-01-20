@@ -712,8 +712,10 @@ void ShaderManager::SetValueRegisterF(int type_shader,DWORD num_shader,const cha
 								}
 						}
 
-						if(num_shader != -1 && num_var != -1)
-							DXDevice->SetVertexShaderConstantF(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex,(float*)data,ArrVS[num_shader]->ArrConst[num_var].RegisterCount);
+						if (num_shader != -1 && num_var != -1)
+							DXDevice->SetVertexShaderConstantF(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex, (float*)data, ArrVS[num_shader]->ArrConst[num_var].RegisterCount);
+						else
+							int qwert = 0;
 						/*else if(num_var == -1)
 							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n",name_var,type_shader,num_shader);*/
 				}

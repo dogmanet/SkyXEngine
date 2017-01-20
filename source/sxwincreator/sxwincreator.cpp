@@ -17,12 +17,15 @@
 #endif
 #include <core\\sxcore.h>
 
+/*
 #if defined(_DEBUG)
 #pragma comment(lib, "sxguiwinapi_d.lib")
 #else
 #pragma comment(lib, "sxguiwinapi.lib")
 #endif
-#include <SXGUIWinApi\sxguielements.h>
+#include <SXGUIWinApi\sxguielements.h>*/
+
+#include <SXGUIWinApi\\sxgui.h>
 
 #include <core\\Array.h>
 #include <../SkyXEngine/SXWinCreator/resource.h>
@@ -253,7 +256,7 @@ namespace SXMainWndElem
 void InLog(const char* format, ...)
 {
 	va_list va;
-	char * buf = new char[1024];
+	char buf[1024];
 	va_start(va, format);
 	vsprintf_s(buf, 1024, format, va);
 	va_end(va);
@@ -263,7 +266,6 @@ void InLog(const char* format, ...)
 			SXMainWndElem::ListBoxLog->AddItem(buf);
 			SXMainWndElem::ListBoxLog->ScrollLine(SXGUI_VERT_SCROLL,SXGUI_DOWN_SCROLL,SXMainWndElem::ListBoxLog->GetCountItem());
 		}
-	SX_SAFE_DELETE_A(buf);
 }
 
 bool Render()
@@ -388,6 +390,7 @@ int WINAPI WinMain(HINSTANCE hinstance,HINSTANCE prevInstance,PSTR cmdLine,int s
 	CreateCursor();
 	
 	SXGUIRegClass::RegButtonImg();
+	SXGUIRegClass::RegGroupBox();
 
 	INITCOMMONCONTROLSEX icex;
     

@@ -1,0 +1,640 @@
+[JobWindow]
+SysClassName = JobWindow
+Name = JobWindow
+CaptionElement = JobWindow
+left = 320
+top = 63
+Width = 820
+Height = 620
+ColorBK = 14474460
+MenuWindow = 1
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 0
+
+[elem_0]
+SysClassName = Window1
+SXClassName = SXGUIBaseWnd
+Name = RenderWindow
+CaptionElement = RenderWindow
+left = 0
+top = 25
+Width = 600
+Height = 400
+ColorBK = 13158600
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_1]
+SysClassName = ToolbarWindow32
+SXClassName = SXGUIToolBar
+Name = ToolBar1
+left = 0
+top = 1
+Width = 810
+Height = 24
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_2]
+SysClassName = Button
+SXClassName = SXGUIGroupBox
+Name = GroupBoxList
+CaptionElement = GroupBoxList
+left = 601
+top = 26
+Width = 200
+Height = 400
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 14474460
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_3]
+SysClassName = Button
+SXClassName = SXGUIGroupBox
+Name = GroupBoxData
+CaptionElement = GroupBoxData
+left = 0
+top = 425
+Width = 800
+Height = 120
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 14474460
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_4]
+SysClassName = ListBox
+SXClassName = SXGUIListBox
+Name = ListBoxList
+left = 604
+top = 56
+Width = 193
+Height = 290
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_5]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = StaticListTextCount
+CaptionElement = Count:
+left = 665
+top = 41
+Width = 30
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 14474460
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_6]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = StaticListValCount
+CaptionElement = 0
+left = 700
+top = 41
+Width = 50
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 14474460
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_7]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = ButtonGeometryOpen
+CaptionElement = Geometry
+left = 605
+top = 350
+Width = 60
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_8]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = ButtonGreenOpen
+CaptionElement = Green
+left = 670
+top = 350
+Width = 60
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_9]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = ButtonLightOpen
+CaptionElement = Light
+left = 735
+top = 350
+Width = 60
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_10]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button4
+CaptionElement = other
+left = 605
+top = 375
+Width = 60
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_11]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button5
+CaptionElement = other
+left = 605
+top = 400
+Width = 60
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_12]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static3
+CaptionElement = Name
+left = 5
+top = 440
+Width = 70
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_13]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static4
+CaptionElement = Model
+left = 5
+top = 460
+Width = 70
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_14]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static5
+CaptionElement = Lod1
+left = 5
+top = 480
+Width = 70
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_15]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static6
+CaptionElement = Lod2
+left = 5
+top = 500
+Width = 70
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_16]
+SysClassName = Edit
+SXClassName = SXGUIEdit
+Name = Edit1
+CaptionElement = 0
+left = 80
+top = 440
+Width = 200
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_17]
+SysClassName = Edit
+SXClassName = SXGUIEdit
+Name = Edit2
+CaptionElement = 0
+left = 80
+top = 460
+Width = 200
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_18]
+SysClassName = Edit
+SXClassName = SXGUIEdit
+Name = Edit3
+CaptionElement = 0
+left = 80
+top = 480
+Width = 200
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_19]
+SysClassName = Edit
+SXClassName = SXGUIEdit
+Name = Edit4
+CaptionElement = 0
+left = 80
+top = 500
+Width = 200
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_20]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button6
+CaptionElement = ...
+left = 285
+top = 480
+Width = 25
+Height = 15
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_21]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button7
+CaptionElement = ...
+left = 285
+top = 460
+Width = 25
+Height = 15
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_22]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button8
+CaptionElement = ...
+left = 285
+top = 500
+Width = 25
+Height = 15
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_23]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button9
+CaptionElement = ...
+left = 285
+top = 520
+Width = 25
+Height = 15
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_24]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static7
+CaptionElement = Mask texture
+left = 5
+top = 520
+Width = 70
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_25]
+SysClassName = Edit
+SXClassName = SXGUIEdit
+Name = Edit5
+CaptionElement = 0
+left = 80
+top = 520
+Width = 200
+Height = 15
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_26]
+SysClassName = msctls_statusbar32
+SXClassName = SXGUIStatusBar
+Name = StatusBar1
+CaptionElement = StatusBar1
+left = 0
+top = 542
+Width = 804
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_27]
+SysClassName = msctls_trackbar32
+SXClassName = SXGUITrackBar
+Name = TrackBar1
+left = 330
+top = 470
+Width = 200
+Height = 20
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_28]
+SysClassName = Button
+SXClassName = SXGUIButton
+Name = Button10
+CaptionElement = Button10
+left = 390
+top = 495
+Width = 100
+Height = 40
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_29]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static8
+CaptionElement = Static8
+left = 336
+top = 436
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1
+
+[elem_30]
+SysClassName = Static
+SXClassName = SXGUIStatic
+Name = Static9
+CaptionElement = Static9
+left = 443
+top = 440
+Width = 100
+Height = 20
+FontName = MS Shell Dlg
+WidthFont = 0
+HeightFont = -11
+WeightFont = 400
+Italic = 0
+Underline = 0
+StrikeOut = 0
+ColorText = 0
+ColorTextBK = 16777215
+TransparentTextBK = 1
+ColorBK = 16777215
+HintVisible = 0
+HintText = 
+Visible = 1
+Enable = 1

@@ -1,1 +1,62 @@
-25 12.3 28
+	shader [mtrl_base_green_tree.vs] is loaded, name[mtrl_base_green_tree.vs], id [0]
+
+	shader [mtrl_base_green_grass.vs] is loaded, name[mtrl_base_green_grass.vs], id [1]
+
+	shader [mtrl_base_green.ps] is loaded, name[mtrl_base_green.ps], id [0]
+
+load textures ...
+
+	texture loaded [terrain_land.dds], id = 0
+
+	texture loaded [karta1_karta1.dds], id = 1
+
+	texture loaded [detal_gruntsuh.dds], id = 2
+
+	texture loaded [grunt_glinastn.dds], id = 3
+
+	texture loaded [grunt_grunt.dds], id = 4
+
+	texture loaded [grunt_saman.dds], id = 5
+
+	texture loaded [grunt_shlak1.dds], id = 6
+
+	texture loaded [grunt_stena1.dds], id = 7
+
+	texture loaded [metal_metalrzh.dds], id = 8
+
+	texture loaded [metal_proflist.dds], id = 9
+
+	texture loaded [metal_rabica.dds], id = 10
+
+	texture loaded [ston_kirp1.dds], id = 11
+
+	texture loaded [tree_doska1.dds], id = 12
+
+	texture loaded [tree_doskabok.dds], id = 13
+
+	texture loaded [tree_doski.dds], id = 14
+
+	texture loaded [tree_doski1.dds], id = 15
+
+	texture loaded [tree_doski2.dds], id = 16
+
+	texture loaded [tree_doski2a.dds], id = 17
+
+	texture loaded [tree_doski3.dds], id = 18
+
+	texture loaded [tree_dvp.dds], id = 19
+
+	texture loaded [tree_potolok.dds], id = 20
+
+all loaded textures [21]
+
+!!! release textures for render ...
+is ok
+
+!!! reset textures for render ...
+is ok
+
+load textures ...
+
+all loaded textures [21]
+

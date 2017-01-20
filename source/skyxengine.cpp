@@ -51,158 +51,105 @@
 #endif
 #include <sxguiwinapi\\sxguielements.h>
 
+#include <geom\\static_geom.h>
+#include <geom\\green.h>
+
 #include <geom\\static_geom.cpp>
+#include <common\\gdata.h>
+#include <geom\\green.cpp>
+
+#include <common\\gdata.h>
+#include <common\\camera_update.cpp>
+#include <common\\render_func.cpp>
 
 
-StaticGeom* Geometry = 0;
-ISXCamera* ObjCamera = 0;
-D3DXMATRIX Projection;
 
-
-//обработка вводы информации с клавиатуры
-void UpdateInputKeyBoard(DWORD timeDelta)
-{
-	//обработка ходьбы
-	if (::GetAsyncKeyState('W') & 0x8000f)
-		ObjCamera->PosFrontBack(float(timeDelta) * 0.001f);
-
-	if (::GetAsyncKeyState('S') & 0x8000f)
-		ObjCamera->PosFrontBack(-float(timeDelta) * 0.001f);
-
-	if (::GetAsyncKeyState('A') & 0x8000f)
-		ObjCamera->PosFrontBack(-float(timeDelta) * 0.001f);
-
-	if (::GetAsyncKeyState('D') & 0x8000f)
-		ObjCamera->PosFrontBack(float(timeDelta) * 0.001f);
-
-	//крен камеры
-	if (::GetAsyncKeyState('Q') & 0x8000f)
-		ObjCamera->Roll(0.2f);
-
-	if (::GetAsyncKeyState('E') & 0x8000f)
-		ObjCamera->Roll(-0.2f);
-}
-
-//обработка движения мыши вправо и влево
-void UpdateInputMouseRotate(DWORD timeDelta)
-{
-	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
-	POINT p;
-	GetCursorPos(&p);
-	POINT centr;
-	centr.x = cx; centr.y = cy;
-
-	if (cx != UINT(p.x))
-	{
-		ObjCamera->RotRightLeft(float(timeDelta) * 0.001f * float(int(p.x - cx)));
-		//SetCursorPos(centr.x,cy);
-	}
-
-	if (cy != UINT(p.y))
-	{
-		ObjCamera->RotUpDown(float(timeDelta) * 0.001f * float(int(p.y - cy)));
-		//SetCursorPos(cx,centr.y);
-	}
-}
-
-//обработка движения мыши вверх вниз
-void UpdateInputMouseUpDown(DWORD timeDelta)
-{
-	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
-	POINT p;
-	GetCursorPos(&p);
-	POINT centr;
-	centr.x = cx; centr.y = cy;
-
-	if (cy != UINT(p.y))
-	{
-		ObjCamera->PosUpDown(float(timeDelta) * 0.001f * float(-int(p.y - cy)));
-		//SetCursorPos(cx,centr.y);
-	}
-}
-
-//центрирвоание курсора мыши
-void CentererCursor()
-{
-	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
-	SetCursorPos(cx, cy);
-}
-
-
-int Render(DWORD timeDelta)
-{
-	DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0x569874, 1.0f, 0);//очистка  буфера цвета и буфера глубины
-	DXDevice->BeginScene();//подготовка к рисованию
-
-	//обработка перемещения/вращения
-	if (GetAsyncKeyState(VK_LCONTROL))
-	{
-		static bool IsFirstLBM = false;
-		static bool IsFirstRBM = false;
-
-		static bool IsSFirstLBM = false;
-		static bool IsSFirstRBM = false;
-
-		UpdateInputKeyBoard(timeDelta);
-
-		//еси нажата левая кнопка мыши то можно вращать
-		if (GetAsyncKeyState(VK_LBUTTON))
-		{
-			//если не первый раз нажата ЛКМ то совершаем действие
-			if (IsFirstLBM)
-				UpdateInputMouseRotate(timeDelta);
-			//иначе просто говорим что впервые и устанавливаем курсор в центр
-			else
-				IsFirstLBM = true;
-			CentererCursor();
-		}
-		//если нажата правая кнопка мыши то можно поднимать и опускать камеру
-		else if (GetAsyncKeyState(VK_RBUTTON))
-		{
-			if (IsFirstRBM)
-				UpdateInputMouseUpDown(timeDelta);
-			else
-				IsFirstRBM = true;
-			CentererCursor();
-		}
-		else
-		{
-			IsFirstLBM = false;
-			IsFirstRBM = false;
-		}
-	}
-
-	DXDevice->SetTransform(D3DTS_WORLD, &(SMMatrixIdentity().operator D3DXMATRIX()));
-
-	//установка видовой матрицы из камеры для применения перемещения/вращения
-	float4x4 view;
-	ObjCamera->GetViewMatrix(&view);
-	DXDevice->SetTransform(D3DTS_VIEW, &(view.operator D3DXMATRIX()));
-
-	//установка матрицы проекции
-	DXDevice->SetTransform(D3DTS_PROJECTION, &Projection);
-
-	Geometry->Render();
-
-	DXDevice->EndScene();	//заканчиваем отрисовку
-	DXDevice->Present(0, 0, 0, 0);	//выводим картинку в окно
-	return 1;
-}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	InitOutLog();
 	srand((unsigned int)time(0));
-	ISXGUIBaseWnd* tmpwin = SXGUICrBaseWnd("SkyLandEditor", "SkyLandEditor", 0, 0, 273, 131, 657, 585, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0);
-	SGCore_0Create("qq", tmpwin->GetHWND(), 800, 600, true, 0, false);
-	D3DXMatrixPerspectiveFovLH(&Projection, D3DX_PI * 0.5f, 800.0 / 600.0, 0.05f, 1000.0f);
-	Geometry = new StaticGeom();
-	Geometry->AddModel("D:\\project\\engine\\build\\gamesource\\meshes\\rinok\\rinok\\land.dse");
+	ISXGUIBaseWnd* tmpwin = SXGUICrBaseWnd("SkyXEngine", "SkyXEngine", 0, 0, 0, 0, GData::WinSize.x, GData::WinSize.y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0);
+	GData::Handle3D = tmpwin->GetHWND();
+	SSInput_0Create("SkyXEngine input", GData::Handle3D, true);
+	SGCore_0Create("SkyXEngine graphics", tmpwin->GetHWND(), GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
+	SGCore_Dbg_Set(printflog);
+	GData::MCamProj = SMMatrixPerspectiveFovLH(D3DX_PI * 0.25f, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
+	GData::MLightProj = SMMatrixPerspectiveFovLH(D3DX_PI * 0.25f, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, 10000);
+	
 
-	DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	ObjCamera = SGCore_CrCamera();
+	StaticGeom::DXDevice = SGCore_GetDXDevice();
+	Green::DXDevice = SGCore_GetDXDevice();
+	GData::Geometry = new StaticGeom();
+	
+	
+	//GData::Geometry->AddModel("D:\\project\\engine\\build\\gamesource\\meshes\\rinok\\rinok\\land.dse");
+	/*GData::Geometry->AddModel("D:\\project\\engine\\build\\gamesource\\meshes\\rinok\\rinok\\cv04.dse");
+	GData::Geometry->AddModel("D:\\project\\engine\\build\\gamesource\\meshes\\rinok\\rinok\\rinok\\zab.dse");
+	GData::Geometry->AddModel("D:\\project\\engine\\build\\gamesource\\meshes\\rinok\\rinok\\land.dse");
+	
+	GData::Geometry->Save("D:\\project\\engine\\build\\gamesource\\test.lvl");*/
+
+
+	GData::Geometry->Load("D:\\project\\engine\\build\\gamesource\\test.lvl");
+
+	GData::StaticGreen = new Green();
+	/*GData::StaticGreen->Load(
+		"D:\\project\\engine\\build\\gamesource\\meshes\\green\\trava1.dse",
+		"D:\\project\\engine\\build\\gamesource\\meshes\\green\\trava1.dse",
+		"D:\\project\\engine\\build\\gamesource\\meshes\\green\\trava1.dse",
+		"D:\\project\\engine\\build\\gamesource\\levels\\abazar\\2.gt",
+		50
+		);*/
+	
+	
+	GData::DXDevice = SGCore_GetDXDevice();
+	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	GData::ObjCamera = SGCore_CrCamera();
+
+	SGCore_ShaderSetStdPath("D:\\project\\engine\\build\\gamesource\\shaders\\");
+	GData::IDShaderVSRenderGreenTree = SGCore_ShaderLoad(0, "mtrl_base_green_tree.vs", "mtrl_base_green_tree.vs", false);
+	GData::IDShaderVSRenderGreenGrass = SGCore_ShaderLoad(0, "mtrl_base_green_grass.vs", "mtrl_base_green_grass.vs", false);
+	GData::IDShaderPSRenderGreenTree = SGCore_ShaderLoad(1, "mtrl_base_green.ps", "mtrl_base_green.ps", false);
+
+	char tmppathexe[1024];
+	char tmppath[1024];
+	GetModuleFileName(NULL, tmppath, 1024);
+	int len = strlen(tmppath);
+	while (tmppath[len--] != '\\')
+	{
+		if (tmppath[len - 1] == '\\')
+		{
+			len--;
+			memcpy(tmppathexe, tmppath, len);
+			tmppathexe[len] = 0;
+		}
+	}
+
+	
+	char tmppathtex[1024];
+	sprintf(tmppathtex, "%s%s", tmppathexe, "\\gamesource\\textures\\");
+	SGCore_LoadTexStdPath(tmppathtex);
+	SGCore_LoadTexLoadTextures();
+
+	DWORD ttime = timeGetTime();
+	GData::StaticGreen->Init(GData::Geometry,
+		"trava_mask.dds",
+		2,
+		"D:\\project\\engine\\build\\gamesource\\meshes\\green\\trava1.dse",
+		0,
+		0,
+		50);
+	ttime = timeGetTime() - ttime;
+
+
+	//GData::StaticGreen->Load("D:\\project\\engine\\build\\gamesource\\test.green");
+
+	SGCore_LoadTexLoadTextures();
+
+	Green::BeginEndLessening = 30;
+	Green::DistLods = float2_t(50,100);
+	Green::CurrentFreqGrass = 100;
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
@@ -225,7 +172,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 					DWORD currTime  = timeGetTime();
 					DWORD timeDelta = (currTime - lastTime);
 
-					Render(timeDelta);
+					SXRenderFunc::GameRender(timeDelta);
 
 					TimeCCadr = timeDelta;
 					TimeStart = TimeThis;

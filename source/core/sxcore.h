@@ -5,6 +5,8 @@
 #include <fstream>
 #include <gdefines.h>
 
+#define def_str_validate(str) (str && str[0]!=0 && str[0]!='0')
+
 //тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();
 

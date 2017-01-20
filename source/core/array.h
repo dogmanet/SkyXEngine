@@ -118,8 +118,9 @@ public:
 	{
 		if(key > ((UINT)-1) - 128)
 		{
-			
+			dbg_break
 		}
+
 			if(key >= this->Size)
 			{
 					if(key >= this->AllocSize)
@@ -129,6 +130,7 @@ public:
 				ConstructInterval(this->Size, key);
 				this->Size = key + 1;
 			}
+
 		return(Data[key]);
 	}
 

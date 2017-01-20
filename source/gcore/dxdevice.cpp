@@ -33,6 +33,18 @@ int InitD3D(HWND hwnd, bool windowed, int width, int heigth, DWORD create_device
 		return SXGC_ERR_FAILED_INIT_D3D;
 	}
 
+	D3DXFONT_DESC LF;
+	ZeroMemory(&LF, sizeof(D3DXFONT_DESC));
+	LF.Height = 10;    // в логических единицах
+	LF.Width = 6;    // в логических единицах
+	LF.Weight = 6;   // насыщенность, 
+	// диапазон 0(тонкий) - 1000(жирный)
+	LF.Italic = 0;
+	LF.CharSet = DEFAULT_CHARSET;
+	LF.FaceName[0] = 0;
+
+	D3DXCreateFontIndirect(DXDevice, &LF, &FPSText);
+
 	//SkyXEngine::Core::Data::Device->CreateQuery(D3DQUERYTYPE_EVENT , &SkyXEngine::Core::Data::D3DQueryEvent);
 
 }

@@ -13,6 +13,8 @@
 
 #include <gcore\ModelFile.h>
 
+#define SXGC_STR_SIZE_DBG_MSG 4096
+
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
@@ -20,6 +22,12 @@ SX_LIB_API long SGCore_0GetVersion(); //возвращает версию ядра
 SX_LIB_API void SGCore_Dbg_Set(report_func rf); //возвращает версию ядра
 SX_LIB_API void SGCore_0Create(const char* name, HWND hwnd, int width,int heigth,bool windowed, DWORD create_device_flags, bool is_unic = true);
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();
+
+SX_LIB_API void SGCore_DbgMsg(const char* format, ...);
+
+SX_LIB_API void SGCore_OnLostDevice();
+SX_LIB_API int SGCore_OnDeviceReset(int width,int heigth,bool windewed);
+SX_LIB_API void SGCore_OnResetDevice();
 
 //шейдеры
 SX_LIB_API DWORD SGCore_ShaderLoad(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro = 0);
@@ -53,6 +61,7 @@ SX_LIB_API void SGCore_ShaderGetName(int type_shader, DWORD id, char* name);
 //////////////
 
 //текстуры
+SX_LIB_API void SGCore_LoadTexStdPath(const char* path);
 SX_LIB_API DWORD SGCore_LoadTexAddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
 SX_LIB_API DWORD SGCore_LoadTexGetID(const char* name);		//получить id по имени
 SX_LIB_API void SGCore_LoadTexGetName(DWORD id, char* name);	//получить имя по id
@@ -83,6 +92,13 @@ SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(DWORD num);
 
 ///////////
 
+SX_LIB_API void SGCore_SetSamplerFilter(DWORD id, DWORD value);
+SX_LIB_API void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value);
+SX_LIB_API void SGCore_SetSamplerAddress(DWORD id, DWORD value);
+SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value);
+
+///////////
+
 struct DataStaticModel
 {
 	/*DataStaticModel();
@@ -99,6 +115,8 @@ struct DataStaticModel
 	UINT* IndexCount;
 	UINT* StartVertex;
 	UINT* VertexCount;
+	UINT AllIndexCount;
+	UINT AllVertexCount;
 };
 
 SX_LIB_API void SGCore_LoadStaticModel(const char* file, DataStaticModel* data);
@@ -108,7 +126,7 @@ SX_LIB_API void SGCore_SaveStaticModel(const char* file, DataStaticModel* data);
 
 //простой объект с минимальным описанием
 //для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
-struct ISXTransObject
+struct ISXTransObject : public IBaseObject
 {
 	virtual ~ISXTransObject(){};
 
@@ -178,9 +196,12 @@ SX_LIB_API ISXBound* SGCore_CrBound();
 /////////////
 
 SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, UINT iSideCount);
-SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert);
+SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert);
 SX_LIB_API void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert);
 SX_LIB_API void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh);
+
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetWord(WORD* ib, WORD numFaces, WORD numVerts);
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetDword(DWORD* ib, DWORD numFaces, DWORD numVerts);
 
 SX_LIB_API bool SGCore_0InPos2D(float3* min, float3* max, float3* pos);
 SX_LIB_API bool SGCore_0InPosAbs2D(float3* min, float3* max, float3* pos);
@@ -192,8 +213,8 @@ SX_LIB_API bool SGCore_0InPosAbs3D(float3* min, float3* max, float3* pos);
 SX_LIB_API int SGCore_0CountPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
 SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
 SX_LIB_API bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
-SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound* bound_arr);
-SX_LIB_API void SGCore_0CompBoundBoxArr4(ISXBound* bound, ISXBound* bound_arr);
+SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr);
+SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound* bound_arr);
 
 ///////////////
 

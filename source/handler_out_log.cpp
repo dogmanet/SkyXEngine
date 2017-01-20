@@ -66,19 +66,19 @@ void InitOutLog()
 void printflog(int level, const char* format, ...)
 {
 	va_list va;
-	char buf[4096];
+	char buf[REPORT_MSG_MAX_LEN];
 	va_start(va, format);
-	vsprintf_s(buf, 4096, format, va);
+	vsprintf_s(buf, REPORT_MSG_MAX_LEN, format, va);
 	va_end(va);
 
 		if(FileOutLog)
 		{
-			if (level == -1)
+			if (level == REPORT_MSG_LEVEL_ERROR)
 			{
 				printf("! ");
 				fwrite("! ", 1, 2, FileOutLog);
 			}
-			else if (level == 1)
+			else if (level == REPORT_MSG_LEVEL_WARRNING)
 			{
 				printf("* ");
 				fwrite("* ", 1, 2, FileOutLog);
@@ -89,7 +89,7 @@ void printflog(int level, const char* format, ...)
 			fprintf(FileOutLog, "\n");
 			fflush(FileOutLog);
 
-			if (level == -1)
+			if (level == REPORT_MSG_LEVEL_ERROR)
 			{
 				HE_HandlerError(buf);
 			}

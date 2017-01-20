@@ -198,6 +198,7 @@ void SGCore_LoadStaticModel(const char * file, DataStaticModel * data)
 				memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_animated_ex)* lh.pSubLODmeshes[i].iVectexCount);
 			}
 
+			data->AllVertexCount = iStartVertex;
 			DXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &data->VertexBuffer, 0);
 			data->ArrVertBuf = new vertex_static[iStartVertex];
 			vertex_static * pData;
@@ -216,6 +217,7 @@ void SGCore_LoadStaticModel(const char * file, DataStaticModel * data)
 				data->VertexBuffer->Unlock();
 			}
 
+			data->AllIndexCount = iStartIndex;
 			DWORD tmpCountIndecex = 0;
 			DXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &data->IndexBuffer, 0);
 			data->ArrIndBuf = new DWORD[iStartIndex];
@@ -334,6 +336,7 @@ void SGCore_LoadStaticModel(const char * file, DataStaticModel * data)
 			memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_static)* lh.pSubLODmeshes[i].iVectexCount);
 		}
 
+		data->AllVertexCount = iStartVertex;
 		DXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &data->VertexBuffer, 0);
 		data->ArrVertBuf = new vertex_static[iStartVertex];
 		vertex_static * pData;
@@ -350,7 +353,8 @@ void SGCore_LoadStaticModel(const char * file, DataStaticModel * data)
 			Core::InLog("------------%d\n",lh.iSubMeshCount);*/
 			data->VertexBuffer->Unlock();
 		}
-
+		
+		data->AllIndexCount = iStartIndex;
 		DXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &data->IndexBuffer, 0);
 		data->ArrIndBuf = new DWORD[iStartIndex];
 		if (!FAILED(data->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))

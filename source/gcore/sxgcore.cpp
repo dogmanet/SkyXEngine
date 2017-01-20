@@ -20,6 +20,7 @@ report_func reportf = def_report;
 IDirect3DDevice9* DXDevice = 0;
 D3DPRESENT_PARAMETERS D3DAPP;
 IDirect3D9* d3d9 = 0;
+ID3DXFont* FPSText = 0;
 
 #include <string\string.cpp>
 #include <gcore\shader.cpp>
@@ -32,7 +33,6 @@ IDirect3D9* d3d9 = 0;
 
 #define SXGCORE_VERSION 1
 
-ID3DXFont* FPSText=0;
 ShaderManager* MShaders = 0;
 CreatorTextures* MRenderTargets = 0;
 LoaderTextures* MTextures = 0;
@@ -95,6 +95,51 @@ void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool win
 IDirect3DDevice9* SGCore_GetDXDevice()
 {
 	return DXDevice;
+}
+
+void SGCore_DbgMsg(const char* format, ...)
+{
+	if (!DXDevice || !FPSText)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	
+	va_list va;
+	char buf[SXGC_STR_SIZE_DBG_MSG];
+	va_start(va, format);
+	vsprintf_s(buf, SXGC_STR_SIZE_DBG_MSG, format, va);
+	va_end(va);
+
+	RECT rect;
+	rect.top = 10;
+	rect.left = 10;
+	rect.right = D3DAPP.BackBufferWidth - 10;
+	rect.bottom = D3DAPP.BackBufferHeight - 10;
+	FPSText->DrawText(0, buf, -1, &rect, 0, 0xff000000);
+}
+
+void SGCore_OnLostDevice()
+{
+	if (!DXDevice || !MShaders)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+
+	FPSText->OnLostDevice();
+	MRenderTargets->OnLostDevice();
+}
+
+int SGCore_OnDeviceReset(int width, int heigth, bool windewed)
+{
+	D3DAPP.BackBufferWidth = width;
+	D3DAPP.BackBufferHeight = heigth;
+	D3DAPP.Windowed = windewed;
+	return (FAILED(DXDevice->Reset(&D3DAPP)));
+}
+
+void SGCore_OnResetDevice()
+{
+	if (!DXDevice || !MShaders)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+
+	FPSText->OnResetDevice();
+	MRenderTargets->OnResetDevice();
 }
 
 DWORD SGCore_ShaderLoad(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro)
@@ -245,6 +290,14 @@ void SGCore_ShaderGetStdPath(char* path)
 
 ////////////////////////
 
+void SGCore_LoadTexStdPath(const char* path)
+{
+	if (!DXDevice || !MTextures)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+
+	MTextures->SetStdPath(path);
+}
+
 DWORD SGCore_LoadTexAddName(const char* name)
 {
 	if (!DXDevice || !MTextures)
@@ -385,7 +438,7 @@ void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID
 	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, DXDevice, iSideCount);
 }
 
-void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
+void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
 {
 	if (!DXDevice)
 		reportf(-1, "%s - sxcore is not init", gen_msg_location);
@@ -407,6 +460,20 @@ void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh)
 		reportf(-1, "%s - sxcore is not init", gen_msg_location);
 
 	CreateBoundingBoxMesh(min, max, bbmesh,DXDevice);
+}
+
+void SGCore_OptimizeIndecesInSubsetWord(WORD* ib, WORD numFaces, WORD numVerts)
+{
+	if (!DXDevice)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	OptimizeIndecesInSubsetWord(ib, numFaces, numVerts);
+}
+
+void SGCore_OptimizeIndecesInSubsetDword(DWORD* ib, DWORD numFaces, DWORD numVerts)
+{
+	if (!DXDevice)
+		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	OptimizeIndecesInSubsetDword(ib, numFaces, numVerts);
 }
 
 
@@ -460,12 +527,12 @@ bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, flo
 	return InPositionPoints3D(min, max, p1, p2, p3);
 }
 
-void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound* bound_arr)
+void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr)
 {
 	ComputeBoundingBoxArr8(bound, bound_arr);
 }
 
-void SGCore_0CompBoundBoxArr4(ISXBound* bound, ISXBound* bound_arr)
+void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr)
 {
 	ComputeBoundingBoxArr4(bound, bound_arr);
 }
@@ -499,3 +566,7 @@ ISXCamera* SGCore_CrCamera()
 	return new Camera();
 }
 
+ISXBound* SGCore_CrBound()
+{
+	return new SXBound();
+}

@@ -74,7 +74,7 @@ bool SXGUIControl::Focus()
 
 void SXGUIControl::Visible(bool bf)
 {
-	ShowWindow(WindowHandle,bf ? SW_SHOW : SW_HIDE);
+	ShowWindow(WindowHandle,bf ? SW_SHOW : SW_HIDE);	
 }
 
 bool SXGUIControl::Visible()
@@ -430,34 +430,20 @@ void SXGUIComponent::GetHintText(char* buf)
 
 void SXGUIComponent::UpdateSize()
 {
+	//если родительское окно свернуто
+	//то прекращаем обработку ибо будут неправильные значения в rect
+	if (IsIconic(this->Parent()))
+		return;
+
 	RECT rect;
 	RECT win_screen_rect;
 	GetWindowRect(this->GetHWND(), &rect);
 
 	GetWindowRect(this->GetHWND(), &win_screen_rect);
-	//MapWindowPoints(this->ParentHandle, HWND_DESKTOP, (LPPOINT)&win_screen_rect, 2);
 
 	RECT NewParentRect;
 	GetWindowRect(this->Parent(),&NewParentRect);
-
-		//if(NewParentRect.top != ParentRect.top)
-	//MessageBox(0,ToPointChar(NewParentRect.top),ToPointChar(ParentRect.top),0);
-
-	//трансляция координат в пространство родителя
-	//MapWindowPoints(NULL, this->ParentHandle, (LPPOINT)&rect, 2);
-
-
-		/*if(OffsetParentRect.left > 30000)
-			OffsetParentRect.left -= 32000;
-
-		if(OffsetParentRect.right > 30000)
-			OffsetParentRect.right -= 32000;
-
-		if(OffsetParentRect.top > 30000)
-			OffsetParentRect.top -= 32000;
-
-		if(OffsetParentRect.bottom > 30000)
-			OffsetParentRect.bottom -= 32000;*/
+	
 	//смещение по всем направлениям
 	RECT offset;
 	offset.left = OffsetParentRect.left ? OffsetParentRect.left : NewParentRect.left - ParentRect.left;
@@ -465,15 +451,10 @@ void SXGUIComponent::UpdateSize()
 	offset.top = OffsetParentRect.top ? OffsetParentRect.top : NewParentRect.top - ParentRect.top;
 	offset.bottom = OffsetParentRect.bottom ? OffsetParentRect.bottom : NewParentRect.bottom - ParentRect.bottom;
 
-	//MessageBox(0,ToPointChar(offset.top),ToPointChar(ParentRect.top),0);
-
-
 		if(GAlign.left) //rect.left
 		{
 				if(GAlign.right)
 					rect.right -= offset.left;
-				/*else
-					rect.right += offset.left;*/
 		}
 		else
 		{
@@ -483,8 +464,6 @@ void SXGUIComponent::UpdateSize()
 
 		if(GAlign.top) //rect.top
 		{
-			//MessageBox(0,ToPointChar(offset.top),ToPointChar(rect.top),0);
-			//rect.top = rect.top + offset.top;
 				if(GAlign.bottom)
 					rect.bottom -= offset.top;
 		}
@@ -511,12 +490,8 @@ void SXGUIComponent::UpdateSize()
 
 	MapWindowPoints(NULL, this->Parent(), (LPPOINT)&rect, 2);
 
-	
-	//MapWindowPoints(this->ParentHandle, HWND_DESKTOP, (LPPOINT)&WinScreenRect, 2);
-	//MessageBox(0,ToPointChar(rect.bottom - rect.top),ToPointChar(rect.bottom - rect.top),0);
-	
 	MoveWindow(this->GetHWND(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
-	//SetWinRect(&rect,true);
+
 	GetWindowRect(this->Parent(),&this->ParentRect);
 	GetWindowRect(this->GetHWND(), &WinScreenRect);
 
@@ -525,16 +500,23 @@ void SXGUIComponent::UpdateSize()
 
 void SXGUIComponent::UpdateRect()
 {
-	//MessageBox(0,"UpdateRect","UpdateRect",0);
+	//если родительское окно свернуто
+	//то прекращаем обработку ибо будут неправильные значения в rect
+	if (IsIconic(this->Parent()))
+	{
+		OffsetParentRect.top = OffsetParentRect.bottom = OffsetParentRect.left = OffsetParentRect.right = 0;
+		return;
+	}
+
 	RECT tmprect;
 	GetWindowRect(this->Parent(),&tmprect);
+
 	OffsetParentRect.top = tmprect.top - ParentRect.top;
 	OffsetParentRect.left = tmprect.left - ParentRect.left;
 	OffsetParentRect.bottom = tmprect.bottom - ParentRect.bottom;
 	OffsetParentRect.right = tmprect.right - ParentRect.right;
-	//MessageBox(0,ToPointChar(tmprect.top - ParentRect.top),ToPointChar(0),0);
-	GetWindowRect(this->Parent(),&ParentRect);
-	//GetWindowRect(this->WindowHandle,&WinScreenRect);
+	
+	GetWindowRect(this->Parent(), &ParentRect);
 }
 
 void SXGUIComponent::SetColorText(BYTE r,BYTE g, BYTE b)
@@ -1136,5 +1118,25 @@ bool SXGUIRegClass::RegToolBar()
 
 		if(!RegisterClass(&wc)) 
 			return false;
+	return true;
+}
+
+bool SXGUIRegClass::RegGroupBox()
+{
+	WNDCLASS wc;
+
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc = DefWindowProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = GetModuleHandle(0);
+	wc.hIcon = 0;
+	wc.hCursor = 0;
+	wc.hbrBackground = 0;
+	wc.lpszMenuName = 0;
+	wc.lpszClassName = "SXGUIGROUPBOX";
+
+	if (!RegisterClass(&wc))
+		return false;
 	return true;
 }

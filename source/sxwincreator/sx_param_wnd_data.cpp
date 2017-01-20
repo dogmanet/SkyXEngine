@@ -210,10 +210,10 @@ void SXUpdateParam::UpdateAll()
 			char ClassName[256];
 			int error = GetClassName(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(),ClassName,256);
 				//обычная кнопка
-				if(strcmp(ClassName,"Button") == 0 && !(GetWindowLong(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(),GWL_STYLE) & BS_GROUPBOX))
+				if (strcmp(ClassName, "SXGUIGROUPBOX") == 0) //strcmp(ClassName, "Button") == 0 && !(GetWindowLong(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(), GWL_STYLE) & BS_GROUPBOX))
 				{
 					SXUpdateParam::UnlockAll();
-					SXUpdateParam::LockColorBlock();
+					//SXUpdateParam::LockColorBlock();
 					SXUpdateParam::LockImgButton();
 				}
 				else if(strcmp(ClassName,TOOLBARCLASSNAME) == 0 || strcmp(ClassName,UPDOWN_CLASS) == 0 || strcmp(ClassName,TRACKBAR_CLASS) == 0 || strcmp(ClassName,PROGRESS_CLASS) == 0)
@@ -978,8 +978,8 @@ void SaveFile(const char* path)
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TOOLBARCLASSNAME) != 0 &&
-					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 && 
-					strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0
+					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 /*&& 
+					strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0*/
 					)
 				{
 					ISXGUITextual* textual = dynamic_cast<ISXGUITextual*>(SXMainWndElem::CreateElements[i]->Object);
@@ -1200,7 +1200,8 @@ void LoadFile(const char* path)
 			sprintf(Object->SysClassName, "%s", tmpconfig->GetKey(sectname, "SysClassName"));
 			sprintf(Object->SXClassName, "%s", tmpconfig->GetKey(sectname, "SXClassName"));
 			sprintf(Object->Name, "%s", tmpconfig->GetKey(sectname, "Name"));
-			sprintf(CaptionElement, "%s", tmpconfig->GetKey(sectname, "CaptionElement"));
+			if (tmpconfig->KeyExists(sectname, "CaptionElement"))
+				sprintf(CaptionElement, "%s", tmpconfig->GetKey(sectname, "CaptionElement"));
 			//}
 
 			//считываем позицию и размеры
@@ -1602,7 +1603,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 						if(
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,UPDOWN_CLASS) != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TRACKBAR_CLASS) != 0 && 
-							strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0 &&
+							//strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,PROGRESS_CLASS) != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&

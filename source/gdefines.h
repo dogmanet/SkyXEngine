@@ -43,7 +43,14 @@ struct IBaseObject
 //тип функции вывода отладочной информации
 typedef void (*report_func) (int level,const char* format,...);
 
-#include <cstdio> 
+#include <cstdio>
+
+//уровни критичности сообщений для функции репортов
+#define REPORT_MSG_LEVEL_NOTICE 0
+#define REPORT_MSG_LEVEL_WARRNING 1
+#define REPORT_MSG_LEVEL_ERROR -1
+
+#define REPORT_MSG_MAX_LEN 4096
 
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT

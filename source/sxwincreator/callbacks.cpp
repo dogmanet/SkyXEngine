@@ -260,9 +260,11 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 		//то дорисовываем ему рамку
 		else if(msg == WM_PAINT && SXMainWndElem::NumActiveElement != -1 && SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND() == hwnd)
 		{
-				if(strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName,"SXGUIButtonImg") == 0)
-					WndProcButtonImgDefault(hwnd, msg, wParam, lParam);
-				else
+			if (strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName, "SXGUIButtonImg") == 0)
+				WndProcButtonImgDefault(hwnd, msg, wParam, lParam);
+			else if (strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName, "SXGUIGroupBox") == 0)
+				WndProcGroupBoxPaint(hwnd, msg, wParam, lParam);
+			else
 					CallWindowProc(Component->OldProc,hwnd, msg, wParam, lParam);
 
 			HDC hdcp = GetDC(hwnd);
@@ -291,6 +293,8 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			int error = GetClassName(hwnd,ClassName,256);
 				if(strcmp(ClassName,"SXGUIBUTTONIMG") == 0)
 					WndProcButtonImgDefault(hwnd, msg, wParam, lParam);
+				else if (strcmp(ClassName, "SXGUIGROUPBOX") == 0)
+					WndProcGroupBoxPaint(hwnd, msg, wParam, lParam);
 				else
 					CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
 			return 1;
@@ -796,7 +800,7 @@ LRESULT InputInfoComboBox(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT InputToEditColor(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIEdit *Component = (ISXGUIEdit *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIEdit *Component = dynamic_cast<ISXGUIEdit*>((ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA));// (ISXGUIEdit*)GetWindowLong(hwnd, GWL_USERDATA);
 	char buf[32];
 	Component->GetText(buf,32);
 	int numbuf;
