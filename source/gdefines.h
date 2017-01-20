@@ -44,6 +44,9 @@ struct IBaseObject
 typedef void (*report_func) (int level,const char* format,...);
 
 #include <cstdio> 
+#if defined(_WINDOWS)
+#	include <Windows.h>
+#endif
 
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT

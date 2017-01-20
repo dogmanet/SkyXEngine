@@ -42,6 +42,12 @@ public:
 /*protected:
 	HWND ParentHandle;
 	HWND WindowHandle;*/
+
+	void * GetUserPtr();
+	void * SetUserPtr(void *);
+
+private:
+	void * UserPtr;
 };
 //WNDPROC SXGUIControl::GetOldProc(){ return this->OldProc; }
 

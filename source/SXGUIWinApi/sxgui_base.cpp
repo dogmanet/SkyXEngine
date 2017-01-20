@@ -82,6 +82,17 @@ bool SXGUIControl::Visible()
 	return IsWindowVisible(WindowHandle);
 }
 
+void * SXGUIControl::GetUserPtr()
+{
+	return(UserPtr);
+}
+void * SXGUIControl::SetUserPtr(void * ptr)
+{
+	void * oldPtr = UserPtr;
+	UserPtr = ptr;
+	return(oldPtr);
+}
+
 ///////////////////
 
 SXGUIComponent::SXGUIComponent()
@@ -752,6 +763,15 @@ int SXGUITextual::GetTextLen()
 
 ///////////////////////////////////
 
+BOOL IsEdit(HWND hWnd)
+{
+	if(hWnd == NULL)
+		return FALSE;
+
+	TCHAR szClassName[6];
+	return ::GetClassNameA(hWnd, szClassName, 6) &&
+		stricmp(szClassName, "Edit") == 0;
+}
 
 LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -760,7 +780,18 @@ LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	//int qwert = 0;
 	if (Component)
 	{
-	
+			if(msg == WM_KEYDOWN)
+			{
+				if(wParam == 'A' && GetKeyState(VK_CONTROL))
+				{
+					// User pressed Ctrl-A.  Let's select-all
+					if(IsEdit(hwnd))
+					{
+						SendMessage(hwnd, EM_SETSEL, 0, -1);
+						return(1);
+					}
+				}
+			}
 			HandlerMsg MainFunction = 0;								//главная функция-обработчик, ее значение и будет возвращаться
 			HandlerMsg SecondFunction[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];	//массив дополнительных обработчиков на сообщения, их значения не должны смысла
 			int CountSecond = 0;	//количество дополнительных функций-обработчиков

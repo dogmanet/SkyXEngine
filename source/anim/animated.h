@@ -4,6 +4,10 @@
 
 #include "ModelFile.h"
 
+#include <core/assotiativearray.h>
+#include <core/array.h>
+#include <string/string.h>
+
 #define BLEND_MAX 3
 
 

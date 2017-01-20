@@ -19,10 +19,10 @@ icex.dwICC  = ICC_BAR_CLASSES;
 InitCommonControlsEx(&icex);
 */
 
-//инициализировав элемент можно установить на него стандартные обработчики: \
-	SXGUIBaseHandlers::InitHandlerMsg(HWND);
-//а затем добавить необходимые:\
-	Wnd->AddHandler(MouseWheel,WM_MOUSEWHEEL,0,0,0,0,true);
+/*инициализировав элемент можно установить на него стандартные обработчики: 
+	SXGUIBaseHandlers::InitHandlerMsg(HWND);*/
+/*а затем добавить необходимые:
+	Wnd->AddHandler(MouseWheel,WM_MOUSEWHEEL,0,0,0,0,true);*/
 
 //!!! main функция-обработчик может быть только одна и должна быть вообще!
 //!!! но если ее нет то для окон будет вызываться ::DefWindowProc(hwnd, msg, wParam, lParam)
@@ -100,6 +100,9 @@ struct ISXGUIControl : public IBaseObject
 	//virtual WNDPROC GetOldProc() = 0;
 
 	WNDPROC OldProc;
+
+	virtual void * GetUserPtr() = 0;
+	virtual void * SetUserPtr(void *) = 0;
 
 protected:
 	HWND ParentHandle;

@@ -8,6 +8,9 @@
 #define MODEL_BONE_MAX_NAME 32
 #define MODEL_CTRL_MAX_BONES 64
 
+#include <sxtypes.h>
+#include <SXMath.h>
+
 struct model_vertex
 {
 
@@ -34,7 +37,7 @@ struct vertex_animated: public model_vertex
 	float3_t Pos;
 	float2_t Tex;
 	float3_t Norm;
-	unsigned char BoneIndices[4];
+	byte BoneIndices[4];
 	float4_t BoneWeights;
 };
 
@@ -45,7 +48,7 @@ struct vertex_animated_ex: public model_vertex
 	float3_t Norm;
 	float3_t Tangent;
 	float3_t Binorm;
-	unsigned char BoneIndices[4];
+	byte BoneIndices[4];
 	float4_t BoneWeights;
 };
 
@@ -90,55 +93,55 @@ enum MODEL_PT_TOPOLOGY
 
 struct ModelHeader
 {
-	unsigned long long int Magick;
-	UINT iVersion; // At present should be 4
-	UINT iFlags;
+	uint64_t Magick;
+	uint32_t iVersion; // At present should be 4
+	uint32_t iFlags;
 	// char[64] szName; // model name without extension
-	UINT iSkinCount; // Count of used skins
-	UINT iMaterialCount; // Count of used materials
-	unsigned long long iMaterialsOffset; // SXmodelMaterialRangeHeader
-	UINT iLODcount; // Count of Levels of detail
-	unsigned long long iLODoffset; // SXmodelLODheader
-	UINT iBoneCount; // Count of model bones
-	unsigned long long iBonesOffset; // SXmodelBone
-	UINT iAnimationCount; // Count of animation sequences
-	unsigned long long iAnimationsOffset; // SXmodelAnimationHeader
-	unsigned long long iSecondHeaderOffset;
+	uint32_t iSkinCount; // Count of used skins
+	uint32_t iMaterialCount; // Count of used materials
+	uint64_t iMaterialsOffset; // SXmodelMaterialRangeHeader
+	uint32_t iLODcount; // Count of Levels of detail
+	uint64_t iLODoffset; // SXmodelLODheader
+	uint32_t iBoneCount; // Count of model bones
+	uint64_t iBonesOffset; // SXmodelBone
+	uint32_t iAnimationCount; // Count of animation sequences
+	uint64_t iAnimationsOffset; // SXmodelAnimationHeader
+	uint64_t iSecondHeaderOffset;
 };
 
 struct ModelHeader2
 {
-	UINT iControllersCount;
-	unsigned long long iControllersOffset;
-	UINT iDepsCount;
-	unsigned long long iDependensiesOffset;
+	uint32_t iControllersCount;
+	uint64_t iControllersOffset;
+	uint32_t iDepsCount;
+	uint64_t iDependensiesOffset;
 
-	UINT iBoneTableCount;
-	unsigned long long iBoneTableOffset;
-	UINT iActivitiesTableCount;
-	unsigned long long iActivitiesTableOffset;
+	uint32_t iBoneTableCount;
+	uint64_t iBoneTableOffset;
+	uint32_t iActivitiesTableCount;
+	uint64_t iActivitiesTableOffset;
 
-	unsigned long long iPhysicsDataOffset;
+	uint64_t iPhysicsDataOffset;
 
 	MODEL_PT_TOPOLOGY topology;
 
-	UINT iHitboxCount;
-	unsigned long long iHitboxesOffset;
+	uint32_t iHitboxCount;
+	uint64_t iHitboxesOffset;
 
-	unsigned long long iBboxInfoOffset;
+	uint64_t iBboxInfoOffset;
 
-	unsigned long long iThirdHeaderOffset;
+	uint64_t iThirdHeaderOffset;
 };
 
 struct ModelBoneController
 {
-	UINT iBoneCount;
+	uint32_t iBoneCount;
 	float3_t fMinRot;
 	float3_t fMaxRot;
 	float3_t fMinTrans;
 	float3_t fMaxTrans;
 	char szName[MODEL_MAX_NAME];
-	UINT bones[MODEL_CTRL_MAX_BONES];
+	uint32_t bones[MODEL_CTRL_MAX_BONES];
 };
 
 struct ModelBoneShader
@@ -149,8 +152,8 @@ struct ModelBoneShader
 
 struct ModelBone
 {
-	int id;
-	int pid;
+	int32_t id;
+	int32_t pid;
 	SMQuaternion orient;
 	float3_t position;
 };
@@ -163,43 +166,43 @@ struct ModelBoneName
 
 struct ModelLoDSubset
 {
-	unsigned int iMaterialID;
-	unsigned int iVectexCount;
-	unsigned int iIndexCount;
+	uint32_t iMaterialID;
+	uint32_t iVectexCount;
+	uint32_t iIndexCount;
 	model_vertex * pVertices;
-	UINT * pIndices;
-	UINT iStartIndex;
-	UINT iStartVertex;
+	uint32_t * pIndices;
+	uint32_t iStartIndex;
+	uint32_t iStartVertex;
 };
 
 struct ModelLoD
 {
-	unsigned int iSubMeshCount;
+	uint32_t iSubMeshCount;
 	ModelLoDSubset * pSubLODmeshes;
 	ModelLoD():pSubLODmeshes(NULL), iSubMeshCount(0)
 	{
 	};
 };// typedef SXmodelLODheader;
-#define MODEL_LOD_STRUCT_SIZE sizeof(unsigned int)
+#define MODEL_LOD_STRUCT_SIZE sizeof(uint32_t)
 
 struct ModelMatrial
 {
-	UINT iMat;
+	uint32_t iMat;
 	char szName[MODEL_MAX_NAME];
 };
 
 struct ModelSequence
 {
 	char name[MODEL_MAX_NAME];
-	bool bLooped;
-	UINT framerate;
-	UINT activity;
-	UINT iNumFrames;
-	UINT act_chance;
+	byte bLooped;
+	uint32_t framerate;
+	uint32_t activity;
+	uint32_t iNumFrames;
+	uint32_t act_chance;
 	ModelBone ** m_vmAnimData;
 };
 
-#define MODEL_SEQUENCE_STRUCT_SIZE (sizeof(char) * MODEL_MAX_NAME + sizeof(bool) + sizeof(UINT) * 4)
+#define MODEL_SEQUENCE_STRUCT_SIZE (sizeof(char) * MODEL_MAX_NAME + sizeof(byte) + sizeof(uint32_t) * 4)
 
 struct ModelDependensy
 {
@@ -209,7 +212,7 @@ struct ModelDependensy
 struct ModelActivity
 {
 	char szName[MODEL_MAX_NAME];
-	//UINT chance;
+	//uint32_t chance;
 };
 
 enum MODEL_BONE_CTL
