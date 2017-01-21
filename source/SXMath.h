@@ -1748,9 +1748,9 @@ public:
 
 			if(tr > 0.0)
 			{
-				s = sqrt(tr + 1.0);
-				w = s / 2.0;
-				s = 0.5 / s;
+				s = sqrt(tr + 1.0f);
+				w = s / 2.0f;
+				s = 0.5f / s;
 				x = (m[1][2] - m[2][1]) * s;
 				y = (m[2][0] - m[0][2]) * s;
 				z = (m[0][1] - m[1][0]) * s;
@@ -1763,11 +1763,11 @@ public:
 				j = nxt[i];
 				k = nxt[j];
 
-				s = sqrt((m[i][i] - (m[j][j] + m[k][k])) + 1.0);
+				s = sqrt((m[i][i] - (m[j][j] + m[k][k])) + 1.0f);
 
-				q[i] = s * 0.5;
+				q[i] = s * 0.5f;
 
-				if(s != 0.0) s = 0.5 / s;
+				if(s != 0.0) s = 0.5f / s;
 
 				q[3] = (m[j][k] - m[k][j]) * s;
 				q[j] = (m[i][j] + m[j][i]) * s;
@@ -1866,7 +1866,7 @@ __forceinline SMQuaternion SMQuaternion::Renormalize()
 	}
 	else
 	{
-		return(SMQuaternion(x, y, z, -sqrtf(len)));
+		return(SMQuaternion(x, y, z, -sqrtf((float)len)));
 	}
 }
 
@@ -1930,7 +1930,7 @@ __forceinline SMQuaternion SMquaternionSlerp(const SMQuaternion &q, const SMQuat
 		scale0 = 1.0 - t;
 		scale1 = t;
 	}
-	return(SMQuaternion(scale0 * q.x + scale1 * p1[0], scale0 * q.y + scale1 * p1[1], scale0 * q.z + scale1 * p1[2], scale0 * q.w + scale1 * p1[3]));
+	return(SMQuaternion((float)(scale0 * q.x + scale1 * p1[0]), (float)(scale0 * q.y + scale1 * p1[1]), (float)(scale0 * q.z + scale1 * p1[2]), (float)(scale0 * q.w + scale1 * p1[3])));
 }
 
 __forceinline static float InnerProduct(const SMQuaternion & q1, const SMQuaternion & q2)
