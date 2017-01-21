@@ -3,6 +3,7 @@
 
 #include <xmmintrin.h>
 #include <math.h>
+#include <cstdlib>
 
 #define SX_ALIGNED_OP_MEM \
 void* operator new(size_t size)\

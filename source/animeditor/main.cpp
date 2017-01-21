@@ -10,13 +10,6 @@
 #	pragma comment(lib, "sxguiwinapi.lib")
 #endif
 
-
-//function for initialize all the elements
-void InitAllElements();
-
-//function for delete all the elements
-void DeleteAllElements();
-
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPTSTR    lpCmdLine,
@@ -24,22 +17,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-	
+
 	Editor edt;
 
-	//InitAllElements();
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG));
-
-	while(GetMessage(&msg, 0, 0, 0) != 0)
+	MSG msg = {0};
+	
+	while(WM_QUIT != msg.message)
 	{
-
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-		//Render();
+		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) && WM_QUIT != msg.message)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		
+		edt.Update();
 	}
-
-	//DeleteAllElements();
 
 	return(msg.wParam);
 }

@@ -4,6 +4,10 @@
 #define SX_MODEL_VERSION 7
 #define SX_MODEL_MAGICK 30510779525321540
 
+#define SX_MODEL_VERSION_NEW 9
+#define SX_MODEL_MAGICK_NEW 30510779525322835
+
+
 #define MODEL_MAX_NAME 32
 #define MODEL_BONE_MAX_NAME 32
 #define MODEL_CTRL_MAX_BONES 64
@@ -94,44 +98,87 @@ enum MODEL_PT_TOPOLOGY
 struct ModelHeader
 {
 	uint64_t Magick;
-	uint32_t iVersion; // At present should be 4
-	uint32_t iFlags;
-	// char[64] szName; // model name without extension
-	uint32_t iSkinCount; // Count of used skins
-	uint32_t iMaterialCount; // Count of used materials
-	uint64_t iMaterialsOffset; // SXmodelMaterialRangeHeader
-	uint32_t iLODcount; // Count of Levels of detail
-	uint64_t iLODoffset; // SXmodelLODheader
-	uint32_t iBoneCount; // Count of model bones
-	uint64_t iBonesOffset; // SXmodelBone
-	uint32_t iAnimationCount; // Count of animation sequences
-	uint64_t iAnimationsOffset; // SXmodelAnimationHeader
-	uint64_t iSecondHeaderOffset;
+	uint32_t iVersion; // версия файла
+	uint32_t iFlags; // флаги
+	uint32_t iSkinCount; // Количество скинов в модели
+	uint32_t iMaterialCount; // Количество сабсетов
+	uint64_t iMaterialsOffset; // Смещение до блока списка материалов
+	uint32_t iLODcount; // Количество лодов
+	uint64_t iLODoffset; // Смещение до блока лодов
+	uint32_t iBoneCount; // Количество костей в скелете
+	uint64_t iBonesOffset; // Смещение до блока костей
+	uint32_t iAnimationCount; // Количество анимаций в файле
+	uint64_t iAnimationsOffset; // Смещение до блока анимаций
+	uint64_t iSecondHeaderOffset; // Смещение до второго заголовка
 };
 
 struct ModelHeader2
 {
-	uint32_t iControllersCount;
-	uint64_t iControllersOffset;
-	uint32_t iDepsCount;
-	uint64_t iDependensiesOffset;
+	uint32_t iControllersCount; // Количество контроллеров
+	uint64_t iControllersOffset; // Смещение до блока контроллеров
+	uint32_t iDepsCount; // Количество включаемых файлов
+	uint64_t iDependensiesOffset; // Смещение до блока включаемых файлов
 
-	uint32_t iBoneTableCount;
-	uint64_t iBoneTableOffset;
-	uint32_t iActivitiesTableCount;
-	uint64_t iActivitiesTableOffset;
+	uint32_t iBoneTableCount; // Количество костей в таблице костей
+	uint64_t iBoneTableOffset; // Смещение до таблицы костей
+	uint32_t iActivitiesTableCount; // Количество записей в таблице активностей
+	uint64_t iActivitiesTableOffset; // Смещение до таблицы активностей
 
-	uint64_t iPhysicsDataOffset;
+	uint64_t iPhysicsDataOffset; // Смещение до блока физических данных
 
-	MODEL_PT_TOPOLOGY topology;
+	MODEL_PT_TOPOLOGY topology; // Используемая топология примитивов
 
-	uint32_t iHitboxCount;
-	uint64_t iHitboxesOffset;
+	uint32_t iHitboxCount; // Количество хитбоксов
+	uint64_t iHitboxesOffset; // Смещение до блока хитбоксов
 
-	uint64_t iBboxInfoOffset;
+	uint64_t iBboxInfoOffset; // Смещение до блока информации об ограничивающем объеме
 
-	uint64_t iThirdHeaderOffset;
+	uint64_t iThirdHeaderOffset; // Смещение до третьего заголовка
 };
+/*
+struct ModelHeaderNew
+{
+	uint64_t Magick;
+	uint32_t iVersion; // версия файла
+	uint32_t iFlags; // флаги
+
+	uint64_t iChunksOffset; // Смещение до блока кусков
+
+};
+
+enum MODEL_CHUNK //attachment
+{
+	MODEL_CHUNK_EXTERNAL = 0x00000001, // Данные чанка хранятся во внешнем файле
+	MODEL_CHUNK_ANIM     = 0x00000002, // Чанк содержит анимации
+	MODEL_CHUNK_MESH     = 0x00000004, // Чанк содержит меш
+
+	MODEL_CHUNK_NORMAL   = 0x00000010, // Обычная интерпретация
+	MODEL_CHUNK_HITBOX   = 0x00000020, // Содержимое чанка - хитбоксы
+	MODEL_CHUNK_PHYSBOX  = 0x00000030, // Содержимое чанка - физическая оболочка
+
+	MODEL_CHUNK_HIDE     = 0x00000100, // Скрыть чанк
+	MODEL_CHUNK_ATTACH_SKIN = 0x00000200, // 
+	MODEL_CHUNK_ATTACH_BONE = 0x00000400, // 
+	MODEL_CHUNK_ENA_COLLISIONS = 0x00000800, // 
+	MODEL_CHUNK_ENA_RAYTRACE = 0x00001000, // 
+};
+
+struct ModelChunk
+{
+	uint32_t iFlags; // флаги
+	char szName[64]; // Имя аттачмента
+	union
+	{
+		char szImportName[256]; // Имя внешнего файла
+		struct
+		{
+			float3_t v3Shift;
+			uint8_t iBone;
+
+
+		};
+	};
+};*/
 
 struct ModelBoneController
 {
