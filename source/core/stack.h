@@ -3,6 +3,11 @@
 
 #include <core\MemAlloc.h>
 
+#if defined(_WINDOWS)
+#	pragma warning(push)
+#	pragma warning(disable:4715)
+#endif
+
 template <typename T, int pageSize=256>
 class Stack
 {
@@ -68,7 +73,6 @@ public:
 			}
 		//return(NULL);
 	}
-
 	void pop(int countpop)
 	{
 		for (int i = 0; i < countpop; ++i)
@@ -126,5 +130,9 @@ public:
 		return SP;
 	}
 };
+
+#if defined(_WINDOWS)
+#	pragma warning(pop)
+#endif
 
 #endif
