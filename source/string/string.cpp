@@ -1053,7 +1053,7 @@ str[lenght] = 0;
 return str;
 }*/
 
-String String::substr(DWORD pos, DWORD len) const
+String String::substr(unsigned long pos, unsigned long len) const
 {
 	char * ns = string + pos;
 	if(!len || len > length() - pos)
