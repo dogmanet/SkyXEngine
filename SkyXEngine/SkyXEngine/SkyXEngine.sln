@@ -71,6 +71,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "animeditor", "..\animeditor\animeditor.vcxproj", "{6A3341BF-710B-4310-A7F8-810040D698DC}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0292BE32-298E-4E18-BC42-5A39F9487EBA} = {0292BE32-298E-4E18-BC42-5A39F9487EBA}
+		{B90F98C8-9BEA-40A2-BE9B-0828177EAB4A} = {B90F98C8-9BEA-40A2-BE9B-0828177EAB4A}
 	EndProjectSection
 EndProject
 Global

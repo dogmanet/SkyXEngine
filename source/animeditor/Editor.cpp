@@ -5,10 +5,39 @@ m_bCamMove(false)
 {
 	InitUI();
 	InitD3D();
+
+	m_pEditor = this;
+	m_szAnimFilter[0] = 0;
+
+
+	m_pAnimMgr = new AnimationManager(m_pd3dDevice);
+	m_pCurAnim = new Animation(m_pAnimMgr);
+	m_pCurAnim->SetCallback(AnimPlayCB);
+	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/krovosos/krovososa.dse");
+	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/spas/spasa.dse");
+	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/pm/pma.dse");
+	m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/ak74/ak74a.dse");
+	//m_pCurAnim->PlayAnimation("reload", 0);
+
+	UINT c = m_pCurAnim->m_pMdl->GetSequenceCount();
+	AnimItem ai;
+	for(UINT i = 0; i < c; ++i)
+	{
+		//m_vAnims
+		ai.seq = m_pCurAnim->m_pMdl->GetSequence(i);
+		((ModelSequence*)ai.seq)->bLooped = true;
+		ai.mdl = m_pCurAnim->m_pMdl;
+		ai.isImported = false;
+		m_vAnims.push_back(ai);
+	}
+	m_pEditor->RenderAnimList();
 }
 
 Editor::~Editor()
 {
+	mem_del(m_pCurAnim);
+	mem_del(m_pAnimMgr);
+
 	DestroyD3D();
 	DestroyUI();
 }
@@ -49,6 +78,7 @@ LRESULT Editor::CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		edt->CenterMouse();
 		edt->m_bCamMove = true;
 		ShowCursor(0);
+		SetFocus(edt->MainWindow->GetHWND());
 		break;
 	case WM_RBUTTONUP:
 		edt->m_bCamMove = false;
@@ -94,6 +124,55 @@ LRESULT Editor::CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return(0);
 }
 
+LRESULT Editor::AnimListCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
+	Editor * edt = (Editor*)cmp->GetUserPtr();
+	ISXGUIListBox * lb = edt->AnimList;
+	int curSel = lb->GetSel();
+	switch(msg)
+	{
+	case WM_LBUTTONDBLCLK:
+		if(curSel != -1)
+		{
+			UINT seqi = (UINT)lb->GetItemData(curSel);
+			edt->m_pCurAnim->PlayAnimation(edt->m_vAnims[seqi].seq->name, 100);
+		}
+		break;
+	}
+
+	return(CallWindowProc(cmp->OldProc, hwnd, msg, wParam, lParam));
+}
+
+LRESULT Editor::AnimFilterCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
+	{
+	case WM_KEYUP:
+		m_pEditor->AnimFilter->GetText(m_pEditor->m_szAnimFilter, sizeof(m_pEditor->m_szAnimFilter) - 1);
+		m_pEditor->RenderAnimList();
+		break;
+	}
+	return(0);
+}
+
+void Editor::AnimPlayCB(int slot, ANIM_STATE state, Animation * pAnim)
+{
+	ModelSequence const * seq = m_pEditor->m_pCurAnim->GetCurAnim(slot);
+	switch(state)
+	{
+	case AS_STOP:
+		m_pEditor->CurAnimName->SetText("");
+		break;
+	case AS_PLAY:
+		char name[MODEL_MAX_NAME + 16];
+		sprintf(name, "Animation: %s", seq->name);
+		m_pEditor->CurAnimName->SetText(name);
+		break;
+	}
+	
+}
+
 void Editor::MenuBrowse(HWND hwnd)
 {
 	OPENFILENAME ofn;
@@ -136,6 +215,13 @@ void Editor::MenuSaveAs(HWND hwnd)
 	m_bDirty = false;
 }
 
+Editor * Editor::GetInstance()
+{
+	return(m_pEditor);
+}
+
+Editor * Editor::m_pEditor;
+
 void Editor::InitUI()
 {
 	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, 256, 199, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
@@ -173,12 +259,19 @@ void Editor::InitUI()
 	AnimList->SetTransparentTextBk(true);
 	AnimList->SetColorBrush(255, 255, 255);
 	AnimList->GAlign = {true, true, true, true};
-	AnimFilter = SXGUICrEdit("AnimFilter", 44, 16, 228, 23, AnimationsGB->GetHWND(), 0, 0);
+
+	AnimList->SetUserPtr(this);
+	AnimList->AddHandler(AnimListCB, WM_LBUTTONDBLCLK);
+
+	AnimFilter = SXGUICrEdit("", 44, 16, 228, 23, AnimationsGB->GetHWND(), 0, 0);
 	AnimFilter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AnimFilter->SetColorText(0, 0, 0);
 	AnimFilter->SetColorTextBk(255, 255, 255);
 	AnimFilter->SetTransparentTextBk(true);
 	AnimFilter->SetColorBrush(255, 255, 255);
+
+	AnimFilter->AddHandler(AnimFilterCB, WM_KEYUP);
+
 	Static1 = SXGUICrStatic("Filter:", 8, 18, 32, 20, AnimationsGB->GetHWND(), 0, 0);
 	Static1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	Static1->SetColorText(0, 0, 0);
@@ -186,9 +279,6 @@ void Editor::InitUI()
 	Static1->SetTransparentTextBk(true);
 	Static1->SetColorBrush(255, 255, 255);
 
-	AnimList->AddItem("text hahaha");
-	AnimList->AddItem("text hahahb");
-	AnimList->AddItem("text hahahc");
 
 	CurAnimName = SXGUICrStatic("Animation: idle", 1149, 649, 145, 19, MainWindow->GetHWND(), 0, 0);
 	CurAnimName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -269,6 +359,7 @@ void Editor::DrawAxis()
 {
 	m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, 0);
 	m_pd3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	m_pd3dDevice->SetTexture(0, NULL);
 	struct vert
 	{
 		float3_t pos;
@@ -323,7 +414,72 @@ void Editor::Update()
 	m_pd3dDevice->BeginScene();
 
 	DrawAxis();
-	
+
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
+	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC);
+
+	m_pAnimMgr->Render();
+
 	m_pd3dDevice->EndScene();
+
+	m_pAnimMgr->Update();
+
 	m_pSwapChain->Present(NULL, NULL, NULL, NULL, D3DSWAPEFFECT_DISCARD);
+}
+
+bool filterStr(char const * str1, char const * str2)
+{
+	const char* p1 = str1;
+	const char* p2 = str2;
+	const char* r = *p2 == 0 ? str1 : 0;
+
+	while(*p1 != 0 && *p2 != 0)
+	{
+		if(tolower(*p1) == tolower(*p2))
+		{
+			if(r == 0)
+			{
+				r = p1;
+			}
+
+			p2++;
+		}
+		else
+		{
+			p2 = str2;
+			if(tolower(*p1) == tolower(*p2))
+			{
+				r = p1;
+				p2++;
+			}
+			else
+			{
+				r = 0;
+			}
+		}
+
+		p1++;
+	}
+
+	return(*p2 == 0);
+}
+
+void Editor::RenderAnimList()
+{
+	UINT c = m_vAnims.size();
+	AnimItem * ai;
+	char tmpSN[MODEL_MAX_NAME + 32];
+	bool filt = m_szAnimFilter[0] != 0;
+	AnimList->Clear();
+	for(UINT i = 0; i < c; ++i)
+	{
+		ai = &m_vAnims[i];
+		if(!filt || filterStr(ai->seq->name, m_szAnimFilter))
+		{
+			sprintf(tmpSN, "[%c%c] %s", ai->isImported ? 'I' : '_', ai->seq->bLooped ? 'L' : '_', ai->seq->name); //I|_, L|_
+			AnimList->AddItem(tmpSN);
+			AnimList->SetItemData(AnimList->GetCountItem() - 1, (LPARAM)i);
+		}
+	}
 }

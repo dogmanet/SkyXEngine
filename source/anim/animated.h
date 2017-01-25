@@ -8,6 +8,15 @@
 #include <core/array.h>
 #include <string/string.h>
 
+#ifdef _SERVER
+#	define IDirect3DDevice9 void
+#else
+#	define D3D_DEBUG_INFO
+#	include <d3d9.h>
+#	include <d3dx9.h>
+#	pragma comment(lib, "d3dx9.lib")
+#endif
+
 #define BLEND_MAX 3
 
 
@@ -19,12 +28,13 @@ typedef AssotiativeArray<int, int> ModelBoneRelinkList;
 typedef AssotiativeArray<String, ModelBoneName> ModelBones;
 
 class Animation;
+class AnimationManager;
 
 class ModelFile
 {
 	friend class Animation;
 public:
-	ModelFile(const char * name);
+	ModelFile(const char * name, AnimationManager * pMgr);
 	~ModelFile();
 
 	SX_ALIGNED_OP_MEM
@@ -48,7 +58,7 @@ public:
 
 	ModelMatrial ** m_iMaterials;
 	ModelLoD * m_pLods;
-	SkyXEngine::Graphics::ThreeD::Bound BoundVol;
+	//SkyXEngine::Graphics::ThreeD::Bound BoundVol;
 protected:
 
 	
@@ -82,9 +92,10 @@ protected:
 
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
-
+#ifndef _SERVER
 	IDirect3DIndexBuffer9 ** m_ppIndexBuffer;
 	IDirect3DVertexBuffer9 ** m_ppVertexBuffer;
+#endif
 
 	const ModelFile ** m_pDeps;
 
@@ -107,20 +118,33 @@ protected:
 	bool m_bAssemblied;
 	bool m_bLoaded;
 	bool m_bInitPosInvSet;
+
+	AnimationManager * m_pMgr;
 };
+
+enum ANIM_STATE
+{
+	AS_STOP,
+	AS_PLAY,
+	AS_LOOP
+};
+
+typedef void(*AnimStateCB)(int slot, ANIM_STATE as, Animation * pAnim);
 
 class Animation
 {
 public:
-	Animation();
+	Animation(AnimationManager * pMgr);
 	~Animation();
 
 	SX_ALIGNED_OP_MEM
 
 	void Advance(unsigned long int dt);
-	bool IsVisibleFrustum(Core::ControllMoving::Frustum* frustum);
+//	bool IsVisibleFrustum(Core::ControllMoving::Frustum* frustum);
 	//0 - простой рендер, 1 - с материалом, 2 - pssm, 3 - cube
+#ifndef _SERVER
 	void Render(int howrender = 0,bool render_forward = false);
+#endif
 
 	void SetModel(const char * file);
 
@@ -158,6 +182,10 @@ public:
 
 	bool IsRenderForShadow();
 	void SetRenderForShadow(bool bdo);
+
+	AnimStateCB SetCallback(AnimStateCB cb);
+
+	ModelSequence const * GetCurAnim(int slot);
 
 	ModelFile * m_pMdl;
 protected:
@@ -206,34 +234,54 @@ protected:
 	bool m_bVisible;
 	bool m_bRenderForShadow;
 	UINT t[BLEND_MAX];
+
+	AnimationManager * m_pMgr;
+
+	AnimStateCB m_pfnCallBack;
 };
 
 class AnimationManager
 {
 public:
-	static const ModelFile * LoadModel(const char * name);
+	AnimationManager(IDirect3DDevice9 * dev);
+	~AnimationManager();
+	const ModelFile * LoadModel(const char * name);
 
-	static void Init();
-
-	static UINT Register(Animation * pAnim);
-	static void UnRegister(UINT id);
+	UINT Register(Animation * pAnim);
+	void UnRegister(UINT id);
 
 	//0 - простой рендер, 1 - с материалом, 2 - pssm, 3 - cube
-	static void Render(int howrender = 0,int render_forward=0,Core::ControllMoving::Frustum* frustum=0);
-	static void Update();
-	static void ComVisible();
+	void Render(int howrender = 0,int render_forward=0/*,Core::ControllMoving::Frustum* frustum=0*/);
+	void Update();
 
-	static void SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
+	void SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
+
+	UINT GetMaterial(const String & mat);
+	void SetMaterial(UINT);
 protected:
-	static AssotiativeArray<String, ModelFile*> m_pModels;
-	static void InitVertexDeclarations();
+	friend class ModelFile;
+	friend class Animation;
+	AssotiativeArray<String, ModelFile*> m_pModels;
+	void InitVertexDeclarations();
 
-	static IDirect3DVertexDeclaration9 * pVertexDeclaration[MVT_SIZE];
+	IDirect3DVertexDeclaration9 * pVertexDeclaration[MVT_SIZE];
 
 	
-	static Array<bool> ArrIsVisible;
-	static Array<Animation*> m_pAnimatedList;
+	Array<bool> ArrIsVisible;
+	Array<Animation*> m_pAnimatedList;
 
+	IDirect3DDevice9 * m_pd3dDevice;
+
+	struct material
+	{
+		IDirect3DTexture9 * tex;
+	};
+
+	AssotiativeArray<String, material> m_mMats;
+
+	IDirect3DVertexShader9 * m_pVSH;
+
+	void LoadShader();
 };
 
 

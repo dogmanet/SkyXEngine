@@ -10,9 +10,10 @@ typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef unsigned int size_t;
 typedef int BOOL;
-typedef unsigned char BYTE;
+typedef unsigned char BYTE, byte;
 typedef unsigned int UINT;
 typedef wchar_t WCHAR;
+typedef unsigned long ULONG;
 
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -31,7 +32,7 @@ typedef wchar_t WCHAR;
 #define mem_del(obj) delete obj;
 #define mem_delete(obj) delete obj;obj=0;
 #define mem_delete_a(obj) delete[] obj;obj=0;
-#define mem_release(obj) obj->Release();
+#define mem_release(obj) if(obj)obj->Release();
 #define mem_release_del(obj) obj->Release(); obj = 0;
 #define mem_release_delete(obj) obj->Release();mem_delete(obj)
 #define mem_free(a) free(a)

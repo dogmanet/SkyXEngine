@@ -6,8 +6,8 @@
 
 #include "TabManager.h"
 
-#include <anim/ModelFile.h>
-//#include <anim/animated.h>
+//#include <anim/ModelFile.h>
+#include <anim/animated.h>
 
 #include "Camera.h"
 
@@ -40,6 +40,12 @@ public:
 
 	static LRESULT MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT AnimListCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT AnimFilterCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+	static void AnimPlayCB(int slot, ANIM_STATE state, Animation * pAnim);
+
+	static Editor * GetInstance();
 	
 	void MenuBrowse(HWND hwnd);
 	void MenuSave();
@@ -92,6 +98,27 @@ protected:
 	UINT m_uHeight;
 
 	bool m_bCamMove;
+
+	AnimationManager * m_pAnimMgr;
+	Animation * m_pCurAnim;
+
+	static Editor * m_pEditor;
+
+	char m_szAnimFilter[64];
+
+	struct AnimItem
+	{
+		ModelSequence const * seq;
+		ModelFile const * mdl;
+		bool isImported;
+	};
+
+	Array<AnimItem> m_vAnims;
+
+	
+
+private:
+	void RenderAnimList();
 };
 
 #endif
