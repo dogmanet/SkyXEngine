@@ -93,6 +93,10 @@ LRESULT TabActivities::AddBtnCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 	int size = MODEL_MAX_NAME;
 	if(Tools::DlgPrompt(out, &size, "Activity name", "New activity") && size > 0)
 	{
+		for(int i = 0; i < size; ++i)
+		{
+			out[i] = toupper(out[i]);
+		}
 		for(int i = 0, l = self->m_vItems.size(); i < l; ++i)
 		{
 			if(!_stricmp(self->m_vItems[i].act.c_str(), out))
@@ -129,6 +133,22 @@ LRESULT TabActivities::RenBtnCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 	ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
 	TabActivities * self = (TabActivities*)cmp->GetUserPtr();
 
+	int cur = self->ActList->GetSel();
+	cur = self->ActList->GetItemData(cur);
+	ActivityItem * item = &self->m_vItems[cur];
+
+	char out[MODEL_MAX_NAME];
+	int size = MODEL_MAX_NAME;
+	if(Tools::DlgPrompt(out, &size, "Activity name", "Rename activity", item->act.c_str()) && size > 0)
+	{
+		for(int i = 0; i < size; ++i)
+		{
+			out[i] = toupper(out[i]);
+		}
+		item->act = out;
+		self->RenderList();
+	}
+	
 
 	return(0);
 }
