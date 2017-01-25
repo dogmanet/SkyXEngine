@@ -3,6 +3,7 @@
 
 #include "TabManager.h"
 #include <SXGUIWinApi/sxguielements.h>
+#include "../../SkyXEngine/animeditor/resource.h"
 
 
 class EditorTab
