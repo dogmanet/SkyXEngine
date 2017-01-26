@@ -72,6 +72,10 @@ void TabActivities::RenderList()
 	ActivityItem * item;
 	char tmpSN[MODEL_MAX_NAME + 32];
 	int cur = ActList->GetSel();
+	if(cur < 0)
+	{
+		cur = 0;
+	}
 	ActList->Clear();
 	for(UINT i = 0; i < c; ++i)
 	{
@@ -82,6 +86,8 @@ void TabActivities::RenderList()
 		ActList->SetItemData(ActList->GetCountItem() - 1, (LPARAM)i);
 	}
 	ActList->SetSel(cur);
+	
+	PostMessage(GetAncestor(m_pRoot->GetHWND(), GA_ROOTOWNER), EM_LOADACTIVITIES, 0, 0);
 }
 
 LRESULT TabActivities::AddBtnCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

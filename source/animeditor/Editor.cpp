@@ -46,8 +46,9 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
 	Editor * edt = (Editor*)cmp->GetUserPtr();
-	if(msg == WM_COMMAND)
+	switch(msg)
 	{
+	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
 		case ID_FILE_OPEN:
@@ -64,6 +65,11 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 			break;
 		}
+		break;
+
+	case EM_LOADACTIVITIES:
+		MessageBoxA(NULL, "Loaded", "", MB_OK);
+		break;
 	}
 	return(0);
 }
@@ -227,6 +233,7 @@ void Editor::InitUI()
 	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, 256, 199, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(MainWindow);
 	MainWindow->AddHandler(MenuCmd, WM_COMMAND);
+	MainWindow->AddHandler(MenuCmd, EM_LOADACTIVITIES);
 
 
 	MainWindow->SetUserPtr(this);
@@ -252,16 +259,18 @@ void Editor::InitUI()
 	AnimationsGB->SetTransparentTextBk(true);
 	AnimationsGB->SetColorBrush(255, 255, 255);
 	AnimationsGB->GAlign = {true, true, true, false};
-	AnimList = SXGUICrListBox("", 2, 43, 270, 623, AnimationsGB->GetHWND(), 0, 0, false);
+	AnimationsGB->SetUserPtr(this);
+	AnimationsGB->AddHandler(AnimGBProc, WM_COMMAND);
+
+	AnimList = SXGUICrListBoxEx("", 2, 43, 270, 623, 0, WS_CHILD | WS_VISIBLE | LBS_HASSTRINGS | WS_VSCROLL | WS_BORDER | LBS_NOTIFY/* | LBS_SORT*/, AnimationsGB->GetHWND(), 0, IDC_LISTBOX);
 	AnimList->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AnimList->SetColorText(0, 0, 0);
 	AnimList->SetColorTextBk(255, 255, 255);
 	AnimList->SetTransparentTextBk(true);
 	AnimList->SetColorBrush(255, 255, 255);
 	AnimList->GAlign = {true, true, true, true};
-
-	AnimList->SetUserPtr(this);
-	AnimList->AddHandler(AnimListCB, WM_LBUTTONDBLCLK);
+	//AnimList->SetUserPtr(this);
+	//AnimList->AddHandler(AnimListCB, WM_LBUTTONDBLCLK);
 
 	AnimFilter = SXGUICrEdit("", 44, 16, 228, 23, AnimationsGB->GetHWND(), 0, 0);
 	AnimFilter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -471,6 +480,11 @@ void Editor::RenderAnimList()
 	AnimItem * ai;
 	char tmpSN[MODEL_MAX_NAME + 32];
 	bool filt = m_szAnimFilter[0] != 0;
+	int cur = AnimList->GetSel();
+	if(cur < 0)
+	{
+		cur = 0;
+	}
 	AnimList->Clear();
 	for(UINT i = 0; i < c; ++i)
 	{
@@ -482,4 +496,30 @@ void Editor::RenderAnimList()
 			AnimList->SetItemData(AnimList->GetCountItem() - 1, (LPARAM)i);
 		}
 	}
+	AnimList->SetSel(cur);
+}
+
+LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
+	Editor * self = (Editor*)cmp->GetUserPtr();
+
+	switch(LOWORD(wParam))
+	{
+	case IDC_LISTBOX:
+		switch(HIWORD(wParam))
+		{
+		case LBN_SELCHANGE:
+		{
+			int sel = self->AnimList->GetSel();
+			AnimItem * item;
+			item = &self->m_vAnims[self->AnimList->GetItemData(sel)];
+
+			self->m_pCurAnim->PlayAnimation(item->seq->name, 100);
+		}
+		break;
+		}
+	}
+
+	return(0);
 }

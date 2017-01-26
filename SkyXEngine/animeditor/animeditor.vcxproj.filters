@@ -92,6 +92,9 @@
     <ClInclude Include="..\..\source\animeditor\Tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\animeditor\EMessages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="animeditor.rc">

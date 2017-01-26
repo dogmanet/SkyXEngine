@@ -107,6 +107,7 @@
     <ClInclude Include="..\..\source\animeditor\Camera.h" />
     <ClInclude Include="..\..\source\animeditor\Editor.h" />
     <ClInclude Include="..\..\source\animeditor\EditorTab.h" />
+    <ClInclude Include="..\..\source\animeditor\EMessages.h" />
     <ClInclude Include="..\..\source\animeditor\TabActivities.h" />
     <ClInclude Include="..\..\source\animeditor\TabAnimation.h" />
     <ClInclude Include="..\..\source\animeditor\TabAttachments.h" />

@@ -10,7 +10,7 @@
 #include <anim/animated.h>
 
 #include "Camera.h"
-
+#include "EMessages.h"
 
 #ifdef _DEBUG
 #	define D3D_DEBUG_INFO
@@ -42,6 +42,7 @@ public:
 	static LRESULT CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT AnimListCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT AnimFilterCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	static void AnimPlayCB(int slot, ANIM_STATE state, Animation * pAnim);
 
