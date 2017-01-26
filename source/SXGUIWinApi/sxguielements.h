@@ -1,4 +1,5 @@
-
+#ifndef SXGUIELEMENTS_H
+#define SXGUIELEMENTS_H
 #include <gdefines.h>
 
 #include <windows.h>
@@ -824,3 +825,5 @@ namespace SXGUIRegClass
 	//класс тулбара
 	SX_LIB_API bool RegToolBar();
 };
+
+#endif
