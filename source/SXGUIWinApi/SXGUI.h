@@ -120,7 +120,7 @@ ISXGUIMemo* SXGUICrMemo(const char* caption, WORD x, WORD y, WORD width, WORD he
 }
 
 
-ISXGUIComboBox* SXGUICrComboBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+ISXGUIComboBox* SXGUICrComboBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
 {
 	return new SXGUIComboBox(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
 }
