@@ -11,7 +11,7 @@ Green::Green()
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
 		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 1, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
 		D3DDECL_END()
 	};
 
@@ -25,7 +25,7 @@ Green::Green()
 		&TransVertBuf,
 		0);
 
-	IRSData tmparr;
+	IRSData* tmparr = new IRSData();
 	ArrComFor.push_back(tmparr);
 }
 
@@ -52,15 +52,36 @@ Green::Model::Model()
 	ArrSplits = 0;
 	AllTrans = 0;
 	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
+	NavigateMesh = 0;
+}
+
+Green::Model::NavMesh::NavMesh()
+{
+	arr_vertex = 0;
+	arr_index = 0;
+	count_vertex = 0;
+	count_index = 0;
+	pathname = "";
+}
+
+Green::Model::NavMesh::~NavMesh()
+{
+	mem_delete_a(arr_vertex);
+	count_vertex = 0;
+	mem_delete_a(arr_index);
+	count_index = 0;
 }
 
 Green::Model::~Model()
 {
 	mem_delete(ArrSplits);
 	mem_delete(AllTrans);
-	mem_delete(ArrLod[0]);
-	mem_delete(ArrLod[1]);
-	mem_delete(ArrLod[2]);
+	mem_del(ArrLod[0]);
+	if (ArrLod[0] != ArrLod[1])
+		mem_del(ArrLod[1]);
+
+	if (ArrLod[0] != ArrLod[2] && ArrLod[1] != ArrLod[2])
+		mem_del(ArrLod[2]);
 }
 
 Green::Segment::Segment()
@@ -124,13 +145,13 @@ Green::IRSData::~IRSData()
 
 void Green::OnLostDevice()
 {
-	mem_release(TransVertBuf);
+	mem_release_del(TransVertBuf);
 }
 
 void Green::OnResetDevice()
 {
 	Green::DXDevice->CreateVertexBuffer(
-		GREEN_MAX_ELEM_IN_DIP * sizeof(float)* 6,
+		GREEN_MAX_ELEM_IN_DIP * sizeof(DataVertex),
 		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
@@ -148,28 +169,28 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 	tmpnewmpdel->ArrLod[1] = new Lod();
 	tmpnewmpdel->ArrLod[2] = new Lod();
 
-	SGCore_LoadStaticModel(path, &tmpnewmpdel->ArrLod[0]->model);
+	SGCore_LoadStaticModel(path, &(tmpnewmpdel->ArrLod[0]->model));
 
 	char tmppathtex[1024];
-	for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model.SubsetCount; ++i)
+	for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 	{
-		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model.ArrTextures[i]);
+		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
 		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 	}
 
 	SGCore_LoadStaticModel(lod1, &tmpnewmpdel->ArrLod[1]->model);
 
-	for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model.SubsetCount; ++i)
+	for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 	{
-		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
 		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 	}
 
 	SGCore_LoadStaticModel(lod2, &tmpnewmpdel->ArrLod[2]->model);
 
-	for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model.SubsetCount; ++i)
+	for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 	{
-		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
 		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 	}
 
@@ -183,14 +204,14 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 
 	if (strcmp(HeaderFile, "sxgreentrans") == 0)
 	{
-		fread(&tmpnewmpdel->AllCountGreen, sizeof(DWORD), 1, file);
+		fread(&tmpnewmpdel->AllCountGreen, sizeof(uint32_t), 1, file);
 		tmpnewmpdel->AllTrans = new DataVertex[tmpnewmpdel->AllCountGreen];
 		fread(tmpnewmpdel->AllTrans, sizeof(DataVertex), tmpnewmpdel->AllCountGreen, file);
 	}
 	//CountGrassInVert = mpnewmpdel->AllCountGreen + 1;
 	fclose(file);
 
-	PreSegmentation(tmpnewmpdel, count_object_in_split);
+	PreSegmentation(tmpnewmpdel);
 	//currSplitsIDs = 0;
 	//currSplitsIDsRender = 0;
 	SetSplitID(tmpnewmpdel->ArrSplits, &tmpnewmpdel->SplitsIDs, &tmpnewmpdel->SplitsIDsRender);
@@ -206,14 +227,14 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 	AddModelInArrCom(ArrModels.size()-1);
 }
 
-void Green::PreSegmentation(Model* model, DWORD count_object_in_split)
+void Green::PreSegmentation(Model* model)
 {
 	model->ArrSplits = new Segment();
 
 	float3 tmpMin, tmpMax;
 	float3 tmpMin2, tmpMax2;
 	model->ArrSplits->BoundVolumeSys = SGCore_CrBound();
-	SGCore_FCompBoundBox(model->ArrLod[0]->model.VertexBuffer, &(model->ArrSplits->BoundVolumeSys), model->ArrLod[0]->model.AllVertexCount, sizeof(vertex_static));
+	SGCore_FCompBoundBox(model->ArrLod[0]->model->VertexBuffer, &(model->ArrSplits->BoundVolumeSys), model->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
 
 	model->ArrSplits->BoundVolumeSys->GetMinMax(&tmpMin2, &tmpMax2);
 	model->BBMax = tmpMax2 * 2.f;
@@ -257,6 +278,13 @@ void Green::PreSegmentation(Model* model, DWORD count_object_in_split)
 
 	model->ArrSplits->BoundVolumeP = SGCore_CrBound();
 	model->ArrSplits->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+
+	float3 dimensions = (tmpMax - tmpMin) * 0.5f;
+	long count_object_in_split = lerpf(GREEN_COUNT_MIN_SEGMENTS, GREEN_COUNT_MAX_SEGMENTS, fabs(float(model->AllCountGreen) / (dimensions.x * dimensions.z * 5.f)));
+	if (count_object_in_split < GREEN_COUNT_MIN_SEGMENTS)
+		count_object_in_split = GREEN_COUNT_MIN_SEGMENTS;
+	else if (count_object_in_split > GREEN_COUNT_MAX_SEGMENTS)
+		count_object_in_split = GREEN_COUNT_MAX_SEGMENTS;
 	//SkyXEngine::Core::WorkModel::CreateBoundingBoxMesh(&tmpMin, &tmpMax, &(model->ArrSplits->BoundBox));
 
 	//выравниваем по квадрату
@@ -477,21 +505,21 @@ void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, long id_a
 	Segment** tmpsegments = 0;
 	for (int i = 0; i < ArrModels.size(); ++i)
 	{
-		tmpcount = ArrComFor[id_arr].arr[i]->Count;
-		ArrComFor[id_arr].arr[i]->CountCom = 0;
-		tmpcountcom = &(ArrComFor[id_arr].arr[i]->CountCom);
-		tmpsegments = ArrComFor[id_arr].arr[i]->Arr;
+		tmpcount = ArrComFor[id_arr]->arr[i]->Count;
+		ArrComFor[id_arr]->arr[i]->CountCom = 0;
+		tmpcountcom = &(ArrComFor[id_arr]->arr[i]->CountCom);
+		tmpsegments = ArrComFor[id_arr]->arr[i]->Arr;
 		
-		ArrComFor[id_arr].queue.clear();
-		long tmpcount = 0;
-		ArrComFor[id_arr].queue.push_back(ArrModels[i]->ArrSplits);
+		ArrComFor[id_arr]->queue.clear();
+		//long tmpcount = 0;
+		ArrComFor[id_arr]->queue.push_back(ArrModels[i]->ArrSplits);
 
-		while (ArrComFor[id_arr].queue.size())
+		while (ArrComFor[id_arr]->queue.size())
 		{
-			ComRecArrIndeces(frustum, tmpsegments, tmpcountcom, ArrComFor[id_arr].queue[0], viewpos, &ArrComFor[id_arr].queue, tmpcount);
+			ComRecArrIndeces(frustum, tmpsegments, tmpcountcom, ArrComFor[id_arr]->queue[0], viewpos, &ArrComFor[id_arr]->queue, tmpcount);
 
-			ArrComFor[id_arr].queue.erase(0);
-			++tmpcount;
+			ArrComFor[id_arr]->queue.erase(0);
+			//++tmpcount;
 		}
 	}
 }
@@ -589,8 +617,8 @@ void Green::GPURender2(DWORD timeDelta,long nm, int lod)
 		Green::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 		Green::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(DataVertex));
 
-		Green::DXDevice->SetStreamSource(0, ArrModels[nm]->ArrLod[lod]->model.VertexBuffer, 0, sizeof(vertex_static));
-		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model.IndexBuffer);
+		Green::DXDevice->SetStreamSource(0, ArrModels[nm]->ArrLod[lod]->model->VertexBuffer, 0, sizeof(vertex_static));
+		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model->IndexBuffer);
 		Green::DXDevice->SetVertexDeclaration(VertexDeclarationGreen);
 
 
@@ -598,28 +626,32 @@ void Green::GPURender2(DWORD timeDelta,long nm, int lod)
 
 		if (ArrModels[nm]->TypeGreen == GREEN_TYPE_TREE)
 		{
-			SGCore_ShaderBind(0, GData::IDShaderVSRenderGreenTree);
-			SGCore_ShaderBind(1, GData::IDShaderPSRenderGreenTree);
+			SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenTree);
+			SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
 
-			SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenTree, "WorldViewProjection", &mat);
+			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenTree, "WorldViewProjection", &mat);
+			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&mat, 4);
 		}
 		else
 		{
-			SGCore_ShaderBind(0, GData::IDShaderVSRenderGreenGrass);
-			SGCore_ShaderBind(1, GData::IDShaderPSRenderGreenTree);
+			SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenGrass);
+			SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
 
-			SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "WorldViewProjection", &mat);
-			SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "DistBeginEndLessening", &float2_t(Green::BeginEndLessening, Green::DistLods.x));
+			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&mat, 4);
+			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
+
+			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "WorldViewProjection", &mat);
+			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "DistBeginEndLessening", &float2_t(Green::BeginEndLessening, Green::DistLods.x));
 		}
 
 		jCountIndex = 0;
-		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model.SubsetCount; i++)
+		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model->SubsetCount; i++)
 		{
 
 
-			Green::DXDevice->SetTexture(0, SGCore_GetTex(ArrModels[nm]->ArrLod[lod]->idstex[i]));
-			Green::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model.VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model.IndexCount[i] / 3);
-			jCountIndex += ArrModels[nm]->ArrLod[lod]->model.IndexCount[i];
+			Green::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(ArrModels[nm]->ArrLod[lod]->idstex[i]));
+			FuncDIP(Green::DXDevice, D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3);
+			jCountIndex += ArrModels[nm]->ArrLod[lod]->model->IndexCount[i];
 		}
 
 		SGCore_ShaderUnBind();
@@ -635,8 +667,8 @@ void Green::GPURender(DWORD timeDelta,long id_arr)
 
 	for (int nm = 0; nm < ArrModels.size(); ++nm)
 	{
-		jarrsplits = ArrComFor[id_arr].arr[nm]->Arr;
-		jcount = ArrComFor[id_arr].arr[nm]->CountCom;
+		jarrsplits = ArrComFor[id_arr]->arr[nm]->Arr;
+		jcount = ArrComFor[id_arr]->arr[nm]->CountCom;
 
 		for (int lod = 0; lod < GREEN_COUNT_LOD; ++lod)
 		{
@@ -718,11 +750,11 @@ void Green::GPURender(DWORD timeDelta,long id_arr)
 	}
 }
 
-void Green::Init(StaticGeom* geom, const char* name,
+long Green::Init(StaticGeom* geom, const char* name,
 	const char* path_mask, 
 	float count_max, 
 	const char* path, const char* lod1, const char* lod2, 
-	DWORD count_object_in_split)
+	const char* navmesh)
 {
 	if (geom->GetCountModel() > 0 && def_str_validate(path))
 	{
@@ -739,9 +771,9 @@ void Green::Init(StaticGeom* geom, const char* name,
 		SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[0]->model);
 		tmpnewmpdel->ArrLod[0]->path = path;
 		char tmppathtex[1024];
-		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model.SubsetCount; ++i)
+		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 		{
-			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model.ArrTextures[i]);
+			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
 			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 		}
 
@@ -756,9 +788,9 @@ void Green::Init(StaticGeom* geom, const char* name,
 				tmpnewmpdel->ArrLod[1]->path = lod1;
 				SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[1]->model);
 
-				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model.SubsetCount; ++i)
+				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
 					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 				}
 			}
@@ -777,9 +809,9 @@ void Green::Init(StaticGeom* geom, const char* name,
 				tmpnewmpdel->ArrLod[2]->path = lod2;
 				SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[2]->model);
 
-				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model.SubsetCount; ++i)
+				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model.ArrTextures[i]);
+					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
 					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
 				}
 			}
@@ -789,6 +821,39 @@ void Green::Init(StaticGeom* geom, const char* name,
 			tmpnewmpdel->TypeGreen = GREEN_TYPE_GRASS;
 		else
 			tmpnewmpdel->TypeGreen = GREEN_TYPE_TREE;
+
+		if (def_str_validate(navmesh))
+		{
+			tmpnewmpdel->NavigateMesh = new Model::NavMesh();
+			
+			sprintf(tmppath, "%s%s", Green::StdPath, navmesh);
+			tmpnewmpdel->NavigateMesh->pathname = navmesh;
+
+			ISXDataStaticModel* nmesh;
+			SGCore_LoadStaticModel(tmppath, &nmesh);
+			tmpnewmpdel->NavigateMesh->count_vertex = nmesh->AllVertexCount;
+			tmpnewmpdel->NavigateMesh->count_index = nmesh->AllIndexCount;
+			tmpnewmpdel->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
+			for (long i = 0; i < nmesh->AllVertexCount; ++i)
+			{
+				tmpnewmpdel->NavigateMesh->arr_vertex[i] = nmesh->ArrVertBuf[i].Pos;
+			}
+
+			tmpnewmpdel->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
+			DWORD prebias = 0;
+			long tmp_countindex = 0;
+			for (long i = 0; i < nmesh->SubsetCount; ++i)
+			{
+				for (long k = 0; k < nmesh->IndexCount[i]; ++k)
+				{
+					tmpnewmpdel->NavigateMesh->arr_index[tmp_countindex] = nmesh->ArrIndBuf[nmesh->StartIndex[i] + k] + prebias;
+					++tmp_countindex;
+				}
+				prebias += nmesh->IndexCount[i];
+			}
+
+			mem_release(nmesh);
+		}
 
 		float3 tmpmin, tmpmax;
 		geom->GetMinMax(&tmpmin, &tmpmax);
@@ -802,11 +867,11 @@ void Green::Init(StaticGeom* geom, const char* name,
 		float HeightLand = tmpmax.z - tmpmin.z;
 
 		D3DSURFACE_DESC desc;
-		SGCore_GetTex(IDTexMask)->GetLevelDesc(0, &desc);
+		SGCore_LoadTexGetTex(IDTexMask)->GetLevelDesc(0, &desc);
 
 		D3DLOCKED_RECT LockedRect;
 
-		SGCore_GetTex(IDTexMask)->LockRect(0, &LockedRect, 0, 0);
+		SGCore_LoadTexGetTex(IDTexMask)->LockRect(0, &LockedRect, 0, 0);
 		DWORD* tmpColor = (DWORD*)LockedRect.pBits;
 
 		DWORD tmpUnAllCountGreen = 0;
@@ -869,7 +934,7 @@ void Green::Init(StaticGeom* geom, const char* name,
 			}
 		}
 
-		SGCore_GetTex(IDTexMask)->UnlockRect(0);
+		SGCore_LoadTexGetTex(IDTexMask)->UnlockRect(0);
 
 		tmpnewmpdel->AllTrans = new DataVertex[tmpnewmpdel->AllCountGreen];
 
@@ -883,7 +948,7 @@ void Green::Init(StaticGeom* geom, const char* name,
 		arrpos.clear();
 
 
-		PreSegmentation(tmpnewmpdel, count_object_in_split);
+		PreSegmentation(tmpnewmpdel);
 		//currSplitsIDs = 0;
 		//currSplitsIDsRender = 0;
 		SetSplitID(tmpnewmpdel->ArrSplits, &tmpnewmpdel->SplitsIDs, &tmpnewmpdel->SplitsIDsRender);
@@ -892,36 +957,51 @@ void Green::Init(StaticGeom* geom, const char* name,
 
 		ArrModels.push_back(tmpnewmpdel);
 		AddModelInArrCom(ArrModels.size() - 1);
+		return ArrModels.size() - 1;
 	}
 	else
 	{
 		reportf(REPORT_MSG_LEVEL_WARRNING,"not found static geometry in level!!!");
 	}
+
+	return -1;
 }
 
 void Green::Save(const char* path)
 {
 	FILE* file = fopen(path, "wb");
 
-	long countmodel = ArrModels.size();
-	fwrite(&countmodel, sizeof(long), 1, file);
+	int32_t countmodel = ArrModels.size();
+	fwrite(&countmodel, sizeof(int32_t), 1, file);
 
 	for (long i = 0; i < ArrModels.size(); ++i)
 	{
-		fwrite(&ArrModels[i]->TypeGreen, sizeof(int), 1, file);
+		fwrite(&ArrModels[i]->TypeGreen, sizeof(int32_t), 1, file);
 
-		long tmpstrlen = strlen(ArrModels[i]->Name);
-		fwrite(&tmpstrlen, sizeof(long), 1, file);
+		int32_t tmpstrlen = strlen(ArrModels[i]->Name);
+		fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 		fwrite(ArrModels[i]->Name, sizeof(char), tmpstrlen, file);
 
 		tmpstrlen = ArrModels[i]->MaskName.length();
-		fwrite(&tmpstrlen, sizeof(long), 1, file);
+		fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 		fwrite(ArrModels[i]->MaskName.c_str(), sizeof(char), tmpstrlen, file);
+
+		if (ArrModels[i]->NavigateMesh)
+		{
+			tmpstrlen = strlen(ArrModels[i]->NavigateMesh->pathname.c_str());
+			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
+			fwrite(ArrModels[i]->NavigateMesh->pathname.c_str(), sizeof(char), tmpstrlen, file);
+		}
+		else
+		{
+			tmpstrlen = 0;
+			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
+		}
 
 		if (ArrModels[i]->TypeGreen == GREEN_TYPE_GRASS)
 		{
 			tmpstrlen = strlen(ArrModels[i]->ArrLod[0]->path.c_str());
-			fwrite(&tmpstrlen, sizeof(long), 1, file);
+			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 			fwrite(ArrModels[i]->ArrLod[0]->path.c_str(), sizeof(char), tmpstrlen, file);
 		}
 		else
@@ -929,7 +1009,7 @@ void Green::Save(const char* path)
 			for (int k = 0; k < GREEN_COUNT_LOD; ++k)
 			{
 				tmpstrlen = ArrModels[i]->ArrLod[k]->path.length();
-				fwrite(&tmpstrlen, sizeof(long), 1, file);
+				fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 				fwrite(ArrModels[i]->ArrLod[k]->path.c_str(), sizeof(char), tmpstrlen, file);
 			}
 		}
@@ -942,7 +1022,7 @@ void Green::Save(const char* path)
 		fwrite(&ArrModels[i]->BBMax.y, sizeof(float), 1, file);
 		fwrite(&ArrModels[i]->BBMax.z, sizeof(float), 1, file);
 
-		fwrite(&ArrModels[i]->AllCountGreen, sizeof(DWORD), 1, file);
+		fwrite(&ArrModels[i]->AllCountGreen, sizeof(uint32_t), 1, file);
 		fwrite(&ArrModels[i]->AllTrans, sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
 
 		Array<Segment*> queue;
@@ -982,9 +1062,9 @@ void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 	fwrite(&jmax.y, sizeof(float), 1, file);
 	fwrite(&jmax.z, sizeof(float), 1, file);
 
-	fwrite(&Split->CountAllGreen, sizeof(DWORD), 1, file);
+	fwrite(&Split->CountAllGreen, sizeof(uint32_t), 1, file);
 
-	fwrite(&Split->BFNonEnd, sizeof(bool), 1, file);
+	fwrite(&Split->BFNonEnd, sizeof(int8_t), 1, file);
 
 	if (Split->BFNonEnd)
 	{
@@ -994,13 +1074,13 @@ void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 			if (Split->Splits[i])
 			{
 				isexists = true;
-				fwrite(&isexists, sizeof(bool), 1, file);
+				fwrite(&isexists, sizeof(int8_t), 1, file);
 				queue->push_back(Split->Splits[i]);
 			}
 			else
 			{
 				isexists = false;
-				fwrite(&isexists, sizeof(bool), 1, file);
+				fwrite(&isexists, sizeof(int8_t), 1, file);
 			}
 
 			isexists = true;
@@ -1023,32 +1103,45 @@ void Green::Load(const char* path)
 	char tmppath[1024];
 	char tmpNameMask[1024];
 
-	long countmodel;
-	fread(&countmodel, sizeof(long), 1, file);
+	int32_t countmodel;
+	fread(&countmodel, sizeof(int32_t), 1, file);
 
 	for (long i = 0; i < countmodel; ++i)
 	{
 		tmpstr[0][0] = tmpstr[1][0] = tmpstr[2][0] = 0;
 		Model* tmpmodel = new Model();
-		fread(&tmpmodel->TypeGreen, sizeof(int), 1, file);
+		fread(&tmpmodel->TypeGreen, sizeof(int32_t), 1, file);
 
-		long tmpstrlen;// = strlen(ArrModels[i]->Name);
-		fread(&tmpstrlen, sizeof(long), 1, file);
+		int32_t tmpstrlen;// = strlen(ArrModels[i]->Name);
+		fread(&tmpstrlen, sizeof(int32_t), 1, file);
 		fread(tmpNameMask, sizeof(char), tmpstrlen, file);
 		tmpNameMask[tmpstrlen] = 0;
 		sprintf(tmpmodel->Name,"%s",tmpNameMask);
 
 		//tmpstrlen = ArrModels[i]->MaskName.length();
-		fread(&tmpstrlen, sizeof(long), 1, file);
+		fread(&tmpstrlen, sizeof(int32_t), 1, file);
 		fread(tmpNameMask, sizeof(char), tmpstrlen, file);
 		tmpNameMask[tmpstrlen] = 0;
 		tmpmodel->MaskName = tmpNameMask;
+
+		/*tmpstrlen = strlen(ArrModels[i]->NavigateMesh->pathname.c_str());
+		fwrite(&tmpstrlen, sizeof(long), 1, file);
+		fwrite(ArrModels[i]->NavigateMesh->pathname.c_str(), sizeof(char), tmpstrlen, file);*/
+
+		fread(&tmpstrlen, sizeof(int32_t), 1, file);
+		if (tmpstrlen > 0)
+		{
+			fread(tmpNameMask, sizeof(char), tmpstrlen, file);
+			tmpNameMask[tmpstrlen] = 0;
+			tmpmodel->NavigateMesh = new Model::NavMesh();
+			tmpmodel->NavigateMesh->pathname = tmpNameMask;
+		}
 
 		if (tmpmodel->TypeGreen == GREEN_TYPE_GRASS)
 		{
 			//sprintf(tmpstr[0], "%s", Green::StdPath);
 			//long tmpstrlen;
-			fread(&tmpstrlen, sizeof(long), 1, file);
+			fread(&tmpstrlen, sizeof(int32_t), 1, file);
 			fread(tmpstr[0], sizeof(char), tmpstrlen, file);
 			tmpstr[0][tmpstrlen] = 0;
 		}
@@ -1058,7 +1151,7 @@ void Green::Load(const char* path)
 			{
 				//sprintf(tmpstr[k], "%s", Green::StdPath);
 				//long tmpstrlen;
-				fread(&tmpstrlen, sizeof(long), 1, file);
+				fread(&tmpstrlen, sizeof(int32_t), 1, file);
 				fread(tmpstr[k], sizeof(char), tmpstrlen, file);
 				tmpstr[k][tmpstrlen] = 0;
 			}
@@ -1073,9 +1166,9 @@ void Green::Load(const char* path)
 		SGCore_LoadStaticModel(tmppath, &tmpmodel->ArrLod[0]->model);
 		tmpmodel->ArrLod[0]->path = tmpstr[0];
 		char tmppathtex[1024];
-		for (int k = 0; k < tmpmodel->ArrLod[0]->model.SubsetCount; ++k)
+		for (int k = 0; k < tmpmodel->ArrLod[0]->model->SubsetCount; ++k)
 		{
-			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model.ArrTextures[k]);
+			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model->ArrTextures[k]);
 			tmpmodel->ArrLod[0]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
 		}
 
@@ -1090,9 +1183,9 @@ void Green::Load(const char* path)
 				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[1]);
 				SGCore_LoadStaticModel(tmpstr[1], &tmpmodel->ArrLod[1]->model);
 
-				for (int k = 0; k < tmpmodel->ArrLod[1]->model.SubsetCount; ++k)
+				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model.ArrTextures[k]);
+					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
 					tmpmodel->ArrLod[1]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
 				}
 			}
@@ -1111,9 +1204,9 @@ void Green::Load(const char* path)
 				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[2]);
 				SGCore_LoadStaticModel(tmppath, &tmpmodel->ArrLod[2]->model);
 
-				for (int k = 0; k < tmpmodel->ArrLod[2]->model.SubsetCount; ++k)
+				for (int k = 0; k < tmpmodel->ArrLod[2]->model->SubsetCount; ++k)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model.ArrTextures[k]);
+					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
 					tmpmodel->ArrLod[2]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
 				}
 			}
@@ -1127,7 +1220,7 @@ void Green::Load(const char* path)
 		fread(&tmpmodel->BBMax.y, sizeof(float), 1, file);
 		fread(&tmpmodel->BBMax.z, sizeof(float), 1, file);
 
-		fread(&tmpmodel->AllCountGreen, sizeof(DWORD), 1, file);
+		fread(&tmpmodel->AllCountGreen, sizeof(uint32_t), 1, file);
 		tmpmodel->AllTrans = new DataVertex[tmpmodel->AllCountGreen];
 		fread(tmpmodel->AllTrans, sizeof(DataVertex), tmpmodel->AllCountGreen, file);
 
@@ -1152,6 +1245,9 @@ void Green::Load(const char* path)
 
 		ArrModels.push_back(tmpmodel);
 		AddModelInArrCom(ArrModels.size() - 1);
+
+		if (tmpmodel->NavigateMesh)
+			SetGreenNav(ArrModels.size() - 1, tmpmodel->NavigateMesh->pathname.c_str());
 		/*InfoRenderSegments* tmpirs = new InfoRenderSegments();
 		tmpirs->Count = tmpmodel->SplitsIDsRender;
 		tmpirs->Arr = new Segment*[tmpmodel->SplitsIDsRender];
@@ -1190,9 +1286,9 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 	(*Split)->BoundVolumeP = SGCore_CrBound();
 	(*Split)->BoundVolumeP->SetMinMax(&jmin, &jmax);
 
-	fread(&(*Split)->CountAllGreen, sizeof(DWORD), 1, file);
+	fread(&(*Split)->CountAllGreen, sizeof(uint32_t), 1, file);
 
-	fread(&(*Split)->BFNonEnd, sizeof(bool), 1, file);
+	fread(&(*Split)->BFNonEnd, sizeof(int8_t), 1, file);
 
 	if ((*Split)->BFNonEnd)
 	{
@@ -1200,7 +1296,7 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 
 		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
 		{
-			fread(&isexists, sizeof(bool), 1, file);
+			fread(&isexists, sizeof(int8_t), 1, file);
 			if (isexists)
 				queue->push_back(&((*Split)->Splits[i]));
 
@@ -1217,19 +1313,34 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 
 long Green::AddArrForCom()
 {
-	IRSData ttmpdata;
+	IRSData* ttmpdata = new IRSData();
 	for (long i = 0; i < ArrModels.size(); ++i)
 	{
 		InfoRenderSegments* tmpirs = new InfoRenderSegments();
 		tmpirs->Count = ArrModels[i]->SplitsIDsRender;
 		tmpirs->Arr = new Segment*[ArrModels[i]->SplitsIDsRender];
 		tmpirs->CountCom = 0;
-		ttmpdata.arr.push_back(tmpirs);
+		ttmpdata->arr.push_back(tmpirs);
 	}
 
-	ArrComFor.push_back(ttmpdata);
+	long id_arr = -1;
+	for (long i = 0; i < ArrComFor.size(); ++i)
+	{
+		if (ArrComFor[i] == 0)
+		{
+			ArrComFor[i] = ttmpdata;
+			id_arr = i;
+			break;
+		}
+	}
 
-	return ArrComFor.size() - 1;
+	if (id_arr == -1)
+	{
+		ArrComFor.push_back(ttmpdata);
+		id_arr = ArrComFor.size() - 1;
+	}
+
+	return id_arr;
 }
 
 void Green::DelArrForCom(long id_arr)
@@ -1238,10 +1349,10 @@ void Green::DelArrForCom(long id_arr)
 
 	for (long i = 0; i < ArrModels.size(); ++i)
 	{
-		mem_delete_a(ArrComFor[id_arr].arr[i]->Arr);
+		mem_delete(ArrComFor[id_arr]);
 	}
 
-	ArrComFor.erase(id_arr);
+	//ArrComFor.erase(id_arr);
 }
 
 void Green::AddModelInArrCom(long id_model)
@@ -1254,7 +1365,7 @@ void Green::AddModelInArrCom(long id_model)
 		tmpirs->Count = ArrModels[id_model]->SplitsIDsRender;
 		tmpirs->Arr = new Segment*[ArrModels[id_model]->SplitsIDsRender];
 		tmpirs->CountCom = 0;
-		ArrComFor[i].arr.push_back(tmpirs);
+		ArrComFor[i]->arr.push_back(tmpirs);
 	}
 }
 
@@ -1264,8 +1375,8 @@ void Green::DelModelInArrCom(long id_model)
 
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
-		mem_delete_a(ArrComFor[i].arr[id_model]->Arr);
-		ArrComFor[i].arr.erase(id_model);
+		mem_delete_a(ArrComFor[i]->arr[id_model]->Arr);
+		ArrComFor[i]->arr.erase(id_model);
 	}
 }
 
@@ -1328,4 +1439,141 @@ inline const char* Green::GetGreenMask(long id)
 		return ArrModels[id]->MaskName.c_str();
 
 	return 0;
+}
+
+inline const char* Green::GetGreenNav(long id)
+{
+	if (id < ArrModels.size() && ArrModels[id]->NavigateMesh)
+		return ArrModels[id]->NavigateMesh->pathname.c_str();
+
+	return 0;
+}
+
+void Green::DelGreen(long id)
+{
+	if (id >= 0 && id < ArrModels.size())
+	{
+		DelModelInArrCom(id);
+		mem_delete(ArrModels[id]);
+		ArrModels.erase(id);
+	}
+}
+
+void Green::Clear()
+{
+	ArrComFor.clear();
+
+	for (long i = 0; i < ArrModels.size(); ++i)
+	{
+		mem_delete(ArrModels[i]);
+		DelModelInArrCom(0);
+	}
+
+	/*ArrModels.clear();
+
+	IRSData tmparr;
+	ArrComFor.push_back(tmparr);
+	IRSData tmparr2;
+	ArrComFor.push_back(tmparr2);*/
+}
+
+void Green::SetGreenLod(long id, int lod, const char* pathname)
+{
+	if (!(lod >= 0 && lod < GREEN_COUNT_LOD && id >= 0 && id < ArrModels.size()))
+		return;
+
+	bool isunic = true;
+
+	for (int i = 0; i < GREEN_COUNT_LOD; ++i)
+	{
+		if (ArrModels[id]->ArrLod[i] == ArrModels[id]->ArrLod[lod])
+			isunic = false;
+	}
+
+	if (isunic)
+		mem_delete(ArrModels[id]->ArrLod[lod]);
+
+	char tmppath[1024];
+	ArrModels[id]->ArrLod[lod] = new Lod();
+	ArrModels[id]->ArrLod[lod]->path = pathname;
+	sprintf(tmppath, "%s%s", Green::StdPath, pathname);
+	SGCore_LoadStaticModel(tmppath, &ArrModels[id]->ArrLod[lod]->model);
+
+	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->SubsetCount; ++k)
+	{
+		sprintf(tmppath, "%s.dds", ArrModels[id]->ArrLod[lod]->model->ArrTextures[k]);
+		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_LoadTexAddName(tmppath);
+	}
+}
+
+void Green::SetGreenNav(int id, const char* pathname)
+{
+	if (!(id >= 0 && id < ArrModels.size()))
+		return;
+
+	char tmpstr[1024];
+	sprintf(tmpstr, "%s", pathname);
+
+	mem_delete(ArrModels[id]->NavigateMesh);
+	ArrModels[id]->NavigateMesh = new Model::NavMesh();
+
+	char tmppath[1024];
+	sprintf(tmppath, "%s%s", Green::StdPath, tmpstr);
+	ArrModels[id]->NavigateMesh->pathname = tmpstr;
+
+	ISXDataStaticModel* nmesh;
+	SGCore_LoadStaticModel(tmppath, &nmesh);
+	ArrModels[id]->NavigateMesh->count_vertex = nmesh->AllVertexCount;
+	ArrModels[id]->NavigateMesh->count_index = nmesh->AllIndexCount;
+	ArrModels[id]->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
+	for (long i = 0; i < nmesh->AllVertexCount; ++i)
+	{
+		ArrModels[id]->NavigateMesh->arr_vertex[i] = nmesh->ArrVertBuf[i].Pos;
+	}
+
+	ArrModels[id]->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
+	DWORD prebias = 0;
+	long tmp_countindex = 0;
+	for (long i = 0; i < nmesh->SubsetCount; ++i)
+	{
+		for (long k = 0; k < nmesh->IndexCount[i]; ++k)
+		{
+			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = nmesh->ArrIndBuf[nmesh->StartIndex[i] + k] + prebias;
+			++tmp_countindex;
+		}
+		prebias += nmesh->IndexCount[i];
+	}
+
+	mem_release_del(nmesh);
+}
+
+void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
+{
+	(*arr_count_green) = ArrModels.size();
+	(*arr_vertex) = new float3_t*[ArrModels.size()];
+	(*arr_count_vertex) = new int32_t[ArrModels.size()];
+
+	(*arr_index) = new uint32_t*[ArrModels.size()];
+	(*arr_count_index) = new int32_t[ArrModels.size()];
+
+	(*arr_transform) = new float4x4*[ArrModels.size()];
+	(*arr_count_transform) = new int32_t[ArrModels.size()];
+
+	for (long i = 0; i < ArrModels.size(); ++i)
+	{
+		(*arr_vertex)[i] = new float3_t[ArrModels[i]->NavigateMesh->count_vertex];
+		memcpy((*arr_vertex)[i], ArrModels[i]->NavigateMesh->arr_vertex, sizeof(float3_t) * ArrModels[i]->NavigateMesh->count_vertex);
+		(*arr_count_vertex)[i] = ArrModels[i]->NavigateMesh->count_vertex;
+
+		(*arr_index)[i] = new uint32_t[ArrModels[i]->NavigateMesh->count_index];
+		memcpy((*arr_index)[i], ArrModels[i]->NavigateMesh->arr_index, sizeof(uint32_t)* ArrModels[i]->NavigateMesh->count_index);
+		(*arr_count_index)[i] = ArrModels[i]->NavigateMesh->count_index;
+
+		(*arr_transform)[i] = new float4x4[ArrModels[i]->AllCountGreen];
+		(*arr_count_transform)[i] = ArrModels[i]->AllCountGreen;
+		for (long k = 0; k < ArrModels[i]->AllCountGreen; ++k)
+		{
+			(*arr_transform)[i][k] = SMMatrixScaling(float3(ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x)) * SMMatrixTranslation(ArrModels[i]->AllTrans[k].Position);
+		}
+	}
 }

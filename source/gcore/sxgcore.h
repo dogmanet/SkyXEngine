@@ -6,6 +6,7 @@
 
 #include <d3d9.h>
 #include <d3dx9.h>
+#define SM_D3D_CONVERSIONS
 #include <sxmath.h>
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "DxErr9.lib")
@@ -18,20 +19,24 @@
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
-SX_LIB_API long SGCore_0GetVersion(); //возвращает версию ядра
-SX_LIB_API void SGCore_Dbg_Set(report_func rf); //возвращает версию ядра
+SX_LIB_API long SGCore_0GetVersion();
+SX_LIB_API void SGCore_Dbg_Set(report_func rf);
 SX_LIB_API void SGCore_0Create(const char* name, HWND hwnd, int width,int heigth,bool windowed, DWORD create_device_flags, bool is_unic = true);
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();
 
+//вывод отладочного сообщения в окно рендера
 SX_LIB_API void SGCore_DbgMsg(const char* format, ...);
 
-SX_LIB_API void SGCore_OnLostDevice();
-SX_LIB_API int SGCore_OnDeviceReset(int width,int heigth,bool windewed);
-SX_LIB_API void SGCore_OnResetDevice();
+SX_LIB_API void SGCore_OnLostDevice();	//вызывать при потере устройства
+SX_LIB_API int SGCore_OnDeviceReset(int width,int heigth,bool windewed);	//вызывать при попытке сброса устройства
+SX_LIB_API void SGCore_OnResetDevice();	//вызывать при сбросе устроства
+
+//отрисовка full screen quad
+SX_LIB_API void SGCore_ScreenQuadDraw();
 
 //шейдеры
 SX_LIB_API DWORD SGCore_ShaderLoad(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro = 0);
-SX_LIB_API void SGCore_ShaderUpdateN(int type_shader, const char* name, D3DXMACRO macro[] = 0);
+SX_LIB_API void	SGCore_ShaderUpdateN(int type_shader, const char* name, D3DXMACRO macro[] = 0);
 SX_LIB_API void SGCore_ShaderUpdate(int type_shader, DWORD id, D3DXMACRO macro[] = 0);
 
 SX_LIB_API void SGCore_ShaderSetStdPath(const char* path);
@@ -64,13 +69,13 @@ SX_LIB_API void SGCore_ShaderGetName(int type_shader, DWORD id, char* name);
 SX_LIB_API void SGCore_LoadTexStdPath(const char* path);
 SX_LIB_API DWORD SGCore_LoadTexAddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
 SX_LIB_API DWORD SGCore_LoadTexGetID(const char* name);		//получить id по имени
-SX_LIB_API void SGCore_LoadTexGetName(DWORD id, char* name);	//получить имя по id
+SX_LIB_API void SGCore_LoadTexGetName(DWORD id, char* name);//получить имя по id
 
 SX_LIB_API DWORD SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex);	//создать место для текстуры tex
 SX_LIB_API DWORD SGCore_LoadTexUpdateN(const char* name);		//перезагрузить текстуру name (поставить в очередь)
 SX_LIB_API void SGCore_LoadTexUpdate(DWORD id);
 
-SX_LIB_API IDirect3DTexture9*SGCore_GetTex(DWORD id);
+SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(DWORD id);
 
 SX_LIB_API void SGCore_LoadTexLoadTextures();	//загрузка всех текстур поставленных в очередь
 
@@ -99,11 +104,11 @@ SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD va
 
 ///////////
 
-struct DataStaticModel
+struct ISXDataStaticModel : public IBaseObject
 {
-	/*DataStaticModel();
-	DataStaticModel(DataStaticModel& dsm);
-	~DataStaticModel();*/
+	virtual ~ISXDataStaticModel(){};
+
+	virtual ISXDataStaticModel* GetCopy()=0;
 	
 	IDirect3DVertexBuffer9* VertexBuffer;
 	IDirect3DIndexBuffer9* IndexBuffer;
@@ -119,8 +124,9 @@ struct DataStaticModel
 	UINT AllVertexCount;
 };
 
-SX_LIB_API void SGCore_LoadStaticModel(const char* file, DataStaticModel* data);
-SX_LIB_API void SGCore_SaveStaticModel(const char* file, DataStaticModel* data);
+SX_LIB_API ISXDataStaticModel* SGCore_CrDSModel();
+SX_LIB_API void SGCore_LoadStaticModel(const char* file, ISXDataStaticModel** data);
+SX_LIB_API void SGCore_SaveStaticModel(const char* file, ISXDataStaticModel** data);
 
 ///////////
 
@@ -200,8 +206,8 @@ SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXB
 SX_LIB_API void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert);
 SX_LIB_API void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh);
 
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetWord(WORD* ib, WORD numFaces, WORD numVerts);
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetDword(DWORD* ib, DWORD numFaces, DWORD numVerts);
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts);
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts);
 
 SX_LIB_API bool SGCore_0InPos2D(float3* min, float3* max, float3* pos);
 SX_LIB_API bool SGCore_0InPosAbs2D(float3* min, float3* max, float3* pos);
@@ -214,7 +220,7 @@ SX_LIB_API int SGCore_0CountPosPoints3D(float3* min, float3* max, float3* p1, fl
 SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
 SX_LIB_API bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
 SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr);
-SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound* bound_arr);
+SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr);
 
 ///////////////
 
@@ -254,7 +260,7 @@ public:
 	virtual bool SphereInFrustumAbs(const float3 *point, float radius) = 0;
 	virtual bool BoxInFrustum(float3* min, float3* max) = 0;
 
-protected:
+//protected:
 	SXFrustumPlane ArrFrustumPlane[6];
 
 	float3	Point[8];
@@ -313,7 +319,7 @@ protected:
 	float AngleUpDown, AngleRightLeft, AngleRoll;
 };
 
- ISXCamera* SGCore_CrCamera();
+SX_LIB_API ISXCamera* SGCore_CrCamera();
 
 ////////
 /*

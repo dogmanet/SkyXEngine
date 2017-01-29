@@ -2,6 +2,8 @@
 #ifndef __string_api
 #define __string_api
 
+#define def_str_validate(str) (str && str[0]!=0 && str[0]!='0')
+
 inline bool StrValidate(const char* str)
 {
 	if (str && str[0] != 0 && str[0] != '0')

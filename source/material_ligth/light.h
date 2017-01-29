@@ -1,153 +1,125 @@
 
+#ifndef __light_h
+#define __light_h
 
-class Light : public Bound
+#define LIGHTS_POS_G_MAX 1000
+
+#include <material_ligth\\shadow.cpp>
+
+class Lights
 {
 public:
-	Light();
-	Light(Light& ll);
-	~Light();
+
+	Lights();
+	~Lights();
+
+	long CreateCopy(long id);
 
 	void OnLostDevice();
 	void OnResetDevice();
 
-	SX_ALIGNED_OP_MEM
+	inline long GetCountLights();
 
-	void CreatePoint(float3* center,float radius,bool isglobal,bool is_shadowed,const char* bound_volume);
-	void CreateDirection(float3* pos,float3* dir,float top_radius,float angle,float height,bool is_shadow,const char* bound_volume);
-	void Render();
+	long CreatePoint(float4* center, float3* color, bool isglobal, bool is_shadowed, const char* bound_volume);
+	long CreateDirection(float4* pos, float3* color, float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume);
+	void DeleteLight(long id);
 
-	void SetShadowCube();
-	void SetShadowSM();
+	void Render(long id,DWORD timeDelta);
 
-	inline void SetNullUpdateShadow();
+	char* GetLightName(long id);
+	void SetLightName(long id, const char* name);
 
-	void RenderSource(bool is_material);
+	void GetLightColor(long id, float3* vec);
+	void SetLightColor(long id, float3* vec);
 
-	void LoadSource(const char* path);
+	void GetLightPosW(long id, float4* vec);
+	void GetLightPos(long id, float3* vec);
+	void SetLightPos(long id, float3* vec);
 
-	void ChangeVolume(const char* path);
-	void ChangeAngle(float angle,bool is_create);
-	void ChangeTopRadius(float top_radius);
-	void ChangeRadiusHeight(float radius_height,bool is_create);
-	void ChangeShadow(bool is_shadow);
+	void GetLightRot(long id, float3* vec);
+	void SetLightRot(long id, float3* vec);
+	void GetLightDir(long id, float3* vec);
+	void SetLightDir(long id, float3* vec);
 
-	inline void SetEnable(bool enable){IsEnable = enable;SetNullUpdateShadow();};
-	inline bool GetEnable(){return IsEnable;};
+	void ChangeAngle(long id, float angle, bool is_create);
+	void ChangeTopRadius(long id, float top_radius);
+	void ChangeRadiusHeight(long id, float radius_height, bool is_create);
+	void ChangeShadow(long id, bool is_shadow);
+	void SetBlurPixel(long id, float blur_pixel);
+	float GetBlurPixel(long id);
+	void SetShadowLocalNear(long id, float slnear);
+	float GetShadowLocalNear(long id);
+	void SetShadowLocalFar(long id, float slfar);
+	float GetShadowLocalFar(long id);
+	void SetEnableCubeEdge(long id, int edge, bool enable);
+	bool GetEnableCubeEdge(long id, int edge);
 
-	inline void SetEnableCubeEdge(int edge,bool enable);
-	inline bool GetEnableCubeEdge(int edge);
+	bool ComVisibleForFrustum(long id, ISXFrustum* frustum);
+	bool GetVisibleForFrustum(long id, ISXFrustum* frustum);
+	float ComDistFor(long id, float3* vec);
+	float GetDistFor(long id);
+	void ComVisibleFrustumDistFor(ISXFrustum* frustum, float3* vec);
 
-	bool GetVisibleForFrustum(Core::ControllMoving::Frustum* frustum);
-	inline bool GetVisible(){return IsVisible;};
-	inline void SetVisible(bool is_visible){IsVisible = is_visible;};
+	bool IsEnable(long id);
+	void SetEnable(long id,bool val);
+	bool IsShadow(long id);
+	int GetType(long id);
+	IDirect3DTexture9* GetShadow(long id);
 
-	inline void SetBias(float bias);
-	inline float GetBias();
+	void InRenderBegin(long id);
+	void InRenderEnd(long id);
+	void InRenderPre(long id, int cube);
+	void InRenderPost(long id, int cube);
+	ISXFrustum* GetFrustum(long id);
+	ISXFrustum* GetFrustumG(long id,int split);
+	void UpdateG(long id, int split,float3* pos, float3* dir);
 
-	inline void SetShadowLocalFar(float slfar);
-	inline float GetShadowLocalFar();
+	void GenShadow(long id);
+	void SoftShadow(long id, bool randomsam, float size);
 
-	inline void SetBlurPixel(float blur_pixel);
-	inline float GetBlurPixel();
+	struct Light
+	{
+		Light();
+		~Light();
 
-	inline void SetRenderGreen(bool is_render_green);
-	inline bool GetRenderGreen();
+		SX_ALIGNED_OP_MEM
 
-	void GetWVP(float4x4* wvp);
-	IDirect3DTexture9* GetShadow();
+		int TypeLight;	
+		char Name[LIGHTS_MAX_LEN_NAME];
 
-	//если источник глобальный, то x,y координаты это углы (в градусах) вращения относительно мира, ибо источник может быть только на отдалении
-	//иначе посылаются координаты
-	inline void GetPosition(float4* pos);		//для использования пользователю
-	inline void GetPositionSys(float4* pos);	//используется движковыми элементами
-	inline void SetPosition(float4* pos);
+		bool IsVisible;
+		bool IsEnable;
+		bool IsShadow;
+		bool IsGlobal;
 
-	inline void GetRotation(float3* rot);
-	inline void SetRotation(float3* rot);
+		ID3DXMesh* Mesh;
 
-	inline void GetDirection(float3* dir);
-	inline void SetDirection(float3* dir);
+		float4 Position; //xyz, w - power
+		float GAngleX, GAngleY; //sun pos
+		float3 Direction;
+		float3 Rotation;
+		float3 Color;
 
-	inline void SetRays(const char* model_rays);
+		float2_t TopBottomRadius;
+		float Angle;
 
-	PSSM* ShadowPSSM;
-	ShadowMapTech* ShadowSM;
-	ShadowMapCubeTech* ShadowCube;
+		ISXBound* BoundVolume;
+		float4x4 WorldMat;
+		float4x4 MatRot;
 
-	int CountRenderInSec;
-	int CountRenderShadowInSec;
-	float4 Color;
+		bool IsVisibleFor;
+		float DistFor;
 
-	float2_t TopBottomRadius;
-	float Angle;
-	int TypeLight;
-	char Name[256];
-	char PathVolume[1024];
-	char PathRays[1024];
-	bool IsShadow;
-	bool IsGlobal;
-	ID3DXMesh* Mesh;
-	Model* MeshRays;
-	float4x4 WorldMat;
-	float DistForCamera;
-	Model* SourceLight;
-	DWORD IDEffect;
+		PSSM* ShadowPSSM;
+		ShadowMapTech* ShadowSM;
+		ShadowMapCubeTech* ShadowCube;
+
+		//char PathNameBoundVol[1024];
+	};
 
 protected:
-
-	float PosLigthMaxValue;
-	float AngleY;
-	float AngleX;
-
-	float4x4 MatRot;
-
-	bool IsTransformation;
-	bool IsVisible;
-	
-	bool IsEnable;
-	float4 Position;
-	float3 Direction;
-	float3 Rotation;
-
-	float3 Center2;
+	inline long AddLight(Light* obj);
+	Array<Light*> ArrLights;
 };
 
-
-class ManagerLight
-{
-public:
-	ManagerLight();
-	~ManagerLight();
-	void AddPoint(float3* center,float4* color,float radius,bool isglobal,bool is_shadowed,const char* bound_volume=0);
-	void AddDirection(float3* pos,float3* dir,float4* color,float top_radius,float angle,float height,bool is_shadow,const char* bound_volume=0);
-	void Render();
-	void RenderSource(bool is_material,bool is_enable);
-	void RenderSelected();
-
-	bool TraceBeam(const float3 & start, const float3 & dir, float3 * _res,DWORD* idlight);
-
-	void OnLostDevice();
-	void OnResetDevice();
-
-	void Delete(DWORD id);
-
-	inline void SetEnable(DWORD id,bool enable);
-	inline bool GetEnable(DWORD id);
-
-	inline void SetSelected(DWORD id);
-	inline DWORD GetSelected();
-	inline DWORD GetCount();
-
-	inline void SetName(DWORD id,const char* text);
-	inline void GetName(DWORD id,char* text);
-
-	inline void SetVolume(DWORD id,const char* text);
-	inline void GetVolume(DWORD id,char* text);
-
-	inline DWORD GetType(DWORD id);
-
-
-//private:
-	DWORD NumSelected;	//id выделенного света
-	Array<Light*> Arr;
-};
+#endif

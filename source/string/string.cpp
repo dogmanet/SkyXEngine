@@ -24,6 +24,8 @@
 #	pragma GCC diagnostic ignored "-Wsign-compare"
 #endif
 
+#pragma once
+
 //////////////////////
 
 const char * String::c_str() const

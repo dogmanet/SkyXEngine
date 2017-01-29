@@ -3,6 +3,7 @@
 class PSSM
 {
 public:
+
 	PSSM();
 	~PSSM();
 
@@ -24,17 +25,6 @@ public:
 	void SoftShadow(bool randomsam,float size);
 	IDirect3DTexture9* GetShadow();
 
-	/*//управление позицией глобального источника света
-	//{{
-	inline void SetAngleX(float angle){AngleX=angle;};
-	inline void SetAngleY(float angle){AngleY=angle;};
-
-	inline float GetAngleX(){return AngleX;};
-	inline float GetAngleY(){return AngleY;};
-
-	void GetPosition(float3* pos){*pos = Position;};
-	//}}*/
-
 	inline void SetPosition(float3* pos){Position = *pos;};
 	inline void GetPosition(float3* pos){*pos = Position;};
 
@@ -44,7 +34,7 @@ public:
 	inline void Set4Or3Splits(bool is4){Generating4Slits = is4;};
 	inline bool Get4Or3Splits(){return Generating4Slits;};
 
-	Core::ControllMoving::Frustum* Frustums[5];
+	ISXFrustum* Frustums[5];
 
 	int IsUpdate[5];
 	float2 NearFar[5];
@@ -53,10 +43,6 @@ public:
 protected:
 
 	float3 Position;
-
-	/*float PosLigthMaxValue;
-	float AngleY;
-	float AngleX;*/
 
 	void Flickering(float4x4 *matLVP,float size_x,float size_y);
 
@@ -107,7 +93,7 @@ public:
 	inline float GetBias();
 
 	inline void SetBlurPixel(float blur_pixel);
-	inline bool GetBlurPixel();
+	inline float GetBlurPixel();
 
 	void Begin();
 	void End();
@@ -128,7 +114,13 @@ public:
 	inline void SetFar(float sfar);
 	inline float GetFar();
 
-	Core::ControllMoving::Frustum* Frustum;
+	inline void SetNear(float snear);
+	inline float GetNear();
+
+	inline void SetAngle(float sangle);
+	inline float GetAngle();
+
+	ISXFrustum* Frustum;
 
 	float4x4 View;
 	float4x4 Proj;
@@ -195,6 +187,12 @@ public:
 
 	void SetNearFar(float2* nf);
 	void GetNearFar(float2* nf);
+
+	void SetNear(float val);
+	float GetNear();
+
+	void SetFar(float val);
+	float GetFar();
 	
 	void Begin();
 	void Pre(int cube);
@@ -205,7 +203,7 @@ public:
 	void SoftShadow(bool randomsam,float size);
 	IDirect3DTexture9* GetShadow();
 
-	Core::ControllMoving::Frustum* Frustum;
+	ISXFrustum* Frustum;
 	bool IsRenderGreen;
 
 private:

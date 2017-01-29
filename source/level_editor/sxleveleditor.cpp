@@ -1,4 +1,5 @@
 
+#define _CRT_SECURE_NO_WARNINGS
 #pragma once
 
 #define SX_EXE
@@ -29,13 +30,18 @@
 #pragma comment(lib, "sxsound.lib")
 #endif
 #include <sound\\sxsound.h>
-/*
+
+#define SXGCORE_IN_SOURCE
+#if !defined(SXGCORE_IN_SOURCE)
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
-#endif*/
+#endif
+#include <gcore\\sxgcore.h>
+#else
 #include <gcore\\sxgcore.cpp>
+#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
@@ -54,14 +60,19 @@
 */
 #include <SXGUIWinApi\\sxgui.h>
 
+IDirect3DVertexBuffer9* vb;
+IDirect3DIndexBuffer9* ib;
+long count_vertex;
+long count_index;
+
 #include <common\\string_api.cpp>
 
-#include <geom\\static_geom.h>
-#include <geom\\green.h>
+#include <geom\\sxgeom.cpp>
+#include <material_ligth\\material_ligth.cpp>
 
-#include <geom\\static_geom.cpp>
 #include <common\\gdata.h>
-#include <geom\\green.cpp>
+
+IDirect3DTexture9* g_pTexAdaptedLuminanceLast, *g_pTexAdaptedLuminanceCur;
 
 #include <common\\gdata.cpp>
 
@@ -124,41 +135,172 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::Pathes::InitAllPathes();
 
 	SSInput_0Create("SXLevelEditor input", SXLevelEditor::JobWindow->GetHWND(), true);
+	SSInput_Dbg_Set(printflog);
 	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
 	SGCore_Dbg_Set(printflog);
-	GData::MCamProj = SMMatrixPerspectiveFovLH(D3DX_PI * 0.25f, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
-	GData::MLightProj = SMMatrixPerspectiveFovLH(D3DX_PI * 0.25f, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, 10000);
+	SGCore_LoadTexStdPath(GData::Pathes::Textures);
+	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
+	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
+	SGeom_Dbg_Set(printflog);
 	
 
-	StaticGeom::DXDevice = SGCore_GetDXDevice();
-	Green::DXDevice = SGCore_GetDXDevice();
-	sprintf(Green::StdPath, "%s", GData::Pathes::Meshes);
-	sprintf(StaticGeom::StdPath, "%s", GData::Pathes::Meshes);
-	StaticGeom::DistForLod = 100;
-
-	GData::Geometry = new StaticGeom();
-	GData::StaticGreen = new Green();
-
-	Green::BeginEndLessening = 30;
-	Green::DistLods = float2_t(50, 100);
-	Green::CurrentFreqGrass = 100;
+	GData::MCamProj = SMMatrixPerspectiveFovLH(D3DX_PI * 0.25f, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
+	GData::MLightProj = SMMatrixPerspectiveFovLH(D3DX_PI * 0.25f, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, 100000);
+	
+	
 	
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	GData::ObjCamera = SGCore_CrCamera();
 
+	
+	//GData::IDShaderVSRenderGreenTree = SGCore_ShaderLoad(0, "mtrl_base_green_tree.vs", "mtrl_base_green_tree.vs", false);
+	//GData::IDShaderVSRenderGreenGrass = SGCore_ShaderLoad(0, "mtrl_base_green_grass.vs", "mtrl_base_green_grass.vs", false);
+	//GData::IDShaderPSRenderGreenTree = SGCore_ShaderLoad(1, "mtrl_base_green.ps", "mtrl_base_green.ps", false);
+
+	//цвет (текстуры)
+	GData::IDSRenderTargets::ColorScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_color", 1);
+	//номрали + микрорельеф
+	GData::IDSRenderTargets::NormalScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal", 1);
+	//параметры освещения
+	GData::IDSRenderTargets::ParamsScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", 1);
+
+	GData::IDSRenderTargets::DepthScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth", 1);
 
 
-	GData::Geometry->AddModel("rinok\\rinok\\land.dse", 0, "land.dse");
+	GData::IDSRenderTargets::LightAmbient = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient", 1);
+	GData::IDSRenderTargets::LightSpecDiff = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_specdiff", 1);
+
+	for (int i = 0; i < 4; i++)
+	{
+		int iSampleLen = 1 << (2 * i);
+
+		GData::IDSRenderTargets::ToneMaps[i] = SGCore_RTAdd(iSampleLen, iSampleLen, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "", 0);
+
+	}
+
+	GData::IDSRenderTargets::AdaptLumCurr = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "", 0);
+	GData::IDSRenderTargets::AdaptLumLast = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "", 0);
+
+	g_pTexAdaptedLuminanceLast = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumLast);
+	g_pTexAdaptedLuminanceCur = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumCurr);
+
+	//GData::IDSRenderTargets::LightSpecDiffD2 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A32B32G32R32F, D3DPOOL_DEFAULT, "ds_specdiffD2", 0.5);
+	GData::DXDevice->CreateOffscreenPlainSurface(1, 1, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &GData::ComLightSurf1x1, 0);
+
+	//DXDevice->CreateRenderTarget(1, 1, D3DFMT_A8R8G8B8, 0, 0, 0, &GData::ComLightSurf1x1, 0);
+	//GData::IDSRenderTargets::LigthCom_1x1 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom_1x1", 1);
+	GData::IDSRenderTargets::LigthCom = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	GData::IDSRenderTargets::LigthCom2 = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+
+	GData::IDSRenderTargets::LigthComScaled = SGCore_RTAdd(GData::WinSize.x*0.25f, GData::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	//GData::IDSRenderTargets::LigthComD2 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD2", 0.5);
+	//GData::IDSRenderTargets::LigthComD4 = SGCore_RTAdd(GData::WinSize.x*0.25f, GData::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD4", 0.25);
+	//GData::IDSRenderTargets::LigthComD8 = SGCore_RTAdd(GData::WinSize.x*0.125f, GData::WinSize.y*0.125f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD8", 0.125);
+
+	GData::IDsShaders::VS::FreeGeometry = SGCore_ShaderLoad(0, "mtrl_base.vs", "mtrl_base", false);
+	GData::IDsShaders::PS::FreeGeometry = SGCore_ShaderLoad(1, "mtrl_base.ps", "mtrl_base", false);
+
+	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(0, "pp_quad_render.vs", "pp_quad_render", false);
+	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(1, "pp_quad_render.ps", "pp_quad_render", false);
+
+	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(0, "pp_quad_render_res_pos.vs", "pp_quad_render_res_pos", false);
+	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(1, "comlighting.ps", "comlighting_nonshadow", false);
+	GData::IDsShaders::PS::BlendAmbientSpecDiffcolor = SGCore_ShaderLoad(1, "blendambientspecdiffcolor.ps", "blendambientspecdiffcolor", false);
+
+	GData::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(1, "pp_calc_adapted_lum.ps", "pp_calc_adapted_lum", false);
+	GData::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(1, "pp_sample_lum_init.ps", "pp_sample_lum_init", false);
+	GData::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(1, "pp_sample_lum_iterative.ps", "pp_sample_lum_iterative", false);
+	GData::IDsShaders::PS::SampleLumFinal = SGCore_ShaderLoad(1, "pp_sample_lum_final.ps", "pp_sample_lum_final", false);
+	GData::IDsShaders::PS::FinalHRDL = SGCore_ShaderLoad(1, "pp_final_hrdl.ps", "pp_final_hrdl", false);
+
+
+
+
+
+	SML_0Create("sxml", SGCore_GetDXDevice(), &GData::WinSize, GData::ProjFov, GData::IDSRenderTargets::DepthScene, 0, 0, false);
+	SML_Dbg_Set(printflog);
+	//SML_LigthsCreatePoint(&float4(10, 40, 10, 100), &float3(0, 1, 0), false, true, 0);
+	SML_LigthsCreatePoint(&float4(45, 45, 0, 1000000), &float3(1, 0, 0), true, true);
+
+	//SML_LigthsCreatePoint(&float4(40, 50, 40, 300), &float3(0, 0, 1), false, true, 0);
+
+	//SML_LigthsCreateDirection(&float4(10, 30, 10, 200), &float3(0, 0, 1), &float3(-0.84, -0.55, -0.01), 0.1, 1.0, true, 0);
+
+	/*GData::Geometry->AddModel("rinok\\rinok\\land.dse", 0, "land.dse");
 	GData::Geometry->AddModel("rinok\\rinok\\cv04.dse", 0, "cv04.dse");
-	GData::Geometry->AddModel("rinok\\rinok\\rinok\\zab.dse", 0, "zab.dse");
+	GData::Geometry->AddModel("rinok\\rinok\\rinok\\zab.dse", 0, "zab.dse");*/
+
+	/*GData::StaticGreen->Init(GData::Geometry, "tree.dse",
+		"trava_mask.dds",
+		1.f,
+		"green\\tree.dse",
+		"green\\tree.dse",
+		"green\\tree.dse",
+		"green\\tree.dse");*/
+
+	/*float3_t** arr_vertex;
+	long* arr_count_vertex;
+	DWORD** arr_index;
+	long* arr_count_index;
+	long count_model;
+	GData::StaticGreen->GetNavMeshAndTransform(&arr_vertex, &arr_count_vertex, &arr_index, &arr_count_index, &count_model);
+
+	int curr_model = 2;
+	count_vertex = arr_count_vertex[curr_model];
+	count_index = arr_count_index[curr_model];
+
+	float3_t* pData;
+	DXDevice->CreateVertexBuffer(sizeof(float3_t)* count_vertex, NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+	vb->Lock(0, 0, (void**)&pData, 0);
+	memcpy(pData, arr_vertex[curr_model], sizeof(float3_t)* count_vertex);
+	vb->Unlock();
+
+	UINT* pDataI;
+	DXDevice->CreateIndexBuffer(sizeof(UINT)* count_index, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &ib, 0);
+
+	ib->Lock(0, 0, (void**)&pDataI, 0);
+	memcpy(pDataI, arr_index[curr_model], sizeof(UINT)* count_index);
+
+	
+	ib->Unlock();*/
+
+	/*float3_t** arr_vertex;
+	long* arr_count_vertex;
+	DWORD** arr_index;
+	long* arr_count_index;
+	float4x4** arr_transform;
+	long* arr_count_transform;
+	long count_model;
+	GData::StaticGreen->GetNavMeshAndTransform(&arr_vertex, &arr_count_vertex, &arr_index, &arr_count_index, &arr_transform, &arr_count_transform, &count_model);
+
+	int curr_model = 0;
+	count_vertex = arr_count_vertex[curr_model];
+	count_index = arr_count_index[curr_model];
+
+	float3_t* pData;
+	DXDevice->CreateVertexBuffer(sizeof(float3_t)* count_vertex, NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+	vb->Lock(0, 0, (void**)&pData, 0);
+	memcpy(pData, arr_vertex[curr_model], sizeof(float3_t)* count_vertex);
+	vb->Unlock();
+
+	UINT* pDataI;
+	DXDevice->CreateIndexBuffer(sizeof(UINT)* count_index, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &ib, 0);
+
+	ib->Lock(0, 0, (void**)&pDataI, 0);
+	memcpy(pDataI, arr_index[curr_model], sizeof(UINT)* count_index);
 
 
+	ib->Unlock();*/
 
-	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
-	GData::IDShaderVSRenderGreenTree = SGCore_ShaderLoad(0, "mtrl_base_green_tree.vs", "mtrl_base_green_tree.vs", false);
-	GData::IDShaderVSRenderGreenGrass = SGCore_ShaderLoad(0, "mtrl_base_green_grass.vs", "mtrl_base_green_grass.vs", false);
-	GData::IDShaderPSRenderGreenTree = SGCore_ShaderLoad(1, "mtrl_base_green.ps", "mtrl_base_green.ps", false);
+	//GData::Geometry->DelModel(1);
+	//GData::Geometry->DelModel(1);
+
+	//GData::Geometry->AddModel("rinok\\rinok\\land.dse", 0, "land.dse");
+	//GData::Geometry->AddModel("rinok\\rinok\\cv04.dse", 0, "cv04.dse");
+	//GData::Geometry->AddModel("rinok\\rinok\\rinok\\zab.dse", 0, "zab.dse");
+
+	
 
 	char tmppathexe[1024];
 	char tmppath[1024];
@@ -176,7 +318,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
-
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
@@ -199,6 +340,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 					DWORD currTime  = timeGetTime();
 					DWORD timeDelta = (currTime - lastTime);
 
+					SGCore_LoadTexLoadTextures();
 					SXLevelEditor_Transform(10);
 					SXRenderFunc::LevelEditorRender(timeDelta);
 

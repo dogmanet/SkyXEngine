@@ -10,6 +10,7 @@ struct CreatedTexture
 	char Name[64];	//им€
 	IDirect3DTexture9* Texture;	//текстура
 	D3DSURFACE_DESC Desc;		//описание текстуры, дл€ восстановлени€
+	UINT Level;
 	float CoefFullScreen;		//если меньше 0 то брать размер из Desc, иначе это коэфициент умножение размера экрана на это число
 };
 

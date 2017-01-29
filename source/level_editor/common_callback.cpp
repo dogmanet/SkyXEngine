@@ -15,7 +15,8 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//новый
 	if (id == ID_FILE_NEW)
 	{
-		GData::Geometry->Clear();
+		SGeom_ModelsClear();
+		SGeom_GreenClear();
 	}
 	//открыть
 	else if (id == ID_FILE_OPEN)
@@ -65,7 +66,7 @@ LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SXLevelEditor::ListBoxList->Clear();
-	long tmpcountmodel = GData::Geometry->GetCountModel();
+	long tmpcountmodel = SGeom_ModelsGetCount();
 	char tmptextvalcountmodel[64];
 	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
 	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountmodel);
@@ -73,7 +74,7 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 	char tmpnamecountpoly[1024];
 	for (int i = 0; i < tmpcountmodel;++i)
 	{
-		sprintf(tmpnamecountpoly, "%s | %d", GData::Geometry->GetModelName(i), GData::Geometry->GetModelCountPoly(i));
+		sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelsMGetName(i), SGeom_ModelsMGetCountPoly(i));
 		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
 	}
 
@@ -88,7 +89,7 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SXLevelEditor::ListBoxList->Clear();
-	long tmpcountmodel = GData::StaticGreen->GetCountGreen();
+	long tmpcountmodel = SGeom_GreenGetCount();
 	char tmptextvalcountmodel[64];
 	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
 	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountmodel);
@@ -97,9 +98,9 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	for (int i = 0; i < tmpcountmodel; ++i)
 	{
 		sprintf(tmpnamecountpoly, "%s | %s | %d", 
-			GData::StaticGreen->GetGreenName(i), 
-			(GData::StaticGreen->GetGreenTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
-			GData::StaticGreen->GetGreenCountGen(i));
+			SGeom_GreenMGetName(i),
+			(SGeom_GreenMGetTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
+			SGeom_GreenMGetCountGen(i));
 		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
 	}
 
@@ -123,7 +124,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 	if (SXLevelEditor::HowActivateType == -1 || SXLevelEditor::HowActivateType == 1)
 	{
-		if (GData::Geometry->GetCountModel() > 0 && sel < GData::Geometry->GetCountModel())
+		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 		{
 			MCInitElemsSelModel(sel);
 			SXLevelEditor::HowActivateType = 1;
@@ -131,7 +132,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	}
 	else if (SXLevelEditor::HowActivateType == -2 || SXLevelEditor::HowActivateType == 2)
 	{
-		if (GData::StaticGreen->GetCountGreen() > 0 && sel < GData::StaticGreen->GetCountGreen())
+		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 		{
 			GCInitElemsSelModel(sel);
 			SXLevelEditor::HowActivateType = 2;
@@ -146,11 +147,11 @@ LRESULT SXLevelEditor_EditName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	if (SXLevelEditor::HowActivateType == 1)
 	{
-		SXLevelEditor::EditName->GetText(GData::Geometry->GetModelName(sel), 64);
+		SXLevelEditor::EditName->GetText(SGeom_ModelsMGetName(sel), 64);
 	}
 	else if (SXLevelEditor::HowActivateType == 2)
 	{
-		SXLevelEditor::EditName->GetText(GData::StaticGreen->GetGreenName(sel), 64);
+		SXLevelEditor::EditName->GetText(SGeom_GreenMGetName(sel), 64);
 	}
 
 	return 0;
@@ -165,15 +166,15 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 	if (SXLevelEditor::HowActivateType == 1)
 	{
-		if (GData::Geometry->GetCountModel() > 0 && sel < GData::Geometry->GetCountModel())
+		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 		{
-			GData::Geometry->DelModel(sel);
+			SGeom_ModelsDelModel(sel);
 			SXLevelEditor::ListBoxList->DeleteItem(sel);
-			if (GData::Geometry->GetCountModel() > 0)
+			if (SGeom_ModelsGetCount() > 0)
 			{
 				if (sel > 0)
 				{
-					if (GData::Geometry->GetCountModel() <= sel)
+					if (SGeom_ModelsGetCount() <= sel)
 						sel -= 1;
 				}
 				SXLevelEditor::ListBoxList->SetSel(sel);
@@ -187,13 +188,92 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	}
 	else if (SXLevelEditor::HowActivateType == 2)
 	{
-		if (GData::StaticGreen->GetCountGreen() > 0 && sel < GData::StaticGreen->GetCountGreen())
+		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 		{
-			GCInitElemsSelModel(sel);
-			SXLevelEditor::HowActivateType = 2;
+			SGeom_GreenDelGreen(sel);
+			SXLevelEditor::ListBoxList->DeleteItem(sel);
+			if (SGeom_GreenGetCount() > 0)
+			{
+				if (sel > 0)
+				{
+					if (SGeom_GreenGetCount() <= sel)
+						sel -= 1;
+				}
+				SXLevelEditor::ListBoxList->SetSel(sel);
+				GCInitElemsSelModel(sel);
+			}
+			else
+			{
+				SXLevelEditor_ButtonGreenOpen_Click(hwnd, msg, wParam, lParam);
+			}
 		}
 	}
 
+	return 0;
+}
+
+LRESULT SXLevelEditor_ButtonModel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	DialogLoadMesh(tmppath);
+	if (def_str_validate(tmppath))
+	{
+		StrCutMesh(tmppath, tmpname);
+		SXLevelEditor::EditModel->SetText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->GetSel();
+		if (SXLevelEditor::HowActivateType == 2)
+		{
+			if (sel >= 0 && sel < SGeom_GreenGetCount())
+				SGeom_GreenMSetLod(sel, 0, tmpname);
+		}
+	}
+	return 0;
+}
+
+LRESULT SXLevelEditor_ButtonLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	DialogLoadMesh(tmppath);
+	if (def_str_validate(tmppath))
+	{
+		StrCutMesh(tmppath, tmpname);
+		SXLevelEditor::EditLod1->SetText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->GetSel();
+		if (SXLevelEditor::HowActivateType == 1)
+		{
+			if (sel >= 0 && sel < SGeom_ModelsGetCount())
+				SGeom_ModelsMSetLodPath(sel, tmpname);
+		}
+		else if (SXLevelEditor::HowActivateType == 2)
+		{
+			if (sel >= 0 && sel < SGeom_GreenGetCount())
+				SGeom_GreenMSetLod(sel, 1, tmpname);
+		}
+	}
+	return 0;
+}
+
+LRESULT SXLevelEditor_ButtonLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	DialogLoadMesh(tmppath);
+	if (def_str_validate(tmppath))
+	{
+		StrCutMesh(tmppath, tmpname);
+		SXLevelEditor::EditLod2->SetText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->GetSel();
+		if (SXLevelEditor::HowActivateType == 2)
+		{
+			if (sel >= 0 && sel < SGeom_GreenGetCount())
+				SGeom_GreenMSetLod(sel, 2, tmpname);
+		}
+	}
 	return 0;
 }
 
@@ -212,12 +292,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 
 	if (SXLevelEditor::HowActivateType == 1)
 	{
-		if (::GetAsyncKeyState(VK_LSHIFT) && GData::Geometry->GetCountModel() > 0)
+		if (::GetAsyncKeyState(VK_LSHIFT) && SGeom_ModelsGetCount() > 0)
 		{
 			DWORD selmodel = SXLevelEditor::ListBoxList->GetSel();
 			if (SXLevelEditor::RadioButtonPosX->GetCheck() || SXLevelEditor::RadioButtonPosY->GetCheck() || SXLevelEditor::RadioButtonPosZ->GetCheck())
 			{
-				float3& pos = *(GData::Geometry->GetModelPosition(selmodel));
+				float3& pos = *(SGeom_ModelsMGetPosition(selmodel));
 
 				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -259,12 +339,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				SXLevelEditor::EditPosY->SetText(tmpPosY);
 				SXLevelEditor::EditPosZ->SetText(tmpPosZ);
 
-				GData::Geometry->ApplyTransform(selmodel);
+				SGeom_ModelsMApplyTransform(selmodel);
 			}
 
 			else if (SXLevelEditor::RadioButtonRotX->GetCheck() || SXLevelEditor::RadioButtonRotY->GetCheck() || SXLevelEditor::RadioButtonRotZ->GetCheck())
 			{
-				float3& pos = *(GData::Geometry->GetModelRotation(selmodel));
+				float3& pos = *(SGeom_ModelsMGetRotation(selmodel));
 
 				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -306,12 +386,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				SXLevelEditor::EditRotY->SetText(tmpPosY);
 				SXLevelEditor::EditRotZ->SetText(tmpPosZ);
 
-				GData::Geometry->ApplyTransform(selmodel);
+				SGeom_ModelsMApplyTransform(selmodel);
 			}
 
 			else if (SXLevelEditor::RadioButtonScaleX->GetCheck() || SXLevelEditor::RadioButtonScaleY->GetCheck() || SXLevelEditor::RadioButtonScaleZ->GetCheck())
 			{
-				float3& pos = *(GData::Geometry->GetModelScale(selmodel));
+				float3& pos = *(SGeom_ModelsMGetScale(selmodel));
 
 				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -353,7 +433,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				SXLevelEditor::EditScaleY->SetText(tmpPosY);
 				SXLevelEditor::EditScaleZ->SetText(tmpPosZ);
 
-				GData::Geometry->ApplyTransform(selmodel);
+				SGeom_ModelsMApplyTransform(selmodel);
 			}
 		}
 	}

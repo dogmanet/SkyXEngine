@@ -13,7 +13,7 @@ namespace GData
 	bool IsWindowed = true;
 	float ProjFov = D3DX_PI * 0.25f;
 	float ProjRatio = WinSize.x / WinSize.y;
-
+	
 	float3 ConstCurrCamPos;
 	float3 ConstCurrCamDir;
 	float4_t CamUpdateWalkParam = float4_t(
@@ -54,13 +54,60 @@ namespace GData
 			char TexturesSkyBoxes[1024];
 	};
 
+	namespace IDsShaders
+	{
+		namespace VS
+		{
+			DWORD FreeGeometry;
+			DWORD ScreenOut;
+			DWORD ResPos;
+		};
+
+		namespace PS
+		{
+			DWORD FreeGeometry;
+			DWORD ScreenOut;
+			DWORD ComLightingNonShadow;
+			DWORD BlendAmbientSpecDiffcolor;
+			DWORD CalcAdaptedLum;
+			DWORD SampleLumInit;
+			DWORD SampleLumIterative;
+			DWORD SampleLumFinal;
+			DWORD FinalHRDL;
+		};
+	};
+
+	namespace IDSRenderTargets
+	{
+		DWORD ColorScene;
+		DWORD NormalScene;
+		DWORD DepthScene;
+		DWORD ParamsScene;
+
+		DWORD ToneMaps[4];
+		DWORD AdaptLumCurr;
+		DWORD AdaptLumLast;
+		DWORD LightAmbient;
+		DWORD LightSpecDiff;
+		DWORD LightSpecDiffD2;
+		DWORD LigthCom;
+		DWORD LigthCom2;
+		DWORD LigthComScaled;
+		DWORD LigthCom_1x1;
+		DWORD LigthComD2;
+		DWORD LigthComD4;
+		DWORD LigthComD8;
+	};
+
 	//////
 
-	StaticGeom* Geometry = 0;
-	DWORD IDShaderVSRenderGreenTree = -1;
-	DWORD IDShaderVSRenderGreenGrass = -1;
-	DWORD IDShaderPSRenderGreenTree = -1;
-	Green* StaticGreen = 0;
+	//StaticGeom* Geometry = 0;
+	//DWORD IDShaderVSRenderGreenTree = -1;
+	//DWORD IDShaderVSRenderGreenGrass = -1;
+	//DWORD IDShaderPSRenderGreenTree = -1;
+	//Green* StaticGreen = 0;
+	
+	IDirect3DSurface9* ComLightSurf1x1;
 };
 
 #endif

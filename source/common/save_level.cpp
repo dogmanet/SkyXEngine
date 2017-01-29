@@ -11,8 +11,8 @@ void SaveLevel(const char* name)
 	//
 
 	sprintf(tmppathlevel, "%s%s\\%s.geom", GData::Pathes::Levels, name, name);
-	GData::Geometry->Save(tmppathlevel);
+	SGeom_ModelsSave(tmppathlevel);
 
 	sprintf(tmppathlevel, "%s%s\\%s.green", GData::Pathes::Levels, name, name);
-	GData::StaticGreen->Save(tmppathlevel);
+	SGeom_GreenSave(tmppathlevel);
 }

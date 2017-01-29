@@ -1,6 +1,8 @@
 
 #include <gcore\sxgcore.h>
 
+#pragma once
+
 //флаги компил€ции шейдеров
 #define SHADER_DEBUG D3DXSHADER_DEBUG | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_AVOID_FLOW_CONTROL | D3DXSHADER_SKIPOPTIMIZATION
 #define SHADER_RELEASE D3DXSHADER_OPTIMIZATION_LEVEL3 | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_PARTIALPRECISION | D3DXSHADER_PREFER_FLOW_CONTROL
@@ -36,7 +38,9 @@ ID3DXFont* FPSText = 0;
 ShaderManager* MShaders = 0;
 CreatorTextures* MRenderTargets = 0;
 LoaderTextures* MTextures = 0;
+ID3DXMesh* ScreenTexture = 0;
 
+#define SG_PRECOND(retval) if(!DXDevice){reportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
 
 #include <gcore\dxdevice.cpp>
 
@@ -99,8 +103,7 @@ IDirect3DDevice9* SGCore_GetDXDevice()
 
 void SGCore_DbgMsg(const char* format, ...)
 {
-	if (!DXDevice || !FPSText)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 	
 	va_list va;
 	char buf[SXGC_STR_SIZE_DBG_MSG];
@@ -118,8 +121,7 @@ void SGCore_DbgMsg(const char* format, ...)
 
 void SGCore_OnLostDevice()
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	FPSText->OnLostDevice();
 	MRenderTargets->OnLostDevice();
@@ -127,6 +129,7 @@ void SGCore_OnLostDevice()
 
 int SGCore_OnDeviceReset(int width, int heigth, bool windewed)
 {
+	SG_PRECOND(-1);
 	D3DAPP.BackBufferWidth = width;
 	D3DAPP.BackBufferHeight = heigth;
 	D3DAPP.Windowed = windewed;
@@ -135,65 +138,64 @@ int SGCore_OnDeviceReset(int width, int heigth, bool windewed)
 
 void SGCore_OnResetDevice()
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	FPSText->OnResetDevice();
 	MRenderTargets->OnResetDevice();
+	ScreenQuadOnResetDevice();
+}
+
+void SGCore_ScreenQuadDraw()
+{
+	SG_PRECOND();
+	ScreenTexture->DrawSubset(0);
 }
 
 DWORD SGCore_ShaderLoad(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MShaders->Load(type_shader, path, name, is_check_double, macro);
 }
 
 void SGCore_ShaderUpdateN(int type_shader, const char* name, D3DXMACRO macro[])
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->Update(type_shader, name, macro);
 }
 
 void SGCore_ShaderUpdate(int type_shader, DWORD id, D3DXMACRO macro[])
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->Update(type_shader, id, macro);
 }
 
 void SGCore_ShaderReloadAll()
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->ReloadAll();
 }
 
 DWORD SGCore_ShaderGetID(int type_shader, const char* shader)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MShaders->GetID(type_shader, shader);
 }
 
 void SGCore_ShaderBindN(int type_shader, const char* shader)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->Bind(type_shader, shader);
 }
 
 void SGCore_ShaderBind(int type_shader, DWORD shader)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->Bind(type_shader, shader);
 }
@@ -201,40 +203,35 @@ void SGCore_ShaderBind(int type_shader, DWORD shader)
 
 void SGCore_ShaderUnBind()
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->UnBind();
 }
 
 void SGCore_ShaderSetVRFN(int type_shader, const char* name_shader, const char* name_var, void* data)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->SetValueRegisterF(type_shader, name_shader, name_var, data);
 }
 
 void SGCore_ShaderSetVRF(int type_shader, DWORD num_shader, const char* name_var, void* data)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->SetValueRegisterF(type_shader, num_shader, name_var, data);
 }
 
 void SGCore_ShaderSetVRIN(int type_shader, const char* name_shader, const char* name_var, void* data)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->SetValueRegisterI(type_shader, name_shader, name_var, data);
 }
 
 void SGCore_ShaderSetVRI(int type_shader, DWORD num_shader, const char* name_var, void* data)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MShaders->SetValueRegisterI(type_shader, num_shader, name_var, data);
 }
@@ -242,48 +239,42 @@ void SGCore_ShaderSetVRI(int type_shader, DWORD num_shader, const char* name_var
 
 DWORD SGCore_ShaderIsExist(int type_shader, const char* name)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MShaders->IsExist(type_shader, name);
 }
 
 bool SGCore_ShaderIsValidate(int type_shader, DWORD id)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(0);
 
 	return MShaders->IsValidate(type_shader, id);
 }
 
 void SGCore_ShaderGetPath(int type_shader, DWORD id, char* path)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->GetPath(type_shader, id, path);
 }
 
 void SGCore_ShaderGetName(int type_shader, DWORD id, char* name)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->GetName(type_shader, id, name);
 }
 
 void SGCore_ShaderSetStdPath(const char* path)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->SetStdPath(path);
 }
 
 void SGCore_ShaderGetStdPath(char* path)
 {
-	if (!DXDevice || !MShaders)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MShaders->GetStdPath(path);
 }
@@ -292,72 +283,63 @@ void SGCore_ShaderGetStdPath(char* path)
 
 void SGCore_LoadTexStdPath(const char* path)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	MTextures->SetStdPath(path);
 }
 
 DWORD SGCore_LoadTexAddName(const char* name)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MTextures->AddName(name);
 }
 
 DWORD SGCore_LoadTexGetID(const char* name)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MTextures->GetID(name);
 }
 
 void SGCore_LoadTexGetName(DWORD id, char* name)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MTextures->GetName(id,name);
 }
 
 DWORD SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MTextures->Create(name, tex);
 }
 
 DWORD SGCore_LoadTexUpdateN(const char* name)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MTextures->Update(name);
 }
 
 void SGCore_LoadTexUpdate(DWORD id)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MTextures->Update(id);
 }
 
-IDirect3DTexture9* SGCore_GetTex(DWORD id)
+IDirect3DTexture9* SGCore_LoadTexGetTex(DWORD id)
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(0);
 
 	return MTextures->GetTexture(id);
 }
 
 void SGCore_LoadTexLoadTextures()
 {
-	if (!DXDevice || !MTextures)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MTextures->LoadTextures();
 }
@@ -366,64 +348,56 @@ void SGCore_LoadTexLoadTextures()
 
 DWORD SGCore_RTAdd(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MRenderTargets->Add(width, height, levels, usage, format, pool, name, coeffullscreen);
 }
 
 void SGCore_RTDeleteN(const char* text)
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MRenderTargets->Delete(text);
 }
 
 void SGCore_RTDelete(DWORD num)
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MRenderTargets->Delete(num);
 }
 
 DWORD SGCore_RTGetNum(const char* text)
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(-1);
 
 	return MRenderTargets->GetNum(text);
 }
 
 void SGCore_RTOnLostDevice()
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MRenderTargets->OnLostDevice();
 }
 
 void SGCore_RTOnResetDevice()
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	return MRenderTargets->OnResetDevice();
 }
 
 IDirect3DTexture9* SGCore_RTGetTextureN(const char* text)
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(0);
 
 	return MRenderTargets->GetTexture(text);
 }
 
 IDirect3DTexture9* SGCore_RTGetTexture(DWORD num)
 {
-	if (!DXDevice || !MRenderTargets)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND(0);
 
 	return MRenderTargets->GetTexture(num);
 }
@@ -432,48 +406,44 @@ IDirect3DTexture9* SGCore_RTGetTexture(DWORD num)
 
 void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, UINT iSideCount)
 {
-	if (!DXDevice)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, DXDevice, iSideCount);
 }
 
 void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
 {
-	if (!DXDevice)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	ComputeBoundingBox(vertex_buffer, bound, count_vert, bytepervert);
 }
 
 void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
 {
-	if (!DXDevice)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	ComputeBoundingBox2(vertex_buffer, bound, count_vert, bytepervert);
 }
 
 void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh)
 {
-	if (!DXDevice)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
+	SG_PRECOND();
 
 	CreateBoundingBoxMesh(min, max, bbmesh,DXDevice);
 }
 
-void SGCore_OptimizeIndecesInSubsetWord(WORD* ib, WORD numFaces, WORD numVerts)
+void SGCore_OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
 {
-	if (!DXDevice)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
-	OptimizeIndecesInSubsetWord(ib, numFaces, numVerts);
+	SG_PRECOND();
+
+	OptimizeIndecesInSubsetUint16(ib, numFaces, numVerts);
 }
 
-void SGCore_OptimizeIndecesInSubsetDword(DWORD* ib, DWORD numFaces, DWORD numVerts)
+void SGCore_OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
 {
-	if (!DXDevice)
-		reportf(-1, "%s - sxcore is not init", gen_msg_location);
-	OptimizeIndecesInSubsetDword(ib, numFaces, numVerts);
+	SG_PRECOND();
+
+	OptimizeIndecesInSubsetUint32(ib, numFaces, numVerts);
 }
 
 
@@ -539,34 +509,64 @@ void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr)
 
 ////////////
 
-ISXFrustum* SXGCore_CrFrustum()
+ISXFrustum* SGCore_CrFrustum()
 {
 	return new Frustum();
 }
-
-ISXCamera* SXGCore_CrCamera()
-{
-	return new Camera();
-}
-
-ISXTransObject* SXGCore_CrTransObject()
-{
-	return new SXTransObject();
-}
-
-ISXBound* SXGCore_CrBound()
-{
-	return new SXBound();
-}
-
-//////////////////////
 
 ISXCamera* SGCore_CrCamera()
 {
 	return new Camera();
 }
 
+ISXTransObject* SGCore_CrTransObject()
+{
+	return new SXTransObject();
+}
+
 ISXBound* SGCore_CrBound()
 {
 	return new SXBound();
+}
+
+//////////////////////
+
+void SGCore_SetSamplerFilter(DWORD id, DWORD value)
+{
+	SG_PRECOND();
+
+	DXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, value);
+	DXDevice->SetSamplerState(id, D3DSAMP_MINFILTER, value);
+	DXDevice->SetSamplerState(id, D3DSAMP_MIPFILTER, value);
+}
+
+void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value)
+{
+	SG_PRECOND();
+
+	if (begin_id >= 0 && end_id <= 16)
+	{
+		for (DWORD i = begin_id; i<end_id; i++)
+			SGCore_SetSamplerFilter(i, value);
+	}
+}
+
+void SGCore_SetSamplerAddress(DWORD id, DWORD value)
+{
+	SG_PRECOND();
+
+	DXDevice->SetSamplerState(id, D3DSAMP_ADDRESSU, value);
+	DXDevice->SetSamplerState(id, D3DSAMP_ADDRESSV, value);
+	DXDevice->SetSamplerState(id, D3DSAMP_ADDRESSW, value);
+}
+
+void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value)
+{
+	SG_PRECOND();
+
+	if (begin_id >= 0 && end_id <= 16)
+	{
+		for (DWORD i = begin_id; i<end_id; i++)
+			SGCore_SetSamplerAddress(i, value);
+	}
 }

@@ -2,6 +2,10 @@
 #ifndef __static_geom
 #define __static_geom
 
+#include <handler_dx_func.cpp>
+#include <string\\string.cpp>
+#include <core\array.h>
+#include <common\\string_api.cpp>
 //максимальное количество полигонов в буферах
 //или максимальнео количество полигонов на одну подгруппу
 #define STATIC_GEOM_MAX_POLY_IN_GROUP 256000
@@ -21,7 +25,7 @@ if (!(id_model < AllModels.size() && AllModels[id_model]))\
 #define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
 #define STATIC_COUNT_TYPE_SEGMENTATION_OCTO 8
 #define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3
-#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 50
+#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20
 #define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000
 #define STATIC_MIN_COUNT_POLY 500
 #define STATIC_MAX_COUNT_POLY 1000
@@ -51,12 +55,12 @@ public:
 		Segment* Splits[STATIC_COUNT_TYPE_SEGMENTATION_OCTO]; //массив из 4/8 частей данного участка
 
 		//для геометрии
-		DWORD** ArrPoly;	//двумерный массив по количеству подгрупп, вложенный массив - все полигоны для данной подгруппы
-		DWORD* CountPoly;	//массив с количеством полигонов на каждую подгруппу
-		DWORD* NumberGroup;	//массив с номерами подгрупп в контексте уровня
-		DWORD* NumberGroupModel;//массив с номерами подгрупп в контексте модели
-		DWORD CountSubSet;	//количество подгрупп
-		DWORD CountAllPoly;	//общее количество полигонов
+		uint32_t** ArrPoly;	//двумерный массив по количеству подгрупп, вложенный массив - все полигоны для данной подгруппы
+		uint32_t* CountPoly;	//массив с количеством полигонов на каждую подгруппу
+		uint32_t* NumberGroup;	//массив с номерами подгрупп в контексте уровня
+		uint32_t* NumberGroupModel;//массив с номерами подгрупп в контексте модели
+		uint32_t CountSubSet;	//количество подгрупп
+		uint32_t CountAllPoly;	//общее количество полигонов
 
 		ISXBound* BoundVolumeSys;	//выравненный ограничивающий объем для равномерного деления
 		ISXBound* BoundVolumeP;		//облегающий ограничивающий объем
@@ -85,24 +89,25 @@ public:
 			Lod();
 			~Lod();
 			char PathName[1024];
-			DataStaticModel* model;
+			ISXDataStaticModel* model;
 			Array<DWORD> IDsTexs;
+			ISXBound* BoundVolume;
 		};
 
 		struct GDataBuff
 		{
-			long idgroup;	//id подгруппы в контексте уровня
-			long idbuff;	//id буфера (в подгруппе) в который заисаны данные геометрии модели
+			int32_t idgroup;	//id подгруппы в контексте уровня
+			int32_t idbuff;	//id буфера (в подгруппе) в который заисаны данные геометрии модели
 
-			long IndexStart;
-			long IndexCount;
-			long VertexStart;
-			long VertexCount;
+			int32_t IndexStart;
+			int32_t IndexCount;
+			int32_t VertexStart;
+			int32_t VertexCount;
 		};
 
 		char Name[64];
 		char PathName[1024];
-		long CountPoly;
+		int32_t CountPoly;
 		float3 Position;
 		float3 Rotation;
 		float3 Scale;
@@ -126,14 +131,25 @@ public:
 	{
 		Group();
 		~Group();
+
+		struct VertexBuff
+		{
+			VertexBuff();
+			~VertexBuff();
+
+			float3_t* arr;
+			long count;
+		};
+
 		String name;	//имя текстуры
 		DWORD idtex;	//идентификатор текстуры
 		long AllCountVertex;	//общее количество вершин
 		long AllCountIndex;		//общее количество индексов
-		Array<long, 4> CountVertex;	//количество вершин в буферах
-		Array<long, 4> CountIndex;	//количество индексов в буферах
+		Array<int32_t, 4> CountVertex;	//количество вершин в буферах
+		Array<int32_t, 4> CountIndex;	//количество индексов в буферах
 		Array<Array<Model*>> ArrModels;
 		Array<IDirect3DVertexBuffer9*, 4> VertexBuffer;
+		Array<VertexBuff*, 4> VertexBufferOrigin;
 	};
 
 	//структура содержащая минимальную необходимую информацию о сегменте модели
@@ -185,14 +201,23 @@ public:
 
 	void ApplyTransform(long id);
 
+	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models);
+	/*
+	(*arr_vertex)[num_model][num_vertex] - вершины модели
+	(*arr_count_vertex)[num_model] - количество вершин для модели
+	(*arr_index)[num_model][num_vertex] - индексы модели
+	(*arr_count_index)[num_model] - количество индексов для модели
+	(*count_model); количество моделей
+	*/
+
 protected:
 
-	Array<IRSData> ArrComFor; //информация о сегментах для рендера
+	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
 	void AddModelInArrCom(long id_model);
 	void DelModelInArrCom(long id_model);
 
 	float4x4 WorldMat;
-	void ApplyTransformLod(long id,float3* centerpos);
+	void ApplyTransformLod(long id);
 
 	ISXBound* BoundVolume;
 
@@ -201,21 +226,21 @@ protected:
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
 	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
 
-	void PreSegmentation(Model* mesh, DataStaticModel* model);	//подготовительный этап сегментации
-	void Segmentation(Segment* Split, Model* mesh, DataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue);	//сегментации модели
-	void CycleSegmentation(Segment* Split, Model* mesh, DataStaticModel* model, long CountSplitsSys, long CountPolyInSegment);	//рекусривный вызов сегментации
+	void PreSegmentation(Model* mesh, ISXDataStaticModel* model);	//подготовительный этап сегментации
+	void Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue);	//сегментации модели
+	void CycleSegmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment);	//рекусривный вызов сегментации
 	void EditVolume(Model* mesh, Segment* Split);
 	void SetSplitID(Segment* Split, long* SplitsIDs, long* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
 	void SetSplitID2(Segment* Split, long* SplitsIDs, long* SplitsIDsRender, Array<Segment*>* queue);
 	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, DWORD curr_splits_ids_render);
 
-	void UpdateArrMeshVertex2(long count_vertex, vertex_static* arrvertex);
+	//void UpdateArrMeshVertex2(long count_vertex, vertex_static* arrvertex);
 	//рабочие данные, используются внутри в методах
 	//{{
 	float3* ArrMeshVertex;
 	long CountVertex;
-	float3* ArrMeshVertex2;
-	long AllCountVertex2;
+	/*float3* ArrMeshVertex2;
+	long AllCountVertex2;*/
 
 	D3DXVECTOR3 jpos;
 	D3DXVECTOR3 jvevyp;
@@ -229,8 +254,8 @@ protected:
 	void DelArrIndexPtr();
 	void InitArrIndexPtr();
 
-	DWORD*** RTCPUArrIndicesPtrs;//массив для хранения всех индексов которые будут отправлены на рендер сейчас
-	DWORD** RTCountDrawPoly;	//массив для хранения размеров для каждого из массивов RTCPUArrIndicesPtrs
+	uint32_t*** RTCPUArrIndicesPtrs;//массив для хранения всех индексов которые будут отправлены на рендер сейчас
+	uint32_t** RTCountDrawPoly;	//массив для хранения размеров для каждого из массивов RTCPUArrIndicesPtrs
 
 	Array<Model*> AllModels;	//массив моделей
 	Array<Group*> AllGroups;		//массив подгрупп

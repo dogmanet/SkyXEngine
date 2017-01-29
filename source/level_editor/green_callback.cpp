@@ -32,6 +32,10 @@ void GCActivateAllElems(bool bf)
 
 	SXLevelEditor::StaticDensityVal->Visible(bf);
 	SXLevelEditor::StaticDensityText->Visible(bf);
+
+	SXLevelEditor::StaticGreenNav->Visible(bf);
+	SXLevelEditor::EditGreenNav->Visible(bf);
+	SXLevelEditor::ButtonGreenNav->Visible(bf);
 }
 
 void GCActivateCreatingElems(bool bf)
@@ -51,15 +55,16 @@ void GCActivateCreatingElems(bool bf)
 
 void GCInitElemsSelModel(int sel)
 {
-	if (sel >= 0 && sel < GData::StaticGreen->GetCountGreen())
+	if (sel >= 0 && sel < SGeom_GreenGetCount())
 	{
 		GCActivateCreatingElems(false);
 
-		SXLevelEditor::EditModel->SetText(GData::StaticGreen->GetGreenModel(sel));
-		SXLevelEditor::EditLod1->SetText((GData::StaticGreen->GetGreenLod1(sel) ? GData::StaticGreen->GetGreenLod1(sel) : ""));
-		SXLevelEditor::EditLod2->SetText((GData::StaticGreen->GetGreenLod2(sel) ? GData::StaticGreen->GetGreenLod2(sel) : ""));
-		SXLevelEditor::EditMask->SetText(GData::StaticGreen->GetGreenMask(sel));
-		SXLevelEditor::EditName->SetText(GData::StaticGreen->GetGreenName(sel));
+		SXLevelEditor::EditModel->SetText(SGeom_GreenMGetModel(sel));
+		SXLevelEditor::EditLod1->SetText((SGeom_GreenMGetLod1(sel) ? SGeom_GreenMGetLod1(sel) : ""));
+		SXLevelEditor::EditLod2->SetText((SGeom_GreenMGetLod2(sel) ? SGeom_GreenMGetLod2(sel) : ""));
+		SXLevelEditor::EditMask->SetText(SGeom_GreenMGetMask(sel));
+		SXLevelEditor::EditName->SetText(SGeom_GreenMGetName(sel));
+		SXLevelEditor::EditGreenNav->SetText(SGeom_GreenMGetNav(sel));
 	}
 }
 
@@ -69,27 +74,8 @@ LRESULT SXLevelEditor_TrackBarDensity_MouseMove(HWND hwnd, UINT msg, WPARAM wPar
 {
 	char freqstr[64];
 	int pos = SXLevelEditor::TrackBarDensity->GetPos();
-	sprintf(freqstr, "%d%", pos * 10);
+	sprintf(freqstr, "%d%", pos);
 	SXLevelEditor::StaticDensityVal->SetText(freqstr);
-	return 0;
-}
-
-LRESULT SXLevelEditor_ButtonLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	DialogLoadMesh(tmppath);
-	if (def_str_validate(tmppath))
-	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditLod2->SetText(tmpname);
-		if (SXLevelEditor::HowActivateType == 2)
-		{
-			int sel = SXLevelEditor::ListBoxList->GetSel();
-			//GData::Geometry->SetModelLodPath(sel, tmppath);
-		}
-	}
 	return 0;
 }
 
@@ -107,9 +93,29 @@ LRESULT SXLevelEditor_ButtonMask_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 	return 0;
 }
 
+LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	DialogLoadMesh(tmppath);
+	if (def_str_validate(tmppath))
+	{
+		StrCutMesh(tmppath, tmpname);
+		SXLevelEditor::EditGreenNav->SetText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->GetSel();
+		if (SXLevelEditor::HowActivateType == 2)
+		{
+			if (sel >= 0 && sel < SGeom_GreenGetCount())
+				SGeom_GreenMSetNav(sel, tmpname);
+		}
+	}
+	return 0;
+}
+
 LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (GData::Geometry->GetCountModel() == 0)
+	if (SGeom_ModelsGetCount() == 0)
 	{
 		MessageBox(0, "Необходимо сначала загрузить модели, и только после сего добавлять растительность!", "Нет моделей", 0);
 		return 0;
@@ -125,6 +131,8 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	path_lod1[0] = 0;
 	char path_lod2[1024];
 	path_lod2[0] = 0;
+	char path_navmesh[1024];
+	path_navmesh[0] = 0;
 
 	char tmp_tex[1024];
 	tmp_tex[0] = 0;
@@ -135,6 +143,9 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmp_lod2[1024];
 	tmp_lod2[0] = 0;
 
+	char tmp_navmesh[1024];
+	tmp_navmesh[0] = 0;
+
 	int greentype = GREEN_TYPE_TREE;
 
 	SXLevelEditor::EditName->GetText(tmp_name, 1024);
@@ -142,6 +153,7 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	SXLevelEditor::EditModel->GetText(tmp_model, 1024);
 	SXLevelEditor::EditLod1->GetText(tmp_lod1, 1024);
 	SXLevelEditor::EditLod2->GetText(tmp_lod2, 1024);
+	SXLevelEditor::EditGreenNav->GetText(tmp_navmesh, 1024);
 
 	if (tmp_lod1[0] == 0 && tmp_lod2[0] == 0)
 		greentype = GREEN_TYPE_GRASS;
@@ -157,6 +169,9 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	if (tmp_lod2[0] != 0)
 		sprintf(path_lod2, "%s%s", GData::Pathes::Meshes, tmp_lod2);
+
+	if (tmp_navmesh[0] != 0)
+		sprintf(path_navmesh, "%s%s", GData::Pathes::Meshes, tmp_navmesh);
 	
 	/*if (!Core_0FileExists(path_tex))
 	{
@@ -170,6 +185,14 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Модель [", path_model, "] не существует");
+		MessageBox(0, tmpstr, 0, 0);
+		return 0;
+	}
+
+	if (def_str_validate(tmp_navmesh) && !Core_0FileExists(path_navmesh))
+	{
+		char tmpstr[2048];
+		sprintf(tmpstr, "%s%s%s", "Модель [", path_navmesh, "] не существует");
 		MessageBox(0, tmpstr, 0, 0);
 		return 0;
 	}
@@ -212,19 +235,19 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	float pos = SXLevelEditor::TrackBarDensity->GetPos();
 
-	GData::StaticGreen->Init(GData::Geometry, tmp_name,
+	SGeom_GreenAddGreen(tmp_name,
 		tmp_tex,
 		pos,
 		tmp_model,
 		(tmp_lod1[0] ? tmp_lod1 : 0),
 		(tmp_lod2[0] ? tmp_lod2 : 0),
-		50);
+		(tmp_navmesh[0] ? tmp_navmesh : 0));
 
 	char tmpnamecountpoly[1024];
 		sprintf(tmpnamecountpoly, "%s | %s | %d",
-			GData::StaticGreen->GetGreenName(GData::StaticGreen->GetCountGreen()-1),
-			(GData::StaticGreen->GetGreenTypeCountGen(GData::StaticGreen->GetCountGreen() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
-			GData::StaticGreen->GetGreenCountGen(GData::StaticGreen->GetCountGreen() - 1));
+			SGeom_GreenMGetName(SGeom_GreenGetCount() - 1),
+			(SGeom_GreenMGetTypeCountGen(SGeom_GreenGetCount() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
+			SGeom_GreenMGetCountGen(SGeom_GreenGetCount() - 1));
 		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
 
 	GCActivateCreatingElems(false);

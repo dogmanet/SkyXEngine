@@ -587,13 +587,13 @@ void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect
 	(*bbmesh)->UnlockVertexBuffer();
 }
 
-void OptimizeIndecesInSubsetWord(WORD* ib, WORD numFaces, WORD numVerts)
+void OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
 {
-	DWORD* pdwRemap = new DWORD[numFaces];
-	D3DXOptimizeFaces(ib, numFaces, numVerts, FALSE, pdwRemap);
+	uint16_t* pdwRemap = new uint16_t[numFaces];
+	D3DXOptimizeFaces(ib, numFaces, numVerts, FALSE, (DWORD*)pdwRemap);
 
-	WORD* pCopyIB = new WORD[numFaces * 3];
-	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(WORD));
+	uint16_t* pCopyIB = new uint16_t[numFaces * 3];
+	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(uint16_t));
 
 	for (int i = 0; i<numFaces; ++i)
 	{
@@ -608,13 +608,13 @@ void OptimizeIndecesInSubsetWord(WORD* ib, WORD numFaces, WORD numVerts)
 	mem_delete_a(pdwRemap);
 }
 
-void OptimizeIndecesInSubsetDword(DWORD* ib, DWORD numFaces, DWORD numVerts)
+void OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
 {
-	DWORD* pdwRemap = new DWORD[numFaces];
-	D3DXOptimizeFaces(ib, numFaces, numVerts, TRUE, pdwRemap);
+	uint32_t* pdwRemap = new uint32_t[numFaces];
+	D3DXOptimizeFaces(ib, numFaces, numVerts, TRUE, (DWORD*)pdwRemap);
 
-	DWORD* pCopyIB = new DWORD[numFaces * 3];
-	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(DWORD));
+	uint32_t* pCopyIB = new uint32_t[numFaces * 3];
+	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(uint32_t));
 
 	for (int i = 0; i<numFaces; ++i)
 	{

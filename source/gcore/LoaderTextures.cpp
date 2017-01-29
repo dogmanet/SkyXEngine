@@ -256,6 +256,8 @@ DWORD LoaderTextures::Update(const char* name)
 
 void LoaderTextures::LoadTextures()
 {
+	if (CountIDsOld == CountIDs)
+		return;
 	reportf(0,"load textures ...\n");
 	char tmpPathFor[1024];
 	char tmpPath[1024];
@@ -293,7 +295,7 @@ void LoaderTextures::LoadTextures()
 											)))
 										{
 											//ArrTextures.push_back(tex);
-											reportf(-1, "%s - \tnot found texture [%s_%s]\n", gen_msg_location, Arr[i].Path, Arr[i].ArrNames[k]);
+											reportf(1, "%s - \tnot found texture [%s_%s]\n", gen_msg_location, Arr[i].Path, Arr[i].ArrNames[k]);
 										}
 										else
 										{

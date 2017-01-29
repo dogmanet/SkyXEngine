@@ -123,6 +123,7 @@ public:
 
 			if(key >= this->Size)
 			{
+				//dbg_break
 					if(key >= this->AllocSize)
 					{
 						Realloc(max(this->AllocSize, key) + BlockSize);

@@ -7,7 +7,7 @@ struct SXTransObject : public virtual ISXTransObject
 	SXTransObject(){};
 	~SXTransObject(){};
 
-	void Release(){ /*mem_del(this);*/ };
+	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 
@@ -33,7 +33,7 @@ public:
 	SXBound(){};
 	~SXBound(){};
 
-	void Release(){ /*mem_del(this);*/ };
+	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 

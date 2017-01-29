@@ -1,4 +1,24 @@
 
+void ScreenQuadOnResetDevice()
+{
+	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty; };
+
+	const float half_pixel_x = 1.0f / float(D3DAPP.BackBufferWidth);
+	const float half_pixel_y = 1.0f / float(D3DAPP.BackBufferHeight);
+
+	VERTEX_SCREEN_TEXTURE AddVertices[] =
+	{
+		{ -1.0f - half_pixel_x, -1.0f + half_pixel_y, 1.0f, 0.0f, 1.0f },
+		{ -1.0f - half_pixel_x, 1.0f + half_pixel_y, 1.0f, 0.0f, 0.0f },
+		{ 1.0f - half_pixel_x, 1.0f + half_pixel_y, 1.0f, 1.0f, 0.0f },
+		{ 1.0f - half_pixel_x, -1.0f + half_pixel_y, 1.0f, 1.0f, 1.0f },
+	};
+
+	void* Vertices;
+	ScreenTexture->LockVertexBuffer(0, (void**)&Vertices);
+	memcpy(Vertices, AddVertices, sizeof(AddVertices));
+	ScreenTexture->UnlockVertexBuffer();
+}
 
 int InitD3D(HWND hwnd, bool windowed, int width, int heigth, DWORD create_device_flags)
 {
@@ -45,6 +65,17 @@ int InitD3D(HWND hwnd, bool windowed, int width, int heigth, DWORD create_device
 
 	D3DXCreateFontIndirect(DXDevice, &LF, &FPSText);
 
+	D3DXCreateMeshFVF(2, 4, D3DXMESH_MANAGED, D3DFVF_XYZ | D3DFVF_TEX1, DXDevice, &ScreenTexture);
+
+	ScreenQuadOnResetDevice();
+
+	WORD* i = 0;
+	ScreenTexture->LockIndexBuffer(0, (void**)&i);
+	i[0] = 0; i[1] = 1; i[2] = 2;
+	i[3] = 0; i[4] = 2; i[5] = 3;
+	ScreenTexture->UnlockIndexBuffer();
+
 	//SkyXEngine::Core::Data::Device->CreateQuery(D3DQUERYTYPE_EVENT , &SkyXEngine::Core::Data::D3DQueryEvent);
 
 }
+

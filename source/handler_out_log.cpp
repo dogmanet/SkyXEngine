@@ -86,7 +86,7 @@ void printflog(int level, const char* format, ...)
 
 			printf(buf);
 			fwrite(buf, 1, strlen(buf), FileOutLog);
-			fprintf(FileOutLog, "\n");
+			//fprintf(FileOutLog, "\n");
 			fflush(FileOutLog);
 
 			if (level == REPORT_MSG_LEVEL_ERROR)

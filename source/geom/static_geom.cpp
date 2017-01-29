@@ -48,6 +48,18 @@ StaticGeom::Group::Group()
 	AllCountVertex = AllCountIndex = 0;
 }
 
+StaticGeom::Group::VertexBuff::VertexBuff()
+{
+	arr = 0;
+	count = 0;
+}
+
+StaticGeom::Group::VertexBuff::~VertexBuff()
+{
+	mem_delete_a(arr);
+	count = 0;
+}
+
 StaticGeom::Group::~Group()
 {
 	idtex = -1;
@@ -65,6 +77,7 @@ StaticGeom::Model::Lod::Lod()
 {
 	PathName[0] = 0;
 	model = 0;
+	BoundVolume = SGCore_CrBound();
 }
 
 StaticGeom::Model::Lod::~Lod()
@@ -115,7 +128,11 @@ StaticGeom::IRSData::IRSData()
 StaticGeom::IRSData::~IRSData()
 {
 	queue.clear();
-	arr.clear();
+	for (long i = 0; i < arr.size(); ++i)
+	{
+		mem_delete_a(arr[i]);
+		arr.clear();
+	}
 }
 
 StaticGeom::StaticGeom()
@@ -127,8 +144,8 @@ StaticGeom::StaticGeom()
 	WorldMat = SMMatrixIdentity();
 
 	ArrMeshVertex = 0;
-	ArrMeshVertex2 = 0;
-	AllCountVertex2 = 0;
+	//ArrMeshVertex2 = 0;
+	//AllCountVertex2 = 0;
 
 	jvevyn = D3DXVECTOR3(0.0f, -1000.0f, 0.0f);
 	jvevyp = D3DXVECTOR3(0.0f, 1000.0f, 0.0f);
@@ -145,9 +162,9 @@ StaticGeom::StaticGeom()
 
 	StaticGeom::DXDevice->CreateVertexDeclaration(layoutstatic, &VertexDeclarationStatic);
 
-	IRSData tmparr;
+	IRSData* tmparr = new IRSData();
 	ArrComFor.push_back(tmparr);
-	IRSData tmparr2;
+	IRSData* tmparr2 = new IRSData();
 	ArrComFor.push_back(tmparr2);
 }
 
@@ -155,7 +172,7 @@ StaticGeom::~StaticGeom()
 {
 	ArrComFor.clear();
 	mem_delete_a(ArrMeshVertex);
-	mem_delete_a(ArrMeshVertex2);
+	//mem_delete_a(ArrMeshVertex2);
 	mem_release(RenderIndexBuffer);
 	mem_release(VertexDeclarationStatic);
 	mem_release(BoundVolume);
@@ -184,7 +201,7 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 {
 	DelArrIndexPtr();
 
-	DataStaticModel model;
+	ISXDataStaticModel* model;
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
 	SGCore_LoadStaticModel(tmppath, &model);
@@ -198,11 +215,11 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 	sprintf(tmpmodel->PathName, "%s", path);
 
 	bool isunictex = true;
-	for (int i = 0; i < model.SubsetCount; ++i)
+	for (int i = 0; i < model->SubsetCount; ++i)
 	{
-		tmpmodel->CountPoly += model.IndexCount[i] / 3;
+		tmpmodel->CountPoly += model->IndexCount[i] / 3;
 		//если количество полигонов в подгруппе модели больше разрешенного
-		if (model.IndexCount[i] / 3 > STATIC_GEOM_MAX_POLY_IN_GROUP)
+		if (model->IndexCount[i] / 3 > STATIC_GEOM_MAX_POLY_IN_GROUP)
 		{
 			reportf(-1, "count polygons in group over default '%s'", STATIC_GEOM_MAX_POLY_IN_GROUP, gen_msg_location);
 			return -1;
@@ -211,7 +228,7 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 		isunictex = true;
 		for (int k = 0; k < AllGroups.size(); ++k)
 		{
-			if (stricmp(AllGroups[k]->name.c_str(), model.ArrTextures[i]) == 0)
+			if (stricmp(AllGroups[k]->name.c_str(), model->ArrTextures[i]) == 0)
 			{
 				isunictex = false;
 
@@ -225,19 +242,29 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 				vertex_static * pData2;
 
 				//если последний незаполненный буфер не вмещает в себ€
-				if (AllGroups[k]->CountVertex[AllGroups[k]->CountVertex.size() - 1] / 3 + model.IndexCount[i] / 3 > STATIC_GEOM_MAX_POLY_IN_GROUP)
+				if (AllGroups[k]->CountVertex[AllGroups[k]->CountVertex.size() - 1] / 3 + model->IndexCount[i] / 3 > STATIC_GEOM_MAX_POLY_IN_GROUP)
 				{
 					//создаем новый
 					gdb.VertexStart = 0;
-					gdb.VertexCount = model.VertexCount[i];
+					gdb.VertexCount = model->VertexCount[i];
 
-					StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* model.VertexCount[i], NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
-					AllGroups[k]->AllCountVertex += model.VertexCount[i];
-					AllGroups[k]->CountVertex.push_back(model.VertexCount[i]);
+					StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* model->VertexCount[i], NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+					
+					Group::VertexBuff* vborigin = new Group::VertexBuff();
+					vborigin->count = model->VertexCount[i];
+					vborigin->arr = new float3_t[vborigin->count];
+					for (long j = 0; j < model->VertexCount[i]; ++j)
+					{
+						vborigin->arr[j] = (model->ArrVertBuf + model->StartVertex[i] + j)->Pos;
+					}
+					AllGroups[k]->VertexBufferOrigin.push_back(vborigin);
+					
+					AllGroups[k]->AllCountVertex += model->VertexCount[i];
+					AllGroups[k]->CountVertex.push_back(model->VertexCount[i]);
 					//копируем данные в новый вершинный буфер
 					if (!FAILED(vb->Lock(0, 0, (void**)&pData, 0)))
 					{
-						memcpy(pData, model.ArrVertBuf + model.StartVertex[i], sizeof(vertex_static)* model.VertexCount[i]);
+						memcpy(pData, model->ArrVertBuf + model->StartVertex[i], sizeof(vertex_static)* model->VertexCount[i]);
 						vb->Unlock();
 					}
 
@@ -245,19 +272,19 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 
 
 					gdb.IndexStart = 0;
-					gdb.IndexCount = model.IndexCount[i];
-					AllGroups[k]->AllCountIndex += model.IndexCount[i];
-					AllGroups[k]->CountIndex.push_back(model.IndexCount[i]);
+					gdb.IndexCount = model->IndexCount[i];
+					AllGroups[k]->AllCountIndex += model->IndexCount[i];
+					AllGroups[k]->CountIndex.push_back(model->IndexCount[i]);
 
 					gdb.idbuff = AllGroups[k]->VertexBuffer.size() - 1;
 
 					AllGroups[k]->ArrModels[gdb.idbuff].push_back(tmpmodel);
 
-					if (SizeRenderIndexBuffer < model.IndexCount[i])
+					if (SizeRenderIndexBuffer < model->IndexCount[i])
 					{
 						mem_release(RenderIndexBuffer);
-						SizeRenderIndexBuffer = model.IndexCount[i];
-						StaticGeom::DXDevice->CreateIndexBuffer(sizeof(UINT)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
+						SizeRenderIndexBuffer = model->IndexCount[i];
+						StaticGeom::DXDevice->CreateIndexBuffer(sizeof(uint32_t)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
 					}
 				}
 				//иначе если влезет в буфер
@@ -269,10 +296,21 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 					AllGroups[k]->ArrModels[gdb.idbuff].push_back(tmpmodel);
 					long lastvbnum = AllGroups[k]->VertexBuffer.size() - 1;
 
-					StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* (AllGroups[k]->CountVertex[lastvbnum] + model.VertexCount[i]), NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+					StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* (AllGroups[k]->CountVertex[lastvbnum] + model->VertexCount[i]), NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
 					
+					Group::VertexBuff* vborigin = new Group::VertexBuff();
+					vborigin->count = (AllGroups[k]->CountVertex[lastvbnum] + model->VertexCount[i]);
+					vborigin->arr = new float3_t[vborigin->count];
+					memcpy(vborigin->arr, AllGroups[k]->VertexBufferOrigin[lastvbnum]->arr, sizeof(float3_t) * AllGroups[k]->CountVertex[lastvbnum]);
+					for (long j = 0; j < model->VertexCount[i]; ++j)
+					{
+						vborigin->arr[AllGroups[k]->CountVertex[lastvbnum]+j] = (model->ArrVertBuf + model->StartVertex[i] + j)->Pos;
+					}
+					mem_delete(AllGroups[k]->VertexBufferOrigin[lastvbnum]);
+					AllGroups[k]->VertexBufferOrigin[lastvbnum] = vborigin;
+
 					gdb.VertexStart = AllGroups[k]->CountVertex[lastvbnum];
-					gdb.VertexCount = model.VertexCount[i];
+					gdb.VertexCount = model->VertexCount[i];
 					
 					if (!FAILED(vb->Lock(0, 0, (void**)&pData, 0)))
 					{
@@ -282,27 +320,26 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 							AllGroups[k]->VertexBuffer[lastvbnum]->Unlock();
 						}
 
-						memcpy(pData + AllGroups[k]->CountVertex[lastvbnum], model.ArrVertBuf + model.StartVertex[i], sizeof(vertex_static)* (model.VertexCount[i]));
+						memcpy(pData + AllGroups[k]->CountVertex[lastvbnum], model->ArrVertBuf + model->StartVertex[i], sizeof(vertex_static)* (model->VertexCount[i]));
 						vb->Unlock();
 					}
 
-					AllGroups[k]->AllCountVertex += model.VertexCount[i];
-					AllGroups[k]->CountVertex[lastvbnum] += model.VertexCount[i];
+					AllGroups[k]->AllCountVertex += model->VertexCount[i];
+					AllGroups[k]->CountVertex[lastvbnum] += model->VertexCount[i];
 					mem_release(AllGroups[k]->VertexBuffer[lastvbnum]);
 					AllGroups[k]->VertexBuffer[lastvbnum] = vb;
 
-
 					gdb.IndexStart = AllGroups[k]->CountIndex[lastvbnum];
-					gdb.IndexCount = model.IndexCount[i];
+					gdb.IndexCount = model->IndexCount[i];
 
-					AllGroups[k]->AllCountIndex += model.IndexCount[i];
-					AllGroups[k]->CountIndex[lastvbnum] += model.IndexCount[i];
+					AllGroups[k]->AllCountIndex += model->IndexCount[i];
+					AllGroups[k]->CountIndex[lastvbnum] += model->IndexCount[i];
 
-					if (SizeRenderIndexBuffer < (AllGroups[k]->CountIndex[lastvbnum] + model.IndexCount[i]))
+					if (SizeRenderIndexBuffer < (AllGroups[k]->CountIndex[lastvbnum] + model->IndexCount[i]))
 					{
 						mem_release(RenderIndexBuffer);
-						SizeRenderIndexBuffer = (AllGroups[k]->CountIndex[lastvbnum] + model.IndexCount[i]);
-						StaticGeom::DXDevice->CreateIndexBuffer(sizeof(UINT)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
+						SizeRenderIndexBuffer = (AllGroups[k]->CountIndex[lastvbnum] + model->IndexCount[i]);
+						StaticGeom::DXDevice->CreateIndexBuffer(sizeof(uint32_t)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
 					}
 				}
 
@@ -320,42 +357,53 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 			gdb.idbuff = 0;
 			gdb.idgroup = AllGroups.size();
 			gdb.VertexStart = 0;
-			gdb.VertexCount = model.VertexCount[i];
+			gdb.VertexCount = model->VertexCount[i];
 			gdb.IndexStart = 0;
-			gdb.IndexCount = model.IndexCount[i];
+			gdb.IndexCount = model->IndexCount[i];
 
 			tmpmodel->SubSet.push_back(gdb);
 
 			IDirect3DVertexBuffer9* vb;
-			StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* model.VertexCount[i], NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
-			ngroup->AllCountVertex = model.VertexCount[i];
-			ngroup->CountVertex.push_back(model.VertexCount[i]);
+			StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* model->VertexCount[i], NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+			
+			Group::VertexBuff* vborigin = new Group::VertexBuff();
+			vborigin->count = model->VertexCount[i];
+			vborigin->arr = new float3_t[vborigin->count];
+
+			for (long k = 0; k < model->VertexCount[i]; ++k)
+			{
+				vborigin->arr[k] = (model->ArrVertBuf + model->StartVertex[i] + k)->Pos;
+			}
+
+			ngroup->AllCountVertex = model->VertexCount[i];
+			ngroup->CountVertex.push_back(model->VertexCount[i]);
 			vertex_static * pData;
 			if (!FAILED(vb->Lock(0, 0, (void**)&pData, 0)))
 			{
-				memcpy(pData, model.ArrVertBuf + model.StartVertex[i], sizeof(vertex_static)* model.VertexCount[i]);
+				memcpy(pData, model->ArrVertBuf + model->StartVertex[i], sizeof(vertex_static)* model->VertexCount[i]);
 				vb->Unlock();
 			}
 
-			UpdateArrMeshVertex2(model.AllVertexCount, model.ArrVertBuf);
+			//UpdateArrMeshVertex2(model->AllVertexCount, model->ArrVertBuf);
 
-			ngroup->AllCountIndex = model.IndexCount[i];
-			ngroup->CountIndex.push_back(model.IndexCount[i]);
+			ngroup->AllCountIndex = model->IndexCount[i];
+			ngroup->CountIndex.push_back(model->IndexCount[i]);
 			
 			ngroup->VertexBuffer.push_back(vb);
+			ngroup->VertexBufferOrigin.push_back(vborigin);
 			
-			if (SizeRenderIndexBuffer < model.IndexCount[i])
+			if (SizeRenderIndexBuffer < model->IndexCount[i])
 			{
 				mem_release(RenderIndexBuffer);
-				SizeRenderIndexBuffer = model.IndexCount[i];
-				StaticGeom::DXDevice->CreateIndexBuffer(sizeof(UINT)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
+				SizeRenderIndexBuffer = model->IndexCount[i];
+				StaticGeom::DXDevice->CreateIndexBuffer(sizeof(uint32_t)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
 			}
 
 			char tmptex[1024];
-			sprintf(tmptex, "%s.dds", model.ArrTextures[i]);
+			sprintf(tmptex, "%s.dds", model->ArrTextures[i]);
 
 			ngroup->idtex = SGCore_LoadTexAddName(tmptex);
-			ngroup->name = model.ArrTextures[i];
+			ngroup->name = model->ArrTextures[i];
 			AllGroups.push_back(ngroup);
 		}
 	}
@@ -364,7 +412,7 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 
 	SetModelLodPath(AllModels.size() - 1, lod1);
 	
-	PreSegmentation(tmpmodel, &model);
+	PreSegmentation(tmpmodel, model);
 
 	SetSplitID(tmpmodel->ArrSplits, &tmpmodel->SplitsIDs, &tmpmodel->SplitsIDsRender);
 
@@ -393,22 +441,8 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 
 	BoundVolume->SetMinMax(&jmin2, &jmax2);
 	
-	//удал€ем загруженную модель
-	mem_release_del(model.VertexBuffer);
-	mem_release_del(model.IndexBuffer);
-
-	for (DWORD i = 0; i < model.SubsetCount; ++i)
-	{
-		mem_delete_a(model.ArrTextures[i]);
-	}
-
-	mem_delete_a(model.ArrTextures);
-	mem_delete_a(model.StartIndex);
-	mem_delete_a(model.IndexCount);
-	mem_delete_a(model.StartVertex);
-	mem_delete_a(model.VertexCount);
-
-	return AllModels.size()-1;
+	mem_release_del(model);
+	return AllModels.size() - 1;
 }
 
 void StaticGeom::DelModel(long id)
@@ -429,100 +463,138 @@ void StaticGeom::DelModel(long id)
 		idgroup = tmpmodel->SubSet[i].idgroup;
 		idbuff = tmpmodel->SubSet[i].idbuff;
 
+
+		if (AllGroups[idgroup]->CountVertex.size() != AllGroups[idgroup]->VertexBuffer.size())
+			int qwert = 0;
+	}
+
+	for (long i = 0; i < tmpmodel->SubSet.size(); ++i)
+	{
+		idgroup = tmpmodel->SubSet[i].idgroup;
+		idbuff = tmpmodel->SubSet[i].idbuff;
+
+		if (AllGroups.size() <= idgroup)
+			continue;
+
 		long tmpcountvertexi = AllGroups[idgroup]->CountVertex[idbuff];
 		long tmpcountvertex = tmpmodel->SubSet[i].VertexCount;
+		long tmpcountstartvertex = tmpmodel->SubSet[i].VertexStart;
 
-		if (AllGroups[idgroup]->CountVertex[idbuff] > tmpmodel->SubSet[i].VertexCount)
+		if (AllGroups[idgroup]->CountVertex[idbuff] > tmpmodel->SubSet[i].VertexCount && AllGroups[idgroup]->CountVertex[idbuff] > tmpmodel->SubSet[i].VertexStart + tmpmodel->SubSet[i].VertexCount)
 		{
 			IDirect3DVertexBuffer9* vb;
-			StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* (AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexCount), NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+			StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static) * (AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexCount), NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
+			
+			Group::VertexBuff* vborigin = new Group::VertexBuff();
+			vborigin->count = (AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexCount);
+			vborigin->arr = new float3_t[vborigin->count];
+			
+			
 			AllGroups[idgroup]->AllCountVertex -= tmpmodel->SubSet[i].VertexCount;
 			AllGroups[idgroup]->CountVertex[idbuff] -= tmpmodel->SubSet[i].VertexCount;
 
 			vb->Lock(0, 0, (void**)&pData, 0);
 			AllGroups[idgroup]->VertexBuffer[idbuff]->Lock(0, 0, (void**)&pData2, 0);
+			long tmpvertexstart = tmpmodel->SubSet[i].VertexStart;
 			memcpy(pData, pData2, sizeof(vertex_static)* tmpmodel->SubSet[i].VertexStart);
+			memcpy(vborigin->arr, AllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr, sizeof(float3_t)* tmpmodel->SubSet[i].VertexStart);
 			if (AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexStart > 0)
-				memcpy(pData + tmpmodel->SubSet[i].VertexStart, pData2 + tmpmodel->SubSet[i].VertexStart + tmpmodel->SubSet[i].VertexCount, sizeof(vertex_static)* AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexStart);
+			{
+				memcpy(pData + tmpmodel->SubSet[i].VertexStart, pData2 + tmpmodel->SubSet[i].VertexStart + tmpmodel->SubSet[i].VertexCount, sizeof(vertex_static)* (AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexStart));
+				memcpy(vborigin->arr + tmpmodel->SubSet[i].VertexStart, AllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr + tmpmodel->SubSet[i].VertexStart + tmpmodel->SubSet[i].VertexCount, sizeof(float3_t)* (AllGroups[idgroup]->CountVertex[idbuff] - tmpmodel->SubSet[i].VertexStart));
+
+			}
 			vb->Unlock();
 			AllGroups[idgroup]->VertexBuffer[idbuff]->Unlock();
 
 			mem_release(AllGroups[idgroup]->VertexBuffer[idbuff]);
 			AllGroups[idgroup]->VertexBuffer[idbuff] = vb;
+
+			mem_delete(AllGroups[idgroup]->VertexBufferOrigin[idbuff]);
+			AllGroups[idgroup]->VertexBufferOrigin[idbuff] = vborigin;
 		}
 
-		long tmpidingroup = -1;
-		for (int k = 0; k < AllGroups[idgroup]->ArrModels[idbuff].size(); ++k)
+		if (AllGroups[idgroup]->ArrModels[idbuff].size() > 1)
 		{
-			Model* tmptmpmodel = AllGroups[idgroup]->ArrModels[idbuff][k];
-			if (AllGroups[idgroup]->ArrModels[idbuff][k] == tmpmodel)
+			long tmpidingroup = -1;
+			for (int k = 0; k < AllGroups[idgroup]->ArrModels[idbuff].size(); ++k)
 			{
-				tmpidingroup = k;
-				break;
-			}
-		}
-
-		if (tmpidingroup == -1)
-			int qqwer = 0;
-
-		for (int k = tmpidingroup + 1; k < AllGroups[idgroup]->ArrModels[idbuff].size(); ++k)
-		{
-			for (int j = 0; j < AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet.size(); ++j)
-			{
-				if (AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet[j].idgroup == idgroup)
+				Model* tmptmpmodel = AllGroups[idgroup]->ArrModels[idbuff][k];
+				if (AllGroups[idgroup]->ArrModels[idbuff][k] == tmpmodel)
 				{
-					AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet[j].VertexStart -= tmpmodel->SubSet[i].VertexCount;
+					tmpidingroup = k;
 					break;
 				}
 			}
 
-			Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
-			long tmpcount = 0;
-			queue.push_back(AllGroups[idgroup]->ArrModels[idbuff][k]->ArrSplits);
-
-			
-			while (queue.size())
+			for (int k = tmpidingroup + 1; k < AllGroups[idgroup]->ArrModels[idbuff].size(); ++k)
 			{
-				if (queue[0]->BFNonEnd)
+				for (int j = 0; j < AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet.size(); ++j)
 				{
-					for (int j = 0; j<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+					if (AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet[j].idgroup == idgroup && AllGroups[idgroup]->ArrModels[idbuff][k] != tmpmodel)
 					{
-						if (queue[0]->Splits[j])
-							queue.push_back(queue[0]->Splits[j]);
+						AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet[j].IndexStart -= tmpmodel->SubSet[i].IndexCount;
+						AllGroups[idgroup]->ArrModels[idbuff][k]->SubSet[j].VertexStart -= tmpmodel->SubSet[i].VertexCount;
+						break;
 					}
 				}
-				else
+
+				Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+				long tmpcount = 0;
+				queue.push_back(AllGroups[idgroup]->ArrModels[idbuff][k]->ArrSplits);
+
+
+				while (queue.size())
 				{
-					for (int j = 0; j < queue[0]->CountSubSet; ++j)
+					if (queue[0]->BFNonEnd)
 					{
-						if (queue[0]->NumberGroup[j] == idgroup)
+						for (int j = 0; j < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
 						{
-							for (int q = 0; q < queue[0]->CountSubSet; ++q)
+							if (queue[0]->Splits[j])
+								queue.push_back(queue[0]->Splits[j]);
+						}
+					}
+					else
+					{
+						for (int j = 0; j < queue[0]->CountSubSet; ++j)
+						{
+							if (queue[0]->NumberGroup[j] == idgroup)
 							{
-								queue[0]->ArrPoly[j][q] -= tmpmodel->SubSet[i].VertexCount;
+								for (int q = 0; q < queue[0]->CountSubSet; ++q)
+								{
+									queue[0]->ArrPoly[j][q] -= tmpmodel->SubSet[i].VertexCount;
+								}
 							}
 						}
 					}
+
+					queue.erase(0);
+					++tmpcount;
 				}
-
-				queue.erase(0);
-				++tmpcount;
 			}
-		}
 
-		AllGroups[idgroup]->ArrModels[idbuff].erase(tmpidingroup);
+			AllGroups[idgroup]->ArrModels[idbuff].erase(tmpidingroup);
+		}
+		else if (AllGroups[idgroup]->ArrModels[idbuff].size() == 1)
+			AllGroups[idgroup]->ArrModels[idbuff].erase(0);
+
+		/*Group* tmpggroup = AllGroups[idgroup];
+		long tmpsize = AllGroups[idgroup]->ArrModels[idbuff].size();*/
 		
-		if (tmpcountvertexi <= tmpcountvertex)
+		if (tmpcountvertexi <= tmpcountvertex || tmpcountvertexi <= tmpcountstartvertex + tmpcountvertex)
 		{
 			AllGroups[idgroup]->CountVertex.erase(idbuff);
 			AllGroups[idgroup]->CountIndex.erase(idbuff);
 			mem_release(AllGroups[idgroup]->VertexBuffer[idbuff]);
-			IDirect3DVertexBuffer9* vb = AllGroups[idgroup]->VertexBuffer[idbuff];
+			//IDirect3DVertexBuffer9* vb = AllGroups[idgroup]->VertexBuffer[idbuff];
 			AllGroups[idgroup]->VertexBuffer.erase(idbuff);
 			AllGroups[idgroup]->ArrModels.erase(idbuff);
+			//Group::VertexBuff* tmpduff = AllGroups[idgroup]->VertexBufferOrigin[idbuff];
+			mem_delete(AllGroups[idgroup]->VertexBufferOrigin[idbuff]);
+			AllGroups[idgroup]->VertexBufferOrigin.erase(idbuff);
 		}
 	}
-
+	DelModelInArrCom(id);
 	mem_delete(AllModels[id]);
 	AllModels.erase(id);
 }
@@ -539,10 +611,10 @@ void StaticGeom::SetSplitID(Segment* Split, long* SplitsIDs, long* SplitsIDsRend
 		{
 			queue[0]->ID = (*SplitsIDs);
 			++(*SplitsIDs);
-			for (int i = 0; i<4; i++)
+			for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
 				queue.push_back(queue[0]->Splits[i]);
 		}
-		else if (Split)
+		else if (queue[0])
 		{
 			queue[0]->ID = (*SplitsIDs);
 			queue[0]->SID = (*SplitsIDsRender);
@@ -575,17 +647,17 @@ void StaticGeom::DelArrIndexPtr()
 
 void StaticGeom::InitArrIndexPtr()
 {
-	RTCPUArrIndicesPtrs = new DWORD**[AllGroups.size()];
-	RTCountDrawPoly = new DWORD*[AllGroups.size()];
+	RTCPUArrIndicesPtrs = new uint32_t**[AllGroups.size()];
+	RTCountDrawPoly = new uint32_t*[AllGroups.size()];
 
 	for (DWORD i = 0; i<AllGroups.size(); i++)
 	{
-		RTCountDrawPoly[i] = new DWORD[AllGroups[i]->VertexBuffer.size()];
-		RTCPUArrIndicesPtrs[i] = new DWORD*[AllGroups[i]->VertexBuffer.size()];
+		RTCountDrawPoly[i] = new uint32_t[AllGroups[i]->VertexBuffer.size()];
+		RTCPUArrIndicesPtrs[i] = new uint32_t*[AllGroups[i]->VertexBuffer.size()];
 		
 		for (long k = 0; k < AllGroups[i]->VertexBuffer.size(); ++k)
 		{
-			RTCPUArrIndicesPtrs[i][k] = new DWORD[AllGroups[i]->CountIndex[k]];
+			RTCPUArrIndicesPtrs[i][k] = new uint32_t[AllGroups[i]->CountIndex[k]];
 		}
 	}
 }
@@ -614,18 +686,18 @@ void StaticGeom::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, long
 		else
 		{
 			AllModels[i]->IsRenderLod = false;
-			tmpcount = ArrComFor[id_arr].arr[i]->Count;
-			ArrComFor[id_arr].arr[i]->CountCom = 0;
-			tmpcountcom = &(ArrComFor[id_arr].arr[i]->CountCom);
-			tmpsegments = ArrComFor[id_arr].arr[i]->Arr;
+			tmpcount = ArrComFor[id_arr]->arr[i]->Count;
+			ArrComFor[id_arr]->arr[i]->CountCom = 0;
+			tmpcountcom = &(ArrComFor[id_arr]->arr[i]->CountCom);
+			tmpsegments = ArrComFor[id_arr]->arr[i]->Arr;
 
-			ArrComFor[id_arr].queue.push_back(AllModels[i]->ArrSplits);
+			ArrComFor[id_arr]->queue.push_back(AllModels[i]->ArrSplits);
 
-			while (ArrComFor[id_arr].queue.size())
+			while (ArrComFor[id_arr]->queue.size())
 			{
-				ComRecArrIndeces(frustum, tmpsegments, tmpcountcom, ArrComFor[id_arr].queue[0], viewpos, &ArrComFor[id_arr].queue, tmpcount);
+				ComRecArrIndeces(frustum, tmpsegments, tmpcountcom, ArrComFor[id_arr]->queue[0], viewpos, &ArrComFor[id_arr]->queue, tmpcount);
 
-				ArrComFor[id_arr].queue.erase(0);
+				ArrComFor[id_arr]->queue.erase(0);
 				++tmpcount;
 			}
 		}
@@ -780,7 +852,7 @@ void StaticGeom::GPURenderModels(DWORD timeDelta, long id_arr)
 						StaticGeom::DXDevice->SetIndices(RenderIndexBuffer);
 						StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
 						StaticGeom::DXDevice->SetTexture(0, SGCore_GetTex(AllGroups[jnumgroup].idtex));
-						StaticGeom::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, AllGroups[jnumgroup].CountVertex[jidbuff], 0, RTCountDrawPoly[jnumgroup][jidbuff]);
+						FuncDIP(StaticGeom::DXDevice,D3DPT_TRIANGLELIST, 0, 0, AllGroups[jnumgroup].CountVertex[jidbuff], 0, RTCountDrawPoly[jnumgroup][jidbuff]);
 					}
 			}
 		}
@@ -795,33 +867,33 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 	Segment** jarrsplits;
 	long jidbuff;
 	long jnumgroup;
-
+	//reportf(0, "111111111111111\n");
 	//обнул€ем все данные об отрисованном в прошлый раз
 	for (DWORD i = 0; i < AllGroups.size(); i++)
 	{
 		for (long k = 0; k < AllGroups[i]->VertexBuffer.size(); ++k)
 			RTCountDrawPoly[i][k] = 0;
 	}
-
+	//reportf(0, "222222222222222\n");
 	//проходимс€ по всем модел€м
 	for (int i = 0; i < AllModels.size(); ++i)
 	{
 		if (AllModels[i]->IsRenderLod)
 		{
-			DXDevice->SetStreamSource(0, AllModels[i]->Lod0.model->VertexBuffer, 0, sizeof(vertex_static));
-			DXDevice->SetIndices(AllModels[i]->Lod0.model->IndexBuffer);
-			DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
+			StaticGeom::DXDevice->SetStreamSource(0, AllModels[i]->Lod0.model->VertexBuffer, 0, sizeof(vertex_static));
+			StaticGeom::DXDevice->SetIndices(AllModels[i]->Lod0.model->IndexBuffer);
+			StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
 			for (int k = 0; k < AllModels[i]->Lod0.model->SubsetCount; ++k)
 			{
-				DXDevice->SetTexture(0, SGCore_GetTex(AllModels[i]->Lod0.IDsTexs[k]));
-				DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, AllModels[i]->Lod0.model->VertexCount[k], AllModels[i]->Lod0.model->StartIndex[k], AllModels[i]->Lod0.model->IndexCount[k] / 3);
+				StaticGeom::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(AllModels[i]->Lod0.IDsTexs[k]));
+				FuncDIP(StaticGeom::DXDevice, D3DPT_TRIANGLELIST, 0, 0, AllModels[i]->Lod0.model->VertexCount[k], AllModels[i]->Lod0.model->StartIndex[k], AllModels[i]->Lod0.model->IndexCount[k] / 3);
 			}
 		}
-		else if (ArrComFor[id_arr].arr[i]->CountCom > 0)
+		else if (ArrComFor[id_arr]->arr[i]->CountCom > 0)
 		{
-			for (DWORD j = 0; j<ArrComFor[id_arr].arr[i]->CountCom; j++)
+			for (DWORD j = 0; j<ArrComFor[id_arr]->arr[i]->CountCom; j++)
 			{
-				jarrsplits = ArrComFor[id_arr].arr[i]->Arr;
+				jarrsplits = ArrComFor[id_arr]->arr[i]->Arr;
 				for (DWORD k = 0; k<jarrsplits[j]->CountSubSet; ++k)
 				{
 					jidbuff = AllModels[i]->SubSet[jarrsplits[j]->NumberGroupModel[k]].idbuff;
@@ -832,10 +904,9 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 						RTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->CountPoly[k] <= AllGroups[jnumgroup]->CountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна€ подгруппа
 						)
 					{
-						DWORD* tmptmptmp = jarrsplits[j]->ArrPoly[k] + (jarrsplits[j]->CountPoly[k] * 3) - 1;
 						memcpy(RTCPUArrIndicesPtrs[jnumgroup][jidbuff] + (RTCountDrawPoly[jnumgroup][jidbuff] * 3),
 							jarrsplits[j]->ArrPoly[k],
-							jarrsplits[j]->CountPoly[k] * sizeof(DWORD)* 3);
+							jarrsplits[j]->CountPoly[k] * sizeof(uint32_t)* 3);
 						
 						RTCountDrawPoly[jnumgroup][jidbuff] += jarrsplits[j]->CountPoly[k];
 					}
@@ -844,8 +915,8 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 		}
 	}
 
-	DWORD* RTGPUArrIndicesPtrs2;
-
+	uint32_t* RTGPUArrIndicesPtrs2;
+	//reportf(0, "333333333333333\n");
 	for (int i = 0; i < AllGroups.size(); ++i)
 	{
 		for (int k = 0; k<AllGroups[i]->VertexBuffer.size(); ++k)
@@ -853,20 +924,23 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 			if (RTCountDrawPoly[i][k] > 0)
 			{
 				RenderIndexBuffer->Lock(0, 0, (void**)&(RTGPUArrIndicesPtrs2), D3DLOCK_DISCARD);
-				memcpy(RTGPUArrIndicesPtrs2, RTCPUArrIndicesPtrs[i][k], RTCountDrawPoly[i][k] * 3 * sizeof(DWORD));
+				memcpy(RTGPUArrIndicesPtrs2, RTCPUArrIndicesPtrs[i][k], RTCountDrawPoly[i][k] * 3 * sizeof(uint32_t));
 				RenderIndexBuffer->Unlock();
 				
 				StaticGeom::DXDevice->SetStreamSource(0, AllGroups[i]->VertexBuffer[k], 0, sizeof(vertex_static));
 				StaticGeom::DXDevice->SetIndices(RenderIndexBuffer);
 				StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
-				StaticGeom::DXDevice->SetTexture(0, SGCore_GetTex(AllGroups[i]->idtex));
-				StaticGeom::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, AllGroups[i]->CountVertex[k], 0, RTCountDrawPoly[i][k]);
+				StaticGeom::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(AllGroups[i]->idtex));
+
+				FuncDIP(StaticGeom::DXDevice, D3DPT_TRIANGLELIST, 0, 0, AllGroups[i]->CountVertex[k], 0, RTCountDrawPoly[i][k]);
 			}
 		}
 	}
+
+	//reportf(0, "@@@@@@@@@@@@@@@@@\n");
 }
 
-void StaticGeom::PreSegmentation(Model* mesh, DataStaticModel* model)
+void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 {
 	vertex_static *CreateV;
 	mem_delete_a(ArrMeshVertex);
@@ -992,9 +1066,9 @@ void StaticGeom::PreSegmentation(Model* mesh, DataStaticModel* model)
 	//}}
 
 	mesh->ArrSplits->CountSubSet = model->SubsetCount;
-	mesh->ArrSplits->NumberGroup = new DWORD[model->SubsetCount];
-	mesh->ArrSplits->NumberGroupModel = new DWORD[model->SubsetCount];
-	mesh->ArrSplits->CountPoly = new DWORD[model->SubsetCount];
+	mesh->ArrSplits->NumberGroup = new uint32_t[model->SubsetCount];
+	mesh->ArrSplits->NumberGroupModel = new uint32_t[model->SubsetCount];
+	mesh->ArrSplits->CountPoly = new uint32_t[model->SubsetCount];
 
 	/////
 
@@ -1007,16 +1081,16 @@ void StaticGeom::PreSegmentation(Model* mesh, DataStaticModel* model)
 	}
 
 	//создаем массивы с полигонами, каждый полигон принадлежит своей подгруппе
-	mesh->ArrSplits->ArrPoly = new DWORD*[mesh->ArrSplits->CountSubSet];
+	mesh->ArrSplits->ArrPoly = new uint32_t*[mesh->ArrSplits->CountSubSet];
 	for (DWORD i = 0; i<mesh->ArrSplits->CountSubSet; i++)
 	{
-		mesh->ArrSplits->ArrPoly[i] = new DWORD[mesh->ArrSplits->CountPoly[i] * 3];
+		mesh->ArrSplits->ArrPoly[i] = new uint32_t[mesh->ArrSplits->CountPoly[i] * 3];
 	}
 
 	//заполн€ем массивы с полигонами
 	for (DWORD i = 0; i<model->SubsetCount; i++)
 	{
-		memcpy(mesh->ArrSplits->ArrPoly[i], model->ArrIndBuf + model->StartIndex[i], model->IndexCount[i] * sizeof(DWORD));
+		memcpy(mesh->ArrSplits->ArrPoly[i], model->ArrIndBuf + model->StartIndex[i], model->IndexCount[i] * sizeof(uint32_t));
 	}
 
 	//если количество полигонов и текуща€ установка делени€ позвол€ют делить дальше
@@ -1050,7 +1124,7 @@ void StaticGeom::PreSegmentation(Model* mesh, DataStaticModel* model)
 					tmpVert.push_back(mesh->ArrSplits->ArrPoly[q][k]);
 			}
 
-			SGCore_OptimizeIndecesInSubsetDword(mesh->ArrSplits->ArrPoly[q], mesh->ArrSplits->CountPoly[q], tmpVert.size());
+			SGCore_OptimizeIndecesInSubsetUint32(mesh->ArrSplits->ArrPoly[q], mesh->ArrSplits->CountPoly[q], tmpVert.size());
 		}
 		//}}
 
@@ -1070,7 +1144,7 @@ void StaticGeom::PreSegmentation(Model* mesh, DataStaticModel* model)
 	}
 }
 
-void StaticGeom::CycleSegmentation(Segment *Split, Model* mesh, DataStaticModel* model, long CountSplitsSys, long CountPolyInSegment)
+void StaticGeom::CycleSegmentation(Segment *Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment)
 {
 	Array<Segment*> queue;
 	long tmpcount = 0;
@@ -1095,7 +1169,7 @@ void StaticGeom::CycleSegmentation(Segment *Split, Model* mesh, DataStaticModel*
 }
 
 
-void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue)
+void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue)
 {
 	Array<DWORD> ArrPoly[8];
 	Array<DWORD> ArrGroup[8];
@@ -1273,8 +1347,8 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* mode
 			}
 
 			//
-			Split->Splits[i]->NumberGroup = new DWORD[Split->Splits[i]->CountSubSet];
-			Split->Splits[i]->NumberGroupModel = new DWORD[Split->Splits[i]->CountSubSet];
+			Split->Splits[i]->NumberGroup = new uint32_t[Split->Splits[i]->CountSubSet];
+			Split->Splits[i]->NumberGroupModel = new uint32_t[Split->Splits[i]->CountSubSet];
 
 			for (DWORD k = 0; k<Split->Splits[i]->CountSubSet; k++)
 			{
@@ -1284,7 +1358,7 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* mode
 
 			tmpNumSubSet.clear();
 
-			Split->Splits[i]->CountPoly = new DWORD[Split->Splits[i]->CountSubSet];
+			Split->Splits[i]->CountPoly = new uint32_t[Split->Splits[i]->CountSubSet];
 
 			//обнуление данных GlobalMesh->SplitMeshes[i]->CountPoly
 			for (DWORD j = 0; j<Split->Splits[i]->CountSubSet; j++)
@@ -1306,13 +1380,13 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* mode
 				}
 			}
 
-			Split->Splits[i]->ArrPoly = new DWORD*[Split->Splits[i]->CountSubSet];
+			Split->Splits[i]->ArrPoly = new uint32_t*[Split->Splits[i]->CountSubSet];
 			
 			for (DWORD j = 0; j<Split->Splits[i]->CountSubSet; j++)
 			{
-				Split->Splits[i]->ArrPoly[j] = new DWORD[Split->Splits[i]->CountPoly[j] * 3];
+				Split->Splits[i]->ArrPoly[j] = new uint32_t[Split->Splits[i]->CountPoly[j] * 3];
 			}
-			DWORD* tmpCountPG = new DWORD[Split->Splits[i]->CountSubSet];
+			uint32_t* tmpCountPG = new uint32_t[Split->Splits[i]->CountSubSet];
 
 			for (DWORD k = 0; k<Split->Splits[i]->CountSubSet; k++)
 			{
@@ -1340,18 +1414,20 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* mode
 
 			mem_delete_a(tmpCountPG);
 
-			EditVolume(mesh, Split->Splits[i]);
+			
 
 			if (Split->Splits[i]->CountAllPoly > 0 && Split->Splits[i]->CountAllPoly > CountPolyInSegment)
+			{
 				Split->Splits[i]->BFNonEnd = true;
+			}
 			else
 			{
 				Split->Splits[i]->BFNonEnd = false;
-
+				EditVolume(mesh, Split->Splits[i]);
 
 				//оптимизаци€ дл€ Post TnL кэша
 				//{{
-				Array<DWORD> tmpVert;
+				Array<uint32_t> tmpVert;
 				bool isunic = true;
 				for (DWORD q = 0; q<Split->Splits[i]->CountSubSet; q++)
 				{
@@ -1372,7 +1448,7 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* mode
 							tmpVert.push_back(Split->Splits[i]->ArrPoly[q][k]);
 					}
 
-					SGCore_OptimizeIndecesInSubsetDword(Split->Splits[i]->ArrPoly[q], Split->Splits[i]->CountPoly[q], tmpVert.size());
+					SGCore_OptimizeIndecesInSubsetUint32(Split->Splits[i]->ArrPoly[q], Split->Splits[i]->CountPoly[q], tmpVert.size());
 				}
 				//}}
 				
@@ -1397,7 +1473,7 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, DataStaticModel* mode
 			mem_delete(Split->Splits[i]);
 		}
 	}
-
+	EditVolume(mesh, Split);
 	mem_delete_a(Split->NumberGroup);
 	
 	mem_delete_a(Split->CountPoly);
@@ -1452,46 +1528,47 @@ void StaticGeom::EditVolume(Model* mesh, Segment* Split)
 void StaticGeom::Save(const char* path)
 {
 	FILE* file = fopen(path, "wb");
-
+	
 	//записываем количество подгрупп
-	long countgroup = AllGroups.size();
-	fwrite(&countgroup, sizeof(long), 1, file);
+	int32_t countgroup = AllGroups.size();
+	fwrite(&countgroup, sizeof(int32_t), 1, file);
 
 	vertex_static * pData;
 
 	for (long i = 0; i < AllGroups.size(); ++i)
 	{
-		long tmpstrlen = AllGroups[i]->name.length();
-		fwrite(&tmpstrlen, sizeof(long), 1, file);
+		int32_t tmpstrlen = AllGroups[i]->name.length();
+		fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 		fwrite(AllGroups[i]->name.c_str(), sizeof(char), tmpstrlen, file);
 
 		//записываем количество буферов в подгруппе
-		long countbuffingroup = AllGroups[i]->VertexBuffer.size();
-		fwrite(&countbuffingroup, sizeof(long), 1, file);
+		int32_t countbuffingroup = AllGroups[i]->VertexBuffer.size();
+		fwrite(&countbuffingroup, sizeof(int32_t), 1, file);
 
 		for (long k = 0; k < AllGroups[i]->CountVertex.size(); ++k)
 		{
 			//записываем количество моделей, которые используют данную подгруппу
-			long countusingmodels = AllGroups[i]->ArrModels[k].size();
-			fwrite(&countusingmodels, sizeof(long), 1, file);
-
-			for (long j = 0; j < AllGroups[i]->ArrModels[k].size(); ++j)
+			int32_t countusingmodels = AllGroups[i]->ArrModels[k].size();
+			fwrite(&countusingmodels, sizeof(int32_t), 1, file);
+			int32_t tmpcountusingmodels = 0;
+			for (int32_t j = 0; j < AllGroups[i]->ArrModels[k].size(); ++j)
 			{
-				for (long q = 0; q < AllModels.size(); ++q)
+				for (int32_t q = 0; q < AllModels.size(); ++q)
 				{
 					if (AllModels[q] == AllGroups[i]->ArrModels[k][j])
 					{
-						fwrite(&(q), sizeof(long), 1, file);
+						fwrite(&(q), sizeof(int32_t), 1, file);
+						++tmpcountusingmodels;
 						break;
 					}
 				}
 			}
 
 			//записываем количество вершин в буфере подгруппы
-			fwrite(&AllGroups[i]->CountVertex[k], sizeof(long), 1, file);
+			fwrite(&AllGroups[i]->CountVertex[k], sizeof(int32_t), 1, file);
 
 			//записываем количество индексов в буфере подгруппы
-			fwrite(&AllGroups[i]->CountIndex[k], sizeof(long), 1, file);
+			fwrite(&AllGroups[i]->CountIndex[k], sizeof(int32_t), 1, file);
 
 			//записываем весь вершинный буфер подгруппы
 			AllGroups[i]->VertexBuffer[k]->Lock(0, 0, (void**)&pData, 0);
@@ -1501,24 +1578,24 @@ void StaticGeom::Save(const char* path)
 	}
 
 	//записываем количество моделей
-	long countmodels = AllModels.size();
-	fwrite(&countmodels, sizeof(long), 1, file);
+	int32_t countmodels = AllModels.size();
+	fwrite(&countmodels, sizeof(int32_t), 1, file);
 
 	for (long i = 0; i < AllModels.size(); ++i)
 	{
-		long countsubset = AllModels[i]->SubSet.size();
-		fwrite(&countsubset, sizeof(long), 1, file);
+		int32_t countsubset = AllModels[i]->SubSet.size();
+		fwrite(&countsubset, sizeof(int32_t), 1, file);
 
-		long countlenstr = strlen(AllModels[i]->Name);
-		fwrite(&countlenstr, sizeof(long), 1, file);
+		int32_t countlenstr = strlen(AllModels[i]->Name);
+		fwrite(&countlenstr, sizeof(int32_t), 1, file);
 		fwrite(&AllModels[i]->Name, sizeof(char), countlenstr, file);
 
 		countlenstr = strlen(AllModels[i]->PathName);
-		fwrite(&countlenstr, sizeof(long), 1, file);
+		fwrite(&countlenstr, sizeof(int32_t), 1, file);
 		fwrite(&AllModels[i]->PathName, sizeof(char), countlenstr, file);
 
 		
-		fwrite(&AllModels[i]->CountPoly, sizeof(long), 1, file);
+		fwrite(&AllModels[i]->CountPoly, sizeof(int32_t), 1, file);
 		
 		fwrite(&AllModels[i]->Position.x, sizeof(float), 1, file);
 		fwrite(&AllModels[i]->Position.y, sizeof(float), 1, file);
@@ -1535,13 +1612,13 @@ void StaticGeom::Save(const char* path)
 		if (AllModels[i]->Lod0.model)
 		{
 			countlenstr = strlen(AllModels[i]->Lod0.PathName);
-			fwrite(&countlenstr, sizeof(long), 1, file);
+			fwrite(&countlenstr, sizeof(int32_t), 1, file);
 			fwrite(AllModels[i]->Lod0.PathName, sizeof(char), countlenstr, file);
 		}
 		else
 		{
 			countlenstr = 0;
-			fwrite(&countlenstr, sizeof(long), 1, file);
+			fwrite(&countlenstr, sizeof(int32_t), 1, file);
 		}
 
 		for (long k = 0; k < AllModels[i]->SubSet.size(); ++k)
@@ -1586,9 +1663,9 @@ void StaticGeom::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 	fwrite(&jmax.y, sizeof(float), 1, file);
 	fwrite(&jmax.z, sizeof(float), 1, file);
 
-	fwrite(&Split->CountAllPoly, sizeof(DWORD), 1, file);
+	fwrite(&Split->CountAllPoly, sizeof(uint32_t), 1, file);
 
-	fwrite(&Split->BFNonEnd, sizeof(bool), 1, file);
+	fwrite(&Split->BFNonEnd, sizeof(int8_t), 1, file);
 
 	if (Split->BFNonEnd)
 	{
@@ -1598,13 +1675,13 @@ void StaticGeom::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 			if (Split->Splits[i])
 			{
 				isexists = true;
-				fwrite(&isexists, sizeof(bool), 1, file);
+				fwrite(&isexists, sizeof(int8_t), 1, file);
 				queue->push_back(Split->Splits[i]);
 			}
 			else
 			{
 				isexists = false;
-				fwrite(&isexists, sizeof(bool), 1, file);
+				fwrite(&isexists, sizeof(int8_t), 1, file);
 			}
 
 			isexists = true;
@@ -1612,14 +1689,14 @@ void StaticGeom::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 	}
 	else
 	{
-		fwrite(&Split->CountSubSet, sizeof(DWORD), 1, file);
-		fwrite(Split->NumberGroupModel, sizeof(DWORD)*Split->CountSubSet, 1, file);
-		fwrite(Split->NumberGroup, sizeof(DWORD)*Split->CountSubSet, 1, file);
-		fwrite(Split->CountPoly, sizeof(DWORD)*Split->CountSubSet, 1, file);
+		fwrite(&Split->CountSubSet, sizeof(uint32_t), 1, file);
+		fwrite(Split->NumberGroupModel, sizeof(uint32_t)*Split->CountSubSet, 1, file);
+		fwrite(Split->NumberGroup, sizeof(uint32_t)*Split->CountSubSet, 1, file);
+		fwrite(Split->CountPoly, sizeof(uint32_t)*Split->CountSubSet, 1, file);
 
 		for (long i = 0; i < Split->CountSubSet; ++i)
 		{
-			fwrite(Split->ArrPoly[i], sizeof(DWORD)*Split->CountPoly[i] * 3, 1, file);
+			fwrite(Split->ArrPoly[i], sizeof(uint32_t)*Split->CountPoly[i] * 3, 1, file);
 		}
 	}
 }
@@ -1629,48 +1706,52 @@ void StaticGeom::Load(const char* path)
 {
 	FILE* file = fopen(path, "rb");
 
-	long countgroup = -1;
-	fread(&countgroup, sizeof(long), 1, file);
-	Array<Array<Array<long>>> tmpArrIdsModels;
+	int32_t countgroup = -1;
+	fread(&countgroup, sizeof(int32_t), 1, file);
+	Array<Array<Array<int32_t>>> tmpArrIdsModels;
 	vertex_static * pData;
+	long tmpbigersizebuff = 0;
 
 	for (long i = 0; i < countgroup; ++i)
 	{
 		Group* group = new Group();
-
-		long tmpstrlen;
+		tmpbigersizebuff = 0;
+		int32_t tmpstrlen;
 		char texname[1024];
-		fread(&tmpstrlen, sizeof(long), 1, file);
+		fread(&tmpstrlen, sizeof(int32_t), 1, file);
 		fread(texname, sizeof(char), tmpstrlen, file);
 		texname[tmpstrlen] = 0;
 		group->name = texname;
-
+		
 		group->AllCountVertex = 0;
 		group->AllCountIndex = 0;
 		
 		//записываем количество буферов в подгруппе
-		long countbuffingroup = -1;
-		fread(&countbuffingroup, sizeof(long), 1, file);
+		int32_t countbuffingroup = -1;
+		fread(&countbuffingroup, sizeof(int32_t), 1, file);
 		
 		for (long k = 0; k < countbuffingroup; ++k)
 		{
 			//записываем количество моделей, которые используют данную подгруппу
-			long countusingmodels;
-			fread(&countusingmodels, sizeof(long), 1, file);
-			long tmpnummodel;
+			int32_t countusingmodels;
+			fread(&countusingmodels, sizeof(int32_t), 1, file);
+			int32_t tmpnummodel;
 			for (long j = 0; j < countusingmodels; ++j)
 			{
-				fread(&tmpnummodel, sizeof(long), 1, file);
+				fread(&tmpnummodel, sizeof(int32_t), 1, file);
 				tmpArrIdsModels[i][k].push_back(tmpnummodel);
 			}
 
 			//записываем количество вершин в буфере подгруппы
-			fread(&group->CountVertex[k], sizeof(long), 1, file);
+			fread(&group->CountVertex[k], sizeof(int32_t), 1, file);
 			group->AllCountVertex += group->CountVertex[k];
-
+			
 			//записываем количество индексов в буфере подгруппы
-			fread(&group->CountIndex[k], sizeof(long), 1, file);
+			fread(&group->CountIndex[k], sizeof(int32_t), 1, file);
 			group->AllCountIndex += group->CountIndex[k];
+
+			if (tmpbigersizebuff < group->CountIndex[k])
+				tmpbigersizebuff = group->CountIndex[k];
 
 			IDirect3DVertexBuffer9* vb;
 			StaticGeom::DXDevice->CreateVertexBuffer(sizeof(vertex_static)* group->CountVertex[k], NULL, NULL, D3DPOOL_MANAGED, &vb, 0);
@@ -1679,10 +1760,20 @@ void StaticGeom::Load(const char* path)
 			vb->Lock(0, 0, (void**)&pData, 0);
 			fread(pData, sizeof(vertex_static), group->CountVertex[k], file);
 		
-			UpdateArrMeshVertex2(group->CountVertex[k], pData);
+			Group::VertexBuff* vborigin = new Group::VertexBuff();
+			vborigin->count = group->CountVertex[k];
+			vborigin->arr = new float3_t[vborigin->count];
+
+			for (long j = 0; j < vborigin->count; ++j)
+			{
+				vborigin->arr[j] = pData[j].Pos;
+			}
+
+			//UpdateArrMeshVertex2(group->CountVertex[k], pData);
 			vb->Unlock();
 
 			group->VertexBuffer.push_back(vb);
+			group->VertexBufferOrigin.push_back(vborigin);
 		}
 		
 		char tmptex[1024];
@@ -1692,37 +1783,36 @@ void StaticGeom::Load(const char* path)
 
 		AllGroups.push_back(group);
 
-		if (SizeRenderIndexBuffer < group->CountIndex[i])
+		if (RenderIndexBuffer == 0 || SizeRenderIndexBuffer < tmpbigersizebuff)
 		{
 			mem_release(RenderIndexBuffer);
-			SizeRenderIndexBuffer = group->CountIndex[i];
-			StaticGeom::DXDevice->CreateIndexBuffer(sizeof(UINT)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
+			SizeRenderIndexBuffer = tmpbigersizebuff;
+			StaticGeom::DXDevice->CreateIndexBuffer(sizeof(uint32_t)* SizeRenderIndexBuffer, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &RenderIndexBuffer, 0);
 		}
 	}
 
 	//записываем количество моделей
-	long countmodels = AllModels.size();
-	fread(&countmodels, sizeof(long), 1, file);
+	int32_t countmodels = AllModels.size();
+	fread(&countmodels, sizeof(int32_t), 1, file);
 
 	for (long i = 0; i < countmodels; ++i)
 	{
 		AllModels[i] = new Model();
 
-		long countsubset;
-		fread(&countsubset, sizeof(long), 1, file);
+		int32_t countsubset;
+		fread(&countsubset, sizeof(int32_t), 1, file);
 
-		long countlenstr = 0;
-		fread(&countlenstr, sizeof(long), 1, file);
+		int32_t countlenstr = 0;
+		fread(&countlenstr, sizeof(int32_t), 1, file);
 		fread(&AllModels[i]->Name, sizeof(char), countlenstr, file);
 		AllModels[i]->Name[countlenstr] = 0;
-
+		
 		countlenstr = 0;
-		fread(&countlenstr, sizeof(long), 1, file);
+		fread(&countlenstr, sizeof(int32_t), 1, file);
 		fread(&AllModels[i]->PathName, sizeof(char), countlenstr, file);
 		AllModels[i]->PathName[countlenstr] = 0;
 
-
-		fread(&AllModels[i]->CountPoly, sizeof(long), 1, file);
+		fread(&AllModels[i]->CountPoly, sizeof(int32_t), 1, file);
 
 		fread(&AllModels[i]->Position.x, sizeof(float), 1, file);
 		fread(&AllModels[i]->Position.y, sizeof(float), 1, file);
@@ -1742,7 +1832,8 @@ void StaticGeom::Load(const char* path)
 
 		WorldMat = SMMatrixScaling(AllModels[i]->Scale) * SMMatrixRotationX(AllModels[i]->Rotation.x) * SMMatrixRotationY(AllModels[i]->Rotation.y) * SMMatrixRotationZ(AllModels[i]->Rotation.z) * SMMatrixTranslation(AllModels[i]->Position);
 
-		fread(&countlenstr, sizeof(long), 1, file);
+		fread(&countlenstr, sizeof(int32_t), 1, file);
+		
 		if (countlenstr > 0)
 		{
 			fread(AllModels[i]->Lod0.PathName, sizeof(char), countlenstr, file);
@@ -1840,9 +1931,9 @@ void StaticGeom::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue
 	(*Split)->BoundVolumeP = SGCore_CrBound();
 	(*Split)->BoundVolumeP->SetMinMax(&jmin, &jmax);
 
-	fread(&(*Split)->CountAllPoly, sizeof(DWORD), 1, file);
+	fread(&(*Split)->CountAllPoly, sizeof(uint32_t), 1, file);
 
-	fread(&(*Split)->BFNonEnd, sizeof(bool), 1, file);
+	fread(&(*Split)->BFNonEnd, sizeof(int8_t), 1, file);
 
 	if ((*Split)->BFNonEnd)
 	{
@@ -1850,7 +1941,7 @@ void StaticGeom::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue
 
 		for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
 		{
-			fread(&isexists, sizeof(bool), 1, file);
+			fread(&isexists, sizeof(int8_t), 1, file);
 			if (isexists)
 				queue->push_back(&((*Split)->Splits[i]));
 
@@ -1859,22 +1950,22 @@ void StaticGeom::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue
 	}
 	else
 	{
-		fread(&(*Split)->CountSubSet, sizeof(DWORD), 1, file);
+		fread(&(*Split)->CountSubSet, sizeof(uint32_t), 1, file);
 
-		(*Split)->NumberGroupModel = new DWORD[(*Split)->CountSubSet];
-		(*Split)->NumberGroup = new DWORD[(*Split)->CountSubSet];
-		(*Split)->CountPoly = new DWORD[(*Split)->CountSubSet];
+		(*Split)->NumberGroupModel = new uint32_t[(*Split)->CountSubSet];
+		(*Split)->NumberGroup = new uint32_t[(*Split)->CountSubSet];
+		(*Split)->CountPoly = new uint32_t[(*Split)->CountSubSet];
 
-		fread((*Split)->NumberGroupModel, sizeof(DWORD)*(*Split)->CountSubSet, 1, file);
-		fread((*Split)->NumberGroup, sizeof(DWORD)*(*Split)->CountSubSet, 1, file);
-		fread((*Split)->CountPoly, sizeof(DWORD)*(*Split)->CountSubSet, 1, file);
+		fread((*Split)->NumberGroupModel, sizeof(uint32_t)*(*Split)->CountSubSet, 1, file);
+		fread((*Split)->NumberGroup, sizeof(uint32_t)*(*Split)->CountSubSet, 1, file);
+		fread((*Split)->CountPoly, sizeof(uint32_t)*(*Split)->CountSubSet, 1, file);
 
-		(*Split)->ArrPoly = new DWORD*[(*Split)->CountSubSet];
+		(*Split)->ArrPoly = new uint32_t*[(*Split)->CountSubSet];
 
 		for (long i = 0; i < (*Split)->CountSubSet; ++i)
 		{
-			(*Split)->ArrPoly[i] = new DWORD[(*Split)->CountPoly[i] * 3];
-			fread((*Split)->ArrPoly[i], sizeof(DWORD)*(*Split)->CountPoly[i] * 3, 1, file);
+			(*Split)->ArrPoly[i] = new uint32_t[(*Split)->CountPoly[i] * 3];
+			fread((*Split)->ArrPoly[i], sizeof(uint32_t)*(*Split)->CountPoly[i] * 3, 1, file);
 		}
 	}
 }
@@ -1909,7 +2000,7 @@ void StaticGeom::GetIntersectedRayY2(float3* pos, Segment** arrsplits, DWORD *co
 
 bool StaticGeom::GetIntersectedRayY(float3* pos)
 {
-	jpos = pos->operator D3DXVECTOR3();
+	jpos = (D3DXVECTOR3)*pos;
 	BOOL Hit;
 	float u, v, Dist, CountDist;
 	Dist = -1000;
@@ -1919,22 +2010,26 @@ bool StaticGeom::GetIntersectedRayY(float3* pos)
 
 	for (int id = 0; id < AllModels.size(); ++id)
 	{
-		ArrComFor[1].arr[id]->CountCom = 0;
+		ArrComFor[1]->arr[id]->CountCom = 0;
 
-		GetIntersectedRayY2(pos, ArrComFor[1].arr[id]->Arr, &(ArrComFor[1].arr[id]->CountCom), AllModels[id]->ArrSplits, ArrComFor[1].arr[id]->Count);
+		GetIntersectedRayY2(pos, ArrComFor[1]->arr[id]->Arr, &(ArrComFor[1]->arr[id]->CountCom), AllModels[id]->ArrSplits, ArrComFor[1]->arr[id]->Count);
 
-		for (DWORD k = 0; k<ArrComFor[1].arr[id]->CountCom; ++k)
+		for (DWORD k = 0; k<ArrComFor[1]->arr[id]->CountCom; ++k)
 		{
-			for (DWORD group = 0; group<ArrComFor[1].arr[id]->Arr[k]->CountSubSet; group++)
+			for (DWORD group = 0; group<ArrComFor[1]->arr[id]->Arr[k]->CountSubSet; group++)
 			{
-				for (DWORD numpoly = 0; numpoly<ArrComFor[1].arr[id]->Arr[k]->CountPoly[group] * 3; numpoly += 3)
+				for (DWORD numpoly = 0; numpoly<ArrComFor[1]->arr[id]->Arr[k]->CountPoly[group] * 3; numpoly += 3)
 				{
 					Dist = -1000.f;
 					//находим все 3 вершины
-					jvec0 = ArrMeshVertex2[ArrComFor[1].arr[id]->Arr[k]->ArrPoly[group][numpoly]];
+					/*jvec0 = ArrMeshVertex2[ArrComFor[1].arr[id]->Arr[k]->ArrPoly[group][numpoly]];
 					jvec1 = ArrMeshVertex2[ArrComFor[1].arr[id]->Arr[k]->ArrPoly[group][numpoly + 1]];
-					jvec2 = ArrMeshVertex2[ArrComFor[1].arr[id]->Arr[k]->ArrPoly[group][numpoly + 2]];
-
+					jvec2 = ArrMeshVertex2[ArrComFor[1].arr[id]->Arr[k]->ArrPoly[group][numpoly + 2]];*/
+					long idbuff = AllModels[id]->SubSet[ArrComFor[1]->arr[id]->Arr[k]->NumberGroupModel[group]].idbuff;
+					long idgroup = ArrComFor[1]->arr[id]->Arr[k]->NumberGroup[group];
+					jvec0 = AllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly]];
+					jvec1 = AllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly + 1]];
+					jvec2 = AllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly + 2]];
 
 					Hit = D3DXIntersectTri(&(jvec0.operator D3DXVECTOR3()),
 						&(jvec1.operator D3DXVECTOR3()),
@@ -1976,7 +2071,7 @@ inline void StaticGeom::GetMinMax(float3* min, float3* max)
 
 long StaticGeom::AddArrForCom()
 {
-	IRSData ttmpdata;
+	IRSData* ttmpdata = new IRSData();
 	
 	for (long i = 0; i < AllModels.size(); ++i)
 	{
@@ -1984,12 +2079,27 @@ long StaticGeom::AddArrForCom()
 		tmpirs->Count = AllModels[i]->SplitsIDsRender;
 		tmpirs->Arr = new Segment*[AllModels[i]->SplitsIDsRender];
 		tmpirs->CountCom = 0;
-		ttmpdata.arr.push_back(tmpirs);
+		ttmpdata->arr.push_back(tmpirs);
 	}
 
-	ArrComFor.push_back(ttmpdata);
+	long id_arr = -1;
+	for (long i = 0; i < ArrComFor.size(); ++i)
+	{
+		if (ArrComFor[i] == 0)
+		{
+			ArrComFor[i] = ttmpdata;
+			id_arr = i;
+			break;
+		}
+	}
 
-	return ArrComFor.size() - 1;
+	if (id_arr == -1)
+	{
+		ArrComFor.push_back(ttmpdata);
+		id_arr = ArrComFor.size() - 1;
+	}
+
+	return id_arr;
 }
 
 void StaticGeom::DelArrForCom(long id_arr)
@@ -1998,10 +2108,12 @@ void StaticGeom::DelArrForCom(long id_arr)
 
 	for (long i = 0; i < AllModels.size(); ++i)
 	{
-		mem_delete_a(ArrComFor[id_arr].arr[i]->Arr);
+		mem_delete(ArrComFor[id_arr]);
+		//mem_delete_a(ArrComFor[id_arr]-arr[i]->Arr);
+		//ArrComFor[id_arr].arr.clear();
 	}
 
-	ArrComFor.erase(id_arr);
+	//ArrComFor.erase(id_arr);
 }
 
 void StaticGeom::AddModelInArrCom(long id_model)
@@ -2014,7 +2126,7 @@ void StaticGeom::AddModelInArrCom(long id_model)
 		tmpirs->Count = AllModels[id_model]->SplitsIDsRender;
 		tmpirs->Arr = new Segment*[AllModels[id_model]->SplitsIDsRender];
 		tmpirs->CountCom = 0;
-		ArrComFor[i].arr.push_back(tmpirs);
+		ArrComFor[i]->arr.push_back(tmpirs);
 	}
 }
 
@@ -2024,24 +2136,8 @@ void StaticGeom::DelModelInArrCom(long id_model)
 
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
-		mem_delete_a(ArrComFor[i].arr[id_model]->Arr);
-		ArrComFor[i].arr.erase(id_model);
-	}
-}
-
-void StaticGeom::UpdateArrMeshVertex2(long count_vertex, vertex_static* arrvertex)
-{
-	float3* tmpArrMeshVertex2 = new float3[AllCountVertex2 + count_vertex];
-	memcpy(tmpArrMeshVertex2, ArrMeshVertex2, sizeof(float3)* AllCountVertex2);
-	long oldAllCountVertex = AllCountVertex2;
-	AllCountVertex2 = AllCountVertex2 + count_vertex;
-	mem_delete_a(ArrMeshVertex2);
-	ArrMeshVertex2 = new float3[AllCountVertex2];
-	memcpy(ArrMeshVertex2, tmpArrMeshVertex2, sizeof(float3)* AllCountVertex2);
-
-	for (long k = 0; k < count_vertex; ++k)
-	{
-		ArrMeshVertex2[oldAllCountVertex + k] = arrvertex[k].Pos;
+		mem_delete_a(ArrComFor[i]->arr[id_model]->Arr);
+		ArrComFor[i]->arr.erase(id_model);
 	}
 }
 
@@ -2109,10 +2205,10 @@ void StaticGeom::SetModelLodPath(long id, const char* path)
 	if (id < AllModels.size() && def_str_validate(path))
 	{
 		mem_delete(AllModels[id]->Lod0.model);
-		AllModels[id]->Lod0.model = new DataStaticModel();
+		//AllModels[id]->Lod0.model = new DataStaticModel();
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
-		SGCore_LoadStaticModel(tmppath, AllModels[id]->Lod0.model);
+		SGCore_LoadStaticModel(tmppath, &(AllModels[id]->Lod0.model));
 
 		char tmptex[1024];
 
@@ -2123,10 +2219,10 @@ void StaticGeom::SetModelLodPath(long id, const char* path)
 		}
 
 		sprintf(AllModels[id]->Lod0.PathName,"%s",path);
-		float3 jmin, jmax;
-		AllModels[id]->ArrSplits->BoundVolumeP->GetMinMax(&jmin, &jmax);
-		float3 jcentererpos = (jmax + jmin)*0.5f;
-		ApplyTransformLod(id, &jcentererpos);
+		
+		AllModels[id]->Lod0.BoundVolume->CalcBound(AllModels[id]->Lod0.model->VertexBuffer, AllModels[id]->Lod0.model->AllVertexCount, sizeof(vertex_static));
+		
+		ApplyTransformLod(id);
 	}
 }
 
@@ -2144,13 +2240,12 @@ void StaticGeom::ApplyTransform(long id)
 	tmpmodel->ArrSplits->BoundVolumeP->GetMinMax(&jmin, &jmax);
 	float3 jcentererpos = (jmax + jmin)*0.5f;
 	
-	WorldMat = /*SMMatrixScaling(tmpmodel->Scale) **/ SMMatrixRotationX(tmprot.x) * SMMatrixRotationY(tmprot.y) * SMMatrixRotationZ(tmprot.z) * SMMatrixTranslation(tmppos);
+	WorldMat = SMMatrixScaling(tmpscale) * SMMatrixRotationX(tmprot.x) * SMMatrixRotationY(tmprot.y) * SMMatrixRotationZ(tmprot.z) * SMMatrixTranslation(tmppos);
 	
-	float tmpdeterm = 0;
-	float4x4 invmatscale = SMMatrixInverse(&tmpdeterm, SMMatrixScaling(tmpmodel->OldScale));
-	float4x4 matscale = SMMatrixScaling(tmpmodel->Scale);
-	ApplyTransformLod(id, &jcentererpos);
+	ApplyTransformLod(id);
+
 	vertex_static* pData;
+	float3_t* pData2;
 	long idgroup;
 	long idbuff;
 
@@ -2160,7 +2255,7 @@ void StaticGeom::ApplyTransform(long id)
 	{
 		idgroup = tmpmodel->SubSet[i].idgroup;
 		idbuff = tmpmodel->SubSet[i].idbuff;
-
+		pData2 = AllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr;
 		if (!FAILED(AllGroups[idgroup]->VertexBuffer[idbuff]->Lock(0, 0, (void**)&pData, 0)))
 		{
 			vertexstart = tmpmodel->SubSet[i].VertexStart;
@@ -2172,8 +2267,6 @@ void StaticGeom::ApplyTransform(long id)
 				pData[vertexstart + k].Pos.y -= jcentererpos.y;
 				pData[vertexstart + k].Pos.z -= jcentererpos.z;
 
-				pData[vertexstart + k].Pos = SMVector3Transform(pData[vertexstart + k].Pos, invmatscale);
-				pData[vertexstart + k].Pos = SMVector3Transform(pData[vertexstart + k].Pos, matscale);
 				pData[vertexstart + k].Pos = SMVector3Transform(pData[vertexstart + k].Pos, WorldMat);
 
 				pData[vertexstart + k].Pos.x += jcentererpos.x;
@@ -2196,14 +2289,9 @@ void StaticGeom::ApplyTransform(long id)
 		tmpmin -= jcentererpos;
 		tmpmax -= jcentererpos;
 
-		tmpmin = SMVector3Transform(tmpmin, invmatscale);
-		tmpmin = SMVector3Transform(tmpmin, matscale);
-
-		tmpmax = SMVector3Transform(tmpmax, invmatscale);
-		tmpmax = SMVector3Transform(tmpmax, matscale);
-
 		tmpmin = SMVector3Transform(tmpmin, WorldMat);
 		tmpmax = SMVector3Transform(tmpmax, WorldMat);
+
 		tmpmin += jcentererpos;
 		tmpmax += jcentererpos;
 		queue[0]->BoundVolumeSys->SetMinMax(&tmpmin, &tmpmax);
@@ -2212,14 +2300,9 @@ void StaticGeom::ApplyTransform(long id)
 		tmpmin -= jcentererpos;
 		tmpmax -= jcentererpos;
 
-		tmpmin = SMVector3Transform(tmpmin, invmatscale);
-		tmpmin = SMVector3Transform(tmpmin, matscale);
-
-		tmpmax = SMVector3Transform(tmpmax, invmatscale);
-		tmpmax = SMVector3Transform(tmpmax, matscale);
-
 		tmpmin = SMVector3Transform(tmpmin, WorldMat);
 		tmpmax = SMVector3Transform(tmpmax, WorldMat);
+
 		tmpmin += jcentererpos;
 		tmpmax += jcentererpos;
 		queue[0]->BoundVolumeP->SetMinMax(&tmpmin, &tmpmax);
@@ -2242,7 +2325,7 @@ void StaticGeom::ApplyTransform(long id)
 	tmpmodel->OldScale = tmpmodel->Scale;
 }
 
-void StaticGeom::ApplyTransformLod(long id, float3* centerpos)
+void StaticGeom::ApplyTransformLod(long id)
 {
 	if (id >= AllModels.size() || AllModels[id]->Lod0.model == 0)
 		return;
@@ -2250,25 +2333,35 @@ void StaticGeom::ApplyTransformLod(long id, float3* centerpos)
 	Model* tmpmodel = AllModels[id];
 	vertex_static* pData;
 
-	float tmpdeterm = 0;
-	float4x4 invmatscale = SMMatrixInverse(&tmpdeterm, SMMatrixScaling(tmpmodel->OldScale));
-	float4x4 matscale = SMMatrixScaling(tmpmodel->Scale);
+	float3 jmin, jmax;
+	AllModels[id]->Lod0.BoundVolume->GetMinMax(&jmin, &jmax);
+	float3 jcentererpos = (jmax + jmin)*0.5f;
+
 	tmpmodel->Lod0.model->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
 
 	for (long i = 0; i < tmpmodel->Lod0.model->AllVertexCount; ++i)
 	{
-		pData[i].Pos.x -= centerpos->x;
-		pData[i].Pos.y -= centerpos->y;
-		pData[i].Pos.z -= centerpos->z;
-		pData[i].Pos = SMVector3Transform(pData[i].Pos, invmatscale);
-		pData[i].Pos = SMVector3Transform(pData[i].Pos, matscale);
+		pData[i].Pos.x -= jcentererpos.x;
+		pData[i].Pos.y -= jcentererpos.y;
+		pData[i].Pos.z -= jcentererpos.z;
 		pData[i].Pos = SMVector3Transform(pData[i].Pos, WorldMat);
-		pData[i].Pos.x += centerpos->x;
-		pData[i].Pos.y += centerpos->y;
-		pData[i].Pos.z += centerpos->z;
+		pData[i].Pos.x += jcentererpos.x;
+		pData[i].Pos.y += jcentererpos.y;
+		pData[i].Pos.z += jcentererpos.z;
 	}
 
 	tmpmodel->Lod0.model->VertexBuffer->Unlock();
+
+	
+	jmin -= jcentererpos;
+	jmax -= jcentererpos;
+
+	jmin = SMVector3Transform(jmin, WorldMat);
+	jmax = SMVector3Transform(jmax, WorldMat);
+
+	jmin += jcentererpos;
+	jmax += jcentererpos;
+	tmpmodel->Lod0.BoundVolume->SetMinMax(&jmin, &jmax);
 }
 
 void StaticGeom::Clear()
@@ -2282,18 +2375,19 @@ void StaticGeom::Clear()
 	for (long i = 0; i < AllModels.size(); ++i)
 	{
 		mem_delete(AllModels[i]);
+		DelModelInArrCom(0);
 	}
 	AllModels.clear();
 
-	ArrComFor.clear();
+	/*ArrComFor.clear();
 
-	IRSData tmparr;
+	IRSData* tmparr = new IRSData();
 	ArrComFor.push_back(tmparr);
-	IRSData tmparr2;
-	ArrComFor.push_back(tmparr2);
+	IRSData* tmparr2 = new IRSData();
+	ArrComFor.push_back(tmparr2);*/
 
-	mem_delete_a(ArrMeshVertex2);
-	AllCountVertex2 = 0;
+	//mem_delete_a(ArrMeshVertex2);
+	//AllCountVertex2 = 0;
 
 	mem_delete_a(ArrMeshVertex);
 	CountVertex = 0;
@@ -2302,4 +2396,85 @@ void StaticGeom::Clear()
 	BoundVolume->SetMinMax(&jmin,&jmax);
 
 	DelArrIndexPtr();
+}
+
+void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models)
+{
+	(*count_models) = AllModels.size();
+	(*arr_vertex) = new float3_t*[AllModels.size()];
+	(*arr_index) = new uint32_t*[AllModels.size()];
+	(*arr_count_vertex) = new int32_t[AllModels.size()];
+	(*arr_count_index) = new int32_t[AllModels.size()];
+
+	vertex_static* pData;
+
+	for (long i = 0; i < AllModels.size(); ++i)
+	{
+		long sizevertex = 0;
+		long sizeindex = 0;
+		for (long k = 0; k < AllModels[i]->SubSet.size(); ++k)
+		{
+			sizevertex += AllModels[i]->SubSet[k].VertexCount;
+			sizeindex += AllModels[i]->SubSet[k].IndexCount;
+		}
+
+		(*arr_vertex)[i] = new float3_t[sizevertex];
+		(*arr_index)[i] = new uint32_t[sizeindex];
+
+		(*arr_count_vertex)[i] = sizevertex;
+		(*arr_count_index)[i] = sizeindex;
+
+		Array<long,1024> tmpbiasindex;
+
+		long curr_size_vertex = 0;
+		long tmp_pre_bias = 0;
+		for (long k = 0; k < AllModels[i]->SubSet.size(); ++k)
+		{
+			AllGroups[AllModels[i]->SubSet[k].idgroup]->VertexBuffer[AllModels[i]->SubSet[k].idbuff]->Lock(0, 0, (void**)&pData, 0);
+
+			for (long j = 0; j < AllModels[i]->SubSet[k].VertexCount; ++j)
+			{
+				(*arr_vertex)[i][curr_size_vertex] = (float3_t)pData[AllModels[i]->SubSet[k].VertexStart + j].Pos;
+				++curr_size_vertex;
+			}
+
+			tmpbiasindex[k] = 0;
+			tmpbiasindex[k] = (tmpbiasindex[k] - AllModels[i]->SubSet[k].VertexStart) + tmp_pre_bias;
+			tmp_pre_bias += AllModels[i]->SubSet[k].VertexCount;
+
+			AllGroups[AllModels[i]->SubSet[k].idgroup]->VertexBuffer[AllModels[i]->SubSet[k].idbuff]->Unlock();
+		}
+
+		Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+		long tmpcount = 0;
+		queue.push_back(AllModels[i]->ArrSplits);
+		long curr_size_index = 0;
+		while (queue.size())
+		{
+			if (queue[0]->BFNonEnd)
+			{
+				for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
+				{
+					if (queue[0]->Splits[i])
+						queue.push_back(queue[0]->Splits[i]);
+				}
+			}
+			else
+			{
+				Segment* split = queue[0];
+				for (long k = 0; k < split->CountSubSet; ++k)
+				{
+					for (long j = 0; j < split->CountPoly[k]*3; ++j)
+					{
+						(*arr_index)[i][curr_size_index] = split->ArrPoly[k][j] + tmpbiasindex[split->NumberGroupModel[k]];
+
+						++curr_size_index;
+					}
+				}
+			}
+
+			queue.erase(0);
+			++tmpcount;
+		}
+	}
 }

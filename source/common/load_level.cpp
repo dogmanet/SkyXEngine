@@ -14,7 +14,7 @@ void LoadLevel(const char* name)
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "geometry"));
 		if (Core_0FileExists(tmppath))
-			GData::Geometry->Load(tmppath);
+			SGeom_ModelsLoad(tmppath);
 		else
 		{
 			//error
@@ -26,7 +26,7 @@ void LoadLevel(const char* name)
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "green"));
 		if (Core_0FileExists(tmppath))
-			GData::StaticGreen->Load(tmppath);
+			SGeom_GreenLoad(tmppath);
 		else
 		{
 			//error

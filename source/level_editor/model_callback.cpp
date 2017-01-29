@@ -49,16 +49,16 @@ void MCActivateTrans(bool bf)
 
 void MCInitElemsSelModel(int sel)
 {
-	if (sel >= 0 && sel < GData::Geometry->GetCountModel())
+	if (sel >= 0 && sel < SGeom_ModelsGetCount())
 	{
 		MCActivateTrans(true);
 
-		SXLevelEditor::EditModel->SetText(GData::Geometry->GetModelPathName(sel));
-		SXLevelEditor::EditLod1->SetText(GData::Geometry->GetModelLodPath(sel));
-		char* tmpname = GData::Geometry->GetModelName(sel);
-		float3* pos = GData::Geometry->GetModelPosition(sel);
-		float3* rot = GData::Geometry->GetModelRotation(sel);
-		float3* scale = GData::Geometry->GetModelScale(sel);
+		SXLevelEditor::EditModel->SetText(SGeom_ModelsMGetPathName(sel));
+		SXLevelEditor::EditLod1->SetText(SGeom_ModelsMGetLodPath(sel));
+		char* tmpname = SGeom_ModelsMGetName(sel);
+		float3* pos = SGeom_ModelsMGetPosition(sel);
+		float3* rot = SGeom_ModelsMGetRotation(sel);
+		float3* scale = SGeom_ModelsMGetScale(sel);
 
 		SXLevelEditor::EditName->SetText(tmpname);
 
@@ -100,41 +100,6 @@ void MCInitElemsSelModel(int sel)
 }
 
 
-
-
-LRESULT SXLevelEditor_ButtonModel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	DialogLoadMesh(tmppath);
-	if (def_str_validate(tmppath))
-	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditModel->SetText(tmpname);
-	}
-	return 0;
-}
-
-LRESULT SXLevelEditor_ButtonLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	DialogLoadMesh(tmppath);
-	if (def_str_validate(tmppath))
-	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditLod1->SetText(tmpname);
-		if (SXLevelEditor::HowActivateType == 1)
-		{
-			int sel = SXLevelEditor::ListBoxList->GetSel();
-			if (sel >= 0 && sel < GData::Geometry->GetCountModel())
-				GData::Geometry->SetModelLodPath(sel, tmpname);
-		}
-	}
-	return 0;
-}
 
 LRESULT SXLevelEditor_ButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -192,10 +157,10 @@ LRESULT SXLevelEditor_ButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	}
 
 
-	GData::Geometry->AddModel(path_model, (def_str_validate(path_model_lod) ? path_model_lod : 0), model_name);
+	SGeom_ModelsAddModel(path_model, (def_str_validate(path_model_lod) ? path_model_lod : 0), model_name);
 
 	char tmpnamecountpoly[1024];
-	sprintf(tmpnamecountpoly, "%s | %d", GData::Geometry->GetModelName(GData::Geometry->GetCountModel() - 1), GData::Geometry->GetModelCountPoly(GData::Geometry->GetCountModel() - 1));
+	sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelsMGetName(SGeom_ModelsGetCount() - 1), SGeom_ModelsMGetCountPoly(SGeom_ModelsGetCount() - 1));
 	SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
 
 	MCActivateTrans(true);
@@ -212,7 +177,7 @@ LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 	if (SXLevelEditor::HowActivateType != 1)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
-	float3* pos = GData::Geometry->GetModelPosition(sel);
+	float3* pos = SGeom_ModelsMGetPosition(sel);
 	char tmpstr[64];
 	if (hwnd == SXLevelEditor::EditPosX->GetHWND())
 	{
@@ -230,7 +195,7 @@ LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 		sscanf(tmpstr, "%f", &(pos->z));
 	}
 
-	GData::Geometry->ApplyTransform(sel);
+	SGeom_ModelsMApplyTransform(sel);
 
 	return 0;
 }
@@ -240,7 +205,7 @@ LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 	if (SXLevelEditor::HowActivateType != 1)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
-	float3* rot = GData::Geometry->GetModelRotation(sel);
+	float3* rot = SGeom_ModelsMGetRotation(sel);
 	char tmpstr[64];
 	if (hwnd == SXLevelEditor::EditRotX->GetHWND())
 	{
@@ -258,7 +223,7 @@ LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 		sscanf(tmpstr, "%f", &(rot->z));
 	}
 
-	GData::Geometry->ApplyTransform(sel);
+	SGeom_ModelsMApplyTransform(sel);
 
 	return 0;
 }
@@ -268,7 +233,7 @@ LRESULT SXLevelEditor_EditTransformScale_Enter(HWND hwnd, UINT msg, WPARAM wPara
 	if (SXLevelEditor::HowActivateType != 1)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
-	float3* scale = GData::Geometry->GetModelScale(sel);
+	float3* scale = SGeom_ModelsMGetScale(sel);
 	char tmpstr[64];
 	if (hwnd == SXLevelEditor::EditScaleX->GetHWND())
 	{
@@ -286,7 +251,7 @@ LRESULT SXLevelEditor_EditTransformScale_Enter(HWND hwnd, UINT msg, WPARAM wPara
 		sscanf(tmpstr, "%f", &(scale->z));
 	}
 
-	GData::Geometry->ApplyTransform(sel);
+	SGeom_ModelsMApplyTransform(sel);
 
 	return 0;
 }
