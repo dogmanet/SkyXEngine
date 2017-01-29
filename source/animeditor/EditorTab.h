@@ -5,6 +5,7 @@
 #include <SXGUIWinApi/sxguielements.h>
 #include "../../SkyXEngine/animeditor/resource.h"
 #include "EMessages.h"
+#include "Tools.h"
 
 
 class EditorTab

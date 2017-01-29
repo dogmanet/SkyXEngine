@@ -20,6 +20,8 @@
 //#include <d3dcompiler.h>
 //#pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d9.lib")
+#include "TabActivities.h"
+#include "TabAnimation.h"
 
 //#ifdef _DEBUG
 //#	pragma comment(lib, "d3dx9d.lib")
@@ -44,7 +46,10 @@ public:
 	static LRESULT AnimFilterCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+	static LRESULT AnimTBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 	static void AnimPlayCB(int slot, ANIM_STATE state, Animation * pAnim);
+	static void AnimProgressCB(int slot, float progress, Animation * pAnim);
 
 	static Editor * GetInstance();
 	
@@ -109,14 +114,16 @@ protected:
 
 	struct AnimItem
 	{
-		ModelSequence const * seq;
+		ModelSequence * seq;
 		ModelFile const * mdl;
 		bool isImported;
 	};
 
 	Array<AnimItem> m_vAnims;
 
-	
+	EActivityItems * m_pvActivities;
+
+	int m_iCurIdx;
 
 private:
 	void RenderAnimList();

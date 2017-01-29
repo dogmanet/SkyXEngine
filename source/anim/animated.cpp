@@ -696,6 +696,7 @@ void ModelFile::BuildMeshBuffers()
 */
 
 #define RUN_CB(slot, state) if(m_pfnCallBack) m_pfnCallBack(slot, state, this)
+#define RUN_P_CB(slot, state) if(m_pfnProgressCB) m_pfnProgressCB(slot, state, this)
 
 Animation::Animation(AnimationManager * pMgr):
 //m_bUpdating(false),
@@ -714,7 +715,8 @@ m_FinalBones(NULL),
 m_mfBoneControllerValues(NULL),
 m_iCurrentSkin(0),
 m_pMgr(pMgr),
-m_pfnCallBack(NULL)
+m_pfnCallBack(NULL),
+m_pfnProgressCB(NULL)
 {
 	for(int i = 0; i < BLEND_MAX; i++)
 	{
@@ -725,6 +727,7 @@ m_pfnCallBack(NULL)
 		m_bNewAnimPlayed[i] = false;
 		m_LastFrameBones[i] = NULL;
 		m_CurrentBones[i] = NULL;
+		m_bDoAdvance[i] = true;
 		t[i] = 0;
 	}
 
@@ -759,6 +762,17 @@ bool Animation::IsVisibleFrustum(Core::ControllMoving::Frustum* frustum)
 		return false;
 }*/
 
+void Animation::SyncAnims()
+{
+	int seqCount = m_pMdl->GetSequenceCount();
+	m_mSeqIds.clear();
+	for(int i = 0; i < seqCount; ++i)
+	{
+		const ModelSequence * pSeq = m_pMdl->GetSequence(i);
+		m_mSeqIds[pSeq->name] = i;
+	}
+}
+
 void Animation::SetModel(const char * file)
 {
 	m_pMdl = const_cast<ModelFile*>(m_pMgr->LoadModel(file));
@@ -769,12 +783,9 @@ void Animation::SetModel(const char * file)
 
 	m_iBoneCount = m_pMdl->GetBoneCount();
 
-	int seqCount = m_pMdl->GetSequenceCount();
-	for(int i = 0; i < seqCount; i++)
-	{
-		const ModelSequence * pSeq = m_pMdl->GetSequence(i);
-		m_mSeqIds[pSeq->name] = i;
-	}
+	
+
+	SyncAnims();
 
 	ctlCount = m_pMdl->GetControllersCount();
 	for(int i = 0; i < ctlCount; i++)
@@ -820,7 +831,7 @@ ModelSequence const * Animation::GetCurAnim(int slot)
 
 void Animation::Advance(unsigned long int dt)
 {
-	UINT deltat = dt - m_iCurTime;
+	int deltat = dt - m_iCurTime;
 	m_iCurTime = dt;
 	UINT deltat_orig = deltat;
 
@@ -845,12 +856,19 @@ void Animation::Advance(unsigned long int dt)
 
 			const ModelSequence * pCurAnim = m_pMdl->GetSequence(m_iPlayingAnim[slot]);
 
+			bool rev = pCurAnim->framerate < 0;
+			int frame = 0;
+			if(rev)
+			{
+				frame = m_iAnimFrameCount[slot] - 2;
+			}
+
 			float delta = (float)m_iFadeCurTime[slot] / (float)m_iFadeTime[slot];
 			for(UINT i = 0; i < m_iBoneCount; i++)
 			{
 				m_CurrentBones[slot][i] = m_LastFrameBones[slot][i];
-				m_CurrentBones[slot][i].orient = SMquaternionSlerp(m_LastFrameBones[slot][i].orient, pCurAnim->m_vmAnimData[0][i].orient * m_pBoneControllers[i].rot, delta).Normalize();
-				m_CurrentBones[slot][i].position = (float3_t)(m_LastFrameBones[slot][i].position + (pCurAnim->m_vmAnimData[0][i].position + m_pBoneControllers[i].tr - m_LastFrameBones[slot][i].position) * delta);
+				m_CurrentBones[slot][i].orient = SMquaternionSlerp(m_LastFrameBones[slot][i].orient, pCurAnim->m_vmAnimData[frame][i].orient * m_pBoneControllers[i].rot, delta).Normalize();
+				m_CurrentBones[slot][i].position = (float3_t)(m_LastFrameBones[slot][i].position + (pCurAnim->m_vmAnimData[frame][i].position + m_pBoneControllers[i].tr - m_LastFrameBones[slot][i].position) * delta);
 			}
 			FillBoneMatrix();
 
@@ -870,28 +888,50 @@ void Animation::Advance(unsigned long int dt)
 			if(!m_iAnimFrameCount[slot])
 			{
 				m_bIsAnimationPlaying[slot] = false;
+				RUN_P_CB(slot, 0);
 				RUN_CB(slot, AS_STOP);
 				continue;
 			}
-			// DSconsole::write("SXbaseAnimating::Advance(%d);\n", deltat);
 
 			const ModelSequence * pCurAnim = m_pMdl->GetSequence(m_iPlayingAnim[slot]);
 			//static UINT t[BLEND_MAX] = {0};
-			if(m_bNewAnimPlayed[slot])
-			{
-				t[slot] = 0;
-				m_bNewAnimPlayed[slot] = false;
-			}
-			UINT fr = 1;
+			int fr = 1;
+			bool rev = pCurAnim->framerate < 0;
 			if(pCurAnim->framerate)
 			{
-				t[slot] += deltat;
 				fr = 1000 / pCurAnim->framerate;
-				bool cont = false;
-				while(t[slot] >= fr)
+			}
+			if(rev)
+			{
+				fr = -fr;
+			}
+			if(m_bNewAnimPlayed[slot])
+			{
+				t[slot] = rev ? fr : 0;
+				m_bNewAnimPlayed[slot] = false;
+				if(rev)
 				{
-					m_iCurrentFrame[slot]++;
-					if(m_iCurrentFrame[slot] >= m_iAnimFrameCount[slot] - 1)
+					m_iCurrentFrame[slot] = -2;
+				}
+			}
+			if(pCurAnim->framerate)
+			{
+				if(m_bDoAdvance[slot])
+				{
+					t[slot] += rev ? -deltat : deltat;
+				}
+				bool cont = false;
+				while((t[slot] >= fr && !rev) || (t[slot] <= 0 && rev))
+				{
+					if(rev)
+					{
+						--m_iCurrentFrame[slot];
+					}
+					else
+					{
+						++m_iCurrentFrame[slot];
+					}
+					if((!rev && m_iCurrentFrame[slot] >= m_iAnimFrameCount[slot] - 1) || (rev && m_iCurrentFrame[slot] <= 0))
 					{
 						if(pCurAnim->bLooped)
 						{
@@ -906,20 +946,47 @@ void Animation::Advance(unsigned long int dt)
 							break;
 						}
 					}
-					t[slot] -= fr;
+					if(rev)
+					{
+						t[slot] += fr;
+					}
+					else
+					{
+						t[slot] -= fr;
+					}
 				}
 				if(cont)
 				{
 					continue;
 				}
+				if(m_iCurrentFrame[slot] < 0)
+				{
+					m_iCurrentFrame[slot] += m_iAnimFrameCount[slot];
+				}
 				m_iCurrentFrame[slot] %= m_iAnimFrameCount[slot];
+				
 			}
-
-			//printf("=%d\n", m_iCurrentFrame[slot]);
-			UINT nextFrame = m_iCurrentFrame[slot] + 1;
+			//char out[256];
+			//sprintf(out, "=%d\n", m_iCurrentFrame[slot]);
+			//OutputDebugStringA(out);
+			int nextFrame = m_iCurrentFrame[slot] + (rev ? -1 : 1);
+			if(nextFrame < 0)
+			{
+				nextFrame += m_iAnimFrameCount[slot];
+			}
 			nextFrame %= m_iAnimFrameCount[slot];
 
 			float delta = (float)t[slot] / (float)fr;
+			if(rev)
+			{
+				delta = 1.0f - delta;
+			}
+
+			//char out[256];
+			//sprintf(out, "=%d %f\n", m_iCurrentFrame[slot], delta);
+			//OutputDebugStringA(out);
+
+			RUN_P_CB(slot, (((float)m_iCurrentFrame[slot] + (rev ? -delta : delta)) / (float)m_iAnimFrameCount[slot]));
 			//SXString bname;
 			//delta = 0;
 			for(UINT i = 0; i < m_iBoneCount; i++)
@@ -953,6 +1020,47 @@ void Animation::StopAnimations()
 			m_bIsAnimationPlaying[i] = false;
 			RUN_CB(i, AS_STOP);
 		}
+	}
+}
+
+void Animation::SetProgress(float progress, UINT slot)
+{
+	const ModelSequence * pCurAnim = m_pMdl->GetSequence(m_iPlayingAnim[slot]);
+	if(!pCurAnim)
+	{
+		return;
+	}
+	UINT fr = 1;
+	if(pCurAnim->framerate)
+	{
+		fr = 1000 / pCurAnim->framerate;
+	}
+	m_iCurrentFrame[slot] = m_iAnimFrameCount[slot] * progress;
+	t[slot] = (progress - (float)m_iCurrentFrame[slot] / (float)m_iAnimFrameCount[slot]) * fr * m_iAnimFrameCount[slot];
+
+
+}
+
+void Animation::SetAdvance(bool set, UINT slot)
+{
+	m_bDoAdvance[slot] = set;
+}
+
+void Animation::Stop(UINT slot)
+{
+	if(m_bIsAnimationPlaying[slot])
+	{
+		m_bIsAnimationPlaying[slot] = false;
+		RUN_CB(slot, AS_STOP);
+	}
+}
+
+void Animation::Resume(UINT slot)
+{
+	if(!m_bIsAnimationPlaying[slot])
+	{
+		m_bIsAnimationPlaying[slot] = true;
+		RUN_CB(slot, AS_PLAY);
 	}
 }
 
@@ -1255,6 +1363,13 @@ AnimStateCB Animation::SetCallback(AnimStateCB cb)
 {
 	AnimStateCB old = m_pfnCallBack;
 	m_pfnCallBack = cb;
+	return(old);
+}
+
+AnimProgressCB Animation::SetProgressCB(AnimProgressCB cb)
+{
+	AnimProgressCB old = m_pfnProgressCB;
+	m_pfnProgressCB = cb;
 	return(old);
 }
 

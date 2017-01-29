@@ -6,6 +6,7 @@
 class TabAnimation:public EditorTab
 {
 public:
+	friend class Editor;
 	TabAnimation(TabManager * tm);
 	~TabAnimation();
 

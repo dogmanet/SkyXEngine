@@ -7,6 +7,7 @@
 class TabActivities:public EditorTab
 {
 public:
+	friend class Editor;
 	TabActivities(TabManager * tm);
 	~TabActivities();
 
@@ -37,5 +38,7 @@ protected:
 private:
 	void RenderList();
 };
+
+typedef Array<TabActivities::ActivityItem> EActivityItems;
 
 #endif

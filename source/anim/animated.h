@@ -130,6 +130,7 @@ enum ANIM_STATE
 };
 
 typedef void(*AnimStateCB)(int slot, ANIM_STATE as, Animation * pAnim);
+typedef void(*AnimProgressCB)(int slot, float progress, Animation * pAnim);
 
 class Animation
 {
@@ -149,6 +150,10 @@ public:
 	void SetModel(const char * file);
 
 	void PlayAnimation(const char * name, UINT iFadeTime, UINT slot = 0); // name: Animation name; changeTime: time to fade to this animation from previous
+	void Stop(UINT slot = 0);
+	void Resume(UINT slot = 0);
+	void SetProgress(float progress, UINT slot = 0);
+	void SetAdvance(bool set, UINT slot = 0);
 
 	void StartActivity(const String & name, UINT iFadeTime);
 
@@ -184,10 +189,13 @@ public:
 	void SetRenderForShadow(bool bdo);
 
 	AnimStateCB SetCallback(AnimStateCB cb);
+	AnimProgressCB SetProgressCB(AnimProgressCB cb);
 
 	ModelSequence const * GetCurAnim(int slot);
 
 	ModelFile * m_pMdl;
+
+	void SyncAnims();
 protected:
 	
 	float3 jcenter2,jcenter;
@@ -196,13 +204,14 @@ protected:
 	bool m_bNewAnimPlayed[BLEND_MAX];
 
 	UINT m_iAnimFrameCount[BLEND_MAX];
-	UINT m_iCurrentFrame[BLEND_MAX];
+	int m_iCurrentFrame[BLEND_MAX];
 
 	ModelBoneShader * m_pBoneMatrix;
 
 	UINT m_iFadeTime[BLEND_MAX];
 	UINT m_iFadeCurTime[BLEND_MAX];
 	bool m_bInFade[BLEND_MAX];
+	bool m_bDoAdvance[BLEND_MAX];
 
 	float3_t m_vPosition;
 	SMQuaternion m_vOrientation;
@@ -233,11 +242,12 @@ protected:
 
 	bool m_bVisible;
 	bool m_bRenderForShadow;
-	UINT t[BLEND_MAX];
+	int t[BLEND_MAX];
 
 	AnimationManager * m_pMgr;
 
 	AnimStateCB m_pfnCallBack;
+	AnimProgressCB m_pfnProgressCB;
 };
 
 class AnimationManager

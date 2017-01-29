@@ -101,3 +101,9 @@ int Tools::DlgConfirm(const char * szText, const char * szTitle, int def)
 {
 	return(MessageBoxA(NULL, szText, szTitle, MB_OKCANCEL | MB_ICONQUESTION | (def ? MB_DEFBUTTON1 : MB_DEFBUTTON2)) == IDOK ? 1 : 0);
 }
+
+
+LRESULT Tools::ProxyCommandProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	return(SendMessage(GetAncestor(hwnd, GA_ROOTOWNER), msg, wParam, lParam));
+}

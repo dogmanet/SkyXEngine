@@ -1,18 +1,28 @@
 #include "Editor.h"
 
 Editor::Editor():
-m_bCamMove(false)
+m_bCamMove(false),
+m_iCurIdx(-1)
 {
 	InitUI();
 	InitD3D();
 
+	m_pvActivities = &((TabActivities*)m_pTM->m_pTabActivities)->m_vItems;
+
 	m_pEditor = this;
 	m_szAnimFilter[0] = 0;
+
+	((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlGB->AddHandler(AnimTBProc, WM_HSCROLL);
+	((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlProgressTrack->AddHandler(AnimTBProc, WM_SETFOCUS);
+	//((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlProgress->AddHandler(AnimTBProc, WM_SETFOCUS);
+	((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlProgressTrack->AddHandler(AnimTBProc, WM_KILLFOCUS);
+	//((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlProgress->AddHandler(AnimTBProc, WM_KILLFOCUS);
 
 
 	m_pAnimMgr = new AnimationManager(m_pd3dDevice);
 	m_pCurAnim = new Animation(m_pAnimMgr);
 	m_pCurAnim->SetCallback(AnimPlayCB);
+	m_pCurAnim->SetProgressCB(AnimProgressCB);
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/krovosos/krovososa.dse");
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/spas/spasa.dse");
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/pm/pma.dse");
@@ -24,8 +34,12 @@ m_bCamMove(false)
 	for(UINT i = 0; i < c; ++i)
 	{
 		//m_vAnims
-		ai.seq = m_pCurAnim->m_pMdl->GetSequence(i);
-		((ModelSequence*)ai.seq)->bLooped = true;
+		ai.seq = (ModelSequence*)m_pCurAnim->m_pMdl->GetSequence(i);
+		//	((ModelSequence*)ai.seq)->bLooped = true;
+		if(!(i % 2))
+		{
+			ai.seq->framerate *= -1;
+		}
 		ai.mdl = m_pCurAnim->m_pMdl;
 		ai.isImported = false;
 		m_vAnims.push_back(ai);
@@ -44,6 +58,10 @@ Editor::~Editor()
 
 LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if(!m_pEditor)
+	{
+		return(0);
+	}
 	ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
 	Editor * edt = (Editor*)cmp->GetUserPtr();
 	switch(msg)
@@ -64,11 +82,76 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case ID_FILE_EXIT:
 			PostQuitMessage(0);
 			break;
+
+		case IDC_ANIM_PAUSE:
+			edt->m_pCurAnim->Stop();
+			break;
+
+		case IDC_ANIM_PLAY:
+			edt->m_pCurAnim->Resume();
+			break;
+
+		case IDC_ANIM_LOOPED:
+			if(m_pEditor->m_iCurIdx >= 0)
+			{
+				m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->bLooped = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) > 0 ? 1 : 0;
+				m_pEditor->RenderAnimList();
+			}
+			break;
+
+		case IDC_ANIM_SPEED:
+			switch(HIWORD(wParam))
+			{
+			case EN_CHANGE:
+				if(m_pEditor->m_iCurIdx >= 0)
+				{
+					int speed = 0;
+					int len = GetWindowTextLengthA((HWND)lParam);
+					char * txt = (char*)alloca(len + 1);
+					GetWindowTextA((HWND)lParam, txt, len + 1);
+					sscanf(txt, "%d", &speed);
+
+					m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->framerate = speed;
+				}
+			}
+			break;
+
+		case IDC_ANIM_NAME:
+			if(HIWORD(wParam) == EN_CHANGE && m_pEditor->m_iCurIdx >= 0)
+			{
+				GetWindowTextA((HWND)lParam, m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name, MODEL_MAX_NAME);
+				m_pEditor->RenderAnimList();
+				m_pEditor->m_pCurAnim->SyncAnims();
+			}
+			break;
+
+		case IDC_ANIM_ACT_CNANCE:
+			if(HIWORD(wParam) == EN_CHANGE && m_pEditor->m_iCurIdx >= 0)
+			{
+				int len = GetWindowTextLengthA((HWND)lParam);
+				char * txt = (char*)alloca(len + 1);
+				GetWindowTextA((HWND)lParam, txt, len + 1);
+				int i;
+				if(sscanf(txt, "%d", &i) < 1)
+				{
+					SetWindowTextA((HWND)lParam, "0");
+				}
+				else
+				{
+					m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->act_chance = i;
+				}
+			}
+			break;
 		}
 		break;
 
 	case EM_LOADACTIVITIES:
-		MessageBoxA(NULL, "Loaded", "", MB_OK);
+		TabAnimation * tAnim = (TabAnimation*)edt->m_pTM->m_pTabAnimation;
+		tAnim->AnimPropActCmb->Clear();
+		for(int i = 0, l = edt->m_pvActivities->size(); i < l; ++i)
+		{
+			tAnim->AnimPropActCmb->AddItem(edt->m_pvActivities[0][i].act.c_str());
+		}
 		break;
 	}
 	return(0);
@@ -165,18 +248,50 @@ LRESULT Editor::AnimFilterCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void Editor::AnimPlayCB(int slot, ANIM_STATE state, Animation * pAnim)
 {
 	ModelSequence const * seq = m_pEditor->m_pCurAnim->GetCurAnim(slot);
+	TabAnimation * ta = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
 	switch(state)
 	{
 	case AS_STOP:
 		m_pEditor->CurAnimName->SetText("");
+		ta->AnimCtlPauseBtn->Enable(0);
+		ta->AnimCtlPlayBtn->Enable(1);
 		break;
 	case AS_PLAY:
 		char name[MODEL_MAX_NAME + 16];
 		sprintf(name, "Animation: %s", seq->name);
 		m_pEditor->CurAnimName->SetText(name);
+
+		ta->AnimCtlPauseBtn->Enable(1);
+		ta->AnimCtlPlayBtn->Enable(0);
 		break;
 	}
 	
+}
+void Editor::AnimProgressCB(int slot, float progress, Animation * pAnim)
+{
+	TabAnimation * ta = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
+	ta->AnimCtlProgress->SetText(String(progress).c_str());
+
+	ta->AnimCtlProgressTrack->SetPos((int)(progress * 1000));
+}
+
+LRESULT Editor::AnimTBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int pos;
+	switch(msg)
+	{
+	case WM_HSCROLL:
+		pos = ((TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation)->AnimCtlProgressTrack->GetPos();
+		m_pEditor->m_pCurAnim->SetProgress(pos / 1000.0f);
+		break;
+	case WM_SETFOCUS:
+		m_pEditor->m_pCurAnim->SetAdvance(false);
+		break;
+	case WM_KILLFOCUS:
+		m_pEditor->m_pCurAnim->SetAdvance(true);
+		break;
+	}
+	return(0);
 }
 
 void Editor::MenuBrowse(HWND hwnd)
@@ -233,6 +348,7 @@ void Editor::InitUI()
 	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, 256, 199, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(MainWindow);
 	MainWindow->AddHandler(MenuCmd, WM_COMMAND);
+	MainWindow->AddHandler(MenuCmd, WM_PARENTNOTIFY);
 	MainWindow->AddHandler(MenuCmd, EM_LOADACTIVITIES);
 
 
@@ -510,14 +626,28 @@ LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch(HIWORD(wParam))
 		{
 		case LBN_SELCHANGE:
-		{
-			int sel = self->AnimList->GetSel();
-			AnimItem * item;
-			item = &self->m_vAnims[self->AnimList->GetItemData(sel)];
+			{
+				int sel = self->AnimList->GetSel();
+				AnimItem * item;
+				int idx = self->AnimList->GetItemData(sel);
+				item = &self->m_vAnims[idx];
+				self->m_iCurIdx = idx;
 
-			self->m_pCurAnim->PlayAnimation(item->seq->name, 100);
-		}
-		break;
+				self->m_pCurAnim->PlayAnimation(item->seq->name, 100);
+
+				TabAnimation * tab = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
+				tab->AnimPropActChance->SetText(String((DWORD)item->seq->act_chance).c_str());
+				tab->AnimPropName->SetText(item->seq->name);
+				tab->AnimPropLoopCB->SetCheck(item->seq->bLooped);
+				tab->AnimPropSpeed->SetText(String(item->seq->framerate).c_str());
+
+				tab->AnimPropActChance->Enable(!item->isImported);
+				tab->AnimPropName->Enable(!item->isImported);
+				tab->AnimPropLoopCB->Enable(!item->isImported);
+				tab->AnimPropSpeed->Enable(!item->isImported);
+				
+			}
+			break;
 		}
 	}
 

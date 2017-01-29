@@ -242,7 +242,7 @@ struct ModelSequence
 {
 	char name[MODEL_MAX_NAME];
 	byte bLooped;
-	uint32_t framerate;
+	int32_t framerate;
 	uint32_t activity;
 	uint32_t iNumFrames;
 	uint32_t act_chance;
