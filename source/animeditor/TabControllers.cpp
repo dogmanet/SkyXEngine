@@ -158,6 +158,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropTrXCB2->SetTransparentTextBk(true);
 	CtlsPropTrXCB2->SetColorBrush(255, 255, 255);
 	CtlsPropTrXCB2->GAlign = {1, 1, 0, 0};
+	CtlsPropTrXCB2->Enable(0);
 	CtlsPropTrYCB2 = SXGUICrCheckBox("y", 109, 19, 30, 20, CtlsPropTranslationGB2->GetHWND(), 0, 0, false);
 	CtlsPropTrYCB2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CtlsPropTrYCB2->SetColorText(0, 0, 0);
@@ -165,6 +166,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropTrYCB2->SetTransparentTextBk(true);
 	CtlsPropTrYCB2->SetColorBrush(255, 255, 255);
 	CtlsPropTrYCB2->GAlign = {1, 1, 0, 0};
+	CtlsPropTrYCB2->Enable(0);
 	CtlsPropTrZCB2 = SXGUICrCheckBox("z", 212, 19, 30, 20, CtlsPropTranslationGB2->GetHWND(), 0, 0, false);
 	CtlsPropTrZCB2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CtlsPropTrZCB2->SetColorText(0, 0, 0);
@@ -172,6 +174,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropTrZCB2->SetTransparentTextBk(true);
 	CtlsPropTrZCB2->SetColorBrush(255, 255, 255);
 	CtlsPropTrZCB2->GAlign = {1, 1, 0, 0};
+	CtlsPropTrZCB2->Enable(0);
 
 	CtlsPropTrX2 = SXGUICrEdit("0.0", 33, 19, 72, 20, CtlsPropTranslationGB2->GetHWND(), 0, 0);
 	CtlsPropTrX2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -283,6 +286,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropRotXCB2->SetTransparentTextBk(true);
 	CtlsPropRotXCB2->SetColorBrush(255, 255, 255);
 	CtlsPropRotXCB2->GAlign = {1, 1, 0, 0};
+	CtlsPropRotXCB2->Enable(0);
 	CtlsPropRotYCB2 = SXGUICrCheckBox("y", 109, 19, 30, 20, CtlsPropRotationGB2->GetHWND(), 0, 0, false);
 	CtlsPropRotYCB2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CtlsPropRotYCB2->SetColorText(0, 0, 0);
@@ -290,6 +294,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropRotYCB2->SetTransparentTextBk(true);
 	CtlsPropRotYCB2->SetColorBrush(255, 255, 255);
 	CtlsPropRotYCB2->GAlign = {1, 1, 0, 0};
+	CtlsPropRotYCB2->Enable(0);
 	CtlsPropRotZCB2 = SXGUICrCheckBox("z", 212, 19, 30, 20, CtlsPropRotationGB2->GetHWND(), 0, 0, false);
 	CtlsPropRotZCB2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CtlsPropRotZCB2->SetColorText(0, 0, 0);
@@ -297,6 +302,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropRotZCB2->SetTransparentTextBk(true);
 	CtlsPropRotZCB2->SetColorBrush(255, 255, 255);
 	CtlsPropRotZCB2->GAlign = {1, 1, 0, 0};
+	CtlsPropRotZCB2->Enable(0);
 
 	CtlsPropRotX2 = SXGUICrEdit("0.0", 33, 19, 72, 20, CtlsPropRotationGB2->GetHWND(), 0, 0);
 	CtlsPropRotX2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
