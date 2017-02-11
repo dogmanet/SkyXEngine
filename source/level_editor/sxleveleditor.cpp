@@ -65,12 +65,14 @@ IDirect3DIndexBuffer9* ib;
 long count_vertex;
 long count_index;
 
-#include <common\\string_api.cpp>
-
-#include <geom\\sxgeom.cpp>
-#include <material_ligth\\material_ligth.cpp>
-
 #include <common\\gdata.h>
+
+#include <common\\string_api.cpp>
+#include <material_ligth\\material_ligth.cpp>
+#include <geom\\sxgeom.cpp>
+
+
+
 
 IDirect3DTexture9* g_pTexAdaptedLuminanceLast, *g_pTexAdaptedLuminanceCur;
 
@@ -154,22 +156,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::ObjCamera = SGCore_CrCamera();
 
 	
-	//GData::IDShaderVSRenderGreenTree = SGCore_ShaderLoad(0, "mtrl_base_green_tree.vs", "mtrl_base_green_tree.vs", false);
-	//GData::IDShaderVSRenderGreenGrass = SGCore_ShaderLoad(0, "mtrl_base_green_grass.vs", "mtrl_base_green_grass.vs", false);
-	//GData::IDShaderPSRenderGreenTree = SGCore_ShaderLoad(1, "mtrl_base_green.ps", "mtrl_base_green.ps", false);
-
 	//цвет (текстуры)
-	GData::IDSRenderTargets::ColorScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_color", 1);
+	/*GData::IDSRenderTargets::ColorScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", 1);
 	//номрали + микрорельеф
-	GData::IDSRenderTargets::NormalScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal", 1);
+	GData::IDSRenderTargets::NormalScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2B10G10R10, D3DPOOL_DEFAULT, "ds_normal", 1);
 	//параметры освещения
-	GData::IDSRenderTargets::ParamsScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", 1);
+	GData::IDSRenderTargets::ParamsScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "ds_param", 1);
 
-	GData::IDSRenderTargets::DepthScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth", 1);
+	GData::IDSRenderTargets::DepthScene = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_depth", 1);
 
 
 	GData::IDSRenderTargets::LightAmbient = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient", 1);
-	GData::IDSRenderTargets::LightSpecDiff = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_specdiff", 1);
+	GData::IDSRenderTargets::LightSpecDiff = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_specdiff", 1);
 
 	for (int i = 0; i < 4; i++)
 	{
@@ -184,44 +182,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	g_pTexAdaptedLuminanceLast = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumLast);
 	g_pTexAdaptedLuminanceCur = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumCurr);
-
+	*/
 	//GData::IDSRenderTargets::LightSpecDiffD2 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A32B32G32R32F, D3DPOOL_DEFAULT, "ds_specdiffD2", 0.5);
-	GData::DXDevice->CreateOffscreenPlainSurface(1, 1, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &GData::ComLightSurf1x1, 0);
+	//GData::DXDevice->CreateOffscreenPlainSurface(1, 1, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &GData::ComLightSurf1x1, 0);
 
 	//DXDevice->CreateRenderTarget(1, 1, D3DFMT_A8R8G8B8, 0, 0, 0, &GData::ComLightSurf1x1, 0);
 	//GData::IDSRenderTargets::LigthCom_1x1 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom_1x1", 1);
-	GData::IDSRenderTargets::LigthCom = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
-	GData::IDSRenderTargets::LigthCom2 = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	/*GData::IDSRenderTargets::LigthCom = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2B10G10R10, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	GData::IDSRenderTargets::LigthCom2 = SGCore_RTAdd(GData::WinSize.x, GData::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2B10G10R10, D3DPOOL_DEFAULT, "ds_lightcom", 1);
 
-	GData::IDSRenderTargets::LigthComScaled = SGCore_RTAdd(GData::WinSize.x*0.25f, GData::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
-	//GData::IDSRenderTargets::LigthComD2 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD2", 0.5);
+	GData::IDSRenderTargets::LigthComScaled = SGCore_RTAdd(GData::WinSize.x*0.25f, GData::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2B10G10R10, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	*///GData::IDSRenderTargets::LigthComD2 = SGCore_RTAdd(GData::WinSize.x*0.5f, GData::WinSize.y*0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD2", 0.5);
 	//GData::IDSRenderTargets::LigthComD4 = SGCore_RTAdd(GData::WinSize.x*0.25f, GData::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD4", 0.25);
 	//GData::IDSRenderTargets::LigthComD8 = SGCore_RTAdd(GData::WinSize.x*0.125f, GData::WinSize.y*0.125f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcomD8", 0.125);
 
-	GData::IDsShaders::VS::FreeGeometry = SGCore_ShaderLoad(0, "mtrl_base.vs", "mtrl_base", false);
-	GData::IDsShaders::PS::FreeGeometry = SGCore_ShaderLoad(1, "mtrl_base.ps", "mtrl_base", false);
+	GData::IDsShaders::VS::FreeGeometry = SGCore_ShaderLoad(0, "mtrl_base.vs", "mtrl_base", true);
+	GData::IDsShaders::PS::FreeGeometry = SGCore_ShaderLoad(1, "mtrl_base.ps", "mtrl_base", true);
 
-	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(0, "pp_quad_render.vs", "pp_quad_render", false);
-	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(1, "pp_quad_render.ps", "pp_quad_render", false);
+	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(0, "pp_quad_render.vs", "pp_quad_render", true);
+	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(1, "pp_quad_render.ps", "pp_quad_render", true);
 
-	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(0, "pp_quad_render_res_pos.vs", "pp_quad_render_res_pos", false);
+	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(0, "pp_quad_render_res_pos.vs", "pp_quad_render_res_pos", true);
 	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(1, "comlighting.ps", "comlighting_nonshadow", false);
-	GData::IDsShaders::PS::BlendAmbientSpecDiffcolor = SGCore_ShaderLoad(1, "blendambientspecdiffcolor.ps", "blendambientspecdiffcolor", false);
+	D3DXMACRO Defines_IS_SHADOWED[] = { { "IS_SHADOWED", "" }, { 0, 0 } };
+	GData::IDsShaders::PS::ComLightingShadow = SGCore_ShaderLoad(1, "comlighting.ps", "comlighting_shadow", false, Defines_IS_SHADOWED);
+	GData::IDsShaders::PS::BlendAmbientSpecDiffcolor = SGCore_ShaderLoad(1, "blendambientspecdiffcolor.ps", "blendambientspecdiffcolor", true);
 
-	GData::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(1, "pp_calc_adapted_lum.ps", "pp_calc_adapted_lum", false);
-	GData::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(1, "pp_sample_lum_init.ps", "pp_sample_lum_init", false);
-	GData::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(1, "pp_sample_lum_iterative.ps", "pp_sample_lum_iterative", false);
-	GData::IDsShaders::PS::SampleLumFinal = SGCore_ShaderLoad(1, "pp_sample_lum_final.ps", "pp_sample_lum_final", false);
-	GData::IDsShaders::PS::FinalHRDL = SGCore_ShaderLoad(1, "pp_final_hrdl.ps", "pp_final_hrdl", false);
+	/*GData::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(1, "pp_calc_adapted_lum.ps", "pp_calc_adapted_lum", true);
+	GData::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(1, "pp_sample_lum_init.ps", "pp_sample_lum_init", true);
+	GData::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(1, "pp_sample_lum_iterative.ps", "pp_sample_lum_iterative", true);
+	GData::IDsShaders::PS::SampleLumFinal = SGCore_ShaderLoad(1, "pp_sample_lum_final.ps", "pp_sample_lum_final", true);
+	GData::IDsShaders::PS::FinalHRDL = SGCore_ShaderLoad(1, "pp_final_hrdl.ps", "pp_final_hrdl", true);*/
 
 
 
 
 
-	SML_0Create("sxml", SGCore_GetDXDevice(), &GData::WinSize, GData::ProjFov, GData::IDSRenderTargets::DepthScene, 0, 0, false);
+	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
 	SML_Dbg_Set(printflog);
 	//SML_LigthsCreatePoint(&float4(10, 40, 10, 100), &float3(0, 1, 0), false, true, 0);
-	SML_LigthsCreatePoint(&float4(45, 45, 0, 1000000), &float3(1, 0, 0), true, true);
+	//SML_LigthsCreatePoint(&float4(45, 45, 0, 1000000), &float3(1, 0, 0), true, true);
 
 	//SML_LigthsCreatePoint(&float4(40, 50, 40, 300), &float3(0, 0, 1), false, true, 0);
 

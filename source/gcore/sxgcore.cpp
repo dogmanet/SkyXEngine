@@ -251,12 +251,12 @@ bool SGCore_ShaderIsValidate(int type_shader, DWORD id)
 	return MShaders->IsValidate(type_shader, id);
 }
 
-void SGCore_ShaderGetPath(int type_shader, DWORD id, char* path)
+/*void SGCore_ShaderGetPath(int type_shader, DWORD id, char* path)
 {
 	SG_PRECOND();
 
 	MShaders->GetPath(type_shader, id, path);
-}
+}*/
 
 void SGCore_ShaderGetName(int type_shader, DWORD id, char* name)
 {
@@ -374,7 +374,7 @@ DWORD SGCore_RTGetNum(const char* text)
 	return MRenderTargets->GetNum(text);
 }
 
-void SGCore_RTOnLostDevice()
+/*void SGCore_RTOnLostDevice()
 {
 	SG_PRECOND();
 
@@ -386,7 +386,7 @@ void SGCore_RTOnResetDevice()
 	SG_PRECOND();
 
 	return MRenderTargets->OnResetDevice();
-}
+}*/
 
 IDirect3DTexture9* SGCore_RTGetTextureN(const char* text)
 {

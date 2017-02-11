@@ -190,6 +190,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\material_ligth\material.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\material_ligth\material_ligth.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -321,6 +324,7 @@
     <ClInclude Include="..\..\..\source\input\sxinput.h" />
     <ClInclude Include="..\..\..\source\input\sxinput_class.h" />
     <ClInclude Include="..\..\..\source\material_ligth\light.h" />
+    <ClInclude Include="..\..\..\source\material_ligth\material.h" />
     <ClInclude Include="..\..\..\source\material_ligth\material_ligth.h" />
     <ClInclude Include="..\..\..\source\material_ligth\shadow.h" />
     <ClInclude Include="..\..\..\source\sound\sxsound.h" />

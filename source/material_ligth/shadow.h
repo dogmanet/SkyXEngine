@@ -14,27 +14,28 @@ public:
 
 	void Init();
 
-	bool IsVisibleForCamera();	//находится ли зона покрытия в видимости камеры
-
-	void Update(DWORD spilt,float3* poscam,float3* dircam);
+	void UpdateFrustums(int split, float3* poscam, float3* dircam);
+	void PreRender(int spilt);
 	void Begin();
 	void End();
 
-	void GenShadow();
-	void NullingShadow();
-	void SoftShadow(bool randomsam,float size);
-	IDirect3DTexture9* GetShadow();
-
-	inline void SetPosition(float3* pos){Position = *pos;};
-	inline void GetPosition(float3* pos){*pos = Position;};
+	void GenShadow2(IDirect3DTexture9* shadowmap, float lightpower,float3* lightpos);
+	
+	inline void SetPosition(float3* pos);
+	inline void GetPosition(float3* pos);
 
 	inline void SetBlurPixel(float blur_pixel);
 	inline bool GetBlurPixel();
 
-	inline void Set4Or3Splits(bool is4){Generating4Slits = is4;};
-	inline bool Get4Or3Splits(){return Generating4Slits;};
+	inline void Set4Or3Splits(bool is4);
+	inline bool Get4Or3Splits();
+
+	void SetIDArr(long id, int split, long idarr);
+	inline long GetCountIDArrs();
+	inline long GetIDArr(long id, int split);
 
 	ISXFrustum* Frustums[5];
+	//long IDArr[5];
 
 	int IsUpdate[5];
 	float2 NearFar[5];
@@ -42,6 +43,7 @@ public:
 
 protected:
 
+	Array<long*> IDArr;
 	float3 Position;
 
 	void Flickering(float4x4 *matLVP,float size_x,float size_y);
@@ -61,9 +63,6 @@ protected:
 	D3DXMATRIX OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 	
-	IDirect3DTexture9* ShadowMap;
-	IDirect3DTexture9* ShadowMap2;
-	int HowShadow; //внутренний релатайм флаг
 	IDirect3DSurface9* OldDepthStencilSurface;
 	IDirect3DSurface9* OldColorSurface;
 };
@@ -83,12 +82,6 @@ public:
 
 	void Init();
 
-	inline void SetStatic(bool is_static){IsStatic = is_static;};
-	inline bool GetStatic(){return IsStatic;};
-
-	inline void SetUpdate(bool is_update){IsUpdate = is_update;};
-	inline bool GetUpdate(){return IsUpdate;};
-
 	inline void SetBias(float bias);
 	inline float GetBias();
 
@@ -98,9 +91,7 @@ public:
 	void Begin();
 	void End();
 
-	void GenShadow();
-	void SoftShadow(bool randomsam,float size);
-	IDirect3DTexture9* GetShadow();
+	void GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos);
 
 	void SetPosition(float3* pos);
 	void GetPosition(float3* pos);
@@ -120,19 +111,21 @@ public:
 	inline void SetAngle(float sangle);
 	inline float GetAngle();
 
+	void SetIDArr(long id, long idarr);
+	inline long GetCountIDArrs();
+	inline long GetIDArr(long id);
+
 	ISXFrustum* Frustum;
+	//long IDArr;
 
 	float4x4 View;
 	float4x4 Proj;
-	bool IsRenderGreen;
 
 private:
 
+	Array<long> IDArr;
 	float Bias;
 	float BlurPixel;
-
-	bool IsStatic;
-	bool IsUpdate;
 
 	float3 Position;
 	float3 Direction;
@@ -142,13 +135,9 @@ private:
 	IDirect3DSurface9*	DepthSurface;
 	IDirect3DSurface9*	DepthStencilSurface;
 	
-
 	D3DXMATRIX OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 
-	IDirect3DTexture9* ShadowMap;
-	IDirect3DTexture9* ShadowMap2;
-	int HowShadow; 
 	IDirect3DSurface9* OldDepthStencilSurface;
 	IDirect3DSurface9*  OldColorSurface;
 };
@@ -165,20 +154,14 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	inline void SetStatic(bool is_static){if(!IsStatic && is_static)CountRender = 0; IsStatic = is_static; };
-	inline bool GetStatic(){return IsStatic;};
-
-	inline void SetUpdate(bool is_update){IsUpdate = is_update;if(!IsUpdate)CountRender = 0;};
-	inline bool GetUpdate(){return IsUpdate;}
-
 	inline void SetEnableCubeEdge(int edge,bool enable);
 	inline bool GetEnableCubeEdge(int edge);
 
-	inline void SetBias(float bias){Bias = bias;};
-	inline float GetBias(){return Bias;};
+	inline void SetBias(float bias);
+	inline float GetBias();
 
-	inline void SetBlurPixel(float blur_pixel){BlurPixel = blur_pixel;};
-	inline bool GetBlurPixel(){return BlurPixel;};
+	inline void SetBlurPixel(float blur_pixel);
+	inline bool GetBlurPixel();
 
 	void Init();
 
@@ -199,16 +182,18 @@ public:
 	void Post(int cube);
 	void End();
 
-	void GenShadow();
-	void SoftShadow(bool randomsam,float size);
-	IDirect3DTexture9* GetShadow();
+	void GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos);
 
-	ISXFrustum* Frustum;
-	bool IsRenderGreen;
+	void SetIDArr(long id, int split, long idarr);
+	inline long GetCountIDArrs();
+	inline long GetIDArr(long id, int split);
+
+	ISXFrustum* Frustums[6];
+	//long IDArr[6];
 
 private:
 
-	WORD CountRender;
+	Array<long*> IDArr;
 	float Bias;
 	float BlurPixel;
 	IDirect3DCubeTexture9*	DepthMap;
@@ -218,15 +203,10 @@ private:
 	float4x4 Proj[6];
 
 	bool EnableEdge[6];
+	bool EnableEdgeNulled[6];
 
 	D3DXMATRIX OldView,OldProj,OldViewProj;
 
-	bool IsStatic;
-	bool IsUpdate;
-
-	IDirect3DTexture9* ShadowMap;
-	IDirect3DTexture9* ShadowMap2;
-	int HowShadow; 
 	IDirect3DSurface9* OldDepthStencilSurface;
 	IDirect3DSurface9*  OldColorSurface;
 

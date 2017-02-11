@@ -130,9 +130,9 @@ StaticGeom::IRSData::~IRSData()
 	queue.clear();
 	for (long i = 0; i < arr.size(); ++i)
 	{
-		mem_delete_a(arr[i]);
-		arr.clear();
+		mem_delete(arr[i]);
 	}
+	arr.clear();
 }
 
 StaticGeom::StaticGeom()
@@ -402,7 +402,7 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 			char tmptex[1024];
 			sprintf(tmptex, "%s.dds", model->ArrTextures[i]);
 
-			ngroup->idtex = SGCore_LoadTexAddName(tmptex);
+			ngroup->idtex = FuncLoadMaterial(tmptex);// SGCore_LoadTexAddName(tmptex);
 			ngroup->name = model->ArrTextures[i];
 			AllGroups.push_back(ngroup);
 		}
@@ -786,6 +786,10 @@ void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWOR
 					comsegment->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
 					(*count)++;
 				}
+				/*else
+				{
+					int qwert = 0;
+				}*/
 			}
 	}
 }
@@ -885,7 +889,7 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 			StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
 			for (int k = 0; k < AllModels[i]->Lod0.model->SubsetCount; ++k)
 			{
-				StaticGeom::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(AllModels[i]->Lod0.IDsTexs[k]));
+				FuncSetMaterial(AllModels[i]->Lod0.IDsTexs[k],0);
 				FuncDIP(StaticGeom::DXDevice, D3DPT_TRIANGLELIST, 0, 0, AllModels[i]->Lod0.model->VertexCount[k], AllModels[i]->Lod0.model->StartIndex[k], AllModels[i]->Lod0.model->IndexCount[k] / 3);
 			}
 		}
@@ -930,7 +934,7 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 				StaticGeom::DXDevice->SetStreamSource(0, AllGroups[i]->VertexBuffer[k], 0, sizeof(vertex_static));
 				StaticGeom::DXDevice->SetIndices(RenderIndexBuffer);
 				StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
-				StaticGeom::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(AllGroups[i]->idtex));
+				FuncSetMaterial(AllGroups[i]->idtex,0);
 
 				FuncDIP(StaticGeom::DXDevice, D3DPT_TRIANGLELIST, 0, 0, AllGroups[i]->CountVertex[k], 0, RTCountDrawPoly[i][k]);
 			}
@@ -1414,8 +1418,7 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* m
 
 			mem_delete_a(tmpCountPG);
 
-			
-
+			EditVolume(mesh, Split->Splits[i]);
 			if (Split->Splits[i]->CountAllPoly > 0 && Split->Splits[i]->CountAllPoly > CountPolyInSegment)
 			{
 				Split->Splits[i]->BFNonEnd = true;
@@ -1423,7 +1426,7 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* m
 			else
 			{
 				Split->Splits[i]->BFNonEnd = false;
-				EditVolume(mesh, Split->Splits[i]);
+				//EditVolume(mesh, Split->Splits[i]);
 
 				//оптимизация для Post TnL кэша
 				//{{
@@ -1473,7 +1476,7 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* m
 			mem_delete(Split->Splits[i]);
 		}
 	}
-	EditVolume(mesh, Split);
+
 	mem_delete_a(Split->NumberGroup);
 	
 	mem_delete_a(Split->CountPoly);
@@ -1779,7 +1782,7 @@ void StaticGeom::Load(const char* path)
 		char tmptex[1024];
 		sprintf(tmptex, "%s.dds", group->name.c_str());
 
-		group->idtex = SGCore_LoadTexAddName(tmptex);
+		group->idtex = FuncLoadMaterial(tmptex);// SGCore_LoadTexAddName(tmptex);
 
 		AllGroups.push_back(group);
 
@@ -2106,12 +2109,12 @@ void StaticGeom::DelArrForCom(long id_arr)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
-	for (long i = 0; i < AllModels.size(); ++i)
-	{
+	//for (long i = 0; i < AllModels.size(); ++i)
+	//{
 		mem_delete(ArrComFor[id_arr]);
 		//mem_delete_a(ArrComFor[id_arr]-arr[i]->Arr);
 		//ArrComFor[id_arr].arr.clear();
-	}
+	//}
 
 	//ArrComFor.erase(id_arr);
 }
@@ -2215,7 +2218,7 @@ void StaticGeom::SetModelLodPath(long id, const char* path)
 		for (long i = 0; i < AllModels[id]->Lod0.model->SubsetCount; ++i)
 		{
 			sprintf(tmptex, "%s.dds", AllModels[id]->Lod0.model->ArrTextures[i]);
-			AllModels[id]->Lod0.IDsTexs.push_back(SGCore_LoadTexAddName(tmptex));
+			AllModels[id]->Lod0.IDsTexs.push_back(FuncLoadMaterial(tmptex)/*SGCore_LoadTexAddName(tmptex)*/);
 		}
 
 		sprintf(AllModels[id]->Lod0.PathName,"%s",path);

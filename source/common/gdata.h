@@ -13,6 +13,8 @@ namespace GData
 	bool IsWindowed = true;
 	float ProjFov = D3DX_PI * 0.25f;
 	float ProjRatio = WinSize.x / WinSize.y;
+
+	int CurrStateRender = 0;
 	
 	float3 ConstCurrCamPos;
 	float3 ConstCurrCamDir;
@@ -68,18 +70,19 @@ namespace GData
 			DWORD FreeGeometry;
 			DWORD ScreenOut;
 			DWORD ComLightingNonShadow;
+			DWORD ComLightingShadow;
 			DWORD BlendAmbientSpecDiffcolor;
-			DWORD CalcAdaptedLum;
+			/*DWORD CalcAdaptedLum;
 			DWORD SampleLumInit;
 			DWORD SampleLumIterative;
 			DWORD SampleLumFinal;
-			DWORD FinalHRDL;
+			DWORD FinalHRDL;*/
 		};
 	};
 
 	namespace IDSRenderTargets
 	{
-		DWORD ColorScene;
+		/*DWORD ColorScene;
 		DWORD NormalScene;
 		DWORD DepthScene;
 		DWORD ParamsScene;
@@ -96,7 +99,7 @@ namespace GData
 		DWORD LigthCom_1x1;
 		DWORD LigthComD2;
 		DWORD LigthComD4;
-		DWORD LigthComD8;
+		DWORD LigthComD8;*/
 	};
 
 	//////

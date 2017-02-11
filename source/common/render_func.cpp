@@ -76,7 +76,7 @@ void SXRenderFunc::ComDeviceLost()
 	SGCore_OnLostDevice();
 	SGeom_OnLostDevice();
 	SML_OnLostDevice();
-	mem_release_del(GData::ComLightSurf1x1);
+	//mem_release_del(GData::ComLightSurf1x1);
 	bool bf = SGCore_OnDeviceReset(GData::WinSize.x, GData::WinSize.y,GData::IsWindowed);
 		if (bf)
 		{
@@ -94,10 +94,10 @@ void SXRenderFunc::ComDeviceLost()
 			SML_OnResetDevice(GData::WinSize.x, GData::WinSize.y, GData::ProjFov);
 			SGeom_OnResetDevice();
 			GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-			GData::DXDevice->CreateOffscreenPlainSurface(1, 1, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &GData::ComLightSurf1x1, 0);
+			//GData::DXDevice->CreateOffscreenPlainSurface(1, 1, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &GData::ComLightSurf1x1, 0);
 		
-			g_pTexAdaptedLuminanceLast = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumLast);
-			g_pTexAdaptedLuminanceCur = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumCurr);
+			//g_pTexAdaptedLuminanceLast = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumLast);
+			//g_pTexAdaptedLuminanceCur = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumCurr);
 		}
 }
 
@@ -192,10 +192,10 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 
 	LPDIRECT3DSURFACE9 BackBuf, ColorSurf, NormalSurf, ParamSurf, DepthMapLinearSurf;
 
-	SGCore_RTGetTexture(GData::IDSRenderTargets::ColorScene)->GetSurfaceLevel(0, &ColorSurf);
-	SGCore_RTGetTexture(GData::IDSRenderTargets::NormalScene)->GetSurfaceLevel(0, &NormalSurf);
-	SGCore_RTGetTexture(GData::IDSRenderTargets::ParamsScene)->GetSurfaceLevel(0, &ParamSurf);
-	SGCore_RTGetTexture(GData::IDSRenderTargets::DepthScene)->GetSurfaceLevel(0, &DepthMapLinearSurf);
+	SML_DSGetRT(DS_RT_COLOR)->GetSurfaceLevel(0, &ColorSurf);
+	SML_DSGetRT(DS_RT_NORMAL)->GetSurfaceLevel(0, &NormalSurf);
+	SML_DSGetRT(DS_RT_PARAM)->GetSurfaceLevel(0, &ParamSurf);
+	SML_DSGetRT(DS_RT_DEPTH)->GetSurfaceLevel(0, &DepthMapLinearSurf);
 
 
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);
@@ -219,8 +219,10 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::FreeGeometry, "World", &(SMMatrixTranspose(SMMatrixIdentity())));
 	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::FreeGeometry, "NearFar", &GData::NearFar);
 	SGeom_ModelsRender(0);
+
 	SGCore_ShaderUnBind();
 	
+	SML_LigthsRenderSource(-1, true, timeDelta);
 	//GData::StaticGreen->GPURender(0);
 
 
@@ -243,6 +245,8 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 
 void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 {
+	GData::CurrStateRender = 2;
+	SML_LigthsComVisibleFrustumDistFor(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -263,100 +267,89 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 			{
 				//Data::Level::LightManager->Arr[i]->ShadowPSSM->Set4Or3Splits(Core::Data::Settings::IsRender4Or3SplitsForPSSM);
 				SML_LigthsInRenderBegin(i);
-					float4 viewpos;
-					SML_LigthsGetPosW(i, &viewpos);
-					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+					/*float4 viewpos;
+					SML_LigthsGetPosW(i, &viewpos);*/
+				
+					//GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 					for (int k = 0; k<4; k++)
 					{
-						SML_LigthsUpdateG(i, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
-						SGeom_ModelsComVisible(SML_LigthsGetFrustumG(i, k), &GData::ConstCurrCamPos);
-						SGeom_ModelsRender(timeDelta);
+						if (SML_LigthsAllowedRender(i, k))
+						{
+							//SML_LigthsUpdateFrustumsG(i, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+							SML_LigthsInRenderPre(i, k);
+							//SGeom_ModelsComVisible(SML_LigthsGetFrustumG(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i,k));
+							SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(i, 0, k));
+
+							SML_LigthsRenderAllExceptGroupSource(i, timeDelta);
+						}
 					}
-					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+					//GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 					SML_LigthsInRenderEnd(i);
 			}
 			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_DIRECTION)
 			{
-				float4 viewpos;
-				SML_LigthsGetPosW(i, &viewpos);
+				/*float4 viewpos;
+				SML_LigthsGetPosW(i, &viewpos);*/
 
-				SML_LigthsInRenderBegin(i);
+				//
+				if (SML_LigthsUpdateCountUpdate(i, &GData::ConstCurrCamPos))
+				{
 
-				SGeom_ModelsComVisible(SML_LigthsGetFrustum(i), &GData::ConstCurrCamPos);
-				SGeom_ModelsRender(timeDelta);
+					SML_LigthsInRenderBegin(i);
 
-				SML_LigthsInRenderEnd(i);
+					//SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i,0));
+					SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(i, 0, 0));
+					SML_LigthsRenderAllExceptGroupSource(i, timeDelta);
+					SML_LigthsInRenderEnd(i);
+				}
 			}
 			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_POINT)
 			{
-				SML_LigthsInRenderBegin(i);
-				float4 viewpos;
-				SML_LigthsGetPosW(i, &viewpos);
-
-				for (int k = 0; k<6; k++)
+				if (SML_LigthsUpdateCountUpdate(i, &GData::ConstCurrCamPos))
 				{
-					SML_LigthsInRenderPre(i, k);
+					SML_LigthsInRenderBegin(i);
+					/*float4 viewpos;
+					SML_LigthsGetPosW(i, &viewpos);*/
 
-					SGeom_ModelsComVisible(SML_LigthsGetFrustum(i), &GData::ConstCurrCamPos);
-					SGeom_ModelsRender(timeDelta);
+					for (int k = 0; k < 6; k++)
+					{
+						SML_LigthsInRenderPre(i, k);
 
-					SML_LigthsInRenderPost(i, k);
+						if (SML_LigthsGetEnableCubeEdge(i, k))
+						{
+							//SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i,k));
+							SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(i, 0, k));
+							SML_LigthsRenderAllExceptGroupSource(i, timeDelta);
+							SML_LigthsInRenderPost(i, k);
+						}
+					}
+
+					SML_LigthsInRenderEnd(i);
 				}
-
-				SML_LigthsInRenderEnd(i);
 			}
 		}
 	}
+	GData::CurrStateRender = 1;
 	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 }
-
-void SXRenderFunc::RenderShadow(DWORD timeDelta)
-{
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
-
-	for (int i = 0; i<SML_LigthsGetCount(); i++)
-	{
-		if (SML_LigthsIsShadow(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
-		{
-			/*if (SML_LigthsGetType(i) == LIGHTS_TYPE_DIRECTION)
-			{	
-				SML_LigthsGenShadow(i);		
-			}
-			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_POINT)
-			{*/
-				SML_LigthsGenShadow(i);
-				//SML_LigthsSoftShadow(i, true, 5);
-				//SML_LigthsSoftShadow(i, false, 2);
-			//}
-		}
-	}
-	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-}
-
 
 void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_old)
 {
 	SGCore_ShaderUnBind();
 
+	SML_LigthsNullingShadow();
+
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
-	LPDIRECT3DSURFACE9 AmbientSurf, SpecDiffSurf, BackBuf;
-	SGCore_RTGetTexture(GData::IDSRenderTargets::LightAmbient)->GetSurfaceLevel(0, &AmbientSurf);
-	SGCore_RTGetTexture(GData::IDSRenderTargets::LightSpecDiff)->GetSurfaceLevel(0, &SpecDiffSurf);
+	LPDIRECT3DSURFACE9 AmbientSurf, SpecDiffSurf, SpecDiffSurf2, BackBuf;
+	SML_DSGetRT(DS_RT_AMBIENT_DIFF)->GetSurfaceLevel(0, &AmbientSurf);
+	SML_DSGetRT(DS_RT_SPECULAR)->GetSurfaceLevel(0, &SpecDiffSurf);
 
 	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, AmbientSurf);
 	GData::DXDevice->SetRenderTarget(1, SpecDiffSurf);
 
-	SetSamplerFilter(0, 6, D3DTEXF_LINEAR);
-	SetSamplerAddress(0, 6, D3DTADDRESS_CLAMP);
-
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::ColorScene));
-	GData::DXDevice->SetTexture(1, SGCore_RTGetTexture(GData::IDSRenderTargets::NormalScene));
-	GData::DXDevice->SetTexture(2, SGCore_RTGetTexture(GData::IDSRenderTargets::ParamsScene));
-	GData::DXDevice->SetTexture(3, SGCore_RTGetTexture(GData::IDSRenderTargets::DepthScene));
+	
 
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
@@ -370,11 +363,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
-		if (true
-			//(Data::Level::LightManager->Arr[i]->GetVisible() && SML_LigthsIsEnable(i))
-			)
+		if (SML_LigthsGetVisibleForFrustum(i) && SML_LigthsIsEnable(i))
 		{
 			DWORD idshader = GData::IDsShaders::PS::ComLightingNonShadow;
+
 			if (SML_LigthsGetType(i) != LIGHTS_TYPE_GLOBAL)
 			{
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
@@ -400,16 +392,13 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 				SML_LigthsRender(i, 0);
-				//Core::Data::Statistics::CountPoly += Data::Level::LightManager->Arr[i]->Mesh->GetNumFaces();
-				//SkyXEngine::Core::Data::Statistics::CountDips += 1;
-
 
 				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 				GData::DXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_ZERO);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_ZERO);
-				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
+				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
 				GData::DXDevice->SetRenderState(D3DRS_STENCILREF, 255);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
@@ -422,26 +411,44 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 				GData::DXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
 			}
 
-			GData::DXDevice->SetTexture(4, SML_LigthsGetShadow(i));
-
-			/*if (Data::Level::LightManager->Arr[i]->IsShadow)
-			{
-				if (
-					(SkyXEngine::Core::Data::Settings::UseShadowGlobal && Data::Level::LightManager->Arr[i]->IsGlobal) ||
-					(SkyXEngine::Core::Data::Settings::UseShadowLocal && !Data::Level::LightManager->Arr[i]->IsGlobal)
-					)
-				{
-					GData::DXDevice->SetTexture(4, Data::Level::LightManager->Arr[i]->GetShadow());
-					idshader = Data::EngineID::PS_ComLigthingShadowed;
-				}
-				else
-				{
-					SkyXEngine::GData::DXDevice->SetTexture(4, Core::Data::LoadedTextures->GetTexture(SkyXEngine::Core::Data::EngineID::Tex_White));
-				}
-			}*/
-
 			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+			GData::DXDevice->GetRenderTarget(1, &SpecDiffSurf2);
+			GData::DXDevice->SetRenderTarget(1, 0);
+			mem_release_del(SpecDiffSurf2);
+			SetSamplerAddress(0, 6, D3DTADDRESS_CLAMP);
+			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+			
+			SML_LigthsNullingShadow();
+			SML_LigthsGenShadow(i);
+			//SML_LigthsSoftShadow(false, 6);
+			//GData::DXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+			SML_LigthsSoftShadow(false, 4);
+			SML_LigthsSoftShadow(false, 2);
+			//GData::DXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+			GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+			GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+			GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			GData::DXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+
+			SML_DSGetRT(DS_RT_SPECULAR)->GetSurfaceLevel(0, &SpecDiffSurf);
+			GData::DXDevice->SetRenderTarget(1, SpecDiffSurf);
+
+			if (SML_LigthsIsShadow(i))
+			{
+				
+				GData::DXDevice->SetTexture(4, SML_LigthsGetShadow());
+				idshader = GData::IDsShaders::PS::ComLightingShadow;
+			}
+
+			
+			GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
+
 			float determ = 0;
 			float4x4 ViewInv = SMMatrixInverse(&determ, GData::MCamView);
 			ViewInv = SMMatrixTranspose(ViewInv);
@@ -449,33 +456,49 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 			SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
 			SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::ResPos, "NearFar", &GData::NearFar);
 
-			SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(GData::WinSize.x, GData::WinSize.y, D3DX_PI / 4.0f));
+			SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(GData::WinSize.x, GData::WinSize.y, GData::ProjFov));
 
-			//float MinIllumination = 0.1f;
-
-			float4 tmpPosition;
-			float3 tmpColor;// = float4(Data::Level::LightManager->Arr[i]->Color.x, Data::Level::LightManager->Arr[i]->Color.y, Data::Level::LightManager->Arr[i]->Color.z, Data::Level::LightManager->Arr[i]->Color.w/**Data::Level::LightManager->Arr[2]->Color.w*/);
+			float3 tmpPosition;
+			float2 tmpPowerDist;
+			float3 tmpColor;
 			SML_LigthsGetColor(i, &tmpColor);
-			SML_LigthsGetPosW(i, &tmpPosition);
+			SML_LigthsGetPos(i, &tmpPosition, false);
+			tmpPowerDist.x = SML_LigthsGetPowerDiv(i);
+			tmpPowerDist.y = SML_LigthsGetDist(i);
 
-			/*if(Data::Level::LightManager->Arr[i]->IsGlobal)
-			MinIllumination = tmpColor.w * (0.5 + (1.f-tmpColor.w)*0.3);*/
-			float MinIllumination = 0.3;
 			SGCore_ShaderSetVRF(1, idshader, "ViewPos", &GData::ConstCurrCamPos);
 			SGCore_ShaderSetVRF(1, idshader, "LightPos", &(tmpPosition));
+			SGCore_ShaderSetVRF(1, idshader, "LightPowerDist", &(tmpPowerDist));
 			SGCore_ShaderSetVRF(1, idshader, "LightColor", &tmpColor);
-			SGCore_ShaderSetVRF(1, idshader, "MinIllumination", &(MinIllumination));
 
 			SGCore_ShaderBind(0, GData::IDsShaders::VS::ResPos);
 			SGCore_ShaderBind(1, idshader);
 
-			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+			SetSamplerFilter(0, 6, D3DTEXF_LINEAR);
+			SetSamplerAddress(0, 6, D3DTADDRESS_CLAMP);
+
+			SetSamplerFilter(1, D3DTEXF_NONE);
+
+			GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_COLOR));
+			GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_NORMAL));
+			GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT_PARAM));
+			GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT_DEPTH));
+
+			//GData::DXDevice->SetTexture(7, SGCore_RTGetTexture(GData::IDSRenderTargets::NormalScene));
+
+			
 
 			SGCore_ScreenQuadDraw();
 
 			GData::DXDevice->SetVertexShader(0);
 			GData::DXDevice->SetPixelShader(0);
 
+			
+
+			//GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+			//SML_LigthsGenShadow2(i);
+			//GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+			
 			//////////////////////
 		}
 	}
@@ -494,307 +517,27 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 	mem_release(SpecDiffSurf);
 	//-------------------------------
 
-	//LPDIRECT3DSURFACE9 ComLightSurf1x1;
-	//SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom_1x1)->GetSurfaceLevel(0, &ComLightSurf1x1);
-	//SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom)->GetSurfaceLevel(SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom)->GetLevelCount() - 1, &ComLightSurf1x1);
-	//SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom)->SetLOD()
-
-	/*LPDIRECT3DSURFACE9 SurfD;
-
-	SGCore_RTGetTexture(GData::IDSRenderTargets::LightSpecDiffD2)->GetSurfaceLevel(0, &SurfD);
-
-	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	GData::DXDevice->SetRenderTarget(0, SurfD);
+	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::ScreenOut);
-
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::LightSpecDiff));
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-
-	SGCore_ShaderUnBind();
-	GData::DXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
-	mem_release(SurfD);*/
-
-
-
-
-
-	/*SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom_1x1)->GetSurfaceLevel(0, &SurfD);
-
-	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	GData::DXDevice->SetRenderTarget(0, SurfD);
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::ScreenOut);
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::LigthComD2));
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-
-	SGCore_ShaderUnBind();
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
-	mem_release(SurfD);*/
-
-
-
-	LPDIRECT3DSURFACE9	DepthInvSurf;
-	HRESULT hr = SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[0])->GetSurfaceLevel(0, &DepthInvSurf);
-	
-	hr = GData::DXDevice->GetRenderTargetData(DepthInvSurf, GData::ComLightSurf1x1);
-	if (hr == D3DERR_DRIVERINTERNALERROR)
-		int qwert = 0;
-	else if (hr == D3DERR_DEVICELOST)
-		int qwert = 0;
-	else if (hr == D3DERR_INVALIDCALL)
-		int qwert = 0;
-	D3DSURFACE_DESC tmpdesc;
-	SGCore_RTGetTexture(GData::IDSRenderTargets::LightSpecDiffD2)->GetLevelDesc(0, &tmpdesc);
-
-	
-	float allcolor = 0;
-	D3DLOCKED_RECT  srect;
-	GData::ComLightSurf1x1->LockRect(&srect, 0, D3DLOCK_READONLY);
-
-	allcolor = *(((float*)srect.pBits) + 0*tmpdesc.Width + 0);
-
-	/*for (int x = 0; x < tmpdesc.Width; ++x)
-	{
-		for (int y = 0; y < tmpdesc.Height; ++y)
-		{
-			
-			allcolor += *(((float*)srect.pBits) + y*tmpdesc.Width + x);
-			++countpix;
-		}
-	}*/
-	//memcpy(&allcolor, srect.pBits, sizeof(DWORD));
-	GData::ComLightSurf1x1->UnlockRect();
-	//allcolor /= (float(countpix));
-
-	DepthInvSurf->Release();
-	
-
-
-
-
-
-
-	float2 avSampleOffsets[16];
-	GetSampleOffsets_DownScale4x4(GData::WinSize.x, GData::WinSize.y, avSampleOffsets);
-
-	LPDIRECT3DSURFACE9 SurfSceneScale;
-
-	SGCore_RTGetTexture(GData::IDSRenderTargets::LigthComScaled)->GetSurfaceLevel(0, &SurfSceneScale);
-
-	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	GData::DXDevice->SetRenderTarget(0, SurfSceneScale);
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::SampleLumIterative);
-	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::SampleLumIterative, "g_avSampleOffsets", &(avSampleOffsets));
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom));
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-
-	SGCore_ShaderUnBind();
-
-	mem_release(SurfSceneScale);
-	/*GData::DXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
-	mem_release(SurfSceneScale);*/
-
-
-
-
-
-#define NUM_TONEMAP_TEXTURES 4
-
-	DWORD dwCurTexture = NUM_TONEMAP_TEXTURES - 1;
-
-	// Sample log average luminance
-	PDIRECT3DSURFACE9 apSurfToneMap[NUM_TONEMAP_TEXTURES] = { 0 };
-
-	// Retrieve the tonemap surfaces
-	for (int i = 0; i < NUM_TONEMAP_TEXTURES; i++)
-	{
-		SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[i])->GetSurfaceLevel(0, &apSurfToneMap[i]);
-	}
-
-	D3DSURFACE_DESC desc;
-	SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[dwCurTexture])->GetLevelDesc(0, &desc);
-
-
-	// Initialize the sample offsets for the initial luminance pass.
-	float tU, tV;
-	tU = 1.0f / (3.0f * desc.Width);
-	tV = 1.0f / (3.0f * desc.Height);
-
-	int index = 0;
-	for (int x = -1; x <= 1; x++)
-	{
-		for (int y = -1; y <= 1; y++)
-		{
-			avSampleOffsets[index].x = x * tU;
-			avSampleOffsets[index].y = y * tV;
-
-			index++;
-		}
-	}
-
-	GData::DXDevice->SetRenderTarget(0, apSurfToneMap[dwCurTexture]);
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::LigthComScaled));
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	GData::DXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	GData::DXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-
-	//GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	//GData::DXDevice->SetRenderTarget(0, SurfSceneScale);
-	//GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	//GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::SampleLumInit);
-	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::SampleLumInit, "g_avSampleOffsets", &(avSampleOffsets));
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-
-	SGCore_ShaderUnBind();
-	mem_release(apSurfToneMap[dwCurTexture]);
-
-	--dwCurTexture;
-	while (dwCurTexture > 0)
-	{
-		SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[dwCurTexture + 1])->GetLevelDesc(0, &desc);
-		GetSampleOffsets_DownScale4x4(desc.Width, desc.Height, avSampleOffsets);
-
-		GData::DXDevice->SetRenderTarget(0, apSurfToneMap[dwCurTexture]);
-		GData::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-		GData::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-
-
-		SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-		SGCore_ShaderBind(1, GData::IDsShaders::PS::SampleLumIterative);
-		SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::SampleLumIterative, "g_avSampleOffsets", &(avSampleOffsets));
-
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[dwCurTexture + 1]));
-		SGCore_ScreenQuadDraw();
-
-		GData::DXDevice->SetVertexShader(0);
-		GData::DXDevice->SetPixelShader(0);
-
-		SGCore_ShaderUnBind();
-		//mem_release(apSurfToneMap[dwCurTexture]);
-		dwCurTexture--;
-	}
-
-
-	SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[1])->GetLevelDesc(0, &desc);
-	GetSampleOffsets_DownScale4x4(desc.Width, desc.Height, avSampleOffsets);
-
-
-	GData::DXDevice->SetRenderTarget(0, apSurfToneMap[0]);
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[1]));
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::SampleLumFinal);
-	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::SampleLumFinal, "g_avSampleOffsets", &(avSampleOffsets));
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-
-	SGCore_ShaderUnBind();
-
-
-	for (int i = 0; i < NUM_TONEMAP_TEXTURES; i++)
-	{
-		mem_release(apSurfToneMap[i]);
-	}
-
-
+	SML_LigthsComHDR(timeDelta,90);
+	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 
 
 
 
 	
-	
-
-	PDIRECT3DTEXTURE9 pTexSwap = g_pTexAdaptedLuminanceLast;
-	g_pTexAdaptedLuminanceLast = g_pTexAdaptedLuminanceCur;
-	g_pTexAdaptedLuminanceCur = pTexSwap;
-
-	PDIRECT3DSURFACE9 pSurfAdaptedLum = NULL;
-	g_pTexAdaptedLuminanceCur->GetSurfaceLevel(0, &pSurfAdaptedLum);
-
-	GData::DXDevice->SetRenderTarget(0, pSurfAdaptedLum);
-	GData::DXDevice->SetTexture(0, g_pTexAdaptedLuminanceLast);
-	GData::DXDevice->SetTexture(1, SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[0]));
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	GData::DXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	GData::DXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::CalcAdaptedLum);
-	
-	float ElapsedTime = float(timeDelta) * 0.001f;
-	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::CalcAdaptedLum, "g_fElapsedTime", &(ElapsedTime));
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-
-	SGCore_ShaderUnBind();
-	mem_release(pSurfAdaptedLum);
-
-	GData::DXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
-	
-
-
-
-
-
-
-	
-
+	//SML_LigthsSoftShadow(true,4,true);
+	//SML_LigthsSoftShadow(true, 2);
+	SML_LigthsSoftShadow(false, 4);
+	SML_LigthsSoftShadow(false, 2);
 
 	LPDIRECT3DSURFACE9 ComLightSurf;
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-	SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom)->GetSurfaceLevel(0, &ComLightSurf);
+	SML_DSGetRT(DS_RT_SCENE_LIGHT_COM)->GetSurfaceLevel(0, &ComLightSurf);
 
 	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
@@ -812,10 +555,12 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 	else*/
 		GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0,0,0,0), 1.0f, 0);
 
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::ColorScene));
-	GData::DXDevice->SetTexture(1, SGCore_RTGetTexture(GData::IDSRenderTargets::LightAmbient));
-	GData::DXDevice->SetTexture(2, SGCore_RTGetTexture(GData::IDSRenderTargets::LightSpecDiff));
-	GData::DXDevice->SetTexture(3, g_pTexAdaptedLuminanceCur/*SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[0])*/);
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_COLOR));
+	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_AMBIENT_DIFF));
+	GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT_SPECULAR));
+	//GData::DXDevice->SetTexture(3, SGCore_RTGetTexture(GData::IDSRenderTargets::ParamsScene));
+	GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT_ADAPTED_LUM_CURR)/*SGCore_RTGetTexture(GData::IDSRenderTargets::ToneMaps[0])*/);
+	//GData::DXDevice->SetTexture(5, SML_LigthsGetShadow());
 
 	//Data::ShadersManager->SetValueRegisterF(1,Data::EngineID::PS_BlendAmbientSpecDiffcolor,"MinIllumination",&(MinIllumination));
 
@@ -827,39 +572,25 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 
 	GData::DXDevice->SetVertexShader(0);
 	GData::DXDevice->SetPixelShader(0);
-	mem_release(ComLightSurf);
 
-
-
-	/*SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom)->GetSurfaceLevel(0, &ComLightSurf);
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
-	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 0, 255), 1.0f, 0);
-
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom2));
-
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(1, GData::IDsShaders::PS::ScreenOut);
-
-	SGCore_ScreenQuadDraw();
-
-	GData::DXDevice->SetVertexShader(0);
-	GData::DXDevice->SetPixelShader(0);
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);*/
-	/*if (render_sky && Data::EngineID::Light_Global != -1)
+	/*if (SML_LigthsGetCount() > 0)
 	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetTransform(D3DTS_VIEW, &(GData::MCamView.operator D3DXMATRIX()));
+		GData::DXDevice->SetTransform(D3DTS_PROJECTION, &(GData::MLightProj.operator D3DXMATRIX()));
+		GData::DXDevice->SetTexture(0, 0);
+		SML_LigthsRender(0, 0);
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-		SkyXEngine::Core::Render::RenderSky(timeDelta);
-		SkyXEngine::Core::Data::Statistics::CountDips += 1;
 	}*/
+
+	mem_release(ComLightSurf);
 
 	GData::DXDevice->SetRenderTarget(0, BackBuf);
 	mem_release(BackBuf);
+
+	
 	
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
@@ -948,9 +679,6 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 	
 	RenderInMRT(0);
 
-	
-	RenderShadow(timeDelta);
-
 	ComLighting(timeDelta, false, false);
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -960,7 +688,7 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 	SGCore_ShaderBind(1, GData::IDsShaders::PS::ScreenOut);
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(GData::IDSRenderTargets::LigthCom));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENE_LIGHT_COM));
 	SGCore_ScreenQuadDraw();
 
 	GData::DXDevice->SetVertexShader(0);
@@ -993,4 +721,46 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 	GData::DXDevice->EndScene();	//заканчиваем отрисовку
 
 	GData::DXDevice->Present(0, 0, 0, 0);	//выводим картинку в окно
+
+
+	/*if (GetAsyncKeyState(VK_NUMPAD1))
+	{
+		D3DXSaveTextureToFile("C:\\1\\color", D3DXIFF_PNG, SGCore_RTGetTexture(GData::IDSRenderTargets::ColorScene), NULL);
+		D3DXSaveTextureToFile("C:\\1\\normal", D3DXIFF_PNG, SGCore_RTGetTexture(GData::IDSRenderTargets::NormalScene), NULL);
+		D3DXSaveTextureToFile("C:\\1\\depth", D3DXIFF_PNG, SGCore_RTGetTexture(GData::IDSRenderTargets::DepthScene), NULL);
+		D3DXSaveTextureToFile("C:\\1\\param", D3DXIFF_PNG, SGCore_RTGetTexture(GData::IDSRenderTargets::ParamsScene), NULL);
+	}*/
+
+	for (int i = 0; i<SML_LigthsGetCount(); i++)
+	{
+		if (SML_LigthsIsShadow(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		{
+			if (SML_LigthsGetType(i) == LIGHTS_TYPE_GLOBAL)
+			{
+				//SML_LigthsUpdateFrustumsG(i, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+				for (int k = 0; k<4; k++)
+				{
+					if (SML_LigthsUpdateCountUpdate(i, &GData::ConstCurrCamPos,k))
+					{
+						SML_LigthsUpdateFrustumsG(i, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+						SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i, 0, k));
+					}
+				}
+			}
+			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_DIRECTION)
+			{
+				SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i, 0, 0));
+			}
+			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_POINT)
+			{
+				for (int k = 0; k<6; k++)
+				{
+					if (SML_LigthsGetEnableCubeEdge(i, k))
+					{
+						SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i, 0, k));
+					}
+				}
+			}
+		}
+	}
 }

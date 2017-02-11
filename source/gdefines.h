@@ -12,6 +12,8 @@
 #endif
 
 #define CORE_NAME_MAX_LEN 32	//максимальная длина имени объекта ядра/подсистемы
+#define OBJECT_NAME_MAX_LEN 64	//максимальная длина имени объекта
+#define CONFIG_SECTION_MAX_LEN 64	//максимальная длина секции конфигурационного файла
 
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT

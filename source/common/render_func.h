@@ -15,7 +15,7 @@ namespace SXRenderFunc
 
 	void RenderInMRT(DWORD timeDelta);
 	void UpdateShadow(DWORD timeDelta);
-	void RenderShadow(DWORD timeDelta);
+	
 	void ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_old);
 	void GameRender(DWORD timeDelta);
 	void LevelEditorRender(DWORD timeDelta);

@@ -198,6 +198,9 @@
     <ClCompile Include="..\..\..\source\geom\geom_data.cpp">
       <Filter>sxgeom</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\material_ligth\material.cpp">
+      <Filter>material_light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\gdefines.h">
@@ -355,6 +358,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\geom\sxgeom.h">
       <Filter>sxgeom</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\material_ligth\material.h">
+      <Filter>material_light</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
