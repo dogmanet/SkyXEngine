@@ -93,7 +93,8 @@ SX_LIB_API void SML_LigthsSave(const char* path);	//сохранить список света
 SX_LIB_API void SML_LigthsLoad(const char* path);	//загрузить список света
 
 SX_LIB_API void SML_LigthsClear();		//очистить список света
-SX_LIB_API long SML_LigthsGetCount();	//количество света
+SX_LIB_API long SML_LigthsGetCount();	//общее количество света
+SX_LIB_API long SML_LigthsGetIDOfKey(long key);	//получить id по ключу (порядковому номеру), к примеру в случае полного обхода массива
 
 //создать точечный свет (светит во все стороны)
 SX_LIB_API long SML_LigthsCreatePoint(
@@ -238,6 +239,7 @@ SX_LIB_API void SML_LigthsInRenderPre(long id,int cube);	//подготовительные проц
 SX_LIB_API void SML_LigthsInRenderPost(long id,int cube);	//завершающие процедур перед рендером для сплита/стороны
 //}
 
+SX_LIB_API void SML_LigthsShadowSetShaderOfTypeMat(long id, int typemat, float4x4* wmat);
 SX_LIB_API void SML_LigthsGenShadow(long id);	//генерация тени на основе уже отработанной информации о затенении
 
 //сглаживание текущей тени
@@ -303,6 +305,12 @@ SX_LIB_API void SML_LigthsSetNullCountUpdate(long id);	//сбросить счетчик обновл
 //обработка hdr, factor_adapted - на сколько быстро "глаз" привыкнет
 SX_LIB_API void SML_LigthsComHDR(DWORD timeDelta, float factor_adapted = 10);
 
+
+SX_LIB_API long SML_LigthsDelGetCount();
+SX_LIB_API int SML_LigthsDelGetType(long key);
+SX_LIB_API void SML_LigthsDelDel(long key);
+SX_LIB_API long SML_LigthsDelGetIDArr(long key, long inid, int how);
+
 /////////
 
 //типы render targets
@@ -320,8 +328,19 @@ SX_LIB_API IDirect3DTexture9*  SML_DSGetRT(int type);	//текстура render target п
 
 /////////
 
-SX_LIB_API long SML_MatrialLoad(const char* name);
-SX_LIB_API void SML_MatrialRender(long id, float4x4* world);
-SX_LIB_API void SML_MatrialSetMainTexture(DWORD slot, long id);
+#define MTL_MAX_SIZE_DIR 64
+#define MTL_MAX_SIZE_NAME 64
+
+//типы материалов
+#define MTL_GEOM 0
+#define MTL_GRASS 1
+#define MTL_TREE 2
+#define MTL_ANIM 3
+
+SX_LIB_API long SML_MtlLoad(const char* name, int mtl_type = MTL_GEOM);
+SX_LIB_API long SML_MtlGetCount();
+SX_LIB_API int SML_MtlGetType(long id);
+SX_LIB_API void SML_MtlRender(long id, float4x4* world);
+SX_LIB_API void SML_MtlSetMainTexture(DWORD slot, long id);
 
 #endif

@@ -12,7 +12,7 @@ PSSM::PSSM()
 		{
 			DepthSurfaces[i] = 0;
 			DepthMaps[i] = 0;
-
+			Frustums[i] = 0;
 			IsUpdate[i] = 0;
 
 			//IDArr[i] = -1;
@@ -20,23 +20,29 @@ PSSM::PSSM()
 
 	OldDepthStencilSurface = 0;
 	OldColorSurface = 0;
+
+	DepthStencilSurface = 0;
 }
 
 PSSM::~PSSM()
 {
-		for(int i=0;i<5;i++)
-		{
-			mem_release_del(DepthMaps[i]);
-			mem_release_del(DepthSurfaces[i]);
-			mem_delete(Frustums[i]);
-		}
+	for(int i=0;i<5;i++)
+	{
+		mem_release_del(DepthMaps[i]);
+		mem_release_del(DepthSurfaces[i]);
+		mem_release_del(Frustums[i]);
+	}
 
-		for (int i = 0; i < IDArr.size(); i++)
-		{
-			mem_delete(IDArr[i]);
-		}
+	for (int i = 0; i < IDArr.size(); i++)
+	{
+		mem_delete_a(IDArr[i]);
+	}
+
+	IDArr.clear();
 
 	mem_release_del(DepthStencilSurface);
+	mem_release_del(OldDepthStencilSurface);
+	mem_release_del(OldColorSurface);
 }
 
 inline void PSSM::SetPosition(float3* pos)
@@ -92,7 +98,7 @@ long PSSM::GetCountIDArrs()
 
 long PSSM::GetIDArr(long id, int split)
 {
-	if (id < 0 || !(split >= 0 && split < 5))
+	if (id < 0 || !(split >= 0 && split < 5) || !(id < IDArr.size()))
 		return -2;
 
 	return IDArr[id][split];
@@ -117,8 +123,8 @@ void PSSM::OnResetDevice()
 
 			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x*(i==4?1:1), MLSet::SizeTexDepthGlobal.y*(i==4?1:1), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
 
-				if(FAILED(hr))
-					reportf(-1,"Ќе удалось создать текстуру глубины PSSM");
+				/*if(FAILED(hr))
+					reportf(-1,"Ќе удалось создать текстуру глубины PSSM");*/
 			
 			DepthSurfaces[i] = 0;
 		}
@@ -300,9 +306,9 @@ void PSSM::PreRender(int split)
 	MLSet::DXDevice->SetTransform(D3DTS_VIEW,&(Views[split].operator D3DXMATRIX()));
 	MLSet::DXDevice->SetTransform(D3DTS_PROJECTION,&(Projs[split].operator D3DXMATRIX()));
 
-	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::ShadowCreatePSSM_Direct, "WorldViewProjection", &SMMatrixTranspose(ViewProj[split]));
-	SGCore_ShaderBind(0, MLSet::IDsShaders::VS::ShadowCreatePSSM_Direct);
-	SGCore_ShaderBind(1, MLSet::IDsShaders::PS::ShadowCreatePSSM_Direct);
+	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(ViewProj[split]));
+	SGCore_ShaderBind(0, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
+	SGCore_ShaderBind(1, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 
 	mem_release_del(DepthSurfaces[split]);
 	DepthMaps[split]->GetSurfaceLevel(0, &(DepthSurfaces[split]));
@@ -377,7 +383,7 @@ void PSSM::Flickering(float4x4 *matLVP,float size_x,float size_y)
 	*matLVP = SMMatrixMultiply(*matLVP,xRounding);
 }
 
-void PSSM::GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos)
+void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 {
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
@@ -421,8 +427,6 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* li
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM4, "NearFar", &MLSet::NearFar);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM4, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM4, "LightPower", &lightpower);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM4, "LightPos", lightpos);
 	}
 	else
 	{
@@ -430,8 +434,6 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* li
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM3, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM3, "NearFar", &MLSet::NearFar);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM3, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM3, "LightPower", &lightpower);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::PSSM3, "LightPos", lightpos);
 	}
 
 	
@@ -473,17 +475,29 @@ ShadowMapTech::ShadowMapTech()
 	Bias = 0.0001;
 	BlurPixel = 0.5;
 
+	Frustum = 0;
+
+	DepthMap = 0;
+	DepthSurface = 0;
+	DepthStencilSurface = 0;
+
+	OldDepthStencilSurface = 0;
+	OldColorSurface = 0;
+
 	//IDArr = -1;
 }
 
 ShadowMapTech::~ShadowMapTech()
 {
-	mem_delete(Frustum);
+	mem_release_del(Frustum);
 
 	mem_release_del(DepthMap);
 	mem_release_del(DepthStencilSurface);
 	
 	mem_release_del(DepthSurface);
+
+	mem_release_del(OldDepthStencilSurface);
+	mem_release_del(OldColorSurface);
 }
 
 void ShadowMapTech::SetPosition(float3* pos)
@@ -599,7 +613,7 @@ long ShadowMapTech::GetCountIDArrs()
 
 long ShadowMapTech::GetIDArr(long id)
 {
-	if (id < 0)
+	if (id < 0 || !(id < IDArr.size()))
 		return -2;
 
 	return IDArr[id];
@@ -629,9 +643,9 @@ void ShadowMapTech::Begin()
 
 	Frustum->Update(&(View),&(Proj));
 
-	SGCore_ShaderSetVRF(0,MLSet::IDsShaders::VS::ShadowCreatePSSM_Direct,"WorldViewProjection",&SMMatrixTranspose(View * Proj));
-	SGCore_ShaderBind(0,MLSet::IDsShaders::VS::ShadowCreatePSSM_Direct);
-	SGCore_ShaderBind(1, MLSet::IDsShaders::PS::ShadowCreatePSSM_Direct);
+	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(View * Proj));
+	SGCore_ShaderBind(0, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
+	SGCore_ShaderBind(1, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 
 	mem_release_del(DepthSurface);
 	DepthMap->GetSurfaceLevel(0, &(DepthSurface));
@@ -654,7 +668,7 @@ void ShadowMapTech::End()
 	MLSet::DXDevice->SetTransform(D3DTS_WORLD1,&OldViewProj);
 }
 
-void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos)
+void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap)
 {
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	shadowmap->GetSurfaceLevel(0, &RenderSurf);
@@ -697,16 +711,12 @@ void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, f
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
 	{
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect4, "LightPower", &lightpower);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect4, "LightPos", lightpos);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect4, "PosCam", &MLSet::ConstCurrCamPos);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect4, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
 	}
 	else
 	{
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect9, "LightPower", &lightpower);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect9, "LightPos", lightpos);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect9, "PosCam", &MLSet::ConstCurrCamPos);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect9, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowDirect9, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
@@ -742,6 +752,9 @@ void ShadowMapCubeTech::OnLostDevice()
 	mem_release_del(DepthSurface[3]);
 	mem_release_del(DepthSurface[4]);
 	mem_release_del(DepthSurface[5]);
+
+	mem_release_del(OldDepthStencilSurface);
+	mem_release_del(OldColorSurface);
 }
 
 void ShadowMapCubeTech::OnResetDevice()
@@ -755,22 +768,19 @@ ShadowMapCubeTech::~ShadowMapCubeTech()
 	for (int i = 0; i < 6; ++i)
 	{
 		mem_release_del(Frustums[i]);
+		mem_release_del(DepthSurface[i]);
 	}
 
 	for (int i = 0; i < IDArr.size(); i++)
 	{
-		mem_delete(IDArr[i]);
+		mem_delete_a(IDArr[i]);
 	}
 
 	mem_release_del(DepthMap);
 	mem_release_del(DepthStencilSurface);
 
-	mem_release_del(DepthSurface[0]);
-	mem_release_del(DepthSurface[1]);
-	mem_release_del(DepthSurface[2]);
-	mem_release_del(DepthSurface[3]);
-	mem_release_del(DepthSurface[4]);
-	mem_release_del(DepthSurface[5]);
+	mem_release_del(OldDepthStencilSurface);
+	mem_release_del(OldColorSurface);
 }
 
 ShadowMapCubeTech::ShadowMapCubeTech()
@@ -778,6 +788,7 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 	for (int i = 0; i < 6; ++i)
 	{
 		Frustums[i] = 0;
+		DepthSurface[i] = 0;
 		//IDArr[i] = -1;
 	}
 
@@ -786,6 +797,11 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 
 	Bias = 0.007;
 	BlurPixel = 16;
+
+	DepthMap = 0;
+	DepthStencilSurface = 0;
+	OldColorSurface = 0;
+	OldDepthStencilSurface = 0;
 }
 
 inline void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
@@ -934,11 +950,11 @@ void ShadowMapCubeTech::Pre(int cube)
 	
 	MLSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,255,255,255), 1.0f, 0);
 
-	SGCore_ShaderBind(0,MLSet::IDsShaders::VS::ShadowCreateCube);
-	SGCore_ShaderBind(1, MLSet::IDsShaders::PS::ShadowCreateCube);
+	SGCore_ShaderBind(0, MLSet::IDsShaders::VS::SMDepthGeomCube);
+	SGCore_ShaderBind(1, MLSet::IDsShaders::PS::SMDepthGeomCube);
 
-	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::ShadowCreateCube, "LightPos", &Position);
-	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::ShadowCreateCube, "WorldViewProjection", &vp);
+	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::SMDepthGeomCube, "LightPos", &Position);
+	SGCore_ShaderSetVRF(0, MLSet::IDsShaders::VS::SMDepthGeomCube, "WorldViewProjection", &vp);
 }
 
 void ShadowMapCubeTech::Post(int cube)
@@ -949,6 +965,7 @@ void ShadowMapCubeTech::Post(int cube)
 			sprintf(tmpstr,"C:\\1\\shadowcube_%d.bmp",cube);
 			D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_PNG, DepthSurface[cube], NULL,0);
 		}
+	mem_release_del(DepthSurface[cube]);
 }
 
 void ShadowMapCubeTech::End()
@@ -963,7 +980,7 @@ void ShadowMapCubeTech::End()
 	MLSet::DXDevice->SetTransform(D3DTS_WORLD1,&OldViewProj);
 }
 
-void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos)
+void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 {
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
@@ -977,7 +994,7 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap, float lightpowe
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
 	SGCore_SetSamplerFilter(1, D3DTEXF_LINEAR);
 	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(2, D3DTEXF_LINEAR);
+	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
 	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
@@ -1002,8 +1019,7 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap, float lightpowe
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube1, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube1, "PixelSize", &pixel_size);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube1, "LightPower", &lightpower);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", lightpos);
+		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
 	}
 	else
 	{
@@ -1011,8 +1027,7 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap, float lightpowe
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube6, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
 		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube6, "LightPower", &lightpower);
-		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", lightpos);
+		SGCore_ShaderSetVRF(1, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 	}
 	float determ = 0;
 	float4x4 ViewInv = SMMatrixInverse(&determ, MLSet::MCamView);
@@ -1053,7 +1068,7 @@ long ShadowMapCubeTech::GetCountIDArrs()
 
 long ShadowMapCubeTech::GetIDArr(long id, int split)
 {
-	if (id < 0 || !(split >= 0 && split < 6))
+	if (id < 0 || !(split >= 0 && split < 6) || !(id < IDArr.size()))
 		return -2;
 
 	return IDArr[id][split];

@@ -76,6 +76,8 @@ Green::Model::~Model()
 {
 	mem_delete(ArrSplits);
 	mem_delete(AllTrans);
+	mem_delete(NavigateMesh);
+
 	mem_del(ArrLod[0]);
 	if (ArrLod[0] != ArrLod[1])
 		mem_del(ArrLod[1]);
@@ -119,6 +121,7 @@ Green::Lod::Lod()
 Green::Lod::~Lod()
 {
 	idstex.clear();
+	mem_release_del(model);
 }
 
 Green::InfoRenderSegments::InfoRenderSegments()
@@ -133,13 +136,18 @@ Green::InfoRenderSegments::~InfoRenderSegments()
 
 Green::IRSData::IRSData()
 {
-	queue.clear();
-	arr.clear();
+	
 }
 
 Green::IRSData::~IRSData()
 {
+	queue.clear();
 
+	for (long i = 0; i < arr.size(); ++i)
+	{
+		mem_delete_a(arr[i]);
+	}
+	arr.clear();
 }
 
 
@@ -175,7 +183,7 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 	for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 	{
 		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadMtl(tmppathtex, MTL_TREE);
 	}
 
 	SGCore_LoadStaticModel(lod1, &tmpnewmpdel->ArrLod[1]->model);
@@ -183,7 +191,7 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 	for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 	{
 		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadMtl(tmppathtex, MTL_TREE);
 	}
 
 	SGCore_LoadStaticModel(lod2, &tmpnewmpdel->ArrLod[2]->model);
@@ -191,7 +199,7 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 	for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 	{
 		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadMtl(tmppathtex, MTL_TREE);
 	}
 
 
@@ -626,16 +634,16 @@ void Green::GPURender2(DWORD timeDelta,long nm, int lod)
 
 		if (ArrModels[nm]->TypeGreen == GREEN_TYPE_TREE)
 		{
-			SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenTree);
-			SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
+			//SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenTree);
+			//SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
 
 			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenTree, "WorldViewProjection", &mat);
 			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&mat, 4);
 		}
 		else
 		{
-			SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenGrass);
-			SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
+			//SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenGrass);
+			//SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
 
 			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&mat, 4);
 			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
@@ -649,12 +657,13 @@ void Green::GPURender2(DWORD timeDelta,long nm, int lod)
 		{
 
 
-			Green::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(ArrModels[nm]->ArrLod[lod]->idstex[i]));
-			FuncDIP(Green::DXDevice, D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3);
+			SGCore_SetMtl(ArrModels[nm]->ArrLod[lod]->idstex[i], 0);
+			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3);
+			Core_RIntSet(SGCORE_RI_INT_COUNT_POLY, Core_RIntGet(SGCORE_RI_INT_COUNT_POLY) + ((ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3) * RTCountDrawObj));
 			jCountIndex += ArrModels[nm]->ArrLod[lod]->model->IndexCount[i];
 		}
 
-		SGCore_ShaderUnBind();
+		//SGCore_ShaderUnBind();
 
 		Green::DXDevice->SetStreamSourceFreq(0, 1);
 		Green::DXDevice->SetStreamSourceFreq(1, 1);
@@ -680,10 +689,6 @@ void Green::GPURender(DWORD timeDelta,long id_arr)
 
 				for (DWORD i = 0; i < jcount; i++)
 				{
-					if (jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
-					{
-						//error
-					}
 					if (RTCountDrawObj + jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
 					{
 						TransVertBuf->Unlock();
@@ -765,6 +770,11 @@ long Green::Init(StaticGeom* geom, const char* name,
 		tmpnewmpdel->ArrLod[1] = 0;
 		tmpnewmpdel->ArrLod[2] = 0;
 
+		if (!lod1 && !lod2)
+			tmpnewmpdel->TypeGreen = GREEN_TYPE_GRASS;
+		else
+			tmpnewmpdel->TypeGreen = GREEN_TYPE_TREE;
+
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s", Green::StdPath, path);
 
@@ -774,7 +784,7 @@ long Green::Init(StaticGeom* geom, const char* name,
 		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 		{
 			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
-			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadMtl(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 		}
 
 		if (def_str_validate(lod1))
@@ -791,7 +801,7 @@ long Green::Init(StaticGeom* geom, const char* name,
 				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadMtl(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 				}
 			}
 		}
@@ -812,15 +822,10 @@ long Green::Init(StaticGeom* geom, const char* name,
 				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadTexAddName(tmppathtex);
+					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadMtl(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 				}
 			}
 		}
-
-		if (!lod1 && !lod2)
-			tmpnewmpdel->TypeGreen = GREEN_TYPE_GRASS;
-		else
-			tmpnewmpdel->TypeGreen = GREEN_TYPE_TREE;
 
 		if (def_str_validate(navmesh))
 		{
@@ -1169,7 +1174,7 @@ void Green::Load(const char* path)
 		for (int k = 0; k < tmpmodel->ArrLod[0]->model->SubsetCount; ++k)
 		{
 			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model->ArrTextures[k]);
-			tmpmodel->ArrLod[0]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
+			tmpmodel->ArrLod[0]->idstex[k] = SGCore_LoadMtl(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 		}
 
 		if (tmpstr[1][0])
@@ -1186,7 +1191,7 @@ void Green::Load(const char* path)
 				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
-					tmpmodel->ArrLod[1]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
+					tmpmodel->ArrLod[1]->idstex[k] = SGCore_LoadMtl(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 				}
 			}
 		}
@@ -1207,7 +1212,7 @@ void Green::Load(const char* path)
 				for (int k = 0; k < tmpmodel->ArrLod[2]->model->SubsetCount; ++k)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
-					tmpmodel->ArrLod[2]->idstex[k] = SGCore_LoadTexAddName(tmppathtex);
+					tmpmodel->ArrLod[2]->idstex[k] = SGCore_LoadMtl(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 				}
 			}
 		}
@@ -1347,12 +1352,7 @@ void Green::DelArrForCom(long id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
-	for (long i = 0; i < ArrModels.size(); ++i)
-	{
-		mem_delete(ArrComFor[id_arr]);
-	}
-
-	//ArrComFor.erase(id_arr);
+	mem_delete(ArrComFor[id_arr]);
 }
 
 void Green::AddModelInArrCom(long id_model)
@@ -1375,7 +1375,7 @@ void Green::DelModelInArrCom(long id_model)
 
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
-		mem_delete_a(ArrComFor[i]->arr[id_model]->Arr);
+		mem_delete(ArrComFor[i]->arr[id_model]);
 		ArrComFor[i]->arr.erase(id_model);
 	}
 }
@@ -1461,20 +1461,18 @@ void Green::DelGreen(long id)
 
 void Green::Clear()
 {
-	ArrComFor.clear();
-
-	for (long i = 0; i < ArrModels.size(); ++i)
+	while(ArrModels.size() > 0)
 	{
-		mem_delete(ArrModels[i]);
 		DelModelInArrCom(0);
+		mem_delete(ArrModels[0]);
+		ArrModels.erase(0);
 	}
 
-	/*ArrModels.clear();
-
-	IRSData tmparr;
-	ArrComFor.push_back(tmparr);
-	IRSData tmparr2;
-	ArrComFor.push_back(tmparr2);*/
+	while (ArrComFor.size() > 1)
+	{
+		mem_delete(ArrComFor[1]);
+		ArrComFor.erase(1);
+	}
 }
 
 void Green::SetGreenLod(long id, int lod, const char* pathname)
@@ -1502,7 +1500,7 @@ void Green::SetGreenLod(long id, int lod, const char* pathname)
 	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->SubsetCount; ++k)
 	{
 		sprintf(tmppath, "%s.dds", ArrModels[id]->ArrLod[lod]->model->ArrTextures[k]);
-		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_LoadTexAddName(tmppath);
+		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_LoadMtl(tmppath, (ArrModels[id]->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
 	}
 }
 

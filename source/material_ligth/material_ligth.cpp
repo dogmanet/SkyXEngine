@@ -1,14 +1,15 @@
 
 #define SXMATERIAL_LIGTH_VERSION 1
 
-#include <material_ligth\\ml_data.cpp>
-#include <material_ligth\material_ligth.h>
-#include <material_ligth\\light.cpp>
-#include <material_ligth\\material.cpp>
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func reportf = def_report;
 #endif
+
+#include <material_ligth\\ml_data.cpp>
+#include <material_ligth\material_ligth.h>
+#include <material_ligth\\light.cpp>
+#include <material_ligth\\material.cpp>
 
 Lights* ArrLights = 0;
 Materials* ArrMaterials = 0;
@@ -129,6 +130,13 @@ long SML_LigthsGetCount()
 	ML_PRECOND(-1);
 
 	return ArrLights->GetCountLights();
+}
+
+long SML_LigthsGetIDOfKey(long key)
+{
+	ML_PRECOND(-1);
+
+	return ArrLights->GetIdOfKey(key);
 }
 
 void SML_LigthsSave(const char* path)
@@ -420,6 +428,12 @@ void SML_LigthsUpdateFrustumsG(long id, int split, float3* pos, float3* dir)
 	return ArrLights->UpdateFrustumsG(id, split, pos,dir);
 }
 
+void SML_LigthsShadowSetShaderOfTypeMat(long id, int typemat, float4x4* wmat)
+{
+	ML_PRECOND();
+	ArrLights->InitShaderOfTypeMaterial(id, typemat, wmat);
+}
+
 void SML_LigthsGenShadow(long id)
 {
 	ML_PRECOND();
@@ -598,6 +612,30 @@ void SML_LigthsComHDR(DWORD timeDelta, float factor_adapted)
 	ArrLights->ComHDR(timeDelta, factor_adapted);
 }
 
+long SML_LigthsDelGetCount()
+{
+	ML_PRECOND(-1);
+	return ArrLights->DelGetCount();
+}
+
+int SML_LigthsDelGetType(long key)
+{
+	ML_PRECOND(-1);
+	return ArrLights->DelGetType(key);
+}
+
+void SML_LigthsDelDel(long key)
+{
+	ML_PRECOND();
+	ArrLights->DelDel(key);
+}
+
+long SML_LigthsDelGetIDArr(long key, long inid, int how)
+{
+	ML_PRECOND(-1);
+	return ArrLights->DelGetIDArr(key, inid, how);
+}
+
 ////////
 
 DWORD SML_DSGetRT_ID(int type)
@@ -623,7 +661,7 @@ DWORD SML_DSGetRT_ID(int type)
 	return -1;
 }
 
-IDirect3DTexture9*  SML_DSGetRT(int type)
+IDirect3DTexture9* SML_DSGetRT(int type)
 {
 	ML_PRECOND(0);
 	if (type == DS_RT_COLOR)
@@ -648,20 +686,34 @@ IDirect3DTexture9*  SML_DSGetRT(int type)
 
 ////////
 
-long SML_MatrialLoad(const char* name)
+long SML_MtlLoad(const char* name, int mtl_type)
 {
 	ML_PRECOND(-1);
 
-	return ArrMaterials->Load(name);
+	return ArrMaterials->Load(name, mtl_type);
 }
 
-void SML_MatrialRender(long id, float4x4* world)
+int SML_MtlGetType(long id)
+{
+	ML_PRECOND(-1);
+
+	return ArrMaterials->GetType(id);
+}
+
+long SML_MtlGetCount()
+{
+	ML_PRECOND(-1);
+
+	return ArrMaterials->GetCount();
+}
+
+void SML_MtlRender(long id, float4x4* world)
 {
 	ML_PRECOND();
 	ArrMaterials->Render(id, world);
 }
 
-void SML_MatrialSetMainTexture(DWORD slot, long id)
+void SML_MtlSetMainTexture(DWORD slot, long id)
 {
 	ML_PRECOND();
 	ArrMaterials->SetMainTexture(slot, id);

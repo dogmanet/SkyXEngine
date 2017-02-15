@@ -1,0 +1,16 @@
+
+sampler2D BaseSampler:register(s0);
+
+struct VSOUTPUT_SHADOW
+{
+	float4 Position	:POSITION0;
+	float4  Pos		:TEXCOORD0;
+	float2 TexUV		:TEXCOORD1;
+};
+
+float4 main(VSOUTPUT_SHADOW IN):COLOR0
+{
+	//float4 color = tex2D(BaseSampler,IN.TexUV);
+	//float depth = IN.Pos.z;
+	return IN.Pos.z/IN.Pos.w;//float4(IN.Depth, IN.Depth, IN.Depth,1.f);
+}

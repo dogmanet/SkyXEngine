@@ -44,7 +44,7 @@ DWORD CreatorTextures::Add(UINT width,UINT height,UINT levels,DWORD usage,D3DFOR
 		}
 
 		if(!isadd)
-			reportf(0,"\ttexture[%s] is created\n",name);
+			reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: render target[%s] is created, id = %d\n", name, id);
 
 	return id;
 }
@@ -85,7 +85,7 @@ DWORD CreatorTextures::GetNum(const char* text)
 
 void CreatorTextures::OnLostDevice()
 {
-	reportf(0,"!!! release textures for render ...");
+	reportf(REPORT_MSG_LEVEL_WARRNING, "sgcore: release render targets ...\n");
 		for(DWORD i=0;i<Arr.size();i++)
 		{
 			CreatedTexture* tmpct = Arr[i];
@@ -94,12 +94,12 @@ void CreatorTextures::OnLostDevice()
 					mem_release_del(Arr[i]->Texture);
 				}
 		}
-	reportf(0,"is ok\n");
+	reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: release render targets success\n");
 }
 
 void CreatorTextures::OnResetDevice()
 {
-	reportf(0, "!!! reset textures for render ...");
+	reportf(REPORT_MSG_LEVEL_WARRNING, "sgcore: reset render targets ...\n");
 		for(DWORD i=0;i<Arr.size();i++)
 		{
 				if(Arr[i]/*->Name[0] != 0*/)
@@ -110,7 +110,7 @@ void CreatorTextures::OnResetDevice()
 							DXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 				}
 		}
-		reportf(0, "is ok\n");
+	reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: reset render targets success\n");
 }
 
 IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)

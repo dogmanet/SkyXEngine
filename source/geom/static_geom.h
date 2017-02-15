@@ -13,13 +13,13 @@
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "static: unresolved id '%d' for array of compute visible", id_arr); \
+	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
 }
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
 if (!(id_model < AllModels.size() && AllModels[id_model]))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "static: unresolved id '%d' for array of models", id_model); \
+	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
 }
 
 #define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
@@ -79,15 +79,16 @@ public:
 	//модель, главный юнит уровня
 	struct Model
 	{
-		SX_ALIGNED_OP_MEM
-
 		Model();
 		~Model();
+
+		SX_ALIGNED_OP_MEM
 
 		struct Lod
 		{
 			Lod();
 			~Lod();
+
 			char PathName[1024];
 			ISXDataStaticModel* model;
 			Array<DWORD> IDsTexs;
@@ -105,9 +106,7 @@ public:
 			int32_t VertexCount;
 		};
 
-		char Name[64];
-		char PathName[1024];
-		int32_t CountPoly;
+		
 		float3 Position;
 		float3 Rotation;
 		float3 Scale;
@@ -115,6 +114,10 @@ public:
 		float3 OldPosition;
 		float3 OldRotation;
 		float3 OldScale;
+
+		char Name[64];
+		char PathName[1024];
+		int32_t CountPoly;
 
 		Lod Lod0;
 
@@ -125,6 +128,7 @@ public:
 		long SplitsIDs;	//общее количество сегментов/спилтов
 		long SplitsIDsRender;	//количество рисубщихся сегментов
 	};
+
 
 	//подгруппа уровня
 	struct Group
@@ -234,13 +238,10 @@ protected:
 	void SetSplitID2(Segment* Split, long* SplitsIDs, long* SplitsIDsRender, Array<Segment*>* queue);
 	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, DWORD curr_splits_ids_render);
 
-	//void UpdateArrMeshVertex2(long count_vertex, vertex_static* arrvertex);
 	//рабочие данные, используются внутри в методах
 	//{{
 	float3* ArrMeshVertex;
 	long CountVertex;
-	/*float3* ArrMeshVertex2;
-	long AllCountVertex2;*/
 
 	D3DXVECTOR3 jpos;
 	D3DXVECTOR3 jvevyp;
@@ -262,7 +263,7 @@ protected:
 	IDirect3DVertexDeclaration9* VertexDeclarationStatic;
 
 	long SizeRenderIndexBuffer;	//размер в элементах RenderIndexBuffer
-	IDirect3DIndexBuffer9* RenderIndexBuffer;	//индексный буфер, используется в изменяется в реайлтайме при рендере уровня	
+	IDirect3DIndexBuffer9* RenderIndexBuffer;	//индексный буфер, используется и изменяется в реайлтайме при рендере уровня	
 };
 
 bool StaticGeom::UseSortFrontToBackSplits = true;

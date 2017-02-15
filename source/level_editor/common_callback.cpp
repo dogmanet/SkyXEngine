@@ -273,9 +273,9 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	}
 	else if (SXLevelEditor::HowActivateType == 3)
 	{
-		if (SML_LigthsGetCount() > 0 && sel < SML_LigthsGetCount())
+		if (SML_LigthsGetCount() > 0 && sel >= 0 && sel < SML_LigthsGetCount())
 		{
-			SML_LigthsDeleteLight(sel);
+			SML_LigthsDeleteLight(SML_LigthsGetIDOfKey(sel));
 			SXLevelEditor::ListBoxList->DeleteItem(sel);
 			if (SML_LigthsGetCount() > 0)
 			{
@@ -535,7 +535,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 		if (SXLevelEditor::LightRadioButtonPosX->GetCheck() || SXLevelEditor::LightRadioButtonPosY->GetCheck() || SXLevelEditor::LightRadioButtonPosZ->GetCheck())
 		{
 			float3 pos;
-			(SML_LigthsGetPos(selmodel, &pos, false/*SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/));
+			(SML_LigthsGetPos(SML_LigthsGetIDOfKey(selmodel), &pos, false/*SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/));
 
 			if (::GetAsyncKeyState(VK_UP) & 0x8000f)
 				pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -577,13 +577,13 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			SXLevelEditor::LightEditPosY->SetText(tmpPosY);
 			SXLevelEditor::LightEditPosZ->SetText(tmpPosZ);
 
-			SML_LigthsSetPos(selmodel, &pos/*, SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
+			SML_LigthsSetPos(SML_LigthsGetIDOfKey(selmodel), &pos/*, SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
 		}
 
 		else if (SXLevelEditor::LightRadioButtonRotX->GetCheck() || SXLevelEditor::LightRadioButtonRotY->GetCheck() || SXLevelEditor::LightRadioButtonRotZ->GetCheck())
 		{
 			float3 pos;
-			(SML_LigthsGetRot(selmodel, &pos, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck()));
+			(SML_LigthsGetRot(SML_LigthsGetIDOfKey(selmodel), &pos, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck()));
 
 			if (::GetAsyncKeyState(VK_UP) & 0x8000f)
 				pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -625,7 +625,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			SXLevelEditor::LightEditRotY->SetText(tmpPosY);
 			SXLevelEditor::LightEditRotZ->SetText(tmpPosZ);
 
-			SML_LigthsSetRot(selmodel, &pos, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+			SML_LigthsSetRot(SML_LigthsGetIDOfKey(selmodel), &pos, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 		}
 	}
 }

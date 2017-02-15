@@ -45,6 +45,21 @@ SX_LIB_API void Core_MTaskAdd(	//добавить задачу
 SX_LIB_API void Core_MTaskStart();	//стартовать обрабатывать все задачи
 SX_LIB_API void Core_MTaskStop();	//остановить все задачи
 
+
+//РЕГИСТРЫ
+//{
+
+#define CORE_REGISTRY_SIZE 256	//размер массива регистров
+
+//утсновка/получения значения из регистра long типа
+SX_LIB_API void Core_RIntSet(int id, int32_t val);
+SX_LIB_API int32_t Core_RIntGet(int id);
+
+//утсновка/получения значения из регистра float типа
+SX_LIB_API void Core_RFloatSet(int id, float32_t val);
+SX_LIB_API float32_t Core_RFloatGet(int id);
+//}
+
 SX_LIB_API void Core_AKill(); //уничтожить ядро
 SX_LIB_API void Core_AGetName(char* name); //получить имя ядра
 

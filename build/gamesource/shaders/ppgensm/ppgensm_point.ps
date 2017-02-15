@@ -1,0 +1,57 @@
+
+#include <../struct.h>
+
+half3 PosCam;
+half2 NearFar;
+half2 SizeMapBias;
+half PixelSize;
+half3 LightPos;
+
+sampler2D DepthLinearSampler:register(s0);
+samplerCUBE DepthSampler1:register(s1);
+sampler2D NoiseSampler:register(s2);
+
+half4x4	MatrixTexture;
+
+half4 main(vs_out_res_pos IN):COLOR0
+{
+	half ShadowTerm = 0.0f;
+	
+	half tmpdepth = tex2D(DepthLinearSampler,IN.TexUV).r;
+	
+	half4 Position = half4(PosCam + IN.WorldRay * tmpdepth,1.f);
+	
+	half3 PLightDirection = 0.0f;
+    PLightDirection = LightPos - Position.xyz;
+    half distance = length(PLightDirection);
+    //PLightDirection = PLightDirection / distance;
+	half ddist = 1.f/distance;
+
+	//PixelSize = clamp(saturate(distance/200.0)*0.1,0,0.1);
+	half3 jitter = (( tex2D( NoiseSampler , -PLightDirection.xy*ddist * 1024.f ).xyz * 2.0 - 1.0 )*0.125);
+	half3 tmpcoord = PLightDirection.xyz;
+	tmpcoord.xyz += jitter;
+	/*half tmpsam = texCUBE( DepthSampler1 , -(tmpcoord)*ddist ).x;
+	ShadowTerm = exp(pow((tmpsam + SizeMapBias.y) - (distance),-ddist));
+	ShadowTerm = tmpsam - (distance);
+	ShadowTerm = saturate(ShadowTerm * exp(pow(ShadowTerm,-1)));*/
+	//ShadowTerm = tmpsam + SizeMapBias.y < distance ? 0 : 1;
+	ShadowTerm = (texCUBE( DepthSampler1 , -(tmpcoord)*ddist ).x + SizeMapBias.y) > distance ? 1 : 0;
+	for(int x=0;x<=1;++x)
+	{
+		for(int y=0;y<=1;++y)
+		{
+			for(int z=0;z<=1;++z)
+			{
+				tmpcoord = PLightDirection + half3(PixelSize*x, PixelSize*y,PixelSize*z) + jitter;
+				//half ShadowTerm2 =  texCUBE( DepthSampler1 , -(tmpcoord)*ddist ).x - (distance);
+				//ShadowTerm += saturate(ShadowTerm2 * exp(pow(ShadowTerm2,-1)));
+				ShadowTerm += texCUBE( DepthSampler1 , -(tmpcoord)*ddist ).x + SizeMapBias.y < distance ? 0 : 1;
+			}
+		}
+	}
+
+	ShadowTerm *= 0.125;
+
+	return (saturate(ShadowTerm));
+} 

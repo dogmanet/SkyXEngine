@@ -1,3 +1,4 @@
+
 #ifndef sxtypes_h
 #define sxtypes_h
 
@@ -6,6 +7,7 @@
 typedef float float32_t;
 static_assert(sizeof(float32_t) == 4, "Please check float32_t on your platform. The size should be exactly 4 bytes");
 
+typedef int32_t ID;
 typedef unsigned long DWORD;
 typedef unsigned short WORD;
 typedef unsigned int size_t;

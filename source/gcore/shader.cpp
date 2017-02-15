@@ -26,13 +26,13 @@ void LoadVertexShader(const char *path,ShaderVS* shader,D3DXMACRO* macro)
 
 		if(tmpError && tmpShader == 0)
 		{
-			reportf(-1, "%s - failed to load shader [%s], msg: %s\n", gen_msg_location, path, (char*)tmpError->GetBufferPointer());
+			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed to load shader [%s], msg: %s\n", gen_msg_location, path, (char*)tmpError->GetBufferPointer());
 		}
 
 		//!!!проанализировать
 		if(FAILED(hr))
 		{
-			reportf(-1, "%s - download function shader fails, path [%s]", gen_msg_location, path);
+			reportf(REPORT_MSG_LEVEL_ERROR, "{SGCORE] %s - download function shader fails, path [%s]", gen_msg_location, path);
 		}
 
 	hr = DXDevice->CreateVertexShader(
@@ -41,7 +41,7 @@ void LoadVertexShader(const char *path,ShaderVS* shader,D3DXMACRO* macro)
 									);
 		if(FAILED(hr))
 		{
-			reportf(-1, "%s - error creating shader [%s]", gen_msg_location, path);
+			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error creating shader [%s]", gen_msg_location, path);
 		}
 
 		D3DXCONSTANTTABLE_DESC desc;
@@ -110,13 +110,13 @@ void LoadPixelShader(const char *path,ShaderPS* shader,D3DXMACRO* macro)
 
 		if(tmpError && tmpShader == 0)
 		{
-			reportf(-1, "%s - failed to load shader [%s], msg: %s\n", gen_msg_location, path, (char*)tmpError->GetBufferPointer());
+			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed to load shader [%s], msg: %s\n", gen_msg_location, path, (char*)tmpError->GetBufferPointer());
 		}
 
 		//!!!проанализировать
 		if(FAILED(hr))
 		{
-			reportf(-1, "%s - download function shader fails, path [%s]", gen_msg_location, path);
+			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - download function shader fails, path [%s]", gen_msg_location, path);
 		}
 
 	hr = DXDevice->CreatePixelShader(
@@ -125,7 +125,7 @@ void LoadPixelShader(const char *path,ShaderPS* shader,D3DXMACRO* macro)
 									);
 		if(FAILED(hr))
 		{
-			reportf(-1, "%s - error creating shader [%s]", gen_msg_location, path);
+			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error creating shader [%s]", gen_msg_location, path);
 		}
 
 		D3DXCONSTANTTABLE_DESC desc;
@@ -272,12 +272,12 @@ DWORD ShaderManager::Load(int type_shader,const char* path,const char* name,int 
 					sprintf(shader->Path,"%s",path);
 					ArrVS.push_back(shader);
 					id = ArrVS.size()-1;
-					reportf(0,"\tshader [%s] is loaded, name[%s], id [%d]\n",path,ArrVS[id]->Name,id);
+					reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is loaded, name[%s], id = [%d]\n", path, ArrVS[id]->Name, id);
 					return id;
 				}
 				else
 				{
-					reportf(0,"\tshader [%s] is detected, name[%s], id [%d]\n",path,ArrVS[id]->Name,id);
+					reportf(REPORT_MSG_LEVEL_WARRNING, "sgcore: shader [%s] is detected, name[%s], id = [%d]\n", path, ArrVS[id]->Name, id);
 					return id;
 				}
 		}
@@ -302,12 +302,12 @@ DWORD ShaderManager::Load(int type_shader,const char* path,const char* name,int 
 					sprintf(shader->Path,"%s",path);
 					ArrPS.push_back(shader);
 					id = ArrPS.size()-1;
-					reportf(0,"\tshader [%s] is loaded, name[%s], id [%d]\n", path, ArrPS[id]->Name, id);
+					reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is loaded, name[%s], id [%d]\n", path, ArrPS[id]->Name, id);
 					return id;
 				}
 				else
 				{
-					reportf(0,"\tshader [%s] is detected, name[%s], id [%d]\n", path, ArrPS[id]->Name, id);
+					reportf(REPORT_MSG_LEVEL_WARRNING, "sgcore: shader [%s] is detected, name[%s], id [%d]\n", path, ArrPS[id]->Name, id);
 					return id;
 				}
 		}
@@ -355,9 +355,9 @@ void ShaderManager::Update(int type_shader,const char* name,D3DXMACRO* macro)
 		}
 
 		if (!isupdate)
-			reportf(-1, "%s - shader [%s] is not detected", gen_msg_location, name);
+			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - shader [%s] is not detected", gen_msg_location, name);
 		else
-			reportf(0, "shader [%s] is update", name);
+			reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", name);
 }
 
 void ShaderManager::Update(int type_shader,DWORD id,D3DXMACRO* macro)
@@ -422,9 +422,9 @@ void ShaderManager::Update(int type_shader,DWORD id,D3DXMACRO* macro)
 		}
 
 		if (!isupdate)
-			reportf(-1, "%s - shader [%s] is not detected", gen_msg_location, ArrPS[id]->Name);
+			reportf(REPORT_MSG_LEVEL_ERROR, " [SGCORE] %s - shader [%s] is not detected", gen_msg_location, ArrPS[id]->Name);
 		else
-			reportf(0, "shader [%s] is update", ArrPS[id]->Name);
+			reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", ArrPS[id]->Name);
 }
 
 DWORD ShaderManager::GetID(int type_shader,const char* shader)
@@ -481,7 +481,7 @@ void ShaderManager::Bind(int type_shader,const char* shader)
 		}
 
 		if(!isbind)
-			reportf(1,"WARNING!!! shader not bind, type [%d], name [%s]\n",type_shader,shader);
+			reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: shader not bind, type [%d], name [%s]\n", type_shader, shader);
 }
 
 void ShaderManager::Bind(int type_shader,DWORD shader)
@@ -505,7 +505,7 @@ void ShaderManager::Bind(int type_shader,DWORD shader)
 		}
 
 		if(!isbind)
-			reportf(1,"WARNING!!! shader not bind, type [%d], id [%d]\n",type_shader,shader);
+			reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: shader not bind, type [%d], id [%d]\n", type_shader, shader);
 }
 
 void ShaderManager::UnBind()
@@ -541,13 +541,13 @@ void ShaderManager::SetValueRegisterF(int type_shader,const char* name_shader,co
 
 				if(num_shader != -1 && num_var != -1)
 					DXDevice->SetVertexShaderConstantF(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex,(float*)data,ArrVS[num_shader]->ArrConst[num_var].RegisterCount);
-				/*else
+				else
 				{
 						if(num_shader == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n",name_var,type_shader,name_shader);
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
 						else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n",name_var,type_shader,name_shader);
-				}*/
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
+				}
 		}
 		else if(type_shader == 1)
 		{
@@ -573,13 +573,13 @@ void ShaderManager::SetValueRegisterF(int type_shader,const char* name_shader,co
 
 				if(num_shader != -1 && num_var != -1)
 					DXDevice->SetPixelShaderConstantF(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex,(float*)data,ArrPS[num_shader]->ArrConst[num_var].RegisterCount);
-				/*else
+				else
 				{
 						if(num_shader == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n",name_var,type_shader,name_shader);
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
 						else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n",name_var,type_shader,name_shader);
-				}*/
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
+				}
 		}
 }
 
@@ -609,13 +609,13 @@ void ShaderManager::SetValueRegisterI(int type_shader,const char* name_shader,co
 
 				if(num_shader != -1 && num_var != -1)
 					DXDevice->SetVertexShaderConstantI(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex,(int*)data,ArrVS[num_shader]->ArrConst[num_var].RegisterCount);
-				/*else
+				else
 				{
 						if(num_shader == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n",name_var,type_shader,name_shader);
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
 						else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n",name_var,type_shader,name_shader);
-				}*/
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
+				}
 		}
 		else if(type_shader == 1)
 		{
@@ -641,13 +641,13 @@ void ShaderManager::SetValueRegisterI(int type_shader,const char* name_shader,co
 
 				if(num_shader != -1 && num_var != -1)
 					DXDevice->SetPixelShaderConstantI(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex,(int*)data,ArrPS[num_shader]->ArrConst[num_var].RegisterCount);
-				/*else
+				else
 				{
 						if(num_shader == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n",name_var,type_shader,name_shader);
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
 						else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n",name_var,type_shader,name_shader);
-				}*/
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
+				}
 		}
 }
 
@@ -670,8 +670,8 @@ void ShaderManager::SetValueRegisterI(int type_shader,DWORD num_shader,const cha
 
 						if(num_shader != -1 && num_var != -1)
 							DXDevice->SetVertexShaderConstantI(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex,(int*)data,ArrVS[num_shader]->ArrConst[num_var].RegisterCount);
-						/*else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n",name_var,type_shader,num_shader);*/
+						else if(num_var == -1)
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", name_var, type_shader, num_shader); 
 				}
 				else if(type_shader == 1)
 				{
@@ -688,10 +688,12 @@ void ShaderManager::SetValueRegisterI(int type_shader,DWORD num_shader,const cha
 
 						if(num_shader != -1 && num_var != -1)
 							DXDevice->SetPixelShaderConstantI(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex,(int*)data,ArrPS[num_shader]->ArrConst[num_var].RegisterCount);
-						/*else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, type [%d], name [%s]\n",name_var,type_shader,ArrPS[num_shader]->Path);*/
+						else if(num_var == -1)
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", name_var, type_shader, ArrPS[num_shader]->Path); 
 				}
 		}
+		else
+			reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 }
 
 
@@ -714,10 +716,8 @@ void ShaderManager::SetValueRegisterF(int type_shader,DWORD num_shader,const cha
 
 						if (num_shader != -1 && num_var != -1)
 							DXDevice->SetVertexShaderConstantF(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex, (float*)data, ArrVS[num_shader]->ArrConst[num_var].RegisterCount);
-						else
-							int qwert = 0;
-						/*else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n",name_var,type_shader,num_shader);*/
+						else if(num_var == -1)
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 				}
 				else if(type_shader == 1)
 				{
@@ -734,12 +734,12 @@ void ShaderManager::SetValueRegisterF(int type_shader,DWORD num_shader,const cha
 
 						if(num_shader != -1 && num_var != -1)
 							DXDevice->SetPixelShaderConstantF(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex,(float*)data,ArrPS[num_shader]->ArrConst[num_var].RegisterCount);
-						/*else if(num_var == -1)
-							SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, constant not found, type [%d], name [%s]\n",name_var,type_shader,ArrPS[num_shader]->Path);*/
+						else if(num_var == -1)
+							reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", name_var, type_shader, ArrPS[num_shader]->Path); 
 				}
 		}
-		/*else
-			SkyXEngine::Core::InLog("WARNING!!! set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n",name_var,type_shader,num_shader);*/
+		else
+			reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 }
 
 bool ShaderManager::IsValidate(int type_shader,DWORD id)

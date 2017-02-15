@@ -20,13 +20,13 @@
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, " green: unresolved id '%d' for array of compute visible", id_arr); \
+	reportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
 }
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
 if (!(id_model < ArrModels.size() && ArrModels[id_model]))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "green: unresolved id '%d' for array of models", id_model); \
+	reportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", gen_msg_location, id_model); \
 }
 
 class Green

@@ -2,6 +2,12 @@
 #ifndef __sxgcore
 #define __sxgcore
 
+//ЗАНИМАЕМЫЕ РЕГИСТРЫ
+//{
+#define SGCORE_RI_INT_COUNT_POLY	0
+#define SGCORE_RI_INT_COUNT_DIP		1
+//}
+
 #include <gdefines.h>
 
 #include <d3d9.h>
@@ -14,10 +20,16 @@
 
 #include <gcore\ModelFile.h>
 
+#include <core\sxcore.h>
+
 #define SXGC_STR_SIZE_DBG_MSG 4096
 
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
+
+typedef void(*g_func_dip) (UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
+typedef void(*g_func_set_material) (UINT id, float4x4* world);
+typedef long(*g_func_load_material) (const char* name, int mtl_type);
 
 SX_LIB_API long SGCore_0GetVersion();			//версия подсистемы
 SX_LIB_API void SGCore_Dbg_Set(report_func rf);	//установка функции вывода сообщений
@@ -45,8 +57,29 @@ SX_LIB_API int SGCore_OnDeviceReset(int width,int heigth,bool windewed);	//вызыв
 SX_LIB_API void SGCore_OnResetDevice();	//вызывать при сбросе устроства
 //}
 
+//БАЗОВЫЕ ФУНКЦИИ УСТАНОВКИ НАСТРОЕК ВЫБОРКИ ИЗ ТЕКСТУР
+//{{
+//установка фильтрации
+SX_LIB_API void SGCore_SetSamplerFilter(DWORD id, DWORD value);	//для конкретного слота
+SX_LIB_API void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value);	//для набора слотов от begin_id до end_id
+
+//установка адресации
+SX_LIB_API void SGCore_SetSamplerAddress(DWORD id, DWORD value);	//для конкретного слота
+SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value);	//для набора слотов от begin_id до end_id
+//}}
+
 //отрисовка full screen quad (уже смещенного как надо чтобы не было размытия)
 SX_LIB_API void SGCore_ScreenQuadDraw();
+
+//{
+SX_LIB_API void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
+SX_LIB_API void SGCore_SetMtl(UINT id, float4x4* world);
+SX_LIB_API long SGCore_LoadMtl(const char* name, int mtl_type);
+
+SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip func);
+SX_LIB_API void SGCore_SetFunc_SetMtl(g_func_set_material func);
+SX_LIB_API void SGCore_SetFunc_LoadMtl(g_func_load_material func);
+//}
 
 //ШЕЙДЕРЫ
 //{{
@@ -59,7 +92,7 @@ SX_LIB_API void SGCore_ScreenQuadDraw();
 
 //типы шейдеров (int type_shader)
 #define SXGC_SHADER_VERTEX 0
-#define SXGC_SHADER_PIXEL 0
+#define SXGC_SHADER_PIXEL 1
 
 //загрузка шейдера
 SX_LIB_API DWORD SGCore_ShaderLoad(
@@ -163,18 +196,6 @@ SX_LIB_API DWORD SGCore_RTGetNum(const char* text); //возвращает id по имени
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char* text);	//возвращает текстуру по имени
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(DWORD num);			//возвращает текстуру по id
 //}
-
-
-//БАЗОВЫЕ ФУНКЦИИ УСТАНОВКИ НАСТРОЕК ВЫБОРКИ ИЗ ТЕКСТУР
-//{{
-//установка фильтрации
-SX_LIB_API void SGCore_SetSamplerFilter(DWORD id, DWORD value);	//для конкретного слота
-SX_LIB_API void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value);	//для набора слотов от begin_id до end_id
-
-//установка адресации
-SX_LIB_API void SGCore_SetSamplerAddress(DWORD id, DWORD value);	//для конкретного слота
-SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value);	//для набора слотов от begin_id до end_id
-//}}
 
 
 //структура статической модели dse
@@ -427,5 +448,65 @@ protected:
 };
 
 SX_LIB_API ISXCamera* SGCore_CrCamera();	//создать ISXCamera
+
+
+//SKY BOX
+//{
+SX_LIB_API void SGCore_SkyBoxCr();	//создание
+
+//абсолютный путь загрузки текстур
+SX_LIB_API void SGCore_SkyBoxSetStdPathTex(const char* path);
+SX_LIB_API void SGCore_SkyBoxGetStdPathTex(char* path);
+
+//!кубические текстуры
+SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture);	//загрузка текстуры, texture - имя текстуры с расширением
+SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture);//смена текстуры, texture - имя текстуры с расширением
+
+//угол на который повернут скайбокс по оси y
+SX_LIB_API void SGCore_SkyBoxSetRot(float angle);	
+SX_LIB_API float SGCore_SkyBoxGetRot();
+
+//цвет в который будет окрашен скайбокс 0-1, альфа компонента - на сколько будет окрашен
+SX_LIB_API void SGCore_SkyBoxSetColor(float4_t* color);
+SX_LIB_API void SGCore_SkyBoxGetColor(float4_t* color);
+
+//рендер скайбокса, timeDelta - время рендера кадра, pos - позиция набладателя (y координату необходимо смещать)
+SX_LIB_API void SGCore_SkyBoxRender(float timeDelta, float3* pos);
+//}
+
+//SKY CLOUDS
+//{
+//простая плоскость параллельная xz на которую зеркально (х2) натягивается текстура, в постоянном движении
+//положение констатно
+
+SX_LIB_API void SGCore_SkyCloudsCr();//создание
+
+//абсолютный путь загрузки текстур
+SX_LIB_API void SGCore_SkyCloudsSetStdPathTex(const char* path);
+SX_LIB_API void SGCore_SkyCloudsGetStdPathTex(char* path);
+
+//установка размеров и позиции
+//так как позиция облаков константна то чтобы была илюзия полного корытия уровня, необходимо облакам указывать размер в 2 раза больше чем весь доступный уровень
+SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, float3* pos);
+
+//!обычные 2д текстуры
+SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *texture);	//загрузка текстуры, texture - имя текстуры с расширением
+SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *texture);	//загрузка текстуры, texture - имя текстуры с расширением
+
+//угол поворота по оси y
+SX_LIB_API void SGCore_SkyCloudsSetRot(float angle);
+SX_LIB_API float SGCore_SkyCloudsGetRot();
+
+//коэфициент прозрачности
+SX_LIB_API void SGCore_SkyCloudsSetAlpha(float alpha);
+SX_LIB_API float SGCore_SkyCloudsGetAlpha();
+
+//цвет в который будут окрашены облака 0-1, альфа компонента - на сколько будет окрашен
+SX_LIB_API void SGCore_SkyCloudsSetColor(float4_t* color);
+SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t* color);
+
+//рендер облаков, timeDelta - время рендера кадра, pos - позиция набладателя (y координату необходимо смещать), is_shadow - для теней ли рендерим?
+SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, float3* pos, bool is_shadow);
+//}
 
 #endif

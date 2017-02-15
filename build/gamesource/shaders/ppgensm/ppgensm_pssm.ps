@@ -1,0 +1,177 @@
+
+#include <../struct.h>
+
+float3 PosCam;
+float4 DistSplit;
+float2 NearFar;
+float2 PixelSize;
+
+sampler2D DepthLinearSampler:register(s0);
+sampler2D DepthSampler1:register(s1);
+sampler2D DepthSampler2:register(s2);
+sampler2D DepthSampler3:register(s3);
+sampler2D DepthSampler4:register(s4);
+sampler2D DepthSampler5:register(s5);
+sampler2D NoiseSampler:register(s6);
+
+float4x4	MatrixTexture1;
+float4x4	MatrixTexture2;
+float4x4	MatrixTexture3;
+float4x4	MatrixTexture4;
+float4x4	MatrixTexture5;
+
+
+float4 main(vs_out_res_pos IN):COLOR0
+{
+	float ShadowTerm = 0.0f;
+	float4 tmpcoord;
+	float Depth;
+	float tmpShadowTerm = 0;
+	float tmpdepth = tex2D(DepthLinearSampler,IN.TexUV).r;
+
+	float4 Position = float4(PosCam+IN.WorldRay * (tmpdepth),1.f);
+
+	float4 TexCoord1	= mul(Position, MatrixTexture1);
+	float4 TexCoord2	= mul(Position, MatrixTexture2);
+	float4 TexCoord3	= mul(Position, MatrixTexture3);
+	#if	!defined(SPLITS3)
+	float4 TexCoord4	= mul(Position, MatrixTexture4);
+	#endif
+	float4 TexCoord5	= mul(Position, MatrixTexture5);
+	
+	//TexCoord1.z = TexCoord1.z / TexCoord1.w;
+	//TexCoord2.z = TexCoord2.z / TexCoord2.w;
+	//TexCoord3.z = TexCoord3.z / TexCoord3.w;
+	//TexCoord1.w = TexCoord2.w = TexCoord3.w = TexCoord4.w = TexCoord5.w = 0;
+	
+	float alphaskyclouds = 0;
+	
+	
+		for(int x=-1;x<=1;x++)
+		{
+				for(int y=-1;y<=1;y++)
+				{
+					tmpcoord = TexCoord5;
+					tmpcoord.xy += float2(x*PixelSize.x, y*PixelSize.y);
+					alphaskyclouds += 1.f-tex2Dlod(DepthSampler5, tmpcoord).r; 
+				}
+		}
+				
+	alphaskyclouds /= 9.f;
+	//alphaskyclouds = pow(alphaskyclouds,16);
+	//alphaskyclouds = pow(alphaskyclouds,16);
+	//alphaskyclouds = pow(alphaskyclouds,16);
+	
+	float l = tmpdepth * NearFar.y;
+	
+	float dx1 = max(abs(ddx(TexCoord1.z)),abs(ddy(TexCoord1.z)));
+	float dx2 = max(abs(ddx(TexCoord2.z)),abs(ddy(TexCoord2.z)));
+	float dx3 = max(abs(ddx(TexCoord3.z)),abs(ddy(TexCoord3.z)));
+	
+	#if	!defined(SPLITS3)
+	float dx4 = max(abs(ddx(TexCoord4.z)),abs(ddy(TexCoord4.z)));
+	#endif
+	
+		[branch]if(l >= 0.25 && l < DistSplit.x)
+		{
+				for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord1;
+							tmpcoord.xy += float2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler1, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord1.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,60),72),84);
+							tmpShadowTerm /= dx1*dx1;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord1.z) ? 0.0f : 1.0f;
+						}
+				}
+				
+			ShadowTerm /= 9.f;
+			//ShadowTerm *= 2;
+		}
+		else [branch]if(l >= 0.25 && l < DistSplit.y)
+		{
+				for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord2;
+							tmpcoord.xy += float2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler2, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord2.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,36),48),60);
+							tmpShadowTerm /= dx2*dx2;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord2.z) ? 0.0f : 1.0f;
+						}
+				}
+				
+			ShadowTerm /= 9.f;
+			//ShadowTerm *= 2;
+		}
+		else [branch]if(l >= 0.25 && l < DistSplit.z)
+		{
+			#ifdef SPLITS3
+			float coefz = (l - DistSplit.y) / (DistSplit.z - DistSplit.y);
+			#endif
+				for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord3;
+							tmpcoord.xy += float2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler3, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord3.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,24),36),48);
+							tmpShadowTerm /= dx3*dx3;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord3.z) ? 0.0f : 1.0f;
+						}
+				}
+				
+			ShadowTerm /= 9.f;
+			//ShadowTerm *= 2;
+			
+			#ifdef SPLITS3
+			ShadowTerm = lerp(ShadowTerm,0.5,coefz);
+			#endif
+		}
+		
+		#if	!defined(SPLITS3)
+		else [branch]if(l >= 0.25 && l < DistSplit.w)
+		{
+			float coefz = (l - DistSplit.z) / (DistSplit.w - DistSplit.z);
+	
+			for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord4;
+							tmpcoord.xy += float2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler4, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord4.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,12),24),36);
+							tmpShadowTerm /= dx4*dx4;
+
+							ShadowTerm += Depth + tmpShadowTerm < TexCoord4.z ? 0.0f : 1.0f;
+						}
+				}
+				
+			ShadowTerm /= 9.f;
+			//ShadowTerm *= 2;
+			ShadowTerm = lerp(ShadowTerm,0.5,coefz);
+		}
+		#endif
+		else
+		{
+			ShadowTerm = 0.5;
+		}
+		
+		/*if(ShadowTerm > 0.5)
+			ShadowTerm = pow(saturate(ShadowTerm*2.1f),16);*/
+			
+	return (saturate(alphaskyclouds*(ShadowTerm)));
+} 

@@ -1,34 +1,6 @@
 
 #include <common\\render_func.h>
 
-HRESULT GetSampleOffsets_DownScale4x4(DWORD dwWidth, DWORD dwHeight, float2 avSampleOffsets[])
-{
-	if (NULL == avSampleOffsets)
-		return E_INVALIDARG;
-
-	float tU = 1.0f / dwWidth;
-	float tV = 1.0f / dwHeight;
-
-	// Sample from the 16 surrounding points. Since the center point will be in
-	// the exact center of 16 texels, a 0.5f offset is needed to specify a texel
-	// center.
-	int index = 0;
-	for (int y = 0; y < 4; y++)
-	{
-		for (int x = 0; x < 4; x++)
-		{
-			avSampleOffsets[index].x = (x - 1.5f) * tU;
-			avSampleOffsets[index].y = (y - 1.5f) * tV;
-
-			index++;
-		}
-	}
-
-	return S_OK;
-}
-
-
-
 inline void SXRenderFunc::SetSamplerFilter(DWORD id, DWORD value)
 {
 	GData::DXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, value);
@@ -76,7 +48,7 @@ void SXRenderFunc::ComDeviceLost()
 	SGCore_OnLostDevice();
 	SGeom_OnLostDevice();
 	SML_OnLostDevice();
-	//mem_release_del(GData::ComLightSurf1x1);
+
 	bool bf = SGCore_OnDeviceReset(GData::WinSize.x, GData::WinSize.y,GData::IsWindowed);
 		if (bf)
 		{
@@ -94,11 +66,107 @@ void SXRenderFunc::ComDeviceLost()
 			SML_OnResetDevice(GData::WinSize.x, GData::WinSize.y, GData::ProjFov);
 			SGeom_OnResetDevice();
 			GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-			//GData::DXDevice->CreateOffscreenPlainSurface(1, 1, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &GData::ComLightSurf1x1, 0);
-		
-			//g_pTexAdaptedLuminanceLast = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumLast);
-			//g_pTexAdaptedLuminanceCur = SGCore_RTGetTexture(GData::IDSRenderTargets::AdaptLumCurr);
 		}
+}
+
+void SXRenderFunc::UpdateLight()
+{
+	for (int i = 0; i<SML_LigthsGetCount(); i++)
+	{
+		long tmpid = SML_LigthsGetIDOfKey(i);
+		if (SML_LigthsIsShadow(tmpid) && (SML_LigthsComVisibleForFrustum(tmpid, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(tmpid)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		{
+			if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_GLOBAL)
+			{
+				for (int k = 0; k<4; k++)
+				{
+					if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k) <= -1)
+						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+
+					if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) <= -1)
+						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+
+					if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos, k))
+					{
+						SML_LigthsUpdateFrustumsG(tmpid, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+						SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
+						SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+					}
+				}
+			}
+			else if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_DIRECTION)
+			{
+				if (SML_LigthsGetTypeShadowed(tmpid) == LIGHTS_TYPE_SHADOWED_DYNAMIC)
+				{
+					if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0) <= -1)
+						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
+
+					if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0) <= -1)
+						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
+
+					SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0));
+					SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
+				}
+			}
+			else if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_POINT)
+			{
+				if (SML_LigthsGetTypeShadowed(tmpid) == LIGHTS_TYPE_SHADOWED_DYNAMIC)
+				{
+					for (int k = 0; k < 6; k++)
+					{
+						if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k) <= -1)
+							SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+
+						if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) <= -1)
+							SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+
+						if (SML_LigthsGetEnableCubeEdge(tmpid, k))
+						{
+							SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
+							SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	long tmpidarr = -1;
+	for (long i = 0; i < SML_LigthsDelGetCount(); ++i)
+	{
+		if (SML_LigthsDelGetType(i) == LIGHTS_TYPE_GLOBAL)
+		{
+			for (int k = 0; k<4; k++)
+			{
+				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GEOM, k)) >= 0)
+					SGeom_ModelsDelArrForCom(tmpidarr);
+
+				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, k)) >= 0)
+					SGeom_GreenDelArrForCom(tmpidarr);
+			}
+		}
+		else if (SML_LigthsDelGetType(i) == LIGHTS_TYPE_DIRECTION)
+		{
+			if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GEOM, 0)) >= 0)
+				SGeom_ModelsDelArrForCom(tmpidarr);
+
+			if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, 0)) >= 0)
+				SGeom_GreenDelArrForCom(tmpidarr);
+		}
+		else if (SML_LigthsDelGetType(i) == LIGHTS_TYPE_POINT)
+		{
+			for (int k = 0; k<6; k++)
+			{
+				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GEOM, k)) >= 0)
+					SGeom_ModelsDelArrForCom(tmpidarr);
+
+				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, k)) >= 0)
+					SGeom_GreenDelArrForCom(tmpidarr);
+			}
+		}
+
+		SML_LigthsDelDel(i);
+	}
 }
 
 /////
@@ -158,7 +226,8 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			
 			FpsValue	= (float)FrameCount / TimeElapsed;
 			sprintf(debugstr, "FPS %.1f\n", FpsValue);
-
+			sprintf(debugstr + strlen(debugstr), "\ncount poly %d\n", Core_RIntGet(SGCORE_RI_INT_COUNT_POLY) / FrameCount);
+			sprintf(debugstr + strlen(debugstr), "count DIPs %d\n\n", Core_RIntGet(SGCORE_RI_INT_COUNT_DIP) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
 			sprintf(debugstr + strlen(debugstr), "Dir camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamDir.x, GData::ConstCurrCamDir.y, GData::ConstCurrCamDir.z);
 
@@ -173,6 +242,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 
 void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 {
+	Core_RIntSet(RENDER_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 	GData::DXDevice->SetTransform(D3DTS_WORLD, &(SMMatrixIdentity().operator D3DXMATRIX()));
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
@@ -186,7 +256,6 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	GData::DXDevice->SetClipPlane(0, GData::PlaneZCullingShader);
 	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
 
-	//SetRenderFilter();
 	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
@@ -211,16 +280,23 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);
 
-	SGCore_ShaderBind(0, GData::IDsShaders::VS::FreeGeometry);
+	/*SGCore_ShaderBind(0, GData::IDsShaders::VS::FreeGeometry);
 	SGCore_ShaderBind(1, GData::IDsShaders::PS::FreeGeometry);
 
 
 	SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::FreeGeometry, "WorldViewProjection", &(SMMatrixTranspose(GData::MCamView * GData::MLightProj)));
 	SGCore_ShaderSetVRF(0, GData::IDsShaders::VS::FreeGeometry, "World", &(SMMatrixTranspose(SMMatrixIdentity())));
-	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::FreeGeometry, "NearFar", &GData::NearFar);
+	SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::FreeGeometry, "NearFar", &GData::NearFar);*/
 	SGeom_ModelsRender(0);
 
-	SGCore_ShaderUnBind();
+	//SGCore_ShaderUnBind();
+
+	if (SGeom_GreenGetCount() > 0)
+	{
+		GData::DXDevice->SetClipPlane(0, GData::PlaneZCullingShader);
+		GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
+		SGeom_GreenRender(timeDelta);
+	}
 	
 	SML_LigthsRenderSource(-1, true, timeDelta);
 	//GData::StaticGreen->GPURender(0);
@@ -239,13 +315,12 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	mem_release(DepthMapLinearSurf);
 
 	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
-	//SetRenderFilterUn();
 }
 
 
 void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 {
-	GData::CurrStateRender = 2;
+	Core_RIntSet(RENDER_RI_INT_RENDERSTATE, RENDER_STATE_SHADOW);
 	SML_LigthsComVisibleFrustumDistFor(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
@@ -261,83 +336,154 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
-		if (SML_LigthsIsShadow(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		long tmpid = SML_LigthsGetIDOfKey(i);
+		Core_RIntSet(RENDER_RI_INT_CURRIDLIGHT, tmpid);
+		if (SML_LigthsIsShadow(tmpid) && (SML_LigthsComVisibleForFrustum(tmpid, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(tmpid)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
 		{
-			if (SML_LigthsGetType(i) == LIGHTS_TYPE_GLOBAL)
+			if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_GLOBAL)
 			{
 				//Data::Level::LightManager->Arr[i]->ShadowPSSM->Set4Or3Splits(Core::Data::Settings::IsRender4Or3SplitsForPSSM);
-				SML_LigthsInRenderBegin(i);
-					/*float4 viewpos;
-					SML_LigthsGetPosW(i, &viewpos);*/
-				
-					//GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-					for (int k = 0; k<4; k++)
+				SML_LigthsInRenderBegin(tmpid);
+				int countsplits = (SML_LigthsGet4Or3SplitsG(tmpid) ? 4 : 3);
+					for (int k = 0; k<countsplits; k++)
 					{
-						if (SML_LigthsAllowedRender(i, k))
+						if (SML_LigthsAllowedRender(tmpid, k) && SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k) > -1)
 						{
-							//SML_LigthsUpdateFrustumsG(i, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
-							SML_LigthsInRenderPre(i, k);
-							//SGeom_ModelsComVisible(SML_LigthsGetFrustumG(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i,k));
-							SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(i, 0, k));
+							SML_LigthsInRenderPre(tmpid, k);
+							SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
+							SGeom_GreenRender(timeDelta, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
 
-							SML_LigthsRenderAllExceptGroupSource(i, timeDelta);
+							SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
 						}
 					}
-					//GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-					SML_LigthsInRenderEnd(i);
-			}
-			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_DIRECTION)
-			{
-				/*float4 viewpos;
-				SML_LigthsGetPosW(i, &viewpos);*/
 
-				//
-				if (SML_LigthsUpdateCountUpdate(i, &GData::ConstCurrCamPos))
+				//ÊÎÃÄÀ ÈÑÒÎ×ÍÈÊ ÁËÈÇÎÊ Ê ÃÎÐÈÇÎÍÒÓ ÈÇ-ÇÀ ÎÁËÀÊÎÂ ÂÎÇÍÈÊÀÅÒ ÁÀÃ Ñ ÒÅÍßÌÈ Â ÂÈÄÅ ÔÅÉÊÎÂÛÕ ÒÅÍÅÉ
+				if (true)
 				{
+					SML_LigthsUpdateFrustumsG(tmpid, 4, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+					SML_LigthsInRenderPre(tmpid, 4);
+					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+					GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+					SetSamplerFilter(0, D3DTEXF_LINEAR);
+					SetSamplerFilter(1, D3DTEXF_LINEAR);
+					SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+					SetSamplerAddress(1, D3DTADDRESS_MIRROR);
 
-					SML_LigthsInRenderBegin(i);
+					SGCore_SkyCloudsRender(timeDelta, &float3(GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y + 150, GData::ConstCurrCamPos.z), true);
 
-					//SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i,0));
-					SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(i, 0, 0));
-					SML_LigthsRenderAllExceptGroupSource(i, timeDelta);
-					SML_LigthsInRenderEnd(i);
+					SetSamplerAddress(0, D3DTADDRESS_WRAP);
+					SetSamplerAddress(1, D3DTADDRESS_WRAP);
+				}
+				SML_LigthsInRenderEnd(tmpid);
+			}
+			else if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_DIRECTION)
+			{
+				if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos))
+				{
+					SML_LigthsInRenderBegin(tmpid);
+
+					if (SML_LigthsGetTypeShadowed(tmpid) == LIGHTS_TYPE_SHADOWED_DYNAMIC && SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0) > -1)
+					{
+						SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0));
+							
+						SGeom_GreenRender(timeDelta, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
+					}
+					else
+					{
+						SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos);
+						SGeom_ModelsRender(timeDelta);
+						SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos);
+						SGeom_GreenRender(timeDelta);
+					}
+
+					SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
+					SML_LigthsInRenderEnd(tmpid);
 				}
 			}
-			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_POINT)
+			else if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_POINT)
 			{
-				if (SML_LigthsUpdateCountUpdate(i, &GData::ConstCurrCamPos))
+				if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos))
 				{
-					SML_LigthsInRenderBegin(i);
-					/*float4 viewpos;
-					SML_LigthsGetPosW(i, &viewpos);*/
+					SML_LigthsInRenderBegin(tmpid);
 
 					for (int k = 0; k < 6; k++)
 					{
-						SML_LigthsInRenderPre(i, k);
-
-						if (SML_LigthsGetEnableCubeEdge(i, k))
+						if (SML_LigthsGetEnableCubeEdge(tmpid, k))
 						{
-							//SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i,k));
-							SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(i, 0, k));
-							SML_LigthsRenderAllExceptGroupSource(i, timeDelta);
-							SML_LigthsInRenderPost(i, k);
+							SML_LigthsInRenderPre(tmpid, k);
+
+							if (SML_LigthsGetTypeShadowed(tmpid) == LIGHTS_TYPE_SHADOWED_DYNAMIC && SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0) > -1)
+							{
+								SGeom_ModelsRender(timeDelta, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
+								SGeom_GreenRender(timeDelta, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+							}
+							else
+							{
+								SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos);
+								SGeom_ModelsRender(timeDelta);
+								SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos);
+								SGeom_GreenRender(timeDelta);
+							}
+							
+							SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
+							SML_LigthsInRenderPost(tmpid, k);
 						}
 					}
 
-					SML_LigthsInRenderEnd(i);
+					SML_LigthsInRenderEnd(tmpid);
 				}
 			}
 		}
 	}
-	GData::CurrStateRender = 1;
+	Core_RIntSet(RENDER_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
 	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+}
+
+void SXRenderFunc::RenderSky(DWORD timeDelta)
+{
+	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
+
+	
+
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+
+	
+
+	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+	GData::DXDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
+	GData::DXDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
+
+	GData::DXDevice->SetSamplerState(1, D3DSAMP_ADDRESSU, D3DTADDRESS_MIRROR);
+	GData::DXDevice->SetSamplerState(1, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR);
+	
+	SGCore_SkyCloudsRender(timeDelta, &float3(GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y + 150, GData::ConstCurrCamPos.z), false);
+	
+	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
+	SGCore_SkyBoxRender(timeDelta, &float3(GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y + 40, GData::ConstCurrCamPos.z));
+
+
+
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_old)
 {
 	SGCore_ShaderUnBind();
-
-	SML_LigthsNullingShadow();
 
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
@@ -348,8 +494,6 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, AmbientSurf);
 	GData::DXDevice->SetRenderTarget(1, SpecDiffSurf);
-
-	
 
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
@@ -363,11 +507,12 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
-		if (SML_LigthsGetVisibleForFrustum(i) && SML_LigthsIsEnable(i))
+		long tmpid = SML_LigthsGetIDOfKey(i);
+		if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsIsEnable(tmpid))
 		{
 			DWORD idshader = GData::IDsShaders::PS::ComLightingNonShadow;
 
-			if (SML_LigthsGetType(i) != LIGHTS_TYPE_GLOBAL)
+			if (SML_LigthsGetType(tmpid) != LIGHTS_TYPE_GLOBAL)
 			{
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 
@@ -391,7 +536,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 				GData::DXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
 				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-				SML_LigthsRender(i, 0);
+				SML_LigthsRender(tmpid, 0);
 
 				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
@@ -419,12 +564,13 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 			GData::DXDevice->GetRenderTarget(1, &SpecDiffSurf2);
 			GData::DXDevice->SetRenderTarget(1, 0);
 			mem_release_del(SpecDiffSurf2);
+			mem_release_del(SpecDiffSurf);
 			SetSamplerAddress(0, 6, D3DTADDRESS_CLAMP);
 			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 			GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
 			
 			SML_LigthsNullingShadow();
-			SML_LigthsGenShadow(i);
+			SML_LigthsGenShadow(tmpid);
 			//SML_LigthsSoftShadow(false, 6);
 			//GData::DXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 			SML_LigthsSoftShadow(false, 4);
@@ -439,7 +585,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 			SML_DSGetRT(DS_RT_SPECULAR)->GetSurfaceLevel(0, &SpecDiffSurf);
 			GData::DXDevice->SetRenderTarget(1, SpecDiffSurf);
 
-			if (SML_LigthsIsShadow(i))
+			if (SML_LigthsIsShadow(tmpid))
 			{
 				
 				GData::DXDevice->SetTexture(4, SML_LigthsGetShadow());
@@ -461,10 +607,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 			float3 tmpPosition;
 			float2 tmpPowerDist;
 			float3 tmpColor;
-			SML_LigthsGetColor(i, &tmpColor);
-			SML_LigthsGetPos(i, &tmpPosition, false);
-			tmpPowerDist.x = SML_LigthsGetPowerDiv(i);
-			tmpPowerDist.y = SML_LigthsGetDist(i);
+			SML_LigthsGetColor(tmpid, &tmpColor);
+			SML_LigthsGetPos(tmpid, &tmpPosition, false);
+			tmpPowerDist.x = SML_LigthsGetPowerDiv(tmpid);
+			tmpPowerDist.y = SML_LigthsGetDist(tmpid);
 
 			SGCore_ShaderSetVRF(1, idshader, "ViewPos", &GData::ConstCurrCamPos);
 			SGCore_ShaderSetVRF(1, idshader, "LightPos", &(tmpPosition));
@@ -521,23 +667,21 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	SML_LigthsComHDR(timeDelta,90);
+	SML_LigthsComHDR(timeDelta,30);
 	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 
 
 
 
-	
-	//SML_LigthsSoftShadow(true,4,true);
-	//SML_LigthsSoftShadow(true, 2);
-	SML_LigthsSoftShadow(false, 4);
-	SML_LigthsSoftShadow(false, 2);
 
 	LPDIRECT3DSURFACE9 ComLightSurf;
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	SML_DSGetRT(DS_RT_SCENE_LIGHT_COM)->GetSurfaceLevel(0, &ComLightSurf);
+
+	D3DSURFACE_DESC desc;
+	ComLightSurf->GetDesc(&desc);
 
 	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
@@ -569,6 +713,16 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky, bool blend_in_o
 	//SGCore_ShaderSetVRF(1, GData::IDsShaders::PS::BlendAmbientSpecDiffcolor, "allcolor", &(allcolor));
 
 	SGCore_ScreenQuadDraw();
+
+	GData::DXDevice->SetVertexShader(0);
+	GData::DXDevice->SetPixelShader(0);
+
+	if (render_sky)
+	{
+		//DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		//DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		SXRenderFunc::RenderSky(timeDelta);
+	}
 
 	GData::DXDevice->SetVertexShader(0);
 	GData::DXDevice->SetPixelShader(0);
@@ -641,6 +795,9 @@ void SXRenderFunc::GameRender(DWORD timeDelta)
 
 void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 {
+	Core_RIntSet(SGCORE_RI_INT_COUNT_POLY, 0);
+	Core_RIntSet(SGCORE_RI_INT_COUNT_DIP, 0);
+
 	if (GData::DXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || GData::ReSize)
 	{
 		if (!IsIconic(GData::Handle3D))
@@ -679,7 +836,7 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 	
 	RenderInMRT(0);
 
-	ComLighting(timeDelta, false, false);
+	ComLighting(timeDelta, true, false);
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
@@ -688,13 +845,18 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 	SGCore_ShaderBind(1, GData::IDsShaders::PS::ScreenOut);
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENE_LIGHT_COM));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT((GetAsyncKeyState('Q') ? DS_RT_NORMAL : DS_RT_SCENE_LIGHT_COM)));
 	SGCore_ScreenQuadDraw();
 
 	GData::DXDevice->SetVertexShader(0);
 	GData::DXDevice->SetPixelShader(0);
 
 	SGCore_ShaderUnBind();
+
+	/*DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	SXRenderFunc::RenderSky(timeDelta);*/
+
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
@@ -709,12 +871,7 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 	DXDevice->SetFVF(D3DFVF_XYZ);
 	DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST,0, 0, count_vertex, 0, count_index/3);*/
 
-	if (SGeom_GreenGetCount() > 0)
-	{
-		GData::DXDevice->SetClipPlane(0, GData::PlaneZCullingShader);
-		GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
-		SGeom_GreenRender(timeDelta);
-	}
+	
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
@@ -731,36 +888,31 @@ void SXRenderFunc::LevelEditorRender(DWORD timeDelta)
 		D3DXSaveTextureToFile("C:\\1\\param", D3DXIFF_PNG, SGCore_RTGetTexture(GData::IDSRenderTargets::ParamsScene), NULL);
 	}*/
 
-	for (int i = 0; i<SML_LigthsGetCount(); i++)
+	SXRenderFunc::UpdateLight();
+}
+
+void SXRenderFunc::RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
+{
+
+}
+
+void SXRenderFunc::RFuncSetMtl(UINT id, float4x4* world)
+{
+	if (Core_RIntGet(RENDER_RI_INT_RENDERSTATE) == RENDER_STATE_SHADOW)
 	{
-		if (SML_LigthsIsShadow(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
-		{
-			if (SML_LigthsGetType(i) == LIGHTS_TYPE_GLOBAL)
-			{
-				//SML_LigthsUpdateFrustumsG(i, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
-				for (int k = 0; k<4; k++)
-				{
-					if (SML_LigthsUpdateCountUpdate(i, &GData::ConstCurrCamPos,k))
-					{
-						SML_LigthsUpdateFrustumsG(i, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
-						SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i, 0, k));
-					}
-				}
-			}
-			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_DIRECTION)
-			{
-				SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i, 0, 0));
-			}
-			else if (SML_LigthsGetType(i) == LIGHTS_TYPE_POINT)
-			{
-				for (int k = 0; k<6; k++)
-				{
-					if (SML_LigthsGetEnableCubeEdge(i, k))
-					{
-						SGeom_ModelsComVisible(SML_LigthsGetFrustum(i, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(i, 0, k));
-					}
-				}
-			}
-		}
+		SML_MtlSetMainTexture(0, id);
+		SML_LigthsShadowSetShaderOfTypeMat(Core_RIntGet(RENDER_RI_INT_CURRIDLIGHT), SML_MtlGetType(id), world);
 	}
+	else if (Core_RIntGet(RENDER_RI_INT_RENDERSTATE) == RENDER_STATE_FREE)
+	{
+		SML_MtlSetMainTexture(0, id);
+		GData::DXDevice->SetTransform(D3DTS_WORLD, &((world ? (*world) : SMMatrixIdentity()).operator D3DXMATRIX()));
+	}
+	else if (Core_RIntGet(RENDER_RI_INT_RENDERSTATE) == RENDER_STATE_MATERIAL)
+		SML_MtlRender(id, world);
+}
+
+long SXRenderFunc::RFuncLoadMtl(const char* name, int mtl_type)
+{
+	return SML_MtlLoad(name, mtl_type);
 }

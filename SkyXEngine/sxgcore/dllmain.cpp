@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <gdefines.h>
 #include <core\array.h>
+
+#include <core\\sxcore.cpp>
 #include <gcore\\sxgcore.cpp>
 
 BOOL APIENTRY DllMain( HMODULE hModule,

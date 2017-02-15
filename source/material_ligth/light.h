@@ -2,13 +2,22 @@
 #ifndef __light_h
 #define __light_h
 
-
 #define LIGHTS_PRE_COND_ID(id,stdval) \
-if (!(id >= 0 && id < ArrLights.size()))\
-	{reportf(-1, "%s - light: unresolved index of access '%d'", gen_msg_location, id); return stdval; }
+if (!(id >= 0 && id < ArrIDLights.size()))\
+	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
+	else if (!ArrIDLights[id]) \
+	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", gen_msg_location, id); return stdval; }
+
+#define LIGHTS_PRE_COND_KEY(key,stdval) \
+if (!(key >= 0 && key < ArrKeyLights.size()))\
+	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
+
+#define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
+if (!(key >= 0 && key < ArrKeyDelLights.size()))\
+	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
 
 #include <material_ligth\\shadow.cpp>
-#include <handler_dx_func.cpp>
+#include <string\\string.cpp>
 
 class Lights
 {
@@ -102,6 +111,9 @@ public:
 	void InRenderEnd(long id);
 	void InRenderPre(long id, int cube);
 	void InRenderPost(long id, int cube);
+
+	void InitShaderOfTypeMaterial(long id, int typemat, float4x4* wmat);
+
 	ISXFrustum* GetFrustum(long id, int how);
 	ISXFrustum* GetFrustumG(long id,int split);
 
@@ -132,7 +144,10 @@ public:
 		Light();
 		~Light();
 
-		SX_ALIGNED_OP_MEM
+		SX_ALIGNED_OP_MEM;
+
+		long ID;
+		long Key;
 
 		int TypeLight;	
 		char Name[OBJECT_NAME_MAX_LEN];
@@ -194,14 +209,26 @@ public:
 		MeshSource* Source;
 	};
 
+	long GetIdOfKey(long key);
+
+	long DelGetCount();
+	long DelGetType(long key);
+	void DelDel(long key);
+	long DelGetIDArr(long key, long inid, int how);
+
 protected:
 	inline long AddLight(Light* obj);
-	Array<Light*> ArrLights;
+
+	Array<Light*> ArrKeyLights;	//массив всех элементов по порядку
+	Array<Light*> ArrIDLights;	//массив всех элементов, основанный на id
+	Array<Light*> ArrKeyDelLights;	//массив света который надо удалить
 	IDirect3DVertexDeclaration9* VertexDeclarationStatic;
 
 	DWORD ShadowMap;
 	DWORD ShadowMap2;
 	int HowShadow;
+
+	D3DXMATRIX tmpmat;
 };
 
 #endif

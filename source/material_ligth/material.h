@@ -2,6 +2,10 @@
 #ifndef __sxmaterial
 #define __sxmaterial
 
+#define MTL_PRE_COND_ID(id,stdval) \
+if (!(id >= 0 && id < ArrMaterials.size()))\
+	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", gen_msg_location, id); return stdval; }
+
 class Materials
 {
 public:
@@ -15,6 +19,11 @@ public:
 	void SetMainTexture(DWORD slot, long id);
 	void Render(long id, float4x4* world);
 
+	void RenderDepthPSSMDirect(long id, float4x4* world);
+	void RenderDepthCube(long id, float4x4* world);
+
+	long IsExists(const char* name);
+	int GetType(long id);
 	long GetID(const char* name);
 
 	inline long GetCount();
@@ -26,7 +35,7 @@ public:
 
 		SX_ALIGNED_OP_MEM
 
-			//структура из материала указывающая на маску и 4 детальных и 4 микрорельефных карты
+		//структура из материала указывающая на маску и 4 детальных и 4 микрорельефных карты
 		struct MaterialMaskPM
 		{
 			MaterialMaskPM();
@@ -108,10 +117,29 @@ public:
 
 		bool IsForwardRender;
 
+		int Type;
+
 		float4x4 view, proj, worldtrans, viewtrans, projtrans;
 	};
 
 protected:
+
+	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
+	struct TLPath
+	{
+		TLPath()
+		{
+			Path[0] = 0;
+		}
+
+		char Path[MTL_MAX_SIZE_DIR];//имя папки
+		Array<long> ArrID;		//идентификатор
+		Array<String> ArrNames;	//массив с именами текстур которые находятся в данной папке
+	};
+	Array<TLPath*> ArrHMtls;
+
+	void AddName(const char* name,long id);
+
 	Array<Material*> ArrMaterials;
 	float4x4 view, proj, worldtrans, viewtrans, projtrans;
 };

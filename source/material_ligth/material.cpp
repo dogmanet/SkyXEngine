@@ -13,7 +13,15 @@ Materials::~Materials()
 
 Materials::Material::Material()
 {
+	Name[0] = 0;
+	TransVSDataInPS = false;
+	TransPSDataInVS = false;
 
+	IsForwardRender = false;
+	IsRefraction = false;
+	PhysicsMaterial = -1;
+
+	Type = MTL_GEOM;
 }
 
 Materials::Material::~Material()
@@ -91,22 +99,117 @@ Materials::Material::MaterialMaskPM::~MaterialMaskPM()
 
 /////
 
-long Materials::Load(const char* name, int type)
+int Materials::GetType(long id)
 {
-	bool IsLoad = false;
-	for (long i = 0; i<ArrMaterials.size(); i++)
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->Type;
+}
+
+long Materials::IsExists(const char* name)
+{
+	char tmp_path[MTL_MAX_SIZE_DIR];//папка
+	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
+	long id = -1;
+	bool IsTruePath = false;
+	//обрезаем имя текстуры и папку
+	for (DWORD i = 0; i<strlen(name); i++)
 	{
-		if (strcmp(ArrMaterials[i]->Name, name) == 0)
+		if (name[i] == '_')
 		{
-			IsLoad = true;
-			return i;
+			memcpy(tmp_path, name, sizeof(char)*i);
+			tmp_path[i] = 0;
+			sprintf(tmp_name, "%s", name + i + 1);
+			IsTruePath = true;
+			break;
 		}
 	}
 
-	if (!IsLoad)
+	if (!IsTruePath)
+	{
+		return -2;
+		//reportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
+	}
+
+	long tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+	for (long i = 0; i<ArrHMtls.size(); ++i)
+	{
+		if (strcmp(ArrHMtls[i]->Path, tmp_path) == 0)
+		{
+			tmpkey = i;
+			break;
+		}
+	}
+
+	//если мы не нашли совпадений значит путь уникален ...
+	if (tmpkey == -1)
+	{
+		return -1;
+	}
+
+	//првоеряем записано ли уже имя текстуры
+	for (DWORD i = 0; i<ArrHMtls[tmpkey]->ArrNames.size(); i++)
+	{
+		if (strcmp(ArrHMtls[tmpkey]->ArrNames[i].c_str(), tmp_name) == 0)
+		{
+			id = ArrHMtls[tmpkey]->ArrID[i];
+			break;
+		}
+	}
+
+	return id;
+}
+
+void Materials::AddName(const char* name, long id)
+{
+	char tmp_path[MTL_MAX_SIZE_DIR];//папка
+	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
+
+	bool IsTruePath = false;
+	//обрезаем имя текстуры и папку
+	for (DWORD i = 0; i<strlen(name); i++)
+	{
+		if (name[i] == '_')
+		{
+			memcpy(tmp_path, name, sizeof(char)*i);
+			tmp_path[i] = 0;
+			sprintf(tmp_name, "%s", name + i + 1);
+			IsTruePath = true;
+			break;
+		}
+	}
+
+	long tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+	for (long i = 0; i<ArrHMtls.size(); ++i)
+	{
+		if (strcmp(ArrHMtls[i]->Path, tmp_path) == 0)
+		{
+			tmpkey = i;
+			break;
+		}
+	}
+
+	//если мы не нашли совпадений значит путь уникален ...
+	if (tmpkey == -1)
+	{
+		tmpkey = ArrHMtls.size();
+		TLPath* tmpntlp = new TLPath();
+		ArrHMtls.push_back(tmpntlp);
+	}
+	sprintf(ArrHMtls[tmpkey]->Path, "%s", tmp_path);
+
+	ArrHMtls[tmpkey]->ArrNames.push_back(tmp_name);
+	ArrHMtls[tmpkey]->ArrID.push_back(id);
+}
+
+long Materials::Load(const char* name, int type)
+{
+	long IsLoad = IsExists(name);
+
+	if (IsLoad >= 0)
+		return IsLoad;
+	else
 	{
 		char* ArrRGBA[4] = { "r", "g", "b", "a" };
-
 
 		char tmpNameMtl[256];
 		char tmpVS[256];
@@ -176,13 +279,10 @@ long Materials::Load(const char* name, int type)
 			if (config->KeyExists(tmp_name, "is_forward"))
 				tmpMtl->IsForwardRender = String(config->GetKey(tmp_name, "is_forward")).ToBool();
 
-			if (tmpMtl->IsForwardRender || strcmp("prop_lampa_g", tmp_name) == 0)
-				int sfsdf = 0;
-
-			/*if(config->KeyExists(tmp_name,"is_forward"))
-
+			if (config->KeyExists(tmp_name, "type"))
+				tmpMtl->Type = String(config->GetKey(tmp_name, "type")).ToInt();
 			else
-			tmpMtl->IsForwardRender = false;*/
+				tmpMtl->Type = MTL_GEOM;
 
 			if (config->KeyExists(tmp_name, "physmaterial"))
 				tmpMtl->PhysicsMaterial = String(config->GetKey(tmp_name, "physmaterial")).ToInt();
@@ -305,43 +405,41 @@ long Materials::Load(const char* name, int type)
 
 			config->Release();
 			ArrMaterials.push_back(tmpMtl);
-			return ArrMaterials.size() - 1;
-			//Data::ArrMaterial->Add(tmpMtl);
 		}
 		else
 		{
 			//если такого материала не существует, то мы должны были задать примерный тип материала
 			Material* tmpMtl = new Material();
-
+			tmpMtl->Type = type;
 			//обычна¤ геометри¤
-			if (type == 0)
+			if (type == MTL_GEOM)
 			{
 				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base");
 				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base");
 				tmpMtl->VS.IsTransWorld = true;
 			}
 			//деревь¤
-			else if (type == 1)
+			else if (type == MTL_TREE)
 			{
 				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base_green_tree");
 				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base_green");
 				//tmpMtl->RenderStates.IsAlphaTest = true;
 			}
 			//трава
-			else if (type == 2)
+			else if (type == MTL_GRASS)
 			{
 				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base_green_grass");
 				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base_green");
 				//tmpMtl->RenderStates.IsAlphaTest = true;
 			}
 			//анимационная модель
-			else if (type == 3)
+			else if (type == MTL_ANIM)
 			{
 				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base_skin");
 				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base");
 				tmpMtl->VS.IsTransWorld = true;
 			}
-			//источник света
+			/*//источник света
 			else if (type == 4)
 			{
 				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base");
@@ -350,7 +448,7 @@ long Materials::Load(const char* name, int type)
 				tmpMtl->IsForwardRender = true;
 				tmpMtl->PS.IsTransUserData = true;
 				tmpMtl->PS.Param = float4(0, 0, 0, 0);
-			}
+			}*/
 
 			tmpMtl->MainTexture = SGCore_LoadTexAddName(name);
 			tmpMtl->VS.IsTransWorldViewProjection = true;
@@ -372,8 +470,10 @@ long Materials::Load(const char* name, int type)
 			sprintf(tmpMtl->Name, "%s", tmp_name);
 
 			ArrMaterials.push_back(tmpMtl);
-			return ArrMaterials.size() - 1;
 		}
+
+		AddName(name, ArrMaterials.size() - 1);
+		return ArrMaterials.size() - 1;
 	}
 }
 
@@ -407,8 +507,7 @@ inline long Materials::GetCount()
 
 void Materials::Render(long id, float4x4* world)
 {
-	if (!(id >= 0 && id < ArrMaterials.size()))
-		return;
+	MTL_PRE_COND_ID(id);
 
 	if (!world)
 		world = &(SMMatrixIdentity());

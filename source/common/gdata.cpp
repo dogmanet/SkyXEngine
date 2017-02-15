@@ -28,7 +28,7 @@ void GData::Pathes::InitAllPathes()
 
 	sprintf(GData::Pathes::Textures, "%s%s", GData::Pathes::GameSource, "textures\\");
 	sprintf(GData::Pathes::TexturesDetail, "%s%s", GData::Pathes::GameSource, "textures\\detail\\");
-	sprintf(GData::Pathes::TexturesSkyBoxes, "%s%s", GData::Pathes::Textures, "");
+	sprintf(GData::Pathes::TexturesSkyBoxes, "%s%s", GData::Pathes::Textures, "sky\\");
 	sprintf(GData::Pathes::Materials, "%s%s", GData::Pathes::GameSource, "materials\\");
 	sprintf(GData::Pathes::GUIresources, "%s%s", GData::Pathes::GameSource, "resource\\");
 }

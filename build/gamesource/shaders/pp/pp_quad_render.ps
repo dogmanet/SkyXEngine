@@ -1,0 +1,9 @@
+
+#include <../struct.h>
+
+sampler2D BaseSampler:register(s0);
+
+float4 main(vs_out_pp IN):COLOR0
+{
+	return tex2D(BaseSampler,IN.TexUV);
+}

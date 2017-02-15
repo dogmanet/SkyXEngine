@@ -258,7 +258,7 @@ void LoaderTextures::LoadTextures()
 {
 	if (CountIDsOld == CountIDs)
 		return;
-	reportf(0,"load textures ...\n");
+	reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: load textures ...\n");
 	char tmpPathFor[1024];
 	char tmpPath[1024];
 
@@ -295,7 +295,7 @@ void LoaderTextures::LoadTextures()
 											)))
 										{
 											//ArrTextures.push_back(tex);
-											reportf(1, "%s - \tnot found texture [%s_%s]\n", gen_msg_location, Arr[i].Path, Arr[i].ArrNames[k]);
+											reportf(REPORT_MSG_LEVEL_WARRNING, "  {load} - not found texture [%s_%s]\n", Arr[i].Path, Arr[i].ArrNames[k]);
 										}
 										else
 										{
@@ -304,14 +304,14 @@ void LoaderTextures::LoadTextures()
 											char* tmpname = new char[256];
 											sprintf(tmpname,"%s_%s",Arr[i].Path,Arr[i].ArrNames[k]);
 											ArrNames[Arr[i].ArrID[k]] = tmpname;
-											reportf(0,"\ttexture loaded [%s_%s], id = %d\n",Arr[i].Path,Arr[i].ArrNames[k],Arr[i].ArrID[k]);
+											reportf(REPORT_MSG_LEVEL_NOTICE, "  texture loaded [%s_%s], id = %d\n", Arr[i].Path, Arr[i].ArrNames[k], Arr[i].ArrID[k]);
 										}
 								}
 						}
 				}
 		}
 	CountIDsOld = CountIDs;
-	reportf(0,"all loaded textures [%d]\n",ArrTextures.size());
+	reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: all loaded textures [%d]\n", ArrTextures.size());
 }
 
 IDirect3DTexture9* LoaderTextures::GetTexture(DWORD id)

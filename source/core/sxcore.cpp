@@ -270,3 +270,36 @@ void Core_MTaskStop()
 
 	TaskManager->stop();
 }
+
+//////////////
+
+int32_t GRegistersInt[CORE_REGISTRY_SIZE];
+float32_t GRegistersFloat[CORE_REGISTRY_SIZE];
+
+#define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
+if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
+{reportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
+
+void Core_RIntSet(int id, int32_t val)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id);
+	GRegistersInt[id] = val;
+}
+
+int32_t Core_RIntGet(int id)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id,0);
+	return GRegistersInt[id];
+}
+
+void Core_RFloatSet(int id, float32_t val)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id);
+	GRegistersFloat[id] = val;
+}
+
+float32_t Core_RFloatGet(int id)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id,0);
+	return GRegistersFloat[id];
+}

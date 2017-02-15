@@ -23,16 +23,20 @@ StaticGeom::Segment::Segment()
 
 StaticGeom::Segment::~Segment()
 {
-	for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
+	for (int i = 0; i < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
+	{
 		mem_delete(Splits[i]);
+	}
 	mem_delete_a(NumberGroup);
 	mem_delete_a(NumberGroupModel);
 	mem_delete_a(CountPoly);
 	
 	if (ArrPoly)
 	{
-		for (DWORD i = 0; i<CountSubSet; i++)
+		for (DWORD i = 0; i < CountSubSet; i++)
+		{
 			mem_delete_a(ArrPoly[i]);
+		}
 	}
 
 	mem_delete_a(ArrPoly);
@@ -69,7 +73,8 @@ StaticGeom::Group::~Group()
 
 	for (long i = 0; i < VertexBuffer.size(); ++i)
 	{
-		mem_release(VertexBuffer[i]);
+		mem_release_del(VertexBuffer[i]);
+		mem_delete(VertexBufferOrigin[i]);
 	}
 }
 
@@ -82,7 +87,8 @@ StaticGeom::Model::Lod::Lod()
 
 StaticGeom::Model::Lod::~Lod()
 {
-	mem_delete(model);
+	mem_release_del(model);
+	mem_release_del(BoundVolume);
 }
 
 StaticGeom::Model::Model()
@@ -125,6 +131,7 @@ StaticGeom::IRSData::IRSData()
 {
 
 }
+
 StaticGeom::IRSData::~IRSData()
 {
 	queue.clear();
@@ -144,8 +151,6 @@ StaticGeom::StaticGeom()
 	WorldMat = SMMatrixIdentity();
 
 	ArrMeshVertex = 0;
-	//ArrMeshVertex2 = 0;
-	//AllCountVertex2 = 0;
 
 	jvevyn = D3DXVECTOR3(0.0f, -1000.0f, 0.0f);
 	jvevyp = D3DXVECTOR3(0.0f, 1000.0f, 0.0f);
@@ -170,9 +175,13 @@ StaticGeom::StaticGeom()
 
 StaticGeom::~StaticGeom()
 {
+	for (long i = 0; i < ArrComFor.size(); ++i)
+	{
+		mem_delete(ArrComFor[i]);
+	}
+
 	ArrComFor.clear();
 	mem_delete_a(ArrMeshVertex);
-	//mem_delete_a(ArrMeshVertex2);
 	mem_release(RenderIndexBuffer);
 	mem_release(VertexDeclarationStatic);
 	mem_release(BoundVolume);
@@ -402,7 +411,7 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 			char tmptex[1024];
 			sprintf(tmptex, "%s.dds", model->ArrTextures[i]);
 
-			ngroup->idtex = FuncLoadMaterial(tmptex);// SGCore_LoadTexAddName(tmptex);
+			ngroup->idtex = SGCore_LoadMtl(tmptex, MTL_GEOM);// SGCore_LoadTexAddName(tmptex);
 			ngroup->name = model->ArrTextures[i];
 			AllGroups.push_back(ngroup);
 		}
@@ -418,6 +427,7 @@ long StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 
 	AddModelInArrCom(AllModels.size() - 1);
 
+	DelArrIndexPtr();
 	InitArrIndexPtr();
 
 	float3 jmin, jmax, jmin2, jmax2;
@@ -640,6 +650,7 @@ void StaticGeom::DelArrIndexPtr()
 			mem_delete_a(RTCountDrawPoly[i]);
 			mem_delete_a(RTCPUArrIndicesPtrs[i]);
 		}
+
 		mem_delete_a(RTCountDrawPoly);
 		mem_delete_a(RTCPUArrIndicesPtrs);
 	}
@@ -889,8 +900,9 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 			StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
 			for (int k = 0; k < AllModels[i]->Lod0.model->SubsetCount; ++k)
 			{
-				FuncSetMaterial(AllModels[i]->Lod0.IDsTexs[k],0);
-				FuncDIP(StaticGeom::DXDevice, D3DPT_TRIANGLELIST, 0, 0, AllModels[i]->Lod0.model->VertexCount[k], AllModels[i]->Lod0.model->StartIndex[k], AllModels[i]->Lod0.model->IndexCount[k] / 3);
+				SGCore_SetMtl(AllModels[i]->Lod0.IDsTexs[k], 0);
+				SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, AllModels[i]->Lod0.model->VertexCount[k], AllModels[i]->Lod0.model->StartIndex[k], AllModels[i]->Lod0.model->IndexCount[k] / 3);
+				Core_RIntSet(SGCORE_RI_INT_COUNT_POLY, Core_RIntGet(SGCORE_RI_INT_COUNT_POLY) + AllModels[i]->Lod0.model->IndexCount[k] / 3);
 			}
 		}
 		else if (ArrComFor[id_arr]->arr[i]->CountCom > 0)
@@ -934,9 +946,10 @@ void StaticGeom::GPURender(DWORD timeDelta, long id_arr)
 				StaticGeom::DXDevice->SetStreamSource(0, AllGroups[i]->VertexBuffer[k], 0, sizeof(vertex_static));
 				StaticGeom::DXDevice->SetIndices(RenderIndexBuffer);
 				StaticGeom::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
-				FuncSetMaterial(AllGroups[i]->idtex,0);
+				SGCore_SetMtl(AllGroups[i]->idtex, 0);
 
-				FuncDIP(StaticGeom::DXDevice, D3DPT_TRIANGLELIST, 0, 0, AllGroups[i]->CountVertex[k], 0, RTCountDrawPoly[i][k]);
+				SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, AllGroups[i]->CountVertex[k], 0, RTCountDrawPoly[i][k]);
+				Core_RIntSet(SGCORE_RI_INT_COUNT_POLY, Core_RIntGet(SGCORE_RI_INT_COUNT_POLY) + RTCountDrawPoly[i][k]);
 			}
 		}
 	}
@@ -1190,13 +1203,17 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* m
 	{
 		ISXBound* ArrBound[STATIC_COUNT_TYPE_SEGMENTATION_QUAD];
 		for (int i = 0; i < STATIC_COUNT_TYPE_SEGMENTATION_QUAD; ++i)
+		{
 			ArrBound[i] = SGCore_CrBound();
-
+		}
+		float3 tmpmin,tmpmax;
 		SGCore_0ComBoundBoxArr4(Split->BoundVolumeSys, (ArrBound));
 		for (int i = 0; i<CountSplitsSys; i++)
 		{
 			Split->Splits[i]->BoundVolumeSys = ArrBound[i];
-			Split->Splits[i]->BoundVolumeP = ArrBound[i];
+			Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpmin, &tmpmax);
+			Split->Splits[i]->BoundVolumeP = SGCore_CrBound();
+			Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpmin, &tmpmax);
 		}
 	}
 	else if (CountSplitsSys == STATIC_COUNT_TYPE_SEGMENTATION_OCTO)
@@ -1782,10 +1799,10 @@ void StaticGeom::Load(const char* path)
 		char tmptex[1024];
 		sprintf(tmptex, "%s.dds", group->name.c_str());
 
-		group->idtex = FuncLoadMaterial(tmptex);// SGCore_LoadTexAddName(tmptex);
+		group->idtex = SGCore_LoadMtl(tmptex, MTL_GEOM);// SGCore_LoadTexAddName(tmptex);
 
 		AllGroups.push_back(group);
-
+		
 		if (RenderIndexBuffer == 0 || SizeRenderIndexBuffer < tmpbigersizebuff)
 		{
 			mem_release(RenderIndexBuffer);
@@ -1800,6 +1817,7 @@ void StaticGeom::Load(const char* path)
 
 	for (long i = 0; i < countmodels; ++i)
 	{
+		AllModels.push_back(0);
 		AllModels[i] = new Model();
 
 		int32_t countsubset;
@@ -1809,7 +1827,7 @@ void StaticGeom::Load(const char* path)
 		fread(&countlenstr, sizeof(int32_t), 1, file);
 		fread(&AllModels[i]->Name, sizeof(char), countlenstr, file);
 		AllModels[i]->Name[countlenstr] = 0;
-		
+
 		countlenstr = 0;
 		fread(&countlenstr, sizeof(int32_t), 1, file);
 		fread(&AllModels[i]->PathName, sizeof(char), countlenstr, file);
@@ -1836,14 +1854,14 @@ void StaticGeom::Load(const char* path)
 		WorldMat = SMMatrixScaling(AllModels[i]->Scale) * SMMatrixRotationX(AllModels[i]->Rotation.x) * SMMatrixRotationY(AllModels[i]->Rotation.y) * SMMatrixRotationZ(AllModels[i]->Rotation.z) * SMMatrixTranslation(AllModels[i]->Position);
 
 		fread(&countlenstr, sizeof(int32_t), 1, file);
-		
+
 		if (countlenstr > 0)
 		{
 			fread(AllModels[i]->Lod0.PathName, sizeof(char), countlenstr, file);
 			AllModels[i]->Lod0.PathName[countlenstr] = 0;
 			SetModelLodPath(i, AllModels[i]->Lod0.PathName);
 		}
-			
+
 		for (long k = 0; k < countsubset; ++k)
 		{
 			Model::GDataBuff gdb;
@@ -1901,6 +1919,7 @@ void StaticGeom::Load(const char* path)
 		}
 	}
 
+	DelArrIndexPtr();
 	InitArrIndexPtr();
 
 	fclose(file);
@@ -2109,14 +2128,7 @@ void StaticGeom::DelArrForCom(long id_arr)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
-	//for (long i = 0; i < AllModels.size(); ++i)
-	//{
-		mem_delete(ArrComFor[id_arr]);
-		//mem_delete_a(ArrComFor[id_arr]-arr[i]->Arr);
-		//ArrComFor[id_arr].arr.clear();
-	//}
-
-	//ArrComFor.erase(id_arr);
+	mem_delete(ArrComFor[id_arr]);
 }
 
 void StaticGeom::AddModelInArrCom(long id_model)
@@ -2139,7 +2151,7 @@ void StaticGeom::DelModelInArrCom(long id_model)
 
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
-		mem_delete_a(ArrComFor[i]->arr[id_model]->Arr);
+		mem_delete(ArrComFor[i]->arr[id_model]);
 		ArrComFor[i]->arr.erase(id_model);
 	}
 }
@@ -2218,7 +2230,7 @@ void StaticGeom::SetModelLodPath(long id, const char* path)
 		for (long i = 0; i < AllModels[id]->Lod0.model->SubsetCount; ++i)
 		{
 			sprintf(tmptex, "%s.dds", AllModels[id]->Lod0.model->ArrTextures[i]);
-			AllModels[id]->Lod0.IDsTexs.push_back(FuncLoadMaterial(tmptex)/*SGCore_LoadTexAddName(tmptex)*/);
+			AllModels[id]->Lod0.IDsTexs.push_back(SGCore_LoadMtl(tmptex, MTL_GEOM)/*SGCore_LoadTexAddName(tmptex)*/);
 		}
 
 		sprintf(AllModels[id]->Lod0.PathName,"%s",path);
@@ -2375,22 +2387,20 @@ void StaticGeom::Clear()
 	}
 	AllGroups.clear();
 
-	for (long i = 0; i < AllModels.size(); ++i)
+	while (AllModels.size() > 0)
 	{
-		mem_delete(AllModels[i]);
 		DelModelInArrCom(0);
+		mem_delete(AllModels[0]);
+		AllModels.erase(0);
 	}
 	AllModels.clear();
 
-	/*ArrComFor.clear();
+	while (ArrComFor.size() > 2)
+	{
+		mem_delete(ArrComFor[2]);
+		ArrComFor.erase(2);
+	}
 
-	IRSData* tmparr = new IRSData();
-	ArrComFor.push_back(tmparr);
-	IRSData* tmparr2 = new IRSData();
-	ArrComFor.push_back(tmparr2);*/
-
-	//mem_delete_a(ArrMeshVertex2);
-	//AllCountVertex2 = 0;
 
 	mem_delete_a(ArrMeshVertex);
 	CountVertex = 0;

@@ -1,0 +1,74 @@
+
+#include <../struct.h>
+
+sampler2D BaseTextSampler:register(s0);
+
+sampler2D MaskSampler:register(s1);
+
+sampler2D DetailText0Sampler:register(s2);
+sampler2D DetailText1Sampler:register(s3);
+sampler2D DetailText2Sampler:register(s4);
+sampler2D DetailText3Sampler:register(s5);
+
+sampler2D MDetailText0Sampler:register(s6);
+sampler2D MDetailText1Sampler:register(s7);
+sampler2D MDetailText2Sampler:register(s8);
+sampler2D MDetailText3Sampler:register(s9);
+
+sampler2D RF0SSIsSampler:register(s10);
+
+float4 Param;
+float2 NearFar;
+
+ps_out_ds_mrt main(vs_out_green IN)
+{
+	ps_out_ds_mrt OUT;
+	float2 dx = ddx((IN.TexUV) * Param.x * 1024.f);
+	float2 dy = ddy((IN.TexUV) * Param.x * 1024.f);
+	float lod = 9.f+log2(max(length(dx), length(dy)));
+
+	float3 NormalPixel;
+	float4 basecolor = tex2D(BaseTextSampler, IN.TexUV);
+	float4 detmaskcolor = tex2D(MaskSampler, IN.TexUV);
+		[branch]if(IN.Pos.z < 100)
+		{
+			float4 detcolor1 = tex2Dlod(DetailText0Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod));
+			float4 detcolor2 = tex2Dlod(DetailText1Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod));
+			float4 detcolor3 = tex2Dlod(DetailText2Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod));
+			float4 detcolor4 = tex2Dlod(DetailText3Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod));
+			
+			float3 mdetcolor1 = (2.0 * (tex2Dlod(MDetailText0Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod)).rgb)) - 1.0;
+			float3 mdetcolor2 = (2.0 * (tex2Dlod(MDetailText1Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod)).rgb)) - 1.0;
+			float3 mdetcolor3 = (2.0 * (tex2Dlod(MDetailText2Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod)).rgb)) - 1.0;
+			float3 mdetcolor4 = (2.0 * (tex2Dlod(MDetailText3Sampler, float4((IN.TexUV) * Param.x * 1024.f,0,lod)).rgb)) - 1.0;
+
+			float4 detcolor = detcolor1 * detmaskcolor.r + detcolor2 * detmaskcolor.g + detcolor3 * detmaskcolor.b + detcolor4 * detmaskcolor.a;
+			detcolor *= Param.y * 4.0f;
+			
+			float3 mdetcolor = mdetcolor1 * detmaskcolor.r + mdetcolor2 * detmaskcolor.g + mdetcolor3 * detmaskcolor.b + mdetcolor4 * detmaskcolor.a;
+			mdetcolor *= ((2.f * Param.z) - 1.f) * 2.f;
+			
+			float4 blend = basecolor * detcolor * (4.0f - detcolor);
+			
+			//NormalPixel = normalize((IN.Normal+float3(mdetcolor.xy,0.5f)) * 0.5);
+			//basecolor = basecolor * detcolor * (4.0f - detcolor);
+			float lerpfactor = IN.Pos.z/100.f;
+			lerpfactor = saturate(lerpfactor*lerpfactor);
+			NormalPixel = lerp(normalize((IN.Normal+float3(mdetcolor.xy,IN.Normal.z)) * 0.5),IN.Normal,lerpfactor);
+			basecolor = lerp(basecolor * detcolor * (4.0f - detcolor),basecolor,lerpfactor);
+		}
+		else
+			NormalPixel = IN.Normal;
+	
+
+	OUT.Normal.xyz = 0.5f *NormalPixel + 0.5f;
+	OUT.Normal.w = 1.f;
+	
+	OUT.Param = tex2D(RF0SSIsSampler,IN.TexUV);
+	
+	OUT.Color = basecolor;
+	
+	OUT.Depth.r = IN.Pos.z / NearFar.y;
+	OUT.Depth.g = IN.Pos.z / IN.Pos.w;
+	return OUT;
+}

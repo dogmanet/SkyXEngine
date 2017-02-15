@@ -1,0 +1,26 @@
+
+#include <../struct.h>
+
+sampler2D s0:register(s0);
+static const int HDR_MAX_SAMPLES = 16;
+float2 ArrOffsets[HDR_MAX_SAMPLES];
+
+static const float3 HDRLumsWeights = float3(0.298f, 0.585f, 0.117f);
+
+float4 main(vs_out_pp IN) : COLOR0
+{
+    float3 color = 0.0f;
+    float res = 0.0f;
+	float tmpcolor;
+
+    for(int i = 0; i < 9; ++i)
+    {
+        color = tex2D(s0, IN.TexUV+ArrOffsets[i]).rgb;
+		tmpcolor =  dot(color, HDRLumsWeights);
+        res += tmpcolor * tmpcolor;
+    }
+    
+    res *= 0.111;
+	
+    return res;
+}

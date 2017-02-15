@@ -19,7 +19,7 @@ public:
 	void Begin();
 	void End();
 
-	void GenShadow2(IDirect3DTexture9* shadowmap, float lightpower,float3* lightpos);
+	void GenShadow2(IDirect3DTexture9* shadowmap);
 	
 	inline void SetPosition(float3* pos);
 	inline void GetPosition(float3* pos);
@@ -91,7 +91,7 @@ public:
 	void Begin();
 	void End();
 
-	void GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos);
+	void GenShadow2(IDirect3DTexture9* shadowmap);
 
 	void SetPosition(float3* pos);
 	void GetPosition(float3* pos);
@@ -182,7 +182,7 @@ public:
 	void Post(int cube);
 	void End();
 
-	void GenShadow2(IDirect3DTexture9* shadowmap, float lightpower, float3* lightpos);
+	void GenShadow2(IDirect3DTexture9* shadowmap);
 
 	void SetIDArr(long id, int split, long idarr);
 	inline long GetCountIDArrs();

@@ -248,6 +248,7 @@ void LCInitElemsSelModel(int sel)
 {
 	if (sel >= 0 && sel < SML_LigthsGetCount())
 	{
+		sel = SML_LigthsGetIDOfKey(sel);
 		SXLevelEditor::LightCheckBoxGlobal->Enable(false);
 
 		LCActivateCreatingElems(false);
@@ -315,6 +316,8 @@ void LCInitElemsSelModel(int sel)
 		SXLevelEditor::LightEditBias->SetText(String(SML_LigthsGetBias(sel)).c_str());
 		SXLevelEditor::LightEditAngle->SetText(String(SML_LigthsGetAngle(sel)).c_str());
 
+		SXLevelEditor::LightComboBoxTypeLightShadow->SetSel(SML_LigthsGetTypeShadowed(sel));
+
 		if (SML_LigthsExistsSource(sel))
 		{
 			SXLevelEditor::LightEditSourceMesh->SetText(SML_LigthsGetPathNameSource(sel));
@@ -323,10 +326,10 @@ void LCInitElemsSelModel(int sel)
 
 			for (int i = 0; i < SML_LigthsGetCountGroupSource(sel); ++i)
 			{
-				SXLevelEditor::LightComboBoxSourceMesh->AddItem(SML_LigthsGetNameGroupSource(sel, i));
+				SXLevelEditor::LightComboBoxSourceMesh->AddItem(SML_LigthsGetNameGroupSource(SML_LigthsGetIDOfKey(sel), i));
 			}
 
-			SXLevelEditor::LightComboBoxSourceMesh->SetSel(SML_LigthsGetBindedGroupSource(sel));
+			SXLevelEditor::LightComboBoxSourceMesh->SetSel(SML_LigthsGetBindedGroupSource(SML_LigthsGetIDOfKey(sel)));
 		}
 	}
 }
@@ -374,7 +377,7 @@ LRESULT SXLevelEditor_LightButtonColorSel_Click(HWND hwnd, UINT msg, WPARAM wPar
 				int sel = SXLevelEditor::ListBoxList->GetSel();
 				if (sel >= 0 && sel < SML_LigthsGetCount())
 				{
-					SML_LigthsSetColor(sel, &float3(255.f / float(tmpr), 255.f / float(tmpg), 255.f / float(tmpb)));
+					SML_LigthsSetColor(SML_LigthsGetIDOfKey(sel), &float3(255.f / float(tmpr), 255.f / float(tmpg), 255.f / float(tmpb)));
 				}
 			}
 
@@ -399,6 +402,7 @@ LRESULT SXLevelEditor_LightButtonSourceMesh_Click(HWND hwnd, UINT msg, WPARAM wP
 		{
 			if (sel >= 0 && sel < SML_LigthsGetCount())
 			{
+				sel = SML_LigthsGetIDOfKey(sel);
 				SML_LigthsLoadSource(sel, tmpname);
 
 				if (SML_LigthsExistsSource(sel))
@@ -434,32 +438,32 @@ LRESULT SXLevelEditor_LightEditColor_Enter(HWND hwnd, UINT msg, WPARAM wParam, L
 		{
 			SXLevelEditor::LightEditColorR->GetText(tmpcoord, 256);
 			sscanf(tmpcoord, "%d", &getcoord);
-			SML_LigthsGetColor(numsel,&color);
+			SML_LigthsGetColor(SML_LigthsGetIDOfKey(numsel), &color);
 			color.x = float(getcoord) / 255.f;
-			SML_LigthsSetColor(numsel,&color);
+			SML_LigthsSetColor(SML_LigthsGetIDOfKey(numsel), &color);
 		}
 		else if (SXLevelEditor::LightEditColorG->GetHWND() == hwnd)
 		{
 			SXLevelEditor::LightEditColorG->GetText(tmpcoord, 256);
 			sscanf(tmpcoord, "%d", &getcoord);
-			SML_LigthsGetColor(numsel, &color);
+			SML_LigthsGetColor(SML_LigthsGetIDOfKey(numsel), &color);
 			color.y = float(getcoord) / 255.f;
-			SML_LigthsSetColor(numsel, &color);
+			SML_LigthsSetColor(SML_LigthsGetIDOfKey(numsel), &color);
 		}
 		else if (SXLevelEditor::LightEditColorB->GetHWND() == hwnd)
 		{
 			SXLevelEditor::LightEditColorB->GetText(tmpcoord, 256);
 			sscanf(tmpcoord, "%d", &getcoord);
-			SML_LigthsGetColor(numsel, &color);
+			SML_LigthsGetColor(SML_LigthsGetIDOfKey(numsel), &color);
 			color.z = float(getcoord) / 255.f;
-			SML_LigthsSetColor(numsel, &color);
+			SML_LigthsSetColor(SML_LigthsGetIDOfKey(numsel), &color);
 		}
 		else if (SXLevelEditor::LightEditPower->GetHWND() == hwnd)
 		{
 			SXLevelEditor::LightEditPower->GetText(tmpcoord, 256);
 			float rh;
 			sscanf(tmpcoord, "%d", &rh);
-			SML_LigthsSetDist(numsel, rh);
+			SML_LigthsSetDist(SML_LigthsGetIDOfKey(numsel), rh);
 		}
 	}
 
@@ -492,43 +496,43 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 			if (SXLevelEditor::LightCheckBoxShadow->GetHWND() == handle_elem)
 			{
 				if (numsel >= 0 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetShadow(numsel,SXLevelEditor::LightCheckBoxShadow->GetCheck());
+					SML_LigthsSetShadow(SML_LigthsGetIDOfKey(numsel), SXLevelEditor::LightCheckBoxShadow->GetCheck());
 			}
 			else if (SXLevelEditor::LightCheckBoxEnable->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnable(numsel,SXLevelEditor::LightCheckBoxEnable->GetCheck());
+					SML_LigthsSetEnable(SML_LigthsGetIDOfKey(numsel), SXLevelEditor::LightCheckBoxEnable->GetCheck());
 			}
 
 			else if (SXLevelEditor::LightCheckBoxCubeEdgeXPos->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnableCubeEdge(numsel, 0, SXLevelEditor::LightCheckBoxCubeEdgeXPos->GetCheck());
+					SML_LigthsSetEnableCubeEdge(SML_LigthsGetIDOfKey(numsel), 0, SXLevelEditor::LightCheckBoxCubeEdgeXPos->GetCheck());
 			}
 			else if (SXLevelEditor::LightCheckBoxCubeEdgeXNeg->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnableCubeEdge(numsel, 1, SXLevelEditor::LightCheckBoxCubeEdgeXNeg->GetCheck());
+					SML_LigthsSetEnableCubeEdge(SML_LigthsGetIDOfKey(numsel), 1, SXLevelEditor::LightCheckBoxCubeEdgeXNeg->GetCheck());
 			}
 			else if (SXLevelEditor::LightCheckBoxCubeEdgeYPos->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnableCubeEdge(numsel, 2, SXLevelEditor::LightCheckBoxCubeEdgeYPos->GetCheck());
+					SML_LigthsSetEnableCubeEdge(SML_LigthsGetIDOfKey(numsel), 2, SXLevelEditor::LightCheckBoxCubeEdgeYPos->GetCheck());
 			}
 			else if (SXLevelEditor::LightCheckBoxCubeEdgeYNeg->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnableCubeEdge(numsel, 3, SXLevelEditor::LightCheckBoxCubeEdgeYNeg->GetCheck());
+					SML_LigthsSetEnableCubeEdge(SML_LigthsGetIDOfKey(numsel), 3, SXLevelEditor::LightCheckBoxCubeEdgeYNeg->GetCheck());
 			}
 			else if (SXLevelEditor::LightCheckBoxCubeEdgeZPos->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnableCubeEdge(numsel, 4, SXLevelEditor::LightCheckBoxCubeEdgeZPos->GetCheck());
+					SML_LigthsSetEnableCubeEdge(SML_LigthsGetIDOfKey(numsel), 4, SXLevelEditor::LightCheckBoxCubeEdgeZPos->GetCheck());
 			}
 			else if (SXLevelEditor::LightCheckBoxCubeEdgeZNeg->GetHWND() == handle_elem)
 			{
 				if (numsel != -1 && numsel < SML_LigthsGetCount())
-					SML_LigthsSetEnableCubeEdge(numsel, 5, SXLevelEditor::LightCheckBoxCubeEdgeZNeg->GetCheck());
+					SML_LigthsSetEnableCubeEdge(SML_LigthsGetIDOfKey(numsel), 5, SXLevelEditor::LightCheckBoxCubeEdgeZNeg->GetCheck());
 			}
 
 			else if (SXLevelEditor::LightCheckBoxDirOrRot->GetHWND() == handle_elem)
@@ -537,9 +541,9 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 				{
 					float3 rot;
 					if (SXLevelEditor::LightCheckBoxDirOrRot->GetCheck())
-						SML_LigthsGetDir(numsel, &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+						SML_LigthsGetDir(SML_LigthsGetIDOfKey(numsel), &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 					else
-						SML_LigthsGetRot(numsel, &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+						SML_LigthsGetRot(SML_LigthsGetIDOfKey(numsel), &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 
 					char tmpRotX[32];
 					char tmpRotY[32];
@@ -561,9 +565,9 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 				{
 					float3 rot;
 					if (SXLevelEditor::LightCheckBoxDirOrRot->GetCheck())
-						SML_LigthsGetDir(numsel, &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+						SML_LigthsGetDir(SML_LigthsGetIDOfKey(numsel), &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 					else
-						SML_LigthsGetRot(numsel, &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+						SML_LigthsGetRot(SML_LigthsGetIDOfKey(numsel), &rot, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 
 					char tmpRotX[32];
 					char tmpRotY[32];
@@ -608,9 +612,9 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 			if (!(numsel >= 0 && numsel < SML_LigthsGetCount()))
 				return 0;
 
-			if (SML_LigthsExistsSource(numsel))
+			if (SML_LigthsExistsSource(SML_LigthsGetIDOfKey(numsel)))
 			{
-				SML_LigthsBindToGroupSource(numsel, SXLevelEditor::LightComboBoxSourceMesh->GetSel());
+				SML_LigthsBindToGroupSource(SML_LigthsGetIDOfKey(numsel), SXLevelEditor::LightComboBoxSourceMesh->GetSel());
 			}
 		}
 
@@ -621,7 +625,7 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 			if (!(numsel >= 0 && numsel < SML_LigthsGetCount()))
 				return 0;
 
-			SML_LigthsSetTypeShadowed(numsel, SXLevelEditor::LightComboBoxTypeLightShadow->GetSel());
+			SML_LigthsSetTypeShadowed(SML_LigthsGetIDOfKey(numsel), SXLevelEditor::LightComboBoxTypeLightShadow->GetSel());
 		}
 	}
 	return 0;
@@ -638,7 +642,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::EditName->GetText(tmptext, 256);
 		if (tmptext[0] != 0 && SXLevelEditor::HowActivateType == 3 && numsel != -1)
 		{
-			SML_LigthsSetName(numsel, tmptext);
+			SML_LigthsSetName(SML_LigthsGetIDOfKey(numsel), tmptext);
 			SXLevelEditor::ListBoxList->SetTextItem(numsel, tmptext);
 		}
 		else if (tmptext[0] != 0)
@@ -675,7 +679,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		sscanf(tmptext, "%f", &bias);
 		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
-			SML_LigthsSetBias(numsel, bias);
+			SML_LigthsSetBias(SML_LigthsGetIDOfKey(numsel), bias);
 		}
 	}
 	else if (SXLevelEditor::LightEditFarShadow->GetHWND() == hwnd)
@@ -685,7 +689,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		sscanf(tmptext, "%f", &dfe);
 		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
-			SML_LigthsSetShadowLocalFar(numsel, dfe);
+			SML_LigthsSetShadowLocalFar(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
 	}
 	else if (SXLevelEditor::LightEditAngle->GetHWND() == hwnd)
@@ -695,7 +699,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		sscanf(tmptext, "%f", &dfe);
 		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
-			SML_LigthsSetAngle(numsel, dfe);
+			SML_LigthsSetAngle(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
 	}
 	else if (SXLevelEditor::LightEditTopRadius->GetHWND() == hwnd)
@@ -705,7 +709,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		sscanf(tmptext, "%f", &dfe);
 		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
-			SML_LigthsSetTopRadius(numsel, dfe);
+			SML_LigthsSetTopRadius(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
 	}
 	else if (SXLevelEditor::LightEditPower->GetHWND() == hwnd)
@@ -715,7 +719,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		sscanf(tmptext, "%f", &dfe);
 		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
-			SML_LigthsSetPower(numsel, dfe);
+			SML_LigthsSetPower(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
 	}
 	else if (SXLevelEditor::LightEditDist->GetHWND() == hwnd)
@@ -725,7 +729,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		sscanf(tmptext, "%f", &dfe);
 		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
-			SML_LigthsSetDist(numsel, dfe);
+			SML_LigthsSetDist(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
 		else
 		{
@@ -791,18 +795,18 @@ LRESULT SXLevelEditor_LightEditTransform_Enter(HWND hwnd, UINT msg, WPARAM wPara
 
 		if (ispos)
 		{
-			SML_LigthsGetPos(numsel, &float3coord, false/*SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
+			SML_LigthsGetPos(SML_LigthsGetIDOfKey(numsel), &float3coord, false/*SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
 			float3coord[keycoord] = getcoord;
-			SML_LigthsSetPos(numsel, &float3coord/*, SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
+			SML_LigthsSetPos(SML_LigthsGetIDOfKey(numsel), &float3coord/*, SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
 		}
 		else
 		{
 			float3 rotcoord;
 			/*if (SkyXEngine::Core::Data::Settings::EditorsTransLightDirOrRot == 1)
 			{*/
-			SML_LigthsGetRot(numsel, &rotcoord, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+			SML_LigthsGetRot(SML_LigthsGetIDOfKey(numsel), &rotcoord, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 				rotcoord[keycoord] = getcoord;
-				SML_LigthsSetRot(numsel, &rotcoord, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
+				SML_LigthsSetRot(SML_LigthsGetIDOfKey(numsel), &rotcoord, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 			/*}
 			else
 			{
@@ -979,23 +983,23 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 
 	if (tmpid >= 0)
 	{
-		if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_GLOBAL)
+		if (SML_LigthsGetType(SML_LigthsGetIDOfKey(tmpid)) == LIGHTS_TYPE_GLOBAL)
 		{
 			for (int i = 0; i < 5; ++i)
 			{
-				SGeom_ModelsDelArrForCom(SML_LigthsGetIDArr(tmpid, 0, i));
+				SGeom_ModelsDelArrForCom(SML_LigthsGetIDArr(SML_LigthsGetIDOfKey(tmpid), 0, i));
 			}
 		}
-		else if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_POINT)
+		else if (SML_LigthsGetType(SML_LigthsGetIDOfKey(tmpid)) == LIGHTS_TYPE_POINT)
 		{
 			for (int i = 0; i < 6; ++i)
 			{
-				SGeom_ModelsDelArrForCom(SML_LigthsGetIDArr(tmpid, 0, i));
+				SGeom_ModelsDelArrForCom(SML_LigthsGetIDArr(SML_LigthsGetIDOfKey(tmpid), 0, i));
 			}
 		}
-		else if (SML_LigthsGetType(tmpid) == LIGHTS_TYPE_DIRECTION)
+		else if (SML_LigthsGetType(SML_LigthsGetIDOfKey(tmpid)) == LIGHTS_TYPE_DIRECTION)
 		{
-			SGeom_ModelsDelArrForCom(SML_LigthsGetIDArr(tmpid, 0, 0));
+			SGeom_ModelsDelArrForCom(SML_LigthsGetIDArr(SML_LigthsGetIDOfKey(tmpid), 0, 0));
 		}
 	}
 
@@ -1004,7 +1008,7 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 	{
 		if (!SXLevelEditor::LightCheckBoxGlobal->GetCheck())
 		{
-			tmpid = SML_LigthsReCreatePoint(tmpid,
+			tmpid = SML_LigthsReCreatePoint(SML_LigthsGetIDOfKey(tmpid),
 				&tmppos,
 				power,
 				radius_height,
@@ -1045,7 +1049,7 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 	}
 	else
 	{
-		tmpid = SML_LigthsReCreateDirection(tmpid,
+		tmpid = SML_LigthsReCreateDirection(SML_LigthsGetIDOfKey(tmpid),
 			&tmppos,
 			power,
 			radius_height,

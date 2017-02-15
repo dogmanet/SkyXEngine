@@ -1,0 +1,20 @@
+
+#include <../struct.h>
+
+sampler2D s0:register(s0);
+static const int HDR_MAX_SAMPLES = 16;
+float2 ArrOffsets[HDR_MAX_SAMPLES];
+
+float4 main(vs_out_pp IN) : COLOR0
+{
+	float res = 0.0f;
+    
+    for(int i = 0; i < 16; ++i)
+    {
+		res += tex2D(s0, IN.TexUV+ArrOffsets[i]);
+    }
+	
+    res *= 0.0625;
+    
+    return res;
+}
