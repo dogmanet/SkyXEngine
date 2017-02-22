@@ -208,6 +208,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\mtl_ligth\reflection.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\skyxengine.cpp" />
     <ClCompile Include="..\..\..\source\sound\sxCallBackOgg.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -331,6 +334,7 @@
     <ClInclude Include="..\..\..\source\material_ligth\material.h" />
     <ClInclude Include="..\..\..\source\material_ligth\material_ligth.h" />
     <ClInclude Include="..\..\..\source\material_ligth\shadow.h" />
+    <ClInclude Include="..\..\..\source\mtl_ligth\reflection.h" />
     <ClInclude Include="..\..\..\source\sound\sxsound.h" />
     <ClInclude Include="..\..\..\source\sound\sxsounds_class.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI.h" />

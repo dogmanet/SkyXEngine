@@ -204,6 +204,9 @@
     <ClCompile Include="..\..\..\source\gcore\sky.cpp">
       <Filter>sxgcore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\mtl_ligth\reflection.cpp">
+      <Filter>material_light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\gdefines.h">
@@ -367,6 +370,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\sky.h">
       <Filter>sxgcore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\mtl_ligth\reflection.h">
+      <Filter>material_light</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

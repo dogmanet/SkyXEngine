@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <material_ligth\\shadow.h>
+#include <mtl_ligth\\shadow.h>
 	
 PSSM::PSSM()
 {

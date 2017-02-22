@@ -1,4 +1,9 @@
 
+/*
+!!!!
+GDataBuff
+тут добавились нвоые данные, которые при трансформации надо менять
+*/
 #ifndef __static_geom
 #define __static_geom
 
@@ -8,7 +13,7 @@
 #include <common\\string_api.cpp>
 //максимальное количество полигонов в буферах
 //или максимальнео количество полигонов на одну подгруппу
-#define STATIC_GEOM_MAX_POLY_IN_GROUP 256000
+#define STATIC_GEOM_MAX_POLY_IN_GROUP 64000
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
@@ -22,14 +27,24 @@ if (!(id_model < AllModels.size() && AllModels[id_model]))\
 	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
 }
 
+#define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \
+if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels[id_model]->SubSet.size()))\
+{\
+	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", gen_msg_location, id_group, id_model); \
+	return ret_val; \
+}
+
+//типы деления
 #define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
 #define STATIC_COUNT_TYPE_SEGMENTATION_OCTO 8
-#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3
-#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20
-#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000
-#define STATIC_MIN_COUNT_POLY 500
-#define STATIC_MAX_COUNT_POLY 1000
-#define STATIC_DEFAULT_RESERVE_COM 512
+
+#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	//минимальная разница между сторонами для окто деления
+#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20//минимальный общий объем модели для деления
+#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000//минимальнео количество полигонов в модели для деления
+#define STATIC_MIN_COUNT_POLY 500	//минимальное количество полигонов в сплите
+#define STATIC_MAX_COUNT_POLY 1000	//максимальное количество полигонов в сплите
+
+#define STATIC_DEFAULT_RESERVE_COM 512	//резервация для просчетов
 
 class StaticGeom
 {
@@ -89,21 +104,27 @@ public:
 			Lod();
 			~Lod();
 
+			int SortGroup;
 			char PathName[1024];
 			ISXDataStaticModel* model;
-			Array<DWORD> IDsTexs;
+			Array<ID> IDsTexs;
 			ISXBound* BoundVolume;
 		};
 
 		struct GDataBuff
 		{
-			int32_t idgroup;	//id подгруппы в контексте уровня
+			int32_t idgroup;//id подгруппы в контексте уровня
 			int32_t idbuff;	//id буфера (в подгруппе) в который заисаны данные геометрии модели
 
 			int32_t IndexStart;
 			int32_t IndexCount;
 			int32_t VertexStart;
 			int32_t VertexCount;
+
+			D3DXPLANE Plane;
+			float3_t Max;
+			float3_t Min;
+			float3_t Center;
 		};
 
 		
@@ -125,8 +146,8 @@ public:
 
 		Array<GDataBuff> SubSet;	//описание каждой подгруппы модели
 		Segment* ArrSplits;	//массив с сегментами	
-		long SplitsIDs;	//общее количество сегментов/спилтов
-		long SplitsIDsRender;	//количество рисубщихся сегментов
+		ID SplitsIDs;	//общее количество сегментов/спилтов
+		ID SplitsIDsRender;	//количество рисубщихся сегментов
 	};
 
 
@@ -145,8 +166,9 @@ public:
 			long count;
 		};
 
-		String name;	//имя текстуры
-		DWORD idtex;	//идентификатор текстуры
+		int SortGroup;//тип/вид/сорт подгруппы, для ранжирования рендера
+		String name;//имя текстуры
+		ID idtex;	//идентификатор текстуры
 		long AllCountVertex;	//общее количество вершин
 		long AllCountIndex;		//общее количество индексов
 		Array<int32_t, 4> CountVertex;	//количество вершин в буферах
@@ -174,36 +196,46 @@ public:
 		Array<InfoRenderSegments*> arr;
 	};
 
+	void OnLostDevice();
+	void OnResetDevice();
+
 	void Clear();
 	void Save(const char* path);
 	void Load(const char* path);
 	
 	inline long GetCountModel();
 
-	void CPUFillingArrIndeces(ISXFrustum* frustum,float3* viewpos,long id_arr = 0);
+	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	bool GetIntersectedRayY(float3* pos);
 	
-	void GPURender(DWORD timeDelta,long id_arr = 0);
-	long AddModel(const char* path,const char* lod1,const char* name);
-	void DelModel(long id);
+	void GPURender(DWORD timeDelta,int sort_mtl, ID id_arr = 0);
+	ID AddModel(const char* path, const char* lod1, const char* name);
+	void DelModel(ID id);
 
 	inline void GetMinMax(float3* min,float3* max);
 
-	long AddArrForCom();
-	void DelArrForCom(long id_arr);
+	ID AddArrForCom();
+	void DelArrForCom(ID id_arr);
 
-	char* GetModelName(long id);
-	const char* GetModelPathName(long id);
-	long GetModelCountPoly(long id);
+	char* GetModelName(ID id);
+	const char* GetModelPathName(ID id);
+	long GetModelCountPoly(ID id);
 
-	float3* GetModelPosition(long id);
-	float3* GetModelRotation(long id);
-	float3* GetModelScale(long id);
+	float3* GetModelPosition(ID id);
+	float3* GetModelRotation(ID id);
+	float3* GetModelScale(ID id);
 
-	const char* GetModelLodPath(long id);
-	void SetModelLodPath(long id,const char* path);
+	const char* GetModelLodPath(ID id);
+	void SetModelLodPath(ID id, const char* path);
 
-	void ApplyTransform(long id);
+	void ApplyTransform(ID id);
+
+	ID GetModelCountGroups(ID id);
+	ID GetModelGroupIDMat(ID id, ID group);
+	void GetModelGroupCenter(ID id, ID group, float3_t* center);
+	void GetModelGroupMin(ID id, ID group, float3_t* min);
+	void GetModelGroupMax(ID id, ID group, float3_t* max);
+	void GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane);
 
 	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models);
 	/*
@@ -217,15 +249,15 @@ public:
 protected:
 
 	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
-	void AddModelInArrCom(long id_model);
-	void DelModelInArrCom(long id_model);
+	void AddModelInArrCom(ID id_model);
+	void DelModelInArrCom(ID id_model);
 
 	float4x4 WorldMat;
-	void ApplyTransformLod(long id);
+	void ApplyTransformLod(ID id);
 
 	ISXBound* BoundVolume;
 
-	void GetIntersectedRayY2(float3* pos, Segment** arrsplits, DWORD *count, Segment* comsegment, DWORD curr_splits_ids_render);
+	void GetIntersectedRayY2(float3* pos, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
 	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
@@ -234,9 +266,9 @@ protected:
 	void Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue);	//сегментации модели
 	void CycleSegmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment);	//рекусривный вызов сегментации
 	void EditVolume(Model* mesh, Segment* Split);
-	void SetSplitID(Segment* Split, long* SplitsIDs, long* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
-	void SetSplitID2(Segment* Split, long* SplitsIDs, long* SplitsIDsRender, Array<Segment*>* queue);
-	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, DWORD curr_splits_ids_render);
+	void SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
+	void SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*>* queue);
+	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
 	//рабочие данные, используются внутри в методах
 	//{{

@@ -16,6 +16,7 @@ void GData::Pathes::InitAllPathes()
 		}
 	}
 
+	sprintf(GData::Pathes::WorkingTex, "%s%s", GData::Pathes::ForExe, "\\worktex\\");
 	sprintf(GData::Pathes::GameSource, "%s%s", GData::Pathes::ForExe, "\\gamesource\\");
 	sprintf(GData::Pathes::Screenshots, "%s%s", GData::Pathes::ForExe, "\\screenshots\\");
 	sprintf(GData::Pathes::Configs, "%s%s", GData::Pathes::GameSource, "configs\\");

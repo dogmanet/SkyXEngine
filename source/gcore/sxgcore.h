@@ -28,8 +28,9 @@
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
 typedef void(*g_func_dip) (UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-typedef void(*g_func_set_material) (UINT id, float4x4* world);
-typedef long(*g_func_load_material) (const char* name, int mtl_type);
+typedef void(*g_func_set_mtl) (ID id, float4x4* world);
+typedef ID(*g_func_load_mtl) (const char* name, int mtl_type);
+typedef int(*g_func_get_sort_mtl) (ID id);
 
 SX_LIB_API long SGCore_0GetVersion();			//версия подсистемы
 SX_LIB_API void SGCore_Dbg_Set(report_func rf);	//установка функции вывода сообщений
@@ -44,6 +45,8 @@ SX_LIB_API void SGCore_0Create(
 	DWORD create_device_flags,	//флаги создания устрайства (стандартные dx)
 	bool is_unic = true			//должна ли подсистема быть уникальной на основе имени
 	);
+
+SX_LIB_API void SGCore_0Kill();
 
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	//возвращает dx устройство
 
@@ -73,12 +76,14 @@ SX_LIB_API void SGCore_ScreenQuadDraw();
 
 //{
 SX_LIB_API void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-SX_LIB_API void SGCore_SetMtl(UINT id, float4x4* world);
-SX_LIB_API long SGCore_LoadMtl(const char* name, int mtl_type);
+SX_LIB_API void SGCore_SetMtl(ID id, float4x4* world);
+SX_LIB_API ID SGCore_LoadMtl(const char* name, int mtl_type);
+SX_LIB_API int SGCore_GetSortMtl(ID id);
 
 SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip func);
-SX_LIB_API void SGCore_SetFunc_SetMtl(g_func_set_material func);
-SX_LIB_API void SGCore_SetFunc_LoadMtl(g_func_load_material func);
+SX_LIB_API void SGCore_SetFunc_SetMtl(g_func_set_mtl func);
+SX_LIB_API void SGCore_SetFunc_LoadMtl(g_func_load_mtl func);
+SX_LIB_API void SGCore_SetFunc_GetSortMtl(g_func_get_sort_mtl func);
 //}
 
 //ШЕЙДЕРЫ
@@ -95,7 +100,7 @@ SX_LIB_API void SGCore_SetFunc_LoadMtl(g_func_load_material func);
 #define SXGC_SHADER_PIXEL 1
 
 //загрузка шейдера
-SX_LIB_API DWORD SGCore_ShaderLoad(
+SX_LIB_API ID SGCore_ShaderLoad(
 	int type_shader,		//тип шейдера
 	const char* path,		//имя файла шейдера с расширением
 	const char* name,		//имя шейдера которое присвоится при загрузке
@@ -103,13 +108,13 @@ SX_LIB_API DWORD SGCore_ShaderLoad(
 	D3DXMACRO* macro = 0	//макросы
 	);
 
-SX_LIB_API void SGCore_ShaderGetName(int type_shader, DWORD id, char* name);	//записывает имя шейдера в name
-SX_LIB_API DWORD SGCore_ShaderIsExist(int type_shader, const char* name);		//существует ли шейдер с именем name, если да то возвращает id
-SX_LIB_API bool SGCore_ShaderIsValidate(int type_shader, DWORD id);				//загружен ли шейдер с данным id
+SX_LIB_API void SGCore_ShaderGetName(int type_shader, ID id, char* name);	//записывает имя шейдера в name
+SX_LIB_API ID SGCore_ShaderIsExist(int type_shader, const char* name);		//существует ли шейдер с именем name, если да то возвращает id
+SX_LIB_API bool SGCore_ShaderIsValidate(int type_shader, ID id);				//загружен ли шейдер с данным id
 
 //обновление шейдера
 SX_LIB_API void	SGCore_ShaderUpdateN(int type_shader, const char* name, D3DXMACRO macro[] = 0);
-SX_LIB_API void SGCore_ShaderUpdate(int type_shader, DWORD id, D3DXMACRO macro[] = 0);
+SX_LIB_API void SGCore_ShaderUpdate(int type_shader, ID id, D3DXMACRO macro[] = 0);
 
 SX_LIB_API void SGCore_ShaderSetStdPath(const char* path);	//установить абсолютный путь откуда брать шейдеры
 SX_LIB_API void SGCore_ShaderGetStdPath(char* path);		//возвращает абсолютный путь откуда берутся шейдеры
@@ -122,7 +127,7 @@ SX_LIB_API DWORD SGCore_ShaderGetID(int type_shader, const char* shader);	//полу
 
 //бинд шейдера
 SX_LIB_API void SGCore_ShaderBindN(int type_shader, const char* shader);
-SX_LIB_API void SGCore_ShaderBind(int type_shader, DWORD shader);
+SX_LIB_API void SGCore_ShaderBind(int type_shader, ID id);
 
 SX_LIB_API void SGCore_ShaderUnBind();	//обнуление биндов шейдеров
 
@@ -133,11 +138,11 @@ SX_LIB_API void SGCore_ShaderUnBind();	//обнуление биндов шейдеров
 
 //передача float значений
 SX_LIB_API void SGCore_ShaderSetVRFN(int type_shader, const char* name_shader, const char* name_var, void* data);
-SX_LIB_API void SGCore_ShaderSetVRF(int type_shader, DWORD num_shader, const char* name_var, void* data);
+SX_LIB_API void SGCore_ShaderSetVRF(int type_shader, ID id, const char* name_var, void* data);
 
 //передача int значений
 SX_LIB_API void SGCore_ShaderSetVRIN(int type_shader, const char* name_shader, const char* name_var, void* data);
-SX_LIB_API void SGCore_ShaderSetVRI(int type_shader, DWORD num_shader, const char* name_var, void* data);
+SX_LIB_API void SGCore_ShaderSetVRI(int type_shader, ID id, const char* name_var, void* data);
 //}
 //}}
 
@@ -150,18 +155,18 @@ SX_LIB_API void SGCore_ShaderSetVRI(int type_shader, DWORD num_shader, const cha
 //mtl_tex.dds - лежит по загружаемому пути: /mtl/mtl_tex.dds
 
 SX_LIB_API void SGCore_LoadTexStdPath(const char* path);
-SX_LIB_API DWORD SGCore_LoadTexAddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
-SX_LIB_API DWORD SGCore_LoadTexGetID(const char* name);		//получить id по имени
-SX_LIB_API void SGCore_LoadTexGetName(DWORD id, char* name);//получить имя по id
+SX_LIB_API ID SGCore_LoadTexAddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
+SX_LIB_API ID SGCore_LoadTexGetID(const char* name);		//получить id по имени
+SX_LIB_API void SGCore_LoadTexGetName(ID id, char* name);//получить имя по id
 
 //создать место для текстуры tex и присвоить ей имя name, возвращает id
 //прежде вызова этой функции, все добавленные текстуры должны быть загружены
 //создавать текстур необходимо в managed pool (D3DPOOL_MANAGED) ибо обработка потери и восстановления устройства сюда не приходит
-SX_LIB_API DWORD SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex);	
-SX_LIB_API DWORD SGCore_LoadTexUpdateN(const char* name);	//обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет
-SX_LIB_API void SGCore_LoadTexUpdate(DWORD id);				//обновить/перезагрузить текстуру
+SX_LIB_API ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex);
+SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name);	//обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет
+SX_LIB_API void SGCore_LoadTexUpdate(ID id);				//обновить/перезагрузить текстуру
 
-SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(DWORD id);	//возвращает текстуру по id
+SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID id);	//возвращает текстуру по id
 
 //загрузка всех текстур поставленных в очередь
 //можно вызывать каждый кадр рендера
@@ -174,7 +179,7 @@ SX_LIB_API void SGCore_LoadTexLoadTextures();
 //{{
 
 //добавить новый render target
-SX_LIB_API DWORD SGCore_RTAdd(
+SX_LIB_API ID SGCore_RTAdd(
 	UINT width,				//ширина
 	UINT height,			//высота
 	UINT levels,			//количество mip-map уровней
@@ -189,12 +194,12 @@ SX_LIB_API DWORD SGCore_RTAdd(
 	);
 
 SX_LIB_API void SGCore_RTDeleteN(const char* text);	//удалить rt но имени
-SX_LIB_API void SGCore_RTDelete(DWORD num);			//удалить rt но id
+SX_LIB_API void SGCore_RTDelete(ID num);			//удалить rt но id
 
-SX_LIB_API DWORD SGCore_RTGetNum(const char* text); //возвращает id по имени
+SX_LIB_API ID SGCore_RTGetNum(const char* text); //возвращает id по имени
 
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char* text);	//возвращает текстуру по имени
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(DWORD num);			//возвращает текстуру по id
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID num);			//возвращает текстуру по id
 //}
 
 
@@ -223,6 +228,7 @@ struct ISXDataStaticModel : public IBaseObject
 SX_LIB_API ISXDataStaticModel* SGCore_CrDSModel();	//создать статическую модель
 SX_LIB_API void SGCore_LoadStaticModel(const char* file, ISXDataStaticModel** data);	//загрузить статическую модель, data инициализируется внутри
 SX_LIB_API void SGCore_SaveStaticModel(const char* file, ISXDataStaticModel** data);	//сохранить статическую модель
+SX_LIB_API void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse);
 
 ///////////
 

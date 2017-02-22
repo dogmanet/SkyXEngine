@@ -224,11 +224,11 @@ void ShaderManager::ReloadAll()
 		}
 }
 
-DWORD ShaderManager::IsExist(int type_shader,const char* path)
+ID ShaderManager::IsExist(int type_shader, const char* path)
 {
 		if(type_shader == 0)
 		{
-				for(DWORD i=0;i<ArrVS.size();i++)
+				for(int i=0;i<ArrVS.size();i++)
 				{
 						if(strcmp(ArrVS[i]->Path,path) == 0)
 							return i;
@@ -236,7 +236,7 @@ DWORD ShaderManager::IsExist(int type_shader,const char* path)
 		}
 		else if(type_shader == 1)
 		{
-				for(DWORD i=0;i<ArrPS.size();i++)
+				for(int i=0;i<ArrPS.size();i++)
 				{
 						if(strcmp(ArrPS[i]->Path,path) == 0)
 							return i;
@@ -245,11 +245,11 @@ DWORD ShaderManager::IsExist(int type_shader,const char* path)
 	return -1;
 }
 
-DWORD ShaderManager::Load(int type_shader,const char* path,const char* name,int is_check_double,D3DXMACRO* macro)
+ID ShaderManager::Load(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro)
 {
 		if(type_shader == 0)
 		{
-			DWORD id = (is_check_double ? IsExist(type_shader,path) : -1);
+			ID id = (is_check_double ? IsExist(type_shader, path) : -1);
 
 				if(id != -1 && is_check_double == 2)
 					Update(0,id,0);
@@ -283,7 +283,7 @@ DWORD ShaderManager::Load(int type_shader,const char* path,const char* name,int 
 		}
 		else if(type_shader == 1)
 		{
-			DWORD id = (is_check_double ? IsExist(type_shader,path) : -1);
+			ID id = (is_check_double ? IsExist(type_shader, path) : -1);
 
 				if(id != -1 && is_check_double == 2)
 					Update(1,id,0);
@@ -319,7 +319,7 @@ void ShaderManager::Update(int type_shader,const char* name,D3DXMACRO* macro)
 	bool isupdate = false;
 		if(type_shader == 0)
 		{	
-				for(DWORD i=0;i<ArrVS.size();i++)
+				for(int i=0;i<ArrVS.size();i++)
 				{
 						if(strcmp(ArrVS[i]->Name,name) == 0)
 						{
@@ -337,7 +337,7 @@ void ShaderManager::Update(int type_shader,const char* name,D3DXMACRO* macro)
 		}
 		else if(type_shader == 1)
 		{
-				for(DWORD i=0;i<ArrPS.size();i++)
+				for(int i=0;i<ArrPS.size();i++)
 				{
 						if(strcmp(ArrPS[i]->Name,name) == 0)
 						{
@@ -360,7 +360,7 @@ void ShaderManager::Update(int type_shader,const char* name,D3DXMACRO* macro)
 			reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", name);
 }
 
-void ShaderManager::Update(int type_shader,DWORD id,D3DXMACRO* macro)
+void ShaderManager::Update(int type_shader, ID id, D3DXMACRO* macro)
 {
 	bool isupdate = false;
 		if(type_shader == 0)
@@ -427,11 +427,11 @@ void ShaderManager::Update(int type_shader,DWORD id,D3DXMACRO* macro)
 			reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", ArrPS[id]->Name);
 }
 
-DWORD ShaderManager::GetID(int type_shader,const char* shader)
+ID ShaderManager::GetID(int type_shader, const char* shader)
 {
 		if(type_shader == 0)
 		{	
-				for(DWORD i=0;i<ArrVS.size();i++)
+				for(int i=0;i<ArrVS.size();i++)
 				{
 						if(strcmp(ArrVS[i]->Name,shader) == 0)
 						{
@@ -441,7 +441,7 @@ DWORD ShaderManager::GetID(int type_shader,const char* shader)
 		}
 		else if(type_shader == 1)
 		{
-				for(DWORD i=0;i<ArrPS.size();i++)
+				for(int i=0;i<ArrPS.size();i++)
 				{
 						if(strcmp(ArrPS[i]->Name,shader) == 0)
 						{
@@ -457,7 +457,7 @@ void ShaderManager::Bind(int type_shader,const char* shader)
 	bool isbind = false;
 		if(type_shader == 0)
 		{	
-				for(DWORD i=0;i<ArrVS.size();i++)
+				for(int i=0;i<ArrVS.size();i++)
 				{
 						if(strcmp(ArrVS[i]->Name,shader) == 0)
 						{
@@ -469,7 +469,7 @@ void ShaderManager::Bind(int type_shader,const char* shader)
 		}
 		else if(type_shader == 1)
 		{
-				for(DWORD i=0;i<ArrPS.size();i++)
+				for(int i=0;i<ArrPS.size();i++)
 				{
 						if(strcmp(ArrPS[i]->Name,shader) == 0)
 						{
@@ -484,7 +484,7 @@ void ShaderManager::Bind(int type_shader,const char* shader)
 			reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: shader not bind, type [%d], name [%s]\n", type_shader, shader);
 }
 
-void ShaderManager::Bind(int type_shader,DWORD shader)
+void ShaderManager::Bind(int type_shader, ID shader)
 {
 	bool isbind = false;
 		if(type_shader == 0)
@@ -651,7 +651,7 @@ void ShaderManager::SetValueRegisterI(int type_shader,const char* name_shader,co
 		}
 }
 
-void ShaderManager::SetValueRegisterI(int type_shader,DWORD num_shader,const char* name_var,void* data)
+void ShaderManager::SetValueRegisterI(int type_shader, ID num_shader, const char* name_var, void* data)
 {
 		if(IsValidate(type_shader,num_shader))
 		{
@@ -697,7 +697,7 @@ void ShaderManager::SetValueRegisterI(int type_shader,DWORD num_shader,const cha
 }
 
 
-void ShaderManager::SetValueRegisterF(int type_shader,DWORD num_shader,const char* name_var,void* data)
+void ShaderManager::SetValueRegisterF(int type_shader, ID num_shader, const char* name_var, void* data)
 {
 		if(IsValidate(type_shader,num_shader))
 		{
@@ -742,7 +742,7 @@ void ShaderManager::SetValueRegisterF(int type_shader,DWORD num_shader,const cha
 			reportf(REPORT_MSG_LEVEL_WARRNING, "!!! sgcore: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 }
 
-bool ShaderManager::IsValidate(int type_shader,DWORD id)
+bool ShaderManager::IsValidate(int type_shader, ID id)
 {
 		if(type_shader == 0)
 		{
@@ -770,7 +770,7 @@ bool ShaderManager::IsValidate(int type_shader,DWORD id)
 		}
 }
 
-inline void ShaderManager::GetPath(int type_shader,DWORD id,char* path)
+inline void ShaderManager::GetPath(int type_shader, ID id, char* path)
 {
 		if(type_shader == 0)
 		{
@@ -790,7 +790,7 @@ inline void ShaderManager::GetPath(int type_shader,DWORD id,char* path)
 		}
 }
 
-inline void ShaderManager::GetName(int type_shader,DWORD id,char* name)
+inline void ShaderManager::GetName(int type_shader, ID id, char* name)
 {
 		if(type_shader == 0)
 		{

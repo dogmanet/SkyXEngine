@@ -12,21 +12,37 @@ LoaderTextures::LoaderTextures()
 
 LoaderTextures::~LoaderTextures()
 {
+
+	for (long i = 0; i < ArrNames.size();++i)
+	{
+		mem_delete(ArrNames[i]);
+	}
+
 	ArrNames.clear();
 
-		for(DWORD i=0;i<ArrTextures.size();i++)
-			mem_release(ArrTextures[i]);
+	for (long i = 0; i < 256; ++i)
+	{
+		for (long k = 0; k < Arr[i].ArrNames.size(); ++k)
+		{
+			mem_delete(Arr[i].ArrNames[k]);
+		}
+	}
+	
+	for (int i = 0; i < ArrTextures.size(); i++)
+	{
+		mem_release(ArrTextures[i]);
+	}
 	ArrTextures.clear();
 }
 
-DWORD LoaderTextures::AddName(const char* name)
+ID LoaderTextures::AddName(const char* name)
 {
 	char tmp_path[256];//папка
 	char tmp_name[256];//само имя текстыр с расширением
-	DWORD id = -1;
+	ID id = -1;
 	bool IsTruePath = false;
 		//обрезаем имя текстуры и папку
-		for(DWORD i=0;i<strlen(name);i++)
+		for(int i=0;i<strlen(name);i++)
 		{
 				if(name[i] == '_')
 				{
@@ -43,8 +59,8 @@ DWORD LoaderTextures::AddName(const char* name)
 			reportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
 		}
 
-	DWORD tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
-		for(DWORD i=0;i<CountArr;i++)
+	int tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+		for(int i=0;i<CountArr;i++)
 		{
 				if(strcmp(Arr[i].Path,tmp_path) == 0)
 				{
@@ -89,13 +105,13 @@ DWORD LoaderTextures::AddName(const char* name)
 	return id;
 }
 
-DWORD LoaderTextures::GetID(const char* name)
+ID LoaderTextures::GetID(const char* name)
 {
 	char tmp_path[256];//папка
 	char tmp_name[256];//само имя текстуры с расширением
-	DWORD id = -1;
+	ID id = -1;
 		//обрезаем имя текстуры и папку
-		for(DWORD i=0;i<strlen(name);i++)
+		for(int i=0;i<strlen(name);i++)
 		{
 				if(name[i] == '_')
 				{
@@ -106,11 +122,11 @@ DWORD LoaderTextures::GetID(const char* name)
 				}
 		}
 
-		for(DWORD i=0;i<CountArr;i++)
+		for(int i=0;i<CountArr;i++)
 		{
 				if(strcmp(Arr[i].Path,tmp_path) == 0)
 				{
-						for(DWORD k=0;k<Arr[i].ArrNames.size();k++)
+						for(int k=0;k<Arr[i].ArrNames.size();k++)
 						{
 								if(strcmp(Arr[i].ArrNames[k],tmp_name) == 0)
 								{
@@ -124,7 +140,7 @@ DWORD LoaderTextures::GetID(const char* name)
 	return id;
 }
 
-void LoaderTextures::GetName(DWORD id,char* name)
+void LoaderTextures::GetName(ID id, char* name)
 {
 		if(id < ArrTextures.size())
 		{
@@ -133,9 +149,9 @@ void LoaderTextures::GetName(DWORD id,char* name)
 		}
 }
 
-DWORD LoaderTextures::Create(const char* name,IDirect3DTexture9* tex)
+ID LoaderTextures::Create(const char* name, IDirect3DTexture9* tex)
 {
-	DWORD id = -1;
+	ID id = -1;
 		if(CountIDsOld == CountIDs)
 		{
 			id = this->AddName(name);
@@ -145,7 +161,7 @@ DWORD LoaderTextures::Create(const char* name,IDirect3DTexture9* tex)
 	return id;
 }
 
-void LoaderTextures::Update(DWORD id)
+void LoaderTextures::Update(ID id)
 {
 		if(id < ArrTextures.size())
 		{
@@ -153,14 +169,14 @@ void LoaderTextures::Update(DWORD id)
 		}
 }
 
-DWORD LoaderTextures::Update(const char* name)
+ID LoaderTextures::Update(const char* name)
 {
 	char tmp_path[256];//папка
 	char tmp_name[256];//само имя текстыр с расширением
 	DWORD id = -1;
 	bool IsTruePath = false;
 		//обрезаем имя текстуры и папку
-		for(DWORD i=0;i<strlen(name);i++)
+		for(int i=0;i<strlen(name);i++)
 		{
 				if(name[i] == '_')
 				{
@@ -177,8 +193,8 @@ DWORD LoaderTextures::Update(const char* name)
 			reportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
 		}
 
-	DWORD tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
-		for(DWORD i=0;i<CountArr;i++)
+	ID tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+		for(int i=0;i<CountArr;i++)
 		{
 				if(strcmp(Arr[i].Path,tmp_path) == 0)
 				{
@@ -197,10 +213,10 @@ DWORD LoaderTextures::Update(const char* name)
 	
 
 	bool isunic = true;
-	DWORD tmpKeyName = -1;
+	int tmpKeyName = -1;
 	
 		//првоеряем записано ли уже имя текстуры
-		for(DWORD i=0;i<Arr[tmpkey].ArrNames.size();i++)
+		for(int i=0;i<Arr[tmpkey].ArrNames.size();i++)
 		{
 				if(strcmp(Arr[tmpkey].ArrNames[i],tmp_name) == 0)
 				{
@@ -268,11 +284,11 @@ void LoaderTextures::LoadTextures()
 			ArrNames.push_back(0);
 		}
 
-		for(DWORD i=0;i<CountArr;i++)
+		for(int i=0;i<CountArr;i++)
 		{
 				if(Arr[i].Path[0] != 0)
 				{
-						for(DWORD k=0;k<Arr[i].ArrNames.size();k++)
+						for(int k=0;k<Arr[i].ArrNames.size();k++)
 						{
 								//если id текстуры больше чем последний id загруженной текстуры
 								if(Arr[i].ArrID[k] >= CountIDsOld)
@@ -295,6 +311,7 @@ void LoaderTextures::LoadTextures()
 											)))
 										{
 											//ArrTextures.push_back(tex);
+											ArrNames[Arr[i].ArrID[k]] = 0;
 											reportf(REPORT_MSG_LEVEL_WARRNING, "  {load} - not found texture [%s_%s]\n", Arr[i].Path, Arr[i].ArrNames[k]);
 										}
 										else
@@ -304,6 +321,7 @@ void LoaderTextures::LoadTextures()
 											char* tmpname = new char[256];
 											sprintf(tmpname,"%s_%s",Arr[i].Path,Arr[i].ArrNames[k]);
 											ArrNames[Arr[i].ArrID[k]] = tmpname;
+											
 											reportf(REPORT_MSG_LEVEL_NOTICE, "  texture loaded [%s_%s], id = %d\n", Arr[i].Path, Arr[i].ArrNames[k], Arr[i].ArrID[k]);
 										}
 								}
@@ -314,7 +332,7 @@ void LoaderTextures::LoadTextures()
 	reportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: all loaded textures [%d]\n", ArrTextures.size());
 }
 
-IDirect3DTexture9* LoaderTextures::GetTexture(DWORD id)
+IDirect3DTexture9* LoaderTextures::GetTexture(ID id)
 {
 		if(id < ArrTextures.size())
 		{

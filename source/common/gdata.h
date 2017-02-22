@@ -16,9 +16,9 @@ namespace GData
 	
 	float3 ConstCurrCamPos;
 	float3 ConstCurrCamDir;
-	float4_t CamUpdateWalkParam = float4_t(
+	float4_t CamWalkParamEditor = float4_t(
 		10.f,	//простое движенеи вперед
-		3.f,	//ускорение
+		5.f,	//коэфициент ускорения
 		0.7f,	//коэфициент от основного движения в стороны 
 		0.5f	//коэфициент от основного движения назад
 		);
@@ -38,6 +38,7 @@ namespace GData
 		void InitAllPathes();
 
 		char ForExe[1024];
+		char WorkingTex[1024];
 		char GameSource[1024];
 		char Screenshots[1024];
 		char Configs[1024];
@@ -58,24 +59,16 @@ namespace GData
 	{
 		namespace VS
 		{
-			DWORD FreeGeometry;
-			DWORD ScreenOut;
-			DWORD ResPos;
-
-			/*DWORD SMDepthGreenPSSMDirect;
-			DWORD SMDepthGreenCube;*/
+			ID ScreenOut;
+			ID ResPos;
 		};
 
 		namespace PS
 		{
-			DWORD FreeGeometry;
-			DWORD ScreenOut;
-			DWORD ComLightingNonShadow;
-			DWORD ComLightingShadow;
-			DWORD BlendAmbientSpecDiffcolor;
-
-			/*DWORD SMDepthGreenPSSMDirect;
-			DWORD SMDepthGreenCube;*/
+			ID ScreenOut;
+			ID ComLightingNonShadow;
+			ID ComLightingShadow;
+			ID BlendAmbientSpecDiffcolor;
 		};
 	};
 

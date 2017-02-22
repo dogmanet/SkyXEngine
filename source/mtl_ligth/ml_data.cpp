@@ -1,5 +1,5 @@
 
-#define HDR_NUM_TONEMAP_TEXTURES 4
+//#define HDR_NUM_TONEMAP_TEXTURES 4
 
 namespace MLSet
 {
@@ -24,6 +24,8 @@ namespace MLSet
 
 	//коэфициент размера текстур для карт глубин глобального источника света
 	float CoefSizeDepthMapForGlobal = 1;
+
+	float2_t SizeTexReflection = float2_t(512, 512);
 
 	void ReCalcSize()
 	{
@@ -57,43 +59,43 @@ namespace MLSet
 	{
 		namespace VS
 		{
-			DWORD PPQuadRender;
-			DWORD ResPosDepth;
+			ID PPQuadRender;
+			ID ResPosDepth;
 			
 
-			DWORD ScreenOut;
+			ID ScreenOut;
 
-			DWORD SMDepthGeomPSSMDirect;
-			DWORD SMDepthGeomCube;
+			ID SMDepthGeomPSSMDirect;
+			ID SMDepthGeomCube;
 
-			DWORD SMDepthGreenPSSMDirect;
-			DWORD SMDepthGreenCube;
+			ID SMDepthGreenPSSMDirect;
+			ID SMDepthGreenCube;
 		};
 
 		namespace PS
 		{
-			DWORD SMDepthGeomPSSMDirect;
-			DWORD SMDepthGeomCube;
+			ID SMDepthGeomPSSMDirect;
+			ID SMDepthGeomCube;
 
-			DWORD SMDepthGreenPSSMDirect;
-			DWORD SMDepthGreenCube;
+			ID SMDepthGreenPSSMDirect;
+			ID SMDepthGreenCube;
 
-			DWORD PPBlurDepthBasedNoise;
-			DWORD PSSM4;
-			DWORD PSSM3;
-			DWORD PPBlurDepthBased;
-			DWORD GenShadowDirect4;
-			DWORD GenShadowDirect9;
+			ID PPBlurDepthBasedNoise;
+			ID PSSM4;
+			ID PSSM3;
+			ID PPBlurDepthBased;
+			ID GenShadowDirect4;
+			ID GenShadowDirect9;
 			
-			DWORD GenShadowCube1;
-			DWORD GenShadowCube6;
+			ID GenShadowCube1;
+			ID GenShadowCube6;
 
-			DWORD CalcAdaptedLum;;
-			DWORD SampleLumInit;
-			DWORD SampleLumIterative;
-			DWORD SampleLumFinal;
+			ID CalcAdaptedLum;;
+			ID SampleLumInit;
+			ID SampleLumIterative;
+			ID SampleLumFinal;
 
-			DWORD ScreenOut;
+			ID ScreenOut;
 		};
 	};
 
@@ -103,38 +105,47 @@ namespace MLSet
 		DWORD Tex_DSDepthLinearD2;
 		DWORD Tex_DSDepthLinearD4;*/
 
-		DWORD DSComLight;
+		ID DSComLight;
 
-		DWORD ColorScene;//цвет (текстуры)
-		DWORD NormalScene;//номрали + микрорельеф
-		DWORD ParamsScene;//параметры освещения
-		DWORD DepthScene;
+		ID ColorScene;//цвет (текстуры)
+		ID ColorScene2;//цвет (текстуры)
+		ID NormalScene;//номрали + микрорельеф
+		ID NormalScene2;//номрали + микрорельеф
+		ID ParamsScene;//параметры освещения
+		ID ParamsScene2;//параметры освещения
+		ID DepthScene;
+		ID DepthScene2;
 
-		DWORD LightAmbientDiff;
-		DWORD LightSpecular;
+		ID LightAmbientDiff;
+		ID LightAmbientDiff2;
+		ID LightSpecular;
+		ID LightSpecular2;
 
-		DWORD ToneMaps[4];
-
+		Array<ID> ToneMaps;
+		Array<LPDIRECT3DSURFACE9> SurfToneMap;
+		int CountArrToneMaps = 0;
 		////
-		DWORD AdaptLumCurr;
-		DWORD AdaptLumLast;
+		ID AdaptLumCurr;
+		ID AdaptLumLast;
 
 		int HowAdaptedLum = 0;
-		inline DWORD GetCurrAdaptedLum(){ if (HowAdaptedLum == 0) return AdaptLumCurr; else return  AdaptLumLast; };
-		inline DWORD GetLastAdaptedLum(){ if (HowAdaptedLum == 1) return AdaptLumCurr; else return  AdaptLumLast; };
+		inline ID GetCurrAdaptedLum(){ if (HowAdaptedLum == 0) return AdaptLumCurr; else return  AdaptLumLast; };
+		inline ID GetLastAdaptedLum(){ if (HowAdaptedLum == 1) return AdaptLumCurr; else return  AdaptLumLast; };
 		void IncrAdaptedLum(){ if (HowAdaptedLum >= 1) HowAdaptedLum = 0; else HowAdaptedLum = 1; };
 		////
 
-		DWORD LigthCom;
+		ID LigthCom;
+		ID LigthCom2;
 
-		DWORD LigthComScaled;
+		ID LigthComScaled;
 	};
 
 	namespace IDsTexs
 	{
-		DWORD Tex_NoiseTex;
-		DWORD ParamLight;
-		DWORD NullMaterial;
+		ID Tex_NoiseTex;
+		ID ParamLight;
+		ID NullMaterial;
+		ID NullingTex;
 	};
 };
 
@@ -195,6 +206,28 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	SGCore_LoadTexLoadTextures();
 	MLSet::IDsTexs::ParamLight = SGCore_LoadTexCreate("param_light__", ParamLightModelTex);
 
+
+
+	IDirect3DTexture9* NullingTex;
+	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &NullingTex, NULL);
+
+	DWORD tmpcolornulling = D3DCOLOR_ARGB(10, 10, 10, 10);
+	NullingTex->LockRect(0, &LockedRect, 0, 0);
+
+	for (int x = 0; x<1; x++)
+	{
+		for (int y = 0; y<1; y++)
+		{
+			tmpOldColor = (uint32_t*)LockedRect.pBits + x*LockedRect.Pitch + y*sizeof(uint32_t);
+			memcpy(tmpOldColor, &tmpcolornulling, sizeof(uint32_t));
+		}
+	}
+
+	NullingTex->UnlockRect(0);
+
+	SGCore_LoadTexLoadTextures();
+	MLSet::IDsTexs::NullingTex = SGCore_LoadTexCreate("nulling_tex__", NullingTex);
+
 	MLSet::IDsShaders::VS::PPQuadRender = SGCore_ShaderLoad(0, "pp_quad_render.vs", "pp_quad_render", true);
 
 
@@ -241,28 +274,43 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", 1);
+	MLSet::IDsRenderTargets::ColorScene2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color2", 1);
 	//номрали + микрорельеф
-	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2B10G10R10, D3DPOOL_DEFAULT, "ds_normal", 1);
+	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal", 1);
+	MLSet::IDsRenderTargets::NormalScene2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal2", 1);
 	//параметры освещения
 	MLSet::IDsRenderTargets::ParamsScene = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "ds_param", 1);
+	MLSet::IDsRenderTargets::ParamsScene2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "ds_param2", 1);
 
 	MLSet::IDsRenderTargets::DepthScene = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_depth", 1);
+	MLSet::IDsRenderTargets::DepthScene2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_depth2", 1);
 
 	MLSet::IDsRenderTargets::LightAmbientDiff = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient", 1);
 	MLSet::IDsRenderTargets::LightSpecular = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_specdiff", 1);
 
-	for (int i = 0; i < 4; i++)
+	MLSet::IDsRenderTargets::LightAmbientDiff2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient2", 1);
+	MLSet::IDsRenderTargets::LightSpecular2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_specdiff2", 1);
+
+
+	MLSet::IDsRenderTargets::ToneMaps.clear();
+	MLSet::IDsRenderTargets::SurfToneMap.clear();
+	int tmpcount = 0;
+	while (true)
 	{
-		int tmpsize = 1 << (2 * i);
-
-		MLSet::IDsRenderTargets::ToneMaps[i] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
-
+		int tmpsize = 1 << (2 * tmpcount);
+		if (tmpsize >= MLSet::WinSize.x*0.25 || tmpsize > MLSet::WinSize.y*0.25)
+			break;
+		MLSet::IDsRenderTargets::ToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "qq", 0);
+		MLSet::IDsRenderTargets::SurfToneMap[tmpcount] = 0;
+		++tmpcount;
 	}
+	MLSet::IDsRenderTargets::CountArrToneMaps = tmpcount;
 
 	MLSet::IDsRenderTargets::AdaptLumCurr = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 	MLSet::IDsRenderTargets::AdaptLumLast = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 
 	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
 	
 	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(MLSet::WinSize.x*0.25f, MLSet::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
 }
@@ -272,8 +320,8 @@ void MLSet::GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[])
 	if (arr == 0)
 		return;
 
-	float tU = 1.0f / width;
-	float tV = 1.0f / height;
+	float tU = 1.0f / float(width);
+	float tV = 1.0f / float(height);
 
 	int index = 0;
 

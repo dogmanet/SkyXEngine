@@ -26,7 +26,9 @@ namespace SXRenderFunc
 	inline void SetSamplerFilter(DWORD begin_id, DWORD end_id, DWORD value);
 	inline void SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD value);
 
-	void UpdateLight();
+	void ComVisibleForLight();
+	void ComVisibleForCamera();
+	void UpdateMsg(DWORD timeDelta);
 
 	void ComDeviceLost();
 
@@ -42,8 +44,20 @@ namespace SXRenderFunc
 	void LevelEditorRender(DWORD timeDelta);
 
 	void RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-	void RFuncSetMtl(UINT id, float4x4* world);
-	long RFuncLoadMtl(const char* name, int mtl_type);
+	void RFuncSetMtl(ID id, float4x4* world);
+	ID RFuncLoadMtl(const char* name, int mtl_type);
+
+	namespace Delay
+	{
+		DWORD UpdateVisibleForCamera = 0;
+		DWORD UpdateVisibleForLight = 0;
+
+		DWORD UpdateShadow = 0;
+		DWORD RenderMRT = 0;
+		DWORD ComLighting = 0;
+
+		DWORD Present = 0;
+	};
 };
 
 #endif

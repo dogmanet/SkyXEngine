@@ -1219,15 +1219,130 @@ void SXLevelEditor::InitAllElements()
 }
 void SXLevelEditor::DeleteAllElements()
 {
-	mem_delete(SXLevelEditor::RenderWindow);
-	mem_delete(SXLevelEditor::ToolBar1);
-	mem_delete(SXLevelEditor::GroupBoxList);
-	mem_delete(SXLevelEditor::GroupBoxData);
-	mem_delete(SXLevelEditor::ListBoxList);
-	mem_delete(SXLevelEditor::StaticListTextCount);
-	mem_delete(SXLevelEditor::StaticListValCount);
-	mem_delete(SXLevelEditor::ButtonGeometryOpen);
-	mem_delete(SXLevelEditor::ButtonGreenOpen);
-	mem_delete(SXLevelEditor::ButtonLightOpen);
-	mem_delete(SXLevelEditor::JobWindow);
+	mem_release(JobWindow);
+	mem_release(MainMenu);
+	mem_release(RenderWindow);
+	mem_release(ToolBar1);
+	mem_release(GroupBoxList);
+	mem_release(GroupBoxData);
+	mem_release(ListBoxList);
+	mem_release(StaticListTextCount);
+	mem_release(StaticListValCount);
+
+	mem_release(ButtonDelete);
+	mem_release(Button5);
+
+	mem_release(ButtonGeometryOpen);
+	mem_release(ButtonGreenOpen);
+	mem_release(ButtonLightOpen);
+
+
+	//model
+	//{{
+	mem_release(StaticName);
+	mem_release(StaticModel);
+	mem_release(StaticLod1);
+	mem_release(StaticLod2);
+	mem_release(EditName);
+	mem_release(EditModel);
+	mem_release(EditLod1);
+	mem_release(EditLod2);
+	mem_release(ButtonLod1);
+	mem_release(ButtonModel);
+	mem_release(ButtonLod2);
+	mem_release(ButtonMask);
+	mem_release(StaticMask);
+	mem_release(EditMask);
+	mem_release(StatusBar1);
+	mem_release(StaticPos);
+	mem_release(EditPosX);
+	mem_release(EditPosY);
+	mem_release(EditPosZ);
+	mem_release(RadioButtonPosX);
+	mem_release(RadioButtonPosY);
+	mem_release(RadioButtonPosZ);
+	mem_release(StaticRot);
+	mem_release(EditRotX);
+	mem_release(EditRotY);
+	mem_release(EditRotZ);
+	mem_release(RadioButtonRotX);
+	mem_release(RadioButtonRotY);
+	mem_release(RadioButtonRotZ);
+	mem_release(StaticScale);
+	mem_release(EditScaleX);
+	mem_release(EditScaleY);
+	mem_release(EditScaleZ);
+	mem_release(RadioButtonScaleX);
+	mem_release(RadioButtonScaleY);
+	mem_release(RadioButtonScaleZ);
+	//ISXGUICheckBox* CheckBoxCG;
+	mem_release(ButtonFinish);
+	//}}
+
+	mem_release(StaticGreenNav);
+	mem_release(EditGreenNav);
+	mem_release(ButtonGreenNav);
+
+	mem_release(TrackBarDensity);
+	mem_release(ButtonGenerate);
+	mem_release(StaticDensityText);
+	mem_release(StaticDensityVal);
+
+
+	///
+	mem_release(LightStaticBias);
+	mem_release(LightCheckBoxShadow);
+	mem_release(LightCheckBoxGlobal);
+	mem_release(LightCheckBoxEnable);
+	mem_release(LightComboBoxTypeLight);
+	mem_release(LightComboBoxTypeLightShadow);
+	mem_release(LightStaticFarShadow);
+	mem_release(LightEditFarShadow);
+	mem_release(LightStaticPos);
+	//ISXGUICheckBox* LightCheckBoxPosLightOrMesh;
+	mem_release(LightEditPosY);
+	mem_release(LightEditPosZ);
+	mem_release(LightRadioButtonPosX);
+	mem_release(LightRadioButtonPosY);
+	mem_release(LightRadioButtonPosZ);
+	mem_release(LightEditPosX);
+	mem_release(LightStaticRot);
+	mem_release(LightCheckBoxRotLightOrMesh);
+	mem_release(LightEditRotX);
+	mem_release(LightEditRotY);
+	mem_release(LightEditRotZ);
+	mem_release(LightRadioButtonRotX);
+	mem_release(LightRadioButtonRotY);
+	mem_release(LightRadioButtonRotZ);
+	mem_release(LightCheckBoxDirOrRot);
+	mem_release(LightStaticCubeEdge);
+	mem_release(LightCheckBoxCubeEdgeXPos);
+	mem_release(LightCheckBoxCubeEdgeYPos);
+	mem_release(LightCheckBoxCubeEdgeZPos);
+	mem_release(LightCheckBoxCubeEdgeXNeg);
+	mem_release(LightCheckBoxCubeEdgeYNeg);
+	mem_release(LightCheckBoxCubeEdgeZNeg);
+	mem_release(LightStaticColor);
+	mem_release(LightEditColorR);
+	mem_release(LightEditColorG);
+	mem_release(LightEditColorB);
+	mem_release(LightStaticPower);
+	mem_release(LightEditPower);
+	mem_release(LightStaticDist);
+	mem_release(LightEditDist);
+	mem_release(LightButtonColorSel);
+	mem_release(LightButtonFinish);
+	mem_release(LightStaticColorR);
+	mem_release(LightStaticColorG);
+	mem_release(LightStaticColorB);
+	mem_release(LightStaticTopRadius);
+	mem_release(LightEditTopRadius);
+	mem_release(LightEditBias);
+	mem_release(LightStaticAngle);
+	mem_release(LightEditAngle);
+
+	mem_release(LightStaticSourceMesh);
+	mem_release(LightEditSourceMesh);
+	mem_release(LightButtonSourceMesh);
+	mem_release(LightComboBoxSourceMesh);
 }

@@ -1,14 +1,67 @@
 
-#include <material_ligth\\material.h>
+#include <mtl_ligth\\material.h>
+#include <mtl_ligth\\reflection.cpp>
 
 Materials::Materials()
 {
+	CountTimeDelta = 0;
+	SGCore_ShaderLoad(0, "mtrlgeom_base.vs", "mtrlgeom_base", true);
+	SGCore_ShaderLoad(1, "mtrlgeom_base.ps", "mtrlgeom_base", true);
 
+	SGCore_ShaderLoad(0, "mtrlgreen_base_tree.vs", "mtrlgreen_base_tree", true);
+	SGCore_ShaderLoad(0, "mtrlgreen_base_grass.vs", "mtrlgreen_base_grass", true);
+	SGCore_ShaderLoad(1, "mtrlgreen_base.ps", "mtrlgreen_base", true);
+
+	SGCore_ShaderLoad(1, "mtrlgeom_light.ps", "mtrlgeom_light",true);
+
+
+	Material* tmpMtlDefaultLight = new Material();
+
+	sprintf(tmpMtlDefaultLight->Name, "%s", "mtrldef_light");
+	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base");
+	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgeom_light");
+
+	tmpMtlDefaultLight->MainTexture = -1;
+	tmpMtlDefaultLight->VS.IsTransWorldViewProjection = true;
+
+	ArrMaterials.push_back(tmpMtlDefaultLight);
+	AddName(tmpMtlDefaultLight->Name, ArrMaterials.size() - 1);
+	MtrlDefLight = ArrMaterials.size() - 1;
+
+	/*Material* tmpMtlDefaultGreen = new Material();
+
+	sprintf(tmpMtlDefaultGreen->Name, "%s", "mtrl_default_green_color");
+	tmpMtlDefaultGreen->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_default_green");
+	tmpMtlDefaultGreen->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_default_green_color");
+
+	tmpMtlDefoltGreen->MainTexture = -1;
+	tmpMtlDefoltGreen->VS.IsTransWorldViewProjection = true;
+
+	Arr.push_back(tmpMtlDefoltGreen);
+
+
+	Material* tmpMtlBase = new Material();
+
+	sprintf(tmpMtlBase->Name, "%s", "mtrl_base");
+	tmpMtlBase->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base");
+	tmpMtlBase->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base");
+	tmpMtlBase->VS.IsTransWorldViewProjection = true;
+	tmpMtlBase->MainTexture = -1;
+
+	Arr.push_back(tmpMtlBase);*/
 }
 
 Materials::~Materials()
 {
+	for (long i = 0; i < ArrHMtls.size(); ++i)
+	{
+		mem_delete(ArrHMtls[i]);
+	}
 
+	for (long i = 0; i < ArrMaterials.size(); ++i)
+	{
+		mem_delete(ArrMaterials[i]);
+	}
 }
 
 Materials::Material::Material()
@@ -22,6 +75,8 @@ Materials::Material::Material()
 	PhysicsMaterial = -1;
 
 	Type = MTL_GEOM;
+
+	Reflect = 0;
 }
 
 Materials::Material::~Material()
@@ -99,20 +154,32 @@ Materials::Material::MaterialMaskPM::~MaterialMaskPM()
 
 /////
 
-int Materials::GetType(long id)
+int Materials::GetType(ID id)
 {
 	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->Type;
 }
 
-long Materials::IsExists(const char* name)
+bool Materials::IsRefraction(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->IsRefraction;
+}
+
+int Materials::TypeReflection(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->LightParam.TypeReflect;
+}
+
+ID Materials::IsExists(const char* name)
 {
 	char tmp_path[MTL_MAX_SIZE_DIR];//папка
 	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
 	long id = -1;
 	bool IsTruePath = false;
 	//обрезаем имя текстуры и папку
-	for (DWORD i = 0; i<strlen(name); i++)
+	for (int i = 0; i<strlen(name); i++)
 	{
 		if (name[i] == '_')
 		{
@@ -147,7 +214,7 @@ long Materials::IsExists(const char* name)
 	}
 
 	//првоеряем записано ли уже имя текстуры
-	for (DWORD i = 0; i<ArrHMtls[tmpkey]->ArrNames.size(); i++)
+	for (int i = 0; i<ArrHMtls[tmpkey]->ArrNames.size(); i++)
 	{
 		if (strcmp(ArrHMtls[tmpkey]->ArrNames[i].c_str(), tmp_name) == 0)
 		{
@@ -159,14 +226,14 @@ long Materials::IsExists(const char* name)
 	return id;
 }
 
-void Materials::AddName(const char* name, long id)
+void Materials::AddName(const char* name, ID id)
 {
 	char tmp_path[MTL_MAX_SIZE_DIR];//папка
 	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
 
 	bool IsTruePath = false;
 	//обрезаем имя текстуры и папку
-	for (DWORD i = 0; i<strlen(name); i++)
+	for (int i = 0; i<strlen(name); i++)
 	{
 		if (name[i] == '_')
 		{
@@ -201,7 +268,7 @@ void Materials::AddName(const char* name, long id)
 	ArrHMtls[tmpkey]->ArrID.push_back(id);
 }
 
-long Materials::Load(const char* name, int type)
+ID Materials::Load(const char* name, int type)
 {
 	long IsLoad = IsExists(name);
 
@@ -294,12 +361,12 @@ long Materials::Load(const char* name, int type)
 			if (def_str_validate(tmpVS))
 				tmpMtl->PreShaderVS = SGCore_ShaderLoad(0, tmpVS, "main", true);
 			else
-				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base");
+				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base");
 
 			if (def_str_validate(tmpPS))
 				tmpMtl->PreShaderPS = SGCore_ShaderLoad(1, tmpPS, "main", true);
 			else
-				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base");
+				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgeom_base");
 
 			sprintf(tmpMicroDiff[0], "%s", config->GetKey(tmp_name, "mirco_diff_r"));
 
@@ -400,6 +467,12 @@ long Materials::Load(const char* name, int type)
 
 			tmpMtl->LightParam.TypeReflect = String(config->GetKey(tmp_name, "type_reflect")).ToInt();
 
+			if (tmpMtl->LightParam.TypeReflect == 1)
+			{
+				/*tmpMtl->Reflect = new Reflection();
+				tmpMtl->Reflect->Init(0);*/
+			}
+
 			tmpMtl->RenderStates.IsAlphaTest = String(config->GetKey(tmp_name, "alpha_test")).ToBool();
 			tmpMtl->RenderStates.IsCullBack = String(config->GetKey(tmp_name, "cullmode")).ToBool();
 
@@ -414,37 +487,36 @@ long Materials::Load(const char* name, int type)
 			//обычна¤ геометри¤
 			if (type == MTL_GEOM)
 			{
-				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base");
-				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base");
+				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base");
+				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgeom_base");
 				tmpMtl->VS.IsTransWorld = true;
 			}
 			//деревь¤
 			else if (type == MTL_TREE)
 			{
-				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base_green_tree");
-				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base_green");
+				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgreen_base_tree");
+				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgreen_base");
 				//tmpMtl->RenderStates.IsAlphaTest = true;
 			}
 			//трава
 			else if (type == MTL_GRASS)
 			{
-				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base_green_grass");
-				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base_green");
+				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgreen_base_grass");
+				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgreen_base");
 				//tmpMtl->RenderStates.IsAlphaTest = true;
 			}
 			//анимационная модель
 			else if (type == MTL_ANIM)
 			{
-				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base_skin");
-				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base");
+				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlskin_base");
+				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlskin_base");
 				tmpMtl->VS.IsTransWorld = true;
 			}
-			/*//источник света
-			else if (type == 4)
+			//источник света
+			/*else if (type == MTL_LIGHT)
 			{
-				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrl_base");
-				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrl_base_ligth");
-				tmpMtl->VS.IsTransWorld = true;
+				tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base");
+				tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgeom_light");
 				tmpMtl->IsForwardRender = true;
 				tmpMtl->PS.IsTransUserData = true;
 				tmpMtl->PS.Param = float4(0, 0, 0, 0);
@@ -482,7 +554,13 @@ void Materials::Save()
 
 }
 
-void Materials::SetMainTexture(DWORD slot, long id)
+void Materials::Update(DWORD timeDelta)
+{
+	CurrTimeDelta = timeDelta;
+	CountTimeDelta += timeDelta;
+}
+
+void Materials::SetMainTexture(ID slot, ID id)
 {
 	if (id >= 0 && id < ArrMaterials.size() && ArrMaterials[id]->MainTexture != -1)
 		MLSet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(ArrMaterials[id]->MainTexture));
@@ -490,7 +568,7 @@ void Materials::SetMainTexture(DWORD slot, long id)
 		MLSet::DXDevice->SetTexture(0, 0);
 }
 
-long Materials::GetID(const char* name)
+ID Materials::GetID(const char* name)
 {
 	for (long i = 0; i<ArrMaterials.size(); i++)
 	{
@@ -505,7 +583,7 @@ inline long Materials::GetCount()
 	return ArrMaterials.size();
 }
 
-void Materials::Render(long id, float4x4* world)
+void Materials::Render(ID id, float4x4* world)
 {
 	MTL_PRE_COND_ID(id);
 
@@ -521,10 +599,14 @@ void Materials::Render(long id, float4x4* world)
 	//если нет отражени¤ то отправл¤ем 0
 	if (tmpmaterial->LightParam.TypeReflect == 0)
 		MLSet::DXDevice->SetTexture(12, 0);
+	else
+		MLSet::DXDevice->SetTexture(12, SML_MtlRefGetTexPlane());
+
+	MLSet::DXDevice->SetTexture(14, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
 
 	//если есть рефаркци¤, а она идет вторым проходом, то отправл¤ем, иначе посылаем 0
 	if (tmpmaterial->IsRefraction)
-		MLSet::DXDevice->SetTexture(13, SGCore_RTGetTexture(/*Core::Data::EngineID::Tex_DSComLigth*/0));
+		MLSet::DXDevice->SetTexture(13, SGCore_RTGetTexture(/*Core::Data::EngineID::Tex_DSComLigth*/MLSet::IDsRenderTargets::LigthCom2));
 	else
 		MLSet::DXDevice->SetTexture(13, 0);
 
@@ -664,10 +746,10 @@ void Materials::Render(long id, float4x4* world)
 		SGCore_ShaderSetVRF(0, tmpmaterial->PreShaderVS, "ParamPS", &(tmpmaterial->PS.Param));
 
 	if (tmpmaterial->VS.IsTransTimeDelta)
-		SGCore_ShaderSetVRF(0, tmpmaterial->PreShaderVS, "TimeDelta", &float2(MLSet::CountTimeDelta, /*float(timeDelta)*/0 * 0.001f));
+		SGCore_ShaderSetVRF(0, tmpmaterial->PreShaderVS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->PS.IsTransTimeDelta)
-		SGCore_ShaderSetVRF(1, tmpmaterial->PreShaderPS, "TimeDelta", &float2(MLSet::CountTimeDelta, /*float(timeDelta)*/0 * 0.001f));
+		SGCore_ShaderSetVRF(1, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->RenderStates.IsCullBack)
 		MLSet::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
@@ -686,4 +768,13 @@ void Materials::Render(long id, float4x4* world)
 	//почти во всех пиксельных шейдерах материалов есть данна¤ NearFar, необходима¤ д¤л записи глубины
 	if (tmpmaterial->PreShaderPS != -1)
 		SGCore_ShaderSetVRF(1, tmpmaterial->PreShaderPS, "NearFar", &(MLSet::NearFar));
+}
+
+void Materials::RenderLight(float4_t* color, float4x4* world)
+{
+	MTL_PRE_COND_ID(MtrlDefLight);
+
+	ArrMaterials[MtrlDefLight]->PS.Param = *color;
+	Render(MtrlDefLight, world);
+	ArrMaterials[MtrlDefLight]->PS.Param = float4(0, 0, 0, 0);
 }

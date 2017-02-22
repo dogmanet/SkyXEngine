@@ -280,7 +280,7 @@ void LCInitElemsSelModel(int sel)
 		SXLevelEditor::LightEditFarShadow->SetText(String(SML_LigthsGetShadowLocalFar(sel)).c_str());
 
 		float3 pos;
-		SML_LigthsGetPos(sel, &pos, SML_LigthsGetType(sel) == LIGHTS_TYPE_GLOBAL);
+		SML_LigthsGetPos(sel, &pos, false, SML_LigthsGetType(sel) == LIGHTS_TYPE_GLOBAL);
 		SXLevelEditor::LightEditPosX->SetText(String(pos.x).c_str());
 		SXLevelEditor::LightEditPosY->SetText(String(pos.y).c_str());
 		SXLevelEditor::LightEditPosZ->SetText(String(pos.z).c_str());

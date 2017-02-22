@@ -647,7 +647,7 @@ SX_LIB_API ISXGUIStatusBar* SXGUICrStatusBar(const char* caption, HWND parent, W
 #define SXGUI_MENU_GRAYED	2
 
 
-struct ISXGUIMenu
+struct ISXGUIMenu : public IBaseObject
 {
 	virtual ~ISXGUIMenu(){}
 	virtual bool InsertItem(int index, const char* text, WORD id, WORD id_sub_menu) = 0;

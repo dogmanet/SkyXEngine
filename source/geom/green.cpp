@@ -12,13 +12,14 @@ Green::Green()
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
 		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
 		{ 1, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 1, 20, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
 		D3DDECL_END()
 	};
 
 	Green::DXDevice->CreateVertexDeclaration(InstanceGreen, &VertexDeclarationGreen);
 
 	Green::DXDevice->CreateVertexBuffer(
-		GREEN_MAX_ELEM_IN_DIP * sizeof(float)* 6,
+		GREEN_MAX_ELEM_IN_DIP * sizeof(DataVertex),
 		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
@@ -31,16 +32,28 @@ Green::Green()
 
 Green::~Green()
 {
-	ArrComFor.clear();
-
 	for (long i = 0; i < ArrModels.size(); ++i)
 	{
 		mem_delete(ArrModels[i]);
 	}
 
 	ArrModels.clear();
+
 	mem_release(TransVertBuf);
 	mem_release(VertexDeclarationGreen);
+
+	while (ArrComFor.size() > 0)
+	{
+		mem_delete(ArrComFor[0]);
+		ArrComFor.erase(0);
+	}
+
+	/*for (long i = 0; i < ArrComFor.size(); ++i)
+	{
+		mem_delete(ArrComFor[i]);
+	}
+
+	ArrComFor.clear();*/
 }
 
 Green::Model::Model()
@@ -98,7 +111,7 @@ Green::Segment::Segment()
 	CountAllGreen = 0;
 	BoundVolumeSys = 0;
 	BoundVolumeP = 0;
-	ID = -1;
+	Id = -1;
 	SID = -1;
 	BFNonEnd = false;
 }
@@ -145,7 +158,7 @@ Green::IRSData::~IRSData()
 
 	for (long i = 0; i < arr.size(); ++i)
 	{
-		mem_delete_a(arr[i]);
+		mem_delete(arr[i]);
 	}
 	arr.clear();
 }
@@ -328,7 +341,7 @@ void Green::PreSegmentation(Model* model)
 	}
 }
 
-void Green::CycleSegmentation(Segment* Split, Model* mesh, DWORD count_object_in_split)
+void Green::CycleSegmentation(Segment* Split, Model* mesh, int count_object_in_split)
 {
 	Array<Segment*> queue;
 	long tmpcount = 0;
@@ -352,7 +365,7 @@ void Green::CycleSegmentation(Segment* Split, Model* mesh, DWORD count_object_in
 	}
 }
 
-void Green::Segmentation(Segment* Split, Model* mesh, DWORD count_object_in_split)
+void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 {
 	Array<DWORD> ArrPoly[4];
 
@@ -365,14 +378,17 @@ void Green::Segmentation(Segment* Split, Model* mesh, DWORD count_object_in_spli
 
 	SGCore_0ComBoundBoxArr4(Split->BoundVolumeSys, (ArrBound));
 
+	float3 tmpmin, tmpmax;
 	for (int i = 0; i<4; i++)
 	{
 		Split->Splits[i]->BoundVolumeSys = ArrBound[i];
-		Split->Splits[i]->BoundVolumeP = ArrBound[i];
+		Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpmin, &tmpmax);
+		Split->Splits[i]->BoundVolumeP = SGCore_CrBound();
+		Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpmin, &tmpmax);
 	}
 
 	bool *tmp_arr_mesh_poly = new bool[Split->CountAllGreen];
-	for (DWORD i = 0; i<Split->CountAllGreen; i++)
+	for (int i = 0; i<Split->CountAllGreen; i++)
 		tmp_arr_mesh_poly[i] = true;
 
 	DWORD tmpCountNonIn = 0;
@@ -472,7 +488,7 @@ void Green::Segmentation(Segment* Split, Model* mesh, DWORD count_object_in_spli
 	mem_delete_a(tmp_arr_mesh_poly);
 }
 
-void Green::SetSplitID(Segment* Split, long* SplitsIDs, long* SplitsIDsRender)
+void Green::SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender)
 {
 	Array<Segment*, GREEN_DEFAULT_RESERVE_COM> queue;
 	long tmpcount = 0;
@@ -487,24 +503,24 @@ void Green::SetSplitID(Segment* Split, long* SplitsIDs, long* SplitsIDsRender)
 	}
 }
 
-void Green::SetSplitID2(Segment* Split, long* SplitsIDs, long* SplitsIDsRender, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue)
+void Green::SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue)
 {
 	if (Split && Split->BFNonEnd)
 	{
-		Split->ID = (*SplitsIDs);
+		Split->Id = (*SplitsIDs);
 		++(*SplitsIDs);
 		for (int i = 0; i<4; i++)
 			queue->push_back(Split->Splits[i]);
 	}
 	else if (Split)
 	{
-		Split->ID = (*SplitsIDs);
+		Split->Id = (*SplitsIDs);
 		++(*SplitsIDs);
 		++(*SplitsIDsRender);
 	}
 }
 
-void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, long id_arr)
+void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 	
@@ -532,7 +548,7 @@ void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, long id_a
 	}
 }
 
-void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, DWORD curr_splits_ids_render)
+void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float3 jcenter;
 	float jradius;
@@ -615,7 +631,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 	}
 }
 
-void Green::GPURender2(DWORD timeDelta,long nm, int lod)
+void Green::GPURender2(DWORD timeDelta, ID nm, int lod)
 {
 	//если есть что к отрисовке
 	if (RTCountDrawObj)
@@ -670,7 +686,7 @@ void Green::GPURender2(DWORD timeDelta,long nm, int lod)
 	}
 }
 
-void Green::GPURender(DWORD timeDelta,long id_arr)
+void Green::GPURender(DWORD timeDelta, ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
@@ -755,7 +771,7 @@ void Green::GPURender(DWORD timeDelta,long id_arr)
 	}
 }
 
-long Green::Init(StaticGeom* geom, const char* name,
+ID Green::Init(StaticGeom* geom, const char* name,
 	const char* path_mask, 
 	float count_max, 
 	const char* path, const char* lod1, const char* lod2, 
@@ -863,7 +879,7 @@ long Green::Init(StaticGeom* geom, const char* name,
 		float3 tmpmin, tmpmax;
 		geom->GetMinMax(&tmpmin, &tmpmax);
 
-		DWORD IDTexMask = SGCore_LoadTexAddName(path_mask);
+		ID IDTexMask = SGCore_LoadTexAddName(path_mask);
 		SGCore_LoadTexLoadTextures();
 
 		float CountMaxInPixel = count_max;
@@ -949,6 +965,8 @@ long Green::Init(StaticGeom* geom, const char* name,
 			tmpnewmpdel->AllTrans[i].TexCoord.x = 1.f + (float(rand() % 100) / 100.f);
 			tmpnewmpdel->AllTrans[i].TexCoord.y = D3DXToRadian(float(rand() % 360));
 			tmpnewmpdel->AllTrans[i].TexCoord.z = (float(rand() % 200) / 100.f) - 1.f;
+			tmpnewmpdel->AllTrans[i].SinCosRot.x = sinf(tmpnewmpdel->AllTrans[i].TexCoord.y);
+			tmpnewmpdel->AllTrans[i].SinCosRot.y = cosf(tmpnewmpdel->AllTrans[i].TexCoord.y);
 		}
 		arrpos.clear();
 
@@ -1316,7 +1334,7 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 	}
 }
 
-long Green::AddArrForCom()
+ID Green::AddArrForCom()
 {
 	IRSData* ttmpdata = new IRSData();
 	for (long i = 0; i < ArrModels.size(); ++i)
@@ -1328,7 +1346,7 @@ long Green::AddArrForCom()
 		ttmpdata->arr.push_back(tmpirs);
 	}
 
-	long id_arr = -1;
+	ID id_arr = -1;
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
 		if (ArrComFor[i] == 0)
@@ -1348,14 +1366,14 @@ long Green::AddArrForCom()
 	return id_arr;
 }
 
-void Green::DelArrForCom(long id_arr)
+void Green::DelArrForCom(ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
 	mem_delete(ArrComFor[id_arr]);
 }
 
-void Green::AddModelInArrCom(long id_model)
+void Green::AddModelInArrCom(ID id_model)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
 	
@@ -1369,7 +1387,7 @@ void Green::AddModelInArrCom(long id_model)
 	}
 }
 
-void Green::DelModelInArrCom(long id_model)
+void Green::DelModelInArrCom(ID id_model)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
 
@@ -1380,12 +1398,12 @@ void Green::DelModelInArrCom(long id_model)
 	}
 }
 
-long Green::GetCountGreen()
+ID Green::GetCountGreen()
 {
 	return ArrModels.size();
 }
 
-char* Green::GetGreenName(long id)
+char* Green::GetGreenName(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->Name;
@@ -1393,7 +1411,7 @@ char* Green::GetGreenName(long id)
 	return 0;
 }
 
-inline long Green::GetGreenCountGen(long id)
+inline long Green::GetGreenCountGen(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->AllCountGreen;
@@ -1401,7 +1419,7 @@ inline long Green::GetGreenCountGen(long id)
 	return -1;
 }
 
-inline int Green::GetGreenTypeCountGen(long id)
+inline int Green::GetGreenTypeCountGen(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->TypeGreen;
@@ -1409,7 +1427,7 @@ inline int Green::GetGreenTypeCountGen(long id)
 	return -1;
 }
 
-inline const char* Green::GetGreenModel(long id)
+inline const char* Green::GetGreenModel(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->ArrLod[0]->path.c_str();
@@ -1417,7 +1435,7 @@ inline const char* Green::GetGreenModel(long id)
 	return 0;
 }
 
-inline const char* Green::GetGreenLod1(long id)
+inline const char* Green::GetGreenLod1(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->ArrLod[1])
 		return ArrModels[id]->ArrLod[1]->path.c_str();
@@ -1425,7 +1443,7 @@ inline const char* Green::GetGreenLod1(long id)
 	return 0;
 }
 
-inline const char* Green::GetGreenLod2(long id)
+inline const char* Green::GetGreenLod2(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->ArrLod[2])
 		return ArrModels[id]->ArrLod[2]->path.c_str();
@@ -1433,7 +1451,7 @@ inline const char* Green::GetGreenLod2(long id)
 	return 0;
 }
 
-inline const char* Green::GetGreenMask(long id)
+inline const char* Green::GetGreenMask(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->MaskName.c_str();
@@ -1441,7 +1459,7 @@ inline const char* Green::GetGreenMask(long id)
 	return 0;
 }
 
-inline const char* Green::GetGreenNav(long id)
+inline const char* Green::GetGreenNav(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->NavigateMesh)
 		return ArrModels[id]->NavigateMesh->pathname.c_str();
@@ -1449,7 +1467,7 @@ inline const char* Green::GetGreenNav(long id)
 	return 0;
 }
 
-void Green::DelGreen(long id)
+void Green::DelGreen(ID id)
 {
 	if (id >= 0 && id < ArrModels.size())
 	{
@@ -1475,7 +1493,7 @@ void Green::Clear()
 	}
 }
 
-void Green::SetGreenLod(long id, int lod, const char* pathname)
+void Green::SetGreenLod(ID id, int lod, const char* pathname)
 {
 	if (!(lod >= 0 && lod < GREEN_COUNT_LOD && id >= 0 && id < ArrModels.size()))
 		return;
@@ -1504,7 +1522,7 @@ void Green::SetGreenLod(long id, int lod, const char* pathname)
 	}
 }
 
-void Green::SetGreenNav(int id, const char* pathname)
+void Green::SetGreenNav(ID id, const char* pathname)
 {
 	if (!(id >= 0 && id < ArrModels.size()))
 		return;

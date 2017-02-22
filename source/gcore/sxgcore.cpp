@@ -33,20 +33,26 @@ void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT mi
 	DXDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
 }
 
-void StdSetMaterial(UINT id, float4x4* world)
+void StdSetMaterial(ID id, float4x4* world)
 {
 
 	DXDevice->SetTexture(0, SGCore_LoadTexGetTex(id));
 }
 
-long StdLoadMaterial(const char* name, int mtl_type)
+ID StdLoadMaterial(const char* name, int mtl_type)
 {
 	return SGCore_LoadTexAddName(name);
 }
 
+int StdGetSortMaterial(ID id)
+{
+	return 0;
+}
+
 g_func_dip FuncDIP = StdDrawIndexedPrimitive;
-g_func_set_material FuncSetMaterial = StdSetMaterial;
-g_func_load_material FuncLoadMaterial = StdLoadMaterial;
+g_func_set_mtl FuncSetMaterial = StdSetMaterial;
+g_func_load_mtl FuncLoadMaterial = StdLoadMaterial;
+g_func_get_sort_mtl FuncGetSortMaterial = StdGetSortMaterial;
 ///
 
 #include <string\string.cpp>
@@ -126,6 +132,21 @@ void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool win
 		reportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);
 }
 
+void SGCore_0Kill()
+{
+	mem_delete(MShaders);
+	mem_delete(MRenderTargets);
+	mem_delete(MTextures);
+
+	mem_release(ScreenTexture);
+	mem_delete(ObjSkyBox);
+	mem_delete(ObjSkyClouds);
+
+	mem_release(FPSText);
+	mem_release(DXDevice);
+	mem_release(d3d9);
+}
+
 IDirect3DDevice9* SGCore_GetDXDevice()
 {
 	return DXDevice;
@@ -189,16 +210,22 @@ void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_inde
 	FuncDIP(type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
 }
 
-void SGCore_SetMtl(UINT id, float4x4* world)
+void SGCore_SetMtl(ID id, float4x4* world)
 {
 	SG_PRECOND();
 	FuncSetMaterial(id, world);
 }
 
-long SGCore_LoadMtl(const char* name, int mtl_type)
+ID SGCore_LoadMtl(const char* name, int mtl_type)
 {
 	SG_PRECOND(-1);
 	return FuncLoadMaterial(name, mtl_type);
+}
+
+int SGCore_GetSortMtl(ID id)
+{
+	SG_PRECOND(-1);
+	return FuncGetSortMaterial(id);
 }
 
 
@@ -208,22 +235,28 @@ void SGCore_SetFunc_DIP(g_func_dip func)
 	FuncDIP = func;
 }
 
-void SGCore_SetFunc_SetMtl(g_func_set_material func)
+void SGCore_SetFunc_SetMtl(g_func_set_mtl func)
 {
 	SG_PRECOND();
 	FuncSetMaterial = func;
 }
 
-void SGCore_SetFunc_LoadMtl(g_func_load_material func)
+void SGCore_SetFunc_LoadMtl(g_func_load_mtl func)
 {
 	SG_PRECOND();
 	FuncLoadMaterial = func;
 }
 
+void SGCore_SetFunc_GetSortMtl(g_func_get_sort_mtl func)
+{
+	SG_PRECOND();
+	FuncGetSortMaterial = func;
+}
+
 
 ////////////
 
-DWORD SGCore_ShaderLoad(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro)
+ID SGCore_ShaderLoad(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro)
 {
 	SG_PRECOND(-1);
 
@@ -237,7 +270,7 @@ void SGCore_ShaderUpdateN(int type_shader, const char* name, D3DXMACRO macro[])
 	MShaders->Update(type_shader, name, macro);
 }
 
-void SGCore_ShaderUpdate(int type_shader, DWORD id, D3DXMACRO macro[])
+void SGCore_ShaderUpdate(int type_shader, ID id, D3DXMACRO macro[])
 {
 	SG_PRECOND();
 
@@ -265,7 +298,7 @@ void SGCore_ShaderBindN(int type_shader, const char* shader)
 	return MShaders->Bind(type_shader, shader);
 }
 
-void SGCore_ShaderBind(int type_shader, DWORD shader)
+void SGCore_ShaderBind(int type_shader, ID shader)
 {
 	SG_PRECOND();
 
@@ -287,7 +320,7 @@ void SGCore_ShaderSetVRFN(int type_shader, const char* name_shader, const char* 
 	return MShaders->SetValueRegisterF(type_shader, name_shader, name_var, data);
 }
 
-void SGCore_ShaderSetVRF(int type_shader, DWORD num_shader, const char* name_var, void* data)
+void SGCore_ShaderSetVRF(int type_shader, ID num_shader, const char* name_var, void* data)
 {
 	SG_PRECOND();
 
@@ -301,7 +334,7 @@ void SGCore_ShaderSetVRIN(int type_shader, const char* name_shader, const char* 
 	return MShaders->SetValueRegisterI(type_shader, name_shader, name_var, data);
 }
 
-void SGCore_ShaderSetVRI(int type_shader, DWORD num_shader, const char* name_var, void* data)
+void SGCore_ShaderSetVRI(int type_shader, ID num_shader, const char* name_var, void* data)
 {
 	SG_PRECOND();
 
@@ -309,14 +342,14 @@ void SGCore_ShaderSetVRI(int type_shader, DWORD num_shader, const char* name_var
 }
 
 
-DWORD SGCore_ShaderIsExist(int type_shader, const char* name)
+ID SGCore_ShaderIsExist(int type_shader, const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->IsExist(type_shader, name);
 }
 
-bool SGCore_ShaderIsValidate(int type_shader, DWORD id)
+bool SGCore_ShaderIsValidate(int type_shader, ID id)
 {
 	SG_PRECOND(0);
 
@@ -330,7 +363,7 @@ bool SGCore_ShaderIsValidate(int type_shader, DWORD id)
 	MShaders->GetPath(type_shader, id, path);
 }*/
 
-void SGCore_ShaderGetName(int type_shader, DWORD id, char* name)
+void SGCore_ShaderGetName(int type_shader, ID id, char* name)
 {
 	SG_PRECOND();
 
@@ -362,49 +395,49 @@ void SGCore_LoadTexStdPath(const char* path)
 	ObjSkyClouds->SetStdPath(path);*/
 }
 
-DWORD SGCore_LoadTexAddName(const char* name)
+ID SGCore_LoadTexAddName(const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->AddName(name);
 }
 
-DWORD SGCore_LoadTexGetID(const char* name)
+ID SGCore_LoadTexGetID(const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->GetID(name);
 }
 
-void SGCore_LoadTexGetName(DWORD id, char* name)
+void SGCore_LoadTexGetName(ID id, char* name)
 {
 	SG_PRECOND();
 
 	return MTextures->GetName(id,name);
 }
 
-DWORD SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
+ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->Create(name, tex);
 }
 
-DWORD SGCore_LoadTexUpdateN(const char* name)
+ID SGCore_LoadTexUpdateN(const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->Update(name);
 }
 
-void SGCore_LoadTexUpdate(DWORD id)
+void SGCore_LoadTexUpdate(ID id)
 {
 	SG_PRECOND();
 
 	return MTextures->Update(id);
 }
 
-IDirect3DTexture9* SGCore_LoadTexGetTex(DWORD id)
+IDirect3DTexture9* SGCore_LoadTexGetTex(ID id)
 {
 	SG_PRECOND(0);
 
@@ -420,7 +453,7 @@ void SGCore_LoadTexLoadTextures()
 
 //////////////////////////
 
-DWORD SGCore_RTAdd(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
+ID SGCore_RTAdd(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
 {
 	SG_PRECOND(-1);
 
@@ -434,14 +467,14 @@ void SGCore_RTDeleteN(const char* text)
 	return MRenderTargets->Delete(text);
 }
 
-void SGCore_RTDelete(DWORD num)
+void SGCore_RTDelete(ID num)
 {
 	SG_PRECOND();
 
 	return MRenderTargets->Delete(num);
 }
 
-DWORD SGCore_RTGetNum(const char* text)
+ID SGCore_RTGetNum(const char* text)
 {
 	SG_PRECOND(-1);
 
@@ -469,7 +502,7 @@ IDirect3DTexture9* SGCore_RTGetTextureN(const char* text)
 	return MRenderTargets->GetTexture(text);
 }
 
-IDirect3DTexture9* SGCore_RTGetTexture(DWORD num)
+IDirect3DTexture9* SGCore_RTGetTexture(ID num)
 {
 	SG_PRECOND(0);
 

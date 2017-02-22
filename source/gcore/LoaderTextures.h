@@ -12,7 +12,7 @@ struct TLPath
 	}
 	
 	char Path[256];//имя папки
-	Array<DWORD> ArrID;		//идентификатор
+	Array<ID> ArrID;		//идентификатор
 	Array<char*> ArrNames;	//массив с именами текстур которые находятся в данной папке
 };
 
@@ -22,26 +22,26 @@ public:
 	LoaderTextures();
 	~LoaderTextures();
 
-	DWORD AddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
-	DWORD GetID(const char* name);		//получить id по имени
-	void GetName(DWORD id,char* name);	//получить имя по id
+	ID AddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
+	ID GetID(const char* name);		//получить id по имени
+	void GetName(ID id, char* name);	//получить имя по id
 
-	DWORD Create(const char* name,IDirect3DTexture9* tex);	//создать место для текстуры tex
-	DWORD Update(const char* name);		//перезагрузить текстуру name (поставить в очередь)
-	void Update(DWORD id);
+	ID Create(const char* name, IDirect3DTexture9* tex);	//создать место для текстуры tex
+	ID Update(const char* name);		//перезагрузить текстуру name (поставить в очередь)
+	void Update(ID id);
 
 	void LoadTextures();	//загрузка всех текстур поставленных в очередь
 
-	IDirect3DTexture9* GetTexture(DWORD id);//получить текстуру по id
+	IDirect3DTexture9* GetTexture(ID id);//получить текстуру по id
 
 	inline void SetStdPath(const char* path){ strcpy(StdPath, path); }
 	inline void GetStdPath(char* path){ if (path)strcpy(path, StdPath); }
 //private:
 	char StdPath[1024];
 	TLPath Arr[256];
-	DWORD CountArr;
-	DWORD CountIDs;
-	DWORD CountIDsOld;
+	int CountArr;
+	int CountIDs;
+	int CountIDsOld;
 
 	Array<char*> ArrNames;
 	Array<IDirect3DTexture9*> ArrTextures;

@@ -8,15 +8,27 @@ CreatorTextures::CreatorTextures()
 
 }
 
-DWORD CreatorTextures::Add(UINT width,UINT height,UINT levels,DWORD usage,D3DFORMAT format,D3DPOOL pool,const char* name,float coeffullscreen)
+CreatorTextures::~CreatorTextures()
+{
+	for (DWORD i = 0; i<Arr.size(); i++)
+	{
+		if (Arr[i])
+		{
+			mem_release(Arr[i]->Texture);
+		}
+		mem_delete(Arr[i]);
+	}
+}
+
+ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
 {
 	IDirect3DTexture9* objtex;
 	DXDevice->CreateTexture(width, height, levels, usage, format,pool, &objtex, NULL);
 
-	DWORD id = -1;
+	ID id = -1;
 	bool isadd = true;
 
-		for(DWORD i=0;i<Arr.size();i++)
+		for(int i=0;i<Arr.size();i++)
 		{
 				if(Arr[i] == 0)
 				{
@@ -51,7 +63,7 @@ DWORD CreatorTextures::Add(UINT width,UINT height,UINT levels,DWORD usage,D3DFOR
 
 void CreatorTextures::Delete(const char* text)
 {
-		for(DWORD i=0;i<Arr.size();i++)
+		for(int i=0;i<Arr.size();i++)
 		{
 				if(strcmp(text,Arr[i]->Name) == 0)
 				{
@@ -62,7 +74,7 @@ void CreatorTextures::Delete(const char* text)
 		}
 }
 
-void CreatorTextures::Delete(DWORD num)
+void CreatorTextures::Delete(ID num)
 {
 		if(num < Arr.size())
 		{
@@ -72,7 +84,7 @@ void CreatorTextures::Delete(DWORD num)
 		}
 }
 
-DWORD CreatorTextures::GetNum(const char* text)
+ID CreatorTextures::GetNum(const char* text)
 {
 		for(DWORD i=0;i<Arr.size();i++)
 		{
@@ -100,11 +112,11 @@ void CreatorTextures::OnLostDevice()
 void CreatorTextures::OnResetDevice()
 {
 	reportf(REPORT_MSG_LEVEL_WARRNING, "sgcore: reset render targets ...\n");
-		for(DWORD i=0;i<Arr.size();i++)
+		for(int i=0;i<Arr.size();i++)
 		{
 				if(Arr[i]/*->Name[0] != 0*/)
 				{
-						if(Arr[i]->CoefFullScreen > 0)
+						if(Arr[i]->CoefFullScreen > 0.001f)
 							DXDevice->CreateTexture(D3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, D3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, 1, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 						else
 							DXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
@@ -115,7 +127,7 @@ void CreatorTextures::OnResetDevice()
 
 IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)
 {
-		for(DWORD i=0;i<Arr.size();i++)
+		for(int i=0;i<Arr.size();i++)
 		{
 				if(strcmp(text,Arr[i]->Name) == 0)
 				{
@@ -124,11 +136,16 @@ IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)
 		}
 }
 
-IDirect3DTexture9* CreatorTextures::GetTexture(DWORD num)
+IDirect3DTexture9* CreatorTextures::GetTexture(ID num)
 {
-		if(num < Arr.size())
-		{
-			IDirect3DTexture9* tmptex = Arr[num]->Texture;
-			return Arr[num]->Texture;
-		}
+	if (num < Arr.size())
+	{
+		IDirect3DTexture9* tmptex = Arr[num]->Texture;
+		return Arr[num]->Texture;
+	}
+	else
+	{
+		dbg_break;
+		return 0;
+	}
 }

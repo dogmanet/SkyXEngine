@@ -8,16 +8,32 @@ namespace CameraUpdate
 	{
 		//обработка ходьбы
 		if (SSInput_GetKeyState(DIK_W))
-			GData::ObjCamera->PosFrontBack(100 * float(timeDelta) * 0.001f);
+			GData::ObjCamera->PosFrontBack(
+					GData::CamWalkParamEditor.x *
+					(SSInput_GetKeyState(DIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) *
+					float(timeDelta) * 0.001f
+					);
 
 		if (SSInput_GetKeyState(DIK_S))
-			GData::ObjCamera->PosFrontBack(-100 * float(timeDelta) * 0.001f);
+			GData::ObjCamera->PosFrontBack(
+					-GData::CamWalkParamEditor.x *
+					(SSInput_GetKeyState(DIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.w *
+					float(timeDelta) * 0.001f
+					);
 
 		if (SSInput_GetKeyState(DIK_A))
-			GData::ObjCamera->PosLeftRight(-100 * float(timeDelta) * 0.001f);
+			GData::ObjCamera->PosLeftRight(
+					-GData::CamWalkParamEditor.x * 
+					(SSInput_GetKeyState(DIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.z *
+					float(timeDelta) * 0.001f
+					);
 
 		if (SSInput_GetKeyState(DIK_D))
-			GData::ObjCamera->PosLeftRight(100 * float(timeDelta) * 0.001f);
+			GData::ObjCamera->PosLeftRight(
+					GData::CamWalkParamEditor.x * 
+					(SSInput_GetKeyState(DIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.z *
+					float(timeDelta) * 0.001f
+					);
 	}
 
 	//обработка движения мыши вправо и влево
@@ -55,7 +71,7 @@ namespace CameraUpdate
 
 		if (cy != UINT(p.y))
 		{
-			GData::ObjCamera->PosUpDown(10 * float(timeDelta) * 0.001f * float(-int(p.y - cy)));
+			GData::ObjCamera->PosUpDown(5 * float(timeDelta) * 0.001f * float(-int(p.y - cy)));
 			//SetCursorPos(cx,centr.y);
 		}
 	}

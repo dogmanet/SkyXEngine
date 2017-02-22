@@ -46,33 +46,33 @@ public:
 	~ShaderManager();
 
 	//is_check_double - 0 не искать среди загруженных, 1 - искать среди загруженных, 2 - обновить если имееться, если нет то грузим
-	DWORD Load(int type_shader,const char* path,const char* name,int is_check_double,D3DXMACRO* macro = 0);
+	ID Load(int type_shader, const char* path, const char* name, int is_check_double, D3DXMACRO* macro = 0);
 	void Update(int type_shader,const char* name,D3DXMACRO macro[] = 0);
-	void Update(int type_shader,DWORD id,D3DXMACRO macro[] = 0);
+	void Update(int type_shader, ID id, D3DXMACRO macro[] = 0);
 
 	void ReloadAll();
 
-	DWORD GetID(int type_shader,const char* shader);
+	ID GetID(int type_shader, const char* shader);
 
 	void Bind(int type_shader,const char* shader);
-	void Bind(int type_shader,DWORD shader);
+	void Bind(int type_shader, ID shader);
 
 	void UnBind();
 
 	void SetValueRegisterF(int type_shader,const char* name_shader,const char* name_var,void* data);
-	void SetValueRegisterF(int type_shader,DWORD num_shader,const char* name_var,void* data);
+	void SetValueRegisterF(int type_shader, ID num_shader, const char* name_var, void* data);
 
 	void SetValueRegisterI(int type_shader,const char* name_shader,const char* name_var,void* data);
-	void SetValueRegisterI(int type_shader,DWORD num_shader,const char* name_var,void* data);
+	void SetValueRegisterI(int type_shader, ID num_shader, const char* name_var, void* data);
 
 	void SetValueRegisterB(int type_shader,const char* name_shader,const char* name_var,void* data);
-	void SetValueRegisterB(int type_shader,DWORD num_shader,const char* name_var,void* data);
+	void SetValueRegisterB(int type_shader, ID num_shader, const char* name_var, void* data);
 
-	DWORD IsExist(int type_shader,const char* name);
-	bool IsValidate(int type_shader,DWORD id);
+	ID IsExist(int type_shader, const char* name);
+	bool IsValidate(int type_shader, ID id);
 
-	inline void GetPath(int type_shader,DWORD id,char* path);
-	inline void GetName(int type_shader,DWORD id,char* name);
+	inline void GetPath(int type_shader, ID id, char* path);
+	inline void GetName(int type_shader, ID id, char* name);
 
 	inline void SetStdPath(const char* path){ strcpy(StdPath, path); };
 	inline void GetStdPath(char* path){		if(path) strcpy(path, StdPath); };

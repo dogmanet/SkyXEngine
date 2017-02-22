@@ -1,7 +1,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #pragma once
-//#include <vld.h> 
+#include <vld.h> 
 #define SX_EXE
 
 #include <windows.h>
@@ -32,7 +32,7 @@
 #include <sound\\sxsound.h>
 
 
-//#define SXGCORE_IN_SOURCE
+#define SXGCORE_IN_SOURCE
 #if !defined(SXGCORE_IN_SOURCE)
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
@@ -69,7 +69,7 @@ long count_index;
 #include <common\\gdata.h>
 
 #include <common\\string_api.cpp>
-#include <material_ligth\\material_ligth.cpp>
+#include <mtl_ligth\\material_ligth.cpp>
 #include <geom\\sxgeom.cpp>
 
 
@@ -94,6 +94,7 @@ IDirect3DTexture9* g_pTexAdaptedLuminanceLast, *g_pTexAdaptedLuminanceCur;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	//MessageBox(0,0,0,0);
 	SXGUIRegClass::RegGroupBox();
 	InitOutLog();
 	srand((unsigned int)time(0));
@@ -146,6 +147,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SGCore_SetFunc_SetMtl(SXRenderFunc::RFuncSetMtl);
 	SGCore_SetFunc_LoadMtl(SXRenderFunc::RFuncLoadMtl);
+	SGCore_SetFunc_GetSortMtl((g_func_get_sort_mtl)SML_MtlIsRefraction);
 
 	SGCore_SkyBoxCr();
 	SGCore_SkyCloudsCr();
@@ -155,6 +157,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
+
+	//SGCore_ConvertX2DSE("C:\\Users\\Byurrer\\Downloads\\gamesource\\gamesource\\meshes\\stroyka\\stroyka.X","D:\\project\\engine\\build\\gamesource\\meshes\\stroyka.dse");
 
 	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
 	SGeom_Dbg_Set(printflog);
@@ -169,9 +173,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	GData::ObjCamera = SGCore_CrCamera();
 
-	
-	GData::IDsShaders::VS::FreeGeometry = SGCore_ShaderLoad(0, "mtrl_base.vs", "mtrl_base", true);
-	GData::IDsShaders::PS::FreeGeometry = SGCore_ShaderLoad(1, "mtrl_base.ps", "mtrl_base", true);
 
 	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(0, "pp_quad_render.vs", "pp_quad_render", true);
 	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(1, "pp_quad_render.ps", "pp_quad_render", true);
@@ -262,11 +263,43 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//GData::Geometry->DelModel(1);
 	//GData::Geometry->DelModel(1);
 
-	//GData::Geometry->AddModel("rinok\\rinok\\land.dse", 0, "land.dse");
-	//GData::Geometry->AddModel("rinok\\rinok\\cv04.dse", 0, "cv04.dse");
-	//GData::Geometry->AddModel("rinok\\rinok\\rinok\\zab.dse", 0, "zab.dse");
+	/*SGeom_ModelsAddModel("rinok\\rinok\\land.dse", 0, "land.dse");
+	SGeom_ModelsAddModel("rinok\\rinok\\cv04.dse", 0, "cv04.dse");
+	SGeom_ModelsAddModel("rinok\\rinok\\rinok\\zab.dse", 0, "zab.dse");*/
 
-	
+	/*SGeom_ModelsAddModel("stroyka\\stroyka_part0.dse", 0, "stroyka_part0.dse");
+	SGeom_ModelsAddModel("stroyka\\stroyka_part1.dse", 0, "stroyka_part1.dse");
+	SGeom_ModelsAddModel("stroyka\\stroyka_part2.dse", 0, "stroyka_part2.dse");*/
+
+	//SGeom_ModelsAddModel("stroyka\\stroyka_part63.dse", 0, "stroyka_part63.dse");
+
+	//MessageBox(0, 0, 0, 0);
+	/*char tmpmpathname[64];
+	char tmpmname[64];
+	for (int i = 0; i < 30; ++i)
+	{
+		sprintf(tmpmpathname, "stroyka\\stroyka_part%d.dse", i);
+		sprintf(tmpmname, "stroyka_part%d.dse", i);
+		SGeom_ModelsAddModel(tmpmpathname, 0, tmpmname);
+	}
+	SGeom_ModelsAddModel("terrain\\terrain.dse", 0, "terrain\\terrain.dse");*/
+	/*for (int i = 0; i < 5; ++i)
+	{
+		SGeom_ModelsDelModel(0);
+	}
+	MessageBox(0, 0, 0, 0);*/
+
+
+
+	/*SML_LigthsCreatePoint(
+		&float3(60,60,0),
+		LIGHTS_GLOBAL_MAX_POWER,
+		LIGHTS_GLOBAL_STD_RADIUS,
+		&float3(1,1,1),
+		true,
+		true);
+	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
+	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");*/
 
 	char tmppathexe[1024];
 	char tmppath[1024];
@@ -286,7 +319,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexLoadTextures();
 
 
-	LoadLevel("test");
+	LoadLevel("darkvalley2");
 
 	//SGCore_LoadTexLoadTextures();
 	//SXLevelEditor_Transform(10);
@@ -297,9 +330,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_LigthsClear();*/
 
 	/*MessageBox(0,0,0,0);
-	for (int i = 0; i < 1000; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
-		LoadLevel("test");
+		LoadLevel("darkvalley");
 
 		//SGCore_LoadTexLoadTextures();
 		//SXLevelEditor_Transform(10);
@@ -311,6 +344,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 	
 	MessageBox(0, 0, 0, 0);*/
+
+	/*mem_release(GData::ObjCamera);
+	SGeom_0CreateKill();
+	SML_0Kill();
+	SGCore_0Kill();
+	SXLevelEditor::DeleteAllElements();
+
+	return 0;*/
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
@@ -343,6 +384,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 					lastTime = currTime;
 				}
 		}
+
+	mem_release(GData::ObjCamera);
+	SGeom_0CreateKill();
+	SML_0Kill();
+	SGCore_0Kill();
+	SXLevelEditor::DeleteAllElements();
 
     return msg.wParam;
 }

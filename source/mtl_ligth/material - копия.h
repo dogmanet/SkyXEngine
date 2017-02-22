@@ -14,17 +14,16 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	long Load(const char* name, int type = 0);
+	ID Load(const char* name, int type = 0);
 	void Save();
-	void SetMainTexture(DWORD slot, long id);
-	void Render(long id, float4x4* world);
+	void Update(DWORD timeDelta);
+	void SetMainTexture(ID slot, ID id);
+	void Render(ID id, float4x4* world);
+	void RenderLight(float4_t* color, float4x4* world);
 
-	void RenderDepthPSSMDirect(long id, float4x4* world);
-	void RenderDepthCube(long id, float4x4* world);
-
-	long IsExists(const char* name);
-	int GetType(long id);
-	long GetID(const char* name);
+	ID IsExists(const char* name);
+	int GetType(ID id);
+	ID GetID(const char* name);
 
 	inline long GetCount();
 
@@ -41,9 +40,9 @@ public:
 			MaterialMaskPM();
 			~MaterialMaskPM();
 
-			DWORD Mask;
-			DWORD ArrDeatail[4];
-			DWORD ArrMicroDiffuse[4];
+			ID Mask;
+			ID ArrDeatail[4];
+			ID ArrMicroDiffuse[4];
 		};
 
 		//структура из материала определ€юща€ состо€ни€ рендера
@@ -66,8 +65,8 @@ public:
 
 			//FOR EDITORS
 			bool IsTextureParam;
-			DWORD ParamTex2;
-			DWORD IDParamLight;
+			ID ParamTex2;
+			ID IDParamLight;
 
 			float RoughnessValue;
 			float F0Value;
@@ -100,10 +99,10 @@ public:
 		int PhysicsMaterial;
 
 		char Name[256];
-		DWORD MainTexture;
-		DWORD PreShaderVS;
-		DWORD PreShaderPS;
-		DWORD IDSelShaders;
+		ID MainTexture;
+		ID PreShaderVS;
+		ID PreShaderPS;
+		ID IDSelShaders;
 		bool IsRefraction;
 		MaterialMaskPM MicroDetail;
 		MaterialRenderStates RenderStates;
@@ -133,14 +132,18 @@ protected:
 		}
 
 		char Path[MTL_MAX_SIZE_DIR];//им€ папки
-		Array<long> ArrID;		//идентификатор
+		Array<ID> ArrID;		//идентификатор
 		Array<String> ArrNames;	//массив с именами текстур которые наход€тс€ в данной папке
 	};
 	Array<TLPath*> ArrHMtls;
 
-	void AddName(const char* name,long id);
+	void AddName(const char* name, ID id);
 
 	Array<Material*> ArrMaterials;
+
+	DWORD CurrTimeDelta;
+	DWORD CountTimeDelta;
+	ID MtrlDefLight;
 	float4x4 view, proj, worldtrans, viewtrans, projtrans;
 };
 

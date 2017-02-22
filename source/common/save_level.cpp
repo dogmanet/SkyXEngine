@@ -25,8 +25,8 @@ void SaveLevel(const char* name)
 
 	if (SGeom_GreenGetCount() > 0)
 	{
+		fprintf(file, "green = %s.green\n", name);
 		sprintf(tmppathlevel, "%s%s\\%s.green", GData::Pathes::Levels, name, name);
-		fprintf(file, "green = s%s\\%s.green\n", name);
 		SGeom_GreenSave(tmppathlevel);
 	}
 

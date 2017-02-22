@@ -18,19 +18,20 @@ class CreatorTextures
 {
 public:
 	CreatorTextures();
+	~CreatorTextures();
 
-	DWORD Add(UINT width,UINT height,UINT levels,DWORD usage,D3DFORMAT format,D3DPOOL pool,const char* name,float coeffullscreen);
+	ID Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen);
 
 	void Delete(const char* text);
-	void Delete(DWORD num);
+	void Delete(ID num);
 
-	DWORD GetNum(const char* text);
+	ID GetNum(const char* text);
 
 	void OnLostDevice();
 	void OnResetDevice();
 
 	IDirect3DTexture9* GetTexture(const char* text);
-	IDirect3DTexture9* GetTexture(DWORD num);
+	IDirect3DTexture9* GetTexture(ID num);
 private:
 	Array<CreatedTexture*> Arr;
 };

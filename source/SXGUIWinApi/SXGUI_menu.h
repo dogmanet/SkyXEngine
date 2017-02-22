@@ -23,6 +23,8 @@ public:
 	SXGUIMenu(WORD menu);
 	~SXGUIMenu();
 
+	void Release(){ mem_del(this); }
+
 	bool InsertItem(int index,const char* text,WORD id,WORD id_sub_menu);
 	bool InsertPopupItem(int index,const char* text,WORD id,WORD id_sub_menu);
 	bool InsertSeparator(int index,WORD id,WORD id_sub_menu);
