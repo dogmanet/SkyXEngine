@@ -472,8 +472,8 @@ int s4g_compiler::compile2(s4g_node* node)
 			cyctls_bak.push(cyctls);
 			cyctls.clear();
 
-			gen(mc_pop, 0, node->lexid);
-			def_printf("pop\n");
+			/*gen(mc_pop, 0, node->lexid);
+			def_printf("pop\n");*/
 
 			int startpos = comms->count();
 			compile2(node->op1);
@@ -483,8 +483,8 @@ int s4g_compiler::compile2(s4g_node* node)
 			compile2(node->op2);
 			int steppos = comms->count();
 			compile2(node->op3);
-			gen(mc_pop, 0, node->lexid);
-			def_printf("pop\n");
+			//gen(mc_pop, 0, node->lexid);
+			//def_printf("pop\n");
 			gen(mc_jmp, (s4g_value*)(startpos - comms->count() - 1), node->lexid);
 			def_printf("jmp\n");
 			comms[0][jzpos].arg = (s4g_value*)(comms->count() - jzpos - 1);
@@ -523,6 +523,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			compile2(node->op3);
 			gen(mc_block_del, 0, node->lexid);
 			def_printf("block_del\n");
+			//compile2(node->op2);
 			/*gen(mc_jmp, 0, node->lexid);
 			def_printf("jmp\n");
 			cyctls.push_back({ comms->count() - 1, _cyctl::BREAK });

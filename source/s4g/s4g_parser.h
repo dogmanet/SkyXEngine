@@ -270,6 +270,7 @@ enum s4g_type_op
 	_get_postdecr,
 	_get_cr,//создание и получение переменной 
 	_call,	//вызов функции
+	_call_b,	//вызов функции
 	_add,//+
 	_sub,//-
 	_mul,//*
@@ -743,12 +744,14 @@ return 0; \
 //строитель абстрактного синтаксического дерева
 struct s4g_builder_syntax_tree
 {
-	s4g_builder_syntax_tree(){status = 0; error[0] = 0; overend = 0; overge = 0; listread = true; readcall = true; isender = true; dowhile = 0;}
+	s4g_builder_syntax_tree(){status = 0; error[0] = 0; overend = 0; overge = 0; /*listread = true;*/ readcall = true; isender = true; dowhile = 0;}
 
 	s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
 
-	s4g_node* s4g_gen_statement(bool one=false);//считывание главных инструкций
-	s4g_node* s4g_read_block();			//считывает блок выражений
+	s4g_node* s4g_gen_statement();//считывание главных инструкций
+	//s4g_node* s4g_read_block();			//считывает блок выражений
+	int s4g_begin_read_block();
+	int s4g_end_read_block();
 	s4g_node* s4g_get_ret_vals();		//считывание возвращаемых значений
 	s4g_node* s4g_get_arg_call_func();	//считывание аргументов при вызове функции
 	s4g_node* s4g_get_function_def_head();	//считывание аргументов при создании функции
@@ -758,7 +761,7 @@ struct s4g_builder_syntax_tree
 	s4g_node* s4g_get_table();	//считывание содержимого создаваемой таблицы
 
 	bool isender;	//если список лексем закончилс€ то можно ли завершить построение?
-	bool listread;	//можем ли мы считывать списки переменны/значений или они уже считываютс€ (то есть false)?
+	//bool listread;	//можем ли мы считывать списки переменны/значений или они уже считываютс€ (то есть false)?
 	bool readcall;	//можем ли мы считывать вызов функции, или сейчас считываетс€ объ€вление функции (то есть false)?
 	int overend;	//если 0 значит все в норме, если более 0 то лишний энд, если меньше 0 то значит мы ищем энды в количестве abs(overend)
 	int overge;		//инкрементиру€ мы говорим что считываем вызов функции и если считывание выражени€ найден лишнюю закрывающую скобку то она принадлежит вызову (тада декрементирует)

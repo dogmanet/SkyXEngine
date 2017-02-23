@@ -2,6 +2,12 @@
 #ifndef s4g_main_h
 #define s4g_main_h
 
+#if defined(_WINDOWS)
+#define dbg_break _asm { int 3 }
+#else
+#define dbg_break asm("int $3");
+#endif
+
 #define mem_delete(data) delete data;data = 0;
 #define mem_delete_a(data) delete[] data;data = 0;
 
