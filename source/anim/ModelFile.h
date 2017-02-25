@@ -278,4 +278,51 @@ struct ModelBoneCrontrollerValue
 	float3_t tr;
 };
 
+enum MODEL_IMPORT
+{
+	MI_MESH        = 0x00000001,
+	MI_ANIMATIONS  = 0x00000002,
+	MI_SKINS       = 0x00000004,
+	MI_CONTROLLERS = 0x00000008,
+	MI_HITBOXES    = 0x00000010,
+
+	MI_ALL         = 0xFFFFFFFF
+};
+
+enum MODEL_ATTACH
+{
+	MA_SKIN = 0x00000001, // Merge skeletons
+	MA_BONE = 0x00000002 // Join skeletons
+};
+
+
+enum ANIM_STATE
+{
+	AS_STOP,
+	AS_PLAY,
+	AS_LOOP
+};
+
+struct ModelAttachDesc
+{
+	MODEL_ATTACH type;
+	float3_t v3Offs;
+	char szBone[MODEL_BONE_MAX_NAME];
+};
+
+class ModelFile;
+struct ModelPart
+{
+	const ModelFile * pMdl;
+	UINT uImportFlags;
+	ModelAttachDesc attachDesc;
+};
+
+enum MBERR
+{
+	MBE_SUCCESS = 0,
+	MBE_NO_ROOT,
+	MBE_BAD_HIERARCY
+};
+
 #endif

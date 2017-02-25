@@ -23,11 +23,15 @@ m_bInitPosInvSet(false),
 m_pBonesBindPoseInv(false),
 m_ppVertexBuffer(NULL),
 m_ppIndexBuffer(NULL),
-m_pMgr(pMgr)
+m_pMgr(pMgr),
+m_bIsTemp(false)
 {
 	memset(&m_hdr, 0, sizeof(ModelHeader));
 	memset(&m_hdr2, 0, sizeof(ModelHeader2));
-	Load(name);
+	if(name[0])
+	{
+		Load(name);
+	}
 }
 
 void ModelFile::Load(const char * name)
@@ -562,6 +566,17 @@ const ModelSequence * ModelFile::GetSequence(UINT id) const
 	}
 	return(&m_pSequences[id]);
 }
+const ModelSequence * ModelFile::GetSequence(const char * name) const
+{
+	for(int i = 0, l = GetSequenceCount(); i < l; ++i)
+	{
+		if(!strcmp(m_pSequences[i].name, name))
+		{
+			return(&m_pSequences[i]);
+		}
+	}
+	return(NULL);
+}
 const ModelBoneController * ModelFile::GetController(UINT id) const
 {
 	if(GetControllersCount() <= id)
@@ -687,6 +702,56 @@ void ModelFile::BuildMeshBuffers()
 	//Core::WorkModel::ComputeBoundingBox2(m_ppVertexBuffer[0], &BoundVol, tmpCountVert, 0);
 }
 
+ModelFile::~ModelFile()
+{
+#ifndef _SERVER
+	if(m_ppIndexBuffer && m_ppVertexBuffer)
+	{
+		for(uint32_t j = 0; j < m_hdr.iLODcount; ++j)
+		{
+			mem_release(m_ppIndexBuffer[j]); 		
+			mem_release(m_ppVertexBuffer[j]);
+		}
+	} 		
+	mem_delete_a(m_ppIndexBuffer);
+	mem_delete_a(m_ppVertexBuffer);
+#endif
+
+	mem_delete_a(m_pBones);
+	mem_delete_a(m_pBonesBindPoseInv);
+	mem_delete_a(pActivities);
+	mem_delete_a(m_pControllers);
+
+	mem_delete_a(m_pDeps);
+
+	for(uint32_t j = 0; j < m_hdr.iSkinCount; ++j)
+	{
+		mem_delete_a(m_iMaterials[j]);
+	}
+	mem_delete_a(m_iMaterials);
+
+	for(uint32_t i = 0; i < m_hdr.iAnimationCount; ++i)
+	{
+		for(uint32_t j = 0; j < m_pSequences[i].iNumFrames; ++j)
+		{
+			mem_delete_a(m_pSequences[i].m_vmAnimData[j]);
+		}
+		mem_delete_a(m_pSequences[i].m_vmAnimData);
+	}
+	mem_delete_a(m_pSequences);
+
+
+	for(uint32_t i = 0; i < m_hdr.iLODcount; ++i)
+	{
+		for(uint32_t j = 0; j < m_pLods[i].iSubMeshCount; ++j)
+		{
+			mem_delete_a(m_pLods[i].pSubLODmeshes[j].pVertices);
+			mem_delete_a(m_pLods[i].pSubLODmeshes[j].pIndices);
+		}
+		mem_delete_a(m_pLods[i].pSubLODmeshes);
+	}
+	mem_delete_a(m_pLods);
+}
 
 
 /**
@@ -780,6 +845,11 @@ void Animation::SetModel(const char * file)
 	{
 		return;
 	}
+	DownloadData();
+}
+
+void Animation::DownloadData()
+{
 
 	m_iBoneCount = m_pMdl->GetBoneCount();
 
@@ -931,7 +1001,7 @@ void Animation::Advance(unsigned long int dt)
 					{
 						++m_iCurrentFrame[slot];
 					}
-					if((!rev && m_iCurrentFrame[slot] >= m_iAnimFrameCount[slot] - 1) || (rev && m_iCurrentFrame[slot] <= 0))
+					if((!rev && m_iCurrentFrame[slot] >= (int)m_iAnimFrameCount[slot] - 1) || (rev && m_iCurrentFrame[slot] <= 0))
 					{
 						if(pCurAnim->bLooped)
 						{
@@ -1035,8 +1105,8 @@ void Animation::SetProgress(float progress, UINT slot)
 	{
 		fr = 1000 / pCurAnim->framerate;
 	}
-	m_iCurrentFrame[slot] = m_iAnimFrameCount[slot] * progress;
-	t[slot] = (progress - (float)m_iCurrentFrame[slot] / (float)m_iAnimFrameCount[slot]) * fr * m_iAnimFrameCount[slot];
+	m_iCurrentFrame[slot] = (int)(m_iAnimFrameCount[slot] * progress);
+	t[slot] = (int)((progress - (float)m_iCurrentFrame[slot] / (float)m_iAnimFrameCount[slot]) * fr * m_iAnimFrameCount[slot]);
 
 
 }
@@ -1068,7 +1138,10 @@ void Animation::FillBoneMatrix()
 {
 	//AssotiativeArray<int, SXmodel::boneID> * mBonesOrig = m_pMdl->GetBindPoseOrig();
 	//const AssotiativeArray<int, SXmodel::boneID> * mBonesBind = m_pMdl->GetBindPose();
-
+	if(!m_pMdl)
+	{
+		return;
+	}
 	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
 	const ModelBoneName * mBonesBind = m_pMdl->m_pBones;
 
@@ -1200,7 +1273,7 @@ inline bool Animation::PlayingAnimations(const char* name)
 	return false;
 }
 
-void Animation::PlayAnimation(const char * name, UINT iFadeTime, UINT slot) // name: Animation name; changeTime: time to fade to this animation from previous
+void Animation::Play(const char * name, UINT iFadeTime, UINT slot) // name: Animation name; changeTime: time to fade to this animation from previous
 {
 	if(!m_pMdl)
 	{
@@ -1289,7 +1362,7 @@ void Animation::UpdateControllers()
 	}
 }
 
-void Animation::StartActivity(const String & name, UINT iFadeTime)
+void Animation::StartActivity(const String & name, UINT iFadeTime, UINT slot)
 {
 	//SX_ASSERT_MSG(false, "Implement me first");
 }
@@ -1329,35 +1402,21 @@ SMQuaternion Animation::GetOrient()
 	return(m_vOrientation);
 }
 
-void Animation::Render(int howrender, bool render_forward)
+void Animation::Render()
 {
 	if(m_bBoneMatrixReFilled)
 	{
 		m_bBoneMatrixReFilled = false;
 	}
-
+	if(!m_pMdl)
+	{
+		return;
+	}
 	m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrix, sizeof(ModelBoneShader) * m_iBoneCount / sizeof(float) / 4);
 
-	m_pMdl->Render(howrender, render_forward, &(SMMatrixScaling(0.01f, 0.01f, 0.01f) * GetWorldTM()), m_iCurrentSkin);
+	m_pMdl->Render(0, 0, &(SMMatrixScaling(0.01f, 0.01f, 0.01f) * GetWorldTM()), m_iCurrentSkin);
 }
 
-bool Animation::IsVisible()
-{
-	return(m_bVisible);
-}
-void Animation::SetVisible(bool bdo)
-{
-	m_bVisible = bdo;
-}
-
-bool Animation::IsRenderForShadow()
-{
-	return(m_bRenderForShadow);
-}
-void Animation::SetRenderForShadow(bool bdo)
-{
-	m_bRenderForShadow = bdo;
-}
 
 AnimStateCB Animation::SetCallback(AnimStateCB cb)
 {
@@ -1373,6 +1432,402 @@ AnimProgressCB Animation::SetProgressCB(AnimProgressCB cb)
 	return(old);
 }
 
+const ModelFile * Animation::AddModel(const char * mdl, UINT flags)
+{
+	const ModelFile * pMdl = m_pMgr->LoadModel(mdl);
+	if(pMdl)
+	{
+		AddModel(pMdl, flags);
+	}
+	return(pMdl);
+}
+void Animation::AddModel(const ModelFile * mdl, UINT flags)
+{
+	if(!mdl)
+	{
+		return;
+	}
+	ModelPart pt;
+	pt.pMdl = mdl;
+	pt.uImportFlags = flags;
+	pt.attachDesc.type = MA_SKIN;
+	AddModel(&pt);
+}
+int Animation::AddModel(ModelPart * mp)
+{
+	if(!mp)
+	{
+		return(-1);
+	}
+
+	m_mMdls.push_back(*mp);
+	return(m_mMdls.size() - 1);
+}
+ModelPart * Animation::GetPart(UINT idx)
+{
+	if(idx >= m_mMdls.size())
+	{
+		return(NULL);
+	}
+	return(&m_mMdls[idx]);
+}
+
+MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
+{
+	bool bRootFound = false;
+	bool bRootLeft = false;
+
+	if(!m_hdr2.iBoneTableCount)
+	{
+		//simply copy bones
+		if(root)
+		{
+			return(MBE_NO_ROOT);
+		}
+		mem_delete_a(m_pBones);
+		m_pBones = new ModelBoneName[mdl->m_hdr2.iBoneTableCount];
+		memcpy(m_pBones, mdl->m_pBones, sizeof(ModelBoneName)* mdl->m_hdr2.iBoneTableCount);
+		m_hdr.iBoneCount = m_hdr2.iBoneTableCount = mdl->m_hdr2.iBoneTableCount;
+		return(MBE_SUCCESS);
+	}
+	if(root)
+	{
+		for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; ++i)
+		{
+			if(!strcmp(m_pBones[i].szName, root))
+			{
+				bRootFound = true;
+				bRootLeft = true;
+				break;
+			}
+		}
+	}
+	else
+	{
+		for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; ++i)
+		{
+			if(!strcmp(m_pBones[i].szName, mdl->m_pBones[0].szName))
+			{
+				bRootFound = true;
+				bRootLeft = true;
+				break;
+			}
+		}
+		if(!bRootFound)
+		{
+			for(uint32_t i = 0; i < mdl->m_hdr2.iBoneTableCount; ++i)
+			{
+				if(!strcmp(m_pBones[0].szName, mdl->m_pBones[i].szName))
+				{
+					bRootFound = true;
+					bRootLeft = false;
+					break;
+				}
+			}
+		}
+	}
+	if(!bRootFound)
+	{
+		return(MBE_NO_ROOT);
+	}
+	Array<ModelBoneName> vNewBones, vTmpBones;
+	if(bRootLeft)
+	{
+		///start m_pBones[i] <- mdl->m_pBones[0]
+
+		for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; ++i)
+		{
+			vNewBones.push_back(m_pBones[i]);
+		}
+		if(root)
+		{
+			ModelBoneName tmp;
+			strcpy(tmp.szName, root);
+			tmp.bone.pid = -1;
+			tmp.bone.id = 0;
+			vTmpBones.push_back(tmp);
+		}
+		for(uint32_t i = 0; i < mdl->m_hdr2.iBoneTableCount; ++i)
+		{
+			vTmpBones.push_back(mdl->m_pBones[i]);
+		}
+		if(root)
+		{
+			for(int i = 1, l = vTmpBones.size(); i < l; ++i)
+			{
+				++vTmpBones[i].bone.id;
+				++vTmpBones[i].bone.pid;
+			}
+		}
+	}
+	else
+	{
+		///start m_pBones[i] -> mdl->m_pBones[0]
+
+		for(uint32_t i = 0; i <= mdl->m_hdr2.iBoneTableCount; ++i)
+		{
+			vNewBones.push_back(mdl->m_pBones[i]);
+		}
+		for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; ++i)
+		{
+			vTmpBones.push_back(m_pBones[i]);
+		}
+	}
+
+	for(int i = 0, l = vTmpBones.size(); i < l; ++i)
+	{
+		bool found = false;
+		for(int j = 0, l2 = vNewBones.size(); j < l2; ++j)
+		{
+			if(!strcmp(vTmpBones[i].szName, vNewBones[j].szName))
+			{
+				if(vTmpBones[i].bone.pid >= 0 && vNewBones[j].bone.pid >= 0
+					&& strcmp(mdl->m_pBones[vTmpBones[i].bone.pid].szName, vNewBones[vNewBones[j].bone.pid].szName))
+				{
+					return(MBE_BAD_HIERARCY);
+				}
+				found = true;
+				break;
+			}
+		}
+		if(!found)
+		{
+			ModelBoneName tmp = vTmpBones[i];
+			for(int j = 0, l2 = vNewBones.size(); j < l2; ++j)
+			{
+				if(!strcmp(vTmpBones[tmp.bone.pid].szName, vNewBones[j].szName))
+				{
+					tmp.bone.id = vNewBones.size();
+					tmp.bone.pid = j;
+					vNewBones.push_back(tmp);
+					break;
+				}
+			}
+		}
+	}
+
+	mem_delete_a(m_pBones);
+	m_pBones = new ModelBoneName[vNewBones.size()];
+	memcpy(m_pBones, &vNewBones[0], sizeof(ModelBoneName)* vNewBones.size());
+	m_hdr.iBoneCount = m_hdr2.iBoneTableCount = vNewBones.size();
+	return(MBE_SUCCESS);
+}
+
+void Animation::Assembly()
+{
+	mem_delete(m_pMdl);
+	///@TODO: clear previous data
+	m_pMdl = new ModelFile("", m_pMgr);
+
+	//vvBoneRelinkList[modelPartIdx][OrigBoneIdx] = newBoneIdx;
+	Array<Array<int> > vvBoneRelinkList;
+
+	//merge bones
+	int sPrev = -1;
+	int sCur = 0;
+	Array<ModelPart> mMdls = m_mMdls;
+	while(sPrev != sCur)
+	{
+		sPrev = sCur;
+		for(UINT i = 0; i < mMdls.size(); ++i)
+		{
+			ModelPart * mp = &mMdls[i];
+			MBERR res;
+			switch(mp->attachDesc.type)
+			{
+			case MA_BONE: // target bone
+				res = m_pMdl->AppendBones(mp->pMdl, mp->attachDesc.szBone);
+				break;
+
+			case MA_SKIN: // merge
+				res = m_pMdl->AppendBones(mp->pMdl);
+				break;
+			}
+
+			switch(res)
+			{
+			case MBE_SUCCESS:
+				mMdls.erase(i);
+				++sCur;
+				--i;
+				break;
+			case MBE_NO_ROOT:
+				//try again
+				break;
+			case MBE_BAD_HIERARCY:
+				mMdls.erase(i);
+				++sCur;
+				--i;
+				//report error
+				MessageBoxA(NULL, "Skeleton hierarchy incompatible", "Merge error!", MB_OK | MB_ICONSTOP);
+				break;
+			}
+		}
+	}
+	m_iBoneCount = m_pMdl->GetBoneCount();
+
+	//build relink lists
+	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
+	{//vvBoneRelinkList[modelPartIdx][OrigBoneIdx] = newBoneIdx;
+		ModelPart * mp = &m_mMdls[i];
+		for(int j = 0, ll = mp->pMdl->GetBoneCount(); j < ll; ++j)
+		{
+			vvBoneRelinkList[i][j] = 0;
+			for(int k = 0, lll = m_pMdl->GetBoneCount(); k < lll; ++k)
+			{
+				if(!strcmp(mp->pMdl->m_pBones[j].szName, m_pMdl->m_pBones[k].szName))
+				{
+					vvBoneRelinkList[i][j] = k;
+					break;
+				}
+			}
+		}
+	}
+
+	Array<Array<ModelLoDSubset> > vvLods;
+	Array<char*> vszMats;
+	Array<Array<int> > vvMatsRelinkList;
+
+	Array<ModelSequence> vAnims;
+
+	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
+	{
+		ModelPart * mp = &m_mMdls[i];
+		const ModelFile * mdl = mp->pMdl;
+
+		if(mp->uImportFlags & MI_MESH)
+		{
+			for(int ii = 0, lll = mdl->m_hdr.iMaterialCount; ii < lll; ++ii)
+			{
+				bool found = false;
+				for(int j = 0, ll = vszMats.size(); j < ll; ++j)
+				{
+					if(!strcmp(vszMats[j], mdl->m_iMaterials[0][ii].szName))
+					{
+						found = true;
+						vvMatsRelinkList[i][ii] = j;
+						break;
+					}
+				}
+				if(!found)
+				{
+					vvMatsRelinkList[i][ii] = vszMats.size();
+					vszMats.push_back(mdl->m_iMaterials[0][ii].szName);
+				}
+			}
+
+			for(int ii = 0, ll = mdl->m_hdr.iLODcount; ii < ll; ++ii)
+			{
+				for(uint32_t j = 0; j < mdl->m_pLods[ii].iSubMeshCount; ++j)
+				{
+					int idx = vvMatsRelinkList[i][mdl->m_pLods[ii].pSubLODmeshes[j].iMaterialID];
+					if((int)vvLods[ii].size() <= idx)
+					{
+						memset(&vvLods[ii][idx], 0, sizeof(vvLods[ii][idx]));
+					}
+					AppendMesh(&vvLods[ii][idx], &mdl->m_pLods[ii].pSubLODmeshes[j], vvBoneRelinkList[i]);
+					vvLods[ii][idx].iMaterialID = idx;
+				}
+			}
+		}
+
+		if(mp->uImportFlags & MI_ANIMATIONS)
+		{
+			for(int j = 0, ll = mdl->m_hdr.iAnimationCount; j < ll; ++j)
+			{
+				ModelSequence tmp = mdl->m_pSequences[j];
+				tmp.m_vmAnimData = new ModelBone*[tmp.iNumFrames];
+				for(UINT k = 0; k < tmp.iNumFrames; k++)
+				{
+					tmp.m_vmAnimData[k] = new ModelBone[m_pMdl->m_hdr.iBoneCount];
+					for(uint32_t o = 0; o < m_pMdl->m_hdr.iBoneCount; ++o)
+					{
+						tmp.m_vmAnimData[k][o] = m_pMdl->m_pBones[o].bone;
+					}
+					for(uint32_t o = 0; o < mdl->m_hdr.iBoneCount; ++o)
+					{
+						int idx = vvBoneRelinkList[i][o];
+						tmp.m_vmAnimData[k][idx].orient = mdl->m_pSequences[j].m_vmAnimData[k][o].orient;
+						tmp.m_vmAnimData[k][idx].position = mdl->m_pSequences[j].m_vmAnimData[k][o].position;
+					}
+				}
+				vAnims.push_back(tmp);
+			}
+		}
+
+		if(mp->uImportFlags & MI_SKINS)
+		{
+
+		}
+
+		if(mp->uImportFlags & MI_CONTROLLERS)
+		{
+
+		}
+	}
+
+	m_pMdl->m_hdr.iSkinCount = 1;
+	m_pMdl->m_iMaterials = new ModelMatrial*[m_pMdl->m_hdr.iSkinCount];
+	m_pMdl->m_hdr.iMaterialCount = vszMats.size();
+	m_pMdl->m_iMaterials[0] = new ModelMatrial[m_pMdl->m_hdr.iMaterialCount];
+	for(uint32_t i = 0; i < m_pMdl->m_hdr.iMaterialCount; ++i)
+	{
+		strcpy(m_pMdl->m_iMaterials[0][i].szName, vszMats[i]);
+		m_pMdl->m_iMaterials[0][i].iMat = m_pMgr->GetMaterial(m_pMdl->m_iMaterials[0][i].szName);
+	}
+
+	m_pMdl->m_hdr.iLODcount = vvLods.size();
+	m_pMdl->m_pLods = new ModelLoD[m_pMdl->m_hdr.iLODcount];
+	for(uint32_t i = 0; i < m_pMdl->m_hdr.iLODcount; i++)
+	{
+		m_pMdl->m_pLods[i].iSubMeshCount = vvLods[i].size();
+		m_pMdl->m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pMdl->m_pLods[i].iSubMeshCount];
+		memcpy(m_pMdl->m_pLods[i].pSubLODmeshes, &vvLods[i][0], sizeof(vvLods[i][0]) * m_pMdl->m_pLods[i].iSubMeshCount);
+	}
+
+	m_pMdl->m_hdr.iAnimationCount = vAnims.size();
+	m_pMdl->m_pSequences = new ModelSequence[m_pMdl->m_hdr.iAnimationCount];
+	memcpy(m_pMdl->m_pSequences, &vAnims[0], sizeof(vAnims[0]) * m_pMdl->m_hdr.iAnimationCount);
+
+
+	DownloadData();
+	m_pMdl->BuildMeshBuffers();
+}
+
+void Animation::AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink)
+{
+	int iNewIdxC = to->iIndexCount + from->iIndexCount;
+	int iNewVtxC = to->iVectexCount + from->iVectexCount;
+
+	UINT * idx = new UINT[iNewIdxC];
+	vertex_animated * vtx = new vertex_animated[iNewVtxC];
+
+	memcpy(idx, to->pIndices, sizeof(UINT) * to->iIndexCount);
+	memcpy(vtx, to->pVertices, sizeof(vertex_animated)* to->iVectexCount);
+
+	memcpy(idx + to->iIndexCount, from->pIndices, sizeof(UINT)* from->iIndexCount);
+	memcpy(vtx + to->iVectexCount, from->pVertices, sizeof(vertex_animated)* from->iVectexCount);
+
+	for(uint32_t i = 0; i < from->iIndexCount; ++i)
+	{
+		idx[to->iIndexCount + i] += to->iVectexCount;
+	}
+
+	for(uint32_t i = 0; i < from->iVectexCount; ++i)
+	{
+		for(int j = 0; j < 4; ++j)
+		{
+			vtx[to->iVectexCount + i].BoneIndices[j] = bone_relink[vtx[to->iVectexCount + i].BoneIndices[j]];
+		}
+	}
+
+	mem_delete_a(to->pIndices);
+	mem_delete_a(to->pVertices);
+	to->pIndices = idx;
+	to->pVertices = vtx;
+	to->iIndexCount = iNewIdxC;
+	to->iVectexCount = iNewVtxC;
+}
 
 /**
 *
@@ -1380,9 +1835,9 @@ AnimProgressCB Animation::SetProgressCB(AnimProgressCB cb)
 *
 */
 
-const ModelFile * AnimationManager::LoadModel(const char * name)
+const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
 {
-	if(m_pModels.KeyExists(name))
+	if(!newInst && m_pModels.KeyExists(name))
 	{
 		return(m_pModels[name]);
 	}
@@ -1436,7 +1891,7 @@ HRESULT CompileShaderFromFile(const char * szFileName, LPCSTR szEntryPoint, LPCS
 
 void AnimationManager::LoadShader()
 {
-	const char * shader = "C:/DSe/revo/build/gamesource/shaders/skinning.vs";
+	const char * shader = "C:/revo/build/gamesource/shaders/skinning.vs";
 
 	ID3DXBuffer * pShader = NULL;
 
@@ -1540,10 +1995,8 @@ void AnimationManager::Render(int howrender, int render_forward)
 	for(uint32_t i = 0; i < m_pAnimatedList.size(); i++)
 	{
 		pAnim = m_pAnimatedList[i];
-		if(pAnim->IsVisible() && (!(howrender == 2 || howrender == 3) || pAnim->IsRenderForShadow()))
-		{
-			pAnim->Render(howrender, render_forward != 0);
-		}
+		
+		pAnim->Render();
 	}
 	m_pd3dDevice->SetVertexShader(NULL);
 #endif
@@ -1552,8 +2005,7 @@ void AnimationManager::Update()
 {
 	for(uint32_t i = 0; i < m_pAnimatedList.size(); i++)
 	{
-		if(m_pAnimatedList[i]->IsVisible())
-			m_pAnimatedList[i]->Advance(GetTickCount());
+		m_pAnimatedList[i]->Advance(GetTickCount());
 	}
 }
 
@@ -1567,7 +2019,7 @@ UINT AnimationManager::GetMaterial(const String & mat)
 	material m;
 	//act_krovosos_new1
 
-	const String sBasePath = "C:/DSe/SX/project/gamesource/textures/";
+	const String sBasePath = "C:/revo/build/gamesource/textures/";
 	String out = sBasePath;
 	UINT pos = mat.find("_");
 	if(pos != ~0)

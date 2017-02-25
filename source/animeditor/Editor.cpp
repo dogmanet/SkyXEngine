@@ -26,25 +26,40 @@ m_iCurIdx(-1)
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/krovosos/krovososa.dse");
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/spas/spasa.dse");
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/pm/pma.dse");
-	m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/ak74/ak74a.dse");
+	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/ak74/ak74a.dse");
 	//m_pCurAnim->PlayAnimation("reload", 0);
 
-	UINT c = m_pCurAnim->m_pMdl->GetSequenceCount();
-	AnimItem ai;
-	for(UINT i = 0; i < c; ++i)
+	AddModel("C:/revo/build/gamesource/models/krovosos/krovososa.dse");
+	ModelPart mp;
+	mp.attachDesc.type = MA_BONE;
+	strcpy(mp.attachDesc.szBone, "bip01_r_hand");
+	mp.uImportFlags = MI_ALL;
+	mp.pMdl = m_pAnimMgr->LoadModel("C:/revo/build/gamesource/models/ak74/ak74.dse", true);
+	m_pCurAnim->AddModel(&mp);
+	//bip01_r_hand
+	//AddModel("C:/revo/build/gamesource/models/ak74/ak74.dse");
+	//AddModel("C:/revo/build/gamesource/models/ak74/idle.dse");
+	//AddModel("C:/revo/build/gamesource/models/ak74/shoot.dse");
+	m_pCurAnim->Assembly();
+	if(m_pCurAnim->m_pMdl)
 	{
-		//m_vAnims
-		ai.seq = (ModelSequence*)m_pCurAnim->m_pMdl->GetSequence(i);
-		//	((ModelSequence*)ai.seq)->bLooped = true;
-		if(!(i % 2))
+		/*UINT c = m_pCurAnim->m_pMdl->GetSequenceCount();
+		AnimItem ai;
+		for(UINT i = 0; i < c; ++i)
 		{
-			ai.seq->framerate *= -1;
-		}
-		ai.mdl = m_pCurAnim->m_pMdl;
-		ai.isImported = false;
-		m_vAnims.push_back(ai);
+			//m_vAnims
+			ai.seq = (ModelSequence*)m_pCurAnim->m_pMdl->GetSequence(i);
+			//	((ModelSequence*)ai.seq)->bLooped = true;
+			if(!(i % 2))
+			{
+				ai.seq->framerate *= -1;
+			}
+			ai.mdl = m_pCurAnim->m_pMdl;
+			ai.isImported = false;
+			m_vAnims.push_back(ai);
+		}*/
+		RenderAnimList();
 	}
-	m_pEditor->RenderAnimList();
 }
 
 Editor::~Editor()
@@ -79,6 +94,10 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			edt->MenuSaveAs(hwnd);
 			break;
 
+		case ID_FILE_IMPORT:
+			edt->MenuBrowseImport(hwnd);
+			break;
+
 		case ID_FILE_EXIT:
 			PostQuitMessage(0);
 			break;
@@ -94,7 +113,9 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_ANIM_LOOPED:
 			if(m_pEditor->m_iCurIdx >= 0)
 			{
-				m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->bLooped = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) > 0 ? 1 : 0;
+				byte lp = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) > 0 ? 1 : 0;
+				m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->bLooped = lp;
+				((ModelSequence*)m_pEditor->m_pCurAnim->m_pMdl->GetSequence(m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name))->bLooped = lp;
 				m_pEditor->RenderAnimList();
 			}
 			break;
@@ -112,6 +133,8 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					sscanf(txt, "%d", &speed);
 
 					m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->framerate = speed;
+					((ModelSequence*)m_pEditor->m_pCurAnim->m_pMdl->GetSequence(m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name))->framerate = speed;
+
 				}
 			}
 			break;
@@ -119,7 +142,9 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_ANIM_NAME:
 			if(HIWORD(wParam) == EN_CHANGE && m_pEditor->m_iCurIdx >= 0)
 			{
+				ModelSequence * ms = ((ModelSequence*)m_pEditor->m_pCurAnim->m_pMdl->GetSequence(m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name));
 				GetWindowTextA((HWND)lParam, m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name, MODEL_MAX_NAME);
+				strcpy(ms->name, m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name);
 				m_pEditor->RenderAnimList();
 				m_pEditor->m_pCurAnim->SyncAnims();
 			}
@@ -139,7 +164,22 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				else
 				{
 					m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->act_chance = i;
+					((ModelSequence*)m_pEditor->m_pCurAnim->m_pMdl->GetSequence(m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name))->act_chance = i;
 				}
+			}
+			break;
+
+		case IDC_ATTACH_RB_BONE:
+			{
+				TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
+				tab->AttachBone->Enable(1);
+			}
+			break;
+
+		case IDC_ATTACH_RB_SKIN:
+			{
+				TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
+				tab->AttachBone->Enable(0);
 			}
 			break;
 		}
@@ -225,7 +265,7 @@ LRESULT Editor::AnimListCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if(curSel != -1)
 		{
 			UINT seqi = (UINT)lb->GetItemData(curSel);
-			edt->m_pCurAnim->PlayAnimation(edt->m_vAnims[seqi].seq->name, 100);
+			edt->m_pCurAnim->Play(edt->m_vAnims[seqi].seq->name, 100);
 		}
 		break;
 	}
@@ -325,6 +365,122 @@ void Editor::MenuBrowse(HWND hwnd)
 		SetCurrentDirectoryW(bf);
 		wprintf(L"File: %s\n", ofn.lpstrFile);
 	}
+}
+void Editor::MenuBrowseImport(HWND hwnd)
+{
+	OPENFILENAMEA ofn;
+	char szFile[260];
+
+	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+	ZeroMemory(szFile, sizeof(char)* 260);
+	ofn.lStructSize = sizeof(OPENFILENAMEA);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(wchar_t)* 260;
+	ofn.lpstrFilter = "Model file (*.dse)\0*.dse\0";
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+	wchar_t bf[256];
+	GetCurrentDirectoryW(256, bf);
+
+	if(GetOpenFileNameA(&ofn) == TRUE)
+	{
+		SetCurrentDirectoryW(bf);
+		//wprintf(L"File: %s\n", ofn.lpstrFile);
+		UINT iflags = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DIALOG_IMPORT), hwnd, DlgImportProc, (LPARAM)&ofn.lpstrFile);
+		m_pEditor->AddModel(ofn.lpstrFile, iflags);
+		m_pEditor->m_pCurAnim->Assembly();
+	}
+}
+
+INT_PTR CALLBACK Editor::DlgImportProc(
+	_In_ HWND   hwndDlg,
+	_In_ UINT   uMsg,
+	_In_ WPARAM wParam,
+	_In_ LPARAM lParam
+	)
+{
+	switch(uMsg)
+	{
+	case WM_INITDIALOG:
+	{
+		SendDlgItemMessage(hwndDlg, IDC_CI_ALL, BM_SETCHECK, 1, 0);
+		SendDlgItemMessage(hwndDlg, IDC_CI_MESH, BM_SETCHECK, 1, 0);
+		SendDlgItemMessage(hwndDlg, IDC_CI_ANIMATIONS, BM_SETCHECK, 1, 0);
+		SendDlgItemMessage(hwndDlg, IDC_CI_SKINS, BM_SETCHECK, 1, 0);
+		SendDlgItemMessage(hwndDlg, IDC_CI_CONTROLLERS, BM_SETCHECK, 1, 0);
+		SendDlgItemMessage(hwndDlg, IDC_CI_HITBOXES, BM_SETCHECK, 1, 0);
+
+		SetWindowLong(hwndDlg, GWL_USERDATA, MI_ALL);
+		return(0);
+	}
+	case WM_CLOSE:
+		EndDialog(hwndDlg, 0);
+		return(1);
+
+	case WM_COMMAND:
+		LONG gwlp = GetWindowLong(hwndDlg, GWL_USERDATA);
+		switch(LOWORD(wParam))
+		{
+		case IDOK:
+			//*prm->pMaxlen = GetDlgItemTextA(hwndDlg, IDC_EDIT1, prm->pOut, *prm->pMaxlen);
+			EndDialog(hwndDlg, gwlp);
+			return(1);
+		case IDCANCEL:
+			EndDialog(hwndDlg, 0);
+			return(1);
+
+
+		case IDC_CI_MESH:
+			DlgImpCheckAll(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) ? gwlp | MI_MESH : gwlp & ~MI_MESH);
+			break;
+		case IDC_CI_ANIMATIONS:
+			DlgImpCheckAll(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) ? gwlp | MI_ANIMATIONS : gwlp & ~MI_ANIMATIONS);
+			break;
+		case IDC_CI_SKINS:
+			DlgImpCheckAll(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) ? gwlp | MI_SKINS : gwlp & ~MI_SKINS);
+			break;
+		case IDC_CI_CONTROLLERS:
+			DlgImpCheckAll(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) ? gwlp | MI_CONTROLLERS : gwlp & ~MI_CONTROLLERS);
+			break;
+		case IDC_CI_HITBOXES:
+			DlgImpCheckAll(hwndDlg);
+			SetWindowLong(hwndDlg, GWL_USERDATA, SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) ? gwlp | MI_HITBOXES : gwlp & ~MI_HITBOXES);
+			break;
+
+
+		case IDC_CI_ALL:
+			byte checked = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0) > 0 ? 1 : 0;
+			SendDlgItemMessage(hwndDlg, IDC_CI_MESH, BM_SETCHECK, checked, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CI_ANIMATIONS, BM_SETCHECK, checked, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CI_SKINS, BM_SETCHECK, checked, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CI_CONTROLLERS, BM_SETCHECK, checked, 0);
+			SendDlgItemMessage(hwndDlg, IDC_CI_HITBOXES, BM_SETCHECK, checked, 0);
+			SetWindowLong(hwndDlg, GWL_USERDATA, checked ? gwlp | MI_ALL : gwlp & ~MI_ALL);
+			break;
+		}
+		break;
+	}
+	return(0);
+}
+
+void Editor::DlgImpCheckAll(HWND hwndDlg)
+{
+	bool checked = SendDlgItemMessage(hwndDlg, IDC_CI_MESH, BM_GETCHECK, 0, 0)
+	&& SendDlgItemMessage(hwndDlg, IDC_CI_ANIMATIONS, BM_GETCHECK, 0, 0)
+	&& SendDlgItemMessage(hwndDlg, IDC_CI_SKINS, BM_GETCHECK, 0, 0)
+	&& SendDlgItemMessage(hwndDlg, IDC_CI_CONTROLLERS, BM_GETCHECK, 0, 0)
+	&& SendDlgItemMessage(hwndDlg, IDC_CI_HITBOXES, BM_GETCHECK, 0, 0);
+
+	SendDlgItemMessage(hwndDlg, IDC_CI_ALL, BM_SETCHECK, checked, 0);
 }
 
 void Editor::MenuSave()
@@ -633,7 +789,7 @@ LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				item = &self->m_vAnims[idx];
 				self->m_iCurIdx = idx;
 
-				self->m_pCurAnim->PlayAnimation(item->seq->name, 100);
+				self->m_pCurAnim->Play(item->seq->name, 100);
 
 				TabAnimation * tab = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
 				tab->AnimPropActChance->SetText(String((DWORD)item->seq->act_chance).c_str());
@@ -652,4 +808,42 @@ LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	}
 
 	return(0);
+}
+
+ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport)
+{
+	ModelFile * pMdl = (ModelFile*)m_pAnimMgr->LoadModel(mdl, true);
+
+	bool bIsImported = (pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED) || forceImport;
+
+	if(flags & MI_ANIMATIONS)
+	{
+		UINT c = pMdl->GetSequenceCount();
+		AnimItem ai;
+		for(UINT i = 0; i < c; ++i)
+		{
+			ai.seq = (ModelSequence*)pMdl->GetSequence(i);
+			ai.mdl = pMdl;
+			ai.isImported = bIsImported;
+			if(!bIsImported)
+			{
+				if(!ai.seq->name[0])
+				{
+					const char * bn = basename(mdl);
+					strncpy(ai.seq->name, bn, min(strlen(bn) - 4, MODEL_MAX_NAME));
+					ai.seq->name[MODEL_MAX_NAME - 1] = 0;
+					ai.seq->framerate = 30;
+					ai.seq->activity = 0;
+					ai.seq->act_chance = 0;
+					ai.seq->bLooped = 0;
+				}
+			}
+			m_vAnims.push_back(ai);
+		}
+		RenderAnimList();
+	}
+	//init all sections from mdl data
+
+	m_pCurAnim->AddModel(pMdl, flags);
+	return(pMdl);
 }

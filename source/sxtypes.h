@@ -30,12 +30,26 @@ typedef unsigned long ULONG;
 #endif
 
 #define mem_del(obj) delete obj;
-#define mem_delete(obj) delete obj;obj=0;
-#define mem_delete_a(obj) delete[] obj;obj=0;
+#define mem_delete(obj) if(obj){delete obj;obj=0;}
+#define mem_delete_a(obj) if(obj){delete[] obj;obj=0;}
 #define mem_release(obj) if(obj)obj->Release();
 #define mem_release_del(obj) obj->Release(); obj = 0;
 #define mem_release_delete(obj) obj->Release();mem_delete(obj)
 #define mem_free(a) free(a)
 #define mem_alloc(a) malloc(a)
+
+inline const char * basename(const char * str)
+{
+	const char * pos = str;
+	while(*str)
+	{
+		if(*str == '/' || *str == '\\')
+		{
+			pos = str+1;
+		}
+		++str;
+	}
+	return(pos);
+}
 
 #endif

@@ -15,6 +15,8 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	m_pRoot->SetTransparentTextBk(true);
 	m_pRoot->SetColorBrush(255, 255, 255);
 	m_pRoot->GAlign = {false, true, true, true};
+	m_pRoot->AddHandler(Tools::ProxyCommandProc, WM_COMMAND);
+
 	AttachmentsList = SXGUICrListBox("", 10, 15, 312, 127, m_pRoot->GetHWND(), 0, 0, false);
 	AttachmentsList->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachmentsList->SetColorText(0, 0, 0);
@@ -31,6 +33,7 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	AttachRemove = SXGUICrButton("Remove", 220, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, 0);
 	AttachRemove->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachRemove->GAlign = {true, true, true, false};
+
 	AttachPropsGB = SXGUICrGroupBox("Props", 331, 14, 677, 144, m_pRoot->GetHWND(), 0, 0);
 	AttachPropsGB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachPropsGB->SetColorText(0, 0, 0);
@@ -38,20 +41,24 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	AttachPropsGB->SetTransparentTextBk(true);
 	AttachPropsGB->SetColorBrush(255, 255, 255);
 	AttachPropsGB->GAlign = {false, true, true, true};
-	AttachBoneRB = SXGUICrRadioButton("Bone attachment", 17, 19, 100, 20, AttachPropsGB->GetHWND(), 0, 0);
+	AttachPropsGB->AddHandler(Tools::ProxyCommandProc, WM_COMMAND);
+
+	AttachBoneRB = SXGUICrRadioButton("Bone attachment", 17, 19, 100, 20, AttachPropsGB->GetHWND(), 0, IDC_ATTACH_RB_BONE);
 	AttachBoneRB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachBoneRB->SetColorText(0, 0, 0);
 	AttachBoneRB->SetColorTextBk(255, 255, 255);
 	AttachBoneRB->SetTransparentTextBk(true);
 	AttachBoneRB->SetColorBrush(255, 255, 255);
 	AttachBoneRB->GAlign = {true, true, true, false};
-	AttachSkinRB = SXGUICrRadioButton("Skin attachment", 17, 39, 100, 20, AttachPropsGB->GetHWND(), 0, 0);
+
+	AttachSkinRB = SXGUICrRadioButton("Skin attachment", 17, 39, 100, 20, AttachPropsGB->GetHWND(), 0, IDC_ATTACH_RB_SKIN);
 	AttachSkinRB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachSkinRB->SetColorText(0, 0, 0);
 	AttachSkinRB->SetColorTextBk(255, 255, 255);
 	AttachSkinRB->SetTransparentTextBk(true);
 	AttachSkinRB->SetColorBrush(255, 255, 255);
 	AttachSkinRB->GAlign = {true, true, true, false};
+
 	AttachHideCB = SXGUICrCheckBox("Hide", 17, 62, 100, 20, AttachPropsGB->GetHWND(), 0, 0, false);
 	AttachHideCB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachHideCB->SetColorText(0, 0, 0);
@@ -80,6 +87,7 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	AttachBone->SetTransparentTextBk(true);
 	AttachBone->SetColorBrush(255, 255, 255);
 	AttachBone->GAlign = {true, true, true, false};
+	AttachBone->Enable(0);
 	AttachXshift = SXGUICrEdit("x-shift", 143, 42, 90, 20, AttachPropsGB->GetHWND(), 0, 0);
 	AttachXshift->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachXshift->SetColorText(0, 0, 0);

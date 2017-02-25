@@ -22,6 +22,7 @@
 #pragma comment(lib, "d3d9.lib")
 #include "TabActivities.h"
 #include "TabAnimation.h"
+#include "TabAttachments.h"
 
 //#ifdef _DEBUG
 //#	pragma comment(lib, "d3dx9d.lib")
@@ -54,10 +55,20 @@ public:
 	static Editor * GetInstance();
 	
 	void MenuBrowse(HWND hwnd);
+	void MenuBrowseImport(HWND hwnd);
 	void MenuSave();
 	void MenuSaveAs(HWND hwnd);
 	
 	void Update();
+
+	ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, bool forceImport=false);
+
+	static INT_PTR CALLBACK DlgImportProc(
+		_In_ HWND   hwndDlg,
+		_In_ UINT   uMsg,
+		_In_ WPARAM wParam,
+		_In_ LPARAM lParam
+		);
 
 protected:
 	void InitUI();
@@ -127,6 +138,8 @@ protected:
 
 private:
 	void RenderAnimList();
+
+	static void DlgImpCheckAll(HWND hwndDlg);
 };
 
 #endif

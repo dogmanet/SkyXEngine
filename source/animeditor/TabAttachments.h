@@ -6,6 +6,8 @@
 class TabAttachments:public EditorTab
 {
 public:
+	friend class Editor;
+
 	TabAttachments(TabManager * tm);
 	~TabAttachments();
 

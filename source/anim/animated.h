@@ -33,6 +33,7 @@ class AnimationManager;
 class ModelFile
 {
 	friend class Animation;
+	friend class Editor;
 public:
 	ModelFile(const char * name, AnimationManager * pMgr);
 	~ModelFile();
@@ -49,6 +50,7 @@ public:
 	void BuildMeshBuffers();
 
 	const ModelSequence * GetSequence(UINT id) const;
+	const ModelSequence * GetSequence(const char * name) const;
 	const ModelBoneController * GetController(UINT id) const;
 	UINT GetBoneCount() const;
 	UINT GetSequenceCount() const;
@@ -59,9 +61,11 @@ public:
 	ModelMatrial ** m_iMaterials;
 	ModelLoD * m_pLods;
 	//SkyXEngine::Graphics::ThreeD::Bound BoundVol;
-protected:
 
 	
+protected:
+
+	MBERR AppendBones(const ModelFile * mdl, char * root=NULL);
 	//void BuildHitboxes();
 	void Load(const char * name);
 	
@@ -120,14 +124,12 @@ protected:
 	bool m_bInitPosInvSet;
 
 	AnimationManager * m_pMgr;
+
+	bool m_bIsTemp;
+
+
 };
 
-enum ANIM_STATE
-{
-	AS_STOP,
-	AS_PLAY,
-	AS_LOOP
-};
 
 typedef void(*AnimStateCB)(int slot, ANIM_STATE as, Animation * pAnim);
 typedef void(*AnimProgressCB)(int slot, float progress, Animation * pAnim);
@@ -141,34 +143,31 @@ public:
 	SX_ALIGNED_OP_MEM
 
 	void Advance(unsigned long int dt);
-//	bool IsVisibleFrustum(Core::ControllMoving::Frustum* frustum);
-	//0 - простой рендер, 1 - с материалом, 2 - pssm, 3 - cube
+
 #ifndef _SERVER
-	void Render(int howrender = 0,bool render_forward = false);
+	void Render();
 #endif
 
 	void SetModel(const char * file);
 
-	void PlayAnimation(const char * name, UINT iFadeTime, UINT slot = 0); // name: Animation name; changeTime: time to fade to this animation from previous
+	void Play(const char * name, UINT iFadeTime = 0, UINT slot = 0); // name: Animation name; changeTime: time to fade to this animation from previous
 	void Stop(UINT slot = 0);
 	void Resume(UINT slot = 0);
+
 	void SetProgress(float progress, UINT slot = 0);
 	void SetAdvance(bool set, UINT slot = 0);
 
-	void StartActivity(const String & name, UINT iFadeTime);
+	void StartActivity(const String & name, UINT iFadeTime = 0, UINT slot = 0);
 
-	//const SXmodel::SXmodelBoneController * GetBoneController(const String & name); // Get and Set values from/to controllable bones
 	void SetBoneController(const String & name, float value, MODEL_BONE_CTL what);
 
 	SMMATRIX GetBoneTransform(UINT id);
+	UINT GetBone(const char * str);
 
 	inline bool PlayingAnimations();
 	inline bool PlayingAnimations(const char* name);
 	void StopAnimations();
 
-	void FillBoneMatrix();
-
-	void UpdateControllers();
 
 	int GetActiveSkin();
 	void SetSkin(int n);
@@ -182,12 +181,6 @@ public:
 
 	SMMATRIX GetWorldTM();
 
-	bool IsVisible();
-	void SetVisible(bool bdo);
-
-	bool IsRenderForShadow();
-	void SetRenderForShadow(bool bdo);
-
 	AnimStateCB SetCallback(AnimStateCB cb);
 	AnimProgressCB SetProgressCB(AnimProgressCB cb);
 
@@ -196,8 +189,20 @@ public:
 	ModelFile * m_pMdl;
 
 	void SyncAnims();
+
+	const ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL);
+	void AddModel(const ModelFile * mdl, UINT flags = MI_ALL);
+	int AddModel(ModelPart * mp);
+	void Assembly();
+	ModelPart * GetPart(UINT idx);
 protected:
-	
+
+	void DownloadData();
+
+	void FillBoneMatrix();
+
+	void UpdateControllers();
+
 	float3 jcenter2,jcenter;
 	float jradius;
 	bool m_bIsAnimationPlaying[BLEND_MAX];
@@ -248,6 +253,12 @@ protected:
 
 	AnimStateCB m_pfnCallBack;
 	AnimProgressCB m_pfnProgressCB;
+
+
+	Array<ModelPart> m_mMdls;
+
+private:
+	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink);
 };
 
 class AnimationManager
@@ -255,7 +266,7 @@ class AnimationManager
 public:
 	AnimationManager(IDirect3DDevice9 * dev);
 	~AnimationManager();
-	const ModelFile * LoadModel(const char * name);
+	const ModelFile * LoadModel(const char * name, bool newInst=false);
 
 	UINT Register(Animation * pAnim);
 	void UnRegister(UINT id);
