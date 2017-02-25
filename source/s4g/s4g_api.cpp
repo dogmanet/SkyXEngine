@@ -76,7 +76,7 @@ int s4g_load_file(s4g_main* s4gm, const char* file)
 	}
 
 	s4gm->gnode = s4gm->bst->s4g_gen_tree();
-/*#if defined(_DEBUG)
+#if defined(_DEBUG)
 	{
 		String tree = String("var s4g_ast = ") + s4gm->gnode->Dump();
 		FILE * pf = fopen("./Debug/ast/ast.json", "wb");
@@ -87,7 +87,7 @@ int s4g_load_file(s4g_main* s4gm, const char* file)
 		}
 	}
 	//exit(0);
-#endif*/
+#endif
 	if (s4gm->bst->status != 0)
 	{
 		s4g_gen_msg(s4gm, S4G_ERROR, "parser: %s", s4gm->bst->error);

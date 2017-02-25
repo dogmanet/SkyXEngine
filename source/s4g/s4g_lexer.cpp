@@ -384,10 +384,11 @@ inline int s4g_is_marg(const char* sstr, char* dstr)
 }*/
 
 
-inline void s4g_scan_litstring(const char* cur, char* dstr, int & len)
+inline void s4g_scan_litstring(const char* cur, String* dstr, int & len)
 {
 	char stop = *cur;
 	++cur;
+
 	while(*cur && *cur != stop)
 	{
 		if(*cur == '\\')
@@ -399,32 +400,32 @@ inline void s4g_scan_litstring(const char* cur, char* dstr, int & len)
 			case L'\'':
 			case L'\\':
 			case L'/':
-				*dstr++ = *cur;
+				(*dstr)[len] = *cur;
 				break;
 			case L'b':
-				*dstr++ = L'\b';
+				(*dstr)[len] = L'\b';
 				break;
 			case L'f':
-				*dstr++ = L'\f';
+				(*dstr)[len] = L'\f';
 				break;
 			case L'n':
-				*dstr++ = L'\n';
+				(*dstr)[len] = L'\n';
 				break;
 			case L'r':
-				*dstr++ = L'\r';
+				(*dstr)[len] = L'\r';
 				break;
 			case L't':
-				*dstr++ = L'\t';
+				(*dstr)[len] = L'\t';
 				break;
 			}
 		}
 		else
 		{
-			*dstr++ = *cur;
+			(*dstr)[len] = *cur;
 		}
 		++cur; ++len;
 	}
-	*dstr = 0;
+	(*dstr)[len] = 0;
 }
 
 inline int s4g_scan_num(const char* sstr, char* dstr)
@@ -554,8 +555,10 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			else if(tmpc == '"' || tmpc == '\'')
 			{
 				int len = 0;
-				s4g_scan_litstring(str + numcursym, tmpword, len);
-				tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string, -1, curr_id_file);
+				String litstr;
+				litstr.Reserve(1024);
+				s4g_scan_litstring(str + numcursym, &litstr, len);
+				tmplex = LexPool.Alloc(litstr.c_str(), numcurstr, s4g_lexeme_type::word_string, -1, curr_id_file);
 				numcursym += len + 2;
 				break;
 			}
@@ -629,8 +632,10 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 					else if(tmpc == '"' || tmpc == '\'')
 					{
 						int len = 0;
-						s4g_scan_litstring(str + numcursym, tmpword, len);
-						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
+						String litstr;
+						litstr.Reserve(1024);
+						s4g_scan_litstring(str + numcursym, &litstr, len);
+						tmplex = LexPool.Alloc(litstr.c_str(), numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
 						numcursym += len + 2;
 						break;
 					}
@@ -837,7 +842,8 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 						sprintf(strerror, "[%s]:%d - #line expected a line number, found [%s]", ArrFiles[tmplex2->fileid], tmplex2->numstr, tmplex2->str);
 						return -1;
 					}
-					sscanf(tmplex2->str, "%d", &numcurstr);
+					//sscanf(tmplex2->str, "%d", &numcurstr);
+					tmplex2->str = numcurstr;
 					--numcurstr;
 					LexPool.Delete(tmplex2);
 
@@ -850,7 +856,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 					int idx = -1;
 					for(int ci = 0, cl = ArrFiles.size(); ci < cl; ++ci)
 					{
-						if(!strcmp(ArrFiles[ci].c_str(), tmplex2->str))
+						if(!strcmp(ArrFiles[ci].c_str(), tmplex2->str.c_str()))
 						{
 							idx = ci;
 							break;

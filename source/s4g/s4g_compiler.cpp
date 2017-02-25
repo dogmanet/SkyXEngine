@@ -391,7 +391,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			def_printf("precall\n");
 			compile2(node->op1);	//ложим на вершину стека функцию
 			long countarg = 0;		//
-			s4g_node* tmpnode = node->op1->op2;
+			s4g_node* tmpnode = node->op2;// ->op1->op2;
 				while(tmpnode->op1)
 				{
 					countarg++;
@@ -520,10 +520,10 @@ int s4g_compiler::compile2(s4g_node* node)
 			def_printf("block_new\n");
 			compile2(node->op1);
 			compile2(node->op2);
-			compile2(node->op3);
+			//compile2(node->op3);
 			gen(mc_block_del, 0, node->lexid);
 			def_printf("block_del\n");
-			//compile2(node->op2);
+			compile2(node->op3);
 			/*gen(mc_jmp, 0, node->lexid);
 			def_printf("jmp\n");
 			cyctls.push_back({ comms->count() - 1, _cyctl::BREAK });
