@@ -215,6 +215,7 @@ public:
 	inline const char * c_str() const;
 
 	void Reserve(int length);
+	inline void AppendReserve(int length);
 
 	inline int		ToInt() const;
 	inline long	ToLongInt() const;
@@ -419,6 +420,7 @@ public:
 	inline const WCHAR * c_str() const;
 
 	inline void Reserve(int length);
+	inline void AppendReserve(int length);
 
 	inline int		ToInt() const;
 	inline long	ToLongInt() const;

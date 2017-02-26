@@ -1,3 +1,4 @@
+
 #ifndef s4g_stack_h
 #define s4g_stack_h
 

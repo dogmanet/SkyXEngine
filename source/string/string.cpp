@@ -2425,10 +2425,28 @@ void String::Reserve(int length)
 	string = new char[length + 1];
 }
 
+void String::AppendReserve(int length)
+{
+	char* tmpnewstr = new char[strlen(string) + length + 1];
+	strcpy(tmpnewstr, string);
+	SAFE_DELETE_A(string);
+
+	string = tmpnewstr;
+}
+
 void StringW::Reserve(int length)
 {
 	SAFE_DELETE_A(string);
 	string = new WCHAR[length + 1];
+}
+
+void StringW::AppendReserve(int length)
+{
+	WCHAR* tmpnewstr = new WCHAR[wcslen(string) + length + 1];
+	wcscpy(tmpnewstr, string);
+	SAFE_DELETE_A(string);
+
+	string = tmpnewstr;
 }
 /*
 StringW operator+(const WCHAR * a, const StringW & b)

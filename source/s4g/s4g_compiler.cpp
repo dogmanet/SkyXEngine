@@ -46,52 +46,10 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _set)
 		{
-			long countvar = 0;		//
-			s4g_node* tmpnode = node->op1;
-			while (tmpnode)
-			{
-				countvar++;
-				//compile2(tmpnode);
-				tmpnode = tmpnode->op2;
-			}
-
-			long countval = 0;	
-			tmpnode = node->op2;
-			while (tmpnode)
-			{
-				countval++;
-				//compile2(tmpnode);
-				tmpnode = tmpnode->op2;
-			}
-
-			if (countvar > 1 || node->op2->type == _call)
-			{
-				gen(mc_end, 0, node->lexid);
-				def_printf("--end\n");
-				tmpnode = node->op2;
-				while (tmpnode)
-				{
-					compile2(tmpnode);
-					tmpnode = tmpnode->op2;
-				}
-
-				tmpnode = node->op1;
-				while (tmpnode)
-				{
-					compile2(tmpnode);
-					tmpnode = tmpnode->op2;
-				}
-
-				gen(mc_mstore, (s4g_value*)countvar, node->lexid);
-				def_printf("mstore\n");
-			}
-			else
-			{
-				compile2(node->op1);
-				compile2(node->op2);
-				gen(mc_store, 0, node->lexid);
-				def_printf("store\n");
-			}
+			compile2(node->op1);
+			compile2(node->op2);
+			gen(mc_store, 0, node->lexid);
+			def_printf("store\n");
 		}
 		else if(node->type == _sett)
 		{
@@ -352,8 +310,7 @@ int s4g_compiler::compile2(s4g_node* node)
 						{
 							sf->ismarg = true;
 							sf->marg_val = gc->cr_val_table_null(0,S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
-							//sf->marg_val->isdelete = false;
-							//sf->marg_val->typedata = 1;
+							
 							sf->marg_val->pdata->typedata = S4G_GC_TYPE_DATA_SYS;
 							sf->margtable = gc->get_table(sf->marg_val);
 							break;
@@ -391,7 +348,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			def_printf("precall\n");
 			compile2(node->op1);	//ложим на вершину стека функцию
 			long countarg = 0;		//
-			s4g_node* tmpnode = node->op1->op2;
+			s4g_node* tmpnode = node->op2;// ->op1->op2;
 				while(tmpnode->op1)
 				{
 					countarg++;
@@ -404,12 +361,8 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _return)
 		{
-			s4g_node* tmpnode = node;
-				while(tmpnode)
-				{
-					compile2(tmpnode->op1);
-					tmpnode = tmpnode->op2;
-				}
+			compile2(node->op1);
+
 			gen(mc_halt, 0, node->lexid);
 			def_printf("halt\n");
 		}
@@ -520,10 +473,10 @@ int s4g_compiler::compile2(s4g_node* node)
 			def_printf("block_new\n");
 			compile2(node->op1);
 			compile2(node->op2);
-			compile2(node->op3);
+			//compile2(node->op3);
 			gen(mc_block_del, 0, node->lexid);
 			def_printf("block_del\n");
-			//compile2(node->op2);
+			compile2(node->op3);
 			/*gen(mc_jmp, 0, node->lexid);
 			def_printf("jmp\n");
 			cyctls.push_back({ comms->count() - 1, _cyctl::BREAK });

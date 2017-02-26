@@ -230,9 +230,10 @@ struct s4g_lexeme
 	s4g_lexeme(){}
 	s4g_lexeme(const char* _str, long _numstr, s4g_lexeme_type _type, int _id, int _idfile)
 	{
-		strcpy(str, _str); numstr = _numstr, type = _type; id = _id; fileid = _idfile;
+		str = _str;/*strcpy(str, _str);*/ numstr = _numstr, type = _type; id = _id; fileid = _idfile;
 	}
-	char str[S4G_MAX_LEN_TYPE_NAME];	//строковое представление лексемы
+	String str;
+	//char str[S4G_MAX_LEN_TYPE_NAME];	//строковое представление лексемы
 	long numstr;	//номер строки на которой находится лексема
 	s4g_lexeme_type type;		//тип лексемы
 	int id;			//порядковый номер лексемы из массива слов к которому она относится
@@ -247,13 +248,16 @@ enum s4g_type_op
 	
 	_expr,	//выражение
 	_var,	//переменная
+
+	//пре и пост инкременты и декременты, для переменных
 	_var_preincr,
 	_var_predecr,
 	_var_postincr,
 	_var_postdecr,
+
 	_crvar,	//создаваемая переменная
 
-	_block,
+	_block,//блок инструкций, создает новый контекст
 
 	//ноды содержащие в себе значения с типами
 	_null,_float, _int, _int_cr, _uint, _uint_cr, _bool,  _string, _string_cr, 
@@ -264,13 +268,15 @@ enum s4g_type_op
 	_set,	//присваивание
 	_sett,	//присваивание в таблице
 	_get,	//получение переменной
+
+	//пре и пост инкременты и декременты, для полей таблиц
 	_get_preincr,
 	_get_predecr,
 	_get_postincr,
 	_get_postdecr,
+
 	_get_cr,//создание и получение переменной 
 	_call,	//вызов функции
-	_call_b,	//вызов функции
 	_add,//+
 	_sub,//-
 	_mul,//*
@@ -280,7 +286,7 @@ enum s4g_type_op
 	_return,		//возвращение значений
 	_create_table,	//создание таблицы
 	_add_in_table,	//добавление в таблицу
-	_append_table,
+	_append_table,	//добавить в конец таблицы
 
 	_if,
 	_while,
@@ -403,18 +409,19 @@ struct s4g_node
 	s4g_node(s4g_type_op _type = _begin, long _lexid = -1, s4g_value* _value = 0, s4g_node* _op1 = 0, s4g_node* _op2 = 0, s4g_node* _op3 = 0)
 	{
 		type = _type; lexid = _lexid; value = _value; op1 = _op1; op2 = _op2; op3 = _op3;
+		ud = 0;
 	}
 	s4g_type_op type;	//тип нода
-	long lexid;
+	long lexid;			//id лексемы которая способствовала генерации данного нода
 	s4g_value* value;	//значение если надо
 
 	//содержимое нода или продолжение
 	s4g_node* op1;	
 	s4g_node* op2;
 	s4g_node* op3;
-
+	int ud;
 	Array<s4g_node*> ops;
-
+	
 #if defined(_DEBUG)
 	String Dump()
 	{
@@ -423,7 +430,7 @@ struct s4g_node
 		out += "'";
 
 		out += ",value:";
-		if(value)
+		if (value && int(value) >10)
 		{
 			out += "{name:'";
 			out += value->name;
@@ -537,6 +544,7 @@ struct s4g_node
 		{
 		case _begin:return("_begin");
 		case _empty:return("_empty");
+		case _block:return("_block");
 		case _expr:return("_expr");
 		case _var:return("_var");
 		case _crvar:return("_crvar");
@@ -643,6 +651,14 @@ struct s4g_node
 		//op2 - _empty
 			//...
 
+//инструкция, она четко отделена от других понятий в парсере
+struct s4g_statement
+{
+	s4g_statement(){ root = 0; node = 0; }
+	s4g_statement(s4g_node* _root, s4g_node** _node){ root = _root; node = _node; }
+	s4g_node* root;	//родительский нод
+	s4g_node** node;//нод который надо будет считать, в основном (*node) == 0, ибо постоянно происходит смена
+};
 
 //является ли анализируемая лексема ...
 inline int s4g_is_syms_arif(const char* sstr,char* dstr);		//арифметическим сиволом из s4g_key_syms_arif
@@ -652,6 +668,7 @@ inline bool s4g_is_comment_os(const char* sstr);				//однострочным комментарием
 inline bool s4g_is_comment_ms_b(const char* sstr);				//началом многострочного комментария
 inline bool s4g_is_comment_ms_e(const char* sstr);				//концом многострочного комментария
 inline int s4g_is_boolean(const char* sstr,char* dstr);			//логическим значеием
+
 inline bool s4g_is_null(const char* sstr);						//пустым значением
 inline int s4g_is_delimiter(const char* sstr,char* dstr);		//разделителем
 inline int s4g_is_assign(const char* sstr,char* dstr);			//присваиванием
@@ -670,28 +687,13 @@ inline bool s4g_is_char_arif_pm(const char sym);			//арифметическим символом + -
 
 //считывание из строки ...
 inline void s4g_scan_string(const char* sstr,char* dstr);				//слова состоящего из букв и цифр
-inline void s4g_scan_litstring(const char* sstr,char* dstr);			//пользовательской строки начинающейся и заканчивающейся "
+inline void s4g_scan_litstring(const char* sstr,String* dstr);			//пользовательской строки начинающейся и заканчивающейся "
 inline int s4g_scan_num(const char* sstr,char* dstr);					//числа
 
 inline int s4g_is_key_word(const char* str);	//является ли слово ключевым
 inline int s4g_is_key_word_pp(const char* str);	//является ли слово ключевым из препроцессора
-
-//аргумент препроцессора
-struct s4g_def_lex_arg
-{
-	s4g_def_lex_arg(){}
-	s4g_def_lex_arg(s4g_lexeme* _l,int _a){lexeme = _l;num_arg = _a;}
-	s4g_lexeme* lexeme;
-	int num_arg;
-};
-
-//команда препроцессора, может быть как константой так и функцией
-struct s4g_define
-{
-	char name[64];
-	Array<String> arg;
-	Array<s4g_def_lex_arg> lexs;
-};
+inline int s4g_is_key_boolean(const char* str);	//логическим значеием
+//inline int s4g_is_key_null(const char* str);	//логическим значеием
 
 //лексический анализатор
 class s4g_arr_lex
@@ -749,7 +751,6 @@ struct s4g_builder_syntax_tree
 	s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
 
 	s4g_node* s4g_gen_statement();//считывание главных инструкций
-	//s4g_node* s4g_read_block();			//считывает блок выражений
 	int s4g_begin_read_block();
 	int s4g_end_read_block();
 	s4g_node* s4g_get_ret_vals();		//считывание возвращаемых значений
@@ -757,7 +758,7 @@ struct s4g_builder_syntax_tree
 	s4g_node* s4g_get_function_def_head();	//считывание аргументов при создании функции
 	s4g_node* s4g_get_term();	//считывание термов
 	s4g_node* s4g_get_op();		//считывание операций
-	s4g_node* s4g_get_expr();	//считывание выражений
+	s4g_node* s4g_get_expr(bool isfull = true);	//считывание выражений
 	s4g_node* s4g_get_table();	//считывание содержимого создаваемой таблицы
 
 	bool isender;	//если список лексем закончился то можно ли завершить построение?

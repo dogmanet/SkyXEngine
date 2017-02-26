@@ -113,7 +113,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//s4g_spush_c_func(s4gm, testcf);
 	//s4g_sstore_g(s4gm, "testcf");
 	
-	int status = s4g_load_file(s4gm, "D:/project/engine/SkyXEngine/SkyXEngine/Debug/s4g.script");
+	int status = s4g_load_file(s4gm, "D:/project/engine/SkyXEngine/SkyXEngine/Debug/sort.script");
 	//status = s4g_load_str(s4gm, exestr);
 	
 	
