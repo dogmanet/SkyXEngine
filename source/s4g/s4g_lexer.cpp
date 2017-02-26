@@ -388,10 +388,11 @@ inline void s4g_scan_litstring(const char* cur, String* dstr, int & len)
 {
 	char stop = *cur;
 	++cur;
+	int idx = 0;
 
 	while(*cur && *cur != stop)
 	{
-		if (dstr->length() <= len)
+		if(dstr->length() <= idx)
 			dstr->AppendReserve(32);
 		if(*cur == '\\')
 		{
@@ -402,32 +403,32 @@ inline void s4g_scan_litstring(const char* cur, String* dstr, int & len)
 			case L'\'':
 			case L'\\':
 			case L'/':
-				(*dstr)[len] = *cur;
+				(*dstr)[idx++] = *cur;
 				break;
 			case L'b':
-				(*dstr)[len] = L'\b';
+				(*dstr)[idx++] = L'\b';
 				break;
 			case L'f':
-				(*dstr)[len] = L'\f';
+				(*dstr)[idx++] = L'\f';
 				break;
 			case L'n':
-				(*dstr)[len] = L'\n';
+				(*dstr)[idx++] = L'\n';
 				break;
 			case L'r':
-				(*dstr)[len] = L'\r';
+				(*dstr)[idx++] = L'\r';
 				break;
 			case L't':
-				(*dstr)[len] = L'\t';
+				(*dstr)[idx++] = L'\t';
 				break;
 			}
 		}
 		else
 		{
-			(*dstr)[len] = *cur;
+			(*dstr)[idx++] = *cur;
 		}
 		++cur; ++len;
 	}
-	(*dstr)[len] = 0;
+	(*dstr)[idx++] = 0;
 }
 
 inline int s4g_scan_num(const char* sstr, char* dstr)
