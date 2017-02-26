@@ -107,7 +107,12 @@ void RecursiveTest(const char * szPath, const char * lpSearch)
 	WIN32_FIND_DATA fdFindData;
 	HANDLE hFind;
 	//printf("%s\n", szPath);
-	String search = String(szPath) + "*";
+	String Path = String(szPath);
+	if(Path[Path.length() - 1] != '/' && Path[Path.length() - 1] != '\\')
+	{
+		Path += '/';
+	}
+	String search = Path + "*";
 
 	hFind = FindFirstFile(search.c_str(), &fdFindData);
 	if(INVALID_HANDLE_VALUE == hFind)
@@ -122,7 +127,7 @@ void RecursiveTest(const char * szPath, const char * lpSearch)
 		{
 			continue;
 		}
-		cur = String(szPath) + fdFindData.cFileName;
+		cur = Path + fdFindData.cFileName;
 		if(fdFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			cur += '/';
@@ -133,7 +138,7 @@ void RecursiveTest(const char * szPath, const char * lpSearch)
 	FindClose(hFind);
 
 
-	search = String(szPath) + lpSearch;
+	search = Path + lpSearch;
 	hFind = FindFirstFile(search.c_str(), &fdFindData);
 	if(INVALID_HANDLE_VALUE == hFind)
 	{
@@ -146,7 +151,7 @@ void RecursiveTest(const char * szPath, const char * lpSearch)
 		{
 			continue;
 		}
-		cur = String(szPath) + fdFindData.cFileName;
+		cur = Path + fdFindData.cFileName;
 		if(!(fdFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			RunTest(cur.c_str());
@@ -200,7 +205,7 @@ void RunTest(const char * file)
 			f = false;
 			for(int j = 0; j < TS_LAST; ++j)
 			{
-				if(!strcmp(g_szSections[j], line.c_str()))
+				if(!strcmp(g_szSections[j], line.trim().c_str()))
 				{
 					curSect = (TEST_SECTION)j;
 					f = true;
@@ -244,6 +249,9 @@ void RunTest(const char * file)
 	String out = exec(cmd.c_str()) + '\n';
 	remove(sName.c_str());
 
+	out.ReplaceAll("\r\n", "\n");
+	sEXPECT.ReplaceAll("\r\n", "\n");
+
 	if(out == sEXPECT)
 	{
 		g_color.setColor(ANSI_LGREEN);
@@ -264,7 +272,7 @@ void RunTest(const char * file)
 			_mkdir(outDir.c_str());
 		}
 		outDir += String('/') + _fname;
-		WriteFile((outDir + ".s4gt").c_str(), tmps, fTestSize);
+		//WriteFile((outDir + ".s4gt").c_str(), tmps, fTestSize);
 		WriteFile((outDir + ".s4g").c_str(), sFILE.c_str(), sFILE.length());
 		WriteFile((outDir + ".expect").c_str(), sEXPECT.c_str(), sEXPECT.length());
 		WriteFile((outDir + ".out").c_str(), out.c_str(), out.length());

@@ -187,8 +187,8 @@ public:
 	bool operator!=(const bool &	bf) const;
 
 	//////////////////////////////////////
-	inline char & operator[](const unsigned long & num);
-	inline const char & operator[](const unsigned long & num) const;
+	char & operator[](const unsigned long & num);
+	const char & operator[](const unsigned long & num) const;
 	//////////////////////////////////////
 
 	inline unsigned long length() const;
@@ -210,11 +210,11 @@ public:
 	inline String substr(unsigned long pos, unsigned long lenght = 0) const;
 	inline unsigned int Delete(unsigned long pos, unsigned long lenght);
 
-	inline String trim();
+	String trim();
 
 	inline const char * c_str() const;
 
-	inline void Reserve(int length);
+	void Reserve(int length);
 
 	inline int		ToInt() const;
 	inline long	ToLongInt() const;
