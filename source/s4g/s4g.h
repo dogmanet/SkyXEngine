@@ -8,7 +8,7 @@ extern "C"
 #include <string/string.cpp>
 #include <limits.h>
 
-#define S4G_VERSION "0.9"
+#define S4G_VERSION "0.9.1"
 #define S4G_COPYRIGHT "Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017"
 #define S4G_SITE "s4g.su"
 
@@ -54,7 +54,7 @@ struct s4g_table;	//таблица
 #define S4G_MAX_LEN_STR_IN_FILE 1024//максимальная длина загружаемого файла
 
 #define S4G_MAX_CALL 1000	//максимальное количество вызовов (рекурсивных и вложенных)
-#define S4G_MAX_ENCLOSURE 100	//максимальное количество вложенных блоков
+
 #define S4G_GLOBAL_NM "_g"	//обращение в скрипте к глобальному пространству имен
 #define S4G_MARG "args"		//таблица для обращения к аргументам в случае если функция принимает неопределенное количество аргументов
 
@@ -62,24 +62,26 @@ struct s4g_table;	//таблица
 //резерв памяти элементов - резерв выделяемой памяти для создания новых элементов
 //(для всех резервов): на это же количество будет увеличиваться дополнительный резерв в случе превышения предыдущего резерва
 
-#define S4G_RESERVE_STACK_EXE 1000	//резерв элементов для стека исполнения
+#define S4G_RESERVE_STACK_EXE 100	//резерв элементов для стека исполнения
 
-#define S4G_RESERVE_VALUE 10000		//резерв элементов для переменных
-#define S4G_RESERVE_VALUE_MEM 10000	//резерв памяти элементов для переменных
+#define S4G_RESERVE_VALUE 1000		//резерв элементов для переменных
+#define S4G_RESERVE_VALUE_MEM 1000	//резерв памяти элементов для переменных
 
-#define S4G_RESERVE_DATA 10000		//резерв элементов для данных
-#define S4G_RESERVE_DATA_MEM 10000	//резерв памяти элементов для данных
+#define S4G_RESERVE_DATA 1000		//резерв элементов для данных
+#define S4G_RESERVE_DATA_MEM 1000	//резерв памяти элементов для данных
 
+#define S4G_RESERVE_BLOCKS 10		//резерв элементов блоков
+#define S4G_RESERVE_BLOCKS_MEM 100		//резерв элементов блоков
 #define S4G_RESERVE_CONTEXTS 100	//резерв элементов для контекстов
-#define S4G_ADD_MEM_CONTEXTS 16		//количество создаваемых контекстов на каждый случай нехватки
+#define S4G_ADD_MEM_CONTEXTS 8		//количество создаваемых контекстов на каждый случай нехватки
 #define S4G_RESERVE_CONTEXTS_MEM 100//резерв памяти элементов для контекстов
 
-#define S4G_RESERVE_STRING_MEM 1000	//резерв памяти элементов для строк
+#define S4G_RESERVE_STRING_MEM 100	//резерв памяти элементов для строк
 
-#define S4G_RESERVE_SFUNC_MEM 1000	//резерв памяти элементов для скриптовых функций
+#define S4G_RESERVE_SFUNC_MEM 100	//резерв памяти элементов для скриптовых функций
 
-#define S4G_RESERVE_TABLE_MEM 1000	//резерв памяти элементов для таблиц
-#define S4G_RESERVE_TABLE_ELEM 16	//на сколько элементов будет резервироваться место в таблицах
+#define S4G_RESERVE_TABLE_MEM 100	//резерв памяти элементов для таблиц
+#define S4G_RESERVE_TABLE_ELEM 8	//на сколько элементов будет резервироваться место в таблицах
 
 //уровни сообщений
 #define S4G_NOTICE 0	//уведомление

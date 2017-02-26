@@ -286,7 +286,7 @@ enum s4g_type_op
 	_return,		//возвращение значений
 	_create_table,	//создание таблицы
 	_add_in_table,	//добавление в таблицу
-	_append_table,
+	_append_table,	//добавить в конец таблицы
 
 	_if,
 	_while,
@@ -668,6 +668,7 @@ inline bool s4g_is_comment_os(const char* sstr);				//однострочным комментарием
 inline bool s4g_is_comment_ms_b(const char* sstr);				//началом многострочного комментария
 inline bool s4g_is_comment_ms_e(const char* sstr);				//концом многострочного комментария
 inline int s4g_is_boolean(const char* sstr,char* dstr);			//логическим значеием
+
 inline bool s4g_is_null(const char* sstr);						//пустым значением
 inline int s4g_is_delimiter(const char* sstr,char* dstr);		//разделителем
 inline int s4g_is_assign(const char* sstr,char* dstr);			//присваиванием
@@ -691,6 +692,8 @@ inline int s4g_scan_num(const char* sstr,char* dstr);					//числа
 
 inline int s4g_is_key_word(const char* str);	//является ли слово ключевым
 inline int s4g_is_key_word_pp(const char* str);	//является ли слово ключевым из препроцессора
+inline int s4g_is_key_boolean(const char* str);	//логическим значеием
+//inline int s4g_is_key_null(const char* str);	//логическим значеием
 
 //лексический анализатор
 class s4g_arr_lex

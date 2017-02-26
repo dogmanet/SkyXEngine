@@ -391,6 +391,8 @@ inline void s4g_scan_litstring(const char* cur, String* dstr, int & len)
 
 	while(*cur && *cur != stop)
 	{
+		if (dstr->length() <= len)
+			dstr->AppendReserve(32);
 		if(*cur == '\\')
 		{
 			++cur; ++len;
@@ -479,6 +481,19 @@ inline int s4g_is_key_word_pp(const char* str)
 	}
 	return -1;
 }
+
+inline int s4g_is_key_boolean(const char* str)
+{
+	long count_key = sizeof(s4g_key_bool) / S4G_MAX_LEN_KEY_WORD_DEF;
+	for (int i = 0; i<count_key; i++)
+	{
+		if (strcmp(s4g_key_bool[i], str) == 0)
+			return i;
+	}
+	return -1;
+}
+
+
 
 ////////////////
 s4g_arr_lex::s4g_arr_lex()
@@ -591,7 +606,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 				if (s4g_is_char_str(tmpc))
 				{
 					s4g_scan_string(str + numcursym, tmpword);
-					if ((tmpid = s4g_is_key_word(tmpword)) == -1)
+					if ((tmpid = s4g_is_key_word(tmpword)) == -1 && (tmpid = s4g_is_key_boolean(tmpword)) == -1)
 						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
 					else
 					{
@@ -633,7 +648,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 					{
 						int len = 0;
 						String litstr;
-						litstr.Reserve(1024);
+						litstr.Reserve(32);
 						s4g_scan_litstring(str + numcursym, &litstr, len);
 						tmplex = LexPool.Alloc(litstr.c_str(), numcurstr, s4g_lexeme_type::word_string_cr, -1, curr_id_file);
 						numcursym += len + 2;

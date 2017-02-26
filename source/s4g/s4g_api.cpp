@@ -78,12 +78,15 @@ int s4g_load_file(s4g_main* s4gm, const char* file)
 	s4gm->gnode = s4gm->bst->s4g_gen_tree();
 #if defined(_DEBUG)
 	{
-		String tree = String("var s4g_ast = ") + s4gm->gnode->Dump();
-		FILE * pf = fopen("./Debug/ast/ast.json", "wb");
-		if(pf)
+		if (s4gm->gnode)
 		{
-			fwrite(tree.c_str(), 1, tree.length(), pf);
-			fclose(pf);
+			String tree = String("var s4g_ast = ") + s4gm->gnode->Dump();
+			FILE * pf = fopen("./Debug/ast/ast.json", "wb");
+			if (pf)
+			{
+				fwrite(tree.c_str(), 1, tree.length(), pf);
+				fclose(pf);
+			}
 		}
 	}
 	//exit(0);
@@ -95,7 +98,7 @@ int s4g_load_file(s4g_main* s4gm, const char* file)
 		return s4gm->bst->status;
 	}
 	s4gm->compiler->compile(s4gm->gnode, s4gm->commands);
-	//s4gm->gc->typedata = 0;
+	
 	s4gm->gc->end_of_const_data();
 	return 0;
 }
@@ -120,7 +123,7 @@ int s4g_load_str(s4g_main* s4gm, const char* str)
 		return s4gm->bst->status;
 	}
 	s4gm->compiler->compile(s4gm->gnode, s4gm->commands);
-	//s4gm->gc->typedata = 0;
+
 	s4gm->gc->end_of_const_data();
 	return 0;
 }

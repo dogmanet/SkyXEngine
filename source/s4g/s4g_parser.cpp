@@ -1,10 +1,10 @@
 
-#include <s4g/s4g_parser.h>
+#include "s4g_parser.h"
 
-#include <s4g/s4g_vm.cpp>
-#include <s4g/s4g_compiler.cpp>
-#include <s4g/s4g_lexer.cpp>
-#include <s4g/s4g_preprocessor.cpp>
+#include "s4g_vm.cpp"
+#include "s4g_compiler.cpp"
+#include "s4g_lexer.cpp"
+#include "s4g_preprocessor.cpp"
 
 //генерация инструкций циклом
 s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
@@ -402,44 +402,51 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				lex_get_next0(tmplexs);
 				--overge;
 
-				//считываем третий блок выражений
-				s4g_node* expt_step = NodePool.Alloc(_expr, curr_lexid, (s4g_value*)0, s4g_get_expr(false), NodePool.Alloc(_empty));
-				lex_get_curr0(tmplexs);
-				bst_cond_er(this);
-
-				//если удалось считать выражение, то возможно у нас список выражений ... анализируем
-				//{
-				if (expt_step)
+				s4g_node* expt_step = 0;	//обнуляем третий блок, ибо может быть его и нет вовсе
+				//если текущая лексема не )
+				if (!(tmplexs->type == sym_group && tmplexs->id == 1))
 				{
-					s4g_node* tmpnode_expt_step = expt_step->op2;
+					//считываем третий блок выражений
+					expt_step = NodePool.Alloc(_expr, curr_lexid, (s4g_value*)0, s4g_get_expr(false), NodePool.Alloc(_empty));
+					lex_get_curr0(tmplexs);
+					bst_cond_er(this);
 
-					while (tmpnode_expt_step)	//если удалось считать последнее выражение
+					//если удалось считать выражение, то возможно у нас список выражений ... анализируем
+					//{
+					if (expt_step)
 					{
-						lex_get_curr0(tmplexs);
+						s4g_node* tmpnode_expt_step = expt_step->op2;
 
-						//если текущая лексема ,
-						if ((tmplexs->type == sym_delimiter && tmplexs->id == 1))
+						while (tmpnode_expt_step)	//если удалось считать последнее выражение
 						{
-							lex_get_next(tmplexs);	//просто шагаем дальше
+							lex_get_curr0(tmplexs);
+
+							//если текущая лексема ,
+							if ((tmplexs->type == sym_delimiter && tmplexs->id == 1))
+							{
+								lex_get_next(tmplexs);	//просто шагаем дальше
+							}
+							//иначе если текущая лексема )
+							else if (tmplexs->type == sym_group && tmplexs->id == 1)
+							{
+								break;	//прерываем цикл
+							}
+
+							tmpnode_expt_step->op1 = NodePool.Alloc(_expr, curr_lexid, (s4g_value*)0, s4g_get_expr(false), NodePool.Alloc(_empty));
+
+							//если мы не смогли прочитать выражение, но не стоит забывать что у нас была перед этим запятая
+							if (!(tmpnode_expt_step->op1->op1))
+								break;	//останавливаем цикл
+
+							tmpnode_expt_step = tmpnode_expt_step->op1->op2;
+							lex_get_curr0(tmplexs);
+							bst_cond_er(this);
 						}
-						//иначе если текущая лексема )
-						else if (tmplexs->type == sym_group && tmplexs->id == 1)
-						{
-							break;	//прерываем цикл
-						}
-
-						tmpnode_expt_step->op1 = NodePool.Alloc(_expr, curr_lexid, (s4g_value*)0, s4g_get_expr(false), NodePool.Alloc(_empty));
-
-						//если мы не смогли прочитать выражение, но не стоит забывать что у нас была перед этим запятая
-						if (!(tmpnode_expt_step->op1->op1))
-							break;	//останавливаем цикл
-
-						tmpnode_expt_step = tmpnode_expt_step->op1->op2;
-						lex_get_curr0(tmplexs);
-						bst_cond_er(this);
 					}
+					//}
 				}
-				//}
+				else
+					++overge;
 
 				lex_get_curr0(tmplexs);
 				bst_cond_er(this);
@@ -487,35 +494,35 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 			{
 				++dowhile;
 			}
+			//оператор break остановка цикла
 			else if (tmplexs->id == S4GLKW_BREAK)
 			{
 				lex_get_next0(tmplexs);
+				//сразу после должна быть лексема ; если это не так
 				if (tmplexs->type != sym_delimiter || tmplexs->id != 0)
 				{
+					//генерим ошибку
 					status = -1;
 					sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return(0);
 				}
-				//return NodePool.Alloc(_break, curr_lexid, (s4g_value*)0, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
-				/**arrnode[arrnode.size() - 1] = NodePool.Alloc(_break, curr_lexid, (s4g_value*)0);
-				arrnode[arrnode.size() - 1] = &((*arrnode[arrnode.size() - 1])->op1);*/
-
+				//уходим дальше не генерацию звеньев
 				*arrnode[arrnode.count_obj - 1].node = NodePool.Alloc(_break, curr_lexid, (s4g_value*)0);
 				arrnode[arrnode.count_obj - 1].node = &((*arrnode[arrnode.count_obj - 1].node)->op1);
 			}
+			//оператор continue
 			else if (tmplexs->id == S4GLKW_CONTINUE)
 			{
 				lex_get_next0(tmplexs);
+				//сразу после должна быть лексема ; если это не так
 				if (tmplexs->type != sym_delimiter || tmplexs->id != 0)
 				{
+					//генерим ошибку
 					status = -1;
 					sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return(0);
 				}
-				//return NodePool.Alloc(_continue, curr_lexid, (s4g_value*)0, one ? NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0) : s4g_gen_statement());
-				/**arrnode[arrnode.size() - 1] = NodePool.Alloc(_continue, curr_lexid, (s4g_value*)0);
-				arrnode[arrnode.size() - 1] = &((*arrnode[arrnode.size() - 1])->op1);*/
-
+				//уходим дальше не генерацию звеньев
 				*arrnode[arrnode.count_obj - 1].node = NodePool.Alloc(_continue, curr_lexid, (s4g_value*)0);
 				arrnode[arrnode.count_obj - 1].node = &((*arrnode[arrnode.count_obj - 1].node)->op1);
 			}
@@ -529,10 +536,6 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				lex_get_next0(tmplexs);
 				if (tmplexs)
 				{
-					//добавляем новый пустой (empty) нод и тут же переходим на следующий, который будет продолжением цепи
-					/**arrnode[arrnode.size() - 1] = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0);
-					arrnode[arrnode.size() - 1] = &((*arrnode[arrnode.size() - 1])->op1);*/
-
 					s4g_node* tmpn = arrnode[arrnode.count_obj - 1].root;
 
 					//добавляем новый пустой (empty) нод и тут же переходим на следующий, который будет продолжением цепи
@@ -548,22 +551,26 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 			//если мы не искали энд но нашли значит он здесь лишний
 			if (this->overend > 0)
 			{
+				//генерим ошибку
 				status = -1;
 				sprintf(this->error, "[%s]:%d - not found operation for end", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 				return 0;
 			}
+
 			lex_get_next0(tmplexs);
 
-			//удаляем из массива последний нод, так как именно в него мы и писали
-			//arrnode.erase(arrnode.size() - 1);
-
+			//получаем родительский нод, и ставим его как прошлый
 			oldroot = arrnode[arrnode.count_obj - 1].root;
-			if (oldroot && oldroot->type == _block && oldroot->op1->type == _if && oldroot->op1->op3)
+
+			//если родитльский нод блок да еще и условие у которого есть ветка else
+			if (oldroot && oldroot->type == _block && oldroot->op1 && oldroot->op1->type == _if && oldroot->op1->op3)
 			{
+				//значит мы уже отработали этот нод, надо еще ниже спустится
 				--(arrnode.count_obj);
 				oldroot = arrnode[arrnode.count_obj - 1].root;
 			}
 
+			//пока оставить закоменченным ...
 			/*if (oldroot && oldroot->ud == 10)
 			{
 				--(arrnode.count_obj);
@@ -571,9 +578,9 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 			}*/
 			
 			countinn = 0;
+
 			s4g_statement tmpn = arrnode[arrnode.count_obj - 1];
 			//удаляем из массива последний нод, так как именно в него мы и писали
-			//arrnode.erase(arrnode.count_obj - 1);
 			--(arrnode.count_obj);
 		}
 		//если у нас символ начала таблицы, значит у нас начало блока
@@ -584,8 +591,8 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 
 			//в последний нод записываем новый
 			(*arrnode[arrnode.count_obj - 1].node) = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, NodePool.Alloc(_block, curr_lexid, (s4g_value*)0));
-			//s4g_node* tmpnode = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0, NodePool.Alloc(_block, curr_lexid, (s4g_value*)0));
-			//добавляем новый нод, который есть тело блока
+			
+			//добавляем новый нод, который есть тело блока, родитель блок, нод - тело блока
 			arrnode.push(s4g_statement((*arrnode[arrnode.count_obj - 1].node), &((*arrnode[arrnode.count_obj - 1].node)->op1->op1)));
 			//устанавливаем что после того как мы закончим читать тело блока переходим на следующий нод который будет продолжением всей цепи
 			arrnode[arrnode.count_obj - 2].node = &((*arrnode[arrnode.count_obj - 2].node)->op2);
@@ -608,27 +615,34 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
+			//иначе если все нормально
 			else
 			{
+				//генерируем продолжение цепи
 				tmpnode->op2 = NodePool.Alloc(_empty, curr_lexid, (s4g_value*)0);
+
+				//обновляем звенья
 				*arrnode[arrnode.count_obj - 1].node = tmpnode;
 				arrnode[arrnode.size() - 1].node = &((tmpnode)->op2->op1);
 
+				//если выражением было присвоение переменной значения функции
 				if (tmpnode && tmpnode->op1->type == _set && tmpnode->op1->op2->type == _function)
 				{
+					//читаем блок
 					s4g_begin_read_block();
 					bst_cond_er(this);
 					lex_get_curr0(tmplexs);
-
+					//записываем новую инструкцию, родитель _expr, нод - тело функции
 					arrnode.push_back(s4g_statement(tmpnode,&(tmpnode->op1->op2->op2)));
 				}
-				
-				lex_get_next0(tmplexs);
-				bst_cond_er(this);
+				else
+				{
+					lex_get_next0(tmplexs);
+				}
 			}
 		}
 
-		++countinn;
+		++countinn;	//обновляем количество итераций с момента последнего обнаружения родителя
 	}
 	return node;
 }
@@ -668,7 +682,7 @@ int s4g_builder_syntax_tree::s4g_end_read_block()
 	else if (tmplexs)
 	{
 		status = -1;
-		sprintf(this->error, "[%s]:%d - expected begin block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+		sprintf(this->error, "[%s]:%d - expected end block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 		return 0;
 	}
 	else
@@ -704,6 +718,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 					tmpnode->op1 = NodePool.Alloc(_get, curr_lexid, (s4g_value*)0, NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str.c_str(), 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)), NodePool.Alloc(_empty, curr_lexid));
 					tmpnode = tmpnode->op1->op2;
 				}
+				
 				else if (tmplexs->type == word_user_cr)
 				{
 					tmpnode->op1 = NodePool.Alloc(_get_cr, curr_lexid, (s4g_value*)0, NodePool.Alloc(_string, curr_lexid, gc->cr_val(t_string, tmplexs->str.c_str(), 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS)), NodePool.Alloc(_empty, curr_lexid));
@@ -764,16 +779,15 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 				//то у нас вызов функции
 				long funccallidlex = curr_lexid;
 				lex_get_next0(tmplexs);
-				bst_cond_eof(tmplexs);
 				overge--;
-
-
+				//считываем все выражения аргументов
 				s4g_node* args = s4g_get_arg_call_func();
 
 				bst_cond_er(this);
 				lex_get_curr0(tmplexs);
-				//lex_get_prev0(tmplexs);
-				//node->op2 = args;
+				
+				//op1 - имя функции
+				//op2 - аргументы
 				return NodePool.Alloc(_call, funccallidlex, (s4g_value*)0, node, (s4g_node*)args, (s4g_node*)0);
 			}
 			//иначе у нас нет обращения к элементам таблицы
@@ -830,18 +844,21 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 		lex_get_next0(tmplexs);
 		return node;
 	}
+	//если тип лексемы создание целого числа
 	else if (tmplexs->type == word_int_cr)
 	{
 		s4g_node* node = NodePool.Alloc(_int_cr, curr_lexid, gc->cr_val(t_int, tmplexs->str.c_str(), 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 		lex_get_next0(tmplexs);
 		return node;
 	}
+	//если тип лексемы беззнаковое целое число
 	else if (tmplexs->type == word_uint)
 	{
 		s4g_node* node = NodePool.Alloc(_uint, curr_lexid, gc->cr_val(t_uint, tmplexs->str.c_str(), 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 		lex_get_next0(tmplexs);
 		return node;
 	}
+	//если тип лексемы логическое значение
 	else if (tmplexs->type == word_bool)
 	{
 		s4g_node* node = NodePool.Alloc(_bool, curr_lexid, gc->cr_val(t_bool, tmplexs->str.c_str(), 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));

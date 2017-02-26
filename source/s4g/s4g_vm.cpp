@@ -7,7 +7,7 @@ s4g_vm::s4g_vm(s4g_gc* _gc)
 	gc->add_new_context(&gvars);
 	vgvars = gc->cr_val_table(gvars, S4G_GLOBAL_NM, S4G_GC_TYPE_VAR_SYS);
 	strerror[0] = 0; error = 0;
-	cfetchpushstore = 0;
+	
 	curr_vars = 0;
 	runexe = false;
 
@@ -16,8 +16,6 @@ s4g_vm::s4g_vm(s4g_gc* _gc)
 	GEN_OP(fetch_get)
 	GEN_OP(fetch)
 	GEN_OP(store)
-	GEN_OP(end)
-	GEN_OP(mstore)
 	arropf[mc_fetch_get_cr] = &s4g_vm::com_fetch_get;
 	arropf[mc_fetch_cr] = &s4g_vm::com_fetch;
 
@@ -73,9 +71,14 @@ s4g_vm::s4g_vm(s4g_gc* _gc)
 	callstack.init_size(0);
 
 
-	for (int i = 0; i < S4G_MAX_ENCLOSURE; i++)
+	for (int i = 0; i < S4G_RESERVE_BLOCKS; i++)
 	{
-		blockstack.push(new s4g_call_data());
+		blockstack.push(MemBlocks.Alloc());
+	}
+
+	for (int i = S4G_RESERVE_BLOCKS; i < S4G_RESERVE_BLOCKS + S4G_RESERVE_BLOCKS; i++)
+	{
+		blockstack.push(0);
 	}
 
 	blockstack.init_size(0);
@@ -91,11 +94,7 @@ s4g_vm::~s4g_vm()
 		mem_delete(callstack[i]);
 	}
 
-	for (int i = 0; i < S4G_MAX_ENCLOSURE; i++)
-	{
-		mem_delete(blockstack[i]);
-	}
-
+	MemBlocks.clear();
 	callstack.Arr.clear();
 }
 
@@ -106,6 +105,24 @@ inline void s4g_vm::com_block_new()
 	ttable = 0;
 	long idnewctx = gc->add_new_context(&ttable);
 	tmpcd = blockstack.get(blockstack.count_obj);
+
+	if (tmpcd == 0)
+	{
+		long oldcountobj = blockstack.count_obj-1;
+		tmpcd = blockstack.get(oldcountobj) = MemBlocks.Alloc();
+		for (int i = 0; i < S4G_RESERVE_BLOCKS-1; i++)
+		{
+			blockstack.push(MemBlocks.Alloc());
+		}
+
+		for (int i = 0; i < S4G_RESERVE_BLOCKS; i++)
+		{
+			blockstack.push(0);
+		}
+
+		blockstack.count_obj = oldcountobj;
+	}
+
 	tmpcd->vars = curr_vars;
 	tmpcd->idnewctx = idnewctx;
 	
@@ -123,7 +140,6 @@ inline void s4g_vm::com_block_del()
 inline void s4g_vm::com_fetch()
 {
 	is_cr = (op == mc_fetch_cr);
-	cfetchpushstore = (cfetchpushstore == 0);
 	
 	str = gc->get_str(arg);
 		if (strcmp(str, S4G_GLOBAL_NM) == 0)
@@ -161,8 +177,6 @@ inline void s4g_vm::com_fetch()
 					execute.push(tmpval);
 				}
 		}
-
-	cfetchget = 0;
 }
 
 inline void s4g_vm::com_fetch_get()
@@ -196,18 +210,12 @@ inline void s4g_vm::com_fetch_get()
 
 					s4g_value* tval = execute.get((execute.count_obj - counttop) - 1);
 					error = -1;
+					s4g_int tmptmptval = tval->pdata->data.i;
 					char strtype[S4G_MAX_LEN_TYPE_NAME];
 					s4g_get_str_type(ttype, strtype);
 					sprintf(this->strerror, "[%s]:%s - value '%s' expected table but got %s", tmpfile, tmpstr, tval->name, strtype);
 					return;
 				}
-				/*
-				//если предыдущей командой было либо fetch либо fetch_get
-				//то значит мы ложили на стек таблицу, однако это оказалось не так
-				else if(cfetchget)	//error
-					int qwert = 0;
-				else
-					ttable = curr_vars;*/
 		}
 		else
 		{
@@ -231,44 +239,56 @@ inline void s4g_vm::com_fetch_get()
 			stack_pop(execute, 1);
 		}
 
-		//если предыдущей командой было либо fetch либо fetch_get
-		//то значит мы ложили на стек таблицу, а теперь берем значение из этой таблицы и саму таблицу выталкиваем из стека
-		//ложа на вершину значение из таблицы
-		if (cfetchget == 1 || (oldop == mc_push && cfetchget == 2))
-			stack_pop(execute, 1);
+	stack_pop(execute, 1);
 	
+		//если у нас установленно что обращение по числовому индексу
 		if(currCom->second_data == 1)
 		{
-		if (tmpval->pdata->type == t_string || tmpval->pdata->type == t_int || tmpval->pdata->type == t_uint)
-		{
+			//если это строка либо число
+			if (tmpval->pdata->type == t_string || tmpval->pdata->type == t_int || tmpval->pdata->type == t_uint)
+			{
 				long index = -1;
 				if (tmpval->pdata->type == t_string)
 					index = atol(((String*)tmpval->pdata->data.p)->c_str());
 				else if (tmpval->pdata->type == t_int)
 					index = tmpval->pdata->data.i;
 
-				tmpval = 0;
+				//tmpval = 0;
 
+				//если индекс допустимый
 				if (ttable->is_exists_n2(index, &tmpval))
 				{
-					//execute.push(gc->cr_val_str(tmpval->name));
-					execute.push(tmpval);
+					execute.push(tmpval);	//ложим на вершина стека
 				}
-				else if (ttable->size() > index)
+				//иначе если индекс положительный и равен размеру таблицы 
+				else if (index >= 0 && ttable->size() == index)
 				{
-					//error
-					int qwert = 0;
-				}
-				else
-				{
+					//то добавляем в конец таблицы
 					tmpval = gc->cr_val_null("");
 					ttable->add_val(tmpval);
 					execute.push(tmpval);
 				}
+				//иначе индекс недопустимый
+				else 
+				{
+					error = -1;
+					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+					char strtype[S4G_MAX_LEN_TYPE_NAME];
+					s4g_get_str_type(gc->get_type(tmpval), strtype);
+					sprintf(this->strerror, "[%s]:%d - unresolved index for access to table on numeric index, table size '%d', index '%d'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, ttable->count_obj, index);
+					return;
+				}
+				
 			}
+			//если тип переменной недопустим
 			else
 			{
-				int qwert = 0;
+				error = -1;
+				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+				char strtype[S4G_MAX_LEN_TYPE_NAME];
+				s4g_get_str_type(gc->get_type(tmpval), strtype);
+				sprintf(this->strerror, "[%s]:%d - when accessed to table on numeric index expected integer or string, but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, strtype);
+				return;
 			}
 		}
 		else if (tmpval->pdata->type == t_string || tmpval->pdata->type == t_int || tmpval->pdata->type == t_uint)
@@ -315,17 +335,16 @@ inline void s4g_vm::com_fetch_get()
 			char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
 			char tmpstr[S4G_MAX_LEN_TYPE_NAME];
 
-				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
-				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
-				sprintf(tmpstr, "%d", tmplexs->numstr);
+			s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+			strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+			sprintf(tmpstr, "%d", tmplexs->numstr);
+			char strtype[S4G_MAX_LEN_TYPE_NAME];
+			s4g_get_str_type(gc->get_type(tmpval), strtype);
 
 			error = -1;
-			sprintf(this->strerror, "[%s]:%s - data type '%s' is unresolved address in table", tmpfile, tmpstr, tmpval->name);
+			sprintf(this->strerror, "[%s]:%s - data '%s' type '%s' is unresolved address in table", tmpfile, tmpstr, tmpval->name, strtype);
 			return;
 		}
-
-	cfetchget = 0;
-	cfetchgetarg = (arg == 0);
 }
 
 inline void s4g_vm::com_store()
@@ -364,62 +383,7 @@ inline void s4g_vm::com_store()
 	}
 
 	gc->c_val(tvalue2, tvalue);
-	
-	if (oldop == mc_push && cfetchpushstore == 2)
-	{
-		//execute.pop(1);
-		stack_pop(execute, 1);
-	}
-	else
-	{
-		//execute.pop(2);
-		stack_pop(execute, 1);
-	}
-
-		if (oldop == mc_push && cfetchgetarg == 1)
-		{
-			//execute.pop(2);
-			stack_pop(execute, 2);
-		}
-	cfetchgetarg = 0;
-	cfetchpushstore = 0;
-}
-
-inline void s4g_vm::com_end()
-{
-	val_end = execute.count_obj-1;
-}
-
-inline void s4g_vm::com_mstore()
-{
-	long keyval = val_end;
-	if (keyval == -1)
-		keyval = 0;
-
-	long countvar = (long)arg;
-	long beginkeyvar = (execute.count_obj - (countvar - 1)) - 1;
-	if (beginkeyvar - keyval > countvar)
-		beginkeyvar = keyval + countvar;
-
-	while (true)
-	{
-		if (keyval < beginkeyvar)
-		{
-			
-			tvalue = execute.get((execute.count_obj - (countvar - 1)) - 1);
-			tvalue2 = execute.get(keyval);
-
-			gc->c_val(tvalue, tvalue2);
-		}
-		else
-			break;
-
-		keyval++;
-		countvar--;
-	}
-
-	stack_pop(execute, execute.count_obj - val_end);
-	//execute.pop(execute.count() - val_end);
+	stack_pop(execute, 1);
 }
 
 inline void s4g_vm::com_add_in_table()
@@ -546,9 +510,6 @@ inline void s4g_vm::com_call()
 			tmpcd = callstack.get(callstack.count_obj);
 			tmpcd->coms = curr_comm;
 			tmpcd->vars = curr_vars;
-			tmpcd->cfetchget = cfetchget;
-			tmpcd->cfetchgetarg = cfetchgetarg;
-			tmpcd->cfetchpushstore = cfetchpushstore;
 			tmpcd->idexternctx = idexternctx;
 			tmpcd->idnewctx = idnewctx;
 			tmpcd->lastidctx = lastidctx;
@@ -564,9 +525,6 @@ inline void s4g_vm::com_call()
 			curr_vars = ttable;
 			curr_comm = &(csfunc->commands);
 
-			cfetchget = 3;
-			cfetchgetarg = false;
-			cfetchpushstore = 0;
 			id_curr_com = -1;
 		}
 		//иначе если у нас с(++) функция
@@ -1196,9 +1154,6 @@ inline void s4g_vm::com_halt()
 
 inline void s4g_vm::com_push()
 {
-	if (cfetchget == 1)
-		--cfetchget;
-
 	execute.push(arg);
 }
 
@@ -1214,9 +1169,7 @@ inline void s4g_vm::com_retprev()
 	//возвращаем предыдущее состояние машины, до момента вызова скриптовой функции
 	curr_comm = tmpcd->coms;
 	curr_vars = tmpcd->vars;
-	cfetchget = tmpcd->cfetchget;
-	cfetchgetarg = tmpcd->cfetchgetarg;
-	cfetchpushstore = tmpcd->cfetchpushstore;
+	
 	id_curr_com = tmpcd->id_curr_com;
 
 	gc->del_top_context(true);
@@ -1577,6 +1530,11 @@ inline void s4g_vm::com_log_eq()
 		execute.push_r(gc->get_bool(false));
 		return;
 	}
+	else if (tvalue->pdata->type == t_null && tvalue2->pdata->type == t_null)
+	{
+		execute.push_r(gc->get_bool(true));
+		return;
+	}
 
 		if (tvalue->pdata->type == t_int)
 		{
@@ -1657,6 +1615,17 @@ inline void s4g_vm::com_log_neq()
 
 	//execute.pop(2);
 	stack_pop(execute, 1);
+
+	if ((tvalue->pdata->type == t_null && tvalue2->pdata->type != t_null) || (tvalue->pdata->type != t_null && tvalue2->pdata->type == t_null))
+	{
+		execute.push_r(gc->get_bool(true));
+		return;
+	}
+	else if (tvalue->pdata->type == t_null && tvalue2->pdata->type == t_null)
+	{
+		execute.push_r(gc->get_bool(false));
+		return;
+	}
 
 		if (tvalue->pdata->type == t_int)
 		{
@@ -2384,10 +2353,8 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	curr_vars = vars;
 	op = mc_halt;
 	arg = 0;
-	cfetchget = 3;
-	cfetchgetarg = false;
+	
 	runexe = true;
-	val_end = -1;
 	currCom = 0;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
@@ -2399,18 +2366,12 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 			if (error < 0)
 				return -1;
 			++id_curr_com;
-			++cfetchpushstore;
-			++cfetchget;
-			oldop = op;
 		}
 
 	//обнуляем текущую таблицу для записи и стек с командами
 	curr_vars = 0;
 	curr_comm = 0;
 	id_curr_com = -1;
-	cfetchget = 3;
-	cfetchgetarg = false;
-	cfetchpushstore = 0;
 
 	if (sr.count() > 0)
 	{
