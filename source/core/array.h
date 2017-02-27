@@ -107,10 +107,15 @@ public:
 	{
 		//this->AllocSize = arr.AllocSize;
 		//this->Size = arr.Size;
-			for(int i = arr.Size - 1; i >= 0; i--)
-			{
-				(*this)[i] = arr[i];
-			}
+		if(arr.Size < this->Size)
+		{
+			DestructInterval(arr.Size, this->Size - 1);
+			this->Size = arr.Size;
+		}
+		for(int i = arr.Size - 1; i >= 0; i--)
+		{
+			(*this)[i] = arr[i];
+		}
 		return(*this);
 	}
 
