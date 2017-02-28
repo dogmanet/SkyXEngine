@@ -9,6 +9,7 @@ enum s4g_vm_command
 	mc_fetch_cr,	//создать и положить на вершину стека значение переменной
 	mc_fetch_get,	//получить значение из таблицы, если предыдущим вызовом был mc_fetch
 	mc_fetch_get_cr,//создать значение в таблице, если предыдущим вызовом был mc_fetch
+	mc_fetch_set_cr,//создать поле со значением в таблице, если предыдущим вызовом был mc_fetch
 	mc_store,		//сохранить в переменной (-1 по отношению к вершине стека) значение с вершины стека
 	mc_push,		//положить на вершину стека
 	mc_pop,			//удалить значение с вершины стека
@@ -102,7 +103,7 @@ struct s4g_call_data
 	s4g_call_data()
 	{
 		coms = 0;vars = 0;
-		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0; stack_size = -1;//namef[0] = 0;
+		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0; /*stack_size = -1;*/ countopenbloks = 0;//namef[0] = 0;
 	}
 
 	s4g_call_data(s4g_stack<s4g_command>* _coms, s4g_table* _vars, 
@@ -114,7 +115,8 @@ struct s4g_call_data
 		lastidctx = _lastidctx;
 		idnewctx = _idnewctx;
 		idexternctx = _idexternctx;
-		stack_size = _stack_size;
+		countopenbloks = 0;
+		//stack_size = _stack_size;
 		_valf = valf;
 	}
 
@@ -126,7 +128,8 @@ struct s4g_call_data
 	long lastidctx;
 	long idnewctx;
 	long idexternctx;
-	long stack_size;
+	//long stack_size;
+	long countopenbloks;
 	s4g_value* valf;
 };
 
@@ -223,7 +226,7 @@ public:
 	s4g_arr_lex* arr_lex;
 	s4g_gc* gc;
 	s4g_main* s4gm;
-
+	long countopenbloks;	//количество текущих открытых блоков
 	s4g_vm_command op;
 	s4g_value* arg;
 
@@ -246,11 +249,12 @@ public:
 	long idctx;
 	s4g_s_function* csfunc;
 	s4g_c_function tcfunc;
-	s4g_call_data* tmpcd;
+	//s4g_call_data* tmpcd;
 	bool is_cr;
 	s4g_table* ttable;
 	bool jmp;
 	s4g_command * currCom;
+	//char tmpstr[256];
 };
 
 #endif

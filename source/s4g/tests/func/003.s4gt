@@ -15,7 +15,7 @@ function b(i)
 
 function c(i,j)
 {
-  print("Counting from "+tostring(i)+" to "+tostring(i)+"\n");
+  print("Counting from "+tostring(i)+" to "+tostring(j)+"\n");
   for (k=i; k<=j; k++) {
     print(tostring(k) + "\n");
   }
@@ -66,7 +66,7 @@ function call_fact()
 {
   print("(it should break at 5...)\n");
   for (i=0; i<=10; i++) {
-    if (i == 5) break;
+    if (i == 5) {break;}
     n=_g.factorial(i);
     print("factorial("+tostring(i)+") = "+tostring(n)+"\n");
   }
@@ -89,7 +89,7 @@ print(tostring(result) + "\n");
 function andi(i, j)
 {
 	for (k=i ; k<=j ; k++) {
-		if (k >5) continue;
+		if (k >5) {continue;}
 		print(tostring(k) + "\n");
 	}
 }

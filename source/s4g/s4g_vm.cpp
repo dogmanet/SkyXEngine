@@ -3,6 +3,7 @@
 
 s4g_vm::s4g_vm(s4g_gc* _gc)
 {
+	countopenbloks = 0;
 	gc = _gc;
 	gc->add_new_context(&gvars);
 	vgvars = gc->cr_val_table(gvars, S4G_GLOBAL_NM, S4G_GC_TYPE_VAR_SYS);
@@ -18,6 +19,7 @@ s4g_vm::s4g_vm(s4g_gc* _gc)
 	GEN_OP(store)
 	arropf[mc_fetch_get_cr] = &s4g_vm::com_fetch_get;
 	arropf[mc_fetch_cr] = &s4g_vm::com_fetch;
+	arropf[mc_fetch_set_cr] = &s4g_vm::com_fetch_get;
 
 	GEN_OP(new_table)
 	GEN_OP(add_in_table)
@@ -104,7 +106,7 @@ inline void s4g_vm::com_block_new()
 {
 	ttable = 0;
 	long idnewctx = gc->add_new_context(&ttable);
-	tmpcd = blockstack.get(blockstack.count_obj);
+	s4g_call_data* tmpcd = blockstack.get(blockstack.count_obj);
 
 	if (tmpcd == 0)
 	{
@@ -120,21 +122,27 @@ inline void s4g_vm::com_block_new()
 			blockstack.push(0);
 		}
 
-		blockstack.count_obj = oldcountobj;
+		blockstack.count_obj = oldcountobj+1;
 	}
 
 	tmpcd->vars = curr_vars;
 	tmpcd->idnewctx = idnewctx;
 	
 	curr_vars = ttable;
+
+	++countopenbloks;
 }
 
 inline void s4g_vm::com_block_del()
 {
-	tmpcd = blockstack.get(blockstack.count_obj - 1);
+	if (blockstack.count_obj <= 0 || countopenbloks <=0)
+		int qwert = 0;
+	s4g_call_data* tmpcd = blockstack.get(blockstack.count_obj - 1);
+
 	curr_vars = tmpcd->vars;
 	gc->del_top_context(true);
 	stack_pop(blockstack, 1);
+	--countopenbloks;
 }
 
 inline void s4g_vm::com_fetch()
@@ -142,6 +150,10 @@ inline void s4g_vm::com_fetch()
 	is_cr = (op == mc_fetch_cr);
 	
 	str = gc->get_str(arg);
+
+	if (strcmp("call_fact", str) == 0)
+		int qwert = 0;
+
 		if (strcmp(str, S4G_GLOBAL_NM) == 0)
 		{
 			execute.push(vgvars);
@@ -159,7 +171,8 @@ inline void s4g_vm::com_fetch()
 						sprintf(this->strerror, "[%s]:%d - value '%s' is exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}
-
+					if (strcmp(tmpval->name, "n") == 0)
+						int qwert = 0;
 					execute.push(tmpval);
 				}
 				else
@@ -181,7 +194,7 @@ inline void s4g_vm::com_fetch()
 
 inline void s4g_vm::com_fetch_get()
 {
-	is_cr = (op == mc_fetch_get_cr);
+	is_cr = ((op == mc_fetch_get_cr) || op == mc_fetch_set_cr);
 	
 	int counttop = 1;
 	tmpval = 0;
@@ -239,7 +252,8 @@ inline void s4g_vm::com_fetch_get()
 			stack_pop(execute, 1);
 		}
 
-	stack_pop(execute, 1);
+		if (op != mc_fetch_set_cr)
+			stack_pop(execute, 1);
 	
 		//если у нас установленно что обращение по числовому индексу
 		if(currCom->second_data == 1)
@@ -459,7 +473,8 @@ inline void s4g_vm::com_call()
 				return;
 			}
 			long lastidctx = gc->deactivate_prev();	//деактивируем все активные возможные предыдущие контексты
-
+			if (lastidctx <= -1)
+				int qwert = 0;
 			long idexternctx = -1;
 			//если у нас есть подставляемые значения из другого констекста
 			if (csfunc->externstable)
@@ -507,7 +522,10 @@ inline void s4g_vm::com_call()
 			stack_pop(execute, countarg + 1);
 
 				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
-			tmpcd = callstack.get(callstack.count_obj);
+
+			if (callstack.count_obj == 0)
+				int qwert = 0;
+			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
 			tmpcd->coms = curr_comm;
 			tmpcd->vars = curr_vars;
 			tmpcd->idexternctx = idexternctx;
@@ -515,10 +533,13 @@ inline void s4g_vm::com_call()
 			tmpcd->lastidctx = lastidctx;
 			tmpcd->id_curr_com = id_curr_com;
 			tmpcd->valf = tvalfunc;
-			if ((long)arg == 1)
+			tmpcd->countopenbloks = countopenbloks;
+
+			countopenbloks = 0;
+			/*if ((long)arg == 1)
 				tmpcd->stack_size = execute.count_obj;
 			else
-				tmpcd->stack_size = -1;
+				tmpcd->stack_size = -1;*/
 			//strcpy(tmpcd->namef, tvalfunc->name);
 
 			//устанавилваем новое окружение и новые конмады
@@ -539,18 +560,19 @@ inline void s4g_vm::com_call()
 			stack_pop(execute, countarg + 1);
 
 			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
-			tmpcd = callstack.get(callstack.count_obj);
+			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
+			tmpcd->idnewctx = tmpcd->idexternctx = tmpcd->lastidctx = -1;
 			tmpcd->valf = tvalfunc;
-			if ((long)arg == 1)
+			/*if ((long)arg == 1)
 				tmpcd->stack_size = execute.count_obj;
 			else
-				tmpcd->stack_size = -1;
+				tmpcd->stack_size = -1;*/
 
 			error = (tcfunc)(s4gm);
 
 			//если указано что нужно проконтролировать количество возвращаемых значений
 			//оно должно быть одним
-			if (tmpcd->stack_size != -1)
+			/*if (tmpcd->stack_size != -1)
 			{
 				//если количество возвращенных значений больше 1
 				if (tmpcd->stack_size + 1 < execute.count_obj)
@@ -560,7 +582,7 @@ inline void s4g_vm::com_call()
 				//иначе если ничего не вернули
 				else if (tmpcd->stack_size >= execute.count_obj)
 					execute.push(gc->get_val_null());	//добавляем null значение
-			}
+			}*/
 
 			--callstack.count_obj;
 			sr.free_last_unfree();
@@ -1149,7 +1171,15 @@ inline void s4g_vm::com_halt()
 		com_retprev();
 	}
 	else
+	{
 		runexe = false;	//останавливаем выполнение
+
+		long tmpcountopenbloks = countopenbloks;
+		for (long i = 0; i < tmpcountopenbloks; ++i)
+		{
+			com_block_del();
+		}
+	}
 }
 
 inline void s4g_vm::com_push()
@@ -1165,39 +1195,60 @@ inline void s4g_vm::com_pop()
 
 inline void s4g_vm::com_retprev()
 {
-	tmpcd = callstack.get(callstack.count_obj - 1);
-	//возвращаем предыдущее состояние машины, до момента вызова скриптовой функции
-	curr_comm = tmpcd->coms;
-	curr_vars = tmpcd->vars;
-	
-	id_curr_com = tmpcd->id_curr_com;
-
-	gc->del_top_context(true);
-	//убираем контексты функции
-	if (tmpcd->idexternctx != -1)
+	s4g_call_data* tmpcd = callstack.get(callstack.count_obj - 1);
+	if (tmpcd->idnewctx >= 0)
 	{
-		gc->remove_context(tmpcd->idexternctx);
-		gc->del_top_context(false);
-	}
+		//возвращаем предыдущее состояние машины, до момента вызова скриптовой функции
 
-	gc->activate_prev(tmpcd->lastidctx);
+		if (tmpcd->lastidctx <= -1)
+			int qwert = 0;
 
-	//если указано что нужно проконтролировать количество возвращаемых значений
-	//оно должно быть одним
-	if (tmpcd->stack_size != -1)
-	{
+		
+
+		long tmpcountopenbloks = countopenbloks;
+		for (long i = 0; i < tmpcountopenbloks; ++i)
+		{
+			com_block_del();
+		}
+		countopenbloks = tmpcd->countopenbloks;
+
+		curr_comm = tmpcd->coms;
+		curr_vars = tmpcd->vars;
+
+		id_curr_com = tmpcd->id_curr_com;
+
+		gc->del_top_context(true);
+		//убираем контексты функции
+		if (tmpcd->idexternctx != -1)
+		{
+			gc->remove_context(tmpcd->idexternctx);
+			gc->del_top_context(false);
+		}
+
+		if (tmpcd->lastidctx <= -1)
+			int qwert = 0;
+
+		gc->activate_prev(tmpcd->lastidctx);
+		
+		//если указано что нужно проконтролировать количество возвращаемых значений
+		//оно должно быть одним
+		/*if (tmpcd->stack_size != -1)
+		{
 		//если количество возвращенных значений больше 1
 		if (tmpcd->stack_size + 1 < execute.count_obj)
 		{
-			stack_pop(execute, execute.count_obj - (tmpcd->stack_size + 1));	//убираем все лишние
+		stack_pop(execute, execute.count_obj - (tmpcd->stack_size + 1));	//убираем все лишние
 		}
 		//иначе если ничего не вернули
 		else if (tmpcd->stack_size >= execute.count_obj)
-			execute.push(gc->get_val_null());	//добавляем null значение
-	}
+		execute.push(gc->get_val_null());	//добавляем null значение
+		}*/
 
+	}
 	//callstack.pop(1);	//удаляем предыдущее состояние ибо оно стало текущим
 	stack_pop(callstack, 1);
+	if (callstack.count_obj == 0)
+		int qwert = 0;
 	sr.free_last_unfree();
 
 	if (!curr_comm)
@@ -1326,6 +1377,19 @@ inline void s4g_vm::com_mod()
 				execute.push(gc->cr_val_uint(tvalue->pdata->data.ui % tvalue2->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_float)
 				execute.push(gc->cr_val_uint(tvalue->pdata->data.ui % (s4g_int)tvalue2->pdata->data.f));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
+			}
+		}
+		else if (tvalue->pdata->type == t_float)
+		{
+			if (tvalue2->pdata->type == t_int)
+				execute.push(gc->cr_val_uint(fmod(tvalue->pdata->data.f, (s4g_float)tvalue2->pdata->data.i)));
+			else if (tvalue2->pdata->type == t_uint)
+				execute.push(gc->cr_val_uint(fmod(tvalue->pdata->data.f, (s4g_float)tvalue2->pdata->data.ui)));
+			else if (tvalue2->pdata->type == t_float)
+				execute.push(gc->cr_val_uint(fmod(tvalue->pdata->data.f, tvalue2->pdata->data.f)));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1546,6 +1610,8 @@ inline void s4g_vm::com_log_eq()
 				execute.push_r(gc->get_bool(tvalue->pdata->data.i == tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
 				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == tvalue->pdata->data.i));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.i == ((String*)tvalue2->pdata->data.p)->ToInt()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1562,6 +1628,8 @@ inline void s4g_vm::com_log_eq()
 				execute.push_r(gc->get_bool(tvalue->pdata->data.ui == tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
 				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == tvalue->pdata->data.ui));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.ui == ((String*)tvalue2->pdata->data.p)->ToUnsLongInt()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1578,6 +1646,8 @@ inline void s4g_vm::com_log_eq()
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f == tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
 				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == tvalue->pdata->data.f));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.f == ((String*)tvalue2->pdata->data.p)->ToDouble()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1585,20 +1655,35 @@ inline void s4g_vm::com_log_eq()
 		}
 		else if(tvalue->pdata->type == t_bool)
 		{
-			s4g_bool num1 = tvalue->pdata->data.b;
-
 			if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.b));
-			//else if(num1)
-			//	execute.push_r(gc->get_bool(false));
+				execute.push_r(gc->get_bool(!tvalue->pdata->data.b == !tvalue2->pdata->data.b));
 			else if(tvalue2->pdata->type == t_int)
-				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.i));
+				execute.push_r(gc->get_bool(!tvalue->pdata->data.b == !tvalue2->pdata->data.i));
 			else if(tvalue2->pdata->type == t_uint)
-				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.ui));
+				execute.push_r(gc->get_bool(!tvalue->pdata->data.b == !tvalue2->pdata->data.ui));
 			else if(tvalue2->pdata->type == t_float)
-				execute.push_r(gc->get_bool(!num1 == !tvalue2->pdata->data.f));
-		else
+				execute.push_r(gc->get_bool(!tvalue->pdata->data.b == !tvalue2->pdata->data.f));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.b == ((String*)tvalue2->pdata->data.p)->ToBool()));
+			else
+			{
+				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
+			}
+		}
+		else if (tvalue->pdata->type == t_string)
 		{
+			if (tvalue2->pdata->type == t_int)
+				execute.push_r(gc->get_bool(((String*)tvalue->pdata->data.p)->ToInt() == tvalue2->pdata->data.i));
+			else if (tvalue2->pdata->type == t_uint)
+				execute.push_r(gc->get_bool(((String*)tvalue->pdata->data.p)->ToUnsLongInt() == tvalue2->pdata->data.ui));
+			else if (tvalue2->pdata->type == t_float)
+				execute.push_r(gc->get_bool(((String*)tvalue->pdata->data.p)->ToDouble() == tvalue2->pdata->data.f));
+			else if (tvalue2->pdata->type == t_bool)
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == ((String*)tvalue->pdata->data.p)->ToBool()));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(((String*)tvalue->pdata->data.p) == ((String*)tvalue2->pdata->data.p)));
+			else
+			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
 			}
 		}
@@ -2358,6 +2443,12 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	currCom = 0;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
+			//call_fact
+			/*if (gvars->is_exists_s("call_fact") >= 0)
+				int qwert = 0;*/
+			if (id_curr_com == 30)
+				int qwert = 0;
+			
 			currCom = &(curr_comm->get(id_curr_com));
 			op = currCom->command;
 			arg = currCom->arg;

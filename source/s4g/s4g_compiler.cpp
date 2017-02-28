@@ -53,16 +53,16 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _sett)
 		{
-				if (node->op1->type == _crvar)
-				{
-					gen(mc_fetch_get_cr, node->op1->value, node->lexid);
-					def_printf("fetch_get_cr\n");
-				}
+				/*if (node->op1->type == _crvar)
+				{*/
+					gen(mc_fetch_set_cr, node->op1->value, node->lexid);
+					def_printf("fetch_set_cr\n");
+				/*}
 				else
 				{
 					gen(mc_fetch_get, node->op1->value, node->lexid);
 					def_printf("fetch_get\n");
-				}
+				}*/
 
 			compile2(node->op2);
 
