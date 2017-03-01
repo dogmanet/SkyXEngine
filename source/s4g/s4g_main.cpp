@@ -171,7 +171,7 @@ inline int s4g_table::is_exists_s(const char* str)
 	if(NameIndex.KeyExists(item_name(str), &node))
 	{
 		return(*node->Val);
-		}
+	}
 	return -1;
 }
 
@@ -183,7 +183,7 @@ inline bool s4g_table::is_exists_n(long key)
 inline long s4g_table::is_exists_s2(const char* str, s4g_value** tval)
 {
 	IndexNode node;
-	if(NameIndex.KeyExists(item_name(str), &node))
+	if(NameIndex.KeyExists(item_name(str), &node) && Arr.Data[*node->Val]->Value)
 	{
 		if (tval)
 			*tval = Arr.Data[*node->Val]->Value;
@@ -195,7 +195,7 @@ inline long s4g_table::is_exists_s2(const char* str, s4g_value** tval)
 
 inline bool s4g_table::is_exists_n2(long key, s4g_value** tval)
 {
-	if (key >= 0 && key < count_obj)
+	if(key >= 0 && key < count_obj && Arr.Data[key]->Value)
 	{
 		if (tval)
 			*tval = Arr.Data[key]->Value;
@@ -211,7 +211,7 @@ inline s4g_value* s4g_table::gets(const char* str)
 	if(NameIndex.KeyExists(item_name(str), &node))
 	{
 		return(Arr.Data[*node->Val]->Value);
-		}
+	}
 	return 0;
 }
 
@@ -241,7 +241,7 @@ inline long s4g_table::get_key(const char* name)
 	if(NameIndex.KeyExists(item_name(name), &node))
 	{
 		return(*node->Val);
-		}
+	}
 	return -1;
 }
 
@@ -348,7 +348,10 @@ s4g_value * s4g_table::cr_if_not_exists(const char * name, s4g_gc * gc)
 	if(NameIndex.KeyExists(item_name(name), &node, true))
 	{
 		tmpkey = *node->Val;
-		return(Arr.Data[tmpkey]->Value);
+		if(tmpkey >= 0)
+		{
+			return(Arr.Data[tmpkey]->Value);
+		}
 	}
 	s4g_value * val = gc->cr_val_null(name);
 	
@@ -375,6 +378,26 @@ s4g_value * s4g_table::cr_if_not_exists(const char * name, s4g_gc * gc)
 		++count_obj;
 	}
 	return(val);
+}
+
+inline void s4g_table::remove(const char * str)
+{
+	remove(get_key(str));
+}
+inline void s4g_table::remove(long key)
+{
+	if(key >= count_obj || key < 0)
+	{
+		return;
+	}
+
+	Arr.Data[key]->Value = NULL;
+	IndexNode node;
+	if(NameIndex.KeyExists(*Arr.Data[key]->name, &node))
+	{
+		*node->Val = -1;
+	}
+	Arr.Data[key]->name = NULL;
 }
 
 ///////////////////////
