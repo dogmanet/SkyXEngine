@@ -140,6 +140,7 @@ s4g_table::~s4g_table()
 	clear();
 	Arr.clear();
 	Mem.clear();
+	NameIndex.clear();
 }
 
 inline void s4g_table::clear()
@@ -154,9 +155,9 @@ inline void s4g_table::clear()
 			--(tmpval->pdata->ref);
 	}
 	count_obj = 0;
-	if (NameIndex.Size() > 0)
-		NameIndex.clear();
-	
+	Arr.clear();
+	Mem.clear();
+	NameIndex.clear();
 }
 
 inline int s4g_table::is_exists_s(const char* str)
@@ -181,8 +182,10 @@ inline long s4g_table::is_exists_s2(const char* str, s4g_value** tval)
 	{
 		if (tval)
 			*tval = Arr.Data[*node->Val]->Value;
+
+		const item_name* tmpstr = Arr.Data[*node->Val]->name;
 		return(*node->Val);
-		}
+	}
 	return -1;
 }
 
@@ -308,6 +311,7 @@ inline void s4g_table::add_val(s4g_value* val)
 	else
 	{
 		table_desc* tmpaa = Mem.Alloc();
+		tmpaa->name = NULL;
 		tmpaa->Value = val;
 		Arr.push_back(tmpaa);
 		++count_obj;
@@ -895,14 +899,15 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 {
 	if (tdata)
 	{
-		if (tdata->type == t_table)
+		if (tdata->type == t_table){
 			MemTable.Delete((s4g_table*)tdata->data.p);
+		}
 		else if (tdata->type == t_string)
 			MemString.Delete((String*)tdata->data.p);
 		else if (tdata->type == t_sfunc)
 		{
 			s4g_s_function* tsf = (s4g_s_function*)tdata->data.p;
-			if (tsf->externstable)
+			/*if (tsf->externstable)
 			{
 				for (int k = 0; k < tsf->externstable->size(); ++k)
 				{
@@ -910,27 +915,24 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 					//tmpval->isdelete = true;
 					if (tmpval->typedata != S4G_GC_TYPE_VAR_SYS)
 						tmpval->typedata = S4G_GC_TYPE_VAR_DEL;
-					if (tmpval->pdata/*tmpval->iddata < arrdata.count_obj && arrdata.Arr.Data[tmpval->iddata]*/)
+					if (tmpval->pdata)
 					{
-						--(/*arrdata.Arr.Data[tmpval->iddata]->ref*/tmpval->pdata);
+						--(tmpval->pdata->ref);
 					}
 				}
-			}
+			}*/
 
 			tsf->args.clear();
 			tsf->commands.clear();
 			tsf->externs_strs.clear();
 			tsf->externstable->clear();
 
-			if (tsf->externs_val && tsf->externs_val->pdata /*tsf->externs_val->iddata < arrdata.count_obj*/)
+			if (tsf->externs_val && tsf->externs_val->pdata)
 			{
 				--(tsf->externs_val->pdata->ref);
-
-				if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)
-					tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;
-				//tsf->externs_val->typedata = 0;
-				//tsf->externs_val->isdelete = true;
-				set_td_data(tsf->externs_val, 0);
+				tsf->externs_val->pdata->typedata = S4G_GC_TYPE_DATA_FREE;
+				//if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)
+				tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;
 			}
 
 			MemSFunc.Delete(tsf);
@@ -999,6 +1001,7 @@ void s4g_gc::clear()
 			if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 			{
 				del_data(tmpdata);
+				tmpdata->type = t_null;
 				MemData.Delete(tmpdata);
 				arrdata.Arr.Data[i] = 0;
 				tmpdata = arrdata.Arr.Data[i];
@@ -1019,6 +1022,7 @@ void s4g_gc::clear()
 					if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 					{
 						del_data(tmpdata);
+						tmpdata->type = t_null;
 						MemData.Delete(tmpdata);
 						arrdata.Arr.Data[posend - k] = 0;
 						tmpdata = arrdata.Arr.Data[i];

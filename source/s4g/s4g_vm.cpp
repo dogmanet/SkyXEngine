@@ -135,8 +135,14 @@ inline void s4g_vm::com_block_new()
 
 inline void s4g_vm::com_block_del()
 {
-	if (blockstack.count_obj <= 0 || countopenbloks <=0)
-		int qwert = 0;
+	if (blockstack.count_obj <= 0 || countopenbloks <= 0)
+	{
+		//врядли это возникнет, но на всякий случай оставлю
+		error = -1;
+		s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+		sprintf(this->strerror, "[%s]:%d - unresolved deleting of block, likely this is bag vm", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+		return;
+	}
 	s4g_call_data* tmpcd = blockstack.get(blockstack.count_obj - 1);
 
 	curr_vars = tmpcd->vars;
@@ -151,7 +157,7 @@ inline void s4g_vm::com_fetch()
 	
 	str = gc->get_str(arg);
 
-	if (strcmp("call_fact", str) == 0)
+	if (curr_vars == gvars && strcmp(str, "nfc") == 0)
 		int qwert = 0;
 
 		if (strcmp(str, S4G_GLOBAL_NM) == 0)
@@ -171,8 +177,7 @@ inline void s4g_vm::com_fetch()
 						sprintf(this->strerror, "[%s]:%d - value '%s' is exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}
-					if (strcmp(tmpval->name, "n") == 0)
-						int qwert = 0;
+					
 					execute.push(tmpval);
 				}
 				else
@@ -381,13 +386,14 @@ inline void s4g_vm::com_store()
 			newsf->externstable = gc->get_table(newsf->externs_val);
 
 			long tmpid = -1;
-			for (int i = 0; i <= newsf->externs_strs.count(); i++)
+			for (int i = 0; i < newsf->externs_strs.count(); ++i)
 			{
+				tmpval = 0;
 				const char* str = newsf->externs_strs.get(i).c_str();
 				if ((tmpid = curr_vars->is_exists_s(str)) != -1)
 				{
 					tmpval = gc->cr_val_null(str);
-					gc->c_val(tmpval, curr_vars->getn(tmpid),false);
+					gc->c_val(tmpval, curr_vars->getn(tmpid), true);
 
 					newsf->externstable->add_val_s(str, tmpval);
 				}
@@ -473,8 +479,7 @@ inline void s4g_vm::com_call()
 				return;
 			}
 			long lastidctx = gc->deactivate_prev();	//деактивируем все активные возможные предыдущие контексты
-			if (lastidctx <= -1)
-				int qwert = 0;
+			
 			long idexternctx = -1;
 			//если у нас есть подставляемые значения из другого констекста
 			if (csfunc->externstable)
@@ -521,10 +526,7 @@ inline void s4g_vm::com_call()
 			//execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
 			stack_pop(execute, countarg + 1);
 
-				//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
-
-			if (callstack.count_obj == 0)
-				int qwert = 0;
+			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
 			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
 			tmpcd->coms = curr_comm;
 			tmpcd->vars = curr_vars;
@@ -536,11 +538,6 @@ inline void s4g_vm::com_call()
 			tmpcd->countopenbloks = countopenbloks;
 
 			countopenbloks = 0;
-			/*if ((long)arg == 1)
-				tmpcd->stack_size = execute.count_obj;
-			else
-				tmpcd->stack_size = -1;*/
-			//strcpy(tmpcd->namef, tvalfunc->name);
 
 			//устанавилваем новое окружение и новые конмады
 			curr_vars = ttable;
@@ -557,32 +554,15 @@ inline void s4g_vm::com_call()
 				stackarg.push(tvalue);
 			}
 			tcfunc = (gc->get_c_func(tvalfunc));
+			csfunc = (gc->get_s_func(tvalfunc));
 			stack_pop(execute, countarg + 1);
 
 			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние
 			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
 			tmpcd->idnewctx = tmpcd->idexternctx = tmpcd->lastidctx = -1;
 			tmpcd->valf = tvalfunc;
-			/*if ((long)arg == 1)
-				tmpcd->stack_size = execute.count_obj;
-			else
-				tmpcd->stack_size = -1;*/
 
 			error = (tcfunc)(s4gm);
-
-			//если указано что нужно проконтролировать количество возвращаемых значений
-			//оно должно быть одним
-			/*if (tmpcd->stack_size != -1)
-			{
-				//если количество возвращенных значений больше 1
-				if (tmpcd->stack_size + 1 < execute.count_obj)
-				{
-					stack_pop(execute, execute.count_obj - (tmpcd->stack_size + 1));	//убираем все лишние
-				}
-				//иначе если ничего не вернули
-				else if (tmpcd->stack_size >= execute.count_obj)
-					execute.push(gc->get_val_null());	//добавляем null значение
-			}*/
 
 			--callstack.count_obj;
 			sr.free_last_unfree();
@@ -1196,59 +1176,33 @@ inline void s4g_vm::com_pop()
 inline void s4g_vm::com_retprev()
 {
 	s4g_call_data* tmpcd = callstack.get(callstack.count_obj - 1);
-	if (tmpcd->idnewctx >= 0)
+
+	//возвращаем предыдущее состояние машины, до момента вызова скриптовой функции
+	long tmpcountopenbloks = countopenbloks;
+	for (long i = 0; i < tmpcountopenbloks; ++i)
 	{
-		//возвращаем предыдущее состояние машины, до момента вызова скриптовой функции
-
-		if (tmpcd->lastidctx <= -1)
-			int qwert = 0;
-
-		
-
-		long tmpcountopenbloks = countopenbloks;
-		for (long i = 0; i < tmpcountopenbloks; ++i)
-		{
-			com_block_del();
-		}
-		countopenbloks = tmpcd->countopenbloks;
-
-		curr_comm = tmpcd->coms;
-		curr_vars = tmpcd->vars;
-
-		id_curr_com = tmpcd->id_curr_com;
-
-		gc->del_top_context(true);
-		//убираем контексты функции
-		if (tmpcd->idexternctx != -1)
-		{
-			gc->remove_context(tmpcd->idexternctx);
-			gc->del_top_context(false);
-		}
-
-		if (tmpcd->lastidctx <= -1)
-			int qwert = 0;
-
-		gc->activate_prev(tmpcd->lastidctx);
-		
-		//если указано что нужно проконтролировать количество возвращаемых значений
-		//оно должно быть одним
-		/*if (tmpcd->stack_size != -1)
-		{
-		//если количество возвращенных значений больше 1
-		if (tmpcd->stack_size + 1 < execute.count_obj)
-		{
-		stack_pop(execute, execute.count_obj - (tmpcd->stack_size + 1));	//убираем все лишние
-		}
-		//иначе если ничего не вернули
-		else if (tmpcd->stack_size >= execute.count_obj)
-		execute.push(gc->get_val_null());	//добавляем null значение
-		}*/
-
+		com_block_del();
 	}
+	countopenbloks = tmpcd->countopenbloks;
+
+	curr_comm = tmpcd->coms;
+	curr_vars = tmpcd->vars;
+
+	id_curr_com = tmpcd->id_curr_com;
+
+	gc->del_top_context(true);
+	//убираем контексты функции
+	if (tmpcd->idexternctx != -1)
+	{
+		gc->remove_context(tmpcd->idexternctx);
+		gc->del_top_context(true);
+	}
+
+	gc->activate_prev(tmpcd->lastidctx);
+		
 	//callstack.pop(1);	//удаляем предыдущее состояние ибо оно стало текущим
 	stack_pop(callstack, 1);
-	if (callstack.count_obj == 0)
-		int qwert = 0;
+	
 	sr.free_last_unfree();
 
 	if (!curr_comm)
@@ -1609,7 +1563,7 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.i == tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == tvalue->pdata->data.i));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !tvalue->pdata->data.i));
 			else if (tvalue2->pdata->type == t_string)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.i == ((String*)tvalue2->pdata->data.p)->ToInt()));
 			else
@@ -1627,7 +1581,7 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.ui == tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == tvalue->pdata->data.ui));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !tvalue->pdata->data.ui));
 			else if (tvalue2->pdata->type == t_string)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.ui == ((String*)tvalue2->pdata->data.p)->ToUnsLongInt()));
 			else
@@ -1645,7 +1599,7 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f == tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == tvalue->pdata->data.f));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !tvalue->pdata->data.f));
 			else if (tvalue2->pdata->type == t_string)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f == ((String*)tvalue2->pdata->data.p)->ToDouble()));
 			else
@@ -1679,9 +1633,9 @@ inline void s4g_vm::com_log_eq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(((String*)tvalue->pdata->data.p)->ToDouble() == tvalue2->pdata->data.f));
 			else if (tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == ((String*)tvalue->pdata->data.p)->ToBool()));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !((String*)tvalue->pdata->data.p)->ToBool()));
 			else if (tvalue2->pdata->type == t_string)
-				execute.push_r(gc->get_bool(((String*)tvalue->pdata->data.p) == ((String*)tvalue2->pdata->data.p)));
+				execute.push_r(gc->get_bool((*(String*)tvalue->pdata->data.p) == (*(String*)tvalue2->pdata->data.p)));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1721,7 +1675,9 @@ inline void s4g_vm::com_log_neq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.i != tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !tvalue->pdata->data.i));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b != !tvalue->pdata->data.i));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.i != ((String*)tvalue2->pdata->data.p)->ToInt()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1737,7 +1693,9 @@ inline void s4g_vm::com_log_neq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.ui != tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !tvalue->pdata->data.ui));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b != !tvalue->pdata->data.ui));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.ui != ((String*)tvalue2->pdata->data.p)->ToUnsLongInt()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1753,7 +1711,9 @@ inline void s4g_vm::com_log_neq()
 			else if (tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(tvalue->pdata->data.f != tvalue2->pdata->data.f));
 			else if(tvalue2->pdata->type == t_bool)
-				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b == !tvalue->pdata->data.f));
+				execute.push_r(gc->get_bool(!tvalue2->pdata->data.b != !tvalue->pdata->data.f));
+			else if (tvalue2->pdata->type == t_float)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.f != ((String*)tvalue2->pdata->data.p)->ToDouble()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -1763,14 +1723,14 @@ inline void s4g_vm::com_log_neq()
 		{
 			if(tvalue2->pdata->type == t_bool)
 				execute.push_r(gc->get_bool(!tvalue->pdata->data.b != !tvalue2->pdata->data.b));
-			//else if(num1)
-			//	execute.push_r(gc->get_bool(true));
 			else if(tvalue2->pdata->type == t_int)
 				execute.push_r(gc->get_bool(!tvalue->pdata->data.b != !tvalue2->pdata->data.i));
 			else if(tvalue2->pdata->type == t_uint)
 				execute.push_r(gc->get_bool(!tvalue->pdata->data.b != !tvalue2->pdata->data.ui));
 			else if(tvalue2->pdata->type == t_float)
 				execute.push_r(gc->get_bool(!tvalue->pdata->data.b != !tvalue2->pdata->data.f));
+			else if (tvalue2->pdata->type == t_string)
+				execute.push_r(gc->get_bool(tvalue->pdata->data.b != ((String*)tvalue2->pdata->data.p)->ToBool()));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -2443,12 +2403,8 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	currCom = 0;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
-			//call_fact
-			/*if (gvars->is_exists_s("call_fact") >= 0)
-				int qwert = 0;*/
-			if (id_curr_com == 30)
+			if (id_curr_com == 10)
 				int qwert = 0;
-			
 			currCom = &(curr_comm->get(id_curr_com));
 			op = currCom->command;
 			arg = currCom->arg;
@@ -2468,20 +2424,6 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	{
 		com_retprev();
 	}
-	
-		/*if (gvars->is_exists_s("ttable") != -1)
-		{
-			s4g_value* tvar1 = gvars->gets("ttable");
-			s4g_type type1 = gc->get_type(tvar1);
-			
-			if (gc->get_type(tvar1) == t_table)
-			{
-				s4g_table* ttable = gc->get_table(tvar1);
-				s4g_value* t1 = ttable->gets("1");
-				//long num = gc->get_int(tvar1);
-				int qwert = 0;
-			}
-		}*/
 	
 	return error;
 }

@@ -300,7 +300,9 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _function)
 		{
-			s4g_s_function* sf = new s4g_s_function();
+			s4g_value* newsfval = gc->cr_val_s_func("##compiler", S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
+			s4g_s_function* sf = gc->get_s_func(newsfval);
+			//s4g_s_function* sf = new s4g_s_function();
 			s4g_node* tmpnode = node;
 				while(tmpnode->op1 && tmpnode->op1->value)
 				{
