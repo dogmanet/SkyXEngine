@@ -154,7 +154,9 @@ inline void s4g_table::clear()
 			--(tmpval->pdata->ref);
 	}
 	count_obj = 0;
-	NameIndex.clear();
+	if (NameIndex.Size() > 0)
+		NameIndex.clear();
+	
 }
 
 inline int s4g_table::is_exists_s(const char* str)
@@ -799,7 +801,7 @@ s4g_gc::s4g_gc()
 	nnulldata->typedata = S4G_GC_TYPE_DATA_SYS;
 	nnulldata->iddata = arrdata.count_obj;
 	nnulldata->type = t_nnull;
-	arrdata.push(bffalsedata);
+	arrdata.push(nnulldata);
 
 	nnullval->pdata = nnulldata;
 
@@ -1249,6 +1251,9 @@ void s4g_gc::del_top_context(bool clear)
 		tmpctx->table->clear();
 	}
 	--curr_num_top_ctx;
+
+	if (curr_num_top_ctx <= 2)
+		int qwert = 0;
 }
 
 inline long s4g_gc::ctx_is_exists_s(const char* str, s4g_value** val)

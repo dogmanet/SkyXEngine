@@ -183,28 +183,39 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				bst_cond_er(this);
 
 				s4g_node* tmpnode2 = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode);
-				
-				//записываем нод блока, и переходим на его выход (op3 - следующее звено цепи кода)
-				*arrnode[arrnode.count_obj - 1].node = tmpnode2;
-				arrnode[arrnode.count_obj - 1].node = &(tmpnode2->op3);
 
-				//если условие выполниться то значит мы сюда пришли из ветки elsr
+				//если условие выполниться то значит мы сюда пришли из ветки else
 				if (arrnode[arrnode.count_obj - 1].root->ud == 10)
 				{
 					//значит предыдущий родитель это if и его ветка уже отработана,
 					//смело можем переназначать родителя
+					arrnode[arrnode.count_obj - 2].root = tmpnode2;
+
 					arrnode[arrnode.count_obj - 1].root = tmpnode2;
+					*arrnode[arrnode.count_obj - 1].node = tmpnode2;
+					arrnode[arrnode.count_obj - 1].node = &(tmpnode2->op1->op2);
+
+					//arrnode.push_back(s4g_statement(tmpnode2, &(tmpnode2->op1->op2)));
 				}
 				else
 				{
 					//иначе получается что это новое условие, и первая ветка, а значит и новая инструкция
 					//записываем блок родителем, а тело ветки в нод для просчетов
+
+					//записываем нод блока, и переходим на его выход (op3 - следующее звено цепи кода)
+					arrnode[arrnode.count_obj - 1].root = tmpnode2;
+					*arrnode[arrnode.count_obj - 1].node = tmpnode2;
+					arrnode[arrnode.count_obj - 1].node = &(tmpnode2->op3);
+
 					arrnode.push_back(s4g_statement(tmpnode2, &(tmpnode2->op1->op2)));
 				}
+
+				
 			}
 			//ветка условия else
 			else if (tmplexs->id == S4GLKW_ELSE)
 			{
+				oldroot = arrnode.get(arrnode.count_obj - 1).root;
 				//если предыдущий (прям с предыдущей итерации) родительский нод был блоком условия
 				if (oldroot && oldroot->type == _block && oldroot->op1->type == _if)
 				{
@@ -245,6 +256,66 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						//записываем новую инструкцию, родитель прошлый родитель (он же _block->op1 == _if)
 						//нодом записываем ветку условия в _if ноде
 						arrnode.push_back(s4g_statement(oldroot, &(oldroot->op1->op3)));
+
+
+						//lex_get_next0(tmplexs);
+						/*if (!(tmplexs->type == word_key && tmplexs->id == S4GLKW_IF))
+							int qwert = 0;
+
+						bool oldisender = isender;
+						isender = false;
+
+						lex_get_next0(tmplexs);
+						//если текущая лексема не (
+						if (tmplexs->type != sym_group || tmplexs->id != 0)
+						{
+							//генерим ошибку ибо нам надо как-то сгруппировать условие
+							status = -1;
+							sprintf(this->error, "[%s]:%d - '(' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+							return(0);
+						}
+
+						lex_get_next0(tmplexs);
+						--overge;
+						//считываем условие
+						s4g_node* tmpnode = NodePool.Alloc(_if, curr_lexid, (s4g_value*)0, s4g_get_expr(false));
+
+						lex_get_curr0(tmplexs);
+						bst_cond_er(this);
+
+						isender = oldisender;
+						//если после условий не )
+						if (tmplexs->type != sym_group || tmplexs->id != 1)
+						{
+							//генерим ошибку, ибо группировка условий не удалась
+							status = -1;
+							sprintf(this->error, "[%s]:%d - ')' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+							return(0);
+						}
+
+						lex_get_next0(tmplexs);
+						//читаем начало блока
+						s4g_begin_read_block();
+
+						lex_get_curr(tmplexs);
+						bst_cond_er(this);
+
+						s4g_node* tmpnode2 = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode);
+
+						s4g_statement tmps = arrnode[arrnode.count_obj - 1];
+
+						
+							//иначе получается что это новое условие, и первая ветка, а значит и новая инструкция
+							//записываем блок родителем, а тело ветки в нод для просчетов
+						oldroot->op1->op3 = tmpnode2;
+							//записываем нод блока, и переходим на его выход (op3 - следующее звено цепи кода)
+							arrnode[arrnode.count_obj - 1].root = tmpnode2;
+
+
+							arrnode.push_back(s4g_statement(tmpnode2, &(tmpnode2->op1->op2)));*/
+
+
+
 					}
 				}
 				//иначе ошибка, ветка else не привязана к условию
@@ -563,12 +634,12 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 			oldroot = arrnode[arrnode.count_obj - 1].root;
 
 			//если родитльский нод блок да еще и условие у которого есть ветка else
-			if (oldroot && oldroot->type == _block && oldroot->op1 && oldroot->op1->type == _if && oldroot->op1->op3)
+			/*if (oldroot && oldroot->type == _block && oldroot->op1 && oldroot->op1->type == _if && oldroot->op1->op3)
 			{
 				//значит мы уже отработали этот нод, надо еще ниже спустится
 				--(arrnode.count_obj);
 				oldroot = arrnode[arrnode.count_obj - 1].root;
-			}
+			}*/
 
 			//пока оставить закоменченным ...
 			/*if (oldroot && oldroot->ud == 10)
@@ -1181,7 +1252,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 		else if (tmplexs->type == sym_arif_assign)
 		{
 			//если предыдущая операция была арифметичксой то ошибка
-			if (how_type_next == -1)
+			if (how_type_next == -1 && !(tmplexs->id == 0 || tmplexs->id == 1))
 			{
 				status = -1;
 				sprintf(this->error, "[%s]:%d - unexpected sequence arifmetic operation and arifmetic assignation", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
@@ -1426,7 +1497,11 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 		//если не запятая
 		else if (!(tmplexs->type == sym_delimiter && tmplexs->id == 1))
 		{
-			s4g_node* tmpnode2 = s4g_get_expr();
+			s4g_node* tmpnode2 = s4g_get_expr(false);
+
+			lex_get_curr0(tmplexs);
+			bst_cond_er(this);
+
 			//если добавление по ключу
 			if (tmpnode2->op2 && tmpnode2->op2->type == _call && tmpnode2->op2->value == 0)
 				tmpnode2->op2->value = (s4g_value*)1;	//устанавливаем необходимость контроля возврата одного аргумента
@@ -1435,10 +1510,12 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 			if (tmpnode2 && tmpnode2->type == _call && tmpnode2->value == 0)
 				tmpnode2->value = (s4g_value*)1; //устанавливаем необходимость контроля возврата одного аргумента
 
-			lex_get_curr0(tmplexs);
-			bst_cond_er(this);
-			if (tmpnode2->type != _set)
+			if (tmpnode2->type != _set || (!tmpnode2->op1 && tmpnode2->op2 && tmpnode2->op2->type == _create_table))
 			{
+				if (!tmpnode2->op1 && tmpnode2->op2 && tmpnode2->op2->type == _create_table)
+				{
+					tmpnode2 = tmpnode2->op2;
+				}
 				tmpnode->op1 = NodePool.Alloc(_add_in_table, curr_lexid, (s4g_value*)0, tmpnode2, NodePool.Alloc(_empty, curr_lexid));
 				tmpnode = tmpnode->op1->op2;
 			}
@@ -1531,7 +1608,26 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 	lex_get_curr0(tmplexs);
 
 	if (node == 0)
-		return 0;
+	{
+		//если символ создания таблицы
+		if (tmplexs->type == sym_table_create && tmplexs->id == 0)
+		{
+			//если у нас не полная интепретация выражений, значит таблицы создавать нельзя
+			/*if (!isfull)
+			{
+				//генерим ошибку
+				status = -1;
+				sprintf(this->error, "[%s]:%d - unresolved create table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+				return 0;
+			}*/
+
+			bst_cond_er(this);
+			lex_get_next(tmplexs);
+			return NodePool.Alloc(_set, curr_lexid, (s4g_value*)0, node, s4g_get_table());
+		}
+		else 
+			return 0;
+	}
 
 	//если тип текущего нода переменная и следующая лексема присвоение
 	if ((node->type == _var || node->type == _crvar) && tmplexs->type == sym_assign)
@@ -1551,13 +1647,13 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 		if (tmplexs->type == sym_table_create && tmplexs->id == 0)
 		{
 			//если у нас не полная интепретация выражений, значит таблицы создавать нельзя
-			if (!isfull)
+			/*if (!isfull)
 			{
 				//генерим ошибку
 				status = -1;
 				sprintf(this->error, "[%s]:%d - unresolved create table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 				return 0;
-			}
+			}*/
 			lex_get_next(tmplexs);
 			//создаем нод и получаем содержимое таблицы
 			return NodePool.Alloc(_set, curr_lexid, (s4g_value*)0, node, s4g_get_table());
