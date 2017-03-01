@@ -135,16 +135,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		
 		
 		//s4g_spop(s4gm, 1);
-		++qwerty;
+		/*++qwerty;
 		if (qwerty >= 1)
-		{
+		{*/
 			long tmpcount = s4g_gc_mem_busy(s4gm);
 			s4g_call_gc(s4gm);
 			long tmpcount2 = s4g_gc_mem_busy(s4gm);
 			long tmpcount3 = tmpcount - tmpcount2;
 			long tmpcount4 = s4g_gc_mem_allocated(s4gm);
 			qwerty = 0;
-		}
+		//}
 		//s4gm->gc->resort();
 		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);

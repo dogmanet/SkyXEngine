@@ -155,8 +155,8 @@ const char s4g_str_type[][S4G_MAX_LEN_TYPE_NAME] = {
 
 #define S4G_NM_GLOBAL INT_MIN	//глобальное пространство имен
 #define S4G_NM_SYS INT_MIN+1	//языковое/системное простраство имен
-//глобальнео простарство имен доступно из локальных контекстов только через _g (как объявлено в S4G_GLOBAL_NM), в глобальном все пишется напрямую в него
-//языковое/системное простраство имен доступно напрямую при любом контексте, поэтому в этоя зыковое простарство можно экспортировать все что необходимо для прямого использования внутри скриптов
+//глобальное простарство имен доступно из локальных контекстов только через _g (как объявлено в S4G_GLOBAL_NM), в глобальном все пишется напрямую в него
+//языковое/системное простраство имен доступно напрямую при любом контексте, поэтому в это языковое простарство можно экспортировать все что необходимо для прямого использования внутри скриптов
 
 //возвращает строковое представление типа tt в str_type
 S4G_API const char* s4g_get_str_type(s4g_type tt, char* str_type = 0);
@@ -172,8 +172,8 @@ S4G_API void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...);	//
 //вызываем сборку мусора, возвращает количество занимаемой памяти
 S4G_API int s4g_call_gc(s4g_main* s4gm);
 
-S4G_API long s4g_gc_mem_busy(s4g_main* s4gm);		//количество занятой памяти
-S4G_API long s4g_gc_mem_allocated(s4g_main* s4gm);
+S4G_API long s4g_gc_mem_busy(s4g_main* s4gm);		//количество занятой памяти в байтах
+S4G_API long s4g_gc_mem_allocated(s4g_main* s4gm);	//количество выделенной памяти в байтах
 
 //возвращают константные значения (константные для сборщика и машины и внутренней системы), то есть значения которые не копируются
 s4g_value* s4g_gcget_null(s4g_main* s4gm);
@@ -234,7 +234,7 @@ S4G_API int s4g_sis_null(s4g_main* s4gm, int index);
 //возвращает тип значения переменной по номеру в стеке index
 S4G_API s4g_type s4g_sget_type(s4g_main* s4gm, int index);
 
-//возвращает приведенное к определнному типу значнеие перменной по номеру index в стеке
+//возвращает приведенное к определнному типу значение перменной по номеру index в стеке
 S4G_API s4g_int s4g_sget_int(s4g_main* s4gm, int index);
 S4G_API s4g_uint s4g_sget_uint(s4g_main* s4gm, int index);
 S4G_API s4g_float s4g_sget_float(s4g_main* s4gm, int index);
@@ -280,7 +280,7 @@ S4G_API int s4g_cfis_cfunc(s4g_main* s4gm, int narg);
 S4G_API int s4g_cfis_pdata(s4g_main* s4gm, int narg);
 
 S4G_API s4g_type s4g_cfget_type(s4g_main* s4gm, int narg);	//возвращает тип аргумента
-S4G_API const char* s4g_cfget_str_type(s4g_main* s4gm, int narg, char* str = 0);//возвращает строковое в предствление типа аргумента
+S4G_API const char* s4g_cfget_str_type(s4g_main* s4gm, int narg, char* str = 0);//возвращает строковое предствление типа аргумента
 
 
 //DEBUG

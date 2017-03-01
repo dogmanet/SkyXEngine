@@ -192,6 +192,7 @@ inline void s4g_vm::com_fetch()
 
 					tmpval = gc->cr_val_null(str);
 					curr_vars->add_val_s(str, tmpval);
+					tmpval->idtable = curr_vars->iddata;
 					execute.push(tmpval);
 				}
 		}
@@ -285,6 +286,7 @@ inline void s4g_vm::com_fetch_get()
 					//то добавляем в конец таблицы
 					tmpval = gc->cr_val_null("");
 					ttable->add_val(tmpval);
+					tmpval->idtable = ttable->iddata;
 					execute.push(tmpval);
 				}
 				//иначе индекс недопустимый
@@ -343,6 +345,7 @@ inline void s4g_vm::com_fetch_get()
 					
 					tmpval = gc->cr_val_null(str);
 					ttable->add_val_s(str, tmpval);
+					tmpval->idtable = ttable->iddata;
 					execute.push(tmpval);
 			}
 			
@@ -470,12 +473,6 @@ inline void s4g_vm::com_call()
 				//execute.pop(countarg + 1); // выталкиваем из стека все что относилось к функции
 				stack_pop(execute, countarg + 1);
 
-				//если надо вернуть только один аргумент
-				if ((long)arg == 1)
-				{
-					//вставляем в стек null
-					execute.push(gc->get_val_null());
-				}
 				return;
 			}
 			long lastidctx = gc->deactivate_prev();	//деактивируем все активные возможные предыдущие контексты
@@ -554,7 +551,6 @@ inline void s4g_vm::com_call()
 				stackarg.push(tvalue);
 			}
 			tcfunc = (gc->get_c_func(tvalfunc));
-			csfunc = (gc->get_s_func(tvalfunc));
 			stack_pop(execute, countarg + 1);
 
 			//записываем в стек вызовов текущий вызов и сохранияем текущее состояние

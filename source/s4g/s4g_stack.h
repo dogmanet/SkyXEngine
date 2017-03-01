@@ -146,6 +146,7 @@ public:
 	inline void clear()
 	{
 		Arr.clear();
+		count_obj = 0;
 	}
 
 	inline void resize(int countel)

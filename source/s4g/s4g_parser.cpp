@@ -256,66 +256,6 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 						//записываем новую инструкцию, родитель прошлый родитель (он же _block->op1 == _if)
 						//нодом записываем ветку условия в _if ноде
 						arrnode.push_back(s4g_statement(oldroot, &(oldroot->op1->op3)));
-
-
-						//lex_get_next0(tmplexs);
-						/*if (!(tmplexs->type == word_key && tmplexs->id == S4GLKW_IF))
-							int qwert = 0;
-
-						bool oldisender = isender;
-						isender = false;
-
-						lex_get_next0(tmplexs);
-						//если текущая лексема не (
-						if (tmplexs->type != sym_group || tmplexs->id != 0)
-						{
-							//генерим ошибку ибо нам надо как-то сгруппировать условие
-							status = -1;
-							sprintf(this->error, "[%s]:%d - '(' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-							return(0);
-						}
-
-						lex_get_next0(tmplexs);
-						--overge;
-						//считываем условие
-						s4g_node* tmpnode = NodePool.Alloc(_if, curr_lexid, (s4g_value*)0, s4g_get_expr(false));
-
-						lex_get_curr0(tmplexs);
-						bst_cond_er(this);
-
-						isender = oldisender;
-						//если после условий не )
-						if (tmplexs->type != sym_group || tmplexs->id != 1)
-						{
-							//генерим ошибку, ибо группировка условий не удалась
-							status = -1;
-							sprintf(this->error, "[%s]:%d - ')' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
-							return(0);
-						}
-
-						lex_get_next0(tmplexs);
-						//читаем начало блока
-						s4g_begin_read_block();
-
-						lex_get_curr(tmplexs);
-						bst_cond_er(this);
-
-						s4g_node* tmpnode2 = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0, tmpnode);
-
-						s4g_statement tmps = arrnode[arrnode.count_obj - 1];
-
-						
-							//иначе получается что это новое условие, и первая ветка, а значит и новая инструкция
-							//записываем блок родителем, а тело ветки в нод для просчетов
-						oldroot->op1->op3 = tmpnode2;
-							//записываем нод блока, и переходим на его выход (op3 - следующее звено цепи кода)
-							arrnode[arrnode.count_obj - 1].root = tmpnode2;
-
-
-							arrnode.push_back(s4g_statement(tmpnode2, &(tmpnode2->op1->op2)));*/
-
-
-
 					}
 				}
 				//иначе ошибка, ветка else не привязана к условию

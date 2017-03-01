@@ -304,20 +304,31 @@ int s4g_compiler::compile2(s4g_node* node)
 			s4g_s_function* sf = gc->get_s_func(newsfval);
 			//s4g_s_function* sf = new s4g_s_function();
 			s4g_node* tmpnode = node;
-				while(tmpnode->op1 && tmpnode->op1->value)
+			if (tmpnode->op1 && tmpnode->op1->op1 && tmpnode->op1->op1->type == _marg)
+			{
+				sf->ismarg = true;
+				sf->marg_val = gc->cr_val_table_null(0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
+
+				sf->marg_val->pdata->typedata = S4G_GC_TYPE_DATA_SYS;
+				sf->margtable = gc->get_table(sf->marg_val);
+			}
+			else
+			{
+				while (tmpnode->op1 && tmpnode->op1->value)
 				{
-						sf->args.push(gc->get_str(tmpnode->op1->value));
-						tmpnode = tmpnode->op1;
-						if (tmpnode && tmpnode->op1 && tmpnode->op1->type == _marg)
-						{
-							sf->ismarg = true;
-							sf->marg_val = gc->cr_val_table_null(0,S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
-							
-							sf->marg_val->pdata->typedata = S4G_GC_TYPE_DATA_SYS;
-							sf->margtable = gc->get_table(sf->marg_val);
-							break;
-						}	
+					sf->args.push(gc->get_str(tmpnode->op1->value));
+					tmpnode = tmpnode->op1;
+					if (tmpnode && tmpnode->op1 && tmpnode->op1->type == _marg)
+					{
+						sf->ismarg = true;
+						sf->marg_val = gc->cr_val_table_null(0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS);
+
+						sf->marg_val->pdata->typedata = S4G_GC_TYPE_DATA_SYS;
+						sf->margtable = gc->get_table(sf->marg_val);
+						break;
+					}
 				}
+			}
 			tmpnode = node->op3;
 				if (tmpnode)
 				{

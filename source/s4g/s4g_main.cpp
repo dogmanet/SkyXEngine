@@ -105,8 +105,12 @@ void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...)
 
 s4g_value::s4g_value()
 {
+	if (strcmp(name, "nfc") == 0)
+		int qwert = 0;
 	typedata = S4G_GC_TYPE_VAR_FREE;
 	pdata = 0;
+	idtable = -1;
+	//printf("%s\n", name);
 	*(short*)name = '\0#';
 }
 
@@ -133,6 +137,7 @@ s4g_data::~s4g_data()
 s4g_table::s4g_table()
 {
 	count_obj = 0;
+	iddata = -1;
 }
 
 s4g_table::~s4g_table()
@@ -183,7 +188,6 @@ inline long s4g_table::is_exists_s2(const char* str, s4g_value** tval)
 		if (tval)
 			*tval = Arr.Data[*node->Val]->Value;
 
-		const item_name* tmpstr = Arr.Data[*node->Val]->name;
 		return(*node->Val);
 	}
 	return -1;
@@ -490,6 +494,7 @@ inline s4g_value* s4g_gc::cr_val_table_null(const char* name, int td_val, int td
 	tmpval->typedata = td_val;
 	tdata->typedata = td_data;
 	tdata->data.p = (void*)MemTable.Alloc();
+	((s4g_table*)tdata->data.p)->iddata = tdata->iddata;
 	tdata->type = t_table;
 	tmpval->pdata = tdata;
 	return tmpval;
@@ -591,6 +596,7 @@ inline s4g_value* s4g_gc::cr_val_table(s4g_table* tt, const char* name, int td_v
 	def_cr_val_null(tmpval, tdata, name);
 	tmpval->typedata = td_val;
 	tdata->data.p = tt;
+	tt->iddata = tdata->iddata;
 	tdata->type = t_table;
 	tmpval->pdata = tdata;
 	return tmpval;
@@ -933,6 +939,11 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 				tsf->externs_val->pdata->typedata = S4G_GC_TYPE_DATA_FREE;
 				//if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)
 				tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;
+				/*MemTable.Delete(tsf->externstable);
+				arrdata.Arr.Data[tsf->externs_val->pdata->iddata] = 0;
+
+				MemValue.Delete(tsf->externs_val);
+				arrvar.Arr.Data[tsf->externs_val->idvar] = 0;*/
 			}
 
 			MemSFunc.Delete(tsf);
@@ -1001,7 +1012,7 @@ void s4g_gc::clear()
 			if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 			{
 				del_data(tmpdata);
-				tmpdata->type = t_null;
+				//tmpdata->type = t_null;
 				MemData.Delete(tmpdata);
 				arrdata.Arr.Data[i] = 0;
 				tmpdata = arrdata.Arr.Data[i];
@@ -1022,7 +1033,7 @@ void s4g_gc::clear()
 					if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 					{
 						del_data(tmpdata);
-						tmpdata->type = t_null;
+						//tmpdata->type = t_null;
 						MemData.Delete(tmpdata);
 						arrdata.Arr.Data[posend - k] = 0;
 						tmpdata = arrdata.Arr.Data[i];
@@ -1055,6 +1066,14 @@ void s4g_gc::clear()
 		tmpval = arrvar.Arr.Data[i];
 		if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 			{
+				if (strcmp(tmpval->name, "nfc") == 0)
+					int qwert = 0;
+
+				if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable])
+				{
+
+				}
+
 				MemValue.Delete(tmpval);
 				arrvar.Arr.Data[i] = 0;
 				++countdelvar;
@@ -1073,6 +1092,14 @@ void s4g_gc::clear()
 					tmpval = arrvar.Arr.Data[posend - k];
 					if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 					{
+						if (strcmp(tmpval->name, "nfc") == 0)
+							int qwert = 0;
+
+						if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable])
+						{
+
+						}
+
 						MemValue.Delete(tmpval);
 						arrvar.Arr.Data[posend - k] = 0;
 						++countdelvar;

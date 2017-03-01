@@ -95,6 +95,7 @@ struct s4g_value
 	int typedata;	//тип данных для сборщика мусора, 0 - удалять если надо, 1 - нельзя удалять
 	//long iddata;	//идентификатор s4g_data из массива управляемого сборщиком мусора
 	long idvar;		//идентификатор этой переменной в массиве управляемым сборщиком мусора
+	long idtable;	//идентификатор таблицы к которой принадлежит данная переменная
 	char name[S4G_MAX_LEN_VAR_NAME];
 	//только для внутреннего использования!!!
 	s4g_data* pdata;
@@ -178,6 +179,7 @@ public:
 	typedef AssotiativeArray<item_name, long> IndexType;
 	typedef const IndexType::Node * IndexNode;
 	IndexType NameIndex;
+	long iddata;
 };
 
 
