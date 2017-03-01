@@ -105,12 +105,9 @@ void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...)
 
 s4g_value::s4g_value()
 {
-	if (strcmp(name, "nfc") == 0)
-		int qwert = 0;
 	typedata = S4G_GC_TYPE_VAR_FREE;
 	pdata = 0;
 	idtable = -1;
-	//printf("%s\n", name);
 	*(short*)name = '\0#';
 }
 
@@ -1083,18 +1080,20 @@ void s4g_gc::clear()
 
 	posend = arrvar.count_obj;
 	posend2 = arrvar.count_obj;
+	long idval = -1;
+	s4g_table* tmptable = 0;
 	
 	for (long i = count_nd_value; i < posend; ++i)
 	{
 		tmpval = arrvar.Arr.Data[i];
 		if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 			{
-				if (strcmp(tmpval->name, "nfc") == 0)
-					int qwert = 0;
-
-				if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable])
+				if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable] && arrdata.Arr.Data[tmpval->idtable]->type == t_table)
 				{
-
+					idval = -1;
+					tmptable = ((s4g_table*)arrdata.Arr.Data[tmpval->idtable]->data.p);
+					if ((idval = tmptable->is_exists_s(tmpval->name)) >= 0)
+						tmptable->add_val_n(idval, cr_val_null());
 				}
 
 				MemValue.Delete(tmpval);
@@ -1115,12 +1114,20 @@ void s4g_gc::clear()
 					tmpval = arrvar.Arr.Data[posend - k];
 					if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 					{
-						if (strcmp(tmpval->name, "nfc") == 0)
+						/*if (strcmp(tmpval->name, "nfc") == 0)
 							int qwert = 0;
 
 						if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable])
 						{
+							((s4g_table*)arrdata.Arr.Data[tmpval->idtable]->data.p)->add_val_s(tmpval->name, cr_val_null());
+						}*/
 
+						if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable] && arrdata.Arr.Data[tmpval->idtable]->type == t_table)
+						{
+							idval = -1;
+							tmptable = ((s4g_table*)arrdata.Arr.Data[tmpval->idtable]->data.p);
+							if ((idval = tmptable->is_exists_s(tmpval->name)) >= 0)
+								tmptable->add_val_n(idval, cr_val_null());
 						}
 
 						MemValue.Delete(tmpval);
