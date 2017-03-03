@@ -31,6 +31,7 @@ public:
 			Arr.Data[count_obj] = val;
 		else
 		{
+			Arr.Size = count_obj;
 			Arr.resize(Arr.AllocSize + BlockSize);
 			Arr[count_obj] = val;
 		}
@@ -39,7 +40,7 @@ public:
 
 	inline void push_r(T val)
 	{
-		if (count_obj > 0)
+		if (count_obj > 0 && Arr.AllocSize > count_obj)
 		{
 			Arr.Data[count_obj - 1] = val;
 		}
@@ -53,6 +54,7 @@ public:
 			Arr.Data[count_obj] = val;
 		else
 		{
+			Arr.Size = count_obj;
 			Arr.resize(Arr.AllocSize + BlockSize);
 			Arr[count_obj] = val;
 		}
@@ -177,8 +179,10 @@ public:
 	{
 		if (Arr.AllocSize > last_free)
 			Arr.Data[last_free] = val;
-		else
+		else{
+			Arr.Size = last_free;
 			Arr[last_free] = val;
+		}
 		++last_free;
 	}
 
@@ -238,6 +242,12 @@ public:
 		{
 			Arr[id] = val;
 		}
+	}
+
+	inline void clear()
+	{
+		last_free = 0;
+		Arr.clear();
 	}
 
 protected:

@@ -25,6 +25,11 @@ extern "C"
 #define S4G_API extern
 #endif
 
+#define S4G_CLEAR_AST	//ичищать ли аст после генерации кода
+//#define S4G_FASTFAIL	//моментальное закрытие приложени€ во врем€ ошибки
+#define S4G_COUNT_TIME_EXPECT_EXIT 50000
+//#define S4G_NPRINT_OPS //не выводить команды генерируемые дл€ машины, если объ€влен
+
 //все типы данных которые могут быть использованы в скриптах
 enum s4g_type
 {
@@ -46,6 +51,12 @@ struct s4g_main;	//основа взаимодействи€ между с(++) и скриптами
 struct s4g_value;	//переменна€-значение
 struct s4g_table;	//таблица
 
+//провер€ть ли наличие переменной перед ее созданием?
+//и если она создана и идет повторное создание то выдать ли ошибку?
+//а если переменна€ не создана и идет обращение к ней выдать ли ошибку?
+//при создании переменной об€зательно наличие $
+//при обращении к переменной об€зательно отсутствие $
+//дл€ того чтобы это все работало в скриптах надо объ€вить (в скриптах этот дефайн)
 #define S4G_CREATE_VAR "S4G_CREATE_VAR"
 
 //const
@@ -127,7 +138,7 @@ void s4g_report(s4g_main* s4gm, int level, const char* name_ss, const char* form
 	{
 		fprintf(stdout, "s4g %s error: %s\n", name_ss, buf);
 #ifndef S4G_FASTFAIL
-		Sleep(50000);
+		Sleep(S4G_COUNT_TIME_EXPECT_EXIT);
 #endif
 		exit(1);
 	}
@@ -163,14 +174,15 @@ S4G_API const char* s4g_get_str_type(s4g_type tt, char* str_type = 0);
 
 S4G_API s4g_main* s4g_init(const char* name);//инициализируем скриптовую систему
 S4G_API void s4g_kill(s4g_main* s4gm);//завершаем работу скриптовой системы
+S4G_API void s4g_clear(s4g_main* s4gm);//очистка скриптовой системы (дл€ перезагрзуки кода)
 S4G_API int s4g_load_file(s4g_main* s4gm, const char* file);//загрузить скрипт из файла
 S4G_API int s4g_load_str(s4g_main* s4gm, const char* str);//загрузить скрипт из строки
 
 S4G_API void s4g_set_rf(s4g_report_func rf);	//установить новую функцию выдачи сообщений
 S4G_API void s4g_gen_msg(s4g_main* s4gm, int level, const char* format, ...);	//генерировать сообщение
 
-//вызываем сборку мусора, возвращает количество занимаемой пам€ти
-S4G_API int s4g_call_gc(s4g_main* s4gm);
+//вызываем сборку мусора
+S4G_API void s4g_call_gc(s4g_main* s4gm);
 
 S4G_API long s4g_gc_mem_busy(s4g_main* s4gm);		//количество зан€той пам€ти в байтах
 S4G_API long s4g_gc_mem_allocated(s4g_main* s4gm);	//количество выделенной пам€ти в байтах

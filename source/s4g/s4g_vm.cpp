@@ -97,7 +97,20 @@ s4g_vm::~s4g_vm()
 	}
 
 	MemBlocks.clear();
-	callstack.Arr.clear();
+	callstack.clear();
+	stackarg.clear();
+}
+
+void s4g_vm::clear()
+{
+	execute.Arr.clear();
+	stackarg.Arr.clear();
+
+	callstack.count_obj = 0;
+	sr.clear();
+
+	MemBlocks.clear();
+	stackarg.clear();
 }
 
 ////////////
@@ -156,9 +169,6 @@ inline void s4g_vm::com_fetch()
 	is_cr = (op == mc_fetch_cr);
 	
 	str = gc->get_str(arg);
-
-	if (curr_vars == gvars && strcmp(str, "nfc") == 0)
-		int qwert = 0;
 
 		if (strcmp(str, S4G_GLOBAL_NM) == 0)
 		{
@@ -373,13 +383,26 @@ inline void s4g_vm::com_store()
 {
 	tvalue = execute.get(execute.count_obj - 1);
 	tvalue2 = execute.get(execute.count_obj - 2);
+
+	//если происходит попытка присвоить данные системной переменной
+	if (tvalue2->typedata == S4G_GC_TYPE_VAR_SYS)
+	{
+		s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+		error = -1;
+		sprintf(this->strerror, "[%s]:%d - unresolved assignation for lang variable", arr_lex->ArrFiles[tmplexs->fileid].c_str(), tmplexs->numstr);
+		return;
+	}
 	
+	//если присваиваем функцию
 	if (tvalue->pdata->type == t_sfunc)
 	{
 		s4g_s_function* sf = gc->get_s_func(tvalue);
+		//и если эта функция имеет замыкания, то есть дополнительный контекст с данными
 		if (sf->externs_strs.count() > 0 && !sf->externstable)
 		{
+			//создаем новую переменную функцию, ибо на входе сейчас шаблон функции, который нельзя менять
 			s4g_value* newsfval = gc->cr_val_s_func(tvalue2->name);
+			newsfval->idtable = curr_vars->iddata;
 			s4g_s_function* newsf = gc->get_s_func(newsfval);
 			newsf->args = sf->args;
 			newsf->commands = sf->commands;
@@ -389,16 +412,26 @@ inline void s4g_vm::com_store()
 			newsf->externstable = gc->get_table(newsf->externs_val);
 
 			long tmpid = -1;
+			//копируем данные из текущего контекста в дополнительный контекст функции
 			for (int i = 0; i < newsf->externs_strs.count(); ++i)
 			{
 				tmpval = 0;
 				const char* str = newsf->externs_strs.get(i).c_str();
-				if ((tmpid = curr_vars->is_exists_s(str)) != -1)
+				//если в текущем контексте есть такая переменная
+				if ((tmpid = /*curr_vars->is_exists_s(str)*/gc->ctx_is_exists_s(str, &tmpval)) != -1)
 				{
-					tmpval = gc->cr_val_null(str);
+					//tmpval = gc->cr_val_null(str);
 					gc->c_val(tmpval, curr_vars->getn(tmpid), true);
 
 					newsf->externstable->add_val_s(str, tmpval);
+				}
+				//иначе в текущем контексте нет переменной
+				else
+				{
+					error = -1;
+					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
+					sprintf(this->strerror, "[%s]:%d - variable '%s' not found in current conttex (closure)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, str);
+					return;
 				}
 			}
 			tvalue = newsfval;
@@ -414,6 +447,7 @@ inline void s4g_vm::com_add_in_table()
 	ttable = gc->get_table(execute.get(execute.count_obj - 2));
 	tmpval = (execute.get(execute.count_obj - 1));
 	ttable->add_val(tmpval);
+	tmpval->idtable = ttable->iddata;
 }
 
 inline void s4g_vm::com_append_table()
@@ -422,6 +456,7 @@ inline void s4g_vm::com_append_table()
 	stack_pop(execute, 1);
 	tvalue = gc->cr_val_null("");
 	ttable->add_val(tvalue);
+	tmpval->idtable = ttable->iddata;
 	execute.push(tvalue);
 }
 
@@ -491,33 +526,33 @@ inline void s4g_vm::com_call()
 				//если аргументы есть
 				if(countarg > 0)
 				{
+					//ПЕРЕДАЧА АРГУМЕНТОВ В ФУНКЦИЮ ОСУЩЕСТВЛЯЕТСЯ ПОСРЕДСТВОМ ПРЯМОЙ ВСТАВКИ ПЕРЕМЕННОЙ В КОНТЕКСТ
+					//ТО ЕСТЬ ЕСТЬ ВОЗМОЖНОСТЬ ПИСАТЬ В АРГУМЕНТЫ РУЗУЛЬТАТЫ
+
 					long tmpargs = countarg;
+					//ограничиваемся количеством аргументом которые имеют имена
 					if (countarg > csfunc->args.count_obj)
 						tmpargs = csfunc->args.count_obj;
 
-						//записываем на сколько хватает аргументов
+						//записываем на сколько хватает имен аргументов
 						for (int i = 0; i<tmpargs; ++i)
 						{
-							//tval2 = gc->cr_val_null();
 							tvalue = execute.get((execute.count_obj - ((countarg - i) - 1)) - 1);
-							//gc->c_val(tval2, tval, false);
-							//const char* tmpstr = csfunc->args.get(i + 1).c_str();
 							ttable->add_val_s(csfunc->args.get(i).c_str(), tvalue);
 						}
 
 						//если есть еще аргументы и у нас следущий аргмент это мультиаргумент
+						//а мультиаргумент это таблица с аргументами
 						if (countarg > tmpargs && csfunc->ismarg)
 						{
 							csfunc->margtable->clear();
 								for (int i = tmpargs; i<countarg; ++i)
 								{
-									//tval2 = gc->cr_val_null();
 									tvalue = execute.get((execute.count_obj - ((countarg - i) - 1) - 1));
-									//gc->c_val(tval2, tval,false);
 									csfunc->margtable->add_val(tvalue);
 								}
-							
-								ttable->add_val_s(S4G_MARG, csfunc->marg_val);
+							//добавляем в контекст таблицу с переменным количеством аргументов
+							ttable->add_val_s(S4G_MARG, csfunc->marg_val);
 						}
 				}
 			//execute.pop(countarg+1); // выталкиваем из стека все что относилось к функции
@@ -533,6 +568,8 @@ inline void s4g_vm::com_call()
 			tmpcd->id_curr_com = id_curr_com;
 			tmpcd->valf = tvalfunc;
 			tmpcd->countopenbloks = countopenbloks;
+			
+			tmpcd->stack_size = execute.count_obj;
 
 			countopenbloks = 0;
 
@@ -557,8 +594,14 @@ inline void s4g_vm::com_call()
 			s4g_call_data* tmpcd = callstack.get(callstack.count_obj);
 			tmpcd->idnewctx = tmpcd->idexternctx = tmpcd->lastidctx = -1;
 			tmpcd->valf = tvalfunc;
+			
+			tmpcd->stack_size = execute.count_obj;
 
 			error = (tcfunc)(s4gm);
+
+			//если ничего не вернули
+			if (tmpcd->stack_size >= execute.count_obj)
+				execute.push(gc->get_val_null());	//добавляем null значение
 
 			--callstack.count_obj;
 			sr.free_last_unfree();
@@ -1195,6 +1238,11 @@ inline void s4g_vm::com_retprev()
 	}
 
 	gc->activate_prev(tmpcd->lastidctx);
+
+	
+	//если ничего не вернули
+	if (tmpcd->stack_size >= execute.count_obj)
+		execute.push(gc->get_val_null());	//добавляем null значение
 		
 	//callstack.pop(1);	//удаляем предыдущее состояние ибо оно стало текущим
 	stack_pop(callstack, 1);
@@ -2399,7 +2447,7 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	currCom = 0;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
-			if (id_curr_com == 10)
+			if (id_curr_com == 22)
 				int qwert = 0;
 			currCom = &(curr_comm->get(id_curr_com));
 			op = currCom->command;

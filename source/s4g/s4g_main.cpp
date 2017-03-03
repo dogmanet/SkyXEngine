@@ -37,12 +37,22 @@ s4g_main::~s4g_main()
 {
 	mem_delete(arr_lex);
 	mem_delete(gc);
-	mem_delete(gnode);
+	//mem_delete(gnode);
 	mem_delete(bst);
-	commands->Arr.clear();
+	commands->clear();
 	mem_delete(commands);
 	mem_delete(compiler);
 	mem_delete(vmachine);
+}
+
+void s4g_main::clear()
+{
+	arr_lex->clear();
+	bst->clear();
+	commands->clear();
+	vmachine->clear();
+	gc->clear_all();
+	create_var = false;
 }
 
 /////////
@@ -140,9 +150,6 @@ s4g_table::s4g_table()
 s4g_table::~s4g_table()
 {
 	clear();
-	Arr.clear();
-	Mem.clear();
-	NameIndex.clear();
 }
 
 inline void s4g_table::clear()
@@ -841,15 +848,15 @@ s4g_gc::s4g_gc()
 
 s4g_gc::~s4g_gc()
 {
-	arrvar.Arr.clear();
-	arrdata.Arr.clear();
-	arrcurrcontexts.Arr.clear();
+	MemTable.clear();
+	arrvar.clear();
+	arrdata.clear();
+	arrcurrcontexts.clear();
 	MemValue.clear();
 	MemData.clear();
 	MemCtx.clear();
 	MemString.clear();
 	MemSFunc.clear();
-	MemTable.clear();
 }
 
 inline s4g_int s4g_gc::get_int(s4g_value* val)
@@ -948,22 +955,20 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 				}
 			}*/
 
+			
 			tsf->args.clear();
 			tsf->commands.clear();
 			tsf->externs_strs.clear();
-			tsf->externstable->clear();
+			
+			
+			if (tsf->externstable)
+				tsf->externstable->clear();
 
 			if (tsf->externs_val && tsf->externs_val->pdata)
 			{
 				--(tsf->externs_val->pdata->ref);
 				tsf->externs_val->pdata->typedata = S4G_GC_TYPE_DATA_FREE;
-				//if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)
 				tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;
-				/*MemTable.Delete(tsf->externstable);
-				arrdata.Arr.Data[tsf->externs_val->pdata->iddata] = 0;
-
-				MemValue.Delete(tsf->externs_val);
-				arrvar.Arr.Data[tsf->externs_val->idvar] = 0;*/
 			}
 
 			MemSFunc.Delete(tsf);
@@ -974,44 +979,18 @@ inline void s4g_gc::del_data(s4g_data* tdata)
 	}
 }
 
-#define def_gc_clear_del_data(tmpdata)\
-if (tmpdata->type == t_table)\
-{\
-	MemTable.Delete((s4g_table*)tmpdata->data.p); \
-}\
-else if (tmpdata->type == t_string)\
-{\
-	MemString.Delete((String*)tmpdata->data.p); \
-}\
-else if (tmpdata->type == t_sfunc)\
-{\
-	s4g_s_function* tsf = (s4g_s_function*)tmpdata->data.p; \
-if (tsf->externstable)\
-{\
-for (int k = 0; k < tsf->externstable->size(); ++k)\
-{\
-	s4g_value* tmpval = tsf->externstable->getn(k); \
-	if (tmpval->typedata != S4G_GC_TYPE_VAR_SYS)\
-	tmpval->typedata = S4G_GC_TYPE_VAR_DEL;\
-	if (tmpval->pdata)\
-{\
-		--(tmpval->pdata);\
-}\
-}\
-}\
-	tsf->args.clear(); \
-	tsf->commands.clear(); \
-	tsf->externs_strs.clear(); \
-	tsf->externstable->clear(); \
-if (tsf->externs_val && tsf->externs_val->pdata)\
-{\
-	--(tsf->externs_val->pdata->ref); \
-	tsf->externs_val->typedata = 0; \
-	if (tsf->externs_val->typedata != S4G_GC_TYPE_VAR_SYS)\
-		tsf->externs_val->typedata = S4G_GC_TYPE_VAR_DEL;\
-	set_td_data(tsf->externs_val, 0); \
-}\
-	MemSFunc.Delete(tsf); \
+inline void s4g_gc::del_value(s4g_value* tval)
+{
+	if (tval->idtable >= 0 && arrdata.Arr.Data[tval->idtable] && arrdata.Arr.Data[tval->idtable]->type == t_table)
+	{
+		long idval = -1;
+		s4g_table* tmptable = ((s4g_table*)arrdata.Arr.Data[tval->idtable]->data.p);
+		if ((idval = tmptable->is_exists_s(tval->name)) >= 0)
+			tmptable->add_val_n(idval, cr_val_null());
+	}
+
+	arrvar.Arr.Data[tval->idvar] = 0;
+	MemValue.Delete(tval);
 }
 
 void s4g_gc::clear()
@@ -1032,7 +1011,6 @@ void s4g_gc::clear()
 			if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 			{
 				del_data(tmpdata);
-				//tmpdata->type = t_null;
 				MemData.Delete(tmpdata);
 				arrdata.Arr.Data[i] = 0;
 				tmpdata = arrdata.Arr.Data[i];
@@ -1053,7 +1031,6 @@ void s4g_gc::clear()
 					if (tmpdata && (tmpdata->typedata != S4G_GC_TYPE_DATA_SYS) && tmpdata->ref < 1)
 					{
 						del_data(tmpdata);
-						//tmpdata->type = t_null;
 						MemData.Delete(tmpdata);
 						arrdata.Arr.Data[posend - k] = 0;
 						tmpdata = arrdata.Arr.Data[i];
@@ -1087,20 +1064,11 @@ void s4g_gc::clear()
 	{
 		tmpval = arrvar.Arr.Data[i];
 		if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
-			{
-				if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable] && arrdata.Arr.Data[tmpval->idtable]->type == t_table)
-				{
-					idval = -1;
-					tmptable = ((s4g_table*)arrdata.Arr.Data[tmpval->idtable]->data.p);
-					if ((idval = tmptable->is_exists_s(tmpval->name)) >= 0)
-						tmptable->add_val_n(idval, cr_val_null());
-				}
-
-				MemValue.Delete(tmpval);
-				arrvar.Arr.Data[i] = 0;
-				++countdelvar;
-				tmpval = 0;
-			}
+		{
+			del_value(tmpval);
+			++countdelvar;
+			tmpval = 0;
+		}
 
 			if (tmpval == 0)
 			{
@@ -1114,26 +1082,9 @@ void s4g_gc::clear()
 					tmpval = arrvar.Arr.Data[posend - k];
 					if (tmpval && (tmpval->pdata == 0 || (tmpval->typedata == S4G_GC_TYPE_VAR_DEL) || ((tmpval->typedata != S4G_GC_TYPE_VAR_SYS) && tmpval->pdata->ref < 1)))
 					{
-						/*if (strcmp(tmpval->name, "nfc") == 0)
-							int qwert = 0;
-
-						if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable])
-						{
-							((s4g_table*)arrdata.Arr.Data[tmpval->idtable]->data.p)->add_val_s(tmpval->name, cr_val_null());
-						}*/
-
-						if (tmpval->idtable >= 0 && arrdata.Arr.Data[tmpval->idtable] && arrdata.Arr.Data[tmpval->idtable]->type == t_table)
-						{
-							idval = -1;
-							tmptable = ((s4g_table*)arrdata.Arr.Data[tmpval->idtable]->data.p);
-							if ((idval = tmptable->is_exists_s(tmpval->name)) >= 0)
-								tmptable->add_val_n(idval, cr_val_null());
-						}
-
-						MemValue.Delete(tmpval);
-						arrvar.Arr.Data[posend - k] = 0;
-						++countdelvar;
+						del_value(tmpval);
 						tmpval = 0;
+						++countdelvar;
 						posend2 = (posend - k);
 					}
 					else if (!tmpval)
@@ -1156,6 +1107,58 @@ void s4g_gc::clear()
 
 	arrvar.count_obj = posend2;
 
+}
+
+void s4g_gc::clear_all()
+{
+	for (int i = 1; i < curr_num_top_ctx; ++i){
+		arrcurrcontexts[i]->table->clear();
+	}
+	curr_num_top_ctx = 2;
+
+	s4g_data* tmpdata = 0;
+	for (long i = 3; i < arrdata.count_obj; ++i)
+	{
+		tmpdata = arrdata.Arr.Data[i];
+
+		if (tmpdata && s4gm->vmachine->vgvars->pdata->iddata != i)
+		{
+			del_data(tmpdata);
+			MemData.Delete(tmpdata);
+			arrdata.Arr.Data[i] = 0;
+			tmpdata = arrdata.Arr.Data[i];
+		}
+	}
+
+	for (long i = arrdata.count_obj-1; i >= 0; --i)
+	{
+		if (arrdata.Arr.Data[i])
+		{
+			arrdata.count_obj = i + 1;
+			break;
+		}
+	}
+
+	s4g_value* tmpval = 0;
+
+	for (long i = 3; i < arrvar.count_obj; ++i)
+	{
+		tmpval = arrvar.Arr.Data[i];
+		if (tmpval && s4gm->vmachine->vgvars->idvar != i)
+		{
+			del_value(tmpval);
+			tmpval = 0;
+		}
+	}
+
+	for (long i = arrvar.count_obj - 1; i >= 0; --i)
+	{
+		if (arrvar.Arr.Data[i])
+		{
+			arrvar.count_obj = i + 1;
+			break;
+		}
+	}
 }
 
 inline void s4g_gc::begin_of_const_data()

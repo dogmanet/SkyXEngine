@@ -19,11 +19,15 @@ void s4g_kill(s4g_main* s4gm)
 	mem_delete(s4gm);
 }
 
-int s4g_call_gc(s4g_main* s4gm)
+void s4g_clear(s4g_main* s4gm)
 {
-	S4G_PRE_COND(s4gm, -1);
+	s4gm->clear();
+}
+
+void s4g_call_gc(s4g_main* s4gm)
+{
+	S4G_PRE_COND(s4gm);
 	s4gm->gc->clear();
-	return 0;
 }
 
 long s4g_gc_mem_busy(s4g_main* s4gm)
@@ -97,8 +101,12 @@ int s4g_load_file(s4g_main* s4gm, const char* file)
 		sprintf(s4gm->strerror, "%s", s4gm->bst->error);
 		return s4gm->bst->status;
 	}
-	s4gm->compiler->compile(s4gm->gnode, s4gm->commands);
 	
+	s4gm->compiler->compile(s4gm->gnode, s4gm->commands);
+	s4gm->compiler->comms = 0;
+#ifdef S4G_CLEAR_AST
+	s4gm->bst->NodePool.clear();
+#endif
 	s4gm->gc->end_of_const_data();
 	return 0;
 }
@@ -123,7 +131,9 @@ int s4g_load_str(s4g_main* s4gm, const char* str)
 		return s4gm->bst->status;
 	}
 	s4gm->compiler->compile(s4gm->gnode, s4gm->commands);
-
+#ifdef S4G_CLEAR_AST
+	s4gm->bst->NodePool.clear();
+#endif
 	s4gm->gc->end_of_const_data();
 	return 0;
 }

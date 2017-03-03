@@ -37,7 +37,7 @@ int s4g_compiler::compile2(s4g_node* node)
 		else if(node->type == _expr)
 		{
 			compile2(node->op1);
-			if ((*comms)[-1].command != mc_call)
+			//if ((*comms)[-1].command != mc_call)
 			{
 				gen(mc_pop, 0, node->lexid);
 				def_printf("pop\n");
@@ -53,16 +53,8 @@ int s4g_compiler::compile2(s4g_node* node)
 		}
 		else if(node->type == _sett)
 		{
-				/*if (node->op1->type == _crvar)
-				{*/
-					gen(mc_fetch_set_cr, node->op1->value, node->lexid);
-					def_printf("fetch_set_cr\n");
-				/*}
-				else
-				{
-					gen(mc_fetch_get, node->op1->value, node->lexid);
-					def_printf("fetch_get\n");
-				}*/
+			gen(mc_fetch_set_cr, node->op1->value, node->lexid);
+			def_printf("fetch_set_cr\n");
 
 			compile2(node->op2);
 
@@ -352,7 +344,7 @@ int s4g_compiler::compile2(s4g_node* node)
 			def_printf("-------e\n");
 			comms = tmpcomms;
 			
-			gen(mc_push, gc->cr_val_s_func(sf, 0, S4G_GC_TYPE_VAR_SYS), node->lexid);
+			gen(mc_push, newsfval/*gc->cr_val_s_func(sf, 0, S4G_GC_TYPE_VAR_SYS)*/, node->lexid);
 			def_printf("push\n");
 		}
 		else if(node->type == _call)

@@ -700,6 +700,8 @@ class s4g_arr_lex
 {
 public:
 	s4g_arr_lex();
+	~s4g_arr_lex();
+	void clear();
 	int read(const char* file_str,bool isfile=true);
 	int gen_lexs(const char* str,Array<s4g_lexeme*>* arr_lexs,bool is_def);
 	s4g_lexeme* get(DWORD num);
@@ -747,6 +749,8 @@ return 0; \
 struct s4g_builder_syntax_tree
 {
 	s4g_builder_syntax_tree(){status = 0; error[0] = 0; overend = 0; overge = 0; /*listread = true;*/ readcall = true; isender = true; dowhile = 0;}
+	~s4g_builder_syntax_tree(){ NodePool.clear(); }
+	void clear() { NodePool.clear(); }
 
 	s4g_node* s4g_gen_tree();	//построить аст и вернуть первый нод
 

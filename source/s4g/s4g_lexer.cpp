@@ -503,6 +503,22 @@ s4g_arr_lex::s4g_arr_lex()
 	strerror[0] = 0;
 }
 
+s4g_arr_lex::~s4g_arr_lex()
+{
+	ArrLexs.clear();
+	ArrFiles.clear();
+	ArrPathForFiles.clear();
+	LexPool.clear();
+}
+
+void s4g_arr_lex::clear()
+{
+	ArrLexs.clear();
+	ArrFiles.clear();
+	ArrPathForFiles.clear();
+	LexPool.clear();
+}
+
 s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* curr_num_str)
 {
 	s4g_lexeme* tmplex = 0;

@@ -23,6 +23,7 @@
 #define S4G_GC_TYPE_VAR_DEL -1	//переменная подлежит удалению
 #define S4G_GC_TYPE_VAR_FREE 0	//простая переменная
 #define S4G_GC_TYPE_VAR_SYS 1	//системная перменная
+#define S4G_GC_TYPE_VAR_ARG 2	//аргумент
 
 //ключи доступа к основным данным
 #define S4G_GC_KEY_NULL 0	//null
@@ -53,10 +54,11 @@ struct s4g_main
 {
 	s4g_main(const char* _name);
 	~s4g_main();
+	void clear();
 	s4g_arr_lex* arr_lex;	//лексический анализатор
 	s4g_node* gnode;		//построенное аст
 	s4g_builder_syntax_tree* bst;	//строитель аст
-	s4g_stack<s4g_command>* commands;	//массив с байт кодом
+	s4g_stack<s4g_command>* commands;//массив с байт кодом
 	s4g_compiler* compiler;			//компилятор
 	s4g_vm* vmachine;				//виртуальная машина
 	s4g_gc* gc;						//сборщик мусора
@@ -267,7 +269,9 @@ public:
 
 	//запустить сборку мусора
 	inline void del_data(s4g_data* tdata);
+	inline void del_value(s4g_value* tval);
 	void clear();
+	void clear_all();
 
 	inline void begin_of_const_data();	//старт создания константных значений (при загрузке скрипта)
 	inline void end_of_const_data();	//окончание создания константных значений (окончание загрузки скрипта)
@@ -278,6 +282,9 @@ public:
 protected:
 	friend class s4g_main;
 	friend class s4g_vm;
+
+	void Init();
+
 	s4g_main* s4gm;
 
 	s4g_stack<s4g_value*, S4G_RESERVE_VALUE> arrvar;//массив переменных
@@ -300,7 +307,7 @@ protected:
 //тип функция
 struct s4g_s_function
 {
-	s4g_s_function(){ externstable = 0; ismarg = false; marg_val = 0; margtable = 0; }
+	s4g_s_function(){ externs_val = 0; externstable = 0; ismarg = false; marg_val = 0; margtable = 0; }
 	~s4g_s_function(){}
 	s4g_value* externs_val;				//значение для externs
 	s4g_table* externstable;			//подстановка переменных и предыдщуего контекста
@@ -309,7 +316,7 @@ struct s4g_s_function
 	s4g_stack<s4g_command> commands;	//опкод
 	bool ismarg;						//принимает ли функция перенное количество аргументов?
 	s4g_value* marg_val;				//значение для margtable
-	s4g_table* margtable;				//подстановка переменных и предыдщуего контекста
+	s4g_table* margtable;				//таблица с переменным количеством аргументов
 };
 
 //контекст содержащий в себе все переменные текущего исполнения

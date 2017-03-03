@@ -103,7 +103,7 @@ struct s4g_call_data
 	s4g_call_data()
 	{
 		coms = 0;vars = 0;
-		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0; countopenbloks = 0;
+		id_curr_com = lastidctx = idnewctx = idexternctx = -1; valf = 0; countopenbloks = 0; stack_size = -1;
 	}
 
 	s4g_call_data(s4g_stack<s4g_command>* _coms, s4g_table* _vars, 
@@ -116,6 +116,7 @@ struct s4g_call_data
 		idnewctx = _idnewctx;
 		idexternctx = _idexternctx;
 		countopenbloks = 0;
+		stack_size = _stack_size;
 		_valf = valf;
 	}
 
@@ -128,6 +129,7 @@ struct s4g_call_data
 	long idnewctx;
 	long idexternctx;
 	long countopenbloks;
+	long stack_size;
 	s4g_value* valf;
 };
 
@@ -137,6 +139,7 @@ public:
 	
 	s4g_vm(s4g_gc* _gc);
 	~s4g_vm();
+	void clear();
 
 	int run(s4g_stack<s4g_command>* commands, s4g_table* vars);
 

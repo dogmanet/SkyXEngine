@@ -1162,7 +1162,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 					tmpnode2->type = (how_type_next == -3 ? _get_preincr : _get_predecr);
 			}
 
-			//если предыдущим символом была открывающая скобка а нынче мы считали вызов функции
+			/*//если предыдущим символом была открывающая скобка а нынче мы считали вызов функции
 			if (how_type_next == 0 && tmpnode->type == _call)
 			{
 				lex_get_curr(tmplexs);
@@ -1182,7 +1182,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 						}
 					}
 				}
-			}
+			}*/
 
 			//сообщаем что у нас было число
 			how_type_next = 2;
@@ -1442,14 +1442,6 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 			lex_get_curr0(tmplexs);
 			bst_cond_er(this);
 
-			//если добавление по ключу
-			if (tmpnode2->op2 && tmpnode2->op2->type == _call && tmpnode2->op2->value == 0)
-				tmpnode2->op2->value = (s4g_value*)1;	//устанавливаем необходимость контроля возврата одного аргумента
-
-			//если простое добавление в конец
-			if (tmpnode2 && tmpnode2->type == _call && tmpnode2->value == 0)
-				tmpnode2->value = (s4g_value*)1; //устанавливаем необходимость контроля возврата одного аргумента
-
 			if (tmpnode2->type != _set || (!tmpnode2->op1 && tmpnode2->op2 && tmpnode2->op2->type == _create_table))
 			{
 				if (!tmpnode2->op1 && tmpnode2->op2 && tmpnode2->op2->type == _create_table)
@@ -1637,6 +1629,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 			//{
 			s4g_node* extern_data = 0;
 			s4g_node* tmped = 0;
+			s4g_stack<String> tmparrnames;
 			//если текущая лексема это ключевое слово extern
 			if (tmplexs->type == word_key && tmplexs->id == 4)
 			{
@@ -1652,7 +1645,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 					//если предыдущий тип лексемы переменная и текущий тип не запятая (,) и не точка с запятой (;)
 					if (type_last == 1 && !(tmplexs->type == sym_delimiter && tmplexs->id == 1) && !(tmplexs->type == sym_delimiter && tmplexs->id == 0))
 					{
-						//сит=нтаксическая ошибка
+						//синтаксическая ошибка
 						this->status = -1;
 						sprintf(this->error, "[%s]:%d - ',' expected delimiter extern data but got [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
@@ -1660,6 +1653,16 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 					//если предыдущая лексема была либо запятой либо никакой и текущая лексема это переменная
 					else if ((type_last == 0 || type_last == -1) && tmplexs->type == word_user)
 					{
+						for (int i = 0; i < tmparrnames.count_obj; ++i)
+						{
+							if (tmparrnames[i] == tmplexs->str)
+							{
+								this->status = -1;
+								sprintf(this->error, "[%s]:%d - not unic variable [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str.c_str());
+								return 0;
+							}
+						}
+						tmparrnames.push(tmplexs->str);
 						//создаем нод с переменной
 						tmpop = NodePool.Alloc(_var, curr_lexid, gc->cr_val(t_string, tmplexs->str.c_str(), 0, S4G_GC_TYPE_VAR_SYS, S4G_GC_TYPE_DATA_SYS));
 						type_last = 1;	//сообщаем о типе
@@ -1683,7 +1686,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 					{
 						type_last = 0;	//сообщаем об этом
 					}
-					//еслитекущая лексема ;
+					//если текущая лексема ;
 					else if (tmplexs->type == sym_delimiter && tmplexs->id == 0)
 					{
 						//берем следующую лексему и прерываем цикл

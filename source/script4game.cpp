@@ -3,7 +3,7 @@
 #pragma once
 
 #define SX_EXE
-
+#include <vld.h> 
 #include <windows.h>
 #include <process.h>
 #include <ctime>
@@ -58,7 +58,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	freopen("CONIN$", "rt", stdin);
 
 
-	LuaState = luaL_newstate();
+	/*LuaState = luaL_newstate();
 
 	luaL_openlibs(LuaState);
 	
@@ -100,7 +100,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//lua_gc(LuaState, LUA_GCCOLLECT, 0);
 	time2 = timeGetTime() - time2;
 	int lcs = lua_gettop(LuaState);
-	int qwert2 = 0;
+	int qwert2 = 0;*/
 
 
 	//for (int i = 0; i < S4G_MAX_CALL; ++i)
@@ -121,9 +121,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	DWORD tmpcount = 0;
 	DWORD time = timeGetTime();
 	s4g_call(s4gm);
+	//s4g_clear(s4gm);
+	//clrscr();
+	//system("cls");
+	printf("\n\n\n\n\n");
+	//int* arrint = new int[100000];
+	//s4g_load_file(s4gm, "D:/project/engine/SkyXEngine/SkyXEngine/Debug/sort.script");
 	int qwerty = 0;
-	for (;;)// int i = 0; i < counttt; i++)
+	for (int i = 0; i < 100000000; i++)
 	{
+		//s4gm->arr_lex->clear();
+		//s4gm->arr_lex->read("D:/project/engine/SkyXEngine/SkyXEngine/Debug/sort.script");
+		/*s4g_clear(s4gm);
+		s4g_load_file(s4gm, "D:/project/engine/SkyXEngine/SkyXEngine/Debug/sort.script");*/
 		//s4g_spush_precall(s4gm,)
 		//s4g_spush_precall(s4gm);
 		//s4g_sget(s4gm, S4G_NM_GLOBAL, "testcall");
@@ -137,14 +147,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		//s4g_spop(s4gm, 1);
 		/*++qwerty;
 		if (qwerty >= 1)
-		{*/
-			long tmpcount = s4g_gc_mem_busy(s4gm);
+		{
+			long tmpcount = s4g_gc_mem_busy(s4gm);*/
 			s4g_call_gc(s4gm);
-			long tmpcount2 = s4g_gc_mem_busy(s4gm);
+			/*long tmpcount2 = s4g_gc_mem_busy(s4gm);
 			long tmpcount3 = tmpcount - tmpcount2;
 			long tmpcount4 = s4g_gc_mem_allocated(s4gm);
 			qwerty = 0;
-		//}
+		}*/
 		//s4gm->gc->resort();
 		//tmpcount++;
 		//s4g_int tnum = s4g_sget_int(s4gm, -1);
@@ -153,6 +163,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//time = timeGetTime();
 	//s4g_call_gc(s4gm);
 	//s4gm->gc->resort();
+	//s4g_clear(s4gm);
+	//s4gm->arr_lex->clear();
 	time = timeGetTime() - time;
 	int qwert = 0;
 
@@ -160,11 +172,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//s4g_call_gc(s4gm, 0);
 	//s4gm->gc->resort();
 	//time = timeGetTime() - time;
-	char texttime[64];
+	/*char texttime[64];
 	sprintf(texttime, "lua = %d | s4g = %d", time2, time);
-	MessageBox(0, texttime, 0, 0);
+	MessageBox(0, texttime, 0, 0);*/
 	
-
+	//s4g_kill(s4gm);
 	
 
 	
@@ -205,7 +217,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//static DWORD lastTime = timeGetTime();
 	//static DWORD TimeCCadr = 0;
 
-		while(msg.message != WM_QUIT /*&& IsWindow(SkyXEngine::Core::Data::HandleWinD3D)*/)
+		/*while(msg.message != WM_QUIT )
 		{
 				if(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 				{
@@ -214,20 +226,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 				}
 				else
 				{	
-					/*static DWORD TimeStart = 0;
-					DWORD TimeThis = timeGetTime();
-
-					DWORD currTime  = timeGetTime();
-					DWORD timeDelta = (currTime - lastTime);
-					timeDelta = (timeDelta + TimeCCadr) / 2;
-					//SkyXEngine::Core::Render::MainRender(timeDelta);
-
-					TimeCCadr = timeDelta;
-					TimeStart = TimeThis;
-
-					lastTime = currTime;*/
+					
 				}
 		}
 
-    return msg.wParam;
+    return msg.wParam;*/
+
+	return 0;
 }
