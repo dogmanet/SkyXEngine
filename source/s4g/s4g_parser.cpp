@@ -269,13 +269,42 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 			//цикл while
 			else if (tmplexs->id == S4GLKW_WHILE)
 			{
-				if (dowhile > 0) // это завершение для do
+				if(dowhile.get(dowhile.count_obj - 1) == overend) // это завершение для do
 				{
-					--dowhile;
+					dowhile.pop(1);
+					bool oldisender = isender;
+					isender = false;
+
+					lex_get_next0(tmplexs);
+					if(tmplexs->type != sym_group || tmplexs->id != 0)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - '(' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return(0);
+					}
+
+					//считываем условие
+					oldroot->op1->op2 = s4g_get_expr(false);
+					lex_get_prev(tmplexs);
+					bst_cond_er(this);
+
+					isender = oldisender;
+					if(tmplexs->type != sym_group || tmplexs->id != 1)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - ')' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return(0);
+					}
+					lex_get_next0(tmplexs);
+					if(tmplexs->type != sym_delimiter || tmplexs->id != 0)
+					{
+						status = -1;
+						sprintf(this->error, "[%s]:%d - ';' expected but found '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						return(0);
+					}
 				}
 				else // это простой while
 				{
-					--dowhile;
 					bool oldisender = isender;
 					isender = false;
 					
@@ -320,9 +349,32 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 
 					//записываем тело while, которое будем сейчас считать
 					arrnode.push(s4g_statement(tmpnode2, &(tmpnode->op2)));
-
-					++dowhile;
 				}
+			}
+			else if(tmplexs->id == S4GLKW_DO)
+			{
+				dowhile.push(overend);
+				/*
+				op1 - _block
+				op1->op1 - _do
+				op1->op1->op1 - тело исполнения
+				op2->op1->op2 - условие выполнения
+				*/
+				s4g_node* tmpnode = NodePool.Alloc(_block, curr_lexid, (s4g_value*)0,
+					NodePool.Alloc(_do, curr_lexid, (s4g_value*)0)
+				);
+
+				lex_get_next0(tmplexs);
+				//tmpnode->op2 = s4g_read_block(); //s4g_gen_statement();	//и считываем то что while
+				s4g_begin_read_block();
+				lex_get_curr0(tmplexs);
+				bst_cond_er(this);
+
+				*arrnode[arrnode.count_obj - 1].node = tmpnode;
+				arrnode[arrnode.count_obj - 1].node = &(tmpnode->op1->op1);
+
+				arrnode.push(s4g_statement(tmpnode, &(tmpnode->op1->op1)));
+
 			}
 			else if (tmplexs->id == S4GLKW_FOR)
 			{
@@ -500,10 +552,6 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				//записываем тело for, которое будем сейчас считать, родителем записываем блок этого for
 				arrnode.push_back(s4g_statement(tmpnode, &(tmpnode->op2->op2)));
 
-			}
-			else if (tmplexs->id == S4GLKW_DO)
-			{
-				++dowhile;
 			}
 			//оператор break остановка цикла
 			else if (tmplexs->id == S4GLKW_BREAK)
