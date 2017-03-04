@@ -187,3 +187,9 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+*.phpt
+libs/
+build/
+source/s4g/tests/failed/
+source/s4g/tests/
