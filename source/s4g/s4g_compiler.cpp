@@ -425,6 +425,37 @@ int s4g_compiler::compile2(s4g_node* node)
 			cyctls = cyctls_bak.get(cyctls_bak.count_obj - 1);
 			cyctls_bak.pop(1);
 		}
+		else if(node->type == _do)
+		{
+			cyctls_bak.push(cyctls);
+			cyctls.clear();
+
+			int startpos = comms->count();
+			compile2(node->op1);
+			compile2(node->op2);
+			int jzpos = comms->count();
+			gen(mc_jnz, 0, node->lexid);
+			def_printf("jnz\n");
+
+			comms[0][jzpos].arg = (s4g_value*)(startpos - jzpos - 1);
+
+			for(int i = 0, l = cyctls.size(); i < l; ++i)
+			{
+				int addr = 0;
+				switch(cyctls[i].type)
+				{
+				case _cyctl::BREAK:
+					addr = comms->count() - cyctls[i].addr - 1;
+					break;
+				case _cyctl::CONTINUE:
+					addr = startpos - cyctls[i].addr - 1;
+					break;
+				}
+				comms[0][cyctls[i].addr].arg = (s4g_value*)addr;
+			}
+			cyctls = cyctls_bak.get(cyctls_bak.count_obj - 1);
+			cyctls_bak.pop(1);
+		}
 		else if(node->type == _for)
 		{
 			cyctls_bak.push(cyctls);

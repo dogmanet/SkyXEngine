@@ -291,6 +291,7 @@ enum s4g_type_op
 	_if,
 	_while,
 	_for,
+	_do,
 
 	_mod,
 	_bit_and,
@@ -598,6 +599,7 @@ struct s4g_node
 		case _break:return("_break");
 		case _continue:return("_continue");
 		case _chain:return("_chain");
+		case _do:return("_do");
 		default:return("UNKNOWN");
 		}
 	}
@@ -771,7 +773,7 @@ struct s4g_builder_syntax_tree
 	int overend;	//если 0 значит все в норме, если более 0 то лишний энд, если меньше 0 то значит мы ищем энды в количестве abs(overend)
 	int overge;		//инкрементиру€ мы говорим что считываем вызов функции и если считывание выражени€ найден лишнюю закрывающую скобку то она принадлежит вызову (тада декрементирует)
 	int status;		//текущий статус, 0 - все норм, все другое это ошибка
-	int dowhile;    //кол-во открытых do
+	s4g_stack<int> dowhile;    //кол-во открытых do
 	char error[1024];//строка с описанием ошибки
 
 	s4g_arr_lex* arr_lex;
