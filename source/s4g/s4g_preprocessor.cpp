@@ -729,7 +729,7 @@ String s4g_preprocessor::MakeExpansion(const String & _expr, ReplList & rlist)
 				--uPCount;
 				if(uPCount == 0)
 				{
-					szArgs.push_back(sArg);
+					szArgs.push_back(sArg.trim());
 					sArg = "";
 					//make expansion with args
 
@@ -751,7 +751,7 @@ String s4g_preprocessor::MakeExpansion(const String & _expr, ReplList & rlist)
 			}
 			else if(ch == ',' && uPCount == 1)
 			{
-				szArgs.push_back(sArg);
+				szArgs.push_back(sArg.trim());
 				sArg = "";
 			}
 			else
@@ -888,6 +888,7 @@ String s4g_preprocessor::ReplArgs(const String & _expr, const _define * pDef, co
 					if(tok == pDef->vArgs[j])
 					{
 						argPos = j;
+						break;
 					}
 				}
 				//search tok in arg list
@@ -907,8 +908,9 @@ String s4g_preprocessor::ReplArgs(const String & _expr, const _define * pDef, co
 						sPos = sMergeStart;
 					}
 					expr = (sPos == 0 ? "" : expr.substr(0, sPos)) + arg + expr.substr(delta);
+					slfsSet = false;
 					l = expr.length();
-					i = sPos + arg.length();
+					i = sPos + arg.length() - 1;
 				}
 				sPos = ~0;
 				//tok_prev = tok;

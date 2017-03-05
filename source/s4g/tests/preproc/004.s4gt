@@ -1,0 +1,12 @@
+--TEST--
+UnDefine test
+--FILE--
+#define TEST "Hello World"
+
+#ifdef TEST
+print("no");
+#else
+print("yes");
+#endif
+--EXPECT--
+no
