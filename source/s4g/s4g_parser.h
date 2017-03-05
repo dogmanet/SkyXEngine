@@ -750,7 +750,7 @@ return 0; \
 //строитель абстрактного синтаксического дерева
 struct s4g_builder_syntax_tree
 {
-	s4g_builder_syntax_tree(){status = 0; error[0] = 0; overend = 0; overge = 0; /*listread = true;*/ readcall = true; isender = true; dowhile = 0;}
+	s4g_builder_syntax_tree(){status = 0; error[0] = 0; overend = 0; overge = 0; /*listread = true;*/ readcall = true; isender = true; }
 	~s4g_builder_syntax_tree(){ NodePool.clear(); }
 	void clear() { NodePool.clear(); }
 

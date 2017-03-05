@@ -219,7 +219,7 @@ public:
 	s4g_table* gvars;	//глобальное пространство имен _g
 	s4g_value* vgvars;	//переменная хранящая в себе глобальное пространство имен
 	s4g_table* curr_vars;	//текущее установленное пространство имен, есл выполняется функция то пространство имен функции
-	s4g_stack<s4g_value*, S4G_RESERVE_STACK_EXE> execute;	//стек выполнения команд
+	s4g_stack<s4g_value*, S4G_VM_MAX_SIZE_STACK_EXE> execute;	//стек выполнения команд
 
 	int error;	//есть ли ошибка? -1 есть, остальное все в норме
 	char strerror[1024];	//строка ошибки

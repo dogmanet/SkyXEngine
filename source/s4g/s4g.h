@@ -73,7 +73,7 @@ struct s4g_table;	//таблица
 //резерв памяти элементов - резерв выделяемой памяти для создания новых элементов
 //(для всех резервов): на это же количество будет увеличиваться дополнительный резерв в случе превышения предыдущего резерва
 
-#define S4G_RESERVE_STACK_EXE 100	//резерв элементов для стека исполнения
+#define S4G_VM_MAX_SIZE_STACK_EXE 1000	//максимальный размер стека исполнения
 
 #define S4G_RESERVE_VALUE 1000		//резерв элементов для переменных
 #define S4G_RESERVE_VALUE_MEM 1000	//резерв памяти элементов для переменных
@@ -310,9 +310,9 @@ S4G_API const char* s4g_dbg_get_curr_func(s4g_main* s4gm, char* str = 0);	//возв
 
 //Pre Process
 
-S4G_API bool s4g_pp_is_def(s4g_main* s4gm, const char* name_def);
-S4G_API void s4g_pp_def(s4g_main* s4gm, const char* def_str);
-S4G_API void s4g_pp_undef(s4g_main* s4gm, const char* name_def);
-S4G_API void s4g_pp_add_inc_path(s4g_main* s4gm, const char* path);
+S4G_API bool s4g_pp_is_def(s4g_main* s4gm, const char* name_def);	//if defined(name_def)
+S4G_API void s4g_pp_def(s4g_main* s4gm, const char* def_str);		//define def_str
+S4G_API void s4g_pp_undef(s4g_main* s4gm, const char* name_def);	//undef name_def
+S4G_API void s4g_pp_add_inc_path(s4g_main* s4gm, const char* path);	//include "path"
 }
 #endif

@@ -486,7 +486,7 @@ inline void s4g_vm::com_call()
 		}
 
 		error = -1;
-		sprintf(this->strerror, "[%s]:%s - stack overflow, limit = %d", tmpfile, tmpstr, S4G_MAX_CALL);
+		sprintf(this->strerror, "[%s]:%s - call stack overflow, limit = %d", tmpfile, tmpstr, S4G_MAX_CALL);
 		return;
 	}
 
@@ -1383,11 +1383,11 @@ inline void s4g_vm::com_mod()
 		else if (tvalue->pdata->type == t_float)
 		{
 			if (tvalue2->pdata->type == t_int)
-				execute.push(gc->cr_val_uint(fmod(tvalue->pdata->data.f, (s4g_float)tvalue2->pdata->data.i)));
+				execute.push(gc->cr_val_float(fmod(tvalue->pdata->data.f, (s4g_float)tvalue2->pdata->data.i)));
 			else if (tvalue2->pdata->type == t_uint)
-				execute.push(gc->cr_val_uint(fmod(tvalue->pdata->data.f, (s4g_float)tvalue2->pdata->data.ui)));
+				execute.push(gc->cr_val_float(fmod(tvalue->pdata->data.f, (s4g_float)tvalue2->pdata->data.ui)));
 			else if (tvalue2->pdata->type == t_float)
-				execute.push(gc->cr_val_uint(fmod(tvalue->pdata->data.f, tvalue2->pdata->data.f)));
+				execute.push(gc->cr_val_float(fmod(tvalue->pdata->data.f, tvalue2->pdata->data.f)));
 			else
 			{
 				S4G_VM_OP_ARIF_ERROR_TYPE2(tvalue2);
@@ -2447,8 +2447,6 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 	currCom = 0;
 		while (runexe && id_curr_com < curr_comm->count())
 		{
-			if (id_curr_com == 22)
-				int qwert = 0;
 			currCom = &(curr_comm->get(id_curr_com));
 			op = currCom->command;
 			arg = currCom->arg;
@@ -2456,6 +2454,22 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 			(this->*(arropf[op]))();
 			if (error < 0)
 				return -1;
+			
+
+			if (execute.count_obj >= S4G_VM_MAX_SIZE_STACK_EXE)
+			{
+				char tmpfile[S4G_MAX_LEN_STR_IN_FILE];
+				char tmpstr[S4G_MAX_LEN_TYPE_NAME];
+
+				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
+				strcpy(tmpfile, arr_lex->ArrFiles[tmplexs->fileid].c_str());
+				sprintf(tmpstr, "%d", tmplexs->numstr);
+
+				error = -1;
+				sprintf(this->strerror, "[%s]:%s - execute stack overflow, limit = %d", tmpfile, tmpstr, S4G_VM_MAX_SIZE_STACK_EXE);
+				return -1;
+			}
+
 			++id_curr_com;
 		}
 

@@ -254,32 +254,6 @@ int s4g_std_call_gc(s4g_main* s4gm)
 	return 0;
 }
 
-int s4g_std_unpack(s4g_main* s4gm)
-{
-	int countarg = s4g_cfcount_arg(s4gm);
-	int countpush = 0;
-	S4G_STDLIB_COND_ARG(s4gm, countarg, 1);
-
-	for (int i = 0; i < countarg; ++i)
-	{
-		if (s4g_cfis_table(s4gm, 1))
-		{
-			s4g_table* tt = (s4g_table*)s4g_cfget_pdata(s4gm, i + 1);
-			for (int k = 0; k < s4g_table_size(tt); ++k)
-			{
-				s4g_spush_value(s4gm, s4g_table_get(tt,k));
-				++countpush;
-			}
-		}
-		else
-		{
-			s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #%d string, but got '%s'", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), i, s4g_cfget_str_type(s4gm, 1));
-			return -1;
-		}
-	}
-	return countpush;
-}
-
 ///////
 
 
@@ -698,9 +672,6 @@ void s4g_export_stdlib(s4g_main* s4gm)
 	s4g_spush_c_func(s4gm, s4g_std_call_gc);
 	s4g_sstore(s4gm, S4G_NM_SYS, "call_gc");
 
-	s4g_spush_c_func(s4gm, s4g_std_unpack);
-	s4g_sstore(s4gm, S4G_NM_SYS, "unpack");
-
 	s4g_spush_c_func(s4gm, s4g_std_toint);
 	s4g_sstore(s4gm, S4G_NM_SYS, "toint");
 
@@ -788,7 +759,7 @@ void s4g_export_stdlib(s4g_main* s4gm)
 	s4g_spush_int(s4gm, t_sfunc);
 	s4g_sstore(s4gm, S4G_NM_SYS, "t_sfunc");
 
-	s4g_spush_str(s4gm, "s4g 0.0");
+	s4g_spush_str(s4gm, S4G_VERSION);
 	s4g_sstore(s4gm, S4G_NM_SYS, "_version");
 }
 
