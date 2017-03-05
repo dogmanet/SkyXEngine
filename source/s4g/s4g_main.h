@@ -29,7 +29,6 @@ https://s4g.su/
 #define S4G_GC_TYPE_VAR_DEL -1	//переменная подлежит удалению
 #define S4G_GC_TYPE_VAR_FREE 0	//простая переменная
 #define S4G_GC_TYPE_VAR_SYS 1	//системная перменная
-#define S4G_GC_TYPE_VAR_ARG 2	//аргумент
 
 //ключи доступа к основным данным
 #define S4G_GC_KEY_NULL 0	//null

@@ -281,6 +281,7 @@ void s4g_sstore(s4g_main* s4gm, int index, const char* name)
 		if (s4gm->vmachine->execute.count() > 0)
 		{
 			s4g_value* tval = s4gm->vmachine->execute.get(-1);
+			tval->typedata = S4G_GC_TYPE_VAR_SYS;
 			strcpy(tval->name, name);
 			s4gm->gc->add_in_const_ctx(name, tval);
 			s4gm->vmachine->execute.pop(1);
