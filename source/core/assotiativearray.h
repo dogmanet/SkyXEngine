@@ -15,7 +15,7 @@
 #endif
 
 
-template<typename SX_KEYTYPE, typename SX_VALTYPE, bool searchCache=false>
+template<typename SX_KEYTYPE, typename SX_VALTYPE, bool searchCache = false, int ReservePage = 256>
 class AssotiativeArray
 {
 public:
@@ -321,8 +321,8 @@ private:
 	//void TreeDelete(Node * node);
 
 	
-	MemAlloc<Node> MemNodes;
-	MemAlloc<SX_VALTYPE> MemVals;
+	MemAlloc<Node, ReservePage, 8> MemNodes;
+	MemAlloc<SX_VALTYPE, ReservePage, 8> MemVals;
 
 	void TreeReleaseNode(Node * node)
 	{
