@@ -1,0 +1,14 @@
+--TEST--
+Testing cycle for
+--FILE--
+for(i=1,q=10;i<q;++i,--q)
+{
+	print(tostring(i) + "\n");
+}
+--EXPECT--
+1
+2
+3
+4
+5
+

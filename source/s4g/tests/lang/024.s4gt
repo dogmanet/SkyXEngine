@@ -229,8 +229,10 @@ test = {};
 i=0;
 while (i<arr_len)
 {
+test[i] = {};
   j=0;
   while (j<arr_len) {
+  test[i][j] = {};
     k=0;
     while (k<arr_len) {
 		test[i][j][k] = i+j+k;
