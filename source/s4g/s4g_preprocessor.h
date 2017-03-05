@@ -1,3 +1,10 @@
+
+/*
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license MIT see in LICENSE or
+https://s4g.su/
+*/
+
 #ifndef s4g_preprocessor_h
 #define s4g_preprocessor_h
 

@@ -1,4 +1,11 @@
 
+/*
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license MIT see in LICENSE or 
+https://s4g.su/
+s4g version 0.9.1
+*/
+
 #ifndef s4g_h
 #define s4g_h
 
@@ -10,7 +17,7 @@ extern "C"
 
 #define S4G_VERSION "0.9.1"
 #define S4G_COPYRIGHT "Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017"
-#define S4G_SITE "s4g.su"
+#define S4G_SITE "https://s4g.su"
 
 //чтобы использовать скрипты пр€мо в приложении ничего дополнительно объ€вл€ть не надо
 //дл€ экспорта в dll необходимо объ€вить S4G_BUILD_DLL и S4G_DLL

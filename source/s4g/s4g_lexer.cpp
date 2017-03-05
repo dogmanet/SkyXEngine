@@ -1,4 +1,11 @@
 
+/*
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license MIT see in LICENSE or
+https://s4g.su/
+*/
+
+
 #include "s4g_preprocessor.h"
 
 
@@ -801,6 +808,7 @@ int s4g_arr_lex::read(const char* file_str, bool isfile)
 
 		if(!(ffile = fopen(file_str, "rb")))
 		{
+			sprintf(strerror, "not found file '%s'", file_str);
 			return -1;
 		}
 		

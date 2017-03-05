@@ -1,4 +1,10 @@
 
+/*
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license MIT see in LICENSE or
+https://s4g.su/
+*/
+
 #ifndef s4g_stdlib_h
 #define s4g_stdlib_h
 
@@ -129,6 +135,25 @@ int s4g_std_print(s4g_main* s4gm)
 		}
 
 	return 0;
+}
+
+int s4g_std_system(s4g_main* s4gm)
+{
+	int countarg = s4g_cfcount_arg(s4gm);
+
+	S4G_STDLIB_COND_ARG(s4gm, countarg, 1);
+
+	if (s4g_cfget_type(s4gm, 1) == t_string)
+	{
+		s4g_spush_int(s4gm, system(s4g_cfget_str(s4gm, 1)));
+	}
+	else
+	{
+		s4g_gen_msg(s4gm, S4G_ERROR, "[%s]:%d function '%s' expected arg #1 valid type, but got %s", s4g_dbg_get_curr_file(s4gm), s4g_dbg_get_curr_str(s4gm), s4g_dbg_get_curr_func(s4gm), s4g_cfget_str_type(s4gm, 1));
+		return -1;
+	}
+
+	return 1;
 }
 
 int s4g_std_assert(s4g_main* s4gm)
@@ -656,6 +681,9 @@ void s4g_export_stdlib(s4g_main* s4gm)
 
 	s4g_spush_c_func(s4gm, s4g_std_print);
 	s4g_sstore(s4gm, S4G_NM_SYS, "print");
+
+	s4g_spush_c_func(s4gm, s4g_std_system);
+	s4g_sstore(s4gm, S4G_NM_SYS, "system");
 
 	s4g_spush_c_func(s4gm, s4g_std_assert);
 	s4g_sstore(s4gm, S4G_NM_SYS, "assert");

@@ -1,4 +1,10 @@
 
+/*
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license MIT see in LICENSE or
+https://s4g.su/
+*/
+
 #include "s4g_parser.h"
 
 #include "s4g_vm.cpp"

@@ -176,7 +176,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	sprintf(texttime, "lua = %d | s4g = %d", time2, time);
 	MessageBox(0, texttime, 0, 0);*/
 	
-	//s4g_kill(s4gm);
+	s4g_kill(s4gm);
 	
 
 	

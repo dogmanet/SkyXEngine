@@ -1,6 +1,14 @@
 
+/*
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license MIT see in LICENSE or
+https://s4g.su/
+*/
+
 #ifndef s4g_vm_h
 #define s4g_vm_h
+
+#include <math.h>
 
 enum s4g_vm_command
 {
@@ -95,7 +103,7 @@ enum s4g_vm_command
 	return;
 
 
-#include <s4g\s4g_compiler.h>
+#include "s4g_compiler.h"
 
 //структура описывающая сохраненное предыдущее состояние при вызове функции и содержащее имя вызыванной функции
 struct s4g_call_data
