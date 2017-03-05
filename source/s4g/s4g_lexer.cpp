@@ -627,7 +627,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 						tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_user_cr, -1, curr_id_file);
 					else
 					{
-						sprintf(strerror, "[%s]:%d - unresolved using of key word '%s' for create a new element", ArrFiles[curr_id_file], numcurstr, tmpword);
+						sprintf(strerror, "[%s]:%d - '%s' is reserved keyword", ArrFiles[curr_id_file], numcurstr, tmpword);
 						return 0;
 					}
 					numcursym += strlen(tmpword);
@@ -642,7 +642,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 						//если есть точка в строке значит это float
 						if (strstr(tmpword, "."))
 						{
-							sprintf(strerror, "[%s]:%d - '%s' is float type this is unresolved for create a new element", ArrFiles[curr_id_file], numcurstr, tmpword);
+							sprintf(strerror, "[%s]:%d - cannot use float '%s' as table index", ArrFiles[curr_id_file], numcurstr, tmpword);
 							return 0;
 						}
 						else
@@ -652,7 +652,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 								tmplex = LexPool.Alloc(tmpword, numcurstr, s4g_lexeme_type::word_uint_cr, -1, curr_id_file);
 							else if (tmpword[slen] == 'f')
 							{
-								sprintf(strerror, "[%s]:%d - '%s' is float type this is unresolved for create a new element", ArrFiles[curr_id_file], numcurstr, tmpword);
+								sprintf(strerror, "[%s]:%d - cannot use float '%s' as table index", ArrFiles[curr_id_file], numcurstr, tmpword);
 								return 0;
 							}
 							else
@@ -673,13 +673,13 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 					}
 					else
 					{
-						sprintf(strerror, "[%s]:%d - '%s' unresolved type for create a new element in table", ArrFiles[curr_id_file], numcurstr, tmpword);
+						sprintf(strerror, "[%s]:%d - cannot use '%s' as table index", ArrFiles[curr_id_file], numcurstr, tmpword);
 						return 0;
 					}
 				}
 				else
 				{
-					sprintf(strerror, "[%s]:%d - '$' unresolved notation to this lexeme", ArrFiles[curr_id_file], numcurstr);
+					sprintf(strerror, "[%s]:%d - unexpected symbol '$'", ArrFiles[curr_id_file], numcurstr);
 					return 0;
 				}
 			}
@@ -773,7 +773,7 @@ s4g_lexeme* s4g_arr_lex::r_get_lexeme(const char* str, long* curr_pos, long* cur
 			}
 			else
 			{
-				sprintf(strerror, "[%s]:%d - unresolved symbol [%c]", ArrFiles[curr_id_file], numcurstr, tmpc);
+				sprintf(strerror, "[%s]:%d - unexpected symbol [%c]", ArrFiles[curr_id_file], numcurstr, tmpc);
 				return 0;
 			}
 		}
