@@ -1,0 +1,232 @@
+--TEST--
+UnDefine test
+--FILE--
+
+////////////////////////////////////////////////////
+//#define TEST "Hello World"
+//#define TEST2 "Hello World"
+//#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+#define TEST "Hello World"
+//#define TEST2 "Hello World"
+//#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+//#define TEST "Hello World"
+#define TEST2 "Hello World"
+//#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+#define TEST "Hello World"
+#define TEST2 "Hello World"
+//#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+//#define TEST "Hello World"
+//#define TEST2 "Hello World"
+#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+#define TEST "Hello World"
+//#define TEST2 "Hello World"
+#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+//#define TEST "Hello World"
+#define TEST2 "Hello World"
+#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+////////////////////////////////////////////////////
+#define TEST "Hello World"
+#define TEST2 "Hello World"
+#define TEST3 "Hello World"
+
+#ifdef TEST
+
+#ifdef TEST2
+print("yyx\n");
+#else
+print("ynx\n");
+#endif
+
+#else
+	
+#ifdef TEST3
+print("nxy\n");
+#else
+print("nxn\n");
+#endif
+#endif
+
+#undef TEST
+#undef TEST2
+#undef TEST3
+
+
+
+
+--EXPECT--
+nxn
+ynx
+nxn
+yyx
+nxy
+ynx
+nxy
+yyx
+

@@ -1,0 +1,9 @@
+--TEST--
+UnDefine test
+--FILE--
+#define TEST "Hello World"
+#undef TEST
+#define TEST "123"
+print(TEST);
+--EXPECT--
+123

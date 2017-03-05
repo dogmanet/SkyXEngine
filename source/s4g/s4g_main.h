@@ -185,8 +185,8 @@ public:
 	};
 	long count_obj;
 	Array<table_desc*, S4G_RESERVE_TABLE_ELEM> Arr;
-	MemAlloc<table_desc, S4G_RESERVE_TABLE_ELEM> Mem;
-	typedef AssotiativeArray<item_name, long> IndexType;
+	MemAlloc<table_desc, S4G_RESERVE_TABLE_ELEM, 8> Mem;
+	typedef AssotiativeArray<item_name, long, false, S4G_RESERVE_TABLE_ELEM> IndexType;
 	typedef const IndexType::Node * IndexNode;
 	IndexType NameIndex;
 	long iddata;

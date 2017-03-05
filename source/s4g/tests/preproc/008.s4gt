@@ -1,0 +1,8 @@
+--TEST--
+Define test
+--FILE--
+#define TEST2(str) #str
+#define TEST(a, b) TEST2(a ## b)
+print(TEST(qwe, asd));
+--EXPECT--
+qweasd

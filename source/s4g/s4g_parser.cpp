@@ -83,7 +83,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				{
 					//îøèáêà, óêàçûâàòü ñîçäàíèå íå íàäî
 					status = -1;
-					sprintf(this->error, "[%s]:%d - function provides for the creation of a new variable, it's too much [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, s4g_key_syms_create[0]);
+					sprintf(this->error, "[%s]:%d - expected function name but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, s4g_key_syms_create[0]);
 					return 0;
 				}
 				//åñëè òèï ëåêñåìû ïîëüçîâàòåëüñêîå ñëîâî
@@ -98,7 +98,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				else //error
 				{
 					status = -1;
-					sprintf(this->error, "[%s]:%d - unresolved word for name function [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+					sprintf(this->error, "[%s]:%d - expected function name but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return 0;
 				}
 
@@ -230,7 +230,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 					if (oldroot->op1->op3)
 					{
 						status = -1;
-						sprintf(this->error, "[%s]:%d - branch conditions already, fix error", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->error, "[%s]:%d - FIXME: else branch already exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return(0);
 					}
 
@@ -268,7 +268,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 				else
 				{
 					status = -1;
-					sprintf(this->error, "[%s]:%d - 'else' not found previous condition", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+					sprintf(this->error, "[%s]:%d - Unexpected 'else' statement", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 					return(0);
 				}
 			}
@@ -618,7 +618,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_gen_statement()
 			{
 				//ãåíåğèì îøèáêó
 				status = -1;
-				sprintf(this->error, "[%s]:%d - not found operation for end", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+				sprintf(this->error, "[%s]:%d - unexpected '}'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 				return 0;
 			}
 
@@ -724,7 +724,7 @@ int s4g_builder_syntax_tree::s4g_begin_read_block()
 	else if (tmplexs)
 	{
 		status = -1;
-		sprintf(this->error, "[%s]:%d - expected begin block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+		sprintf(this->error, "[%s]:%d - '{', but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 		return 0;
 	}
 	else
@@ -747,7 +747,7 @@ int s4g_builder_syntax_tree::s4g_end_read_block()
 	else if (tmplexs)
 	{
 		status = -1;
-		sprintf(this->error, "[%s]:%d - expected end block, but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+		sprintf(this->error, "[%s]:%d - '}', but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 		return 0;
 	}
 	else
@@ -834,7 +834,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_term()
 				if (!(tmplexs->type == sym_table_elem && tmplexs->id == 1))
 				{
 					status = -1;
-					sprintf(this->error, "[%s]:%d - none end for access in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+					sprintf(this->error, "[%s]:%d - expected ']' but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return 0;
 				}
 			}
@@ -965,7 +965,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 			if (how_type_next == -3 || how_type_next == -2)
 			{
 				status = -1;
-				sprintf(this->error, "[%s]:%d - unexpected sequence arifmetic assignation and arifmetic operation", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 
@@ -984,7 +984,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 						))
 					{
 						status = -1;
-						sprintf(this->error, "[%s]:%d - Invalid sequence of arithmetic operations one after the other", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+						sprintf(this->error, "[%s]:%d - Unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 					else
@@ -1005,7 +1005,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 						))	//error
 					{
 						status = -1;
-						sprintf(this->error, "[%s]:%d - illegal inderection", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+						sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 					//èíà÷å
@@ -1027,7 +1027,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 						))	//error
 					{
 						status = -1;
-						sprintf(this->error, "[%s]:%d - illegal inderection", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+						sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 					//èíà÷å
@@ -1061,14 +1061,14 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 					if (how_type_next == -4)
 					{
 						status = -1;
-						sprintf(this->error, "[%s]:%d - unresolved begin for expression [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 					//à ïğåäóäùèé ñèìâîë àğèôìåòè÷åñêàÿ îïåğàöèÿ
 					if (how_type_next == -1)	//error
 					{
 						status = -1;
-						sprintf(this->error, "[%s]:%d - unresolved end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+						sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 					tmptypeop = _group_e;
@@ -1092,7 +1092,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 						if (stack_op.get(stack_op.count() - 1)->type == _group_b && stack_var.count() == 0)
 						{
 							status = -1;
-							sprintf(this->error, "[%s]:%d - unresolved  null expression ()", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 							return 0;
 						}
 						bool is_find_gb = false;//íàéäåíà ëè îòêğûâàşùàÿ ñêîáêà
@@ -1123,7 +1123,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 							if (overge > 0) //error
 							{
 								status = -1;
-								sprintf(this->error, "[%s]:%d - excess ')'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+								sprintf(this->error, "[%s]:%d - unexpected ')'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 								return 0;
 							}
 							//âûçîâ ôóíêöèè äàåò çàïğîñ íà ïîèñê
@@ -1139,7 +1139,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 						if (overge > 0) //error
 						{
 							status = -1;
-							sprintf(this->error, "[%s]:%d - excess ')'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+							sprintf(this->error, "[%s]:%d - unexpected ')'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 							return 0;
 						}
 						//âûçîâ ôóíêöèè äàåò çàïğîñ íà ïîèñê
@@ -1193,7 +1193,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 			if (how_type_next == 2)	//error
 			{
 				status = -1;
-				sprintf(this->error, "[%s]:%d - Invalid sequence of terms to each other", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+				sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 			//èíà÷å ó íàñ ïğå èíêğåìåíò/äåêğåìåíò
@@ -1249,7 +1249,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 			if (how_type_next == -1 && !(tmplexs->id == 0 || tmplexs->id == 1))
 			{
 				status = -1;
-				sprintf(this->error, "[%s]:%d - unexpected sequence arifmetic operation and arifmetic assignation", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 
@@ -1300,7 +1300,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 				else
 				{
 					status = -1;
-					sprintf(this->error, "[%s]:%d - unknown sequence of arithmetic assignation '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+					sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return 0;
 				}
 			}
@@ -1324,7 +1324,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 	{
 		lex_get_prev0(tmplexs);
 		status = -1;
-		sprintf(this->error, "[%s]:%d - invalid end for expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+		sprintf(this->error, "[%s]:%d - unexpected end of expression", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 		return 0;
 	}
 
@@ -1341,7 +1341,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_op()
 			if (tmtm->type == _group_b)	//error
 			{
 				status = -1;
-				sprintf(this->error, "[%s]:%d - no ')'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+				sprintf(this->error, "[%s]:%d - expected ')'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 				return 0;
 			}
 			stack_var.push(tmtm);
@@ -1398,7 +1398,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 					if (arrarg[i] == tmplexs->str)
 					{
 						this->status = -1;
-						sprintf(this->error, "[%s]:%d - non unic argument [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->error, "[%s]:%d - duplicate parameter name '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 				}
@@ -1424,7 +1424,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 				else if (!(tmplexs->type == sym_group && tmplexs->id == 1))
 				{
 					this->status = -1;
-					sprintf(this->error, "[%s]:%d - no separate arguments", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+					sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return 0;
 				}
 			}
@@ -1435,7 +1435,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 				if (!(tmplexs->type == sym_group && tmplexs->id == 1))
 				{
 					this->status = -1;
-					sprintf(this->error, "[%s]:%d - expected ')' but got %s", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+					sprintf(this->error, "[%s]:%d - expected ')' but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 					return 0;
 				}
 				lex_get_next0(tmplexs);
@@ -1445,7 +1445,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 			else //error
 			{
 				this->status = -1;
-				sprintf(this->error, "[%s]:%d - unresolved type for argument [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 		}
@@ -1453,7 +1453,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_function_def_head()
 		else //error
 		{
 			this->status = -1;
-			sprintf(this->error, "[%s]:%d - unresolved definition for argument [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+			sprintf(this->error, "[%s]:%d - unexpected [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 			return 0;
 		}
 	}
@@ -1473,7 +1473,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 		if (type_last == 1 && !(tmplexs->type == sym_delimiter && tmplexs->id == 1) && !(tmplexs->type == sym_table_create && tmplexs->id == 1))
 		{
 			this->status = -1;
-			sprintf(this->error, "[%s]:%d - expected delimiter arg but got [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+			sprintf(this->error, "[%s]:%d - expected delimiter but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 			return 0;
 		}
 		//åñëè ñèìâîë îêîíöàíèÿ òàáëèöû }
@@ -1482,7 +1482,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 			if (type_last == 0)
 			{
 				this->status = -1;
-				sprintf(this->error, "[%s]:%d - expected arg but got end definition of the table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - expected arg but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 			lex_get_next(tmplexs);
@@ -1519,7 +1519,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_table()
 			if (type_last == 0)
 			{
 				this->status = -1;
-				sprintf(this->error, "[%s]:%d - expected double delimiter ','", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - unexpected double delimiter ','", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 			lex_get_next(tmplexs);
@@ -1544,7 +1544,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_arg_call_func()
 		if (type_last == 1 && !(tmplexs->type == sym_delimiter && tmplexs->id == 1) && !(tmplexs->type == sym_group && tmplexs->id == 1))
 		{
 			this->status = -1;
-			sprintf(this->error, "[%s]:%d - expected delimiter arg but got [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+			sprintf(this->error, "[%s]:%d - expected delimiter arg but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 			return 0;
 		}
 		//åñëè òåêóùèé ñèìâîë çàêğûâàşùàÿ ñêîáêà
@@ -1553,7 +1553,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_arg_call_func()
 			if (type_last == 0)
 			{
 				this->status = -1;
-				sprintf(this->error, "[%s]:%d - expected arg but got end call of function", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - expected arg but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 			lex_get_next0(tmplexs);
@@ -1573,7 +1573,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_arg_call_func()
 			if (type_last == 0)
 			{
 				this->status = -1;
-				sprintf(this->error, "[%s]:%d - expected double delimiter ','", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - unexpected double delimiter ','", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 			type_last = 0;
@@ -1623,7 +1623,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 		{
 			//à ıòî íå äîïóñòèìî, ïğèñâàèâàòü ìîæíî òîëüêî ïåğåìåííûì!!!
 			this->status = -1;
-			sprintf(this->error, "[%s]:%d - unresolved assignation", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+			sprintf(this->error, "[%s]:%d - unexpected '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 			return 0;
 		}
 
@@ -1652,7 +1652,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 			{
 				//ãåíåğèì îøèáêó
 				status = -1;
-				sprintf(this->error, "[%s]:%d - unresolved create function", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+				sprintf(this->error, "[%s]:%d - cannot create function here", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 				return 0;
 			}
 
@@ -1669,7 +1669,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 			else //èíà÷å îøèáêà, èáî íàì íàäî êàê-òîñãğóïïèğîâàòü àğãóìåíòû
 			{
 				status = -1;
-				sprintf(this->error, "[%s]:%d - expected '(' but got [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+				sprintf(this->error, "[%s]:%d - expected '(' but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 				return 0;
 			}
 
@@ -1701,7 +1701,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 					{
 						//ñèíòàêñè÷åñêàÿ îøèáêà
 						this->status = -1;
-						sprintf(this->error, "[%s]:%d - ',' expected delimiter extern data but got [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->error, "[%s]:%d - ',' expected delimiter extern data but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return 0;
 					}
 					//åñëè ïğåäûäóùàÿ ëåêñåìà áûëà ëèáî çàïÿòîé ëèáî íèêàêîé è òåêóùàÿ ëåêñåìà ıòî ïåğåìåííàÿ
@@ -1712,7 +1712,7 @@ s4g_node* s4g_builder_syntax_tree::s4g_get_expr(bool isfull)
 							if (tmparrnames[i] == tmplexs->str)
 							{
 								this->status = -1;
-								sprintf(this->error, "[%s]:%d - not unic variable [%s]", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str.c_str());
+								sprintf(this->error, "[%s]:%d - duplicate parameter name '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str.c_str());
 								return 0;
 							}
 						}

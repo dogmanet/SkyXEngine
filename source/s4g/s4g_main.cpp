@@ -10,7 +10,7 @@ https://s4g.su/
 #include "s4g_main.h"
 #include "s4g_parser.cpp"
 
-#define S4G_PRE_COND(s4gm, retval) if (s4gm == 0){s4g_gen_msg(s4gm, S4G_ERROR, "!!!", "script system is not init, api function [%s]",__FUNCTION__);	return retval;}
+#define S4G_PRE_COND(s4gm, retval) if (s4gm == 0){s4g_gen_msg(s4gm, S4G_ERROR, "!!!", "script system is not initialized, api function [%s]",__FUNCTION__);	return retval;}
 
 s4g_main::s4g_main(const char* _name)
 {

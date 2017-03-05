@@ -27,9 +27,6 @@
     <ClCompile Include="..\..\source\s4g\s4g_vm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\s4g\s4g.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\source\s4g\s4g_compiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

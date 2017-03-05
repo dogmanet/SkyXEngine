@@ -160,7 +160,7 @@ inline void s4g_vm::com_block_del()
 		//врядли это возникнет, но на всякий случай оставлю
 		error = -1;
 		s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-		sprintf(this->strerror, "[%s]:%d - unresolved deleting of block, likely this is bag vm", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
+		sprintf(this->strerror, "[%s]:%d - FIXME: unexpected block deletion", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr);
 		return;
 	}
 	s4g_call_data* tmpcd = blockstack.get(blockstack.count_obj - 1);
@@ -191,7 +191,7 @@ inline void s4g_vm::com_fetch()
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - value '%s' is exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->strerror, "[%s]:%d - variable '%s' already exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}
 					
@@ -203,7 +203,7 @@ inline void s4g_vm::com_fetch()
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - value '%s' is not exists", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->strerror, "[%s]:%d - undefined variable '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}
 
@@ -249,7 +249,7 @@ inline void s4g_vm::com_fetch_get()
 					s4g_int tmptmptval = tval->pdata->data.i;
 					char strtype[S4G_MAX_LEN_TYPE_NAME];
 					s4g_get_str_type(ttype, strtype);
-					sprintf(this->strerror, "[%s]:%s - value '%s' expected table but got %s", tmpfile, tmpstr, tval->name, strtype);
+					sprintf(this->strerror, "[%s]:%s - '%s' expected table but got '%s'", tmpfile, tmpstr, tval->name, strtype);
 					return;
 				}
 		}
@@ -264,6 +264,7 @@ inline void s4g_vm::com_fetch_get()
 
 
 			error = -1;
+			///@FIXME: improve translation
 			sprintf(this->strerror, "[%s]:%s - address to the table '%s', but the stack is empty", tmpfile, tmpstr, tmpval->name);
 			return;
 		}
@@ -313,7 +314,7 @@ inline void s4g_vm::com_fetch_get()
 					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 					char strtype[S4G_MAX_LEN_TYPE_NAME];
 					s4g_get_str_type(gc->get_type(tmpval), strtype);
-					sprintf(this->strerror, "[%s]:%d - unresolved index for access to table on numeric index, table size '%d', index '%d'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, ttable->count_obj, index);
+					sprintf(this->strerror, "[%s]:%d - invalid table index '%d', table size '%d'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, index, ttable->count_obj);
 					return;
 				}
 				
@@ -325,7 +326,7 @@ inline void s4g_vm::com_fetch_get()
 				s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
 				char strtype[S4G_MAX_LEN_TYPE_NAME];
 				s4g_get_str_type(gc->get_type(tmpval), strtype);
-				sprintf(this->strerror, "[%s]:%d - when accessed to table on numeric index expected integer or string, but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, strtype);
+				sprintf(this->strerror, "[%s]:%d - unexpected table index type. expecting int or string, but got '%s'", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, strtype);
 				return;
 			}
 		}
@@ -344,7 +345,7 @@ inline void s4g_vm::com_fetch_get()
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - key number '%s' is exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->strerror, "[%s]:%d - key number '%s' is already exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}
 
@@ -356,7 +357,7 @@ inline void s4g_vm::com_fetch_get()
 					{
 						error = -1;
 						s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-						sprintf(this->strerror, "[%s]:%d - key number '%s' is not exists in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
+						sprintf(this->strerror, "[%s]:%d - undefined key number '%s' in table", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, tmplexs->str);
 						return;
 					}
 					
@@ -381,7 +382,7 @@ inline void s4g_vm::com_fetch_get()
 			s4g_get_str_type(gc->get_type(tmpval), strtype);
 
 			error = -1;
-			sprintf(this->strerror, "[%s]:%s - data '%s' type '%s' is unresolved address in table", tmpfile, tmpstr, tmpval->name, strtype);
+			sprintf(this->strerror, "[%s]:%s - cannot use '%s' type '%s' as table index", tmpfile, tmpstr, tmpval->name, strtype);
 			return;
 		}
 }
@@ -396,7 +397,7 @@ inline void s4g_vm::com_store()
 	{
 		s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid - 1);
 		error = -1;
-		sprintf(this->strerror, "[%s]:%d - unresolved assignation for lang variable", arr_lex->ArrFiles[tmplexs->fileid].c_str(), tmplexs->numstr);
+		sprintf(this->strerror, "[%s]:%d - '%s' is read-only variable", arr_lex->ArrFiles[tmplexs->fileid].c_str(), tmplexs->numstr, tvalue2->name);
 		return;
 	}
 	
@@ -437,7 +438,7 @@ inline void s4g_vm::com_store()
 				{
 					error = -1;
 					s4g_lexeme* tmplexs = this->arr_lex->get(curr_comm->get(id_curr_com).lexid);
-					sprintf(this->strerror, "[%s]:%d - variable '%s' not found in current conttex (closure)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, str);
+					sprintf(this->strerror, "[%s]:%d - variable '%s' is not found in current context (closure)", this->arr_lex->ArrFiles[tmplexs->fileid], tmplexs->numstr, str);
 					return;
 				}
 			}
@@ -635,7 +636,7 @@ inline void s4g_vm::com_call()
 			error = -1;
 			char strtype[S4G_MAX_LEN_TYPE_NAME];
 			s4g_get_str_type(gc->get_type(tvalfunc), strtype);
-			sprintf(this->strerror, "[%s]:%s - called value '%s' is not function, this is '%s'", tmpfile, tmpstr, tvalfunc->name, strtype);
+			sprintf(this->strerror, "[%s]:%s - '%s' attempt to call '%s' as a function", tmpfile, tmpstr, tvalfunc->name, strtype);
 		}
 }
 
@@ -2473,7 +2474,7 @@ int s4g_vm::run(s4g_stack<s4g_command>* commands, s4g_table* vars)
 				sprintf(tmpstr, "%d", tmplexs->numstr);
 
 				error = -1;
-				sprintf(this->strerror, "[%s]:%s - execute stack overflow, limit = %d", tmpfile, tmpstr, S4G_VM_MAX_SIZE_STACK_EXE);
+				sprintf(this->strerror, "[%s]:%s - executetion stack overflow, limit = %d", tmpfile, tmpstr, S4G_VM_MAX_SIZE_STACK_EXE);
 				return -1;
 			}
 

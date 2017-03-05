@@ -294,7 +294,7 @@ void s4g_sstore(s4g_main* s4gm, int index, const char* name)
 	{
 		if (s4gm->vmachine->execute.count() >= index)
 		{
-			s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', size stack '%d', api function [%s]", index, s4gm->vmachine->execute.count(), __FUNCTION__);
+			s4g_gen_msg(s4gm, S4G_ERROR, "invalid index '%d', size stack '%d', api function [%s]", index, s4gm->vmachine->execute.count(), __FUNCTION__);
 			return;
 		}
 
@@ -309,12 +309,12 @@ void s4g_sstore(s4g_main* s4gm, int index, const char* name)
 		}
 		else
 		{
-			s4g_gen_msg(s4gm, S4G_ERROR, "value of stack at index '%d' is not table, api function [%s]", index, __FUNCTION__);
+			s4g_gen_msg(s4gm, S4G_ERROR, "stack element at '%d' is not a table, api function [%s]", index, __FUNCTION__);
 		}
 	}
 	else
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', api function [%s]", index, __FUNCTION__);
+		s4g_gen_msg(s4gm, S4G_ERROR, "invalid index '%d', api function [%s]", index, __FUNCTION__);
 	}
 }
 
@@ -328,7 +328,7 @@ void s4g_sget(s4g_main* s4gm, int index, const char* name)
 		s4g_value* tval = s4gm->vmachine->gvars->gets(name);
 		if (!tval)
 		{
-				s4g_gen_msg(s4gm, S4G_ERROR, "var '%s' is not found in global, api function [%s]", name, __FUNCTION__);
+				s4g_gen_msg(s4gm, S4G_ERROR, "global variable '%s' is not found, api function [%s]", name, __FUNCTION__);
 			return;
 		}
 		s4gm->vmachine->execute.push(tval);
@@ -342,7 +342,7 @@ void s4g_sget(s4g_main* s4gm, int index, const char* name)
 		}
 		else
 		{
-			s4g_gen_msg(s4gm, S4G_ERROR, "var '%s' is not found in sys_ctx, api function [%s]", name, __FUNCTION__);
+			s4g_gen_msg(s4gm, S4G_ERROR, "sys_ctx variable '%s' is not found, api function [%s]", name, __FUNCTION__);
 			return;
 		}
 	}
@@ -350,7 +350,7 @@ void s4g_sget(s4g_main* s4gm, int index, const char* name)
 	{
 		if (s4gm->vmachine->execute.count() >= index)
 		{
-			s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', size stack '%d', api function [%s]", index, s4gm->vmachine->execute.count(), __FUNCTION__);
+			s4g_gen_msg(s4gm, S4G_ERROR, "invalid index '%d', size stack '%d', api function [%s]", index, s4gm->vmachine->execute.count(), __FUNCTION__);
 			return;
 		}
 
@@ -361,19 +361,19 @@ void s4g_sget(s4g_main* s4gm, int index, const char* name)
 			s4g_value* tval2 = ttable->gets(name);
 			if (!tval2)
 			{
-				s4g_gen_msg(s4gm, S4G_ERROR, "var '%s' is not found in table, api function [%s]", name, __FUNCTION__);
+				s4g_gen_msg(s4gm, S4G_ERROR, "table var '%s' is not found, api function [%s]", name, __FUNCTION__);
 				return;
 			}
 			s4gm->vmachine->execute.push(tval2);
 		}
 		else
 		{
-			s4g_gen_msg(s4gm, S4G_ERROR, "value of stack at index '%d' is not table, api function [%s]", index, __FUNCTION__);
+			s4g_gen_msg(s4gm, S4G_ERROR, "stack element at '%d' is not a table, api function [%s]", index, __FUNCTION__);
 		}
 	}
 	else
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "unresolved index '%d', api function [%s]", index, __FUNCTION__);
+		s4g_gen_msg(s4gm, S4G_ERROR, "invalid index '%d', api function [%s]", index, __FUNCTION__);
 	}
 }
 
@@ -600,7 +600,7 @@ s4g_value* s4g_cfget_arg(s4g_main* s4gm, int narg)
 
 	if (narg <= 0)
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "narg '%d' must be greater than 0, api function [%s]", narg, __FUNCTION__);
+		s4g_gen_msg(s4gm, S4G_ERROR, "argument number '%d' must be > 0, api function [%s]", narg, __FUNCTION__);
 		return 0;
 	}
 
@@ -616,7 +616,7 @@ s4g_value* s4g_cfget_arg(s4g_main* s4gm, int narg)
 	}
 	else if (s4gm->vmachine->stackarg.count_obj == 0)
 	{
-		s4g_gen_msg(s4gm, S4G_ERROR, "in function arguments have not been sent, api function [%s]", __FUNCTION__);
+		s4g_gen_msg(s4gm, S4G_ERROR, "there is no arguments, api function [%s]", __FUNCTION__);
 		return 0;
 	}
 }

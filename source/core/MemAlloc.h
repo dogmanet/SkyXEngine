@@ -27,7 +27,7 @@ struct UsageStats
 	ULONG ulAllocMem; //Количество занятой элементами памяти
 };
 
-template <typename T, int SizeBlock = 256>
+template <typename T, int SizeBlock = 256, int SizePage=16>
 class MemAlloc
 {
 	struct MemCell
@@ -177,15 +177,15 @@ public:
 	{
 		MemBlock * tmpMB = this->memblocks;
 
-		NumCurBlockCount += 256;
+		NumCurBlockCount += SizePage;
 
 		this->memblocks = new MemBlock[NumCurBlockCount];
 		//SX_DBG_NEW(this->NumCurBlockCount * sizeof(MemBlock), this->memblocks);
 		if(tmpMB)
 		{
-			memcpy(this->memblocks, tmpMB, (NumCurBlockCount - 256) * sizeof(MemBlock));
+			memcpy(this->memblocks, tmpMB, (NumCurBlockCount - SizePage) * sizeof(MemBlock));
 		}
-		memset(this->memblocks + (NumCurBlockCount - 256), 0, 256 * sizeof(MemBlock));
+		memset(this->memblocks + (NumCurBlockCount - SizePage), 0, SizePage * sizeof(MemBlock));
 		mem_delete_a(tmpMB);
 
 
