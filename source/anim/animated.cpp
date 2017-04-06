@@ -36,6 +36,8 @@ m_bIsTemp(false)
 
 void ModelFile::Load(const char * name)
 {
+	strncpy(m_szFileName, name, MODEL_MAX_FILE);
+	m_szFileName[MODEL_MAX_FILE - 1] = 0;
 	FILE * fp = fopen(name, "rb");
 	if(!fp)
 	{
@@ -167,6 +169,17 @@ void ModelFile::Load(const char * name)
 
 	fclose(fp);
 	m_bLoaded = true;
+}
+
+void ModelFile::GetBoneName(UINT id, char * name, int len) const
+{
+	if(id >= m_hdr2.iBoneTableCount)
+	{
+		name[0] = 0;
+		return;
+	}
+
+	strncpy(name, m_pBones[id].szName, len);
 }
 
 UINT ModelFile::GetBoneID(const String & name)
@@ -724,11 +737,14 @@ ModelFile::~ModelFile()
 
 	mem_delete_a(m_pDeps);
 
-	for(uint32_t j = 0; j < m_hdr.iSkinCount; ++j)
+	if(m_iMaterials)
 	{
-		mem_delete_a(m_iMaterials[j]);
+		for(uint32_t j = 0; j < m_hdr.iSkinCount; ++j)
+		{
+			mem_delete_a(m_iMaterials[j]);
+		}
+		mem_delete_a(m_iMaterials);
 	}
-	mem_delete_a(m_iMaterials);
 
 	for(uint32_t i = 0; i < m_hdr.iAnimationCount; ++i)
 	{
@@ -1081,13 +1097,14 @@ inline bool Animation::PlayingAnimations()
 	return false;
 }
 
-void Animation::StopAnimations()
+void Animation::StopAll()
 {
 	for(int i = 0; i < BLEND_MAX; ++i)
 	{
 		if(m_bIsAnimationPlaying[i])
 		{
 			m_bIsAnimationPlaying[i] = false;
+			m_bInFade[i] = false;
 			RUN_CB(i, AS_STOP);
 		}
 	}
@@ -1417,6 +1434,14 @@ void Animation::Render()
 	m_pMdl->Render(0, 0, &(SMMatrixScaling(0.01f, 0.01f, 0.01f) * GetWorldTM()), m_iCurrentSkin);
 }
 
+UINT Animation::GetBoneCount() const
+{
+	return(m_pMdl->GetBoneCount());
+}
+void Animation::GetBoneName(UINT id, char * name, int len) const
+{
+	m_pMdl->GetBoneName(id, name, len);
+}
 
 AnimStateCB Animation::SetCallback(AnimStateCB cb)
 {
@@ -1432,24 +1457,30 @@ AnimProgressCB Animation::SetProgressCB(AnimProgressCB cb)
 	return(old);
 }
 
-const ModelFile * Animation::AddModel(const char * mdl, UINT flags)
+const ModelFile * Animation::AddModel(const char * mdl, UINT flags, char * name)
 {
 	const ModelFile * pMdl = m_pMgr->LoadModel(mdl);
 	if(pMdl)
 	{
-		AddModel(pMdl, flags);
+		AddModel(pMdl, flags, name);
 	}
 	return(pMdl);
 }
-void Animation::AddModel(const ModelFile * mdl, UINT flags)
+void Animation::AddModel(const ModelFile * mdl, UINT flags, char * name)
 {
-	if(!mdl)
-	{
-		return;
-	}
 	ModelPart pt;
 	pt.pMdl = mdl;
 	pt.uImportFlags = flags;
+	pt.uFlags = 0;
+	strcpy(pt.name, name);
+	if(mdl)
+	{
+		strcpy(pt.file, mdl->m_szFileName);
+	}
+	else
+	{
+		pt.file[0] = 0;
+	}
 	pt.attachDesc.type = MA_SKIN;
 	AddModel(&pt);
 }
@@ -1460,7 +1491,7 @@ int Animation::AddModel(ModelPart * mp)
 		return(-1);
 	}
 
-	m_mMdls.push_back(*mp);
+	m_mMdls.push_back(m_aMdls.Alloc(*mp));
 	return(m_mMdls.size() - 1);
 }
 ModelPart * Animation::GetPart(UINT idx)
@@ -1469,7 +1500,25 @@ ModelPart * Animation::GetPart(UINT idx)
 	{
 		return(NULL);
 	}
-	return(&m_mMdls[idx]);
+	return(m_mMdls[idx]);
+}
+
+void Animation::DelModel(ModelPart * mp)
+{
+	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
+	{
+		if(m_mMdls[i] == mp)
+		{
+			m_mMdls.erase(i);
+			m_aMdls.Delete(mp);
+			break;
+		}
+	}
+}
+
+UINT Animation::GetPartCount()
+{
+	return(m_mMdls.size());
 }
 
 MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
@@ -1625,14 +1674,21 @@ void Animation::Assembly()
 	//merge bones
 	int sPrev = -1;
 	int sCur = 0;
-	Array<ModelPart> mMdls = m_mMdls;
+	Array<ModelPart*> mMdls = m_mMdls;
 	while(sPrev != sCur)
 	{
 		sPrev = sCur;
 		for(UINT i = 0; i < mMdls.size(); ++i)
 		{
-			ModelPart * mp = &mMdls[i];
+			ModelPart * mp = mMdls[i];
 			MBERR res;
+			if(!mp->pMdl)
+			{
+				mMdls.erase(i);
+				++sCur;
+				--i;
+				continue;
+			}
 			switch(mp->attachDesc.type)
 			{
 			case MA_BONE: // target bone
@@ -1669,7 +1725,11 @@ void Animation::Assembly()
 	//build relink lists
 	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
 	{//vvBoneRelinkList[modelPartIdx][OrigBoneIdx] = newBoneIdx;
-		ModelPart * mp = &m_mMdls[i];
+		ModelPart * mp = m_mMdls[i];
+		if(!mp->pMdl)
+		{
+			continue;
+		}
 		for(int j = 0, ll = mp->pMdl->GetBoneCount(); j < ll; ++j)
 		{
 			vvBoneRelinkList[i][j] = 0;
@@ -1692,10 +1752,13 @@ void Animation::Assembly()
 
 	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
 	{
-		ModelPart * mp = &m_mMdls[i];
+		ModelPart * mp = m_mMdls[i];
 		const ModelFile * mdl = mp->pMdl;
-
-		if(mp->uImportFlags & MI_MESH)
+		if(!mdl)
+		{
+			continue;
+		}
+		if((mp->uImportFlags & MI_MESH) && !(mp->uFlags & MP_HIDDEN))
 		{
 			for(int ii = 0, lll = mdl->m_hdr.iMaterialCount; ii < lll; ++ii)
 			{
@@ -1723,7 +1786,10 @@ void Animation::Assembly()
 					int idx = vvMatsRelinkList[i][mdl->m_pLods[ii].pSubLODmeshes[j].iMaterialID];
 					if((int)vvLods[ii].size() <= idx)
 					{
-						memset(&vvLods[ii][idx], 0, sizeof(vvLods[ii][idx]));
+						for(int u = vvLods[ii].size(), us = idx; u <= us; ++u)
+						{
+							memset(&vvLods[ii][u], 0, sizeof(vvLods[ii][u]));
+						}
 					}
 					AppendMesh(&vvLods[ii][idx], &mdl->m_pLods[ii].pSubLODmeshes[j], vvBoneRelinkList[i]);
 					vvLods[ii][idx].iMaterialID = idx;
@@ -1851,6 +1917,19 @@ const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
 	}
 }
 
+void AnimationManager::UnloadModel(const ModelFile * mdl)
+{
+	for(AssotiativeArray<String, ModelFile*>::Iterator i = m_pModels.begin(); i; i++)
+	{
+		if(*(i.second) == mdl)
+		{
+			m_pModels[*i.first] = NULL;
+			delete mdl;
+			break;
+		}
+	}
+}
+
 AnimationManager::AnimationManager(IDirect3DDevice9*dev):
 m_pd3dDevice(dev)
 {
@@ -1880,7 +1959,8 @@ HRESULT CompileShaderFromFile(const char * szFileName, LPCSTR szEntryPoint, LPCS
 	{
 		if(pErrorBlob != NULL)
 		{
-			fprintf(stderr, "[Error]: %s\n", (char*)pErrorBlob->GetBufferPointer());
+			char * err = (char*)pErrorBlob->GetBufferPointer();
+			fprintf(stderr, "[Error]: %s\n", err);
 		}
 		mem_release(pErrorBlob);
 		return hr;
@@ -1891,7 +1971,7 @@ HRESULT CompileShaderFromFile(const char * szFileName, LPCSTR szEntryPoint, LPCS
 
 void AnimationManager::LoadShader()
 {
-	const char * shader = "C:/revo/build/gamesource/shaders/skinning.vs";
+	const char * shader = "shaders/skinning.vs";
 
 	ID3DXBuffer * pShader = NULL;
 
@@ -1906,6 +1986,25 @@ void AnimationManager::LoadShader()
 		pShader->Release();
 		fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
 		return;
+	}
+
+	{
+		const char * shader = "shaders/pp_quad_render.ps";
+
+		ID3DXBuffer * pShader = NULL;
+
+		if(FAILED(CompileShaderFromFile(shader, "main", "ps_3_0", &pShader, NULL)))
+		{
+			fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
+			return;
+		}
+
+		if(FAILED(m_pd3dDevice->CreatePixelShader((DWORD *)pShader->GetBufferPointer(), &m_pPSH)))
+		{
+			pShader->Release();
+			fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
+			return;
+		}
 	}
 }
 
@@ -1991,6 +2090,7 @@ void AnimationManager::Render(int howrender, int render_forward)
 {
 #ifndef _SERVER
 	m_pd3dDevice->SetVertexShader(m_pVSH);
+	m_pd3dDevice->SetPixelShader(m_pPSH);
 	Animation * pAnim;
 	for(uint32_t i = 0; i < m_pAnimatedList.size(); i++)
 	{
@@ -1999,6 +2099,7 @@ void AnimationManager::Render(int howrender, int render_forward)
 		pAnim->Render();
 	}
 	m_pd3dDevice->SetVertexShader(NULL);
+	m_pd3dDevice->SetPixelShader(NULL);
 #endif
 }
 void AnimationManager::Update()
@@ -2019,7 +2120,7 @@ UINT AnimationManager::GetMaterial(const String & mat)
 	material m;
 	//act_krovosos_new1
 
-	const String sBasePath = "C:/revo/build/gamesource/textures/";
+	const String sBasePath = "textures/";
 	String out = sBasePath;
 	UINT pos = mat.find("_");
 	if(pos != ~0)

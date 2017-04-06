@@ -1,6 +1,9 @@
 #ifndef Editor_H
 #define Editor_H
 
+#define EDITOR_REG_TREE "SOFTWARE\\DogmaNet\\SkyXEnging\\Editor"
+#define EDITOR_REG_KEY_GSDIR "gs_dir"
+
 #include <SXGUIWinApi/sxguielements.h>
 #include "../../SkyXEngine/animeditor/resource.h"
 
@@ -55,13 +58,14 @@ public:
 	static Editor * GetInstance();
 	
 	void MenuBrowse(HWND hwnd);
-	void MenuBrowseImport(HWND hwnd);
+	void MenuBrowseImport(HWND hwnd, bool use=true);
 	void MenuSave();
 	void MenuSaveAs(HWND hwnd);
 	
 	void Update();
 
-	ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, bool forceImport=false);
+	ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, bool forceImport = false, bool forceLocal = false);
+	void DelModel(UINT id);
 
 	static INT_PTR CALLBACK DlgImportProc(
 		_In_ HWND   hwndDlg,
@@ -132,14 +136,28 @@ protected:
 
 	Array<AnimItem> m_vAnims;
 
+	Array<ModelPart*> m_vMdlParts;
+
 	EActivityItems * m_pvActivities;
 
 	int m_iCurIdx;
 
+	char m_szGamesourceDir[MODEL_MAX_FILE];
+
 private:
 	void RenderAnimList();
+	void RenderBoneList();
+	void RenderPartList();
+
+	void OnAnimListSelChg();
+	void OnPartListSelChg();
+	void OnPartApply();
+	void SetPartFlag(MODEL_PART_FLAGS f, byte v);
 
 	static void DlgImpCheckAll(HWND hwndDlg);
+
+	bool GetRegGSdir();
+	void SetRegGSdir();
 };
 
 #endif

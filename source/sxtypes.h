@@ -2,6 +2,9 @@
 #define sxtypes_h
 
 #include <stdint.h>
+#include <string.h>
+#include <memory.h>
+
 
 typedef float float32_t;
 static_assert(sizeof(float32_t) == 4, "Please check float32_t on your platform. The size should be exactly 4 bytes");
@@ -50,6 +53,45 @@ inline const char * basename(const char * str)
 		++str;
 	}
 	return(pos);
+}
+
+inline const char * dirname(char * str)
+{
+	char * pos = str, *ret = str;
+	while(*str)
+	{
+		if(*str == '/' || *str == '\\')
+		{
+			pos = str + 1;
+		}
+		++str;
+	}
+	*pos = 0;
+	return(ret);
+}
+
+inline const char * canonize_path(char * str)
+{
+	char * ret = str;
+	while(*str)
+	{
+		if(*str == '\\')
+		{
+			*str = '/';
+		}
+		++str;
+	}
+	return(ret);
+}
+
+inline const char * strip_prefix(const char * str, const char * pref)
+{
+	int len = strlen(pref);
+	if(!memcmp(str, pref, len))
+	{
+		return(str + len);
+	}
+	return(str);
 }
 
 #endif

@@ -33,6 +33,9 @@ protected:
 	ISXGUIStatic* Static5;
 	ISXGUIEdit* AttachFileField;
 	ISXGUIButton* AttachFileBrowse;
+	ISXGUIButton* AttachFileApply;
+
+	UINT m_iflags;
 };
 
 #endif

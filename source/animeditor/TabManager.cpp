@@ -15,7 +15,7 @@ m_pBaseWnd(wnd)
 	m_pTabActivities = new TabActivities(this);
 	m_pTabAnimation = new TabAnimation(this);
 	m_pTabControllers = new TabControllers(this);
-	m_pTabFiles = new TabFiles(this);
+	//m_pTabFiles = new TabFiles(this);
 
 	m_pCurTab->Show();
 }
@@ -27,7 +27,7 @@ TabManager::~TabManager()
 	mem_delete(m_pTabActivities);
 	mem_delete(m_pTabAnimation);
 	mem_delete(m_pTabControllers);
-	mem_delete(m_pTabFiles);
+	//mem_delete(m_pTabFiles);
 }
 
 void TabManager::ShowTab(EditorTab * pTab)

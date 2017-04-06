@@ -57,6 +57,7 @@ public:
 	UINT GetControllersCount() const;
 
 	UINT GetBoneID(const String & name);
+	void GetBoneName(UINT id, char * name, int len) const;
 
 	ModelMatrial ** m_iMaterials;
 	ModelLoD * m_pLods;
@@ -115,7 +116,7 @@ protected:
 	//AssotiativeArray<String, ModelBoneController> m_mfBoneControllers;
 	//AssotiativeArray<String, UINT> m_mSeqNames;
 
-	
+	char m_szFileName[MODEL_MAX_FILE];
 
 	
 
@@ -163,10 +164,12 @@ public:
 
 	SMMATRIX GetBoneTransform(UINT id);
 	UINT GetBone(const char * str);
+	UINT GetBoneCount() const;
+	void GetBoneName(UINT id, char * name, int len) const;
 
 	inline bool PlayingAnimations();
 	inline bool PlayingAnimations(const char* name);
-	void StopAnimations();
+	void StopAll();
 
 
 	int GetActiveSkin();
@@ -190,11 +193,13 @@ public:
 
 	void SyncAnims();
 
-	const ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL);
-	void AddModel(const ModelFile * mdl, UINT flags = MI_ALL);
+	const ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, char * name = "No name");
+	void AddModel(const ModelFile * mdl, UINT flags = MI_ALL, char * name="No name");
 	int AddModel(ModelPart * mp);
+	void DelModel(ModelPart * mp);
 	void Assembly();
 	ModelPart * GetPart(UINT idx);
+	UINT GetPartCount();
 protected:
 
 	void DownloadData();
@@ -255,7 +260,8 @@ protected:
 	AnimProgressCB m_pfnProgressCB;
 
 
-	Array<ModelPart> m_mMdls;
+	Array<ModelPart*> m_mMdls;
+	MemAlloc<ModelPart, 8> m_aMdls;
 
 private:
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink);
@@ -266,7 +272,8 @@ class AnimationManager
 public:
 	AnimationManager(IDirect3DDevice9 * dev);
 	~AnimationManager();
-	const ModelFile * LoadModel(const char * name, bool newInst=false);
+	const ModelFile * LoadModel(const char * name, bool newInst = false);
+	void UnloadModel(const ModelFile * mdl);
 
 	UINT Register(Animation * pAnim);
 	void UnRegister(UINT id);
@@ -301,6 +308,7 @@ protected:
 	AssotiativeArray<String, material> m_mMats;
 
 	IDirect3DVertexShader9 * m_pVSH;
+	IDirect3DPixelShader9 * m_pPSH;
 
 	void LoadShader();
 };

@@ -10,6 +10,7 @@
 
 #define MODEL_MAX_NAME 32
 #define MODEL_BONE_MAX_NAME 32
+#define MODEL_MAX_FILE	128
 #define MODEL_CTRL_MAX_BONES 64
 
 #include <sxtypes.h>
@@ -303,6 +304,14 @@ enum ANIM_STATE
 	AS_LOOP
 };
 
+enum MODEL_PART_FLAGS
+{
+	MP_NONE = 0x00000001,
+	MP_HIDDEN = 0x00000002,
+	MP_COLLISIONS = 0x00000004,
+	MP_RAYTRACE = 0x00000008
+};
+
 struct ModelAttachDesc
 {
 	MODEL_ATTACH type;
@@ -315,7 +324,10 @@ struct ModelPart
 {
 	const ModelFile * pMdl;
 	UINT uImportFlags;
+	UINT uFlags;
 	ModelAttachDesc attachDesc;
+	char name[MODEL_MAX_NAME];
+	char file[MODEL_MAX_FILE];
 };
 
 enum MBERR

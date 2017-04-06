@@ -17,20 +17,23 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	m_pRoot->GAlign = {false, true, true, true};
 	m_pRoot->AddHandler(Tools::ProxyCommandProc, WM_COMMAND);
 
-	AttachmentsList = SXGUICrListBox("", 10, 15, 312, 127, m_pRoot->GetHWND(), 0, 0, false);
+	AttachmentsList = SXGUICrListBoxEx("", 10, 15, 312, 127, 0, WS_CHILD | WS_VISIBLE | LBS_HASSTRINGS | WS_VSCROLL | WS_BORDER | LBS_NOTIFY/* | LBS_SORT*/, m_pRoot->GetHWND(), 0, IDC_PT_LB);
 	AttachmentsList->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachmentsList->SetColorText(0, 0, 0);
 	AttachmentsList->SetColorTextBk(255, 255, 255);
 	AttachmentsList->SetTransparentTextBk(true);
 	AttachmentsList->SetColorBrush(255, 255, 255);
 	AttachmentsList->GAlign = {true, true, true, false};
-	AttachNew = SXGUICrButton("New", 11, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, 0);
+
+	AttachNew = SXGUICrButton("New", 11, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, IDC_PT_ADD);
 	AttachNew->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachNew->GAlign = {true, true, true, false};
-	AttachRename = SXGUICrButton("Rename", 116, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, 0);
+
+	AttachRename = SXGUICrButton("Rename", 116, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, IDC_PT_REN);
 	AttachRename->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachRename->GAlign = {true, true, true, false};
-	AttachRemove = SXGUICrButton("Remove", 220, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, 0);
+
+	AttachRemove = SXGUICrButton("Remove", 220, 144, 100, 20, 0, m_pRoot->GetHWND(), 0, IDC_PT_DEL);
 	AttachRemove->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachRemove->GAlign = {true, true, true, false};
 
@@ -59,28 +62,31 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	AttachSkinRB->SetColorBrush(255, 255, 255);
 	AttachSkinRB->GAlign = {true, true, true, false};
 
-	AttachHideCB = SXGUICrCheckBox("Hide", 17, 62, 100, 20, AttachPropsGB->GetHWND(), 0, 0, false);
+	AttachHideCB = SXGUICrCheckBox("Hide", 17, 62, 100, 20, AttachPropsGB->GetHWND(), 0, IDC_PT_CB_HIDDEN, false);
 	AttachHideCB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachHideCB->SetColorText(0, 0, 0);
 	AttachHideCB->SetColorTextBk(255, 255, 255);
 	AttachHideCB->SetTransparentTextBk(true);
 	AttachHideCB->SetColorBrush(255, 255, 255);
 	AttachHideCB->GAlign = {true, true, true, false};
-	AttachEnaCollisionCB = SXGUICrCheckBox("Enable collisions", 17, 82, 100, 20, AttachPropsGB->GetHWND(), 0, 0, false);
+
+	AttachEnaCollisionCB = SXGUICrCheckBox("Enable collisions", 17, 82, 100, 20, AttachPropsGB->GetHWND(), 0, IDC_PT_CB_COLLIDE, false);
 	AttachEnaCollisionCB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachEnaCollisionCB->SetColorText(0, 0, 0);
 	AttachEnaCollisionCB->SetColorTextBk(255, 255, 255);
 	AttachEnaCollisionCB->SetTransparentTextBk(true);
 	AttachEnaCollisionCB->SetColorBrush(255, 255, 255);
 	AttachEnaCollisionCB->GAlign = {true, true, true, false};
-	AttachEnaRaytraceCB = SXGUICrCheckBox("Enable raytrace", 17, 102, 100, 20, AttachPropsGB->GetHWND(), 0, 0, false);
+
+	AttachEnaRaytraceCB = SXGUICrCheckBox("Enable raytrace", 17, 102, 100, 20, AttachPropsGB->GetHWND(), 0, IDC_PT_CB_RAYTRACE, false);
 	AttachEnaRaytraceCB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachEnaRaytraceCB->SetColorText(0, 0, 0);
 	AttachEnaRaytraceCB->SetColorTextBk(255, 255, 255);
 	AttachEnaRaytraceCB->SetTransparentTextBk(true);
 	AttachEnaRaytraceCB->SetColorBrush(255, 255, 255);
 	AttachEnaRaytraceCB->GAlign = {true, true, true, false};
-	AttachBone = SXGUICrComboBox("", 141, 18, 350, 21, AttachPropsGB->GetHWND(), 0, 0);
+
+	AttachBone = SXGUICrComboBoxEx("", 141, 18, 350, 350, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, AttachPropsGB->GetHWND(), 0, 0);
 	AttachBone->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachBone->SetColorText(0, 0, 0);
 	AttachBone->SetColorTextBk(255, 255, 255);
@@ -88,6 +94,7 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	AttachBone->SetColorBrush(255, 255, 255);
 	AttachBone->GAlign = {true, true, true, false};
 	AttachBone->Enable(0);
+
 	AttachXshift = SXGUICrEdit("x-shift", 143, 42, 90, 20, AttachPropsGB->GetHWND(), 0, 0);
 	AttachXshift->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachXshift->SetColorText(0, 0, 0);
@@ -115,23 +122,31 @@ TabAttachments::TabAttachments(TabManager * tm):EditorTab(tm)
 	AttachZshift->GAlign = {true, true, true, false};
 	AttachZshiftSpin = SXGUICrUpDown(473, 42, 17, 20, AttachPropsGB->GetHWND(), 0, 0, 0, 0);
 	AttachZshiftSpin->GAlign = {true, true, true, false};
-	Static5 = SXGUICrStatic("File", 142, 102, 38, 20, AttachPropsGB->GetHWND(), 0, 0);
+
+	Static5 = SXGUICrStatic("File", 142, 80, 38, 20, AttachPropsGB->GetHWND(), 0, 0);
 	Static5->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	Static5->SetColorText(0, 0, 0);
 	Static5->SetColorTextBk(255, 255, 255);
 	Static5->SetTransparentTextBk(true);
 	Static5->SetColorBrush(255, 255, 255);
 	Static5->GAlign = {true, true, true, false};
-	AttachFileField = SXGUICrEdit("file", 182, 102, 279, 20, AttachPropsGB->GetHWND(), 0, 0);
+
+	AttachFileField = SXGUICrEdit("file", 182, 80, 279, 20, AttachPropsGB->GetHWND(), 0, 0);
 	AttachFileField->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachFileField->SetColorText(0, 0, 0);
 	AttachFileField->SetColorTextBk(255, 255, 255);
 	AttachFileField->SetTransparentTextBk(true);
 	AttachFileField->SetColorBrush(255, 255, 255);
 	AttachFileField->GAlign = {true, true, true, false};
-	AttachFileBrowse = SXGUICrButton("...", 464, 102, 27, 20, 0, AttachPropsGB->GetHWND(), 0, 0);
+	SendMessage(AttachFileField->GetHWND(), EM_SETREADONLY, TRUE, NULL);
+
+	AttachFileBrowse = SXGUICrButton("...", 464, 80, 27, 20, 0, AttachPropsGB->GetHWND(), 0, IDC_PT_BROWSE);
 	AttachFileBrowse->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AttachFileBrowse->GAlign = {true, true, true, false};
+
+	AttachFileApply = SXGUICrButton("Apply", 364, 102, 127, 20, 0, AttachPropsGB->GetHWND(), 0, IDC_PT_APPLY);
+	AttachFileApply->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	AttachFileApply->GAlign = {true, false, true, true};
 
 	Show(false);
 }
@@ -158,4 +173,5 @@ TabAttachments::~TabAttachments()
 	mem_delete(Static5);
 	mem_delete(AttachFileField);
 	mem_delete(AttachFileBrowse);
+	mem_delete(AttachFileApply);
 }

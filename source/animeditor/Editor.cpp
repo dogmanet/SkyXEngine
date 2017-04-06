@@ -1,5 +1,8 @@
 #include "Editor.h"
 
+#include <ShlObj.h>
+
+
 Editor::Editor():
 m_bCamMove(false),
 m_iCurIdx(-1)
@@ -19,6 +22,18 @@ m_iCurIdx(-1)
 	//((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlProgress->AddHandler(AnimTBProc, WM_KILLFOCUS);
 
 
+	/*m_szGamesourceDir[0] = 0;
+	if(!GetRegGSdir())
+	{
+		
+	}*/
+	GetModuleFileNameA(NULL, m_szGamesourceDir, sizeof(m_szGamesourceDir));
+	canonize_path(m_szGamesourceDir);
+	dirname(m_szGamesourceDir);
+	strcat(m_szGamesourceDir, "gamesource/");
+	SetCurrentDirectoryA(m_szGamesourceDir);
+
+
 	m_pAnimMgr = new AnimationManager(m_pd3dDevice);
 	m_pCurAnim = new Animation(m_pAnimMgr);
 	m_pCurAnim->SetCallback(AnimPlayCB);
@@ -29,16 +44,22 @@ m_iCurIdx(-1)
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/ak74/ak74a.dse");
 	//m_pCurAnim->PlayAnimation("reload", 0);
 
-	AddModel("C:/revo/build/gamesource/models/krovosos/krovososa.dse");
-	ModelPart mp;
+	//AddModel("C:/revo/build/gamesource/models/krovosos/krovososa.dse");//ak74_ref.dse
+	//AddModel("C:/revo/build/gamesource/models/ak74/ak74_ref.dse");
+	//AddModel("C:/revo/build/gamesource/models/ak74/hands.dse");
+	//AddModel("C:/revo/build/gamesource/models/ak74/reload.dse");
+
+	/*ModelPart mp;
 	mp.attachDesc.type = MA_BONE;
 	strcpy(mp.attachDesc.szBone, "bip01_r_hand");
 	mp.uImportFlags = MI_ALL;
 	mp.pMdl = m_pAnimMgr->LoadModel("C:/revo/build/gamesource/models/ak74/ak74.dse", true);
-	m_pCurAnim->AddModel(&mp);
+	m_pCurAnim->AddModel(&mp);*/
+
 	//bip01_r_hand
-	//AddModel("C:/revo/build/gamesource/models/ak74/ak74.dse");
-	//AddModel("C:/revo/build/gamesource/models/ak74/idle.dse");
+	AddModel("F:/revo/build/gamesource/models/ak74/ak74.dse");
+	AddModel("F:/revo/build/gamesource/models/ak74/idle.dse");
+	//AddModel("C:/revo/build/gamesource/models/ak74/reload.dse");
 	//AddModel("C:/revo/build/gamesource/models/ak74/shoot.dse");
 	m_pCurAnim->Assembly();
 	if(m_pCurAnim->m_pMdl)
@@ -59,7 +80,42 @@ m_iCurIdx(-1)
 			m_vAnims.push_back(ai);
 		}*/
 		RenderAnimList();
+		RenderBoneList();
 	}
+}
+bool Editor::GetRegGSdir()
+{
+	HKEY hKey;
+	LONG lRes = RegOpenKeyExA(HKEY_CURRENT_USER, EDITOR_REG_TREE, 0, KEY_READ, &hKey);
+	if(lRes == ERROR_SUCCESS)
+	{
+		DWORD dwBufferSize = sizeof(m_szGamesourceDir);
+		ULONG nError = RegQueryValueExA(hKey, EDITOR_REG_KEY_GSDIR, 0, NULL, (LPBYTE)m_szGamesourceDir, &dwBufferSize);
+		if(ERROR_SUCCESS == nError)
+		{
+			
+		}
+	}
+
+	RegCloseKey(hKey);
+	return(m_szGamesourceDir[0] != 0);
+}
+
+void Editor::SetRegGSdir()
+{
+	HKEY hKey;
+	LONG lRes = RegCreateKeyExA(HKEY_CURRENT_USER, EDITOR_REG_TREE, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, NULL, &hKey, NULL);
+	if(lRes == ERROR_SUCCESS)
+	{
+		DWORD dwBufferSize = strlen(m_szGamesourceDir);
+		ULONG nError = RegSetValueExA(hKey, EDITOR_REG_KEY_GSDIR, 0, REG_SZ, (LPBYTE)m_szGamesourceDir, dwBufferSize);
+		if(ERROR_SUCCESS == nError)
+		{
+
+		}
+	}
+
+	RegCloseKey(hKey);
 }
 
 Editor::~Editor()
@@ -99,6 +155,10 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_FILE_EXIT:
+			if(edt->m_bDirty && MessageBoxA(hwnd, "All unsaved changes will be lost", "Exit?", MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON2) != IDOK)
+			{
+				return(0);
+			}
 			PostQuitMessage(0);
 			break;
 
@@ -181,6 +241,79 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
 				tab->AttachBone->Enable(0);
 			}
+			break;
+
+		case IDC_PT_REN:
+			{
+				ISXGUIListBox * pList = ((TabAttachments*)edt->m_pTM->m_pTabAttachments)->AttachmentsList;
+				int len = MODEL_MAX_NAME;
+				int sel = pList->GetSel();
+				if(sel < 0)
+				{
+					break;
+				}
+				sel = pList->GetItemData(sel);
+				
+				Tools::DlgPrompt(edt->m_vMdlParts[sel]->name, &len, "New name", "Rename", edt->m_vMdlParts[sel]->name);
+				edt->RenderPartList();
+			}
+			break;
+
+		case IDC_PT_DEL:
+			{
+				ISXGUIListBox * pList = ((TabAttachments*)edt->m_pTM->m_pTabAttachments)->AttachmentsList;
+				int len = MODEL_MAX_NAME;
+				int sel = pList->GetSel();
+				if(sel < 0)
+				{
+					break;
+				}
+				sel = pList->GetItemData(sel);
+
+				if(Tools::DlgConfirm())
+				{
+					edt->DelModel(sel);
+				}
+			}
+			break;
+
+		case IDC_PT_ADD:
+			{
+				m_pEditor->AddModel("");
+				ISXGUIListBox * pList = ((TabAttachments*)edt->m_pTM->m_pTabAttachments)->AttachmentsList;
+				pList->SetSel(pList->GetCountItem() - 1);
+				m_pEditor->OnPartListSelChg();
+			}
+			break;
+
+		case IDC_PT_LB:
+			switch(HIWORD(wParam))
+			{
+			case LBN_SELCHANGE:
+				edt->OnPartListSelChg();
+				break;
+			}
+			break;
+
+		case IDC_PT_CB_HIDDEN:
+			edt->SetPartFlag(MP_HIDDEN, (byte)SendMessage((HWND)lParam, BM_GETCHECK, 0, 0));
+			edt->m_pCurAnim->Assembly();
+			break;
+
+		case IDC_PT_CB_COLLIDE:
+			edt->SetPartFlag(MP_COLLISIONS, (byte)SendMessage((HWND)lParam, BM_GETCHECK, 0, 0));
+			break;
+
+		case IDC_PT_CB_RAYTRACE:
+			edt->SetPartFlag(MP_RAYTRACE, (byte)SendMessage((HWND)lParam, BM_GETCHECK, 0, 0));
+			break;
+
+		case IDC_PT_BROWSE:
+			edt->MenuBrowseImport(hwnd, false);
+			break;
+
+		case IDC_PT_APPLY:
+			edt->OnPartApply();
 			break;
 		}
 		break;
@@ -336,21 +469,21 @@ LRESULT Editor::AnimTBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Editor::MenuBrowse(HWND hwnd)
 {
-	OPENFILENAME ofn;
-	wchar_t szFile[260];
+	OPENFILENAMEA ofn;
+	char szFile[260];
 
 	if(m_bDirty && MessageBoxA(hwnd, "All unsaved changes will be lost", "Open?", MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON2) != IDOK)
 	{
 		return;
 	}
 
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ZeroMemory(szFile, sizeof(wchar_t) * 260);
-	ofn.lStructSize = sizeof(OPENFILENAME);
+	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
+	ZeroMemory(szFile, sizeof(szFile));
+	ofn.lStructSize = sizeof(OPENFILENAMEA);
 	ofn.hwndOwner = NULL;
 	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(wchar_t) * 260;
-	ofn.lpstrFilter = L"Model file (*.dse)\0*.dse\0";
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = "Model file (*.dse)\0*.dse\0";
 	ofn.nFilterIndex = 0;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -360,23 +493,32 @@ void Editor::MenuBrowse(HWND hwnd)
 	wchar_t bf[256];
 	GetCurrentDirectoryW(256, bf);
 
-	if(GetOpenFileName(&ofn) == TRUE)
+	if(GetOpenFileNameA(&ofn) == TRUE)
 	{
 		SetCurrentDirectoryW(bf);
-		wprintf(L"File: %s\n", ofn.lpstrFile);
+
+		//wprintf(L"File: %s\n", ofn.lpstrFile);
+
+		//unload all parts
+		while(m_pEditor->m_vMdlParts.size())
+		{
+			m_pEditor->DelModel(0);
+		}
+		m_pEditor->AddModel(ofn.lpstrFile, MI_ALL, false, true);
+		m_pEditor->m_pCurAnim->Assembly();
 	}
 }
-void Editor::MenuBrowseImport(HWND hwnd)
+void Editor::MenuBrowseImport(HWND hwnd, bool use)
 {
 	OPENFILENAMEA ofn;
 	char szFile[260];
 
 	ZeroMemory(&ofn, sizeof(OPENFILENAMEA));
-	ZeroMemory(szFile, sizeof(char)* 260);
+	ZeroMemory(szFile, sizeof(szFile));
 	ofn.lStructSize = sizeof(OPENFILENAMEA);
 	ofn.hwndOwner = NULL;
 	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(wchar_t)* 260;
+	ofn.nMaxFile = sizeof(szFile);
 	ofn.lpstrFilter = "Model file (*.dse)\0*.dse\0";
 	ofn.nFilterIndex = 0;
 	ofn.lpstrFileTitle = NULL;
@@ -392,8 +534,19 @@ void Editor::MenuBrowseImport(HWND hwnd)
 		SetCurrentDirectoryW(bf);
 		//wprintf(L"File: %s\n", ofn.lpstrFile);
 		UINT iflags = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DIALOG_IMPORT), hwnd, DlgImportProc, (LPARAM)&ofn.lpstrFile);
-		m_pEditor->AddModel(ofn.lpstrFile, iflags);
-		m_pEditor->m_pCurAnim->Assembly();
+		if(use)
+		{
+			m_pEditor->AddModel(ofn.lpstrFile, iflags);
+			m_pEditor->m_pCurAnim->Assembly();
+		}
+		else
+		{
+			TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
+			canonize_path(ofn.lpstrFile);
+			ofn.lpstrFile = (char*)strip_prefix(ofn.lpstrFile, m_pEditor->m_szGamesourceDir);
+			tab->AttachFileField->SetText(ofn.lpstrFile);
+			tab->m_iflags = iflags;
+		}
 	}
 }
 
@@ -683,6 +836,7 @@ void Editor::Update()
 	}
 	m_mViewMat = m_cam.GetMatrix();
 
+	m_pd3dDevice->BeginScene();
 
 	m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(16, 32, 48), 1.0f, 0);
 	static VShaderInputCamera VSICData;
@@ -692,9 +846,10 @@ void Editor::Update()
 	m_pd3dDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&m_mViewMat);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&m_mProjMat);
 
-	m_pd3dDevice->BeginScene();
 
 	DrawAxis();
+
+	m_pd3dDevice->SetPixelShader(NULL);
 
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
@@ -771,6 +926,78 @@ void Editor::RenderAnimList()
 	AnimList->SetSel(cur);
 }
 
+void Editor::RenderBoneList()
+{
+	ISXGUIComboBox * cmb = ((TabAttachments*)(m_pTM->m_pTabAttachments))->AttachBone;
+	int sel = cmb->GetSel();
+	char * text = (char*)alloca(sizeof(char) * (cmb->GetItemTextLength(sel) + 1));
+	cmb->GetItemText(sel, text);
+
+	char tmp[MODEL_BONE_MAX_NAME + 1];
+	cmb->Clear();
+	for(int i = 0, l = m_pCurAnim->GetBoneCount(); i < l; ++i)
+	{
+		m_pCurAnim->GetBoneName(i, tmp, sizeof(tmp));
+		if(!strcmp(tmp, text))
+		{
+			sel = i;
+		}
+		cmb->AddItem(tmp);
+	}
+
+	cmb->SetSel(sel);
+
+	/*UINT c = m_vAnims.size();
+	AnimItem * ai;
+	char tmpSN[MODEL_MAX_NAME + 32];
+	bool filt = m_szAnimFilter[0] != 0;
+	int cur = AnimList->GetSel();
+	if(cur < 0)
+	{
+		cur = 0;
+	}
+	AnimList->Clear();
+	for(UINT i = 0; i < c; ++i)
+	{
+		ai = &m_vAnims[i];
+		if(!filt || filterStr(ai->seq->name, m_szAnimFilter))
+		{
+			sprintf(tmpSN, "[%c%c] %s", ai->isImported ? 'I' : '_', ai->seq->bLooped ? 'L' : '_', ai->seq->name); //I|_, L|_
+			AnimList->AddItem(tmpSN);
+			AnimList->SetItemData(AnimList->GetCountItem() - 1, (LPARAM)i);
+		}
+	}
+	AnimList->SetSel(cur);*/
+}
+
+void Editor::RenderPartList()
+{
+	UINT c = m_vMdlParts.size();
+	ModelPart * par;
+	//char tmpSN[MODEL_MAX_NAME + 32];
+
+	ISXGUIListBox * pList = ((TabAttachments*)m_pTM->m_pTabAttachments)->AttachmentsList;
+	
+	int cur = pList->GetSel();
+	if(cur < 0)
+	{
+		cur = 0;
+	}
+	pList->Clear();
+
+	for(UINT i = 0; i < c; ++i)
+	{
+		par = m_vMdlParts[i];
+	
+		//sprintf(tmpSN, "[%c%c] %s", ai->isImported ? 'I' : '_', ai->seq->bLooped ? 'L' : '_', ai->seq->name); //I|_, L|_
+		pList->AddItem(par->name);
+		pList->SetItemData(pList->GetCountItem() - 1, (LPARAM)i);
+		
+	}
+	pList->SetSel(cur);
+	OnPartListSelChg();
+}
+
 LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
@@ -782,27 +1009,7 @@ LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch(HIWORD(wParam))
 		{
 		case LBN_SELCHANGE:
-			{
-				int sel = self->AnimList->GetSel();
-				AnimItem * item;
-				int idx = self->AnimList->GetItemData(sel);
-				item = &self->m_vAnims[idx];
-				self->m_iCurIdx = idx;
-
-				self->m_pCurAnim->Play(item->seq->name, 100);
-
-				TabAnimation * tab = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
-				tab->AnimPropActChance->SetText(String((DWORD)item->seq->act_chance).c_str());
-				tab->AnimPropName->SetText(item->seq->name);
-				tab->AnimPropLoopCB->SetCheck(item->seq->bLooped);
-				tab->AnimPropSpeed->SetText(String(item->seq->framerate).c_str());
-
-				tab->AnimPropActChance->Enable(!item->isImported);
-				tab->AnimPropName->Enable(!item->isImported);
-				tab->AnimPropLoopCB->Enable(!item->isImported);
-				tab->AnimPropSpeed->Enable(!item->isImported);
-				
-			}
+			self->OnAnimListSelChg();
 			break;
 		}
 	}
@@ -810,40 +1017,335 @@ LRESULT Editor::AnimGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return(0);
 }
 
-ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport)
+void Editor::OnAnimListSelChg()
 {
-	ModelFile * pMdl = (ModelFile*)m_pAnimMgr->LoadModel(mdl, true);
-
-	bool bIsImported = (pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED) || forceImport;
-
-	if(flags & MI_ANIMATIONS)
+	int sel = AnimList->GetSel();
+	AnimItem * item;
+	int idx = AnimList->GetItemData(sel);
+	TabAnimation * tab = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
+	if(idx < 0)
 	{
-		UINT c = pMdl->GetSequenceCount();
-		AnimItem ai;
-		for(UINT i = 0; i < c; ++i)
+		tab->AnimPropActChance->Enable(0);
+		tab->AnimPropName->Enable(0);
+		tab->AnimPropLoopCB->Enable(0);
+		tab->AnimPropSpeed->Enable(0);
+		tab->AnimPropActCmb->Enable(0);
+		tab->AnimCtlPlayBtn->Enable(0);
+		tab->AnimCtlPauseBtn->Enable(0);
+	}
+	else
+	{
+		item = &m_vAnims[idx];
+		m_iCurIdx = idx;
+
+		m_pCurAnim->Play(item->seq->name, 100);
+
+		tab->AnimPropActChance->SetText(String((DWORD)item->seq->act_chance).c_str());
+		tab->AnimPropName->SetText(item->seq->name);
+		tab->AnimPropLoopCB->SetCheck(item->seq->bLooped);
+		tab->AnimPropSpeed->SetText(String(item->seq->framerate).c_str());
+
+		tab->AnimPropActChance->Enable(!item->isImported);
+		tab->AnimPropName->Enable(!item->isImported);
+		tab->AnimPropLoopCB->Enable(!item->isImported);
+		tab->AnimPropSpeed->Enable(!item->isImported);
+		tab->AnimPropActCmb->Enable(!item->isImported);
+	}
+}
+
+void Editor::SetPartFlag(MODEL_PART_FLAGS f, byte v)
+{
+	TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
+	ISXGUIListBox * pList = tab->AttachmentsList;
+	int sel = pList->GetSel();
+	ModelPart * pt;
+	int idx = pList->GetItemData(sel);
+	if(idx >= 0)
+	{
+		pt = m_vMdlParts[idx];
+		if(v == 0)
 		{
-			ai.seq = (ModelSequence*)pMdl->GetSequence(i);
-			ai.mdl = pMdl;
-			ai.isImported = bIsImported;
-			if(!bIsImported)
+			pt->uFlags &= ~f;
+		}
+		else
+		{
+			pt->uFlags |= f;
+		}
+	}
+}
+
+void Editor::OnPartListSelChg()
+{
+	TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
+	ISXGUIListBox * pList = tab->AttachmentsList;
+	int sel = pList->GetSel();
+	ModelPart * pt;
+	int idx = pList->GetItemData(sel);
+	if(idx < 0)
+	{
+		tab->AttachSkinRB->Enable(0);
+		tab->AttachBoneRB->Enable(0);
+		tab->AttachBone->Enable(0);
+
+		tab->AttachFileBrowse->Enable(0);
+		tab->AttachFileField->Enable(0);
+
+		tab->AttachHideCB->Enable(0);
+		tab->AttachEnaCollisionCB->Enable(0);
+		tab->AttachEnaRaytraceCB->Enable(0);
+
+		tab->AttachXshift->Enable(0);
+		tab->AttachXshiftSpin->Enable(0);
+		tab->AttachYshift->Enable(0);
+		tab->AttachYshiftSpin->Enable(0);
+		tab->AttachZshift->Enable(0);
+		tab->AttachZshiftSpin->Enable(0);
+
+		tab->AttachFileApply->Enable(0);
+	}
+	else
+	{
+		pt = m_vMdlParts[idx];
+
+		tab->AttachSkinRB->Enable(1);
+		tab->AttachBoneRB->Enable(1);
+
+		switch(pt->attachDesc.type)
+		{
+		case MA_SKIN:
+			tab->AttachSkinRB->SetCheck(1);
+			tab->AttachBoneRB->SetCheck(0);
+			tab->AttachBone->Enable(0);
+			break;
+		case MA_BONE:
+			tab->AttachBoneRB->SetCheck(1);	
+			tab->AttachSkinRB->SetCheck(0);
+			tab->AttachBone->Enable(1);
+			tab->AttachBone->SetSel(-1);
 			{
-				if(!ai.seq->name[0])
+				char tmpBone[MODEL_BONE_MAX_NAME + 1];
+				for(int i = 0, l = tab->AttachBone->GetCount(); i < l; ++i)
 				{
-					const char * bn = basename(mdl);
-					strncpy(ai.seq->name, bn, min(strlen(bn) - 4, MODEL_MAX_NAME));
-					ai.seq->name[MODEL_MAX_NAME - 1] = 0;
-					ai.seq->framerate = 30;
-					ai.seq->activity = 0;
-					ai.seq->act_chance = 0;
-					ai.seq->bLooped = 0;
+					tab->AttachBone->GetItemText(i, tmpBone);
+					if(!strcmp(pt->attachDesc.szBone, tmpBone))
+					{
+						tab->AttachBone->SetSel(i);
+						break;
+					}
 				}
 			}
-			m_vAnims.push_back(ai);
+			break;
 		}
-		RenderAnimList();
+
+		tab->AttachFileApply->Enable(1);
+
+		tab->AttachHideCB->Enable(1);
+		tab->AttachHideCB->SetCheck(pt->uFlags & MP_HIDDEN);
+
+		tab->AttachEnaCollisionCB->Enable(1);
+		tab->AttachEnaCollisionCB->SetCheck(pt->uFlags & MP_COLLISIONS);
+
+		tab->AttachEnaRaytraceCB->Enable(1);
+		tab->AttachEnaRaytraceCB->SetCheck(pt->uFlags & MP_RAYTRACE);
+
+		tab->AttachFileBrowse->Enable(1);
+		tab->AttachFileField->Enable(1);
+
+		tab->AttachFileField->SetText(pt->file);
+
+		tab->AttachXshift->Enable(0);
+		tab->AttachXshiftSpin->Enable(0);
+		tab->AttachYshift->Enable(0);
+		tab->AttachYshiftSpin->Enable(0);
+		tab->AttachZshift->Enable(0);
+		tab->AttachZshiftSpin->Enable(0);
+	}
+}
+
+ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, bool forceLocal)
+{
+	char * mdlFile = (char*)alloca(strlen(mdl) + 1);
+	strcpy(mdlFile, mdl);
+	canonize_path(mdlFile);
+	const char * localPath = strip_prefix(mdlFile, m_szGamesourceDir);
+
+	ModelFile * pMdl = localPath[0] ? (ModelFile*)m_pAnimMgr->LoadModel(localPath, true) : NULL;
+
+	
+	if(pMdl)
+	{
+		bool bIsImported = ((pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED) || forceImport) && !forceLocal;
+
+		if(flags & MI_ANIMATIONS)
+		{
+			UINT c = pMdl->GetSequenceCount();
+			AnimItem ai;
+			for(UINT i = 0; i < c; ++i)
+			{
+				ai.seq = (ModelSequence*)pMdl->GetSequence(i);
+				ai.mdl = pMdl;
+				ai.isImported = bIsImported;
+				if(!bIsImported)
+				{
+					if(!ai.seq->name[0])
+					{
+						const char * bn = basename(localPath);
+						strncpy(ai.seq->name, bn, min(strlen(bn) - 4, MODEL_MAX_NAME));
+						ai.seq->name[MODEL_MAX_NAME - 1] = 0;
+						ai.seq->framerate = 30;
+						ai.seq->activity = 0;
+						ai.seq->act_chance = 0;
+						ai.seq->bLooped = 0;
+					}
+				}
+				m_vAnims.push_back(ai);
+			}
+			RenderAnimList();
+		}
 	}
 	//init all sections from mdl data
 
 	m_pCurAnim->AddModel(pMdl, flags);
+
+
+	m_vMdlParts.push_back(m_pCurAnim->GetPart(m_pCurAnim->GetPartCount() - 1));
+
+	RenderPartList();
+
 	return(pMdl);
+}
+
+void Editor::DelModel(UINT id)
+{
+	if(id >= m_vMdlParts.size())
+	{
+		return;
+	}
+
+	ModelPart * pt = m_vMdlParts[id];
+	m_vMdlParts.erase(id);
+
+	const ModelFile * mdl = pt->pMdl;
+	if(mdl)
+	{
+		bool hasAnims = false;
+		for(int i = 0, l = m_vAnims.size(); i < l; ++i)
+		{
+			if(m_vAnims[i].mdl == mdl)
+			{
+				hasAnims = true;
+				m_vAnims.erase(i--);
+				--l;
+			}
+		}
+		RenderAnimList();
+		OnAnimListSelChg();
+		if(hasAnims)
+		{
+			m_pCurAnim->StopAll();
+		}
+	}
+	m_pCurAnim->DelModel(pt);
+	m_pCurAnim->Assembly();
+
+	m_pAnimMgr->UnloadModel(mdl);
+
+
+	RenderPartList();
+}
+
+void Editor::OnPartApply()
+{
+	TabAttachments * tab = (TabAttachments*)m_pEditor->m_pTM->m_pTabAttachments;
+	ISXGUIListBox * pList = tab->AttachmentsList;
+	int sel = pList->GetSel();
+	ModelPart * pt;
+	int idx = pList->GetItemData(sel);
+	if(idx < 0)
+	{
+		return;
+	}
+	pt = m_vMdlParts[idx];
+
+	MODEL_ATTACH ma = tab->AttachBoneRB->GetCheck() ? MA_BONE : MA_SKIN;
+
+	if(ma == MA_BONE)
+	{
+		int sel = tab->AttachBone->GetSel();
+		if(sel < 0)
+		{
+			MessageBoxA(NULL, "Please select bone", "Error!", MB_OK | MB_ICONSTOP);
+			return;
+		}
+		tab->AttachBone->GetItemText(sel, pt->attachDesc.szBone);
+	}
+	pt->attachDesc.type = ma;
+
+	char szFile[MODEL_MAX_FILE];
+	tab->AttachFileField->GetText(szFile, sizeof(szFile));
+
+	if(strcmp(pt->file, szFile))
+	{
+		//unload old mdl
+		const ModelFile * mdl = pt->pMdl;
+		if(mdl)
+		{
+			bool hasAnims = false;
+			for(int i = 0, l = m_vAnims.size(); i < l; ++i)
+			{
+				if(m_vAnims[i].mdl == mdl)
+				{
+					hasAnims = true;
+					m_vAnims.erase(i--);
+					--l;
+				}
+			}
+			RenderAnimList();
+			OnAnimListSelChg();
+			if(hasAnims)
+			{
+				m_pCurAnim->StopAll();
+			}
+			m_pAnimMgr->UnloadModel(mdl);
+			pt->pMdl = NULL;
+		}
+
+		//load new mdl
+		strcpy(pt->file, szFile);
+		UINT flags = tab->m_iflags;
+		ModelFile * pMdl = (ModelFile*)m_pAnimMgr->LoadModel(szFile, true);
+		pt->pMdl = pMdl;
+		pt->uImportFlags = flags;
+		bool bIsImported = (pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED);
+
+		if(flags & MI_ANIMATIONS)
+		{
+			UINT c = pMdl->GetSequenceCount();
+			AnimItem ai;
+			for(UINT i = 0; i < c; ++i)
+			{
+				ai.seq = (ModelSequence*)pMdl->GetSequence(i);
+				ai.mdl = pMdl;
+				ai.isImported = bIsImported;
+				if(!bIsImported)
+				{
+					if(!ai.seq->name[0])
+					{
+						const char * bn = basename(szFile);
+						strncpy(ai.seq->name, bn, min(strlen(bn) - 4, MODEL_MAX_NAME));
+						ai.seq->name[MODEL_MAX_NAME - 1] = 0;
+						ai.seq->framerate = 30;
+						ai.seq->activity = 0;
+						ai.seq->act_chance = 0;
+						ai.seq->bLooped = 0;
+					}
+				}
+				m_vAnims.push_back(ai);
+			}
+			RenderAnimList();
+		}
+	}
+
+	m_pCurAnim->Assembly();
+	//
 }
