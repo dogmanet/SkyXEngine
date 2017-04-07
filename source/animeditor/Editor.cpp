@@ -315,8 +315,16 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_PT_APPLY:
 			edt->OnPartApply();
 			break;
+
 		}
 		break;
+
+	case WM_CLOSE:
+		if(m_pEditor->m_bDirty && MessageBoxA(hwnd, "All unsaved changes will be lost", "Quit?", MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON2) != IDOK)
+		{
+			return(0);
+		}
+		return(DefWindowProc(hwnd, msg, wParam, lParam));
 
 	case EM_LOADACTIVITIES:
 		TabAnimation * tAnim = (TabAnimation*)edt->m_pTM->m_pTabAnimation;
@@ -657,6 +665,7 @@ void Editor::InitUI()
 	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, 256, 199, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(MainWindow);
 	MainWindow->AddHandler(MenuCmd, WM_COMMAND);
+	MainWindow->AddHandler(MenuCmd, WM_CLOSE, 0, 0, 0, 0, 1);
 	MainWindow->AddHandler(MenuCmd, WM_PARENTNOTIFY);
 	MainWindow->AddHandler(MenuCmd, EM_LOADACTIVITIES);
 
@@ -929,12 +938,18 @@ void Editor::RenderAnimList()
 void Editor::RenderBoneList()
 {
 	ISXGUIComboBox * cmb = ((TabAttachments*)(m_pTM->m_pTabAttachments))->AttachBone;
+	ISXGUIComboBox * cmb_2 = ((TabHitboxes*)(m_pTM->m_pTabHitboxes))->CBBone;
 	int sel = cmb->GetSel();
 	char * text = (char*)alloca(sizeof(char) * (cmb->GetItemTextLength(sel) + 1));
 	cmb->GetItemText(sel, text);
 
+	int sel2 = cmb_2->GetSel();
+	char * text2 = (char*)alloca(sizeof(char)* (cmb_2->GetItemTextLength(sel2) + 1));
+	cmb_2->GetItemText(sel2, text2);
+
 	char tmp[MODEL_BONE_MAX_NAME + 1];
 	cmb->Clear();
+	cmb_2->Clear();
 	for(int i = 0, l = m_pCurAnim->GetBoneCount(); i < l; ++i)
 	{
 		m_pCurAnim->GetBoneName(i, tmp, sizeof(tmp));
@@ -942,10 +957,16 @@ void Editor::RenderBoneList()
 		{
 			sel = i;
 		}
+		if(!strcmp(tmp, text2))
+		{
+			sel2 = i;
+		}
 		cmb->AddItem(tmp);
+		cmb_2->AddItem(tmp);
 	}
 
 	cmb->SetSel(sel);
+	cmb_2->SetSel(sel2);
 
 	/*UINT c = m_vAnims.size();
 	AnimItem * ai;

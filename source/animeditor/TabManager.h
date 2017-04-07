@@ -16,6 +16,7 @@ public:
 	EditorTab * m_pTabAnimation;
 	EditorTab * m_pTabControllers;
 	EditorTab * m_pTabFiles;
+	EditorTab * m_pTabHitboxes;
 
 	void ShowTab(EditorTab * pTab);
 	ISXGUIBaseWnd * GetBaseWnd();

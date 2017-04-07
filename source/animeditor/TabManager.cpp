@@ -6,6 +6,7 @@
 #include "TabAnimation.h"
 #include "TabControllers.h"
 #include "TabFiles.h"
+#include "TabHitboxes.h"
 
 TabManager::TabManager(ISXGUIBaseWnd * wnd):
 m_pBaseWnd(wnd)
@@ -16,6 +17,7 @@ m_pBaseWnd(wnd)
 	m_pTabAnimation = new TabAnimation(this);
 	m_pTabControllers = new TabControllers(this);
 	//m_pTabFiles = new TabFiles(this);
+	m_pTabHitboxes = new TabHitboxes(this);
 
 	m_pCurTab->Show();
 }
@@ -28,6 +30,7 @@ TabManager::~TabManager()
 	mem_delete(m_pTabAnimation);
 	mem_delete(m_pTabControllers);
 	//mem_delete(m_pTabFiles);
+	mem_delete(m_pTabHitboxes);
 }
 
 void TabManager::ShowTab(EditorTab * pTab)

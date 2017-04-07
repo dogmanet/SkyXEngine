@@ -26,6 +26,7 @@
 #include "TabActivities.h"
 #include "TabAnimation.h"
 #include "TabAttachments.h"
+#include "TabHitboxes.h"
 
 //#ifdef _DEBUG
 //#	pragma comment(lib, "d3dx9d.lib")

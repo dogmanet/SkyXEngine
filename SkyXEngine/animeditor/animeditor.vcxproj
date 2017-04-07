@@ -98,6 +98,7 @@
     <ClCompile Include="..\..\source\animeditor\TabAttachments.cpp" />
     <ClCompile Include="..\..\source\animeditor\TabControllers.cpp" />
     <ClCompile Include="..\..\source\animeditor\TabFiles.cpp" />
+    <ClCompile Include="..\..\source\animeditor\TabHitboxes.cpp" />
     <ClCompile Include="..\..\source\animeditor\TabManager.cpp" />
     <ClCompile Include="..\..\source\animeditor\TabSkins.cpp" />
     <ClCompile Include="..\..\source\animeditor\Tools.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="..\..\source\animeditor\TabAttachments.h" />
     <ClInclude Include="..\..\source\animeditor\TabControllers.h" />
     <ClInclude Include="..\..\source\animeditor\TabFiles.h" />
+    <ClInclude Include="..\..\source\animeditor\TabHitboxes.h" />
     <ClInclude Include="..\..\source\animeditor\TabManager.h" />
     <ClInclude Include="..\..\source\animeditor\TabSkins.h" />
     <ClInclude Include="..\..\source\animeditor\Tools.h" />
