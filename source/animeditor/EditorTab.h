@@ -15,7 +15,7 @@ public:
 	virtual ~EditorTab();
 
 	void Show();
-	void Show(bool bShow);
+	virtual void Show(bool bShow);
 
 	static LRESULT TabBtnHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

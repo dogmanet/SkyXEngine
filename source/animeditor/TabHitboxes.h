@@ -11,6 +11,8 @@ public:
 	TabHitboxes(TabManager * tm);
 	~TabHitboxes();
 
+	void Show(bool bShow);
+	bool m_bShown;
 protected:
 	ISXGUIListBox* HBList;
 	ISXGUIButton* BtnAdd;

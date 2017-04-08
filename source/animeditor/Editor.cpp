@@ -1084,29 +1084,35 @@ void Editor::Update()
 
 	m_pAnimMgr->Render();
 
-	DrawHitboxes();
-
-	if(m_vHitboxes.size() > m_iActiveHitbox)
+	if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
 	{
-		HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
-		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+		DrawHitboxes();
 
-		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMat * mBone));
-		switch(m_htype)
+		if(m_vHitboxes.size() > m_iActiveHitbox)
 		{
-		case HT_MOVE:
-			DrawHandlerMove();
-			break;
+			HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
+			SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
 
-		case HT_ROTATE:
-			DrawHandlerRotate();
-			break;
+			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
 
-		case HT_SCALE:
-			DrawHandlerScale();
-			break;
+			m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMat * mBone));
+			switch(m_htype)
+			{
+			case HT_MOVE:
+				DrawHandlerMove();
+				break;
+
+			case HT_ROTATE:
+				DrawHandlerRotate();
+				break;
+
+			case HT_SCALE:
+				DrawHandlerScale();
+				break;
+			}
+			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 1);
+
 		}
-
 	}
 	m_pd3dDevice->EndScene();
 
@@ -3006,7 +3012,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 void Editor::OnMouseDown(int x, int y)
 {
 	float f; 
-	if(m_vHitboxes.size() > m_iActiveHitbox)
+	if(m_vHitboxes.size() > m_iActiveHitbox && if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown))
 	{
 		HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
 		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());

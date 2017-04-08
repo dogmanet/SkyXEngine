@@ -1,6 +1,12 @@
 #include "TabHitboxes.h"
 #include <anim/ModelFile.h>
 
+void TabHitboxes::Show(bool bShow)
+{
+	EditorTab::Show(bShow);
+	m_bShown = bShow;
+}
+
 TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 {
 	m_pTabBtn = SXGUICrButtonEx("Hitboxes", 780, 648, 100, 20, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE, m_pTM->GetBaseWnd()->GetHWND(), 0, 0);
