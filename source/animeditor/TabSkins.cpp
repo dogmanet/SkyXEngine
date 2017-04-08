@@ -78,6 +78,7 @@ TabSkins::TabSkins(TabManager * tm):EditorTab(tm)
 	SkinMatReset->GAlign = {0, 0, 1, 1};
 
 	Show(false);
+	m_pTabBtn->Enable(0);
 
 }
 

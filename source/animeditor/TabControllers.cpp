@@ -335,6 +335,7 @@ TabControllers::TabControllers(TabManager * tm):EditorTab(tm)
 	CtlsPropRotZSpin2->GAlign = {1, 1, 0, 0};
 
 	Show(false);
+	m_pTabBtn->Enable(0);
 }
 
 TabControllers::~TabControllers()
