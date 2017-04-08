@@ -5,7 +5,13 @@
 
 Editor::Editor():
 m_bCamMove(false),
-m_iCurIdx(-1)
+m_iCurIdx(-1),
+m_pHitboxesPart(NULL),
+m_currentAxe(HA_NONE),
+m_bIsDragging(false),
+m_htype(HT_MOVE),
+m_bIsDraggingStop(false),
+m_iActiveHitbox(0)
 {
 	InitUI();
 	InitD3D();
@@ -316,6 +322,200 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			edt->OnPartApply();
 			break;
 
+		case IDC_HB_DEL:
+			{
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				int len = MODEL_MAX_NAME;
+				int sel = pList->GetSel();
+				if(sel < 0)
+				{
+					break;
+				}
+				sel = pList->GetItemData(sel);
+
+				if(Tools::DlgConfirm())
+				{
+					edt->DelHitbox(sel);
+				}
+			}
+			break;
+
+		case IDC_HB_ADD:
+			{
+				if(!m_pEditor->m_pHitboxesPart)
+				{
+					m_pEditor->m_pHitboxesPart = m_pEditor->AddModel("!hitboxes");
+				}
+				ModelHitbox hb;
+				memset(&hb, 0, sizeof(hb));
+				strcpy(hb.name, "New hitbox");
+
+				m_pEditor->m_pHitboxesPart->AddHitbox(&hb);
+				m_pEditor->m_pCurAnim->Assembly();
+				m_pEditor->UpdateHitboxList(m_pEditor->m_pHitboxesPart, false);
+
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				pList->SetSel(pList->GetCountItem() - 1);
+				m_pEditor->OnHitboxListSelChg();
+			}
+			break;
+
+		case IDC_HB_LB:
+			switch(HIWORD(wParam))
+			{
+			case LBN_SELCHANGE:
+				edt->OnHitboxListSelChg();
+				break;
+			}
+			break;
+
+		case IDC_HB_NAME:
+			if(HIWORD(wParam) == EN_CHANGE)
+			{
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				int sel = pList->GetSel();
+				if(sel < 0 || (sel = pList->GetItemData(sel)) < 0)
+				{
+					break;
+				}
+				
+				HitboxItem * hbx = &m_pEditor->m_vHitboxes[sel];
+				
+				int len = GetWindowTextLengthA((HWND)lParam);
+
+				GetWindowTextA((HWND)lParam, hbx->hb->name, MODEL_MAX_NAME);
+				char tmpSN[MODEL_MAX_NAME + 32];
+				sprintf(tmpSN, "[%c] %s", hbx->isImported ? 'I' : '_', hbx->hb->name);
+				pList->SetTextItem(pList->GetSel(), tmpSN);
+				//m_pEditor->RenderHitboxList();
+			}
+			break;
+
+		case IDC_HB_BONE:
+			if(HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				int sel = pList->GetSel();
+				if(sel < 0 || (sel = pList->GetItemData(sel)) < 0)
+				{
+					break;
+				}
+				HitboxItem * hbx = &m_pEditor->m_vHitboxes[sel];
+				GetWindowTextA((HWND)lParam, hbx->hb->bone, MODEL_BONE_MAX_NAME);
+			}
+			break;
+
+		case IDC_HB_BODYPART:
+			if(HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				ISXGUIComboBox * cmb = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->CBBodyPart;
+				int sel = pList->GetSel();
+				if(sel < 0 || (sel = pList->GetItemData(sel)) < 0)
+				{
+					break;
+				}
+				HitboxItem * hbx = &m_pEditor->m_vHitboxes[sel];
+				hbx->hb->part = (HITBOX_BODYPART)cmb->GetItemData(cmb->GetSel());
+			}
+			break;
+
+		case IDC_HB_TYPE:
+			if(HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				ISXGUIComboBox * cmb = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->CBType;
+				int sel = pList->GetSel();
+				if(sel < 0 || (sel = pList->GetItemData(sel)) < 0)
+				{
+					break;
+				}
+				HitboxItem * hbx = &m_pEditor->m_vHitboxes[sel];
+				hbx->hb->type = (HITBOX_TYPE)cmb->GetItemData(cmb->GetSel());
+			}
+			break;
+
+		case IDC_HB_ED_L:
+		case IDC_HB_ED_W:
+		case IDC_HB_ED_H:
+		case IDC_HB_ED_POS_X:
+		case IDC_HB_ED_POS_Y:
+		case IDC_HB_ED_POS_Z:
+		case IDC_HB_ED_ROT_X:
+		case IDC_HB_ED_ROT_Y:
+		case IDC_HB_ED_ROT_Z:
+			if(HIWORD(wParam) == EN_CHANGE)
+			{
+				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
+				int sel = pList->GetSel();
+				if(sel < 0 || (sel = pList->GetItemData(sel)) < 0)
+				{
+					break;
+				}
+				HitboxItem * hbx = &m_pEditor->m_vHitboxes[sel];
+
+				int len = GetWindowTextLengthA((HWND)lParam);
+				char * txt = (char*)alloca(len + 1);
+				GetWindowTextA((HWND)lParam, txt, len + 1);
+				float f;
+				if(sscanf(txt, "%f", &f) < 1)
+				{
+					SetWindowTextA((HWND)lParam, "0");
+				}
+				else
+				{
+					switch(LOWORD(wParam))
+					{
+					case IDC_HB_ED_L:
+						hbx->hb->lwh.x = f;
+						break;
+
+					case IDC_HB_ED_W:
+						hbx->hb->lwh.y = f;
+						break;
+
+					case IDC_HB_ED_H:
+						hbx->hb->lwh.z = f;
+						break;
+
+					case IDC_HB_ED_POS_X:
+						hbx->hb->pos.x = f;
+						break;
+
+					case IDC_HB_ED_POS_Y:
+						hbx->hb->pos.y = f;
+						break;
+
+					case IDC_HB_ED_POS_Z:
+						hbx->hb->pos.z = f;
+						break;
+
+					case IDC_HB_ED_ROT_X:
+						hbx->hb->rot.x = SMToRadian(f);
+						break;
+
+					case IDC_HB_ED_ROT_Y:
+						hbx->hb->rot.y = SMToRadian(f);
+						break;
+
+					case IDC_HB_ED_ROT_Z:
+						hbx->hb->rot.z = SMToRadian(f);
+						break;
+
+					}
+				}
+			}
+			break;
+
+		case IDC_HB_TRANS:
+			m_pEditor->m_htype = HT_MOVE;
+			break;
+		case IDC_HB_ROT:
+			m_pEditor->m_htype = HT_ROTATE;
+			break;
+		case IDC_HB_SCALE:
+			m_pEditor->m_htype = HT_SCALE;
+			break;
 		}
 		break;
 
@@ -388,6 +588,20 @@ LRESULT Editor::CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			edt->m_cam.Move(Camera::CAMERA_MOVE_RIGHT, 0);
 			break;
 		}
+		break;
+
+	case WM_MOUSEMOVE:
+		m_pEditor->OnMouseDown(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+		break;
+
+	case WM_LBUTTONDOWN:
+		m_pEditor->m_bIsDragging = true;
+		m_pEditor->m_bIsDraggingStart = true;
+		break;
+
+	case WM_LBUTTONUP:
+		m_pEditor->m_bIsDragging = false;
+		m_pEditor->m_bIsDraggingStop = true;
 		break;
 		
 	}
@@ -683,6 +897,9 @@ void Editor::InitUI()
 	D3DWindow->AddHandler(CamInput, WM_RBUTTONUP);
 	MainWindow->AddHandler(CamInput, WM_KEYDOWN);
 	MainWindow->AddHandler(CamInput, WM_KEYUP);
+	D3DWindow->AddHandler(CamInput, WM_LBUTTONDOWN);
+	D3DWindow->AddHandler(CamInput, WM_LBUTTONUP);
+	D3DWindow->AddHandler(CamInput, WM_MOUSEMOVE);
 
 	m_pTM = new TabManager(MainWindow);
 
@@ -770,7 +987,7 @@ void Editor::InitD3D()
 	pp.BackBufferCount = 1;
 	pp.hDeviceWindow = hWnd;
 	pp.MultiSampleQuality = 0;
-	pp.MultiSampleType = D3DMULTISAMPLE_NONE;
+	pp.MultiSampleType = D3DMULTISAMPLE_8_SAMPLES;
 	pp.EnableAutoDepthStencil = true;
 	pp.AutoDepthStencilFormat = D3DFMT_D24S8;
 	pp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
@@ -790,6 +1007,7 @@ void Editor::InitD3D()
 	//create camera
 
 	m_mViewMat = SMMatrixLookAtLH(float3(10.0f, 10.0f, 10.0f), float3(0.0f, 0.0f, 0.0f), float3(0.0f, 1.0f, 0.0f));
+	m_mHelperMat = SMMatrixTranslation(10.0f, 10.0f, 10.0f);
 }
 
 void Editor::DestroyD3D()
@@ -854,7 +1072,7 @@ void Editor::Update()
 	m_pd3dDevice->SetVertexShaderConstantF(1, (float*)&VSICData, sizeof(VSICData) / sizeof(float) / 4);
 	m_pd3dDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&m_mViewMat);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&m_mProjMat);
-
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixIdentity()));
 
 	DrawAxis();
 
@@ -866,6 +1084,30 @@ void Editor::Update()
 
 	m_pAnimMgr->Render();
 
+	DrawHitboxes();
+
+	if(m_vHitboxes.size() > m_iActiveHitbox)
+	{
+		HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
+		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+
+		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMat * mBone));
+		switch(m_htype)
+		{
+		case HT_MOVE:
+			DrawHandlerMove();
+			break;
+
+		case HT_ROTATE:
+			DrawHandlerRotate();
+			break;
+
+		case HT_SCALE:
+			DrawHandlerScale();
+			break;
+		}
+
+	}
 	m_pd3dDevice->EndScene();
 
 	m_pAnimMgr->Update();
@@ -950,6 +1192,7 @@ void Editor::RenderBoneList()
 	char tmp[MODEL_BONE_MAX_NAME + 1];
 	cmb->Clear();
 	cmb_2->Clear();
+	cmb_2->AddItem("");
 	for(int i = 0, l = m_pCurAnim->GetBoneCount(); i < l; ++i)
 	{
 		m_pCurAnim->GetBoneName(i, tmp, sizeof(tmp));
@@ -1011,8 +1254,11 @@ void Editor::RenderPartList()
 		par = m_vMdlParts[i];
 	
 		//sprintf(tmpSN, "[%c%c] %s", ai->isImported ? 'I' : '_', ai->seq->bLooped ? 'L' : '_', ai->seq->name); //I|_, L|_
-		pList->AddItem(par->name);
-		pList->SetItemData(pList->GetCountItem() - 1, (LPARAM)i);
+		if(par->file[0] != '!')
+		{
+			pList->AddItem(par->name);
+			pList->SetItemData(pList->GetCountItem() - 1, (LPARAM)i);
+		}
 		
 	}
 	pList->SetSel(cur);
@@ -1223,6 +1469,11 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 			}
 			RenderAnimList();
 		}
+
+		if(flags & MI_HITBOXES)
+		{
+			UpdateHitboxList(pMdl, bIsImported);
+		}
 	}
 	//init all sections from mdl data
 
@@ -1264,6 +1515,23 @@ void Editor::DelModel(UINT id)
 		if(hasAnims)
 		{
 			m_pCurAnim->StopAll();
+		}
+
+		for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
+		{
+			if(m_vHitboxes[i].mdl == mdl)
+			{
+				m_vHitboxes.erase(i);
+				--i;
+				--l;
+			}
+		}
+		RenderHitboxList();
+		OnHitboxListSelChg();
+
+		if(mdl == m_pHitboxesPart)
+		{
+			m_pHitboxesPart = 0;
 		}
 	}
 	m_pCurAnim->DelModel(pt);
@@ -1327,6 +1595,19 @@ void Editor::OnPartApply()
 			{
 				m_pCurAnim->StopAll();
 			}
+
+			for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
+			{
+				if(m_vHitboxes[i].mdl == mdl)
+				{
+					m_vHitboxes.erase(i);
+					--i;
+					--l;
+				}
+			}
+			RenderHitboxList();
+			OnHitboxListSelChg();
+
 			m_pAnimMgr->UnloadModel(mdl);
 			pt->pMdl = NULL;
 		}
@@ -1365,8 +1646,1507 @@ void Editor::OnPartApply()
 			}
 			RenderAnimList();
 		}
+
+		if(flags & MI_HITBOXES)
+		{
+			UpdateHitboxList(pMdl, bIsImported);
+		}
 	}
 
 	m_pCurAnim->Assembly();
 	//
+}
+
+void Editor::RenderHitboxList()
+{
+	UINT c = m_vHitboxes.size();
+	HitboxItem * hbi;
+	char tmpSN[MODEL_MAX_NAME + 32];
+
+	TabHitboxes * tab = (TabHitboxes*)m_pEditor->m_pTM->m_pTabHitboxes;
+	ISXGUIListBox * pList = tab->HBList;
+
+
+	int cur = pList->GetSel();
+	if(cur < 0)
+	{
+		cur = 0;
+	}
+	pList->Clear();
+
+	for(UINT i = 0; i < c; ++i)
+	{
+		hbi = &m_vHitboxes[i];
+			
+		sprintf(tmpSN, "[%c] %s", hbi->isImported ? 'I' : '_', hbi->hb->name);
+		pList->AddItem(tmpSN);
+		pList->SetItemData(pList->GetCountItem() - 1, (LPARAM)i);
+	}
+	pList->SetSel(cur);
+
+	OnHitboxListSelChg();
+}
+
+void Editor::OnHitboxListSelChg()
+{
+	TabHitboxes * tab = (TabHitboxes*)m_pEditor->m_pTM->m_pTabHitboxes;
+	ISXGUIListBox * pList = tab->HBList;
+
+	int sel = pList->GetSel();
+	HitboxItem * hbx;
+	int idx = pList->GetItemData(sel);
+	if(idx < 0)
+	{
+		tab->CBBodyPart->Enable(0);
+		tab->CBBone->Enable(0);
+		tab->CBType->Enable(0);
+
+		tab->EdL->Enable(0);
+		tab->EdW->Enable(0);
+		tab->EdH->Enable(0);
+
+		tab->EdName->Enable(0);
+
+		tab->EdPosX->Enable(0);
+		tab->EdPosY->Enable(0);
+		tab->EdPosZ->Enable(0);
+
+		tab->EdRotX->Enable(0);
+		tab->EdRotY->Enable(0);
+		tab->EdRotZ->Enable(0);
+
+		tab->BtnDel->Enable(0);
+	}
+	else
+	{
+		hbx = &m_vHitboxes[idx];
+		m_iActiveHitbox = idx;
+		tab->CBBodyPart->Enable(!hbx->isImported);
+		tab->CBBone->Enable(!hbx->isImported);
+		tab->CBType->Enable(!hbx->isImported);
+
+		tab->EdL->Enable(!hbx->isImported);
+		tab->EdW->Enable(!hbx->isImported);
+		tab->EdH->Enable(!hbx->isImported);
+
+		tab->EdName->Enable(!hbx->isImported);
+
+		tab->EdPosX->Enable(!hbx->isImported);
+		tab->EdPosY->Enable(!hbx->isImported);
+		tab->EdPosZ->Enable(!hbx->isImported);
+
+		tab->EdRotX->Enable(!hbx->isImported);
+		tab->EdRotY->Enable(!hbx->isImported);
+		tab->EdRotZ->Enable(!hbx->isImported);
+
+		tab->BtnDel->Enable(1);
+
+		tab->EdName->SetText(hbx->hb->name);
+
+		tab->CBBodyPart->SetSel(hbx->hb->part);
+		tab->CBType->SetSel(hbx->hb->type);
+		char tmp[MODEL_BONE_MAX_NAME];
+		for(int i = 0, l = tab->CBBone->GetCount(); i < l; ++i)
+		{
+			tab->CBBone->GetItemText(i, tmp);
+			if(!strcmp(tmp, hbx->hb->bone))
+			{
+				tab->CBBone->SetSel(i);
+			}
+		}
+
+		sprintf(tmp, "%f", hbx->hb->lwh.x); tab->EdL->SetText(tmp);
+		sprintf(tmp, "%f", hbx->hb->lwh.y); tab->EdW->SetText(tmp);
+		sprintf(tmp, "%f", hbx->hb->lwh.z); tab->EdH->SetText(tmp);
+
+		sprintf(tmp, "%f", hbx->hb->pos.x); tab->EdPosX->SetText(tmp);
+		sprintf(tmp, "%f", hbx->hb->pos.y); tab->EdPosY->SetText(tmp);
+		sprintf(tmp, "%f", hbx->hb->pos.z); tab->EdPosZ->SetText(tmp);
+
+		sprintf(tmp, "%f", SMToAngle(hbx->hb->rot.x)); tab->EdRotX->SetText(tmp);
+		sprintf(tmp, "%f", SMToAngle(hbx->hb->rot.y)); tab->EdRotY->SetText(tmp);
+		sprintf(tmp, "%f", SMToAngle(hbx->hb->rot.z)); tab->EdRotZ->SetText(tmp);
+		
+	}
+}
+
+void Editor::UpdateHitboxList(ModelFile * pMdl, bool bIsImported)
+{
+	for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
+	{
+		if(m_vHitboxes[i].mdl == pMdl)
+		{
+			bIsImported = m_vHitboxes[i].isImported;
+			m_vHitboxes.erase(i);
+			--i;
+			--l;
+		}
+	}
+
+	uint32_t c = pMdl->GetHitboxCount();
+	HitboxItem hbi;
+	for(uint32_t i = 0; i < c; ++i)
+	{
+		hbi.hb = (ModelHitbox*)pMdl->GetHitbox(i);
+		hbi.mdl = pMdl;
+		hbi.isImported = bIsImported;
+		hbi.id = i;
+
+		m_vHitboxes.push_back(hbi);
+	}
+	RenderHitboxList();
+}
+
+void Editor::DelHitbox(UINT id)
+{
+	if(id >= m_vHitboxes.size())
+	{
+		return;
+	}
+
+	HitboxItem * hbx = &m_vHitboxes[id];
+	
+	((ModelFile*)hbx->mdl)->DelHitbox(hbx->id);
+	m_pCurAnim->m_pMdl->Assembly();
+	
+	UpdateHitboxList((ModelFile*)hbx->mdl, false);
+	OnHitboxListSelChg();
+}
+
+void Editor::DrawHitboxes()
+{
+	m_pd3dDevice->SetVertexShader(NULL);
+	m_pd3dDevice->SetPixelShader(NULL);
+
+	m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, 0);
+	m_pd3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	m_pd3dDevice->SetTexture(0, NULL);
+	
+	for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
+	{
+		HitboxItem * hbi = &m_vHitboxes[i];
+		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&((m_iActiveHitbox == i && m_bIsDragging ? m_mHitboxMat :
+			SMMatrixRotationX(hbi->hb->rot.x)
+			* SMMatrixRotationY(hbi->hb->rot.y)
+			* SMMatrixRotationZ(hbi->hb->rot.z)
+			* SMMatrixTranslation(hbi->hb->pos))
+			* mBone
+			));
+
+		if(m_iActiveHitbox == i && !m_bIsDragging)
+		{
+			switch(m_htype)
+			{
+			case HT_MOVE:
+				m_mHelperMat = SMMatrixTranslation(hbi->hb->pos/* + float3(mBone._41, mBone._42, mBone._43)*/);
+				break;
+			case HT_ROTATE:
+			case HT_SCALE:
+				m_mHelperMat = SMMatrixRotationX(hbi->hb->rot.x)
+					* SMMatrixRotationY(hbi->hb->rot.y)
+					* SMMatrixRotationZ(hbi->hb->rot.z)
+					* SMMatrixTranslation(hbi->hb->pos/* + float3(mBone._41, mBone._42, mBone._43)*/);
+				break;
+			}
+		}
+
+		DWORD color = m_iActiveHitbox == i ? 0xFFFFFF00 : 0xFFFFFFFF;
+		switch(hbi->hb->type)
+		{
+		case HT_BOX:
+			DrawBox(hbi->hb->lwh, color);
+			break;
+		case HT_CAPSULE:
+			DrawCapsule(hbi->hb->lwh, color);
+			break;
+		case HT_ELIPSOID:
+			DrawSphere(hbi->hb->lwh, color);
+			break;
+		case HT_CYLINDER:
+			DrawCylinder(hbi->hb->lwh, color);
+			break;
+		}
+	}
+	//DrawCapsule(float3_t(10.0f, 20.0f, 30.0f));
+}
+
+void Editor::DrawBox(const float3_t & lwh, DWORD color)
+{
+	vert l[] = {
+		{lwh * float3_t(-0.5f, -0.5f, -0.5f), color},
+		{lwh * float3_t(0.5f, -0.5f, -0.5f), color},
+		{lwh * float3_t(-0.5f, -0.5f, -0.5f), color},
+		{lwh * float3_t(-0.5f, 0.5f, -0.5f), color},
+		{lwh * float3_t(-0.5f, -0.5f, -0.5f), color},
+		{lwh * float3_t(-0.5f, -0.5f, 0.5f), color},
+
+		{lwh * float3_t(0.5f, -0.5f, -0.5f), color},
+		{lwh * float3_t(0.5f, 0.5f, -0.5f), color},
+		{lwh * float3_t(0.5f, -0.5f, -0.5f), color},
+		{lwh * float3_t(0.5f, -0.5f, 0.5f), color},
+
+		{lwh * float3_t(-0.5f, -0.5f, 0.5f), color},
+		{lwh * float3_t(0.5f, -0.5f, 0.5f), color},
+		{lwh * float3_t(-0.5f, -0.5f, 0.5f), color},
+		{lwh * float3_t(-0.5f, 0.5f, 0.5f), color},
+
+		{lwh * float3_t(-0.5f, 0.5f, -0.5f), color},
+		{lwh * float3_t(0.5f, 0.5f, -0.5f), color},
+		{lwh * float3_t(-0.5f, 0.5f, -0.5f), color},
+		{lwh * float3_t(-0.5f, 0.5f, 0.5f), color},
+
+		{lwh * float3_t(0.5f, 0.5f, 0.5f), color},
+		{lwh * float3_t(0.5f, 0.5f, -0.5f), color},
+		{lwh * float3_t(0.5f, 0.5f, 0.5f), color},
+		{lwh * float3_t(0.5f, -0.5f, 0.5f), color},
+		{lwh * float3_t(0.5f, 0.5f, 0.5f), color},
+		{lwh * float3_t(-0.5f, 0.5f, 0.5f), color}
+	};
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, sizeof(l) / sizeof(vert) / 2, l, sizeof(vert));
+}
+
+void Editor::DrawHemiSphere(float3_t lwh, bool up, DWORD color)
+{
+	const int segs = 16;
+	const int hsegs = 8;
+
+	lwh = (float3)(lwh * 0.5f);
+	Array<vert> l;
+	l.reserve(segs * segs * 4);
+	float deg1, deg2, hdeg1, hdeg2, ymod, xzmod;
+	for(int i = 0; i < segs; ++i)
+	{
+		deg1 = ((float)i / (float)segs) * SM_2PI;
+		deg2 = ((float)((i + 1) % segs) / (float)segs) * SM_2PI;
+		for(int j = 0; j < hsegs; ++j)
+		{
+			hdeg1 = ((float)j / (float)hsegs) * SM_PIDIV2;
+			hdeg2 = ((float)(j + 1) / (float)hsegs) * SM_PIDIV2;
+
+			ymod = sinf(hdeg1);
+			xzmod = cosf(hdeg1);
+
+			l.push_back({lwh * float3_t(sinf(deg1) * xzmod, ymod * (up ? 1.0f : -1.0f), cosf(deg1) * xzmod), color});
+			l.push_back({lwh * float3_t(sinf(deg2) * xzmod, ymod * (up ? 1.0f : -1.0f), cosf(deg2) * xzmod), color});
+
+			l.push_back({lwh * float3_t(sinf(deg1) * xzmod, ymod * (up ? 1.0f : -1.0f), cosf(deg1) * xzmod), color});
+			l.push_back({lwh * float3_t(sinf(deg1) * cosf(hdeg2), sinf(hdeg2) * (up ? 1.0f : -1.0f), cosf(deg1) * cosf(hdeg2)), color});
+		}
+	}
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, l.size() / 2, &l[0], sizeof(vert));
+}
+
+void Editor::DrawSphere(float3_t lwh, DWORD color)
+{
+	DrawHemiSphere(lwh, true, color);
+	DrawHemiSphere(lwh, false, color);
+}
+
+void Editor::DrawCapsule(float3_t lwh, DWORD color)
+{
+	SMMATRIX mOld;
+	m_pd3dDevice->GetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
+
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixTranslation(0.0f, lwh.z * 0.5f, 0.0f) * mOld));
+	DrawHemiSphere(float3_t(lwh.y, lwh.y, lwh.y), true, color);
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixTranslation(0.0f, -lwh.z * 0.5f, 0.0f) * mOld));
+	DrawHemiSphere(float3_t(lwh.y, lwh.y, lwh.y), false, color);
+
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
+
+	DrawCylinder(float3_t(lwh.y, lwh.z, lwh.y), color);
+}
+
+void Editor::DrawCylinder(float3_t lwh, DWORD color)
+{
+	const int segs = 16;
+
+	lwh = (float3)(lwh * 0.5f);
+	Array<vert> l;
+	l.reserve(segs * 6);
+	float deg1, deg2;
+	for(int i = 0; i < segs; ++i)
+	{
+		deg1 = ((float)i / (float)segs) * SM_2PI;
+		deg2 = ((float)((i + 1) % segs) / (float)segs) * SM_2PI;
+
+		l.push_back({lwh * float3_t(sinf(deg1), 1.0f, cosf(deg1)), color});
+		l.push_back({lwh * float3_t(sinf(deg2), 1.0f, cosf(deg2)), color});
+
+		l.push_back({lwh * float3_t(sinf(deg1), 1.0f, cosf(deg1)), color});
+		l.push_back({lwh * float3_t(sinf(deg1), -1.0f, cosf(deg1)), color});
+
+		l.push_back({lwh * float3_t(sinf(deg1), -1.0f, cosf(deg1)), color});
+		l.push_back({lwh * float3_t(sinf(deg2), -1.0f, cosf(deg2)), color});
+	}
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, l.size() / 2, &l[0], sizeof(vert));
+}
+
+void Editor::DrawHandlerMove()
+{
+	m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, 0);
+	m_pd3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	m_pd3dDevice->SetTexture(0, NULL);
+	m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
+
+	m_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	m_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	DWORD color_act = 0xFFFFFF00;
+	DWORD color_act2 = 0x1FFFFF00;
+	
+	float len = 20;
+	vert l[] = {
+		{float3_t(0, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+
+		{float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFFFF0000},
+		{float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0x3FFF0000},
+		{float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFFFF0000},
+		{float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0x3FFF0000},
+
+		{float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF00FF00},
+		{float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0x3F00FF00},
+		{float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFF00FF00},
+		{float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0x3F00FF00},
+
+		{float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF0000FF},
+		{float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0x3F0000FF},
+		{float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFF0000FF},
+		{float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0x3F0000FF},
+	};
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, sizeof(l) / sizeof(vert) / 2, l, sizeof(vert));
+
+	float asize = 1.0f;
+	float a2size = 3.0f;
+
+
+	vert l2[] = {
+		//arrow X
+		{float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+
+		//arrow Y
+		{float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+
+		{float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+
+		//arrow Z
+		{float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+
+		{float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+
+
+		//plane XY
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00},
+		{float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+
+		//plane XZ
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+		{float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF},
+
+		//plane YZ
+		{float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+		{float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF},
+
+
+		/*
+		//inv X
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+
+		//inv Y
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+
+		//inv Z
+
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},*/
+
+	};
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, sizeof(l2) / sizeof(vert) / 3, l2, sizeof(vert));
+
+		m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
+}
+
+void Editor::DrawHandlerScale()
+{
+	m_pd3dDevice->SetRenderState(D3DRS_LIGHTING, 0);
+	m_pd3dDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	m_pd3dDevice->SetTexture(0, NULL);
+	m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, 1);
+
+	m_pd3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	m_pd3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	DWORD color_act = 0xFFFFFF00;
+	DWORD color_act2 = 0x1FFFFF00;
+
+	float len = 20.0f;
+	float len05 = len * 0.5f;
+	float len075 = len * 0.75f;
+	vert l[] = {
+		{float3_t(0, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, 0, 0), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFFFF0000},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFF00FF00},
+		{float3_t(len075, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFFFF0000},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFF00FF00},
+
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFFFF0000},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFF0000FF},
+		{float3_t(len075, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFFFF0000},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFF0000FF},
+
+		{float3_t(0, 0, len05), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF0000FF},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF00FF00},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF0000FF},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF00FF00},
+	};
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, sizeof(l) / sizeof(vert) / 2, l, sizeof(vert));
+
+	float asize = 1.0f;
+	float a2size = 3.0f;
+
+
+	vert l2[] = {
+		//arrow X
+		{float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+		{float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000},
+
+		//arrow Y
+		{float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+
+		{float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+		{float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00},
+
+		//arrow Z
+		{float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+
+		{float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+		{float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF},
+
+
+		//plane XY
+		{float3_t(len075, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+		{float3_t(len075, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00},
+
+		//plane XZ
+		{float3_t(len075, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(len075, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF},
+
+		//plane YZ
+		{float3_t(0, len075, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, len075, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF},
+
+		//plane XYZ
+		{float3_t(0, len05, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F00FF00},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F0000FF},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, len05, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F00FF00},
+		{float3_t(len05, 0, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1FFF0000},
+		{float3_t(0, 0, len05), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F0000FF},
+
+		/*
+		//inv X
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+
+		//inv Y
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f), 0x1F00FFFF},
+
+		//inv Z
+
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},
+		{float3_t(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f), 0x1F00FFFF},*/
+
+	};
+	m_pd3dDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, sizeof(l2) / sizeof(vert) / 3, l2, sizeof(vert));
+
+	m_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
+}
+
+void Editor::DrawHandlerRotate()
+{
+	DWORD color_act = 0xFFFFFF00;
+
+	SMMATRIX mOld;
+	m_pd3dDevice->GetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
+
+	DrawCylinder(float3_t(20.0f, 1.0f, 20.0f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00);
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixRotationZ(SM_PIDIV2) * mOld));
+	DrawCylinder(float3_t(20.0f, 1.0f, 20.0f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000);
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixRotationX(SM_PIDIV2) * mOld));
+	DrawCylinder(float3_t(20.0f, 1.0f, 20.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF);
+
+
+	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
+}
+
+bool line_intersect_triangle(const float3 &t1, const float3 &t2, const float3 &t3,
+	const float3 &l1, const float3 &l2, float3 &p)
+{
+	float3 n = SMVector3Normalize(SMVector3Cross((t2 - t1), (t3 - t2)));
+	float d1 = SMVector3Dot((l1 - t1), n) / SMVector3Length(n), d2 = SMVector3Dot((l2 - t1), n) / SMVector3Length(n);
+	if((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
+		return(false);
+	p = l1 + (l2 - l1) * (-d1 / (d2 - d1));
+	if(SMVector3Dot(SMVector3Cross((t2 - t1), (p - t1)), n) <= 0.0f) return(false);
+	if(SMVector3Dot(SMVector3Cross((t3 - t2), (p - t2)), n) <= 0.0f) return(false);
+	if(SMVector3Dot(SMVector3Cross((t1 - t3), (p - t3)), n) <= 0.0f) return(false);
+	return(true);
+}
+
+void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
+{
+	if(m_bIsDragging)
+	{
+		return;
+	}
+	float3 end = dir;
+	float len = 20.0f;
+	float asize = 1.0f;
+	float a2size = 3.0f;
+
+	m_currentAxe = HA_NONE;
+
+	float3 p;
+
+	float mind = FLOAT_INF;
+
+	if(line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, 0, 0), float3_t(len * 0.5f, len * 0.5f, 0), start, end, p)
+		|| line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, len * 0.5f, 0), float3_t(0, len * 0.5f, 0), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_XY;
+		}
+	}
+
+	if(line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, 0, 0), float3_t(len * 0.5f, 0, len * 0.5f), start, end, p)
+		|| line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, 0, len * 0.5f), float3_t(0, 0, len * 0.5f), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_XZ;
+		}
+	}
+	
+	if(line_intersect_triangle(float3(0, 0, 0), float3(0, 0, len * 0.5f), float3_t(0, len * 0.5f, len * 0.5f), start, end, p)
+		|| line_intersect_triangle(float3(0, 0, 0), float3(0, len * 0.5f, len * 0.5f), float3_t(0, len * 0.5f, 0), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_YZ;
+		}
+	}
+
+
+	float3 asX[] = {
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f),
+
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f),
+
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f),
+	};
+
+	float3 asY[] = {
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f), 
+		float3(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+	};
+
+	float3 asZ[] = {
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+	};
+
+	for(int i = 0, l = sizeof(asX) / sizeof(asX[0]); i < l; i += 3)
+	{
+		if(line_intersect_triangle(asX[i], asX[i + 1], asX[i + 2], start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_X;
+				break;
+			}
+		}
+	}
+	for(int i = 0, l = sizeof(asY) / sizeof(asY[0]); i < l; i += 3)
+	{
+		if(line_intersect_triangle(asY[i], asY[i + 1], asY[i + 2], start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_Y;
+				break;
+			}
+		}
+	}
+	for(int i = 0, l = sizeof(asZ) / sizeof(asZ[0]); i < l; i += 3)
+	{
+		if(line_intersect_triangle(asZ[i], asZ[i + 1], asZ[i + 2], start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_Z; 
+				break;
+			}
+		}
+	}
+}
+
+void Editor::HandlerIntersectRotate(const float3 & start, const float3 & dir)
+{
+	if(m_bIsDragging)
+	{
+		return;
+	}
+	float3 end = dir;
+	float rad = 20.0f;
+	float h = 1.0f;
+
+
+	m_currentAxe = HA_NONE;
+
+	float3 p;
+
+	float mind = FLOAT_INF;
+
+	const int segs = 16;
+
+	float3_t lwh(rad, h, rad);
+
+	lwh = (float3)(lwh * 0.5f);
+	float deg1, deg2;
+
+	/*
+	1--2
+	 \
+	  \
+	3--4
+	*/
+
+	//Y
+	for(int i = 0; i < segs; ++i)
+	{
+		deg1 = ((float)i / (float)segs) * SM_2PI;
+		deg2 = ((float)((i + 1) % segs) / (float)segs) * SM_2PI;
+
+		
+		float3_t p1(lwh * float3_t(sinf(deg1), 1.0f, cosf(deg1)));
+		float3_t p2(lwh * float3_t(sinf(deg2), 1.0f, cosf(deg2)));
+
+		float3_t p3(lwh * float3_t(sinf(deg1), -1.0f, cosf(deg1)));
+		float3_t p4(lwh * float3_t(sinf(deg2), -1.0f, cosf(deg2)));
+		if(line_intersect_triangle(p1, p2, p4, start, end, p)
+			|| line_intersect_triangle(p1, p4, p3, start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_Y;
+				break;
+			}
+		}
+	}
+	lwh = float3_t(lwh.y, lwh.x, lwh.z);
+	//X
+	for(int i = 0; i < segs; ++i)
+	{
+		deg1 = ((float)i / (float)segs) * SM_2PI;
+		deg2 = ((float)((i + 1) % segs) / (float)segs) * SM_2PI;
+
+
+		float3_t p1(lwh * float3_t(1.0f, sinf(deg1), cosf(deg1)));
+		float3_t p2(lwh * float3_t(1.0f, sinf(deg2), cosf(deg2)));
+
+		float3_t p3(lwh * float3_t(-1.0f, sinf(deg1), cosf(deg1)));
+		float3_t p4(lwh * float3_t(-1.0f, sinf(deg2), cosf(deg2)));
+		if(line_intersect_triangle(p1, p2, p4, start, end, p)
+			|| line_intersect_triangle(p1, p4, p3, start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_X;
+				break;
+			}
+		}
+	}
+	lwh = float3_t(lwh.y, lwh.z, lwh.x);
+	//Z
+	for(int i = 0; i < segs; ++i)
+	{
+		deg1 = ((float)i / (float)segs) * SM_2PI;
+		deg2 = ((float)((i + 1) % segs) / (float)segs) * SM_2PI;
+
+
+		float3_t p1(lwh * float3_t(sinf(deg1), cosf(deg1), 1.0f));
+		float3_t p2(lwh * float3_t(sinf(deg2), cosf(deg2), 1.0f));
+
+		float3_t p3(lwh * float3_t(sinf(deg1), cosf(deg1), -1.0f));
+		float3_t p4(lwh * float3_t(sinf(deg2), cosf(deg2), -1.0f));
+		if(line_intersect_triangle(p1, p2, p4, start, end, p)
+			|| line_intersect_triangle(p1, p4, p3, start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_Z;
+				break;
+			}
+		}
+	}
+
+}
+
+void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
+{
+	if(m_bIsDragging)
+	{
+		return;
+	}
+	float3 end = dir;
+	float len = 20.0f;
+	float len05 = len * 0.5f;
+	float len075 = len * 0.75f;
+	float asize = 1.0f;
+	float a2size = 3.0f;
+
+	m_currentAxe = HA_NONE;
+
+	float3 p;
+
+	float mind = FLOAT_INF;
+
+	if(line_intersect_triangle(float3(len075, 0, 0), float3(0, len075, 0), float3_t(len05, 0, 0), start, end, p)
+		|| line_intersect_triangle(float3(len05, 0, 0), float3(0, len075, 0), float3_t(0, len05, 0), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_XY;
+		}
+	}
+
+	if(line_intersect_triangle(float3(len075, 0, 0), float3(0, 0, len075), float3_t(len05, 0, 0), start, end, p)
+		|| line_intersect_triangle(float3(len05, 0, 0), float3(0, 0, len075), float3_t(0, 0, len05), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_XZ;
+		}
+	}
+
+	if(line_intersect_triangle(float3(0, len075, 0), float3(0, 0, len075), float3_t(0, len05, 0), start, end, p)
+		|| line_intersect_triangle(float3(0, len05, 0), float3(0, 0, len075), float3_t(0, 0, len05), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_YZ;
+		}
+	}
+
+	if(line_intersect_triangle(float3(0, len05, 0), float3(0, 0, len05), float3_t(len05, 0, 0), start, end, p))
+	{
+		float d = SMVector3Length(p - m_cam.GetPos());
+		if(d < mind)
+		{
+			mind = d;
+			m_currentAxe = HA_XYZ;
+		}
+	}
+
+
+	float3 asX[] = {
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f),
+
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, a2size * 0.5f),
+		float3(len + asize * 2.0f, a2size * 0.5f, -a2size * 0.5f),
+
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, -a2size * 0.5f),
+		float3(len + asize * 2.0f, -a2size * 0.5f, a2size * 0.5f),
+	};
+
+	float3 asY[] = {
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+		float3(a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, -a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, a2size * 0.5f),
+		float3(-a2size * 0.5f, len + asize * 2.0f, -a2size * 0.5f),
+	};
+
+	float3 asZ[] = {
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, a2size * 0.5f),
+		float3(-a2size * 0.5f, -a2size * 0.5f, len + asize * 2.0f),
+		float3(-a2size * 0.5f, a2size * 0.5f, len + asize * 2.0f),
+	};
+
+	for(int i = 0, l = sizeof(asX) / sizeof(asX[0]); i < l; i += 3)
+	{
+		if(line_intersect_triangle(asX[i], asX[i + 1], asX[i + 2], start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_X;
+				break;
+			}
+		}
+	}
+	for(int i = 0, l = sizeof(asY) / sizeof(asY[0]); i < l; i += 3)
+	{
+		if(line_intersect_triangle(asY[i], asY[i + 1], asY[i + 2], start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_Y;
+				break;
+			}
+		}
+	}
+	for(int i = 0, l = sizeof(asZ) / sizeof(asZ[0]); i < l; i += 3)
+	{
+		if(line_intersect_triangle(asZ[i], asZ[i + 1], asZ[i + 2], start, end, p))
+		{
+			float d = SMVector3Length(p - m_cam.GetPos());
+			if(d < mind)
+			{
+				mind = d;
+				m_currentAxe = HA_Z;
+				break;
+			}
+		}
+	}
+}
+
+void Editor::OnMouseDown(int x, int y)
+{
+	float f; 
+	if(m_vHitboxes.size() > m_iActiveHitbox)
+	{
+		HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
+		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+
+		SMMATRIX revMat = SMMatrixInverse(&f, (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMat : m_mHelperMat) * mBone * m_mViewMat * m_mProjMat);
+
+		D3DVIEWPORT9 vp;
+		m_pd3dDevice->GetViewport(&vp);
+
+		float px = (((2.0f*x) / vp.Width) - 1.0f) /* / m_mProjMat._11 */;
+		float py = (((-2.0f*y) / vp.Height) + 1.0f) /* / m_mProjMat._22 */;
+
+		float3 pos(px, py, -1);
+		float3 dir(px, py, 1);
+		pos = SMVector3Transform(pos, revMat);
+		dir = SMVector3Transform(dir, revMat);
+		pos /= pos.w;
+		dir /= dir.w;
+
+		//dir -= pos;
+		switch(m_htype)
+		{
+		case HT_MOVE:
+			HandlerIntersectMove(pos, dir);
+			break;
+
+		case HT_ROTATE:
+			HandlerIntersectRotate(pos, dir);
+			break;
+
+		case HT_SCALE:
+			HandlerIntersectScale(pos, dir);
+			break;
+		}
+
+		if(m_bIsDraggingStart)
+		{
+			m_bIsDraggingStart = false;
+			m_fStartDragPos = pos;
+			m_mOldDragMat = m_mHelperMat;
+			if(m_vHitboxes.size() > m_iActiveHitbox)
+			{
+				HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
+
+				m_mHitboxMat = m_mOldHitboxMat = SMMatrixRotationX(hbi->hb->rot.x)
+					* SMMatrixRotationY(hbi->hb->rot.y)
+					* SMMatrixRotationZ(hbi->hb->rot.z)
+					* SMMatrixTranslation(hbi->hb->pos)
+					//* (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity())
+					;
+				m_fOldHitboxLWH = hbi->hb->lwh;
+			}
+		}
+
+		if(m_bIsDragging)
+		{
+			float3 dv = (pos - m_fStartDragPos) * (1000.0f + SMVector3Length(m_cam.GetPos() - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * 10.0f);
+			SMMATRIX m_res;
+			TabHitboxes * tab = (TabHitboxes*)m_pEditor->m_pTM->m_pTabHitboxes;
+			char tmp[64];
+			if(m_vHitboxes.size() > m_iActiveHitbox)
+			{
+				HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
+
+				switch(m_htype)
+				{
+				case HT_MOVE:
+					m_res = SMMatrixTranslation((m_currentAxe & HA_X) ? dv.x : 0, (m_currentAxe & HA_Y) ? dv.y : 0, (m_currentAxe & HA_Z) ? dv.z : 0);
+					m_mHitboxMat = m_mOldHitboxMat * m_res;
+					m_res = m_mOldDragMat * m_res;
+					break;
+
+				case HT_ROTATE:
+					m_res = SMMatrixRotationX((m_currentAxe & HA_X) ? dv.x : 0) * SMMatrixRotationY((m_currentAxe & HA_Y) ? dv.y : 0) * SMMatrixRotationZ((m_currentAxe & HA_Z) ? dv.z : 0);
+					m_mHitboxMat = m_res * m_mOldHitboxMat;
+					m_res = m_res * m_mOldDragMat;
+					break;
+
+				case HT_SCALE:
+					dv /= 100.0f;
+					dv += float3(1.0f, 1.0f, 1.0f);
+					if((m_currentAxe & HA_XY) == HA_XY)
+					{
+						dv.x = dv.z = dv.y;
+					}
+					else if((m_currentAxe & HA_YZ) == HA_YZ)
+					{
+						dv.y = dv.z;
+					}
+					else if((m_currentAxe & HA_XZ) == HA_XZ)
+					{
+						dv.x = dv.z;
+					}
+					m_res = SMMatrixScaling((m_currentAxe & HA_X) ? dv.x : 1, (m_currentAxe & HA_Y) ? dv.y : 1, (m_currentAxe & HA_Z) ? dv.z : 1);
+					if(m_vHitboxes.size() > m_iActiveHitbox)
+					{
+						HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
+						float3 vec = SMVector3Transform(m_fOldHitboxLWH, m_res);
+
+						sprintf(tmp, "%f", vec.x); tab->EdL->SetText(tmp);
+						sprintf(tmp, "%f", vec.y); tab->EdW->SetText(tmp);
+						sprintf(tmp, "%f", vec.z); tab->EdH->SetText(tmp);
+					}
+					m_res = m_res * m_mOldDragMat;
+					break;
+				}
+				SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+
+
+				m_mHelperMat = m_res;/* * SMMatrixTranslation(float3(mBone._41, mBone._42, mBone._43));
+				m_mHitboxMat *= SMMatrixTranslation(float3(mBone._41, mBone._42, mBone._43));*/
+
+				sprintf(tmp, "%f", m_mHitboxMat._41); tab->EdPosX->SetText(tmp);
+				sprintf(tmp, "%f", m_mHitboxMat._42); tab->EdPosY->SetText(tmp);
+				sprintf(tmp, "%f", m_mHitboxMat._43); tab->EdPosZ->SetText(tmp);
+
+				float3 rot = SMMatrixToEuler(m_mHitboxMat);
+				sprintf(tmp, "%f", SMToAngle(-rot.x)); tab->EdRotX->SetText(tmp);
+				sprintf(tmp, "%f", SMToAngle(rot.y)); tab->EdRotY->SetText(tmp);
+				sprintf(tmp, "%f", SMToAngle(-rot.z)); tab->EdRotZ->SetText(tmp);
+
+			}
+		}
+		if(m_bIsDraggingStop)
+		{
+			m_bIsDraggingStop = false;
+			if(m_htype == HT_SCALE)
+			{
+				m_mHelperMat._11 = 1.0f;
+				m_mHelperMat._12 = 0.0f;
+				m_mHelperMat._13 = 0.0f;
+
+				m_mHelperMat._21 = 0.0f;
+				m_mHelperMat._22 = 1.0f;
+				m_mHelperMat._23 = 0.0f;
+
+				m_mHelperMat._31 = 0.0f;
+				m_mHelperMat._32 = 0.0f;
+				m_mHelperMat._33 = 1.0f;
+			}
+		}
+	}
 }

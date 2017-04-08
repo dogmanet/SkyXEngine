@@ -357,4 +357,16 @@ enum HITBOX_BODYPART
 	HBP_RIGHTLEG
 };
 
+struct ModelHitbox
+{
+	HITBOX_TYPE type;
+	HITBOX_BODYPART part;
+	float3_t lwh;
+	float3_t pos;
+	float3_t rot;
+	char bone[MODEL_BONE_MAX_NAME];
+	int bone_id;
+	char name[MODEL_MAX_NAME];
+};
+
 #endif

@@ -38,10 +38,16 @@ protected:
 	ISXGUIEdit* EdRotZ;
 	ISXGUIStatic* Static13;
 	ISXGUIStatic* Static14;
+	ISXGUIEdit* EdL;
 	ISXGUIEdit* EdW;
 	ISXGUIEdit* EdH;
 	ISXGUIStatic* Static15;
+	ISXGUIStatic* Static16;
 	ISXGUIComboBox* CBType;
+
+	ISXGUIRadioButton* RBTranslate;
+	ISXGUIRadioButton* RBRotate;
+	ISXGUIRadioButton* RBScale;
 };
 
 #endif

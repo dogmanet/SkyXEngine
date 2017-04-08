@@ -24,13 +24,18 @@ m_pBonesBindPoseInv(false),
 m_ppVertexBuffer(NULL),
 m_ppIndexBuffer(NULL),
 m_pMgr(pMgr),
-m_bIsTemp(false)
+m_bIsTemp(false),
+m_pHitboxes(NULL)
 {
 	memset(&m_hdr, 0, sizeof(ModelHeader));
 	memset(&m_hdr2, 0, sizeof(ModelHeader2));
-	if(name[0])
+	if(name[0] && name[0] != '!')
 	{
 		Load(name);
+	}
+	else
+	{
+		strncpy(m_szFileName, name, MODEL_MAX_FILE);
 	}
 }
 
@@ -182,11 +187,11 @@ void ModelFile::GetBoneName(UINT id, char * name, int len) const
 	strncpy(name, m_pBones[id].szName, len);
 }
 
-UINT ModelFile::GetBoneID(const String & name)
+UINT ModelFile::GetBoneID(const char * name)
 {
 	for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; i++)
 	{
-		if(_stricmp(m_pBones[i].szName, name.c_str()) == 0)
+		if(_stricmp(m_pBones[i].szName, name) == 0)
 		{
 			return(m_pBones[i].bone.id);
 		}
@@ -203,6 +208,92 @@ void ModelFile::Assembly()
 		MergeModel(m_pDeps[i]);
 	}
 }
+
+const ModelHitbox * ModelFile::GetHitbox(const char * name) const
+{
+	for(uint32_t i = 0; i < m_hdr2.iHitboxCount; ++i)
+	{
+		if(!strcmp(name, m_pHitboxes[i].name))
+		{
+			return(&m_pHitboxes[i]);
+		}
+	}
+	return(NULL);
+}
+const ModelHitbox * ModelFile::GetHitbox(uint32_t id) const
+{
+	if(id >= m_hdr2.iHitboxCount)
+	{
+		return(NULL);
+	}
+	return(&m_pHitboxes[id]);
+}
+uint32_t ModelFile::GetHitboxCount() const
+{
+	return(m_hdr2.iHitboxCount);
+}
+void ModelFile::AddHitbox(const ModelHitbox * hb)
+{
+	++m_hdr2.iHitboxCount;
+	ModelHitbox * tmp = new ModelHitbox[m_hdr2.iHitboxCount];
+	if(m_pHitboxes)
+	{
+		memcpy(tmp, m_pHitboxes, sizeof(ModelHitbox)* (m_hdr2.iHitboxCount - 1));
+		mem_delete_a(m_pHitboxes);
+	}
+	tmp[m_hdr2.iHitboxCount - 1] = *hb;
+	m_pHitboxes = tmp;
+}
+
+void ModelFile::DelHitbox(const char * name)
+{
+	ModelHitbox * tmp;
+	for(uint32_t i = 0; i < m_hdr2.iHitboxCount; ++i)
+	{
+		if(!strcmp(name, m_pHitboxes[i].name))
+		{
+			--m_hdr2.iHitboxCount;
+			if(m_hdr2.iHitboxCount)
+			{
+				tmp = new ModelHitbox[m_hdr2.iHitboxCount];
+				memcpy(tmp, m_pHitboxes, sizeof(ModelHitbox) * i);
+				memcpy(tmp + i, m_pHitboxes + i + 1, sizeof(ModelHitbox)* (m_hdr2.iHitboxCount - i));
+			}
+			else
+			{
+				tmp = NULL;
+			}
+			mem_delete_a(m_pHitboxes);
+			m_pHitboxes = tmp;
+			break;
+		}
+	}
+}
+
+void ModelFile::DelHitbox(uint32_t i)
+{
+	if(i >= m_hdr2.iHitboxCount)
+	{
+		return;
+	}
+
+	ModelHitbox * tmp;
+	
+	--m_hdr2.iHitboxCount;
+	if(m_hdr2.iHitboxCount)
+	{
+		tmp = new ModelHitbox[m_hdr2.iHitboxCount];
+		memcpy(tmp, m_pHitboxes, sizeof(ModelHitbox)* i);
+		memcpy(tmp + i, m_pHitboxes + i + 1, sizeof(ModelHitbox)* (m_hdr2.iHitboxCount - i));
+	}
+	else
+	{
+		tmp = NULL;
+	}
+	mem_delete_a(m_pHitboxes);
+	m_pHitboxes = tmp;
+}
+
 
 void ModelFile::MergeModel(const ModelFile * mdl)
 {
@@ -767,6 +858,7 @@ ModelFile::~ModelFile()
 		mem_delete_a(m_pLods[i].pSubLODmeshes);
 	}
 	mem_delete_a(m_pLods);
+	mem_delete_a(m_pHitboxes);
 }
 
 
@@ -866,6 +958,8 @@ void Animation::SetModel(const char * file)
 
 void Animation::DownloadData()
 {
+	mem_delete_a(m_pBoneMatrix);
+	mem_delete_a(m_FinalBones);
 
 	m_iBoneCount = m_pMdl->GetBoneCount();
 
@@ -1442,6 +1536,10 @@ void Animation::GetBoneName(UINT id, char * name, int len) const
 {
 	m_pMdl->GetBoneName(id, name, len);
 }
+UINT Animation::GetBone(const char * str)
+{
+	return(m_pMdl->GetBoneID(str));
+}
 
 AnimStateCB Animation::SetCallback(AnimStateCB cb)
 {
@@ -1553,13 +1651,16 @@ MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
 	}
 	else
 	{
-		for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; ++i)
+		if(mdl->m_pBones)
 		{
-			if(!strcmp(m_pBones[i].szName, mdl->m_pBones[0].szName))
+			for(uint32_t i = 0; i < m_hdr2.iBoneTableCount; ++i)
 			{
-				bRootFound = true;
-				bRootLeft = true;
-				break;
+				if(!strcmp(m_pBones[i].szName, mdl->m_pBones[0].szName))
+				{
+					bRootFound = true;
+					bRootLeft = true;
+					break;
+				}
 			}
 		}
 		if(!bRootFound)

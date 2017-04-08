@@ -68,6 +68,8 @@ public:
 	ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, bool forceImport = false, bool forceLocal = false);
 	void DelModel(UINT id);
 
+	void DelHitbox(UINT id);
+
 	static INT_PTR CALLBACK DlgImportProc(
 		_In_ HWND   hwndDlg,
 		_In_ UINT   uMsg,
@@ -83,6 +85,7 @@ protected:
 	void DestroyD3D();
 
 	void DrawAxis();
+	void DrawHitboxes();
 	void CenterMouse();
 
 	ISXGUIBaseWnd* MainWindow;
@@ -113,6 +116,7 @@ protected:
 	SMMATRIX m_mWorldMat;
 	SMMATRIX m_mViewMat;
 	SMMATRIX m_mProjMat;
+	SMMATRIX m_mHelperMat;
 
 	Camera m_cam;
 
@@ -145,20 +149,89 @@ protected:
 
 	char m_szGamesourceDir[MODEL_MAX_FILE];
 
+	struct HitboxItem
+	{
+		ModelHitbox * hb;
+		ModelFile const * mdl;
+		bool isImported;
+		UINT id;
+	};
+	Array<HitboxItem> m_vHitboxes;
+
+	ModelFile * m_pHitboxesPart;
+
 private:
 	void RenderAnimList();
 	void RenderBoneList();
 	void RenderPartList();
+	void RenderHitboxList();
 
 	void OnAnimListSelChg();
 	void OnPartListSelChg();
 	void OnPartApply();
 	void SetPartFlag(MODEL_PART_FLAGS f, byte v);
+	void OnHitboxListSelChg();
 
 	static void DlgImpCheckAll(HWND hwndDlg);
 
 	bool GetRegGSdir();
 	void SetRegGSdir();
+
+	void UpdateHitboxList(ModelFile * mdl, bool bIsImported);
+
+	struct vert
+	{
+		float3_t pos;
+		DWORD color;
+	};
+
+	void DrawBox(const float3_t & lwh, DWORD color = 0xFFFFFFFF);
+	void DrawHemiSphere(float3_t lwh, bool up=true, DWORD color = 0xFFFFFFFF);
+	void DrawSphere(float3_t lwh, DWORD color = 0xFFFFFFFF);
+	void DrawCapsule(float3_t lwh, DWORD color = 0xFFFFFFFF);
+	void DrawCylinder(float3_t lwh, DWORD color = 0xFFFFFFFF);
+
+	enum HANDLER_AXE
+	{
+		HA_NONE = 0x00,
+		HA_X    = 0x01,
+		HA_Y    = 0x02,
+		HA_XY   = 0x03,
+		HA_Z    = 0x04,
+		HA_XZ   = 0x05,
+		HA_YZ   = 0x06,
+		HA_XYZ  = 0x07
+	};
+
+	enum HANDLER_TYPE
+	{
+		HT_NONE,
+		HT_MOVE,
+		HT_ROTATE,
+		HT_SCALE
+	};
+
+
+	HANDLER_AXE m_currentAxe;
+	HANDLER_TYPE m_htype;
+	bool m_bIsDragging;
+	bool m_bIsDraggingStart;
+	bool m_bIsDraggingStop;
+	float3 m_fStartDragPos;
+	SMMATRIX m_mOldDragMat;
+	SMMATRIX m_mOldHitboxMat;
+	SMMATRIX m_mHitboxMat;
+	float3 m_fOldHitboxLWH;
+
+	UINT m_iActiveHitbox;
+
+	void DrawHandlerMove();
+	void DrawHandlerRotate();
+	void DrawHandlerScale();
+	void OnMouseDown(int x, int y);
+	void HandlerIntersectMove(const float3 & start, const float3 & dir);
+	void HandlerIntersectRotate(const float3 & start, const float3 & dir);
+	void HandlerIntersectScale(const float3 & start, const float3 & dir);
 };
 
 #endif

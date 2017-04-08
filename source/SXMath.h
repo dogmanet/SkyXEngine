@@ -41,6 +41,7 @@ void operator delete[](void* ptr)\
 #define sign(x) (x >= 0 ? (x>0 ?1 :0) : -1)
 #define sign2(x) (x >= 0 ? 1 : -1)
 #define SMToRadian(degree)((degree)*(SM_PI / 180.0f))
+#define SMToAngle(rad)((rad)*(180.0f / SM_PI))
 
 inline float GetRandomFloat(float lowBound, float highBound)
 {
@@ -2044,7 +2045,7 @@ __forceinline float3 SMMatrixToEuler(const SMMATRIX & mat)
 	float3 res;
 	res.y = D = -asin(mat._13);
 	float C = cos(res.y);
-	res.y *= RADIANS;
+	//res.y *= RADIANS;
 	float tr_x, tr_y;
 
 		if(fabs(C) > 0.005)
@@ -2052,12 +2053,12 @@ __forceinline float3 SMMatrixToEuler(const SMMATRIX & mat)
 			tr_x = mat._33 / C;
 			tr_y = -mat._23 / C;
 
-			res.x = atan2(tr_y, tr_x) * RADIANS;
+			res.x = atan2(tr_y, tr_x)/* * RADIANS*/;
 
 			tr_x = mat._11 / C;
 			tr_y = -mat._12 / C;
 
-			res.z = atan2(tr_y, tr_x) * RADIANS;
+			res.z = atan2(tr_y, tr_x)/* * RADIANS*/;
 		}
 		else
 		{
@@ -2066,12 +2067,12 @@ __forceinline float3 SMMatrixToEuler(const SMMATRIX & mat)
 			tr_x = mat._22;
 			tr_y = mat._21;
 
-			res.z = atan2(tr_y, tr_x) * RADIANS;
+			res.z = atan2(tr_y, tr_x)/* * RADIANS*/;
 		}
 //D3DXToRadian
-	res.x = -SMToRadian(res.x);
-	res.y = -SMToRadian(res.y);
-	res.z = -SMToRadian(res.z);
+	//res.x = -SMToRadian(res.x);
+	//res.y = -SMToRadian(res.y);
+	//res.z = -SMToRadian(res.z);
 	return(res);
 }
 

@@ -16,18 +16,19 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	m_pRoot->SetTransparentTextBk(true);
 	m_pRoot->SetColorBrush(255, 255, 255);
 	m_pRoot->GAlign = {false, true, true, true};
+	m_pRoot->AddHandler(Tools::ProxyCommandProc, WM_COMMAND);
 
-	HBList = SXGUICrListBoxEx("", 3, 12, 236, 135, 0, WS_CHILD | WS_VISIBLE | LBS_HASSTRINGS | WS_VSCROLL | WS_BORDER | LBS_NOTIFY/* | LBS_SORT*/, m_pRoot->GetHWND(), 0, 0);
+	HBList = SXGUICrListBoxEx("", 3, 12, 236, 135, 0, WS_CHILD | WS_VISIBLE | LBS_HASSTRINGS | WS_VSCROLL | WS_BORDER | LBS_NOTIFY/* | LBS_SORT*/, m_pRoot->GetHWND(), 0, IDC_HB_LB);
 	HBList->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	HBList->SetColorText(0, 0, 0);
 	HBList->SetColorTextBk(255, 255, 255);
 	HBList->SetTransparentTextBk(true);
 	HBList->SetColorBrush(255, 255, 255);
 
-	BtnAdd = SXGUICrButton("Add", 5, 139, 130, 20, 0, m_pRoot->GetHWND(), 0, 0);
+	BtnAdd = SXGUICrButton("Add", 5, 139, 130, 20, 0, m_pRoot->GetHWND(), 0, IDC_HB_ADD);
 	BtnAdd->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 
-	BtnDel = SXGUICrButton("Remove", 138, 139, 100, 20, 0, m_pRoot->GetHWND(), 0, 0);
+	BtnDel = SXGUICrButton("Remove", 138, 139, 100, 20, 0, m_pRoot->GetHWND(), 0, IDC_HB_DEL);
 	BtnDel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 
 
@@ -37,6 +38,7 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	PropsGB->SetColorTextBk(255, 255, 255);
 	PropsGB->SetTransparentTextBk(true);
 	PropsGB->SetColorBrush(255, 255, 255);
+	PropsGB->AddHandler(Tools::ProxyCommandProc, WM_COMMAND);
 
 	Static1 = SXGUICrStatic("Name:", 6, 16, 50, 20, PropsGB->GetHWND(), 0, 0);
 	Static1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -59,21 +61,21 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	Static3->SetTransparentTextBk(true);
 	Static3->SetColorBrush(255, 255, 255);
 
-	EdName = SXGUICrEdit("", 57, 16, 100, 20, PropsGB->GetHWND(), 0, 0);
+	EdName = SXGUICrEdit("", 57, 16, 100, 20, PropsGB->GetHWND(), 0, IDC_HB_NAME);
 	EdName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdName->SetColorText(0, 0, 0);
 	EdName->SetColorTextBk(255, 255, 255);
 	EdName->SetTransparentTextBk(true);
 	EdName->SetColorBrush(255, 255, 255);
 
-	CBBone = SXGUICrComboBoxEx("", 57, 37, 100, 300, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, PropsGB->GetHWND(), 0, 0);
+	CBBone = SXGUICrComboBoxEx("", 57, 37, 100, 300, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, PropsGB->GetHWND(), 0, IDC_HB_BONE);
 	CBBone->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CBBone->SetColorText(0, 0, 0);
 	CBBone->SetColorTextBk(255, 255, 255);
 	CBBone->SetTransparentTextBk(true);
 	CBBone->SetColorBrush(255, 255, 255);
 
-	CBBodyPart = SXGUICrComboBoxEx("", 57, 59, 100, 300, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, PropsGB->GetHWND(), 0, 0);
+	CBBodyPart = SXGUICrComboBoxEx("", 57, 59, 100, 300, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, PropsGB->GetHWND(), 0, IDC_HB_BODYPART);
 	CBBodyPart->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CBBodyPart->SetColorText(0, 0, 0);
 	CBBodyPart->SetColorTextBk(255, 255, 255);
@@ -94,7 +96,7 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	Static5->SetTransparentTextBk(true);
 	Static5->SetColorBrush(255, 255, 255);
 
-	EdPosX = SXGUICrEdit("0.0", 187, 35, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdPosX = SXGUICrEdit("0.0", 187, 35, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_POS_X);
 	EdPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdPosX->SetColorText(0, 0, 0);
 	EdPosX->SetColorTextBk(255, 255, 255);
@@ -108,7 +110,7 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	Static6->SetTransparentTextBk(true);
 	Static6->SetColorBrush(255, 255, 255);
 
-	EdPosY = SXGUICrEdit("0.0", 271, 35, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdPosY = SXGUICrEdit("0.0", 271, 35, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_POS_Y);
 	EdPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdPosY->SetColorText(0, 0, 0);
 	EdPosY->SetColorTextBk(255, 255, 255);
@@ -122,7 +124,7 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	Static7->SetTransparentTextBk(true);
 	Static7->SetColorBrush(255, 255, 255);
 
-	EdPosZ = SXGUICrEdit("0.0", 353, 35, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdPosZ = SXGUICrEdit("0.0", 353, 35, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_POS_Z);
 	EdPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdPosZ->SetColorText(0, 0, 0);
 	EdPosZ->SetColorTextBk(255, 255, 255);
@@ -157,49 +159,63 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	Static11->SetTransparentTextBk(true);
 	Static11->SetColorBrush(255, 255, 255);
 
-	EdRotX = SXGUICrEdit("0.0", 187, 79, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdRotX = SXGUICrEdit("0.0", 187, 79, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_ROT_X);
 	EdRotX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdRotX->SetColorText(0, 0, 0);
 	EdRotX->SetColorTextBk(255, 255, 255);
 	EdRotX->SetTransparentTextBk(true);
 	EdRotX->SetColorBrush(255, 255, 255);
 
-	EdRotY = SXGUICrEdit("0.0", 271, 79, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdRotY = SXGUICrEdit("0.0", 271, 79, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_ROT_Y);
 	EdRotY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdRotY->SetColorText(0, 0, 0);
 	EdRotY->SetColorTextBk(255, 255, 255);
 	EdRotY->SetTransparentTextBk(true);
 	EdRotY->SetColorBrush(255, 255, 255);
 
-	EdRotZ = SXGUICrEdit("0.0", 353, 79, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdRotZ = SXGUICrEdit("0.0", 353, 79, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_ROT_Z);
 	EdRotZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdRotZ->SetColorText(0, 0, 0);
 	EdRotZ->SetColorTextBk(255, 255, 255);
 	EdRotZ->SetTransparentTextBk(true);
 	EdRotZ->SetColorBrush(255, 255, 255);
 
-	Static13 = SXGUICrStatic("W", 172, 104, 15, 20, PropsGB->GetHWND(), 0, 0);
+	Static16 = SXGUICrStatic("L", 172, 104, 15, 20, PropsGB->GetHWND(), 0, 0);
+	Static16->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	Static16->SetColorText(0, 0, 0);
+	Static16->SetColorTextBk(255, 255, 255);
+	Static16->SetTransparentTextBk(true);
+	Static16->SetColorBrush(255, 255, 255);
+
+	Static13 = SXGUICrStatic("W", 256, 104, 15, 20, PropsGB->GetHWND(), 0, 0);
 	Static13->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	Static13->SetColorText(0, 0, 0);
 	Static13->SetColorTextBk(255, 255, 255);
 	Static13->SetTransparentTextBk(true);
 	Static13->SetColorBrush(255, 255, 255);
 
-	Static14 = SXGUICrStatic("H", 256, 104, 15, 20, PropsGB->GetHWND(), 0, 0);
+	Static14 = SXGUICrStatic("H", 338, 104, 15, 20, PropsGB->GetHWND(), 0, 0);
 	Static14->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	Static14->SetColorText(0, 0, 0);
 	Static14->SetColorTextBk(255, 255, 255);
 	Static14->SetTransparentTextBk(true);
 	Static14->SetColorBrush(255, 255, 255);
 
-	EdW = SXGUICrEdit("0.0", 187, 104, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdL = SXGUICrEdit("0.0", 187, 104, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_L);
+	EdL->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	EdL->SetColorText(0, 0, 0);
+	EdL->SetColorTextBk(255, 255, 255);
+	EdL->SetTransparentTextBk(true);
+	EdL->SetColorBrush(255, 255, 255);
+
+	EdW = SXGUICrEdit("0.0", 271, 104, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_W);
 	EdW->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdW->SetColorText(0, 0, 0);
 	EdW->SetColorTextBk(255, 255, 255);
 	EdW->SetTransparentTextBk(true);
 	EdW->SetColorBrush(255, 255, 255);
 
-	EdH = SXGUICrEdit("0.0", 271, 104, 60, 20, PropsGB->GetHWND(), 0, 0);
+	EdH = SXGUICrEdit("0.0", 353, 104, 60, 20, PropsGB->GetHWND(), 0, IDC_HB_ED_H);
 	EdH->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	EdH->SetColorText(0, 0, 0);
 	EdH->SetColorTextBk(255, 255, 255);
@@ -213,12 +229,35 @@ TabHitboxes::TabHitboxes(TabManager * tm):EditorTab(tm)
 	Static15->SetTransparentTextBk(true);
 	Static15->SetColorBrush(255, 255, 255);
 
-	CBType = SXGUICrComboBoxEx("", 57, 104, 100, 300, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, PropsGB->GetHWND(), 0, 0);
+	CBType = SXGUICrComboBoxEx("", 57, 104, 100, 300, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, PropsGB->GetHWND(), 0, IDC_HB_TYPE);
 	CBType->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	CBType->SetColorText(0, 0, 0);
 	CBType->SetColorTextBk(255, 255, 255);
 	CBType->SetTransparentTextBk(true);
 	CBType->SetColorBrush(255, 255, 255);
+	
+	RBTranslate = SXGUICrRadioButton("Translate", 417, 15, 100, 20, PropsGB->GetHWND(), 0, IDC_HB_TRANS);
+	RBTranslate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	RBTranslate->SetColorText(0, 0, 0);
+	RBTranslate->SetColorTextBk(255, 255, 255);
+	RBTranslate->SetTransparentTextBk(true);
+	RBTranslate->SetColorBrush(255, 255, 255);
+
+	RBRotate = SXGUICrRadioButton("Rotate", 417, 59, 100, 20, PropsGB->GetHWND(), 0, IDC_HB_ROT);
+	RBRotate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	RBRotate->SetColorText(0, 0, 0);
+	RBRotate->SetColorTextBk(255, 255, 255);
+	RBRotate->SetTransparentTextBk(true);
+	RBRotate->SetColorBrush(255, 255, 255);
+
+	RBScale = SXGUICrRadioButton("Scale", 417, 104, 100, 20, PropsGB->GetHWND(), 0, IDC_HB_SCALE);
+	RBScale->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	RBScale->SetColorText(0, 0, 0);
+	RBScale->SetColorTextBk(255, 255, 255);
+	RBScale->SetTransparentTextBk(true);
+	RBScale->SetColorBrush(255, 255, 255);
+
+
 
 	CBType->AddItem("Box");
 	CBType->SetItemData(CBType->GetCount() - 1, HT_BOX);
@@ -281,8 +320,13 @@ TabHitboxes::~TabHitboxes()
 	mem_delete(EdRotZ);
 	mem_delete(Static13);
 	mem_delete(Static14);
+	mem_delete(EdL);
 	mem_delete(EdW);
 	mem_delete(EdH);
 	mem_delete(Static15);
 	mem_delete(CBType);
+	mem_delete(Static16);
+	mem_delete(RBTranslate);
+	mem_delete(RBRotate);
+	mem_delete(RBScale);
 }

@@ -56,13 +56,19 @@ public:
 	UINT GetSequenceCount() const;
 	UINT GetControllersCount() const;
 
-	UINT GetBoneID(const String & name);
+	UINT GetBoneID(const char * name);
 	void GetBoneName(UINT id, char * name, int len) const;
 
 	ModelMatrial ** m_iMaterials;
 	ModelLoD * m_pLods;
 	//SkyXEngine::Graphics::ThreeD::Bound BoundVol;
 
+	const ModelHitbox * GetHitbox(const char * name) const;
+	const ModelHitbox * GetHitbox(uint32_t id) const;
+	uint32_t GetHitboxCount() const;
+	void AddHitbox(const ModelHitbox * hb);
+	void DelHitbox(const char * name);
+	void DelHitbox(uint32_t id);
 	
 protected:
 
@@ -112,6 +118,8 @@ protected:
 	ModelBoneController * m_pControllers;
 
 	ModelSequence * m_pSequences;
+
+	ModelHitbox * m_pHitboxes;
 
 	//AssotiativeArray<String, ModelBoneController> m_mfBoneControllers;
 	//AssotiativeArray<String, UINT> m_mSeqNames;
