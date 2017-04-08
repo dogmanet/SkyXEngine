@@ -782,7 +782,7 @@ LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	{
 			if(msg == WM_KEYDOWN)
 			{
-				if(wParam == 'A' && GetKeyState(VK_CONTROL))
+				if(wParam == 'A' && (GetKeyState(VK_CONTROL) & 0x80))
 				{
 					// User pressed Ctrl-A.  Let's select-all
 					if(IsEdit(hwnd))
