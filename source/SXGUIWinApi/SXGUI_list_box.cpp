@@ -113,6 +113,7 @@ bool SXGUIListBox::Clear()
 bool SXGUIListBox::SetTextItem(int index,const char* text)
 {
 	LPARAM data = this->GetItemData(index);
+	int sel = this->GetSel();
 		/*if(!this->DeleteItem(index))
 			return false;
 		if(!this->InsertItem(index,text))
@@ -121,6 +122,10 @@ bool SXGUIListBox::SetTextItem(int index,const char* text)
 
 	this->DeleteItem(index);
 	this->InsertItem(index,text);
+	if(sel == index)
+	{
+		this->SetSel(index);
+	}
 	return this->SetItemData(index,data);
 }
 
