@@ -1,0 +1,41 @@
+
+#include <../struct.h>
+
+half2	SizeMap;
+
+sampler2D BaseSampler:register(s0);
+
+half CoefBlur;
+
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half2 tx  = IN.TexUV;
+	
+	#ifdef _H_
+    half2 dx  = half2(0.0,1.0/SizeMap.y)*CoefBlur;
+	#else
+    half2 dx  = half2(1.0/SizeMap.x,0.0)*CoefBlur;
+	#endif
+	
+	half2 sdx = dx;
+	
+    half4 color = tex2D(BaseSampler,tx) * 0.134598;
+	//half alpha = color.a;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.127325;
+    sdx += dx;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.107778;
+    sdx += dx;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.081638;
+    sdx += dx;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.055335;
+    sdx += dx;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.033562;
+    sdx += dx;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.018216;
+    sdx += dx;
+    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.008847;
+    sdx += dx;
+	
+	return color;
+}

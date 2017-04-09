@@ -1,0 +1,149 @@
+
+#include <../struct.h>
+
+sampler2D SceneColor:register(s0);
+sampler2D SceneLighting:register(s1);
+sampler2D Depth:register(s2);
+sampler2D Normal:register(s3);
+sampler2D Param:register(s4);
+
+half4 WinSize;
+half2 NearFar;
+
+static int ArrExistsIDs[4] = {-1,-1,-1,-1};
+
+bool IsExists(int id)
+{
+	for(int i=0;i<4;++i)
+	{
+		[branch] if(ArrExistsIDs[i] == id)
+			return true;
+	}
+	return false;
+}
+
+struct ps_out_alpha_union
+{
+	half4 Color		: COLOR0;
+	half4 Depth0	: COLOR1;
+	half4 Depth1	: COLOR2;
+};
+
+ps_out_alpha_union main(vs_out_pp IN):COLOR0
+{
+	ps_out_alpha_union OUT;
+	half4 ArrColor[4];
+	half ArrDepth[4];
+	int ArrSort[4];
+	int ArrSort2[4];
+	int ArrIsTransparency[4];
+	half4 ArrTexUV[4];
+	int ArrIDs[4];
+	
+	ArrTexUV[0] = half4(IN.TexUV,0,0);
+	ArrTexUV[1] = half4(IN.TexUV + half2(0,WinSize.w),0,0);
+	ArrTexUV[2] = half4(IN.TexUV+ half2(WinSize.z,0),0,0);
+	ArrTexUV[3] = half4(IN.TexUV+ half2(WinSize.z,WinSize.w),0,0);
+	
+	ArrColor[0] = tex2Dlod(SceneLighting, ArrTexUV[0]);
+	ArrColor[1] = tex2Dlod(SceneLighting, ArrTexUV[1]);
+	ArrColor[2] = tex2Dlod(SceneLighting, ArrTexUV[2]);
+	ArrColor[3] = tex2Dlod(SceneLighting, ArrTexUV[3]);
+	
+	/*ArrColor[0].a = tex2Dlod(SceneColor, ArrTexUV[0]).a;
+	ArrColor[1].a = tex2Dlod(SceneColor, ArrTexUV[1]).a;
+	ArrColor[2].a = tex2Dlod(SceneColor, ArrTexUV[2]).a;
+	ArrColor[3].a = tex2Dlod(SceneColor, ArrTexUV[3]).a;*/
+	
+	ArrDepth[0] = tex2Dlod(Depth, ArrTexUV[0]).r;
+	ArrDepth[1] = tex2Dlod(Depth, ArrTexUV[1]).r;
+	ArrDepth[2] = tex2Dlod(Depth, ArrTexUV[2]).r;
+	ArrDepth[3] = tex2Dlod(Depth, ArrTexUV[3]).r;
+	
+	ArrIDs[0] = int(tex2Dlod(Param, ArrTexUV[0]).z * 256.f);
+	ArrIDs[1] = int(tex2Dlod(Param, ArrTexUV[1]).z * 256.f);
+	ArrIDs[2] = int(tex2Dlod(Param, ArrTexUV[2]).z * 256.f);
+	ArrIDs[3] = int(tex2Dlod(Param, ArrTexUV[3]).z * 256.f);
+	
+	ArrIsTransparency[0] = tex2Dlod(Normal, ArrTexUV[0]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[1] = tex2Dlod(Normal, ArrTexUV[1]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[2] = tex2Dlod(Normal, ArrTexUV[2]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[3] = tex2Dlod(Normal, ArrTexUV[3]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	
+	//в случае если у нас нет ппрозрачных слоев то возвращаем текущий цвет
+	[branch] if((ArrIsTransparency[0] == 0 && ArrIsTransparency[1] == 0 && ArrIsTransparency[2] == 0 && ArrIsTransparency[3] == 0))
+	{
+		OUT.Color = ArrColor[0];
+		OUT.Depth0 = ArrDepth[0];
+		OUT.Depth1 = ArrDepth[0];
+		return OUT;
+	}
+	
+	[unroll]for(int i=0;i<4;++i){
+		ArrSort[i] = 0;
+		[unroll]for(int k=0;k<4;++k){
+			[branch] if(i != k && (ArrDepth[i] > ArrDepth[k] || (i > k && ArrDepth[i] == ArrDepth[k]))){
+				++(ArrSort[i]);
+			}
+		}
+		
+		//ArrSort2[ArrSort[i]] = i;
+		[branch] if(ArrSort[i] == 0)
+			ArrSort2[0] = i;
+		else [branch] if(ArrSort[i] == 1)
+			ArrSort2[1] = i;
+		else [branch] if(ArrSort[i] == 2)
+			ArrSort2[2] = i;
+		else
+			ArrSort2[3] = i;
+	}
+	
+	half4 cc = ArrColor[ArrSort2[3]];
+	half tmpa = cc.a;
+	ArrExistsIDs[0] = ArrIDs[ArrSort2[3]];
+	half tmpa2 = 0;
+	
+	//если id текущей поверхности записан либо этот id это нулевая (непрозрачная) поверхность
+	//проверка на непрозрачную поверхность нужна для правильного смешивания нулевого слоя, иначе будет жуткий альясинг
+	[branch] if(!IsExists(ArrIDs[ArrSort2[2]]) || ArrIDs[ArrSort2[2]] == 0)
+	{
+		tmpa2 = ArrColor[ArrSort2[2]].a;
+		cc = ArrColor[ArrSort2[2]] * tmpa2 + cc * (1.f - tmpa2);
+		cc.a = max(tmpa2,tmpa);
+		tmpa = cc.a;
+		ArrExistsIDs[1] = ArrIDs[ArrSort2[2]];
+	}
+	
+	[branch] if(!IsExists(ArrIDs[ArrSort2[1]]) || ArrIDs[ArrSort2[1]] == 0)
+	{
+		tmpa2 = ArrColor[ArrSort2[1]].a;
+		cc = ArrColor[ArrSort2[1]] * tmpa2 + cc.rgba * (1.f - tmpa2);
+		cc.a = max(tmpa2,tmpa);
+		tmpa = cc.a;
+		ArrExistsIDs[2] = ArrIDs[ArrSort2[1]];
+	}
+	
+	[branch] if(!IsExists(ArrIDs[ArrSort2[0]]) || ArrIDs[ArrSort2[0]] == 0)
+	{
+		tmpa2 = ArrColor[ArrSort2[0]].a;
+		cc = ArrColor[ArrSort2[0]] * tmpa2 + cc * (1.f - tmpa2);
+		cc.a = max(tmpa2,tmpa);
+	}
+	
+	OUT.Color = cc;
+	OUT.Depth0 = ArrDepth[ArrSort2[0]];
+	OUT.Depth1 = ArrDepth[ArrSort2[0]];
+	
+	//если есть хотя бы один не прозрачный материал
+	[branch] if(!ArrIsTransparency[0] || !ArrIsTransparency[1] || !ArrIsTransparency[2] || !ArrIsTransparency[3])
+		 OUT.Color.a = 1;
+	
+	//если хотя бы один слой полупрозрачный
+	[branch] if(ArrIsTransparency[0] || ArrIsTransparency[1] || ArrIsTransparency[2] || ArrIsTransparency[3])
+		OUT.Depth1 = 1;
+	
+	[branch] if(ArrDepth[ArrSort2[3]] >= 1 && cc.a < 1.f)
+		OUT.Depth0 = 1;
+	
+	return OUT;
+}

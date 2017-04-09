@@ -1,0 +1,19 @@
+
+#include <../struct.h>
+
+half4 LightPos;
+half2 SizeMap;
+half RadiusSun;
+
+sampler2D DepthSampler:register(s0);
+
+half4 main(vs_out_pp IN) : COLOR0
+{	
+	half2 SunPosProj = LightPos.xy;
+	half depth = tex2D(DepthSampler,IN.TexUV).r;
+	half2 ntc = IN.TexUV;
+	ntc.y *= SizeMap.y/SizeMap.x;
+	SunPosProj.y *= SizeMap.y/SizeMap.x;
+	half tmpcolor = lerp(0,1,1.0-(saturate((distance(ntc, SunPosProj)) * (1.0 / (((RadiusSun)/0.9)/SizeMap.x))))) * 0.7f * saturate(depth);
+	return tmpcolor;
+}

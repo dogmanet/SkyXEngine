@@ -1,0 +1,97 @@
+
+#include <../struct.h>
+
+#define DLAA_MUL_VAL 0.333
+
+sampler2D Texture0:register(s0);
+
+half2 PixelSize;
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	//short edge
+	half4 sampleCenter		= tex2D(Texture0, IN.TexUV + half2( 0.0,  0.0) * PixelSize);   
+	half4 sampleHorizNeg0	= tex2D(Texture0, IN.TexUV + half2(-1.5,  0.0) * PixelSize);
+	half4 sampleHorizPos0	= tex2D(Texture0, IN.TexUV + half2( 1.5,  0.0) * PixelSize); 
+	half4 sampleVertNeg0	= tex2D(Texture0, IN.TexUV + half2( 0.0, -1.5) * PixelSize); 
+	half4 sampleVertPos0	= tex2D(Texture0, IN.TexUV + half2( 0.0,  1.5) * PixelSize);
+
+	half4 sumHoriz	= sampleHorizNeg0 + sampleHorizPos0;
+	half4 sumVert	= sampleVertNeg0  + sampleVertPos0;
+
+	half4 diffToCenterHoriz	= abs(sumHoriz - (2.0 * sampleCenter)) / 2.0;  
+	half4 diffToCenterVert	= abs(sumHoriz - (2.0 * sampleCenter)) / 2.0;
+
+	half valueEdgeHoriz	= dot(diffToCenterHoriz.xyz, DLAA_MUL_VAL);
+	half valueEdgeVert	= dot(diffToCenterVert.xyz, DLAA_MUL_VAL);
+	
+	half edgeDetectHoriz	= saturate((3.0 * valueEdgeHoriz) - 0.1);
+	half edgeDetectVert		= saturate((3.0 * valueEdgeVert)  - 0.1);
+
+	half4 avgHoriz	= (sumHoriz + sampleCenter) / 3.0;
+	half4 avgVert	= (sumVert  + sampleCenter) / 3.0;
+
+	half valueHoriz	= dot(avgHoriz.xyz, DLAA_MUL_VAL);
+	half valueVert	= dot(avgVert.xyz, DLAA_MUL_VAL);
+
+	half blurAmountHoriz	= saturate(edgeDetectHoriz / valueHoriz);
+	half blurAmountVert	= saturate(edgeDetectVert  / valueVert);
+
+	half4 aaResult	= lerp(sampleCenter,  avgHoriz, blurAmountHoriz);
+	aaResult		= lerp(aaResult,  	avgVert,  blurAmountVert);
+  
+	// long edges
+	half4 sampleVertNeg1	= tex2D(Texture0, IN.TexUV + half2(0.0, -3.5) * PixelSize); 
+	half4 sampleVertNeg2	= tex2D(Texture0, IN.TexUV + half2(0.0, -7.5) * PixelSize);
+	half4 sampleVertPos1	= tex2D(Texture0, IN.TexUV + half2(0.0,  3.5) * PixelSize); 
+	half4 sampleVertPos2	= tex2D(Texture0, IN.TexUV + half2(0.0,  7.5) * PixelSize); 
+
+	half4 sampleHorizNeg1   = tex2D(Texture0, IN.TexUV + half2(-3.5, 0.0) * PixelSize); 
+	half4 sampleHorizNeg2   = tex2D(Texture0, IN.TexUV + half2(-7.5, 0.0) * PixelSize);
+	half4 sampleHorizPos1   = tex2D(Texture0, IN.TexUV + half2( 3.5, 0.0) * PixelSize); 
+	half4 sampleHorizPos2   = tex2D(Texture0, IN.TexUV + half2( 7.5, 0.0) * PixelSize); 
+
+	half pass1EdgeAvgHoriz  = (sampleHorizNeg2.a + sampleHorizNeg1.a + sampleCenter.a + sampleHorizPos1.a + sampleHorizPos2.a) / 5.0;
+	half pass1EdgeAvgVert   = (sampleVertNeg2.a  + sampleVertNeg1.a  + sampleCenter.a + sampleVertPos1.a  + sampleVertPos2.a ) / 5.0;
+	pass1EdgeAvgHoriz    	= saturate(pass1EdgeAvgHoriz * 2.0f - 1.0f);
+	pass1EdgeAvgVert 		= saturate(pass1EdgeAvgVert  * 2.0f - 1.0f);
+	half longEdge   		= max(pass1EdgeAvgHoriz, pass1EdgeAvgVert);
+
+	if (longEdge > 0)
+	{
+    	half4 avgHorizLong	= (sampleHorizNeg2 + sampleHorizNeg1 + sampleCenter + sampleHorizPos1 + sampleHorizPos2) / 5.0;
+    	half4 avgVertLong	= (sampleVertNeg2  + sampleVertNeg1  + sampleCenter + sampleVertPos1  + sampleVertPos2) / 5.0;
+    	half valueHorizLong	= dot(avgHorizLong.xyz, DLAA_MUL_VAL);
+    	half valueVertLong	= dot(avgVertLong.xyz, DLAA_MUL_VAL);
+
+    	half4 sampleLeft	= tex2D(Texture0, IN.TexUV + half2(-1.0,  0.0) * PixelSize);
+    	half4 sampleRight	= tex2D(Texture0, IN.TexUV + half2( 1.0,  0.0) * PixelSize);
+    	half4 sampleUp		= tex2D(Texture0, IN.TexUV + half2( 0.0, -1.0) * PixelSize);
+    	half4 sampleDown	= tex2D(Texture0, IN.TexUV + half2( 0.0,  1.0) * PixelSize);
+
+    	half valueCenter	= dot(sampleCenter.xyz, DLAA_MUL_VAL);
+    	half valueLeft		= dot(sampleLeft.xyz, DLAA_MUL_VAL);
+    	half valueRight		= dot(sampleRight.xyz, DLAA_MUL_VAL);
+    	half valueTop		= dot(sampleUp.xyz, DLAA_MUL_VAL);
+    	half valueBottom	= dot(sampleDown.xyz, DLAA_MUL_VAL);
+
+    	half4 diffToCenter	= valueCenter - half4(valueLeft, valueTop, valueRight, valueBottom);   	
+    	half blurAmountLeft	= saturate(0.0 + ( valueVertLong  - valueLeft) 		/ diffToCenter.x);
+    	half blurAmountUp	= saturate(0.0 + ( valueHorizLong - valueTop) 		/ diffToCenter.y);
+    	half blurAmountRight= saturate(1.0 + ( valueVertLong  - valueCenter)	/ diffToCenter.z);
+    	half blurAmountDown	= saturate(1.0 + ( valueHorizLong - valueCenter)	/ diffToCenter.w);  	
+
+    	half4 blurAmounts	= half4( blurAmountLeft, blurAmountRight, blurAmountUp, blurAmountDown );
+    	blurAmounts			= (blurAmounts == half4(0.0, 0.0, 0.0, 0.0)) ? half4(1.0, 1.0, 1.0, 1.0) : blurAmounts;
+
+    	half4 longBlurHoriz	= lerp(sampleLeft,  sampleCenter,	blurAmounts.x);
+    	longBlurHoriz		= lerp(sampleRight, longBlurHoriz,	blurAmounts.y);
+    	half4 longBlurVert	= lerp(sampleUp,	sampleCenter,	blurAmounts.z);
+    	longBlurVert		= lerp(sampleDown,  longBlurVert,	blurAmounts.w);
+
+    	aaResult	= lerp(aaResult,	longBlurHoriz,	pass1EdgeAvgVert);
+    	aaResult	= lerp(aaResult,	longBlurVert,	pass1EdgeAvgHoriz);
+   }
+
+   return half4(aaResult.rgb, 1.0f);
+}

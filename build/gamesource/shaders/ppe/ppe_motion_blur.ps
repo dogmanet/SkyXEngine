@@ -1,0 +1,37 @@
+
+#include <../struct.h>
+
+half4x4 ViewProjectionPrev;
+
+half3 ViewPos;
+half CoefBlur;
+
+static int NumSam = 16;
+
+sampler2D DepthMap:register(s1);
+sampler2D SceneMap:register(s0);
+
+half4 main(vs_out_res_pos IN) : COLOR0
+{
+	half alpha = tex2D(SceneMap, IN.TexUV).a;
+	half depth = tex2D(DepthMap, IN.TexUV).r; 
+	
+	half4 tmppos = half4(ViewPos.xyz + IN.WorldRay * depth,1.f);
+	
+	half4 currentPos = half4(IN.TexUV.x * 2 - 1, (1-IN.TexUV.y) * 2 - 1,tmppos.z, 1);
+	half4 previousPos = mul(tmppos,ViewProjectionPrev);
+	previousPos.xyz /= previousPos.w;
+
+	half2 velocity = (currentPos.xy - previousPos.xy) * CoefBlur;
+	velocity.y = -velocity.y;
+
+	half4 color = tex2D(SceneMap, IN.TexUV);
+		for(int i = 1; i < NumSam; i++)
+		{   
+			half2 SamplePoint = velocity * half(i)/half(NumSam) + IN.TexUV;        
+			half4 CurrentSample = tex2D(SceneMap, SamplePoint);
+			color += CurrentSample;
+		}
+	color /= half(NumSam);
+	return half4(color.rgb,alpha);
+}

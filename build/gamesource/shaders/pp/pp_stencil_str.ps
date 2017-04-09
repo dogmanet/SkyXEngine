@@ -1,0 +1,13 @@
+
+#include <../struct.h>
+
+half2 WinSize;
+
+half4 main(vs_out_pp IN):COLOR0
+{
+	clip(frac(IN.TexUV.y*WinSize.y*0.5) - 0.5);
+	
+	[branch]if(frac(IN.TexUV.x*WinSize.x*0.5) >= 0.5)
+		clip(-1);
+	return 1;
+}

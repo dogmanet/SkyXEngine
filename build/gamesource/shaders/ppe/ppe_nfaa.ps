@@ -1,0 +1,57 @@
+
+#include <../struct.h>
+
+half3 Param;
+//half Param.x - Strength;
+//half Param.y - Scale;
+//bool Param.z - CountNotmalMap
+
+half2 PixelSize;
+
+sampler2D FrameSampler:register(s0);
+
+half2 GetNormal(half2 texuv) 
+{
+	half2 upOffset = half2(0, PixelSize.y) * Param.y;
+	half2 rightOffset = half2(PixelSize.x, 0) * Param.y;
+	half3 topHeight         = saturate(tex2Dlod(FrameSampler, half4(texuv + upOffset, 0, 0)).rgb);
+	half3 bottomHeight      = saturate(tex2Dlod(FrameSampler, half4(texuv - upOffset, 0, 0)).rgb);
+	half3 rightHeight       = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset, 0, 0)).rgb);
+	half3 leftHeight        = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset, 0, 0)).rgb);
+	half3 leftTopHeight     = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset + upOffset, 0, 0)).rgb);
+	half3 leftBottomHeight  = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset - upOffset, 0, 0)).rgb);
+	half3 rightBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset + upOffset, 0, 0)).rgb);
+	half3 rightTopHeight    = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset - upOffset, 0, 0)).rgb);
+
+	half3 sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
+	half3 sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
+	half3 sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
+	half3 sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
+
+	half vec1 = length(sum0 - sum1) * Param.x;
+	half vec2 = length(sum3 - sum2) * Param.x;
+	half2 Vectors = half2(vec1,vec2);
+	return  Vectors;
+}
+
+half4 main(vs_out_pp IN) : COLOR0 
+{
+	half2 Normal = GetNormal(IN.TexUV.xy);			
+	
+	Normal = clamp(Normal, -1, 1) * PixelSize;
+
+	half4 Scene0 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy, 0, 0));
+	half4 Scene1 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + Normal.xy, 0, 0));
+	half4 Scene2 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - Normal.xy, 0, 0));
+	half4 Scene3 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + half2(Normal.x, -Normal.y), 0, 0));
+	half4 Scene4 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - half2(Normal.x, -Normal.y), 0, 0));
+	half4 Scene5 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + half2(-Normal.x, Normal.y), 0, 0));
+	half4 Scene6 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - half2(-Normal.x, Normal.y), 0, 0));
+
+	half4 CountColor = (Scene0 + Scene1 + Scene2 + Scene3 + Scene4 + Scene5 + Scene6) / 7.f;
+
+		[branch]if (Param.z) 
+			CountColor.xyz = normalize(half3(Normal.xy, 1) * 0.1 + 0.1);
+
+	return CountColor;
+}
