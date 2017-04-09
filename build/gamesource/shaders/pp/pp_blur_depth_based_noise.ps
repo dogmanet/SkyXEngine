@@ -11,12 +11,12 @@ half2 NearFar;
 
 half4 main(vs_out_pp IN) : COLOR0
 {
-	half2 jitter = (( tex2D( NoiseSampler , IN.TexUV.xy * 256.0f ).xy * 2.0f - 1.0f )*PixelSize);
+	half2 jitter = ((tex2D( NoiseSampler , IN.TexUV.xy * 256.0f).xy * 2.0f - 1.0f )*PixelSize);
   
 	half4 Color = tex2D(BlurMap,IN.TexUV);
 	half CenterDepth = tex2D(DepthMap, IN.TexUV).r * NearFar.y;
 	
-	float4 sourcevals[8];
+	half4 sourcevals[8];
 	sourcevals[0] = tex2D( BlurMap , IN.TexUV.xy + half2(-PixelSize.x, 0.0) + jitter );
 	sourcevals[1] = tex2D( BlurMap , IN.TexUV.xy + half2(PixelSize.x, 0.0) + jitter );
 	sourcevals[2] = tex2D( BlurMap , IN.TexUV.xy + half2(0.0, PixelSize.y) + jitter  );

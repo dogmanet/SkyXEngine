@@ -1,13 +1,12 @@
 
 #include <../struct.h>
+#include <pphdr_common.h>
 
 sampler2D s0:register(s0);
-static const int HDR_MAX_SAMPLES = 16;
-float2 ArrOffsets[HDR_MAX_SAMPLES];
 
-float4 main(vs_out_pp IN) : COLOR0
+half4 main(vs_out_pp IN) : COLOR0
 {
-	float res = 0.0f;
+	half res = 0.0f;
     
     for(int i = 0; i < 16; ++i)
     {
@@ -16,5 +15,5 @@ float4 main(vs_out_pp IN) : COLOR0
 	
     res *= 0.0625;
     
-    return res;
+    return half4(res,0,0,1);
 }

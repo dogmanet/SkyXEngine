@@ -45,8 +45,8 @@ protected:
 	IDirect3DVertexBuffer9*	Vertices;
 	IDirect3DIndexBuffer9*  Indeces;
 
-	DWORD VS_RenderSkyBox;
-	DWORD PS_RenderSkyBox;
+	ID VS_RenderSkyBox;
+	ID PS_RenderSkyBox;
 };
 
 
@@ -107,10 +107,10 @@ private:
 	IDirect3DTexture9*	SkyCloudsTex;
 	IDirect3DTexture9*	SkyCloudsTex2;
 
-	DWORD VS_RenderSkyClouds;
-	DWORD PS_RenderSkyClouds;
+	ID VS_RenderSkyClouds;
+	ID PS_RenderSkyClouds;
 
-	DWORD PS_RenderSkyCloudsShadow;
+	ID PS_RenderSkyCloudsShadow;
 };
 
 #endif

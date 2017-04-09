@@ -17,38 +17,32 @@ half4 main(vs_out_res_pos IN):COLOR0
 	half ShadowTerm = 0.0f;
 	
 	half tmpdepth = tex2D(DepthLinearSampler,IN.TexUV).r;
-	half4 tmpcolor = 0;
-	half Depth = 0;
-	
 	half4 Position = half4(PosCam + IN.WorldRay * tmpdepth,1.f);
-	
 	half4 TexCoord1	= mul(Position, MatrixTexture);
 	
 	half3 ShadowTexC;
 	ShadowTexC.xyz = TexCoord1.xyz / TexCoord1.w;
 	
-		[branch]if(!(ShadowTexC.x <= 1.f && ShadowTexC.y <= 1.f && ShadowTexC.x >= 0.f && ShadowTexC.y >= 0.f))
-		{
-			clip(-1);
-		}
+	[branch]if(!(ShadowTexC.x <= 1.f && ShadowTexC.y <= 1.f && ShadowTexC.x >= 0.f && ShadowTexC.y >= 0.f))
+		clip(-1);
 		
-	half2 jitter = (( tex2D( NoiseSampler , ShadowTexC.xy * 2000.0f ).xy * 2.0f - 1.0f ) * PixelSize);
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + jitter ).x + SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(0, PixelSize.y) + jitter ).x + SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(PixelSize.x, 0) + jitter ).x + SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(PixelSize.x, PixelSize.y) + jitter ).x + SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	half2 jitter = ((tex2D(NoiseSampler, ShadowTexC.xy * SHADOWGEN_JITTER_SCALE).xy * 2.0f - 1.0f) * PixelSize);
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + jitter).x									+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(0, PixelSize.y) + jitter).x			+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(PixelSize.x, 0) + jitter).x			+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(PixelSize.x, PixelSize.y) + jitter).x	+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
 
 	#ifdef GSD_9
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(-PixelSize.x, 0.0) + jitter ).x + SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(PixelSize.x, -PixelSize.y) + jitter ).x+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(-PixelSize.x, PixelSize.y) + jitter  ).x+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(0.0, -PixelSize.y) + jitter  ).x+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D( DepthSampler1 , ShadowTexC.xy + half2(-PixelSize.x, -PixelSize.y) + jitter  ).x+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(-PixelSize.x, 0.0) + jitter).x				+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(PixelSize.x, -PixelSize.y) + jitter).x		+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(-PixelSize.x, PixelSize.y) + jitter).x		+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(0.0, -PixelSize.y) + jitter).x				+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(-PixelSize.x, -PixelSize.y) + jitter).x	+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
 
 	ShadowTerm *= 0.111;
 	#else
 	ShadowTerm *= 0.25;
 	#endif
 
-	return (saturate(ShadowTerm));
+	return saturate(ShadowTerm);
 } 

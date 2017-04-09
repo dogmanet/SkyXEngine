@@ -11,8 +11,8 @@ Green::Green()
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
 		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 1, 20, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
+		{ 1, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 1, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
 		D3DDECL_END()
 	};
 
@@ -190,29 +190,29 @@ void Green::Load(const char* path, const char* lod1, const char* lod2, const cha
 	tmpnewmpdel->ArrLod[1] = new Lod();
 	tmpnewmpdel->ArrLod[2] = new Lod();
 
-	SGCore_LoadStaticModel(path, &(tmpnewmpdel->ArrLod[0]->model));
+	SGCore_StaticModelLoad(path, &(tmpnewmpdel->ArrLod[0]->model));
 
 	char tmppathtex[1024];
 	for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 	{
 		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadMtl(tmppathtex, MTL_TREE);
+		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_MtlLoad(tmppathtex, MTL_TYPE_TREE);
 	}
 
-	SGCore_LoadStaticModel(lod1, &tmpnewmpdel->ArrLod[1]->model);
+	SGCore_StaticModelLoad(lod1, &tmpnewmpdel->ArrLod[1]->model);
 
 	for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 	{
 		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadMtl(tmppathtex, MTL_TREE);
+		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_MtlLoad(tmppathtex, MTL_TYPE_TREE);
 	}
 
-	SGCore_LoadStaticModel(lod2, &tmpnewmpdel->ArrLod[2]->model);
+	SGCore_StaticModelLoad(lod2, &tmpnewmpdel->ArrLod[2]->model);
 
 	for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 	{
 		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadMtl(tmppathtex, MTL_TREE);
+		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_MtlLoad(tmppathtex, MTL_TYPE_TREE);
 	}
 
 
@@ -546,6 +546,8 @@ void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr
 			//++tmpcount;
 		}
 	}
+
+	int qwert = 0;
 }
 
 void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
@@ -624,14 +626,14 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 				if ((*count) < curr_splits_ids_render)
 				{
 					arrsplits[(*count)] = comsegment;
-					comsegment->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
+					comsegment->DistForCamera = 0;// SMVector3Length((jcenter - (*viewpos))) - jradius;
 					(*count)++;
 				}
 			}
 	}
 }
 
-void Green::GPURender2(DWORD timeDelta, ID nm, int lod)
+void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod)
 {
 	//если есть что к отрисовке
 	if (RTCountDrawObj)
@@ -645,53 +647,41 @@ void Green::GPURender2(DWORD timeDelta, ID nm, int lod)
 		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model->IndexBuffer);
 		Green::DXDevice->SetVertexDeclaration(VertexDeclarationGreen);
 
-
-		Green::DXDevice->GetTransform(D3DTS_WORLD2, &mat);
-
-		if (ArrModels[nm]->TypeGreen == GREEN_TYPE_TREE)
-		{
-			//SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenTree);
-			//SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
-
-			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenTree, "WorldViewProjection", &mat);
-			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&mat, 4);
-		}
-		else
-		{
-			//SGCore_ShaderBind(0, Green::IDShaderVSRenderGreenGrass);
-			//SGCore_ShaderBind(1, Green::IDShaderPSRenderGreenTree);
-
-			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&mat, 4);
-			Green::DXDevice->SetVertexShaderConstantF(0, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
-
-			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "WorldViewProjection", &mat);
-			//SGCore_ShaderSetVRF(0, GData::IDShaderVSRenderGreenGrass, "DistBeginEndLessening", &float2_t(Green::BeginEndLessening, Green::DistLods.x));
-		}
-
 		jCountIndex = 0;
 		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model->SubsetCount; i++)
 		{
+			SGCore_MtlSet(ArrModels[nm]->ArrLod[lod]->idstex[i], 0);
 
+			if (ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
+					Green::DXDevice->SetVertexShaderConstantF(62, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
+				else
+					Green::DXDevice->SetVertexShaderConstantF(62, (float*)&float2_t(0,0), 1);
 
-			SGCore_SetMtl(ArrModels[nm]->ArrLod[lod]->idstex[i], 0);
+			Green::DXDevice->SetVertexShaderConstantF(63, (float*)viewpos, 1);
+
 			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3);
-			Core_RIntSet(SGCORE_RI_INT_COUNT_POLY, Core_RIntGet(SGCORE_RI_INT_COUNT_POLY) + ((ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3) * RTCountDrawObj));
+			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3) * RTCountDrawObj));
 			jCountIndex += ArrModels[nm]->ArrLod[lod]->model->IndexCount[i];
 		}
-
-		//SGCore_ShaderUnBind();
 
 		Green::DXDevice->SetStreamSourceFreq(0, 1);
 		Green::DXDevice->SetStreamSourceFreq(1, 1);
 	}
 }
 
-void Green::GPURender(DWORD timeDelta, ID id_arr)
+void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
+	float3 jcenter;
+	float jradius;
+
 	for (int nm = 0; nm < ArrModels.size(); ++nm)
 	{
+		//если тип не указан
+		if (type != GeomGreenType::ggtr_all && type != ArrModels[nm]->TypeGreen)
+			continue;
+
 		jarrsplits = ArrComFor[id_arr]->arr[nm]->Arr;
 		jcount = ArrComFor[id_arr]->arr[nm]->CountCom;
 
@@ -708,10 +698,13 @@ void Green::GPURender(DWORD timeDelta, ID id_arr)
 					if (RTCountDrawObj + jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
 					{
 						TransVertBuf->Unlock();
-						GPURender2(timeDelta, nm, lod);
+						GPURender2(timeDelta, viewpos, nm, lod);
 						TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 						RTCountDrawObj = 0;
 					}
+
+					jarrsplits[i]->BoundVolumeP->GetSphere(&jcenter, &jradius);
+					jarrsplits[i]->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
 
 					if (
 						//распределение по дистанции есесно и по лодам
@@ -723,7 +716,7 @@ void Green::GPURender(DWORD timeDelta, ID id_arr)
 						)
 					{
 						//если это не трава
-						if (!(lod == 0 && ArrModels[nm]->TypeGreen == GREEN_TYPE_TREE))
+						if (!(lod == 0 && ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass))
 						{
 							memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 								jarrsplits[i]->Data,
@@ -732,9 +725,9 @@ void Green::GPURender(DWORD timeDelta, ID id_arr)
 							RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 						}
 						//иначе это трава, а ее по особенному рисуем
-						else
+						else if (lod == 0 && ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
 						{
-							if (Green::CurrentFreqGrass == 100)
+							if (Green::CurrentFreqGrass >= 100)
 							{
 								memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 									jarrsplits[i]->Data,
@@ -765,7 +758,7 @@ void Green::GPURender(DWORD timeDelta, ID id_arr)
 
 				TransVertBuf->Unlock();
 
-				GPURender2(timeDelta, nm, lod);
+				GPURender2(timeDelta, viewpos, nm, lod);
 			}
 		}
 	}
@@ -787,20 +780,20 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		tmpnewmpdel->ArrLod[2] = 0;
 
 		if (!lod1 && !lod2)
-			tmpnewmpdel->TypeGreen = GREEN_TYPE_GRASS;
+			tmpnewmpdel->TypeGreen = GeomGreenType::ggt_grass;
 		else
-			tmpnewmpdel->TypeGreen = GREEN_TYPE_TREE;
+			tmpnewmpdel->TypeGreen = GeomGreenType::ggt_tree;
 
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s", Green::StdPath, path);
 
-		SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[0]->model);
+		SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[0]->model);
 		tmpnewmpdel->ArrLod[0]->path = path;
 		char tmppathtex[1024];
 		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 		{
 			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
-			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_LoadMtl(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
 		if (def_str_validate(lod1))
@@ -812,12 +805,12 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				tmpnewmpdel->ArrLod[1] = new Lod();
 				sprintf(tmppath, "%s%s", Green::StdPath, lod1);
 				tmpnewmpdel->ArrLod[1]->path = lod1;
-				SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[1]->model);
+				SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[1]->model);
 
 				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_LoadMtl(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -833,12 +826,12 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				tmpnewmpdel->ArrLod[2] = new Lod();
 				sprintf(tmppath, "%s%s", Green::StdPath, lod2);
 				tmpnewmpdel->ArrLod[2]->path = lod2;
-				SGCore_LoadStaticModel(tmppath, &tmpnewmpdel->ArrLod[2]->model);
+				SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[2]->model);
 
 				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_LoadMtl(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -851,7 +844,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			tmpnewmpdel->NavigateMesh->pathname = navmesh;
 
 			ISXDataStaticModel* nmesh;
-			SGCore_LoadStaticModel(tmppath, &nmesh);
+			SGCore_StaticModelLoad(tmppath, &nmesh);
 			tmpnewmpdel->NavigateMesh->count_vertex = nmesh->AllVertexCount;
 			tmpnewmpdel->NavigateMesh->count_index = nmesh->AllIndexCount;
 			tmpnewmpdel->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
@@ -876,10 +869,23 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			mem_release(nmesh);
 		}
 
+		ISXBound* tmpbb = SGCore_CrBound();
+		SGCore_FCompBoundBox(tmpnewmpdel->ArrLod[0]->model->VertexBuffer, &tmpbb, tmpnewmpdel->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
+
+		float3 mmax, mmin;
+		tmpbb->GetMinMax(&mmin, &mmax);
+		mem_release(tmpbb);
+		float r2d = 0;
+
+		if ((mmax.x - mmin.x)*0.5f > (mmax.z - mmin.z)*0.5f)
+			r2d = (mmax.x - mmin.x)*0.5f;
+		else
+			r2d = (mmax.z - mmin.z)*0.5f;
+
 		float3 tmpmin, tmpmax;
 		geom->GetMinMax(&tmpmin, &tmpmax);
 
-		ID IDTexMask = SGCore_LoadTexAddName(path_mask);
+		ID IDTexMask = SGCore_LoadTexAddName(path_mask, LoadTexType::ltt_load);
 		SGCore_LoadTexLoadTextures();
 
 		float CountMaxInPixel = count_max;
@@ -939,12 +945,31 @@ ID Green::Init(StaticGeom* geom, const char* name,
 						tmppos2.x = (tmp2.x - OneEdX*0.5f) + randf(0.0, OneEdX);
 						tmppos2.z = (tmp2.z - OneEdY*0.5f) + randf(0.0, OneEdY);
 
-						isintersect = geom->GetIntersectedRayY(&tmppos2);
+						if (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree)
+						{
+							for (int k = 0; k < arrpos.size(); ++k)
+							{
+								if (SMVector3Length2(tmppos2 - float3(arrpos[k].x, 100, arrpos[k].z)) < r2d*r2d)
+								{
+									alpha = 0;
+									isintersect = false;
+									break;
+								}
+							}
+						}
+
+						if (isintersect)
+							isintersect = geom->GetIntersectedRayY(&tmppos2);
+
 						if (isintersect)
 						{
 							arrpos.push_back(tmppos2);
 
 							++tmpnewmpdel->AllCountGreen;
+
+							//если тип дерево, то на пиксель генерируем только одно дерево
+							if (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree)
+								break;
 						}
 						else
 						{
@@ -964,7 +989,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			tmpnewmpdel->AllTrans[i].Position = arrpos[i];
 			tmpnewmpdel->AllTrans[i].TexCoord.x = 1.f + (float(rand() % 100) / 100.f);
 			tmpnewmpdel->AllTrans[i].TexCoord.y = D3DXToRadian(float(rand() % 360));
-			tmpnewmpdel->AllTrans[i].TexCoord.z = (float(rand() % 200) / 100.f) - 1.f;
+			tmpnewmpdel->AllTrans[i].TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
 			tmpnewmpdel->AllTrans[i].SinCosRot.x = sinf(tmpnewmpdel->AllTrans[i].TexCoord.y);
 			tmpnewmpdel->AllTrans[i].SinCosRot.y = cosf(tmpnewmpdel->AllTrans[i].TexCoord.y);
 		}
@@ -1021,7 +1046,7 @@ void Green::Save(const char* path)
 			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 		}
 
-		if (ArrModels[i]->TypeGreen == GREEN_TYPE_GRASS)
+		if (ArrModels[i]->TypeGreen == GeomGreenType::ggt_grass)
 		{
 			tmpstrlen = strlen(ArrModels[i]->ArrLod[0]->path.c_str());
 			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
@@ -1046,7 +1071,9 @@ void Green::Save(const char* path)
 		fwrite(&ArrModels[i]->BBMax.z, sizeof(float), 1, file);
 
 		fwrite(&ArrModels[i]->AllCountGreen, sizeof(uint32_t), 1, file);
-		fwrite(&ArrModels[i]->AllTrans, sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
+		DataVertex* tmpdv = ArrModels[i]->AllTrans;
+		int tmpac = ArrModels[i]->AllCountGreen;
+		fwrite((ArrModels[i]->AllTrans), sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
 
 		Array<Segment*> queue;
 		long tmpcount = 0;
@@ -1160,7 +1187,7 @@ void Green::Load(const char* path)
 			tmpmodel->NavigateMesh->pathname = tmpNameMask;
 		}
 
-		if (tmpmodel->TypeGreen == GREEN_TYPE_GRASS)
+		if (tmpmodel->TypeGreen == GeomGreenType::ggt_grass)
 		{
 			//sprintf(tmpstr[0], "%s", Green::StdPath);
 			//long tmpstrlen;
@@ -1186,13 +1213,13 @@ void Green::Load(const char* path)
 		tmpmodel->ArrLod[2] = 0;
 
 		sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[0]);
-		SGCore_LoadStaticModel(tmppath, &tmpmodel->ArrLod[0]->model);
+		SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[0]->model);
 		tmpmodel->ArrLod[0]->path = tmpstr[0];
 		char tmppathtex[1024];
 		for (int k = 0; k < tmpmodel->ArrLod[0]->model->SubsetCount; ++k)
 		{
 			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model->ArrTextures[k]);
-			tmpmodel->ArrLod[0]->idstex[k] = SGCore_LoadMtl(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+			tmpmodel->ArrLod[0]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
 		if (tmpstr[1][0])
@@ -1204,12 +1231,12 @@ void Green::Load(const char* path)
 				tmpmodel->ArrLod[1] = new Lod();
 				tmpmodel->ArrLod[1]->path = tmpstr[1];
 				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[1]);
-				SGCore_LoadStaticModel(tmpstr[1], &tmpmodel->ArrLod[1]->model);
+				SGCore_StaticModelLoad(tmpstr[1], &tmpmodel->ArrLod[1]->model);
 
 				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
-					tmpmodel->ArrLod[1]->idstex[k] = SGCore_LoadMtl(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+					tmpmodel->ArrLod[1]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -1225,12 +1252,12 @@ void Green::Load(const char* path)
 				tmpmodel->ArrLod[2] = new Lod();
 				tmpmodel->ArrLod[2]->path = tmpstr[2];
 				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[2]);
-				SGCore_LoadStaticModel(tmppath, &tmpmodel->ArrLod[2]->model);
+				SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[2]->model);
 
 				for (int k = 0; k < tmpmodel->ArrLod[2]->model->SubsetCount; ++k)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
-					tmpmodel->ArrLod[2]->idstex[k] = SGCore_LoadMtl(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+					tmpmodel->ArrLod[2]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -1513,12 +1540,12 @@ void Green::SetGreenLod(ID id, int lod, const char* pathname)
 	ArrModels[id]->ArrLod[lod] = new Lod();
 	ArrModels[id]->ArrLod[lod]->path = pathname;
 	sprintf(tmppath, "%s%s", Green::StdPath, pathname);
-	SGCore_LoadStaticModel(tmppath, &ArrModels[id]->ArrLod[lod]->model);
+	SGCore_StaticModelLoad(tmppath, &ArrModels[id]->ArrLod[lod]->model);
 
 	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->SubsetCount; ++k)
 	{
 		sprintf(tmppath, "%s.dds", ArrModels[id]->ArrLod[lod]->model->ArrTextures[k]);
-		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_LoadMtl(tmppath, (ArrModels[id]->TypeGreen == GREEN_TYPE_TREE ? MTL_TREE : MTL_GRASS));
+		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_MtlLoad(tmppath, (ArrModels[id]->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 	}
 }
 
@@ -1538,7 +1565,7 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	ArrModels[id]->NavigateMesh->pathname = tmpstr;
 
 	ISXDataStaticModel* nmesh;
-	SGCore_LoadStaticModel(tmppath, &nmesh);
+	SGCore_StaticModelLoad(tmppath, &nmesh);
 	ArrModels[id]->NavigateMesh->count_vertex = nmesh->AllVertexCount;
 	ArrModels[id]->NavigateMesh->count_index = nmesh->AllIndexCount;
 	ArrModels[id]->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];

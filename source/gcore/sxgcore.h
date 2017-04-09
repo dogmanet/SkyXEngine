@@ -4,33 +4,50 @@
 
 //ЗАНИМАЕМЫЕ РЕГИСТРЫ
 //{
-#define SGCORE_RI_INT_COUNT_POLY	0
-#define SGCORE_RI_INT_COUNT_DIP		1
+#define G_RI_INT_COUNT_POLY	0
+#define G_RI_INT_COUNT_DIP		1
 //}
 
 #include <gdefines.h>
 
 #include <d3d9.h>
 #include <d3dx9.h>
-#define SM_D3D_CONVERSIONS
-#include <sxmath.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxcore_d.lib")
+#else
+#pragma comment(lib, "sxcore.lib")
+#endif
+#include <core\\sxcore.h>
+
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "DxErr9.lib")
 #pragma comment(lib, "d3dx9.lib")
 
 #include <gcore\ModelFile.h>
 
-#include <core\sxcore.h>
 
+
+//типы материалов
+#define MTL_TYPE_GEOM 0
+#define MTL_TYPE_GRASS 1
+#define MTL_TYPE_TREE 2
+#define MTL_TYPE_ANIM 3
+//#define MTL_LIGHT 4
+
+//размер отладочного сообщения, выводимого в окно рендера
 #define SXGC_STR_SIZE_DBG_MSG 4096
 
+//
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
-typedef void(*g_func_dip) (UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-typedef void(*g_func_set_mtl) (ID id, float4x4* world);
-typedef ID(*g_func_load_mtl) (const char* name, int mtl_type);
-typedef int(*g_func_get_sort_mtl) (ID id);
+//количество mipmap уровней в загружаемых текстурах
+#define SXGC_LOADTEX_COUNT_MIPMAP 5	
+
+//формат в который будут преобразованы загружаемые текстуры
+//если установить формат со сжатием то необходимо следовать всем правилам оформления текстур для данного формата
+#define SXGC_LOADTEX_FORMAT_TEX D3DFMT_FROM_FILE	
 
 SX_LIB_API long SGCore_0GetVersion();			//версия подсистемы
 SX_LIB_API void SGCore_Dbg_Set(report_func rf);	//установка функции вывода сообщений
@@ -46,7 +63,7 @@ SX_LIB_API void SGCore_0Create(
 	bool is_unic = true			//должна ли подсистема быть уникальной на основе имени
 	);
 
-SX_LIB_API void SGCore_0Kill();
+SX_LIB_API void SGCore_0Kill();	//уничтожение либы
 
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	//возвращает dx устройство
 
@@ -74,16 +91,38 @@ SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD va
 //отрисовка full screen quad (уже смещенного как надо чтобы не было размытия)
 SX_LIB_API void SGCore_ScreenQuadDraw();
 
+
+//ПРОТОТИПЫ ПЕРЕОПРЕДЕЛЯЕМЫХ ФУНКЦИЙ
+//{
+//draw indexed primitive, команда отрисовки
+typedef void(*g_func_dip) (UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
+//установка материала id, world - мировая матрица
+typedef void(*g_func_mtl_set) (ID id, float4x4* world);
+//загрузка материала, name - имя текстуры с расширением, mtl_type - тип материала на случай провала загрузки, MTL_TYPE_
+//в случаях провала загрузки тип стандартного материала будет определен на основании mtl_type
+typedef ID(*g_func_mtl_load) (const char* name, int mtl_type);
+//получить сорт материала, по дефолту 0
+typedef int(*g_func_mtl_get_sort) (ID id);
+//рисовать ли подгруппы моделей данного материала раздельно?
+typedef bool(*g_func_mtl_group_render_is_singly) (ID id);
+//}
+
+//ПЕРЕОПРЕДЕЛЯЕМЫЕ ФУНКЦИИ (точнее переопредяется их внутрення реализация)
 //{
 SX_LIB_API void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-SX_LIB_API void SGCore_SetMtl(ID id, float4x4* world);
-SX_LIB_API ID SGCore_LoadMtl(const char* name, int mtl_type);
-SX_LIB_API int SGCore_GetSortMtl(ID id);
+SX_LIB_API void SGCore_MtlSet(ID id, float4x4* world);
+SX_LIB_API ID SGCore_MtlLoad(const char* name, int mtl_type);
+SX_LIB_API int SGCore_MtlGetSort(ID id);
+SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id);
+//}
 
+//ПЕРЕОПРЕДЕЛЕНИЕ ФУНКЦИЙ
+//{
 SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip func);
-SX_LIB_API void SGCore_SetFunc_SetMtl(g_func_set_mtl func);
-SX_LIB_API void SGCore_SetFunc_LoadMtl(g_func_load_mtl func);
-SX_LIB_API void SGCore_SetFunc_GetSortMtl(g_func_get_sort_mtl func);
+SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set func);
+SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load func);
+SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort func);
+SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly func);
 //}
 
 //ШЕЙДЕРЫ
@@ -95,26 +134,58 @@ SX_LIB_API void SGCore_SetFunc_GetSortMtl(g_func_get_sort_mtl func);
 //если шейдер содержит нижний пробел (_) то строка до первого нижнего проблема это имя папки в котором находится шейдер с целым именем
 //pp_shader.vs - лежит по загружаемому пути: /pp/pp_shader.vs
 
+//максимальный размер имени директории (до _)
+#define SXGC_SHADER_MAX_SIZE_DIR 64
+//максимальный размер имени с расширением (после _)
+#define SXGC_SHADER_MAX_SIZE_NAME 64
+//общий максимальный  размер имени текстуры с расширением
+#define SXGC_SHADER_MAX_SIZE_DIRNAME SXGC_SHADER_MAX_SIZE_DIR + SXGC_SHADER_MAX_SIZE_NAME
+//максимальный размер пути до файла шейдера (без имени файла)
+#define SXGC_SHADER_MAX_SIZE_STDPATH 256
+//максимальный размер полного пути до шейдера (включая имя шейдера)
+#define SXGC_SHADER_MAX_SIZE_FULLPATH SXGC_SHADER_MAX_SIZE_STDPATH + SXGC_SHADER_MAX_SIZE_DIRNAME
+
+//максимальная длина имени переменной в шейдере
+#define SXGC_SHADER_VAR_MAX_SIZE 64
+//максимальное количество переменных в шейдере
+#define SXGC_SHADER_VAR_MAX_COUNT 64
+
+//количество макросов в массиве макросов
+#define SXGC_SHADER_COUNT_MACRO 12
+
 //типы шейдеров (int type_shader)
-#define SXGC_SHADER_VERTEX 0
-#define SXGC_SHADER_PIXEL 1
+enum ShaderType
+{
+	st_vertex,	//вершинный
+	st_pixel	//пиксельный
+};
+
+//типы проверок дубликатов шейдеров
+enum ShaderCheckDouble
+{
+	scd_none,	//нет проверки
+	scd_path,	//проверка по пути (имени шейдера с расширением)
+	scd_name	//проверка по пользовательскому имени
+};
 
 //загрузка шейдера
 SX_LIB_API ID SGCore_ShaderLoad(
-	int type_shader,		//тип шейдера
+	ShaderType type_shader,	//тип шейдера
 	const char* path,		//имя файла шейдера с расширением
 	const char* name,		//имя шейдера которое присвоится при загрузке
-	int is_check_double,	//проверять ли на уникальность (на основании имени файла с расширением)
+	ShaderCheckDouble is_check_double,	//проверять ли на уникальность (на основании имени файла с расширением)
 	D3DXMACRO* macro = 0	//макросы
 	);
 
-SX_LIB_API void SGCore_ShaderGetName(int type_shader, ID id, char* name);	//записывает имя шейдера в name
-SX_LIB_API ID SGCore_ShaderIsExist(int type_shader, const char* name);		//существует ли шейдер с именем name, если да то возвращает id
-SX_LIB_API bool SGCore_ShaderIsValidate(int type_shader, ID id);				//загружен ли шейдер с данным id
+SX_LIB_API void SGCore_ShaderGetName(ShaderType type_shader, ID id, char* name);	//записывает пользовательское имя шейдера в name
+SX_LIB_API void SGCore_ShaderGetPath(ShaderType type_shader, ID id, char* path);	//записывает имя шейдер с расширением в path
+SX_LIB_API ID SGCore_ShaderIsExistName(ShaderType type_shader, const char* name);	//существует ли шейдер с пользовательским именем name, если да то возвращает id
+SX_LIB_API ID SGCore_ShaderIsExistPath(ShaderType type_shader, const char* path);	//существует ли шейдер с именем файла и расширением name, если да то возвращает id
+SX_LIB_API bool SGCore_ShaderIsValidate(ShaderType type_shader, ID id);				//загружен ли шейдер с данным id
 
 //обновление шейдера
-SX_LIB_API void	SGCore_ShaderUpdateN(int type_shader, const char* name, D3DXMACRO macro[] = 0);
-SX_LIB_API void SGCore_ShaderUpdate(int type_shader, ID id, D3DXMACRO macro[] = 0);
+SX_LIB_API void	SGCore_ShaderUpdateN(ShaderType type_shader, const char* name, D3DXMACRO macro[] = 0);
+SX_LIB_API void SGCore_ShaderUpdate(ShaderType type_shader, ID id, D3DXMACRO macro[] = 0);
 
 SX_LIB_API void SGCore_ShaderSetStdPath(const char* path);	//установить абсолютный путь откуда брать шейдеры
 SX_LIB_API void SGCore_ShaderGetStdPath(char* path);		//возвращает абсолютный путь откуда берутся шейдеры
@@ -123,11 +194,11 @@ SX_LIB_API void SGCore_ShaderGetStdPath(char* path);		//возвращает абсолютный пу
 //с учетом макросов
 SX_LIB_API void SGCore_ShaderReloadAll();	
 
-SX_LIB_API DWORD SGCore_ShaderGetID(int type_shader, const char* shader);	//получить идентификатор шейдера по имени
+SX_LIB_API ID SGCore_ShaderGetID(ShaderType type_shader, const char* shader);	//получить идентификатор шейдера по имени
 
 //бинд шейдера
-SX_LIB_API void SGCore_ShaderBindN(int type_shader, const char* shader);
-SX_LIB_API void SGCore_ShaderBind(int type_shader, ID id);
+SX_LIB_API void SGCore_ShaderBindN(ShaderType type_shader, const char* shader);
+SX_LIB_API void SGCore_ShaderBind(ShaderType type_shader, ID id);
 
 SX_LIB_API void SGCore_ShaderUnBind();	//обнуление биндов шейдеров
 
@@ -137,12 +208,12 @@ SX_LIB_API void SGCore_ShaderUnBind();	//обнуление биндов шейдеров
 //data указатель значение
 
 //передача float значений
-SX_LIB_API void SGCore_ShaderSetVRFN(int type_shader, const char* name_shader, const char* name_var, void* data);
-SX_LIB_API void SGCore_ShaderSetVRF(int type_shader, ID id, const char* name_var, void* data);
+SX_LIB_API void SGCore_ShaderSetVRFN(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_float4 = 0);
+SX_LIB_API void SGCore_ShaderSetVRF(ShaderType type_shader, ID id, const char* name_var, void* data, int count_float4 = 0);
 
 //передача int значений
-SX_LIB_API void SGCore_ShaderSetVRIN(int type_shader, const char* name_shader, const char* name_var, void* data);
-SX_LIB_API void SGCore_ShaderSetVRI(int type_shader, ID id, const char* name_var, void* data);
+SX_LIB_API void SGCore_ShaderSetVRIN(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_int4 = 0);
+SX_LIB_API void SGCore_ShaderSetVRI(ShaderType type_shader, ID id, const char* name_var, void* data, int count_int4 = 0);
 //}
 //}}
 
@@ -154,29 +225,60 @@ SX_LIB_API void SGCore_ShaderSetVRI(int type_shader, ID id, const char* name_var
 //имя текстуры обязательно долно содержать нижний пробел (_), строка до первого нижнего проблема это имя папки в котором находится шейдер с целым именем
 //mtl_tex.dds - лежит по загружаемому пути: /mtl/mtl_tex.dds
 
-SX_LIB_API void SGCore_LoadTexStdPath(const char* path);
-SX_LIB_API ID SGCore_LoadTexAddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
-SX_LIB_API ID SGCore_LoadTexGetID(const char* name);		//получить id по имени
+//максимальный размер имени директории (до _)
+#define SXGC_LOADTEX_MAX_SIZE_DIR 64
+//максимальный размер имени с расширением (после _)
+#define SXGC_LOADTEX_MAX_SIZE_NAME 64
+//общий максимальный  размер имени текстуры с расширением
+#define SXGC_LOADTEX_MAX_SIZE_DIRNAME SXGC_LOADTEX_MAX_SIZE_DIR + SXGC_LOADTEX_MAX_SIZE_NAME
+//максимальный размер пути до файла текстуры (без имени файла)
+#define SXGC_LOADTEX_MAX_SIZE_STDPATH 256
+//максимальный размер полного пути до текстуры (включая имя текстуры)
+#define SXGC_LOADTEX_MAX_SIZE_FULLPATH SXGC_LOADTEX_MAX_SIZE_STDPATH + SXGC_LOADTEX_MAX_SIZE_DIRNAME
+
+//типы текстур
+enum LoadTexType
+{
+	ltt_load,	//загружаемая
+	ltt_const,	//неудаляемая загружаемая
+	ltt_custom,	//созданная пользователем
+
+	//самоопределение типа, на тот случай когда мы обновляем текстуру которая точно есть
+	//если определить этот тип, а внутри у текстуры на самом деле нет типа (скорее всего нет текстуры)
+	//то будет определен ltt_load
+	ltt_self,	
+};
+
+SX_LIB_API void SGCore_LoadTexStdPath(const char* path);	//установить стандартный путь откуда брать текстуры
+SX_LIB_API void SGCore_LoadTexClearLoaded();				//очистить список загружаемых текстур
+SX_LIB_API void SGCore_LoadTexDelete(ID id);				//удалить тектуру по id (независимо от типа)
+SX_LIB_API ID SGCore_LoadTexAddName(const char* name, LoadTexType type);//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
+SX_LIB_API ID SGCore_LoadTexGetID(const char* name);	//получить id по имени
 SX_LIB_API void SGCore_LoadTexGetName(ID id, char* name);//получить имя по id
 
 //создать место для текстуры tex и присвоить ей имя name, возвращает id
 //прежде вызова этой функции, все добавленные текстуры должны быть загружены
 //создавать текстур необходимо в managed pool (D3DPOOL_MANAGED) ибо обработка потери и восстановления устройства сюда не приходит
 SX_LIB_API ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex);
-SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name);	//обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет
-SX_LIB_API void SGCore_LoadTexUpdate(ID id);				//обновить/перезагрузить текстуру
+
+//обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет
+//если текстуру надо обновить, но тип у нее заранее не известен, но она точно уже загружена 
+//то можно использовать тип самоопределения ltt_self, тогда тип текстуры не изменится
+SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name, LoadTexType type);
+SX_LIB_API void SGCore_LoadTexUpdate(ID id);//обновить/перезагрузить текстуру
 
 SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID id);	//возвращает текстуру по id
 
 //загрузка всех текстур поставленных в очередь
 //можно вызывать каждый кадр рендера
-//функция сначала проверяет есть ли не загруженные текстуры на основе счетчиков и только потмо грузит
+//функция сначала проверяет есть ли не загруженные текстуры на основе счетчиков и только потом грузит
 SX_LIB_API void SGCore_LoadTexLoadTextures();	
 //}
 
 
 //RENDER TARGETS
 //{{
+//сброс и восстановление устройства сюда приходят
 
 //добавить новый render target
 SX_LIB_API ID SGCore_RTAdd(
@@ -193,13 +295,13 @@ SX_LIB_API ID SGCore_RTAdd(
 	float coeffullscreen
 	);
 
-SX_LIB_API void SGCore_RTDeleteN(const char* text);	//удалить rt но имени
-SX_LIB_API void SGCore_RTDelete(ID num);			//удалить rt но id
+SX_LIB_API void SGCore_RTDeleteN(const char* text);	//удалить rt по имени
+SX_LIB_API void SGCore_RTDelete(ID num);			//удалить rt по id
 
 SX_LIB_API ID SGCore_RTGetNum(const char* text); //возвращает id по имени
 
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char* text);	//возвращает текстуру по имени
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID num);			//возвращает текстуру по id
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID num);				//возвращает текстуру по id
 //}
 
 
@@ -213,9 +315,9 @@ struct ISXDataStaticModel : public IBaseObject
 	IDirect3DVertexBuffer9* VertexBuffer;	//вершиный буфер
 	IDirect3DIndexBuffer9* IndexBuffer;		//индексный буфер
 	vertex_static* ArrVertBuf;				//массив вершин
-	DWORD* ArrIndBuf;						//массив индексов
+	UINT* ArrIndBuf;						//массив индексов
 
-	DWORD SubsetCount;		//количество подгрупп
+	UINT SubsetCount;		//количество подгрупп
 	char** ArrTextures;		//массив имен текстур без расширения
 	UINT* StartIndex;		//массив стартовых позиций индексов для каждой подгруппы
 	UINT* IndexCount;		//массив количества индексов для каждой подгруппы
@@ -225,11 +327,10 @@ struct ISXDataStaticModel : public IBaseObject
 	UINT AllVertexCount;	//общее количество вершин
 };
 
-SX_LIB_API ISXDataStaticModel* SGCore_CrDSModel();	//создать статическую модель
-SX_LIB_API void SGCore_LoadStaticModel(const char* file, ISXDataStaticModel** data);	//загрузить статическую модель, data инициализируется внутри
-SX_LIB_API void SGCore_SaveStaticModel(const char* file, ISXDataStaticModel** data);	//сохранить статическую модель
-SX_LIB_API void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse);
-
+SX_LIB_API ISXDataStaticModel* SGCore_StaticModelCr();	//создать статическую модель
+SX_LIB_API void SGCore_StaticModelLoad(const char* file, ISXDataStaticModel** data);	//загрузить статическую модель, data инициализируется внутри
+SX_LIB_API void SGCore_StaticModelSave(const char* file, ISXDataStaticModel** data);	//сохранить статическую модель
+SX_LIB_API IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl();	//возвращает декларацию вершин статической модели
 ///////////
 
 //простой объект с минимальным описанием
@@ -459,7 +560,7 @@ SX_LIB_API ISXCamera* SGCore_CrCamera();	//создать ISXCamera
 //SKY BOX
 //{
 SX_LIB_API void SGCore_SkyBoxCr();	//создание
-
+SX_LIB_API bool SGCore_SkyBoxIsCr();//инициализирован ли skybox
 //абсолютный путь загрузки текстур
 SX_LIB_API void SGCore_SkyBoxSetStdPathTex(const char* path);
 SX_LIB_API void SGCore_SkyBoxGetStdPathTex(char* path);
@@ -485,14 +586,14 @@ SX_LIB_API void SGCore_SkyBoxRender(float timeDelta, float3* pos);
 //простая плоскость параллельная xz на которую зеркально (х2) натягивается текстура, в постоянном движении
 //положение констатно
 
-SX_LIB_API void SGCore_SkyCloudsCr();//создание
-
+SX_LIB_API void SGCore_SkyCloudsCr();	//создание
+SX_LIB_API bool SGCore_SkyCloudsIsCr();	//инициализирован ли sky clouds
 //абсолютный путь загрузки текстур
 SX_LIB_API void SGCore_SkyCloudsSetStdPathTex(const char* path);
 SX_LIB_API void SGCore_SkyCloudsGetStdPathTex(char* path);
 
 //установка размеров и позиции
-//так как позиция облаков константна то чтобы была илюзия полного корытия уровня, необходимо облакам указывать размер в 2 раза больше чем весь доступный уровень
+//так как позиция облаков константна то чтобы была илюзия полного покрытия уровня, необходимо облакам указывать размер в 2 раза больше чем весь доступный уровень
 SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, float3* pos);
 
 //!обычные 2д текстуры

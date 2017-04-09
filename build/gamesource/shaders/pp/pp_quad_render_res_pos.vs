@@ -1,23 +1,29 @@
 
 #include <../struct.h>
 
-float4x4 ViewInv;
-float2	NearFar;
-float3	ParamProj;
+half4x4 ViewInv;
+half2 NearFar;
+half3 ParamProj;
 
-vs_out_res_pos main(vs_in_pp IN)
+struct vs_in_pp2
+{
+	half4 Position	:POSITION;
+	half3 TexUV		:TEXCOORD0;
+};
+
+vs_out_res_pos main(vs_in_pp2 IN)
 {
 	vs_out_res_pos OUT;
 	OUT.Position = IN.Position;
-	OUT.TexUV = IN.TexUV;
+	OUT.TexUV = IN.TexUV.xy;
 	
-	float tanHalfFOV = tan( ParamProj.z * 0.5f) ; 
-	float aspectRatio = ParamProj.x / ParamProj.y; 
-	float farY = tanHalfFOV * NearFar.y; 
-	float farX = farY * aspectRatio; 
+	half tanHalfFOV = tan( ParamProj.z * 0.5f) ; 
+	half aspectRatio = ParamProj.x / ParamProj.y; 
+	half farY = tanHalfFOV * NearFar.y; 
+	half farX = farY * aspectRatio; 
 	
-	OUT.EyeRay = float3(OUT.Position.x * farX, OUT.Position.y * farY, NearFar.y); 
-	OUT.WorldRay = mul(float4(OUT.EyeRay, 0.0), ViewInv).xyz;
-	
+	OUT.EyeRay = half3(sign(OUT.Position.x) * farX, sign(OUT.Position.y) * farY, NearFar.y); 
+	OUT.WorldRay = mul(half4(OUT.EyeRay, 0.0), ViewInv).xyz;
+  
 	return OUT;
 }

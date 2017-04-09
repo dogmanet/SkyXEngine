@@ -1,7 +1,0 @@
---TEST--
-Define test
---FILE--
-#define TEST "Hello World"
-print(TEST);
---EXPECT--
-Hello World

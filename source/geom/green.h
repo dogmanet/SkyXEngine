@@ -2,8 +2,8 @@
 #ifndef __green
 #define __green
 
-#include <handler_dx_func.cpp>
-#include <core\array.h>
+//#include <handler_dx_func.cpp>
+#include <common\array.h>
 #include <common\\string_api.cpp>
 #define GREEN_MAX_ELEM_IN_DIP 512000
 #define GREEN_COUNT_TYPE_SEGMENTATION 4
@@ -11,8 +11,8 @@
 #define GREEN_COUNT_MAX_SEGMENTS 100
 #define GREEN_COUNT_LOD 3
 
-#define GREEN_TYPE_GRASS 0
-#define GREEN_TYPE_TREE 1
+/*#define GREEN_TYPE_GRASS 0
+#define GREEN_TYPE_TREE 1*/
 
 #define GREEN_DEFAULT_RESERVE_GEN 1024
 #define GREEN_DEFAULT_RESERVE_COM 1024
@@ -65,7 +65,7 @@ public:
 	void Load(const char* path);
 	void Clear();
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
-	void GPURender(DWORD timeDelta, ID id_arr = 0);
+	void GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID id_arr = 0);
 
 	inline ID GetCountGreen();
 	inline char* GetGreenName(ID id);
@@ -143,7 +143,7 @@ public:
 			String pathname;
 		};
 
-		int32_t TypeGreen;	//
+		GeomGreenType TypeGreen;	//
 		String MaskName;
 		uint32_t AllCountGreen;	//сколько всего сгенерировано объектов
 		char Name[64];
@@ -179,7 +179,7 @@ protected:
 	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
 	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
-	void GPURender2(DWORD timeDelta, ID nm, int lod);
+	void GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod);
 
 	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 

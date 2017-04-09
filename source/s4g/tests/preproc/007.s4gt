@@ -1,7 +1,0 @@
---TEST--
-Define test
---FILE--
-#define TEST(str) #str
-print(TEST(qwe));
---EXPECT--
-qwe

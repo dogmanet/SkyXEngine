@@ -5,50 +5,25 @@
 
 #include <core\\sxcore.h>
 
-#include <core\\Array.h>
-#include <core\sxloaderconfig_class.cpp>
+#include <common\\Array.h>
+#include <core\loaderconfig.cpp>
 
-#include <core\\sxfile.cpp>
+#include <core\\file.cpp>
 
 #include <core\Task.cpp>
 #include <core\TaskManager.cpp>
 
-ISXFile* Core_CrFile()
-{
-	return new SXFile();
-}
-
-ISXFile* Core_OpFile(const char* path, int type)
-{
-	 SXFile* tmpsxfile = new SXFile();
-	 tmpsxfile->Open(path,type);
-	 return tmpsxfile;
-}
-
-
-ISXLConfig*  Core_CrLConfig()
-{
-	return new SXLoaderConfig();
-}
-
-ISXLConfig*  Core_OpLConfig(const char* path)
-{
-	 SXLoaderConfig* tmplconfig = new SXLoaderConfig();
-	 tmplconfig->Open(path);
-	 return tmplconfig;
-}
-
 #pragma comment(lib, "winmm.lib")
 
 char CoreName[CORE_NAME_MAX_LEN];
-//CoreName[1] = 0;
-bool IsCoreInit = false;
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func reportf = def_report;
 #endif
 SXTaskManager* TaskManager = 0;
+
+#define SXCORE_PRECOND(retval) if(!TaskManager){reportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
 
 //функции обертки
 long Core_0GetVersion()
@@ -73,89 +48,86 @@ int Core_0FileExists(const char* fname)
 	return 0;
 }
 
-char** Core_0CommandLineToArgvA(char* CmdLine,int* _argc)
+char** Core_0CommandLineToArgvA(char* CmdLine, int* _argc)
 {
-	PCHAR* argv;
-	PCHAR  _argv;
-	ULONG   len;
-	ULONG   argc;
-	CHAR   a;
-	ULONG   i, j;
+	char** argv;
+	char* _argv;
+	UINT len;
+	UINT argc;
+	char a;
+	UINT i, j;
 
-	BOOLEAN  in_QM;
-	BOOLEAN  in_TEXT;
-	BOOLEAN  in_SPACE;
+	bool is_qm = false;
+	bool is_text = false;
+	bool is_space = true;
 
 	len = strlen(CmdLine);
-	i = ((len+2)/2)*sizeof(PVOID) + sizeof(PVOID);
+	i = ((len + 2) / 2)*sizeof(void*)+sizeof(void*);
 
-	argv = (PCHAR*)GlobalAlloc(GMEM_FIXED,i + (len+2)*sizeof(CHAR));
+	argv = (char**)GlobalAlloc(GMEM_FIXED, i + (len + 2)*sizeof(char));
 
-	_argv = (PCHAR)(((PUCHAR)argv)+i);
+	_argv = (char*)(((unsigned char*)argv) + i);
 
 	argc = 0;
 	argv[argc] = _argv;
-	in_QM = FALSE;
-	in_TEXT = FALSE;
-	in_SPACE = TRUE;
 	i = 0;
 	j = 0;
 
-		while( a = CmdLine[i] )
+	while (a = CmdLine[i])
+	{
+		if (is_qm)
 		{
-				if(in_QM) 
-				{
-						if(a == '\"') 
-						{
-							in_QM = FALSE;
-						} 
-						else
-						{
-							_argv[j] = a;
-							j++;
-						}
-				} 
-				else
-				{
-						switch(a) 
-						{
-							case '\"':
-								in_QM = TRUE;
-								in_TEXT = TRUE;
-									if(in_SPACE)
-									{
-										argv[argc] = _argv+j;
-										argc++;
-									}
-								in_SPACE = FALSE;
-								break;
-							case ' ':
-							case '\t':
-							case '\n':
-							case '\r':
-									if(in_TEXT)
-									{
-										_argv[j] = '\0';
-										j++;
-									}
-								in_TEXT = FALSE;
-								in_SPACE = TRUE;
-								break;
-							default:
-								in_TEXT = TRUE;
-									if(in_SPACE)
-									{
-										argv[argc] = _argv+j;
-										argc++;
-									}
-								_argv[j] = a;
-								j++;
-								in_SPACE = FALSE;
-								break;
-						}
-				}
-			i++;
+			if (a == '\"')
+			{
+				is_qm = false;
+			}
+			else
+			{
+				_argv[j] = a;
+				j++;
+			}
 		}
+		else
+		{
+			switch (a)
+			{
+			case '\"':
+				is_qm = true;
+				is_text = true;
+				if (is_space)
+				{
+					argv[argc] = _argv + j;
+					argc++;
+				}
+				is_space = false;
+				break;
+			case ' ':
+			case '\t':
+			case '\n':
+			case '\r':
+				if (is_text)
+				{
+					_argv[j] = '\0';
+					j++;
+				}
+				is_text = false;
+				is_space = true;
+				break;
+			default:
+				is_text = true;
+				if (is_space)
+				{
+					argv[argc] = _argv + j;
+					argc++;
+				}
+				_argv[j] = a;
+				j++;
+				is_space = false;
+				break;
+			}
+		}
+		i++;
+	}
 	_argv[j] = '\0';
 	argv[argc] = NULL;
 
@@ -205,14 +177,12 @@ void Core_0Create(const char* name, bool is_unic)
 						else
 						{
 							strcpy(CoreName,name);
-							IsCoreInit = true;
 							TaskManager = new SXTaskManager();
 						}
 				}
 				else
 				{
 					strcpy(CoreName, name);
-					IsCoreInit = true;
 					TaskManager = new SXTaskManager();
 				}
 		}
@@ -222,52 +192,65 @@ void Core_0Create(const char* name, bool is_unic)
 
 void Core_AKill()
 {
-	if (!IsCoreInit)
-		reportf(-1, "%s - score is not init", gen_msg_location);
+	SXCORE_PRECOND();
 
-	if (TaskManager)
-	{
-		mem_delete(TaskManager);
-		IsCoreInit = false;
-	}
+	mem_delete(TaskManager);
 }
 
 void Core_AGetName(char* name)
 {
-	if (!IsCoreInit)
-		reportf(-1, "%s - score is not init", gen_msg_location);
+	SXCORE_PRECOND();
 
-		if(name)
-		{
-			strcpy(name, CoreName);
-		}
-		else
-			reportf(-1, "%s - invalid argument", gen_msg_location);
+	if(name)
+		strcpy(name, CoreName);
+	else
+		reportf(-1, "%s - invalid argument", gen_msg_location);
+}
+
+////
+
+ISXFile* Core_CrFile()
+{
+	return new SXFile();
+}
+
+ISXFile* Core_OpFile(const char* path, int type)
+{
+	SXFile* tmpsxfile = new SXFile();
+	tmpsxfile->Open(path, type);
+	return tmpsxfile;
+}
+
+
+ISXLConfig*  Core_CrLConfig()
+{
+	return new SXLoaderConfig();
+}
+
+ISXLConfig*  Core_OpLConfig(const char* path)
+{
+	SXLoaderConfig* tmplconfig = new SXLoaderConfig();
+	tmplconfig->Open(path);
+	return tmplconfig;
 }
 
 ////
 
 void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
-	if (!TaskManager)
-		reportf(-1, "%s - score is not init", gen_msg_location);
-
+	SXCORE_PRECOND();
 	TaskManager->add(func, flag);
 }
 
 void Core_MTaskStart()
 {
-	if (!TaskManager)
-		reportf(-1, "%s - score is not init", gen_msg_location);
-
+	SXCORE_PRECOND();
 	TaskManager->start();
 }
 
 void Core_MTaskStop()
 {
-	if (!TaskManager)
-		reportf(-1, "%s - score is not init", gen_msg_location);
-
+	SXCORE_PRECOND();
 	TaskManager->stop();
 }
 
@@ -275,6 +258,7 @@ void Core_MTaskStop()
 
 int32_t GRegistersInt[CORE_REGISTRY_SIZE];
 float32_t GRegistersFloat[CORE_REGISTRY_SIZE];
+float4x4 GRegistersMatrix[CORE_REGISTRY_SIZE];
 
 #define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
@@ -302,4 +286,21 @@ float32_t Core_RFloatGet(int id)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id,0);
 	return GRegistersFloat[id];
+}
+
+void Core_RMatrixSet(int id, float4x4* val)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id);
+	if (val)
+		GRegistersMatrix[id] = *val;
+	else
+		GRegistersMatrix[id] = SMMatrixIdentity();
+}
+
+void Core_RMatrixGet(int id, float4x4* val)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id);
+
+	if (val)
+		memcpy(val, &GRegistersMatrix[id], sizeof(float4x4));
 }

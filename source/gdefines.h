@@ -29,7 +29,7 @@ struct IBaseObject
 
 #endif
 
-#include "sxtypes.h"
+#include <common/sxtypes.h>
 
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);
 

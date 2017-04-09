@@ -3,18 +3,6 @@
 #define LOADER_TEXTURES_H
 
 #pragma once
-//структура описывающая папку и все текстуры в ней, у каждой свой id джля доступа
-struct TLPath
-{
-	TLPath()
-	{
-		Path[0] = 0;
-	}
-	
-	char Path[256];//имя папки
-	Array<ID> ArrID;		//идентификатор
-	Array<char*> ArrNames;	//массив с именами текстур которые находятся в данной папке
-};
 
 class LoaderTextures
 {
@@ -22,29 +10,69 @@ public:
 	LoaderTextures();
 	~LoaderTextures();
 
-	ID AddName(const char* name);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
+	void ClearLoaded();
+
+	void Delete(ID id);	//удалить текстуру id
+
+	ID AddName(const char* name, LoadTexType type, ID* iddir = 0, ID* idname = 0);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
 	ID GetID(const char* name);		//получить id по имени
-	void GetName(ID id, char* name);	//получить имя по id
+	void GetName(ID id, char* name);//получить имя по id
 
 	ID Create(const char* name, IDirect3DTexture9* tex);	//создать место для текстуры tex
-	ID Update(const char* name);		//перезагрузить текстуру name (поставить в очередь)
+	ID Update(const char* name, LoadTexType type);			//перезагрузить текстуру name
 	void Update(ID id);
 
 	void LoadTextures();	//загрузка всех текстур поставленных в очередь
 
 	IDirect3DTexture9* GetTexture(ID id);//получить текстуру по id
 
-	inline void SetStdPath(const char* path){ strcpy(StdPath, path); }
-	inline void GetStdPath(char* path){ if (path)strcpy(path, StdPath); }
-//private:
-	char StdPath[1024];
-	TLPath Arr[256];
-	int CountArr;
-	int CountIDs;
-	int CountIDsOld;
+	inline void SetStdPath(const char* path){ StdPath = path; }
+	inline void GetStdPath(char* path){ if (path)strcpy(path, StdPath.c_str()); }
+private:
 
-	Array<char*> ArrNames;
-	Array<IDirect3DTexture9*> ArrTextures;
+	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
+	struct TLPath
+	{
+		TLPath(){}
+		~TLPath()
+		{
+			for (int i = 0; i < ArrTex.size(); ++i)
+			{
+				mem_delete(ArrTex[i]);
+			}
+		}
+
+		String Path;	//имя папки
+
+		struct TLTex
+		{
+			TLTex(){ id = -1; type = LoadTexType::ltt_load; }
+			TLTex(ID _id, const char* _name, LoadTexType _type){ id = _id; name = _name; type = _type; }
+			
+			ID id;
+			String name;
+			LoadTexType type;
+		};
+		
+		Array<TLTex*> ArrTex;
+	};
+
+	struct TexAndName
+	{
+		TexAndName(){ tex = 0; IDDir = -1; }
+		~TexAndName(){ mem_release(tex); }
+		String name;
+		IDirect3DTexture9* tex;
+		ID IDDir;
+		
+	};
+
+	String StdPath;
+	Array<TLPath*> Arr;
+	int CurrFirstFree;
+
+	Array<TexAndName*> ArrTextures;
+	Array<ID> ArrIDsLoad;
 };
 
 #endif

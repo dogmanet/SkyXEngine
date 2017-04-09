@@ -1,6 +1,0 @@
---TEST--
-Testing include
---FILE--
-#include "015.inc"
---EXPECT--
-Hello

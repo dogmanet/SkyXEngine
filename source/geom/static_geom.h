@@ -7,13 +7,13 @@ GDataBuff
 #ifndef __static_geom
 #define __static_geom
 
-#include <handler_dx_func.cpp>
-#include <string\\string.cpp>
-#include <core\array.h>
+//#include <handler_dx_func.cpp>
+#include <common\\string.cpp>
+#include <common\array.h>
 #include <common\\string_api.cpp>
 //максимальное количество полигонов в буферах
 //или максимальнео количество полигонов на одну подгруппу
-#define STATIC_GEOM_MAX_POLY_IN_GROUP 64000
+#define STATIC_GEOM_MAX_POLY_IN_GROUP 400000
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
@@ -115,7 +115,6 @@ public:
 		{
 			int32_t idgroup;//id подгруппы в контексте уровня
 			int32_t idbuff;	//id буфера (в подгруппе) в который заисаны данные геометрии модели
-
 			int32_t IndexStart;
 			int32_t IndexCount;
 			int32_t VertexStart;
@@ -145,6 +144,8 @@ public:
 		bool IsRenderLod;
 
 		Array<GDataBuff> SubSet;	//описание каждой подгруппы модели
+		Array<float> GroupDist;
+		Array<ID> IDTex;
 		Segment* ArrSplits;	//массив с сегментами	
 		ID SplitsIDs;	//общее количество сегментов/спилтов
 		ID SplitsIDsRender;	//количество рисубщихся сегментов
@@ -157,15 +158,16 @@ public:
 		Group();
 		~Group();
 
-		struct VertexBuff
+		/*struct VertexBuff
 		{
 			VertexBuff();
 			~VertexBuff();
 
 			float3_t* arr;
 			long count;
-		};
+		};*/
 
+		bool IsRenderSingly;
 		int SortGroup;//тип/вид/сорт подгруппы, для ранжирования рендера
 		String name;//имя текстуры
 		ID idtex;	//идентификатор текстуры
@@ -175,7 +177,7 @@ public:
 		Array<int32_t, 4> CountIndex;	//количество индексов в буферах
 		Array<Array<Model*>> ArrModels;
 		Array<IDirect3DVertexBuffer9*, 4> VertexBuffer;
-		Array<VertexBuff*, 4> VertexBufferOrigin;
+		//Array<VertexBuff*, 4> VertexBufferOrigin;
 	};
 
 	//структура содержащая минимальную необходимую информацию о сегменте модели
@@ -202,13 +204,15 @@ public:
 	void Clear();
 	void Save(const char* path);
 	void Load(const char* path);
+
+	void SortGroup(float3* viewpos, int sort_mtl);
 	
 	inline long GetCountModel();
 
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	bool GetIntersectedRayY(float3* pos);
 	
-	void GPURender(DWORD timeDelta,int sort_mtl, ID id_arr = 0);
+	void GPURender(DWORD timeDelta, int sort_mtl, ID id_arr = 0, ID exclude_model_id = -1, ID exclude_group_id = -1, bool is_sorted = false);
 	ID AddModel(const char* path, const char* lod1, const char* name);
 	void DelModel(ID id);
 
@@ -248,11 +252,21 @@ public:
 
 protected:
 
+	struct InfoGroup
+	{
+		ID model;
+		ID group;
+		ID g_group;
+		float dist;
+		int count;
+	};
+	Array<InfoGroup*> DistGroup;
 	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
 	void AddModelInArrCom(ID id_model);
 	void DelModelInArrCom(ID id_model);
 
 	float4x4 WorldMat;
+	float4x4 RotationMat;
 	void ApplyTransformLod(ID id);
 
 	ISXBound* BoundVolume;
@@ -287,12 +301,14 @@ protected:
 	void DelArrIndexPtr();
 	void InitArrIndexPtr();
 
-	uint32_t*** RTCPUArrIndicesPtrs;//массив для хранения всех индексов которые будут отправлены на рендер сейчас
-	uint32_t** RTCountDrawPoly;	//массив для хранения размеров для каждого из массивов RTCPUArrIndicesPtrs
+	uint32_t*** RTCPUArrIndicesPtrs;	//массив для хранения всех индексов которые будут отправлены на рендер сейчас
+	uint32_t** RTCountDrawPoly;			//массив для хранения размеров для каждого из массивов RTCPUArrIndicesPtrs
+	uint32_t*** RTCountDrawPolyModel;	//массив для хранения количества рисуемых полигонов для каждой подгруппы для каждой модели
+	uint32_t*** RTBeginIndexModel;		//массив для хранения начала индексов для каждой подгруппы для каждой модели
 
 	Array<Model*> AllModels;	//массив моделей
-	Array<Group*> AllGroups;		//массив подгрупп
-	IDirect3DVertexDeclaration9* VertexDeclarationStatic;
+	Array<Group*> AllGroups;	//массив подгрупп
+	//IDirect3DVertexDeclaration9* VertexDeclarationStatic;
 
 	long SizeRenderIndexBuffer;	//размер в элементах RenderIndexBuffer
 	IDirect3DIndexBuffer9* RenderIndexBuffer;	//индексный буфер, используется и изменяется в реайлтайме при рендере уровня	

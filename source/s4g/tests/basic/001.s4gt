@@ -1,6 +1,0 @@
---TEST--
-Trivial "Hello World" test
---FILE--
-print("Hello World");
---EXPECT--
-Hello World

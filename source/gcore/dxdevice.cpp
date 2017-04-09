@@ -1,23 +1,25 @@
 
 void ScreenQuadOnResetDevice()
 {
-	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty; };
+	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
 
-	const float half_pixel_x = 1.0f / float(D3DAPP.BackBufferWidth);
-	const float half_pixel_y = 1.0f / float(D3DAPP.BackBufferHeight);
+	const float offset_pixel_x = 1.0f / float(D3DAPP.BackBufferWidth);
+	const float offset_pixel_y = 1.0f / float(D3DAPP.BackBufferHeight);
 
 	VERTEX_SCREEN_TEXTURE AddVertices[] =
 	{
-		{ -1.0f - half_pixel_x, -1.0f + half_pixel_y, 1.0f, 0.0f, 1.0f },
-		{ -1.0f - half_pixel_x, 1.0f + half_pixel_y, 1.0f, 0.0f, 0.0f },
-		{ 1.0f - half_pixel_x, 1.0f + half_pixel_y, 1.0f, 1.0f, 0.0f },
-		{ 1.0f - half_pixel_x, -1.0f + half_pixel_y, 1.0f, 1.0f, 1.0f },
+		{ -1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 0.0f, 1.0f, 0 },
+		{ -1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 0.0f, 0.0f, 1 },
+		{ 1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 1.0f, 0.0f, 2 },
+		{ 1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 1.0f, 1.0f, 3 },
 	};
 
 	void* Vertices;
-	ScreenTexture->LockVertexBuffer(0, (void**)&Vertices);
-	memcpy(Vertices, AddVertices, sizeof(AddVertices));
-	ScreenTexture->UnlockVertexBuffer();
+	if (!FAILED(ScreenTexture->LockVertexBuffer(0, (void**)&Vertices)))
+	{
+		memcpy(Vertices, AddVertices, sizeof(AddVertices));
+		ScreenTexture->UnlockVertexBuffer();
+	}
 }
 
 int InitD3D(HWND hwnd, bool windowed, int width, int heigth, DWORD create_device_flags)
@@ -65,7 +67,17 @@ int InitD3D(HWND hwnd, bool windowed, int width, int heigth, DWORD create_device
 
 	D3DXCreateFontIndirect(DXDevice, &LF, &FPSText);
 
-	D3DXCreateMeshFVF(2, 4, D3DXMESH_MANAGED, D3DFVF_XYZ | D3DFVF_TEX1, DXDevice, &ScreenTexture);
+	D3DVERTEXELEMENT9 layoutquad[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
+	//IDirect3DVertexDeclaration9* VertexDeclarationQuad;
+	//GData::DXDevice->CreateVertexDeclaration(layoutquad, &VertexDeclarationQuad);
+
+	D3DXCreateMesh(2, 4, D3DXMESH_MANAGED, layoutquad, DXDevice, &ScreenTexture);
 
 	ScreenQuadOnResetDevice();
 

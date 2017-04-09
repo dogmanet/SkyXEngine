@@ -3,11 +3,10 @@
 
 sampler2D BaseSampler:register(s0);
 
-
-float4 main(vs_out_green IN):COLOR0
+half4 main(vs_out_gcommon IN):COLOR0
 { 
-	float4 tmpColor = tex2D(BaseSampler,IN.TexUV);
-	clip(tmpColor.a - 0.5);
+	half4 tmpColor = tex2D(BaseSampler,IN.TexUV);
+	clip(tmpColor.a - GREEN_ALPHA_VAL_CLIP);
 	tmpColor.a = 1.f;
 	
 	return length(IN.Pos);

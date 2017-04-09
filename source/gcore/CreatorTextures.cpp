@@ -117,7 +117,7 @@ void CreatorTextures::OnResetDevice()
 				if(Arr[i]/*->Name[0] != 0*/)
 				{
 						if(Arr[i]->CoefFullScreen > 0.001f)
-							DXDevice->CreateTexture(D3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, D3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, 1, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+							DXDevice->CreateTexture(D3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, D3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 						else
 							DXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 				}

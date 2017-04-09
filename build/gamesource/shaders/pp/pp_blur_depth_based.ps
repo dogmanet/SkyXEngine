@@ -26,8 +26,6 @@ half4 main(vs_out_pp IN) : COLOR0
 				{
 					half2 SampleTC = CenterTC + half2(x * PixelSize.x,y * PixelSize.y);
 					half Depth = tex2D(DepthMap, SampleTC).r;
-						//if(Depth <= 0.0)
-							//Depth = 1.0;
 					Depth *= NearFar.y;
 					half Diff = 9.0f*(1.0f - Depth/CenterDepth);
 					half Weight = saturate(0.5 - 0.75f*abs(Diff) - 0.25f*(Diff));
@@ -37,7 +35,5 @@ half4 main(vs_out_pp IN) : COLOR0
 		}
 
 	Color /= SumWeight;
-		//if(CenterDepth/NearFar.y <= 0)
-			//Color.r = 1.0;
 	return Color;
 }

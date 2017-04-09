@@ -61,7 +61,7 @@ struct DataStaticModel : public ISXDataStaticModel
 
 
 		DXDevice->CreateIndexBuffer(sizeof(UINT)* tmpind, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &nm->IndexBuffer, 0);
-		nm->ArrIndBuf = new DWORD[tmpind];
+		nm->ArrIndBuf = new UINT[tmpind];
 		nm->IndexBuffer->Lock(0, 0, (void**)&dstData, 0);
 		IndexBuffer->Lock(0, 0, (void**)&srcData, 0);
 
@@ -98,12 +98,17 @@ struct DataStaticModel : public ISXDataStaticModel
 
 ///////////
 
-ISXDataStaticModel* SGCore_CrDSModel()
+ISXDataStaticModel* SGCore_StaticModelCr()
 {
 	return new DataStaticModel();
 }
 
-void SGCore_LoadStaticModel(const char * file, ISXDataStaticModel** data)
+IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl()
+{
+	return StaticVertexDecl;
+}
+
+void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 {
 	if (!data)
 	{
@@ -237,7 +242,7 @@ void SGCore_LoadStaticModel(const char * file, ISXDataStaticModel** data)
 			(*data)->AllIndexCount = iStartIndex;
 			DWORD tmpCountIndecex = 0;
 			DXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
-			(*data)->ArrIndBuf = new DWORD[iStartIndex];
+			(*data)->ArrIndBuf = new UINT[iStartIndex];
 			if (!FAILED((*data)->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 			{
 				memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
@@ -357,7 +362,7 @@ void SGCore_LoadStaticModel(const char * file, ISXDataStaticModel** data)
 
 		(*data)->AllIndexCount = iStartIndex;
 		DXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
-		(*data)->ArrIndBuf = new DWORD[iStartIndex];
+		(*data)->ArrIndBuf = new UINT[iStartIndex];
 		if (!FAILED((*data)->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 		{
 			memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
@@ -391,7 +396,7 @@ void SGCore_LoadStaticModel(const char * file, ISXDataStaticModel** data)
 	memset(tmpmodel->ArrTextures, 0, (*data)->SubsetCount * sizeof(char));
 
 	tmpmodel->ArrVertBuf = new vertex_static[(*data)->AllVertexCount];
-	tmpmodel->ArrIndBuf = new DWORD[(*data)->AllIndexCount];
+	tmpmodel->ArrIndBuf = new UINT[(*data)->AllIndexCount];
 
 	tmpmodel->StartIndex = new UINT[(*data)->SubsetCount];
 	tmpmodel->StartVertex = new UINT[(*data)->SubsetCount];
@@ -482,7 +487,7 @@ void SGCore_LoadStaticModel(const char * file, ISXDataStaticModel** data)
 	//Core::InLog("mesh is loaded [%s]\n", file);
 };
 
-void SGCore_SaveStaticModel(const char * file, DataStaticModel** data)
+void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 {
 	ModelHeader hdr;
 	memset(&hdr, 0, sizeof(hdr));
@@ -556,7 +561,7 @@ void SGCore_SaveStaticModel(const char * file, DataStaticModel** data)
 	fclose(pF);
 }
 
-void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse)
+/*void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse)
 {
 	ID3DXMesh* Mesh;
 	ID3DXBuffer* Mtrl;
@@ -601,7 +606,7 @@ void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse)
 	DWORD* optimizedAdjacencyInfo = new DWORD[pMesh->GetNumFaces() * 3];
 
 
-	HRESULT hr = pMesh->OptimizeInplace(D3DXMESHOPT_ATTRSORT/* | D3DXMESHOPT_VERTEXCACHE*/, adjacencyInfo, optimizedAdjacencyInfo, 0, 0);
+	HRESULT hr = pMesh->OptimizeInplace(D3DXMESHOPT_ATTRSORT, adjacencyInfo, optimizedAdjacencyInfo, 0, 0);
 
 	DWORD numSubsets = 0;
 	pMesh->GetAttributeTable(0, &numSubsets);
@@ -689,4 +694,4 @@ void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse)
 
 	mem_release(Mesh);
 	mem_release(DataModel);
-}
+}*/

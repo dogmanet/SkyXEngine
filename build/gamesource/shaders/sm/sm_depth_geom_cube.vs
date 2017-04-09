@@ -1,29 +1,16 @@
 
-float4x4 WorldViewProjection;
-float3 LightPos;
+#include <../struct.h>
 
-struct VS_INPUT_SHADOW
+half4x4 WorldViewProjection;
+half3 LightPos;
+
+vs_out_gcommon main(vs_in_geom IN)
 {
-	float4 Position	:POSITION;
-	float2 TexUV		:TEXCOORD0;
-};
-
-struct VSOUTPUT_SHADOW
-{
-	float4 Position	:POSITION0;
-	float3 Pos		:TEXCOORD0;
-	float2 TexUV	:TEXCOORD1;
-};
-
-//-----------------------------------------------------------------------------------------------
-
-VSOUTPUT_SHADOW main(VS_INPUT_SHADOW IN)
-{
-	VSOUTPUT_SHADOW OUT;
+	vs_out_gcommon OUT;
 	
-	OUT.Position= mul(float4(IN.Position.xyz,1.0),WorldViewProjection);
+	OUT.Position= mul(half4(IN.Position.xyz,1.0),WorldViewProjection);
 	OUT.TexUV	= IN.TexUV;
-	OUT.Pos		= LightPos - IN.Position.xyz;
+	OUT.Pos		= half4(LightPos - IN.Position.xyz,1);
 
 	return OUT;
 }

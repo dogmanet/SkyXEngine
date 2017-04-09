@@ -5,6 +5,13 @@
 #include <fstream>
 #include <gdefines.h>
 
+#define SM_D3D_CONVERSIONS
+#include <common\sxmath.h>
+
+#define CORE_NAME_MAX_LEN 32	//максимальная длина имени объекта ядра/подсистемы
+#define OBJECT_NAME_MAX_LEN 64	//максимальная длина имени объекта
+#define CONFIG_SECTION_MAX_LEN 64	//максимальная длина секции конфигурационного файла
+
 //тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();
 
@@ -35,33 +42,46 @@ SX_LIB_API void Core_0Create(const char* name, bool is_unic = true); //создание 
 SX_LIB_API void Core_Dbg_Set(report_func rf); //установка своего обработчика вывода отладочной информации
 SX_LIB_API int Core_0FileExists(const char* path); //существует ли файл
 SX_LIB_API char** Core_0CommandLineToArgvA(char* CmdLine,int* _argc); //возвращает массив строк с аргументами в строке CmdLine, в _argc записывает количество считанных элементов, то есть количество ключей созданного массива
-SX_LIB_API int Core_0ClipBoardCopy(const char *str); //копирует память в буфер обмена
+SX_LIB_API int Core_0ClipBoardCopy(const char *str); //копирует строку в буфер обмена
+
+SX_LIB_API void Core_AKill(); //уничтожить ядро
+SX_LIB_API void Core_AGetName(char* name); //получить имя ядра
 
 //менеджер задач
+//{
 //создает потоки по количеству ядер
 SX_LIB_API void Core_MTaskAdd(	//добавить задачу
 								THREAD_UPDATE_FUNCTION func, //функция обработки
 								DWORD flag = CoreTF_SINGLETHREADED_REPEATING); //флаг из CoreTaskFlag
 SX_LIB_API void Core_MTaskStart();	//стартовать обрабатывать все задачи
 SX_LIB_API void Core_MTaskStop();	//остановить все задачи
-
+//}
 
 //РЕГИСТРЫ
 //{
 
-#define CORE_REGISTRY_SIZE 256	//размер массива регистров
+#define CORE_REGISTRY_SIZE 64	//размер массива регистров
 
-//утсновка/получения значения из регистра long типа
+#define G_RI_MATRIX_WORLD 0
+#define G_RI_MATRIX_VIEW 1
+#define G_RI_MATRIX_PROJECTION 2
+#define G_RI_MATRIX_VIEWPROJ 3
+#define G_RI_MATRIX_TRANSP_VIEWPROJ 4
+
+//установка/получения значения из регистра long типа
 SX_LIB_API void Core_RIntSet(int id, int32_t val);
 SX_LIB_API int32_t Core_RIntGet(int id);
 
-//утсновка/получения значения из регистра float типа
+//установка/получения значения из регистра float типа
 SX_LIB_API void Core_RFloatSet(int id, float32_t val);
 SX_LIB_API float32_t Core_RFloatGet(int id);
+
+//установка/получения значения из регистра матриц
+SX_LIB_API void Core_RMatrixSet(int id, float4x4* val);
+SX_LIB_API void Core_RMatrixGet(int id, float4x4* val);
 //}
 
-SX_LIB_API void Core_AKill(); //уничтожить ядро
-SX_LIB_API void Core_AGetName(char* name); //получить имя ядра
+
 
 ///////
 //интерфейс для записи/чтения файлов

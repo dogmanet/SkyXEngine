@@ -1,62 +1,428 @@
-	shader [mtrl_base_green_tree.vs] is loaded, name[mtrl_base_green_tree.vs], id [0]
-
-	shader [mtrl_base_green_grass.vs] is loaded, name[mtrl_base_green_grass.vs], id [1]
-
-	shader [mtrl_base_green.ps] is loaded, name[mtrl_base_green.ps], id [0]
-
-load textures ...
-
-	texture loaded [terrain_land.dds], id = 0
-
-	texture loaded [karta1_karta1.dds], id = 1
-
-	texture loaded [detal_gruntsuh.dds], id = 2
-
-	texture loaded [grunt_glinastn.dds], id = 3
-
-	texture loaded [grunt_grunt.dds], id = 4
-
-	texture loaded [grunt_saman.dds], id = 5
-
-	texture loaded [grunt_shlak1.dds], id = 6
-
-	texture loaded [grunt_stena1.dds], id = 7
-
-	texture loaded [metal_metalrzh.dds], id = 8
-
-	texture loaded [metal_proflist.dds], id = 9
-
-	texture loaded [metal_rabica.dds], id = 10
-
-	texture loaded [ston_kirp1.dds], id = 11
-
-	texture loaded [tree_doska1.dds], id = 12
-
-	texture loaded [tree_doskabok.dds], id = 13
-
-	texture loaded [tree_doski.dds], id = 14
-
-	texture loaded [tree_doski1.dds], id = 15
-
-	texture loaded [tree_doski2.dds], id = 16
-
-	texture loaded [tree_doski2a.dds], id = 17
-
-	texture loaded [tree_doski3.dds], id = 18
-
-	texture loaded [tree_dvp.dds], id = 19
-
-	texture loaded [tree_potolok.dds], id = 20
-
-all loaded textures [21]
-
-!!! release textures for render ...
-is ok
-
-!!! reset textures for render ...
-is ok
-
-load textures ...
-
-all loaded textures [21]
-
+sgcore: shader [sky_box.vs] is loaded, name[sky_box], id = [0]
+sgcore: shader [sky_box.ps] is loaded, name[sky_box], id [0]
+sgcore: shader [sky_clouds.vs] is loaded, name[sky_clouds], id = [1]
+sgcore: shader [sky_clouds.ps] is loaded, name[sky_clouds], id [1]
+sgcore: shader [sky_clouds.ps] is loaded, name[sky_clouds_shadow], id [2]
+sgcore: load textures ...
+  texture loaded [noise_rottex.dds], id = 0
+sgcore: all loaded textures [1]
+sgcore: shader [sm_depth_geom_pssm_direct.vs] is loaded, name[sm_depth_geom_pssm_direct], id = [2]
+sgcore: shader [sm_depth_geom_pssm_direct.ps] is loaded, name[sm_depth_geom_pssm_direct], id [3]
+sgcore: shader [sm_depth_geom_cube.vs] is loaded, name[sm_depth_geom_cube], id = [3]
+sgcore: shader [sm_depth_geom_cube.ps] is loaded, name[sm_depth_geom_cube], id [4]
+sgcore: shader [sm_depth_green_pssm_direct.vs] is loaded, name[sm_depth_tree_pssm_direct], id = [4]
+sgcore: shader [sm_depth_green_pssm_direct.vs] is loaded, name[sm_depth_grass_pssm_direct], id = [5]
+sgcore: shader [sm_depth_green_pssm_direct.ps] is loaded, name[sm_depth_green_pssm_direct], id [5]
+sgcore: shader [sm_depth_green_cube.vs] is loaded, name[sm_depth_tree_cube], id = [6]
+sgcore: shader [sm_depth_green_cube.vs] is loaded, name[sm_depth_green_cube], id = [7]
+sgcore: shader [sm_depth_green_cube.ps] is loaded, name[sm_depth_green_cube], id [6]
+sgcore: shader [pp_quad_render_res_pos.vs] is loaded, name[pp_quad_render_res_pos], id = [8]
+sgcore: shader [ppgensm_pssm.ps] is loaded, name[ppgensm_pssm], id [7]
+sgcore: shader [ppgensm_pssm.ps] is loaded, name[ppgensm_pssm3split], id [8]
+sgcore: shader [ppgensm_direct.ps] is loaded, name[ppgensm_direct], id [9]
+sgcore: shader [ppgensm_direct.ps] is loaded, name[ppgensm_direct_9], id [10]
+sgcore: shader [ppgensm_point.ps] is loaded, name[ppgensm_point], id [11]
+sgcore: shader [ppgensm_point.ps] is loaded, name[ppgensm_point_9], id [12]
+sgcore: shader [pp_blur_depth_based.ps] is loaded, name[pp_blur_depth_based], id [13]
+sgcore: shader [pp_blur_depth_based_noise.ps] is loaded, name[pp_blur_depth_based_noise], id [14]
+sgcore: shader [pphdr_calc_adapted_lum.ps] is loaded, name[pp_hdr_calc_adapted_lum], id [15]
+sgcore: shader [pphdr_lum_init.ps] is loaded, name[pp_hdr_lum_init], id [16]
+sgcore: shader [pphdr_lum_iterative.ps] is loaded, name[pp_hdr_lum_iterative], id [17]
+sgcore: shader [pphdr_lum_final.ps] is loaded, name[pp_hdr_lum_final], id [18]
+sgcore: shader [pp_quad_render.vs] is loaded, name[pp_quad_render], id = [9]
+sgcore: shader [pp_quad_render.ps] is loaded, name[pp_quad_render], id [19]
+sgcore: render target[ds_color] is created, id = 0
+sgcore: render target[ds_normal] is created, id = 1
+sgcore: render target[ds_param] is created, id = 2
+sgcore: render target[ds_depth] is created, id = 3
+sgcore: render target[ds_depth_0] is created, id = 4
+sgcore: render target[ds_depth_1] is created, id = 5
+sgcore: render target[ds_ambient] is created, id = 6
+sgcore: render target[ds_specdiff] is created, id = 7
+sgcore: render target[qq] is created, id = 8
+sgcore: render target[qq] is created, id = 9
+sgcore: render target[qq] is created, id = 10
+sgcore: render target[qq] is created, id = 11
+sgcore: render target[] is created, id = 12
+sgcore: render target[] is created, id = 13
+sgcore: render target[ds_lightcom] is created, id = 14
+sgcore: render target[ds_lightcom2] is created, id = 15
+sgcore: render target[ds_lightcom3] is created, id = 16
+sgcore: render target[ds_lightcomscaled] is created, id = 17
+sgcore: render target[shadowmap] is created, id = 18
+sgcore: render target[shadowmap2] is created, id = 19
+sgcore: shader [mtrlgeom_base.vs] is loaded, name[mtrlgeom_base], id = [10]
+sgcore: shader [mtrlgeom_base.ps] is loaded, name[mtrlgeom_base], id [20]
+sgcore: shader [mtrlgreen_base_tree.vs] is loaded, name[mtrlgreen_base_tree], id = [11]
+sgcore: shader [mtrlgreen_base_grass.vs] is loaded, name[mtrlgreen_base_grass], id = [12]
+sgcore: shader [mtrlgreen_base.ps] is loaded, name[mtrlgreen_base], id [21]
+sgcore: shader [mtrlgeom_light.ps] is loaded, name[mtrlgeom_light], id [22]
+* sgcore: shader [pp_quad_render_res_pos.vs] is detected, name[pp_quad_render_res_pos], id = [8]
+* sgcore: shader [pp_quad_render.vs] is detected, name[pp_quad_render], id = [9]
+* sgcore: shader [pp_quad_render.ps] is detected, name[pp_quad_render], id [19]
+sgcore: shader [ppe_fog_free.ps] is loaded, name[ppe_fog_free], id [23]
+sgcore: shader [ppe_ssao.ps] is loaded, name[ppe_ssao], id [24]
+sgcore: shader [ppe_ssao_blur1.ps] is loaded, name[ppe_ssao_blur1], id [25]
+sgcore: shader [ppe_ssao_blur2.ps] is loaded, name[ppe_ssao_blur2], id [26]
+sgcore: shader [ppe_black_white.ps] is loaded, name[ppe_black_white], id [27]
+sgcore: shader [ppe_sepia.ps] is loaded, name[ppe_sepia], id [28]
+sgcore: shader [ppe_count_cbg.ps] is loaded, name[ppe_count_cbg], id [29]
+sgcore: shader [ppe_sun_render.ps] is loaded, name[ppe_sun_render], id [30]
+sgcore: shader [ppe_gauss_blur.ps] is loaded, name[ppe_gauss_blur_h], id [31]
+sgcore: shader [ppe_gauss_blur.ps] is loaded, name[ppe_gauss_blur_w], id [32]
+sgcore: shader [ppe_free_blur_3x3.ps] is loaded, name[ppe_free_blur_3x3], id [33]
+sgcore: shader [ppe_depth_of_field.ps] is loaded, name[ppe_depth_of_field], id [34]
+sgcore: shader [ppe_bloom_bp.ps] is loaded, name[ppe_bloom_bp], id [35]
+sgcore: shader [ppe_bloom_final.ps] is loaded, name[ppe_bloom_final], id [36]
+sgcore: shader [ppe_lens_flare0.ps] is loaded, name[ppe_lens_flare0], id [37]
+sgcore: shader [ppe_lens_flare2.ps] is loaded, name[ppe_lens_flare2], id [38]
+sgcore: shader [ppe_motion_blur.ps] is loaded, name[ppe_motion_blur], id [39]
+sgcore: shader [ppe_nfaa.ps] is loaded, name[ppe_nfaa], id [40]
+sgcore: shader [ppe_dlaa1.ps] is loaded, name[ppe_dlaa1], id [41]
+sgcore: shader [ppe_dlaa2.ps] is loaded, name[ppe_dlaa2], id [42]
+sgcore: render target[pp_intermidiatews] is created, id = 20
+sgcore: render target[pp_intermidiatews2] is created, id = 21
+sgcore: render target[pp_bright] is created, id = 22
+sgcore: render target[pp_bright2] is created, id = 23
+* sgcore: shader [pp_quad_render.vs] is detected, name[pp_quad_render], id = [9]
+* sgcore: shader [pp_quad_render.ps] is detected, name[pp_quad_render], id [19]
+* sgcore: shader [pp_quad_render_res_pos.vs] is detected, name[pp_quad_render_res_pos], id = [8]
+sgcore: shader [lighting_com.ps] is loaded, name[lighting_com_nonshadow], id [43]
+sgcore: shader [lighting_com.ps] is loaded, name[lighting_com_shadow], id [44]
+sgcore: shader [lighting_blend.ps] is loaded, name[lighting_blend], id [45]
+sgcore: shader [pp_union_alpha.ps] is loaded, name[pp_union_alpha], id [46]
+sgcore: shader [pp_stencil_str.ps] is loaded, name[pp_stencil_str], id [47]
+sgcore: shader [pp_stencil_column.ps] is loaded, name[pp_stencil_column], id [48]
+sgcore: shader [pp_stencil_str_column.ps] is loaded, name[pp_stencil_str_column], id [49]
+sgcore: shader [pp_transparency_smoothing.ps] is loaded, name[pp_transparency_smoothing], id [50]
+sgcore: load textures ...
+  texture loaded [fx_sun.dds], id = 4
+  texture loaded [crete_podval.dds], id = 5
+sgcore: all loaded textures [6]
+sgcore: load textures ...
+  texture loaded [crete_schiffer2.dds], id = 7
+sgcore: all loaded textures [8]
+sgcore: load textures ...
+  texture loaded [crete_schiffer3.dds], id = 9
+sgcore: all loaded textures [10]
+sgcore: load textures ...
+  texture loaded [crete_stuccowall3_iov.dds], id = 11
+sgcore: all loaded textures [12]
+sgcore: load textures ...
+  texture loaded [door_gr_iov_01.dds], id = 13
+sgcore: all loaded textures [14]
+sgcore: load textures ...
+  texture loaded [fx_wood_fire.dds], id = 15
+sgcore: all loaded textures [16]
+sgcore: load textures ...
+  texture loaded [fx_wood_fire_2.dds], id = 17
+sgcore: all loaded textures [18]
+sgcore: load textures ...
+  texture loaded [grnd_dry_gr.dds], id = 19
+sgcore: all loaded textures [20]
+sgcore: load textures ...
+  texture loaded [grnd_zemlya2_iov.dds], id = 21
+sgcore: all loaded textures [22]
+sgcore: load textures ...
+  texture loaded [grnd_zemlya_iov.dds], id = 23
+sgcore: all loaded textures [24]
+sgcore: load textures ...
+  texture loaded [mtl_arm_2.dds], id = 25
+sgcore: all loaded textures [26]
+sgcore: load textures ...
+  texture loaded [mtl_bo4ka_big_iov.dds], id = 27
+sgcore: all loaded textures [28]
+sgcore: load textures ...
+  texture loaded [mtl_bochka_01.dds], id = 29
+sgcore: all loaded textures [30]
+sgcore: load textures ...
+  texture loaded [mtl_bochka_02.dds], id = 31
+sgcore: all loaded textures [32]
+sgcore: load textures ...
+  texture loaded [mtl_bochka_04.dds], id = 33
+sgcore: all loaded textures [34]
+sgcore: load textures ...
+  texture loaded [mtl_bochka_05.dds], id = 35
+sgcore: all loaded textures [36]
+sgcore: load textures ...
+  texture loaded [mtl_bochka_06.dds], id = 37
+sgcore: all loaded textures [38]
+sgcore: load textures ...
+  texture loaded [mtl_bochka_06a.dds], id = 39
+sgcore: all loaded textures [40]
+sgcore: load textures ...
+  texture loaded [mtl_colored_alum.dds], id = 41
+sgcore: all loaded textures [42]
+* sgcore: shader [mtrlgeom_base.vs] is detected, name[mtrlgeom_base], id = [10]
+* sgcore: shader [mtrlgeom_base.ps] is detected, name[mtrlgeom_base], id [20]
+sgcore: load textures ...
+  texture loaded [mtl_fence2.dds], id = 43
+sgcore: all loaded textures [44]
+* sgcore: shader [mtrlgeom_base.vs] is detected, name[mtrlgeom_base], id = [10]
+* sgcore: shader [mtrlgeom_base.ps] is detected, name[mtrlgeom_base], id [20]
+sgcore: load textures ...
+  texture loaded [mtl_fence2n.dds], id = 45
+sgcore: all loaded textures [46]
+sgcore: load textures ...
+  texture loaded [mtl_gate_j01a.dds], id = 47
+sgcore: all loaded textures [48]
+sgcore: load textures ...
+  texture loaded [mtl_luk_n.dds], id = 49
+sgcore: all loaded textures [50]
+sgcore: load textures ...
+  texture loaded [mtl_musor_bak.dds], id = 51
+sgcore: all loaded textures [52]
+sgcore: load textures ...
+  texture loaded [mtl_pod_01.dds], id = 53
+sgcore: all loaded textures [54]
+sgcore: load textures ...
+  texture loaded [mtl_rja2_iov.dds], id = 55
+sgcore: all loaded textures [56]
+sgcore: load textures ...
+  texture loaded [mtl_rja_iov_01.dds], id = 57
+sgcore: all loaded textures [58]
+sgcore: load textures ...
+  texture loaded [mtl_roof_red_iov.dds], id = 59
+sgcore: all loaded textures [60]
+sgcore: load textures ...
+  texture loaded [mtl_rope3-1.dds], id = 61
+sgcore: all loaded textures [62]
+sgcore: load textures ...
+  texture loaded [mtl_rust_dark_iov.dds], id = 63
+sgcore: all loaded textures [64]
+sgcore: load textures ...
+  texture loaded [mtl_rza_ch_01.dds], id = 65
+sgcore: all loaded textures [66]
+sgcore: load textures ...
+  texture loaded [mtl_set_iov.dds], id = 67
+sgcore: all loaded textures [68]
+sgcore: load textures ...
+  texture loaded [mtl_stena_ch_04.dds], id = 69
+sgcore: all loaded textures [70]
+sgcore: load textures ...
+  texture loaded [mtl_truba_pod_01.dds], id = 71
+sgcore: all loaded textures [72]
+sgcore: load textures ...
+  texture loaded [mtl_tubes3.dds], id = 73
+sgcore: all loaded textures [74]
+sgcore: load textures ...
+  texture loaded [mtl_tubes3b.dds], id = 75
+sgcore: all loaded textures [76]
+sgcore: load textures ...
+  texture loaded [mtl_tubes3c.dds], id = 77
+sgcore: all loaded textures [78]
+sgcore: load textures ...
+  texture loaded [mtl_walls1_b.dds], id = 79
+sgcore: all loaded textures [80]
+sgcore: load textures ...
+  texture loaded [mtl_walls20.dds], id = 81
+sgcore: all loaded textures [82]
+sgcore: load textures ...
+  texture loaded [mtl_walls7.dds], id = 83
+sgcore: all loaded textures [84]
+sgcore: load textures ...
+  texture loaded [mtl_walls9a.dds], id = 85
+sgcore: all loaded textures [86]
+sgcore: load textures ...
+  texture loaded [prop_ballon1.dds], id = 87
+sgcore: all loaded textures [88]
+sgcore: load textures ...
+  texture loaded [prop_ballon2.dds], id = 89
+sgcore: all loaded textures [90]
+sgcore: load textures ...
+  texture loaded [prop_bochenok.dds], id = 91
+sgcore: all loaded textures [92]
+sgcore: load textures ...
+  texture loaded [prop_chair1.dds], id = 93
+sgcore: all loaded textures [94]
+sgcore: load textures ...
+  texture loaded [prop_chair1a.dds], id = 95
+sgcore: all loaded textures [96]
+sgcore: load textures ...
+  texture loaded [prop_dangerbox.dds], id = 97
+sgcore: all loaded textures [98]
+sgcore: load textures ...
+  texture loaded [prop_electroengine1.dds], id = 99
+sgcore: all loaded textures [100]
+sgcore: load textures ...
+  texture loaded [prop_grate1.dds], id = 101
+sgcore: all loaded textures [102]
+sgcore: load textures ...
+  texture loaded [prop_kanistra.dds], id = 103
+sgcore: all loaded textures [104]
+sgcore: load textures ...
+  texture loaded [prop_lamppost1.dds], id = 105
+sgcore: all loaded textures [106]
+sgcore: load textures ...
+  texture loaded [prop_lamppost1a.dds], id = 107
+sgcore: all loaded textures [108]
+sgcore: load textures ...
+  texture loaded [prop_lamppost1b.dds], id = 109
+sgcore: all loaded textures [110]
+sgcore: load textures ...
+  texture loaded [prop_mus_kont_01.dds], id = 111
+sgcore: all loaded textures [112]
+sgcore: load textures ...
+  texture loaded [prop_mus_kont_01a.dds], id = 113
+sgcore: all loaded textures [114]
+sgcore: load textures ...
+  texture loaded [prop_musor_02.dds], id = 115
+sgcore: all loaded textures [116]
+sgcore: load textures ...
+  texture loaded [prop_provod_05.dds], id = 117
+sgcore: all loaded textures [118]
+sgcore: load textures ...
+  texture loaded [prop_table1.dds], id = 119
+sgcore: all loaded textures [120]
+sgcore: load textures ...
+  texture loaded [prop_table1a.dds], id = 121
+sgcore: all loaded textures [122]
+sgcore: load textures ...
+  texture loaded [prop_table1b.dds], id = 123
+sgcore: all loaded textures [124]
+sgcore: load textures ...
+  texture loaded [prop_table1c.dds], id = 125
+sgcore: all loaded textures [126]
+sgcore: load textures ...
+  texture loaded [prop_transformer_dw.dds], id = 127
+sgcore: all loaded textures [128]
+sgcore: load textures ...
+  texture loaded [prop_urna.dds], id = 129
+sgcore: all loaded textures [130]
+* sgcore: shader [mtrlgeom_base.vs] is detected, name[mtrlgeom_base], id = [10]
+* sgcore: shader [mtrlgeom_base.ps] is detected, name[mtrlgeom_base], id [20]
+sgcore: load textures ...
+  texture loaded [prop_zabor_iov.dds], id = 131
+sgcore: all loaded textures [132]
+sgcore: load textures ...
+  texture loaded [ston_beton_ch_15.dds], id = 133
+sgcore: all loaded textures [134]
+sgcore: load textures ...
+  texture loaded [ston_beton_iov_01.dds], id = 135
+sgcore: all loaded textures [136]
+sgcore: load textures ...
+  texture loaded [ston_beton_iov_06.dds], id = 137
+sgcore: all loaded textures [138]
+sgcore: load textures ...
+  texture loaded [ston_beton_iov_dirt_01.dds], id = 139
+sgcore: all loaded textures [140]
+sgcore: load textures ...
+  texture loaded [ston_beton_lom_iov.dds], id = 141
+sgcore: all loaded textures [142]
+sgcore: load textures ...
+  texture loaded [ston_beton_pod_01.dds], id = 143
+sgcore: all loaded textures [144]
+sgcore: load textures ...
+  texture loaded [ston_beton_stena_iov_hi.dds], id = 145
+sgcore: all loaded textures [146]
+sgcore: load textures ...
+  texture loaded [ston_br2_iov.dds], id = 147
+sgcore: all loaded textures [148]
+sgcore: load textures ...
+  texture loaded [ston_bricks10.dds], id = 149
+sgcore: all loaded textures [150]
+sgcore: load textures ...
+  texture loaded [ston_bricks3.dds], id = 151
+sgcore: all loaded textures [152]
+sgcore: load textures ...
+  texture loaded [ston_bricks_j10.dds], id = 153
+sgcore: all loaded textures [154]
+sgcore: load textures ...
+  texture loaded [ston_briks_iov_dirt_01.dds], id = 155
+sgcore: all loaded textures [156]
+sgcore: load textures ...
+  texture loaded [ston_floor_04.dds], id = 157
+sgcore: all loaded textures [158]
+sgcore: load textures ...
+  texture loaded [ston_kazarmawall_iov.dds], id = 159
+sgcore: all loaded textures [160]
+sgcore: load textures ...
+  texture loaded [ston_old_beton_iov.dds], id = 161
+sgcore: all loaded textures [162]
+sgcore: load textures ...
+  texture loaded [ston_old_wall_iov.dds], id = 163
+sgcore: all loaded textures [164]
+sgcore: load textures ...
+  texture loaded [ston_pol_smola_iov.dds], id = 165
+sgcore: all loaded textures [166]
+sgcore: load textures ...
+  texture loaded [ston_stripes_iov.dds], id = 167
+sgcore: all loaded textures [168]
+sgcore: load textures ...
+  texture loaded [ston_stuccobrick2_iov.dds], id = 169
+sgcore: all loaded textures [170]
+sgcore: load textures ...
+  texture loaded [ston_stuccowall2_iov.dds], id = 171
+sgcore: all loaded textures [172]
+* sgcore: shader [mtrlgeom_base.vs] is detected, name[mtrlgeom_base], id = [10]
+sgcore: shader [mtrlgeom_land.ps] is loaded, name[main], id [51]
+sgcore: load textures ...
+  texture loaded [terrain_mp_atp.dds], id = 173
+  texture loaded [detail_grnd_grass_nrm.dds], id = 174
+  texture loaded [detail_grnd_asphalt_nrm.dds], id = 175
+  texture loaded [detail_grnd_yantar_nrm.dds], id = 176
+  texture loaded [detail_asfalt_det1_nrm.dds], id = 177
+  texture loaded [detail_grnd_grass.dds], id = 178
+  texture loaded [detail_grnd_asphalt.dds], id = 179
+  texture loaded [detail_grnd_yantar.dds], id = 180
+  texture loaded [detail_asfalt_det1.dds], id = 181
+  texture loaded [terrain_mp_atp_mask.dds], id = 182
+sgcore: all loaded textures [183]
+* sgcore: shader [mtrlgeom_base.vs] is detected, name[mtrlgeom_base], id = [10]
+* sgcore: shader [mtrlgeom_base.ps] is detected, name[mtrlgeom_base], id [20]
+sgcore: load textures ...
+  texture loaded [trees_forestwall1.dds], id = 184
+sgcore: all loaded textures [185]
+sgcore: load textures ...
+  texture loaded [veh_kamaz_base1.dds], id = 186
+sgcore: all loaded textures [187]
+sgcore: load textures ...
+  texture loaded [veh_kamazwheel1.dds], id = 188
+sgcore: all loaded textures [189]
+sgcore: load textures ...
+  texture loaded [veh_kamazwheel1a.dds], id = 190
+sgcore: all loaded textures [191]
+sgcore: load textures ...
+  texture loaded [veh_kamazwheel1b.dds], id = 192
+sgcore: all loaded textures [193]
+sgcore: load textures ...
+  texture loaded [veh_kamazwheel1c.dds], id = 194
+sgcore: all loaded textures [195]
+sgcore: shader [mtrlgeom_water.vs] is loaded, name[main], id = [13]
+sgcore: shader [mtrlgeom_water_color_reflection.ps] is loaded, name[main], id [52]
+sgcore: load textures ...
+  texture loaded [water_color_test.dds], id = 196
+  texture loaded [water_normal2.dds], id = 197
+  texture loaded [water_dudv.dds], id = 198
+  texture loaded [water_studen.dds], id = 199
+sgcore: all loaded textures [200]
+sgcore: load textures ...
+  texture loaded [wood_doski2.dds], id = 201
+sgcore: all loaded textures [202]
+sgcore: load textures ...
+  texture loaded [wood_doski_1.dds], id = 203
+sgcore: all loaded textures [204]
+sgcore: load textures ...
+  texture loaded [wood_jasik.dds], id = 205
+sgcore: all loaded textures [206]
+sgcore: load textures ...
+  texture loaded [wood_paint_iov02.dds], id = 207
+sgcore: all loaded textures [208]
+sgcore: load textures ...
+  texture loaded [wood_plank6.dds], id = 209
+sgcore: all loaded textures [210]
+sgcore: load textures ...
+  texture loaded [wood_plank6_bar.dds], id = 211
+sgcore: all loaded textures [212]
+sgcore: load textures ...
+  texture loaded [wood_plank8.dds], id = 213
+sgcore: all loaded textures [214]
+sgcore: load textures ...
+  texture loaded [wood_stolb_iov.dds], id = 215
+sgcore: all loaded textures [216]
+sgcore: load textures ...
+  texture loaded [wood_zabor_iov.dds], id = 217
+sgcore: all loaded textures [218]
+sgcore: load textures ...
+  texture loaded [det_darkvalley.dds], id = 219
+sgcore: all loaded textures [220]
