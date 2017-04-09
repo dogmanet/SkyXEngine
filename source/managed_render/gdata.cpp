@@ -62,6 +62,9 @@ void GData::IDsShaders::InitAllShaders()
 	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_stencil_column.ps", "pp_stencil_column", ShaderCheckDouble::scd_path);
 	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_stencil_str_column.ps", "pp_stencil_str_column", ShaderCheckDouble::scd_path);
 	GData::IDsShaders::PS::SmoothingAlpha = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_transparency_smoothing.ps", "pp_transparency_smoothing", ShaderCheckDouble::scd_path);
+
+	GData::IDsShaders::VS::CPGeom = SGCore_ShaderLoad(ShaderType::st_vertex, "cp_geom.vs", "cp_geom", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::PS::CPGeom = SGCore_ShaderLoad(ShaderType::st_pixel, "cp_geom.ps", "cp_geom", ShaderCheckDouble::scd_path);
 }
 
 LRESULT CALLBACK GData::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

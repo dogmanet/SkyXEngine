@@ -1140,12 +1140,33 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
+				float4x4 mvp, mvp2;
+				Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mvp);
+				
+				mvp2 = mvp;
+				//mvp2._41 = mvp2._42 = mvp2._43 = 0;
+				//mvp2._44 = 1;
+				float3 planepoint = /*center; //*/ SMVector3Transform(center, mvp);
+				//planepoint /= planepoint.w;
+				float3 planenormal = /*float3(plane.a, plane.b, plane.c);//*/ SMVector3Transform(float3(plane.a, plane.b, plane.c), mvp2);
+				planenormal = SMVector3Normalize(planenormal);
+				//planenormal /= planenormal.w;
+				mvp = SMMatrixTranspose(mvp);
+				
+
+				SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::CPGeom);
+				SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::CPGeom);
+				SGCore_ShaderSetVRF(ShaderType::st_vertex, GData::IDsShaders::VS::CPGeom, "WorldViewProjection", &mvp);
+				SGCore_ShaderSetVRF(ShaderType::st_pixel, GData::IDsShaders::PS::CPGeom, "PlaneNormal", &planenormal);
+				SGCore_ShaderSetVRF(ShaderType::st_pixel, GData::IDsShaders::PS::CPGeom, "PlanePoint", &planepoint);
+
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
 					SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
 				
-				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
+				SGCore_ShaderUnBind();
+				/*if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
 					SGeom_GreenRender(timeDelta, &float3(center), GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
-
+					*/
 				GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
 
 				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -1424,9 +1445,10 @@ void SXRenderFunc::RFuncMtlSet(ID id, float4x4* world)
 	else if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_FREE)
 	{
 		SML_MtlSetMainTexture(0, id);
-		//GData::DXDevice->SetTransform(D3DTS_WORLD, &((world ? (*world) : SMMatrixIdentity()).operator D3DXMATRIX()));
+		//GData::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
-		SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world);
+		//SGCore_ShaderUnBind();
+		//SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world);
 	}
 	else if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_MATERIAL)
 		SML_MtlRender(id, world);
