@@ -146,11 +146,12 @@ void GData::InitWin(const char* name)
 		name,
 		name,
 		WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-		0, 0,
+		CW_USEDEFAULT, CW_USEDEFAULT,
 		rc.right - rc.left, rc.bottom - rc.top,
 		0, 0,
 		GetModuleHandle(0),
 		0);
+	
 	//SetWindowLong(SkyXEngine::Core::Data::HandleWinD3D,GWL_STYLE, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 	/*if(wndproc)
 	SetWindowLong(hwnd, GWL_WNDPROC, (LONG)wndproc);*/
