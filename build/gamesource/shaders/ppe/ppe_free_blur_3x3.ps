@@ -1,0 +1,33 @@
+
+#include <../struct.h>
+
+half2 PixelSize;
+
+sampler2D BlurMap:register(s0);
+
+struct VS_OUTPUT_BLUR
+{
+	half4 Pos	:POSITION0;
+	half2 TexUV	:TEXCOORD0;
+};
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half4 CountColor = tex2D(BlurMap,IN.TexUV);
+	
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(-PixelSize.x,0)));
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(PixelSize.x,0)));
+	
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(0,-PixelSize.y)));
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(0,PixelSize.y)));
+	
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(-PixelSize.x,PixelSize.y)));
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(PixelSize.x,PixelSize.y)));
+	
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(-PixelSize.x,-PixelSize.y)));
+	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(PixelSize.x,-PixelSize.y)));
+	
+	CountColor/=9.f;
+
+	return CountColor;
+}

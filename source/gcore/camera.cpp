@@ -136,7 +136,7 @@ Camera::Camera()
 
 Camera::~Camera	()
 {
-	
+	mem_delete(ObjFrustum);
 }
 
 inline void Camera::PosLeftRight(float units)

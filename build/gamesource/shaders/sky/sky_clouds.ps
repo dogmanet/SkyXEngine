@@ -1,0 +1,32 @@
+
+#include <../struct.h>
+
+sampler2D BaseCloudsTexture: register(s0);
+sampler2D SecondCloudsTexture: register(s1);
+
+half2 BlendFactorBias;
+half4 Color;
+half Alpha;
+
+half4 main(vs_out_skyclouds IN):COLOR0
+{
+	half dist = (1.0f)-distance(IN.TexUV,half2(1,1));
+	IN.TexUV.x += BlendFactorBias.y;
+	
+	half4 Color1 = tex2D(BaseCloudsTexture, IN.TexUV);
+	half4 Color2 = tex2D(SecondCloudsTexture, IN.TexUV);
+	half4 FinalColor = lerp(Color1,Color2,BlendFactorBias.x);
+	dist *= 1.f + dist;
+	FinalColor.a *= saturate(dist);
+	
+	#ifndef SHADOW
+	FinalColor.rgb = lerp(FinalColor.rgb,Color.rgb,Color.a);
+	#endif
+	FinalColor.a *= Alpha;
+	
+	#ifdef SHADOW
+	return FinalColor.a;
+	#else
+	return FinalColor;
+	#endif
+}

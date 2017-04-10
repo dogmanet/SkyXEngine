@@ -1,0 +1,25 @@
+
+#include <../struct.h>
+
+half3 LightColor;
+half3 DarkColor;;
+half3 LumWeights;
+
+half CountSepia;
+
+sampler2D FrameSampler:register(s0);
+
+half4 main(vs_out_pp IN):COLOR0
+{
+	half4 color = tex2D(FrameSampler,IN.TexUV);
+	
+	half lum = dot(LumWeights,color);
+	half4 tmp_color = color;
+	tmp_color.rgb = DarkColor*(1.0-lum) + LightColor*lum;
+	tmp_color.rgb *= CountSepia * 2.0;
+	color.rgb *= 1.0 + (1.0 - (CountSepia * 2.0));
+	color += tmp_color;
+	color /= 2.0;
+	
+	return color;
+}

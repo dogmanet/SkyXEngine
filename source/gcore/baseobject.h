@@ -7,6 +7,8 @@ struct SXTransObject : public virtual ISXTransObject
 	SXTransObject(){};
 	~SXTransObject(){};
 
+	void Release(){ mem_del(this); };
+
 	SX_ALIGNED_OP_MEM
 
 	inline float4x4* CalcWorld();
@@ -30,6 +32,8 @@ class SXBound : public SXTransObject, public virtual ISXBound
 public:
 	SXBound(){};
 	~SXBound(){};
+
+	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 

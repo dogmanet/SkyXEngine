@@ -1,0 +1,16 @@
+
+#include <../struct.h>
+
+half CountPassWB;
+
+sampler2D FrameSampler:register(s0);
+
+half4 main(vs_out_pp IN):COLOR0
+{
+	half4 color = tex2D(FrameSampler,IN.TexUV);
+	
+	half count_color = color.r + color.g + color.b;
+	count_color *= 0.333;
+	
+	return half4(lerp(color.rgb,count_color,CountPassWB),color.a);
+}

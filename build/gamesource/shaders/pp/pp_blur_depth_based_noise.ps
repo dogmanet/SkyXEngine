@@ -1,0 +1,48 @@
+
+#include <../struct.h>
+
+half4 PixelSize;
+
+sampler2D DepthMap:register(s0);
+sampler2D BlurMap:register(s1);
+sampler2D NoiseSampler:register(s2);
+
+half2 NearFar;
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half2 jitter = ((tex2D( NoiseSampler , IN.TexUV.xy * 256.0f).xy * 2.0f - 1.0f )*PixelSize);
+  
+	half4 Color = tex2D(BlurMap,IN.TexUV);
+	half CenterDepth = tex2D(DepthMap, IN.TexUV).r * NearFar.y;
+	
+	half4 sourcevals[8];
+	sourcevals[0] = tex2D( BlurMap , IN.TexUV.xy + half2(-PixelSize.x, 0.0) + jitter );
+	sourcevals[1] = tex2D( BlurMap , IN.TexUV.xy + half2(PixelSize.x, 0.0) + jitter );
+	sourcevals[2] = tex2D( BlurMap , IN.TexUV.xy + half2(0.0, PixelSize.y) + jitter  );
+	sourcevals[3] = tex2D( BlurMap , IN.TexUV.xy + half2(0.0, -PixelSize.y) + jitter  );
+	
+	sourcevals[4] = tex2D( BlurMap , IN.TexUV.xy + half2(-PixelSize.x, PixelSize.y) + jitter );
+	sourcevals[5] = tex2D( BlurMap , IN.TexUV.xy + half2(PixelSize.x, -PixelSize.y) + jitter );
+	sourcevals[6] = tex2D( BlurMap , IN.TexUV.xy + half2(PixelSize.x, PixelSize.y) + jitter  );
+	sourcevals[7] = tex2D( BlurMap , IN.TexUV.xy + half2(-PixelSize.x, -PixelSize.y) + jitter  );
+	
+	half depthsourcevals[8];
+	depthsourcevals[0] = tex2D( DepthMap , IN.TexUV.xy + half2(-PixelSize.x, 0.0) + jitter ).r * NearFar.y;
+	depthsourcevals[1] = tex2D( DepthMap , IN.TexUV.xy + half2(PixelSize.x, 0.0) + jitter ).r * NearFar.y;
+	depthsourcevals[2] = tex2D( DepthMap , IN.TexUV.xy + half2(0.0, PixelSize.y) + jitter  ).r * NearFar.y;
+	depthsourcevals[3] = tex2D( DepthMap , IN.TexUV.xy + half2(0.0, -PixelSize.y) + jitter  ).r * NearFar.y;
+	
+	depthsourcevals[4] = tex2D( DepthMap , IN.TexUV.xy + half2(-PixelSize.x, PixelSize.y) + jitter ).r * NearFar.y;
+	depthsourcevals[5] = tex2D( DepthMap , IN.TexUV.xy + half2(PixelSize.x, -PixelSize.y) + jitter ).r * NearFar.y;
+	depthsourcevals[6] = tex2D( DepthMap , IN.TexUV.xy + half2(PixelSize.x, PixelSize.y) + jitter  ).r * NearFar.y;
+	depthsourcevals[7] = tex2D( DepthMap , IN.TexUV.xy + half2(-PixelSize.x, -PixelSize.y) + jitter  ).r * NearFar.y;
+	
+		for(int i=0;i<8;i++)
+		{
+			half coef = saturate(1.f - abs(depthsourcevals[i] - CenterDepth));
+			Color = lerp(Color,sourcevals[i],coef);
+		}
+	
+	return Color;
+}

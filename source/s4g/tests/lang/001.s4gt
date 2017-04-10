@@ -1,6 +1,0 @@
---TEST--
-Simple If condition test
---FILE--
-$a=1; if(a>0) { print("Yes"); }
---EXPECT--
-Yes

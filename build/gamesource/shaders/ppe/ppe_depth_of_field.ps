@@ -1,0 +1,39 @@
+
+#include <../struct.h>
+
+half4 Param;
+//x - откуда начинается нормальное видиние
+//y - где оно заканчивается
+//z - постепенный переход на ближней плоскости
+//w - постепенный переход на дальней плоскости
+half SkyBlur;//на сколько блюрить небо
+
+half2 NearFar;
+
+sampler2D FrameSampler:register(s0);
+sampler2D DepthSampler:register(s1);
+sampler2D BlurSampler:register(s2);
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half4 color = tex2D(FrameSampler,IN.TexUV);
+	half tmp_DOF_NearDist	= Param.x	/ NearFar.y;
+	half tmp_DOF_FarDist	= Param.y	/ NearFar.y;
+	half tmp_DOF_NearRange	= Param.z	/ NearFar.y;
+	half tmp_DOF_FarRange	= Param.w	/ NearFar.y;
+
+	half Depth = tex2D(DepthSampler, IN.TexUV).r;
+			
+	half4 BlurColor = tex2D(BlurSampler,IN.TexUV);
+	
+    half Blur = max(
+						saturate(1.f - (Depth - tmp_DOF_NearDist) / tmp_DOF_NearRange),
+						saturate((Depth - (tmp_DOF_FarDist - tmp_DOF_FarRange)) / tmp_DOF_FarRange)
+					);
+	Blur = clamp(0.0, 1.0, Blur);
+	Blur = lerp(Blur, SkyBlur, clamp(sign(Depth - 0.99)+1.0, 0.0, 1.0));
+		/*if(Depth >= 0.99)
+			Blur = SkyBlur;*/
+
+	return lerp(color, BlurColor, Blur);
+}

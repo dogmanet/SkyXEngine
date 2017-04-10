@@ -79,7 +79,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 	mem_delete(pVertices);
 }
 
-void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert)
+void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert)
 {
 	float3_t *V = 0;
 	HRESULT hr = 0;
@@ -121,7 +121,7 @@ void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DW
 		{
 			int wefdsfs=0;
 		}
-	bound->SetMinMax(&float3(Min),&float3(Max));
+	(*bound)->SetMinMax(&float3(Min),&float3(Max));
 }
 
 void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert)
@@ -311,7 +311,7 @@ inline bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,flo
 
 ////////////////////
 
-void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
+void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound** bound_arr)
 {
 	float3 tmpMin2,tmpMax2;
 	float3 tmpMin,tmpMax;
@@ -341,7 +341,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(dist_x,dist_y,dist_z);
 
-	(bound_arr[0]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[0])->SetMinMax(&tmpMin2,&tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -358,7 +358,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(-dist_x,dist_y,dist_z);
 
-	(bound_arr[1]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[1])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -376,7 +376,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(dist_x,dist_y,-dist_z);
 
-	(bound_arr[2]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[2])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -394,7 +394,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(-dist_x,dist_y,-dist_z);
 
-	(bound_arr[3]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[3])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	
@@ -412,7 +412,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(dist_x,-dist_y,dist_z);
 
-	(bound_arr[4]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[4])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -429,7 +429,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(-dist_x,-dist_y,dist_z);
 
-	(bound_arr[5]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[5])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -447,7 +447,7 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(dist_x,-dist_y,-dist_z);
 
-	(bound_arr[6]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[6])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -465,10 +465,10 @@ void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(-dist_x,-dist_y,-dist_z);
 
-	(bound_arr[7]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[7])->SetMinMax(&tmpMin2, &tmpMax2);
 }
 
-void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound* bound_arr)
+void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound** bound_arr)
 {
 	float3 tmpMin2,tmpMax2;
 	float3 tmpMin,tmpMax;
@@ -498,7 +498,7 @@ void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(dist_x,0,dist_z);
 
-	(bound_arr[0]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[0])->SetMinMax(&tmpMin2,&tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -515,7 +515,7 @@ void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(-dist_x,0,dist_z);
 
-	(bound_arr[1]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[1])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -533,7 +533,7 @@ void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(dist_x,0,-dist_z);
 
-	(bound_arr[2]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[2])->SetMinMax(&tmpMin2, &tmpMax2);
 
 
 	tmpMin2.x = -dist_x;
@@ -551,7 +551,7 @@ void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound* bound_arr)
 	tmpMax2 += float3(x,y,z);
 	tmpMax2 += float3(-dist_x,0,-dist_z);
 
-	(bound_arr[3]).SetMinMax(&tmpMin2,&tmpMax2);
+	(bound_arr[3])->SetMinMax(&tmpMin2, &tmpMax2);
 }
 
 ////////////////////
@@ -585,4 +585,46 @@ void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect
 			*v += dv;
 		}
 	(*bbmesh)->UnlockVertexBuffer();
+}
+
+void OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
+{
+	uint16_t* pdwRemap = new uint16_t[numFaces];
+	D3DXOptimizeFaces(ib, numFaces, numVerts, FALSE, (DWORD*)pdwRemap);
+
+	uint16_t* pCopyIB = new uint16_t[numFaces * 3];
+	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(uint16_t));
+
+	for (int i = 0; i<numFaces; ++i)
+	{
+		int newFace = (int)pdwRemap[i];
+		for (int j = 0; j<3; ++j)
+		{
+			ib[i * 3 + j] = pCopyIB[newFace * 3 + j];
+		}
+	}
+
+	mem_delete_a(pCopyIB);
+	mem_delete_a(pdwRemap);
+}
+
+void OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
+{
+	uint32_t* pdwRemap = new uint32_t[numFaces];
+	D3DXOptimizeFaces(ib, numFaces, numVerts, TRUE, (DWORD*)pdwRemap);
+
+	uint32_t* pCopyIB = new uint32_t[numFaces * 3];
+	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(uint32_t));
+
+	for (int i = 0; i<numFaces; ++i)
+	{
+		int newFace = (int)pdwRemap[i];
+		for (int j = 0; j<3; ++j)
+		{
+			ib[i * 3 + j] = pCopyIB[newFace * 3 + j];
+		}
+	}
+
+	mem_delete_a(pCopyIB);
+	mem_delete_a(pdwRemap);
 }

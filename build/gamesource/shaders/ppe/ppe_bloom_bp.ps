@@ -1,0 +1,25 @@
+
+#include <../struct.h>
+
+half3 Param;
+//x - во сколько раз увеличиваем цвет пикселя
+//y - минимальное значение цвета
+//z - во сколько раз увеличиваем цвет пикселя если он прошел тест 
+
+sampler2D BaseSampler:register(s0);
+
+half4 IsBlooming(half4 c)
+{
+		[branch]if (c.r >= Param.y && c.g >= Param.y && c.b >= Param.y)
+		{
+			half3 tmp = c.rgb * Param.z;
+			return half4(tmp.rgb,1.0);
+		}
+		else
+			return half4(0.0, 0.0, 0.0, 0.0);
+}
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	return IsBlooming(half4(tex2D(BaseSampler, IN.TexUV).xyz*Param.x, 1.0));
+}

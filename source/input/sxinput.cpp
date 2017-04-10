@@ -1,6 +1,6 @@
 
 #include <input\sxinput.h>
-#include <input\sxinput_class.cpp>
+#include <input\input.cpp>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -9,7 +9,12 @@
 #define SXINPUT_VERSION 1
 
 SXInput* ObjectInput = 0;
+#if !defined(DEF_STD_REPORT)
+#define DEF_STD_REPORT
 report_func reportf = def_report;
+#endif
+
+#define SI_PRECOND(retval) if(!ObjectInput){reportf(-1, "%s - sxinput is not init", gen_msg_location); return retval;}
 
 long SSInput_0GetVersion()
 {
@@ -19,6 +24,36 @@ long SSInput_0GetVersion()
 void SSInput_Dbg_Set(report_func rf)
 {
 	reportf = rf;
+}
+
+void InitIntup(const char* name, HWND hwnd)
+{
+	ObjectInput = new SXInput(name);
+	int cerr = ObjectInput->Init(hwnd, GetModuleHandle(0));
+	if (cerr == SX_INPUT_ERR_CDI_INVALID_ARG)
+		reportf(-1, "%s - invalid args, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_CDI_OUT_OF_MEM)
+		reportf(-1, "%s - out of memory, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_CDI_NONE_ERR)
+		reportf(-1, "%s - other error, system input", gen_msg_location);
+
+	else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD)
+		reportf(-1, "%s - none init device keyboard, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD)
+		reportf(-1, "%s - none init format for device keyboard, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_COOPERATIVE_KEYBOARD)
+		reportf(-1, "%s - none init level cooperation for device keyboard, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_ACQUIRE_KEYBOARD)
+		reportf(-1, "%s - none acquire device keyboard, system input", gen_msg_location);
+
+	else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_MOUSE)
+		reportf(-1, "%s - none init device mouse, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE)
+		reportf(-1, "%s - none init format for device mouse, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_COOPERATIVE_MOUSE)
+		reportf(-1, "%s - none init level cooperation for device mouse, system input", gen_msg_location);
+	else if (cerr == SX_INPUT_ERR_ACQUIRE_MOUSE)
+		reportf(-1, "%s - none acquire device mouse, system input", gen_msg_location);
 }
 
 void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
@@ -35,62 +70,12 @@ void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
 						}
 						else
 						{
-							ObjectInput = new SXInput(name);
-							int cerr = ObjectInput->Init(hwnd,GetModuleHandle(0));
-							if (cerr == SX_INPUT_ERR_CDI_INVALID_ARG)
-								reportf(-1, "%s - invalid args, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_CDI_OUT_OF_MEM)
-								reportf(-1, "%s - out of memory, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_CDI_NONE_ERR)
-								reportf(-1, "%s - other error, system input", gen_msg_location);
-
-							else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD)
-								reportf(-1, "%s - none init device keyboard, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD)
-								reportf(-1, "%s - none init format for device keyboard, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_COOPERATIVE_KEYBOARD)
-								reportf(-1, "%s - none init level cooperation for device keyboard, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_ACQUIRE_KEYBOARD)
-								reportf(-1, "%s - none acquire device keyboard, system input", gen_msg_location);
-
-							else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_MOUSE)
-								reportf(-1, "%s - none init device mouse, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE)
-								reportf(-1, "%s - none init format for device mouse, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_COOPERATIVE_MOUSE)
-								reportf(-1, "%s - none init level cooperation for device mouse, system input", gen_msg_location);
-							else if (cerr == SX_INPUT_ERR_ACQUIRE_MOUSE)
-								reportf(-1, "%s - none acquire device mouse, system input", gen_msg_location);
+							InitIntup(name, hwnd);
 						}
 				}
 				else
 				{
-					ObjectInput = new SXInput(name);
-					int cerr = ObjectInput->Init(hwnd,GetModuleHandle(0));
-					if (cerr == SX_INPUT_ERR_CDI_INVALID_ARG)
-						reportf(-1, "%s - invalid args, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_CDI_OUT_OF_MEM)
-						reportf(-1, "%s - out of memory, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_CDI_NONE_ERR)
-						reportf(-1, "%s - other error, system input", gen_msg_location);
-
-					else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD)
-						reportf(-1, "%s - none init device keyboard, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD)
-						reportf(-1, "%s - none init format for device keyboard, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_COOPERATIVE_KEYBOARD)
-						reportf(-1, "%s - none init level cooperation for device keyboard, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_ACQUIRE_KEYBOARD)
-						reportf(-1, "%s - none acquire device keyboard, system input", gen_msg_location);
-
-					else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_MOUSE)
-						reportf(-1, "%s - none init device mouse, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE)
-						reportf(-1, "%s - none init format for device mouse, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_COOPERATIVE_MOUSE)
-						reportf(-1, "%s - none init level cooperation for device mouse, system input", gen_msg_location);
-					else if (cerr == SX_INPUT_ERR_ACQUIRE_MOUSE)
-						reportf(-1, "%s - none acquire device mouse, system input", gen_msg_location);
+					InitIntup(name, hwnd);
 				}
 		}
 		else
@@ -99,140 +84,107 @@ void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
 
 void SSInput_Update()
 {
-		if(ObjectInput)
-			ObjectInput->Update();
-		else
-			reportf(-1, "%s - input sub system is not init",gen_msg_location);
+	SI_PRECOND();
+	ObjectInput->Update();
 }
 
-bool SSInput_GetKeyState(unsigned char Key)
+bool SSInput_GetKeyState(InputCode Key)
 {
-		if(ObjectInput)
-			return ObjectInput->GetKeyState(Key);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	return ObjectInput->GetKeyState(Key);
 }
 
-bool SSInput_GetButtonState(unsigned char Number)
+bool SSInput_GetButtonState(InputCode Number)
 {
-		if(ObjectInput)
-			return ObjectInput->GetButtonState(Number);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	return ObjectInput->GetButtonState(Number);
 }
 
-bool SSInput_IsOtherButtonOn(unsigned char Button)
+bool SSInput_IsOtherButtonOn(InputCode Button)
 {
-		if(ObjectInput)
-			return ObjectInput->IsOtherButtonOn(Button);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	return ObjectInput->IsOtherButtonOn(Button);
 }
 
-DWORD SSInput_GetKeyEvents(unsigned char Key)
+InputEvents SSInput_GetKeyEvents(InputCode Key)
 {
-		if(ObjectInput)
-			return ObjectInput->GetKeyEvents(Key);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(InputEvents::iv_dissable);
+	return ObjectInput->GetKeyEvents(Key);
 }
 
-WORD SSInput_GetButtonEvent(unsigned char Button)
+InputEvents SSInput_GetButtonEvent(InputCode Button)
 {
-		if(ObjectInput)
-			return ObjectInput->GetButtonEvent(Button);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(InputEvents::iv_dissable);
+	return ObjectInput->GetButtonEvent(Button);
 }
 
 long SSInput_GetScroll()
 {
-		if(ObjectInput)
-			return ObjectInput->GetScroll();
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(0);
+	return ObjectInput->GetScroll();
 }
 
-bool SSInput_GetMouseDouble(unsigned char Button)
+bool SSInput_GetMouseDouble(InputCode Button)
 {
-		if(ObjectInput)
-			return ObjectInput->GetMouseDouble(Button);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	return ObjectInput->GetMouseDouble(Button);
 }
 
-int SSInput_IsMouseClick()
+InputCode SSInput_IsMouseClick()
 {
-		if(ObjectInput)
-			return ObjectInput->IsMouseClick(&(ObjectInput->MouseState));
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(-1);
+	return ObjectInput->IsMouseClick();
 }
 
-bool SSInput_GetExeEventsS(SXInMess *Event)
+bool SSInput_GetExeEventsS(InMess *Event)
 {
-		if(ObjectInput)
-			return ObjectInput->GetExeEvents(Event);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	return ObjectInput->GetExeEvents(Event);
 }
 
-bool SSInput_GetExeEvents(WORD type,WORD sect,WORD code)
+bool SSInput_GetExeEvents(InputDevice type, InputCode sect, InputEvents code)
 {
-		if(ObjectInput)
-			return ObjectInput->GetExeEvents(type,sect,code);
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	return ObjectInput->GetExeEvents(type,sect,code);
 }
 
 bool SSInput_GetActiveKeyOrButton()
 {
-		if(ObjectInput)
-		{
-				for(int i=0;i<256;i++)
-				{
-						if(ObjectInput->GetKeyState(i))
-							return true;
-				}
+	SI_PRECOND(false);
+		
+	for(int i=0;i<256;i++)
+	{
+		if(ObjectInput->GetKeyState(i))
+			return true;
+	}
 
-				for(int i=0;i<3;i++)
-				{
-						if(ObjectInput->GetButtonState(i))
-							return true;
-				}
-			return 0;
-		}
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	for(int i=0;i<3;i++)
+	{
+		if(ObjectInput->GetButtonState(i))
+			return true;
+	}
+	return 0;
 }
 
 bool SSInput_GetActiveButton()
 {
-		if(ObjectInput)
-		{
-				for(int i=0;i<3;i++)
-				{
-						if(ObjectInput->GetButtonState(i))
-							return true;
-				}
-			return 0;
-		}
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	SI_PRECOND(false);
+	for(int i=0;i<3;i++)
+	{
+		if(ObjectInput->GetButtonState(i))
+			return true;
+	}
+	return 0;
 }
 
 bool SSInput_GetActiveKey()
 {
-		if(ObjectInput)
-		{
-				for(int i=0;i<256;i++)
-				{
-						if(ObjectInput->GetKeyState(i))
-							return true;
-				}
+	SI_PRECOND(false);
+	for(int i=0;i<256;i++)
+	{
+		if(ObjectInput->GetKeyState(i))
+			return true;
+	}
 
-			return 0;
-		}
-		else
-			reportf(-1, "%s - input sub system is not init", gen_msg_location);
+	return 0;
 }

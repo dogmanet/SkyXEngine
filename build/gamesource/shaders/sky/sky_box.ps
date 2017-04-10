@@ -1,0 +1,18 @@
+
+#include <../struct.h>
+
+samplerCUBE BaseSkyTexture: register(s0);
+samplerCUBE SecondSkyTexture: register(s1);
+
+half BlendFactor;
+half4 Color;
+
+half4 main(vs_out_skybox IN):COLOR0
+{
+	half4 Color1 = texCUBE(BaseSkyTexture, IN.TexUV);
+	half4 Color2 = texCUBE(SecondSkyTexture, IN.TexUV);
+	half4 FinalColor = lerp(Color1,Color2,BlendFactor);
+	FinalColor.rgb = lerp(FinalColor.rgb,Color.rgb,Color.a);
+	//FinalColor.a = 1;
+	return FinalColor;
+}

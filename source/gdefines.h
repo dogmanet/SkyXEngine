@@ -12,6 +12,8 @@
 #endif
 
 #define CORE_NAME_MAX_LEN 32	//максимальная длина имени объекта ядра/подсистемы
+#define OBJECT_NAME_MAX_LEN 64	//максимальная длина имени объекта
+#define CONFIG_SECTION_MAX_LEN 64	//максимальная длина секции конфигурационного файла
 
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
@@ -27,7 +29,7 @@ struct IBaseObject
 
 #endif
 
-#include "sxtypes.h"
+#include <common/sxtypes.h>
 
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);
 
@@ -47,6 +49,13 @@ typedef void (*report_func) (int level,const char* format,...);
 #if defined(_WINDOWS)
 #	include <Windows.h>
 #endif
+
+//уровни критичности сообщений для функции репортов
+#define REPORT_MSG_LEVEL_NOTICE 0
+#define REPORT_MSG_LEVEL_WARRNING 1
+#define REPORT_MSG_LEVEL_ERROR -1
+
+#define REPORT_MSG_MAX_LEN 4096
 
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT

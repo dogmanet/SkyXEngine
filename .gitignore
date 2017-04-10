@@ -190,6 +190,11 @@ ModelManifest.xml
 
 *.phpt
 libs/
-build/
+
 source/s4g/tests/failed/
 source/s4g/tests/
+
+build/*
+!gamesource/
+build/gamesource/*
+!shaders/

@@ -2,22 +2,22 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#pragma once
+#include <common\array.h>
 
-#define SHADER_COUNT_ARR_MACRO 12
+#pragma once
 
 struct ShaderVS
 {
 	ShaderVS(){VertexShader=0;ConstTable=0;};
 	~ShaderVS(){ mem_release(VertexShader); mem_release(ConstTable); };
-	char Name[256];
-	char Path[256];
+	char Name[SXGC_SHADER_MAX_SIZE_NAME];
+	char Path[SXGC_SHADER_MAX_SIZE_DIR];
 	int CountConst;
 	IDirect3DVertexShader9* VertexShader;
 	ID3DXConstantTable* ConstTable;
-	D3DXHANDLE ArrHandle[128];
-	D3DXCONSTANT_DESC ArrConst[128];
-	D3DXMACRO ArrMacro[SHADER_COUNT_ARR_MACRO];
+	D3DXHANDLE ArrHandle[SXGC_SHADER_VAR_MAX_COUNT];
+	D3DXCONSTANT_DESC ArrConst[SXGC_SHADER_VAR_MAX_COUNT];
+	D3DXMACRO ArrMacro[SXGC_SHADER_COUNT_MACRO];
 };
 
 
@@ -25,14 +25,14 @@ struct ShaderPS
 {
 	ShaderPS(){PixelShader=0;ConstTable=0;};
 	~ShaderPS(){ mem_release(PixelShader); mem_release(ConstTable); };
-	char Name[256];
-	char Path[256];
+	char Name[SXGC_SHADER_MAX_SIZE_NAME];
+	char Path[SXGC_SHADER_MAX_SIZE_DIR];
 	int CountConst;
 	IDirect3DPixelShader9* PixelShader;
 	ID3DXConstantTable* ConstTable;
-	D3DXHANDLE ArrHandle[128];
-	D3DXCONSTANT_DESC ArrConst[128];
-	D3DXMACRO ArrMacro[SHADER_COUNT_ARR_MACRO];
+	D3DXHANDLE ArrHandle[SXGC_SHADER_VAR_MAX_COUNT];
+	D3DXCONSTANT_DESC ArrConst[SXGC_SHADER_VAR_MAX_COUNT];
+	D3DXMACRO ArrMacro[SXGC_SHADER_COUNT_MACRO];
 };
 
 void LoadVertexShader(const char *path,ShaderVS* shader,D3DXMACRO* macro = 0);
@@ -45,39 +45,39 @@ public:
 	ShaderManager();
 	~ShaderManager();
 
-	//is_check_double - 0 не искать среди загруженных, 1 - искать среди загруженных, 2 - обновить если имееться, если нет то грузим
-	DWORD Load(int type_shader,const char* path,const char* name,int is_check_double,D3DXMACRO* macro = 0);
-	void Update(int type_shader,const char* name,D3DXMACRO macro[] = 0);
-	void Update(int type_shader,DWORD id,D3DXMACRO macro[] = 0);
+	ID Load(ShaderType type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro = 0);
+	void Update(ShaderType type_shader, const char* name, D3DXMACRO macro[] = 0);
+	void Update(ShaderType type_shader, ID id, D3DXMACRO macro[] = 0);
 
 	void ReloadAll();
 
-	DWORD GetID(int type_shader,const char* shader);
+	ID GetID(ShaderType type_shader, const char* shader);
 
-	void Bind(int type_shader,const char* shader);
-	void Bind(int type_shader,DWORD shader);
+	void Bind(ShaderType type_shader, const char* shader);
+	void Bind(ShaderType type_shader, ID shader);
 
 	void UnBind();
 
-	void SetValueRegisterF(int type_shader,const char* name_shader,const char* name_var,void* data);
-	void SetValueRegisterF(int type_shader,DWORD num_shader,const char* name_var,void* data);
+	void SetValueRegisterF(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_float4=0);
+	void SetValueRegisterF(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_float4 = 0);
 
-	void SetValueRegisterI(int type_shader,const char* name_shader,const char* name_var,void* data);
-	void SetValueRegisterI(int type_shader,DWORD num_shader,const char* name_var,void* data);
+	void SetValueRegisterI(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_int4 = 0);
+	void SetValueRegisterI(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_int4 = 0);
 
-	void SetValueRegisterB(int type_shader,const char* name_shader,const char* name_var,void* data);
-	void SetValueRegisterB(int type_shader,DWORD num_shader,const char* name_var,void* data);
+	void SetValueRegisterB(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_bool4 = 0);
+	void SetValueRegisterB(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_bool4 = 0);
 
-	DWORD IsExist(int type_shader,const char* name);
-	bool IsValidate(int type_shader,DWORD id);
+	ID IsExistPath(ShaderType type_shader, const char* path);
+	ID IsExistName(ShaderType type_shader, const char* name);
+	bool IsValidate(ShaderType type_shader, ID id);
 
-	inline void GetPath(int type_shader,DWORD id,char* path);
-	inline void GetName(int type_shader,DWORD id,char* name);
+	inline void GetPath(ShaderType type_shader, ID id, char* path);
+	inline void GetName(ShaderType type_shader, ID id, char* name);
 
 	inline void SetStdPath(const char* path){ strcpy(StdPath, path); };
 	inline void GetStdPath(char* path){		if(path) strcpy(path, StdPath); };
 protected:
-	char StdPath[1024];
+	char StdPath[SXGC_SHADER_MAX_SIZE_STDPATH];
 	Array<ShaderVS*> ArrVS;
 	Array<ShaderPS*> ArrPS;
 };

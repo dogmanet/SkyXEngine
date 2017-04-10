@@ -1,0 +1,27 @@
+
+#include <../struct.h>
+
+sampler2D ColorSampler:register(s0);
+sampler2D AmbientSampler:register(s1);
+sampler2D SpecDiffSampler:register(s2);
+sampler2D NormalSampler:register(s3);
+sampler2D AdaptedLumSampler:register(s4);
+
+half4 main(vs_out_pp IN):COLOR0
+{
+	half isunlit = tex2D(NormalSampler,IN.TexUV).a;
+
+	half4 color = tex2D(ColorSampler,IN.TexUV);
+
+	half4 ambient = tex2D(AmbientSampler,IN.TexUV);
+	half spec = tex2D(SpecDiffSampler,IN.TexUV).r;
+	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
+
+	if(isunlit != NOTLIGHTING_NOTTRANSPARENCY && isunlit != NOTLIGHTING_TRANSPARENCY)
+		color.xyz = ((sqrt(ambient.xyz * ambient.w)*color.xyz)) + sqrt(spec*ambient.xyz);
+
+	color.rgb *= 0.1/(fAdaptedLum + 0.001f);
+	color.rgb /= (fAdaptedLum + color.rgb);
+	
+	return color;
+}

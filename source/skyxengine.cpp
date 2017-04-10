@@ -1,204 +1,169 @@
 
+#define _CRT_SECURE_NO_WARNINGS
 #pragma once
-
+//#include <vld.h> 
 #define SX_EXE
 
 #include <windows.h>
 #include <ctime>
 #pragma comment(lib, "winmm.lib")
 #include <gdefines.h>
-#if defined(_DEBUG)
-#pragma comment(lib, "sxinput_d.lib")
-#else
-#pragma comment(lib, "sxinput.lib")
-#endif
-#include <input\\sxinput.h>
-#include <core\\array.h>
-#include <handler_out_log.cpp>
-//#include <core\\sxcore.cpp>
-#include <sxmath.h>
 
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxsound_d.lib")
-#else
-#pragma comment(lib, "sxsound.lib")
-#endif
-#include <sound\\sxsound.h>
+#include <managed_render\\handler_out_log.cpp>
+#include <SkyXEngine.h>
+#include <managed_render\\gdata.cpp>
+#include <managed_render\\camera_update.cpp>
+#include <managed_render\\render_func.cpp>
+#include <managed_render\\save_level.cpp>
+#include <managed_render\\load_level.cpp>
 
-/*#if defined(_DEBUG)
-#pragma comment(lib, "sxgcore_d.lib")
-#else
-#pragma comment(lib, "sxgcore.lib")
-#endif*/
-#include <gcore\\sxgcore.cpp>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxcore_d.lib")
-#else
-#pragma comment(lib, "sxcore.lib")
-#endif
-#include <core\\sxcore.cpp>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxguiwinapi_d.lib")
-#else
-#pragma comment(lib, "sxguiwinapi.lib")
-#endif
-#include <sxguiwinapi\\sxguielements.h>
-
-
-/*
-class WndMsgTask : public SXTask
-{
-public:
-	WndMsgTask() : SXTask(BACKGROUND_SYNC | REPEATING)
-	{
-	}
-	~WndMsgTask()
-	{
-	}
-
-	void run()
-	{
-		Sleep(1000);
-	}
-
-};*/
-
-void runqq()
-{
-	Sleep(1000);
-}
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-	ISXFile* tmpfile = Core_OpFile("./log.txt", SXFILE_TEXT);
-
-	int arg1 = 147;
-	float arg2;
-	int arg3;
-
-	tmpfile->ReadT("%d%f%d", &arg1, &arg2, &arg3);
-	/*SXTaskManager * pTaskManager = new SXTaskManager();
-
-	///Добавляем задачи 
-	pTaskManager->add(runqq);
-	pTaskManager->add(runqq);
-
-	//pTaskManager->add(SXTaskManager::TaskPtr(new WndMsgTask()));
-
-
-
-
-	/// Добавляем задачу обработки сообщений windows
-	//pTaskManager->add(SXTaskManager::TaskPtr(new WndMsgTask(this)));
-	/// Запускаем выполнение
-	pTaskManager->start();*/
-	ISXLConfig* tmpconfig = Core_OpLConfig("D:\\project\\builds\\build_22_04_2016\\gamesource\\configs\\camera_fly\\test.cf");
-	const char* tmpstr = tmpconfig->GetSectionName(0);
-	Core_0Create("qqq", true);
-	Core_MTaskAdd(runqq);
-	Core_MTaskStart();
-	//CreateElements[1]->Object;
-	srand((unsigned int)time(0));
-	SXGUIRegClass::RegButtonImg();
-	//memcpy(test2, test3, sizeof(test2));
-	//test2::release = test3::release;
-	//test2::method1 = test3::method1;
-	ISXGUIBaseWnd* tmpwin = SXGUICrBaseWnd("SkyLandEditor", "SkyLandEditor", 0, 0, 273, 131, 657, 585, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0);
-	//tmpwin->SetColorBrush(255, 0, 0);
-	tmpwin->SetText("qqqqqqqqqqqqqqqqqqqqqqqqq");
-	SXGUIBaseHandlers::InitHandlerMsg(tmpwin);
-	ISXGUIButtonImg* ImgNew = SXGUICrButtonImgEx("D:\\project\\engine\\old source\\SkyX Engine source\\sxwincreator\\ресурсы\\меню\\new.bmp", 3, 1, 30, 30, RGB(255, 0, 110), RGB(220, 220, 220), tmpwin->GetHWND(), 0, 0);
-	ImgNew->InitCallBack();
-	ImgNew->Visible(true);
-	ImgNew->AlphaColor = RGB(200, 100, 100);
-	ImgNew->BkColor = RGB(250, 0, 0);
-	/*ImgNew->EnableBf = true;
-	ImgNew->EnableState = true;*/
-	//SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(0, 0);
-	//ISXGUIStatic* tst = SXCreateStatic("3d модель:", 3, 5, 65, 15, tmpwin->GetHWND(), 0, 0);
-	ISXGUIButton* tbut = SXGUICrButton("...", 300, 5, 25, 15, 0, tmpwin->GetHWND(), 0, 0);
-	//SSound_0Create("test", 0, false);
-	//SSound_Play(0);
 	InitOutLog();
-	//SSInput_Dbg_Set(printflog);
-	//SSInput_0Create("test", 0, false);
-	//SSInput_Update();
+	srand((unsigned int)time(0));
+
+	GData::InitWin("SkyXEngine");
+	GData::Pathes::InitAllPathes();
+
+	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
+	SSInput_Dbg_Set(printflog);
+	Core_0Create("SkyXEngine Core", true);
+	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
+	SGCore_Dbg_Set(printflog);
+	SGCore_LoadTexStdPath(GData::Pathes::Textures);
+	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
+
+	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
+	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
+	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
+	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
+
+	SGCore_SkyBoxCr();
+	SGCore_SkyCloudsCr();
+	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+
+	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
+	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
+
+
+	GData::DXDevice = SGCore_GetDXDevice();
+	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	GData::ObjCamera = SGCore_CrCamera();
+
+
+	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
+	SGeom_Dbg_Set(printflog);
+
+
+	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
+	SML_Dbg_Set(printflog);
+
+
+	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
+	SPP_Dbg_Set(printflog);
+	SPP_ChangeTexSun("fx_sun.dds");
+
+	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
+	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
+	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
+	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
+	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
+
+
 	
 
-	float2 WidthHeight(800, 600);
-	WNDCLASSEX wcex;
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = DefWindowProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = GetModuleHandle(0);
-	wcex.hIcon = NULL;
-	wcex.hCursor = 0;
-	wcex.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = "test";
-	wcex.hIconSm = 0;
 
-	RegisterClassEx(&wcex);
+	GData::InitAllMatrix();
 
-	RECT rc = { 0, 0, WidthHeight.x, WidthHeight.y };
-	AdjustWindowRect(&rc, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 
-	HWND hwnd3d3 = CreateWindowEx(
-		0,
-		"test",
-		"test",
-		WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-		0, 0,
-		rc.right - rc.left, rc.bottom - rc.top,
-		0, 0,
-		GetModuleHandle(0),
-		0);
+	
 
-	ShowWindow(hwnd3d3, SW_SHOW);
 
-		SGCore_0Create("qwert", hwnd3d3, WidthHeight.x, WidthHeight.y, true, 0, true);
-		IDirect3DDevice9* DXDevice = SGCore_GetDXDevice();
+	GData::IDsShaders::InitAllShaders();
+
+	LoadLevel("stalker_atp");
+
+	
+	/*SGeom_ModelsAddModel("stalker_atp.dse", 0, "stalker_atp.dse");
+
+	//*//*SGeom_GreenAddGreen("tree_topol", "terrain_mp_atp_mask_tree.dds", 0.3, "green\\tree_topol_lod0.dse", "green\\tree_topol_lod1.dse", "green\\tree_topol_lod2.dse", "green\\tree_topol_lod2.dse");
+	SGeom_GreenAddGreen("trava_green_det2", "terrain_mp_atp_mask_grass.dds", 0.2, "green\\trava_green_det2.dse", 0, 0, 0);
+
+
+	SML_LigthsCreatePoint(
+		&float3(60,60,0),
+		LIGHTS_GLOBAL_MAX_POWER,
+		LIGHTS_GLOBAL_STD_RADIUS,
+		&float3(1,1,1),
+		true,
+		true);
+		SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
+		SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
+		
+	SaveLevel("stalker_atp"); */
+
+	char tmppathexe[1024];
+	char tmppath[1024];
+	GetModuleFileName(NULL, tmppath, 1024);
+	int len = strlen(tmppath);
+	while (tmppath[len--] != '\\')
+	{
+		if (tmppath[len - 1] == '\\')
+		{
+			len--;
+			memcpy(tmppathexe, tmppath, len);
+			tmppathexe[len] = 0;
+		}
+	}
+
+	SGCore_LoadTexStdPath(GData::Pathes::Textures);
+	SGCore_LoadTexLoadTextures();
+
+
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
-	
+
 	static DWORD lastTime = timeGetTime();
 	static DWORD TimeCCadr = 0;
 
-		while(msg.message != WM_QUIT /*&& IsWindow(SkyXEngine::Core::Data::HandleWinD3D)*/)
+	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
+	{
+		if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
-				if(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-				{
-					::TranslateMessage(&msg);
-					::DispatchMessage(&msg);
-				}
-				else
-				{	
-					static DWORD TimeStart = 0;
-					DWORD TimeThis = timeGetTime();
-
-					DWORD currTime  = timeGetTime();
-					DWORD timeDelta = (currTime - lastTime);
-					timeDelta = (timeDelta + TimeCCadr) / 2;
-					//SkyXEngine::Core::Render::MainRender(timeDelta);
-
-					DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-						0x569874, 1.0f, 0);
-					DXDevice->Present(0, 0, 0, 0); // показ вторичного буфера
-
-
-					TimeCCadr = timeDelta;
-					TimeStart = TimeThis;
-
-					lastTime = currTime;
-				}
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
 		}
+		else
+		{
+			static DWORD TimeStart = 0;
+			DWORD TimeThis = timeGetTime();
 
-    return msg.wParam;
+			DWORD currTime = timeGetTime();
+			DWORD timeDelta = (currTime - lastTime);
+
+			if (GetActiveWindow() == GData::Handle3D)
+			{
+				SGCore_LoadTexLoadTextures();
+				SXRenderFunc::MainRender(timeDelta);
+			}
+
+			TimeCCadr = timeDelta;
+			TimeStart = TimeThis;
+
+			lastTime = currTime;
+		}
+	}
+
+	mem_release(GData::ObjCamera);
+	SGeom_0CreateKill();
+	SML_0Kill();
+	SGCore_0Kill();
+
+	return msg.wParam;
 }

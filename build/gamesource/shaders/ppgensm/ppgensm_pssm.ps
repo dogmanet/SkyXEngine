@@ -1,0 +1,157 @@
+
+#include <../struct.h>
+
+half3 PosCam;
+half4 DistSplit;
+half2 NearFar;
+half2 PixelSize;
+
+sampler2D DepthLinearSampler:register(s0);
+sampler2D DepthSampler1:register(s1);
+sampler2D DepthSampler2:register(s2);
+sampler2D DepthSampler3:register(s3);
+sampler2D DepthSampler4:register(s4);
+sampler2D DepthSampler5:register(s5);
+sampler2D NoiseSampler:register(s6);
+
+half4x4 MatrixTexture1;
+half4x4 MatrixTexture2;
+half4x4 MatrixTexture3;
+half4x4 MatrixTexture4;
+half4x4 MatrixTexture5;
+
+
+half4 main(vs_out_res_pos IN):COLOR0
+{
+	half ShadowTerm = 0.0f;
+	half4 tmpcoord;
+	half Depth;
+	half tmpShadowTerm = 0;
+	half tmpdepth2 = GetDepthLinearR(tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r,NearFar);
+	
+	half4 Position = half4(PosCam + IN.WorldRay * (tmpdepth2),1.f);
+
+	half4 TexCoord1	= mul(Position, MatrixTexture1);
+	half4 TexCoord2	= mul(Position, MatrixTexture2);
+	half4 TexCoord3	= mul(Position, MatrixTexture3);
+	
+	#if	!defined(SPLITS3)
+	half4 TexCoord4	= mul(Position, MatrixTexture4);
+	#endif
+	
+	half4 TexCoord5	= mul(Position, MatrixTexture5);
+	
+	half alphaskyclouds = 0;
+	
+		for(int x=-1;x<=1;x++)
+		{
+				for(int y=-1;y<=1;y++)
+				{
+					tmpcoord = TexCoord5;
+					tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
+					alphaskyclouds += 1.f-tex2Dlod(DepthSampler5, tmpcoord).r; 
+				}
+		}
+				
+	alphaskyclouds /= 9.f;
+	
+	half l = tmpdepth2*NearFar.y;
+
+	half dx1 = max(abs(ddx(TexCoord1.z)),abs(ddy(TexCoord1.z)));
+	half dx2 = max(abs(ddx(TexCoord2.z)),abs(ddy(TexCoord2.z)));
+	half dx3 = max(abs(ddx(TexCoord3.z)),abs(ddy(TexCoord3.z)));
+	
+	#if	!defined(SPLITS3)
+	half dx4 = max(abs(ddx(TexCoord4.z)),abs(ddy(TexCoord4.z)));
+	#endif
+	
+		[branch]if(l >= 0.0 && l < DistSplit.x)
+		{
+				for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord1;
+							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler1, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord1.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,60),72),84);
+							tmpShadowTerm /= dx1*dx1;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord1.z) ? 0.0f : 1.0f;
+						}
+				}
+			ShadowTerm /= 9.f;
+		}
+		else [branch]if(l >= 0.0 && l < DistSplit.y)
+		{
+				for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord2;
+							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler2, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord2.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,36),48),60);
+							tmpShadowTerm /= dx2*dx2;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord2.z) ? 0.0f : 1.0f;
+						}
+				}
+			ShadowTerm /= 9.f;
+		}
+		else [branch]if(l >= 0.0 && l < DistSplit.z)
+		{
+				for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord3;
+							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler3, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord3.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,24),36),48);
+							tmpShadowTerm /= dx3*dx3;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord3.z) ? 0.0f : 1.0f;
+						}
+				}
+			ShadowTerm /= 9.f;
+			
+			#ifdef SPLITS3
+			half coefz = (l - DistSplit.y) / (DistSplit.z - DistSplit.y);
+			ShadowTerm = lerp(ShadowTerm,PSSM_SHADING_LAST,coefz);
+			#endif
+		}
+		
+		#if	!defined(SPLITS3)
+		else [branch]if(l >= 0.0 && l < DistSplit.w)
+		{
+			for(int x=-1;x<=1;x++)
+				{
+						for(int y=-1;y<=1;y++)
+						{
+							tmpcoord = TexCoord4;
+							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
+							Depth = tex2Dlod(DepthSampler4, tmpcoord).r; 
+							tmpShadowTerm = 1.f-((TexCoord4.z) - Depth);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,12),24),36);
+							tmpShadowTerm /= dx4*dx4;
+
+							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord4.z) ? 0.0f : 1.0f;
+						}
+				}
+			ShadowTerm /= 9.f;
+
+			half coefz = (l - DistSplit.z) / (DistSplit.w - DistSplit.z);
+			ShadowTerm = lerp(saturate(ShadowTerm),PSSM_SHADING_LAST,coefz);
+		}
+		#endif
+		else
+		{
+			ShadowTerm = PSSM_SHADING_LAST;
+		}
+			
+	return (saturate(alphaskyclouds*(ShadowTerm)));
+} 
