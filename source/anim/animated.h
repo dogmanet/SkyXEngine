@@ -34,13 +34,14 @@ class ModelFile
 {
 	friend class Animation;
 	friend class Editor;
+	friend class AnimationManager;
 public:
 	ModelFile(const char * name, AnimationManager * pMgr);
 	~ModelFile();
 
 	SX_ALIGNED_OP_MEM
 
-	void Save(const char * name);
+	bool Save(const char * name);
 	
 	//0 - простой рендер, 1 - с материалом, 2 - pssm, 3 - cube
 	void Render(int howrender,int render_forward,SMMATRIX * mWorld, UINT nSkin = 0, UINT nLod = 0);
@@ -69,6 +70,8 @@ public:
 	void AddHitbox(const ModelHitbox * hb);
 	void DelHitbox(const char * name);
 	void DelHitbox(uint32_t id);
+
+	void LoadParts();
 	
 protected:
 
@@ -121,6 +124,8 @@ protected:
 
 	ModelHitbox * m_pHitboxes;
 
+	ModelPart * m_pParts;
+
 	//AssotiativeArray<String, ModelBoneController> m_mfBoneControllers;
 	//AssotiativeArray<String, UINT> m_mSeqNames;
 
@@ -145,6 +150,7 @@ typedef void(*AnimProgressCB)(int slot, float progress, Animation * pAnim);
 
 class Animation
 {
+	friend class AnimationManager;
 public:
 	Animation(AnimationManager * pMgr);
 	~Animation();
@@ -208,6 +214,8 @@ public:
 	void Assembly();
 	ModelPart * GetPart(UINT idx);
 	UINT GetPartCount();
+
+	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 
 	void DownloadData();

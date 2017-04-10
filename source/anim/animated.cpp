@@ -25,7 +25,8 @@ m_ppVertexBuffer(NULL),
 m_ppIndexBuffer(NULL),
 m_pMgr(pMgr),
 m_bIsTemp(false),
-m_pHitboxes(NULL)
+m_pHitboxes(NULL),
+m_pParts(NULL)
 {
 	memset(&m_hdr, 0, sizeof(ModelHeader));
 	memset(&m_hdr2, 0, sizeof(ModelHeader2));
@@ -74,15 +75,23 @@ void ModelFile::Load(const char * name)
 	if(m_hdr2.iDepsCount && m_hdr2.iDependensiesOffset)
 	{
 		_fseeki64(fp, m_hdr2.iDependensiesOffset, SEEK_SET);
-
-		ModelDependensy md;
-
-		m_pDeps = new const ModelFile*[m_hdr2.iDepsCount];
-
-		for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
+		if(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS)
 		{
-			fread(&md, sizeof(ModelDependensy), 1, fp);
-			m_pDeps[i] = m_pMgr->LoadModel(md.szName);
+			m_pParts = new ModelPart[m_hdr2.iDepsCount];
+			fread(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
+			
+		}
+		else
+		{
+			ModelDependensy md;
+
+			m_pDeps = new const ModelFile*[m_hdr2.iDepsCount];
+
+			for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
+			{
+				fread(&md, sizeof(ModelDependensy), 1, fp);
+				m_pDeps[i] = m_pMgr->LoadModel(md.szName);
+			}
 		}
 	}
 
@@ -159,9 +168,9 @@ void ModelFile::Load(const char * name)
 			for(uint32_t j = 0; j < m_pLods[i].iSubMeshCount; j++)
 			{
 
-				fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(int), 1, fp);
-				fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(int), 1, fp);
-				fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(int), 1, fp);
+				fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(uint32_t), 1, fp);
+				fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(uint32_t), 1, fp);
+				fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(uint32_t), 1, fp);
 				m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
 				m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
 				fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
@@ -172,8 +181,23 @@ void ModelFile::Load(const char * name)
 		}
 	}
 
+	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
+	{
+		_fseeki64(fp, m_hdr2.iHitboxesOffset, SEEK_SET);
+		m_pHitboxes = new ModelHitbox[m_hdr2.iHitboxCount];
+		fread(m_pHitboxes, sizeof(ModelHitbox), m_hdr2.iHitboxCount, fp);
+	}
+
 	fclose(fp);
 	m_bLoaded = true;
+}
+
+void ModelFile::LoadParts()
+{
+	for(uint32_t i = 0; i < m_hdr2.iDepsCount; ++i)
+	{
+		m_pParts[i].pMdl = m_pMgr->LoadModel(m_pParts[i].file);
+	}
 }
 
 void ModelFile::GetBoneName(UINT id, char * name, int len) const
@@ -203,10 +227,23 @@ void ModelFile::Assembly()
 {
 	//Assumed all dependensies already assembled
 
-	for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
+	if(!(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS))
 	{
-		MergeModel(m_pDeps[i]);
+		for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
+		{
+			MergeModel(m_pDeps[i]);
+		}
 	}
+	/*else
+	{
+		Animation tmp(m_pMgr);
+		for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
+		{
+			tmp.AddModel(&m_pParts[i]);
+		}
+		tmp.Assembly();
+		
+	}*/
 }
 
 const ModelHitbox * ModelFile::GetHitbox(const char * name) const
@@ -859,8 +896,119 @@ ModelFile::~ModelFile()
 	}
 	mem_delete_a(m_pLods);
 	mem_delete_a(m_pHitboxes);
+	if(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS)
+	{
+		for(uint32_t i = 0; i < m_hdr2.iDepsCount; ++i)
+		{
+			m_pMgr->UnloadModel(m_pParts[i].pMdl);
+		}
+	}
+	mem_delete_a(m_pParts);
 }
 
+bool ModelFile::Save(const char * file)
+{
+	FILE * fp = fopen(file, "wb");
+	if(!fp)
+	{
+		return(false);
+	}
+
+	m_hdr.Magick = SX_MODEL_MAGICK;
+	m_hdr.iVersion = SX_MODEL_VERSION;
+
+	fwrite(&m_hdr, sizeof(ModelHeader), 1, fp);
+	m_hdr.iSecondHeaderOffset = ftell(fp);
+	fwrite(&m_hdr2, sizeof(ModelHeader2), 1, fp);
+
+	//write bones
+	m_hdr2.iBoneTableOffset = ftell(fp);
+	fwrite(m_pBones, sizeof(ModelBoneName), m_hdr2.iBoneTableCount, fp);
+
+	//write activities
+	if(pActivities)
+	{
+		m_hdr2.iActivitiesTableOffset = ftell(fp);
+		fwrite(pActivities, sizeof(ModelActivity), m_hdr2.iActivitiesTableCount, fp);
+	}
+
+	//write controllers
+	if(m_pControllers)
+	{
+		m_hdr2.iControllersOffset = ftell(fp);
+		fwrite(m_pControllers, sizeof(ModelBoneController), m_hdr2.iControllersCount, fp);
+	}
+
+	//write materials
+	if(m_iMaterials)
+	{
+		m_hdr.iMaterialsOffset = ftell(fp);
+		for(UINT j = 0; j < m_hdr.iSkinCount; j++)
+		{
+			for(uint32_t i = 0; i < m_hdr.iMaterialCount; i++)
+			{
+				fwrite(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
+			}
+		}
+	}
+
+	//write animations
+	if(m_pSequences)
+	{
+		m_hdr.iAnimationsOffset = ftell(fp);
+		for(UINT i = 0; i < m_hdr.iAnimationCount; i++)
+		{
+			//@TODO: check activity index
+			fwrite(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE, 1, fp);
+			for(UINT j = 0; j < m_pSequences[i].iNumFrames; j++)
+			{
+				fwrite(m_pSequences[i].m_vmAnimData[j], sizeof(ModelBone), m_hdr.iBoneCount, fp);
+			}
+		}
+	}
+
+	//write lods
+	if(m_pLods)
+	{
+		m_hdr.iLODoffset = ftell(fp);
+		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
+		{
+			fwrite(&m_pLods[i], MODEL_LOD_STRUCT_SIZE, 1, fp);
+			for(uint32_t j = 0; j < m_pLods[i].iSubMeshCount; j++)
+			{
+				fwrite(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(uint32_t), 1, fp);
+				fwrite(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(uint32_t), 1, fp);
+				fwrite(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(uint32_t), 1, fp);
+				
+				fwrite(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+				fwrite(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, fp);
+			}
+		}
+	}
+
+	//write hitboxes
+	if(m_pHitboxes)
+	{
+		m_hdr2.iHitboxesOffset = ftell(fp);
+		fwrite(m_pHitboxes, sizeof(ModelHitbox), m_hdr2.iHitboxCount, fp);
+	}
+
+	//write parts
+	if(m_pParts)
+	{
+		m_hdr2.iDependensiesOffset = ftell(fp);
+		fwrite(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
+	}
+
+	m_hdr.iFlags |= MODEL_FLAG_COMPILED | MODEL_FLAG_NEW_STYLE_DEPS;
+
+	fseek(fp, 0, SEEK_SET);
+	fwrite(&m_hdr, sizeof(ModelHeader), 1, fp);
+	fwrite(&m_hdr2, sizeof(ModelHeader2), 1, fp);
+
+	fclose(fp);
+	return(true);
+}
 
 /**
 *
@@ -1763,12 +1911,17 @@ MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
 	return(MBE_SUCCESS);
 }
 
+/*void Animation::AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls)
+{
+
+}*/
+
 void Animation::Assembly()
 {
 	mem_delete(m_pMdl);
 	///@TODO: clear previous data
 	m_pMdl = new ModelFile("", m_pMgr);
-
+	//AssemblyMdl(m_pMdl
 	//vvBoneRelinkList[modelPartIdx][OrigBoneIdx] = newBoneIdx;
 	Array<Array<int> > vvBoneRelinkList;
 
@@ -1850,6 +2003,7 @@ void Animation::Assembly()
 	Array<Array<int> > vvMatsRelinkList;
 
 	Array<ModelSequence> vAnims;
+	Array<ModelHitbox> vHitboxes;
 
 	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
 	{
@@ -1931,6 +2085,33 @@ void Animation::Assembly()
 		{
 
 		}
+
+		if(mp->uImportFlags & MI_HITBOXES)
+		{
+			ModelHitbox hb;
+			for(int j = 0, ll = mdl->m_hdr2.iHitboxCount; j < ll; ++j)
+			{
+				hb = mdl->m_pHitboxes[j];
+				hb.bone_id = -1;
+				for(int k = 0, lll = m_pMdl->GetBoneCount(); k < lll; ++k)
+				{
+					if(!strcmp(hb.bone, m_pMdl->m_pBones[k].szName))
+					{
+						hb.bone_id = k;
+						break;
+					}
+				}
+				vHitboxes.push_back(hb);
+			}
+		}
+
+		/*if(mp->file[0] != '@')
+		{
+			for(int j = 0; j < mdl->m_hdr2.iDepsCount; ++j)
+			{
+				m_mMdls.push_back(&(mdl->m_pParts[j]));
+			}
+		}*/
 	}
 
 	m_pMdl->m_hdr.iSkinCount = 1;
@@ -1955,6 +2136,10 @@ void Animation::Assembly()
 	m_pMdl->m_hdr.iAnimationCount = vAnims.size();
 	m_pMdl->m_pSequences = new ModelSequence[m_pMdl->m_hdr.iAnimationCount];
 	memcpy(m_pMdl->m_pSequences, &vAnims[0], sizeof(vAnims[0]) * m_pMdl->m_hdr.iAnimationCount);
+
+	m_pMdl->m_hdr2.iHitboxCount = vHitboxes.size();
+	m_pMdl->m_pHitboxes = new ModelHitbox[m_pMdl->m_hdr2.iHitboxCount];
+	memcpy(m_pMdl->m_pHitboxes, &vHitboxes[0], sizeof(vHitboxes[0]) * m_pMdl->m_hdr2.iHitboxCount);
 
 
 	DownloadData();
@@ -2002,6 +2187,7 @@ void Animation::AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int
 *
 */
 
+
 const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
 {
 	if(!newInst && m_pModels.KeyExists(name))
@@ -2010,9 +2196,33 @@ const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
 	}
 	else
 	{
+		bool build = true;
+		if(name[0] == '@')
+		{
+			build = false;
+			++name;
+		}
 		ModelFile * mdl = new ModelFile(name, this);
-		mdl->Assembly();
-		mdl->BuildMeshBuffers();
+		if((mdl->m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS) && mdl->m_hdr2.iDepsCount && build)
+		{
+			mdl->LoadParts();
+			Animation tmp(this);
+			tmp.AddModel(mdl);
+			for(uint32_t i = 0; i < mdl->m_hdr2.iDepsCount; ++i)
+			{
+				tmp.AddModel(&mdl->m_pParts[i]);
+			}
+			tmp.Assembly();
+			strcpy(tmp.m_pMdl->m_szFileName, mdl->m_szFileName);
+			ModelFile * tmpmdl = mdl;
+			mdl = tmp.m_pMdl;
+			tmp.m_pMdl = tmpmdl;
+		}
+		else
+		{
+			mdl->BuildMeshBuffers();
+		}
+
 		m_pModels[name] = mdl;
 		return(mdl);
 	}

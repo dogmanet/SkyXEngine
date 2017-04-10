@@ -58,10 +58,13 @@ public:
 
 	static Editor * GetInstance();
 	
+	void MenuNew(HWND hwnd);
 	void MenuBrowse(HWND hwnd);
 	void MenuBrowseImport(HWND hwnd, bool use=true);
-	void MenuSave();
+	void MenuSave(HWND hwnd);
 	void MenuSaveAs(HWND hwnd);
+
+	bool SaveTo(char * to);
 	
 	void Update();
 
@@ -159,6 +162,8 @@ protected:
 	Array<HitboxItem> m_vHitboxes;
 
 	ModelFile * m_pHitboxesPart;
+
+	char m_szEditFile[MAX_PATH];
 
 private:
 	void RenderAnimList();

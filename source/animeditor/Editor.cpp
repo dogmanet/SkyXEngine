@@ -11,7 +11,8 @@ m_currentAxe(HA_NONE),
 m_bIsDragging(false),
 m_htype(HT_MOVE),
 m_bIsDraggingStop(false),
-m_iActiveHitbox(0)
+m_iActiveHitbox(0),
+m_bDirty(false)
 {
 	InitUI();
 	InitD3D();
@@ -20,6 +21,7 @@ m_iActiveHitbox(0)
 
 	m_pEditor = this;
 	m_szAnimFilter[0] = 0;
+	m_szEditFile[0] = 0;
 
 	((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlGB->AddHandler(AnimTBProc, WM_HSCROLL);
 	((TabAnimation*)m_pTM->m_pTabAnimation)->AnimCtlProgressTrack->AddHandler(AnimTBProc, WM_SETFOCUS);
@@ -63,12 +65,12 @@ m_iActiveHitbox(0)
 	m_pCurAnim->AddModel(&mp);*/
 
 	//bip01_r_hand
-	AddModel("F:/revo/build/gamesource/models/ak74/ak74.dse");
-	AddModel("F:/revo/build/gamesource/models/ak74/idle.dse");
+	//AddModel("F:/revo/build/gamesource/models/ak74/ak74.dse");
+	//AddModel("F:/revo/build/gamesource/models/ak74/idle.dse");
 	//AddModel("C:/revo/build/gamesource/models/ak74/reload.dse");
 	//AddModel("C:/revo/build/gamesource/models/ak74/shoot.dse");
-	m_pCurAnim->Assembly();
-	if(m_pCurAnim->m_pMdl)
+	//m_pCurAnim->Assembly();
+	//if(m_pCurAnim->m_pMdl)
 	{
 		/*UINT c = m_pCurAnim->m_pMdl->GetSequenceCount();
 		AnimItem ai;
@@ -85,8 +87,8 @@ m_iActiveHitbox(0)
 			ai.isImported = false;
 			m_vAnims.push_back(ai);
 		}*/
-		RenderAnimList();
-		RenderBoneList();
+	//	RenderAnimList();
+	//	RenderBoneList();
 	}
 }
 bool Editor::GetRegGSdir()
@@ -150,7 +152,7 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			edt->MenuBrowse(hwnd);
 			break;
 		case ID_FILE_SAVE:
-			edt->MenuSave();
+			edt->MenuSave(hwnd);
 			break;
 		case ID_FILE_SAVEAS:
 			edt->MenuSaveAs(hwnd);
@@ -158,6 +160,10 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case ID_FILE_IMPORT:
 			edt->MenuBrowseImport(hwnd);
+			break;
+
+		case ID_FILE_NEW:
+			edt->MenuNew(hwnd);
 			break;
 
 		case ID_FILE_EXIT:
@@ -526,6 +532,14 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		return(DefWindowProc(hwnd, msg, wParam, lParam));
 
+	/*case WM_KEYDOWN:
+		if(wParam == 'S' && (GetKeyState(VK_CONTROL) & 0x80))
+		{
+			edt->MenuSave(hwnd);
+			return(1);
+		}
+		break;*/
+
 	case EM_LOADACTIVITIES:
 		TabAnimation * tAnim = (TabAnimation*)edt->m_pTM->m_pTabAnimation;
 		tAnim->AnimPropActCmb->Clear();
@@ -689,6 +703,20 @@ LRESULT Editor::AnimTBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return(0);
 }
 
+void Editor::MenuNew(HWND hwnd)
+{
+	if(m_bDirty && MessageBoxA(hwnd, "All unsaved changes will be lost", "New?", MB_OKCANCEL | MB_ICONWARNING | MB_DEFBUTTON2) != IDOK)
+	{
+		return;
+	}
+
+	while(m_pEditor->m_vMdlParts.size())
+	{
+		m_pEditor->DelModel(0);
+	}
+	m_bDirty = false;
+}
+
 void Editor::MenuBrowse(HWND hwnd)
 {
 	OPENFILENAMEA ofn;
@@ -718,7 +746,7 @@ void Editor::MenuBrowse(HWND hwnd)
 	if(GetOpenFileNameA(&ofn) == TRUE)
 	{
 		SetCurrentDirectoryW(bf);
-
+		strcpy(m_szEditFile, ofn.lpstrFile);
 		//wprintf(L"File: %s\n", ofn.lpstrFile);
 
 		//unload all parts
@@ -728,6 +756,7 @@ void Editor::MenuBrowse(HWND hwnd)
 		}
 		m_pEditor->AddModel(ofn.lpstrFile, MI_ALL, false, true);
 		m_pEditor->m_pCurAnim->Assembly();
+		m_bDirty = false;
 	}
 }
 void Editor::MenuBrowseImport(HWND hwnd, bool use)
@@ -858,13 +887,114 @@ void Editor::DlgImpCheckAll(HWND hwndDlg)
 	SendDlgItemMessage(hwndDlg, IDC_CI_ALL, BM_SETCHECK, checked, 0);
 }
 
-void Editor::MenuSave()
+void Editor::MenuSave(HWND hwnd)
 {
-	m_bDirty = false;
+	if(m_szEditFile[0])
+	{
+		if(SaveTo(m_szEditFile))
+		{
+			m_bDirty = false;
+		}
+		else
+		{
+			MessageBoxA(hwnd, "Unable to write file", "Error!", MB_OK | MB_ICONSTOP);
+		}
+	}
+	else
+	{
+		MenuSaveAs(hwnd);
+	}
 }
 void Editor::MenuSaveAs(HWND hwnd)
 {
-	m_bDirty = false;
+	OPENFILENAMEA ofn;
+	char szFile[260];
+
+	ZeroMemory(&ofn, sizeof(ofn));
+	ZeroMemory(szFile, sizeof(szFile));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = "Model file (*.dse)\0*.dse\0";
+	ofn.nFilterIndex = 0;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+	wchar_t bf[256];
+	GetCurrentDirectoryW(256, bf);
+
+	if(GetSaveFileNameA(&ofn) == TRUE)
+	{
+		SetCurrentDirectoryW(bf);
+		
+
+		if(SaveTo(ofn.lpstrFile))
+		{
+			strcpy(m_szEditFile, ofn.lpstrFile);
+			m_bDirty = false;
+		}
+		else
+		{
+			MessageBoxA(hwnd, "Unable to write file", "Error!", MB_OK | MB_ICONSTOP);
+		}
+	}
+}
+
+bool Editor::SaveTo(char * to)
+{
+	if(strcmpi(to + strlen(to) - 4, ".dse"))
+	{
+		strcat(to, ".dse");
+	}
+
+	Animation pTmpAnim(m_pAnimMgr);
+	ModelPart mp;
+	memset(&mp, 0, sizeof(mp));
+	strcpy(mp.file, "!bones");
+	strcpy(mp.name, "!bones");
+	mp.pMdl = m_pCurAnim->m_pMdl;
+	mp.attachDesc.type = MA_SKIN;
+	pTmpAnim.AddModel(&mp);
+	int c = 0;
+	for(int i = 0, l = m_vMdlParts.size(); i < l; ++i)
+	{
+		if(!(m_vMdlParts[i]->uFlags & MP_IMPORTED))
+		{
+			pTmpAnim.AddModel(m_vMdlParts[i]);
+			++c;
+		}
+	}
+	pTmpAnim.Assembly();
+
+	pTmpAnim.m_pMdl->m_hdr2.iActivitiesTableCount = m_pvActivities->size();
+	pTmpAnim.m_pMdl->pActivities = new ModelActivity[pTmpAnim.m_pMdl->m_hdr2.iActivitiesTableCount];
+	for(uint32_t i = 0; i < pTmpAnim.m_pMdl->m_hdr2.iActivitiesTableCount; ++i)
+	{
+		strcpy(pTmpAnim.m_pMdl->pActivities[i].szName, m_pvActivities[0][i].act.c_str());
+	}
+
+	pTmpAnim.m_pMdl->m_hdr2.iDepsCount = m_vMdlParts.size() - c;
+	pTmpAnim.m_pMdl->m_pParts = new ModelPart[pTmpAnim.m_pMdl->m_hdr2.iDepsCount];
+	ModelPart * pmp = pTmpAnim.m_pMdl->m_pParts;
+	for(int i = 0, l = m_vMdlParts.size(); i < l; ++i)
+	{
+		if(m_vMdlParts[i]->uFlags & MP_IMPORTED)
+		{
+			if(m_vMdlParts[i]->file[0] == '@')
+			{
+				--pTmpAnim.m_pMdl->m_hdr2.iDepsCount;
+			}
+			else
+			{
+				*(pmp++) = *m_vMdlParts[i];
+			}
+		}
+	}
+
+	return(pTmpAnim.m_pMdl->Save(to));
 }
 
 Editor * Editor::GetInstance()
@@ -882,6 +1012,7 @@ void Editor::InitUI()
 	MainWindow->AddHandler(MenuCmd, WM_CLOSE, 0, 0, 0, 0, 1);
 	MainWindow->AddHandler(MenuCmd, WM_PARENTNOTIFY);
 	MainWindow->AddHandler(MenuCmd, EM_LOADACTIVITIES);
+	//MainWindow->AddHandler(MenuCmd, WM_KEYDOWN);
 
 
 	MainWindow->SetUserPtr(this);
@@ -1437,17 +1568,20 @@ void Editor::OnPartListSelChg()
 
 ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, bool forceLocal)
 {
-	char * mdlFile = (char*)alloca(strlen(mdl) + 1);
+	char * mdlFile = (char*)alloca(strlen(mdl) + 2) + 1;
 	strcpy(mdlFile, mdl);
 	canonize_path(mdlFile);
 	const char * localPath = strip_prefix(mdlFile, m_szGamesourceDir);
-
+	if(forceLocal)
+	{
+		*(char*)(--localPath) = '@';
+	}
 	ModelFile * pMdl = localPath[0] ? (ModelFile*)m_pAnimMgr->LoadModel(localPath, true) : NULL;
 
-	
+	bool bIsImported = forceImport && !forceLocal;
 	if(pMdl)
 	{
-		bool bIsImported = ((pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED) || forceImport) && !forceLocal;
+		bIsImported = ((pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED) || forceImport) && !forceLocal;
 
 		if(flags & MI_ANIMATIONS)
 		{
@@ -1487,8 +1621,24 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 
 
 	m_vMdlParts.push_back(m_pCurAnim->GetPart(m_pCurAnim->GetPartCount() - 1));
+	if(bIsImported)
+	{
+		m_vMdlParts[m_vMdlParts.size() - 1]->uFlags |= MP_IMPORTED;
+	}
 
 	RenderPartList();
+
+	if(pMdl && forceLocal)
+	{
+		for(uint32_t i = 0; i < pMdl->m_hdr2.iDepsCount; ++i)
+		{
+			ModelPart * mpSrc = &pMdl->m_pParts[i];
+			AddModel(mpSrc->file, mpSrc->uImportFlags, true);
+			ModelPart * mp = m_vMdlParts[m_vMdlParts.size() - 1];
+			mpSrc->pMdl = mp->pMdl;
+			*mp = *mpSrc;
+		}
+	}
 
 	return(pMdl);
 }
@@ -3012,7 +3162,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 void Editor::OnMouseDown(int x, int y)
 {
 	float f; 
-	if(m_vHitboxes.size() > m_iActiveHitbox && if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown))
+	if(m_vHitboxes.size() > m_iActiveHitbox && ((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
 	{
 		HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
 		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
