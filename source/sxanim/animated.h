@@ -4,9 +4,9 @@
 
 #include "ModelFile.h"
 
-#include <core/assotiativearray.h>
-#include <core/array.h>
-#include <string/string.h>
+#include <common/assotiativearray.h>
+#include <common/array.h>
+#include <common/string.h>
 
 #ifdef _SERVER
 #	define IDirect3DDevice9 void
@@ -17,15 +17,9 @@
 #	pragma comment(lib, "d3dx9.lib")
 #endif
 
-#define BLEND_MAX 3
+#include "sxanim.h"
 
-
-
-typedef AssotiativeArray<String, ModelBoneName*> ModelBoneList;
-typedef AssotiativeArray<int, Array<int>> ModelBoneChildrenList;
-typedef AssotiativeArray<int, ModelBoneName*> ModelBoneIdList;
-typedef AssotiativeArray<int, int> ModelBoneRelinkList;
-typedef AssotiativeArray<String, ModelBoneName> ModelBones;
+void Report(int level, const char* format, ...);
 
 class Animation;
 class AnimationManager;
@@ -42,11 +36,9 @@ public:
 	SX_ALIGNED_OP_MEM
 
 	bool Save(const char * name);
-	
-	//0 - простой рендер, 1 - с материалом, 2 - pssm, 3 - cube
-	void Render(int howrender,int render_forward,SMMATRIX * mWorld, UINT nSkin = 0, UINT nLod = 0);
-
-	void Assembly();
+#ifndef _SERVER
+	void Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0);
+#endif
 
 	void BuildMeshBuffers();
 
@@ -78,31 +70,6 @@ protected:
 	MBERR AppendBones(const ModelFile * mdl, char * root=NULL);
 	//void BuildHitboxes();
 	void Load(const char * name);
-	
-	
-
-	void MergeModel(const ModelFile * mdl);
-	void MergeBones(
-		ModelBoneChildrenList & child_remote,
-		ModelBoneList & local,
-		ModelBoneIdList & id_remote,
-		ModelBoneRelinkList & relink_remote,
-		ModelBones & res
-		);
-	void DoMerge(
-		int startId,
-		ModelBoneChildrenList & child_remote,
-		ModelBoneIdList & id_remote,
-		ModelBoneRelinkList & relink_remote,
-		ModelBones & res
-		);
-
-	void MergeActivities(const ModelFile * mdl, ModelBoneRelinkList & relink);
-	void MergeMaterials(const ModelFile * mdl, ModelBoneRelinkList & relink);
-	void MergeLods(const ModelFile * mdl, ModelBoneRelinkList & relink);
-
-	void ImportControllers(const ModelFile * mdl, ModelBoneRelinkList * relink);
-	void ImportSequences(const ModelFile * mdl, ModelBoneRelinkList * relink, ModelBoneRelinkList & relink_activities);
 
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
@@ -144,11 +111,7 @@ protected:
 
 };
 
-
-typedef void(*AnimStateCB)(int slot, ANIM_STATE as, Animation * pAnim);
-typedef void(*AnimProgressCB)(int slot, float progress, Animation * pAnim);
-
-class Animation
+class Animation: public IAnimPlayer
 {
 	friend class AnimationManager;
 public:
@@ -294,14 +257,13 @@ public:
 	UINT Register(Animation * pAnim);
 	void UnRegister(UINT id);
 
-	//0 - простой рендер, 1 - с материалом, 2 - pssm, 3 - cube
-	void Render(int howrender = 0,int render_forward=0/*,Core::ControllMoving::Frustum* frustum=0*/);
+	void Render();
 	void Update();
+	void Sync();
 
 	void SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
 
-	UINT GetMaterial(const String & mat);
-	void SetMaterial(UINT);
+	UINT GetMaterial(const char * mat);
 protected:
 	friend class ModelFile;
 	friend class Animation;
@@ -310,23 +272,9 @@ protected:
 
 	IDirect3DVertexDeclaration9 * pVertexDeclaration[MVT_SIZE];
 
-	
-	Array<bool> ArrIsVisible;
 	Array<Animation*> m_pAnimatedList;
 
 	IDirect3DDevice9 * m_pd3dDevice;
-
-	struct material
-	{
-		IDirect3DTexture9 * tex;
-	};
-
-	AssotiativeArray<String, material> m_mMats;
-
-	IDirect3DVertexShader9 * m_pVSH;
-	IDirect3DPixelShader9 * m_pPSH;
-
-	void LoadShader();
 };
 
 

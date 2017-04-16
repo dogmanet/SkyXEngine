@@ -404,9 +404,9 @@ const char* SXLoaderConfig::GetKeyName(const char* section, int key)
 			if (countiter == key)
 				return iter.first->c_str();
 		}
-		//return 0;
+		return 0;
 	}
-	//return 0;
+	return 0;
 }
 
 const char* SXLoaderConfig::GetSectionName(int num)

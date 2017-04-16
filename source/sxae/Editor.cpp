@@ -2,6 +2,57 @@
 
 #include <ShlObj.h>
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxgcore_d.lib")
+#else
+#pragma comment(lib, "sxgcore.lib")
+#endif
+
+#include <gcore/sxgcore.h>
+
+void msgbx(int level, const char* format, ...)
+{
+	va_list va;
+	char buf[REPORT_MSG_MAX_LEN];
+	va_start(va, format);
+	vsprintf_s(buf, REPORT_MSG_MAX_LEN, format, va);
+	va_end(va);
+
+	char * title;
+	UINT flags = MB_OK;
+
+	switch(level)
+	{
+	case REPORT_MSG_LEVEL_ERROR:
+		title = "Error";
+		flags |= MB_ICONSTOP;
+		break;
+	case REPORT_MSG_LEVEL_WARRNING:
+		title = "Warning";
+		flags |= MB_ICONWARNING;
+		break;
+	default:
+		title = "Notice";
+		flags |= MB_ICONINFORMATION;
+		break;
+	}
+	if(REPORT_MSG_LEVEL_NOTICE != level)
+	{
+		MessageBoxA(NULL, buf, title, flags);
+	}
+	if(REPORT_MSG_LEVEL_ERROR == level)
+	{
+		exit(-1);
+	}
+}
+
+void Report(int level, const char* format, ...)
+{
+	va_list va;
+	va_start(va, format);
+	msgbx(level, format, va);
+	va_end(va);
+}
 
 Editor::Editor():
 m_bCamMove(false),
@@ -14,6 +65,12 @@ m_bIsDraggingStop(false),
 m_iActiveHitbox(0),
 m_bDirty(false)
 {
+	GetModuleFileNameA(NULL, m_szGamesourceDir, sizeof(m_szGamesourceDir));
+	canonize_path(m_szGamesourceDir);
+	dirname(m_szGamesourceDir);
+	strcat(m_szGamesourceDir, "gamesource/");
+	SetCurrentDirectoryA(m_szGamesourceDir);
+
 	InitUI();
 	InitD3D();
 
@@ -35,17 +92,13 @@ m_bDirty(false)
 	{
 		
 	}*/
-	GetModuleFileNameA(NULL, m_szGamesourceDir, sizeof(m_szGamesourceDir));
-	canonize_path(m_szGamesourceDir);
-	dirname(m_szGamesourceDir);
-	strcat(m_szGamesourceDir, "gamesource/");
-	SetCurrentDirectoryA(m_szGamesourceDir);
+	
 
 
 	m_pAnimMgr = new AnimationManager(m_pd3dDevice);
 	m_pCurAnim = new Animation(m_pAnimMgr);
-	m_pCurAnim->SetCallback(AnimPlayCB);
-	m_pCurAnim->SetProgressCB(AnimProgressCB);
+	m_pCurAnim->SetCallback((AnimStateCB)AnimPlayCB);
+	m_pCurAnim->SetProgressCB((::AnimProgressCB)AnimProgressCB);
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/krovosos/krovososa.dse");
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/spas/spasa.dse");
 	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/pm/pma.dse");
@@ -91,6 +144,7 @@ m_bDirty(false)
 	//	RenderBoneList();
 	}
 }
+
 bool Editor::GetRegGSdir()
 {
 	HKEY hKey;
@@ -1100,8 +1154,19 @@ void Editor::InitD3D()
 	GetClientRect(hWnd, &rc);
 	UINT width = m_uWidth = rc.right - rc.left;
 	UINT height = m_uHeight = rc.bottom - rc.top;
+	
+	SGCore_0Create("SXAnimEditor", hWnd, width, height, 1, 0, true);
+	SGCore_Dbg_Set(msgbx);
 
+	char tmp[260];
 
+	sprintf(tmp, "%stextures/", m_szGamesourceDir);
+	SGCore_LoadTexStdPath(tmp);
+	sprintf(tmp, "%sshaders/", m_szGamesourceDir);
+	SGCore_ShaderSetStdPath(tmp);
+
+	m_pd3dDevice = SGCore_GetDXDevice();
+	/*
 	m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 	if(!m_pD3D)
 	{
@@ -1129,8 +1194,12 @@ void Editor::InitD3D()
 		return;
 	}
 
+	*/
 	m_pd3dDevice->GetSwapChain(0, &m_pSwapChain);
 
+	m_pVSH = SGCore_ShaderLoad(st_vertex, "mtrlskin_base.vs", "mtrlskin_base", scd_path);
+	//m_pPSH = SGCore_ShaderLoad(st_pixel, "mtrlskin_base.ps", "mtrlskin_base", scd_path);
+	m_pPSH = SGCore_ShaderLoad(st_pixel, "mtrlskin_stdr.ps", "mtrlskin_stdr", scd_path);
 
 	m_mProjMat = SMMatrixPerspectiveFovLH(50.0f / 180.0f * SM_PI, (float)width / (float)height, 0.1f, 10000.0f);
 
@@ -1143,8 +1212,9 @@ void Editor::InitD3D()
 
 void Editor::DestroyD3D()
 {
-	mem_release(m_pd3dDevice);
-	mem_release(m_pD3D);
+	SGCore_0Kill();
+	//mem_release(m_pd3dDevice);
+	//mem_release(m_pD3D);
 }
 
 void Editor::DrawAxis()
@@ -1201,6 +1271,7 @@ void Editor::Update()
 	VSICData.mRes = SMMatrixTranspose(m_mWorldMat * m_mViewMat * m_mProjMat);
 	VSICData.mWorld = SMMatrixTranspose(m_mWorldMat);
 	m_pd3dDevice->SetVertexShaderConstantF(1, (float*)&VSICData, sizeof(VSICData) / sizeof(float) / 4);
+
 	m_pd3dDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&m_mViewMat);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&m_mProjMat);
 	m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixIdentity()));
@@ -1213,7 +1284,10 @@ void Editor::Update()
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC);
 
+	SGCore_ShaderBind(st_vertex, m_pVSH);
+	SGCore_ShaderBind(st_pixel, m_pPSH);
 	m_pAnimMgr->Render();
+	SGCore_ShaderUnBind();
 
 	if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
 	{
@@ -1963,7 +2037,7 @@ void Editor::DelHitbox(UINT id)
 	HitboxItem * hbx = &m_vHitboxes[id];
 	
 	((ModelFile*)hbx->mdl)->DelHitbox(hbx->id);
-	m_pCurAnim->m_pMdl->Assembly();
+	m_pCurAnim->Assembly();
 	
 	UpdateHitboxList((ModelFile*)hbx->mdl, false);
 	OnHitboxListSelChg();

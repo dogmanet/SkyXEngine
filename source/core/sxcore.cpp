@@ -192,14 +192,14 @@ void Core_0Create(const char* name, bool is_unic)
 
 void Core_AKill()
 {
-	SXCORE_PRECOND();
+	SXCORE_PRECOND(_VOID);
 
 	mem_delete(TaskManager);
 }
 
 void Core_AGetName(char* name)
 {
-	SXCORE_PRECOND();
+	SXCORE_PRECOND(_VOID);
 
 	if(name)
 		strcpy(name, CoreName);
@@ -238,19 +238,19 @@ ISXLConfig*  Core_OpLConfig(const char* path)
 
 void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
-	SXCORE_PRECOND();
+	SXCORE_PRECOND(_VOID);
 	TaskManager->add(func, flag);
 }
 
 void Core_MTaskStart()
 {
-	SXCORE_PRECOND();
+	SXCORE_PRECOND(_VOID);
 	TaskManager->start();
 }
 
 void Core_MTaskStop()
 {
-	SXCORE_PRECOND();
+	SXCORE_PRECOND(_VOID);
 	TaskManager->stop();
 }
 
@@ -266,7 +266,7 @@ if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
 
 void Core_RIntSet(int id, int32_t val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	GRegistersInt[id] = val;
 }
 
@@ -278,7 +278,7 @@ int32_t Core_RIntGet(int id)
 
 void Core_RFloatSet(int id, float32_t val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	GRegistersFloat[id] = val;
 }
 
@@ -290,7 +290,7 @@ float32_t Core_RFloatGet(int id)
 
 void Core_RMatrixSet(int id, float4x4* val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	if (val)
 		GRegistersMatrix[id] = *val;
 	else
@@ -299,7 +299,7 @@ void Core_RMatrixSet(int id, float4x4* val)
 
 void Core_RMatrixGet(int id, float4x4* val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 
 	if (val)
 		memcpy(val, &GRegistersMatrix[id], sizeof(float4x4));

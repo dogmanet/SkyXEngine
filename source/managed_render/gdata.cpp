@@ -41,6 +41,8 @@ void GData::Pathes::InitAllPathes()
 	sprintf(GData::Pathes::TexturesSkyBoxes, "%s%s", GData::Pathes::Textures, "sky\\");
 	sprintf(GData::Pathes::Materials, "%s%s", GData::Pathes::GameSource, "materials\\");
 	sprintf(GData::Pathes::GUIresources, "%s%s", GData::Pathes::GameSource, "resource\\");
+
+	SetCurrentDirectoryA(GData::Pathes::GameSource);
 }
 
 void GData::IDsShaders::InitAllShaders()

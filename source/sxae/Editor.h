@@ -1,16 +1,16 @@
 #ifndef Editor_H
 #define Editor_H
 
-#define EDITOR_REG_TREE "SOFTWARE\\DogmaNet\\SkyXEnging\\Editor"
+#define EDITOR_REG_TREE "SOFTWARE\\DogmaNet\\SkyXEngine\\Editor"
 #define EDITOR_REG_KEY_GSDIR "gs_dir"
 
 #include <SXGUIWinApi/sxguielements.h>
-#include "../../SkyXEngine/animeditor/resource.h"
+#include "resource.h"
 
 #include "TabManager.h"
 
 //#include <anim/ModelFile.h>
-#include <anim/animated.h>
+#include <sxanim/animated.h>
 
 #include "Camera.h"
 #include "EMessages.h"
@@ -164,6 +164,10 @@ protected:
 	ModelFile * m_pHitboxesPart;
 
 	char m_szEditFile[MAX_PATH];
+
+
+	ID m_pVSH;
+	ID m_pPSH;
 
 private:
 	void RenderAnimList();

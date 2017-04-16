@@ -65,7 +65,7 @@ void SGeom_0CreateKill()
 
 void SGeom_OnLostDevice()
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 
 	GreenObj->OnLostDevice();
 	GeometryObj->OnLostDevice();
@@ -73,7 +73,7 @@ void SGeom_OnLostDevice()
 
 void SGeom_OnResetDevice()
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 
 	GreenObj->OnResetDevice();
 	GeometryObj->OnResetDevice();
@@ -159,19 +159,19 @@ void SGeom_0SettGreenSetSortFrontToBackSplits(bool val)
 
 void SGeom_ModelsClear()
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->Clear();
 }
 
 void SGeom_ModelsSave(const char* path)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->Save(path);
 }
 
 void SGeom_ModelsLoad(const char* path)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->Load(path);
 }
 
@@ -185,14 +185,14 @@ long SGeom_ModelsGetCount()
 
 void SGeom_ModelsComVisible(ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->CPUFillingArrIndeces(frustum, viewpos, id_arr);
 }
 
 
 void SGeom_ModelsRender(DWORD timeDelta, int sort_mtl, ID id_arr, bool is_sorted, ID exclude_model_id, ID exclude_group_id)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->GPURender(timeDelta, sort_mtl, id_arr, exclude_model_id, exclude_group_id, is_sorted);
 }
 
@@ -204,14 +204,14 @@ ID SGeom_ModelsAddModel(const char* path, const char* lod1, const char* name)
 
 void SGeom_ModelsDelModel(ID id)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->DelModel(id);
 }
 
 
 void SGeom_ModelsGetMinMax(float3* min, float3* max)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->GetMinMax(min, max);
 }
 
@@ -224,7 +224,7 @@ ID SGeom_ModelsAddArrForCom()
 
 void SGeom_ModelsDelArrForCom(ID id_arr)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->DelArrForCom(id_arr);
 }
 
@@ -275,21 +275,21 @@ const char* SGeom_ModelsMGetLodPath(ID id)
 
 void SGeom_ModelsMSetLodPath(ID id, const char* path)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->SetModelLodPath(id, path);
 }
 
 
 void SGeom_ModelsMApplyTransform(ID id)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->ApplyTransform(id);
 }
 
 
 void SGeom_ModelsMSortGroups(float3* viewpos, int sort_mtl)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->SortGroup(viewpos, sort_mtl);
 }
 
@@ -308,25 +308,25 @@ ID SGeom_ModelsMGetGroupIDMat(ID id, ID group)
 
 void SGeom_ModelsMGetGroupCenter(ID id, ID group, float3_t* center)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	return GeometryObj->GetModelGroupCenter(id, group, center);
 }
 
 void SGeom_ModelsMGetGroupMin(ID id, ID group, float3_t* min)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	return GeometryObj->GetModelGroupMin(id, group, min);
 }
 
 void SGeom_ModelsMGetGroupMax(ID id, ID group, float3_t* max)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	return GeometryObj->GetModelGroupMax(id, group, max);
 }
 
 void SGeom_ModelsMGetGroupPlane(ID id, ID group, D3DXPLANE* plane)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	return GeometryObj->GetModelGroupPlane(id, group, plane);
 }
 
@@ -334,7 +334,7 @@ void SGeom_ModelsMGetGroupPlane(ID id, ID group, D3DXPLANE* plane)
 
 void SGeom_ModelsGetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GeometryObj->GetArrBuffsGeom(arr_vertex, arr_count_vertex, arr_index, arr_count_index, count_models);
 }
 
@@ -352,7 +352,7 @@ ID SGeom_GreenAddGreen(const char* name,
 
 void SGeom_GreenDelGreen(ID id)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->DelGreen(id);
 }
 
@@ -365,38 +365,38 @@ ID SGeom_GreenAddArrForCom()
 
 void SGeom_GreenDelArrForCom(ID id_arr)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->DelArrForCom(id_arr);
 }
 
 
 void SGeom_GreenSave(const char* path)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->Save(path);
 }
 
 void SGeom_GreenLoad(const char* path)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->Load(path);
 }
 
 void SGeom_GreenClear()
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->Clear();
 }
 
 void SGeom_GreenComVisible(ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->CPUFillingArrIndeces(frustum, viewpos, id_arr);
 }
 
 void SGeom_GreenRender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID id_arr)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->GPURender(timeDelta, viewpos, type, id_arr);
 }
 
@@ -457,20 +457,20 @@ const char* SGeom_GreenMGetNav(ID id)
 
 void SGeom_GreenMSetLod(ID id, int lod, const char* pathname)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->SetGreenLod(id, lod, pathname);
 }
 
 void SGeom_GreenMSetNav(ID id, const char* pathname)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->SetGreenNav(id, pathname);
 }
 
 
 void SGeom_GreenGetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
 {
-	GEOM_PRECOND();
+	GEOM_PRECOND(_VOID);
 	GreenObj->GetNavMeshAndTransform(arr_vertex, arr_count_vertex, arr_index, arr_count_index, arr_transform, arr_count_transform, arr_count_green);
 }
 

@@ -15,6 +15,9 @@
 #define OBJECT_NAME_MAX_LEN 64	//максимальная длина имени объекта
 #define CONFIG_SECTION_MAX_LEN 64	//максимальная длина секции конфигурационного файла
 
+//for warning C4003: not enough actual parameters for macro
+#define _VOID
+
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
 

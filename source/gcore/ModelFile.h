@@ -35,7 +35,7 @@ struct vertex_animated: public model_vertex
 	float3_t Pos;
 	float2_t Tex;
 	float3_t Norm;
-	unsigned char BoneIndices[4];
+	byte BoneIndices[4];
 	float4_t BoneWeights;
 };
 
@@ -46,7 +46,7 @@ struct vertex_animated_ex: public model_vertex
 	float3_t Norm;
 	float3_t Tangent;
 	float3_t Binorm;
-	unsigned char BoneIndices[4];
+	byte BoneIndices[4];
 	float4_t BoneWeights;
 };
 
@@ -77,7 +77,8 @@ enum MODEL_FLAG
 	MODEL_FLAG_HAS_GIBS = 0x400,
 	MODEL_FLAG_HAS_PHYSBOX = 0x800,
 	MODEL_FLAG_HAS_HITBOXES = 0x1000,
-	MODEL_FLAG_HAS_TANGENT_BINORM = 0x2000 // should never been defined
+	MODEL_FLAG_HAS_TANGENT_BINORM = 0x2000, // should never been defined
+	MODEL_FLAG_NEW_STYLE_DEPS = 0x4000
 };
 
 enum MODEL_PT_TOPOLOGY
@@ -91,76 +92,45 @@ enum MODEL_PT_TOPOLOGY
 
 struct ModelHeader
 {
-	unsigned long long int Magick;
-	UINT iVersion; // At present should be 4
-	UINT iFlags;
-	// char[64] szName; // model name without extension
-	UINT iSkinCount; // Count of used skins
-	UINT iMaterialCount; // Count of used materials
-	unsigned long long iMaterialsOffset; // SXmodelMaterialRangeHeader
-	UINT iLODcount; // Count of Levels of detail
-	unsigned long long iLODoffset; // SXmodelLODheader
-	UINT iBoneCount; // Count of model bones
-	unsigned long long iBonesOffset; // SXmodelBone
-	UINT iAnimationCount; // Count of animation sequences
-	unsigned long long iAnimationsOffset; // SXmodelAnimationHeader
-	unsigned long long iSecondHeaderOffset;
+	uint64_t Magick;
+	uint32_t iVersion; // версия файла
+	uint32_t iFlags; // флаги
+	uint32_t iSkinCount; // Количество скинов в модели
+	uint32_t iMaterialCount; // Количество сабсетов
+	uint64_t iMaterialsOffset; // Смещение до блока списка материалов
+	uint32_t iLODcount; // Количество лодов
+	uint64_t iLODoffset; // Смещение до блока лодов
+	uint32_t iBoneCount; // Количество костей в скелете
+	uint64_t iBonesOffset; // Смещение до блока костей
+	uint32_t iAnimationCount; // Количество анимаций в файле
+	uint64_t iAnimationsOffset; // Смещение до блока анимаций
+	uint64_t iSecondHeaderOffset; // Смещение до второго заголовка
 };
 
 struct ModelHeader2
 {
-	UINT iControllersCount;
-	unsigned long long iControllersOffset;
-	UINT iDepsCount;
-	unsigned long long iDependensiesOffset;
+	uint32_t iControllersCount; // Количество контроллеров
+	uint64_t iControllersOffset; // Смещение до блока контроллеров
+	uint32_t iDepsCount; // Количество включаемых файлов
+	uint64_t iDependensiesOffset; // Смещение до блока включаемых файлов
 
-	UINT iBoneTableCount;
-	unsigned long long iBoneTableOffset;
-	UINT iActivitiesTableCount;
-	unsigned long long iActivitiesTableOffset;
+	uint32_t iBoneTableCount; // Количество костей в таблице костей
+	uint64_t iBoneTableOffset; // Смещение до таблицы костей
+	uint32_t iActivitiesTableCount; // Количество записей в таблице активностей
+	uint64_t iActivitiesTableOffset; // Смещение до таблицы активностей
 
-	unsigned long long iPhysicsDataOffset;
+	uint64_t iPhysicsDataOffset; // Смещение до блока физических данных
 
-	MODEL_PT_TOPOLOGY topology;
+	MODEL_PT_TOPOLOGY topology; // Используемая топология примитивов
 
-	UINT iHitboxCount;
-	unsigned long long iHitboxesOffset;
+	uint32_t iHitboxCount; // Количество хитбоксов
+	uint64_t iHitboxesOffset; // Смещение до блока хитбоксов
 
-	unsigned long long iBboxInfoOffset;
+	uint64_t iBboxInfoOffset; // Смещение до блока информации об ограничивающем объеме
 
-	unsigned long long iThirdHeaderOffset;
+	uint64_t iThirdHeaderOffset; // Смещение до третьего заголовка
 };
 
-struct ModelBoneController
-{
-	UINT iBoneCount;
-	float3_t fMinRot;
-	float3_t fMaxRot;
-	float3_t fMinTrans;
-	float3_t fMaxTrans;
-	char szName[MODEL_MAX_NAME];
-	UINT bones[MODEL_CTRL_MAX_BONES];
-};
-
-struct ModelBoneShader
-{
-	float4_t position;
-	SMQuaternion orient;
-};
-
-struct ModelBone
-{
-	int id;
-	int pid;
-	SMQuaternion orient;
-	float3_t position;
-};
-
-struct ModelBoneName
-{
-	ModelBone bone;
-	char szName[MODEL_BONE_MAX_NAME];
-};
 
 struct ModelLoDSubset
 {
@@ -187,46 +157,6 @@ struct ModelMatrial
 {
 	UINT iMat;
 	char szName[MODEL_MAX_NAME];
-};
-
-struct ModelSequence
-{
-	char name[MODEL_MAX_NAME];
-	bool bLooped;
-	UINT framerate;
-	UINT activity;
-	UINT iNumFrames;
-	UINT act_chance;
-	ModelBone ** m_vmAnimData;
-};
-
-#define MODEL_SEQUENCE_STRUCT_SIZE (sizeof(char) * MODEL_MAX_NAME + sizeof(bool) + sizeof(UINT) * 4)
-
-struct ModelDependensy
-{
-	char szName[MODEL_MAX_NAME];
-};
-
-struct ModelActivity
-{
-	char szName[MODEL_MAX_NAME];
-	//UINT chance;
-};
-
-enum MODEL_BONE_CTL
-{
-	MBCTL_ROT_X = 0,
-	MBCTL_ROT_Y,
-	MBCTL_ROT_Z,
-	MBCTL_TRANS_X,
-	MBCTL_TRANS_Y,
-	MBCTL_TRANS_Z
-};
-
-struct ModelBoneCrontrollerValue
-{
-	SMQuaternion rot;
-	float3_t tr;
 };
 
 #endif

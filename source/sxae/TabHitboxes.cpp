@@ -1,5 +1,5 @@
 #include "TabHitboxes.h"
-#include <anim/ModelFile.h>
+#include <sxanim/ModelFile.h>
 
 void TabHitboxes::Show(bool bShow)
 {

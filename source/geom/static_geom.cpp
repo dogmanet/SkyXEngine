@@ -2509,7 +2509,7 @@ bool StaticGeom::GetIntersectedRayY(float3* pos)
 						&(jpos),
 						&jvevyn, &u, &v, &Dist);
 
-					if (Hit == true && tmpy < (pos->y - Dist * 1000))
+					if (Hit && tmpy < (pos->y - Dist * 1000))
 					{
 						tmpy = pos->y - Dist * 1000;
 						is_find = true;
@@ -2521,7 +2521,7 @@ bool StaticGeom::GetIntersectedRayY(float3* pos)
 							&(jvec2.operator D3DXVECTOR3()),
 							&(jpos),
 							&jvevyp, &u, &v, &Dist);
-						if (Hit == true)
+						if (Hit)
 						{
 							pos->y += Dist * 1000;
 							tmpy = pos->y;
@@ -2585,7 +2585,7 @@ void StaticGeom::DelArrForCom(ID id_arr)
 
 void StaticGeom::AddModelInArrCom(ID id_model)
 {
-	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
+	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, _VOID);
 
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
@@ -2599,7 +2599,7 @@ void StaticGeom::AddModelInArrCom(ID id_model)
 
 void StaticGeom::DelModelInArrCom(ID id_model)
 {
-	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
+	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, _VOID);
 
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
@@ -2991,28 +2991,28 @@ ID StaticGeom::GetModelGroupIDMat(ID id, ID group)
 
 void StaticGeom::GetModelGroupCenter(ID id, ID group, float3_t* center)
 {
-	STATIC_PRECOND_ERR_ID_GROUP(id, group);
+	STATIC_PRECOND_ERR_ID_GROUP(id, group, _VOID);
 
 	*center = AllModels[id]->SubSet[group].Center;
 }
 
 void StaticGeom::GetModelGroupMin(ID id, ID group, float3_t* min)
 {
-	STATIC_PRECOND_ERR_ID_GROUP(id, group);
+	STATIC_PRECOND_ERR_ID_GROUP(id, group, _VOID);
 
 	*min = AllModels[id]->SubSet[group].Min;
 }
 
 void StaticGeom::GetModelGroupMax(ID id, ID group, float3_t* max)
 {
-	STATIC_PRECOND_ERR_ID_GROUP(id, group);
+	STATIC_PRECOND_ERR_ID_GROUP(id, group, _VOID);
 
 	*max = AllModels[id]->SubSet[group].Max;
 }
 
 void StaticGeom::GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane)
 {
-	STATIC_PRECOND_ERR_ID_GROUP(id, group);
+	STATIC_PRECOND_ERR_ID_GROUP(id, group, _VOID);
 
 	*plane = AllModels[id]->SubSet[group].Plane;
 }

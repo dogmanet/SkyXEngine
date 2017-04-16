@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <SXMath.h>
+#include <common/SXMath.h>
 
 class Camera
 {

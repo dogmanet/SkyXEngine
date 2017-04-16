@@ -84,7 +84,7 @@ void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
 
 void SSInput_Update()
 {
-	SI_PRECOND();
+	SI_PRECOND(_VOID);
 	ObjectInput->Update();
 }
 

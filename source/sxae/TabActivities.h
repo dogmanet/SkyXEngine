@@ -2,7 +2,7 @@
 #define TabActivities_H
 
 #include "EditorTab.h"
-#include <anim/animated.h>
+#include <sxanim/animated.h>
 
 class TabActivities:public EditorTab
 {

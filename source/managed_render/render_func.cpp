@@ -437,6 +437,8 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	if (SGeom_ModelsGetCount() > 0)
 		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
 
+	SXAnim_Render();
+
 	if (SGeom_GreenGetCount() > 0)
 		SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggtr_all);
 
@@ -1346,6 +1348,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	//@@@
 	CameraUpdate::UpdateEditorial(timeDelta);
 
+	SXAnim_Update();
+	SXAnim_Sync();
+
 	GData::ObjCamera->GetPosition(&GData::ConstCurrCamPos);
 	GData::ObjCamera->GetLook(&GData::ConstCurrCamDir);
 
@@ -1437,21 +1442,25 @@ void SXRenderFunc::RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min
 
 void SXRenderFunc::RFuncMtlSet(ID id, float4x4* world)
 {
-	if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_SHADOW)
+	switch(Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
+	case RENDER_STATE_SHADOW:
 		SML_MtlSetMainTexture(0, id);
 		SML_LigthsShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SML_MtlGetTypeModel(id), world);
-	}
-	else if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_FREE)
-	{
+		break;
+
+	case RENDER_STATE_FREE:
 		SML_MtlSetMainTexture(0, id);
 		//GData::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
 		//SGCore_ShaderUnBind();
 		//SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world);
-	}
-	else if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_MATERIAL)
+		break;
+
+	case RENDER_STATE_MATERIAL:
 		SML_MtlRender(id, world);
+		break;
+	}
 }
 
 ID SXRenderFunc::RFuncMtlLoad(const char* name, int mtl_type)

@@ -32,7 +32,7 @@
 #define MTL_TYPE_GEOM 0
 #define MTL_TYPE_GRASS 1
 #define MTL_TYPE_TREE 2
-#define MTL_TYPE_ANIM 3
+#define MTL_TYPE_SKIN 3
 //#define MTL_LIGHT 4
 
 //размер отладочного сообщения, выводимого в окно рендера

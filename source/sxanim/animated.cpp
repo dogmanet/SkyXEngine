@@ -2,7 +2,8 @@
 #include "animated.h"
 #include <cstdlib>
 #include <cstdio>
-#include <sxtypes.h>
+#include <common/sxtypes.h>
+#include <gcore/sxgcore.h>
 
 /**
 *
@@ -47,21 +48,21 @@ void ModelFile::Load(const char * name)
 	FILE * fp = fopen(name, "rb");
 	if(!fp)
 	{
-		fprintf(stderr, "Err: Unable to open \"%s\"\n", name);
+		Report(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
 	}
 
 	fread(&m_hdr, sizeof(ModelHeader), 1, fp);
 
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
-		fprintf(stderr, "Err: Corrupt model \"%s\"\n", name);
+		Report(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
 		fclose(fp);
 		return;
 	}
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION)
 	{
-		fprintf(stderr, "Err: Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
+		Report(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
 		fclose(fp);
 		return;
 	}
@@ -130,10 +131,12 @@ void ModelFile::Load(const char * name)
 				fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
 
 				m_iMaterials[j][i].iMat = m_pMgr->GetMaterial(m_iMaterials[j][i].szName); //3
+
 			}
 		}
 	}
 
+	SGCore_LoadTexLoadTextures();
 
 	if(m_hdr.iAnimationsOffset)
 	{
@@ -223,29 +226,6 @@ UINT ModelFile::GetBoneID(const char * name)
 	return(-1);
 }
 
-void ModelFile::Assembly()
-{
-	//Assumed all dependensies already assembled
-
-	if(!(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS))
-	{
-		for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
-		{
-			MergeModel(m_pDeps[i]);
-		}
-	}
-	/*else
-	{
-		Animation tmp(m_pMgr);
-		for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
-		{
-			tmp.AddModel(&m_pParts[i]);
-		}
-		tmp.Assembly();
-		
-	}*/
-}
-
 const ModelHitbox * ModelFile::GetHitbox(const char * name) const
 {
 	for(uint32_t i = 0; i < m_hdr2.iHitboxCount; ++i)
@@ -331,374 +311,6 @@ void ModelFile::DelHitbox(uint32_t i)
 	m_pHitboxes = tmp;
 }
 
-
-void ModelFile::MergeModel(const ModelFile * mdl)
-{
-	//merge bones
-	ModelBoneList local;
-	ModelBoneList remote;
-	ModelBoneRelinkList relink;
-	ModelBoneRelinkList relink_activities;
-	ModelBoneRelinkList relink_materials;
-	ModelBoneChildrenList local_children;
-	ModelBoneChildrenList remote_children;
-	ModelBoneIdList id_local;
-	ModelBoneIdList id_remote;
-	ModelBones result;
-	//AssotiativeArray<String, ModelBone> new_list;
-	bool bLocalRoot = true;
-	bool bDualRoot = false;
-	for(uint32_t i = 0; i < m_hdr.iBoneCount; i++)
-	{
-		local[m_pBones[i].szName] = &m_pBones[i];
-		local_children[m_pBones[i].bone.pid].push_back(m_pBones[i].bone.id);
-		id_local[m_pBones[i].bone.id] = &m_pBones[i];
-	}
-	for(uint32_t i = 0; i < mdl->m_hdr.iBoneCount; i++)
-	{
-		remote[mdl->m_pBones[i].szName] = &mdl->m_pBones[i];
-		remote_children[mdl->m_pBones[i].bone.pid].push_back(mdl->m_pBones[i].bone.id);
-		id_remote[mdl->m_pBones[i].bone.id] = &mdl->m_pBones[i];
-		if(mdl->m_pBones[i].bone.pid == -1 && local.KeyExists(mdl->m_pBones[i].szName))
-		{
-			bLocalRoot = true;
-			bDualRoot = false;
-		}
-	}
-	if(!bLocalRoot)
-	{
-		for(uint32_t i = 0; i < m_hdr.iBoneCount; i++)
-		{
-			if(m_pBones[i].bone.pid == -1 && remote.KeyExists(m_pBones[i].szName))
-			{
-				bDualRoot = false;
-			}
-		}
-	}
-	if(bDualRoot)
-	{
-		printf("Err: Invalid model bones hierarchy\n");
-		return;
-	}
-	MergeActivities(mdl, relink_activities);
-	if(bLocalRoot)
-	{
-		//remote relink
-		MergeBones(remote_children, local, id_remote, relink, result);
-		ImportControllers(mdl, &relink);
-		ImportSequences(mdl, &relink, relink_activities);
-	}
-	else
-	{
-		//local relink
-		MergeBones(local_children, remote, id_local, relink, result);
-		for(uint32_t i = 0; i < m_hdr2.iControllersCount; i++)
-		{
-			for(uint32_t j = 0; j < m_pControllers[i].iBoneCount; j++)
-			{
-				if(relink.KeyExists(m_pControllers[i].bones[j]))
-				{
-					m_pControllers[i].bones[j] = relink[m_pControllers[i].bones[j]];
-				}
-			}
-		}
-		for(uint32_t i = 0; i < m_hdr.iAnimationCount; i++)
-		{
-			for(uint32_t f = 0; f < m_pSequences[i].iNumFrames; f++)
-			{
-				for(uint32_t j = 0; j < m_hdr.iBoneCount; j++)
-				{
-					if(relink.KeyExists(m_pSequences[i].m_vmAnimData[f][j].id))
-					{
-						m_pSequences[i].m_vmAnimData[f][j].id = relink[m_pSequences[i].m_vmAnimData[f][j].id];
-					}
-					if(relink.KeyExists(m_pSequences[i].m_vmAnimData[f][j].pid))
-					{
-						m_pSequences[i].m_vmAnimData[f][j].pid = relink[m_pSequences[i].m_vmAnimData[f][j].id];
-					}
-				}
-			}
-		}
-		ImportControllers(mdl, NULL);
-		ImportSequences(mdl, NULL, relink_activities);
-	}
-
-	//relink:
-	//m_pControllers
-	//m_pSequences
-	mem_delete_a(m_pBones);
-	m_hdr2.iBoneTableCount = m_hdr.iBoneCount = result.Size();
-	m_pBones = new ModelBoneName[result.Size()];
-	for(ModelBones::Iterator i = result.begin(); i; i++)
-	{
-		m_pBones[i.second->bone.id] = *(i.second);
-	}
-
-	//		for(ModelBoneList::Iterator i = local
-
-	//merge texture lists
-
-	MergeMaterials(mdl, relink_materials);
-
-	//merge lods
-	MergeLods(mdl, relink_materials);
-}
-
-void ModelFile::MergeBones(
-	ModelBoneChildrenList & child_remote,
-	ModelBoneList & local,
-	ModelBoneIdList & id_remote,
-	ModelBoneRelinkList & relink_remote,
-	ModelBones & res
-	)
-{
-	for(ModelBoneList::Iterator i = local.begin(); i; i++)
-	{
-		res[*(i.first)] = **(i.second);
-	}
-	//Init base struct
-	DoMerge(0, child_remote, id_remote, relink_remote, res);
-}
-
-void ModelFile::DoMerge(
-	int startId,
-	ModelBoneChildrenList & child_remote,
-	ModelBoneIdList & id_remote,
-	ModelBoneRelinkList & relink_remote,
-	ModelBones & res
-	)
-{
-	for(UINT i = 0; i < child_remote[startId].size(); i++)
-	{
-		//ModelBoneName out = *id_local[child_local[startId][i]];
-		if(res.KeyExists(id_remote[child_remote[startId][i]]->szName))
-		{
-			ModelBoneName * rem_bone = &res[id_remote[child_remote[startId][i]]->szName];
-			relink_remote[child_remote[startId][i]] = rem_bone->bone.id;
-			relink_remote[id_remote[child_remote[startId][i]]->bone.pid] = rem_bone->bone.pid;
-		}
-		else
-		{
-			res[id_remote[child_remote[startId][i]]->szName] = *id_remote[child_remote[startId][i]];
-			ModelBoneName * rem_bone = &res[id_remote[child_remote[startId][i]]->szName];
-			rem_bone->bone.pid = relink_remote[rem_bone->bone.pid];
-			int newId = res.Size();
-			relink_remote[rem_bone->bone.id] = newId;
-			rem_bone->bone.id = newId;
-		}
-
-		DoMerge(child_remote[startId][i], child_remote, id_remote, relink_remote, res);
-	}
-}
-
-void ModelFile::MergeActivities(const ModelFile * mdl, ModelBoneRelinkList & relink)
-{
-	if(mdl->m_hdr2.iActivitiesTableCount)
-	{
-		AssotiativeArray<String, int> list;
-		Array<ModelActivity> data;
-		if(m_hdr2.iActivitiesTableCount)
-		{
-			for(uint32_t i = 0; i < m_hdr2.iActivitiesTableCount; i++)
-			{
-				list[pActivities[i].szName] = i; // save original IDs
-				data.push_back(pActivities[i]);
-			}
-		}
-		for(uint32_t i = 0; i < mdl->m_hdr2.iActivitiesTableCount; i++)
-		{
-			if(list.KeyExists(mdl->pActivities[i].szName))
-			{
-				relink[i] = list[mdl->pActivities[i].szName];
-			}
-			else
-			{
-				data.push_back(mdl->pActivities[i]);
-				relink[i] = data.size() - 1;
-			}
-		}
-		m_hdr2.iActivitiesTableCount = data.size();
-		mem_delete_a(pActivities);
-		pActivities = new ModelActivity[m_hdr2.iActivitiesTableCount];
-		memcpy(pActivities, &data[0], sizeof(ModelActivity) * m_hdr2.iActivitiesTableCount);
-	}
-}
-
-void ModelFile::ImportControllers(const ModelFile * mdl, ModelBoneRelinkList * relink)
-{
-	if(mdl->m_hdr2.iControllersCount)
-	{
-		Array<ModelBoneController> list;
-		if(m_hdr2.iControllersCount)
-		{
-			list.resize(m_hdr2.iControllersCount);
-			memcpy(&list[0], m_pControllers, sizeof(ModelBoneController) * m_hdr2.iControllersCount);
-		}
-		for(uint32_t i = 0; i < mdl->m_hdr2.iControllersCount; i++)
-		{
-			list.push_back(mdl->m_pControllers[i]);
-			if(relink)
-			{
-				ModelBoneRelinkList & rlist = *relink;
-				ModelBoneController & ctrl = list[list.size() - 1];
-				for(uint32_t j = 0; j < ctrl.iBoneCount; j++)
-				{
-					if(rlist.KeyExists(ctrl.bones[j]))
-					{
-						ctrl.bones[j] = rlist[ctrl.bones[j]];
-					}
-				}
-			}
-		}
-		m_hdr2.iControllersCount = list.size();
-		mem_delete_a(m_pControllers);
-		m_pControllers = new ModelBoneController[m_hdr2.iControllersCount];
-		memcpy(m_pControllers, &list[0], sizeof(ModelBoneController) * m_hdr2.iControllersCount);
-	}
-}
-void ModelFile::ImportSequences(const ModelFile * mdl, ModelBoneRelinkList * relink, ModelBoneRelinkList & relink_activities)
-{
-	if(mdl->m_hdr.iAnimationCount)
-	{
-		Array<ModelSequence> list;
-		if(m_hdr.iAnimationCount)
-		{
-			list.resize(m_hdr.iAnimationCount);
-			memcpy(&list[0], m_pSequences, sizeof(ModelSequence) * m_hdr.iAnimationCount);
-		}
-
-		for(uint32_t i = 0; i < mdl->m_hdr.iAnimationCount; i++)
-		{
-			list.push_back(mdl->m_pSequences[i]);
-			ModelSequence & seq = list[list.size() - 1];
-
-			seq.m_vmAnimData = new ModelBone*[seq.iNumFrames];
-
-			for(UINT j = 0; j < seq.iNumFrames; j++)
-			{
-				seq.m_vmAnimData[j] = new ModelBone[m_hdr.iBoneCount];
-				memcpy(&seq.m_vmAnimData[j], &mdl->m_pSequences[i].m_vmAnimData[j], sizeof(ModelBone) * m_hdr.iBoneCount);
-
-				if(relink)
-				{
-					ModelBoneRelinkList & rlist = *relink;
-					for(uint32_t k = 0; k < m_hdr.iBoneCount; k++)
-					{
-						if(rlist.KeyExists(seq.m_vmAnimData[j][k].id))
-						{
-							seq.m_vmAnimData[j][k].id = rlist[seq.m_vmAnimData[j][k].id];
-						}
-						if(rlist.KeyExists(seq.m_vmAnimData[j][k].pid))
-						{
-							seq.m_vmAnimData[j][k].pid = rlist[seq.m_vmAnimData[j][k].pid];
-						}
-					}
-				}
-			}
-		}
-
-		m_hdr.iAnimationCount = list.size();
-		mem_delete_a(m_pSequences);
-		m_pSequences = new ModelSequence[m_hdr.iAnimationCount];
-		memcpy(m_pSequences, &list[0], sizeof(ModelSequence) * m_hdr.iAnimationCount);
-	}
-}
-
-void ModelFile::MergeMaterials(const ModelFile * mdl, ModelBoneRelinkList & relink)
-{
-	if(mdl->m_hdr.iMaterialCount)
-	{
-		Array<Array<ModelMatrial>> _data;
-		for(uint32_t i = 0; i < max(mdl->m_hdr.iSkinCount, m_hdr.iSkinCount); i++)
-		{
-			UINT iLocalSkin = i >= m_hdr.iSkinCount ? 0 : i;
-			UINT iRemoteSkin = i >= mdl->m_hdr.iSkinCount ? 0 : i;
-
-			Array<ModelMatrial> data;
-			for(uint32_t j = 0; j < m_hdr.iMaterialCount; j++)
-			{
-				data.push_back(m_iMaterials[iLocalSkin][j]);
-			}
-			for(uint32_t j = 0; j < mdl->m_hdr.iMaterialCount; j++)
-			{
-				data.push_back(mdl->m_iMaterials[iRemoteSkin][j]);
-				if(i == 0)
-				{
-					relink[i] = data.size() - 1;
-				}
-			}
-			_data.push_back(data);
-		}
-
-		for(uint32_t i = 0; i < m_hdr.iSkinCount; i++)
-		{
-			mem_delete_a(m_iMaterials[i]);
-		}
-		mem_delete_a(m_iMaterials);
-		m_hdr.iSkinCount = _data.size();
-		m_iMaterials = new ModelMatrial*[m_hdr.iSkinCount];
-		m_hdr.iMaterialCount = _data[0].size();
-		for(uint32_t i = 0; i < m_hdr.iSkinCount; i++)
-		{
-			m_iMaterials[i] = new ModelMatrial[m_hdr.iMaterialCount];
-			memcpy(m_iMaterials[i], &_data[i][0], sizeof(ModelMatrial) * m_hdr.iMaterialCount);
-		}
-	}
-}
-
-void ModelFile::MergeLods(const ModelFile * mdl, ModelBoneRelinkList & relink)
-{
-	if(mdl->m_hdr.iLODcount)
-	{
-		Array<Array<ModelLoDSubset>> _list;
-
-		for(uint32_t i = 0; i < max(m_hdr.iLODcount, mdl->m_hdr.iLODcount); i++)
-		{
-			Array<ModelLoDSubset> list;
-			bool bHasLocalLod = i < m_hdr.iLODcount;
-			bool bHasRemoteLod = i < mdl->m_hdr.iLODcount;
-			if(bHasLocalLod)
-			{
-				for(uint32_t j = 0; j < m_pLods[i].iSubMeshCount; j++)
-				{
-					list.push_back(m_pLods[i].pSubLODmeshes[j]);
-				}
-			}
-			if(bHasRemoteLod)
-			{
-				for(uint32_t j = 0; j < mdl->m_pLods[i].iSubMeshCount; j++)
-				{
-					list.push_back(mdl->m_pLods[i].pSubLODmeshes[j]);
-					ModelLoDSubset & lss = list[list.size() - 1];
-					lss.pIndices = new UINT[lss.iIndexCount];
-					lss.pVertices = new vertex_animated[lss.iVectexCount];
-					memcpy(lss.pIndices, mdl->m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT) * lss.iIndexCount);
-					memcpy(lss.pVertices, mdl->m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated) * lss.iVectexCount);
-					if(relink.KeyExists(lss.iMaterialID))
-					{
-						lss.iMaterialID = relink[lss.iMaterialID];
-					}
-				}
-			}
-			_list.push_back(list);
-		}
-
-		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
-		{
-			mem_delete_a(m_pLods[i].pSubLODmeshes);
-		}
-		mem_delete_a(m_pLods);
-		m_hdr.iLODcount = _list.size();
-		m_pLods = new ModelLoD[m_hdr.iLODcount];
-		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
-		{
-			m_pLods[i].iSubMeshCount = _list[i].size();
-			m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pLods[i].iSubMeshCount];
-			memcpy(m_pLods[i].pSubLODmeshes, &_list[i][0], sizeof(ModelLoDSubset) * m_pLods[i].iSubMeshCount);
-		}
-	}
-}
-
 const ModelSequence * ModelFile::GetSequence(UINT id) const
 {
 	if(GetSequenceCount() <= id)
@@ -739,7 +351,7 @@ UINT ModelFile::GetControllersCount() const
 	return(m_hdr2.iControllersCount);
 }
 #ifndef _SERVER
-void ModelFile::Render(int howrender, int render_forward, SMMATRIX * mWorld, UINT nSkin, UINT nLod)
+void ModelFile::Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod)
 {
 	if(nSkin >= m_hdr.iSkinCount)
 	{
@@ -765,9 +377,10 @@ void ModelFile::Render(int howrender, int render_forward, SMMATRIX * mWorld, UIN
 
 	for(UINT i = 0; i < m_pLods[nLod].iSubMeshCount; i++)
 	{
-		m_pMgr->SetMaterial(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat);
+		//m_pMgr->SetMaterial(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat);
+		SGCore_MtlSet(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat, mWorld);
 
-		m_pMgr->m_pd3dDevice->DrawIndexedPrimitive(
+		SGCore_DIP(
 			D3DPT_TRIANGLELIST,
 			m_pLods[nLod].pSubLODmeshes[i].iStartVertex,
 			0,
@@ -1540,12 +1153,12 @@ void Animation::Play(const char * name, UINT iFadeTime, UINT slot) // name: Anim
 	}
 	if(slot >= BLEND_MAX)
 	{
-		fprintf(stderr, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
+		Report(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
 		return;
 	}
 	if(!m_mSeqIds.KeyExists(name))
 	{
-		fprintf(stderr, "Unable to play animation \"%s\"\n", name);
+		Report(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\"\n", name);
 		return;
 	}
 	UINT sid = m_mSeqIds[name];
@@ -1673,7 +1286,7 @@ void Animation::Render()
 	}
 	m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrix, sizeof(ModelBoneShader) * m_iBoneCount / sizeof(float) / 4);
 
-	m_pMdl->Render(0, 0, &(SMMatrixScaling(0.01f, 0.01f, 0.01f) * GetWorldTM()), m_iCurrentSkin);
+	m_pMdl->Render(&(SMMatrixScaling(0.01f, 0.01f, 0.01f) * GetWorldTM()), m_iCurrentSkin);
 }
 
 UINT Animation::GetBoneCount() const
@@ -1969,7 +1582,7 @@ void Animation::Assembly()
 				++sCur;
 				--i;
 				//report error
-				MessageBoxA(NULL, "Skeleton hierarchy incompatible", "Merge error!", MB_OK | MB_ICONSTOP);
+				Report(REPORT_MSG_LEVEL_WARRNING, NULL, "Skeleton hierarchy incompatible");
 				break;
 			}
 		}
@@ -2124,6 +1737,8 @@ void Animation::Assembly()
 		m_pMdl->m_iMaterials[0][i].iMat = m_pMgr->GetMaterial(m_pMdl->m_iMaterials[0][i].szName);
 	}
 
+	SGCore_LoadTexLoadTextures();
+
 	m_pMdl->m_hdr.iLODcount = vvLods.size();
 	m_pMdl->m_pLods = new ModelLoD[m_pMdl->m_hdr.iLODcount];
 	for(uint32_t i = 0; i < m_pMdl->m_hdr.iLODcount; i++)
@@ -2245,81 +1860,7 @@ AnimationManager::AnimationManager(IDirect3DDevice9*dev):
 m_pd3dDevice(dev)
 {
 	InitVertexDeclarations();
-	LoadShader();
 }
-
-HRESULT CompileShaderFromFile(const char * szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DXBuffer ** ppBlobOut, UINT defs)
-{
-	int s = strlen(szFileName);
-	HRESULT hr = S_OK;
-	//DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-	DWORD dwShaderFlags = 0;
-#if 0
-#ifdef _DEBUG
-	dwShaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_AVOID_FLOW_CONTROL | D3DCOMPILE_SKIP_OPTIMIZATION;
-#else
-	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
-#endif
-#endif
-	ID3DXBuffer * pErrorBlob = NULL;
-	hr = D3DXCompileShaderFromFileA(szFileName, NULL, NULL, szEntryPoint, szShaderModel, dwShaderFlags, ppBlobOut, &pErrorBlob, NULL); // LAst - constant table
-
-
-	//SHOW_ERROR;
-	if(FAILED(hr))
-	{
-		if(pErrorBlob != NULL)
-		{
-			char * err = (char*)pErrorBlob->GetBufferPointer();
-			fprintf(stderr, "[Error]: %s\n", err);
-		}
-		mem_release(pErrorBlob);
-		return hr;
-	}
-	mem_release(pErrorBlob);
-	return(S_OK);
-}
-
-void AnimationManager::LoadShader()
-{
-	const char * shader = "shaders/skinning.vs";
-
-	ID3DXBuffer * pShader = NULL;
-
-	if(FAILED(CompileShaderFromFile(shader, "main", "vs_3_0", &pShader, NULL)))
-	{
-		fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
-		return;
-	}
-
-	if(FAILED(m_pd3dDevice->CreateVertexShader((DWORD *)pShader->GetBufferPointer(), &m_pVSH)))
-	{
-		pShader->Release();
-		fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
-		return;
-	}
-
-	{
-		const char * shader = "shaders/pp_quad_render.ps";
-
-		ID3DXBuffer * pShader = NULL;
-
-		if(FAILED(CompileShaderFromFile(shader, "main", "ps_3_0", &pShader, NULL)))
-		{
-			fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
-			return;
-		}
-
-		if(FAILED(m_pd3dDevice->CreatePixelShader((DWORD *)pShader->GetBufferPointer(), &m_pPSH)))
-		{
-			pShader->Release();
-			fprintf(stderr, "[Error]: Unable to load shader \"%s\"\n", shader);
-			return;
-		}
-	}
-}
-
-
 
 AnimationManager::~AnimationManager()
 {
@@ -2381,7 +1922,7 @@ void AnimationManager::SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
 {
 	if(nDecl >= MVT_SIZE)
 	{
-		printf("Unknown vertex declaration %d in AnimationManager::SetVertexDeclaration()\n", nDecl);
+		Report(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::SetVertexDeclaration()\n", nDecl);
 		return;
 	}
 	m_pd3dDevice->SetVertexDeclaration(pVertexDeclaration[nDecl]);
@@ -2390,38 +1931,48 @@ void AnimationManager::SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
 UINT AnimationManager::Register(Animation * pAnim)
 {
 	m_pAnimatedList.push_back(pAnim);
-	ArrIsVisible.push_back(true);
 	return(m_pAnimatedList.size() - 1);
 }
 void AnimationManager::UnRegister(UINT id)
 {
 	m_pAnimatedList.erase(id);
 }
-void AnimationManager::Render(int howrender, int render_forward)
+void AnimationManager::Render()
 {
 #ifndef _SERVER
-	m_pd3dDevice->SetVertexShader(m_pVSH);
-	m_pd3dDevice->SetPixelShader(m_pPSH);
 	Animation * pAnim;
-	for(uint32_t i = 0; i < m_pAnimatedList.size(); i++)
+	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		pAnim = m_pAnimatedList[i];
 		
 		pAnim->Render();
 	}
-	m_pd3dDevice->SetVertexShader(NULL);
-	m_pd3dDevice->SetPixelShader(NULL);
 #endif
 }
 void AnimationManager::Update()
 {
-	for(uint32_t i = 0; i < m_pAnimatedList.size(); i++)
+	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		m_pAnimatedList[i]->Advance(GetTickCount());
 	}
 }
 
-UINT AnimationManager::GetMaterial(const String & mat)
+void AnimationManager::Sync()
+{
+	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
+	{
+		//m_pAnimatedList[i]->Advance(GetTickCount());
+	}
+}
+
+UINT AnimationManager::GetMaterial(const char * mat)
+{
+	char * tmp = (char*)alloca(sizeof(char)* (strlen(mat) + 5));
+	sprintf(tmp, "%s.dds", mat);
+	return(SGCore_MtlLoad(tmp, MTL_TYPE_SKIN));
+}
+
+/*UINT AnimationManager::GetMaterial(const String & mat)
 {
 	const AssotiativeArray<String, material>::Node * pNode;
 	if(m_mMats.KeyExists(mat, &pNode))
@@ -2446,8 +1997,8 @@ UINT AnimationManager::GetMaterial(const String & mat)
 	
 	m_mMats[mat] = m;
 	return((UINT)&m_mMats[mat]);
-}
-void AnimationManager::SetMaterial(UINT mat)
+}*/
+/*void AnimationManager::SetMaterial(UINT mat)
 {
 	m_pd3dDevice->SetTexture(0, ((material*)mat)->tex);
-}
+}*/
