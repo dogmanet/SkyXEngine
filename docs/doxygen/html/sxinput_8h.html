@@ -1,0 +1,624 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Файл sxinput.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('sxinput_8h.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Классы</a> &#124;
+<a href="#namespaces">Пространства имен</a> &#124;
+<a href="#define-members">Макросы</a> &#124;
+<a href="#typedef-members">Определения типов</a> &#124;
+<a href="#enum-members">Перечисления</a> &#124;
+<a href="#func-members">Функции</a>  </div>
+  <div class="headertitle">
+<div class="title">Файл sxinput.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Заголовочный файл sxinput - системы ввода информации с устройств  
+<a href="#details">Подробнее...</a></p>
+<div class="textblock"><code>#include &lt;<a class="el" href="gdefines_8h_source.html">gdefines.h</a>&gt;</code><br />
+</div>
+<p><a href="sxinput_8h_source.html">См. исходные тексты.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Классы</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_in_mess.html">InMess</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">стрктура для шаблона сообщений  <a href="struct_in_mess.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Пространства имен</h2></td></tr>
+<tr class="memitem:namespace_input_symbol"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_input_symbol.html">InputSymbol</a></td></tr>
+<tr class="memdesc:namespace_input_symbol"><td class="mdescLeft">&#160;</td><td class="mdescRight">коды букв и цифр распределенные по массивам <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Макросы</h2></td></tr>
+<tr class="memitem:gacef26e2843ea74f541b9480a6210ce10"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gacef26e2843ea74f541b9480a6210ce10">SIK_LBRACKET</a>&#160;&#160;&#160;0x1A</td></tr>
+<tr class="memdesc:gacef26e2843ea74f541b9480a6210ce10"><td class="mdescLeft">&#160;</td><td class="mdescRight">{ <br /></td></tr>
+<tr class="separator:gacef26e2843ea74f541b9480a6210ce10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadae8635cdb0cd37fdb46727d82a96c5c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gadae8635cdb0cd37fdb46727d82a96c5c">SIK_RBRACKET</a>&#160;&#160;&#160;0x1B</td></tr>
+<tr class="memdesc:gadae8635cdb0cd37fdb46727d82a96c5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">} <br /></td></tr>
+<tr class="separator:gadae8635cdb0cd37fdb46727d82a96c5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5ca3e3c204cc6292add756ae065ec3a9"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga5ca3e3c204cc6292add756ae065ec3a9">SIK_RETURN</a>&#160;&#160;&#160;0x1C</td></tr>
+<tr class="memdesc:ga5ca3e3c204cc6292add756ae065ec3a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter на основной <br /></td></tr>
+<tr class="separator:ga5ca3e3c204cc6292add756ae065ec3a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac276cdcf34023b50203f0b9408b82ce9"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gac276cdcf34023b50203f0b9408b82ce9">SIK_SPACE</a>&#160;&#160;&#160;0x39</td></tr>
+<tr class="memdesc:gac276cdcf34023b50203f0b9408b82ce9"><td class="mdescLeft">&#160;</td><td class="mdescRight">пробел <br /></td></tr>
+<tr class="separator:gac276cdcf34023b50203f0b9408b82ce9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad738f63ba8ffb7c8ef4044d2c815f207"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gad738f63ba8ffb7c8ef4044d2c815f207">SIK_GRAVE</a>&#160;&#160;&#160;0x29</td></tr>
+<tr class="memdesc:gad738f63ba8ffb7c8ef4044d2c815f207"><td class="mdescLeft">&#160;</td><td class="mdescRight">` <br /></td></tr>
+<tr class="separator:gad738f63ba8ffb7c8ef4044d2c815f207"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga344b932d9a6e78e01cfd03bc10c3a0d2"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga344b932d9a6e78e01cfd03bc10c3a0d2">SIK_MINUS</a>&#160;&#160;&#160;0x0C</td></tr>
+<tr class="memdesc:ga344b932d9a6e78e01cfd03bc10c3a0d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">- <br /></td></tr>
+<tr class="separator:ga344b932d9a6e78e01cfd03bc10c3a0d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga82808178674e0a6d6a861e9a41a1c8ef"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga82808178674e0a6d6a861e9a41a1c8ef">SIK_EQUALS</a>&#160;&#160;&#160;0x0D</td></tr>
+<tr class="memdesc:ga82808178674e0a6d6a861e9a41a1c8ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">= <br /></td></tr>
+<tr class="separator:ga82808178674e0a6d6a861e9a41a1c8ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaffd58f23211903ed6823336fc41b9eb7"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gaffd58f23211903ed6823336fc41b9eb7">SIK_SEMICOLON</a>&#160;&#160;&#160;0x27</td></tr>
+<tr class="memdesc:gaffd58f23211903ed6823336fc41b9eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">; <br /></td></tr>
+<tr class="separator:gaffd58f23211903ed6823336fc41b9eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga80b6ebfb6dc64af58b0384707137408e"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga80b6ebfb6dc64af58b0384707137408e">SIK_APOSTROPHE</a>&#160;&#160;&#160;0x28</td></tr>
+<tr class="memdesc:ga80b6ebfb6dc64af58b0384707137408e"><td class="mdescLeft">&#160;</td><td class="mdescRight">' <br /></td></tr>
+<tr class="separator:ga80b6ebfb6dc64af58b0384707137408e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabf4e7eebb06cd0188622f613c26ef5f8"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gabf4e7eebb06cd0188622f613c26ef5f8">SIK_BACKSLASH</a>&#160;&#160;&#160;0x2B</td></tr>
+<tr class="memdesc:gabf4e7eebb06cd0188622f613c26ef5f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">\ <br /></td></tr>
+<tr class="separator:gabf4e7eebb06cd0188622f613c26ef5f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga561eb1c1ffe43b6cdafb0119e3f1f6f1"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga561eb1c1ffe43b6cdafb0119e3f1f6f1">SIK_SLASH</a>&#160;&#160;&#160;0x35</td></tr>
+<tr class="memdesc:ga561eb1c1ffe43b6cdafb0119e3f1f6f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">/ на основной <br /></td></tr>
+<tr class="separator:ga561eb1c1ffe43b6cdafb0119e3f1f6f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0bc7eaf4bdb150b51981d8086b49415a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga0bc7eaf4bdb150b51981d8086b49415a">SIK_PERIOD</a>&#160;&#160;&#160;0x34</td></tr>
+<tr class="memdesc:ga0bc7eaf4bdb150b51981d8086b49415a"><td class="mdescLeft">&#160;</td><td class="mdescRight">.  <a href="group__sxinput__code__keyboard.html#ga0bc7eaf4bdb150b51981d8086b49415a">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga0bc7eaf4bdb150b51981d8086b49415a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2600763dd6a23a13429500be39c566da"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga2600763dd6a23a13429500be39c566da">SIK_SCROLLLOCK</a>&#160;&#160;&#160;0x46</td></tr>
+<tr class="memdesc:ga2600763dd6a23a13429500be39c566da"><td class="mdescLeft">&#160;</td><td class="mdescRight">scroll lock <br /></td></tr>
+<tr class="separator:ga2600763dd6a23a13429500be39c566da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5b02cecebc975e421ccee832e311c004"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga5b02cecebc975e421ccee832e311c004">SIK_HOME</a>&#160;&#160;&#160;0xC7</td></tr>
+<tr class="memdesc:ga5b02cecebc975e421ccee832e311c004"><td class="mdescLeft">&#160;</td><td class="mdescRight">Home. <br /></td></tr>
+<tr class="separator:ga5b02cecebc975e421ccee832e311c004"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab03f38e325ca2d396a1d71a36131e8c3"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gab03f38e325ca2d396a1d71a36131e8c3">SIK_END</a>&#160;&#160;&#160;0xCF</td></tr>
+<tr class="memdesc:gab03f38e325ca2d396a1d71a36131e8c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">End. <br /></td></tr>
+<tr class="separator:gab03f38e325ca2d396a1d71a36131e8c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8b499649fd837e06c29df849e6f0bd08"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga8b499649fd837e06c29df849e6f0bd08">SIK_PGUP</a>&#160;&#160;&#160;0xC9</td></tr>
+<tr class="memdesc:ga8b499649fd837e06c29df849e6f0bd08"><td class="mdescLeft">&#160;</td><td class="mdescRight">Page Up. <br /></td></tr>
+<tr class="separator:ga8b499649fd837e06c29df849e6f0bd08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa808cb1678d4c6e0fa1c66259553efca"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gaa808cb1678d4c6e0fa1c66259553efca">SIK_PGDOWN</a>&#160;&#160;&#160;0xD1</td></tr>
+<tr class="memdesc:gaa808cb1678d4c6e0fa1c66259553efca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Page Down. <br /></td></tr>
+<tr class="separator:gaa808cb1678d4c6e0fa1c66259553efca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae5b02b5c138a370dee4e74df205fc59d"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gae5b02b5c138a370dee4e74df205fc59d">SIK_INSERT</a>&#160;&#160;&#160;0xD2</td></tr>
+<tr class="memdesc:gae5b02b5c138a370dee4e74df205fc59d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert. <br /></td></tr>
+<tr class="separator:gae5b02b5c138a370dee4e74df205fc59d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7bdeb771e184e85216bd2b28a0fcda90"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga7bdeb771e184e85216bd2b28a0fcda90">SIK_DELETE</a>&#160;&#160;&#160;0xD3</td></tr>
+<tr class="memdesc:ga7bdeb771e184e85216bd2b28a0fcda90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete. <br /></td></tr>
+<tr class="separator:ga7bdeb771e184e85216bd2b28a0fcda90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga223a8a3273bba40ae24ec73afcf16cf9"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__mouse.html#ga223a8a3273bba40ae24ec73afcf16cf9">SIM_LBUTTON</a>&#160;&#160;&#160;0</td></tr>
+<tr class="memdesc:ga223a8a3273bba40ae24ec73afcf16cf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">левая кнопка <br /></td></tr>
+<tr class="separator:ga223a8a3273bba40ae24ec73afcf16cf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf22fb032be164d0cf9b72308dcb8fffd"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__mouse.html#gaf22fb032be164d0cf9b72308dcb8fffd">SIM_RBUTTON</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memdesc:gaf22fb032be164d0cf9b72308dcb8fffd"><td class="mdescLeft">&#160;</td><td class="mdescRight">правая кнопка <br /></td></tr>
+<tr class="separator:gaf22fb032be164d0cf9b72308dcb8fffd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga26a25183364419d908f32b318844b84d"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__mouse.html#ga26a25183364419d908f32b318844b84d">SIM_MBUTTON</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:ga26a25183364419d908f32b318844b84d"><td class="mdescLeft">&#160;</td><td class="mdescRight">средняя кнопка (она же скролл) <br /></td></tr>
+<tr class="separator:ga26a25183364419d908f32b318844b84d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">F1-F15</div></td></tr>
+<tr class="memitem:gab4e6b05f3e613142bf86675905bee55c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F1</b>&#160;&#160;&#160;0x3B</td></tr>
+<tr class="separator:gab4e6b05f3e613142bf86675905bee55c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaed55703bc53623d7cdee6e8103ac5dd6"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F2</b>&#160;&#160;&#160;0x3C</td></tr>
+<tr class="separator:gaed55703bc53623d7cdee6e8103ac5dd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab722c45af2454ce4978dbe57cad18678"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F3</b>&#160;&#160;&#160;0x3D</td></tr>
+<tr class="separator:gab722c45af2454ce4978dbe57cad18678"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga36e1686d3a515c33ffd7398246886c45"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F4</b>&#160;&#160;&#160;0x3E</td></tr>
+<tr class="separator:ga36e1686d3a515c33ffd7398246886c45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad55419f142963cb413dc360ae50f008d"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F5</b>&#160;&#160;&#160;0x3F</td></tr>
+<tr class="separator:gad55419f142963cb413dc360ae50f008d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9b923caee9912649fb35247ff1f3cc9"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F6</b>&#160;&#160;&#160;0x40</td></tr>
+<tr class="separator:gaa9b923caee9912649fb35247ff1f3cc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga177716c116418e8c1ccb129c3c719f86"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F7</b>&#160;&#160;&#160;0x41</td></tr>
+<tr class="separator:ga177716c116418e8c1ccb129c3c719f86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2a0e020b0330f517deb64ea180133440"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F8</b>&#160;&#160;&#160;0x42</td></tr>
+<tr class="separator:ga2a0e020b0330f517deb64ea180133440"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf269ca0cb91afcfd9db8cc451c7bcd3"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F9</b>&#160;&#160;&#160;0x43</td></tr>
+<tr class="separator:gaaf269ca0cb91afcfd9db8cc451c7bcd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2a9954992a59f633bba7ead73f765a1b"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F10</b>&#160;&#160;&#160;0x44</td></tr>
+<tr class="separator:ga2a9954992a59f633bba7ead73f765a1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafd0f62a58d7a6247815c62e879d06b5b"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F11</b>&#160;&#160;&#160;0x57</td></tr>
+<tr class="separator:gafd0f62a58d7a6247815c62e879d06b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga28845fd5e381983631d33a52369b442e"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F12</b>&#160;&#160;&#160;0x58</td></tr>
+<tr class="separator:ga28845fd5e381983631d33a52369b442e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Цифры основной клавиатуры</div></td></tr>
+<tr class="memitem:ga5fcc59b7e469b0157b26a37803b88fb0"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_0</b>&#160;&#160;&#160;0x0B</td></tr>
+<tr class="separator:ga5fcc59b7e469b0157b26a37803b88fb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4c5aef97d3abbea71db082beaeb9989a"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_1</b>&#160;&#160;&#160;0x02</td></tr>
+<tr class="separator:ga4c5aef97d3abbea71db082beaeb9989a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8561adc8bb5ed9764ef6388ac0a9a720"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_2</b>&#160;&#160;&#160;0x03</td></tr>
+<tr class="separator:ga8561adc8bb5ed9764ef6388ac0a9a720"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa455b7d377c33ab7fc1c26ef1e36293c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_3</b>&#160;&#160;&#160;0x04</td></tr>
+<tr class="separator:gaa455b7d377c33ab7fc1c26ef1e36293c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6c53ab0433f7d75f0948c71f6af450fe"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_4</b>&#160;&#160;&#160;0x05</td></tr>
+<tr class="separator:ga6c53ab0433f7d75f0948c71f6af450fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad0b41a8fa4d4fb28abcc0bb8a4f7d9ef"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_5</b>&#160;&#160;&#160;0x06</td></tr>
+<tr class="separator:gad0b41a8fa4d4fb28abcc0bb8a4f7d9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga65ca80828e07a12fa39c153b739288eb"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_6</b>&#160;&#160;&#160;0x07</td></tr>
+<tr class="separator:ga65ca80828e07a12fa39c153b739288eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ec50d7facc4c783831beb8335eaed99"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_7</b>&#160;&#160;&#160;0x08</td></tr>
+<tr class="separator:ga2ec50d7facc4c783831beb8335eaed99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabc1b2cfcdf2fdf18dd9cdfff8f018824"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_8</b>&#160;&#160;&#160;0x09</td></tr>
+<tr class="separator:gabc1b2cfcdf2fdf18dd9cdfff8f018824"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa59c01cf0fa3517f25dfa2785cefbef0"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_9</b>&#160;&#160;&#160;0x0A</td></tr>
+<tr class="separator:gaa59c01cf0fa3517f25dfa2785cefbef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Стрелки</div></td></tr>
+<tr class="memitem:ga055f3436b46f923d252552f8fce1f36b"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_LEFT</b>&#160;&#160;&#160;0xCB</td></tr>
+<tr class="separator:ga055f3436b46f923d252552f8fce1f36b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad52e6ec64effecd62ec0f8d5f8abf7af"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_RIGHT</b>&#160;&#160;&#160;0xCD</td></tr>
+<tr class="separator:gad52e6ec64effecd62ec0f8d5f8abf7af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga06fea468bdff7d8dd32bf84e9b635f28"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_DOWN</b>&#160;&#160;&#160;0xD0</td></tr>
+<tr class="separator:ga06fea468bdff7d8dd32bf84e9b635f28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac545c82ba91094f9399c53fb4016c849"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_UP</b>&#160;&#160;&#160;0xC8</td></tr>
+<tr class="separator:gac545c82ba91094f9399c53fb4016c849"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Цифровая клавиатура</div></td></tr>
+<tr class="memitem:ga384032166eeb937ce76f3376b2ad78e4"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga384032166eeb937ce76f3376b2ad78e4">SIK_NUMPAD0</a>&#160;&#160;&#160;0x52</td></tr>
+<tr class="memdesc:ga384032166eeb937ce76f3376b2ad78e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">0 <br /></td></tr>
+<tr class="separator:ga384032166eeb937ce76f3376b2ad78e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga194e040cd93de79e6d2aabd311ffb585"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga194e040cd93de79e6d2aabd311ffb585">SIK_NUMPAD1</a>&#160;&#160;&#160;0x4F</td></tr>
+<tr class="memdesc:ga194e040cd93de79e6d2aabd311ffb585"><td class="mdescLeft">&#160;</td><td class="mdescRight">1 <br /></td></tr>
+<tr class="separator:ga194e040cd93de79e6d2aabd311ffb585"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa7f8e2792436bf3a2162f94c8d06cf00"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gaa7f8e2792436bf3a2162f94c8d06cf00">SIK_NUMPAD2</a>&#160;&#160;&#160;0x50</td></tr>
+<tr class="memdesc:gaa7f8e2792436bf3a2162f94c8d06cf00"><td class="mdescLeft">&#160;</td><td class="mdescRight">2 <br /></td></tr>
+<tr class="separator:gaa7f8e2792436bf3a2162f94c8d06cf00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga53bef88ed41fa60e9f51d1dc7ae66197"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga53bef88ed41fa60e9f51d1dc7ae66197">SIK_NUMPAD3</a>&#160;&#160;&#160;0x51</td></tr>
+<tr class="memdesc:ga53bef88ed41fa60e9f51d1dc7ae66197"><td class="mdescLeft">&#160;</td><td class="mdescRight">3 <br /></td></tr>
+<tr class="separator:ga53bef88ed41fa60e9f51d1dc7ae66197"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7db77087ba1a30f9f093028be0172500"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga7db77087ba1a30f9f093028be0172500">SIK_NUMPAD4</a>&#160;&#160;&#160;0x4B</td></tr>
+<tr class="memdesc:ga7db77087ba1a30f9f093028be0172500"><td class="mdescLeft">&#160;</td><td class="mdescRight">4 <br /></td></tr>
+<tr class="separator:ga7db77087ba1a30f9f093028be0172500"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae117850675463b418d71870429af5e9c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gae117850675463b418d71870429af5e9c">SIK_NUMPAD5</a>&#160;&#160;&#160;0x4C</td></tr>
+<tr class="memdesc:gae117850675463b418d71870429af5e9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">5 <br /></td></tr>
+<tr class="separator:gae117850675463b418d71870429af5e9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad3ce39e0ce3869599486201cd2568ee1"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gad3ce39e0ce3869599486201cd2568ee1">SIK_NUMPAD6</a>&#160;&#160;&#160;0x4D</td></tr>
+<tr class="memdesc:gad3ce39e0ce3869599486201cd2568ee1"><td class="mdescLeft">&#160;</td><td class="mdescRight">6 <br /></td></tr>
+<tr class="separator:gad3ce39e0ce3869599486201cd2568ee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad69ad7b7af8ed16a1307c55b3caab9e6"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gad69ad7b7af8ed16a1307c55b3caab9e6">SIK_NUMPAD7</a>&#160;&#160;&#160;0x47</td></tr>
+<tr class="memdesc:gad69ad7b7af8ed16a1307c55b3caab9e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">7 <br /></td></tr>
+<tr class="separator:gad69ad7b7af8ed16a1307c55b3caab9e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1d36c7e79ca65dce450c9b460308564a"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga1d36c7e79ca65dce450c9b460308564a">SIK_NUMPAD8</a>&#160;&#160;&#160;0x48</td></tr>
+<tr class="memdesc:ga1d36c7e79ca65dce450c9b460308564a"><td class="mdescLeft">&#160;</td><td class="mdescRight">8 <br /></td></tr>
+<tr class="separator:ga1d36c7e79ca65dce450c9b460308564a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga135080ca2ff76e3435a280ade2a8c083"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga135080ca2ff76e3435a280ade2a8c083">SIK_NUMPAD9</a>&#160;&#160;&#160;0x49</td></tr>
+<tr class="memdesc:ga135080ca2ff76e3435a280ade2a8c083"><td class="mdescLeft">&#160;</td><td class="mdescRight">9 <br /></td></tr>
+<tr class="separator:ga135080ca2ff76e3435a280ade2a8c083"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabd623f5d8e9589be57a77b12357e64c6"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gabd623f5d8e9589be57a77b12357e64c6">SIK_NUMLOCK</a>&#160;&#160;&#160;0x45</td></tr>
+<tr class="memdesc:gabd623f5d8e9589be57a77b12357e64c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">0 <br /></td></tr>
+<tr class="separator:gabd623f5d8e9589be57a77b12357e64c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga07927d33298b42a532ab4456c7b7aecb"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga07927d33298b42a532ab4456c7b7aecb">SIK_DIVIDE</a>&#160;&#160;&#160;0xB5</td></tr>
+<tr class="memdesc:ga07927d33298b42a532ab4456c7b7aecb"><td class="mdescLeft">&#160;</td><td class="mdescRight">/ <br /></td></tr>
+<tr class="separator:ga07927d33298b42a532ab4456c7b7aecb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabec90027ce944fe2457fb6587154aa0e"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gabec90027ce944fe2457fb6587154aa0e">SIK_MULTIPLY</a>&#160;&#160;&#160;0x37</td></tr>
+<tr class="memdesc:gabec90027ce944fe2457fb6587154aa0e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><ul>
+<li></li>
+</ul>
+<br /></td></tr>
+<tr class="separator:gabec90027ce944fe2457fb6587154aa0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac164e592813cfd45e2785bc2196d3a16"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gac164e592813cfd45e2785bc2196d3a16">SIK_SUBTRACT</a>&#160;&#160;&#160;0x4A</td></tr>
+<tr class="memdesc:gac164e592813cfd45e2785bc2196d3a16"><td class="mdescLeft">&#160;</td><td class="mdescRight">- <br /></td></tr>
+<tr class="separator:gac164e592813cfd45e2785bc2196d3a16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa71833c8a0d1f17b2ac87bf361dbbde0"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gaa71833c8a0d1f17b2ac87bf361dbbde0">SIK_ADD</a>&#160;&#160;&#160;0x4E</td></tr>
+<tr class="memdesc:gaa71833c8a0d1f17b2ac87bf361dbbde0"><td class="mdescLeft">&#160;</td><td class="mdescRight">+ <br /></td></tr>
+<tr class="separator:gaa71833c8a0d1f17b2ac87bf361dbbde0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4d57767d569cd024f0049a8fb3c5cfd0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#ga4d57767d569cd024f0049a8fb3c5cfd0">SIK_DECIMAL</a>&#160;&#160;&#160;0x53</td></tr>
+<tr class="memdesc:ga4d57767d569cd024f0049a8fb3c5cfd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">.  <a href="group__sxinput__code__keyboard.html#ga4d57767d569cd024f0049a8fb3c5cfd0">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga4d57767d569cd024f0049a8fb3c5cfd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadabd6ea62407cc8eaec213454b2172f5"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gadabd6ea62407cc8eaec213454b2172f5">SIK_NUMPADENTER</a>&#160;&#160;&#160;0x9C</td></tr>
+<tr class="memdesc:gadabd6ea62407cc8eaec213454b2172f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter. <br /></td></tr>
+<tr class="separator:gadabd6ea62407cc8eaec213454b2172f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">A-Z</div></td></tr>
+<tr class="memitem:ga32a4e92875c132a9fbb39e0d9f1b5865"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_A</b>&#160;&#160;&#160;0x1E</td></tr>
+<tr class="separator:ga32a4e92875c132a9fbb39e0d9f1b5865"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4102c261a8dfb27fcd7086fcdec1a3af"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_B</b>&#160;&#160;&#160;0x30</td></tr>
+<tr class="separator:ga4102c261a8dfb27fcd7086fcdec1a3af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5e97ff82109eaa692be5c76460694fa3"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_C</b>&#160;&#160;&#160;0x2E</td></tr>
+<tr class="separator:ga5e97ff82109eaa692be5c76460694fa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacc2632679ebda37c7a8c224083617caf"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_D</b>&#160;&#160;&#160;0x20</td></tr>
+<tr class="separator:gacc2632679ebda37c7a8c224083617caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga596c632837faf7cef649bbce67b76cb7"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_E</b>&#160;&#160;&#160;0x12</td></tr>
+<tr class="separator:ga596c632837faf7cef649bbce67b76cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga71669c59a35d6083484570c0206be876"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_F</b>&#160;&#160;&#160;0x21</td></tr>
+<tr class="separator:ga71669c59a35d6083484570c0206be876"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab4d85b388a115a342f12ea26b97db20d"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_G</b>&#160;&#160;&#160;0x22</td></tr>
+<tr class="separator:gab4d85b388a115a342f12ea26b97db20d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab7f1d792687b21a41f704ffa1142f3cb"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_J</b>&#160;&#160;&#160;0x24</td></tr>
+<tr class="separator:gab7f1d792687b21a41f704ffa1142f3cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga648b408cd9c12db3694a4dfd24339b56"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_H</b>&#160;&#160;&#160;0x23</td></tr>
+<tr class="separator:ga648b408cd9c12db3694a4dfd24339b56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaffd5ff8cb68602626c7d62ea5fbc16e0"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_I</b>&#160;&#160;&#160;0x17</td></tr>
+<tr class="separator:gaffd5ff8cb68602626c7d62ea5fbc16e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga237a348f93dec12f41944ae6aad850c0"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_K</b>&#160;&#160;&#160;0x25</td></tr>
+<tr class="separator:ga237a348f93dec12f41944ae6aad850c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga916691e5b644bc121fc18857e75016d1"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_L</b>&#160;&#160;&#160;0x26</td></tr>
+<tr class="separator:ga916691e5b644bc121fc18857e75016d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga819cc58f8198fe30707bc5ccf3a59a9f"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_M</b>&#160;&#160;&#160;0x32</td></tr>
+<tr class="separator:ga819cc58f8198fe30707bc5ccf3a59a9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga32df077259a236c0dc1f803483e4000c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_N</b>&#160;&#160;&#160;0x31</td></tr>
+<tr class="separator:ga32df077259a236c0dc1f803483e4000c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaf5e05609d5bcc9b14395ae143509449"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_O</b>&#160;&#160;&#160;0x18</td></tr>
+<tr class="separator:gaaf5e05609d5bcc9b14395ae143509449"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga295f6b818bbd63a171c8dc47be9cced8"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_P</b>&#160;&#160;&#160;0x19</td></tr>
+<tr class="separator:ga295f6b818bbd63a171c8dc47be9cced8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1d90747959b11d44d4f45e9a9ba3acb6"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_Q</b>&#160;&#160;&#160;0x10</td></tr>
+<tr class="separator:ga1d90747959b11d44d4f45e9a9ba3acb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga29f71eb3dc90df9e0ab5d598067f0f93"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_R</b>&#160;&#160;&#160;0x13</td></tr>
+<tr class="separator:ga29f71eb3dc90df9e0ab5d598067f0f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga20fe9cdf452cdf7be2f45b836a5d9338"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_S</b>&#160;&#160;&#160;0x1F</td></tr>
+<tr class="separator:ga20fe9cdf452cdf7be2f45b836a5d9338"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf351f142e2b01d6e7675ea05237af400"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_T</b>&#160;&#160;&#160;0x14</td></tr>
+<tr class="separator:gaf351f142e2b01d6e7675ea05237af400"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabe01fa9e92c223e4aa9956e675a3e8d3"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_U</b>&#160;&#160;&#160;0x16</td></tr>
+<tr class="separator:gabe01fa9e92c223e4aa9956e675a3e8d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafb130c1ec05fdb103e49fe1efc429dc9"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_V</b>&#160;&#160;&#160;0x2F</td></tr>
+<tr class="separator:gafb130c1ec05fdb103e49fe1efc429dc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga20b68095ab65a62b8c5d00df2c53a13f"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_W</b>&#160;&#160;&#160;0x11</td></tr>
+<tr class="separator:ga20b68095ab65a62b8c5d00df2c53a13f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3ab449424da729e0a436ae6fd7513382"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_X</b>&#160;&#160;&#160;0x2D</td></tr>
+<tr class="separator:ga3ab449424da729e0a436ae6fd7513382"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gade03dbee8318fd8e506cd1736984adca"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_Y</b>&#160;&#160;&#160;0x15</td></tr>
+<tr class="separator:gade03dbee8318fd8e506cd1736984adca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafd6c1e2aa90bd8ada12346970646a86b"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_Z</b>&#160;&#160;&#160;0x2C</td></tr>
+<tr class="separator:gafd6c1e2aa90bd8ada12346970646a86b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Ctrl</div></td></tr>
+<tr class="memitem:ga008dd4f74057004f331da9f96b24b207"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_LCONTROL</b>&#160;&#160;&#160;0x1D</td></tr>
+<tr class="separator:ga008dd4f74057004f331da9f96b24b207"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf9a3dbd4ee883f278ea33cfb91e3e94a"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_RCONTROL</b>&#160;&#160;&#160;0x9D</td></tr>
+<tr class="separator:gaf9a3dbd4ee883f278ea33cfb91e3e94a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Shift</div></td></tr>
+<tr class="memitem:ga3b45fd890eb84baa5b091e107693497c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_LSHIFT</b>&#160;&#160;&#160;0x2A</td></tr>
+<tr class="separator:ga3b45fd890eb84baa5b091e107693497c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2e781c54cb7ac17b6251a5ae302d4caa"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_RSHIFT</b>&#160;&#160;&#160;0x36</td></tr>
+<tr class="separator:ga2e781c54cb7ac17b6251a5ae302d4caa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Alt</div></td></tr>
+<tr class="memitem:ga4c53ebfa5cb36458b321682ab7c065f8"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_LALT</b>&#160;&#160;&#160;0x38</td></tr>
+<tr class="separator:ga4c53ebfa5cb36458b321682ab7c065f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96abb346d1037a2f483159a8c89280ca"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>SIK_RALT</b>&#160;&#160;&#160;0xB8</td></tr>
+<tr class="separator:ga96abb346d1037a2f483159a8c89280ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Windows key</div></td></tr>
+<tr class="memitem:gaa4ba7eb26830293ad36018c62e05efe2"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gaa4ba7eb26830293ad36018c62e05efe2">SIK_LWIN</a>&#160;&#160;&#160;0xDB</td></tr>
+<tr class="memdesc:gaa4ba7eb26830293ad36018c62e05efe2"><td class="mdescLeft">&#160;</td><td class="mdescRight">left Windows key <br /></td></tr>
+<tr class="separator:gaa4ba7eb26830293ad36018c62e05efe2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa091cec3c8af20d57d07d78aa80658bc"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput__code__keyboard.html#gaa091cec3c8af20d57d07d78aa80658bc">SIK_RWIN</a>&#160;&#160;&#160;0xDC</td></tr>
+<tr class="memdesc:gaa091cec3c8af20d57d07d78aa80658bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">right Windows key <br /></td></tr>
+<tr class="separator:gaa091cec3c8af20d57d07d78aa80658bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Макросы с настройками</div></td></tr>
+<tr class="memitem:ga8c4ebcebc74a76f2970c8457f75c6bf7"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga8c4ebcebc74a76f2970c8457f75c6bf7">SX_INPUT_COUNT_EVENTS_FOR_DBL_CLICK</a>&#160;&#160;&#160;3</td></tr>
+<tr class="memdesc:ga8c4ebcebc74a76f2970c8457f75c6bf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">сколько событий должно произойти для возникновения события двойного клика <br /></td></tr>
+<tr class="separator:ga8c4ebcebc74a76f2970c8457f75c6bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga20008083a562ef2c7ed15725308286e4"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga20008083a562ef2c7ed15725308286e4">SX_INPUT_PERIOD_RE_PRESSED</a>&#160;&#160;&#160;200</td></tr>
+<tr class="memdesc:ga20008083a562ef2c7ed15725308286e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">период циклического события, когда кнопку нажали, ставим таймер и периодично выдаем события DOWN. <br /></td></tr>
+<tr class="separator:ga20008083a562ef2c7ed15725308286e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7e781ac02eb2b63a1b0bb5a3500ea3ae"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga7e781ac02eb2b63a1b0bb5a3500ea3ae">SX_INPUT_PERIOD_NON_DBL_CLICK</a>&#160;&#160;&#160;150</td></tr>
+<tr class="memdesc:ga7e781ac02eb2b63a1b0bb5a3500ea3ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">время в течении которого двойной клик не будет засчитан <br /></td></tr>
+<tr class="separator:ga7e781ac02eb2b63a1b0bb5a3500ea3ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c3182bd73efd45af5ce60bbf521843c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga3c3182bd73efd45af5ce60bbf521843c">SX_INPUT_PERIOD_NON_DOWN_KEY</a>&#160;&#160;&#160;50</td></tr>
+<tr class="memdesc:ga3c3182bd73efd45af5ce60bbf521843c"><td class="mdescLeft">&#160;</td><td class="mdescRight">время в течении которого зажатая клавиша будет считаться отпущенной <br /></td></tr>
+<tr class="separator:ga3c3182bd73efd45af5ce60bbf521843c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga71354a03f437133a7b4516bc8466027e"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga71354a03f437133a7b4516bc8466027e">SX_INPUT_PERIOD_DBL_CLICK</a>&#160;&#160;&#160;500</td></tr>
+<tr class="memdesc:ga71354a03f437133a7b4516bc8466027e"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальное время в течении которого (-<a class="el" href="group__sxinput.html#ga7e781ac02eb2b63a1b0bb5a3500ea3ae" title="время в течении которого двойной клик не будет засчитан ">SX_INPUT_PERIOD_NON_DBL_CLICK</a>) может произойти двойной клик <br /></td></tr>
+<tr class="separator:ga71354a03f437133a7b4516bc8466027e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Определения типов</h2></td></tr>
+<tr class="memitem:gae7c78618147c0bdfb996be282f2301c4"><td class="memItemLeft" align="right" valign="top">
+typedef unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a></td></tr>
+<tr class="memdesc:gae7c78618147c0bdfb996be282f2301c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">тип "код клавиши/кнопки". <br /></td></tr>
+<tr class="separator:gae7c78618147c0bdfb996be282f2301c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Перечисления</h2></td></tr>
+<tr class="memitem:ga81b904903f4bfc430f4794bc3849503b"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga81b904903f4bfc430f4794bc3849503b">InputDevice</a> { <a class="el" href="group__sxinput.html#gga81b904903f4bfc430f4794bc3849503ba1286db1b2c2e8f9db89e0b02b9558fea">dev_keyboard</a>, 
+<a class="el" href="group__sxinput.html#gga81b904903f4bfc430f4794bc3849503bac1dd54ecc5fddc8d49bd34caa9d36847">dev_mouse</a>
+ }<tr class="memdesc:ga81b904903f4bfc430f4794bc3849503b"><td class="mdescLeft">&#160;</td><td class="mdescRight">поддерживаемые устройства  <a href="group__sxinput.html#ga81b904903f4bfc430f4794bc3849503b">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:ga81b904903f4bfc430f4794bc3849503b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf67962350171f3d08e668fd5ff7f7558"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gaf67962350171f3d08e668fd5ff7f7558">InputEvents</a> { <br />
+&#160;&#160;<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558a9cf8a23609ae58e0ce74a9f8851f9a8f">iv_dissable</a> = 0, 
+<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558ab1edbbd128172ab3d41a31872c235b01">iv_k_first</a> = 1, 
+<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558a69fb31364ead02a771b015447ae35ec5">iv_k_down</a> = 2, 
+<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558a06b5c3be5d471112622cbfc30de9df7a">iv_k_up</a> = 3, 
+<br />
+&#160;&#160;<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558a9d271f3b60413337aaeece8f3d16f67c">iv_m_first</a> = 4, 
+<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558ab8fe732f56a621479bd370116276596f">iv_m_down</a> = 5, 
+<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558aae52668bb770aeb7ef851e8d0660e9cb">iv_m_up</a> = 6, 
+<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558a33b1d7dc93540c1a86fe742f3ec257e5">iv_m_dbl</a> = 7, 
+<br />
+&#160;&#160;<a class="el" href="group__sxinput.html#ggaf67962350171f3d08e668fd5ff7f7558a8deac92eb3667d971c990e192f3faaf2">iv_m_scroll</a> = 8
+<br />
+ }<tr class="memdesc:gaf67962350171f3d08e668fd5ff7f7558"><td class="mdescLeft">&#160;</td><td class="mdescRight">виды обытий (клавиатура, мышь)  <a href="group__sxinput.html#gaf67962350171f3d08e668fd5ff7f7558">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:gaf67962350171f3d08e668fd5ff7f7558"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr class="memitem:gaf4ebfb9516677e652e8bf5d5daf76489"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gaf4ebfb9516677e652e8bf5d5daf76489">SSInput_0GetVersion</a> ()</td></tr>
+<tr class="memdesc:gaf4ebfb9516677e652e8bf5d5daf76489"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает версию ядра <br /></td></tr>
+<tr class="separator:gaf4ebfb9516677e652e8bf5d5daf76489"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1cf8e18192c9642c7fee9986f5c88088"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga1cf8e18192c9642c7fee9986f5c88088">SSInput_Dbg_Set</a> (<a class="el" href="gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb">report_func</a> rf)</td></tr>
+<tr class="memdesc:ga1cf8e18192c9642c7fee9986f5c88088"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает версию ядра <br /></td></tr>
+<tr class="separator:ga1cf8e18192c9642c7fee9986f5c88088"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ee30de500465ad4135ea5b108dc8647"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga2ee30de500465ad4135ea5b108dc8647">SSInput_Update</a> ()</td></tr>
+<tr class="memdesc:ga2ee30de500465ad4135ea5b108dc8647"><td class="mdescLeft">&#160;</td><td class="mdescRight">обновление состояния устройств <br /></td></tr>
+<tr class="separator:ga2ee30de500465ad4135ea5b108dc8647"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9a063b1f380a0780786fd076cfea46d5"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga9a063b1f380a0780786fd076cfea46d5">SSInput_GetKeyState</a> (<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> Key)</td></tr>
+<tr class="memdesc:ga9a063b1f380a0780786fd076cfea46d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">нажата ли клавиша под номером Key. <br /></td></tr>
+<tr class="separator:ga9a063b1f380a0780786fd076cfea46d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1809bf10f73696ae7d03bf8bb8c6cfb7"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga1809bf10f73696ae7d03bf8bb8c6cfb7">SSInput_GetButtonState</a> (<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> Number)</td></tr>
+<tr class="memdesc:ga1809bf10f73696ae7d03bf8bb8c6cfb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">нажата ли кнопка мыши под номером Number. <br /></td></tr>
+<tr class="separator:ga1809bf10f73696ae7d03bf8bb8c6cfb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae080b6ac8ba16b8963f2ef2ec4956cba"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gae080b6ac8ba16b8963f2ef2ec4956cba">SSInput_IsOtherButtonOn</a> (<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> Button)</td></tr>
+<tr class="memdesc:gae080b6ac8ba16b8963f2ef2ec4956cba"><td class="mdescLeft">&#160;</td><td class="mdescRight">нажаты ли другие кнопки мыши, Button - для которой отслеживаем единственное нажатие <br /></td></tr>
+<tr class="separator:gae080b6ac8ba16b8963f2ef2ec4956cba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafd6516104e0c3edd3ca530a2836b8bf6"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="group__sxinput.html#gaf67962350171f3d08e668fd5ff7f7558">InputEvents</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gafd6516104e0c3edd3ca530a2836b8bf6">SSInput_GetKeyEvents</a> (<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> Key)</td></tr>
+<tr class="memdesc:gafd6516104e0c3edd3ca530a2836b8bf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить событие посылаемое клавишей на клавиатуре <br /></td></tr>
+<tr class="separator:gafd6516104e0c3edd3ca530a2836b8bf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga061134f9b3a84d207058c8d734dd655a"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="group__sxinput.html#gaf67962350171f3d08e668fd5ff7f7558">InputEvents</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga061134f9b3a84d207058c8d734dd655a">SSInput_GetButtonEvent</a> (<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> Button)</td></tr>
+<tr class="memdesc:ga061134f9b3a84d207058c8d734dd655a"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить событие посылаемое кнопкой мыши <br /></td></tr>
+<tr class="separator:ga061134f9b3a84d207058c8d734dd655a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga35594473d43148b0545190a6e5eb0779"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga35594473d43148b0545190a6e5eb0779">SSInput_GetScroll</a> ()</td></tr>
+<tr class="memdesc:ga35594473d43148b0545190a6e5eb0779"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить скролл, -120 - назад, 120 - вперед (120 - 1 проход) <br /></td></tr>
+<tr class="separator:ga35594473d43148b0545190a6e5eb0779"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadc147fabe51f4c881fde7c334e7b479e"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gadc147fabe51f4c881fde7c334e7b479e">SSInput_GetMouseDouble</a> (<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> Button)</td></tr>
+<tr class="memdesc:gadc147fabe51f4c881fde7c334e7b479e"><td class="mdescLeft">&#160;</td><td class="mdescRight">был ли сделан кнопкой мыши Button двойной клик <br /></td></tr>
+<tr class="separator:gadc147fabe51f4c881fde7c334e7b479e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaec0658c5df05423993a88dddd37c7f42"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gaec0658c5df05423993a88dddd37c7f42">SSInput_IsMouseClick</a> ()</td></tr>
+<tr class="memdesc:gaec0658c5df05423993a88dddd37c7f42"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает код нажатой сейчас кнопки мыши <br /></td></tr>
+<tr class="separator:gaec0658c5df05423993a88dddd37c7f42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga83e4d8394c73f03cc0ed4546951a5ec5"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga83e4d8394c73f03cc0ed4546951a5ec5">SSInput_GetExeEventsS</a> (<a class="el" href="struct_in_mess.html">InMess</a> *Event)</td></tr>
+<tr class="memdesc:ga83e4d8394c73f03cc0ed4546951a5ec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">было ли совершенно данное событие Event. <br /></td></tr>
+<tr class="separator:ga83e4d8394c73f03cc0ed4546951a5ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad78af403bb2cf3283c5812221cc49edf"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gad78af403bb2cf3283c5812221cc49edf">SSInput_GetExeEvents</a> (<a class="el" href="group__sxinput.html#ga81b904903f4bfc430f4794bc3849503b">InputDevice</a> type, <a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a> sect, <a class="el" href="group__sxinput.html#gaf67962350171f3d08e668fd5ff7f7558">InputEvents</a> code)</td></tr>
+<tr class="memdesc:gad78af403bb2cf3283c5812221cc49edf"><td class="mdescLeft">&#160;</td><td class="mdescRight">было ли совершенно данное событие <br /></td></tr>
+<tr class="separator:gad78af403bb2cf3283c5812221cc49edf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c375d4676e5686846726393895dded6"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga8c375d4676e5686846726393895dded6">SSInput_GetActiveKeyOrButton</a> ()</td></tr>
+<tr class="memdesc:ga8c375d4676e5686846726393895dded6"><td class="mdescLeft">&#160;</td><td class="mdescRight">нажата ли хоть какая-то кнопка клавиатуры либо клавиша мыши <br /></td></tr>
+<tr class="separator:ga8c375d4676e5686846726393895dded6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga012911d78d7d67984bf10e10f6b876fc"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#ga012911d78d7d67984bf10e10f6b876fc">SSInput_GetActiveButton</a> ()</td></tr>
+<tr class="memdesc:ga012911d78d7d67984bf10e10f6b876fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">нажата ли хоть какая-то клавиша мыши <br /></td></tr>
+<tr class="separator:ga012911d78d7d67984bf10e10f6b876fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadbc5fee92c912436bd05c575926136ba"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxinput.html#gadbc5fee92c912436bd05c575926136ba">SSInput_GetActiveKey</a> ()</td></tr>
+<tr class="memdesc:gadbc5fee92c912436bd05c575926136ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">нажата ли хоть какая-то кнопка клавиатуры <br /></td></tr>
+<tr class="separator:gadbc5fee92c912436bd05c575926136ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Переменные</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Массивы букв и кодов для них</div></td></tr>
+<tr class="memitem:ab3010392626836c7db48295d197c6cbf"><td class="memItemLeft" align="right" valign="top"><a id="ab3010392626836c7db48295d197c6cbf"></a>
+<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_input_symbol.html#ab3010392626836c7db48295d197c6cbf">InputSymbol::KeyLetters</a> [27] = { SIK_A, SIK_B, SIK_C, SIK_D, SIK_E, SIK_F, SIK_G, SIK_H, SIK_I, SIK_J, SIK_K, SIK_L, SIK_M, SIK_N, SIK_O, SIK_P, SIK_Q, SIK_R, SIK_S, SIK_T, SIK_U, SIK_V, SIK_W, SIK_X, SIK_Y, SIK_Z, <a class="el" href="group__sxinput__code__keyboard.html#gac276cdcf34023b50203f0b9408b82ce9">SIK_SPACE</a> }</td></tr>
+<tr class="memdesc:ab3010392626836c7db48295d197c6cbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">массив с кодами букв <br /></td></tr>
+<tr class="separator:ab3010392626836c7db48295d197c6cbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72022984f13fbdf9b445228a3c18f74d"><td class="memItemLeft" align="right" valign="top"><a id="a72022984f13fbdf9b445228a3c18f74d"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_input_symbol.html#a72022984f13fbdf9b445228a3c18f74d">InputSymbol::BigLetters</a> [27] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',' '}</td></tr>
+<tr class="memdesc:a72022984f13fbdf9b445228a3c18f74d"><td class="mdescLeft">&#160;</td><td class="mdescRight">массив с заглавными буквами <br /></td></tr>
+<tr class="separator:a72022984f13fbdf9b445228a3c18f74d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b3b14bc168119301dc406567a9e7976"><td class="memItemLeft" align="right" valign="top"><a id="a8b3b14bc168119301dc406567a9e7976"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_input_symbol.html#a8b3b14bc168119301dc406567a9e7976">InputSymbol::SmallLetters</a> [27] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' '}</td></tr>
+<tr class="memdesc:a8b3b14bc168119301dc406567a9e7976"><td class="mdescLeft">&#160;</td><td class="mdescRight">массив с прописными буквами <br /></td></tr>
+<tr class="separator:a8b3b14bc168119301dc406567a9e7976"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Массивы цифр и коды для них, основнйо и цифровой клавиатуры</div></td></tr>
+<tr class="memitem:ad59b615539883e26eb04706189e02f06"><td class="memItemLeft" align="right" valign="top"><a id="ad59b615539883e26eb04706189e02f06"></a>
+<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InputSymbol::KeyNumbers</b> [10] = { SIK_1, SIK_2, SIK_3, SIK_4, SIK_5, SIK_6, SIK_7, SIK_8, SIK_9, SIK_0 }</td></tr>
+<tr class="separator:ad59b615539883e26eb04706189e02f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a908ecbe2f3087b12e849da403383434d"><td class="memItemLeft" align="right" valign="top"><a id="a908ecbe2f3087b12e849da403383434d"></a>
+<a class="el" href="group__sxinput.html#gae7c78618147c0bdfb996be282f2301c4">InputCode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>InputSymbol::KeyNumbers2</b> [10] = { <a class="el" href="group__sxinput__code__keyboard.html#ga194e040cd93de79e6d2aabd311ffb585">SIK_NUMPAD1</a>, <a class="el" href="group__sxinput__code__keyboard.html#gaa7f8e2792436bf3a2162f94c8d06cf00">SIK_NUMPAD2</a>, <a class="el" href="group__sxinput__code__keyboard.html#ga53bef88ed41fa60e9f51d1dc7ae66197">SIK_NUMPAD3</a>, <a class="el" href="group__sxinput__code__keyboard.html#ga7db77087ba1a30f9f093028be0172500">SIK_NUMPAD4</a>, <a class="el" href="group__sxinput__code__keyboard.html#gae117850675463b418d71870429af5e9c">SIK_NUMPAD5</a>, <a class="el" href="group__sxinput__code__keyboard.html#gad3ce39e0ce3869599486201cd2568ee1">SIK_NUMPAD6</a>, <a class="el" href="group__sxinput__code__keyboard.html#gad69ad7b7af8ed16a1307c55b3caab9e6">SIK_NUMPAD7</a>, <a class="el" href="group__sxinput__code__keyboard.html#ga1d36c7e79ca65dce450c9b460308564a">SIK_NUMPAD8</a>, <a class="el" href="group__sxinput__code__keyboard.html#ga135080ca2ff76e3435a280ade2a8c083">SIK_NUMPAD9</a>, <a class="el" href="group__sxinput__code__keyboard.html#ga384032166eeb937ce76f3376b2ad78e4">SIK_NUMPAD0</a> }</td></tr>
+<tr class="separator:a908ecbe2f3087b12e849da403383434d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc00b2272b4a93e20e25e0794f61beba"><td class="memItemLeft" align="right" valign="top"><a id="acc00b2272b4a93e20e25e0794f61beba"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><b>InputSymbol::NumbersStr</b> [10] = {'1','2','3','4','5','6','7','8','9','0'}</td></tr>
+<tr class="separator:acc00b2272b4a93e20e25e0794f61beba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<div class="textblock"><p>Заголовочный файл sxinput - системы ввода информации с устройств </p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b.html">source</a></li><li class="navelem"><a class="el" href="dir_edd00ab9dbea59a79f62a3a1e6a918d7.html">input</a></li><li class="navelem"><a class="el" href="sxinput_8h.html">sxinput.h</a></li>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Пн 17 Апр 2017 20:36:16. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

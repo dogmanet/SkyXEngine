@@ -314,7 +314,7 @@ ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* nam
 			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
 			tmpspath[0] = 0;
 			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			ParseStrPathName(path, tmpspath, tmpname);
+			StrParsePathName(path, tmpspath, tmpname);
 
 			ShaderVS* shader = new ShaderVS();
 			if (tmpspath[0] != 0)
@@ -349,7 +349,7 @@ ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* nam
 			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
 			tmpspath[0] = 0;
 			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			ParseStrPathName(path, tmpspath, tmpname);
+			StrParsePathName(path, tmpspath, tmpname);
 			sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, path);
 			ShaderPS* shader = /*mem_new(ShaderPS);//*/new ShaderPS();
 			LoadPixelShader(tmppath, shader, macro);
@@ -426,7 +426,7 @@ void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
 			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
 			tmpspath[0] = 0;
 			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			ParseStrPathName(ArrVS[id]->Path, tmpspath, tmpname);
+			StrParsePathName(ArrVS[id]->Path, tmpspath, tmpname);
 
 			ShaderVS* shader = /*mem_new(ShaderVS);//*/new ShaderVS();
 			if (tmpspath[0] != 0)
@@ -454,7 +454,7 @@ void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
 			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
 			tmpspath[0] = 0;
 			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			ParseStrPathName(ArrPS[id]->Path, tmpspath, tmpname);
+			StrParsePathName(ArrPS[id]->Path, tmpspath, tmpname);
 
 			ShaderPS* shader = /*mem_new(ShaderVS);//*/new ShaderPS();
 			if (tmpspath[0] != 0)

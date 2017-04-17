@@ -10,7 +10,7 @@
 #include <core\eventchannel.h>
 
 #if defined(_WINDOWS)
-// Это только для того, чтобы задать имя потока в отладччике
+// Р­С‚Рѕ С‚РѕР»СЊРєРѕ РґР»СЏ С‚РѕРіРѕ, С‡С‚РѕР±С‹ Р·Р°РґР°С‚СЊ РёРјСЏ РїРѕС‚РѕРєР° РІ РѕС‚Р»Р°РґС‡С‡РёРєРµ
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push,8)
 typedef struct tagTHREADNAME_INFO
@@ -24,7 +24,7 @@ typedef struct tagTHREADNAME_INFO
 #endif
 
 
-// Внимание, при использовании должна быть создана хотя бы одна фоновая задача!
+// Р’РЅРёРјР°РЅРёРµ, РїСЂРё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё РґРѕР»Р¶РЅР° Р±С‹С‚СЊ СЃРѕР·РґР°РЅР° С…РѕС‚СЏ Р±С‹ РѕРґРЅР° С„РѕРЅРѕРІР°СЏ Р·Р°РґР°С‡Р°!
 class SXTaskManager
 {
 public:
@@ -35,14 +35,14 @@ public:
 	{
 	};
 
-	SXTaskManager(unsigned int numThreads = 0); //< Количество рабочих потоков, 0 для автоопределения
+	SXTaskManager(unsigned int numThreads = 0); //< РљРѕР»РёС‡РµСЃС‚РІРѕ СЂР°Р±РѕС‡РёС… РїРѕС‚РѕРєРѕРІ, 0 РґР»СЏ Р°РІС‚РѕРѕРїСЂРµРґРµР»РµРЅРёСЏ
 	~SXTaskManager();
 
-	void  addTask(TaskPtr task); //< Добавляет задачу в планировщик
-	void  add(THREAD_UPDATE_FUNCTION func, DWORD flag = CoreTF_SINGLETHREADED_REPEATING); //< Добавляет задачу в планировщик
+	void  addTask(TaskPtr task); //< Р”РѕР±Р°РІР»СЏРµС‚ Р·Р°РґР°С‡Сѓ РІ РїР»Р°РЅРёСЂРѕРІС‰РёРє
+	void  add(THREAD_UPDATE_FUNCTION func, DWORD flag = CoreTF_SINGLETHREADED_REPEATING); //< Р”РѕР±Р°РІР»СЏРµС‚ Р·Р°РґР°С‡Сѓ РІ РїР»Р°РЅРёСЂРѕРІС‰РёРє
 
-	void start(); //< Запускает выполнение планировщика
-	void stop(); //< Останавливает все
+	void start(); //< Р—Р°РїСѓСЃРєР°РµС‚ РІС‹РїРѕР»РЅРµРЅРёРµ РїР»Р°РЅРёСЂРѕРІС‰РёРєР°
+	void stop(); //< РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЃРµ
 
 	void handle(const StopEvent&);
 	void handle(const SXTask::TaskCompleted& tc);

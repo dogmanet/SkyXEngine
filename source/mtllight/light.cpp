@@ -136,13 +136,13 @@ void Lights::Load(const char* path)
 {
 	ISXLConfig* config = Core_OpLConfig(path);
 
-	if (!config->SectionExists("light", true))
+	if (!config->SectionExists("light"))
 	{
 		reportf(-1, "%s - light: not found section 'light', file '%s'", gen_msg_location, path);
 		return;
 	}
 
-	if (!config->KeyExists("light", "count", true))
+	if (!config->KeyExists("light", "count"))
 	{
 		reportf(-1, "%s - light: not found key 'count', file '%s', section 'light'", gen_msg_location);
 		return;
@@ -176,7 +176,7 @@ void Lights::Load(const char* path)
 	{
 		sprintf(text_SectionLight, "%s%d", "light_", i);
 
-		if (!config->SectionExists(text_SectionLight, true))
+		if (!config->SectionExists(text_SectionLight))
 		{
 			reportf(-1, "%s - light: not found section '%s', file '%s', section ''", gen_msg_location, path, text_SectionLight);
 			return;
@@ -2077,9 +2077,6 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::LigthCom));
 	SGCore_ScreenQuadDraw();
 
-	MLSet::DXDevice->SetVertexShader(0);
-	MLSet::DXDevice->SetPixelShader(0);
-
 	SGCore_ShaderUnBind();
 
 	mem_release(SurfSceneScale);
@@ -2089,7 +2086,10 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 
 	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps; i++)
 	{
+		IDirect3DTexture9* tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[i]);
+		IDirect3DSurface9* tmpsurf = MLSet::IDsRenderTargets::SurfToneMap[i];
 		SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[i])->GetSurfaceLevel(0, &MLSet::IDsRenderTargets::SurfToneMap[i]);
+		int qwert = 0;
 	}
 
 	D3DSURFACE_DESC desc;
@@ -2110,13 +2110,12 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 
 	SGCore_ScreenQuadDraw();
 
-	MLSet::DXDevice->SetVertexShader(0);
-	MLSet::DXDevice->SetPixelShader(0);
-
 	SGCore_ShaderUnBind();
 	mem_release(MLSet::IDsRenderTargets::SurfToneMap[CurrTexture]);
 
 	--CurrTexture;
+
+	
 
 	while (CurrTexture >= 0)
 	{
@@ -2134,17 +2133,21 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 		MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[CurrTexture + 1]));
 		SGCore_ScreenQuadDraw();
 
-		MLSet::DXDevice->SetVertexShader(0);
-		MLSet::DXDevice->SetPixelShader(0);
-
 		SGCore_ShaderUnBind();
 		CurrTexture--;
 	}
 
-	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps; i++)
+	IDirect3DTexture9* tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[3]);
+	int qwert = 0;
+
+	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps-1; i++)
 	{
+		IDirect3DSurface9* tmpsurf = MLSet::IDsRenderTargets::SurfToneMap[i];
 		mem_release(MLSet::IDsRenderTargets::SurfToneMap[i]);
 	}
+
+	tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[3]);
+	qwert = 0;
 
 	MLSet::IDsRenderTargets::IncrAdaptedLum();
 	LPDIRECT3DSURFACE9 SurfAdaptedLum = NULL;
@@ -2166,9 +2169,6 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 
 	SGCore_ScreenQuadDraw();
 
-	MLSet::DXDevice->SetVertexShader(0);
-	MLSet::DXDevice->SetPixelShader(0);
-
 	SGCore_ShaderUnBind();
 	mem_release(SurfAdaptedLum);
 
@@ -2177,6 +2177,7 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 
 	MLSet::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 
+	
 }
 
 void Lights::Set4Or3Splits(ID id, bool is4)

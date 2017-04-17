@@ -2,7 +2,7 @@
 /*
 !!!!
 GDataBuff
-тут добавились нвоые данные, которые при трансформации надо менять
+С‚СѓС‚ РґРѕР±Р°РІРёР»РёСЃСЊ РЅРІРѕС‹Рµ РґР°РЅРЅС‹Рµ, РєРѕС‚РѕСЂС‹Рµ РїСЂРё С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё РЅР°РґРѕ РјРµРЅСЏС‚СЊ
 */
 #ifndef __static_geom
 #define __static_geom
@@ -11,8 +11,8 @@ GDataBuff
 #include <common\\string.cpp>
 #include <common\array.h>
 #include <common\\string_api.cpp>
-//максимальное количество полигонов в буферах
-//или максимальнео количество полигонов на одну подгруппу
+//РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ РІ Р±СѓС„РµСЂР°С…
+//РёР»Рё РјР°РєСЃРёРјР°Р»СЊРЅРµРѕ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ РЅР° РѕРґРЅСѓ РїРѕРґРіСЂСѓРїРїСѓ
 #define STATIC_GEOM_MAX_POLY_IN_GROUP 400000
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
@@ -34,17 +34,17 @@ if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels
 	return ret_val; \
 }
 
-//типы деления
+//С‚РёРїС‹ РґРµР»РµРЅРёСЏ
 #define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
 #define STATIC_COUNT_TYPE_SEGMENTATION_OCTO 8
 
-#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	//минимальная разница между сторонами для окто деления
-#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20//минимальный общий объем модели для деления
-#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000//минимальнео количество полигонов в модели для деления
-#define STATIC_MIN_COUNT_POLY 500	//минимальное количество полигонов в сплите
-#define STATIC_MAX_COUNT_POLY 1000	//максимальное количество полигонов в сплите
+#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	//РјРёРЅРёРјР°Р»СЊРЅР°СЏ СЂР°Р·РЅРёС†Р° РјРµР¶РґСѓ СЃС‚РѕСЂРѕРЅР°РјРё РґР»СЏ РѕРєС‚Рѕ РґРµР»РµРЅРёСЏ
+#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20//РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РѕР±С‰РёР№ РѕР±СЉРµРј РјРѕРґРµР»Рё РґР»СЏ РґРµР»РµРЅРёСЏ
+#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000//РјРёРЅРёРјР°Р»СЊРЅРµРѕ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ РІ РјРѕРґРµР»Рё РґР»СЏ РґРµР»РµРЅРёСЏ
+#define STATIC_MIN_COUNT_POLY 500	//РјРёРЅРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ РІ СЃРїР»РёС‚Рµ
+#define STATIC_MAX_COUNT_POLY 1000	//РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ РІ СЃРїР»РёС‚Рµ
 
-#define STATIC_DEFAULT_RESERVE_COM 512	//резервация для просчетов
+#define STATIC_DEFAULT_RESERVE_COM 512	//СЂРµР·РµСЂРІР°С†РёСЏ РґР»СЏ РїСЂРѕСЃС‡РµС‚РѕРІ
 
 class StaticGeom
 {
@@ -61,37 +61,37 @@ public:
 
 	SX_ALIGNED_OP_MEM
 	
-	//сегмент, кусок модели
+	//СЃРµРіРјРµРЅС‚, РєСѓСЃРѕРє РјРѕРґРµР»Рё
 	struct Segment
 	{
 		Segment();
 		~Segment();
 
-		Segment* Splits[STATIC_COUNT_TYPE_SEGMENTATION_OCTO]; //массив из 4/8 частей данного участка
+		Segment* Splits[STATIC_COUNT_TYPE_SEGMENTATION_OCTO]; //РјР°СЃСЃРёРІ РёР· 4/8 С‡Р°СЃС‚РµР№ РґР°РЅРЅРѕРіРѕ СѓС‡Р°СЃС‚РєР°
 
-		//для геометрии
-		uint32_t** ArrPoly;	//двумерный массив по количеству подгрупп, вложенный массив - все полигоны для данной подгруппы
-		uint32_t* CountPoly;	//массив с количеством полигонов на каждую подгруппу
-		uint32_t* NumberGroup;	//массив с номерами подгрупп в контексте уровня
-		uint32_t* NumberGroupModel;//массив с номерами подгрупп в контексте модели
-		uint32_t CountSubSet;	//количество подгрупп
-		uint32_t CountAllPoly;	//общее количество полигонов
+		//РґР»СЏ РіРµРѕРјРµС‚СЂРёРё
+		uint32_t** ArrPoly;	//РґРІСѓРјРµСЂРЅС‹Р№ РјР°СЃСЃРёРІ РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ РїРѕРґРіСЂСѓРїРї, РІР»РѕР¶РµРЅРЅС‹Р№ РјР°СЃСЃРёРІ - РІСЃРµ РїРѕР»РёРіРѕРЅС‹ РґР»СЏ РґР°РЅРЅРѕР№ РїРѕРґРіСЂСѓРїРїС‹
+		uint32_t* CountPoly;	//РјР°СЃСЃРёРІ СЃ РєРѕР»РёС‡РµСЃС‚РІРѕРј РїРѕР»РёРіРѕРЅРѕРІ РЅР° РєР°Р¶РґСѓСЋ РїРѕРґРіСЂСѓРїРїСѓ
+		uint32_t* NumberGroup;	//РјР°СЃСЃРёРІ СЃ РЅРѕРјРµСЂР°РјРё РїРѕРґРіСЂСѓРїРї РІ РєРѕРЅС‚РµРєСЃС‚Рµ СѓСЂРѕРІРЅСЏ
+		uint32_t* NumberGroupModel;//РјР°СЃСЃРёРІ СЃ РЅРѕРјРµСЂР°РјРё РїРѕРґРіСЂСѓРїРї РІ РєРѕРЅС‚РµРєСЃС‚Рµ РјРѕРґРµР»Рё
+		uint32_t CountSubSet;	//РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРґРіСЂСѓРїРї
+		uint32_t CountAllPoly;	//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ
 
-		ISXBound* BoundVolumeSys;	//выравненный ограничивающий объем для равномерного деления
-		ISXBound* BoundVolumeP;		//облегающий ограничивающий объем
+		ISXBound* BoundVolumeSys;	//РІС‹СЂР°РІРЅРµРЅРЅС‹Р№ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РѕР±СЉРµРј РґР»СЏ СЂР°РІРЅРѕРјРµСЂРЅРѕРіРѕ РґРµР»РµРЅРёСЏ
+		ISXBound* BoundVolumeP;		//РѕР±Р»РµРіР°СЋС‰РёР№ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РѕР±СЉРµРј
 
 		float DistForCamera;
 
-		DWORD ID;	//идентификатор куска
-		DWORD SID;	//порядковый номер куска из массива рисующихся кусков
+		DWORD ID;	//РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєСѓСЃРєР°
+		DWORD SID;	//РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ РєСѓСЃРєР° РёР· РјР°СЃСЃРёРІР° СЂРёСЃСѓСЋС‰РёС…СЃСЏ РєСѓСЃРєРѕРІ
 
-		//ID3DXMesh* BoundBox;	//ограничивающий параллелепипед (меш)
-		bool BFNonEnd;//имеет ли кусок куски внутри себя?
+		//ID3DXMesh* BoundBox;	//РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РїР°СЂР°Р»Р»РµР»РµРїРёРїРµРґ (РјРµС€)
+		bool BFNonEnd;//РёРјРµРµС‚ Р»Рё РєСѓСЃРѕРє РєСѓСЃРєРё РІРЅСѓС‚СЂРё СЃРµР±СЏ?
 	};
 
 	
 
-	//модель, главный юнит уровня
+	//РјРѕРґРµР»СЊ, РіР»Р°РІРЅС‹Р№ СЋРЅРёС‚ СѓСЂРѕРІРЅСЏ
 	struct Model
 	{
 		Model();
@@ -113,8 +113,8 @@ public:
 
 		struct GDataBuff
 		{
-			int32_t idgroup;//id подгруппы в контексте уровня
-			int32_t idbuff;	//id буфера (в подгруппе) в который заисаны данные геометрии модели
+			int32_t idgroup;//id РїРѕРґРіСЂСѓРїРїС‹ РІ РєРѕРЅС‚РµРєСЃС‚Рµ СѓСЂРѕРІРЅСЏ
+			int32_t idbuff;	//id Р±СѓС„РµСЂР° (РІ РїРѕРґРіСЂСѓРїРїРµ) РІ РєРѕС‚РѕСЂС‹Р№ Р·Р°РёСЃР°РЅС‹ РґР°РЅРЅС‹Рµ РіРµРѕРјРµС‚СЂРёРё РјРѕРґРµР»Рё
 			int32_t IndexStart;
 			int32_t IndexCount;
 			int32_t VertexStart;
@@ -143,16 +143,16 @@ public:
 
 		bool IsRenderLod;
 
-		Array<GDataBuff> SubSet;	//описание каждой подгруппы модели
+		Array<GDataBuff> SubSet;	//РѕРїРёСЃР°РЅРёРµ РєР°Р¶РґРѕР№ РїРѕРґРіСЂСѓРїРїС‹ РјРѕРґРµР»Рё
 		Array<float> GroupDist;
 		Array<ID> IDTex;
-		Segment* ArrSplits;	//массив с сегментами	
-		ID SplitsIDs;	//общее количество сегментов/спилтов
-		ID SplitsIDsRender;	//количество рисубщихся сегментов
+		Segment* ArrSplits;	//РјР°СЃСЃРёРІ СЃ СЃРµРіРјРµРЅС‚Р°РјРё	
+		ID SplitsIDs;	//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРіРјРµРЅС‚РѕРІ/СЃРїРёР»С‚РѕРІ
+		ID SplitsIDsRender;	//РєРѕР»РёС‡РµСЃС‚РІРѕ СЂРёСЃСѓР±С‰РёС…СЃСЏ СЃРµРіРјРµРЅС‚РѕРІ
 	};
 
 
-	//подгруппа уровня
+	//РїРѕРґРіСЂСѓРїРїР° СѓСЂРѕРІРЅСЏ
 	struct Group
 	{
 		Group();
@@ -168,26 +168,26 @@ public:
 		};*/
 
 		bool IsRenderSingly;
-		int SortGroup;//тип/вид/сорт подгруппы, для ранжирования рендера
-		String name;//имя текстуры
-		ID idtex;	//идентификатор текстуры
-		long AllCountVertex;	//общее количество вершин
-		long AllCountIndex;		//общее количество индексов
-		Array<int32_t, 4> CountVertex;	//количество вершин в буферах
-		Array<int32_t, 4> CountIndex;	//количество индексов в буферах
+		int SortGroup;//С‚РёРї/РІРёРґ/СЃРѕСЂС‚ РїРѕРґРіСЂСѓРїРїС‹, РґР»СЏ СЂР°РЅР¶РёСЂРѕРІР°РЅРёСЏ СЂРµРЅРґРµСЂР°
+		String name;//РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹
+		ID idtex;	//РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С‚РµРєСЃС‚СѓСЂС‹
+		long AllCountVertex;	//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ
+		long AllCountIndex;		//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРґРµРєСЃРѕРІ
+		Array<int32_t, 4> CountVertex;	//РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ РІ Р±СѓС„РµСЂР°С…
+		Array<int32_t, 4> CountIndex;	//РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРґРµРєСЃРѕРІ РІ Р±СѓС„РµСЂР°С…
 		Array<Array<Model*>> ArrModels;
 		Array<IDirect3DVertexBuffer9*, 4> VertexBuffer;
 		//Array<VertexBuff*, 4> VertexBufferOrigin;
 	};
 
-	//структура содержащая минимальную необходимую информацию о сегменте модели
+	//СЃС‚СЂСѓРєС‚СѓСЂР° СЃРѕРґРµСЂР¶Р°С‰Р°СЏ РјРёРЅРёРјР°Р»СЊРЅСѓСЋ РЅРµРѕР±С…РѕРґРёРјСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЃРµРіРјРµРЅС‚Рµ РјРѕРґРµР»Рё
 	struct InfoRenderSegments
 	{
 		InfoRenderSegments();
 		~InfoRenderSegments();
-		Segment** Arr;	//массив хранящий в себе указатели на сегменты REALTIME
-		DWORD Count;	//размер Arr 
-		DWORD CountCom;	//сколько сегментов записано в Arr	REALTIME
+		Segment** Arr;	//РјР°СЃСЃРёРІ С…СЂР°РЅСЏС‰РёР№ РІ СЃРµР±Рµ СѓРєР°Р·Р°С‚РµР»Рё РЅР° СЃРµРіРјРµРЅС‚С‹ REALTIME
+		DWORD Count;	//СЂР°Р·РјРµСЂ Arr 
+		DWORD CountCom;	//СЃРєРѕР»СЊРєРѕ СЃРµРіРјРµРЅС‚РѕРІ Р·Р°РїРёСЃР°РЅРѕ РІ Arr	REALTIME
 	};
 
 	struct IRSData
@@ -243,11 +243,11 @@ public:
 
 	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models);
 	/*
-	(*arr_vertex)[num_model][num_vertex] - вершины модели
-	(*arr_count_vertex)[num_model] - количество вершин для модели
-	(*arr_index)[num_model][num_vertex] - индексы модели
-	(*arr_count_index)[num_model] - количество индексов для модели
-	(*count_model); количество моделей
+	(*arr_vertex)[num_model][num_vertex] - РІРµСЂС€РёРЅС‹ РјРѕРґРµР»Рё
+	(*arr_count_vertex)[num_model] - РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ РґР»СЏ РјРѕРґРµР»Рё
+	(*arr_index)[num_model][num_vertex] - РёРЅРґРµРєСЃС‹ РјРѕРґРµР»Рё
+	(*arr_count_index)[num_model] - РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРґРµРєСЃРѕРІ РґР»СЏ РјРѕРґРµР»Рё
+	(*count_model); РєРѕР»РёС‡РµСЃС‚РІРѕ РјРѕРґРµР»РµР№
 	*/
 
 protected:
@@ -261,7 +261,7 @@ protected:
 		int count;
 	};
 	Array<InfoGroup*> DistGroup;
-	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
+	Array<IRSData*> ArrComFor; //РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃРµРіРјРµРЅС‚Р°С… РґР»СЏ СЂРµРЅРґРµСЂР°
 	void AddModelInArrCom(ID id_model);
 	void DelModelInArrCom(ID id_model);
 
@@ -276,17 +276,18 @@ protected:
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
 	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
 
-	void PreSegmentation(Model* mesh, ISXDataStaticModel* model);	//подготовительный этап сегментации
-	void Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue);	//сегментации модели
-	void CycleSegmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment);	//рекусривный вызов сегментации
+	void PreSegmentation(Model* mesh, ISXDataStaticModel* model);	//РїРѕРґРіРѕС‚РѕРІРёС‚РµР»СЊРЅС‹Р№ СЌС‚Р°Рї СЃРµРіРјРµРЅС‚Р°С†РёРё
+	void Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment, Array<Segment*> * queue);	//СЃРµРіРјРµРЅС‚Р°С†РёРё РјРѕРґРµР»Рё
+	void CycleSegmentation(Segment* Split, Model* mesh, ISXDataStaticModel* model, long CountSplitsSys, long CountPolyInSegment);	//СЂРµРєСѓСЃСЂРёРІРЅС‹Р№ РІС‹Р·РѕРІ СЃРµРіРјРµРЅС‚Р°С†РёРё
 	void EditVolume(Model* mesh, Segment* Split);
-	void SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
+	void SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender);	//СѓСЃС‚Р°РЅРѕРІРєР° РєР°Р¶РґРѕРјСѓ РєСѓСЃРєСѓ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР°, СѓРґР°Р»РµРЅРёРµ РїСѓСЃС‚С‹С… РєСѓСЃРєРѕРІ
 	void SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*>* queue);
 	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
-	//рабочие данные, используются внутри в методах
+	//СЂР°Р±РѕС‡РёРµ РґР°РЅРЅС‹Рµ, РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РІРЅСѓС‚СЂРё РІ РјРµС‚РѕРґР°С…
 	//{{
 	float3* ArrMeshVertex;
+	UINT* ArrMeshIndex;
 	long CountVertex;
 
 	D3DXVECTOR3 jpos;
@@ -296,22 +297,22 @@ protected:
 
 	//}}
 
-	//функции удаления и создания массивов RTCPUArrIndicesPtrs и RTCountDrawPoly
-	//при добавлении новой модели
+	//С„СѓРЅРєС†РёРё СѓРґР°Р»РµРЅРёСЏ Рё СЃРѕР·РґР°РЅРёСЏ РјР°СЃСЃРёРІРѕРІ RTCPUArrIndicesPtrs Рё RTCountDrawPoly
+	//РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РЅРѕРІРѕР№ РјРѕРґРµР»Рё
 	void DelArrIndexPtr();
 	void InitArrIndexPtr();
 
-	uint32_t*** RTCPUArrIndicesPtrs;	//массив для хранения всех индексов которые будут отправлены на рендер сейчас
-	uint32_t** RTCountDrawPoly;			//массив для хранения размеров для каждого из массивов RTCPUArrIndicesPtrs
-	uint32_t*** RTCountDrawPolyModel;	//массив для хранения количества рисуемых полигонов для каждой подгруппы для каждой модели
-	uint32_t*** RTBeginIndexModel;		//массив для хранения начала индексов для каждой подгруппы для каждой модели
+	uint32_t*** RTCPUArrIndicesPtrs;	//РјР°СЃСЃРёРІ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РІСЃРµС… РёРЅРґРµРєСЃРѕРІ РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ РѕС‚РїСЂР°РІР»РµРЅС‹ РЅР° СЂРµРЅРґРµСЂ СЃРµР№С‡Р°СЃ
+	uint32_t** RTCountDrawPoly;			//РјР°СЃСЃРёРІ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СЂР°Р·РјРµСЂРѕРІ РґР»СЏ РєР°Р¶РґРѕРіРѕ РёР· РјР°СЃСЃРёРІРѕРІ RTCPUArrIndicesPtrs
+	uint32_t*** RTCountDrawPolyModel;	//РјР°СЃСЃРёРІ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° СЂРёСЃСѓРµРјС‹С… РїРѕР»РёРіРѕРЅРѕРІ РґР»СЏ РєР°Р¶РґРѕР№ РїРѕРґРіСЂСѓРїРїС‹ РґР»СЏ РєР°Р¶РґРѕР№ РјРѕРґРµР»Рё
+	uint32_t*** RTBeginIndexModel;		//РјР°СЃСЃРёРІ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РЅР°С‡Р°Р»Р° РёРЅРґРµРєСЃРѕРІ РґР»СЏ РєР°Р¶РґРѕР№ РїРѕРґРіСЂСѓРїРїС‹ РґР»СЏ РєР°Р¶РґРѕР№ РјРѕРґРµР»Рё
 
-	Array<Model*> AllModels;	//массив моделей
-	Array<Group*> AllGroups;	//массив подгрупп
+	Array<Model*> AllModels;	//РјР°СЃСЃРёРІ РјРѕРґРµР»РµР№
+	Array<Group*> AllGroups;	//РјР°СЃСЃРёРІ РїРѕРґРіСЂСѓРїРї
 	//IDirect3DVertexDeclaration9* VertexDeclarationStatic;
 
-	long SizeRenderIndexBuffer;	//размер в элементах RenderIndexBuffer
-	IDirect3DIndexBuffer9* RenderIndexBuffer;	//индексный буфер, используется и изменяется в реайлтайме при рендере уровня	
+	long SizeRenderIndexBuffer;	//СЂР°Р·РјРµСЂ РІ СЌР»РµРјРµРЅС‚Р°С… RenderIndexBuffer
+	IDirect3DIndexBuffer9* RenderIndexBuffer;	//РёРЅРґРµРєСЃРЅС‹Р№ Р±СѓС„РµСЂ, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Рё РёР·РјРµРЅСЏРµС‚СЃСЏ РІ СЂРµР°Р№Р»С‚Р°Р№РјРµ РїСЂРё СЂРµРЅРґРµСЂРµ СѓСЂРѕРІРЅСЏ	
 };
 
 bool StaticGeom::UseSortFrontToBackSplits = true;

@@ -11,7 +11,6 @@
 #endif
 #include <gcore\\sxgcore.h>
 
-
 #define LIGHTS_UPDATE_MAX_COUNT_FOR_STATIC 3	//максимальное количество обновлений статических источников света, с первый момент рендера
 
 //дистанции при которых будут сниженно или повышено количество отрисовок
@@ -482,6 +481,17 @@ SX_LIB_API void SML_MtlSetTypeModel(ID id, MtlTypeModel type_model);
 //world - укзаатель на мировую матрицу модели, либо 0 - тогда будет принята единичная матрица
 SX_LIB_API void SML_MtlRender(ID id, float4x4* world);
 
+//стандартная отрисовка материала
+SX_LIB_API void SML_MtlRenderStd(
+	MtlTypeModel type,			//тип материала из MtlTypeModel
+	float4x4* world,			//мировая матрица трансформации, либо 0 и будет применена единичная матрица
+	ID slot,					//текстурный слот в который установить текстуру
+	ID id_mtl,					//идентификатор материала из которого будет браться текстура
+	bool is_cp = false,			//устанавливать ли плоскость отсечения
+	float3* plane_normal = 0,	//нормаль плоскости в мировом пространстве, если 0 то не будет установлена плоскость отсечения
+	float3* plane_point = 0		//точка на плоскости в мировом пространстве, если 0 то не будет установлена плоскость отсечения
+	);
+
 //установка параметров материала для рендера источника света
 //color - rgb - цвет, w зарезервирован, world аналогично SML_MtlRender
 SX_LIB_API void SML_MtlRenderLight(float4_t* color, float4x4* world);
@@ -532,7 +542,7 @@ SX_LIB_API bool SML_MtlRefUpdateCountUpdate(ID id, float3_t* viewpos);
 //полезно в случаях каких-либо изменений, чтобы эти изменения были видны и в отражениях (актуально для статических отражений)
 SX_LIB_API void SML_MtlRefNullingCountUpdate(ID id);
 
-SX_LIB_API void SML_MtlRefSetCenter(ID id, float3_t* center);			//установка центра подгруппы
+//SX_LIB_API void SML_MtlRefSetCenter(ID id, float3_t* center);			//установка центра подгруппы
 SX_LIB_API void SML_MtlRefSetMinMax(ID id, float3_t* min, float3_t* max);//экстремумы подгруппы
 //возвращает фрустум отражения, cube - сторона куба
 //если отражение плоское то необходимо указать в cube передать 0, иначе вернет NULL
@@ -541,8 +551,8 @@ SX_LIB_API bool SML_MtlRefIsAllowedRender(ID id);	//разрешен ли рендер отражений
 
 //плоское отражение
 //{
-SX_LIB_API void SML_MtlRefSetPlane(ID id, D3DXPLANE* plane);		//установка плоскости для отражения
-SX_LIB_API void SML_MtlRefPreRenderPlane(ID id, float4x4* world);	//первоначальные настройки данных для генерации отражения, world - мировая матрица модели
+//SX_LIB_API void SML_MtlRefSetPlane(ID id, D3DXPLANE* plane);		//установка плоскости для отражения
+SX_LIB_API void SML_MtlRefPreRenderPlane(ID id, D3DXPLANE* plane);	//первоначальные настройки данных для генерации отражения, world - мировая матрица модели
 //между этими функциями необходимо помещать код рендера всего того что необходимо поместить в текстуру отражений
 SX_LIB_API void SML_MtlRefPostRenderPlane(ID id);					//завершающие операции
 SX_LIB_API IDirect3DTexture9* SML_MtlRefGetTexPlane(ID id);			//возвращает текстуру с плоским отражением (если оно есть, иначе 0)
@@ -550,7 +560,7 @@ SX_LIB_API IDirect3DTexture9* SML_MtlRefGetTexPlane(ID id);			//возвращает текст
 
 //объемное (кубическое) отражение
 //{
-SX_LIB_API void SML_MtlRefCubeBeginRender(ID id);	//установка общих настроек
+SX_LIB_API void SML_MtlRefCubeBeginRender(ID id, float3_t* center);	//установка общих настроек
 SX_LIB_API void SML_MtlRefCubePreRender(ID id, int cube, float4x4* world);//установка частных настроек для стороны куба (cube), world - мировая матрица модели 
 //между этим набором функций (Begin-pre ... post-End) необходимо помещать код рендера всего того что необходимо поместить в текстуру отражений
 SX_LIB_API void SML_MtlRefCubePostRender(ID id, int cube);	//завершающие частные моменты для стороны куба

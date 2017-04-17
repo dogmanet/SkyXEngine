@@ -242,8 +242,8 @@ int SXInput::ReadMouseData(IDirectInputDevice8 *DIDevice)
 				{
 					EventsMouse.Buttons[i] = InputEvents::iv_m_down;
 					EventsMouse.Timer[i] = 0;
-					//заглушка, на случай если событие двойного клика стартовало
-					//а мы меняем стэйты кнопки
+					//Р·Р°РіР»СѓС€РєР°, РЅР° СЃР»СѓС‡Р°Р№ РµСЃР»Рё СЃРѕР±С‹С‚РёРµ РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР° СЃС‚Р°СЂС‚РѕРІР°Р»Рѕ
+					//Р° РјС‹ РјРµРЅСЏРµРј СЃС‚СЌР№С‚С‹ РєРЅРѕРїРєРё
 					if (InsTime)
 						ShiftEvent--;
 				}
@@ -267,14 +267,14 @@ int SXInput::ReadMouseData(IDirectInputDevice8 *DIDevice)
 		}
 	}
 
-	//если таймер еще не ставили и нажата какая-то кнопка мыши значит событие двоного клика не стартовало и можно его стартануть
-	//ControlMouseButton - номер кнопки для которой стартует событие двойного клика
+	//РµСЃР»Рё С‚Р°Р№РјРµСЂ РµС‰Рµ РЅРµ СЃС‚Р°РІРёР»Рё Рё РЅР°Р¶Р°С‚Р° РєР°РєР°СЏ-С‚Рѕ РєРЅРѕРїРєР° РјС‹С€Рё Р·РЅР°С‡РёС‚ СЃРѕР±С‹С‚РёРµ РґРІРѕРЅРѕРіРѕ РєР»РёРєР° РЅРµ СЃС‚Р°СЂС‚РѕРІР°Р»Рѕ Рё РјРѕР¶РЅРѕ РµРіРѕ СЃС‚Р°СЂС‚Р°РЅСѓС‚СЊ
+	//ControlMouseButton - РЅРѕРјРµСЂ РєРЅРѕРїРєРё РґР»СЏ РєРѕС‚РѕСЂРѕР№ СЃС‚Р°СЂС‚СѓРµС‚ СЃРѕР±С‹С‚РёРµ РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР°
 	if (!InsTime && (ControlMouseButton = IsMouseClick()) > -1)
 	{
 		OldMouseState = MouseState;
 		InsTime = timeGetTime();
 	}
-	//если таймер уже стоит и нажата другая кнопка тогда убиваем событие
+	//РµСЃР»Рё С‚Р°Р№РјРµСЂ СѓР¶Рµ СЃС‚РѕРёС‚ Рё РЅР°Р¶Р°С‚Р° РґСЂСѓРіР°СЏ РєРЅРѕРїРєР° С‚РѕРіРґР° СѓР±РёРІР°РµРј СЃРѕР±С‹С‚РёРµ
 	else if (InsTime && !(ControlMouseButton == IsMouseClick() || IsMouseClick() == -1))
 	{
 		OldMouseState = MouseState;
@@ -289,7 +289,7 @@ int SXInput::ReadMouseData(IDirectInputDevice8 *DIDevice)
 
 	if (InsTime != 0)
 	{
-		//если время двойного клика не истекло
+		//РµСЃР»Рё РІСЂРµРјСЏ РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР° РЅРµ РёСЃС‚РµРєР»Рѕ
 		if (timeGetTime() - InsTime <= SX_INPUT_PERIOD_DBL_CLICK && timeGetTime() - InsTime >= SX_INPUT_PERIOD_NON_DBL_CLICK)
 		{
 			if (ShiftEvent >= SX_INPUT_COUNT_EVENTS_FOR_DBL_CLICK && (MouseState.rgbButtons[ControlMouseButton] & 0x80) && (OldMouseState.rgbButtons[ControlMouseButton] & 0x80))
@@ -304,7 +304,7 @@ int SXInput::ReadMouseData(IDirectInputDevice8 *DIDevice)
 			}
 
 		}
-		//если время двойного клика истекло
+		//РµСЃР»Рё РІСЂРµРјСЏ РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР° РёСЃС‚РµРєР»Рѕ
 		else if (timeGetTime() - InsTime > SX_INPUT_PERIOD_DBL_CLICK)
 		{
 			InsTime = 0;

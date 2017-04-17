@@ -74,6 +74,11 @@ namespace MLSet
 
 			ID SMDepthTreePSSMDirect;
 			ID SMDepthTreeCube;
+
+			ID StdGeom;
+			ID StdTree;
+			ID StdGrass;
+			ID StdSkin;
 		};
 
 		namespace PS
@@ -100,6 +105,12 @@ namespace MLSet
 			ID SampleLumFinal;
 
 			ID ScreenOut;
+
+			ID StdGeom;
+			ID StdGeomCP;
+			ID StdGreen;
+			ID StdGreenCP;
+			ID StdSkin;
 		};
 	};
 
@@ -273,6 +284,22 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 
 	MLSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
 	MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
+
+
+	MLSet::IDsShaders::VS::StdGeom = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_geom.vs", "stdr_geom", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::PS::StdGeom = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_geom.ps", "stdr_geom", ShaderCheckDouble::scd_name);
+
+	D3DXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
+	MLSet::IDsShaders::PS::StdGeomCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_geom.ps", "stdr_geom_cp", ShaderCheckDouble::scd_name, Defines_CP);
+
+
+	MLSet::IDsShaders::VS::StdGrass = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_grass.vs", "stdr_grass", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::StdTree = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_tree.vs", "stdr_tree", ShaderCheckDouble::scd_path);
+
+	MLSet::IDsShaders::PS::StdGreen = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_green.ps", "stdr_green", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::PS::StdGreenCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_green.ps", "stdr_green_cp", ShaderCheckDouble::scd_name, Defines_CP);
+
+
 
 	//////////
 	float tmpcoefsizert = 1;

@@ -2,11 +2,7 @@
 #ifndef __render_func
 #define __render_func
 
-//ЗАНИМАЕМЫЕ РЕГИСТРЫ
-//{
-#define G_RI_INT_CURRIDLIGHT	10
-#define G_RI_INT_RENDERSTATE	11
-//}
+#include <GRegisterIndex.h>
 
 //состояния рендера
 #define RENDER_STATE_MATERIAL 0	//отрисовка материалов
@@ -14,7 +10,6 @@
 #define RENDER_STATE_FREE 2		//простая отрисовка (не материальная)
 
 //идентификаторы для определяния типа просчетов видимости
-//хотя тип на самом деле это порядковое число
 #define RENDER_IDARRCOM_GEOM 0	//геометрия
 #define RENDER_IDARRCOM_GREEN 1	//растительность
 

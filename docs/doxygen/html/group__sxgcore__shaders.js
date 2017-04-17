@@ -1,0 +1,46 @@
+var group__sxgcore__shaders =
+[
+    [ "SXGC_SHADER_MAX_SIZE_DIR", "group__sxgcore__shaders.html#ga1b12b8c7df7b228ed4485839a0af4b56", null ],
+    [ "SXGC_SHADER_MAX_SIZE_NAME", "group__sxgcore__shaders.html#ga7d2e503a42e0462edefdf2d0e935c0fd", null ],
+    [ "SXGC_SHADER_MAX_SIZE_DIRNAME", "group__sxgcore__shaders.html#ga48892df21f63c0008949d85574bbd022", null ],
+    [ "SXGC_SHADER_MAX_SIZE_STDPATH", "group__sxgcore__shaders.html#gaf5a63cbdce19601a2d11aa0340c50795", null ],
+    [ "SXGC_SHADER_MAX_SIZE_FULLPATH", "group__sxgcore__shaders.html#ga548a5002794c0e178aba8c046ce894a6", null ],
+    [ "SXGC_SHADER_VAR_MAX_SIZE", "group__sxgcore__shaders.html#gad0221a9714b651133c3993b19d1fde10", null ],
+    [ "SXGC_SHADER_VAR_MAX_COUNT", "group__sxgcore__shaders.html#gae6e66903b7d85bb88ec56aa93056377b", null ],
+    [ "SXGC_SHADER_COUNT_MACRO", "group__sxgcore__shaders.html#ga4b430fd1cc814e6fb16a566a92c742f1", null ],
+    [ "SXGC_LOADTEX_MAX_SIZE_DIR", "group__sxgcore__shaders.html#ga027ecdefe40443d4b47ec5f185e57834", null ],
+    [ "SXGC_LOADTEX_MAX_SIZE_NAME", "group__sxgcore__shaders.html#ga308ea42c46c2bc12d0263cc09981b583", null ],
+    [ "SXGC_LOADTEX_MAX_SIZE_DIRNAME", "group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925", null ],
+    [ "SXGC_LOADTEX_MAX_SIZE_STDPATH", "group__sxgcore__shaders.html#ga9f078853fc78039c2aafbf21e263ec51", null ],
+    [ "SXGC_LOADTEX_MAX_SIZE_FULLPATH", "group__sxgcore__shaders.html#ga8c0c49b447d846c44f025743e9146e46", null ],
+    [ "SXGC_LOADTEX_COUNT_MIPMAP", "group__sxgcore__shaders.html#ga95fcce78bcf8e8aa68e6be26d58d9279", null ],
+    [ "SXGC_LOADTEX_FORMAT_TEX", "group__sxgcore__shaders.html#ga7464c3f3ce63f1d3f08331ab7cdd93cd", null ],
+    [ "ShaderType", "group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46", [
+      [ "st_vertex", "group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a2d70842347ece461c8e7410727fc4ff7", null ],
+      [ "st_pixel", "group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a4d9ec09af36addcb899c486f722d72c7", null ]
+    ] ],
+    [ "ShaderCheckDouble", "group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9", [
+      [ "scd_none", "group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a795c9cbe6e108ba419b45bdf859d342f", null ],
+      [ "scd_path", "group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a37e251ede797395dc2a8e540f5bd226e", null ],
+      [ "scd_name", "group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9ace17db85931ca03f87592df8fa44244d", null ]
+    ] ],
+    [ "SGCore_ShaderLoad", "group__sxgcore__shaders.html#ga5a9f76538a8c8f15f31354ddee948397", null ],
+    [ "SGCore_ShaderGetName", "group__sxgcore__shaders.html#ga3caaafd46ce50c2942d77a6847188df9", null ],
+    [ "SGCore_ShaderGetPath", "group__sxgcore__shaders.html#gab06e5db57890f043a54985761b2bd848", null ],
+    [ "SGCore_ShaderIsExistName", "group__sxgcore__shaders.html#gabd5628938ef58282085e0192d87fe507", null ],
+    [ "SGCore_ShaderIsExistPath", "group__sxgcore__shaders.html#gad8e0d50605b268b6afe5e10942211b34", null ],
+    [ "SGCore_ShaderIsValidate", "group__sxgcore__shaders.html#ga3ad6c22082fbc6e74ad338cc7ae10f11", null ],
+    [ "SGCore_ShaderUpdateN", "group__sxgcore__shaders.html#ga2d7c51f376886ef58e51312dbebcd90a", null ],
+    [ "SGCore_ShaderUpdate", "group__sxgcore__shaders.html#gaf506f80b652171bb1dfc2b9ad63a0a0d", null ],
+    [ "SGCore_ShaderSetStdPath", "group__sxgcore__shaders.html#ga2031cde9823be27ca956517a1dd7edd3", null ],
+    [ "SGCore_ShaderGetStdPath", "group__sxgcore__shaders.html#ga4893393b9c49518cd12fa54bc7cd2c0d", null ],
+    [ "SGCore_ShaderReloadAll", "group__sxgcore__shaders.html#ga8ce34c187dd5192b54d49caaf1f20c6d", null ],
+    [ "SGCore_ShaderGetID", "group__sxgcore__shaders.html#ga91cf59a467ad5442327b9337419b23e5", null ],
+    [ "SGCore_ShaderBindN", "group__sxgcore__shaders.html#ga260f3af4cc3b7cb383e9f043c4128642", null ],
+    [ "SGCore_ShaderBind", "group__sxgcore__shaders.html#ga95f5d8813399c3f1537dbdb45371d09c", null ],
+    [ "SGCore_ShaderUnBind", "group__sxgcore__shaders.html#ga79aa442ddc3e1013591b569d14f7f229", null ],
+    [ "SGCore_ShaderSetVRFN", "group__sxgcore__shaders.html#ga8882c7ee2e51571942e9027435004177", null ],
+    [ "SGCore_ShaderSetVRF", "group__sxgcore__shaders.html#ga0e42c175b0e2512263fcd7f1dfe3e459", null ],
+    [ "SGCore_ShaderSetVRIN", "group__sxgcore__shaders.html#ga3c265622425b3556eb2c5c741157bb35", null ],
+    [ "SGCore_ShaderSetVRI", "group__sxgcore__shaders.html#gadbd48105b0eb059f424cb12e9a1a43a3", null ]
+];

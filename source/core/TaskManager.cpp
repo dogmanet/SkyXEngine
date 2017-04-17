@@ -80,7 +80,7 @@ void SXTaskManager::start()
 	char name[64];
 
 
-	//< Èíèöèàëèçèğóåì ïóë ğàáî÷èõ ïîòîêîâ
+	//< Ğ˜Ğ½Ğ¸Ñ†Ğ¸Ğ°Ğ»Ğ¸Ğ·Ğ¸Ñ€ÑƒĞµĞ¼ Ğ¿ÑƒĞ» Ñ€Ğ°Ğ±Ğ¾Ñ‡Ğ¸Ñ… Ğ¿Ğ¾Ñ‚Ğ¾ĞºĞ¾Ğ²
 	for(unsigned int i = 0; i < mNumThreads; ++i)
 	{
 		std::thread * t = new std::thread(std::bind(&SXTaskManager::worker, this));
@@ -189,7 +189,7 @@ void SXTaskManager::worker()
 		}
 		else
 		{
-			// òóò äåëàòü íå÷åãî, ñïèì 1.667 ìñ (1/10 êàäğà ïğè 60 FPS)
+			// Ñ‚ÑƒÑ‚ Ğ´ĞµĞ»Ğ°Ñ‚ÑŒ Ğ½ĞµÑ‡ĞµĞ³Ğ¾, ÑĞ¿Ğ¸Ğ¼ 1.667 Ğ¼Ñ (1/10 ĞºĞ°Ğ´Ñ€Ğ° Ğ¿Ñ€Ğ¸ 60 FPS)
 			std::this_thread::sleep_for(std::chrono::microseconds(166));
 		}
 	}

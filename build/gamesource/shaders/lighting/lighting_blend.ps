@@ -6,11 +6,12 @@ sampler2D AmbientSampler:register(s1);
 sampler2D SpecDiffSampler:register(s2);
 sampler2D NormalSampler:register(s3);
 sampler2D AdaptedLumSampler:register(s4);
+sampler2D ParamSampler:register(s5);
 
 half4 main(vs_out_pp IN):COLOR0
 {
 	half isunlit = tex2D(NormalSampler,IN.TexUV).a;
-
+	half layer = tex2D(ParamSampler,IN.TexUV).z;
 	half4 color = tex2D(ColorSampler,IN.TexUV);
 
 	half4 ambient = tex2D(AmbientSampler,IN.TexUV);
@@ -19,6 +20,9 @@ half4 main(vs_out_pp IN):COLOR0
 
 	if(isunlit != NOTLIGHTING_NOTTRANSPARENCY && isunlit != NOTLIGHTING_TRANSPARENCY)
 		color.xyz = ((sqrt(ambient.xyz * ambient.w)*color.xyz)) + sqrt(spec*ambient.xyz);
+		
+	if(int(layer * 255.f) == 1)
+		color.a = 1.f;
 
 	color.rgb *= 0.1/(fAdaptedLum + 0.001f);
 	color.rgb /= (fAdaptedLum + color.rgb);

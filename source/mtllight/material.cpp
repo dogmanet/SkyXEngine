@@ -423,22 +423,22 @@ ID Materials::MtlRefGetIDArr(ID id, ID inid, int cube)
 	return ArrMaterials[id]->Reflect->GetIDArr(inid, cube);
 }
 
-void Materials::MtlRefSetPlane(ID id, D3DXPLANE* plane)
+/*void Materials::MtlRefSetPlane(ID id, D3DXPLANE* plane)
 {
 	MTL_REF_PRE_COND_ID(id);
 	ArrMaterials[id]->Reflect->Plane = *plane;
-}
+}*/
 
-void Materials::MtlRefSetCenter(ID id, float3_t* center)
+/*void Materials::MtlRefSetCenter(ID id, float3_t* center)
 {
 	MTL_REF_PRE_COND_ID(id);
 	ArrMaterials[id]->Reflect->Position = *center;
-}
+}*/
 
-void Materials::MtlRefPreRenderPlane(ID id, float4x4* world)
+void Materials::MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 {
 	MTL_REF_PRE_COND_ID(id);
-	ArrMaterials[id]->Reflect->PreRenderRefPlane(world);
+	ArrMaterials[id]->Reflect->PreRenderRefPlane(plane);
 }
 
 ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
@@ -478,10 +478,10 @@ bool Materials::MtlRefIsAllowedRender(ID  id)
 }
 
 
-void Materials::MtlRefCubeBeginRender(ID id)
+void Materials::MtlRefCubeBeginRender(ID id, float3_t* center)
 {
 	MTL_REF_PRE_COND_ID(id);
-	ArrMaterials[id]->Reflect->BeginRenderRefCube();
+	ArrMaterials[id]->Reflect->BeginRenderRefCube(center);
 }
 
 void Materials::MtlRefCubePreRender(ID id, int cube, float4x4* world)
@@ -1724,6 +1724,74 @@ inline void Materials::SetCurrCountSurf(int count)
 	CurrIdSurf = count;
 }
 
+void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl, bool is_cp, float3* plane_normal, float3* plane_point)
+{
+	//может быть случай когда текстура в которую сейчас рисуем еще стоит в текстурных слотах
+	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
+	//поэтому нужно обнулить слот в котором возможно была текстура
+	//такое явление может быть в случае когда в кадре только один материал который отражает
+	MLSet::DXDevice->SetTexture(12, 0);
+
+	if (id_mtl >= 0 && id_mtl < ArrMaterials.size())
+		this->SetMainTexture(slot, id_mtl);
+
+	if (type == MtlTypeModel::tms_static)
+	{
+		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom);
+
+		float4x4 wmat = SMMatrixTranspose((world ? (*world) : SMMatrixIdentity()));
+		float4x4 wvpmat;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
+		wvpmat = SMMatrixTranspose(wvpmat);
+
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
+
+		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
+		{
+			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP);
+
+			float3 tmpnormal, tmppoint;
+
+			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
+			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
+
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP, "PlanePoint", &tmppoint);
+		}
+		else
+			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeom);
+	}
+	else if (type == MtlTypeModel::tms_grass || type == MtlTypeModel::tms_tree)
+	{
+		ID tmpvs = (type == MtlTypeModel::tms_grass ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
+		SGCore_ShaderBind(ShaderType::st_vertex, tmpvs);
+
+		float4x4 wmat = SMMatrixTranspose((world ? (*world) : SMMatrixIdentity()));
+		float4x4 wvpmat;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
+		wvpmat = SMMatrixTranspose(wvpmat);
+
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "World", &wmat);
+
+		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
+		{
+			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP);
+
+			float3 tmpnormal, tmppoint;
+
+			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
+			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
+
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP, "PlanePoint", &tmppoint);
+		}
+		else
+			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreen);
+	}
+}
+
 void Materials::Render(ID id, float4x4* world)
 {
 	MTL_PRE_COND_ID(id);
@@ -1733,12 +1801,6 @@ void Materials::Render(ID id, float4x4* world)
 
 	Material* tmpmaterial = ArrMaterials[id]->mtl;
 
-	float4_t tmpnull;
-	for (int i = 0; i < 256; ++i)
-	{
-		MLSet::DXDevice->SetVertexShaderConstantF(i, (float*)&tmpnull, 1);
-		MLSet::DXDevice->SetPixelShaderConstantF(i, (float*)&tmpnull, 1);
-	}
 	//если есть то устанавливаем текстуру материала
 	if (tmpmaterial->MainTexture != -1)
 		MLSet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(tmpmaterial->MainTexture));
@@ -1937,7 +1999,7 @@ void Materials::Render(ID id, float4x4* world)
 	if (tmpmaterial->PreShaderPS != -1)
 	{	
 		//освещаемый ли тип материала или нет? Ппрозрачный освещаемый?
-		//0,0.25,0.5,1
+		//0,0.33,0.66,1
 		float zz;
 		if (tmpmaterial->IsUnlit)
 		{

@@ -117,10 +117,7 @@ void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,D
 				}
 			vertex_buffer->Unlock();
 		}
-		else
-		{
-			int wefdsfs=0;
-		}
+
 	(*bound)->SetMinMax(&float3(Min),&float3(Max));
 }
 
@@ -161,10 +158,6 @@ void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,D
 							Min.z = pos.z;
 				}
 			vertex_buffer->Unlock();
-		}
-		else
-		{
-			int wefdsfs=0;
 		}
 
 	Min.x /= 100.f;

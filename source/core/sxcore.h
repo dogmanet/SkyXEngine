@@ -1,4 +1,18 @@
 
+/*! 
+\mainpage Р”РѕРєСѓРјРµРЅС‚Р°С†РёСЏ SkyXEngine
+Р­С‚Рѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёСЏ API (РёРЅС‚РµСЂС„РµР№СЃР° РїСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёСЏ РїСЂРёР»РѕР¶РµРЅРёСЏ) 3D РґРІРёР¶РєР° real-time СЂРµРЅРґРµСЂР° SkyXEngine
+*/
+
+/*!
+\file 
+Р—Р°РіРѕР»РѕРІРѕС‡РЅС‹Р№ С„Р°Р№Р» sxcore - РѕСЃРЅРѕРІРЅРѕРіРѕ СЏРґСЂР° РґРІРёР¶РєР° SkyXEngine
+*/
+
+/*! \defgroup sxcore sxcore - РѕСЃРЅРѕРІРЅРѕРµ СЏРґСЂРѕ РґРІРёР¶РєР° SkyXEngine
+@{
+*/
+
 #ifndef __sxcore
 #define __sxcore
 
@@ -8,131 +22,141 @@
 #define SM_D3D_CONVERSIONS
 #include <common\sxmath.h>
 
-#define CORE_NAME_MAX_LEN 32	//максимальная длина имени объекта ядра/подсистемы
-#define OBJECT_NAME_MAX_LEN 64	//максимальная длина имени объекта
-#define CONFIG_SECTION_MAX_LEN 64	//максимальная длина секции конфигурационного файла
-
-//тип функции для обработки в менеджере задач
+//! С‚РёРї С„СѓРЅРєС†РёРё РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РІ РјРµРЅРµРґР¶РµСЂРµ Р·Р°РґР°С‡
 typedef void(*THREAD_UPDATE_FUNCTION)();
 
+//! Р·РЅР°С‡РµРЅРёСЏ РѕРїСЂРµРґРµР»СЋС‰РёРµ РїРѕРІРµРґРµРЅРёРµ Р·Р°РґР°С‡Рё
 enum CoreTaskFlag
 {
 	CoreTF_NONE = 0x0,
 
-	CoreTF_REPEATING = 0x1 << 0, //< Задача будет повторяться, если не указано - выполнится только один раз
-	CoreTF_THREADSAFE = 0x1 << 1, //< Задача может быть выполнена в любом потоке
-	CoreTF_FRAME_SYNC = 0x1 << 2, //< Задаче необходима синхронизация по границе кадра
-	CoreTF_ON_SYNC = 0x1 << 3, //< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
+	CoreTF_REPEATING = 0x1 << 0,	//!< Р—Р°РґР°С‡Р° Р±СѓРґРµС‚ РїРѕРІС‚РѕСЂСЏС‚СЊСЃСЏ, РµСЃР»Рё РЅРµ СѓРєР°Р·Р°РЅРѕ - РІС‹РїРѕР»РЅРёС‚СЃСЏ С‚РѕР»СЊРєРѕ РѕРґРёРЅ СЂР°Р·
+	CoreTF_THREADSAFE = 0x1 << 1,	//!< Р—Р°РґР°С‡Р° РјРѕР¶РµС‚ Р±С‹С‚СЊ РІС‹РїРѕР»РЅРµРЅР° РІ Р»СЋР±РѕРј РїРѕС‚РѕРєРµ
+	CoreTF_FRAME_SYNC = 0x1 << 2,	//!< Р—Р°РґР°С‡Рµ РЅРµРѕР±С…РѕРґРёРјР° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ РїРѕ РіСЂР°РЅРёС†Рµ РєР°РґСЂР°
+	CoreTF_ON_SYNC = 0x1 << 3,		//!< Р­С‚Рѕ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ РјРѕРјРµРЅС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё(РІС‹РїРѕР»РЅСЏРµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґРµР№СЃС‚РІРёСЏ РґР»СЏ РѕР±РјРµРЅР° РґР°РЅРЅС‹РјРё РІРѕ РІСЂРµРјСЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё)
 
-	CoreTF_SINGLETHREADED = CoreTF_NONE, //< Задача выполняется в главном потоке, один раз
-	CoreTF_SINGLETHREADED_REPEATING = CoreTF_REPEATING, //< Задача выполняется в главном потоке, повторяется
-	CoreTF_BACKGROUND = CoreTF_THREADSAFE,  //< Задача выполняется в фоне(не ожидает синхронизации) один раз
-	CoreTF_BACKGROUND_REPEATING = CoreTF_THREADSAFE | CoreTF_REPEATING, //< Задача выполняется в фоне(не ожидает синхронизации), по завершении повторяется
-	CoreTF_BACKGROUND_SYNC = CoreTF_THREADSAFE | CoreTF_FRAME_SYNC, //< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
-	CoreTF_BACKGROUND_SYNC_REPEATING = CoreTF_THREADSAFE | CoreTF_REPEATING | CoreTF_FRAME_SYNC, //< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
+	CoreTF_SINGLETHREADED = CoreTF_NONE,				//!< Р—Р°РґР°С‡Р° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ РіР»Р°РІРЅРѕРј РїРѕС‚РѕРєРµ, РѕРґРёРЅ СЂР°Р·
+	CoreTF_SINGLETHREADED_REPEATING = CoreTF_REPEATING, //!< Р—Р°РґР°С‡Р° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ РіР»Р°РІРЅРѕРј РїРѕС‚РѕРєРµ, РїРѕРІС‚РѕСЂСЏРµС‚СЃСЏ
+	CoreTF_BACKGROUND = CoreTF_THREADSAFE,				//!< Р—Р°РґР°С‡Р° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ С„РѕРЅРµ(РЅРµ РѕР¶РёРґР°РµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё) РѕРґРёРЅ СЂР°Р·
+	CoreTF_BACKGROUND_REPEATING = CoreTF_THREADSAFE | CoreTF_REPEATING,		//!< Р—Р°РґР°С‡Р° РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІ С„РѕРЅРµ(РЅРµ РѕР¶РёРґР°РµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё), РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё РїРѕРІС‚РѕСЂСЏРµС‚СЃСЏ
+	CoreTF_BACKGROUND_SYNC = CoreTF_THREADSAFE | CoreTF_FRAME_SYNC,			//!< Р—Р°РґР°С‡Р° РјРѕР¶РµС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ РІ Р»СЋР±РѕРј РїРѕС‚РѕРєРµ, РѕР¶РёРґР°РµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё, РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РѕРґРёРЅ СЂР°Р·
+	CoreTF_BACKGROUND_SYNC_REPEATING = CoreTF_THREADSAFE | CoreTF_REPEATING | CoreTF_FRAME_SYNC,	//!< Р—Р°РґР°С‡Р° РјРѕР¶РµС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ РІ Р»СЋР±РѕРј РїРѕС‚РѕРєРµ, РѕР¶РёРґР°РµС‚ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё, РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РјРЅРѕРіРѕРєСЂР°С‚РЅРѕ
 
 	CoreTF_ALL = ~0x0
 };
 
-//базовые функции ядра
-//только функции Core_0 могу вызываться без инициализированного ядра
+/*!@name Р‘Р°Р·РѕРІС‹Рµ С„СѓРЅРєС†РёРё СЏРґСЂР° */
+//!@{
+SX_LIB_API long Core_0GetVersion();	//!< РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ СЏРґСЂР°
+SX_LIB_API void Core_0Create(const char* name, bool is_unic = true); //!< СЃРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ СЏРґСЂР°, name - РёРјСЏ, is_unic - РґРѕР»Р¶РЅРѕ Р»Рё РёРјСЏ СЏРґСЂР° Р±С‹С‚СЊ СѓРЅРёРєР°Р»СЊРЅС‹Рј
+SX_LIB_API void Core_Dbg_Set(report_func rf); //!< СѓСЃС‚Р°РЅРѕРІРєР° СЃРІРѕРµРіРѕ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РІС‹РІРѕРґР° РѕС‚Р»Р°РґРѕС‡РЅРѕР№ РёРЅС„РѕСЂРјР°С†РёРё
+SX_LIB_API bool Core_0FileExists(const char* path); //!< СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С„Р°Р№Р»
+SX_LIB_API bool Core_0ClipBoardCopy(const char *str); //!< РєРѕРїРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ РІ Р±СѓС„РµСЂ РѕР±РјРµРЅР°
 
-SX_LIB_API long Core_0GetVersion();	//возвращает версию ядра
-SX_LIB_API void Core_0Create(const char* name, bool is_unic = true); //создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
-SX_LIB_API void Core_Dbg_Set(report_func rf); //установка своего обработчика вывода отладочной информации
-SX_LIB_API int Core_0FileExists(const char* path); //существует ли файл
-SX_LIB_API char** Core_0CommandLineToArgvA(char* CmdLine,int* _argc); //возвращает массив строк с аргументами в строке CmdLine, в _argc записывает количество считанных элементов, то есть количество ключей созданного массива
-SX_LIB_API int Core_0ClipBoardCopy(const char *str); //копирует строку в буфер обмена
+SX_LIB_API void Core_AKill(); //!< СѓРЅРёС‡С‚РѕР¶РёС‚СЊ СЏРґСЂРѕ
+SX_LIB_API void Core_AGetName(char* name); ///< РїРѕР»СѓС‡РёС‚СЊ РёРјСЏ СЏРґСЂР°
+//!@}
 
-SX_LIB_API void Core_AKill(); //уничтожить ядро
-SX_LIB_API void Core_AGetName(char* name); //получить имя ядра
+/*! @name РњРµРЅРµРґР¶РµСЂ Р·Р°РґР°С‡ 
+ СЃРѕР·РґР°РµС‚ РїРѕС‚РѕРєРё РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ СЏРґРµСЂ
+*/
+//! @{
 
-//менеджер задач
-//{
-//создает потоки по количеству ядер
-SX_LIB_API void Core_MTaskAdd(	//добавить задачу
-								THREAD_UPDATE_FUNCTION func, //функция обработки
-								DWORD flag = CoreTF_SINGLETHREADED_REPEATING); //флаг из CoreTaskFlag
-SX_LIB_API void Core_MTaskStart();	//стартовать обрабатывать все задачи
-SX_LIB_API void Core_MTaskStop();	//остановить все задачи
-//}
+//! РґРѕР±Р°РІРёС‚СЊ Р·Р°РґР°С‡Сѓ
+SX_LIB_API void Core_MTaskAdd(	
+								THREAD_UPDATE_FUNCTION func, //!< С„СѓРЅРєС†РёСЏ РѕР±СЂР°Р±РѕС‚РєРё
+								DWORD flag = CoreTF_SINGLETHREADED_REPEATING //!< С„Р»Р°Рі РёР· #CoreTaskFlag 
+								); 
+SX_LIB_API void Core_MTaskStart();	//!< СЃС‚Р°СЂС‚РѕРІР°С‚СЊ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РІСЃРµ Р·Р°РґР°С‡Рё
+SX_LIB_API void Core_MTaskStop();	//!< РѕСЃС‚Р°РЅРѕРІРёС‚СЊ РІСЃРµ Р·Р°РґР°С‡Рё
+//! @}
 
-//РЕГИСТРЫ
-//{
+/*! @name Р РµРіРёСЃС‚СЂС‹
+СЃРѕР·РґР°РµС‚ РїРѕС‚РѕРєРё РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ СЏРґРµСЂ
+*/
+//! @{
 
-#define CORE_REGISTRY_SIZE 64	//размер массива регистров
+#define CORE_REGISTRY_SIZE 64	/*!< СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР° СЂРµРіРёСЃС‚СЂРѕРІ */
 
-#define G_RI_MATRIX_WORLD 0
-#define G_RI_MATRIX_VIEW 1
-#define G_RI_MATRIX_PROJECTION 2
-#define G_RI_MATRIX_VIEWPROJ 3
-#define G_RI_MATRIX_TRANSP_VIEWPROJ 4
+SX_LIB_API void Core_RBoolSet(int id, bool val);	//!< СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂ bool С‚РёРїР°
+SX_LIB_API bool Core_RBoolGet(int id);				//!< РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РёР· СЂРµРіРёСЃС‚СЂР° bool С‚РёРїР°
 
-//установка/получения значения из регистра long типа
-SX_LIB_API void Core_RIntSet(int id, int32_t val);
-SX_LIB_API int32_t Core_RIntGet(int id);
+SX_LIB_API void Core_RIntSet(int id, int32_t val);	//!< СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂ int32_t С‚РёРїР°
+SX_LIB_API int32_t Core_RIntGet(int id);			//!< РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РёР· СЂРµРіРёСЃС‚СЂР° int32_t С‚РёРїР°
 
-//установка/получения значения из регистра float типа
-SX_LIB_API void Core_RFloatSet(int id, float32_t val);
-SX_LIB_API float32_t Core_RFloatGet(int id);
+SX_LIB_API void Core_RFloatSet(int id, float32_t val);	//!< СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂ float32_t С‚РёРїР°
+SX_LIB_API float32_t Core_RFloatGet(int id);			//!< РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РёР· СЂРµРіРёСЃС‚СЂР° float32_t С‚РёРїР°
 
-//установка/получения значения из регистра матриц
-SX_LIB_API void Core_RMatrixSet(int id, float4x4* val);
-SX_LIB_API void Core_RMatrixGet(int id, float4x4* val);
-//}
+SX_LIB_API void Core_RMatrixSet(int id, float4x4* val);	//!< СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂ float4x4 С‚РёРїР°
+SX_LIB_API void Core_RMatrixGet(int id, float4x4* val);	//!< РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РёР· СЂРµРіРёСЃС‚СЂР° float4x4 С‚РёРїР°
 
+SX_LIB_API void Core_RFloat3Set(int id, float3* val);	//!< СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёСЏ РІ СЂРµРіРёСЃС‚СЂ float3 С‚РёРїР°
+SX_LIB_API void Core_RFloat3Get(int id, float3* val);	//!< РїРѕР»СѓС‡РµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ РёР· СЂРµРіРёСЃС‚СЂР° float3 С‚РёРїР°
 
+//! @}
 
-///////
-//интерфейс для записи/чтения файлов
+/*! @name Р РµР¶РёРјС‹ РѕС‚РєСЂС‹С‚РёСЏ С„Р°Р№Р»РѕРІ */
+//! @{
+#define CORE_FILE_BIN	0	/*!< РґРІРѕРёС‡РЅС‹Р№ */
+#define CORE_FILE_TEXT	1	/*!< С‚РµРєСЃС‚РѕРІС‹Р№ */
+//! @}
 
-//режим открытия
-#define SXFILE_BIN 0	//двоичный
-#define SXFILE_TEXT 1	//текстовый
-//аргумент type - режим отрытия файла
+#define CORE_FILE_EOF	EOF	/*!< РєРѕРЅРµС† С„Р°Р№Р»Р° */
+
+/*! РРЅС‚РµСЂС„РµР№СЃ РґР»СЏ Р·Р°РїРёСЃРё/С‡С‚РµРЅРёСЏ С„Р°Р№Р»РѕРІ
+ \note Р°СЂРіСѓРјРµРЅС‚ type - СЂРµР¶РёРј РѕС‚СЂС‹С‚РёСЏ С„Р°Р№Р»Р°
+*/
 struct ISXFile : public IBaseObject
 {
 	virtual ~ISXFile(){};
-	virtual int Open(const char* path, int type = SXFILE_TEXT) = 0;	//открыть файл
-	virtual int Create(const char* path, int type = SXFILE_TEXT) = 0;//создать файл
-	virtual int Add(const char* path, int type = SXFILE_TEXT) = 0;	//добавить в конец файла
-	virtual size_t ReadB(void* dest, size_t size)=0;	//считать в dest количетсво байт size
-	virtual size_t WriteB(void* src, size_t size)=0;	//записать src в количетве size байт
-	virtual size_t ReadT(const char* format, ...) = 0;	//чтение из файла, ... - только указатели
-	virtual size_t WriteT(const char* format, ...) = 0;	//запись в файл
-	virtual size_t GetSize()=0;	//получить размер файла в байтах
-	virtual char ReadChar()=0;	//считать символ
-	virtual size_t GetPos() = 0;//размер файла
-	virtual void SetPos(size_t pos) = 0; //установить позицию
-	virtual void Close()=0;		//закрыть файл
-	virtual BOOL IsEOF()=0;		//текущая позиция является концом файла?
+	
+	virtual int Open(const char* path, int type = CORE_FILE_TEXT) = 0;	//!<  РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»
+	virtual int Create(const char* path, int type = CORE_FILE_TEXT) = 0;//!< СЃРѕР·РґР°С‚СЊ С„Р°Р№Р»
+	virtual int Add(const char* path, int type = CORE_FILE_TEXT) = 0;	//!< РґРѕР±Р°РІРёС‚СЊ РІ РєРѕРЅРµС† С„Р°Р№Р»Р°
+	virtual size_t ReadB(void* dest, size_t size)=0;	//!< СЃС‡РёС‚Р°С‚СЊ РІ dest РєРѕР»РёС‡РµС‚СЃРІРѕ Р±Р°Р№С‚ size
+	virtual size_t WriteB(void* src, size_t size)=0;	//!< Р·Р°РїРёСЃР°С‚СЊ src РІ РєРѕР»РёС‡РµС‚РІРµ size Р±Р°Р№С‚
+	virtual size_t ReadT(const char* format, ...) = 0;	//!< С‡С‚РµРЅРёРµ РёР· С„Р°Р№Р»Р°, РІ Р°СЂРіСѓРјРµРЅС‚С‹ С‚РѕР»СЊРєРѕ СѓРєР°Р·Р°С‚РµР»Рё
+	virtual size_t WriteT(const char* format, ...) = 0;	//!< Р·Р°РїРёСЃСЊ РІ С„Р°Р№Р»
+	virtual size_t GetSize()=0;	//!< РїРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ С„Р°Р№Р»Р° РІ Р±Р°Р№С‚Р°С…
+	virtual int ReadChar()=0;	//!< СЃС‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР»
+	virtual size_t GetPos() = 0;//!< С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РєСѓСЂСЃРѕСЂР° РІ С„Р°Р№Р»Рµ
+	virtual void SetPos(size_t pos) = 0; //!< СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ
+	virtual void Close()=0;		//!< Р·Р°РєСЂС‹С‚СЊ С„Р°Р№Р»
+	virtual bool IsEOF()=0;		//!< С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ СЏРІР»СЏРµС‚СЃСЏ РєРѕРЅС†РѕРј С„Р°Р№Р»Р°?
 };
 
-SX_LIB_API ISXFile* Core_CrFile(); //создать экземпляр класса ISXFile
-SX_LIB_API ISXFile* Core_OpFile(const char* path, int type); //открыть файл
-
+/*! @name РЎРѕР·РґР°РЅРёРµ СЌРєР·РµРјРїР»СЏСЂРѕРІ С„Р°Р№Р»РѕРІ */
+//!@{
+SX_LIB_API ISXFile* Core_CrFile(); //!< СЃРѕР·РґР°С‚СЊ СЌРєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° ISXFile
+SX_LIB_API ISXFile* Core_OpFile(const char* path, int type); //!< РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»
+//!@}
 ////////
-//интерфейс для работы с файлами конфигурации (ini)
-//аргумент acceptIncludes - использовать ли включения других файлов конфигов
-//!!!секции и ключи хранятся в виде дерева, и нет гарантии что может быть доступ по порядковому номеру
-//!!! можно получить общее количество секций/ключей, дальше плясать
+
+/*! РёРЅС‚РµСЂС„РµР№СЃ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ С„Р°Р№Р»Р°РјРё РєРѕРЅС„РёРіСѓСЂР°С†РёРё (ini) 
+ \warning СЃРµРєС†РёРё Рё РєР»СЋС‡Рё С…СЂР°РЅСЏС‚СЃСЏ РІ РІРёРґРµ РґРµСЂРµРІР°, Рё РЅРµС‚ РіР°СЂР°РЅС‚РёРё С‡С‚Рѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ РґРѕСЃС‚СѓРї РїРѕ РїРѕСЂСЏРґРєРѕРІРѕРјСѓ РЅРѕРјРµСЂСѓ, 
+РјРѕР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№/РєР»СЋС‡РµР№, РґР°Р»СЊС€Рµ РїР»СЏСЃР°С‚СЊ */
 struct ISXLConfig : public IBaseObject
 {
 	virtual ~ISXLConfig(){};
-	virtual int Open(const char* path)=0;	//открыть файл
-	virtual const char* GetKey(const char* section, const char* key) = 0; //получить значения ключа key который в секции section
-	virtual const char* GetKeyName(const char* section, int key) = 0; //получить имя ключа по номеру
-	virtual const char* GetSectionName(int num) = 0; //получить имя секци по номеру
-	virtual void Set(const char* section, const char* key, const char* val)=0; //установить значение val ключа key котор в секции section
-	virtual int Save()=0;	//сохранить файл
-	virtual int GetSectionCount(bool acceptIncludes = false)=0;	//количество секций в файле
-	virtual int GetKeyCount(bool acceptIncludes = false)=0; //общее количество ключей
-	virtual int GetKeyCount(const char* section, bool acceptIncludes = false) = 0; //общее количество ключей в секции
-	virtual bool SectionExists(const char* section, bool acceptIncludes = false)=0; //существует ли секция section
-	virtual bool KeyExists(const char* section, const char* key, bool acceptIncludes = false)=0; //существует ли ключ key в секции section
+	virtual int Open(const char* path)=0;	//!< РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»
+	virtual const char* GetKey(const char* section, const char* key) = 0;	//!< РїРѕР»СѓС‡РёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РєР»СЋС‡Р° key РєРѕС‚РѕСЂС‹Р№ РІ СЃРµРєС†РёРё section
+	virtual const char* GetKeyName(const char* section, int key) = 0;		//!< РїРѕР»СѓС‡РёС‚СЊ РёРјСЏ РєР»СЋС‡Р° РїРѕ РЅРѕРјРµСЂСѓ
+	virtual const char* GetSectionName(int num) = 0;						//!< РїРѕР»СѓС‡РёС‚СЊ РёРјСЏ СЃРµРєС†РёРё РїРѕ РЅРѕРјРµСЂСѓ
+	virtual void Set(const char* section, const char* key, const char* val)=0;	//!< СѓСЃС‚Р°РЅРѕРІРёС‚СЊ Р·РЅР°С‡РµРЅРёРµ val РєР»СЋС‡Р° key РєРѕС‚РѕСЂ РІ СЃРµРєС†РёРё section
+	virtual int Save()=0;				//!< СЃРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р»
+	virtual int GetSectionCount()=0;	//!< РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРєС†РёР№ РІ С„Р°Р№Р»Рµ
+	virtual int GetKeyCount()=0;		//!< РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»СЋС‡РµР№
+	virtual int GetKeyCount(const char* section) = 0;				//!< РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»СЋС‡РµР№ РІ СЃРµРєС†РёРё
+	virtual bool SectionExists(const char* section) = 0;			//!< СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СЃРµРєС†РёСЏ section
+	virtual bool KeyExists(const char* section, const char* key)=0;	//!< СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РєР»СЋС‡ key РІ СЃРµРєС†РёРё section
 };
 
-SX_LIB_API ISXLConfig* Core_CrLConfig(); //создать файл экземпляр класса ISXLConfig
-SX_LIB_API ISXLConfig* Core_OpLConfig(const char* path); //открыть файл конфигов
+/*!@name РЎРѕР·РґР°РЅРёРµ СЌРєР·РµРјРїР»СЏСЂРѕРІ РєРѕРЅС„РёРіСѓСЂР°С†РёРёРЅС‹С… С„Р°Р№Р»РѕРІ */
+//!@{
+SX_LIB_API ISXLConfig* Core_CrLConfig(); //!< СЃРѕР·РґР°С‚СЊ С„Р°Р№Р» СЌРєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° ISXLConfig
+SX_LIB_API ISXLConfig* Core_OpLConfig(const char* path); //!< РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РєРѕРЅС„РёРіРѕРІ
+//!@}
 
 #endif
+
+/*! @} */

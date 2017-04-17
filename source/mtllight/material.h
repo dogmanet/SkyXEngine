@@ -30,6 +30,7 @@ public:
 	void Update(DWORD timeDelta);
 	void SetMainTexture(ID slot, ID id);
 	void Render(ID id, float4x4* world);
+	void RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl, bool is_cp = false, float3* plane_normal = 0, float3* plane_point = 0);
 	void RenderLight(float4_t* color, float4x4* world);
 	inline long GetCount();
 
@@ -64,9 +65,9 @@ public:
 	void MtlRefSetIDArr(ID id, ID inid, int cube, ID idarr);
 	ID MtlRefGetIDArr(ID id, ID inid, int cube);
 
-	void MtlRefSetPlane(ID id, D3DXPLANE* plane);
-	void MtlRefSetCenter(ID id, float3_t* center);
-	void MtlRefPreRenderPlane(ID id, float4x4* world);
+	//void MtlRefSetPlane(ID id, D3DXPLANE* plane);
+	//void MtlRefSetCenter(ID id, float3_t* center);
+	void MtlRefPreRenderPlane(ID id, D3DXPLANE* plane);
 	ISXFrustum* MtlRefGetfrustum(ID id, int cube);
 	void MtlRefPostRenderPlane(ID id);
 	IDirect3DTexture9* MtlRefPlaneGetTex(ID id);
@@ -74,7 +75,7 @@ public:
 	void MtlRefSetMinMax(ID id, float3_t* min, float3_t* max);
 	bool MtlRefIsAllowedRender(ID id);
 
-	void MtlRefCubeBeginRender(ID id);
+	void MtlRefCubeBeginRender(ID id, float3_t* center);
 	void MtlRefCubePreRender(ID id, int cube, float4x4* world);
 	void MtlRefCubePostRender(ID id, int cube);
 	void MtlRefCubeEndRender(ID id, float3_t* viewpos);
@@ -292,6 +293,7 @@ protected:
 	ID MtrlDefStatic;
 	ID MtrlDefSkin;
 	ID BeginNonDef;
+
 	float4x4 view, proj, worldtrans, viewtrans, projtrans;
 };
 

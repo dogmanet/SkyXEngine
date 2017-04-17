@@ -4,7 +4,7 @@
 #include <memory>
 #define _NTASKMANAGER
 
-// Базовый класс задачи
+// Р…Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ Р·Р°РґР°С‡Рё
 class SXTask
 {
 public:
@@ -28,7 +28,7 @@ public:
 	void run() {
 		if (UpdateFunc)
 			(UpdateFunc)();
-	}; //< Функция выполнения задачи, она и вызывается
+	}; //< вЂСѓРЅРєС†РёВ¤ РІС‹РїРѕР»РЅРµРЅРёВ¤ Р·Р°РґР°С‡Рё, РѕРЅР° Рё РІС‹Р·С‹РІР°РµС‚СЃВ¤
 
 	void stopRepeating()
 	{

@@ -16,11 +16,11 @@ public:
 	void Init(MtlTypeReflect howref);
 	inline MtlTypeReflect GetTypeReflect(){ return TypeRef; };
 
-	void PreRenderRefPlane(float4x4* world);
+	void PreRenderRefPlane(D3DXPLANE* plane);
 	void PostRenderRefPlane();
 	inline IDirect3DTexture9* GetRefPlaneTex();
 
-	void BeginRenderRefCube();
+	void BeginRenderRefCube(float3_t* center);
 	void PreRenderRefCube(int cube, float4x4* world);
 	void PostRenderRefCube(int cube);
 	void EndRenderRefCube(float3_t* viewpos);
@@ -47,7 +47,7 @@ public:
 
 	//protected:
 	MtlTypeReflect TypeRef;
-	D3DXPLANE Plane, Plane2;
+	D3DXPLANE Plane;
 	float ZNear;
 	float4x4 OldMatProj,OldMatView,OldMatViewProj;
 	IDirect3DSurface9* BackBuffer;
