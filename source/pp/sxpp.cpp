@@ -210,35 +210,35 @@ void SPP_0Kill()
 
 void SPP_RTSetDepth0(ID rt)
 {
-	PP_PRECOND();
+	PP_PRECOND(_VOID);
 
 	PPSet::IDsRenderTargets::Depth0 = rt;
 }
 
 void SPP_RTSetDepth1(ID rt)
 {
-	PP_PRECOND();
+	PP_PRECOND(_VOID);
 
 	PPSet::IDsRenderTargets::Depth1 = rt;
 }
 
 void SPP_RTSetNormal(ID rt)
 {
-	PP_PRECOND();
+	PP_PRECOND(_VOID);
 
 	PPSet::IDsRenderTargets::Normal = rt;
 }
 
 void SPP_RTSetInput(ID rt)
 {
-	PP_PRECOND();
+	PP_PRECOND(_VOID);
 
 	PPSet::IDsRenderTargets::Input = rt;
 }
 
 void SPP_RTSetOutput(ID rt)
 {
-	PP_PRECOND();
+	PP_PRECOND(_VOID);
 
 	PPSet::IDsRenderTargets::Output = rt;
 }
@@ -261,16 +261,16 @@ ID SPP_RTGetCurrSend()
 
 void SPP_RTIncr()
 {
-	PP_PRECOND();
-	PP_PRECOND_SECOND();
+	PP_PRECOND(_VOID);
+	PP_PRECOND_SECOND(_VOID);
 
 	PPSet::IDsRenderTargets::IncrRT();
 }
 
 void SPP_RTNull()
 {
-	PP_PRECOND();
-	PP_PRECOND_SECOND();
+	PP_PRECOND(_VOID);
+	PP_PRECOND_SECOND(_VOID);
 
 	PPSet::IDsRenderTargets::NullRT();
 }
@@ -279,7 +279,7 @@ void SPP_RTNull()
 
 void SPP_Update(float3_t* viewpos, float3_t* viewdir, float4x4* view, float4x4* proj, float2_t* winsize, float2_t* nearfar, float projfov)
 {
-	PP_PRECOND();
+	PP_PRECOND(_VOID);
 	PPSet::ConstCurrCamPos = *viewpos;
 	PPSet::ConstCurrCamDir = *viewdir;
 	PPSet::MCamViewPrev = PPSet::MCamView;
@@ -296,8 +296,8 @@ void SPP_Update(float3_t* viewpos, float3_t* viewdir, float4x4* view, float4x4* 
 
 void SPP_RenderFog(float3_t* color, float4_t* param)
 {
-	PP_PRECOND();
-	PP_PRECOND_SECOND();
+	PP_PRECOND(_VOID);
+	PP_PRECOND_SECOND(_VOID);
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
 	PPSet::DXDevice->GetRenderTarget(0, &BackBuf);
@@ -334,8 +334,8 @@ void SPP_RenderFog(float3_t* color, float4_t* param)
 
 void SPP_RenderSSAO(float4_t* param)
 {
-	PP_PRECOND();
-	PP_PRECOND_SECOND();
+	PP_PRECOND(_VOID);
+	PP_PRECOND_SECOND(_VOID);
 
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(PPSet::IDsRenderTargets::IntermediateWinSize)/*SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT())*/->GetSurfaceLevel(0, &RenderSurf);

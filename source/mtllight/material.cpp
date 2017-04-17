@@ -16,6 +16,9 @@ Materials::Materials()
 
 	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_light.ps", "mtrlgeom_light", ShaderCheckDouble::scd_path);
 
+	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlskin_base.vs", "mtrlskin_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlskin_base.ps", "mtrlskin_base", ShaderCheckDouble::scd_path);
+
 	IsIncrCountSurf = false;
 	CurrIdSurf = 0;
 

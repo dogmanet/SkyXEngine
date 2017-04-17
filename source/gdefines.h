@@ -87,6 +87,9 @@ struct IBaseObject
 #define CONFIG_SECTION_MAX_LEN	64	/*!< максимальная длина секции конфигурационного файла */
 ///@}
 
+//for warning C4003: not enough actual parameters for macro
+#define _VOID
+
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
 
@@ -120,7 +123,10 @@ struct IBaseObject
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int level, const char* format, ...);
 
-#include <cstdio>
+#include <cstdio> 
+#if defined(_WINDOWS)
+#	include <Windows.h>
+#endif
 
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{

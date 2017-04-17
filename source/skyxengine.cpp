@@ -68,6 +68,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SPP_Dbg_Set(printflog);
 	SPP_ChangeTexSun("fx_sun.dds");
 
+	SXAnim_0Init();
+
 	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
 	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
 	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
@@ -88,6 +90,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	LoadLevel("stalker_atp");
 
+	IAnimPlayer * pl;
+	//pl = SXAnim_CreatePlayer("F:/engine/build/gamesource/models/ak74.dse");
+	//pl->Play("idle");
+	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
+	pl->SetPos(float3(0, -1.38f, 0));
+	pl->Play("reload");
 	
 	/*SGeom_ModelsAddModel("stalker_atp.dse", 0, "stalker_atp.dse");
 
@@ -160,6 +168,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
+	SXAnim_0Kill();
 	mem_release(GData::ObjCamera);
 	SGeom_0CreateKill();
 	SML_0Kill();

@@ -21,10 +21,11 @@ if (!(id_arr < ArrComFor.size()))\
 	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
 }
 
-#define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
+#define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, retval) \
 if (!(id_model < AllModels.size() && AllModels[id_model]))\
 {\
 	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
+	return retval;\
 }
 
 #define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \

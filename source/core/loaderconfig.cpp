@@ -395,7 +395,7 @@ const char* SXLoaderConfig::GetKeyName(const char* section, int key)
 			if (countiter == key)
 				return iter.first->c_str();
 		}
-		//return 0;
+		return 0;
 	}
 	return 0;
 }
@@ -658,23 +658,23 @@ return 0;
 int SXLoaderConfig::GetSectionCount()
 {
 	int c = m_mSections.Size();
-	int size = m_vIncludes.size();
+		int size = m_vIncludes.size();
 		for(int i = 0; i < size; ++i)
 		{
 			//m_vIncludes
 			c += m_vIncludes[i].pParser->GetSectionCount();
-		}
+	}
 	return(c);
 }
 
 int SXLoaderConfig::GetKeyCount()
 {
 	int c = m_mFinalValues.Size();
-	int size = m_vIncludes.size();
+		int size = m_vIncludes.size();
 		for(int i = 0; i < size; ++i)
 		{
 			c += m_vIncludes[i].pParser->GetKeyCount();
-		}
+	}
 	return(c);
 }
 
@@ -684,16 +684,16 @@ int SXLoaderConfig::GetKeyCount(const char* section)
 
 	if (m_mSections.KeyExists(sections))
 	{
-		return(m_mSections[sections].mValues.Size());
-	}
-	return -1;
-}
+			return(m_mSections[sections].mValues.Size());
+		}
+				return -1;
+		}
 
 bool SXLoaderConfig::SectionExists(const char * section)
 {
 	String sections(section);
 	if(m_mSections.KeyExists(sections))
-		return(true);
+			return(true);
 	return(false);
 //	return(m_mSections.count(section) != 0 && m_mSections[section].native);
 }
@@ -703,7 +703,7 @@ bool SXLoaderConfig::KeyExists(const char * section, const char * key)
 	String sections(section);
 	String keys(key);
 	if(m_mSections.KeyExists(sections))
-		return(m_mSections[sections].mValues.KeyExists(keys));
+			return(m_mSections[sections].mValues.KeyExists(keys));
 	return(false);
 }
 

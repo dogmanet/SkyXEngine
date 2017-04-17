@@ -443,7 +443,7 @@ struct ISXDataStaticModel : public IBaseObject
 	
 	IDirect3DVertexBuffer9* VertexBuffer;	//!< вершиный буфер
 	IDirect3DIndexBuffer9* IndexBuffer;		//!< индексный буфер
-	
+
 	UINT SubsetCount;	//!< количество подгрупп
 	char** ArrTextures;	//!< массив имен текстур без расширения
 	UINT* StartIndex;	//!< массив стартовых позиций индексов для каждой подгруппы

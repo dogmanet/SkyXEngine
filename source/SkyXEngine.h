@@ -54,3 +54,10 @@
 #pragma comment(lib, "sxpp.lib")
 #endif
 #include <pp\\sxpp.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxanim_d.lib")
+#else
+#pragma comment(lib, "sxanim.lib")
+#endif
+#include <sxanim/sxanim.h>

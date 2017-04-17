@@ -6,28 +6,28 @@
 void CameraUpdate::UpdateInputKeyBoard(DWORD timeDelta)
 {
 	//обработка ходьбы
-	if (SSInput_GetKeyState(SIK_W))
+	if(SSInput_GetKeyState(SIK_W))
 		GData::ObjCamera->PosFrontBack(
 		GData::CamWalkParamEditor.x *
 		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) *
 		float(timeDelta) * 0.001f
 		);
 
-	if (SSInput_GetKeyState(SIK_S))
+	if(SSInput_GetKeyState(SIK_S))
 		GData::ObjCamera->PosFrontBack(
 		-GData::CamWalkParamEditor.x *
 		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.w *
 		float(timeDelta) * 0.001f
 		);
 
-	if (SSInput_GetKeyState(SIK_A))
+	if(SSInput_GetKeyState(SIK_A))
 		GData::ObjCamera->PosLeftRight(
 		-GData::CamWalkParamEditor.x *
 		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.z *
 		float(timeDelta) * 0.001f
 		);
 
-	if (SSInput_GetKeyState(SIK_D))
+	if(SSInput_GetKeyState(SIK_D))
 		GData::ObjCamera->PosLeftRight(
 		GData::CamWalkParamEditor.x *
 		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.z *
@@ -45,13 +45,13 @@ void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 	POINT centr;
 	centr.x = cx; centr.y = cy;
 
-	if (cx != UINT(p.x))
+	if(cx != UINT(p.x))
 	{
 		GData::ObjCamera->RotRightLeft(float(timeDelta) * 0.001f * float(int(p.x - cx)));
 		//SetCursorPos(centr.x,cy);
 	}
 
-	if (cy != UINT(p.y))
+	if(cy != UINT(p.y))
 	{
 		GData::ObjCamera->RotUpDown(float(timeDelta) * 0.001f * float(int(p.y - cy)));
 		//SetCursorPos(cx,centr.y);
@@ -68,7 +68,7 @@ void CameraUpdate::UpdateInputMouseUpDown(DWORD timeDelta)
 	POINT centr;
 	centr.x = cx; centr.y = cy;
 
-	if (cy != UINT(p.y))
+	if(cy != UINT(p.y))
 	{
 		GData::ObjCamera->PosUpDown(5 * float(timeDelta) * 0.001f * float(-int(p.y - cy)));
 		//SetCursorPos(cx,centr.y);
@@ -86,7 +86,7 @@ void CameraUpdate::CentererCursor()
 void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 {
 	//обработка перемещени€/вращени€
-	if (SSInput_GetKeyState(SIK_LCONTROL))
+	if(SSInput_GetKeyState(SIK_LCONTROL))
 	{
 		static bool IsFirstLBM = false;
 		static bool IsFirstRBM = false;
@@ -97,10 +97,10 @@ void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 		UpdateInputKeyBoard(timeDelta);
 
 		//еси нажата лева€ кнопка мыши то можно вращать
-		if (SSInput_GetButtonState(SIM_LBUTTON))
+		if(SSInput_GetButtonState(SIM_LBUTTON))
 		{
 			//если не первый раз нажата Ћ ћ то совершаем действие
-			if (IsFirstLBM)
+			if(IsFirstLBM)
 				UpdateInputMouseRotate(timeDelta);
 			//иначе просто говорим что впервые и устанавливаем курсор в центр
 			else
@@ -108,9 +108,9 @@ void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 			CentererCursor();
 		}
 		//если нажата права€ кнопка мыши то можно поднимать и опускать камеру
-		else if (SSInput_GetButtonState(SIM_RBUTTON))
+		else if(SSInput_GetButtonState(SIM_RBUTTON))
 		{
-			if (IsFirstRBM)
+			if(IsFirstRBM)
 				UpdateInputMouseUpDown(timeDelta);
 			else
 				IsFirstRBM = true;

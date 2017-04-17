@@ -438,6 +438,8 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	if (SGeom_ModelsGetCount() > 0)
 		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
 
+	SXAnim_Render();
+
 	if (SGeom_GreenGetCount() > 0)
 		SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggtr_all);
 
@@ -1140,7 +1142,7 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-
+				
 				Core_RBoolSet(G_RI_BOOL_CLIPPLANE0, true);
 
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &float3(plane.a, plane.b, plane.c));
@@ -1151,7 +1153,7 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 				
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
 					SGeom_GreenRender(timeDelta, &float3(center), GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
-					
+
 				SGCore_ShaderUnBind();
 
 
@@ -1331,6 +1333,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	//@@@
 	CameraUpdate::UpdateEditorial(timeDelta);
 
+	SXAnim_Update();
+	SXAnim_Sync();
+
 	GData::ObjCamera->GetPosition(&GData::ConstCurrCamPos);
 	GData::ObjCamera->GetLook(&GData::ConstCurrCamDir);
 
@@ -1429,19 +1434,24 @@ void SXRenderFunc::RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min
 
 void SXRenderFunc::RFuncMtlSet(ID id, float4x4* world)
 {
-	if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_SHADOW)
+	switch(Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
+	case RENDER_STATE_SHADOW:
 		SML_MtlSetMainTexture(0, id);
 		SML_LigthsShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SML_MtlGetTypeModel(id), world);
-	}
-	else if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_FREE)
-	{
+		break;
+
+	case RENDER_STATE_FREE:
 		SML_MtlSetMainTexture(0, id);
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
-		SML_MtlRenderStd(SML_MtlGetTypeModel(id), world, 0, id);
-	}
-	else if (Core_RIntGet(G_RI_INT_RENDERSTATE) == RENDER_STATE_MATERIAL)
+		//SGCore_ShaderUnBind();
+		SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world, 0, id);
+		break;
+
+	case RENDER_STATE_MATERIAL:
 		SML_MtlRender(id, world);
+		break;
+	}
 }
 
 ID SXRenderFunc::RFuncMtlLoad(const char* name, int mtl_type)
