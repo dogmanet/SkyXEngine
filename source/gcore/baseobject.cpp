@@ -271,7 +271,7 @@ void SXBound::SetSphere(float3* center, float* radius)
 	Max = Center + float3(Radius, Radius, Radius);
 };
 
-void SXBound::GetSphere(float3* center, float* radius)
+void SXBound::GetSphere(float3* center, float* radius) const
 {
 	*center = Center;
 	*radius = Radius;

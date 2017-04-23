@@ -387,7 +387,7 @@ public:
 	virtual void GetMinMax(float3* min, float3* max) = 0;
 
 	virtual void SetSphere(float3* center, float* radius) = 0;
-	virtual void GetSphere(float3* center, float* radius) = 0;
+	virtual void GetSphere(float3* center, float* radius) const = 0;
 
 	virtual bool IsPointInSphere(float3* point) = 0;
 	virtual bool IsPointInBox(float3* point) = 0;
@@ -485,7 +485,7 @@ public:
 	virtual bool PolyInFrustum(const float3* p1, const float3* p2, const float3* p3) = 0;
 	virtual bool PolyInFrustumAbs(const float3* p1, const float3* p2, const float3* p3) = 0;
 
-	virtual bool SphereInFrustum(const float3 *point, float radius) = 0;
+	virtual bool SphereInFrustum(const float3 *point, float radius) const = 0;
 
 	virtual bool SphereInFrustumAbs(const float3 *point, float radius) = 0;
 	virtual bool BoxInFrustum(float3* min, float3* max) = 0;

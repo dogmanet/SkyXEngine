@@ -87,11 +87,15 @@ void SXRenderFunc::ComVisibleForLight()
 					if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) <= -1)
 						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
 
+					if(SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k) <= -1)
+						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
+
 					if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos, k))
 					{
 						SML_LigthsUpdateFrustumsG(tmpid, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 						SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
 						SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+						SXAnim_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k));
 					}
 				}
 			}
@@ -105,8 +109,12 @@ void SXRenderFunc::ComVisibleForLight()
 					if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0) <= -1)
 						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
 
+					if(SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, 0) <= -1)
+						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
+
 					SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0));
 					SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
+					SXAnim_ModelsComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, 0));
 				}
 			}
 			else if (SML_LigthsGetType(tmpid) == LightsTypeLight::ltl_point)
@@ -121,10 +129,14 @@ void SXRenderFunc::ComVisibleForLight()
 						if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) <= -1)
 							SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
 
+						if(SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k) <= -1)
+							SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
+
 						if (SML_LigthsGetEnableCubeEdge(tmpid, k))
 						{
 							SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
 							SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+							SXAnim_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k));
 						}
 					}
 				}
@@ -144,6 +156,9 @@ void SXRenderFunc::ComVisibleForLight()
 
 				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, k)) >= 0)
 					SGeom_GreenDelArrForCom(tmpidarr);
+
+				if((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_ANIM, k)) >= 0)
+					SXAnim_ModelsDelArrForCom(tmpidarr);
 			}
 		}
 		else if (SML_LigthsDelGetType(i) == LightsTypeLight::ltl_direction)
@@ -153,6 +168,10 @@ void SXRenderFunc::ComVisibleForLight()
 
 			if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, 0)) >= 0)
 				SGeom_GreenDelArrForCom(tmpidarr);
+
+			if((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_ANIM, 0)) >= 0)
+				SXAnim_ModelsDelArrForCom(tmpidarr);
+
 		}
 		else if (SML_LigthsDelGetType(i) == LightsTypeLight::ltl_point)
 		{
@@ -163,6 +182,9 @@ void SXRenderFunc::ComVisibleForLight()
 
 				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, k)) >= 0)
 					SGeom_GreenDelArrForCom(tmpidarr);
+
+				if((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_ANIM, k)) >= 0)
+					SXAnim_ModelsDelArrForCom(tmpidarr);
 			}
 		}
 
@@ -177,6 +199,8 @@ void SXRenderFunc::ComVisibleForCamera()
 
 	if (SGeom_GreenGetCount() > 0)
 		SGeom_GreenComVisible(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+
+	SXAnim_ModelsComVisible(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
 }
 
 void SXRenderFunc::ComVisibleReflection()
@@ -202,8 +226,12 @@ void SXRenderFunc::ComVisibleReflection()
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) < 0)
 					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
 
+				if(SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0) < 0)
+					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
+
 				SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0));
 				SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+				SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0));
 			}
 			else if (typeref == MtlTypeReflect::mtr_cube_dynamic)
 			{
@@ -219,9 +247,13 @@ void SXRenderFunc::ComVisibleReflection()
 
 					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) < 0)
 						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+
+					if(SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k) < 0)
+						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
 					
 					SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
 					SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
+					SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k));
 				}
 			}
 		}
@@ -1358,11 +1390,14 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
 	SXRenderFunc::Delay::GeomSortGroup += timeGetTime() - ttime;
 
-	if (GData::DefaultGeomIDArr < 0)
+	if(GData::DefaultGeomIDArr < 0)
 		GData::DefaultGeomIDArr = SGeom_ModelsAddArrForCom();
 
-	if (GData::DefaultGreenIDArr < 0)
+	if(GData::DefaultGreenIDArr < 0)
 		GData::DefaultGreenIDArr = SGeom_GreenAddArrForCom();
+
+	if(GData::DefaultAnimIDArr < 0)
+		GData::DefaultAnimIDArr = SXAnim_ModelsAddArrForCom();
 
 	//@@@
 	SXRenderFunc::UpdateView();

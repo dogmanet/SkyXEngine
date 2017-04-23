@@ -805,11 +805,7 @@ bool ShaderManager::IsValidate(ShaderType type_shader, ID id)
 		{
 			if(ArrVS[id]->VertexShader)
 				return true;
-			else
-				return false;
 		}
-		else 
-			return false;
 	}
 	else if (type_shader == ShaderType::st_pixel)
 	{
@@ -817,12 +813,9 @@ bool ShaderManager::IsValidate(ShaderType type_shader, ID id)
 		{
 			if (ArrPS[id]->PixelShader)
 				return true;
-			else
-				return false;
 		}
-		else
-			return false;
 	}
+	return false;
 }
 
 inline void ShaderManager::GetPath(ShaderType type_shader, ID id, char* path)

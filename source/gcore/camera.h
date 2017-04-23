@@ -13,7 +13,7 @@ public:
 	bool PolyInFrustum(const float3* p1,const float3* p2,const float3* p3);
 	bool PolyInFrustumAbs(const float3* p1,const float3* p2,const float3* p3);
 	
-	bool SphereInFrustum(const float3 *point, float radius);
+	bool SphereInFrustum(const float3 *point, float radius) const;
 
 	bool SphereInFrustumAbs(const float3 *point, float radius);
 	bool BoxInFrustum(float3* min,float3* max);

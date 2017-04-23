@@ -8,6 +8,7 @@
 #include <common/array.h>
 #include <common/string.h>
 
+
 #ifdef _SERVER
 #	define IDirect3DDevice9 void
 #else
@@ -23,6 +24,7 @@ void Report(int level, const char* format, ...);
 
 class Animation;
 class AnimationManager;
+class ISXBound;
 
 class ModelFile
 {
@@ -33,7 +35,7 @@ public:
 	ModelFile(const char * name, AnimationManager * pMgr);
 	~ModelFile();
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM;
 
 	bool Save(const char * name);
 #ifndef _SERVER
@@ -64,6 +66,8 @@ public:
 	void DelHitbox(uint32_t id);
 
 	void LoadParts();
+
+	const ISXBound * GetBound() const;
 	
 protected:
 
@@ -107,6 +111,8 @@ protected:
 	AnimationManager * m_pMgr;
 
 	bool m_bIsTemp;
+
+	ISXBound * m_pBoundBox;
 
 
 };
@@ -178,6 +184,10 @@ public:
 	ModelPart * GetPart(UINT idx);
 	UINT GetPartCount();
 
+	const ISXBound * GetBound() const;
+
+	void SwapBoneBuffs();
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 
@@ -196,6 +206,7 @@ protected:
 	int m_iCurrentFrame[BLEND_MAX];
 
 	ModelBoneShader * m_pBoneMatrix;
+	ModelBoneShader * m_pBoneMatrixRender;
 
 	UINT m_iFadeTime[BLEND_MAX];
 	UINT m_iFadeCurTime[BLEND_MAX];
@@ -242,6 +253,8 @@ protected:
 	Array<ModelPart*> m_mMdls;
 	MemAlloc<ModelPart, 8> m_aMdls;
 
+	Array<bool> m_vIsVisibleFor;
+
 private:
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink);
 };
@@ -257,13 +270,18 @@ public:
 	UINT Register(Animation * pAnim);
 	void UnRegister(UINT id);
 
-	void Render();
-	void Update();
+	void Render(ID for_id);
+	void Update(int thread = 0);
 	void Sync();
 
 	void SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
 
 	UINT GetMaterial(const char * mat);
+
+	void ComputeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr);
+
+	ID GetNextVisId();
+
 protected:
 	friend class ModelFile;
 	friend class Animation;
@@ -275,6 +293,10 @@ protected:
 	Array<Animation*> m_pAnimatedList;
 
 	IDirect3DDevice9 * m_pd3dDevice;
+
+	ID m_iVisID;
+
+	int m_iThreadNum;
 };
 
 

@@ -88,6 +88,6 @@ int InitD3D(HWND hwnd, bool windowed, int width, int heigth, DWORD create_device
 	ScreenTexture->UnlockIndexBuffer();
 
 	//SkyXEngine::Core::Data::Device->CreateQuery(D3DQUERYTYPE_EVENT , &SkyXEngine::Core::Data::D3DQueryEvent);
-
+	return(0);
 }
 

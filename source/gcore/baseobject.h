@@ -48,7 +48,7 @@ public:
 	inline void GetMinMax(float3* min, float3* max);
 
 	inline void SetSphere(float3* center, float* radius);
-	inline void GetSphere(float3* center, float* radius);
+	inline void GetSphere(float3* center, float* radius) const;
 
 	inline bool IsPointInSphere(float3* point);
 	inline bool IsPointInBox(float3* point);

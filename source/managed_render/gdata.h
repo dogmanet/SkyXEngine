@@ -21,6 +21,7 @@ namespace GData
 
 	ID DefaultGeomIDArr = -1;
 	ID DefaultGreenIDArr = -1;
+	ID DefaultAnimIDArr = -1;
 	
 	float3 ConstCurrCamPos;	//позиция камеры
 	float3 ConstCurrCamDir;	//направление взгляда камеры

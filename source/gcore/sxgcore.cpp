@@ -84,8 +84,8 @@ SkyClouds* ObjSkyClouds = 0;
 
 
 #define SG_PRECOND(retval) if(!DXDevice){reportf(-1, "%s - sxgcore is not init", gen_msg_location); return retval;}
-#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval); if(!ObjSkyBox){reportf(-1, "%s - sky_box is not init", gen_msg_location); return retval;}
-#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval); if(!ObjSkyClouds){reportf(-1, "%s - sky_clouds is not init", gen_msg_location); return retval;}
+#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!ObjSkyBox){reportf(-1, "%s - sky_box is not init", gen_msg_location); return retval;}
+#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!ObjSkyClouds){reportf(-1, "%s - sky_clouds is not init", gen_msg_location); return retval;}
 
 #include <gcore\dxdevice.cpp>
 

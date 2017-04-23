@@ -17,6 +17,7 @@
 //хотя тип на самом деле это порядковое число
 #define RENDER_IDARRCOM_GEOM 0	//геометрия
 #define RENDER_IDARRCOM_GREEN 1	//растительность
+#define RENDER_IDARRCOM_ANIM 2	//растительность
 
 namespace SXRenderFunc
 {

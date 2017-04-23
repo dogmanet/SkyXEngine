@@ -969,7 +969,7 @@ void StaticGeom::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID i
 	float jradius;
 	float3 jcenter;
 
-	for (int i = 0; i < AllModels.size(); ++i)
+	for(int i = 0, l = AllModels.size(); i < l; ++i)
 	{
 		if (id_arr == 0)
 		{
