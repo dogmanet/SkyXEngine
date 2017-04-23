@@ -239,7 +239,6 @@ void SXBound::GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemap
 			res->mindepth = 0.f;
 
 	res->IsVisible = true;
-	res->IsIn = false;
 
 		/*if(campos->x > Min.x && campos->y > Min.y && campos->z > Min.z   &&   campos->x < Max.x && campos->y < Max.y && campos->z < Max.z)
 			res->IsIn = true;*/

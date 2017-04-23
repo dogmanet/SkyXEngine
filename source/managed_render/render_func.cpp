@@ -464,6 +464,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//ставим рт глубины
 
 	SML_MtlNullingCurrCountSurf();
+	SML_MtlSetCurrCountSurf(1);
 //если не объ€влен флаг редактора материалов (дл€ него немного другой рендер)
 #if !defined(SX_MATERIAL_EDITOR)
 	if (SGeom_ModelsGetCount() > 0)
@@ -599,7 +600,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	if (SGeom_ModelsGetCount() > 0)
 	{
 		SML_MtlSetIsIncrCountSurf(true);
-		SML_MtlSetCurrCountSurf(1);
+		SML_MtlSetCurrCountSurf(2);
 		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_alpha_lighting, 0, true, -1, -1);
 	}
 
@@ -1034,6 +1035,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_specular));
 	GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_normal));
 	GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
+	GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT::ds_rt_param));
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::BlendAmbientSpecDiffColor);
@@ -1144,7 +1146,7 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 	Core_RMatrixSet(G_RI_MATRIX_TRANSP_VIEWPROJ, &SMMatrixTranspose(GData::MCamView * GData::MLightProj));
 
 	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
-
+	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
@@ -1168,40 +1170,24 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 
 				SGeom_ModelsMGetGroupPlane(i, k, &plane);
 				SGeom_ModelsMGetGroupCenter(i, k, &center);
-				SML_MtlRefSetPlane(idmat, &plane);
-				SML_MtlRefSetCenter(idmat, &center);
-				SML_MtlRefPreRenderPlane(idmat, &SMMatrixIdentity());
+				SML_MtlRefPreRenderPlane(idmat, &plane);
 				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-				float4x4 mvp, mvp2;
-				Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mvp);
 				
-				mvp2 = mvp;
-				//mvp2._41 = mvp2._42 = mvp2._43 = 0;
-				//mvp2._44 = 1;
-				float3 planepoint = /*center; //*/ SMVector3Transform(center, mvp);
-				//planepoint /= planepoint.w;
-				float3 planenormal = /*float3(plane.a, plane.b, plane.c);//*/ SMVector3Transform(float3(plane.a, plane.b, plane.c), mvp2);
-				planenormal = SMVector3Normalize(planenormal);
-				//planenormal /= planenormal.w;
-				mvp = SMMatrixTranspose(mvp);
-				
+				Core_RBoolSet(G_RI_BOOL_CLIPPLANE0, true);
 
-				SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::CPGeom);
-				SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::CPGeom);
-				SGCore_ShaderSetVRF(ShaderType::st_vertex, GData::IDsShaders::VS::CPGeom, "WorldViewProjection", &mvp);
-				SGCore_ShaderSetVRF(ShaderType::st_pixel, GData::IDsShaders::PS::CPGeom, "PlaneNormal", &planenormal);
-				SGCore_ShaderSetVRF(ShaderType::st_pixel, GData::IDsShaders::PS::CPGeom, "PlanePoint", &planepoint);
+				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &float3(plane.a, plane.b, plane.c));
+				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_POINT, &float3(center));
 
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
 					SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
 				
-				SGCore_ShaderUnBind();
-				/*if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
+				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
 					SGeom_GreenRender(timeDelta, &float3(center), GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
-					*/
-				GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
+
+				SGCore_ShaderUnBind();
+
 
 				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -1227,7 +1213,6 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 				float3_t min, max;
 				SGeom_ModelsMGetGroupMin(i, k, &min);
 				SGeom_ModelsMGetGroupMax(i, k, &max);
-				SML_MtlRefSetCenter(idmat, &center);
 				SML_MtlRefSetMinMax(idmat, &min, &max);
 
 				if (!SML_MtlRefIsAllowedRender(idmat))
@@ -1236,7 +1221,7 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 					continue;
 				}
 
-				SML_MtlRefCubeBeginRender(idmat);
+				SML_MtlRefCubeBeginRender(idmat, &center);
 
 				for (int j = 0; j<6; j++)
 				{
@@ -1428,7 +1413,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	ttime = timeGetTime();
-	PostProcess(timeDelta);
+	//PostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += timeGetTime() - ttime;
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
@@ -1445,6 +1430,13 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
+
+	float4_t tmpnull;
+	for (int i = 0; i < 256; ++i)
+	{
+		GData::DXDevice->SetVertexShaderConstantF(i, (float*)&tmpnull, 1);
+		GData::DXDevice->SetPixelShaderConstantF(i, (float*)&tmpnull, 1);
+	}
 	
 
 	GData::DXDevice->EndScene();
@@ -1486,10 +1478,9 @@ void SXRenderFunc::RFuncMtlSet(ID id, float4x4* world)
 
 	case RENDER_STATE_FREE:
 		SML_MtlSetMainTexture(0, id);
-		//GData::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
 		//SGCore_ShaderUnBind();
-		//SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world);
+		SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world, 0, id);
 		break;
 
 	case RENDER_STATE_MATERIAL:

@@ -52,7 +52,7 @@ public:
 		const char* navmesh);
 
 	void DelGreen(ID id);
-	//!!!удалить как будет завершен этот класс
+	//!!!СѓРґР°Р»РёС‚СЊ РєР°Рє Р±СѓРґРµС‚ Р·Р°РІРµСЂС€РµРЅ СЌС‚РѕС‚ РєР»Р°СЃСЃ
 	void Load(const char* path, const char* lod1, const char* lod2, const char* path_bin_mask, DWORD count_object_in_split);
 
 	void OnLostDevice();
@@ -81,11 +81,11 @@ public:
 
 	void GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green);
 
-	//структура трансформаций растительности
+	//СЃС‚СЂСѓРєС‚СѓСЂР° С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёР№ СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚Рё
 	struct DataVertex
 	{
-		float3_t Position;	//позиция
-		float3_t TexCoord;	//x - общий масштаб,y - поворот по оси y, z -
+		float3_t Position;	//РїРѕР·РёС†РёСЏ
+		float3_t TexCoord;	//x - РѕР±С‰РёР№ РјР°СЃС€С‚Р°Р±,y - РїРѕРІРѕСЂРѕС‚ РїРѕ РѕСЃРё y, z -
 		float2_t SinCosRot;
 	};
 
@@ -99,21 +99,21 @@ public:
 
 		ID SortId[GREEN_COUNT_TYPE_SEGMENTATION];
 
-		Segment* Splits[GREEN_COUNT_TYPE_SEGMENTATION]; //массив из 4 частей данного участка
+		Segment* Splits[GREEN_COUNT_TYPE_SEGMENTATION]; //РјР°СЃСЃРёРІ РёР· 4 С‡Р°СЃС‚РµР№ РґР°РЅРЅРѕРіРѕ СѓС‡Р°СЃС‚РєР°
 
 		DataVertex* Data;
-		DWORD CountAllGreen;	//количество элементов
+		DWORD CountAllGreen;	//РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ
 
-		ISXBound* BoundVolumeSys;	//выравненный ограничивающий объем для равномерного деления
-		ISXBound* BoundVolumeP;		//облегающий ограничивающий объем
+		ISXBound* BoundVolumeSys;	//РІС‹СЂР°РІРЅРµРЅРЅС‹Р№ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РѕР±СЉРµРј РґР»СЏ СЂР°РІРЅРѕРјРµСЂРЅРѕРіРѕ РґРµР»РµРЅРёСЏ
+		ISXBound* BoundVolumeP;		//РѕР±Р»РµРіР°СЋС‰РёР№ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РѕР±СЉРµРј
 
 		float DistForCamera;
 
-		ID Id;	//идентификатор куска
-		ID SID;	//порядковый номер куска из массива рисующихся кусков
+		ID Id;	//РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєСѓСЃРєР°
+		ID SID;	//РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ РєСѓСЃРєР° РёР· РјР°СЃСЃРёРІР° СЂРёСЃСѓСЋС‰РёС…СЃСЏ РєСѓСЃРєРѕРІ
 
-		//ID3DXMesh* BoundBox;	//ограничивающий параллелепипед (меш)
-		bool BFNonEnd;//имеет ли кусок куски внутри себя?
+		//ID3DXMesh* BoundBox;	//РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РїР°СЂР°Р»Р»РµР»РµРїРёРїРµРґ (РјРµС€)
+		bool BFNonEnd;//РёРјРµРµС‚ Р»Рё РєСѓСЃРѕРє РєСѓСЃРєРё РІРЅСѓС‚СЂРё СЃРµР±СЏ?
 	};
 
 	struct Lod
@@ -145,7 +145,7 @@ public:
 
 		GeomGreenType TypeGreen;	//
 		String MaskName;
-		uint32_t AllCountGreen;	//сколько всего сгенерировано объектов
+		uint32_t AllCountGreen;	//СЃРєРѕР»СЊРєРѕ РІСЃРµРіРѕ СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РѕР±СЉРµРєС‚РѕРІ
 		char Name[64];
 		NavMesh* NavigateMesh;
 
@@ -153,18 +153,18 @@ public:
 		float3 BBMax, BBMin;
 		DataVertex* AllTrans;//
 		Lod* ArrLod[GREEN_COUNT_LOD];
-		ID SplitsIDs;	//общее количество сегментов/спилтов
-		ID SplitsIDsRender;	//количество рисубщихся сегментов
+		ID SplitsIDs;	//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРµРіРјРµРЅС‚РѕРІ/СЃРїРёР»С‚РѕРІ
+		ID SplitsIDsRender;	//РєРѕР»РёС‡РµСЃС‚РІРѕ СЂРёСЃСѓР±С‰РёС…СЃСЏ СЃРµРіРјРµРЅС‚РѕРІ
 	};
 
-	//структура содержащая минимальную необходимую информацию о сегменте модели
+	//СЃС‚СЂСѓРєС‚СѓСЂР° СЃРѕРґРµСЂР¶Р°С‰Р°СЏ РјРёРЅРёРјР°Р»СЊРЅСѓСЋ РЅРµРѕР±С…РѕРґРёРјСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЃРµРіРјРµРЅС‚Рµ РјРѕРґРµР»Рё
 	struct InfoRenderSegments
 	{
 		InfoRenderSegments();
 		~InfoRenderSegments();
-		Segment** Arr;	//массив хранящий в себе указатели на сегменты REALTIME
-		DWORD Count;	//размер Arr 
-		DWORD CountCom;	//сколько сегментов записано в Arr	REALTIME
+		Segment** Arr;	//РјР°СЃСЃРёРІ С…СЂР°РЅСЏС‰РёР№ РІ СЃРµР±Рµ СѓРєР°Р·Р°С‚РµР»Рё РЅР° СЃРµРіРјРµРЅС‚С‹ REALTIME
+		DWORD Count;	//СЂР°Р·РјРµСЂ Arr 
+		DWORD CountCom;	//СЃРєРѕР»СЊРєРѕ СЃРµРіРјРµРЅС‚РѕРІ Р·Р°РїРёСЃР°РЅРѕ РІ Arr	REALTIME
 	};
 
 	struct IRSData
@@ -176,7 +176,7 @@ public:
 	};
 	
 protected:
-	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
+	Array<IRSData*> ArrComFor; //РёРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃРµРіРјРµРЅС‚Р°С… РґР»СЏ СЂРµРЅРґРµСЂР°
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
 	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
 	void GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod);
@@ -187,7 +187,7 @@ protected:
 	void DelModelInArrCom(ID id_model);
 
 	Array<Model*> ArrModels;
-	IDirect3DVertexBuffer9* TransVertBuf;	//буфер вершин с трансформациями растительности
+	IDirect3DVertexBuffer9* TransVertBuf;	//Р±СѓС„РµСЂ РІРµСЂС€РёРЅ СЃ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёСЏРјРё СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚Рё
 	IDirect3DVertexDeclaration9* VertexDeclarationGreen;
 	
 	void PreSegmentation(Model* model);

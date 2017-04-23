@@ -194,9 +194,9 @@ void SGCore_OnLostDevice()
 	MRenderTargets->OnLostDevice();
 }
 
-int SGCore_OnDeviceReset(int width, int heigth, bool windewed)
+bool SGCore_OnDeviceReset(int width, int heigth, bool windewed)
 {
-	SG_PRECOND(-1);
+	SG_PRECOND(false);
 	D3DAPP.BackBufferWidth = width;
 	D3DAPP.BackBufferHeight = heigth;
 	D3DAPP.Windowed = windewed;

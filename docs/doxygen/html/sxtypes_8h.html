@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Файл sxtypes.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('sxtypes_8h.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Макросы</a>  </div>
+  <div class="headertitle">
+<div class="title">Файл sxtypes.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Определние базовых типов, макросов  
+<a href="#details">Подробнее...</a></p>
+<div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
+</div>
+<p><a href="sxtypes_8h_source.html">См. исходные тексты.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Макросы</h2></td></tr>
+<tr class="memitem:a11ea0994eede16bca95ddef9e50d279c"><td class="memItemLeft" align="right" valign="top"><a id="a11ea0994eede16bca95ddef9e50d279c"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a11ea0994eede16bca95ddef9e50d279c">dbg_break</a>&#160;&#160;&#160;asm(&quot;int $3&quot;);</td></tr>
+<tr class="memdesc:a11ea0994eede16bca95ddef9e50d279c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Принудительная точка остновки, break point, на случай затыков <br /></td></tr>
+<tr class="separator:a11ea0994eede16bca95ddef9e50d279c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Удаление/очитска памяти</div></td></tr>
+<tr class="memitem:a287a7282ed9302a7ce1446af8a2c36b2"><td class="memItemLeft" align="right" valign="top"><a id="a287a7282ed9302a7ce1446af8a2c36b2"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a287a7282ed9302a7ce1446af8a2c36b2">mem_del</a>(obj)&#160;&#160;&#160;if(obj){delete obj;}</td></tr>
+<tr class="memdesc:a287a7282ed9302a7ce1446af8a2c36b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">удаление указателя <br /></td></tr>
+<tr class="separator:a287a7282ed9302a7ce1446af8a2c36b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c9de784d321fed4deddd17dd6b4f7e9"><td class="memItemLeft" align="right" valign="top"><a id="a1c9de784d321fed4deddd17dd6b4f7e9"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a1c9de784d321fed4deddd17dd6b4f7e9">mem_delete</a>(obj)&#160;&#160;&#160;if(obj){delete obj;obj=0;}</td></tr>
+<tr class="memdesc:a1c9de784d321fed4deddd17dd6b4f7e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">удаление и обнуление указателя <br /></td></tr>
+<tr class="separator:a1c9de784d321fed4deddd17dd6b4f7e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71eaef1e523d6d1d2bbbb2a9ed178574"><td class="memItemLeft" align="right" valign="top"><a id="a71eaef1e523d6d1d2bbbb2a9ed178574"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a71eaef1e523d6d1d2bbbb2a9ed178574">mem_delete_a</a>(obj)&#160;&#160;&#160;if(obj){delete[] obj;obj=0;}</td></tr>
+<tr class="memdesc:a71eaef1e523d6d1d2bbbb2a9ed178574"><td class="mdescLeft">&#160;</td><td class="mdescRight">удаление массива указателей и обнуление указателя на массив <br /></td></tr>
+<tr class="separator:a71eaef1e523d6d1d2bbbb2a9ed178574"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32823e3446440569235e6c2218749799"><td class="memItemLeft" align="right" valign="top"><a id="a32823e3446440569235e6c2218749799"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a32823e3446440569235e6c2218749799">mem_release</a>(obj)&#160;&#160;&#160;if(obj){obj-&gt;Release();}</td></tr>
+<tr class="memdesc:a32823e3446440569235e6c2218749799"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызов метода Release. <br /></td></tr>
+<tr class="separator:a32823e3446440569235e6c2218749799"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ee7d83f1df8d5bcafa798d23fd9513d"><td class="memItemLeft" align="right" valign="top"><a id="a0ee7d83f1df8d5bcafa798d23fd9513d"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a0ee7d83f1df8d5bcafa798d23fd9513d">mem_release_del</a>(obj)&#160;&#160;&#160;if(obj){obj-&gt;Release(); obj = 0;}</td></tr>
+<tr class="memdesc:a0ee7d83f1df8d5bcafa798d23fd9513d"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызов метода Release и обнуление <br /></td></tr>
+<tr class="separator:a0ee7d83f1df8d5bcafa798d23fd9513d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98ded738cc8aa2badf9162fd7ed3ac47"><td class="memItemLeft" align="right" valign="top"><a id="a98ded738cc8aa2badf9162fd7ed3ac47"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a98ded738cc8aa2badf9162fd7ed3ac47">mem_free</a>(a)&#160;&#160;&#160;free(a)</td></tr>
+<tr class="memdesc:a98ded738cc8aa2badf9162fd7ed3ac47"><td class="mdescLeft">&#160;</td><td class="mdescRight">обертка для free (сюда можно что-то поставить) <br /></td></tr>
+<tr class="separator:a98ded738cc8aa2badf9162fd7ed3ac47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a820de1b607338f6a1e5a359d0b2c3712"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sxtypes_8h.html#a820de1b607338f6a1e5a359d0b2c3712">mem_alloc</a>(a)&#160;&#160;&#160;malloc(a)</td></tr>
+<tr class="separator:a820de1b607338f6a1e5a359d0b2c3712"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Определения типов</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Определение базовых типов</div></td></tr>
+<tr class="memitem:a4611b605e45ab401f02cab15c5e38715"><td class="memItemLeft" align="right" valign="top"><a id="a4611b605e45ab401f02cab15c5e38715"></a>
+typedef float&#160;</td><td class="memItemRight" valign="bottom"><b>float32_t</b></td></tr>
+<tr class="separator:a4611b605e45ab401f02cab15c5e38715"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61a76f533b75b76020b96d83f0838e22"><td class="memItemLeft" align="right" valign="top"><a id="a61a76f533b75b76020b96d83f0838e22"></a>
+typedef int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>ID</b></td></tr>
+<tr class="separator:a61a76f533b75b76020b96d83f0838e22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad342ac907eb044443153a22f964bf0af"><td class="memItemLeft" align="right" valign="top"><a id="ad342ac907eb044443153a22f964bf0af"></a>
+typedef unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>DWORD</b></td></tr>
+<tr class="separator:ad342ac907eb044443153a22f964bf0af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a197942eefa7db30960ae396d68339b97"><td class="memItemLeft" align="right" valign="top"><a id="a197942eefa7db30960ae396d68339b97"></a>
+typedef unsigned short&#160;</td><td class="memItemRight" valign="bottom"><b>WORD</b></td></tr>
+<tr class="separator:a197942eefa7db30960ae396d68339b97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c94ea6f8948649f8d181ae55911eeaf"><td class="memItemLeft" align="right" valign="top"><a id="a7c94ea6f8948649f8d181ae55911eeaf"></a>
+typedef unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>size_t</b></td></tr>
+<tr class="separator:a7c94ea6f8948649f8d181ae55911eeaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a050c65e107f0c828f856a231f4b4e788"><td class="memItemLeft" align="right" valign="top"><a id="a050c65e107f0c828f856a231f4b4e788"></a>
+typedef int&#160;</td><td class="memItemRight" valign="bottom"><b>BOOL</b></td></tr>
+<tr class="separator:a050c65e107f0c828f856a231f4b4e788"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ae1dab0fb4b072a66584546209e7d58"><td class="memItemLeft" align="right" valign="top"><a id="a4ae1dab0fb4b072a66584546209e7d58"></a>
+typedef unsigned char&#160;</td><td class="memItemRight" valign="bottom"><b>BYTE</b></td></tr>
+<tr class="separator:a4ae1dab0fb4b072a66584546209e7d58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36cb3b01d81ffd844bbbfb54003e06ec"><td class="memItemLeft" align="right" valign="top"><a id="a36cb3b01d81ffd844bbbfb54003e06ec"></a>
+typedef unsigned int&#160;</td><td class="memItemRight" valign="bottom"><b>UINT</b></td></tr>
+<tr class="separator:a36cb3b01d81ffd844bbbfb54003e06ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad61bc3eae1804d8784adebdce0721d3"><td class="memItemLeft" align="right" valign="top"><a id="aad61bc3eae1804d8784adebdce0721d3"></a>
+typedef wchar_t&#160;</td><td class="memItemRight" valign="bottom"><b>WCHAR</b></td></tr>
+<tr class="separator:aad61bc3eae1804d8784adebdce0721d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<div class="textblock"><p>Определние базовых типов, макросов </p>
+</div><h2 class="groupheader">Макросы</h2>
+<a id="a820de1b607338f6a1e5a359d0b2c3712"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a820de1b607338f6a1e5a359d0b2c3712">&#9670;&nbsp;</a></span>mem_alloc</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define mem_alloc</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">a</td><td>)</td>
+          <td>&#160;&#160;&#160;malloc(a)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>обертка для malloc (сюда можно что-то поставить) </p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b.html">source</a></li><li class="navelem"><a class="el" href="dir_30087b5439e04c85304dbcf15650710b.html">common</a></li><li class="navelem"><a class="el" href="sxtypes_8h.html">sxtypes.h</a></li>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Сб 15 Апр 2017 20:55:05. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

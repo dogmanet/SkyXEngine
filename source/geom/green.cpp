@@ -3,7 +3,7 @@
 
 Green::Green()
 {
-	//для растиетльности (с хардварным инстансингом)
+	//РґР»СЏ СЂР°СЃС‚РёРµС‚Р»СЊРЅРѕСЃС‚Рё (СЃ С…Р°СЂРґРІР°СЂРЅС‹Рј РёРЅСЃС‚Р°РЅСЃРёРЅРіРѕРј)
 	//{
 	D3DVERTEXELEMENT9 InstanceGreen[] =
 	{
@@ -308,7 +308,7 @@ void Green::PreSegmentation(Model* model)
 		count_object_in_split = GREEN_COUNT_MAX_SEGMENTS;
 	//SkyXEngine::Core::WorkModel::CreateBoundingBoxMesh(&tmpMin, &tmpMax, &(model->ArrSplits->BoundBox));
 
-	//выравниваем по квадрату
+	//РІС‹СЂР°РІРЅРёРІР°РµРј РїРѕ РєРІР°РґСЂР°С‚Сѓ
 	if (tmpX > tmpZ)
 	{
 		tmpZ = tmpX - tmpZ;
@@ -400,7 +400,7 @@ void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 
 		for (DWORD j = 0; j<Split->CountAllGreen; j++)
 		{
-			//если позици¤ провер¤емого полигона находитьс¤ в пределах ограничивающего паралелепипеда
+			//РµСЃР»Рё РїРѕР·РёС†РёВ¤ РїСЂРѕРІРµСЂВ¤РµРјРѕРіРѕ РїРѕР»РёРіРѕРЅР° РЅР°С…РѕРґРёС‚СЊСЃВ¤ РІ РїСЂРµРґРµР»Р°С… РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РµРіРѕ РїР°СЂР°Р»РµР»РµРїРёРїРµРґР°
 			if (
 				(long(tmpMax.x * 1000) >= long(Split->Data[j].Position.x * 1000) && long(tmpMin.x * 1000) <= long(Split->Data[j].Position.x * 1000))
 				&&
@@ -409,9 +409,9 @@ void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 				tmp_arr_mesh_poly[j]
 				)
 			{
-				//записываем вершины в массив
+				//Р·Р°РїРёСЃС‹РІР°РµРј РІРµСЂС€РёРЅС‹ РІ РјР°СЃСЃРёРІ
 				ArrPoly[i].push_back(j);
-				//полигон использваон, т.е. зан¤т
+				//РїРѕР»РёРіРѕРЅ РёСЃРїРѕР»СЊР·РІР°РѕРЅ, С‚.Рµ. Р·Р°РЅВ¤С‚
 				tmp_arr_mesh_poly[j] = false;
 				tmpCountNonIn++;
 			}
@@ -635,7 +635,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 
 void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod)
 {
-	//если есть что к отрисовке
+	//РµСЃР»Рё РµСЃС‚СЊ С‡С‚Рѕ Рє РѕС‚СЂРёСЃРѕРІРєРµ
 	if (RTCountDrawObj)
 	{
 		Green::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | RTCountDrawObj));
@@ -678,7 +678,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 
 	for (int nm = 0; nm < ArrModels.size(); ++nm)
 	{
-		//если тип не указан
+		//РµСЃР»Рё С‚РёРї РЅРµ СѓРєР°Р·Р°РЅ
 		if (type != GeomGreenType::ggtr_all && type != ArrModels[nm]->TypeGreen)
 			continue;
 
@@ -707,7 +707,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 					jarrsplits[i]->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
 
 					if (
-						//распределение по дистанции есесно и по лодам
+						//СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ РїРѕ РґРёСЃС‚Р°РЅС†РёРё РµСЃРµСЃРЅРѕ Рё РїРѕ Р»РѕРґР°Рј
 						(
 						(lod == 0 && jarrsplits[i]->DistForCamera <= Green::DistLods.x) ||
 						(lod == 1 && jarrsplits[i]->DistForCamera <= Green::DistLods.y && jarrsplits[i]->DistForCamera > Green::DistLods.x) ||
@@ -715,7 +715,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 						)
 						)
 					{
-						//если это не трава
+						//РµСЃР»Рё СЌС‚Рѕ РЅРµ С‚СЂР°РІР°
 						if (!(lod == 0 && ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass))
 						{
 							memcpy(RTGPUArrVerteces + (RTCountDrawObj),
@@ -724,7 +724,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 
 							RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 						}
-						//иначе это трава, а ее по особенному рисуем
+						//РёРЅР°С‡Рµ СЌС‚Рѕ С‚СЂР°РІР°, Р° РµРµ РїРѕ РѕСЃРѕР±РµРЅРЅРѕРјСѓ СЂРёСЃСѓРµРј
 						else if (lod == 0 && ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
 						{
 							if (Green::CurrentFreqGrass >= 100)
@@ -848,23 +848,33 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			tmpnewmpdel->NavigateMesh->count_vertex = nmesh->AllVertexCount;
 			tmpnewmpdel->NavigateMesh->count_index = nmesh->AllIndexCount;
 			tmpnewmpdel->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
+
+			vertex_static *pVert;
+			nmesh->VertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 			for (long i = 0; i < nmesh->AllVertexCount; ++i)
 			{
-				tmpnewmpdel->NavigateMesh->arr_vertex[i] = nmesh->ArrVertBuf[i].Pos;
+				tmpnewmpdel->NavigateMesh->arr_vertex[i] = pVert[i].Pos;
 			}
+			nmesh->VertexBuffer->Unlock();
 
 			tmpnewmpdel->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
+
+			UINT* pInd;
+			nmesh->IndexBuffer->Lock(0, 0, (void **)&pInd, 0);
+			
 			DWORD prebias = 0;
 			long tmp_countindex = 0;
 			for (long i = 0; i < nmesh->SubsetCount; ++i)
 			{
 				for (long k = 0; k < nmesh->IndexCount[i]; ++k)
 				{
-					tmpnewmpdel->NavigateMesh->arr_index[tmp_countindex] = nmesh->ArrIndBuf[nmesh->StartIndex[i] + k] + prebias;
+					tmpnewmpdel->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] + prebias;
 					++tmp_countindex;
 				}
 				prebias += nmesh->IndexCount[i];
 			}
+
+			nmesh->IndexBuffer->Unlock();
 
 			mem_release(nmesh);
 		}
@@ -926,7 +936,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				AlphaColor = 1.f / 255.f * (float)alpha;
 				if (alpha > 0)
 				{
-					//позици¤ пиксел¤ на ландшафте
+					//РїРѕР·РёС†РёВ¤ РїРёРєСЃРµР»В¤ РЅР° Р»Р°РЅРґС€Р°С„С‚Рµ
 					PosInLandX = lerpf(tmpmin.x, tmpmax.x, float(x + 1) / float(desc.Width));
 					PosInLandY = lerpf(tmpmax.z, tmpmin.z, float(y + 1) / float(desc.Height));
 
@@ -936,7 +946,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 					OneEdY = HeightLand / float(desc.Height);
 
 					//int tmpcountgreen = lerp(0,10,(float(alpha)*CountMaxInPixel)/255.f);//int(floor(float(float(alpha)*CountMaxInPixel*100)/2550.f));
-					//расчет позиций объектов на квадратный метр
+					//СЂР°СЃС‡РµС‚ РїРѕР·РёС†РёР№ РѕР±СЉРµРєС‚РѕРІ РЅР° РєРІР°РґСЂР°С‚РЅС‹Р№ РјРµС‚СЂ
 					for (int i = 0; i<int(floor(float(float(alpha)*CountMaxInPixel * 100) / 2550.f)); ++i)
 					{
 						tmppos2 = float3(tmp2.x, 100, tmp2.z);
@@ -967,7 +977,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 
 							++tmpnewmpdel->AllCountGreen;
 
-							//если тип дерево, то на пиксель генерируем только одно дерево
+							//РµСЃР»Рё С‚РёРї РґРµСЂРµРІРѕ, С‚Рѕ РЅР° РїРёРєСЃРµР»СЊ РіРµРЅРµСЂРёСЂСѓРµРј С‚РѕР»СЊРєРѕ РѕРґРЅРѕ РґРµСЂРµРІРѕ
 							if (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree)
 								break;
 						}
@@ -1231,7 +1241,7 @@ void Green::Load(const char* path)
 				tmpmodel->ArrLod[1] = new Lod();
 				tmpmodel->ArrLod[1]->path = tmpstr[1];
 				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[1]);
-				SGCore_StaticModelLoad(tmpstr[1], &tmpmodel->ArrLod[1]->model);
+				SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[1]->model);
 
 				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
 				{
@@ -1569,24 +1579,29 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	ArrModels[id]->NavigateMesh->count_vertex = nmesh->AllVertexCount;
 	ArrModels[id]->NavigateMesh->count_index = nmesh->AllIndexCount;
 	ArrModels[id]->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
+	vertex_static *pVert;
+	nmesh->VertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (long i = 0; i < nmesh->AllVertexCount; ++i)
 	{
-		ArrModels[id]->NavigateMesh->arr_vertex[i] = nmesh->ArrVertBuf[i].Pos;
+		ArrModels[id]->NavigateMesh->arr_vertex[i] = pVert[i].Pos;
 	}
-
+	nmesh->VertexBuffer->Unlock();
+	
 	ArrModels[id]->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
+	UINT* pInd;
+	nmesh->IndexBuffer->Lock(0, 0, (void **)&pInd, 0);
 	DWORD prebias = 0;
 	long tmp_countindex = 0;
 	for (long i = 0; i < nmesh->SubsetCount; ++i)
 	{
 		for (long k = 0; k < nmesh->IndexCount[i]; ++k)
 		{
-			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = nmesh->ArrIndBuf[nmesh->StartIndex[i] + k] + prebias;
+			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] + prebias;
 			++tmp_countindex;
 		}
 		prebias += nmesh->IndexCount[i];
 	}
-
+	nmesh->IndexBuffer->Unlock();
 	mem_release_del(nmesh);
 }
 

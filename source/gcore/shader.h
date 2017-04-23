@@ -3,6 +3,7 @@
 #define SHADER_H
 
 #include <common\array.h>
+#include <common\string_api.cpp>
 
 #pragma once
 

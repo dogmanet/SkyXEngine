@@ -79,7 +79,6 @@ namespace GData
 		{
 			ID ScreenOut;
 			ID ResPos;
-			ID CPGeom;
 		};
 
 		//пиксельные шейдеры
@@ -96,8 +95,6 @@ namespace GData
 			ID StencilStrColumn;
 			ID UnionAlpha;
 			ID SmoothingAlpha;
-
-			ID CPGeom;
 		};
 	};
 

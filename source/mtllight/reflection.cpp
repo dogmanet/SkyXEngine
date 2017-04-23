@@ -158,73 +158,29 @@ void Reflection::Init(MtlTypeReflect howref)
 	CountUpdate = 0;
 }
 
-void Reflection::PreRenderRefPlane(float4x4* world)
+void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 {
+	if (!plane)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - sxmtllight [reflection]: plane is NULL", gen_msg_location);
+		return;
+	}
+
+	Plane = *plane;
+
 	float4x4 viewmat;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &viewmat);
 
-	float4x4 tmpworld;
-	tmpworld = *world;
-	tmpworld._41 = tmpworld._42 = tmpworld._43 = tmpworld._14 = tmpworld._24 = tmpworld._34 = 0;
-	tmpworld._44 = 1.f;
-
 	D3DXMATRIX matReflect, matView;
-	/*D3DXPLANE tmpplane;
-	D3DXPlaneTransform(&tmpplane, &Plane, &((D3DXMATRIX)tmpworld));*/
 	D3DXMatrixReflect(&matReflect, &Plane);
 	
 	viewmat = float4x4(matReflect) * viewmat;
-	/**/
 	viewmat._12 = -viewmat._12;
 	viewmat._22 = -viewmat._22;
 	viewmat._32 = -viewmat._32;
 	viewmat._42 = -viewmat._42;
 
-	float determ = 0;
-	float4x4 invviewmat = SMMatrixInverse(&determ, viewmat);
-	float3 tmppos = float3(viewmat._41, viewmat._42, viewmat._43);
-	float nearp = SMVector3Distance(Position, tmppos);
-	//MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(MLSet::ProjFov, MLSet::ProjRatio, nearp, MTl_REF_PROJ_FAR);
-	
-	
-
-	/*float3 pointplane = (tmppos + ((nearp) * float3(0,1,0)));
-	D3DXPlaneFromPointNormal(
-		&Plane2,
-		&((D3DXVECTOR3)pointplane),
-		&D3DXVECTOR3(-GData::ConstCurrCamDir.x, -GData::ConstCurrCamDir.y, -GData::ConstCurrCamDir.z));*/
-
-	//Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldMatProj);
-	//Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
-	/*float4x4 wmat = (viewmat*MLSet::RefMProjPlane);
-
-	//float determ = 0;
-	
-	wmat = SMMatrixTranspose(wmat);
-	wmat = SMMatrixInverse(&determ, wmat);
-
-	float4x4 vmat = SMMatrixInverse(&determ, SMMatrixTranspose(viewmat));
-	D3DXPlaneTransform(&Plane, &Plane, &((D3DXMATRIX)vmat));
-
-	float4x4 pmat = SMMatrixInverse(&determ, SMMatrixTranspose(MLSet::RefMProjPlane));
-	D3DXPlaneTransform(&Plane, &Plane, &((D3DXMATRIX)pmat));
-
-	//Plane2.a = Plane2.b = Plane2.c = Plane2.d = 0;
-	//Plane2 = Plane;
-	//Plane.b = -Plane.b;
-	//Plane.d = -Plane.d;
-	//
-	//D3DXPlaneTransform(&Plane, &Plane, &((D3DXMATRIX)wmat));
-	//D3DXPlaneNormalize(&Plane, &Plane);
-	MLSet::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
-	MLSet::DXDevice->SetClipPlane(1, Plane);
-	MLSet::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE1);*/
-
-	
-
 	ReflectFrustum[0]->Update(&viewmat, &(MLSet::RefMProjPlane));
-
-	
 
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &OldMatView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldMatProj);
@@ -233,10 +189,6 @@ void Reflection::PreRenderRefPlane(float4x4* world)
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &viewmat);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &MLSet::RefMProjPlane);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(viewmat * MLSet::RefMProjPlane));
-
-	//MLSet::DXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)viewmat));
-	//MLSet::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)MLSet::RefMProjPlane));
-
 
 	MLSet::DXDevice->GetRenderTarget(0, &BackBuffer);
 
@@ -254,17 +206,15 @@ void Reflection::PostRenderRefPlane()
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &OldMatProj);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
-	MLSet::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
-
 	MLSet::DXDevice->SetRenderTarget(0, BackBuffer);
 	MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
 
-	if (GetAsyncKeyState(VK_NUMPAD9))
+	/*if (GetAsyncKeyState(VK_NUMPAD9))
 	{
 		char tmpstr[256];
 		sprintf(tmpstr, "C:\\1\\reflectionreflection.png");
 		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_JPG, SurfaceReflect, NULL, 0);
-	}
+	}*/
 
 	mem_release_del(BackBuffer);
 	mem_release_del(LastSurfaceZBuffer);
@@ -287,8 +237,15 @@ void Reflection::SetMinMax(float3_t* min, float3_t* max)
 	PosMin = *min;
 }
 
-void Reflection::BeginRenderRefCube()
+void Reflection::BeginRenderRefCube(float3_t* center)
 {
+	if (!center)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - sxmtllight [reflection]: position center is NULL", gen_msg_location);
+		return;
+	}
+
+	Position = *center;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &OldMatView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldMatProj);
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);

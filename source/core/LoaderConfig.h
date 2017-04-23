@@ -37,12 +37,12 @@ public:
 
 	int Save();
 
-	int GetSectionCount(bool acceptIncludes = false);
-	int GetKeyCount(bool acceptIncludes = false);
-	int GetKeyCount(const char* section,bool acceptIncludes = false);
+	int GetSectionCount();
+	int GetKeyCount();
+	int GetKeyCount(const char* section);
 
-	bool SectionExists(const char* section, bool acceptIncludes = false);
-	bool KeyExists(const char* section, const char* key, bool acceptIncludes = false);
+	bool SectionExists(const char* section);
+	bool KeyExists(const char* section, const char* key);
 
 	void Release();
 	void Clear();

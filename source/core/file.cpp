@@ -21,43 +21,40 @@ void SXFile::Release()
 int SXFile::Open(const char* path,int type)
 {
 	char* mode;
-		if(type == SXFILE_BIN)
+	if (type == CORE_FILE_BIN)
 			mode = "rb";
-		else if(type == SXFILE_TEXT)
+	else if (type == CORE_FILE_TEXT)
 			mode = "r+";
 	File = fopen(path, mode);
 		if(!File)
-		{
 			return -1;
-		}
+	return 0;
 }
 
 int SXFile::Create(const char* path,int type)
 {
 	char* mode;
-		if(type == SXFILE_BIN)
+	if (type == CORE_FILE_BIN)
 			mode = "wb";
-		else if(type == SXFILE_TEXT)
+	else if (type == CORE_FILE_TEXT)
 			mode = "w";
 	File = fopen(path, mode);
-		if(!File)
-		{
-			return -1;
-		}
+	if (!File)
+		return -1;
+	return 0;
 }
 
 int SXFile::Add(const char* path,int type)
 {
 	char* mode;
-		if(type == SXFILE_BIN)
+	if (type == CORE_FILE_BIN)
 			mode = "ab";
-		else if(type == SXFILE_TEXT)
+	else if (type == CORE_FILE_TEXT)
 			mode = "a";
 	File = fopen(path, mode);
-		if(!File)
-		{
-			return -1;
-		}
+	if (!File)
+		return -1;
+	return 0;
 }
 
 size_t SXFile::ReadB(void* dest, size_t size)
@@ -100,13 +97,17 @@ size_t SXFile::ReadT(const char* format, ...)
 
 size_t SXFile::WriteT(const char* format, ...)
 {
-	char buf[4096];
-	format_str(buf, format);
-	return fprintf(File, buf);
+	va_list ptr;
+	va_start(ptr, format);
+	int countout = vfprintf(File, format, ptr);
+	va_end(ptr);
+	return countout;
 }
 
 size_t SXFile::GetPos()
 {
+	if (IsEOF())
+		return CORE_FILE_EOF;
 	return ftell(File);
 }
 
@@ -125,9 +126,9 @@ size_t SXFile::GetSize()
 	return size;
 }
 
-char SXFile::ReadChar()
+int SXFile::ReadChar()
 {
-	return(fgetc(File));
+	return fgetc(File);
 }
 
 void SXFile::Close()
@@ -135,7 +136,7 @@ void SXFile::Close()
 	fclose(File);
 }
 
-BOOL SXFile::IsEOF()
+bool SXFile::IsEOF()
 {
-	return(feof(File));
+	return feof(File);
 }

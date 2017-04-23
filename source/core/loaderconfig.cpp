@@ -4,8 +4,8 @@
 #include <core\\LoaderConfig.h>
 #pragma once
 /*
-1. Проверить обработку циклических зависимостей
-2. Проверить привязку к переводу строки в конце файла
+1. РџСЂРѕРІРµСЂРёС‚СЊ РѕР±СЂР°Р±РѕС‚РєСѓ С†РёРєР»РёС‡РµСЃРєРёС… Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№
+2. РџСЂРѕРІРµСЂРёС‚СЊ РїСЂРёРІСЏР·РєСѓ Рє РїРµСЂРµРІРѕРґСѓ СЃС‚СЂРѕРєРё РІ РєРѕРЅС†Рµ С„Р°Р№Р»Р°
 */
 
 
@@ -15,20 +15,10 @@ SXLoaderConfig::SXLoaderConfig()
 	BaseFile = "";
 }
 
-/*SXLoaderConfig::SXLoaderConfig(const char * file)
-{
-	Parse(file);
-}*/
-
 int SXLoaderConfig::Open(const char* path)
 {
 	return Parse(path);
 }
-
-/*inline const char* SXLoaderConfig::GetPath()
-{
-	return BaseFile.c_str();
-}*/
 
 String SXLoaderConfig::BaseDir(String dir)
 {
@@ -311,6 +301,7 @@ int SXLoaderConfig::Parse(const char* file)
 	}
 
 	fclose(fp);
+	return 0;
 }
 
 void SXLoaderConfig::Modify(AssotiativeArray<String, section> & sections, AssotiativeArray<String, value> & values, String IncName)
@@ -383,7 +374,7 @@ const char* SXLoaderConfig::GetKey(const char * section, const char * key)
 				}
 			//return 0;
 		}
-	//return 0;
+	return 0;
 }
 
 const char* SXLoaderConfig::GetKeyName(const char* section, int key)
@@ -488,6 +479,8 @@ int SXLoaderConfig::Save()
 			}
 		}
 	}
+
+	return 0;
 }
 
 int SXLoaderConfig::WriteFile(const String & name, String section, String key, const String & val)
@@ -662,89 +655,55 @@ int SXLoaderConfig::WriteFile(const String & name, String section, String key, c
 return 0;
 }
 
-int SXLoaderConfig::GetSectionCount(bool acceptIncludes)
+int SXLoaderConfig::GetSectionCount()
 {
 	int c = m_mSections.Size();
-	if(acceptIncludes)
-	{
 		int size = m_vIncludes.size();
 		for(int i = 0; i < size; ++i)
 		{
 			//m_vIncludes
-			c += m_vIncludes[i].pParser->GetSectionCount(true);
-		}
+			c += m_vIncludes[i].pParser->GetSectionCount();
 	}
 	return(c);
 }
 
-int SXLoaderConfig::GetKeyCount(bool acceptIncludes)
+int SXLoaderConfig::GetKeyCount()
 {
 	int c = m_mFinalValues.Size();
-	if(acceptIncludes)
-	{
 		int size = m_vIncludes.size();
 		for(int i = 0; i < size; ++i)
 		{
-			c += m_vIncludes[i].pParser->GetKeyCount(true);
-		}
+			c += m_vIncludes[i].pParser->GetKeyCount();
 	}
 	return(c);
 }
 
-int SXLoaderConfig::GetKeyCount(const char* section, bool acceptIncludes)
+int SXLoaderConfig::GetKeyCount(const char* section)
 {
 	String sections(section);
 
 	if (m_mSections.KeyExists(sections))
 	{
-		if (acceptIncludes)
-		{
 			return(m_mSections[sections].mValues.Size());
 		}
-		else
-		{
-			if (m_mSections[sections].native)
-				return m_mSections[sections].mValues.Size();
-			else
 				return -1;
 		}
-	}
-	return -1;
-}
 
-bool SXLoaderConfig::SectionExists(const char * section, bool acceptIncludes)
+bool SXLoaderConfig::SectionExists(const char * section)
 {
 	String sections(section);
 	if(m_mSections.KeyExists(sections))
-	{
-		if(acceptIncludes)
-		{
 			return(true);
-		}
-		else
-		{
-			return(m_mSections[sections].native);
-		}
-	}
 	return(false);
 //	return(m_mSections.count(section) != 0 && m_mSections[section].native);
 }
 
-bool SXLoaderConfig::KeyExists(const char * section, const char * key, bool acceptIncludes)
+bool SXLoaderConfig::KeyExists(const char * section, const char * key)
 {
 	String sections(section);
 	String keys(key);
 	if(m_mSections.KeyExists(sections))
-	{
-		if(acceptIncludes)
-		{
 			return(m_mSections[sections].mValues.KeyExists(keys));
-		}
-		else
-		{
-			return(m_mSections[sections].native && m_mSections[sections].mValues.KeyExists(keys));
-		}
-	}
 	return(false);
 }
 
@@ -759,7 +718,8 @@ void SXLoaderConfig::Clear()
 	int size = m_vIncludes.size();
 	for (int i = 0; i < size; ++i)
 	{
-		mem_release_delete(m_vIncludes[i].pParser);
+		mem_release(m_vIncludes[i].pParser);
+		mem_delete(m_vIncludes[i].pParser);
 	}
 	m_vIncludes.clear();
 	m_mFinalValues.clear();

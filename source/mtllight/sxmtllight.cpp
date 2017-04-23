@@ -87,7 +87,7 @@ void SML_OnResetDevice(int width, int heigth, float projfov)
 
 	//MLSet::IDsRenderTargets::ToneMaps.clear();
 	//MLSet::IDsRenderTargets::SurfToneMap.clear();
-	int tmpcount = 0;
+	/*int tmpcount = 0;
 	while (true)
 	{
 		int tmpsize = 1 << (2 * tmpcount);
@@ -100,7 +100,7 @@ void SML_OnResetDevice(int width, int heigth, float projfov)
 		}
 		++tmpcount;
 	}
-	MLSet::IDsRenderTargets::CountArrToneMaps = tmpcount;
+	MLSet::IDsRenderTargets::CountArrToneMaps = tmpcount;*/
 	MLSet::IDsRenderTargets::HowAdaptedLum = 0;
 }
 
@@ -777,6 +777,12 @@ void SML_MtlRender(ID id, float4x4* world)
 	ArrMaterials->Render(id, world);
 }
 
+void SML_MtlRenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl, bool is_cp, float3* plane_normal, float3* plane_point )
+{
+	ML_PRECOND();
+	ArrMaterials->RenderStd(type, world, slot, id_mtl, is_cp, plane_normal, plane_point);
+}
+
 void SML_MtlRenderLight(float4_t* color, float4x4* world)
 {
 	ML_PRECOND();
@@ -895,17 +901,17 @@ void SML_MtlDelRefClear()
 	ArrMaterials->DelRefAllDel();
 }
 
-void SML_MtlRefSetPlane(ID id, D3DXPLANE* plane)
+/*void SML_MtlRefSetPlane(ID id, D3DXPLANE* plane)
 {
 	ML_PRECOND();
 	ArrMaterials->MtlRefSetPlane(id, plane);
-}
+}*/
 
-void SML_MtlRefSetCenter(ID id, float3_t* center)
+/*void SML_MtlRefSetCenter(ID id, float3_t* center)
 {
 	ML_PRECOND();
 	ArrMaterials->MtlRefSetCenter(id, center);
-}
+}*/
 
 void SML_MtlRefSetMinMax(ID id, float3_t* min, float3_t* max)
 {
@@ -913,10 +919,10 @@ void SML_MtlRefSetMinMax(ID id, float3_t* min, float3_t* max)
 	ArrMaterials->MtlRefSetMinMax(id, min, max);
 }
 
-void SML_MtlRefPreRenderPlane(ID id, float4x4* world)
+void SML_MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 {
 	ML_PRECOND();
-	ArrMaterials->MtlRefPreRenderPlane(id, world);
+	ArrMaterials->MtlRefPreRenderPlane(id, plane);
 }
 
 ISXFrustum* SML_MtlRefGetfrustum(ID id, int cube)
@@ -945,10 +951,10 @@ IDirect3DTexture9* SML_MtlRefGetTexPlane(ID id)
 
 
 
-void SML_MtlRefCubeBeginRender(ID id)
+void SML_MtlRefCubeBeginRender(ID id, float3_t* center)
 {
 	ML_PRECOND();
-	ArrMaterials->MtlRefCubeBeginRender(id);
+	ArrMaterials->MtlRefCubeBeginRender(id, center);
 }
 
 void SML_MtlRefCubePreRender(ID id, int cube, float4x4* world)

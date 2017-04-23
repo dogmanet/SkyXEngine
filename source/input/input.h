@@ -7,32 +7,32 @@
 
 #pragma once
 
-//коды ошибок
+//РєРѕРґС‹ РѕС€РёР±РѕРє
 #define SX_INPUT_ERROR_NON_ACQUIRE 2
 #define SX_INPUT_ERROR_UNKNOWN 1
 
-#define SX_INPUT_ERR_CREATE_DI					-1	/*DirectInput не создано*/
-#define SX_INPUT_ERR_CDI_INVALID_ARG			-12	/*неверные параметры*/
-#define SX_INPUT_ERR_CDI_OUT_OF_MEM				-13	/*нехватка памяти*/
-#define SX_INPUT_ERR_CDI_NONE_ERR				-14	/*неопознаная ошибка*/
+#define SX_INPUT_ERR_CREATE_DI					-1	/*DirectInput РЅРµ СЃРѕР·РґР°РЅРѕ*/
+#define SX_INPUT_ERR_CDI_INVALID_ARG			-12	/*РЅРµРІРµСЂРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹*/
+#define SX_INPUT_ERR_CDI_OUT_OF_MEM				-13	/*РЅРµС…РІР°С‚РєР° РїР°РјСЏС‚Рё*/
+#define SX_INPUT_ERR_CDI_NONE_ERR				-14	/*РЅРµРѕРїРѕР·РЅР°РЅР°СЏ РѕС€РёР±РєР°*/
 
-#define SX_INPUT_ERR_ATTACH_THREAD_IN			-2	/*не удалось подцепиться к пользовательскому вводу*/
-#define SX_INPUT_ERR_ATTACH_THREAD_OUT			-3	/*не удалось отцепиться от пользовательского ввода*/
+#define SX_INPUT_ERR_ATTACH_THREAD_IN			-2	/*РЅРµ СѓРґР°Р»РѕСЃСЊ РїРѕРґС†РµРїРёС‚СЊСЃСЏ Рє РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРјСѓ РІРІРѕРґСѓ*/
+#define SX_INPUT_ERR_ATTACH_THREAD_OUT			-3	/*РЅРµ СѓРґР°Р»РѕСЃСЊ РѕС‚С†РµРїРёС‚СЊСЃСЏ РѕС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРіРѕ РІРІРѕРґР°*/
 
-#define SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD		-4	/*не удалось создать устройство "клавиатура"*/
-#define SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD	-5	/*не удалось установить формат ввода для устройства "клавиатура"*/
-#define SX_INPUT_ERR_COOPERATIVE_KEYBOARD		-6	/*не удалось установить уровень кооперации для устройства "клавиатура"*/
-#define SX_INPUT_ERR_ACQUIRE_KEYBOARD			-7	/*не удалось захватить устройство "клавиатура"*/
+#define SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD		-4	/*РЅРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ "РєР»Р°РІРёР°С‚СѓСЂР°"*/
+#define SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD	-5	/*РЅРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕСЂРјР°С‚ РІРІРѕРґР° РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІР° "РєР»Р°РІРёР°С‚СѓСЂР°"*/
+#define SX_INPUT_ERR_COOPERATIVE_KEYBOARD		-6	/*РЅРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СѓСЂРѕРІРµРЅСЊ РєРѕРѕРїРµСЂР°С†РёРё РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІР° "РєР»Р°РІРёР°С‚СѓСЂР°"*/
+#define SX_INPUT_ERR_ACQUIRE_KEYBOARD			-7	/*РЅРµ СѓРґР°Р»РѕСЃСЊ Р·Р°С…РІР°С‚РёС‚СЊ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ "РєР»Р°РІРёР°С‚СѓСЂР°"*/
 
-#define SX_INPUT_ERR_CREATE_DEVICE_MOUSE		-8	/*не удалось создать устройство "мышь"*/
-#define SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE		-9	/*не удалось установить формат ввода для устройства "мышь"*/
-#define SX_INPUT_ERR_COOPERATIVE_MOUSE			-10	/*не удалось установить уровень кооперации для устройства "мышь"*/
-#define SX_INPUT_ERR_ACQUIRE_MOUSE				-11	/*не удалось захватить устройство "мышь"*/
+#define SX_INPUT_ERR_CREATE_DEVICE_MOUSE		-8	/*РЅРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ "РјС‹С€СЊ"*/
+#define SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE		-9	/*РЅРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕСЂРјР°С‚ РІРІРѕРґР° РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІР° "РјС‹С€СЊ"*/
+#define SX_INPUT_ERR_COOPERATIVE_MOUSE			-10	/*РЅРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СѓСЂРѕРІРµРЅСЊ РєРѕРѕРїРµСЂР°С†РёРё РґР»СЏ СѓСЃС‚СЂРѕР№СЃС‚РІР° "РјС‹С€СЊ"*/
+#define SX_INPUT_ERR_ACQUIRE_MOUSE				-11	/*РЅРµ СѓРґР°Р»РѕСЃСЊ Р·Р°С…РІР°С‚РёС‚СЊ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ "РјС‹С€СЊ"*/
 
-//состояния клавиш мыши
+//СЃРѕСЃС‚РѕСЏРЅРёСЏ РєР»Р°РІРёС€ РјС‹С€Рё
 struct StateMouse
 {
-	InputEvents Buttons[3];	//текущие события для каждой кнопки мыши
+	InputEvents Buttons[3];	//С‚РµРєСѓС‰РёРµ СЃРѕР±С‹С‚РёСЏ РґР»СЏ РєР°Р¶РґРѕР№ РєРЅРѕРїРєРё РјС‹С€Рё
 	DWORD Timer[3];
 };
 
@@ -43,26 +43,26 @@ public:
 	~SXInput();
 
 	long Init(HWND hwnd, HINSTANCE hinst);
-	//необходимые пользовательские функции и переменные
-	int	ReadMouseData		(IDirectInputDevice8 *DIDevice);	//обновление состоянияя мыши
-	int	ReadKeyBoardData	(IDirectInputDevice8 *DIDevice);	//обновление состояния клавиатуры
+	//РЅРµРѕР±С…РѕРґРёРјС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ С„СѓРЅРєС†РёРё Рё РїРµСЂРµРјРµРЅРЅС‹Рµ
+	int	ReadMouseData		(IDirectInputDevice8 *DIDevice);	//РѕР±РЅРѕРІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏСЏ РјС‹С€Рё
+	int	ReadKeyBoardData	(IDirectInputDevice8 *DIDevice);	//РѕР±РЅРѕРІР»РµРЅРёРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РєР»Р°РІРёР°С‚СѓСЂС‹
 
-	void	Update();	//обновление стэйтов, включает в себя ReadMouseData и ReadKeyBoardData
+	void	Update();	//РѕР±РЅРѕРІР»РµРЅРёРµ СЃС‚СЌР№С‚РѕРІ, РІРєР»СЋС‡Р°РµС‚ РІ СЃРµР±СЏ ReadMouseData Рё ReadKeyBoardData
 
 	
-	bool	GetKeyState(InputCode Key);	//нажата ли клавиша под номером Key
-	bool	GetButtonState(InputCode Number);	//нажата ли кнопка мыши под номером Number
-	bool	IsOtherButtonOn(InputCode Button);	//нажаты ли другие кнопки мыши, Button - для которой отслеживаем единственное нажатие
+	bool	GetKeyState(InputCode Key);	//РЅР°Р¶Р°С‚Р° Р»Рё РєР»Р°РІРёС€Р° РїРѕРґ РЅРѕРјРµСЂРѕРј Key
+	bool	GetButtonState(InputCode Number);	//РЅР°Р¶Р°С‚Р° Р»Рё РєРЅРѕРїРєР° РјС‹С€Рё РїРѕРґ РЅРѕРјРµСЂРѕРј Number
+	bool	IsOtherButtonOn(InputCode Button);	//РЅР°Р¶Р°С‚С‹ Р»Рё РґСЂСѓРіРёРµ РєРЅРѕРїРєРё РјС‹С€Рё, Button - РґР»СЏ РєРѕС‚РѕСЂРѕР№ РѕС‚СЃР»РµР¶РёРІР°РµРј РµРґРёРЅСЃС‚РІРµРЅРЅРѕРµ РЅР°Р¶Р°С‚РёРµ
 
-	InputEvents	GetKeyEvents(InputCode Key);	//получить событие посылаемое клавишей на клавиатуре
-	InputEvents	GetButtonEvent(InputCode Button);//получить событие посылаемое кнопкой мыши
-	long	GetScroll		();						//получить скролл, -120 - назад, 120 - вперед (120 - 1 проход)
-	bool	GetMouseDouble(InputCode Button);	//был ли сделан кнопкой мыши Button двойной клик
+	InputEvents	GetKeyEvents(InputCode Key);	//РїРѕР»СѓС‡РёС‚СЊ СЃРѕР±С‹С‚РёРµ РїРѕСЃС‹Р»Р°РµРјРѕРµ РєР»Р°РІРёС€РµР№ РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
+	InputEvents	GetButtonEvent(InputCode Button);//РїРѕР»СѓС‡РёС‚СЊ СЃРѕР±С‹С‚РёРµ РїРѕСЃС‹Р»Р°РµРјРѕРµ РєРЅРѕРїРєРѕР№ РјС‹С€Рё
+	long	GetScroll		();						//РїРѕР»СѓС‡РёС‚СЊ СЃРєСЂРѕР»Р», -120 - РЅР°Р·Р°Рґ, 120 - РІРїРµСЂРµРґ (120 - 1 РїСЂРѕС…РѕРґ)
+	bool	GetMouseDouble(InputCode Button);	//Р±С‹Р» Р»Рё СЃРґРµР»Р°РЅ РєРЅРѕРїРєРѕР№ РјС‹С€Рё Button РґРІРѕР№РЅРѕР№ РєР»РёРє
 
-	InputCode IsMouseClick();	//возвращает код нажатой сейчас кнопки мыши
+	InputCode IsMouseClick();	//РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕРґ РЅР°Р¶Р°С‚РѕР№ СЃРµР№С‡Р°СЃ РєРЅРѕРїРєРё РјС‹С€Рё
 
-	bool	GetExeEvents(InMess *Event);					//было ли совершенно данное событие
-	bool	GetExeEvents(InputDevice type, InputCode sect, InputEvents code);	//аналог
+	bool	GetExeEvents(InMess *Event);					//Р±С‹Р»Рѕ Р»Рё СЃРѕРІРµСЂС€РµРЅРЅРѕ РґР°РЅРЅРѕРµ СЃРѕР±С‹С‚РёРµ
+	bool	GetExeEvents(InputDevice type, InputCode sect, InputEvents code);	//Р°РЅР°Р»РѕРі
 
 private:
 	char Name[CORE_NAME_MAX_LEN];
@@ -70,26 +70,26 @@ private:
 	IDirectInputDevice8	*DeviceKeyBoard;
 	IDirectInputDevice8	*DeviceMouse;
 
-	char	KeyStateBuffer[256];	//буффер состояний клавиатуры
-	char	OldKeyStateBuffer[256];	//буффер состояний клавиатуры при прошлом обновлении
-	InputEvents	KeyStateEvents[256];	//буффер сообщений посылаемых от клавиатуры
-	DWORD		TimerKeyStateBuffer[256];	//буффер таймеров для каждой клавиши клавиатуры
+	char	KeyStateBuffer[256];	//Р±СѓС„С„РµСЂ СЃРѕСЃС‚РѕСЏРЅРёР№ РєР»Р°РІРёР°С‚СѓСЂС‹
+	char	OldKeyStateBuffer[256];	//Р±СѓС„С„РµСЂ СЃРѕСЃС‚РѕСЏРЅРёР№ РєР»Р°РІРёР°С‚СѓСЂС‹ РїСЂРё РїСЂРѕС€Р»РѕРј РѕР±РЅРѕРІР»РµРЅРёРё
+	InputEvents	KeyStateEvents[256];	//Р±СѓС„С„РµСЂ СЃРѕРѕР±С‰РµРЅРёР№ РїРѕСЃС‹Р»Р°РµРјС‹С… РѕС‚ РєР»Р°РІРёР°С‚СѓСЂС‹
+	DWORD		TimerKeyStateBuffer[256];	//Р±СѓС„С„РµСЂ С‚Р°Р№РјРµСЂРѕРІ РґР»СЏ РєР°Р¶РґРѕР№ РєР»Р°РІРёС€Рё РєР»Р°РІРёР°С‚СѓСЂС‹
 
-	DIMOUSESTATE	MouseState;				//стэйты мыши
-	DIMOUSESTATE	OldMouseState;			//стэйты мыши во время совершения прошлого нажатия кнопки, необходимо для двойного клика
-	DIMOUSESTATE	SomeTimesMouseState;	//стэйты мыши при прошлом обновлении
+	DIMOUSESTATE	MouseState;				//СЃС‚СЌР№С‚С‹ РјС‹С€Рё
+	DIMOUSESTATE	OldMouseState;			//СЃС‚СЌР№С‚С‹ РјС‹С€Рё РІРѕ РІСЂРµРјСЏ СЃРѕРІРµСЂС€РµРЅРёСЏ РїСЂРѕС€Р»РѕРіРѕ РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё, РЅРµРѕР±С…РѕРґРёРјРѕ РґР»СЏ РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР°
+	DIMOUSESTATE	SomeTimesMouseState;	//СЃС‚СЌР№С‚С‹ РјС‹С€Рё РїСЂРё РїСЂРѕС€Р»РѕРј РѕР±РЅРѕРІР»РµРЅРёРё
 
-	StateMouse	EventsMouse;		//события посылаемые мышью
-	StateMouse	OldEventsMouse;		//события при прошлом апдэйте
+	StateMouse	EventsMouse;		//СЃРѕР±С‹С‚РёСЏ РїРѕСЃС‹Р»Р°РµРјС‹Рµ РјС‹С€СЊСЋ
+	StateMouse	OldEventsMouse;		//СЃРѕР±С‹С‚РёСЏ РїСЂРё РїСЂРѕС€Р»РѕРј Р°РїРґСЌР№С‚Рµ
 
-	DWORD	InsTime;		//таймер для отслеживания двойного клика
-	DWORD	DoubleClick;	//на какую кнопку поставлен двойной клик, если -1 значит ни на какую, для удобства отдельно
+	DWORD	InsTime;		//С‚Р°Р№РјРµСЂ РґР»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР°
+	DWORD	DoubleClick;	//РЅР° РєР°РєСѓСЋ РєРЅРѕРїРєСѓ РїРѕСЃС‚Р°РІР»РµРЅ РґРІРѕР№РЅРѕР№ РєР»РёРє, РµСЃР»Рё -1 Р·РЅР°С‡РёС‚ РЅРё РЅР° РєР°РєСѓСЋ, РґР»СЏ СѓРґРѕР±СЃС‚РІР° РѕС‚РґРµР»СЊРЅРѕ
 
-	int	ControlMouseButton;	//аналог, для удобства манипуляций
-	int	ShiftEvent;			//количество событий которые произошли при совершении двойного клика
+	int	ControlMouseButton;	//Р°РЅР°Р»РѕРі, РґР»СЏ СѓРґРѕР±СЃС‚РІР° РјР°РЅРёРїСѓР»СЏС†РёР№
+	int	ShiftEvent;			//РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРѕР±С‹С‚РёР№ РєРѕС‚РѕСЂС‹Рµ РїСЂРѕРёР·РѕС€Р»Рё РїСЂРё СЃРѕРІРµСЂС€РµРЅРёРё РґРІРѕР№РЅРѕРіРѕ РєР»РёРєР°
 
-	long InitKeyboard (HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev);	//устанавливает устройство клавиатуры и возвращает его
-	long InitMouse (HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev);	//устанавливает устройство мыши и возвращает его
+	long InitKeyboard (HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev);	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РєР»Р°РІРёР°С‚СѓСЂС‹ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ
+	long InitMouse (HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev);	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РјС‹С€Рё Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ
 };
 
 

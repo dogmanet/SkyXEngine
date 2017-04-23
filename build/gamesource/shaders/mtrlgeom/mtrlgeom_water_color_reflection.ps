@@ -55,7 +55,7 @@ ps_out_ds_mrt main(vs_out_water IN)
 	half intens = saturate(abs((Depth - depth)*NearFarIsUnlit.y) / (Param.x * 100.f));
 	intens *= intens;
 	normaloffset *= intens;
-	//IN.Pos.xyz += normaloffset;
+	IN.Pos.xyz += normaloffset;
 	
 	half4 tmppspos = mul(IN.Pos,Mr2);
 	
@@ -63,7 +63,7 @@ ps_out_ds_mrt main(vs_out_water IN)
 	
 	half4 inTexProj = mul(IN.Pos,Mr);
 	half4 reflection = tex2D(TexReflection, inTexProj.xy/inTexProj.w);
-	//reflection = lerp(reflection,colorbase,0.2);
+	reflection = lerp(reflection,colorbase,0.2);
 	
 	OUT.Color.rgb = reflection.rgb;
 	OUT.Color.a = intens;
