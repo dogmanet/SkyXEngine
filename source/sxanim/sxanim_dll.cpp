@@ -37,7 +37,7 @@ void Report(int level, const char* format, ...)
 	va_end(va);
 }
 
-SX_LIB_API void SXAnim_0Init()
+SX_LIB_API void SXAnim_0Create()
 {
 	if(g_mgr)
 	{
@@ -52,20 +52,20 @@ SX_LIB_API void SXAnim_0Kill()
 	mem_delete(g_mgr);
 }
 
-SX_LIB_API void SXAnim_Update()
+SX_LIB_API void SXAnim_Update(int thread)
 {
 	SA_PRECOND();
-	g_mgr->Update();
+	g_mgr->Update(thread);
 }
 SX_LIB_API void SXAnim_Sync()
 {
 	SA_PRECOND();
 	g_mgr->Sync();
 }
-SX_LIB_API void SXAnim_Render()
+SX_LIB_API void SXAnim_Render(ID for_id)
 {
 	SA_PRECOND();
-	g_mgr->Render();
+	g_mgr->Render(for_id);
 }
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
@@ -80,4 +80,17 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 		anim->SetModel(mdl);
 	}
 	return(anim);
+}
+
+SX_LIB_API void SXAnim_ModelsComVisible(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)
+{
+	g_mgr->ComputeVis(frustum, viewpos, id_arr);
+}
+
+SX_LIB_API ID SXAnim_ModelsAddArrForCom()
+{
+	return(g_mgr->GetNextVisId());
+}
+SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
+{
 }

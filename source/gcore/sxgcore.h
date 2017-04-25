@@ -533,7 +533,7 @@ public:
 	virtual void GetMinMax(float3* min, float3* max) = 0;	//!< запишет в min и max точки экстремума
 
 	virtual void SetSphere(float3* center, float* radius) = 0;	//!< установить сферу, просчитает также и параллелепипед
-	virtual void GetSphere(float3* center, float* radius) = 0;	//!< запишет в center центр сферы, в radius радиус сферы
+	virtual void GetSphere(float3* center, float* radius) const = 0;	//!< запишет в center центр сферы, в radius радиус сферы
 
 	virtual bool IsPointInSphere(float3* point) = 0;	//!< находится ли точка point в пределах сферы
 	virtual bool IsPointInBox(float3* point) = 0;		//!< находится ли точка point в пределах параллелепипеда
@@ -682,7 +682,7 @@ public:
 	virtual bool PolyInFrustum(const float3* p1, const float3* p2, const float3* p3) = 0;		//!< находится ли треугольник во фрутстуме
 	virtual bool PolyInFrustumAbs(const float3* p1, const float3* p2, const float3* p3) = 0;	//!< находится ли полигон во фрустуме полностью
 
-	virtual bool SphereInFrustum(const float3 *point, float radius) = 0;	//!< находится ли полигон во фрустуме
+	virtual bool SphereInFrustum(const float3 *point, float radius) const = 0;	//!< находится ли полигон во фрустуме
 
 	virtual bool SphereInFrustumAbs(const float3 *point, float radius) = 0;	//!< находится ли сфера во фрустуме полностью
 	virtual bool BoxInFrustum(float3* min, float3* max) = 0;				//!< находится ли параллелепипед (описанный точками экстремума) во фрустуме

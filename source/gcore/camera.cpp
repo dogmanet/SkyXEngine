@@ -80,7 +80,7 @@ bool Frustum::PolyInFrustumAbs(const float3* p1,const float3* p2,const float3* p
 	return false;
 }
 			
-bool Frustum::SphereInFrustum(const float3 *point, float radius)
+bool Frustum::SphereInFrustum(const float3 *point, float radius) const
 {
 		for (int i=0; i<6; ++i)
 		{

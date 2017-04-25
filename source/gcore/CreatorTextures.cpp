@@ -93,6 +93,7 @@ ID CreatorTextures::GetNum(const char* text)
 					return i;
 				}
 		}
+		return(-1);
 }
 
 void CreatorTextures::OnLostDevice()
@@ -134,6 +135,7 @@ IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)
 					return Arr[i]->Texture;
 				}
 		}
+		return(NULL);
 }
 
 IDirect3DTexture9* CreatorTextures::GetTexture(ID num)

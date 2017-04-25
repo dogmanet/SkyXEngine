@@ -63,10 +63,10 @@ namespace SXRenderFunc
 	void RenderInMRT(DWORD timeDelta);		//!< построение G буфера, то есть рендер всей сцены
 	void UpdateShadow(DWORD timeDelta);		//!< обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
 	void UpdateReflection(DWORD timeDelta);	//!< обработка/обновление отражений
-
+	
 	void RenderSky(DWORD timeDelta);					//!< отрисовка скайбокса и облаков
 	void ComLighting(DWORD timeDelta, bool render_sky);	//!< обработка освещения, render_sky - рисовать ли небо
-
+	
 	void PostProcess(DWORD timeDelta);	//!< отрисовка постпроцесса
 
 	/*! \name Функции обертки, для передачи графическому ядру для замены стандартных

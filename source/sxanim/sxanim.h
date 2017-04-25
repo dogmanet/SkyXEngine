@@ -28,6 +28,8 @@
 #endif
 
 class IAnimPlayer;
+class ISXFrustum;
+class ISXBound;
 
 typedef void(*AnimStateCB)(int slot, ANIM_STATE as, IAnimPlayer * pAnim);
 typedef void(*AnimProgressCB)(int slot, float progress, IAnimPlayer * pAnim);
@@ -89,17 +91,31 @@ public:
 	virtual AnimProgressCB SetProgressCB(AnimProgressCB cb) = 0;
 
 	virtual ModelSequence const * GetCurAnim(int slot) = 0;
+
+	virtual const ISXBound * GetBound() const = 0;
 };
 
-SX_LIB_API void SXAnim_0Init();
+SX_LIB_API void SXAnim_0Create();
 SX_LIB_API void SXAnim_0Kill();
 
 SX_LIB_API void SGCore_Dbg_Set(report_func rf);
 
-SX_LIB_API void SXAnim_Update();
+SX_LIB_API void SXAnim_UpdateSetThreadNum(int num);
+SX_LIB_API void SXAnim_Update(int thread = 0);
 SX_LIB_API void SXAnim_Sync();
-SX_LIB_API void SXAnim_Render();
+SX_LIB_API void SXAnim_Render(ID for_id=0);
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl = NULL);
+
+//просчитать видимость всех моделей для фрустума 
+SX_LIB_API void SXAnim_ModelsComVisible(
+	const ISXFrustum * frustum,	//фрустум для которого считаем видимость моделей
+	const float3 * viewpos,		//позиция источника фрустума чтобы просчитать дистанцию
+	ID id_arr = 0			//идентификатор массива информации о видимости для фрустума, создается через SXAnim_ModelsAddArrForCom, если 0 то считаем в дефолтный
+	);
+
+SX_LIB_API ID SXAnim_ModelsAddArrForCom();				//добавить массив просчетов, возвращает его идентификатор
+SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr);	//удалить массив просчетов с номером id_arr
+
 
 #endif

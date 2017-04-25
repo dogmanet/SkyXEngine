@@ -47,8 +47,9 @@ namespace GData
 	float2_t NearFar = float2_t(0.25,400);	//!< значение дальней и ближней плоскостей отсечения
 	float ProjFov = SM_PI * 0.25f;			//!< fov камеры
 
-	ID DefaultGeomIDArr = -1;	//!< идентификатор просчетов для геометрии по умолчанию
-	ID DefaultGreenIDArr = -1;	//!< идентификатор просчетов для растительности по умолчанию
+	ID DefaultGeomIDArr = -1;
+	ID DefaultGreenIDArr = -1;
+	ID DefaultAnimIDArr = -1;
 	
 	float3 ConstCurrCamPos;	//!< позиция камеры
 	float3 ConstCurrCamDir;	//!< направление взгляда камеры
@@ -121,8 +122,8 @@ namespace GData
 			ID StencilStrColumn;
 			ID UnionAlpha;
 		};
+		};
 	};
-};
 
 //!@} managed_render_gdata
 
