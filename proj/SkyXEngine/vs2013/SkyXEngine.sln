@@ -36,6 +36,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxmtllight", "..\..\sxmtlli
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxpp", "..\..\sxpp\vs2013\sxpp.vcxproj", "{BA779DCC-93C8-4FB7-BBB9-A7D2F76C35DE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AEECC2DB-C7C7-4089-9262-A69794DF834D} = {AEECC2DB-C7C7-4089-9262-A69794DF834D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxguiwinapi", "..\..\sxguiwinapi\vs2013\sxguiwinapi.vcxproj", "{0292BE32-298E-4E18-BC42-5A39F9487EBA}"
 EndProject

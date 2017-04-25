@@ -183,7 +183,7 @@ void Core_MTaskStop()
 
 void Core_RBoolSet(int id, bool val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	GRegistersBool[id] = val;
 }
 
@@ -237,14 +237,14 @@ void Core_RMatrixGet(int id, float4x4* val)
 
 void Core_RFloat3Set(int id, float3* val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	if (val)
 		GRegistersFloat3[id] = *val;
 }
 
 void Core_RFloat3Get(int id, float3* val)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id);
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 
 	if (val)
 		memcpy(val, &GRegistersFloat3[id], sizeof(float3));

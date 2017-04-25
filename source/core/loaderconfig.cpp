@@ -348,6 +348,7 @@ int SXLoaderConfig::ParseInclude(String & file, const String & dir)
 		}*/
 		inc.pParser->Modify(m_mSections, m_mFinalValues, dir + file);
 		m_vIncludes.push_back(inc);
+		return(0);
 	}
 	else
 	{
@@ -415,6 +416,7 @@ const char* SXLoaderConfig::GetSectionName(int num)
 		if (countiter == num)
 			return iter.first->c_str();
 	}
+	return(NULL);
 }
 
 void SXLoaderConfig::Set(const char * sectionp, const char * key, const char * val)
