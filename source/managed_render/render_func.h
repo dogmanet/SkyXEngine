@@ -26,6 +26,7 @@
 
 #define RENDER_IDARRCOM_GEOM	0	/*!< геометрия */
 #define RENDER_IDARRCOM_GREEN	1	/*!< растительность */
+#define RENDER_IDARRCOM_ANIM	2	/*!< анимации */
 
 //!@}
 
