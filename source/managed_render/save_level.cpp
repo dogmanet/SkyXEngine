@@ -1,4 +1,9 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license see in LICENSE
+******************************************************/
+
 void SaveLevel(const char* name)
 {
 	char tmppathlevel[1024];

@@ -1,4 +1,9 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license see in LICENSE
+******************************************************/
+
 #pragma once
 
 #define CORE_VERSION 1

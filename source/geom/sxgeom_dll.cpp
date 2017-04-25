@@ -1,3 +1,9 @@
+
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license see in LICENSE
+******************************************************/
+
 #define SX_DLL
 #pragma once
 #include <windows.h>

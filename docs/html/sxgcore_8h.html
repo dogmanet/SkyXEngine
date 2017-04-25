@@ -1,0 +1,707 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Файл sxgcore.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('sxgcore_8h.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Классы</a> &#124;
+<a href="#enum-members">Перечисления</a> &#124;
+<a href="#func-members">Функции</a>  </div>
+  <div class="headertitle">
+<div class="title">Файл sxgcore.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Заголовочный файл sxgcore - графического ядра (переопределяемые функции, шейдеры, загружаемые текстуры, render targets, ограничиваюий объем, камера, статическая модель dse формата, skybox, skyclouds)  
+<a href="#details">Подробнее...</a></p>
+<div class="textblock"><code>#include &lt;<a class="el" href="gdefines_8h_source.html">gdefines.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="_g_register_index_8h_source.html">GRegisterIndex.h</a>&gt;</code><br />
+<code>#include &lt;d3d9.h&gt;</code><br />
+<code>#include &lt;d3dx9.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="sxcore_8h_source.html">core\\sxcore.h</a>&gt;</code><br />
+<code>#include &lt;gcore\ModelFile.h&gt;</code><br />
+</div>
+<p><a href="sxgcore_8h_source.html">См. исходные тексты.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Классы</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_s_x_data_static_model.html">ISXDataStaticModel</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">структура статической модели dse.  <a href="struct_i_s_x_data_static_model.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_i_s_x_trans_object.html">ISXTransObject</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Простой объект трансформаций с минимальным описанием.  <a href="struct_i_s_x_trans_object.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_s_x_pos_b_b_screen.html">SXPosBBScreen</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">структура описывающая ограничивающий квадрат (а точнее параллелепипед) в пространстве экрана  <a href="struct_s_x_pos_b_b_screen.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_s_x_bound.html">ISXBound</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">класс ограничивающего объема  <a href="class_i_s_x_bound.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_s_x_frustum_plane.html">SXFrustumPlane</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">структура описание плоскости  <a href="struct_s_x_frustum_plane.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_s_x_frustum.html">ISXFrustum</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">класс описывающий фрустум  <a href="class_i_s_x_frustum.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_s_x_camera.html">ISXCamera</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">камера  <a href="class_i_s_x_camera.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Макросы</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Ограничения на размеры</div></td></tr>
+<tr class="memitem:ga1b12b8c7df7b228ed4485839a0af4b56"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga1b12b8c7df7b228ed4485839a0af4b56">SXGC_SHADER_MAX_SIZE_DIR</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga1b12b8c7df7b228ed4485839a0af4b56"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени директории (до _) <br /></td></tr>
+<tr class="separator:ga1b12b8c7df7b228ed4485839a0af4b56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7d2e503a42e0462edefdf2d0e935c0fd"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga7d2e503a42e0462edefdf2d0e935c0fd">SXGC_SHADER_MAX_SIZE_NAME</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga7d2e503a42e0462edefdf2d0e935c0fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени с расширением (после _) <br /></td></tr>
+<tr class="separator:ga7d2e503a42e0462edefdf2d0e935c0fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga48892df21f63c0008949d85574bbd022"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga48892df21f63c0008949d85574bbd022">SXGC_SHADER_MAX_SIZE_DIRNAME</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#ga1b12b8c7df7b228ed4485839a0af4b56">SXGC_SHADER_MAX_SIZE_DIR</a> + <a class="el" href="group__sxgcore__shaders.html#ga7d2e503a42e0462edefdf2d0e935c0fd">SXGC_SHADER_MAX_SIZE_NAME</a></td></tr>
+<tr class="memdesc:ga48892df21f63c0008949d85574bbd022"><td class="mdescLeft">&#160;</td><td class="mdescRight">общий максимальный размер имени текстуры с расширением <br /></td></tr>
+<tr class="separator:ga48892df21f63c0008949d85574bbd022"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf5a63cbdce19601a2d11aa0340c50795"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gaf5a63cbdce19601a2d11aa0340c50795">SXGC_SHADER_MAX_SIZE_STDPATH</a>&#160;&#160;&#160;256</td></tr>
+<tr class="memdesc:gaf5a63cbdce19601a2d11aa0340c50795"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер пути до файла шейдера (без имени файла) <br /></td></tr>
+<tr class="separator:gaf5a63cbdce19601a2d11aa0340c50795"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga548a5002794c0e178aba8c046ce894a6"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga548a5002794c0e178aba8c046ce894a6">SXGC_SHADER_MAX_SIZE_FULLPATH</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#gaf5a63cbdce19601a2d11aa0340c50795">SXGC_SHADER_MAX_SIZE_STDPATH</a> + <a class="el" href="group__sxgcore__shaders.html#ga48892df21f63c0008949d85574bbd022">SXGC_SHADER_MAX_SIZE_DIRNAME</a></td></tr>
+<tr class="memdesc:ga548a5002794c0e178aba8c046ce894a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер полного пути до шейдера (включая имя шейдера) <br /></td></tr>
+<tr class="separator:ga548a5002794c0e178aba8c046ce894a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad0221a9714b651133c3993b19d1fde10"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gad0221a9714b651133c3993b19d1fde10">SXGC_SHADER_VAR_MAX_SIZE</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:gad0221a9714b651133c3993b19d1fde10"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальная длина имени переменной в шейдере <br /></td></tr>
+<tr class="separator:gad0221a9714b651133c3993b19d1fde10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae6e66903b7d85bb88ec56aa93056377b"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gae6e66903b7d85bb88ec56aa93056377b">SXGC_SHADER_VAR_MAX_COUNT</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:gae6e66903b7d85bb88ec56aa93056377b"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальное количество переменных в шейдере <br /></td></tr>
+<tr class="separator:gae6e66903b7d85bb88ec56aa93056377b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b430fd1cc814e6fb16a566a92c742f1"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga4b430fd1cc814e6fb16a566a92c742f1">SXGC_SHADER_COUNT_MACRO</a>&#160;&#160;&#160;12</td></tr>
+<tr class="memdesc:ga4b430fd1cc814e6fb16a566a92c742f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">количество макросов в массиве макросов <br /></td></tr>
+<tr class="separator:ga4b430fd1cc814e6fb16a566a92c742f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga027ecdefe40443d4b47ec5f185e57834"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga027ecdefe40443d4b47ec5f185e57834">SXGC_LOADTEX_MAX_SIZE_DIR</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga027ecdefe40443d4b47ec5f185e57834"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени директории (до _) <br /></td></tr>
+<tr class="separator:ga027ecdefe40443d4b47ec5f185e57834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga308ea42c46c2bc12d0263cc09981b583"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga308ea42c46c2bc12d0263cc09981b583">SXGC_LOADTEX_MAX_SIZE_NAME</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga308ea42c46c2bc12d0263cc09981b583"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени с расширением (после _) <br /></td></tr>
+<tr class="separator:ga308ea42c46c2bc12d0263cc09981b583"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaadb63d46f55cc5a620929b9dfab25925"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925">SXGC_LOADTEX_MAX_SIZE_DIRNAME</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#ga027ecdefe40443d4b47ec5f185e57834">SXGC_LOADTEX_MAX_SIZE_DIR</a> + <a class="el" href="group__sxgcore__shaders.html#ga308ea42c46c2bc12d0263cc09981b583">SXGC_LOADTEX_MAX_SIZE_NAME</a></td></tr>
+<tr class="memdesc:gaadb63d46f55cc5a620929b9dfab25925"><td class="mdescLeft">&#160;</td><td class="mdescRight">общий максимальный размер имени текстуры с расширением <br /></td></tr>
+<tr class="separator:gaadb63d46f55cc5a620929b9dfab25925"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f078853fc78039c2aafbf21e263ec51"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga9f078853fc78039c2aafbf21e263ec51">SXGC_LOADTEX_MAX_SIZE_STDPATH</a>&#160;&#160;&#160;256</td></tr>
+<tr class="memdesc:ga9f078853fc78039c2aafbf21e263ec51"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер пути до файла текстуры (без имени файла) <br /></td></tr>
+<tr class="separator:ga9f078853fc78039c2aafbf21e263ec51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c0c49b447d846c44f025743e9146e46"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga8c0c49b447d846c44f025743e9146e46">SXGC_LOADTEX_MAX_SIZE_FULLPATH</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#ga9f078853fc78039c2aafbf21e263ec51">SXGC_LOADTEX_MAX_SIZE_STDPATH</a> + <a class="el" href="group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925">SXGC_LOADTEX_MAX_SIZE_DIRNAME</a></td></tr>
+<tr class="memdesc:ga8c0c49b447d846c44f025743e9146e46"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер полного пути до текстуры (включая имя текстуры) <br /></td></tr>
+<tr class="separator:ga8c0c49b447d846c44f025743e9146e46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga95fcce78bcf8e8aa68e6be26d58d9279"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga95fcce78bcf8e8aa68e6be26d58d9279">SXGC_LOADTEX_COUNT_MIPMAP</a>&#160;&#160;&#160;5</td></tr>
+<tr class="memdesc:ga95fcce78bcf8e8aa68e6be26d58d9279"><td class="mdescLeft">&#160;</td><td class="mdescRight">количество mipmap уровней в загружаемых текстурах <br /></td></tr>
+<tr class="separator:ga95fcce78bcf8e8aa68e6be26d58d9279"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7464c3f3ce63f1d3f08331ab7cdd93cd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga7464c3f3ce63f1d3f08331ab7cdd93cd">SXGC_LOADTEX_FORMAT_TEX</a>&#160;&#160;&#160;D3DFMT_FROM_FILE</td></tr>
+<tr class="memdesc:ga7464c3f3ce63f1d3f08331ab7cdd93cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">формат в который будут преобразованы загружаемые текстуры  <a href="group__sxgcore__shaders.html#ga7464c3f3ce63f1d3f08331ab7cdd93cd">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga7464c3f3ce63f1d3f08331ab7cdd93cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Типы материалов</div></td></tr>
+<tr class="memitem:ga5d629d8d8d60c95473eccc8f8e8cb6a7"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga5d629d8d8d60c95473eccc8f8e8cb6a7">MTL_TYPE_GEOM</a>&#160;&#160;&#160;0</td></tr>
+<tr class="memdesc:ga5d629d8d8d60c95473eccc8f8e8cb6a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">статическая геометрия <br /></td></tr>
+<tr class="separator:ga5d629d8d8d60c95473eccc8f8e8cb6a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8e058b23e6d6483243db773422adda9c"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga8e058b23e6d6483243db773422adda9c">MTL_TYPE_GRASS</a>&#160;&#160;&#160;1</td></tr>
+<tr class="memdesc:ga8e058b23e6d6483243db773422adda9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">растительность - трава <br /></td></tr>
+<tr class="separator:ga8e058b23e6d6483243db773422adda9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5eb135eb2383413f4ed4157026f41673"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga5eb135eb2383413f4ed4157026f41673">MTL_TYPE_TREE</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:ga5eb135eb2383413f4ed4157026f41673"><td class="mdescLeft">&#160;</td><td class="mdescRight">растительность - деревья <br /></td></tr>
+<tr class="separator:ga5eb135eb2383413f4ed4157026f41673"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad513894916fbc3f734c1d4f18a043068"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#gad513894916fbc3f734c1d4f18a043068">MTL_TYPE_SKIN</a>&#160;&#160;&#160;3</td></tr>
+<tr class="memdesc:gad513894916fbc3f734c1d4f18a043068"><td class="mdescLeft">&#160;</td><td class="mdescRight">скелетная модель <br /></td></tr>
+<tr class="separator:gad513894916fbc3f734c1d4f18a043068"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Определения типов</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Прототипы переопределяемых функций</div></td></tr>
+<tr class="memitem:gacd4d3c571364ac4b59f2141caef3e4ae"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gacd4d3c571364ac4b59f2141caef3e4ae">g_func_dip</a>) (UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)</td></tr>
+<tr class="memdesc:gacd4d3c571364ac4b59f2141caef3e4ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">draw indexed primitive, команда отрисовки.  <a href="group__sxgcore__redefinition__func.html#gacd4d3c571364ac4b59f2141caef3e4ae">Подробнее...</a><br /></td></tr>
+<tr class="separator:gacd4d3c571364ac4b59f2141caef3e4ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga16a922cc6d2cab556e29ad8e259f859c"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga16a922cc6d2cab556e29ad8e259f859c">g_func_mtl_set</a>) (ID id, float4x4 *world)</td></tr>
+<tr class="memdesc:ga16a922cc6d2cab556e29ad8e259f859c"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка материала id, world - мировая матрица.  <a href="group__sxgcore__redefinition__func.html#ga16a922cc6d2cab556e29ad8e259f859c">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga16a922cc6d2cab556e29ad8e259f859c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac6071cc219e96cc916f9fa8c5555f81c"><td class="memItemLeft" align="right" valign="top">typedef ID(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gac6071cc219e96cc916f9fa8c5555f81c">g_func_mtl_load</a>) (const char *name, int mtl_type)</td></tr>
+<tr class="memdesc:gac6071cc219e96cc916f9fa8c5555f81c"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка материала, name - имя текстуры с расширением, mtl_type - тип материала на случай провала загрузки.  <a href="group__sxgcore__redefinition__func.html#gac6071cc219e96cc916f9fa8c5555f81c">Подробнее...</a><br /></td></tr>
+<tr class="separator:gac6071cc219e96cc916f9fa8c5555f81c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5d3ef8064ffe9d5a7a1ca8a4e4d52d7b"><td class="memItemLeft" align="right" valign="top">
+typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga5d3ef8064ffe9d5a7a1ca8a4e4d52d7b">g_func_mtl_get_sort</a>) (ID id)</td></tr>
+<tr class="memdesc:ga5d3ef8064ffe9d5a7a1ca8a4e4d52d7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить сорт материала, по дефолту 0. <br /></td></tr>
+<tr class="separator:ga5d3ef8064ffe9d5a7a1ca8a4e4d52d7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae1e0986a68d12a634f92b4f41dd24789"><td class="memItemLeft" align="right" valign="top">
+typedef bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gae1e0986a68d12a634f92b4f41dd24789">g_func_mtl_group_render_is_singly</a>) (ID id)</td></tr>
+<tr class="memdesc:gae1e0986a68d12a634f92b4f41dd24789"><td class="mdescLeft">&#160;</td><td class="mdescRight">рисовать ли подгруппы моделей данного материала раздельно? <br /></td></tr>
+<tr class="separator:gae1e0986a68d12a634f92b4f41dd24789"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Перечисления</h2></td></tr>
+<tr class="memitem:ga6230e1b9ecbf2d82d10856fd7e1fde46"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> { <a class="el" href="group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a2d70842347ece461c8e7410727fc4ff7">st_vertex</a>, 
+<a class="el" href="group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a4d9ec09af36addcb899c486f722d72c7">st_pixel</a>
+ }<tr class="memdesc:ga6230e1b9ecbf2d82d10856fd7e1fde46"><td class="mdescLeft">&#160;</td><td class="mdescRight">типы шейдеров (int type_shader)  <a href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:ga6230e1b9ecbf2d82d10856fd7e1fde46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6394eb4c1449977b5a7cbb985724bba9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">ShaderCheckDouble</a> { <a class="el" href="group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a795c9cbe6e108ba419b45bdf859d342f">scd_none</a>, 
+<a class="el" href="group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a37e251ede797395dc2a8e540f5bd226e">scd_path</a>, 
+<a class="el" href="group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9ace17db85931ca03f87592df8fa44244d">scd_name</a>
+ }<tr class="memdesc:ga6394eb4c1449977b5a7cbb985724bba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">типы проверок дубликатов шейдеров  <a href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:ga6394eb4c1449977b5a7cbb985724bba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86ece31a4c96486dd9d3c6c65281152d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga86ece31a4c96486dd9d3c6c65281152d">LoadTexType</a> { <a class="el" href="group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152da801ab48b4e4b319b38612df761a0cfa1">ltt_load</a>, 
+<a class="el" href="group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152da022aad3a08f07f5d9e5a08684b0859f5">ltt_const</a>, 
+<a class="el" href="group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafc66ee4f8eaa32605f21dd2c24d523f3">ltt_custom</a>, 
+<a class="el" href="group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafa34324915b356bf4395a3a58407b106">ltt_self</a>
+ }<tr class="memdesc:ga86ece31a4c96486dd9d3c6c65281152d"><td class="mdescLeft">&#160;</td><td class="mdescRight">типы текстур  <a href="group__sxgcore__loadtex.html#ga86ece31a4c96486dd9d3c6c65281152d">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:ga86ece31a4c96486dd9d3c6c65281152d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr class="memitem:ga5a9f76538a8c8f15f31354ddee948397"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga5a9f76538a8c8f15f31354ddee948397">SGCore_ShaderLoad</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *path, const char *name, <a class="el" href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">ShaderCheckDouble</a> is_check_double, D3DXMACRO *macro=0)</td></tr>
+<tr class="memdesc:ga5a9f76538a8c8f15f31354ddee948397"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка шейдера  <a href="group__sxgcore__shaders.html#ga5a9f76538a8c8f15f31354ddee948397">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga5a9f76538a8c8f15f31354ddee948397"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3caaafd46ce50c2942d77a6847188df9"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga3caaafd46ce50c2942d77a6847188df9">SGCore_ShaderGetName</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, char *name)</td></tr>
+<tr class="memdesc:ga3caaafd46ce50c2942d77a6847188df9"><td class="mdescLeft">&#160;</td><td class="mdescRight">записывает пользовательское имя шейдера в name. <br /></td></tr>
+<tr class="separator:ga3caaafd46ce50c2942d77a6847188df9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab06e5db57890f043a54985761b2bd848"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gab06e5db57890f043a54985761b2bd848">SGCore_ShaderGetPath</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, char *path)</td></tr>
+<tr class="memdesc:gab06e5db57890f043a54985761b2bd848"><td class="mdescLeft">&#160;</td><td class="mdescRight">записывает имя шейдер с расширением в path. <br /></td></tr>
+<tr class="separator:gab06e5db57890f043a54985761b2bd848"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabd5628938ef58282085e0192d87fe507"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gabd5628938ef58282085e0192d87fe507">SGCore_ShaderIsExistName</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name)</td></tr>
+<tr class="memdesc:gabd5628938ef58282085e0192d87fe507"><td class="mdescLeft">&#160;</td><td class="mdescRight">существует ли шейдер с пользовательским именем name, если да то возвращает id. <br /></td></tr>
+<tr class="separator:gabd5628938ef58282085e0192d87fe507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad8e0d50605b268b6afe5e10942211b34"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gad8e0d50605b268b6afe5e10942211b34">SGCore_ShaderIsExistPath</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *path)</td></tr>
+<tr class="memdesc:gad8e0d50605b268b6afe5e10942211b34"><td class="mdescLeft">&#160;</td><td class="mdescRight">существует ли шейдер с именем файла и расширением name, если да то возвращает id. <br /></td></tr>
+<tr class="separator:gad8e0d50605b268b6afe5e10942211b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3ad6c22082fbc6e74ad338cc7ae10f11"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga3ad6c22082fbc6e74ad338cc7ae10f11">SGCore_ShaderIsValidate</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id)</td></tr>
+<tr class="memdesc:ga3ad6c22082fbc6e74ad338cc7ae10f11"><td class="mdescLeft">&#160;</td><td class="mdescRight">загружен ли шейдер с данным id. <br /></td></tr>
+<tr class="separator:ga3ad6c22082fbc6e74ad338cc7ae10f11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2d7c51f376886ef58e51312dbebcd90a"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga2d7c51f376886ef58e51312dbebcd90a">SGCore_ShaderUpdateN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name, D3DXMACRO macro[]=0)</td></tr>
+<tr class="memdesc:ga2d7c51f376886ef58e51312dbebcd90a"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по имени <br /></td></tr>
+<tr class="separator:ga2d7c51f376886ef58e51312dbebcd90a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf506f80b652171bb1dfc2b9ad63a0a0d"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gaf506f80b652171bb1dfc2b9ad63a0a0d">SGCore_ShaderUpdate</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, D3DXMACRO macro[]=0)</td></tr>
+<tr class="memdesc:gaf506f80b652171bb1dfc2b9ad63a0a0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по id. <br /></td></tr>
+<tr class="separator:gaf506f80b652171bb1dfc2b9ad63a0a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2031cde9823be27ca956517a1dd7edd3"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga2031cde9823be27ca956517a1dd7edd3">SGCore_ShaderSetStdPath</a> (const char *path)</td></tr>
+<tr class="memdesc:ga2031cde9823be27ca956517a1dd7edd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">установить абсолютный путь откуда брать шейдеры <br /></td></tr>
+<tr class="separator:ga2031cde9823be27ca956517a1dd7edd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4893393b9c49518cd12fa54bc7cd2c0d"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga4893393b9c49518cd12fa54bc7cd2c0d">SGCore_ShaderGetStdPath</a> (char *path)</td></tr>
+<tr class="memdesc:ga4893393b9c49518cd12fa54bc7cd2c0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает абсолютный путь откуда берутся шейдеры <br /></td></tr>
+<tr class="separator:ga4893393b9c49518cd12fa54bc7cd2c0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8ce34c187dd5192b54d49caaf1f20c6d"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga8ce34c187dd5192b54d49caaf1f20c6d">SGCore_ShaderReloadAll</a> ()</td></tr>
+<tr class="memdesc:ga8ce34c187dd5192b54d49caaf1f20c6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">перезагрузить все шейдеры, с учетом макросов <br /></td></tr>
+<tr class="separator:ga8ce34c187dd5192b54d49caaf1f20c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga91cf59a467ad5442327b9337419b23e5"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga91cf59a467ad5442327b9337419b23e5">SGCore_ShaderGetID</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name)</td></tr>
+<tr class="memdesc:ga91cf59a467ad5442327b9337419b23e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить идентификатор шейдера по имени <br /></td></tr>
+<tr class="separator:ga91cf59a467ad5442327b9337419b23e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga260f3af4cc3b7cb383e9f043c4128642"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga260f3af4cc3b7cb383e9f043c4128642">SGCore_ShaderBindN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name)</td></tr>
+<tr class="memdesc:ga260f3af4cc3b7cb383e9f043c4128642"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по имени <br /></td></tr>
+<tr class="separator:ga260f3af4cc3b7cb383e9f043c4128642"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga95f5d8813399c3f1537dbdb45371d09c"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga95f5d8813399c3f1537dbdb45371d09c">SGCore_ShaderBind</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id)</td></tr>
+<tr class="memdesc:ga95f5d8813399c3f1537dbdb45371d09c"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по id. <br /></td></tr>
+<tr class="separator:ga95f5d8813399c3f1537dbdb45371d09c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga79aa442ddc3e1013591b569d14f7f229"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga79aa442ddc3e1013591b569d14f7f229">SGCore_ShaderUnBind</a> ()</td></tr>
+<tr class="memdesc:ga79aa442ddc3e1013591b569d14f7f229"><td class="mdescLeft">&#160;</td><td class="mdescRight">обнуление биндов шейдеров <br /></td></tr>
+<tr class="separator:ga79aa442ddc3e1013591b569d14f7f229"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga446c3847a395e976d5aeb4fb3b212f2b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga446c3847a395e976d5aeb4fb3b212f2b">SGCore_LoadTexStdPath</a> (const char *path)</td></tr>
+<tr class="memdesc:ga446c3847a395e976d5aeb4fb3b212f2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">установить стандартный путь откуда брать текстуры <br /></td></tr>
+<tr class="separator:ga446c3847a395e976d5aeb4fb3b212f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad29625d62f95c25483b6f1348e0d5365"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#gad29625d62f95c25483b6f1348e0d5365">SGCore_LoadTexClearLoaded</a> ()</td></tr>
+<tr class="memdesc:gad29625d62f95c25483b6f1348e0d5365"><td class="mdescLeft">&#160;</td><td class="mdescRight">очистить список загружаемых текстур <br /></td></tr>
+<tr class="separator:gad29625d62f95c25483b6f1348e0d5365"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga004e0804f06824ff395042fcc97713d0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga004e0804f06824ff395042fcc97713d0">SGCore_LoadTexDelete</a> (ID id)</td></tr>
+<tr class="memdesc:ga004e0804f06824ff395042fcc97713d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">удалить тектуру по id (независимо от типа) <br /></td></tr>
+<tr class="separator:ga004e0804f06824ff395042fcc97713d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2dc8d679ffbd9814443a5863950f6431"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga2dc8d679ffbd9814443a5863950f6431">SGCore_LoadTexAddName</a> (const char *name, <a class="el" href="group__sxgcore__loadtex.html#ga86ece31a4c96486dd9d3c6c65281152d">LoadTexType</a> type)</td></tr>
+<tr class="memdesc:ga2dc8d679ffbd9814443a5863950f6431"><td class="mdescLeft">&#160;</td><td class="mdescRight">добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь) <br /></td></tr>
+<tr class="separator:ga2dc8d679ffbd9814443a5863950f6431"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaea798fd45f4b03f49ec27cdea8a4e93f"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#gaea798fd45f4b03f49ec27cdea8a4e93f">SGCore_LoadTexGetID</a> (const char *name)</td></tr>
+<tr class="memdesc:gaea798fd45f4b03f49ec27cdea8a4e93f"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить id по имени <br /></td></tr>
+<tr class="separator:gaea798fd45f4b03f49ec27cdea8a4e93f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga63b430d94788d2b7e01ceee44ac20ae0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga63b430d94788d2b7e01ceee44ac20ae0">SGCore_LoadTexGetName</a> (ID id, char *name)</td></tr>
+<tr class="memdesc:ga63b430d94788d2b7e01ceee44ac20ae0"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить имя по id. <br /></td></tr>
+<tr class="separator:ga63b430d94788d2b7e01ceee44ac20ae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga55bf42f8df825485b97eab7f89c3ea71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga55bf42f8df825485b97eab7f89c3ea71">SGCore_LoadTexCreate</a> (const char *name, IDirect3DTexture9 *tex)</td></tr>
+<tr class="memdesc:ga55bf42f8df825485b97eab7f89c3ea71"><td class="mdescLeft">&#160;</td><td class="mdescRight">создать место для текстуры tex и присвоить ей имя name, возвращает id.  <a href="group__sxgcore__loadtex.html#ga55bf42f8df825485b97eab7f89c3ea71">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga55bf42f8df825485b97eab7f89c3ea71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gada16a0678b9be9a3f29e2b4f28ab19ba"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#gada16a0678b9be9a3f29e2b4f28ab19ba">SGCore_LoadTexUpdateN</a> (const char *name, <a class="el" href="group__sxgcore__loadtex.html#ga86ece31a4c96486dd9d3c6c65281152d">LoadTexType</a> type)</td></tr>
+<tr class="memdesc:gada16a0678b9be9a3f29e2b4f28ab19ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет.  <a href="group__sxgcore__loadtex.html#gada16a0678b9be9a3f29e2b4f28ab19ba">Подробнее...</a><br /></td></tr>
+<tr class="separator:gada16a0678b9be9a3f29e2b4f28ab19ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7fdb4087a130b7b148ecc87fd6edcb52"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga7fdb4087a130b7b148ecc87fd6edcb52">SGCore_LoadTexUpdate</a> (ID id)</td></tr>
+<tr class="memdesc:ga7fdb4087a130b7b148ecc87fd6edcb52"><td class="mdescLeft">&#160;</td><td class="mdescRight">обновить/перезагрузить текстуру <br /></td></tr>
+<tr class="separator:ga7fdb4087a130b7b148ecc87fd6edcb52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1c3a204e04f9f05e3e0afe56ce560983"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html#ga1c3a204e04f9f05e3e0afe56ce560983">SGCore_LoadTexLoadTextures</a> ()</td></tr>
+<tr class="memdesc:ga1c3a204e04f9f05e3e0afe56ce560983"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка всех текстур поставленных в очередь, если есть очередь <br /></td></tr>
+<tr class="separator:ga1c3a204e04f9f05e3e0afe56ce560983"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga43a49950791526930eda0b08c06b119e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html#ga43a49950791526930eda0b08c06b119e">SGCore_RTAdd</a> (UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char *name, float coeffullscreen)</td></tr>
+<tr class="memdesc:ga43a49950791526930eda0b08c06b119e"><td class="mdescLeft">&#160;</td><td class="mdescRight">добавить новый render target.  <a href="group__sxgcore__rt.html#ga43a49950791526930eda0b08c06b119e">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga43a49950791526930eda0b08c06b119e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga54e7f69aa883ac275deac2a592f7e9df"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html#ga54e7f69aa883ac275deac2a592f7e9df">SGCore_RTDeleteN</a> (const char *name)</td></tr>
+<tr class="memdesc:ga54e7f69aa883ac275deac2a592f7e9df"><td class="mdescLeft">&#160;</td><td class="mdescRight">удалить rt по имени <br /></td></tr>
+<tr class="separator:ga54e7f69aa883ac275deac2a592f7e9df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7aa8a490449e1fdaebe83f2ffff0e4ab"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html#ga7aa8a490449e1fdaebe83f2ffff0e4ab">SGCore_RTDelete</a> (ID id)</td></tr>
+<tr class="memdesc:ga7aa8a490449e1fdaebe83f2ffff0e4ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">удалить rt по id. <br /></td></tr>
+<tr class="separator:ga7aa8a490449e1fdaebe83f2ffff0e4ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga787fde528cea4c9f88fe3a34193bd4ec"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html#ga787fde528cea4c9f88fe3a34193bd4ec">SGCore_RTGetNum</a> (const char *name)</td></tr>
+<tr class="memdesc:ga787fde528cea4c9f88fe3a34193bd4ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает id по имени <br /></td></tr>
+<tr class="separator:ga787fde528cea4c9f88fe3a34193bd4ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga333fa9235265bcf55449defce332676b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> IDirect3DTexture9 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html#ga333fa9235265bcf55449defce332676b">SGCore_RTGetTextureN</a> (const char *name)</td></tr>
+<tr class="memdesc:ga333fa9235265bcf55449defce332676b"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает текстуру по имени <br /></td></tr>
+<tr class="separator:ga333fa9235265bcf55449defce332676b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaad3fc0d0aa37c7cfd94a3459bf4f0794"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> IDirect3DTexture9 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html#gaad3fc0d0aa37c7cfd94a3459bf4f0794">SGCore_RTGetTexture</a> (ID id)</td></tr>
+<tr class="memdesc:gaad3fc0d0aa37c7cfd94a3459bf4f0794"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает текстуру по id. <br /></td></tr>
+<tr class="separator:gaad3fc0d0aa37c7cfd94a3459bf4f0794"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae50f3b7539206a8fd382e9cdcb6ade7e"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="struct_i_s_x_data_static_model.html">ISXDataStaticModel</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__dse__static.html#gae50f3b7539206a8fd382e9cdcb6ade7e">SGCore_StaticModelCr</a> ()</td></tr>
+<tr class="memdesc:gae50f3b7539206a8fd382e9cdcb6ade7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">создать статическую модель <br /></td></tr>
+<tr class="separator:gae50f3b7539206a8fd382e9cdcb6ade7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0a651a459c29b883dccbee1727f81026"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__dse__static.html#ga0a651a459c29b883dccbee1727f81026">SGCore_StaticModelLoad</a> (const char *file, <a class="el" href="struct_i_s_x_data_static_model.html">ISXDataStaticModel</a> **data)</td></tr>
+<tr class="memdesc:ga0a651a459c29b883dccbee1727f81026"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузить статическую модель, data инициализируется внутри <br /></td></tr>
+<tr class="separator:ga0a651a459c29b883dccbee1727f81026"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga895e42a3d32daf3e3b5463d4263bf582"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__dse__static.html#ga895e42a3d32daf3e3b5463d4263bf582">SGCore_StaticModelSave</a> (const char *file, <a class="el" href="struct_i_s_x_data_static_model.html">ISXDataStaticModel</a> **data)</td></tr>
+<tr class="memdesc:ga895e42a3d32daf3e3b5463d4263bf582"><td class="mdescLeft">&#160;</td><td class="mdescRight">сохранить статическую модель <br /></td></tr>
+<tr class="separator:ga895e42a3d32daf3e3b5463d4263bf582"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0f991418f15d510792a4ce99a6d172b6"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> IDirect3DVertexDeclaration9 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__dse__static.html#ga0f991418f15d510792a4ce99a6d172b6">SGCore_StaticModelGetDecl</a> ()</td></tr>
+<tr class="memdesc:ga0f991418f15d510792a4ce99a6d172b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает декларацию вершин статической модели <br /></td></tr>
+<tr class="separator:ga0f991418f15d510792a4ce99a6d172b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadbfbf63246af364e4d1cf0ec9c356747"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="struct_i_s_x_trans_object.html">ISXTransObject</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb.html#gadbfbf63246af364e4d1cf0ec9c356747">SGCore_CrTransObject</a> ()</td></tr>
+<tr class="memdesc:gadbfbf63246af364e4d1cf0ec9c356747"><td class="mdescLeft">&#160;</td><td class="mdescRight">создать <a class="el" href="struct_i_s_x_trans_object.html" title="Простой объект трансформаций с минимальным описанием. ">ISXTransObject</a>. <br /></td></tr>
+<tr class="separator:gadbfbf63246af364e4d1cf0ec9c356747"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga937f3873e20d24d2a3c056dfe4011bf7"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="class_i_s_x_bound.html">ISXBound</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb.html#ga937f3873e20d24d2a3c056dfe4011bf7">SGCore_CrBound</a> ()</td></tr>
+<tr class="memdesc:ga937f3873e20d24d2a3c056dfe4011bf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">создать <a class="el" href="class_i_s_x_bound.html" title="класс ограничивающего объема ">ISXBound</a>. <br /></td></tr>
+<tr class="separator:ga937f3873e20d24d2a3c056dfe4011bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7e390ca9ebb93cd2a6b0e77356f4f427"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga7e390ca9ebb93cd2a6b0e77356f4f427">SGCore_FCreateCone</a> (float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh **ppMesh, UINT iSideCount)</td></tr>
+<tr class="memdesc:ga7e390ca9ebb93cd2a6b0e77356f4f427"><td class="mdescLeft">&#160;</td><td class="mdescRight">создание меша (ID3DXMesh) конуса  <a href="group__sxgcore.html#ga7e390ca9ebb93cd2a6b0e77356f4f427">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga7e390ca9ebb93cd2a6b0e77356f4f427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa6ec3176498bedcd1f386743ec0e6995"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaa6ec3176498bedcd1f386743ec0e6995">SGCore_FCompBoundBox</a> (IDirect3DVertexBuffer9 *vertex_buffer, <a class="el" href="class_i_s_x_bound.html">ISXBound</a> **bound, DWORD count_vert, DWORD bytepervert)</td></tr>
+<tr class="memdesc:gaa6ec3176498bedcd1f386743ec0e6995"><td class="mdescLeft">&#160;</td><td class="mdescRight">просчет ограничивающего объема по вершинному буфер  <a href="group__sxgcore.html#gaa6ec3176498bedcd1f386743ec0e6995">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaa6ec3176498bedcd1f386743ec0e6995"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf4a0eb050832c1707046293d6b3b1ce0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaf4a0eb050832c1707046293d6b3b1ce0">SGCore_FCreateBoundingBoxMesh</a> (float3 *min, float3 *max, ID3DXMesh **bbmesh)</td></tr>
+<tr class="memdesc:gaf4a0eb050832c1707046293d6b3b1ce0"><td class="mdescLeft">&#160;</td><td class="mdescRight">создание меша (ID3DXMesh) ограничивающего объема <br /></td></tr>
+<tr class="separator:gaf4a0eb050832c1707046293d6b3b1ce0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf6c2281b354b2657e4870742f35288b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gacf6c2281b354b2657e4870742f35288b">SGCore_0ComBoundBoxArr8</a> (<a class="el" href="class_i_s_x_bound.html">ISXBound</a> *bound, <a class="el" href="class_i_s_x_bound.html">ISXBound</a> **bound_arr)</td></tr>
+<tr class="memdesc:gacf6c2281b354b2657e4870742f35288b"><td class="mdescLeft">&#160;</td><td class="mdescRight">кубическое (octo) деление объема (по всем трем осям)  <a href="group__sxgcore__bb__intersect.html#gacf6c2281b354b2657e4870742f35288b">Подробнее...</a><br /></td></tr>
+<tr class="separator:gacf6c2281b354b2657e4870742f35288b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b62d2f79f9707aac86adb4995c017e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga6b62d2f79f9707aac86adb4995c017e9">SGCore_0ComBoundBoxArr4</a> (<a class="el" href="class_i_s_x_bound.html">ISXBound</a> *bound, <a class="el" href="class_i_s_x_bound.html">ISXBound</a> **bound_arr)</td></tr>
+<tr class="memdesc:ga6b62d2f79f9707aac86adb4995c017e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">квадратичное (quad) деление объема (по двум осям x и z)  <a href="group__sxgcore__bb__intersect.html#ga6b62d2f79f9707aac86adb4995c017e9">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga6b62d2f79f9707aac86adb4995c017e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6f7e29131f4a271ad29316239ed816ff"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="class_i_s_x_frustum.html">ISXFrustum</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__camera.html#ga6f7e29131f4a271ad29316239ed816ff">SGCore_CrFrustum</a> ()</td></tr>
+<tr class="memdesc:ga6f7e29131f4a271ad29316239ed816ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">создать <a class="el" href="class_i_s_x_frustum.html" title="класс описывающий фрустум ">ISXFrustum</a>. <br /></td></tr>
+<tr class="separator:ga6f7e29131f4a271ad29316239ed816ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4dda46a3be12d76d3393569534990142"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="class_i_s_x_camera.html">ISXCamera</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__camera.html#ga4dda46a3be12d76d3393569534990142">SGCore_CrCamera</a> ()</td></tr>
+<tr class="memdesc:ga4dda46a3be12d76d3393569534990142"><td class="mdescLeft">&#160;</td><td class="mdescRight">создать <a class="el" href="class_i_s_x_camera.html" title="камера ">ISXCamera</a>. <br /></td></tr>
+<tr class="separator:ga4dda46a3be12d76d3393569534990142"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Базовые функции библиотеки</div></td></tr>
+<tr class="memitem:ga967677866498385f1c98256ff9fee53b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga967677866498385f1c98256ff9fee53b">SGCore_0GetVersion</a> ()</td></tr>
+<tr class="memdesc:ga967677866498385f1c98256ff9fee53b"><td class="mdescLeft">&#160;</td><td class="mdescRight">версия подсистемы <br /></td></tr>
+<tr class="separator:ga967677866498385f1c98256ff9fee53b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gab0478a99472ad9fe2373ee6f7bf8c962">SGCore_Dbg_Set</a> (<a class="el" href="gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb">report_func</a> rf)</td></tr>
+<tr class="memdesc:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка функции вывода сообщений <br /></td></tr>
+<tr class="separator:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae06fa073e050f9c267767af351151f21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gae06fa073e050f9c267767af351151f21">SGCore_0Create</a> (const char *name, HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags, bool is_unic=true)</td></tr>
+<tr class="memdesc:gae06fa073e050f9c267767af351151f21"><td class="mdescLeft">&#160;</td><td class="mdescRight">инициализация подсистемы  <a href="group__sxgcore.html#gae06fa073e050f9c267767af351151f21">Подробнее...</a><br /></td></tr>
+<tr class="separator:gae06fa073e050f9c267767af351151f21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab97c2192a26ac72c7285dd50e925245b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gab97c2192a26ac72c7285dd50e925245b">SGCore_0Kill</a> ()</td></tr>
+<tr class="memdesc:gab97c2192a26ac72c7285dd50e925245b"><td class="mdescLeft">&#160;</td><td class="mdescRight">уничтожение либы <br /></td></tr>
+<tr class="separator:gab97c2192a26ac72c7285dd50e925245b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga471bb610e76c98fb62cc2b1f7e753ee3"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> IDirect3DDevice9 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga471bb610e76c98fb62cc2b1f7e753ee3">SGCore_GetDXDevice</a> ()</td></tr>
+<tr class="memdesc:ga471bb610e76c98fb62cc2b1f7e753ee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает dx устройство <br /></td></tr>
+<tr class="separator:ga471bb610e76c98fb62cc2b1f7e753ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Обработка потери/восстановления устройства</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><dl class="section warning"><dt>Предупреждения</dt><dd>Функции обработки потери/восстановления устройства обрабатывают ресурсы только в пределах данной библиотеки, другие библиотеки должны сами производить данную обработку! </dd></dl>
+</div></td></tr>
+<tr class="memitem:gae7aba671c770761fb8513fc8e80fcbff"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gae7aba671c770761fb8513fc8e80fcbff">SGCore_OnLostDevice</a> ()</td></tr>
+<tr class="memdesc:gae7aba671c770761fb8513fc8e80fcbff"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызывать при потере устройства <br /></td></tr>
+<tr class="separator:gae7aba671c770761fb8513fc8e80fcbff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11181d7683a0c736c4e1f0347dbf95d7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga11181d7683a0c736c4e1f0347dbf95d7">SGCore_OnDeviceReset</a> (int width, int heigth, bool windewed)</td></tr>
+<tr class="memdesc:ga11181d7683a0c736c4e1f0347dbf95d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызывать при попытке сброса устройства  <a href="group__sxgcore.html#ga11181d7683a0c736c4e1f0347dbf95d7">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga11181d7683a0c736c4e1f0347dbf95d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaad477145204d97c421cf0b3fff020d49"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaad477145204d97c421cf0b3fff020d49">SGCore_OnResetDevice</a> ()</td></tr>
+<tr class="memdesc:gaad477145204d97c421cf0b3fff020d49"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызывать при сбросе устроства <br /></td></tr>
+<tr class="separator:gaad477145204d97c421cf0b3fff020d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaac859375cc473e0fb135b3c02e9779d3"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaac859375cc473e0fb135b3c02e9779d3">SGCore_ScreenQuadDraw</a> ()</td></tr>
+<tr class="memdesc:gaac859375cc473e0fb135b3c02e9779d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">отрисовка full screen quad (уже смещенного как надо чтобы не было размытия) <br /></td></tr>
+<tr class="separator:gaac859375cc473e0fb135b3c02e9779d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Базовые функции установки настроек выборки из текстуры</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>id - идентификатор текстурного слота value - для Filter D3DTEXTUREFILTERTYPE, для Address D3DTEXTUREADDRESS </p>
+</div></td></tr>
+<tr class="memitem:ga806f351809842713334d582e31bd0cd8"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga806f351809842713334d582e31bd0cd8">SGCore_SetSamplerFilter</a> (DWORD id, DWORD value)</td></tr>
+<tr class="memdesc:ga806f351809842713334d582e31bd0cd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка фильтрации для конкретного слота <br /></td></tr>
+<tr class="separator:ga806f351809842713334d582e31bd0cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae019c92bf5ba31603f553671f9382af7"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gae019c92bf5ba31603f553671f9382af7">SGCore_SetSamplerFilter2</a> (DWORD begin_id, DWORD end_id, DWORD value)</td></tr>
+<tr class="memdesc:gae019c92bf5ba31603f553671f9382af7"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка фильтрации для набора слотов от begin_id до end_id. <br /></td></tr>
+<tr class="separator:gae019c92bf5ba31603f553671f9382af7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga498de9cc792d5901a3c084c4b94e2372"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga498de9cc792d5901a3c084c4b94e2372">SGCore_SetSamplerAddress</a> (DWORD id, DWORD value)</td></tr>
+<tr class="memdesc:ga498de9cc792d5901a3c084c4b94e2372"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка адресации для конкретного слота <br /></td></tr>
+<tr class="separator:ga498de9cc792d5901a3c084c4b94e2372"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga19936d8db40a4f5432ab73998eb4c3f3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga19936d8db40a4f5432ab73998eb4c3f3">SGCore_SetSamplerAddress2</a> (DWORD begin_id, DWORD end_id, DWORD value)</td></tr>
+<tr class="separator:ga19936d8db40a4f5432ab73998eb4c3f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Переопределяемые функции(переопределение реализации внутри)</div></td></tr>
+<tr class="memitem:gabb490bb6d82aff7ea5b274430189425d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gabb490bb6d82aff7ea5b274430189425d">SGCore_DIP</a> (UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)</td></tr>
+<tr class="memdesc:gabb490bb6d82aff7ea5b274430189425d"><td class="mdescLeft">&#160;</td><td class="mdescRight">draw indexed primitive, команда отрисовки.  <a href="group__sxgcore__redefinition__func.html#gabb490bb6d82aff7ea5b274430189425d">Подробнее...</a><br /></td></tr>
+<tr class="separator:gabb490bb6d82aff7ea5b274430189425d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga638ad3e617906da08a0442a3840c9556"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga638ad3e617906da08a0442a3840c9556">SGCore_MtlSet</a> (ID id, float4x4 *world)</td></tr>
+<tr class="memdesc:ga638ad3e617906da08a0442a3840c9556"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка материала id, world - мировая матрица.  <a href="group__sxgcore__redefinition__func.html#ga638ad3e617906da08a0442a3840c9556">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga638ad3e617906da08a0442a3840c9556"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa04aa5b131c40285124b85b7e30d2411"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gaa04aa5b131c40285124b85b7e30d2411">SGCore_MtlLoad</a> (const char *name, int mtl_type)</td></tr>
+<tr class="memdesc:gaa04aa5b131c40285124b85b7e30d2411"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка материала, name - имя текстуры с расширением, mtl_type - тип материала на случай провала загрузки.  <a href="group__sxgcore__redefinition__func.html#gaa04aa5b131c40285124b85b7e30d2411">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaa04aa5b131c40285124b85b7e30d2411"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86e4a55e534b6d4b7eaf9b3128001f38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga86e4a55e534b6d4b7eaf9b3128001f38">SGCore_MtlGetSort</a> (ID id)</td></tr>
+<tr class="memdesc:ga86e4a55e534b6d4b7eaf9b3128001f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить сорт материала, по дефолту 0.  <a href="group__sxgcore__redefinition__func.html#ga86e4a55e534b6d4b7eaf9b3128001f38">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga86e4a55e534b6d4b7eaf9b3128001f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9d1ef5d2ef9473a366d1465d4932a7e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga9d1ef5d2ef9473a366d1465d4932a7e5">SGCore_MtlGroupRenderIsSingly</a> (ID id)</td></tr>
+<tr class="memdesc:ga9d1ef5d2ef9473a366d1465d4932a7e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">рисовать ли подгруппы моделей данного материала раздельно?  <a href="group__sxgcore__redefinition__func.html#ga9d1ef5d2ef9473a366d1465d4932a7e5">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga9d1ef5d2ef9473a366d1465d4932a7e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Переопределение функций</div></td></tr>
+<tr class="memitem:ga30320536d0e9fc703e476e820d263028"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga30320536d0e9fc703e476e820d263028">SGCore_SetFunc_DIP</a> (<a class="el" href="group__sxgcore__redefinition__func.html#gacd4d3c571364ac4b59f2141caef3e4ae">g_func_dip</a> func)</td></tr>
+<tr class="memdesc:ga30320536d0e9fc703e476e820d263028"><td class="mdescLeft">&#160;</td><td class="mdescRight">переназначение g_func_dip. <br /></td></tr>
+<tr class="separator:ga30320536d0e9fc703e476e820d263028"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae5c216ee5ef6c83ca46a32afbe3788ad"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gae5c216ee5ef6c83ca46a32afbe3788ad">SGCore_SetFunc_MtlSet</a> (<a class="el" href="group__sxgcore__redefinition__func.html#ga16a922cc6d2cab556e29ad8e259f859c">g_func_mtl_set</a> func)</td></tr>
+<tr class="memdesc:gae5c216ee5ef6c83ca46a32afbe3788ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">переназначение g_func_mtl_set. <br /></td></tr>
+<tr class="separator:gae5c216ee5ef6c83ca46a32afbe3788ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga21737dccc685feeb0865843b2e5322c0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#ga21737dccc685feeb0865843b2e5322c0">SGCore_SetFunc_MtlLoad</a> (<a class="el" href="group__sxgcore__redefinition__func.html#gac6071cc219e96cc916f9fa8c5555f81c">g_func_mtl_load</a> func)</td></tr>
+<tr class="memdesc:ga21737dccc685feeb0865843b2e5322c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">переназначение g_func_mtl_load. <br /></td></tr>
+<tr class="separator:ga21737dccc685feeb0865843b2e5322c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf1be15e4e304cf2ed2fb3576c13d5ab0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gaf1be15e4e304cf2ed2fb3576c13d5ab0">SGCore_SetFunc_MtlGetSort</a> (<a class="el" href="group__sxgcore__redefinition__func.html#ga5d3ef8064ffe9d5a7a1ca8a4e4d52d7b">g_func_mtl_get_sort</a> func)</td></tr>
+<tr class="memdesc:gaf1be15e4e304cf2ed2fb3576c13d5ab0"><td class="mdescLeft">&#160;</td><td class="mdescRight">переназначение g_func_mtl_get_sort. <br /></td></tr>
+<tr class="separator:gaf1be15e4e304cf2ed2fb3576c13d5ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa35531c6f9745c48e99107f8628737f6"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html#gaa35531c6f9745c48e99107f8628737f6">SGCore_SetFunc_MtlGroupRenderIsSingly</a> (<a class="el" href="group__sxgcore__redefinition__func.html#gae1e0986a68d12a634f92b4f41dd24789">g_func_mtl_group_render_is_singly</a> func)</td></tr>
+<tr class="memdesc:gaa35531c6f9745c48e99107f8628737f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">переназначение g_func_mtl_group_render_is_singly. <br /></td></tr>
+<tr class="separator:gaa35531c6f9745c48e99107f8628737f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Передача данных в шейдер</div></td></tr>
+<tr class="memitem:ga8882c7ee2e51571942e9027435004177"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga8882c7ee2e51571942e9027435004177">SGCore_ShaderSetVRFN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name_shader, const char *name_var, void *data, int count_float4=0)</td></tr>
+<tr class="memdesc:ga8882c7ee2e51571942e9027435004177"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача float значений в шейдер по имени  <a href="group__sxgcore__shaders.html#ga8882c7ee2e51571942e9027435004177">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga8882c7ee2e51571942e9027435004177"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0e42c175b0e2512263fcd7f1dfe3e459"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga0e42c175b0e2512263fcd7f1dfe3e459">SGCore_ShaderSetVRF</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, const char *name_var, void *data, int count_float4=0)</td></tr>
+<tr class="memdesc:ga0e42c175b0e2512263fcd7f1dfe3e459"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача float значений в шейдер по ID.  <a href="group__sxgcore__shaders.html#ga0e42c175b0e2512263fcd7f1dfe3e459">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga0e42c175b0e2512263fcd7f1dfe3e459"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c265622425b3556eb2c5c741157bb35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga3c265622425b3556eb2c5c741157bb35">SGCore_ShaderSetVRIN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name_shader, const char *name_var, void *data, int count_int4=0)</td></tr>
+<tr class="memdesc:ga3c265622425b3556eb2c5c741157bb35"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача int значений в шейдер по имени  <a href="group__sxgcore__shaders.html#ga3c265622425b3556eb2c5c741157bb35">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga3c265622425b3556eb2c5c741157bb35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadbd48105b0eb059f424cb12e9a1a43a3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gadbd48105b0eb059f424cb12e9a1a43a3">SGCore_ShaderSetVRI</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, const char *name_var, void *data, int count_int4=0)</td></tr>
+<tr class="memdesc:gadbd48105b0eb059f424cb12e9a1a43a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача int значений в шейдер по ID.  <a href="group__sxgcore__shaders.html#gadbd48105b0eb059f424cb12e9a1a43a3">Подробнее...</a><br /></td></tr>
+<tr class="separator:gadbd48105b0eb059f424cb12e9a1a43a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Оптимизация индексных буферов</div></td></tr>
+<tr class="memitem:gaebad723ee9ebbd665412b233446c36e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaebad723ee9ebbd665412b233446c36e4">SGCore_OptimizeIndecesInSubsetUint16</a> (uint16_t *ib, uint16_t numFaces, uint16_t numVerts)</td></tr>
+<tr class="memdesc:gaebad723ee9ebbd665412b233446c36e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">16 битные индексные буферы  <a href="group__sxgcore.html#gaebad723ee9ebbd665412b233446c36e4">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaebad723ee9ebbd665412b233446c36e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5b4f1faebfaa524d26c30a2f69d5c786"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga5b4f1faebfaa524d26c30a2f69d5c786">SGCore_OptimizeIndecesInSubsetUint32</a> (uint32_t *ib, uint32_t numFaces, uint32_t numVerts)</td></tr>
+<tr class="memdesc:ga5b4f1faebfaa524d26c30a2f69d5c786"><td class="mdescLeft">&#160;</td><td class="mdescRight">16 битные индексные буферы  <a href="group__sxgcore.html#ga5b4f1faebfaa524d26c30a2f69d5c786">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga5b4f1faebfaa524d26c30a2f69d5c786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Просчеты попадания точки/точек в объем</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><dl class="section note"><dt>Заметки</dt><dd>2d - на основании x и z координат <br />
+3d - на основании всех трех координат <br />
+Abs - абсолютное нахождение внутри, не на границах, иное допускает нахождение на границах </dd></dl>
+</div></td></tr>
+<tr class="memitem:gadb6bda0b983a16684c166788a948e053"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gadb6bda0b983a16684c166788a948e053">SGCore_0InPos2D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:gadb6bda0b983a16684c166788a948e053"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах [min,max] по осям x z. <br /></td></tr>
+<tr class="separator:gadb6bda0b983a16684c166788a948e053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7335079b1952e33be14a99a350466220"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga7335079b1952e33be14a99a350466220">SGCore_0InPosAbs2D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:ga7335079b1952e33be14a99a350466220"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах (min,max) по осям x z. <br /></td></tr>
+<tr class="separator:ga7335079b1952e33be14a99a350466220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab824693464e1f41f32103a3f0e847f0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gaab824693464e1f41f32103a3f0e847f0">SGCore_0CountPosPoints2D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gaab824693464e1f41f32103a3f0e847f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max] по осям x z. <br /></td></tr>
+<tr class="separator:gaab824693464e1f41f32103a3f0e847f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7013a0d2afe4d4dcdb206fc20c836285"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga7013a0d2afe4d4dcdb206fc20c836285">SGCore_0CountPosPointsAbs2D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:ga7013a0d2afe4d4dcdb206fc20c836285"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max) по осям x z. <br /></td></tr>
+<tr class="separator:ga7013a0d2afe4d4dcdb206fc20c836285"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga549befdd0d357bf168a3433006fd19ff"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga549befdd0d357bf168a3433006fd19ff">SGCore_0InPosPoints2D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:ga549befdd0d357bf168a3433006fd19ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3, по осям x z. <br /></td></tr>
+<tr class="separator:ga549befdd0d357bf168a3433006fd19ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7310f3dedae5b57f7ba3fb07c72fe305"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga7310f3dedae5b57f7ba3fb07c72fe305">SGCore_0InPos3D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:ga7310f3dedae5b57f7ba3fb07c72fe305"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах [min,max]. <br /></td></tr>
+<tr class="separator:ga7310f3dedae5b57f7ba3fb07c72fe305"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2b2e07f972793f55b8f15e7a1299246f"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga2b2e07f972793f55b8f15e7a1299246f">SGCore_0InPosAbs3D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:ga2b2e07f972793f55b8f15e7a1299246f"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах (min,max) <br /></td></tr>
+<tr class="separator:ga2b2e07f972793f55b8f15e7a1299246f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa64255e65dd1c16e0de0170bb598050c"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gaa64255e65dd1c16e0de0170bb598050c">SGCore_0CountPosPoints3D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gaa64255e65dd1c16e0de0170bb598050c"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]. <br /></td></tr>
+<tr class="separator:gaa64255e65dd1c16e0de0170bb598050c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0eeeb9ad15f04c40e52f3dbabaaecbf"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gae0eeeb9ad15f04c40e52f3dbabaaecbf">SGCore_0CountPosPointsAbs3D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gae0eeeb9ad15f04c40e52f3dbabaaecbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max) <br /></td></tr>
+<tr class="separator:gae0eeeb9ad15f04c40e52f3dbabaaecbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaefb762f931f3d8a8dd63de8476a513ad"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gaefb762f931f3d8a8dd63de8476a513ad">SGCore_0InPosPoints3D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gaefb762f931f3d8a8dd63de8476a513ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3. <br /></td></tr>
+<tr class="separator:gaefb762f931f3d8a8dd63de8476a513ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">SkyBox</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><dl class="section note"><dt>Заметки</dt><dd>Используются кубические текстуры </dd></dl>
+</div></td></tr>
+<tr class="memitem:ga3f1cefcc6cde9696ecf9525c2b8e8849"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga3f1cefcc6cde9696ecf9525c2b8e8849">SGCore_SkyBoxCr</a> ()</td></tr>
+<tr class="memdesc:ga3f1cefcc6cde9696ecf9525c2b8e8849"><td class="mdescLeft">&#160;</td><td class="mdescRight">создание <br /></td></tr>
+<tr class="separator:ga3f1cefcc6cde9696ecf9525c2b8e8849"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa0b0e969bad15490ad323bd00fe6bd40"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gaa0b0e969bad15490ad323bd00fe6bd40">SGCore_SkyBoxIsCr</a> ()</td></tr>
+<tr class="memdesc:gaa0b0e969bad15490ad323bd00fe6bd40"><td class="mdescLeft">&#160;</td><td class="mdescRight">инициализирован ли skybox. <br /></td></tr>
+<tr class="separator:gaa0b0e969bad15490ad323bd00fe6bd40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0d0ac2e29318ede423de03e795011d78"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga0d0ac2e29318ede423de03e795011d78">SGCore_SkyBoxSetStdPathTex</a> (const char *path)</td></tr>
+<tr class="memdesc:ga0d0ac2e29318ede423de03e795011d78"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка пути, относительно которого будут загружаться текстуры <br /></td></tr>
+<tr class="separator:ga0d0ac2e29318ede423de03e795011d78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8613be9f95a200852a376b1a084b144e"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga8613be9f95a200852a376b1a084b144e">SGCore_SkyBoxGetStdPathTex</a> (char *path)</td></tr>
+<tr class="memdesc:ga8613be9f95a200852a376b1a084b144e"><td class="mdescLeft">&#160;</td><td class="mdescRight">в path записывает путь относительно которого загружаются текстуры <br /></td></tr>
+<tr class="separator:ga8613be9f95a200852a376b1a084b144e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga72d8056acaa463432d8613c1d6fc4664"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga72d8056acaa463432d8613c1d6fc4664">SGCore_SkyBoxLoadTex</a> (const char *texture)</td></tr>
+<tr class="memdesc:ga72d8056acaa463432d8613c1d6fc4664"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка текстуры, texture - имя текстуры с расширением <br /></td></tr>
+<tr class="separator:ga72d8056acaa463432d8613c1d6fc4664"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga726fec17bcf6f61d012af2e049e19831"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga726fec17bcf6f61d012af2e049e19831">SGCore_SkyBoxChangeTex</a> (const char *texture)</td></tr>
+<tr class="memdesc:ga726fec17bcf6f61d012af2e049e19831"><td class="mdescLeft">&#160;</td><td class="mdescRight">смена текстуры, texture - имя текстуры с расширением <br /></td></tr>
+<tr class="separator:ga726fec17bcf6f61d012af2e049e19831"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadd362ec9ba5407aca7539d78cd990aca"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gadd362ec9ba5407aca7539d78cd990aca">SGCore_SkyBoxSetRot</a> (float angle)</td></tr>
+<tr class="memdesc:gadd362ec9ba5407aca7539d78cd990aca"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка угла поворота angle по оси y, в радианах <br /></td></tr>
+<tr class="separator:gadd362ec9ba5407aca7539d78cd990aca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2b238f63994cb785e1c231a1a60f8bf0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga2b238f63994cb785e1c231a1a60f8bf0">SGCore_SkyBoxGetRot</a> ()</td></tr>
+<tr class="memdesc:ga2b238f63994cb785e1c231a1a60f8bf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает угол поворота по оси y, в радианах <br /></td></tr>
+<tr class="separator:ga2b238f63994cb785e1c231a1a60f8bf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga283df35c4258e001c98162167ebe3743"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga283df35c4258e001c98162167ebe3743">SGCore_SkyBoxSetColor</a> (float4_t *color)</td></tr>
+<tr class="memdesc:ga283df35c4258e001c98162167ebe3743"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен <br /></td></tr>
+<tr class="separator:ga283df35c4258e001c98162167ebe3743"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab5d5e7b0fd6c9e0fabd402fcbc1a348"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gaab5d5e7b0fd6c9e0fabd402fcbc1a348">SGCore_SkyBoxGetColor</a> (float4_t *color)</td></tr>
+<tr class="memdesc:gaab5d5e7b0fd6c9e0fabd402fcbc1a348"><td class="mdescLeft">&#160;</td><td class="mdescRight">в color записывает текущий цвет окраски <br /></td></tr>
+<tr class="separator:gaab5d5e7b0fd6c9e0fabd402fcbc1a348"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ae8d74a725de10e18535238513b0f87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga2ae8d74a725de10e18535238513b0f87">SGCore_SkyBoxRender</a> (float timeDelta, float3 *pos)</td></tr>
+<tr class="memdesc:ga2ae8d74a725de10e18535238513b0f87"><td class="mdescLeft">&#160;</td><td class="mdescRight">рендер скайбокса  <a href="group__sxgcore__sky.html#ga2ae8d74a725de10e18535238513b0f87">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga2ae8d74a725de10e18535238513b0f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">SkyClouds</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><dl class="section note"><dt>Заметки</dt><dd>Простая плоскость параллельная xz на которую зеркально (х2) натягивается текстура, в постоянном движении. Положение констатно. Используются обычные 2д текстуры. </dd></dl>
+</div></td></tr>
+<tr class="memitem:ga0cc5c2e55712cccc5380f910dd012d10"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga0cc5c2e55712cccc5380f910dd012d10">SGCore_SkyCloudsCr</a> ()</td></tr>
+<tr class="memdesc:ga0cc5c2e55712cccc5380f910dd012d10"><td class="mdescLeft">&#160;</td><td class="mdescRight">создание <br /></td></tr>
+<tr class="separator:ga0cc5c2e55712cccc5380f910dd012d10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa3a41fbe8c5329c3c5891daef7bcb729"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gaa3a41fbe8c5329c3c5891daef7bcb729">SGCore_SkyCloudsIsCr</a> ()</td></tr>
+<tr class="memdesc:gaa3a41fbe8c5329c3c5891daef7bcb729"><td class="mdescLeft">&#160;</td><td class="mdescRight">инициализирован ли sky clouds. <br /></td></tr>
+<tr class="separator:gaa3a41fbe8c5329c3c5891daef7bcb729"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabce5dfead874f4849efb70f6e8d6aff5"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gabce5dfead874f4849efb70f6e8d6aff5">SGCore_SkyCloudsSetStdPathTex</a> (const char *path)</td></tr>
+<tr class="memdesc:gabce5dfead874f4849efb70f6e8d6aff5"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка пути, относительно которого будут загружаться текстуры <br /></td></tr>
+<tr class="separator:gabce5dfead874f4849efb70f6e8d6aff5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8a6c689c2d489a97e0387c6676349a59"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga8a6c689c2d489a97e0387c6676349a59">SGCore_SkyCloudsGetStdPathTex</a> (char *path)</td></tr>
+<tr class="memdesc:ga8a6c689c2d489a97e0387c6676349a59"><td class="mdescLeft">&#160;</td><td class="mdescRight">в path записывает путь относительно которого загружаются текстуры <br /></td></tr>
+<tr class="separator:ga8a6c689c2d489a97e0387c6676349a59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5aeabd390bc57fe69c602e471e2131b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga5aeabd390bc57fe69c602e471e2131b8">SGCore_SkyCloudsSetWidthHeightPos</a> (float width, float height, float3 *center)</td></tr>
+<tr class="memdesc:ga5aeabd390bc57fe69c602e471e2131b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка размеров и позиции.  <a href="group__sxgcore__sky.html#ga5aeabd390bc57fe69c602e471e2131b8">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga5aeabd390bc57fe69c602e471e2131b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3123928f2bf1062ad3cc344c969558f1"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga3123928f2bf1062ad3cc344c969558f1">SGCore_SkyCloudsLoadTex</a> (const char *texture)</td></tr>
+<tr class="memdesc:ga3123928f2bf1062ad3cc344c969558f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка текстуры, texture - имя текстуры с расширением <br /></td></tr>
+<tr class="separator:ga3123928f2bf1062ad3cc344c969558f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafbf5689edf2654c22b2a9a19b2ebe312"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gafbf5689edf2654c22b2a9a19b2ebe312">SGCore_SkyCloudsChangeTex</a> (const char *texture)</td></tr>
+<tr class="memdesc:gafbf5689edf2654c22b2a9a19b2ebe312"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка текстуры, texture - имя текстуры с расширением <br /></td></tr>
+<tr class="separator:gafbf5689edf2654c22b2a9a19b2ebe312"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4066ecc6781aade44f889314b8fbf78f"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga4066ecc6781aade44f889314b8fbf78f">SGCore_SkyCloudsSetRot</a> (float angle)</td></tr>
+<tr class="memdesc:ga4066ecc6781aade44f889314b8fbf78f"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка угла поворота angle по оси y, в радианах <br /></td></tr>
+<tr class="separator:ga4066ecc6781aade44f889314b8fbf78f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga40c813a68f88be193a6b27b38b1dac54"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga40c813a68f88be193a6b27b38b1dac54">SGCore_SkyCloudsGetRot</a> ()</td></tr>
+<tr class="memdesc:ga40c813a68f88be193a6b27b38b1dac54"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает текущий угол поворота по оси y, в радианах <br /></td></tr>
+<tr class="separator:ga40c813a68f88be193a6b27b38b1dac54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3a0a70af05f704eea3e70fded4b38cb0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga3a0a70af05f704eea3e70fded4b38cb0">SGCore_SkyCloudsSetAlpha</a> (float alpha)</td></tr>
+<tr class="memdesc:ga3a0a70af05f704eea3e70fded4b38cb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">устанавливает коэфициент прозрачности, в пределах 0-1. <br /></td></tr>
+<tr class="separator:ga3a0a70af05f704eea3e70fded4b38cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga31284f3d29e9697676e50a095a6a4716"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga31284f3d29e9697676e50a095a6a4716">SGCore_SkyCloudsGetAlpha</a> ()</td></tr>
+<tr class="memdesc:ga31284f3d29e9697676e50a095a6a4716"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает текущий коэфициент прозрачности <br /></td></tr>
+<tr class="separator:ga31284f3d29e9697676e50a095a6a4716"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga73b8ed281817bdbc6b39ec0dd654b60a"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga73b8ed281817bdbc6b39ec0dd654b60a">SGCore_SkyCloudsSetColor</a> (float4_t *color)</td></tr>
+<tr class="memdesc:ga73b8ed281817bdbc6b39ec0dd654b60a"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен <br /></td></tr>
+<tr class="separator:ga73b8ed281817bdbc6b39ec0dd654b60a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac205a6fab9857134a88859139410ca2c"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#gac205a6fab9857134a88859139410ca2c">SGCore_SkyCloudsGetColor</a> (float4_t *color)</td></tr>
+<tr class="memdesc:gac205a6fab9857134a88859139410ca2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">в color записывает текущий цвет окраски <br /></td></tr>
+<tr class="separator:gac205a6fab9857134a88859139410ca2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga71d2085d27e53a8ed34d13467967b51b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html#ga71d2085d27e53a8ed34d13467967b51b">SGCore_SkyCloudsRender</a> (DWORD timeDetlta, float3 *pos, bool is_shadow)</td></tr>
+<tr class="memdesc:ga71d2085d27e53a8ed34d13467967b51b"><td class="mdescLeft">&#160;</td><td class="mdescRight">рендер облаков  <a href="group__sxgcore__sky.html#ga71d2085d27e53a8ed34d13467967b51b">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga71d2085d27e53a8ed34d13467967b51b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Отладочное сообщение в окне рендера</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p><a class="anchor" id="amgrpe81e063d268031e082019d22f098b676"></a> </p><dl class="section note"><dt>Заметки</dt><dd>Графическое ядро предусматривает наличие текстового сообщения в окне рендера, которое формирует непосредственно сам программист и дает команду на его вывод </dd></dl>
+</td></tr>
+<tr class="memitem:ga8b8e491584d042c41ca5addbf0f2e6e7"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga8b8e491584d042c41ca5addbf0f2e6e7">SXGC_STR_SIZE_DBG_MSG</a>&#160;&#160;&#160;4096</td></tr>
+<tr class="memdesc:ga8b8e491584d042c41ca5addbf0f2e6e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">размер отладочного сообщения, выводимого в окно рендера <br /></td></tr>
+<tr class="separator:ga8b8e491584d042c41ca5addbf0f2e6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9311f51ac16ed2a6d5af673cd374e301"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga9311f51ac16ed2a6d5af673cd374e301">SGCore_DbgMsg</a> (const char *format,...)</td></tr>
+<tr class="memdesc:ga9311f51ac16ed2a6d5af673cd374e301"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вывод отладочного сообщения в окно рендера.  <a href="group__sxgcore.html#ga9311f51ac16ed2a6d5af673cd374e301">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga9311f51ac16ed2a6d5af673cd374e301"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<div class="textblock"><p>Заголовочный файл sxgcore - графического ядра (переопределяемые функции, шейдеры, загружаемые текстуры, render targets, ограничиваюий объем, камера, статическая модель dse формата, skybox, skyclouds) </p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b.html">source</a></li><li class="navelem"><a class="el" href="dir_97e64f1c5bd24fa299f45022abab3495.html">gcore</a></li><li class="navelem"><a class="el" href="sxgcore_8h.html">sxgcore.h</a></li>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Вт 25 Апр 2017 23:26:18. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,4 +1,9 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license see in LICENSE
+******************************************************/
+
 #define SXPP_VERSION 1
 
 #if !defined(DEF_STD_REPORT)

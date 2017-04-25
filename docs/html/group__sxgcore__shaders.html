@@ -1,0 +1,635 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Шейдеры</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('group__sxgcore__shaders.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#enum-members">Перечисления</a> &#124;
+<a href="#func-members">Функции</a>  </div>
+  <div class="headertitle">
+<div class="title">Шейдеры<div class="ingroups"><a class="el" href="group__sxgcore.html">sxgcore - графическое ядро, использует технологии DirectX 9</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Перечисления</h2></td></tr>
+<tr class="memitem:ga6230e1b9ecbf2d82d10856fd7e1fde46"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> { <a class="el" href="group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a2d70842347ece461c8e7410727fc4ff7">st_vertex</a>, 
+<a class="el" href="group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a4d9ec09af36addcb899c486f722d72c7">st_pixel</a>
+ }<tr class="memdesc:ga6230e1b9ecbf2d82d10856fd7e1fde46"><td class="mdescLeft">&#160;</td><td class="mdescRight">типы шейдеров (int type_shader)  <a href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:ga6230e1b9ecbf2d82d10856fd7e1fde46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6394eb4c1449977b5a7cbb985724bba9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">ShaderCheckDouble</a> { <a class="el" href="group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a795c9cbe6e108ba419b45bdf859d342f">scd_none</a>, 
+<a class="el" href="group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a37e251ede797395dc2a8e540f5bd226e">scd_path</a>, 
+<a class="el" href="group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9ace17db85931ca03f87592df8fa44244d">scd_name</a>
+ }<tr class="memdesc:ga6394eb4c1449977b5a7cbb985724bba9"><td class="mdescLeft">&#160;</td><td class="mdescRight">типы проверок дубликатов шейдеров  <a href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">Подробнее...</a><br /></td></tr>
+</td></tr>
+<tr class="separator:ga6394eb4c1449977b5a7cbb985724bba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr class="memitem:ga5a9f76538a8c8f15f31354ddee948397"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga5a9f76538a8c8f15f31354ddee948397">SGCore_ShaderLoad</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *path, const char *name, <a class="el" href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">ShaderCheckDouble</a> is_check_double, D3DXMACRO *macro=0)</td></tr>
+<tr class="memdesc:ga5a9f76538a8c8f15f31354ddee948397"><td class="mdescLeft">&#160;</td><td class="mdescRight">загрузка шейдера  <a href="#ga5a9f76538a8c8f15f31354ddee948397">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga5a9f76538a8c8f15f31354ddee948397"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3caaafd46ce50c2942d77a6847188df9"><td class="memItemLeft" align="right" valign="top"><a id="ga3caaafd46ce50c2942d77a6847188df9"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga3caaafd46ce50c2942d77a6847188df9">SGCore_ShaderGetName</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, char *name)</td></tr>
+<tr class="memdesc:ga3caaafd46ce50c2942d77a6847188df9"><td class="mdescLeft">&#160;</td><td class="mdescRight">записывает пользовательское имя шейдера в name. <br /></td></tr>
+<tr class="separator:ga3caaafd46ce50c2942d77a6847188df9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab06e5db57890f043a54985761b2bd848"><td class="memItemLeft" align="right" valign="top"><a id="gab06e5db57890f043a54985761b2bd848"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gab06e5db57890f043a54985761b2bd848">SGCore_ShaderGetPath</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, char *path)</td></tr>
+<tr class="memdesc:gab06e5db57890f043a54985761b2bd848"><td class="mdescLeft">&#160;</td><td class="mdescRight">записывает имя шейдер с расширением в path. <br /></td></tr>
+<tr class="separator:gab06e5db57890f043a54985761b2bd848"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabd5628938ef58282085e0192d87fe507"><td class="memItemLeft" align="right" valign="top"><a id="gabd5628938ef58282085e0192d87fe507"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gabd5628938ef58282085e0192d87fe507">SGCore_ShaderIsExistName</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name)</td></tr>
+<tr class="memdesc:gabd5628938ef58282085e0192d87fe507"><td class="mdescLeft">&#160;</td><td class="mdescRight">существует ли шейдер с пользовательским именем name, если да то возвращает id. <br /></td></tr>
+<tr class="separator:gabd5628938ef58282085e0192d87fe507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad8e0d50605b268b6afe5e10942211b34"><td class="memItemLeft" align="right" valign="top"><a id="gad8e0d50605b268b6afe5e10942211b34"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gad8e0d50605b268b6afe5e10942211b34">SGCore_ShaderIsExistPath</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *path)</td></tr>
+<tr class="memdesc:gad8e0d50605b268b6afe5e10942211b34"><td class="mdescLeft">&#160;</td><td class="mdescRight">существует ли шейдер с именем файла и расширением name, если да то возвращает id. <br /></td></tr>
+<tr class="separator:gad8e0d50605b268b6afe5e10942211b34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3ad6c22082fbc6e74ad338cc7ae10f11"><td class="memItemLeft" align="right" valign="top"><a id="ga3ad6c22082fbc6e74ad338cc7ae10f11"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga3ad6c22082fbc6e74ad338cc7ae10f11">SGCore_ShaderIsValidate</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id)</td></tr>
+<tr class="memdesc:ga3ad6c22082fbc6e74ad338cc7ae10f11"><td class="mdescLeft">&#160;</td><td class="mdescRight">загружен ли шейдер с данным id. <br /></td></tr>
+<tr class="separator:ga3ad6c22082fbc6e74ad338cc7ae10f11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2d7c51f376886ef58e51312dbebcd90a"><td class="memItemLeft" align="right" valign="top"><a id="ga2d7c51f376886ef58e51312dbebcd90a"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga2d7c51f376886ef58e51312dbebcd90a">SGCore_ShaderUpdateN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name, D3DXMACRO macro[]=0)</td></tr>
+<tr class="memdesc:ga2d7c51f376886ef58e51312dbebcd90a"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по имени <br /></td></tr>
+<tr class="separator:ga2d7c51f376886ef58e51312dbebcd90a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf506f80b652171bb1dfc2b9ad63a0a0d"><td class="memItemLeft" align="right" valign="top"><a id="gaf506f80b652171bb1dfc2b9ad63a0a0d"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gaf506f80b652171bb1dfc2b9ad63a0a0d">SGCore_ShaderUpdate</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, D3DXMACRO macro[]=0)</td></tr>
+<tr class="memdesc:gaf506f80b652171bb1dfc2b9ad63a0a0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по id. <br /></td></tr>
+<tr class="separator:gaf506f80b652171bb1dfc2b9ad63a0a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2031cde9823be27ca956517a1dd7edd3"><td class="memItemLeft" align="right" valign="top"><a id="ga2031cde9823be27ca956517a1dd7edd3"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga2031cde9823be27ca956517a1dd7edd3">SGCore_ShaderSetStdPath</a> (const char *path)</td></tr>
+<tr class="memdesc:ga2031cde9823be27ca956517a1dd7edd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">установить абсолютный путь откуда брать шейдеры <br /></td></tr>
+<tr class="separator:ga2031cde9823be27ca956517a1dd7edd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4893393b9c49518cd12fa54bc7cd2c0d"><td class="memItemLeft" align="right" valign="top"><a id="ga4893393b9c49518cd12fa54bc7cd2c0d"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga4893393b9c49518cd12fa54bc7cd2c0d">SGCore_ShaderGetStdPath</a> (char *path)</td></tr>
+<tr class="memdesc:ga4893393b9c49518cd12fa54bc7cd2c0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает абсолютный путь откуда берутся шейдеры <br /></td></tr>
+<tr class="separator:ga4893393b9c49518cd12fa54bc7cd2c0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8ce34c187dd5192b54d49caaf1f20c6d"><td class="memItemLeft" align="right" valign="top"><a id="ga8ce34c187dd5192b54d49caaf1f20c6d"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga8ce34c187dd5192b54d49caaf1f20c6d">SGCore_ShaderReloadAll</a> ()</td></tr>
+<tr class="memdesc:ga8ce34c187dd5192b54d49caaf1f20c6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">перезагрузить все шейдеры, с учетом макросов <br /></td></tr>
+<tr class="separator:ga8ce34c187dd5192b54d49caaf1f20c6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga91cf59a467ad5442327b9337419b23e5"><td class="memItemLeft" align="right" valign="top"><a id="ga91cf59a467ad5442327b9337419b23e5"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga91cf59a467ad5442327b9337419b23e5">SGCore_ShaderGetID</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name)</td></tr>
+<tr class="memdesc:ga91cf59a467ad5442327b9337419b23e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить идентификатор шейдера по имени <br /></td></tr>
+<tr class="separator:ga91cf59a467ad5442327b9337419b23e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga260f3af4cc3b7cb383e9f043c4128642"><td class="memItemLeft" align="right" valign="top"><a id="ga260f3af4cc3b7cb383e9f043c4128642"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga260f3af4cc3b7cb383e9f043c4128642">SGCore_ShaderBindN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name)</td></tr>
+<tr class="memdesc:ga260f3af4cc3b7cb383e9f043c4128642"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по имени <br /></td></tr>
+<tr class="separator:ga260f3af4cc3b7cb383e9f043c4128642"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga95f5d8813399c3f1537dbdb45371d09c"><td class="memItemLeft" align="right" valign="top"><a id="ga95f5d8813399c3f1537dbdb45371d09c"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga95f5d8813399c3f1537dbdb45371d09c">SGCore_ShaderBind</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id)</td></tr>
+<tr class="memdesc:ga95f5d8813399c3f1537dbdb45371d09c"><td class="mdescLeft">&#160;</td><td class="mdescRight">бинд шейдера по id. <br /></td></tr>
+<tr class="separator:ga95f5d8813399c3f1537dbdb45371d09c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga79aa442ddc3e1013591b569d14f7f229"><td class="memItemLeft" align="right" valign="top"><a id="ga79aa442ddc3e1013591b569d14f7f229"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga79aa442ddc3e1013591b569d14f7f229">SGCore_ShaderUnBind</a> ()</td></tr>
+<tr class="memdesc:ga79aa442ddc3e1013591b569d14f7f229"><td class="mdescLeft">&#160;</td><td class="mdescRight">обнуление биндов шейдеров <br /></td></tr>
+<tr class="separator:ga79aa442ddc3e1013591b569d14f7f229"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Ограничения на размеры</h2></td></tr>
+<tr class="memitem:ga1b12b8c7df7b228ed4485839a0af4b56"><td class="memItemLeft" align="right" valign="top"><a id="ga1b12b8c7df7b228ed4485839a0af4b56"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga1b12b8c7df7b228ed4485839a0af4b56">SXGC_SHADER_MAX_SIZE_DIR</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga1b12b8c7df7b228ed4485839a0af4b56"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени директории (до _) <br /></td></tr>
+<tr class="separator:ga1b12b8c7df7b228ed4485839a0af4b56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7d2e503a42e0462edefdf2d0e935c0fd"><td class="memItemLeft" align="right" valign="top"><a id="ga7d2e503a42e0462edefdf2d0e935c0fd"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga7d2e503a42e0462edefdf2d0e935c0fd">SXGC_SHADER_MAX_SIZE_NAME</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga7d2e503a42e0462edefdf2d0e935c0fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени с расширением (после _) <br /></td></tr>
+<tr class="separator:ga7d2e503a42e0462edefdf2d0e935c0fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga48892df21f63c0008949d85574bbd022"><td class="memItemLeft" align="right" valign="top"><a id="ga48892df21f63c0008949d85574bbd022"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga48892df21f63c0008949d85574bbd022">SXGC_SHADER_MAX_SIZE_DIRNAME</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#ga1b12b8c7df7b228ed4485839a0af4b56">SXGC_SHADER_MAX_SIZE_DIR</a> + <a class="el" href="group__sxgcore__shaders.html#ga7d2e503a42e0462edefdf2d0e935c0fd">SXGC_SHADER_MAX_SIZE_NAME</a></td></tr>
+<tr class="memdesc:ga48892df21f63c0008949d85574bbd022"><td class="mdescLeft">&#160;</td><td class="mdescRight">общий максимальный размер имени текстуры с расширением <br /></td></tr>
+<tr class="separator:ga48892df21f63c0008949d85574bbd022"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf5a63cbdce19601a2d11aa0340c50795"><td class="memItemLeft" align="right" valign="top"><a id="gaf5a63cbdce19601a2d11aa0340c50795"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gaf5a63cbdce19601a2d11aa0340c50795">SXGC_SHADER_MAX_SIZE_STDPATH</a>&#160;&#160;&#160;256</td></tr>
+<tr class="memdesc:gaf5a63cbdce19601a2d11aa0340c50795"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер пути до файла шейдера (без имени файла) <br /></td></tr>
+<tr class="separator:gaf5a63cbdce19601a2d11aa0340c50795"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga548a5002794c0e178aba8c046ce894a6"><td class="memItemLeft" align="right" valign="top"><a id="ga548a5002794c0e178aba8c046ce894a6"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga548a5002794c0e178aba8c046ce894a6">SXGC_SHADER_MAX_SIZE_FULLPATH</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#gaf5a63cbdce19601a2d11aa0340c50795">SXGC_SHADER_MAX_SIZE_STDPATH</a> + <a class="el" href="group__sxgcore__shaders.html#ga48892df21f63c0008949d85574bbd022">SXGC_SHADER_MAX_SIZE_DIRNAME</a></td></tr>
+<tr class="memdesc:ga548a5002794c0e178aba8c046ce894a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер полного пути до шейдера (включая имя шейдера) <br /></td></tr>
+<tr class="separator:ga548a5002794c0e178aba8c046ce894a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad0221a9714b651133c3993b19d1fde10"><td class="memItemLeft" align="right" valign="top"><a id="gad0221a9714b651133c3993b19d1fde10"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gad0221a9714b651133c3993b19d1fde10">SXGC_SHADER_VAR_MAX_SIZE</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:gad0221a9714b651133c3993b19d1fde10"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальная длина имени переменной в шейдере <br /></td></tr>
+<tr class="separator:gad0221a9714b651133c3993b19d1fde10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae6e66903b7d85bb88ec56aa93056377b"><td class="memItemLeft" align="right" valign="top"><a id="gae6e66903b7d85bb88ec56aa93056377b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gae6e66903b7d85bb88ec56aa93056377b">SXGC_SHADER_VAR_MAX_COUNT</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:gae6e66903b7d85bb88ec56aa93056377b"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальное количество переменных в шейдере <br /></td></tr>
+<tr class="separator:gae6e66903b7d85bb88ec56aa93056377b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4b430fd1cc814e6fb16a566a92c742f1"><td class="memItemLeft" align="right" valign="top"><a id="ga4b430fd1cc814e6fb16a566a92c742f1"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga4b430fd1cc814e6fb16a566a92c742f1">SXGC_SHADER_COUNT_MACRO</a>&#160;&#160;&#160;12</td></tr>
+<tr class="memdesc:ga4b430fd1cc814e6fb16a566a92c742f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">количество макросов в массиве макросов <br /></td></tr>
+<tr class="separator:ga4b430fd1cc814e6fb16a566a92c742f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga027ecdefe40443d4b47ec5f185e57834"><td class="memItemLeft" align="right" valign="top"><a id="ga027ecdefe40443d4b47ec5f185e57834"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga027ecdefe40443d4b47ec5f185e57834">SXGC_LOADTEX_MAX_SIZE_DIR</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga027ecdefe40443d4b47ec5f185e57834"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени директории (до _) <br /></td></tr>
+<tr class="separator:ga027ecdefe40443d4b47ec5f185e57834"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga308ea42c46c2bc12d0263cc09981b583"><td class="memItemLeft" align="right" valign="top"><a id="ga308ea42c46c2bc12d0263cc09981b583"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga308ea42c46c2bc12d0263cc09981b583">SXGC_LOADTEX_MAX_SIZE_NAME</a>&#160;&#160;&#160;64</td></tr>
+<tr class="memdesc:ga308ea42c46c2bc12d0263cc09981b583"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер имени с расширением (после _) <br /></td></tr>
+<tr class="separator:ga308ea42c46c2bc12d0263cc09981b583"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaadb63d46f55cc5a620929b9dfab25925"><td class="memItemLeft" align="right" valign="top"><a id="gaadb63d46f55cc5a620929b9dfab25925"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925">SXGC_LOADTEX_MAX_SIZE_DIRNAME</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#ga027ecdefe40443d4b47ec5f185e57834">SXGC_LOADTEX_MAX_SIZE_DIR</a> + <a class="el" href="group__sxgcore__shaders.html#ga308ea42c46c2bc12d0263cc09981b583">SXGC_LOADTEX_MAX_SIZE_NAME</a></td></tr>
+<tr class="memdesc:gaadb63d46f55cc5a620929b9dfab25925"><td class="mdescLeft">&#160;</td><td class="mdescRight">общий максимальный размер имени текстуры с расширением <br /></td></tr>
+<tr class="separator:gaadb63d46f55cc5a620929b9dfab25925"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f078853fc78039c2aafbf21e263ec51"><td class="memItemLeft" align="right" valign="top"><a id="ga9f078853fc78039c2aafbf21e263ec51"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga9f078853fc78039c2aafbf21e263ec51">SXGC_LOADTEX_MAX_SIZE_STDPATH</a>&#160;&#160;&#160;256</td></tr>
+<tr class="memdesc:ga9f078853fc78039c2aafbf21e263ec51"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер пути до файла текстуры (без имени файла) <br /></td></tr>
+<tr class="separator:ga9f078853fc78039c2aafbf21e263ec51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8c0c49b447d846c44f025743e9146e46"><td class="memItemLeft" align="right" valign="top"><a id="ga8c0c49b447d846c44f025743e9146e46"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga8c0c49b447d846c44f025743e9146e46">SXGC_LOADTEX_MAX_SIZE_FULLPATH</a>&#160;&#160;&#160;<a class="el" href="group__sxgcore__shaders.html#ga9f078853fc78039c2aafbf21e263ec51">SXGC_LOADTEX_MAX_SIZE_STDPATH</a> + <a class="el" href="group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925">SXGC_LOADTEX_MAX_SIZE_DIRNAME</a></td></tr>
+<tr class="memdesc:ga8c0c49b447d846c44f025743e9146e46"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный размер полного пути до текстуры (включая имя текстуры) <br /></td></tr>
+<tr class="separator:ga8c0c49b447d846c44f025743e9146e46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga95fcce78bcf8e8aa68e6be26d58d9279"><td class="memItemLeft" align="right" valign="top"><a id="ga95fcce78bcf8e8aa68e6be26d58d9279"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga95fcce78bcf8e8aa68e6be26d58d9279">SXGC_LOADTEX_COUNT_MIPMAP</a>&#160;&#160;&#160;5</td></tr>
+<tr class="memdesc:ga95fcce78bcf8e8aa68e6be26d58d9279"><td class="mdescLeft">&#160;</td><td class="mdescRight">количество mipmap уровней в загружаемых текстурах <br /></td></tr>
+<tr class="separator:ga95fcce78bcf8e8aa68e6be26d58d9279"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7464c3f3ce63f1d3f08331ab7cdd93cd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga7464c3f3ce63f1d3f08331ab7cdd93cd">SXGC_LOADTEX_FORMAT_TEX</a>&#160;&#160;&#160;D3DFMT_FROM_FILE</td></tr>
+<tr class="memdesc:ga7464c3f3ce63f1d3f08331ab7cdd93cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">формат в который будут преобразованы загружаемые текстуры  <a href="#ga7464c3f3ce63f1d3f08331ab7cdd93cd">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga7464c3f3ce63f1d3f08331ab7cdd93cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Передача данных в шейдер</h2></td></tr>
+<tr class="memitem:ga8882c7ee2e51571942e9027435004177"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga8882c7ee2e51571942e9027435004177">SGCore_ShaderSetVRFN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name_shader, const char *name_var, void *data, int count_float4=0)</td></tr>
+<tr class="memdesc:ga8882c7ee2e51571942e9027435004177"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача float значений в шейдер по имени  <a href="#ga8882c7ee2e51571942e9027435004177">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga8882c7ee2e51571942e9027435004177"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0e42c175b0e2512263fcd7f1dfe3e459"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga0e42c175b0e2512263fcd7f1dfe3e459">SGCore_ShaderSetVRF</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, const char *name_var, void *data, int count_float4=0)</td></tr>
+<tr class="memdesc:ga0e42c175b0e2512263fcd7f1dfe3e459"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача float значений в шейдер по ID.  <a href="#ga0e42c175b0e2512263fcd7f1dfe3e459">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga0e42c175b0e2512263fcd7f1dfe3e459"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3c265622425b3556eb2c5c741157bb35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#ga3c265622425b3556eb2c5c741157bb35">SGCore_ShaderSetVRIN</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, const char *name_shader, const char *name_var, void *data, int count_int4=0)</td></tr>
+<tr class="memdesc:ga3c265622425b3556eb2c5c741157bb35"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача int значений в шейдер по имени  <a href="#ga3c265622425b3556eb2c5c741157bb35">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga3c265622425b3556eb2c5c741157bb35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadbd48105b0eb059f424cb12e9a1a43a3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html#gadbd48105b0eb059f424cb12e9a1a43a3">SGCore_ShaderSetVRI</a> (<a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a> type_shader, ID id, const char *name_var, void *data, int count_int4=0)</td></tr>
+<tr class="memdesc:gadbd48105b0eb059f424cb12e9a1a43a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">передача int значений в шейдер по ID.  <a href="#gadbd48105b0eb059f424cb12e9a1a43a3">Подробнее...</a><br /></td></tr>
+<tr class="separator:gadbd48105b0eb059f424cb12e9a1a43a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<dl class="section note"><dt>Заметки</dt><dd>Распознавание шейдеров (обращение через функции) происходит на основе идентификаторов представленных типом ID <br />
+Если речь идет об идентификации на основе имени то имя в данном случае эта та строка name которая была передана SGCore_ShaderLoad <br />
+Все шейдеры загружаются с версией 3.0 <br />
+Если имя шейдер не содержит нижний пробел (_) то значит шейдера находится в корне директории <br />
+Если шейдер содержит нижний пробел (_) то строка до первого нижнего проблема это имя папки в котором находится шейдер с целым именем <br />
+Пример: pp_shader.vs - лежит по загружаемому пути: /pp/pp_shader.vs </dd></dl>
+<h2 class="groupheader">Макросы</h2>
+<a id="ga7464c3f3ce63f1d3f08331ab7cdd93cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7464c3f3ce63f1d3f08331ab7cdd93cd">&#9670;&nbsp;</a></span>SXGC_LOADTEX_FORMAT_TEX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SXGC_LOADTEX_FORMAT_TEX&#160;&#160;&#160;D3DFMT_FROM_FILE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>формат в который будут преобразованы загружаемые текстуры </p>
+<dl class="section warning"><dt>Предупреждения</dt><dd>если установить формат со сжатием то необходимо следовать всем правилам оформления текстур для данного формата </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Перечисления</h2>
+<a id="ga6230e1b9ecbf2d82d10856fd7e1fde46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6230e1b9ecbf2d82d10856fd7e1fde46">&#9670;&nbsp;</a></span>ShaderType</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>типы шейдеров (int type_shader) </p>
+<table class="fieldtable">
+<tr><th colspan="2">Элементы перечислений</th></tr><tr><td class="fieldname"><a id="gga6230e1b9ecbf2d82d10856fd7e1fde46a2d70842347ece461c8e7410727fc4ff7"></a>st_vertex&#160;</td><td class="fielddoc"><p>вершинный </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga6230e1b9ecbf2d82d10856fd7e1fde46a4d9ec09af36addcb899c486f722d72c7"></a>st_pixel&#160;</td><td class="fielddoc"><p>пиксельный </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a id="ga6394eb4c1449977b5a7cbb985724bba9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6394eb4c1449977b5a7cbb985724bba9">&#9670;&nbsp;</a></span>ShaderCheckDouble</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">ShaderCheckDouble</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>типы проверок дубликатов шейдеров </p>
+<table class="fieldtable">
+<tr><th colspan="2">Элементы перечислений</th></tr><tr><td class="fieldname"><a id="gga6394eb4c1449977b5a7cbb985724bba9a795c9cbe6e108ba419b45bdf859d342f"></a>scd_none&#160;</td><td class="fielddoc"><p>нет проверки </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga6394eb4c1449977b5a7cbb985724bba9a37e251ede797395dc2a8e540f5bd226e"></a>scd_path&#160;</td><td class="fielddoc"><p>проверка по пути (имени шейдера с расширением) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga6394eb4c1449977b5a7cbb985724bba9ace17db85931ca03f87592df8fa44244d"></a>scd_name&#160;</td><td class="fielddoc"><p>проверка по пользовательскому имени </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">Функции</h2>
+<a id="ga5a9f76538a8c8f15f31354ddee948397"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5a9f76538a8c8f15f31354ddee948397">&#9670;&nbsp;</a></span>SGCore_ShaderLoad()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID SGCore_ShaderLoad </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a>&#160;</td>
+          <td class="paramname"><em>type_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__sxgcore__shaders.html#ga6394eb4c1449977b5a7cbb985724bba9">ShaderCheckDouble</a>&#160;</td>
+          <td class="paramname"><em>is_check_double</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">D3DXMACRO *&#160;</td>
+          <td class="paramname"><em>macro</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>загрузка шейдера </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type_shader</td><td>тип шейдера </td></tr>
+    <tr><td class="paramname">path</td><td>имя файла шейдера с расширением </td></tr>
+    <tr><td class="paramname">name</td><td>имя шейдера которое присвоится при загрузке </td></tr>
+    <tr><td class="paramname">is_check_double</td><td>проверять ли на уникальность </td></tr>
+    <tr><td class="paramname">macro</td><td>макросы </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga8882c7ee2e51571942e9027435004177"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8882c7ee2e51571942e9027435004177">&#9670;&nbsp;</a></span>SGCore_ShaderSetVRFN()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_ShaderSetVRFN </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a>&#160;</td>
+          <td class="paramname"><em>type_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name_var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count_float4</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>передача float значений в шейдер по имени </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type_shader</td><td>тип шейдера из <a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46" title="типы шейдеров (int type_shader) ">ShaderType</a> </td></tr>
+    <tr><td class="paramname">name_shader</td><td>пользовательское имя шейдера </td></tr>
+    <tr><td class="paramname">name_var</td><td>имя переменной которой присваивается значение </td></tr>
+    <tr><td class="paramname">data</td><td>указатель на массив данных </td></tr>
+    <tr><td class="paramname">count_float4</td><td>количество float4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga0e42c175b0e2512263fcd7f1dfe3e459"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0e42c175b0e2512263fcd7f1dfe3e459">&#9670;&nbsp;</a></span>SGCore_ShaderSetVRF()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_ShaderSetVRF </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a>&#160;</td>
+          <td class="paramname"><em>type_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ID&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name_var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count_float4</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>передача float значений в шейдер по ID. </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type_shader</td><td>тип шейдера из <a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46" title="типы шейдеров (int type_shader) ">ShaderType</a> </td></tr>
+    <tr><td class="paramname">id</td><td>идентификатор шейдера </td></tr>
+    <tr><td class="paramname">name_var</td><td>имя переменной которой присваивается значение </td></tr>
+    <tr><td class="paramname">data</td><td>указатель на массив данных </td></tr>
+    <tr><td class="paramname">count_float4</td><td>количество float4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3c265622425b3556eb2c5c741157bb35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3c265622425b3556eb2c5c741157bb35">&#9670;&nbsp;</a></span>SGCore_ShaderSetVRIN()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_ShaderSetVRIN </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a>&#160;</td>
+          <td class="paramname"><em>type_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name_var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count_int4</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>передача int значений в шейдер по имени </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type_shader</td><td>тип шейдера из <a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46" title="типы шейдеров (int type_shader) ">ShaderType</a> </td></tr>
+    <tr><td class="paramname">name_shader</td><td>пользовательское имя шейдера </td></tr>
+    <tr><td class="paramname">name_var</td><td>имя переменной которой присваивается значение </td></tr>
+    <tr><td class="paramname">data</td><td>указатель на массив данных </td></tr>
+    <tr><td class="paramname">count_int4</td><td>количество int4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gadbd48105b0eb059f424cb12e9a1a43a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadbd48105b0eb059f424cb12e9a1a43a3">&#9670;&nbsp;</a></span>SGCore_ShaderSetVRI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_ShaderSetVRI </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46">ShaderType</a>&#160;</td>
+          <td class="paramname"><em>type_shader</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ID&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name_var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count_int4</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>передача int значений в шейдер по ID. </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type_shader</td><td>тип шейдера из <a class="el" href="group__sxgcore__shaders.html#ga6230e1b9ecbf2d82d10856fd7e1fde46" title="типы шейдеров (int type_shader) ">ShaderType</a> </td></tr>
+    <tr><td class="paramname">id</td><td>идентификатор шейдера </td></tr>
+    <tr><td class="paramname">name_var</td><td>имя переменной которой присваивается значение </td></tr>
+    <tr><td class="paramname">data</td><td>указатель на массив данных </td></tr>
+    <tr><td class="paramname">count_int4</td><td>количество int4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Вт 25 Апр 2017 23:26:18. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,7 +1,12 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license see in LICENSE
+******************************************************/
+
 #define _CRT_SECURE_NO_WARNINGS
 #pragma once
-//#include <vld.h> 
+
 #define SX_EXE
 
 #include <windows.h>

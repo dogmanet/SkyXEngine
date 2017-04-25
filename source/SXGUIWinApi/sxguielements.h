@@ -1,3 +1,9 @@
+
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+license see in LICENSE
+******************************************************/
+
 #ifndef SXGUIELEMENTS_H
 #define SXGUIELEMENTS_H
 #include <gdefines.h>

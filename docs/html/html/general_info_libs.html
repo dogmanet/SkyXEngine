@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Общая информация о библиотеках</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('general_info_libs.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="headertitle">
+<div class="title">Общая информация о библиотеках </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="toc"><h3>Оглавление</h3>
+<ul><li class="level1"><a href="#sec0">Общие правила библиотек</a></li>
+<li class="level1"><a href="#sec1">Начальный базовый интерфейс IBaseObject</a></li>
+<li class="level1"><a href="#sec2">Система вывода сообщений в библиотеках</a></li>
+<li class="level1"><a href="#sec3">Ограничения на размеры</a></li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="sec0"></a>
+Общие правила библиотек</h1>
+<p>Каждая функция в библиотеках имеет префикс с именем самой библиотеки которое формируется исходя из назначения. После следует символ _ после которого (желательно) указывается имя объекта/подсистемы/подмодуля если имеется.<br />
+Все функции имя которых после _ начинается с 0 можно вызывать без инициализации самой библиотеки, все остальные можно вызывать только после инициализации.<br />
+Набор стандартных функций с 0:</p><ul>
+<li>0GetVersion – возвращает номер версии текущей библиотеки.</li>
+<li>0Create – инициализирует текущую библиотеку.</li>
+</ul>
+<p>Функция Dbg_Set переназначает стандартную функцию вывода сообщений, и доступна в любой момент времени, независимо от инициализации библиотеки.<br />
+Функции имя которых после _ начинается с A являются начальными, и могут быть вызваны только после того как библиотека была инициализирована.<br />
+Набор стандартны функций с A:</p><ul>
+<li>AGetName – получить имя текущей инициализированной библиотеки, которое было указано при инициализации.</li>
+<li>AKill – уничтожить инициализированную библиотеку.</li>
+</ul>
+<p>Каждая инициализированная библиотека должна иметь имя, уникальное или нет задается в момент вызова инициализации исходя из нужд программиста.<br />
+Каждая библиотека также может называться подсистема, в некоторых случаях ядро.<br />
+Для подключения любой библиотеки (в виде заголовочного файла либо исходного кода) осуществляется посредством подключения в проект всего одного файла с кодом:</p><ul>
+<li>для подключения внешней библиотеки (dll) нужно подключить заголовочный файл с расширением h а также файл с для экспорта функций с расширением lib.</li>
+<li>для подключения исходного кода библиотеки достаточно подключить только cpp файл с исходным кодом.</li>
+</ul>
+<p>Имена заголовочного и файла с исходным кодом одинаковые и отражают назначение самой библиотеки. К примеру sxgcore – графическое ядро, sxinput – система ввода (клавиатура/мышь), sxpp – библиотека с постпроцессом и т.д.</p>
+<h1><a class="anchor" id="sec1"></a>
+Начальный базовый интерфейс IBaseObject</h1>
+<p>Начальным родителем всех интерфейсов является базовый интерфейс <a class="el" href="struct_i_base_object.html" title="Общий базовый интерфейс. ">IBaseObject</a>, который объявлен в файле <a class="el" href="gdefines_8h.html" title="Заголовочный файл для всех библиотек движка SkyXEngine. ">gdefines.h</a> и имеет следующий вид:<br />
+</p><div class="fragment"><div class="line"><span class="keyword">struct </span><a class="code" href="struct_i_base_object.html">IBaseObject</a></div><div class="line">{</div><div class="line">    <span class="keyword">virtual</span> ~<a class="code" href="struct_i_base_object.html">IBaseObject</a>(){};</div><div class="line">    <span class="keyword">virtual</span> <span class="keywordtype">void</span> Release()=0;</div><div class="line">};</div></div><!-- fragment --><h1><a class="anchor" id="sec2"></a>
+Система вывода сообщений в библиотеках</h1>
+<p>Во всех библиотеках предусмотрена система вывода сообщений через единую функцию. По умолчанию все сообщения выводятся через стандартную функцию def_report, объявленную в <a class="el" href="gdefines_8h.html" title="Заголовочный файл для всех библиотек движка SkyXEngine. ">gdefines.h</a>.<br />
+Стандартная функция имеет ограничение на длину сообщения которое регулируется макроопределением REPORT_MSG_MAX_LEN объявленном в <a class="el" href="gdefines_8h.html" title="Заголовочный файл для всех библиотек движка SkyXEngine. ">gdefines.h</a>. При написании своего обработчика сообщений следует использовать данное ограничение.<br />
+Уровни критичности сообщений объявлены в <a class="el" href="gdefines_8h.html" title="Заголовочный файл для всех библиотек движка SkyXEngine. ">gdefines.h</a>: <br />
+</p><ul>
+<li><a class="el" href="gdefines_8h.html#acdd922a3d45e1148185388d22fd5d7b5" title="заметка ">REPORT_MSG_LEVEL_NOTICE</a></li>
+<li><a class="el" href="gdefines_8h.html#a166fb4c8a925679ccf8b1b38f095c205" title="предупреждение ">REPORT_MSG_LEVEL_WARRNING</a></li>
+<li><a class="el" href="gdefines_8h.html#a755dae4d0ae35c001334c3fadeb8781e" title="ошибка, желательно вылетать ">REPORT_MSG_LEVEL_ERROR</a></li>
+</ul>
+<p>В случае переназначения стандартной функции сообщений необходимо самостоятельно(в переназначаемой функции) обрабатывать уровни критичности, для примера можно использовать механизм стандартной функции.<br />
+ Тип функции для сообщений: <br />
+</p><ul>
+<li><a class="el" href="gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb" title="Тип функции вывода отладочной информации ">report_func</a></li>
+</ul>
+<p>Каждая библиотека имеет функцию для переназначения стандартной функции сообщений на пользовательскую. Пример основного ядра: <br />
+</p><ul>
+<li><a class="el" href="group__sxcore.html#ga178b7e86024cda583c5fd962aceedbbf" title="установка своего обработчика вывода отладочной информации ">Core_Dbg_Set(report_func rf)</a>;</li>
+</ul>
+<p>Данная функция может вызываться в любой момент времени, инициализация библиотеки необязательна.<br />
+Для формирования строки вида полный_путь_до_файла : номер_текущей_строки можно воспользоваться макроопределением gen_msg_location объявленной в <a class="el" href="gdefines_8h.html" title="Заголовочный файл для всех библиотек движка SkyXEngine. ">gdefines.h</a>.</p>
+<h1><a class="anchor" id="sec3"></a>
+Ограничения на размеры</h1>
+<ul>
+<li><a class="el" href="gdefines_8h.html#a109da2b5ddd425ca9cd16a25f1a82a26" title="максимальная длина имени объекта ядра/подсистемы ">CORE_NAME_MAX_LEN</a> - максимальная длина имени объекта ядра/подсистемы</li>
+<li><a class="el" href="gdefines_8h.html#ac8782a8bee6109050516536e3e4b0648" title="максимальная длина имени абстрактного объекта ">OBJECT_NAME_MAX_LEN</a> - максимальная длина имени абстрактного объекта</li>
+<li><a class="el" href="gdefines_8h.html#a88b9cbdf0b7c981f0cca30ae822e4e96" title="максимальная длина секции конфигурационного файла ">CONFIG_SECTION_MAX_LEN</a> - максимальная длина секции конфигурационного файла</li>
+</ul>
+<p>Под абстрактным объектом следует понимать обобщенные элементы движка, к примеру имя статической модели, имя источника света и прочее. </p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Вт 25 Апр 2017 23:37:02. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

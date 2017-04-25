@@ -1,0 +1,616 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: sxgcore - графическое ядро, использует технологии DirectX 9</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('group__sxgcore.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#groups">Группы</a> &#124;
+<a href="#func-members">Функции</a>  </div>
+  <div class="headertitle">
+<div class="title">sxgcore - графическое ядро, использует технологии DirectX 9</div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="groups"></a>
+Группы</h2></td></tr>
+<tr class="memitem:group__sxgcore__redefinition__func"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__redefinition__func.html">Переопределяемые функции</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__shaders"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__shaders.html">Шейдеры</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__loadtex"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__loadtex.html">Загружаемые текстуры</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__rt"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__rt.html">Render targets</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__dse__static"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__dse__static.html">Статическая модель dse формата</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__bb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb.html">Ограничивающий объем</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__bb__intersect"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html">Функции просчета попаданий точек в объемы и деление объемов</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__camera"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__camera.html">Камера</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:group__sxgcore__sky"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__sky.html">Небо</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr class="memitem:ga7e390ca9ebb93cd2a6b0e77356f4f427"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga7e390ca9ebb93cd2a6b0e77356f4f427">SGCore_FCreateCone</a> (float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh **ppMesh, UINT iSideCount)</td></tr>
+<tr class="memdesc:ga7e390ca9ebb93cd2a6b0e77356f4f427"><td class="mdescLeft">&#160;</td><td class="mdescRight">создание меша (ID3DXMesh) конуса  <a href="#ga7e390ca9ebb93cd2a6b0e77356f4f427">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga7e390ca9ebb93cd2a6b0e77356f4f427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa6ec3176498bedcd1f386743ec0e6995"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaa6ec3176498bedcd1f386743ec0e6995">SGCore_FCompBoundBox</a> (IDirect3DVertexBuffer9 *vertex_buffer, <a class="el" href="class_i_s_x_bound.html">ISXBound</a> **bound, DWORD count_vert, DWORD bytepervert)</td></tr>
+<tr class="memdesc:gaa6ec3176498bedcd1f386743ec0e6995"><td class="mdescLeft">&#160;</td><td class="mdescRight">просчет ограничивающего объема по вершинному буфер  <a href="#gaa6ec3176498bedcd1f386743ec0e6995">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaa6ec3176498bedcd1f386743ec0e6995"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf4a0eb050832c1707046293d6b3b1ce0"><td class="memItemLeft" align="right" valign="top"><a id="gaf4a0eb050832c1707046293d6b3b1ce0"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaf4a0eb050832c1707046293d6b3b1ce0">SGCore_FCreateBoundingBoxMesh</a> (float3 *min, float3 *max, ID3DXMesh **bbmesh)</td></tr>
+<tr class="memdesc:gaf4a0eb050832c1707046293d6b3b1ce0"><td class="mdescLeft">&#160;</td><td class="mdescRight">создание меша (ID3DXMesh) ограничивающего объема <br /></td></tr>
+<tr class="separator:gaf4a0eb050832c1707046293d6b3b1ce0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Базовые функции библиотеки</h2></td></tr>
+<tr class="memitem:ga967677866498385f1c98256ff9fee53b"><td class="memItemLeft" align="right" valign="top"><a id="ga967677866498385f1c98256ff9fee53b"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga967677866498385f1c98256ff9fee53b">SGCore_0GetVersion</a> ()</td></tr>
+<tr class="memdesc:ga967677866498385f1c98256ff9fee53b"><td class="mdescLeft">&#160;</td><td class="mdescRight">версия подсистемы <br /></td></tr>
+<tr class="separator:ga967677866498385f1c98256ff9fee53b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="memItemLeft" align="right" valign="top"><a id="gab0478a99472ad9fe2373ee6f7bf8c962"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gab0478a99472ad9fe2373ee6f7bf8c962">SGCore_Dbg_Set</a> (<a class="el" href="gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb">report_func</a> rf)</td></tr>
+<tr class="memdesc:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка функции вывода сообщений <br /></td></tr>
+<tr class="separator:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae06fa073e050f9c267767af351151f21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gae06fa073e050f9c267767af351151f21">SGCore_0Create</a> (const char *name, HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags, bool is_unic=true)</td></tr>
+<tr class="memdesc:gae06fa073e050f9c267767af351151f21"><td class="mdescLeft">&#160;</td><td class="mdescRight">инициализация подсистемы  <a href="#gae06fa073e050f9c267767af351151f21">Подробнее...</a><br /></td></tr>
+<tr class="separator:gae06fa073e050f9c267767af351151f21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab97c2192a26ac72c7285dd50e925245b"><td class="memItemLeft" align="right" valign="top"><a id="gab97c2192a26ac72c7285dd50e925245b"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gab97c2192a26ac72c7285dd50e925245b">SGCore_0Kill</a> ()</td></tr>
+<tr class="memdesc:gab97c2192a26ac72c7285dd50e925245b"><td class="mdescLeft">&#160;</td><td class="mdescRight">уничтожение либы <br /></td></tr>
+<tr class="separator:gab97c2192a26ac72c7285dd50e925245b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga471bb610e76c98fb62cc2b1f7e753ee3"><td class="memItemLeft" align="right" valign="top"><a id="ga471bb610e76c98fb62cc2b1f7e753ee3"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> IDirect3DDevice9 *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga471bb610e76c98fb62cc2b1f7e753ee3">SGCore_GetDXDevice</a> ()</td></tr>
+<tr class="memdesc:ga471bb610e76c98fb62cc2b1f7e753ee3"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает dx устройство <br /></td></tr>
+<tr class="separator:ga471bb610e76c98fb62cc2b1f7e753ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Отладочное сообщение в окне рендера</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p><a class="anchor" id="amgrpe81e063d268031e082019d22f098b676"></a> </p><dl class="section note"><dt>Заметки</dt><dd>Графическое ядро предусматривает наличие текстового сообщения в окне рендера, которое формирует непосредственно сам программист и дает команду на его вывод </dd></dl>
+</td></tr>
+<tr class="memitem:ga9311f51ac16ed2a6d5af673cd374e301"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga9311f51ac16ed2a6d5af673cd374e301">SGCore_DbgMsg</a> (const char *format,...)</td></tr>
+<tr class="memdesc:ga9311f51ac16ed2a6d5af673cd374e301"><td class="mdescLeft">&#160;</td><td class="mdescRight">Вывод отладочного сообщения в окно рендера.  <a href="#ga9311f51ac16ed2a6d5af673cd374e301">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga9311f51ac16ed2a6d5af673cd374e301"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8b8e491584d042c41ca5addbf0f2e6e7"><td class="memItemLeft" align="right" valign="top"><a id="ga8b8e491584d042c41ca5addbf0f2e6e7"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga8b8e491584d042c41ca5addbf0f2e6e7">SXGC_STR_SIZE_DBG_MSG</a>&#160;&#160;&#160;4096</td></tr>
+<tr class="memdesc:ga8b8e491584d042c41ca5addbf0f2e6e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">размер отладочного сообщения, выводимого в окно рендера <br /></td></tr>
+<tr class="separator:ga8b8e491584d042c41ca5addbf0f2e6e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Обработка потери/восстановления устройства</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p><a class="anchor" id="amgrp9aca0d4b4e7ede038672c6dd47d8bf67"></a></p><dl class="section warning"><dt>Предупреждения</dt><dd>Функции обработки потери/восстановления устройства обрабатывают ресурсы только в пределах данной библиотеки, другие библиотеки должны сами производить данную обработку! </dd></dl>
+</td></tr>
+<tr class="memitem:gae7aba671c770761fb8513fc8e80fcbff"><td class="memItemLeft" align="right" valign="top"><a id="gae7aba671c770761fb8513fc8e80fcbff"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gae7aba671c770761fb8513fc8e80fcbff">SGCore_OnLostDevice</a> ()</td></tr>
+<tr class="memdesc:gae7aba671c770761fb8513fc8e80fcbff"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызывать при потере устройства <br /></td></tr>
+<tr class="separator:gae7aba671c770761fb8513fc8e80fcbff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11181d7683a0c736c4e1f0347dbf95d7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga11181d7683a0c736c4e1f0347dbf95d7">SGCore_OnDeviceReset</a> (int width, int heigth, bool windewed)</td></tr>
+<tr class="memdesc:ga11181d7683a0c736c4e1f0347dbf95d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызывать при попытке сброса устройства  <a href="#ga11181d7683a0c736c4e1f0347dbf95d7">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga11181d7683a0c736c4e1f0347dbf95d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaad477145204d97c421cf0b3fff020d49"><td class="memItemLeft" align="right" valign="top"><a id="gaad477145204d97c421cf0b3fff020d49"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaad477145204d97c421cf0b3fff020d49">SGCore_OnResetDevice</a> ()</td></tr>
+<tr class="memdesc:gaad477145204d97c421cf0b3fff020d49"><td class="mdescLeft">&#160;</td><td class="mdescRight">вызывать при сбросе устроства <br /></td></tr>
+<tr class="separator:gaad477145204d97c421cf0b3fff020d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaac859375cc473e0fb135b3c02e9779d3"><td class="memItemLeft" align="right" valign="top"><a id="gaac859375cc473e0fb135b3c02e9779d3"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaac859375cc473e0fb135b3c02e9779d3">SGCore_ScreenQuadDraw</a> ()</td></tr>
+<tr class="memdesc:gaac859375cc473e0fb135b3c02e9779d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">отрисовка full screen quad (уже смещенного как надо чтобы не было размытия) <br /></td></tr>
+<tr class="separator:gaac859375cc473e0fb135b3c02e9779d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Базовые функции установки настроек выборки из текстуры</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p><a class="anchor" id="amgrp585b697da17e184f90d23f0edd1098c6"></a>id - идентификатор текстурного слота value - для Filter D3DTEXTUREFILTERTYPE, для Address D3DTEXTUREADDRESS </p>
+</td></tr>
+<tr class="memitem:ga806f351809842713334d582e31bd0cd8"><td class="memItemLeft" align="right" valign="top"><a id="ga806f351809842713334d582e31bd0cd8"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga806f351809842713334d582e31bd0cd8">SGCore_SetSamplerFilter</a> (DWORD id, DWORD value)</td></tr>
+<tr class="memdesc:ga806f351809842713334d582e31bd0cd8"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка фильтрации для конкретного слота <br /></td></tr>
+<tr class="separator:ga806f351809842713334d582e31bd0cd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae019c92bf5ba31603f553671f9382af7"><td class="memItemLeft" align="right" valign="top"><a id="gae019c92bf5ba31603f553671f9382af7"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gae019c92bf5ba31603f553671f9382af7">SGCore_SetSamplerFilter2</a> (DWORD begin_id, DWORD end_id, DWORD value)</td></tr>
+<tr class="memdesc:gae019c92bf5ba31603f553671f9382af7"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка фильтрации для набора слотов от begin_id до end_id. <br /></td></tr>
+<tr class="separator:gae019c92bf5ba31603f553671f9382af7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga498de9cc792d5901a3c084c4b94e2372"><td class="memItemLeft" align="right" valign="top"><a id="ga498de9cc792d5901a3c084c4b94e2372"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga498de9cc792d5901a3c084c4b94e2372">SGCore_SetSamplerAddress</a> (DWORD id, DWORD value)</td></tr>
+<tr class="memdesc:ga498de9cc792d5901a3c084c4b94e2372"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка адресации для конкретного слота <br /></td></tr>
+<tr class="separator:ga498de9cc792d5901a3c084c4b94e2372"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga19936d8db40a4f5432ab73998eb4c3f3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga19936d8db40a4f5432ab73998eb4c3f3">SGCore_SetSamplerAddress2</a> (DWORD begin_id, DWORD end_id, DWORD value)</td></tr>
+<tr class="separator:ga19936d8db40a4f5432ab73998eb4c3f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Оптимизация индексных буферов</h2></td></tr>
+<tr class="memitem:gaebad723ee9ebbd665412b233446c36e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#gaebad723ee9ebbd665412b233446c36e4">SGCore_OptimizeIndecesInSubsetUint16</a> (uint16_t *ib, uint16_t numFaces, uint16_t numVerts)</td></tr>
+<tr class="memdesc:gaebad723ee9ebbd665412b233446c36e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">16 битные индексные буферы  <a href="#gaebad723ee9ebbd665412b233446c36e4">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaebad723ee9ebbd665412b233446c36e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5b4f1faebfaa524d26c30a2f69d5c786"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore.html#ga5b4f1faebfaa524d26c30a2f69d5c786">SGCore_OptimizeIndecesInSubsetUint32</a> (uint32_t *ib, uint32_t numFaces, uint32_t numVerts)</td></tr>
+<tr class="memdesc:ga5b4f1faebfaa524d26c30a2f69d5c786"><td class="mdescLeft">&#160;</td><td class="mdescRight">16 битные индексные буферы  <a href="#ga5b4f1faebfaa524d26c30a2f69d5c786">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga5b4f1faebfaa524d26c30a2f69d5c786"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<h2 class="groupheader">Функции</h2>
+<a id="gae06fa073e050f9c267767af351151f21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae06fa073e050f9c267767af351151f21">&#9670;&nbsp;</a></span>SGCore_0Create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_0Create </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">HWND&#160;</td>
+          <td class="paramname"><em>hwnd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>heigth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>windowed</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>create_device_flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>is_unic</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>инициализация подсистемы </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>передваваемое имя подсистемы </td></tr>
+    <tr><td class="paramname">hwnd</td><td>дескриптор окна в которое будет осуществляться рендер </td></tr>
+    <tr><td class="paramname">width</td><td>ширина области рендера </td></tr>
+    <tr><td class="paramname">heigth</td><td>высота области рендера </td></tr>
+    <tr><td class="paramname">windowed</td><td>оконный режим использовать ли? иначе полноэкранный </td></tr>
+    <tr><td class="paramname">create_device_flags</td><td>флаги создания устрайства (стандартные dx) </td></tr>
+    <tr><td class="paramname">is_unic</td><td>должна ли подсистема быть уникальной на основе имени </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga9311f51ac16ed2a6d5af673cd374e301"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9311f51ac16ed2a6d5af673cd374e301">&#9670;&nbsp;</a></span>SGCore_DbgMsg()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_DbgMsg </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>Вывод отладочного сообщения в окно рендера. </p>
+<p>Аргументы аналогичны стандартным функциям типа printf. </p>
+
+</div>
+</div>
+<a id="ga11181d7683a0c736c4e1f0347dbf95d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga11181d7683a0c736c4e1f0347dbf95d7">&#9670;&nbsp;</a></span>SGCore_OnDeviceReset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool SGCore_OnDeviceReset </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>heigth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>windewed</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>вызывать при попытке сброса устройства </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">width</td><td>новая ширина окна </td></tr>
+    <tr><td class="paramname">heigth</td><td>новая выоста окна </td></tr>
+    <tr><td class="paramname">windewed</td><td>true - оконный режим, false - полноэкранный </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga19936d8db40a4f5432ab73998eb4c3f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga19936d8db40a4f5432ab73998eb4c3f3">&#9670;&nbsp;</a></span>SGCore_SetSamplerAddress2()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_SetSamplerAddress2 </td>
+          <td>(</td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>begin_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>end_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+<p>установка адресации для набора слотов от begin_id до end_id </p>
+
+</div>
+</div>
+<a id="ga7e390ca9ebb93cd2a6b0e77356f4f427"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7e390ca9ebb93cd2a6b0e77356f4f427">&#9670;&nbsp;</a></span>SGCore_FCreateCone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_FCreateCone </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>fTopRadius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>fBottomRadius</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>fHeight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ID3DXMesh **&#160;</td>
+          <td class="paramname"><em>ppMesh</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>iSideCount</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>создание меша (ID3DXMesh) конуса </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fTopRadius</td><td>верхний радиус </td></tr>
+    <tr><td class="paramname">fBottomRadius</td><td>нижний радиус </td></tr>
+    <tr><td class="paramname">fHeight</td><td>длина </td></tr>
+    <tr><td class="paramname">ppMesh</td><td>выходной меш </td></tr>
+    <tr><td class="paramname">iSideCount</td><td>количество частей?? </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaa6ec3176498bedcd1f386743ec0e6995"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa6ec3176498bedcd1f386743ec0e6995">&#9670;&nbsp;</a></span>SGCore_FCompBoundBox()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_FCompBoundBox </td>
+          <td>(</td>
+          <td class="paramtype">IDirect3DVertexBuffer9 *&#160;</td>
+          <td class="paramname"><em>vertex_buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_i_s_x_bound.html">ISXBound</a> **&#160;</td>
+          <td class="paramname"><em>bound</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>count_vert</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">DWORD&#160;</td>
+          <td class="paramname"><em>bytepervert</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>просчет ограничивающего объема по вершинному буфер </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">vertex_buffer</td><td>вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор </td></tr>
+    <tr><td class="paramname">bound</td><td>инициализированный <a class="el" href="class_i_s_x_bound.html" title="класс ограничивающего объема ">ISXBound</a> </td></tr>
+    <tr><td class="paramname">count_vert</td><td>количество вершин </td></tr>
+    <tr><td class="paramname">bytepervert</td><td>количество байт в вершине </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaebad723ee9ebbd665412b233446c36e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaebad723ee9ebbd665412b233446c36e4">&#9670;&nbsp;</a></span>SGCore_OptimizeIndecesInSubsetUint16()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_OptimizeIndecesInSubsetUint16 </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t *&#160;</td>
+          <td class="paramname"><em>ib</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>numFaces</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>numVerts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>16 битные индексные буферы </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ib</td><td>указатель на индексный буфер </td></tr>
+    <tr><td class="paramname">numFaces</td><td>количество индексов </td></tr>
+    <tr><td class="paramname">numVerts</td><td>количество вершин </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga5b4f1faebfaa524d26c30a2f69d5c786"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5b4f1faebfaa524d26c30a2f69d5c786">&#9670;&nbsp;</a></span>SGCore_OptimizeIndecesInSubsetUint32()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_OptimizeIndecesInSubsetUint32 </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>ib</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>numFaces</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>numVerts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>16 битные индексные буферы </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ib</td><td>указатель на индексный буфер </td></tr>
+    <tr><td class="paramname">numFaces</td><td>количество индексов </td></tr>
+    <tr><td class="paramname">numVerts</td><td>количество вершин </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Вт 25 Апр 2017 23:26:18. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>
