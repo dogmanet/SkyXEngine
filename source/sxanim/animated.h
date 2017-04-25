@@ -282,6 +282,8 @@ public:
 
 	ID GetNextVisId();
 
+	void SetThreadNum(int num);
+
 protected:
 	friend class ModelFile;
 	friend class Animation;

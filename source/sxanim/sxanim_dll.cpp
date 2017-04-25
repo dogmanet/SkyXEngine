@@ -57,6 +57,11 @@ SX_LIB_API void SXAnim_Update(int thread)
 	SA_PRECOND();
 	g_mgr->Update(thread);
 }
+SX_LIB_API void SXAnim_UpdateSetThreadNum(int num)
+{
+	SA_PRECOND();
+	g_mgr->SetThreadNum(num);
+}
 SX_LIB_API void SXAnim_Sync()
 {
 	SA_PRECOND();

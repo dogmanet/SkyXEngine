@@ -2037,3 +2037,8 @@ ID AnimationManager::GetNextVisId()
 {
 	return(++m_iVisID);
 }
+
+void AnimationManager::SetThreadNum(int num)
+{
+	m_iThreadNum = num;
+}
