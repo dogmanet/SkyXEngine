@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['width',['width',['../struct_s_x_pos_b_b_screen.html#a7d4fa7ef976c18c6d444a02aaa4cb620',1,'SXPosBBScreen']]],
-  ['world',['World',['../struct_i_s_x_trans_object.html#ab2a82091c10cc242f3fcf573942b62ed',1,'ISXTransObject']]]
+  ['position',['Position',['../struct_i_s_x_trans_object.html#a2f33aa67048a9994fb12e4fdc23641a1',1,'ISXTransObject']]],
+  ['projfov',['ProjFov',['../namespace_g_data.html#a229d24e5cfda6d6fc365766051650aab',1,'GData']]]
 ];

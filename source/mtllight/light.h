@@ -212,16 +212,16 @@ public:
 	ID GetIdOfKey(long key);
 
 	long DelGetCount();
-	int DelGetType(long key);
-	void DelDel(long key);
-	ID DelGetIDArr(long key, ID inid, int how);
+	LightsTypeLight DelGetType(ID key);
+	void DelDel(ID key);
+	ID DelGetIDArr(ID key, ID inid, int how);
 
 protected:
 	inline ID AddLight(Light* obj);
 
-	Array<Light*> ArrKeyLights;	//массив всех элементов по порядку
-	Array<Light*> ArrIDLights;	//массив всех элементов, основанный на id
-	Array<Light*> ArrKeyDelLights;	//массив света который надо удалить
+	Array<Light*> ArrKeyLights;	//РјР°СЃСЃРёРІ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РїРѕСЂСЏРґРєСѓ
+	Array<Light*> ArrIDLights;	//РјР°СЃСЃРёРІ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ, РѕСЃРЅРѕРІР°РЅРЅС‹Р№ РЅР° id
+	Array<Light*> ArrKeyDelLights;	//РјР°СЃСЃРёРІ СЃРІРµС‚Р° РєРѕС‚РѕСЂС‹Р№ РЅР°РґРѕ СѓРґР°Р»РёС‚СЊ
 	//IDirect3DVertexDeclaration9* VertexDeclarationStatic;
 
 	DWORD ShadowMap;

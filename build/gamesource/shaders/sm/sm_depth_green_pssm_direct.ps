@@ -6,7 +6,7 @@ sampler2D BaseSampler:register(s0);
 half4 main(vs_out_gcommon IN):COLOR0
 { 
 	half4 tmpColor = tex2D(BaseSampler,IN.TexUV);
-	clip(tmpColor.a - GREEN_ALPHA_VAL_CLIP);
+	clip(tmpColor.a - GREEN_ALPHATEST_VALUE);
 	tmpColor.a = 1.f;
 	
 	return IN.Pos.z/IN.Pos.w;

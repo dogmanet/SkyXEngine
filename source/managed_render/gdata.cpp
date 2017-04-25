@@ -4,10 +4,17 @@
 void GData::InitAllMatrix()
 {
 	GData::MCamProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
-	GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, 100000);
+	GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
 
-	GData::MRefPlaneSkyProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, 0.25, 100000);
-	GData::MRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, 0.25, 100000);
+	GData::MRefPlaneSkyProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
+	GData::MRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, GData::NearFar.x, G_DATA_LIGHT_FAR);
+
+	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &GData::MCamProj);
+	Core_RMatrixSet(G_RI_MATRIX_LIGHT_PROJ, &GData::MLightProj);
+
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_NEAR, GData::NearFar.x);
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
 }
 
 void GData::Pathes::InitAllPathes()
@@ -60,13 +67,12 @@ void GData::IDsShaders::InitAllShaders()
 
 	GData::IDsShaders::PS::UnionAlpha = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_union_alpha.ps", "pp_union_alpha", ShaderCheckDouble::scd_path);
 
-	GData::IDsShaders::PS::StencilStr = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_stencil_str.ps", "pp_stencil_str", ShaderCheckDouble::scd_path);
-	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_stencil_column.ps", "pp_stencil_column", ShaderCheckDouble::scd_path);
-	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_stencil_str_column.ps", "pp_stencil_str_column", ShaderCheckDouble::scd_path);
-	GData::IDsShaders::PS::SmoothingAlpha = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_transparency_smoothing.ps", "pp_transparency_smoothing", ShaderCheckDouble::scd_path);
-
-	//GData::IDsShaders::VS::CPGeom = SGCore_ShaderLoad(ShaderType::st_vertex, "cp_geom.vs", "cp_geom", ShaderCheckDouble::scd_path);
-	//GData::IDsShaders::PS::CPGeom = SGCore_ShaderLoad(ShaderType::st_pixel, "cp_geom.ps", "cp_geom", ShaderCheckDouble::scd_path);
+	D3DXMACRO Defines_STR[] = { { "_STR_", "" }, { 0, 0 } };
+	GData::IDsShaders::PS::StencilStr = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_alpha_stencil_mark.ps", "pp_stencil_str", ShaderCheckDouble::scd_name, Defines_STR);
+	D3DXMACRO Defines_COLUMN[] = { { "_COLUMN_", "" }, { 0, 0 } };
+	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_alpha_stencil_mark.ps", "pp_stencil_column", ShaderCheckDouble::scd_name, Defines_COLUMN);
+	D3DXMACRO Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
+	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column", ShaderCheckDouble::scd_name, Defines_COLUMN_STR);
 }
 
 LRESULT CALLBACK GData::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -84,45 +90,12 @@ LRESULT CALLBACK GData::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-
-	/*case WM_ACTIVATE:
-		if (LOWORD(wParam) == WA_INACTIVE)
-			SkyXEngine::Core::Data::IsRestoreWin = false;
-		else if (LOWORD(wParam) == WA_ACTIVE)
-			SkyXEngine::Core::Data::IsRestoreWin = true;
-		break;
-
-	case WM_KEYDOWN:
-
-		//делаем скрин
-		if (wParam == VK_F12)
-		{
-			SkyXEngine::Core::Data::Settings::IsSaveScreen = true;
-		}
-		//убираем/ставим статистику
-		else if (wParam == VK_F11)
-		{
-			SkyXEngine::Core::Data::Settings::UseStatistics = !SkyXEngine::Core::Data::Settings::UseStatistics;
-		}
-		//убираем/ставим статистику
-		else if (wParam == VK_F9)
-		{
-			if (SkyXEngine::Core::Data::Settings::UseGUIConsol == 0)
-				SkyXEngine::Core::Data::Settings::UseGUIConsol = 1;
-			else
-				SkyXEngine::Core::Data::Settings::UseGUIConsol = -1;
-		}
-		else if (wParam == VK_ESCAPE)
-		{
-			SkyXEngine::Core::Data::IsUseCamera = !SkyXEngine::Core::Data::IsUseCamera;
-		}
-		break;*/
 	}
 
 	return(DefWindowProc(hWnd, message, wParam, lParam));
 }
 
-void GData::InitWin(const char* name)
+void GData::InitWin(const char* name, const char* caption)
 {
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -146,7 +119,7 @@ void GData::InitWin(const char* name)
 	GData::Handle3D = CreateWindowEx(
 		0,
 		name,
-		name,
+		caption,
 		WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		rc.right - rc.left, rc.bottom - rc.top,
@@ -154,9 +127,6 @@ void GData::InitWin(const char* name)
 		GetModuleHandle(0),
 		0);
 	
-	//SetWindowLong(SkyXEngine::Core::Data::HandleWinD3D,GWL_STYLE, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
-	/*if(wndproc)
-	SetWindowLong(hwnd, GWL_WNDPROC, (LONG)wndproc);*/
 	if (GData::IsWindowed)
 		ShowWindow(GData::Handle3D, SW_SHOW);
 	else

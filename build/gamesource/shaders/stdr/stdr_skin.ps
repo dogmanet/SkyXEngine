@@ -1,0 +1,18 @@
+
+#include <../struct.h>
+
+sampler2D BaseSampler:register(s0);
+
+#ifdef _CLIP_PLANE_
+half3 PlaneNormal;
+half3 PlanePoint;
+#endif
+
+half4 main(vs_out_gcommon IN) : COLOR0
+{
+#ifdef _CLIP_PLANE_
+	clip(dot(IN.Pos.xyz - PlanePoint, PlaneNormal));
+#endif
+	
+	return tex2D(BaseSampler,IN.TexUV);
+}

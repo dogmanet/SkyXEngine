@@ -2,10 +2,10 @@
 #include <managed_render\\camera_update.h>
 
 
-//обработка вводы информации с клавиатуры
+//РѕР±СЂР°Р±РѕС‚РєР° РІРІРѕРґС‹ РёРЅС„РѕСЂРјР°С†РёРё СЃ РєР»Р°РІРёР°С‚СѓСЂС‹
 void CameraUpdate::UpdateInputKeyBoard(DWORD timeDelta)
 {
-	//обработка ходьбы
+	//РѕР±СЂР°Р±РѕС‚РєР° С…РѕРґСЊР±С‹
 	if(SSInput_GetKeyState(SIK_W))
 		GData::ObjCamera->PosFrontBack(
 		GData::CamWalkParamEditor.x *
@@ -35,7 +35,7 @@ void CameraUpdate::UpdateInputKeyBoard(DWORD timeDelta)
 		);
 }
 
-//обработка движения мыши вправо и влево
+//РѕР±СЂР°Р±РѕС‚РєР° РґРІРёР¶РµРЅРёСЏ РјС‹С€Рё РІРїСЂР°РІРѕ Рё РІР»РµРІРѕ
 void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 {
 	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
@@ -58,7 +58,7 @@ void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 	}
 }
 
-//обработка движения мыши вверх вниз
+//РѕР±СЂР°Р±РѕС‚РєР° РґРІРёР¶РµРЅРёСЏ РјС‹С€Рё РІРІРµСЂС… РІРЅРёР·
 void CameraUpdate::UpdateInputMouseUpDown(DWORD timeDelta)
 {
 	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
@@ -75,7 +75,7 @@ void CameraUpdate::UpdateInputMouseUpDown(DWORD timeDelta)
 	}
 }
 
-//центрирвоание курсора мыши
+//С†РµРЅС‚СЂРёСЂРІРѕР°РЅРёРµ РєСѓСЂСЃРѕСЂР° РјС‹С€Рё
 void CameraUpdate::CentererCursor()
 {
 	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
@@ -85,7 +85,7 @@ void CameraUpdate::CentererCursor()
 
 void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 {
-	//обработка перемещения/вращения
+	//РѕР±СЂР°Р±РѕС‚РєР° РїРµСЂРµРјРµС‰РµРЅРёСЏ/РІСЂР°С‰РµРЅРёСЏ
 	if(SSInput_GetKeyState(SIK_LCONTROL))
 	{
 		static bool IsFirstLBM = false;
@@ -96,18 +96,18 @@ void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 
 		UpdateInputKeyBoard(timeDelta);
 
-		//еси нажата левая кнопка мыши то можно вращать
+		//РµСЃРё РЅР°Р¶Р°С‚Р° Р»РµРІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё С‚Рѕ РјРѕР¶РЅРѕ РІСЂР°С‰Р°С‚СЊ
 		if(SSInput_GetButtonState(SIM_LBUTTON))
 		{
-			//если не первый раз нажата ЛКМ то совершаем действие
+			//РµСЃР»Рё РЅРµ РїРµСЂРІС‹Р№ СЂР°Р· РЅР°Р¶Р°С‚Р° Р›РљРњ С‚Рѕ СЃРѕРІРµСЂС€Р°РµРј РґРµР№СЃС‚РІРёРµ
 			if(IsFirstLBM)
 				UpdateInputMouseRotate(timeDelta);
-			//иначе просто говорим что впервые и устанавливаем курсор в центр
+			//РёРЅР°С‡Рµ РїСЂРѕСЃС‚Рѕ РіРѕРІРѕСЂРёРј С‡С‚Рѕ РІРїРµСЂРІС‹Рµ Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РєСѓСЂСЃРѕСЂ РІ С†РµРЅС‚СЂ
 			else
 				IsFirstLBM = true;
 			CentererCursor();
 		}
-		//если нажата правая кнопка мыши то можно поднимать и опускать камеру
+		//РµСЃР»Рё РЅР°Р¶Р°С‚Р° РїСЂР°РІР°СЏ РєРЅРѕРїРєР° РјС‹С€Рё С‚Рѕ РјРѕР¶РЅРѕ РїРѕРґРЅРёРјР°С‚СЊ Рё РѕРїСѓСЃРєР°С‚СЊ РєР°РјРµСЂСѓ
 		else if(SSInput_GetButtonState(SIM_RBUTTON))
 		{
 			if(IsFirstRBM)

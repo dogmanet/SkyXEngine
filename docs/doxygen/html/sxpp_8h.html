@@ -1,0 +1,295 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Файл sxpp.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('sxpp_8h.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#define-members">Макросы</a> &#124;
+<a href="#func-members">Функции</a>  </div>
+  <div class="headertitle">
+<div class="title">Файл sxpp.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Заголовочный файл sxpp - библиотеки постпроцесса  
+<a href="#details">Подробнее...</a></p>
+<div class="textblock"><code>#include &lt;<a class="el" href="gdefines_8h_source.html">gdefines.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="sxgcore_8h_source.html">gcore\\sxgcore.h</a>&gt;</code><br />
+</div>
+<p><a href="sxpp_8h_source.html">См. исходные тексты.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Макросы</h2></td></tr>
+<tr class="memitem:ga7760eeb2d92421001174cc2600bafc8f"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga7760eeb2d92421001174cc2600bafc8f">PP_SUN_RADIUS</a>&#160;&#160;&#160;30</td></tr>
+<tr class="memdesc:ga7760eeb2d92421001174cc2600bafc8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">радиус солнца в пикселях для lens flare. <br /></td></tr>
+<tr class="separator:ga7760eeb2d92421001174cc2600bafc8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab6aa095ee728ba8e549a7c57fe993873"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gab6aa095ee728ba8e549a7c57fe993873">PP_MAX_ANGLE_VISIBLE_SUN</a>&#160;&#160;&#160;1.57</td></tr>
+<tr class="memdesc:gab6aa095ee728ba8e549a7c57fe993873"><td class="mdescLeft">&#160;</td><td class="mdescRight">максимальный угол между взглядом наблюдателя и позицией источнкиа света при котором еще видно солнце, больше этого солнце уже не видно <br /></td></tr>
+<tr class="separator:gab6aa095ee728ba8e549a7c57fe993873"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Значения цветов для создания эффекта sepia</div></td></tr>
+<tr class="memitem:gae99b4cd68ddb7e622de766ed7e77e04a"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PP_SEPIA_LIGHT_COLOR</b>&#160;&#160;&#160;float3_t(1.0,0.9,0.5)</td></tr>
+<tr class="separator:gae99b4cd68ddb7e622de766ed7e77e04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51ef42c32a3ca02e6e37b47f27c06163"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PP_SEPIA_DARK_COLOR</b>&#160;&#160;&#160;float3_t(0.2,0.05,0.0)</td></tr>
+<tr class="separator:ga51ef42c32a3ca02e6e37b47f27c06163"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab5bc1e3d48e6309d2a43bf60930b3135"><td class="memItemLeft" align="right" valign="top">
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>PP_SEPIA_WEIGHTS_COLOR</b>&#160;&#160;&#160;float3_t(0.27, 0.67, 0.06)</td></tr>
+<tr class="separator:gab5bc1e3d48e6309d2a43bf60930b3135"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr class="memitem:gaf03864ac6a6dc77e00dd628d0a067557"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gaf03864ac6a6dc77e00dd628d0a067557">SPP_Update</a> (float3_t *viewpos, float3_t *viewdir, float4x4 *view, float4x4 *proj, float2_t *winsize, float2_t *nearfar, float projfov)</td></tr>
+<tr class="memdesc:gaf03864ac6a6dc77e00dd628d0a067557"><td class="mdescLeft">&#160;</td><td class="mdescRight">обновление данных постпроцессорной подсистемы, необходимо вызывать перед началом рендера постпроцесса  <a href="group__sxpp.html#gaf03864ac6a6dc77e00dd628d0a067557">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaf03864ac6a6dc77e00dd628d0a067557"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab5fff6551430ba0f6babb68338fbf3c2"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gab5fff6551430ba0f6babb68338fbf3c2">SPP_UpdateSun</a> (float3 *sunpos)</td></tr>
+<tr class="memdesc:gab5fff6551430ba0f6babb68338fbf3c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">обвновление позиции солнца <br /></td></tr>
+<tr class="separator:gab5fff6551430ba0f6babb68338fbf3c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga018e740eafd47ab589f0d9f9466bc7c2"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga018e740eafd47ab589f0d9f9466bc7c2">SPP_ChangeTexSun</a> (const char *str)</td></tr>
+<tr class="memdesc:ga018e740eafd47ab589f0d9f9466bc7c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">сменить текстуру солнца на str. <br /></td></tr>
+<tr class="separator:ga018e740eafd47ab589f0d9f9466bc7c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga399086bb7b0049e5ee9198acd668e99b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#ga399086bb7b0049e5ee9198acd668e99b">SPP_RenderSun</a> (float4_t *sun_color)</td></tr>
+<tr class="memdesc:ga399086bb7b0049e5ee9198acd668e99b"><td class="mdescLeft">&#160;</td><td class="mdescRight">рендер солнца, использует depth0, используется текстура загруженная функцией <a class="el" href="group__sxpp.html#ga018e740eafd47ab589f0d9f9466bc7c2" title="сменить текстуру солнца на str. ">SPP_ChangeTexSun</a> <br />
+ sun_color - rgb цвет (0-1), w - на сколько цвет применится к текстуре (0-1) <br /></td></tr>
+<tr class="separator:ga399086bb7b0049e5ee9198acd668e99b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac0e43fc1db91c977fe4ed85e11c69076"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gac0e43fc1db91c977fe4ed85e11c69076">SPP_RenderBloom</a> (float3_t *param)</td></tr>
+<tr class="memdesc:gac0e43fc1db91c977fe4ed85e11c69076"><td class="mdescLeft">&#160;</td><td class="mdescRight">bloom <br />
+ param.x - во сколько раз увеличиваем цвет пикселя при анализе <br />
+ param.y - минимальное значение цвета для прохождение теста bright pass <br />
+ param.z - во сколько раз увеличиваем цвет пикселя если он прошел тест <br />
+ примерные значения: 1, 0.8, 1 <br /></td></tr>
+<tr class="separator:gac0e43fc1db91c977fe4ed85e11c69076"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeeadd0ddaca91a2dcde73d0c1ca2fa92"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gaeeadd0ddaca91a2dcde73d0c1ca2fa92">SPP_RenderLensFlare</a> (float3_t *param, bool use_bloom)</td></tr>
+<tr class="memdesc:gaeeadd0ddaca91a2dcde73d0c1ca2fa92"><td class="mdescLeft">&#160;</td><td class="mdescRight">lens flare, эффект восприятия яркого света линзами, использует depth0 <br />
+ param.x - дисперсия (разброс) <br />
+ param.y - ширина свечения <br />
+ param.z - множитель интенсивности <br />
+ use_bloom - использовать ли в дополнение данные от bloom прохода, если true то этот эффект должен идти поле bloom <br />
+ примерные данные для 8 (NumSamples) выборок: 0.25f, 0.3f, 0.9f, use_bloom - на любителя <br /></td></tr>
+<tr class="separator:gaeeadd0ddaca91a2dcde73d0c1ca2fa92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa2a7d82df72c339042348ec8ec36212b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gaa2a7d82df72c339042348ec8ec36212b">SPP_RenderDOF</a> (float4_t *param, float sky_blur)</td></tr>
+<tr class="memdesc:gaa2a7d82df72c339042348ec8ec36212b"><td class="mdescLeft">&#160;</td><td class="mdescRight">depth of field, глубина резкости, использует depth0 <br />
+ все компоненты param указываются в метрах <br />
+ param.x - откуда начинается нормальное видиние <br />
+ param.y - где оно заканчивается <br />
+ param.z - постепенный переход на ближней плоскости <br />
+ param.w - постепенный переход на дальней плоскости <br />
+ sky_blur - на сколько % размывать небо (0-1) <br />
+ для примеры: param:0, 200, 0, 50, sky_blur: 0 <br /></td></tr>
+<tr class="separator:gaa2a7d82df72c339042348ec8ec36212b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac26f1e7883035e76c6662b05b3e7ce46"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gac26f1e7883035e76c6662b05b3e7ce46">SPP_RenderFog</a> (float3_t *color, float4_t *param)</td></tr>
+<tr class="memdesc:gac26f1e7883035e76c6662b05b3e7ce46"><td class="mdescLeft">&#160;</td><td class="mdescRight">linear fog, линейный туман, использует depth0 <br />
+ color - цвет тумана (0-1) <br />
+ param.x - интенсивность тумана <br />
+ param.y - на сколько небо в тумане <br />
+ param.z - минимальное значение тумана <br />
+ param.w - максимальное значение тумана <br />
+ примерные значения: 0.8, 1, 0.1, 0.9 <br /></td></tr>
+<tr class="separator:gac26f1e7883035e76c6662b05b3e7ce46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6376fbac93221bafcbaa623359e47e63"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#ga6376fbac93221bafcbaa623359e47e63">SPP_RenderSSAO</a> (float4_t *param)</td></tr>
+<tr class="memdesc:ga6376fbac93221bafcbaa623359e47e63"><td class="mdescLeft">&#160;</td><td class="mdescRight">space screen ambient occulusion, глобальное освещение (точнее затенение) в пространстве экрана, использует depth1 <br />
+ param.x - радиус <br />
+ param.y - минимально допустимая разница в глубине между пикселя для просчета затенения <br />
+ param.z - освещенность пикселя по дефолту (если разница меньше минимальной) <br />
+ param.w - допустимая разница для сравнения <br />
+ примерные значения: 0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y <br /></td></tr>
+<tr class="separator:ga6376fbac93221bafcbaa623359e47e63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga16a0cfade36a6e96c225502fe25ee39a"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#ga16a0cfade36a6e96c225502fe25ee39a">SPP_RenderMotionBlur</a> (float coef, DWORD timeDelta)</td></tr>
+<tr class="memdesc:ga16a0cfade36a6e96c225502fe25ee39a"><td class="mdescLeft">&#160;</td><td class="mdescRight">motion blur, размытие в движении, использует depth0 <br />
+ coef - коэфициент размытия, 0 - 1 <br />
+ timeDelta - время рендера текущего кадра в млсек <br /></td></tr>
+<tr class="separator:ga16a0cfade36a6e96c225502fe25ee39a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Базовые функции библиотеки</div></td></tr>
+<tr class="memitem:gaef2b6e6e384b131924023320b2e4e78d"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gaef2b6e6e384b131924023320b2e4e78d">SPP_0GetVersion</a> ()</td></tr>
+<tr class="memdesc:gaef2b6e6e384b131924023320b2e4e78d"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает версию подсистемы <br /></td></tr>
+<tr class="separator:gaef2b6e6e384b131924023320b2e4e78d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9ddfb840053c7684c6e14eb43c765016"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga9ddfb840053c7684c6e14eb43c765016">SPP_Dbg_Set</a> (<a class="el" href="gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb">report_func</a> rf)</td></tr>
+<tr class="memdesc:ga9ddfb840053c7684c6e14eb43c765016"><td class="mdescLeft">&#160;</td><td class="mdescRight">установка функции обработки сообщений <br /></td></tr>
+<tr class="separator:ga9ddfb840053c7684c6e14eb43c765016"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf43b93718a2b85208407f694a44755ef"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gaf43b93718a2b85208407f694a44755ef">SPP_0Create</a> (const char *name, IDirect3DDevice9 *device, float2_t *winsize, bool is_unic)</td></tr>
+<tr class="memdesc:gaf43b93718a2b85208407f694a44755ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">инициализация подсистемы <br /></td></tr>
+<tr class="separator:gaf43b93718a2b85208407f694a44755ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9cc24d35471c979765ca9f4d81dbfb05"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga9cc24d35471c979765ca9f4d81dbfb05">SPP_0Kill</a> ()</td></tr>
+<tr class="memdesc:ga9cc24d35471c979765ca9f4d81dbfb05"><td class="mdescLeft">&#160;</td><td class="mdescRight">уничтожение подсистемы <br /></td></tr>
+<tr class="separator:ga9cc24d35471c979765ca9f4d81dbfb05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Установка основных render targets</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><dl class="section warning"><dt>Предупреждения</dt><dd>Глубина должна быть линейная, от 0 до 1, где 0 это возле камеры, а 1 это максимальная удаленность от камеры. Причем линейность в пространстве камеры. Однако допускается и такая глубина: <br />
+ depth = (z + near)/far <br />
+где near и far ближняя и дальняя плоскости отсечения соответственно (к примеру 0.25 и 400), z - z компонента трехмерного вектора отрансформированного wordview projection матрицей и интерпалированного в пиксельный шейдер </dd></dl>
+</div></td></tr>
+<tr class="memitem:gaf80a8dffe9f25c77f9e4c7247344f2c0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gaf80a8dffe9f25c77f9e4c7247344f2c0">SPP_RTSetInput</a> (ID rt)</td></tr>
+<tr class="memdesc:gaf80a8dffe9f25c77f9e4c7247344f2c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">входное изображение которое будет модифицироваться <br /></td></tr>
+<tr class="separator:gaf80a8dffe9f25c77f9e4c7247344f2c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabbd9e832254c79215905924c34b07762"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gabbd9e832254c79215905924c34b07762">SPP_RTSetOutput</a> (ID rt)</td></tr>
+<tr class="memdesc:gabbd9e832254c79215905924c34b07762"><td class="mdescLeft">&#160;</td><td class="mdescRight">дополнительное изображение для внутренних нужд <br /></td></tr>
+<tr class="separator:gabbd9e832254c79215905924c34b07762"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga14a5259d12a3e1b83216a34b91de236f"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga14a5259d12a3e1b83216a34b91de236f">SPP_RTSetDepth0</a> (ID rt)</td></tr>
+<tr class="memdesc:ga14a5259d12a3e1b83216a34b91de236f"><td class="mdescLeft">&#160;</td><td class="mdescRight">глубина (линейная 0-1), абсолютно непрозрачные пиксели <br /></td></tr>
+<tr class="separator:ga14a5259d12a3e1b83216a34b91de236f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga717267c3088927632a5d79eba06ee646"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga717267c3088927632a5d79eba06ee646">SPP_RTSetDepth1</a> (ID rt)</td></tr>
+<tr class="memdesc:ga717267c3088927632a5d79eba06ee646"><td class="mdescLeft">&#160;</td><td class="mdescRight">глубина (линейная 0-1), непрозрачные и прозрачные пиксели, однако прозрачные (если есть) будут перекрывать непрозрачные, и в этом случае их глубина будет 1 то есть максимальной (для идентификации) <br /></td></tr>
+<tr class="separator:ga717267c3088927632a5d79eba06ee646"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3cef8fee300885ef2ecdba242e2b40d6"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga3cef8fee300885ef2ecdba242e2b40d6">SPP_RTSetNormal</a> (ID rt)</td></tr>
+<tr class="memdesc:ga3cef8fee300885ef2ecdba242e2b40d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">нормали (в том числе и микрорейльеф) <br /></td></tr>
+<tr class="separator:ga3cef8fee300885ef2ecdba242e2b40d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Переключение очереди и получением текущих rt</div></td></tr>
+<tr class="memitem:gaed37442cf1f5792cc08d1d4119883a49"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gaed37442cf1f5792cc08d1d4119883a49">SPP_RTGetCurrRender</a> ()</td></tr>
+<tr class="memdesc:gaed37442cf1f5792cc08d1d4119883a49"><td class="mdescLeft">&#160;</td><td class="mdescRight">поулчить текущий rt для рендера в него <br /></td></tr>
+<tr class="separator:gaed37442cf1f5792cc08d1d4119883a49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa40571511930b6839b2b4e182985cc2b"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#gaa40571511930b6839b2b4e182985cc2b">SPP_RTGetCurrSend</a> ()</td></tr>
+<tr class="memdesc:gaa40571511930b6839b2b4e182985cc2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">получить текущий rt для отправки в шейдер <br /></td></tr>
+<tr class="separator:gaa40571511930b6839b2b4e182985cc2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3744c1ba4f1945a4c9a6431dfb4482f1"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga3744c1ba4f1945a4c9a6431dfb4482f1">SPP_RTIncr</a> ()</td></tr>
+<tr class="memdesc:ga3744c1ba4f1945a4c9a6431dfb4482f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">переключить очередь между ке в который рисуем и который отправляем <br /></td></tr>
+<tr class="separator:ga3744c1ba4f1945a4c9a6431dfb4482f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga95e5014520356c3f38b7f28535b22d19"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp.html#ga95e5014520356c3f38b7f28535b22d19">SPP_RTNull</a> ()</td></tr>
+<tr class="memdesc:ga95e5014520356c3f38b7f28535b22d19"><td class="mdescLeft">&#160;</td><td class="mdescRight">обнулить очередь rt, то есть после вызова rt рендера станет input, а дополнительной output. <br /></td></tr>
+<tr class="separator:ga95e5014520356c3f38b7f28535b22d19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Стандартные эффекты</div></td></tr>
+<tr class="memitem:gad3ce506aa1eade8ffadac4883271caf7"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gad3ce506aa1eade8ffadac4883271caf7">SPP_RenderWhiteBlack</a> (float coef)</td></tr>
+<tr class="memdesc:gad3ce506aa1eade8ffadac4883271caf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">черно-белое изображение, coef - коэфициент перехода от цветного к черное-белому (0-1) <br /></td></tr>
+<tr class="separator:gad3ce506aa1eade8ffadac4883271caf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51d55b83ce34efd2b5c5a69c49b603aa"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#ga51d55b83ce34efd2b5c5a69c49b603aa">SPP_RenderSepia</a> (float coef)</td></tr>
+<tr class="memdesc:ga51d55b83ce34efd2b5c5a69c49b603aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">эффект сепия, , coef - коэфициент перехода от цветного к сепии (0-1) <br /></td></tr>
+<tr class="separator:ga51d55b83ce34efd2b5c5a69c49b603aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae1aa4406a51856bd7d66c40b70a708e1"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gae1aa4406a51856bd7d66c40b70a708e1">SPP_RenderCBG</a> (float3_t *param)</td></tr>
+<tr class="memdesc:gae1aa4406a51856bd7d66c40b70a708e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">коррекция изображения <br />
+ param.x - contrast/контраст <br />
+ param.y - brightness/яркость <br />
+ param.z - gamma/гамма-коррекция <br />
+ нейтральные параметры: 1,1,0. <br /></td></tr>
+<tr class="separator:gae1aa4406a51856bd7d66c40b70a708e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Anti aliasing</div></td></tr>
+<tr class="memitem:gaf018b39f96a67edc62f3b844926cb933"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gaf018b39f96a67edc62f3b844926cb933">SPP_RenderNFAA</a> (float3_t *param)</td></tr>
+<tr class="memdesc:gaf018b39f96a67edc62f3b844926cb933"><td class="mdescLeft">&#160;</td><td class="mdescRight">nfaa <br />
+ param.x - strength, множитель нормали, усиляет влияние нормали <br />
+ param.y - scale, охватываемый масштаб <br />
+ param.z - notmal map, вывести сформированные нормали <br />
+ рекомендуемые параметры: 2, 1, 0 <br /></td></tr>
+<tr class="separator:gaf018b39f96a67edc62f3b844926cb933"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafa45409e772704cf12348837d9f308e9"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxpp__eff.html#gafa45409e772704cf12348837d9f308e9">SPP_RenderDLAA</a> ()</td></tr>
+<tr class="memdesc:gafa45409e772704cf12348837d9f308e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">dlaa <br /></td></tr>
+<tr class="separator:gafa45409e772704cf12348837d9f308e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<div class="textblock"><p>Заголовочный файл sxpp - библиотеки постпроцесса </p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b.html">source</a></li><li class="navelem"><a class="el" href="dir_7028af5b0f64d4c0bfb3ff82a5cf26d1.html">pp</a></li><li class="navelem"><a class="el" href="sxpp_8h.html">sxpp.h</a></li>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Пн 24 Апр 2017 23:11:50. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

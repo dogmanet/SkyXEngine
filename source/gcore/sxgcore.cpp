@@ -97,6 +97,11 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 	else if (cerr == SXGC_ERR_FAILED_INIT_D3D)
 		reportf(-1, "%s - failed initialized d3d, sxgcore", gen_msg_location);
 
+	//устанавливаем данные в регистры
+	Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
+	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
+	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);
+
 	MShaders = new ShaderManager();
 	MRenderTargets = new CreatorTextures();
 	MTextures = new LoaderTextures();
@@ -194,12 +199,17 @@ void SGCore_OnLostDevice()
 	MRenderTargets->OnLostDevice();
 }
 
-bool SGCore_OnDeviceReset(int width, int heigth, bool windewed)
+bool SGCore_OnDeviceReset(int width, int heigth, bool windowed)
 {
 	SG_PRECOND(false);
 	D3DAPP.BackBufferWidth = width;
 	D3DAPP.BackBufferHeight = heigth;
-	D3DAPP.Windowed = windewed;
+	D3DAPP.Windowed = windowed;
+
+	Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
+	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
+	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);
+
 	return (FAILED(DXDevice->Reset(&D3DAPP)));
 }
 

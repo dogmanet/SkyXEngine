@@ -1,15 +1,10 @@
 
-/*! 
-\mainpage Документация SkyXEngine
-Это документация API (интерфейса программирования приложения) 3D движка real-time рендера SkyXEngine
-*/
-
 /*!
 \file 
-Заголовочный файл sxcore - основного ядра движка SkyXEngine
+Заголовочный файл sxcore - основного ядра
 */
 
-/*! \defgroup sxcore sxcore - основное ядро движка SkyXEngine
+/*! \defgroup sxcore sxcore - основное ядро
 @{
 */
 

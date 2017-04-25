@@ -39,7 +39,7 @@ void SXRenderFunc::ComDeviceLost()
 {
 	if (GData::ReSize != 2)
 	{
-		//получаем текущий размер окна в которое рисовали
+		//РїРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёР№ СЂР°Р·РјРµСЂ РѕРєРЅР° РІ РєРѕС‚РѕСЂРѕРµ СЂРёСЃРѕРІР°Р»Рё
 		RECT rect_scene;
 		GetClientRect(GData::Handle3D, &rect_scene);
 
@@ -48,7 +48,7 @@ void SXRenderFunc::ComDeviceLost()
 		GData::WinSize.y = rect_scene.bottom;
 	}
 
-	//сбрасываем все что необходимо для восстановления устройства
+	//СЃР±СЂР°СЃС‹РІР°РµРј РІСЃРµ С‡С‚Рѕ РЅРµРѕР±С…РѕРґРёРјРѕ РґР»СЏ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ СѓСЃС‚СЂРѕР№СЃС‚РІР°
 	SGCore_OnLostDevice();
 	SGeom_OnLostDevice();
 	SML_OnLostDevice();
@@ -56,7 +56,7 @@ void SXRenderFunc::ComDeviceLost()
 	bool bf = SGCore_OnDeviceReset(GData::WinSize.x, GData::WinSize.y,GData::IsWindowed);
 		if (bf)
 		{
-			//если всетаки функция зашла сюда значит чтото было неосвобождено
+			//РµСЃР»Рё РІСЃРµС‚Р°РєРё С„СѓРЅРєС†РёСЏ Р·Р°С€Р»Р° СЃСЋРґР° Р·РЅР°С‡РёС‚ С‡С‚РѕС‚Рѕ Р±С‹Р»Рѕ РЅРµРѕСЃРІРѕР±РѕР¶РґРµРЅРѕ
 			printflog(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
 		}
 		else
@@ -301,33 +301,21 @@ void SXRenderFunc::UpdateView()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(GData::MCamView * GData::MLightProj));
 	Core_RMatrixSet(G_RI_MATRIX_TRANSP_VIEWPROJ, &SMMatrixTranspose(GData::MCamView * GData::MLightProj));
 
+	GData::ObjCamera->GetPosition(&GData::ConstCurrCamPos);
+	GData::ObjCamera->GetLook(&GData::ConstCurrCamDir);
+
+	Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_POSITION, &GData::ConstCurrCamPos);
+	Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_DIRECTION, &GData::ConstCurrCamDir);
+
+	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &GData::MCamView);
+	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &GData::MCamProj);
+	Core_RMatrixSet(G_RI_MATRIX_LIGHT_PROJ, &GData::MLightProj);
+
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_NEAR, GData::NearFar.x);
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
+
 	GData::ObjCamera->ObjFrustum->Update(&(GData::MCamView), &(GData::MCamProj));
-
-	GData::PlaneZCulling.a = 0;
-	GData::PlaneZCulling.b = 0;
-	GData::PlaneZCulling.c = 0;
-	GData::PlaneZCulling.d = 0;
-
-	GData::PlaneZCullingShader.a = 0;
-	GData::PlaneZCullingShader.b = 0;
-	GData::PlaneZCullingShader.c = 0;
-	GData::PlaneZCullingShader.d = 0;
-
-	GData::DXDevice->SetClipPlane(0, GData::PlaneZCulling);
-
-	GData::ConstCurrCamDir = SMVector3Normalize(GData::ConstCurrCamDir);
-	float3 pointplane = (GData::ConstCurrCamPos + ((GData::NearFar.y - 1.f) * GData::ConstCurrCamDir));
-	D3DXPlaneFromPointNormal(
-		&GData::PlaneZCulling,
-		&((D3DXVECTOR3)pointplane),
-		&D3DXVECTOR3(-GData::ConstCurrCamDir.x, -GData::ConstCurrCamDir.y, -GData::ConstCurrCamDir.z));
-	float4x4 wmat = (GData::MCamView*GData::MLightProj);
-
-	float determ = 0;
-	wmat = SMMatrixTranspose(wmat);
-	wmat = SMMatrixInverse(&determ, wmat);
-
-	D3DXPlaneTransform(&GData::PlaneZCullingShader, &GData::PlaneZCulling, &(wmat.operator D3DXMATRIX()));
 }
 
 void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
@@ -398,9 +386,6 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
-	GData::DXDevice->SetClipPlane(0, GData::PlaneZCullingShader);
-	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
-
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -417,11 +402,11 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	SML_DSGetRT(DS_RT::ds_rt_param)->GetSurfaceLevel(0, &ParamSurf);
 	SML_DSGetRT(DS_RT::ds_rt_depth)->GetSurfaceLevel(0, &DepthMapLinearSurf);
 
-	//очищаем рт глубины  максимальным значением
-	//чтобы там где нет окружения к примеру был скайбокс, а значит в рт глубины было максимальное значение - максимальная отдаленность
+	//РѕС‡РёС‰Р°РµРј СЂС‚ РіР»СѓР±РёРЅС‹  РјР°РєСЃРёРјР°Р»СЊРЅС‹Рј Р·РЅР°С‡РµРЅРёРµРј
+	//С‡С‚РѕР±С‹ С‚Р°Рј РіРґРµ РЅРµС‚ РѕРєСЂСѓР¶РµРЅРёСЏ Рє РїСЂРёРјРµСЂСѓ Р±С‹Р» СЃРєР°Р№Р±РѕРєСЃ, Р° Р·РЅР°С‡РёС‚ РІ СЂС‚ РіР»СѓР±РёРЅС‹ Р±С‹Р»Рѕ РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ - РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ РѕС‚РґР°Р»РµРЅРЅРѕСЃС‚СЊ
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);
 	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0);
-	GData::DXDevice->SetRenderTarget(3, 0);	//убираем рт глубины
+	GData::DXDevice->SetRenderTarget(3, 0);	//СѓР±РёСЂР°РµРј СЂС‚ РіР»СѓР±РёРЅС‹
 
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ColorSurf);
@@ -429,11 +414,11 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	GData::DXDevice->SetRenderTarget(2, ParamSurf);
 
 	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//ставим рт глубины
+	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//СЃС‚Р°РІРёРј СЂС‚ РіР»СѓР±РёРЅС‹
 
 	SML_MtlNullingCurrCountSurf();
 	SML_MtlSetCurrCountSurf(1);
-//если не объявлен флаг редактора материалов (для него немного другой рендер)
+//РµСЃР»Рё РЅРµ РѕР±СЉСЏРІР»РµРЅ С„Р»Р°Рі СЂРµРґР°РєС‚РѕСЂР° РјР°С‚РµСЂРёР°Р»РѕРІ (РґР»СЏ РЅРµРіРѕ РЅРµРјРЅРѕРіРѕ РґСЂСѓРіРѕР№ СЂРµРЅРґРµСЂ)
 #if !defined(SX_MATERIAL_EDITOR)
 	if (SGeom_ModelsGetCount() > 0)
 		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
@@ -450,15 +435,13 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	SGCore_ShaderUnBind();
 #endif
 
-	//копируем глубину нулевого слоя (непрозрачной геометрии) в рт непрозрачной глубины
+	//РєРѕРїРёСЂСѓРµРј РіР»СѓР±РёРЅСѓ РЅСѓР»РµРІРѕРіРѕ СЃР»РѕСЏ (РЅРµРїСЂРѕР·СЂР°С‡РЅРѕР№ РіРµРѕРјРµС‚СЂРёРё) РІ СЂС‚ РЅРµРїСЂРѕР·СЂР°С‡РЅРѕР№ РіР»СѓР±РёРЅС‹
 	//{
 	//mem_release_del(DepthMapLinearSurf);
 	//GData::DXDevice->SetRenderTarget(0, BackBuf);
 	GData::DXDevice->SetRenderTarget(1, 0);
 	GData::DXDevice->SetRenderTarget(2, 0);
 	GData::DXDevice->SetRenderTarget(3, 0);
-
-	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
 
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
@@ -494,16 +477,14 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	//}}
 
 #if !defined(SX_MATERIAL_EDITOR)
-	//тут такая ситуация ... есть два рабочих варианта, причем работают чутка по разному, возможно я изработался и не могу сообразить что да как ...
-	//первый вариант, чистим в 4, метим 3 раза начиная с нуля (первый раз 0, второй 1 третий 2 НЕ ИНКРЕМЕНТ а метка)
-	//рисуем с сотрировкой front to back один раз, значение 1 функция D3DCMP_LESSEQUAL, с декрементом в случае успеха стенсил теста
-	//но этот вариант не совсем понятно почему работает стабильно для трех ппрозрачных поверхностей, причем миганий перехода на передний план у двух (ппповерхностей) последних не наблюдалось
-	//второй вариант, чистим в 0, метим 3 раза начиная с 1 (первый 1, второй 2, третий 3)
-	//рисуем с сотрировкой front to back один раз, значение 0 функция D3DCMP_NOTEQUAL, с декрементом в случае успеха стенсил теста
-	//второй случай логичнее, однако на двух дальних плоскостях иногда наблюдается переход одной плоскости на передний план, что слегка заметно
-	//пересмотреть этот момент как будет время, а пока оставить второй вариант как наиболее логичный
-
-	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
+	//С‚СѓС‚ С‚Р°РєР°СЏ СЃРёС‚СѓР°С†РёСЏ ... РµСЃС‚СЊ РґРІР° СЂР°Р±РѕС‡РёС… РІР°СЂРёР°РЅС‚Р°, РїСЂРёС‡РµРј СЂР°Р±РѕС‚Р°СЋС‚ С‡СѓС‚РєР° РїРѕ СЂР°Р·РЅРѕРјСѓ, РІРѕР·РјРѕР¶РЅРѕ СЏ РёР·СЂР°Р±РѕС‚Р°Р»СЃСЏ Рё РЅРµ РјРѕРіСѓ СЃРѕРѕР±СЂР°Р·РёС‚СЊ С‡С‚Рѕ РґР° РєР°Рє ...
+	//РїРµСЂРІС‹Р№ РІР°СЂРёР°РЅС‚, С‡РёСЃС‚РёРј РІ 4, РјРµС‚РёРј 3 СЂР°Р·Р° РЅР°С‡РёРЅР°СЏ СЃ РЅСѓР»СЏ (РїРµСЂРІС‹Р№ СЂР°Р· 0, РІС‚РѕСЂРѕР№ 1 С‚СЂРµС‚РёР№ 2 РќР• РРќРљР Р•РњР•РќРў Р° РјРµС‚РєР°)
+	//СЂРёСЃСѓРµРј СЃ СЃРѕС‚СЂРёСЂРѕРІРєРѕР№ front to back РѕРґРёРЅ СЂР°Р·, Р·РЅР°С‡РµРЅРёРµ 1 С„СѓРЅРєС†РёСЏ D3DCMP_LESSEQUAL, СЃ РґРµРєСЂРµРјРµРЅС‚РѕРј РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р° СЃС‚РµРЅСЃРёР» С‚РµСЃС‚Р°
+	//РЅРѕ СЌС‚РѕС‚ РІР°СЂРёР°РЅС‚ РЅРµ СЃРѕРІСЃРµРј РїРѕРЅСЏС‚РЅРѕ РїРѕС‡РµРјСѓ СЂР°Р±РѕС‚Р°РµС‚ СЃС‚Р°Р±РёР»СЊРЅРѕ РґР»СЏ С‚СЂРµС… РїРїСЂРѕР·СЂР°С‡РЅС‹С… РїРѕРІРµСЂС…РЅРѕСЃС‚РµР№, РїСЂРёС‡РµРј РјРёРіР°РЅРёР№ РїРµСЂРµС…РѕРґР° РЅР° РїРµСЂРµРґРЅРёР№ РїР»Р°РЅ Сѓ РґРІСѓС… (РїРїРїРѕРІРµСЂС…РЅРѕСЃС‚РµР№) РїРѕСЃР»РµРґРЅРёС… РЅРµ РЅР°Р±Р»СЋРґР°Р»РѕСЃСЊ
+	//РІС‚РѕСЂРѕР№ РІР°СЂРёР°РЅС‚, С‡РёСЃС‚РёРј РІ 0, РјРµС‚РёРј 3 СЂР°Р·Р° РЅР°С‡РёРЅР°СЏ СЃ 1 (РїРµСЂРІС‹Р№ 1, РІС‚РѕСЂРѕР№ 2, С‚СЂРµС‚РёР№ 3)
+	//СЂРёСЃСѓРµРј СЃ СЃРѕС‚СЂРёСЂРѕРІРєРѕР№ front to back РѕРґРёРЅ СЂР°Р·, Р·РЅР°С‡РµРЅРёРµ 0 С„СѓРЅРєС†РёСЏ D3DCMP_NOTEQUAL, СЃ РґРµРєСЂРµРјРµРЅС‚РѕРј РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р° СЃС‚РµРЅСЃРёР» С‚РµСЃС‚Р°
+	//РІС‚РѕСЂРѕР№ СЃР»СѓС‡Р°Р№ Р»РѕРіРёС‡РЅРµРµ, РѕРґРЅР°РєРѕ РЅР° РґРІСѓС… РґР°Р»СЊРЅРёС… РїР»РѕСЃРєРѕСЃС‚СЏС… РёРЅРѕРіРґР° РЅР°Р±Р»СЋРґР°РµС‚СЃСЏ РїРµСЂРµС…РѕРґ РѕРґРЅРѕР№ РїР»РѕСЃРєРѕСЃС‚Рё РЅР° РїРµСЂРµРґРЅРёР№ РїР»Р°РЅ, С‡С‚Рѕ СЃР»РµРіРєР° Р·Р°РјРµС‚РЅРѕ
+	//РїРµСЂРµСЃРјРѕС‚СЂРµС‚СЊ СЌС‚РѕС‚ РјРѕРјРµРЅС‚ РєР°Рє Р±СѓРґРµС‚ РІСЂРµРјСЏ, Р° РїРѕРєР° РѕСЃС‚Р°РІРёС‚СЊ РІС‚РѕСЂРѕР№ РІР°СЂРёР°РЅС‚ РєР°Рє РЅР°РёР±РѕР»РµРµ Р»РѕРіРёС‡РЅС‹Р№
 
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
@@ -600,8 +581,6 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	mem_release(NormalSurf);
 	mem_release(ParamSurf);
 	mem_release(DepthMapLinearSurf);
-
-	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
 }
 
 
@@ -645,10 +624,12 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
 
 							SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
+
+							SXAnim_Render();
 						}
 					}
 
-				//КОГДА ИСТОЧНИК БЛИЗОК К ГОРИЗОНТУ ИЗ-ЗА ОБЛАКОВ ВОЗНИКАЕТ БАГ С ТЕНЯМИ В ВИДЕ ФЕЙКОВЫХ ТЕНЕЙ
+				//РљРћР“Р”Рђ РРЎРўРћР§РќРРљ Р‘Р›РР—РћРљ Рљ Р“РћР РР—РћРќРўРЈ РР—-Р—Рђ РћР‘Р›РђРљРћР’ Р’РћР—РќРРљРђР•Рў Р‘РђР“ РЎ РўР•РќРЇРњР Р’ Р’РР”Р• Р¤Р•Р™РљРћР’Р«РҐ РўР•РќР•Р™
 				if (true)
 				{
 					SML_LigthsUpdateFrustumsG(tmpid, 4, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
@@ -680,6 +661,8 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							
 						if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0) > -1)
 							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
+
+						SXAnim_Render();
 					}
 					else
 					{
@@ -712,6 +695,8 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 
 								if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) > -1)
 									SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+
+								SXAnim_Render();
 							}
 							else
 							{
@@ -800,130 +785,140 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->SetRenderTarget(0, AmbientSurf);
 	GData::DXDevice->SetRenderTarget(1, SpecDiffSurf);
 
-	//очищаем рт и стенсил
+	//РѕС‡РёС‰Р°РµРј СЂС‚ Рё СЃС‚РµРЅСЃРёР»
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
-	//устанавка аддитивного смешивания
-	//когда к уже записанному будет прибавляться то что хотим записать
+	//СѓСЃС‚Р°РЅР°РІРєР° Р°РґРґРёС‚РёРІРЅРѕРіРѕ СЃРјРµС€РёРІР°РЅРёСЏ
+	//РєРѕРіРґР° Рє СѓР¶Рµ Р·Р°РїРёСЃР°РЅРЅРѕРјСѓ Р±СѓРґРµС‚ РїСЂРёР±Р°РІР»СЏС‚СЊСЃСЏ С‚Рѕ С‡С‚Рѕ С…РѕС‚РёРј Р·Р°РїРёСЃР°С‚СЊ
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 	GData::DXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-	//проходимся циклом по всем источникам света
+	GData::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+	GData::DXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)GData::MCamView));
+	GData::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)GData::MLightProj));
+
+	//РїСЂРѕС…РѕРґРёРјСЃСЏ С†РёРєР»РѕРј РїРѕ РІСЃРµРј РёСЃС‚РѕС‡РЅРёРєР°Рј СЃРІРµС‚Р°
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
-		//поулчаем идентификатор света по ключу
+		//РїРѕСѓР»С‡Р°РµРј РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃРІРµС‚Р° РїРѕ РєР»СЋС‡Сѓ
 		ID tmpid = SML_LigthsGetIDOfKey(i);
 
-		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
+		//РµСЃР»Рё СЃРІРµС‚ РІРёРґРµРЅ С„СЂСѓСЃС‚СѓРјСѓ РєР°РјРµСЂС‹ (СЌС‚Рѕ РЅР°РґРѕ Р±С‹Р»Рѕ Р·Р°СЂР°РЅРµРµ РїСЂРѕСЃС‡РёС‚Р°С‚СЊ) Рё РµСЃР»Рё СЃРІРµС‚ РІРєР»СЋС‡РµРЅ
 		if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsIsEnable(tmpid))
 		{
-			//пока что назначаем шейдер без теней
+			//РїРѕРєР° С‡С‚Рѕ РЅР°Р·РЅР°С‡Р°РµРј С€РµР№РґРµСЂ Р±РµР· С‚РµРЅРµР№
 			ID idshader = GData::IDsShaders::PS::ComLightingNonShadow;
 
-			//если не глобальный источник
+			//РµСЃР»Рё РЅРµ РіР»РѕР±Р°Р»СЊРЅС‹Р№ РёСЃС‚РѕС‡РЅРёРє
 			if (SML_LigthsGetType(tmpid) != LightsTypeLight::ltl_global)
 			{
-				//помечаем в стенсил буфере пиксели  которые входят в ограничивающий объем света, чтобы их осветить
+				//РїРѕРјРµС‡Р°РµРј РІ СЃС‚РµРЅСЃРёР» Р±СѓС„РµСЂРµ РїРёРєСЃРµР»Рё  РєРѕС‚РѕСЂС‹Рµ РІС…РѕРґСЏС‚ РІ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёР№ РѕР±СЉРµРј СЃРІРµС‚Р°, С‡С‚РѕР±С‹ РёС… РѕСЃРІРµС‚РёС‚СЊ
 
-				//отключаем вывод цвета
+				//РѕС‚РєР»СЋС‡Р°РµРј РІС‹РІРѕРґ С†РІРµС‚Р°
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 
-				//установка стенсил теста, причем и двухстороннего тоже
+				//СѓСЃС‚Р°РЅРѕРІРєР° СЃС‚РµРЅСЃРёР» С‚РµСЃС‚Р°, РїСЂРёС‡РµРј Рё РґРІСѓС…СЃС‚РѕСЂРѕРЅРЅРµРіРѕ С‚РѕР¶Рµ
 				GData::DXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
 				GData::DXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, TRUE);
 
-				//вклчить тест глубины, но запись выключить, установить стандартную функцию проверки глубины
+				//РІРєР»С‡РёС‚СЊ С‚РµСЃС‚ РіР»СѓР±РёРЅС‹, РЅРѕ Р·Р°РїРёСЃСЊ РІС‹РєР»СЋС‡РёС‚СЊ, СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЃС‚Р°РЅРґР°СЂС‚РЅСѓСЋ С„СѓРЅРєС†РёСЋ РїСЂРѕРІРµСЂРєРё РіР»СѓР±РёРЅС‹
 				GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 				GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 				GData::DXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
-				//стенсил тест проходит всегда удачно, при провале теста глубины инкрементируем значение в стенсиле
+				//СЃС‚РµРЅСЃРёР» С‚РµСЃС‚ РїСЂРѕС…РѕРґРёС‚ РІСЃРµРіРґР° СѓРґР°С‡РЅРѕ, РїСЂРё РїСЂРѕРІР°Р»Рµ С‚РµСЃС‚Р° РіР»СѓР±РёРЅС‹ РёРЅРєСЂРµРјРµРЅС‚РёСЂСѓРµРј Р·РЅР°С‡РµРЅРёРµ РІ СЃС‚РµРЅСЃРёР»Рµ
 				GData::DXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_INCR);
-				//при удачно проходе, игнорируем
+				//РїСЂРё СѓРґР°С‡РЅРѕ РїСЂРѕС…РѕРґРµ, РёРіРЅРѕСЂРёСЂСѓРµРј
 				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
-				//стенсил тест для обратной глубины проходит всегда удачно, при провале теста глубины декрементируем значение в стенсиле
+				//СЃС‚РµРЅСЃРёР» С‚РµСЃС‚ РґР»СЏ РѕР±СЂР°С‚РЅРѕР№ РіР»СѓР±РёРЅС‹ РїСЂРѕС…РѕРґРёС‚ РІСЃРµРіРґР° СѓРґР°С‡РЅРѕ, РїСЂРё РїСЂРѕРІР°Р»Рµ С‚РµСЃС‚Р° РіР»СѓР±РёРЅС‹ РґРµРєСЂРµРјРµРЅС‚РёСЂСѓРµРј Р·РЅР°С‡РµРЅРёРµ РІ СЃС‚РµРЅСЃРёР»Рµ
 				GData::DXDevice->SetRenderState(D3DRS_CCW_STENCILFUNC, D3DCMP_ALWAYS);
 				GData::DXDevice->SetRenderState(D3DRS_CCW_STENCILZFAIL, D3DSTENCILOP_DECR);
-				//при удачно проходе, игнорируем
+				//РїСЂРё СѓРґР°С‡РЅРѕ РїСЂРѕС…РѕРґРµ, РёРіРЅРѕСЂРёСЂСѓРµРј
 				GData::DXDevice->SetRenderState(D3DRS_CCW_STENCILPASS, D3DSTENCILOP_KEEP);
 
-				//установка значений для записи
+				//СѓСЃС‚Р°РЅРѕРІРєР° Р·РЅР°С‡РµРЅРёР№ РґР»СЏ Р·Р°РїРёСЃРё
 				GData::DXDevice->SetRenderState(D3DRS_STENCILREF, 0x0);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
-				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	//включение двухсторонней отрисовки
+				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	//РІРєР»СЋС‡РµРЅРёРµ РґРІСѓС…СЃС‚РѕСЂРѕРЅРЅРµР№ РѕС‚СЂРёСЃРѕРІРєРё
 
-				//отрисовка ограничивающего объема
+				GData::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+				GData::DXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)GData::MCamView));
+				GData::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)GData::MLightProj));
+
+				//РѕС‚СЂРёСЃРѕРІРєР° РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РµРіРѕ РѕР±СЉРµРјР°
 				SML_LigthsRender(tmpid, 0);
 
 				//
 				GData::DXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_ZERO);
 				GData::DXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_ZERO);
-				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
+				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
 				GData::DXDevice->SetRenderState(D3DRS_STENCILREF, 255);
 
-				//включаем вывод цвета
+				//РІРєР»СЋС‡Р°РµРј РІС‹РІРѕРґ С†РІРµС‚Р°
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 			}
 			else
 			{
-				//иначе это глобальный источник, отключаем стенсил тест
+				//РёРЅР°С‡Рµ СЌС‚Рѕ РіР»РѕР±Р°Р»СЊРЅС‹Р№ РёСЃС‚РѕС‡РЅРёРє, РѕС‚РєР»СЋС‡Р°РµРј СЃС‚РµРЅСЃРёР» С‚РµСЃС‚
 				GData::DXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 				GData::DXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
 			}
 
-			//отключаем тест глубины ибо будем теперь пост процессом обрабатывать полученные данные
+			//РѕС‚РєР»СЋС‡Р°РµРј С‚РµСЃС‚ РіР»СѓР±РёРЅС‹ РёР±Рѕ Р±СѓРґРµРј С‚РµРїРµСЂСЊ РїРѕСЃС‚ РїСЂРѕС†РµСЃСЃРѕРј РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РїРѕР»СѓС‡РµРЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
 			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-			//если свет отбрасывает тени
+			//РµСЃР»Рё СЃРІРµС‚ РѕС‚Р±СЂР°СЃС‹РІР°РµС‚ С‚РµРЅРё
 			if (SML_LigthsIsShadow(tmpid))
 			{
-				//генерация теней для текущего света
+				//РіРµРЅРµСЂР°С†РёСЏ С‚РµРЅРµР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ СЃРІРµС‚Р°
 				//{{
-				//так как нам нужно провести очистку рт то убираем оба рт
+				//С‚Р°Рє РєР°Рє РЅР°Рј РЅСѓР¶РЅРѕ РїСЂРѕРІРµСЃС‚Рё РѕС‡РёСЃС‚РєСѓ СЂС‚ С‚Рѕ СѓР±РёСЂР°РµРј РѕР±Р° СЂС‚
 				GData::DXDevice->SetRenderTarget(0, 0);
 				GData::DXDevice->SetRenderTarget(1, 0);
 
-				//отключаем смешивание, нам не нужен хлам в рт
+				//РѕС‚РєР»СЋС‡Р°РµРј СЃРјРµС€РёРІР°РЅРёРµ, РЅР°Рј РЅРµ РЅСѓР¶РµРЅ С…Р»Р°Рј РІ СЂС‚
 				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 				GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
 
-				SML_LigthsNullingShadow();	//очищаем рт генерации теней
-				SML_LigthsGenShadow(tmpid);	//генерируем тень для света
+				SML_LigthsNullingShadow();	//РѕС‡РёС‰Р°РµРј СЂС‚ РіРµРЅРµСЂР°С†РёРё С‚РµРЅРµР№
+				SML_LigthsGenShadow(tmpid);	//РіРµРЅРµСЂРёСЂСѓРµРј С‚РµРЅСЊ РґР»СЏ СЃРІРµС‚Р°
 
-				//сглаживаем
+				//СЃРіР»Р°Р¶РёРІР°РµРј
 				SML_LigthsSoftShadow(false, 4);
 				SML_LigthsSoftShadow(false, 2);
 
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 				//}}
 			
-				//включаем смешивание для освещения
+				//РІРєР»СЋС‡Р°РµРј СЃРјРµС€РёРІР°РЅРёРµ РґР»СЏ РѕСЃРІРµС‰РµРЅРёСЏ
 				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-				//опять назначаем второй рт
+				//РѕРїСЏС‚СЊ РЅР°Р·РЅР°С‡Р°РµРј РІС‚РѕСЂРѕР№ СЂС‚
+				GData::DXDevice->SetRenderTarget(0, AmbientSurf);
 				GData::DXDevice->SetRenderTarget(1, SpecDiffSurf);
 
-				//устанавливаем текстуру с тенями и переназначаем шейдер, теперь уже с тенями
+				//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚СѓСЂСѓ СЃ С‚РµРЅСЏРјРё Рё РїРµСЂРµРЅР°Р·РЅР°С‡Р°РµРј С€РµР№РґРµСЂ, С‚РµРїРµСЂСЊ СѓР¶Рµ СЃ С‚РµРЅСЏРјРё
 				GData::DXDevice->SetTexture(4, SML_LigthsGetShadow());
 				idshader = GData::IDsShaders::PS::ComLightingShadow;
 			}
 
-			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
-			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
-			//! было актуально когда было два прохода, причем ставить это надо перед вторым, а после метки стенсиля устноввить при проходе стенсил теста keep
-			/*if (SML_LigthsGetType(tmpid) != LIGHTS_TYPE_GLOBAL)
-				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);*/
+			SGCore_ShaderUnBind();
+
+			//С‚РµРїРµСЂСЊ РєРѕРіРґР° Р±СѓРґРµРј СЃС‡РёС‚Р°С‚СЊ РѕСЃРІРµС‰РµРЅРёРµ РЅР°РґРѕ СЃР±СЂРѕСЃРёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РІ СЃС‚РµРЅСЃРёР» Р±СѓС„РµСЂРµ, С‡С‚РѕР±С‹ РєР°Р¶РґС‹Р№ РєР°РґСЂ РЅРµ С‡РёСЃС‚РёС‚СЊ
+			//РµСЃР»Рё СЃС‚РµРЅСЃРёР» С‚РµСЃС‚ РїСЂРѕС€РµР» СѓСЃРїРµС€РЅРѕ, СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РЅР°С‡РЅРµРёРµ РІ РЅСѓР»СЊ
+			if (SML_LigthsGetType(tmpid) != LightsTypeLight::ltl_global)
+				GData::DXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
 
 			float determ = 0;
 			float4x4 ViewInv = SMMatrixInverse(&determ, GData::MCamView);
@@ -981,10 +976,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	//обратаываем hdr (а если точнее именно tone mapping)
+	//РѕР±СЂР°С‚Р°С‹РІР°РµРј hdr (Р° РµСЃР»Рё С‚РѕС‡РЅРµРµ РёРјРµРЅРЅРѕ tone mapping)
 	SML_LigthsComHDR(timeDelta,30);
 	
-	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
+	//С‚РµРїРµСЂСЊ РЅРµРѕР±С…РѕРґРёРјРѕ РІСЃРµ СЃРјРµС€Р°С‚СЊ С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ РёС‚РѕРіРѕРІСѓСЋ РѕСЃРІРµС‰РµРЅРЅСѓСЋ РєР°СЂС‚РёРЅРєСѓ
 	//{{
 	SetSamplerFilter(0, 5, D3DTEXF_NONE);
 	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
@@ -995,7 +990,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 
-	//очищаем рт (в старой версии было многопроходное смешинваие)
+	//РѕС‡РёС‰Р°РµРј СЂС‚ (РІ СЃС‚Р°СЂРѕР№ РІРµСЂСЃРёРё Р±С‹Р»Рѕ РјРЅРѕРіРѕРїСЂРѕС…РѕРґРЅРѕРµ СЃРјРµС€РёРЅРІР°РёРµ)
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0,0,0,0), 1.0f, 0);
 
 	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_color));
@@ -1013,7 +1008,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	mem_release(ComLightSurf);
 	//}}
 
-	//теперь надо смешать все полупрозрачные слои (если есть) с непрозрачными
+	//С‚РµРїРµСЂСЊ РЅР°РґРѕ СЃРјРµС€Р°С‚СЊ РІСЃРµ РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Рµ СЃР»РѕРё (РµСЃР»Рё РµСЃС‚СЊ) СЃ РЅРµРїСЂРѕР·СЂР°С‡РЅС‹РјРё
 	//{{
 	LPDIRECT3DSURFACE9 ColorSurf, Color2Surf, DepthSurf;
 	SML_DSGetRT(DS_RT::ds_rt_scene_light_com2)->GetSurfaceLevel(0, &ColorSurf);
@@ -1041,7 +1036,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	mem_release(DepthSurf);
 	mem_release(Color2Surf);
 
-	//копируем итоговую сцену
+	//РєРѕРїРёСЂСѓРµРј РёС‚РѕРіРѕРІСѓСЋ СЃС†РµРЅСѓ
 	SML_DSGetRT(DS_RT::ds_rt_scene_light_com)->GetSurfaceLevel(0, &ComLightSurf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
@@ -1061,7 +1056,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->SetRenderTarget(0, BackBuf);
 	mem_release(BackBuf);
 
-	//если надо то рисуем небо
+	//РµСЃР»Рё РЅР°РґРѕ С‚Рѕ СЂРёСЃСѓРµРј РЅРµР±Рѕ
 	if (render_sky && SGCore_SkyBoxIsCr())
 		SXRenderFunc::RenderSky(timeDelta);
 
@@ -1085,8 +1080,8 @@ void SXRenderFunc::PostProcess(DWORD timeDelta)
 	float3 tmpPosition;
 	float3 tmpColor;
 
-	//УКАЗЫВАТЬ 0 ЕСЛИ ТОЛЬКО ID СОЛНЦА 0
-	//А ВООБЩЕ В СЛЕДУЮЩИХ ВЕРСИЯХ КАК-ТО ЛУЧШЕ СДЕЛАТЬ
+	//РЈРљРђР—Р«Р’РђРўР¬ 0 Р•РЎР›Р РўРћР›Р¬РљРћ ID РЎРћР›РќР¦Рђ 0
+	//Рђ Р’РћРћР‘Р©Р• Р’ РЎР›Р•Р”РЈР®Р©РРҐ Р’Р•Р РЎРРЇРҐ РљРђРљ-РўРћ Р›РЈР§РЁР• РЎР”Р•Р›РђРўР¬
 	SML_LigthsGetColor(0, &tmpColor);
 	SML_LigthsGetPos(0, &tmpPosition, false, true);
 
@@ -1104,21 +1099,17 @@ void SXRenderFunc::PostProcess(DWORD timeDelta)
 	SPP_RenderMotionBlur(0.1, timeDelta);
 }
 
-void SXRenderFunc::ComReflection(DWORD timeDelta)
+void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 {
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &GData::MCamView);
-	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MLightProj);
-	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(GData::MCamView * GData::MLightProj));
-	Core_RMatrixSet(G_RI_MATRIX_TRANSP_VIEWPROJ, &SMMatrixTranspose(GData::MCamView * GData::MLightProj));
 
-	GData::DXDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
-//если не объявлен флаг редактора материалов (для него немного другой рендер)
+//РµСЃР»Рё РЅРµ РѕР±СЉСЏРІР»РµРЅ С„Р»Р°Рі СЂРµРґР°РєС‚РѕСЂР° РјР°С‚РµСЂРёР°Р»РѕРІ (РґР»СЏ РЅРµРіРѕ РЅРµРјРЅРѕРіРѕ РґСЂСѓРіРѕР№ СЂРµРЅРґРµСЂ)
 #if !defined(SX_MATERIAL_EDITOR)
 	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
 	{
@@ -1154,6 +1145,8 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
 					SGeom_GreenRender(timeDelta, &float3(center), GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
 
+				SXAnim_Render();
+				
 				SGCore_ShaderUnBind();
 
 
@@ -1199,10 +1192,10 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 					SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 					SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-					//если статические кубические отражения
+					//РµСЃР»Рё СЃС‚Р°С‚РёС‡РµСЃРєРёРµ РєСѓР±РёС‡РµСЃРєРёРµ РѕС‚СЂР°Р¶РµРЅРёСЏ
 					if (SML_MtlGetTypeReflection(idmat) == MtlTypeReflect::mtr_cube_static)
 					{
-						//тогда считаем в массив камеры
+						//С‚РѕРіРґР° СЃС‡РёС‚Р°РµРј РІ РјР°СЃСЃРёРІ РєР°РјРµСЂС‹
 						SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGeomIDArr);
 						SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, GData::DefaultGeomIDArr, false, i, k);
 
@@ -1216,6 +1209,8 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 						
 						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) >= 0)
 							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k));
+
+						SXAnim_Render();
 					}
 
 					GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -1318,12 +1313,12 @@ void SXRenderFunc::ComReflection(DWORD timeDelta)
 void SXRenderFunc::MainRender(DWORD timeDelta)
 {
 	DWORD ttime;
-	//потеряно ли устройство или произошло изменение размеров?
+	//РїРѕС‚РµСЂСЏРЅРѕ Р»Рё СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РёР»Рё РїСЂРѕРёР·РѕС€Р»Рѕ РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂРѕРІ?
 	if (GData::DXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || GData::ReSize)
 	{
-		//если не свернуто окно
+		//РµСЃР»Рё РЅРµ СЃРІРµСЂРЅСѓС‚Рѕ РѕРєРЅРѕ
 		if (!IsIconic(GData::Handle3D))
-			SXRenderFunc::ComDeviceLost();	//вытаемся восстановить
+			SXRenderFunc::ComDeviceLost();	//РІС‹С‚Р°РµРјСЃСЏ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ
 		return;
 	}
 
@@ -1335,9 +1330,6 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SXAnim_Update();
 	SXAnim_Sync();
-
-	GData::ObjCamera->GetPosition(&GData::ConstCurrCamPos);
-	GData::ObjCamera->GetLook(&GData::ConstCurrCamDir);
 
 	ttime = timeGetTime();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
@@ -1356,20 +1348,20 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	GData::DXDevice->BeginScene();
 
 	ttime = timeGetTime();
-	ComReflection(timeDelta);
+	UpdateReflection(timeDelta);
 	SXRenderFunc::Delay::ComReflection += timeGetTime() - ttime;
 
-	//рендерим глубину от света
+	//СЂРµРЅРґРµСЂРёРј РіР»СѓР±РёРЅСѓ РѕС‚ СЃРІРµС‚Р°
 	ttime = timeGetTime();
 	UpdateShadow(timeDelta);
 	SXRenderFunc::Delay::UpdateShadow += timeGetTime() - ttime;
 
-	//рисуем сцену и заполняем mrt данными
+	//СЂРёСЃСѓРµРј СЃС†РµРЅСѓ Рё Р·Р°РїРѕР»РЅСЏРµРј mrt РґР°РЅРЅС‹РјРё
 	ttime = timeGetTime();
 	RenderInMRT(timeDelta);
 	SXRenderFunc::Delay::RenderMRT += timeGetTime() - ttime;
 	
-	//освещаем сцену
+	//РѕСЃРІРµС‰Р°РµРј СЃС†РµРЅСѓ
 	ttime = timeGetTime();
 	ComLighting(timeDelta, true);
 	SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
@@ -1378,7 +1370,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	ttime = timeGetTime();
-	//PostProcess(timeDelta);
+	PostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += timeGetTime() - ttime;
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
@@ -1389,7 +1381,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
-
+	//GData::DXDevice->SetTexture(0, 0);
+	//SML_LigthsRender(0, 0);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
@@ -1445,7 +1438,7 @@ void SXRenderFunc::RFuncMtlSet(ID id, float4x4* world)
 		SML_MtlSetMainTexture(0, id);
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
 		//SGCore_ShaderUnBind();
-		SML_MtlRender(SML_MtlGetStdMtl(SML_MtlGetTypeModel(id)), world, 0, id);
+		SML_MtlRenderStd(SML_MtlGetTypeModel(id), world, 0, id);
 		break;
 
 	case RENDER_STATE_MATERIAL:

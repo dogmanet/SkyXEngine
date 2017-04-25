@@ -5,44 +5,7 @@
 Определены все структуры которые используются
 */
 
-#define GREEN_ALPHA_VAL_CLIP 	0.5
-#define PSSM_SHADING_LAST 		0.1
-#define SHADOWGEN_JITTER_SCALE 1024.0
-
-#define PI 3.141592654f
-
-#define NOTLIGHTING_NOTTRANSPARENCY 0.0
-#define LIGHTING_NOTTRANSPARENCY 	0.333333
-#define NOTLIGHTING_TRANSPARENCY 	0.666667
-#define LIGHTING_TRANSPARENCY 		1.0
-
-half4 GetDepthW(half4 pos, half2 near_far)
-{
-	half depth = (pos.z + near_far.x)/near_far.y;
-	return half4(depth,depth,depth,1);
-}
-
-half4 GetDepthLinearR(half depth, half2 near_far)
-{
-	return depth;
-}
-
-half4 GetDepthDistR(half depth, half2 near_far)
-{
-	return depth*near_far.y;
-}
-
-
-half4 bilinear(sampler2D tex, half2 texCoord, int texSize) 
-{
-   half2 trTexCoord = texCoord*texSize;
-   half2 texf = floor(trTexCoord);
-   half2 ratio = trTexCoord - texf;
-   half2 opposite = 1.0 - ratio;
-   half4 result = (tex2D(tex, texf/texSize) * opposite.x  + tex2D(tex, (texf+half2(1, 0))/texSize)   * ratio.x) * opposite.y + 
-                   (tex2D(tex, (texf+half2(0, 1))/texSize) * opposite.x + tex2D(tex, (texf+half2(1, 1))/texSize) * ratio.x) * ratio.y;
-   return result;
-}
+#include <../gdefines.h>
 
 //ПОСТПРОЦЕСС
 //{

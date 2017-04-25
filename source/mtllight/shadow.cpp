@@ -124,7 +124,7 @@ void PSSM::OnResetDevice()
 			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x*(i==4?1:1), MLSet::SizeTexDepthGlobal.y*(i==4?1:1), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
 
 				/*if(FAILED(hr))
-					reportf(-1,"Íå óäàëîñü ñîçäàòü òåêñòóðó ãëóáèíû PSSM");*/
+					reportf(-1,"ÐŒÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ ÑÐ¾Ð·Ð´Ð°Ñ‚ÑŒ Ñ‚ÐµÐºÑÑ‚ÑƒÑ€Ñƒ Ð³Ð»ÑƒÐ±Ð¸Ð½Ñ‹ PSSM");*/
 			
 			DepthSurfaces[i] = 0;
 		}
@@ -819,7 +819,7 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 	EnableEdge[0] = EnableEdge[1] = EnableEdge[2] = EnableEdge[3] = EnableEdge[4] = EnableEdge[5] = true;
 	EnableEdgeNulled[0] = EnableEdgeNulled[1] = EnableEdgeNulled[2] = EnableEdgeNulled[3] = EnableEdgeNulled[4] = EnableEdgeNulled[5] = false;
 
-	Bias = 0.007;
+	Bias = 0.1;
 	BlurPixel = 16;
 
 	DepthMap = 0;
@@ -1063,7 +1063,7 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "PosCam", &MLSet::ConstCurrCamPos);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
+		//SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 	}
 	float determ = 0;
@@ -1074,8 +1074,7 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 
 	SGCore_ScreenQuadDraw();
 
-	MLSet::DXDevice->SetVertexShader(0);
-	MLSet::DXDevice->SetPixelShader(0);
+	SGCore_ShaderUnBind();
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuf);
 	mem_release_del(RenderSurf);

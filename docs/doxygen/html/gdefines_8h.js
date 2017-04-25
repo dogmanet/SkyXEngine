@@ -5,6 +5,7 @@ var gdefines_8h =
     [ "CORE_NAME_MAX_LEN", "gdefines_8h.html#a109da2b5ddd425ca9cd16a25f1a82a26", null ],
     [ "OBJECT_NAME_MAX_LEN", "gdefines_8h.html#ac8782a8bee6109050516536e3e4b0648", null ],
     [ "CONFIG_SECTION_MAX_LEN", "gdefines_8h.html#a88b9cbdf0b7c981f0cca30ae822e4e96", null ],
+    [ "_VOID", "gdefines_8h.html#a6de2472e43448d3b76cc1bc6c876b873", null ],
     [ "format_str", "gdefines_8h.html#aa6fe6b11c6687df1e7c0858749611acd", null ],
     [ "gen_msg_location", "gdefines_8h.html#a861c01cb9cad0aad8da063e6486c3c17", null ],
     [ "REPORT_MSG_LEVEL_NOTICE", "gdefines_8h.html#acdd922a3d45e1148185388d22fd5d7b5", null ],

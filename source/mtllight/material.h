@@ -30,7 +30,7 @@ public:
 	void Update(DWORD timeDelta);
 	void SetMainTexture(ID slot, ID id);
 	void Render(ID id, float4x4* world);
-	void RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl, bool is_cp = false, float3* plane_normal = 0, float3* plane_point = 0);
+	void RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl);
 	void RenderLight(float4_t* color, float4x4* world);
 	inline long GetCount();
 
@@ -162,7 +162,7 @@ public:
 
 		bool IsDelete;
 
-		//структура из материала указывающая на маску и 4 детальных и 4 микрорельефных карты
+		//СЃС‚СЂСѓРєС‚СѓСЂР° РёР· РјР°С‚РµСЂРёР°Р»Р° СѓРєР°Р·С‹РІР°СЋС‰Р°СЏ РЅР° РјР°СЃРєСѓ Рё 4 РґРµС‚Р°Р»СЊРЅС‹С… Рё 4 РјРёРєСЂРѕСЂРµР»СЊРµС„РЅС‹С… РєР°СЂС‚С‹
 		struct MaterialMaskPM
 		{
 			MaterialMaskPM();
@@ -173,7 +173,7 @@ public:
 			ID ArrMicroDiffuse[4];
 		};
 
-		//структура из материала определяющая основные характеристики просчета освещения
+		//СЃС‚СЂСѓРєС‚СѓСЂР° РёР· РјР°С‚РµСЂРёР°Р»Р° РѕРїСЂРµРґРµР»СЏСЋС‰Р°СЏ РѕСЃРЅРѕРІРЅС‹Рµ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРєРё РїСЂРѕСЃС‡РµС‚Р° РѕСЃРІРµС‰РµРЅРёСЏ
 		struct MaterialLightParam
 		{
 			MaterialLightParam();
@@ -253,7 +253,7 @@ protected:
 	void CreateMtl(const char* name, Material** mtl, MtlTypeModel type);
 	ID CreateTexParamLighting(float roughness, float f0);
 
-	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
+	//СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃС‹РІР°СЋС‰Р°СЏ РїР°РїРєСѓ Рё РІСЃРµ С‚РµРєСЃС‚СѓСЂС‹ РІ РЅРµР№, Сѓ РєР°Р¶РґРѕР№ СЃРІРѕР№ id РґР»СЏ РґРѕСЃС‚СѓРїР°
 	struct TLPath
 	{
 		TLPath(){}

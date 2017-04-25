@@ -25,7 +25,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	InitOutLog();
 	srand((unsigned int)time(0));
 
-	GData::InitWin("SkyXEngine");
+	GData::InitWin("SkyXEngine", "SkyXEngine");
 	GData::Pathes::InitAllPathes();
 
 	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
@@ -94,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//pl = SXAnim_CreatePlayer("F:/engine/build/gamesource/models/ak74.dse");
 	//pl->Play("idle");
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
-	pl->SetPos(float3(0, -1.38f, 0));
+	pl->SetPos(float3(-17.18, -1.38f, -32.3));
 	pl->Play("reload");
 	
 	/*SGeom_ModelsAddModel("stalker_atp.dse", 0, "stalker_atp.dse");
@@ -114,6 +114,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 		
 	SaveLevel("stalker_atp"); */
+
+	/*SML_LigthsCreatePoint(
+		&float3(20, 20, 20),
+		10,
+		100,
+		&float3(1, 1, 1),
+		false,
+		true);
+
+	SML_LigthsSetEnableCubeEdge(0, 0, true);
+	SML_LigthsSetEnableCubeEdge(0, 1, true);
+
+	SML_LigthsSetEnableCubeEdge(0, 2, true);
+	SML_LigthsSetEnableCubeEdge(0, 3, true);
+
+	SML_LigthsSetEnableCubeEdge(0, 4, true);
+	SML_LigthsSetEnableCubeEdge(0, 5, true);
+
+	SML_LigthsSetTypeShadowed(0, LightsTypeShadow::lts_static);
+
+	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
+	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");*/
 
 	char tmppathexe[1024];
 	char tmppath[1024];

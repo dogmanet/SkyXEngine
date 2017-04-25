@@ -824,6 +824,8 @@ namespace SXGUIRegClass
 	SX_LIB_API bool RegButtonImg();
 	//класс тулбара
 	SX_LIB_API bool RegToolBar();
+	//класс group box
+	SX_LIB_API bool RegGroupBox();
 };
 
 #endif

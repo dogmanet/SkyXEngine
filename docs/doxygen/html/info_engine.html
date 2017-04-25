@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Информация о движке SkyXEngine</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('info_engine.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="headertitle">
+<div class="title">Информация о движке SkyXEngine </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="toc"><h3>Оглавление</h3>
+<ul><li class="level1"><a href="#ie_common">Общее</a></li>
+<li class="level1"><a href="#dogma_engine">Идеология движка</a></li>
+<li class="level1"><a href="#struct_engine">Структура движка</a></li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="ie_common"></a>
+Общее</h1>
+<p>SkyXEngine - графический 3D движок с real-time рендером, использует технологии DirectX 9. <br />
+<small>Сразу уточнение, DirectX 9 мы используем в связи с личными предпочтениями, так как на наш взгляд эта технология является одной из лучших, хоть и считается устаревшей. Все новое это забытое старое)) И как нам кажется ... нет ничего такого, чего нельзя было бы сделать на DirectX 9, но что можно сделать на другом GAPI, для создания игр любого жанра с real-time рендером. Но это только точка зрения нашей команды и она может быть ошибочная. Однако в планах есть расширение поддерживаемых GAPI.</small></p>
+<p><b>Формирование уровня</b> осуществляется посредством:</p><ul>
+<li>загрузки статических моделей формата dse, с их автоматическим разбиением на "куски рендера" как quad или octo дерево, возможны сохранение/загрузка в бинарный файл всей геометрии уровня</li>
+<li>генерации растительности по маске, возможны 2 вида: трава (чем дальше тем меньше размер объекта) и деревья (с возможностью загрузки лодов), возможны возможны сохранение/загрузка в бинарный файл всей растительности уровня.</li>
+</ul>
+<p><b>Освещение</b> представлено 3 видами источников света (опционально поддерживается генерация теней от каждого исчтоника света):</p><ul>
+<li>глобальный (солнце), тени - PSSM</li>
+<li>локальный - точечный, тени - Cube Shadow Mapping</li>
+<li>локальный - направленный? тени - Shadow Mapping.</li>
+</ul>
+<p>HDR эффект присутсвует.</p>
+<p><b>Система материалов</b> pbr, то есть построенная на физичеки корретных, но апроксимированных вычислениях. <br />
+Для формирования данных для освещения используется техника Deferred shading, что позволяет обрабатывать неограниченное количество источников света. <br />
+Поддерживаются отражения 2 видов:</p><ul>
+<li>плоские (планарные)</li>
+<li>объемные (кубические).</li>
+</ul>
+<p>Поддерживается до 3 полупрозрачных поверхностей в кадре (пока только тестовый режим, в планах улучшения качества). <br />
+Поддерживаемые эффекты поверхностей:</p><ul>
+<li>микрорельеф</li>
+<li>микрорельеф по маске (до 4 текстур)</li>
+<li>детальность</li>
+<li>детальность по маске (до 4 текстур)</li>
+<li>комбинированный микрорельеф с детальностью по маске (до 4 текстур)</li>
+<li>альфа тест.</li>
+</ul>
+<p>Вся система материалов является открытой и практически любой функционал системы доступен для собственной интерпретации, посредством шейдеров. Имеется встроенный набор данных.<br />
+ Поддерживаются различные пользовательские данные которые которые интерпретируются только создающим материалы.</p>
+<p><b>Постпроцесс</b> состоит из эффектов:</p><ul>
+<li>черно-белое изображение</li>
+<li>эффект сепия</li>
+<li>коррекция изображения</li>
+<li>рендер солнца</li>
+<li>bloom</li>
+<li>lens flare, эффект восприятия яркого света линзами</li>
+<li>depth of field, глубина резкости</li>
+<li>linear fog, линейный туман</li>
+<li>space screen ambient occulusion, глобальное освещение (точнее затенение) в пространстве экрана</li>
+<li>motion blur, размытие в движении</li>
+<li>nfaa</li>
+<li>dlaa.</li>
+</ul>
+<h1><a class="anchor" id="dogma_engine"></a>
+Идеология движка</h1>
+<p>Основной идеей при разработке движка была идея о том что программист должен иметь контроль над объектами которыми он оперирует, НО этот контроль должен быть в меру. <br />
+Также главенствовал принцип разделения функционала на логические блоки (библиотеки) и после окончания разработки очередного блока он бы выносился в dll (с глаз долой). Однако существенным дополнением являлась идея о том что библиотеки не должны ничего значть о равнозначных себе библиотеках в общей иерархии. К примеру <a class="el" href="group__sxgeom.html">библиотека статической геометрии и растительности</a> ничего не знает о <a class="el" href="group__sxmtllight.html">библиотеке материалов</a>, и последняя ничего не знает о первой, однако первая использует функции из второй посредством графического ядра, а вторая осуществляется настройку материалов перед рендером первой.<br />
+Немаловажным моментом являлся ориентир на гибкость. К примеру <a class="el" href="group__sxgcore__redefinition__func.html">переопредляемые функции</a> в графическом ядре, позволяют настроить на свой лад рендер. <br />
+Ну и пожалуй самая главная идея заключается в полноценной возможности разработки игр с видом от первого лица, с настройкой/перестройкой "под себя" всего рендера. Также к приправе к этому мы руководствовались мыслью о том что скриптеры (коих не мало) могли бы вести разработку игры на своем (доступном им) уровне, со всеми возможностями движка.</p>
+<h1><a class="anchor" id="struct_engine"></a>
+Структура движка</h1>
+<p>Весь движок состоит из <a class="el" href="general_info_libs.html">подсистем</a>, которые в некоторых случаях являются ядрами. <br />
+Иерархия подсистем:<br />
+- <a class="el" href="group__sxcore.html">sxcore - основное ядро</a><br />
+-- <a class="el" href="group__sxgcore.html">sxgcore - графическое ядро, использует технологии DirectX 9</a><br />
+--- <a class="el" href="group__sxgeom.html">sxgeom - библиотека с базовой организацией статической геометрии и растительности</a><br />
+--- <a class="el" href="group__sxmtllight.html">sxmtllight - библиотека освещения и материалов</a><br />
+--- <a class="el" href="group__sxpp.html">sxpp - библиотека постпроцесса</a><br />
+- <a class="el" href="group__sxinput.html">sxinput - система ввода информации с устройств, использует технологии DirectInput8</a><br />
+Все библиотеки представлены файлами dll, что позволяет разделить функционал и реализацию. Также в большинстве случаев библиотеки могут быть вычленены из самого движка и могут использоваться автономно.<br />
+В большинстве случаев весь функционал библиотек предоставляется интерфейсом функций, а идентификация объектов числовая, по типу #ID. Это позволяет не беспокоится о типах и о существовании объектов - об этом заботятся сами библиотеки. </p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Пн 24 Апр 2017 23:11:50. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

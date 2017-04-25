@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['iseof',['IsEOF',['../struct_i_s_x_file.html#ae5be34629a3b57804d68ac6037c0d47f',1,'ISXFile']]],
-  ['ispointinbox',['IsPointInBox',['../class_i_s_x_bound.html#ada6257ea617e7803075489f0c1689fa4',1,'ISXBound']]],
-  ['ispointinsphere',['IsPointInSphere',['../class_i_s_x_bound.html#ac918ce0b03b10f6502dd442d9fcbf8c6',1,'ISXBound']]]
+  ['he_5fenumwindowsproc',['HE_EnumWindowsProc',['../group__managed__render__out__log.html#ga92b80e158e66a6d41f00ee0a0ec44333',1,'handler_out_log.cpp']]],
+  ['he_5fhandlererror',['HE_HandlerError',['../group__managed__render__out__log.html#ga4d903461b363b38b207f7e4e1a364f17',1,'handler_out_log.cpp']]]
 ];

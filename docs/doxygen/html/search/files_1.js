@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['sxcore_2eh',['sxcore.h',['../sxcore_8h.html',1,'']]],
-  ['sxgcore_2eh',['sxgcore.h',['../sxgcore_8h.html',1,'']]],
-  ['sxgeom_2eh',['sxgeom.h',['../sxgeom_8h.html',1,'']]],
-  ['sxinput_2eh',['sxinput.h',['../sxinput_8h.html',1,'']]]
+  ['gdata_2eh',['gdata.h',['../gdata_8h.html',1,'']]],
+  ['gdefines_2eh',['gdefines.h',['../gdefines_8h.html',1,'']]],
+  ['gregisterindex_2eh',['GRegisterIndex.h',['../_g_register_index_8h.html',1,'']]]
 ];

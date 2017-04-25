@@ -22,7 +22,7 @@ namespace PPSet
 
 	float3_t ArrRndVecSSAO[24];
 
-	//ближняя и дальняя плоскости
+	//Р±Р»РёР¶РЅВ¤В¤ Рё РґР°Р»СЊРЅВ¤В¤ РїР»РѕСЃРєРѕСЃС‚Рё
 	float2_t NearFar = float2_t(0.25f, 400.f);
 
 	float4x4 MCamView;

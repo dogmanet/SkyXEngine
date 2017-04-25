@@ -314,7 +314,7 @@ void Materials::Clear(bool clear_del)
 
 	for (int i = BeginNonDef; i < ArrMaterials.size(); ++i)
 	{
-		//если есть отражения, то записываем в очередь на удаление
+		//РµСЃР»Рё РµСЃС‚СЊ РѕС‚СЂР°Р¶РµРЅРёСЏ, С‚Рѕ Р·Р°РїРёСЃС‹РІР°РµРј РІ РѕС‡РµСЂРµРґСЊ РЅР° СѓРґР°Р»РµРЅРёРµ
 		if (ArrMaterials[i]->Reflect)
 			ArrDelRefMtrls.push_back(ArrMaterials[i]->Reflect);
 
@@ -894,11 +894,11 @@ bool Materials::MtlGetUDPS_InPS(ID id)
 
 ID Materials::IsExists(const char* name)
 {
-	char tmp_path[MTL_MAX_SIZE_DIR];//папка
-	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
+	char tmp_path[MTL_MAX_SIZE_DIR];//РїР°РїРєР°
+	char tmp_name[MTL_MAX_SIZE_NAME];//СЃР°РјРѕ РёРјСЏ С‚РµРєСЃС‚С‹СЂ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј
 	long id = -1;
 	bool IsTruePath = false;
-	//обрезаем имя текстуры и папку
+	//РѕР±СЂРµР·Р°РµРј РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 	for (int i = 0; i<strlen(name); i++)
 	{
 		if (name[i] == '_')
@@ -917,7 +917,7 @@ ID Materials::IsExists(const char* name)
 		//reportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
 	}
 
-	long tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+	long tmpkey = -1;	//РїРµСЂРµРјРµРЅРЅР°СЏ РІ РєРѕС‚РѕСЂРѕР№ С…СЂР°РЅРёРј РєР»СЋС‡ РѕС‚ РјР°СЃСЃРёРІР° РІ РєРѕС‚РѕСЂС‹Р№ Р·Р°РїРёСЃС‹РІР°РµРј
 	for (long i = 0; i<ArrHMtls.size(); ++i)
 	{
 		//TLPath* tmptlpath = ArrHMtls[i];
@@ -928,13 +928,13 @@ ID Materials::IsExists(const char* name)
 		}
 	}
 
-	//если мы не нашли совпадений значит путь уникален ...
+	//РµСЃР»Рё РјС‹ РЅРµ РЅР°С€Р»Рё СЃРѕРІРїР°РґРµРЅРёР№ Р·РЅР°С‡РёС‚ РїСѓС‚СЊ СѓРЅРёРєР°Р»РµРЅ ...
 	if (tmpkey == -1)
 	{
 		return -1;
 	}
 
-	//проверяем записано ли уже имя текстуры
+	//РїСЂРѕРІРµСЂСЏРµРј Р·Р°РїРёСЃР°РЅРѕ Р»Рё СѓР¶Рµ РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹
 	for (int i = 0; i<ArrHMtls[tmpkey]->ArrTex.size(); i++)
 	{
 		if (strcmp(ArrHMtls[tmpkey]->ArrTex[i]->name.c_str(), tmp_name) == 0)
@@ -988,11 +988,11 @@ ID Materials::AddMaterial(Material* mtl)
 
 void Materials::AddName(const char* name, ID id)
 {
-	char tmp_path[MTL_MAX_SIZE_DIR];//папка
-	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
+	char tmp_path[MTL_MAX_SIZE_DIR];//РїР°РїРєР°
+	char tmp_name[MTL_MAX_SIZE_NAME];//СЃР°РјРѕ РёРјСЏ С‚РµРєСЃС‚С‹СЂ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј
 
 	bool IsTruePath = false;
-	//обрезаем имя текстуры и папку
+	//РѕР±СЂРµР·Р°РµРј РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 	for (int i = 0; i<strlen(name); i++)
 	{
 		if (name[i] == '_')
@@ -1005,7 +1005,7 @@ void Materials::AddName(const char* name, ID id)
 		}
 	}
 
-	long tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+	long tmpkey = -1;	//РїРµСЂРµРјРµРЅРЅР°СЏ РІ РєРѕС‚РѕСЂРѕР№ С…СЂР°РЅРёРј РєР»СЋС‡ РѕС‚ РјР°СЃСЃРёРІР° РІ РєРѕС‚РѕСЂС‹Р№ Р·Р°РїРёСЃС‹РІР°РµРј
 	for (long i = 0; i<ArrHMtls.size(); ++i)
 	{
 		if (ArrHMtls[i] && strcmp(ArrHMtls[i]->Path.c_str(), tmp_path) == 0)
@@ -1015,7 +1015,7 @@ void Materials::AddName(const char* name, ID id)
 		}
 	}
 
-	//если мы не нашли совпадений значит путь уникален ...
+	//РµСЃР»Рё РјС‹ РЅРµ РЅР°С€Р»Рё СЃРѕРІРїР°РґРµРЅРёР№ Р·РЅР°С‡РёС‚ РїСѓС‚СЊ СѓРЅРёРєР°Р»РµРЅ ...
 	if (tmpkey == -1)
 	{
 		tmpkey = ArrHMtls.size();
@@ -1043,11 +1043,11 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 	char tmpParamLigth[256];
 
-	char tmp_path[256];//папка
-	char tmp_name[256];//само им¤ текстыр с расширением
+	char tmp_path[256];//РїР°РїРєР°
+	char tmp_name[256];//СЃР°РјРѕ РёРјВ¤ С‚РµРєСЃС‚С‹СЂ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј
 
 	bool IsTruePath = false;
-	//обрезаем им¤ текстуры и папку
+	//РѕР±СЂРµР·Р°РµРј РёРјВ¤ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 	for (long k = 0; k< strlen(name); k++)
 	{
 		if (name[k] == '_')
@@ -1080,10 +1080,10 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 	{
 		ISXLConfig* config = Core_OpLConfig(path);
 
-		//если в конфиге указана текстура то берем ее
+		//РµСЃР»Рё РІ РєРѕРЅС„РёРіРµ СѓРєР°Р·Р°РЅР° С‚РµРєСЃС‚СѓСЂР° С‚Рѕ Р±РµСЂРµРј РµРµ
 		if (config->KeyExists(tmp_name, "texture"))
 			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->GetKey(tmp_name, "texture"), LoadTexType::ltt_load);
-		else //если нет то тогда берем имя материала, может быть он имя текстуры, иначе будет -1
+		else //РµСЃР»Рё РЅРµС‚ С‚Рѕ С‚РѕРіРґР° Р±РµСЂРµРј РёРјСЏ РјР°С‚РµСЂРёР°Р»Р°, РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕРЅ РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹, РёРЅР°С‡Рµ Р±СѓРґРµС‚ -1
 			tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LoadTexType::ltt_load);
 
 		sprintf(tmpMtl->Name, "%s", tmp_name);
@@ -1193,10 +1193,10 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value);
 
-		//говорим что не установлено использовать ли текстуру или нет
+		//РіРѕРІРѕСЂРёРј С‡С‚Рѕ РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё С‚РµРєСЃС‚СѓСЂСѓ РёР»Рё РЅРµС‚
 		int istexparam = -1;
 
-		//если есть ключ использования текстуры то грузим
+		//РµСЃР»Рё РµСЃС‚СЊ РєР»СЋС‡ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ С‚РµРєСЃС‚СѓСЂС‹ С‚Рѕ РіСЂСѓР·РёРј
 		if (config->KeyExists(tmp_name, "is_texture_param"))
 			istexparam = String(config->GetKey(tmp_name, "is_texture_param")).ToBool();
 
@@ -1204,17 +1204,17 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->KeyExists(tmp_name, "param_ligth"))
 			sprintf(tmpParamLigth, "%s", config->GetKey(tmp_name, "param_ligth"));
 
-		//если текстура с параметрами освещения была определена
+		//РµСЃР»Рё С‚РµРєСЃС‚СѓСЂР° СЃ РїР°СЂР°РјРµС‚СЂР°РјРё РѕСЃРІРµС‰РµРЅРёСЏ Р±С‹Р»Р° РѕРїСЂРµРґРµР»РµРЅР°
 		if (tmpParamLigth[0] != '0' && tmpParamLigth[0] != 0)
 		{
 			tmpMtl->LightParam.ParamTex = SGCore_LoadTexAddName(tmpParamLigth, LoadTexType::ltt_load);
-			//если использование параметров освещения из текстуры не было определено
+			//РµСЃР»Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ РѕСЃРІРµС‰РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹ РЅРµ Р±С‹Р»Рѕ РѕРїСЂРµРґРµР»РµРЅРѕ
 			if (istexparam == -1)
 				tmpMtl->LightParam.IsTextureParam = true;
 			else
 				tmpMtl->LightParam.IsTextureParam = istexparam;
 		}
-		//если использование параметров освещения из текстуры не было определено
+		//РµСЃР»Рё РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ РѕСЃРІРµС‰РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹ РЅРµ Р±С‹Р»Рѕ РѕРїСЂРµРґРµР»РµРЅРѕ
 		else if (istexparam == -1)
 		{
 			tmpMtl->LightParam.IsTextureParam = false;
@@ -1366,37 +1366,37 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 {
 	Material* tmpMtl = *mtl;
 	new(tmpMtl)Material*;
-	//если такого материала не существует, то мы должны были задать примерный тип материала
+	//РµСЃР»Рё С‚Р°РєРѕРіРѕ РјР°С‚РµСЂРёР°Р»Р° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, С‚Рѕ РјС‹ РґРѕР»Р¶РЅС‹ Р±С‹Р»Рё Р·Р°РґР°С‚СЊ РїСЂРёРјРµСЂРЅС‹Р№ С‚РёРї РјР°С‚РµСЂРёР°Р»Р°
 	tmpMtl->Type = type;
-	//обычна¤ геометри¤
+	//РѕР±С‹С‡РЅР°В¤ РіРµРѕРјРµС‚СЂРёВ¤
 	if (type == MtlTypeModel::tms_static)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
-	//деревь¤
+	//РґРµСЂРµРІСЊВ¤
 	else if (type == MtlTypeModel::tms_tree)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_tree");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
-	//трава
+	//С‚СЂР°РІР°
 	else if (type == MtlTypeModel::tms_grass)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_grass");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
-	//анимационная модель
+	//Р°РЅРёРјР°С†РёРѕРЅРЅР°СЏ РјРѕРґРµР»СЊ
 	else if (type == MtlTypeModel::tms_skin)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlskin_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlskin_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
-	//источник света
+	//РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
 	/*else if (type == MTL_LIGHT)
 	{
 	tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base");
@@ -1504,8 +1504,8 @@ void Materials::MtlSave(ID id)
 {
 	MTL_PRE_COND_ID(id);
 
-	char tmp_path[256];//папка
-	char tmp_name[256];//само им¤ текстыр с расширением
+	char tmp_path[256];//РїР°РїРєР°
+	char tmp_name[256];//СЃР°РјРѕ РёРјВ¤ С‚РµРєСЃС‚С‹СЂ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј
 	bool IsTruePath = false;
 	char tmppath[1024];
 	char* ArrRGBA[4] = { "r", "g", "b", "a" };
@@ -1513,7 +1513,7 @@ void Materials::MtlSave(ID id)
 	Material* mtrl = ArrMaterials[id]->mtl;
 
 	IsTruePath = false;
-	//обрезаем им¤ текстуры и папку
+	//РѕР±СЂРµР·Р°РµРј РёРјВ¤ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 	for (DWORD k = 0; k<strlen(mtrl->Name); k++)
 	{
 		if (mtrl->Name[k] == '_')
@@ -1670,9 +1670,9 @@ void Materials::Update(DWORD timeDelta)
 void Materials::SetMainTexture(ID slot, ID id)
 {
 	if (id >= 0 && id < ArrMaterials.size() && ArrMaterials[id]->mtl->MainTexture != -1)
-		MLSet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(ArrMaterials[id]->mtl->MainTexture));
+		MLSet::DXDevice->SetTexture(slot, SGCore_LoadTexGetTex(ArrMaterials[id]->mtl->MainTexture));
 	else
-		MLSet::DXDevice->SetTexture(0, 0);
+		MLSet::DXDevice->SetTexture(slot, 0);
 }
 
 ID Materials::GetID(const char* name)
@@ -1727,13 +1727,13 @@ inline void Materials::SetCurrCountSurf(int count)
 	CurrIdSurf = count;
 }
 
-void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl, bool is_cp, float3* plane_normal, float3* plane_point)
+void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl)
 {
-	//может быть случай когда текстура в которую сейчас рисуем еще стоит в текстурных слотах
-	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
-	//поэтому нужно обнулить слот в котором возможно была текстура
-	//такое явление может быть в случае когда в кадре только один материал который отражает
-	MLSet::DXDevice->SetTexture(12, 0);
+	//РјРѕР¶РµС‚ Р±С‹С‚СЊ СЃР»СѓС‡Р°Р№ РєРѕРіРґР° С‚РµРєСЃС‚СѓСЂР° РІ РєРѕС‚РѕСЂСѓСЋ СЃРµР№С‡Р°СЃ СЂРёСЃСѓРµРј РµС‰Рµ СЃС‚РѕРёС‚ РІ С‚РµРєСЃС‚СѓСЂРЅС‹С… СЃР»РѕС‚Р°С…
+	//РёР·-Р·Р° СЌС‚РѕРіРѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅРµРѕР±СЉСЏСЃРЅРёРјРѕРµ РїРѕРІРѕРґРµРЅРµРёРµ Рё РєР°Рє СЂРµР·СѓР»СЊС‚Р°С‚ РЅРµРїРѕРЅСЏС‚РЅС‹Рµ Р°СЂС‚РµС„Р°РєС‚С‹ РІ СЃР°РјРѕР№ С‚РµРєСЃС‚СѓСЂРµ РІ РєРѕС‚РѕСЂСѓСЋ СЃРµР№С‡Р°СЃ СЂРёСЃСѓРµРј
+	//РїРѕСЌС‚РѕРјСѓ РЅСѓР¶РЅРѕ РѕР±РЅСѓР»РёС‚СЊ СЃР»РѕС‚ РІ РєРѕС‚РѕСЂРѕРј РІРѕР·РјРѕР¶РЅРѕ Р±С‹Р»Р° С‚РµРєСЃС‚СѓСЂР°
+	//С‚Р°РєРѕРµ СЏРІР»РµРЅРёРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РІ СЃР»СѓС‡Р°Рµ РєРѕРіРґР° РІ РєР°РґСЂРµ С‚РѕР»СЊРєРѕ РѕРґРёРЅ РјР°С‚РµСЂРёР°Р» РєРѕС‚РѕСЂС‹Р№ РѕС‚СЂР°Р¶Р°РµС‚
+	MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 
 	if (id_mtl >= 0 && id_mtl < ArrMaterials.size())
 		this->SetMainTexture(slot, id_mtl);
@@ -1742,10 +1742,11 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 	{
 		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom);
 
-		float4x4 wmat = SMMatrixTranspose((world ? (*world) : SMMatrixIdentity()));
+		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
 		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
-		wvpmat = SMMatrixTranspose(wvpmat);
+		wvpmat = SMMatrixTranspose(wmat * wvpmat);
+		wmat = SMMatrixTranspose(wmat);
 
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
@@ -1770,10 +1771,11 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		ID tmpvs = (type == MtlTypeModel::tms_grass ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
 		SGCore_ShaderBind(ShaderType::st_vertex, tmpvs);
 
-		float4x4 wmat = SMMatrixTranspose((world ? (*world) : SMMatrixIdentity()));
+		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
 		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
-		wvpmat = SMMatrixTranspose(wvpmat);
+		wvpmat = SMMatrixTranspose(wmat * wvpmat);
+		wmat = SMMatrixTranspose(wmat);
 
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "WorldViewProjection", &wvpmat);
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "World", &wmat);
@@ -1793,6 +1795,34 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		else
 			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreen);
 	}
+	else if (type == MtlTypeModel::tms_skin)
+	{
+		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin);
+
+		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
+		float4x4 wvpmat;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
+		wvpmat = SMMatrixTranspose(wmat * wvpmat);
+		wmat = SMMatrixTranspose(wmat);
+
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin, "World", &wmat);
+
+		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
+		{
+			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP);
+
+			float3 tmpnormal, tmppoint;
+
+			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
+			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
+
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP, "PlanePoint", &tmppoint);
+		}
+		else
+			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkin);
+	}
 }
 
 void Materials::Render(ID id, float4x4* world)
@@ -1804,56 +1834,56 @@ void Materials::Render(ID id, float4x4* world)
 
 	Material* tmpmaterial = ArrMaterials[id]->mtl;
 
-	//если есть то устанавливаем текстуру материала
+	//РµСЃР»Рё РµСЃС‚СЊ С‚Рѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРєСЃС‚СѓСЂСѓ РјР°С‚РµСЂРёР°Р»Р°
 	if (tmpmaterial->MainTexture != -1)
-		MLSet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(tmpmaterial->MainTexture));
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_MAIN, SGCore_LoadTexGetTex(tmpmaterial->MainTexture));
 
-	//если нет отражени¤ то отправл¤ем 0
+	//РµСЃР»Рё РЅРµС‚ РѕС‚СЂР°Р¶РµРЅРёВ¤ С‚Рѕ РѕС‚РїСЂР°РІР»В¤РµРј 0
 	if (tmpmaterial->LightParam.TypeReflect == 0)
-		MLSet::DXDevice->SetTexture(12, 0);
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 	else
 	{
 		if (ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_plane)
-			MLSet::DXDevice->SetTexture(12, ArrMaterials[id]->Reflect->GetRefPlaneTex());
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefPlaneTex());
 		else if (ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_cube_static || ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_cube_dynamic)
-			MLSet::DXDevice->SetTexture(12, ArrMaterials[id]->Reflect->GetRefCubeTex());
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefCubeTex());
 	}
 
-	MLSet::DXDevice->SetTexture(14, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene0));
+	MLSet::DXDevice->SetTexture(MTL_TEX_R_CURR_DEPTH, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene0));
 
-	//если есть рефаркци¤, а она идет вторым проходом, то отправл¤ем, иначе посылаем 0
+	//РµСЃР»Рё РµСЃС‚СЊ СЂРµС„Р°СЂРєС†РёВ¤, Р° РѕРЅР° РёРґРµС‚ РІС‚РѕСЂС‹Рј РїСЂРѕС…РѕРґРѕРј, С‚Рѕ РѕС‚РїСЂР°РІР»В¤РµРј, РёРЅР°С‡Рµ РїРѕСЃС‹Р»Р°РµРј 0
 	/*if (tmpmaterial->LightParam.TypeRefraction)
-		MLSet::DXDevice->SetTexture(13, SGCore_RTGetTexture(SML_DSGetRT_ID(DS_RT_SCENE_LIGHT_COM_REF)));
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFRACTION, SGCore_RTGetTexture(SML_DSGetRT_ID(DS_RT_SCENE_LIGHT_COM_REF)));
 	else
-		MLSet::DXDevice->SetTexture(13, 0);*/
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFRACTION, 0);*/
 
 	if (tmpmaterial->MicroDetail.Mask != -1)
-		MLSet::DXDevice->SetTexture(1, SGCore_LoadTexGetTex(tmpmaterial->MicroDetail.Mask));
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_MASK, SGCore_LoadTexGetTex(tmpmaterial->MicroDetail.Mask));
 
 	for (int k = 0; k<4; k++)
 	{
 		if (tmpmaterial->MicroDetail.ArrDeatail[k] != -1)
-			MLSet::DXDevice->SetTexture(2 + k, SGCore_LoadTexGetTex(tmpmaterial->MicroDetail.ArrDeatail[k]));
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_DETAIL + k, SGCore_LoadTexGetTex(tmpmaterial->MicroDetail.ArrDeatail[k]));
 		else
-			MLSet::DXDevice->SetTexture(2 + k, 0);
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_DETAIL + k, 0);
 
 		if (tmpmaterial->MicroDetail.ArrMicroDiffuse[k] != -1)
-			MLSet::DXDevice->SetTexture(6 + k, SGCore_LoadTexGetTex(tmpmaterial->MicroDetail.ArrMicroDiffuse[k]));
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_MICRO + k, SGCore_LoadTexGetTex(tmpmaterial->MicroDetail.ArrMicroDiffuse[k]));
 		else
-			MLSet::DXDevice->SetTexture(6 + k, 0);
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_MICRO + k, 0);
 	}
 
-	//если есть текстура с параметрами освещени¤ и установлено что берем параметры из текстуры, то отправл¤ем текстуру с параметрами
+	//РµСЃР»Рё РµСЃС‚СЊ С‚РµРєСЃС‚СѓСЂР° СЃ РїР°СЂР°РјРµС‚СЂР°РјРё РѕСЃРІРµС‰РµРЅРёВ¤ Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ С‡С‚Рѕ Р±РµСЂРµРј РїР°СЂР°РјРµС‚СЂС‹ РёР· С‚РµРєСЃС‚СѓСЂС‹, С‚Рѕ РѕС‚РїСЂР°РІР»В¤РµРј С‚РµРєСЃС‚СѓСЂСѓ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё
 	if (tmpmaterial->LightParam.ParamTex != -1 && tmpmaterial->LightParam.IsTextureParam)
 	{
-		MLSet::DXDevice->SetTexture(10, SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTex));
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTex));
 	}
-	//иначе если берем параметры из ... редактора
+	//РёРЅР°С‡Рµ РµСЃР»Рё Р±РµСЂРµРј РїР°СЂР°РјРµС‚СЂС‹ РёР· ... СЂРµРґР°РєС‚РѕСЂР°
 	else if (!tmpmaterial->LightParam.IsTextureParam)
 	{
 		if (tmpmaterial->LightParam.OldRoughnessValue != tmpmaterial->LightParam.RoughnessValue || tmpmaterial->LightParam.OldF0Value != tmpmaterial->LightParam.F0Value)
 		{
-			//блокируем текстуру 1х1 котора¤ есть параметры освещени¤, и запсиываем туда то что настроили
+			//Р±Р»РѕРєРёСЂСѓРµРј С‚РµРєСЃС‚СѓСЂСѓ 1С…1 РєРѕС‚РѕСЂР°В¤ РµСЃС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РѕСЃРІРµС‰РµРЅРёВ¤, Рё Р·Р°РїСЃРёС‹РІР°РµРј С‚СѓРґР° С‚Рѕ С‡С‚Рѕ РЅР°СЃС‚СЂРѕРёР»Рё
 			D3DLOCKED_RECT LockedRect;
 			IDirect3DTexture9* ParamLightModelTex = SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTexHand);
 			ParamLightModelTex->LockRect(0, &LockedRect, 0, 0);
@@ -1866,10 +1896,10 @@ void Materials::Render(ID id, float4x4* world)
 			tmpmaterial->LightParam.OldF0Value = tmpmaterial->LightParam.F0Value;
 		}
 
-		MLSet::DXDevice->SetTexture(10, SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTexHand));
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTexHand));
 	}
 	else
-		MLSet::DXDevice->SetTexture(10, SGCore_LoadTexGetTex(MLSet::IDsTexs::NullMaterial));
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(MLSet::IDsTexs::NullMaterial));
 
 
 	if (tmpmaterial->PreShaderVS != -1)
@@ -1976,19 +2006,19 @@ void Materials::Render(ID id, float4x4* world)
 	if (tmpmaterial->PS.IsTransWinSize)
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WinSize", &MLSet::WinSize);
 
-	//если материалом назначен альфа тест и не включен принудительный
+	//РµСЃР»Рё РјР°С‚РµСЂРёР°Р»РѕРј РЅР°Р·РЅР°С‡РµРЅ Р°Р»СЊС„Р° С‚РµСЃС‚ Рё РЅРµ РІРєР»СЋС‡РµРЅ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅС‹Р№
 	if (tmpmaterial->IsAlphaTest && !IsForceblyAlphaTest)
 	{
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FREE_VALUE);
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	}
-	//если не включен принудительный альфа тест
+	//РµСЃР»Рё РЅРµ РІРєР»СЋС‡РµРЅ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅС‹Р№ Р°Р»СЊС„Р° С‚РµСЃС‚
 	else if (!IsForceblyAlphaTest)
 	{
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	}
-	//иначе включен принудительный альфа тест
+	//РёРЅР°С‡Рµ РІРєР»СЋС‡РµРЅ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅС‹Р№ Р°Р»СЊС„Р° С‚РµСЃС‚
 	else
 	{
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
@@ -1998,10 +2028,10 @@ void Materials::Render(ID id, float4x4* world)
 
 	
 
-	//почти во всех пиксельных шейдерах материалов есть данна¤ NearFar, необходима¤ д¤л записи глубины
+	//РїРѕС‡С‚Рё РІРѕ РІСЃРµС… РїРёРєСЃРµР»СЊРЅС‹С… С€РµР№РґРµСЂР°С… РјР°С‚РµСЂРёР°Р»РѕРІ РµСЃС‚СЊ РґР°РЅРЅР°В¤ NearFar, РЅРµРѕР±С…РѕРґРёРјР°В¤ РґВ¤Р» Р·Р°РїРёСЃРё РіР»СѓР±РёРЅС‹
 	if (tmpmaterial->PreShaderPS != -1)
 	{	
-		//освещаемый ли тип материала или нет? Ппрозрачный освещаемый?
+		//РѕСЃРІРµС‰Р°РµРјС‹Р№ Р»Рё С‚РёРї РјР°С‚РµСЂРёР°Р»Р° РёР»Рё РЅРµС‚? РџРїСЂРѕР·СЂР°С‡РЅС‹Р№ РѕСЃРІРµС‰Р°РµРјС‹Р№?
 		//0,0.33,0.66,1
 		float zz;
 		if (tmpmaterial->IsUnlit)

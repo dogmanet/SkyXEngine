@@ -1,5 +1,5 @@
 
-/*! \page page1 Общая информация о библиотеках
+/*! \page general_info_libs Общая информация о библиотеках
 \tableofcontents
 \section sec0 Общие правила библиотек
 
@@ -87,7 +87,7 @@ struct IBaseObject
 #define CONFIG_SECTION_MAX_LEN	64	/*!< максимальная длина секции конфигурационного файла */
 ///@}
 
-//for warning C4003: not enough actual parameters for macro
+//! for warning C4003: not enough actual parameters for macro
 #define _VOID
 
 #ifndef IFACEBASEOBJECT
@@ -130,9 +130,9 @@ typedef void(*report_func) (int level, const char* format, ...);
 
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{
-#define REPORT_MSG_LEVEL_NOTICE		0	/*!< \brief заметка */
-#define REPORT_MSG_LEVEL_WARRNING	1	/*!< \brief предупреждение */
-#define REPORT_MSG_LEVEL_ERROR		-1	/*!< \brief ошибка, желательно вылетать */
+#define REPORT_MSG_LEVEL_NOTICE		0	/*!< заметка */
+#define REPORT_MSG_LEVEL_WARRNING	1	/*!< предупреждение */
+#define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, желательно вылетать */
 
 #define REPORT_MSG_MAX_LEN 4096		/*!< максимальный размер сообщения */
 //! @}
@@ -141,7 +141,7 @@ typedef void(*report_func) (int level, const char* format, ...);
 #define DEFAULT_FUNCTION_REPORT
 
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
-void def_report(int level, const char* format, ...)
+inline void def_report(int level, const char* format, ...)
 {
 #if defined(_WINDOWS)
 	AllocConsole();

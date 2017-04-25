@@ -35,8 +35,8 @@ public:
 	inline int GetCountIDArrs();
 	inline ID GetIDArr(ID id, int cube);
 
-	bool IsComNow;	//обрабатывать ли сейчас, на случай еси видно или нет
-	float3 PositionReflect;	//позиция откуда идут отражения, обновляется каждый раз
+	bool IsComNow;	//РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ Р»Рё СЃРµР№С‡Р°СЃ, РЅР° СЃР»СѓС‡Р°Р№ РµСЃРё РІРёРґРЅРѕ РёР»Рё РЅРµС‚
+	float3 PositionReflect;	//РїРѕР·РёС†РёСЏ РѕС‚РєСѓРґР° РёРґСѓС‚ РѕС‚СЂР°Р¶РµРЅРёСЏ, РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ РєР°Р¶РґС‹Р№ СЂР°Р·
 	float3 Position;
 	float3 PosMin, PosMax;
 	float4x4 MatrixView;

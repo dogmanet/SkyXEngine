@@ -229,7 +229,7 @@ inline IDirect3DTexture9* Reflection::GetRefPlaneTex()
 
 void Reflection::SetMinMax(float3_t* min, float3_t* max)
 {
-	//åñëè íîâûå ðàçìåðû îòëè÷àþòñÿ îò ñòàðûõ çíà÷èò íàäî îáíîâèòü îòðàæåíèÿ, åñëè îíè áûëè ñòàòè÷åñêèå
+	//ÐµÑÐ»Ð¸ Ð½Ð¾Ð²Ñ‹Ðµ Ñ€Ð°Ð·Ð¼ÐµÑ€Ñ‹ Ð¾Ñ‚Ð»Ð¸Ñ‡Ð°ÑŽÑ‚ÑÑ Ð¾Ñ‚ ÑÑ‚Ð°Ñ€Ñ‹Ñ… Ð·Ð½Ð°Ñ‡Ð¸Ñ‚ Ð½Ð°Ð´Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð¸Ñ‚ÑŒ Ð¾Ñ‚Ñ€Ð°Ð¶ÐµÐ½Ð¸Ñ, ÐµÑÐ»Ð¸ Ð¾Ð½Ð¸ Ð±Ñ‹Ð»Ð¸ ÑÑ‚Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ¸Ðµ
 	if (PosMax.x != max->x || PosMax.y != max->y || PosMax.z != max->z || PosMin.x != min->x || PosMin.y != min->y || PosMin.z != min->z)
 		CountUpdate = 0;
 

@@ -1,5 +1,6 @@
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 sampler2D BaseSampler:register(s0);
 sampler2D RF0SSIsSampler:register(s10);
@@ -8,6 +9,8 @@ half4 NearFarIsUnlit;
 
 ps_out_ds_mrt main(vs_out_gcommon IN)
 {
+	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
+	
 	ps_out_ds_mrt OUT; 
 	OUT.Color = tex2D(BaseSampler,IN.TexUV);
 	

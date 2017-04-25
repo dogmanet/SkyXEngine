@@ -52,7 +52,7 @@ protected:
 	
 	float2 FovRatio;
 
-	//генерация теней для 4 сплитов, иначе для 3
+	//РіРµРЅРµСЂР°С†РёСЏ С‚РµРЅРµР№ РґР»СЏ 4 СЃРїР»РёС‚РѕРІ, РёРЅР°С‡Рµ РґР»СЏ 3
 	bool Generating4Slits;
 	
 	IDirect3DSurface9*	DepthSurfaces[5];

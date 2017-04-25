@@ -175,7 +175,7 @@ long SML_LigthsGetCount()
 	return ArrLights->GetCountLights();
 }
 
-long SML_LigthsGetIDOfKey(long key)
+ID SML_LigthsGetIDOfKey(ID key)
 {
 	ML_PRECOND(-1);
 
@@ -224,7 +224,7 @@ void SML_LigthsLoadSource(ID id, const char* path)
 	ArrLights->LoadLightMeshSource(id, path);
 }
 
-void SML_LigthsBindToGroupSource(ID id, int group)
+void SML_LigthsBindToGroupSource(ID id, ID group)
 {
 	ML_PRECOND();
 	ArrLights->BindLightToGroup(id, group);
@@ -248,7 +248,7 @@ const char* SML_LigthsGetPathNameSource(ID id)
 	return ArrLights->GetLightPathSource(id);
 }
 
-long SML_LigthsGetBindedGroupSource(ID id)
+ID SML_LigthsGetBindedGroupSource(ID id)
 {
 	ML_PRECOND(-1);
 	return ArrLights->GetLightBindedGroupSource(id);
@@ -395,7 +395,7 @@ void SML_LigthsComVisibleFrustumDistFor(ISXFrustum* frustum, float3* vec)
 	return ArrLights->ComVisibleFrustumDistFor(frustum, vec);
 }
 
-int SML_LigthsIsEnable(ID id)
+bool SML_LigthsIsEnable(ID id)
 {
 	ML_PRECOND(-1);
 	return ArrLights->IsEnable(id);
@@ -664,19 +664,19 @@ long SML_LigthsDelGetCount()
 	return ArrLights->DelGetCount();
 }
 
-int SML_LigthsDelGetType(long key)
+LightsTypeLight SML_LigthsDelGetType(ID key)
 {
-	ML_PRECOND(-1);
+	ML_PRECOND(LightsTypeLight::ltl_none);
 	return ArrLights->DelGetType(key);
 }
 
-void SML_LigthsDelDel(long key)
+void SML_LigthsDelDel(ID key)
 {
 	ML_PRECOND();
 	ArrLights->DelDel(key);
 }
 
-ID SML_LigthsDelGetIDArr(long key, ID inid, int how)
+ID SML_LigthsDelGetIDArr(ID key, ID inid, int how)
 {
 	ML_PRECOND(-1);
 	return ArrLights->DelGetIDArr(key, inid, how);
@@ -777,10 +777,10 @@ void SML_MtlRender(ID id, float4x4* world)
 	ArrMaterials->Render(id, world);
 }
 
-void SML_MtlRenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl, bool is_cp, float3* plane_normal, float3* plane_point )
+void SML_MtlRenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl)
 {
 	ML_PRECOND();
-	ArrMaterials->RenderStd(type, world, slot, id_mtl, is_cp, plane_normal, plane_point);
+	ArrMaterials->RenderStd(type, world, slot, id_mtl);
 }
 
 void SML_MtlRenderLight(float4_t* color, float4x4* world)

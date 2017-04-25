@@ -1,5 +1,6 @@
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 half3 PosCam;
 half2 NearFar;
@@ -26,7 +27,7 @@ half4 main(vs_out_res_pos IN):COLOR0
     half distance = length(PLightDirection);
 	half ddist = 1.f/distance;
 
-	half3 jitter = ((tex2D(NoiseSampler, -PLightDirection.xy*ddist * SHADOWGEN_JITTER_SCALE).xyz * 2.0 - 1.0 )*0.125);
+	half3 jitter = half3(0,0,0);//(normalize(tex2D(NoiseSampler, -PLightDirection.xy*ddist * SHADOWGEN_JITTER_SCALE).xyz * 2.0 - 1.0 )*0.01);
 	half3 tmpcoord = PLightDirection.xyz;
 	tmpcoord.xyz += jitter;
 	

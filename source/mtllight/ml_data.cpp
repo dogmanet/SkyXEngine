@@ -10,19 +10,19 @@ namespace MLSet
 	char StdPathMaterial[1024];
 	char StdPathMesh[1024];
 	
-	//размер текстуры глубины для локальных источников света
+	//СЂР°Р·РјРµСЂ С‚РµРєСЃС‚СѓСЂС‹ РіР»СѓР±РёРЅС‹ РґР»В¤ Р»РѕРєР°Р»СЊРЅС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
 	float2_t SizeTexDepthGlobal = float2_t(1024, 768);
 
-	//размер текстуры глубины для локальных источников света
+	//СЂР°Р·РјРµСЂ С‚РµРєСЃС‚СѓСЂС‹ РіР»СѓР±РёРЅС‹ РґР»В¤ Р»РѕРєР°Р»СЊРЅС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
 	float2_t SizeTexDepthLocal = float2_t(1024, 768);
 
-	//дистанции для 4 сплитов для глоальных теней PSSM
+	//РґРёСЃС‚Р°РЅС†РёРё РґР»В¤ 4 СЃРїР»РёС‚РѕРІ РґР»В¤ РіР»РѕР°Р»СЊРЅС‹С… С‚РµРЅРµР№ PSSM
 	float4_t DistForPSSM = float4_t(10.f, 40.f, 100.f, 200.f);
 
-	//коэфициент размера текстур для карт глубин локальных источников света
-	float CoefSizeDepthMapForLocal = 1;
+	//РєРѕСЌС„РёС†РёРµРЅС‚ СЂР°Р·РјРµСЂР° С‚РµРєСЃС‚СѓСЂ РґР»В¤ РєР°СЂС‚ РіР»СѓР±РёРЅ Р»РѕРєР°Р»СЊРЅС‹С… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
+	float CoefSizeDepthMapForLocal = 2;
 
-	//коэфициент размера текстур для карт глубин глобального источника света
+	//РєРѕСЌС„РёС†РёРµРЅС‚ СЂР°Р·РјРµСЂР° С‚РµРєСЃС‚СѓСЂ РґР»В¤ РєР°СЂС‚ РіР»СѓР±РёРЅ РіР»РѕР±Р°Р»СЊРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 	float CoefSizeDepthMapForGlobal = 1;
 
 	float2_t SizeTexReflection = float2_t(MTL_REF_TEX_SIZE, MTL_REF_TEX_SIZE);
@@ -39,17 +39,17 @@ namespace MLSet
 	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
 
 	//fov and ration esesno
-	float ProjFov = D3DX_PI * 0.25f;
+	float ProjFov = SM_PI * 0.25f;
 	float ProjRatio = WinSize.x / WinSize.y;
 
-	//ближняя и дальняя плоскости
+	//Р±Р»РёР¶РЅВ¤В¤ Рё РґР°Р»СЊРЅВ¤В¤ РїР»РѕСЃРєРѕСЃС‚Рё
 	float2_t NearFar = float2_t(0.25f, 400.f);
 
 	float4x4 MCamView;
 
 	bool IsHalfGenPCFShadowLocal = false;
 
-	//ориентация и верхний вектор для рендера в кубическую текстуру
+	//РѕСЂРёРµРЅС‚Р°С†РёВ¤ Рё РІРµСЂС…РЅРёР№ РІРµРєС‚РѕСЂ РґР»В¤ СЂРµРЅРґРµСЂР° РІ РєСѓР±РёС‡РµСЃРєСѓСЋ С‚РµРєСЃС‚СѓСЂСѓ
 	float3 OrientedCube[6] = { float3(1, 0, 0), float3(-1, 0, 0), float3(0, 1, 0), float3(0, -1, 0), float3(0, 0, 1), float3(0, 0, -1) };
 	float3 UpVectorsCube[6] = { float3(0, 1, 0), float3(0, 1, 0), float3(0, 0, -1), float3(0, 0, 1), float3(0, 1, 0), float3(0, 1, 0) };
 
@@ -75,6 +75,9 @@ namespace MLSet
 			ID SMDepthTreePSSMDirect;
 			ID SMDepthTreeCube;
 
+			ID SMDepthSkinPSSMDirect;
+			ID SMDepthSkinCube;
+
 			ID StdGeom;
 			ID StdTree;
 			ID StdGrass;
@@ -88,6 +91,9 @@ namespace MLSet
 
 			ID SMDepthGreenPSSMDirect;
 			ID SMDepthGreenCube;
+
+			ID SMDepthSkinPSSMDirect;
+			ID SMDepthSkinCube;
 
 			ID PPBlurDepthBasedNoise;
 			ID PSSM4;
@@ -111,6 +117,7 @@ namespace MLSet
 			ID StdGreen;
 			ID StdGreenCP;
 			ID StdSkin;
+			ID StdSkinCP;
 		};
 	};
 
@@ -118,9 +125,9 @@ namespace MLSet
 	{
 		ID DSComLight;
 
-		ID ColorScene;//цвет (текстуры)
-		ID NormalScene;//номрали + микрорельеф
-		ID ParamsScene;//параметры освещения
+		ID ColorScene;//С†РІРµС‚ (С‚РµРєСЃС‚СѓСЂС‹)
+		ID NormalScene;//РЅРѕРјСЂР°Р»Рё + РјРёРєСЂРѕСЂРµР»СЊРµС„
+		ID ParamsScene;//РїР°СЂР°РјРµС‚СЂС‹ РѕСЃРІРµС‰РµРЅРёВ¤
 		ID DepthScene;
 		ID DepthScene0;
 		ID DepthScene1;
@@ -237,11 +244,18 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	MLSet::IDsTexs::NullingTex = SGCore_LoadTexCreate("nulling_tex__", NullingTex);
 
 
+	MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_skin_pssm_direct.vs", "sm_depth_skin_pssm_direct", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_skin_pssm_direct.ps", "sm_depth_skin_pssm_direct", ShaderCheckDouble::scd_path);
+
 	MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_geom_pssm_direct.vs", "sm_depth_geom_pssm_direct", ShaderCheckDouble::scd_path);
 	MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_geom_pssm_direct.ps", "sm_depth_geom_pssm_direct", ShaderCheckDouble::scd_path);
 
+
 	MLSet::IDsShaders::VS::SMDepthGeomCube = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_geom_cube.vs", "sm_depth_geom_cube", ShaderCheckDouble::scd_path);
 	MLSet::IDsShaders::PS::SMDepthGeomCube = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_geom_cube.ps", "sm_depth_geom_cube", ShaderCheckDouble::scd_path);
+
+	MLSet::IDsShaders::VS::SMDepthSkinCube = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_skin_cube.vs", "sm_depth_skin_cube", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::SMDepthSkinCube = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_skin_cube.ps", "sm_depth_skin_cube", ShaderCheckDouble::scd_path);
 
 	
 	MLSet::IDsShaders::VS::SMDepthTreePSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_green_pssm_direct.vs", "sm_depth_tree_pssm_direct", ShaderCheckDouble::scd_name);
@@ -292,24 +306,29 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	D3DXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
 	MLSet::IDsShaders::PS::StdGeomCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_geom.ps", "stdr_geom_cp", ShaderCheckDouble::scd_name, Defines_CP);
 
-
-	MLSet::IDsShaders::VS::StdGrass = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_grass.vs", "stdr_grass", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::VS::StdTree = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_tree.vs", "stdr_tree", ShaderCheckDouble::scd_path);
+	//D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
+	MLSet::IDsShaders::VS::StdGrass = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_green.vs", "stdr_grass", ShaderCheckDouble::scd_name, Defines_GRASS);
+	MLSet::IDsShaders::VS::StdTree = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_green.vs", "stdr_tree", ShaderCheckDouble::scd_name);
 
 	MLSet::IDsShaders::PS::StdGreen = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_green.ps", "stdr_green", ShaderCheckDouble::scd_name);
 	MLSet::IDsShaders::PS::StdGreenCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_green.ps", "stdr_green_cp", ShaderCheckDouble::scd_name, Defines_CP);
 
+
+	MLSet::IDsShaders::VS::StdSkin = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_skin.vs", "stdr_skin", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::PS::StdSkin = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_skin.ps", "stdr_skin", ShaderCheckDouble::scd_name);
+
+	MLSet::IDsShaders::PS::StdSkinCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_skin.ps", "stdr_skin_cp", ShaderCheckDouble::scd_name, Defines_CP);
 
 
 	//////////
 	float tmpcoefsizert = 1;
 	float2_t tmp_sizert = float2_t(MLSet::WinSize.x * tmpcoefsizert, MLSet::WinSize.y * tmpcoefsizert);
 
-	//цвет (текстуры)
+	//С†РІРµС‚ (С‚РµРєСЃС‚СѓСЂС‹)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
-	//номрали + микрорельеф
+	//РЅРѕРјСЂР°Р»Рё + РјРёРєСЂРѕСЂРµР»СЊРµС„
 	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
-	//параметры освещения
+	//РїР°СЂР°РјРµС‚СЂС‹ РѕСЃРІРµС‰РµРЅРёВ¤
 	MLSet::IDsRenderTargets::ParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
 	
 	MLSet::IDsRenderTargets::DepthScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_depth", tmpcoefsizert);

@@ -1,5 +1,6 @@
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 //матрица для трансформации координат текстуры отражения (над водой)
 static const half4x4  Mr=
@@ -35,16 +36,19 @@ sampler2D DepthMap:register(s14);		//карта глубины
 
 ps_out_ds_mrt main(vs_out_water IN)
 {
+	
+	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
+	
 	ps_out_ds_mrt OUT;
 	half4 tmpPPos = IN.Pos;
 	half Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy).x;
 	half3 colorOne = 2.0f * tex2D(NormalMap, IN.Tex2.xy) - 1.0f;
-	half3 colorTwo = 2.0f * tex2D(NormalMap, IN.Tex3.xy*0.5) - 1.0f;
+	half3 colorTwo = 2.0f * tex2D(NormalMap, IN.Tex3.xy) - 1.0f;
 	
-	colorOne.z = 0;
-	colorTwo.z = 0;
+	colorOne.z = IN.Normal.z;
+	colorTwo.z = IN.Normal.z;
 
-	half3 normal = normalize((colorOne+colorTwo+IN.Normal)*0.33f);
+	half3 normal = normalize((colorOne+colorTwo+IN.Normal));
     half3 WorldNormal = normal;
 	half3 texturecoordoffset = 2.0f * tex2D(DUDVMap,IN.Tex2.xy) - 1.0f;
 	half3 texturecoordoffset2= 2.0f * tex2D(DUDVMap,IN.Tex3.xy*0.5) - 1.0f;

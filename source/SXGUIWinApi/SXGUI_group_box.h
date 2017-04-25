@@ -11,14 +11,16 @@
 
 #pragma once
 
-//LRESULT CALLBACK WndProcGroupBoxDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 class SXGUIGroupBox : public SXGUITextual, public virtual ISXGUIGroupBox
 {
 public:
 	SXGUIGroupBox();
 	SXGUIGroupBox(const char* caption,WORD x,WORD y,WORD width,WORD heigth,DWORD exstyle,DWORD style,HWND parent,WNDPROC handler,DWORD id);
 	SXGUIGroupBox(const char* caption,WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPROC handler,DWORD id);
+
+//private:
+	char* StrText;
+	int LenStrText;
 };
 
 #endif

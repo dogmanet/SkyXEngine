@@ -1,8 +1,26 @@
 var searchData=
 [
-  ['scd_5fname',['scd_name',['../group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9ace17db85931ca03f87592df8fa44244d',1,'sxgcore.h']]],
-  ['scd_5fnone',['scd_none',['../group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a795c9cbe6e108ba419b45bdf859d342f',1,'sxgcore.h']]],
-  ['scd_5fpath',['scd_path',['../group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a37e251ede797395dc2a8e540f5bd226e',1,'sxgcore.h']]],
-  ['st_5fpixel',['st_pixel',['../group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a4d9ec09af36addcb899c486f722d72c7',1,'sxgcore.h']]],
-  ['st_5fvertex',['st_vertex',['../group__sxgcore__shaders.html#gga6230e1b9ecbf2d82d10856fd7e1fde46a2d70842347ece461c8e7410727fc4ff7',1,'sxgcore.h']]]
+  ['mpt_5fconcrete',['mpt_concrete',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9a429b493e8817dba004dbe4437c7be7d8',1,'sxmtllight.h']]],
+  ['mpt_5fdefault',['mpt_default',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9ac890974b564e29ff3eddc68947532e90',1,'sxmtllight.h']]],
+  ['mpt_5fflesh',['mpt_flesh',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9ab1501362e63f2e24ea7643d312e480da',1,'sxmtllight.h']]],
+  ['mpt_5fglass',['mpt_glass',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9a288ba69dfcc8a25887d348a79b6918a4',1,'sxmtllight.h']]],
+  ['mpt_5fground_5fsand',['mpt_ground_sand',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9aec09aaa3ceb1fc9daa4043d784dce711',1,'sxmtllight.h']]],
+  ['mpt_5fmetal',['mpt_metal',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9aacd0a7057f24bcf4677618bd528affc3',1,'sxmtllight.h']]],
+  ['mpt_5fplastic',['mpt_plastic',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9ad3468c7d4fa1c27e5a9c75940c209566',1,'sxmtllight.h']]],
+  ['mpt_5ftree',['mpt_tree',['../group__sxmtllight__mtl.html#ggada38f2839171736158bf562cd9cd5be9af8076323a2381fc23061360b74be2d80',1,'sxmtllight.h']]],
+  ['mtr_5fcube_5fdynamic',['mtr_cube_dynamic',['../group__sxmtllight__mtl.html#gga088a13ec3603203bd50e09e1d9fe2aaba941a7e75f0d28da4d865f94033346fe8',1,'sxmtllight.h']]],
+  ['mtr_5fcube_5fstatic',['mtr_cube_static',['../group__sxmtllight__mtl.html#gga088a13ec3603203bd50e09e1d9fe2aabab6504e4fe288fd2f5635d165e3560947',1,'sxmtllight.h']]],
+  ['mtr_5fnone',['mtr_none',['../group__sxmtllight__mtl.html#gga088a13ec3603203bd50e09e1d9fe2aabaa2e36d89d450810216bafab7e786efec',1,'sxmtllight.h']]],
+  ['mtr_5fplane',['mtr_plane',['../group__sxmtllight__mtl.html#gga088a13ec3603203bd50e09e1d9fe2aaba13303e458bb6def8aa3aad678a047767',1,'sxmtllight.h']]],
+  ['mtss_5fcampos',['mtss_campos',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8ac12c829d1db4e8afc4b5e1da5808819b',1,'sxmtllight.h']]],
+  ['mtss_5fmat_5fp',['mtss_mat_p',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8a2513d550d825113d71ae9b8b8c5b561d',1,'sxmtllight.h']]],
+  ['mtss_5fmat_5fv',['mtss_mat_v',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8aa2bff4890906400cc98f6bfd240e9281',1,'sxmtllight.h']]],
+  ['mtss_5fmat_5fw',['mtss_mat_w',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8af1d746451d866303e3b83319838af0bf',1,'sxmtllight.h']]],
+  ['mtss_5fmat_5fwv',['mtss_mat_wv',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8a6fa0060eb433ae6833efb2bbc4ab4272',1,'sxmtllight.h']]],
+  ['mtss_5fmat_5fwvp',['mtss_mat_wvp',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8ab9c449f9a86c33174f1bfe023a720749',1,'sxmtllight.h']]],
+  ['mtss_5ftimedelta',['mtss_timedelta',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8ae408fd0b5bf071d3435b0d795b276494',1,'sxmtllight.h']]],
+  ['mtss_5fud',['mtss_ud',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8a1630c4b91b189171cbe70b53d4772e8e',1,'sxmtllight.h']]],
+  ['mtss_5fwinsize',['mtss_winsize',['../group__sxmtllight__mtl.html#ggaefbd6c9ccb53be547bd0829be4ed40b8a6f66398cd3936bdaa6073c3d18e6f7e0',1,'sxmtllight.h']]],
+  ['mtt_5falpha_5flighting',['mtt_alpha_lighting',['../group__sxmtllight__mtl.html#gga097fd9375fe44222a3488a69be2e0604a30b686ed24386c5f53d6b7879de3e24d',1,'sxmtllight.h']]],
+  ['mtt_5fnone',['mtt_none',['../group__sxmtllight__mtl.html#gga097fd9375fe44222a3488a69be2e0604a266d33345fc141e6efe0af6726d0e645',1,'sxmtllight.h']]]
 ];

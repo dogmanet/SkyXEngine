@@ -1,5 +1,6 @@
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 half4 LightPos;
 half2 LightPowerDist;
@@ -107,7 +108,7 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	//diffuse = diffuse * (1.f+Param.y+0.01);
 	
 	#ifdef IS_SHADOWED
-	diffuse *= max(shadow,0.08);
+	diffuse *= max(shadow,0.06);
 	#endif
 
 	half lighting = saturate(max((Param.y) * 0.5f, 0.1f));

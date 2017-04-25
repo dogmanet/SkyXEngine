@@ -1,5 +1,6 @@
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 sampler2D BaseTextSampler:register(s0);
 
@@ -22,6 +23,7 @@ half4 NearFarIsUnlit;
 
 ps_out_ds_mrt main(vs_out_gcommon IN)
 {
+	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
 	ps_out_ds_mrt OUT;
 	half2 dx = ddx((IN.TexUV) * Param.x * 1024.f);
 	half2 dy = ddy((IN.TexUV) * Param.x * 1024.f);

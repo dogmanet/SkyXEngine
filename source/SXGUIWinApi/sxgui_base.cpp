@@ -1169,3 +1169,23 @@ bool SXGUIRegClass::RegToolBar()
 			return false;
 	return true;
 }
+
+bool SXGUIRegClass::RegGroupBox()
+{
+	WNDCLASS wc;
+
+	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.lpfnWndProc = DefWindowProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = GetModuleHandle(0);
+	wc.hIcon = 0;
+	wc.hCursor = 0;
+	wc.hbrBackground = 0;
+	wc.lpszMenuName = 0;
+	wc.lpszClassName = "SXGUIGROUPBOX";
+
+	if (!RegisterClass(&wc))
+		return false;
+	return true;
+}

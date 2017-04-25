@@ -1,0 +1,9 @@
+
+#include <../struct.h>
+
+sampler2D BaseSampler:register(s0);
+
+half4 main(vs_out_gcommon IN) : COLOR0
+{
+	return length(IN.Pos);
+}
