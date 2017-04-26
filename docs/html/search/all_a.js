@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['level',['Level',['../namespace_level.html',1,'']]],
+  ['level_2eh',['level.h',['../level_8h.html',1,'']]],
   ['levels',['Levels',['../namespace_g_data_1_1_pathes.html#aa2f874fe36a062b7acfca9fb749f77cf',1,'GData::Pathes']]],
   ['lights_5fglobal_5fmax_5fpower',['LIGHTS_GLOBAL_MAX_POWER',['../group__sxmtllight__light.html#gafb0bdb40410e953a06428bf6249ed161',1,'sxmtllight.h']]],
   ['lights_5fglobal_5fstd_5fradius',['LIGHTS_GLOBAL_STD_RADIUS',['../group__sxmtllight__light.html#ga9d2552a03462be9772f1d73b3e25e6bd',1,'sxmtllight.h']]],
@@ -12,6 +14,7 @@ var searchData=
   ['lights_5fupdate_5fpssm_5fsplit_5f5',['LIGHTS_UPDATE_PSSM_SPLIT_5',['../group__sxmtllight__light.html#gaec0ce59fdf7aafed6b35dc88ee8f0468',1,'sxmtllight.h']]],
   ['lightstypelight',['LightsTypeLight',['../group__sxmtllight__light.html#ga2c4b45d31b7e861f9d29a534eb97e1a8',1,'sxmtllight.h']]],
   ['lightstypeshadow',['LightsTypeShadow',['../group__sxmtllight__light.html#ga4f09af8a8c1982516c908f76e3e83b75',1,'sxmtllight.h']]],
+  ['load',['Load',['../namespace_level.html#af57c72a691b6d9c5ba91902775a8f8d4',1,'Level']]],
   ['loadtextype',['LoadTexType',['../group__sxgcore__loadtex.html#ga86ece31a4c96486dd9d3c6c65281152d',1,'sxgcore.h']]],
   ['ltl_5fdirection',['ltl_direction',['../group__sxmtllight__light.html#gga2c4b45d31b7e861f9d29a534eb97e1a8a53f6b72c21b4bffc4fd294d3f701c2dd',1,'sxmtllight.h']]],
   ['ltl_5fglobal',['ltl_global',['../group__sxmtllight__light.html#gga2c4b45d31b7e861f9d29a534eb97e1a8a0a243ac1f199c7baab63dc3ac9fad153',1,'sxmtllight.h']]],
@@ -23,5 +26,6 @@ var searchData=
   ['ltt_5fconst',['ltt_const',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152da022aad3a08f07f5d9e5a08684b0859f5',1,'sxgcore.h']]],
   ['ltt_5fcustom',['ltt_custom',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafc66ee4f8eaa32605f21dd2c24d523f3',1,'sxgcore.h']]],
   ['ltt_5fload',['ltt_load',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152da801ab48b4e4b319b38612df761a0cfa1',1,'sxgcore.h']]],
-  ['ltt_5fself',['ltt_self',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafa34324915b356bf4395a3a58407b106',1,'sxgcore.h']]]
+  ['ltt_5fself',['ltt_self',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafa34324915b356bf4395a3a58407b106',1,'sxgcore.h']]],
+  ['level_20_2d_20пространство_20имен_20для_20управления_20уровнем',['level - пространство имен для управления уровнем',['../group__managed__render__level.html',1,'']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['managed_5frender_20_2d_20управляемый_20рендер',['managed_render - управляемый рендер',['../group__managed__render.html',1,'']]]
+  ['level_20_2d_20пространство_20имен_20для_20управления_20уровнем',['level - пространство имен для управления уровнем',['../group__managed__render__level.html',1,'']]]
 ];

@@ -19,7 +19,10 @@ var NAVTREE =
       [ "Описание файла (обязательно для каждого документируемого файла)", "std_doc.html#style_desc_file", null ],
       [ "Модули/подмодули", "std_doc.html#style_modules", null ],
       [ "Группа (вложенные группы не поддерживаются)", "std_doc.html#style_group", null ],
-      [ "Ссылки", "std_doc.html#style_ref", null ]
+      [ "Ссылки", "std_doc.html#style_ref", null ],
+      [ "Страницы", "std_doc.html#style_page", null ],
+      [ "Списки", "std_doc.html#style_list", null ],
+      [ "Дополнительно", "std_doc.html#style_extra", null ]
     ] ],
     [ "Список задач", "todo.html", null ],
     [ "Модули", "modules.html", "modules" ],
@@ -41,12 +44,12 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_g_register_index_8h.html",
-"group__sxcore.html#ggada302017da5836d260c85f6de6504ea4a1586d8fa65d93716375e05cb6911083a",
-"group__sxgcore__shaders.html#gab06e5db57890f043a54985761b2bd848",
-"group__sxinput.html#ga8c375d4676e5686846726393895dded6",
+"group__sxcore.html#ggada302017da5836d260c85f6de6504ea4a118a4b6ba5915a67fc3d0218bc532180",
+"group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925",
+"group__sxinput.html#ga83e4d8394c73f03cc0ed4546951a5ec5",
 "group__sxmtllight__light.html#ga7fe8387d4b879d34c48d58ed0b0109f6",
 "group__sxmtllight__mtl.html#gga7ce25bd99bc49acda0df5ed71f984939a761c8fe3e7149ac4f186c50283efd95e",
-"std_doc.html#style_doc"
+"render__func_8h.html#afb53b46eae86a20577baa3164b9309db"
 ];
 
 var SYNCONMSG = 'нажмите на выключить для синхронизации панелей';

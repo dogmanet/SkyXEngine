@@ -1,6 +1,6 @@
 var menudata={children:[
 {text:"Главная",url:"index.html"},
-{text:"Описания",url:"pages.html"},
+{text:"Статьи",url:"pages.html"},
 {text:"Модули",url:"modules.html"},
 {text:"Файлы",url:"files.html",children:[
 {text:"Файлы",url:"files.html"},

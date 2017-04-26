@@ -92,6 +92,9 @@ $(document).ready(function(){initNavTree('std_doc.html','');});
 <li class="level1"><a href="#style_modules">Модули/подмодули</a></li>
 <li class="level1"><a href="#style_group">Группа (вложенные группы не поддерживаются)</a></li>
 <li class="level1"><a href="#style_ref">Ссылки</a></li>
+<li class="level1"><a href="#style_page">Страницы</a></li>
+<li class="level1"><a href="#style_list">Списки</a></li>
+<li class="level1"><a href="#style_extra">Дополнительно</a></li>
 </ul>
 </div>
 <div class="textblock"><h1><a class="anchor" id="std_doc_common"></a>
@@ -142,12 +145,33 @@ $(document).ready(function(){initNavTree('std_doc.html','');});
 \ref sxcore
 </pre><p>Пример ссылки на код: </p><pre>
 #SCore_Create
-</pre> </div></div><!-- contents -->
+</pre><h1><a class="anchor" id="style_page"></a>
+Страницы</h1>
+<pre>
+/ *! \page идентификатор_только_латиница Заголовок страницы
+\tableofcontents
+Для того чтобы разделить на разделы можно использовать секции:
+\section style_page Создание страниц
+\* /
+</pre><h1><a class="anchor" id="style_list"></a>
+Списки</h1>
+<pre>
+ - первый элемент
+ - второй элемент
+</pre><h1><a class="anchor" id="style_extra"></a>
+Дополнительно</h1>
+<p>\n - для новой строки <br />
+Также можно использовать html теги. <br />
+\note - заметка <br />
+\warning - предупреждение <br />
+\todo - пометка о том что надо сделать <br />
+</p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Документация по SkyXEngine. Последние изменения: Вт 25 Апр 2017 23:26:18. Создано системой
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Ср 26 Апр 2017 23:20:29. Создано системой
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>

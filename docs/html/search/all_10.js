@@ -1,7 +1,7 @@
 var searchData=
 [
   ['delay',['Delay',['../namespace_s_x_render_func_1_1_delay.html',1,'SXRenderFunc']]],
-  ['save',['Save',['../struct_i_s_x_l_config.html#a18381ee5d15631dc78cc4b055219d2ce',1,'ISXLConfig']]],
+  ['save',['Save',['../struct_i_s_x_l_config.html#a18381ee5d15631dc78cc4b055219d2ce',1,'ISXLConfig::Save()'],['../namespace_level.html#a9aa7950e0ff46013b7b88b2b25dffd4f',1,'Level::Save()']]],
   ['scale',['Scale',['../struct_i_s_x_trans_object.html#a4daea70a8b68a5a122029629175de13d',1,'ISXTransObject']]],
   ['scd_5fname',['scd_name',['../group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9ace17db85931ca03f87592df8fa44244d',1,'sxgcore.h']]],
   ['scd_5fnone',['scd_none',['../group__sxgcore__shaders.html#gga6394eb4c1449977b5a7cbb985724bba9a795c9cbe6e108ba419b45bdf859d342f',1,'sxgcore.h']]],
