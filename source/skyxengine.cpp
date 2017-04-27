@@ -1,7 +1,7 @@
 
 /******************************************************
 Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-license see in LICENSE
+See the license in LICENSE
 ******************************************************/
 
 #define _CRT_SECURE_NO_WARNINGS

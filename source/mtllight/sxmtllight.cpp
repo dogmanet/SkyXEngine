@@ -1,7 +1,7 @@
 
 /******************************************************
 Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-license see in LICENSE
+See the license in LICENSE
 ******************************************************/
 
 #define SXMATERIAL_LIGTH_VERSION 1

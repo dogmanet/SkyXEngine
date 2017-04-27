@@ -1,7 +1,7 @@
 
 /******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-license see in LICENSE
+Copyright ¬© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
 ******************************************************/
 
 #ifndef SXGUI_H
@@ -125,7 +125,7 @@ ISXGUIComboBox* SXGUICrComboBoxEx(const char* caption, WORD x, WORD y, WORD widt
 	return new SXGUIComboBox(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
 }
 
-//ÙÎ‡„Ë: (parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
+//–á—ã—Ä—É—à: (parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
 ISXGUIComboBox* SXGUICrComboBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
 {
 	return new SXGUIComboBox(caption, x, y, width, heigth, parent, handler, id);

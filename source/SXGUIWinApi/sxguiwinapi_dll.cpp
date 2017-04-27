@@ -1,7 +1,7 @@
 
 /******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-license see in LICENSE
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
 ******************************************************/
 
 #define SX_DLL

@@ -1,9 +1,8 @@
-//-------------------------------------------------
-// Файл: SXGUI_base.h
-// Краткое описание: все базовые классы и функции
-// Project S.I.P for SkyXEngine (09,2012)(4,2013)(11,2014)
-//------------------------------------------------
 
+/******************************************************
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
 
 #ifndef SXGUI_BASE_H
 #define SXGUI_BASE_H
@@ -14,9 +13,9 @@ extern class SXGUIButtonImg;
 #include <SXGUIWinApi\SXGUI_hint.h>
 
 
-//первый базовый класс, единственным родителем не используется
-//определяет объект как контрол, то есть содержит в себе минимум данных для 
-//управления объектом
+//РїРµСЂРІС‹Р№ Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ, РµРґРёРЅСЃС‚РІРµРЅРЅС‹Рј СЂРѕРґРёС‚РµР»РµРј РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+//РѕРїСЂРµРґРµР»СЏРµС‚ РѕР±СЉРµРєС‚ РєР°Рє РєРѕРЅС‚СЂРѕР», С‚Рѕ РµСЃС‚СЊ СЃРѕРґРµСЂР¶РёС‚ РІ СЃРµР±Рµ РјРёРЅРёРјСѓРј РґР°РЅРЅС‹С… РґР»СЏ 
+//СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРј
 class SXGUIControl : public virtual ISXGUIControl
 {
 public:
@@ -24,20 +23,20 @@ public:
 	SXGUIControl(HWND window_handle,HWND parent_handle,WNDPROC handler);
 	~SXGUIControl();
 	void Release(){ mem_del(this); }
-	void Init(HWND window_handle, HWND parent_handle, WNDPROC handler);	//запоминаем дескрипторы, и устанавливаем новый обработчик
+	void Init(HWND window_handle, HWND parent_handle, WNDPROC handler);	//Р·Р°РїРѕРјРёРЅР°РµРј РґРµСЃРєСЂРёРїС‚РѕСЂС‹, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РЅРѕРІС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє
 
-	HWND Parent();						//возвращает HWND родителя
-	bool Parent(HWND parent_handle);	//устанавливает родителя
+	HWND Parent();						//РІРѕР·РІСЂР°С‰Р°РµС‚ HWND СЂРѕРґРёС‚РµР»СЏ
+	bool Parent(HWND parent_handle);	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРѕРґРёС‚РµР»СЏ
 
 	HWND GetHWND();
 
-	void Visible(bool bf);				//установка видимости контрола
-	bool Visible();						//видим ли контрол?
+	void Visible(bool bf);				//СѓСЃС‚Р°РЅРѕРІРєР° РІРёРґРёРјРѕСЃС‚Рё РєРѕРЅС‚СЂРѕР»Р°
+	bool Visible();						//РІРёРґРёРј Р»Рё РєРѕРЅС‚СЂРѕР»?
 
-	void SetFocus();					//установить фокус на контрол
-	bool Focus();						//установлен ли фокус на контроле?
+	void SetFocus();					//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕРєСѓСЃ РЅР° РєРѕРЅС‚СЂРѕР»
+	bool Focus();						//СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё С„РѕРєСѓСЃ РЅР° РєРѕРЅС‚СЂРѕР»Рµ?
 	//WNDPROC GetOldProc();// { return OldProc; }
-	//WNDPROC OldProc;					//если устнавливается новый обработчик (через конструктор или Init) то старый сохраняется здесь
+	//WNDPROC OldProc;					//РµСЃР»Рё СѓСЃС‚РЅР°РІР»РёРІР°РµС‚СЃСЏ РЅРѕРІС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє (С‡РµСЂРµР· РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёР»Рё Init) С‚Рѕ СЃС‚Р°СЂС‹Р№ СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ Р·РґРµСЃСЊ
 
 /*protected:
 	HWND ParentHandle;
@@ -51,118 +50,118 @@ private:
 };
 //WNDPROC SXGUIControl::GetOldProc(){ return this->OldProc; }
 
-//второй в очереди родитель, часто наследование идет именно от него
-//более расширенное управление большинством элементов
+//РІС‚РѕСЂРѕР№ РІ РѕС‡РµСЂРµРґРё СЂРѕРґРёС‚РµР»СЊ, С‡Р°СЃС‚Рѕ РЅР°СЃР»РµРґРѕРІР°РЅРёРµ РёРґРµС‚ РёРјРµРЅРЅРѕ РѕС‚ РЅРµРіРѕ
+//Р±РѕР»РµРµ СЂР°СЃС€РёСЂРµРЅРЅРѕРµ СѓРїСЂР°РІР»РµРЅРёРµ Р±РѕР»СЊС€РёРЅСЃС‚РІРѕРј СЌР»РµРјРµРЅС‚РѕРІ
 class SXGUIComponent : public SXGUIControl, public virtual ISXGUIComponent
 {
 public:
 	SXGUIComponent();
 	~SXGUIComponent();
 	void Release(){ mem_del(this); }
-	//устанавливает необходимые данные для управления элементом
-	void InitComponent(); //необходимо вызывать после инициализации
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ СЌР»РµРјРµРЅС‚РѕРј
+	void InitComponent(); //РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹Р·С‹РІР°С‚СЊ РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 
-	//действителен ли элемент
+	//РґРµР№СЃС‚РІРёС‚РµР»РµРЅ Р»Рё СЌР»РµРјРµРЅС‚
 	bool Enable();
 	void Enable(bool bf);
 
-	//работа со шрифтом
-	//если name == 0 то не изменияем название шрифта,
-	//если name[0] == 0 то дефолтный шрифт gui
-	//если остальные значения в -1 то не учитываются
+	//СЂР°Р±РѕС‚Р° СЃРѕ С€СЂРёС„С‚РѕРј
+	//РµСЃР»Рё name == 0 С‚Рѕ РЅРµ РёР·РјРµРЅРёСЏРµРј РЅР°Р·РІР°РЅРёРµ С€СЂРёС„С‚Р°,
+	//РµСЃР»Рё name[0] == 0 С‚Рѕ РґРµС„РѕР»С‚РЅС‹Р№ С€СЂРёС„С‚ gui
+	//РµСЃР»Рё РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІ -1 С‚Рѕ РЅРµ СѓС‡РёС‚С‹РІР°СЋС‚СЃСЏ
 	void SetFont(const char* name, int height, int width, int weight, int italic, int underline, int strike_out);
 	void SetFont(HFONT* hfont);
 	HFONT GetFont();
 	
-	bool IsParentFont();	//наследуется ли шрифт родителя
-	HFONT ParentFont();		//получает родительский шрифт
+	bool IsParentFont();	//РЅР°СЃР»РµРґСѓРµС‚СЃСЏ Р»Рё С€СЂРёС„С‚ СЂРѕРґРёС‚РµР»СЏ
+	HFONT ParentFont();		//РїРѕР»СѓС‡Р°РµС‚ СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ С€СЂРёС„С‚
 
-	//работа со стилями (в т.ч. специальным)
-	//style_add - добавляемые стили
-	//style_del - удаляемые
+	//СЂР°Р±РѕС‚Р° СЃРѕ СЃС‚РёР»СЏРјРё (РІ С‚.С‡. СЃРїРµС†РёР°Р»СЊРЅС‹Рј)
+	//style_add - РґРѕР±Р°РІР»СЏРµРјС‹Рµ СЃС‚РёР»Рё
+	//style_del - СѓРґР°Р»СЏРµРјС‹Рµ
 	bool ModifyStyle(long style_add, long style_del);
 	bool ModifyExStyle(long style_add, long style_del);
 
-	//устанавливает/возвращает область окна RECT элемента в глобальных координатах
-	bool	SetWinRect(RECT* rect, bool alignment_screen_space);	//alignment_screen_space - использовать ли только работчую область (рабочий стол кроме панели задач)
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚/РІРѕР·РІСЂР°С‰Р°РµС‚ РѕР±Р»Р°СЃС‚СЊ РѕРєРЅР° RECT СЌР»РµРјРµРЅС‚Р° РІ РіР»РѕР±Р°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
+	bool	SetWinRect(RECT* rect, bool alignment_screen_space);	//alignment_screen_space - РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‚С‡СѓСЋ РѕР±Р»Р°СЃС‚СЊ (СЂР°Р±РѕС‡РёР№ СЃС‚РѕР» РєСЂРѕРјРµ РїР°РЅРµР»Рё Р·Р°РґР°С‡)
 	RECT*	GetWinRect();
 	void	GetWinRect(RECT* rect);
 
-	//устанавливает/возвращает клиентскую область RECT элемента в глобальных координатах
-	bool	SetClientRect(RECT* rect, bool alignment_screen_space);	//alignment_screen_space - использовать ли только работчую область (рабочий стол кроме панели задач)
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚/РІРѕР·РІСЂР°С‰Р°РµС‚ РєР»РёРµРЅС‚СЃРєСѓСЋ РѕР±Р»Р°СЃС‚СЊ RECT СЌР»РµРјРµРЅС‚Р° РІ РіР»РѕР±Р°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
+	bool	SetClientRect(RECT* rect, bool alignment_screen_space);	//alignment_screen_space - РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‚С‡СѓСЋ РѕР±Р»Р°СЃС‚СЊ (СЂР°Р±РѕС‡РёР№ СЃС‚РѕР» РєСЂРѕРјРµ РїР°РЅРµР»Рё Р·Р°РґР°С‡)
 	RECT*	GetClientRect();
 	void	GetClientRect(RECT* rect);
 
-	//!!!первоначально нужно единожды включить видимость подсказки, ибо в этот момент она инициализируется
-	//видимость подсказки
+	//!!!РїРµСЂРІРѕРЅР°С‡Р°Р»СЊРЅРѕ РЅСѓР¶РЅРѕ РµРґРёРЅРѕР¶РґС‹ РІРєР»СЋС‡РёС‚СЊ РІРёРґРёРјРѕСЃС‚СЊ РїРѕРґСЃРєР°Р·РєРё, РёР±Рѕ РІ СЌС‚РѕС‚ РјРѕРјРµРЅС‚ РѕРЅР° РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚СЃСЏ
+	//РІРёРґРёРјРѕСЃС‚СЊ РїРѕРґСЃРєР°Р·РєРё
 	void ShowHint(bool bf);
 	bool ShowHint();
 
-	//работа с текстом подсказки для элемента
+	//СЂР°Р±РѕС‚Р° СЃ С‚РµРєСЃС‚РѕРј РїРѕРґСЃРєР°Р·РєРё РґР»СЏ СЌР»РµРјРµРЅС‚Р°
 	void SetHintText(const char* text);
 	char* GetHintText();
 	void GetHintText(char* buf);
 
-	//функции для цветов
-	//set/get цвет текста
+	//С„СѓРЅРєС†РёРё РґР»СЏ С†РІРµС‚РѕРІ
+	//set/get С†РІРµС‚ С‚РµРєСЃС‚Р°
 	void SetColorText(BYTE r, BYTE g, BYTE b);
 	void SetColorText(DWORD color);
 	DWORD GetColorText();
 
-	//set/get прозрачность заднего фона текста
+	//set/get РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° С‚РµРєСЃС‚Р°
 	void SetTransparentTextBk(bool bf);
 	bool GetTransparentTextBk();
 
-	//set/get цвет заднего фона
+	//set/get С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР°
 	void SetColorTextBk(BYTE r, BYTE g, BYTE b);
 	void SetColorTextBk(DWORD color);
 	DWORD GetColorTextBk();
 	
-	//set/get цвет заднего фона элемента
+	//set/get С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° СЌР»РµРјРµРЅС‚Р°
 	bool SetColorBrush(BYTE r, BYTE g, BYTE b);
 	bool SetColorBrush(DWORD color);
 	DWORD GetColorBrush();
 	HBRUSH GetBrush();
 
-	//все что касается обработчиков функций
+	//РІСЃРµ С‡С‚Рѕ РєР°СЃР°РµС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ С„СѓРЅРєС†РёР№
 	///////////////////////////////////////
 
-	//добавление обработчика
+	//РґРѕР±Р°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 	bool AddHandler(HandlerMsg Handler, UINT Msg, WPARAM wParam, bool considerWparam, LPARAM lParam, bool considerLparam, bool isMain);
-	bool AddHandler(HandlerMsg Handler, UINT Msg);	//все что необъявлено из функции выше не учитывается
+	bool AddHandler(HandlerMsg Handler, UINT Msg);	//РІСЃРµ С‡С‚Рѕ РЅРµРѕР±СЉСЏРІР»РµРЅРѕ РёР· С„СѓРЅРєС†РёРё РІС‹С€Рµ РЅРµ СѓС‡РёС‚С‹РІР°РµС‚СЃСЏ
 
-	//key - ключ в массиве обработчиков
-	HandlerMsg GetHandlerFunction(int key);	//возвращает функцию обработчик 
-	WORD GetCountKeyArrHandler();			//количество ключей в массиве обработчиков
+	//key - РєР»СЋС‡ РІ РјР°СЃСЃРёРІРµ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ
+	HandlerMsg GetHandlerFunction(int key);	//РІРѕР·РІСЂР°С‰Р°РµС‚ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚С‡РёРє 
+	WORD GetCountKeyArrHandler();			//РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»СЋС‡РµР№ РІ РјР°СЃСЃРёРІРµ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ
 
-	//все что касается данных сообщения
+	//РІСЃРµ С‡С‚Рѕ РєР°СЃР°РµС‚СЃСЏ РґР°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёСЏ
 	UINT GetMsgHandler(int key);
 	WPARAM GetWParamHandler(int key);
-	bool GetConsiderWParamHandler(int key);	//учитывать WParam?
+	bool GetConsiderWParamHandler(int key);	//СѓС‡РёС‚С‹РІР°С‚СЊ WParam?
 	LPARAM GetLParamHandler(int key);
-	bool GetConsiderLParamHandler(int key);	//учитывать LParam?
+	bool GetConsiderLParamHandler(int key);	//СѓС‡РёС‚С‹РІР°С‚СЊ LParam?
 
-	bool IsMainFunction(int key);	//это главная функция?
-	LRESULT ExecuteHandler(int key, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);	//выполняет функцию обработчик, в аргументы отправляет свои аргументы
+	bool IsMainFunction(int key);	//СЌС‚Рѕ РіР»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ?
+	LRESULT ExecuteHandler(int key, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);	//РІС‹РїРѕР»РЅСЏРµС‚ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚С‡РёРє, РІ Р°СЂРіСѓРјРµРЅС‚С‹ РѕС‚РїСЂР°РІР»СЏРµС‚ СЃРІРѕРё Р°СЂРіСѓРјРµРЅС‚С‹
 	///////////////////////////////////////
 
-	//SXRectBool GAlign;	//данные регулирующие размеры элемента при изменении размеров его родителя
+	//SXRectBool GAlign;	//РґР°РЅРЅС‹Рµ СЂРµРіСѓР»РёСЂСѓСЋС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌР»РµРјРµРЅС‚Р° РїСЂРё РёР·РјРµРЅРµРЅРёРё СЂР°Р·РјРµСЂРѕРІ РµРіРѕ СЂРѕРґРёС‚РµР»СЏ
 
 	void UpdateSize();
 	void UpdateRect();
 
-	//данные необходимые для UpdateSize
-	/*RECT ParentRect;		//параметры родителя
-	RECT OffsetParentRect;	//на сколько был изменен родитель
-	RECT WinScreenRect;		//параметры текущего окна относительно рабочего стола
+	//РґР°РЅРЅС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР»СЏ UpdateSize
+	/*RECT ParentRect;		//РїР°СЂР°РјРµС‚СЂС‹ СЂРѕРґРёС‚РµР»СЏ
+	RECT OffsetParentRect;	//РЅР° СЃРєРѕР»СЊРєРѕ Р±С‹Р» РёР·РјРµРЅРµРЅ СЂРѕРґРёС‚РµР»СЊ
+	RECT WinScreenRect;		//РїР°СЂР°РјРµС‚СЂС‹ С‚РµРєСѓС‰РµРіРѕ РѕРєРЅР° РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ СЂР°Р±РѕС‡РµРіРѕ СЃС‚РѕР»Р°
 
-	//данные регулирующие будет ли передвигаться определнная сторона
-	bool BFSizingChangeTop;		//за верх окно расширять нельзя ... типа того
+	//РґР°РЅРЅС‹Рµ СЂРµРіСѓР»РёСЂСѓСЋС‰РёРµ Р±СѓРґРµС‚ Р»Рё РїРµСЂРµРґРІРёРіР°С‚СЊСЃСЏ РѕРїСЂРµРґРµР»РЅРЅР°СЏ СЃС‚РѕСЂРѕРЅР°
+	bool BFSizingChangeTop;		//Р·Р° РІРµСЂС… РѕРєРЅРѕ СЂР°СЃС€РёСЂСЏС‚СЊ РЅРµР»СЊР·СЏ ... С‚РёРїР° С‚РѕРіРѕ
 	bool BFSizingChangeBottom;	
 	bool BFSizingChangeRight;	
 	bool BFSizingChangeLeft;	
 
-	bool BFMinSize;	//установлен ли минимальный размер? если да то меньше чем MinSizeX и MinSizeY не будет уменьшаться
+	bool BFMinSize;	//СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ? РµСЃР»Рё РґР° С‚Рѕ РјРµРЅСЊС€Рµ С‡РµРј MinSizeX Рё MinSizeY РЅРµ Р±СѓРґРµС‚ СѓРјРµРЅСЊС€Р°С‚СЊСЃСЏ
 	WORD MinSizeX;
 	WORD MinSizeY;*/
 
@@ -171,16 +170,16 @@ public:
 	SXHandlerMsgStruct ArrHandler[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];
 	int CountKeyArrHandler;
 
-	DWORD ColorBrush;	//цвет заливки формы
+	DWORD ColorBrush;	//С†РІРµС‚ Р·Р°Р»РёРІРєРё С„РѕСЂРјС‹
 	HBRUSH HBrush;
 
-	DWORD ColorText;	//цвет текста
-	bool TransparenTextBf;	//используется прозрачность? если true то заднего фона у текста не будет
-	DWORD ColorTextBk;	//цвет заднего фона у текста*/
+	DWORD ColorText;	//С†РІРµС‚ С‚РµРєСЃС‚Р°
+	bool TransparenTextBf;	//РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ? РµСЃР»Рё true С‚Рѕ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° Сѓ С‚РµРєСЃС‚Р° РЅРµ Р±СѓРґРµС‚
+	DWORD ColorTextBk;	//С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° Сѓ С‚РµРєСЃС‚Р°*/
 };
 
-//третий (если нужен текст) родитель, непосредтсвенно не используется
-//характеризует элемент как содержащий единый текст (аля кэпшен) текстовый компонент
+//С‚СЂРµС‚РёР№ (РµСЃР»Рё РЅСѓР¶РµРЅ С‚РµРєСЃС‚) СЂРѕРґРёС‚РµР»СЊ, РЅРµРїРѕСЃСЂРµРґС‚СЃРІРµРЅРЅРѕ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+//С…Р°СЂР°РєС‚РµСЂРёР·СѓРµС‚ СЌР»РµРјРµРЅС‚ РєР°Рє СЃРѕРґРµСЂР¶Р°С‰РёР№ РµРґРёРЅС‹Р№ С‚РµРєСЃС‚ (Р°Р»СЏ РєСЌРїС€РµРЅ) С‚РµРєСЃС‚РѕРІС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
 class SXGUITextual : public SXGUIComponent, public virtual ISXGUITextual
 {
 public:

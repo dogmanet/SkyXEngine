@@ -3,8 +3,6 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017. All rights reserved.
 
 ----------------------------------------------------------------------------------
 
-(MIT License https://opensource.org/licenses/mit-license.html)
-
 Permission is hereby granted, free of charge, to any person obtaining a copy 
 of this software and associated documentation files (the "Software"), to deal 
 in the Software without restriction, including without limitation the rights 
@@ -14,6 +12,7 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in 
 all copies or substantial portions of the Software.
+The word SkyXEngine can not be included in the product name.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
@@ -40,6 +39,7 @@ must comply with the terms of this License, excluding any additional conditions.
 
 Указанное выше уведомление об авторском праве и данные условия должны быть 
 включены во все копии или значимые части данного Программного Обеспечения.
+Слово SkyXEngine не может быть включено в название продукта.
 
 ДАННОЕ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ», БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ, 
 ЯВНО ВЫРАЖЕННЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ, ВКЛЮЧАЯ ГАРАНТИИ ТОВАРНОЙ ПРИГОДНОСТИ, 
