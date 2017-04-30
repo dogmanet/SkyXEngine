@@ -1972,7 +1972,7 @@ void AnimationManager::Render(ID for_id)
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		pAnim = m_pAnimatedList[i];
-		if(pAnim->m_vIsVisibleFor[for_id])
+		if(for_id < 0 || pAnim->m_vIsVisibleFor[for_id])
 		{
 			pAnim->Render();
 		}
