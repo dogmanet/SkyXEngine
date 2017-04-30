@@ -1,4 +1,9 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
 #define SXGEOM_VERSION 1
 
 #if !defined(DEF_STD_REPORT)

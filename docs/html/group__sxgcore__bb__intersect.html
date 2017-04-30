@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Функции просчета попаданий точек в объемы и деление объемов</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('group__sxgcore__bb__intersect.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Функции</a>  </div>
+  <div class="headertitle">
+<div class="title">Функции просчета попаданий точек в объемы и деление объемов<div class="ingroups"><a class="el" href="group__sxgcore.html">sxgcore - графическое ядро, использует технологии DirectX 9</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr class="memitem:gacf6c2281b354b2657e4870742f35288b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gacf6c2281b354b2657e4870742f35288b">SGCore_0ComBoundBoxArr8</a> (<a class="el" href="class_i_s_x_bound.html">ISXBound</a> *bound, <a class="el" href="class_i_s_x_bound.html">ISXBound</a> **bound_arr)</td></tr>
+<tr class="memdesc:gacf6c2281b354b2657e4870742f35288b"><td class="mdescLeft">&#160;</td><td class="mdescRight">кубическое (octo) деление объема (по всем трем осям)  <a href="#gacf6c2281b354b2657e4870742f35288b">Подробнее...</a><br /></td></tr>
+<tr class="separator:gacf6c2281b354b2657e4870742f35288b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b62d2f79f9707aac86adb4995c017e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga6b62d2f79f9707aac86adb4995c017e9">SGCore_0ComBoundBoxArr4</a> (<a class="el" href="class_i_s_x_bound.html">ISXBound</a> *bound, <a class="el" href="class_i_s_x_bound.html">ISXBound</a> **bound_arr)</td></tr>
+<tr class="memdesc:ga6b62d2f79f9707aac86adb4995c017e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">квадратичное (quad) деление объема (по двум осям x и z)  <a href="#ga6b62d2f79f9707aac86adb4995c017e9">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga6b62d2f79f9707aac86adb4995c017e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+Просчеты попадания точки/точек в объем</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p><a class="anchor" id="amgrpbf62ca91056b5fea9fce720a1624d301"></a> </p><dl class="section note"><dt>Заметки</dt><dd>2d - на основании x и z координат <br />
+3d - на основании всех трех координат <br />
+Abs - абсолютное нахождение внутри, не на границах, иное допускает нахождение на границах </dd></dl>
+</td></tr>
+<tr class="memitem:gadb6bda0b983a16684c166788a948e053"><td class="memItemLeft" align="right" valign="top"><a id="gadb6bda0b983a16684c166788a948e053"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gadb6bda0b983a16684c166788a948e053">SGCore_0InPos2D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:gadb6bda0b983a16684c166788a948e053"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах [min,max] по осям x z. <br /></td></tr>
+<tr class="separator:gadb6bda0b983a16684c166788a948e053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7335079b1952e33be14a99a350466220"><td class="memItemLeft" align="right" valign="top"><a id="ga7335079b1952e33be14a99a350466220"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga7335079b1952e33be14a99a350466220">SGCore_0InPosAbs2D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:ga7335079b1952e33be14a99a350466220"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах (min,max) по осям x z. <br /></td></tr>
+<tr class="separator:ga7335079b1952e33be14a99a350466220"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab824693464e1f41f32103a3f0e847f0"><td class="memItemLeft" align="right" valign="top"><a id="gaab824693464e1f41f32103a3f0e847f0"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gaab824693464e1f41f32103a3f0e847f0">SGCore_0CountPosPoints2D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gaab824693464e1f41f32103a3f0e847f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max] по осям x z. <br /></td></tr>
+<tr class="separator:gaab824693464e1f41f32103a3f0e847f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7013a0d2afe4d4dcdb206fc20c836285"><td class="memItemLeft" align="right" valign="top"><a id="ga7013a0d2afe4d4dcdb206fc20c836285"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga7013a0d2afe4d4dcdb206fc20c836285">SGCore_0CountPosPointsAbs2D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:ga7013a0d2afe4d4dcdb206fc20c836285"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max) по осям x z. <br /></td></tr>
+<tr class="separator:ga7013a0d2afe4d4dcdb206fc20c836285"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga549befdd0d357bf168a3433006fd19ff"><td class="memItemLeft" align="right" valign="top"><a id="ga549befdd0d357bf168a3433006fd19ff"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga549befdd0d357bf168a3433006fd19ff">SGCore_0InPosPoints2D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:ga549befdd0d357bf168a3433006fd19ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3, по осям x z. <br /></td></tr>
+<tr class="separator:ga549befdd0d357bf168a3433006fd19ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7310f3dedae5b57f7ba3fb07c72fe305"><td class="memItemLeft" align="right" valign="top"><a id="ga7310f3dedae5b57f7ba3fb07c72fe305"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga7310f3dedae5b57f7ba3fb07c72fe305">SGCore_0InPos3D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:ga7310f3dedae5b57f7ba3fb07c72fe305"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах [min,max]. <br /></td></tr>
+<tr class="separator:ga7310f3dedae5b57f7ba3fb07c72fe305"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2b2e07f972793f55b8f15e7a1299246f"><td class="memItemLeft" align="right" valign="top"><a id="ga2b2e07f972793f55b8f15e7a1299246f"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#ga2b2e07f972793f55b8f15e7a1299246f">SGCore_0InPosAbs3D</a> (float3 *min, float3 *max, float3 *pos)</td></tr>
+<tr class="memdesc:ga2b2e07f972793f55b8f15e7a1299246f"><td class="mdescLeft">&#160;</td><td class="mdescRight">находится ли точка pos в пределах (min,max) <br /></td></tr>
+<tr class="separator:ga2b2e07f972793f55b8f15e7a1299246f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa64255e65dd1c16e0de0170bb598050c"><td class="memItemLeft" align="right" valign="top"><a id="gaa64255e65dd1c16e0de0170bb598050c"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gaa64255e65dd1c16e0de0170bb598050c">SGCore_0CountPosPoints3D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gaa64255e65dd1c16e0de0170bb598050c"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]. <br /></td></tr>
+<tr class="separator:gaa64255e65dd1c16e0de0170bb598050c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae0eeeb9ad15f04c40e52f3dbabaaecbf"><td class="memItemLeft" align="right" valign="top"><a id="gae0eeeb9ad15f04c40e52f3dbabaaecbf"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gae0eeeb9ad15f04c40e52f3dbabaaecbf">SGCore_0CountPosPointsAbs3D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gae0eeeb9ad15f04c40e52f3dbabaaecbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max) <br /></td></tr>
+<tr class="separator:gae0eeeb9ad15f04c40e52f3dbabaaecbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaefb762f931f3d8a8dd63de8476a513ad"><td class="memItemLeft" align="right" valign="top"><a id="gaefb762f931f3d8a8dd63de8476a513ad"></a>
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxgcore__bb__intersect.html#gaefb762f931f3d8a8dd63de8476a513ad">SGCore_0InPosPoints3D</a> (float3 *min, float3 *max, float3 *p1, float3 *p2, float3 *p3)</td></tr>
+<tr class="memdesc:gaefb762f931f3d8a8dd63de8476a513ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3. <br /></td></tr>
+<tr class="separator:gaefb762f931f3d8a8dd63de8476a513ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<h2 class="groupheader">Функции</h2>
+<a id="gacf6c2281b354b2657e4870742f35288b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacf6c2281b354b2657e4870742f35288b">&#9670;&nbsp;</a></span>SGCore_0ComBoundBoxArr8()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_0ComBoundBoxArr8 </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_i_s_x_bound.html">ISXBound</a> *&#160;</td>
+          <td class="paramname"><em>bound</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_i_s_x_bound.html">ISXBound</a> **&#160;</td>
+          <td class="paramname"><em>bound_arr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>кубическое (octo) деление объема (по всем трем осям) </p>
+<dl class="section warning"><dt>Предупреждения</dt><dd>массивы и объекты должны быть заранее инициализированны </dd></dl>
+
+</div>
+</div>
+<a id="ga6b62d2f79f9707aac86adb4995c017e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6b62d2f79f9707aac86adb4995c017e9">&#9670;&nbsp;</a></span>SGCore_0ComBoundBoxArr4()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void SGCore_0ComBoundBoxArr4 </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_i_s_x_bound.html">ISXBound</a> *&#160;</td>
+          <td class="paramname"><em>bound</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_i_s_x_bound.html">ISXBound</a> **&#160;</td>
+          <td class="paramname"><em>bound_arr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="sxgcore_8h.html">sxgcore.h</a>&gt;</code></p>
+
+<p>квадратичное (quad) деление объема (по двум осям x и z) </p>
+<dl class="section warning"><dt>Предупреждения</dt><dd>массивы и объекты должны быть заранее инициализированны </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Ср 26 Апр 2017 23:20:29. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

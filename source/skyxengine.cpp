@@ -1,7 +1,12 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
 #define _CRT_SECURE_NO_WARNINGS
 #pragma once
-//#include <vld.h> 
+
 #define SX_EXE
 
 #include <windows.h>
@@ -15,10 +20,7 @@
 #include <managed_render\\gdata.cpp>
 #include <managed_render\\camera_update.cpp>
 #include <managed_render\\render_func.cpp>
-#include <managed_render\\save_level.cpp>
-#include <managed_render\\load_level.cpp>
-
-
+#include <managed_render\\level.cpp>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -76,23 +78,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
 	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
 
-
-	
-
-
 	GData::InitAllMatrix();
-
-
-	
-
 
 	GData::IDsShaders::InitAllShaders();
 
-	LoadLevel("stalker_atp");
+	Level::Load("stalker_atp");
 
 	IAnimPlayer * pl;
-	//pl = SXAnim_CreatePlayer("F:/engine/build/gamesource/models/ak74.dse");
-	//pl->Play("idle");
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
 	pl->SetPos(float3(-17.18, -1.38f, -32.3));
 	pl->Play("reload");
@@ -113,29 +105,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 		SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 		
-	SaveLevel("stalker_atp"); */
-
-	/*SML_LigthsCreatePoint(
-		&float3(20, 20, 20),
-		10,
-		100,
-		&float3(1, 1, 1),
-		false,
-		true);
-
-	SML_LigthsSetEnableCubeEdge(0, 0, true);
-	SML_LigthsSetEnableCubeEdge(0, 1, true);
-
-	SML_LigthsSetEnableCubeEdge(0, 2, true);
-	SML_LigthsSetEnableCubeEdge(0, 3, true);
-
-	SML_LigthsSetEnableCubeEdge(0, 4, true);
-	SML_LigthsSetEnableCubeEdge(0, 5, true);
-
-	SML_LigthsSetTypeShadowed(0, LightsTypeShadow::lts_static);
-
-	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
-	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");*/
+	Level::Save("stalker_atp"); */
 
 	char tmppathexe[1024];
 	char tmppath[1024];

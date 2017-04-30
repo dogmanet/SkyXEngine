@@ -1,3 +1,9 @@
+
+/******************************************************
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
 #ifndef SXGUIELEMENTS_H
 #define SXGUIELEMENTS_H
 #include <gdefines.h>
@@ -7,9 +13,9 @@
 #include <Winuser.h>
 #include <stdio.h>
 
-//для начала нужно инициализировать как внутренние библиотеки так и новые компоненты зарегистрировать 
+//РґР»СЏ РЅР°С‡Р°Р»Р° РЅСѓР¶РЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ РєР°Рє РІРЅСѓС‚СЂРµРЅРЅРёРµ Р±РёР±Р»РёРѕС‚РµРєРё С‚Р°Рє Рё РЅРѕРІС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊ 
 /*
-//регистрируем новые элементы
+//СЂРµРіРёСЃС‚СЂРёСЂСѓРµРј РЅРѕРІС‹Рµ СЌР»РµРјРµРЅС‚С‹
 SXGUIRegClass::RegButtonImg();
 SXGUIRegClass::RegToolBar();
 
@@ -20,14 +26,14 @@ icex.dwICC  = ICC_BAR_CLASSES;
 InitCommonControlsEx(&icex);
 */
 
-/*инициализировав элемент можно установить на него стандартные обработчики: 
+/*РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РІ СЌР»РµРјРµРЅС‚ РјРѕР¶РЅРѕ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР° РЅРµРіРѕ СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РѕР±СЂР°Р±РѕС‚С‡РёРєРё: 
 	SXGUIBaseHandlers::InitHandlerMsg(HWND);*/
-/*а затем добавить необходимые:
+/*Р° Р·Р°С‚РµРј РґРѕР±Р°РІРёС‚СЊ РЅРµРѕР±С…РѕРґРёРјС‹Рµ:
 	Wnd->AddHandler(MouseWheel,WM_MOUSEWHEEL,0,0,0,0,true);*/
 
-//!!! main функция-обработчик может быть только одна и должна быть вообще!
-//!!! но если ее нет то для окон будет вызываться ::DefWindowProc(hwnd, msg, wParam, lParam)
-//!!! а для остальных компонентов CallWindowProc(Component->OldProc,hwnd, msg, wParam, lParam)
+//!!! main С„СѓРЅРєС†РёСЏ-РѕР±СЂР°Р±РѕС‚С‡РёРє РјРѕР¶РµС‚ Р±С‹С‚СЊ С‚РѕР»СЊРєРѕ РѕРґРЅР° Рё РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІРѕРѕР±С‰Рµ!
+//!!! РЅРѕ РµСЃР»Рё РµРµ РЅРµС‚ С‚Рѕ РґР»СЏ РѕРєРѕРЅ Р±СѓРґРµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ ::DefWindowProc(hwnd, msg, wParam, lParam)
+//!!! Р° РґР»СЏ РѕСЃС‚Р°Р»СЊРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ CallWindowProc(Component->OldProc,hwnd, msg, wParam, lParam)
 
 #define SXGUI_HORZ_SCROLL	0
 #define SXGUI_VERT_SCROLL	1
@@ -38,26 +44,26 @@ InitCommonControlsEx(&icex);
 #define SXGUI_LEFT_SCROLL	0
 #define SXGUI_RIGTH_SCROLL	1
 
-//максимальнео количество обработчиков
-//нужно подобрать оптимальное значение
+//РјР°РєСЃРёРјР°Р»СЊРЅРµРѕ РєРѕР»РёС‡РµСЃС‚РІРѕ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ
+//РЅСѓР¶РЅРѕ РїРѕРґРѕР±СЂР°С‚СЊ РѕРїС‚РёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ
 #define SXGUI_COUNT_HANDLERS_MSG_IN_ARR 256
 
-//тип обработчика
+//С‚РёРї РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 typedef LRESULT(*HandlerMsg) (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-//структура данных для обработчика
+//СЃС‚СЂСѓРєС‚СѓСЂР° РґР°РЅРЅС‹С… РґР»СЏ РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 struct SXHandlerMsgStruct
 {
-	HandlerMsg Handler;		//сама функция, которая будет вызываться
+	HandlerMsg Handler;		//СЃР°РјР° С„СѓРЅРєС†РёСЏ, РєРѕС‚РѕСЂР°СЏ Р±СѓРґРµС‚ РІС‹Р·С‹РІР°С‚СЊСЃСЏ
 	UINT Msg;
 	WPARAM WParam;
-	bool BFCondiderWParam;	//проверять WParam?
+	bool BFCondiderWParam;	//РїСЂРѕРІРµСЂСЏС‚СЊ WParam?
 	LPARAM LParam;
-	bool BFCondiderLParam;	//проверять LParam
-	bool IsMainFunction;	//главный ли это обработчик? true - значение возвращенное фунцией - возвращается WndProc, иначе нет 
+	bool BFCondiderLParam;	//РїСЂРѕРІРµСЂСЏС‚СЊ LParam
+	bool IsMainFunction;	//РіР»Р°РІРЅС‹Р№ Р»Рё СЌС‚Рѕ РѕР±СЂР°Р±РѕС‚С‡РёРє? true - Р·РЅР°С‡РµРЅРёРµ РІРѕР·РІСЂР°С‰РµРЅРЅРѕРµ С„СѓРЅС†РёРµР№ - РІРѕР·РІСЂР°С‰Р°РµС‚СЃСЏ WndProc, РёРЅР°С‡Рµ РЅРµС‚ 
 };
 
-//структура, логическая, для определения тянуться ли стороны элемента за сторонами родителя
+//СЃС‚СЂСѓРєС‚СѓСЂР°, Р»РѕРіРёС‡РµСЃРєР°СЏ, РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ С‚СЏРЅСѓС‚СЊСЃСЏ Р»Рё СЃС‚РѕСЂРѕРЅС‹ СЌР»РµРјРµРЅС‚Р° Р·Р° СЃС‚РѕСЂРѕРЅР°РјРё СЂРѕРґРёС‚РµР»СЏ
 struct SXRectBool
 {
 	SXRectBool()
@@ -80,24 +86,24 @@ struct SXRectBool
 	bool right;
 };
 
-//первый базовый класс, единственным родителем не используется
-//определяет объект как контрол, то есть содержит в себе минимум данных для 
-//управления объектом
+//РїРµСЂРІС‹Р№ Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ, РµРґРёРЅСЃС‚РІРµРЅРЅС‹Рј СЂРѕРґРёС‚РµР»РµРј РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+//РѕРїСЂРµРґРµР»СЏРµС‚ РѕР±СЉРµРєС‚ РєР°Рє РєРѕРЅС‚СЂРѕР», С‚Рѕ РµСЃС‚СЊ СЃРѕРґРµСЂР¶РёС‚ РІ СЃРµР±Рµ РјРёРЅРёРјСѓРј РґР°РЅРЅС‹С… РґР»СЏ 
+//СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРј
 struct ISXGUIControl : public IBaseObject
 {
 	virtual ~ISXGUIControl(){};
-	virtual void Init(HWND window_handle, HWND parent_handle, WNDPROC handler) = 0;	//запоминаем дескрипторы, и устанавливаем новый обработчик
+	virtual void Init(HWND window_handle, HWND parent_handle, WNDPROC handler) = 0;	//Р·Р°РїРѕРјРёРЅР°РµРј РґРµСЃРєСЂРёРїС‚РѕСЂС‹, Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РЅРѕРІС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє
 
-	virtual HWND Parent() = 0;						//возвращает HWND родителя
-	virtual bool Parent(HWND parent_handle) = 0;	//устанавливает родителя
+	virtual HWND Parent() = 0;						//РІРѕР·РІСЂР°С‰Р°РµС‚ HWND СЂРѕРґРёС‚РµР»СЏ
+	virtual bool Parent(HWND parent_handle) = 0;	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРѕРґРёС‚РµР»СЏ
 
 	virtual HWND GetHWND() = 0;
 
-	virtual void Visible(bool bf) = 0;				//установка видимости контрола
-	virtual bool Visible() = 0;						//видим ли контрол?
+	virtual void Visible(bool bf) = 0;				//СѓСЃС‚Р°РЅРѕРІРєР° РІРёРґРёРјРѕСЃС‚Рё РєРѕРЅС‚СЂРѕР»Р°
+	virtual bool Visible() = 0;						//РІРёРґРёРј Р»Рё РєРѕРЅС‚СЂРѕР»?
 
-	virtual void SetFocus() = 0;					//установить фокус на контрол
-	virtual bool Focus() = 0;						//установлен ли фокус на контроле?
+	virtual void SetFocus() = 0;					//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„РѕРєСѓСЃ РЅР° РєРѕРЅС‚СЂРѕР»
+	virtual bool Focus() = 0;						//СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё С„РѕРєСѓСЃ РЅР° РєРѕРЅС‚СЂРѕР»Рµ?
 	//virtual WNDPROC GetOldProc() = 0;
 
 	WNDPROC OldProc;
@@ -112,14 +118,14 @@ protected:
 
 
 //////
-//размер текста подсказки
+//СЂР°Р·РјРµСЂ С‚РµРєСЃС‚Р° РїРѕРґСЃРєР°Р·РєРё
 #define SX_HINT_COUNT_BUF_SIZE 1024
 
 struct ISXGUIHint : public IBaseObject
 {
 	virtual ~ISXGUIHint(){}
-	//autopop - время показа
-	//init - сколько ждем появления подсказки после наведения курсора
+	//autopop - РІСЂРµРјСЏ РїРѕРєР°Р·Р°
+	//init - СЃРєРѕР»СЊРєРѕ Р¶РґРµРј РїРѕСЏРІР»РµРЅРёСЏ РїРѕРґСЃРєР°Р·РєРё РїРѕСЃР»Рµ РЅР°РІРµРґРµРЅРёСЏ РєСѓСЂСЃРѕСЂР°
 	virtual void SetDelayTime(DWORD init, DWORD autopop) = 0;
 
 	virtual bool Parent(HWND parent) = 0;
@@ -130,8 +136,8 @@ struct ISXGUIHint : public IBaseObject
 	virtual void Visible(bool bf) = 0;
 	virtual bool Visible() = 0;
 
-	virtual void SetText(const char* text) = 0;	//установка текста подсказки
-	virtual char* GetText() = 0;				//возвращает указатель на текст подсказки, очищается при вызове деструктора
+	virtual void SetText(const char* text) = 0;	//СѓСЃС‚Р°РЅРѕРІРєР° С‚РµРєСЃС‚Р° РїРѕРґСЃРєР°Р·РєРё
+	virtual char* GetText() = 0;				//РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСЃС‚ РїРѕРґСЃРєР°Р·РєРё, РѕС‡РёС‰Р°РµС‚СЃСЏ РїСЂРё РІС‹Р·РѕРІРµ РґРµСЃС‚СЂСѓРєС‚РѕСЂР°
 	virtual void GetText(char* buf) = 0;
 };
 
@@ -139,115 +145,115 @@ SX_LIB_API ISXGUIHint* SXGUICrHint(HWND parent);
 
 ////
 
-//второй в очереди родитель, часто наследование идет именно от него
-//более расширенное управление большинством элементов
+//РІС‚РѕСЂРѕР№ РІ РѕС‡РµСЂРµРґРё СЂРѕРґРёС‚РµР»СЊ, С‡Р°СЃС‚Рѕ РЅР°СЃР»РµРґРѕРІР°РЅРёРµ РёРґРµС‚ РёРјРµРЅРЅРѕ РѕС‚ РЅРµРіРѕ
+//Р±РѕР»РµРµ СЂР°СЃС€РёСЂРµРЅРЅРѕРµ СѓРїСЂР°РІР»РµРЅРёРµ Р±РѕР»СЊС€РёРЅСЃС‚РІРѕРј СЌР»РµРјРµРЅС‚РѕРІ
 struct ISXGUIComponent : public virtual ISXGUIControl
 {
 	virtual ~ISXGUIComponent(){};
-	//устанавливает необходимые данные для управления элементом
-	virtual void InitComponent() = 0; //необходимо вызывать после инициализации
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ СЌР»РµРјРµРЅС‚РѕРј
+	virtual void InitComponent() = 0; //РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹Р·С‹РІР°С‚СЊ РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 
-	//действителен ли элемент
+	//РґРµР№СЃС‚РІРёС‚РµР»РµРЅ Р»Рё СЌР»РµРјРµРЅС‚
 	virtual bool Enable()=0;
 	virtual void Enable(bool bf) = 0;
 
-	//работа со шрифтом
-	//если name == 0 то не изменияем название шрифта,
-	//если name[0] == 0 то дефолтный шрифт gui
-	//если остальные значения в -1 то не учитываются
+	//СЂР°Р±РѕС‚Р° СЃРѕ С€СЂРёС„С‚РѕРј
+	//РµСЃР»Рё name == 0 С‚Рѕ РЅРµ РёР·РјРµРЅРёСЏРµРј РЅР°Р·РІР°РЅРёРµ С€СЂРёС„С‚Р°,
+	//РµСЃР»Рё name[0] == 0 С‚Рѕ РґРµС„РѕР»С‚РЅС‹Р№ С€СЂРёС„С‚ gui
+	//РµСЃР»Рё РѕСЃС‚Р°Р»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІ -1 С‚Рѕ РЅРµ СѓС‡РёС‚С‹РІР°СЋС‚СЃСЏ
 	virtual void SetFont(const char* name, int height, int width, int weight, int italic, int underline, int strike_out) = 0;
 	virtual void SetFont(HFONT* hfont) = 0;
 	virtual HFONT GetFont() = 0;
 
-	virtual bool IsParentFont() = 0;	//наследуется ли шрифт родителя
-	virtual HFONT ParentFont() = 0;		//получает родительский шрифт
+	virtual bool IsParentFont() = 0;	//РЅР°СЃР»РµРґСѓРµС‚СЃСЏ Р»Рё С€СЂРёС„С‚ СЂРѕРґРёС‚РµР»СЏ
+	virtual HFONT ParentFont() = 0;		//РїРѕР»СѓС‡Р°РµС‚ СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ С€СЂРёС„С‚
 
-	//работа со стилями (в т.ч. специальным)
-	//style_add - добавляемые стили
-	//style_del - удаляемые
+	//СЂР°Р±РѕС‚Р° СЃРѕ СЃС‚РёР»СЏРјРё (РІ С‚.С‡. СЃРїРµС†РёР°Р»СЊРЅС‹Рј)
+	//style_add - РґРѕР±Р°РІР»СЏРµРјС‹Рµ СЃС‚РёР»Рё
+	//style_del - СѓРґР°Р»СЏРµРјС‹Рµ
 	virtual bool ModifyStyle(long style_add, long style_del) = 0;
 	virtual bool ModifyExStyle(long style_add, long style_del) = 0;
 
-	//устанавливает/возвращает область окна RECT элемента в глобальных координатах
-	virtual bool	SetWinRect(RECT* rect, bool alignment_screen_space) = 0;	//alignment_screen_space - использовать ли только работчую область (рабочий стол кроме панели задач)
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚/РІРѕР·РІСЂР°С‰Р°РµС‚ РѕР±Р»Р°СЃС‚СЊ РѕРєРЅР° RECT СЌР»РµРјРµРЅС‚Р° РІ РіР»РѕР±Р°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
+	virtual bool	SetWinRect(RECT* rect, bool alignment_screen_space) = 0;	//alignment_screen_space - РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‚С‡СѓСЋ РѕР±Р»Р°СЃС‚СЊ (СЂР°Р±РѕС‡РёР№ СЃС‚РѕР» РєСЂРѕРјРµ РїР°РЅРµР»Рё Р·Р°РґР°С‡)
 	virtual RECT*	GetWinRect() = 0;
 	virtual void	GetWinRect(RECT* rect) = 0;
 
-	//устанавливает/возвращает клиентскую область RECT элемента в глобальных координатах
-	virtual bool	SetClientRect(RECT* rect, bool alignment_screen_space) = 0;	//alignment_screen_space - использовать ли только работчую область (рабочий стол кроме панели задач)
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚/РІРѕР·РІСЂР°С‰Р°РµС‚ РєР»РёРµРЅС‚СЃРєСѓСЋ РѕР±Р»Р°СЃС‚СЊ RECT СЌР»РµРјРµРЅС‚Р° РІ РіР»РѕР±Р°Р»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
+	virtual bool	SetClientRect(RECT* rect, bool alignment_screen_space) = 0;	//alignment_screen_space - РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‚С‡СѓСЋ РѕР±Р»Р°СЃС‚СЊ (СЂР°Р±РѕС‡РёР№ СЃС‚РѕР» РєСЂРѕРјРµ РїР°РЅРµР»Рё Р·Р°РґР°С‡)
 	virtual RECT*	GetClientRect() = 0;
 	virtual void	GetClientRect(RECT* rect) = 0;
 
-	//!!!первоначально нужно единожды включить видимость подсказки, ибо в этот момент она инициализируется
-	//видимость подсказки
+	//!!!РїРµСЂРІРѕРЅР°С‡Р°Р»СЊРЅРѕ РЅСѓР¶РЅРѕ РµРґРёРЅРѕР¶РґС‹ РІРєР»СЋС‡РёС‚СЊ РІРёРґРёРјРѕСЃС‚СЊ РїРѕРґСЃРєР°Р·РєРё, РёР±Рѕ РІ СЌС‚РѕС‚ РјРѕРјРµРЅС‚ РѕРЅР° РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚СЃСЏ
+	//РІРёРґРёРјРѕСЃС‚СЊ РїРѕРґСЃРєР°Р·РєРё
 	virtual void ShowHint(bool bf) = 0;
 	virtual bool ShowHint() = 0;
 
-	//работа с текстом подсказки для элемента
+	//СЂР°Р±РѕС‚Р° СЃ С‚РµРєСЃС‚РѕРј РїРѕРґСЃРєР°Р·РєРё РґР»СЏ СЌР»РµРјРµРЅС‚Р°
 	virtual void SetHintText(const char* text) = 0;
 	virtual char* GetHintText() = 0;
 	virtual void GetHintText(char* buf) = 0;
 
-	//функции для цветов
-	//set/get цвет текста
+	//С„СѓРЅРєС†РёРё РґР»СЏ С†РІРµС‚РѕРІ
+	//set/get С†РІРµС‚ С‚РµРєСЃС‚Р°
 	virtual void SetColorText(BYTE r, BYTE g, BYTE b) = 0;
 	virtual void SetColorText(DWORD color) = 0;
 	virtual DWORD GetColorText() = 0;
 
-	//set/get прозрачность заднего фона текста
+	//set/get РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° С‚РµРєСЃС‚Р°
 	virtual void SetTransparentTextBk(bool bf) = 0;
 	virtual bool GetTransparentTextBk() = 0;
 
-	//set/get цвет заднего фона
+	//set/get С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР°
 	virtual void SetColorTextBk(BYTE r, BYTE g, BYTE b) = 0;
 	virtual void SetColorTextBk(DWORD color) = 0;
 	virtual DWORD GetColorTextBk() = 0;
 
-	//set/get цвет заднего фона элемента
+	//set/get С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° СЌР»РµРјРµРЅС‚Р°
 	virtual bool SetColorBrush(BYTE r, BYTE g, BYTE b) = 0;
 	virtual bool SetColorBrush(DWORD color) = 0;
 	virtual DWORD GetColorBrush() = 0;
 	virtual HBRUSH GetBrush() = 0;
 
-	//все что касается обработчиков функций
+	//РІСЃРµ С‡С‚Рѕ РєР°СЃР°РµС‚СЃСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ С„СѓРЅРєС†РёР№
 	///////////////////////////////////////
 
-	//добавление обработчика
+	//РґРѕР±Р°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 	virtual bool AddHandler(HandlerMsg Handler, UINT Msg, WPARAM wParam, bool considerWparam, LPARAM lParam, bool considerLparam, bool isMain) = 0;
-	virtual bool AddHandler(HandlerMsg Handler, UINT Msg) = 0;	//все что необъявлено из функции выше не учитывается
+	virtual bool AddHandler(HandlerMsg Handler, UINT Msg) = 0;	//РІСЃРµ С‡С‚Рѕ РЅРµРѕР±СЉСЏРІР»РµРЅРѕ РёР· С„СѓРЅРєС†РёРё РІС‹С€Рµ РЅРµ СѓС‡РёС‚С‹РІР°РµС‚СЃСЏ
 
-	//key - ключ в массиве обработчиков
-	virtual HandlerMsg GetHandlerFunction(int key) = 0;	//возвращает функцию обработчик 
-	virtual WORD GetCountKeyArrHandler() = 0;			//количество ключей в массиве обработчиков
+	//key - РєР»СЋС‡ РІ РјР°СЃСЃРёРІРµ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ
+	virtual HandlerMsg GetHandlerFunction(int key) = 0;	//РІРѕР·РІСЂР°С‰Р°РµС‚ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚С‡РёРє 
+	virtual WORD GetCountKeyArrHandler() = 0;			//РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»СЋС‡РµР№ РІ РјР°СЃСЃРёРІРµ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ
 
-	//все что касается данных сообщения
+	//РІСЃРµ С‡С‚Рѕ РєР°СЃР°РµС‚СЃСЏ РґР°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёСЏ
 	virtual UINT GetMsgHandler(int key) = 0;
 	virtual WPARAM GetWParamHandler(int key) = 0;
-	virtual bool GetConsiderWParamHandler(int key) = 0;	//учитывать WParam?
+	virtual bool GetConsiderWParamHandler(int key) = 0;	//СѓС‡РёС‚С‹РІР°С‚СЊ WParam?
 	virtual LPARAM GetLParamHandler(int key) = 0;
-	virtual bool GetConsiderLParamHandler(int key) = 0;	//учитывать LParam?
+	virtual bool GetConsiderLParamHandler(int key) = 0;	//СѓС‡РёС‚С‹РІР°С‚СЊ LParam?
 
-	virtual bool IsMainFunction(int key) = 0;	//это главная функция?
-	virtual LRESULT ExecuteHandler(int key, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;	//выполняет функцию обработчик, в аргументы отправляет свои аргументы
+	virtual bool IsMainFunction(int key) = 0;	//СЌС‚Рѕ РіР»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ?
+	virtual LRESULT ExecuteHandler(int key, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;	//РІС‹РїРѕР»РЅСЏРµС‚ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚С‡РёРє, РІ Р°СЂРіСѓРјРµРЅС‚С‹ РѕС‚РїСЂР°РІР»СЏРµС‚ СЃРІРѕРё Р°СЂРіСѓРјРµРЅС‚С‹
 	///////////////////////////////////////
 
 	virtual void UpdateSize() = 0;
 	virtual void UpdateRect() = 0;
 
 
-	SXRectBool GAlign;	//данные регулирующие размеры элемента при изменении размеров его родителя
-	//данные необходимые для UpdateSize
-	RECT ParentRect;		//параметры родителя
-	RECT OffsetParentRect;	//на сколько был изменен родитель
-	RECT WinScreenRect;		//параметры текущего окна относительно рабочего стола
+	SXRectBool GAlign;	//РґР°РЅРЅС‹Рµ СЂРµРіСѓР»РёСЂСѓСЋС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌР»РµРјРµРЅС‚Р° РїСЂРё РёР·РјРµРЅРµРЅРёРё СЂР°Р·РјРµСЂРѕРІ РµРіРѕ СЂРѕРґРёС‚РµР»СЏ
+	//РґР°РЅРЅС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР»СЏ UpdateSize
+	RECT ParentRect;		//РїР°СЂР°РјРµС‚СЂС‹ СЂРѕРґРёС‚РµР»СЏ
+	RECT OffsetParentRect;	//РЅР° СЃРєРѕР»СЊРєРѕ Р±С‹Р» РёР·РјРµРЅРµРЅ СЂРѕРґРёС‚РµР»СЊ
+	RECT WinScreenRect;		//РїР°СЂР°РјРµС‚СЂС‹ С‚РµРєСѓС‰РµРіРѕ РѕРєРЅР° РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ СЂР°Р±РѕС‡РµРіРѕ СЃС‚РѕР»Р°
 
-	//данные регулирующие будет ли передвигаться определнная сторона
-	bool BFSizingChangeTop;		//за верх окно расширять нельзя ... типа того
+	//РґР°РЅРЅС‹Рµ СЂРµРіСѓР»РёСЂСѓСЋС‰РёРµ Р±СѓРґРµС‚ Р»Рё РїРµСЂРµРґРІРёРіР°С‚СЊСЃСЏ РѕРїСЂРµРґРµР»РЅРЅР°СЏ СЃС‚РѕСЂРѕРЅР°
+	bool BFSizingChangeTop;		//Р·Р° РІРµСЂС… РѕРєРЅРѕ СЂР°СЃС€РёСЂСЏС‚СЊ РЅРµР»СЊР·СЏ ... С‚РёРїР° С‚РѕРіРѕ
 	bool BFSizingChangeBottom;
 	bool BFSizingChangeRight;
 	bool BFSizingChangeLeft;
 
-	bool BFMinSize;	//установлен ли минимальный размер? если да то меньше чем MinSizeX и MinSizeY не будет уменьшаться
+	bool BFMinSize;	//СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё РјРёРЅРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ? РµСЃР»Рё РґР° С‚Рѕ РјРµРЅСЊС€Рµ С‡РµРј MinSizeX Рё MinSizeY РЅРµ Р±СѓРґРµС‚ СѓРјРµРЅСЊС€Р°С‚СЊСЃСЏ
 	WORD MinSizeX;
 	WORD MinSizeY;
 
@@ -256,16 +262,16 @@ protected:
 	SXHandlerMsgStruct ArrHandler[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];
 	int CountKeyArrHandler;
 
-	DWORD ColorBrush;	//цвет заливки формы
+	DWORD ColorBrush;	//С†РІРµС‚ Р·Р°Р»РёРІРєРё С„РѕСЂРјС‹
 	HBRUSH HBrush;
 
-	DWORD ColorText;	//цвет текста
-	bool TransparenTextBf;	//используется прозрачность? если true то заднего фона у текста не будет
-	DWORD ColorTextBk;	//цвет заднего фона у текста
+	DWORD ColorText;	//С†РІРµС‚ С‚РµРєСЃС‚Р°
+	bool TransparenTextBf;	//РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚СЊ? РµСЃР»Рё true С‚Рѕ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° Сѓ С‚РµРєСЃС‚Р° РЅРµ Р±СѓРґРµС‚
+	DWORD ColorTextBk;	//С†РІРµС‚ Р·Р°РґРЅРµРіРѕ С„РѕРЅР° Сѓ С‚РµРєСЃС‚Р°
 };
 
-//третий (если нужен текст) родитель, непосредтсвенно не используется
-//характеризует элемент как содержащий единый текст (аля кэпшен) текстовый компонент
+//С‚СЂРµС‚РёР№ (РµСЃР»Рё РЅСѓР¶РµРЅ С‚РµРєСЃС‚) СЂРѕРґРёС‚РµР»СЊ, РЅРµРїРѕСЃСЂРµРґС‚СЃРІРµРЅРЅРѕ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+//С…Р°СЂР°РєС‚РµСЂРёР·СѓРµС‚ СЌР»РµРјРµРЅС‚ РєР°Рє СЃРѕРґРµСЂР¶Р°С‰РёР№ РµРґРёРЅС‹Р№ С‚РµРєСЃС‚ (Р°Р»СЏ РєСЌРїС€РµРЅ) С‚РµРєСЃС‚РѕРІС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
 struct ISXGUITextual : public virtual ISXGUIComponent
 {
 	virtual ~ISXGUITextual(){};
@@ -308,16 +314,16 @@ SX_LIB_API ISXGUIBaseWnd* SXGUICrBaseWnd(
 struct ISXGUIStatic : public virtual ISXGUITextual
 {
 	virtual ~ISXGUIStatic(){}
-	virtual WORD Align() = 0;			//возвращает флаг выравнивания текста
-	virtual bool Align(WORD align) = 0;	//устанавливает выравнивание текста
+	virtual WORD Align() = 0;			//РІРѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ С‚РµРєСЃС‚Р°
+	virtual bool Align(WORD align) = 0;	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІС‹СЂР°РІРЅРёРІР°РЅРёРµ С‚РµРєСЃС‚Р°
 
-	virtual bool WordWrap() = 0;		//установлен ли автоперенос строк
-	virtual bool WordWrap(bool bf) = 0; //манипуляция со свойством автоперенос строк
+	virtual bool WordWrap() = 0;		//СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё Р°РІС‚РѕРїРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРє
+	virtual bool WordWrap(bool bf) = 0; //РјР°РЅРёРїСѓР»СЏС†РёСЏ СЃРѕ СЃРІРѕР№СЃС‚РІРѕРј Р°РІС‚РѕРїРµСЂРµРЅРѕСЃ СЃС‚СЂРѕРє
 };
 
 SX_LIB_API ISXGUIStatic* SXGUICrStaticEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
 SX_LIB_API ISXGUIStatic* SXGUICrStatic(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id);
-//создает линию
+//СЃРѕР·РґР°РµС‚ Р»РёРЅРёСЋ
 SX_LIB_API ISXGUIStatic* SXGUICrStaticLine(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, bool vertical);
 
 //////
@@ -358,17 +364,17 @@ struct ISXGUIButtonImg : public virtual ISXGUIComponent
 
 	virtual void InitCallBack() = 0;
 
-	DWORD AlphaColor;	//цвет который будет исключен
-	DWORD BkColor;	//цвет фона кнопки
-	DWORD FrameColor;	//цвет фона кнопки
+	DWORD AlphaColor;	//С†РІРµС‚ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РёСЃРєР»СЋС‡РµРЅ
+	DWORD BkColor;	//С†РІРµС‚ С„РѕРЅР° РєРЅРѕРїРєРё
+	DWORD FrameColor;	//С†РІРµС‚ С„РѕРЅР° РєРЅРѕРїРєРё
 
-	WORD Pos;			//позиция в которой состоит кнопка
-	bool PosBf[3];		//нужна ли перерисовка состоянию
+	WORD Pos;			//РїРѕР·РёС†РёСЏ РІ РєРѕС‚РѕСЂРѕР№ СЃРѕСЃС‚РѕРёС‚ РєРЅРѕРїРєР°
+	bool PosBf[3];		//РЅСѓР¶РЅР° Р»Рё РїРµСЂРµСЂРёСЃРѕРІРєР° СЃРѕСЃС‚РѕСЏРЅРёСЋ
 
-	bool EnableState;	//состояние кнопки (активна/пассивна)
+	bool EnableState;	//СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРєРё (Р°РєС‚РёРІРЅР°/РїР°СЃСЃРёРІРЅР°)
 
-	bool EnableBf;		//включено ли изменение активности кнопки
-	bool EnableGroup;	//включена ли кнопка в группу всех дочерних элементов родителя, это необходимо чтобы деактивировать кнопку при нажатиии другой кнопки
+	bool EnableBf;		//РІРєР»СЋС‡РµРЅРѕ Р»Рё РёР·РјРµРЅРµРЅРёРµ Р°РєС‚РёРІРЅРѕСЃС‚Рё РєРЅРѕРїРєРё
+	bool EnableGroup;	//РІРєР»СЋС‡РµРЅР° Р»Рё РєРЅРѕРїРєР° РІ РіСЂСѓРїРїСѓ РІСЃРµС… РґРѕС‡РµСЂРЅРёС… СЌР»РµРјРµРЅС‚РѕРІ СЂРѕРґРёС‚РµР»СЏ, СЌС‚Рѕ РЅРµРѕР±С…РѕРґРёРјРѕ С‡С‚РѕР±С‹ РґРµР°РєС‚РёРІРёСЂРѕРІР°С‚СЊ РєРЅРѕРїРєСѓ РїСЂРё РЅР°Р¶Р°С‚РёРёРё РґСЂСѓРіРѕР№ РєРЅРѕРїРєРё
 
 
 	BITMAP Bitmap;
@@ -391,15 +397,15 @@ SX_LIB_API ISXGUIButtonImg* SXGUICrButtonImg(WORD button, WORD x, WORD y, WORD w
 struct ISXGUIEdit : public virtual ISXGUITextual
 {
 	virtual ~ISXGUIEdit(){}
-	virtual bool ReadOnly() = 0;		//установлено ли свойство "только для чтения"
-	virtual bool ReadOnly(bool bf) = 0;	//манипулирует свойством "только для чтения", возвращает результат действия
+	virtual bool ReadOnly() = 0;		//СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ Р»Рё СЃРІРѕР№СЃС‚РІРѕ "С‚РѕР»СЊРєРѕ РґР»СЏ С‡С‚РµРЅРёСЏ"
+	virtual bool ReadOnly(bool bf) = 0;	//РјР°РЅРёРїСѓР»РёСЂСѓРµС‚ СЃРІРѕР№СЃС‚РІРѕРј "С‚РѕР»СЊРєРѕ РґР»СЏ С‡С‚РµРЅРёСЏ", РІРѕР·РІСЂР°С‰Р°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚ РґРµР№СЃС‚РІРёСЏ
 
-	//дефолтово скрытый текст заменяется на *
-	virtual bool Password() = 0;		//установлено ли свойств скрытия текста
-	virtual bool Password(bool bf) = 0;	//манипулирует свойством скрытия текста
+	//РґРµС„РѕР»С‚РѕРІРѕ СЃРєСЂС‹С‚С‹Р№ С‚РµРєСЃС‚ Р·Р°РјРµРЅСЏРµС‚СЃСЏ РЅР° *
+	virtual bool Password() = 0;		//СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ Р»Рё СЃРІРѕР№СЃС‚РІ СЃРєСЂС‹С‚РёСЏ С‚РµРєСЃС‚Р°
+	virtual bool Password(bool bf) = 0;	//РјР°РЅРёРїСѓР»РёСЂСѓРµС‚ СЃРІРѕР№СЃС‚РІРѕРј СЃРєСЂС‹С‚РёСЏ С‚РµРєСЃС‚Р°
 
-	virtual WORD Align() = 0;			//возвращает флаг выравнивания текста
-	virtual bool Align(WORD align) = 0;	//устанавливает выравнивание
+	virtual WORD Align() = 0;			//РІРѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ С‚РµРєСЃС‚Р°
+	virtual bool Align(WORD align) = 0;	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІС‹СЂР°РІРЅРёРІР°РЅРёРµ
 };
 
 SX_LIB_API ISXGUIEdit* SXGUICrEditEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
@@ -429,8 +435,8 @@ SX_LIB_API ISXGUIUpDown* SXGUICrUpDown(WORD x, WORD y, WORD width, WORD heigth, 
 struct ISXGUIMemo : public virtual ISXGUIEdit
 {
 	virtual ~ISXGUIMemo(){}
-	virtual bool WordWrap() = 0;		//установлен ли автоперенос слов
-	virtual bool WordWrap(bool bf) = 0;	//манипулирует свойством автоперенос слов
+	virtual bool WordWrap() = 0;		//СѓСЃС‚Р°РЅРѕРІР»РµРЅ Р»Рё Р°РІС‚РѕРїРµСЂРµРЅРѕСЃ СЃР»РѕРІ
+	virtual bool WordWrap(bool bf) = 0;	//РјР°РЅРёРїСѓР»РёСЂСѓРµС‚ СЃРІРѕР№СЃС‚РІРѕРј Р°РІС‚РѕРїРµСЂРµРЅРѕСЃ СЃР»РѕРІ
 
 	//SXGUIFuctinon
 	virtual bool ScrollBars(bool h, bool v) = 0;
@@ -447,29 +453,29 @@ SX_LIB_API ISXGUIMemo* SXGUICrMemo(const char* caption, WORD x, WORD y, WORD wid
 struct ISXGUIComboBox : public virtual ISXGUIComponent
 {
 	virtual ~ISXGUIComboBox(){}
-	virtual bool	InsertItem(int index, const char* text) = 0;		//вставка текста в строку
-	virtual bool	DeleteItem(int index) = 0;						//удаление строки
+	virtual bool	InsertItem(int index, const char* text) = 0;		//РІСЃС‚Р°РІРєР° С‚РµРєСЃС‚Р° РІ СЃС‚СЂРѕРєСѓ
+	virtual bool	DeleteItem(int index) = 0;						//СѓРґР°Р»РµРЅРёРµ СЃС‚СЂРѕРєРё
 
-	virtual int		GetCount() = 0;									//количество строк
+	virtual int		GetCount() = 0;									//РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє
 
-	virtual bool	SetSel(int index) = 0;							//выделяет определенную строку
-	virtual int		GetSel() = 0;									//номер выделенной строки
+	virtual bool	SetSel(int index) = 0;							//РІС‹РґРµР»СЏРµС‚ РѕРїСЂРµРґРµР»РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+	virtual int		GetSel() = 0;									//РЅРѕРјРµСЂ РІС‹РґРµР»РµРЅРЅРѕР№ СЃС‚СЂРѕРєРё
 
-	virtual bool	SetItemData(int index, LPARAM data) = 0;			//установка для строки userdata (32 бита)
-	virtual LPARAM	GetItemData(int index) = 0;						//получение userdata
+	virtual bool	SetItemData(int index, LPARAM data) = 0;			//СѓСЃС‚Р°РЅРѕРІРєР° РґР»СЏ СЃС‚СЂРѕРєРё userdata (32 Р±РёС‚Р°)
+	virtual LPARAM	GetItemData(int index) = 0;						//РїРѕР»СѓС‡РµРЅРёРµ userdata
 
-	virtual bool	Clear() = 0;									//удаляет все элементы
+	virtual bool	Clear() = 0;									//СѓРґР°Р»СЏРµС‚ РІСЃРµ СЌР»РµРјРµРЅС‚С‹
 
-	virtual bool	SetItemText(int index, const char* text) = 0;	//вставка текста в строку, подобие замены
-	virtual char*	GetItemText(int index) = 0;						//получить текст из строки (происходит выделение памяти в куче, юзер сам должен ее освободить)
-	virtual void	GetItemText(int index, char* buf) = 0;			//получить текст из строки 
-	virtual int		GetItemTextLength(int index) = 0;				//получить длину текста из строки
-	virtual bool	AddItem(const char* text) = 0;					//добавляет в конец новую строку
+	virtual bool	SetItemText(int index, const char* text) = 0;	//РІСЃС‚Р°РІРєР° С‚РµРєСЃС‚Р° РІ СЃС‚СЂРѕРєСѓ, РїРѕРґРѕР±РёРµ Р·Р°РјРµРЅС‹
+	virtual char*	GetItemText(int index) = 0;						//РїРѕР»СѓС‡РёС‚СЊ С‚РµРєСЃС‚ РёР· СЃС‚СЂРѕРєРё (РїСЂРѕРёСЃС…РѕРґРёС‚ РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё РІ РєСѓС‡Рµ, СЋР·РµСЂ СЃР°Рј РґРѕР»Р¶РµРЅ РµРµ РѕСЃРІРѕР±РѕРґРёС‚СЊ)
+	virtual void	GetItemText(int index, char* buf) = 0;			//РїРѕР»СѓС‡РёС‚СЊ С‚РµРєСЃС‚ РёР· СЃС‚СЂРѕРєРё 
+	virtual int		GetItemTextLength(int index) = 0;				//РїРѕР»СѓС‡РёС‚СЊ РґР»РёРЅСѓ С‚РµРєСЃС‚Р° РёР· СЃС‚СЂРѕРєРё
+	virtual bool	AddItem(const char* text) = 0;					//РґРѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС† РЅРѕРІСѓСЋ СЃС‚СЂРѕРєСѓ
 };
 
 SX_LIB_API ISXGUIComboBox* SXGUICrComboBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
 
-//флаги: (parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
+//С„Р»Р°РіРё: (parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
 SX_LIB_API ISXGUIComboBox* SXGUICrComboBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id);
 
 /////
@@ -477,35 +483,35 @@ SX_LIB_API ISXGUIComboBox* SXGUICrComboBox(const char* caption, WORD x, WORD y, 
 struct ISXGUIListBox : public virtual ISXGUIComponent
 {
 	virtual ~ISXGUIListBox(){}
-	virtual bool	MultipleSel() = 0;	//установленно ли свойство множественного выделения строк
+	virtual bool	MultipleSel() = 0;	//СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕ Р»Рё СЃРІРѕР№СЃС‚РІРѕ РјРЅРѕР¶РµСЃС‚РІРµРЅРЅРѕРіРѕ РІС‹РґРµР»РµРЅРёСЏ СЃС‚СЂРѕРє
 
-	virtual bool	InsertItem(int index, const char* text) = 0;	//вставить текст в строку с номером index
-	virtual bool	AddItem(const char* text) = 0;				//добавить строку в конец списка
-	virtual int		GetCountItem() = 0;							//возвращает количество строк
+	virtual bool	InsertItem(int index, const char* text) = 0;	//РІСЃС‚Р°РІРёС‚СЊ С‚РµРєСЃС‚ РІ СЃС‚СЂРѕРєСѓ СЃ РЅРѕРјРµСЂРѕРј index
+	virtual bool	AddItem(const char* text) = 0;				//РґРѕР±Р°РІРёС‚СЊ СЃС‚СЂРѕРєСѓ РІ РєРѕРЅРµС† СЃРїРёСЃРєР°
+	virtual int		GetCountItem() = 0;							//РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє
 
-	virtual bool	DeleteItem(int index) = 0;					//удалить строку с номером index
+	virtual bool	DeleteItem(int index) = 0;					//СѓРґР°Р»РёС‚СЊ СЃС‚СЂРѕРєСѓ СЃ РЅРѕРјРµСЂРѕРј index
 
-	virtual bool	SetSel(int index) = 0;						//выделить строку с номером index
+	virtual bool	SetSel(int index) = 0;						//РІС‹РґРµР»РёС‚СЊ СЃС‚СЂРѕРєСѓ СЃ РЅРѕРјРµСЂРѕРј index
 	virtual int		GetSel() = 0;
 
-	virtual bool	SetItemData(int index, LPARAM data) = 0;		//установить userdata для строки с номером index
-	virtual LPARAM	GetItemData(int index) = 0;					//возвращает userdata
+	virtual bool	SetItemData(int index, LPARAM data) = 0;		//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ userdata РґР»СЏ СЃС‚СЂРѕРєРё СЃ РЅРѕРјРµСЂРѕРј index
+	virtual LPARAM	GetItemData(int index) = 0;					//РІРѕР·РІСЂР°С‰Р°РµС‚ userdata
 
-	virtual bool	Clear() = 0;								//очистить
+	virtual bool	Clear() = 0;								//РѕС‡РёСЃС‚РёС‚СЊ
 
-	virtual bool	SetTextItem(int index, const char* text) = 0;//установить текст в строке с номером index
-	virtual char*	GetItemText(int index) = 0;					//возвращает текст из строки !!!память выделяется в куче
-	virtual void	GetItemText(int index, char* buf) = 0;		//возвращает текст из строки
+	virtual bool	SetTextItem(int index, const char* text) = 0;//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РµРєСЃС‚ РІ СЃС‚СЂРѕРєРµ СЃ РЅРѕРјРµСЂРѕРј index
+	virtual char*	GetItemText(int index) = 0;					//РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСЃС‚ РёР· СЃС‚СЂРѕРєРё !!!РїР°РјСЏС‚СЊ РІС‹РґРµР»СЏРµС‚СЃСЏ РІ РєСѓС‡Рµ
+	virtual void	GetItemText(int index, char* buf) = 0;		//РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСЃС‚ РёР· СЃС‚СЂРѕРєРё
 
-	virtual int		GetItemTextLength(int index) = 0;			//возвращает длину текста в строке
+	virtual int		GetItemTextLength(int index) = 0;			//РІРѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅСѓ С‚РµРєСЃС‚Р° РІ СЃС‚СЂРѕРєРµ
 
-	//мультивыделение строк, если this->MultipleSel() == true
-	virtual int		GetMultipleSelCount() = 0;					//возвращает количество выделенных строк
+	//РјСѓР»СЊС‚РёРІС‹РґРµР»РµРЅРёРµ СЃС‚СЂРѕРє, РµСЃР»Рё this->MultipleSel() == true
+	virtual int		GetMultipleSelCount() = 0;					//РІРѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹РґРµР»РµРЅРЅС‹С… СЃС‚СЂРѕРє
 
-	virtual bool	SetMultipleSel(int index, bool sel) = 0;		//устанавливает выделена/не выделена строка
-	virtual bool	GetMultipleSel(int index) = 0;				//возвращает выделена ли строка
+	virtual bool	SetMultipleSel(int index, bool sel) = 0;		//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІС‹РґРµР»РµРЅР°/РЅРµ РІС‹РґРµР»РµРЅР° СЃС‚СЂРѕРєР°
+	virtual bool	GetMultipleSel(int index) = 0;				//РІРѕР·РІСЂР°С‰Р°РµС‚ РІС‹РґРµР»РµРЅР° Р»Рё СЃС‚СЂРѕРєР°
 
-	virtual int*	GetMultipleSelArr() = 0;					//возвращает массив с номерами выделенных строк
+	virtual int*	GetMultipleSelArr() = 0;					//РІРѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ СЃ РЅРѕРјРµСЂР°РјРё РІС‹РґРµР»РµРЅРЅС‹С… СЃС‚СЂРѕРє
 
 	//SXGUIFuctinon
 	virtual bool ScrollBars(bool h, bool v) = 0;
@@ -532,32 +538,32 @@ SX_LIB_API ISXGUIGroupBox* SXGUICrGroupBox(const char* caption, WORD x, WORD y, 
 struct ISXGUIProgressBar : public virtual ISXGUIComponent
 {
 	virtual ~ISXGUIProgressBar(){}
-	//получить/установить позицию прогресса
-	virtual int GetPos() = 0;				//возвращает текущую позицию
-	virtual int SetPos(int pos) = 0;		//возвращает старую позицию
+	//РїРѕР»СѓС‡РёС‚СЊ/СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ РїСЂРѕРіСЂРµСЃСЃР°
+	virtual int GetPos() = 0;				//РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ
+	virtual int SetPos(int pos) = 0;		//РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚Р°СЂСѓСЋ РїРѕР·РёС†РёСЋ
 
-	//получить/установить размер шага прогресса
-	/*virtual int GetStep() = 0;				//возвращает текущий размер шага
-	virtual int SetStep(int step) = 0;		//возвращает старый размер шага
+	//РїРѕР»СѓС‡РёС‚СЊ/СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЂР°Р·РјРµСЂ С€Р°РіР° РїСЂРѕРіСЂРµСЃСЃР°
+	/*virtual int GetStep() = 0;				//РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РёР№ СЂР°Р·РјРµСЂ С€Р°РіР°
+	virtual int SetStep(int step) = 0;		//РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚Р°СЂС‹Р№ СЂР°Р·РјРµСЂ С€Р°РіР°
 
-	//возвращают предшествующую позицию
-	virtual int SetPosSteps(int steps) = 0;	//установить позицию по количеству шагов
-	virtual int SetOneStep() = 0;			//увеличить позицию на один шаг
+	//РІРѕР·РІСЂР°С‰Р°СЋС‚ РїСЂРµРґС€РµСЃС‚РІСѓСЋС‰СѓСЋ РїРѕР·РёС†РёСЋ
+	virtual int SetPosSteps(int steps) = 0;	//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ С€Р°РіРѕРІ
+	virtual int SetOneStep() = 0;			//СѓРІРµР»РёС‡РёС‚СЊ РїРѕР·РёС†РёСЋ РЅР° РѕРґРёРЅ С€Р°Рі
 
-	//устанавливает позицию минимума и максимума прогресса
-	//при удачном выполнении возвращает true, иначе false
+	//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРѕР·РёС†РёСЋ РјРёРЅРёРјСѓРјР° Рё РјР°РєСЃРёРјСѓРјР° РїСЂРѕРіСЂРµСЃСЃР°
+	//РїСЂРё СѓРґР°С‡РЅРѕРј РІС‹РїРѕР»РЅРµРЅРёРё РІРѕР·РІСЂР°С‰Р°РµС‚ true, РёРЅР°С‡Рµ false
 	virtual bool SetMinMax(int min, int max) = 0;
 
-	//возвращают минимальную/максимальную позицию прогресса
+	//РІРѕР·РІСЂР°С‰Р°СЋС‚ РјРёРЅРёРјР°Р»СЊРЅСѓСЋ/РјР°РєСЃРёРјР°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ РїСЂРѕРіСЂРµСЃСЃР°
 	virtual int GetMin() = 0;
 	virtual int GetMax() = 0;
 
-	//установить/получить цвет полоски (дефолтовый цвет определен вручную RGB(51,153,255))
-	virtual bool SetBarColor(WORD r, WORD g, WORD b) = 0;	//при удачном выполнении возвращает true, иначе false
+	//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ/РїРѕР»СѓС‡РёС‚СЊ С†РІРµС‚ РїРѕР»РѕСЃРєРё (РґРµС„РѕР»С‚РѕРІС‹Р№ С†РІРµС‚ РѕРїСЂРµРґРµР»РµРЅ РІСЂСѓС‡РЅСѓСЋ RGB(51,153,255))
+	virtual bool SetBarColor(WORD r, WORD g, WORD b) = 0;	//РїСЂРё СѓРґР°С‡РЅРѕРј РІС‹РїРѕР»РЅРµРЅРёРё РІРѕР·РІСЂР°С‰Р°РµС‚ true, РёРЅР°С‡Рµ false
 	virtual DWORD GetBarColor() = 0;
 
-	//установить/получить цвет фона (дефолтовый цвет равен цвету фона родителя)
-	virtual bool SetBkColor(WORD r, WORD g, WORD b) = 0; //при удачном выполнении возвращает true, иначе false
+	//СѓСЃС‚Р°РЅРѕРІРёС‚СЊ/РїРѕР»СѓС‡РёС‚СЊ С†РІРµС‚ С„РѕРЅР° (РґРµС„РѕР»С‚РѕРІС‹Р№ С†РІРµС‚ СЂР°РІРµРЅ С†РІРµС‚Сѓ С„РѕРЅР° СЂРѕРґРёС‚РµР»СЏ)
+	virtual bool SetBkColor(WORD r, WORD g, WORD b) = 0; //РїСЂРё СѓРґР°С‡РЅРѕРј РІС‹РїРѕР»РЅРµРЅРёРё РІРѕР·РІСЂР°С‰Р°РµС‚ true, РёРЅР°С‡Рµ false
 	virtual DWORD GetBkColor() = 0;*/
 };
 
@@ -625,7 +631,7 @@ SX_LIB_API ISXGUITrackBar* SXGUICrTrackBar(const char* caption, WORD x, WORD y, 
 #define SXGUI_SB_ALIGN_RS_NONE		0
 #define SXGUI_SB_ALIGN_RS_PERCENT	1
 #define SXGUI_SB_ALIGN_RS_PROP		2
-//!!! проверить код, там чето не лады с выделением памяти
+//!!! РїСЂРѕРІРµСЂРёС‚СЊ РєРѕРґ, С‚Р°Рј С‡РµС‚Рѕ РЅРµ Р»Р°РґС‹ СЃ РІС‹РґРµР»РµРЅРёРµРј РїР°РјСЏС‚Рё
 struct ISXGUIStatusBar : public virtual ISXGUIComponent
 {
 	virtual ~ISXGUIStatusBar(){}
@@ -739,92 +745,92 @@ SX_LIB_API ISXGUIToolBarSX* SXGUICrToolBarSX(const char* caption, WORD x, WORD y
 //////
 
 //!!!
-//на одно сообщение может быть назначен только один обработчик который будет возвращать значение
-//седьмой аргумент AddHandler (isMain) должен быть true
-//остальные не должны сего делать (седьмой аргумент AddHandler false)
+//РЅР° РѕРґРЅРѕ СЃРѕРѕР±С‰РµРЅРёРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РЅР°Р·РЅР°С‡РµРЅ С‚РѕР»СЊРєРѕ РѕРґРёРЅ РѕР±СЂР°Р±РѕС‚С‡РёРє РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РІРѕР·РІСЂР°С‰Р°С‚СЊ Р·РЅР°С‡РµРЅРёРµ
+//СЃРµРґСЊРјРѕР№ Р°СЂРіСѓРјРµРЅС‚ AddHandler (isMain) РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ true
+//РѕСЃС‚Р°Р»СЊРЅС‹Рµ РЅРµ РґРѕР»Р¶РЅС‹ СЃРµРіРѕ РґРµР»Р°С‚СЊ (СЃРµРґСЊРјРѕР№ Р°СЂРіСѓРјРµРЅС‚ AddHandler false)
 //!!!
 
-//стандартный обработчик событий для всех элементов
+//СЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёР№ РґР»СЏ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ
 SX_LIB_API LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 ////////////////////////
 
 namespace SXGUIFuctinon
 {
-	//!!!тут разобраться
-	//!!!автоматизировать сроллбары
+	//!!!С‚СѓС‚ СЂР°Р·РѕР±СЂР°С‚СЊСЃСЏ
+	//!!!Р°РІС‚РѕРјР°С‚РёР·РёСЂРѕРІР°С‚СЊ СЃСЂРѕР»Р»Р±Р°СЂС‹
 	SX_LIB_API bool	ScroolBars(ISXGUIControl *Control, bool h, bool v);
 	SX_LIB_API bool	ScrollBarV(ISXGUIControl *Control);
 	SX_LIB_API bool	ScrollBarH(ISXGUIControl *Control);
 
 	SX_LIB_API bool	ScrollLine(ISXGUIControl *Control, WORD scroll, WORD dir, int count);
 
-	//операции с текстом элемента
+	//РѕРїРµСЂР°С†РёРё СЃ С‚РµРєСЃС‚РѕРј СЌР»РµРјРµРЅС‚Р°
 	SX_LIB_API bool	SetText(ISXGUIControl*const Control, const char* text);
-	//!!!выделение памяти
+	//!!!РІС‹РґРµР»РµРЅРёРµ РїР°РјСЏС‚Рё
 	//SX_LIB_API char*GetTextOut(ISXGUIControl *Control);
 	SX_LIB_API void	GetText(ISXGUIControl *Control, char* buf, int count);
 	SX_LIB_API int	GetTextLen(ISXGUIControl *Control);
 };
 
-//функции обработки определенного события посылаемого родительскому элементу у всех его дочерних элементов
+//С„СѓРЅРєС†РёРё РѕР±СЂР°Р±РѕС‚РєРё РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ СЃРѕР±С‹С‚РёСЏ РїРѕСЃС‹Р»Р°РµРјРѕРіРѕ СЂРѕРґРёС‚РµР»СЊСЃРєРѕРјСѓ СЌР»РµРјРµРЅС‚Сѓ Сѓ РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… СЌР»РµРјРµРЅС‚РѕРІ
 namespace SXGUIEnumChildWindow
 {
-	//для класса SXGUIButtonImg
-	//обработка события активации кнопки и в последствии дезактивации остальных кнопкок
+	//РґР»СЏ РєР»Р°СЃСЃР° SXGUIButtonImg
+	//РѕР±СЂР°Р±РѕС‚РєР° СЃРѕР±С‹С‚РёСЏ Р°РєС‚РёРІР°С†РёРё РєРЅРѕРїРєРё Рё РІ РїРѕСЃР»РµРґСЃС‚РІРёРё РґРµР·Р°РєС‚РёРІР°С†РёРё РѕСЃС‚Р°Р»СЊРЅС‹С… РєРЅРѕРїРєРѕРє
 	SX_LIB_API BOOL CALLBACK EnumChildProcUpdateImgButton(HWND hwnd, LPARAM lParam);
 
-	//событие WM_SIZE
+	//СЃРѕР±С‹С‚РёРµ WM_SIZE
 	SX_LIB_API BOOL CALLBACK EnumChildProcUpdateSize(HWND hwnd, LPARAM lParam);
 
-	//событие WM_MOVE
+	//СЃРѕР±С‹С‚РёРµ WM_MOVE
 	SX_LIB_API BOOL CALLBACK EnumChildProcUpdateRect(HWND hwnd, LPARAM lParam);
 
-	//событие WM_MOUSEMOVE
+	//СЃРѕР±С‹С‚РёРµ WM_MOUSEMOVE
 	SX_LIB_API BOOL CALLBACK EnumChildProcMouseMove(HWND hwnd, LPARAM lParam);
 };
 
 namespace SXGUIBaseHandlers
 {
-	//установка основных обработчиков, без которых SXGUIWinApi будет работать не стабильно, а возможно и не будет работать
-	//если возвращает 0 значит все в норме, иначе возвращает номер того обработчика который не удалось устанвоить
-	//данная функция вызывается только если не требуется каких либо дополнительных действий при обработке зарезервированных сообщений
+	//СѓСЃС‚Р°РЅРѕРІРєР° РѕСЃРЅРѕРІРЅС‹С… РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ, Р±РµР· РєРѕС‚РѕСЂС‹С… SXGUIWinApi Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ РЅРµ СЃС‚Р°Р±РёР»СЊРЅРѕ, Р° РІРѕР·РјРѕР¶РЅРѕ Рё РЅРµ Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ
+	//РµСЃР»Рё РІРѕР·РІСЂР°С‰Р°РµС‚ 0 Р·РЅР°С‡РёС‚ РІСЃРµ РІ РЅРѕСЂРјРµ, РёРЅР°С‡Рµ РІРѕР·РІСЂР°С‰Р°РµС‚ РЅРѕРјРµСЂ С‚РѕРіРѕ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РєРѕС‚РѕСЂС‹Р№ РЅРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРІРѕРёС‚СЊ
+	//РґР°РЅРЅР°СЏ С„СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РµСЃР»Рё РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ РєР°РєРёС… Р»РёР±Рѕ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… РґРµР№СЃС‚РІРёР№ РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ Р·Р°СЂРµР·РµСЂРІРёСЂРѕРІР°РЅРЅС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 	SX_LIB_API int InitHandlerMsg(ISXGUIComponent* Component);
 
-	//обработчик события WM_SIZE
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_SIZE
 	SX_LIB_API LRESULT SizeChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик событий WM_CTLCOLORSTATIC WM_CTLCOLOREDIT WM_CTLCOLORBTN WM_CTLCOLORLISTBOX
-	//то есть обработка цветов дочерних элементов окна (static, edit,button, listbox)
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёР№ WM_CTLCOLORSTATIC WM_CTLCOLOREDIT WM_CTLCOLORBTN WM_CTLCOLORLISTBOX
+	//С‚Рѕ РµСЃС‚СЊ РѕР±СЂР°Р±РѕС‚РєР° С†РІРµС‚РѕРІ РґРѕС‡РµСЂРЅРёС… СЌР»РµРјРµРЅС‚РѕРІ РѕРєРЅР° (static, edit,button, listbox)
 	SX_LIB_API LRESULT CtlColorChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик события WM_SIZING
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_SIZING
 	SX_LIB_API LRESULT SizingChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик события WM_MOVE
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_MOVE
 	SX_LIB_API LRESULT MoveChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик события WM_MOUSEMOVE
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_MOUSEMOVE
 	SX_LIB_API LRESULT MouseMoveChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик события WM_SETCURSOR
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_SETCURSOR
 	SX_LIB_API LRESULT SetCursorChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик события WM_COMMAND SC_MAXIMIZE
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_COMMAND SC_MAXIMIZE
 	SX_LIB_API LRESULT MaximuzeWinChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-	//обработчик события WM_DESTROY
+	//РѕР±СЂР°Р±РѕС‚С‡РёРє СЃРѕР±С‹С‚РёСЏ WM_DESTROY
 	SX_LIB_API LRESULT WinDestroy(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 
-//классы созданные вручную и требующие регистрации
+//РєР»Р°СЃСЃС‹ СЃРѕР·РґР°РЅРЅС‹Рµ РІСЂСѓС‡РЅСѓСЋ Рё С‚СЂРµР±СѓСЋС‰РёРµ СЂРµРіРёСЃС‚СЂР°С†РёРё
 namespace SXGUIRegClass
 {
-	//класс кнопки
+	//РєР»Р°СЃСЃ РєРЅРѕРїРєРё
 	SX_LIB_API bool RegButtonImg();
-	//класс тулбара
+	//РєР»Р°СЃСЃ С‚СѓР»Р±Р°СЂР°
 	SX_LIB_API bool RegToolBar();
-	//класс group box
+	//РєР»Р°СЃСЃ group box
 	SX_LIB_API bool RegGroupBox();
 };
 

@@ -1,4 +1,9 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
 /*! \page general_info_libs Общая информация о библиотеках
 \tableofcontents
 \section sec0 Общие правила библиотек
