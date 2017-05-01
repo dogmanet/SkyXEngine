@@ -1,8 +1,8 @@
-
 Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017. All rights reserved.
 
 SkyXEngine - графический 3D движок с real-time рендером, использует технологии DirectX 9.
-Документация по использованию: docs/html/index.html
+Документация по использованию: docs/html/index.html Онлайн версия: https://doc.skyxengine.com/
+Официальный сайт: https://skyxengine.com/
 
 ИДЕОЛОГИЯ
 Основной технической идеей при разработке движка была идея о том что программист должен иметь контроль над объектами, которыми он оперирует, НО этот контроль должен быть в меру.
