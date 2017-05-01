@@ -1,6 +1,7 @@
 var NAVTREE =
 [
   [ "SkyXEngine", "index.html", [
+    [ "skyxengine.com", "^https://skyxengine.com", null ],
     [ "Документация SkyXEngine", "index.html", null ],
     [ "Общая информация о библиотеках", "general_info_libs.html", [
       [ "Общие правила библиотек", "general_info_libs.html#sec0", null ],
