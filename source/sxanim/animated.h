@@ -270,7 +270,7 @@ public:
 	UINT Register(Animation * pAnim);
 	void UnRegister(UINT id);
 
-	void Render(ID for_id);
+	void Render(ID for_id=-1);
 	void Update(int thread = 0);
 	void Sync();
 
