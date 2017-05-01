@@ -1,14 +1,15 @@
 var searchData=
 [
-  ['ltl_5fdirection',['ltl_direction',['../group__sxmtllight__light.html#gga2c4b45d31b7e861f9d29a534eb97e1a8a53f6b72c21b4bffc4fd294d3f701c2dd',1,'sxmtllight.h']]],
-  ['ltl_5fglobal',['ltl_global',['../group__sxmtllight__light.html#gga2c4b45d31b7e861f9d29a534eb97e1a8a0a243ac1f199c7baab63dc3ac9fad153',1,'sxmtllight.h']]],
-  ['ltl_5fnone',['ltl_none',['../group__sxmtllight__light.html#gga2c4b45d31b7e861f9d29a534eb97e1a8a8cc97f198211f4de9ce51ec30050a7ec',1,'sxmtllight.h']]],
-  ['ltl_5fpoint',['ltl_point',['../group__sxmtllight__light.html#gga2c4b45d31b7e861f9d29a534eb97e1a8aa0278800bb7bd7f7e60e198e5fb55e81',1,'sxmtllight.h']]],
-  ['lts_5fdynamic',['lts_dynamic',['../group__sxmtllight__light.html#gga4f09af8a8c1982516c908f76e3e83b75ac44704c4bdfd1cfbeed87f6bf86d99ba',1,'sxmtllight.h']]],
-  ['lts_5fnone',['lts_none',['../group__sxmtllight__light.html#gga4f09af8a8c1982516c908f76e3e83b75a19a0d14581e6fb7d30c736815b308183',1,'sxmtllight.h']]],
-  ['lts_5fstatic',['lts_static',['../group__sxmtllight__light.html#gga4f09af8a8c1982516c908f76e3e83b75a9e72d58e4f78c151790098ede8125ab8',1,'sxmtllight.h']]],
-  ['ltt_5fconst',['ltt_const',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152da022aad3a08f07f5d9e5a08684b0859f5',1,'sxgcore.h']]],
-  ['ltt_5fcustom',['ltt_custom',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafc66ee4f8eaa32605f21dd2c24d523f3',1,'sxgcore.h']]],
-  ['ltt_5fload',['ltt_load',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152da801ab48b4e4b319b38612df761a0cfa1',1,'sxgcore.h']]],
-  ['ltt_5fself',['ltt_self',['../group__sxgcore__loadtex.html#gga86ece31a4c96486dd9d3c6c65281152dafa34324915b356bf4395a3a58407b106',1,'sxgcore.h']]]
+  ['hbp_5fchest',['HBP_CHEST',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aa3880c8ccd88ce2ea5d04b41adcc6ffdd',1,'ModelFile.h']]],
+  ['hbp_5fdefault',['HBP_DEFAULT',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aa1c253f94307c6168598f914cab6cc4d2',1,'ModelFile.h']]],
+  ['hbp_5fhead',['HBP_HEAD',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aa6a800dca14e643a4d3677231a3db215d',1,'ModelFile.h']]],
+  ['hbp_5fleftarm',['HBP_LEFTARM',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aaaccc1aed5a9b9ba4094a2ca714b55b30',1,'ModelFile.h']]],
+  ['hbp_5fleftleg',['HBP_LEFTLEG',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aa44f4fc517eb4901bfafb64fe56496efd',1,'ModelFile.h']]],
+  ['hbp_5frightarm',['HBP_RIGHTARM',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aa3470152be12786fd3d6947c330a39265',1,'ModelFile.h']]],
+  ['hbp_5frightleg',['HBP_RIGHTLEG',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aa0a08a0dbb648371661c810dedc2fcd8c',1,'ModelFile.h']]],
+  ['hbp_5fstomach',['HBP_STOMACH',['../sxanim_2_model_file_8h.html#gac1afb407062ca8625582de82e97fda7aaaca5c4e53aa3685db7b4fd3253b17fea',1,'ModelFile.h']]],
+  ['ht_5fbox',['HT_BOX',['../sxanim_2_model_file_8h.html#ga04e2c6ba4978626e486e329ad8ef8bddac51b771ec6b068544ae94026be6d9f23',1,'ModelFile.h']]],
+  ['ht_5fcapsule',['HT_CAPSULE',['../sxanim_2_model_file_8h.html#ga04e2c6ba4978626e486e329ad8ef8bdda38d6ce669418f04cef313f5223522365',1,'ModelFile.h']]],
+  ['ht_5fcylinder',['HT_CYLINDER',['../sxanim_2_model_file_8h.html#ga04e2c6ba4978626e486e329ad8ef8bdda7f031339557676d00cc8b7b6b65ef33f',1,'ModelFile.h']]],
+  ['ht_5felipsoid',['HT_ELIPSOID',['../sxanim_2_model_file_8h.html#ga04e2c6ba4978626e486e329ad8ef8bdda831124a168cd977f0779f773b7ec6968',1,'ModelFile.h']]]
 ];

@@ -45,12 +45,13 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_g_register_index_8h.html",
-"group__sxcore.html#ggada302017da5836d260c85f6de6504ea4a118a4b6ba5915a67fc3d0218bc532180",
-"group__sxgcore__shaders.html#gaadb63d46f55cc5a620929b9dfab25925",
-"group__sxinput.html#ga83e4d8394c73f03cc0ed4546951a5ec5",
-"group__sxmtllight__light.html#ga7fe8387d4b879d34c48d58ed0b0109f6",
-"group__sxmtllight__mtl.html#gga7ce25bd99bc49acda0df5ed71f984939a761c8fe3e7149ac4f186c50283efd95e",
-"render__func_8h.html#afb53b46eae86a20577baa3164b9309db"
+"group__managed__render__render__func.html",
+"group__sxgcore__loadtex.html#ga004e0804f06824ff395042fcc97713d0",
+"group__sxgeom__green.html#ga84e926ba842844018572d1b3b91853e5",
+"group__sxinput__code__keyboard.html#gacef26e2843ea74f541b9480a6210ce10",
+"group__sxmtllight__light__shadow.html#ga7c3af675cb6c34e7fe5cc3595eec196e",
+"group__sxmtllight__mtl__propslayer.html#gac6cb2b9115a6d01b04745ca42bfbe5cc",
+"sxanim_2_model_file_8h.html#ga8199a8baf25a4e8bbc06d4ac7d77d6fba453bab1616187f1fcba36cbd895b4e0c"
 ];
 
 var SYNCONMSG = 'нажмите на выключить для синхронизации панелей';

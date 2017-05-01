@@ -1,3 +1,9 @@
+
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
 #include <windows.h>
 
 #include "animated.h"

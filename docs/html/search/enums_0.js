@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['coretaskflag',['CoreTaskFlag',['../group__sxcore.html#gada302017da5836d260c85f6de6504ea4',1,'sxcore.h']]]
+  ['anim_5fstate',['ANIM_STATE',['../group__sxanim.html#ga6a23e8bab4a378f5f0fe1df92ce678dc',1,'ModelFile.h']]]
 ];

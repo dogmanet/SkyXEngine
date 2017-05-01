@@ -6,5 +6,6 @@ var modules =
     [ "sxgeom - библиотека с базовой организацией статической геометрии и растительности", "group__sxgeom.html", "group__sxgeom" ],
     [ "sxmtllight - библиотека освещения и материалов", "group__sxmtllight.html", "group__sxmtllight" ],
     [ "sxpp - библиотека постпроцесса", "group__sxpp.html", "group__sxpp" ],
-    [ "managed_render - управляемый рендер", "group__managed__render.html", "group__managed__render" ]
+    [ "managed_render - управляемый рендер", "group__managed__render.html", "group__managed__render" ],
+    [ "sxanim - библиотека скелетной анимации", "group__sxanim.html", "group__sxanim" ]
 ];

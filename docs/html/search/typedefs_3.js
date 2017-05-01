@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['thread_5fupdate_5ffunction',['THREAD_UPDATE_FUNCTION',['../group__sxcore.html#gae81ce8e544f1b5ad41ab776293c6492d',1,'sxcore.h']]]
+  ['report_5ffunc',['report_func',['../gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb',1,'gdefines.h']]]
 ];

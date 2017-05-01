@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ds_5frt',['DS_RT',['../group__sxmtllight__ds.html#ga68fd71fc8e711bb00e43d8ea369f3bf4',1,'sxmtllight.h']]]
+  ['coretaskflag',['CoreTaskFlag',['../group__sxcore.html#gada302017da5836d260c85f6de6504ea4',1,'sxcore.h']]]
 ];

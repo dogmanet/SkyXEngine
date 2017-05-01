@@ -1,3 +1,18 @@
+﻿
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Файл определений для работы со скелетной анимацией
+*/
+
+/*! \ingroup sxanim
+@{
+*/
+
 #ifndef _ModelFileAnim_H_
 #define _ModelFileAnim_H_
 
@@ -6,173 +21,213 @@
 
 #include <gcore/ModelFile.h>
 
-#define MODEL_MAX_FILE	128
+#define MODEL_MAX_FILE	128 /*!< Максимальная длина имени файла модели */
 
-#define BLEND_MAX 3
-
-
+#define BLEND_MAX 3 /*!< Количество слотов смешения анимации */
 
 
+
+/*! Структура контроллера
+*/
 struct ModelBoneController
 {
-	uint32_t iBoneCount;
-	float3_t fMinRot;
-	float3_t fMaxRot;
-	float3_t fMinTrans;
-	float3_t fMaxTrans;
-	char szName[MODEL_MAX_NAME];
-	uint32_t bones[MODEL_CTRL_MAX_BONES];
+	uint32_t iBoneCount; /*!< Количество костей, которыми управляет контроллер */
+	float3_t fMinRot; /*!< Вращение ОТ */
+	float3_t fMaxRot; /*!< Вращение ДО */
+	float3_t fMinTrans; /*!< Перемещение ОТ */
+	float3_t fMaxTrans; /*!< Перемещение ДО */
+	char szName[MODEL_MAX_NAME];  /*!< Имя контроллера */
+	uint32_t bones[MODEL_CTRL_MAX_BONES];  /*!< Массив индексов костей */
 };
 
+/*! Структура кости для передачи в шейдер
+*/
 struct ModelBoneShader
 {
-	float4_t position;
-	SMQuaternion orient;
+	float4_t position;   /*!< Позиция */
+	SMQuaternion orient; /*!< Вращение */
 };
 
+/*! Структура кости
+*/
 struct ModelBone
 {
-	int32_t id;
-	int32_t pid;
-	SMQuaternion orient;
-	float3_t position;
+	int32_t id;          /*!< Номер кости */
+	int32_t pid;         /*!< Номер родительской кости */
+	SMQuaternion orient; /*!< Вращение */
+	float3_t position;   /*!< Позиция */
 };
 
+/*! Структура с именем кости
+*/
 struct ModelBoneName
 {
-	ModelBone bone;
-	char szName[MODEL_BONE_MAX_NAME];
+	ModelBone bone; /*!< Кость */
+	char szName[MODEL_BONE_MAX_NAME]; /*!< Имя */
 };
 
+/*! Структура дескриптор анимации
+*/
 struct ModelSequence
 {
-	char name[MODEL_MAX_NAME];
-	byte bLooped;
-	int32_t framerate;
-	uint32_t activity;
-	uint32_t iNumFrames;
-	uint32_t act_chance;
-	ModelBone ** m_vmAnimData;
+	char name[MODEL_MAX_NAME]; /*!< Имя */
+	byte bLooped; /*!< Анимация зациклена */
+	int32_t framerate; /*!< Скорость кадров в секунду */
+	uint32_t activity; /*!< Идентификатор активности */
+	uint32_t iNumFrames; /*!< Количество кадров */
+	uint32_t act_chance; /*!< Шанс воспроизведения этой анимации в активности */
+	ModelBone ** m_vmAnimData; /*!< Данные анимации */
 };
 
-#define MODEL_SEQUENCE_STRUCT_SIZE (sizeof(char) * MODEL_MAX_NAME + sizeof(byte) + sizeof(uint32_t) * 4)
+#define MODEL_SEQUENCE_STRUCT_SIZE (sizeof(char) * MODEL_MAX_NAME + sizeof(byte) + sizeof(uint32_t) * 4) /*!< Файловый размер структуры дескриптора анимации */
 
+/*! Устарела, используется для обратной совместимости
+*/
 struct ModelDependensy
 {
 	char szName[MODEL_MAX_NAME];
 };
 
+/*! Структура описатель активности
+*/
 struct ModelActivity
 {
 	char szName[MODEL_MAX_NAME];
 	//uint32_t chance;
 };
 
+/*! Управление частями контроллера
+*/
 enum MODEL_BONE_CTL
 {
-	MBCTL_ROT_X = 0,
-	MBCTL_ROT_Y,
-	MBCTL_ROT_Z,
-	MBCTL_TRANS_X,
-	MBCTL_TRANS_Y,
-	MBCTL_TRANS_Z
+	MBCTL_ROT_X = 0, /*!< Вращение по X */
+	MBCTL_ROT_Y,     /*!< Вращение по Y */
+	MBCTL_ROT_Z,     /*!< Вращение по Z */
+	MBCTL_TRANS_X,   /*!< Перемещение по X */
+	MBCTL_TRANS_Y,   /*!< Перемещение по Y */
+	MBCTL_TRANS_Z    /*!< Перемещение по Z */
 };
 
+/*! Значение контроллера кости
+*/
 struct ModelBoneCrontrollerValue
 {
 	SMQuaternion rot;
 	float3_t tr;
 };
 
+
+/*! Флаги импорта файла моделм анимации
+*/
 enum MODEL_IMPORT
 {
-	MI_MESH        = 0x00000001,
-	MI_ANIMATIONS  = 0x00000002,
-	MI_SKINS       = 0x00000004,
-	MI_CONTROLLERS = 0x00000008,
-	MI_HITBOXES    = 0x00000010,
+	MI_MESH        = 0x00000001, /*!< Импортировать сетку */
+	MI_ANIMATIONS  = 0x00000002, /*!< Импортировать анимации */
+	MI_SKINS       = 0x00000004, /*!< Импортировать скины */
+	MI_CONTROLLERS = 0x00000008, /*!< Импортировать контроллеры */
+	MI_HITBOXES    = 0x00000010, /*!< Импортировать хитбоксы */
 
-	MI_ALL         = 0xFFFFFFFF
+	MI_ALL         = 0xFFFFFFFF  /*!< Импортировать все */
 };
 
+/*! Типы соединения частей модели
+*/
 enum MODEL_ATTACH
 {
-	MA_SKIN = 0x00000001, // Merge skeletons
-	MA_BONE = 0x00000002 // Join skeletons
+	MA_SKIN = 0x00000001, /*!< Объединение скелетов */
+	MA_BONE = 0x00000002  /*!< Присоединение иерархии к одной из костей */
 };
 
-
+/*! Изменение состояния воспроизведения анимации
+*/
 enum ANIM_STATE
 {
-	AS_STOP,
-	AS_PLAY,
-	AS_LOOP
+	AS_STOP, /*!< Остановлено */
+	AS_PLAY, /*!< Воспроизведено */
+	AS_LOOP  /*!< Повтор заного */
 };
 
+/*! Флаги управления частями модели
+*/
 enum MODEL_PART_FLAGS
 {
-	MP_NONE = 0x00000001,
-	MP_HIDDEN = 0x00000002,
-	MP_COLLISIONS = 0x00000004,
-	MP_RAYTRACE = 0x00000008,
-	MP_IMPORTED = 0x00000010
+	MP_NONE = 0x00000001,       /*!< нет */
+	MP_HIDDEN = 0x00000002,     /*!< Часть спрятана */
+	MP_COLLISIONS = 0x00000004, /*!< Проверять столкновения */
+	MP_RAYTRACE = 0x00000008,   /*!< Проверять трассировки луча */
+	MP_IMPORTED = 0x00000010    /*!< Часть импортируется из внешнего файла */
 };
 
+/*! Дескриптор аттачмента модели
+*/
 struct ModelAttachDesc
 {
-	MODEL_ATTACH type;
-	float3_t v3Offs;
-	char szBone[MODEL_BONE_MAX_NAME];
+	MODEL_ATTACH type; /*!< Тип соединения */
+	float3_t v3Offs;   /*!< Смещение */
+	char szBone[MODEL_BONE_MAX_NAME]; /*!< Кость для присоединения (только для MA_BONE) */
 };
 
 class ModelFile;
+
+/*! Дескриптор части модели
+*/
 struct ModelPart
 {
-	const ModelFile * pMdl;
-	UINT uImportFlags;
-	UINT uFlags;
-	ModelAttachDesc attachDesc;
-	char name[MODEL_MAX_NAME];
-	char file[MODEL_MAX_FILE];
+	const ModelFile * pMdl;     /*!< Модель */
+	UINT uImportFlags;          /*!< Флаги импорта MODEL_IMPORT */
+	UINT uFlags;                /*!< Флаги части MODEL_PART_FLAGS */
+	ModelAttachDesc attachDesc; /*!< Дескриптор аттачмента */
+	char name[MODEL_MAX_NAME];  /*!< Имя части */
+	char file[MODEL_MAX_FILE];  /*!< Имя файла модели */
 };
 
+/*! Типы ошибок объединения скелетов
+*/
 enum MBERR
 {
-	MBE_SUCCESS = 0,
-	MBE_NO_ROOT,
-	MBE_BAD_HIERARCY
+	MBE_SUCCESS = 0, /*!< Нет ошибки */
+	MBE_NO_ROOT,     /*!< Не найден корень */
+	MBE_BAD_HIERARCY /*!< Несовместимые иерархии костей */
 };
 
+/*! Типы хитбоксов
+*/
 enum HITBOX_TYPE
 {
-	HT_BOX = 0,
-	HT_CYLINDER,
-	HT_CAPSULE,
-	HT_ELIPSOID
+	HT_BOX = 0,  /*!< Параллелепипед */
+	HT_CYLINDER, /*!< Цилиндр */
+	HT_CAPSULE,  /*!< Капсула */
+	HT_ELIPSOID  /*!< Эллипсойд */
 };
 
+/*! Типы частей тела для хитбоксов
+*/
 enum HITBOX_BODYPART
 {
-	HBP_DEFAULT = 0,
-	HBP_HEAD,
-	HBP_CHEST,
-	HBP_STOMACH,
-	HBP_LEFTARM,
-	HBP_RIGHTARM,
-	HBP_LEFTLEG,
-	HBP_RIGHTLEG
+	HBP_DEFAULT = 0, /*!< нет */
+	HBP_HEAD,        /*!< Голова */
+	HBP_CHEST,       /*!< Грудь */
+	HBP_STOMACH,     /*!< Живот */
+	HBP_LEFTARM,     /*!< Левая рука */
+	HBP_RIGHTARM,    /*!< Правая рука */
+	HBP_LEFTLEG,     /*!< Левая нога */
+	HBP_RIGHTLEG     /*!< Правая нога */
 };
 
+/*! Дескриптор хитбокса
+*/
 struct ModelHitbox
 {
-	HITBOX_TYPE type;
-	HITBOX_BODYPART part;
-	float3_t lwh;
-	float3_t pos;
-	float3_t rot;
-	char bone[MODEL_BONE_MAX_NAME];
-	int bone_id;
-	char name[MODEL_MAX_NAME];
+	HITBOX_TYPE type;               /*!< Тип хитбокса */
+	HITBOX_BODYPART part;           /*!< Часть тела */
+	float3_t lwh;                   /*!< Размеры */
+	float3_t pos;                   /*!< Положение */
+	float3_t rot;                   /*!< Ориентация */
+	char bone[MODEL_BONE_MAX_NAME]; /*!< Имя кости */
+	int bone_id;                    /*!< Идентификатор кости */
+	char name[MODEL_MAX_NAME];      /*!< Имя хитбокса */
 };
 
 #endif
+
+/*! @} */

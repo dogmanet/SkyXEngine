@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['lightstypelight',['LightsTypeLight',['../group__sxmtllight__light.html#ga2c4b45d31b7e861f9d29a534eb97e1a8',1,'sxmtllight.h']]],
-  ['lightstypeshadow',['LightsTypeShadow',['../group__sxmtllight__light.html#ga4f09af8a8c1982516c908f76e3e83b75',1,'sxmtllight.h']]],
-  ['loadtextype',['LoadTexType',['../group__sxgcore__loadtex.html#ga86ece31a4c96486dd9d3c6c65281152d',1,'sxgcore.h']]]
+  ['hitbox_5fbodypart',['HITBOX_BODYPART',['../group__sxanim.html#gac1afb407062ca8625582de82e97fda7a',1,'ModelFile.h']]],
+  ['hitbox_5ftype',['HITBOX_TYPE',['../group__sxanim.html#ga04e2c6ba4978626e486e329ad8ef8bdd',1,'ModelFile.h']]]
 ];

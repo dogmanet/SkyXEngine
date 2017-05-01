@@ -8,6 +8,8 @@ var menudata={children:[
 {text:"Список членов всех файлов",url:"globals.html",children:[
 {text:"Указатель",url:"globals.html",children:[
 {text:"_",url:"globals.html#index__"},
+{text:"a",url:"globals_a.html#index_a"},
+{text:"b",url:"globals_b.html#index_b"},
 {text:"c",url:"globals_c.html#index_c"},
 {text:"d",url:"globals_d.html#index_d"},
 {text:"f",url:"globals_f.html#index_f"},
@@ -32,9 +34,11 @@ var menudata={children:[
 {text:"Определения типов",url:"globals_type.html"},
 {text:"Перечисления",url:"globals_enum.html"},
 {text:"Элементы перечислений",url:"globals_eval.html",children:[
+{text:"a",url:"globals_eval.html#index_a"},
 {text:"c",url:"globals_eval.html#index_c"},
 {text:"d",url:"globals_eval.html#index_d"},
 {text:"g",url:"globals_eval.html#index_g"},
+{text:"h",url:"globals_eval.html#index_h"},
 {text:"i",url:"globals_eval.html#index_i"},
 {text:"l",url:"globals_eval.html#index_l"},
 {text:"m",url:"globals_eval.html#index_m"},
@@ -42,6 +46,7 @@ var menudata={children:[
 {text:"t",url:"globals_eval.html#index_t"}]},
 {text:"Макросы",url:"globals_defs.html",children:[
 {text:"_",url:"globals_defs.html#index__"},
+{text:"b",url:"globals_defs.html#index_b"},
 {text:"c",url:"globals_defs.html#index_c"},
 {text:"f",url:"globals_defs.html#index_f"},
 {text:"g",url:"globals_defs.html#index_g"},
