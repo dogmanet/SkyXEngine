@@ -539,7 +539,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 	mem_delete_a(ArrMeshVertex);
 	mem_delete_a(ArrMeshIndex);
 
-	reportf(0, " complited\n", path);
+	reportf(0, " completed\n", path);
 	return AllModels.size() - 1;
 }
 
@@ -1138,7 +1138,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 	}
 	
 	//проходимся по всем моделям
-	for (int i = 0; i < AllModels.size(); ++i)
+	for(int i = 0, l = AllModels.size(); i < l; ++i)
 	{
 		if (exclude_model_id == i && exclude_group_id < 0)
 			continue;
@@ -1148,7 +1148,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 			StaticGeom::DXDevice->SetStreamSource(0, AllModels[i]->Lod0.model->VertexBuffer, 0, sizeof(vertex_static));
 			StaticGeom::DXDevice->SetIndices(AllModels[i]->Lod0.model->IndexBuffer);
 			StaticGeom::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
-			for (int k = 0; k < AllModels[i]->Lod0.model->SubsetCount; ++k)
+			for(int k = 0, kl = AllModels[i]->Lod0.model->SubsetCount; k < kl; ++k)
 			{
 				if (AllModels[i]->Lod0.SortGroup == sort_mtl || sort_mtl == -1)
 				{
@@ -1160,7 +1160,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 		}
 		else if (ArrComFor[id_arr]->arr[i]->CountCom > 0)
 		{
-			for (DWORD j = 0; j<ArrComFor[id_arr]->arr[i]->CountCom; j++)
+			for(DWORD j = 0, jl = ArrComFor[id_arr]->arr[i]->CountCom; j<jl; j++)
 			{
 				jarrsplits = ArrComFor[id_arr]->arr[i]->Arr;
 				for (DWORD k = 0; k<jarrsplits[j]->CountSubSet; ++k)
@@ -1173,7 +1173,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 
 					ID tmpcurrmodel = -1;
 
-					for (int q = 0; q<AllGroups[jnumgroup]->ArrModels[jidbuff].size(); ++q)
+					for(int q = 0, ql = AllGroups[jnumgroup]->ArrModels[jidbuff].size(); q<ql; ++q)
 					{
 						if (AllGroups[jnumgroup]->ArrModels[jidbuff][q] == AllModels[i])
 						{
@@ -1221,14 +1221,14 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 	if (!is_sorted)
 	{
 		//проходимся по всем подгруппам
-		for (int i = 0; i < AllGroups.size(); ++i)
+		for(int i = 0, l = AllGroups.size(); i < l; ++i)
 		{
 			Group* tmpgroup = AllGroups[i];
 			if (!tmpgroup || tmpgroup->CountVertex.size() <= 0 || !(tmpgroup->SortGroup == sort_mtl || sort_mtl == -1))
 				continue;
 
 			//проходимся по всем буферам
-			for (int k = 0; k<tmpgroup->VertexBuffer.size(); ++k)
+			for(int k = 0, kl = tmpgroup->VertexBuffer.size(); k<kl; ++k)
 			{
 				//если есть что к отрисовке
 				if (RTCountDrawPoly[i][k] > 0)
@@ -1246,7 +1246,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 					{
 						long tmpprevcountindex = 0;
 
-						for (int j = 0; j < tmpgroup->ArrModels[k].size(); ++j)
+						for(int j = 0, jl = tmpgroup->ArrModels[k].size(); j < jl; ++j)
 						{
 							if (RTCountDrawPolyModel[i][k][j] > 0)
 							{
@@ -1260,6 +1260,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 										break;
 									}
 								}
+								
 								SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, tmpgroup->CountVertex[k], tmpprevcountindex * 3, RTCountDrawPolyModel[i][k][j]);
 								tmpprevcountindex += RTCountDrawPolyModel[i][k][j];
 								Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + RTCountDrawPolyModel[i][k][j]);
@@ -1375,40 +1376,87 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 	int CountPolyInSegment = STATIC_MIN_COUNT_POLY;
 
 	float3 dimensions = tmpMax - tmpMin;	//габариты
-	float allvolume = (dimensions.x + dimensions.y + dimensions.z) * 0.33f;	//общий средний объем
-	
-	//если общий средний объем больше либо равно чем минимальный подлжеащий делению и количество полигонов больше либо равно чем минимум подлжеащий делению
-	if (allvolume >= STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION && model->AllIndexCount/3 >= STATIC_MIN_POLYGONS_FOR_SEGMENTATION)
+#if 1
+	float allvolume = dimensions.x * dimensions.y * dimensions.z;
+	const float minVol = STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION;
+	const float minLen = STATIC_MIN_LENGTH_FOR_SEGMENTATION;
+	const float minOctoHeight = STATIC_MIN_HEIGHT_FOR_SEGMENTATION;
+	if((allvolume >= minVol || dimensions.x >= minLen || dimensions.y >= minOctoHeight || dimensions.z >= minLen) && (model->AllIndexCount >= STATIC_MIN_POLYGONS_FOR_SEGMENTATION * 3 || allvolume >= STATIC_FORCE_ALLVOLUME_FOR_SEGMENTATION))
 	{
-		//если разница сторон меньше чем минимально допустимое
-		if (
-			(dimensions.x / dimensions.y >= STATIC_DIFFERENCE_SIDES_FOR_OCTO && dimensions.x / dimensions.y <= 1 + STATIC_DIFFERENCE_SIDES_FOR_OCTO) ||
-			(dimensions.z / dimensions.y >= STATIC_DIFFERENCE_SIDES_FOR_OCTO && dimensions.z / dimensions.y <= 1 + STATIC_DIFFERENCE_SIDES_FOR_OCTO)
-			)
+		if(dimensions.y >= minOctoHeight)
 		{
-			//делим как octo дерево
 			CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_OCTO;
-			reportf(REPORT_MSG_LEVEL_NOTICE," div: octo, ");
+			reportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
 		}
 		else
 		{
 			CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_QUAD;
 			reportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
+
+		}
+			
+		float4_t tmpmin(dimensions.x / minLen, dimensions.y / minOctoHeight, dimensions.z / minLen, model->AllIndexCount / STATIC_MIN_POLYGONS_FOR_SEGMENTATION / 3);
+		tmpmin.x = min(min(min(tmpmin.x, tmpmin.y), min(tmpmin.z, tmpmin.w)), (allvolume / minVol));
+
+		CountPolyInSegment = (float)model->AllIndexCount / 3.0 / tmpmin.x / CountSplitsSys;
+
+		if(CountPolyInSegment < STATIC_MIN_COUNT_POLY)
+		{
+			CountPolyInSegment = STATIC_MIN_COUNT_POLY;
 		}
 
-		//определяем коэфициент интерполяции для определния минимального количества полигонов в сплите
-		float tmpcoef = float(allvolume * 3) / (float)(model->AllIndexCount/3);
-		if (tmpcoef > 1.f)
-			tmpcoef = 1;
-		else if (tmpcoef < 0.f)
-			tmpcoef = 0;
-		CountPolyInSegment = lerpf(STATIC_MIN_COUNT_POLY, STATIC_MAX_COUNT_POLY, tmpcoef);
+		if(CountPolyInSegment > STATIC_MAX_COUNT_POLY)
+		{
+			CountPolyInSegment = STATIC_MAX_COUNT_POLY;
+		}
+
 		reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 	}
 
-	float tmpX = tmpMax.x - tmpMin.x;
-	float tmpY = tmpMax.y - tmpMin.y;
-	float tmpZ = tmpMax.z - tmpMin.z;
+	//определяем коэфициент интерполяции для определния минимального количества полигонов в сплите
+	float tmpcoef = float(allvolume * 3) / (float)(model->AllIndexCount / 3);
+	if(tmpcoef > 1.f)
+		tmpcoef = 1;
+	else if(tmpcoef < 0.f)
+		tmpcoef = 0;
+	CountPolyInSegment = lerpf(STATIC_MIN_COUNT_POLY, STATIC_MAX_COUNT_POLY, tmpcoef);
+	reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
+#else
+		float allvolume = (dimensions.x + dimensions.y + dimensions.z) * 0.33f;	//общий средний объем
+
+		//если общий средний объем больше либо равно чем минимальный подлжеащий делению и количество полигонов больше либо равно чем минимум подлжеащий делению
+		if(allvolume >= STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION && model->AllIndexCount / 3 >= STATIC_MIN_POLYGONS_FOR_SEGMENTATION)
+		{
+			//если разница сторон меньше чем минимально допустимое
+			if(
+				(dimensions.x / dimensions.y >= STATIC_DIFFERENCE_SIDES_FOR_OCTO && dimensions.x / dimensions.y <= 1 + STATIC_DIFFERENCE_SIDES_FOR_OCTO) ||
+				(dimensions.z / dimensions.y >= STATIC_DIFFERENCE_SIDES_FOR_OCTO && dimensions.z / dimensions.y <= 1 + STATIC_DIFFERENCE_SIDES_FOR_OCTO)
+				)
+			{
+				//делим как octo дерево
+				CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_OCTO;
+				reportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
+			}
+			else
+			{
+				CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_QUAD;
+				reportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
+			}
+
+			//определяем коэфициент интерполяции для определния минимального количества полигонов в сплите
+			float tmpcoef = float(allvolume * 3) / (float)(model->AllIndexCount / 3);
+			if(tmpcoef > 1.f)
+				tmpcoef = 1;
+			else if(tmpcoef < 0.f)
+				tmpcoef = 0;
+			CountPolyInSegment = lerpf(STATIC_MIN_COUNT_POLY, STATIC_MAX_COUNT_POLY, tmpcoef);
+			reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
+		}
+#endif
+
+	float tmpX = dimensions.x;
+	float tmpY = dimensions.y;
+	float tmpZ = dimensions.z;
 
 	//выравниваем для равномерного делени
 	//{

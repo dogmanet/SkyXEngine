@@ -39,13 +39,16 @@ if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels
 #define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
 #define STATIC_COUNT_TYPE_SEGMENTATION_OCTO 8
 
-#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	//минимальная разница между сторонами для окто деления
-#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20//минимальный общий объем модели для деления
-#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000//минимальнео количество полигонов в модели для деления
-#define STATIC_MIN_COUNT_POLY 500	//минимальное количество полигонов в сплите
-#define STATIC_MAX_COUNT_POLY 1000	//максимальное количество полигонов в сплите
+#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	/* минимальная разница между сторонами для окто деления */
+#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20 /* минимальный общий объем модели для деления */
+#define STATIC_MIN_LENGTH_FOR_SEGMENTATION 10 /* минимальный длина по горизонтальной оси модели для деления */
+#define STATIC_FORCE_ALLVOLUME_FOR_SEGMENTATION 150 /* минимальный длина по горизонтальной оси модели для деления */
+#define STATIC_MIN_HEIGHT_FOR_SEGMENTATION 5 /* минимальный высота модели для деления окто */
+#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000 /* минимальнео количество полигонов в модели для деления */
+#define STATIC_MIN_COUNT_POLY 500	/* минимальное количество полигонов в сплите */
+#define STATIC_MAX_COUNT_POLY 1000	/* максимальное количество полигонов в сплите */
 
-#define STATIC_DEFAULT_RESERVE_COM 512	//резервация для просчетов
+#define STATIC_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
 
 class StaticGeom
 {
