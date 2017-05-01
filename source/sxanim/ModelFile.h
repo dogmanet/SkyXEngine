@@ -9,7 +9,8 @@ See the license in LICENSE
 Файл определений для работы со скелетной анимацией
 */
 
-/*! \ingroup sxanim
+/*! \defgroup sxanim_defs Определения для работы с файлами анимации
+    \ingroup sxanim
 @{
 */
 
@@ -227,6 +228,8 @@ struct ModelHitbox
 	int bone_id;                    /*!< Идентификатор кости */
 	char name[MODEL_MAX_NAME];      /*!< Имя хитбокса */
 };
+
+/*! @} sxanim_defs */
 
 #endif
 

@@ -1413,14 +1413,6 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 		reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 	}
 
-	//определяем коэфициент интерполяции для определния минимального количества полигонов в сплите
-	float tmpcoef = float(allvolume * 3) / (float)(model->AllIndexCount / 3);
-	if(tmpcoef > 1.f)
-		tmpcoef = 1;
-	else if(tmpcoef < 0.f)
-		tmpcoef = 0;
-	CountPolyInSegment = lerpf(STATIC_MIN_COUNT_POLY, STATIC_MAX_COUNT_POLY, tmpcoef);
-	reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 #else
 		float allvolume = (dimensions.x + dimensions.y + dimensions.z) * 0.33f;	//общий средний объем
 

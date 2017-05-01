@@ -9,7 +9,8 @@ See the license in LICENSE
 Файл определений для работы с файлами моделей
 */
 
-/*! \ingroup sxgcore
+/*! \defgroup sxgcore_mdl_defs Определения для работы с файлами моделей
+	\ingroup sxgcore
 @{
 */
 
@@ -196,6 +197,8 @@ struct ModelMatrial
 	UINT iMat;                   //!< индекс материала
 	char szName[MODEL_MAX_NAME]; //!< название материала
 };
+
+/*! @} sxgcore_mdl_defs */
 
 #endif
 
