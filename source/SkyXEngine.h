@@ -85,6 +85,7 @@ HDR эффект присутсвует.
 \- \ref sxcore\n
 \-- \ref sxgcore\n
 \--- \ref sxgeom\n
+\--- \ref sxanim\n
 \--- \ref sxmtllight\n
 \--- \ref sxpp\n
 \- \ref sxinput\n

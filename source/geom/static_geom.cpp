@@ -1395,8 +1395,8 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 
 		}
 			
-		float4_t tmpmin(dimensions.x / minLen, dimensions.y / minOctoHeight, dimensions.z / minLen, model->AllIndexCount / STATIC_MIN_POLYGONS_FOR_SEGMENTATION / 3);
-		tmpmin.x = min(min(min(tmpmin.x, tmpmin.y), min(tmpmin.z, tmpmin.w)), (allvolume / minVol));
+		float4_t tmpmin(dimensions.x / minLen, dimensions.y / minOctoHeight, dimensions.z / minLen, (float)model->AllIndexCount / (float)STATIC_MIN_POLYGONS_FOR_SEGMENTATION / 3.0f);
+		tmpmin.x = min(min(min(tmpmin.x, tmpmin.y), min(tmpmin.z, tmpmin.w)), (allvolume / minVol)) * 10.0;
 
 		CountPolyInSegment = (float)model->AllIndexCount / 3.0 / tmpmin.x / CountSplitsSys;
 
