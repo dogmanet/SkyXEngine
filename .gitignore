@@ -198,3 +198,4 @@ build/*
 !gamesource/
 build/gamesource/*
 !shaders/
+docs/html
