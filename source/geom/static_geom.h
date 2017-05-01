@@ -43,7 +43,7 @@ if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels
 #define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20 /* минимальный общий объем модели для деления */
 #define STATIC_MIN_LENGTH_FOR_SEGMENTATION 10 /* минимальный длина по горизонтальной оси модели для деления */
 #define STATIC_FORCE_ALLVOLUME_FOR_SEGMENTATION 150 /* минимальный длина по горизонтальной оси модели для деления */
-#define STATIC_MIN_HEIGHT_FOR_SEGMENTATION 5 /* минимальный высота модели для деления окто */
+#define STATIC_MIN_HEIGHT_FOR_SEGMENTATION 14 /* минимальный высота модели для деления окто */
 #define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000 /* минимальнео количество полигонов в модели для деления */
 #define STATIC_MIN_COUNT_POLY 500	/* минимальное количество полигонов в сплите */
 #define STATIC_MAX_COUNT_POLY 1000	/* максимальное количество полигонов в сплите */
