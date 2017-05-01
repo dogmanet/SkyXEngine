@@ -2,7 +2,7 @@ var searchData=
 [
   ['bigletters',['BigLetters',['../namespace_input_symbol.html#a72022984f13fbdf9b445228a3c18f74d',1,'InputSymbol']]],
   ['binorm',['Binorm',['../structvertex__static__ex.html#a08df87b1a6d381a0acef7cb66d9ffb36',1,'vertex_static_ex::Binorm()'],['../structvertex__animated__ex.html#af711f362781073928fc8a10341bb4ee2',1,'vertex_animated_ex::Binorm()']]],
-  ['blend_5fmax',['BLEND_MAX',['../group__sxanim.html#ga0ab36acf2cfdc509874403be31c63fc7',1,'ModelFile.h']]],
+  ['blend_5fmax',['BLEND_MAX',['../group__sxanim__defs.html#ga0ab36acf2cfdc509874403be31c63fc7',1,'ModelFile.h']]],
   ['blooped',['bLooped',['../struct_model_sequence.html#ae5b1a15a6d2f3e3d4dbbef6b40a3cb7c',1,'ModelSequence']]],
   ['bone',['bone',['../struct_model_bone_name.html#afd57fccb89a8813175614ce78e104ade',1,'ModelBoneName::bone()'],['../struct_model_hitbox.html#a5467499eed44236f1e1e08478a16c456',1,'ModelHitbox::bone()']]],
   ['bone_5fid',['bone_id',['../struct_model_hitbox.html#a3acc6296e222b09dc795022dd7a99d73',1,'ModelHitbox']]],

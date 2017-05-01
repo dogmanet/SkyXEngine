@@ -258,7 +258,7 @@ SX_LIB_API void SXAnim_ModelsComVisible(
 SX_LIB_API ID SXAnim_ModelsAddArrForCom();				//!< добавить массив просчетов, возвращает его идентификатор
 SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr);	//!< удалить массив просчетов с номером id_arr
 
-/*! @} */
+/*! @} sxanim */
 
 #endif
 
