@@ -1,0 +1,884 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: IAnimPlayer</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('class_i_anim_player.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Открытые члены</a> &#124;
+<a href="class_i_anim_player-members.html">Полный список членов класса</a>  </div>
+  <div class="headertitle">
+<div class="title">IAnimPlayer<span class="mlabels"><span class="mlabel">abstract</span></span><div class="ingroups"><a class="el" href="group__sxanim.html">sxanim - библиотека скелетной анимации</a></div></div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Интерфейс проигрывателя анимаций  
+ <a href="class_i_anim_player.html#details">Подробнее...</a></p>
+
+<p><code>#include &lt;<a class="el" href="sxanim_8h_source.html">sxanim.h</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Открытые члены</h2></td></tr>
+<tr class="memitem:a7d46046c6a77bc222e91d93180d13004"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a7d46046c6a77bc222e91d93180d13004">Advance</a> (unsigned long int dt)=0</td></tr>
+<tr class="memdesc:a7d46046c6a77bc222e91d93180d13004"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выполняет обновление состояния воспроизведения анимации  <a href="#a7d46046c6a77bc222e91d93180d13004">Подробнее...</a><br /></td></tr>
+<tr class="separator:a7d46046c6a77bc222e91d93180d13004"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2ceae910139d9efdcae33b9d9c61d75"><td class="memItemLeft" align="right" valign="top"><a id="ad2ceae910139d9efdcae33b9d9c61d75"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#ad2ceae910139d9efdcae33b9d9c61d75">Render</a> ()=0</td></tr>
+<tr class="memdesc:ad2ceae910139d9efdcae33b9d9c61d75"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выполняет отрисовку модели <br /></td></tr>
+<tr class="separator:ad2ceae910139d9efdcae33b9d9c61d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a161b4e9b9e59545c62267779969da90b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a161b4e9b9e59545c62267779969da90b">SetModel</a> (const char *file)=0</td></tr>
+<tr class="memdesc:a161b4e9b9e59545c62267779969da90b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Загружает новую модель для воспроизведения  <a href="#a161b4e9b9e59545c62267779969da90b">Подробнее...</a><br /></td></tr>
+<tr class="separator:a161b4e9b9e59545c62267779969da90b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae060c968e031db2964709efedb232353"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#ae060c968e031db2964709efedb232353">Play</a> (const char *name, UINT iFadeTime=0, UINT slot=0)=0</td></tr>
+<tr class="memdesc:ae060c968e031db2964709efedb232353"><td class="mdescLeft">&#160;</td><td class="mdescRight">Запускает воспроизведения анимации  <a href="#ae060c968e031db2964709efedb232353">Подробнее...</a><br /></td></tr>
+<tr class="separator:ae060c968e031db2964709efedb232353"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af83090e9307515c7cc4410ebd60b8c68"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#af83090e9307515c7cc4410ebd60b8c68">Stop</a> (UINT slot=0)=0</td></tr>
+<tr class="memdesc:af83090e9307515c7cc4410ebd60b8c68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Останавливает воспроизведения для указанного слота  <a href="#af83090e9307515c7cc4410ebd60b8c68">Подробнее...</a><br /></td></tr>
+<tr class="separator:af83090e9307515c7cc4410ebd60b8c68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5071fc89043db91c70111e6b2bb058f6"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a5071fc89043db91c70111e6b2bb058f6">Resume</a> (UINT slot=0)=0</td></tr>
+<tr class="memdesc:a5071fc89043db91c70111e6b2bb058f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возобновляет воспроизведения для указанного слота  <a href="#a5071fc89043db91c70111e6b2bb058f6">Подробнее...</a><br /></td></tr>
+<tr class="separator:a5071fc89043db91c70111e6b2bb058f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac066b4c4d6795705adf5cfe1d933f7fe"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#ac066b4c4d6795705adf5cfe1d933f7fe">SetProgress</a> (float progress, UINT slot=0)=0</td></tr>
+<tr class="memdesc:ac066b4c4d6795705adf5cfe1d933f7fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает прогресс воспроизведения в конкретном слоте  <a href="#ac066b4c4d6795705adf5cfe1d933f7fe">Подробнее...</a><br /></td></tr>
+<tr class="separator:ac066b4c4d6795705adf5cfe1d933f7fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe61632cb36bc2c39ec2a9f41a4b62c8"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#afe61632cb36bc2c39ec2a9f41a4b62c8">SetAdvance</a> (bool set, UINT slot=0)=0</td></tr>
+<tr class="memdesc:afe61632cb36bc2c39ec2a9f41a4b62c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Разрешает/запрещает обновление конкретного слота  <a href="#afe61632cb36bc2c39ec2a9f41a4b62c8">Подробнее...</a><br /></td></tr>
+<tr class="separator:afe61632cb36bc2c39ec2a9f41a4b62c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6772a63798c3877d56ac3cd229dba2d5"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a6772a63798c3877d56ac3cd229dba2d5">StartActivity</a> (const String &amp;name, UINT iFadeTime=0, UINT slot=0)=0</td></tr>
+<tr class="memdesc:a6772a63798c3877d56ac3cd229dba2d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Запускает воспроизведение указанной активности в заданном слоте  <a href="#a6772a63798c3877d56ac3cd229dba2d5">Подробнее...</a><br /></td></tr>
+<tr class="separator:a6772a63798c3877d56ac3cd229dba2d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac62e856cee8583d3663ac5630165136b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#ac62e856cee8583d3663ac5630165136b">SetBoneController</a> (const String &amp;name, float value, <a class="el" href="group__sxanim.html#gac49bbdf16877632b9d6503fce872a63c">MODEL_BONE_CTL</a> what)=0</td></tr>
+<tr class="memdesc:ac62e856cee8583d3663ac5630165136b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает значение для заданного контроллера  <a href="#ac62e856cee8583d3663ac5630165136b">Подробнее...</a><br /></td></tr>
+<tr class="separator:ac62e856cee8583d3663ac5630165136b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0ea6993ff239990510249763dab6cf2"><td class="memItemLeft" align="right" valign="top">virtual SMMATRIX&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#aa0ea6993ff239990510249763dab6cf2">GetBoneTransform</a> (UINT id)=0</td></tr>
+<tr class="memdesc:aa0ea6993ff239990510249763dab6cf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает трансформацию указанной кости  <a href="#aa0ea6993ff239990510249763dab6cf2">Подробнее...</a><br /></td></tr>
+<tr class="separator:aa0ea6993ff239990510249763dab6cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ba1ea4da8ae89e15a58da60edb31829"><td class="memItemLeft" align="right" valign="top">virtual UINT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a0ba1ea4da8ae89e15a58da60edb31829">GetBone</a> (const char *str)=0</td></tr>
+<tr class="memdesc:a0ba1ea4da8ae89e15a58da60edb31829"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает идентификатор указанной кости  <a href="#a0ba1ea4da8ae89e15a58da60edb31829">Подробнее...</a><br /></td></tr>
+<tr class="separator:a0ba1ea4da8ae89e15a58da60edb31829"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a061839f8ab43c24996767251639cb6a5"><td class="memItemLeft" align="right" valign="top">virtual UINT&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a061839f8ab43c24996767251639cb6a5">GetBoneCount</a> () const =0</td></tr>
+<tr class="memdesc:a061839f8ab43c24996767251639cb6a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает количество костей  <a href="#a061839f8ab43c24996767251639cb6a5">Подробнее...</a><br /></td></tr>
+<tr class="separator:a061839f8ab43c24996767251639cb6a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0b60fd4532d2e5f6ce18b753fd95ba0"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#ac0b60fd4532d2e5f6ce18b753fd95ba0">GetBoneName</a> (UINT id, char *name, int len) const =0</td></tr>
+<tr class="memdesc:ac0b60fd4532d2e5f6ce18b753fd95ba0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает имя указанной кости  <a href="#ac0b60fd4532d2e5f6ce18b753fd95ba0">Подробнее...</a><br /></td></tr>
+<tr class="separator:ac0b60fd4532d2e5f6ce18b753fd95ba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7e60ee30d675f334e44a6aee872a6aa"><td class="memItemLeft" align="right" valign="top"><a id="ad7e60ee30d675f334e44a6aee872a6aa"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#ad7e60ee30d675f334e44a6aee872a6aa">PlayingAnimations</a> ()=0</td></tr>
+<tr class="memdesc:ad7e60ee30d675f334e44a6aee872a6aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверяет, воспроизводится ли анимация <br /></td></tr>
+<tr class="separator:ad7e60ee30d675f334e44a6aee872a6aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69d84acbf410964e1adddd86d4677377"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a69d84acbf410964e1adddd86d4677377">PlayingAnimations</a> (const char *name)=0</td></tr>
+<tr class="memdesc:a69d84acbf410964e1adddd86d4677377"><td class="mdescLeft">&#160;</td><td class="mdescRight">Проверяет, воспроизводится ли анимация  <a href="#a69d84acbf410964e1adddd86d4677377">Подробнее...</a><br /></td></tr>
+<tr class="separator:a69d84acbf410964e1adddd86d4677377"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a326c637546ee8ba0708ce43f8d99efe1"><td class="memItemLeft" align="right" valign="top"><a id="a326c637546ee8ba0708ce43f8d99efe1"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a326c637546ee8ba0708ce43f8d99efe1">StopAll</a> ()=0</td></tr>
+<tr class="memdesc:a326c637546ee8ba0708ce43f8d99efe1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Останавливает воспроизведение всех анимаций <br /></td></tr>
+<tr class="separator:a326c637546ee8ba0708ce43f8d99efe1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0eaf31781290f429e2ade3f6dd3a906"><td class="memItemLeft" align="right" valign="top"><a id="af0eaf31781290f429e2ade3f6dd3a906"></a>
+virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#af0eaf31781290f429e2ade3f6dd3a906">GetActiveSkin</a> ()=0</td></tr>
+<tr class="memdesc:af0eaf31781290f429e2ade3f6dd3a906"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает номер текущего скина <br /></td></tr>
+<tr class="separator:af0eaf31781290f429e2ade3f6dd3a906"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a199039902e8a35305d0ccdb49f0ac68e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a199039902e8a35305d0ccdb49f0ac68e">SetSkin</a> (int n)=0</td></tr>
+<tr class="memdesc:a199039902e8a35305d0ccdb49f0ac68e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает активный скин  <a href="#a199039902e8a35305d0ccdb49f0ac68e">Подробнее...</a><br /></td></tr>
+<tr class="separator:a199039902e8a35305d0ccdb49f0ac68e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e6482d38adc8bba0b8719257dc194ef"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a7e6482d38adc8bba0b8719257dc194ef">SetPos</a> (const float3 &amp;pos)=0</td></tr>
+<tr class="memdesc:a7e6482d38adc8bba0b8719257dc194ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает мировую позицию модели  <a href="#a7e6482d38adc8bba0b8719257dc194ef">Подробнее...</a><br /></td></tr>
+<tr class="separator:a7e6482d38adc8bba0b8719257dc194ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb37fd98a4403e9ffe3954ecbb6929ea"><td class="memItemLeft" align="right" valign="top"><a id="acb37fd98a4403e9ffe3954ecbb6929ea"></a>
+virtual float3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#acb37fd98a4403e9ffe3954ecbb6929ea">GetPos</a> ()=0</td></tr>
+<tr class="memdesc:acb37fd98a4403e9ffe3954ecbb6929ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает мировую позицию модели <br /></td></tr>
+<tr class="separator:acb37fd98a4403e9ffe3954ecbb6929ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54ff980b2c580bc3b9ca85e1e4192a7d"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a54ff980b2c580bc3b9ca85e1e4192a7d">SetOrient</a> (const SMQuaternion &amp;pos)=0</td></tr>
+<tr class="memdesc:a54ff980b2c580bc3b9ca85e1e4192a7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает вращение модели  <a href="#a54ff980b2c580bc3b9ca85e1e4192a7d">Подробнее...</a><br /></td></tr>
+<tr class="separator:a54ff980b2c580bc3b9ca85e1e4192a7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fa98355369df77171b301e77986fe4b"><td class="memItemLeft" align="right" valign="top"><a id="a0fa98355369df77171b301e77986fe4b"></a>
+virtual SMQuaternion&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a0fa98355369df77171b301e77986fe4b">GetOrient</a> ()=0</td></tr>
+<tr class="memdesc:a0fa98355369df77171b301e77986fe4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Возвращает вращение модели <br /></td></tr>
+<tr class="separator:a0fa98355369df77171b301e77986fe4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fe2f537f025fa5f50fed68d85548afc"><td class="memItemLeft" align="right" valign="top"><a id="a4fe2f537f025fa5f50fed68d85548afc"></a>
+virtual SMMATRIX&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a4fe2f537f025fa5f50fed68d85548afc">GetWorldTM</a> ()=0</td></tr>
+<tr class="memdesc:a4fe2f537f025fa5f50fed68d85548afc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получает мировую матрицу модели <br /></td></tr>
+<tr class="separator:a4fe2f537f025fa5f50fed68d85548afc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa659e1c0601bd2764d96da62960d4c6"><td class="memItemLeft" align="right" valign="top"><a id="aaa659e1c0601bd2764d96da62960d4c6"></a>
+virtual <a class="el" href="group__sxanim.html#gaf9f7686f10a9cc0b6b2c0abfc835466a">AnimStateCB</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#aaa659e1c0601bd2764d96da62960d4c6">SetCallback</a> (<a class="el" href="group__sxanim.html#gaf9f7686f10a9cc0b6b2c0abfc835466a">AnimStateCB</a> cb)=0</td></tr>
+<tr class="memdesc:aaa659e1c0601bd2764d96da62960d4c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает коллбэк на изменение состояния объекта <br /></td></tr>
+<tr class="separator:aaa659e1c0601bd2764d96da62960d4c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53a855abd2cac4ff16f63cf13448e216"><td class="memItemLeft" align="right" valign="top"><a id="a53a855abd2cac4ff16f63cf13448e216"></a>
+virtual <a class="el" href="group__sxanim.html#ga57f5ac65b1836f9d85aacdb78b5d278a">AnimProgressCB</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a53a855abd2cac4ff16f63cf13448e216">SetProgressCB</a> (<a class="el" href="group__sxanim.html#ga57f5ac65b1836f9d85aacdb78b5d278a">AnimProgressCB</a> cb)=0</td></tr>
+<tr class="memdesc:a53a855abd2cac4ff16f63cf13448e216"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает коллбэк на изменение состояния воспроизведения <br /></td></tr>
+<tr class="separator:a53a855abd2cac4ff16f63cf13448e216"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4397b830ac921c9798d74a0bc51ab83f"><td class="memItemLeft" align="right" valign="top"><a id="a4397b830ac921c9798d74a0bc51ab83f"></a>
+virtual <a class="el" href="struct_model_sequence.html">ModelSequence</a> const  *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#a4397b830ac921c9798d74a0bc51ab83f">GetCurAnim</a> (int slot)=0</td></tr>
+<tr class="memdesc:a4397b830ac921c9798d74a0bc51ab83f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получает текущую воспроизводимую анимацию в слоте <br /></td></tr>
+<tr class="separator:a4397b830ac921c9798d74a0bc51ab83f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc92126f0552f01d0cd4f5421c008fa4"><td class="memItemLeft" align="right" valign="top"><a id="acc92126f0552f01d0cd4f5421c008fa4"></a>
+virtual const <a class="el" href="class_i_s_x_bound.html">ISXBound</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html#acc92126f0552f01d0cd4f5421c008fa4">GetBound</a> () const =0</td></tr>
+<tr class="memdesc:acc92126f0552f01d0cd4f5421c008fa4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Получает ограничивающий объем модели <br /></td></tr>
+<tr class="separator:acc92126f0552f01d0cd4f5421c008fa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<div class="textblock"><p>Интерфейс проигрывателя анимаций </p>
+</div><h2 class="groupheader">Методы</h2>
+<a id="a7d46046c6a77bc222e91d93180d13004"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d46046c6a77bc222e91d93180d13004">&#9670;&nbsp;</a></span>Advance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::Advance </td>
+          <td>(</td>
+          <td class="paramtype">unsigned long int&#160;</td>
+          <td class="paramname"><em>dt</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Выполняет обновление состояния воспроизведения анимации </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">dt</td><td>Текущее абсолютное время в микросекундах </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a161b4e9b9e59545c62267779969da90b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a161b4e9b9e59545c62267779969da90b">&#9670;&nbsp;</a></span>SetModel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetModel </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>file</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Загружает новую модель для воспроизведения </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">file</td><td>Имя файла модели </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae060c968e031db2964709efedb232353"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae060c968e031db2964709efedb232353">&#9670;&nbsp;</a></span>Play()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::Play </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>iFadeTime</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>slot</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Запускает воспроизведения анимации </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Имя анимации </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">iFadeTime</td><td>Время перехода от предыдущей анимации к новой в ms </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">slot</td><td>Слот для воспроизведения. От 0 до BLEND_MAX </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af83090e9307515c7cc4410ebd60b8c68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af83090e9307515c7cc4410ebd60b8c68">&#9670;&nbsp;</a></span>Stop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::Stop </td>
+          <td>(</td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>slot</em> = <code>0</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Останавливает воспроизведения для указанного слота </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">slot</td><td>Слот для остановки. От 0 до BLEND_MAX </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5071fc89043db91c70111e6b2bb058f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5071fc89043db91c70111e6b2bb058f6">&#9670;&nbsp;</a></span>Resume()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::Resume </td>
+          <td>(</td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>slot</em> = <code>0</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Возобновляет воспроизведения для указанного слота </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">slot</td><td>Слот для возобновления. От 0 до BLEND_MAX </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac066b4c4d6795705adf5cfe1d933f7fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac066b4c4d6795705adf5cfe1d933f7fe">&#9670;&nbsp;</a></span>SetProgress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetProgress </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>progress</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>slot</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Устанавливает прогресс воспроизведения в конкретном слоте </p>
+<dl class="section warning"><dt>Предупреждения</dt><dd>Если в конкретном слоте не происходит воспроизведения, не будет эффекта </dd></dl>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">progress</td><td>Значение прогресса. От 0 до 1 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">slot</td><td>Слот. От 0 до BLEND_MAX </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="afe61632cb36bc2c39ec2a9f41a4b62c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe61632cb36bc2c39ec2a9f41a4b62c8">&#9670;&nbsp;</a></span>SetAdvance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetAdvance </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>set</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>slot</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Разрешает/запрещает обновление конкретного слота </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">set</td><td>разрешить/запретить </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">slot</td><td>Слот. От 0 до BLEND_MAX </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a6772a63798c3877d56ac3cd229dba2d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6772a63798c3877d56ac3cd229dba2d5">&#9670;&nbsp;</a></span>StartActivity()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::StartActivity </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>iFadeTime</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>slot</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Запускает воспроизведение указанной активности в заданном слоте </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Имя анимации </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">iFadeTime</td><td>Время перехода от предыдущей анимации к новой в ms </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">slot</td><td>Слот для воспроизведения. От 0 до BLEND_MAX</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section warning"><dt>Предупреждения</dt><dd>В данный момент не работат </dd></dl>
+
+</div>
+</div>
+<a id="ac62e856cee8583d3663ac5630165136b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac62e856cee8583d3663ac5630165136b">&#9670;&nbsp;</a></span>SetBoneController()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetBoneController </td>
+          <td>(</td>
+          <td class="paramtype">const String &amp;&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__sxanim.html#gac49bbdf16877632b9d6503fce872a63c">MODEL_BONE_CTL</a>&#160;</td>
+          <td class="paramname"><em>what</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Устанавливает значение для заданного контроллера </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Имя контроллера </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Значение от 0 до 1 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">what</td><td>Какую часть контроллера изменить</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section warning"><dt>Предупреждения</dt><dd>В данный момент не работат </dd></dl>
+
+</div>
+</div>
+<a id="aa0ea6993ff239990510249763dab6cf2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0ea6993ff239990510249763dab6cf2">&#9670;&nbsp;</a></span>GetBoneTransform()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual SMMATRIX IAnimPlayer::GetBoneTransform </td>
+          <td>(</td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Возвращает трансформацию указанной кости </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Номер кости </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Возвращает</dt><dd>Матрица трансформации кости </dd></dl>
+
+</div>
+</div>
+<a id="a0ba1ea4da8ae89e15a58da60edb31829"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ba1ea4da8ae89e15a58da60edb31829">&#9670;&nbsp;</a></span>GetBone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual UINT IAnimPlayer::GetBone </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Возвращает идентификатор указанной кости </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Имя кости </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Возвращает</dt><dd>Номер кости </dd></dl>
+
+</div>
+</div>
+<a id="a061839f8ab43c24996767251639cb6a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a061839f8ab43c24996767251639cb6a5">&#9670;&nbsp;</a></span>GetBoneCount()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual UINT IAnimPlayer::GetBoneCount </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Возвращает количество костей </p>
+<dl class="section return"><dt>Возвращает</dt><dd>Количество костей </dd></dl>
+
+</div>
+</div>
+<a id="ac0b60fd4532d2e5f6ce18b753fd95ba0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0b60fd4532d2e5f6ce18b753fd95ba0">&#9670;&nbsp;</a></span>GetBoneName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::GetBoneName </td>
+          <td>(</td>
+          <td class="paramtype">UINT&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Возвращает имя указанной кости </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>Номер кости </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">name</td><td>Буфер для записи имени </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">len</td><td>Размер буфера для записи </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a69d84acbf410964e1adddd86d4677377"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69d84acbf410964e1adddd86d4677377">&#9670;&nbsp;</a></span>PlayingAnimations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool IAnimPlayer::PlayingAnimations </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Проверяет, воспроизводится ли анимация </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Имя анимации </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a199039902e8a35305d0ccdb49f0ac68e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a199039902e8a35305d0ccdb49f0ac68e">&#9670;&nbsp;</a></span>SetSkin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetSkin </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Устанавливает активный скин </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Номер скина </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7e6482d38adc8bba0b8719257dc194ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e6482d38adc8bba0b8719257dc194ef">&#9670;&nbsp;</a></span>SetPos()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetPos </td>
+          <td>(</td>
+          <td class="paramtype">const float3 &amp;&#160;</td>
+          <td class="paramname"><em>pos</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Устанавливает мировую позицию модели </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos</td><td>позиция </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a54ff980b2c580bc3b9ca85e1e4192a7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54ff980b2c580bc3b9ca85e1e4192a7d">&#9670;&nbsp;</a></span>SetOrient()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void IAnimPlayer::SetOrient </td>
+          <td>(</td>
+          <td class="paramtype">const SMQuaternion &amp;&#160;</td>
+          <td class="paramname"><em>pos</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Устанавливает вращение модели </p>
+<dl class="params"><dt>Аргументы</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pos</td><td>позиция </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<hr/>Объявления и описания членов класса находятся в файле:<ul>
+<li><a class="el" href="sxanim_8h_source.html">sxanim.h</a></li>
+</ul>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="class_i_anim_player.html">IAnimPlayer</a></li>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Пн 1 Май 2017 19:44:42. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>

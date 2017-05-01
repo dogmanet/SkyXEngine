@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.13"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SkyXEngine: Файл sxanim.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+</script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">SkyXEngine
+   &#160;<span id="projectnumber">0.9.0</span>
+   </div>
+   <div id="projectbrief">3D real-time render</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.13 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search",false,'Поиск');
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(document).ready(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('sxanim_8h.html','');});
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Классы</a> &#124;
+<a href="#typedef-members">Определения типов</a>  </div>
+  <div class="headertitle">
+<div class="title">Файл sxanim.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+
+<p>Заголовочный файл sxanim - библиотека скелетной анимации  
+<a href="#details">Подробнее...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="sxanim_2_model_file_8h_source.html">ModelFile.h</a>&quot;</code><br />
+<code>#include &lt;common/assotiativearray.h&gt;</code><br />
+<code>#include &lt;common/array.h&gt;</code><br />
+<code>#include &lt;common/string.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="gdefines_8h_source.html">gdefines.h</a>&gt;</code><br />
+<code>#include &lt;d3d9.h&gt;</code><br />
+<code>#include &lt;d3dx9.h&gt;</code><br />
+</div>
+<p><a href="sxanim_8h_source.html">См. исходные тексты.</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Классы</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_i_anim_player.html">IAnimPlayer</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Интерфейс проигрывателя анимаций  <a href="class_i_anim_player.html#details">Подробнее...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Определения типов</h2></td></tr>
+<tr class="memitem:gaf9f7686f10a9cc0b6b2c0abfc835466a"><td class="memItemLeft" align="right" valign="top">
+typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gaf9f7686f10a9cc0b6b2c0abfc835466a">AnimStateCB</a>) (int slot, <a class="el" href="group__sxanim.html#ga6a23e8bab4a378f5f0fe1df92ce678dc">ANIM_STATE</a> as, <a class="el" href="class_i_anim_player.html">IAnimPlayer</a> *pAnim)</td></tr>
+<tr class="memdesc:gaf9f7686f10a9cc0b6b2c0abfc835466a"><td class="mdescLeft">&#160;</td><td class="mdescRight">коллбэк для определения изменения состояния воспроизведения <br /></td></tr>
+<tr class="separator:gaf9f7686f10a9cc0b6b2c0abfc835466a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga57f5ac65b1836f9d85aacdb78b5d278a"><td class="memItemLeft" align="right" valign="top">
+typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#ga57f5ac65b1836f9d85aacdb78b5d278a">AnimProgressCB</a>) (int slot, float progress, <a class="el" href="class_i_anim_player.html">IAnimPlayer</a> *pAnim)</td></tr>
+<tr class="memdesc:ga57f5ac65b1836f9d85aacdb78b5d278a"><td class="mdescLeft">&#160;</td><td class="mdescRight">коллбэк для определения изменения прогресса воспроизведения <br /></td></tr>
+<tr class="separator:ga57f5ac65b1836f9d85aacdb78b5d278a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Функции</h2></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Функции управления анимацией</div></td></tr>
+<tr class="memitem:ga1d3db4b589e3e717a8e783adf8ee3031"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#ga1d3db4b589e3e717a8e783adf8ee3031">SXAnim_0Create</a> ()</td></tr>
+<tr class="memdesc:ga1d3db4b589e3e717a8e783adf8ee3031"><td class="mdescLeft">&#160;</td><td class="mdescRight">Инициализирует библиотеку <br /></td></tr>
+<tr class="separator:ga1d3db4b589e3e717a8e783adf8ee3031"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf5a88b1eb9402a52a7f9e8ee81208b9"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gadf5a88b1eb9402a52a7f9e8ee81208b9">SXAnim_0Kill</a> ()</td></tr>
+<tr class="memdesc:gadf5a88b1eb9402a52a7f9e8ee81208b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Деинициализирует библиотеку <br /></td></tr>
+<tr class="separator:gadf5a88b1eb9402a52a7f9e8ee81208b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gab0478a99472ad9fe2373ee6f7bf8c962">SGCore_Dbg_Set</a> (<a class="el" href="gdefines_8h.html#a516a805d0f649ec2a8f6d290c265c1fb">report_func</a> rf)</td></tr>
+<tr class="memdesc:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает функцию сообщений <br /></td></tr>
+<tr class="separator:gab0478a99472ad9fe2373ee6f7bf8c962"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae49ba3110a34b1d2b7ac2e3bfb821605"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gae49ba3110a34b1d2b7ac2e3bfb821605">SXAnim_UpdateSetThreadNum</a> (int num)</td></tr>
+<tr class="memdesc:gae49ba3110a34b1d2b7ac2e3bfb821605"><td class="mdescLeft">&#160;</td><td class="mdescRight">Устанавливает количество потоков обновления анимации <br /></td></tr>
+<tr class="separator:gae49ba3110a34b1d2b7ac2e3bfb821605"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaee7e91d7757d923c42d4f1ccac805a13"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gaee7e91d7757d923c42d4f1ccac805a13">SXAnim_Update</a> (int thread=0)</td></tr>
+<tr class="memdesc:gaee7e91d7757d923c42d4f1ccac805a13"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выполняет обновление анимаций  <a href="group__sxanim.html#gaee7e91d7757d923c42d4f1ccac805a13">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaee7e91d7757d923c42d4f1ccac805a13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaa476b2234f46453700b524c9cdd1e10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gaaa476b2234f46453700b524c9cdd1e10">SXAnim_Sync</a> ()</td></tr>
+<tr class="memdesc:gaaa476b2234f46453700b524c9cdd1e10"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выполняет синхронизацию.  <a href="group__sxanim.html#gaaa476b2234f46453700b524c9cdd1e10">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaaa476b2234f46453700b524c9cdd1e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa7bfd7e62f53ed1de881d83699cecc4c"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gaa7bfd7e62f53ed1de881d83699cecc4c">SXAnim_Render</a> (ID for_id=0)</td></tr>
+<tr class="memdesc:gaa7bfd7e62f53ed1de881d83699cecc4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Выполняет рендер всех анимаций с учетом видимости <br /></td></tr>
+<tr class="separator:gaa7bfd7e62f53ed1de881d83699cecc4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa9e7d551d016911415c09147fc96b5ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> <a class="el" href="class_i_anim_player.html">IAnimPlayer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#gaa9e7d551d016911415c09147fc96b5ed">SXAnim_CreatePlayer</a> (const char *mdl=NULL)</td></tr>
+<tr class="memdesc:gaa9e7d551d016911415c09147fc96b5ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Создает проигрыватель анимации.  <a href="group__sxanim.html#gaa9e7d551d016911415c09147fc96b5ed">Подробнее...</a><br /></td></tr>
+<tr class="separator:gaa9e7d551d016911415c09147fc96b5ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7a62090b8f10eb85deff01e88baa4767"><td class="memItemLeft" align="right" valign="top"><a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#ga7a62090b8f10eb85deff01e88baa4767">SXAnim_ModelsComVisible</a> (const <a class="el" href="class_i_s_x_frustum.html">ISXFrustum</a> *frustum, const float3 *viewpos, ID id_arr=0)</td></tr>
+<tr class="memdesc:ga7a62090b8f10eb85deff01e88baa4767"><td class="mdescLeft">&#160;</td><td class="mdescRight">просчитать видимость всех моделей для фрустума  <a href="group__sxanim.html#ga7a62090b8f10eb85deff01e88baa4767">Подробнее...</a><br /></td></tr>
+<tr class="separator:ga7a62090b8f10eb85deff01e88baa4767"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga35aeacb48e0c06e695f88db1fe7f1ba0"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> ID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#ga35aeacb48e0c06e695f88db1fe7f1ba0">SXAnim_ModelsAddArrForCom</a> ()</td></tr>
+<tr class="memdesc:ga35aeacb48e0c06e695f88db1fe7f1ba0"><td class="mdescLeft">&#160;</td><td class="mdescRight">добавить массив просчетов, возвращает его идентификатор <br /></td></tr>
+<tr class="separator:ga35aeacb48e0c06e695f88db1fe7f1ba0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga83e79d5c40fa2e856c5d6e39f5908244"><td class="memItemLeft" align="right" valign="top">
+<a class="el" href="gdefines_8h.html#a98a6341c285c4c683fefccee08111eb8">SX_LIB_API</a> void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__sxanim.html#ga83e79d5c40fa2e856c5d6e39f5908244">SXAnim_ModelsDelArrForCom</a> (ID id_arr)</td></tr>
+<tr class="memdesc:ga83e79d5c40fa2e856c5d6e39f5908244"><td class="mdescLeft">&#160;</td><td class="mdescRight">удалить массив просчетов с номером id_arr. <br /></td></tr>
+<tr class="separator:ga83e79d5c40fa2e856c5d6e39f5908244"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Подробное описание</h2>
+<div class="textblock"><p>Заголовочный файл sxanim - библиотека скелетной анимации </p>
+</div></div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_b2f33c71d4aa5e7af42a1ca61ff5af1b.html">source</a></li><li class="navelem"><a class="el" href="dir_1b5cacecc46cadb84cae0ace4d51f019.html">sxanim</a></li><li class="navelem"><a class="el" href="sxanim_8h.html">sxanim.h</a></li>
+    <li class="footer">Документация по SkyXEngine. Последние изменения: Пн 1 Май 2017 19:44:41. Создано системой
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
+  </ul>
+</div>
+</body>
+</html>
