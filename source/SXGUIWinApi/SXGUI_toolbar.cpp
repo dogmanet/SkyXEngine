@@ -31,7 +31,7 @@ SXGUIToolBar::SXGUIToolBar(const char* caption,WORD x,WORD y,WORD width,WORD hei
 
 SXGUIToolBar::~SXGUIToolBar()
 {
-
+	ImageList_Destroy(HimList);
 }
 
 void SXGUIToolBar::AddButton(WORD num,WORD id,const char* hint,WORD id_resource,DWORD mask)

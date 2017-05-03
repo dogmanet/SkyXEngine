@@ -9,7 +9,7 @@ See the license in LICENSE
 #include <windows.h>
 #include <gdefines.h>
 
-#include <SXGUIWinApi\\sxgui.h>
+#include <SXGUIWinApi\\sxgui.cpp>
 
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,

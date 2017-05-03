@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_menu.h
-// Краткое описание: меню окна и контекстное меню
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_MENU_H
 #define SXGUI_MENU_H
@@ -11,16 +6,12 @@
 
 #pragma once
 
-#define SXGUI_MENU_ENABLED	0
-#define SXGUI_MENU_DISABLED	1
-#define SXGUI_MENU_GRAYED	2
-
-
 class SXGUIMenu : public virtual ISXGUIMenu
 {
 public:
 	SXGUIMenu();
 	SXGUIMenu(WORD menu);
+	void Release(){ mem_del(this); }
 	~SXGUIMenu();
 
 	bool InsertItem(int index,const char* text,WORD id,WORD id_sub_menu);
@@ -52,6 +43,7 @@ class SXGUIPopupMenu : public virtual ISXGUIPopupMenu
 public:
 	SXGUIPopupMenu(WORD menu);
 	SXGUIPopupMenu();
+	void Release(){ mem_del(this); }
 	~SXGUIPopupMenu();
 
 	bool InsertItem(int index,const char* text,WORD id,WORD id_sub_menu);

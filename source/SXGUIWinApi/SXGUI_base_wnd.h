@@ -1,11 +1,3 @@
-//----------------------------------------
-// Файл: SXGUI_base_wnd.h
-// Краткое описание: простое окно
-// Project S.I.P for SkyXEngine (09,2012)
-//----------------------------------------
-
-//по дефолту обработчиком назначается DefWindowProc
-//чтобы функционировали свойства SXGUIComponent необходимо указать стандартный для всех элементов обработчик WndProcAllDefault
 
 #ifndef SXGUI_BASE_WND_H
 #define SXGUI_BASE_WND_H
@@ -37,7 +29,5 @@ public:
 	bool AlphaBlend(bool bf);
 	bool AlphaBlend();
 };
-
-//class SXGUIBaseWndW : public SXGUIBaseWnd
 
 #endif

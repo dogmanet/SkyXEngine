@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_track_bar.h
-// Краткое описание: стандартный track bar
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_TRACK_BAR_H
 #define SXGUI_TRACK_BAR_H

@@ -1278,14 +1278,15 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 	MtlTypeReflect typeref = SML_MtlGetTypeReflection(idmat);
 	D3DXPLANE plane;
 	float3_t center;
+	GData::SimModel->GetCenter(&center);
+
 	if (typeref == MtlTypeReflect::mtr_plane)
 	{
 		GData::SimModel->GetPlane(&plane);
-		GData::SimModel->GetCenter(&center);
-
-		SML_MtlRefSetPlane(idmat, &plane);
-		SML_MtlRefSetCenter(idmat, &center);
-		SML_MtlRefPreRenderPlane(idmat, &SMMatrixIdentity());
+		
+		SML_MtlRefPreRenderPlane(idmat, &plane);
+		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
+		SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
 		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -1307,9 +1308,7 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 	}
 	else if (typeref == MtlTypeReflect::mtr_cube_static || typeref == MtlTypeReflect::mtr_cube_dynamic)
 	{
-		SML_MtlRefCubeBeginRender(idmat);
-		GData::SimModel->GetCenter(&center);
-		SML_MtlRefSetCenter(idmat, &center);
+		SML_MtlRefCubeBeginRender(idmat, &center);
 
 		for (int j = 0; j<6; j++)
 		{
@@ -1360,8 +1359,10 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	//@@@
 	CameraUpdate::UpdateEditorial(timeDelta);
 
+//#if !defined(SX_MATERIAL_EDITOR)
 	SXAnim_Update();
 	SXAnim_Sync();
+//#endif
 
 	ttime = timeGetTime();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);

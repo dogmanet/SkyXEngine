@@ -105,13 +105,6 @@ bool SXGUIComboBox::SetItemText(int index,const char* text)
 	return true;
 }
 
-char* SXGUIComboBox::GetItemText(int index)
-{
-	char* text = new char[this->GetItemTextLength(index)+1];
-	SendMessage(this->GetHWND(), CB_GETLBTEXT, WPARAM(index), LPARAM(text));
-	return text;
-}
-
 void SXGUIComboBox::GetItemText(int index,char* buf)
 {
 	SendMessage(this->GetHWND(), CB_GETLBTEXT, WPARAM(index), LPARAM(buf));

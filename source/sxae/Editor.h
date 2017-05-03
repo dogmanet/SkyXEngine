@@ -4,7 +4,7 @@
 #define EDITOR_REG_TREE "SOFTWARE\\DogmaNet\\SkyXEngine\\Editor"
 #define EDITOR_REG_KEY_GSDIR "gs_dir"
 
-#include <SXGUIWinApi/sxguielements.h>
+#include <SXGUIWinApi/sxgui.h>
 #include "resource.h"
 
 #include "TabManager.h"

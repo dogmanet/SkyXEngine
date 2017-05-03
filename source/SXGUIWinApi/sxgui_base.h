@@ -35,20 +35,17 @@ public:
 
 	void SetFocus();					//установить фокус на контрол
 	bool Focus();						//установлен ли фокус на контроле?
-	//WNDPROC GetOldProc();// { return OldProc; }
-	//WNDPROC OldProc;					//если устнавливается новый обработчик (через конструктор или Init) то старый сохраняется здесь
-
-/*protected:
-	HWND ParentHandle;
-	HWND WindowHandle;*/
 
 	void * GetUserPtr();
 	void * SetUserPtr(void *);
 
 private:
 	void * UserPtr;
+
+protected:
+	HWND ParentHandle;
+	HWND WindowHandle;
 };
-//WNDPROC SXGUIControl::GetOldProc(){ return this->OldProc; }
 
 //второй в очереди родитель, часто наследование идет именно от него
 //более расширенное управление большинством элементов
@@ -99,7 +96,7 @@ public:
 
 	//работа с текстом подсказки для элемента
 	void SetHintText(const char* text);
-	char* GetHintText();
+	const char* GetHintText();
 	void GetHintText(char* buf);
 
 	//функции для цветов
@@ -145,28 +142,12 @@ public:
 	LRESULT ExecuteHandler(int key, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);	//выполняет функцию обработчик, в аргументы отправляет свои аргументы
 	///////////////////////////////////////
 
-	//SXRectBool GAlign;	//данные регулирующие размеры элемента при изменении размеров его родителя
-
 	void UpdateSize();
 	void UpdateRect();
 
-	//данные необходимые для UpdateSize
-	/*RECT ParentRect;		//параметры родителя
-	RECT OffsetParentRect;	//на сколько был изменен родитель
-	RECT WinScreenRect;		//параметры текущего окна относительно рабочего стола
 
-	//данные регулирующие будет ли передвигаться определнная сторона
-	bool BFSizingChangeTop;		//за верх окно расширять нельзя ... типа того
-	bool BFSizingChangeBottom;	
-	bool BFSizingChangeRight;	
-	bool BFSizingChangeLeft;	
-
-	bool BFMinSize;	//установлен ли минимальный размер? если да то меньше чем MinSizeX и MinSizeY не будет уменьшаться
-	WORD MinSizeX;
-	WORD MinSizeY;*/
-
-/*protected:
-	SXGUIHint *Hint;
+protected:
+	ISXGUIHint *Hint;
 	SXHandlerMsgStruct ArrHandler[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];
 	int CountKeyArrHandler;
 
@@ -175,7 +156,7 @@ public:
 
 	DWORD ColorText;	//цвет текста
 	bool TransparenTextBf;	//используется прозрачность? если true то заднего фона у текста не будет
-	DWORD ColorTextBk;	//цвет заднего фона у текста*/
+	DWORD ColorTextBk;	//цвет заднего фона у текста
 };
 
 //третий (если нужен текст) родитель, непосредтсвенно не используется
@@ -187,7 +168,6 @@ public:
 	~SXGUITextual();
 	void Release(){ mem_del(this); }
 	bool	SetText(const char* text);
-	//const char*	GetText();
 	void	GetText(char* buf, int size);
 	int		GetTextLen();
 };

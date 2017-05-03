@@ -1,3 +1,4 @@
+
 #include <SXGUIWinApi\SXGUI_edit.h>
 
 #pragma once
@@ -55,7 +56,7 @@ bool SXGUIEdit::ReadOnly(bool bf)
 	return this->ReadOnly() == bf;
 }
 
-WORD SXGUIEdit::Align()
+int SXGUIEdit::Align()
 {
 	long style = GetWindowLong(this->GetHWND(),GWL_STYLE);
 		if(style & ES_RIGHT)
@@ -66,7 +67,7 @@ WORD SXGUIEdit::Align()
 			return SXGUI_EDIT_ALIGN_LEFT;
 }
 
-bool SXGUIEdit::Align(WORD align)
+bool SXGUIEdit::Align(int align)
 {
 		if(align == SXGUI_EDIT_ALIGN_LEFT)
 			return this->ModifyStyle(ES_LEFT,0);

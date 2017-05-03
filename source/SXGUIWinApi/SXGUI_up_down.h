@@ -1,8 +1,3 @@
-//------------------------------------------------
-// Файл: SXGUI_up_down.h
-// Краткое описание: стандартный UpDown
-// Project S.I.P for SkyXEngine (09,2012)
-//------------------------------------------------
 
 #ifndef SXGUI_UP_DOWN_H
 #define SXGUI_UP_DOWN_H

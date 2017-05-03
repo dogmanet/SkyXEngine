@@ -1,8 +1,3 @@
-//----------------------------------------
-// Файл: SXGUI_combo_box.h
-// Краткое описание: стандартный combo box
-// Project S.I.P for SkyXEngine (09,2012)
-//----------------------------------------
 
 #ifndef SXGUI_COMBO_BOX_H
 #define SXGUI_COMBO_BOX_H
@@ -17,7 +12,6 @@ public:
 	SXGUIComboBox();
 	SXGUIComboBox(const char* caption,WORD x,WORD y,WORD width,WORD heigth,DWORD exstyle,DWORD style,HWND parent,WNDPROC handler,DWORD id);
 
-	//флаги: (parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
 	SXGUIComboBox(const char* caption,WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPROC handler,DWORD id);
 
 	bool	InsertItem(int index,const char* text);		//вставка текста в строку
@@ -34,7 +28,6 @@ public:
 	bool	Clear();									//удаляет все элементы
 
 	bool	SetItemText(int index,const char* text);	//вставка текста в строку, подобие замены
-	char*	GetItemText(int index);						//получить текст из строки (происходит выделение памяти в куче, юзер сам должен ее освободить)
 	void	GetItemText(int index,char* buf);			//получить текст из строки 
 	int		GetItemTextLength(int index);				//получить длину текста из строки
 	bool	AddItem(const char* text);					//добавляет в конец новую строку

@@ -85,7 +85,7 @@ void SXGUIHint::SetText(const char* text)
 	//SendMessage(WindowHandle, TTM_SETTOOLINFO , 0, (LPARAM) &Hint);
 }
 
-char* SXGUIHint::GetText()
+const char* SXGUIHint::GetText()
 {
 	return Hint.lpszText;
 }

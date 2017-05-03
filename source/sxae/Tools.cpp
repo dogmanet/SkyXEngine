@@ -1,7 +1,7 @@
 #include "Tools.h"
 
 #include <windows.h>
-#include "../../SkyXEngine/animeditor/resource.h"
+#include <sxae/resource.h>
 
 struct PromptPrm
 {

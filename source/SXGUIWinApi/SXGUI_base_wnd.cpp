@@ -1,17 +1,6 @@
 
 #include <SXGUIWinApi\SXGUI_base_wnd.h>
 
-LRESULT CALLBACK TmpWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	switch(msg)
-	{
-	case WM_DESTROY:
-		::PostQuitMessage(0);
-		break;
-	}
-	return ::DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
 SXGUIBaseWnd::SXGUIBaseWnd(	
 					const char* class_name,const char* caption,const char* menu,
 					WORD id,WORD x,WORD y,WORD width,WORD heigth,
@@ -62,10 +51,7 @@ SXGUIBaseWnd::SXGUIBaseWnd(
 
 SXGUIBaseWnd::~SXGUIBaseWnd()
 {
-	/*char ClassName[256];
-	int error = GetClassName(this->WindowHandle,ClassName,256);
-	DestroyWindow(this->WindowHandle);
-	UnregisterClass(ClassName,GetModuleHandle(0));*/
+
 }
 
 bool SXGUIBaseWnd::AlphaBlend(bool bf)

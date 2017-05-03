@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_list_box.h
-// Краткое описание: стандартный list box
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_LIST_BOX_H
 #define SXGUI_LIST_BOX_H
@@ -35,7 +30,6 @@ public:
 	bool	Clear();								//очистить
 
 	bool	SetTextItem(int index,const char* text);//установить текст в строке с номером index
-	char*	GetItemText(int index);					//возвращает текст из строки !!!память выделяется в куче
 	void	GetItemText(int index,char* buf);		//возвращает текст из строки
 
 	int		GetItemTextLength(int index);			//возвращает длину текста в строке
@@ -46,7 +40,7 @@ public:
 	bool	SetMultipleSel(int index,bool sel);		//устанавливает выделена/не выделена строка
 	bool	GetMultipleSel(int index);				//возвращает выделена ли строка
 
-	int*	GetMultipleSelArr();					//возвращает массив с номерами выделенных строк
+	void	GetMultipleSelArr(int** arr);					//возвращает массив с номерами выделенных строк
 
 	//SXGUIFuctinon
 	bool ScrollBars(bool h,bool v);

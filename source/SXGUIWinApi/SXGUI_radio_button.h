@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_radio_button.h
-// Краткое описание: стандартная радио кнопка
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_RADIO_BUTTON_H
 #define SXGUI_RADIO_BUTTON_H

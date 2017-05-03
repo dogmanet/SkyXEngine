@@ -6,8 +6,7 @@
 LRESULT WndProcGroupBoxPaint(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SXGUIGroupBox *GroupBox = dynamic_cast<SXGUIGroupBox*>((ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA));
-	/*CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);*/
-	//DefWindowProc(hwnd, msg, wParam, lParam);
+	
 	PAINTSTRUCT PaintStruct;
 	HDC hdcp = BeginPaint(hwnd, &PaintStruct);
 	
@@ -90,6 +89,11 @@ SXGUIGroupBox::SXGUIGroupBox()
 	LenStrText = 0; StrText = 0;
 }
 
+SXGUIGroupBox::~SXGUIGroupBox()
+{
+	mem_delete(StrText);
+}
+
 SXGUIGroupBox::SXGUIGroupBox(const char* caption,WORD x,WORD y,WORD width,WORD heigth,DWORD exstyle,DWORD style,HWND parent,WNDPROC handler,DWORD id)
 {
 	LenStrText = strlen(caption)+1;
@@ -125,6 +129,7 @@ SXGUIGroupBox::SXGUIGroupBox(const char* caption,WORD x,WORD y,WORD width,WORD h
 							(HMENU)id,
 							GetModuleHandle(0),
 							0);
+	
 	this->Init(this->GetHWND(), parent, (handler == 0 ? WndProcAllDefault : handler));
 	SetWindowLong(GetHWND(),GWL_USERDATA,(LONG)dynamic_cast<ISXGUIComponent*>(this));
 	this->InitComponent();

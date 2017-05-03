@@ -66,17 +66,14 @@ SXGUIStatusBar::SXGUIStatusBar(const char* caption,HWND parent,WNDPROC handler,D
 
 SXGUIStatusBar::~SXGUIStatusBar()
 {
-	delete[] ArrCoef;
-	ArrCoef = 0;
-
-	delete[] ArrWidth;
-	ArrWidth = 0;
+	mem_delete_a(ArrCoef);
+	mem_delete_a(ArrWidth);
 }
 
 bool SXGUIStatusBar::SetCountParts(WORD count,int *arr)
 {
 	CountArr = count;
-	//delete[] ArrWidth;
+	mem_delete_a(ArrWidth);
 	ArrWidth = 0;
 	ArrWidth = arr;
 
@@ -91,20 +88,18 @@ bool SXGUIStatusBar::SetCountParts(WORD count,int *arr)
 void SXGUIStatusBar::ComCoef()
 {
 	WORD GWidth = 0;
-	RECT *rect = new RECT;
-	::GetClientRect(this->GetHWND(),rect);
-	GWidth = rect->right;
+	RECT rect;
+	::GetClientRect(this->GetHWND(),&rect);
+	GWidth = rect.right;
 	float OnePercent = 100.0 / float(GWidth);
 
-	delete[] ArrCoef;
-	ArrCoef = 0;
+	mem_delete_a(ArrCoef);
 	ArrCoef = new float[CountArr];
 
-		for(WORD i=0;i<CountArr;i++)
+		for(int i=0;i<CountArr;i++)
 		{
 			ArrCoef[i] = OnePercent *  ((ArrWidth[i] != -1 ? ArrWidth[i] : GWidth) - (i > 0 ? ArrWidth[i-1] : 0));
 		}
-	//MessageBox(0,ToPointChar(ToString(ArrCoef[0]) + "|" + ToString(ArrCoef[1]) + "|" + ToString(ArrCoef[2])),"ComCoef",0);
 }
 
 bool SXGUIStatusBar::SetTextParts(WORD pos,const char* text)
@@ -113,7 +108,7 @@ bool SXGUIStatusBar::SetTextParts(WORD pos,const char* text)
 	return true;
 }
 
-WORD SXGUIStatusBar::GetCountParts(int **arr)
+WORD SXGUIStatusBar::GetCountParts(int** arr)
 {
 	WORD CountParts = SendMessage(this->GetHWND(),SB_GETPARTS,0,0);
 	int *parts = new int[CountParts];
@@ -124,24 +119,21 @@ WORD SXGUIStatusBar::GetCountParts(int **arr)
 			*arr = parts;
 		else
 		{
-			delete[] parts;
-			parts = 0;
+			mem_delete_a(parts);
 		}
 	return CountParts;
 }
 
-const char* SXGUIStatusBar::GetTextParts(WORD pos)
+bool SXGUIStatusBar::GetTextParts(WORD pos, char* buf, int len)
 {
 	WORD CountSym = SendMessage(this->GetHWND(),SB_GETTEXTLENGTH,pos,0);
-	const char* text = new const char[CountSym];
-		if(!SendMessage(this->GetHWND(),SB_GETTEXT,pos,(LPARAM)text))
-		{
-			delete[] text;
-			text = 0;
-			return 0;
-		}
-		else
-			return text;
+	if (len < CountSym)
+		return false;
+
+	if (!SendMessage(this->GetHWND(), SB_GETTEXT, pos, (LPARAM)buf))
+		return false;
+
+	return true;
 }
 
 void SXGUIStatusBar::Update()
@@ -196,9 +188,8 @@ void SXGUIStatusBar::Update()
 			::GetClientRect(this->GetHWND(),&this->OldRect);
 
 	SendMessage(this->GetHWND(),SB_SETPARTS,CountParts,(LPARAM)NewArr);
-	delete[] Arr,NewArr;
-	Arr = 0;
-	NewArr = 0;
+	mem_delete_a(Arr);
+	mem_delete_a(NewArr);
 }
 
 void SXGUIStatusBar::UpdateSize()

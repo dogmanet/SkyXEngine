@@ -150,7 +150,7 @@ SX_LIB_API ID SGeom_ModelsAddModel(
 /*! удалить модель под номером id
  \warning Поверхностные тесты не дали ошибок, однако внутренняя организация хранения данных чрезвычайно сложна (по нашему мнению), поэтому могут быть ошибки, в том числе и критические, но пока обнаружить их не удалось
 */
-SX_LIB_API void SGeom_ModelsDelModel(long id);	
+SX_LIB_API void SGeom_ModelsDelModel(ID id);	
 
 SX_LIB_API void SGeom_ModelsGetMinMax(float3* min, float3* max);	//!< получить общий ограничивающий объем всего списка моделей
 

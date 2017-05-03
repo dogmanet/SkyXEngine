@@ -129,14 +129,6 @@ bool SXGUIListBox::SetTextItem(int index,const char* text)
 	return this->SetItemData(index,data);
 }
 
-char* SXGUIListBox::GetItemText(int index)
-{
-	WORD CountLength = GetItemTextLength(index) + 1;
-	char* text = new char[CountLength];
-	SendMessage(this->GetHWND(),LB_GETTEXT,WPARAM(index),LPARAM(text));
-	return text;
-}
-
 void SXGUIListBox::GetItemText(int index,char* buf)
 {
 	SendMessage(this->GetHWND(),LB_GETTEXT,WPARAM(index),LPARAM(buf));
@@ -167,14 +159,16 @@ bool SXGUIListBox::GetMultipleSel(int index)
 	return true;
 }
 
-int* SXGUIListBox::GetMultipleSelArr()
+void SXGUIListBox::GetMultipleSelArr(int** arr)
 {
-	WORD count = this->GetMultipleSelCount();
+	if (!arr)
+		return;
+
+	int count = this->GetMultipleSelCount();
 		if(count <= 0)
-			return 0;
-	int* arr = new int[count];
-	SendMessage(this->GetHWND(),LB_GETSELITEMS,WPARAM(count),LPARAM(arr));
-	return arr;
+			return;
+	*arr = new int[count];
+	SendMessage(this->GetHWND(),LB_GETSELITEMS,WPARAM(count),LPARAM(*arr));
 }
 
 

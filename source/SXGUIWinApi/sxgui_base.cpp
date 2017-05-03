@@ -20,8 +20,6 @@ SXGUIControl::SXGUIControl(HWND window_handle,HWND parent_handle,WNDPROC handler
 	ParentHandle = parent_handle;
 		if(handler != 0)
 			OldProc = (WNDPROC)SetWindowLong(WindowHandle, GWL_WNDPROC, (LONG)handler);
-
-	//SetWindowLong(WindowHandle,GWL_USERDATA,(LONG)OldProc);
 }
 
 void SXGUIControl::Init(HWND window_handle, HWND parent_handle, WNDPROC handler)
@@ -424,10 +422,10 @@ void SXGUIComponent::SetHintText(const char* text)
 	Hint->SetText(text);
 }
 
-char* SXGUIComponent::GetHintText()
+const char* SXGUIComponent::GetHintText()
 {
 		if(Hint != 0)
-			Hint->GetText();
+			return Hint->GetText();
 	return 0;
 }
 
@@ -775,9 +773,8 @@ BOOL IsEdit(HWND hWnd)
 
 LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);//dynamic_cast<ISXGUIComponent*>(((IBaseObject*)((LONG*)GetWindowLong(hwnd, GWL_USERDATA))));
-	//ISXGUIBaseWnd *Component22 = dynamic_cast<ISXGUIBaseWnd*>(Component);//dynamic_cast<ISXGUIComponent*>(((IBaseObject*)((LONG*)GetWindowLong(hwnd, GWL_USERDATA))));
-	//int qwert = 0;
+	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
+	
 	if (Component)
 	{
 			if(msg == WM_KEYDOWN)
@@ -957,9 +954,8 @@ int SXGUIFuctinon::GetTextLen(ISXGUIControl *Control)
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(HWND hwnd,LPARAM lParam)
 {
-	//SXGUIButtonImg *Component = (SXGUIButtonImg *)GetWindowLong(hwnd,GWL_USERDATA);
 	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
-	ISXGUIButtonImg *Button = dynamic_cast<ISXGUIButtonImg*>(Component);
+	
 	char ClassName[256];
 	int error = GetClassName(hwnd,ClassName,256);
 		if(error && strcmp(ClassName,"SXGUIBUTTONIMG") == 0 && Component)
@@ -970,7 +966,7 @@ BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(HWND hwnd,LPARA
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateSize(HWND hwnd,LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
 	Component->UpdateSize();
 		
 	return TRUE;
@@ -978,7 +974,7 @@ BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateSize(HWND hwnd,LPARAM lPa
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateRect(HWND hwnd,LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
 	Component->UpdateRect();
 		
 	return TRUE;
@@ -986,7 +982,7 @@ BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateRect(HWND hwnd,LPARAM lPa
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcMouseMove(HWND hwnd,LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
 
 	POINT p;
 	GetCursorPos(&p);
@@ -1035,7 +1031,7 @@ int SXGUIBaseHandlers::InitHandlerMsg(ISXGUIComponent* Component)
 
 LRESULT SXGUIBaseHandlers::CtlColorChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong((HWND)lParam,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong((HWND)lParam, GWL_USERDATA);
 
 		if(Component)
 		{
@@ -1056,7 +1052,7 @@ LRESULT SXGUIBaseHandlers::SizeChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXGUIBaseHandlers::SizingChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
 	RECT rc;
 	GetWindowRect(hwnd, &rc);
 	POINT p;
@@ -1150,26 +1146,6 @@ bool SXGUIRegClass::RegButtonImg()
 	return true;
 }
 
-bool SXGUIRegClass::RegToolBar()
-{
-	WNDCLASS wc;
-
-	wc.style         = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc   =  WndProcAllDefault; 
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
-	wc.hInstance     = GetModuleHandle(0);
-	wc.hIcon         = 0;
-	wc.hCursor       = 0;
-	wc.hbrBackground = 0;
-	wc.lpszMenuName  = 0;
-	wc.lpszClassName = "SXGUITOOLBAR";
-
-		if(!RegisterClass(&wc)) 
-			return false;
-	return true;
-}
-
 bool SXGUIRegClass::RegGroupBox()
 {
 	WNDCLASS wc;
@@ -1188,4 +1164,43 @@ bool SXGUIRegClass::RegGroupBox()
 	if (!RegisterClass(&wc))
 		return false;
 	return true;
+}
+
+void SXGUIDialogs::SelectFile(int type, char* path, char* name, const char* stdpath, const char* filter)
+{
+	OPENFILENAME ofn;
+	
+	if (!path && !name)
+		return;
+
+	if (path)
+		path[0] = 0;
+
+	if (name)
+		name[0] = 0;
+
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hInstance = GetModuleHandle(0);
+	ofn.hwndOwner = 0;
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = path;
+	ofn.nMaxFile = sizeof(path);
+	ofn.lpstrInitialDir = stdpath;
+
+	ofn.lpstrFileTitle = name;
+	ofn.nMaxFileTitle = sizeof(name);
+
+	ofn.Flags = 0;
+
+	if (path)
+		ofn.Flags |= OFN_PATHMUSTEXIST;
+
+	if (name)
+		ofn.Flags |= OFN_FILEMUSTEXIST;
+
+	if (type == SXGUI_DIALOG_FILE_OPEN)
+		GetOpenFileName(&ofn);
+	else if (type == SXGUI_DIALOG_FILE_SAVE)
+		GetSaveFileName(&ofn);
 }
