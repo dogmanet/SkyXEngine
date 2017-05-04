@@ -1270,7 +1270,7 @@ void Editor::Update()
 	static VShaderInputCamera VSICData;
 	VSICData.mRes = SMMatrixTranspose(m_mWorldMat * m_mViewMat * m_mProjMat);
 	VSICData.mWorld = SMMatrixTranspose(m_mWorldMat);
-	m_pd3dDevice->SetVertexShaderConstantF(1, (float*)&VSICData, sizeof(VSICData) / sizeof(float) / 4);
+	m_pd3dDevice->SetVertexShaderConstantF(0, (float*)&VSICData, sizeof(VSICData) / sizeof(float) / 4);
 
 	m_pd3dDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&m_mViewMat);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&m_mProjMat);
@@ -1322,6 +1322,7 @@ void Editor::Update()
 	m_pd3dDevice->EndScene();
 
 	m_pAnimMgr->Update();
+	m_pAnimMgr->Sync();
 
 	m_pSwapChain->Present(NULL, NULL, NULL, NULL, D3DSWAPEFFECT_DISCARD);
 }
