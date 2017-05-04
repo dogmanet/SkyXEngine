@@ -4,6 +4,15 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
+/*!
+\file
+Заголовочный файл библиотеки графического пользовательского интерфейса посредством WinApi
+*/
+
+/*! \defgroup sxguiwinapi sxguiwinapi - библиотека графического пользовательского интерфейса реализованного на WinApi
+@{
+*/
+
 #ifndef __sxguiwinapi
 #define __sxguiwinapi
 
@@ -39,9 +48,9 @@ SXGUIBaseHandlers::InitHandlerMsg(HWND);*/
 /*а затем добавить необходимые:
 Wnd->AddHandler(MouseWheel,WM_MOUSEWHEEL,0,0,0,0,true);*/
 
-//!!! main функция-обработчик может быть только одна и должна быть вообще!
-//!!! но если ее нет то для окон будет вызываться ::DefWindowProc(hwnd, msg, wParam, lParam)
-//!!! а для остальных компонентов CallWindowProc(Component->OldProc,hwnd, msg, wParam, lParam)
+// main функция-обработчик может быть только одна и должна быть вообще!
+// но если ее нет то для окон будет вызываться DefWindowProc(hwnd, msg, wParam, lParam)
+// а для остальных компонентов CallWindowProc(Component->OldProc,hwnd, msg, wParam, lParam)
 
 #define SXGUI_HORZ_SCROLL	0
 #define SXGUI_VERT_SCROLL	1
@@ -52,26 +61,25 @@ Wnd->AddHandler(MouseWheel,WM_MOUSEWHEEL,0,0,0,0,true);*/
 #define SXGUI_LEFT_SCROLL	0
 #define SXGUI_RIGTH_SCROLL	1
 
-//максимальнео количество обработчиков
-//нужно подобрать оптимальное значение
+//! максимальнео количество обработчиков
 #define SXGUI_COUNT_HANDLERS_MSG_IN_ARR 256
 
-//тип обработчика
+//! тип обработчика
 typedef LRESULT(*HandlerMsg) (HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-//структура данных для обработчика
+//! структура данных для обработчика
 struct SXHandlerMsgStruct
 {
-	HandlerMsg Handler;		//сама функция, которая будет вызываться
-	UINT Msg;
-	WPARAM WParam;
-	bool BFCondiderWParam;	//проверять WParam?
-	LPARAM LParam;
-	bool BFCondiderLParam;	//проверять LParam
-	bool IsMainFunction;	//главный ли это обработчик? true - значение возвращенное фунцией - возвращается WndProc, иначе нет 
+	HandlerMsg Handler;		//!< сама функция, которая будет вызываться
+	UINT Msg;				//!< код сообщения
+	WPARAM WParam;			//!< WParam сообщения
+	bool BFCondiderWParam;	//!< проверять WParam?
+	LPARAM LParam;			//!< LParam сообщения
+	bool BFCondiderLParam;	//!< проверять LParam
+	bool IsMainFunction;	//!< главный ли это обработчик? true - значение возвращенное фунцией - возвращается WndProc, иначе нет 
 };
 
-//структура, логическая, для определения тянуться ли стороны элемента за сторонами родителя
+//! структура, логическая, для определения тянуться ли стороны элемента за сторонами родителя
 struct SXRectBool
 {
 	SXRectBool()
@@ -94,71 +102,82 @@ struct SXRectBool
 	bool right;
 };
 
-//первый базовый класс, единственным родителем не используется
-//определяет объект как контрол, то есть содержит в себе минимум данных для 
-//управления объектом
+/*! 
+первый базовый класс, единственным родителем не используется, 
+определяет объект как контрол, то есть содержит в себе минимум данных для управления объектом
+*/
 struct ISXGUIControl : public IBaseObject
 {
 	virtual ~ISXGUIControl(){};
-	virtual void Init(HWND window_handle, HWND parent_handle, WNDPROC handler) = 0;	//запоминаем дескрипторы, и устанавливаем новый обработчик
+	virtual void Init(HWND window_handle, HWND parent_handle, WNDPROC handler) = 0;	//!< запоминаем дескрипторы, и устанавливаем новый обработчик
 
-	virtual HWND Parent() = 0;						//возвращает HWND родителя
-	virtual bool Parent(HWND parent_handle) = 0;	//устанавливает родителя
+	virtual HWND Parent() = 0;						//!< возвращает HWND родителя
+	virtual bool Parent(HWND parent_handle) = 0;	//!< устанавливает родителя
 
-	virtual HWND GetHWND() = 0;
+	virtual HWND GetHWND() = 0;						//!< возвращает свой HWND
 
-	virtual void Visible(bool bf) = 0;				//установка видимости контрола
-	virtual bool Visible() = 0;						//видим ли контрол?
+	virtual void Visible(bool bf) = 0;				//!< установка видимости контрола
+	virtual bool Visible() = 0;						//!< видим ли?
 
-	virtual void SetFocus() = 0;					//установить фокус на контрол
-	virtual bool Focus() = 0;						//установлен ли фокус на контроле?
+	virtual void SetFocus() = 0;					//!< установить фокус
+	virtual bool Focus() = 0;						//!< установлен ли фокус?
 	
-	WNDPROC OldProc;
+	WNDPROC OldProc;								//!< старый обработчик
 
-	virtual void * GetUserPtr() = 0;
-	virtual void * SetUserPtr(void *) = 0;
+	/*! \name Пользовательские данные
+	@{*/
+
+	virtual void * GetUserPtr() = 0;				//!< получить пользовательские данные
+	virtual void * SetUserPtr(void *) = 0;			//!< установить пользовательские данные
+
+	//!@}
 };
 
+//#############################################################################
 
-//////
-//размер текста подсказки
+//! размер текста подсказки
 #define SX_HINT_COUNT_BUF_SIZE 1024
 
+//! всплывающая подсказка при наведении на элемент
 struct ISXGUIHint : public IBaseObject
 {
 	virtual ~ISXGUIHint(){}
-	//autopop - время показа
-	//init - сколько ждем появления подсказки после наведения курсора
-	virtual void SetDelayTime(DWORD init, DWORD autopop) = 0;
+	
+	//! установка времени ожидания и показа
+	virtual void SetDelayTime(
+		DWORD init,		//!< сколько ждать до появления подсказки после наведения курсора
+		DWORD autopop	//!< время показа
+		) = 0;
 
-	virtual bool Parent(HWND parent) = 0;
-	virtual HWND Parent() = 0;
+	virtual bool Parent(HWND parent) = 0;	//!< устанавливает родителя (при наведении на родителя всплывает эта подсказка)
+	virtual HWND Parent() = 0;				//!< возвращает родителя
 
-	virtual HWND GetHWND() = 0;
+	virtual HWND GetHWND() = 0;				//!< возвращает свой HWND
 
-	virtual void Visible(bool bf) = 0;
-	virtual bool Visible() = 0;
+	virtual void Visible(bool bf) = 0;		//!< установка видимости
+	virtual bool Visible() = 0;				//!< видно ли?
 
-	virtual void SetText(const char* text) = 0;	//установка текста подсказки
-	virtual const char* GetText() = 0;				//возвращает указатель на текст подсказки, очищается при вызове деструктора
-	virtual void GetText(char* buf) = 0;
+	virtual void SetText(const char* text) = 0;		//!< установка текста подсказки
+	virtual const char* GetText() = 0;				//!< возвращает указатель на текущий текст подсказки, очищается при вызове деструктора
+	virtual void GetText(char* buf) = 0;			//!< записывает в buf текущий текст подсказки
 };
 
+//! создание объекта подсказки для элемента parent
 SX_LIB_API ISXGUIHint* SXGUICrHint(HWND parent);
 
-////
+//#############################################################################
 
-//второй в очереди родитель, часто наследование идет именно от него
-//более расширенное управление большинством элементов
+/*! Компонент - второй в очереди родитель, часто наследование идет именно от него,
+более расширенное управление большинством элементов*/
 struct ISXGUIComponent : public virtual ISXGUIControl
 {
 	virtual ~ISXGUIComponent(){};
-	//устанавливает необходимые данные для управления элементом
-	virtual void InitComponent() = 0; //необходимо вызывать после инициализации
+	/*! устанавливает необходимые данные для управления элементом
+	 \note Необходимо вызывать после инициализации, то есть когда HWND уже получен*/
+	virtual void InitComponent() = 0; 
 
-	//действителен ли элемент
-	virtual bool Enable() = 0;
-	virtual void Enable(bool bf) = 0;
+	virtual bool Enable() = 0;			//!< действителен ли элемент
+	virtual void Enable(bool bf) = 0;	//!< установка действительности элемента
 
 	//работа со шрифтом
 	//если name == 0 то не изменияем название шрифта,
@@ -262,17 +281,18 @@ struct ISXGUIComponent : public virtual ISXGUIControl
 
 };
 
-//третий (если нужен текст) родитель, непосредтсвенно не используется
-//характеризует элемент как содержащий единый текст (аля кэпшен) текстовый компонент
+/*! третий (если нужен текст) родитель, непосредтсвенно не используется,
+характеризует элемент как содержащий единый текст (аля кэпшен) текстовый компонент
+*/
 struct ISXGUITextual : public virtual ISXGUIComponent
 {
 	virtual ~ISXGUITextual(){};
-	virtual bool SetText(const char* text) = 0;
-	virtual void GetText(char* buf, int size) = 0;
-	virtual int GetTextLen() = 0;
+	virtual bool SetText(const char* text) = 0;		//установка текста
+	virtual void GetText(char* buf, int size) = 0;	//записывает в buf текущий текст элемента, не больше size
+	virtual int GetTextLen() = 0;					//возвращает размер строки
 };
 
-///////
+//#############################################################################
 
 //по дефолту обработчиком назначается DefWindowProc
 //чтобы функционировали свойства SXGUIComponent необходимо указать стандартный для всех элементов обработчик WndProcAllDefault
@@ -712,18 +732,22 @@ struct ISXGUIToolBar : public virtual ISXGUIComponent
 
 SX_LIB_API ISXGUIToolBar* SXGUICrToolBar(const char* caption, WORD x, WORD y, WORD width, WORD heigth, WORD width_element, WORD heigth_element, HWND parent, WNDPROC handler, DWORD id);
 
-//////
+//#############################################################################
+
+/*! \name Стандартный обработчик событий для всех элементов
 
 //!!!
 //на одно сообщение может быть назначен только один обработчик который будет возвращать значение
 //седьмой аргумент AddHandler (isMain) должен быть true
 //остальные не должны сего делать (седьмой аргумент AddHandler false)
 //!!!
-
-//стандартный обработчик событий для всех элементов
+@{*/
+//
 SX_LIB_API LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-////////////////////////
+//!@}
+
+//#############################################################################
 
 namespace SXGUIFuctinon
 {
@@ -737,26 +761,23 @@ namespace SXGUIFuctinon
 
 	//операции с текстом элемента
 	SX_LIB_API bool	SetText(ISXGUIControl*const Control, const char* text);
-	//!!!выделение памяти
-	//SX_LIB_API char*GetTextOut(ISXGUIControl *Control);
 	SX_LIB_API void	GetText(ISXGUIControl *Control, char* buf, int count);
 	SX_LIB_API int	GetTextLen(ISXGUIControl *Control);
 };
 
-//функции обработки определенного события посылаемого родительскому элементу у всех его дочерних элементов
+//! функции обработки определенного события посылаемого родительскому элементу у всех его дочерних элементов
 namespace SXGUIEnumChildWindow
 {
-	//для класса SXGUIButtonImg
-	//обработка события активации кнопки и в последствии дезактивации остальных кнопкок
+	//! для класса SXGUIButtonImg, обработка события активации кнопки и в последствии дезактивации остальных кнопкок
 	SX_LIB_API BOOL CALLBACK EnumChildProcUpdateImgButton(HWND hwnd, LPARAM lParam);
 
-	//событие WM_SIZE
+	//! событие WM_SIZE
 	SX_LIB_API BOOL CALLBACK EnumChildProcUpdateSize(HWND hwnd, LPARAM lParam);
 
-	//событие WM_MOVE
+	//! событие WM_MOVE
 	SX_LIB_API BOOL CALLBACK EnumChildProcUpdateRect(HWND hwnd, LPARAM lParam);
 
-	//событие WM_MOUSEMOVE
+	//! событие WM_MOUSEMOVE
 	SX_LIB_API BOOL CALLBACK EnumChildProcMouseMove(HWND hwnd, LPARAM lParam);
 };
 
@@ -811,3 +832,5 @@ namespace SXGUIDialogs
 };
 
 #endif
+
+//!@}
