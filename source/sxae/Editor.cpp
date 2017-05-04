@@ -1197,9 +1197,9 @@ void Editor::InitD3D()
 	*/
 	m_pd3dDevice->GetSwapChain(0, &m_pSwapChain);
 
-	m_pVSH = SGCore_ShaderLoad(st_vertex, "mtrlskin_base.vs", "mtrlskin_base", scd_path);
+	m_pVSH = SGCore_ShaderLoad(st_vertex, "stdr_skin.vs", "stdr_skin.vs", scd_path);
 	//m_pPSH = SGCore_ShaderLoad(st_pixel, "mtrlskin_base.ps", "mtrlskin_base", scd_path);
-	m_pPSH = SGCore_ShaderLoad(st_pixel, "mtrlskin_stdr.ps", "mtrlskin_stdr", scd_path);
+	m_pPSH = SGCore_ShaderLoad(st_pixel, "stdr_skin.ps", "stdr_skin.ps", scd_path);
 
 	m_mProjMat = SMMatrixPerspectiveFovLH(50.0f / 180.0f * SM_PI, (float)width / (float)height, 0.1f, 10000.0f);
 
