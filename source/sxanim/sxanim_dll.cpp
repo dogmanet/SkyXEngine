@@ -15,7 +15,7 @@ See the license in LICENSE
 report_func reportf = def_report;
 #endif
 
-#define SA_PRECOND() if(!g_mgr){reportf(-1, "%s - sxanim is not init", gen_msg_location);return;}
+#define SA_PRECOND(ret) if(!g_mgr){reportf(-1, "%s - sxanim is not init", gen_msg_location);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -54,37 +54,34 @@ SX_LIB_API void SXAnim_0Create()
 }
 SX_LIB_API void SXAnim_0Kill()
 {
-	SA_PRECOND();
+	SA_PRECOND(_VOID);
 	mem_delete(g_mgr);
 }
 
 SX_LIB_API void SXAnim_Update(int thread)
 {
-	SA_PRECOND();
+	SA_PRECOND(_VOID);
 	g_mgr->Update(thread);
 }
 SX_LIB_API void SXAnim_UpdateSetThreadNum(int num)
 {
-	SA_PRECOND();
+	SA_PRECOND(_VOID);
 	g_mgr->SetThreadNum(num);
 }
 SX_LIB_API void SXAnim_Sync()
 {
-	SA_PRECOND();
+	SA_PRECOND(_VOID);
 	g_mgr->Sync();
 }
 SX_LIB_API void SXAnim_Render(ID for_id)
 {
-	SA_PRECOND();
+	SA_PRECOND(_VOID);
 	g_mgr->Render(for_id);
 }
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 {
-	if(!g_mgr)
-	{
-		reportf(-1, "%s - sxanim is not init", gen_msg_location); return(NULL);
-	}
+	SA_PRECOND(NULL);
 	Animation * anim = new Animation(g_mgr);
 	if(mdl)
 	{
@@ -95,11 +92,13 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 
 SX_LIB_API void SXAnim_ModelsComVisible(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)
 {
+	SA_PRECOND(_VOID);
 	g_mgr->ComputeVis(frustum, viewpos, id_arr);
 }
 
 SX_LIB_API ID SXAnim_ModelsAddArrForCom()
 {
+	SA_PRECOND(_VOID);
 	return(g_mgr->GetNextVisId());
 }
 SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
