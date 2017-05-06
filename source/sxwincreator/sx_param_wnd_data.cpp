@@ -1159,7 +1159,7 @@ void LoadFile(const char* path)
 
 	BOOL MenuWindow;
 	sscanf(tmpconfig->GetKey("JobWindow", "MenuWindow"), "%d", &MenuWindow);
-	SXMainWndElem::CheckBoxParamWinMenu->SetCheck(MenuWindow ? 1 : 0);
+	SXMainWndElem::CheckBoxParamWinMenu->SetCheck(MenuWindow ? SXGUI_CHECKBOX_CHECKED : SXGUI_CHECKBOX_UNCHECKED);
 	InvalidateRect(SXMainWndElem::CheckBoxParamWinMenu->GetHWND(),0,1);
 	SXUpdateParam::SetMenuWindow();
 
@@ -1223,15 +1223,15 @@ void LoadFile(const char* path)
 				if(strcmp(Object->SXClassName,"SXGUIButton") == 0)
 				{
 					CountObject = 0;
-					Object->Object = SXGUICrButton(CaptionElement,GClientRect.left,GClientRect.top,Width,Height,0,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+					Object->Object = SXGUICrButton(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIButtonImg") == 0)
 				{
 					CountObject = 1;
-					ISXGUIButtonImg* tmpButtonImg = SXGUICrButtonImgEx("",GClientRect.left,GClientRect.top,Width,Height,RGB(0,0,0),RGB(100,100,100),SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
-					tmpButtonImg->FrameColor = RGB(100,100,100);
-					tmpButtonImg->EnableBf = true;
-					tmpButtonImg->EnableState = true;
+					ISXGUIButtonImg* tmpButtonImg = SXGUICrButtonImgLoad("",GClientRect.left,GClientRect.top,Width,Height,RGB(0,0,0),RGB(100,100,100),SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+					tmpButtonImg->SetColorFrame(100, 100, 100);
+					tmpButtonImg->SetEnable(true);
+					tmpButtonImg->SetEnableActive(true);
 
 					Object->Object = tmpButtonImg;
 				}
@@ -1294,7 +1294,7 @@ void LoadFile(const char* path)
 				else if(strcmp(Object->SXClassName,"SXGUIToolBar") == 0)
 				{
 					CountObject = 13;
-					Object->Object = SXGUICrToolBar(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrToolBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIUpDown") == 0)
 				{
@@ -1651,9 +1651,9 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
 							fprintf(file,"%d%s",0,");\n");
 
-							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->FrameColor = RGB(100,100,100);\n");
-							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->EnableBf = true;\n");
-							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->EnableState = true;\n");
+							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetColorFrame(100,100,100);\n");
+							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetEnableActive(true);\n");
+							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetEnable(true);\n");
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIEdit") == 0)
 						{

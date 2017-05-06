@@ -60,20 +60,20 @@ int SXGUIEdit::Align()
 {
 	long style = GetWindowLong(this->GetHWND(),GWL_STYLE);
 		if(style & ES_RIGHT)
-			return SXGUI_EDIT_ALIGN_RIGHT;
+			return SXGUI_TEXT_ALIGN_RIGHT;
 		else if(style & ES_CENTER)
-			return SXGUI_EDIT_ALIGN_CENTER;
+			return SXGUI_TEXT_ALIGN_CENTER;
 		else
-			return SXGUI_EDIT_ALIGN_LEFT;
+			return SXGUI_TEXT_ALIGN_LEFT;
 }
 
 bool SXGUIEdit::Align(int align)
 {
-		if(align == SXGUI_EDIT_ALIGN_LEFT)
+		if (align == SXGUI_TEXT_ALIGN_LEFT)
 			return this->ModifyStyle(ES_LEFT,0);
-		else if(align == SXGUI_EDIT_ALIGN_RIGHT)
+		else if (align == SXGUI_TEXT_ALIGN_RIGHT)
 			return this->ModifyStyle(ES_RIGHT,0);
-		else if(align == SXGUI_EDIT_ALIGN_CENTER)
+		else if (align == SXGUI_TEXT_ALIGN_CENTER)
 			return this->ModifyStyle(ES_CENTER,0);
 	return false;
 }

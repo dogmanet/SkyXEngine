@@ -15,16 +15,20 @@ public:
 	void Release(){ mem_del(this); }
 	~SXGUIStatusBar();
 
-	bool SetCountParts(WORD count,int *arr);
-	WORD GetCountParts(int **arr);
-	bool SetTextParts(WORD pos,const char* text);
-	bool GetTextParts(WORD pos, char* buf, int len);
+	bool SetCountParts(int count, int *arr);
+	int GetCountParts(int **arr);
+	bool SetTextParts(int pos, const char* text);
+	bool GetTextParts(int pos, char* buf, int len);
 
 	void Update();
 	void UpdateSize();
 
-	WORD AlignReSizing;
+	void SetAlignRS(int alignrs);
+	int GetAlignRS();
+
 protected:
+
+	int AlignReSizing;
 
 	RECT OldRect;
 

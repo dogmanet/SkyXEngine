@@ -67,7 +67,7 @@ public:
 	//если name[0] == 0 то дефолтный шрифт gui
 	//если остальные значения в -1 то не учитываются
 	void SetFont(const char* name, int height, int width, int weight, int italic, int underline, int strike_out);
-	void SetFont(HFONT* hfont);
+	void SetFont(HFONT hfont);
 	HFONT GetFont();
 	
 	bool IsParentFont();	//наследуется ли шрифт родителя
@@ -86,7 +86,6 @@ public:
 
 	//устанавливает/возвращает клиентскую область RECT элемента в глобальных координатах
 	bool	SetClientRect(RECT* rect, bool alignment_screen_space);	//alignment_screen_space - использовать ли только работчую область (рабочий стол кроме панели задач)
-	RECT*	GetClientRect();
 	void	GetClientRect(RECT* rect);
 
 	//!!!первоначально нужно единожды включить видимость подсказки, ибо в этот момент она инициализируется
@@ -129,7 +128,7 @@ public:
 
 	//key - ключ в массиве обработчиков
 	HandlerMsg GetHandlerFunction(int key);	//возвращает функцию обработчик 
-	WORD GetCountKeyArrHandler();			//количество ключей в массиве обработчиков
+	int GetCountKeyArrHandler();			//количество ключей в массиве обработчиков
 
 	//все что касается данных сообщения
 	UINT GetMsgHandler(int key);
@@ -147,6 +146,12 @@ public:
 
 
 protected:
+
+	//данные необходимые для UpdateSize
+	RECT ParentRect;		//!< координаты родителя
+	RECT OffsetParentRect;	//!< на сколько был изменен родитель
+	RECT WinScreenRect;		//!< координаты текущего окна относительно рабочего стола
+
 	ISXGUIHint *Hint;
 	SXHandlerMsgStruct ArrHandler[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];
 	int CountKeyArrHandler;

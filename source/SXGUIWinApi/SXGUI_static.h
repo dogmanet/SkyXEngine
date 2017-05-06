@@ -16,8 +16,8 @@ public:
 	//создает линию
 	SXGUIStatic(WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPROC handler,DWORD id,bool vertical);
 
-	WORD Align();			//возвращает флаг выравнивания текста
-	bool Align(WORD align);	//устанавливает выравнивание текста
+	int Align();			//возвращает флаг выравнивания текста
+	bool Align(int align);	//устанавливает выравнивание текста
 
 	bool WordWrap();		//установлен ли автоперенос строк
 	bool WordWrap(bool bf); //манипуляция со свойством автоперенос строк

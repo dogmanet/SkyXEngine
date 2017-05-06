@@ -195,6 +195,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 				}
 		}
 
+	mem_delete(GData::SimModel);
 	mem_release(GData::ObjCamera);
 	SML_0Kill();
 	SGCore_0Kill();

@@ -62,10 +62,7 @@ bool SXGUIBaseWnd::AlphaBlend(bool bf)
 bool SXGUIBaseWnd::AlphaBlend()
 {
 	long style = GetWindowLong(this->WindowHandle, GWL_EXSTYLE);
-		if(style & WS_EX_LAYERED)
-			return true;
-		else
-			return false;
+	return (style & WS_EX_LAYERED);
 }
 
 bool SXGUIBaseWnd::Alpha(WORD alpha)

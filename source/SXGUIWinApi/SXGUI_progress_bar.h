@@ -34,11 +34,11 @@ public:
 	int GetMax();
 
 	//установить/получить цвет полоски (дефолтовый цвет определен вручную RGB(51,153,255))
-	bool SetBarColor(WORD r,WORD g,WORD b);	//при удачном выполнении возвращает true, иначе false
+	bool SetBarColor(BYTE r, BYTE g, BYTE b);	//при удачном выполнении возвращает true, иначе false
 	DWORD GetBarColor();
 
 	//установить/получить цвет фона (дефолтовый цвет равен цвету фона родителя)
-	bool SetBkColor(WORD r,WORD g,WORD b); //при удачном выполнении возвращает true, иначе false
+	bool SetBkColor(BYTE r, BYTE g, BYTE b); //при удачном выполнении возвращает true, иначе false
 	DWORD GetBkColor();
 };
 

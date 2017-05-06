@@ -23,10 +23,10 @@ public:
 	HMENU GetSubMenu(WORD id);
 
 	bool CheckItem(WORD id,bool check);
-	bool EnableItem(WORD id,WORD enable);
+	bool EnableItem(WORD id, int enable);
 
 	bool GetCheckedItem(WORD id);
-	WORD GetEnabledItem(WORD id);
+	int GetEnabledItem(WORD id);
 
 
 	HMENU GetHMENU();
@@ -55,10 +55,10 @@ public:
 	HMENU GetSubMenu(WORD id);
 
 	bool CheckItem(WORD id,bool check);
-	bool EnableItem(WORD id,WORD enable);
+	bool EnableItem(WORD id, int enable);
 
 	bool GetCheckedItem(WORD id);
-	WORD GetEnabledItem(WORD id);
+	int GetEnabledItem(WORD id);
 
 	bool Track(HWND hwnd,int x,int y);
 

@@ -11,8 +11,8 @@ class SXGUIUpDown : public SXGUIComponent, public virtual ISXGUIUpDown
 public:
 	SXGUIUpDown();
 	~SXGUIUpDown();
-	SXGUIUpDown(WORD x,WORD y,WORD width,WORD heigth,DWORD exstyle,DWORD style,HWND parent,WNDPROC handler,DWORD id,HWND buddy);
-	SXGUIUpDown(WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPROC handler,DWORD id,HWND buddy,WORD left_right);
+	SXGUIUpDown(WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id, HWND buddy);
+	SXGUIUpDown(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, HWND buddy, bool align_left);
 
 	void SetMinMax(long min,long max);
 	long SetPos(long pos);

@@ -94,12 +94,12 @@ int SXGUIProgressBar::GetMax()
 	return SendMessage(this->GetHWND(),PBM_GETRANGE,WPARAM(0),0);
 }
 
-bool SXGUIProgressBar::SetBarColor(WORD r,WORD g,WORD b)
+bool SXGUIProgressBar::SetBarColor(BYTE r, BYTE g, BYTE b)
 {
 	return SendMessage(this->GetHWND(),PBM_SETBARCOLOR,0,LPARAM(RGB(r,g,b)));
 }
 
-bool SXGUIProgressBar::SetBkColor(WORD r,WORD g,WORD b)
+bool SXGUIProgressBar::SetBkColor(BYTE r, BYTE g, BYTE b)
 {
 	return SendMessage(this->GetHWND(),PBM_SETBKCOLOR,1,LPARAM(RGB(r,g,b)));
 }
@@ -107,17 +107,11 @@ bool SXGUIProgressBar::SetBkColor(WORD r,WORD g,WORD b)
 DWORD SXGUIProgressBar::GetBarColor()
 {
 	COLORREF color = SendMessage(this->GetHWND(),PBM_SETBARCOLOR,0,0);
-		if(color == DWORD(CLR_DEFAULT))
-			color = RGB(51,153,255);
-	SendMessage(this->GetHWND(),PBM_SETBARCOLOR,0,color);
 	return color;
 }
 
 DWORD SXGUIProgressBar::GetBkColor()
 {
 	COLORREF color = SendMessage(this->GetHWND(),PBM_SETBKCOLOR,0,0);
-		if(color == DWORD(CLR_DEFAULT))
-			color = ::GetBkColor(GetDC(this->ParentHandle));
-	SendMessage(this->GetHWND(),PBM_SETBKCOLOR,0,color);
 	return color;
 }

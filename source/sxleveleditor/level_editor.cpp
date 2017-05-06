@@ -146,7 +146,7 @@ void SXLevelEditor::InitAllElements()
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::JobWindow);
 
 	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow","RenderWindow",0,0,0,25,600,400,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXLevelEditor::JobWindow->GetHWND(),0);
-	SXLevelEditor::ToolBar1 = SXGUICrToolBar("",0,1,810,24,810,24,SXLevelEditor::JobWindow->GetHWND(),0,0);
+	SXLevelEditor::ToolBar1 = SXGUICrToolBar(0,1,810,24,SXLevelEditor::JobWindow->GetHWND(),0,0);
 	
 	SXLevelEditor::GroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 26, 200, 400, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxList);

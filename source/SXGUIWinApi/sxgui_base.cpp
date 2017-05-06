@@ -168,10 +168,10 @@ void SXGUIComponent::Enable(bool bf)
 
 bool SXGUIComponent::SetWinRect(RECT* rect,bool alignment_screen_space)
 {
-	RECT* wrect = new RECT;
-	SystemParametersInfo(SPI_GETWORKAREA, 0, wrect, 0);
-	UINT width_screen = wrect->right;
-	UINT heigth_screen = wrect->bottom;
+	RECT wrect;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
+	UINT width_screen = wrect.right;
+	UINT heigth_screen = wrect.bottom;
 
 	//MessageBox(0,ToPointChar(ToString(width_screen) + "|" + ToString(heigth_screen)),0,0);
 
@@ -196,13 +196,6 @@ bool SXGUIComponent::SetWinRect(RECT* rect,bool alignment_screen_space)
 	//MessageBox(0,ToPointChar(ToString(width) + "|" + ToString(heigth)),"wh",0);
 		BOOL bf = MoveWindow(this->GetHWND(), x, y, width, heigth, true);
 	return bf == TRUE ? true : false;
-}
-
-RECT* SXGUIComponent::GetWinRect()
-{
-	RECT* rect = new RECT;
-	GetWindowRect(this->GetHWND(), rect);
-	return rect;
 }
 
 void SXGUIComponent::GetWinRect(RECT* rect)
@@ -238,14 +231,6 @@ bool SXGUIComponent::SetClientRect(RECT* rect,bool alignment_screen_space)
 		if(x != qwerr->left || y != qwerr->top || width != qwerr->right - qwerr->left || heigth != qwerr->bottom - qwerr->top)
 			MessageBox(0,0,0,0);*/
 	return bf == TRUE ? true : false;
-}
-
-RECT* SXGUIComponent::GetClientRect()
-{
-	RECT* rect = new RECT;
-	GetWindowRect(this->GetHWND(), rect);
-	MapWindowPoints(NULL, this->Parent(), (LPPOINT)rect, 2);
-	return rect;
 }
 
 void SXGUIComponent::GetClientRect(RECT* rect)
@@ -285,7 +270,7 @@ void SXGUIComponent::SetFont(const char* name,int height,int width,int weight,in
 	SendMessage(this->GetHWND(), WM_SETFONT, WPARAM(hfont), 1);
 }
 
-void SXGUIComponent::SetFont(HFONT* hfont)
+void SXGUIComponent::SetFont(HFONT hfont)
 {
 	SendMessage(this->GetHWND(), WM_SETFONT, WPARAM(hfont), 1);
 }
@@ -658,7 +643,7 @@ bool SXGUIComponent::AddHandler(HandlerMsg Handler,UINT Msg)
 			return false;
 }
 
-WORD SXGUIComponent::GetCountKeyArrHandler()
+int SXGUIComponent::GetCountKeyArrHandler()
 {
 	return CountKeyArrHandler;
 }
@@ -907,14 +892,14 @@ bool SXGUIFuctinon::ScrollBarH(ISXGUIControl *Control)
 	return false;
 }
 
-bool SXGUIFuctinon::ScrollLine(ISXGUIControl *Control,WORD scroll,WORD dir,int count)
+bool SXGUIFuctinon::ScrollLine(ISXGUIControl *Control,int scroll,int dir,int count)
 {
-	long _scroll = scroll == SXGUI_VERT_SCROLL ? WM_VSCROLL : WM_HSCROLL;
+	long _scroll = scroll == SXGUI_SCROLL_TYPE_VERT ? WM_VSCROLL : WM_HSCROLL;
 	long _dir = 0;
 		if(_scroll == WM_VSCROLL)
-			_dir = dir == SXGUI_DOWN_SCROLL ? SB_LINEDOWN : SB_LINEUP /*SB_BOTTOM :SB_TOP*/;
+			_dir = dir == SXGUI_SCROLL_DIR_DOWN ? SB_LINEDOWN : SB_LINEUP /*SB_BOTTOM :SB_TOP*/;
 		else
-			_dir = dir == SXGUI_RIGTH_SCROLL ? SB_LINERIGHT : SB_LINELEFT /*SB_RIGHT :SB_LEFT*/;
+			_dir = dir == SXGUI_SCROLL_DIR_RIGTH ? SB_LINERIGHT : SB_LINELEFT /*SB_RIGHT :SB_LEFT*/;
 
 	bool bf = true;
 		for(int i=0;i<count;i++)
@@ -932,13 +917,6 @@ bool SXGUIFuctinon::SetText(ISXGUIControl*const Control, const char* text)
 		else
 			return true;
 }	
-
-/*char* SXGUIFuctinon::GetTextOut(ISXGUIControl *Control)
-{
-	char* text = new char[GetWindowTextLength(Control->GetHWND()) + 1];
-	GetWindowText(Control->GetHWND(),text,GetWindowTextLength(Control->GetHWND()) + 1);
-	return text;
-}*/
 
 void SXGUIFuctinon::GetText(ISXGUIControl *Control,char* buf,int count)
 {
@@ -1169,38 +1147,53 @@ bool SXGUIRegClass::RegGroupBox()
 void SXGUIDialogs::SelectFile(int type, char* path, char* name, const char* stdpath, const char* filter)
 {
 	OPENFILENAME ofn;
+
+	char tpath[1024];
+	char tname[256];
 	
 	if (!path && !name)
 		return;
 
 	if (path)
-		path[0] = 0;
+		tpath[0] = tpath[1] = 0;
 
 	if (name)
-		name[0] = 0;
+		tname[0] = tname[1] = 0;
 
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	ofn.hInstance = GetModuleHandle(0);
 	ofn.hwndOwner = 0;
 	ofn.lpstrFilter = filter;
-	ofn.lpstrFile = path;
-	ofn.nMaxFile = sizeof(path);
+	ofn.lpstrFile = tpath;
+	ofn.nMaxFile = sizeof(tpath);
 	ofn.lpstrInitialDir = stdpath;
 
-	ofn.lpstrFileTitle = name;
-	ofn.nMaxFileTitle = sizeof(name);
+	if (name)
+	{
+		ofn.lpstrFileTitle = tname;
+		ofn.nMaxFileTitle = sizeof(tname);
+	}
 
 	ofn.Flags = 0;
 
-	if (path)
-		ofn.Flags |= OFN_PATHMUSTEXIST;
+	//if (path)
+	ofn.Flags |= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
-	if (name)
-		ofn.Flags |= OFN_FILEMUSTEXIST;
-
+	/*if (name)
+		ofn.Flags |= OFN_FILEMUSTEXIST;*/
+	BOOL Result = FALSE;
 	if (type == SXGUI_DIALOG_FILE_OPEN)
-		GetOpenFileName(&ofn);
+		Result = GetOpenFileName(&ofn);
 	else if (type == SXGUI_DIALOG_FILE_SAVE)
-		GetSaveFileName(&ofn);
+		Result = GetSaveFileName(&ofn);
+
+	if (Result)
+	{
+		if (path)
+			strcpy(path, tpath);
+
+		if (name)
+			strcpy(name, tname);
+	}
 }

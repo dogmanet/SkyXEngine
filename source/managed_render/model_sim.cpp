@@ -30,6 +30,17 @@ ModelSim::ModelSim()
 
 	GData::DXDevice->CreateVertexDeclaration(InstanceGreen, &VertexDeclarationGreen);
 
+	D3DVERTEXELEMENT9 layoutDynamic[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+		{ 0, 32, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0 },
+		{ 0, 36, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0 },
+		D3DDECL_END()
+	};
+	GData::DXDevice->CreateVertexDeclaration(layoutDynamic, &VertexDeclarationSkin);
+
 	GData::DXDevice->CreateVertexBuffer(
 		1 * sizeof(DataVertex),
 		/*D3DUSAGE_DYNAMIC | */D3DUSAGE_WRITEONLY,
@@ -49,6 +60,22 @@ ModelSim::ModelSim()
 	TransVertBufGreen->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 	memcpy(RTGPUArrVerteces, &DVGreen, sizeof(DataVertex));
 	TransVertBufGreen->Unlock();
+}
+
+ModelSim::~ModelSim()
+{
+	mem_release(VertexDeclarationStatic);
+	mem_release(VertexDeclarationGreen);
+	mem_release(VertexDeclarationSkin);
+
+	mem_release(TransVertBufGreen);
+
+	for (int i = 0; i < ArrStaticModel.size(); ++i)
+	{
+		mem_release(ArrStaticModel[i]->Anim);
+		mem_release(ArrStaticModel[i]->Model);
+		mem_delete(ArrStaticModel[i]);
+	}
 }
 
 void ModelSim::Add(const char* path)
@@ -114,6 +141,34 @@ void ModelSim::Add(const char* path)
 	float3_t Max = tmpMax;
 
 	ArrStaticModel.push_back(new DataModel(StaticModel, &Center,&Max,&Min,&Plane));
+
+	IDirect3DVertexBuffer9* Anim;
+	GData::DXDevice->CreateVertexBuffer(
+		StaticModel->AllVertexCount * sizeof(vertex_animated),
+		D3DUSAGE_WRITEONLY,
+		0,
+		D3DPOOL_MANAGED,
+		&Anim,
+		0);
+
+	vertex_animated* pDataAnim;
+	Anim->Lock(0, 0, (void**)&pDataAnim, 0);
+	StaticModel->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
+	
+	for (int i = 0; i < StaticModel->AllVertexCount; ++i)
+	{
+		pDataAnim[i].Pos = pData[i].Pos;
+		pDataAnim[i].Norm = pData[i].Norm;
+		pDataAnim[i].Tex = pData[i].Tex;
+		pDataAnim[i].BoneIndices[0] = pDataAnim[i].BoneIndices[1] = pDataAnim[i].BoneIndices[2] = pDataAnim[i].BoneIndices[3] = 0;
+		pDataAnim[i].BoneWeights.x = 1;
+		pDataAnim[i].BoneWeights.y = pDataAnim[i].BoneWeights.z = pDataAnim[i].BoneWeights.w = 0;
+	}
+
+	Anim->Unlock();
+	StaticModel->VertexBuffer->Unlock();
+
+	ArrStaticModel[ArrStaticModel.size() - 1]->Anim = Anim;
 }
 
 inline ID ModelSim::GetIDMtl()
@@ -192,7 +247,7 @@ void ModelSim::RenderGreen(DWORD timeDelta)
 
 	long jCountIndex = 0;
 
-	SGCore_MtlSet(IDsMat, 0);
+	SGCore_MtlSet(IDsMat, &WorldMat);
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->VertexCount[0], jCountIndex, ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3) * 1));
 	jCountIndex += ArrStaticModel[CurrRenderModel]->Model->IndexCount[0];
@@ -203,5 +258,16 @@ void ModelSim::RenderGreen(DWORD timeDelta)
 
 void ModelSim::RenderSkin(DWORD timeDelta)
 {
+	ModelBoneShader mbs;
+	mbs.position = float4(0, 0, 0, 1);
+	mbs.orient = SMQuaternion();
 
+	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Anim, 0, sizeof(vertex_animated));
+	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->IndexBuffer);
+	GData::DXDevice->SetVertexDeclaration(VertexDeclarationSkin);
+
+	SGCore_MtlSet(IDsMat, &WorldMat);
+	GData::DXDevice->SetVertexShaderConstantF(16, (float*)&mbs, 2);
+	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->VertexCount[0], 0, ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
+	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
 }

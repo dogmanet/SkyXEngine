@@ -23,14 +23,14 @@ SXGUIButton::SXGUIButton(const char* caption,WORD x,WORD y,WORD width,WORD heigt
 	this->InitComponent();
 }
 
-SXGUIButton::SXGUIButton(const char* caption,WORD x,WORD y,WORD width,WORD heigth,WORD image,HWND parent,WNDPROC handler,DWORD id)
+SXGUIButton::SXGUIButton(const char* caption, WORD x, WORD y, WORD width, WORD heigth, int image, HWND parent, WNDPROC handler, DWORD id)
 {
 	DWORD image_style = BS_TEXT;
 
-		if(image == SXGUI_BUTTON_IMAGE_ICON)
-			image_style = BS_ICON;
-		else if(image == SXGUI_BUTTON_IMAGE_BITMAT)
-			image_style = BS_BITMAP;
+	if (image == SXGUI_BUTTON_IMAGE_ICON)
+		image_style = BS_ICON;
+	else if (image == SXGUI_BUTTON_IMAGE_BITMAT)
+		image_style = BS_BITMAP;
 
 	this->WindowHandle = CreateWindowEx(
 							0,

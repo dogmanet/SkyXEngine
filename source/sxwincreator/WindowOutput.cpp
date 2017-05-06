@@ -127,14 +127,14 @@ void SXNameSapce::InitAllElements()
 	SXNameSapce::SXNameSpace->SetTransparentTextBk(true);
 	SXNameSapce::SXNameSpace->SetColorBrush(255,255,255);
 	SXNameSapce::Constructors = SXGUICrCheckBox("Constructors", 15, 60, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::Constructors->SetCheck(1);
+	SXNameSapce::Constructors->SetCheck(SXGUI_CHECKBOX_CHECKED);
 	SXNameSapce::Constructors->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXNameSapce::Constructors->SetColorText(0,0,0);
 	SXNameSapce::Constructors->SetColorTextBk(255,255,255);
 	SXNameSapce::Constructors->SetTransparentTextBk(true);
 	SXNameSapce::Constructors->SetColorBrush(220,220,220);
 	SXNameSapce::Destructors = SXGUICrCheckBox("Destructors", 15, 80, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::Destructors->SetCheck(1);
+	SXNameSapce::Destructors->SetCheck(SXGUI_CHECKBOX_CHECKED);
 	SXNameSapce::Destructors->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXNameSapce::Destructors->SetColorText(0,0,0);
 	SXNameSapce::Destructors->SetColorTextBk(255,255,255);
@@ -153,7 +153,7 @@ void SXNameSapce::InitAllElements()
 	SXNameSapce::Inlude->SetTransparentTextBk(true);
 	SXNameSapce::Inlude->SetColorBrush(220,220,220);
 	SXNameSapce::DetectedNameSpace = SXGUICrCheckBox("In Name Space", 15, 40, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::DetectedNameSpace->SetCheck(1);
+	SXNameSapce::DetectedNameSpace->SetCheck(SXGUI_CHECKBOX_CHECKED);
 	SXNameSapce::DetectedNameSpace->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXNameSapce::DetectedNameSpace->SetColorText(0,0,0);
 	SXNameSapce::DetectedNameSpace->SetColorTextBk(255,255,255);
@@ -171,10 +171,10 @@ void SXNameSapce::InitAllElements()
 	SXNameSapce::PathForFile->SetColorTextBk(255,255,255);
 	SXNameSapce::PathForFile->SetTransparentTextBk(true);
 	SXNameSapce::PathForFile->SetColorBrush(255,255,255);
-	SXNameSapce::ButtonSelectFile = SXGUICrButton("...", 298, 159, 23, 19, 0, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
+	SXNameSapce::ButtonSelectFile = SXGUICrButton("...", 298, 159, 23, 19, SXGUI_BUTTON_IMAGE_NONE, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
 	SXNameSapce::ButtonSelectFile->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXNameSapce::ButtonSelectFile->AddHandler(SelectButClick,WM_LBUTTONUP);
-	SXNameSapce::StartOutput = SXGUICrButton("Start output",160,51,134,77,0,SXNameSapce::OutputGUIInFile->GetHWND(),0,0);
+	SXNameSapce::StartOutput = SXGUICrButton("Start output", 160, 51, 134, 77, SXGUI_BUTTON_IMAGE_NONE, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
 	SXNameSapce::StartOutput->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXNameSapce::StartOutput->AddHandler(StartButClick,WM_LBUTTONUP);
 }

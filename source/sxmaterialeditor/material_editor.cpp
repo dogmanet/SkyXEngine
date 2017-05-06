@@ -145,9 +145,9 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::JobWindow->AddHandler(SXMaterialEditor_JobWindow_CallWmCommand, WM_COMMAND);
 
 	SXMaterialEditor::WindowRender = SXGUICrBaseWnd("WindowRender","WindowRender",0,0,0,25,300,300,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXMaterialEditor::JobWindow->GetHWND(),0);
-	SXMaterialEditor::ToolBar = SXGUICrToolBar("",0,0,645,25,645,25,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ToolBar = SXGUICrToolBar(0,0,645,25,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	
-	SXMaterialEditor::ButtonSkyBox = SXGUICrButton("...", 275, 330, 25, 15, 0, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::ButtonSkyBox = SXGUICrButton("...", 275, 330, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonSkyBox->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ButtonSkyBox->AddHandler(SXMaterialEditor_ButtonSkyBox_Click, WM_LBUTTONUP);
 
@@ -173,14 +173,15 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::StaticTypeModel->SetTransparentTextBk(true);
 	SXMaterialEditor::StaticTypeModel->SetColorBrush(220,220,220);
 
-	SXMaterialEditor::ComboBoxTypeModel = SXGUICrComboBox("",100,347,200,70,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ComboBoxTypeModel = SXGUICrComboBox("",100,347,200,100,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::ComboBoxTypeModel->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ComboBoxTypeModel->SetColorText(0,0,0);
 	SXMaterialEditor::ComboBoxTypeModel->SetColorTextBk(255,255,255);
 	SXMaterialEditor::ComboBoxTypeModel->SetTransparentTextBk(true);
 	SXMaterialEditor::ComboBoxTypeModel->SetColorBrush(255,255,255);
 	SXMaterialEditor::ComboBoxTypeModel->AddItem("geometry");
-	SXMaterialEditor::ComboBoxTypeModel->AddItem("green");
+	SXMaterialEditor::ComboBoxTypeModel->AddItem("grass");
+	SXMaterialEditor::ComboBoxTypeModel->AddItem("tree");
 	SXMaterialEditor::ComboBoxTypeModel->AddItem("skin");
 	SXMaterialEditor::ComboBoxTypeModel->SetSel(0);
 
@@ -245,15 +246,15 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditPS->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditPS->AddHandler(SXMaterialEditor_EditPS_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
-	SXMaterialEditor::ButtonTex = SXGUICrButton("...",275,400,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonTex = SXGUICrButton("...", 275, 400, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonTex->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonTex->AddHandler(SXMaterialEditor_ButtonTex_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonVS = SXGUICrButton("...",275,420,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonVS = SXGUICrButton("...", 275, 420, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonVS->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonVS->AddHandler(SXMaterialEditor_ButtonVS_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonPS = SXGUICrButton("...",275,440,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonPS = SXGUICrButton("...", 275, 440, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonPS->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonPS->AddHandler(SXMaterialEditor_ButtonPS_Click, WM_LBUTTONUP);
 
@@ -343,7 +344,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditTexLighting->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditTexLighting->AddHandler(SXMaterialEditor_EditTexLighting_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
-	SXMaterialEditor::ButtonTexLighting = SXGUICrButton("...",605,90,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonTexLighting = SXGUICrButton("...", 605, 90, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonTexLighting->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonTexLighting->AddHandler(SXMaterialEditor_ButtonTexLighting_Click, WM_LBUTTONUP);
 
@@ -417,11 +418,11 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMask->SetColorBrush(255, 255, 255);
 	SXMaterialEditor::EditMask->AddHandler(SXMaterialEditor_EditMask_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
-	SXMaterialEditor::ButtonMask = SXGUICrButton("...", 605, 152, 25, 15, 0, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::ButtonMask = SXGUICrButton("...", 605, 152, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMask->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ButtonMask->AddHandler(SXMaterialEditor_ButtonMask_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonMR = SXGUICrButton("...",605,175,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonMR = SXGUICrButton("...", 605, 175, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMR->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonMR->AddHandler(SXMaterialEditor_ButtonMR_Click, WM_LBUTTONUP);
 
@@ -476,19 +477,19 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDR->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditDR->AddHandler(SXMaterialEditor_EditDR_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
-	SXMaterialEditor::ButtonMG = SXGUICrButton("...",605,195,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonMG = SXGUICrButton("...", 605, 195, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMG->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonMG->AddHandler(SXMaterialEditor_ButtonMG_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonMB = SXGUICrButton("...",605,215,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonMB = SXGUICrButton("...", 605, 215, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMB->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonMB->AddHandler(SXMaterialEditor_ButtonMB_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonMA = SXGUICrButton("...",605,235,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonMA = SXGUICrButton("...", 605, 235, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMA->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonMA->AddHandler(SXMaterialEditor_ButtonMA_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonDR = SXGUICrButton("...",605,260,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonDR = SXGUICrButton("...", 605, 260, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonDR->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonDR->AddHandler(SXMaterialEditor_ButtonDR_Click, WM_LBUTTONUP);
 
@@ -535,15 +536,15 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDA->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditDA->AddHandler(SXMaterialEditor_EditDA_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
-	SXMaterialEditor::ButtonDG = SXGUICrButton("...",605,280,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonDG = SXGUICrButton("...", 605, 280, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonDG->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonDG->AddHandler(SXMaterialEditor_ButtonDG_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonDB = SXGUICrButton("...",605,300,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonDB = SXGUICrButton("...", 605, 300, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonDB->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonDB->AddHandler(SXMaterialEditor_ButtonDB_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::ButtonDA = SXGUICrButton("...",605,320,25,15,0,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ButtonDA = SXGUICrButton("...", 605, 320, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonDA->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonDA->AddHandler(SXMaterialEditor_ButtonDA_Click, WM_LBUTTONUP);
 

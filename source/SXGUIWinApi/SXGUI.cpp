@@ -61,18 +61,18 @@ ISXGUIButton* SXGUICrButtonEx(const char* caption, WORD x, WORD y, WORD width, W
 {
 	return new SXGUIButton(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
 }
-ISXGUIButton* SXGUICrButton(const char* caption, WORD x, WORD y, WORD width, WORD heigth, WORD image, HWND parent, WNDPROC handler, DWORD id)
+ISXGUIButton* SXGUICrButton(const char* caption, WORD x, WORD y, WORD width, WORD heigth, int image, HWND parent, WNDPROC handler, DWORD id)
 {
 	return new SXGUIButton(caption, x, y, width, heigth, image, parent, handler, id);
 }
 
 
-ISXGUIButtonImg* SXGUICrButtonImgEx(const char* path, WORD x, WORD y, WORD width, WORD heigth, DWORD alpha_color, DWORD bk_color, HWND parent, WNDPROC handler, DWORD id)
+ISXGUIButtonImg* SXGUICrButtonImgLoad(const char* path, WORD x, WORD y, WORD width, WORD heigth, DWORD alpha_color, DWORD bk_color, HWND parent, WNDPROC handler, DWORD id)
 {
 	return new SXGUIButtonImg(path, x, y, width, heigth, alpha_color, bk_color, parent, handler, id);
 }
 
-ISXGUIButtonImg* SXGUICrButtonImg(WORD button, WORD x, WORD y, WORD width, WORD heigth, DWORD alpha_color, DWORD bk_color, HWND parent, WNDPROC handler, DWORD id)
+ISXGUIButtonImg* SXGUICrButtonImgRes(WORD button, WORD x, WORD y, WORD width, WORD heigth, DWORD alpha_color, DWORD bk_color, HWND parent, WNDPROC handler, DWORD id)
 {
 	return new SXGUIButtonImg(button, x, y, width, heigth, alpha_color, bk_color, parent, handler, id);
 }
@@ -93,9 +93,9 @@ ISXGUIUpDown* SXGUICrUpDownEx(WORD x, WORD y, WORD width, WORD heigth, DWORD exs
 	return new SXGUIUpDown(x, y, width, heigth, exstyle, style, parent, handler, id, buddy);
 }
 
-ISXGUIUpDown* SXGUICrUpDown(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, HWND buddy, WORD left_right)
+ISXGUIUpDown* SXGUICrUpDown(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, HWND buddy, bool align_left)
 {
-	return new SXGUIUpDown(x, y, width, heigth, parent, handler, id, buddy, left_right);
+	return new SXGUIUpDown(x, y, width, heigth, parent, handler, id, buddy, align_left);
 }
 
 
@@ -227,7 +227,7 @@ ISXGUIPopupMenu* SXGUICrPopupMenu()
 }
 
 
-ISXGUIToolBar* SXGUICrToolBar(const char* caption, WORD x, WORD y, WORD width, WORD heigth, WORD width_element, WORD heigth_element, HWND parent, WNDPROC handler, DWORD id)
+ISXGUIToolBar* SXGUICrToolBar(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
 {
-	return new SXGUIToolBar(caption, x, y, width, heigth, width_element, heigth_element, parent, handler, id);
+	return new SXGUIToolBar(0, x, y, width, heigth, 0, 0, parent, handler, id);
 }

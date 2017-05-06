@@ -6,6 +6,12 @@
 
 #pragma once
 
+/*
+BST_UNCHECKED
+BST_CHECKED
+BST_INDETERMINATE
+*/
+
 class SXGUICheckBox : public SXGUITextual, public virtual ISXGUICheckBox
 {
 public:

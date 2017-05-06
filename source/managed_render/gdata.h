@@ -28,7 +28,7 @@ See the license in LICENSE
 #define FILE_FILTER_LEVEL	"Все файлы\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
 #define FILE_FILTER_MODEL	"dse file(.dse)\0*.dse\0Все файлы\0*.*\0\0"
 #define FILE_FILTER_VS		"vertex shader file(.vs)\0*.vs\0Все файлы\0*.*\0\0"
-#define FILE_FILTER_PS		"SkyX level file(.lvl)\0*.lvl\0Все файлы\0*.*\0\0"
+#define FILE_FILTER_PS		"pixel shader file(.ps)\0*.ps\0Все файлы\0*.*\0\0"
 
 //! пространство имен для хранения данных цикла рендера
 namespace GData

@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_toolbar.h
-// Краткое описание: tool bar в "своем стиле"
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_TOOLBAR_H
 #define SXGUI_TOOLBAR_H

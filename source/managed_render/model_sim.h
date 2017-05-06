@@ -67,6 +67,7 @@ protected:
 		}
 
 		ISXDataStaticModel* Model;
+		IDirect3DVertexBuffer9* Anim;
 		float3_t Min, Max, Center;
 		D3DXPLANE Plane;
 	};
