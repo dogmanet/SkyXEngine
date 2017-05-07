@@ -19,6 +19,9 @@ See the license in LICENSE
 #include <fstream>
 #include <gdefines.h>
 
+#include <io.h>
+#include <fcntl.h>
+
 #define SM_D3D_CONVERSIONS
 #include <common\sxmath.h>
 
@@ -155,6 +158,117 @@ struct ISXLConfig : public IBaseObject
 //!@{
 SX_LIB_API ISXLConfig* Core_CrLConfig(); //!< создать файл экземпляр класса ISXLConfig
 SX_LIB_API ISXLConfig* Core_OpLConfig(const char* path); //!< открыть файл конфигов
+//!@}
+
+/*!@name Работа с консолью */
+//!@{
+typedef void(*SXCONCMD)(); /*!< Тип функции для регистрации команды без аргументов */
+typedef void(*SXCONCMDARG)(int argc, const char ** argv); /*!< Тип функции для регистрации команды с аргументами */
+
+class ConCmdStub{}; /*!< Класс-заглушка, для определения следующих типов */
+typedef void(ConCmdStub::* SXCONCMDCLS)(); /*!< Тип метода для регистрации команды-члена класса без аргументов */
+typedef void(ConCmdStub::* SXCONCMDCLSARG)(int argc, const char ** argv); /*!< Тип метода для регистрации команды-члена класса с аргументами */
+
+SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd); //!< Регистрация консольной функции без аргументов
+SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd); //!< Регистрация консольной функции с аргументами
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd); //!< Регистрация консольной функции-члена класса без аргументов
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd); //!< Регистрация консольной функции-члена класса с аргументами
+
+SX_LIB_API void Core_0ConsoleUpdate(); //!< Обновление консоли, выполнение буфера команд
+SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд
+
+SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler();
+
+__inline void Core_SetOutPtr()
+{
+	UINT_PTR sock = Core_ConsoleGetOutHandler();
+	if(sock == ~0)
+	{
+		return;
+	}
+	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
+	FILE * fOut = ::fdopen(hOut, "a+");
+	::setvbuf(fOut, NULL, _IONBF, 0);
+
+	*stdout = *fOut;
+	*stderr = *fOut;
+}
+
+//!@}
+
+/*!@name Работа с реестром конфигурации (cvars) */
+//!@{
+
+//! Флаги кваров
+enum CVAR_FLAG
+{
+	CVARF_NONE     = 0x00, //!< нет
+	CVARF_CHEAT    = 0x01, //!< Изменение этой переменной с дефолтного значения разрешено только в режиме разработки
+	CVARF_READONLY = 0x02  //!< Только для чтения
+};
+
+//! Регистрирует строковую переменную
+SX_LIB_API void Core_0RegisterCVarString(
+	const char * name, //!< Имя квара
+	const char * value,  //!< значение по умолчанию
+	const char * desc=NULL, //!< краткое описание
+	int flags = 0 //!< флаги из CVAR_FLAG
+	);
+
+//! Регистрирует целую переменную
+SX_LIB_API void Core_0RegisterCVarInt(
+	const char * name, //!< Имя квара
+	int value,  //!< значение по умолчанию
+	const char * desc = NULL, //!< краткое описание
+	int flags = 0 //!< флаги из CVAR_FLAG
+	);
+
+//! Регистрирует дробную переменную
+SX_LIB_API void Core_0RegisterCVarFloat(
+	const char * name, //!< Имя квара
+	float value,  //!< значение по умолчанию
+	const char * desc = NULL, //!< краткое описание
+	int flags = 0 //!< флаги из CVAR_FLAG
+	);
+
+//! Регистрирует логическую переменную
+SX_LIB_API void Core_0RegisterCVarBool(
+	const char * name, //!< Имя квара
+	bool value,  //!< значение по умолчанию
+	const char * desc = NULL, //!< краткое описание
+	int flags = 0 //!< флаги из CVAR_FLAG
+	);
+
+//! Получает указатель на значение строкового квара. При отсутствии квара запрошенного типа возвращает NULL
+SX_LIB_API const char ** Core_0GetPCVarString(const char * name);
+#define GET_PCVAR_STRING(k) Core_0GetPCVarString(k);
+
+//! Получает указатель на значение целочисленного квара. При отсутствии квара запрошенного типа возвращает NULL
+SX_LIB_API const int * Core_0GetPCVarInt(const char * name);
+#define GET_PCVAR_INT(k) Core_0GetPCVarInt(k);
+
+//! Получает указатель на значение дробного квара. При отсутствии квара запрошенного типа возвращает NULL
+SX_LIB_API const float * Core_0GetPCVarFloat(const char * name);
+#define GET_PCVAR_FLOAT(k) Core_0GetPCVarFloat(k);
+
+//! Получает указатель на значение логического квара. При отсутствии квара запрошенного типа возвращает NULL
+SX_LIB_API const bool * Core_0GetPCVarBool(const char * name);
+#define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k);
+
+
+//! Устанавливает новое значение квара. Должен существовать
+SX_LIB_API void Core_0SetCVarString(const char * name, const char * value);
+
+//! Устанавливает новое значение квара. Должен существовать
+SX_LIB_API void Core_0SetCVarInt(const char * name, int value);
+
+//! Устанавливает новое значение квара. Должен существовать
+SX_LIB_API void Core_0SetCVarFloat(const char * name, float value);
+
+//! Устанавливает новое значение квара. Должен существовать
+SX_LIB_API void Core_0SetCVarBool(const char * name, bool value);
+
+
 //!@}
 
 #endif

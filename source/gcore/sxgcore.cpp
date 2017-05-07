@@ -143,16 +143,10 @@ void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool win
 			{
 				CloseHandle(hMutex);
 				reportf(-1, "%s - none unic name, sxgcore", gen_msg_location);
-			}
-			else
-			{
-				GCoreInit(hwnd, width, heigth, windowed, create_device_flags);
+				return;
 			}
 		}
-		else
-		{
-			GCoreInit(hwnd, width, heigth, windowed, create_device_flags);
-		}
+		GCoreInit(hwnd, width, heigth, windowed, create_device_flags);
 	}
 	else
 		reportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);

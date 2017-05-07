@@ -6,6 +6,7 @@ See the license in LICENSE
 
 #define SX_DLL
 #pragma once
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <gdefines.h>
 

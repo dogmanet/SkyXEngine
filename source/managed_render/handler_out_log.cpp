@@ -93,16 +93,20 @@ void printflog(int level, const char* format, ...)
 		{
 			if (level == REPORT_MSG_LEVEL_ERROR)
 			{
-				printf("! ");
+				printf(COLOR_LRED "! ");
 				fwrite("! ", 1, 2, FileOutLog);
 			}
 			else if (level == REPORT_MSG_LEVEL_WARRNING)
 			{
-				printf("* ");
+				printf(COLOR_YELLOW "* ");
 				fwrite("* ", 1, 2, FileOutLog);
 			}
 
 			printf(buf);
+			if(level == REPORT_MSG_LEVEL_ERROR || level == REPORT_MSG_LEVEL_WARRNING)
+			{
+				printf(COLOR_RESET);
+			}
 			fwrite(buf, 1, strlen(buf), FileOutLog);
 			//fprintf(FileOutLog, "\n");
 			fflush(FileOutLog);

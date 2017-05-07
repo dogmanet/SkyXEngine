@@ -33,6 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
 	Core_0Create("SkyXEngine Core", true);
+	Core_SetOutPtr();
 	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
 	SGCore_Dbg_Set(printflog);
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
@@ -146,6 +147,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 			DWORD currTime = timeGetTime();
 			DWORD timeDelta = (currTime - lastTime);
+
+			Core_0ConsoleUpdate();
 
 			if (GetActiveWindow() == GData::Handle3D)
 			{

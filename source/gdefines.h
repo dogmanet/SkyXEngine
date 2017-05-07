@@ -85,6 +85,8 @@ struct IBaseObject
 	#endif
 #endif
 
+#include <cstdlib>
+
 /*! \name Некоторые ограничения на размерности */
 ///@{
 #define CORE_NAME_MAX_LEN		32	/*!< максимальная длина имени объекта ядра/подсистемы */
@@ -130,6 +132,7 @@ typedef void(*report_func) (int level, const char* format, ...);
 
 #include <cstdio> 
 #if defined(_WINDOWS)
+#	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
 #endif
 
@@ -140,6 +143,48 @@ typedef void(*report_func) (int level, const char* format, ...);
 #define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, желательно вылетать */
 
 #define REPORT_MSG_MAX_LEN 4096		/*!< максимальный размер сообщения */
+//! @}
+
+/** \name Коды цветов для цветной консоли */
+//! @{
+#define COLOR_RESET "\033[0m" /*!< Сброс на стандартные цвета текста и фона */
+
+#define COLOR_BLACK    "\033[38;5;0m"  /*!< Черный текст */
+#define COLOR_RED      "\033[38;5;1m"  /*!< Красный текст */
+#define COLOR_GREEN    "\033[38;5;2m"  /*!< Зеленый текст */
+#define COLOR_BLUE     "\033[38;5;4m"  /*!< Синий текст */
+#define COLOR_OLIVE    "\033[38;5;3m"  /*!< Темно-желтый текст */
+#define COLOR_MAGENTA  "\033[38;5;5m"  /*!< Пурпурный текст */
+#define COLOR_CYAN     "\033[38;5;6m"  /*!< Темно-бирюзовый текст */
+#define COLOR_GRAY     "\033[38;5;7m"  /*!< Серый текст */
+
+#define COLOR_DARKGRAY "\033[38;5;8m"  /*!< Темно-серый текст */
+#define COLOR_LRED     "\033[38;5;9m"  /*!< Светло красный текст */
+#define COLOR_LGREEN   "\033[38;5;10m" /*!< Зеленый текст */
+#define COLOR_LBLUE    "\033[38;5;12m" /*!< Светло-синий текст */
+#define COLOR_YELLOW   "\033[38;5;11m" /*!< Желтый текст */
+#define COLOR_LMAGENTA "\033[38;5;13m" /*!< Розоывй текст */
+#define COLOR_LCYAN    "\033[38;5;14m" /*!< Бирюзовый текст */
+#define COLOR_WHITE    "\033[38;5;15m" /*!< Белый текст */
+
+#define COLOR_BG_BLACK    "\033[48;5;0m"  /*!< Черный фон */
+#define COLOR_BG_RED      "\033[48;5;1m"  /*!< Красный фон */
+#define COLOR_BG_GREEN    "\033[48;5;2m"  /*!< Зеленый фон */
+#define COLOR_BG_BLUE     "\033[48;5;4m"  /*!< Синий фон */
+#define COLOR_BG_OLIVE    "\033[48;5;3m"  /*!< Темно-желтый фон */
+#define COLOR_BG_MAGENTA  "\033[48;5;5m"  /*!< Пурпурный фон */
+#define COLOR_BG_CYAN     "\033[48;5;6m"  /*!< Темно-бирюзовый фон */
+#define COLOR_BG_GRAY     "\033[48;5;7m"  /*!< Серый фон */
+
+#define COLOR_BG_DARKGRAY "\033[48;5;8m"  /*!< Темно-серый фон */
+#define COLOR_BG_LRED     "\033[48;5;9m"  /*!< Светло красный фон */
+#define COLOR_BG_LGREEN   "\033[48;5;10m" /*!< Зеленый фон */
+#define COLOR_BG_LBLUE    "\033[48;5;12m" /*!< Светло-синий фон */
+#define COLOR_BG_YELLOW   "\033[48;5;11m" /*!< Желтый фон */
+#define COLOR_BG_LMAGENTA "\033[48;5;13m" /*!< Розоывй фон */
+#define COLOR_BG_LCYAN    "\033[48;5;14m" /*!< Бирюзовый фон */
+#define COLOR_BG_WHITE    "\033[48;5;15m" /*!< Белый фон */
+
 //! @}
 
 #ifndef DEFAULT_FUNCTION_REPORT 
