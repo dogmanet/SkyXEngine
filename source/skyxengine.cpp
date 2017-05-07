@@ -74,6 +74,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXAnim_0Create();
 	SXAnim_Dbg_Set(printflog);
 
+	SXPhysics_0Create();
+	SXPhysics_Dbg_Set(printflog);
+
 	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
 	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
 	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
@@ -164,11 +167,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
+	SXPhysics_0Kill();
 	SXAnim_0Kill();
 	mem_release(GData::ObjCamera);
 	SGeom_0CreateKill();
 	SML_0Kill();
 	SGCore_0Kill();
+	Core_AKill();
 
 	return msg.wParam;
 }
