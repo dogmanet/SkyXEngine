@@ -367,17 +367,20 @@ void ConsoleRecv(void*)
 		}
 		else if(iResult == 0)
 		{
-			printf("Connection closed\n");
+			//printf("Connection closed\n");
 			return;
 		}
-		else
-			printf("recv failed with error: %d\n", WSAGetLastError());
+		//else
+			//printf("recv failed with error: %d\n", WSAGetLastError());
 	}
 }
 
 
 bool CommandConnect();
 void CommandDisconnect();
+
+int hOut;
+FILE * fOut;
 
 bool ConsoleConnect()
 {
@@ -462,9 +465,8 @@ bool ConsoleConnect()
 
 	FreeConsole();
 
-	int hOut = _open_osfhandle(ConnectSocket, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	FILE * fOut = ::fdopen(hOut, "a+");
-	
+	hOut = _open_osfhandle(ConnectSocket, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
+	fOut = ::fdopen(hOut, "a+");
 	::setvbuf(fOut, NULL, _IONBF, 0);
 
 	*stdout = *fOut;
@@ -479,20 +481,23 @@ bool ConsoleConnect()
 }
 void ConsoleDisconnect()
 {
-	CommandDisconnect();
+
 	g_bRunning = false; 
 
-	int iResult = shutdown(ConnectSocket, SD_SEND);
+	
+
+	fclose(fOut);
+	/*int iResult = shutdown(ConnectSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)
 	{
 		printf("shutdown failed with error: %d\n", WSAGetLastError());
-		closesocket(ConnectSocket);
-		WSACleanup();
-		return;
-	}
-	// cleanup
-	closesocket(ConnectSocket);
+		goto end;
+	}*/
+//end:
+	//closesocket(ConnectSocket);
 	WSACleanup();
+	//Sleep(1000);
+	CommandDisconnect();
 }
 
 bool CommandConnect()
@@ -571,7 +576,7 @@ void CommandDisconnect()
 {
 	g_bRunningCmd = false;
 
-	int iResult = shutdown(CommandSocket, SD_SEND);
+	int iResult = shutdown(CommandSocket, SD_BOTH);
 	if(iResult == SOCKET_ERROR)
 	{
 		printf("shutdown failed with error: %d\n", WSAGetLastError());
@@ -581,6 +586,6 @@ void CommandDisconnect()
 	}
 	// cleanup
 	closesocket(CommandSocket);
-	WSACleanup();
+	//WSACleanup();
 }
 

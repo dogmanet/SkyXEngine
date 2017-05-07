@@ -315,13 +315,15 @@ end:
 
 bool g_bConnected = true;
 
+SOCKET ListenSocket = INVALID_SOCKET;
+
 void threadServer(void*)
 {
 	WSADATA wsaData;
 	int iResult;
 
 	SOCKET ListenSocket = INVALID_SOCKET;
-	SOCKET ClientSocket = INVALID_SOCKET;
+	SOCKET _ClientSocket = INVALID_SOCKET;
 
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
@@ -401,8 +403,8 @@ void threadServer(void*)
 	int offset = 0;
 	while(g_bRunning)
 	{
-		ClientSocket = accept(ListenSocket, NULL, NULL);
-		if(ClientSocket == INVALID_SOCKET)
+		_ClientSocket = accept(ListenSocket, NULL, NULL);
+		if(_ClientSocket == INVALID_SOCKET)
 		{
 			SetColor(ANSI_RED);
 			WriteOutput("accept failed with error: %d\n", WSAGetLastError());
@@ -416,7 +418,7 @@ void threadServer(void*)
 		do
 		{
 
-			iResult = recv(ClientSocket, recvbuf + offset, recvbuflen - 1 - offset, 0);
+			iResult = recv(_ClientSocket, recvbuf + offset, recvbuflen - 1 - offset, 0);
 			if(iResult > 0)
 			{
 				recvbuf[iResult + offset] = 0;
@@ -439,8 +441,8 @@ void threadServer(void*)
 				SetColor(ANSI_RED);
 				WriteOutput("recv failed with error: %d\n", WSAGetLastError());
 				SetColor(g_pColor->getDefaultFG());
-				closesocket(ClientSocket);
-				ClientSocket = INVALID_SOCKET;
+				closesocket(_ClientSocket);
+				_ClientSocket = INVALID_SOCKET;
 				continue;
 			}
 
@@ -448,6 +450,17 @@ void threadServer(void*)
 		while(iResult > 0);
 		g_bConnected = false;
 		// shutdown the connection since we're done
+		iResult = shutdown(_ClientSocket, SD_SEND);
+		if(iResult == SOCKET_ERROR)
+		{
+			SetColor(ANSI_RED);
+			WriteOutput("shutdown failed with error: %d\n", WSAGetLastError());
+			SetColor(g_pColor->getDefaultFG());
+			closesocket(_ClientSocket);
+			_ClientSocket = INVALID_SOCKET;
+			continue;
+		}
+		_ClientSocket = INVALID_SOCKET;
 		iResult = shutdown(ClientSocket, SD_SEND);
 		if(iResult == SOCKET_ERROR)
 		{
@@ -465,11 +478,10 @@ void threadServer(void*)
 	closesocket(ListenSocket);
 
 
-	closesocket(ClientSocket);
+	closesocket(_ClientSocket);
 	WSACleanup();
 }
 
-SOCKET ListenSocket = INVALID_SOCKET;
 void InitCommandChannel(void*)
 {
 	WSADATA wsaData;
