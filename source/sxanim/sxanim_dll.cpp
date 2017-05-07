@@ -105,3 +105,8 @@ SX_LIB_API ID SXAnim_ModelsAddArrForCom()
 SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
 {
 }
+
+SX_LIB_API void SXAnim_Dbg_Set(report_func rf)
+{
+	reportf = rf;
+}
