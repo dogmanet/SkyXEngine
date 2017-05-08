@@ -179,6 +179,9 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добав�
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler();
 
+/*! Устанавливает поток вывода. Для работы консоли
+	\warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
+*/
 __inline void Core_SetOutPtr()
 {
 	UINT_PTR sock = Core_ConsoleGetOutHandler();
@@ -192,11 +195,8 @@ __inline void Core_SetOutPtr()
 
 	*stdout = *fOut;
 	*stderr = *fOut;
-}
 
-__inline void Core_FixOutPtr()
-{
-	__iob_func()[stdout->_file]._file = 1;
+	fOut->_file = 1;
 }
 
 //!@}
