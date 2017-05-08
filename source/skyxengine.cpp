@@ -181,6 +181,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGeom_0CreateKill();
 	SML_0Kill();
 	SGCore_0Kill();
+
+	Core_FixOutPtr();
 	Core_AKill();
 
 	return msg.wParam;

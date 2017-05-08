@@ -194,6 +194,11 @@ __inline void Core_SetOutPtr()
 	*stderr = *fOut;
 }
 
+__inline void Core_FixOutPtr()
+{
+	__iob_func()[stdout->_file]._file = 1;
+}
+
 //!@}
 
 /*!@name Работа с реестром конфигурации (cvars) */

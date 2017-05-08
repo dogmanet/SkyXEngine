@@ -74,6 +74,8 @@ SX_LIB_API void SXPhysics_0Kill()
 {
 	SP_PRECOND(_VOID);
 	mem_delete(g_pWorld);
+	
+	Core_FixOutPtr();
 }
 
 SX_LIB_API void SXPhysics_Update(int thread)
