@@ -1445,7 +1445,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 	
-
+#if defined(SX_MATERIAL_EDITOR) || defined(SX_LEVEL_EDITOR)
 	if (GData::Editors::SelSelection)
 	{
 		if (GData::Editors::SelZTest)
@@ -1503,7 +1503,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	}
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
-
+#endif
 
 	SXPhysics_DebugRender();
 

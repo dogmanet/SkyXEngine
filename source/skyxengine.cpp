@@ -8,6 +8,7 @@ See the license in LICENSE
 #pragma once
 
 #define SX_EXE
+#define SX_GAME
 
 #include <windows.h>
 #include <ctime>
