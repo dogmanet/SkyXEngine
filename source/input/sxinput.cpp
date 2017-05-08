@@ -72,16 +72,10 @@ void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
 						{
 							CloseHandle(hMutex);
 							reportf(-1, "%s - none unic name for system input", gen_msg_location);
-						}
-						else
-						{
-							InitIntup(name, hwnd);
+							return;
 						}
 				}
-				else
-				{
-					InitIntup(name, hwnd);
-				}
+			InitIntup(name, hwnd);
 		}
 		else
 			reportf(-1, "%s - not init argument [name] for system sound", gen_msg_location);

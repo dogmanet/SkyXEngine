@@ -457,7 +457,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, 0, false, GData::Editors::ActiveElement);
 		else*/
-			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
+		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
 	}
 
 	SXAnim_Render();
@@ -1127,9 +1127,9 @@ void SXRenderFunc::PostProcess(DWORD timeDelta)
 		SML_LigthsGetColor(GlobalLight, &tmpColor);
 		SML_LigthsGetPos(GlobalLight, &tmpPosition, false, true);
 
-		SPP_UpdateSun(&tmpPosition);
+	SPP_UpdateSun(&tmpPosition);
 
-		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
+	SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
 	}
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
@@ -1374,6 +1374,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SXAnim_Update();
 	SXAnim_Sync();
 
+	SXPhysics_Update();
+	SXPhysics_Sync();
+
 	ttime = timeGetTime();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
 	SXRenderFunc::Delay::GeomSortGroup += timeGetTime() - ttime;
@@ -1399,10 +1402,10 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
-		//рендерим глубину от света
-		ttime = timeGetTime();
-		UpdateShadow(timeDelta);
-		SXRenderFunc::Delay::UpdateShadow += timeGetTime() - ttime;
+	//рендерим глубину от света
+	ttime = timeGetTime();
+	UpdateShadow(timeDelta);
+	SXRenderFunc::Delay::UpdateShadow += timeGetTime() - ttime;
 	}
 
 	//рисуем сцену и заполняем mrt данными
@@ -1412,10 +1415,10 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
-		//освещаем сцену
-		ttime = timeGetTime();
-		ComLighting(timeDelta, true);
-		SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
+	//освещаем сцену
+	ttime = timeGetTime();
+	ComLighting(timeDelta, true);
+	SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
 	}
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -1489,8 +1492,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			}
 		}
 
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
 		if (GData::Editors::SelMesh)
 			GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
@@ -1501,6 +1504,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
+
+	SXPhysics_DebugRender();
 
 	float4_t tmpnull;
 	for (int i = 0; i < 256; ++i)

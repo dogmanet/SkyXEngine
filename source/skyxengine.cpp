@@ -33,6 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
 	Core_0Create("SkyXEngine Core", true);
+	Core_SetOutPtr();
 	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
 	SGCore_Dbg_Set(printflog);
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
@@ -71,6 +72,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SPP_ChangeTexSun("fx_sun.dds");
 
 	SXAnim_0Create();
+	SXAnim_Dbg_Set(printflog);
+
+	SXPhysics_0Create();
+	SXPhysics_Dbg_Set(printflog);
 
 	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
 	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
@@ -82,7 +87,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	GData::IDsShaders::InitAllShaders();
 
+	//!@TODO: Найти для этого более подходящее место
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+
+	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
+
 	Level::Load("stalker_atp");
+
+	SXPhysics_LoadGeom();
 
 	IAnimPlayer * pl;
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
@@ -147,6 +159,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			DWORD currTime = timeGetTime();
 			DWORD timeDelta = (currTime - lastTime);
 
+			Core_0ConsoleUpdate();
+
 			if (GetActiveWindow() == GData::Handle3D)
 			{
 				SGCore_LoadTexLoadTextures();
@@ -160,11 +174,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
+	SXPhysics_0Kill();
 	SXAnim_0Kill();
 	mem_release(GData::ObjCamera);
 	SGeom_0CreateKill();
 	SML_0Kill();
 	SGCore_0Kill();
+	Core_AKill();
 
 	return msg.wParam;
 }

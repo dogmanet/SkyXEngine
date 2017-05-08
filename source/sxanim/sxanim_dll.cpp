@@ -4,6 +4,7 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include "animated.h"
@@ -103,4 +104,9 @@ SX_LIB_API ID SXAnim_ModelsAddArrForCom()
 }
 SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
 {
+}
+
+SX_LIB_API void SXAnim_Dbg_Set(report_func rf)
+{
+	reportf = rf;
 }

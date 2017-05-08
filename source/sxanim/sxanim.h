@@ -224,7 +224,7 @@ SX_LIB_API void SXAnim_0Kill();
 
 /*! Устанавливает функцию сообщений
 */
-SX_LIB_API void SGCore_Dbg_Set(report_func rf);
+SX_LIB_API void SXAnim_Dbg_Set(report_func rf);
 
 /*! Устанавливает количество потоков обновления анимации
 */

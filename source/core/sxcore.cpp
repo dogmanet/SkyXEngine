@@ -8,15 +8,18 @@ See the license in LICENSE
 
 #define CORE_VERSION 1
 
-#include <core\\sxcore.h>
+#include <core/sxcore.h>
 
-#include <common\\Array.h>
-#include <core\loaderconfig.cpp>
+#include <common/Array.h>
+#include <core/loaderconfig.cpp>
 
-#include <core\\file.cpp>
+#include <core/file.cpp>
 
-#include <core\Task.cpp>
-#include <core\TaskManager.cpp>
+#include <core/Task.cpp>
+#include <core/TaskManager.cpp>
+
+#include <core/concmd.cpp>
+#include <core/cvars.cpp>
 
 #pragma comment(lib, "winmm.lib")
 
@@ -103,18 +106,13 @@ void Core_0Create(const char* name, bool is_unic)
 						{
 							CloseHandle(hMutex);
 							reportf(-1, "%s - none unic name, sgcore", gen_msg_location);
-						}
-						else
-						{
-							strcpy(CoreName,name);
-							TaskManager = new SXTaskManager();
+							return;
 						}
 				}
-				else
-				{
-					strcpy(CoreName, name);
-					TaskManager = new SXTaskManager();
-				}
+			strcpy(CoreName, name);
+			ConsoleConnect();
+			ConsoleRegisterCmds();
+			TaskManager = new SXTaskManager();
 		}
 		else
 			reportf(-1, "%s - not init argument [name], sgcore", gen_msg_location);
@@ -125,6 +123,7 @@ void Core_AKill()
 	SXCORE_PRECOND(_VOID);
 
 	mem_delete(TaskManager);
+	ConsoleDisconnect();
 }
 
 void Core_AGetName(char* name)
