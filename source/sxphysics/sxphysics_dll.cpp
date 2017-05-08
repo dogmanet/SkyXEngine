@@ -12,16 +12,15 @@ See the license in LICENSE
 
 #include <core/sxcore.h>
 
-//..\..\bin\BulletDynamics_vs2010_debug.lib;..\..\bin\BulletCollision_vs2010_debug.lib;..\..\bin\LinearMath_vs2010_debug.lib;
-
-
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
+#	pragma comment(lib, "sxgeom_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
+#	pragma comment(lib, "sxgeom.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
@@ -96,4 +95,14 @@ SX_LIB_API void SXPhysics_Sync()
 SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
 {
 	reportf = rf;
+}
+
+SX_LIB_API void SXPhysics_LoadGeom()
+{
+	g_pWorld->LoadGeom();
+}
+
+SX_LIB_API void SXPhysics_DebugRender()
+{
+	g_pWorld->Render();
 }

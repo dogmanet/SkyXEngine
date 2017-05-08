@@ -45,6 +45,14 @@ SX_LIB_API void SXPhysics_Update(int thread = 0);
 */
 SX_LIB_API void SXPhysics_Sync();
 
+/*! Загружает информацию о геометрии уровня
+*/
+SX_LIB_API void SXPhysics_LoadGeom();
+
+/*! Выполняет отрисовку физических объектов
+*/
+SX_LIB_API void SXPhysics_DebugRender();
+
 
 #endif
 

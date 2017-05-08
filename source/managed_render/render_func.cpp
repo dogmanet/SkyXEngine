@@ -1364,6 +1364,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SXAnim_Sync();
 //#endif
 
+	SXPhysics_Update();
+	SXPhysics_Sync();
+
 	ttime = timeGetTime();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
 	SXRenderFunc::Delay::GeomSortGroup += timeGetTime() - ttime;
@@ -1404,7 +1407,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
+	
 	ttime = timeGetTime();
 	PostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += timeGetTime() - ttime;
@@ -1424,6 +1427,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
+
+	SXPhysics_DebugRender();
 
 	float4_t tmpnull;
 	for (int i = 0; i < 256; ++i)

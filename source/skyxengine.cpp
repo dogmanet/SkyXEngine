@@ -94,6 +94,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	Level::Load("stalker_atp");
 
+	SXPhysics_LoadGeom();
+
 	IAnimPlayer * pl;
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
 	pl->SetPos(float3(-17.18, -1.38f, -32.3));
