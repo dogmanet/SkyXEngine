@@ -87,6 +87,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	GData::IDsShaders::InitAllShaders();
 
+	//!@TODO: Найти для этого более подходящее место
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+
 	Level::Load("stalker_atp");
 
 	IAnimPlayer * pl;

@@ -45,15 +45,17 @@ void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 	POINT centr;
 	centr.x = cx; centr.y = cy;
 
+	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
+
 	if(cx != UINT(p.x))
 	{
-		GData::ObjCamera->RotRightLeft(float(timeDelta) * 0.001f * float(int(p.x - cx)));
+		GData::ObjCamera->RotRightLeft(float(timeDelta) * *sense * float(int(p.x - cx)));
 		//SetCursorPos(centr.x,cy);
 	}
 
 	if(cy != UINT(p.y))
 	{
-		GData::ObjCamera->RotUpDown(float(timeDelta) * 0.001f * float(int(p.y - cy)));
+		GData::ObjCamera->RotUpDown(float(timeDelta) * *sense * float(int(p.y - cy)));
 		//SetCursorPos(cx,centr.y);
 	}
 }
@@ -68,9 +70,11 @@ void CameraUpdate::UpdateInputMouseUpDown(DWORD timeDelta)
 	POINT centr;
 	centr.x = cx; centr.y = cy;
 
+	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
+
 	if(cy != UINT(p.y))
 	{
-		GData::ObjCamera->PosUpDown(5 * float(timeDelta) * 0.001f * float(-int(p.y - cy)));
+		GData::ObjCamera->PosUpDown(5 * float(timeDelta) * *sense * float(-int(p.y - cy)));
 		//SetCursorPos(cx,centr.y);
 	}
 }
