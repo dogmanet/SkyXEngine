@@ -39,6 +39,50 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return TrueExit(hwnd, msg, wParam, lParam);
 	}
 
+	
+	//
+	else if (id == ID_FINALIMAGE_COLOR)
+	{
+		GData::FinalImage = DS_RT::ds_rt_color;
+		SXMaterialEditor::FinalImageUncheckedMenu();
+		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_NORMALS)
+	{
+		GData::FinalImage = DS_RT::ds_rt_normal;
+		SXMaterialEditor::FinalImageUncheckedMenu();
+		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_PARAMETERS)
+	{
+		GData::FinalImage = DS_RT::ds_rt_param;
+		SXMaterialEditor::FinalImageUncheckedMenu();
+		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
+	{
+		GData::FinalImage = DS_RT::ds_rt_ambient_diff;
+		SXMaterialEditor::FinalImageUncheckedMenu();
+		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_SPECULAR)
+	{
+		GData::FinalImage = DS_RT::ds_rt_specular;
+		SXMaterialEditor::FinalImageUncheckedMenu();
+		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
+	{
+		GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+		SXMaterialEditor::FinalImageUncheckedMenu();
+		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
+	}
+
 
 	return 0;
 }
@@ -392,4 +436,14 @@ void SXMaterialEditor::InitMtl(ID id)
 
 	SXMaterialEditor::CheckBoxUDPSInVS->SetCheck(SML_MtlGetUDPS_InVS(GData::SimModel->GetIDMtl()));
 	SXMaterialEditor::CheckBoxUDVSInPS->SetCheck(SML_MtlGetUDVS_InPS(GData::SimModel->GetIDMtl()));
+}
+
+void SXMaterialEditor::FinalImageUncheckedMenu()
+{
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, false);
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, false);
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, false);
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, false);
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
 }

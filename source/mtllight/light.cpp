@@ -15,6 +15,8 @@ Lights::Lights()
 	HowShadow = 0;
 	ShadowMap = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
 	ShadowMap2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
+
+	GlobalLight = -1;
 }
 
 Lights::~Lights()
@@ -699,11 +701,15 @@ void Lights::Clear()
 
 	ArrKeyLights.clear();
 	ArrIDLights.clear();
+	GlobalLight = -1;
 }
 
 void Lights::DeleteLight(ID id)
 {
 	LIGHTS_PRE_COND_ID(id);
+
+	if (ArrIDLights[id]->IsGlobal)
+		GlobalLight = -1;
 
 	for (long i = ArrIDLights[id]->Key + 1; i < ArrKeyLights.size(); ++i)
 	{
@@ -731,6 +737,12 @@ void Lights::SetLightName(ID id, const char* name)
 
 ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* color, bool isglobal, bool is_shadowed, const char* bound_volume)
 {
+	if (GlobalLight != -1 && isglobal)
+	{
+		reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", gen_msg_location);
+		return -1;
+	}
+
 	Light* tmplight = 0;// new Light();
 
 	if (id < 0)
@@ -786,7 +798,7 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 		else
 			tmplight->IsShadow = false;
 
-	long tmpid = id;
+	ID tmpid = id;
 
 	if (id == -1)
 		tmpid = AddLight(tmplight);
@@ -800,6 +812,9 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 	tmplight->Mesh->GetVertexBuffer(&vertexbuf);
 	tmplight->BoundVolume->CalcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
 	mem_release(vertexbuf);
+
+	if (tmplight->IsGlobal)
+		GlobalLight = tmpid;
 
 	return tmpid;
 }
@@ -1058,6 +1073,11 @@ void Lights::Render(ID id, DWORD timeDelta)
 	MLSet::DXDevice->SetTransform(D3DTS_WORLD, &(ArrIDLights[id]->WorldMat.operator D3DXMATRIX()));
 	ArrIDLights[id]->Mesh->DrawSubset(0);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (ArrIDLights[id]->Mesh->GetNumFaces() / 3));
+}
+
+ID Lights::GetLightGlobal()
+{
+	return GlobalLight;
 }
 
 void Lights::GetLightColor(ID id, float3* vec)

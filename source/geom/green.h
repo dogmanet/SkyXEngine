@@ -66,10 +66,12 @@ public:
 	void Clear();
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	void GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID id_arr = 0);
+	void GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex);
 
 	inline ID GetCountGreen();
 	inline char* GetGreenName(ID id);
 	inline long GetGreenCountGen(ID id);
+	inline long GetGreenCountPoly(ID id);
 	inline int GetGreenTypeCountGen(ID id);
 	inline const char* GetGreenModel(ID id);
 	inline const char* GetGreenLod1(ID id);
@@ -179,7 +181,7 @@ protected:
 	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
 	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
-	void GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod);
+	void GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_tex);
 
 	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 

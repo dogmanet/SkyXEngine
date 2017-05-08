@@ -633,7 +633,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 	}
 }
 
-void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod)
+void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_tex)
 {
 	//если есть что к отрисовке
 	if (RTCountDrawObj)
@@ -650,7 +650,7 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod)
 		jCountIndex = 0;
 		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model->SubsetCount; i++)
 		{
-			SGCore_MtlSet(ArrModels[nm]->ArrLod[lod]->idstex[i], 0);
+			SGCore_MtlSet((id_tex > 0 ? id_tex : ArrModels[nm]->ArrLod[lod]->idstex[i]), 0);
 
 			if (ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
 					Green::DXDevice->SetVertexShaderConstantF(62, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
@@ -698,7 +698,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 					if (RTCountDrawObj + jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
 					{
 						TransVertBuf->Unlock();
-						GPURender2(timeDelta, viewpos, nm, lod);
+						GPURender2(timeDelta, viewpos, nm, lod, -1);
 						TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 						RTCountDrawObj = 0;
 					}
@@ -758,8 +758,82 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 
 				TransVertBuf->Unlock();
 
-				GPURender2(timeDelta, viewpos, nm, lod);
+				GPURender2(timeDelta, viewpos, nm, lod, -1);
 			}
+		}
+	}
+}
+
+void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
+{
+	float3 jcenter;
+	float jradius;
+	ID id_arr = 0;
+
+	jarrsplits = ArrComFor[id_arr]->arr[id]->Arr;
+	jcount = ArrComFor[id_arr]->arr[id]->CountCom;
+
+	for (int lod = 0; lod < GREEN_COUNT_LOD; ++lod)
+	{
+		if (ArrModels[id]->ArrLod[lod])
+		{
+			RTGPUArrVerteces = 0;
+			TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+			RTCountDrawObj = 0;
+
+			for (DWORD i = 0; i < jcount; i++)
+			{
+				if (RTCountDrawObj + jarrsplits[i]->CountAllGreen >= GREEN_MAX_ELEM_IN_DIP)
+				{
+					TransVertBuf->Unlock();
+					GPURender2(timeDelta, viewpos, id, lod, id_tex);
+					TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+					RTCountDrawObj = 0;
+				}
+
+				jarrsplits[i]->BoundVolumeP->GetSphere(&jcenter, &jradius);
+				jarrsplits[i]->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
+
+				if (
+					//распределение по дистанции есесно и по лодам
+					(
+					(lod == 0 && jarrsplits[i]->DistForCamera <= Green::DistLods.x) ||
+					(lod == 1 && jarrsplits[i]->DistForCamera <= Green::DistLods.y && jarrsplits[i]->DistForCamera > Green::DistLods.x) ||
+					(lod == 2 && jarrsplits[i]->DistForCamera > Green::DistLods.y) || !(ArrModels[id]->ArrLod[1])
+					)
+					)
+				{
+					if (!(lod == 0 && ArrModels[id]->TypeGreen == GeomGreenType::ggt_grass))
+					{
+						memcpy(RTGPUArrVerteces + (RTCountDrawObj),
+							jarrsplits[i]->Data,
+							jarrsplits[i]->CountAllGreen * sizeof(DataVertex));
+
+						RTCountDrawObj += jarrsplits[i]->CountAllGreen;
+					}
+					else
+					{
+						float percent = 0.1f;
+						float newCount = ((float)jarrsplits[i]->CountAllGreen * percent);
+						float step = float(jarrsplits[i]->CountAllGreen) / newCount;
+						UINT lastCP = 0;
+						for (float k = 0; k < jarrsplits[i]->CountAllGreen; k += step)
+						{
+							UINT curCP = (int)floor(k + 0.5);;
+							if (curCP > lastCP)
+							{
+								memcpy(RTGPUArrVerteces + RTCountDrawObj, jarrsplits[i]->Data + curCP, sizeof(DataVertex));
+								RTCountDrawObj += 1;
+								lastCP = curCP;
+							}
+						}
+					}
+				}
+			}
+
+			TransVertBuf->Unlock();
+
+			GPURender2(timeDelta, viewpos, id, lod, id_tex);
 		}
 	}
 }
@@ -1452,6 +1526,14 @@ inline long Green::GetGreenCountGen(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->AllCountGreen;
+
+	return -1;
+}
+
+inline long Green::GetGreenCountPoly(ID id)
+{
+	if (id < ArrModels.size() && ArrModels[id]->ArrLod[0])
+		return ArrModels[id]->ArrLod[0]->model->AllIndexCount / 3;
 
 	return -1;
 }

@@ -167,14 +167,15 @@ LRESULT SXLevelEditor_ButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	SXLevelEditor::ListBoxList->SetSel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
 	MCInitElemsSelModel(SXLevelEditor::ListBoxList->GetSel());
 
-	SXLevelEditor::HowActivateType = 1;
+	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
+	GData::Editors::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
 
 	return 0;
 }
 
 LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SXLevelEditor::HowActivateType != 1)
+	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	float3* pos = SGeom_ModelsMGetPosition(sel);
@@ -202,7 +203,7 @@ LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SXLevelEditor::HowActivateType != 1)
+	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	float3* rot = SGeom_ModelsMGetRotation(sel);
@@ -230,7 +231,7 @@ LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditTransformScale_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SXLevelEditor::HowActivateType != 1)
+	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	float3* scale = SGeom_ModelsMGetScale(sel);

@@ -55,6 +55,8 @@ public:
 
 	void Render(ID id, DWORD timeDelta);
 
+	ID GetLightGlobal();
+
 	char* GetLightName(ID id);
 	void SetLightName(ID id, const char* name);
 
@@ -228,7 +230,7 @@ protected:
 	DWORD ShadowMap2;
 	int HowShadow;
 
-	
+	ID GlobalLight;
 };
 
 #endif

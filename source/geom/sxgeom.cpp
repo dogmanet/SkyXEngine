@@ -201,6 +201,12 @@ void SGeom_ModelsRender(DWORD timeDelta, int sort_mtl, ID id_arr, bool is_sorted
 	GeometryObj->GPURender(timeDelta, sort_mtl, id_arr, exclude_model_id, exclude_group_id, is_sorted);
 }
 
+void SGeom_ModelsRenderSingly(DWORD timeDelta, ID id, ID id_tex)
+{
+	GEOM_PRECOND(_VOID);
+	GeometryObj->GPURenderSingly(timeDelta, id, id_tex);
+}
+
 ID SGeom_ModelsAddModel(const char* path, const char* lod1, const char* name)
 {
 	GEOM_PRECOND(-1);
@@ -405,6 +411,12 @@ void SGeom_GreenRender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID 
 	GreenObj->GPURender(timeDelta, viewpos, type, id_arr);
 }
 
+void SGeom_GreenRenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
+{
+	GEOM_PRECOND(_VOID);
+	GreenObj->GPURenderSingly(timeDelta, viewpos, id, id_tex);
+}
+
 
 long SGeom_GreenGetCount()
 {
@@ -420,8 +432,14 @@ char* SGeom_GreenMGetName(ID id)
 
 long SGeom_GreenMGetCountGen(ID id)
 {
-	GEOM_PRECOND(-1);
+	GEOM_PRECOND(0);
 	return GreenObj->GetGreenCountGen(id);
+}
+
+long SGeom_GreenMGetCountPoly(ID id)
+{
+	GEOM_PRECOND(0);
+	return GreenObj->GetGreenCountPoly(id);
 }
 
 int SGeom_GreenMGetTypeCountGen(ID id)

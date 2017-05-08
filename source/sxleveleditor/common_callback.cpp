@@ -18,6 +18,9 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		SGeom_ModelsClear();
 		SGeom_GreenClear();
 		SML_LigthsClear();
+		char tmpcaption[256];
+		sprintf(tmpcaption, "%s: new level ** ", EDITORS_LEVEL_CAPTION);
+		SXLevelEditor::JobWindow->SetText(tmpcaption);
 	}
 	//открыть
 	else if (id == ID_FILE_OPEN)
@@ -30,6 +33,9 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			StrCutNameNEx(tmppath, tmpname);
 			Level::Load(tmpname);
+			char tmpcaption[256];
+			sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
+			SXLevelEditor::JobWindow->SetText(tmpcaption);
 		}
 
 	}
@@ -44,6 +50,9 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			StrCutNameNEx(tmppath, tmpname);
 			Level::Save(tmpname);
+			char tmpcaption[256];
+			sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
+			SXLevelEditor::JobWindow->SetText(tmpcaption);
 		}
 	}
 	//выход
@@ -52,6 +61,75 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return TrueExit(hwnd, msg, wParam, lParam);
 	}
 
+
+	//
+	else if (id == ID_FINALIMAGE_COLOR)
+	{
+		GData::FinalImage = DS_RT::ds_rt_color;
+		SXLevelEditor::FinalImageUncheckedMenu();
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_NORMALS)
+	{
+		GData::FinalImage = DS_RT::ds_rt_normal;
+		SXLevelEditor::FinalImageUncheckedMenu();
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_PARAMETERS)
+	{
+		GData::FinalImage = DS_RT::ds_rt_param;
+		SXLevelEditor::FinalImageUncheckedMenu();
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
+	{
+		GData::FinalImage = DS_RT::ds_rt_ambient_diff;
+		SXLevelEditor::FinalImageUncheckedMenu();
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_SPECULAR)
+	{
+		GData::FinalImage = DS_RT::ds_rt_specular;
+		SXLevelEditor::FinalImageUncheckedMenu();
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
+	{
+		GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+		SXLevelEditor::FinalImageUncheckedMenu();
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+
+
+	//
+	else if (id == ID_SELECTIONSETTINGS_SELECTION)
+	{
+		GData::Editors::SelSelection = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_SELECTIONSETTINGS_ZTEST)
+	{
+		GData::Editors::SelZTest = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_SELECTIONSETTINGS_MESH)
+	{
+		GData::Editors::SelMesh = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
+	//
+	else if (id == ID_SELECTIONSETTINGS_BACKFACESCULL)
+	{
+		GData::Editors::SelBackFacesCull = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+	}
 
 	return 0;
 }
@@ -87,7 +165,8 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 	MCActivateAllElems(true);
 	MCActivateTrans(false);
 
-	SXLevelEditor::HowActivateType = -1;
+	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GEOM;
+	GData::Editors::ActiveElement = -1;
 	return 0;
 }
 
@@ -120,7 +199,8 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	
 	//MCActivateTrans(false);
 
-	SXLevelEditor::HowActivateType = -2;
+	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GREEN;
+	GData::Editors::ActiveElement = -1;
 	return 0;
 }
 
@@ -162,7 +242,8 @@ LRESULT SXLevelEditor_ButtonLightOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	LCActivatePoint(true);*/
 	LCActivateType(LightsTypeLight::ltl_point);
 
-	SXLevelEditor::HowActivateType = -3;
+	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_LIGHT;
+	GData::Editors::ActiveElement = -1;
 	return 0;
 }
 
@@ -173,28 +254,31 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	if (sel < 0)
 		return 0;
 
-	if (SXLevelEditor::HowActivateType == -1 || SXLevelEditor::HowActivateType == 1)
+	if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 		{
 			MCInitElemsSelModel(sel);
-			SXLevelEditor::HowActivateType = 1;
+			GData::Editors::ActiveElement = sel;
+			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
 		}
 	}
-	else if (SXLevelEditor::HowActivateType == -2 || SXLevelEditor::HowActivateType == 2)
+	else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GREEN || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
 		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 		{
 			GCInitElemsSelModel(sel);
-			SXLevelEditor::HowActivateType = 2;
+			GData::Editors::ActiveElement = sel;
+			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
 		}
 	}
-	else if (SXLevelEditor::HowActivateType == -3 || SXLevelEditor::HowActivateType == 3)
+	else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_LIGHT || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		if (SML_LigthsGetCount() > 0 && sel < SML_LigthsGetCount())
 		{
 			LCInitElemsSelModel(sel);
-			SXLevelEditor::HowActivateType = 3;
+			GData::Editors::ActiveElement = sel;
+			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_LIGHT;
 		}
 	}
 
@@ -204,15 +288,15 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 LRESULT SXLevelEditor_EditName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int sel = SXLevelEditor::ListBoxList->GetSel();
-	if (SXLevelEditor::HowActivateType == 1)
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		SXLevelEditor::EditName->GetText(SGeom_ModelsMGetName(sel), 64);
 	}
-	else if (SXLevelEditor::HowActivateType == 2)
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
 		SXLevelEditor::EditName->GetText(SGeom_GreenMGetName(sel), 64);
 	}
-	else if (SXLevelEditor::HowActivateType == 3)
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		SXLevelEditor::EditName->GetText(SML_LigthsGetName(sel), 64);
 	}
@@ -227,7 +311,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	if (sel < 0)
 		return 0;
 
-	if (SXLevelEditor::HowActivateType == 1)
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 		{
@@ -249,7 +333,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 		}
 	}
-	else if (SXLevelEditor::HowActivateType == 2)
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
 		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 		{
@@ -271,7 +355,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 		}
 	}
-	else if (SXLevelEditor::HowActivateType == 3)
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		if (SML_LigthsGetCount() > 0 && sel >= 0 && sel < SML_LigthsGetCount())
 		{
@@ -308,7 +392,7 @@ LRESULT SXLevelEditor_ButtonModel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditModel->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (SXLevelEditor::HowActivateType == 2)
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetLod(sel, 0, tmpname);
@@ -328,12 +412,12 @@ LRESULT SXLevelEditor_ButtonLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditLod1->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (SXLevelEditor::HowActivateType == 1)
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{
 			if (sel >= 0 && sel < SGeom_ModelsGetCount())
 				SGeom_ModelsMSetLodPath(sel, tmpname);
 		}
-		else if (SXLevelEditor::HowActivateType == 2)
+		else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetLod(sel, 1, tmpname);
@@ -353,7 +437,7 @@ LRESULT SXLevelEditor_ButtonLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditLod2->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (SXLevelEditor::HowActivateType == 2)
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetLod(sel, 2, tmpname);
@@ -375,7 +459,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 	else if (SXLevelEditor::RadioButtonPosZ->GetCheck() || SXLevelEditor::RadioButtonRotZ->GetCheck() || SXLevelEditor::RadioButtonScaleZ->GetCheck() || SXLevelEditor::LightRadioButtonPosZ->GetCheck() || SXLevelEditor::LightRadioButtonRotZ->GetCheck())
 		CoordinateTransformation = 2;
 
-	if (SXLevelEditor::HowActivateType == 1)
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (::GetAsyncKeyState(VK_LSHIFT) && SGeom_ModelsGetCount() > 0)
 		{
@@ -526,7 +610,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 	///////////////////
 
 
-	else if (SXLevelEditor::HowActivateType == 3)
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		if (!(::GetAsyncKeyState(VK_LSHIFT) && SML_LigthsGetCount() > 0))
 			return;
@@ -628,4 +712,14 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			SML_LigthsSetRot(SML_LigthsGetIDOfKey(selmodel), &pos, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 		}
 	}
+}
+
+void SXLevelEditor::FinalImageUncheckedMenu()
+{
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, false);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, false);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, false);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, false);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
 }

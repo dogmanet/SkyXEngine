@@ -285,6 +285,12 @@ void SML_LigthsRender(ID id, DWORD timeDelta)
 	ArrLights->Render(id, timeDelta);
 }
 
+ID SML_LigthsGetGlobal()
+{
+	ML_PRECOND(-1);
+	return ArrLights->GetLightGlobal();
+}
+
 void SML_LigthsGetColor(ID id, float3* color)
 {
 	ML_PRECOND();

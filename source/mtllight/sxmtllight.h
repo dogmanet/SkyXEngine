@@ -319,6 +319,7 @@ SX_LIB_API float SML_LigthsGetDistFor(ID id);			//!< просчитанная д
 SX_LIB_API bool SML_LigthsIsEnable(ID id);				//!< включен ли свет с идентификатором id
 SX_LIB_API void SML_LigthsSetEnable(ID id, bool val);	//!< установить всключен (true) или отключен (false) свет  с идентификатором id
 
+SX_LIB_API ID SML_LigthsGetGlobal();					//!< возвращает идентификатор глобального источника света, если он есть, иначе -1
 
 /*! \name Настройки для направленного света
 @{*/

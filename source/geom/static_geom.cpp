@@ -1338,6 +1338,122 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 	}
 }
 
+void StaticGeom::GPURenderSingly(DWORD timeDelta, ID id, ID id_tex)
+{
+	Segment** jarrsplits;
+	long jidbuff;
+	long jnumgroup;
+
+	//обнуляем все данные об отрисованном в прошлый раз
+	for (int i = 0; i < AllGroups.size(); i++)
+	{
+		if (AllGroups[i])
+		{
+			for (int k = 0; k < AllGroups[i]->VertexBuffer.size(); ++k)
+			{
+				RTCountDrawPoly[i][k] = 0;
+
+				for (int j = 0; j < AllGroups[i]->ArrModels[k].size(); ++j)
+				{
+					RTCountDrawPolyModel[i][k][j] = 0;
+					RTBeginIndexModel[i][k][j] = -1;
+				}
+			}
+		}
+	}
+
+
+	if (AllModels[id]->IsRenderLod)
+	{
+		StaticGeom::DXDevice->SetStreamSource(0, AllModels[id]->Lod0.model->VertexBuffer, 0, sizeof(vertex_static));
+		StaticGeom::DXDevice->SetIndices(AllModels[id]->Lod0.model->IndexBuffer);
+		StaticGeom::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
+		for (int k = 0, kl = AllModels[id]->Lod0.model->SubsetCount; k < kl; ++k)
+		{
+			SGCore_MtlSet(AllModels[id]->Lod0.IDsTexs[k], 0);
+			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, AllModels[id]->Lod0.model->VertexCount[k], AllModels[id]->Lod0.model->StartIndex[k], AllModels[id]->Lod0.model->IndexCount[k] / 3);
+			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + AllModels[id]->Lod0.model->IndexCount[k] / 3);
+		}
+	}
+	else if (ArrComFor[0]->arr[id]->CountCom > 0)
+	{
+		for (DWORD j = 0, jl = ArrComFor[0]->arr[id]->CountCom; j < jl; j++)
+		{
+			jarrsplits = ArrComFor[0]->arr[id]->Arr;
+			for (DWORD k = 0; k < jarrsplits[j]->CountSubSet; ++k)
+			{
+				jidbuff = AllModels[id]->SubSet[jarrsplits[j]->NumberGroupModel[k]].idbuff;
+				jnumgroup = jarrsplits[j]->NumberGroup[k];
+
+				ID tmpcurrmodel = -1;
+
+				for (int q = 0, ql = AllGroups[jnumgroup]->ArrModels[jidbuff].size(); q < ql; ++q)
+				{
+					if (AllGroups[jnumgroup]->ArrModels[jidbuff][q] == AllModels[id])
+					{
+						tmpcurrmodel = q;
+						break;
+					}
+				}
+
+				int currsort = AllGroups[jnumgroup]->SortGroup;
+
+				
+					if (
+						jarrsplits[j]->CountPoly[k] > 0 &&	//если количество полигонов больше 0
+						RTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->CountPoly[k] <= AllGroups[jnumgroup]->CountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
+						)
+					{
+						memcpy(RTCPUArrIndicesPtrs[jnumgroup][jidbuff] + (RTCountDrawPoly[jnumgroup][jidbuff] * 3),
+							jarrsplits[j]->ArrPoly[k],
+							jarrsplits[j]->CountPoly[k] * sizeof(uint32_t)* 3);
+
+						if (RTBeginIndexModel[jnumgroup][jidbuff][tmpcurrmodel] == -1)
+						{
+							RTBeginIndexModel[jnumgroup][jidbuff][tmpcurrmodel] = RTCountDrawPoly[jnumgroup][jidbuff];
+						}
+
+						RTCountDrawPoly[jnumgroup][jidbuff] += jarrsplits[j]->CountPoly[k];
+						RTCountDrawPolyModel[jnumgroup][jidbuff][tmpcurrmodel] += jarrsplits[j]->CountPoly[k];
+					}
+			}
+		}
+	}
+
+
+	uint32_t* RTGPUArrIndicesPtrs2;
+	
+	for (int i = 0; i < AllModels[id]->SubSet.size(); ++i)
+	{
+		ID idgroup = AllModels[id]->SubSet[i].idgroup;
+		Group* tmpgroup = AllGroups[AllModels[id]->SubSet[i].idgroup];
+		ID id_buff = AllModels[id]->SubSet[i].idbuff;
+
+		ID id_model;
+		for (int j = 0; j < tmpgroup->ArrModels[id_buff].size(); ++j)
+		{
+			if (tmpgroup->ArrModels[id_buff][j] == AllModels[id])
+			{
+				id_model = j;
+				break;
+			}
+		}
+
+		RenderIndexBuffer->Lock(0, 0, (void**)&(RTGPUArrIndicesPtrs2), D3DLOCK_DISCARD);
+		memcpy(RTGPUArrIndicesPtrs2, RTCPUArrIndicesPtrs[idgroup][id_buff], RTCountDrawPoly[idgroup][id_buff]/*RTCountDrawPolyModel[tmpig->g_group][id_buff][id_model]*/ * 3 * sizeof(uint32_t));
+		RenderIndexBuffer->Unlock();
+
+		StaticGeom::DXDevice->SetStreamSource(0, tmpgroup->VertexBuffer[id_buff], 0, sizeof(vertex_static));
+		StaticGeom::DXDevice->SetIndices(RenderIndexBuffer);
+		StaticGeom::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
+
+		SGCore_MtlSet((id_tex > 0 ? id_tex : tmpgroup->idtex), 0);
+
+		SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, tmpgroup->CountVertex[id_buff], 0, RTCountDrawPoly[idgroup][id_buff]);
+		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + RTCountDrawPoly[idgroup][id_buff]);
+	}
+}
+
 void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 {
 	vertex_static *CreateV;

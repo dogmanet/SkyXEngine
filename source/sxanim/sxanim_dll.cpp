@@ -98,7 +98,7 @@ SX_LIB_API void SXAnim_ModelsComVisible(const ISXFrustum * frustum, const float3
 
 SX_LIB_API ID SXAnim_ModelsAddArrForCom()
 {
-	SA_PRECOND(_VOID);
+	SA_PRECOND(-1);
 	return(g_mgr->GetNextVisId());
 }
 SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)

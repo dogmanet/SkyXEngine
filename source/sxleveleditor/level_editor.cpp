@@ -1,4 +1,5 @@
 
+
 namespace SXLevelEditor
 {
 	ISXGUIBaseWnd* JobWindow;
@@ -131,8 +132,8 @@ namespace SXLevelEditor
 	void InitAllElements();
 
 	void DeleteAllElements();
-
-	int HowActivateType = 0;	
+	void FinalImageUncheckedMenu();
+	//int HowActivateType = 0;	
 };
 
 #include <SXLevelEditor/light_callback.cpp>
@@ -220,7 +221,18 @@ void SXLevelEditor::InitAllElements()
 
 	SXLevelEditor::StatusBar1 = SXGUICrStatusBar("StatusBar1", SXLevelEditor::JobWindow->GetHWND(), 0, 0);
 	SXLevelEditor::StatusBar1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-
+	int arrpart[5];
+	arrpart[0] = 150;
+	arrpart[1] = 300;
+	arrpart[2] = 450;
+	arrpart[3] = 600;
+	arrpart[4] = -1;
+	SXLevelEditor::StatusBar1->SetCountParts(5, arrpart);
+	SXLevelEditor::StatusBar1->SetTextParts(0, "Level poly: ");
+	SXLevelEditor::StatusBar1->SetTextParts(1, "Geom poly: ");
+	SXLevelEditor::StatusBar1->SetTextParts(2, "Green poly: ");
+	SXLevelEditor::StatusBar1->SetTextParts(3, "");
+	SXLevelEditor::StatusBar1->SetTextParts(4, "");
 
 	////
 	SXLevelEditor::StaticName = SXGUICrStatic("Name", 5, 20, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);

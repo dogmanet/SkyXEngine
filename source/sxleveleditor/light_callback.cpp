@@ -372,7 +372,7 @@ LRESULT SXLevelEditor_LightButtonColorSel_Click(HWND hwnd, UINT msg, WPARAM wPar
 			SXLevelEditor::LightEditColorG->SetText(bufg);
 			SXLevelEditor::LightEditColorB->SetText(bufb);
 
-			if (SXLevelEditor::HowActivateType == 3)
+			if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 			{
 				int sel = SXLevelEditor::ListBoxList->GetSel();
 				if (sel >= 0 && sel < SML_LigthsGetCount())
@@ -398,7 +398,7 @@ LRESULT SXLevelEditor_LightButtonSourceMesh_Click(HWND hwnd, UINT msg, WPARAM wP
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::LightEditSourceMesh->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (SXLevelEditor::HowActivateType == 3)
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		{
 			if (sel >= 0 && sel < SML_LigthsGetCount())
 			{
@@ -481,15 +481,15 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 		{
 			if (SXLevelEditor::LightCheckBoxGlobal->GetCheck())
 			{
-				LCActivateType(LightsTypeLight::ltl_global, SXLevelEditor::HowActivateType != 3);
+				LCActivateType(LightsTypeLight::ltl_global, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
 			}
 			else
 			{
-				LCActivateType(SXLevelEditor::LightComboBoxTypeLight->GetSel() == 0 ? LightsTypeLight::ltl_point : LightsTypeLight::ltl_direction, SXLevelEditor::HowActivateType != 3);
+				LCActivateType(SXLevelEditor::LightComboBoxTypeLight->GetSel() == 0 ? LightsTypeLight::ltl_point : LightsTypeLight::ltl_direction, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
 			}
 		}
 
-		else if (SXLevelEditor::HowActivateType == 3)
+		else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		{
 			DWORD numsel = SXLevelEditor::ListBoxList->GetSel();
 
@@ -592,16 +592,16 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 			int numsel = SXLevelEditor::LightComboBoxTypeLight->GetSel();
 			if (numsel == 0)
 			{
-				LCActivateType(LightsTypeLight::ltl_point, SXLevelEditor::HowActivateType != 3);
+				LCActivateType(LightsTypeLight::ltl_point, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
 
-				if (SXLevelEditor::HowActivateType == 3)
+				if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 					SXLevelEditor_LightButtonFinish_Click(hwnd, msg, wParam, lParam);
 			}
 			else
 			{
-				LCActivateType(LightsTypeLight::ltl_direction, SXLevelEditor::HowActivateType != 3);
+				LCActivateType(LightsTypeLight::ltl_direction, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
 
-				if (SXLevelEditor::HowActivateType == 3)
+				if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 					SXLevelEditor_LightButtonFinish_Click(hwnd, msg, wParam, lParam);
 			}
 		}
@@ -640,7 +640,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 	if (SXLevelEditor::EditName->GetHWND() == hwnd)
 	{
 		SXLevelEditor::EditName->GetText(tmptext, 256);
-		if (tmptext[0] != 0 && SXLevelEditor::HowActivateType == 3 && numsel != -1)
+		if (tmptext[0] != 0 && GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel != -1)
 		{
 			SML_LigthsSetName(SML_LigthsGetIDOfKey(numsel), tmptext);
 			SXLevelEditor::ListBoxList->SetTextItem(numsel, tmptext);
@@ -677,7 +677,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::LightEditBias->GetText(tmptext, 256);
 		float bias = 0;
 		sscanf(tmptext, "%f", &bias);
-		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
 			SML_LigthsSetBias(SML_LigthsGetIDOfKey(numsel), bias);
 		}
@@ -687,7 +687,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::LightEditFarShadow->GetText(tmptext, 256);
 		float dfe = 0;
 		sscanf(tmptext, "%f", &dfe);
-		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
 			SML_LigthsSetShadowLocalFar(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
@@ -697,7 +697,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::LightEditAngle->GetText(tmptext, 256);
 		float dfe = 0;
 		sscanf(tmptext, "%f", &dfe);
-		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
 			SML_LigthsSetAngle(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
@@ -707,7 +707,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::LightEditTopRadius->GetText(tmptext, 256);
 		float dfe = 0;
 		sscanf(tmptext, "%f", &dfe);
-		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
 			SML_LigthsSetTopRadius(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
@@ -717,7 +717,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::LightEditPower->GetText(tmptext, 256);
 		float dfe = 0;
 		sscanf(tmptext, "%f", &dfe);
-		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
 			SML_LigthsSetPower(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
@@ -727,7 +727,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SXLevelEditor::LightEditDist->GetText(tmptext, 256);
 		float dfe = 0;
 		sscanf(tmptext, "%f", &dfe);
-		if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 		{
 			SML_LigthsSetDist(SML_LigthsGetIDOfKey(numsel), dfe);
 		}
@@ -744,7 +744,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 LRESULT SXLevelEditor_LightEditTransform_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DWORD numsel = SXLevelEditor::ListBoxList->GetSel();
-	if (SXLevelEditor::HowActivateType == 3 && numsel >= 0 && numsel < SML_LigthsGetCount())
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 	{
 		char tmpcoord[256];
 		tmpcoord[0] = 0;
@@ -825,7 +825,7 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 {
 	long tmpid = -1;
 	long tmpid2 = -1;
-	if (SXLevelEditor::HowActivateType == 3)
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		tmpid = SXLevelEditor::ListBoxList->GetSel();
 	tmpid2 = tmpid;
 	int typelight = SXLevelEditor::LightComboBoxTypeLight->GetSel();
@@ -1124,9 +1124,11 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 	sprintf(tmpcountlight, "%d", tmpid);
 	SXLevelEditor::StaticListValCount->SetText(tmpcountlight);
 
-	SXLevelEditor::HowActivateType = 3;
 	SXLevelEditor::ListBoxList->SetSel(tmpid);
 	LCInitElemsSelModel(SXLevelEditor::ListBoxList->GetSel());
+
+	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_LIGHT;
+	GData::Editors::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
 
 	return 1;
 }

@@ -367,7 +367,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			FpsValue	= (float)FrameCount / TimeElapsed;
 			sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
-#if !defined(SX_MATERIAL_EDITOR)
+#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR)
 			sprintf(debugstr + strlen(debugstr), "\ncount poly : %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "count DIPs : %d\n\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
@@ -445,7 +445,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	GData::DXDevice->SetRenderTarget(1, NormalSurf);
 	GData::DXDevice->SetRenderTarget(2, ParamSurf);
 
-	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, RENDER_DEFAUL_BACKGROUND_COLOR/*D3DCOLOR_ARGB(0, 0, 0, 0)*/, 1.0f, 0);
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//ставим рт глубины
 
 	SML_MtlNullingCurrCountSurf();
@@ -453,7 +453,12 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 //если не объявлен флаг редактора материалов (для него немного другой рендер)
 #if !defined(SX_MATERIAL_EDITOR)
 	if (SGeom_ModelsGetCount() > 0)
-		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
+	{
+		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, 0, false, GData::Editors::ActiveElement);
+		else*/
+			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
+	}
 
 	SXAnim_Render();
 
@@ -582,7 +587,11 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	{
 		SML_MtlSetIsIncrCountSurf(true);
 		SML_MtlSetCurrCountSurf(2);
-		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_alpha_lighting, 0, true, -1, -1);
+
+		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_alpha_lighting, 0, true, GData::Editors::ActiveElement);
+		else*/
+			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_alpha_lighting, 0, true);
 	}
 
 
@@ -1112,14 +1121,17 @@ void SXRenderFunc::PostProcess(DWORD timeDelta)
 	float3 tmpPosition;
 	float3 tmpColor;
 
-	//УКАЗЫВАТЬ 0 ЕСЛИ ТОЛЬКО ID СОЛНЦА 0
-	//А ВООБЩЕ В СЛЕДУЮЩИХ ВЕРСИЯХ КАК-ТО ЛУЧШЕ СДЕЛАТЬ
-	SML_LigthsGetColor(0, &tmpColor);
-	SML_LigthsGetPos(0, &tmpPosition, false, true);
+	ID GlobalLight = SML_LigthsGetGlobal();
+	if (GlobalLight > -1)
+	{
+		SML_LigthsGetColor(GlobalLight, &tmpColor);
+		SML_LigthsGetPos(GlobalLight, &tmpPosition, false, true);
 
-	SPP_UpdateSun(&tmpPosition);
+		SPP_UpdateSun(&tmpPosition);
 
-	SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
+		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
+	}
+
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
 
 	if (!SSInput_GetKeyState(SIK_Z))
@@ -1359,10 +1371,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	//@@@
 	CameraUpdate::UpdateEditorial(timeDelta);
 
-//#if !defined(SX_MATERIAL_EDITOR)
 	SXAnim_Update();
 	SXAnim_Sync();
-//#endif
 
 	ttime = timeGetTime();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
@@ -1387,40 +1397,107 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	UpdateReflection(timeDelta);
 	SXRenderFunc::Delay::ComReflection += timeGetTime() - ttime;
 
-	//рендерим глубину от света
-	ttime = timeGetTime();
-	UpdateShadow(timeDelta);
-	SXRenderFunc::Delay::UpdateShadow += timeGetTime() - ttime;
+	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
+	{
+		//рендерим глубину от света
+		ttime = timeGetTime();
+		UpdateShadow(timeDelta);
+		SXRenderFunc::Delay::UpdateShadow += timeGetTime() - ttime;
+	}
 
 	//рисуем сцену и заполняем mrt данными
 	ttime = timeGetTime();
 	RenderInMRT(timeDelta);
 	SXRenderFunc::Delay::RenderMRT += timeGetTime() - ttime;
 	
-	//освещаем сцену
-	ttime = timeGetTime();
-	ComLighting(timeDelta, true);
-	SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
+	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
+	{
+		//освещаем сцену
+		ttime = timeGetTime();
+		ComLighting(timeDelta, true);
+		SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
+	}
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
+#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR)
 	ttime = timeGetTime();
 	PostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += timeGetTime() - ttime;
+#endif
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+#if defined(SX_MATERIAL_EDITOR) || defined(SX_LEVEL_EDITOR)
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(GData::FinalImage));
+#else
 	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
+#endif
+
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
-	//GData::DXDevice->SetTexture(0, 0);
-	//SML_LigthsRender(0, 0);
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	
+
+	if (GData::Editors::SelSelection)
+	{
+		if (GData::Editors::SelZTest)
+		{
+			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		}
+		else 
+		{
+			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		}
+
+		if (GData::Editors::SelMesh)
+			GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		if (GData::Editors::SelBackFacesCull)
+			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+		{
+			if (GData::Editors::ActiveElement > -1)
+			{
+				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+				SML_LigthsRender(GData::Editors::ActiveElement, timeDelta);
+			}
+		}
+
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		{
+			if (GData::Editors::ActiveElement > -1)
+			{
+				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+				SGeom_ModelsRenderSingly(timeDelta, GData::Editors::ActiveElement, SML_MtlGetStdMtl(MtlTypeModel::tms_static));
+			}
+		}
+
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		{
+			if (GData::Editors::ActiveElement > -1)
+			{
+				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+				SGeom_GreenRenderSingly(timeDelta, &GData::ConstCurrCamPos, GData::Editors::ActiveElement, SML_MtlGetStdMtl(MtlTypeModel::tms_tree));
+			}
+		}
+
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+
+		if (GData::Editors::SelMesh)
+			GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+		if (GData::Editors::SelBackFacesCull)
+			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	}
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
@@ -1453,6 +1530,10 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SXRenderFunc::Delay::Present += timeGetTime() - ttime;
 
 	SXRenderFunc::UpdateMsg(timeDelta);
+
+#if !defined(SX_GAME)
+	GData::Editors::LevelEditorUpdateStatusBar();
+#endif
 }
 
 

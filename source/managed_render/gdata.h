@@ -25,10 +25,23 @@ See the license in LICENSE
 */
 
 #define FILE_FILTER_TEXTURE	"Все файлы\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
-#define FILE_FILTER_LEVEL	"Все файлы\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
+#define FILE_FILTER_LEVEL	"SkyX level file(.lvl)\0*.lvl\0Все файлы\0*.*\0\0"
 #define FILE_FILTER_MODEL	"dse file(.dse)\0*.dse\0Все файлы\0*.*\0\0"
 #define FILE_FILTER_VS		"vertex shader file(.vs)\0*.vs\0Все файлы\0*.*\0\0"
 #define FILE_FILTER_PS		"pixel shader file(.ps)\0*.ps\0Все файлы\0*.*\0\0"
+
+
+#define EDITORS_LEVEL_GROUPTYPE_GEOM	1
+#define EDITORS_LEVEL_GROUPTYPE_GREEN	2
+#define EDITORS_LEVEL_GROUPTYPE_LIGHT	3
+
+#define EDITORS_LEVEL_CAPTION "SXLevelEditor"
+#define EDITORS_LEVEL_STATUSBAR_LEVEL_POLY "Level poly: "
+#define EDITORS_LEVEL_STATUSBAR_GEOM_POLY "Geom poly: "
+#define EDITORS_LEVEL_STATUSBAR_GREEN_POLY "Green poly: "
+#define EDITORS_LEVEL_STATUSBAR_LIGHT_COUNT "Count light: "
+
+#define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
 
 //! пространство имен для хранения данных цикла рендера
 namespace GData
@@ -50,9 +63,9 @@ namespace GData
 	bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
 
 	ModelSim* SimModel = 0;		//!< указатель симуляционной модели
-
+	DS_RT FinalImage;			//!< финальное изображение
 	ISXCamera* ObjCamera = 0;	//!< камера для которой будет рендер
-	
+	ID IDSelectTex = -1;
 	int ReSize = 0;				//!< 0 - ничего не меняли, 1 - ресайз, 2 - переход между фуллскрин и окном
 
 	float2_t NearFar = float2_t(0.25,400);	//!< значение дальней и ближней плоскостей отсечения
@@ -133,8 +146,22 @@ namespace GData
 			ID StencilStrColumn;
 			ID UnionAlpha;
 		};
-		};
 	};
+
+#if !defined(SX_GAME)
+	namespace Editors
+	{
+		int ActiveGroupType = 0;
+		ID ActiveElement = -1;
+		bool SelSelection;
+		bool SelZTest;
+		bool SelMesh;
+		bool SelBackFacesCull;
+
+		void LevelEditorUpdateStatusBar();
+	};
+#endif
+};
 
 //!@} managed_render_gdata
 

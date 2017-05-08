@@ -1,4 +1,5 @@
 
+#define SX_LEVEL_EDITOR
 #define _CRT_SECURE_NO_WARNINGS
 #pragma once
 #include <vld.h> 
@@ -25,13 +26,20 @@
 
 #include <common\\string_api.cpp>
 
+#include <managed_render\\gdata.h>
+#include <managed_render\\camera_update.h>
+#include <managed_render\\render_func.h>
+#include <managed_render\\level.h>
+
+#include <SXLevelEditor/resource.h>
+#include <SXLevelEditor\\level_editor.cpp>
+
 #include <managed_render\\gdata.cpp>
 #include <managed_render\\camera_update.cpp>
 #include <managed_render\\render_func.cpp>
 #include <managed_render\\level.cpp>
 
-#include <SXLevelEditor/resource.h>
-#include <SXLevelEditor\\level_editor.cpp>
+
 
 
 
@@ -50,6 +58,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXLevelEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
 	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+
+	GData::Editors::SelSelection = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
+	GData::Editors::SelBackFacesCull = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
+	GData::Editors::SelZTest = false;
+	GData::Editors::SelMesh = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, true);
+	
 
 	SXLevelEditor::RenderWindow->GAlign.left = true;
 	SXLevelEditor::RenderWindow->GAlign.right = true;
@@ -133,35 +152,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
 	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
 
-	
-	//LoadLevel("test_alpha2");
 
-	/*char tmpmpathname[64];
-	char tmpmname[64];
-	for (int i = 0; i < 10; ++i)
-	{
-		sprintf(tmpmpathname, "stroyka\\stroyka_part%d.dse", i);
-		sprintf(tmpmname, "stroyka_part%d.dse", i);
-		SGeom_ModelsAddModel(tmpmpathname, 0, tmpmname);
-	}
-	SGeom_ModelsAddModel("terrain\\terrain.dse", 0, "terrain\\terrain.dse");*/
-	/*for (int i = 0; i < 5; ++i)
-	{
-		SGeom_ModelsDelModel(0);
-	}
-	MessageBox(0, 0, 0, 0);*/
+	IDirect3DTexture9* SelectMaterial;
+	GData::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &SelectMaterial, NULL);
+	D3DLOCKED_RECT LockedRect;
+	uint32_t tmpColor = D3DCOLOR_ARGB(255, 255, 0, 255);
 
+	SelectMaterial->LockRect(0, &LockedRect, 0, 0);
 
+	uint32_t* tmpOldColor = (uint32_t*)LockedRect.pBits + 0 * LockedRect.Pitch + 0 * sizeof(uint32_t);
+	memcpy(tmpOldColor, &tmpColor, sizeof(uint32_t));
 
-	SML_LigthsCreatePoint(
-		&float3(60,60,0),
-		LIGHTS_GLOBAL_MAX_POWER,
-		LIGHTS_GLOBAL_STD_RADIUS,
-		&float3(1,1,1),
-		true,
-		true);
-	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
-	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
+	SelectMaterial->UnlockRect(0);
+
+	SGCore_LoadTexLoadTextures();
+	GData::IDSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 
 	char tmppathexe[1024];
 	char tmppath[1024];

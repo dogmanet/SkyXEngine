@@ -217,6 +217,7 @@ public:
 	bool GetIntersectedRayY(float3* pos);
 	
 	void GPURender(DWORD timeDelta, int sort_mtl, ID id_arr = 0, ID exclude_model_id = -1, ID exclude_group_id = -1, bool is_sorted = false);
+	void GPURenderSingly(DWORD timeDelta, ID id, ID id_tex);
 	ID AddModel(const char* path, const char* lod1, const char* name);
 	void DelModel(ID id);
 

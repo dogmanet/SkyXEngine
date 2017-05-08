@@ -132,3 +132,34 @@ void GData::InitWin(const char* name, const char* caption)
 	else
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
 }
+
+#if !defined(SX_GAME)
+void GData::Editors::LevelEditorUpdateStatusBar()
+{
+	long count_poly_green = 0;
+	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
+	{
+		count_poly_green += SGeom_GreenMGetCountGen(i) * SGeom_GreenMGetCountPoly(i);
+	}
+
+	long count_poly_geom = 0;
+	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
+	{
+		count_poly_geom += SGeom_ModelsMGetCountPoly(i);
+	}
+
+	char text[256];
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_LEVEL_POLY, count_poly_geom + count_poly_green);
+	SXLevelEditor::StatusBar1->SetTextParts(0, text);
+
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GEOM_POLY, count_poly_geom);
+	SXLevelEditor::StatusBar1->SetTextParts(1, text);
+
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GREEN_POLY, count_poly_green);
+	SXLevelEditor::StatusBar1->SetTextParts(2, text);
+
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_LIGHT_COUNT, SML_LigthsGetCount());
+	SXLevelEditor::StatusBar1->SetTextParts(3, text);
+}
+
+#endif

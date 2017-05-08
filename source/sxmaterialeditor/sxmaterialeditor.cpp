@@ -54,6 +54,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
 	SXMaterialEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXMaterialEditor::MainMenu->SetToWindow(SXMaterialEditor::JobWindow->GetHWND());
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
 
 	SXMaterialEditor::WindowRender->GAlign.left = true;
 	SXMaterialEditor::WindowRender->GAlign.right = true;

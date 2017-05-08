@@ -130,6 +130,8 @@ namespace SXMaterialEditor
 	void Nulling();
 	void InitMtl(ID id);
 
+	void FinalImageUncheckedMenu();
+
 	ID IDMat = -1;
 };
 

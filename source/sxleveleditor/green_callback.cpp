@@ -104,7 +104,7 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenNav->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (SXLevelEditor::HowActivateType == 2)
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetNav(sel, tmpname);
@@ -252,9 +252,11 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	GCActivateCreatingElems(false);
 	SXLevelEditor::ListBoxList->SetSel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
-	SXLevelEditor::HowActivateType = 2;
 
 	GCInitElemsSelModel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
+
+	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
+	GData::Editors::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
 
 	return 0;
 }
