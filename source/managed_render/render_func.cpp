@@ -1415,16 +1415,16 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
-	//освещаем сцену
-	ttime = timeGetTime();
-	ComLighting(timeDelta, true);
-	SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
+		//освещаем сцену
+		ttime = timeGetTime();
+		ComLighting(timeDelta, true);
+		SXRenderFunc::Delay::ComLighting += timeGetTime() - ttime;
 	}
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR)
+#if defined(SX_GAME)
 	ttime = timeGetTime();
 	PostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += timeGetTime() - ttime;
@@ -1435,7 +1435,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-#if defined(SX_MATERIAL_EDITOR) || defined(SX_LEVEL_EDITOR)
+#if !defined(SX_GAME)
 	GData::DXDevice->SetTexture(0, SML_DSGetRT(GData::FinalImage));
 #else
 	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
@@ -1445,7 +1445,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 	
-#if defined(SX_MATERIAL_EDITOR) || defined(SX_LEVEL_EDITOR)
+#if defined(SX_LEVEL_EDITOR)
 	if (GData::Editors::SelSelection)
 	{
 		if (GData::Editors::SelZTest)
@@ -1501,9 +1501,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 		if (GData::Editors::SelBackFacesCull)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
+#endif
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
-#endif
 
 	SXPhysics_DebugRender();
 
@@ -1536,7 +1536,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SXRenderFunc::UpdateMsg(timeDelta);
 
-#if !defined(SX_GAME)
+#if defined(SX_LEVEL_EDITOR)
 	GData::Editors::LevelEditorUpdateStatusBar();
 #endif
 }
