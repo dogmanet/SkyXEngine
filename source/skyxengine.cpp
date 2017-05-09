@@ -91,6 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//!@TODO: Найти для этого более подходящее место
 	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
+	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
 
 	Level::Load("stalker_atp");
