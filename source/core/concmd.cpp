@@ -29,36 +29,60 @@ bool g_bRunningCmd = false;
 
 ConcurrentQueue<char *> g_vCommandBuffer;
 
-SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd)
+SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_DEFAULT;
 	c.cls = NULL;
 	c.cmd.cmd = cmd;
+	c.szDesc = NULL;
+	if(desc)
+	{
+		c.szDesc = new char[strlen(desc) + 1];
+		strcpy(c.szDesc, desc);
+	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd)
+SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_ARG;
 	c.cls = NULL;
 	c.cmd.cmd = cmd;
+	c.szDesc = NULL;
+	if(desc)
+	{
+		c.szDesc = new char[strlen(desc) + 1];
+		strcpy(c.szDesc, desc);
+	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd)
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS;
 	c.cls = (ConCmdStub*)pObject;
 	c.cmd.clscmd = cmd;
+	c.szDesc = NULL;
+	if(desc)
+	{
+		c.szDesc = new char[strlen(desc) + 1];
+		strcpy(c.szDesc, desc);
+	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd)
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS_ARG;
 	c.cls = (ConCmdStub*)pObject;
 	c.cmd.clscmdarg = cmd;
+	c.szDesc = NULL;
+	if(desc)
+	{
+		c.szDesc = new char[strlen(desc) + 1];
+		strcpy(c.szDesc, desc);
+	}
 	g_mCmds[name] = c;
 }
 
@@ -80,7 +104,13 @@ void ConsoleExecInternal(char * cmd, char * args)
 	char * arglist[64];
 	int argc = 0;
 
+
 	if(bCVarHandle)
+	{
+		arglist[argc++] = "cvar_handle";
+		arglist[argc++] = cmd;
+	}
+	else
 	{
 		arglist[argc++] = cmd;
 	}
@@ -278,7 +308,7 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...)
 
 void echo(int argc, const char ** argv)
 {
-	for(int i = 0; i < argc; ++i)
+	for(int i = 1; i < argc; ++i)
 	{
 		printf("%s ", argv[i]);
 	}
@@ -287,15 +317,15 @@ void echo(int argc, const char ** argv)
 
 void exec(int argc, const char ** argv)
 {
-	if(argc != 1)
+	if(argc != 2)
 	{
 		puts(COLOR_LRED "[exec]: Expected filename" COLOR_RESET);
 		return;
 	}
 	ISXFile * f = Core_CrFile();
-	if(f->Open(argv[0], CORE_FILE_BIN) < 0)
+	if(f->Open(argv[1], CORE_FILE_BIN) < 0)
 	{
-		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, argv[0]);
+		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, argv[1]);
 		return;
 	}
 	int len = f->GetSize() + 1;
@@ -325,22 +355,48 @@ void cmd_exit()
 
 void cvar_handle(int argc, const char ** argv)
 {
-	if(argc == 1)
+	if(argc == 2)
 	{
-		PrintCVar(argv[0]);
+		PrintCVar(argv[1]);
 	}
-	else if(argc > 1)
+	else if(argc > 2)
 	{
-		SetCVar(argv[0], argv[1]);
+		SetCVar(argv[1], argv[2]);
+	}
+}
+
+void cmd_help(int argc, const char ** argv)
+{
+	if(argc == 2)
+	{
+		const AssotiativeArray<String, ConCmd>::Node * pNode;
+		if(!g_mCmds.KeyExists(argv[1], &pNode))
+		{
+			printf(COLOR_LRED "Unknown command '%s'\n" COLOR_RESET, argv[1]);
+			return;
+		}
+		if(pNode->Val->szDesc)
+		{
+			printf(COLOR_GREEN "%s\n" COLOR_RESET, pNode->Val->szDesc);
+		}
+		else
+		{
+			printf(COLOR_RED "No description for '%s'\n" COLOR_RESET, argv[1]);
+		}
+	}
+	else
+	{
+		printf(COLOR_GREEN "Usage:\n    " COLOR_LGREEN "help <command>" COLOR_GREEN " - Show command description\n" COLOR_RESET);
 	}
 }
 
 void ConsoleRegisterCmds()
 {
-	Core_0RegisterConcmdArg("echo", echo);
-	Core_0RegisterConcmdArg("exec", exec);
-	Core_0RegisterConcmd("exit", cmd_exit);
-	Core_0RegisterConcmdArg("cvar_handle", cvar_handle);
+	Core_0RegisterConcmdArg("echo", echo, "Echoes all parameters to console");
+	Core_0RegisterConcmdArg("exec", exec, "Executes given cfg file");
+	Core_0RegisterConcmd("exit", cmd_exit, "Shuts down the engine");
+	Core_0RegisterConcmdArg("cvar_handle", cvar_handle, "Handle to show or set cvar value");
+	Core_0RegisterConcmdArg("help", cmd_help, "Handle to show command description");
 }
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler()

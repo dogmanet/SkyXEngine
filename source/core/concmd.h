@@ -26,6 +26,7 @@ struct ConCmd
 		SXCONCMDCLS clscmd;
 		SXCONCMDCLSARG clscmdarg;
 	} cmd;
+	char * szDesc;
 };
 
 void ConsoleRegisterCmds();

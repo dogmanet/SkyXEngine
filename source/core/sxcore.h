@@ -169,10 +169,10 @@ class ConCmdStub{}; /*!< Класс-заглушка, для определен�
 typedef void(ConCmdStub::* SXCONCMDCLS)(); /*!< Тип метода для регистрации команды-члена класса без аргументов */
 typedef void(ConCmdStub::* SXCONCMDCLSARG)(int argc, const char ** argv); /*!< Тип метода для регистрации команды-члена класса с аргументами */
 
-SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd); //!< Регистрация консольной функции без аргументов
-SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd); //!< Регистрация консольной функции с аргументами
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd); //!< Регистрация консольной функции-члена класса без аргументов
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd); //!< Регистрация консольной функции-члена класса с аргументами
+SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc = NULL); //!< Регистрация консольной функции без аргументов
+SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc = NULL); //!< Регистрация консольной функции с аргументами
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
 
 SX_LIB_API void Core_0ConsoleUpdate(); //!< Обновление консоли, выполнение буфера команд
 SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд
