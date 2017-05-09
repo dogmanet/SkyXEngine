@@ -87,12 +87,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\sxphysics\PhyWorld.cpp" />
-    <ClCompile Include="..\..\..\source\sxphysics\sxphysics_dll.cpp" />
+    <ClCompile Include="..\..\..\source\physics\PhyWorld.cpp" />
+    <ClCompile Include="..\..\..\source\physics\sxphysics_dll.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\sxphysics\PhyWorld.h" />
-    <ClInclude Include="..\..\..\source\sxphysics\sxphysics.h" />
+    <ClInclude Include="..\..\..\source\physics\PhyWorld.h" />
+    <ClInclude Include="..\..\..\source\physics\sxphysics.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

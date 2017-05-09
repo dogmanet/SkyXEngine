@@ -48,7 +48,7 @@
     <ClCompile Include="..\..\..\source\sxae\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\sxanim\animated.cpp">
+    <ClCompile Include="..\..\..\source\anim\animated.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\sxae\Tools.cpp">

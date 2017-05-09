@@ -1,5 +1,7 @@
 #include "Editor.h"
 
+#include <Commdlg.h>
+
 #include <ShlObj.h>
 
 #if defined(_DEBUG)

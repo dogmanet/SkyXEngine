@@ -231,11 +231,11 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #else
 #pragma comment(lib, "sxanim.lib")
 #endif
-#include <sxanim/sxanim.h>
+#include <anim/sxanim.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxphysics_d.lib")
 #else
 #pragma comment(lib, "sxphysics.lib")
 #endif
-#include <sxphysics/sxphysics.h>
+#include <physics/sxphysics.h>

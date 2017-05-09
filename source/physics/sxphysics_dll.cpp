@@ -99,10 +99,12 @@ SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
 
 SX_LIB_API void SXPhysics_LoadGeom()
 {
+	SP_PRECOND(_VOID);
 	g_pWorld->LoadGeom();
 }
 
 SX_LIB_API void SXPhysics_DebugRender()
 {
+	SP_PRECOND(_VOID);
 	g_pWorld->Render();
 }

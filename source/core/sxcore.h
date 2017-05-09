@@ -190,7 +190,7 @@ __inline void Core_SetOutPtr()
 		return;
 	}
 	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	FILE * fOut = ::fdopen(hOut, "a+");
+	FILE * fOut = ::_fdopen(hOut, "a+");
 	::setvbuf(fOut, NULL, _IONBF, 0);
 
 	*stdout = *fOut;
