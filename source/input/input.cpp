@@ -1,8 +1,18 @@
 
-#include <input\sxinput.h>
-#include <input\input.h>
+#include <input/sxinput.h>
+#include <input/input.h>
+
+#include <core/sxcore.h>
+
+#if defined(_DEBUG)
+#	pragma comment(lib, "sxcore_d.lib")
+#else
+#	pragma comment(lib, "sxcore.lib")
+#endif
 
 #pragma once
+
+extern report_func reportf;
 
 SXInput::SXInput(const char* name)
 {
@@ -11,402 +21,413 @@ SXInput::SXInput(const char* name)
 
 long SXInput::Init(HWND hwnd, HINSTANCE hinst)
 {
-	long tmperror = 0;
-	HRESULT hr = DirectInput8Create(hinst, DIRECTINPUT_HEADER_VERSION, IID_IDirectInput8, (void**)&DirectInput, NULL);
-	if (hr == DI_OK)
+	InitKeymap();
+
+#if defined(_WINDOWS)
+	RAWINPUTDEVICE Rid[1];
+
+	Rid[0].usUsagePage = 1;
+	Rid[0].usUsage = 2;
+	Rid[0].dwFlags = RIDEV_INPUTSINK;
+	Rid[0].hwndTarget = hwnd;
+
+	if(RegisterRawInputDevices(Rid, sizeof(Rid) / sizeof(RAWINPUTDEVICE), sizeof(Rid[0])) == FALSE)
 	{
-		tmperror = InitKeyboard(hwnd, DirectInput, &DeviceKeyBoard);
-		if (tmperror != 0)
-			return tmperror;
-
-		tmperror = InitMouse(hwnd, DirectInput, &DeviceMouse);
-		if (tmperror != 0)
-			return tmperror;
-
-		InsTime = 0;
-		DoubleClick = -1;
-
-		for (int i = 0; i<256; i++)
-		{
-			TimerKeyStateBuffer[i] = 0;
-			KeyStateEvents[i] = InputEvents::iv_dissable;
-		}
-
-		ControlMouseButton = -1;
-		ShiftEvent = false;
+		reportf(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
+		return(SX_INPUT_ERR_REGISTER_RI);
 	}
-	else
-	{
-		if (hr == DIERR_INVALIDPARAM)
-			return SX_INPUT_ERR_CDI_INVALID_ARG;
-		else if (hr == DIERR_OUTOFMEMORY)
-			return SX_INPUT_ERR_CDI_OUT_OF_MEM;
-		else
-			return SX_INPUT_ERR_CDI_NONE_ERR;
-	}
+#endif
+
 	return 0;
 }
 
 SXInput::~SXInput()
 {
-	DirectInput->Release();
-	DeviceKeyBoard->Release();
-	DeviceMouse->Release();
-}
-
-long SXInput::InitKeyboard(HWND hwnd, IDirectInput8 *DirectInput, IDirectInputDevice8** dev)
-{
-	HWND CurrWnd = GetForegroundWindow();
-	int MyTID = GetCurrentThreadId();
-	int CurrTID = GetWindowThreadProcessId(CurrWnd, 0);
-
-	AttachThreadInput(MyTID, CurrTID, TRUE);
-	SetForegroundWindow(hwnd);
-	AttachThreadInput(MyTID, CurrTID, FALSE);
-
-	/////////////////////
-	HRESULT hr = 0;
-	if (FAILED(hr = DirectInput->CreateDevice(GUID_SysKeyboard, dev, NULL)))
-	{
-		return SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD;
-	}
-
-	if (FAILED(hr = (*dev)->SetDataFormat(&c_dfDIKeyboard)))
-	{
-		(*dev)->Release();
-		return SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD;
-	}
-
-	if (FAILED(hr = (*dev)->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY)))
-	{
-		(*dev)->Release();
-		return SX_INPUT_ERR_COOPERATIVE_KEYBOARD;
-	}
-
-	if (FAILED(hr = (*dev)->Acquire()))
-	{
-		(*dev)->Release();
-		return SX_INPUT_ERR_ACQUIRE_KEYBOARD;
-	}
-
-	return 0;
-}
-
-long SXInput::InitMouse(HWND hwnd, IDirectInput8 *DirectInput, IDirectInputDevice8** dev)
-{
-	HWND CurrWnd = GetForegroundWindow();
-	int MyTID = GetCurrentThreadId();
-	int CurrTID = GetWindowThreadProcessId(CurrWnd, 0);
-
-	AttachThreadInput(MyTID, CurrTID, TRUE);
-	SetForegroundWindow(hwnd);
-	AttachThreadInput(MyTID, CurrTID, FALSE);
-
-	if (FAILED(DirectInput->CreateDevice(GUID_SysMouse, dev, NULL)))
-	{
-		return SX_INPUT_ERR_CREATE_DEVICE_MOUSE;
-	}
-
-	if (FAILED((*dev)->SetDataFormat(&c_dfDIMouse)))
-	{
-		(*dev)->Release();
-		return SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE;
-	}
-
-	if (FAILED((*dev)->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY)))
-	{
-		(*dev)->Release();
-		return SX_INPUT_ERR_COOPERATIVE_MOUSE;
-	}
-
-	if (FAILED((*dev)->Acquire()))
-	{
-		(*dev)->Release();
-		return SX_INPUT_ERR_ACQUIRE_MOUSE;
-	}
-
-	return 0;
-}
-
-int SXInput::ReadKeyBoardData(IDirectInputDevice8 *DIDevice)
-{
-	HRESULT hr;
-
-	while (1)
-	{
-		DIDevice->Poll();
-
-		if (SUCCEEDED(hr = DIDevice->GetDeviceState(256, (void*)KeyStateBuffer)))
-			break;
-
-		if (hr != DIERR_INPUTLOST && hr != DIERR_NOTACQUIRED)
-		{
-			return SX_INPUT_ERROR_NON_ACQUIRE;
-		}
-
-		if (FAILED(DIDevice->Acquire()))
-		{
-			return SX_INPUT_ERROR_UNKNOWN;
-		}
-	}
-
-
-	for (int i = 0; i<256; i++)
-	{
-		if (!(KeyStateBuffer[i]) && (OldKeyStateBuffer[i]))
-		{
-			//key up
-			KeyStateEvents[i] = InputEvents::iv_k_up;
-			TimerKeyStateBuffer[i] = 0;
-		}
-		else if ((KeyStateBuffer[i]) && !(OldKeyStateBuffer[i]))
-		{
-			//key first down
-			KeyStateEvents[i] = InputEvents::iv_k_first;
-			TimerKeyStateBuffer[i] = timeGetTime();
-		}
-
-		else if ((KeyStateBuffer[i]) && (OldKeyStateBuffer[i]))
-		{
-			if (TimerKeyStateBuffer[i] > 0)
-			{
-				if (TimerKeyStateBuffer[i] <= timeGetTime())
-				{
-					KeyStateEvents[i] = InputEvents::iv_k_down;
-					TimerKeyStateBuffer[i] = 0;
-				}
-				else
-				{
-					KeyStateEvents[i] = InputEvents::iv_dissable;
-				}
-			}
-			else
-			{
-				TimerKeyStateBuffer[i] = timeGetTime() + SX_INPUT_PERIOD_NON_DOWN_KEY;
-				KeyStateEvents[i] = InputEvents::iv_dissable;
-			}
-		}
-		else
-		{
-			KeyStateEvents[i] = InputEvents::iv_dissable;
-			TimerKeyStateBuffer[i] = 0;
-		}
-
-		OldKeyStateBuffer[i] = KeyStateBuffer[i];
-	}
-
-	return 0;
-}
-
-int SXInput::ReadMouseData(IDirectInputDevice8 *DIDevice)
-{
-	HRESULT hr;
-	DoubleClick = -1;
-	while (1)
-	{
-		DIDevice->Poll();
-
-		if (SUCCEEDED(hr = DIDevice->GetDeviceState(sizeof(DIMOUSESTATE), (void*)&MouseState)))
-			break;
-
-		if (hr != DIERR_INPUTLOST && hr != DIERR_NOTACQUIRED)
-		{
-			return SX_INPUT_ERROR_NON_ACQUIRE;
-		}
-
-		if (FAILED(DIDevice->Acquire()))
-		{
-			return SX_INPUT_ERROR_UNKNOWN;
-		}
-	}
-
-
-	for (int i = 0; i<3; i++)
-	{
-		if ((MouseState.rgbButtons[i] & 0x80) && !(SomeTimesMouseState.rgbButtons[i] & 0x80))
-		{
-			EventsMouse.Buttons[i] = InputEvents::iv_m_first;
-		}
-		else if (!(MouseState.rgbButtons[i] & 0x80) && (SomeTimesMouseState.rgbButtons[i] & 0x80))
-		{
-			EventsMouse.Buttons[i] = InputEvents::iv_m_up;
-		}
-		else if ((MouseState.rgbButtons[i] & 0x80) && (SomeTimesMouseState.rgbButtons[i] & 0x80))
-		{
-			//if(EventsMouse.Buttons[i] != InputEvents::BUTTON_DOWN)
-			//{
-			if (EventsMouse.Timer[i] > 0)
-			{
-				//LOG(ToPointChar(EventsMouse.Timer[i]));
-				if (EventsMouse.Timer[i] <= timeGetTime())
-				{
-					EventsMouse.Buttons[i] = InputEvents::iv_m_down;
-					EventsMouse.Timer[i] = 0;
-					//заглушка, на случай если событие двойного клика стартовало
-					//а мы меняем стэйты кнопки
-					if (InsTime)
-						ShiftEvent--;
-				}
-				else
-				{
-					EventsMouse.Buttons[i] = InputEvents::iv_dissable;
-				}
-			}
-			else
-			{
-				//LOG(ToPointChar("PERIOD_RE_PRESSED |" + ToString(EventsMouse.Timer[i])));
-				EventsMouse.Timer[i] = timeGetTime() + SX_INPUT_PERIOD_RE_PRESSED;
-				EventsMouse.Buttons[i] = InputEvents::iv_dissable;
-			}
-			//}
-		}
-		else
-		{
-			EventsMouse.Timer[i] = 0;
-			EventsMouse.Buttons[i] = InputEvents::iv_dissable;
-		}
-	}
-
-	//если таймер еще не ставили и нажата какая-то кнопка мыши значит событие двоного клика не стартовало и можно его стартануть
-	//ControlMouseButton - номер кнопки для которой стартует событие двойного клика
-	if (!InsTime && (ControlMouseButton = IsMouseClick()) > -1)
-	{
-		OldMouseState = MouseState;
-		InsTime = timeGetTime();
-	}
-	//если таймер уже стоит и нажата другая кнопка тогда убиваем событие
-	else if (InsTime && !(ControlMouseButton == IsMouseClick() || IsMouseClick() == -1))
-	{
-		OldMouseState = MouseState;
-		InsTime = 0;
-		DoubleClick = -1;
-		ControlMouseButton = -1;
-		ShiftEvent = 0;
-	}
-	else if (!InsTime)
-		ControlMouseButton = -1;
-
-
-	if (InsTime != 0)
-	{
-		//если время двойного клика не истекло
-		if (timeGetTime() - InsTime <= SX_INPUT_PERIOD_DBL_CLICK && timeGetTime() - InsTime >= SX_INPUT_PERIOD_NON_DBL_CLICK)
-		{
-			if (ShiftEvent >= SX_INPUT_COUNT_EVENTS_FOR_DBL_CLICK && (MouseState.rgbButtons[ControlMouseButton] & 0x80) && (OldMouseState.rgbButtons[ControlMouseButton] & 0x80))
-			{
-				DoubleClick = ControlMouseButton;
-				EventsMouse.Buttons[ControlMouseButton] = InputEvents::iv_m_dbl;
-				//EventsMouse.Timer[ControlMouseButton] = 0;
-				InsTime = 0;
-				ControlMouseButton = -1;
-				ShiftEvent = 0;
-				OldMouseState = MouseState;
-			}
-
-		}
-		//если время двойного клика истекло
-		else if (timeGetTime() - InsTime > SX_INPUT_PERIOD_DBL_CLICK)
-		{
-			InsTime = 0;
-			DoubleClick = -1;
-			ControlMouseButton = -1;
-			ShiftEvent = 0;
-			OldMouseState = MouseState;
-		}
-		else if (ShiftEvent < SX_INPUT_COUNT_EVENTS_FOR_DBL_CLICK)
-		{
-			if (EventsMouse.Buttons[ControlMouseButton] != OldEventsMouse.Buttons[ControlMouseButton])
-				ShiftEvent++;
-		}
-	}
-
-	SomeTimesMouseState = MouseState;
-	OldEventsMouse = EventsMouse;
-
-	return 0;
 }
 
 void SXInput::Update()
 {
-	ReadKeyBoardData(DeviceKeyBoard);
-	ReadMouseData(DeviceMouse);
+	for(int i = 0; i < SXI_KEYMAP_SIZE; ++i)
+	{
+		m_vKeyMap[i].is_dblclick = FALSE;
+		m_vKeyMap[i].changed = FALSE;
+	}
+
+	wheelCount = 0;
+
+	mdeltaOld = mdelta;
+	mdelta = {0};
+
+	IMSG msg;
+	while(!m_qMsgs.empty())
+	{
+		msg = m_qMsgs.front();
+		m_qMsgs.pop();
+
+		UINT key = 0;
+		switch(msg.message)
+		{
+		case WM_XBUTTONDBLCLK:
+			key = SIK_OFFS + GET_XBUTTON_WPARAM(msg.wParam) + 2;
+		case WM_LBUTTONDBLCLK:
+			if(!key)
+				key = SIM_LBUTTON;
+		case WM_RBUTTONDBLCLK:
+			if(!key)
+				key = SIM_RBUTTON;
+		case WM_MBUTTONDBLCLK:
+			if(!key)
+				key = SIM_MBUTTON;
+			m_vKeyMap[key].is_dblclick = TRUE;
+		case WM_XBUTTONDOWN:
+			if(!key)
+				key = SIK_OFFS + GET_XBUTTON_WPARAM(msg.wParam) + 2;
+		case WM_RBUTTONDOWN:
+			if(!key)
+				key = SIM_RBUTTON;
+		case WM_MBUTTONDOWN:
+			if(!key)
+				key = SIM_MBUTTON;
+		case WM_LBUTTONDOWN:
+			if(!key)
+				key = SIM_LBUTTON;
+		case WM_SYSKEYDOWN:
+		case WM_KEYDOWN:
+			SXIKD * pikd;
+			pikd = (SXIKD*)&msg.lParam;
+
+			if(!key)
+				key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
+
+			if(key <= SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
+			{
+				m_vKeyMap[key].state = TRUE;
+				m_vKeyMap[key].changed = TRUE;
+
+				if(m_vKeyMap[key].cmd != 0)
+				{
+					Core_0ConsoleExecCmd("%s", m_vKeyMap[key].cmd);
+				}
+			}
+			break;
+
+
+		case WM_XBUTTONUP:
+			key = SIK_OFFS + GET_XBUTTON_WPARAM(msg.wParam) + 2;
+		case WM_RBUTTONUP:
+			if(!key)
+				key = SIM_RBUTTON;
+		case WM_MBUTTONUP:
+			if(!key)
+				key = SIM_MBUTTON;
+		case WM_LBUTTONUP:
+			if(!key)
+				key = SIM_LBUTTON;
+		case WM_SYSKEYUP:
+		case WM_KEYUP:
+			pikd = (SXIKD*)&msg.lParam;
+
+			if(!key)
+				key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
+
+			if(key <= SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
+			{
+				m_vKeyMap[key].state = FALSE;
+				m_vKeyMap[key].changed = TRUE;
+
+				if(m_vKeyMap[key].cmd != 0 && m_vKeyMap[key].cmd[0] == L'+')
+				{
+					Core_0ConsoleExecCmd("-%s", m_vKeyMap[key].cmd + 1);
+				}
+			}
+			break;
+
+		case WM_MOUSEWHEEL:
+			wheelDelta += GET_WHEEL_DELTA_WPARAM(msg.wParam);
+			for(; wheelDelta > WHEEL_DELTA; wheelDelta -= WHEEL_DELTA)
+			{
+				wheelCount++;
+			}
+			for(; wheelDelta < 0; wheelDelta += WHEEL_DELTA)
+			{
+				wheelCount--;
+			}
+			if(wheelCount)
+			{
+				key = wheelCount > 0 ? SIM_MWHEELUP : SIM_MWHEELDOWN;
+				if(m_vKeyMap[key].cmd != 0)
+				{
+					Core_0ConsoleExecCmd("%s", m_vKeyMap[key].cmd);
+					if(m_vKeyMap[key].cmd[0] == L'+')
+					{
+						Core_0ConsoleExecCmd("-%s", m_vKeyMap[key].cmd + 1);
+					}
+				}
+			}
+			break;
+		}
+	}
+}
+
+void SXInput::GetMouseDelta(int * x, int * y)
+{
+	if(x)
+	{
+		*x = mdeltaOld.x;
+	}
+	if(y)
+	{
+		*y = mdeltaOld.y;
+	}
 }
 
 bool SXInput::GetKeyState(InputCode Key)
 {
-	return KeyStateBuffer[Key] ? true : false;
+	return((bool)m_vKeyMap[Key].state);
 }
 
 InputEvents SXInput::GetKeyEvents(InputCode Key)
 {
-	return KeyStateEvents[Key];
-}
-
-bool SXInput::GetButtonState(InputCode Number)
-{
-	return (MouseState.rgbButtons[Number] & 0x80) ? true : false;
+	IKM * ikm = &m_vKeyMap[Key];
+	if(ikm->is_dblclick)
+	{
+		return(iv_k_dbl);
+	}
+	if(ikm->state)
+	{
+		return(ikm->changed ? iv_k_first : iv_k_down);
+	}
+	return(iv_k_up);
 }
 
 long SXInput::GetScroll()
 {
-	return MouseState.lZ;
+	return wheelCount * WHEEL_DELTA + wheelDelta;
 }
 
 bool SXInput::GetMouseDouble(InputCode Button)
 {
-	return (Button == DoubleClick);
-}
-
-InputEvents SXInput::GetButtonEvent(InputCode Button)
-{
-	return EventsMouse.Buttons[Button];
-}
-
-InputCode SXInput::IsMouseClick()
-{
-	for (int i = 0; i<3; i++)
-	{
-		if (MouseState.rgbButtons[i] & 0x80)
-			return i;
-	}
-	return -1;
+	return(m_vKeyMap[Button].is_dblclick);
 }
 
 bool SXInput::IsOtherButtonOn(InputCode Button)
 {
-	for (int i = 0; i<3; i++)
+	for(int i = SIM_START; i <= SIM_END; ++i)
 	{
-		if (i != Button)
+		if(i != Button && GetKeyState(i))
 		{
-			if (GetButtonEvent(i) > 0)
-				return false;
+			return(true);
 		}
 	}
-	return true;
+	return(false);
 }
 
 bool SXInput::GetExeEvents(InMess *Event)
 {
-	if (Event->TypeDevice == InputDevice::dev_mouse)
-	{
-		return GetButtonEvent(Event->Section) == Event->Code ? true : false;
-	}
-	else if (Event->TypeDevice == InputDevice::dev_keyboard)
-	{
-		return GetKeyEvents(Event->Section) == Event->Code ? true : false;
-	}
-	return false;
+	return GetKeyEvents(Event->Section) == Event->Code;
 }
 
-bool SXInput::GetExeEvents(InputDevice type, InputCode sect, InputEvents code)
+bool SXInput::GetExeEvents(InputCode sect, InputEvents code)
 {
-	if (type == InputDevice::dev_mouse)
+	return GetKeyEvents(sect) == code;
+}
+
+
+#define SXI_BIND_KM(k, v) m_vKeyMap[k] = {v, NULL, FALSE, FALSE};
+
+void SXInput::InitKeymap()
+{
+	for(int i = 0; i < SXI_KEYMAP_SIZE; ++i)
 	{
-		return GetButtonEvent(sect) == code ? true : false;
+		m_vKeyMap[i] = {"#", NULL, FALSE, FALSE};
 	}
-	else if (type == InputDevice::dev_keyboard)
+
+	SXI_BIND_KM(SIM_LBUTTON, "mouse1");
+	SXI_BIND_KM(SIM_MBUTTON, "mouse2");
+	SXI_BIND_KM(SIM_RBUTTON, "mouse3");
+	SXI_BIND_KM(SIM_XBUTTON1, "x1");
+	SXI_BIND_KM(SIM_XBUTTON2, "x2");
+	SXI_BIND_KM(SIM_MWHEELUP, "mwheelup");
+	SXI_BIND_KM(SIM_MWHEELDOWN, "mwheeldown");
+
+	SXI_BIND_KM(SIK_ESCAPE, "escape");
+	SXI_BIND_KM(SIK_BACKSPACE, "backspace");
+	SXI_BIND_KM(SIK_TAB, "tab");
+	SXI_BIND_KM(SIK_ENTER, "enter");
+	SXI_BIND_KM(SIK_NUMPADENTER, "num_enter");
+	SXI_BIND_KM(SIK_SPACE, "space");
+
+	SXI_BIND_KM(SIK_SHIFT, "shift");
+	SXI_BIND_KM(SIK_CONTROL, "ctrl");
+	SXI_BIND_KM(SIK_ALT, "alt");
+
+	SXI_BIND_KM(SIK_LSHIFT, "lshift");
+	SXI_BIND_KM(SIK_LCONTROL, "lctrl");
+	SXI_BIND_KM(SIK_LALT, "lalt");
+	SXI_BIND_KM(SIK_RSHIFT, "rshift");
+	SXI_BIND_KM(SIK_RCONTROL, "rctrl");
+	SXI_BIND_KM(SIK_RALT, "ralt");
+
+	SXI_BIND_KM(SIK_APPS, "menu");
+
+	SXI_BIND_KM(SIK_PAUSE, "pause");
+	SXI_BIND_KM(SIK_CAPSLOCK, "capslock");
+	SXI_BIND_KM(SIK_NUMLOCK, "numlock");
+	SXI_BIND_KM(SIK_SCROLLLOCK, "scrolllock");
+
+	SXI_BIND_KM(SIK_PGUP, "pageup");
+	SXI_BIND_KM(SIK_PGDOWN, "pagedown");
+	SXI_BIND_KM(SIK_HOME, "home");
+	SXI_BIND_KM(SIK_END, "end");
+	SXI_BIND_KM(SIK_INSERT, "insert");
+	SXI_BIND_KM(SIK_DELETE, "delete");
+
+	SXI_BIND_KM(SIK_LEFT, "left");
+	SXI_BIND_KM(SIK_UP, "up");
+	SXI_BIND_KM(SIK_RIGHT, "right");
+	SXI_BIND_KM(SIK_DOWN, "down");
+
+	SXI_BIND_KM(SIK_0, "0");
+	SXI_BIND_KM(SIK_1, "1");
+	SXI_BIND_KM(SIK_2, "2");
+	SXI_BIND_KM(SIK_3, "3");
+	SXI_BIND_KM(SIK_4, "4");
+	SXI_BIND_KM(SIK_5, "5");
+	SXI_BIND_KM(SIK_6, "6");
+	SXI_BIND_KM(SIK_7, "7");
+	SXI_BIND_KM(SIK_8, "8");
+	SXI_BIND_KM(SIK_9, "9");
+
+	SXI_BIND_KM(SIK_A, "a");
+	SXI_BIND_KM(SIK_B, "b");
+	SXI_BIND_KM(SIK_C, "c");
+	SXI_BIND_KM(SIK_D, "d");
+	SXI_BIND_KM(SIK_E, "e");
+	SXI_BIND_KM(SIK_F, "f");
+	SXI_BIND_KM(SIK_G, "g");
+	SXI_BIND_KM(SIK_H, "h");
+	SXI_BIND_KM(SIK_I, "i");
+	SXI_BIND_KM(SIK_J, "j");
+	SXI_BIND_KM(SIK_K, "k");
+	SXI_BIND_KM(SIK_L, "l");
+	SXI_BIND_KM(SIK_M, "m");
+	SXI_BIND_KM(SIK_N, "n");
+	SXI_BIND_KM(SIK_O, "o");
+	SXI_BIND_KM(SIK_P, "p");
+	SXI_BIND_KM(SIK_Q, "q");
+	SXI_BIND_KM(SIK_R, "r");
+	SXI_BIND_KM(SIK_S, "s");
+	SXI_BIND_KM(SIK_T, "t");
+	SXI_BIND_KM(SIK_U, "u");
+	SXI_BIND_KM(SIK_V, "v");
+	SXI_BIND_KM(SIK_W, "w");
+	SXI_BIND_KM(SIK_X, "x");
+	SXI_BIND_KM(SIK_Y, "y");
+	SXI_BIND_KM(SIK_Z, "z");
+
+	SXI_BIND_KM(SIK_GRAVE, "~");
+	SXI_BIND_KM(SIK_MINUS, "-");
+	SXI_BIND_KM(SIK_EQUALS, "=");
+	SXI_BIND_KM(SIK_BACKSLASH, "\\");
+	SXI_BIND_KM(SIK_LBRACKET, "[");
+	SXI_BIND_KM(SIK_RBRACKET, "]");
+	SXI_BIND_KM(SIK_SEMICOLON, ";");
+	SXI_BIND_KM(SIK_APOSTROPHE, "'");
+	SXI_BIND_KM(SIK_COMMA, ",");
+	SXI_BIND_KM(SIK_PERIOD, ".");
+	SXI_BIND_KM(SIK_SLASH, "/");
+
+	SXI_BIND_KM(SIK_NUMPAD0, "num_0");
+	SXI_BIND_KM(SIK_NUMPAD1, "num_1");
+	SXI_BIND_KM(SIK_NUMPAD2, "num_2");
+	SXI_BIND_KM(SIK_NUMPAD3, "num_3");
+	SXI_BIND_KM(SIK_NUMPAD4, "num_4");
+	SXI_BIND_KM(SIK_NUMPAD5, "num_5");
+	SXI_BIND_KM(SIK_NUMPAD6, "num_6");
+	SXI_BIND_KM(SIK_NUMPAD7, "num_7");
+	SXI_BIND_KM(SIK_NUMPAD8, "num_8");
+	SXI_BIND_KM(SIK_NUMPAD9, "num_9");
+
+	SXI_BIND_KM(SIK_MULTIPLY, "num_*");
+	SXI_BIND_KM(SIK_DIVIDE, "num_/");
+	SXI_BIND_KM(SIK_ADD, "num_+");
+	SXI_BIND_KM(SIK_SUBTRACT, "num_-");
+	SXI_BIND_KM(SIK_DECIMAL, "num_.");
+
+	SXI_BIND_KM(SIK_F1, "f1");
+	SXI_BIND_KM(SIK_F2, "f2");
+	SXI_BIND_KM(SIK_F3, "f3");
+	SXI_BIND_KM(SIK_F4, "f4");
+	SXI_BIND_KM(SIK_F5, "f5");
+	SXI_BIND_KM(SIK_F6, "f6");
+	SXI_BIND_KM(SIK_F7, "f7");
+	SXI_BIND_KM(SIK_F8, "f8");
+	SXI_BIND_KM(SIK_F9, "f9");
+	SXI_BIND_KM(SIK_F10, "f10");
+	SXI_BIND_KM(SIK_F11, "f11");
+	SXI_BIND_KM(SIK_F12, "f12");
+}
+
+#undef DSI_BIND_KM
+
+void SXInput::Bind(const char * key, const char * cmd)
+{
+	for(int i = 0; i < SXI_KEYMAP_SIZE; ++i)
 	{
-		return GetKeyEvents(sect) == code ? true : false;
+		if(!strcmp(m_vKeyMap[i].bind, key))
+		{
+			int len = strlen(cmd);
+			if(!m_vKeyMap[i].cmd)
+			{
+				if(len)
+				{
+					m_vKeyMap[i].cmd = new char[len + 1];
+					strcpy(m_vKeyMap[i].cmd, cmd);
+				}
+			}
+			else
+			{
+				if(len)
+				{
+					if(len <= strlen(m_vKeyMap[i].cmd))
+					{
+						strcpy(m_vKeyMap[i].cmd, cmd);
+					}
+					else
+					{
+						mem_delete_a(m_vKeyMap[i].cmd);
+						m_vKeyMap[i].cmd = new char[len + 1];
+						strcpy(m_vKeyMap[i].cmd, cmd);
+					}
+				}
+				else
+				{
+					mem_delete_a(m_vKeyMap[i].cmd);
+				}
+			}
+			return;
+		}
 	}
-	return false;
+}
+
+void SXInput::QueueMsg(const IMSG & msg)
+{
+	switch(msg.message)
+	{
+	case WM_INPUT:
+		RAWINPUT raw;
+		UINT dwSize;
+		dwSize = sizeof(raw);
+		if(~0 != GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, &raw, &dwSize, sizeof(RAWINPUTHEADER)))
+		{
+			if(raw.header.dwType == RIM_TYPEMOUSE)
+			{
+				mdelta.x += raw.data.mouse.lLastX;
+				mdelta.y += raw.data.mouse.lLastY;
+			}
+		}
+		return;
+	}
+
+	m_qMsgs.push(msg);
 }

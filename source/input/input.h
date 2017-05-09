@@ -2,16 +2,20 @@
 #ifndef SX_INPUT_CLASS_H
 #define SX_INPUT_CLASS_H
 
-#include <Mmsystem.h>
-#include <DInput.h>
+#include <common/String.h>
+
+#include <queue>
 
 #pragma once
+
+#define SXI_KEYMAP_SIZE 256
 
 //коды ошибок
 #define SX_INPUT_ERROR_NON_ACQUIRE 2
 #define SX_INPUT_ERROR_UNKNOWN 1
 
 #define SX_INPUT_ERR_CREATE_DI					-1	/*DirectInput не создано*/
+#define SX_INPUT_ERR_REGISTER_RI				-15	/*Не удалось зарегистрировать RAW input device*/
 #define SX_INPUT_ERR_CDI_INVALID_ARG			-12	/*неверные параметры*/
 #define SX_INPUT_ERR_CDI_OUT_OF_MEM				-13	/*нехватка памяти*/
 #define SX_INPUT_ERR_CDI_NONE_ERR				-14	/*неопознаная ошибка*/
@@ -36,6 +40,27 @@ struct StateMouse
 	DWORD Timer[3];
 };
 
+//элемент карты ввода
+struct IKM
+{
+	const char * bind;
+	char * cmd;
+	BOOL state;
+	BOOL changed;
+	BOOL is_dblclick;
+};
+
+struct SXIKD
+{
+	UINT repeatCount : 16;
+	UINT scanCode : 8;
+	UINT isExtended : 1;
+	UINT reserved : 4;
+	UINT contextCode : 1;
+	UINT previousState : 1;
+	UINT transitionState : 1;
+};
+
 class SXInput
 {
 public:
@@ -44,52 +69,49 @@ public:
 
 	long Init(HWND hwnd, HINSTANCE hinst);
 	//необходимые пользовательские функции и переменные
-	int	ReadMouseData		(IDirectInputDevice8 *DIDevice);	//обновление состоянияя мыши
-	int	ReadKeyBoardData	(IDirectInputDevice8 *DIDevice);	//обновление состояния клавиатуры
-
+	
 	void	Update();	//обновление стэйтов, включает в себя ReadMouseData и ReadKeyBoardData
 
 	
 	bool	GetKeyState(InputCode Key);	//нажата ли клавиша под номером Key
-	bool	GetButtonState(InputCode Number);	//нажата ли кнопка мыши под номером Number
 	bool	IsOtherButtonOn(InputCode Button);	//нажаты ли другие кнопки мыши, Button - для которой отслеживаем единственное нажатие
 
 	InputEvents	GetKeyEvents(InputCode Key);	//получить событие посылаемое клавишей на клавиатуре
 	InputEvents	GetButtonEvent(InputCode Button);//получить событие посылаемое кнопкой мыши
-	long	GetScroll		();						//получить скролл, -120 - назад, 120 - вперед (120 - 1 проход)
+	long	GetScroll();
 	bool	GetMouseDouble(InputCode Button);	//был ли сделан кнопкой мыши Button двойной клик
 
-	InputCode IsMouseClick();	//возвращает код нажатой сейчас кнопки мыши
-
 	bool	GetExeEvents(InMess *Event);					//было ли совершенно данное событие
-	bool	GetExeEvents(InputDevice type, InputCode sect, InputEvents code);	//аналог
+	bool	GetExeEvents(InputCode sect, InputEvents code);	//аналог
+
+	void QueueMsg(const IMSG & msg);
+
+	void InitKeymap(); // инициализация карты ввода
+
+	// связывает кнопку с консольной командой
+	void Bind(const char * key, const char * cmd);
+
+	void GetMouseDelta(int * x, int * y);
 
 private:
 	char Name[CORE_NAME_MAX_LEN];
-	IDirectInput8		*DirectInput;
-	IDirectInputDevice8	*DeviceKeyBoard;
-	IDirectInputDevice8	*DeviceMouse;
 
-	char	KeyStateBuffer[256];	//буффер состояний клавиатуры
-	char	OldKeyStateBuffer[256];	//буффер состояний клавиатуры при прошлом обновлении
-	InputEvents	KeyStateEvents[256];	//буффер сообщений посылаемых от клавиатуры
-	DWORD		TimerKeyStateBuffer[256];	//буффер таймеров для каждой клавиши клавиатуры
+	IKM m_vKeyMap[SXI_KEYMAP_SIZE]; // карта состояния ввода
 
-	DIMOUSESTATE	MouseState;				//стэйты мыши
-	DIMOUSESTATE	OldMouseState;			//стэйты мыши во время совершения прошлого нажатия кнопки, необходимо для двойного клика
-	DIMOUSESTATE	SomeTimesMouseState;	//стэйты мыши при прошлом обновлении
+	struct mpoint
+	{
+		int x;
+		int y;
+	};
 
-	StateMouse	EventsMouse;		//события посылаемые мышью
-	StateMouse	OldEventsMouse;		//события при прошлом апдэйте
+	mpoint mdelta;
 
-	DWORD	InsTime;		//таймер для отслеживания двойного клика
-	DWORD	DoubleClick;	//на какую кнопку поставлен двойной клик, если -1 значит ни на какую, для удобства отдельно
+	std::queue<IMSG> m_qMsgs; // буфер сообщений ввода. // Нам действительно надо буферизовать это?
 
-	int	ControlMouseButton;	//аналог, для удобства манипуляций
-	int	ShiftEvent;			//количество событий которые произошли при совершении двойного клика
+	mpoint mdeltaOld;
 
-	long InitKeyboard (HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev);	//устанавливает устройство клавиатуры и возвращает его
-	long InitMouse (HWND hwnd, IDirectInput8 *DirectInput,IDirectInputDevice8** dev);	//устанавливает устройство мыши и возвращает его
+	int wheelDelta = 0;
+	int wheelCount = 0;
 };
 
 

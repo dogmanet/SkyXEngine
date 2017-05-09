@@ -80,6 +80,13 @@ LRESULT CALLBACK GData::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	PAINTSTRUCT ps;
 	HDC hdc;
 
+	IMSG msg;
+	msg.lParam = lParam;
+	msg.wParam = wParam;
+	msg.message = message;
+
+	SSInput_AddMsg(msg);
+
 	switch (message)
 	{
 	case WM_PAINT:
