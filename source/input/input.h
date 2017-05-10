@@ -2,8 +2,6 @@
 #ifndef SX_INPUT_CLASS_H
 #define SX_INPUT_CLASS_H
 
-#include <common/String.h>
-
 #include <queue>
 
 #pragma once

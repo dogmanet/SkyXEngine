@@ -6,7 +6,6 @@ See the license in LICENSE
 
 #include <input/sxinput.h>
 #include <input/input.cpp>
-#include <common/String.cpp>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
