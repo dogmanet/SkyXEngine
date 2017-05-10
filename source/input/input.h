@@ -10,36 +10,6 @@
 
 #define SXI_KEYMAP_SIZE 256
 
-//коды ошибок
-#define SX_INPUT_ERROR_NON_ACQUIRE 2
-#define SX_INPUT_ERROR_UNKNOWN 1
-
-#define SX_INPUT_ERR_CREATE_DI					-1	/*DirectInput не создано*/
-#define SX_INPUT_ERR_REGISTER_RI				-15	/*Не удалось зарегистрировать RAW input device*/
-#define SX_INPUT_ERR_CDI_INVALID_ARG			-12	/*неверные параметры*/
-#define SX_INPUT_ERR_CDI_OUT_OF_MEM				-13	/*нехватка памяти*/
-#define SX_INPUT_ERR_CDI_NONE_ERR				-14	/*неопознаная ошибка*/
-
-#define SX_INPUT_ERR_ATTACH_THREAD_IN			-2	/*не удалось подцепиться к пользовательскому вводу*/
-#define SX_INPUT_ERR_ATTACH_THREAD_OUT			-3	/*не удалось отцепиться от пользовательского ввода*/
-
-#define SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD		-4	/*не удалось создать устройство "клавиатура"*/
-#define SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD	-5	/*не удалось установить формат ввода для устройства "клавиатура"*/
-#define SX_INPUT_ERR_COOPERATIVE_KEYBOARD		-6	/*не удалось установить уровень кооперации для устройства "клавиатура"*/
-#define SX_INPUT_ERR_ACQUIRE_KEYBOARD			-7	/*не удалось захватить устройство "клавиатура"*/
-
-#define SX_INPUT_ERR_CREATE_DEVICE_MOUSE		-8	/*не удалось создать устройство "мышь"*/
-#define SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE		-9	/*не удалось установить формат ввода для устройства "мышь"*/
-#define SX_INPUT_ERR_COOPERATIVE_MOUSE			-10	/*не удалось установить уровень кооперации для устройства "мышь"*/
-#define SX_INPUT_ERR_ACQUIRE_MOUSE				-11	/*не удалось захватить устройство "мышь"*/
-
-//состояния клавиш мыши
-struct StateMouse
-{
-	InputEvents Buttons[3];	//текущие события для каждой кнопки мыши
-	DWORD Timer[3];
-};
-
 //элемент карты ввода
 struct IKM
 {
@@ -67,7 +37,7 @@ public:
 	SXInput(const char* name);
 	~SXInput();
 
-	long Init(HWND hwnd, HINSTANCE hinst);
+	long Init(HWND hwnd);
 	//необходимые пользовательские функции и переменные
 	
 	void	Update();	//обновление стэйтов, включает в себя ReadMouseData и ReadKeyBoardData

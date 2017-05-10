@@ -19,7 +19,7 @@ SXInput::SXInput(const char* name)
 	sprintf(Name, "%s", name);
 }
 
-long SXInput::Init(HWND hwnd, HINSTANCE hinst)
+long SXInput::Init(HWND hwnd)
 {
 	InitKeymap();
 
@@ -34,7 +34,7 @@ long SXInput::Init(HWND hwnd, HINSTANCE hinst)
 	if(RegisterRawInputDevices(Rid, sizeof(Rid) / sizeof(RAWINPUTDEVICE), sizeof(Rid[0])) == FALSE)
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
-		return(SX_INPUT_ERR_REGISTER_RI);
+		return(-1);
 	}
 #endif
 

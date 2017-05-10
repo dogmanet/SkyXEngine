@@ -12,7 +12,7 @@ See the license in LICENSE
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"winmm.lib")
 
-#define SXINPUT_VERSION 1
+#define SXINPUT_VERSION 2
 
 SXInput* ObjectInput = 0;
 #if !defined(DEF_STD_REPORT)
@@ -50,31 +50,7 @@ void InitIntup(const char* name, HWND hwnd)
 
 	Core_0RegisterConcmdArg("bind", cmd_bind, "Bind command to key");
 
-	int cerr = ObjectInput->Init(hwnd, GetModuleHandle(0));
-	if (cerr == SX_INPUT_ERR_CDI_INVALID_ARG)
-		reportf(-1, "%s - invalid args, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_CDI_OUT_OF_MEM)
-		reportf(-1, "%s - out of memory, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_CDI_NONE_ERR)
-		reportf(-1, "%s - other error, system input", gen_msg_location);
-
-	else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_KEYBOARD)
-		reportf(-1, "%s - none init device keyboard, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_KEYBOARD)
-		reportf(-1, "%s - none init format for device keyboard, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_COOPERATIVE_KEYBOARD)
-		reportf(-1, "%s - none init level cooperation for device keyboard, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_ACQUIRE_KEYBOARD)
-		reportf(-1, "%s - none acquire device keyboard, system input", gen_msg_location);
-
-	else if (cerr == SX_INPUT_ERR_CREATE_DEVICE_MOUSE)
-		reportf(-1, "%s - none init device mouse, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_SET_DATA_FORMAT_MOUSE)
-		reportf(-1, "%s - none init format for device mouse, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_COOPERATIVE_MOUSE)
-		reportf(-1, "%s - none init level cooperation for device mouse, system input", gen_msg_location);
-	else if (cerr == SX_INPUT_ERR_ACQUIRE_MOUSE)
-		reportf(-1, "%s - none acquire device mouse, system input", gen_msg_location);
+	ObjectInput->Init(hwnd);
 }
 
 void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
