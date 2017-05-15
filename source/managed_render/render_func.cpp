@@ -52,6 +52,7 @@ void SXRenderFunc::ComDeviceLost()
 	SGCore_OnLostDevice();
 	SGeom_OnLostDevice();
 	SML_OnLostDevice();
+	SPE_OnLostDevice();
 
 	bool bf = SGCore_OnDeviceReset(GData::WinSize.x, GData::WinSize.y,GData::IsWindowed);
 		if (bf)
@@ -66,6 +67,9 @@ void SXRenderFunc::ComDeviceLost()
 			SGCore_OnResetDevice();
 			SML_OnResetDevice(GData::WinSize.x, GData::WinSize.y, GData::ProjFov);
 			SGeom_OnResetDevice();
+			SPE_OnResetDevice();
+
+
 			GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 		}
 }
@@ -1502,6 +1506,35 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 #endif
+
+
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
+	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+	/*ArrEffects->EffectPosSet(0, &float3(GData::ConstCurrCamPos + GData::ConstCurrCamDir*2));*/
+
+	//ArrEffects->EffectDirSet(0, &GData::ConstCurrCamDir);
+
+	SPE_EffectVisibleComAll(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+	SPE_EffectComputeAll();
+	SPE_EffectComputeLightingAll();
+	SPE_EffectRenderAll(timeDelta);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 

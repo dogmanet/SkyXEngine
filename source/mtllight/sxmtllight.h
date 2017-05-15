@@ -13,8 +13,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef __sxmlight
-#define __sxmlight
+#ifndef __sxmtlight
+#define __sxmtlight
 
 #include <gdefines.h>
 

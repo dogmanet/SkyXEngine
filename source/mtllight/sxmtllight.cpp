@@ -21,7 +21,7 @@ report_func reportf = def_report;
 Lights* ArrLights = 0;
 Materials* ArrMaterials = 0;
 
-#define ML_PRECOND(retval) if(!ArrLights){reportf(-1, "%s - sxmaterial_ligth is not init", gen_msg_location); return retval;}
+#define ML_PRECOND(retval) if(!ArrLights){reportf(-1, "%s - sxmtlligth is not init", gen_msg_location); return retval;}
 
 long SML_0GetVersion()
 {

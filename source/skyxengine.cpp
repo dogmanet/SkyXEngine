@@ -18,10 +18,18 @@ See the license in LICENSE
 
 #include <managed_render\\handler_out_log.cpp>
 #include <SkyXEngine.h>
+#include <particles\\sxparticles.cpp>
+/*#include <particles\\sxparticles.h>
+#include <particles\\effect.h>
+#include <particles\\particles.h>*/
+
 #include <managed_render\\gdata.cpp>
 #include <managed_render\\camera_update.cpp>
+
 #include <managed_render\\render_func.cpp>
 #include <managed_render\\level.cpp>
+
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -67,6 +75,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
 	SML_Dbg_Set(printflog);
 
+	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
+
 
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
 	SPP_Dbg_Set(printflog);
@@ -93,7 +103,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
 
-	Level::Load("stalker_atp");
+	//Level::Load("stalker_atp");
 
 	SXPhysics_LoadGeom();
 
@@ -101,7 +111,97 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
 	pl->SetPos(float3(-17.18, -1.38f, -32.3));
 	pl->Play("reload");
+
+	//TestEffect = new Effect();
+
+	ParticlesData data;
+	ZeroMemory(&data, sizeof(ParticlesData));
+
+	data.FigureType = ParticlesFigureType::pft_quad_composite;
+	data.FigureCountQuads = 4;
+	data.FigureRotRand = false;
+	data.FigureTapY = true;
+
+	data.ReCreateCount = -1;
+
+	//data.SpawnNextTime = 1000;
+	//data.Billboard = true;
+
+	//data.TimeLife = 100000;
+	//data.TimeLifeDisp = 200;
+
+	//data.AlphaAgeDepend = ParticlesDependType::padt_direct;
+
+	data.SizeParticle = float2(0.3, 0.3);
+	data.SizeDisp = 0.3;
+	//data.SizeDependAge = ParticlesDependType::padt_direct;
+
+	/*data.Velocity = float3(0.01, 0.1, 0.01);
+	data.VelocityDisp = 0.1;
+	data.VelocityDispXNeg = true;
+	data.VelocityDispYNeg = false;
+	data.VelocityDispZNeg = true;*/
+
+	data.AnimTexCountCadrsX = 11;
+	data.AnimTexCountCadrsY = 7;
+	data.AnimTexRate = 10;
+	data.AnimTexStartCadr = 1;
+	//data.AnimTexStartCadrDisp = 20;
+
+	/*data.CharacterCircle = true;
+	data.CharacterCircleAngle = 0.5;*/
+
+	/*data.CharacterRotate = true;
+	data.CharacterRotateAngle = 0.1;*/
+	//data.CharacterRotateAngleDisp = 0.2;
+	//data.CharacterRotateAngleDispNeg = true;
+
+	/*data.CharacterDeviation = true;
+	data.CharacterMotionAmplitude = 0.01f;
+	data.CharacterMotionCoefAngle = 100.0;*/
+
+	/*data.CharacterDeviationAmplitude = 0.02f;
+	data.CharacterDeviationCoefAngle = 100.0;
+
+	data.CharacterDeviationDisp = 0.1;
+	data.CharacterDeviationDispNeg = true;
+
+	data.CharacterDeviationCountDelayMls = 100;
+	data.CharacterDeviationType = ParticlesDeviationType::pdt_rnd;
+	data.CharacterDeviationAxis = ParticlesAxis::pa_y;
+	data.CharacterDeviationTapX = true;
+	data.CharacterDeviationTapZ = true;*/
+
+	//data.Lighting = true;
+
+	ID tmpeffid = ArrEffects->EffectAdd("test");
+	ID tmppartid = ArrEffects->ParticlesAdd(tmpeffid, &data);
+
+	ID idtex = SGCore_LoadTexAddName("pfx_explotions_2.dds"/*"pfx_smoke_c.dds"*/, LoadTexType::ltt_load);
+	SGCore_LoadTexLoadTextures();
+	SPE_ParticlesTextureSet(tmpeffid, tmppartid, idtex);
+	SPE_ParticlesCreate(tmpeffid, tmppartid, 1);
+
+	SPE_ParticlesSet(tmpeffid, tmppartid, SizeParticle, float2_t(2, 2));
+	SPE_ParticlesSet(tmpeffid, tmppartid, TransparencyCoef, 0.25);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureCountQuads, 10);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureRotRand, true);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapX, true);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapZ, true);
+
+	//ID tmppartid = TestEffect->ParticlesAdd(&data);
 	
+	//TestParticles->CountReCreate = 2;
+	//TestParticles->TimeSpawn = 200;
+	//TestParticles->SetTimeLife(3000,true,200);
+	//TestParticles->SetSize(&float2(0.3,0.3),true,0.3,0);
+	//TestParticles->SetDependAlphaAge(1,0.1,2000);
+	//TestParticles->SetRotateMarkBillboard(true);
+
+	/*ID idtex = SGCore_LoadTexAddName("pfx_smoke_c.dds", LoadTexType::ltt_load);
+	SGCore_LoadTexLoadTextures();
+	TestEffect->ParticlesTextureSet(tmppartid, idtex);
+	TestEffect->ParticlesCreate(tmppartid, 1000);*/
 	/*SGeom_ModelsAddModel("stalker_atp.dse", 0, "stalker_atp.dse");
 
 	SGeom_GreenAddGreen("tree_topol", "terrain_mp_atp_mask_tree.dds", 0.3, "green\\tree_topol_lod0.dse", "green\\tree_topol_lod1.dse", "green\\tree_topol_lod2.dse", "green\\tree_topol_lod2.dse");
