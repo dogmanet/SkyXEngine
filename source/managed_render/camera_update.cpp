@@ -38,24 +38,21 @@ void CameraUpdate::UpdateInputKeyBoard(DWORD timeDelta)
 //обработка движения мыши вправо и влево
 void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 {
-	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
-	POINT p;
-	GetCursorPos(&p);
-	POINT centr;
-	centr.x = cx; centr.y = cy;
-
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
 
-	if(cx != UINT(p.x))
+	int dx, dy;
+
+	SSInput_GetMouseDelta(&dx, &dy);
+
+	if(dx)
 	{
-		GData::ObjCamera->RotRightLeft(float(timeDelta) * *sense * float(int(p.x - cx)));
+		GData::ObjCamera->RotRightLeft(float(timeDelta) * *sense * float(dx));
 		//SetCursorPos(centr.x,cy);
 	}
 
-	if(cy != UINT(p.y))
+	if(dy)
 	{
-		GData::ObjCamera->RotUpDown(float(timeDelta) * *sense * float(int(p.y - cy)));
+		GData::ObjCamera->RotUpDown(float(timeDelta) * *sense * float(dy));
 		//SetCursorPos(cx,centr.y);
 	}
 }
@@ -63,28 +60,24 @@ void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 //обработка движения мыши вверх вниз
 void CameraUpdate::UpdateInputMouseUpDown(DWORD timeDelta)
 {
-	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
-	POINT p;
-	GetCursorPos(&p);
-	POINT centr;
-	centr.x = cx; centr.y = cy;
-
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
 
-	if(cy != UINT(p.y))
+	int dy;
+
+	SSInput_GetMouseDelta(NULL, &dy);
+
+	if(dy)
 	{
-		GData::ObjCamera->PosUpDown(5 * float(timeDelta) * *sense * float(-int(p.y - cy)));
-		//SetCursorPos(cx,centr.y);
+		GData::ObjCamera->PosUpDown(5 * float(timeDelta) * *sense * float(-dy));
 	}
 }
 
 //центрирвоание курсора мыши
 void CameraUpdate::CentererCursor()
 {
-	UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-	UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
-	SetCursorPos(cx, cy);
+	RECT rc;
+	GetWindowRect(GetForegroundWindow(), &rc);
+	SetCursorPos((rc.right + rc.left) / 2, (rc.bottom + rc.top) / 2);
 }
 
 void CameraUpdate::UpdateEditorial(DWORD timeDelta)
@@ -101,7 +94,7 @@ void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 		UpdateInputKeyBoard(timeDelta);
 
 		//еси нажата левая кнопка мыши то можно вращать
-		if(SSInput_GetButtonState(SIM_LBUTTON))
+		if(SSInput_GetKeyState(SIM_LBUTTON))
 		{
 			//если не первый раз нажата ЛКМ то совершаем действие
 			if(IsFirstLBM)
@@ -112,7 +105,7 @@ void CameraUpdate::UpdateEditorial(DWORD timeDelta)
 			CentererCursor();
 		}
 		//если нажата правая кнопка мыши то можно поднимать и опускать камеру
-		else if(SSInput_GetButtonState(SIM_RBUTTON))
+		else if(SSInput_GetKeyState(SIM_RBUTTON))
 		{
 			if(IsFirstRBM)
 				UpdateInputMouseUpDown(timeDelta);

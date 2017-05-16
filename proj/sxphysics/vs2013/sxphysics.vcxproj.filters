@@ -15,18 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\sxphysics\sxphysics_dll.cpp">
+    <ClCompile Include="..\..\..\source\physics\sxphysics_dll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\sxphysics\PhyWorld.cpp">
+    <ClCompile Include="..\..\..\source\physics\PhyWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\sxphysics\sxphysics.h">
+    <ClInclude Include="..\..\..\source\physics\sxphysics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\sxphysics\PhyWorld.h">
+    <ClInclude Include="..\..\..\source\physics\PhyWorld.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

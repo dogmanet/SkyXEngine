@@ -85,9 +85,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::IDsShaders::InitAllShaders();
 
 	//!@TODO: Найти для этого более подходящее место
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");*/
 
-	Core_0ConsoleExecCmd("exec ../userconfig.cfg");*/
+	
 
 
 	SkyXEngine_Init();
@@ -100,7 +100,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
 	pl->SetPos(float3(-17.18, -1.38f, -32.3));
 	pl->Play("reload");
-
+	
 	//TestEffect = new Effect();
 
 	/*ParticlesData data;

@@ -169,16 +169,19 @@ class ConCmdStub{}; /*!< Класс-заглушка, для определен�
 typedef void(ConCmdStub::* SXCONCMDCLS)(); /*!< Тип метода для регистрации команды-члена класса без аргументов */
 typedef void(ConCmdStub::* SXCONCMDCLSARG)(int argc, const char ** argv); /*!< Тип метода для регистрации команды-члена класса с аргументами */
 
-SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd); //!< Регистрация консольной функции без аргументов
-SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd); //!< Регистрация консольной функции с аргументами
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd); //!< Регистрация консольной функции-члена класса без аргументов
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd); //!< Регистрация консольной функции-члена класса с аргументами
+SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc = NULL); //!< Регистрация консольной функции без аргументов
+SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc = NULL); //!< Регистрация консольной функции с аргументами
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
 
 SX_LIB_API void Core_0ConsoleUpdate(); //!< Обновление консоли, выполнение буфера команд
 SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler();
 
+/*! Устанавливает поток вывода. Для работы консоли
+	\warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
+*/
 __inline void Core_SetOutPtr()
 {
 	UINT_PTR sock = Core_ConsoleGetOutHandler();
@@ -187,11 +190,13 @@ __inline void Core_SetOutPtr()
 		return;
 	}
 	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	FILE * fOut = ::fdopen(hOut, "a+");
+	FILE * fOut = ::_fdopen(hOut, "a+");
 	::setvbuf(fOut, NULL, _IONBF, 0);
 
 	*stdout = *fOut;
 	*stderr = *fOut;
+
+	fOut->_file = 1;
 }
 
 //!@}

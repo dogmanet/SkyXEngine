@@ -104,7 +104,7 @@
     <ClCompile Include="..\..\..\source\sxae\TabManager.cpp" />
     <ClCompile Include="..\..\..\source\sxae\TabSkins.cpp" />
     <ClCompile Include="..\..\..\source\sxae\Tools.cpp" />
-    <ClCompile Include="..\..\..\source\sxanim\animated.cpp" />
+    <ClCompile Include="..\..\..\source\anim\animated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxae\Camera.h" />

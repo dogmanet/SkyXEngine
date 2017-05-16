@@ -10,7 +10,7 @@
 #include "TabManager.h"
 
 //#include <anim/ModelFile.h>
-#include <sxanim/animated.h>
+#include <anim/animated.h>
 
 #include "Camera.h"
 #include "EMessages.h"

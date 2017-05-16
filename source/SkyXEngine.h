@@ -240,7 +240,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #else
 #pragma comment(lib, "sxanim.lib")
 #endif
-#include <sxanim/sxanim.h>
+#include <anim/sxanim.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxphysics_d.lib")
@@ -321,6 +321,7 @@ void SkyXEngine_Init()
 	//!@TODO: Найти для этого более подходящее место
 	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
+	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
 
 	SXPhysics_LoadGeom();
