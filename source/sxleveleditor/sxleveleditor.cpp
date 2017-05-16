@@ -140,6 +140,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
 	SML_Dbg_Set(printflog);
+
+	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
+	SPE_Dbg_Set(printflog);
 	
 
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);

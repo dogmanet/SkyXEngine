@@ -356,6 +356,11 @@ void SXRenderFunc::UpdateView()
 
 void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 {
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+
 	static DWORD FrameCount=0;
 	static float TimeElapsed=0;
 	static float FpsValue = 0;
@@ -384,6 +389,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			sprintf(debugstr + strlen(debugstr), "\tPostProcess : %.1f\n", float(SXRenderFunc::Delay::PostProcess) / float(FrameCount));
 			sprintf(debugstr + strlen(debugstr), "\tComReflection : %.1f\n", float(SXRenderFunc::Delay::ComReflection) / float(FrameCount));
 			sprintf(debugstr + strlen(debugstr), "\tGeomSortGroup : %.1f\n", float(SXRenderFunc::Delay::GeomSortGroup) / float(FrameCount));
+			sprintf(debugstr + strlen(debugstr), "\tUpdateParticles : %.1f\n", float(SXRenderFunc::Delay::UpdateParticles) / float(FrameCount));
 
 			sprintf(debugstr + strlen(debugstr), "\n\tUpdateVisibleFor\n");
 			sprintf(debugstr + strlen(debugstr), "\t\tCamera\t: %.1f\n", float(SXRenderFunc::Delay::UpdateVisibleForCamera) / float(FrameCount));
@@ -1108,14 +1114,47 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	SGCore_ShaderUnBind();
 }
 
-void SXRenderFunc::PostProcess(DWORD timeDelta)
+void SXRenderFunc::RenderParticles(DWORD timeDelta)
+{
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHAREF, RENDER_PARTICLES_ALPHATEST_VALUE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+
+	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
+	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+	/*ArrEffects->EffectPosSet(0, &float3(GData::ConstCurrCamPos + GData::ConstCurrCamDir*2));*/
+
+	//ArrEffects->EffectDirSet(0, &GData::ConstCurrCamDir);
+
+	SPE_EffectRenderAll(timeDelta);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+}
+
+void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 {
 	SPP_RTNull();
 
 	if (!SSInput_GetKeyState(SIK_X))
 		SPP_RenderSSAO(&float4_t(0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y));
 
-	if (SSInput_GetKeyState(SIK_L))
+	if (!SSInput_GetKeyState(SIK_L))
 		SPP_RenderFog(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 1, 0.1, 0.9));
 	//SPP_RenderWhiteBlack(1);
 	SPP_RenderBloom(&float3_t(1, 0.9, 1));
@@ -1131,9 +1170,9 @@ void SXRenderFunc::PostProcess(DWORD timeDelta)
 		SML_LigthsGetColor(GlobalLight, &tmpColor);
 		SML_LigthsGetPos(GlobalLight, &tmpPosition, false, true);
 
-	SPP_UpdateSun(&tmpPosition);
+		SPP_UpdateSun(&tmpPosition);
 
-	SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
+		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
 	}
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
@@ -1141,10 +1180,20 @@ void SXRenderFunc::PostProcess(DWORD timeDelta)
 	if (!SSInput_GetKeyState(SIK_Z))
 		SPP_RenderDLAA();
 
-	if (!SSInput_GetKeyState(SIK_C))
-		SPP_RenderNFAA(&float3_t(1, 1, 0));
+	/*if (!SSInput_GetKeyState(SIK_C))
+		SPP_RenderNFAA(&float3_t(1, 1, 0));*/
 
 	SPP_RenderMotionBlur(0.1, timeDelta);
+}
+
+void SXRenderFunc::ShaderRegisterData()
+{
+	static float4_t tmpnull;
+	for (int i = 0; i < 256; ++i)
+	{
+		GData::DXDevice->SetVertexShaderConstantF(i, (float*)&tmpnull, 1);
+		GData::DXDevice->SetPixelShaderConstantF(i, (float*)&tmpnull, 1);
+	}
 }
 
 void SXRenderFunc::UpdateReflection(DWORD timeDelta)
@@ -1430,7 +1479,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	ttime = timeGetTime();
-	PostProcess(timeDelta);
+	RenderPostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += timeGetTime() - ttime;
 #endif
 
@@ -1507,47 +1556,14 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	}
 #endif
 
-
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
-	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-	/*ArrEffects->EffectPosSet(0, &float3(GData::ConstCurrCamPos + GData::ConstCurrCamDir*2));*/
-
-	//ArrEffects->EffectDirSet(0, &GData::ConstCurrCamDir);
-
-	SPE_EffectVisibleComAll(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
-	SPE_EffectComputeAll();
-	SPE_EffectComputeLightingAll();
-	SPE_EffectRenderAll(timeDelta);
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	SXRenderFunc::RenderParticles(timeDelta);
 
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
 	SXPhysics_DebugRender();
 
-	float4_t tmpnull;
-	for (int i = 0; i < 256; ++i)
-	{
-		GData::DXDevice->SetVertexShaderConstantF(i, (float*)&tmpnull, 1);
-		GData::DXDevice->SetPixelShaderConstantF(i, (float*)&tmpnull, 1);
-	}
+	SXRenderFunc::ShaderRegisterData();
 	
-
 	GData::DXDevice->EndScene();
 
 	//@@@
@@ -1562,6 +1578,12 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	ttime = timeGetTime();
 	SXRenderFunc::ComVisibleForLight();
 	SXRenderFunc::Delay::UpdateVisibleForLight += timeGetTime() - ttime;
+
+	ttime = timeGetTime();
+	SPE_EffectVisibleComAll(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+	SPE_EffectComputeAll();
+	SPE_EffectComputeLightingAll();
+	SXRenderFunc::Delay::UpdateParticles += timeGetTime() - ttime;
 
 	ttime = timeGetTime();
 	GData::DXDevice->Present(0, 0, 0, 0);

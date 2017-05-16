@@ -96,8 +96,8 @@ namespace PPSet
 
 	namespace IDsTexs
 	{
-		ID Noise;
-		ID Sun;
+		ID Noise = -1;
+		ID Sun = -1;
 	};
 }
 
@@ -667,6 +667,12 @@ void SPP_RenderSun(float4_t* sun_color)
 {
 	if (PPSet::SunPos.w > PP_MAX_ANGLE_VISIBLE_SUN)
 		return;
+
+	if (PPSet::IDsTexs::Sun < 0 || SGCore_LoadTexGetTex(PPSet::IDsTexs::Sun))
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "sxpp: %s - sun texture is not init, process can not be started", gen_msg_location);
+		return;
+	}
 
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);

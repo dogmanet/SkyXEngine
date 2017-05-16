@@ -183,6 +183,8 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 \\todo - пометка о том что надо сделать  \n
 */
 
+#include <gdefines.h>
+
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
 #else
@@ -220,6 +222,13 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <mtllight\\sxmtllight.h>
 
 #if defined(_DEBUG)
+#pragma comment(lib, "sxparticles_d.lib")
+#else
+#pragma comment(lib, "sxparticles.lib")
+#endif
+#include <particles\\sxparticles.h>
+
+#if defined(_DEBUG)
 #pragma comment(lib, "sxpp_d.lib")
 #else
 #pragma comment(lib, "sxpp.lib")
@@ -239,3 +248,91 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #pragma comment(lib, "sxphysics.lib")
 #endif
 #include <sxphysics/sxphysics.h>
+
+#include <managed_render\\handler_out_log.cpp>
+#include <managed_render\\gdata.cpp>
+#include <managed_render\\camera_update.cpp>
+#include <managed_render\\render_func.cpp>
+#include <managed_render\\level.cpp>
+
+void SkyXEngine_Init()
+{
+	GData::InitWin("SkyXEngine", "SkyXEngine");
+	GData::Pathes::InitAllPathes();
+
+	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
+	SSInput_Dbg_Set(printflog);
+
+	Core_0Create("SkyXEngine Core", true);
+	Core_SetOutPtr();
+
+	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
+	SGCore_Dbg_Set(printflog);
+	SGCore_LoadTexStdPath(GData::Pathes::Textures);
+	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
+
+	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
+	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
+	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
+	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
+
+	SGCore_SkyBoxCr();
+	SGCore_SkyCloudsCr();
+	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+
+	/*SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
+	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
+	*/
+
+	GData::DXDevice = SGCore_GetDXDevice();
+	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	GData::ObjCamera = SGCore_CrCamera();
+
+	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
+	SGeom_Dbg_Set(printflog);
+
+	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
+	SML_Dbg_Set(printflog);
+
+	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
+	SPE_Dbg_Set(printflog);
+
+	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
+	SPP_Dbg_Set(printflog);
+	//SPP_ChangeTexSun("fx_sun.dds");
+	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
+	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
+	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
+	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
+	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
+
+	SXAnim_0Create();
+	SXAnim_Dbg_Set(printflog);
+
+	SXPhysics_0Create();
+	SXPhysics_Dbg_Set(printflog);
+
+	GData::InitAllMatrix();
+
+	GData::IDsShaders::InitAllShaders();
+
+	//!@TODO: Найти для этого более подходящее место
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+
+	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
+
+	SXPhysics_LoadGeom();
+}
+
+void SkyXEngine_Kill()
+{
+	SXPhysics_0Kill();
+	SXAnim_0Kill();
+	mem_release(GData::ObjCamera);
+	SGeom_0CreateKill();
+	SML_0Kill();
+	SGCore_0Kill();
+	Core_AKill();
+}

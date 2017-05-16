@@ -13,30 +13,15 @@ See the license in LICENSE
 #include <windows.h>
 #include <ctime>
 #pragma comment(lib, "winmm.lib")
-#include <gdefines.h>
 
-
-#include <managed_render\\handler_out_log.cpp>
 #include <SkyXEngine.h>
-#include <particles\\sxparticles.cpp>
-/*#include <particles\\sxparticles.h>
-#include <particles\\effect.h>
-#include <particles\\particles.h>*/
-
-#include <managed_render\\gdata.cpp>
-#include <managed_render\\camera_update.cpp>
-
-#include <managed_render\\render_func.cpp>
-#include <managed_render\\level.cpp>
-
-
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	InitOutLog();
 	srand((unsigned int)time(0));
 
-	GData::InitWin("SkyXEngine", "SkyXEngine");
+	/*GData::InitWin("SkyXEngine", "SkyXEngine");
 	GData::Pathes::InitAllPathes();
 
 	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
@@ -76,6 +61,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_Dbg_Set(printflog);
 
 	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
+	SPE_Dbg_Set(printflog);
 
 
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
@@ -101,9 +87,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//!@TODO: Найти для этого более подходящее место
 	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
-	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
+	Core_0ConsoleExecCmd("exec ../userconfig.cfg");*/
 
-	//Level::Load("stalker_atp");
+
+	SkyXEngine_Init();
+
+	Level::Load("stalker_atp");
 
 	SXPhysics_LoadGeom();
 
@@ -114,7 +103,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	//TestEffect = new Effect();
 
-	ParticlesData data;
+	/*ParticlesData data;
 	ZeroMemory(&data, sizeof(ParticlesData));
 
 	data.FigureType = ParticlesFigureType::pft_quad_composite;
@@ -122,7 +111,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	data.FigureRotRand = false;
 	data.FigureTapY = true;
 
-	data.ReCreateCount = -1;
+	data.ReCreateCount = -1;*/
 
 	//data.SpawnNextTime = 1000;
 	//data.Billboard = true;
@@ -132,8 +121,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	//data.AlphaAgeDepend = ParticlesDependType::padt_direct;
 
-	data.SizeParticle = float2(0.3, 0.3);
-	data.SizeDisp = 0.3;
+	/*data.SizeParticle = float2(0.3, 0.3);
+	data.SizeDisp = 0.3;*/
 	//data.SizeDependAge = ParticlesDependType::padt_direct;
 
 	/*data.Velocity = float3(0.01, 0.1, 0.01);
@@ -142,10 +131,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	data.VelocityDispYNeg = false;
 	data.VelocityDispZNeg = true;*/
 
-	data.AnimTexCountCadrsX = 11;
+	/*data.AnimTexCountCadrsX = 11;
 	data.AnimTexCountCadrsY = 7;
 	data.AnimTexRate = 10;
-	data.AnimTexStartCadr = 1;
+	data.AnimTexStartCadr = 1;*/
 	//data.AnimTexStartCadrDisp = 20;
 
 	/*data.CharacterCircle = true;
@@ -174,34 +163,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	//data.Lighting = true;
 
-	ID tmpeffid = ArrEffects->EffectAdd("test");
-	ID tmppartid = ArrEffects->ParticlesAdd(tmpeffid, &data);
+	/*ID tmpeffid = SPE_EffectAdd("test");
+	ID tmppartid = SPE_ParticlesAdd(tmpeffid, &data);
 
-	ID idtex = SGCore_LoadTexAddName("pfx_explotions_2.dds"/*"pfx_smoke_c.dds"*/, LoadTexType::ltt_load);
+	//ID idtex = SGCore_LoadTexAddName("pfx_explotions_2.dds", LoadTexType::ltt_load);
 	SGCore_LoadTexLoadTextures();
 	SPE_ParticlesTextureSet(tmpeffid, tmppartid, idtex);
 	SPE_ParticlesCreate(tmpeffid, tmppartid, 1);
 
 	SPE_ParticlesSet(tmpeffid, tmppartid, SizeParticle, float2_t(2, 2));
-	SPE_ParticlesSet(tmpeffid, tmppartid, TransparencyCoef, 0.25);
+	SPE_ParticlesSet(tmpeffid, tmppartid, TransparencyCoef, 0.25);*/
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureCountQuads, 10);
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureRotRand, true);
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapX, true);
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapZ, true);
 
-	//ID tmppartid = TestEffect->ParticlesAdd(&data);
-	
-	//TestParticles->CountReCreate = 2;
-	//TestParticles->TimeSpawn = 200;
-	//TestParticles->SetTimeLife(3000,true,200);
-	//TestParticles->SetSize(&float2(0.3,0.3),true,0.3,0);
-	//TestParticles->SetDependAlphaAge(1,0.1,2000);
-	//TestParticles->SetRotateMarkBillboard(true);
-
-	/*ID idtex = SGCore_LoadTexAddName("pfx_smoke_c.dds", LoadTexType::ltt_load);
-	SGCore_LoadTexLoadTextures();
-	TestEffect->ParticlesTextureSet(tmppartid, idtex);
-	TestEffect->ParticlesCreate(tmppartid, 1000);*/
 	/*SGeom_ModelsAddModel("stalker_atp.dse", 0, "stalker_atp.dse");
 
 	SGeom_GreenAddGreen("tree_topol", "terrain_mp_atp_mask_tree.dds", 0.3, "green\\tree_topol_lod0.dse", "green\\tree_topol_lod1.dse", "green\\tree_topol_lod2.dse", "green\\tree_topol_lod2.dse");
@@ -275,13 +251,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
-	SXPhysics_0Kill();
+	/*SXPhysics_0Kill();
 	SXAnim_0Kill();
 	mem_release(GData::ObjCamera);
 	SGeom_0CreateKill();
 	SML_0Kill();
 	SGCore_0Kill();
-	Core_AKill();
+	Core_AKill();*/
+
+	SkyXEngine_Kill();
 
 	return msg.wParam;
 }
