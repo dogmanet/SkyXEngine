@@ -140,7 +140,7 @@ void GData::InitWin(const char* name, const char* caption)
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
 }
 
-#if !defined(SX_GAME)
+#if defined(SX_LEVEL_EDITOR)
 void GData::Editors::LevelEditorUpdateStatusBar()
 {
 	long count_poly_green = 0;

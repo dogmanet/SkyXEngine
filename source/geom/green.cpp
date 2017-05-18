@@ -653,11 +653,14 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_t
 			SGCore_MtlSet((id_tex > 0 ? id_tex : ArrModels[nm]->ArrLod[lod]->idstex[i]), 0);
 
 			if (ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
-					Green::DXDevice->SetVertexShaderConstantF(62, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
+					Green::DXDevice->SetVertexShaderConstantF(59, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
 				else
-					Green::DXDevice->SetVertexShaderConstantF(62, (float*)&float2_t(0,0), 1);
+					Green::DXDevice->SetVertexShaderConstantF(59, (float*)&float2_t(0,0), 1);
 
-			Green::DXDevice->SetVertexShaderConstantF(63, (float*)viewpos, 1);
+			Green::DXDevice->SetVertexShaderConstantF(60, (float*)viewpos, 1);
+			Green::DXDevice->SetVertexShaderConstantF(61, (float*)&(ArrModels[nm]->ArrLod[lod]->model->BSphere), 1);
+			Green::DXDevice->SetVertexShaderConstantF(62, (float*)&(ArrModels[nm]->ArrLod[lod]->model->BBMax), 1);
+			Green::DXDevice->SetVertexShaderConstantF(63, (float*)&(ArrModels[nm]->ArrLod[lod]->model->BBMin), 1);
 
 			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3);
 			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3) * RTCountDrawObj));

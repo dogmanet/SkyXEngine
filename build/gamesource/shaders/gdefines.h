@@ -11,6 +11,13 @@
 #define LIGHTING_NOTTRANSPARENCY 	0.333333
 #define NOTLIGHTING_TRANSPARENCY 	0.666667
 #define LIGHTING_TRANSPARENCY 		1.0
+
+#define GREEN_R_LESSENING	c59
+#define GREEN_R_VIEWPOS		c60
+#define GREEN_R_BSPHERE		c61
+#define GREEN_R_BBMAX		c62
+#define GREEN_R_BBMIN		c63
+
 #else
 	#error G_DEFINES double include
 #endif

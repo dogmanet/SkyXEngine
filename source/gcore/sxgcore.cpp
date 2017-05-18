@@ -754,6 +754,12 @@ bool SGCore_SkyBoxIsCr()
 	return (ObjSkyBox != 0);
 }
 
+bool SGCore_SkyBoxIsLoadTex()
+{
+	SG_PRECOND_SKY_BOX(false);
+	return ObjSkyBox->IsLoadTex();
+}
+
 void SGCore_SkyBoxLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
@@ -824,6 +830,13 @@ bool SGCore_SkyCloudsIsCr()
 	SG_PRECOND(false);
 
 	return (ObjSkyClouds != 0);
+}
+
+bool SGCore_SkyCloudsIsLoadTex()
+{
+	SG_PRECOND_SKY_CLOUDS(false);
+
+	return ObjSkyClouds->IsLoadTex();
 }
 
 void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, float3* pos)

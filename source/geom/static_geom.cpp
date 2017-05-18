@@ -1110,14 +1110,46 @@ void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWOR
 	}
 }
 
+bool StaticGeom::SortExistsForRender(int sort, ID id_arr)
+{
+	//валиден ли id_arr?
+	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
+
+	Segment** jarrsplits;
+	ID jidbuff;
+	ID jnumgroup;
+
+	//проходимся по всем моделям
+	for (int i = 0, l = AllModels.size(); i < l; ++i)
+	{
+		if (ArrComFor[id_arr]->arr[i]->CountCom > 0)
+		{
+			for (int j = 0, jl = ArrComFor[id_arr]->arr[i]->CountCom; j<jl; j++)
+			{
+				jarrsplits = ArrComFor[id_arr]->arr[i]->Arr;
+				for (int k = 0; k<jarrsplits[j]->CountSubSet; ++k)
+				{
+					jidbuff = AllModels[i]->SubSet[jarrsplits[j]->NumberGroupModel[k]].idbuff;
+					jnumgroup = jarrsplits[j]->NumberGroup[k];
+
+					if (SGCore_MtlGetSort(AllGroups[jnumgroup]->idtex) == sort)
+						return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_model_id, ID exclude_group_id, bool is_sorted)
 {
 	//валиден ли id_arr?
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
 	Segment** jarrsplits;
-	long jidbuff;
-	long jnumgroup;
+	ID jidbuff;
+	ID jnumgroup;
 	
 	//обнуляем все данные об отрисованном в прошлый раз
 	for (int i = 0; i < AllGroups.size(); i++)

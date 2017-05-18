@@ -10,91 +10,26 @@ See the license in LICENSE
 #define SX_EXE
 #define SX_GAME
 
-#include <windows.h>
-#include <ctime>
-#pragma comment(lib, "winmm.lib")
-
 #include <SkyXEngine.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	InitOutLog();
 	srand((unsigned int)time(0));
+	
+	GData::InitWin("SkyXEngine", "SkyXEngine");
 
-	/*GData::InitWin("SkyXEngine", "SkyXEngine");
-	GData::Pathes::InitAllPathes();
-
-	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
-	SSInput_Dbg_Set(printflog);
-	Core_0Create("SkyXEngine Core", true);
-	Core_SetOutPtr();
-	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
-	SGCore_Dbg_Set(printflog);
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
-	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
-
-	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
-	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
-	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
-	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
-
-	SGCore_SkyBoxCr();
-	SGCore_SkyCloudsCr();
-	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
-	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+	SkyXEngine_Init();
 
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
-
-	GData::DXDevice = SGCore_GetDXDevice();
-	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	GData::ObjCamera = SGCore_CrCamera();
-
-
-	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
-	SGeom_Dbg_Set(printflog);
-
-
-	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
-	SML_Dbg_Set(printflog);
-
-	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
-	SPE_Dbg_Set(printflog);
-
-
-	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
-	SPP_Dbg_Set(printflog);
-	SPP_ChangeTexSun("fx_sun.dds");
-
-	SXAnim_0Create();
-	SXAnim_Dbg_Set(printflog);
-
-	SXPhysics_0Create();
-	SXPhysics_Dbg_Set(printflog);
-
-	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
-	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
-	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
-	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
-	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
-
-	GData::InitAllMatrix();
-
-	GData::IDsShaders::InitAllShaders();
-
-	//!@TODO: Найти для этого более подходящее место
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");*/
-
-	
-
-
-	SkyXEngine_Init();
-
 	Level::Load("stalker_atp");
 
 	SXPhysics_LoadGeom();
+
+	SGeom_0SettGreenSetFreqGrass(30);
 
 	IAnimPlayer * pl;
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
@@ -218,7 +153,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
 
-	static DWORD lastTime = timeGetTime();
+	static DWORD lastTime = GetTickCount();
 	static DWORD TimeCCadr = 0;
 
 	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
@@ -231,9 +166,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		else
 		{
 			static DWORD TimeStart = 0;
-			DWORD TimeThis = timeGetTime();
+			DWORD TimeThis = GetTickCount();
 
-			DWORD currTime = timeGetTime();
+			DWORD currTime = GetTickCount();
 			DWORD timeDelta = (currTime - lastTime);
 
 			Core_0ConsoleUpdate();

@@ -1108,6 +1108,19 @@ float SML_MtlGetRoughness(ID id)
 }
 
 
+void SML_MtlSetThickness(ID id, float thickness)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->MtlSetThickness(id, thickness);
+}
+
+float SML_MtlGetThickness(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrMaterials->MtlGetThickness(id);
+}
+
+
 void SML_MtlSetF0(ID id, float f0)
 {
 	ML_PRECOND();

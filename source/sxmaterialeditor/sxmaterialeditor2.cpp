@@ -117,6 +117,9 @@ namespace SXMaterialEditor
 	ISXGUIButton* ButtonSkyBox;
 	ISXGUIEdit* EditSkyBox;
 	ISXGUICheckBox* CheckBoxModelRot;
+	ISXGUIStatic* StaticThickness;
+	ISXGUIEdit* EditThickness;
+	ISXGUITrackBar* TrackBarThickness;
 
 	void InitAllElements();
 
@@ -126,7 +129,7 @@ namespace SXMaterialEditor
 
 void SXMaterialEditor::InitAllElements()
 {
-	SXMaterialEditor::JobWindow = SXGUICrBaseWnd("SXMaterialEditor","SXMaterialEditor",0,0,366,18,655,710,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
+	SXMaterialEditor::JobWindow = SXGUICrBaseWnd("SXMaterialEditor","SXMaterialEditor",0,0,341,3,655,710,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(SXMaterialEditor::JobWindow);
 
 	SXMaterialEditor::WindowRender = SXGUICrBaseWnd("WindowRender","WindowRender",0,0,0,25,300,300,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXMaterialEditor::JobWindow->GetHWND(),0);
@@ -239,7 +242,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMR->SetColorTextBk(255,255,255);
 	SXMaterialEditor::EditMR->SetTransparentTextBk(true);
 	SXMaterialEditor::EditMR->SetColorBrush(255,255,255);
-	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting",305,30,100,15,SXMaterialEditor::JobWindow->GetHWND(),0,0,true);
+	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting",371,111,55,15,SXMaterialEditor::JobWindow->GetHWND(),0,0,true);
 	SXMaterialEditor::CheckBoxLighting->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::CheckBoxLighting->SetColorText(0,0,0);
 	SXMaterialEditor::CheckBoxLighting->SetColorTextBk(255,255,255);
@@ -268,7 +271,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxTexLighting->SetColorTextBk(255,255,255);
 	SXMaterialEditor::CheckBoxTexLighting->SetTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxTexLighting->SetColorBrush(220,220,220);
-	SXMaterialEditor::ComboBoxTypeRefract = SXGUICrComboBox("",305,110,155,21,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ComboBoxTypeRefract = SXGUICrComboBox("",430,110,100,21,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::ComboBoxTypeRefract->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ComboBoxTypeRefract->SetColorText(0,0,0);
 	SXMaterialEditor::ComboBoxTypeRefract->SetColorTextBk(255,255,255);
@@ -280,7 +283,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxDoSVVS->SetColorTextBk(255,255,255);
 	SXMaterialEditor::CheckBoxDoSVVS->SetTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxDoSVVS->SetColorBrush(220,220,220);
-	SXMaterialEditor::ComboBoxTypeReflect = SXGUICrComboBox("",475,110,155,21,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ComboBoxTypeReflect = SXGUICrComboBox("",535,110,100,21,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::ComboBoxTypeReflect->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ComboBoxTypeReflect->SetColorText(0,0,0);
 	SXMaterialEditor::ComboBoxTypeReflect->SetColorTextBk(255,255,255);
@@ -677,7 +680,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxDoSWinSizePS->SetColorTextBk(255,255,255);
 	SXMaterialEditor::CheckBoxDoSWinSizePS->SetTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxDoSWinSizePS->SetColorBrush(220,220,220);
-	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("alpha test",430,30,70,15,SXMaterialEditor::JobWindow->GetHWND(),0,0,true);
+	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("alpha test",305,110,65,15,SXMaterialEditor::JobWindow->GetHWND(),0,0,true);
 	SXMaterialEditor::CheckBoxAlphaTest->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::CheckBoxAlphaTest->SetColorText(0,0,0);
 	SXMaterialEditor::CheckBoxAlphaTest->SetColorTextBk(255,255,255);
@@ -697,6 +700,19 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxModelRot->SetColorTextBk(255,255,255);
 	SXMaterialEditor::CheckBoxModelRot->SetTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxModelRot->SetColorBrush(220,220,220);
+	SXMaterialEditor::StaticThickness = SXGUICrStatic("Thickness:",305,30,70,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::StaticThickness->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXMaterialEditor::StaticThickness->SetColorText(0,0,0);
+	SXMaterialEditor::StaticThickness->SetColorTextBk(255,255,255);
+	SXMaterialEditor::StaticThickness->SetTransparentTextBk(true);
+	SXMaterialEditor::StaticThickness->SetColorBrush(220,220,220);
+	SXMaterialEditor::EditThickness = SXGUICrEdit("0",375,30,50,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::EditThickness->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXMaterialEditor::EditThickness->SetColorText(0,0,0);
+	SXMaterialEditor::EditThickness->SetColorTextBk(255,255,255);
+	SXMaterialEditor::EditThickness->SetTransparentTextBk(true);
+	SXMaterialEditor::EditThickness->SetColorBrush(255,255,255);
+	SXMaterialEditor::TrackBarThickness = SXGUICrTrackBar("",430,30,200,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 }
 void SXMaterialEditor::DeleteAllElements()
 {
@@ -814,5 +830,8 @@ void SXMaterialEditor::DeleteAllElements()
 	mem_delete(SXMaterialEditor::ButtonSkyBox);
 	mem_delete(SXMaterialEditor::EditSkyBox);
 	mem_delete(SXMaterialEditor::CheckBoxModelRot);
+	mem_delete(SXMaterialEditor::StaticThickness);
+	mem_delete(SXMaterialEditor::EditThickness);
+	mem_delete(SXMaterialEditor::TrackBarThickness);
 	mem_delete(SXMaterialEditor::JobWindow);
 }

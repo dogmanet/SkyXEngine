@@ -183,6 +183,8 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 \\todo - пометка о том что надо сделать  \n
 */
 
+#include <windows.h>
+#include <ctime>
 #include <gdefines.h>
 
 #if defined(_DEBUG)
@@ -247,7 +249,32 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #else
 #pragma comment(lib, "sxphysics.lib")
 #endif
-#include <sxphysics/sxphysics.h>
+#include <physics/sxphysics.h>
+
+#if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR)
+#if defined(_DEBUG)
+#pragma comment(lib, "sxguiwinapi_d.lib")
+#else
+#pragma comment(lib, "sxguiwinapi.lib")
+#endif
+#include <sxguiwinapi\\sxgui.h>
+#endif
+
+#include <managed_render\\gdata.h>
+#include <common\\string_api.cpp>
+#include <managed_render\\camera_update.h>
+#include <managed_render\\render_func.h>
+#include <managed_render\\level.h>
+
+#if defined(SX_LEVEL_EDITOR)
+#include <SXLevelEditor/resource.h>
+#include <SXLevelEditor\\level_editor.cpp>
+#endif
+
+#if defined(SX_MATERIAL_EDITOR)
+#include <sxmaterialeditor/resource.h>
+#include <sxmaterialeditor\\material_editor.cpp>
+#endif
 
 #include <managed_render\\handler_out_log.cpp>
 #include <managed_render\\gdata.cpp>
@@ -255,18 +282,23 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <managed_render\\render_func.cpp>
 #include <managed_render\\level.cpp>
 
+#include <common\\array.h>
+#include <common\\string.cpp>
+
 void SkyXEngine_Init()
 {
-	GData::InitWin("SkyXEngine", "SkyXEngine");
+	ShellExecute(NULL, "open", "sxconsole.exe", NULL, NULL, SW_SHOWNORMAL);
 	GData::Pathes::InitAllPathes();
 
-	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
+#if defined(SX_GAME)
+	SSInput_0Create("sxinput", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
+#endif
 
-	Core_0Create("SkyXEngine Core", true);
+	Core_0Create("sxcore", true);
 	Core_SetOutPtr();
 
-	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
+	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
 	SGCore_Dbg_Set(printflog);
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
@@ -277,20 +309,16 @@ void SkyXEngine_Init()
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
 
 	SGCore_SkyBoxCr();
-	SGCore_SkyCloudsCr();
 	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
-	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
 
-	/*SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
-	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
-	*/
+	SGCore_SkyCloudsCr();
+	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
 
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	GData::ObjCamera = SGCore_CrCamera();
 
-	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
+	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
 	SGeom_Dbg_Set(printflog);
 
 	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);

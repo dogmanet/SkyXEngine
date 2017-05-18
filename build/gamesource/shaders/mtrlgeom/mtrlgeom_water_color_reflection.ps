@@ -76,7 +76,7 @@ ps_out_ds_mrt main(vs_out_water IN)
 	OUT.Normal.w = NearFarIsUnlit.z;
 	
 	OUT.Param = half4(tex2D(RF0SSIsSampler,IN.TexUV).rg, tmppspos.xy/tmppspos.w);
-	OUT.Param.z = NearFarIsUnlit.w;
+	OUT.Param.w = NearFarIsUnlit.w;
 	
 	OUT.Depth = GetDepthW(tmpPPos,NearFarIsUnlit.xy);
 	

@@ -120,12 +120,18 @@ SX_LIB_API void SGeom_ModelsLoad(const char* path);	//!< загрузить би
 
 SX_LIB_API long SGeom_ModelsGetCount();	//!< количество моделей в текущем списке
 
-//! проситать видимость всех моделей для фрустума 
+//! просчитать видимость всех моделей для фрустума 
 SX_LIB_API void SGeom_ModelsComVisible(	
 	ISXFrustum* frustum,	//!< фрустум для которого считаем видимость моделей
 	float3* viewpos,		//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID id_arr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);	
+
+//! есть ли сорт материала sort который просчитан к отрисовке в массиве просчетов id_arr
+SX_LIB_API bool SGeom_ModelsSortExistsForRender(
+	int sort, 		//!< искомый сорт
+	ID id_arr = 0	//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
+	);
 
 //! отрисовка всех моделей, на основе информации о видимости из массива видимости id_arr
 SX_LIB_API void SGeom_ModelsRender(

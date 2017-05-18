@@ -187,7 +187,7 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	IDirect3DTexture9* NullMaterial;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &NullMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
-	uint32_t tmpColor = D3DCOLOR_ARGB(0, 250, 2, 0);
+	uint32_t tmpColor = D3DCOLOR_ARGB(0, 250, 2, 255);
 
 	NullMaterial->LockRect(0, &LockedRect, 0, 0);
 

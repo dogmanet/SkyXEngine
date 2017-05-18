@@ -479,6 +479,42 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	if (!FAILED(tmpmodel->VertexBuffer->Lock(0, sizeof(vertex_static)* countvertex, (void**)&pData, 0)))
 	{
 		memcpy(pData, ArrVertBuf, sizeof(vertex_static)* countvertex);
+
+		float3_t tmppos = pData[0].Pos;
+		tmpmodel->BBMax = tmppos;
+		tmpmodel->BBMin = tmppos;
+		float3_t pos;
+
+		for (long i = 0; i<countvertex; i++)
+		{
+			pos = pData[i].Pos;
+
+			if (pos.x > tmpmodel->BBMax.x)
+				tmpmodel->BBMax.x = pos.x;
+
+			if (pos.y > tmpmodel->BBMax.y)
+				tmpmodel->BBMax.y = pos.y;
+
+			if (pos.z > tmpmodel->BBMax.z)
+				tmpmodel->BBMax.z = pos.z;
+
+
+			if (pos.x < tmpmodel->BBMin.x)
+				tmpmodel->BBMin.x = pos.x;
+
+			if (pos.y < tmpmodel->BBMin.y)
+				tmpmodel->BBMin.y = pos.y;
+
+			if (pos.z < tmpmodel->BBMin.z)
+				tmpmodel->BBMin.z = pos.z;
+		}
+
+		float3 Center = (tmpmodel->BBMin + tmpmodel->BBMax) * 0.5f;
+		tmpmodel->BSphere.x = Center.x;
+		tmpmodel->BSphere.y = Center.y;
+		tmpmodel->BSphere.z = Center.z;
+		tmpmodel->BSphere.w = SMVector3Length(Center - tmpmodel->BBMax);
+
 		tmpmodel->VertexBuffer->Unlock();
 	}
 

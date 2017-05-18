@@ -2,7 +2,6 @@
 #ifndef __green
 #define __green
 
-//#include <handler_dx_func.cpp>
 #include <common\array.h>
 #include <common\\string_api.cpp>
 #define GREEN_MAX_ELEM_IN_DIP 512000
@@ -10,9 +9,6 @@
 #define GREEN_COUNT_MIN_SEGMENTS 10
 #define GREEN_COUNT_MAX_SEGMENTS 100
 #define GREEN_COUNT_LOD 3
-
-/*#define GREEN_TYPE_GRASS 0
-#define GREEN_TYPE_TREE 1*/
 
 #define GREEN_DEFAULT_RESERVE_GEN 1024
 #define GREEN_DEFAULT_RESERVE_COM 1024

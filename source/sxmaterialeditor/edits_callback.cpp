@@ -206,6 +206,21 @@ LRESULT SXMaterialEditor_EditF0_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return 0;
 }
 
+LRESULT SXMaterialEditor_EditThickness_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char tmptextval[256];
+	tmptextval[0] = 0;
+	float tmpval = 0;
+
+	SXMaterialEditor::EditThickness->GetText(tmptextval, 256);
+
+	sscanf(tmptextval, "%f", &tmpval);
+
+	SXMaterialEditor::TrackBarThickness->SetPos(tmpval * 100);
+
+	return 0;
+}
+
 
 
 LRESULT SXMaterialEditor_EditUDVSX_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

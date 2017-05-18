@@ -194,6 +194,12 @@ void SGeom_ModelsComVisible(ISXFrustum* frustum, float3* viewpos, ID id_arr)
 	GeometryObj->CPUFillingArrIndeces(frustum, viewpos, id_arr);
 }
 
+bool SGeom_ModelsSortExistsForRender(int sort, ID id_arr)
+{
+	GEOM_PRECOND(false);
+	return GeometryObj->SortExistsForRender(sort, id_arr);
+}
+
 
 void SGeom_ModelsRender(DWORD timeDelta, int sort_mtl, ID id_arr, bool is_sorted, ID exclude_model_id, ID exclude_group_id)
 {

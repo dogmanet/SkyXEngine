@@ -615,6 +615,8 @@ SX_LIB_API IDirect3DTexture9* SML_DSGetRT(DS_RT type);	//!< текстура ren
 //! значение f0 (отражательной способности поверхности) по умолчанию
 #define MTL_LIGHTING_DEFAULT_F0 2.f/255.f
 
+#define MTL_LIGHTING_DEFAULT_THICKNESS 255.f/255.f
+
 //!@}
 
 /*! \name Параметры отражений
@@ -992,6 +994,9 @@ SX_LIB_API void SML_MtlGetTextureLighting(ID id, char* path_tex);		//!< в path_
 
 SX_LIB_API void SML_MtlSetRoughness(ID id, float roughness);	//!< установка шероховатости (0-1)
 SX_LIB_API float SML_MtlGetRoughness(ID id);					//!< возвращает текущее значение шероховатости поверхности
+
+SX_LIB_API void SML_MtlSetThickness(ID id, float thickness);	
+SX_LIB_API float SML_MtlGetThickness(ID id);
 
 //f0 - отражательная способность поверхности (0-1)
 SX_LIB_API void SML_MtlSetF0(ID id, float f0);	//!< установка отражательной способности поверхности (0-1)

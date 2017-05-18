@@ -125,7 +125,12 @@ void SkyBox::LoadTextures(const char *texture)
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmppath);
 	}
-};
+}
+
+bool SkyBox::IsLoadTex()
+{
+	return (Tex != 0 || Tex2 != 0);
+}
 
 void SkyBox::ChangeTexture(const char *texture)
 {
@@ -388,7 +393,12 @@ void SkyClouds::LoadTextures(const char *texture)
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmppath);
 	}
-};
+}
+
+bool SkyClouds::IsLoadTex()
+{
+	return (SkyCloudsTex != 0 || SkyCloudsTex2 != 0);
+}
 
 void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 {

@@ -33,6 +33,11 @@ namespace SXMaterialEditor
 	ISXGUICheckBox* CheckBoxLighting;
 	ISXGUITrackBar* TrackBarRoughness;
 	ISXGUITrackBar* TrackBarF0;
+
+	ISXGUIStatic* StaticThickness;
+	ISXGUIEdit* EditThickness;
+	ISXGUITrackBar* TrackBarThickness;
+
 	ISXGUITrackBar* TrackBarUDVSX;
 	ISXGUIStatic* StaticMaD;
 	ISXGUIEdit* EditTexLighting;
@@ -261,7 +266,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ButtonPS->AddHandler(SXMaterialEditor_ButtonPS_Click, WM_LBUTTONUP);
 
 
-	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("alpha test", 430, 30, 70, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0, false);
+	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("alphatest", 365, 110, 60, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxAlphaTest->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::CheckBoxAlphaTest->SetColorText(0, 0, 0);
 	SXMaterialEditor::CheckBoxAlphaTest->SetColorTextBk(255, 255, 255);
@@ -308,6 +313,25 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditF0->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditF0->AddHandler(SXMaterialEditor_EditF0_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
+	SXMaterialEditor::StaticThickness = SXGUICrStatic("Thickness:", 305, 30, 70, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::StaticThickness->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticThickness->SetColorText(0, 0, 0);
+	SXMaterialEditor::StaticThickness->SetColorTextBk(255, 255, 255);
+	SXMaterialEditor::StaticThickness->SetTransparentTextBk(true);
+	SXMaterialEditor::StaticThickness->SetColorBrush(220, 220, 220);
+
+	SXMaterialEditor::EditThickness = SXGUICrEdit("0", 375, 30, 50, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::EditThickness->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::EditThickness->SetColorText(0, 0, 0);
+	SXMaterialEditor::EditThickness->SetColorTextBk(255, 255, 255);
+	SXMaterialEditor::EditThickness->SetTransparentTextBk(true);
+	SXMaterialEditor::EditThickness->SetColorBrush(255, 255, 255);
+	SXMaterialEditor::EditThickness->AddHandler(SXMaterialEditor_EditThickness_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+
+	SXMaterialEditor::TrackBarThickness = SXGUICrTrackBar("", 430, 30, 200, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::TrackBarThickness->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarThickness->AddHandler(SXMaterialEditor_TrackBarThickness_MouseMove, WM_MOUSEMOVE);
+
 	SXMaterialEditor::EditMR = SXGUICrEdit("0",360,175,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditMR->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::EditMR->SetColorText(0,0,0);
@@ -316,7 +340,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMR->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditMR->AddHandler(SXMaterialEditor_EditMR_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
-	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting",305,30,100,15,SXMaterialEditor::JobWindow->GetHWND(),0,0,false);
+	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting", 305, 110, 55, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxLighting->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::CheckBoxLighting->SetColorText(0,0,0);
 	SXMaterialEditor::CheckBoxLighting->SetColorTextBk(255,255,255);
@@ -356,7 +380,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxTexLighting->SetColorTextBk(255,255,255);
 	SXMaterialEditor::CheckBoxTexLighting->SetTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxTexLighting->SetColorBrush(220,220,220);
-	SXMaterialEditor::ComboBoxTypeRefract = SXGUICrComboBox("",305,110,155,70,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ComboBoxTypeRefract = SXGUICrComboBox("", 430, 110, 100, 115, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ComboBoxTypeRefract->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ComboBoxTypeRefract->SetColorText(0,0,0);
 	SXMaterialEditor::ComboBoxTypeRefract->SetColorTextBk(255,255,255);
@@ -372,16 +396,16 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxDoSVVS->SetColorTextBk(255,255,255);
 	SXMaterialEditor::CheckBoxDoSVVS->SetTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxDoSVVS->SetColorBrush(220,220,220);
-	SXMaterialEditor::ComboBoxTypeReflect = SXGUICrComboBox("",475,110,155,120,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ComboBoxTypeReflect = SXGUICrComboBox("", 535, 110, 100, 115, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ComboBoxTypeReflect->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ComboBoxTypeReflect->SetColorText(0,0,0);
 	SXMaterialEditor::ComboBoxTypeReflect->SetColorTextBk(255,255,255);
 	SXMaterialEditor::ComboBoxTypeReflect->SetTransparentTextBk(true);
 	SXMaterialEditor::ComboBoxTypeReflect->SetColorBrush(255,255,255);
 	SXMaterialEditor::ComboBoxTypeReflect->AddItem("none");
-	SXMaterialEditor::ComboBoxTypeReflect->AddItem("reflection plane");
-	SXMaterialEditor::ComboBoxTypeReflect->AddItem("reflection cube dynamic");
-	SXMaterialEditor::ComboBoxTypeReflect->AddItem("reflection cube static");
+	SXMaterialEditor::ComboBoxTypeReflect->AddItem("reflect plane");
+	SXMaterialEditor::ComboBoxTypeReflect->AddItem("reflect cube dynamic");
+	SXMaterialEditor::ComboBoxTypeReflect->AddItem("reflect cube static");
 	SXMaterialEditor::ComboBoxTypeReflect->SetSel(0);
 
 	SXMaterialEditor::StaticPhysic = SXGUICrStatic("Physic material:",5,465,80,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
@@ -1008,5 +1032,8 @@ void SXMaterialEditor::DeleteAllElements()
 	mem_delete(SXMaterialEditor::ButtonSkyBox);
 	mem_delete(SXMaterialEditor::EditSkyBox);
 	mem_delete(SXMaterialEditor::CheckBoxModelRot);
+	mem_delete(SXMaterialEditor::StaticThickness);
+	mem_delete(SXMaterialEditor::EditThickness);
+	mem_delete(SXMaterialEditor::TrackBarThickness);
 	mem_delete(SXMaterialEditor::JobWindow);
 }
