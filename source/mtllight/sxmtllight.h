@@ -42,7 +42,7 @@ SX_LIB_API void SML_0Create(
 	bool is_unic = true				//!< должна ли подсистема быть уникальной по имени
 	);
 
-SX_LIB_API void SML_0Kill();	//!< уничтожить подсистему
+SX_LIB_API void SML_AKill();	//!< уничтожить подсистему
 
 //!@}
 
@@ -615,6 +615,7 @@ SX_LIB_API IDirect3DTexture9* SML_DSGetRT(DS_RT type);	//!< текстура ren
 //! значение f0 (отражательной способности поверхности) по умолчанию
 #define MTL_LIGHTING_DEFAULT_F0 2.f/255.f
 
+//! значение thickness (толщина - на сколько будет использована диффузная составляющая, для твердых поверхностей - 1, для листьев деревьев и травы <1) по умолчанию
 #define MTL_LIGHTING_DEFAULT_THICKNESS 255.f/255.f
 
 //!@}
@@ -995,8 +996,8 @@ SX_LIB_API void SML_MtlGetTextureLighting(ID id, char* path_tex);		//!< в path_
 SX_LIB_API void SML_MtlSetRoughness(ID id, float roughness);	//!< установка шероховатости (0-1)
 SX_LIB_API float SML_MtlGetRoughness(ID id);					//!< возвращает текущее значение шероховатости поверхности
 
-SX_LIB_API void SML_MtlSetThickness(ID id, float thickness);	
-SX_LIB_API float SML_MtlGetThickness(ID id);
+SX_LIB_API void SML_MtlSetThickness(ID id, float thickness);	//!< установка толщины (0-1)
+SX_LIB_API float SML_MtlGetThickness(ID id);					//!< возвращает текущее значение толщины
 
 //f0 - отражательная способность поверхности (0-1)
 SX_LIB_API void SML_MtlSetF0(ID id, float f0);	//!< установка отражательной способности поверхности (0-1)

@@ -316,7 +316,7 @@ void Particles::CreateParticles()
 			CountReCreate2 = 0;
 			i = Count;
 			if (Data.SpawnNextTime)
-				TimeNextSpawnParticle = timeGetTime() + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
+				TimeNextSpawnParticle = GetTickCount() + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
 		}
 	}
 
@@ -577,8 +577,8 @@ void Particles::Compute()
 	CountReCreate2 = 0;
 	if (OldTime > 0 && Data.ReCreateCount > 0 && Data.ReCreateCount <= Count - CountLifeParticle)
 	{
-		//DWORD tt = timeGetTime();
-		if (timeGetTime() > TimeNextSpawnParticle)
+		//DWORD tt = GetTickCount();
+		if (GetTickCount() > TimeNextSpawnParticle)
 		{
 			for (int i = 0; i<Count; i++)
 			{
@@ -592,14 +592,14 @@ void Particles::Compute()
 					CountReCreate2 = 0;
 					i = Count;
 					if (Data.SpawnNextTime)
-						TimeNextSpawnParticle = timeGetTime() + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
+						TimeNextSpawnParticle = GetTickCount() + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
 				}
 			}
 		}
 		IsAlife = true;
 	}
 
-	DWORD tmptime = timeGetTime();
+	DWORD tmptime = GetTickCount();
 	CountLifeParticle = 0;
 
 	for (int i = 0; i<Count && OldTime != 0 && IsAlife; i++)

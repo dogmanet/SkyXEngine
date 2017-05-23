@@ -37,6 +37,15 @@ See the license in LICENSE
 
 #define RENDER_PARTICLES_ALPHATEST_VALUE 16	/*!< минимальное значение для альфа теста */
 
+/*! \name Идентификаторы для определяния типа просчетов видимости
+@{*/
+
+#define RENDER_LAYER_NULL			0	/*!< нулевой (пустой слой, здесь будут к примеру скайбокс, облака и т.д.) */
+#define RENDER_LAYER_UNTRANSPARENT	1	/*!< непрозрачный слой */
+#define RENDER_LAYER_TRANSPARENT	2	/*!< первый прозрачный слой, следующие слои могут быть прозрачными */
+
+//!@}
+
 //! пространство имен с орагнизацией рендера
 namespace SXRenderFunc
 {

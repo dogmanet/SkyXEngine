@@ -11,11 +11,11 @@ if (!(key >= 0 && key < ArrKey.size()))\
 
 #define EFFECTS_EFFECT_PRECOND(id, retval) \
 	if (id >= ArrID.size() || !(ArrID[id]))\
-		{reportf(-1, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval;}
+		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval; }
 
 #define EFFECTS_PARTICLES_PRECOND(id, id_part, retval) \
 	if (id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
-		{reportf(-1, "%s - sxparticles - unresolved address to particles %d in effect %d", gen_msg_location, id_part, id); return retval;}
+		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", gen_msg_location, id_part, id); return retval; }
 
 #define EFFECTS_PRECOND(id, id_part, retval) \
 	EFFECTS_EFFECT_PRECOND(id, retval); \

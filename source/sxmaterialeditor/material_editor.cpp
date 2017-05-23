@@ -1,4 +1,3 @@
-#define mem_delete(p) if(p) {delete (p);(p) = NULL;}
 
 namespace SXMaterialEditor
 {

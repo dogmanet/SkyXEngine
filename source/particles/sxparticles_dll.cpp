@@ -9,8 +9,6 @@ See the license in LICENSE
 #include <windows.h>
 #include <gdefines.h>
 
-#pragma comment(lib, "winmm.lib")
-
 #include <particles\\sxparticles.cpp>
 
 BOOL APIENTRY DllMain(HMODULE hModule,

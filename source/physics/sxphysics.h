@@ -26,7 +26,7 @@ SX_LIB_API void SXPhysics_0Create();
 
 /*! Деинициализирует библиотеку
 */
-SX_LIB_API void SXPhysics_0Kill();
+SX_LIB_API void SXPhysics_AKill();
 
 /*! Устанавливает функцию сообщений
 */

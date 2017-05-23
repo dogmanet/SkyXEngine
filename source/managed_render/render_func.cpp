@@ -459,7 +459,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//ставим рт глубины
 
 	SML_MtlNullingCurrCountSurf();
-	SML_MtlSetCurrCountSurf(1);
+	SML_MtlSetCurrCountSurf(RENDER_LAYER_UNTRANSPARENT);
 //если не объявлен флаг редактора материалов (для него немного другой рендер)
 #if !defined(SX_MATERIAL_EDITOR)
 	if (SGeom_ModelsGetCount() > 0)
@@ -600,7 +600,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 		if (SGeom_ModelsGetCount() > 0)
 		{
 			SML_MtlSetIsIncrCountSurf(true);
-			SML_MtlSetCurrCountSurf(2);
+			SML_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
 
 			/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 				SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_alpha_lighting, 0, true, GData::Editors::ActiveElement);
@@ -1072,7 +1072,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 #else
 	CurrCountTransparencySurf = SML_MtlGetCurrCountSurf();
 #endif
-	if (CurrCountTransparencySurf > 2)
+	if (CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT)
 	{
 		LPDIRECT3DSURFACE9 ColorSurf, Color2Surf, DepthSurf;
 		SML_DSGetRT(DS_RT::ds_rt_scene_light_com2)->GetSurfaceLevel(0, &ColorSurf);
@@ -1102,20 +1102,9 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	}
 	else
 	{
-		LPDIRECT3DSURFACE9 DepthSurf0, DepthSurf1;
+		//копируем значения только для ds_rt_depth1, а ds_rt_depth0 уже заполнен
 
-		SML_DSGetRT(DS_RT::ds_rt_depth0)->GetSurfaceLevel(0, &DepthSurf0);
-		GData::DXDevice->SetRenderTarget(0, DepthSurf0);
-
-		GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-
-		GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_depth));
-
-		SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
-		SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
-		
-		SGCore_ScreenQuadDraw();
-
+		LPDIRECT3DSURFACE9 DepthSurf1;
 
 		SML_DSGetRT(DS_RT::ds_rt_depth1)->GetSurfaceLevel(0, &DepthSurf1);
 		GData::DXDevice->SetRenderTarget(0, DepthSurf1);
@@ -1130,15 +1119,14 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 		SGCore_ScreenQuadDraw();
 
 		GData::DXDevice->SetRenderTarget(0, 0);
-		mem_release(DepthSurf0);
 		mem_release(DepthSurf1);
 	}
 
 	//копируем итоговую сцену
-	SML_DSGetRT((CurrCountTransparencySurf > 2 ? DS_RT::ds_rt_scene_light_com : DS_RT::ds_rt_scene_light_com2))->GetSurfaceLevel(0, &ComLightSurf);
+	SML_DSGetRT((CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT::ds_rt_scene_light_com : DS_RT::ds_rt_scene_light_com2))->GetSurfaceLevel(0, &ComLightSurf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	GData::DXDevice->SetTexture(0, SML_DSGetRT((CurrCountTransparencySurf > 2 ? DS_RT::ds_rt_scene_light_com2 : DS_RT::ds_rt_scene_light_com)));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT((CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT::ds_rt_scene_light_com2 : DS_RT::ds_rt_scene_light_com)));
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
@@ -1467,7 +1455,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	//@@@
 	SSInput_Update();
-
+	SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 	//@@@
 	CameraUpdate::UpdateEditorial(timeDelta);
 
@@ -1526,7 +1514,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	ttime = GetTickCount();
-	//RenderPostProcess(timeDelta);
+	RenderPostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += GetTickCount() - ttime;
 #endif
 

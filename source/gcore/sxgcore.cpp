@@ -152,7 +152,7 @@ void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool win
 		reportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);
 }
 
-void SGCore_0Kill()
+void SGCore_AKill()
 {
 	mem_delete(MShaders);
 	mem_delete(MRenderTargets);

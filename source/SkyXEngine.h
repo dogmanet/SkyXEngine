@@ -186,6 +186,8 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>
+#include <common\\array.h>
+#include <common\\string.cpp>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
@@ -200,6 +202,13 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #pragma comment(lib, "sxinput.lib")
 #endif
 #include <input\\sxinput.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxscore_d.lib")
+#else
+#pragma comment(lib, "sxscore.lib")
+#endif
+#include <score/sxscore.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
@@ -282,8 +291,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <managed_render\\render_func.cpp>
 #include <managed_render\\level.cpp>
 
-#include <common\\array.h>
-#include <common\\string.cpp>
+
 
 void SkyXEngine_Init()
 {
@@ -297,6 +305,8 @@ void SkyXEngine_Init()
 
 	Core_0Create("sxcore", true);
 	Core_SetOutPtr();
+
+	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds,false);
 
 	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
 	SGCore_Dbg_Set(printflog);
@@ -357,11 +367,12 @@ void SkyXEngine_Init()
 
 void SkyXEngine_Kill()
 {
-	SXPhysics_0Kill();
-	SXAnim_0Kill();
+	SXPhysics_AKill();
+	SXAnim_AKill();
 	mem_release(GData::ObjCamera);
-	SGeom_0CreateKill();
-	SML_0Kill();
-	SGCore_0Kill();
+	SGeom_AKill();
+	SML_AKill();
+	SSCore_AKill();
+	SGCore_AKill();
 	Core_AKill();
 }

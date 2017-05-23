@@ -110,9 +110,9 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	diffuse = lerp(1,diffuse, Param.z);
 	#ifdef IS_SHADOWED
 	if(Param.z < 1.f)
-		diffuse *= max(originshadow,0.06);
+		diffuse *= max(originshadow,0.1);
 	else
-		diffuse *= max(shadow,0.06);
+		diffuse *= max(shadow,0.1);
 	#endif
 
 	half lighting = saturate(max((Param.y) * 0.5f, 0.1f));

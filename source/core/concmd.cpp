@@ -541,8 +541,8 @@ void ConsoleDisconnect()
 	g_bRunning = false; 
 
 	
-
-	fclose(fOut);
+	if (fOut)
+		fclose(fOut);
 	/*int iResult = shutdown(ConnectSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)
 	{

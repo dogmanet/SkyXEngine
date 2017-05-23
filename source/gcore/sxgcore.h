@@ -55,7 +55,7 @@ SX_LIB_API void SGCore_0Create(
 	bool is_unic = true			//!< должна ли подсистема быть уникальной на основе имени
 	);
 
-SX_LIB_API void SGCore_0Kill();	//!< уничтожение либы
+SX_LIB_API void SGCore_AKill();	//!< уничтожение либы
 
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	//!< возвращает dx устройство
 

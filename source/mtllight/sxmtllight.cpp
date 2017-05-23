@@ -65,7 +65,7 @@ void SML_0Create(const char* name, IDirect3DDevice9* device, const char* std_pat
 		reportf(-1, "%s - not init argument [name], sxmaterial_ligth", gen_msg_location);
 }
 
-void SML_0Kill()
+void SML_AKill()
 {
 	mem_delete(ArrLights)
 	mem_delete(ArrMaterials);

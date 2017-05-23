@@ -12,6 +12,7 @@ See the license in LICENSE
 
 #include <SkyXEngine.h>
 
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	InitOutLog();
@@ -20,14 +21,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::InitWin("SkyXEngine", "SkyXEngine");
 
 	SkyXEngine_Init();
-
+	
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
 	Level::Load("stalker_atp");
 
-	SXPhysics_LoadGeom();
+	//SXPhysics_LoadGeom();
 
 	SGeom_0SettGreenSetFreqGrass(30);
 
@@ -148,7 +149,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
+	ID tmpid = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
+	SSCore_SndPosCurrSet(tmpid, 20, SOUND_POS_SEC);
+	SSCore_SndPlay(tmpid);
+	//ms->SoundPanSet(tmpid, DSBPAN_RIGHT, 0);
+	//ms->SoundVolumeSet(tmpid, 100);
 
+	ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
+	//SSCore_SndVolumeSet(tmpid2, 50, SOUND_VOL_PCT);
+	SSCore_SndPlay(tmpid2);
+
+	//ms->SoundEffectGargleSet(tmpid, 100, DSFXGARGLE_WAVE_SQUARE);
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));

@@ -9,7 +9,7 @@ See the license in LICENSE
 Заголовочный файл sxparticles - библиотека системы частиц (эффектов)
 */
 
-/*! \defgroup sxparticles Система частиц
+/*! \defgroup sxparticles sxparticles - система частиц
 @{*/
 
 #ifndef __sxparticles
