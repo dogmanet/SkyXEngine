@@ -222,8 +222,9 @@ void ConsoleExecInternal(char * cmd, char * args)
 }
 void ConsoleExecInternal(char * cmd)
 {
-	char * space = strstr(cmd, " ");
-	if(space)
+	char * space = cmd;
+	while((*++space) && !isspace(*space));
+	if(*space)
 	{
 		*space = 0;
 		++space;
@@ -436,7 +437,7 @@ bool CommandConnect();
 void CommandDisconnect();
 
 int hOut;
-FILE * fOut;
+FILE * fOut = NULL;
 
 bool ConsoleConnect()
 {
@@ -541,8 +542,10 @@ void ConsoleDisconnect()
 	g_bRunning = false; 
 
 	
-
-	fclose(fOut);
+	if(fOut)
+	{
+		fclose(fOut);
+	}
 	/*int iResult = shutdown(ConnectSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)
 	{

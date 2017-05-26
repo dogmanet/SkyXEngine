@@ -28,7 +28,7 @@ subject to the following restrictions:
 
 /// The btConvexShape is an abstract shape interface, implemented by all convex shapes such as btBoxShape, btConvexHullShape etc.
 /// It describes general convex shapes using the localGetSupportingVertex interface, used by collision detectors such as btGjkPairDetector.
-ATTRIBUTE_ALIGNED16(class) btConvexShape : public btCollisionShape
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btConvexShape : public btCollisionShape
 {
 
 

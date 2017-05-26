@@ -51,14 +51,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
-void Report(int level, const char* format, ...)
-{
-	va_list va;
-	va_start(va, format);
-	reportf(level, format, va);
-	va_end(va);
-}
-
 SX_LIB_API void SXPhysics_0Create()
 {
 	if(g_pWorld)
@@ -107,4 +99,22 @@ SX_LIB_API void SXPhysics_DebugRender()
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->Render();
+}
+
+SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody)
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->AddShape(pBody);
+}
+
+SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody)
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->RemoveShape(pBody);
+}
+
+SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld()
+{
+	SP_PRECOND(NULL);
+	return(g_pWorld->GetBtWorld());
 }

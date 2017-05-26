@@ -117,6 +117,7 @@ struct IBaseObject
 //! Считывание неопределенного количества аргументов при форматированнии строки в buf на основании format
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);
 
+#define F3_BTVEC(xmf) (btVector3((xmf).x, (xmf).y, (xmf).z))
 
 #define macro_text_(x) #x
 #define macro_text(x) macro_text_(x)

@@ -107,6 +107,10 @@ void PhyWorld::Update(int thread)
 	static UINT time0 = GetTickCount();
 	UINT time1 = GetTickCount();
 
+	if(time1 - time0 > 5000)
+	{
+		time0 = time1;
+	}
 	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 0, 1.0f / 60.0f);
 
 	time0 = time1;
@@ -178,6 +182,8 @@ void PhyWorld::LoadGeom()
 
 	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, pIndexCount, iModelCount);
 }
+
+
 
 
 //##############################################################

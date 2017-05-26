@@ -57,7 +57,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+#ifndef SX_GAME
 	GData::ObjCamera = SGCore_CrCamera();
+#endif
 
 
 	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
@@ -78,6 +80,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXPhysics_0Create();
 	SXPhysics_Dbg_Set(printflog);
 
+	SXGame_0Create();
+#ifdef SX_GAME
+	GData::ObjCamera = SXGame_GetActiveCamera();
+#endif
+
 	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
 	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
 	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
@@ -87,10 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::InitAllMatrix();
 
 	GData::IDsShaders::InitAllShaders();
-
-	//!@TODO: Найти для этого более подходящее место
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
-
+	
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
 
@@ -162,7 +166,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			DWORD timeDelta = (currTime - lastTime);
 
 			Core_0ConsoleUpdate();
-
+#ifdef SX_GAME
+			GData::ObjCamera = SXGame_GetActiveCamera();
+#endif
 			if (GetActiveWindow() == GData::Handle3D)
 			{
 				SGCore_LoadTexLoadTextures();
@@ -176,6 +182,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
+	SXGame_0Kill();
 	SXPhysics_0Kill();
 	SXAnim_0Kill();
 	mem_release(GData::ObjCamera);

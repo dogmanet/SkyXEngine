@@ -31,9 +31,9 @@ subject to the following restrictions:
  * Some issues under PS3 Linux with IBM 2.1 SDK, gcc compiler prevent from using aligned quadword.
  */
 #ifndef USE_LIBSPE2
-ATTRIBUTE_ALIGNED16(class) btQuadWord
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btQuadWord
 #else
-class btQuadWord
+class BULLET_EXPORTS btQuadWord
 #endif
 {
 protected:

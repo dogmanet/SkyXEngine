@@ -1,0 +1,122 @@
+#include "GameData.h"
+
+SXplayer * GameData::m_pPlayer;
+SXpointCamera * GameData::m_pActiveCamera;
+EntityManager * GameData::m_pMgr;
+
+GameData::GameData()
+{
+	m_pMgr = new EntityManager();
+
+	Core_0RegisterConcmd("+forward", ccmd_forward_on);
+	Core_0RegisterConcmd("-forward", ccmd_forward_off);
+	Core_0RegisterConcmd("+backward", ccmd_backward_on);
+	Core_0RegisterConcmd("-backward", ccmd_backward_off);
+	Core_0RegisterConcmd("+left", ccmd_left_on);
+	Core_0RegisterConcmd("-left", ccmd_left_off);
+	Core_0RegisterConcmd("+right", ccmd_right_on);
+	Core_0RegisterConcmd("-right", ccmd_right_off);
+	Core_0RegisterConcmd("+boost", ccmd_boost_on);
+	Core_0RegisterConcmd("-boost", ccmd_boost_off);
+	Core_0RegisterConcmd("+crouch", ccmd_crouch_on);
+	Core_0RegisterConcmd("-crouch", ccmd_crouch_off);
+	Core_0RegisterConcmd("+jump", ccmd_jump_on);
+	Core_0RegisterConcmd("-jump", ccmd_jump_off);
+	Core_0RegisterConcmd("+crawl", ccmd_crawl_on);
+	Core_0RegisterConcmd("-crawl", ccmd_crawl_off);
+
+	Core_0RegisterConcmd("spawn", ccmd_spawn);
+	Core_0RegisterConcmd("observe", ccmd_observe);
+
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
+
+	m_pPlayer = (SXplayer*)CREATE_ENTITY("player", m_pMgr);
+	m_pActiveCamera = m_pPlayer->GetCamera();
+}
+GameData::~GameData()
+{
+	mem_delete(m_pMgr);
+}
+
+void GameData::ccmd_forward_on()
+{
+	m_pPlayer->Move(PM_FORWARD, TRUE);
+}
+void GameData::ccmd_forward_off()
+{
+	m_pPlayer->Move(PM_FORWARD, FALSE);
+}
+
+void GameData::ccmd_backward_on()
+{
+	m_pPlayer->Move(PM_BACKWARD, TRUE);
+}
+void GameData::ccmd_backward_off()
+{
+	m_pPlayer->Move(PM_BACKWARD, FALSE);
+}
+
+void GameData::ccmd_left_on()
+{
+	m_pPlayer->Move(PM_LEFT, TRUE);
+}
+void GameData::ccmd_left_off()
+{
+	m_pPlayer->Move(PM_LEFT, FALSE);
+}
+
+void GameData::ccmd_right_on()
+{
+	m_pPlayer->Move(PM_RIGHT, TRUE);
+}
+void GameData::ccmd_right_off()
+{
+	m_pPlayer->Move(PM_RIGHT, FALSE);
+}
+
+void GameData::ccmd_boost_on()
+{
+	m_pPlayer->Move(PM_RUN, TRUE);
+}
+void GameData::ccmd_boost_off()
+{
+	m_pPlayer->Move(PM_RUN, FALSE);
+}
+
+void GameData::ccmd_crouch_on()
+{
+	m_pPlayer->Move(PM_CROUCH, TRUE);
+}
+void GameData::ccmd_crouch_off()
+{
+	m_pPlayer->Move(PM_CROUCH, FALSE);
+}
+
+void GameData::ccmd_crawl_on()
+{
+	m_pPlayer->Move(PM_CRAWL, TRUE);
+}
+void GameData::ccmd_crawl_off()
+{
+	m_pPlayer->Move(PM_CRAWL, FALSE);
+}
+
+void GameData::ccmd_jump_on()
+{
+	m_pPlayer->Move(PM_JUMP, TRUE);
+}
+void GameData::ccmd_jump_off()
+{
+	m_pPlayer->Move(PM_JUMP, FALSE);
+}
+
+void GameData::ccmd_spawn()
+{
+	Core_0ConsoleExecCmd("cl_mode_editor 0");
+	m_pPlayer->Spawn();
+}
+void GameData::ccmd_observe()
+{
+	m_pPlayer->Observe();
+}

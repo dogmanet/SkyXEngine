@@ -239,3 +239,11 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #pragma comment(lib, "sxphysics.lib")
 #endif
 #include <physics/sxphysics.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxgame_d.lib")
+#else
+#pragma comment(lib, "sxgame.lib")
+#endif
+#include <game/sxgame.h>
+

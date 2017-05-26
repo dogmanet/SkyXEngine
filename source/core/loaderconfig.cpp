@@ -703,9 +703,8 @@ bool SXLoaderConfig::SectionExists(const char * section)
 bool SXLoaderConfig::KeyExists(const char * section, const char * key)
 {
 	String sections(section);
-	String keys(key);
 	if(m_mSections.KeyExists(sections))
-			return(m_mSections[sections].mValues.KeyExists(keys));
+			return(m_mSections[sections].mValues.KeyExists(key));
 	return(false);
 }
 

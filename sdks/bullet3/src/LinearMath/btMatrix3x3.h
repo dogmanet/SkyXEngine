@@ -45,7 +45,7 @@ const btSimdFloat4 ATTRIBUTE_ALIGNED16(v0010) = {0.0f, 0.0f, 1.0f, 0.0f};
 
 /**@brief The btMatrix3x3 class implements a 3x3 rotation matrix, to perform linear algebra in combination with btQuaternion, btTransform and btVector3.
 * Make sure to only include a pure orthogonal matrix without scaling. */
-ATTRIBUTE_ALIGNED16(class) btMatrix3x3 {
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btMatrix3x3{
 
 	///Data storage for the matrix, each vector is a row of the matrix
 	btVector3 m_el[3];

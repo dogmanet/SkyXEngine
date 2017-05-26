@@ -1369,13 +1369,17 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SSInput_Update();
 
 	//@@@
+#ifndef SX_GAME
 	CameraUpdate::UpdateEditorial(timeDelta);
+#endif
 
 	SXAnim_Update();
-	SXAnim_Sync();
-
+	SXGame_Update();
 	SXPhysics_Update();
+
+	SXAnim_Sync();
 	SXPhysics_Sync();
+	SXGame_Sync();
 
 	ttime = timeGetTime();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
@@ -1506,6 +1510,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
 	SXPhysics_DebugRender();
+	//SXGame_EditorRender();
 
 	float4_t tmpnull;
 	for (int i = 0; i < 256; ++i)

@@ -218,6 +218,18 @@ inline void Camera::Roll(float angle)
 	}*/
 }
 
+inline void Camera::SetOrientation(const SMQuaternion & q)
+{
+	float3 angles = SMMatrixToEuler(q.GetMatrix());
+	AngleUpDown = angles.x;
+	AngleRightLeft = angles.y;
+	AngleRoll = angles.z;
+
+	Right = q * float3(1.0f, 0.0f, 0.0f);
+	Up = q * float3(0.0f, 1.0f, 0.0f);
+	Look = q * float3(0.0f, 0.0f, 1.0f);
+}
+
 
 inline void Camera::GetViewMatrix(float4x4* view_matrix)
 {

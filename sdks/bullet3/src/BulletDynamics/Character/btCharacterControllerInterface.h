@@ -23,7 +23,7 @@ class btCollisionShape;
 class btRigidBody;
 class btCollisionWorld;
 
-class btCharacterControllerInterface : public btActionInterface
+class BULLET_EXPORTS btCharacterControllerInterface: public btActionInterface
 {
 public:
 	btCharacterControllerInterface () {};
