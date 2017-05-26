@@ -20,7 +20,7 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 	OUT.Normal.w = NearFarIsUnlit.z;
 	
 	OUT.Param = tex2D(RF0SSIsSampler,IN.TexUV);
-	OUT.Param.z = NearFarIsUnlit.w;
+	OUT.Param.w = NearFarIsUnlit.w;
 	
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
 	

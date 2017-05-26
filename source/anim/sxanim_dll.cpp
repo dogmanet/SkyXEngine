@@ -53,7 +53,7 @@ SX_LIB_API void SXAnim_0Create()
 	}
 	g_mgr = new AnimationManager(SGCore_GetDXDevice());
 }
-SX_LIB_API void SXAnim_0Kill()
+SX_LIB_API void SXAnim_AKill()
 {
 	SA_PRECOND(_VOID);
 	mem_delete(g_mgr);

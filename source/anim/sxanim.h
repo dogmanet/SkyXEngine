@@ -220,7 +220,7 @@ SX_LIB_API void SXAnim_0Create();
 
 /*! Деинициализирует библиотеку
 */
-SX_LIB_API void SXAnim_0Kill();
+SX_LIB_API void SXAnim_AKill();
 
 /*! Устанавливает функцию сообщений
 */

@@ -62,7 +62,7 @@ SX_LIB_API void SXPhysics_0Create()
 
 	g_pWorld = new PhyWorld();
 }
-SX_LIB_API void SXPhysics_0Kill()
+SX_LIB_API void SXPhysics_AKill()
 {
 	SP_PRECOND(_VOID);
 	mem_delete(g_pWorld);

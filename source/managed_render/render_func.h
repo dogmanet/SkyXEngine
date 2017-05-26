@@ -35,6 +35,17 @@ See the license in LICENSE
 
 //!@}
 
+#define RENDER_PARTICLES_ALPHATEST_VALUE 16	/*!< минимальное значение для альфа теста */
+
+/*! \name Идентификаторы для определяния типа просчетов видимости
+@{*/
+
+#define RENDER_LAYER_NULL			0	/*!< нулевой (пустой слой, здесь будут к примеру скайбокс, облака и т.д.) */
+#define RENDER_LAYER_UNTRANSPARENT	1	/*!< непрозрачный слой */
+#define RENDER_LAYER_TRANSPARENT	2	/*!< первый прозрачный слой, следующие слои могут быть прозрачными */
+
+//!@}
+
 //! пространство имен с орагнизацией рендера
 namespace SXRenderFunc
 {
@@ -62,9 +73,9 @@ namespace SXRenderFunc
 	void UpdateView();						//!< обработка и установка основных матриц, обработка плоскостей отсечения
 	void OutputDebugInfo(DWORD timeDelta);	//!< вывод отладочной текстовой информации в окно рендера
 
-	void ComVisibleForLight();			//!< обработка видимости для источников света
-	void ComVisibleForCamera();			//!< обработка видимости для камеры
-	void ComVisibleReflection();		//!< обработка видимости для отражений
+	void ComVisibleForLight();				//!< обработка видимости для источников света
+	void ComVisibleForCamera();				//!< обработка видимости для камеры
+	void ComVisibleReflection();			//!< обработка видимости для отражений
 
 	void RenderInMRT(DWORD timeDelta);		//!< построение G буфера, то есть рендер всей сцены
 	void UpdateShadow(DWORD timeDelta);		//!< обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
@@ -72,9 +83,9 @@ namespace SXRenderFunc
 	
 	void RenderSky(DWORD timeDelta);					//!< отрисовка скайбокса и облаков
 	void ComLighting(DWORD timeDelta, bool render_sky);	//!< обработка освещения, render_sky - рисовать ли небо
-	
-	void PostProcess(DWORD timeDelta);	//!< отрисовка постпроцесса
-
+	void RenderParticles(DWORD timeDelta);				//!< отрисовка партиклов (эффектов)
+	void RenderPostProcess(DWORD timeDelta);			//!< отрисовка постпроцесса
+	void ShaderRegisterData();
 	/*! \name Функции обертки, для передачи графическому ядру для замены стандартных
 	@{*/
 
@@ -95,6 +106,7 @@ namespace SXRenderFunc
 		DWORD UpdateVisibleForReflection = 0;
 
 		DWORD UpdateShadow = 0;
+		DWORD UpdateParticles = 0;
 		DWORD RenderMRT = 0;
 		DWORD ComLighting = 0;
 		DWORD PostProcess = 0;

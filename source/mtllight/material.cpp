@@ -217,6 +217,7 @@ Materials::Material::MaterialLightParam::MaterialLightParam()
 
 	RoughnessValue = 0.f;
 	F0Value = 0.f;
+	ThicknessValue = 1.f;
 	TypeRefraction = MtlTypeTransparency::mtt_none;
 
 	TypeReflect = MtlTypeReflect::mtr_none;
@@ -648,6 +649,18 @@ float Materials::MtlGetF0(ID id)
 {
 	MTL_PRE_COND_ID(id,-1);
 	return ArrMaterials[id]->mtl->LightParam.F0Value;
+}
+
+void Materials::MtlSetThickness(ID id, float thickness)
+{
+	MTL_PRE_COND_ID(id);
+	ArrMaterials[id]->mtl->LightParam.ThicknessValue = thickness;
+}
+
+float Materials::MtlGetThickness(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->mtl->LightParam.ThicknessValue;
 }
 
 
@@ -1184,6 +1197,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 		tmpMtl->LightParam.RoughnessValue = MTL_LIGHTING_DEFAULT_ROUGHNESS;
 		tmpMtl->LightParam.F0Value = MTL_LIGHTING_DEFAULT_F0;
+		tmpMtl->LightParam.ThicknessValue = MTL_LIGHTING_DEFAULT_THICKNESS;
 
 		if (config->KeyExists(tmp_name, "roughness"))
 			tmpMtl->LightParam.RoughnessValue = String(config->GetKey(tmp_name, "roughness")).ToDouble();
@@ -1191,7 +1205,10 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->KeyExists(tmp_name, "f0"))
 			tmpMtl->LightParam.F0Value = String(config->GetKey(tmp_name, "f0")).ToDouble();
 
-		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value);
+		if (config->KeyExists(tmp_name, "thickness"))
+			tmpMtl->LightParam.ThicknessValue = String(config->GetKey(tmp_name, "thickness")).ToDouble();
+
+		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
 		//говорим что не установлено использовать ли текстуру или нет
 		int istexparam = -1;
@@ -1340,12 +1357,12 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 	return false;
 }
 
-ID Materials::CreateTexParamLighting(float roughness, float f0)
+ID Materials::CreateTexParamLighting(float roughness, float f0, float thickness)
 {
 	IDirect3DTexture9* TexMaterial;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &TexMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
-	uint32_t tmpColor = D3DCOLOR_ARGB(0, DWORD(roughness*255.f), DWORD(f0*255.f), 0);
+	uint32_t tmpColor = D3DCOLOR_ARGB(0, DWORD(roughness*255.f), DWORD(f0*255.f), DWORD(thickness*255.f));
 
 	TexMaterial->LockRect(0, &LockedRect, 0, 0);
 
@@ -1411,9 +1428,10 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 
 	tmpMtl->LightParam.RoughnessValue = MTL_LIGHTING_DEFAULT_ROUGHNESS;
 	tmpMtl->LightParam.F0Value = MTL_LIGHTING_DEFAULT_F0;
+	tmpMtl->LightParam.ThicknessValue = MTL_LIGHTING_DEFAULT_THICKNESS;
 
 	tmpMtl->LightParam.ParamTex = -1;
-	tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value);
+	tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
 	//char path[1024];
 	char tmp_name[256];
@@ -1626,6 +1644,7 @@ void Materials::MtlSave(ID id)
 
 	fprintf(file, "roughness = %f\n", mtrl->LightParam.RoughnessValue);
 	fprintf(file, "f0 = %f\n", mtrl->LightParam.F0Value);
+	fprintf(file, "thickness = %f\n", mtrl->LightParam.ThicknessValue);
 
 	fprintf(file, "refraction = %d\n", mtrl->LightParam.TypeRefraction);
 
@@ -1881,7 +1900,7 @@ void Materials::Render(ID id, float4x4* world)
 	//иначе если берем параметры из ... редактора
 	else if (!tmpmaterial->LightParam.IsTextureParam)
 	{
-		if (tmpmaterial->LightParam.OldRoughnessValue != tmpmaterial->LightParam.RoughnessValue || tmpmaterial->LightParam.OldF0Value != tmpmaterial->LightParam.F0Value)
+		if (tmpmaterial->LightParam.OldRoughnessValue != tmpmaterial->LightParam.RoughnessValue || tmpmaterial->LightParam.OldF0Value != tmpmaterial->LightParam.F0Value || tmpmaterial->LightParam.OldThicknessValue != tmpmaterial->LightParam.ThicknessValue)
 		{
 			//блокируем текстуру 1х1 котора¤ есть параметры освещени¤, и запсиываем туда то что настроили
 			D3DLOCKED_RECT LockedRect;
@@ -1889,11 +1908,12 @@ void Materials::Render(ID id, float4x4* world)
 			ParamLightModelTex->LockRect(0, &LockedRect, 0, 0);
 			DWORD *param = (DWORD*)LockedRect.pBits;
 			//DWORD param = D3DCOLOR_ARGB(0,0,0,0);
-			param[0] = D3DCOLOR_ARGB(0, DWORD(tmpmaterial->LightParam.RoughnessValue*255.f), DWORD(tmpmaterial->LightParam.F0Value*255.f), 0);
+			param[0] = D3DCOLOR_ARGB(0, DWORD(tmpmaterial->LightParam.RoughnessValue*255.f), DWORD(tmpmaterial->LightParam.F0Value*255.f), DWORD(tmpmaterial->LightParam.ThicknessValue*255.f));
 			ParamLightModelTex->UnlockRect(0);
 
 			tmpmaterial->LightParam.OldRoughnessValue = tmpmaterial->LightParam.RoughnessValue;
 			tmpmaterial->LightParam.OldF0Value = tmpmaterial->LightParam.F0Value;
+			tmpmaterial->LightParam.OldThicknessValue = tmpmaterial->LightParam.ThicknessValue;
 		}
 
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTexHand));

@@ -10,18 +10,8 @@ See the license in LICENSE
 #define SX_EXE
 #define SX_GAME
 
-#include <windows.h>
-#include <ctime>
-#pragma comment(lib, "winmm.lib")
-#include <gdefines.h>
-
-
-#include <managed_render\\handler_out_log.cpp>
 #include <SkyXEngine.h>
-#include <managed_render\\gdata.cpp>
-#include <managed_render\\camera_update.cpp>
-#include <managed_render\\render_func.cpp>
-#include <managed_render\\level.cpp>
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -29,83 +19,99 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	srand((unsigned int)time(0));
 
 	GData::InitWin("SkyXEngine", "SkyXEngine");
-	GData::Pathes::InitAllPathes();
 
-	SSInput_0Create("SXLevelEditor input", GData::Handle3D, true);
-	SSInput_Dbg_Set(printflog);
-	Core_0Create("SkyXEngine Core", true);
-	Core_SetOutPtr();
-	SGCore_0Create("SXLevelEditor graphics", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
-	SGCore_Dbg_Set(printflog);
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
-	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
-
-	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
-	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
-	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
-	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
-
-	SGCore_SkyBoxCr();
-	SGCore_SkyCloudsCr();
-	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
-	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+	SkyXEngine_Init();
 
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
-
-	GData::DXDevice = SGCore_GetDXDevice();
-	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-#ifndef SX_GAME
-	GData::ObjCamera = SGCore_CrCamera();
-#endif
-
-
-	SGeom_0Create("SXLevelEditor geometry", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
-	SGeom_Dbg_Set(printflog);
-
-
-	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
-	SML_Dbg_Set(printflog);
-
-
-	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
-	SPP_Dbg_Set(printflog);
-	SPP_ChangeTexSun("fx_sun.dds");
-
-	SXAnim_0Create();
-	SXAnim_Dbg_Set(printflog);
-
-	SXPhysics_0Create();
-	SXPhysics_Dbg_Set(printflog);
-
-	SXGame_0Create();
-#ifdef SX_GAME
-	GData::ObjCamera = SXGame_GetActiveCamera();
-#endif
-
-	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
-	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
-	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
-	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
-	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
-
-	GData::InitAllMatrix();
-
-	GData::IDsShaders::InitAllShaders();
-	
-	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
-	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
-
 	Level::Load("stalker_atp");
-
 	SXPhysics_LoadGeom();
+
+	SGeom_0SettGreenSetFreqGrass(30);
 
 	IAnimPlayer * pl;
 	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
 	pl->SetPos(float3(-17.18, -1.38f, -32.3));
 	pl->Play("reload");
+
+	//TestEffect = new Effect();
+
+	/*ParticlesData data;
+	ZeroMemory(&data, sizeof(ParticlesData));
+
+	data.FigureType = ParticlesFigureType::pft_quad_composite;
+	data.FigureCountQuads = 4;
+	data.FigureRotRand = false;
+	data.FigureTapY = true;
+
+	data.ReCreateCount = -1;*/
+
+	//data.SpawnNextTime = 1000;
+	//data.Billboard = true;
+
+	//data.TimeLife = 100000;
+	//data.TimeLifeDisp = 200;
+
+	//data.AlphaAgeDepend = ParticlesDependType::padt_direct;
+
+	/*data.SizeParticle = float2(0.3, 0.3);
+	data.SizeDisp = 0.3;*/
+	//data.SizeDependAge = ParticlesDependType::padt_direct;
+
+	/*data.Velocity = float3(0.01, 0.1, 0.01);
+	data.VelocityDisp = 0.1;
+	data.VelocityDispXNeg = true;
+	data.VelocityDispYNeg = false;
+	data.VelocityDispZNeg = true;*/
+
+	/*data.AnimTexCountCadrsX = 11;
+	data.AnimTexCountCadrsY = 7;
+	data.AnimTexRate = 10;
+	data.AnimTexStartCadr = 1;*/
+	//data.AnimTexStartCadrDisp = 20;
+
+	/*data.CharacterCircle = true;
+	data.CharacterCircleAngle = 0.5;*/
+
+	/*data.CharacterRotate = true;
+	data.CharacterRotateAngle = 0.1;*/
+	//data.CharacterRotateAngleDisp = 0.2;
+	//data.CharacterRotateAngleDispNeg = true;
+
+	/*data.CharacterDeviation = true;
+	data.CharacterMotionAmplitude = 0.01f;
+	data.CharacterMotionCoefAngle = 100.0;*/
+
+	/*data.CharacterDeviationAmplitude = 0.02f;
+	data.CharacterDeviationCoefAngle = 100.0;
+
+	data.CharacterDeviationDisp = 0.1;
+	data.CharacterDeviationDispNeg = true;
+
+	data.CharacterDeviationCountDelayMls = 100;
+	data.CharacterDeviationType = ParticlesDeviationType::pdt_rnd;
+	data.CharacterDeviationAxis = ParticlesAxis::pa_y;
+	data.CharacterDeviationTapX = true;
+	data.CharacterDeviationTapZ = true;*/
+
+	//data.Lighting = true;
+
+	/*ID tmpeffid = SPE_EffectAdd("test");
+	ID tmppartid = SPE_ParticlesAdd(tmpeffid, &data);
+
+	//ID idtex = SGCore_LoadTexAddName("pfx_explotions_2.dds", LoadTexType::ltt_load);
+	SGCore_LoadTexLoadTextures();
+	SPE_ParticlesTextureSet(tmpeffid, tmppartid, idtex);
+	SPE_ParticlesCreate(tmpeffid, tmppartid, 1);
+
+	SPE_ParticlesSet(tmpeffid, tmppartid, SizeParticle, float2_t(2, 2));
+	SPE_ParticlesSet(tmpeffid, tmppartid, TransparencyCoef, 0.25);*/
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureCountQuads, 10);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureRotRand, true);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapX, true);
+	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapZ, true);
 	
 	/*SGeom_ModelsAddModel("stalker_atp.dse", 0, "stalker_atp.dse");
 
@@ -142,12 +148,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
+	ID tmpid = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
+	if(tmpid >= 0)
+	{
+		SSCore_SndPosCurrSet(tmpid, 20, SOUND_POS_SEC);
+		SSCore_SndPlay(tmpid);
+		//ms->SoundPanSet(tmpid, DSBPAN_RIGHT, 0);
+		//ms->SoundVolumeSet(tmpid, 100);
+	}
 
+	ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
+	if(tmpid2 >= 0)
+	{
+		//SSCore_SndVolumeSet(tmpid2, 50, SOUND_VOL_PCT);
+		SSCore_SndPlay(tmpid2);
+	}
+
+	//ms->SoundEffectGargleSet(tmpid, 100, DSFXGARGLE_WAVE_SQUARE);
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
 
-	static DWORD lastTime = timeGetTime();
+	static DWORD lastTime = GetTickCount();
 	static DWORD TimeCCadr = 0;
 
 	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
@@ -160,9 +182,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		else
 		{
 			static DWORD TimeStart = 0;
-			DWORD TimeThis = timeGetTime();
+			DWORD TimeThis = GetTickCount();
 
-			DWORD currTime = timeGetTime();
+			DWORD currTime = GetTickCount();
 			DWORD timeDelta = (currTime - lastTime);
 
 			Core_0ConsoleUpdate();
@@ -182,6 +204,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
+	/*
 	SXGame_0Kill();
 	SXPhysics_0Kill();
 	SXAnim_0Kill();
@@ -189,7 +212,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGeom_0CreateKill();
 	SML_0Kill();
 	SGCore_0Kill();
-	Core_AKill();
+	Core_AKill();*/
+
+	SkyXEngine_Kill();
 
 	return msg.wParam;
 }

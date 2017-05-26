@@ -139,3 +139,30 @@ struct vs_out_skyclouds
 	half2 TexUV		:TEXCOORD0;
 };
 //}
+
+//PARTICLES
+//{
+struct vs_in_particles 
+{
+	float3 Position :POSITION0;
+	float2 TexUV : TEXCOORD0;
+	
+	float3 InstancePos :TEXCOORD1;
+	float4 InstanceTex :TEXCOORD2;
+	float InstanceSize :TEXCOORD3;
+	float InstanceAlpha :TEXCOORD4;
+	
+	float2 InstanceRot1 :TEXCOORD5;
+	float InstanceLight :TEXCOORD6;
+};
+
+struct vs_out_particles 
+{
+	float4 Position :POSITION0;
+	float2 TexUV 	:TEXCOORD0;
+	float Alpha		:TEXCOORD1;
+	float4 Pos		:TEXCOORD2;
+	float Light	:TEXCOORD3;
+	float2 TexUV2	:TEXCOORD4;
+};
+//}

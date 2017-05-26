@@ -544,7 +544,7 @@ void ConsoleDisconnect()
 	
 	if(fOut)
 	{
-		fclose(fOut);
+	fclose(fOut);
 	}
 	/*int iResult = shutdown(ConnectSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)

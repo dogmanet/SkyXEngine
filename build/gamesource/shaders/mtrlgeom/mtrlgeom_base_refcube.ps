@@ -20,7 +20,7 @@ ps_out_ds_mrt main(vs_out_refcube IN)
 	OUT.Normal.w = NearFarIsUnlit.z;
 	
 	OUT.Param = tex2D(RF0SSIsSampler,IN.TexUV);
-	OUT.Param.z = NearFarIsUnlit.w;
+	OUT.Param.w = NearFarIsUnlit.w;
 	
 	half MipmapIndex = lerp(0,10,1-OUT.Param.r);
 	half4 reflection = texCUBElod(ReflectionSampler, half4(IN.CubePPos,MipmapIndex));

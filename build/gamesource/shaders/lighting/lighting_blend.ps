@@ -15,6 +15,7 @@ half4 main(vs_out_pp IN):COLOR0
 	half4 color = tex2D(ColorSampler,IN.TexUV);
 
 	half4 ambient = tex2D(AmbientSampler,IN.TexUV);
+	//return float4(ambient.w,ambient.w,ambient.w,1);;
 	half spec = tex2D(SpecDiffSampler,IN.TexUV).r;
 	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
 

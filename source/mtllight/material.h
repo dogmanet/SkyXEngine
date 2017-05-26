@@ -111,6 +111,9 @@ public:
 	void MtlSetF0(ID id, float f0);
 	float MtlGetF0(ID id);
 
+	void MtlSetThickness(ID id, float thickness);
+	float MtlGetThickness(ID id);
+
 	void MtlSetTypeTransparency(ID id, MtlTypeTransparency type);
 	MtlTypeTransparency MtlGetTypeTransparency(ID id);
 
@@ -187,9 +190,11 @@ public:
 
 			float RoughnessValue;
 			float F0Value;
+			float ThicknessValue;
 
 			float OldRoughnessValue;
 			float OldF0Value;
+			float OldThicknessValue;
 
 			MtlTypeReflect TypeReflect;
 			MtlTypeTransparency TypeRefraction;
@@ -251,7 +256,7 @@ protected:
 
 	bool LoadMtl(const char* name, Material** mtl);
 	void CreateMtl(const char* name, Material** mtl, MtlTypeModel type);
-	ID CreateTexParamLighting(float roughness, float f0);
+	ID CreateTexParamLighting(float roughness, float f0, float thickness);
 
 	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
 	struct TLPath

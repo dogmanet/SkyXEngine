@@ -43,7 +43,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
+    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
   </PropertyGroup>

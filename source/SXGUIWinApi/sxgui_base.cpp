@@ -106,7 +106,7 @@ SXGUIComponent::SXGUIComponent()
 	BFSizingChangeRight = true;
 	BFSizingChangeLeft = true;
 
-	BFMinSize = false;
+	MinSizeX = MinSizeY = 0;
 	//this->Font = 0;
 }
 
@@ -426,7 +426,7 @@ void SXGUIComponent::UpdateSize()
 {
 	RECT rect;
 	RECT win_screen_rect;
-	GetWindowRect(this->GetHWND(), &rect);
+	BOOL bf = GetWindowRect(this->GetHWND(), &rect);
 
 	GetWindowRect(this->GetHWND(), &win_screen_rect);
 	//MapWindowPoints(this->ParentHandle, HWND_DESKTOP, (LPPOINT)&win_screen_rect, 2);
@@ -440,18 +440,9 @@ void SXGUIComponent::UpdateSize()
 	//трансляция координат в пространство родителя
 	//MapWindowPoints(NULL, this->ParentHandle, (LPPOINT)&rect, 2);
 
+	if (abs(OffsetParentRect.left) > 30000 || abs(OffsetParentRect.right) > 30000 || abs(OffsetParentRect.top) > 30000 || abs(OffsetParentRect.bottom) > 30000)
+		return;
 
-		/*if(OffsetParentRect.left > 30000)
-			OffsetParentRect.left -= 32000;
-
-		if(OffsetParentRect.right > 30000)
-			OffsetParentRect.right -= 32000;
-
-		if(OffsetParentRect.top > 30000)
-			OffsetParentRect.top -= 32000;
-
-		if(OffsetParentRect.bottom > 30000)
-			OffsetParentRect.bottom -= 32000;*/
 	//смещение по всем направлениям
 	RECT offset;
 	offset.left = OffsetParentRect.left ? OffsetParentRect.left : NewParentRect.left - ParentRect.left;
@@ -1053,7 +1044,7 @@ LRESULT SXGUIBaseHandlers::SizingChange(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 				if(!Component->BFSizingChangeBottom)
 					lpRect.bottom = rc.bottom;
 
-				if(Component->BFMinSize)
+				if (Component->MinSizeX != 0 && Component->MinSizeY != 0)
 				{
 						if(lpRect.right - lpRect.left < Component->MinSizeX && Component->BFSizingChangeRight)
 						{

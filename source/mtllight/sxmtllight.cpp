@@ -21,7 +21,7 @@ report_func reportf = def_report;
 Lights* ArrLights = 0;
 Materials* ArrMaterials = 0;
 
-#define ML_PRECOND(retval) if(!ArrLights){reportf(-1, "%s - sxmaterial_ligth is not init", gen_msg_location); return retval;}
+#define ML_PRECOND(retval) if(!ArrLights){reportf(-1, "%s - sxmtlligth is not init", gen_msg_location); return retval;}
 
 long SML_0GetVersion()
 {
@@ -65,7 +65,7 @@ void SML_0Create(const char* name, IDirect3DDevice9* device, const char* std_pat
 		reportf(-1, "%s - not init argument [name], sxmaterial_ligth", gen_msg_location);
 }
 
-void SML_0Kill()
+void SML_AKill()
 {
 	mem_delete(ArrLights)
 	mem_delete(ArrMaterials);
@@ -1105,6 +1105,19 @@ float SML_MtlGetRoughness(ID id)
 {
 	ML_PRECOND(-1);
 	return ArrMaterials->MtlGetRoughness(id);
+}
+
+
+void SML_MtlSetThickness(ID id, float thickness)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->MtlSetThickness(id, thickness);
+}
+
+float SML_MtlGetThickness(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrMaterials->MtlGetThickness(id);
 }
 
 

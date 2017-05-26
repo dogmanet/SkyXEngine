@@ -183,6 +183,12 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 \\todo - пометка о том что надо сделать  \n
 */
 
+#include <windows.h>
+#include <ctime>
+#include <gdefines.h>
+#include <common\\array.h>
+#include <common\\string.cpp>
+
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
 #else
@@ -196,6 +202,13 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #pragma comment(lib, "sxinput.lib")
 #endif
 #include <input\\sxinput.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxscore_d.lib")
+#else
+#pragma comment(lib, "sxscore.lib")
+#endif
+#include <score/sxscore.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
@@ -220,6 +233,13 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <mtllight\\sxmtllight.h>
 
 #if defined(_DEBUG)
+#pragma comment(lib, "sxparticles_d.lib")
+#else
+#pragma comment(lib, "sxparticles.lib")
+#endif
+#include <particles\\sxparticles.h>
+
+#if defined(_DEBUG)
 #pragma comment(lib, "sxpp_d.lib")
 #else
 #pragma comment(lib, "sxpp.lib")
@@ -240,10 +260,135 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <physics/sxphysics.h>
 
+
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxgame.lib")
 #endif
 #include <game/sxgame.h>
+
+#if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR)
+#if defined(_DEBUG)
+#pragma comment(lib, "sxguiwinapi_d.lib")
+#else
+#pragma comment(lib, "sxguiwinapi.lib")
+#endif
+#include <sxguiwinapi\\sxgui.h>
+#endif
+
+#include <managed_render\\gdata.h>
+#include <common\\string_api.cpp>
+#include <managed_render\\camera_update.h>
+#include <managed_render\\render_func.h>
+#include <managed_render\\level.h>
+
+#if defined(SX_LEVEL_EDITOR)
+#include <SXLevelEditor/resource.h>
+#include <SXLevelEditor\\level_editor.cpp>
+#endif
+
+#if defined(SX_MATERIAL_EDITOR)
+#include <sxmaterialeditor/resource.h>
+#include <sxmaterialeditor\\material_editor.cpp>
+#endif
+
+#include <managed_render\\handler_out_log.cpp>
+#include <managed_render\\gdata.cpp>
+#include <managed_render\\camera_update.cpp>
+#include <managed_render\\render_func.cpp>
+#include <managed_render\\level.cpp>
+
+
+
+void SkyXEngine_Init()
+{
+	ShellExecute(NULL, "open", "sxconsole.exe", NULL, NULL, SW_SHOWNORMAL);
+	GData::Pathes::InitAllPathes();
+
+#if defined(SX_GAME)
+	SSInput_0Create("sxinput", GData::Handle3D, true);
+	SSInput_Dbg_Set(printflog);
+#endif
+
+	Core_0Create("sxcore", true);
+	Core_SetOutPtr();
+
+	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds,false);
+	SSCore_Dbg_Set(printflog);
+
+	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
+	SGCore_Dbg_Set(printflog);
+	SGCore_LoadTexStdPath(GData::Pathes::Textures);
+	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
+
+	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
+	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
+	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
+	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
+
+	SGCore_SkyBoxCr();
+	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+
+	SGCore_SkyCloudsCr();
+	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
+
+	GData::DXDevice = SGCore_GetDXDevice();
+	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+#ifndef SX_GAME
+	GData::ObjCamera = SGCore_CrCamera();
+#endif
+
+	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
+	SGeom_Dbg_Set(printflog);
+
+	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
+	SML_Dbg_Set(printflog);
+
+	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
+	SPE_Dbg_Set(printflog);
+
+	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
+	SPP_Dbg_Set(printflog);
+
+
+	//SPP_ChangeTexSun("fx_sun.dds");
+	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
+	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
+	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
+	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT::ds_rt_depth1));
+	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
+
+	SXAnim_0Create();
+	SXAnim_Dbg_Set(printflog);
+
+	SXPhysics_0Create();
+	SXPhysics_Dbg_Set(printflog);
+
+	SXGame_0Create();
+	SXGame_Dbg_Set(printflog);
+#ifdef SX_GAME
+	GData::ObjCamera = SXGame_GetActiveCamera();
+#endif
+
+	GData::InitAllMatrix();
+
+	GData::IDsShaders::InitAllShaders();
+	
+	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
+	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
+}
+
+void SkyXEngine_Kill()
+{
+	SXGame_0Kill();
+	SXPhysics_AKill();
+	SXAnim_AKill();
+	mem_release(GData::ObjCamera);
+	SGeom_AKill();
+	SML_AKill();
+	SSCore_AKill();
+	SGCore_AKill();
+	Core_AKill();
+}
 

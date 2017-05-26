@@ -12,7 +12,8 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 	OUT.Color = Param;
 	OUT.Color.a = 1;
 	OUT.Normal = half4(0,0,0,NearFarIsUnlit.z);
-	OUT.Param = half4(0,0,NearFarIsUnlit.w, 0);
+	OUT.Param = half4(0, 0, 0, 0);
+	OUT.Param.w = NearFarIsUnlit.w;
 	
 	OUT.Depth = GetDepthW(IN.Pos, NearFarIsUnlit.xy);
 	return OUT;

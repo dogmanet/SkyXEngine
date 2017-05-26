@@ -307,7 +307,7 @@ struct ISXGUIComponent : public virtual ISXGUIControl
 
 	//!@}
 
-	bool BFMinSize;	//!< установлен ли минимальный размер? если да то меньше чем #MinSizeX и #MinSizeY не будет уменьшаться
+	//bool BFMinSize;	//!< установлен ли минимальный размер? если да то меньше чем #MinSizeX и #MinSizeY не будет уменьшаться
 	WORD MinSizeX;	//!< минимальный размер окна по ширине
 	WORD MinSizeY;	//!< минимальный размер окна по высоте
 

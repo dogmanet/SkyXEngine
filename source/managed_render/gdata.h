@@ -57,7 +57,8 @@ namespace GData
 		const char* caption	//!< название окна
 		);
 
-	HWND Handle3D = 0;	//!< хэндл окна рендера
+	HWND HandleParent3D = 0;//!< хэндл окна родителя окна рендера, на случай редакторов
+	HWND Handle3D = 0;		//!< хэндл окна рендера
 
 	float2_t WinSize = float2_t(800, 600);	//!< размер окна рендера (области рендера)
 	bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
@@ -148,7 +149,7 @@ namespace GData
 		};
 	};
 
-#if !defined(SX_GAME)
+#if !defined(SX_LEVEl_EDITOR)
 	namespace Editors
 	{
 		int ActiveGroupType = 0;

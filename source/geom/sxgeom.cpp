@@ -62,7 +62,7 @@ void SGeom_0Create(const char* name, IDirect3DDevice9* device, const char* std_p
 		reportf(-1, "%s - not init argument [name], sxgeom", gen_msg_location);
 }
 
-void SGeom_0CreateKill()
+void SGeom_AKill()
 {
 	mem_delete(GeometryObj);
 	mem_delete(GreenObj);
@@ -192,6 +192,12 @@ void SGeom_ModelsComVisible(ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
 	GEOM_PRECOND(_VOID);
 	GeometryObj->CPUFillingArrIndeces(frustum, viewpos, id_arr);
+}
+
+bool SGeom_ModelsSortExistsForRender(int sort, ID id_arr)
+{
+	GEOM_PRECOND(false);
+	return GeometryObj->SortExistsForRender(sort, id_arr);
 }
 
 

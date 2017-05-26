@@ -1,9 +1,4 @@
 
-/*
-!!!!
-GDataBuff
-тут добавились нвоые данные, которые при трансформации надо менять
-*/
 #ifndef __static_geom
 #define __static_geom
 
@@ -215,6 +210,8 @@ public:
 
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	bool GetIntersectedRayY(float3* pos);
+
+	bool SortExistsForRender(int sort, ID id_arr = 0);
 	
 	void GPURender(DWORD timeDelta, int sort_mtl, ID id_arr = 0, ID exclude_model_id = -1, ID exclude_group_id = -1, bool is_sorted = false);
 	void GPURenderSingly(DWORD timeDelta, ID id, ID id_tex);

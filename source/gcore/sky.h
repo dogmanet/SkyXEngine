@@ -18,6 +18,7 @@ public:
 	SkyBox();
 	~SkyBox();
 	void LoadTextures(const char *texture);
+	inline bool IsLoadTex();
 	void ChangeTexture(const char *texture);
 	inline void SetRotation(float angle);
 	inline float GetRotation();
@@ -71,6 +72,7 @@ public:
 	//если облака отбрасывают тень, то надо шобы облака покрывали почти весь уровень
 	void SetWidthHeightPos(float width,float height,float3* pos);
 	void LoadTextures(const char *texture);
+	inline bool IsLoadTex();
 	void ChangeTexture(const char *texture);
 
 	inline void SetRotation(float angle);

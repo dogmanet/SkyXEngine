@@ -14,12 +14,12 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 	OUT.Color = tex2D(BaseSampler,IN.TexUV);
 	clip(OUT.Color.a - GREEN_ALPHATEST_VALUE);
 	OUT.Color.a = 1.f;
-	
+	//OUT.Color.xyz *= lerp(0.4,1,IN.Pos.w);
 	OUT.Normal.xyz = 0.5f * normalize(IN.Normal) + 0.5f;
 	OUT.Normal.w = NearFarIsUnlit.z;
 	
 	OUT.Param = tex2D(RF0SSIsSampler,IN.TexUV);
-	OUT.Param.z = NearFarIsUnlit.w;
+	OUT.Param.w = NearFarIsUnlit.w;
 	
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
 	

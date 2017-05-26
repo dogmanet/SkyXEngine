@@ -60,10 +60,10 @@ ps_out_alpha_union main(vs_out_pp IN):COLOR0
 	ArrDepth[2] = tex2Dlod(Depth, ArrTexUV[2]).r;
 	ArrDepth[3] = tex2Dlod(Depth, ArrTexUV[3]).r;
 	
-	ArrIDs[0] = int(tex2Dlod(Param, ArrTexUV[0]).z * 256.f);
-	ArrIDs[1] = int(tex2Dlod(Param, ArrTexUV[1]).z * 256.f);
-	ArrIDs[2] = int(tex2Dlod(Param, ArrTexUV[2]).z * 256.f);
-	ArrIDs[3] = int(tex2Dlod(Param, ArrTexUV[3]).z * 256.f);
+	ArrIDs[0] = int(tex2Dlod(Param, ArrTexUV[0]).w * 256.f);
+	ArrIDs[1] = int(tex2Dlod(Param, ArrTexUV[1]).w * 256.f);
+	ArrIDs[2] = int(tex2Dlod(Param, ArrTexUV[2]).w * 256.f);
+	ArrIDs[3] = int(tex2Dlod(Param, ArrTexUV[3]).w * 256.f);
 	
 	ArrIsTransparency[0] = tex2Dlod(Normal, ArrTexUV[0]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
 	ArrIsTransparency[1] = tex2Dlod(Normal, ArrTexUV[1]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;

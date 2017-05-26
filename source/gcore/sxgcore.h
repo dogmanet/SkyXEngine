@@ -55,7 +55,7 @@ SX_LIB_API void SGCore_0Create(
 	bool is_unic = true			//!< должна ли подсистема быть уникальной на основе имени
 	);
 
-SX_LIB_API void SGCore_0Kill();	//!< уничтожение либы
+SX_LIB_API void SGCore_AKill();	//!< уничтожение либы
 
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	//!< возвращает dx устройство
 
@@ -458,6 +458,9 @@ struct ISXDataStaticModel : public IBaseObject
 	UINT* VertexCount;	//!< массив количества вершин для каждой подгруппы
 	UINT AllIndexCount;	//!< общее количество индексов
 	UINT AllVertexCount;//!< общее количество вершин
+
+	float4_t BSphere;
+	float3_t BBMax, BBMin;
 };
 
 SX_LIB_API ISXDataStaticModel* SGCore_StaticModelCr();	//!< создать статическую модель
@@ -784,6 +787,7 @@ SX_LIB_API ISXCamera* SGCore_CrCamera();	//!< создать ISXCamera
 
 SX_LIB_API void SGCore_SkyBoxCr();	//!< создание
 SX_LIB_API bool SGCore_SkyBoxIsCr();//!< инициализирован ли skybox
+SX_LIB_API bool SGCore_SkyBoxIsLoadTex();//!< загружена ли текстура?
 
 SX_LIB_API void SGCore_SkyBoxSetStdPathTex(const char* path);	//!< установка пути, относительно которого будут загружаться текстуры
 SX_LIB_API void SGCore_SkyBoxGetStdPathTex(char* path);			//!< в path записывает путь относительно которого загружаются текстуры
@@ -813,8 +817,9 @@ SX_LIB_API void SGCore_SkyBoxRender(
 @{
 */
 
-SX_LIB_API void SGCore_SkyCloudsCr();	//!< создание
-SX_LIB_API bool SGCore_SkyCloudsIsCr();	//!< инициализирован ли sky clouds
+SX_LIB_API void SGCore_SkyCloudsCr();		//!< создание
+SX_LIB_API bool SGCore_SkyCloudsIsCr();		//!< инициализирован ли sky clouds
+SX_LIB_API bool SGCore_SkyCloudsIsLoadTex();//!< загружена ли текстура
 
 SX_LIB_API void SGCore_SkyCloudsSetStdPathTex(const char* path);	//!< установка пути, относительно которого будут загружаться текстуры
 SX_LIB_API void SGCore_SkyCloudsGetStdPathTex(char* path);			//!< в path записывает путь относительно которого загружаются текстуры

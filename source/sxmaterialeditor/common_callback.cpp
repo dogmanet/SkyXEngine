@@ -246,10 +246,12 @@ void SXMaterialEditor::Nulling()
 	
 	SXMaterialEditor::CheckBoxAlphaTest->SetCheck(false);
 	SXMaterialEditor::EditRoughness->SetText("0");
+	SXMaterialEditor::EditThickness->SetText("1");
 	SXMaterialEditor::EditF0->SetText("0");
 	SXMaterialEditor::EditMR->SetText("");
 	SXMaterialEditor::CheckBoxLighting->SetCheck(true);
 	SXMaterialEditor::TrackBarRoughness->SetPos(0);
+	SXMaterialEditor::TrackBarThickness->SetPos(100);
 	SXMaterialEditor::TrackBarF0->SetPos(0);
 	SXMaterialEditor::TrackBarUDVSX->SetPos(0);
 	SXMaterialEditor::EditTexLighting->SetText("");
@@ -339,11 +341,13 @@ void SXMaterialEditor::InitMtl(ID id)
 	SXMaterialEditor::CheckBoxAlphaTest->SetCheck(SML_MtlGetUsingAlphaTest(GData::SimModel->GetIDMtl()));
 
 	SXMaterialEditor::EditRoughness->SetText(String(SML_MtlGetRoughness(GData::SimModel->GetIDMtl())).c_str());
+	SXMaterialEditor::EditThickness->SetText(String(SML_MtlGetThickness(GData::SimModel->GetIDMtl())).c_str());
 	SXMaterialEditor::EditF0->SetText(String(SML_MtlGetF0(GData::SimModel->GetIDMtl())).c_str());
 	
 	SXMaterialEditor::CheckBoxLighting->SetCheck(SML_MtlGetLighting(GData::SimModel->GetIDMtl()));
 
 	SXMaterialEditor::TrackBarRoughness->SetPos(SML_MtlGetRoughness(GData::SimModel->GetIDMtl())*100.f);
+	SXMaterialEditor::TrackBarThickness->SetPos(SML_MtlGetThickness(GData::SimModel->GetIDMtl())*100.f);
 	SXMaterialEditor::TrackBarF0->SetPos(SML_MtlGetF0(GData::SimModel->GetIDMtl()) * 100.f);
 
 	SML_MtlGetTextureLighting(GData::SimModel->GetIDMtl(), tmppath);
