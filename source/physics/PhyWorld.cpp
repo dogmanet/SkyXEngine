@@ -148,18 +148,38 @@ void PhyWorld::LoadGeom()
 
 	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &pIndexCount, &iModelCount);
 
+	
 	m_pGeomStaticCollideMesh = new btTriangleMesh();
 
+	uint32_t IC = 0, VC = 0;
 	for(int32_t tc = 0; tc < iModelCount; ++tc)
 	{
+		IC += pIndexCount[tc];
+		VC += pVertexCount[tc];
+	}
+
+	m_pGeomStaticCollideMesh->preallocateIndices(IC);
+	m_pGeomStaticCollideMesh->preallocateVertices(VC);
+	IC = 0;
+	VC = 0;
+	
+	for(int32_t tc = 0; tc < iModelCount; ++tc)
+	{
+		for(int i = 0; i < pVertexCount[tc]; ++i)
+		{
+			m_pGeomStaticCollideMesh->findOrAddVertex(F3_BTVEC(ppVertices[tc][i]), false);
+		}
 		for(int i = 0; i < pIndexCount[tc]; i += 3)
 		{
-			m_pGeomStaticCollideMesh->addTriangle(
+			m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
+			/*m_pGeomStaticCollideMesh->addTriangle(
 				F3_BTVEC(ppVertices[tc][ppIndices[tc][i]]),
 				F3_BTVEC(ppVertices[tc][ppIndices[tc][i + 1]]),
 				F3_BTVEC(ppVertices[tc][ppIndices[tc][i + 2]])
-				);
+				);*/
 		}
+		IC += pIndexCount[tc];
+		VC += pVertexCount[tc];
 	}
 
 	if(m_pGeomStaticCollideMesh->getNumTriangles() != 0)
