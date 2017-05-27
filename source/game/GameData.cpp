@@ -31,6 +31,15 @@ GameData::GameData()
 	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
 
+	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
+	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");
+	Core_0RegisterCVarFloat("cl_bob_walk_x", 0.1f, "View bobbing walk strafe amplitude");
+	Core_0RegisterCVarFloat("cl_bob_run_y", 0.2f, "View bobbing run y amplitude");
+	Core_0RegisterCVarFloat("cl_bob_run_x", 0.15f, "View bobbing run strafe amplitude");
+	Core_0RegisterCVarFloat("cl_bob_walk", 0.5f, "View bobbing walk period");
+	Core_0RegisterCVarFloat("cl_bob_run", 1.0f, "View bobbing run period");
+
+
 	m_pPlayer = (SXplayer*)CREATE_ENTITY("player", m_pMgr);
 	m_pActiveCamera = m_pPlayer->GetCamera();
 }

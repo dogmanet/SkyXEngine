@@ -61,6 +61,10 @@ protected:
 	btKinematicCharacterController * m_pCharacter;
 
 	bool m_bCanJump;
+
+	float m_fViewbobStep;
+	float m_fViewbobY;
+	float3_t m_fViewbobStrafe;
 };
 
 #endif

@@ -12,7 +12,10 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	BaseClass(pMgr),
 	m_uMoveDir(PM_OBSERVER),
 	m_vPitchYawRoll(float3_t(0, 0, 0)),
-	m_bCanJump(true)
+	m_bCanJump(true),
+	m_fViewbobStep(0.0f),
+	m_fViewbobY(0.0f),
+	m_fViewbobStrafe(float3_t(0, 0, 0))
 {
 	m_pCamera = (SXpointCamera*)CREATE_ENTITY("point_camera", pMgr);
 	m_pCamera->SetParent(this);
@@ -105,24 +108,29 @@ void SXplayer::UpdateInput(float dt)
 		}
 		dt *= 10.0f;
 		float3 dir;
+		bool mov = false;
 		if(m_uMoveDir & PM_FORWARD)
 		{
 			dir.z += 1.0f;
+			mov = true;
 		}
 
 		if(m_uMoveDir & PM_BACKWARD)
 		{
 			dir.z -= 1.0f;
+			mov = true;
 		}
 
 		if(m_uMoveDir & PM_LEFT)
 		{
 			dir.x -= 1.0f;
+			mov = true;
 		}
 
 		if(m_uMoveDir & PM_RIGHT)
 		{
 			dir.x += 1.0f;
+			mov = true;
 		}
 
 		if(m_uMoveDir & PM_OBSERVER)
@@ -157,7 +165,60 @@ void SXplayer::UpdateInput(float dt)
 				m_bCanJump = true;
 			}
 			m_pCharacter->setWalkDirection(F3_BTVEC(dir));
+
+			static const bool * cl_bob = GET_PCVAR_BOOL("cl_bob");
+			static const float * cl_bob_walk_y = GET_PCVAR_FLOAT("cl_bob_walk_y");
+			static const float * cl_bob_walk_x = GET_PCVAR_FLOAT("cl_bob_walk_x");
+			static const float * cl_bob_run_x = GET_PCVAR_FLOAT("cl_bob_run_x");
+			static const float * cl_bob_run_y = GET_PCVAR_FLOAT("cl_bob_run_y");
+			static const float * cl_bob_run = GET_PCVAR_FLOAT("cl_bob_run");
+			static const float * cl_bob_walk = GET_PCVAR_FLOAT("cl_bob_walk");
+
+			
+
+			if(*cl_bob)
+			{
+				if(mov && m_pCharacter->onGround())
+				{
+					if(m_uMoveDir & PM_RUN)
+					{
+						m_fViewbobStep += dt * *cl_bob_run * 0.2f;
+					}
+					else
+					{
+						m_fViewbobStep += dt * *cl_bob_walk;
+					}
+					while(m_fViewbobStep > SM_2PI)
+					{
+						m_fViewbobStep -= SM_2PI;
+					}
+					while(m_fViewbobStep < -SM_2PI)
+					{
+						m_fViewbobStep += SM_2PI;
+					}
+				}
+				else
+				{
+					if(m_fViewbobStep > SM_PI + SM_PIDIV2)
+					{
+						m_fViewbobStep = m_fViewbobStep - SM_2PI;
+					}
+					if(m_fViewbobStep > SM_PIDIV2 || m_fViewbobStep < -SM_PIDIV2)
+					{
+						m_fViewbobStep = SM_PI - m_fViewbobStep;
+					}
+					m_fViewbobStep *= 0.7f;
+				}
+				float sin = cosf(m_fViewbobStep * 2.0f);
+				float sin2 = sinf(m_fViewbobStep);
+				float3 vec(1.0f, 0.0f, 0.0f);
+				vec = m_vOrientation * vec;
+				m_fViewbobY = (sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
+				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
+				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;
+			}
 		}
+
 	}
 
 #ifndef _SERVER
@@ -196,7 +257,8 @@ void SXplayer::OnSync()
 	}
 	btTransform trans;
 	trans = m_pGhostObject->getWorldTransform();
-	m_vPosition = float3_t(trans.getOrigin().x(), trans.getOrigin().y() + 0.75f, trans.getOrigin().z());
+	
+	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() + 0.75f + m_fViewbobY, trans.getOrigin().z()) + m_fViewbobStrafe);
 }
 
 void SXplayer::Spawn()
