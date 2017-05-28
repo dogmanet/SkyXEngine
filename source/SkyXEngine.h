@@ -260,6 +260,12 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <physics/sxphysics.h>
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxdecals_d.lib")
+#else
+#pragma comment(lib, "sxdecals.lib")
+#endif
+#include <decals/sxdecals.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")
@@ -365,6 +371,9 @@ void SkyXEngine_Init()
 	SXPhysics_0Create();
 	SXPhysics_Dbg_Set(printflog);
 
+	SXDecals_0Create();
+	SXDecals_Dbg_Set(printflog);
+
 	SXGame_0Create();
 	SXGame_Dbg_Set(printflog);
 #ifdef SX_GAME
@@ -382,6 +391,7 @@ void SkyXEngine_Init()
 void SkyXEngine_Kill()
 {
 	SXGame_0Kill();
+	SXDecals_AKill();
 	SXPhysics_AKill();
 	SXAnim_AKill();
 	mem_release(GData::ObjCamera);

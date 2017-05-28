@@ -45,6 +45,11 @@ public:
 
 	void SetPos(const float3 & pos);
 
+	void Attack(BOOL state);
+	void Attack2(BOOL state);
+
+	float3 GetWeaponOrigin();
+
 protected:
 
 	SXpointCamera * m_pCamera;

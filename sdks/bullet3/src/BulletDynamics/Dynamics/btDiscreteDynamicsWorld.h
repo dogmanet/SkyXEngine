@@ -35,7 +35,7 @@ struct InplaceSolverIslandCallback;
 
 ///btDiscreteDynamicsWorld provides discrete rigid body simulation
 ///those classes replace the obsolete CcdPhysicsEnvironment/CcdPhysicsController
-ATTRIBUTE_ALIGNED16(class) btDiscreteDynamicsWorld : public btDynamicsWorld
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btDiscreteDynamicsWorld : public btDynamicsWorld
 {
 protected:
 	

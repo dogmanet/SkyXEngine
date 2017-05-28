@@ -24,6 +24,10 @@ GameData::GameData()
 	Core_0RegisterConcmd("-jump", ccmd_jump_off);
 	Core_0RegisterConcmd("+crawl", ccmd_crawl_on);
 	Core_0RegisterConcmd("-crawl", ccmd_crawl_off);
+	Core_0RegisterConcmd("+attack", ccmd_attack_on);
+	Core_0RegisterConcmd("-attack", ccmd_attack_off);
+	Core_0RegisterConcmd("+attack2", ccmd_attack2_on);
+	Core_0RegisterConcmd("-attack2", ccmd_attack2_off);
 
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
 	Core_0RegisterConcmd("observe", ccmd_observe);
@@ -118,6 +122,24 @@ void GameData::ccmd_jump_on()
 void GameData::ccmd_jump_off()
 {
 	m_pPlayer->Move(PM_JUMP, FALSE);
+}
+
+void GameData::ccmd_attack_on()
+{
+	m_pPlayer->Attack(TRUE);
+}
+void GameData::ccmd_attack_off()
+{
+	m_pPlayer->Attack(FALSE);
+}
+
+void GameData::ccmd_attack2_on()
+{
+	m_pPlayer->Attack2(TRUE);
+}
+void GameData::ccmd_attack2_off()
+{
+	m_pPlayer->Attack2(FALSE);
 }
 
 void GameData::ccmd_spawn()

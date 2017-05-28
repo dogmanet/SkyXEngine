@@ -2,6 +2,8 @@
 
 #include "SXplayer.h"
 
+#include <decals/sxdecals.h>
+
 BEGIN_PROPTABLE(SXplayer)
 // empty
 END_PROPTABLE()
@@ -261,6 +263,12 @@ void SXplayer::OnSync()
 	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() + 0.75f + m_fViewbobY, trans.getOrigin().z()) + m_fViewbobStrafe);
 }
 
+float3 SXplayer::GetWeaponOrigin()
+{
+	//@TODO: Implement me
+	return(m_vPosition);
+}
+
 void SXplayer::Spawn()
 {
 	SXbaseEntity * pEnt;
@@ -281,4 +289,30 @@ void SXplayer::SetPos(const float3 & pos)
 {
 	BaseClass::SetPos(pos);
 	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
+}
+
+void SXplayer::Attack(BOOL state)
+{
+	if(m_uMoveDir & PM_OBSERVER)
+	{
+		return;
+	}
+	if(state)
+	{
+		//trace line
+		float3 start = GetWeaponOrigin();
+		float3 end = start + (m_vOrientation * float3(0.0f, 0.0f, 1.0f)) * 1000.0f;
+		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+		if(cb.hasHit())
+		{
+			//shoot decal
+			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
+		}
+	}
+}
+
+void SXplayer::Attack2(BOOL state)
+{
 }

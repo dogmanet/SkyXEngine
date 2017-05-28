@@ -39,7 +39,7 @@ enum btDynamicsWorldType
 };
 
 ///The btDynamicsWorld is the interface class for several dynamics implementation, basic, discrete, parallel, and continuous etc.
-class btDynamicsWorld : public btCollisionWorld
+class BULLET_EXPORTS btDynamicsWorld : public btCollisionWorld
 {
 
 protected:

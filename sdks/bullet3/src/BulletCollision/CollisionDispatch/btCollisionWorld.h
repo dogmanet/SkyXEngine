@@ -84,8 +84,9 @@ class btSerializer;
 #include "BulletCollision/BroadphaseCollision/btOverlappingPairCache.h"
 #include "LinearMath/btAlignedObjectArray.h"
 
+
 ///CollisionWorld is interface and container for the collision detection
-class btCollisionWorld
+class BULLET_EXPORTS btCollisionWorld
 {
 
 	
@@ -407,6 +408,58 @@ public:
 		}
 	};
 
+	struct	AllConvexResultCallback: public ConvexResultCallback
+	{
+		AllConvexResultCallback(const btVector3&	rayFromWorld, const btVector3&	rayToWorld)
+		:m_rayFromWorld(rayFromWorld),
+		m_rayToWorld(rayToWorld)
+		{
+		}
+
+		btAlignedObjectArray<const btCollisionObject*>		m_hitCollisionObjects;
+		const btCollisionObject*	m_hitCollisionObject;
+
+		btVector3	m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
+		btVector3	m_rayToWorld;
+
+		btAlignedObjectArray<btVector3>	m_hitNormalWorld;
+		btAlignedObjectArray<btVector3>	m_hitPointWorld;
+		btAlignedObjectArray<btScalar> m_hitFractions;
+		btAlignedObjectArray<LocalShapeInfo> m_shapeInfos;
+
+		virtual	btScalar	addSingleResult(LocalConvexResult& convexResult, bool normalInWorldSpace)
+		{
+			m_hitCollisionObject = convexResult.m_hitCollisionObject;
+			m_hitCollisionObjects.push_back(convexResult.m_hitCollisionObject);
+			btVector3 hitNormalWorld;
+			if(normalInWorldSpace)
+			{
+				hitNormalWorld = convexResult.m_hitNormalLocal;
+			}
+			else
+			{
+				///need to transform normal into worldspace
+				hitNormalWorld = m_hitCollisionObject->getWorldTransform().getBasis()*convexResult.m_hitNormalLocal;
+			}
+			if(convexResult.m_hitFraction < m_closestHitFraction)
+			{
+				m_closestHitFraction = convexResult.m_hitFraction;
+			}
+			if(convexResult.m_localShapeInfo)
+			{
+				m_shapeInfos.push_back(*convexResult.m_localShapeInfo);
+			}
+			m_hitNormalWorld.push_back(hitNormalWorld);
+			btVector3 hitPointWorld;
+			hitPointWorld.setInterpolate3(m_rayFromWorld, m_rayToWorld, convexResult.m_hitFraction);
+			m_hitPointWorld.push_back(hitPointWorld);
+			m_hitFractions.push_back(convexResult.m_hitFraction);
+			m_shapeInfos[0];
+			return m_closestHitFraction;
+		}
+	};
+
+
 	///ContactResultCallback is used to report contact points
 	struct	ContactResultCallback
 	{
@@ -524,5 +577,9 @@ public:
 
 };
 
+
+template class btAlignedObjectArray<btVector3>;
+template class btAlignedObjectArray<btScalar>;
+//template class btAlignedObjectArray<btCollisionWorld::LocalShapeInfo>;
 
 #endif //BT_COLLISION_WORLD_H

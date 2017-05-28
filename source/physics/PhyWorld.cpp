@@ -149,7 +149,7 @@ void PhyWorld::LoadGeom()
 	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &pIndexCount, &iModelCount);
 
 	
-	m_pGeomStaticCollideMesh = new btTriangleMesh();
+	m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
 	uint32_t IC = 0, VC = 0;
 	for(int32_t tc = 0; tc < iModelCount; ++tc)
@@ -172,11 +172,6 @@ void PhyWorld::LoadGeom()
 		for(int i = 0; i < pIndexCount[tc]; i += 3)
 		{
 			m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
-			/*m_pGeomStaticCollideMesh->addTriangle(
-				F3_BTVEC(ppVertices[tc][ppIndices[tc][i]]),
-				F3_BTVEC(ppVertices[tc][ppIndices[tc][i + 1]]),
-				F3_BTVEC(ppVertices[tc][ppIndices[tc][i + 2]])
-				);*/
 		}
 		IC += pIndexCount[tc];
 		VC += pVertexCount[tc];

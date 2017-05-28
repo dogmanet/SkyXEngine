@@ -43,6 +43,12 @@ protected:
 	static void ccmd_spawn();
 	static void ccmd_observe();
 
+	static void ccmd_attack_on();
+	static void ccmd_attack_off();
+
+	static void ccmd_attack2_on();
+	static void ccmd_attack2_off();
+
 };
 
 #endif

@@ -1598,6 +1598,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	SXPhysics_DebugRender();
 	//SXGame_EditorRender();
+	SXDecals_Render();
 
 	SXRenderFunc::ShaderRegisterData();
 	
