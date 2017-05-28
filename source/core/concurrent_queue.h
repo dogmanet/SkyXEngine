@@ -43,6 +43,25 @@ public:
 	bool try_pop(T& result);
 	T wait_pop();
 	std::size_t size() const;
+	void clear()
+	{
+		Queue().swap(mQueue);
+	}
+	
+	ConcurrentQueue<T> & operator =(const ConcurrentQueue<T> & other)
+	{
+		mQueue = other.mQueue;
+		return(*this);
+	}
+
+	ConcurrentQueue()
+	{
+	}
+
+	ConcurrentQueue(const ConcurrentQueue<T> & other)
+	{
+		mQueue = other.mQueue;
+	}
 
 private:
 	Queue mQueue;

@@ -9,7 +9,7 @@ See the license in LICENSE
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <vld.h> 
+//#include <vld.h> 
 #include <skyxengine.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
@@ -69,6 +69,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::WinSize.y = winrndrect.bottom;
 
 	SkyXEngine_Init();
+	Core_0ConsoleExecCmd("exec ../editor.cfg");
 
 	SSInput_0Create("sxinput", SXLevelEditor::JobWindow->GetHWND(), true);
 	SSInput_Dbg_Set(printflog);
@@ -140,6 +141,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 					DWORD timeDelta = (currTime - lastTime);
 
 					SGCore_LoadTexLoadTextures();
+					Core_0ConsoleUpdate();
 					SXLevelEditor_Transform(10);
 					SXRenderFunc::MainRender(timeDelta);
 
@@ -151,9 +153,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 
 	mem_release(GData::ObjCamera);
-	SGeom_0CreateKill();
-	SML_0Kill();
-	SGCore_0Kill();
+	SGeom_AKill();
+	SML_AKill();
+	SGCore_AKill();
 	SXLevelEditor::DeleteAllElements();
 
     return msg.wParam;

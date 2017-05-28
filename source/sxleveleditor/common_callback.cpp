@@ -476,8 +476,10 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				{
 					if (IsSFirstRBMTransform)
 					{
-						UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-						UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+						RECT rc;
+						GetWindowRect(GetForegroundWindow(), &rc);
+						UINT cx = (rc.right + rc.left) / 2;
+						UINT cy = (rc.bottom + rc.top) / 2;
 						POINT p;
 						GetCursorPos(&p);
 						POINT centr;
@@ -523,8 +525,10 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				{
 					if (IsSFirstRBMTransform)
 					{
-						UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-						UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+						RECT rc;
+						GetWindowRect(GetForegroundWindow(), &rc);
+						UINT cx = (rc.right + rc.left) / 2;
+						UINT cy = (rc.bottom + rc.top) / 2;
 						POINT p;
 						GetCursorPos(&p);
 						POINT centr;
@@ -570,8 +574,10 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				{
 					if (IsSFirstRBMTransform)
 					{
-						UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-						UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+						RECT rc;
+						GetWindowRect(GetForegroundWindow(), &rc);
+						UINT cx = (rc.right + rc.left) / 2;
+						UINT cy = (rc.bottom + rc.top) / 2;
 						POINT p;
 						GetCursorPos(&p);
 						POINT centr;
@@ -629,8 +635,10 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			{
 				if (IsSFirstRBMTransform)
 				{
-					UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-					UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+					RECT rc;
+					GetWindowRect(GetForegroundWindow(), &rc);
+					UINT cx = (rc.right + rc.left) / 2;
+					UINT cy = (rc.bottom + rc.top) / 2;
 					POINT p;
 					GetCursorPos(&p);
 					POINT centr;
@@ -677,8 +685,10 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			{
 				if (IsSFirstRBMTransform)
 				{
-					UINT cx = GetSystemMetrics(SM_CXSCREEN) / 2;
-					UINT cy = GetSystemMetrics(SM_CYSCREEN) / 2;
+					RECT rc;
+					GetWindowRect(GetForegroundWindow(), &rc);
+					UINT cx = (rc.right + rc.left) / 2;
+					UINT cy = (rc.bottom + rc.top) / 2;
 					POINT p;
 					GetCursorPos(&p);
 					POINT centr;
