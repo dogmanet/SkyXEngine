@@ -2035,8 +2035,23 @@ void AnimationManager::ComputeVis(const ISXFrustum * frustum, const float3 * vie
 
 ID AnimationManager::GetNextVisId()
 {
+	if(m_vFreeVisIDs.size() > 0)
+	{
+		ID ret = m_vFreeVisIDs[0];
+		m_vFreeVisIDs.erase(0);
+		return(ret);
+	}
 	return(++m_iVisID);
 }
+
+void AnimationManager::FreeVisID(ID id)
+{
+	if(id <= m_iVisID)
+	{
+		m_vFreeVisIDs.push_back(id);
+	}
+}
+
 
 void AnimationManager::SetThreadNum(int num)
 {
