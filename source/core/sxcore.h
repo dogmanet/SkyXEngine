@@ -141,7 +141,8 @@ SX_LIB_API ISXFile* Core_OpFile(const char* path, int type); //!< открыть
 struct ISXLConfig : public IBaseObject
 {
 	virtual ~ISXLConfig(){};
-	virtual int Open(const char* path)=0;	//!< открыть файл
+	virtual void New(const char* path) = 0;	//!< новый файл
+	virtual int Open(const char* path) = 0;	//!< открыть файл
 	virtual const char* GetKey(const char* section, const char* key) = 0;	//!< получить значения ключа key который в секции section
 	virtual const char* GetKeyName(const char* section, int key) = 0;		//!< получить имя ключа по номеру
 	virtual const char* GetSectionName(int num) = 0;						//!< получить имя секции по номеру
@@ -151,7 +152,7 @@ struct ISXLConfig : public IBaseObject
 	virtual int GetKeyCount()=0;		//!< общее количество ключей
 	virtual int GetKeyCount(const char* section) = 0;				//!< общее количество ключей в секции
 	virtual bool SectionExists(const char* section) = 0;			//!< существует ли секция section
-	virtual bool KeyExists(const char* section, const char* key)=0;	//!< существует ли ключ key в секции section
+	virtual bool KeyExists(const char* section, const char* key) = 0;	//!< существует ли ключ key в секции section
 };
 
 /*!@name Создание экземпляров конфигурацииных файлов */

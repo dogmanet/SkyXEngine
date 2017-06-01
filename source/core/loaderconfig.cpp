@@ -20,6 +20,12 @@ int SXLoaderConfig::Open(const char* path)
 	return Parse(path);
 }
 
+void SXLoaderConfig::New(const char* path)
+{
+	Clear();
+	BaseFile = path;
+}
+
 String SXLoaderConfig::BaseDir(String dir)
 {
 	int p1 = dir.find_last_of('/');

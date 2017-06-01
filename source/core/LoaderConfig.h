@@ -28,6 +28,7 @@ public:
 	SXLoaderConfig();
 	//SXLoaderConfig(const char* file);
 	int Open(const char* path);
+	void New(const char* path);
 
 	const char* GetKey(const char* section, const char* key);
 	const char* GetKeyName(const char* section, int key);
