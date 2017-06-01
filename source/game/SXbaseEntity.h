@@ -12,12 +12,6 @@
 
 #pragma pointers_to_members(full_generality, virtual_inheritance)
 
-/*enum DS_ENT_FLAGS
-{
-	DS_ENT_RENDERABLE = 0x001,
-	DS_ENT_NORMALTIMEFLOW = 0x002
-};*/
-
 class SXbaseEntity
 {
 	DECLARE_CLASS_NOBASE(SXbaseEntity);

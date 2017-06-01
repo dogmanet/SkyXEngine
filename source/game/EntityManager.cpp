@@ -139,7 +139,7 @@ void EntityManager::ClearInterval(ID id)
 bool EntityManager::Export(const char * file)
 {
 	ISXLConfig * conf = Core_CrLConfig();
-	conf->Open(file);
+	conf->New(file);
 	char buf[512], sect[32];
 	SXbaseEntity * pEnt;
 	proptable_t * pTbl;
@@ -152,7 +152,7 @@ bool EntityManager::Export(const char * file)
 		pEnt = m_vEntList[i];
 		sprintf(sect, "ent_%d", ic);
 
-		if(EntityFactoryMap::GetInstance()->IsEditorHidden(pEnt->GetClassName()))
+		if(!(pEnt->GetFlags() & EF_EXPORT))
 		{
 			continue;
 		}
@@ -231,6 +231,7 @@ bool EntityManager::Import(const char * file)
 		{
 			pEnt->SetKV("rotation", conf->GetKey(sect, "rotation"));
 		}
+		pEnt->SetFlags(pEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
 		tmpList[i] = pEnt;
 	}
 

@@ -13,7 +13,8 @@ enum PDF_TYPE
 	PDF_STRING,
 	PDF_ANGLES,
 	PDF_ENTITY,
-	PDF_PARENT
+	PDF_PARENT,
+	PDF_FLAGS
 };
 
 //! типы редакторов полей
@@ -21,7 +22,23 @@ enum PDE_TYPE
 {
 	PDE_NONE = 0,
 	PDE_TEXTFIELD,
-	PDE_COMBOBOX
+	PDE_COMBOBOX,
+	PDE_FILEFIELD
+};
+
+enum PDF_FLAG
+{
+	PDFF_NONE      = 0x00,
+	PDFF_NOEXPORT  = 0x01
+};
+
+enum ENT_FLAG
+{
+	EF_NONE           = 0x0000,
+	EF_EXPORT         = 0x0001,
+	EF_LEVEL          = 0x0002,
+
+	EF_LAST           = 0x8000
 };
 
 typedef int SXbaseEntity::*fieldtype;
@@ -58,6 +75,7 @@ struct proptable_t
 #define ED_COMBO_MAXELS 256
 
 prop_editor_t _GetEditorCombobox(int start, ...);
+prop_editor_t _GetEditorFilefield(int start, ...);
 
 #define DECLARE_PROPTABLE() \
 	\
@@ -79,7 +97,7 @@ void cls::ReleasePropData()\
 {\
 	for(int i = 0; i < m_pPropTable.numFields; ++i)\
 	{\
-		if(m_pPropTable.pData[i].editor.type == PDE_COMBOBOX && m_pPropTable.pData[i].editor.pData)\
+		if(m_pPropTable.pData[i].editor.pData)\
 			delete[] m_pPropTable.pData[i].editor.pData; \
 	}\
 }\
@@ -137,9 +155,14 @@ const char * GetEmptyString();
 
 #define EDITOR_NONE {PDE_NONE, NULL}}
 #define EDITOR_TEXTFIELD {PDE_TEXTFIELD, NULL}}
+
 #define EDITOR_COMBOBOX _GetEditorCombobox(0
 #define COMBO_OPTION(name, value) , name, value
 #define EDITOR_COMBO_END() , NULL)}
+
+#define EDITOR_FILEFIELD _GetEditorFilefield(0
+#define FILE_OPTION(name, value) , name, value
+#define EDITOR_FILE_END() , NULL)}
 
 
 #define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, editor
@@ -150,5 +173,6 @@ const char * GetEmptyString();
 #define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_BOOL, flags, keyname, edname, editor
 #define DEFINE_FIELD_ENTITY(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, editor
 #define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
+#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_FLAGS, flags, keyname, edname, editor
 
 #endif

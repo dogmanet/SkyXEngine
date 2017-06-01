@@ -2,41 +2,12 @@
 
 #include "EntityManager.h"
 
-
-/*void SXbaseEntity::InitPropData()
-{
-	m_pPropTable.pBaseProptable = NULL;
-	//m_pPropTable.pBaseProptable = BaseClass::GetPropTable();
-
-	static propdata_t pData[] = {{0}
-		, {(fieldtype)&SXbaseEntity::m_szName, PDF_STRING, 0, "name", "Name", {PDE_TEXTFIELD, NULL}}
-		, {(fieldtype)&SXbaseEntity::m_vPosition, PDF_VECTOR, 0, "origin", "Origin", {PDE_TEXTFIELD, NULL}}
-		, {(fieldtype)&SXbaseEntity::m_vOrientation, PDF_ANGLES, 0, "rotation", "Rotation", {PDE_TEXTFIELD, NULL}}
-		, {(fieldtype)&SXbaseEntity::m_szName, PDF_STRING, 0, "some opt", "Option", _GetEditorCombobox(0
-			, "Option 1", "value 1"
-			, "Option 2", "value 2"
-			, "Option 3", "value 3"
-			, NULL)}
-	};
-
-
-	if(ARRAYSIZE(pData) > 1)
-	{
-		m_pPropTable.pData = &pData[1];
-		m_pPropTable.numFields = ARRAYSIZE(pData) - 1;
-	}
-	else
-	{
-		m_pPropTable.pData = pData;
-		m_pPropTable.numFields = 1;
-	}
-}*/
-
 BEGIN_PROPTABLE_NOBASE(SXbaseEntity)
 	DEFINE_FIELD_STRING(m_szName, 0, "name", "Name", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_VECTOR(m_vPosition, 0, "origin", "Origin", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_ANGLES(m_vOrientation, 0, "rotation", "Rotation", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_PARENT(m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_TEXTFIELD)
 
 	//DEFINE_FIELD_STRING(m_szName, 0, "some opt", "Option", EDITOR_COMBOBOX)
 	//	COMBO_OPTION("Option 1", "value 1")
@@ -158,6 +129,7 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 		return(false);
 	}
 	float3_t f3;
+	SMQuaternion q;
 	int d;
 	float f;
 	char * str;
@@ -215,6 +187,11 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 			this->*((SMQuaternion ThisClass::*)field->pField) = q;
 			return(true);
 		}
+		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
+		{
+			this->*((SMQuaternion ThisClass::*)field->pField) = q;
+			return(true);
+		}
 		return(false);
 	case PDF_ENTITY:
 	case PDF_PARENT:
@@ -229,6 +206,15 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 			{
 				this->*((SXbaseEntity * ThisClass::*)field->pField) = pEnt;
 			}
+			return(true);
+		}
+		return(false);
+	case PDF_FLAGS:
+		if(1 == sscanf(value, "%d", &d))
+		{
+			UINT * f = &(this->*((UINT ThisClass::*)field->pField));
+			*f &= 0xFFFF;
+			*f |= d & 0xFFFF0000;
 			return(true);
 		}
 		return(false);
@@ -252,6 +238,9 @@ bool SXbaseEntity::GetKV(const char * name, char * out, int bufsize)
 	case PDF_INT:
 		sprintf_s(out, bufsize, "%d", this->*((int ThisClass::*)field->pField));
 		break;
+	case PDF_FLAGS:
+		sprintf_s(out, bufsize, "%d", this->*((int ThisClass::*)field->pField) & 0xFFFF0000);
+		break;
 	case PDF_FLOAT:
 		sprintf_s(out, bufsize, "%f", this->*((float ThisClass::*)field->pField));
 		break;
@@ -266,8 +255,8 @@ bool SXbaseEntity::GetKV(const char * name, char * out, int bufsize)
 		break;
 	case PDF_ANGLES:
 		q = this->*((SMQuaternion ThisClass::*)field->pField);
-		f3 = SMMatrixToEuler(q.GetMatrix());
-		sprintf_s(out, bufsize, "%f %f %f", SMToAngle(f3.x), SMToAngle(f3.y), SMToAngle(f3.z));
+		//f3 = SMMatrixToEuler(q.GetMatrix());
+		sprintf_s(out, bufsize, "%f %f %f %f", q.x, q.y, q.z, q.w);
 		break;
 	case PDF_ENTITY:
 	case PDF_PARENT:
