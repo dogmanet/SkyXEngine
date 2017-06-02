@@ -139,8 +139,8 @@ void SXGUIComponent::InitComponent()
 
 	OffsetParentRect.top = OffsetParentRect.bottom = OffsetParentRect.left = OffsetParentRect.right = 0;
 
-	MinSizeX = rc.left - rc.right;
-	MinSizeY = rc.bottom - rc.top;
+	//MinSizeX = rc.right - rc.left;
+	//MinSizeY = rc.bottom - rc.top;
 
 	//HFONT HandleFont;
 	//SystemParametersInfo(SPI_GETICONTITLELOGFONT, 0, &HandleFont, 0);

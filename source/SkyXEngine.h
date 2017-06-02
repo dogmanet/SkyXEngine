@@ -260,7 +260,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <physics/sxphysics.h>
 
-#if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR)
+#if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR) || defined(SX_PARTICLES_EDITOR)
 #if defined(_DEBUG)
 #pragma comment(lib, "sxguiwinapi_d.lib")
 #else
@@ -283,6 +283,11 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #if defined(SX_MATERIAL_EDITOR)
 #include <sxmaterialeditor/resource.h>
 #include <sxmaterialeditor\\material_editor.cpp>
+#endif
+
+#if defined(SX_PARTICLES_EDITOR)
+#include <sxparticleseditor/resource.h>
+#include <sxparticleseditor\\particles_editor.cpp>
 #endif
 
 #include <managed_render\\handler_out_log.cpp>

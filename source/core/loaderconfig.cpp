@@ -114,7 +114,7 @@ int SXLoaderConfig::Parse(const char* file)
 				int s4len = s4.length();
 				for(int i = 0; i < s4len; ++i)
 				{
-					if(!isspace(s4[i]))
+					if(!isspace((unsigned char)s4[i]))
 					{
 						pos = i;
 					}
@@ -154,7 +154,7 @@ int SXLoaderConfig::Parse(const char* file)
 				int s4len = s4.length();
 				for(int i = 0; i < s4len; ++i)
 				{
-					if(!isspace(s4[i]))
+					if (!isspace((unsigned char)s4[i]))
 					{
 						pos = i;
 					}
@@ -557,7 +557,7 @@ int SXLoaderConfig::WriteFile(const String & name, String section, String key, c
 								break;
 							}
 						}
-						if(f && (isspace(szData[j]) || szData[j] == '='))//KeyFound!
+						if (f && (isspace((unsigned char)szData[j]) || szData[j] == '='))//KeyFound!
 						{
 							i = j;
 							kf = true;

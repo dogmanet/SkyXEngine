@@ -19,11 +19,14 @@ void main( in vs_in_particles IN, out vs_out_particles OUT )
 	
 	IN.Position.xyz *= IN.InstanceSize;
 	
+	IN.Position = mul(IN.Position, World);
+	
 	OUT.Position.xyz = IN.Position + IN.InstancePos;
 	OUT.Position.w = 1.f;
 	
 	OUT.Position = mul(OUT.Position, MatRot);
 	OUT.Position = mul(OUT.Position, MatPos);
+	
 	
 	OUT.Alpha = IN.InstanceAlpha;
 	OUT.Light = IN.InstanceLight;

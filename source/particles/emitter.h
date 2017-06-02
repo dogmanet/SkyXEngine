@@ -14,7 +14,8 @@ struct CommonParticle
 		AnimTexRateMls = 0;
 		AnimTexCurrentMls = 0;
 		AnimTexCurrentCadr = 0;
-		AlphaAgeDependCoef = 0;
+		AlphaAgeDependCoef = 1;
+		AlphaDeath = 1;
 		IsAlife = false;
 		AnimTexSizeCadrAndBias = float4(1, 1, 0, 0);
 
@@ -54,6 +55,7 @@ struct CommonParticle
 	float3 Acceleration;	//ускорение
 
 	float AlphaAgeDependCoef;
+	float AlphaDeath;
 	float LightingIntens;
 	bool IsAlife;
 };
@@ -92,12 +94,13 @@ struct CommonParticleDecl2
 
 //#############################################################################
 
-class Particles
+class Emitter
 {
 public:
 
-	Particles();
-	~Particles();
+	Emitter();
+	Emitter(Emitter& part);
+	~Emitter();
 
 	SX_ALIGNED_OP_MEM
 
@@ -107,26 +110,39 @@ public:
 	void Init(ParticlesData* data);
 	ParticlesData* GetData();
 
-	void NameSet(const char* name);
-	void NameGet(char* name);
+	inline void NameSet(const char* name);
+	inline void NameGet(char* name);
 
-	void Create(int count);
-	void ReCreate(int count=0);
+	inline void CountSet(int count);
+	inline int CountGet();
+	inline int CountLifeGet();
+
+	inline void EnableSet(bool enable);
+	inline bool EnableGet();
+
 	void VertexCreate();
 	
 	void Compute();
 	void ComputeLighting();
 	void Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos);
 
-	void SetTexture(ID tex);
+	void TextureSet(const char* tex);
+	void TextureSetID(ID tex);
+	ID TextureGetID();
+	void TextureGet(char* tex);
+
 	void AnimTexDataInit();
 
-	bool GetAlife();
+	inline void AlifeSet(bool alife);
+	inline bool AlifeGet();
 
 	float3_t CurrMin;
 	float3_t CurrMax;
+	float SizeAdd;
 
 protected:
+
+	inline void NullingInit();
 
 	char Name[OBJECT_NAME_MAX_LEN];
 
@@ -141,14 +157,17 @@ protected:
 	float2_t AnimTexSize;	//размер текстуры
 	float4 AnimSizeCadr;//размер одного кадра, xy - в пикселях, zw - в процентном соотношении к размеру текстуры
 
-	ID IDTex;		//id текстуры, общей на все партиклы текущего организатора
+	ID IDTex;			//id текстуры, общей на все партиклы текущего организатора
 	DWORD OldTime;		//прошлое время с которого началось обработка
 	DWORD TimeNextSpawnParticle;	//время спавна будущего партикла
 	
 	long CountReCreate2;//сколько переродили
 
-	DWORD CountLifeParticle;	//количество живых частиц
-	bool IsAlife;				//живо ли сие? если false то все партиклы умерли
+	int CountLifeParticle;	//количество живых частиц
+	bool Alife;					//живо ли сие? если false то все партиклы умерли
+	float GTransparency;
+	DWORD TimerDeath;
+	bool Enable;
 
 	CommonParticle* Arr;
 	int Count;

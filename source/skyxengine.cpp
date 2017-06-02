@@ -26,7 +26,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
-	Level::Load("stalker_atp");
+	//Level::Load("stalker_atp");
 
 	//SXPhysics_LoadGeom();
 
@@ -39,33 +39,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	
 	//TestEffect = new Effect();
 
-	/*ParticlesData data;
-	ZeroMemory(&data, sizeof(ParticlesData));
+	ParticlesData data;
 
-	data.FigureType = ParticlesFigureType::pft_quad_composite;
-	data.FigureCountQuads = 4;
+	data.FigureType = ParticlesFigureType::pft_billboard;
+	data.FigureCountQuads = 1;
 	data.FigureRotRand = false;
-	data.FigureTapY = true;
+	data.FigureTapY = false;
 
-	data.ReCreateCount = -1;*/
+	data.ReCreateCount = 3;
 
-	//data.SpawnNextTime = 1000;
-	//data.Billboard = true;
+	data.SpawnNextTime = 1000;
 
-	//data.TimeLife = 100000;
-	//data.TimeLifeDisp = 200;
+	data.TimeLife = 5000;
+	data.TimeLifeDisp = 200;
 
-	//data.AlphaAgeDepend = ParticlesDependType::padt_direct;
+	data.AlphaAgeDepend = ParticlesDependType::padt_direct;
 
-	/*data.SizeParticle = float2(0.3, 0.3);
-	data.SizeDisp = 0.3;*/
-	//data.SizeDependAge = ParticlesDependType::padt_direct;
+	data.SizeParticle = float2(0.3, 0.3);
+	data.SizeDisp = 0.3;
+	data.SizeDependAge = ParticlesDependType::padt_direct;
 
-	/*data.Velocity = float3(0.01, 0.1, 0.01);
+	data.Velocity = float3(0.01, 0.1, 0.01);
 	data.VelocityDisp = 0.1;
 	data.VelocityDispXNeg = true;
 	data.VelocityDispYNeg = false;
-	data.VelocityDispZNeg = true;*/
+	data.VelocityDispZNeg = true;
 
 	/*data.AnimTexCountCadrsX = 11;
 	data.AnimTexCountCadrsY = 7;
@@ -99,16 +97,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	//data.Lighting = true;
 
-	/*ID tmpeffid = SPE_EffectAdd("test");
-	ID tmppartid = SPE_ParticlesAdd(tmpeffid, &data);
+	char tmppathsave[1024];
+	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
 
-	//ID idtex = SGCore_LoadTexAddName("pfx_explotions_2.dds", LoadTexType::ltt_load);
-	SGCore_LoadTexLoadTextures();
-	SPE_ParticlesTextureSet(tmpeffid, tmppartid, idtex);
-	SPE_ParticlesCreate(tmpeffid, tmppartid, 1);
+	SPE_EffectLoad(tmppathsave);
 
-	SPE_ParticlesSet(tmpeffid, tmppartid, SizeParticle, float2_t(2, 2));
-	SPE_ParticlesSet(tmpeffid, tmppartid, TransparencyCoef, 0.25);*/
+	//ID tmpeffid = SPE_EffectAdd("test");
+	//ID tmppartid = SPE_ParticlesAdd(tmpeffid, &data);
+
+	//SPE_ParticlesTextureSet(0, 0, "pfx_smoke_c.dds");
+	//SPE_ParticlesCreate(0, 0, 0);
+	//SPE_EffectEnableSet(0, false);
+
+	/*for (int i = 0; i < 20; ++i)
+	{
+		for (int k = 0; k < 20; ++k)
+		{
+			ID tmpid = SPE_EffectCopyName("test");
+			SPE_EffectPosSet(tmpid, &float3(i, 0, k));
+			SPE_EffectEnableSet(tmpid, true);
+		}
+	}*/
+
+	ID tmpid = SPE_EffectGetByName("test");
+	SPE_EffectEnableSet(tmpid, true);
+	
+	/*SPE_EffectCopyName("test");
+	SPE_EffectCopyName("test");*/
+	
+
+	//SPE_EffectSave(tmppathsave);
+
+	/*SPE_ParticlesSet(tmpeffid, tmppartid, SizeParticle, float2_t(2, 2));*/
+	//SPE_ParticlesSet(tmpeffid, tmppartid, TransparencyCoef, 1);
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureCountQuads, 10);
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureRotRand, true);
 	//SPE_ParticlesSet(tmpeffid, tmppartid, FigureTapX, true);
@@ -149,15 +170,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
-	ID tmpid = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
-	SSCore_SndPosCurrSet(tmpid, 20, SOUND_POS_SEC);
-	SSCore_SndPlay(tmpid);
+	/*ID tmpids = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
+	SSCore_SndPosCurrSet(tmpids, 20, SOUND_POS_SEC);
+	SSCore_SndPlay(tmpids);*/
 	//ms->SoundPanSet(tmpid, DSBPAN_RIGHT, 0);
 	//ms->SoundVolumeSet(tmpid, 100);
 
-	ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
+	/*ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
 	//SSCore_SndVolumeSet(tmpid2, 50, SOUND_VOL_PCT);
-	SSCore_SndPlay(tmpid2);
+	SSCore_SndPlay(tmpid2);*/
 
 	//ms->SoundEffectGargleSet(tmpid, 100, DSFXGARGLE_WAVE_SQUARE);
 
@@ -176,6 +197,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 		else
 		{
+			if (SSInput_GetKeyEvents(SIK_T) == InputEvents::iv_k_first)
+			{
+				for (int i = 0; i < 1; ++i)
+				{
+					ID tmpid = SPE_EffectIdOfKey(i);
+					//SPE_EffectPosSet(tmpid, &float3(i, 0, k));
+					SPE_EffectAlifeSet(tmpid, !SPE_EffectAlifeGet(tmpid));
+				}
+			}
 			static DWORD TimeStart = 0;
 			DWORD TimeThis = GetTickCount();
 

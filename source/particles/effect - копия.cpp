@@ -33,11 +33,13 @@ Effects::Effect::Effect(Effect& eff)
 	Direction = eff.Direction;
 	Rotation = eff.Rotation;
 	
-	Enable = eff.Enable;
+	//IsAlife = eff.IsAlife;
+
+	IsEnable = eff.IsEnable;
 
 	for (int i = 0; i < eff.Arr.size(); ++i)
 	{
-		Emitter* part = new Emitter(*eff.Arr[i]);
+		Particles* part = new Particles(*eff.Arr[i]);
 		Arr.push_back(part);
 	}
 }
@@ -55,10 +57,12 @@ Effects::Effect::~Effect()
 void Effects::Effect::NullingInit()
 {
 	Id = Key = -1;
-	ViewDist = 0.0f;
-	ViewRender = false;
+	DistForCamera = 0.0f;
+	IsRenderForCamera = false;
 
-	Enable = false;
+	IDLight = -1;
+	//IsAlife = false;
+	IsEnable = false;
 }
 
 void Effects::OnLostDevice()
@@ -91,17 +95,6 @@ void Effects::OnResetDevice()
 	}
 }
 
-void Effects::Clear()
-{
-	for (int i = 0; i < ArrKey.size(); ++i)
-	{
-		mem_delete(ArrKey[i]);
-	}
-
-	ArrKey.clear();
-	ArrID.clear();
-}
-
 void Effects::Save(const char* path)
 {
 	FILE* file = 0;
@@ -124,11 +117,11 @@ void Effects::Save(const char* path)
 		
 		fprintf(file, "[effect_%d]\n", i);
 		fprintf(file, "name = %s\n", ArrKey[i]->Name);
-		fprintf(file, "emitters_count = %d\n\n", part_count);
+		fprintf(file, "particles_count = %d\n\n", part_count);
 
 		for (int k = 0; k < part_count; ++k)
 		{
-			Emitter* part = ArrKey[i]->Arr[k];
+			Particles* part = ArrKey[i]->Arr[k];
 			char tmpname[CONFIG_SECTION_MAX_LEN];
 			part->NameGet(tmpname);
 			char tmptex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
@@ -137,24 +130,42 @@ void Effects::Save(const char* path)
 			if (part->TextureGetID() >= 0)
 				SGCore_LoadTexGetName(part->TextureGetID(), tmptex);
 
-			fprintf(file, "[effect_%d_emitter_%d]\n", i, k);
+			fprintf(file, "[effect_%d_particles_%d]\n", i, k);
 			fprintf(file, "name = %s\n", tmpname);
 			fprintf(file, "count = %d\n", part->CountGet());
 
 			if (tmptex[0] != 0)
 				fprintf(file, "texture = %s\n", tmptex);
 
-			fprintf(file, "BoundType = %d\n", part->GetData()->BoundType);
+			if (part->GetData()->BoundType == ParticlesBoundType::pbt_box)
+			{
+				fprintf(file, "bvec1x = %f\n", part->GetData()->BoundBoxMin.x);
+				fprintf(file, "bvec1y = %f\n", part->GetData()->BoundBoxMin.y);
+				fprintf(file, "bvec1z = %f\n", part->GetData()->BoundBoxMin.z);
 
-			fprintf(file, "BoundVec1X = %f\n", part->GetData()->BoundVec1.x);
-			fprintf(file, "BoundVec1Y = %f\n", part->GetData()->BoundVec1.y);
-			fprintf(file, "BoundVec1Z = %f\n", part->GetData()->BoundVec1.z);
-			fprintf(file, "BoundVec1W = %f\n", part->GetData()->BoundVec1.w);
+				fprintf(file, "bvec2x = %f\n", part->GetData()->BoundBoxMax.x);
+				fprintf(file, "bvec2y = %f\n", part->GetData()->BoundBoxMax.y);
+				fprintf(file, "bvec2z = %f\n", part->GetData()->BoundBoxMax.z);
+			}
+			else if (part->GetData()->BoundType == ParticlesBoundType::pbt_sphere)
+			{
+				fprintf(file, "bvec1x = %f\n", part->GetData()->BoundSphereCenter.x);
+				fprintf(file, "bvec1y = %f\n", part->GetData()->BoundSphereCenter.y);
+				fprintf(file, "bvec1z = %f\n", part->GetData()->BoundSphereCenter.z);
+				fprintf(file, "bvec1w = %f\n", part->GetData()->BoundSphereRadius);
+			}
+			else if (part->GetData()->BoundType == ParticlesBoundType::pbt_cone)
+			{
+				fprintf(file, "bvec1x = %f\n", part->GetData()->BoundConeBeginPos.x);
+				fprintf(file, "bvec1y = %f\n", part->GetData()->BoundConeBeginPos.y);
+				fprintf(file, "bvec1z = %f\n", part->GetData()->BoundConeBeginPos.z);
+				fprintf(file, "bvec1w = %f\n", part->GetData()->BoundConeBeginPos.w);
 
-			fprintf(file, "BoundVec2X = %f\n", part->GetData()->BoundVec2.x);
-			fprintf(file, "BoundVec2Y = %f\n", part->GetData()->BoundVec2.y);
-			fprintf(file, "BoundVec2Z = %f\n", part->GetData()->BoundVec2.z);
-			fprintf(file, "BoundVec2W = %f\n", part->GetData()->BoundVec2.w);
+				fprintf(file, "bvec2x = %f\n", part->GetData()->BoundConeEndPos.x);
+				fprintf(file, "bvec2y = %f\n", part->GetData()->BoundConeEndPos.y);
+				fprintf(file, "bvec2z = %f\n", part->GetData()->BoundConeEndPos.z);
+				fprintf(file, "bvec2w = %f\n", part->GetData()->BoundConeEndPos.w);
+			}
 
 
 			fprintf(file, "SpawnPosType = %d\n", part->GetData()->SpawnPosType);
@@ -186,10 +197,10 @@ void Effects::Save(const char* path)
 
 			fprintf(file, "TimeLife = %d\n", part->GetData()->TimeLife);
 			fprintf(file, "TimeLifeDisp = %d\n", part->GetData()->TimeLifeDisp);
-			fprintf(file, "AlphaDependAge = %d\n", part->GetData()->AlphaDependAge);
+			fprintf(file, "AlphaAgeDepend = %d\n", part->GetData()->AlphaAgeDepend);
 
-			fprintf(file, "SizeX = %f\n", part->GetData()->Size.x);
-			fprintf(file, "SizeY = %f\n", part->GetData()->Size.y);
+			fprintf(file, "SizeParticleX = %f\n", part->GetData()->SizeParticle.x);
+			fprintf(file, "SizeParticleY = %f\n", part->GetData()->SizeParticle.y);
 			fprintf(file, "SizeDisp = %f\n", part->GetData()->SizeDisp);
 
 			fprintf(file, "SizeDependAge = %d\n", part->GetData()->SizeDependAge);
@@ -252,10 +263,6 @@ void Effects::Save(const char* path)
 
 			fprintf(file, "ReCreateCount = %d\n", part->GetData()->ReCreateCount);
 
-			fprintf(file, "AlphaBlendType = %d\n", part->GetData()->AlphaBlendType);
-
-			fprintf(file, "ColorCoef = %f\n", part->GetData()->ColorCoef);
-
 			fprintf(file, "Soft = %d\n", part->GetData()->Soft);
 			fprintf(file, "SoftCoef = %f\n", part->GetData()->SoftCoef);
 
@@ -266,7 +273,7 @@ void Effects::Save(const char* path)
 			fprintf(file, "Lighting = %d\n", part->GetData()->Lighting);
 			fprintf(file, "\n");
 		}
-		fprintf(file, "----------------------------------------------------------------------\n\n");
+		fprintf(file, "----------------------------------------------------------------------");
 	}
 
 	fclose(file);
@@ -313,12 +320,12 @@ void Effects::Load(const char* path)
 		if (config->KeyExists(eff_section_name, "name"))
 			EffectNameSet(eff_id, config->GetKey(eff_section_name, "name"));
 
-		if (config->KeyExists(eff_section_name, "emitters_count"))
-			eff_count_part = String(config->GetKey(eff_section_name, "emitters_count")).ToInt();
+		if (config->KeyExists(eff_section_name, "particles_count"))
+			eff_count_part = String(config->GetKey(eff_section_name, "particles_count")).ToInt();
 
 		for (int k = 0; k < eff_count_part; ++k)
 		{
-			sprintf(part_section_name, "effect_%d_emitter_%d", i, k);
+			sprintf(part_section_name, "effect_%d_particles_%d", i, k);
 			if (!config->SectionExists(eff_section_name))
 			{
 				reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", gen_msg_location, part_section_name, path);
@@ -331,23 +338,23 @@ void Effects::Load(const char* path)
 			if (config->KeyExists(part_section_name, "BoundType"))
 				part.BoundType = (ParticlesBoundType)String(config->GetKey(part_section_name, "BoundType")).ToInt();
 
-			if (config->KeyExists(part_section_name, "BoundVec1X"))
-				part.BoundVec1.x = String(config->GetKey(part_section_name, "BoundVec1X")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec1Y"))
-				part.BoundVec1.y = String(config->GetKey(part_section_name, "BoundVec1Y")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec1Z"))
-				part.BoundVec1.z = String(config->GetKey(part_section_name, "BoundVec1Z")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec1W"))
-				part.BoundVec1.w = String(config->GetKey(part_section_name, "BoundVec1W")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec1x"))
+				part.BoundSphereCenter.x = part.BoundBoxMin.x = part.BoundConeBeginPos.x = String(config->GetKey(part_section_name, "bvec1x")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec1y"))
+				part.BoundSphereCenter.y = part.BoundBoxMin.y = part.BoundConeBeginPos.y = String(config->GetKey(part_section_name, "bvec1y")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec1z"))
+				part.BoundSphereCenter.z = part.BoundBoxMin.z = part.BoundConeBeginPos.z = String(config->GetKey(part_section_name, "bvec1z")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec1w"))
+				part.BoundSphereRadius = part.BoundConeBeginRadius = String(config->GetKey(part_section_name, "bvec1w")).ToDouble();
 
-			if (config->KeyExists(part_section_name, "BoundVec2X"))
-				part.BoundVec2.x = String(config->GetKey(part_section_name, "BoundVec2X")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec2Y"))
-				part.BoundVec2.y = String(config->GetKey(part_section_name, "BoundVec2Y")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec2Z"))
-				part.BoundVec2.z = String(config->GetKey(part_section_name, "BoundVec2Z")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec2W"))
-				part.BoundVec2.w = String(config->GetKey(part_section_name, "BoundVec2W")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec2x"))
+				part.BoundBoxMax.x = part.BoundConeEndPos.x = String(config->GetKey(part_section_name, "bvec2x")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec2y"))
+				part.BoundBoxMax.y = part.BoundConeEndPos.y = String(config->GetKey(part_section_name, "bvec2y")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec2z"))
+				part.BoundBoxMax.z = part.BoundConeEndPos.z = String(config->GetKey(part_section_name, "bvec2z")).ToDouble();
+			if (config->KeyExists(part_section_name, "bvec2w"))
+				part.BoundConeEndRadius = String(config->GetKey(part_section_name, "bvec2w")).ToDouble();
 
 
 			if (config->KeyExists(part_section_name, "SpawnPosType"))
@@ -401,13 +408,13 @@ void Effects::Load(const char* path)
 			if (config->KeyExists(part_section_name, "TimeLifeDisp"))
 				part.TimeLifeDisp = String(config->GetKey(part_section_name, "TimeLifeDisp")).ToUnsLongInt();
 
-			if (config->KeyExists(part_section_name, "AlphaDependAge"))
-				part.AlphaDependAge = (ParticlesDependType)String(config->GetKey(part_section_name, "AlphaDependAge")).ToInt();
+			if (config->KeyExists(part_section_name, "AlphaAgeDepend"))
+				part.AlphaAgeDepend = (ParticlesDependType)String(config->GetKey(part_section_name, "AlphaAgeDepend")).ToInt();
 
-			if (config->KeyExists(part_section_name, "SizeX"))
-				part.Size.x = String(config->GetKey(part_section_name, "SizeX")).ToDouble();
-			if (config->KeyExists(part_section_name, "SizeY"))
-				part.Size.y = String(config->GetKey(part_section_name, "SizeY")).ToDouble();
+			if (config->KeyExists(part_section_name, "SizeParticleX"))
+				part.SizeParticle.x = String(config->GetKey(part_section_name, "SizeParticleX")).ToDouble();
+			if (config->KeyExists(part_section_name, "SizeParticleY"))
+				part.SizeParticle.y = String(config->GetKey(part_section_name, "SizeParticleY")).ToDouble();
 
 			if (config->KeyExists(part_section_name, "SizeDisp"))
 				part.SizeDisp = String(config->GetKey(part_section_name, "SizeDisp")).ToDouble();
@@ -516,13 +523,6 @@ void Effects::Load(const char* path)
 
 			if (config->KeyExists(part_section_name, "ReCreateCount"))
 				part.ReCreateCount = String(config->GetKey(part_section_name, "ReCreateCount")).ToInt();
-
-			if (config->KeyExists(part_section_name, "AlphaBlendType"))
-				part.AlphaBlendType = (ParticlesAlphaBlendType)String(config->GetKey(part_section_name, "AlphaBlendType")).ToInt();
-
-			if (config->KeyExists(part_section_name, "ColorCoef"))
-				part.ColorCoef = String(config->GetKey(part_section_name, "ColorCoef")).ToDouble();
-
 			if (config->KeyExists(part_section_name, "Soft"))
 				part.Soft = String(config->GetKey(part_section_name, "Soft")).ToBool();
 			if (config->KeyExists(part_section_name, "SoftCoef"))
@@ -539,16 +539,16 @@ void Effects::Load(const char* path)
 				part.Lighting = String(config->GetKey(part_section_name, "Lighting")).ToBool();
 
 			
-			ID part_id = this->EmitterAdd(eff_id, &part);
+			ID part_id = this->ParticlesAdd(eff_id, &part);
 
 			if (config->KeyExists(part_section_name, "name"))
-				EmitterNameSet(eff_id, part_id, config->GetKey(part_section_name, "name"));
+				ParticlesNameSet(eff_id, part_id, config->GetKey(part_section_name, "name"));
 
 			if (config->KeyExists(part_section_name, "count"))
-				EmitterCountSet(eff_id, part_id, String(config->GetKey(part_section_name, "count")).ToInt());
+				ParticlesCountSet(eff_id, part_id, String(config->GetKey(part_section_name, "count")).ToInt());
 
 			if (config->KeyExists(part_section_name, "texture"))
-				EmitterTextureSet(eff_id, part_id, config->GetKey(part_section_name, "texture"));
+				ParticlesTextureSet(eff_id, part_id, config->GetKey(part_section_name, "texture"));
 		}
 	}
 
@@ -557,114 +557,119 @@ void Effects::Load(const char* path)
 
 
 
-void Effects::EmitterNameSet(ID id, ID id_part, const char* name)
+void Effects::ParticlesNameSet(ID id, ID id_part, const char* name)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->NameSet(name);
 }
 
-void Effects::EmitterNameGet(ID id, ID id_part, char* name)
+void Effects::ParticlesNameGet(ID id, ID id_part, char* name)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->NameGet(name);
 }
 
-ID Effects::EmitterAdd(ID id, ParticlesData* data)
+ID Effects::ParticlesAdd(ID id, ParticlesData* data)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 
-	Emitter* tmppart = new Emitter();
+	Particles* tmppart = new Particles();
 	tmppart->Init(data);
 	ArrID[id]->Arr.push_back(tmppart);
 	return ArrID[id]->Arr.size() - 1;
 }
 
-void Effects::EmitterReInit(ID id, ID id_part, ParticlesData* data)
+void Effects::ParticlesReInit(ID id, ID id_part, ParticlesData* data)
 {
 	EFFECTS_PARTICLES_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->Init(data);
 }
 
-int Effects::EmitterGetCount(ID id)
+int Effects::ParticlesGetCount(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 	return ArrID[id]->Arr.size();
 }
 
-void Effects::EmitterDelete(ID id, ID id_part)
+void Effects::ParticlesDelete(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
-	mem_delete(ArrID[id]->Arr[id_part]);
-	ArrID[id]->Arr.erase(id_part);
 }
 
-ParticlesData* Effects::EmitterGetData(ID id, ID id_part)
+ParticlesData* Effects::ParticlesGetData(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
 	return ArrID[id]->Arr[id_part]->GetData();
 }
 
-void Effects::EmitterCountSet(ID id, ID id_part, int count)
+void Effects::ParticlesCountSet(ID id, ID id_part, int count)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->CountSet(count);
 }
 
-int Effects::EmitterCountGet(ID id, ID id_part)
+int Effects::ParticlesCountGet(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
 	return ArrID[id]->Arr[id_part]->CountGet();
 }
 
-int Effects::EmitterCountLifeGet(ID id, ID id_part)
-{
-	EFFECTS_PRECOND(id, id_part, 0);
-
-	return ArrID[id]->Arr[id_part]->CountLifeGet();
-}
-
-void Effects::EmitterEnableSet(ID id, ID id_part, bool enable)
+void Effects::ParticlesEnableSet(ID id, ID id_part, bool enable)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->EnableSet(enable);
+	ArrID[id]->Arr[id_part]->CountGet();
 }
 
-bool Effects::EmitterEnableGet(ID id, ID id_part)
+bool Effects::ParticlesEnableGet(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, false);
 
 	return ArrID[id]->Arr[id_part]->EnableGet();
 }
 
-void Effects::EmitterTextureSet(ID id, ID id_part, const char* tex)
+/*void Effects::ParticlesCreate(ID id, ID id_part, int count)
+{
+	EFFECTS_PRECOND(id, id_part, _VOID);
+
+	ArrID[id]->Arr[id_part]->Create(count);
+}
+
+void Effects::ParticlesReCreate(ID id, ID id_part, int count)
+{
+	EFFECTS_PRECOND(id, id_part,  _VOID);
+
+	ArrID[id]->Arr[id_part]->ReCreate(count);
+}*/
+
+void Effects::ParticlesTextureSet(ID id, ID id_part, const char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->TextureSet(tex);
 }
 
-void Effects::EmitterTextureSetID(ID id, ID id_part, ID tex)
+void Effects::ParticlesTextureSetID(ID id, ID id_part, ID tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->TextureSetID(tex);
 }
 
-ID Effects::EmitterTextureGetID(ID id, ID id_part)
+ID Effects::ParticlesTextureGetID(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, -1);
 
 	return ArrID[id]->Arr[id_part]->TextureGetID();
 }
 
-void Effects::EmitterTextureGet(ID id, ID id_part, char* tex)
+void Effects::ParticlesTextureGet(ID id, ID id_part, char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
@@ -753,7 +758,7 @@ void Effects::EffectDelete(ID id)
 		--(ArrKey[i]->Key);
 	}
 
-	ArrID[id]->Enable = false;
+	ArrID[id]->IsEnable = false;
 	ArrKey.erase(ArrID[id]->Key);
 	mem_delete(ArrID[id]);
 }
@@ -778,75 +783,70 @@ void Effects::EffectCompute(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	if (!ArrID[id]->Enable)
+	if (!ArrID[id]->IsEnable)
 		return;
 
-	Effect* eff = ArrID[id];
-
 	int countdead = 0;	//счетик живых партиклов
-	for (int i = 0, l = eff->Arr.size(); i < l; ++i)
+	for (int i = 0; i < ArrID[id]->Arr.size(); ++i)
 	{
-		if (eff->Arr[i])
-			eff->Arr[i]->Compute();
+		if (ArrID[id]->Arr[i])
+			ArrID[id]->Arr[i]->Compute();
 
 		//если партиклы метрвы то инкрементируем счетчик
-		if (!eff->Arr[i]->EnableGet())
+		if (!ArrID[id]->Arr[i]->GetAlife())
 			++countdead;
 		else //иначе партиклы живы, считаем объем эффекта
 		{
-			if (eff->Arr[i]->CurrMax.x > eff->CurrMax.x)
-				eff->CurrMax.x = eff->Arr[i]->CurrMax.x;
+			if (ArrID[id]->Arr[i]->CurrMax.x > ArrID[id]->CurrMax.x)
+				ArrID[id]->CurrMax.x = ArrID[id]->Arr[i]->CurrMax.x;
 			
-			if (eff->Arr[i]->CurrMax.y > eff->CurrMax.y)
-				eff->CurrMax.y = eff->Arr[i]->CurrMax.y;
+			if (ArrID[id]->Arr[i]->CurrMax.y > ArrID[id]->CurrMax.y)
+				ArrID[id]->CurrMax.y = ArrID[id]->Arr[i]->CurrMax.y;
 
-			if (eff->Arr[i]->CurrMax.z > eff->CurrMax.z)
-				eff->CurrMax.z = eff->Arr[i]->CurrMax.z;
+			if (ArrID[id]->Arr[i]->CurrMax.z > ArrID[id]->CurrMax.z)
+				ArrID[id]->CurrMax.z = ArrID[id]->Arr[i]->CurrMax.z;
 
-			if (eff->Arr[i]->CurrMin.x < eff->CurrMin.x)
-				eff->CurrMin.x = eff->Arr[i]->CurrMin.x;
+			if (ArrID[id]->Arr[i]->CurrMin.x < ArrID[id]->CurrMin.x)
+				ArrID[id]->CurrMin.x = ArrID[id]->Arr[i]->CurrMin.x;
 
-			if (eff->Arr[i]->CurrMin.y < eff->CurrMin.y)
-				eff->CurrMin.y = eff->Arr[i]->CurrMin.y;
+			if (ArrID[id]->Arr[i]->CurrMin.y < ArrID[id]->CurrMin.y)
+				ArrID[id]->CurrMin.y = ArrID[id]->Arr[i]->CurrMin.y;
 
-			if (eff->Arr[i]->CurrMin.z < eff->CurrMin.z)
-				eff->CurrMin.z = eff->Arr[i]->CurrMin.z;
+			if (ArrID[id]->Arr[i]->CurrMin.z < ArrID[id]->CurrMin.z)
+				ArrID[id]->CurrMin.z = ArrID[id]->Arr[i]->CurrMin.z;
 
 			static float4x4 mattrans;
-			mattrans = eff->MatRotate * eff->MatTranslation;
+			mattrans = ArrID[id]->MatRotate * ArrID[id]->MatTranslation;
 			
-			eff->CurrMin = SMVector3Transform(eff->CurrMin, mattrans);
-			eff->CurrMin = SMVector3Transform(eff->CurrMin, mattrans);
+			ArrID[id]->CurrMin = SMVector3Transform(ArrID[id]->CurrMin, mattrans);
+			ArrID[id]->CurrMin = SMVector3Transform(ArrID[id]->CurrMin, mattrans);
 		}
 	}
 
 	//если количество мертвых объектов партиклов равно общему количесву объектов партиклов
-	if (countdead == eff->Arr.size())
-	{
-		eff->Enable = false;	//эффект мертв
-		eff->Alife = false;
-	}
+	if (countdead == ArrID[id]->Arr.size())
+		ArrID[id]->IsEnable = false;	//эффект мертв
 	else
-		eff->Enable = true;
+		ArrID[id]->IsEnable = true;
+
+	EffectLightEnable(id, ArrID[id]->IsEnable);
 }
 
 void Effects::EffectComputeLighting(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	Effect* eff = ArrID[id];
-
-	if (!eff->ViewRender)
+	if (!ArrID[id]->IsRenderForCamera)
 		return;
 
-	if (!eff->Enable)
+	if (!ArrID[id]->IsEnable)
 		return;
 
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	for (int i = 0; i < ArrID[id]->Arr.size(); ++i)
 	{
-		if (eff->Arr[i] && eff->Arr[i]->EnableGet())
+		if (ArrID[id]->Arr[i] && ArrID[id]->Arr[i]->GetAlife())
 		{
-			eff->Arr[i]->ComputeLighting();
+			ArrID[id]->Arr[i]->ComputeLighting();
 		}
 	}
 }
@@ -855,45 +855,41 @@ void Effects::EffectRender(ID id, DWORD timeDelta)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	Effect* eff = ArrID[id];
-
-	if (!eff->ViewRender)
+	if (!ArrID[id]->IsRenderForCamera)
 		return;
 
-	if (!eff->Enable)
+	if (!ArrID[id]->IsEnable)
 		return;
 
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	for (int i = 0; i < ArrID[id]->Arr.size(); ++i)
 	{
-		if (eff->Arr[i] && eff->Arr[i]->EnableGet())
+		if (ArrID[id]->Arr[i] && ArrID[id]->Arr[i]->GetAlife())
 		{
-			eff->Arr[i]->Render(timeDelta, &eff->MatRotate, &eff->MatTranslation);
+			ArrID[id]->Arr[i]->Render(timeDelta, &ArrID[id]->MatRotate, &ArrID[id]->MatTranslation);
 		}
 	}
 }
 
 void Effects::EffectComputeAll()
 {
-	for (int i = 0, l = ArrID.size(); i < l; ++i)
+	for (int i = 0; i < ArrID.size(); ++i)
 	{
-		if (ArrID[i])
-			EffectCompute(ArrID[i]->Id);
+		EffectCompute(ArrID[i]->Id);
 	}
 }
 
 void Effects::EffectComputeLightingAll()
 {
-	for (int i = 0, l = ArrID.size(); i < l; ++i)
+	for (int i = 0; i < ArrID.size(); ++i)
 	{
-		if (ArrID[i])
-			EffectComputeLighting(ArrID[i]->Id);
+		EffectComputeLighting(ArrID[i]->Id);
 	}
 }
 
 void Effects::EffectRenderAll(DWORD timeDelta)
 {
 	ID tmpid = -1;
-	for (int i = ArrSortSizeCurr; i >= 0; --i)
+	for (int i = ArrSort.size()-1; i >= 0; --i)
 	{
 		tmpid = ArrSort[i];
 		if (tmpid >= 0)
@@ -905,29 +901,24 @@ bool Effects::EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	Effect* eff = ArrID[id];
-	if (!eff || !eff->Enable)
-		return false;
-
 	float3 scenter;
 	float sradius;
 
-	scenter = (eff->CurrMin + eff->CurrMax) * 0.5f;
-	sradius = SMVector3Length(scenter - eff->CurrMax);
+	scenter = (ArrID[id]->CurrMin + ArrID[id]->CurrMax) * 0.5f;
+	sradius = SMVector3Length(scenter - ArrID[id]->CurrMax);
 
-	eff->ViewRender = frustum->SphereInFrustum(&scenter, sradius);
+	ArrID[id]->IsRenderForCamera = frustum->SphereInFrustum(&scenter, sradius);
 
-	eff->ViewDist = SMVector3Length((scenter - (*view))) - sradius;
+	ArrID[id]->DistForCamera = SMVector3Length((scenter - (*view))) - sradius;
 
-	return eff->ViewRender;
+	return ArrID[id]->IsRenderForCamera;
 }
 
 void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 {
 	for (int i = 0; i < ArrID.size(); ++i)
 	{
-		if (ArrID[i])
-			EffectVisibleCom(i, frustum, view);
+		EffectVisibleCom(i, frustum, view);
 	}
 
 	for (int i = 0; i < ArrSort.size(); ++i)
@@ -935,95 +926,81 @@ void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 		ArrSort[i] = -1;
 	}
 
-	ArrSortSizeCurr = 0;
-
-	float tmpdist;
-	int pos;
+	int tmpdist, pos;
 	for (int i = 0; i < ArrKey.size(); ++i)
 	{
-		if (!ArrKey[i]->ViewRender)
-			continue;
+		/*if (!ArrKey[i]->IsRenderForCamera)
+			continue;*/
 
 		pos = 0;
-		tmpdist = ArrKey[i]->ViewDist;
+		tmpdist = ArrKey[i]->DistForCamera;
 		for (int j = 0; j < ArrKey.size(); ++j)
 		{
-			if (i != j && ArrKey[j]->ViewRender && ArrKey[j]->ViewDist < tmpdist)
+			if (i != j /*&& ArrKey[j]->IsRenderForCamera*/ && ArrKey[j]->DistForCamera < tmpdist)
 				++pos;
 		}
 
 		ArrSort[pos] = ArrKey[i]->Id;
-
-		if (ArrSortSizeCurr < pos)
-			ArrSortSizeCurr = pos;
 	}
 
-	/*for (int i = 0; i < ArrSort.size(); ++i)
+	for (int i = 0; i < ArrSort.size(); ++i)
 	{
 		reportf(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
 	}
 
-	reportf(0, "%d---------\n", ArrSortSizeCurr);*/
+	reportf(0, "---------\n");
 }
 
 bool Effects::EffectVisibleGet(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	return ArrID[id]->ViewRender;
+	return ArrID[id]->IsRenderForCamera;
 }
 
 float Effects::EffectDistToViewGet(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, 0);
 
-	return ArrID[id]->ViewDist;
+	return ArrID[id]->DistForCamera;
 }
 
-
-bool Effects::EffectEnableGet(ID id)
-{
-	EFFECTS_EFFECT_PRECOND(id, false);
-
-	return ArrID[id]->Enable;
-}
-
-void Effects::EffectEnableSet(ID id, bool isenable)
-{
-	EFFECTS_EFFECT_PRECOND(id, _VOID);
-	Effect* eff = ArrID[id];
-	
-	for (int i = 0; i < eff->Arr.size(); ++i)
-	{
-		eff->Arr[i]->EnableSet(isenable);
-	}
-
-	eff->Enable = isenable;
-	
-	if (!isenable)
-		eff->Alife = isenable;
-}
 
 bool Effects::EffectAlifeGet(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	return ArrID[id]->Alife;
+	return ArrID[id]->IsEnable;
 }
 
-void Effects::EffectAlifeSet(ID id, bool alife)
+bool Effects::EffectEnableGet(ID id)
+{
+	EFFECTS_EFFECT_PRECOND(id, false);
+
+	return ArrID[id]->IsEnable;
+}
+
+void Effects::EffectEnableSet(ID id, bool isenable)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ArrID[id]->Alife = alife;
-	Effect* eff = ArrID[id];
-
-	if (!eff->Enable && eff->Alife)
-		eff->Enable = eff->Alife;
-
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	//если предыдущее состояние эффекта было "выключен", а теперь включаем
+	if (!ArrID[id]->IsEnable && isenable)
 	{
-		eff->Arr[i]->AlifeSet(alife);
+		EffectLightEnable(id, true);
+	}
+
+	for (int i = 0; i < ArrID[id]->Arr.size(); ++i)
+	{
+		ArrID[id]->Arr[i]->EnableSet(isenable);
+	}
+
+	ArrID[id]->IsEnable = isenable;
+
+	if (!ArrID[id]->IsEnable)
+	{
+		ArrID[id]->IsEnable = false;
+		EffectLightEnable(id, false);
 	}
 }
 
@@ -1086,4 +1063,58 @@ void Effects::EffectRotGet(ID id, float3* rot)
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
 	*rot = ArrID[id]->Rotation;
+}
+
+
+
+
+
+void Effects::EffectLightSet(ID id, float3* color, float dist, bool is_shadow)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	if (ArrID[id]->IDLight >= 0)
+	{
+		SML_LigthsSetColor(ArrID[id]->IDLight, color);
+		SML_LigthsSetDist(ArrID[id]->IDLight, dist, true);
+		SML_LigthsSetPower(ArrID[id]->IDLight, dist / LIGHTS_LOCAL_MAX_POWER);
+		SML_LigthsSetShadow(ArrID[id]->IDLight, is_shadow);
+	}
+	else
+		ArrID[id]->IDLight = SML_LigthsCreatePoint(&ArrID[id]->Position, dist / LIGHTS_LOCAL_MAX_POWER, dist, color, false, is_shadow);
+}
+
+void Effects::EffectLightDelete(ID id)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	if (ArrID[id]->IDLight >= 0)
+	{
+		SML_LigthsDeleteLight(ArrID[id]->IDLight);
+		ArrID[id]->IDLight = -1;
+	}
+}
+
+void Effects::EffectLightEnable(ID id, bool is_enable)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	if (ArrID[id]->IDLight >= 0)
+		SML_LigthsSetEnable(ArrID[id]->IDLight, is_enable);
+}
+
+void Effects::EffectLightRotationSet(ID id)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	if (ArrID[id]->IDLight >= 0)
+		SML_LigthsSetRot(ArrID[id]->IDLight, &ArrID[id]->Rotation, false);
+}
+
+void Effects::EffectLightPositionSet(ID id)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	if (ArrID[id]->IDLight >= 0)
+		SML_LigthsSetPos(ArrID[id]->IDLight, &ArrID[id]->Position);
 }

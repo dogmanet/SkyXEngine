@@ -82,7 +82,7 @@ void PESet::Init(IDirect3DDevice9* device)
 	PESet::IDsShaders::PS::ParticlesSoftRefractionLight = SGCore_ShaderLoad(ShaderType::st_pixel, "particles_main.ps", "particles_soft_refraction_light", ShaderCheckDouble::scd_name, Defines_PART_SOFT_REFRACTION_LIGHT);
 }
 
-#include <particles/particles.cpp>
+#include <particles/emitter.cpp>
 #include <particles/effect.cpp>
 
 Effects* ArrEffects = 0;
@@ -151,7 +151,47 @@ void SPE_OnResetDevice()
 
 
 
+void SPE_EffectLoad(const char* path)
+{
+	PE_PRECOND(_VOID);
 
+	ArrEffects->Load(path);
+}
+
+void SPE_EffectSave(const char* path)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->Save(path);
+}
+
+void SPE_EffectsClear()
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->Clear();
+}
+
+ID SPE_EffectCopyName(const char* name)
+{
+	PE_PRECOND(-1);
+
+	return ArrEffects->EffectCopyName(name);
+}
+
+ID SPE_EffectCopyID(ID id)
+{
+	PE_PRECOND(-1);
+
+	return ArrEffects->EffectCopyID(id);
+}
+
+ID SPE_EffectGetByName(const char* name)
+{
+	PE_PRECOND(-1);
+
+	return ArrEffects->EffectGetByName(name);
+}
 
 ID SPE_EffectAdd(const char* name)
 {
@@ -247,6 +287,13 @@ bool SPE_EffectAlifeGet(ID id)
 	return ArrEffects->EffectAlifeGet(id);
 }
 
+void SPE_EffectAlifeSet(ID id, bool alife)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EffectAlifeSet(id,alife);
+}
+
 
 bool SPE_EffectEnableGet(ID id)
 {
@@ -336,93 +383,118 @@ float SPE_EffectDistToViewGet(ID id)
 }
 
 
-void SPE_EffectLightSet(ID id, float3* color, float dist, bool is_shadow)
-{
-	PE_PRECOND(_VOID);
-
-	ArrEffects->EffectLightSet(id, color, dist, is_shadow);
-}
-
-void SPE_EffectLightDelete(ID id)
-{
-	PE_PRECOND(_VOID);
-
-	ArrEffects->EffectLightDelete(id);
-}
 
 
-
-
-
-ID SPE_ParticlesAdd(ID id, ParticlesData* data)
+ID SPE_EmitterAdd(ID id, ParticlesData* data)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->ParticlesAdd(id, data);
+	return ArrEffects->EmitterAdd(id, data);
 }
 
-int SPE_ParticlesGetCount(ID id)
+int SPE_EmitterSCountGet(ID id)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->ParticlesGetCount(id);
+	return ArrEffects->EmitterGetCount(id);
 }
 
-void SPE_ParticlesDelete(ID id, ID id_part)
+void SPE_EmitterDelete(ID id, ID id_part)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->ParticlesDelete(id, id_part);
+	ArrEffects->EmitterDelete(id, id_part);
 }
 
-ParticlesData* SPE_ParticlesGetData(ID id, ID id_part)
+ParticlesData* SPE_EmitterGetData(ID id, ID id_part)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->ParticlesGetData(id, id_part);
+	return ArrEffects->EmitterGetData(id, id_part);
 }
 
-void SPE_ParticlesReInit(ID id, ID id_part, ParticlesData* data)
+void SPE_EmitterReInit(ID id, ID id_part, ParticlesData* data)
 {
 	PE_PRECOND(_VOID);
 
-	return ArrEffects->ParticlesReInit(id, id_part, data);
+	return ArrEffects->EmitterReInit(id, id_part, data);
 }
 
-
-void SPE_ParticlesCreate(ID id, ID id_part, int count)
+void SPE_EmitterCountSet(ID id, ID id_part, int count)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->ParticlesCreate(id, id_part, count);
+	return ArrEffects->EmitterCountSet(id, id_part, count);
 }
 
-void SPE_ParticlesReCreate(ID id, ID id_part, int count)
+int SPE_EmitterCountGet(ID id, ID id_part)
+{
+	PE_PRECOND(0);
+
+	return ArrEffects->EmitterCountGet(id, id_part);
+}
+
+int SPE_EmitterCountLifeGet(ID id, ID id_part)
+{
+	PE_PRECOND(0);
+
+	return ArrEffects->EmitterCountLifeGet(id, id_part);
+}
+
+void SPE_EmitterEnableSet(ID id, ID id_part, bool enable)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->ParticlesReCreate(id, id_part, count);
+	ArrEffects->EmitterEnableSet(id, id_part, enable);
+}
+
+bool SPE_EmitterEnableGet(ID id, ID id_part)
+{
+	PE_PRECOND(false);
+
+	return ArrEffects->EmitterEnableGet(id, id_part);
 }
 
 
-void SPE_ParticlesTextureSet(ID id, ID id_part, ID tex)
+void SPE_EmitterTextureSet(ID id, ID id_part, const char* tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->ParticlesTextureSet(id, id_part, tex);
+	ArrEffects->EmitterTextureSet(id, id_part, tex);
+}
+
+void SPE_EmitterTextureSetID(ID id, ID id_part, ID tex)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EmitterTextureSetID(id, id_part, tex);
+}
+
+ID SPE_EmitterTextureGetID(ID id, ID id_part)
+{
+	PE_PRECOND(-1);
+
+	ArrEffects->EmitterTextureGetID(id, id_part);
+}
+
+void SPE_EmitterTextureGet(ID id, ID id_part, char* tex)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EmitterTextureGet(id, id_part, tex);
 }
 
 
-void SPE_ParticlesNameSet(ID id, ID id_part, const char* name)
+void SPE_EmitterNameSet(ID id, ID id_part, const char* name)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->ParticlesNameSet(id, id_part, name);
+	ArrEffects->EmitterNameSet(id, id_part, name);
 }
 
-void SPE_ParticlesNameGet(ID id, ID id_part, char* name)
+void SPE_EmitterNameGet(ID id, ID id_part, char* name)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->ParticlesNameGet(id, id_part, name);
+	ArrEffects->EmitterNameGet(id, id_part, name);
 }

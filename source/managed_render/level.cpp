@@ -89,3 +89,19 @@ void Level::Save(const char* name)
 
 	fclose(file);
 }
+
+void Level::LoadParticles()
+{
+	char tmppathsave[1024];
+	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
+
+	SPE_EffectLoad(tmppathsave);
+}
+
+void Level::SaveParticles()
+{
+	char tmppathsave[1024];
+	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
+
+	SPE_EffectSave(tmppathsave);
+}

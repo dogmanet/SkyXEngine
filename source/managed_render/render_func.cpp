@@ -376,7 +376,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			FpsValue	= (float)FrameCount / TimeElapsed;
 			sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
-#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR)
+#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR) && !defined(SX_PARTICLES_EDITOR)
 			sprintf(debugstr + strlen(debugstr), "\ncount poly : %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "count DIPs : %d\n\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
@@ -1151,12 +1151,66 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 
 void SXRenderFunc::RenderParticles(DWORD timeDelta)
 {
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+#if defined(SX_PARTICLES_EDITOR)
+	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 128, 128, 128), 1.0f, 0);
+
+	if (SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType) != ParticlesBoundType::pbt_none)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+
+		ParticlesData* pdata = SPE_EmitterGetData(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		if (pdata->BoundType == ParticlesBoundType::pbt_box)
+		{
+			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(float3(pdata->BoundVec2 - pdata->BoundVec1)) * SMMatrixTranslation(float3(pdata->BoundVec2 + pdata->BoundVec1)*0.5f)));
+			GData::FigureBox->DrawSubset(0);
+		}
+		else if (pdata->BoundType == ParticlesBoundType::pbt_sphere)
+		{
+			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(pdata->BoundVec1.w, pdata->BoundVec1.w, pdata->BoundVec1.w) * SMMatrixTranslation(float3(pdata->BoundVec1))));
+			GData::FigureSphere->DrawSubset(0);
+		}
+		else if (pdata->BoundType == ParticlesBoundType::pbt_cone)
+		{
+			if(GData::FigureConeParam.x != pdata->BoundVec2.w || GData::FigureConeParam.y != pdata->BoundVec1.w || GData::FigureConeParam.z != pdata->BoundVec2.y - pdata->BoundVec1.y)
+			{
+				GData::FigureConeParam.x = pdata->BoundVec2.w;
+				GData::FigureConeParam.y = pdata->BoundVec1.w;
+				GData::FigureConeParam.z = pdata->BoundVec2.y - pdata->BoundVec1.y;
+
+				SGCore_FCreateCone(GData::FigureConeParam.x, GData::FigureConeParam.y, GData::FigureConeParam.z, &GData::FigureCone, 20);
+			}
+
+			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(pdata->BoundVec1.x, pdata->BoundVec2.y, pdata->BoundVec1.z));
+			GData::FigureCone->DrawSubset(0);
+		}
+
+		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixIdentity());
+	}
+#endif
+
+	
+
+	if (GData::ObjGrid)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::ObjGrid->Render();
+	}
+
+	if (GData::ObjAxesStatic)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::ObjAxesStatic->Render();
+	}
+
+	
 
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHAREF, RENDER_PARTICLES_ALPHATEST_VALUE);
@@ -1168,8 +1222,6 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
 	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
 
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
 	/*ArrEffects->EffectPosSet(0, &float3(GData::ConstCurrCamPos + GData::ConstCurrCamDir*2));*/
 
 	//ArrEffects->EffectDirSet(0, &GData::ConstCurrCamDir);
@@ -1177,7 +1229,6 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 	SPE_EffectRenderAll(timeDelta);
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 }
@@ -1514,7 +1565,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	ttime = GetTickCount();
-	RenderPostProcess(timeDelta);
+	//RenderPostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += GetTickCount() - ttime;
 #endif
 
@@ -1628,6 +1679,10 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 #if defined(SX_LEVEL_EDITOR)
 	GData::Editors::LevelEditorUpdateStatusBar();
+#endif
+
+#if defined(SX_PARTICLES_EDITOR)
+	GData::Editors::ParticlesEditorUpdateStatusBar();
 #endif
 }
 

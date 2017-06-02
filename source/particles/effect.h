@@ -2,8 +2,9 @@
 #ifndef __effect_h
 #define __effect_h
 
-#include <particles/particles.h>
+#include <particles/emitter.h>
 #include <common/array.h>
+#include <common/string.cpp>
 
 #define EFFECTS_EFFECT_PRECOND_KEY(key,retval) \
 if (!(key >= 0 && key < ArrKey.size()))\
@@ -34,7 +35,9 @@ public:
 	struct Effect
 	{
 		Effect();
+		Effect(Effect& eff);
 		~Effect();
+		inline void NullingInit();
 
 		SX_ALIGNED_OP_MEM
 
@@ -43,48 +46,58 @@ public:
 		ID Id;
 		ID Key;
 
-		float3_t CurrMin;
-		float3_t CurrMax;
+		float3 CurrMin;
+		float3 CurrMax;
 
 		float3 Position, Direction, Rotation;
 		float4x4 MatTranslation;
 		float4x4 MatRotate;
-		float4x4 MatTransform;
 
-		float DistForCamera;
-		bool IsRenderForCamera;
+		float ViewDist;
+		bool ViewRender;
 
-		ID IDLight;
-		bool IsAlife;
-
-		bool IsEnable;
-		Array<Particles*> Arr;
+		bool Enable;
+		bool Alife;
+		Array<Emitter*> Arr;
 	};
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void Load(const char* file);
+	void Save(const char* file);
+	void Clear();
 
-	inline ID ParticlesAdd(ID id, ParticlesData* data);
-	inline void ParticlesReInit(ID id, ID id_part, ParticlesData* data);
-	inline int ParticlesGetCount(ID id);
-	inline void ParticlesDelete(ID id, ID id_part);
-	inline ParticlesData* ParticlesGetData(ID id, ID id_part);
+	inline void OnLostDevice();
+	inline void OnResetDevice();
 
-	inline void ParticlesCreate(ID id, ID id_part, int count);
-	inline void ParticlesReCreate(ID id, ID id_part, int count = 0);
+	inline ID EmitterAdd(ID id, ParticlesData* data);
+	inline void EmitterReInit(ID id, ID id_part, ParticlesData* data);
+	inline int EmitterGetCount(ID id);
+	inline void EmitterDelete(ID id, ID id_part);
+	inline ParticlesData* EmitterGetData(ID id, ID id_part);
 
-	inline void ParticlesTextureSet(ID id, ID id_part, ID tex);
+	inline void EmitterCountSet(ID id, ID id_part, int count);
+	inline int EmitterCountGet(ID id, ID id_part);
+	inline int EmitterCountLifeGet(ID id, ID id_part);
 
-	void ParticlesNameSet(ID id, ID id_part, const char* name);
-	void ParticlesNameGet(ID id, ID id_part, char* name);
+	inline void EmitterEnableSet(ID id, ID id_part, bool enable);
+	inline bool EmitterEnableGet(ID id, ID id_part);
 
+	inline void EmitterTextureSet(ID id, ID id_part, const char* tex);
+	inline void EmitterTextureSetID(ID id, ID id_part, ID tex);
+	inline ID EmitterTextureGetID(ID id, ID id_part);
+	inline void EmitterTextureGet(ID id, ID id_part, char* tex);
 
-	ID EffectAdd(const char* name);
-	int EffectCountGet();
-	ID EffectIdOfKey(ID key);
-	void EffectDelete(ID id);
-	void EffectNameSet(ID id, const char* name);
-	void EffectNameGet(ID id, char* name);
+	inline void EmitterNameSet(ID id, ID id_part, const char* name);
+	inline void EmitterNameGet(ID id, ID id_part, char* name);
+
+	inline ID EffectCopyName(const char* name);
+	inline ID EffectCopyID(ID id);
+	inline ID EffectGetByName(const char* name);
+	inline ID EffectAdd(const char* name);
+	inline int EffectCountGet();
+	inline ID EffectIdOfKey(ID key);
+	inline void EffectDelete(ID id);
+	inline void EffectNameSet(ID id, const char* name);
+	inline void EffectNameGet(ID id, char* name);
 
 	void EffectCompute(ID id);
 	void EffectComputeLighting(ID id);
@@ -94,10 +107,11 @@ public:
 	void EffectComputeLightingAll();
 	void EffectRenderAll(DWORD timeDelta);
 
-	inline bool EffectAlifeGet(ID id);
-
 	inline bool EffectEnableGet(ID id);
 	inline void EffectEnableSet(ID id, bool isenable);
+
+	inline bool EffectAlifeGet(ID id);
+	inline void EffectAlifeSet(ID id, bool alife);
 
 	inline void EffectPosSet(ID id, float3* pos);
 	inline void EffectDirSet(ID id, float3* dir);
@@ -112,21 +126,14 @@ public:
 	inline bool EffectVisibleGet(ID id);
 	inline float EffectDistToViewGet(ID id);
 
-	inline void EffectLightSet(ID id, float3* color, float dist, bool is_shadow);
-	inline void EffectLightDelete(ID id);
-	
 protected:
 
 	inline ID AddEffect(Effect* obj);
 
-	inline void EffectLightEnable(ID id, bool is_enable);
-	inline void EffectLightRotationSet(ID id);
-	inline void EffectLightPositionSet(ID id);
-
 	Array<Effect*> ArrKey;	//массив всех элементов по порядку
 	Array<Effect*> ArrID;	//массив всех элементов, основанный на id
-
-	//Array<Effect*> Arr;
+	Array<ID> ArrSort;
+	int ArrSortSizeCurr;	//текущий размер массива ArrSort
 };
 
 #endif

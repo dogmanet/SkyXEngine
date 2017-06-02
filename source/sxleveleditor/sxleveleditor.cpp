@@ -151,9 +151,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 
 	mem_release(GData::ObjCamera);
-	SGeom_0CreateKill();
-	SML_0Kill();
-	SGCore_0Kill();
+	SGeom_AKill();
+	SML_AKill();
+	SGCore_AKill();
 	SXLevelEditor::DeleteAllElements();
 
     return msg.wParam;

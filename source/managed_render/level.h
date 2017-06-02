@@ -33,6 +33,9 @@ namespace Level
 	void Load(const char* name);	//!< Загрузка уровня с именем name
 	void Save(const char* name);	//!< Сохранение уровня под именем name
 
+	void LoadParticles();
+	void SaveParticles();
+
 	//!@}
 };
 

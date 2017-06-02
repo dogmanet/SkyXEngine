@@ -7,12 +7,14 @@ sampler2D SceneSampler:register(s2);
 
 float RefractCoef;
 float SoftCoef;
+float ColorCoef;
 float2 NearFar;
 
 
 float4 main(vs_out_particles IN):COLOR0
 {
 	float4 color = tex2D(BaseSampler,IN.TexUV);
+	color.rgb *= ColorCoef;
 	color.a *= IN.Alpha.x;
 	#if defined(PART_SOFT) || defined(PART_REFRACTION)
 	float2 texuv = IN.Pos.xy / IN.Pos.w;

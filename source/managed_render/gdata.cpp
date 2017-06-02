@@ -140,6 +140,66 @@ void GData::InitWin(const char* name, const char* caption)
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
 }
 
+#if defined(SX_PARTICLES_EDITOR)
+void GData::Editors::ParticlesEditorUpdateStatusBar()
+{
+	int emitters_count = 0;
+	int emitters_all_count = 0;
+	int particles_life_count = 0;
+	int particles_all_count = 0;
+	//ID effid = -1;
+	/*for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	{
+		effid = SPE_EffectIdOfKey(i);
+		if (SPE_EffectEnableGet(effid))
+		{
+			for (int k = 0; k < SPE_EmitterSCountGet(effid); ++k)
+			{
+				if (SPE_EmitterEnableGet(effid, k))
+					++emitters_count;
+
+				particles_all_count += SPE_EmitterCountGet(effid, k);
+				particles_life_count += SPE_EmitterCountLifeGet(effid, k);
+			}
+			break;
+		}
+		effid = -1;
+	}*/
+
+	if (SXParticlesEditor::SelEffID >= 0)
+	{
+		if (SXParticlesEditor::SelEmitterID < 0)
+		{
+			emitters_all_count = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
+			for (int k = 0; k < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++k)
+			{
+				if (SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, k))
+					++emitters_count;
+
+				particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, k);
+				particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, k);
+			}
+		}
+
+		if (SXParticlesEditor::SelEmitterID >= 0)
+		{
+			emitters_all_count = 1;
+			emitters_count = SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+		}
+	}
+
+	char ttext[256];
+	
+	sprintf(ttext, "Playing emitters: %d/%d", emitters_all_count, emitters_count);
+	SXParticlesEditor::StatusBar1->SetTextParts(0, ttext);
+
+	sprintf(ttext, "Living particles: %d/%d", particles_all_count, particles_life_count);
+	SXParticlesEditor::StatusBar1->SetTextParts(1, ttext);
+}
+#endif
+
 #if defined(SX_LEVEL_EDITOR)
 void GData::Editors::LevelEditorUpdateStatusBar()
 {

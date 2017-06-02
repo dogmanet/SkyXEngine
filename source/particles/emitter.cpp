@@ -1,18 +1,40 @@
 
-#include <particles/particles.h>
+#include <particles/Emitter.h>
 
 #pragma once
 
-Particles::Particles()
+void Emitter::NullingInit()
 {
 	OldTime = 0;
 	TimeNextSpawnParticle = 0;
 	VertexBuff = 0;
 	IndexBuff = 0;
 	IDTex = -1;
+	Arr = 0;
+	TransVertBuf = 0;
+	Name[0] = 0;
+	Count = 0;
+	Enable = false;
+	Alife = false;
+	GTransparency = 1;
+	TimerDeath = 0;
+	SizeAdd = 0;
 }
 
-Particles::~Particles()
+Emitter::Emitter()
+{
+	NullingInit();
+}
+
+Emitter::Emitter(Emitter& part)
+{
+	NullingInit();
+	IDTex = part.IDTex;
+	Data = part.Data;
+	CountSet(part.Count);
+}
+
+Emitter::~Emitter()
 {
 	mem_delete_a(Arr);
 	mem_release_del(TransVertBuf);
@@ -20,12 +42,12 @@ Particles::~Particles()
 	mem_release_del(IndexBuff);
 }
 
-void Particles::OnLostDevice()
+void Emitter::OnLostDevice()
 {
 	mem_release_del(TransVertBuf);
 }
 
-void Particles::OnResetDevice()
+void Emitter::OnResetDevice()
 {
 	PESet::DXDevice->CreateVertexBuffer(
 		Count * sizeof(CommonParticleDecl2),
@@ -36,7 +58,7 @@ void Particles::OnResetDevice()
 		0);
 }
 
-void Particles::Init(ParticlesData* data)
+void Emitter::Init(ParticlesData* data)
 {
 	if (data)
 		memcpy(&Data, data, sizeof(ParticlesData));
@@ -47,30 +69,50 @@ void Particles::Init(ParticlesData* data)
 	VertexCreate();
 }
 
-ParticlesData* Particles::GetData()
+ParticlesData* Emitter::GetData()
 {
 	return &Data;
 }
 
-void Particles::NameSet(const char* name)
+void Emitter::NameSet(const char* name)
 {
 	if (name)
 		strcpy(Name,name);
 }
 
-void Particles::NameGet(char* name)
+void Emitter::NameGet(char* name)
 {
 	if (name)
 		strcpy(name, Name);
 }
 
-void Particles::SetTexture(ID tex)
+void Emitter::TextureSetID(ID tex)
 {
 	IDTex = tex;
 	AnimTexDataInit();
 }
 
-void Particles::AnimTexDataInit()
+void Emitter::TextureSet(const char* tex)
+{
+	IDTex = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
+	SGCore_LoadTexLoadTextures();
+	AnimTexDataInit();
+}
+
+ID Emitter::TextureGetID()
+{
+	return IDTex;
+}
+
+void Emitter::TextureGet(char* tex)
+{
+	if (IDTex >= 0)
+	{
+		SGCore_LoadTexGetName(IDTex, tex);
+	}
+}
+
+void Emitter::AnimTexDataInit()
 {
 	if (Data.AnimTexCountCadrsX != 0 && Data.AnimTexCountCadrsY != 0)
 	{
@@ -87,15 +129,31 @@ void Particles::AnimTexDataInit()
 	}
 }
 
-bool Particles::GetAlife()
+void Emitter::AlifeSet(bool alife)
 {
-	return IsAlife;
+	if (Alife != alife)
+	{
+		GTransparency = 1.f;
+		TimerDeath = 0;
+	}
+
+	Alife = alife;
+	if (!Enable && Alife)
+		Enable = Alife;
+}
+
+bool Emitter::AlifeGet()
+{
+	return Alife;
 }
 
 ////////////////////
 
-void Particles::ComputeLighting()
+void Emitter::ComputeLighting()
 {
+	if (!Enable)
+		return;
+
 	if (CountLifeParticle > 0 && Data.Lighting)
 	{
 		float3 tmpPosition;
@@ -140,33 +198,20 @@ void Particles::ComputeLighting()
 	}
 }
 
-void Particles::ReCreate(int count)
-{
-	if (count <= 0)
-	{
-		Count = count;
-		mem_delete_a(Arr);
-		mem_release_del(TransVertBuf);
-		Arr = new CommonParticle[Count];
-
-		PESet::DXDevice->CreateVertexBuffer(
-			Count * sizeof(CommonParticleDecl2),
-			D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-			0,
-			D3DPOOL_DEFAULT,
-			&TransVertBuf,
-			0);
-	}
-
-	CreateParticles();
-}
-
-void Particles::Create(int count)
+void Emitter::CountSet(int count)
 {
 	Count = count;
-	Arr = new CommonParticle[Count];
 
-	CreateParticles();
+	if (Count <= 0)
+	{
+		reportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", gen_msg_location);
+		return;
+	}
+
+	mem_delete_a(Arr);
+	mem_release_del(TransVertBuf);
+
+	Arr = new CommonParticle[Count];
 
 	PESet::DXDevice->CreateVertexBuffer(
 		Count * sizeof(CommonParticleDecl2),
@@ -179,16 +224,43 @@ void Particles::Create(int count)
 	VertexCreate();
 }
 
-void Particles::VertexCreate()
+int Emitter::CountGet()
+{
+	return Count;
+}
+
+int Emitter::CountLifeGet()
+{
+	return CountLifeParticle;
+}
+
+void Emitter::EnableSet(bool enable)
+{
+	if (!Enable && enable)
+		CreateParticles();
+
+	Alife = enable;
+
+	Enable = enable;
+
+	if (!Enable)
+	{
+		for (int i = 0; i < Count; ++i)
+		{
+			Arr[i].IsAlife = false;
+		}
+	}
+}
+
+bool Emitter::EnableGet()
+{
+	return Enable;
+}
+
+void Emitter::VertexCreate()
 {
 	mem_release_del(VertexBuff);
 	mem_release_del(IndexBuff);
-
-	/*int count_quads = 10;
-	bool isrand = true;
-	bool tapx = false;
-	bool tapy = true;
-	bool tapz = true;*/
 
 	PESet::DXDevice->CreateVertexBuffer(
 		4 * Data.FigureCountQuads * sizeof(CommonParticleDecl),
@@ -216,14 +288,15 @@ void Particles::VertexCreate()
 
 	int countvert = 0;
 
+	static float4x4 mat;
+	mat = SMMatrixIdentity();
+
 	for (int i = 0; i < Data.FigureCountQuads; ++i)
 	{
 		float3 v0(-0.5f, -0.5f, 0.f);
 		float3 v1(-0.5f, 0.5f, 0.f);
 		float3 v2(0.5f, 0.5f, 0.f);
 		float3 v3(0.5f, -0.5f, 0.f);
-
-		float4x4 mat;
 
 		if (Data.FigureTapX)
 		{
@@ -268,19 +341,11 @@ void Particles::VertexCreate()
 		countvert += 4;
 	}
 
-	/*vertices[0] = CommonParticleDecl(-0.5f, -0.5f, 0.f, 0.0f, 1.0f);
-	vertices[1] = CommonParticleDecl(-0.5f,  0.5f, 0.f, 0.0f, 0.0f);
-	vertices[2] = CommonParticleDecl( 0.5f,  0.5f, 0.f, 1.0f, 0.0f);
-	vertices[3] = CommonParticleDecl( 0.5f, -0.5f, 0.f, 1.0f, 1.0f);*/
-
 	VertexBuff->Unlock();
 
 
 	WORD* indices = 0;
 	IndexBuff->Lock(0, 0, (void**)&indices, 0);
-
-	/*indices[0] = 0; indices[1] = 1; indices[2] = 2;
-	indices[3] = 0; indices[4] = 2; indices[5] = 3;*/
 
 	int countind = 0;
 	countvert = 0;
@@ -297,15 +362,14 @@ void Particles::VertexCreate()
 	IndexBuff->Unlock();
 }
 
-void Particles::CreateParticles()
+void Emitter::CreateParticles()
 {
 	CountReCreate2 = 0;
 	CountLifeParticle = 0;
-	IsAlife = true;
-
+	
 	for (int i = 0; i<Count; i++)
 	{
-		if (abs(Data.ReCreateCount) > CountReCreate2)
+		if (abs(Data.ReCreateCount) > CountReCreate2 || Data.ReCreateCount == 0)
 		{
 			ReCreateParticles(i);
 			CountReCreate2++;
@@ -322,7 +386,7 @@ void Particles::CreateParticles()
 
 }
 
-inline void Particles::ReCreateParticles(WORD id)
+inline void Emitter::ReCreateParticles(WORD id)
 {
 	//если разброс недопустим то спавним только в точке
 	if (Data.SpawnPosType == ParticlesSpawnPosType::pspt_strictly)
@@ -334,57 +398,126 @@ inline void Particles::ReCreateParticles(WORD id)
 	{
 		if (Data.BoundType == ParticlesBoundType::pbt_cone)
 		{
-			Arr[id].Pos.y = randf(Data.BoundConeBeginPos.y, Data.BoundConeEndPos.y);
-			float tmplerp = (Data.BoundConeEndPos.y - Arr[id].Pos.y) / (Data.BoundConeEndPos.y - Data.BoundConeBeginPos.y);
+			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
+				Arr[id].Pos.y = randf(Data.BoundVec1.y, Data.BoundVec2.y);
+			else if (Data.SpawnBoundBindCreateYNeg)
+				Arr[id].Pos.y = Data.BoundVec1.y;
+			else if (Data.SpawnBoundBindCreateYPos)
+				Arr[id].Pos.y = Data.BoundVec2.y;
+			else
+				Arr[id].Pos.y = Data.SpawnOrigin.y;
 
-			float tmpradius = lerp(Data.BoundConeEndRadius, Data.BoundConeBeginRadius, tmplerp);
-			float3 tmpcoord = float3(lerp(Data.BoundConeEndPos.x, Data.BoundConeBeginPos.x, tmplerp), 0, lerp(Data.BoundConeEndPos.z, Data.BoundConeBeginPos.z, tmplerp));
+			float tmplerp = (Data.BoundVec2.y - Arr[id].Pos.y) / (Data.BoundVec2.y - Data.BoundVec1.y);
 
-			Arr[id].Pos.x = randf(tmpcoord.x - (tmpradius*0.5), tmpcoord.x + (tmpradius*0.5));
-			Arr[id].Pos.z = randf(tmpcoord.z - (tmpradius*0.5), tmpcoord.z + (tmpradius*0.5));
+			float tmpradius = lerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
+			float3 tmpcoord = float3(Data.BoundVec1.x, 0,Data.BoundVec1.z);
+
+			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
+				Arr[id].Pos.x = randf(tmpcoord.x - tmpradius, tmpcoord.x + tmpradius);
+			else if (Data.SpawnBoundBindCreateXNeg)
+				Arr[id].Pos.x = tmpcoord.x - tmpradius;
+			else if (Data.SpawnBoundBindCreateXPos)
+				Arr[id].Pos.x = tmpcoord.x + tmpradius;
+			else
+				Arr[id].Pos.x = Data.SpawnOrigin.x;
+
+			if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
+				Arr[id].Pos.z = randf(tmpcoord.z - tmpradius, tmpcoord.z + tmpradius);
+			else if (Data.SpawnBoundBindCreateZNeg)
+				Arr[id].Pos.z = tmpcoord.z - tmpradius;
+			else if (Data.SpawnBoundBindCreateZPos)
+				Arr[id].Pos.z = tmpcoord.z + tmpradius;
+			else
+				Arr[id].Pos.z = Data.SpawnOrigin.z;
 		}
 		else if (Data.BoundType == ParticlesBoundType::pbt_box)
 		{
 			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = randf(Data.BoundBoxMin.x, Data.BoundBoxMax.x);
+				Arr[id].Pos.x = randf(Data.BoundVec1.x, Data.BoundVec2.x);
 			else if (Data.SpawnBoundBindCreateXNeg)
-				Arr[id].Pos.x = Data.BoundBoxMin.x;
+				Arr[id].Pos.x = Data.BoundVec1.x;
 			else if (Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = Data.BoundBoxMax.x;
+				Arr[id].Pos.x = Data.BoundVec2.x;
 			else
 				Arr[id].Pos.x = Data.SpawnOrigin.x;
 
 			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = randf(Data.BoundBoxMin.y, Data.BoundBoxMax.y);
+				Arr[id].Pos.y = randf(Data.BoundVec1.y, Data.BoundVec2.y);
 			else if (Data.SpawnBoundBindCreateYNeg)
-				Arr[id].Pos.y = Data.BoundBoxMin.y;
+				Arr[id].Pos.y = Data.BoundVec1.y;
 			else if (Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = Data.BoundBoxMax.y;
+				Arr[id].Pos.y = Data.BoundVec2.y;
 			else
 				Arr[id].Pos.y = Data.SpawnOrigin.y;
 
 			if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = randf(Data.BoundBoxMin.z, Data.BoundBoxMax.z);
+				Arr[id].Pos.z = randf(Data.BoundVec1.z, Data.BoundVec2.z);
 			else if (Data.SpawnBoundBindCreateZNeg)
-				Arr[id].Pos.z = Data.BoundBoxMin.z;
+				Arr[id].Pos.z = Data.BoundVec1.z;
 			else if (Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = Data.BoundBoxMax.z;
+				Arr[id].Pos.z = Data.BoundVec2.z;
 			else
 				Arr[id].Pos.z = Data.SpawnOrigin.z;
 		}
 		else if (Data.BoundType == ParticlesBoundType::pbt_sphere)
 		{
-			Arr[id].Pos.x = randf(Data.BoundSphereCenter.x - (Data.BoundSphereRadius*0.5), Data.BoundSphereCenter.x + (Data.BoundSphereRadius*0.5));
-			Arr[id].Pos.y = randf(Data.BoundSphereCenter.y - (Data.BoundSphereRadius*0.5), Data.BoundSphereCenter.y + (Data.BoundSphereRadius*0.5));
-			Arr[id].Pos.z = randf(Data.BoundSphereCenter.z - (Data.BoundSphereRadius*0.5), Data.BoundSphereCenter.z + (Data.BoundSphereRadius*0.5));
+			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
+				Arr[id].Pos.x = randf(Data.BoundVec1.x - Data.BoundVec1.w, Data.BoundVec1.x + Data.BoundVec1.w);
+			else if (Data.SpawnBoundBindCreateXNeg)
+				Arr[id].Pos.x = Data.BoundVec1.x - Data.BoundVec1.w;
+			else if (Data.SpawnBoundBindCreateXPos)
+				Arr[id].Pos.x = Data.BoundVec1.x + Data.BoundVec1.w;
+			else
+				Arr[id].Pos.x = Data.SpawnOrigin.x;
+
+			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
+				Arr[id].Pos.y = randf(Data.BoundVec1.y - Data.BoundVec1.w, Data.BoundVec1.y + Data.BoundVec1.w);
+			else if (Data.SpawnBoundBindCreateYNeg)
+				Arr[id].Pos.y = Data.BoundVec1.y - Data.BoundVec1.w;
+			else if (Data.SpawnBoundBindCreateYPos)
+				Arr[id].Pos.y = Data.BoundVec1.y + Data.BoundVec1.w;
+			else
+				Arr[id].Pos.y = Data.SpawnOrigin.y;
+
+			if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
+				Arr[id].Pos.z = randf(Data.BoundVec1.z - Data.BoundVec1.w, Data.BoundVec1.z + Data.BoundVec1.w);
+			else if (Data.SpawnBoundBindCreateZNeg)
+				Arr[id].Pos.z = Data.BoundVec1.z - Data.BoundVec1.w;
+			else if (Data.SpawnBoundBindCreateZPos)
+				Arr[id].Pos.z = Data.BoundVec1.z + Data.BoundVec1.w;
+			else
+				Arr[id].Pos.z = Data.SpawnOrigin.z;
 		}
 		else if (Data.BoundType == ParticlesBoundType::pbt_none)
 		{
 			if (Data.SpawnOriginDisp != 0.0f)
 			{
-				Arr[id].Pos.x = randf(Data.SpawnOrigin.x - (Data.SpawnOriginDisp*0.5), Data.SpawnOrigin.x + (Data.SpawnOriginDisp*0.5));
-				Arr[id].Pos.z = randf(Data.SpawnOrigin.z - (Data.SpawnOriginDisp*0.5), Data.SpawnOrigin.z + (Data.SpawnOriginDisp*0.5));
-				Arr[id].Pos.y = randf(Data.SpawnOrigin.y - (Data.SpawnOriginDisp*0.5), Data.SpawnOrigin.y + (Data.SpawnOriginDisp*0.5));
+				if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
+					Arr[id].Pos.x = randf(Data.SpawnOrigin.x - Data.SpawnOriginDisp, Data.SpawnOrigin.x + Data.SpawnOriginDisp);
+				else if (Data.SpawnBoundBindCreateXNeg)
+					Arr[id].Pos.x = randf(Data.SpawnOrigin.x - Data.SpawnOriginDisp, Data.SpawnOrigin.x);
+				else if (Data.SpawnBoundBindCreateXPos)
+					Arr[id].Pos.x = randf(Data.SpawnOrigin.x, Data.SpawnOrigin.x + Data.SpawnOriginDisp);
+				else
+					Arr[id].Pos.x = Data.SpawnOrigin.x;
+
+				if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
+					Arr[id].Pos.y = randf(Data.SpawnOrigin.y - Data.SpawnOriginDisp, Data.SpawnOrigin.y + Data.SpawnOriginDisp);
+				else if (Data.SpawnBoundBindCreateYNeg)
+					Arr[id].Pos.y = randf(Data.SpawnOrigin.y - Data.SpawnOriginDisp, Data.SpawnOrigin.y);
+				else if (Data.SpawnBoundBindCreateYPos)
+					Arr[id].Pos.y = randf(Data.SpawnOrigin.y, Data.SpawnOrigin.y + Data.SpawnOriginDisp);
+				else
+					Arr[id].Pos.y = Data.SpawnOrigin.y;
+
+				if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
+					Arr[id].Pos.z = randf(Data.SpawnOrigin.z - Data.SpawnOriginDisp, Data.SpawnOrigin.z + Data.SpawnOriginDisp);
+				else if (Data.SpawnBoundBindCreateZNeg)
+					Arr[id].Pos.z = randf(Data.SpawnOrigin.z - Data.SpawnOriginDisp, Data.SpawnOrigin.z);
+				else if (Data.SpawnBoundBindCreateZPos)
+					Arr[id].Pos.z = randf(Data.SpawnOrigin.z, Data.SpawnOrigin.z + Data.SpawnOriginDisp);
+				else
+					Arr[id].Pos.z = Data.SpawnOrigin.z;
 			}
 		}
 	}
@@ -392,6 +525,7 @@ inline void Particles::ReCreateParticles(WORD id)
 	Arr[id].PosCreate = Arr[id].Pos;
 	Arr[id].IsAlife = true;
 	Arr[id].AlphaAgeDependCoef = 1.f;
+	Arr[id].AlphaDeath = 1.f;
 
 	Arr[id].Age = 0;
 	Arr[id].TimeLife = Data.TimeLife + (Data.TimeLifeDisp != 0 ? ((rand() % (Data.TimeLifeDisp / 2)) - (Data.TimeLifeDisp / 2)) : 0);//GetRandomFloat(5000,30000);
@@ -435,8 +569,8 @@ inline void Particles::ReCreateParticles(WORD id)
 	if (Data.SizeDisp > 0.f)
 	{
 		float tmprand = randf(0.0, Data.SizeDisp);
-		Arr[id].Size.x = Data.SizeParticle.x + tmprand;
-		Arr[id].Size.y = Data.SizeParticle.y + tmprand;
+		Arr[id].Size.x = Data.Size.x + tmprand;
+		Arr[id].Size.y = Data.Size.y + tmprand;
 
 		if (Data.SizeDependAge == ParticlesDependType::padt_direct)
 		{
@@ -446,8 +580,8 @@ inline void Particles::ReCreateParticles(WORD id)
 	}
 	else
 	{
-		Arr[id].Size.y = Data.SizeParticle.x;
-		Arr[id].Size.x = (Data.SizeDependAge == ParticlesDependType::padt_direct ? 0 : Data.SizeParticle.x);
+		Arr[id].Size.y = Data.Size.x;
+		Arr[id].Size.x = (Data.SizeDependAge == ParticlesDependType::padt_direct ? 0 : Data.Size.x);
 	}
 
 
@@ -501,7 +635,7 @@ inline void Particles::ReCreateParticles(WORD id)
 	}
 }
 
-void Particles::UpdateAnimTex(WORD idparticle, DWORD tmptime)
+void Emitter::UpdateAnimTex(WORD idparticle, DWORD tmptime)
 {
 	//если подошло время обновления анимации текстуры
 	if (Arr[idparticle].AnimTexRateMls <= Arr[idparticle].AnimTexCurrentMls)
@@ -538,13 +672,13 @@ void Particles::UpdateAnimTex(WORD idparticle, DWORD tmptime)
 	}
 }
 
-inline bool Particles::IsPointInCone(float3* point)
+inline bool Emitter::IsPointInCone(float3* point)
 {
-	if (point->y >= Data.BoundConeBeginPos.y && point->y <= Data.BoundConeEndPos.y)
+	if (point->y >= Data.BoundVec1.y && point->y <= Data.BoundVec2.y)
 	{
-		float tmplerp = (Data.BoundConeEndPos.y - point->y) / (Data.BoundConeEndPos.y - Data.BoundConeBeginPos.y);
-		float tmpradius = lerp(Data.BoundConeEndRadius, Data.BoundConeBeginRadius, tmplerp) * 0.5f;
-		float3 tmpcoord = float3(lerp(Data.BoundConeEndPos.x, Data.BoundConeBeginPos.x, tmplerp), 0, lerp(Data.BoundConeEndPos.z, Data.BoundConeBeginPos.z, tmplerp));
+		float tmplerp = (Data.BoundVec2.y - point->y) / (Data.BoundVec2.y - Data.BoundVec1.y);
+		float tmpradius = lerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
+		float3 tmpcoord = float3(Data.BoundVec1.x, 0, Data.BoundVec1.z);
 		if (
 			tmpcoord.x + tmpradius >= point->x && tmpcoord.x - tmpradius <= point->x &&
 			tmpcoord.z + tmpradius >= point->z && tmpcoord.z - tmpradius <= point->z
@@ -555,29 +689,33 @@ inline bool Particles::IsPointInCone(float3* point)
 	return false;
 }
 
-inline bool Particles::IsPointInSphere(float3* point)
+inline bool Emitter::IsPointInSphere(float3* point)
 {
-	float distsqr = SMVector3Dot(Data.BoundSphereCenter - *point);
-	if (distsqr <= Data.BoundSphereRadius*Data.BoundSphereRadius)
+	float distsqr = SMVector3Dot(Data.BoundVec1 - *point);
+	if (distsqr <= Data.BoundVec1.w*Data.BoundVec1.w)
 		return true;
 	else
 		return false;
 }
 
-inline bool Particles::IsPointInBox(float3* point)
+inline bool Emitter::IsPointInBox(float3* point)
 {
-	if (point->x >= Data.BoundBoxMin.x && point->y >= Data.BoundBoxMin.y && point->z >= Data.BoundBoxMin.z && point->x <= Data.BoundBoxMax.x && point->y <= Data.BoundBoxMax.y && point->z <= Data.BoundBoxMax.z)
+	if (point->x >= Data.BoundVec1.x && point->y >= Data.BoundVec1.y && point->z >= Data.BoundVec1.z && point->x <= Data.BoundVec2.x && point->y <= Data.BoundVec2.y && point->z <= Data.BoundVec2.z)
 		return true;
 	else
 		return false;
 }
 
-void Particles::Compute()
+void Emitter::Compute()
 {
+	if (!Enable)
+		return;
+
+	SizeAdd = (Data.Size.x > Data.Size.y ? Data.Size.x : Data.Size.y) + Data.SizeDisp;
+
 	CountReCreate2 = 0;
-	if (OldTime > 0 && Data.ReCreateCount > 0 && Data.ReCreateCount <= Count - CountLifeParticle)
+	if (Alife && OldTime > 0 && Data.ReCreateCount > 0 && Data.ReCreateCount <= Count - CountLifeParticle)
 	{
-		//DWORD tt = GetTickCount();
 		if (GetTickCount() > TimeNextSpawnParticle)
 		{
 			for (int i = 0; i<Count; i++)
@@ -596,13 +734,35 @@ void Particles::Compute()
 				}
 			}
 		}
-		IsAlife = true;
 	}
+
+	if (!Alife)
+	{
+		TimeNextSpawnParticle = 0;
+		if (TimerDeath == 0)
+			TimerDeath = GetTickCount();
+		else
+		{
+			GTransparency = 1.f - float(GetTickCount() - TimerDeath) / float(SXPARTICLES_DEADTH_TIME);
+			if (GetTickCount() - TimerDeath > SXPARTICLES_DEADTH_TIME)
+			{
+				Enable = false;
+				GTransparency = 1.f;
+				TimerDeath = 0;
+				for (int i = 0; i < Count; ++i)
+				{
+					Arr[i].IsAlife = false;
+				}
+				return;
+			}
+		}
+	}
+
 
 	DWORD tmptime = GetTickCount();
 	CountLifeParticle = 0;
 
-	for (int i = 0; i<Count && OldTime != 0 && IsAlife; i++)
+	for (int i = 0; i<Count && OldTime != 0; i++)
 	{
 		//если время жизни частицы больше либо равно назначенному то значит она уже умерла
 		if (Arr[i].IsAlife && Arr[i].TimeLife > 0 && Arr[i].Age >= Arr[i].TimeLife)
@@ -625,6 +785,7 @@ void Particles::Compute()
 				CountLifeParticle++;
 		}
 
+		
 		//если частица жива то обрабатываем поведение
 		if (Arr[i].IsAlife)
 		{
@@ -632,9 +793,9 @@ void Particles::Compute()
 			Arr[i].Age += tmptime - OldTime;
 
 			//обработка зависимости прозрачности от возраста
-			if (Data.AlphaAgeDepend == ParticlesDependType::padt_direct)
+			if (Data.AlphaDependAge == ParticlesDependType::padt_direct)
 				Arr[i].AlphaAgeDependCoef = 1.f - (float(Arr[i].Age) / float(Arr[i].TimeLife));
-			else if (Data.AlphaAgeDepend == ParticlesDependType::padt_inverse)
+			else if (Data.AlphaDependAge == ParticlesDependType::padt_inverse)
 				Arr[i].AlphaAgeDependCoef = (float(Arr[i].Age) / float(Arr[i].TimeLife));
 			else
 				Arr[i].AlphaAgeDependCoef = 1;
@@ -643,6 +804,9 @@ void Particles::Compute()
 				Arr[i].AlphaAgeDependCoef = 1.f;
 			else if (Arr[i].AlphaAgeDependCoef < 0.f)
 				Arr[i].AlphaAgeDependCoef = 0.f;
+
+			if (!Alife)
+				Arr[i].AlphaDeath = GTransparency;
 
 			//обработка зависимости размера от возвраста
 			if (Data.SizeDependAge == ParticlesDependType::padt_direct)
@@ -734,19 +898,19 @@ void Particles::Compute()
 						tmpdist = Arr[i].Pos.z;
 
 					//если разрешена дисперсия
-					if (Data.CharacterDeviationDisp != 0.0f)
+					if (Data.CharacterDeviationCoefAngleDisp != 0.0f)
 					{
-						if (Data.CharacterDeviationDispNeg)
+						if (Data.CharacterDeviationCoefAngleDispNeg)
 						{
-							tmpdist += randf(-Data.CharacterDeviationDisp*0.5, Data.CharacterDeviationDisp*0.5);
+							tmpdist += randf(-Data.CharacterDeviationCoefAngleDisp*0.5, Data.CharacterDeviationCoefAngleDisp*0.5);
 						}
 						else
 						{
 							//если амплитуда отрицательная, значит и рандомное значение тоже
 							if (Data.CharacterDeviationAmplitude < 0)
-								tmpdist += randf(Data.CharacterDeviationDisp, 0);
+								tmpdist += randf(Data.CharacterDeviationCoefAngleDisp, 0);
 							else
-								tmpdist += randf(0, Data.CharacterDeviationDisp);
+								tmpdist += randf(0, Data.CharacterDeviationCoefAngleDisp);
 						}
 						
 					}
@@ -777,16 +941,16 @@ void Particles::Compute()
 					if (Data.CharacterDeviationType == ParticlesDeviationType::pdt_rnd)
 					{
 						//если разрешена дисперсия то генерируем
-						if (Data.CharacterDeviationDisp != 0.0f)
+						if (Data.CharacterDeviationCoefAngleDisp != 0.0f)
 						{
 							if (Data.CharacterDeviationTapX)
-								Arr[i].DeviationVector.x = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
+								Arr[i].DeviationVector.x = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationCoefAngleDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
 
 							if (Data.CharacterDeviationTapY)
-								Arr[i].DeviationVector.y = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
+								Arr[i].DeviationVector.y = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationCoefAngleDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
 
 							if (Data.CharacterDeviationTapZ)
-								Arr[i].DeviationVector.z = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
+								Arr[i].DeviationVector.z = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationCoefAngleDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
 						}
 						else
 						{
@@ -850,17 +1014,31 @@ void Particles::Compute()
 		}
 	}
 
-	//все частицы отыграли свое
-	if (OldTime != 0 && CountLifeParticle == 0)
-		IsAlife = false;
+	//все частицы отыграли свое и будущего спавна нет
+	if (OldTime != 0 && CountLifeParticle == 0 && TimeNextSpawnParticle == 0)
+		Enable = false;
+
+	if (!Enable)
+		Alife = Enable;
 
 	OldTime = tmptime;
+
+	CurrMin.x -= SizeAdd;
+	CurrMin.y -= SizeAdd;
+	CurrMin.z -= SizeAdd;
+
+	CurrMax.x += SizeAdd;
+	CurrMax.y += SizeAdd;
+	CurrMax.z += SizeAdd;
 }
 
 
 
-void Particles::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
+void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 {
+	if (!Enable)
+		return;
+
 	if (CountLifeParticle > 0)
 	{
 		CommonParticleDecl2* RTGPUArrVerteces;
@@ -872,7 +1050,7 @@ void Particles::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 			{
 				RTGPUArrVerteces[tmpcount].pos = Arr[i].Pos;
 				RTGPUArrVerteces[tmpcount].tex = Arr[i].AnimTexSizeCadrAndBias;
-				RTGPUArrVerteces[tmpcount].alpha = Arr[i].AlphaAgeDependCoef * Data.TransparencyCoef;
+				RTGPUArrVerteces[tmpcount].alpha = Arr[i].AlphaAgeDependCoef * Arr[i].AlphaDeath * Data.TransparencyCoef;
 				RTGPUArrVerteces[tmpcount].size = Arr[i].Size.x;
 				RTGPUArrVerteces[tmpcount].lighting = Arr[i].LightingIntens;
 
@@ -930,14 +1108,18 @@ void Particles::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 
 		SGCore_ShaderBind(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles);
 
+		static ID psid = -1;
+
 		if (Data.Soft && !Data.Refraction && !Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesSoft;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoft);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoft, "SoftCoef", &Data.SoftCoef);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoft, "NearFar", &NearFar);
 		}
 		else if (Data.Soft && Data.Refraction && !Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesSoftRefraction;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction, "SoftCoef", &Data.SoftCoef);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction, "NearFar", &NearFar);
@@ -945,6 +1127,7 @@ void Particles::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		}
 		else if (Data.Soft && Data.Refraction && Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesSoftRefractionLight;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "SoftCoef", &Data.SoftCoef);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "NearFar", &NearFar);
@@ -952,6 +1135,7 @@ void Particles::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		}
 		else if (Data.Soft && !Data.Refraction && Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesSoftLight;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight, "SoftCoef", &Data.SoftCoef);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight, "NearFar", &NearFar);
@@ -959,32 +1143,58 @@ void Particles::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		}
 		else if (!Data.Soft && Data.Refraction && Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesRefractionLight;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefractionLight);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefractionLight, "RefractCoef", &Data.RefractionCoef);
 		}
 		else if (!Data.Soft && !Data.Refraction && Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesLight;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesLight);
 		}
 		else if (!Data.Soft && Data.Refraction && !Data.Lighting)
 		{
+			psid = PESet::IDsShaders::PS::ParticlesRefraction;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefraction);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefraction, "RefractCoef", &Data.RefractionCoef);
 		}
 		else
+		{
+			psid = PESet::IDsShaders::PS::Particles;
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::Particles);
+		}
 
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "ViewProjection", &SMMatrixTranspose(vp));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "WorldMat", &SMMatrixTranspose(worldmat));
+		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "WorldMat", &SMMatrixTranspose(worldmat));
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "World", &SMMatrixTranspose(world));
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatRot", &SMMatrixTranspose(tmpmatrot));
 		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
+		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, psid, "ColorCoef", &Data.ColorCoef);
+
+		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+		if (Data.AlphaBlendType == pabt_alpha)
+		{
+			PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+			PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+			PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		}
+		else if (Data.AlphaBlendType == pabt_add)
+		{
+			PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+			PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			PESet::DXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+		}
 
 		if (Data.FigureType == ParticlesFigureType::pft_quad_composite)
 			PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4 * Data.FigureCountQuads, 0, 2 * Data.FigureCountQuads);
 		else
 			PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+
+		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 		SGCore_ShaderUnBind();
 

@@ -16,6 +16,8 @@ See the license in LICENSE
 #define __gdata_h
 
 #include <managed_render/model_sim.h>
+#include <managed_render/editor/grid.h>
+#include <managed_render/editor/axes_static.h>
 
 #define G_DATA_LIGHT_FAR 100000 /*!< дальняя плоскость отсечения наблюдателя для света */
 
@@ -149,7 +151,22 @@ namespace GData
 		};
 	};
 
-#if !defined(SX_LEVEl_EDITOR)
+	Grid* ObjGrid = 0;
+	AxesStatic* ObjAxesStatic = 0;
+	ID3DXMesh* FigureBox;
+	ID3DXMesh* FigureSphere;
+	ID3DXMesh* FigureCone;
+	float3_t FigureConeParam;
+	float3 FigureConePos;
+
+#if defined(SX_PARTICLES_EDITOR)
+	namespace Editors
+	{
+		void ParticlesEditorUpdateStatusBar();
+	};
+#endif
+
+#if defined(SX_LEVEL_EDITOR)
 	namespace Editors
 	{
 		int ActiveGroupType = 0;
@@ -167,6 +184,8 @@ namespace GData
 //!@} managed_render_gdata
 
 #include <managed_render/model_sim.cpp>
+#include <managed_render/editor/grid.cpp>
+#include <managed_render/editor/axes_static.cpp>
 
 #endif
 
