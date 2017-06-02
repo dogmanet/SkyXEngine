@@ -244,7 +244,7 @@ void    btAlignedFreeInternal   (void* ptr,int line,char* filename)
 
 #else //BT_DEBUG_MEMORY_ALLOCATIONS
 
-void*	btAlignedAllocInternal	(size_t size, int alignment)
+BULLET_EXPORTS void* btAlignedAllocInternal(size_t size, int alignment)
 {
 	gNumAlignedAllocs++;
 	void* ptr;
@@ -253,7 +253,7 @@ void*	btAlignedAllocInternal	(size_t size, int alignment)
 	return ptr;
 }
 
-void	btAlignedFreeInternal	(void* ptr)
+BULLET_EXPORTS void	btAlignedFreeInternal(void* ptr)
 {
 	if (!ptr)
 	{

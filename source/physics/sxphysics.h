@@ -19,6 +19,12 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#ifdef lerp
+#undef lerp
+#endif
+#include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+#include <BulletDynamics/Character/btKinematicCharacterController.h>
 
 /*! Инициализирует библиотеку
 */
@@ -53,6 +59,15 @@ SX_LIB_API void SXPhysics_LoadGeom();
 */
 SX_LIB_API void SXPhysics_DebugRender();
 
+/*! Добавляет объект в симуляцию
+*/
+SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody);
+
+/*! Удаляет объект из симуляции
+*/
+SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody);
+
+SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld();
 
 #endif
 

@@ -281,6 +281,7 @@ public:
 	void ComputeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr);
 
 	ID GetNextVisId();
+	void FreeVisID(ID id);
 
 	void SetThreadNum(int num);
 
@@ -296,6 +297,7 @@ protected:
 
 	IDirect3DDevice9 * m_pd3dDevice;
 
+	Array<ID> m_vFreeVisIDs;
 	ID m_iVisID;
 
 	int m_iThreadNum;

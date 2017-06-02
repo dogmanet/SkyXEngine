@@ -109,6 +109,23 @@ void SXInput::Update()
 					Core_0ConsoleExecCmd("%s", m_vKeyMap[key].cmd);
 				}
 			}
+			if(
+				((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
+				|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
+				|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
+				)
+			{
+				if(key <= SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
+				{
+					m_vKeyMap[key].state = TRUE;
+					m_vKeyMap[key].changed = TRUE;
+
+					if(m_vKeyMap[key].cmd != 0)
+					{
+						Core_0ConsoleExecCmd("%s", m_vKeyMap[key].cmd);
+					}
+				}
+			}
 			break;
 
 
@@ -138,6 +155,24 @@ void SXInput::Update()
 				if(m_vKeyMap[key].cmd != 0 && m_vKeyMap[key].cmd[0] == L'+')
 				{
 					Core_0ConsoleExecCmd("-%s", m_vKeyMap[key].cmd + 1);
+				}
+			}
+
+			if(
+				((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
+				|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
+				|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
+				)
+			{
+				if(key <= SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
+				{
+					m_vKeyMap[key].state = FALSE;
+					m_vKeyMap[key].changed = TRUE;
+
+					if(m_vKeyMap[key].cmd != 0 && m_vKeyMap[key].cmd[0] == L'+')
+					{
+						Core_0ConsoleExecCmd("-%s", m_vKeyMap[key].cmd + 1);
+					}
 				}
 			}
 			break;

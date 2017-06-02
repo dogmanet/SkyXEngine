@@ -23,7 +23,7 @@ class btCollisionWorld;
 #include "btRigidBody.h"
 
 ///Basic interface to allow actions such as vehicles and characters to be updated inside a btDynamicsWorld
-class btActionInterface
+class BULLET_EXPORTS btActionInterface
 {
 protected:
 

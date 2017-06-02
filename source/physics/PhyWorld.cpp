@@ -107,6 +107,10 @@ void PhyWorld::Update(int thread)
 	static UINT time0 = GetTickCount();
 	UINT time1 = GetTickCount();
 
+	if(time1 - time0 > 5000)
+	{
+		time0 = time1;
+	}
 	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 0, 1.0f / 60.0f);
 
 	time0 = time1;
@@ -144,18 +148,33 @@ void PhyWorld::LoadGeom()
 
 	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &pIndexCount, &iModelCount);
 
-	m_pGeomStaticCollideMesh = new btTriangleMesh();
+	
+	m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
+	uint32_t IC = 0, VC = 0;
 	for(int32_t tc = 0; tc < iModelCount; ++tc)
 	{
+		IC += pIndexCount[tc];
+		VC += pVertexCount[tc];
+	}
+
+	m_pGeomStaticCollideMesh->preallocateIndices(IC);
+	m_pGeomStaticCollideMesh->preallocateVertices(VC);
+	IC = 0;
+	VC = 0;
+	
+	for(int32_t tc = 0; tc < iModelCount; ++tc)
+	{
+		for(int i = 0; i < pVertexCount[tc]; ++i)
+		{
+			m_pGeomStaticCollideMesh->findOrAddVertex(F3_BTVEC(ppVertices[tc][i]), false);
+		}
 		for(int i = 0; i < pIndexCount[tc]; i += 3)
 		{
-			m_pGeomStaticCollideMesh->addTriangle(
-				F3_BTVEC(ppVertices[tc][ppIndices[tc][i]]),
-				F3_BTVEC(ppVertices[tc][ppIndices[tc][i + 1]]),
-				F3_BTVEC(ppVertices[tc][ppIndices[tc][i + 2]])
-				);
+			m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
 		}
+		IC += pIndexCount[tc];
+		VC += pVertexCount[tc];
 	}
 
 	if(m_pGeomStaticCollideMesh->getNumTriangles() != 0)
@@ -178,6 +197,8 @@ void PhyWorld::LoadGeom()
 
 	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, pIndexCount, iModelCount);
 }
+
+
 
 
 //##############################################################

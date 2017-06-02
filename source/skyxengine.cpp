@@ -26,9 +26,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
-	//Level::Load("stalker_atp");
-
-	//SXPhysics_LoadGeom();
+	Level::Load("stalker_atp");
+	SXPhysics_LoadGeom();
 
 	SGeom_0SettGreenSetFreqGrass(30);
 
@@ -39,63 +38,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	
 	//TestEffect = new Effect();
 
-	ParticlesData data;
 
-	data.FigureType = ParticlesFigureType::pft_billboard;
-	data.FigureCountQuads = 1;
-	data.FigureRotRand = false;
-	data.FigureTapY = false;
-
-	data.ReCreateCount = 3;
-
-	data.SpawnNextTime = 1000;
-
-	data.TimeLife = 5000;
-	data.TimeLifeDisp = 200;
-
-	data.AlphaAgeDepend = ParticlesDependType::padt_direct;
-
-	data.SizeParticle = float2(0.3, 0.3);
-	data.SizeDisp = 0.3;
-	data.SizeDependAge = ParticlesDependType::padt_direct;
-
-	data.Velocity = float3(0.01, 0.1, 0.01);
-	data.VelocityDisp = 0.1;
-	data.VelocityDispXNeg = true;
-	data.VelocityDispYNeg = false;
-	data.VelocityDispZNeg = true;
-
-	/*data.AnimTexCountCadrsX = 11;
-	data.AnimTexCountCadrsY = 7;
-	data.AnimTexRate = 10;
-	data.AnimTexStartCadr = 1;*/
-	//data.AnimTexStartCadrDisp = 20;
-
-	/*data.CharacterCircle = true;
-	data.CharacterCircleAngle = 0.5;*/
-
-	/*data.CharacterRotate = true;
-	data.CharacterRotateAngle = 0.1;*/
-	//data.CharacterRotateAngleDisp = 0.2;
-	//data.CharacterRotateAngleDispNeg = true;
-
-	/*data.CharacterDeviation = true;
-	data.CharacterMotionAmplitude = 0.01f;
-	data.CharacterMotionCoefAngle = 100.0;*/
-
-	/*data.CharacterDeviationAmplitude = 0.02f;
-	data.CharacterDeviationCoefAngle = 100.0;
-
-	data.CharacterDeviationDisp = 0.1;
-	data.CharacterDeviationDispNeg = true;
-
-	data.CharacterDeviationCountDelayMls = 100;
-	data.CharacterDeviationType = ParticlesDeviationType::pdt_rnd;
-	data.CharacterDeviationAxis = ParticlesAxis::pa_y;
-	data.CharacterDeviationTapX = true;
-	data.CharacterDeviationTapZ = true;*/
-
-	//data.Lighting = true;
 
 	char tmppathsave[1024];
 	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
@@ -121,10 +64,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	ID tmpid = SPE_EffectGetByName("test");
 	SPE_EffectEnableSet(tmpid, true);
-	
+
 	/*SPE_EffectCopyName("test");
 	SPE_EffectCopyName("test");*/
-	
+
 
 	//SPE_EffectSave(tmppathsave);
 
@@ -173,12 +116,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	/*ID tmpids = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
 	SSCore_SndPosCurrSet(tmpids, 20, SOUND_POS_SEC);
 	SSCore_SndPlay(tmpids);*/
+	ID tmpid = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
+	if(tmpid >= 0)
+	{
+		SSCore_SndPosCurrSet(tmpid, 20, SOUND_POS_SEC);
+		SSCore_SndPlay(tmpid);
 	//ms->SoundPanSet(tmpid, DSBPAN_RIGHT, 0);
 	//ms->SoundVolumeSet(tmpid, 100);
+	}
 
-	/*ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
+	ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
+	if(tmpid2 >= 0)
+	{
 	//SSCore_SndVolumeSet(tmpid2, 50, SOUND_VOL_PCT);
-	SSCore_SndPlay(tmpid2);*/
+		SSCore_SndPlay(tmpid2);
+	}
 
 	//ms->SoundEffectGargleSet(tmpid, 100, DSFXGARGLE_WAVE_SQUARE);
 
@@ -213,7 +165,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			DWORD timeDelta = (currTime - lastTime);
 
 			Core_0ConsoleUpdate();
-
+#ifdef SX_GAME
+			GData::ObjCamera = SXGame_GetActiveCamera();
+#endif
 			if (GetActiveWindow() == GData::Handle3D)
 			{
 				SGCore_LoadTexLoadTextures();
@@ -227,7 +181,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
-	/*SXPhysics_0Kill();
+	/*
+	SXGame_0Kill();
+	SXPhysics_0Kill();
 	SXAnim_0Kill();
 	mem_release(GData::ObjCamera);
 	SGeom_0CreateKill();

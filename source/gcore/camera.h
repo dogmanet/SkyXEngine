@@ -36,6 +36,7 @@ public:
 	inline void RotUpDown(float angle);	//вращение вверх/вниз
 	inline void RotRightLeft(float angle);	//вращение вправо/влево
 	inline void Roll(float angle);	//крен
+	inline void SetOrientation(const SMQuaternion & q);
 
 	inline void GetViewMatrix(float4x4* view_matrix);//получаем матрицу вида
 	

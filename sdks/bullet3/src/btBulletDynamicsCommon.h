@@ -16,6 +16,10 @@ subject to the following restrictions:
 #ifndef BULLET_DYNAMICS_COMMON_H
 #define BULLET_DYNAMICS_COMMON_H
 
+#ifndef BULLET_EXPORTS
+#define BULLET_EXPORTS _declspec(dllimport)
+#endif
+
 ///Common headerfile includes for Bullet Dynamics, including Collision Detection
 #include "btBulletCollisionCommon.h"
 

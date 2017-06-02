@@ -24,7 +24,7 @@ class btSerializer;
 
 
 ///The btCollisionShape class provides an interface for collision shapes that can be shared among btCollisionObjects.
-ATTRIBUTE_ALIGNED16(class) btCollisionShape
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btCollisionShape
 {
 protected:
 	int m_shapeType;

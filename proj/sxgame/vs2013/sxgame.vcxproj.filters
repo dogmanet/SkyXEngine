@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ents">
+      <UniqueIdentifier>{fe80ba2f-c4bf-4847-b1ad-191e125d71cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents">
+      <UniqueIdentifier>{683bc9ab-75e2-483e-824d-037c2c4dd4d3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseEntity.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\proptable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EntityFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EntityManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXplayer.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseAnimating.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PathCorner.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\GameData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\game\sxgame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseEntity.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseAnimating.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXplayer.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXpointEntity.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\proptable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXpointCamera.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PathCorner.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\FuncTrain.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\GameData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

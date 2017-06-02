@@ -13,8 +13,6 @@
 
 #include <common/SXMath.h>
 
-#define F3_BTVEC(xmf) (btVector3((xmf).x, (xmf).y, (xmf).z))
-
 extern report_func reportf;
 
 class PhyWorld
@@ -33,6 +31,11 @@ public:
 	void LoadGeom();
 
 	void Render();
+
+	btDiscreteDynamicsWorld * GetBtWorld()
+	{
+		return(m_pDynamicsWorld);
+	}
 
 	class DebugDrawer: public btIDebugDraw
 	{

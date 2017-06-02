@@ -960,10 +960,10 @@ void btKinematicCharacterController::setUp(const btVector3& up)
 		return;
 	}
 
-	setUpVector(up);
+	setUpVector(up, true);
 }
 
-void btKinematicCharacterController::setUpVector(const btVector3& up)
+void btKinematicCharacterController::setUpVector(const btVector3& up, bool skipGHost)
 {
 	if (m_up == up)
 		return;
@@ -975,7 +975,7 @@ void btKinematicCharacterController::setUpVector(const btVector3& up)
 	else
 		m_up = btVector3(0.0, 0.0, 0.0);
 
-	if (!m_ghostObject) return;
+	if(!m_ghostObject || skipGHost) return;
 	btQuaternion rot = getRotation(m_up, u);
 
 	//set orientation with new up

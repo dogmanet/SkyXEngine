@@ -729,6 +729,7 @@ public:
 	virtual inline void RotUpDown(float angle) = 0;		//!< вращение вверх/вниз
 	virtual inline void RotRightLeft(float angle) = 0;	//!< вращение вправо/влево
 	virtual inline void Roll(float angle) = 0;			//!< крен
+	virtual inline void SetOrientation(const SMQuaternion & q) = 0; //!< установить полное вращение
 	//!@}
 
 	virtual inline void GetViewMatrix(float4x4* view_matrix) = 0;//!< получаем матрицу вида в view_matrix

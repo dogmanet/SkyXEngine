@@ -47,6 +47,18 @@ void Level::Load(const char* name)
 		}
 	}
 
+	if(config->KeyExists("level", "entity"))
+	{
+		char tmppath[1024];
+		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "entity"));
+		if(Core_0FileExists(tmppath))
+			SXGame_LoadEnts(tmppath);
+		else
+		{
+			//error
+		}
+	}
+
 	SGCore_LoadTexLoadTextures();
 	mem_release(config);
 }

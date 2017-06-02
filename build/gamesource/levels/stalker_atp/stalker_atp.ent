@@ -1,0 +1,202 @@
+[ent_0]
+classname = func_train
+name = cam_train
+origin = "-106.658783 -0.106368 1.572050"
+start = cam_pt_0
+rotation = "0.000000 0 0"
+speed = 5
+
+[ent_1]
+classname = point_camera
+origin = "-106.658783 -0.106368 1.572050"
+parent = cam_train
+name = train_camera
+rotation = "0.000000 180 0"
+
+[ent_10]
+type = 0
+speed = 0.000000
+rotation = 174.270401 -74.669426 179.999985
+parent = 
+origin = 30.400223 5.038457 24.533363
+next = cam_pt_9
+name = cam_pt_8
+classname = path_corner
+
+[ent_11]
+type = 0
+speed = 0.000000
+rotation = 173.468246 -33.874779 -179.999985
+parent = 
+origin = 22.309462 5.038457 38.705887
+next = cam_pt_10
+name = cam_pt_9
+classname = path_corner
+
+[ent_12]
+type = 0
+speed = 0.000000
+rotation = 155.706589 8.982540 -179.999985
+parent = 
+origin = 7.407078 14.349155 45.017582
+next = cam_pt_11
+name = cam_pt_10
+classname = path_corner
+
+[ent_13]
+type = 0
+speed = 0.000000
+rotation = 156.852509 26.515091 -179.999985
+parent = 
+origin = -22.641125 18.850998 42.844719
+next = cam_pt_12
+name = cam_pt_11
+classname = path_corner
+
+[ent_14]
+type = 0
+speed = 0.000000
+rotation = 160.748596 55.506725 179.999985
+parent = 
+origin = -41.062172 16.238222 25.595926
+next = cam_pt_13
+name = cam_pt_12
+classname = path_corner
+
+[ent_15]
+type = 0
+speed = 0.000000
+rotation = 168.311676 68.455612 180.000000
+parent = 
+origin = -27.214052 10.006430 6.619457
+next = cam_pt_14
+name = cam_pt_13
+classname = path_corner
+
+[ent_16]
+type = 0
+speed = 0.000000
+rotation = 174.155869 74.758255 -179.999954
+parent = 
+origin = -10.673305 7.396099 0.787011
+next = cam_pt_15
+name = cam_pt_14
+classname = path_corner
+
+[ent_17]
+type = 0
+speed = 0.000000
+rotation = -173.811996 87.134262 -179.999924
+parent = 
+origin = -1.875340 7.051552 -0.783876
+next = cam_pt_16
+name = cam_pt_15
+classname = path_corner
+
+[ent_18]
+type = 0
+speed = 0.000000
+rotation = -175.760071 77.164619 -179.999969
+parent = 
+origin = 13.182630 8.533407 -2.605206
+next = cam_pt_17
+name = cam_pt_16
+classname = path_corner
+
+[ent_19]
+type = 0
+speed = 0.000000
+rotation = -10.427822 -65.682053 0.000001
+parent = 
+origin = 26.969713 8.383520 -18.184080
+name = cam_pt_17
+classname = path_corner
+
+[ent_2]
+type = 0
+speed = 0.000000
+rotation = 0.000000 89.886360 1.604293
+parent = 
+origin = -106.658783 -0.106368 1.572050
+next = cam_pt_1
+name = cam_pt_0
+classname = path_corner
+
+[ent_3]
+type = 0
+speed = 0.000000
+rotation = -0.000010 89.542854 0.000010
+parent = 
+origin = -87.406258 -0.449019 1.677870
+next = cam_pt_2
+name = cam_pt_1
+classname = path_corner
+
+[ent_4]
+type = 0
+speed = 0.000000
+rotation = 1.260862 89.544144 0.000348
+parent = 
+origin = -58.231617 -0.143631 1.910716
+next = cam_pt_3
+name = cam_pt_2
+classname = path_corner
+
+[ent_5]
+type = 0
+speed = 0.000000
+rotation = -174.614243 89.425964 179.999924
+parent = 
+origin = -40.818382 0.838363 1.891964
+next = cam_pt_4
+name = cam_pt_3
+classname = path_corner
+
+[ent_6]
+type = 0
+speed = 0.000000
+rotation = 174.384979 66.622169 179.999985
+parent = 
+origin = -33.075165 1.703738 8.209880
+next = cam_pt_5
+name = cam_pt_4
+classname = path_corner
+
+[ent_7]
+type = 0
+speed = 0.000000
+rotation = 178.624893 76.018684 -179.999969
+parent = 
+origin = -8.018185 0.374952 0.224873
+next = cam_pt_6
+name = cam_pt_5
+classname = path_corner
+
+[ent_8]
+type = 0
+speed = 0.000000
+rotation = -9.969482 -33.481724 -0.000000
+parent = 
+origin = 24.394606 2.826913 -2.666729
+next = cam_pt_7
+name = cam_pt_6
+classname = path_corner
+
+[ent_9]
+type = 0
+speed = 0.000000
+rotation = -8.938160 -69.348839 0.000004
+parent = 
+origin = 27.689428 4.612576 7.771554
+next = cam_pt_8
+name = cam_pt_7
+classname = path_corner
+
+[ent_20]
+classname = info_player_spawn
+origin = "10.0 10.0 10.0"
+rotation = "0 0 0"
+team = 0
+
+[meta]
+count = 21

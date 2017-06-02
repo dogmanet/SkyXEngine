@@ -27,7 +27,7 @@ struct btCollisionObjectWrapper;
 class btPersistentManifold;
 class btPoolAllocator;
 
-struct btDispatcherInfo
+struct BULLET_EXPORTS btDispatcherInfo
 {
 	enum DispatchFunc
 	{

@@ -260,6 +260,20 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <physics/sxphysics.h>
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxdecals_d.lib")
+#else
+#pragma comment(lib, "sxdecals.lib")
+#endif
+#include <decals/sxdecals.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxgame_d.lib")
+#else
+#pragma comment(lib, "sxgame.lib")
+#endif
+#include <game/sxgame.h>
+
 #if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR) || defined(SX_PARTICLES_EDITOR)
 #if defined(_DEBUG)
 #pragma comment(lib, "sxguiwinapi_d.lib")
@@ -312,6 +326,7 @@ void SkyXEngine_Init()
 	Core_SetOutPtr();
 
 	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds,false);
+	SSCore_Dbg_Set(printflog);
 
 	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
 	SGCore_Dbg_Set(printflog);
@@ -331,7 +346,9 @@ void SkyXEngine_Init()
 
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+#ifndef SX_GAME
 	GData::ObjCamera = SGCore_CrCamera();
+#endif
 
 	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
 	SGeom_Dbg_Set(printflog);
@@ -344,6 +361,8 @@ void SkyXEngine_Init()
 
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
 	SPP_Dbg_Set(printflog);
+
+
 	//SPP_ChangeTexSun("fx_sun.dds");
 	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
 	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
@@ -357,21 +376,27 @@ void SkyXEngine_Init()
 	SXPhysics_0Create();
 	SXPhysics_Dbg_Set(printflog);
 
+	SXDecals_0Create();
+	SXDecals_Dbg_Set(printflog);
+
+	SXGame_0Create();
+	SXGame_Dbg_Set(printflog);
+#ifdef SX_GAME
+	GData::ObjCamera = SXGame_GetActiveCamera();
+#endif
+
 	GData::InitAllMatrix();
 
 	GData::IDsShaders::InitAllShaders();
 
-	//!@TODO: Найти для этого более подходящее место
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
-
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
-
-	SXPhysics_LoadGeom();
 }
 
 void SkyXEngine_Kill()
 {
+	SXGame_0Kill();
+	SXDecals_AKill();
 	SXPhysics_AKill();
 	SXAnim_AKill();
 	mem_release(GData::ObjCamera);
@@ -381,3 +406,4 @@ void SkyXEngine_Kill()
 	SGCore_AKill();
 	Core_AKill();
 }
+

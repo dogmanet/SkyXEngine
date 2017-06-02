@@ -1274,12 +1274,9 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 void SXRenderFunc::ShaderRegisterData()
 {
-	static float4_t tmpnull;
-	for (int i = 0; i < 256; ++i)
-	{
-		GData::DXDevice->SetVertexShaderConstantF(i, (float*)&tmpnull, 1);
-		GData::DXDevice->SetPixelShaderConstantF(i, (float*)&tmpnull, 1);
-	}
+	static float4_t tmpnull[256];
+	GData::DXDevice->SetVertexShaderConstantF(0, (float*)&tmpnull, 256);
+	GData::DXDevice->SetPixelShaderConstantF(0, (float*)&tmpnull, 256);
 }
 
 void SXRenderFunc::UpdateReflection(DWORD timeDelta)
@@ -1508,13 +1505,17 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SSInput_Update();
 	SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 	//@@@
+#ifndef SX_GAME
 	CameraUpdate::UpdateEditorial(timeDelta);
+#endif
 
 	SXAnim_Update();
-	SXAnim_Sync();
-
+	SXGame_Update();
 	SXPhysics_Update();
+
+	SXAnim_Sync();
 	SXPhysics_Sync();
+	SXGame_Sync();
 
 	ttime = GetTickCount();
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
@@ -1647,6 +1648,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
 	SXPhysics_DebugRender();
+	//SXGame_EditorRender();
+	SXDecals_Render();
 
 	SXRenderFunc::ShaderRegisterData();
 	

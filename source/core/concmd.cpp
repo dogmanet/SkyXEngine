@@ -27,7 +27,10 @@ SOCKET CommandSocket = INVALID_SOCKET;
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
 
-ConcurrentQueue<char *> g_vCommandBuffer;
+typedef ConcurrentQueue<char *> CommandBuffer;
+typedef std::mutex Mutex;
+CommandBuffer g_vCommandBuffer;
+Stack<CommandBuffer> g_cbufStack;
 
 SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc)
 {
@@ -86,7 +89,7 @@ SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMD
 	g_mCmds[name] = c;
 }
 
-
+Mutex g_conUpdMtx;
 
 void ConsoleExecInternal(char * cmd, char * args)
 {
@@ -222,8 +225,9 @@ void ConsoleExecInternal(char * cmd, char * args)
 }
 void ConsoleExecInternal(char * cmd)
 {
-	char * space = strstr(cmd, " ");
-	if(space)
+	char * space = cmd;
+	while((*++space) && !isspace(*space));
+	if(*space)
 	{
 		*space = 0;
 		++space;
@@ -236,6 +240,14 @@ void ConsoleExecInternal(char * cmd)
 	ConsoleExecInternal(cmd, space);
 }
 
+void ConsolePushBuffer()
+{
+	g_conUpdMtx.lock();
+	g_cbufStack.push(g_vCommandBuffer);
+	g_vCommandBuffer.clear();
+	g_conUpdMtx.unlock();
+}
+
 SX_LIB_API void Core_0ConsoleUpdate()
 {
 	char * buf;
@@ -243,6 +255,10 @@ SX_LIB_API void Core_0ConsoleUpdate()
 	{
 		ConsoleExecInternal(buf);
 		mem_delete_a(buf);
+	}
+	if(!g_cbufStack.IsEmpty())
+	{
+		g_vCommandBuffer = g_cbufStack.pop();
 	}
 
 	//execute command buffer
@@ -284,7 +300,9 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...)
 			{
 				char * str = new char[len + 1];
 				memcpy(str, buf, len + 1);
+				g_conUpdMtx.lock();
 				g_vCommandBuffer.push(str);
+				g_conUpdMtx.unlock();
 			}
 			buf = nl;
 		}
@@ -300,7 +318,9 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...)
 	{
 		char * str = new char[len + 1];
 		memcpy(str, buf, len + 1);
+		g_conUpdMtx.lock();
 		g_vCommandBuffer.push(str);
+		g_conUpdMtx.unlock();
 	}
 
 	mem_delete_a(cbuf);
@@ -342,6 +362,7 @@ void exec(int argc, const char ** argv)
 	f->ReadB(buf, len - 1);
 	buf[len - 1] = 0;
 
+	ConsolePushBuffer();
 	Core_0ConsoleExecCmd("%s", buf);
 	f->Release();
 
@@ -436,7 +457,7 @@ bool CommandConnect();
 void CommandDisconnect();
 
 int hOut;
-FILE * fOut;
+FILE * fOut = NULL;
 
 bool ConsoleConnect()
 {
@@ -541,8 +562,10 @@ void ConsoleDisconnect()
 	g_bRunning = false; 
 
 	
-	if (fOut)
-		fclose(fOut);
+	if(fOut)
+	{
+	fclose(fOut);
+	}
 	/*int iResult = shutdown(ConnectSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)
 	{

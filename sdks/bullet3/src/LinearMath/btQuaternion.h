@@ -52,7 +52,8 @@ const btSimdFloat4 ATTRIBUTE_ALIGNED16(vPPPM) = {+0.0f, +0.0f, +0.0f, -0.0f};
 #endif
 
 /**@brief The btQuaternion implements quaternion to perform linear algebra rotations in combination with btMatrix3x3, btVector3 and btTransform. */
-class btQuaternion : public btQuadWord {
+class BULLET_EXPORTS btQuaternion: public btQuadWord
+{
 public:
   /**@brief No initialization constructor */
 	btQuaternion() {}
