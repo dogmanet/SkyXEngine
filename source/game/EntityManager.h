@@ -8,6 +8,7 @@
 typedef std::chrono::system_clock::time_point time_point;
 
 class SXbaseEntity;
+struct ISXLConfig;
 
 #define SET_TIMEOUT(fn, time) m_pMgr->SetTimeout((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
 #define SET_INTERVAL(fn, time) m_pMgr->SetInterval((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
@@ -26,12 +27,15 @@ class EntityManager
 {
 	friend class SXbaseEntity;
 public:
-	EntityManager():m_iThreadNum(1)
-	{
-	}
+	EntityManager();
+	~EntityManager();
+
 	void Update(int thread);
 	void SetThreadNum(int num);
 	void Sync();
+
+	void LoadDefaults();
+	void LoadDynClasses();
 
 	void SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
 	ID SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
@@ -56,6 +60,10 @@ protected:
 	Array<ID> m_vFreeInterval;
 
 	int m_iThreadNum;
+
+	//! @warning это нужно хранить в течение работы проги, т.к. таблицы дефолтов ссылаются напрямую на этот объект
+	ISXLConfig * m_pDefaultsConf;
+	ISXLConfig * m_pDynClassConf;
 };
 
 #endif
