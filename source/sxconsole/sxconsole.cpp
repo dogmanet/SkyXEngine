@@ -181,6 +181,24 @@ void SyncOutput(bool begin)
 	}
 }
 
+void ClearAll()
+{
+	mx.lock();
+	SyncOutput(1);
+
+	COORD tl = {0, 0};
+	CONSOLE_SCREEN_BUFFER_INFO s;
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+	GetConsoleScreenBufferInfo(console, &s);
+	DWORD written, cells = s.dwSize.X * s.dwSize.Y;
+	FillConsoleOutputCharacterA(console, ' ', cells, tl, &written);
+	FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
+	SetConsoleCursorPosition(console, tl);
+
+	SyncOutput(0);
+	mx.unlock();
+}
+
 void WriteOutput(const char * buf, ...)
 {
 	mx.lock();
@@ -411,6 +429,7 @@ void threadServer(void*)
 			SetColor(g_pColor->getDefaultFG());
 			continue;
 		}
+		ClearAll();
 		SetColor(ANSI_LGREEN);
 		WriteOutput("Connected!\n");
 		SetColor(g_pColor->getDefaultFG());
