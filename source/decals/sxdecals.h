@@ -20,6 +20,13 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/SXMath.h>
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxmtllight_d.lib")
+#else
+#pragma comment(lib, "sxmtllight.lib")
+#endif
+#include <mtllight\\sxmtllight.h>
+
 enum DECAL_TYPE
 {
 	DECAL_TYPE_CUSTOM = -1,

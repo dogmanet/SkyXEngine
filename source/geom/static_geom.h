@@ -243,11 +243,12 @@ public:
 	void GetModelGroupMax(ID id, ID group, float3_t* max);
 	void GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane);
 
-	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models);
+	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, int32_t* count_models);
 	/*
 	(*arr_vertex)[num_model][num_vertex] - вершины модели
 	(*arr_count_vertex)[num_model] - количество вершин для модели
 	(*arr_index)[num_model][num_vertex] - индексы модели
+	(*arr_mtl)[num_model][num_vertex] - материал для индекса
 	(*arr_count_index)[num_model] - количество индексов для модели
 	(*count_model); количество моделей
 	*/

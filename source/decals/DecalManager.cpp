@@ -315,7 +315,8 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	{
 		return;
 	}
-	pTex = SGCore_LoadTexGetTex(pMat);
+
+	pTex = SGCore_LoadTexGetTex(SML_MtlGetTextureID(pMat));
 	if(!pTex)
 	{
 		return;

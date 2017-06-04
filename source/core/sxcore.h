@@ -21,6 +21,7 @@ See the license in LICENSE
 
 #include <io.h>
 #include <fcntl.h>
+#include <tlhelp32.h>
 
 #define SM_D3D_CONVERSIONS
 #include <common\sxmath.h>
@@ -53,8 +54,9 @@ enum CoreTaskFlag
 SX_LIB_API long Core_0GetVersion();	//!< возвращает версию ядра
 SX_LIB_API void Core_0Create(const char* name, bool is_unic = true); //!< создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
 SX_LIB_API void Core_Dbg_Set(report_func rf); //!< установка своего обработчика вывода отладочной информации
-SX_LIB_API bool Core_0FileExists(const char* path); //!< существует ли файл
-SX_LIB_API bool Core_0ClipBoardCopy(const char *str); //!< копирует строку в буфер обмена
+SX_LIB_API bool Core_0FileExists(const char* path);			//!< существует ли файл
+SX_LIB_API bool Core_0ClipBoardCopy(const char *str);		//!< копирует строку в буфер обмена
+SX_LIB_API bool Core_0IsProcessRun(const char* process);	//!< запущен ли процесс
 
 SX_LIB_API void Core_AKill(); //!< уничтожить ядро
 SX_LIB_API void Core_AGetName(char* name); ///< получить имя ядра

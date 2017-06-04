@@ -2,6 +2,13 @@
 LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SXParticlesEditor::ListBoxEmitters->Clear();
+	if (SPE_EffectCountGet() == 0)
+	{
+		SXParticlesEditor::ListBoxEffects->Clear();
+		SXParticlesEditor::EffVisible(true, true);
+		SXParticlesEditor::TabsVisible(false);
+		return 0;
+	}
 	int sel = SXParticlesEditor::ListBoxEffects->GetSel();
 	SXParticlesEditor::SelEffID = SPE_EffectIdOfKey(sel);
 	int partcount = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
@@ -192,7 +199,7 @@ LRESULT SXParticlesEditor_ButtonEffCreate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	char effname[OBJECT_NAME_MAX_LEN];
 	SXParticlesEditor::EditEffName->GetText(effname, OBJECT_NAME_MAX_LEN);
 
-	SPE_EffectAdd(effname);
+	SXParticlesEditor::SelEffID = SPE_EffectAdd(effname);
 
 	SXParticlesEditor::ListBoxEffects->AddItem(effname);
 	SXParticlesEditor::ListBoxEffects->SetSel(SXParticlesEditor::ListBoxEffects->GetCountItem() - 1);
@@ -325,6 +332,8 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	sscanf(tmptxt, "%f", &(pdata.RefractionCoef));
 	SXParticlesEditor::EditTransparencyCoef->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.TransparencyCoef));
+	SXParticlesEditor::EditColorCoef->GetText(tmptxt, 64);
+	sscanf(tmptxt, "%f", &(pdata.ColorCoef));
 
 	pdata.Lighting = SXParticlesEditor::CheckBoxLighting->GetCheck();
 
@@ -335,6 +344,8 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	pdata.FigureTapX = SXParticlesEditor::CheckBoxFigureTapX->GetCheck();
 	pdata.FigureTapY = SXParticlesEditor::CheckBoxFigureTapY->GetCheck();
 	pdata.FigureTapZ = SXParticlesEditor::CheckBoxFigureTapZ->GetCheck();
+
+	pdata.AlphaBlendType = (ParticlesAlphaBlendType)SXParticlesEditor::ComboBoxAlphaBlendType->GetSel();
 
 	SXParticlesEditor::EditTimeLife->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%d", &(pdata.TimeLife));

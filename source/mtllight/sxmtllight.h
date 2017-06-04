@@ -955,6 +955,7 @@ SX_LIB_API IDirect3DCubeTexture9* SML_MtlRefCubeGetTex(ID id);	//!< возвра
 //основная текстура которая накладывается на модель/подгруппу
 SX_LIB_API void SML_MtlSetTexture(ID id, const char* path_tex);	//!< установка основной текстуры (загрузка текстуры по имени)
 SX_LIB_API void SML_MtlGetTexture(ID id, char* name);			//!< в name записывает имя текстуры
+SX_LIB_API ID SML_MtlGetTextureID(ID id);						//!< возвращает id текстуры материала
 
 
 /*! \name Шейдеры для рендера материала
@@ -969,6 +970,9 @@ SX_LIB_API void SML_MtlSetPS(ID id, const char* path_ps);	//!< установк�
 SX_LIB_API void SML_MtlGetPS(ID id, char* name);			//!< в name записывает имя текущего пикельного шейдера
 
 //!@}
+
+SX_LIB_API float SML_MtlGetPenetration(ID id);
+SX_LIB_API void SML_MtlSetPenetration(ID id, float penetration);
 
 //использование альфа теста для материала
 SX_LIB_API bool SML_MtlGetUsingAlphaTest(ID id);				//!< используется ли альфа тест для материала

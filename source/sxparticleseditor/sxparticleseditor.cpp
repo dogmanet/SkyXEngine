@@ -9,8 +9,6 @@ See the license in LICENSE
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <vld.h> 
-
 #include <SkyXEngine.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
@@ -37,14 +35,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SkyXEngine_Init();
 
-	SSInput_0Create("sxinput", GData::Handle3D, true);
-	SSInput_Dbg_Set(printflog);
+	GData::Editors::RenderGrid = GData::Editors::RenderAxesStatic = GData::Editors::RenderBound = true;
 
-	
-	GData::DXDevice = SGCore_GetDXDevice();
-
-	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	GData::ObjCamera = SGCore_CrCamera();
 	GData::ObjCamera->SetPosition(&float3(0, 0.5, -2));
 
 	GData::ObjGrid = new Grid();
@@ -62,21 +54,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SGCore_FCreateCone(GData::FigureConeParam.x, GData::FigureConeParam.y, GData::FigureConeParam.z, &GData::FigureCone, 20);
 
-	char tmppathexe[1024];
-	char tmppath[1024];
-	GetModuleFileName(NULL, tmppath, 1024);
-	int len = strlen(tmppath);
-	while (tmppath[len--] != '\\')
-	{
-		if (tmppath[len - 1] == '\\')
-		{
-			len--;
-			memcpy(tmppathexe, tmppath, len);
-			tmppathexe[len] = 0;
-		}
-	}
-
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
+	
 	SGCore_LoadTexLoadTextures();
 
 	Level::LoadParticles();
@@ -122,7 +100,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
-	mem_delete(GData::SimModel);
 	SXParticlesEditor::DeleteAllElements();
 
 	SkyXEngine_Kill();

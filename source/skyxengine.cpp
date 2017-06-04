@@ -116,23 +116,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	/*ID tmpids = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
 	SSCore_SndPosCurrSet(tmpids, 20, SOUND_POS_SEC);
 	SSCore_SndPlay(tmpids);*/
-	ID tmpid = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
-	if(tmpid >= 0)
+	ID tmpidsnd = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
+	if (tmpidsnd >= 0)
 	{
-		SSCore_SndPosCurrSet(tmpid, 20, SOUND_POS_SEC);
-		SSCore_SndPlay(tmpid);
+		SSCore_SndPosCurrSet(tmpidsnd, 20, SOUND_POS_SEC);
+		SSCore_SndPlay(tmpidsnd);
 	//ms->SoundPanSet(tmpid, DSBPAN_RIGHT, 0);
 	//ms->SoundVolumeSet(tmpid, 100);
 	}
-
-	ID tmpid2 = SSCore_SndCreate2d("battle_1.ogg", true, 0);
-	if(tmpid2 >= 0)
-	{
-	//SSCore_SndVolumeSet(tmpid2, 50, SOUND_VOL_PCT);
-		SSCore_SndPlay(tmpid2);
-	}
-
-	//ms->SoundEffectGargleSet(tmpid, 100, DSFXGARGLE_WAVE_SQUARE);
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));

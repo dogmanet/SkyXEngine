@@ -349,22 +349,24 @@ void SGeom_ModelsMGetGroupPlane(ID id, ID group, D3DXPLANE* plane)
 
 
 
-void SGeom_ModelsGetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models)
+void SGeom_ModelsGetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, int32_t* count_models)
 {
 	GEOM_PRECOND(_VOID);
-	GeometryObj->GetArrBuffsGeom(arr_vertex, arr_count_vertex, arr_index, arr_count_index, count_models);
+	GeometryObj->GetArrBuffsGeom(arr_vertex, arr_count_vertex, arr_index, arr_mtl, arr_count_index, count_models);
 }
 
-void SGeom_ModelsClearArrBuffsGeom(float3_t** arr_vertex, int32_t* arr_count_vertex, uint32_t** arr_index, int32_t* arr_count_index, int32_t count_models)
+void SGeom_ModelsClearArrBuffsGeom(float3_t** arr_vertex, int32_t* arr_count_vertex, uint32_t** arr_index, ID** arr_mtl, int32_t* arr_count_index, int32_t count_models)
 {
 	for(int32_t i = 0; i < count_models; ++i)
 	{
 		mem_delete_a(arr_vertex[i]);
 		mem_delete_a(arr_index[i]);
+		mem_delete_a(arr_mtl[i]);
 	}
 	mem_delete_a(arr_vertex);
 	mem_delete_a(arr_count_vertex);
 	mem_delete_a(arr_index);
+	mem_delete_a(arr_mtl);
 	mem_delete_a(arr_count_index);
 }
 

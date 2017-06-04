@@ -320,7 +320,7 @@ void SPP_RenderFog(float3_t* color, float4_t* param)
 
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogFree, "FogColor", color);
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogFree, "Param", param);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogFree, "NearFar", &PPSet::NearFar);
+	//SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogFree, "NearFar", &PPSet::NearFar);
 
 	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogFree);
@@ -668,9 +668,9 @@ void SPP_RenderSun(float4_t* sun_color)
 	if (PPSet::SunPos.w > PP_MAX_ANGLE_VISIBLE_SUN)
 		return;
 
-	if (PPSet::IDsTexs::Sun < 0 || SGCore_LoadTexGetTex(PPSet::IDsTexs::Sun))
+	if (PPSet::IDsTexs::Sun < 0 || !SGCore_LoadTexGetTex(PPSet::IDsTexs::Sun))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "sxpp: %s - sun texture is not init, process can not be started", gen_msg_location);
+		reportf(REPORT_MSG_LEVEL_WARRNING, "sxpp: %s - sun texture is not init, process can not be started\n", gen_msg_location);
 		return;
 	}
 

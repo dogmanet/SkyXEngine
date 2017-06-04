@@ -795,6 +795,9 @@ SX_LIB_API void SGCore_SkyBoxGetStdPathTex(char* path);			//!< в path запи�
 SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture);	//!< загрузка текстуры, texture - имя текстуры с расширением
 SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture);//!< смена текстуры, texture - имя текстуры с расширением
 
+SX_LIB_API void SGCore_SkyBoxGetActiveTex(char *texture);
+SX_LIB_API void SGCore_SkyBoxGetSecondTex(char *texture);
+
 SX_LIB_API void SGCore_SkyBoxSetRot(float angle);	//!< установка угла поворота angle по оси y, в радианах
 SX_LIB_API float SGCore_SkyBoxGetRot();				//!< возвращает угол поворота по оси y, в радианах
 

@@ -163,6 +163,8 @@ void Materials::Material::Nulling()
 	MicroDetail = MaterialMaskPM();
 	LightParam = MaterialLightParam();
 
+	Penetration = 0.f;
+
 	VS = MaterialDataShader();
 	PS = MaterialDataShader();
 }
@@ -553,6 +555,13 @@ void Materials::MtlGetTexture(ID id, char* name)
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->MainTexture, name);
 }
 
+ID Materials::MtlGetTextureID(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+
+	return ArrMaterials[id]->mtl->MainTexture;
+}
+
 void Materials::MtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id);
@@ -661,6 +670,18 @@ float Materials::MtlGetThickness(ID id)
 {
 	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->mtl->LightParam.ThicknessValue;
+}
+
+void Materials::MtlSetPenetration(ID id, float penetration)
+{
+	MTL_PRE_COND_ID(id, _VOID);
+	ArrMaterials[id]->mtl->Penetration = penetration;
+}
+
+float Materials::MtlGetPenetration(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->mtl->Penetration;
 }
 
 
@@ -1208,6 +1229,9 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->KeyExists(tmp_name, "thickness"))
 			tmpMtl->LightParam.ThicknessValue = String(config->GetKey(tmp_name, "thickness")).ToDouble();
 
+		if (config->KeyExists(tmp_name, "penetration"))
+			tmpMtl->Penetration = String(config->GetKey(tmp_name, "penetration")).ToDouble();
+
 		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
 		//говорим что не установлено использовать ли текстуру или нет
@@ -1645,6 +1669,7 @@ void Materials::MtlSave(ID id)
 	fprintf(file, "roughness = %f\n", mtrl->LightParam.RoughnessValue);
 	fprintf(file, "f0 = %f\n", mtrl->LightParam.F0Value);
 	fprintf(file, "thickness = %f\n", mtrl->LightParam.ThicknessValue);
+	fprintf(file, "penetration = %f\n", mtrl->Penetration);
 
 	fprintf(file, "refraction = %d\n", mtrl->LightParam.TypeRefraction);
 

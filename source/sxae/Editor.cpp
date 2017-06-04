@@ -1214,7 +1214,7 @@ void Editor::InitD3D()
 
 void Editor::DestroyD3D()
 {
-	SGCore_0Kill();
+	SGCore_AKill();
 	//mem_release(m_pd3dDevice);
 	//mem_release(m_pD3D);
 }

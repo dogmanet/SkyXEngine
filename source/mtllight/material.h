@@ -90,6 +90,7 @@ public:
 
 	void MtlSetTexture(ID id, const char* path_tex);
 	void MtlGetTexture(ID id, char* name);
+	ID MtlGetTextureID(ID id);
 	void MtlSetVS(ID id, const char* path_vs);
 	void MtlGetVS(ID id, char* name);
 	void MtlSetPS(ID id, const char* path_vs);
@@ -113,6 +114,9 @@ public:
 
 	void MtlSetThickness(ID id, float thickness);
 	float MtlGetThickness(ID id);
+
+	void MtlSetPenetration(ID id, float penetration);
+	float MtlGetPenetration(ID id);
 
 	void MtlSetTypeTransparency(ID id, MtlTypeTransparency type);
 	MtlTypeTransparency MtlGetTypeTransparency(ID id);
@@ -237,6 +241,8 @@ public:
 
 		bool IsUnlit;
 		bool IsAlphaTest;
+
+		float Penetration;
 
 		MtlTypeModel Type;
 	};

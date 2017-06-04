@@ -159,6 +159,7 @@ void SXParticlesEditor::BaseDataInit()
 	SXParticlesEditor::EditTransparencyCoef->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TransparencyCoef)).c_str());
 	SXParticlesEditor::CheckBoxLighting->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Lighting));
 	SXParticlesEditor::ComboBoxFigureType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureType));
+	SXParticlesEditor::ComboBoxAlphaBlendType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType));
 	SXParticlesEditor::EditFigureCountQuads->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureCountQuads)).c_str());
 	SXParticlesEditor::CheckBoxFigureRotRand->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureRotRand));
 	SXParticlesEditor::CheckBoxFigureTapX->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapX));

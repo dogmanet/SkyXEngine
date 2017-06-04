@@ -10,6 +10,11 @@ namespace SXMaterialEditor
 	ISXGUICheckBox* CheckBoxModelRot;
 	ISXGUIStatic* StaticTypeModel;
 	ISXGUIComboBox* ComboBoxTypeModel;
+
+	ISXGUIStatic* StaticPenetration;
+	ISXGUIEdit* EditPenetration;
+	ISXGUITrackBar* TrackBarPenetration;
+
 	ISXGUIStatic* StaticTestModel;
 	ISXGUIComboBox* ComboBoxTestModel;
 	ISXGUIStatic* StaticTex;
@@ -150,8 +155,24 @@ void SXMaterialEditor::InitAllElements()
 	SXGUIBaseHandlers::InitHandlerMsg(SXMaterialEditor::JobWindow);
 	SXMaterialEditor::JobWindow->AddHandler(SXMaterialEditor_JobWindow_CallWmCommand, WM_COMMAND);
 
+	SXMaterialEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
+	SXMaterialEditor::JobWindow->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
+	SXMaterialEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
+	SXMaterialEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
+	SXMaterialEditor::MainMenu->SetToWindow(SXMaterialEditor::JobWindow->GetHWND());
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+
 	SXMaterialEditor::WindowRender = SXGUICrBaseWnd("WindowRender","WindowRender",0,0,0,25,300,300,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXMaterialEditor::JobWindow->GetHWND(),0);
+	SXMaterialEditor::WindowRender->GAlign.left = false;
+	SXMaterialEditor::WindowRender->GAlign.right = false;
+	SXMaterialEditor::WindowRender->GAlign.top = false;
+	SXMaterialEditor::WindowRender->GAlign.bottom = false;
+	
 	SXMaterialEditor::ToolBar = SXGUICrToolBar(0,0,645,25,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ToolBar->GAlign.left = false;
+	SXMaterialEditor::ToolBar->GAlign.right = false;
+	SXMaterialEditor::ToolBar->GAlign.top = false;
+	SXMaterialEditor::ToolBar->GAlign.bottom = false;
 	
 	SXMaterialEditor::ButtonSkyBox = SXGUICrButton("...", 275, 330, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonSkyBox->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -263,6 +284,23 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ButtonPS = SXGUICrButton("...", 275, 440, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonPS->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonPS->AddHandler(SXMaterialEditor_ButtonPS_Click, WM_LBUTTONUP);
+
+	SXMaterialEditor::StaticPenetration = SXGUICrStatic("Penetraion:", 5, 490, 60, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::StaticPenetration->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticPenetration->SetColorText(0, 0, 0);
+	SXMaterialEditor::StaticPenetration->SetColorTextBk(255, 255, 255);
+	SXMaterialEditor::StaticPenetration->SetTransparentTextBk(true);
+	SXMaterialEditor::StaticPenetration->SetColorBrush(220, 220, 220);
+	SXMaterialEditor::EditPenetration = SXGUICrEdit("0", 60, 490, 65, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::EditPenetration->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::EditPenetration->SetColorText(0, 0, 0);
+	SXMaterialEditor::EditPenetration->SetColorTextBk(255, 255, 255);
+	SXMaterialEditor::EditPenetration->SetTransparentTextBk(true);
+	SXMaterialEditor::EditPenetration->SetColorBrush(255, 255, 255);
+	SXMaterialEditor::EditPenetration->AddHandler(SXMaterialEditor_EditPenetration_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::TrackBarPenetration = SXGUICrTrackBar("", 130, 490, 170, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
+	SXMaterialEditor::TrackBarPenetration->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarPenetration->AddHandler(SXMaterialEditor_TrackBarPenetration_MouseMove, WM_MOUSEMOVE);
 
 
 	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("alphatest", 365, 110, 60, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0, false);

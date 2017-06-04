@@ -20,6 +20,8 @@ public:
 	void LoadTextures(const char *texture);
 	inline bool IsLoadTex();
 	void ChangeTexture(const char *texture);
+	void GetActiveTexture(char *texture);
+	void GetSecondTexture(char *texture);
 	inline void SetRotation(float angle);
 	inline float GetRotation();
 	inline void SetColor(float4_t* color);
@@ -33,6 +35,8 @@ protected:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationSkyBox;
 	char StdPath[1024];
+	char TexActive[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	char TexSecond[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	float RotaionY;
 	float4x4 MatRotation;
 	float4_t Color;

@@ -231,17 +231,18 @@ SX_LIB_API void SGeom_ModelsGetArrBuffsGeom(
 	float3_t*** arr_vertex,		//!< (*arr_vertex)[num_model][num_vertex] - вершины модели
 	int32_t** arr_count_vertex, //!< (*arr_count_vertex)[num_model] - количество вершин для модели
 	uint32_t*** arr_index,		//!< (*arr_index)[num_model][num_vertex] - индексы модели
+	ID*** arr_mtl,				//!< (*arr_mtl)[num_model][num_vertex] - материал для индекса
 	int32_t** arr_count_index,	//!< (*arr_count_index)[num_model] - количество индексов для модели
 	int32_t* count_models		//!< (*count_model) - количество моделей
 	);
 
 /*! Очищает папять, выделенную в SGeom_ModelsGetArrBuffsGeom
-\note Функция сама инициализирует все данные, кроме count_models, в count_models функция только запишет число
 */
 SX_LIB_API void SGeom_ModelsClearArrBuffsGeom(
 	float3_t** arr_vertex,		//!< arr_vertex[num_model][num_vertex] - вершины модели
-	int32_t* arr_count_vertex, //!< arr_count_vertex[num_model] - количество вершин для модели
+	int32_t* arr_count_vertex,	//!< arr_count_vertex[num_model] - количество вершин для модели
 	uint32_t** arr_index,		//!< arr_index[num_model][num_vertex] - индексы модели
+	ID** arr_mtl,				//!< (*arr_mtl)[num_model][num_vertex] - материал для индекса
 	int32_t* arr_count_index,	//!< arr_count_index[num_model] - количество индексов для модели
 	int32_t count_models		//!< count_model - количество моделей
 	);

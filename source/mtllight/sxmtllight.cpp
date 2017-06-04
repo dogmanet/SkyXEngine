@@ -1029,6 +1029,12 @@ void SML_MtlGetTexture(ID id, char* name)
 	ArrMaterials->MtlGetTexture(id, name);
 }
 
+ID SML_MtlGetTextureID(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrMaterials->MtlGetTextureID(id);
+}
+
 void SML_MtlSetVS(ID id, const char* path_vs)
 {
 	ML_PRECOND();
@@ -1051,6 +1057,18 @@ void SML_MtlGetPS(ID id, char* name)
 {
 	ML_PRECOND();
 	ArrMaterials->MtlGetPS(id, name);
+}
+
+float SML_MtlGetPenetration(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrMaterials->MtlGetPenetration(id);
+}
+
+void SML_MtlSetPenetration(ID id, float penetration)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->MtlSetPenetration(id, penetration);
 }
 
 

@@ -283,6 +283,10 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXParticlesEditor::MainMenu->SetToWindow(SXParticlesEditor::JobWindow->GetHWND());
 
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, true);
+
 	SXParticlesEditor::StatusBar1 = SXGUICrStatusBar("StatusBar1", SXParticlesEditor::JobWindow->GetHWND(), 0, 0);
 	SXParticlesEditor::StatusBar1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	int arrpart[5];

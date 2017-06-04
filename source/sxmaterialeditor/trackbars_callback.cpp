@@ -1,4 +1,18 @@
 
+LRESULT SXMaterialEditor_TrackBarPenetration_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char thickness[64];
+	thickness[0] = '0';
+
+	int pos = SXMaterialEditor::TrackBarPenetration->GetPos();
+	sprintf(thickness, "%.2f", float(pos)*0.01f);
+	SXMaterialEditor::EditPenetration->SetText(thickness);
+
+	SML_MtlSetPenetration(SXMaterialEditor::IDMat, float(pos)*0.01f);
+
+	return 0;
+}
+
 LRESULT SXMaterialEditor_TrackBarRoughness_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char roughness[64];

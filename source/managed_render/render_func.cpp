@@ -264,65 +264,70 @@ void SXRenderFunc::ComVisibleReflection()
 	}
 }
 
-void SXRenderFunc::UpdateMsg(DWORD timeDelta)
+void SXRenderFunc::SaveScreenShot()
 {
-	if (SSInput_GetKeyState(SIK_Y))
-		SGCore_ShaderReloadAll();
-
 	char tmppath[1024];
-	if (SSInput_GetKeyEvents(SIK_NUMPAD1) == InputEvents::iv_k_first)
+	static int numscreen = 0;
+
+	do
 	{
-		sprintf(tmppath, "%scolor.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_color), NULL);
+		++numscreen;
+		sprintf(tmppath, "%sscreen_skyxengine_build_%d.jpg", GData::Pathes::Screenshots, numscreen);
+	} while (Core_0FileExists(tmppath));
 
-		sprintf(tmppath, "%snormal.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_normal), NULL);
+	LPDIRECT3DSURFACE9 BackBuf;
+	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
+	D3DXSaveSurfaceToFile(tmppath, D3DXIFF_JPG, BackBuf, NULL, NULL);
+	mem_release(BackBuf);
+}
 
-		sprintf(tmppath, "%sdepth.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth), NULL);
+void SXRenderFunc::SaveWorkTex()
+{
+	char tmppath[1024];
+	sprintf(tmppath, "%scolor.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_color), NULL);
 
-		sprintf(tmppath, "%sdepth0.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth0), NULL);
+	sprintf(tmppath, "%snormal.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_normal), NULL);
 
-		sprintf(tmppath, "%sparam.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_param), NULL);
+	sprintf(tmppath, "%sdepth.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth), NULL);
 
-		sprintf(tmppath, "%sambient_diff.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_ambient_diff), NULL);
+	sprintf(tmppath, "%sdepth0.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth0), NULL);
 
-		sprintf(tmppath, "%sspecular.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_specular), NULL);
+	sprintf(tmppath, "%sparam.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_param), NULL);
+
+	sprintf(tmppath, "%sambient_diff.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_ambient_diff), NULL);
+
+	sprintf(tmppath, "%sspecular.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_specular), NULL);
 
 
-		sprintf(tmppath, "%slight_com_1.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com), NULL);
+	sprintf(tmppath, "%slight_com_1.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com), NULL);
 
-		sprintf(tmppath, "%slight_com_2.png", GData::Pathes::WorkingTex);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2), NULL);
+	sprintf(tmppath, "%slight_com_2.png", GData::Pathes::WorkingTex);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2), NULL);
+}
+
+void SXRenderFunc::ChangeModeWindow()
+{
+	if (GData::IsWindowed)
+	{
+		SetWindowLong(GData::Handle3D, GWL_STYLE, WS_POPUP);
+		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
+	}
+	else
+	{
+		SetWindowLong(GData::Handle3D, GWL_STYLE, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+		SetWindowPos(GData::Handle3D, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_SHOWWINDOW);
 	}
 
-	if (SSInput_GetKeyEvents(SIK_F12) == InputEvents::iv_k_first)
-	{
-		sprintf(tmppath, "%sscreen_skyxengine_build_%d_%d.png", GData::Pathes::Screenshots,rand()%99+1,rand()%99+1);
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, /*SML_DSGetRT(DS_RT_SCENE_LIGHT_COM)*/SGCore_RTGetTexture(SPP_RTGetCurrSend()), NULL);
-	}
-
-	if (SSInput_GetKeyEvents(SIK_F11) == InputEvents::iv_k_first)
-	{
-		if (GData::IsWindowed)
-		{
-			SetWindowLong(GData::Handle3D, GWL_STYLE, WS_POPUP);
-			ShowWindow(GData::Handle3D, SW_MAXIMIZE);
-		}
-		else
-		{
-			SetWindowLong(GData::Handle3D, GWL_STYLE, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
-			SetWindowPos(GData::Handle3D, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_SHOWWINDOW);
-		}
-
-		GData::IsWindowed = !GData::IsWindowed;
-		GData::ReSize = 2;
-	}
+	GData::IsWindowed = !GData::IsWindowed;
+	GData::ReSize = 2;
 }
 
 /////
@@ -783,7 +788,7 @@ void SXRenderFunc::RenderSky(DWORD timeDelta)
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ColorSurf);
 
-	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, RENDER_DEFAUL_BACKGROUND_COLOR, 1.0f, 0);
 
 	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
 
@@ -1154,9 +1159,9 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 #if defined(SX_PARTICLES_EDITOR)
-	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 128, 128, 128), 1.0f, 0);
+	//GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 128, 128, 128), 1.0f, 0);
 
-	if (SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType) != ParticlesBoundType::pbt_none)
+	if (GData::Editors::RenderBound && SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType) != ParticlesBoundType::pbt_none)
 	{
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
@@ -1192,25 +1197,9 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixIdentity());
 	}
+
 #endif
 
-	
-
-	if (GData::ObjGrid)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::ObjGrid->Render();
-	}
-
-	if (GData::ObjAxesStatic)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::ObjAxesStatic->Render();
-	}
-
-	
 
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHAREF, RENDER_PARTICLES_ALPHATEST_VALUE);
@@ -1241,7 +1230,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 		SPP_RenderSSAO(&float4_t(0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y));
 
 	if (!SSInput_GetKeyState(SIK_L))
-		SPP_RenderFog(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 1, 0.1, 0.9));
+		SPP_RenderFog(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 0, 0.1, 0.9));
 	//SPP_RenderWhiteBlack(1);
 	SPP_RenderBloom(&float3_t(1, 0.9, 1));
 	SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), true);
@@ -1500,7 +1489,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			SXRenderFunc::ComDeviceLost();	//вытаемся восстановить
 		return;
 	}
-
+	Core_0ConsoleUpdate();
 	//@@@
 	SSInput_Update();
 	SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
@@ -1542,10 +1531,10 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
-	//рендерим глубину от света
-	ttime = GetTickCount();
-	UpdateShadow(timeDelta);
-	SXRenderFunc::Delay::UpdateShadow += GetTickCount() - ttime;
+		//рендерим глубину от света
+		ttime = GetTickCount();
+		UpdateShadow(timeDelta);
+		SXRenderFunc::Delay::UpdateShadow += GetTickCount() - ttime;
 	}
 
 	//рисуем сцену и заполняем mrt данными
@@ -1566,9 +1555,11 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	ttime = GetTickCount();
-	//RenderPostProcess(timeDelta);
+	RenderPostProcess(timeDelta);
 	SXRenderFunc::Delay::PostProcess += GetTickCount() - ttime;
 #endif
+
+	//GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 128, 128, 128), 1.0f, 0);
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
@@ -1584,6 +1575,24 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
+
+	SXRenderFunc::RenderParticles(timeDelta);
+
+#if !defined(SX_GAME)
+	if (GData::ObjGrid && GData::Editors::RenderGrid)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::ObjGrid->Render();
+	}
+
+	if (GData::ObjAxesStatic && GData::Editors::RenderAxesStatic)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::ObjAxesStatic->Render();
+	}
+#endif
 	
 #if defined(SX_LEVEL_EDITOR)
 	if (GData::Editors::SelSelection)
@@ -1643,12 +1652,25 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	}
 #endif
 
-	SXRenderFunc::RenderParticles(timeDelta);
-
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
 	SXPhysics_DebugRender();
 	//SXGame_EditorRender();
+
+	if (SSInput_GetKeyEvents(SIK_ENTER) == InputEvents::iv_k_first)
+	{
+		float3 start = GData::ConstCurrCamPos;
+		float3 end = start + (GData::ConstCurrCamDir * 1000);
+		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+		if (cb.hasHit())
+		{
+			//shoot decal
+			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
+		}
+	}
+
 	SXDecals_Render();
 
 	SXRenderFunc::ShaderRegisterData();
@@ -1677,8 +1699,6 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	ttime = GetTickCount();
 	GData::DXDevice->Present(0, 0, 0, 0);
 	SXRenderFunc::Delay::Present += GetTickCount() - ttime;
-
-	SXRenderFunc::UpdateMsg(timeDelta);
 
 #if defined(SX_LEVEL_EDITOR)
 	GData::Editors::LevelEditorUpdateStatusBar();

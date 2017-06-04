@@ -3108,11 +3108,12 @@ void StaticGeom::Clear()
 	BoundVolume->SetMinMax(&jmin,&jmax);
 }
 
-void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models)
+void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, int32_t* count_models)
 {
 	(*count_models) = AllModels.size();
 	(*arr_vertex) = new float3_t*[AllModels.size()];
 	(*arr_index) = new uint32_t*[AllModels.size()];
+	(*arr_mtl) = new ID*[AllModels.size()];
 	(*arr_count_vertex) = new int32_t[AllModels.size()];
 	(*arr_count_index) = new int32_t[AllModels.size()];
 
@@ -3130,6 +3131,7 @@ void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_ver
 
 		(*arr_vertex)[i] = new float3_t[sizevertex];
 		(*arr_index)[i] = new uint32_t[sizeindex];
+		(*arr_mtl)[i] = new ID[sizeindex];
 
 		(*arr_count_vertex)[i] = sizevertex;
 		(*arr_count_index)[i] = sizeindex;
@@ -3177,7 +3179,7 @@ void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_ver
 					for (long j = 0; j < split->CountPoly[k]*3; ++j)
 					{
 						(*arr_index)[i][curr_size_index] = split->ArrPoly[k][j] + tmpbiasindex[split->NumberGroupModel[k]];
-
+						(*arr_mtl)[i][curr_size_index] = AllGroups[split->NumberGroup[k]]->idtex;
 						++curr_size_index;
 					}
 				}

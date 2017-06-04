@@ -474,7 +474,7 @@ ID SPE_EmitterTextureGetID(ID id, ID id_part)
 {
 	PE_PRECOND(-1);
 
-	ArrEffects->EmitterTextureGetID(id, id_part);
+	return ArrEffects->EmitterTextureGetID(id, id_part);
 }
 
 void SPE_EmitterTextureGet(ID id, ID id_part, char* tex)

@@ -314,13 +314,12 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 void SkyXEngine_Init()
 {
-	ShellExecute(NULL, "open", "sxconsole.exe", NULL, NULL, SW_SHOWNORMAL);
 	GData::Pathes::InitAllPathes();
+	if (!Core_0IsProcessRun("sxconsole.exe"))
+		ShellExecute(NULL, "open", "sxconsole.exe", NULL, GData::Pathes::ForExe, SW_SHOWNORMAL);
 
-#if defined(SX_GAME)
 	SSInput_0Create("sxinput", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
-#endif
 
 	Core_0Create("sxcore", true);
 	Core_SetOutPtr();
@@ -346,6 +345,7 @@ void SkyXEngine_Init()
 
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+
 #ifndef SX_GAME
 	GData::ObjCamera = SGCore_CrCamera();
 #endif
@@ -362,8 +362,9 @@ void SkyXEngine_Init()
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
 	SPP_Dbg_Set(printflog);
 
-
-	//SPP_ChangeTexSun("fx_sun.dds");
+#if defined(SX_GAME)
+	SPP_ChangeTexSun("fx_sun.dds");
+#endif
 	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com));
 	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT::ds_rt_scene_light_com2));
 	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT::ds_rt_depth0));
@@ -389,8 +390,20 @@ void SkyXEngine_Init()
 
 	GData::IDsShaders::InitAllShaders();
 
+	Core_0RegisterConcmd("screenshot", SXRenderFunc::SaveScreenShot);
+	Core_0RegisterConcmd("save_worktex", SXRenderFunc::SaveWorkTex);
+	Core_0RegisterConcmd("shader_reload", SGCore_ShaderReloadAll);
+
+#if defined(SX_GAME)
+	Core_0RegisterConcmd("change_mode_window", SXRenderFunc::ChangeModeWindow);
+#endif
+
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
+
+#if !defined(SX_GAME)
+	Core_0ConsoleExecCmd("exec ../editor.cfg");
+#endif
 }
 
 void SkyXEngine_Kill()

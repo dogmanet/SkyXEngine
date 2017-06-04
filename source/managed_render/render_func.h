@@ -63,10 +63,6 @@ namespace SXRenderFunc
 	//! основная функция которая запускает все остальное, вызывается в цикле
 	void MainRender(DWORD timeDelta);
 
-	/*! обработка каких-либо не рисующих сообщений, 
-	в данной версии сохранение рабочих текстур и скришотов*/
-	void UpdateMsg(DWORD timeDelta);
-
 	//! обработка потери и восстановление устройства
 	void ComDeviceLost();
 
@@ -97,6 +93,10 @@ namespace SXRenderFunc
 	ID RFuncMtlLoad(const char* name, int mtl_type);
 	
 	//!@}
+
+	void SaveScreenShot();		//!< сохранить скриншот
+	void SaveWorkTex();			//!< сохранить рабочие текстуры (г-буфер и что к нему прилагается)
+	void ChangeModeWindow();	//!< изменить режим рендера (оконный/полноэкранный)
 
 	//! время задержек/ожидания выполнения некоторых функций рендера
 	namespace Delay

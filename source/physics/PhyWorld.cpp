@@ -142,11 +142,12 @@ void PhyWorld::LoadGeom()
 	float3_t ** ppVertices;
 	int32_t * pVertexCount;
 	uint32_t ** ppIndices;
+	ID ** ppMtls;
 	int32_t * pIndexCount;
 
 	int32_t iModelCount;
 
-	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &pIndexCount, &iModelCount);
+	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 
 	
 	m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
@@ -195,7 +196,7 @@ void PhyWorld::LoadGeom()
 		AddShape(m_pGeomStaticRigidBody);
 	}
 
-	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, pIndexCount, iModelCount);
+	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
 }
 
 

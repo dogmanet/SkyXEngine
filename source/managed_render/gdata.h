@@ -26,11 +26,11 @@ See the license in LICENSE
 @{
 */
 
-#define FILE_FILTER_TEXTURE	"Все файлы\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
-#define FILE_FILTER_LEVEL	"SkyX level file(.lvl)\0*.lvl\0Все файлы\0*.*\0\0"
-#define FILE_FILTER_MODEL	"dse file(.dse)\0*.dse\0Все файлы\0*.*\0\0"
-#define FILE_FILTER_VS		"vertex shader file(.vs)\0*.vs\0Все файлы\0*.*\0\0"
-#define FILE_FILTER_PS		"pixel shader file(.ps)\0*.ps\0Все файлы\0*.*\0\0"
+#define FILE_FILTER_TEXTURE	"All files\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
+#define FILE_FILTER_LEVEL	"SkyX level file(.lvl)\0*.lvl\0All files\0*.*\0\0"
+#define FILE_FILTER_MODEL	"dse file(.dse)\0*.dse\0All files\0*.*\0\0"
+#define FILE_FILTER_VS		"vertex shader file(.vs)\0*.vs\0All files\0*.*\0\0"
+#define FILE_FILTER_PS		"pixel shader file(.ps)\0*.ps\0All files\0*.*\0\0"
 
 
 #define EDITORS_LEVEL_GROUPTYPE_GEOM	1
@@ -159,16 +159,12 @@ namespace GData
 	float3_t FigureConeParam;
 	float3 FigureConePos;
 
-#if defined(SX_PARTICLES_EDITOR)
+#if !defined(SX_GAME)
 	namespace Editors
 	{
-		void ParticlesEditorUpdateStatusBar();
-	};
-#endif
-
+		bool RenderGrid = false;
+		bool RenderAxesStatic = false;
 #if defined(SX_LEVEL_EDITOR)
-	namespace Editors
-	{
 		int ActiveGroupType = 0;
 		ID ActiveElement = -1;
 		bool SelSelection;
@@ -177,8 +173,15 @@ namespace GData
 		bool SelBackFacesCull;
 
 		void LevelEditorUpdateStatusBar();
+#endif
+
+#if defined(SX_PARTICLES_EDITOR)
+		bool RenderBound = false;
+		void ParticlesEditorUpdateStatusBar();
+#endif
 	};
 #endif
+
 };
 
 //!@} managed_render_gdata

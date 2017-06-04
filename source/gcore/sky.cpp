@@ -3,6 +3,9 @@
 
 SkyBox::SkyBox()
 {
+	TexActive[0] = 0;
+	TexSecond[0] = 0;
+
 	D3DVERTEXELEMENT9 layoutskybox[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
@@ -143,6 +146,18 @@ void SkyBox::ChangeTexture(const char *texture)
 		{
 			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmpsb1);
 		}
+}
+
+void SkyBox::GetActiveTexture(char *texture)
+{
+	if (texture)
+		strcpy(texture, TexActive);
+}
+
+void SkyBox::GetSecondTexture(char *texture)
+{
+	if (texture)
+		strcpy(texture, TexSecond);
 }
 
 inline void SkyBox::SetRotation(float angle)

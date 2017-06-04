@@ -67,6 +67,12 @@ void Emitter::Init(ParticlesData* data)
 		AnimTexDataInit();
 
 	VertexCreate();
+
+	if (Enable)
+	{
+		EnableSet(false);
+		EnableSet(true);
+	}
 }
 
 ParticlesData* Emitter::GetData()
@@ -825,6 +831,10 @@ void Emitter::Compute()
 			//если назначена анимация текстуры то обрабатываем
 			if (Arr[i].AnimTexRateMls > 0)
 				UpdateAnimTex(i, tmptime);
+			/*else if (Data.AnimTexRate > 0 && Data.AnimTexCountCadrsX > 0 && Data.AnimTexCountCadrsY > 0)
+			{
+				Arr[i].AnimTexRateMls = Data.AnimTexRate + (Data.AnimTexRateDisp>0 ? ((rand() % (Data.AnimTexRateDisp / 2)) - (Data.AnimTexRateDisp / 2)) : 0);
+			}*/
 
 			//CHARACTER
 

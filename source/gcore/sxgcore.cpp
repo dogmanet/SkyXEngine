@@ -784,6 +784,18 @@ void SGCore_SkyBoxChangeTex(const char *texture)
 	ObjSkyBox->ChangeTexture(texture);
 }
 
+void SGCore_SkyBoxGetActiveTex(char *texture)
+{
+	SG_PRECOND_SKY_BOX(_VOID);
+	ObjSkyBox->GetActiveTexture(texture);
+}
+
+void SGCore_SkyBoxGetSecondTex(char *texture)
+{
+	SG_PRECOND_SKY_BOX(_VOID);
+	ObjSkyBox->GetSecondTexture(texture);
+}
+
 void SGCore_SkyBoxSetRot(float angle)
 {
 	SG_PRECOND_SKY_BOX(_VOID);

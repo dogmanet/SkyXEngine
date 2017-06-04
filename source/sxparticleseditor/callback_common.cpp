@@ -31,6 +31,22 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return TrueExit(hwnd, msg, wParam, lParam);
 	}
 
+	else if (id == ID_VIEW_GRID)
+	{
+		SXParticlesEditor::MainMenu->CheckItem(id, !SXParticlesEditor::MainMenu->GetCheckedItem(id));
+		GData::Editors::RenderGrid = SXParticlesEditor::MainMenu->GetCheckedItem(id);
+	}
+	else if (id == ID_VIEW_AXES)
+	{
+		SXParticlesEditor::MainMenu->CheckItem(id, !SXParticlesEditor::MainMenu->GetCheckedItem(id));
+		GData::Editors::RenderAxesStatic = SXParticlesEditor::MainMenu->GetCheckedItem(id);
+	}
+	else if (id == ID_VIEW_BOUND)
+	{
+		SXParticlesEditor::MainMenu->CheckItem(id, !SXParticlesEditor::MainMenu->GetCheckedItem(id));
+		GData::Editors::RenderBound = SXParticlesEditor::MainMenu->GetCheckedItem(id);
+	}
+
 	return 0;
 }
 
@@ -267,8 +283,8 @@ LRESULT SXParticlesEditor_EditEffName_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		SPE_EffectNameGet(SXParticlesEditor::SelEffID, ttext);
 		SXParticlesEditor::EditEffName->SetText(ttext);
 		MessageBox(0, "unresolved name", 0, 0);
-		return 0;
 	}
+	return 0;
 }
 
 LRESULT SXParticlesEditor_Edits_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
