@@ -28,8 +28,8 @@ enum PDE_TYPE
 
 enum PDF_FLAG
 {
-	PDFF_NONE      = 0x00,
-	PDFF_NOEXPORT  = 0x01
+	PDFF_NONE       = 0x00,
+	PDFF_NOEXPORT   = 0x01
 };
 
 enum ENT_FLAG
@@ -85,7 +85,8 @@ prop_editor_t _GetEditorFilefield(int start, ...);
 	\
 protected:\
 	static void InitPropData(); \
-	static proptable_t * GetPropTable(); \
+	virtual proptable_t * GetPropTable(); \
+	static proptable_t * SGetPropTable(); \
 	static void ReleasePropData();\
 public:\
 	virtual propdata_t * GetField(const char * name);\
@@ -97,15 +98,20 @@ void cls::ReleasePropData()\
 {\
 	for(int i = 0; i < m_pPropTable.numFields; ++i)\
 	{\
-		if(m_pPropTable.pData[i].editor.pData)\
-			delete[] m_pPropTable.pData[i].editor.pData; \
+		mem_delete_a(m_pPropTable.pData[i].editor.pData); \
 	}\
 }\
-proptable_t * cls::GetPropTable()\
+proptable_t * cls::SGetPropTable()\
 {\
 	if(!m_pPropTable.numFields)\
 		InitPropData();\
 	return(&m_pPropTable);\
+}\
+proptable_t * cls::GetPropTable()\
+{\
+	if(!m_pPropTable.numFields)\
+		InitPropData(); \
+	return(&m_pPropTable); \
 }\
 propdata_t * cls::GetField(const char * name)\
 {\
@@ -130,7 +136,7 @@ void cls::InitPropData() \
 	static propdata_t pData[] = {{0}
 
 #define BEGIN_PROPTABLE(cls) \
-	_BEGIN_PROPTABLE(cls, m_pPropTable.pBaseProptable = BaseClass::GetPropTable();)
+	_BEGIN_PROPTABLE(cls, m_pPropTable.pBaseProptable = BaseClass::SGetPropTable();)
 
 #define BEGIN_PROPTABLE_NOBASE(cls) \
 	_BEGIN_PROPTABLE(cls, m_pPropTable.pBaseProptable = NULL;)
@@ -168,11 +174,11 @@ const char * GetEmptyString();
 #define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, editor
 #define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, editor
 #define DEFINE_FIELD_ANGLES(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, editor
-#define DEFINE_FIELD_INT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_INT, flags, keyname, edname, editor
-#define DEFINE_FIELD_FLOAT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_FLOAT, flags, keyname, edname, editor
-#define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_BOOL, flags, keyname, edname, editor
+#define DEFINE_FIELD_INT(field, flags, keyname, edname, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, editor
+#define DEFINE_FIELD_FLOAT(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, editor
+#define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, editor
 #define DEFINE_FIELD_ENTITY(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, editor
 #define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
-#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_FLAGS, flags, keyname, edname, editor
+#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, editor
 
 #endif

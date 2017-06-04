@@ -64,6 +64,7 @@ void SXplayer::UpdateInput(float dt)
 	int x, y;
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
 	static const bool * editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
+	static const bool * grab_cursor = GET_PCVAR_BOOL("cl_grab_cursor");
 
 	if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
 	{
@@ -224,7 +225,7 @@ void SXplayer::UpdateInput(float dt)
 	}
 
 #ifndef _SERVER
-	if(!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))
+	if(*grab_cursor && (!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON)))
 	{
 		RECT rc;
 		GetWindowRect(GetForegroundWindow(), &rc);

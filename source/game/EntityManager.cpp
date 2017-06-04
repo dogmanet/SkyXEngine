@@ -4,6 +4,21 @@
 
 #include <core/sxcore.h>
 
+EntityManager::EntityManager():
+	m_iThreadNum(1),
+	m_pDefaultsConf(NULL),
+	m_pDynClassConf(NULL)
+{
+	LoadDefaults();
+	LoadDynClasses();
+}
+
+EntityManager::~EntityManager()
+{
+	mem_release(m_pDynClassConf);
+	mem_release(m_pDefaultsConf);
+}
+
 void EntityManager::Update(int thread)
 {
 	time_point tNow = std::chrono::high_resolution_clock::now();
@@ -186,7 +201,7 @@ bool EntityManager::Import(const char * file)
 {
 	ISXLConfig * conf = Core_CrLConfig();
 	char sect[32];
-	SXbaseEntity * pEnt;
+	SXbaseEntity * pEnt = NULL;
 	Array<SXbaseEntity*> tmpList;
 	if(conf->Open(file))
 	{
@@ -212,11 +227,13 @@ bool EntityManager::Import(const char * file)
 		if(!conf->KeyExists(sect, "classname"))
 		{
 			printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
+			tmpList[i] = NULL;
 			continue;
 		}
 		if(!(pEnt = CREATE_ENTITY(conf->GetKey(sect, "classname"), this)))
 		{
 			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->GetKey(sect, "classname"));
+			tmpList[i] = NULL;
 			continue;
 		}
 		if(conf->KeyExists(sect, "name"))
@@ -316,4 +333,77 @@ SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity 
 		}
 	}
 	return(NULL);
+}
+
+void EntityManager::LoadDefaults()
+{
+	m_pDefaultsConf = Core_CrLConfig();
+	if(m_pDefaultsConf->Open("entities/defaults.ent") < 0)
+	{
+		mem_release(m_pDefaultsConf);
+		return;
+	}
+
+	const char * sect, * key;
+	EntDefaultsMap * defs;
+
+	for(int i = 0, l = m_pDefaultsConf->GetSectionCount(); i < l; ++i)
+	{
+		sect = m_pDefaultsConf->GetSectionName(i);
+		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(sect)))
+		{
+			continue;
+		}
+		for(int j = 0, jl = m_pDefaultsConf->GetKeyCount(sect); j < jl; ++j)
+		{
+			key = m_pDefaultsConf->GetKeyName(sect, j);
+			defs[0][AAString(key)] = m_pDefaultsConf->GetKey(sect, key);
+		}
+	}
+}
+
+void EntityManager::LoadDynClasses()
+{
+	m_pDynClassConf = Core_CrLConfig();
+	if(m_pDynClassConf->Open("entities/classes.ent") < 0)
+	{
+		mem_release(m_pDynClassConf);
+		return;
+	}
+
+	const char * newClass, *key, *baseClass;
+	EntDefaultsMap * defs;
+	bool bShow = true;
+
+	for(int i = 0, l = m_pDynClassConf->GetSectionCount(); i < l; ++i)
+	{
+		newClass = m_pDynClassConf->GetSectionName(i);
+		if(!(baseClass = m_pDynClassConf->GetKey(newClass, "base_class")))
+		{
+			printf(COLOR_LRED "Couldn't create entity class '%s': Unknown base class\n" COLOR_RESET, newClass);
+			continue;
+		}
+		IEntityFactory * pOldFactory = EntityFactoryMap::GetInstance()->GetFactory(baseClass);
+		if(!pOldFactory)
+		{
+			printf(COLOR_LRED "Couldn't create entity class '%s': Base class '%s' is undefined\n" COLOR_RESET, newClass, baseClass);
+			continue;
+		}
+		if((key = m_pDynClassConf->GetKey(newClass, "show_in_listing")))
+		{
+			bShow = strcmp(key, "0") && strcmp(key, "false");
+		}
+		IEntityFactory * newFactory = pOldFactory->Copy(newClass, bShow);
+		EntityFactoryMap::GetInstance()->AddFactory(newFactory, newClass);
+
+		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(newClass)))
+		{
+			continue;
+		}
+		for(int j = 0, jl = m_pDynClassConf->GetKeyCount(newClass); j < jl; ++j)
+		{
+			key = m_pDynClassConf->GetKeyName(newClass, j);
+			defs[0][AAString(key)] = m_pDynClassConf->GetKey(newClass, key);
+		}
+	}
 }

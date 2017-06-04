@@ -4,12 +4,16 @@
 #include <gdefines.h>
 #include <common/AssotiativeArray.h>
 #include <common/String.h>
+#include <common/AAString.h>
+#include <common/Array.h>
 
 #include "proptable.h"
 
 #ifdef GetClassName
 #undef GetClassName
 #endif
+
+typedef AssotiativeArray<AAString, const char *> EntDefaultsMap;
 
 class SXbaseEntity;
 class EntityManager;
@@ -21,10 +25,13 @@ public:
 	virtual const char * GetClassName() = 0;
 	virtual proptable_t * GetPropTable() = 0;
 	virtual bool IsEditorHidden() = 0;
+	virtual EntDefaultsMap * GetDefaults() = 0;
+	virtual IEntityFactory * Copy(const char * szName, bool showInListing) = 0;
 };
 
 class EntityFactoryMap
 {
+	friend class EntityManager;
 public:
 	EntityFactoryMap();
 
@@ -35,10 +42,10 @@ public:
 	static EntityFactoryMap * GetInstance();
 	proptable_t * GetPropTable(const char * szClass);
 	bool IsEditorHidden(const char * szClass);
-
+	EntDefaultsMap * GetDefaults(const char * szClass);
 private:
 	IEntityFactory * GetFactory(const char * szName);
-	AssotiativeArray<String, IEntityFactory*> m_mFactories;
+	AssotiativeArray<AAString, IEntityFactory*> m_mFactories;
 };
 
 template <class T>
@@ -49,13 +56,26 @@ public:
 	{
 		EntityFactoryMap::GetInstance()->AddFactory(this, szName);
 		m_szClassName = szName;
-		m_pPropTable = T::GetPropTable();
+		m_pPropTable = T::SGetPropTable();
 		m_bShowInListing = showInListing;
 	}
 
 	~EntityFactory()
 	{
 		T::ReleasePropData();
+		for(int i = 0, l = m_vDerivatives.size(); i < l; ++i)
+		{
+			delete m_vDerivatives[i];
+		}
+	}
+
+	IEntityFactory * Copy(const char * szName, bool showInListing)
+	{
+		EntityFactory<T> * newF = new EntityFactory<T>(*this);
+		newF->m_szClassName = szName;
+		newF->m_bShowInListing = showInListing;
+		m_vDerivatives.push_back(newF);
+		return(newF);
 	}
 
 	SXbaseEntity * Create(EntityManager * pWorld)
@@ -86,11 +106,17 @@ public:
 		return(!m_bShowInListing);
 	}
 
+	EntDefaultsMap * GetDefaults()
+	{
+		return(&m_mDefaults);
+	}
 
 private:
 	const char * m_szClassName;
 	proptable_t * m_pPropTable;
 	bool m_bShowInListing;
+	EntDefaultsMap m_mDefaults;
+	Array<EntityFactory<T>*> m_vDerivatives;
 };
 
 #define REGISTER_ENTITY(cls, name) \

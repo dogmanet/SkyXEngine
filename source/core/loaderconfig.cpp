@@ -218,6 +218,13 @@ int SXLoaderConfig::Parse(const char* file)
 				bComment = true;
 				continue;
 			}
+			else if(bValue)
+			{
+				if((c != ' ' && c != '\t') || s4.length())
+				{
+					s4 += c;
+				}
+			}
 		}
 		else if(c == '#' && bFirstChar)
 		{

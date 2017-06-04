@@ -21,6 +21,7 @@ class SXbaseEntity
 
 private:
 	void SetClassName(const char * name);
+	void SetDefaults();
 
 	const char * m_szClassName;
 
@@ -42,10 +43,13 @@ protected:
 	const char * m_szName;
 
 	SXbaseEntity * m_pParent;
+	int m_iParentAttachment;
 
 	virtual void OnSync();
 	virtual void OnPostLoad();
 	
+	virtual float3 GetAttachmentPos(int id);
+	virtual SMQuaternion GetAttachmentRot(int id);
 public:
 	SXbaseEntity(EntityManager * pMgr);
 	virtual ~SXbaseEntity();
@@ -66,11 +70,11 @@ public:
 	void SetOrient(const SMQuaternion & q);
 	SMQuaternion GetOrient();
 
-	bool SetKV(const char * name, const char * value);
-	bool GetKV(const char * name, char * out, int bufsize);
+	virtual bool SetKV(const char * name, const char * value);
+	virtual bool GetKV(const char * name, char * out, int bufsize);
 
 
-	void SetParent(SXbaseEntity * pEnt);
+	void SetParent(SXbaseEntity * pEnt, int attachment = -1);
 	SXbaseEntity * GetParent();
 };
 

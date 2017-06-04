@@ -24,10 +24,17 @@ SXbaseEntity::SXbaseEntity(EntityManager * pWorld):
 	m_pMgr(pWorld),
 	m_szClassName(NULL),
 	m_szName(NULL),
-	m_pParent(NULL)
+	m_pParent(NULL),
+	m_iParentAttachment(-1)
+{
+	m_iId = pWorld->Register(this);
+}
+
+void SXbaseEntity::SetDefaults()
 {
 	proptable_t * pt = GetPropTable();
 	const char * estr = GetEmptyString();
+	const char * defstr = NULL;
 	while(pt)
 	{
 		for(int i = 0; i < pt->numFields; ++i)
@@ -39,7 +46,6 @@ SXbaseEntity::SXbaseEntity(EntityManager * pWorld):
 		}
 		pt = pt->pBaseProptable;
 	}
-	m_iId = pWorld->Register(this);
 }
 
 SXbaseEntity::~SXbaseEntity()
@@ -276,13 +282,22 @@ bool SXbaseEntity::GetKV(const char * name, char * out, int bufsize)
 	return(true);
 }
 
-void SXbaseEntity::SetParent(SXbaseEntity * pEnt)
+void SXbaseEntity::SetParent(SXbaseEntity * pEnt, int attachment)
 {
 	m_pParent = pEnt;
 	if(pEnt)
 	{
-		m_vOffsetPos = (float3)(m_vPosition - m_pParent->GetPos());
-		m_vOffsetOrient = m_vOrientation * m_pParent->GetOrient().Conjugate();
+		if(attachment >= 0)
+		{
+			m_vOffsetPos = (float3)(m_vPosition - m_pParent->GetAttachmentPos(attachment));
+			m_vOffsetOrient = m_vOrientation * m_pParent->GetAttachmentRot(attachment).Conjugate();
+		}
+		else
+		{
+			m_vOffsetPos = (float3)(m_vPosition - m_pParent->GetPos());
+			m_vOffsetOrient = m_vOrientation * m_pParent->GetOrient().Conjugate();
+		}
+		m_iParentAttachment = attachment;
 	}
 }
 
@@ -296,8 +311,16 @@ void SXbaseEntity::OnSync()
 	if(m_pParent)
 	{
 		m_pParent->OnSync();
-		m_vPosition = (float3)(m_pParent->GetPos() + m_vOffsetPos);
-		m_vOrientation = m_pParent->GetOrient() * m_vOffsetOrient;
+		if(m_iParentAttachment >= 0)
+		{
+			m_vPosition = (float3)(m_pParent->GetAttachmentPos(m_iParentAttachment) + m_vOffsetPos);
+			m_vOrientation = m_pParent->GetAttachmentRot(m_iParentAttachment) * m_vOffsetOrient;
+		}
+		else
+		{
+			m_vPosition = (float3)(m_pParent->GetPos() + m_vOffsetPos);
+			m_vOrientation = m_pParent->GetOrient() * m_vOffsetOrient;
+		}
 		//if(m_pPhysObj)
 		//{
 		//	m_pPhysObj->SetPos(m_vPosition);
@@ -313,4 +336,14 @@ void SXbaseEntity::OnSync()
 
 void SXbaseEntity::OnPostLoad()
 {
+}
+
+float3 SXbaseEntity::GetAttachmentPos(int id)
+{
+	return(float3());
+}
+
+SMQuaternion SXbaseEntity::GetAttachmentRot(int id)
+{
+	return(SMQuaternion());
 }
