@@ -268,6 +268,11 @@ void SXRenderFunc::SaveScreenShot()
 {
 	char tmppath[1024];
 	static int numscreen = 0;
+	
+	if(!Core_0FileExists(GData::Pathes::Screenshots))
+	{
+		CreateDirectoryA(GData::Pathes::Screenshots, NULL);
+	}
 
 	do
 	{
