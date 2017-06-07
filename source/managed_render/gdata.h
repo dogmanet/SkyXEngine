@@ -166,6 +166,8 @@ namespace GData
 		bool RenderAxesStatic = false;
 #if defined(SX_LEVEL_EDITOR)
 		int ActiveGroupType = 0;
+		ID ActiveGreenSplit = -1;
+		ID ActiveGreenObject = -1;
 		ID ActiveElement = -1;
 		bool SelSelection;
 		bool SelZTest;

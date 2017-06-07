@@ -197,6 +197,14 @@ LRESULT SXLevelEditor_ButtonGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 		return 0;
 	}
 
+	if (def_str_validate(tmp_tex) && !Core_0FileExists(path_tex))
+	{
+		char tmpstr[2048];
+		sprintf(tmpstr, "%s%s%s", "Текстура [", path_tex, "] не существует");
+		MessageBox(0, tmpstr, 0, 0);
+		return 0;
+	}
+
 	if (greentype == GeomGreenType::ggt_tree)
 	{
 		if (!Core_0FileExists(path_lod1))

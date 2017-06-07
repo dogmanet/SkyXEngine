@@ -1,0 +1,15 @@
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+sampler2D BaseSampler:register(s0);
+
+half4 NearFarIsUnlit;
+
+half4 main(vs_out_gcommon IN) : COLOR0
+{
+	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
+	half4 color = tex2D(BaseSampler,IN.TexUV);
+	clip(color.a - 0.5);
+	return color;
+}

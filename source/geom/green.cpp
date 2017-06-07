@@ -28,6 +28,8 @@ Green::Green()
 
 	IRSData* tmparr = new IRSData();
 	ArrComFor.push_back(tmparr);
+	IRSData* tmparr2 = new IRSData();
+	ArrComFor.push_back(tmparr2);
 }
 
 Green::~Green()
@@ -61,8 +63,8 @@ Green::Model::Model()
 	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
 	AllCountGreen = 0;
 	SplitsIDs = 0;
-	SplitsIDsRender = 0;
-	ArrSplits = 0;
+	//SplitsIDsRender = 0;
+	SplitsTree = 0;
 	AllTrans = 0;
 	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
 	NavigateMesh = 0;
@@ -87,7 +89,7 @@ Green::Model::NavMesh::~NavMesh()
 
 Green::Model::~Model()
 {
-	mem_delete(ArrSplits);
+	mem_delete(SplitsTree);
 	mem_delete(AllTrans);
 	mem_delete(NavigateMesh);
 
@@ -104,15 +106,15 @@ Green::Segment::Segment()
 	for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; ++i)
 	{
 		Splits[i] = 0;
-		SortId[i] = -1;
+		//SortId[i] = -1;
 	}
-
+	
 	Data = 0;
 	CountAllGreen = 0;
 	BoundVolumeSys = 0;
 	BoundVolumeP = 0;
 	Id = -1;
-	SID = -1;
+	//SID = -1;
 	BFNonEnd = false;
 }
 
@@ -180,110 +182,20 @@ void Green::OnResetDevice()
 		0);
 }
 
-void Green::Load(const char* path, const char* lod1, const char* lod2, const char* path_bin_mask, DWORD count_object_in_split)
+void Green::PreSegmentation(Model* model, float3* min_level, float3* max_level)
 {
-	/*if (!path)
-		return;*/
-
-	Model* tmpnewmpdel = new Model();
-	tmpnewmpdel->ArrLod[0] = new Lod();
-	tmpnewmpdel->ArrLod[1] = new Lod();
-	tmpnewmpdel->ArrLod[2] = new Lod();
-
-	SGCore_StaticModelLoad(path, &(tmpnewmpdel->ArrLod[0]->model));
-
-	char tmppathtex[1024];
-	for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
-	{
-		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_MtlLoad(tmppathtex, MTL_TYPE_TREE);
-	}
-
-	SGCore_StaticModelLoad(lod1, &tmpnewmpdel->ArrLod[1]->model);
-
-	for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
-	{
-		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_MtlLoad(tmppathtex, MTL_TYPE_TREE);
-	}
-
-	SGCore_StaticModelLoad(lod2, &tmpnewmpdel->ArrLod[2]->model);
-
-	for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
-	{
-		sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-		tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_MtlLoad(tmppathtex, MTL_TYPE_TREE);
-	}
-
-
-	FILE* file = 0;
-	file = fopen(path_bin_mask, "rb");
-
-	char HeaderFile[13];
-
-	fread(HeaderFile, 13, 1, file);
-
-	if (strcmp(HeaderFile, "sxgreentrans") == 0)
-	{
-		fread(&tmpnewmpdel->AllCountGreen, sizeof(uint32_t), 1, file);
-		tmpnewmpdel->AllTrans = new DataVertex[tmpnewmpdel->AllCountGreen];
-		fread(tmpnewmpdel->AllTrans, sizeof(DataVertex), tmpnewmpdel->AllCountGreen, file);
-	}
-	//CountGrassInVert = mpnewmpdel->AllCountGreen + 1;
-	fclose(file);
-
-	PreSegmentation(tmpnewmpdel);
-	//currSplitsIDs = 0;
-	//currSplitsIDsRender = 0;
-	SetSplitID(tmpnewmpdel->ArrSplits, &tmpnewmpdel->SplitsIDs, &tmpnewmpdel->SplitsIDsRender);
-	//tmpnewmpdel->SplitsIDs = currSplitsIDs;
-	//tmpnewmpdel->SplitsIDsRender = currSplitsIDsRender;
-
-	/*InfoRenderSegments* tmpirs = new InfoRenderSegments();
-	tmpirs->Count = tmpnewmpdel->SplitsIDsRender;
-	tmpirs->Arr = new Segment*[tmpnewmpdel->SplitsIDsRender];
-	tmpirs->CountCom = 0;*/
-
-	ArrModels.push_back(tmpnewmpdel);
-	AddModelInArrCom(ArrModels.size()-1);
-}
-
-void Green::PreSegmentation(Model* model)
-{
-	model->ArrSplits = new Segment();
+	model->SplitsTree = new Segment();
 
 	float3 tmpMin, tmpMax;
 	float3 tmpMin2, tmpMax2;
-	model->ArrSplits->BoundVolumeSys = SGCore_CrBound();
-	SGCore_FCompBoundBox(model->ArrLod[0]->model->VertexBuffer, &(model->ArrSplits->BoundVolumeSys), model->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
+	model->SplitsTree->BoundVolumeSys = SGCore_CrBound();
+	SGCore_FCompBoundBox(model->ArrLod[0]->model->VertexBuffer, &(model->SplitsTree->BoundVolumeSys), model->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
 
-	model->ArrSplits->BoundVolumeSys->GetMinMax(&tmpMin2, &tmpMax2);
-	model->BBMax = tmpMax2 * 2.f;
-	model->BBMin = tmpMin2 * 2.f;
-	tmpMin = model->AllTrans[0].Position;
-	tmpMax = model->AllTrans[0].Position;
-
-	for (DWORD i = 0; i<model->AllCountGreen; i++)
-	{
-		if (model->AllTrans[i].Position.x > tmpMax.x)
-			tmpMax.x = model->AllTrans[i].Position.x;
-
-		if (model->AllTrans[i].Position.y > tmpMax.y)
-			tmpMax.y = model->AllTrans[i].Position.y;
-
-		if (model->AllTrans[i].Position.z > tmpMax.z)
-			tmpMax.z = model->AllTrans[i].Position.z;
-
-
-		if (model->AllTrans[i].Position.x < tmpMin.x)
-			tmpMin.x = model->AllTrans[i].Position.x;
-
-		if (model->AllTrans[i].Position.y < tmpMin.y)
-			tmpMin.y = model->AllTrans[i].Position.y;
-
-		if (model->AllTrans[i].Position.z < tmpMin.z)
-			tmpMin.z = model->AllTrans[i].Position.z;
-	}
+	model->SplitsTree->BoundVolumeSys->GetMinMax(&tmpMin2, &tmpMax2);
+	model->BBMax = tmpMax2 * (1.f + GREEN_GEN_RAND_SCALE);
+	model->BBMin = tmpMin2 * (1.f + GREEN_GEN_RAND_SCALE);
+	tmpMin = *min_level;
+	tmpMax = *max_level;
 
 	tmpMax.x += model->BBMax.x;
 	tmpMax.y += model->BBMax.y;
@@ -297,16 +209,8 @@ void Green::PreSegmentation(Model* model)
 	float tmpY = tmpMax.y - tmpMin.y;
 	float tmpZ = tmpMax.z - tmpMin.z;
 
-	model->ArrSplits->BoundVolumeP = SGCore_CrBound();
-	model->ArrSplits->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
-
-	float3 dimensions = (tmpMax - tmpMin) * 0.5f;
-	long count_object_in_split = lerpf(GREEN_COUNT_MIN_SEGMENTS, GREEN_COUNT_MAX_SEGMENTS, fabs(float(model->AllCountGreen) / (dimensions.x * dimensions.z * 5.f)));
-	if (count_object_in_split < GREEN_COUNT_MIN_SEGMENTS)
-		count_object_in_split = GREEN_COUNT_MIN_SEGMENTS;
-	else if (count_object_in_split > GREEN_COUNT_MAX_SEGMENTS)
-		count_object_in_split = GREEN_COUNT_MAX_SEGMENTS;
-	//SkyXEngine::Core::WorkModel::CreateBoundingBoxMesh(&tmpMin, &tmpMax, &(model->ArrSplits->BoundBox));
+	model->SplitsTree->BoundVolumeP = SGCore_CrBound();
+	model->SplitsTree->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
 
 	//выравниваем по квадрату
 	if (tmpX > tmpZ)
@@ -324,48 +228,53 @@ void Green::PreSegmentation(Model* model)
 		tmpMin.x -= tmpX;
 	}
 
-	model->ArrSplits->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+	model->SplitsTree->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
 
-	model->ArrSplits->CountAllGreen = model->AllCountGreen;
-	model->ArrSplits->Data = new DataVertex[model->AllCountGreen];
-	memcpy(model->ArrSplits->Data, model->AllTrans, sizeof(DataVertex)* model->AllCountGreen);
-
-	if (model->ArrSplits->CountAllGreen > 0 && model->ArrSplits->CountAllGreen > count_object_in_split)
+	model->SplitsTree->CountAllGreen = model->AllCountGreen;
+	if (model->AllCountGreen > 0)
 	{
-		model->ArrSplits->BFNonEnd = true;
-		CycleSegmentation(model->ArrSplits, model, count_object_in_split);
+		model->SplitsTree->Data = new DataVertex[model->AllCountGreen];
+		memcpy(model->SplitsTree->Data, model->AllTrans, sizeof(DataVertex)* model->AllCountGreen);
 	}
+
+	if (model->SplitsTree->CountAllGreen > 0)
+		model->SplitsTree->BFNonEnd = true;
 	else
-	{
-		model->ArrSplits->BFNonEnd = false;
-	}
+		model->SplitsTree->BFNonEnd = false;
+
+	CycleSegmentation(model->SplitsTree, model);
 }
 
-void Green::CycleSegmentation(Segment* Split, Model* mesh, int count_object_in_split)
+void Green::CycleSegmentation(Segment* Split, Model* mesh)
 {
 	Array<Segment*> queue;
 	long tmpcount = 0;
 	queue.push_back(Split);
+	float width = 0;
+	float depth = 0;
+	float3 min, max;
 
 	while (queue.size())
 	{
-		if (queue[0]->BFNonEnd)
+		queue[0]->BoundVolumeSys->GetMinMax(&min, &max);
+		if ((max.x - min.x)*0.5f > GREEN_BB_MIN_X && (max.z - min.z)*0.5f > GREEN_BB_MIN_Z)
 		{
-			Segmentation(queue[0], mesh, count_object_in_split);
-
+			Segmentation(queue[0], mesh);
 			for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; i++)
 			{
 				if (queue[0]->Splits[i])
 					queue.push_back(queue[0]->Splits[i]);
 			}
 		}
+		else
+			queue[0]->BFNonEnd = false;
 
 		queue.erase(0);
 		++tmpcount;
 	}
 }
 
-void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
+void Green::Segmentation(Segment* Split, Model* mesh)
 {
 	Array<DWORD> ArrPoly[4];
 
@@ -379,7 +288,7 @@ void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 	SGCore_0ComBoundBoxArr4(Split->BoundVolumeSys, (ArrBound));
 
 	float3 tmpmin, tmpmax;
-	for (int i = 0; i<4; i++)
+	for (int i = 0; i<4; ++i)
 	{
 		Split->Splits[i]->BoundVolumeSys = ArrBound[i];
 		Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpmin, &tmpmax);
@@ -387,18 +296,22 @@ void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 		Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpmin, &tmpmax);
 	}
 
-	bool *tmp_arr_mesh_poly = new bool[Split->CountAllGreen];
-	for (int i = 0; i<Split->CountAllGreen; i++)
-		tmp_arr_mesh_poly[i] = true;
+	bool *tmp_arr_mesh_poly = 0;
+	if (Split->CountAllGreen)
+	{
+		tmp_arr_mesh_poly = new bool[Split->CountAllGreen];
+		for (int i = 0; i < Split->CountAllGreen; i++)
+			tmp_arr_mesh_poly[i] = true;
+	}
 
 	DWORD tmpCountNonIn = 0;
 	float3 tmpMin, tmpMax;
-	for (WORD i = 0; i<4; i++)
+	for (WORD i = 0; i<4; ++i)
 	{
 		Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
 		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(Split->Splits[i]->BoundBox));
 
-		for (DWORD j = 0; j<Split->CountAllGreen; j++)
+		for (DWORD j = 0; j<Split->CountAllGreen; ++j)
 		{
 			//если позици¤ провер¤емого полигона находитьс¤ в пределах ограничивающего паралелепипеда
 			if (
@@ -418,7 +331,6 @@ void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 		}
 	}
 
-
 	for (int i = 0; i<4; i++)
 	{
 		Split->Splits[i]->CountAllGreen = ArrPoly[i].size();
@@ -426,98 +338,114 @@ void Green::Segmentation(Segment* Split, Model* mesh, int count_object_in_split)
 		if (Split->Splits[i]->CountAllGreen > 0)
 		{
 			Split->Splits[i]->Data = new DataVertex[Split->Splits[i]->CountAllGreen];
-
-			float3 comMax = Split->Data[ArrPoly[i][0]].Position;
-			float3 comMin = Split->Data[ArrPoly[i][0]].Position;
-
-			for (DWORD k = 0; k<ArrPoly[i].size(); k++)
+			for (DWORD k = 0; k < ArrPoly[i].size(); k++)
 			{
 				Split->Splits[i]->Data[k] = Split->Data[ArrPoly[i][k]];
-
-				if (Split->Data[ArrPoly[i][k]].Position.y > comMax.y)
-					comMax.y = Split->Data[ArrPoly[i][k]].Position.y;
-
-				if (Split->Data[ArrPoly[i][k]].Position.y < comMin.y)
-					comMin.y = Split->Data[ArrPoly[i][k]].Position.y;
-
-
-				if (Split->Data[ArrPoly[i][k]].Position.x > comMax.x)
-					comMax.x = Split->Data[ArrPoly[i][k]].Position.x;
-
-				if (Split->Data[ArrPoly[i][k]].Position.x < comMin.x)
-					comMin.x = Split->Data[ArrPoly[i][k]].Position.x;
-
-
-				if (Split->Data[ArrPoly[i][k]].Position.z > comMax.z)
-					comMax.z = Split->Data[ArrPoly[i][k]].Position.z;
-
-				if (Split->Data[ArrPoly[i][k]].Position.z < comMin.z)
-					comMin.z = Split->Data[ArrPoly[i][k]].Position.z;
 			}
 
-			Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
-			tmpMax.y = comMax.y + mesh->BBMax.y;
-			tmpMin.y = comMin.y + mesh->BBMin.y;
-
-			Split->Splits[i]->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
-
-			tmpMax.x = comMax.x + mesh->BBMax.x;
-			tmpMax.y = comMax.y + mesh->BBMax.y;
-			tmpMax.z = comMax.z + mesh->BBMax.z;
-
-			tmpMin.x = comMin.x + mesh->BBMin.x;
-			tmpMin.y = comMin.y + mesh->BBMin.y;
-			tmpMin.z = comMin.z + mesh->BBMin.z;
-
-			Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+			AlignBound(mesh, Split->Splits[i]);
 
 			ArrPoly[i].clear();
 		}
 
-		if (Split->Splits[i]->CountAllGreen > 0 && Split->Splits[i]->CountAllGreen > count_object_in_split)
+		if (Split->Splits[i]->CountAllGreen > 0)
 			Split->Splits[i]->BFNonEnd = true;
-		else if (Split->Splits[i]->CountAllGreen <= 0)
-		{
-			mem_delete(Split->Splits[i]);
-		}
 		else
+		{
 			Split->Splits[i]->BFNonEnd = false;
+		}
 	}
 
 	mem_delete_a(Split->Data);
 	mem_delete_a(tmp_arr_mesh_poly);
 }
 
-void Green::SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender)
+void Green::AlignBound(Model* model, Segment* split)
+{
+	if (split->CountAllGreen > 0)
+	{
+		float3 comMax = split->Data[0].Position;
+		float3 comMin = split->Data[0].Position;
+
+		for (int k = 0; k<split->CountAllGreen; ++k)
+		{
+			if (split->Data[k].Position.y > comMax.y)
+				comMax.y = split->Data[k].Position.y;
+
+			if (split->Data[k].Position.y < comMin.y)
+				comMin.y = split->Data[k].Position.y;
+
+
+			if (split->Data[k].Position.x > comMax.x)
+				comMax.x = split->Data[k].Position.x;
+
+			if (split->Data[k].Position.x < comMin.x)
+				comMin.x = split->Data[k].Position.x;
+
+
+			if (split->Data[k].Position.z > comMax.z)
+				comMax.z = split->Data[k].Position.z;
+
+			if (split->Data[k].Position.z < comMin.z)
+				comMin.z = split->Data[k].Position.z;
+		}
+
+		float3 tmpMin, tmpMax;
+		float scalecoef = 1.f + GREEN_GEN_RAND_SCALE;
+
+		split->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+		tmpMax.y = comMax.y + model->BBMax.y * scalecoef;
+		tmpMin.y = comMin.y + model->BBMin.y * scalecoef;
+
+		split->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+
+		tmpMax.x = comMax.x + model->BBMax.x * scalecoef;
+		tmpMax.y = comMax.y + model->BBMax.y * scalecoef;
+		tmpMax.z = comMax.z + model->BBMax.z * scalecoef;
+
+		tmpMin.x = comMin.x + model->BBMin.x * scalecoef;
+		tmpMin.y = comMin.y + model->BBMin.y * scalecoef;
+		tmpMin.z = comMin.z + model->BBMin.z * scalecoef;
+
+		split->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+	}
+}
+
+void Green::SetSplitID(Model* model)
 {
 	Array<Segment*, GREEN_DEFAULT_RESERVE_COM> queue;
 	long tmpcount = 0;
-	queue.push_back(Split);
+	queue.push_back(model->SplitsTree);
 
 	while (queue.size())
 	{
-		SetSplitID2(queue[0], SplitsIDs, SplitsIDsRender, &queue);
+		SetSplitID2(model, queue[0], &queue);
 
 		queue.erase(0);
 		++tmpcount;
 	}
 }
 
-void Green::SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue)
+void Green::SetSplitID2(Model* model, Segment* Split, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue)
 {
-	if (Split && Split->BFNonEnd)
+	if (Split/* && Split->BFNonEnd*/)
 	{
-		Split->Id = (*SplitsIDs);
-		++(*SplitsIDs);
-		for (int i = 0; i<4; i++)
-			queue->push_back(Split->Splits[i]);
+		Split->Id = model->SplitsIDs;
+		model->SplitsArr[Split->Id] = Split;
+		++(model->SplitsIDs);
+		for (int i = 0; i < 4; i++)
+		{
+			if (Split->Splits[i])
+				queue->push_back(Split->Splits[i]);
+		}
 	}
-	else if (Split)
+	/*else if (Split)
 	{
-		Split->Id = (*SplitsIDs);
-		++(*SplitsIDs);
-		++(*SplitsIDsRender);
-	}
+		Split->Id = (model->SplitsIDs);
+		model->SplitsArr[Split->Id] = Split;
+		++(model->SplitsIDs);
+		++(model->SplitsIDsRender);
+	}*/
 }
 
 void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr)
@@ -536,7 +464,7 @@ void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr
 		
 		ArrComFor[id_arr]->queue.clear();
 		//long tmpcount = 0;
-		ArrComFor[id_arr]->queue.push_back(ArrModels[i]->ArrSplits);
+		ArrComFor[id_arr]->queue.push_back(ArrModels[i]->SplitsTree);
 
 		while (ArrComFor[id_arr]->queue.size())
 		{
@@ -554,6 +482,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 {
 	float3 jcenter;
 	float jradius;
+	ID SortId[GREEN_COUNT_TYPE_SEGMENTATION];
 	comsegment->BoundVolumeP->GetSphere(&jcenter, &jradius);
 
 	if (comsegment->CountAllGreen > 0 && frustum->SphereInFrustum(&jcenter, jradius))
@@ -564,7 +493,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 				{
 					for (int q = 0; q<GREEN_COUNT_TYPE_SEGMENTATION; ++q)
 					{
-						comsegment->SortId[q] = -1;
+						SortId[q] = -1;
 						if (comsegment->Splits[q])
 						{
 							comsegment->Splits[q]->BoundVolumeP->GetSphere(&jcenter, &jradius);
@@ -595,9 +524,9 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 							bool tmpisnend = true;
 							while (tmpisnend)
 							{
-								if (comsegment->SortId[tmpCountGreater] == -1)
+								if (SortId[tmpCountGreater] == -1)
 								{
-									comsegment->SortId[tmpCountGreater] = i;
+									SortId[tmpCountGreater] = i;
 									tmpisnend = false;
 								}
 								else
@@ -608,8 +537,8 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 
 					for (int j = 0; j<GREEN_COUNT_TYPE_SEGMENTATION; ++j)
 					{
-						if (comsegment->SortId[(GREEN_COUNT_TYPE_SEGMENTATION - 1) - j] != -1 && comsegment->Splits[comsegment->SortId[(GREEN_COUNT_TYPE_SEGMENTATION-1) - j]])
-							queue->push_back(comsegment->Splits[comsegment->SortId[(GREEN_COUNT_TYPE_SEGMENTATION-1) - j]]);
+						if (SortId[(GREEN_COUNT_TYPE_SEGMENTATION - 1) - j] != -1 && comsegment->Splits[SortId[(GREEN_COUNT_TYPE_SEGMENTATION-1) - j]])
+							queue->push_back(comsegment->Splits[SortId[(GREEN_COUNT_TYPE_SEGMENTATION-1) - j]]);
 					}
 				}
 				else
@@ -623,7 +552,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 			}
 			else
 			{
-				if ((*count) < curr_splits_ids_render)
+				if ((*count) < curr_splits_ids_render && comsegment->Data)
 				{
 					arrsplits[(*count)] = comsegment;
 					comsegment->DistForCamera = 0;// SMVector3Length((jcenter - (*viewpos))) - jradius;
@@ -769,6 +698,9 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 
 void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 {
+	if (ArrModels.size() <= id)
+		return;
+
 	float3 jcenter;
 	float jradius;
 	ID id_arr = 0;
@@ -839,6 +771,20 @@ void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 			GPURender2(timeDelta, viewpos, id, lod, id_tex);
 		}
 	}
+}
+
+void Green::GPURenderObject(DWORD timeDelta, float3* viewpos, ID id, ID split, ID idobj, ID id_tex)
+{
+	if (id < 0 || ArrModels.size() <= id || split < 0 || ArrModels[id]->SplitsArr.size() <= split || idobj < 0 || ArrModels[id]->SplitsArr[split]->CountAllGreen <= idobj)
+		return;
+
+	RTGPUArrVerteces = 0;
+	TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+	memcpy(RTGPUArrVerteces, &(ArrModels[id]->SplitsArr[split]->Data[idobj]), sizeof(DataVertex));
+	TransVertBuf->Unlock();
+	RTCountDrawObj = 1;
+
+	GPURender2(timeDelta, viewpos, id, 0, id_tex);
 }
 
 ID Green::Init(StaticGeom* geom, const char* name,
@@ -962,134 +908,23 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		float3 mmax, mmin;
 		tmpbb->GetMinMax(&mmin, &mmax);
 		mem_release(tmpbb);
-		float r2d = 0;
-
-		if ((mmax.x - mmin.x)*0.5f > (mmax.z - mmin.z)*0.5f)
-			r2d = (mmax.x - mmin.x)*0.5f;
-		else
-			r2d = (mmax.z - mmin.z)*0.5f;
 
 		float3 tmpmin, tmpmax;
 		geom->GetMinMax(&tmpmin, &tmpmax);
 
-		ID IDTexMask = SGCore_LoadTexAddName(path_mask, LoadTexType::ltt_load);
-		SGCore_LoadTexLoadTextures();
+		if (def_str_validate(path_mask))
+		{
+			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LoadTexType::ltt_load);
+			SGCore_LoadTexLoadTextures();
 
-		float CountMaxInPixel = count_max;
+			GenByTex(geom, tmpnewmpdel, IDTexMask, &tmpmin, &tmpmax, count_max);
+		}
 
-		float WidthLand = tmpmax.x - tmpmin.x;
-		float HeightLand = tmpmax.z - tmpmin.z;
+		PreSegmentation(tmpnewmpdel, &tmpmin, &tmpmax);
+		mem_delete_a(tmpnewmpdel->AllTrans);
 
-		D3DSURFACE_DESC desc;
-		SGCore_LoadTexGetTex(IDTexMask)->GetLevelDesc(0, &desc);
-
-		D3DLOCKED_RECT LockedRect;
-
-		SGCore_LoadTexGetTex(IDTexMask)->LockRect(0, &LockedRect, 0, 0);
-		DWORD* tmpColor = (DWORD*)LockedRect.pBits;
-
-		DWORD tmpUnAllCountGreen = 0;
-		Array<float3_t, GREEN_DEFAULT_RESERVE_GEN> arrpos;
+		SetSplitID(tmpnewmpdel);
 		
-		DWORD MaxAlpha = 0;
-		DWORD alpha;
-		float AlphaColor;
-		float PosInLandX;
-		float PosInLandY;
-
-		float3_t tmp2;
-
-		float OneEdX;
-		float OneEdY;
-
-		float3 tmppos2;
-		bool isintersect;
-
-		for (DWORD x = 0; x<desc.Width; ++x)
-		{
-			for (DWORD y = 0; y<desc.Height; ++y)
-			{
-				alpha = (tmpColor[y*desc.Width + x] >> 24);
-				AlphaColor = 1.f / 255.f * (float)alpha;
-				if (alpha > 0)
-				{
-					//позици¤ пиксел¤ на ландшафте
-					PosInLandX = lerpf(tmpmin.x, tmpmax.x, float(x + 1) / float(desc.Width));
-					PosInLandY = lerpf(tmpmax.z, tmpmin.z, float(y + 1) / float(desc.Height));
-
-					tmp2 = float3_t(PosInLandX, 0, PosInLandY);
-
-					OneEdX = WidthLand / float(desc.Width);
-					OneEdY = HeightLand / float(desc.Height);
-
-					//int tmpcountgreen = lerp(0,10,(float(alpha)*CountMaxInPixel)/255.f);//int(floor(float(float(alpha)*CountMaxInPixel*100)/2550.f));
-					//расчет позиций объектов на квадратный метр
-					for (int i = 0; i<int(floor(float(float(alpha)*CountMaxInPixel * 100) / 2550.f)); ++i)
-					{
-						tmppos2 = float3(tmp2.x, 100, tmp2.z);
-						isintersect = true;
-
-						tmppos2.x = (tmp2.x - OneEdX*0.5f) + randf(0.0, OneEdX);
-						tmppos2.z = (tmp2.z - OneEdY*0.5f) + randf(0.0, OneEdY);
-
-						if (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree)
-						{
-							for (int k = 0; k < arrpos.size(); ++k)
-							{
-								if (SMVector3Length2(tmppos2 - float3(arrpos[k].x, 100, arrpos[k].z)) < r2d*r2d)
-								{
-									alpha = 0;
-									isintersect = false;
-									break;
-								}
-							}
-						}
-
-						if (isintersect)
-							isintersect = geom->GetIntersectedRayY(&tmppos2);
-
-						if (isintersect)
-						{
-							arrpos.push_back(tmppos2);
-
-							++tmpnewmpdel->AllCountGreen;
-
-							//если тип дерево, то на пиксель генерируем только одно дерево
-							if (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree)
-								break;
-						}
-						else
-						{
-							++tmpUnAllCountGreen;
-						}
-					}
-				}
-			}
-		}
-
-		SGCore_LoadTexGetTex(IDTexMask)->UnlockRect(0);
-
-		tmpnewmpdel->AllTrans = new DataVertex[tmpnewmpdel->AllCountGreen];
-
-		for (DWORD i = 0; i<tmpnewmpdel->AllCountGreen; i++)
-		{
-			tmpnewmpdel->AllTrans[i].Position = arrpos[i];
-			tmpnewmpdel->AllTrans[i].TexCoord.x = 1.f + (float(rand() % 100) / 100.f);
-			tmpnewmpdel->AllTrans[i].TexCoord.y = D3DXToRadian(float(rand() % 360));
-			tmpnewmpdel->AllTrans[i].TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
-			tmpnewmpdel->AllTrans[i].SinCosRot.x = sinf(tmpnewmpdel->AllTrans[i].TexCoord.y);
-			tmpnewmpdel->AllTrans[i].SinCosRot.y = cosf(tmpnewmpdel->AllTrans[i].TexCoord.y);
-		}
-		arrpos.clear();
-
-
-		PreSegmentation(tmpnewmpdel);
-		//currSplitsIDs = 0;
-		//currSplitsIDsRender = 0;
-		SetSplitID(tmpnewmpdel->ArrSplits, &tmpnewmpdel->SplitsIDs, &tmpnewmpdel->SplitsIDsRender);
-		//tmpnewmpdel->SplitsIDs = currSplitsIDs;
-		//tmpnewmpdel->SplitsIDsRender = currSplitsIDsRender;
-
 		ArrModels.push_back(tmpnewmpdel);
 		AddModelInArrCom(ArrModels.size() - 1);
 		return ArrModels.size() - 1;
@@ -1100,6 +935,229 @@ ID Green::Init(StaticGeom* geom, const char* name,
 	}
 
 	return -1;
+}
+
+void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, float3* max, float count_max)
+{
+	float CountMaxInPixel = count_max;
+
+	float r2d = 0;
+
+	if ((max->x - min->x)*0.5f > (max->z - min->z)*0.5f)
+		r2d = (max->x - min->x)*0.5f;
+	else
+		r2d = (max->z - min->z)*0.5f;
+
+	float WidthLand = max->x - min->x;
+	float HeightLand = max->z - min->z;
+
+	D3DSURFACE_DESC desc;
+	SGCore_LoadTexGetTex(idmask)->GetLevelDesc(0, &desc);
+
+	D3DLOCKED_RECT LockedRect;
+
+	SGCore_LoadTexGetTex(idmask)->LockRect(0, &LockedRect, 0, 0);
+	DWORD* tmpColor = (DWORD*)LockedRect.pBits;
+
+	DWORD tmpUnAllCountGreen = 0;
+	Array<float3_t, GREEN_DEFAULT_RESERVE_GEN> arrpos;
+
+	DWORD MaxAlpha = 0;
+	DWORD alpha;
+	float AlphaColor;
+	float PosInLandX;
+	float PosInLandY;
+
+	float3_t tmp2;
+
+	float OneEdX;
+	float OneEdY;
+
+	float3 tmppos2;
+	bool isintersect;
+
+	for (DWORD x = 0; x<desc.Width; ++x)
+	{
+		for (DWORD y = 0; y<desc.Height; ++y)
+		{
+			alpha = (tmpColor[y*desc.Width + x] >> 24);
+			AlphaColor = 1.f / 255.f * (float)alpha;
+			if (alpha > 0)
+			{
+				//позици¤ пиксел¤ на ландшафте
+				PosInLandX = lerpf(min->x, max->x, float(x + 1) / float(desc.Width));
+				PosInLandY = lerpf(max->z, min->z, float(y + 1) / float(desc.Height));
+
+				tmp2 = float3_t(PosInLandX, 0, PosInLandY);
+
+				OneEdX = WidthLand / float(desc.Width);
+				OneEdY = HeightLand / float(desc.Height);
+
+				//int tmpcountgreen = lerp(0,10,(float(alpha)*CountMaxInPixel)/255.f);//int(floor(float(float(alpha)*CountMaxInPixel*100)/2550.f));
+				//расчет позиций объектов на квадратный метр
+				for (int i = 0; i<int(floor(float(float(alpha)*CountMaxInPixel * 100) / 2550.f)); ++i)
+				{
+					tmppos2 = float3(tmp2.x, 100, tmp2.z);
+					isintersect = true;
+
+					tmppos2.x = (tmp2.x - OneEdX*0.5f) + randf(0.0, OneEdX);
+					tmppos2.z = (tmp2.z - OneEdY*0.5f) + randf(0.0, OneEdY);
+
+					if (model->TypeGreen == GeomGreenType::ggt_tree)
+					{
+						for (int k = 0; k < arrpos.size(); ++k)
+						{
+							if (SMVector3Length2(tmppos2 - float3(arrpos[k].x, 100, arrpos[k].z)) < r2d*r2d)
+							{
+								alpha = 0;
+								isintersect = false;
+								break;
+							}
+						}
+					}
+
+					if (isintersect)
+						isintersect = geom->GetIntersectedRayY(&tmppos2);
+
+					if (isintersect)
+					{
+						arrpos.push_back(tmppos2);
+
+						++model->AllCountGreen;
+
+						//если тип дерево, то на пиксель генерируем только одно дерево
+						if (model->TypeGreen == GeomGreenType::ggt_tree)
+							break;
+					}
+					else
+					{
+						++tmpUnAllCountGreen;
+					}
+				}
+			}
+		}
+	}
+
+	SGCore_LoadTexGetTex(idmask)->UnlockRect(0);
+
+	if (model->AllCountGreen <= 0)
+		return;
+
+	model->AllTrans = new DataVertex[model->AllCountGreen];
+
+	for (DWORD i = 0; i<model->AllCountGreen; i++)
+	{
+		model->AllTrans[i].Position = arrpos[i];
+		model->AllTrans[i].TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
+		model->AllTrans[i].TexCoord.y = D3DXToRadian(float(rand() % 360));
+		model->AllTrans[i].TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
+		model->AllTrans[i].SinCosRot.x = sinf(model->AllTrans[i].TexCoord.y);
+		model->AllTrans[i].SinCosRot.y = cosf(model->AllTrans[i].TexCoord.y);
+	}
+	arrpos.clear();
+}
+
+ID Green::AddObject(ID id, float3* pos)
+{
+	if (id < 0 || ArrModels.size() <= id)
+		return -1;
+
+	Array<Segment*> queue;
+	long tmpcount = 0;
+	queue.push_back(ArrModels[id]->SplitsTree);
+	float width = 0;
+	float depth = 0;
+	float3 min, max;
+	ID idsplit = -1;
+
+	while (queue.size())
+	{
+		queue[0]->BoundVolumeSys->GetMinMax(&min, &max);
+		if (max.x >= pos->x && max.z >= pos->z && min.x <= pos->x && min.z <= pos->z)
+		{
+			if (!(queue[0]->Splits[0]))
+				idsplit = queue[0]->Id;
+			else
+			{
+				queue[0]->BFNonEnd = true;
+				++(queue[0]->CountAllGreen);
+
+				float3 tmpMin, tmpMax;
+				float scalecoef = 1.f + GREEN_GEN_RAND_SCALE;
+
+				queue[0]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+				if (tmpMax.y < (pos->y + ArrModels[id]->BBMax.y * scalecoef))
+					tmpMax.y = tmpMax.y + ArrModels[id]->BBMax.y * scalecoef;
+
+				if (tmpMin.y > (pos->y + ArrModels[id]->BBMin.y * scalecoef))
+					tmpMin.y = tmpMin.y + ArrModels[id]->BBMin.y * scalecoef;
+
+				queue[0]->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+
+				if (tmpMax.x < (pos->x + ArrModels[id]->BBMax.x * scalecoef))
+					tmpMax.x = tmpMax.x + ArrModels[id]->BBMax.x * scalecoef;
+				
+				if (tmpMax.z < (pos->z + ArrModels[id]->BBMax.z * scalecoef))
+					tmpMax.z = tmpMax.z + ArrModels[id]->BBMax.z * scalecoef;
+
+				if (tmpMin.x >(pos->x + ArrModels[id]->BBMin.x * scalecoef))
+					tmpMin.x = tmpMin.x + ArrModels[id]->BBMin.x * scalecoef;
+				
+				if (tmpMin.z >(pos->z + ArrModels[id]->BBMin.z * scalecoef))
+					tmpMin.z = tmpMin.z + ArrModels[id]->BBMin.z * scalecoef;
+
+				queue[0]->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+			}
+
+			for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; i++)
+			{
+				if (queue[0]->Splits[i])
+					queue.push_back(queue[0]->Splits[i]);
+			}
+		}
+
+		queue.erase(0);
+		++tmpcount;
+	}
+
+	if (idsplit < 0)
+		return -1;
+
+	int oldlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
+	DataVertex* tmpdv = new DataVertex[oldlen + 1];
+	if (oldlen > 0)
+		memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, oldlen * sizeof(DataVertex));
+
+	DataVertex tmpdvobj;
+	tmpdvobj.Position = *pos;
+	tmpdvobj.TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
+	tmpdvobj.TexCoord.y = D3DXToRadian(float(rand() % 360));
+	tmpdvobj.TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
+	tmpdvobj.SinCosRot.x = sinf(tmpdvobj.TexCoord.y);
+	tmpdvobj.SinCosRot.y = cosf(tmpdvobj.TexCoord.y);
+
+	memcpy(tmpdv + oldlen, &tmpdvobj, sizeof(DataVertex));
+	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
+	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
+	++(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
+	int currlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
+	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[idsplit]);
+	return oldlen;
+}
+
+void Green::DelObject(ID id, ID idsplit, ID idobj)
+{
+	if (id < 0 || ArrModels.size() <= id || idsplit < 0 || ArrModels[id]->SplitsArr.size() <= idsplit || idobj < 0 || ArrModels[id]->SplitsArr[idsplit]->CountAllGreen <= idobj)
+		return;
+
+	int oldlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
+	DataVertex* tmpdv = new DataVertex[oldlen - 1];
+	memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, idobj * sizeof(DataVertex));
+	memcpy(tmpdv + idobj, ArrModels[id]->SplitsArr[idsplit]->Data + idobj + 1, ((oldlen - idobj) - 1)* sizeof(DataVertex));
+	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
+	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
+	--(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
+	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[idsplit]);
 }
 
 void Green::Save(const char* path)
@@ -1158,13 +1216,13 @@ void Green::Save(const char* path)
 		fwrite(&ArrModels[i]->BBMax.z, sizeof(float), 1, file);
 
 		fwrite(&ArrModels[i]->AllCountGreen, sizeof(uint32_t), 1, file);
-		DataVertex* tmpdv = ArrModels[i]->AllTrans;
-		int tmpac = ArrModels[i]->AllCountGreen;
-		fwrite((ArrModels[i]->AllTrans), sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
+		//DataVertex* tmpdv = ArrModels[i]->AllTrans;
+		//int tmpac = ArrModels[i]->AllCountGreen;
+		//fwrite((ArrModels[i]->AllTrans), sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
 
 		Array<Segment*> queue;
 		long tmpcount = 0;
-		queue.push_back(ArrModels[i]->ArrSplits);
+		queue.push_back(ArrModels[i]->SplitsTree);
 
 		while (queue.size())
 		{
@@ -1201,31 +1259,28 @@ void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 
 	fwrite(&Split->CountAllGreen, sizeof(uint32_t), 1, file);
 
+	if (Split->CountAllGreen > 0)
+		int qwerty = 0;
+
 	fwrite(&Split->BFNonEnd, sizeof(int8_t), 1, file);
 
-	if (Split->BFNonEnd)
+	bool isexists = true;
+
+	if (Split->Splits[0]/*!Split->Data && Split->CountAllGreen > 0*/)
 	{
-		bool isexists = true;
+		fwrite(&isexists, sizeof(int8_t), 1, file);
 		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
 		{
 			if (Split->Splits[i])
-			{
-				isexists = true;
-				fwrite(&isexists, sizeof(int8_t), 1, file);
 				queue->push_back(Split->Splits[i]);
-			}
-			else
-			{
-				isexists = false;
-				fwrite(&isexists, sizeof(int8_t), 1, file);
-			}
-
-			isexists = true;
 		}
 	}
 	else
 	{
-		fwrite(Split->Data, sizeof(DataVertex), Split->CountAllGreen, file);
+		isexists = false;
+		fwrite(&isexists, sizeof(int8_t), 1, file);
+		if (Split->CountAllGreen > 0)
+			fwrite(Split->Data, sizeof(DataVertex), Split->CountAllGreen, file);
 	}
 }
 
@@ -1358,12 +1413,17 @@ void Green::Load(const char* path)
 		fread(&tmpmodel->BBMax.z, sizeof(float), 1, file);
 
 		fread(&tmpmodel->AllCountGreen, sizeof(uint32_t), 1, file);
-		tmpmodel->AllTrans = new DataVertex[tmpmodel->AllCountGreen];
-		fread(tmpmodel->AllTrans, sizeof(DataVertex), tmpmodel->AllCountGreen, file);
+		/*tmpmodel->AllTrans = new DataVertex[tmpmodel->AllCountGreen];
+		fread(tmpmodel->AllTrans, sizeof(DataVertex), tmpmodel->AllCountGreen, file);*/
+
+		/*for (int i = 0; i < tmpmodel->AllCountGreen; ++i)
+		{
+			fread(&(tmpmodel->AllTrans[i]), sizeof(DataVertex)-sizeof(UINT), 1, file);
+		}*/
 
 		Array<Segment**> queue;
 		long tmpcount = 0;
-		queue.push_back(&(tmpmodel->ArrSplits));
+		queue.push_back(&(tmpmodel->SplitsTree));
 
 		while (queue.size())
 		{
@@ -1376,7 +1436,7 @@ void Green::Load(const char* path)
 
 		//currSplitsIDs = 0;
 		//currSplitsIDsRender = 0;
-		SetSplitID(tmpmodel->ArrSplits, &tmpmodel->SplitsIDs, &tmpmodel->SplitsIDsRender);
+		SetSplitID(tmpmodel);
 		//tmpmodel->SplitsIDs = currSplitsIDs;
 		//tmpmodel->SplitsIDsRender = currSplitsIDsRender;
 
@@ -1427,24 +1487,24 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 
 	fread(&(*Split)->BFNonEnd, sizeof(int8_t), 1, file);
 
-	if ((*Split)->BFNonEnd)
-	{
-		bool isexists = false;
+	bool isexists = false;
+	fread(&isexists, sizeof(int8_t), 1, file);
 
+	if (isexists)
+	{
 		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
 		{
-			fread(&isexists, sizeof(int8_t), 1, file);
-			if (isexists)
-				queue->push_back(&((*Split)->Splits[i]));
-
-			isexists = false;
+			queue->push_back(&((*Split)->Splits[i]));
 		}
 	}
 	else
 	{
-		(*Split)->Data = new DataVertex[(*Split)->CountAllGreen];
-		
-		fread((*Split)->Data, sizeof(DataVertex)*(*Split)->CountAllGreen, 1, file);
+		if ((*Split)->CountAllGreen > 0)
+		{
+			(*Split)->Data = new DataVertex[(*Split)->CountAllGreen];
+
+			fread((*Split)->Data, sizeof(DataVertex)*(*Split)->CountAllGreen, 1, file);
+		}
 	}
 }
 
@@ -1454,8 +1514,8 @@ ID Green::AddArrForCom()
 	for (long i = 0; i < ArrModels.size(); ++i)
 	{
 		InfoRenderSegments* tmpirs = new InfoRenderSegments();
-		tmpirs->Count = ArrModels[i]->SplitsIDsRender;
-		tmpirs->Arr = new Segment*[ArrModels[i]->SplitsIDsRender];
+		tmpirs->Count = ArrModels[i]->SplitsIDs;
+		tmpirs->Arr = new Segment*[ArrModels[i]->SplitsIDs];
 		tmpirs->CountCom = 0;
 		ttmpdata->arr.push_back(tmpirs);
 	}
@@ -1494,8 +1554,8 @@ void Green::AddModelInArrCom(ID id_model)
 	for (long i = 0; i < ArrComFor.size(); ++i)
 	{
 		InfoRenderSegments* tmpirs = new InfoRenderSegments();
-		tmpirs->Count = ArrModels[id_model]->SplitsIDsRender;
-		tmpirs->Arr = new Segment*[ArrModels[id_model]->SplitsIDsRender];
+		tmpirs->Count = ArrModels[id_model]->SplitsIDs;
+		tmpirs->Arr = new Segment*[ArrModels[id_model]->SplitsIDs];
 		tmpirs->CountCom = 0;
 		ArrComFor[i]->arr.push_back(tmpirs);
 	}
@@ -1704,6 +1764,7 @@ void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_v
 
 	for (long i = 0; i < ArrModels.size(); ++i)
 	{
+		//!!! НАДО ПОЛУЧИТЬ СНАЧАЛА ВЕСЬ СПИСОК ОБЪЕКТОВ В ArrModels[i]->AllTrans
 		(*arr_vertex)[i] = new float3_t[ArrModels[i]->NavigateMesh->count_vertex];
 		memcpy((*arr_vertex)[i], ArrModels[i]->NavigateMesh->arr_vertex, sizeof(float3_t) * ArrModels[i]->NavigateMesh->count_vertex);
 		(*arr_count_vertex)[i] = ArrModels[i]->NavigateMesh->count_vertex;
@@ -1719,4 +1780,119 @@ void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_v
 			(*arr_transform)[i][k] = SMMatrixScaling(float3(ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x)) * SMMatrixTranslation(ArrModels[i]->AllTrans[k].Position);
 		}
 	}
+}
+
+void Green::GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render)
+{
+	float3 center;
+	float radius;
+	comsegment->BoundVolumeP->GetSphere(&center, &radius);
+
+	float distsqr = UTIL_DistancePointBeam2(center, *pos, *dir);
+	if (comsegment->CountAllGreen > 0 && distsqr <= radius*radius)
+	{
+		if (comsegment->BFNonEnd)
+		{
+			for (int j = 0; j<GREEN_COUNT_TYPE_SEGMENTATION; ++j)
+			{
+				if (comsegment->Splits[j])
+					GetPartBeam(pos, dir, arrsplits, count, comsegment->Splits[j], curr_splits_ids_render);
+			}
+		}
+		else
+		{
+			if ((*count) < curr_splits_ids_render)
+			{
+				arrsplits[(*count)] = comsegment;
+
+				++(*count);
+			}
+		}
+	}
+}
+
+bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl)
+{
+	if (ArrModels.size() <= 0)
+		return false;
+
+	triangle tmptri;
+	float dist;
+	bool tmpiscom = true;
+	float3 ip;
+	float3 res;
+	float3 il;
+	res = (*start) + float3(10000.0f, 10000.0f, 10000.0f);
+	il = (*dir) * 10000.0f;
+	bool found = false;
+	InfoRenderSegments* irs = 0;
+	Model* model = 0;
+
+	for (int id = 0; id < ArrModels.size(); ++id)
+	{
+		model = ArrModels[id];
+		irs = ArrComFor[1]->arr[id];
+		irs->CountCom = 0;
+
+		GetPartBeam(start, dir, irs->Arr, &(irs->CountCom), model->SplitsTree, irs->Count);
+
+		vertex_static* pVertData = 0;
+		if (FAILED(model->ArrLod[0]->model->VertexBuffer->Lock(0, 0, (void**)&pVertData, 0)))
+			continue;
+
+		DWORD* pIndData = 0;
+		if (FAILED(model->ArrLod[0]->model->IndexBuffer->Lock(0, 0, (void**)&pIndData, 0)))
+			continue;
+
+		for (int k = 0; k < irs->CountCom; ++k)
+		{
+			for (int key = 0; key < irs->Arr[k]->CountAllGreen; ++key)
+			{
+				UINT tmpcountind = 0;
+				for (int g = 0; g < model->ArrLod[0]->model->SubsetCount; ++g)
+				{
+					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3; ++poly)
+					{
+						float tmpscale = irs->Arr[k]->Data[key].TexCoord.x;
+						float4x4 mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].TexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].Position);
+
+						tmptri.a = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
+						tmptri.b = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);
+						tmptri.c = SMVector3Transform(pVertData[pIndData[poly + 2]].Pos, mat);
+
+						if (tmptri.IntersectLine((*start), il, &ip))
+						{
+							if (SMVector3Length2((*start) - res) > SMVector3Length2((*start) - ip))
+							{
+								res = ip;
+								found = true;
+
+								if (idgreen)
+									*idgreen = id;
+
+								if (idsplits)
+									*idsplits = irs->Arr[k]->Id;
+
+								if (idobj)
+									*idobj = key;
+
+								if (idmtl)
+									*idmtl = model->ArrLod[0]->idstex[g];
+							}
+						}
+					}
+
+					tmpcountind += model->ArrLod[0]->model->SubsetCount;
+				}
+			}
+		}
+
+		model->ArrLod[0]->model->VertexBuffer->Unlock();
+		model->ArrLod[0]->model->IndexBuffer->Unlock();
+	}
+
+	if (found && _res)
+		*_res = res;
+
+	return found;
 }

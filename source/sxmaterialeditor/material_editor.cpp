@@ -464,6 +464,8 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ComboBoxPhysic->AddItem("Дерево");
 	SXMaterialEditor::ComboBoxPhysic->AddItem("Плоть");
 	SXMaterialEditor::ComboBoxPhysic->AddItem("Земля/песок");
+	SXMaterialEditor::ComboBoxPhysic->AddItem("Вода");
+	SXMaterialEditor::ComboBoxPhysic->AddItem("Листва/трава");
 	SXMaterialEditor::ComboBoxPhysic->SetSel(0);
 
 	SXMaterialEditor::StaticMask = SXGUICrStatic("Mask:", 305, 152, 50, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);

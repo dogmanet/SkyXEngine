@@ -599,6 +599,8 @@ void DecalManager::Render()
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
 		dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
 	}
+
+	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 void DecalManager::UpdateBuffer()
@@ -643,7 +645,7 @@ void DecalManager::UpdateBuffer()
 		return;
 	}
 
-	dev->CreateVertexBuffer(sizeof(DecalVertex) * iVC, NULL, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0);
+	dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0);
 	DecalVertex * pData;
 	if(!FAILED(m_pVertexBuffer->Lock(0, sizeof(DecalVertex) * iVC, (void**)&pData, 0)))
 	{

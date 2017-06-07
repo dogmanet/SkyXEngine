@@ -1601,7 +1601,7 @@ void Materials::MtlSave(ID id)
 	SGCore_ShaderGetPath(ShaderType::st_pixel, mtrl->PreShaderPS, tmpPathPSName);
 
 	fprintf(file, "type = %d\n", mtrl->Type);
-	fprintf(file, "is_inlit = %d\n", mtrl->IsUnlit);
+	fprintf(file, "is_unlit = %d\n", mtrl->IsUnlit);
 	fprintf(file, "%s%d%s", "physmaterial = ", mtrl->PhysicsMaterial, "\n");
 
 	fprintf(file, "%s%s%s", "vs = ", tmpPathVSName, "\n");

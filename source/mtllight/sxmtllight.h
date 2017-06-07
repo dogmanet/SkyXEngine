@@ -707,6 +707,8 @@ enum MtlPhysicType
 	mpt_tree,			//!< дерево
 	mpt_flesh,			//!< плоть
 	mpt_ground_sand,	//!< земля/песок
+	mpt_water,			//!< вода
+	mpt_leaf_grass,		//!< листва/трава
 
 	//! значение по умолчанию
 	mpt_default = mpt_concrete,

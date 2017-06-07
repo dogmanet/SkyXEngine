@@ -467,6 +467,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	SML_MtlSetCurrCountSurf(RENDER_LAYER_UNTRANSPARENT);
 //если не объявлен флаг редактора материалов (для него немного другой рендер)
 #if !defined(SX_MATERIAL_EDITOR)
+	//SXDecals_Render();
 	if (SGeom_ModelsGetCount() > 0)
 	{
 		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
@@ -623,6 +624,8 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	}
 
+	SXDecals_Render();
+
 #else
 	if(SML_MtlGetTypeTransparency(GData::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
 		SML_MtlSetForceblyAlphaTest(true);
@@ -691,7 +694,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 					}
 
 				//КОГДА ИСТОЧНИК БЛИЗОК К ГОРИЗОНТУ ИЗ-ЗА ОБЛАКОВ ВОЗНИКАЕТ БАГ С ТЕНЯМИ В ВИДЕ ФЕЙКОВЫХ ТЕНЕЙ
-				if (true)
+				if (SGCore_SkyCloudsIsCr() && SGCore_SkyCloudsIsLoadTex())
 				{
 					SML_LigthsUpdateFrustumsG(tmpid, 4, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 					SML_LigthsInRenderPre(tmpid, 4);
@@ -1636,8 +1639,16 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 		{
 			if (GData::Editors::ActiveElement > -1)
 			{
-				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-				SGeom_GreenRenderSingly(timeDelta, &GData::ConstCurrCamPos, GData::Editors::ActiveElement, SML_MtlGetStdMtl(MtlTypeModel::tms_tree));
+				if (GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0)
+				{
+					GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+					SGeom_GreenRenderObject(timeDelta, &GData::ConstCurrCamPos, GData::Editors::ActiveElement, GData::Editors::ActiveGreenSplit, GData::Editors::ActiveGreenObject, SML_MtlGetStdMtl(MtlTypeModel::tms_tree));
+				}
+				else
+				{
+					GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+					SGeom_GreenRenderSingly(timeDelta, &GData::ConstCurrCamPos, GData::Editors::ActiveElement, SML_MtlGetStdMtl(MtlTypeModel::tms_tree));
+				}
 			}
 		}
 
@@ -1657,7 +1668,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 	SXPhysics_DebugRender();
 	//SXGame_EditorRender();
 
-	if (SSInput_GetKeyEvents(SIK_ENTER) == InputEvents::iv_k_first)
+	/*if (SSInput_GetKeyEvents(SIK_ENTER) == InputEvents::iv_k_first)
 	{
 		float3 start = GData::ConstCurrCamPos;
 		float3 end = start + (GData::ConstCurrCamDir * 1000);
@@ -1669,9 +1680,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			//shoot decal
 			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
 		}
-	}
+	}*/
 
-	SXDecals_Render();
+	
 
 	SXRenderFunc::ShaderRegisterData();
 	

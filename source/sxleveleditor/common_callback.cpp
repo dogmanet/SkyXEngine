@@ -61,6 +61,16 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return TrueExit(hwnd, msg, wParam, lParam);
 	}
 
+	else if (id == ID_VIEW_GRID)
+	{
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		GData::Editors::RenderGrid = SXLevelEditor::MainMenu->GetCheckedItem(id);
+	}
+	else if (id == ID_VIEW_AXES)
+	{
+		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		GData::Editors::RenderAxesStatic = SXLevelEditor::MainMenu->GetCheckedItem(id);
+	}
 
 	//
 	else if (id == ID_FINALIMAGE_COLOR)

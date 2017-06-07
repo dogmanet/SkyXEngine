@@ -20,46 +20,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SXLevelEditor::InitAllElements();
 
-	SXLevelEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
-	SXLevelEditor::JobWindow->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
-	SXLevelEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
-	SXLevelEditor::JobWindow->MinSizeX = 820;
-	SXLevelEditor::JobWindow->MinSizeY = 620;
-	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
-	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
-
-	GData::Editors::SelSelection = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
-	GData::Editors::SelBackFacesCull = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
-	GData::Editors::SelZTest = false;
-	GData::Editors::SelMesh = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, true);
-	
-
-	SXLevelEditor::RenderWindow->GAlign.left = true;
-	SXLevelEditor::RenderWindow->GAlign.right = true;
-	SXLevelEditor::RenderWindow->GAlign.top = true;
-	SXLevelEditor::RenderWindow->GAlign.bottom = true;
-
-	SXLevelEditor::GroupBoxList->GAlign.left = false;
-	SXLevelEditor::GroupBoxList->GAlign.right = true;
-	SXLevelEditor::GroupBoxList->GAlign.top = true;
-	SXLevelEditor::GroupBoxList->GAlign.bottom = true;
-
-	SXLevelEditor::GroupBoxData->GAlign.left = true;
-	SXLevelEditor::GroupBoxData->GAlign.right = true;
-	SXLevelEditor::GroupBoxData->GAlign.top = false;
-	SXLevelEditor::GroupBoxData->GAlign.bottom = true;
-
-
-	SXLevelEditor::ToolBar1->GAlign.left = true;
-	SXLevelEditor::ToolBar1->GAlign.right = true;
-	SXLevelEditor::ToolBar1->GAlign.top = true;
-	SXLevelEditor::ToolBar1->GAlign.bottom = false;
-
 	GData::Handle3D = SXLevelEditor::RenderWindow->GetHWND();
 	GData::HandleParent3D = SXLevelEditor::JobWindow->GetHWND();
 	RECT winrndrect;
@@ -69,14 +29,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::WinSize.y = winrndrect.bottom;
 
 	SkyXEngine_Init();
-	Core_0ConsoleExecCmd("exec ../editor.cfg");
-
-	SSInput_0Create("sxinput", SXLevelEditor::JobWindow->GetHWND(), true);
-	SSInput_Dbg_Set(printflog);
-
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
-	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
 	IDirect3DTexture9* SelectMaterial;
 	GData::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &SelectMaterial, NULL);
@@ -93,23 +45,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexLoadTextures();
 	GData::IDSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 
-	char tmppathexe[1024];
-	char tmppath[1024];
-	GetModuleFileName(NULL, tmppath, 1024);
-	int len = strlen(tmppath);
-	while (tmppath[len--] != '\\')
-	{
-		if (tmppath[len - 1] == '\\')
-		{
-			len--;
-			memcpy(tmppathexe, tmppath, len);
-			tmppathexe[len] = 0;
-		}
-	}
-
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
-
 
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
@@ -144,6 +81,52 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 					Core_0ConsoleUpdate();
 					SXLevelEditor_Transform(10);
 					SXRenderFunc::MainRender(timeDelta);
+
+					if (SSInput_GetKeyEvents(SIM_LBUTTON) == InputEvents::iv_k_first)
+					{
+						/*float3 start = GData::ConstCurrCamPos;
+						float3 end = start + (GData::ConstCurrCamDir * 1000);*/
+						float3 _res;
+						ID idmodel;
+						ID idmtl;
+
+						
+						float3 camDir;
+						float det;
+						SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
+						POINT pt;
+						GetCursorPos(&pt);
+						ScreenToClient(GData::Handle3D, &pt);
+						
+						float3 pos = float3(
+							(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
+							-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
+							1.0f
+							) * mat;
+						camDir = pos - GData::ConstCurrCamPos;
+
+						ID idgreen;
+						ID idsplit;
+						ID idobj;
+
+						/*if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_GreenTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+						{
+							GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
+							GData::Editors::ActiveElement = idgreen;
+							GData::Editors::ActiveGreenSplit = idsplit;
+							GData::Editors::ActiveGreenObject = idobj;
+							SGeom_GreenDelObject(idgreen, idsplit, idobj);
+							int qwert = 0;
+						}*/
+
+						if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
+						{
+							/*MCInitElemsSelModel(idmodel);
+							GData::Editors::ActiveElement = idmodel;
+							GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;*/
+							SGeom_GreenAddObject(0, &_res);
+						}
+					}
 
 					TimeCCadr = timeDelta;
 					TimeStart = TimeThis;

@@ -45,6 +45,22 @@ if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels
 
 #define STATIC_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
 
+float UTIL_DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
+{
+	float3 v = dir;
+	float3 w = p - start;
+	float c1;
+	if ((c1 = SMVector3Dot(w, v)) <= 0.0f)
+	{
+		return(SMVector3Length2(p - start));
+	}
+	float c2 = SMVector3Dot(v, v);
+
+	float b = c1 / c2;
+	float3 Pb = start + b * v;
+	return(SMVector3Length2(p - Pb));
+}
+
 class StaticGeom
 {
 public:
@@ -253,6 +269,9 @@ public:
 	(*count_model); количество моделей
 	*/
 
+	
+	bool TraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel, ID* idmtl);
+
 protected:
 
 	struct InfoGroup
@@ -273,6 +292,8 @@ protected:
 	void ApplyTransformLod(ID id);
 
 	ISXBound* BoundVolume;
+
+	void GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 
 	void GetIntersectedRayY2(float3* pos, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 

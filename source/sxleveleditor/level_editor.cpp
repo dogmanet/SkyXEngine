@@ -146,8 +146,39 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::JobWindow = SXGUICrBaseWnd("JobWindow","SX Level editor",0,0,256,71,820,620,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::JobWindow);
 
+	SXLevelEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
+	SXLevelEditor::JobWindow->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
+	SXLevelEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
+	SXLevelEditor::JobWindow->MinSizeX = 820;
+	SXLevelEditor::JobWindow->MinSizeY = 620;
+	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
+	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
+
+	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
+	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
+
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+
+	GData::Editors::SelSelection = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
+	GData::Editors::SelBackFacesCull = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
+	GData::Editors::SelZTest = false;
+	GData::Editors::SelMesh = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, true);
+
 	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow","RenderWindow",0,0,0,25,600,400,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXLevelEditor::JobWindow->GetHWND(),0);
+	SXLevelEditor::RenderWindow->GAlign.left = true;
+	SXLevelEditor::RenderWindow->GAlign.right = true;
+	SXLevelEditor::RenderWindow->GAlign.top = true;
+	SXLevelEditor::RenderWindow->GAlign.bottom = true;
+
 	SXLevelEditor::ToolBar1 = SXGUICrToolBar(0,1,810,24,SXLevelEditor::JobWindow->GetHWND(),0,0);
+	SXLevelEditor::ToolBar1->GAlign.left = true;
+	SXLevelEditor::ToolBar1->GAlign.right = true;
+	SXLevelEditor::ToolBar1->GAlign.top = true;
+	SXLevelEditor::ToolBar1->GAlign.bottom = false;
 	
 	SXLevelEditor::GroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 26, 200, 400, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxList);
@@ -158,6 +189,11 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::GroupBoxList->SetTransparentTextBk(true);
 	SXLevelEditor::GroupBoxList->SetColorBrush(220,220,220);
 
+	SXLevelEditor::GroupBoxList->GAlign.left = false;
+	SXLevelEditor::GroupBoxList->GAlign.right = true;
+	SXLevelEditor::GroupBoxList->GAlign.top = true;
+	SXLevelEditor::GroupBoxList->GAlign.bottom = true;
+
 	SXLevelEditor::GroupBoxData = SXGUICrGroupBox("GroupBoxData", 0, 425, 800, 120, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxData);
 	SXLevelEditor::GroupBoxData->AddHandler(SXLevelEditor_GroupBoxLight_CallWmCommand, WM_COMMAND);
@@ -166,6 +202,11 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::GroupBoxData->SetColorTextBk(220,220,220);
 	SXLevelEditor::GroupBoxData->SetTransparentTextBk(true);
 	SXLevelEditor::GroupBoxData->SetColorBrush(220,220,220);
+
+	SXLevelEditor::GroupBoxData->GAlign.left = true;
+	SXLevelEditor::GroupBoxData->GAlign.right = true;
+	SXLevelEditor::GroupBoxData->GAlign.top = false;
+	SXLevelEditor::GroupBoxData->GAlign.bottom = true;
 
 	SXLevelEditor::ListBoxList = SXGUICrListBox("", 4, 30, 193, 290, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0, false);
 	SXLevelEditor::ListBoxList->GAlign.left = true;

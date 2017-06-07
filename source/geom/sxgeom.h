@@ -247,6 +247,8 @@ SX_LIB_API void SGeom_ModelsClearArrBuffsGeom(
 	int32_t count_models		//!< count_model - количество моделей
 	);
 
+SX_LIB_API bool SGeom_ModelsTraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel, ID* idmtl);
+
 //!@} sxgeom
 
 //#############################################################################
@@ -325,6 +327,9 @@ SX_LIB_API ID SGeom_GreenAddGreen(
 	const char* navmesh		//!< навигационный меш, который будет передан в функции #SGeom_GreenGetMNavMeshAndTransform как основной по которому нужно считать перемещение
 	);
 
+SX_LIB_API ID SGeom_GreenAddObject(ID id, float3* pos);
+SX_LIB_API void SGeom_GreenDelObject(ID id, ID idsplit, ID idobj);
+
 SX_LIB_API void SGeom_GreenDelGreen(ID id);	//!< удалить единицу растительности
 
 /*! \name Массивы просчетов видимости
@@ -368,6 +373,16 @@ SX_LIB_API void SGeom_GreenRenderSingly(
 	ID id_tex = -1		//!< идентификатор материала, который будет применен ко всем объектам и подгруппам растительности, -1 если надо использовать назначенные материалы
 	);
 
+//! индивидуальная отрисовка растительности по идентификатору, массив просчетов по умолчанию (0)
+SX_LIB_API void SGeom_GreenRenderObject(
+	DWORD timeDelta,	//!< время рендера кадра
+	float3* viewpos,	//!< позиция наблюдателя (для которого будет рендер)
+	ID id,				//!< идентификатор растительности
+	ID split,			//!< идентификатор сплита (в котором находится объект)
+	ID idobj,			//!< идентификатор объекта (в сплите)
+	ID id_tex = -1		//!< идентификатор материала, который будет применен ко всем объектам и подгруппам растительности, -1 если надо использовать назначенные материалы
+	);
+
 SX_LIB_API long SGeom_GreenGetCount();	//!< получить количество единиц растительности (по видам есесно)
 
 /*! \name Управление единицами растительности
@@ -406,6 +421,8 @@ SX_LIB_API void SGeom_GreenGetMNavMeshAndTransform(
 	int32_t** arr_count_transform,	//!< (*arr_count_transform)[num_type_green] - количество матриц для трансформаций
 	int32_t* arr_count_green		//!< (*arr_count_green) - количество единиц растительности по видам
 	);
+
+SX_LIB_API bool SGeom_GreenTraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl);
 
 //!@} sxgeom_green
 

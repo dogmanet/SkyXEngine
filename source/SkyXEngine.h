@@ -386,6 +386,32 @@ void SkyXEngine_Init()
 	GData::ObjCamera = SXGame_GetActiveCamera();
 #endif
 
+#if defined(SX_LEVEL_EDITOR) || defined(SX_PARTICLES_EDITOR)
+	GData::ObjGrid = new Grid();
+	GData::ObjGrid->Create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
+
+	GData::ObjAxesStatic = new AxesStatic();
+	GData::ObjAxesStatic->Create(1);
+
+	GData::ObjCamera->SetPosition(&float3(0, 0.5, -2));
+
+	GData::Editors::RenderGrid = GData::Editors::RenderAxesStatic = true;
+#endif
+
+#if defined(SX_PARTICLES_EDITOR)
+	GData::Editors::RenderBound = true;
+
+	D3DXCreateBox(GData::DXDevice, 1, 1, 1, &GData::FigureBox, 0);
+	D3DXCreateSphere(GData::DXDevice, 1, 20, 20, &GData::FigureSphere, 0);
+
+	GData::FigureConeParam.x = 1;
+	GData::FigureConeParam.y = 0.1;
+	GData::FigureConeParam.z = 1;
+
+	SGCore_FCreateCone(GData::FigureConeParam.x, GData::FigureConeParam.y, GData::FigureConeParam.z, &GData::FigureCone, 20);
+
+#endif
+
 	GData::InitAllMatrix();
 
 	GData::IDsShaders::InitAllShaders();

@@ -3232,3 +3232,126 @@ void StaticGeom::GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane)
 
 	*plane = AllModels[id]->SubSet[group].Plane;
 }
+
+
+struct triangle
+{
+	float3_t a;
+	float3_t b;
+	float3_t c;
+	triangle()
+	{
+	};
+	triangle(float3_t _a, float3_t _b, float3_t _c) :a(_a), b(_b), c(_c)
+	{
+	};
+
+	//Проверкка пересечения треугольника и отрезка
+	bool IntersectLine(const float3 & l1, const float3 &l2, float3 * p)
+	{
+		float3 n = SMVector3Normalize(SMVector3Cross((b - a), (c - b)));
+		float d1 = SMVector3Dot((l1 - a), n) / SMVector3Length(n);
+		float d2 = SMVector3Dot((l2 - a), n) / SMVector3Length(n);
+		if ((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
+			return(false);
+		*p = l1 + (l2 - l1) * (-d1 / (d2 - d1));
+		if (SMVector3Dot(SMVector3Cross((b - a), (*p - a)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((c - b), (*p - b)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((a - c), (*p - c)), n) <= 0) return(false);
+		return(true);
+	}
+};
+
+void StaticGeom::GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render)
+{
+	float3 center;
+	float radius;
+	comsegment->BoundVolumeP->GetSphere(&center, &radius);
+
+	float distsqr = UTIL_DistancePointBeam2(center, *pos, *dir);
+	if (comsegment->CountAllPoly > 0 && distsqr <= radius*radius)
+	{
+		if (comsegment->BFNonEnd)
+		{
+			for (int j = 0; j<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+			{
+				if (comsegment->Splits[j])
+					GetPartBeam(pos, dir, arrsplits, count, comsegment->Splits[j], curr_splits_ids_render);
+			}
+		}
+		else
+		{
+			if ((*count) < curr_splits_ids_render)
+			{
+				arrsplits[(*count)] = comsegment;
+
+				++(*count);
+			}
+		}
+	}
+}
+
+bool StaticGeom::TraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel, ID* idmtl)
+{
+	if (AllModels.size() <= 0)
+		return false;
+
+	triangle tmptri;
+	float dist;
+	bool tmpiscom = true;
+	float3 ip;
+	float3 res;
+	float3 il;
+	res = (*start) + float3(10000.0f, 10000.0f, 10000.0f);
+	il = (*dir) * 10000.0f;
+	bool found = false;
+
+	for (int id = 0; id < AllModels.size(); ++id)
+	{
+		ArrComFor[1]->arr[id]->CountCom = 0;
+
+		GetPartBeam(start, dir, ArrComFor[1]->arr[id]->Arr, &(ArrComFor[1]->arr[id]->CountCom), AllModels[id]->ArrSplits, ArrComFor[1]->arr[id]->Count);
+
+		for (DWORD k = 0; k<ArrComFor[1]->arr[id]->CountCom; ++k)
+		{
+			for (DWORD group = 0; group<ArrComFor[1]->arr[id]->Arr[k]->CountSubSet; group++)
+			{
+				ID idbuff = AllModels[id]->SubSet[ArrComFor[1]->arr[id]->Arr[k]->NumberGroupModel[group]].idbuff;
+				ID idgroup = ArrComFor[1]->arr[id]->Arr[k]->NumberGroup[group];
+
+				vertex_static* pData = 0;
+				if (FAILED(AllGroups[idgroup]->VertexBuffer[idbuff]->Lock(0, 0, (void**)&pData, 0)))
+					continue;
+
+				for (DWORD numpoly = 0; numpoly<ArrComFor[1]->arr[id]->Arr[k]->CountPoly[group] * 3; numpoly += 3)
+				{
+					tmptri.a = pData[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly]].Pos;
+					tmptri.b = pData[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly + 1]].Pos;
+					tmptri.c = pData[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly + 2]].Pos;
+
+					if (tmptri.IntersectLine((*start), il, &ip))
+					{
+						if (SMVector3Length2((*start) - res) > SMVector3Length2((*start) - ip))
+						{
+							res = ip;
+							found = true;
+
+							if (idmodel)
+								*idmodel = id;
+
+							if (idmtl)
+								*idmtl = AllGroups[idgroup]->idtex;
+						}
+					}
+				}
+
+				AllGroups[idgroup]->VertexBuffer[idbuff]->Unlock();
+			}
+		}
+	}
+
+	if (found && _res)
+		*_res = res;
+
+	return found;
+}

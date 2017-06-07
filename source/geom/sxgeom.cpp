@@ -370,6 +370,12 @@ void SGeom_ModelsClearArrBuffsGeom(float3_t** arr_vertex, int32_t* arr_count_ver
 	mem_delete_a(arr_count_index);
 }
 
+bool SGeom_ModelsTraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel, ID* idmtl)
+{
+	GEOM_PRECOND(false);
+	return GeometryObj->TraceBeam(start, dir, _res, idmodel, idmtl);
+}
+
 ///////////
 
 ID SGeom_GreenAddGreen(const char* name,
@@ -380,6 +386,18 @@ ID SGeom_GreenAddGreen(const char* name,
 {
 	GEOM_PRECOND(-1);
 	return GreenObj->Init(GeometryObj, name, path_mask, count_max, path, lod1, lod2, navmesh);
+}
+
+ID SGeom_GreenAddObject(ID id, float3* pos)
+{
+	GEOM_PRECOND(-1);
+	return GreenObj->AddObject(id, pos);
+}
+
+void SGeom_GreenDelObject(ID id, ID idsplit, ID idobj)
+{
+	GEOM_PRECOND(_VOID);
+	return GreenObj->DelObject(id, idsplit, idobj);
 }
 
 void SGeom_GreenDelGreen(ID id)
@@ -436,6 +454,12 @@ void SGeom_GreenRenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 {
 	GEOM_PRECOND(_VOID);
 	GreenObj->GPURenderSingly(timeDelta, viewpos, id, id_tex);
+}
+
+void SGeom_GreenRenderObject(DWORD timeDelta,float3* viewpos,ID id,ID split,ID idobj,ID id_tex)
+{
+	GEOM_PRECOND(_VOID);
+	GreenObj->GPURenderObject(timeDelta, viewpos, id, split, idobj, id_tex);
 }
 
 
@@ -516,5 +540,11 @@ void SGeom_GreenGetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_cou
 {
 	GEOM_PRECOND(_VOID);
 	GreenObj->GetNavMeshAndTransform(arr_vertex, arr_count_vertex, arr_index, arr_count_index, arr_transform, arr_count_transform, arr_count_green);
+}
+
+bool SGeom_GreenTraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl)
+{
+	GEOM_PRECOND(false);
+	return GreenObj->TraceBeam(start, dir, _res, idgreen, idsplits, idobj, idmtl);
 }
 
