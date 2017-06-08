@@ -4,15 +4,9 @@
 
 #include <common\array.h>
 #include <common\\string_api.cpp>
-#define GREEN_MAX_ELEM_IN_DIP 512000
-#define GREEN_COUNT_TYPE_SEGMENTATION 4
-#define GREEN_COUNT_MIN_SEGMENTS 10
-#define GREEN_COUNT_MAX_SEGMENTS 100
-#define GREEN_COUNT_LOD 3
-#define GREEN_BB_MIN_X 10.f
-#define GREEN_BB_MIN_Z 10.f
 
-#define GREEN_GEN_RAND_SCALE 1.f
+#define GREEN_COUNT_TYPE_SEGMENTATION 4
+#define GREEN_COUNT_LOD 3
 
 #define GREEN_DEFAULT_RESERVE_GEN 1024
 #define GREEN_DEFAULT_RESERVE_COM 1024
@@ -83,8 +77,8 @@ public:
 	void SetGreenLod(ID id, int lod, const char* pathname);
 	void SetGreenNav(ID id, const char* pathname);
 
-	void GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green);
-	
+	void GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green);
+	bool GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl);
 	
 	bool TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl);
 
@@ -104,8 +98,6 @@ public:
 		Segment();
 		~Segment();
 
-		//ID SortId[GREEN_COUNT_TYPE_SEGMENTATION];
-
 		Segment* Splits[GREEN_COUNT_TYPE_SEGMENTATION]; //массив из 4 частей данного участка
 
 		DataVertex* Data;
@@ -117,8 +109,7 @@ public:
 		float DistForCamera;
 
 		ID Id;	//идентификатор куска
-		//ID SID;	//порядковый номер куска из массива рисующихся кусков
-
+	
 		//ID3DXMesh* BoundBox;	//ограничивающий параллелепипед (меш)
 		bool BFNonEnd;//имеет ли кусок куски внутри себя?
 	};
@@ -146,6 +137,7 @@ public:
 			float3_t* arr_vertex;
 			int32_t count_vertex;
 			uint32_t* arr_index;
+			ID* arr_mtl;
 			int32_t count_index;
 			String pathname;
 		};
@@ -162,7 +154,6 @@ public:
 		DataVertex* AllTrans;//
 		Lod* ArrLod[GREEN_COUNT_LOD];
 		ID SplitsIDs;	//общее количество сегментов/спилтов
-		// SplitsIDsRender;	//количество рисубщихся сегментов
 	};
 
 	//структура содержащая минимальную необходимую информацию о сегменте модели
@@ -192,6 +183,7 @@ protected:
 	void GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, float3* max, float count_max);
 
 	void GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
+	void GetPartBB(float3* bbmin, float3 * bbmax, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 
 	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
@@ -224,7 +216,5 @@ float Green::BeginEndLessening = 30;
 bool Green::UseSortFrontToBackSplits = false;
 IDirect3DDevice9* Green::DXDevice = 0;
 char Green::StdPath[1024];
-
-//sprintf(Green::StdPath,"");
 
 #endif

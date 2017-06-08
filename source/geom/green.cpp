@@ -49,13 +49,6 @@ Green::~Green()
 		mem_delete(ArrComFor[0]);
 		ArrComFor.erase(0);
 	}
-
-	/*for (long i = 0; i < ArrComFor.size(); ++i)
-	{
-		mem_delete(ArrComFor[i]);
-	}
-
-	ArrComFor.clear();*/
 }
 
 Green::Model::Model()
@@ -63,7 +56,6 @@ Green::Model::Model()
 	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
 	AllCountGreen = 0;
 	SplitsIDs = 0;
-	//SplitsIDsRender = 0;
 	SplitsTree = 0;
 	AllTrans = 0;
 	ArrLod[0] = ArrLod[1] = ArrLod[2] = 0;
@@ -76,6 +68,7 @@ Green::Model::NavMesh::NavMesh()
 	arr_index = 0;
 	count_vertex = 0;
 	count_index = 0;
+	arr_mtl = 0;
 	pathname = "";
 }
 
@@ -84,6 +77,7 @@ Green::Model::NavMesh::~NavMesh()
 	mem_delete_a(arr_vertex);
 	count_vertex = 0;
 	mem_delete_a(arr_index);
+	mem_delete_a(arr_mtl);
 	count_index = 0;
 }
 
@@ -104,17 +98,13 @@ Green::Model::~Model()
 Green::Segment::Segment()
 {
 	for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; ++i)
-	{
 		Splits[i] = 0;
-		//SortId[i] = -1;
-	}
 	
 	Data = 0;
 	CountAllGreen = 0;
 	BoundVolumeSys = 0;
 	BoundVolumeP = 0;
 	Id = -1;
-	//SID = -1;
 	BFNonEnd = false;
 }
 
@@ -130,7 +120,7 @@ Green::Segment::~Segment()
 
 Green::Lod::Lod()
 {
-
+	model = 0;
 }
 
 Green::Lod::~Lod()
@@ -158,7 +148,7 @@ Green::IRSData::~IRSData()
 {
 	queue.clear();
 
-	for (long i = 0; i < arr.size(); ++i)
+	for (int i = 0; i < arr.size(); ++i)
 	{
 		mem_delete(arr[i]);
 	}
@@ -428,7 +418,7 @@ void Green::SetSplitID(Model* model)
 
 void Green::SetSplitID2(Model* model, Segment* Split, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue)
 {
-	if (Split/* && Split->BFNonEnd*/)
+	if (Split)
 	{
 		Split->Id = model->SplitsIDs;
 		model->SplitsArr[Split->Id] = Split;
@@ -439,13 +429,6 @@ void Green::SetSplitID2(Model* model, Segment* Split, Array<Segment*, GREEN_DEFA
 				queue->push_back(Split->Splits[i]);
 		}
 	}
-	/*else if (Split)
-	{
-		Split->Id = (model->SplitsIDs);
-		model->SplitsArr[Split->Id] = Split;
-		++(model->SplitsIDs);
-		++(model->SplitsIDsRender);
-	}*/
 }
 
 void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr)
@@ -859,49 +842,6 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			}
 		}
 
-		if (def_str_validate(navmesh))
-		{
-			tmpnewmpdel->NavigateMesh = new Model::NavMesh();
-			
-			sprintf(tmppath, "%s%s", Green::StdPath, navmesh);
-			tmpnewmpdel->NavigateMesh->pathname = navmesh;
-
-			ISXDataStaticModel* nmesh;
-			SGCore_StaticModelLoad(tmppath, &nmesh);
-			tmpnewmpdel->NavigateMesh->count_vertex = nmesh->AllVertexCount;
-			tmpnewmpdel->NavigateMesh->count_index = nmesh->AllIndexCount;
-			tmpnewmpdel->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
-
-			vertex_static *pVert;
-			nmesh->VertexBuffer->Lock(0, 0, (void **)&pVert, 0);
-			for (long i = 0; i < nmesh->AllVertexCount; ++i)
-			{
-				tmpnewmpdel->NavigateMesh->arr_vertex[i] = pVert[i].Pos;
-			}
-			nmesh->VertexBuffer->Unlock();
-
-			tmpnewmpdel->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
-
-			UINT* pInd;
-			nmesh->IndexBuffer->Lock(0, 0, (void **)&pInd, 0);
-			
-			DWORD prebias = 0;
-			long tmp_countindex = 0;
-			for (long i = 0; i < nmesh->SubsetCount; ++i)
-			{
-				for (long k = 0; k < nmesh->IndexCount[i]; ++k)
-				{
-					tmpnewmpdel->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] + prebias;
-					++tmp_countindex;
-				}
-				prebias += nmesh->IndexCount[i];
-			}
-
-			nmesh->IndexBuffer->Unlock();
-
-			mem_release(nmesh);
-		}
-
 		ISXBound* tmpbb = SGCore_CrBound();
 		SGCore_FCompBoundBox(tmpnewmpdel->ArrLod[0]->model->VertexBuffer, &tmpbb, tmpnewmpdel->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
 
@@ -917,7 +857,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LoadTexType::ltt_load);
 			SGCore_LoadTexLoadTextures();
 
-			GenByTex(geom, tmpnewmpdel, IDTexMask, &tmpmin, &tmpmax, count_max);
+			GenByTex(geom, tmpnewmpdel, IDTexMask, &mmin, &mmax, count_max);
 		}
 
 		PreSegmentation(tmpnewmpdel, &tmpmin, &tmpmax);
@@ -926,6 +866,10 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		SetSplitID(tmpnewmpdel);
 		
 		ArrModels.push_back(tmpnewmpdel);
+		if (def_str_validate(navmesh))
+		{
+			SetGreenNav(ArrModels.size() - 1, navmesh);
+		}
 		AddModelInArrCom(ArrModels.size() - 1);
 		return ArrModels.size() - 1;
 	}
@@ -941,6 +885,9 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 {
 	float CountMaxInPixel = count_max;
 
+	float3 tmpmin, tmpmax;
+	geom->GetMinMax(&tmpmin, &tmpmax);
+
 	float r2d = 0;
 
 	if ((max->x - min->x)*0.5f > (max->z - min->z)*0.5f)
@@ -948,8 +895,8 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 	else
 		r2d = (max->z - min->z)*0.5f;
 
-	float WidthLand = max->x - min->x;
-	float HeightLand = max->z - min->z;
+	float WidthLand = tmpmax.x - tmpmin.x;
+	float HeightLand = tmpmax.z - tmpmin.z;
 
 	D3DSURFACE_DESC desc;
 	SGCore_LoadTexGetTex(idmask)->GetLevelDesc(0, &desc);
@@ -985,8 +932,8 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 			if (alpha > 0)
 			{
 				//позици¤ пиксел¤ на ландшафте
-				PosInLandX = lerpf(min->x, max->x, float(x + 1) / float(desc.Width));
-				PosInLandY = lerpf(max->z, min->z, float(y + 1) / float(desc.Height));
+				PosInLandX = lerpf(tmpmin.x, tmpmax.x, float(x + 1) / float(desc.Width));
+				PosInLandY = lerpf(tmpmax.z, tmpmin.z, float(y + 1) / float(desc.Height));
 
 				tmp2 = float3_t(PosInLandX, 0, PosInLandY);
 
@@ -1049,7 +996,7 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 	{
 		model->AllTrans[i].Position = arrpos[i];
 		model->AllTrans[i].TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
-		model->AllTrans[i].TexCoord.y = D3DXToRadian(float(rand() % 360));
+		model->AllTrans[i].TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
 		model->AllTrans[i].TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
 		model->AllTrans[i].SinCosRot.x = sinf(model->AllTrans[i].TexCoord.y);
 		model->AllTrans[i].SinCosRot.y = cosf(model->AllTrans[i].TexCoord.y);
@@ -1131,7 +1078,7 @@ ID Green::AddObject(ID id, float3* pos)
 	DataVertex tmpdvobj;
 	tmpdvobj.Position = *pos;
 	tmpdvobj.TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
-	tmpdvobj.TexCoord.y = D3DXToRadian(float(rand() % 360));
+	tmpdvobj.TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
 	tmpdvobj.TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
 	tmpdvobj.SinCosRot.x = sinf(tmpdvobj.TexCoord.y);
 	tmpdvobj.SinCosRot.y = cosf(tmpdvobj.TexCoord.y);
@@ -1140,6 +1087,7 @@ ID Green::AddObject(ID id, float3* pos)
 	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
 	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
 	++(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
+	++(ArrModels[id]->AllCountGreen);
 	int currlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
 	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[idsplit]);
 	return oldlen;
@@ -1157,6 +1105,7 @@ void Green::DelObject(ID id, ID idsplit, ID idobj)
 	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
 	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
 	--(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
+	--(ArrModels[id]->AllCountGreen);
 	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[idsplit]);
 }
 
@@ -1216,9 +1165,6 @@ void Green::Save(const char* path)
 		fwrite(&ArrModels[i]->BBMax.z, sizeof(float), 1, file);
 
 		fwrite(&ArrModels[i]->AllCountGreen, sizeof(uint32_t), 1, file);
-		//DataVertex* tmpdv = ArrModels[i]->AllTrans;
-		//int tmpac = ArrModels[i]->AllCountGreen;
-		//fwrite((ArrModels[i]->AllTrans), sizeof(DataVertex), ArrModels[i]->AllCountGreen, file);
 
 		Array<Segment*> queue;
 		long tmpcount = 0;
@@ -1316,10 +1262,6 @@ void Green::Load(const char* path)
 		tmpNameMask[tmpstrlen] = 0;
 		tmpmodel->MaskName = tmpNameMask;
 
-		/*tmpstrlen = strlen(ArrModels[i]->NavigateMesh->pathname.c_str());
-		fwrite(&tmpstrlen, sizeof(long), 1, file);
-		fwrite(ArrModels[i]->NavigateMesh->pathname.c_str(), sizeof(char), tmpstrlen, file);*/
-
 		fread(&tmpstrlen, sizeof(int32_t), 1, file);
 		if (tmpstrlen > 0)
 		{
@@ -1331,8 +1273,6 @@ void Green::Load(const char* path)
 
 		if (tmpmodel->TypeGreen == GeomGreenType::ggt_grass)
 		{
-			//sprintf(tmpstr[0], "%s", Green::StdPath);
-			//long tmpstrlen;
 			fread(&tmpstrlen, sizeof(int32_t), 1, file);
 			fread(tmpstr[0], sizeof(char), tmpstrlen, file);
 			tmpstr[0][tmpstrlen] = 0;
@@ -1341,8 +1281,6 @@ void Green::Load(const char* path)
 		{
 			for (int k = 0; k < GREEN_COUNT_LOD; ++k)
 			{
-				//sprintf(tmpstr[k], "%s", Green::StdPath);
-				//long tmpstrlen;
 				fread(&tmpstrlen, sizeof(int32_t), 1, file);
 				fread(tmpstr[k], sizeof(char), tmpstrlen, file);
 				tmpstr[k][tmpstrlen] = 0;
@@ -1413,13 +1351,6 @@ void Green::Load(const char* path)
 		fread(&tmpmodel->BBMax.z, sizeof(float), 1, file);
 
 		fread(&tmpmodel->AllCountGreen, sizeof(uint32_t), 1, file);
-		/*tmpmodel->AllTrans = new DataVertex[tmpmodel->AllCountGreen];
-		fread(tmpmodel->AllTrans, sizeof(DataVertex), tmpmodel->AllCountGreen, file);*/
-
-		/*for (int i = 0; i < tmpmodel->AllCountGreen; ++i)
-		{
-			fread(&(tmpmodel->AllTrans[i]), sizeof(DataVertex)-sizeof(UINT), 1, file);
-		}*/
 
 		Array<Segment**> queue;
 		long tmpcount = 0;
@@ -1429,28 +1360,19 @@ void Green::Load(const char* path)
 		{
 			LoadSplit(queue[0], file, &queue);
 
+			if ((*queue[0])->Data)
+				tmpmodel->AllCountGreen += (*queue[0])->CountAllGreen;
 			queue.erase(0);
 			++tmpcount;
 		}
 
-
-		//currSplitsIDs = 0;
-		//currSplitsIDsRender = 0;
 		SetSplitID(tmpmodel);
-		//tmpmodel->SplitsIDs = currSplitsIDs;
-		//tmpmodel->SplitsIDsRender = currSplitsIDsRender;
 
 		ArrModels.push_back(tmpmodel);
 		AddModelInArrCom(ArrModels.size() - 1);
 
 		if (tmpmodel->NavigateMesh)
 			SetGreenNav(ArrModels.size() - 1, tmpmodel->NavigateMesh->pathname.c_str());
-		/*InfoRenderSegments* tmpirs = new InfoRenderSegments();
-		tmpirs->Count = tmpmodel->SplitsIDsRender;
-		tmpirs->Arr = new Segment*[tmpmodel->SplitsIDsRender];
-		tmpirs->CountCom = 0;
-
-		ArrComForCamera.push_back(tmpirs);*/
 	}
 
 	fclose(file);
@@ -1733,15 +1655,20 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	nmesh->VertexBuffer->Unlock();
 	
 	ArrModels[id]->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
+	ArrModels[id]->NavigateMesh->arr_mtl = new ID[nmesh->AllIndexCount];
 	UINT* pInd;
 	nmesh->IndexBuffer->Lock(0, 0, (void **)&pInd, 0);
 	DWORD prebias = 0;
 	long tmp_countindex = 0;
-	for (long i = 0; i < nmesh->SubsetCount; ++i)
+	char tmpnametex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	for (int i = 0; i < nmesh->SubsetCount; ++i)
 	{
-		for (long k = 0; k < nmesh->IndexCount[i]; ++k)
+		sprintf(tmpnametex, "%s.dss", nmesh->ArrTextures[i]);
+		ID tmpidmtl = SGCore_MtlLoad(tmpnametex, MTL_TYPE_TREE);
+		for (int k = 0; k < nmesh->IndexCount[i]; ++k)
 		{
 			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] + prebias;
+			ArrModels[id]->NavigateMesh->arr_mtl[tmp_countindex] = tmpidmtl;
 			++tmp_countindex;
 		}
 		prebias += nmesh->IndexCount[i];
@@ -1750,35 +1677,98 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	mem_release_del(nmesh);
 }
 
-void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
+void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
 {
-	(*arr_count_green) = ArrModels.size();
-	(*arr_vertex) = new float3_t*[ArrModels.size()];
-	(*arr_count_vertex) = new int32_t[ArrModels.size()];
+	if (ArrModels.size() <= 0)
+		return;
 
-	(*arr_index) = new uint32_t*[ArrModels.size()];
-	(*arr_count_index) = new int32_t[ArrModels.size()];
+	int count_green = 0;
 
-	(*arr_transform) = new float4x4*[ArrModels.size()];
-	(*arr_count_transform) = new int32_t[ArrModels.size()];
-
-	for (long i = 0; i < ArrModels.size(); ++i)
+	for (int id = 0; id < ArrModels.size(); ++id)
 	{
-		//!!! НАДО ПОЛУЧИТЬ СНАЧАЛА ВЕСЬ СПИСОК ОБЪЕКТОВ В ArrModels[i]->AllTrans
-		(*arr_vertex)[i] = new float3_t[ArrModels[i]->NavigateMesh->count_vertex];
-		memcpy((*arr_vertex)[i], ArrModels[i]->NavigateMesh->arr_vertex, sizeof(float3_t) * ArrModels[i]->NavigateMesh->count_vertex);
-		(*arr_count_vertex)[i] = ArrModels[i]->NavigateMesh->count_vertex;
+		if (!(ArrModels[id]->NavigateMesh))
+			continue;
 
-		(*arr_index)[i] = new uint32_t[ArrModels[i]->NavigateMesh->count_index];
-		memcpy((*arr_index)[i], ArrModels[i]->NavigateMesh->arr_index, sizeof(uint32_t)* ArrModels[i]->NavigateMesh->count_index);
-		(*arr_count_index)[i] = ArrModels[i]->NavigateMesh->count_index;
+		Array<Segment*> queue;
+		long tmpcount = 0;
+		queue.push_back(ArrModels[id]->SplitsTree);
 
-		(*arr_transform)[i] = new float4x4[ArrModels[i]->AllCountGreen];
-		(*arr_count_transform)[i] = ArrModels[i]->AllCountGreen;
+		ArrModels[id]->AllCountGreen = 0;
+
+		while (queue.size())
+		{
+			if (!(queue[0]->Splits[0]) && queue[0]->Data && queue[0]->CountAllGreen > 0)
+			{
+				int AllCountGreen = ArrModels[id]->AllCountGreen;
+				int CountAllGreen = queue[0]->CountAllGreen;
+				DataVertex* tmpdv = new DataVertex[ArrModels[id]->AllCountGreen + queue[0]->CountAllGreen];
+				if (ArrModels[id]->AllTrans)
+					memcpy(tmpdv, ArrModels[id]->AllTrans, sizeof(DataVertex)* ArrModels[id]->AllCountGreen);
+				memcpy(tmpdv + ArrModels[id]->AllCountGreen, queue[0]->Data, sizeof(DataVertex)* queue[0]->CountAllGreen);
+				mem_delete_a(ArrModels[id]->AllTrans);
+				ArrModels[id]->AllTrans = tmpdv;
+				ArrModels[id]->AllCountGreen += queue[0]->CountAllGreen;
+			}
+
+			for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; ++i)
+			{
+				if (queue[0]->Splits[i])
+					queue.push_back(queue[0]->Splits[i]);
+			}
+
+			queue.erase(0);
+			++tmpcount;
+		}
+
+		if (ArrModels[id]->AllTrans)
+			++count_green;
+	}
+
+	(*arr_count_green) = count_green;
+
+	if (count_green <= 0)
+		return;
+
+	(*arr_vertex) = new float3_t*[count_green];
+	(*arr_count_vertex) = new int32_t[count_green];
+
+	(*arr_index) = new uint32_t*[count_green];
+	(*arr_mtl) = new ID*[count_green];
+	(*arr_count_index) = new int32_t[count_green];
+
+	(*arr_transform) = new float4x4*[count_green];
+	(*arr_count_transform) = new int32_t[count_green];
+
+	int curr_model = 0;
+
+	for (int i = 0; i < ArrModels.size(); ++i)
+	{
+		if (!(ArrModels[i]->NavigateMesh))
+			continue;
+
+		(*arr_vertex)[curr_model] = new float3_t[ArrModels[i]->NavigateMesh->count_vertex];
+		memcpy((*arr_vertex)[curr_model], ArrModels[i]->NavigateMesh->arr_vertex, sizeof(float3_t)* ArrModels[i]->NavigateMesh->count_vertex);
+		(*arr_count_vertex)[curr_model] = ArrModels[i]->NavigateMesh->count_vertex;
+
+		(*arr_index)[curr_model] = new uint32_t[ArrModels[i]->NavigateMesh->count_index];
+		memcpy((*arr_index)[curr_model], ArrModels[i]->NavigateMesh->arr_index, sizeof(uint32_t)* ArrModels[i]->NavigateMesh->count_index);
+		(*arr_mtl)[curr_model] = new ID[ArrModels[i]->NavigateMesh->count_index];
+		memcpy((*arr_mtl)[curr_model], ArrModels[i]->NavigateMesh->arr_mtl, sizeof(ID)* ArrModels[i]->NavigateMesh->count_index);
+		(*arr_count_index)[curr_model] = ArrModels[i]->NavigateMesh->count_index;
+
+		(*arr_transform)[curr_model] = new float4x4[ArrModels[i]->AllCountGreen];
+		(*arr_count_transform)[curr_model] = ArrModels[i]->AllCountGreen;
 		for (long k = 0; k < ArrModels[i]->AllCountGreen; ++k)
 		{
-			(*arr_transform)[i][k] = SMMatrixScaling(float3(ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x)) * SMMatrixTranslation(ArrModels[i]->AllTrans[k].Position);
+			(*arr_transform)[curr_model][k] = SMMatrixScaling(float3(ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x)) * SMMatrixRotationY(ArrModels[i]->AllTrans[k].TexCoord.y) * SMMatrixTranslation(ArrModels[i]->AllTrans[k].Position);
 		}
+
+		++curr_model;
+	}
+
+	for (int id = 0; id < ArrModels.size(); ++id)
+	{
+		mem_delete_a(ArrModels[id]->AllTrans);
 	}
 }
 
@@ -1827,6 +1817,7 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 	bool found = false;
 	InfoRenderSegments* irs = 0;
 	Model* model = 0;
+	float4x4 mat;
 
 	for (int id = 0; id < ArrModels.size(); ++id)
 	{
@@ -1854,7 +1845,7 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3; ++poly)
 					{
 						float tmpscale = irs->Arr[k]->Data[key].TexCoord.x;
-						float4x4 mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].TexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].Position);
+						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].TexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].Position);
 
 						tmptri.a = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
 						tmptri.b = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);
@@ -1895,4 +1886,128 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 		*_res = res;
 
 	return found;
+}
+
+void Green::GetPartBB(float3* bbmin, float3 * bbmax, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render)
+{
+	float3 min,max;
+	float radius;
+	comsegment->BoundVolumeP->GetMinMax(&min, &max);
+
+	if (comsegment->CountAllGreen > 0 && UTIL_InretsectBox(bbmin, bbmax, &min, &max))
+	{
+		if (comsegment->BFNonEnd)
+		{
+			for (int j = 0; j<GREEN_COUNT_TYPE_SEGMENTATION; ++j)
+			{
+				if (comsegment->Splits[j])
+					GetPartBB(bbmin, bbmax, arrsplits, count, comsegment->Splits[j], curr_splits_ids_render);
+			}
+		}
+		else
+		{
+			if ((*count) < curr_splits_ids_render)
+			{
+				arrsplits[(*count)] = comsegment;
+
+				++(*count);
+			}
+		}
+	}
+}
+
+bool Green::GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl)
+{
+	if (ArrModels.size() <= 0)
+		return false;
+
+	bool isfound = false;
+	InfoRenderSegments* irs = 0;
+	Model* model = 0;
+	float3 p1, p2, p3, min, max;
+	float4x4 mat;
+
+	for (int id = 0; id < ArrModels.size() && !isfound; ++id)
+	{
+		model = ArrModels[id];
+		irs = ArrComFor[1]->arr[id];
+		irs->CountCom = 0;
+
+		GetPartBB(bbmin, bbmax, irs->Arr, &(irs->CountCom), model->SplitsTree, irs->Count);
+
+		vertex_static* pVertData = 0;
+		if (FAILED(model->ArrLod[0]->model->VertexBuffer->Lock(0, 0, (void**)&pVertData, 0)))
+			continue;
+
+		DWORD* pIndData = 0;
+		if (FAILED(model->ArrLod[0]->model->IndexBuffer->Lock(0, 0, (void**)&pIndData, 0)))
+			continue;
+
+		for (int g = 0; g < model->ArrLod[0]->model->SubsetCount && !isfound; ++g)
+		{
+			int pt = SGCore_MtlGetPhysicType(model->ArrLod[0]->idstex[g]);
+			if (SGCore_MtlGetPhysicType(model->ArrLod[0]->idstex[g]) != physic_mtl)
+				continue;
+
+			for (int k = 0; k < irs->CountCom && !isfound; ++k)
+			{
+				for (int key = 0; key < irs->Arr[k]->CountAllGreen && !isfound; ++key)
+				{
+
+
+					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3 && !isfound; ++poly)
+					{
+						float tmpscale = irs->Arr[k]->Data[key].TexCoord.x;
+						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].TexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].Position);
+
+						p1 = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
+						p2 = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);
+						p3 = SMVector3Transform(pVertData[pIndData[poly + 2]].Pos, mat);
+
+						min = p1;
+						max = p1;
+
+						if (min.x > p2.x)
+							min.x = p2.x;
+						if (min.y > p2.y)
+							min.y = p2.y;
+						if (min.z > p2.z)
+							min.z = p2.z;
+
+						if (min.x > p3.x)
+							min.x = p3.x;
+						if (min.y > p3.y)
+							min.y = p3.y;
+						if (min.z > p3.z)
+							min.z = p3.z;
+
+						if (max.x < p2.x)
+							max.x = p2.x;
+						if (max.y < p2.y)
+							max.y = p2.y;
+						if (max.z < p2.z)
+							max.z = p2.z;
+
+						if (max.x < p3.x)
+							max.x = p3.x;
+						if (max.y < p3.y)
+							max.y = p3.y;
+						if (max.z < p3.z)
+							max.z = p3.z;
+
+						if (UTIL_InretsectBox(bbmin, bbmax, &min, &max))
+						{
+							isfound = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		model->ArrLod[0]->model->VertexBuffer->Unlock();
+		model->ArrLod[0]->model->IndexBuffer->Unlock();
+	}
+
+	return isfound;
 }

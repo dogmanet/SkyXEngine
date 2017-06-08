@@ -159,7 +159,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 #ifdef SX_GAME
 			GData::ObjCamera = SXGame_GetActiveCamera();
 #endif
-			if (GetActiveWindow() == GData::Handle3D)
+			if (GetActiveWindow() == GData::Handle3D || GetActiveWindow() == FindWindow(NULL,"sxconsole"))
 			{
 				SGCore_LoadTexLoadTextures();
 				SXRenderFunc::MainRender(timeDelta);

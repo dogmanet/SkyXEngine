@@ -114,6 +114,8 @@ namespace SXRenderFunc
 		DWORD GeomSortGroup = 0;
 
 		DWORD Present = 0;
+
+		DWORD FreeVal = 0;
 	};
 };
 

@@ -54,6 +54,11 @@ int StdMtlGetSort(ID id)
 	return 0;
 }
 
+int StdMtlGetPhysicType(ID id)
+{
+	return 0;
+}
+
 bool StdMtlGroupIsSyngly(ID id)
 {
 	return false;
@@ -63,6 +68,7 @@ g_func_dip FuncDIP = StdDrawIndexedPrimitive;
 g_func_mtl_set FuncMtlSet = StdMtlSet;
 g_func_mtl_load FuncMtlLoad = StdMtlLoad;
 g_func_mtl_get_sort FuncMtlGetSort = StdMtlGetSort;
+g_func_mtl_get_physic_type FuncMtlGetPhysicType = StdMtlGetPhysicType;
 g_func_mtl_group_render_is_singly FuncMtlGroupRenderIsSingly = StdMtlGroupIsSyngly;
 ///
 
@@ -253,6 +259,12 @@ int SGCore_MtlGetSort(ID id)
 	return FuncMtlGetSort(id);
 }
 
+int SGCore_MtlGetPhysicType(ID id)
+{
+	SG_PRECOND(-1);
+	return FuncMtlGetPhysicType(id);
+}
+
 bool SGCore_MtlGroupRenderIsSingly(ID id)
 {
 	SG_PRECOND(false);
@@ -282,6 +294,12 @@ void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort func)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlGetSort = func;
+}
+
+void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type func)
+{
+	SG_PRECOND(_VOID);
+	FuncMtlGetPhysicType = func;
 }
 
 void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly func)

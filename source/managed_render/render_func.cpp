@@ -402,6 +402,8 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			sprintf(debugstr + strlen(debugstr), "\t\tReflection\t: %.1f\n", float(SXRenderFunc::Delay::UpdateVisibleForReflection) / float(FrameCount));
 
 			sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.1f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount));
+
+			sprintf(debugstr + strlen(debugstr), "\n\FreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
 #endif
 			Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
 			Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
@@ -1521,6 +1523,13 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 
 	if(GData::DefaultAnimIDArr < 0)
 		GData::DefaultAnimIDArr = SXAnim_ModelsAddArrForCom();
+
+	/**/
+	if (SGeom_GreenGetOccurencessLeafGrass(&float3(GData::ConstCurrCamPos - float3(0.25, 1.8, 0.25)), &float3(GData::ConstCurrCamPos + float3(0.25, 0, 0.25)),MtlPhysicType::mpt_leaf_grass))
+		SXRenderFunc::Delay::FreeVal = 1;
+	else
+		SXRenderFunc::Delay::FreeVal = 0;
+	/**/
 
 	//@@@
 	SXRenderFunc::UpdateView();

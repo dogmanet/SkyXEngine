@@ -536,10 +536,30 @@ void SGeom_GreenMSetNav(ID id, const char* pathname)
 }
 
 
-void SGeom_GreenGetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
+void SGeom_GreenGetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
 {
 	GEOM_PRECOND(_VOID);
-	GreenObj->GetNavMeshAndTransform(arr_vertex, arr_count_vertex, arr_index, arr_count_index, arr_transform, arr_count_transform, arr_count_green);
+	GreenObj->GetNavMeshAndTransform(arr_vertex, arr_count_vertex, arr_index, arr_mtl, arr_count_index, arr_transform, arr_count_transform, arr_count_green);
+}
+
+void SGeom_GreenClearNavMeshAndTransform(float3_t** arr_vertex, int32_t* arr_count_vertex, uint32_t** arr_index, ID** arr_mtl, int32_t* arr_count_index, float4x4** arr_transform, int32_t* arr_count_transform, int32_t arr_count_green)
+{
+	GEOM_PRECOND(_VOID);
+	
+	for (int i = 0; i < arr_count_green; ++i)
+	{
+		mem_delete_a(arr_vertex[i]);
+		mem_delete_a(arr_index[i]);
+		mem_delete_a(arr_mtl[i]);
+		mem_delete_a(arr_transform[i]);
+	}
+	mem_delete_a(arr_vertex);
+	mem_delete_a(arr_count_vertex);
+	mem_delete_a(arr_index);
+	mem_delete_a(arr_mtl);
+	mem_delete_a(arr_transform);
+	mem_delete_a(arr_count_transform);
+	mem_delete_a(arr_count_index);
 }
 
 bool SGeom_GreenTraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl)
@@ -548,3 +568,8 @@ bool SGeom_GreenTraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen,
 	return GreenObj->TraceBeam(start, dir, _res, idgreen, idsplits, idobj, idmtl);
 }
 
+bool SGeom_GreenGetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl)
+{
+	GEOM_PRECOND(false);
+	return GreenObj->GetOccurencessLeafGrass(bbmin, bbmax, physic_mtl);
+}

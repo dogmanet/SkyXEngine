@@ -147,6 +147,8 @@ typedef ID(*g_func_mtl_load) (const char* name,	int mtl_type);
 
 //! получить сорт материала, по дефолту 0
 typedef int(*g_func_mtl_get_sort) (ID id);
+//! получить физический тип материала
+typedef int(*g_func_mtl_get_physic_type)(ID id);
 //! рисовать ли подгруппы моделей данного материала раздельно?
 typedef bool(*g_func_mtl_group_render_is_singly) (ID id);
 //!@}
@@ -162,6 +164,8 @@ SX_LIB_API void SGCore_MtlSet(ID id, float4x4* world);
 SX_LIB_API ID SGCore_MtlLoad(const char* name, int mtl_type);
 //! \copydoc g_func_mtl_get_sort
 SX_LIB_API int SGCore_MtlGetSort(ID id);
+//! \copydoc g_func_mtl_get_physic_type
+SX_LIB_API int SGCore_MtlGetPhysicType(ID id);
 //! \copydoc g_func_mtl_group_render_is_singly
 SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id);
 
@@ -178,6 +182,8 @@ SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set func);
 SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load func);
 //! переназначение g_func_mtl_get_sort
 SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort func);
+//! переназначение g_func_mtl_get_physic_type
+SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type func);
 //! переназначение g_func_mtl_group_render_is_singly
 SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly func);
 //!@}

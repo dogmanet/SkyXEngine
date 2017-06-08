@@ -2,13 +2,9 @@
 #ifndef __static_geom
 #define __static_geom
 
-//#include <handler_dx_func.cpp>
 #include <common\\string.cpp>
 #include <common\array.h>
 #include <common\\string_api.cpp>
-//максимальное количество полигонов в буферах
-//или максимальнео количество полигонов на одну подгруппу
-#define STATIC_GEOM_MAX_POLY_IN_GROUP 400000
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
@@ -31,19 +27,9 @@ if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels
 }
 
 //типы деления
-#define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
-#define STATIC_COUNT_TYPE_SEGMENTATION_OCTO 8
-
-#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	/* минимальная разница между сторонами для окто деления */
-#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20 /* минимальный общий объем модели для деления */
-#define STATIC_MIN_LENGTH_FOR_SEGMENTATION 10 /* минимальный длина по горизонтальной оси модели для деления */
-#define STATIC_FORCE_ALLVOLUME_FOR_SEGMENTATION 150 /* минимальный длина по горизонтальной оси модели для деления */
-#define STATIC_MIN_HEIGHT_FOR_SEGMENTATION 14 /* минимальный высота модели для деления окто */
-#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000 /* минимальнео количество полигонов в модели для деления */
-#define STATIC_MIN_COUNT_POLY 500	/* минимальное количество полигонов в сплите */
-#define STATIC_MAX_COUNT_POLY 1000	/* максимальное количество полигонов в сплите */
-
-#define STATIC_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
+#define GEOM_COUNT_TYPE_SEGMENTATION_QUAD 4
+#define GEOM_COUNT_TYPE_SEGMENTATION_OCTO 8
+#define GEOM_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
 
 float UTIL_DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
 {
@@ -59,6 +45,18 @@ float UTIL_DistancePointBeam2(const float3 & p, const float3 & start, const floa
 	float b = c1 / c2;
 	float3 Pb = start + b * v;
 	return(SMVector3Length2(p - Pb));
+}
+
+float UTIL_InretsectBox(const float3* min1, const float3* max1, const float3* min2, const float3* max2)
+{
+	return (!((min1->x > max2->x || max1->x < min2->x)
+		|| (min1->y > max2->y || max1->y < min2->y)
+		|| (min1->z > max2->z || max1->z < min2->z)));
+	/*return (
+		((min1->x < min2->x && max1->x > min2->x) || (min1->x < max2->x && max1->x > max2->x) || (min2->x < min1->x && max2->x > min1->x) || (min2->x < max1->x && max2->x > max1->x)) &&
+		((min1->y < min2->y && max1->y > min2->y) || (min1->y < max2->y && max1->y > max2->y) || (min2->y < min1->y && max2->y > min1->y) || (min2->y < max1->y && max2->y > max1->y)) &&
+		((min1->z < min2->z && max1->z > min2->z) || (min1->z < max2->z && max1->z > max2->z || (min2->z < min1->z && max2->z > min1->z) || (min2->z < max1->z && max2->z > max1->z)))
+		);*/
 }
 
 class StaticGeom
@@ -82,7 +80,7 @@ public:
 		Segment();
 		~Segment();
 
-		Segment* Splits[STATIC_COUNT_TYPE_SEGMENTATION_OCTO]; //массив из 4/8 частей данного участка
+		Segment* Splits[GEOM_COUNT_TYPE_SEGMENTATION_OCTO]; //массив из 4/8 частей данного участка
 
 		//для геометрии
 		uint32_t** ArrPoly;	//двумерный массив по количеству подгрупп, вложенный массив - все полигоны для данной подгруппы
@@ -209,7 +207,7 @@ public:
 	{
 		IRSData();
 		~IRSData();
-		Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+		Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 		Array<InfoRenderSegments*> arr;
 	};
 
@@ -306,7 +304,7 @@ protected:
 	void EditVolume(Model* mesh, Segment* Split);
 	void SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
 	void SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*>* queue);
-	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
+	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
 	//рабочие данные, используются внутри в методах
 	//{{

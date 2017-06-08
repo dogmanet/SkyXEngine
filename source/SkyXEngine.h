@@ -318,6 +318,7 @@ void SkyXEngine_Init()
 	if (!Core_0IsProcessRun("sxconsole.exe"))
 		ShellExecute(NULL, "open", "sxconsole.exe", NULL, GData::Pathes::ForExe, SW_SHOWNORMAL);
 
+	SetConsoleTitle("sxconsole");
 	SSInput_0Create("sxinput", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
 
@@ -336,6 +337,7 @@ void SkyXEngine_Init()
 	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
 	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
+	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
 
 	SGCore_SkyBoxCr();
 	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);

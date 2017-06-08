@@ -149,6 +149,17 @@ void PhyWorld::LoadGeom()
 
 	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 
+	float3_t** green_arr_vertex;
+	int32_t* green_arr_count_vertex;
+	uint32_t** green_arr_index;
+	ID** green_arr_mtl;
+	int32_t* green_arr_count_index;
+	float4x4** green_arr_transform;
+	int32_t* green_arr_count_transform;
+	int32_t green_arr_count_green;
+
+	SGeom_GreenGetNavMeshAndTransform(&green_arr_vertex, &green_arr_count_vertex, &green_arr_index, &green_arr_mtl, &green_arr_count_index, &green_arr_transform, &green_arr_count_transform, &green_arr_count_green);
+
 	
 	m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
@@ -197,6 +208,7 @@ void PhyWorld::LoadGeom()
 	}
 
 	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
+	SGeom_GreenClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
 }
 
 

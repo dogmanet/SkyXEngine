@@ -112,6 +112,16 @@ SGeom_ModelsRender(timeDelta, type, id_arr_light);
 @{
 */
 
+#define GEOM_MAX_POLY_IN_GROUP					400000	/*!< максимальное количество полигонов на одну подгруппу */
+#define GEOM_DIFFERENCE_SIDES_FOR_OCTO			0.3		/*!< минимальная разница между сторонами для окто деления */
+#define GEOM_MIN_ALLVOLUME_FOR_SEGMENTATION		20		/*!< минимальный общий объем модели для деления */
+#define GEOM_MIN_LENGTH_FOR_SEGMENTATION		10		/*!< минимальный длина по горизонтальной оси модели для деления */
+#define GEOM_FORCE_ALLVOLUME_FOR_SEGMENTATION	150		/*!< минимальный длина по горизонтальной оси модели для деления */
+#define GEOM_MIN_HEIGHT_FOR_SEGMENTATION		14		/*!< минимальный высота модели для деления окто */
+#define GEOM_MIN_POLYGONS_FOR_SEGMENTATION		5000	/*!< минимальнео количество полигонов в модели для деления */
+#define GEOM_MIN_COUNT_POLY						500		/*!< минимальное количество полигонов в сплите */
+#define GEOM_MAX_COUNT_POLY						1000	/*!< максимальное количество полигонов в сплите */
+	
 SX_LIB_API void SGeom_ModelsClear();	//!< очистить список всех моделей
 
 //лоды сохраняются в виде относительных путей, текстуры в виде имен
@@ -278,6 +288,12 @@ SX_LIB_API bool SGeom_ModelsTraceBeam(float3* start, float3* dir, float3* _res, 
 @{
 */
 
+#define GREEN_MAX_ELEM_IN_DIP	512000	/*!< максимальнео количество объектов для единовременной отрисовки для одного вида растительности */
+#define GREEN_BB_MIN_X			10.f	/*!< минимальный размер сплита по ширине */
+#define GREEN_BB_MIN_Z			10.f	/*!< минимальный размер сплита по длине */
+#define GREEN_GEN_RAND_SCALE	1.f		/*!< рандомный масштаб модели при генерации (0, 1 + GREEN_GEN_RAND_SCALE) */
+#define GREEN_GEN_RAND_ROTATE_Y	SM_2PI	/*!< рандомный поворот (в радианах) модели при генерации (0, 1 + GREEN_GEN_RAND_ROTATE_Y) */
+
 //! типы растительности
 enum GeomGreenType
 {
@@ -327,8 +343,18 @@ SX_LIB_API ID SGeom_GreenAddGreen(
 	const char* navmesh		//!< навигационный меш, который будет передан в функции #SGeom_GreenGetMNavMeshAndTransform как основной по которому нужно считать перемещение
 	);
 
-SX_LIB_API ID SGeom_GreenAddObject(ID id, float3* pos);
-SX_LIB_API void SGeom_GreenDelObject(ID id, ID idsplit, ID idobj);
+//! добавить объект растительности
+SX_LIB_API ID SGeom_GreenAddObject(
+	ID id,		//!< идентификатор растительности к которой добавляем
+	float3* pos	//!< позиция в которой будет находится объект
+	);
+
+//! удалить объект растительности
+SX_LIB_API void SGeom_GreenDelObject(
+	ID id,		//!< идентификатор растительности
+	ID idsplit,	//!< идентификатор слпита из которого надо удалить
+	ID idobj	//!< идентификатор объекта который надо удалить
+	);
 
 SX_LIB_API void SGeom_GreenDelGreen(ID id);	//!< удалить единицу растительности
 
@@ -412,17 +438,47 @@ SX_LIB_API void SGeom_GreenMSetNav(ID id, const char* pathname);	//!< устан
 /*! получить все данные о физических характеристиках для навигации из всего того что на данный момент содержит растительность и только того что иметт навигационные модели
  \note Все данные кроме arr_count_green функция инициализирует сама, в arr_count_green запишет число
 */
-SX_LIB_API void SGeom_GreenGetMNavMeshAndTransform(
+SX_LIB_API void SGeom_GreenGetNavMeshAndTransform(
 	float3_t*** arr_vertex,			//!< (*arr_vertex)[num_green_mesh_nav][num_vertex] - вершины модели
 	int32_t** arr_count_vertex,		//!< (*arr_count_vertex)[num_green_mesh_nav] - количество вершин для модели
 	uint32_t*** arr_index,			//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
+	ID*** arr_mtl,			//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
 	int32_t** arr_count_index,		//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
 	float4x4*** arr_transform,		//!< (*arr_transform)[num_type_green][num_elem] - матрица для трансформации модели навигации
 	int32_t** arr_count_transform,	//!< (*arr_count_transform)[num_type_green] - количество матриц для трансформаций
 	int32_t* arr_count_green		//!< (*arr_count_green) - количество единиц растительности по видам
 	);
 
-SX_LIB_API bool SGeom_GreenTraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl);
+/*! Очищает папять, выделенную в SGeom_GreenGetNavMeshAndTransform
+*/
+SX_LIB_API void SGeom_GreenClearNavMeshAndTransform(
+	float3_t** arr_vertex,			//!< (*arr_vertex)[num_green_mesh_nav][num_vertex] - вершины модели
+	int32_t* arr_count_vertex,		//!< (*arr_count_vertex)[num_green_mesh_nav] - количество вершин для модели
+	uint32_t** arr_index,			//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
+	ID** arr_mtl,					//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
+	int32_t* arr_count_index,		//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
+	float4x4** arr_transform,		//!< (*arr_transform)[num_type_green][num_elem] - матрица для трансформации модели навигации
+	int32_t* arr_count_transform,	//!< (*arr_count_transform)[num_type_green] - количество матриц для трансформаций
+	int32_t arr_count_green			//!< (*arr_count_green) - количество единиц растительности по видам
+	);
+
+//! трасировка луча, возвращает "было ли пересечение луча и растительности (по объектно)"
+SX_LIB_API bool SGeom_GreenTraceBeam(
+	float3* start,	//!< позиция испускания луча
+	float3* dir,	//!< направление взгляда луча
+	float3* _res,	//!< запишется в какой позиции было персечение (если было)
+	ID* idgreen,	//!< запишется идентификатор растительности
+	ID* idsplits,	//!< запишется идентификатор сплита
+	ID* idobj,		//!< запишется идентификатор объекта
+	ID* idmtl		//!< запишется идентификатор материала
+	);
+
+//! есть ли входящая в объем растительность (ее объекты), при первом попавшемся полигоне который входит в объем будет возвращено true
+SX_LIB_API bool SGeom_GreenGetOccurencessLeafGrass(
+	float3* bbmin,	//!< минимум
+	float3* bbmax,	//!< максимум
+	int physic_mtl	//!< физический тип материала (#SGCore_MtlGetPhysicType) который будет проверятся на вхождение
+	);
 
 //!@} sxgeom_green
 
