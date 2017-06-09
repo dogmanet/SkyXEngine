@@ -4,6 +4,8 @@
 
 #include <decals/sxdecals.h>
 
+#include "SXbaseTool.h"
+
 BEGIN_PROPTABLE(SXplayer)
 // empty
 END_PROPTABLE()
@@ -17,7 +19,8 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_bCanJump(true),
 	m_fViewbobStep(0.0f),
 	m_fViewbobY(0.0f),
-	m_fViewbobStrafe(float3_t(0, 0, 0))
+	m_fViewbobStrafe(float3_t(0, 0, 0)),
+	m_pActiveTool(NULL)
 {
 	m_pCamera = (SXpointCamera*)CREATE_ENTITY("point_camera", pMgr);
 	m_pCamera->SetParent(this);
@@ -51,6 +54,17 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
 	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
+
+
+
+
+	/*m_pActiveTool = (SXbaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
+	m_pActiveTool->SetOwner(this);
+	m_pActiveTool->PlayAnimation("idle");
+	m_pActiveTool->SetPos(GetPos() + float3(1.0f, 0.0f, 1.0f));
+	//m_pActiveTool->SetOrient(GetOrient());*/
+	//m_pActiveTool->SetParent(this);
+
 }
 
 SXplayer::~SXplayer()
@@ -298,6 +312,10 @@ void SXplayer::Attack(BOOL state)
 	{
 		return;
 	}
+	if(m_pActiveTool)
+	{
+		m_pActiveTool->SecondaryAction(state);
+	}
 	if(state)
 	{
 		//trace line
@@ -316,4 +334,24 @@ void SXplayer::Attack(BOOL state)
 
 void SXplayer::Attack2(BOOL state)
 {
+	if(m_uMoveDir & PM_OBSERVER)
+	{
+		return;
+	}
+	if(m_pActiveTool)
+	{
+		m_pActiveTool->SecondaryAction(state);
+	}
+}
+
+void SXplayer::Reload()
+{
+	if(m_uMoveDir & PM_OBSERVER)
+	{
+		return;
+	}
+	if(m_pActiveTool)
+	{
+		m_pActiveTool->Reload();
+	}
 }

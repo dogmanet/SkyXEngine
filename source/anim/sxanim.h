@@ -24,7 +24,9 @@ See the license in LICENSE
 #include <common/array.h>
 #include <common/string.h>
 
+#ifndef SX_DLL
 #define SX_DLL
+#endif
 
 #include <gdefines.h>
 
@@ -126,6 +128,18 @@ public:
 	*/
 	virtual void SetBoneController(const String & name, float value, MODEL_BONE_CTL what) = 0;
 
+	/*! Возвращает смещение указанной кости
+		@param[in] id Номер кости
+		@return Смещение кости
+	*/
+	virtual float3 GetBoneTransformPos(UINT id) = 0;
+
+	/*! Возвращает вращение указанной кости
+		@param[in] id Номер кости
+		@return Вращение кости
+	*/
+	virtual SMQuaternion GetBoneTransformRot(UINT id) = 0;
+
 	/*! Возвращает трансформацию указанной кости
 		@param[in] id Номер кости
 		@return Матрица трансформации кости
@@ -209,6 +223,14 @@ public:
 	/*! Получает ограничивающий объем модели
 	*/
 	virtual const ISXBound * GetBound() const = 0;
+
+	/*! Уничтожает объект
+	*/
+	virtual void Release() = 0;
+
+	/*! Устанавливает масштаб
+	*/
+	virtual void SetScale(float fScale) = 0;
 };
 
 //! \name Функции управления анимацией

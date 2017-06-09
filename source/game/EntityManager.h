@@ -48,6 +48,9 @@ public:
 	bool Export(const char * file);
 	bool Import(const char * file);
 
+	void DumpList(int argc, const char ** argv);
+	void EntKV(int argc, const char ** argv);
+
 protected:
 	ID Register(SXbaseEntity * pEnt);
 	void Unregister(ID ent);

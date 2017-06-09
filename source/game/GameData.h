@@ -49,6 +49,8 @@ protected:
 	static void ccmd_attack2_on();
 	static void ccmd_attack2_off();
 
+	static void ccmd_reload();
+
 };
 
 #endif

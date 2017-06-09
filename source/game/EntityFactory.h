@@ -43,9 +43,13 @@ public:
 	proptable_t * GetPropTable(const char * szClass);
 	bool IsEditorHidden(const char * szClass);
 	EntDefaultsMap * GetDefaults(const char * szClass);
+
+	int GetListCount();
+	void GetListing(const char ** pszOut, int size);
 private:
 	IEntityFactory * GetFactory(const char * szName);
 	AssotiativeArray<AAString, IEntityFactory*> m_mFactories;
+	int m_iShowInListCount;
 };
 
 template <class T>

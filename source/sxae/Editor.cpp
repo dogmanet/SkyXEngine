@@ -48,13 +48,7 @@ void msgbx(int level, const char* format, ...)
 	}
 }
 
-void Report(int level, const char* format, ...)
-{
-	va_list va;
-	va_start(va, format);
-	msgbx(level, format, va);
-	va_end(va);
-}
+report_func reportf = msgbx;
 
 Editor::Editor():
 m_bCamMove(false),

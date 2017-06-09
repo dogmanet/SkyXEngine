@@ -49,21 +49,21 @@ void ModelFile::Load(const char * name)
 	FILE * fp = fopen(name, "rb");
 	if(!fp)
 	{
-		Report(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
+		reportf(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
 	}
 
 	fread(&m_hdr, sizeof(ModelHeader), 1, fp);
 
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
-		Report(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
+		reportf(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
 		fclose(fp);
 		return;
 	}
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION)
 	{
-		Report(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
+		reportf(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
 		fclose(fp);
 		return;
 	}
@@ -488,7 +488,7 @@ MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
 	{
 		///start m_pBones[i] -> mdl->m_pBones[0]
 
-		for(uint32_t i = 0; i <= mdl->m_hdr2.iBoneTableCount; ++i)
+		for(uint32_t i = 0; i < mdl->m_hdr2.iBoneTableCount; ++i)
 		{
 			vNewBones.push_back(mdl->m_pBones[i]);
 		}
@@ -506,7 +506,7 @@ MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
 			if(!strcmp(vTmpBones[i].szName, vNewBones[j].szName))
 			{
 				if(vTmpBones[i].bone.pid >= 0 && vNewBones[j].bone.pid >= 0
-					&& strcmp(mdl->m_pBones[vTmpBones[i].bone.pid].szName, vNewBones[vNewBones[j].bone.pid].szName))
+					&& strcmp(vTmpBones[vTmpBones[i].bone.pid].szName, vNewBones[vNewBones[j].bone.pid].szName))
 				{
 					return(MBE_BAD_HIERARCY);
 				}
@@ -810,7 +810,8 @@ m_mfBoneControllerValues(NULL),
 m_iCurrentSkin(0),
 m_pMgr(pMgr),
 m_pfnCallBack(NULL),
-m_pfnProgressCB(NULL)
+m_pfnProgressCB(NULL),
+m_fScale(0.01f)
 {
 	for(int i = 0; i < BLEND_MAX; i++)
 	{
@@ -841,10 +842,21 @@ Animation::~Animation()
 SMMATRIX Animation::GetBoneTransform(UINT id)
 {
 	//id *= 2;
-	float3 pos = m_pBoneMatrix[id].position;
-	SMQuaternion q = m_pBoneMatrix[id].orient;
+	float3 pos = m_pBoneMatrixRender[id].position;
+	SMQuaternion q = m_pBoneMatrixRender[id].orient;
 	return(q.GetMatrix() * SMMatrixTranslation(pos));
 }
+
+float3 Animation::GetBoneTransformPos(UINT id)
+{
+	return(GetOrient() * (float3)m_pBoneMatrixRender[id].position + GetPos());
+}
+
+SMQuaternion Animation::GetBoneTransformRot(UINT id)
+{
+	return(GetOrient() * m_pBoneMatrixRender[id].orient);
+}
+
 /*
 bool Animation::IsVisibleFrustum(Core::ControllMoving::Frustum* frustum)
 {
@@ -1316,12 +1328,12 @@ void Animation::Play(const char * name, UINT iFadeTime, UINT slot) // name: Anim
 	}
 	if(slot >= BLEND_MAX)
 	{
-		Report(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
+		reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
 		return;
 	}
 	if(!m_mSeqIds.KeyExists(name))
 	{
-		Report(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\"\n", name);
+		reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\"\n", name);
 		return;
 	}
 	UINT sid = m_mSeqIds[name];
@@ -1424,7 +1436,7 @@ float3 Animation::GetPos()
 
 SMMATRIX Animation::GetWorldTM()
 {
-	return(SMMatrixScaling(0.01f, 0.01f, 0.01f) * m_vOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
+	return(SMMatrixScaling(m_fScale, m_fScale, m_fScale) * m_vOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
 }
 
 void Animation::SetOrient(const SMQuaternion & pos)
@@ -1601,7 +1613,7 @@ void Animation::Assembly()
 				++sCur;
 				--i;
 				//report error
-				Report(REPORT_MSG_LEVEL_WARRNING, NULL, "Skeleton hierarchy incompatible");
+				reportf(REPORT_MSG_LEVEL_WARRNING, "Skeleton hierarchy incompatible");
 				break;
 			}
 		}
@@ -1823,6 +1835,11 @@ void Animation::SwapBoneBuffs()
 }
 
 
+void Animation::Release()
+{
+	delete this;
+}
+
 
 /**
 *
@@ -1950,7 +1967,7 @@ void AnimationManager::SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
 {
 	if(nDecl >= MVT_SIZE)
 	{
-		Report(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::SetVertexDeclaration()\n", nDecl);
+		reportf(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::SetVertexDeclaration()\n", nDecl);
 		return;
 	}
 	m_pd3dDevice->SetVertexDeclaration(pVertexDeclaration[nDecl]);
@@ -1983,7 +2000,7 @@ void AnimationManager::Update(int thread)
 {
 	if(thread >= m_iThreadNum)
 	{
-		Report(REPORT_MSG_LEVEL_WARRNING, "Requested thread %d but only %d threads allowed\n", thread, m_iThreadNum);
+		reportf(REPORT_MSG_LEVEL_WARRNING, "Requested thread %d but only %d threads allowed\n", thread, m_iThreadNum);
 		return;
 	}
 	for(uint32_t i = thread, l = m_pAnimatedList.size(); i < l; i += m_iThreadNum)

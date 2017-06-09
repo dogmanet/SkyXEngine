@@ -19,6 +19,24 @@
     <Filter Include="Source Files\ents">
       <UniqueIdentifier>{683bc9ab-75e2-483e-824d-037c2c4dd4d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ents\items">
+      <UniqueIdentifier>{ad8491a4-33cf-4f8d-bb42-8808741767f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\items\tools">
+      <UniqueIdentifier>{dc95d33c-af51-4a94-bef6-e11ba0c3a5eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\items\tools\weapons">
+      <UniqueIdentifier>{d327c624-7899-42aa-ac91-9e8f786c7506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items">
+      <UniqueIdentifier>{5d4f6948-ed8e-4ddd-a372-980bdcb8e585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items\tools">
+      <UniqueIdentifier>{49827d4d-01fe-4980-9844-7bc021b4206c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items\tools\weapons">
+      <UniqueIdentifier>{d8c4fbd2-a078-4fd3-90e7-bd298c1e0640}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -63,6 +81,24 @@
     <ClCompile Include="..\..\..\source\game\GameData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseItem.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseAmmo.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseAmmoBox.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseTool.cpp">
+      <Filter>Source Files\ents\items\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseRiffle.cpp">
+      <Filter>Source Files\ents\items\tools\weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp">
+      <Filter>Source Files\ents\items\tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -103,6 +139,33 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\GameData.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\AAString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseRiffle.h">
+      <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseSnipe.h">
+      <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbasePistol.h">
+      <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseTool.h">
+      <Filter>Header Files\ents\items\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseAmmo.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseItem.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseAmmoBox.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h">
+      <Filter>Header Files\ents\items\tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

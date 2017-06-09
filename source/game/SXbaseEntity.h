@@ -12,7 +12,10 @@
 
 #pragma pointers_to_members(full_generality, virtual_inheritance)
 
-class SXbaseEntity
+#pragma warning(push)
+#pragma warning(disable:4251)
+
+class SXGAME_EXPORT SXbaseEntity
 {
 	DECLARE_CLASS_NOBASE(SXbaseEntity);
 	DECLARE_PROPTABLE();
@@ -45,6 +48,8 @@ protected:
 	SXbaseEntity * m_pParent;
 	int m_iParentAttachment;
 
+	SXbaseEntity * m_pOwner;
+
 	virtual void OnSync();
 	virtual void OnPostLoad();
 	
@@ -76,6 +81,11 @@ public:
 
 	void SetParent(SXbaseEntity * pEnt, int attachment = -1);
 	SXbaseEntity * GetParent();
+
+	void SetOwner(SXbaseEntity * pEnt);
+	SXbaseEntity * GetOwner();
 };
+
+#pragma warning(pop)
 
 #endif

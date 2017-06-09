@@ -1663,7 +1663,7 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	char tmpnametex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	for (int i = 0; i < nmesh->SubsetCount; ++i)
 	{
-		sprintf(tmpnametex, "%s.dss", nmesh->ArrTextures[i]);
+		sprintf(tmpnametex, "%s.dds", nmesh->ArrTextures[i]);
 		ID tmpidmtl = SGCore_MtlLoad(tmpnametex, MTL_TYPE_TREE);
 		for (int k = 0; k < nmesh->IndexCount[i]; ++k)
 		{

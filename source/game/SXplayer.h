@@ -21,6 +21,8 @@ enum
 	PM_STOP = 0xFFFF,
 };
 
+class SXbaseTool;
+
 class SXplayer: public SXbaseAnimating
 {
 	DECLARE_CLASS(SXplayer, SXbaseAnimating);
@@ -47,6 +49,7 @@ public:
 
 	void Attack(BOOL state);
 	void Attack2(BOOL state);
+	void Reload();
 
 	float3 GetWeaponOrigin();
 
@@ -64,6 +67,8 @@ protected:
 	btRigidBody * m_pRigidBody;
 	btPairCachingGhostObject * m_pGhostObject;
 	btKinematicCharacterController * m_pCharacter;
+
+	SXbaseTool * m_pActiveTool;
 
 	bool m_bCanJump;
 
