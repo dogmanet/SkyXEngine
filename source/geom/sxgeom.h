@@ -303,6 +303,14 @@ enum GeomGreenType
 	ggt_tree,		//!< деревья
 };
 
+//! структура трансформаций растительности
+struct GreenDataVertex
+{
+	float3_t Position;	//!< позиция
+	float3_t TexCoord;	//!< x - общий масштаб,y - поворот по оси y, z -
+	float2_t SinCosRot;	//!< синус и косинус (угол TexCoord.y) для поворота
+};
+
 /*! добавить единицу растительности
  \note path, lod1, lod2 - пути относительно стандартного пути, до модели и лодов, 
 если lod1 и lod2 равны 0, тогда будет добавлен элемент трава, иначе элемент дерево.
@@ -442,10 +450,10 @@ SX_LIB_API void SGeom_GreenGetNavMeshAndTransform(
 	float3_t*** arr_vertex,			//!< (*arr_vertex)[num_green_mesh_nav][num_vertex] - вершины модели
 	int32_t** arr_count_vertex,		//!< (*arr_count_vertex)[num_green_mesh_nav] - количество вершин для модели
 	uint32_t*** arr_index,			//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
-	ID*** arr_mtl,			//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
+	ID*** arr_mtl,					//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
 	int32_t** arr_count_index,		//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
-	float4x4*** arr_transform,		//!< (*arr_transform)[num_type_green][num_elem] - матрица для трансформации модели навигации
-	int32_t** arr_count_transform,	//!< (*arr_count_transform)[num_type_green] - количество матриц для трансформаций
+	GreenDataVertex*** arr_transform,//!< (*arr_transform)[num_green_mesh_nav][num_obj] - трансформации модели навигации
+	int32_t** arr_count_transform,	//!< (*arr_count_transform)[num_green_mesh_nav] - количество матриц для трансформаций
 	int32_t* arr_count_green		//!< (*arr_count_green) - количество единиц растительности по видам
 	);
 
@@ -457,7 +465,7 @@ SX_LIB_API void SGeom_GreenClearNavMeshAndTransform(
 	uint32_t** arr_index,			//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
 	ID** arr_mtl,					//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
 	int32_t* arr_count_index,		//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
-	float4x4** arr_transform,		//!< (*arr_transform)[num_type_green][num_elem] - матрица для трансформации модели навигации
+	GreenDataVertex** arr_transform,//!< (*arr_transform)[num_type_green][num_elem] - трансформации модели навигации
 	int32_t* arr_count_transform,	//!< (*arr_count_transform)[num_type_green] - количество матриц для трансформаций
 	int32_t arr_count_green			//!< (*arr_count_green) - количество единиц растительности по видам
 	);

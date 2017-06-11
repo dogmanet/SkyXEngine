@@ -19,7 +19,7 @@ Green::Green()
 	Green::DXDevice->CreateVertexDeclaration(InstanceGreen, &VertexDeclarationGreen);
 
 	Green::DXDevice->CreateVertexBuffer(
-		GREEN_MAX_ELEM_IN_DIP * sizeof(DataVertex),
+		GREEN_MAX_ELEM_IN_DIP * sizeof(GreenDataVertex),
 		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
@@ -164,7 +164,7 @@ void Green::OnLostDevice()
 void Green::OnResetDevice()
 {
 	Green::DXDevice->CreateVertexBuffer(
-		GREEN_MAX_ELEM_IN_DIP * sizeof(DataVertex),
+		GREEN_MAX_ELEM_IN_DIP * sizeof(GreenDataVertex),
 		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/,
@@ -223,8 +223,8 @@ void Green::PreSegmentation(Model* model, float3* min_level, float3* max_level)
 	model->SplitsTree->CountAllGreen = model->AllCountGreen;
 	if (model->AllCountGreen > 0)
 	{
-		model->SplitsTree->Data = new DataVertex[model->AllCountGreen];
-		memcpy(model->SplitsTree->Data, model->AllTrans, sizeof(DataVertex)* model->AllCountGreen);
+		model->SplitsTree->Data = new GreenDataVertex[model->AllCountGreen];
+		memcpy(model->SplitsTree->Data, model->AllTrans, sizeof(GreenDataVertex)* model->AllCountGreen);
 	}
 
 	if (model->SplitsTree->CountAllGreen > 0)
@@ -327,7 +327,7 @@ void Green::Segmentation(Segment* Split, Model* mesh)
 
 		if (Split->Splits[i]->CountAllGreen > 0)
 		{
-			Split->Splits[i]->Data = new DataVertex[Split->Splits[i]->CountAllGreen];
+			Split->Splits[i]->Data = new GreenDataVertex[Split->Splits[i]->CountAllGreen];
 			for (DWORD k = 0; k < ArrPoly[i].size(); k++)
 			{
 				Split->Splits[i]->Data[k] = Split->Data[ArrPoly[i][k]];
@@ -553,7 +553,7 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_t
 		Green::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | RTCountDrawObj));
 
 		Green::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		Green::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(DataVertex));
+		Green::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(GreenDataVertex));
 
 		Green::DXDevice->SetStreamSource(0, ArrModels[nm]->ArrLod[lod]->model->VertexBuffer, 0, sizeof(vertex_static));
 		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model->IndexBuffer);
@@ -635,7 +635,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 						{
 							memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 								jarrsplits[i]->Data,
-								jarrsplits[i]->CountAllGreen * sizeof(DataVertex));
+								jarrsplits[i]->CountAllGreen * sizeof(GreenDataVertex));
 
 							RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 						}
@@ -646,7 +646,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 							{
 								memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 									jarrsplits[i]->Data,
-									jarrsplits[i]->CountAllGreen * sizeof(DataVertex));
+									jarrsplits[i]->CountAllGreen * sizeof(GreenDataVertex));
 
 								RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 							}
@@ -661,7 +661,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 									UINT curCP = (int)floor(k + 0.5);;
 									if (curCP > lastCP)
 									{
-										memcpy(RTGPUArrVerteces + RTCountDrawObj, jarrsplits[i]->Data + curCP, sizeof(DataVertex));
+										memcpy(RTGPUArrVerteces + RTCountDrawObj, jarrsplits[i]->Data + curCP, sizeof(GreenDataVertex));
 										RTCountDrawObj += 1;
 										lastCP = curCP;
 									}
@@ -725,7 +725,7 @@ void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 					{
 						memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 							jarrsplits[i]->Data,
-							jarrsplits[i]->CountAllGreen * sizeof(DataVertex));
+							jarrsplits[i]->CountAllGreen * sizeof(GreenDataVertex));
 
 						RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 					}
@@ -740,7 +740,7 @@ void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 							UINT curCP = (int)floor(k + 0.5);;
 							if (curCP > lastCP)
 							{
-								memcpy(RTGPUArrVerteces + RTCountDrawObj, jarrsplits[i]->Data + curCP, sizeof(DataVertex));
+								memcpy(RTGPUArrVerteces + RTCountDrawObj, jarrsplits[i]->Data + curCP, sizeof(GreenDataVertex));
 								RTCountDrawObj += 1;
 								lastCP = curCP;
 							}
@@ -763,7 +763,7 @@ void Green::GPURenderObject(DWORD timeDelta, float3* viewpos, ID id, ID split, I
 
 	RTGPUArrVerteces = 0;
 	TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
-	memcpy(RTGPUArrVerteces, &(ArrModels[id]->SplitsArr[split]->Data[idobj]), sizeof(DataVertex));
+	memcpy(RTGPUArrVerteces, &(ArrModels[id]->SplitsArr[split]->Data[idobj]), sizeof(GreenDataVertex));
 	TransVertBuf->Unlock();
 	RTCountDrawObj = 1;
 
@@ -990,7 +990,7 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 	if (model->AllCountGreen <= 0)
 		return;
 
-	model->AllTrans = new DataVertex[model->AllCountGreen];
+	model->AllTrans = new GreenDataVertex[model->AllCountGreen];
 
 	for (DWORD i = 0; i<model->AllCountGreen; i++)
 	{
@@ -1071,11 +1071,11 @@ ID Green::AddObject(ID id, float3* pos)
 		return -1;
 
 	int oldlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
-	DataVertex* tmpdv = new DataVertex[oldlen + 1];
+	GreenDataVertex* tmpdv = new GreenDataVertex[oldlen + 1];
 	if (oldlen > 0)
-		memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, oldlen * sizeof(DataVertex));
+		memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, oldlen * sizeof(GreenDataVertex));
 
-	DataVertex tmpdvobj;
+	GreenDataVertex tmpdvobj;
 	tmpdvobj.Position = *pos;
 	tmpdvobj.TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
 	tmpdvobj.TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
@@ -1083,7 +1083,7 @@ ID Green::AddObject(ID id, float3* pos)
 	tmpdvobj.SinCosRot.x = sinf(tmpdvobj.TexCoord.y);
 	tmpdvobj.SinCosRot.y = cosf(tmpdvobj.TexCoord.y);
 
-	memcpy(tmpdv + oldlen, &tmpdvobj, sizeof(DataVertex));
+	memcpy(tmpdv + oldlen, &tmpdvobj, sizeof(GreenDataVertex));
 	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
 	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
 	++(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
@@ -1099,9 +1099,9 @@ void Green::DelObject(ID id, ID idsplit, ID idobj)
 		return;
 
 	int oldlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
-	DataVertex* tmpdv = new DataVertex[oldlen - 1];
-	memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, idobj * sizeof(DataVertex));
-	memcpy(tmpdv + idobj, ArrModels[id]->SplitsArr[idsplit]->Data + idobj + 1, ((oldlen - idobj) - 1)* sizeof(DataVertex));
+	GreenDataVertex* tmpdv = new GreenDataVertex[oldlen - 1];
+	memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, idobj * sizeof(GreenDataVertex));
+	memcpy(tmpdv + idobj, ArrModels[id]->SplitsArr[idsplit]->Data + idobj + 1, ((oldlen - idobj) - 1)* sizeof(GreenDataVertex));
 	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
 	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
 	--(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
@@ -1226,7 +1226,7 @@ void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 		isexists = false;
 		fwrite(&isexists, sizeof(int8_t), 1, file);
 		if (Split->CountAllGreen > 0)
-			fwrite(Split->Data, sizeof(DataVertex), Split->CountAllGreen, file);
+			fwrite(Split->Data, sizeof(GreenDataVertex), Split->CountAllGreen, file);
 	}
 }
 
@@ -1423,9 +1423,9 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 	{
 		if ((*Split)->CountAllGreen > 0)
 		{
-			(*Split)->Data = new DataVertex[(*Split)->CountAllGreen];
+			(*Split)->Data = new GreenDataVertex[(*Split)->CountAllGreen];
 
-			fread((*Split)->Data, sizeof(DataVertex)*(*Split)->CountAllGreen, 1, file);
+			fread((*Split)->Data, sizeof(GreenDataVertex)*(*Split)->CountAllGreen, 1, file);
 		}
 	}
 }
@@ -1487,8 +1487,11 @@ void Green::DelModelInArrCom(ID id_model)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model);
 
-	for (long i = 0; i < ArrComFor.size(); ++i)
+	for (int i = 0; i < ArrComFor.size(); ++i)
 	{
+		if (!(ArrComFor[i]))
+			continue;
+
 		mem_delete(ArrComFor[i]->arr[id_model]);
 		ArrComFor[i]->arr.erase(id_model);
 	}
@@ -1590,10 +1593,10 @@ void Green::Clear()
 		ArrModels.erase(0);
 	}
 
-	while (ArrComFor.size() > 1)
+	while (ArrComFor.size() > 2)
 	{
-		mem_delete(ArrComFor[1]);
-		ArrComFor.erase(1);
+		mem_delete(ArrComFor[2]);
+		ArrComFor.erase(2);
 	}
 }
 
@@ -1663,11 +1666,11 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	char tmpnametex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	for (int i = 0; i < nmesh->SubsetCount; ++i)
 	{
-		sprintf(tmpnametex, "%s.dss", nmesh->ArrTextures[i]);
+		sprintf(tmpnametex, "%s.dds", nmesh->ArrTextures[i]);
 		ID tmpidmtl = SGCore_MtlLoad(tmpnametex, MTL_TYPE_TREE);
 		for (int k = 0; k < nmesh->IndexCount[i]; ++k)
 		{
-			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] + prebias;
+			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] /*+ prebias*/;
 			ArrModels[id]->NavigateMesh->arr_mtl[tmp_countindex] = tmpidmtl;
 			++tmp_countindex;
 		}
@@ -1677,7 +1680,7 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	mem_release_del(nmesh);
 }
 
-void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
+void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, GreenDataVertex*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
 {
 	if (ArrModels.size() <= 0)
 		return;
@@ -1701,10 +1704,10 @@ void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_v
 			{
 				int AllCountGreen = ArrModels[id]->AllCountGreen;
 				int CountAllGreen = queue[0]->CountAllGreen;
-				DataVertex* tmpdv = new DataVertex[ArrModels[id]->AllCountGreen + queue[0]->CountAllGreen];
+				GreenDataVertex* tmpdv = new GreenDataVertex[ArrModels[id]->AllCountGreen + queue[0]->CountAllGreen];
 				if (ArrModels[id]->AllTrans)
-					memcpy(tmpdv, ArrModels[id]->AllTrans, sizeof(DataVertex)* ArrModels[id]->AllCountGreen);
-				memcpy(tmpdv + ArrModels[id]->AllCountGreen, queue[0]->Data, sizeof(DataVertex)* queue[0]->CountAllGreen);
+					memcpy(tmpdv, ArrModels[id]->AllTrans, sizeof(GreenDataVertex)* ArrModels[id]->AllCountGreen);
+				memcpy(tmpdv + ArrModels[id]->AllCountGreen, queue[0]->Data, sizeof(GreenDataVertex)* queue[0]->CountAllGreen);
 				mem_delete_a(ArrModels[id]->AllTrans);
 				ArrModels[id]->AllTrans = tmpdv;
 				ArrModels[id]->AllCountGreen += queue[0]->CountAllGreen;
@@ -1736,7 +1739,7 @@ void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_v
 	(*arr_mtl) = new ID*[count_green];
 	(*arr_count_index) = new int32_t[count_green];
 
-	(*arr_transform) = new float4x4*[count_green];
+	(*arr_transform) = new GreenDataVertex*[count_green];
 	(*arr_count_transform) = new int32_t[count_green];
 
 	int curr_model = 0;
@@ -1756,11 +1759,11 @@ void Green::GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_v
 		memcpy((*arr_mtl)[curr_model], ArrModels[i]->NavigateMesh->arr_mtl, sizeof(ID)* ArrModels[i]->NavigateMesh->count_index);
 		(*arr_count_index)[curr_model] = ArrModels[i]->NavigateMesh->count_index;
 
-		(*arr_transform)[curr_model] = new float4x4[ArrModels[i]->AllCountGreen];
+		(*arr_transform)[curr_model] = new GreenDataVertex[ArrModels[i]->AllCountGreen];
 		(*arr_count_transform)[curr_model] = ArrModels[i]->AllCountGreen;
 		for (long k = 0; k < ArrModels[i]->AllCountGreen; ++k)
 		{
-			(*arr_transform)[curr_model][k] = SMMatrixScaling(float3(ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x)) * SMMatrixRotationY(ArrModels[i]->AllTrans[k].TexCoord.y) * SMMatrixTranslation(ArrModels[i]->AllTrans[k].Position);
+			(*arr_transform)[curr_model][k] = ArrModels[i]->AllTrans[k];// SMMatrixScaling(float3(ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x, ArrModels[i]->AllTrans[k].TexCoord.x)) * SMMatrixRotationY(ArrModels[i]->AllTrans[k].TexCoord.y) * SMMatrixTranslation(ArrModels[i]->AllTrans[k].Position);
 		}
 
 		++curr_model;

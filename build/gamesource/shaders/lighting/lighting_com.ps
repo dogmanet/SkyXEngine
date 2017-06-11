@@ -21,7 +21,7 @@ sampler2D ShadowSampler:register(s4);
 
 half D_Get(half roughness, half NdotH)
 {
-	half a = max(0.01f, roughness * roughness);
+	half a = max(0.001f, roughness);
 	half a2 = a*a;
 	half d = ((NdotH * NdotH) * (a2 - 1.0) + 1.0);
 	
@@ -31,6 +31,7 @@ half D_Get(half roughness, half NdotH)
 ////////////////////////
 half F_Get(half f0, half HdotV)
 {
+	//return lerp(pow(1.0 - NoV, 5.0), 1,f0);
     return (f0 + (1.0f - f0) * pow((1.0f - HdotV), 5)) * (f0 > 0.001f ? 1 : 0);
 }
 ////////////////////////////////
@@ -42,9 +43,10 @@ half G_Get(half NdotV, half NdotL, half LdotV, half NdotH,half VdotH)
 
 half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half HdotV)
 {
+	matparam.x = lerp(0.0f,0.5f,matparam.x);
 	half D = D_Get(matparam.x, NdotH);
 	half G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
-	half3 F = F_Get(matparam.y, HdotV);
+	half3 F = F_Get(matparam.y*matparam.y, HdotV);
 	return ((D*G)/(PI*NdotL*NdotV))*F;
 }
 

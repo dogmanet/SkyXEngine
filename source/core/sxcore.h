@@ -77,7 +77,7 @@ SX_LIB_API void Core_MTaskStop();	//!< остановить все задачи
 //! @}
 
 /*! @name Регистры
-создает потоки по количеству ядер
+Массивы данных, определенных типов, доступные в любой библиотеке включающей в себя ядро
 */
 //! @{
 
@@ -99,6 +99,46 @@ SX_LIB_API void Core_RFloat3Set(int id, float3* val);	//!< установка з
 SX_LIB_API void Core_RFloat3Get(int id, float3* val);	//!< получение значения из регистра float3 типа
 
 //! @}
+
+/*! \name Таймеры
+ \note Для Unix даты рекомендуется использовать функции:
+  - localtime или localtime_s (из структуры tm в общее количество секунд), 
+  - mktime (из общего количества секунд в структуру tm).
+ \note По умолчанию Unix дата используется time(NULL) в момент создания таймера
+ \note Все возвращаемое время вычисляется в соответсвии с коэфициентом скорости
+ \note Функции возвращающие время без постфикса U (update) требуют обновления, которое происходит в функции #Core_TimesUpdate
+@{
+*/
+
+SX_LIB_API ID Core_TimeAdd();		//!< добавление таймера
+
+SX_LIB_API void Core_TimesUpdate();	//!< обновление всех таймеров
+
+SX_LIB_API void Core_TimeSpeedSet(ID id, float speed);	//!< установка скорости течения времени
+SX_LIB_API float Core_TimeSpeedGet(ID id);				//!< возвращает скоротечность времени для таймера
+
+SX_LIB_API void Core_TimeWorkingSet(ID id, bool working);	//!< установка состояния запуска таймера
+SX_LIB_API bool Core_TimeWorkingGet(ID id);					//!< запущен ли таймер
+
+SX_LIB_API void Core_TimeUnixStartSet(ID id, int64_t start_time);	//!< установить стартовую дату в Unix в секундах
+SX_LIB_API int64_t Core_TimeUnixStartGet(ID id);					//!< возвращает стартовую дату в Unix в секундах
+SX_LIB_API int64_t Core_TimeUnixCurrGet(ID id);						//!< возвращает текущюю дату в Unix в секундах
+
+SX_LIB_API int64_t Core_TimeTotalMcsGet(ID id);						//!< возвращает общее время работы таймера в микросекундах (требует обновления)
+
+#define Core_TimeTotalMlsGet(id) Core_TimeTotalMcsGet(id)/1000		//!< возвращает общее время работы таймера в миллисекундах (требует обновления)
+
+#define TimeGetMls(id) Core_TimeTotalMlsGet(id)						//!< возвращает общее время работы таймера в миллисекундах (требует обновления)
+#define TimeGetMcs Core_TimeTotalMcsGet								//!< возвращает общее время работы таймера в микросекундах (требует обновления)
+
+SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);					//!< возвращает общее время работы таймера в микросекундах (независимо от обновления)
+
+#define Core_TimeTotalMlsGetU(id) Core_TimeTotalMcsGetU(id)/1000	//!< возвращает общее время работы таймера в микросекундах (независимо от обновления)
+
+#define TimeGetMlsU(id) Core_TimeTotalMlsGetU(id)					//!< возвращает общее время работы таймера в миллисекундах (независимо от обновления)
+#define TimeGetMcsU Core_TimeTotalMcsGetU							//!< возвращает общее время работы таймера в микросекундах (независимо от обновления)
+
+//!@}
 
 /*! @name Режимы открытия файлов */
 //! @{

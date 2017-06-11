@@ -154,7 +154,7 @@ void PhyWorld::LoadGeom()
 	uint32_t** green_arr_index;
 	ID** green_arr_mtl;
 	int32_t* green_arr_count_index;
-	float4x4** green_arr_transform;
+	GreenDataVertex** green_arr_transform;
 	int32_t* green_arr_count_transform;
 	int32_t green_arr_count_green;
 

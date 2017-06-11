@@ -61,6 +61,11 @@ void Level::Load(const char* name)
 
 	SGCore_LoadTexLoadTextures();
 	mem_release(config);
+
+#if defined(SX_GAME)
+	SXPhysics_LoadGeom();
+#endif
+
 }
 
 void Level::Save(const char* name)

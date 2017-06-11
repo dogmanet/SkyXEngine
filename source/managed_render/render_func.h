@@ -82,6 +82,9 @@ namespace SXRenderFunc
 	void RenderParticles(DWORD timeDelta);				//!< отрисовка партиклов (эффектов)
 	void RenderPostProcess(DWORD timeDelta);			//!< отрисовка постпроцесса
 	void ShaderRegisterData();
+
+	void RenderEditorMain();	//!< рендер основных элементов для редакторов
+	void RenderEditorLE(DWORD timeDelta);		//!< рендер элементов для редактора уровней
 	/*! \name Функции обертки, для передачи графическому ядру для замены стандартных
 	@{*/
 
@@ -101,21 +104,21 @@ namespace SXRenderFunc
 	//! время задержек/ожидания выполнения некоторых функций рендера
 	namespace Delay
 	{
-		DWORD UpdateVisibleForCamera = 0;
-		DWORD UpdateVisibleForLight = 0;
-		DWORD UpdateVisibleForReflection = 0;
+		int64_t UpdateVisibleForCamera = 0;
+		int64_t UpdateVisibleForLight = 0;
+		int64_t UpdateVisibleForReflection = 0;
 
-		DWORD UpdateShadow = 0;
-		DWORD UpdateParticles = 0;
-		DWORD RenderMRT = 0;
-		DWORD ComLighting = 0;
-		DWORD PostProcess = 0;
-		DWORD ComReflection = 0;
-		DWORD GeomSortGroup = 0;
+		int64_t UpdateShadow = 0;
+		int64_t UpdateParticles = 0;
+		int64_t RenderMRT = 0;
+		int64_t ComLighting = 0;
+		int64_t PostProcess = 0;
+		int64_t ComReflection = 0;
+		int64_t GeomSortGroup = 0;
 
-		DWORD Present = 0;
+		int64_t Present = 0;
 
-		DWORD FreeVal = 0;
+		int64_t FreeVal = 0;
 	};
 };
 

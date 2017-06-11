@@ -77,18 +77,10 @@ public:
 	void SetGreenLod(ID id, int lod, const char* pathname);
 	void SetGreenNav(ID id, const char* pathname);
 
-	void GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green);
+	void GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, GreenDataVertex*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green);
 	bool GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl);
 	
 	bool TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl);
-
-	//структура трансформаций растительности
-	struct DataVertex
-	{
-		float3_t Position;	//позиция
-		float3_t TexCoord;	//x - общий масштаб,y - поворот по оси y, z -
-		float2_t SinCosRot;
-	};
 
 	//
 	struct Segment
@@ -100,7 +92,7 @@ public:
 
 		Segment* Splits[GREEN_COUNT_TYPE_SEGMENTATION]; //массив из 4 частей данного участка
 
-		DataVertex* Data;
+		GreenDataVertex* Data;
 		DWORD CountAllGreen;	//количество элементов
 
 		ISXBound* BoundVolumeSys;	//выравненный ограничивающий объем для равномерного деления
@@ -151,7 +143,7 @@ public:
 		Segment* SplitsTree;
 		Array<Segment*> SplitsArr;
 		float3 BBMax, BBMin;
-		DataVertex* AllTrans;//
+		GreenDataVertex* AllTrans;//
 		Lod* ArrLod[GREEN_COUNT_LOD];
 		ID SplitsIDs;	//общее количество сегментов/спилтов
 	};
@@ -201,7 +193,7 @@ protected:
 	void SetSplitID2(Model* model, Segment* Split, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue);
 
 	long RTCountDrawObj;
-	DataVertex* RTGPUArrVerteces;
+	GreenDataVertex* RTGPUArrVerteces;
 	D3DXMATRIX mat;
 
 	Segment** jarrsplits;

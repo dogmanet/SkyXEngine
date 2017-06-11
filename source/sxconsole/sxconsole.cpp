@@ -692,6 +692,8 @@ int main(void)
 	//strcpy(str, "Some " COLOR_RED "red " COLOR_RESET "text\n");
 	//WriteColored(str);
 
+	SetConsoleTitle(L"sxconsole");
+
 	while(1)
 	{
 		ch = (char)getch();

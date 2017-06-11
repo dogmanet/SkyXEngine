@@ -136,7 +136,7 @@ StaticGeom::IRSData::IRSData()
 StaticGeom::IRSData::~IRSData()
 {
 	queue.clear();
-	for (long i = 0; i < arr.size(); ++i)
+	for (int i = 0; i < arr.size(); ++i)
 	{
 		mem_delete(arr[i]);
 	}
@@ -2760,7 +2760,7 @@ ID StaticGeom::AddArrForCom()
 {
 	IRSData* ttmpdata = new IRSData();
 	
-	for (long i = 0; i < AllModels.size(); ++i)
+	for (int i = 0; i < AllModels.size(); ++i)
 	{
 		InfoRenderSegments* tmpirs = new InfoRenderSegments();
 		tmpirs->Count = AllModels[i]->SplitsIDsRender;
@@ -2769,8 +2769,8 @@ ID StaticGeom::AddArrForCom()
 		ttmpdata->arr.push_back(tmpirs);
 	}
 
-	long id_arr = -1;
-	for (long i = 0; i < ArrComFor.size(); ++i)
+	ID id_arr = -1;
+	for (int i = 0; i < ArrComFor.size(); ++i)
 	{
 		if (ArrComFor[i] == 0)
 		{
@@ -2814,8 +2814,11 @@ void StaticGeom::DelModelInArrCom(ID id_model)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, _VOID);
 
-	for (long i = 0; i < ArrComFor.size(); ++i)
+	for (int i = 0; i < ArrComFor.size(); ++i)
 	{
+		if (!(ArrComFor[i]))
+			continue;
+
 		mem_delete(ArrComFor[i]->arr[id_model]);
 		ArrComFor[i]->arr.erase(id_model);
 	}

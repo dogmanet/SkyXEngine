@@ -365,7 +365,7 @@ LRESULT SXParticlesEditor_Edits_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	else if (hwnd == SXParticlesEditor::EditTimeLife->GetHWND())
 	{
 		sscanf(ttext, "%d", &tlong);
-		if (tlong > 0)
+		if (tlong >= 0)
 			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TimeLife, tlong)
 		else
 		{

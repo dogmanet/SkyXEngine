@@ -372,7 +372,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 	static char FpsStr[1024];
 	static char debugstr[SXGC_STR_SIZE_DBG_MSG];
 
-	FrameCount++;
+	++FrameCount;
 	TimeElapsed += ((float)timeDelta) * 0.001f;
 
 		if(TimeElapsed >= 1.0f)
@@ -388,20 +388,20 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			sprintf(debugstr + strlen(debugstr), "Dir camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamDir.x, GData::ConstCurrCamDir.y, GData::ConstCurrCamDir.z);
 
 			sprintf(debugstr + strlen(debugstr), "\nDELAY:\n");
-			sprintf(debugstr + strlen(debugstr), "\tUpdateShadow : %.1f\n", float(SXRenderFunc::Delay::UpdateShadow) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\tRenderMRT : %.1f\n", float(SXRenderFunc::Delay::RenderMRT) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\tComLighting : %.1f\n", float(SXRenderFunc::Delay::ComLighting) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\tPostProcess : %.1f\n", float(SXRenderFunc::Delay::PostProcess) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\tComReflection : %.1f\n", float(SXRenderFunc::Delay::ComReflection) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\tGeomSortGroup : %.1f\n", float(SXRenderFunc::Delay::GeomSortGroup) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\tUpdateParticles : %.1f\n", float(SXRenderFunc::Delay::UpdateParticles) / float(FrameCount));
+			sprintf(debugstr + strlen(debugstr), "\tUpdateShadow : %.3f\n", float(SXRenderFunc::Delay::UpdateShadow) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\tRenderMRT : %.3f\n", float(SXRenderFunc::Delay::RenderMRT) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\tComLighting : %.3f\n", float(SXRenderFunc::Delay::ComLighting) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\tPostProcess : %.3f\n", float(SXRenderFunc::Delay::PostProcess) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\tComReflection : %.3f\n", float(SXRenderFunc::Delay::ComReflection) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\tGeomSortGroup : %.3f\n", float(SXRenderFunc::Delay::GeomSortGroup) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\tUpdateParticles : %.3f\n", float(SXRenderFunc::Delay::UpdateParticles) / float(FrameCount) * 0.001f);
 
 			sprintf(debugstr + strlen(debugstr), "\n\tUpdateVisibleFor\n");
-			sprintf(debugstr + strlen(debugstr), "\t\tCamera\t: %.1f\n", float(SXRenderFunc::Delay::UpdateVisibleForCamera) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\t\tLight\t: %.1f\n", float(SXRenderFunc::Delay::UpdateVisibleForLight) / float(FrameCount));
-			sprintf(debugstr + strlen(debugstr), "\t\tReflection\t: %.1f\n", float(SXRenderFunc::Delay::UpdateVisibleForReflection) / float(FrameCount));
+			sprintf(debugstr + strlen(debugstr), "\t\tCamera\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForCamera) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\t\tLight\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForLight) / float(FrameCount) * 0.001f);
+			sprintf(debugstr + strlen(debugstr), "\t\tReflection\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForReflection) / float(FrameCount) * 0.001f);
 
-			sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.1f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount));
+			sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.3f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount) * 0.001f);
 
 			sprintf(debugstr + strlen(debugstr), "\n\FreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
 #endif
@@ -629,10 +629,10 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	SXDecals_Render();
 
 #else
-	if(SML_MtlGetTypeTransparency(GData::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
+	if(SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
 		SML_MtlSetForceblyAlphaTest(true);
-	GData::SimModel->Render(timeDelta);
-	if (SML_MtlGetTypeTransparency(GData::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
+	GData::Editors::SimModel->Render(timeDelta);
+	if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
 		SML_MtlSetForceblyAlphaTest(false);
 #endif
 
@@ -1216,10 +1216,6 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
 	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
 
-	/*ArrEffects->EffectPosSet(0, &float3(GData::ConstCurrCamPos + GData::ConstCurrCamDir*2));*/
-
-	//ArrEffects->EffectDirSet(0, &GData::ConstCurrCamDir);
-
 	SPE_EffectRenderAll(timeDelta);
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
@@ -1263,7 +1259,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	/*if (!SSInput_GetKeyState(SIK_C))
 		SPP_RenderNFAA(&float3_t(1, 1, 0));*/
 
-	SPP_RenderMotionBlur(0.1, timeDelta);
+	//SPP_RenderMotionBlur(0.1, timeDelta);
 }
 
 void SXRenderFunc::ShaderRegisterData()
@@ -1416,15 +1412,15 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 		}
 	}
 #else
-	ID idmat = GData::SimModel->GetIDMtl();
+	ID idmat = GData::Editors::SimModel->GetIDMtl();
 	MtlTypeReflect typeref = SML_MtlGetTypeReflection(idmat);
 	D3DXPLANE plane;
 	float3_t center;
-	GData::SimModel->GetCenter(&center);
+	GData::Editors::SimModel->GetCenter(&center);
 
 	if (typeref == MtlTypeReflect::mtr_plane)
 	{
-		GData::SimModel->GetPlane(&plane);
+		GData::Editors::SimModel->GetPlane(&plane);
 		
 		SML_MtlRefPreRenderPlane(idmat, &plane);
 		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
@@ -1483,129 +1479,27 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 
 ////////
 
-void SXRenderFunc::MainRender(DWORD timeDelta)
+void SXRenderFunc::RenderEditorMain()
 {
-	DWORD ttime;
-	//потеряно ли устройство или произошло изменение размеров?
-	if (GData::DXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || GData::ReSize)
-	{
-		//если не свернуто окно
-		if (!IsIconic(GData::Handle3D) && ((GData::HandleParent3D != 0 && !IsIconic(GData::HandleParent3D)) || GData::HandleParent3D == 0))
-			SXRenderFunc::ComDeviceLost();	//вытаемся восстановить
-		return;
-	}
-	Core_0ConsoleUpdate();
-	//@@@
-	SSInput_Update();
-	SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
-	//@@@
-#ifndef SX_GAME
-	CameraUpdate::UpdateEditorial(timeDelta);
-#endif
-
-	SXAnim_Update();
-	SXGame_Update();
-	SXPhysics_Update();
-
-	SXAnim_Sync();
-	SXPhysics_Sync();
-	SXGame_Sync();
-
-	ttime = GetTickCount();
-	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos,2);
-	SXRenderFunc::Delay::GeomSortGroup += GetTickCount() - ttime;
-
-	if(GData::DefaultGeomIDArr < 0)
-		GData::DefaultGeomIDArr = SGeom_ModelsAddArrForCom();
-
-	if(GData::DefaultGreenIDArr < 0)
-		GData::DefaultGreenIDArr = SGeom_GreenAddArrForCom();
-
-	if(GData::DefaultAnimIDArr < 0)
-		GData::DefaultAnimIDArr = SXAnim_ModelsAddArrForCom();
-
-	/**/
-	if (SGeom_GreenGetOccurencessLeafGrass(&float3(GData::ConstCurrCamPos - float3(0.25, 1.8, 0.25)), &float3(GData::ConstCurrCamPos + float3(0.25, 0, 0.25)),MtlPhysicType::mpt_leaf_grass))
-		SXRenderFunc::Delay::FreeVal = 1;
-	else
-		SXRenderFunc::Delay::FreeVal = 0;
-	/**/
-
-	//@@@
-	SXRenderFunc::UpdateView();
-	SML_Update(timeDelta, &GData::WinSize, &GData::NearFar, &GData::ConstCurrCamPos,&GData::MCamView, GData::ProjFov);
-	
-	GData::DXDevice->BeginScene();
-
-	ttime = GetTickCount();
-	UpdateReflection(timeDelta);
-	SXRenderFunc::Delay::ComReflection += GetTickCount() - ttime;
-
-	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
-	{
-		//рендерим глубину от света
-		ttime = GetTickCount();
-		UpdateShadow(timeDelta);
-		SXRenderFunc::Delay::UpdateShadow += GetTickCount() - ttime;
-	}
-
-	//рисуем сцену и заполняем mrt данными
-	ttime = GetTickCount();
-	RenderInMRT(timeDelta);
-	SXRenderFunc::Delay::RenderMRT += GetTickCount() - ttime;
-	
-	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
-	{
-		//освещаем сцену
-		ttime = GetTickCount();
-		ComLighting(timeDelta, true);
-		SXRenderFunc::Delay::ComLighting += GetTickCount() - ttime;
-	}
-
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-#if defined(SX_GAME)
-	ttime = GetTickCount();
-	RenderPostProcess(timeDelta);
-	SXRenderFunc::Delay::PostProcess += GetTickCount() - ttime;
-#endif
-
-	//GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 128, 128, 128), 1.0f, 0);
-
-	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
-
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
 #if !defined(SX_GAME)
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(GData::FinalImage));
-#else
-	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
-#endif
-
-	SGCore_ScreenQuadDraw();
-
-	SGCore_ShaderUnBind();
-
-	SXRenderFunc::RenderParticles(timeDelta);
-
-#if !defined(SX_GAME)
-	if (GData::ObjGrid && GData::Editors::RenderGrid)
+	if (GData::Editors::ObjGrid && GData::Editors::RenderGrid)
 	{
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::ObjGrid->Render();
+		GData::Editors::ObjGrid->Render();
 	}
 
-	if (GData::ObjAxesStatic && GData::Editors::RenderAxesStatic)
+	if (GData::Editors::ObjAxesStatic && GData::Editors::RenderAxesStatic)
 	{
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::ObjAxesStatic->Render();
+		GData::Editors::ObjAxesStatic->Render();
 	}
 #endif
-	
+}
+
+void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
+{
 #if defined(SX_LEVEL_EDITOR)
 	if (GData::Editors::SelSelection)
 	{
@@ -1614,7 +1508,7 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		}
-		else 
+		else
 		{
 			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
@@ -1661,8 +1555,8 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			}
 		}
 
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
 		if (GData::Editors::SelMesh)
 			GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
@@ -1671,64 +1565,9 @@ void SXRenderFunc::MainRender(DWORD timeDelta)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 #endif
-
-	SXRenderFunc::OutputDebugInfo(timeDelta);
-
-	SXPhysics_DebugRender();
-	//SXGame_EditorRender();
-
-	/*if (SSInput_GetKeyEvents(SIK_ENTER) == InputEvents::iv_k_first)
-	{
-		float3 start = GData::ConstCurrCamPos;
-		float3 end = start + (GData::ConstCurrCamDir * 1000);
-		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
-
-		if (cb.hasHit())
-		{
-			//shoot decal
-			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
-		}
-	}*/
-
-	
-
-	SXRenderFunc::ShaderRegisterData();
-	
-	GData::DXDevice->EndScene();
-
-	//@@@
-	ttime = GetTickCount();
-	SXRenderFunc::ComVisibleForCamera();
-	SXRenderFunc::Delay::UpdateVisibleForCamera += GetTickCount() - ttime;
-
-	ttime = GetTickCount();
-	SXRenderFunc::ComVisibleReflection();
-	SXRenderFunc::Delay::UpdateVisibleForReflection += GetTickCount() - ttime;
-
-	ttime = GetTickCount();
-	SXRenderFunc::ComVisibleForLight();
-	SXRenderFunc::Delay::UpdateVisibleForLight += GetTickCount() - ttime;
-
-	ttime = GetTickCount();
-	SPE_EffectVisibleComAll(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
-	SPE_EffectComputeAll();
-	SPE_EffectComputeLightingAll();
-	SXRenderFunc::Delay::UpdateParticles += GetTickCount() - ttime;
-
-	ttime = GetTickCount();
-	GData::DXDevice->Present(0, 0, 0, 0);
-	SXRenderFunc::Delay::Present += GetTickCount() - ttime;
-
-#if defined(SX_LEVEL_EDITOR)
-	GData::Editors::LevelEditorUpdateStatusBar();
-#endif
-
-#if defined(SX_PARTICLES_EDITOR)
-	GData::Editors::ParticlesEditorUpdateStatusBar();
-#endif
 }
 
+///////
 
 void SXRenderFunc::RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {

@@ -22,9 +22,9 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (def_str_validate(tmppath))
 		{
 			StrCutName(tmppath, tmpname);
-			SML_MtlReloadMaterial(GData::SimModel->GetIDMtl(), tmpname);
+			SML_MtlReloadMaterial(GData::Editors::SimModel->GetIDMtl(), tmpname);
 			SGCore_LoadTexLoadTextures();
-			SXMaterialEditor::InitMtl(GData::SimModel->GetIDMtl());
+			SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
 		}
 
 	}
@@ -208,12 +208,12 @@ LRESULT SXMaterialEditor_JobWindow_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		HWND handle_elem = (HWND)(lParam);
 		if (SXMaterialEditor::ComboBoxTypeModel->GetHWND() == handle_elem)
 		{
-			GData::SimModel->TypeModel = (MtlTypeModel)SXMaterialEditor::ComboBoxTypeModel->GetSel();
-			SML_MtlSetTypeModel(GData::SimModel->GetIDMtl(), (MtlTypeModel)SXMaterialEditor::ComboBoxTypeModel->GetSel());
+			GData::Editors::SimModel->TypeModel = (MtlTypeModel)SXMaterialEditor::ComboBoxTypeModel->GetSel();
+			SML_MtlSetTypeModel(GData::Editors::SimModel->GetIDMtl(), (MtlTypeModel)SXMaterialEditor::ComboBoxTypeModel->GetSel());
 		}
 		else if (SXMaterialEditor::ComboBoxTestModel->GetHWND() == handle_elem)
 		{
-			GData::SimModel->CurrRenderModel = SXMaterialEditor::ComboBoxTestModel->GetSel();
+			GData::Editors::SimModel->CurrRenderModel = SXMaterialEditor::ComboBoxTestModel->GetSel();
 		}
 		else if (SXMaterialEditor::ComboBoxTypeRefract->GetHWND() == handle_elem)
 		{
@@ -324,124 +324,124 @@ void SXMaterialEditor::Nulling()
 
 void SXMaterialEditor::InitMtl(ID id)
 {
-	GData::SimModel->TypeModel = SML_MtlGetTypeModel(id);
+	GData::Editors::SimModel->TypeModel = SML_MtlGetTypeModel(id);
 	SXMaterialEditor::ComboBoxTypeModel->SetSel(SML_MtlGetTypeModel(id));
 	SXMaterialEditor::ComboBoxTestModel;
 
-	SXMaterialEditor::ComboBoxPhysic->SetSel(SML_MtlGetPhysicMaterial(GData::SimModel->GetIDMtl()));
+	SXMaterialEditor::ComboBoxPhysic->SetSel(SML_MtlGetPhysicMaterial(GData::Editors::SimModel->GetIDMtl()));
 
 	char tmppath[1024];
-	SML_MtlGetTexture(GData::SimModel->GetIDMtl(), tmppath);
+	SML_MtlGetTexture(GData::Editors::SimModel->GetIDMtl(), tmppath);
 	SXMaterialEditor::EditTex->SetText(tmppath);
-	SML_MtlGetVS(GData::SimModel->GetIDMtl(), tmppath);
+	SML_MtlGetVS(GData::Editors::SimModel->GetIDMtl(), tmppath);
 	SXMaterialEditor::EditVS->SetText(tmppath);
-	SML_MtlGetPS(GData::SimModel->GetIDMtl(), tmppath);
+	SML_MtlGetPS(GData::Editors::SimModel->GetIDMtl(), tmppath);
 	SXMaterialEditor::EditPS->SetText(tmppath);
 
-	SXMaterialEditor::CheckBoxAlphaTest->SetCheck(SML_MtlGetUsingAlphaTest(GData::SimModel->GetIDMtl()));
+	SXMaterialEditor::CheckBoxAlphaTest->SetCheck(SML_MtlGetUsingAlphaTest(GData::Editors::SimModel->GetIDMtl()));
 
-	SXMaterialEditor::EditRoughness->SetText(String(SML_MtlGetRoughness(GData::SimModel->GetIDMtl())).c_str());
-	SXMaterialEditor::EditThickness->SetText(String(SML_MtlGetThickness(GData::SimModel->GetIDMtl())).c_str());
-	SXMaterialEditor::EditF0->SetText(String(SML_MtlGetF0(GData::SimModel->GetIDMtl())).c_str());
-	SXMaterialEditor::EditPenetration->SetText(String(SML_MtlGetPenetration(GData::SimModel->GetIDMtl())).c_str());
+	SXMaterialEditor::EditRoughness->SetText(String(SML_MtlGetRoughness(GData::Editors::SimModel->GetIDMtl())).c_str());
+	SXMaterialEditor::EditThickness->SetText(String(SML_MtlGetThickness(GData::Editors::SimModel->GetIDMtl())).c_str());
+	SXMaterialEditor::EditF0->SetText(String(SML_MtlGetF0(GData::Editors::SimModel->GetIDMtl())).c_str());
+	SXMaterialEditor::EditPenetration->SetText(String(SML_MtlGetPenetration(GData::Editors::SimModel->GetIDMtl())).c_str());
 	
-	SXMaterialEditor::CheckBoxLighting->SetCheck(SML_MtlGetLighting(GData::SimModel->GetIDMtl()));
+	SXMaterialEditor::CheckBoxLighting->SetCheck(SML_MtlGetLighting(GData::Editors::SimModel->GetIDMtl()));
 
-	SXMaterialEditor::TrackBarRoughness->SetPos(SML_MtlGetRoughness(GData::SimModel->GetIDMtl())*100.f);
-	SXMaterialEditor::TrackBarThickness->SetPos(SML_MtlGetThickness(GData::SimModel->GetIDMtl())*100.f);
-	SXMaterialEditor::TrackBarF0->SetPos(SML_MtlGetF0(GData::SimModel->GetIDMtl()) * 100.f);
-	SXMaterialEditor::TrackBarPenetration->SetPos(SML_MtlGetPenetration(GData::SimModel->GetIDMtl()) * 100.f);
+	SXMaterialEditor::TrackBarRoughness->SetPos(SML_MtlGetRoughness(GData::Editors::SimModel->GetIDMtl())*100.f);
+	SXMaterialEditor::TrackBarThickness->SetPos(SML_MtlGetThickness(GData::Editors::SimModel->GetIDMtl())*100.f);
+	SXMaterialEditor::TrackBarF0->SetPos(SML_MtlGetF0(GData::Editors::SimModel->GetIDMtl()) * 100.f);
+	SXMaterialEditor::TrackBarPenetration->SetPos(SML_MtlGetPenetration(GData::Editors::SimModel->GetIDMtl()) * 100.f);
 
-	SML_MtlGetTextureLighting(GData::SimModel->GetIDMtl(), tmppath);
+	SML_MtlGetTextureLighting(GData::Editors::SimModel->GetIDMtl(), tmppath);
 	SXMaterialEditor::EditTexLighting->SetText(tmppath);
-	SXMaterialEditor::CheckBoxTexLighting->SetCheck(SML_MtlGetIsTextureLighting(GData::SimModel->GetIDMtl()));
+	SXMaterialEditor::CheckBoxTexLighting->SetCheck(SML_MtlGetIsTextureLighting(GData::Editors::SimModel->GetIDMtl()));
 	
-	SXMaterialEditor::ComboBoxTypeRefract->SetSel(SML_MtlGetTypeTransparency(GData::SimModel->GetIDMtl()));
-	SXMaterialEditor::ComboBoxTypeReflect->SetSel(SML_MtlGetTypeReflection(GData::SimModel->GetIDMtl()));
+	SXMaterialEditor::ComboBoxTypeRefract->SetSel(SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()));
+	SXMaterialEditor::ComboBoxTypeReflect->SetSel(SML_MtlGetTypeReflection(GData::Editors::SimModel->GetIDMtl()));
 
 	SXMaterialEditor::ComboBoxPhysic->SetSel(0);
 
-	SML_MtlGetMaskTex(GData::SimModel->GetIDMtl(), tmppath);
+	SML_MtlGetMaskTex(GData::Editors::SimModel->GetIDMtl(), tmppath);
 	SXMaterialEditor::EditMask->SetText(tmppath);
 
-	SML_MtlGetMRTex(GData::SimModel->GetIDMtl(), 0, tmppath);
+	SML_MtlGetMRTex(GData::Editors::SimModel->GetIDMtl(), 0, tmppath);
 	SXMaterialEditor::EditMR->SetText(tmppath);
-	SML_MtlGetMRTex(GData::SimModel->GetIDMtl(), 1, tmppath);
+	SML_MtlGetMRTex(GData::Editors::SimModel->GetIDMtl(), 1, tmppath);
 	SXMaterialEditor::EditMG->SetText(tmppath);
-	SML_MtlGetMRTex(GData::SimModel->GetIDMtl(), 2, tmppath);
+	SML_MtlGetMRTex(GData::Editors::SimModel->GetIDMtl(), 2, tmppath);
 	SXMaterialEditor::EditMB->SetText(tmppath);
-	SML_MtlGetMRTex(GData::SimModel->GetIDMtl(), 3, tmppath);
+	SML_MtlGetMRTex(GData::Editors::SimModel->GetIDMtl(), 3, tmppath);
 	SXMaterialEditor::EditMA->SetText(tmppath);
 
-	SML_MtlGetDTex(GData::SimModel->GetIDMtl(), 0, tmppath);
+	SML_MtlGetDTex(GData::Editors::SimModel->GetIDMtl(), 0, tmppath);
 	SXMaterialEditor::EditDR->SetText(tmppath);
-	SML_MtlGetDTex(GData::SimModel->GetIDMtl(), 1, tmppath);
+	SML_MtlGetDTex(GData::Editors::SimModel->GetIDMtl(), 1, tmppath);
 	SXMaterialEditor::EditDG->SetText(tmppath);
-	SML_MtlGetDTex(GData::SimModel->GetIDMtl(), 2, tmppath);
+	SML_MtlGetDTex(GData::Editors::SimModel->GetIDMtl(), 2, tmppath);
 	SXMaterialEditor::EditDB->SetText(tmppath);
-	SML_MtlGetDTex(GData::SimModel->GetIDMtl(), 3, tmppath);
+	SML_MtlGetDTex(GData::Editors::SimModel->GetIDMtl(), 3, tmppath);
 	SXMaterialEditor::EditDA->SetText(tmppath);
 
-	SXMaterialEditor::CheckBoxDoSWVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_mat_w));
-	SXMaterialEditor::CheckBoxDoSWPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_mat_w));
+	SXMaterialEditor::CheckBoxDoSWVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_w));
+	SXMaterialEditor::CheckBoxDoSWPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_w));
 
-	SXMaterialEditor::CheckBoxDoSVVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_mat_v));
-	SXMaterialEditor::CheckBoxDoSVPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_mat_v));
+	SXMaterialEditor::CheckBoxDoSVVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_v));
+	SXMaterialEditor::CheckBoxDoSVPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_v));
 
-	SXMaterialEditor::CheckBoxDoSPVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_mat_p));
-	SXMaterialEditor::CheckBoxDoSPPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_mat_p));
+	SXMaterialEditor::CheckBoxDoSPVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_p));
+	SXMaterialEditor::CheckBoxDoSPPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_p));
 
-	SXMaterialEditor::CheckBoxDoSWVVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_mat_wv));
-	SXMaterialEditor::CheckBoxDoSWVPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_mat_wv));
+	SXMaterialEditor::CheckBoxDoSWVVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_wv));
+	SXMaterialEditor::CheckBoxDoSWVPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_wv));
 
-	SXMaterialEditor::CheckBoxDoSCamposVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_campos));
-	SXMaterialEditor::CheckBoxDoSCamposPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_campos));
+	SXMaterialEditor::CheckBoxDoSCamposVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_campos));
+	SXMaterialEditor::CheckBoxDoSCamposPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_campos));
 
-	SXMaterialEditor::CheckBoxDoSTimeDeltaVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_timedelta));
-	SXMaterialEditor::CheckBoxDoSTimeDeltaPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_timedelta));
+	SXMaterialEditor::CheckBoxDoSTimeDeltaVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_timedelta));
+	SXMaterialEditor::CheckBoxDoSTimeDeltaPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_timedelta));
 
-	SXMaterialEditor::CheckBoxDoSWVPVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_mat_wvp));
-	SXMaterialEditor::CheckBoxDoSWVPPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_mat_wvp));
+	SXMaterialEditor::CheckBoxDoSWVPVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_wvp));
+	SXMaterialEditor::CheckBoxDoSWVPPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_mat_wvp));
 
-	SXMaterialEditor::CheckBoxDoSWinSizeVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_winsize));
-	SXMaterialEditor::CheckBoxDoSWinSizePS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_winsize));
+	SXMaterialEditor::CheckBoxDoSWinSizeVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_winsize));
+	SXMaterialEditor::CheckBoxDoSWinSizePS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_winsize));
 
-	SXMaterialEditor::CheckBoxUDVS->SetCheck(SML_MtlGetSTDVS(GData::SimModel->GetIDMtl(), mtss_ud));
-	SXMaterialEditor::CheckBoxUDPS->SetCheck(SML_MtlGetSTDPS(GData::SimModel->GetIDMtl(), mtss_ud));
+	SXMaterialEditor::CheckBoxUDVS->SetCheck(SML_MtlGetSTDVS(GData::Editors::SimModel->GetIDMtl(), mtss_ud));
+	SXMaterialEditor::CheckBoxUDPS->SetCheck(SML_MtlGetSTDPS(GData::Editors::SimModel->GetIDMtl(), mtss_ud));
 
 	//
 
 	//
 	SXMaterialEditor::CheckBoxUDVSInPS->SetCheck(false);
 
-	SXMaterialEditor::TrackBarUDVSX->SetPos(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 0) * 100.f);
-	SXMaterialEditor::EditUDVSX->SetText(String(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(),0)).c_str());
+	SXMaterialEditor::TrackBarUDVSX->SetPos(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 0) * 100.f);
+	SXMaterialEditor::EditUDVSX->SetText(String(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 0)).c_str());
 
-	SXMaterialEditor::TrackBarUDVSY->SetPos(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 1) * 100.f);
-	SXMaterialEditor::EditUDVSY->SetText(String(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 1)).c_str());
+	SXMaterialEditor::TrackBarUDVSY->SetPos(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 1) * 100.f);
+	SXMaterialEditor::EditUDVSY->SetText(String(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 1)).c_str());
 	
-	SXMaterialEditor::TrackBarUDVSZ->SetPos(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 2) * 100.f);
-	SXMaterialEditor::EditUDVSZ->SetText(String(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 2)).c_str());
+	SXMaterialEditor::TrackBarUDVSZ->SetPos(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 2) * 100.f);
+	SXMaterialEditor::EditUDVSZ->SetText(String(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 2)).c_str());
 	
-	SXMaterialEditor::TrackBarUDVSW->SetPos(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 3) * 100.f);
-	SXMaterialEditor::EditUDVSW->SetText(String(SML_MtlGetUDVS(GData::SimModel->GetIDMtl(), 3)).c_str());
+	SXMaterialEditor::TrackBarUDVSW->SetPos(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 3) * 100.f);
+	SXMaterialEditor::EditUDVSW->SetText(String(SML_MtlGetUDVS(GData::Editors::SimModel->GetIDMtl(), 3)).c_str());
 	
 	SXMaterialEditor::CheckBoxUDPSInVS->SetCheck(false);
 
-	SXMaterialEditor::TrackBarUDPSX->SetPos(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 0) * 100.f);
-	SXMaterialEditor::EditUDPSX->SetText(String(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 0)).c_str());
+	SXMaterialEditor::TrackBarUDPSX->SetPos(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 0) * 100.f);
+	SXMaterialEditor::EditUDPSX->SetText(String(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 0)).c_str());
 
-	SXMaterialEditor::TrackBarUDPSY->SetPos(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 1) * 100.f);
-	SXMaterialEditor::EditUDPSY->SetText(String(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 1)).c_str());
+	SXMaterialEditor::TrackBarUDPSY->SetPos(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 1) * 100.f);
+	SXMaterialEditor::EditUDPSY->SetText(String(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 1)).c_str());
 	
-	SXMaterialEditor::TrackBarUDPSZ->SetPos(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 2) * 100.f);
-	SXMaterialEditor::EditUDPSZ->SetText(String(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 2)).c_str());
+	SXMaterialEditor::TrackBarUDPSZ->SetPos(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 2) * 100.f);
+	SXMaterialEditor::EditUDPSZ->SetText(String(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 2)).c_str());
 	
-	SXMaterialEditor::TrackBarUDPSW->SetPos(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 3) * 100.f);
-	SXMaterialEditor::EditUDPSW->SetText(String(SML_MtlGetUDPS(GData::SimModel->GetIDMtl(), 3)).c_str());
+	SXMaterialEditor::TrackBarUDPSW->SetPos(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 3) * 100.f);
+	SXMaterialEditor::EditUDPSW->SetText(String(SML_MtlGetUDPS(GData::Editors::SimModel->GetIDMtl(), 3)).c_str());
 
-	SXMaterialEditor::CheckBoxUDPSInVS->SetCheck(SML_MtlGetUDPS_InVS(GData::SimModel->GetIDMtl()));
-	SXMaterialEditor::CheckBoxUDVSInPS->SetCheck(SML_MtlGetUDVS_InPS(GData::SimModel->GetIDMtl()));
+	SXMaterialEditor::CheckBoxUDPSInVS->SetCheck(SML_MtlGetUDPS_InVS(GData::Editors::SimModel->GetIDMtl()));
+	SXMaterialEditor::CheckBoxUDVSInPS->SetCheck(SML_MtlGetUDVS_InPS(GData::Editors::SimModel->GetIDMtl()));
 }
 
 void SXMaterialEditor::FinalImageUncheckedMenu()

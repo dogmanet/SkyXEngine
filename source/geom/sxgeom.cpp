@@ -536,13 +536,13 @@ void SGeom_GreenMSetNav(ID id, const char* pathname)
 }
 
 
-void SGeom_GreenGetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, float4x4*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
+void SGeom_GreenGetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, GreenDataVertex*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green)
 {
 	GEOM_PRECOND(_VOID);
 	GreenObj->GetNavMeshAndTransform(arr_vertex, arr_count_vertex, arr_index, arr_mtl, arr_count_index, arr_transform, arr_count_transform, arr_count_green);
 }
 
-void SGeom_GreenClearNavMeshAndTransform(float3_t** arr_vertex, int32_t* arr_count_vertex, uint32_t** arr_index, ID** arr_mtl, int32_t* arr_count_index, float4x4** arr_transform, int32_t* arr_count_transform, int32_t arr_count_green)
+void SGeom_GreenClearNavMeshAndTransform(float3_t** arr_vertex, int32_t* arr_count_vertex, uint32_t** arr_index, ID** arr_mtl, int32_t* arr_count_index, GreenDataVertex** arr_transform, int32_t* arr_count_transform, int32_t arr_count_green)
 {
 	GEOM_PRECOND(_VOID);
 	

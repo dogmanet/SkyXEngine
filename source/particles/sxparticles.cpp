@@ -1,6 +1,6 @@
 
 #include <particles/sxparticles.h>
-
+#include <cdata.h>
 #define SXPARTICLES_VERSION 1
 
 #if !defined(DEF_STD_REPORT)
@@ -38,6 +38,9 @@ namespace PESet
 
 void PESet::Init(IDirect3DDevice9* device)
 {
+	G_Timer_Render_Scene = Core_RIntGet(G_RI_INT_TIMER_RENDER);
+	G_Timer_Game = Core_RIntGet(G_RI_INT_TIMER_GAME);
+
 	PESet::DXDevice = device;
 
 	D3DVERTEXELEMENT9 InstanceParticles[] =

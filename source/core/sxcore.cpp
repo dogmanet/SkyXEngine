@@ -21,7 +21,7 @@ See the license in LICENSE
 #include <core/concmd.cpp>
 #include <core/cvars.cpp>
 
-#pragma comment(lib, "winmm.lib")
+#include <core/time.cpp>
 
 char CoreName[CORE_NAME_MAX_LEN];
 
@@ -44,6 +44,9 @@ float3 GRegistersFloat3[CORE_REGISTRY_SIZE];
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
 {reportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
 
+
+TimeManager* Timers = 0;
+#define CORE_TIME_PRECOND(retval) if(!Timers){reportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
 
 //функции обертки
 long Core_0GetVersion()
@@ -127,6 +130,7 @@ void Core_0Create(const char* name, bool is_unic)
 			ConsoleConnect();
 			ConsoleRegisterCmds();
 			TaskManager = new SXTaskManager();
+			Timers = new TimeManager();
 		}
 		else
 			reportf(-1, "%s - not init argument [name], sgcore", gen_msg_location);
@@ -266,4 +270,88 @@ void Core_RFloat3Get(int id, float3* val)
 
 	if (val)
 		memcpy(val, &GRegistersFloat3[id], sizeof(float3));
+}
+
+////
+
+
+ID Core_TimeAdd()
+{
+	CORE_TIME_PRECOND(-1);
+
+	return Timers->TimeAdd();
+}
+
+void Core_TimesUpdate()
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	Timers->Update();
+}
+
+
+void Core_TimeSpeedSet(ID id, float speed)
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	Timers->TimeSpeedSet(id, speed);
+}
+
+float Core_TimeSpeedGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return Timers->TimeSpeedGet(id);
+}
+
+
+void Core_TimeWorkingSet(ID id, bool working)
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	Timers->TimeWorkingSet(id, working);
+}
+
+bool Core_TimeWorkingGet(ID id)
+{
+	CORE_TIME_PRECOND(false);
+
+	return Timers->TimeWorkingGet(id);
+}
+
+
+void Core_TimeUnixStartSet(ID id, int64_t start_time)
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	Timers->TimeUnixStartSet(id, start_time);
+}
+
+int64_t Core_TimeUnixStartGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return Timers->TimeUnixStartGet(id);
+}
+
+int64_t Core_TimeUnixCurrGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return Timers->TimeUnixCurrGet(id);
+}
+
+
+int64_t Core_TimeTotalMcsGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return Timers->TimeTotalMcsGet(id);
+}
+
+int64_t Core_TimeTotalMcsGetU(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return Timers->TimeTotalMcsGetU(id);
 }

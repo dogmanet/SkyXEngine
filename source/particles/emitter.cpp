@@ -246,7 +246,7 @@ void Emitter::EnableSet(bool enable)
 		CreateParticles();
 
 	Alife = enable;
-
+	OldTime = TimeGetMls(G_Timer_Render_Scene);
 	Enable = enable;
 
 	if (!Enable)
@@ -386,7 +386,7 @@ void Emitter::CreateParticles()
 			CountReCreate2 = 0;
 			i = Count;
 			if (Data.SpawnNextTime)
-				TimeNextSpawnParticle = GetTickCount() + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
+				TimeNextSpawnParticle = TimeGetMls(G_Timer_Render_Scene) + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
 		}
 	}
 
@@ -722,7 +722,7 @@ void Emitter::Compute()
 	CountReCreate2 = 0;
 	if (Alife && OldTime > 0 && Data.ReCreateCount > 0 && Data.ReCreateCount <= Count - CountLifeParticle)
 	{
-		if (GetTickCount() > TimeNextSpawnParticle)
+		if (TimeGetMls(G_Timer_Render_Scene) > TimeNextSpawnParticle)
 		{
 			for (int i = 0; i<Count; i++)
 			{
@@ -736,7 +736,7 @@ void Emitter::Compute()
 					CountReCreate2 = 0;
 					i = Count;
 					if (Data.SpawnNextTime)
-						TimeNextSpawnParticle = GetTickCount() + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
+						TimeNextSpawnParticle = TimeGetMls(G_Timer_Render_Scene) + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
 				}
 			}
 		}
@@ -746,11 +746,11 @@ void Emitter::Compute()
 	{
 		TimeNextSpawnParticle = 0;
 		if (TimerDeath == 0)
-			TimerDeath = GetTickCount();
+			TimerDeath = TimeGetMls(G_Timer_Render_Scene);
 		else
 		{
-			GTransparency = 1.f - float(GetTickCount() - TimerDeath) / float(SXPARTICLES_DEADTH_TIME);
-			if (GetTickCount() - TimerDeath > SXPARTICLES_DEADTH_TIME)
+			GTransparency = 1.f - float(TimeGetMls(G_Timer_Render_Scene) - TimerDeath) / float(SXPARTICLES_DEADTH_TIME);
+			if (TimeGetMls(G_Timer_Render_Scene) - TimerDeath > SXPARTICLES_DEADTH_TIME)
 			{
 				Enable = false;
 				GTransparency = 1.f;
@@ -765,7 +765,7 @@ void Emitter::Compute()
 	}
 
 
-	DWORD tmptime = GetTickCount();
+	DWORD tmptime = TimeGetMls(G_Timer_Render_Scene);
 	CountLifeParticle = 0;
 
 	for (int i = 0; i<Count && OldTime != 0; i++)

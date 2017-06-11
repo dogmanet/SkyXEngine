@@ -43,6 +43,7 @@ See the license in LICENSE
 #define EDITORS_LEVEL_STATUSBAR_GREEN_POLY "Green poly: "
 #define EDITORS_LEVEL_STATUSBAR_LIGHT_COUNT "Count light: "
 
+//! цвет очистки цветового буфера сцены по умолчанию
 #define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
 
 //! пространство имен для хранения данных цикла рендера
@@ -65,7 +66,7 @@ namespace GData
 	float2_t WinSize = float2_t(800, 600);	//!< размер окна рендера (области рендера)
 	bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
 
-	ModelSim* SimModel = 0;		//!< указатель симуляционной модели
+	
 	DS_RT FinalImage = DS_RT::ds_rt_scene_light_com;//!< финальное изображение
 	ISXCamera* ObjCamera = 0;	//!< камера для которой будет рендер
 	ID IDSelectTex = -1;
@@ -151,19 +152,20 @@ namespace GData
 		};
 	};
 
-	Grid* ObjGrid = 0;
-	AxesStatic* ObjAxesStatic = 0;
-	ID3DXMesh* FigureBox;
-	ID3DXMesh* FigureSphere;
-	ID3DXMesh* FigureCone;
-	float3_t FigureConeParam;
-	float3 FigureConePos;
-
 #if !defined(SX_GAME)
 	namespace Editors
 	{
-		bool RenderGrid = false;
-		bool RenderAxesStatic = false;
+		ModelSim* SimModel = 0;			//!< указатель симуляционной модели
+		Grid* ObjGrid = 0;				//!< сетка дял редакторов
+		AxesStatic* ObjAxesStatic = 0;	//!< рендер статический осей в центре координат
+		ID3DXMesh* FigureBox;			//!< бокс для определения ограничивающего объема для эммитера партиклов
+		ID3DXMesh* FigureSphere;		//!< сфера для определения ограничивающего объема для эммитера партиклов
+		ID3DXMesh* FigureCone;			//!< конус для определения ограничивающего объема для эммитера партиклов
+		float3_t FigureConeParam;		//!< параметры для FigureCone (x - верхний радиус, y - нижний радиус, z - высота)
+		float3 FigureConePos;			//!< позиция для FigureCone
+
+		bool RenderGrid = false;		//!< рисовать ли #ObjGrid
+		bool RenderAxesStatic = false;	//!< рисовать ли #ObjAxesStatic
 #if defined(SX_LEVEL_EDITOR)
 		int ActiveGroupType = 0;
 		ID ActiveGreenSplit = -1;

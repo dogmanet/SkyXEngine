@@ -30,7 +30,7 @@ See the license in LICENSE
 #define G_RI_BOOL_RENDER_WINDOWED	1	/*!< оконный рендер - true, полноэкранный - false */
 //! @}
 
-/*! @name float3 register */
+/*! @name float register */
 //! @{
 #define G_RI_FLOAT_OBSERVER_NEAR		0	/*!< ближняя плоскость отсечения наблюдателя */
 #define G_RI_FLOAT_OBSERVER_FAR			1	/*!< дальняя плоскость отсечения наблюдателя или дальность видимости */
@@ -53,6 +53,9 @@ See the license in LICENSE
 #define G_RI_INT_COUNT_DIP		1	/*!< количество вызовов draw indexed primitive */
 #define G_RI_INT_CURRIDLIGHT	2	/*!< текущий идентификатор источнкиа света */
 #define G_RI_INT_RENDERSTATE	3	/*!< текущее состояние рендера */
+
+#define G_RI_INT_TIMER_RENDER	4	/*!< время для рендера */
+#define G_RI_INT_TIMER_GAME		5	/*!< время для игры */
 //! @}
 
 #endif

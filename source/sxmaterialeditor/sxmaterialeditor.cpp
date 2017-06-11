@@ -39,11 +39,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		
 	GData::ObjCamera->SetPosition(&float3(0, 0, -1.2*100));
 
-	GData::SimModel = new ModelSim();
+	GData::Editors::SimModel = new ModelSim();
 
-	GData::SimModel->Add("sphere.dse");
-	GData::SimModel->Add("cube.dse");
-	GData::SimModel->Add("plane.dse");
+	GData::Editors::SimModel->Add("sphere.dse");
+	GData::Editors::SimModel->Add("cube.dse");
+	GData::Editors::SimModel->Add("plane.dse");
 
 	SML_LigthsCreatePoint(
 		&float3(10,300,0),
@@ -66,8 +66,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	static DWORD lastTime = GetTickCount();
 	static DWORD TimeCCadr = 0;
 
-	SXMaterialEditor::InitMtl(GData::SimModel->GetIDMtl());
-	SXMaterialEditor::IDMat = GData::SimModel->GetIDMtl();
+	SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
+	SXMaterialEditor::IDMat = GData::Editors::SimModel->GetIDMtl();
 
 	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
 	{
@@ -94,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 			SGCore_LoadTexLoadTextures();
 			if (SXMaterialEditor::CheckBoxModelRot->GetCheck())
-				GData::SimModel->Rotation.y -= float(timeDelta) * 0.001f * 0.25;
+				GData::Editors::SimModel->Rotation.y -= float(timeDelta) * 0.001f * 0.25;
 			SXRenderFunc::MainRender(timeDelta);
 
 			TimeCCadr = timeDelta;
@@ -104,7 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 
-	mem_delete(GData::SimModel);
+	mem_delete(GData::Editors::SimModel);
 	SXMaterialEditor::DeleteAllElements();
 
 	SkyXEngine_Kill();

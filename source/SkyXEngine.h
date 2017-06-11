@@ -4,7 +4,6 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-
 /*! 
 \file
 Заголовочный файл движка SkyXEngine, подключает все необходимые библиотеки
@@ -186,9 +185,12 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>
+#include <cdata.h>
 #include <common\\array.h>
 #include <common\\string.cpp>
 
+//ЗАГРУЗКА БИБЛИОТЕК
+//{
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
 #else
@@ -223,7 +225,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #pragma comment(lib, "sxgeom.lib")
 #endif
 #include <geom\\sxgeom.h>
-
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtllight_d.lib")
@@ -283,6 +284,8 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <sxguiwinapi\\sxgui.h>
 #endif
 
+//}
+
 #include <managed_render\\gdata.h>
 #include <common\\string_api.cpp>
 #include <managed_render\\camera_update.h>
@@ -311,19 +314,37 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <managed_render\\level.cpp>
 
 
-
+//!< инициализация движка
 void SkyXEngine_Init()
 {
+	srand((UINT)time(0));
+	InitOutLog();
 	GData::Pathes::InitAllPathes();
 	if (!Core_0IsProcessRun("sxconsole.exe"))
 		ShellExecute(NULL, "open", "sxconsole.exe", NULL, GData::Pathes::ForExe, SW_SHOWNORMAL);
 
 	SetConsoleTitle("sxconsole");
+
+#if defined(SX_GAME)
+	GData::InitWin("SkyXEngine", "SkyXEngine");
+#endif
+
 	SSInput_0Create("sxinput", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
 
 	Core_0Create("sxcore", true);
 	Core_SetOutPtr();
+
+	G_Timer_Render_Scene = Core_TimeAdd();
+	G_Timer_Game = Core_TimeAdd();
+	Core_RIntSet(G_RI_INT_TIMER_RENDER, G_Timer_Render_Scene);
+	Core_RIntSet(G_RI_INT_TIMER_GAME, G_Timer_Game);
+
+	tm ct = {0,0,9,27,5,2030-1900,0,0,0};
+	Core_TimeUnixStartSet(G_Timer_Game, mktime(&ct));
+	
+	Core_TimeWorkingSet(G_Timer_Render_Scene, true);
+	Core_TimeWorkingSet(G_Timer_Game, true);
 
 	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds,false);
 	SSCore_Dbg_Set(printflog);
@@ -360,6 +381,7 @@ void SkyXEngine_Init()
 
 	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
 	SPE_Dbg_Set(printflog);
+	Level::LoadParticles();
 
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
 	SPP_Dbg_Set(printflog);
@@ -389,11 +411,11 @@ void SkyXEngine_Init()
 #endif
 
 #if defined(SX_LEVEL_EDITOR) || defined(SX_PARTICLES_EDITOR)
-	GData::ObjGrid = new Grid();
-	GData::ObjGrid->Create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
+	GData::Editors::ObjGrid = new Grid();
+	GData::Editors::ObjGrid->Create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
 
-	GData::ObjAxesStatic = new AxesStatic();
-	GData::ObjAxesStatic->Create(1);
+	GData::Editors::ObjAxesStatic = new AxesStatic();
+	GData::Editors::ObjAxesStatic->Create(1);
 
 	GData::ObjCamera->SetPosition(&float3(0, 0.5, -2));
 
@@ -434,8 +456,234 @@ void SkyXEngine_Init()
 #endif
 }
 
+//!< рендер
+void SkyXEngine_Render(DWORD timeDelta)
+{
+	int64_t ttime;
+	//потеряно ли устройство или произошло изменение размеров?
+	if (GData::DXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || GData::ReSize)
+	{
+		//если не свернуто окно
+		if (!IsIconic(GData::Handle3D) && ((GData::HandleParent3D != 0 && !IsIconic(GData::HandleParent3D)) || GData::HandleParent3D == 0))
+			SXRenderFunc::ComDeviceLost();	//пытаемся восстановить
+		return;
+	}
+
+#ifndef SX_GAME
+	CameraUpdate::UpdateEditorial(timeDelta);
+#endif
+
+	SXAnim_Update();
+	SXGame_Update();
+	SXPhysics_Update();
+
+	SXAnim_Sync();
+	SXPhysics_Sync();
+	SXGame_Sync();
+
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos, 2);
+	SXRenderFunc::Delay::GeomSortGroup += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	if (GData::DefaultGeomIDArr < 0)
+		GData::DefaultGeomIDArr = SGeom_ModelsAddArrForCom();
+
+	if (GData::DefaultGreenIDArr < 0)
+		GData::DefaultGreenIDArr = SGeom_GreenAddArrForCom();
+
+	if (GData::DefaultAnimIDArr < 0)
+		GData::DefaultAnimIDArr = SXAnim_ModelsAddArrForCom();
+
+	/**/
+	if (SGeom_GreenGetOccurencessLeafGrass(&float3(GData::ConstCurrCamPos - float3(0.25, 1.8, 0.25)), &float3(GData::ConstCurrCamPos + float3(0.25, 0, 0.25)), MtlPhysicType::mpt_leaf_grass))
+		SXRenderFunc::Delay::FreeVal = 1;
+	else
+		SXRenderFunc::Delay::FreeVal = 0;
+	/**/
+
+	SXRenderFunc::UpdateView();
+	SML_Update(timeDelta, &GData::WinSize, &GData::NearFar, &GData::ConstCurrCamPos, &GData::MCamView, GData::ProjFov);
+
+	GData::DXDevice->BeginScene();
+
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SXRenderFunc::UpdateReflection(timeDelta);
+	SXRenderFunc::Delay::ComReflection += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
+	{
+		//рендерим глубину от света
+		ttime = TimeGetMcsU(G_Timer_Render_Scene);
+		SXRenderFunc::UpdateShadow(timeDelta);
+		SXRenderFunc::Delay::UpdateShadow += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	}
+
+	//рисуем сцену и заполняем mrt данными
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SXRenderFunc::RenderInMRT(timeDelta);
+	SXRenderFunc::Delay::RenderMRT += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
+	{
+		//освещаем сцену
+		ttime = TimeGetMcsU(G_Timer_Render_Scene);
+		SXRenderFunc::ComLighting(timeDelta, true);
+		SXRenderFunc::Delay::ComLighting += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	}
+
+	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+#if defined(SX_GAME)
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SXRenderFunc::RenderPostProcess(timeDelta);
+	SXRenderFunc::Delay::PostProcess += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+#endif
+
+	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+#if !defined(SX_GAME)
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(GData::FinalImage));
+#else
+	GData::DXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
+#endif
+
+	SGCore_ScreenQuadDraw();
+
+	SGCore_ShaderUnBind();
+
+	SXRenderFunc::RenderParticles(timeDelta);
+
+	SXRenderFunc::RenderEditorMain();
+	SXRenderFunc::RenderEditorLE(timeDelta);
+
+	SXRenderFunc::OutputDebugInfo(timeDelta);
+
+	SXPhysics_DebugRender();
+	//SXGame_EditorRender();
+
+	SXRenderFunc::ShaderRegisterData();
+
+	GData::DXDevice->EndScene();
+
+	//@@@
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SXRenderFunc::ComVisibleForCamera();
+	SXRenderFunc::Delay::UpdateVisibleForCamera += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SXRenderFunc::ComVisibleReflection();
+	SXRenderFunc::Delay::UpdateVisibleForReflection += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SXRenderFunc::ComVisibleForLight();
+	SXRenderFunc::Delay::UpdateVisibleForLight += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	SPE_EffectVisibleComAll(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+	SPE_EffectComputeAll();
+	SPE_EffectComputeLightingAll();
+	SXRenderFunc::Delay::UpdateParticles += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	GData::DXDevice->Present(0, 0, 0, 0);
+	SXRenderFunc::Delay::Present += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+#if defined(SX_LEVEL_EDITOR)
+	GData::Editors::LevelEditorUpdateStatusBar();
+#endif
+
+#if defined(SX_PARTICLES_EDITOR)
+	GData::Editors::ParticlesEditorUpdateStatusBar();
+#endif
+}
+
+//!< запуск основного цикла обработки
+int SkyXEngine_CycleMain()
+{
+	MSG msg;
+	::ZeroMemory(&msg, sizeof(MSG));
+
+	static DWORD lastTime = TimeGetMls(G_Timer_Render_Scene);
+
+	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
+	{
+		if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			::TranslateMessage(&msg);
+
+#if !defined(SX_GAME)
+			IMSG imsg;
+			imsg.lParam = msg.lParam;
+			imsg.wParam = msg.wParam;
+			imsg.message = msg.message;
+
+			SSInput_AddMsg(imsg);
+#endif
+
+			::DispatchMessage(&msg);
+		}
+		else
+		{
+			Core_TimesUpdate();
+			Core_0ConsoleUpdate();
+			SSInput_Update();
+			SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+			SGCore_LoadTexLoadTextures();
+
+			if (SSInput_GetKeyEvents(SIK_T) == InputEvents::iv_k_first)
+			{
+				Core_TimeWorkingSet(G_Timer_Render_Scene, !Core_TimeWorkingGet(G_Timer_Render_Scene));
+				/*for (int i = 0; i < 1; ++i)
+				{
+				ID tmpid = SPE_EffectIdOfKey(i);
+				//SPE_EffectPosSet(tmpid, &float3(i, 0, k));
+				SPE_EffectAlifeSet(tmpid, !SPE_EffectAlifeGet(tmpid));
+				}*/
+			}
+
+			DWORD currTime = TimeGetMls(G_Timer_Render_Scene);
+			DWORD timeDelta = (currTime - lastTime);
+
+#ifdef SX_GAME
+			GData::ObjCamera = SXGame_GetActiveCamera();
+#endif
+
+			if (Core_TimeWorkingGet(G_Timer_Render_Scene) && (GetForegroundWindow() == GData::Handle3D || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
+			{
+
+#if defined(SX_LEVEL_EDITOR)
+				SXLevelEditor_Transform(10);
+#endif
+
+				SkyXEngine_Render(timeDelta);
+			}
+
+			lastTime = currTime;
+		}
+	}
+
+	return msg.wParam;
+}
+
+//!< уничтожение данных движка, освобождение памяти
 void SkyXEngine_Kill()
 {
+#if defined(SX_MATERIAL_EDITOR)
+	mem_delete(GData::Editors::SimModel);
+#endif
+
+#if !defined(SX_GAME)
+	mem_delete(GData::Editors::ObjGrid);
+	mem_delete(GData::Editors::ObjAxesStatic);
+	mem_release(GData::Editors::FigureBox);
+	mem_release(GData::Editors::FigureSphere);
+	mem_release(GData::Editors::FigureCone);
+#endif
+
 	SXGame_0Kill();
 	SXDecals_AKill();
 	SXPhysics_AKill();
