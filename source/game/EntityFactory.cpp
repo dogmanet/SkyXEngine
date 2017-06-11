@@ -2,13 +2,18 @@
 #include "SXbaseEntity.h"
 
 
-EntityFactoryMap::EntityFactoryMap()
+EntityFactoryMap::EntityFactoryMap():
+	m_iShowInListCount(0)
 {
 
 }
 
 void EntityFactoryMap::AddFactory(IEntityFactory * pFactory, const char * szName)
 {
+	if(!pFactory->IsEditorHidden())
+	{
+		++m_iShowInListCount;
+	}
 	m_mFactories[AAString(szName)] = pFactory;
 }
 SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWorld)
@@ -86,4 +91,25 @@ bool EntityFactoryMap::IsEditorHidden(const char * szClass)
 EntDefaultsMap * EntityFactoryMap::GetDefaults(const char * szClass)
 {
 	return(GetFactory(szClass)->GetDefaults());
+}
+
+int EntityFactoryMap::GetListCount()
+{
+	return(m_iShowInListCount);
+}
+
+void EntityFactoryMap::GetListing(const char ** pszOut, int size)
+{
+	int j = 0;
+	if(size > m_iShowInListCount)
+	{
+		size = m_iShowInListCount;
+	}
+	for(AssotiativeArray<AAString, IEntityFactory*>::Iterator i = m_mFactories.begin(); i && j < size; i++)
+	{
+		if(!(*i.second)->IsEditorHidden())
+		{
+			pszOut[j++] = i.first->GetName();
+		}
+	}
 }

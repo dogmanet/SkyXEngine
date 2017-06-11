@@ -17,9 +17,15 @@ See the license in LICENSE
 #ifndef _SXGAME_H_
 #define _SXGAME_H_
 
+#ifndef SXGAME_EXPORT
+#define SXGAME_EXPORT _declspec(dllimport)
+#endif
+
 #include <gdefines.h>
 
 #include <gcore/sxgcore.h>
+
+#include "SXbaseEntity.h"
 
 
 /*! »нициализирует библиотеку
@@ -62,6 +68,31 @@ SX_LIB_API void SXGame_PlayerSpawn();
 SX_LIB_API void SXGame_EditorRender();
 
 SX_LIB_API ISXCamera * SXGame_GetActiveCamera();
+
+/*! ѕолучает количество зарегистрированных классов entity
+*/
+SX_LIB_API int SXGame_EntGetClassListCount();
+
+/*! ѕолучает список зарегистрированных классов entity.
+	ѕам€ть под массив const char * должна быть выделена заранее
+*/
+SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count);
+
+/*! —оздает entity заданного класса
+*/
+SX_LIB_API SXbaseEntity * SXGame_CreateEntity(const char * classname);
+
+/*! ”ничтожает entity
+*/
+SX_LIB_API void SXGame_RemoveEntity(SXbaseEntity * pEnt);
+
+/*! ѕолучает таблицу свойств дл€ заданного класса
+*/
+SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname);
+
+/*! ѕолучает значение свойства по умолчанию дл€ заданного класса
+*/
+SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key);
 
 #endif
 

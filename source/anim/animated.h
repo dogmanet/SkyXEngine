@@ -20,7 +20,7 @@
 
 #include "sxanim.h"
 
-void Report(int level, const char* format, ...);
+extern report_func reportf;
 
 class Animation;
 class AnimationManager;
@@ -146,6 +146,8 @@ public:
 	void SetBoneController(const String & name, float value, MODEL_BONE_CTL what);
 
 	SMMATRIX GetBoneTransform(UINT id);
+	float3 GetBoneTransformPos(UINT id);
+	SMQuaternion GetBoneTransformRot(UINT id);
 	UINT GetBone(const char * str);
 	UINT GetBoneCount() const;
 	void GetBoneName(UINT id, char * name, int len) const;
@@ -188,6 +190,13 @@ public:
 
 	void SwapBoneBuffs();
 
+	void Release();
+
+	void SetScale(float fScale)
+	{
+		m_fScale = fScale;
+	}
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 
@@ -206,7 +215,7 @@ protected:
 	int m_iCurrentFrame[BLEND_MAX];
 
 	ModelBoneShader * m_pBoneMatrix;
-	ModelBoneShader * m_pBoneMatrixRender;
+	ModelBoneShader * m_pBoneMatrixRender; //!< read only in update cycle
 
 	UINT m_iFadeTime[BLEND_MAX];
 	UINT m_iFadeCurTime[BLEND_MAX];
@@ -254,6 +263,8 @@ protected:
 	MemAlloc<ModelPart, 8> m_aMdls;
 
 	Array<bool> m_vIsVisibleFor;
+
+	float m_fScale;
 
 private:
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink);

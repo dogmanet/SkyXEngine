@@ -8,6 +8,7 @@ BEGIN_PROPTABLE_NOBASE(SXbaseEntity)
 	DEFINE_FIELD_ANGLES(m_vOrientation, 0, "rotation", "Rotation", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_PARENT(m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
 
 	//DEFINE_FIELD_STRING(m_szName, 0, "some opt", "Option", EDITOR_COMBOBOX)
 	//	COMBO_OPTION("Option 1", "value 1")
@@ -18,6 +19,23 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(SXbaseEntity, base_entity);
 
+void SXbaseEntity::SetDefaults()
+{
+	proptable_t * pt = GetPropTable();
+	const char * estr = GetEmptyString();
+	while(pt)
+	{
+		for(int i = 0; i < pt->numFields; ++i)
+		{
+			if(pt->pData[i].type == PDF_STRING)
+			{
+				this->*((const char * ThisClass::*)pt->pData[i].pField) = estr;
+			}
+		}
+		pt = pt->pBaseProptable;
+	}
+}
+
 SXbaseEntity::SXbaseEntity(EntityManager * pWorld):
 	m_iId(0),
 	m_iFlags(0),
@@ -25,12 +43,13 @@ SXbaseEntity::SXbaseEntity(EntityManager * pWorld):
 	m_szClassName(NULL),
 	m_szName(NULL),
 	m_pParent(NULL),
-	m_iParentAttachment(-1)
+	m_iParentAttachment(-1),
+	m_pOwner(NULL)
 {
 	m_iId = pWorld->Register(this);
 }
 
-void SXbaseEntity::SetDefaults()
+/*void SXbaseEntity::SetDefaults()
 {
 	proptable_t * pt = GetPropTable();
 	const char * estr = GetEmptyString();
@@ -46,7 +65,7 @@ void SXbaseEntity::SetDefaults()
 		}
 		pt = pt->pBaseProptable;
 	}
-}
+}*/
 
 SXbaseEntity::~SXbaseEntity()
 {
@@ -186,15 +205,15 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 		this->*((char * ThisClass::*)field->pField) = str;
 		break;
 	case PDF_ANGLES:
+		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
+		{
+			this->*((SMQuaternion ThisClass::*)field->pField) = q;
+			return(true);
+		}
 		if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
 		{
 			SMQuaternion q;
 			q = SMQuaternion(SMToRadian(f3.x), 'x') * SMQuaternion(SMToRadian(f3.y), 'y') * SMQuaternion(SMToRadian(f3.z), 'z');
-			this->*((SMQuaternion ThisClass::*)field->pField) = q;
-			return(true);
-		}
-		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
-		{
 			this->*((SMQuaternion ThisClass::*)field->pField) = q;
 			return(true);
 		}
@@ -294,7 +313,7 @@ void SXbaseEntity::SetParent(SXbaseEntity * pEnt, int attachment)
 		}
 		else
 		{
-			m_vOffsetPos = (float3)(m_vPosition - m_pParent->GetPos());
+			m_vOffsetPos = m_pParent->GetOrient().Conjugate() * (float3)(m_vPosition - m_pParent->GetPos());
 			m_vOffsetOrient = m_vOrientation * m_pParent->GetOrient().Conjugate();
 		}
 		m_iParentAttachment = attachment;
@@ -318,7 +337,7 @@ void SXbaseEntity::OnSync()
 		}
 		else
 		{
-			m_vPosition = (float3)(m_pParent->GetPos() + m_vOffsetPos);
+			m_vPosition = (float3)(m_pParent->GetPos() + m_pParent->GetOrient() * m_vOffsetPos);
 			m_vOrientation = m_pParent->GetOrient() * m_vOffsetOrient;
 		}
 		//if(m_pPhysObj)
@@ -346,4 +365,14 @@ float3 SXbaseEntity::GetAttachmentPos(int id)
 SMQuaternion SXbaseEntity::GetAttachmentRot(int id)
 {
 	return(SMQuaternion());
+}
+
+void SXbaseEntity::SetOwner(SXbaseEntity * pEnt)
+{
+	m_pOwner = pEnt;
+}
+
+SXbaseEntity * SXbaseEntity::GetOwner()
+{
+	return(m_pOwner);
 }

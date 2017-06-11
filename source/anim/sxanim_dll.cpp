@@ -36,14 +36,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 AnimationManager * g_mgr = NULL;
 
-void Report(int level, const char* format, ...)
-{
-	va_list va;
-	va_start(va, format);
-	reportf(level, format, va);
-	va_end(va);
-}
-
 SX_LIB_API void SXAnim_0Create()
 {
 	if(g_mgr)

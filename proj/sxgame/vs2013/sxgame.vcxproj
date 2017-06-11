@@ -58,7 +58,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -77,7 +77,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SXGAME_EXPORTS=_declspec(dllexport);SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -96,8 +96,14 @@
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
     <ClCompile Include="..\..\..\source\game\proptable.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXbaseAmmo.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXbaseAmmoBox.cpp" />
     <ClCompile Include="..\..\..\source\game\SXbaseAnimating.cpp" />
     <ClCompile Include="..\..\..\source\game\SXbaseEntity.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXbaseItem.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXbaseRiffle.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXbaseTool.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp" />
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp" />
     <ClCompile Include="..\..\..\source\game\SXplayer.cpp" />
     <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp" />
@@ -105,14 +111,23 @@
     <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\AAString.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />
     <ClInclude Include="..\..\..\source\game\EntityManager.h" />
     <ClInclude Include="..\..\..\source\game\FuncTrain.h" />
     <ClInclude Include="..\..\..\source\game\GameData.h" />
     <ClInclude Include="..\..\..\source\game\PathCorner.h" />
     <ClInclude Include="..\..\..\source\game\proptable.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseAmmo.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseAmmoBox.h" />
     <ClInclude Include="..\..\..\source\game\SXbaseAnimating.h" />
     <ClInclude Include="..\..\..\source\game\SXbaseEntity.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseItem.h" />
+    <ClInclude Include="..\..\..\source\game\SXbasePistol.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseRiffle.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseSnipe.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseTool.h" />
+    <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h" />
     <ClInclude Include="..\..\..\source\game\sxgame.h" />
     <ClInclude Include="..\..\..\source\game\SXplayer.h" />
     <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h" />

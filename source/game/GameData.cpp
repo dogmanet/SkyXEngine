@@ -28,6 +28,7 @@ GameData::GameData()
 	Core_0RegisterConcmd("-attack", ccmd_attack_off);
 	Core_0RegisterConcmd("+attack2", ccmd_attack2_on);
 	Core_0RegisterConcmd("-attack2", ccmd_attack2_off);
+	Core_0RegisterConcmd("reload", ccmd_reload);
 
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
 	Core_0RegisterConcmd("observe", ccmd_observe);
@@ -48,6 +49,9 @@ GameData::GameData()
 
 	m_pPlayer = (SXplayer*)CREATE_ENTITY("player", m_pMgr);
 	m_pActiveCamera = m_pPlayer->GetCamera();
+
+	m_pPlayer->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
+	m_pPlayer->PlayAnimation("reload");
 }
 GameData::~GameData()
 {
@@ -152,4 +156,9 @@ void GameData::ccmd_spawn()
 void GameData::ccmd_observe()
 {
 	m_pPlayer->Observe();
+}
+
+void GameData::ccmd_reload()
+{
+	m_pPlayer->Reload();
 }

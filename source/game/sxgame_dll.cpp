@@ -25,12 +25,14 @@ See the license in LICENSE
 #	pragma comment(lib, "sxinput_d.lib")
 #	pragma comment(lib, "sxphysics_d.lib")
 #	pragma comment(lib, "sxdecals_d.lib")
+#	pragma comment(lib, "sxanim_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
 #	pragma comment(lib, "sxinput.lib")
 #	pragma comment(lib, "sxphysics.lib")
 #	pragma comment(lib, "sxdecals.lib")
+#	pragma comment(lib, "sxanim.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -222,4 +224,57 @@ SX_LIB_API void SXGame_EditorRender()
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints + 1, &pts, sizeof(float3_t));
 
 	
+}
+
+SX_LIB_API int SXGame_EntGetClassListCount()
+{
+	SG_PRECOND(-1);
+
+	return(EntityFactoryMap::GetInstance()->GetListCount());
+}
+
+SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count)
+{
+	SG_PRECOND(_VOID);
+
+	EntityFactoryMap::GetInstance()->GetListing(pszClassList, count);
+}
+
+SX_LIB_API SXbaseEntity * SXGame_CreateEntity(const char * classname)
+{
+	SG_PRECOND(NULL);
+
+	return(CREATE_ENTITY(classname, GameData::m_pMgr));
+}
+
+SX_LIB_API void SXGame_RemoveEntity(SXbaseEntity * pEnt)
+{
+	SG_PRECOND(_VOID);
+
+	REMOVE_ENTITY(pEnt);
+}
+
+SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname)
+{
+	SG_PRECOND(NULL);
+
+	return(EntityFactoryMap::GetInstance()->GetPropTable(classname));
+}
+
+SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key)
+{
+	SG_PRECOND(NULL);
+
+	EntDefaultsMap * pMap = EntityFactoryMap::GetInstance()->GetDefaults(classname);
+	if(!pMap)
+	{
+		return(NULL);
+	}
+
+	const EntDefaultsMap::Node * pNode;
+	if(!pMap->KeyExists(AAString(key), &pNode))
+	{
+		return(NULL);
+	}
+	return(*pNode->Val);
 }

@@ -29,7 +29,8 @@ enum PDE_TYPE
 enum PDF_FLAG
 {
 	PDFF_NONE       = 0x00,
-	PDFF_NOEXPORT   = 0x01
+	PDFF_NOEXPORT   = 0x01, //!< Не экспортировать поле в файл
+	PDFF_NOEDIT     = 0x02, //!< Не отображать поле в редакторе
 };
 
 enum ENT_FLAG
@@ -107,6 +108,7 @@ proptable_t * cls::SGetPropTable()\
 		InitPropData();\
 	return(&m_pPropTable);\
 }\
+\
 proptable_t * cls::GetPropTable()\
 {\
 	if(!m_pPropTable.numFields)\
@@ -156,6 +158,7 @@ void cls::InitPropData() \
 } 
 
 #define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(EntityManager * pMgr):BaseClass(pMgr){}
+#define DECLARE_CONSTRUCTOR() ThisClass(EntityManager * pMgr);
 
 const char * GetEmptyString();
 
