@@ -28,6 +28,12 @@ protected:
 	IAnimPlayer * m_pAnimPlayer;
 	const char * m_szModelFile;
 	float m_fBaseScale;
+
+	void InitPhysics();
+	void ReleasePhysics();
+
+	btCollisionShape * m_pCollideShape;
+	btRigidBody * m_pRigidBody;
 };
 
 #endif

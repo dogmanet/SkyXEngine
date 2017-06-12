@@ -128,6 +128,9 @@ struct IBaseObject
 #define F3_BTVEC(xmf) (btVector3((xmf).x, (xmf).y, (xmf).z))
 #define BTVEC_F3(btv) (float3((btv).x(), (btv).y(), (btv).z()))
 
+#define Q4_BTQUAT(xmf) (btQuaternion((xmf).x, (xmf).y, (xmf).z, -(xmf).w))
+#define BTQUAT_Q4(btv) (SMQuaternion((btv).x(), (btv).y(), (btv).z(), -(btv).w()))
+
 #define macro_text_(x) #x
 #define macro_text(x) macro_text_(x)
 

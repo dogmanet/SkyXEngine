@@ -232,6 +232,20 @@ public:
 	*/
 	virtual void SetScale(float fScale) = 0;
 
+	virtual void GetPhysData(
+		int32_t * piShapeCount,
+		HITBOX_TYPE ** phTypes,
+		float3_t *** pppfData,
+		int32_t ** ppfDataLen
+		) = 0;
+
+	virtual void FreePhysData(
+		int32_t iShapeCount,
+		HITBOX_TYPE * hTypes,
+		float3_t ** ppfData,
+		int32_t * pfDataLen
+		) = 0;
+
 
 	virtual const ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, char * name = "No name") = 0;
 	virtual void AddModel(const ModelFile * mdl, UINT flags = MI_ALL, char * name = "No name") = 0;

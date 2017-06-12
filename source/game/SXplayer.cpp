@@ -2,8 +2,6 @@
 
 #include "SXplayer.h"
 
-#include <decals/sxdecals.h>
-
 #include "SXbaseTool.h"
 
 BEGIN_PROPTABLE(SXplayer)
@@ -329,20 +327,6 @@ void SXplayer::Attack(BOOL state)
 	if(m_pActiveTool)
 	{
 		m_pActiveTool->PrimaryAction(state);
-	}
-	if(state)
-	{
-		//trace line
-		float3 start = GetWeaponOrigin();
-		float3 end = start + (m_vOrientation * float3(0.0f, 0.0f, 1.0f)) * 1000.0f;
-		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
-
-		if(cb.hasHit())
-		{
-			//shoot decal
-			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
-		}
 	}
 }
 

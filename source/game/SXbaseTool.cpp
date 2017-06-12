@@ -1,6 +1,7 @@
 #include "SXbaseTool.h"
 
 #include <particles/sxparticles.h>
+#include <decals/sxdecals.h>
 
 BEGIN_PROPTABLE(SXbaseTool)
 	DEFINE_FIELD_FLOAT(m_fReloadTime, PDFF_NOEDIT | PDFF_NOEXPORT, "reload_time", "", EDITOR_NONE)
@@ -27,7 +28,7 @@ SXbaseTool::SXbaseTool(EntityManager * pMgr):
 
 	m_iMuzzleFlash = SPE_EffectCopyName("muzzleflash_ak74");
 
-	m_iIvalUpdate = SET_INTERVAL(_Update, 1.0f / 60.0f);
+	m_iIvalUpdate = SET_INTERVAL(_Update, 0);
 }
 
 SXbaseTool::~SXbaseTool()
@@ -52,6 +53,24 @@ void SXbaseTool::PrimaryAction(BOOL st)
 	{
 		PlayAnimation("shoot1");
 		SPE_EffectEnableSet(m_iMuzzleFlash, true);
+
+		//trace line
+		float3 start = GetPos();
+		float3 dir = m_pParent->GetOrient() * float3(0.0f, 0.0f, 1.0f);
+		float3 end = start + dir * 1000.0f;
+		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+		if(cb.hasHit())
+		{
+			//shoot decal
+			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
+			if(!cb.m_collisionObject->isStaticOrKinematicObject())
+			{
+				((btRigidBody*)cb.m_collisionObject)->applyCentralImpulse(F3_BTVEC(dir * 10.0f));
+				cb.m_collisionObject->activate();
+			}
+		}
 	}
 }
 
@@ -130,7 +149,7 @@ void SXbaseTool::_Update(float dt)
 	{
 		if(m_fZoomProgress < 1.0f)
 		{
-			m_fZoomProgress += dt * 5.0f;
+			m_fZoomProgress += dt * 8.0f;
 			if(m_fZoomProgress > 1.0f)
 			{
 				m_fZoomProgress = 1.0f;
@@ -142,7 +161,7 @@ void SXbaseTool::_Update(float dt)
 	{
 		if(m_fZoomProgress > 0.0f)
 		{
-			m_fZoomProgress -= dt * 5.0f;
+			m_fZoomProgress -= dt * 8.0f;
 			if(m_fZoomProgress < 0.0f)
 			{
 				m_fZoomProgress = 0.0f;

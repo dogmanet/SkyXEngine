@@ -157,8 +157,6 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 	SMQuaternion q;
 	int d;
 	float f;
-	char * str;
-	size_t len;
 	SXbaseEntity * pEnt;
 	switch(field->type)
 	{
@@ -191,29 +189,7 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 		}
 		return(false);
 	case PDF_STRING:
-		len = strlen(value);
-		str = this->*((char * ThisClass::*)field->pField);
-		if(!value[0])
-		{
-			if(str && str != GetEmptyString())
-			{
-				delete[] str;
-			}
-			this->*((const char * ThisClass::*)field->pField) = GetEmptyString();
-		}
-		else
-		{
-			if(!str || strlen(str) < len)
-			{
-				if(str && str != GetEmptyString())
-				{
-					delete[] str;
-				}
-				str = new char[len + 1];
-			}
-			memcpy(str, value, sizeof(char)* (len + 1));
-			this->*((char * ThisClass::*)field->pField) = str;
-		}
+		_SetStrVal(&(this->*((const char * ThisClass::*)field->pField)), value);
 		break;
 	case PDF_ANGLES:
 		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
@@ -386,4 +362,35 @@ void SXbaseEntity::SetOwner(SXbaseEntity * pEnt)
 SXbaseEntity * SXbaseEntity::GetOwner()
 {
 	return(m_pOwner);
+}
+
+void SXbaseEntity::_SetStrVal(const char ** to, const char * value)
+{
+	char * str = (char*)*to;
+	if(str && !fstrcmp(str, value))
+	{
+		return;
+	}
+	if(!value[0])
+	{
+		if(str && str != GetEmptyString())
+		{
+			delete[] str;
+		}
+		*to = GetEmptyString();
+	}
+	else
+	{
+		size_t len = strlen(value);
+		if(!str || strlen(str) < len)
+		{
+			if(str && str != GetEmptyString())
+			{
+				delete[] str;
+			}
+			str = new char[len + 1];
+		}
+		memcpy(str, value, sizeof(char)* (len + 1));
+		*to = str;
+	}
 }

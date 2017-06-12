@@ -22,7 +22,7 @@ class btConvexPolyhedron;
 
 
 ///The btPolyhedralConvexShape is an internal interface class for polyhedral convex shapes.
-ATTRIBUTE_ALIGNED16(class) btPolyhedralConvexShape : public btConvexInternalShape
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btPolyhedralConvexShape : public btConvexInternalShape
 {
 	
 
@@ -70,7 +70,7 @@ public:
 
 
 ///The btPolyhedralConvexAabbCachingShape adds aabb caching to the btPolyhedralConvexShape
-class btPolyhedralConvexAabbCachingShape : public btPolyhedralConvexShape
+class BULLET_EXPORTS btPolyhedralConvexAabbCachingShape: public btPolyhedralConvexShape
 {
 
 	btVector3	m_localAabbMin;

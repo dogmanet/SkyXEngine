@@ -59,7 +59,7 @@ enum	btRigidBodyFlags
 ///- C) Kinematic objects, which are objects without mass, but the user can move them. There is on-way interaction, and Bullet calculates a velocity based on the timestep and previous and current world transform.
 ///Bullet automatically deactivates dynamic rigid bodies, when the velocity is below a threshold for a given time.
 ///Deactivated (sleeping) rigid bodies don't take any processing time, except a minor broadphase collision detection impact (to allow active objects to activate/wake up sleeping objects)
-class btRigidBody  : public btCollisionObject
+class BULLET_EXPORTS btRigidBody: public btCollisionObject
 {
 
 	btMatrix3x3	m_invInertiaTensorWorld;

@@ -197,6 +197,18 @@ public:
 		m_fScale = fScale;
 	}
 
+	void GetPhysData(
+		int32_t * piShapeCount,
+		HITBOX_TYPE ** phTypes,
+		float3_t *** pppfData,
+		int32_t ** ppfDataLen);
+
+	void FreePhysData(
+		int32_t iShapeCount,
+		HITBOX_TYPE * hTypes,
+		float3_t ** ppfData,
+		int32_t * pfDataLen);
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 

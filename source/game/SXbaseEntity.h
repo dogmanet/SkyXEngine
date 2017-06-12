@@ -55,6 +55,8 @@ protected:
 	
 	virtual float3 GetAttachmentPos(int id);
 	virtual SMQuaternion GetAttachmentRot(int id);
+
+	void _SetStrVal(const char ** to, const char * value);
 public:
 	SXbaseEntity(EntityManager * pMgr);
 	virtual ~SXbaseEntity();

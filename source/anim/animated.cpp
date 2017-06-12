@@ -1842,6 +1842,56 @@ void Animation::Release()
 	delete this;
 }
 
+void Animation::GetPhysData(
+	int32_t * piShapeCount,
+	HITBOX_TYPE ** phTypes,
+	float3_t *** pppfData,
+	int32_t ** ppfDataLen)
+{
+	*piShapeCount = 1;
+	*phTypes = new HITBOX_TYPE[*piShapeCount];
+	*pppfData = new float3_t*[*piShapeCount];
+	*ppfDataLen = new int32_t[*piShapeCount];
+
+	*phTypes[0] = HT_CONVEX;
+
+	DWORD tmpCountVert = 0;
+
+	UINT j = 0;
+	UINT iVC = 0;
+	for(uint32_t i = 0; i < m_pMdl->m_pLods[j].iSubMeshCount; ++i)
+	{
+		iVC += m_pMdl->m_pLods[j].pSubLODmeshes[i].iVectexCount;
+	}
+	(*ppfDataLen)[0] = iVC;
+	(*pppfData)[0] = new float3_t[*ppfDataLen[0]];
+
+	ModelLoDSubset * pSM;
+	UINT vc = 0;
+	for(uint32_t i = 0; i < m_pMdl->m_pLods[j].iSubMeshCount; ++i)
+	{
+		pSM = &m_pMdl->m_pLods[j].pSubLODmeshes[i];
+		for(int k = 0; k < pSM->iVectexCount; ++k)
+		{
+			(*pppfData)[0][vc++] = (float3)(((vertex_animated*)pSM->pVertices)[k].Pos * m_fScale);
+		}
+	}
+}
+
+void Animation::FreePhysData(
+	int32_t iShapeCount,
+	HITBOX_TYPE * hTypes,
+	float3_t ** ppfData,
+	int32_t * pfDataLen)
+{
+	mem_delete_a(hTypes);
+	mem_delete_a(pfDataLen);
+	for(int i = 0; i < iShapeCount; ++i)
+	{
+		mem_delete_a(ppfData[i]);
+	}
+}
+
 
 /**
 *
