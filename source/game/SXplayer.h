@@ -53,6 +53,9 @@ public:
 
 	float3 GetWeaponOrigin();
 
+	void _ccmd_slot_on(int argc, const char ** argv);
+	void _ccmd_slot_off();
+
 protected:
 
 	SXpointCamera * m_pCamera;
@@ -75,6 +78,8 @@ protected:
 	float m_fViewbobStep;
 	float m_fViewbobY;
 	float3_t m_fViewbobStrafe;
+
+	int m_iDSM;
 };
 
 #endif

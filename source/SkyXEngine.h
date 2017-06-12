@@ -383,6 +383,8 @@ void SkyXEngine_Init()
 	SPE_Dbg_Set(printflog);
 	Level::LoadParticles();
 
+	Level::LoadParticles();
+
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
 	SPP_Dbg_Set(printflog);
 

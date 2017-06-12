@@ -154,7 +154,7 @@ void PPSet::Init(float2_t* winsize)
 		PPSet::ArrRndVecSSAO[i] = SMVector3Normalize(PPSet::ArrRndVecSSAO[i]);
 
 		float scale = (float)i / 24.f;
-		scale = lerp(0.1f, 1.0f, scale);
+		scale = vlerp(0.1f, 1.0f, scale);
 		PPSet::ArrRndVecSSAO[i].x *= scale;
 		PPSet::ArrRndVecSSAO[i].y *= scale;
 		PPSet::ArrRndVecSSAO[i].z *= scale;

@@ -198,5 +198,10 @@ origin = "10.0 10.0 10.0"
 rotation = "0 0 0"
 team = 0
 
+[ent_21]
+classname = ammobox_5.45x39
+origin = "0.0 -0.75 0.0"
+rotation = "0 0 0"
+
 [meta]
-count = 21
+count = 22

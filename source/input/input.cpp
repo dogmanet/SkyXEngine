@@ -99,7 +99,7 @@ void SXInput::Update()
 			if(!key)
 				key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
 
-			if(key <= SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
+			if(key < SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
 			{
 				m_vKeyMap[key].state = TRUE;
 				m_vKeyMap[key].changed = TRUE;
@@ -115,7 +115,7 @@ void SXInput::Update()
 				|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
 				)
 			{
-				if(key <= SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
+				if(key < SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
 				{
 					m_vKeyMap[key].state = TRUE;
 					m_vKeyMap[key].changed = TRUE;
@@ -147,7 +147,7 @@ void SXInput::Update()
 			if(!key)
 				key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
 
-			if(key <= SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
+			if(key < SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
 			{
 				m_vKeyMap[key].state = FALSE;
 				m_vKeyMap[key].changed = TRUE;
@@ -164,7 +164,7 @@ void SXInput::Update()
 				|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
 				)
 			{
-				if(key <= SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
+				if(key < SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
 				{
 					m_vKeyMap[key].state = FALSE;
 					m_vKeyMap[key].changed = TRUE;
@@ -194,6 +194,22 @@ void SXInput::Update()
 				{
 					Core_0ConsoleExecCmd("%s", m_vKeyMap[key].cmd);
 					if(m_vKeyMap[key].cmd[0] == L'+')
+					{
+						Core_0ConsoleExecCmd("-%s", m_vKeyMap[key].cmd + 1);
+					}
+				}
+			}
+			break;
+
+		case WM_KILLFOCUS:
+			for(int key = 0; key < SXI_KEYMAP_SIZE; ++key)
+			{
+				if(m_vKeyMap[key].state)
+				{
+					m_vKeyMap[key].state = FALSE;
+					m_vKeyMap[key].changed = TRUE;
+
+					if(m_vKeyMap[key].cmd != 0 && m_vKeyMap[key].cmd[0] == L'+')
 					{
 						Core_0ConsoleExecCmd("-%s", m_vKeyMap[key].cmd + 1);
 					}

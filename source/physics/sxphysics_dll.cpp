@@ -15,12 +15,14 @@ See the license in LICENSE
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxgeom_d.lib")
+#	pragma comment(lib, "sxmtllight_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgeom.lib")
+#	pragma comment(lib, "sxmtllight.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
@@ -93,6 +95,12 @@ SX_LIB_API void SXPhysics_LoadGeom()
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->LoadGeom();
+}
+
+SX_LIB_API void SXPhysics_UnloadGeom()
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->UnloadGeom();
 }
 
 SX_LIB_API void SXPhysics_DebugRender()

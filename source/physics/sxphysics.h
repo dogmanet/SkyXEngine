@@ -19,9 +19,9 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#ifdef lerp
-#undef lerp
-#endif
+//#ifdef lerp
+//#undef lerp
+//#endif
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
@@ -54,6 +54,10 @@ SX_LIB_API void SXPhysics_Sync();
 /*! Загружает информацию о геометрии уровня
 */
 SX_LIB_API void SXPhysics_LoadGeom();
+
+/*! Выгружает информацию о геометрии уровня
+*/
+SX_LIB_API void SXPhysics_UnloadGeom();
 
 /*! Выполняет отрисовку физических объектов
 */

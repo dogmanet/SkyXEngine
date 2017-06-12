@@ -193,16 +193,27 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 	case PDF_STRING:
 		len = strlen(value);
 		str = this->*((char * ThisClass::*)field->pField);
-		if(!str || strlen(str) < len)
+		if(!value[0])
 		{
 			if(str && str != GetEmptyString())
 			{
 				delete[] str;
 			}
-			str = new char[len + 1];
+			this->*((const char * ThisClass::*)field->pField) = GetEmptyString();
 		}
-		memcpy(str, value, sizeof(char)* (len + 1));
-		this->*((char * ThisClass::*)field->pField) = str;
+		else
+		{
+			if(!str || strlen(str) < len)
+			{
+				if(str && str != GetEmptyString())
+				{
+					delete[] str;
+				}
+				str = new char[len + 1];
+			}
+			memcpy(str, value, sizeof(char)* (len + 1));
+			this->*((char * ThisClass::*)field->pField) = str;
+		}
 		break;
 	case PDF_ANGLES:
 		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
@@ -221,7 +232,7 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 	case PDF_ENTITY:
 	case PDF_PARENT:
 		pEnt = m_pMgr->FindEntityByName(value);
-		if(pEnt)
+		if(pEnt || !value[0])
 		{
 			if(field->type == PDF_PARENT)
 			{
@@ -338,7 +349,7 @@ void SXbaseEntity::OnSync()
 		else
 		{
 			m_vPosition = (float3)(m_pParent->GetPos() + m_pParent->GetOrient() * m_vOffsetPos);
-			m_vOrientation = m_pParent->GetOrient() * m_vOffsetOrient;
+			m_vOrientation = m_vOffsetOrient * m_pParent->GetOrient();
 		}
 		//if(m_pPhysObj)
 		//{
