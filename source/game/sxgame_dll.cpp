@@ -33,6 +33,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxinput.lib")
 #	pragma comment(lib, "sxphysics.lib")
 #	pragma comment(lib, "sxdecals.lib")
+#	pragma comment(lib, "sxanim.lib")
 #	pragma comment(lib, "sxparticles.lib")
 #endif
 

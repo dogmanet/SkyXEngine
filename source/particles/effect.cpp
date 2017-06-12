@@ -5,7 +5,7 @@
 
 Effects::Effects()
 {
-	
+	ArrSortSizeCurr = 0;
 }
 
 Effects::~Effects()
@@ -893,9 +893,13 @@ void Effects::EffectComputeLightingAll()
 void Effects::EffectRenderAll(DWORD timeDelta)
 {
 	ID tmpid = -1;
-	for (int i = ArrSortSizeCurr; i >= 0; --i)
+	if (ArrSortSizeCurr <= 0)
+		return;
+
+	for (int i = ArrSortSizeCurr-1; i >= 0; --i)
 	{
 		tmpid = ArrSort[i];
+		reportf(0, "tmpid = %d\n", tmpid);
 		if (tmpid >= 0)
 			EffectRender(tmpid, timeDelta);
 	}
