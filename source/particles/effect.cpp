@@ -957,8 +957,8 @@ void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 
 		ArrSort[pos] = ArrKey[i]->Id;
 
-		if (ArrSortSizeCurr < pos)
-			ArrSortSizeCurr = pos;
+		if (ArrSortSizeCurr <= pos)
+			ArrSortSizeCurr = pos+1;
 	}
 
 	/*for (int i = 0; i < ArrSort.size(); ++i)

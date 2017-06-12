@@ -34,8 +34,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}*/
 
-	ID tmpid = SPE_EffectGetByName("test");
-	SPE_EffectEnableSet(tmpid, true);
+	/*ID tmpid = SPE_EffectGetByName("test");
+	SPE_EffectEnableSet(tmpid, true);*/
 
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
