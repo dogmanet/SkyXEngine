@@ -9,10 +9,10 @@ half GrassComMultiplier(half3 vertex_pos, half3 view_pos,half2 dist_bel)
 half3 GreenComRotation(half3 vec, half2 sincos)
 {
 	half3 tvec;
-	tvec.x = vec.x * sincos.y - vec.z * sincos.x;
-	tvec.z = vec.x * sincos.x + vec.z * sincos.y;
+	tvec.x = vec.x * sincos.y + vec.z * sincos.x;
+	tvec.z = -vec.x * sincos.x + vec.z * sincos.y;
 	tvec.y = vec.y;
-	return vec;
+	return tvec;
 }
 
 half4 GreenTransformPos(half3 pos,half scale,half multiplier, half3 translate)

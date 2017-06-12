@@ -39,6 +39,11 @@ bool SXbaseAnimating::SetKV(const char * name, const char * value)
 
 void SXbaseAnimating::SetModel(const char * mdl)
 {
+	if(!mdl[0] && m_pAnimPlayer)
+	{
+		mem_release(m_pAnimPlayer);
+		return;
+	}
 	if(!m_pAnimPlayer)
 	{
 		m_pAnimPlayer = SXAnim_CreatePlayer(mdl);

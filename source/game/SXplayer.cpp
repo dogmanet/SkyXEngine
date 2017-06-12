@@ -20,7 +20,8 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_fViewbobStep(0.0f),
 	m_fViewbobY(0.0f),
 	m_fViewbobStrafe(float3_t(0, 0, 0)),
-	m_pActiveTool(NULL)
+	m_pActiveTool(NULL),
+	m_iDSM(DSM_NONE)
 {
 	m_pCamera = (SXpointCamera*)CREATE_ENTITY("point_camera", pMgr);
 	m_pCamera->SetParent(this);
@@ -58,12 +59,13 @@ SXplayer::SXplayer(EntityManager * pMgr):
 
 
 
-	/*m_pActiveTool = (SXbaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
+	m_pActiveTool = (SXbaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 	m_pActiveTool->SetOwner(this);
+	m_pActiveTool->AttachHands();
 	m_pActiveTool->PlayAnimation("idle");
 	m_pActiveTool->SetPos(GetPos() + float3(1.0f, 0.0f, 1.0f));
-	//m_pActiveTool->SetOrient(GetOrient());*/
-	//m_pActiveTool->SetParent(this);
+	m_pActiveTool->SetOrient(GetOrient());
+	m_pActiveTool->SetParent(this);
 
 }
 
@@ -92,30 +94,42 @@ void SXplayer::UpdateInput(float dt)
 
 		float dx = (float)x * *sense * 10.0f /* / dt */;
 		float dy = (float)y * *sense * 10.0f /* / dt */;
-		//printf("%f %f : ", dx, dy);
-		m_vPitchYawRoll.y -= dx;
-		m_vPitchYawRoll.x -= dy;
-		//printf(" %f %f\n", m_vPitchYawRoll.x, m_vPitchYawRoll.y);
-		if(m_vPitchYawRoll.x > SM_PIDIV2)
+		if(m_iDSM && m_pActiveTool)
 		{
-			m_vPitchYawRoll.x = SM_PIDIV2;
+			m_pActiveTool->DbgMove(m_iDSM, dy);
+			if(m_iDSM == DSM_PRINT)
+			{
+				m_iDSM = DSM_NONE;
+			}
 		}
-		else if(m_vPitchYawRoll.x < -SM_PIDIV2)
+		else
 		{
-			m_vPitchYawRoll.x = -SM_PIDIV2;
-		}
-		while(m_vPitchYawRoll.y < 0.0f)
-		{
-			m_vPitchYawRoll.y += SM_2PI;
-		}
-		while(m_vPitchYawRoll.y > SM_2PI)
-		{
-			m_vPitchYawRoll.y -= SM_2PI;
+			//printf("%f %f : ", dx, dy);
+			m_vPitchYawRoll.y -= dx;
+			m_vPitchYawRoll.x -= dy;
+			//printf(" %f %f\n", m_vPitchYawRoll.x, m_vPitchYawRoll.y);
+			if(m_vPitchYawRoll.x > SM_PIDIV2)
+			{
+				m_vPitchYawRoll.x = SM_PIDIV2;
+			}
+			else if(m_vPitchYawRoll.x < -SM_PIDIV2)
+			{
+				m_vPitchYawRoll.x = -SM_PIDIV2;
+			}
+			while(m_vPitchYawRoll.y < 0.0f)
+			{
+				m_vPitchYawRoll.y += SM_2PI;
+			}
+			while(m_vPitchYawRoll.y > SM_2PI)
+			{
+				m_vPitchYawRoll.y -= SM_2PI;
+			}
+
+			m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
+				* SMQuaternion(m_vPitchYawRoll.y, 'y')
+				* SMQuaternion(m_vPitchYawRoll.z, 'z');
 		}
 
-		m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
-			* SMQuaternion(m_vPitchYawRoll.y, 'y')
-			* SMQuaternion(m_vPitchYawRoll.z, 'z');
 	}
 
 	{
@@ -314,7 +328,7 @@ void SXplayer::Attack(BOOL state)
 	}
 	if(m_pActiveTool)
 	{
-		m_pActiveTool->SecondaryAction(state);
+		m_pActiveTool->PrimaryAction(state);
 	}
 	if(state)
 	{
@@ -354,4 +368,39 @@ void SXplayer::Reload()
 	{
 		m_pActiveTool->Reload();
 	}
+}
+
+void SXplayer::_ccmd_slot_on(int argc, const char ** argv)
+{
+	if(argc != 2)
+	{
+		printf("Usage: \n    debug_slot_move <direction>\n    direction: ox oy oz rx ry rz\n");
+	}
+	if(argv[1][0] == 'o')
+	{
+		switch(argv[1][1])
+		{
+		case 'x': m_iDSM = DSM_POS_X; break;
+		case 'y': m_iDSM = DSM_POS_Y; break;
+		case 'z': m_iDSM = DSM_POS_Z; break;
+		}
+	}
+	else if(argv[1][0] == 'r')
+	{
+		switch(argv[1][1])
+		{
+		case 'x': m_iDSM = DSM_ROT_X; break;
+		case 'y': m_iDSM = DSM_ROT_Y; break;
+		case 'z': m_iDSM = DSM_ROT_Z; break;
+		}
+	}
+	else if(!strcmp(argv[1], "dump"))
+	{
+		m_iDSM = DSM_PRINT;
+	}
+}
+
+void SXplayer::_ccmd_slot_off()
+{
+	m_iDSM = DSM_NONE;
 }

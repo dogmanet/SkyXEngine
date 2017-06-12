@@ -1,0 +1,26 @@
+[ammo_5.45x39]
+base_class = base_ammo
+show_in_listing = 1
+model = "models/ammo/ammo_5.45x39.dse"
+inv_name = "5.45x39"
+
+[ammobox_5.45x39]
+base_class = base_ammobox
+show_in_listing = 1
+model = "models/ammobox/ammobox_generic.dse"
+max_items = 0
+items_per_use = 60
+item_class = "ammo_5.45x39"
+scale = 0.01
+
+[weapon_ak74]
+base_class = base_riffle
+show_in_listing = 1
+model = "models/weapons/ak74/ak74.dse"
+reload_time = 2.7
+scale = 0.0254
+slot_offset = 0.0620000102 -0.0239999797 0.0879999697
+slot_rotation = 0.00766652822 0.729397118 -0.0193332434 0.683774292
+slot_offset_aim = -0.046000 -0.002000 -0.068000
+slot_rotation_aim = -0.062175 0.698391 -0.059027 0.710563
+

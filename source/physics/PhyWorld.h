@@ -29,6 +29,7 @@ public:
 	void RemoveShape(btRigidBody * pBody);
 
 	void LoadGeom();
+	void UnloadGeom();
 
 	void Render();
 
@@ -77,6 +78,11 @@ protected:
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;
+
+	btCollisionShape ** m_ppGreenStaticCollideShape;
+	btRigidBody *** m_pppGreenStaticRigidBody;
+	int m_iGreenShapes;
+	int * m_piGreenTotal;
 
 
 	btCollisionShape * m_pCollideShape;

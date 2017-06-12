@@ -842,14 +842,14 @@ Animation::~Animation()
 SMMATRIX Animation::GetBoneTransform(UINT id)
 {
 	//id *= 2;
-	float3 pos = m_pBoneMatrixRender[id].position;
+	float3 pos = m_pBoneMatrixRender[id].position * m_fScale;
 	SMQuaternion q = m_pBoneMatrixRender[id].orient;
 	return(q.GetMatrix() * SMMatrixTranslation(pos));
 }
 
 float3 Animation::GetBoneTransformPos(UINT id)
 {
-	return(GetOrient() * (float3)m_pBoneMatrixRender[id].position + GetPos());
+	return(GetOrient() * ((float3)m_pBoneMatrixRender[id].position * -m_fScale) + GetPos());
 }
 
 SMQuaternion Animation::GetBoneTransformRot(UINT id)
@@ -882,11 +882,13 @@ void Animation::SyncAnims()
 
 void Animation::SetModel(const char * file)
 {
+	mem_delete(m_pMdl);
 	m_pMdl = const_cast<ModelFile*>(m_pMgr->LoadModel(file));
 	if(!m_pMdl)
 	{
 		return;
 	}
+	AddModel(m_pMdl);
 	DownloadData();
 }
 
@@ -1562,7 +1564,7 @@ const ISXBound * Animation::GetBound() const
 
 void Animation::Assembly()
 {
-	mem_delete(m_pMdl);
+	//mem_delete(m_pMdl);
 	///@TODO: clear previous data
 	m_pMdl = new ModelFile("", m_pMgr);
 	//AssemblyMdl(m_pMdl

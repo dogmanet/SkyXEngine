@@ -415,7 +415,7 @@ inline void Emitter::ReCreateParticles(WORD id)
 
 			float tmplerp = (Data.BoundVec2.y - Arr[id].Pos.y) / (Data.BoundVec2.y - Data.BoundVec1.y);
 
-			float tmpradius = lerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
+			float tmpradius = vlerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
 			float3 tmpcoord = float3(Data.BoundVec1.x, 0,Data.BoundVec1.z);
 
 			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
@@ -683,7 +683,7 @@ inline bool Emitter::IsPointInCone(float3* point)
 	if (point->y >= Data.BoundVec1.y && point->y <= Data.BoundVec2.y)
 	{
 		float tmplerp = (Data.BoundVec2.y - point->y) / (Data.BoundVec2.y - Data.BoundVec1.y);
-		float tmpradius = lerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
+		float tmpradius = vlerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
 		float3 tmpcoord = float3(Data.BoundVec1.x, 0, Data.BoundVec1.z);
 		if (
 			tmpcoord.x + tmpradius >= point->x && tmpcoord.x - tmpradius <= point->x &&

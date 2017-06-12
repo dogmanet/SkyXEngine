@@ -1667,7 +1667,7 @@ void Green::SetGreenNav(ID id, const char* pathname)
 		ID tmpidmtl = SGCore_MtlLoad(tmpnametex, MTL_TYPE_TREE);
 		for (int k = 0; k < nmesh->IndexCount[i]; ++k)
 		{
-			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] + prebias;
+			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k];// +prebias;
 			ArrModels[id]->NavigateMesh->arr_mtl[tmp_countindex] = tmpidmtl;
 			++tmp_countindex;
 		}

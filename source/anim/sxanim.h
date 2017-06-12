@@ -231,6 +231,13 @@ public:
 	/*! Устанавливает масштаб
 	*/
 	virtual void SetScale(float fScale) = 0;
+
+
+	virtual const ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, char * name = "No name") = 0;
+	virtual void AddModel(const ModelFile * mdl, UINT flags = MI_ALL, char * name = "No name") = 0;
+	virtual int AddModel(ModelPart * mp) = 0;
+	virtual void DelModel(ModelPart * mp) = 0;
+	virtual void Assembly() = 0;
 };
 
 //! \name Функции управления анимацией

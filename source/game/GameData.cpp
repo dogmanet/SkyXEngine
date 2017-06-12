@@ -50,8 +50,11 @@ GameData::GameData()
 	m_pPlayer = (SXplayer*)CREATE_ENTITY("player", m_pMgr);
 	m_pActiveCamera = m_pPlayer->GetCamera();
 
-	m_pPlayer->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
-	m_pPlayer->PlayAnimation("reload");
+	Core_0RegisterConcmdClsArg("+debug_slot_move", m_pPlayer, (SXCONCMDCLSARG)&SXplayer::_ccmd_slot_on);
+	Core_0RegisterConcmdCls("-debug_slot_move", m_pPlayer, (SXCONCMDCLS)&SXplayer::_ccmd_slot_off);
+
+	//m_pPlayer->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
+	//m_pPlayer->PlayAnimation("reload");
 }
 GameData::~GameData()
 {

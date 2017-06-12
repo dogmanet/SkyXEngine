@@ -481,8 +481,11 @@ void EntityManager::EntKV(int argc, const char ** argv)
 			{
 				for(int i = 0; i < pt->numFields; ++i)
 				{
-					pEnt->GetKV(pt->pData[i].szKey, buf, sizeof(buf));
-					printf("%s = %s\n", pt->pData[i].szKey, buf);
+					if(pt->pData[i].szKey)
+					{
+						pEnt->GetKV(pt->pData[i].szKey, buf, sizeof(buf));
+						printf("%s = %s\n", pt->pData[i].szKey, buf);
+					}
 				}
 				pt = pt->pBaseProptable;
 			}
