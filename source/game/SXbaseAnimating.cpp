@@ -15,7 +15,9 @@ REGISTER_ENTITY_NOLISTING(SXbaseAnimating, base_animating);
 SXbaseAnimating::SXbaseAnimating(EntityManager * pMgr):
 	BaseClass(pMgr),
 	m_pAnimPlayer(NULL),
-	m_fBaseScale(1.0f)
+	m_fBaseScale(1.0f),
+	m_pCollideShape(NULL),
+	m_pRigidBody(NULL)
 {
 }
 
@@ -39,6 +41,8 @@ bool SXbaseAnimating::SetKV(const char * name, const char * value)
 
 void SXbaseAnimating::SetModel(const char * mdl)
 {
+	_SetStrVal(&m_szModelFile, mdl);
+	ReleasePhysics();
 	if(!mdl[0] && m_pAnimPlayer)
 	{
 		mem_release(m_pAnimPlayer);
@@ -52,6 +56,7 @@ void SXbaseAnimating::SetModel(const char * mdl)
 	{
 		m_pAnimPlayer->SetModel(mdl);
 	}
+	InitPhysics();
 }
 
 float3 SXbaseAnimating::GetAttachmentPos(int id)
@@ -79,6 +84,16 @@ SMQuaternion SXbaseAnimating::GetAttachmentRot(int id)
 void SXbaseAnimating::OnSync()
 {
 	BaseClass::OnSync();
+	if(!m_pParent && m_pRigidBody)
+	{
+		SetPos(BTVEC_F3(m_pRigidBody->getWorldTransform().getOrigin()));
+		SetOrient(BTQUAT_Q4(m_pRigidBody->getWorldTransform().getRotation()));
+	}
+	else if(m_pRigidBody)
+	{
+	//	m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(GetPos()));
+	//	m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(GetOrient()));
+	}
 	if(m_pAnimPlayer)
 	{
 		m_pAnimPlayer->SetScale(m_fBaseScale);
@@ -93,4 +108,60 @@ void SXbaseAnimating::PlayAnimation(const char * name, UINT iFadeTime, UINT slot
 	{
 		m_pAnimPlayer->Play(name, iFadeTime, slot);
 	}
+}
+
+void SXbaseAnimating::InitPhysics()
+{
+	if(!m_pAnimPlayer)
+	{
+		return;
+	}
+	int32_t iShapeCount;
+	HITBOX_TYPE * phTypes;
+	float3_t ** ppfData;
+	int32_t * pfDataLen;
+
+	//m_pAnimPlayer->SetScale(m_fBaseScale);
+
+	m_pAnimPlayer->GetPhysData(&iShapeCount, &phTypes, &ppfData, &pfDataLen);
+
+	for(int i = 0; i < iShapeCount; ++i)
+	{
+		if(phTypes[i] == HT_CONVEX)
+		{
+			m_pCollideShape = new btConvexHullShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
+		}
+		break;
+	}
+
+	m_pAnimPlayer->FreePhysData(iShapeCount, phTypes, ppfData, pfDataLen);
+
+
+	if(m_pCollideShape)
+	{
+
+		btVector3 vInertia;
+		const float fMass = 1.0f;
+		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
+
+		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+			fMass,                  // mass
+			motionState,        // initial position
+			m_pCollideShape,    // collision shape of body
+			vInertia  // local inertia
+			);
+		m_pRigidBody = new btRigidBody(rigidBodyCI);
+
+		//m_pRigidBody->setFriction(100.0f);
+
+		SXPhysics_AddShape(m_pRigidBody);
+	}
+}
+
+void SXbaseAnimating::ReleasePhysics()
+{
+	SXPhysics_RemoveShape(m_pRigidBody);
+	mem_delete(m_pRigidBody);
+	mem_delete(m_pCollideShape);
 }

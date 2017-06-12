@@ -198,7 +198,8 @@ enum HITBOX_TYPE
 	HT_BOX = 0,  /*!< Параллелепипед */
 	HT_CYLINDER, /*!< Цилиндр */
 	HT_CAPSULE,  /*!< Капсула */
-	HT_ELIPSOID  /*!< Эллипсойд */
+	HT_ELIPSOID,  /*!< Эллипсойд */
+	HT_CONVEX
 };
 
 /*! Типы частей тела для хитбоксов

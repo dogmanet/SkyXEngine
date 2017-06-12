@@ -85,12 +85,6 @@ protected:
 	btRigidBody *** m_pppGreenStaticRigidBody;
 	int m_iGreenShapes;
 	int * m_piGreenTotal;
-
-
-
-
-	btCollisionShape * m_pCollideShape;
-	btRigidBody * m_pRigidBody;
 };
 
 #endif

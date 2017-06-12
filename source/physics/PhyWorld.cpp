@@ -35,48 +35,6 @@ PhyWorld::PhyWorld():
 	Core_0RegisterCVarBool("r_physdebug", false, "Debug drawing physics shapes");
 	m_bDebugDraw = GET_PCVAR_BOOL("r_physdebug");
 	printf("Done!\n");
-
-	{
-		m_pCollideShape = new btSphereShape(1.0f);
-
-		btVector3 vInertia;
-		const float fMass = 4.0f;
-		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
-
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0.0f, 10.0f, 0.0f)));
-		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-			fMass,                  // mass
-			motionState,        // initial position
-			m_pCollideShape,    // collision shape of body
-			vInertia  // local inertia
-			);
-		m_pRigidBody = new btRigidBody(rigidBodyCI);
-
-		m_pRigidBody->setFriction(100.0f);
-
-		AddShape(m_pRigidBody);
-	}
-
-	{
-		m_pCollideShape = new btSphereShape(0.8f);
-
-		btVector3 vInertia;
-		const float fMass = 4.0f;
-		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
-
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0.0f, 15.0f, 0.0f)));
-		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-			fMass,                  // mass
-			motionState,        // initial position
-			m_pCollideShape,    // collision shape of body
-			vInertia  // local inertia
-			);
-		m_pRigidBody = new btRigidBody(rigidBodyCI);
-
-		m_pRigidBody->setFriction(100.0f);
-
-		AddShape(m_pRigidBody);
-	}
 }
 
 PhyWorld::~PhyWorld()
@@ -374,7 +332,8 @@ void PhyWorld::LoadGeom()
 				for(int i = 0; i < green_arr_count_transform[num_green]; ++i)
 				{
 					btTransform tr;
-					tr.setFromOpenGLMatrix((float*)&green_arr_transform[num_green][i]);
+					tr.setOrigin(F3_BTVEC(green_arr_transform[num_green][i].Position));
+					tr.setRotation(Q4_BTQUAT(SMQuaternion(-green_arr_transform[num_green][i].TexCoord.y, 'y')));
 					btDefaultMotionState motionState(tr);
 					btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
 						0,                  // mass
