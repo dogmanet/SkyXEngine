@@ -8,6 +8,8 @@ PhyWorld::PhyWorld():
 	m_pGeomStaticCollideMesh(NULL),
 	m_pGeomStaticCollideShape(NULL),
 	m_pGeomStaticRigidBody(NULL),
+	m_ppGeomMtlTypes(0),
+	m_iGeomModelCount(0),
 	m_ppGreenStaticCollideShape(NULL),
 	m_pppGreenStaticRigidBody(NULL),
 	m_iGreenShapes(0),
@@ -144,6 +146,8 @@ void PhyWorld::LoadGeom()
 	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 	if(iModelCount > 0)
 	{
+		m_ppGeomMtlTypes = new int*[iModelCount];
+		m_iGeomModelCount = iModelCount;
 		m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
 		uint32_t IC = 0, VC = 0;
@@ -155,17 +159,22 @@ void PhyWorld::LoadGeom()
 
 		m_pGeomStaticCollideMesh->preallocateIndices(IC);
 		m_pGeomStaticCollideMesh->preallocateVertices(VC);
+
+		
+
 		IC = 0;
 		VC = 0;
 
 		for(int32_t tc = 0; tc < iModelCount; ++tc)
 		{
+			m_ppGeomMtlTypes[tc] = new int[pIndexCount[tc] / 3];
 			for(int i = 0; i < pVertexCount[tc]; ++i)
 			{
 				m_pGeomStaticCollideMesh->findOrAddVertex(F3_BTVEC(ppVertices[tc][i]), false);
 			}
 			for(int i = 0; i < pIndexCount[tc]; i += 3)
 			{
+				m_ppGeomMtlTypes[tc][i / 3] = SML_MtlGetPhysicMaterial(ppMtls[tc][i]);
 				m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
 			}
 			IC += pIndexCount[tc];
@@ -419,6 +428,13 @@ void PhyWorld::UnloadGeom()
 	mem_delete(m_pGeomStaticRigidBody);
 	mem_delete(m_pGeomStaticCollideShape);
 	mem_delete(m_pGeomStaticCollideMesh);
+
+	for(int i = 0; i < m_iGeomModelCount; ++i)
+	{
+		mem_delete_a(m_ppGeomMtlTypes[i]);
+	}
+	m_iGeomModelCount = 0;
+	mem_delete_a(m_ppGeomMtlTypes);
 }
 
 

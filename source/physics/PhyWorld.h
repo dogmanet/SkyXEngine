@@ -78,11 +78,15 @@ protected:
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;
+	int ** m_ppGeomMtlTypes;
+	int m_iGeomModelCount;
 
 	btCollisionShape ** m_ppGreenStaticCollideShape;
 	btRigidBody *** m_pppGreenStaticRigidBody;
 	int m_iGreenShapes;
 	int * m_piGreenTotal;
+
+
 
 
 	btCollisionShape * m_pCollideShape;
