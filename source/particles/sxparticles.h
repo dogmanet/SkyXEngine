@@ -62,6 +62,7 @@ SX_LIB_API void SPE_OnResetDevice();
 #define SXPARTICLES_BASIS_DIR float3(0,0,1)
 
 #define SXPARTICLES_DEADTH_TIME 1000
+#define SXPARTICLES_PULL_RESERVE 8
 
 //#############################################################################
 
@@ -218,7 +219,7 @@ struct ParticlesData
 
 	ParticlesDependType AlphaDependAge;	//!< зависит ли альфа компонента частицы от ее возраста
 	
-	float2_t Size;				//!< размер частиц
+	float2_t Size;						//!< размер частиц
 	float SizeDisp;						//!< разброс для размера части
 
 	ParticlesDependType SizeDependAge;	//!< зависит ли альфа компонента частицы от ее возраста
@@ -291,7 +292,7 @@ struct ParticlesData
 	ParticlesAxis CharacterDeviationAxis;			//!< ось на основании которой будет вычислен угол поворота, только для ParticlesDeviationType::ptd_wave
 	DWORD CharacterDeviationCountDelayMls;			//!< время обновления для #ParticlesDeviationType::ptd_rnd и #ParticlesDeviationType::pdt_along
 
-	float CharacterDeviationCoefAngleDisp;	//!< коэфициент дисперсии, для #CharacterDeviationCoefAngle если #ParticlesDeviationType::ptd_wave, для #CharacterDeviationAmplitude в других случаях
+	float CharacterDeviationCoefAngleDisp;		//!< коэфициент дисперсии, для #CharacterDeviationCoefAngle если #ParticlesDeviationType::ptd_wave, для #CharacterDeviationAmplitude в других случаях
 	bool CharacterDeviationCoefAngleDispNeg;	//!< возможна ли отрицательная дисперсия
 
 	bool CharacterDeviationTapX;	//!< задействовать ли координату X при просчете смещения
@@ -334,12 +335,12 @@ struct ParticlesData
 передав этот ключ #SPE_EffectIdOfKey, которая в случае успеха вернет идентификатор эффекта.
 @{*/
 
-SX_LIB_API void SPE_EffectLoad(const char* path);	//!< 
-SX_LIB_API void SPE_EffectSave(const char* path);	//!< 
-SX_LIB_API void SPE_EffectsClear();	//!< 
+SX_LIB_API void SPE_EffectLoad(const char* path);	//!< загрузка информации об эффектах и эмиттерах из файла
+SX_LIB_API void SPE_EffectSave(const char* path);	//!< сохранение информации об эффектах и эмиттерах в файл
+SX_LIB_API void SPE_EffectsClear();	//!< очистка всего списка эффектов и эмиттеров
 
-SX_LIB_API ID SPE_EffectCopyName(const char* name);
-SX_LIB_API ID SPE_EffectCopyID(ID id);
+SX_LIB_API ID SPE_EffectInstanceByName(const char* name);
+SX_LIB_API ID SPE_EffectInstanceByID(ID id);
 SX_LIB_API ID SPE_EffectGetByName(const char* name);
 
 SX_LIB_API ID SPE_EffectAdd(const char* name);	//!< добавить эффект и установить ему имя
@@ -358,10 +359,24 @@ SX_LIB_API void SPE_EffectComputeLightingAll();			//!< просчет света
 SX_LIB_API void SPE_EffectRenderAll(DWORD timeDelta);	//!< отрисовка всех эффектов
 
 SX_LIB_API bool SPE_EffectAlifeGet(ID id);				//<! жив ли эффект, или все частицы в нем уже умерли?
-SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);
+SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);	//<! установка состояния жизни
 
 SX_LIB_API bool SPE_EffectEnableGet(ID id);				//<! включен ли эффект
 SX_LIB_API void SPE_EffectEnableSet(ID id, bool enable);//<! устанавливает состяние включен/выключен для эффекта
+
+//! воспроизвести эффект используя при этом копию эффекта с идентификатором id
+SX_LIB_API void SPE_EffectPlayByID(
+	ID id,			//!< идентификатор оригинального эффекта
+	float3* pos,	//!< позиция эффекта воспроизведения
+	float3* dir		//!< направление взгляда эффекта
+	);
+
+//! воспроизвести эффект используя при этом копию эффекта с именем name
+SX_LIB_API void SPE_EffectPlayByName(
+	const char* name,	//!< идентификатор оригинального эффекта
+	float3* pos,		//!< позиция эффекта воспроизведения
+	float3* dir			//!< направление взгляда эффекта
+	);
 
 SX_LIB_API void SPE_EffectPosSet(ID id, float3* pos);	//<! установка позиции эффекту
 SX_LIB_API void SPE_EffectDirSet(ID id, float3* dir);	//<! установка направления взгляда эффекта

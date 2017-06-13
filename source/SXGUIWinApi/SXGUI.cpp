@@ -15,6 +15,7 @@ See the license in LICENSE
 #include <SXGUIWinApi\SXGUI_memo.cpp>
 #include <SXGUIWinApi\SXGUI_combo_box.cpp>
 #include <SXGUIWinApi\SXGUI_list_box.cpp>
+#include <SXGUIWinApi\SXGUI_list_view.cpp>
 #include <SXGUIWinApi\SXGUI_group_box.cpp>
 #include <SXGUIWinApi\SXGUI_progress_bar.cpp>
 #include <SXGUIWinApi\SXGUI_radio_button.cpp>

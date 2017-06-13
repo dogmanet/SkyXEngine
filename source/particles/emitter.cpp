@@ -243,7 +243,19 @@ int Emitter::CountLifeGet()
 void Emitter::EnableSet(bool enable)
 {
 	if (!Enable && enable)
+	{
 		CreateParticles();
+
+		for (int i = 0; i < Count; ++i)
+		{
+			if (Arr[i].IsAlife)
+			{
+				CurrMax = Arr[i].Pos;
+				CurrMin = Arr[i].Pos;
+				break;
+			}
+		}
+	}
 
 	Alife = enable;
 	OldTime = TimeGetMls(G_Timer_Render_Scene);
@@ -998,25 +1010,43 @@ void Emitter::Compute()
 				Arr[i].CharacterDeviationCountDelayMls2 += tmptime - OldTime;
 			}
 
+			
+
 			//считаем ограничивающий объем
 			float tmpmaxedge = Arr[i].Size.x;
 			if (Arr[i].Size.x < Arr[i].Size.y)
 				tmpmaxedge = Arr[i].Size.y;
 
-			if (Arr[i].Pos.x + tmpmaxedge > CurrMax.x)
-				CurrMax.x = Arr[i].Pos.x;
-			else if (Arr[i].Pos.x - tmpmaxedge > CurrMin.x)
-				CurrMin.x = Arr[i].Pos.x;
+			if (CountLifeParticle == 1)
+			{
+				CurrMax.x = Arr[i].Pos.x + tmpmaxedge;
+				CurrMax.y = Arr[i].Pos.y + tmpmaxedge;
+				CurrMax.z = Arr[i].Pos.z + tmpmaxedge;
 
-			if (Arr[i].Pos.y + tmpmaxedge > CurrMax.y)
-				CurrMax.y = Arr[i].Pos.y;
-			else if (Arr[i].Pos.y - tmpmaxedge > CurrMin.y)
-				CurrMin.y = Arr[i].Pos.y;
+				CurrMin.x = Arr[i].Pos.x - tmpmaxedge;
+				CurrMin.y = Arr[i].Pos.y - tmpmaxedge;
+				CurrMin.z = Arr[i].Pos.z - tmpmaxedge;
+			}
+			else
+			{
+				if (Arr[i].Pos.x + tmpmaxedge > CurrMax.x)
+					CurrMax.x = Arr[i].Pos.x + tmpmaxedge;
 
-			if (Arr[i].Pos.z + tmpmaxedge > CurrMax.z)
-				CurrMax.z = Arr[i].Pos.z;
-			else if (Arr[i].Pos.z - tmpmaxedge > CurrMin.z)
-				CurrMin.z = Arr[i].Pos.z;
+				if (Arr[i].Pos.x - tmpmaxedge < CurrMin.x)
+					CurrMin.x = Arr[i].Pos.x - tmpmaxedge;
+
+				if (Arr[i].Pos.y + tmpmaxedge > CurrMax.y)
+					CurrMax.y = Arr[i].Pos.y + tmpmaxedge;
+
+				if (Arr[i].Pos.y - tmpmaxedge < CurrMin.y)
+					CurrMin.y = Arr[i].Pos.y - tmpmaxedge;
+
+				if (Arr[i].Pos.z + tmpmaxedge > CurrMax.z)
+					CurrMax.z = Arr[i].Pos.z + tmpmaxedge;
+
+				if (Arr[i].Pos.z - tmpmaxedge < CurrMin.z)
+					CurrMin.z = Arr[i].Pos.z - tmpmaxedge;
+			}
 		}
 		else
 		{
@@ -1033,13 +1063,13 @@ void Emitter::Compute()
 
 	OldTime = tmptime;
 
-	CurrMin.x -= SizeAdd;
+	/*CurrMin.x -= SizeAdd;
 	CurrMin.y -= SizeAdd;
 	CurrMin.z -= SizeAdd;
 
 	CurrMax.x += SizeAdd;
 	CurrMax.y += SizeAdd;
-	CurrMax.z += SizeAdd;
+	CurrMax.z += SizeAdd;*/
 }
 
 

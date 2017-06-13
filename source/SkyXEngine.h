@@ -383,8 +383,6 @@ void SkyXEngine_Init()
 	SPE_Dbg_Set(printflog);
 	Level::LoadParticles();
 
-	Level::LoadParticles();
-
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
 	SPP_Dbg_Set(printflog);
 
@@ -406,9 +404,10 @@ void SkyXEngine_Init()
 	SXDecals_0Create();
 	SXDecals_Dbg_Set(printflog);
 
+#ifdef SX_GAME
 	SXGame_0Create();
 	SXGame_Dbg_Set(printflog);
-#ifdef SX_GAME
+
 	GData::ObjCamera = SXGame_GetActiveCamera();
 #endif
 
@@ -427,14 +426,14 @@ void SkyXEngine_Init()
 #if defined(SX_PARTICLES_EDITOR)
 	GData::Editors::RenderBound = true;
 
-	D3DXCreateBox(GData::DXDevice, 1, 1, 1, &GData::FigureBox, 0);
-	D3DXCreateSphere(GData::DXDevice, 1, 20, 20, &GData::FigureSphere, 0);
+	D3DXCreateBox(GData::DXDevice, 1, 1, 1, &GData::Editors::FigureBox, 0);
+	D3DXCreateSphere(GData::DXDevice, 1, 20, 20, &GData::Editors::FigureSphere, 0);
 
-	GData::FigureConeParam.x = 1;
-	GData::FigureConeParam.y = 0.1;
-	GData::FigureConeParam.z = 1;
+	GData::Editors::FigureConeParam.x = 1;
+	GData::Editors::FigureConeParam.y = 0.1;
+	GData::Editors::FigureConeParam.z = 1;
 
-	SGCore_FCreateCone(GData::FigureConeParam.x, GData::FigureConeParam.y, GData::FigureConeParam.z, &GData::FigureCone, 20);
+	SGCore_FCreateCone(GData::Editors::FigureConeParam.x, GData::Editors::FigureConeParam.y, GData::Editors::FigureConeParam.z, &GData::Editors::FigureCone, 20);
 
 #endif
 
@@ -476,12 +475,16 @@ void SkyXEngine_Render(DWORD timeDelta)
 #endif
 
 	SXAnim_Update();
+#ifndef SX_PARTICLES_EDITOR
 	SXGame_Update();
+#endif
 	SXPhysics_Update();
 
 	SXAnim_Sync();
 	SXPhysics_Sync();
+#ifndef SX_PARTICLES_EDITOR
 	SXGame_Sync();
+#endif
 
 	ttime = TimeGetMcsU(G_Timer_Render_Scene);
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos, 2);
@@ -654,7 +657,7 @@ int SkyXEngine_CycleMain()
 			GData::ObjCamera = SXGame_GetActiveCamera();
 #endif
 
-			if (Core_TimeWorkingGet(G_Timer_Render_Scene) && (GetForegroundWindow() == GData::Handle3D || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
+			if (Core_TimeWorkingGet(G_Timer_Render_Scene) && (GetForegroundWindow() == GData::Handle3D || GetForegroundWindow() == GData::HandleParent3D || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
 			{
 
 #if defined(SX_LEVEL_EDITOR)

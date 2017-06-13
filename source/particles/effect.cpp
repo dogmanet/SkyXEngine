@@ -40,6 +40,7 @@ Effects::Effect::Effect(Effect& eff)
 		Emitter* part = new Emitter(*eff.Arr[i]);
 		Arr.push_back(part);
 	}
+	IDPull = eff.IDPull;
 }
 
 Effects::Effect::~Effect()
@@ -52,6 +53,11 @@ Effects::Effect::~Effect()
 	Arr.clear();
 }
 
+Effects::Pull::Pull()
+{
+	ideff = -1;
+}
+
 void Effects::Effect::NullingInit()
 {
 	Id = Key = -1;
@@ -59,6 +65,9 @@ void Effects::Effect::NullingInit()
 	ViewRender = false;
 
 	Enable = false;
+	Busy = false;
+	IDPull = -1;
+	Original = true;
 }
 
 void Effects::OnLostDevice()
@@ -100,6 +109,13 @@ void Effects::Clear()
 
 	ArrKey.clear();
 	ArrID.clear();
+
+	for (int i = 0; i < Pulls.size(); ++i)
+	{
+		mem_delete(Pulls[i]);
+	}
+
+	Pulls.clear();
 }
 
 void Effects::Save(const char* path)
@@ -308,6 +324,7 @@ void Effects::Load(const char* path)
 		}
 
 		ID eff_id = this->EffectAdd(0);
+		ArrID[eff_id]->Original = true;
 		int eff_count_part = 0;
 
 		if (config->KeyExists(eff_section_name, "name"))
@@ -706,7 +723,112 @@ ID Effects::EffectAdd(const char* name)
 	if (name)
 		strcpy(tmpeffect->Name, name);
 
-	return AddEffect(tmpeffect);
+	ID id = AddEffect(tmpeffect);
+	tmpeffect->IDPull = PullAdd(id);
+	//PullExtend(tmpeffect->Pull);
+	return id;
+}
+
+ID Effects::PullAdd(ID ideff)
+{
+	EFFECTS_EFFECT_PRECOND(ideff, -1);
+
+	ID id = -1;
+	for (int i = 0; i < Pulls.size(); ++i)
+	{
+		if (Pulls[i]->ideff < 0)
+		{
+			Pulls[i]->arr.clear();
+			id = i;
+			break;
+		}
+	}
+
+	if (id < 0)
+	{
+		Pull* tmparr = new Pull();
+		tmparr->ideff = ideff;
+		Pulls.push_back(tmparr);
+		id = Pulls.size() - 1;
+	}
+
+	return Pulls.size() - 1;
+}
+
+void Effects::PullExtend(ID id)
+{
+	EFFECTS_PULL_PRECOND(id, _VOID);
+	for (int i = 0; i < SXPARTICLES_PULL_RESERVE; ++i)
+	{
+		ID tmpid = EffectCopyID(Pulls[id]->ideff);
+		ArrID[tmpid]->Busy = false;
+		ArrID[tmpid]->Original = false;
+		Pulls[id]->arr.push_back(tmpid);
+	}
+}
+
+void Effects::PullDelete(ID id)
+{
+	EFFECTS_PULL_PRECOND(id, _VOID);
+
+	for (int i = 0; i < Pulls[id]->arr.size(); ++i)
+	{
+		EffectDel(Pulls[id]->arr[i]);
+	}
+
+	Pulls[id]->ideff = -1;
+	Pulls[id]->arr.clear();
+}
+
+ID Effects::PullGet(ID id)
+{
+	EFFECTS_PULL_PRECOND(id, -1);
+
+	for (int i = 0; i < Pulls[id]->arr.size(); ++i)
+	{
+		if (!(ArrID[Pulls[id]->arr[i]]->Busy) && !(ArrID[Pulls[id]->arr[i]]->Enable))
+			return ArrID[Pulls[id]->arr[i]]->Id;
+	}
+	
+	int oldsize = Pulls[id]->arr.size();
+
+	PullExtend(id);
+	return ArrID[Pulls[id]->arr[oldsize]]->Id;
+}
+
+ID Effects::EffectInstanceByID(ID id)
+{
+	EFFECTS_EFFECT_PRECOND(id, -1);
+
+	ID ideff = PullGet(ArrID[id]->IDPull);
+	ArrID[ideff]->Busy = true;
+
+	return ideff;
+}
+
+ID Effects::EffectInstanceByName(const char* name)
+{
+	return EffectInstanceByID(EffectGetByName(name));
+}
+
+void Effects::EffectPlayByID(ID id, float3* pos, float3* dir)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	ID ideff = PullGet(ArrID[id]->IDPull);
+
+	if (pos)
+		EffectPosSet(ideff, pos);
+
+	if (dir)
+		EffectDirSet(ideff, dir);
+
+	EffectEnableSet(ideff, true);
+}
+
+void Effects::EffectPlayByName(const char* name, float3* pos, float3* dir)
+{
+	EffectPlayByID(EffectGetByName(name), pos, dir);
 }
 
 ID Effects::AddEffect(Effect* obj)
@@ -748,6 +870,24 @@ ID Effects::EffectIdOfKey(ID key)
 
 void Effects::EffectDelete(ID id)
 {
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	if (ArrID[id]->Original)
+	{
+		PullDelete(ArrID[id]->IDPull);
+		EffectDel(id);
+	}
+	else
+	{
+		ArrID[id]->Busy = false;
+		EffectEnableSet(id, false);
+	}
+}
+
+void Effects::EffectDel(ID id)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
 	for (long i = ArrID[id]->Key + 1; i < ArrKey.size(); ++i)
 	{
 		--(ArrKey[i]->Key);
@@ -782,6 +922,7 @@ void Effects::EffectCompute(ID id)
 		return;
 
 	Effect* eff = ArrID[id];
+	int countlife = 0;
 
 	int countdead = 0;	//счетик живых партиклов
 	for (int i = 0, l = eff->Arr.size(); i < l; ++i)
@@ -794,29 +935,38 @@ void Effects::EffectCompute(ID id)
 			++countdead;
 		else //иначе партиклы живы, считаем объем эффекта
 		{
-			if (eff->Arr[i]->CurrMax.x > eff->CurrMax.x)
-				eff->CurrMax.x = eff->Arr[i]->CurrMax.x;
-			
-			if (eff->Arr[i]->CurrMax.y > eff->CurrMax.y)
-				eff->CurrMax.y = eff->Arr[i]->CurrMax.y;
+			++countlife;
+			if (countlife == 1)
+			{
+				eff->CurrMax = eff->Arr[i]->CurrMax;
+				eff->CurrMin = eff->Arr[i]->CurrMin;
+			}
+			else
+			{
+				if (eff->Arr[i]->CurrMax.x > eff->CurrMax.x)
+					eff->CurrMax.x = eff->Arr[i]->CurrMax.x;
 
-			if (eff->Arr[i]->CurrMax.z > eff->CurrMax.z)
-				eff->CurrMax.z = eff->Arr[i]->CurrMax.z;
+				if (eff->Arr[i]->CurrMax.y > eff->CurrMax.y)
+					eff->CurrMax.y = eff->Arr[i]->CurrMax.y;
 
-			if (eff->Arr[i]->CurrMin.x < eff->CurrMin.x)
-				eff->CurrMin.x = eff->Arr[i]->CurrMin.x;
+				if (eff->Arr[i]->CurrMax.z > eff->CurrMax.z)
+					eff->CurrMax.z = eff->Arr[i]->CurrMax.z;
 
-			if (eff->Arr[i]->CurrMin.y < eff->CurrMin.y)
-				eff->CurrMin.y = eff->Arr[i]->CurrMin.y;
+				if (eff->Arr[i]->CurrMin.x < eff->CurrMin.x)
+					eff->CurrMin.x = eff->Arr[i]->CurrMin.x;
 
-			if (eff->Arr[i]->CurrMin.z < eff->CurrMin.z)
-				eff->CurrMin.z = eff->Arr[i]->CurrMin.z;
+				if (eff->Arr[i]->CurrMin.y < eff->CurrMin.y)
+					eff->CurrMin.y = eff->Arr[i]->CurrMin.y;
+
+				if (eff->Arr[i]->CurrMin.z < eff->CurrMin.z)
+					eff->CurrMin.z = eff->Arr[i]->CurrMin.z;
+			}
 
 			static float4x4 mattrans;
 			mattrans = eff->MatRotate * eff->MatTranslation;
 			
-			eff->CurrMin = SMVector3Transform(eff->CurrMin, mattrans);
-			eff->CurrMin = SMVector3Transform(eff->CurrMin, mattrans);
+			eff->CurrMin2 = SMVector3Transform(eff->CurrMin, mattrans);
+			eff->CurrMax2 = SMVector3Transform(eff->CurrMax, mattrans);
 		}
 	}
 
@@ -915,9 +1065,9 @@ bool Effects::EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
 	float3 scenter;
 	float sradius;
 
-	scenter = (eff->CurrMin + eff->CurrMax) * 0.5f;
-	sradius = SMVector3Length(scenter - eff->CurrMax);
-
+	scenter = (eff->CurrMin2 + eff->CurrMax2) * 0.5f;
+	sradius = SMVector3Length(scenter - eff->CurrMax2);
+	
 	eff->ViewRender = frustum->SphereInFrustum(&scenter, sradius);
 
 	eff->ViewDist = SMVector3Length((scenter - (*view))) - sradius;
@@ -933,7 +1083,7 @@ void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 			EffectVisibleCom(i, frustum, view);
 	}
 
-	for (int i = 0; i < ArrSort.size(); ++i)
+	for (int i = 0; i < /*ArrSort.size()*/ArrKey.size(); ++i)
 	{
 		ArrSort[i] = -1;
 	}
@@ -961,12 +1111,17 @@ void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 			ArrSortSizeCurr = pos+1;
 	}
 
-	/*for (int i = 0; i < ArrSort.size(); ++i)
+	/*if (GetAsyncKeyState('Y'))
 	{
-		reportf(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
-	}
+		for (int i = 0; i < ArrSortSizeCurr; ++i)
+		{
+			//reportf(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
+			if (ArrSort[i] >= 0)
+				reportf(0, "ViewDist = %f\n", ArrID[ArrSort[i]]->ViewDist);
+		}
 
-	reportf(0, "%d---------\n", ArrSortSizeCurr);*/
+		reportf(0, "%d---------\n", ArrSortSizeCurr);
+	}*/
 }
 
 bool Effects::EffectVisibleGet(ID id)

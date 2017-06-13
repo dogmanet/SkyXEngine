@@ -92,6 +92,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 }*/
 
+
+	INITCOMMONCONTROLSEX icex;
+	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	icex.dwICC = ICC_LISTVIEW_CLASSES;
+	InitCommonControlsEx(&icex);
+
+	SXLevelEditor::GroupBoxData->Visible(false);
+
+	HWND hWndLV = CreateWindow(WC_LISTVIEW, "",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | LVS_REPORT,
+		5, 430, 300, 200,
+		SXLevelEditor::JobWindow->GetHWND(), /*(HMENU)IDC_LISTVIEW*/0, GetModuleHandle(NULL), NULL);
+
+	// Чтобы определялись строка (item) и столбец (subitem) обязательно устанавливаем
+	// расширенный стиль LVS_EX_FULLROWSELECT.
+	ListView_SetExtendedListViewStyleEx(hWndLV, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
 	return result;

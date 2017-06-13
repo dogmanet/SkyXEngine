@@ -24,15 +24,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SGeom_0SettGreenSetFreqGrass(30);
 
-	/*for (int i = 0; i < 20; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
-		for (int k = 0; k < 20; ++k)
+		for (int k = 0; k < 10; ++k)
 		{
-			ID tmpid = SPE_EffectCopyName("test");
-			SPE_EffectPosSet(tmpid, &float3(i, 0, k));
-			SPE_EffectEnableSet(tmpid, true);
+			ID tmpid = SPE_EffectGetByName("test");
+			//SPE_EffectPosSet(tmpid, &float3(i, 0, k));
+			//SPE_EffectEnableSet(tmpid, true);
+			SPE_EffectPlayByID(tmpid, &float3(i, 0, k), 0/*&float3(0,1,0)*/);
 		}
-	}*/
+	}
 
 	/*ID tmpid = SPE_EffectGetByName("test");
 	SPE_EffectEnableSet(tmpid, true);*/

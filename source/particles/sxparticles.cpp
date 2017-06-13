@@ -175,18 +175,18 @@ void SPE_EffectsClear()
 	ArrEffects->Clear();
 }
 
-ID SPE_EffectCopyName(const char* name)
+ID SPE_EffectInstanceByName(const char* name)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectCopyName(name);
+	return ArrEffects->EffectInstanceByName(name);
 }
 
-ID SPE_EffectCopyID(ID id)
+ID SPE_EffectInstanceByID(ID id)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectCopyID(id);
+	return ArrEffects->EffectInstanceByID(id);
 }
 
 ID SPE_EffectGetByName(const char* name)
@@ -310,6 +310,20 @@ void SPE_EffectEnableSet(ID id, bool isenable)
 	PE_PRECOND(_VOID);
 
 	ArrEffects->EffectEnableSet(id, isenable);
+}
+
+void SPE_EffectPlayByID(ID id, float3* pos, float3* dir)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EffectPlayByID(id, pos, dir);
+}
+
+void SPE_EffectPlayByName(const char* name, float3* pos, float3* dir)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EffectPlayByName(name, pos, dir);
 }
 
 

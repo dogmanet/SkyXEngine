@@ -53,8 +53,8 @@ LRESULT SXParticlesEditor_ListBoxEmitters_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 
 	SXParticlesEditor::SelEmitterID = SXParticlesEditor::ListBoxEmitters->GetSel();
-
-	if (SPE_EmitterSCountGet(SXParticlesEditor::SelEffID) <= SXParticlesEditor::SelEmitterID)
+	int countemitters = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
+	if (SXParticlesEditor::SelEmitterID < 0 || countemitters <= 0 || SPE_EmitterSCountGet(SXParticlesEditor::SelEffID) <= SXParticlesEditor::SelEmitterID)
 		return 0;
 
 	SPE_EffectEnableSet(SXParticlesEditor::SelEffID, true);

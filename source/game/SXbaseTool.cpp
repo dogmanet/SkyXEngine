@@ -26,7 +26,7 @@ SXbaseTool::SXbaseTool(EntityManager * pMgr):
 {
 	m_bInvStackable = false;
 
-	m_iMuzzleFlash = SPE_EffectCopyName("muzzleflash_ak74");
+	m_iMuzzleFlash = SPE_EffectInstanceByName("muzzleflash_ak74");
 
 	m_iIvalUpdate = SET_INTERVAL(_Update, 0);
 }
@@ -65,6 +65,7 @@ void SXbaseTool::PrimaryAction(BOOL st)
 		{
 			//shoot decal
 			SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
+			SPE_EffectPlayByName("fire", &BTVEC_F3(cb.m_hitPointWorld), &BTVEC_F3(cb.m_hitNormalWorld));
 			if(!cb.m_collisionObject->isStaticOrKinematicObject())
 			{
 				((btRigidBody*)cb.m_collisionObject)->applyCentralImpulse(F3_BTVEC(dir * 10.0f));
@@ -137,10 +138,13 @@ void SXbaseTool::DbgMove(int dir, float dy)
 void SXbaseTool::OnSync()
 {
 	BaseClass::OnSync();
-	float3 pos = m_pAnimPlayer->GetBoneTransformPos(m_pAnimPlayer->GetBone("muzzle_rifle1"));
-	SPE_EffectPosSet(m_iMuzzleFlash, &pos);
-	pos = m_vOrientation * float3(0, 0, 1);
-	SPE_EffectDirSet(m_iMuzzleFlash, &pos);
+	if (m_pAnimPlayer)
+	{
+		float3 pos = m_pAnimPlayer->GetBoneTransformPos(m_pAnimPlayer->GetBone("muzzle_rifle1"));
+		SPE_EffectPosSet(m_iMuzzleFlash, &pos);
+		pos = m_vOrientation * float3(0, 0, 1);
+		SPE_EffectDirSet(m_iMuzzleFlash, &pos);
+	}
 }
 
 void SXbaseTool::_Update(float dt)

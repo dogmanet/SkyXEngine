@@ -11,11 +11,17 @@ if (!(key >= 0 && key < ArrKey.size()))\
 	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles: unresolved key of access '%d'", gen_msg_location, key); return retval; }
 
 #define EFFECTS_EFFECT_PRECOND(id, retval) \
-	if (id >= ArrID.size() || !(ArrID[id]))\
+	if (id < 0 || id >= ArrID.size() || !(ArrID[id]))\
 		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval; }
 
+#define EFFECTS_PULL_PRECOND(id, retval) \
+	if (id < 0 || id >= Pulls.size())\
+		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pull %d", gen_msg_location, id); return retval; } \
+	if (Pulls[id]->ideff < 0) \
+		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pull %d", gen_msg_location, id); return retval; }
+
 #define EFFECTS_PARTICLES_PRECOND(id, id_part, retval) \
-	if (id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
+	if (id_part < 0 || id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
 		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", gen_msg_location, id_part, id); return retval; }
 
 #define EFFECTS_PRECOND(id, id_part, retval) \
@@ -49,6 +55,9 @@ public:
 		float3 CurrMin;
 		float3 CurrMax;
 
+		float3 CurrMin2;
+		float3 CurrMax2;
+
 		float3 Position, Direction, Rotation;
 		float4x4 MatTranslation;
 		float4x4 MatRotate;
@@ -59,6 +68,10 @@ public:
 		bool Enable;
 		bool Alife;
 		Array<Emitter*> Arr;
+
+		ID IDPull;
+		bool Busy;
+		bool Original;
 	};
 
 	void Load(const char* file);
@@ -89,8 +102,8 @@ public:
 	inline void EmitterNameSet(ID id, ID id_part, const char* name);
 	inline void EmitterNameGet(ID id, ID id_part, char* name);
 
-	inline ID EffectCopyName(const char* name);
-	inline ID EffectCopyID(ID id);
+	inline ID EffectInstanceByID(ID id);
+	inline ID EffectInstanceByName(const char* name);
 	inline ID EffectGetByName(const char* name);
 	inline ID EffectAdd(const char* name);
 	inline int EffectCountGet();
@@ -110,6 +123,9 @@ public:
 	inline bool EffectEnableGet(ID id);
 	inline void EffectEnableSet(ID id, bool isenable);
 
+	void EffectPlayByID(ID id, float3* pos, float3* dir);
+	void EffectPlayByName(const char* name, float3* pos, float3* dir);
+
 	inline bool EffectAlifeGet(ID id);
 	inline void EffectAlifeSet(ID id, bool alife);
 
@@ -128,10 +144,27 @@ public:
 
 protected:
 
+	struct Pull
+	{
+		Pull();
+
+		Array<ID> arr;
+		ID ideff;
+	};
+
+	inline ID EffectCopyName(const char* name);
+	inline ID EffectCopyID(ID id);
+	inline void EffectDel(ID id);
+
 	inline ID AddEffect(Effect* obj);
+	inline ID PullAdd(ID ideff);
+	inline void PullDelete(ID id);
+	inline void PullExtend(ID id);
+	inline ID PullGet(ID id);
 
 	Array<Effect*> ArrKey;	//массив всех элементов по порядку
 	Array<Effect*> ArrID;	//массив всех элементов, основанный на id
+	Array<Pull*> Pulls;
 	Array<ID> ArrSort;
 	int ArrSortSizeCurr;	//текущий размер массива ArrSort
 };

@@ -693,6 +693,12 @@ struct ISXGUIListBox : public virtual ISXGUIComponent
 	virtual bool ScrollLine(WORD scroll, WORD dir, int count) = 0;
 };
 
+struct ISXGUIListView : public virtual ISXGUIComponent
+{
+	virtual ~ISXGUIListView(){}
+
+};
+
 //! создает экземплляр объекта "ListBox", и возвращает указатель
 SX_LIB_API ISXGUIListBox* SXGUICrListBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
 

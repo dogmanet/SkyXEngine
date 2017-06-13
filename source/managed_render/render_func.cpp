@@ -1182,26 +1182,26 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 		if (pdata->BoundType == ParticlesBoundType::pbt_box)
 		{
 			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(float3(pdata->BoundVec2 - pdata->BoundVec1)) * SMMatrixTranslation(float3(pdata->BoundVec2 + pdata->BoundVec1)*0.5f)));
-			GData::FigureBox->DrawSubset(0);
+			GData::Editors::FigureBox->DrawSubset(0);
 		}
 		else if (pdata->BoundType == ParticlesBoundType::pbt_sphere)
 		{
 			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(pdata->BoundVec1.w, pdata->BoundVec1.w, pdata->BoundVec1.w) * SMMatrixTranslation(float3(pdata->BoundVec1))));
-			GData::FigureSphere->DrawSubset(0);
+			GData::Editors::FigureSphere->DrawSubset(0);
 		}
 		else if (pdata->BoundType == ParticlesBoundType::pbt_cone)
 		{
-			if(GData::FigureConeParam.x != pdata->BoundVec2.w || GData::FigureConeParam.y != pdata->BoundVec1.w || GData::FigureConeParam.z != pdata->BoundVec2.y - pdata->BoundVec1.y)
+			if(GData::Editors::FigureConeParam.x != pdata->BoundVec2.w || GData::Editors::FigureConeParam.y != pdata->BoundVec1.w || GData::Editors::FigureConeParam.z != pdata->BoundVec2.y - pdata->BoundVec1.y)
 			{
-				GData::FigureConeParam.x = pdata->BoundVec2.w;
-				GData::FigureConeParam.y = pdata->BoundVec1.w;
-				GData::FigureConeParam.z = pdata->BoundVec2.y - pdata->BoundVec1.y;
+				GData::Editors::FigureConeParam.x = pdata->BoundVec2.w;
+				GData::Editors::FigureConeParam.y = pdata->BoundVec1.w;
+				GData::Editors::FigureConeParam.z = pdata->BoundVec2.y - pdata->BoundVec1.y;
 
-				SGCore_FCreateCone(GData::FigureConeParam.x, GData::FigureConeParam.y, GData::FigureConeParam.z, &GData::FigureCone, 20);
+				SGCore_FCreateCone(GData::Editors::FigureConeParam.x, GData::Editors::FigureConeParam.y, GData::Editors::FigureConeParam.z, &GData::Editors::FigureCone, 20);
 			}
 
 			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(pdata->BoundVec1.x, pdata->BoundVec2.y, pdata->BoundVec1.z));
-			GData::FigureCone->DrawSubset(0);
+			GData::Editors::FigureCone->DrawSubset(0);
 		}
 
 		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
