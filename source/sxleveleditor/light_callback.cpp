@@ -372,13 +372,13 @@ LRESULT SXLevelEditor_LightButtonColorSel_Click(HWND hwnd, UINT msg, WPARAM wPar
 			SXLevelEditor::LightEditColorG->SetText(bufg);
 			SXLevelEditor::LightEditColorB->SetText(bufb);
 
-			if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+			if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 			{
-				int sel = SXLevelEditor::ListBoxList->GetSel();
+				/*int sel = SXLevelEditor::ListBoxList->GetSel();
 				if (sel >= 0 && sel < SML_LigthsGetCount())
 				{
 					SML_LigthsSetColor(SML_LigthsGetIDOfKey(sel), &float3(255.f / float(tmpr), 255.f / float(tmpg), 255.f / float(tmpb)));
-				}
+				}*/
 			}
 
 		}
@@ -398,9 +398,9 @@ LRESULT SXLevelEditor_LightButtonSourceMesh_Click(HWND hwnd, UINT msg, WPARAM wP
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::LightEditSourceMesh->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 		{
-			if (sel >= 0 && sel < SML_LigthsGetCount())
+			/*if (sel >= 0 && sel < SML_LigthsGetCount())
 			{
 				sel = SML_LigthsGetIDOfKey(sel);
 				SML_LigthsLoadSource(sel, tmpname);
@@ -418,7 +418,7 @@ LRESULT SXLevelEditor_LightButtonSourceMesh_Click(HWND hwnd, UINT msg, WPARAM wP
 
 					SXLevelEditor::LightComboBoxSourceMesh->SetSel(SML_LigthsGetBindedGroupSource(sel));
 				}
-			}
+			}*/
 		}
 	}
 	return 0;
@@ -481,15 +481,15 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 		{
 			if (SXLevelEditor::LightCheckBoxGlobal->GetCheck())
 			{
-				LCActivateType(LightsTypeLight::ltl_global, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
+				//LCActivateType(LightsTypeLight::ltl_global, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
 			}
 			else
 			{
-				LCActivateType(SXLevelEditor::LightComboBoxTypeLight->GetSel() == 0 ? LightsTypeLight::ltl_point : LightsTypeLight::ltl_direction, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
+				//LCActivateType(SXLevelEditor::LightComboBoxTypeLight->GetSel() == 0 ? LightsTypeLight::ltl_point : LightsTypeLight::ltl_direction, GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_LIGHT);
 			}
 		}
 
-		else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+		/*else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		{
 			DWORD numsel = SXLevelEditor::ListBoxList->GetSel();
 
@@ -582,12 +582,12 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 					SXLevelEditor::LightEditRotZ->SetText(tmpRotZ);
 				}
 			}
-		}
+		}*/
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
 		HWND handle_elem = (HWND)(lParam);
-		if (SXLevelEditor::LightComboBoxTypeLight->GetHWND() == handle_elem)
+		/*if (SXLevelEditor::LightComboBoxTypeLight->GetHWND() == handle_elem)
 		{
 			int numsel = SXLevelEditor::LightComboBoxTypeLight->GetSel();
 			if (numsel == 0)
@@ -626,7 +626,7 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 				return 0;
 
 			SML_LigthsSetTypeShadowed(SML_LigthsGetIDOfKey(numsel), (LightsTypeShadow)SXLevelEditor::LightComboBoxTypeLightShadow->GetSel());
-		}
+		}*/
 	}
 	return 0;
 }
@@ -637,7 +637,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmptext[256];
 	tmptext[0] = 0;
 	DWORD numsel = SXLevelEditor::ListBoxList->GetSel();
-	if (SXLevelEditor::EditName->GetHWND() == hwnd)
+	/*if (SXLevelEditor::EditName->GetHWND() == hwnd)
 	{
 		SXLevelEditor::EditName->GetText(tmptext, 256);
 		if (tmptext[0] != 0 && GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel != -1)
@@ -647,7 +647,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		}
 		else if (tmptext[0] != 0)
 			MessageBox(0, "Необходимо ввести имя!", 0, 0);
-	}
+	}*/
 	/*else if (SXWinAddSetLight::EditVolume->GetHWND() == hwnd)
 	{
 		SXWinAddSetLight::EditVolume->GetText(tmptext, 256);
@@ -671,8 +671,8 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 		{
 			SkyXEngine::Core::Data::Level::LightManager->Arr[numsel]->SetRays(tmptext);
 		}
-	}*/
-	else if (SXLevelEditor::LightEditBias->GetHWND() == hwnd)
+	}
+	/*else if (SXLevelEditor::LightEditBias->GetHWND() == hwnd)
 	{
 		SXLevelEditor::LightEditBias->GetText(tmptext, 256);
 		float bias = 0;
@@ -736,7 +736,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 			SXLevelEditor::LightEditDist->SetText(tmptext);
 		}
 
-	}
+	}*/
 
 	return 0;
 }
@@ -744,7 +744,7 @@ LRESULT SXLevelEditor_LightEditObject_Enter(HWND hwnd, UINT msg, WPARAM wParam, 
 LRESULT SXLevelEditor_LightEditTransform_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DWORD numsel = SXLevelEditor::ListBoxList->GetSel();
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
+	/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT && numsel >= 0 && numsel < SML_LigthsGetCount())
 	{
 		char tmpcoord[256];
 		tmpcoord[0] = 0;
@@ -795,28 +795,21 @@ LRESULT SXLevelEditor_LightEditTransform_Enter(HWND hwnd, UINT msg, WPARAM wPara
 
 		if (ispos)
 		{
-			SML_LigthsGetPos(SML_LigthsGetIDOfKey(numsel), &float3coord, false, false/*SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
+			SML_LigthsGetPos(SML_LigthsGetIDOfKey(numsel), &float3coord, false, false);
 			float3coord[keycoord] = getcoord;
-			SML_LigthsSetPos(SML_LigthsGetIDOfKey(numsel), &float3coord/*, SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
+			SML_LigthsSetPos(SML_LigthsGetIDOfKey(numsel), &float3coord);
 		}
 		else
 		{
 			float3 rotcoord;
-			/*if (SkyXEngine::Core::Data::Settings::EditorsTransLightDirOrRot == 1)
-			{*/
+			
 			SML_LigthsGetRot(SML_LigthsGetIDOfKey(numsel), &rotcoord, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 				rotcoord[keycoord] = getcoord;
 				SML_LigthsSetRot(SML_LigthsGetIDOfKey(numsel), &rotcoord, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
-			/*}
-			else
-			{
-				SkyXEngine::Core::Data::Level::LightManager->Arr[numsel]->GetDirection(&rotcoord);
-				rotcoord[keycoord] = getcoord;
-				SkyXEngine::Core::Data::Level::LightManager->Arr[numsel]->SetDirection(&rotcoord);
-			}*/
+			
 		}
 	}
-
+	*/
 	return 0;
 }
 
@@ -825,7 +818,7 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 {
 	long tmpid = -1;
 	long tmpid2 = -1;
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+	/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		tmpid = SXLevelEditor::ListBoxList->GetSel();
 	tmpid2 = tmpid;
 	int typelight = SXLevelEditor::LightComboBoxTypeLight->GetSel();
@@ -1036,15 +1029,7 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 				true,
 				is_shadow);
 
-			/*SkyXEngine::Core::Data::EngineID::Light_Global = SkyXEngine::Core::Data::Level::LightManager->Arr.size() - 1;
-			SXWinAddSetLight::CheckBoxGlobal->SetCheck(false);
-			SXWinAddSetLight::ComboBoxType->Enable(true);
-			SXWinAddSetLight::CheckBoxGlobal->Enable(false);*/
-
-			/*if (SkyXEngine::Core::Data::Settings::EditorsTransLightDirOrRot == 1)
-				SkyXEngine::Core::Data::Level::LightManager->Arr[SkyXEngine::Core::Data::Level::LightManager->Arr.size() - 1]->SetRotation(&tmprot);
-			else
-				SkyXEngine::Core::Data::Level::LightManager->Arr[SkyXEngine::Core::Data::Level::LightManager->Arr.size() - 1]->SetDirection(&tmprot);*/
+			
 		}
 	}
 	else
@@ -1071,25 +1056,6 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 		SML_LigthsLoadSource(tmpid, tmppathsource);
 	}
 
-	/*if (StrValidate(tmppathsource))
-	{
-		SkyXEngine::Core::Data::Level::LightManager->Arr[SkyXEngine::Core::Data::Level::LightManager->GetCount() - 1]->LoadSource(tmppathsource);
-	}
-
-	if (StrValidate(tmprays))
-	{
-		SkyXEngine::Core::Data::Level::LightManager->Arr[SkyXEngine::Core::Data::Level::LightManager->GetCount() - 1]->SetRays(tmprays);
-	}*/
-
-	/*if (tmpbiasnum > 0.0f)
-	{
-		SkyXEngine::Core::Data::Level::LightManager->Arr[SkyXEngine::Core::Data::Level::LightManager->GetCount() - 1]->SetBias(tmpbiasnum);
-	}
-
-	if (tmpdistforendnum > 0.0f)
-	{
-		SkyXEngine::Core::Data::Level::LightManager->Arr[SkyXEngine::Core::Data::Level::LightManager->GetCount() - 1]->SetShadowLocalFar(tmpdistforendnum);
-	}*/
 
 	if (tmpid >= 0)
 	{
@@ -1129,6 +1095,6 @@ LRESULT SXLevelEditor_LightButtonFinish_Click(HWND hwnd, UINT msg, WPARAM wParam
 
 	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_LIGHT;
 	GData::Editors::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
-
+*/
 	return 1;
 }

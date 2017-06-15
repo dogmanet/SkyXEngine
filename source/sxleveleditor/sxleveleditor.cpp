@@ -45,6 +45,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
+	int countgc = SXGame_EntGetClassListCount();
+	const char** listgc = new const char*[countgc];
+
+	SXGame_EntGetClassList(listgc, countgc);
+	for (int i = 0; i < countgc; ++i)
+	{
+		SXLevelEditor::ComboBoxGameClass->AddItem(listgc[i]);
+	}
+
 	/*
 	if (SSInput_GetKeyEvents(SIM_LBUTTON) == InputEvents::iv_k_first)
 	{
@@ -91,23 +100,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		SGeom_GreenAddObject(0, &_res);
 	}
 }*/
-
-
-	INITCOMMONCONTROLSEX icex;
-	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-	icex.dwICC = ICC_LISTVIEW_CLASSES;
-	InitCommonControlsEx(&icex);
-
-	SXLevelEditor::GroupBoxData->Visible(false);
-
-	HWND hWndLV = CreateWindow(WC_LISTVIEW, "",
-		WS_VISIBLE | WS_CHILD | WS_BORDER | LVS_REPORT,
-		5, 430, 300, 200,
-		SXLevelEditor::JobWindow->GetHWND(), /*(HMENU)IDC_LISTVIEW*/0, GetModuleHandle(NULL), NULL);
-
-	// Чтобы определялись строка (item) и столбец (subitem) обязательно устанавливаем
-	// расширенный стиль LVS_EX_FULLROWSELECT.
-	ListView_SetExtendedListViewStyleEx(hWndLV, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();

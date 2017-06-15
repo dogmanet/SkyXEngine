@@ -693,17 +693,45 @@ struct ISXGUIListBox : public virtual ISXGUIComponent
 	virtual bool ScrollLine(WORD scroll, WORD dir, int count) = 0;
 };
 
-struct ISXGUIListView : public virtual ISXGUIComponent
-{
-	virtual ~ISXGUIListView(){}
-
-};
-
 //! создает экземплляр объекта "ListBox", и возвращает указатель
 SX_LIB_API ISXGUIListBox* SXGUICrListBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
 
 //! создает экземплляр объекта "ListBox", и возвращает указатель
 SX_LIB_API ISXGUIListBox* SXGUICrListBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, bool miltiple_sel);
+
+////////////////////////////////////////////////////////////////////////////
+
+//! элемент "ListView" - таблица с возможностью выбора
+struct ISXGUIListView : public virtual ISXGUIComponent
+{
+	virtual ~ISXGUIListView(){}
+
+	virtual int InsertColumn(char* text, int col, int width) = 0;	//!< вставить столбец по индексу
+	virtual int AddColumn(char* text, int width) = 0;				//!< добавить (последним) столбец
+	virtual void DeleteColumn(int col) = 0;							//!< удалить столбец по индексу
+	virtual int GetCountColumns() = 0;								//!< количество столбцов
+
+	virtual int AddString() = 0;				//!< добавить строку
+	virtual void DeleteString(int str) = 0;		//!< удалить строку
+	virtual int GetCountString() = 0;			//!< количество строк
+
+	virtual void SetTextItem(char* text, int col, int str) = 0;					//!< установить текст в ячейку
+	virtual void GetTextItem(char* text, int col, int str, int sizebuff) = 0;	//!< получить текст из ячейки
+
+	virtual int GetSelString(int start = -1) = 0;	//!< возвращает индекс первого найденного выделения после start (-1 - значит сначала искать)
+	virtual void SetSelString(int str) = 0;			//!< выделение строки по индексу
+	virtual int GetSelColumn() = 0;					//!< возвращает индекс выделеного столбца
+	virtual void SetSelColumn(int col) = 0;			//!< выделение столбца по индексу
+
+	virtual void Clear() = 0;						//!< очистка всей таблицы
+	virtual void ClearStrings() = 0;				//!< очистка только строк
+};
+
+//! создает экземплляр объекта "istView", и возвращает указатель
+SX_LIB_API ISXGUIListView* SXGUICrListViewEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
+
+//! создает экземплляр объекта "istView", и возвращает указатель
+SX_LIB_API ISXGUIListView* SXGUICrListView(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id);
 
 ////////////////////////////////////////////////////////////////////////////
 

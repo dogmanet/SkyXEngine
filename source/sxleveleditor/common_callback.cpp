@@ -171,6 +171,7 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 
 	LCActivateAllElems(false);
 	LCActivateCreatingElems(false);
+	GameCActivateAllElems(false);
 
 	MCActivateAllElems(true);
 	MCActivateTrans(false);
@@ -204,6 +205,8 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	LCActivateAllElems(false);
 	LCActivateCreatingElems(false);
 
+	GameCActivateAllElems(false);
+
 	GCActivateCreatingElems(true);
 	GCActivateAllElems(true);
 	
@@ -214,7 +217,7 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonLightOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+/*LRESULT SXLevelEditor_ButtonLightOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SXLevelEditor::ListBoxList->Clear();
 	long tmpcountmodel = SML_LigthsGetCount();
@@ -250,10 +253,60 @@ LRESULT SXLevelEditor_ButtonLightOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	/*LCActivateGlobal(true);
 	LCActivateDirect(true);
 	LCActivatePoint(true);*/
-	LCActivateType(LightsTypeLight::ltl_point);
+	/*LCActivateType(LightsTypeLight::ltl_point);
 
 	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_LIGHT;
 	GData::Editors::ActiveElement = -1;
+	return 0;
+}*/
+
+LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	SXLevelEditor::ListBoxList->Clear();
+
+	MCActivateAllElems(false);
+	MCActivateTrans(false);
+	GCActivateCreatingElems(false);
+	GCActivateAllElems(false);
+
+	GameCActivateAllElems(true);
+	/*long tmpcountmodel = SML_LigthsGetCount();
+	char tmptextvalcountmodel[64];
+	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
+	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountmodel);
+
+	char tmpnamecountpoly[1024];
+	char texttypel[64];
+	for (int i = 0; i < tmpcountmodel; ++i)
+	{
+		if (SML_LigthsGetType(i) == LightsTypeLight::ltl_global)
+			sprintf(texttypel, "%s", "global");
+		else if (SML_LigthsGetType(i) == LightsTypeLight::ltl_point)
+			sprintf(texttypel, "%s", "point");
+		else if (SML_LigthsGetType(i) == LightsTypeLight::ltl_direction)
+			sprintf(texttypel, "%s", "direction");
+
+		sprintf(tmpnamecountpoly, "%s | %s",
+			SML_LigthsGetName(i),
+			texttypel);
+		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
+	}
+
+	MCActivateAllElems(false);
+	MCActivateTrans(false);
+	GCActivateCreatingElems(false);
+	GCActivateAllElems(false);
+
+	LCActivateAllElems(true);
+	LCActivateCreatingElems(true);
+
+	/*LCActivateGlobal(true);
+	LCActivateDirect(true);
+	LCActivatePoint(true);
+	LCActivateType(LightsTypeLight::ltl_point);
+
+	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_LIGHT;
+	GData::Editors::ActiveElement = -1;*/
 	return 0;
 }
 
@@ -282,7 +335,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_LIGHT || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+	/*else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_LIGHT || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		if (SML_LigthsGetCount() > 0 && sel < SML_LigthsGetCount())
 		{
@@ -290,7 +343,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			GData::Editors::ActiveElement = sel;
 			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_LIGHT;
 		}
-	}
+	}*/
 
 	return 0;
 }
@@ -306,10 +359,10 @@ LRESULT SXLevelEditor_EditName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
 	{
 		SXLevelEditor::EditName->GetText(SGeom_GreenMGetName(sel), 64);
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+	/*else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		SXLevelEditor::EditName->GetText(SML_LigthsGetName(sel), 64);
-	}
+	}*/
 
 	return 0;
 }
@@ -365,7 +418,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+	/*else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		if (SML_LigthsGetCount() > 0 && sel >= 0 && sel < SML_LigthsGetCount())
 		{
@@ -383,10 +436,10 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 			else
 			{
-				SXLevelEditor_ButtonLightOpen_Click(hwnd, msg, wParam, lParam);
+				SXLevelEditor_ButtonGameObject_Click(hwnd, msg, wParam, lParam);
 			}
 		}
-	}
+	}*/
 
 	return 0;
 }
@@ -626,7 +679,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 	///////////////////
 
 
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+	/*else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 	{
 		if (!(::GetAsyncKeyState(VK_LSHIFT) && SML_LigthsGetCount() > 0))
 			return;
@@ -635,7 +688,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 		if (SXLevelEditor::LightRadioButtonPosX->GetCheck() || SXLevelEditor::LightRadioButtonPosY->GetCheck() || SXLevelEditor::LightRadioButtonPosZ->GetCheck())
 		{
 			float3 pos;
-			(SML_LigthsGetPos(SML_LigthsGetIDOfKey(selmodel), &pos, false/*SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/));
+			(SML_LigthsGetPos(SML_LigthsGetIDOfKey(selmodel), &pos, false));
 
 			if (::GetAsyncKeyState(VK_UP) & 0x8000f)
 				pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -679,7 +732,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			SXLevelEditor::LightEditPosY->SetText(tmpPosY);
 			SXLevelEditor::LightEditPosZ->SetText(tmpPosZ);
 
-			SML_LigthsSetPos(SML_LigthsGetIDOfKey(selmodel), &pos/*, SXLevelEditor::LightCheckBoxPosLightOrMesh->GetCheck()*/);
+			SML_LigthsSetPos(SML_LigthsGetIDOfKey(selmodel), &pos);
 		}
 
 		else if (SXLevelEditor::LightRadioButtonRotX->GetCheck() || SXLevelEditor::LightRadioButtonRotY->GetCheck() || SXLevelEditor::LightRadioButtonRotZ->GetCheck())
@@ -731,7 +784,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 
 			SML_LigthsSetRot(SML_LigthsGetIDOfKey(selmodel), &pos, SXLevelEditor::LightCheckBoxRotLightOrMesh->GetCheck());
 		}
-	}
+	}*/
 }
 
 void SXLevelEditor::FinalImageUncheckedMenu()

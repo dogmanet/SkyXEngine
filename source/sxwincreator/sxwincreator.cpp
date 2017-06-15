@@ -34,7 +34,7 @@
 #define SX_SAFE_DELETE_A
 #define SX_SAFE_DELETE
 
-#define SX_WINCREATOR_COUNT_ELEMENT 16
+#define SX_WINCREATOR_COUNT_ELEMENT 17
 
 #define SX_WINCREATOR_STAT_CUR_TEXT "Statistic for cursor:"
 #define SX_WINCREATOR_STAT_CUR_G "desktop:\t"
@@ -162,6 +162,7 @@ namespace SXMainWndElem
 		"ComboBox",
 		"GroupBox",
 		"ListBox",
+		"ListView",
 		"Memo",
 		"ProgressBar",
 		"RadioButton",
@@ -182,6 +183,7 @@ namespace SXMainWndElem
 		IDB_BITMAP9,
 		IDB_BITMAP11,
 		IDB_BITMAP13,
+		IDB_BITMAP25,
 		IDB_BITMAP15,
 		IDB_BITMAP17,
 		IDB_BITMAP18,

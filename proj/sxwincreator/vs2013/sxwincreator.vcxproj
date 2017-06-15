@@ -111,6 +111,33 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\sxwincreator\resource\arrow.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\button.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\button_img.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\checkbox.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\combobox.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\edit.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\groupbox.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\listbox.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\listview.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\mainmenu.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\memo.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\popupmenu.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\progressbar.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\radiobutton.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\static.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\statusbar.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\toolbar.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\trackbar.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\updown.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\window.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\меню\new.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\меню\open.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\меню\run.bmp" />
+    <Image Include="..\..\..\source\sxwincreator\resource\меню\save.bmp" />
+    <Image Include="resource\listview.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

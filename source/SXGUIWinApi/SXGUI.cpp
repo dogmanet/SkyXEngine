@@ -133,6 +133,16 @@ ISXGUIListBox* SXGUICrListBox(const char* caption, WORD x, WORD y, WORD width, W
 	return new SXGUIListBox(caption, x, y, width, heigth, parent, handler, id, miltiple_sel);
 }
 
+ISXGUIListView* SXGUICrListViewEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+{
+	return new SXGUIListView(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+}
+
+ISXGUIListView* SXGUICrListView(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+{
+	return new SXGUIListView(caption, x, y, width, heigth, parent, handler, id);
+}
+
 
 ISXGUIHint* SXGUICrHint(HWND parent)
 {

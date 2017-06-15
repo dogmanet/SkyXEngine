@@ -424,6 +424,10 @@ void SXGUIComponent::GetHintText(char* buf)
 
 void SXGUIComponent::UpdateSize()
 {
+	char classname[256];
+	GetClassName(this->GetHWND(), classname, 256);
+	if (strcmp(classname, WC_LISTVIEW) == 0)
+		int qwerty = 0;
 	RECT rect;
 	RECT win_screen_rect;
 	BOOL bf = GetWindowRect(this->GetHWND(), &rect);
@@ -500,12 +504,15 @@ void SXGUIComponent::UpdateSize()
 	//MapWindowPoints(this->ParentHandle, HWND_DESKTOP, (LPPOINT)&WinScreenRect, 2);
 	//MessageBox(0,ToPointChar(rect.bottom - rect.top),ToPointChar(rect.bottom - rect.top),0);
 	
-	MoveWindow(this->GetHWND(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+	bf = MoveWindow(this->GetHWND(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 	//SetWinRect(&rect,true);
 	GetWindowRect(this->Parent(),&this->ParentRect);
 	GetWindowRect(this->GetHWND(), &WinScreenRect);
 
 	OffsetParentRect.top = OffsetParentRect.bottom = OffsetParentRect.left = OffsetParentRect.right = 0;
+
+	DWORD err = GetLastError();
+	int qweerty = 0;
 }
 
 void SXGUIComponent::UpdateRect()
@@ -925,10 +932,13 @@ BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(HWND hwnd,LPARA
 {
 	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
 	
-	char ClassName[256];
-	int error = GetClassName(hwnd,ClassName,256);
-		if(error && strcmp(ClassName,"SXGUIBUTTONIMG") == 0 && Component)
-			SendMessage(hwnd,WM_KILLFOCUS,0,lParam);
+	if (Component)
+	{
+		char ClassName[256];
+		int error = GetClassName(hwnd, ClassName, 256);
+		if (error && strcmp(ClassName, "SXGUIBUTTONIMG") == 0 && Component)
+			SendMessage(hwnd, WM_KILLFOCUS, 0, lParam);
+	}
 		
 	return TRUE;
 }
@@ -936,15 +946,17 @@ BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(HWND hwnd,LPARA
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateSize(HWND hwnd,LPARAM lParam)
 {
 	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
-	Component->UpdateSize();
-		
+	if (Component)
+		Component->UpdateSize();
+
 	return TRUE;
 }
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateRect(HWND hwnd,LPARAM lParam)
 {
 	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
-	Component->UpdateRect();
+	if (Component)
+		Component->UpdateRect();
 		
 	return TRUE;
 }
@@ -953,15 +965,18 @@ BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcMouseMove(HWND hwnd,LPARAM lPar
 {
 	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
 
-	POINT p;
-	GetCursorPos(&p);
-	RECT rect;
-	GetWindowRect(hwnd,&rect);
+	if (Component)
+	{
+		POINT p;
+		GetCursorPos(&p);
+		RECT rect;
+		GetWindowRect(hwnd, &rect);
 
-		if(Component && !((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom)))
+		if (Component && !((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom)))
 		{
-			SendMessage(Component->GetHWND(),WM_NCMOUSEMOVE,lParam,0);
+			SendMessage(Component->GetHWND(), WM_NCMOUSEMOVE, lParam, 0);
 		}
+	}
 
 	return TRUE;
 }
@@ -1022,6 +1037,10 @@ LRESULT SXGUIBaseHandlers::SizeChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 LRESULT SXGUIBaseHandlers::SizingChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
+	
+	if (!Component)
+		return TRUE;
+
 	RECT rc;
 	GetWindowRect(hwnd, &rc);
 	POINT p;

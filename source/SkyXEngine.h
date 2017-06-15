@@ -404,7 +404,7 @@ void SkyXEngine_Init()
 	SXDecals_0Create();
 	SXDecals_Dbg_Set(printflog);
 
-#ifdef SX_GAME
+#ifndef SX_PARTICLES_EDITOR
 	SXGame_0Create();
 	SXGame_Dbg_Set(printflog);
 

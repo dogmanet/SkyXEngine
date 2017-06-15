@@ -1525,14 +1525,14 @@ void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 		if (GData::Editors::SelBackFacesCull)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
+		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		{
 			if (GData::Editors::ActiveElement > -1)
 			{
 				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
 				SML_LigthsRender(GData::Editors::ActiveElement, timeDelta);
 			}
-		}
+		}*/
 
 		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{

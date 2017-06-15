@@ -403,6 +403,13 @@ LRESULT AddElement(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 									sprintf(Object->SXClassName,"%s","SXGUIListBox");
 									SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
 								}
+								else if (strcmp(SXMainWndElem::Elements[i].Name, "ListView") == 0)
+								{
+									Object->Object = SXGUICrListView(NameElem, xPos, yPos, 200, 100, hwnd, WndProcChildJob, 0);
+									GetClassName(Object->Object->GetHWND(), Object->SysClassName, 64);
+									sprintf(Object->SXClassName, "%s", "SXGUIListView");
+									SendMessage(Object->Object->GetHWND(), LB_SETITEMHEIGHT, 0, 1);
+								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"Memo") == 0)
 								{
 									Object->Object = SXGUICrMemo(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);

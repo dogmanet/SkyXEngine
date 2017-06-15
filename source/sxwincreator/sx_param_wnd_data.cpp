@@ -978,7 +978,8 @@ void SaveFile(const char* path)
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TOOLBARCLASSNAME) != 0 &&
-					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 /*&& 
+					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 &&
+					strcmp(SXMainWndElem::CreateElements[i]->SXClassName, "SXGUIListView") != 0 /*&&
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0*/
 					)
 				{
@@ -1261,49 +1262,54 @@ void LoadFile(const char* path)
 					Object->Object = SXGUICrListBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, true);
 					SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
 				}
-				else if(strcmp(Object->SXClassName,"SXGUIMemo") == 0)
+				else if (strcmp(Object->SXClassName, "SXGUIListView") == 0)
 				{
 					CountObject = 7;
+					Object->Object = SXGUICrListView(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+				}
+				else if(strcmp(Object->SXClassName,"SXGUIMemo") == 0)
+				{
+					CountObject = 8;
 					Object->Object = SXGUICrMemo(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIProgressBar") == 0)
 				{
-					CountObject = 8;
+					CountObject = 9;
 					Object->Object = SXGUICrProgressBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, true, true);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIRadioButton") == 0)
 				{
-					CountObject = 9;
+					CountObject = 10;
 					Object->Object = SXGUICrRadioButton(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIStatic") == 0)
 				{
-					CountObject = 10;
+					CountObject = 11;
 					Object->Object = SXGUICrStatic(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUITrackBar") == 0)
 				{
-					CountObject = 11;
+					CountObject = 12;
 					Object->Object = SXGUICrTrackBar(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIStatusBar") == 0)
 				{
-					CountObject = 12;
+					CountObject = 13;
 					Object->Object = SXGUICrStatusBar(CaptionElement, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIToolBar") == 0)
 				{
-					CountObject = 13;
+					CountObject = 14;
 					Object->Object = SXGUICrToolBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIUpDown") == 0)
 				{
-					CountObject = 14;
+					CountObject = 15;
 					Object->Object = SXGUICrUpDown(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, 0, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIBaseWnd") == 0)
 				{
-					CountObject = 15;
+					CountObject = 16;
 					Object->Object = SXGUICrBaseWnd(Object->Name, CaptionElement, 0,
 													0,GClientRect.left,GClientRect.top,Width,Height,
 													0,0,CreateSolidBrush(RGB(200,200,200)),
@@ -1608,7 +1614,8 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TOOLBARCLASSNAME) != 0 &&
-							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0
+							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 &&
+							strcmp(SXMainWndElem::CreateElements[i]->SXClassName, "SXGUIListView") != 0
 							)
 						{
 							//char* tmpstr = 0;
@@ -1716,6 +1723,19 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%s%s","true",");\n");
+							//Object->Object = new SXGUIListBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,true);
+							//SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
+						}
+						else if (strcmp(SXMainWndElem::CreateElements[i]->SXClassName, "SXGUIListView") == 0)
+						{
+							fprintf(file, "%s%s%s", "\"", CaptionElement, "\",");
+							fprintf(file, "%d%s", GClientRect.left, ",");
+							fprintf(file, "%d%s", GClientRect.top, ",");
+							fprintf(file, "%d%s", Width, ",");
+							fprintf(file, "%d%s", Height, ",");
+							fprintf(file, "%s%s%s", NameSpacePP, SXMainWndElem::NameJobWnd, "->GetHWND(),");
+							fprintf(file, "%d%s", 0, ",");
+							fprintf(file, "%d%s", 0, ");\n");
 							//Object->Object = new SXGUIListBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,true);
 							//SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
 						}
