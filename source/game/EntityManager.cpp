@@ -501,3 +501,17 @@ void EntityManager::EntKV(int argc, const char ** argv)
 		break;
 	}
 }
+
+int EntityManager::GetCount()
+{
+	return(m_vEntList.size());
+}
+
+SXbaseEntity * EntityManager::GetById(ID id)
+{
+	if(id < 0 || (UINT)id >= m_vEntList.size())
+	{
+		return(NULL);
+	}
+	return(m_vEntList[id]);
+}

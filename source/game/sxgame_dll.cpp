@@ -280,3 +280,15 @@ SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char 
 	}
 	return(*pNode->Val);
 }
+
+SX_LIB_API int SXGame_EntGetCount()
+{
+	SG_PRECOND(0);
+	return(GameData::m_pMgr->GetCount());
+}
+
+SX_LIB_API SXbaseEntity * SXGame_EntGet(ID id)
+{
+	SG_PRECOND(NULL);
+	return(GameData::m_pMgr->GetById(id));
+}

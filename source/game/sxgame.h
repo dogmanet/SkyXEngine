@@ -94,6 +94,14 @@ SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname);
 */
 SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key);
 
+/*! Количество всех entity
+*/
+SX_LIB_API int SXGame_EntGetCount();
+
+/*! Количество всех entity
+*/
+SX_LIB_API SXbaseEntity * SXGame_EntGet(ID id);
+
 #endif
 
 /*! @} */
