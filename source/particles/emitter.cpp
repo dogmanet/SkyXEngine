@@ -1029,19 +1029,19 @@ void Emitter::Compute()
 			}
 			else
 			{
-				if (Arr[i].Pos.x + tmpmaxedge > CurrMax.x)
+			if (Arr[i].Pos.x + tmpmaxedge > CurrMax.x)
 					CurrMax.x = Arr[i].Pos.x + tmpmaxedge;
 
 				if (Arr[i].Pos.x - tmpmaxedge < CurrMin.x)
 					CurrMin.x = Arr[i].Pos.x - tmpmaxedge;
 
-				if (Arr[i].Pos.y + tmpmaxedge > CurrMax.y)
+			if (Arr[i].Pos.y + tmpmaxedge > CurrMax.y)
 					CurrMax.y = Arr[i].Pos.y + tmpmaxedge;
 
 				if (Arr[i].Pos.y - tmpmaxedge < CurrMin.y)
 					CurrMin.y = Arr[i].Pos.y - tmpmaxedge;
 
-				if (Arr[i].Pos.z + tmpmaxedge > CurrMax.z)
+			if (Arr[i].Pos.z + tmpmaxedge > CurrMax.z)
 					CurrMax.z = Arr[i].Pos.z + tmpmaxedge;
 
 				if (Arr[i].Pos.z - tmpmaxedge < CurrMin.z)

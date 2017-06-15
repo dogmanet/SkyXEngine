@@ -51,6 +51,9 @@ public:
 	void DumpList(int argc, const char ** argv);
 	void EntKV(int argc, const char ** argv);
 
+	int GetCount();
+	SXbaseEntity * GetById(ID id);
+
 protected:
 	ID Register(SXbaseEntity * pEnt);
 	void Unregister(ID ent);
