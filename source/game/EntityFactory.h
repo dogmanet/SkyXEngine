@@ -58,10 +58,10 @@ class EntityFactory: public IEntityFactory
 public:
 	EntityFactory(const char * szName, bool showInListing)
 	{
-		EntityFactoryMap::GetInstance()->AddFactory(this, szName);
+		m_bShowInListing = showInListing;
 		m_szClassName = szName;
 		m_pPropTable = T::SGetPropTable();
-		m_bShowInListing = showInListing;
+		EntityFactoryMap::GetInstance()->AddFactory(this, szName);
 	}
 
 	~EntityFactory()

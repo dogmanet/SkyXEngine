@@ -28,8 +28,11 @@ public:
 	void AddShape(btRigidBody * pBody);
 	void RemoveShape(btRigidBody * pBody);
 
-	void LoadGeom();
+	void LoadGeom(const char * file=NULL);
 	void UnloadGeom();
+
+	bool ImportGeom(const char * file);
+	bool ExportGeom(const char * file);
 
 	void Render();
 

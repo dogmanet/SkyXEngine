@@ -74,7 +74,7 @@ public:
 
 	SMMATRIX GetWorldTM();
 
-	void SetOrient(const SMQuaternion & q);
+	virtual void SetOrient(const SMQuaternion & q);
 	SMQuaternion GetOrient();
 
 	virtual bool SetKV(const char * name, const char * value);

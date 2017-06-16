@@ -79,13 +79,18 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">obj\x64\Debug\BulletWorldImporter\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">BulletWorldImporter_vs2010_x64_debug</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LibraryPath>../../bin;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LibraryPath>../../bin;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalOptions>/MP /wd4244 /wd4267 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Full</Optimization>
       <AdditionalIncludeDirectories>..\..\Extras\Serialize\BulletFileLoader;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>
-      </PreprocessorDefinitions>
+      <PreprocessorDefinitions>BULLET_EXPORTS=_declspec(dllexport);</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -106,6 +111,7 @@
     <Lib>
       <OutputFile>$(OutDir)BulletWorldImporter_vs2010.lib</OutputFile>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>BulletFileLoader_vs2010.lib</AdditionalDependencies>
     </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -154,7 +160,7 @@
       <AdditionalOptions>/MP /wd4244 /wd4267 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\Extras\Serialize\BulletFileLoader;..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BULLET_EXPORTS=_declspec(dllexport);_DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -173,6 +179,7 @@
     <Lib>
       <OutputFile>$(OutDir)BulletWorldImporter_vs2010_debug.lib</OutputFile>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalDependencies>BulletFileLoader_vs2010_debug.lib</AdditionalDependencies>
     </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>

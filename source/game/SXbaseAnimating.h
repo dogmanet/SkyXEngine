@@ -23,6 +23,8 @@ public:
 
 	void PlayAnimation(const char * name, UINT iFadeTime = 0, UINT slot = 0);
 
+	void SetPos(const float3 & pos);
+	void SetOrient(const SMQuaternion & q);
 
 protected:
 	IAnimPlayer * m_pAnimPlayer;

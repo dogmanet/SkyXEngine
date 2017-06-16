@@ -165,3 +165,21 @@ void SXbaseAnimating::ReleasePhysics()
 	mem_delete(m_pRigidBody);
 	mem_delete(m_pCollideShape);
 }
+
+void SXbaseAnimating::SetPos(const float3 & pos)
+{
+	BaseClass::SetPos(pos);
+	if(m_pRigidBody)
+	{
+		m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(pos));
+	}
+}
+
+void SXbaseAnimating::SetOrient(const SMQuaternion & q)
+{
+	BaseClass::SetOrient(q);
+	if(m_pRigidBody)
+	{
+		m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(q));
+	}
+}

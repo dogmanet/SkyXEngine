@@ -19,6 +19,7 @@ See the license in LICENSE
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
+#	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgeom.lib")
@@ -26,6 +27,7 @@ See the license in LICENSE
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
+#	pragma comment(lib, "BulletWorldImporter_vs2010.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -91,10 +93,10 @@ SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
 	reportf = rf;
 }
 
-SX_LIB_API void SXPhysics_LoadGeom()
+SX_LIB_API void SXPhysics_LoadGeom(const char * file)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->LoadGeom();
+	g_pWorld->LoadGeom(file);
 }
 
 SX_LIB_API void SXPhysics_UnloadGeom()
@@ -125,4 +127,16 @@ SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld()
 {
 	SP_PRECOND(NULL);
 	return(g_pWorld->GetBtWorld());
+}
+
+SX_LIB_API bool SXPhysics_ImportGeom(const char * file)
+{
+	SP_PRECOND(false);
+	return(g_pWorld->ImportGeom(file));
+}
+
+SX_LIB_API bool SXPhysics_ExportGeom(const char * file)
+{
+	SP_PRECOND(false);
+	return(g_pWorld->ExportGeom(file));
 }
