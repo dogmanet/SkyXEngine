@@ -53,11 +53,19 @@ SX_LIB_API void SXPhysics_Sync();
 
 /*! Загружает информацию о геометрии уровня
 */
-SX_LIB_API void SXPhysics_LoadGeom();
+SX_LIB_API void SXPhysics_LoadGeom(const char * file = NULL);
 
 /*! Выгружает информацию о геометрии уровня
 */
 SX_LIB_API void SXPhysics_UnloadGeom();
+
+/*! Загружает информацию о геометрии уровня
+*/
+SX_LIB_API bool SXPhysics_ImportGeom(const char * file);
+
+/*! Выгружает информацию о геометрии уровня
+*/
+SX_LIB_API bool SXPhysics_ExportGeom(const char * file);
 
 /*! Выполняет отрисовку физических объектов
 */

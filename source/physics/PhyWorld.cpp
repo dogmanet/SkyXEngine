@@ -4,6 +4,9 @@
 #include <gcore/sxgcore.h>
 #include <mtllight/sxmtllight.h>
 
+
+#include <../Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h>
+
 PhyWorld::PhyWorld():
 	m_pGeomStaticCollideMesh(NULL),
 	m_pGeomStaticCollideShape(NULL),
@@ -91,8 +94,13 @@ void PhyWorld::RemoveShape(btRigidBody * pBody)
 	}
 }
 
-void PhyWorld::LoadGeom()
+void PhyWorld::LoadGeom(const char * file)
 {
+	file = "cache.phy";
+	if(file && ImportGeom(file))
+	{
+		return;
+	}
 	float3_t ** ppVertices;
 	int32_t * pVertexCount;
 	uint32_t ** ppIndices;
@@ -396,6 +404,96 @@ void PhyWorld::UnloadGeom()
 	mem_delete_a(m_ppGeomMtlTypes);
 }
 
+bool PhyWorld::ImportGeom(const char * file)
+{
+	UnloadGeom();
+
+	btBulletWorldImporter * importer = new btBulletWorldImporter(m_pDynamicsWorld);
+
+	bool ret = importer->loadFile(file);
+	if(ret)
+	{
+		m_pGeomStaticCollideShape = importer->getCollisionShapeByName("m_pGeomStaticCollideShape");
+		m_pGeomStaticRigidBody = importer->getRigidBodyByName("m_pGeomStaticRigidBody");
+		m_pGeomStaticRigidBody->setCollisionFlags(m_pGeomStaticRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+
+		m_iGreenShapes = -1;
+		char str[64];
+		do
+		{
+			sprintf(str, "m_ppGreenStaticCollideShape[%d]", ++m_iGreenShapes);
+		}
+		while(importer->getCollisionShapeByName(str));
+		if(m_iGreenShapes)
+		{
+			m_ppGreenStaticCollideShape = new btCollisionShape*[m_iGreenShapes];
+			m_piGreenTotal = new int[m_iGreenShapes];
+			m_pppGreenStaticRigidBody = new btRigidBody**[m_iGreenShapes];
+			for(int i = 0; i < m_iGreenShapes; ++i)
+			{
+				sprintf(str, "m_ppGreenStaticCollideShape[%d]", i);
+				m_ppGreenStaticCollideShape[i] = importer->getCollisionShapeByName(str);
+				m_piGreenTotal[i] = -1;
+				do
+				{
+					sprintf(str, "m_pppGreenStaticRigidBody[%d][%d]", i, ++m_piGreenTotal[i]);
+				}
+				while(importer->getRigidBodyByName(str));
+
+				m_pppGreenStaticRigidBody[i] = new btRigidBody*[m_piGreenTotal[i]];
+
+				for(int j = 0; j < m_piGreenTotal[i]; ++j)
+				{
+					sprintf(str, "m_pppGreenStaticRigidBody[%d][%d]", i, j);
+					m_pppGreenStaticRigidBody[i][j] = importer->getRigidBodyByName(str);
+					m_pppGreenStaticRigidBody[i][j]->setCollisionFlags(m_pppGreenStaticRigidBody[i][j]->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+				}
+			}
+		}
+	}
+	mem_delete(importer);
+	return(ret);
+}
+
+const char * _allocStr(const char * _str)
+{
+	char * str = new char[strlen(_str) + 1];
+	strcpy(str, _str);
+	return(str);
+}
+
+bool PhyWorld::ExportGeom(const char * _file)
+{
+	btDefaultSerializer * serializer = new btDefaultSerializer();
+	serializer->startSerialization();
+
+	serializer->registerNameForPointer(m_pGeomStaticCollideShape, _allocStr("m_pGeomStaticCollideShape"));
+	serializer->registerNameForPointer(m_pGeomStaticRigidBody, _allocStr("m_pGeomStaticRigidBody"));
+
+	m_pGeomStaticCollideShape->serializeSingleShape(serializer);
+	m_pGeomStaticRigidBody->serializeSingleObject(serializer);
+	char str[64];
+	for(int i = 0; i < m_iGreenShapes; ++i)
+	{
+		sprintf(str, "m_ppGreenStaticCollideShape[%d]", i);
+		serializer->registerNameForPointer(m_ppGreenStaticCollideShape[i], _allocStr(str));
+		m_ppGreenStaticCollideShape[i]->serializeSingleShape(serializer);
+		for(int j = 0; j < m_piGreenTotal[i]; ++j)
+		{
+			sprintf(str, "m_pppGreenStaticRigidBody[%d][%d]", i, j);
+			serializer->registerNameForPointer(m_pppGreenStaticRigidBody[i][j], _allocStr(str));
+			m_pppGreenStaticRigidBody[i][j]->serializeSingleObject(serializer);
+		}
+	}
+	serializer->finishSerialization();
+
+	FILE * file = fopen(_file, "wb");
+	bool ret = file
+		&& fwrite(serializer->getBufferPointer(), serializer->getCurrentBufferSize(), 1, file)
+		&& !fclose(file);
+	mem_delete(serializer);
+	return(ret);
+}
 
 //##############################################################
 
