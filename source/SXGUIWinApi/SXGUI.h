@@ -711,12 +711,15 @@ struct ISXGUIListView : public virtual ISXGUIComponent
 	virtual void DeleteColumn(int col) = 0;							//!< удалить столбец по индексу
 	virtual int GetCountColumns() = 0;								//!< количество столбцов
 
-	virtual int AddString() = 0;				//!< добавить строку
+	virtual int AddString(long data = -1) = 0;				//!< добавить строку
 	virtual void DeleteString(int str) = 0;		//!< удалить строку
 	virtual int GetCountString() = 0;			//!< количество строк
 
 	virtual void SetTextItem(char* text, int col, int str) = 0;					//!< установить текст в ячейку
 	virtual void GetTextItem(char* text, int col, int str, int sizebuff) = 0;	//!< получить текст из ячейки
+
+	virtual void SetDataItem(int str, long data) = 0;
+	virtual long GetDataItem(int str) = 0;
 
 	virtual int GetSelString(int start = -1) = 0;	//!< возвращает индекс первого найденного выделения после start (-1 - значит сначала искать)
 	virtual void SetSelString(int str) = 0;			//!< выделение строки по индексу

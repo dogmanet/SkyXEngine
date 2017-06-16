@@ -18,12 +18,15 @@ public:
 	void DeleteColumn(int col);
 	int GetCountColumns();
 
-	int AddString();
+	int AddString(long data = -1);
 	void DeleteString(int str);
 	int GetCountString();
 
 	void SetTextItem(char* text, int col, int str);
 	void GetTextItem(char* text, int col, int str, int sizebuff);
+
+	void SetDataItem(int str, long data);
+	long GetDataItem(int str);
 
 	int GetSelString(int start = -1);
 	void SetSelString(int str);

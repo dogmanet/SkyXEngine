@@ -21,7 +21,7 @@ SXGUIListView::SXGUIListView(const char* caption, WORD x, WORD y, WORD width, WO
 		GetModuleHandle(0),
 		0);
 
-	ListView_SetExtendedListViewStyleEx(this->WindowHandle, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_FLATSB);
+	//ListView_SetExtendedListViewStyleEx(this->WindowHandle, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_FLATSB | LVS_EX_ONECLICKACTIVATE);
 	this->Init(this->GetHWND(), parent, handler);
 	SetWindowLong(GetHWND(), GWL_USERDATA, (LONG)dynamic_cast<ISXGUIComponent*>(this));
 	this->InitComponent();
@@ -33,14 +33,14 @@ SXGUIListView::SXGUIListView(const char* caption, WORD x, WORD y, WORD width, WO
 		0,
 		WC_LISTVIEW,
 		0,
-		(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | /*WS_VSCROLL | WS_HSCROLL | LVS_ALIGNLEFT |*/ /*LVS_SHOWSELALWAYS |*/ WS_BORDER | LVS_REPORT,
+		(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | /*WS_VSCROLL | WS_HSCROLL | LVS_ALIGNLEFT |*/ LVS_SHOWSELALWAYS | WS_BORDER | LVS_REPORT | LVS_SINGLESEL,
 		x, y, width, heigth,
 		parent,
 		(HMENU)id,
 		GetModuleHandle(0),
 		0);
 
-	ListView_SetExtendedListViewStyleEx(this->WindowHandle, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_FLATSB);
+	ListView_SetExtendedListViewStyleEx(this->WindowHandle, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_FLATSB | LVS_EX_ONECLICKACTIVATE);
 	this->Init(this->GetHWND(), parent, handler);
 	SetWindowLong(GetHWND(), GWL_USERDATA, (LONG)dynamic_cast<ISXGUIComponent*>(this));
 	this->InitComponent();
@@ -76,14 +76,14 @@ int SXGUIListView::GetCountColumns()
 	return ::SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
 }
 
-int SXGUIListView::AddString()
+int SXGUIListView::AddString(long data)
 {
 	LVITEM lvi;
 	memset(&lvi, 0, sizeof(LVCOLUMN));
-	lvi.mask = LVIF_TEXT;
+	lvi.mask = LVIF_TEXT | LVIF_PARAM;
 	lvi.iItem = GetCountString();
 	lvi.iSubItem = 0;
-
+	lvi.lParam = data;
 	return ListView_InsertItem(this->WindowHandle, &lvi);
 }
 
@@ -99,12 +99,37 @@ int SXGUIListView::GetCountString()
 
 void SXGUIListView::SetTextItem(char* text, int col, int str)
 {
-	ListView_SetItemText(this->WindowHandle, col, str, text);
+	ListView_SetItemText(this->WindowHandle, str, col, text);
 }
 
 void SXGUIListView::GetTextItem(char* text, int col, int str, int sizebuff)
 {
-	ListView_GetItemText(this->WindowHandle, col, str, text, sizebuff);
+	ListView_GetItemText(this->WindowHandle, str, col, text, sizebuff);
+}
+
+void SXGUIListView::SetDataItem(int str, long data)
+{
+	LVITEM lvi;
+	lvi.iItem = str;
+	lvi.iSubItem = 0;
+
+	ListView_GetItem(this->WindowHandle, &lvi);
+
+	lvi.mask = lvi.mask | LVIF_PARAM;
+	lvi.iSubItem = 0;
+	lvi.lParam = data;
+	BOOL res = ListView_SetItem(this->WindowHandle, &lvi);
+	int qwerty = 0;
+}
+
+long SXGUIListView::GetDataItem(int str)
+{
+	LVITEM lvi;
+	lvi.iItem = str;
+	lvi.iSubItem = 0;
+
+	BOOL res = ListView_GetItem(this->WindowHandle, &lvi);
+	return lvi.lParam;
 }
 
 int SXGUIListView::GetSelString(int start)
@@ -141,5 +166,11 @@ void SXGUIListView::Clear()
 
 void SXGUIListView::ClearStrings()
 {
-	TabCtrl_DeleteAllItems(this->WindowHandle);
+	int countstr = GetCountString();
+	for (int i = 0; i < countstr; ++i)
+	{
+		DeleteString(0);
+	}
+	//BOOL bf = TabCtrl_DeleteAllItems(this->WindowHandle);
+	//int qwerty = 0;
 }

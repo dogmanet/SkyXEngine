@@ -1192,11 +1192,16 @@ void SXGUIDialogs::SelectFile(int type, char* path, char* name, const char* stdp
 
 	/*if (name)
 		ofn.Flags |= OFN_FILEMUSTEXIST;*/
+
+	char bf[256];
+	GetCurrentDirectory(256, bf);
 	BOOL Result = FALSE;
 	if (type == SXGUI_DIALOG_FILE_OPEN)
 		Result = GetOpenFileName(&ofn);
 	else if (type == SXGUI_DIALOG_FILE_SAVE)
 		Result = GetSaveFileName(&ofn);
+
+	SetCurrentDirectory(bf);
 
 	if (Result)
 	{

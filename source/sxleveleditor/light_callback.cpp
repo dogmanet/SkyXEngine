@@ -470,8 +470,17 @@ LRESULT SXLevelEditor_LightEditColor_Enter(HWND hwnd, UINT msg, WPARAM wParam, L
 	return 0;
 }
 
+LRESULT SXLevelEditor_GroupBox_Notify(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (((NMHDR*)lParam)->hwndFrom == SXLevelEditor::ListViewGameClass->GetHWND() && ((NMHDR*)lParam)->code == NM_CLICK)
+	{
+		SXLevelEditor_ListViewGameClass_Click();
+	}
+	return 0;
+}
 
-LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+
+LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int Notification = HIWORD(wParam);
 	if (Notification == BN_CLICKED)
@@ -587,6 +596,124 @@ LRESULT SXLevelEditor_GroupBoxLight_CallWmCommand(HWND hwnd, UINT msg, WPARAM wP
 	else if (Notification == CBN_SELCHANGE)
 	{
 		HWND handle_elem = (HWND)(lParam);
+
+		if (SXLevelEditor::ComboBoxGameValue->GetHWND() == handle_elem)
+		{
+			int sel = SXLevelEditor::ListBoxList->GetSel();
+			char txt[256];
+			SXLevelEditor::ComboBoxGameValue->GetItemText(SXLevelEditor::ComboBoxGameValue->GetSel(), txt);
+			SXLevelEditor::ListViewGameClass->SetTextItem(txt, 1, SXLevelEditor::ListViewGameClass->GetSelString());
+			SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
+			if (bEnt)
+			{
+				propdata_t* pd = (propdata_t*)SXLevelEditor::ListViewGameClass->GetDataItem(SXLevelEditor::ListViewGameClass->GetSelString());
+				SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel());
+				bEnt->SetKV(pd->szKey, (const char*)SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel()));
+			}
+		}
+		else if (SXLevelEditor::ComboBoxGameClass->GetHWND() == handle_elem)
+		{
+			if (SXLevelEditor::ComboBoxGameClass->GetSel() == 0)
+				return 0;
+
+			int sel = SXLevelEditor::ListBoxList->GetSel();
+
+			if (sel < 0)
+				return 0;
+
+			SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
+			proptable_t* pt = SXGame_EntGetProptable(bEnt->GetClassName());
+
+			propdata_t* pd;
+			char txtkey[256];
+			char txtval[256];
+
+			struct KeyVal
+			{
+				KeyVal(){}
+				KeyVal(const char* _key, const char* _val)
+				{
+					key = _key;
+					val = _val;
+				}
+
+				String key;
+				String val;
+			};
+
+			Array<KeyVal> tmparrdata;
+
+			Array<proptable_t*> tmparr;
+
+			proptable_t* ptparent = pt->pBaseProptable;
+			while (ptparent)
+			{
+				tmparr.push_back(ptparent);
+				ptparent = ptparent->pBaseProptable;
+			}
+
+			for (int k = 0; k < tmparr.size(); ++k)
+			{
+				ptparent = tmparr[(tmparr.size() - 1) - k];
+				for (int i = 0; i < ptparent->numFields; ++i)
+				{
+					pd = &ptparent->pData[i];
+					if (pd->szKey && pd->szEdName && !(pd->flags & PDFF_NOEDIT) && pd->editor.type != PDE_NONE)
+					{
+						sprintf(txtkey, "%s", pd->szEdName);
+						bEnt->GetKV(pd->szKey, txtval, 256);
+						tmparrdata.push_back(KeyVal(pd->szKey, txtval));
+					}
+				}
+			}
+
+			tmparr.clear();
+
+			for (int i = 0; i < pt->numFields; ++i)
+			{
+				pd = &pt->pData[i];
+				if (pd->szKey && pd->szEdName && !(pd->flags & PDFF_NOEDIT) && pd->editor.type != PDE_NONE)
+				{
+					sprintf(txtkey, "%s", pd->szEdName);
+					bEnt->GetKV(pd->szKey, txtval, 256);
+					tmparrdata.push_back(KeyVal(pd->szKey, txtval));
+				}
+			}
+
+			char txt[256];
+			SXLevelEditor::ComboBoxGameClass->GetItemText(SXLevelEditor::ComboBoxGameClass->GetSel(), txt);
+			SXGame_RemoveEntity(bEnt);
+
+			bEnt = SXGame_CreateEntity(txt);
+			bEnt->SetFlags(bEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
+
+
+			for (int i = 0; i < tmparrdata.size(); ++i)
+			{
+				bEnt->SetKV(tmparrdata[i].key.c_str(), tmparrdata[i].val.c_str());
+			}
+
+			SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
+			sel = -1;
+			for (int i = 0; i < SXLevelEditor::ListBoxList->GetCountItem(); ++i)
+			{
+				if (SXLevelEditor::ListBoxList->GetItemData(i) == bEnt->GetId())
+				{
+					sel = i;
+					break;
+				}
+			}
+
+			if (sel < 0)
+			{
+				
+			}
+
+			SXLevelEditor::ListBoxList->SetSel(sel);
+			GameCInitElemsSelModel(sel);
+			GData::Editors::ActiveElement = sel;
+			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+		}
 		/*if (SXLevelEditor::LightComboBoxTypeLight->GetHWND() == handle_elem)
 		{
 			int numsel = SXLevelEditor::LightComboBoxTypeLight->GetSel();

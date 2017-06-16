@@ -264,6 +264,40 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 {
 	SXLevelEditor::ListBoxList->Clear();
 
+	/*long tmpcountmodel = SGeom_GreenGetCount();
+	char tmptextvalcountmodel[64];
+	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
+	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountmodel);
+
+	char tmpnamecountpoly[1024];
+	for (int i = 0; i < tmpcountmodel; ++i)
+	{
+		sprintf(tmpnamecountpoly, "%s | %s | %d",
+			SGeom_GreenMGetName(i),
+			(SGeom_GreenMGetTypeCountGen(i) == GeomGreenType::ggt_grass ? "grass" : "tree/shrub"),
+			SGeom_GreenMGetCountGen(i));
+		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
+	}*/
+
+	int tmpcoungo = SXGame_EntGetCount();
+	int tmpcoungo2 = 0;
+	char tmpname[1024];
+	for (int i = 0; i < tmpcoungo; ++i)
+	{
+		SXbaseEntity* bEnt = SXGame_EntGet(i);
+		if (bEnt)
+		{
+			sprintf(tmpname, "%s / %s", bEnt->GetName(), bEnt->GetClassName());
+			SXLevelEditor::ListBoxList->AddItem(tmpname);
+			SXLevelEditor::ListBoxList->SetItemData(SXLevelEditor::ListBoxList->GetCountItem() - 1, i);
+			++tmpcoungo2;
+		}
+	}
+
+	char tmptextvalcountgo[64];
+	sprintf(tmptextvalcountgo, "%d", tmpcoungo2);
+	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountgo);
+
 	MCActivateAllElems(false);
 	MCActivateTrans(false);
 	GCActivateCreatingElems(false);
@@ -303,10 +337,10 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 	/*LCActivateGlobal(true);
 	LCActivateDirect(true);
 	LCActivatePoint(true);
-	LCActivateType(LightsTypeLight::ltl_point);
+	LCActivateType(LightsTypeLight::ltl_point);*/
 
-	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_LIGHT;
-	GData::Editors::ActiveElement = -1;*/
+	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GAME;
+	GData::Editors::ActiveElement = -1;
 	return 0;
 }
 
@@ -344,6 +378,15 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_LIGHT;
 		}
 	}*/
+	else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GAME || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+	{
+		if (SXGame_EntGetCount() > 0 && sel < SXGame_EntGetCount())
+		{
+			GameCInitElemsSelModel(SXLevelEditor::ListBoxList->GetItemData(sel));
+			GData::Editors::ActiveElement = sel;
+			GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+		}
+	}
 
 	return 0;
 }
@@ -440,6 +483,25 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 		}
 	}*/
+
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+	{
+		if (SXGame_EntGetCount() > 0 && sel < SXGame_EntGetCount())
+		{
+			SXGame_RemoveEntity(SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel)));
+			SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
+
+			if (sel >= SXLevelEditor::ListBoxList->GetCountItem())
+				--sel;
+			if (sel >= 0)
+			{
+				SXLevelEditor::ListBoxList->SetSel(sel);
+				GameCInitElemsSelModel(SXLevelEditor::ListBoxList->GetItemData(sel));
+				GData::Editors::ActiveElement = sel;
+				GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+			}
+		}
+	}
 
 	return 0;
 }

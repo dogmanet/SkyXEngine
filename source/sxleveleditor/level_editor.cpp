@@ -140,6 +140,7 @@ namespace SXLevelEditor
 	ISXGUIButton* ButtonGameValue;
 	ISXGUIStatic* StaticGameHelp;
 	ISXGUIMemo* MemoGameHelp;
+	ISXGUIButton* ButtonGameCreate;
 
 	//}
 
@@ -149,6 +150,8 @@ namespace SXLevelEditor
 	void FinalImageUncheckedMenu();
 	//int HowActivateType = 0;	
 };
+
+LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 #include <SXLevelEditor/game_callback.cpp>
 #include <SXLevelEditor/light_callback.cpp>
@@ -216,7 +219,8 @@ void SXLevelEditor::InitAllElements()
 
 	SXLevelEditor::GroupBoxData = SXGUICrGroupBox("GroupBoxData", 0, 425, 800, 220, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxData);
-	SXLevelEditor::GroupBoxData->AddHandler(SXLevelEditor_GroupBoxLight_CallWmCommand, WM_COMMAND);
+	SXLevelEditor::GroupBoxData->AddHandler(SXLevelEditor_GroupBox_CallWmCommand, WM_COMMAND);
+	SXLevelEditor::GroupBoxData->AddHandler(SXLevelEditor_GroupBox_Notify, WM_NOTIFY);
 	SXLevelEditor::GroupBoxData->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXLevelEditor::GroupBoxData->SetColorText(0,0,0);
 	SXLevelEditor::GroupBoxData->SetColorTextBk(220,220,220);
@@ -1311,6 +1315,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ComboBoxGameClass->GAlign.left = true;
 	SXLevelEditor::ComboBoxGameClass->GAlign.top = true;
 	SXLevelEditor::ComboBoxGameClass->Visible(false);
+	SXLevelEditor::ComboBoxGameClass->AddItem("");
 
 	SXLevelEditor::ListViewGameClass = SXGUICrListView("", 5, 15, 400, 200, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
 	SXLevelEditor::ListViewGameClass->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1323,6 +1328,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ListViewGameClass->GAlign.left = true;
 	SXLevelEditor::ListViewGameClass->GAlign.top = true;
 	SXLevelEditor::ListViewGameClass->Visible(false);
+	//SXLevelEditor::ListViewGameClass->AddHandler(SXLevelEditor_ListViewGameClass_Click, WM_LBUTTONDOWN,0,0,0,0,true);
 
 	SXLevelEditor::ComboBoxGameValue = SXGUICrComboBox("", 415, 45, 270, 100, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::ComboBoxGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1333,6 +1339,24 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ComboBoxGameValue->GAlign.left = true;
 	SXLevelEditor::ComboBoxGameValue->GAlign.top = true;
 	SXLevelEditor::ComboBoxGameValue->Visible(false);
+
+	SXLevelEditor::EditGameValue = SXGUICrEdit("", 415, 45, 240, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditGameValue->SetColorText(0, 0, 0);
+	SXLevelEditor::EditGameValue->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditGameValue->SetTransparentTextBk(true);
+	SXLevelEditor::EditGameValue->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditGameValue->GAlign.left = true;
+	SXLevelEditor::EditGameValue->GAlign.top = true;
+	SXLevelEditor::EditGameValue->Visible(false);
+	SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+
+	SXLevelEditor::ButtonGameValue = SXGUICrButton("...", 660, 45, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonGameValue->GAlign.left = true;
+	SXLevelEditor::ButtonGameValue->GAlign.top = true;
+	SXLevelEditor::ButtonGameValue->Visible(false);
+	SXLevelEditor::ButtonGameValue->AddHandler(SXLevelEditor_ButtonGameValue_Click, WM_LBUTTONUP);
 
 	SXLevelEditor::StaticGameHelp = SXGUICrStatic("Help:", 415, 75, 35, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::StaticGameHelp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1353,6 +1377,13 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::MemoGameHelp->GAlign.left = true;
 	SXLevelEditor::MemoGameHelp->GAlign.top = true;
 	SXLevelEditor::MemoGameHelp->Visible(false);
+
+	SXLevelEditor::ButtonGameCreate = SXGUICrButton("Create", 695, 190, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameCreate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonGameCreate->GAlign.left = true;
+	SXLevelEditor::ButtonGameCreate->GAlign.top = true;
+	SXLevelEditor::ButtonGameCreate->Visible(false);
+	SXLevelEditor::ButtonGameCreate->AddHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
 }
 
 void SXLevelEditor::DeleteAllElements()
@@ -1489,6 +1520,9 @@ void SXLevelEditor::DeleteAllElements()
 	mem_delete(SXLevelEditor::ComboBoxGameClass);
 	mem_delete(SXLevelEditor::ListViewGameClass);
 	mem_delete(SXLevelEditor::ComboBoxGameValue);
+	mem_delete(SXLevelEditor::EditGameValue);
+	mem_delete(SXLevelEditor::ButtonGameValue);
 	mem_delete(SXLevelEditor::StaticGameHelp);
 	mem_delete(SXLevelEditor::MemoGameHelp);
+	mem_delete(SXLevelEditor::ButtonGameCreate);
 }

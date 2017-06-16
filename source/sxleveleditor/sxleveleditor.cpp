@@ -53,6 +53,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	{
 		SXLevelEditor::ComboBoxGameClass->AddItem(listgc[i]);
 	}
+	mem_delete_a(listgc);
 
 	/*
 	if (SSInput_GetKeyEvents(SIM_LBUTTON) == InputEvents::iv_k_first)
@@ -100,6 +101,61 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		SGeom_GreenAddObject(0, &_res);
 	}
 }*/
+
+
+	
+
+	//SXLevelEditor::GroupBoxData->Visible(false);
+
+	/*HWND hWndLV = CreateWindow(WC_LISTVIEW, "",
+		WS_VISIBLE | WS_CHILD | WS_BORDER | LVS_REPORT,
+		5, 430, 300, 200,
+		SXLevelEditor::JobWindow->GetHWND(), 0, GetModuleHandle(NULL), NULL);
+
+	// Чтобы определялись строка (item) и столбец (subitem) обязательно устанавливаем
+	// расширенный стиль LVS_EX_FULLROWSELECT.
+	ListView_SetExtendedListViewStyleEx(hWndLV, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);*/
+
+	/*ISXGUIListView* lv = SXGUICrListView("", 50, 430, 300, 100, SXLevelEditor::JobWindow->GetHWND(), 0, 0);
+	lv->InsertColumn("column", 0, 100);
+	lv->AddColumn("column2", 100);
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	lv->AddString();
+	//lv->AddItem("0", 0);
+	//lv->AddItem("1", 1);
+	//lv->AddItem("2", 2);
+	lv->SetTextItem("0", 0, 0);
+	lv->SetTextItem("1", 0, 1);
+	lv->SetTextItem("0", 1, 0);
+	lv->SetTextItem("1", 1, 1);
+	lv->SetTextItem("0", 2, 0);
+	lv->SetTextItem("1", 2, 1);
+	lv->SetTextItem("0", 3, 0);
+	lv->SetTextItem("1", 3, 1);
+	lv->SetTextItem("0", 4, 0);
+	lv->SetTextItem("1", 4, 1);
+	lv->SetTextItem("0", 5, 0);
+	lv->SetTextItem("1", 5, 1);
+	lv->SetTextItem("0", 6, 0);
+	lv->SetTextItem("1", 6, 1);
+	lv->SetTextItem("0", 7, 0);
+	lv->SetTextItem("1", 7, 1);
+	lv->SetSelString(1);
+	int selectedstr = lv->GetSelString();
+	//lv->SetTextItem(0, 2, "2");
+
+	//lv->Clear();*/
+
+	/*int str = SXLevelEditor::ListViewGameClass->AddString();
+	SXLevelEditor::ListViewGameClass->SetTextItem("txtkey", 0, str);
+	SXLevelEditor::ListViewGameClass->SetTextItem("txtval", 0, str);*/
 
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
