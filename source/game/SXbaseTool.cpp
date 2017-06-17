@@ -138,7 +138,7 @@ void SXbaseTool::DbgMove(int dir, float dy)
 void SXbaseTool::OnSync()
 {
 	BaseClass::OnSync();
-	if (m_pAnimPlayer)
+	if(m_pAnimPlayer)
 	{
 		float3 pos = m_pAnimPlayer->GetBoneTransformPos(m_pAnimPlayer->GetBone("muzzle_rifle1"));
 		SPE_EffectPosSet(m_iMuzzleFlash, &pos);

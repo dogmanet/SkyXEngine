@@ -764,7 +764,7 @@ bool ModelFile::Save(const char * file)
 	}
 
 	//write parts
-	if(m_pParts)
+	if(m_pParts && m_hdr2.iDepsCount)
 	{
 		m_hdr2.iDependensiesOffset = ftell(fp);
 		fwrite(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
@@ -811,7 +811,8 @@ m_iCurrentSkin(0),
 m_pMgr(pMgr),
 m_pfnCallBack(NULL),
 m_pfnProgressCB(NULL),
-m_fScale(0.01f)
+m_fScale(0.01f),
+m_iBoneCount(0)
 {
 	for(int i = 0; i < BLEND_MAX; i++)
 	{
@@ -839,22 +840,29 @@ Animation::~Animation()
 	m_pMgr->UnRegister(myId);
 }
 
-SMMATRIX Animation::GetBoneTransform(UINT id)
+SMMATRIX Animation::GetBoneTransform(UINT _id)
 {
 	//id *= 2;
-	float3 pos = m_pBoneMatrixRender[id].position * m_fScale;
+	int id = m_FinalBones[_id].pid;
+	if(id < 0)
+	{
+		return(SMMatrixIdentity());
+	}
+	float3 pos = m_pBoneMatrixRender[id].position/* * m_fScale*/;
 	SMQuaternion q = m_pBoneMatrixRender[id].orient;
 	return(q.GetMatrix() * SMMatrixTranslation(pos));
 }
 
 float3 Animation::GetBoneTransformPos(UINT id)
 {
-	return(GetOrient() * ((float3)m_pBoneMatrixRender[id].position * -m_fScale) + GetPos());
+	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
+	return(GetOrient() * ((m_pBoneMatrixRender[id].position - m_pBoneMatrixRender[id].orient * (float3)mBonesOrig[id].position) * m_fScale) + GetPos());
 }
 
 SMQuaternion Animation::GetBoneTransformRot(UINT id)
 {
-	return(GetOrient() * m_pBoneMatrixRender[id].orient);
+	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
+	return(GetOrient() * m_pBoneMatrixRender[id].orient * mBonesOrig[id].orient.Conjugate());
 }
 
 /*
@@ -1310,6 +1318,42 @@ void Animation::FillBoneMatrix()
 		//m_bUpdating = false;
 
 		m_bBoneMatrixReFilled = true;
+}
+
+void Animation::RenderSkeleton(int hlBone)
+{
+	if(!m_iBoneCount)
+	{
+		return;
+	}
+	struct _vt
+	{
+		float3_t pos;
+		DWORD color;
+	};
+	_vt * verts = new _vt[m_iBoneCount * 2];
+	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
+
+	for(UINT i = 0; i < m_iBoneCount; i++)
+	{
+		//SMQuaternion q = m_pBoneMatrixRender[i].orient * mBonesOrig[i].orient.Conjugate();
+		float3 pos = m_pBoneMatrixRender[i].position - m_pBoneMatrixRender[i].orient * (float3)mBonesOrig[i].position;
+		
+		if(m_FinalBones[i].pid < 0)
+		{
+			verts[i * 2].pos = float3_t(0.0f, 0.0f, 0.0f);
+		}
+		else
+		{
+			verts[i * 2].pos = verts[m_FinalBones[i].pid * 2 + 1].pos;
+		}
+		verts[i * 2 + 1].pos = pos;
+		verts[i * 2].color = verts[i * 2 + 1].color = hlBone == i ? 0xFFFF00FF : 0xFF0000FF;
+	}
+
+	m_pMgr->m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, m_iBoneCount - 1, verts + 2, sizeof(verts[0]));
+
+	mem_delete_a(verts);
 }
 
 inline bool Animation::PlayingAnimations(const char* name)
@@ -1871,7 +1915,7 @@ void Animation::GetPhysData(
 	for(uint32_t i = 0; i < m_pMdl->m_pLods[j].iSubMeshCount; ++i)
 	{
 		pSM = &m_pMdl->m_pLods[j].pSubLODmeshes[i];
-		for(int k = 0; k < pSM->iVectexCount; ++k)
+		for(uint32_t k = 0; k < pSM->iVectexCount; ++k)
 		{
 			(*pppfData)[0][vc++] = (float3)(((vertex_animated*)pSM->pVertices)[k].Pos * m_fScale);
 		}

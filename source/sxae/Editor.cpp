@@ -806,6 +806,7 @@ void Editor::MenuBrowse(HWND hwnd)
 		}
 		m_pEditor->AddModel(ofn.lpstrFile, MI_ALL, false, true);
 		m_pEditor->m_pCurAnim->Assembly();
+		RenderBoneList();
 		m_bDirty = false;
 	}
 }
@@ -839,6 +840,7 @@ void Editor::MenuBrowseImport(HWND hwnd, bool use)
 		{
 			m_pEditor->AddModel(ofn.lpstrFile, iflags);
 			m_pEditor->m_pCurAnim->Assembly();
+			RenderBoneList();
 		}
 		else
 		{
@@ -1288,13 +1290,15 @@ void Editor::Update()
 	if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
 	{
 		DrawHitboxes();
-
+		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
+		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixIdentity()));
+		m_pCurAnim->RenderSkeleton(m_iActiveHitbox > 0 ? m_pCurAnim->GetBone(m_vHitboxes[m_iActiveHitbox].hb->bone) : -1);
 		if(m_vHitboxes.size() > m_iActiveHitbox)
 		{
 			HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
 			SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
 
-			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
+			//m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
 
 			m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMat * mBone));
 			switch(m_htype)
@@ -1311,9 +1315,9 @@ void Editor::Update()
 				DrawHandlerScale();
 				break;
 			}
-			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 1);
 
 		}
+		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 1);
 	}
 	m_pd3dDevice->EndScene();
 
@@ -1881,6 +1885,7 @@ void Editor::OnPartApply()
 	}
 
 	m_pCurAnim->Assembly();
+	RenderBoneList();
 	//
 }
 
