@@ -209,6 +209,8 @@ public:
 		float3_t ** ppfData,
 		int32_t * pfDataLen);
 
+	void RenderSkeleton(int hlBone=-1);
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 

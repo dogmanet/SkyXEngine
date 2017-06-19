@@ -169,9 +169,9 @@ struct ModelHeader2
 */
 struct ModelLoDSubset
 {
-	unsigned int iMaterialID; //!< Идентификатор материала
-	unsigned int iVectexCount; //!< Количество вертексов в сабсете
-	unsigned int iIndexCount; //!< Количество индексов в сабсете
+	uint32_t iMaterialID; //!< Идентификатор материала
+	uint32_t iVectexCount; //!< Количество вертексов в сабсете
+	uint32_t iIndexCount; //!< Количество индексов в сабсете
 	model_vertex * pVertices; //!< Указатель на массив вертексов
 	UINT * pIndices; //!< Массив индексов
 	UINT iStartIndex; //!< Начальный индекс отрисовки сабсеа
