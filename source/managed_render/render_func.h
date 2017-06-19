@@ -83,8 +83,8 @@ namespace SXRenderFunc
 	void RenderPostProcess(DWORD timeDelta);			//!< отрисовка постпроцесса
 	void ShaderRegisterData();
 
-	void RenderEditorMain();	//!< рендер основных элементов для редакторов
-	void RenderEditorLE(DWORD timeDelta);		//!< рендер элементов для редактора уровней
+	void RenderEditorMain();				//!< рендер основных элементов для редакторов
+	void RenderEditorLE(DWORD timeDelta);	//!< рендер элементов для редактора уровней
 	/*! \name Функции обертки, для передачи графическому ядру для замены стандартных
 	@{*/
 

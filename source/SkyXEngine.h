@@ -407,7 +407,9 @@ void SkyXEngine_Init()
 #ifndef SX_PARTICLES_EDITOR
 	SXGame_0Create();
 	SXGame_Dbg_Set(printflog);
+#endif
 
+#ifdef SX_GAME
 	GData::ObjCamera = SXGame_GetActiveCamera();
 #endif
 
@@ -423,6 +425,10 @@ void SkyXEngine_Init()
 	GData::Editors::RenderGrid = GData::Editors::RenderAxesStatic = true;
 #endif
 
+#if defined(SX_MATERIAL_EDITOR)
+	GData::ObjCamera->SetPosition(&float3(0, 0, -1.2 * 100));
+#endif
+
 #if defined(SX_PARTICLES_EDITOR)
 	GData::Editors::RenderBound = true;
 
@@ -435,6 +441,10 @@ void SkyXEngine_Init()
 
 	SGCore_FCreateCone(GData::Editors::FigureConeParam.x, GData::Editors::FigureConeParam.y, GData::Editors::FigureConeParam.z, &GData::Editors::FigureCone, 20);
 
+#endif
+
+#if defined(SX_LEVEL_EDITOR)
+	D3DXCreateBox(GData::DXDevice, 1, 1, 1, &GData::Editors::FigureBox, 0);
 #endif
 
 	GData::InitAllMatrix();
@@ -470,7 +480,7 @@ void SkyXEngine_Render(DWORD timeDelta)
 		return;
 	}
 
-#ifndef SX_GAME
+#if !defined(SX_GAME) //&& !defined(SX_MATERIAL_EDITOR)
 	CameraUpdate::UpdateEditorial(timeDelta);
 #endif
 
@@ -662,6 +672,11 @@ int SkyXEngine_CycleMain()
 
 #if defined(SX_LEVEL_EDITOR)
 				SXLevelEditor_Transform(10);
+#endif
+
+#if defined(SX_MATERIAL_EDITOR)
+				if (SXMaterialEditor::CheckBoxModelRot->GetCheck())
+					GData::Editors::SimModel->Rotation.y -= float(timeDelta) * 0.001f * 0.25;
 #endif
 
 				SkyXEngine_Render(timeDelta);

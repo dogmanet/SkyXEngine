@@ -222,63 +222,6 @@ ID SML_LigthsReCreateDirection(ID id, float3* pos, float power, float dist, floa
 	return ArrLights->CreateDirection(id, pos, power, dist, color, dir, top_radius, angle, is_shadow, 0);
 }
 
-void SML_LigthsLoadSource(ID id, const char* path)
-{
-	ML_PRECOND();
-	ArrLights->LoadLightMeshSource(id, path);
-}
-
-void SML_LigthsBindToGroupSource(ID id, ID group)
-{
-	ML_PRECOND();
-	ArrLights->BindLightToGroup(id, group);
-}
-
-long SML_LigthsGetCountGroupSource(ID id)
-{
-	ML_PRECOND(-1);
-	return ArrLights->GetLightCountGroupMesh(id);
-}
-
-const char* SML_LigthsGetNameGroupSource(ID id, int group)
-{
-	ML_PRECOND(0);
-	return ArrLights->GetLightNameGroupMesh(id, group);
-}
-
-const char* SML_LigthsGetPathNameSource(ID id)
-{
-	ML_PRECOND(0);
-	return ArrLights->GetLightPathSource(id);
-}
-
-ID SML_LigthsGetBindedGroupSource(ID id)
-{
-	ML_PRECOND(-1);
-	return ArrLights->GetLightBindedGroupSource(id);
-}
-
-bool SML_LigthsExistsSource(ID id)
-{
-	ML_PRECOND(0);
-	return (ArrLights->GetLightCountGroupMesh(id) > -1);
-}
-
-void SML_LigthsRenderSource(ID id, bool render_bind_group, DWORD timeDelta)
-{
-	ML_PRECOND();
-	if (id < 0)
-		ArrLights->RenderSourceAll(render_bind_group, timeDelta);
-	else
-		ArrLights->RenderSource(id, render_bind_group, timeDelta);
-}
-
-void SML_LigthsRenderAllExceptGroupSource(ID id, DWORD timeDelta)
-{
-	ML_PRECOND();
-	ArrLights->RenderSourceAllExceptGroup(id, timeDelta);
-}
-
 void SML_LigthsRender(ID id, DWORD timeDelta)
 {
 	ML_PRECOND();
@@ -309,10 +252,10 @@ void SML_LigthsGetPosW(long id, float4* pos)
 	ArrLights->GetLightPosW(id, pos);
 }*/
 
-void SML_LigthsGetPos(ID id, float3* vec, bool for_mesh, bool greal)
+void SML_LigthsGetPos(ID id, float3* vec, bool greal)
 {
 	ML_PRECOND();
-	ArrLights->GetLightPos(id, vec, for_mesh, greal);
+	ArrLights->GetLightPos(id, vec, greal);
 }
 
 void SML_LigthsSetPower(ID id, float power)
@@ -345,28 +288,28 @@ void SML_LigthsSetPos(ID id, float3* vec, bool greal)
 	ArrLights->SetLightPos(id, vec, greal);
 }
 
-void SML_LigthsGetRot(ID id, float3* vec, bool rot_mesh)
+void SML_LigthsGetRot(ID id, float3* vec)
 {
 	ML_PRECOND();
-	ArrLights->GetLightRot(id, vec, rot_mesh);
+	ArrLights->GetLightRot(id, vec);
 }
 
-void SML_LigthsSetRot(ID id, float3* vec, bool rot_mesh)
+void SML_LigthsSetRot(ID id, float3* vec)
 {
 	ML_PRECOND();
-	ArrLights->SetLightRot(id, vec, rot_mesh);
+	ArrLights->SetLightRot(id, vec);
 }
 
-void SML_LigthsGetDir(ID id, float3* vec, bool rot_mesh)
+void SML_LigthsGetDir(ID id, float3* vec)
 {
 	ML_PRECOND();
-	ArrLights->GetLightDir(id, vec, rot_mesh);
+	ArrLights->GetLightDir(id, vec);
 }
 
-void SML_LigthsSetDir(ID id, float3* vec, bool rot_mesh)
+void SML_LigthsSetDir(ID id, float3* vec)
 {
 	ML_PRECOND();
-	ArrLights->SetLightDir(id, vec, rot_mesh);
+	ArrLights->SetLightDir(id, vec);
 }
 
 LightsTypeLight SML_LigthsGetType(ID id)

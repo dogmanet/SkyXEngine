@@ -7,11 +7,9 @@ See the license in LICENSE
 #ifndef SXGUI_BASE_H
 #define SXGUI_BASE_H
 
-
 extern class SXGUIButtonImg;
 
 #include <SXGUIWinApi\SXGUI_hint.h>
-
 
 //первый базовый класс, единственным родителем не используется
 //определяет объект как контрол, то есть содержит в себе минимум данных для 

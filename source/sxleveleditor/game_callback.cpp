@@ -1,5 +1,5 @@
-#include "string.h"
-void GameCActivateAllElems(bool bf)
+
+void SXLevelEditor::GameActivateAll(bool bf)
 {
 	SXLevelEditor::StaticGameClass->Visible(bf);
 	SXLevelEditor::ComboBoxGameClass->Visible(bf);
@@ -10,7 +10,7 @@ void GameCActivateAllElems(bool bf)
 	SXLevelEditor::ComboBoxGameValue->Clear();
 	SXLevelEditor::EditGameValue->Visible(false);
 	SXLevelEditor::EditGameValue->SetText("");
-	//SXLevelEditor::ComboBoxGameValue->Clear();
+	SXLevelEditor::ButtonGameValue->Visible(false);
 	SXLevelEditor::ListViewGameClass->Enable(false);
 
 	SXLevelEditor::StaticGameHelp->Visible(bf);
@@ -19,7 +19,7 @@ void GameCActivateAllElems(bool bf)
 	SXLevelEditor::ButtonGameCreate->Visible(bf);
 }
 
-void GameCInitElemsSelModel(int sel)
+void SXLevelEditor::GameSel(int sel)
 {
 	SXLevelEditor::ComboBoxGameValue->Visible(false);
 	SXLevelEditor::ComboBoxGameValue->Clear();
@@ -28,7 +28,10 @@ void GameCInitElemsSelModel(int sel)
 	SXLevelEditor::ButtonGameCreate->Visible(false);
 	SXLevelEditor::ListViewGameClass->Enable(true);
 	SXLevelEditor::ListViewGameClass->ClearStrings();
-	SXbaseEntity* bEnt = SXGame_EntGet(sel);
+	ID seldata = SXLevelEditor::ListBoxList->GetItemData(sel);
+	GData::Editors::ActiveElement = seldata;
+	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+	SXbaseEntity* bEnt = SXGame_EntGet(seldata);
 	proptable_t* pt = SXGame_EntGetProptable(bEnt->GetClassName());
 
 	char txtclasscb[256];
@@ -167,10 +170,18 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 
 LRESULT SXLevelEditor_EditGameValue_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	int sel = SXLevelEditor::ListBoxList->GetSel();
+	
+	if (sel < 0)
+		return 0;
+
+	int str = SXLevelEditor::ListViewGameClass->GetSelString();
+	
+	if (str < 0)
+		return 0;
+
 	char txt[256];
 	SXLevelEditor::EditGameValue->GetText(txt, 256);
-	int sel = SXLevelEditor::ListBoxList->GetSel();
-	int str = SXLevelEditor::ListViewGameClass->GetSelString();
 	SXLevelEditor::ListViewGameClass->SetTextItem(txt, 1, str);
 	SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
 	if (bEnt)
@@ -178,6 +189,13 @@ LRESULT SXLevelEditor_EditGameValue_Enter(HWND hwnd, UINT msg, WPARAM wParam, LP
 		propdata_t* pd = (propdata_t*)SXLevelEditor::ListViewGameClass->GetDataItem(str);
 		bool bf = bEnt->SetKV(pd->szKey, txt);
 		int qwerty = 0;
+
+		if (strcmp(pd->szKey, "name") == 0)
+		{
+			char tmpname[512];
+			sprintf(tmpname, "%s / %s", bEnt->GetName(), bEnt->GetClassName());
+			SXLevelEditor::ListBoxList->SetTextItem(sel, tmpname);
+		}
 	}
 
 	return 0;
@@ -236,14 +254,17 @@ LRESULT SXLevelEditor_ButtonGameValue_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::GameSource, txtfmt);
 	if (def_str_validate(tmppath))
 	{
-		SXLevelEditor::EditGameValue->SetText(tmppath + strlen(GData::Pathes::GameSource));
+		String tmpstr = tmppath + strlen(GData::Pathes::GameSource);
+		tmpstr.ReplaceAll("\\", "/");
+		sprintf(tmpname, "%s", tmpstr.c_str());
+		SXLevelEditor::EditGameValue->SetText(tmpname);
 
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		SXLevelEditor::ListViewGameClass->SetTextItem(tmppath + strlen(GData::Pathes::GameSource), 1, str);
+		SXLevelEditor::ListViewGameClass->SetTextItem(tmpname, 1, str);
 		SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
 		if (bEnt)
 		{
-			bEnt->SetKV(pd->szKey, tmppath + strlen(GData::Pathes::GameSource));
+			bEnt->SetKV(pd->szKey, tmpname);
 		}
 	}
 
@@ -266,7 +287,7 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
 	int sel = SXLevelEditor::ListBoxList->GetCountItem()-1;
 	SXLevelEditor::ListBoxList->SetSel(sel);
-	GameCInitElemsSelModel(sel);
+	SXLevelEditor::GameSel(sel);
 	GData::Editors::ActiveElement = sel;
 	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
 

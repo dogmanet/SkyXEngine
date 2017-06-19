@@ -41,7 +41,7 @@ See the license in LICENSE
 #define EDITORS_LEVEL_STATUSBAR_LEVEL_POLY "Level poly: "
 #define EDITORS_LEVEL_STATUSBAR_GEOM_POLY "Geom poly: "
 #define EDITORS_LEVEL_STATUSBAR_GREEN_POLY "Green poly: "
-#define EDITORS_LEVEL_STATUSBAR_LIGHT_COUNT "Count light: "
+#define EDITORS_LEVEL_STATUSBAR_GAME_COUNT "Count game object: "
 
 //! цвет очистки цветового буфера сцены по умолчанию
 #define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
@@ -166,15 +166,19 @@ namespace GData
 
 		bool RenderGrid = false;		//!< рисовать ли #ObjGrid
 		bool RenderAxesStatic = false;	//!< рисовать ли #ObjAxesStatic
+
 #if defined(SX_LEVEL_EDITOR)
 		int ActiveGroupType = 0;
 		ID ActiveGreenSplit = -1;
 		ID ActiveGreenObject = -1;
 		ID ActiveElement = -1;
-		bool SelSelection;
-		bool SelZTest;
-		bool SelMesh;
-		bool SelBackFacesCull;
+		bool SelSelection = false;
+		bool SelZTest = false;
+		bool SelMesh = false;
+		bool SelBackFacesCull = false;
+		bool GreenRenderBox = false;
+		float3 GreenBoxPos;
+		float3_t GreenBoxWHD(1,1,1);
 
 		void LevelEditorUpdateStatusBar();
 #endif

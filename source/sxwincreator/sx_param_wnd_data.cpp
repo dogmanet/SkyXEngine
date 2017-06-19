@@ -979,10 +979,11 @@ void SaveFile(const char* path)
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TOOLBARCLASSNAME) != 0 &&
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") != 0 &&
-					strcmp(SXMainWndElem::CreateElements[i]->SXClassName, "SXGUIListView") != 0 /*&&
-					strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0*/
+					strcmp(SXMainWndElem::CreateElements[i]->SXClassName, "SXGUIListView") != 0 &&
+					strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0
 					)
 				{
+					//char* tmptxt = SXMainWndElem::CreateElements[i]->SysClassName;
 					ISXGUITextual* textual = dynamic_cast<ISXGUITextual*>(SXMainWndElem::CreateElements[i]->Object);
 					textual->GetText(CaptionElement,256);
 					fprintf(file, "CaptionElement = %s\n", CaptionElement);
@@ -1047,6 +1048,7 @@ void SaveFile(const char* path)
 					fprintf(file, "WidthFont = %d\n", WidthFont);
 					fprintf(file, "HeightFont = %d\n", HeightFont);
 					fprintf(file, "WeightFont = %d\n", WeightFont);
+					
 					fprintf(file, "Italic = %d\n", Italic);
 					fprintf(file, "Underline = %d\n", Underline);
 					fprintf(file, "StrikeOut = %d\n", StrikeOut);
@@ -1609,7 +1611,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 						if(
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,UPDOWN_CLASS) != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,TRACKBAR_CLASS) != 0 && 
-							//strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0 &&
+							strcmp(SXMainWndElem::CreateElements[i]->SysClassName, STATUSCLASSNAME) != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SysClassName,PROGRESS_CLASS) != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") != 0 &&
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") != 0 &&

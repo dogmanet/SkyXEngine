@@ -353,8 +353,9 @@ SX_LIB_API ID SGeom_GreenAddGreen(
 
 //! добавить объект растительности
 SX_LIB_API ID SGeom_GreenAddObject(
-	ID id,		//!< идентификатор растительности к которой добавляем
-	float3* pos	//!< позиция в которой будет находится объект
+	ID id,			//!< идентификатор растительности к которой добавляем
+	float3* pos,	//!< позиция в которой будет находится объект
+	ID* idsplit		//!< запишет идентификатор сплита, в котором был добавлен объект
 	);
 
 //! удалить объект растительности
@@ -362,6 +363,22 @@ SX_LIB_API void SGeom_GreenDelObject(
 	ID id,		//!< идентификатор растительности
 	ID idsplit,	//!< идентификатор слпита из которого надо удалить
 	ID idobj	//!< идентификатор объекта который надо удалить
+	);
+
+//! 
+SX_LIB_API void SGeom_GreenGetPosObject(
+	ID id, 
+	ID idsplit, 
+	ID idobj, 
+	float3_t* pos
+	);
+
+//! 
+SX_LIB_API void SGeom_GreenSetPosObject(
+	ID id,
+	ID* idsplit,
+	ID* idobj,
+	float3_t* pos
 	);
 
 SX_LIB_API void SGeom_GreenDelGreen(ID id);	//!< удалить единицу растительности

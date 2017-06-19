@@ -184,7 +184,7 @@ void Emitter::ComputeLighting()
 
 						if (SML_LigthsGetType(tmpid) != LightsTypeLight::ltl_global)
 						{
-							SML_LigthsGetPos(tmpid, &tmpPosition, false, true);
+							SML_LigthsGetPos(tmpid, &tmpPosition, true);
 
 							float dist = SMVector3Dot(Arr[i].Pos - float3(tmpPosition.x, tmpPosition.y, tmpPosition.z));
 							float invdist = 1.f - (dist / (SML_LigthsGetDist(tmpid)));

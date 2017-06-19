@@ -3,15 +3,6 @@
 
 Lights::Lights()
 {
-	/*D3DVERTEXELEMENT9 layoutstatic[] =
-	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		D3DDECL_END()
-	};
-
-	MLSet::DXDevice->CreateVertexDeclaration(layoutstatic, &VertexDeclarationStatic);*/
 	HowShadow = 0;
 	ShadowMap = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
 	ShadowMap2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
@@ -31,8 +22,6 @@ Lights::~Lights()
 
 	SGCore_RTDelete(ShadowMap);
 	SGCore_RTDelete(ShadowMap2);
-
-	//mem_release_del(VertexDeclarationStatic);
 }
 
 void Lights::Save(const char* path)
@@ -59,9 +48,7 @@ void Lights::Save(const char* path)
 
 	for (DWORD i = 0; i<ArrKeyLights.size(); i++)
 	{
-		//if (SkyXEngine::Core::Data::Level::LightManager->Arr[i]->IDEffect == -1)
-		//{
-		GetLightPos(i, &tmppos,false,false);
+		GetLightPos(i, &tmppos,false);
 		tmppower = ArrKeyLights[i]->Power;
 		tmpdist = ArrKeyLights[i]->Dist;
 		tmprot = ArrKeyLights[i]->Rotation;
@@ -93,19 +80,6 @@ void Lights::Save(const char* path)
 			fprintf(file, "%s%f%s", "shadow_bias = ", GetLightBias(i), "\n");
 			fprintf(file, "%s%f%s", "dist = ", tmpdist, "\n");
 			fprintf(file, "%s%f%s", "dist_for_end_shadow = ", GetShadowLocalFar(i), "\n");
-
-			if (ArrKeyLights[i]->Source)
-			{
-				fprintf(file, "source = %s\n", GetLightPathSource(i));
-				fprintf(file, "source_bind_group = %d\n", GetLightBindedGroupSource(i));
-
-				float3 rotsource;
-				GetLightRot(i, &rotsource, true);
-
-				fprintf(file, "source_rot_x = %f\n", rotsource.x);
-				fprintf(file, "source_rot_y = %f\n", rotsource.y);
-				fprintf(file, "source_rot_z = %f\n", rotsource.z);
-			}
 
 				if (ArrKeyLights[i]->TypeLight == LightsTypeLight::ltl_direction)
 				{
@@ -184,13 +158,8 @@ void Lights::Load(const char* path)
 			return;
 		}
 
-		/*if (config->KeyExists(text_SectionLight, "enable", true))
-		{
-			reportf(-1, "%s - light: not found key 'enable', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}*/
-
-		tmpenable = String(config->GetKey(text_SectionLight, "enable")).ToBool();
+		if (config->KeyExists(text_SectionLight, "enable"))
+			tmpenable = String(config->GetKey(text_SectionLight, "enable")).ToBool();
 
 		if (config->KeyExists(text_SectionLight, "dist_for_end_shadow"))
 			distforendshadow = String(config->GetKey(text_SectionLight, "dist_for_end_shadow")).ToDouble();
@@ -407,7 +376,7 @@ void Lights::Load(const char* path)
 		}
 		else
 		{
-			reportf(-1, "%s - light: undefinde type light '%d', file '%s', section '%s'", gen_msg_location, tmptype, path, text_SectionLight);
+			reportf(-1, "%s - light: undefined type light '%d', file '%s', section '%s'", gen_msg_location, tmptype, path, text_SectionLight);
 			return;
 		}
 
@@ -418,46 +387,12 @@ void Lights::Load(const char* path)
 			if (distforendshadow > 0)
 				SetShadowLocalFar(tmpidcr, distforendshadow);
 
-			if (def_str_validate(textsource))
-			{
-				LoadLightMeshSource(tmpidcr, textsource);
-				BindLightToGroup(tmpidcr, tmpsourcebindgroup);
-
-				float3 rotsource;
-
-				if (config->KeyExists(text_SectionLight, "source_rot_x"))
-					rotsource.x = String(config->GetKey(text_SectionLight, "source_rot_x")).ToDouble();
-				else
-				{
-					reportf(-1, "%s - light: not found key 'source_rot_x', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-					return;
-				}
-
-				if (config->KeyExists(text_SectionLight, "source_rot_y"))
-					rotsource.x = String(config->GetKey(text_SectionLight, "source_rot_y")).ToDouble();
-				else
-				{
-					reportf(-1, "%s - light: not found key 'source_rot_y', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-					return;
-				}
-
-				if (config->KeyExists(text_SectionLight, "source_rot_z"))
-					rotsource.x = String(config->GetKey(text_SectionLight, "source_rot_z")).ToDouble();
-				else
-				{
-					reportf(-1, "%s - light: not found key 'source_rot_z', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-					return;
-				}
-
-				SetLightRot(tmpidcr, &rotsource, true);
-			}
-
 			if (tmptype == LightsTypeLight::ltl_direction)
 			{
 				if (dir_or_rot == 1)
-					SetLightDir(tmpidcr, &tmprot, false);
+					SetLightDir(tmpidcr, &tmprot);
 				else
-					SetLightRot(tmpidcr, &tmprot, false);
+					SetLightRot(tmpidcr, &tmprot);
 			}
 		}
 
@@ -504,24 +439,6 @@ ID Lights::CreateCopy(ID id)
 		tmplight2->TypeShadowed = tmplight->TypeShadowed;
 		tmplight2->CountUpdate = tmplight->CountUpdate;
 		tmplight2->MatRotL = tmplight2->MatRotL;
-
-		if (tmplight->Source)
-		{
-			tmplight2->Source = new Light::MeshSource();
-			sprintf(tmplight2->Source->Path, "%s", tmplight->Source->Path);
-
-			tmplight2->Source->Mesh = tmplight->Source->Mesh->GetCopy();
-			tmplight2->Source->WorldMat;
-			tmplight2->Source->WorldMatLocal;
-			tmplight2->Source->MatRot;
-			tmplight2->Source->Position;
-			tmplight2->Source->Rotation;
-			tmplight2->Source->LocalPos;
-			tmplight2->Source->IdGroupBind;
-
-			tmplight2->Source->ArrTex = new DWORD[tmplight2->Source->Mesh->SubsetCount];
-			memcpy(tmplight2->Source->ArrTex, tmplight->Source->ArrTex, sizeof(DWORD)* tmplight2->Source->Mesh->SubsetCount);
-		}
 
 		if (tmplight->ShadowPSSM)
 		{
@@ -605,33 +522,16 @@ Lights::Light::Light()
 	ShadowPSSM = 0;
 	ShadowSM = 0;
 	ShadowCube = 0;
-
-	Source = 0;
 }
 
 Lights::Light::~Light()
 {
 	mem_release_del(Mesh);
-	mem_delete(Source);
 	mem_release_del(BoundVolume);
 	
 	mem_delete(ShadowPSSM);
 	mem_delete(ShadowSM);
 	mem_delete(ShadowCube);
-}
-
-Lights::Light::MeshSource::MeshSource()
-{
-	Path[0]=0;
-	Mesh = 0;
-	IdGroupBind=-1;
-	ArrTex = 0;
-}
-
-Lights::Light::MeshSource::~MeshSource()
-{
-	mem_release_del(Mesh);
-	mem_delete_a(ArrTex);
 }
 
 void Lights::OnLostDevice()
@@ -803,7 +703,7 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 	if (id == -1)
 		tmpid = AddLight(tmplight);
 
-	SetLightPos(tmpid, &float3(center->x, center->y, center->z), true);
+	SetLightPos(tmpid, &float3(center->x, center->y, center->z));
 
 	tmplight->Color = *color;
 	tmplight->IsEnable = true;
@@ -891,180 +791,6 @@ ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* 
 	return tmpid;
 }
 
-void Lights::LoadLightMeshSource(ID id, const char* path)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-	if (!def_str_validate(path))
-		return;
-
-	mem_delete(ArrIDLights[id]->Source);
-
-	ArrIDLights[id]->Source = new Light::MeshSource();
-
-	char fullpath[1024];
-	sprintf(fullpath, "%s%s", MLSet::StdPathMesh, path);
-	SGCore_StaticModelLoad(fullpath, &(ArrIDLights[id]->Source->Mesh));
-
-	if (ArrIDLights[id]->Source->Mesh)
-	{
-		sprintf(ArrIDLights[id]->Source->Path, "%s", path);
-
-		char tmpnametex[1024];
-		ArrIDLights[id]->Source->ArrTex = new DWORD[ArrIDLights[id]->Source->Mesh->SubsetCount];
-		for (int i = 0; i < ArrIDLights[id]->Source->Mesh->SubsetCount; ++i)
-		{
-			sprintf(tmpnametex, "%s.dds", ArrIDLights[id]->Source->Mesh->ArrTextures[i]);
-			ArrIDLights[id]->Source->ArrTex[i] = SGCore_MtlLoad(tmpnametex, MTL_TYPE_GEOM);
-		}
-	}
-
-	//ArrLights[id]->Source->Position = ArrLights[id]->Position;
-	//ArrLights[id]->Source->WorldMat = SMMatrixTranslation(ArrLights[id]->Source->Position);
-
-	BindLightToGroup(id, 0);
-}
-
-void Lights::BindLightToGroup(ID id, int group)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-	if (ArrIDLights[id]->Source->Mesh->SubsetCount <= group)
-		return;
-
-	vertex_static* pData;
-	ArrIDLights[id]->Source->Mesh->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
-
-	float3 tmpmin, tmpmax;
-	tmpmin = pData[0].Pos;
-	tmpmax = pData[0].Pos;
-	long tmpindv = 0;
-	for (long i = 0; i < ArrIDLights[id]->Source->Mesh->VertexCount[group]; ++i)
-	{
-		tmpindv = ArrIDLights[id]->Source->Mesh->StartVertex[group] + i;
-
-		if (tmpmin.x > pData[tmpindv].Pos.x)
-			tmpmin.x = pData[tmpindv].Pos.x;
-		else if (tmpmin.y > pData[tmpindv].Pos.y)
-			tmpmin.y = pData[tmpindv].Pos.y;
-		else if (tmpmin.z > pData[tmpindv].Pos.z)
-			tmpmin.z = pData[tmpindv].Pos.z;
-
-		if (tmpmax.x < pData[tmpindv].Pos.x)
-			tmpmax.x = pData[tmpindv].Pos.x;
-		else if (tmpmax.y < pData[tmpindv].Pos.y)
-			tmpmax.y = pData[tmpindv].Pos.y;
-		else if (tmpmin.z < pData[tmpindv].Pos.z)
-			tmpmax.z = pData[tmpindv].Pos.z;
-	}
-
-	ArrIDLights[id]->Source->Mesh->VertexBuffer->Unlock();
-
-	ArrIDLights[id]->Source->LocalPos = ((tmpmin + tmpmax) * 0.5f);
-	ArrIDLights[id]->Source->Position = ArrIDLights[id]->Position - ArrIDLights[id]->Source->LocalPos;
-	ArrIDLights[id]->Source->WorldMatLocal = SMMatrixTranslation(ArrIDLights[id]->Source->Position);
-	SetLightRot(id, &float3(0, 0, 0), true);
-	ArrIDLights[id]->Source->IdGroupBind = group;
-	SetNullLightCountUpdate(id);
-}
-
-long Lights::GetLightCountGroupMesh(ID id)
-{
-	LIGHTS_PRE_COND_ID(id, -1);
-
-	if (!(ArrIDLights[id]->Source && ArrIDLights[id]->Source->Mesh))
-		return -1;
-
-	return ArrIDLights[id]->Source->Mesh->SubsetCount;
-}
-
-const char* Lights::GetLightNameGroupMesh(ID id, int group)
-{
-	LIGHTS_PRE_COND_ID(id, 0);
-
-	if (ArrIDLights[id]->Source && ArrIDLights[id]->Source->Mesh->SubsetCount <= group)
-		return 0;
-
-	return ArrIDLights[id]->Source->Mesh->ArrTextures[group];
-}
-
-const char* Lights::GetLightPathSource(ID id)
-{
-	LIGHTS_PRE_COND_ID(id, 0);
-
-	if (!(ArrIDLights[id]->Source))
-		return 0;
-
-	return ArrIDLights[id]->Source->Path;
-}
-
-long Lights::GetLightBindedGroupSource(ID id)
-{
-	LIGHTS_PRE_COND_ID(id, -1);
-
-	if (ArrIDLights[id]->Source)
-		return 0;
-
-	return ArrIDLights[id]->Source->IdGroupBind;
-}
-
-void Lights::RenderSource(ID id, bool render_bind_group, DWORD timeDelta)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-		if (!(ArrIDLights[id]->Source && ArrIDLights[id]->Source->Mesh))
-			return;
-
-		float4x4 tmpwmat = ArrIDLights[id]->Source->WorldMat;
-		MLSet::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)ArrIDLights[id]->Source->WorldMat));
-		D3DXMATRIX tmpmat;
-		MLSet::DXDevice->GetTransform(D3DTS_WORLD1, &(tmpmat));
-		MLSet::DXDevice->SetVertexShaderConstantF(0, (float*)&(SMMatrixTranspose(ArrIDLights[id]->Source->WorldMat * float4x4(tmpmat))), 4);
-
-		MLSet::DXDevice->SetStreamSource(0, ArrIDLights[id]->Source->Mesh->VertexBuffer, 0, sizeof(vertex_static));
-		MLSet::DXDevice->SetIndices(ArrIDLights[id]->Source->Mesh->IndexBuffer);
-		MLSet::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
-
-		float4_t tmpcolor = ArrIDLights[id]->Color * ArrIDLights[id]->Power;
-		tmpcolor.w = 1;
-		
-		for (int i = 0; i < ArrIDLights[id]->Source->Mesh->SubsetCount; ++i)
-		{
-			if (!render_bind_group && i == ArrIDLights[id]->Source->IdGroupBind)
-				continue;
-
-			if (!(ArrIDLights[id]->IsEnable && i == ArrIDLights[id]->Source->IdGroupBind))
-				SGCore_MtlSet(ArrIDLights[id]->Source->ArrTex[i], &(ArrIDLights[id]->Source->WorldMat));
-			else
-				SML_MtlRenderLight(&tmpcolor, &(ArrIDLights[id]->Source->WorldMat));
-			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrIDLights[id]->Source->Mesh->VertexCount[i], ArrIDLights[id]->Source->Mesh->StartIndex[i], ArrIDLights[id]->Source->Mesh->IndexCount[i]);
-			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ArrIDLights[id]->Source->Mesh->IndexCount[i]);
-		}
-}
-
-void Lights::RenderSourceAll(bool render_bind_group, DWORD timeDelta)
-{
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
-	{
-		if (!ArrKeyLights[i] && !(ArrKeyLights[i]->Source && ArrKeyLights[i]->Source->Mesh))
-			return;
-
-		RenderSource(ArrKeyLights[i]->Id, render_bind_group, timeDelta);
-	}
-}
-
-void Lights::RenderSourceAllExceptGroup(ID id, DWORD timeDelta)
-{
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
-	{
-		if (!ArrKeyLights[i] && !(ArrKeyLights[i]->Source && ArrKeyLights[i]->Source->Mesh))
-			return;
-
-		RenderSource(ArrKeyLights[i]->Id, (ArrKeyLights[i]->Id == id ? false : true), timeDelta);
-	}
-}
-
-
 void Lights::Render(ID id, DWORD timeDelta)
 {
 	LIGHTS_PRE_COND_ID(id);
@@ -1095,7 +821,7 @@ void Lights::SetLightColor(ID id, float3* vec)
 	SetNullLightCountUpdate(id);
 }
 
-void Lights::GetLightPos(ID id, float3* vec, bool for_mesh, bool greal)
+void Lights::GetLightPos(ID id, float3* vec, bool greal)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1107,19 +833,10 @@ void Lights::GetLightPos(ID id, float3* vec, bool for_mesh, bool greal)
 	}
 	else
 	{
-			if (!for_mesh)
-			{
-				vec->x = ArrIDLights[id]->Position.x;
-				vec->y = ArrIDLights[id]->Position.y;
-				vec->z = ArrIDLights[id]->Position.z;
-			}
-			else if (ArrIDLights[id]->Source && ArrIDLights[id]->Source->IdGroupBind > -1)
-			{
-				vec->x = ArrIDLights[id]->Source->Position.x;// +ArrLights[id]->Source->LocalPos.x;
-				vec->y = ArrIDLights[id]->Source->Position.y;// +ArrLights[id]->Source->LocalPos.y;
-				vec->z = ArrIDLights[id]->Source->Position.z;// +ArrLights[id]->Source->LocalPos.z;
-			}
-		}
+		vec->x = ArrIDLights[id]->Position.x;
+		vec->y = ArrIDLights[id]->Position.y;
+		vec->z = ArrIDLights[id]->Position.z;	
+	}
 }
 
 float Lights::GetLightPower(ID id)
@@ -1213,14 +930,6 @@ void Lights::SetLightPos(ID id, float3* vec, bool greal)
 
 				float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
 				ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
-
-				if (ArrIDLights[id]->Source && ArrIDLights[id]->Source->IdGroupBind > -1)
-				{
-					float determ = 0;
-					ArrIDLights[id]->Source->Position = ArrIDLights[id]->Position - ArrIDLights[id]->Source->LocalPos;
-					ArrIDLights[id]->Source->WorldMatLocal = SMMatrixTranslation(ArrIDLights[id]->Source->Position);
-					ArrIDLights[id]->Source->WorldMat = ArrIDLights[id]->Source->MatRot * ArrIDLights[id]->Source->WorldMatLocal;
-				}
 			//}
 
 			if (ArrIDLights[id]->ShadowSM)
@@ -1239,101 +948,70 @@ void Lights::SetLightPos(ID id, float3* vec, bool greal)
 }
 
 
-void Lights::GetLightRot(ID id, float3* vec, bool rot_mesh)
+void Lights::GetLightRot(ID id, float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
-	if (!rot_mesh)
-		*vec = ArrIDLights[id]->Rotation;
-	else if (ArrIDLights[id]->Source)
-		*vec = ArrIDLights[id]->Source->Rotation;
+	*vec = ArrIDLights[id]->Rotation;
 }
 
-void Lights::SetLightRot(ID id, float3* vec, bool rot_mesh)
+void Lights::SetLightRot(ID id, float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
-		float3 tmpdir = SMEulerToVec((*vec));
+	float3 tmpdir = SMEulerToVec((*vec));
 
-		float3 f(0, -1, 0);
-		float3 a = SMVector3Cross(f, tmpdir);
-		float ang = acosf(SMVector3Dot(f, tmpdir));
-		float4x4 tmpmatrot = SMMatrixRotationAxis(a, ang);
+	float3 f(0, -1, 0);
+	float3 a = SMVector3Cross(f, tmpdir);
+	float ang = acosf(SMVector3Dot(f, tmpdir));
+	float4x4 tmpmatrot = SMMatrixRotationAxis(a, ang);
 
-		Light* tmpl = ArrIDLights[id];
-		float determ = 0;
+	Light* tmpl = ArrIDLights[id];
+	float determ = 0;
 
-		if (rot_mesh && ArrIDLights[id]->Source && ArrIDLights[id]->Source->IdGroupBind > -1)
-		{
-			tmpl->Source->Rotation = (*vec);
-			tmpl->Source->MatRot = tmpmatrot;
-			tmpl->MatRot = tmpl->Source->MatRot * tmpl->MatRotL;
-			ArrIDLights[id]->Rotation = SMMatrixToEuler(tmpl->MatRot);
-			float4x4 mpos = SMMatrixTranslation(tmpl->Position.x, tmpl->Position.y, tmpl->Position.z);
-			tmpl->WorldMat = tmpl->MatRot * mpos;
-			tmpl->Direction = SMEulerToVec(ArrIDLights[id]->Rotation);
-			tmpl->Source->WorldMat = tmpl->Source->MatRot * tmpl->Source->WorldMatLocal;
-		}
-		else if (ArrIDLights[id]->Source && ArrIDLights[id]->Source->IdGroupBind > -1)
-		{
-			ArrIDLights[id]->Rotation = *vec;
-			ArrIDLights[id]->Direction = tmpdir;
+	ArrIDLights[id]->Rotation = *vec;
+	ArrIDLights[id]->Direction = tmpdir;
 
-			tmpl->MatRot = tmpmatrot;
-			tmpl->MatRotL = SMMatrixInverse(&determ, tmpl->Source->MatRot) * tmpl->MatRot;
-			tmpl->MatRot = tmpl->Source->MatRot * tmpl->MatRotL;
-			float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-			ArrIDLights[id]->WorldMat = tmpmatrot * mpos;
-		}
-		else
-		{
-			ArrIDLights[id]->Rotation = *vec;
-			ArrIDLights[id]->Direction = tmpdir;
+	tmpl->MatRot = tmpmatrot;
+	//tmpl->MatRotL = SMMatrixIdentity() * tmpl->MatRot;
+	//tmpl->MatRot = SMMatrixIdentity() * tmpl->MatRotL;
+	float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
+	ArrIDLights[id]->WorldMat = tmpl->MatRot * mpos;
 
-			tmpl->MatRot = tmpmatrot;
-			//tmpl->MatRotL = SMMatrixIdentity() * tmpl->MatRot;
-			//tmpl->MatRot = SMMatrixIdentity() * tmpl->MatRotL;
-			float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-			ArrIDLights[id]->WorldMat = tmpl->MatRot * mpos;
-		}
-		
 
-		if (ArrIDLights[id]->ShadowSM)
-			ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
+	if (ArrIDLights[id]->ShadowSM)
+		ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
 
-		SetNullLightCountUpdate(id);
+	SetNullLightCountUpdate(id);
 }
 
-void Lights::GetLightDir(ID id, float3* vec, bool rot_mesh)
+void Lights::GetLightDir(ID id, float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
-	if (rot_mesh && ArrIDLights[id]->Source && ArrIDLights[id]->Source->IdGroupBind > -1)
-		*vec = ArrIDLights[id]->Source->Direction;
-	else
-		*vec = ArrIDLights[id]->Direction;
+	*vec = ArrIDLights[id]->Direction;
 }
 
-void Lights::SetLightDir(ID id, float3* vec, bool rot_mesh)
+void Lights::SetLightDir(ID id, float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
-		float3 tmpdir = *vec;
+	float3 tmpdir = *vec;
 
-		float3 f(0, -1, 0);
-		float3 a = SMVector3Cross(f, tmpdir);
-		float ang = acosf(SMVector3Dot(f, tmpdir));
-		//ArrIDLights[id]->MatRot = SMMatrixRotationAxis(a, ang);
+	float3 f(0, -1, 0);
+	float3 a = SMVector3Cross(f, tmpdir);
+	float ang = acosf(SMVector3Dot(f, tmpdir));
+	//ArrIDLights[id]->MatRot = SMMatrixRotationAxis(a, ang);
 
-		//ArrIDLights[id]->Rotation = SMMatrixToEuler(ArrIDLights[id]->MatRot);
-		SetLightRot(id, &SMMatrixToEuler(SMMatrixRotationAxis(a, ang)), rot_mesh);
-		/*float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-		ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
+	//ArrIDLights[id]->Rotation = SMMatrixToEuler(ArrIDLights[id]->MatRot);
+	SetLightRot(id, &SMMatrixToEuler(SMMatrixRotationAxis(a, ang)));
+	/*float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
+	ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
 
-		if (ArrIDLights[id]->ShadowSM)
-			ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
+	if (ArrIDLights[id]->ShadowSM)
+	ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
 
-		SetNullLightCountUpdate(id);*/
+	SetNullLightCountUpdate(id);*/
 }
 
 void Lights::SetLightBias(ID id, float val)

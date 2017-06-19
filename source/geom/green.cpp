@@ -1004,7 +1004,7 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 	arrpos.clear();
 }
 
-ID Green::AddObject(ID id, float3* pos)
+ID Green::GetIDSplit(ID id, float3* pos)
 {
 	if (id < 0 || ArrModels.size() <= id)
 		return -1;
@@ -1015,7 +1015,7 @@ ID Green::AddObject(ID id, float3* pos)
 	float width = 0;
 	float depth = 0;
 	float3 min, max;
-	ID idsplit = -1;
+	ID tmpidsplit = -1;
 
 	while (queue.size())
 	{
@@ -1023,7 +1023,7 @@ ID Green::AddObject(ID id, float3* pos)
 		if (max.x >= pos->x && max.z >= pos->z && min.x <= pos->x && min.z <= pos->z)
 		{
 			if (!(queue[0]->Splits[0]))
-				idsplit = queue[0]->Id;
+				tmpidsplit = queue[0]->Id;
 			else
 			{
 				queue[0]->BFNonEnd = true;
@@ -1036,20 +1036,20 @@ ID Green::AddObject(ID id, float3* pos)
 				if (tmpMax.y < (pos->y + ArrModels[id]->BBMax.y * scalecoef))
 					tmpMax.y = tmpMax.y + ArrModels[id]->BBMax.y * scalecoef;
 
-				if (tmpMin.y > (pos->y + ArrModels[id]->BBMin.y * scalecoef))
+				if (tmpMin.y >(pos->y + ArrModels[id]->BBMin.y * scalecoef))
 					tmpMin.y = tmpMin.y + ArrModels[id]->BBMin.y * scalecoef;
 
 				queue[0]->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
 
 				if (tmpMax.x < (pos->x + ArrModels[id]->BBMax.x * scalecoef))
 					tmpMax.x = tmpMax.x + ArrModels[id]->BBMax.x * scalecoef;
-				
+
 				if (tmpMax.z < (pos->z + ArrModels[id]->BBMax.z * scalecoef))
 					tmpMax.z = tmpMax.z + ArrModels[id]->BBMax.z * scalecoef;
 
 				if (tmpMin.x >(pos->x + ArrModels[id]->BBMin.x * scalecoef))
 					tmpMin.x = tmpMin.x + ArrModels[id]->BBMin.x * scalecoef;
-				
+
 				if (tmpMin.z >(pos->z + ArrModels[id]->BBMin.z * scalecoef))
 					tmpMin.z = tmpMin.z + ArrModels[id]->BBMin.z * scalecoef;
 
@@ -1067,29 +1067,51 @@ ID Green::AddObject(ID id, float3* pos)
 		++tmpcount;
 	}
 
-	if (idsplit < 0)
+	return tmpidsplit;
+}
+
+ID Green::AddObject(ID id, float3* pos, GreenDataVertex* data, ID* idsplit)
+{
+	if (id < 0 || ArrModels.size() <= id)
 		return -1;
 
-	int oldlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
+	ID tmpidsplit = GetIDSplit(id, pos);
+
+	if (tmpidsplit < 0)
+		return -1;
+
+	int oldlen = ArrModels[id]->SplitsArr[tmpidsplit]->CountAllGreen;
 	GreenDataVertex* tmpdv = new GreenDataVertex[oldlen + 1];
 	if (oldlen > 0)
-		memcpy(tmpdv, ArrModels[id]->SplitsArr[idsplit]->Data, oldlen * sizeof(GreenDataVertex));
+		memcpy(tmpdv, ArrModels[id]->SplitsArr[tmpidsplit]->Data, oldlen * sizeof(GreenDataVertex));
 
 	GreenDataVertex tmpdvobj;
-	tmpdvobj.Position = *pos;
-	tmpdvobj.TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
-	tmpdvobj.TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
-	tmpdvobj.TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
-	tmpdvobj.SinCosRot.x = sinf(tmpdvobj.TexCoord.y);
-	tmpdvobj.SinCosRot.y = cosf(tmpdvobj.TexCoord.y);
+	if (!data)
+	{
+		tmpdvobj.Position = *pos;
+		tmpdvobj.TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
+		tmpdvobj.TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
+		tmpdvobj.TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
+		tmpdvobj.SinCosRot.x = sinf(tmpdvobj.TexCoord.y);
+		tmpdvobj.SinCosRot.y = cosf(tmpdvobj.TexCoord.y);
+	}
+	else
+	{
+		tmpdvobj = *data;
+		tmpdvobj.Position = *pos;
+	}
 
 	memcpy(tmpdv + oldlen, &tmpdvobj, sizeof(GreenDataVertex));
-	mem_delete_a(ArrModels[id]->SplitsArr[idsplit]->Data);
-	ArrModels[id]->SplitsArr[idsplit]->Data = tmpdv;
-	++(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
+	mem_delete_a(ArrModels[id]->SplitsArr[tmpidsplit]->Data);
+	ArrModels[id]->SplitsArr[tmpidsplit]->Data = tmpdv;
+	++(ArrModels[id]->SplitsArr[tmpidsplit]->CountAllGreen);
 	++(ArrModels[id]->AllCountGreen);
-	int currlen = ArrModels[id]->SplitsArr[idsplit]->CountAllGreen;
-	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[idsplit]);
+	int currlen = ArrModels[id]->SplitsArr[tmpidsplit]->CountAllGreen;
+	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[tmpidsplit]);
+
+	if (idsplit)
+		*idsplit = tmpidsplit;
+
 	return oldlen;
 }
 
@@ -1107,6 +1129,29 @@ void Green::DelObject(ID id, ID idsplit, ID idobj)
 	--(ArrModels[id]->SplitsArr[idsplit]->CountAllGreen);
 	--(ArrModels[id]->AllCountGreen);
 	AlignBound(ArrModels[id], ArrModels[id]->SplitsArr[idsplit]);
+}
+
+void Green::GetPosObject(ID id, ID idsplit, ID idobj, float3_t* pos)
+{
+	if (!pos || id < 0 || ArrModels.size() <= id || idsplit < 0 || ArrModels[id]->SplitsArr.size() <= idsplit || idobj < 0 || ArrModels[id]->SplitsArr[idsplit]->CountAllGreen <= idobj)
+		return;
+
+	*pos = ArrModels[id]->SplitsArr[idsplit]->Data[idobj].Position;
+}
+
+void Green::SetPosObject(ID id, ID* idsplit, ID* idobj, float3_t* pos)
+{
+	if (!pos || !idsplit || !idobj || id < 0 || ArrModels.size() <= id || (*idsplit) < 0 || ArrModels[id]->SplitsArr.size() <= (*idsplit) || (*idobj) < 0 || ArrModels[id]->SplitsArr[(*idsplit)]->CountAllGreen <= (*idobj))
+		return;
+
+	if (GetIDSplit(id, &float3(*pos)) == (*idsplit))
+		ArrModels[id]->SplitsArr[(*idsplit)]->Data[(*idobj)].Position = *pos;
+	else
+	{
+		GreenDataVertex tmpdv = ArrModels[id]->SplitsArr[(*idsplit)]->Data[(*idobj)];
+		DelObject(id, (*idsplit), (*idobj));
+		(*idobj) = AddObject(id, &float3(*pos), &tmpdv, idsplit);
+	}
 }
 
 void Green::Save(const char* path)

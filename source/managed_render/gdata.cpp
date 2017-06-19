@@ -225,7 +225,7 @@ void GData::Editors::LevelEditorUpdateStatusBar()
 	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GREEN_POLY, count_poly_green);
 	SXLevelEditor::StatusBar1->SetTextParts(2, text);
 
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_LIGHT_COUNT, SML_LigthsGetCount());
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
 	SXLevelEditor::StatusBar1->SetTextParts(3, text);
 }
 

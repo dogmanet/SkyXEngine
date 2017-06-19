@@ -40,17 +40,6 @@ public:
 	ID CreatePoint(ID id, float3* center, float power, float dist, float3* color, bool isglobal, bool is_shadowed, const char* bound_volume);
 	ID CreateDirection(ID id, float3* pos, float power, float dist, float3* color, float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume);
 
-	void LoadLightMeshSource(ID id, const char* path);
-	void BindLightToGroup(ID id, int group);
-	long GetLightBindedGroupSource(ID id);
-	long GetLightCountGroupMesh(ID id);
-	const char* GetLightNameGroupMesh(ID id, int group);
-	const char* GetLightPathSource(ID id);
-
-	void RenderSource(ID id, bool render_bind_group, DWORD timeDelta);
-	void RenderSourceAll(bool render_bind_group, DWORD timeDelta);
-	void RenderSourceAllExceptGroup(ID id, DWORD timeDelta);
-
 	void DeleteLight(ID id);
 
 	void Render(ID id, DWORD timeDelta);
@@ -63,7 +52,7 @@ public:
 	void GetLightColor(ID id, float3* vec);
 	void SetLightColor(ID id, float3* vec);
 
-	void GetLightPos(ID id, float3* vec, bool for_mesh, bool greal = false);
+	void GetLightPos(ID id, float3* vec, bool greal = false);
 	void SetLightPos(ID id, float3* vec, bool greal = false);
 
 	void SetLightPower(ID id, float power);
@@ -72,10 +61,10 @@ public:
 
 	float GetLightDist(ID id);
 
-	void GetLightRot(ID id, float3* vec, bool rot_mesh);
-	void SetLightRot(ID id, float3* vec, bool rot_mesh);
-	void GetLightDir(ID id, float3* vec, bool rot_mesh);
-	void SetLightDir(ID id, float3* vec, bool rot_mesh);
+	void GetLightRot(ID id, float3* vec);
+	void SetLightRot(ID id, float3* vec);
+	void GetLightDir(ID id, float3* vec);
+	void SetLightDir(ID id, float3* vec);
 
 	void SetLightBias(ID id, float val);
 	float GetLightBias(ID id);
@@ -162,7 +151,6 @@ public:
 		LightsTypeShadow TypeShadowed;
 		long CountUpdate;
 		
-
 		ID3DXMesh* Mesh;
 
 		float3 Position;
@@ -187,28 +175,6 @@ public:
 		PSSM* ShadowPSSM;
 		ShadowMapTech* ShadowSM;
 		ShadowMapCubeTech* ShadowCube;
-
-		struct MeshSource
-		{
-			MeshSource();
-			~MeshSource();
-
-			SX_ALIGNED_OP_MEM
-
-			char Path[1024];
-			ISXDataStaticModel* Mesh;
-			float4x4 WorldMat;
-			float4x4 WorldMatLocal;
-			float4x4 MatRot;
-			float3 Position;
-			float3 Rotation;
-			float3 Direction;
-			float3 LocalPos;
-			long IdGroupBind;
-			DWORD* ArrTex;
-		};
-		
-		MeshSource* Source;
 	};
 
 	ID GetIdOfKey(long key);
@@ -224,7 +190,6 @@ protected:
 	Array<Light*> ArrKeyLights;	//массив всех элементов по порядку
 	Array<Light*> ArrIDLights;	//массив всех элементов, основанный на id
 	Array<Light*> ArrKeyDelLights;	//массив света который надо удалить
-	//IDirect3DVertexDeclaration9* VertexDeclarationStatic;
 
 	DWORD ShadowMap;
 	DWORD ShadowMap2;

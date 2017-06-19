@@ -388,16 +388,28 @@ ID SGeom_GreenAddGreen(const char* name,
 	return GreenObj->Init(GeometryObj, name, path_mask, count_max, path, lod1, lod2, navmesh);
 }
 
-ID SGeom_GreenAddObject(ID id, float3* pos)
+ID SGeom_GreenAddObject(ID id, float3* pos, ID* idsplit)
 {
 	GEOM_PRECOND(-1);
-	return GreenObj->AddObject(id, pos);
+	return GreenObj->AddObject(id, pos, 0, idsplit);
 }
 
 void SGeom_GreenDelObject(ID id, ID idsplit, ID idobj)
 {
 	GEOM_PRECOND(_VOID);
 	return GreenObj->DelObject(id, idsplit, idobj);
+}
+
+void SGeom_GreenGetPosObject(ID id, ID idsplit, ID idobj, float3_t* pos)
+{
+	GEOM_PRECOND(_VOID);
+	GreenObj->GetPosObject(id, idsplit, idobj, pos);
+}
+
+void SGeom_GreenSetPosObject(ID id, ID* idsplit, ID* idobj, float3_t* pos)
+{
+	GEOM_PRECOND(_VOID);
+	GreenObj->SetPosObject(id, idsplit, idobj, pos);
 }
 
 void SGeom_GreenDelGreen(ID id)

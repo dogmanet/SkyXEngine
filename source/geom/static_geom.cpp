@@ -1402,7 +1402,7 @@ void StaticGeom::GPURenderSingly(DWORD timeDelta, ID id, ID id_tex)
 		StaticGeom::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
 		for (int k = 0, kl = AllModels[id]->Lod0.model->SubsetCount; k < kl; ++k)
 		{
-			SGCore_MtlSet(AllModels[id]->Lod0.IDsTexs[k], 0);
+			SGCore_MtlSet((id_tex > 0 ? id_tex : AllModels[id]->Lod0.IDsTexs[k]), 0);
 			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, AllModels[id]->Lod0.model->VertexCount[k], AllModels[id]->Lod0.model->StartIndex[k], AllModels[id]->Lod0.model->IndexCount[k] / 3);
 			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + AllModels[id]->Lod0.model->IndexCount[k] / 3);
 		}
@@ -2888,6 +2888,7 @@ void StaticGeom::SetModelLodPath(ID id, const char* path)
 	if (id < AllModels.size() && def_str_validate(path))
 	{
 		mem_delete(AllModels[id]->Lod0.model);
+		AllModels[id]->Lod0.IDsTexs.clear();
 		//AllModels[id]->Lod0.model = new DataStaticModel();
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
@@ -2895,7 +2896,7 @@ void StaticGeom::SetModelLodPath(ID id, const char* path)
 
 		char tmptex[1024];
 		ID tmpidmat;
-		for (long i = 0; i < AllModels[id]->Lod0.model->SubsetCount; ++i)
+		for (int i = 0; i < AllModels[id]->Lod0.model->SubsetCount; ++i)
 		{
 			sprintf(tmptex, "%s.dds", AllModels[id]->Lod0.model->ArrTextures[i]);
 			tmpidmat = SGCore_MtlLoad(tmptex, MTL_TYPE_GEOM);

@@ -754,116 +754,122 @@ BOOL IsEdit(HWND hWnd)
 		stricmp(szClassName, "Edit") == 0;
 }
 
+
 LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
-	
+
 	if (Component)
 	{
-			if(msg == WM_KEYDOWN)
+		if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN)
+		{
+			Component->SetFocus();
+		}
+
+		if (msg == WM_KEYDOWN)
+		{
+			if (wParam == 'A' && (GetKeyState(VK_CONTROL) & 0x80))
 			{
-				if(wParam == 'A' && (GetKeyState(VK_CONTROL) & 0x80))
+				// User pressed Ctrl-A.  Let's select-all
+				if (IsEdit(hwnd))
 				{
-					// User pressed Ctrl-A.  Let's select-all
-					if(IsEdit(hwnd))
-					{
-						SendMessage(hwnd, EM_SETSEL, 0, -1);
-						return(1);
-					}
+					SendMessage(hwnd, EM_SETSEL, 0, -1);
+					return(1);
 				}
 			}
-			HandlerMsg MainFunction = 0;								//главная функция-обработчик, ее значение и будет возвращаться
-			HandlerMsg SecondFunction[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];	//массив дополнительных обработчиков на сообщения, их значения не должны смысла
-			int CountSecond = 0;	//количество дополнительных функций-обработчиков
-				//инициализируем вышеописанные данные
-				for(int i=0;i<Component->GetCountKeyArrHandler();i++)
-				{
-						if(Component->GetMsgHandler(i) == msg)
-						{
-								if(
-									Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam && 
-									Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-								else if(
-									!Component->GetConsiderWParamHandler(i) && 
-									Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-								else if(
-									Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam && 
-									!Component->GetConsiderLParamHandler(i)
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-								else if(
-									!Component->GetConsiderWParamHandler(i) && 
-									!Component->GetConsiderLParamHandler(i)
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-						}
-				}
-
-				//вызываем все дополнительные функции обработчики
-				for(int i=0;i<CountSecond;i++)
-				{
-					SecondFunction[i](hwnd, msg, wParam, lParam);
-				}
-
-					//если была найдена главная функция то вызываем ее и возвраащем ее значение
-					if(MainFunction)
-						return MainFunction(hwnd, msg, wParam, lParam);
-					//else
-						//return Component->OldProc(hwnd, msg, wParam, lParam);
-					//!!!а если нет то что???
-					//else mf
-				//return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
-				return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);;
 		}
-	
+		HandlerMsg MainFunction = 0;								//главная функция-обработчик, ее значение и будет возвращаться
+		HandlerMsg SecondFunction[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];	//массив дополнительных обработчиков на сообщения, их значения не должны смысла
+		int CountSecond = 0;	//количество дополнительных функций-обработчиков
+		//инициализируем вышеописанные данные
+		for (int i = 0; i<Component->GetCountKeyArrHandler(); i++)
+		{
+			if (Component->GetMsgHandler(i) == msg)
+			{
+				if (
+					Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam &&
+					Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+				else if (
+					!Component->GetConsiderWParamHandler(i) &&
+					Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+				else if (
+					Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam &&
+					!Component->GetConsiderLParamHandler(i)
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+				else if (
+					!Component->GetConsiderWParamHandler(i) &&
+					!Component->GetConsiderLParamHandler(i)
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+			}
+		}
+
+		//вызываем все дополнительные функции обработчики
+		for (int i = 0; i<CountSecond; i++)
+		{
+			SecondFunction[i](hwnd, msg, wParam, lParam);
+		}
+
+		//если была найдена главная функция то вызываем ее и возвраащем ее значение
+		if (MainFunction)
+			return MainFunction(hwnd, msg, wParam, lParam);
+		//else
+		//return Component->OldProc(hwnd, msg, wParam, lParam);
+		//!!!а если нет то что???
+		//else mf
+		//return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
+		return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);;
+	}
+
 	return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
 }
 

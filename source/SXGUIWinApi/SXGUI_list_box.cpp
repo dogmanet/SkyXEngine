@@ -31,7 +31,7 @@ SXGUIListBox::SXGUIListBox(const char* caption,WORD x,WORD y,WORD width,WORD hei
 							0,
 							"LISTBOX",
 							0,
-							(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE  | LBS_HASSTRINGS | WS_VSCROLL | WS_BORDER | (miltiple_sel ? LBS_EXTENDEDSEL : 0),
+							(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | LBS_HASSTRINGS | LBS_NOTIFY | WS_VSCROLL | WS_BORDER | (miltiple_sel ? LBS_EXTENDEDSEL : 0),
 							x,y,width,heigth,
 							parent,
 							(HMENU)id,

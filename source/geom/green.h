@@ -45,8 +45,11 @@ public:
 		const char* path, const char* lod1, const char* lod2,
 		const char* navmesh);
 
-	ID AddObject(ID id, float3* pos);
+	ID GetIDSplit(ID id, float3* pos);
+	ID AddObject(ID id, float3* pos, GreenDataVertex* data, ID* idsplit);
 	void DelObject(ID id, ID idsplit, ID idobj);
+	void GetPosObject(ID id, ID idsplit, ID idobj, float3_t* pos);
+	void SetPosObject(ID id, ID* idsplit, ID* idobj, float3_t* pos);
 
 	void DelGreen(ID id);
 	

@@ -490,8 +490,6 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 	
-	SML_LigthsRenderSource(-1, true, timeDelta);
-
 	SGCore_ShaderUnBind();
 #endif
 
@@ -694,8 +692,6 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) > -1)
 								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
 
-							SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
-
 							SXAnim_Render();
 						}
 					}
@@ -743,7 +739,6 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 						SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, GData::DefaultGreenIDArr);
 					}
 
-					SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
 					SML_LigthsInRenderEnd(tmpid);
 				}
 			}
@@ -777,7 +772,6 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, GData::DefaultGreenIDArr);
 							}
 							
-							SML_LigthsRenderAllExceptGroupSource(tmpid, timeDelta);
 							SML_LigthsInRenderPost(tmpid, k);
 						}
 					}
@@ -1003,7 +997,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 			float2 tmpPowerDist;
 			float3 tmpColor;
 			SML_LigthsGetColor(tmpid, &tmpColor);
-			SML_LigthsGetPos(tmpid, &tmpPosition, false, true);
+			SML_LigthsGetPos(tmpid, &tmpPosition, true);
 			tmpPowerDist.x = SML_LigthsGetPowerDiv(tmpid);
 			tmpPowerDist.y = SML_LigthsGetDist(tmpid);
 
@@ -1249,7 +1243,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	if (GlobalLight > -1)
 	{
 		SML_LigthsGetColor(GlobalLight, &tmpColor);
-		SML_LigthsGetPos(GlobalLight, &tmpPosition, false, true);
+		SML_LigthsGetPos(GlobalLight, &tmpPosition, true);
 
 		SPP_UpdateSun(&tmpPosition);
 
@@ -1506,6 +1500,24 @@ void SXRenderFunc::RenderEditorMain()
 void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 {
 #if defined(SX_LEVEL_EDITOR)
+
+	if (GData::Editors::GreenRenderBox)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+		float3 tmppos = GData::Editors::GreenBoxPos;
+		tmppos.y += GData::Editors::GreenBoxWHD.y * 0.5f;
+		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(GData::Editors::GreenBoxWHD) * SMMatrixTranslation(tmppos)));
+		GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+		GData::Editors::FigureBox->DrawSubset(0);
+
+		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	}
+
 	if (GData::Editors::SelSelection)
 	{
 		if (GData::Editors::SelZTest)
@@ -1569,6 +1581,7 @@ void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 		if (GData::Editors::SelBackFacesCull)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
+
 #endif
 }
 
