@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\SkyXEngine.cpp" />
+    <ClCompile Include="..\..\..\source\managed_render\gdata.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\handler_out_log.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\level.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\model_sim.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\render_func.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\camera_update.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header">
+      <UniqueIdentifier>{bfffb271-334c-400b-8c56-81a62877f6de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{1775ac6b-729a-4a5f-8916-d8d7b9fd4a6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\managed_render">
+      <UniqueIdentifier>{f3721427-a340-4107-b54b-a4ac928c80d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\managed_render">
+      <UniqueIdentifier>{f177015d-a4dd-4605-b11d-851b7ef2e4d4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\SkyXEngine.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gdefines.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\gdata.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\level.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\model_sim.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\render_func.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\camera_update.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

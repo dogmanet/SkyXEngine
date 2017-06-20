@@ -1122,17 +1122,17 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &MCamView);
 		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &MCamProj);
 
-		float4x4 world = SMMatrixIdentity();
-		float determ = 0;
-		float4x4 invview = SMMatrixInverse(&determ, MCamView);
-		if (Data.FigureType == ParticlesFigureType::pft_billboard)
-		{
-			world = invview;
-			world._41 = world._42 = world._43 = 0;
-		}
+		float4x4 cammat = SMMatrixIdentity();
 
 		static float4x4 tmpmatrot = SMMatrixIdentity();
 		tmpmatrot = (matrot ? (*matrot) : SMMatrixIdentity());
+
+		if (Data.FigureType == ParticlesFigureType::pft_billboard)
+		{
+			float determ = 0;
+			cammat = SMMatrixInverse(&determ, tmpmatrot * MCamView);
+			cammat._41 = cammat._42 = cammat._43 = 0;
+		}
 
 		/*static float tmpangle = 0.0;
 		tmpangle += 0.01;
@@ -1140,7 +1140,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 
 		static float4x4 tmpmatpos = SMMatrixIdentity();
 		tmpmatpos = (matpos ? (*matpos) : SMMatrixIdentity());
-
+		
 		float4x4 worldmat = tmpmatrot * tmpmatpos;
 
 		float4x4 vp = MCamView * MCamProj;
@@ -1204,11 +1204,12 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::Particles);
 		}
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "ViewProjection", &SMMatrixTranspose(vp));
-		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "WorldMat", &SMMatrixTranspose(worldmat));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "World", &SMMatrixTranspose(world));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatRot", &SMMatrixTranspose(tmpmatrot));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
+		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "ViewProjection", &SMMatrixTranspose(vp));
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "WorldViewProjection", &SMMatrixTranspose(worldmat * vp));
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "CamRot", &SMMatrixTranspose(cammat));
+		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "World", &SMMatrixTranspose(world));
+		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatRot", &SMMatrixTranspose(tmpmatrot));
+		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
 		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, psid, "ColorCoef", &Data.ColorCoef);
 

@@ -348,6 +348,13 @@ void SPE_EffectRotSet(ID id, float3* rot)
 	ArrEffects->EffectRotSet(id, rot);
 }
 
+void SPE_EffectRotSetQ(ID id, const SMQuaternion & rot)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EffectRotSet(id, rot);
+}
+
 
 void SPE_EffectPosGet(ID id, float3* pos)
 {

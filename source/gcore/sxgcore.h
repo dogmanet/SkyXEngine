@@ -760,6 +760,9 @@ public:
 
 	//!@}
 
+	virtual inline void SetFOV(float fov) = 0;	//!< Устанавливает FOV камеры
+	virtual inline float GetFOV() = 0;	//!< возвращает FOV камеры
+
 	ISXFrustum* ObjFrustum;	//!< фрустум этой камеры
 
 	float3 LastVal; //??
@@ -773,6 +776,7 @@ protected:
 	float3 Position;
 
 	float AngleUpDown, AngleRightLeft, AngleRoll;
+	float m_fFOV;
 };
 
 SX_LIB_API ISXCamera* SGCore_CrCamera();	//!< создать ISXCamera

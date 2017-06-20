@@ -132,6 +132,7 @@ public:
 	inline void EffectPosSet(ID id, float3* pos);
 	inline void EffectDirSet(ID id, float3* dir);
 	inline void EffectRotSet(ID id, float3* rot);
+	inline void EffectRotSet(ID id, const SMQuaternion & rot);
 
 	inline void EffectPosGet(ID id, float3* pos);
 	inline void EffectDirGet(ID id, float3* dir);

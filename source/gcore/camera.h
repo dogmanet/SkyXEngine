@@ -54,4 +54,7 @@ public:
 	inline float GetRotationX();
 	inline float GetRotationY();
 	inline float GetRotationZ();
+
+	inline void SetFOV(float fov);
+	inline float GetFOV();
 };

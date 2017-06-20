@@ -381,6 +381,7 @@ SX_LIB_API void SPE_EffectPlayByName(
 SX_LIB_API void SPE_EffectPosSet(ID id, float3* pos);	//<! установка позиции эффекту
 SX_LIB_API void SPE_EffectDirSet(ID id, float3* dir);	//<! установка направления взгляда эффекта
 SX_LIB_API void SPE_EffectRotSet(ID id, float3* rot);	//<! установка поворотов эффекта (в радианах)
+SX_LIB_API void SPE_EffectRotSetQ(ID id, const SMQuaternion & rot);	//<! установка поворотов эффекта
 
 SX_LIB_API void SPE_EffectPosGet(ID id, float3* pos);	//<! в pos записывает позицию эффекта
 SX_LIB_API void SPE_EffectDirGet(ID id, float3* dir);	//<! в dir записывает  направление взгляда эффекта

@@ -371,6 +371,7 @@ void SkyXEngine_Init()
 
 #ifndef SX_GAME
 	GData::ObjCamera = SGCore_CrCamera();
+	GData::ObjCamera->SetFOV(GData::ProjFov);
 #endif
 
 	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
@@ -707,8 +708,10 @@ void SkyXEngine_Kill()
 	SXGame_0Kill();
 	SXDecals_AKill();
 	SXPhysics_AKill();
-	SXAnim_AKill();
+	SXAnim_AKill(); 
+#ifndef SX_GAME
 	mem_release(GData::ObjCamera);
+#endif
 	SGeom_AKill();
 	SML_AKill();
 	SSCore_AKill();

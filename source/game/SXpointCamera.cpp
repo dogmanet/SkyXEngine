@@ -10,7 +10,9 @@ REGISTER_ENTITY(SXpointCamera, point_camera);
 SXpointCamera::SXpointCamera(EntityManager * pMgr):
 	BaseClass(pMgr)
 {
+	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	m_pSXC = SGCore_CrCamera();
+	m_pSXC->SetFOV(SMToRadian(*r_default_fov));
 }
 
 SXpointCamera::~SXpointCamera()

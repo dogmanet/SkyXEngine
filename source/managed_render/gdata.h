@@ -73,7 +73,7 @@ namespace GData
 	int ReSize = 0;				//!< 0 - ничего не меняли, 1 - ресайз, 2 - переход между фуллскрин и окном
 
 	float2_t NearFar = float2_t(0.025,400);	//!< значение дальней и ближней плоскостей отсечения
-	float ProjFov = SM_PI * 0.25f;			//!< fov камеры
+	float ProjFov = SM_PIDIV4;			//!< fov камеры
 
 	ID DefaultGeomIDArr = -1;
 	ID DefaultGreenIDArr = -1;
