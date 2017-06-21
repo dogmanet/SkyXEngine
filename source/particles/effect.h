@@ -14,11 +14,11 @@ if (!(key >= 0 && key < ArrKey.size()))\
 	if (id < 0 || id >= ArrID.size() || !(ArrID[id]))\
 		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval; }
 
-#define EFFECTS_PULL_PRECOND(id, retval) \
-	if (id < 0 || id >= Pulls.size())\
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pull %d", gen_msg_location, id); return retval; } \
-	if (Pulls[id]->ideff < 0) \
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pull %d", gen_msg_location, id); return retval; }
+#define EFFECTS_POOL_PRECOND(id, retval) \
+	if (id < 0 || id >= Pools.size())\
+		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pool %d", gen_msg_location, id); return retval; } \
+	if (Pools[id]->ideff < 0) \
+		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pool %d", gen_msg_location, id); return retval; }
 
 #define EFFECTS_PARTICLES_PRECOND(id, id_part, retval) \
 	if (id_part < 0 || id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
@@ -69,7 +69,7 @@ public:
 		bool Alife;
 		Array<Emitter*> Arr;
 
-		ID IDPull;
+		ID IDPool;
 		bool Busy;
 		bool Original;
 	};
@@ -144,9 +144,9 @@ public:
 
 protected:
 
-	struct Pull
+	struct Pool
 	{
-		Pull();
+		Pool();
 
 		Array<ID> arr;
 		ID ideff;
@@ -157,14 +157,14 @@ protected:
 	inline void EffectDel(ID id);
 
 	inline ID AddEffect(Effect* obj);
-	inline ID PullAdd(ID ideff);
-	inline void PullDelete(ID id);
-	inline void PullExtend(ID id);
-	inline ID PullGet(ID id);
+	inline ID PoolAdd(ID ideff);
+	inline void PoolDelete(ID id);
+	inline void PoolExtend(ID id);
+	inline ID PoolGet(ID id);
 
 	Array<Effect*> ArrKey;	//массив всех элементов по порядку
 	Array<Effect*> ArrID;	//массив всех элементов, основанный на id
-	Array<Pull*> Pulls;
+	Array<Pool*> Pools;
 	Array<ID> ArrSort;
 	int ArrSortSizeCurr;	//текущий размер массива ArrSort
 };

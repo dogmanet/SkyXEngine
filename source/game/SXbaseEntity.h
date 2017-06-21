@@ -63,6 +63,8 @@ public:
 
 	const char * GetClassName();
 	const char * GetName();
+	virtual void GetMinMax(float3 * min, float3 * max);
+	virtual void GetSphere(float3 * center, float * radius);
 
 	virtual void SetPos(const float3 & pos);
 	float3 GetPos();

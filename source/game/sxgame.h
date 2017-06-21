@@ -65,7 +65,7 @@ SX_LIB_API void SXGame_SaveEnts(const char * file);
 */
 SX_LIB_API void SXGame_PlayerSpawn();
 
-SX_LIB_API void SXGame_EditorRender();
+SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex);
 
 SX_LIB_API ISXCamera * SXGame_GetActiveCamera();
 

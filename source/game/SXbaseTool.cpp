@@ -27,7 +27,7 @@ SXbaseTool::SXbaseTool(EntityManager * pMgr):
 	m_bInvStackable = false;
 
 	m_iMuzzleFlash = SPE_EffectInstanceByName("muzzleflash_ak74");
-
+	m_iSoundShot = SSCore_SndCreate3dInst("ak74_shoot2.ogg", false, 0, 100);
 	m_iIvalUpdate = SET_INTERVAL(_Update, 0);
 }
 
@@ -53,6 +53,7 @@ void SXbaseTool::PrimaryAction(BOOL st)
 	{
 		PlayAnimation("shoot1");
 		SPE_EffectEnableSet(m_iMuzzleFlash, true);
+		SSCore_SndInstancePlay3d(m_iSoundShot, &GetPos());
 
 		//trace line
 		float3 start = GetPos();

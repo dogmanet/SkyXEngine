@@ -122,6 +122,48 @@ ID SSCore_SndCreate3d(const char *file, bool looping, DWORD size_stream, float d
 	return MSound->SoundCreate3d(file, looping, size_stream, dist, shift_pan);
 }
 
+ID SSCore_SndCreate2dInst(const char *file, bool looping, DWORD size_stream)
+{
+	SCORE_PRECOND(-1);
+
+	return  MSound->SoundCreate2dInst(file, looping, size_stream);
+}
+
+ID SSCore_SndCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
+{
+	SCORE_PRECOND(-1);
+
+	return  MSound->SoundCreate3dInst(file, looping, size_stream, dist, shift_pan);
+}
+
+ID SSCore_SndFind2dInst(const char * file)
+{
+	SCORE_PRECOND(-1);
+
+	return MSound->SoundFind2dInst(file);
+}
+
+ID SSCore_SndFind3dInst(const char * file)
+{
+	SCORE_PRECOND(-1);
+
+	return MSound->SoundFind3dInst(file);
+}
+
+void SSCore_SndInstancePlay2d(ID id, int volume, int pan)
+{
+	SCORE_PRECOND(_VOID);
+
+	MSound->SoundInstancePlay2d(id, volume, pan);
+}
+
+void SSCore_SndInstancePlay3d(ID id, float3* pos)
+{
+	SCORE_PRECOND(_VOID);
+
+	MSound->SoundInstancePlay3d(id, pos);
+}
+
 
 bool SSCore_SndIsInit(ID id)
 {
@@ -296,87 +338,4 @@ void SSCore_SndDistAudibleSet(ID id, float value)
 	SCORE_PRECOND(_VOID);
 
 	MSound->SoundDistAudibleSet(id, value);
-}
-
-
-int SSCore_SndEffectStateGet(ID id, int effect)
-{
-	SCORE_PRECOND(0);
-
-	return MSound->SoundEffectStateGet(id, effect);
-}
-
-void SSCore_SndEffectStateSet(ID id, int effect, int state)
-{
-	SCORE_PRECOND(_VOID);
-
-	MSound->SoundEffectStateSet(id, effect, state);
-}
-
-bool SSCore_SndEffectGargleSet(ID id, DWORD RateHz, DWORD WaveShape)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectGargleSet(id, RateHz, WaveShape);
-}
-
-bool SSCore_SndEffectChorusSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectChorusSet(id, WetDryMix, Depth, Feedback, Frequency, Waveform, Delay, Phase);
-}
-
-bool SSCore_SndEffectFlangerSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectFlangerSet(id, WetDryMix, Depth, Feedback, Frequency, Waveform, Delay, Phase);
-}
-
-bool SSCore_SndEffectEchoSet(ID id, float WetDryMix, float Feedback, float LeftDelay, float RightDelay, long PanDelay)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectEchoSet(id, WetDryMix, Feedback, LeftDelay, RightDelay, PanDelay);
-}
-
-bool SSCore_SndEffectDistortionSet(ID id, float Gain, float Edge, float PostEQCenterFrequency, float PostEQBandwidth, float PreLowpassCutoff)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectDistortionSet(id, Gain, Edge, PostEQCenterFrequency, PostEQBandwidth, PreLowpassCutoff);
-}
-
-bool SSCore_SndEffectCompressorSet(ID id, float Gain, float Attack, float Release, float Threshold, float Ratio, float Predelay)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectCompressorSet(id, Gain, Attack, Release, Threshold, Ratio, Predelay);
-}
-
-bool SSCore_SndEffectParameqSet(ID id, float Center, float Bandwidth, float Gain)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectParameqSet(id, Center, Bandwidth, Gain);
-}
-
-
-bool SSCore_SndEffectI3DL2ReverbSet(ID id,
-	long Room, long RoomHF, float RoomRolloffFactor, float DecayTime, float DecayHFRatio, long Reflections,
-	float ReflectionsDelay, long Reverb, float ReverbDelay, float Diffusion, float Density, float HFReference
-	)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectI3DL2ReverbSet(id, Room, RoomHF, RoomRolloffFactor, DecayTime, DecayHFRatio, Reflections,
-		ReflectionsDelay, Reverb, ReverbDelay, Diffusion, Density, HFReference);
-}
-
-bool SSCore_SndEffectWavesReverbSet(ID id, float InGain, float ReverbMix, float ReverbTime, float HighFreqRTRatio)
-{
-	SCORE_PRECOND(false);
-
-	return MSound->SoundEffectWavesReverbSet(id, InGain, ReverbMix, ReverbTime, HighFreqRTRatio);
 }

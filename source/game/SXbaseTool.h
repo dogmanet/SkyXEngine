@@ -2,6 +2,7 @@
 #define _SXbaseTool_H_
 
 #include "SXbaseItem.h"
+#include <score/sxscore.h>
 
 enum
 {
@@ -73,6 +74,7 @@ protected:
 	ID m_iIvalUpdate;
 
 	ID m_iMuzzleFlash;
+	ID m_iSoundShot;
 };
 
 #endif

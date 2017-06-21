@@ -40,7 +40,7 @@ Effects::Effect::Effect(Effect& eff)
 		Emitter* part = new Emitter(*eff.Arr[i]);
 		Arr.push_back(part);
 	}
-	IDPull = eff.IDPull;
+	IDPool = eff.IDPool;
 }
 
 Effects::Effect::~Effect()
@@ -53,7 +53,7 @@ Effects::Effect::~Effect()
 	Arr.clear();
 }
 
-Effects::Pull::Pull()
+Effects::Pool::Pool()
 {
 	ideff = -1;
 }
@@ -66,7 +66,7 @@ void Effects::Effect::NullingInit()
 
 	Enable = false;
 	Busy = false;
-	IDPull = -1;
+	IDPool = -1;
 	Original = true;
 }
 
@@ -110,12 +110,12 @@ void Effects::Clear()
 	ArrKey.clear();
 	ArrID.clear();
 
-	for (int i = 0; i < Pulls.size(); ++i)
+	for (int i = 0; i < Pools.size(); ++i)
 	{
-		mem_delete(Pulls[i]);
+		mem_delete(Pools[i]);
 	}
 
-	Pulls.clear();
+	Pools.clear();
 }
 
 void Effects::Save(const char* path)
@@ -724,21 +724,21 @@ ID Effects::EffectAdd(const char* name)
 		strcpy(tmpeffect->Name, name);
 
 	ID id = AddEffect(tmpeffect);
-	tmpeffect->IDPull = PullAdd(id);
-	//PullExtend(tmpeffect->Pull);
+	tmpeffect->IDPool = PoolAdd(id);
+	//PoolExtend(tmpeffect->Pool);
 	return id;
 }
 
-ID Effects::PullAdd(ID ideff)
+ID Effects::PoolAdd(ID ideff)
 {
 	EFFECTS_EFFECT_PRECOND(ideff, -1);
 
 	ID id = -1;
-	for (int i = 0; i < Pulls.size(); ++i)
+	for (int i = 0; i < Pools.size(); ++i)
 	{
-		if (Pulls[i]->ideff < 0)
+		if (Pools[i]->ideff < 0)
 		{
-			Pulls[i]->arr.clear();
+			Pools[i]->arr.clear();
 			id = i;
 			break;
 		}
@@ -746,61 +746,61 @@ ID Effects::PullAdd(ID ideff)
 
 	if (id < 0)
 	{
-		Pull* tmparr = new Pull();
+		Pool* tmparr = new Pool();
 		tmparr->ideff = ideff;
-		Pulls.push_back(tmparr);
-		id = Pulls.size() - 1;
+		Pools.push_back(tmparr);
+		id = Pools.size() - 1;
 	}
 
-	return Pulls.size() - 1;
+	return Pools.size() - 1;
 }
 
-void Effects::PullExtend(ID id)
+void Effects::PoolExtend(ID id)
 {
-	EFFECTS_PULL_PRECOND(id, _VOID);
-	for (int i = 0; i < SXPARTICLES_PULL_RESERVE; ++i)
+	EFFECTS_POOL_PRECOND(id, _VOID);
+	for (int i = 0; i < SXPARTICLES_POOL_RESERVE; ++i)
 	{
-		ID tmpid = EffectCopyID(Pulls[id]->ideff);
+		ID tmpid = EffectCopyID(Pools[id]->ideff);
 		ArrID[tmpid]->Busy = false;
 		ArrID[tmpid]->Original = false;
-		Pulls[id]->arr.push_back(tmpid);
+		Pools[id]->arr.push_back(tmpid);
 	}
 }
 
-void Effects::PullDelete(ID id)
+void Effects::PoolDelete(ID id)
 {
-	EFFECTS_PULL_PRECOND(id, _VOID);
+	EFFECTS_POOL_PRECOND(id, _VOID);
 
-	for (int i = 0; i < Pulls[id]->arr.size(); ++i)
+	for (int i = 0; i < Pools[id]->arr.size(); ++i)
 	{
-		EffectDel(Pulls[id]->arr[i]);
+		EffectDel(Pools[id]->arr[i]);
 	}
 
-	Pulls[id]->ideff = -1;
-	Pulls[id]->arr.clear();
+	Pools[id]->ideff = -1;
+	Pools[id]->arr.clear();
 }
 
-ID Effects::PullGet(ID id)
+ID Effects::PoolGet(ID id)
 {
-	EFFECTS_PULL_PRECOND(id, -1);
+	EFFECTS_POOL_PRECOND(id, -1);
 
-	for (int i = 0; i < Pulls[id]->arr.size(); ++i)
+	for (int i = 0; i < Pools[id]->arr.size(); ++i)
 	{
-		if (!(ArrID[Pulls[id]->arr[i]]->Busy) && !(ArrID[Pulls[id]->arr[i]]->Enable))
-			return ArrID[Pulls[id]->arr[i]]->Id;
+		if (!(ArrID[Pools[id]->arr[i]]->Busy) && !(ArrID[Pools[id]->arr[i]]->Enable))
+			return ArrID[Pools[id]->arr[i]]->Id;
 	}
 	
-	int oldsize = Pulls[id]->arr.size();
+	int oldsize = Pools[id]->arr.size();
 
-	PullExtend(id);
-	return ArrID[Pulls[id]->arr[oldsize]]->Id;
+	PoolExtend(id);
+	return ArrID[Pools[id]->arr[oldsize]]->Id;
 }
 
 ID Effects::EffectInstanceByID(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 
-	ID ideff = PullGet(ArrID[id]->IDPull);
+	ID ideff = PoolGet(ArrID[id]->IDPool);
 	ArrID[ideff]->Busy = true;
 
 	return ideff;
@@ -815,7 +815,7 @@ void Effects::EffectPlayByID(ID id, float3* pos, float3* dir)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ID ideff = PullGet(ArrID[id]->IDPull);
+	ID ideff = PoolGet(ArrID[id]->IDPool);
 
 	if (pos)
 		EffectPosSet(ideff, pos);
@@ -874,7 +874,7 @@ void Effects::EffectDelete(ID id)
 
 	if (ArrID[id]->Original)
 	{
-		PullDelete(ArrID[id]->IDPull);
+		PoolDelete(ArrID[id]->IDPool);
 		EffectDel(id);
 	}
 	else

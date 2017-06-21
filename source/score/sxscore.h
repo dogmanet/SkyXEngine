@@ -128,6 +128,15 @@ SX_LIB_API ID SSCore_SndCreate3d(
 	float shift_pan = 0.1f	//!< изменение позиционирования звука [0-1], на сколько будет смещен звук (между ушами слушателя) при поворотах камеры к источнику звука, чем ближе к объекту тем меньше разница в позиционировании при поворотах
 	);
 
+SX_LIB_API void SSCore_SndInstancePlay2d(ID id, int volume = 100, int pan = 0);
+SX_LIB_API void SSCore_SndInstancePlay3d(ID id, float3* pos);
+
+SX_LIB_API ID SSCore_SndCreate2dInst(const char *file, bool looping = false, DWORD size_stream = 0);
+SX_LIB_API ID SSCore_SndCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
+
+SX_LIB_API ID SSCore_SndFind2dInst(const char * file);
+SX_LIB_API ID SSCore_SndFind3dInst(const char * file);
+
 SX_LIB_API bool SSCore_SndIsInit(ID id);	//!< инициализирован ли звук с идентификатором id
 SX_LIB_API void SSCore_SndDelete(ID id);	//!< удалить звук по его id
 
@@ -191,37 +200,6 @@ SX_LIB_API void SSCore_SndFileGet(ID id, char* path);		//!< относитель
 
 SX_LIB_API float SSCore_SndDistAudibleGet(ID id);				//!< возвращает дистанцию слышимости
 SX_LIB_API void SSCore_SndDistAudibleSet(ID id, float value);	//!< установка дистанции слышимости в метрах
-
-//! включен ли эффект 
-SX_LIB_API int SSCore_SndEffectStateGet(
-	ID id,		//!< идентификатор звука
-	int effect	//!< номер эффекта SOUND_EFFECT_
-	);		
-
-//! включить/отключить эффект
-SX_LIB_API void SSCore_SndEffectStateSet(
-	ID id,		//!< идентификатор звука
-	int effect,	//!< номер эффекта SOUND_EFFECT_
-	int state	//!< состояние в которое надо перевести эффект SOUND_EFF_
-	);	
-
-/*! \name Установка эффектов и параметров
- \note Для уточнени значений параметров для эффектов следует обратиться к документации по DirectSound8
-@{*/
-
-SX_LIB_API bool SSCore_SndEffectGargleSet(ID id, DWORD RateHz, DWORD WaveShape);
-SX_LIB_API bool SSCore_SndEffectChorusSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase);
-SX_LIB_API bool SSCore_SndEffectFlangerSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase);
-SX_LIB_API bool SSCore_SndEffectEchoSet(ID id, float WetDryMix, float Feedback, float LeftDelay, float RightDelay, long PanDelay);
-SX_LIB_API bool SSCore_SndEffectDistortionSet(ID id, float Gain, float Edge, float PostEQCenterFrequency, float PostEQBandwidth, float PreLowpassCutoff);
-SX_LIB_API bool SSCore_SndEffectCompressorSet(ID id, float Gain, float Attack, float Release, float Threshold, float Ratio, float Predelay);
-SX_LIB_API bool SSCore_SndEffectParameqSet(ID id, float Center, float Bandwidth, float Gain);
-
-SX_LIB_API bool SSCore_SndEffectI3DL2ReverbSet(ID id,
-	long Room, long RoomHF, float RoomRolloffFactor, float DecayTime, float DecayHFRatio, long Reflections,
-	float ReflectionsDelay, long Reverb, float ReverbDelay, float Diffusion, float Density, float HFReference
-	);
-SX_LIB_API bool SSCore_SndEffectWavesReverbSet(ID id, float InGain, float ReverbMix, float ReverbTime, float HighFreqRTRatio);
 
 //!@}
 

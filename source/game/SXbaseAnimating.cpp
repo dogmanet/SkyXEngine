@@ -1,5 +1,5 @@
 #include "SXbaseAnimating.h"
-
+#include "gcore/sxgcore.h"
 
 BEGIN_PROPTABLE(SXbaseAnimating)
 // empty
@@ -24,6 +24,24 @@ SXbaseAnimating::SXbaseAnimating(EntityManager * pMgr):
 SXbaseAnimating::~SXbaseAnimating()
 {
 	mem_release(m_pAnimPlayer);
+}
+
+void SXbaseAnimating::GetMinMax(float3 * min, float3 * max)
+{
+	if (m_pAnimPlayer)
+	{
+		const ISXBound * bound = m_pAnimPlayer->GetBound();
+		bound->GetMinMax(min, max);
+	}
+}
+
+void SXbaseAnimating::GetSphere(float3 * center, float * radius)
+{
+	if (m_pAnimPlayer)
+	{
+		const ISXBound * bound = m_pAnimPlayer->GetBound();
+		bound->GetSphere(center, radius);
+	}
 }
 
 bool SXbaseAnimating::SetKV(const char * name, const char * value)

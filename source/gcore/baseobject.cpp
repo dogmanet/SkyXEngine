@@ -256,7 +256,7 @@ void SXBound::SetMinMax(float3* min, float3* max)
 	Radius = SMVector3Length(Center - Max);
 };
 
-void SXBound::GetMinMax(float3* min, float3* max)
+void SXBound::GetMinMax(float3* min, float3* max) const
 {
 	*min = Min; *max = Max;
 };
@@ -276,7 +276,7 @@ void SXBound::GetSphere(float3* center, float* radius) const
 	*radius = Radius;
 };
 
-bool SXBound::IsPointInSphere(float3* point)
+bool SXBound::IsPointInSphere(float3* point) const
 {
 	float distsqr = SMVector3Dot(Center - *point);
 	if (distsqr <= Radius*Radius)
@@ -285,7 +285,7 @@ bool SXBound::IsPointInSphere(float3* point)
 		return false;
 }
 
-bool SXBound::IsPointInBox(float3* point)
+bool SXBound::IsPointInBox(float3* point) const
 {
 	if (point->x >= Min.x && point->y >= Min.y && point->z >= Min.z && point->x <= Max.x && point->y <= Max.y && point->z <= Max.z)
 		return true;

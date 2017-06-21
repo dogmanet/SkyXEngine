@@ -11,6 +11,7 @@ See the license in LICENSE
 
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
+#include <score/sxscore.h>
 
 #include "EntityManager.h"
 
@@ -27,6 +28,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxdecals_d.lib")
 #	pragma comment(lib, "sxanim_d.lib")
 #	pragma comment(lib, "sxparticles_d.lib")
+#	pragma comment(lib, "sxscore_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
@@ -35,6 +37,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxdecals.lib")
 #	pragma comment(lib, "sxanim.lib")
 #	pragma comment(lib, "sxparticles.lib")
+#	pragma comment(lib, "sxscore.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -43,6 +46,7 @@ report_func reportf = def_report;
 #endif
 
 GameData * g_pGameData = NULL;
+ID3DXMesh* FigureBox = 0;
 
 #define SG_PRECOND(ret) if(!g_pGameData){reportf(-1, "%s - sxgame is not init", gen_msg_location);return ret;}
 
@@ -107,7 +111,7 @@ SX_LIB_API void SXGame_0Create()
 	g_pGameData = new GameData();
 
 	//g_pPlayer->Spawn();
-
+	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &FigureBox, 0);
 
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);
@@ -116,6 +120,7 @@ SX_LIB_API void SXGame_0Kill()
 {
 	SG_PRECOND(_VOID);
 	mem_delete(g_pGameData);
+	mem_release(FigureBox);
 }
 
 SX_LIB_API void SXGame_Update(int thread)
@@ -157,75 +162,113 @@ SX_LIB_API void SXGame_PlayerSpawn()
 	GameData::m_pPlayer->Spawn();
 }
 
-SX_LIB_API void SXGame_EditorRender()
+SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 {
 	SG_PRECOND(_VOID);
-	
-	PathCorner * pStartPoint = (PathCorner*)(GameData::m_pMgr->FindEntityByName("cam_pt_0"));
-	if(!pStartPoint)
-	{
+
+	SXbaseEntity* bEnt = SXGame_EntGet(id);
+	if (!bEnt)
 		return;
-	}
-	FuncTrain * pTrain = (FuncTrain*)(GameData::m_pMgr->FindEntityByClass("func_train"));
-	if(!pTrain)
-	{
-		return;
-	}
-	SXpointCamera * cam = (SXpointCamera*)(GameData::m_pMgr->FindEntityByName("train_camera"));
-	if(cam)
-	{
-		GameData::m_pActiveCamera = cam;
-	}
-	pTrain->Start();
-
-	//pStartPoint = pStartPoint->GetNext();
-
-	float len = 0;
-	PathCorner * pCur = pStartPoint;
-	do
-	{
-		len += pCur->GetLength();
-	}
-	while((pCur = pCur->GetNext())/* && false*/);
-
-
-	const int npoints = 60;
-	float3_t pts[npoints * 2 + 2];
-
-	for(int i = 0; i < npoints; ++i)
-	{
-		pts[i * 2] = pStartPoint->GetPoint((float)i * (len / (float)npoints));
-	}
-	for(int i = 0; i < npoints - 1; ++i)
-	{
-		pts[i * 2 + 1] = pts[(i + 1) * 2];
-	}
-	pts[npoints * 2 - 1] = pStartPoint->GetPoint(len);
-
-	pts[npoints * 2] = pTrain->GetPos();
-	pts[npoints * 2 + 1] = (float3)(pTrain->GetPos() + (pTrain->GetOrient() * float3(0.0f, 1.0f, 0.0f)));
-
-	SGCore_ShaderUnBind();
 
 	SMMATRIX mView, mProj;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
 
-	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
 	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
 
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFF);
+	if (strcmp(bEnt->GetClassName(), "path_corner") == 0)
+	{
+		PathCorner * pStartPoint = (PathCorner*)bEnt;
+		if (!pStartPoint)
+			return;
 
-	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ);
+		/*FuncTrain * pTrain = (FuncTrain*)(GameData::m_pMgr->FindEntityByClass("func_train"));
+		if (pTrain)
+		{
+			pTrain->Start();
+		}
 
-	SGCore_GetDXDevice()->SetTexture(0, 0);
+		SXpointCamera * cam = (SXpointCamera*)(GameData::m_pMgr->FindEntityByName("train_camera"));
+		if (cam)
+		{
+			GameData::m_pActiveCamera = cam;
+			cam->SetParent();
+		}*/
 
-	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints + 1, &pts, sizeof(float3_t));
+		PathCorner * pCur = pStartPoint;
+		while ((pCur = pCur->GetPrev()))
+		{
+			pStartPoint = pCur;
+		}
 
-	
+		float len = 0;
+		int count = 0;
+		pCur = pStartPoint;
+		do
+		{
+			len += pCur->GetLength();
+			++count;
+			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixTranslation(pCur->GetPos()));
+
+			if (id == pCur->GetId())
+				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
+			else
+				SGCore_GetDXDevice()->SetTexture(0, 0);
+
+			FigureBox->DrawSubset(0);
+		} while ((pCur = pCur->GetNext()));
+
+
+		int npoints = count * 10;
+		static Array<float3_t> pts;
+
+		if (pts.size() <= npoints)
+		{
+			pts.clear();
+			pts.resize(npoints*2);
+		}
+		
+		for (int i = 0; i < npoints; ++i)
+		{
+			pts[i * 2] = pStartPoint->GetPoint((float)i * (len / (float)npoints));
+		}
+		for (int i = 0; i < npoints - 1; ++i)
+		{
+			pts[i * 2 + 1] = pts[(i + 1) * 2];
+		}
+		pts[npoints * 2 - 1] = pStartPoint->GetPoint(len);
+
+		//pts[npoints * 2] = pTrain->GetPos();
+		//pts[npoints * 2 + 1] = (float3)(pTrain->GetPos() + (pTrain->GetOrient() * float3(0.0f, 1.0f, 0.0f)));
+
+		SGCore_ShaderUnBind();
+
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
+
+		SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ);
+		SGCore_GetDXDevice()->SetTexture(0, 0);
+		SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints, &(pts[0]), sizeof(float3_t));
+	}
+	else
+	{
+		float3 min, max;
+		bEnt->GetMinMax(&min, &max);
+
+		if (min.x == 0.0f && min.y == 0.0f && min.z == 0.0f && max.x == 0.0f && max.y == 0.0f && max.z == 0.0f)
+			max.x = max.y = max.z = 0.5f;
+		SMMATRIX mView, mProj;
+		Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
+		Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
+
+		SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
+		SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling((max.x - min.x), (max.y - min.y), (max.z - min.z)) * SMMatrixTranslation(bEnt->GetPos())));
+		//SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&bEnt->GetWorldTM());
+
+		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
+		FigureBox->DrawSubset(0);
+	}
 }
 
 SX_LIB_API int SXGame_EntGetClassListCount()

@@ -1572,6 +1572,11 @@ void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 			}
 		}
 
+		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+		{
+			SXGame_EditorRender(GData::Editors::ActiveElement, GData::IDSelectTex);
+		}
+
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 

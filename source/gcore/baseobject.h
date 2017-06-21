@@ -45,11 +45,11 @@ public:
 	void GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat);
 
 	inline void SetMinMax(float3* min, float3* max);
-	inline void GetMinMax(float3* min, float3* max);
+	inline void GetMinMax(float3* min, float3* max) const;
 
 	inline void SetSphere(float3* center, float* radius);
 	inline void GetSphere(float3* center, float* radius) const;
 
-	inline bool IsPointInSphere(float3* point);
-	inline bool IsPointInBox(float3* point);
+	inline bool IsPointInSphere(float3* point) const;
+	inline bool IsPointInBox(float3* point) const;
 };

@@ -12,6 +12,9 @@ public:
 	SXbaseAnimating(EntityManager * pMgr);
 	~SXbaseAnimating();
 
+	void GetMinMax(float3 * min, float3 * max);
+	void GetSphere(float3 * center, float * radius);
+
 	bool SetKV(const char * name, const char * value);
 
 	void SetModel(const char * mdl);

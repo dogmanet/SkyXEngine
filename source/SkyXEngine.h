@@ -578,7 +578,6 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
 	SXPhysics_DebugRender();
-	//SXGame_EditorRender();
 
 	SXRenderFunc::ShaderRegisterData();
 

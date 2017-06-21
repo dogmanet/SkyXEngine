@@ -13,11 +13,56 @@
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
 #include <score/CallBackOgg.cpp>
-#include <common\\array.h>
+#include <common/aastring.h>
+
+struct AAStringNR : public AAString
+{
+	__forceinline AAStringNR(const char * str)
+	{
+		tmpName = str;
+		Name[0] = 0;
+	}
+
+	__forceinline AAStringNR()
+	{
+		tmpName = NULL;
+		Name[0] = 0;
+	}
+
+	__forceinline bool operator==(const AAStringNR & str) const
+	{
+		return(stricmp(tmpName ? tmpName : Name, str.tmpName ? str.tmpName : str.Name) == 0);
+	}
+};
+
+#include <common/array.h>
+#include <common/assotiativearray.h>
 
 #define SOUND_PRECOND(id, retval) \
 if (id >= ArrSounds.size() || !(ArrSounds[id]))\
 		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxsound - unresolved address to sound %d", gen_msg_location, id); return retval; }
+
+inline long SOUND_3D_COM_VOLUME(const float3 & snd_pos, const float3 & view_pos, const float snd_distaudible)
+{
+	long vol = (SMVector3Distance(snd_pos, view_pos) / snd_distaudible) * (-10000);
+
+	if (vol > 0)
+		vol = 0;
+
+	if (vol < -10000)
+		vol = -10000;
+
+	return vol;
+}
+
+inline long SOUND_3D_COM_PAN(const float3 & snd_pos, const float3 & view_pos, const float3 & view_dir, const float snd_distaudible, const float snd_shiftpan)
+{
+	float dist = SMVector3Distance(snd_pos, view_pos);
+	float3 vec = view_pos + view_dir;
+
+	float str = (snd_pos.x - view_pos.x)*(snd_pos.z - vec.z) - (snd_pos.z - view_pos.z)*(snd_pos.x - vec.x);
+	return ((str * (dist / snd_distaudible)) * snd_shiftpan * (-10000));
+}
 
 //структура для загрузки wave файла
 struct SoundWaveHeader
@@ -58,16 +103,40 @@ public:
 		SX_ALIGNED_OP_MEM
 
 		char RPath[SOUND_MAX_SIZE_PATH];
+		ID Id;
+		bool IsInst;
 		FILE* StreamFile;
 		IDirectSoundBuffer8* DSBuffer;	//звуковой буфер
 		OggVorbis_File* VorbisFile;		//поток для декодирования ogg
-		SoundFileFormat Format;			//формат файла
-		DWORD SizeFull;					//полный размер в байтах (для wav исключая заголовочную структуру)
+
+		struct SIData
+		{
+			SIData(){ sbuffer = 0; busy = false; }
+			SIData(IDirectSoundBuffer8* _sbuffer, float3_t* _pos, bool _busy)
+			{
+				sbuffer = _sbuffer; if (_pos) pos = *_pos; busy = _busy;
+			}
+			~SIData()
+			{
+				mem_release(sbuffer);
+			}
+
+			IDirectSoundBuffer8* sbuffer;
+			float3_t pos;
+			bool busy;
+		};
+
+		Array<SIData> DataInstances;
+
+		SoundFileFormat Format;		//формат файла
+		DWORD SizeFull;				//полный размер в байтах (для wav исключая заголовочную структуру)
 		
 		float3 Position;	//позиция источника звука
-		//float Damping;		//сброс громкости при отдалении на метр, т.е. count_volume = volume - dist * Damping %
-		float ShiftPan;		//изменение позиционирования звука, на сколько будет смещен звук при поворотах камеры к источнику звука
+		//float Damping;	//сброс громкости при отдалении на метр, т.е. count_volume = volume - dist * Damping %
+		
+		//изменение позиционирования звука, на сколько будет смещен звук при поворотах камеры к источнику звука
 		//чем ближе к объекту тем меньше разница в позиционировании при поворотах
+		float ShiftPan;		
 
 		SoundObjState State;
 		DWORD FrecOrigin;	//оригинальная частота
@@ -100,22 +169,19 @@ public:
 		short SplitActive;	//активный сплит
 		int RePlayCount;	//сколько раз был полностью перезагружен поток
 		int	RePlayEndCount;	//сколько раз нужно полностью перезагрузить поток чтоб дойти до конца
-
-		bool EffectInit[9];
-
-		DSFXGargle		EffGargle;
-		DSFXChorus		EffChorus;
-		DSFXFlanger		EffFlanger;
-		DSFXEcho		EffEcho;
-		DSFXDistortion	EffDistortion;
-		DSFXCompressor	EffCompressor;
-		DSFXParamEq		EffParamEq;
-		DSFXI3DL2Reverb	EffI3DL2Reverb;
-		DSFXWavesReverb	EffWavesReverb;
 	};
 
-	ID SoundCreate2d(const char *file, bool looping = 0, DWORD size_stream = 0);
+	ID SoundCreate2d(const char *file, bool looping = false, DWORD size_stream = 0);
 	ID SoundCreate3d(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
+
+	ID SoundCreate2dInst(const char *file, bool looping = false, DWORD size_stream = 0);
+	ID SoundCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
+
+	ID SoundFind2dInst(const char * file);
+	ID SoundFind3dInst(const char * file);
+
+	void SoundInstancePlay2d(ID id, int volume=100, int pan = 0);
+	void SoundInstancePlay3d(ID id, float3* pos);
 
 	inline bool SoundIsInit(ID id);
 	inline void SoundDelete(ID id);
@@ -155,25 +221,6 @@ public:
 	inline float SoundDistAudibleGet(ID id);
 	inline void SoundDistAudibleSet(ID id, float value);
 
-	int SoundEffectStateGet(ID id, int effect);					//включен ли эффект 
-	void SoundEffectStateSet(ID id, int effect, int state);	//включить/отключить эффект
-
-	//установка эффектов
-	bool SoundEffectGargleSet(ID id, DWORD RateHz, DWORD WaveShape);
-	bool SoundEffectChorusSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase);
-	bool SoundEffectFlangerSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase);
-	bool SoundEffectEchoSet(ID id, float WetDryMix, float Feedback, float LeftDelay, float RightDelay, long PanDelay);
-	bool SoundEffectDistortionSet(ID id, float Gain, float Edge, float PostEQCenterFrequency, float PostEQBandwidth, float PreLowpassCutoff);
-	bool SoundEffectCompressorSet(ID id, float Gain, float Attack, float Release, float Threshold, float Ratio, float Predelay);
-	bool SoundEffectParameqSet(ID id, float Center, float Bandwidth, float Gain);
-
-	bool SoundEffectI3DL2ReverbSet(ID id,
-		long Room, long RoomHF, float RoomRolloffFactor, float DecayTime, float DecayHFRatio, long Reflections,
-		float ReflectionsDelay, long Reverb, float ReverbDelay, float Diffusion, float Density, float HFReference
-		);
-	bool SoundEffectWavesReverbSet(ID id, float InGain, float ReverbMix, float ReverbTime, float HighFreqRTRatio);
-
-
 	void Update(float3* viewpos, float3* viewdir);
 
 	SoundFileFormat FileFormat(const char* file);
@@ -193,13 +240,11 @@ private:
 
 	void ReLoadSplit(ID id, DWORD Pos, DWORD Size);
 
-	GUID EffectGuidGet(int effect);
-	void EffectInitRe(ID id);
-	bool EffectInitPrecond(HRESULT hr);
-
 	ID AddSound(Sound* snd);
 
 	Array<Sound*> ArrSounds;	//массив со всеми звуковыми объектами
+	AssotiativeArray<AAStringNR, ID, false, 16> AArr2dInst;
+	AssotiativeArray<AAStringNR, ID, false, 16> AArr3dInst;
 	
 	char StdPath[SOUND_MAX_SIZE_STDPATH];
 
@@ -207,6 +252,9 @@ private:
 	IDirectSoundBuffer* DSPrimary;	//первичный буфер
 	int SoundsPlayCount;			//количество проигрываемых звуков
 	int SoundsLoadCount;			//количество загруженных звуков (с учетом как проигрывающихся так и простаивающих)
+
+	float3 OldViewPos;
+	float3 OldViewDir;
 };
 
 #endif

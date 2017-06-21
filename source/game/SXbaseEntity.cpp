@@ -105,6 +105,24 @@ const char * SXbaseEntity::GetClassName()
 	return(m_szClassName);
 }
 
+void SXbaseEntity::GetMinMax(float3 * min, float3 * max)
+{
+	if (min)
+		min->x = min->y = min->z = 0;
+
+	if (max)
+		max->x = max->y = max->z = 0;
+}
+
+void SXbaseEntity::GetSphere(float3 * center, float * radius)
+{
+	if (center)
+		center->x = center->y = center->z = 0;
+
+	if (radius)
+		radius = 0;
+}
+
 void SXbaseEntity::SetPos(const float3 & pos)
 {
 	m_vPosition = pos;

@@ -544,13 +544,13 @@ public:
 		) = 0;
 
 	virtual void SetMinMax(float3* min, float3* max) = 0;	//!< установить экстремум, также просчитает и сферу
-	virtual void GetMinMax(float3* min, float3* max) = 0;	//!< запишет в min и max точки экстремума
+	virtual void GetMinMax(float3* min, float3* max) const = 0;	//!< запишет в min и max точки экстремума
 
 	virtual void SetSphere(float3* center, float* radius) = 0;	//!< установить сферу, просчитает также и параллелепипед
 	virtual void GetSphere(float3* center, float* radius) const = 0;	//!< запишет в center центр сферы, в radius радиус сферы
 
-	virtual bool IsPointInSphere(float3* point) = 0;	//!< находится ли точка point в пределах сферы
-	virtual bool IsPointInBox(float3* point) = 0;		//!< находится ли точка point в пределах параллелепипеда
+	virtual bool IsPointInSphere(float3* point) const = 0;	//!< находится ли точка point в пределах сферы
+	virtual bool IsPointInBox(float3* point) const = 0;		//!< находится ли точка point в пределах параллелепипеда
 
 protected:
 	float3 Min;

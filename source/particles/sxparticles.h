@@ -62,7 +62,7 @@ SX_LIB_API void SPE_OnResetDevice();
 #define SXPARTICLES_BASIS_DIR float3(0,0,1)
 
 #define SXPARTICLES_DEADTH_TIME 1000
-#define SXPARTICLES_PULL_RESERVE 8
+#define SXPARTICLES_POOL_RESERVE 8
 
 //#############################################################################
 

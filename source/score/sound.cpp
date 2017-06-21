@@ -26,6 +26,7 @@ void MainSound::Clear()
 MainSound::Sound::Sound()
 {
 	ZeroMemory(this, sizeof(MainSound::Sound));
+	Id = -1;
 }
 
 MainSound::Sound::~Sound()
@@ -55,13 +56,13 @@ void MainSound::Init(HWND hwnd)
 		return;// SOUND_INIT_ERR_CL;
 	}
 
-	DSBUFFERDESC       dsbd;
+	DSBUFFERDESC  dsbd;
 	ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
 
 	dsbd.dwSize = sizeof(DSBUFFERDESC);
 	dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_CTRLVOLUME;
 	dsbd.dwBufferBytes = 0;
-	dsbd.lpwfxFormat = NULL;
+	dsbd.lpwfxFormat = 0;
 
 	if (FAILED(DeviceSound->CreateSoundBuffer(&dsbd, &DSPrimary, NULL)))
 	{
@@ -229,7 +230,7 @@ IDirectSoundBuffer8* MainSound::SoundBufferCreate(SoundWaveHeader* hdr)
 	//создаем звуковой буфер, использу¤ данные заголовка
 	ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
 	dsbd.dwSize = sizeof(DSBUFFERDESC);
-	dsbd.dwFlags = DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRLFX;
+	dsbd.dwFlags = DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE;
 	dsbd.dwBufferBytes = hdr->DataSize;
 	dsbd.lpwfxFormat = &wfex;
 	if (FAILED(DeviceSound->CreateSoundBuffer(&dsbd, &DSB, NULL)))
@@ -442,7 +443,10 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 	sprintf(fullpath, "%s%s", StdPath, file);
 
 	if (!Core_0FileExists(fullpath))
+	{
+		reportf(REPORT_MSG_LEVEL_ERROR, "%s - file not found [%s]", gen_msg_location, fullpath);
 		return -1;
+	}
 
 	SoundFileFormat fmt = FileFormat(fullpath);
 
@@ -457,6 +461,7 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 	snd->Format = fmt;
 	snd->IsLooping = looping;
 
+	snd->StreamSize = 0;
 	if (size_stream > 0)
 	{
 		if (size_stream < SOUND_MIN_SIZE_STREAM)
@@ -468,8 +473,8 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 	Load(snd, fullpath, fmt);
 
 	snd->DSBuffer->GetFrequency(&snd->FrecOrigin);
-
-	return AddSound(snd);
+	snd->Id = AddSound(snd);
+	return snd->Id;
 }
 
 ID MainSound::SoundCreate3d(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
@@ -483,9 +488,167 @@ ID MainSound::SoundCreate3d(const char *file, bool looping, DWORD size_stream, f
 	snd = ArrSounds[sndid];
 	snd->DistAudible = dist;
 	snd->Is3d = true;
-	//snd->Damping = damping;
 	snd->ShiftPan = shift_pan;
+	
 	return sndid;
+}
+
+ID MainSound::SoundCreate2dInst(const char *file, bool looping, DWORD size_stream)
+{
+	ID idsnd = SoundFind2dInst(file);
+	if (idsnd >= 0)
+		return idsnd;
+	idsnd = SoundCreate2d(file, looping, size_stream);
+	AArr2dInst[file] = idsnd;
+	ArrSounds[idsnd]->IsInst = true;
+	return idsnd;
+}
+
+ID MainSound::SoundCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
+{
+	ID idsnd = SoundFind2dInst(file);
+	if (idsnd >= 0)
+		return idsnd;
+	idsnd = SoundCreate3d(file, looping, size_stream, dist, shift_pan);
+	AArr3dInst[file] = idsnd;
+	ArrSounds[idsnd]->IsInst = true;
+	return idsnd;
+}
+
+ID MainSound::SoundFind2dInst(const char * file)
+{
+	ID id = -1;
+	const AssotiativeArray<AAStringNR, ID, false, 16>::Node* pNode = 0;
+	if (AArr2dInst.KeyExists(file, &pNode))
+		id = *(pNode->Val);
+
+	return id;
+}
+
+ID MainSound::SoundFind3dInst(const char * file)
+{
+	ID id = -1;
+	const AssotiativeArray<AAStringNR, ID, false, 16>::Node* pNode = 0;
+	if (AArr3dInst.KeyExists(file, &pNode))
+		id = *(pNode->Val);
+
+	return id;
+}
+
+void MainSound::SoundInstancePlay2d(ID id, int volume, int pan)
+{
+	SOUND_PRECOND(id, _VOID);
+
+	Sound* snd = ArrSounds[id];
+
+	if (snd->StreamSize > 0)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - can not create sound instance for streaming [%s]", gen_msg_location, snd->RPath);
+		return;
+	}
+
+	if (snd->Is3d)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - can not create 2d sound instance by 3d [%s]", gen_msg_location, snd->RPath);
+		return;
+	}
+
+	ID id_instance = -1;
+	for (int i = 0; i < snd->DataInstances.size(); ++i)
+	{
+		if (!snd->DataInstances[i].busy)
+		{
+			id_instance = i;
+			break;
+		}
+	}
+
+	if (id_instance < 0)
+	{
+		IDirectSoundBuffer* tsb;
+		IDirectSoundBuffer8* tsb8;
+		DeviceSound->DuplicateSoundBuffer(snd->DSBuffer, &tsb);
+		if (!tsb)
+		{
+			reportf(REPORT_MSG_LEVEL_WARRNING, "%s - can not create sound instance [%s], this is big problem", gen_msg_location, snd->RPath);
+			return;
+		}
+		tsb->QueryInterface(IID_IDirectSoundBuffer8, (void**)&tsb8);
+		snd->DataInstances.push_back(Sound::SIData(tsb8, 0, true));
+		id_instance = snd->DataInstances.size() - 1;
+	}
+
+	if (id_instance >= 0)
+	{
+		long tvol;
+		snd->DSBuffer->GetVolume(&tvol);
+		snd->DataInstances[id_instance].busy = true;
+		//IDirectSoundBuffer8* tsb = snd->DataInstances[id_instance].sbuffer;
+		snd->DataInstances[id_instance].sbuffer->SetVolume((tvol > -5000 ? tvol - 5000 : tvol + 5000));
+		snd->DataInstances[id_instance].sbuffer->SetCurrentPosition(0);
+		snd->DataInstances[id_instance].sbuffer->SetVolume(-10000 + (volume * 100));
+		snd->DataInstances[id_instance].sbuffer->SetPan((pan > 0) ? (10000 - (pan * 100)) - 10000 : 10000 - (10000 + (pan * 100)));
+		snd->DataInstances[id_instance].sbuffer->Play(0, 0, 0);
+	}
+}
+
+void MainSound::SoundInstancePlay3d(ID id, float3* pos)
+{
+	SOUND_PRECOND(id, _VOID);
+
+	if (!pos)
+		return;
+
+	Sound* snd = ArrSounds[id];
+
+	if (snd->StreamSize > 0)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - can not create sound instance for streaming [%s]", gen_msg_location, snd->RPath);
+		return;
+	}
+
+	if (!snd->Is3d)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - can not create 3d sound instance by 2d[%s]", gen_msg_location, snd->RPath);
+		return;
+	}
+
+	ID id_instance = -1;
+	for (int i = 0; i < snd->DataInstances.size(); ++i)
+	{
+		if (!snd->DataInstances[i].busy)
+		{
+			id_instance = i;
+			break;
+		}
+	}
+
+	if (id_instance < 0)
+	{
+		IDirectSoundBuffer* tsb;
+		IDirectSoundBuffer8* tsb8;
+		DeviceSound->DuplicateSoundBuffer(snd->DSBuffer, &tsb);
+		if (!tsb)
+		{
+			reportf(REPORT_MSG_LEVEL_WARRNING, "%s - can not create sound instance [%s], this is big problem", gen_msg_location, snd->RPath);
+			return;
+		}
+		tsb->QueryInterface(IID_IDirectSoundBuffer8, (void**)&tsb8);
+		snd->DataInstances.push_back(Sound::SIData(tsb8, &float3_t(*pos), true));
+		id_instance = snd->DataInstances.size() - 1;
+	}
+
+	if (id_instance >= 0)
+	{
+		long tvol;
+		snd->DSBuffer->GetVolume(&tvol);
+		snd->DataInstances[id_instance].sbuffer->SetVolume((tvol > -5000 ? tvol - 5000 : tvol + 5000));
+
+		snd->DataInstances[id_instance].sbuffer->SetVolume(SOUND_3D_COM_VOLUME((*pos), OldViewPos, snd->DistAudible));
+		snd->DataInstances[id_instance].sbuffer->SetPan(SOUND_3D_COM_PAN((*pos), OldViewPos, OldViewDir, snd->DistAudible,snd->ShiftPan));
+		snd->DataInstances[id_instance].sbuffer->SetCurrentPosition(0);
+		snd->DataInstances[id_instance].sbuffer->Play(0, 0, 0);
+	}
 }
 
 ID MainSound::AddSound(Sound* snd)
@@ -511,9 +674,15 @@ bool MainSound::SoundIsInit(ID id)
 void MainSound::SoundDelete(ID id)
 {
 	SOUND_PRECOND(id, _VOID);
-
-	mem_delete(ArrSounds[id]);
-
+	Sound* snd = ArrSounds[id];
+	if (snd->IsInst)
+	{
+		if (snd->Is3d)
+			AArr3dInst.erase(snd->RPath);
+		else
+			AArr2dInst.erase(snd->RPath);
+	}
+	mem_delete(snd);
 }
 
 //#############################################################################
@@ -744,6 +913,8 @@ void MainSound::SoundPanSet(ID id, long value, int type)
 			Value = value;
 		else if (type == SOUND_VOL_PCT && value != 0)
 			Value = (value > 0) ? (10000 - (value * 100)) - 10000 : 10000 - (10000 + (value * 100));
+
+		snd->DSBuffer->SetPan(Value);
 	}
 }
 
@@ -883,6 +1054,7 @@ void MainSound::Update(float3* viewpos, float3* viewdir)
 	int tmpSoundsLoadCount = 0;
 
 	Sound* snd;
+	DWORD status = 0;
 	for (int i = 0; i < ArrSounds.size(); ++i)
 	{
 		snd = ArrSounds[i];
@@ -893,23 +1065,24 @@ void MainSound::Update(float3* viewpos, float3* viewdir)
 				++tmpSoundsPlayCount;
 			if (snd->Is3d && snd->DSBuffer && viewpos && viewdir)
 			{
-				float Dist = SMVector3Distance(snd->Position, *viewpos);
-				float tmp_volume;// = 0 + (Dist/MaxDist)*(-10000 - 0);/*-((float(Dist * Damping)*100.0) + 10000.0 * ((1.0/10000.0) * float((10000.0+VolumeSound))))*/;
-				tmp_volume = (Dist) / snd->DistAudible;
-				tmp_volume = (tmp_volume)*(-10000.f);
+				snd->DSBuffer->SetVolume(SOUND_3D_COM_VOLUME(snd->Position, (*viewpos), snd->DistAudible));
+				snd->DSBuffer->SetPan(SOUND_3D_COM_PAN(snd->Position, (*viewpos), (*viewdir), snd->DistAudible, snd->ShiftPan));
 
-				if (tmp_volume > 0)
-					tmp_volume = 0;
+				if (snd->DataInstances.size() > 0)
+				{
+					for (int k = 0, l = snd->DataInstances.size(); k < l; ++k)
+					{
+						snd->DSBuffer->SetVolume(SOUND_3D_COM_VOLUME(snd->DataInstances[k].pos, (*viewpos), snd->DistAudible));
+						snd->DSBuffer->SetPan(SOUND_3D_COM_PAN(snd->DataInstances[k].pos, (*viewpos), (*viewdir), snd->DistAudible, snd->ShiftPan));
+					}
+				}
+			}
 
-				if (tmp_volume < -10000)
-					tmp_volume = -10000;
-
-				snd->DSBuffer->SetVolume(tmp_volume);
-
-				float3 vec = (*viewpos) + (*viewdir);
-
-				float str = (snd->Position.x - viewpos->x)*(snd->Position.z - vec.z) - (snd->Position.z - viewpos->z)*(snd->Position.x - vec.x);
-				snd->DSBuffer->SetPan((str * (Dist / snd->DistAudible)) * snd->ShiftPan * (-10000));
+			for (int k = 0, l = snd->DataInstances.size(); k < l; ++k)
+			{
+				status = 0;
+				if (SUCCEEDED(snd->DataInstances[k].sbuffer->GetStatus(&status)) && !(status & DSBSTATUS_PLAYING))
+					snd->DataInstances[k].busy = false;
 			}
 
 			if (snd->StreamSize && snd->DSBuffer != 0)
@@ -982,6 +1155,9 @@ void MainSound::Update(float3* viewpos, float3* viewdir)
 
 	SoundsPlayCount = tmpSoundsPlayCount;
 	SoundsLoadCount = tmpSoundsLoadCount;
+
+	OldViewPos = *viewpos;
+	OldViewDir = *viewdir;
 }
 
 int MainSound::SoundsPlayCountGet()
@@ -992,412 +1168,4 @@ int MainSound::SoundsPlayCountGet()
 int MainSound::SoundsLoadCountGet()
 {
 	return SoundsLoadCount;
-}
-
-//#############################################################################
-
-void MainSound::EffectInitRe(ID id)
-{
-	SOUND_PRECOND(id, _VOID);
-
-	Sound* snd = ArrSounds[id];
-
-	if (snd->EffectInit[SOUND_EFFECT_GARGLE])
-	{
-		//snd->EffectInit[SOUND_EFF_GARGLE] = false;
-		SoundEffectGargleSet(id, snd->EffGargle.dwRateHz, snd->EffGargle.dwWaveShape);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_CHORUS])
-	{
-		//snd->EffectInit[SOUND_EFF_CHORUS] = false;
-		SoundEffectChorusSet(id, snd->EffChorus.fWetDryMix, snd->EffChorus.fDepth, snd->EffChorus.fFeedback, snd->EffChorus.fFrequency, snd->EffChorus.lWaveform, snd->EffChorus.fDelay, snd->EffChorus.lPhase);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_FLANDER])
-	{
-		//snd->EffectInit[SOUND_EFF_FLANDER] = false;
-		SoundEffectFlangerSet(id, snd->EffFlanger.fWetDryMix, snd->EffFlanger.fDepth, snd->EffFlanger.fFeedback, snd->EffFlanger.fFrequency, snd->EffFlanger.lWaveform, snd->EffFlanger.fDelay, snd->EffFlanger.lPhase);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_ECHO])
-	{
-		//snd->EffectInit[SOUND_EFF_ECHO] = false;
-		SoundEffectEchoSet(id, snd->EffEcho.fWetDryMix, snd->EffEcho.fFeedback, snd->EffEcho.fLeftDelay, snd->EffEcho.fRightDelay, snd->EffEcho.lPanDelay);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_DISTORTION])
-	{
-		//snd->EffectInit[SOUND_EFF_DISTORTION] = false;
-		SoundEffectDistortionSet(id, snd->EffDistortion.fGain, snd->EffDistortion.fEdge, snd->EffDistortion.fPostEQCenterFrequency, snd->EffDistortion.fPostEQBandwidth, snd->EffDistortion.fPreLowpassCutoff);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_COMPRESSOR])
-	{
-		//snd->EffectInit[SOUND_EFF_COMPRESSOR] = false;
-		SoundEffectCompressorSet(id, snd->EffCompressor.fGain, snd->EffCompressor.fAttack, snd->EffCompressor.fRelease, snd->EffCompressor.fThreshold, snd->EffCompressor.fRatio, snd->EffCompressor.fPredelay);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_PARAMEQ])
-	{
-		//snd->EffectInit[SOUND_EFF_PARAMEQ] = false;
-		SoundEffectParameqSet(id, snd->EffParamEq.fCenter, snd->EffParamEq.fBandwidth, snd->EffParamEq.fGain);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_I3DL2REVERB])
-	{
-		//snd->EffectInit[SOUND_EFF_I3DL2REVERB] = false;
-		SoundEffectI3DL2ReverbSet(id, snd->EffI3DL2Reverb.lRoom, snd->EffI3DL2Reverb.lRoomHF, snd->EffI3DL2Reverb.flRoomRolloffFactor, snd->EffI3DL2Reverb.flDecayTime, snd->EffI3DL2Reverb.flDecayHFRatio,
-			snd->EffI3DL2Reverb.lReflections, snd->EffI3DL2Reverb.flReflectionsDelay, snd->EffI3DL2Reverb.lReverb, snd->EffI3DL2Reverb.flReverbDelay,
-			snd->EffI3DL2Reverb.flDiffusion, snd->EffI3DL2Reverb.flDensity, snd->EffI3DL2Reverb.flHFReference);
-	}
-
-	if (snd->EffectInit[SOUND_EFFECT_WAVESREVERB])
-	{
-		//snd->EffectInit[SOUND_EFF_WAVESREVERB] = false;
-		SoundEffectWavesReverbSet(id, snd->EffWavesReverb.fInGain, snd->EffWavesReverb.fReverbMix, snd->EffWavesReverb.fReverbTime, snd->EffWavesReverb.fHighFreqRTRatio);
-	}
-}
-
-bool MainSound::EffectInitPrecond(HRESULT hr)
-{
-	if (FAILED(hr))
-	{
-		if (hr == DSERR_CONTROLUNAVAIL)
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_CONTROLUNAVAIL");
-		else if (hr == DSERR_GENERIC)
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_GENERIC");
-		else if (hr == DSERR_INVALIDCALL)
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_INVALIDCALL");
-		else if (hr == DSERR_INVALIDPARAM)
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_INVALIDPARAM");
-		else if (hr == DSERR_PRIOLEVELNEEDED)
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_PRIOLEVELNEEDED");
-		else if (hr == DSERR_NOINTERFACE)
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_NOINTERFACE");
-		else
-			reportf(REPORT_MSG_LEVEL_WARRNING, "SOUND_ERR_UNCPECIFIED");
-
-		return false;
-	}
-	return true;
-}
-
-
-
-int MainSound::SoundEffectStateGet(ID id, int effect)
-{
-	SOUND_PRECOND(id, -1);
-
-	Sound* snd = ArrSounds[id];
-	if (effect >= 0 && effect <= 8)
-		return (snd->EffectInit[effect]);
-	else
-		return SOUND_EFF_INVALID_KEY;
-}
-
-GUID MainSound::EffectGuidGet(int effect)
-{
-	if (effect == SOUND_EFFECT_GARGLE)
-		return GUID_DSFX_STANDARD_GARGLE;
-	else if (effect == SOUND_EFFECT_CHORUS)
-		return GUID_DSFX_STANDARD_CHORUS;
-	else if (effect == SOUND_EFFECT_FLANDER)
-		return GUID_DSFX_STANDARD_FLANGER;
-	else if (effect == SOUND_EFFECT_ECHO)
-		return GUID_DSFX_STANDARD_ECHO;
-	else if (effect == SOUND_EFFECT_DISTORTION)
-		return GUID_DSFX_STANDARD_DISTORTION;
-	else if (effect == SOUND_EFFECT_COMPRESSOR)
-		return GUID_DSFX_STANDARD_COMPRESSOR;
-	else if (effect == SOUND_EFFECT_PARAMEQ)
-		return GUID_DSFX_STANDARD_PARAMEQ;
-	else if (effect == SOUND_EFFECT_I3DL2REVERB)
-		return GUID_DSFX_STANDARD_I3DL2REVERB;
-	else if (effect == SOUND_EFFECT_WAVESREVERB)
-		return GUID_DSFX_WAVES_REVERB;
-}
-
-void MainSound::SoundEffectStateSet(ID id, int effect, int state)
-{
-	SOUND_PRECOND(id, _VOID);
-
-	Sound* snd = ArrSounds[id];
-
-	bool IsPlaying = snd->State == SoundObjState::sos_play;
-	
-	if (IsPlaying)
-		SoundStop(id);
-
-	//включаем эффект
-	if (state == SOUND_EFF_ON)
-	{
-		DWORD arr;
-		DSEFFECTDESC dsEffect;
-
-		memset(&dsEffect, 0, sizeof(DSEFFECTDESC));
-		dsEffect.dwSize = sizeof(DSEFFECTDESC);
-		dsEffect.dwFlags = 0;
-		dsEffect.guidDSFXClass = EffectGuidGet(effect);
-
-		if(EffectInitPrecond(snd->DSBuffer->SetFX(1, &dsEffect, &arr)))
-			snd->EffectInit[effect] = true;
-	}
-	//выключаем эффект
-	else if (state == SOUND_EFF_OFF)
-	{
-		if (EffectInitPrecond(snd->DSBuffer->SetFX(0, 0, 0)))
-		{
-			snd->EffectInit[effect] = false;
-			EffectInitRe(id);
-		}
-	}
-
-	if (IsPlaying)
-		SoundPlay(id);
-}
-
-//#############################################################################
-
-bool MainSound::SoundEffectGargleSet(ID id, DWORD RateHz, DWORD WaveShape)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXGargle8 *gargle = 0;
-	
-	if (!snd->EffectInit[SOUND_EFFECT_GARGLE])
-		SoundEffectStateSet(id, SOUND_EFFECT_GARGLE, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_GARGLE, 0, IID_IDirectSoundFXGargle8, (void**)&gargle);
-
-	snd->EffGargle.dwRateHz = RateHz;
-	snd->EffGargle.dwWaveShape = WaveShape;
-
-	HRESULT hr = gargle->SetAllParameters(&snd->EffGargle);
-	mem_release_del(gargle);
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;
-	return info;*/
-
-	return true;
-}
-
-bool MainSound::SoundEffectChorusSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXChorus8 *chorus = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_CHORUS])
-		SoundEffectStateSet(id, SOUND_EFFECT_CHORUS, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_CHORUS, 0, IID_IDirectSoundFXChorus8, (void**)&chorus);
-
-	snd->EffChorus.fDelay = Delay;
-	snd->EffChorus.fDepth = Depth;
-	snd->EffChorus.fFeedback = Feedback;
-	snd->EffChorus.fFrequency = Frequency;
-	snd->EffChorus.lWaveform = Waveform;
-	snd->EffChorus.fWetDryMix = WetDryMix;
-	snd->EffChorus.lPhase = Phase;
-
-	HRESULT hr = chorus->SetAllParameters(&snd->EffChorus);
-	mem_release_del(chorus);
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectFlangerSet(ID id, float WetDryMix, float Depth, float Feedback, float Frequency, long Waveform, float Delay, long Phase)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXFlanger8 *flanger = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_FLANDER])
-		SoundEffectStateSet(id, SOUND_EFFECT_FLANDER, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_FLANGER, 0, IID_IDirectSoundFXFlanger8, (void**)&flanger);
-
-	snd->EffFlanger.fDelay = Delay;
-	snd->EffFlanger.fDepth = Depth;
-	snd->EffFlanger.fFeedback = Feedback;
-	snd->EffFlanger.fFrequency = Frequency;
-	snd->EffFlanger.lWaveform = Waveform;
-	snd->EffFlanger.fWetDryMix = WetDryMix;
-	snd->EffFlanger.lPhase = Phase;
-
-	HRESULT hr = flanger->SetAllParameters(&snd->EffFlanger);
-	mem_release_del(flanger);
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectEchoSet(ID id, float WetDryMix, float Feedback, float LeftDelay, float RightDelay, long PanDelay)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXEcho8 *echo = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_ECHO])
-		SoundEffectStateSet(id, SOUND_EFFECT_ECHO, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_ECHO, 0, IID_IDirectSoundFXEcho8, (void**)&echo);
-
-	snd->EffEcho.fWetDryMix = WetDryMix;
-	snd->EffEcho.fFeedback = Feedback;
-	snd->EffEcho.fRightDelay = RightDelay;
-	snd->EffEcho.fLeftDelay = LeftDelay;
-	snd->EffEcho.lPanDelay = PanDelay;
-
-	HRESULT hr = echo->SetAllParameters(&snd->EffEcho);
-	mem_release_del(echo);
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectDistortionSet(ID id, float Gain, float Edge, float PostEQCenterFrequency, float PostEQBandwidth, float PreLowpassCutoff)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXDistortion8 *distortion = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_DISTORTION])
-		SoundEffectStateSet(id, SOUND_EFFECT_DISTORTION, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_ECHO, 0, IID_IDirectSoundFXDistortion8, (void**)&distortion);
-
-	snd->EffDistortion.fEdge = Edge;
-	snd->EffDistortion.fGain = Gain;
-	snd->EffDistortion.fPostEQBandwidth = PostEQBandwidth;
-	snd->EffDistortion.fPostEQCenterFrequency = PostEQCenterFrequency;
-	snd->EffDistortion.fPreLowpassCutoff = PreLowpassCutoff;
-
-	HRESULT hr = distortion->SetAllParameters(&snd->EffDistortion);
-
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectCompressorSet(ID id, float Gain, float Attack, float Release, float Threshold, float Ratio, float Predelay)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXCompressor8 *compressor = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_COMPRESSOR])
-		SoundEffectStateSet(id, SOUND_EFFECT_COMPRESSOR, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_COMPRESSOR, 0, IID_IDirectSoundFXCompressor8, (void**)&compressor);
-
-	snd->EffCompressor.fAttack = Attack;
-	snd->EffCompressor.fGain = Gain;
-	snd->EffCompressor.fPredelay = Predelay;
-	snd->EffCompressor.fRatio = Ratio;
-	snd->EffCompressor.fThreshold = Threshold;
-	snd->EffCompressor.fRelease = Release;
-
-	HRESULT hr = compressor->SetAllParameters(&snd->EffCompressor);
-
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectParameqSet(ID id, float Center, float Bandwidth, float Gain)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXParamEq8 *parameq = 0;
-	
-	if (!snd->EffectInit[SOUND_EFFECT_PARAMEQ])
-		SoundEffectStateSet(id, SOUND_EFFECT_PARAMEQ, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_PARAMEQ, 0, IID_IDirectSoundFXParamEq8, (void**)&parameq);
-
-	snd->EffParamEq.fBandwidth = Bandwidth;
-	snd->EffParamEq.fCenter = Center;
-	snd->EffParamEq.fGain = Gain;
-
-	HRESULT hr = parameq->SetAllParameters(&snd->EffParamEq);
-
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectI3DL2ReverbSet(ID id, long Room, long RoomHF, float RoomRolloffFactor, float DecayTime, float DecayHFRatio, long Reflections,
-	float ReflectionsDelay, long Reverb, float ReverbDelay, float Diffusion, float Density, float HFReference)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXI3DL2Reverb8 *I3DL2Reverb8 = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_I3DL2REVERB])
-		SoundEffectStateSet(id, SOUND_EFFECT_I3DL2REVERB, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_STANDARD_I3DL2REVERB, 0, IID_IDirectSoundFXI3DL2Reverb8, (void**)&I3DL2Reverb8);
-
-	snd->EffI3DL2Reverb.lRoom = Room;
-	snd->EffI3DL2Reverb.lRoomHF = RoomHF;
-	snd->EffI3DL2Reverb.flRoomRolloffFactor = RoomRolloffFactor;
-	snd->EffI3DL2Reverb.flDecayTime = DecayTime;
-	snd->EffI3DL2Reverb.flDecayHFRatio = DecayHFRatio;
-	snd->EffI3DL2Reverb.lReflections = Reflections;
-	snd->EffI3DL2Reverb.flReflectionsDelay = ReflectionsDelay;
-	snd->EffI3DL2Reverb.lReverb = Reverb;
-	snd->EffI3DL2Reverb.flReverbDelay = ReverbDelay;
-	snd->EffI3DL2Reverb.flDiffusion = Diffusion;
-	snd->EffI3DL2Reverb.flDensity = Density;
-	snd->EffI3DL2Reverb.flHFReference = HFReference;
-
-	HRESULT hr = I3DL2Reverb8->SetAllParameters(&snd->EffI3DL2Reverb);
-
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
-}
-
-bool MainSound::SoundEffectWavesReverbSet(ID id, float InGain, float ReverbMix, float ReverbTime, float HighFreqRTRatio)
-{
-	SOUND_PRECOND(id, false);
-
-	Sound* snd = ArrSounds[id];
-
-	IDirectSoundFXWavesReverb8 *wavereverb = 0;
-
-	if (!snd->EffectInit[SOUND_EFFECT_WAVESREVERB])
-		SoundEffectStateSet(id, SOUND_EFFECT_WAVESREVERB, SOUND_EFF_ON);
-
-	snd->DSBuffer->GetObjectInPath(GUID_DSFX_WAVES_REVERB, 0, IID_IDirectSoundFXWavesReverb8, (void**)&wavereverb);
-
-	snd->EffWavesReverb.fHighFreqRTRatio = HighFreqRTRatio;
-	snd->EffWavesReverb.fInGain = InGain;
-	snd->EffWavesReverb.fReverbMix = ReverbMix;
-	snd->EffWavesReverb.fReverbTime = ReverbTime;
-
-	HRESULT hr = wavereverb->SetAllParameters(&snd->EffWavesReverb);
-
-	/*if (FAILED(hr))
-		info = SOUND_ERR_EFFECT_NON_SETUP;*/
-	return true;
 }
