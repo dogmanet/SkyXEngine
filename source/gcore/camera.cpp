@@ -233,6 +233,8 @@ inline void Camera::SetOrientation(const SMQuaternion & q)
 
 inline void Camera::GetViewMatrix(float4x4* view_matrix)
 {
+	*view_matrix = SMMatrixLookToLH(Position, Look, Up);
+	/*
 	Look = SMVector3Normalize(Look);
 
 	Up = SMVector3Cross(Look, Right);
@@ -249,7 +251,7 @@ inline void Camera::GetViewMatrix(float4x4* view_matrix)
 	(*view_matrix)._21 = Right.y;	(*view_matrix)._22 = Up.y;	(*view_matrix)._23 = Look.y; (*view_matrix)._24 = 0.0f;
 	(*view_matrix)._31 = Right.z;	(*view_matrix)._32 = Up.z;	(*view_matrix)._33 = Look.z; (*view_matrix)._34 = 0.0f;
 	(*view_matrix)._41 = x;			(*view_matrix)._42 = y;		(*view_matrix)._43 = z;      (*view_matrix)._44 = 1.0f;
-
+	*/
 	/*D3DXVec3Normalize(&Look, &Look);
 
 	D3DXVec3Cross(&Up, &Look, &Right);
@@ -326,4 +328,14 @@ inline float Camera::GetRotationY()
 inline float Camera::GetRotationZ()
 {
 	return AngleRoll;
+}
+
+inline void Camera::SetFOV(float fov)
+{
+	m_fFOV = fov;
+}
+
+inline float Camera::GetFOV()
+{
+	return(m_fFOV);
 }

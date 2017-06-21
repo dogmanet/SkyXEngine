@@ -992,7 +992,7 @@ void Effects::EffectComputeLighting(ID id)
 	if (!eff->Enable)
 		return;
 
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	for(int i = 0, l = eff->Arr.size(); i < l; ++i)
 	{
 		if (eff->Arr[i] && eff->Arr[i]->EnableGet())
 		{
@@ -1013,9 +1013,9 @@ void Effects::EffectRender(ID id, DWORD timeDelta)
 	if (!eff->Enable)
 		return;
 
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	for(int i = 0, l = eff->Arr.size(); i < l; ++i)
 	{
-		if (eff->Arr[i] && eff->Arr[i]->EnableGet())
+		if(eff->Arr[i] && eff->Arr[i]->EnableGet())
 		{
 			eff->Arr[i]->Render(timeDelta, &eff->MatRotate, &eff->MatTranslation);
 		}
@@ -1077,7 +1077,7 @@ bool Effects::EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
 
 void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 {
-	for (int i = 0; i < ArrID.size(); ++i)
+	for(int i = 0, l = ArrID.size(); i < l; ++i)
 	{
 		if (ArrID[i])
 			EffectVisibleCom(i, frustum, view);
@@ -1197,15 +1197,16 @@ void Effects::EffectDirSet(ID id, float3* dir)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 	float3 tmpdir = *dir;
-	tmpdir.y = 0;
+	//tmpdir.y = 0;
 	tmpdir = SMVector3Normalize(tmpdir);
 	ArrID[id]->Direction = tmpdir;
 
-	static float3 f = SXPARTICLES_BASIS_DIR;
+	//static float3 f = SXPARTICLES_BASIS_DIR;
+	static float3 f(0, 1, 0);
 	//float3 f(0, 1, 0);
 	float3 a = SMVector3Cross(f, tmpdir);
 	float ang = acosf(SMVector3Dot(f, tmpdir));
-	ArrID[id]->MatRotate = /*SMMatrixRotationX(SM_PIDIV2) * */SMMatrixRotationAxis(a, ang);
+	ArrID[id]->MatRotate = SMMatrixRotationAxis(a, ang)/*SMQuaternion(a, ang).GetMatrix()*//*SMMatrixRotationX(SM_PIDIV2) * *//*SMMatrixRotationAxis(a, ang)*/;
 
 	ArrID[id]->Rotation = SMMatrixToEuler(ArrID[id]->MatRotate);
 }
@@ -1223,6 +1224,17 @@ void Effects::EffectRotSet(ID id, float3* rot)
 	float3 a = SMVector3Cross(f, ArrID[id]->Direction);
 	float ang = acosf(SMVector3Dot(f, ArrID[id]->Direction));
 	ArrID[id]->MatRotate = SMMatrixRotationAxis(a, ang);
+}
+
+void Effects::EffectRotSet(ID id, const SMQuaternion & rot)
+{
+	EFFECTS_EFFECT_PRECOND(id, _VOID);
+
+	ArrID[id]->MatRotate = rot.GetMatrix();
+
+	ArrID[id]->Direction = rot * float3(0, 1, 0);
+
+	ArrID[id]->Rotation = SMMatrixToEuler(ArrID[id]->MatRotate);
 }
 
 void Effects::EffectPosGet(ID id, float3* pos)

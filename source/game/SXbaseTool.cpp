@@ -2,6 +2,7 @@
 
 #include <particles/sxparticles.h>
 #include <decals/sxdecals.h>
+#include "SXplayer.h"
 
 BEGIN_PROPTABLE(SXbaseTool)
 	DEFINE_FIELD_FLOAT(m_fReloadTime, PDFF_NOEDIT | PDFF_NOEXPORT, "reload_time", "", EDITOR_NONE)
@@ -143,8 +144,8 @@ void SXbaseTool::OnSync()
 	{
 		float3 pos = m_pAnimPlayer->GetBoneTransformPos(m_pAnimPlayer->GetBone("muzzle_rifle1"));
 		SPE_EffectPosSet(m_iMuzzleFlash, &pos);
-		pos = m_vOrientation * float3(0, 0, 1);
-		SPE_EffectDirSet(m_iMuzzleFlash, &pos);
+		//pos = m_vOrientation * float3(0, 0, 1);
+		SPE_EffectRotSetQ(m_iMuzzleFlash, m_vOrientation);
 	}
 }
 
@@ -185,6 +186,11 @@ void SXbaseTool::SetParent(SXbaseEntity * pEnt, int attachment)
 
 void SXbaseTool::_Rezoom()
 {
+	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	m_vOffsetPos = (float3)vlerp(m_vSlotPos, m_vSlotPosAim, m_fZoomProgress);
 	m_vOffsetOrient = SMquaternionSlerp(m_qSlotRot, m_qSlotRotAim, m_fZoomProgress);
+	if(m_pOwner)
+	{
+		((SXplayer*)m_pOwner)->GetCamera()->GetCamera()->SetFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
+	}
 }

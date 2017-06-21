@@ -339,6 +339,14 @@ void SXRenderFunc::ChangeModeWindow()
 
 void SXRenderFunc::UpdateView()
 {
+	float fov = GData::ObjCamera->GetFOV();
+	if(fov != GData::ProjFov)
+	{
+		GData::ProjFov = fov;
+		GData::MCamProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
+		GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
+		GData::MRefPlaneSkyProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
+	}
 	GData::ObjCamera->GetViewMatrix(&GData::MCamView);
 	
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
