@@ -119,6 +119,9 @@ namespace SXRenderFunc
 		int64_t Present = 0;
 
 		int64_t FreeVal = 0;
+		float FreeValF1 = 0;
+		float FreeValF2 = 0;
+		float FreeValF3 = 0;
 	};
 };
 

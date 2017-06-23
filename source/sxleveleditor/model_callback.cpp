@@ -66,6 +66,9 @@ void SXLevelEditor::GeomSel(int sel)
 		float3* rot = SGeom_ModelsMGetRotation(sel);
 		float3* scale = SGeom_ModelsMGetScale(sel);
 
+		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
+		GData::Editors::ObjAxesHelper->SetPosition(*pos);
+
 		SXLevelEditor::EditGeomName->SetText(tmpname);
 
 		char tmpval[64];

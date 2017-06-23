@@ -152,32 +152,97 @@ LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 ///////
 
+LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
+		return 0;
+	GData::Editors::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && GData::Editors::ActiveElement >= 0)
+	{
+		if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
+		{
+			float3* pos = SGeom_ModelsMGetPosition(GData::Editors::ActiveElement);
+			float3 npos = GData::Editors::ObjAxesHelper->GetPosition();
+			if ((*pos).x != npos.x || (*pos).y != npos.y || (*pos).z != npos.z)
+			{
+				*pos = GData::Editors::ObjAxesHelper->GetPosition();
+				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+			}
+		}
+		/*else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
+		{
+			float3* rot = SGeom_ModelsMGetRotation(GData::Editors::ActiveElement);
+			float3 nrot = GData::Editors::ObjAxesHelper->GetRotation();
+			if ((*rot).x != nrot.x || (*rot).y != nrot.y || (*rot).z != nrot.z)
+			{
+				*rot = GData::Editors::ObjAxesHelper->GetRotation();
+				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+			}
+		}
+		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_SCALE)
+		{
+			float3* scale = SGeom_ModelsMGetScale(GData::Editors::ActiveElement);
+			float3 nscale = GData::Editors::ObjAxesHelper->GetScale();
+			if ((*scale).x != nscale.x || (*scale).y != nscale.y || (*scale).z != nscale.z)
+			{
+				*scale = GData::Editors::ObjAxesHelper->GetScale();
+				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+			}
+		}*/
+	}
+	return 0;
+}
+
+LRESULT SXLevelEditor_RenderWindow_LDown(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
+		return 0;
+	GData::Editors::ObjAxesHelper->m_bIsDragging = true;
+	GData::Editors::ObjAxesHelper->m_bIsDraggingStart = true;
+	return 0;
+}
+
 LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
+	GData::Editors::ObjAxesHelper->m_bIsDragging = false;
+	GData::Editors::ObjAxesHelper->m_bIsDraggingStop = true;
+
+	/*if (!SSInput_GetKeyState(SIK_LALT))
+		return 0;*/
+
+	float3 _res;
+	float3_t pos2;
+	ID idmodel;
+	ID idmtl;
+
+	float3 camDir;
+	float det;
+	SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
+	POINT pt;
+	GetCursorPos(&pt);
+	ScreenToClient(GData::Handle3D, &pt);
+
+	float3 pos = float3(
+		(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
+		-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
+		1.0f
+		) * mat;
+	camDir = pos - GData::ConstCurrCamPos;
+
+	/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		float3 _res;
-		float3_t pos2;
-		ID idmodel;
-		ID idmtl;
-
-		float3 camDir;
-		float det;
-		SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
-		POINT pt;
-		GetCursorPos(&pt);
-		ScreenToClient(GData::Handle3D, &pt);
-
-		float3 pos = float3(
-			(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
-			-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
-			1.0f
-			) * mat;
-		camDir = pos - GData::ConstCurrCamPos;
-
+		if (SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
+		{
+			SXLevelEditor::ListBoxList->SetSel(idmodel);
+			SXLevelEditor::GeomSel(idmodel);
+		}
+	}
+	else */if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
+	{
 		ID idgreen;
 		ID idsplit;
 		ID idobj;

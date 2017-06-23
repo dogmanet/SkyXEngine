@@ -177,6 +177,8 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::RenderWindow->GAlign.right = true;
 	SXLevelEditor::RenderWindow->GAlign.top = true;
 	SXLevelEditor::RenderWindow->GAlign.bottom = true;
+	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_MouseMove, WM_MOUSEMOVE);
+	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_LDown, WM_LBUTTONDOWN);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_LClick, WM_LBUTTONUP);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_RClick, WM_RBUTTONUP);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYDOWN, VK_DELETE, 1, 0, 0, 0);

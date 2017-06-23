@@ -308,6 +308,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 
 #include <managed_render\\handler_out_log.cpp>
+#include <managed_render\\render_func.h>
 #include <managed_render\\gdata.cpp>
 #include <managed_render\\camera_update.cpp>
 #include <managed_render\\render_func.cpp>
@@ -410,9 +411,9 @@ void SkyXEngine_Init()
 	SXGame_Dbg_Set(printflog);
 #endif
 
-#ifdef SX_GAME
+//#ifdef SX_GAME
 	GData::ObjCamera = SXGame_GetActiveCamera();
-#endif
+//#endif
 
 #if defined(SX_LEVEL_EDITOR) || defined(SX_PARTICLES_EDITOR)
 	GData::Editors::ObjGrid = new Grid();
@@ -420,6 +421,7 @@ void SkyXEngine_Init()
 
 	GData::Editors::ObjAxesStatic = new AxesStatic();
 	GData::Editors::ObjAxesStatic->Create(1);
+	GData::Editors::ObjAxesHelper = new AxesHelper();
 
 	GData::ObjCamera->SetPosition(&float3(0, 0.5, -2));
 
@@ -651,7 +653,7 @@ int SkyXEngine_CycleMain()
 
 			if (SSInput_GetKeyEvents(SIK_T) == InputEvents::iv_k_first)
 			{
-				Core_TimeWorkingSet(G_Timer_Render_Scene, !Core_TimeWorkingGet(G_Timer_Render_Scene));
+				//Core_TimeWorkingSet(G_Timer_Render_Scene, !Core_TimeWorkingGet(G_Timer_Render_Scene));
 				/*for (int i = 0; i < 1; ++i)
 				{
 				ID tmpid = SPE_EffectIdOfKey(i);

@@ -18,6 +18,7 @@ See the license in LICENSE
 #include <managed_render/model_sim.h>
 #include <managed_render/editor/grid.h>
 #include <managed_render/editor/axes_static.h>
+#include <managed_render/editor/axes_helper.h>
 
 #define G_DATA_LIGHT_FAR 100000 /*!< дальняя плоскость отсечения наблюдателя для света */
 
@@ -158,6 +159,7 @@ namespace GData
 		ModelSim* SimModel = 0;			//!< указатель симуляционной модели
 		Grid* ObjGrid = 0;				//!< сетка дял редакторов
 		AxesStatic* ObjAxesStatic = 0;	//!< рендер статический осей в центре координат
+		AxesHelper* ObjAxesHelper = 0;
 		ID3DXMesh* FigureBox;			//!< бокс для определения ограничивающего объема для эммитера партиклов
 		ID3DXMesh* FigureSphere;		//!< сфера для определения ограничивающего объема для эммитера партиклов
 		ID3DXMesh* FigureCone;			//!< конус для определения ограничивающего объема для эммитера партиклов
@@ -197,6 +199,7 @@ namespace GData
 #include <managed_render/model_sim.cpp>
 #include <managed_render/editor/grid.cpp>
 #include <managed_render/editor/axes_static.cpp>
+#include <managed_render/editor/axes_helper.cpp>
 
 #endif
 

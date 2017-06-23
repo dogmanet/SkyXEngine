@@ -89,6 +89,8 @@ public:
 	MainSound();
 	~MainSound();
 
+	SX_ALIGNED_OP_MEM
+
 	void Clear();
 
 	void Init(HWND hwnd);
