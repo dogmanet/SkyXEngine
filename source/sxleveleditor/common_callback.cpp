@@ -170,7 +170,7 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
 			}
 		}
-		/*else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
+		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
 		{
 			float3* rot = SGeom_ModelsMGetRotation(GData::Editors::ActiveElement);
 			float3 nrot = GData::Editors::ObjAxesHelper->GetRotation();
@@ -189,7 +189,7 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 				*scale = GData::Editors::ObjAxesHelper->GetScale();
 				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
 			}
-		}*/
+		}
 	}
 	return 0;
 }

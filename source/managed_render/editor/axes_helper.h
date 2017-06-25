@@ -50,11 +50,13 @@ public:
 
 	void SetPosition(const float3 & pos);
 	void SetRotation(const float3 & rot);
+	void SetRotation(const SMQuaternion & rot);
 	void SetScale(const float3 & scale);
 
 	const float3 & GetPosition();
 	const float3 & GetRotation();
 	const float3 & GetScale();
+	const SMQuaternion & GetRotationQ();
 
 	void OnMouseMove(int x, int y);
 
@@ -66,7 +68,8 @@ private:
 
 	float3 Position;
 	float3 Rotation;
-	float3 Scale;
+	SMQuaternion QRotation;
+	float3 Scale, ScaleOld;
 
 	void DrawMove();
 	void DrawCylinder(float3_t lwh, DWORD color = 0xFFFFFFFF);
@@ -102,6 +105,7 @@ private:
 	SMMATRIX m_mHelperMat;
 	SMMATRIX m_mOldHelperMat;
 	SMMATRIX m_mHelperMatScale2;
+	float dist;
 	SMMATRIX m_mOldDragMat;
 };
 
