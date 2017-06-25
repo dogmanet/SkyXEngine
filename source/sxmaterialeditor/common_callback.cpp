@@ -7,6 +7,26 @@ LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+void SXMaterialEditor::MtlOpen()
+{
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Textures, FILE_FILTER_TEXTURE);
+	if (def_str_validate(tmppath))
+	{
+		StrCutName(tmppath, tmpname);
+		SML_MtlReloadMaterial(GData::Editors::SimModel->GetIDMtl(), tmpname);
+		SGCore_LoadTexLoadTextures();
+		SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
+	}
+}
+
+void SXMaterialEditor::MtlSave()
+{
+	SML_MtlSave(SXMaterialEditor::IDMat);
+}
+
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	WORD id = LOWORD(wParam);
@@ -15,23 +35,12 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//открыть
 	if (id == ID_FILE_OPEN)
 	{
-		char tmppath[1024];
-		tmppath[0] = 0;
-		char tmpname[1024];
-		SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Textures, FILE_FILTER_TEXTURE);
-		if (def_str_validate(tmppath))
-		{
-			StrCutName(tmppath, tmpname);
-			SML_MtlReloadMaterial(GData::Editors::SimModel->GetIDMtl(), tmpname);
-			SGCore_LoadTexLoadTextures();
-			SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
-		}
-
+		SXMaterialEditor::MtlOpen();
 	}
 	//сохранить
 	else if (id == ID_FILE_SAVE)
 	{
-		SML_MtlSave(SXMaterialEditor::IDMat);
+		SXMaterialEditor::MtlSave();
 	}
 	//выход
 	else if (id == ID_FILE_EXIT)
@@ -83,6 +92,78 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
 
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_ToolBar_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int Notification = HIWORD(wParam);
+	HWND handle_elem = (HWND)(lParam);
+	if (Notification == BN_CLICKED)
+	{
+		if (SXMaterialEditor::ButtonTBOpen->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::MtlOpen();
+		}
+		else if (SXMaterialEditor::ButtonTBSave->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::MtlSave();
+		}
+
+		else if (SXMaterialEditor::CheckBoxTBCam->GetHWND() == handle_elem)
+		{
+			GData::Editors::MoveCamera = SXMaterialEditor::CheckBoxTBCam->GetCheck();
+		}
+		else if (SXMaterialEditor::ButtonTBView->GetHWND() == handle_elem)
+		{
+			GData::ObjCamera->SetPosition(&float3(0, 0, -1.2 * 100));
+			GData::ObjCamera->SetOrientation(SMQuaternion(float3(0, 0, 1), 0));
+		}
+
+		else if (SXMaterialEditor::CheckBoxTBRColor->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::FinalImageUncheckedMenu();
+			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
+			SXMaterialEditor::CheckBoxTBRColor->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_color;
+		}
+		else if (SXMaterialEditor::CheckBoxTBRNormal->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::FinalImageUncheckedMenu();
+			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, true);
+			SXMaterialEditor::CheckBoxTBRNormal->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_normal;
+		}
+		else if (SXMaterialEditor::CheckBoxTBRParam->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::FinalImageUncheckedMenu();
+			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, true);
+			SXMaterialEditor::CheckBoxTBRParam->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_param;
+		}
+		else if (SXMaterialEditor::CheckBoxTBRAmDiff->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::FinalImageUncheckedMenu();
+			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
+			SXMaterialEditor::CheckBoxTBRAmDiff->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_ambient_diff;
+		}
+		else if (SXMaterialEditor::CheckBoxTBRSpecular->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::FinalImageUncheckedMenu();
+			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, true);
+			SXMaterialEditor::CheckBoxTBRSpecular->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_specular;
+		}
+		else if (SXMaterialEditor::CheckBoxTBRLighting->GetHWND() == handle_elem)
+		{
+			SXMaterialEditor::FinalImageUncheckedMenu();
+			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+			SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+		}
+	}
 
 	return 0;
 }
@@ -452,4 +533,11 @@ void SXMaterialEditor::FinalImageUncheckedMenu()
 	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
 	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, false);
 	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
+
+	SXMaterialEditor::CheckBoxTBRColor->SetCheck(false);
+	SXMaterialEditor::CheckBoxTBRNormal->SetCheck(false);
+	SXMaterialEditor::CheckBoxTBRParam->SetCheck(false);
+	SXMaterialEditor::CheckBoxTBRAmDiff->SetCheck(false);
+	SXMaterialEditor::CheckBoxTBRSpecular->SetCheck(false);
+	SXMaterialEditor::CheckBoxTBRLighting->SetCheck(false);
 }

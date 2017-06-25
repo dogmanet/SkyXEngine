@@ -1,8 +1,19 @@
 
 #include <managed_render\\level.h>
 
+void Level::Clear()
+{
+	Name[0] = 0;
+	SGeom_ModelsClear();
+	SGeom_GreenClear();
+	SML_LigthsClear();
+	SXPhysics_UnloadGeom();
+	//! \todo добавить очистку игровых объектов в очистку уровня
+}
+
 void Level::Load(const char* name)
 {
+	sprintf(Name, "%s", name);
 	char tmppathlevel[1024];
 	sprintf(tmppathlevel, "%s%s\\%s.lvl", GData::Pathes::Levels, name, name);
 	if (!Core_0FileExists(tmppathlevel))
@@ -59,17 +70,31 @@ void Level::Load(const char* name)
 		}
 	}
 
+	if (config->KeyExists("level", "physic"))
+	{
+		char tmppath[1024];
+		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "physic"));
+		if(Core_0FileExists(tmppath))
+			SXPhysics_ImportGeom(tmppath);
+		else
+		{
+			//error
+		}
+	}
+	else
+	{
+#if defined(SX_GAME)
+		SXPhysics_LoadGeom();
+#endif
+	}
+
 	SGCore_LoadTexLoadTextures();
 	mem_release(config);
-
-#if defined(SX_GAME)
-	SXPhysics_LoadGeom();
-#endif
-
 }
 
 void Level::Save(const char* name)
 {
+	sprintf(Name, "%s", name);
 	char tmppathlevel[1024];
 	sprintf(tmppathlevel, "%s%s\\%s.lvl", GData::Pathes::Levels, name, name);
 	if (!Core_0FileExists(tmppathlevel))
@@ -103,6 +128,19 @@ void Level::Save(const char* name)
 		fprintf(file, "light = %s.light\n", name);
 		SML_LigthsSave(tmppathlevel);
 	}
+
+	if (SXGame_EntGetCount() > 0)
+	{
+		sprintf(tmppathlevel, "%s%s\\%s.ent", GData::Pathes::Levels, name, name);
+		fprintf(file, "entity = %s.ent\n", name);
+		SXGame_SaveEnts(tmppathlevel);
+	}
+
+	SXPhysics_LoadGeom();
+	sprintf(tmppathlevel, "%s%s\\%s.phy", GData::Pathes::Levels, name, name);
+	fprintf(file, "physic = %s.phy\n", name);
+	SXPhysics_ExportGeom(tmppathlevel);
+
 
 	fclose(file);
 }

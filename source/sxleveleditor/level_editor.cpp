@@ -4,7 +4,33 @@ namespace SXLevelEditor
 	ISXGUIBaseWnd* JobWindow;
 	ISXGUIMenu* MainMenu;
 	ISXGUIBaseWnd* RenderWindow;
+
 	ISXGUIToolBar* ToolBar1;
+	ISXGUIButton* ButtonTBNew;
+	ISXGUIButton* ButtonTBOpen;
+	ISXGUIButton* ButtonTBSave;
+	ISXGUIButton* ButtonTBSaveAs;
+
+	ISXGUICheckBox* CheckBoxTBArrow;
+	ISXGUICheckBox* CheckBoxTBPos;
+	ISXGUICheckBox* CheckBoxTBRot;
+	ISXGUICheckBox* CheckBoxTBScale;
+
+	ISXGUICheckBox* CheckBoxTBGrid;
+	ISXGUICheckBox* CheckBoxTBAxes;
+
+	ISXGUICheckBox* CheckBoxTBRColor;
+	ISXGUICheckBox* CheckBoxTBRNormal;
+	ISXGUICheckBox* CheckBoxTBRParam;
+	ISXGUICheckBox* CheckBoxTBRAmDiff;
+	ISXGUICheckBox* CheckBoxTBRSpecular;
+	ISXGUICheckBox* CheckBoxTBRLighting;
+
+	ISXGUICheckBox* CheckBoxTBSelS;
+	ISXGUICheckBox* CheckBoxTBSelZTest;
+	ISXGUICheckBox* CheckBoxTBSelMesh;
+	ISXGUICheckBox* CheckBoxTBSelCullBack;
+
 	ISXGUIGroupBox* GroupBoxList;
 	ISXGUIGroupBox* GroupBoxData;
 	ISXGUIListBox* ListBoxList;
@@ -115,6 +141,12 @@ namespace SXLevelEditor
 	void InitAllElements();
 
 	void DeleteAllElements();
+
+	void LevelNew();
+	void LevelOpen();
+	void LevelSave();
+	void LevelSaveAs();
+
 	void FinalImageUncheckedMenu();
 	
 
@@ -158,21 +190,9 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
 
-	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
-	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
+	
 
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
-
-	GData::Editors::SelSelection = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
-	GData::Editors::SelBackFacesCull = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
-	GData::Editors::SelZTest = false;
-	GData::Editors::SelMesh = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, true);
-
-	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow", "RenderWindow", 0, 0, 0, 25, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_CHILD | WS_VISIBLE | WS_BORDER, SXLevelEditor::JobWindow->GetHWND(), 0);
+	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow", "RenderWindow", 0, 0, 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_CHILD | WS_VISIBLE | WS_BORDER, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault);
 	SXLevelEditor::RenderWindow->GAlign.left = true;
 	SXLevelEditor::RenderWindow->GAlign.right = true;
 	SXLevelEditor::RenderWindow->GAlign.top = true;
@@ -183,13 +203,160 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_RClick, WM_RBUTTONUP);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYDOWN, VK_DELETE, 1, 0, 0, 0);
 
-	SXLevelEditor::ToolBar1 = SXGUICrToolBar(0,1,810,24,SXLevelEditor::JobWindow->GetHWND(),0,0);
+	SXLevelEditor::ToolBar1 = SXGUICrToolBar(0, 1, 810, 26, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXLevelEditor::ToolBar1->GAlign.left = true;
 	SXLevelEditor::ToolBar1->GAlign.right = true;
 	SXLevelEditor::ToolBar1->GAlign.top = true;
 	SXLevelEditor::ToolBar1->GAlign.bottom = false;
+	SXLevelEditor::ToolBar1->AddHandler(SXLevelEditor_ToolBar1_CallWmCommand, WM_COMMAND);
+
+	SXLevelEditor::ButtonTBNew = SXGUICrButtonEx("", 2, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonTBNew->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonTBNew->GAlign.left = true;
+	SXLevelEditor::ButtonTBNew->GAlign.top = true;
+	SXLevelEditor::ButtonTBNew->SetBmpInResourse(IDB_BITMAP1);
+
+	SXLevelEditor::ButtonTBOpen = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonTBOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonTBOpen->GAlign.left = true;
+	SXLevelEditor::ButtonTBOpen->GAlign.top = true;
+	SXLevelEditor::ButtonTBOpen->SetBmpInResourse(IDB_BITMAP2);
+
+	SXLevelEditor::ButtonTBSave = SXGUICrButtonEx("", 50, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonTBSave->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonTBSave->GAlign.left = true;
+	SXLevelEditor::ButtonTBSave->GAlign.top = true;
+	SXLevelEditor::ButtonTBSave->SetBmpInResourse(IDB_BITMAP4);
+
+	SXLevelEditor::ButtonTBSaveAs = SXGUICrButtonEx("", 74, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonTBSaveAs->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonTBSaveAs->GAlign.left = true;
+	SXLevelEditor::ButtonTBSaveAs->GAlign.top = true;
+	SXLevelEditor::ButtonTBSaveAs->SetBmpInResourse(IDB_BITMAP3);
+
+	SXLevelEditor::CheckBoxTBArrow = SXGUICrCheckBoxEx("", 104, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBArrow->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBArrow->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBArrow->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBArrow->SetBmpInResourse(IDB_BITMAP5);
+
+	SXLevelEditor::CheckBoxTBPos = SXGUICrCheckBoxEx("", 128, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBPos->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBPos->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBPos->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBPos->SetBmpInResourse(IDB_BITMAP6);
+
+	SXLevelEditor::CheckBoxTBRot = SXGUICrCheckBoxEx("", 152, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRot->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRot->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRot->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRot->SetBmpInResourse(IDB_BITMAP7);
+
+	SXLevelEditor::CheckBoxTBScale = SXGUICrCheckBoxEx("", 176, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBScale->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBScale->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBScale->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBScale->SetBmpInResourse(IDB_BITMAP8);
+
+
+	SXLevelEditor::CheckBoxTBGrid = SXGUICrCheckBoxEx("", 206, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBGrid->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBGrid->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBGrid->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBGrid->SetBmpInResourse(IDB_BITMAP9);
+
+	SXLevelEditor::CheckBoxTBAxes = SXGUICrCheckBoxEx("", 230, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBAxes->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBAxes->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBAxes->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBAxes->SetBmpInResourse(IDB_BITMAP10);
+
+
+	SXLevelEditor::CheckBoxTBRColor = SXGUICrCheckBoxEx("", 260, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRColor->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRColor->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRColor->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRColor->SetBmpInResourse(IDB_BITMAP11);
+
+	SXLevelEditor::CheckBoxTBRNormal = SXGUICrCheckBoxEx("", 284, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRNormal->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRNormal->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRNormal->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRNormal->SetBmpInResourse(IDB_BITMAP12);
+
+	SXLevelEditor::CheckBoxTBRParam = SXGUICrCheckBoxEx("", 308, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRParam->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRParam->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRParam->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRParam->SetBmpInResourse(IDB_BITMAP13);
+
+	SXLevelEditor::CheckBoxTBRAmDiff = SXGUICrCheckBoxEx("", 332, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRAmDiff->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRAmDiff->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRAmDiff->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRAmDiff->SetBmpInResourse(IDB_BITMAP14);
+
+	SXLevelEditor::CheckBoxTBRSpecular = SXGUICrCheckBoxEx("", 356, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRSpecular->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRSpecular->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRSpecular->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRSpecular->SetBmpInResourse(IDB_BITMAP15);
+
+	SXLevelEditor::CheckBoxTBRLighting = SXGUICrCheckBoxEx("", 380, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBRLighting->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBRLighting->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBRLighting->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBRLighting->SetBmpInResourse(IDB_BITMAP16);
+
 	
-	SXLevelEditor::GroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 26, 200, 400, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
+	SXLevelEditor::CheckBoxTBSelS = SXGUICrCheckBoxEx("", 410, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBSelS->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBSelS->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBSelS->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBSelS->SetBmpInResourse(IDB_BITMAP17);
+
+	SXLevelEditor::CheckBoxTBSelZTest = SXGUICrCheckBoxEx("", 434, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBSelZTest->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBSelZTest->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBSelZTest->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBSelZTest->SetBmpInResourse(IDB_BITMAP18);
+
+	SXLevelEditor::CheckBoxTBSelMesh = SXGUICrCheckBoxEx("", 458, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBSelMesh->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBSelMesh->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBSelMesh->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBSelMesh->SetBmpInResourse(IDB_BITMAP19);
+
+	SXLevelEditor::CheckBoxTBSelCullBack = SXGUICrCheckBoxEx("", 482, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBSelCullBack->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBSelCullBack->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBSelCullBack->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBSelCullBack->SetBmpInResourse(IDB_BITMAP20);
+
+	SXLevelEditor::CheckBoxTBGrid->SetCheck(true);
+	SXLevelEditor::CheckBoxTBAxes->SetCheck(true);
+	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
+	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
+
+	SXLevelEditor::CheckBoxTBRLighting->SetCheck(true);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+
+	SXLevelEditor::CheckBoxTBSelS->SetCheck(true);
+	GData::Editors::SelSelection = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
+
+	SXLevelEditor::CheckBoxTBSelCullBack->SetCheck(true);
+	GData::Editors::SelBackFacesCull = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
+	GData::Editors::SelZTest = false;
+
+	SXLevelEditor::CheckBoxTBSelMesh->SetCheck(true);
+	GData::Editors::SelMesh = true;
+	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, true);
+
+	
+	SXLevelEditor::GroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 28, 200, 400, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxList);
 	SXLevelEditor::GroupBoxList->AddHandler(SXLevelEditor_GroupBoxList_CallWmCommand, WM_COMMAND);
 	SXLevelEditor::GroupBoxList->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -1000,7 +1167,33 @@ void SXLevelEditor::DeleteAllElements()
 	mem_release(JobWindow);
 	mem_release(MainMenu);
 	mem_release(RenderWindow);
+
 	mem_release(ToolBar1);
+	mem_release(ButtonTBNew);
+	mem_release(ButtonTBOpen);
+	mem_release(ButtonTBSave);
+	mem_release(ButtonTBSaveAs);
+
+	mem_release(CheckBoxTBArrow);
+	mem_release(CheckBoxTBPos);
+	mem_release(CheckBoxTBRot);
+	mem_release(CheckBoxTBScale);
+
+	mem_release(CheckBoxTBGrid);
+	mem_release(CheckBoxTBAxes);
+
+	mem_release(CheckBoxTBRColor);
+	mem_release(CheckBoxTBRNormal);
+	mem_release(CheckBoxTBRParam);
+	mem_release(CheckBoxTBRAmDiff);
+	mem_release(CheckBoxTBRSpecular);
+	mem_release(CheckBoxTBRLighting);
+
+	mem_release(CheckBoxTBSelS);
+	mem_release(CheckBoxTBSelZTest);
+	mem_release(CheckBoxTBSelMesh);
+	mem_release(CheckBoxTBSelCullBack);
+
 	mem_release(GroupBoxList);
 	mem_release(GroupBoxData);
 	mem_release(ListBoxList);

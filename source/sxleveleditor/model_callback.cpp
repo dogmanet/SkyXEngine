@@ -177,7 +177,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	if (!Core_0FileExists(tmppath))
 	{
 		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Модель [", tmppath, "] не существует");
+		sprintf(tmpstr, "%s%s%s", "Model [", tmppath, "] not found");
 		MessageBox(0, tmpstr, 0, 0);
 		return 0;
 	}
@@ -186,14 +186,14 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	if (def_str_validate(path_model_lod) && !Core_0FileExists(tmppath))
 	{
 		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Модель/лод [", path_model_lod, "] не существует");
+		sprintf(tmpstr, "%s%s%s", "Model/lod [", path_model_lod, "] not found");
 		MessageBox(0, tmpstr, 0, 0);
 		return 0;
 	}
 
 	if (!def_str_validate(model_name))
 	{
-		if (MessageBox(0, "Нет имени у модели, ввести имя файла автоматически?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
+		if (MessageBox(0, "No name for the model, enter the file name automatically?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
 		{
 			for (int i = 0; i<strlen(path_model); i++)
 			{

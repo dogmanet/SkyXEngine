@@ -44,4 +44,66 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\save.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\open.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\save.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\cam.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\view.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_c.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\cam.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\view.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_c.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_n.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_n.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_ad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_l.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_ad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_l.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

@@ -117,6 +117,47 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxleveleditor\resource.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\new.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\open.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\pos.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\rot.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_ad.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_c.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_l.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_n.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_p.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_s.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\save.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\save_as.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\scale.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_cb.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_m.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_s.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_z.bmp" />
+    <Image Include="resource\arrow.bmp" />
+    <Image Include="resource\axes.bmp" />
+    <Image Include="resource\grid.bmp" />
+    <Image Include="resource\open.bmp" />
+    <Image Include="resource\pos.bmp" />
+    <Image Include="resource\rot.bmp" />
+    <Image Include="resource\r_ad.bmp" />
+    <Image Include="resource\r_c.bmp" />
+    <Image Include="resource\r_l.bmp" />
+    <Image Include="resource\r_n.bmp" />
+    <Image Include="resource\r_p.bmp" />
+    <Image Include="resource\r_s.bmp" />
+    <Image Include="resource\save.bmp" />
+    <Image Include="resource\save_as.bmp" />
+    <Image Include="resource\scale.bmp" />
+    <Image Include="resource\sel_cb.bmp" />
+    <Image Include="resource\sel_m.bmp" />
+    <Image Include="resource\sel_s.bmp" />
+    <Image Include="resource\sel_z.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

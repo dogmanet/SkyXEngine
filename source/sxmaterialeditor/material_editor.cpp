@@ -4,7 +4,21 @@ namespace SXMaterialEditor
 	ISXGUIBaseWnd* JobWindow;
 	ISXGUIMenu* MainMenu;
 	ISXGUIBaseWnd* WindowRender;
+
 	ISXGUIToolBar* ToolBar;
+	ISXGUIButton* ButtonTBOpen;
+	ISXGUIButton* ButtonTBSave;
+
+	ISXGUICheckBox* CheckBoxTBCam;
+	ISXGUIButton* ButtonTBView;
+
+	ISXGUICheckBox* CheckBoxTBRColor;
+	ISXGUICheckBox* CheckBoxTBRNormal;
+	ISXGUICheckBox* CheckBoxTBRParam;
+	ISXGUICheckBox* CheckBoxTBRAmDiff;
+	ISXGUICheckBox* CheckBoxTBRSpecular;
+	ISXGUICheckBox* CheckBoxTBRLighting;
+
 	ISXGUIButton* ButtonSkyBox;
 	ISXGUIEdit* EditSkyBox;
 	ISXGUICheckBox* CheckBoxModelRot;
@@ -139,6 +153,9 @@ namespace SXMaterialEditor
 	void Nulling();
 	void InitMtl(ID id);
 
+	void MtlOpen();
+	void MtlSave();
+
 	void FinalImageUncheckedMenu();
 
 	ID IDMat = -1;
@@ -160,19 +177,88 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
 	SXMaterialEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXMaterialEditor::MainMenu->SetToWindow(SXMaterialEditor::JobWindow->GetHWND());
-	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
 
-	SXMaterialEditor::WindowRender = SXGUICrBaseWnd("WindowRender","WindowRender",0,0,0,25,300,300,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXMaterialEditor::JobWindow->GetHWND(),0);
+	SXMaterialEditor::WindowRender = SXGUICrBaseWnd("WindowRender","WindowRender",0,0,0,26,300,300,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXMaterialEditor::JobWindow->GetHWND(),0);
 	SXMaterialEditor::WindowRender->GAlign.left = false;
 	SXMaterialEditor::WindowRender->GAlign.right = false;
 	SXMaterialEditor::WindowRender->GAlign.top = false;
 	SXMaterialEditor::WindowRender->GAlign.bottom = false;
 	
-	SXMaterialEditor::ToolBar = SXGUICrToolBar(0,0,645,25,SXMaterialEditor::JobWindow->GetHWND(),0,0);
+	SXMaterialEditor::ToolBar = SXGUICrToolBar(0, 0, 645, 26, SXMaterialEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXMaterialEditor::ToolBar->GAlign.left = false;
 	SXMaterialEditor::ToolBar->GAlign.right = false;
 	SXMaterialEditor::ToolBar->GAlign.top = false;
 	SXMaterialEditor::ToolBar->GAlign.bottom = false;
+	SXMaterialEditor::ToolBar->AddHandler(SXMaterialEditor_ToolBar_CallWmCommand, WM_COMMAND);
+
+	SXMaterialEditor::ButtonTBOpen = SXGUICrButtonEx("", 2, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::ButtonTBOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::ButtonTBOpen->GAlign.left = true;
+	SXMaterialEditor::ButtonTBOpen->GAlign.top = true;
+	SXMaterialEditor::ButtonTBOpen->SetBmpInResourse(IDB_BITMAP1);
+
+	SXMaterialEditor::ButtonTBSave = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::ButtonTBSave->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::ButtonTBSave->GAlign.left = true;
+	SXMaterialEditor::ButtonTBSave->GAlign.top = true;
+	SXMaterialEditor::ButtonTBSave->SetBmpInResourse(IDB_BITMAP2);
+
+	SXMaterialEditor::CheckBoxTBCam = SXGUICrCheckBoxEx("", 54, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBCam->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBCam->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBCam->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBCam->SetBmpInResourse(IDB_BITMAP3);
+
+	SXMaterialEditor::ButtonTBView = SXGUICrButtonEx("", 78, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::ButtonTBView->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::ButtonTBView->GAlign.left = true;
+	SXMaterialEditor::ButtonTBView->GAlign.top = true;
+	SXMaterialEditor::ButtonTBView->SetBmpInResourse(IDB_BITMAP4);
+
+	SXMaterialEditor::CheckBoxTBRColor = SXGUICrCheckBoxEx("", 106, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBRColor->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBRColor->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBRColor->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBRColor->SetBmpInResourse(IDB_BITMAP5);
+
+	SXMaterialEditor::CheckBoxTBRNormal = SXGUICrCheckBoxEx("", 130, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBRNormal->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBRNormal->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBRNormal->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBRNormal->SetBmpInResourse(IDB_BITMAP6);
+
+	SXMaterialEditor::CheckBoxTBRParam = SXGUICrCheckBoxEx("", 154, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBRParam->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBRParam->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBRParam->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBRParam->SetBmpInResourse(IDB_BITMAP7);
+
+	SXMaterialEditor::CheckBoxTBRAmDiff = SXGUICrCheckBoxEx("", 178, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBRAmDiff->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBRAmDiff->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBRAmDiff->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBRAmDiff->SetBmpInResourse(IDB_BITMAP8);
+
+	SXMaterialEditor::CheckBoxTBRSpecular = SXGUICrCheckBoxEx("", 202, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBRSpecular->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBRSpecular->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBRSpecular->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBRSpecular->SetBmpInResourse(IDB_BITMAP9);
+
+	SXMaterialEditor::CheckBoxTBRLighting = SXGUICrCheckBoxEx("", 226, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXMaterialEditor::ToolBar->GetHWND(), 0, 0);
+	SXMaterialEditor::CheckBoxTBRLighting->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::CheckBoxTBRLighting->GAlign.left = true;
+	SXMaterialEditor::CheckBoxTBRLighting->GAlign.top = true;
+	SXMaterialEditor::CheckBoxTBRLighting->SetBmpInResourse(IDB_BITMAP10);
+
+
+	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);
+
+	SXMaterialEditor::CheckBoxTBCam->SetCheck(true);
+	GData::Editors::MoveCamera = SXMaterialEditor::CheckBoxTBCam->GetCheck();
+
 	
 	SXMaterialEditor::ButtonSkyBox = SXGUICrButton("...", 275, 330, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonSkyBox->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);

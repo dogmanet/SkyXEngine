@@ -143,6 +143,26 @@ void GData::InitWin(const char* name, const char* caption)
 #if defined(SX_PARTICLES_EDITOR)
 void GData::Editors::ParticlesEditorUpdateStatusBar()
 {
+	bool whyplay = false;
+	for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	{
+		if (SPE_EffectEnableGet(SPE_EffectIdOfKey(i)))
+		{
+			SXParticlesEditor::CheckBoxTBPlay->SetCheck(true);
+			SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
+			SXParticlesEditor::CheckBoxTBStop->SetCheck(false);
+			whyplay = true;
+			break;
+		}
+	}
+
+	if(!whyplay)
+	{
+		SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
+		SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
+		SXParticlesEditor::CheckBoxTBStop->SetCheck(true);
+	}
+
 	int emitters_count = 0;
 	int emitters_all_count = 0;
 	int particles_life_count = 0;

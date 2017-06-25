@@ -42,5 +42,41 @@
     <Image Include="..\..\..\source\sxparticleseditor\resource\save.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\axes.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\bound.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\play.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\pause.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\axes.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\bound.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\play.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\pause.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\stop.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\stop.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

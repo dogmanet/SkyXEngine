@@ -799,7 +799,7 @@ SX_LIB_API ISXGUIProgressBar* SXGUICrProgressBar(WORD x, WORD y, WORD width, WOR
 ////////////////////////////////////////////////////////////////////////////
 
 //! элемент "RadioButton" - переключа́тель (с необязательной подписью), позволяет выбрать одну опцию  из предопределенного набора (таких же RadioButton'ов у одного родителя)
-struct ISXGUIRadioButton : public virtual ISXGUITextual
+struct ISXGUIRadioButton : public virtual ISXGUIButton
 {
 	virtual ~ISXGUIRadioButton(){}
 	virtual void SetCheck(bool check) = 0;	//!< установка отметки
@@ -823,7 +823,7 @@ SX_LIB_API ISXGUIRadioButton* SXGUICrRadioButton(const char* caption, WORD x, WO
 //!@}
 
 //! элемент "CheckBox" - "галочка" (с необязательной подписью) с возможностью выбора состояния отметки
-struct ISXGUICheckBox : public virtual ISXGUITextual
+struct ISXGUICheckBox : public virtual ISXGUIButton
 {
 	virtual ~ISXGUICheckBox(){}
 	virtual void SetCheck(int check) = 0;	//!< установка состояния отметки SXGUI_CHECKBOX_

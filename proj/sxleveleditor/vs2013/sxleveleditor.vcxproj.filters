@@ -44,4 +44,123 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\sxleveleditor\resource\new.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\open.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\open.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\save_as.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\save_as.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\save.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\save.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\arrow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\pos.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\rot.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\scale.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\pos.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\rot.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\scale.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\axes.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_c.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_n.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_c.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_n.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_ad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_l.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_ad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_l.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_z.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_m.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_cb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_z.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_m.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_cb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

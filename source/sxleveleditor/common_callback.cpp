@@ -1,10 +1,75 @@
 
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (MessageBox(0, "¬ы действительно хотите выйти?", "¬ыход?!", MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
+	if (MessageBox(0, "Exit?", "Exit?!", MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
 		DefWindowProc(hwnd, msg, wParam, lParam);
 
 	return 0;
+}
+
+void SXLevelEditor::LevelNew()
+{
+	if (SGeom_ModelsGetCount() <= 0 || (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO))
+		return;
+
+	Level::Clear();
+	char tmpcaption[256];
+	sprintf(tmpcaption, "%s: new level ** ", EDITORS_LEVEL_CAPTION);
+	SXLevelEditor::JobWindow->SetText(tmpcaption);
+}
+
+void SXLevelEditor::LevelOpen()
+{
+	if (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure that you need to open the level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)
+		return;
+
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Levels, FILE_FILTER_LEVEL);
+	if (def_str_validate(tmppath))
+	{
+		StrCutNameNEx(tmppath, tmpname);
+		Level::Load(tmpname);
+		char tmpcaption[256];
+		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
+		SXLevelEditor::JobWindow->SetText(tmpcaption);
+	}
+}
+
+void SXLevelEditor::LevelSave()
+{
+	if (Level::Name[0])
+		Level::Save(Level::Name);
+	else
+	{
+		if (SGeom_ModelsGetCount() <= 0)
+			MessageBox(0, "You need to create a level!", 0, 0);
+		else
+			SXLevelEditor::LevelSaveAs();
+	}
+}
+
+void SXLevelEditor::LevelSaveAs()
+{
+	if (SGeom_ModelsGetCount() <= 0)
+	{
+		MessageBox(0, "You need to create a level!", 0, 0);
+		return;
+	}
+
+	char tmppath[1024];
+	tmppath[0] = 0;
+	char tmpname[1024];
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, GData::Pathes::Levels, FILE_FILTER_LEVEL);
+	if (StrValidate(tmppath))
+	{
+		StrCutNameNEx(tmppath, tmpname);
+		Level::Save(tmpname);
+		char tmpcaption[256];
+		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
+		SXLevelEditor::JobWindow->SetText(tmpcaption);
+	}
 }
 
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -15,45 +80,22 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//новый
 	if (id == ID_FILE_NEW)
 	{
-		SGeom_ModelsClear();
-		SGeom_GreenClear();
-		SML_LigthsClear();
-		char tmpcaption[256];
-		sprintf(tmpcaption, "%s: new level ** ", EDITORS_LEVEL_CAPTION);
-		SXLevelEditor::JobWindow->SetText(tmpcaption);
+		SXLevelEditor::LevelNew();
 	}
 	//открыть
 	else if (id == ID_FILE_OPEN)
 	{
-		char tmppath[1024];
-		tmppath[0] = 0;
-		char tmpname[1024];
-		SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Levels, FILE_FILTER_LEVEL);
-		if (def_str_validate(tmppath))
-		{
-			StrCutNameNEx(tmppath, tmpname);
-			Level::Load(tmpname);
-			char tmpcaption[256];
-			sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
-			SXLevelEditor::JobWindow->SetText(tmpcaption);
-		}
-
+		SXLevelEditor::LevelOpen();
 	}
 	//сохранить
 	else if (id == ID_FILE_SAVE)
 	{
-		char tmppath[1024];
-		tmppath[0] = 0;
-		char tmpname[1024];
-		SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, GData::Pathes::Levels, FILE_FILTER_LEVEL);
-		if (StrValidate(tmppath))
-		{
-			StrCutNameNEx(tmppath, tmpname);
-			Level::Save(tmpname);
-			char tmpcaption[256];
-			sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
-			SXLevelEditor::JobWindow->SetText(tmpcaption);
-		}
+		SXLevelEditor::LevelSave();
+	}
+	//сохранить как
+	else if (id == ID_FILE_SAVEAS)
+	{
+		SXLevelEditor::LevelSaveAs();
 	}
 	//выход
 	else if (id == ID_FILE_EXIT)
@@ -598,6 +640,133 @@ LRESULT SXLevelEditor_GroupBox_Notify(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return 0;
 }
 
+LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int Notification = HIWORD(wParam);
+	HWND handle_elem = (HWND)(lParam);
+	if (Notification == BN_CLICKED)
+	{
+		if (SXLevelEditor::CheckBoxTBArrow->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
+			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
+			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+		}
+		else if (SXLevelEditor::CheckBoxTBPos->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
+			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+		}
+		else if (SXLevelEditor::CheckBoxTBRot->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
+			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+		}
+		else if (SXLevelEditor::CheckBoxTBScale->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
+			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
+			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+		}
+
+		else if (SXLevelEditor::ButtonTBNew->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::LevelNew();
+		}
+		else if (SXLevelEditor::ButtonTBOpen->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::LevelOpen();
+		}
+		else if (SXLevelEditor::ButtonTBSave->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::LevelSave();
+		}
+		else if (SXLevelEditor::ButtonTBSaveAs->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::LevelSaveAs();
+		}
+
+		else if (SXLevelEditor::CheckBoxTBGrid->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, SXLevelEditor::CheckBoxTBGrid->GetCheck());
+			GData::Editors::RenderGrid = SXLevelEditor::CheckBoxTBGrid->GetCheck();
+		}
+		else if (SXLevelEditor::CheckBoxTBAxes->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, SXLevelEditor::CheckBoxTBAxes->GetCheck());
+			GData::Editors::RenderAxesStatic = SXLevelEditor::CheckBoxTBAxes->GetCheck();
+		}
+
+		else if (SXLevelEditor::CheckBoxTBRColor->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::FinalImageUncheckedMenu();
+			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
+			SXLevelEditor::CheckBoxTBRColor->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_color;
+		}
+		else if (SXLevelEditor::CheckBoxTBRNormal->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::FinalImageUncheckedMenu();
+			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, true);
+			SXLevelEditor::CheckBoxTBRNormal->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_normal;
+		}
+		else if (SXLevelEditor::CheckBoxTBRParam->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::FinalImageUncheckedMenu();
+			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, true);
+			SXLevelEditor::CheckBoxTBRParam->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_param;
+		}
+		else if (SXLevelEditor::CheckBoxTBRAmDiff->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::FinalImageUncheckedMenu();
+			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
+			SXLevelEditor::CheckBoxTBRAmDiff->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_ambient_diff;
+		}
+		else if (SXLevelEditor::CheckBoxTBRSpecular->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::FinalImageUncheckedMenu();
+			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, true);
+			SXLevelEditor::CheckBoxTBRSpecular->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_specular;
+		}
+		else if (SXLevelEditor::CheckBoxTBRLighting->GetHWND() == handle_elem)
+		{
+			SXLevelEditor::FinalImageUncheckedMenu();
+			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+			SXLevelEditor::CheckBoxTBRLighting->SetCheck(true);
+			GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+		}
+
+		else if (SXLevelEditor::CheckBoxTBSelS->GetHWND() == handle_elem)
+		{
+			GData::Editors::SelSelection = SXLevelEditor::CheckBoxTBSelS->GetCheck();
+			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, SXLevelEditor::CheckBoxTBSelS->GetCheck());
+		}
+		else if (SXLevelEditor::CheckBoxTBSelZTest->GetHWND() == handle_elem)
+		{
+			GData::Editors::SelZTest = SXLevelEditor::CheckBoxTBSelZTest->GetCheck();
+			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_ZTEST, SXLevelEditor::CheckBoxTBSelZTest->GetCheck());
+		}
+		else if (SXLevelEditor::CheckBoxTBSelMesh->GetHWND() == handle_elem)
+		{
+			GData::Editors::SelMesh = SXLevelEditor::CheckBoxTBSelMesh->GetCheck();
+			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, SXLevelEditor::CheckBoxTBSelMesh->GetCheck());
+		}
+		else if (SXLevelEditor::CheckBoxTBSelCullBack->GetHWND() == handle_elem)
+		{
+			GData::Editors::SelBackFacesCull = SXLevelEditor::CheckBoxTBSelCullBack->GetCheck();
+			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, SXLevelEditor::CheckBoxTBSelCullBack->GetCheck());
+		}
+	}
+
+	return 0;
+}
+
 
 LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -605,7 +774,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 	HWND handle_elem = (HWND)(lParam);
 	if (Notification == BN_CLICKED)
 	{
-
+		
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
@@ -1017,4 +1186,11 @@ void SXLevelEditor::FinalImageUncheckedMenu()
 	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
 	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, false);
 	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
+
+	SXLevelEditor::CheckBoxTBRColor->SetCheck(false);
+	SXLevelEditor::CheckBoxTBRNormal->SetCheck(false);
+	SXLevelEditor::CheckBoxTBRParam->SetCheck(false);
+	SXLevelEditor::CheckBoxTBRAmDiff->SetCheck(false);
+	SXLevelEditor::CheckBoxTBRSpecular->SetCheck(false);
+	SXLevelEditor::CheckBoxTBRLighting->SetCheck(false);
 }

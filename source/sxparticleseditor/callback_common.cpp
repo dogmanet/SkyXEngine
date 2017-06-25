@@ -7,6 +7,19 @@ LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+void SXParticlesEditor::EffReOpen()
+{
+	SPE_EffectsClear();
+	Level::LoadParticles();
+
+	SXParticlesEditor::EffInitList();
+}
+
+void SXParticlesEditor::EffSave()
+{
+	Level::SaveParticles();;
+}
+
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	WORD id = LOWORD(wParam);
@@ -15,15 +28,12 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//открыть
 	if (id == ID_FILE_REOPEN)
 	{
-		SPE_EffectsClear();
-		Level::LoadParticles();
-
-		SXParticlesEditor::EffInitList();
+		SXParticlesEditor::EffReOpen();
 	}
 	//сохранить
 	else if (id == ID_FILE_SAVE)
 	{
-		Level::SaveParticles();
+		SXParticlesEditor::EffSave();
 	}
 	//выход
 	else if (id == ID_FILE_EXIT)
@@ -50,7 +60,74 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-LRESULT SXParticlesEditor_ButtonImgReOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	int Notification = HIWORD(wParam);
+	HWND handle_elem = (HWND)(lParam);
+	if (Notification == BN_CLICKED)
+	{
+		if (SXParticlesEditor::ButtonTBReOpen->GetHWND() == handle_elem)
+		{
+			SXParticlesEditor::EffReOpen();
+		}
+		else if (SXParticlesEditor::ButtonTBSave->GetHWND() == handle_elem)
+		{
+			SXParticlesEditor::EffSave();
+		}
+		
+
+		else if (SXParticlesEditor::CheckBoxTBGrid->GetHWND() == handle_elem)
+		{
+			SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, SXParticlesEditor::CheckBoxTBGrid->GetCheck());
+			GData::Editors::RenderGrid = SXParticlesEditor::CheckBoxTBGrid->GetCheck();
+		}
+		else if (SXParticlesEditor::CheckBoxTBAxes->GetHWND() == handle_elem)
+		{
+			SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, SXParticlesEditor::CheckBoxTBAxes->GetCheck());
+			GData::Editors::RenderAxesStatic = SXParticlesEditor::CheckBoxTBAxes->GetCheck();
+		}
+		else if (SXParticlesEditor::CheckBoxTBBound->GetHWND() == handle_elem)
+		{
+			SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, SXParticlesEditor::CheckBoxTBBound->GetCheck());
+			GData::Editors::RenderBound = SXParticlesEditor::CheckBoxTBBound->GetCheck();
+		}
+
+		else if (SXParticlesEditor::CheckBoxTBPlay->GetHWND() == handle_elem)
+		{
+			if (SXParticlesEditor::SelEffID >= 0)
+			{
+				if (SXParticlesEditor::SelEmitterID >= 0)
+					SXParticlesEditor_ListBoxEmitters_Click(hwnd, msg, wParam, lParam);
+				else
+					SXParticlesEditor_ListBoxEffects_Click(hwnd, msg, wParam, lParam);
+			}
+			else
+				SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
+
+			SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
+			SXParticlesEditor::CheckBoxTBStop->SetCheck(false);
+		}
+		else if (SXParticlesEditor::CheckBoxTBPause->GetHWND() == handle_elem)
+		{
+			Core_TimeWorkingSet(G_Timer_Render_Scene, !SXParticlesEditor::CheckBoxTBPause->GetCheck());
+
+			SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
+			SXParticlesEditor::CheckBoxTBStop->SetCheck(false);
+		}
+		else if (SXParticlesEditor::CheckBoxTBStop->GetHWND() == handle_elem)
+		{
+			if (SXParticlesEditor::SelEffID >= 0)
+				SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
+
+			SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
+			SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
+		}
+	}
+
+	return 0;
+}
+
+LRESULT SXParticlesEditor_ButtonTBReOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SPE_EffectsClear();
 	Level::LoadParticles();
@@ -60,7 +137,7 @@ LRESULT SXParticlesEditor_ButtonImgReOpen_Click(HWND hwnd, UINT msg, WPARAM wPar
 	return 0;
 }
 
-LRESULT SXParticlesEditor_ButtonImgSave_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXParticlesEditor_ButtonTBSave_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	Level::SaveParticles();
 

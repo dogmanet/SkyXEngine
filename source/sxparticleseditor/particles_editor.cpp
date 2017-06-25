@@ -9,9 +9,17 @@ namespace SXParticlesEditor
 	ISXGUIGroupBox* GroupBoxData;
 	ISXGUIGroupBox* GroupBoxData2;
 	ISXGUIBaseWnd* WindowRender;
+
 	ISXGUIToolBar* ToolBar1;
-	ISXGUIButtonImg* ButtonImgReOpen;
-	ISXGUIButtonImg* ButtonImgSave;
+
+	ISXGUIButton* ButtonTBReOpen;
+	ISXGUIButton* ButtonTBSave;
+	ISXGUICheckBox* CheckBoxTBGrid;
+	ISXGUICheckBox* CheckBoxTBAxes;
+	ISXGUICheckBox* CheckBoxTBBound;
+	ISXGUICheckBox* CheckBoxTBPlay;
+	ISXGUICheckBox* CheckBoxTBPause;
+	ISXGUICheckBox* CheckBoxTBStop;
 
 	ISXGUIListBox* ListBoxEffects;
 	ISXGUIListBox* ListBoxEmitters;
@@ -221,6 +229,9 @@ namespace SXParticlesEditor
 
 	void UpdateCountInfo();
 
+	void EffReOpen();
+	void EffSave();
+
 	void EffInitList();
 
 	void EffVisible(bool visible, bool iscreate);
@@ -265,9 +276,10 @@ namespace SXParticlesEditor
 };
 
 #include <sxparticleseditor/particles_editor_op.cpp>
-#include <sxparticleseditor/callback_common.cpp>
 #include <sxparticleseditor/callback_tabs.cpp>
 #include <sxparticleseditor/callback_list.cpp>
+#include <sxparticleseditor/callback_common.cpp>
+
 
 void SXParticlesEditor::InitAllElements()
 {
@@ -283,10 +295,6 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXParticlesEditor::MainMenu->SetToWindow(SXParticlesEditor::JobWindow->GetHWND());
 
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, true);
-
 	SXParticlesEditor::StatusBar1 = SXGUICrStatusBar("StatusBar1", SXParticlesEditor::JobWindow->GetHWND(), 0, 0);
 	SXParticlesEditor::StatusBar1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	int arrpart[5];
@@ -296,37 +304,78 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::StatusBar1->SetTextParts(0, "Playing emitters: 0/0");
 	SXParticlesEditor::StatusBar1->SetTextParts(1, "Living particles: 0/0");
 
-	SXParticlesEditor::WindowRender = SXGUICrBaseWnd("WindowRender","Window1",0,0,0,25,600,400,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXParticlesEditor::JobWindow->GetHWND(),0);
+	SXParticlesEditor::WindowRender = SXGUICrBaseWnd("WindowRender","Window1",0,0,0,27,600,400,0,0,CreateSolidBrush(RGB(200,200,200)),0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,SXParticlesEditor::JobWindow->GetHWND(),0);
 	SXParticlesEditor::WindowRender->GAlign.left = true;
 	SXParticlesEditor::WindowRender->GAlign.right = true;
 	SXParticlesEditor::WindowRender->GAlign.top = true;
 	SXParticlesEditor::WindowRender->GAlign.bottom = true;
 	
-	SXParticlesEditor::ToolBar1 = SXGUICrToolBar(0,1,804,24,SXParticlesEditor::JobWindow->GetHWND(),0,0);
+	SXParticlesEditor::ToolBar1 = SXGUICrToolBar(0, 0, 804, 27, SXParticlesEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXParticlesEditor::ToolBar1->GAlign.left = true;
 	SXParticlesEditor::ToolBar1->GAlign.right = true;
 	SXParticlesEditor::ToolBar1->GAlign.top = true;
 	SXParticlesEditor::ToolBar1->GAlign.bottom = false;
+	SXParticlesEditor::ToolBar1->AddHandler(SXParticlesEditor_ToolBar1_CallWmCommand, WM_COMMAND);
 
-	SXParticlesEditor::ButtonImgReOpen = SXGUICrButtonImgRes(IDB_BITMAP1, 3, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
-	SXParticlesEditor::ButtonImgReOpen->InitCallBack();
-	SXParticlesEditor::ButtonImgReOpen->SetColorFrame(100, 100, 100);
-	SXParticlesEditor::ButtonImgReOpen->GAlign.top = true;
-	SXParticlesEditor::ButtonImgReOpen->GAlign.left = true;
-	SXParticlesEditor::ButtonImgReOpen->GAlign.bottom = false;
-	SXParticlesEditor::ButtonImgReOpen->GAlign.right = false;
-	SXParticlesEditor::ButtonImgReOpen->AddHandler(SXParticlesEditor_ButtonImgReOpen_Click, WM_LBUTTONUP);
+	SXParticlesEditor::ButtonTBReOpen = SXGUICrButtonEx("", 2, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::ButtonTBReOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::ButtonTBReOpen->GAlign.left = true;
+	SXParticlesEditor::ButtonTBReOpen->GAlign.top = true;
+	SXParticlesEditor::ButtonTBReOpen->SetBmpInResourse(IDB_BITMAP1);
 
-	SXParticlesEditor::ButtonImgSave = SXGUICrButtonImgRes(IDB_BITMAP2, 26, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
-	SXParticlesEditor::ButtonImgSave->InitCallBack();
-	SXParticlesEditor::ButtonImgSave->SetColorFrame(100, 100, 100);
-	SXParticlesEditor::ButtonImgSave->GAlign.top = true;
-	SXParticlesEditor::ButtonImgSave->GAlign.left = true;
-	SXParticlesEditor::ButtonImgSave->GAlign.bottom = false;
-	SXParticlesEditor::ButtonImgSave->GAlign.right = false;
-	SXParticlesEditor::ButtonImgSave->AddHandler(SXParticlesEditor_ButtonImgSave_Click, WM_LBUTTONUP);
+	SXParticlesEditor::ButtonTBSave = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::ButtonTBSave->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::ButtonTBSave->GAlign.left = true;
+	SXParticlesEditor::ButtonTBSave->GAlign.top = true;
+	SXParticlesEditor::ButtonTBSave->SetBmpInResourse(IDB_BITMAP2);
+
+	SXParticlesEditor::CheckBoxTBGrid = SXGUICrCheckBoxEx("", 54, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::CheckBoxTBGrid->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTBGrid->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTBGrid->GAlign.top = true;
+	SXParticlesEditor::CheckBoxTBGrid->SetBmpInResourse(IDB_BITMAP3);
+
+	SXParticlesEditor::CheckBoxTBAxes = SXGUICrCheckBoxEx("", 78, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::CheckBoxTBAxes->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTBAxes->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTBAxes->GAlign.top = true;
+	SXParticlesEditor::CheckBoxTBAxes->SetBmpInResourse(IDB_BITMAP4);
+
+	SXParticlesEditor::CheckBoxTBBound = SXGUICrCheckBoxEx("", 102, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::CheckBoxTBBound->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTBBound->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTBBound->GAlign.top = true;
+	SXParticlesEditor::CheckBoxTBBound->SetBmpInResourse(IDB_BITMAP5);
+
+	SXParticlesEditor::CheckBoxTBPlay = SXGUICrCheckBoxEx("", 130, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::CheckBoxTBPlay->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTBPlay->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTBPlay->GAlign.top = true;
+	SXParticlesEditor::CheckBoxTBPlay->SetBmpInResourse(IDB_BITMAP6);
+
+	SXParticlesEditor::CheckBoxTBPause = SXGUICrCheckBoxEx("", 154, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::CheckBoxTBPause->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTBPause->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTBPause->GAlign.top = true;
+	SXParticlesEditor::CheckBoxTBPause->SetBmpInResourse(IDB_BITMAP7);
+
+	SXParticlesEditor::CheckBoxTBStop = SXGUICrCheckBoxEx("", 178, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXParticlesEditor::ToolBar1->GetHWND(), 0, 0);
+	SXParticlesEditor::CheckBoxTBStop->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTBStop->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTBStop->GAlign.top = true;
+	SXParticlesEditor::CheckBoxTBStop->SetBmpInResourse(IDB_BITMAP8);
+
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, true);
+	SXParticlesEditor::CheckBoxTBGrid->SetCheck(true);
+	SXParticlesEditor::CheckBoxTBAxes->SetCheck(true);
+	SXParticlesEditor::CheckBoxTBBound->SetCheck(true);
+	GData::Editors::RenderGrid = true;
+	GData::Editors::RenderAxesStatic = true;
+	GData::Editors::RenderBound = true;
 	
-	SXParticlesEditor::GroupBoxList = SXGUICrGroupBox("", 601, 26, 204, 400, SXParticlesEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
+	SXParticlesEditor::GroupBoxList = SXGUICrGroupBox("", 601, 28, 204, 400, SXParticlesEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXParticlesEditor::GroupBoxList);
 	SXParticlesEditor::GroupBoxList->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXParticlesEditor::GroupBoxList->SetColorText(0, 0, 0);

@@ -329,7 +329,7 @@ void SkyXEngine_Init()
 #if defined(SX_GAME)
 	GData::InitWin("SkyXEngine", "SkyXEngine");
 #endif
-
+	Level::Name[0] = 0;
 	SSInput_0Create("sxinput", GData::Handle3D, true);
 	SSInput_Dbg_Set(printflog);
 
@@ -411,9 +411,9 @@ void SkyXEngine_Init()
 	SXGame_Dbg_Set(printflog);
 #endif
 
-//#ifdef SX_GAME
+#ifdef SX_GAME
 	GData::ObjCamera = SXGame_GetActiveCamera();
-//#endif
+#endif
 
 #if defined(SX_LEVEL_EDITOR) || defined(SX_PARTICLES_EDITOR)
 	GData::Editors::ObjGrid = new Grid();
@@ -484,7 +484,10 @@ void SkyXEngine_Render(DWORD timeDelta)
 	}
 
 #if !defined(SX_GAME) //&& !defined(SX_MATERIAL_EDITOR)
-	CameraUpdate::UpdateEditorial(timeDelta);
+#if defined(SX_MATERIAL_EDITOR)
+	if(GData::Editors::MoveCamera)
+#endif
+		CameraUpdate::UpdateEditorial(timeDelta);
 #endif
 
 	SXAnim_Update();

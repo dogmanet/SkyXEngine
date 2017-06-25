@@ -6,7 +6,7 @@
 
 #pragma once
 
-class SXGUIRadioButton : public SXGUITextual, public virtual ISXGUIRadioButton
+class SXGUIRadioButton : public SXGUIButton, public virtual ISXGUIRadioButton
 {
 public:
 	SXGUIRadioButton();

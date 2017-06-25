@@ -117,6 +117,28 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxmaterialeditor\resource.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\cam.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\open.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_ad.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_c.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_l.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_n.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_p.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_s.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\save.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\view.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp" />
+    <Image Include="resource\cam.bmp" />
+    <Image Include="resource\r_ad.bmp" />
+    <Image Include="resource\r_c.bmp" />
+    <Image Include="resource\r_l.bmp" />
+    <Image Include="resource\r_n.bmp" />
+    <Image Include="resource\r_p.bmp" />
+    <Image Include="resource\r_s.bmp" />
+    <Image Include="resource\save.bmp" />
+    <Image Include="resource\view.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

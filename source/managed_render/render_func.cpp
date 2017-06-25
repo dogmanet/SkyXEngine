@@ -394,7 +394,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			FpsValue	= (float)FrameCount / TimeElapsed;
 			sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
-//#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR) && !defined(SX_PARTICLES_EDITOR)
+#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR) && !defined(SX_PARTICLES_EDITOR)
 			sprintf(debugstr + strlen(debugstr), "\ncount poly : %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "count DIPs : %d\n\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
 			sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
@@ -420,7 +420,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			sprintf(debugstr + strlen(debugstr), "\n\FreeValF1 : %f\n", SXRenderFunc::Delay::FreeValF1);
 			sprintf(debugstr + strlen(debugstr), "\n\FreeValF2 : %f\n", SXRenderFunc::Delay::FreeValF2);
 			sprintf(debugstr + strlen(debugstr), "\n\FreeValF3 : %f\n", SXRenderFunc::Delay::FreeValF3);
-//#endif
+#endif
 			Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
 			Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
 			TimeElapsed		= 0.0f;
@@ -1506,7 +1506,7 @@ void SXRenderFunc::RenderEditorMain()
 		GData::Editors::ObjAxesStatic->Render();
 	}
 
-	if(SSInput_GetKeyState(SIK_R))
+	/*if(SSInput_GetKeyState(SIK_R))
 		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
 	if(SSInput_GetKeyState(SIK_T))
 		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
@@ -1517,7 +1517,7 @@ void SXRenderFunc::RenderEditorMain()
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 	GData::Editors::ObjAxesHelper->Render();
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);*/
 #endif
 }
 

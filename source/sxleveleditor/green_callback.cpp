@@ -218,7 +218,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 {
 	if (SGeom_ModelsGetCount() == 0)
 	{
-		MessageBox(0, "Необходимо сначала загрузить модели, и только после сего добавлять растительность!", "Нет моделей", 0);
+		MessageBox(0, "Not found geomety!", "Not found geomety", 0);
 		return 0;
 	}
 
@@ -285,7 +285,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	if (!Core_0FileExists(path_model))
 	{
 		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Модель [", path_model, "] не существует");
+		sprintf(tmpstr, "%s%s%s", "Model [", path_model, "] not found");
 		MessageBox(0, tmpstr, 0, 0);
 		return 0;
 	}
@@ -293,7 +293,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	if (def_str_validate(tmp_navmesh) && !Core_0FileExists(path_navmesh))
 	{
 		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Модель [", path_navmesh, "] не существует");
+		sprintf(tmpstr, "%s%s%s", "Model [", path_navmesh, "] not found");
 		MessageBox(0, tmpstr, 0, 0);
 		return 0;
 	}
@@ -303,7 +303,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		if (!Core_0FileExists(path_lod1))
 		{
 			char tmpstr[2048];
-			sprintf(tmpstr, "%s%s%s", "Модель [", path_lod1, "] не существует");
+			sprintf(tmpstr, "%s%s%s", "Model [", path_lod1, "] not found");
 			MessageBox(0, tmpstr, 0, 0);
 			return 0;
 		}
@@ -311,7 +311,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		if (!Core_0FileExists(path_lod2))
 		{
 			char tmpstr[2048];
-			sprintf(tmpstr, "%s%s%s", "Модель [", path_lod2, "] не существует");
+			sprintf(tmpstr, "%s%s%s", "Model [", path_lod2, "] not found");
 			MessageBox(0, tmpstr, 0, 0);
 			return 0;
 		}
@@ -319,7 +319,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	if (!def_str_validate(tmp_name))
 	{
-		if (MessageBox(0, "Нет имени у модели, ввести имя файла автоматически?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
+		if (MessageBox(0, "No name for the model, enter the file name automatically?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
 		{
 			for (int i = 0; i<strlen(path_model); i++)
 			{

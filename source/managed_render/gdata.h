@@ -169,6 +169,10 @@ namespace GData
 		bool RenderGrid = false;		//!< рисовать ли #ObjGrid
 		bool RenderAxesStatic = false;	//!< рисовать ли #ObjAxesStatic
 
+#if defined(SX_MATERIAL_EDITOR)
+		bool MoveCamera = false;		//!< разрешено ли двигать камеру
+#endif
+
 #if defined(SX_LEVEL_EDITOR)
 		int ActiveGroupType = 0;
 		ID ActiveGreenSplit = -1;
@@ -186,7 +190,7 @@ namespace GData
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
-		bool RenderBound = false;
+		bool RenderBound = false;				//!< рисовать ли ограничивающий объем для эффекта
 		void ParticlesEditorUpdateStatusBar();
 #endif
 	};

@@ -21,7 +21,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::InitAllElements();
 	SXMaterialEditor::Nulling();
 	
-	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+	
 
 	GData::Handle3D = SXMaterialEditor::WindowRender->GetHWND();
 	GData::HandleParent3D = SXMaterialEditor::JobWindow->GetHWND();

@@ -12,7 +12,7 @@ BST_CHECKED
 BST_INDETERMINATE
 */
 
-class SXGUICheckBox : public SXGUITextual, public virtual ISXGUICheckBox
+class SXGUICheckBox : public SXGUIButton, public virtual ISXGUICheckBox
 {
 public:
 	SXGUICheckBox();

@@ -98,10 +98,22 @@
     <ResourceCompile Include="..\..\..\source\sxparticleseditor\sxparticleseditor.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\sxparticleseditor\resource\axes.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\bound.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp" />
     <Image Include="..\..\..\source\sxparticleseditor\resource\open.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\pause.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\play.bmp" />
     <Image Include="..\..\..\source\sxparticleseditor\resource\save.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\stop.bmp" />
+    <Image Include="resource\axes.bmp" />
+    <Image Include="resource\bound.bmp" />
+    <Image Include="resource\grid.bmp" />
     <Image Include="resource\open.bmp" />
+    <Image Include="resource\pause.bmp" />
+    <Image Include="resource\play.bmp" />
     <Image Include="resource\save.bmp" />
+    <Image Include="resource\stop.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
