@@ -411,9 +411,9 @@ void SkyXEngine_Init()
 	SXGame_Dbg_Set(printflog);
 #endif
 
-#ifdef SX_GAME
+//#ifdef SX_GAME
 	GData::ObjCamera = SXGame_GetActiveCamera();
-#endif
+//#endif
 
 #if defined(SX_LEVEL_EDITOR) || defined(SX_PARTICLES_EDITOR)
 	GData::Editors::ObjGrid = new Grid();

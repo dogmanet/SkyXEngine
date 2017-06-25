@@ -32,12 +32,13 @@ void AxesHelper::SetRotation(const SMQuaternion & rot)
 {
 	QRotation = rot;
 	Rotation = SMMatrixToEuler(rot.GetMatrix());
-	//SMMatrixRotationX(Rotation.x) * SMMatrixRotationY(Rotation.y) * SMMatrixRotationZ(Rotation.z)
+	m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
 }
 
 void AxesHelper::SetRotation(const float3 & rot)
 {
 	Rotation = rot;
+	QRotation = SMQuaternion(rot.x, 'x') * SMQuaternion(rot.y, 'y') * SMQuaternion(rot.z, 'z');
 	m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
 }
 
@@ -528,7 +529,7 @@ void AxesHelper::OnMouseMove(int x, int y)
 			else if ((m_currentAxe & HA_XZ) == HA_XZ)
 				dv.x = dv.z;
 
-			m_mHelperMat = SMMatrixScaling((m_currentAxe & HA_X) ? dv.x : 1, (m_currentAxe & HA_Y) ? dv.y : 1, (m_currentAxe & HA_Z) ? dv.z : 1);
+			m_mHelperMat = SMMatrixScaling((m_currentAxe & HA_X) ? dv.x : 1, (m_currentAxe & HA_Y) ? dv.y : 1, (m_currentAxe & HA_Z) ? dv.z : 1) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
 			Scale = (SMVECTOR)ScaleOld * float3(SMVector3Length(float3(m_mHelperMat._11, m_mHelperMat._12, m_mHelperMat._13)),
 				SMVector3Length(float3(m_mHelperMat._21, m_mHelperMat._22, m_mHelperMat._23)),
 				SMVector3Length(float3(m_mHelperMat._31, m_mHelperMat._32, m_mHelperMat._33)));
@@ -539,7 +540,9 @@ void AxesHelper::OnMouseMove(int x, int y)
 		m_bIsDraggingStop = false;
 		if (m_htype == HT_SCALE)
 		{
-			m_mHelperMat._11 = 1.0f;
+			//Scale = float3(1, 1, 1);
+			//m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
+			/*m_mHelperMat._11 = 1.0f;
 			m_mHelperMat._12 = 0.0f;
 			m_mHelperMat._13 = 0.0f;
 
@@ -549,7 +552,7 @@ void AxesHelper::OnMouseMove(int x, int y)
 
 			m_mHelperMat._31 = 0.0f;
 			m_mHelperMat._32 = 0.0f;
-			m_mHelperMat._33 = 1.0f;
+			m_mHelperMat._33 = 1.0f;*/
 		}
 	}
 }

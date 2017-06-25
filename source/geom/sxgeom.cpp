@@ -246,6 +246,12 @@ void SGeom_ModelsDelArrForCom(ID id_arr)
 }
 
 
+void SGeom_ModelsMGetMinMax(ID id, float3* min, float3* max)
+{
+	GEOM_PRECOND(_VOID);
+	return GeometryObj->GetModelMinMax(id, min, max);
+}
+
 char* SGeom_ModelsMGetName(ID id)
 {
 	GEOM_PRECOND(0);

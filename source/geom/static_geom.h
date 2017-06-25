@@ -240,6 +240,7 @@ public:
 	char* GetModelName(ID id);
 	const char* GetModelPathName(ID id);
 	long GetModelCountPoly(ID id);
+	void GetModelMinMax(ID id, float3* min, float3* max);
 
 	float3* GetModelPosition(ID id);
 	float3* GetModelRotation(ID id);

@@ -2850,6 +2850,14 @@ long StaticGeom::GetModelCountPoly(ID id)
 	return -1;
 }
 
+void StaticGeom::GetModelMinMax(ID id, float3* min, float3* max)
+{
+	if (id >= AllModels.size())
+		return;
+
+	AllModels[id]->ArrSplits->BoundVolumeP->GetMinMax(min, max);
+}
+
 
 float3* StaticGeom::GetModelPosition(ID id)
 {

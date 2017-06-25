@@ -1506,7 +1506,7 @@ void SXRenderFunc::RenderEditorMain()
 		GData::Editors::ObjAxesStatic->Render();
 	}
 
-	/*if(SSInput_GetKeyState(SIK_R))
+	if(SSInput_GetKeyState(SIK_R))
 		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
 	if(SSInput_GetKeyState(SIK_T))
 		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
@@ -1517,7 +1517,7 @@ void SXRenderFunc::RenderEditorMain()
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 	GData::Editors::ObjAxesHelper->Render();
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);*/
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 #endif
 }
 

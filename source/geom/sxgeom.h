@@ -194,6 +194,7 @@ SX_LIB_API void SGeom_ModelsDelArrForCom(ID id_arr);	//!< удалить мас�
  \note Функции #SGeom_ModelsMGetPosition #SGeom_ModelsMGetRotation #SGeom_ModelsMGetScale возвращают указатели, поэтому после получения вектора его уже можно менять, для того чтобы изменения вступили в силу надо вызывать #SGeom_ModelsMApplyTransform
 @{*/
 
+SX_LIB_API void SGeom_ModelsMGetMinMax(ID id, float3* min, float3* max);
 SX_LIB_API char* SGeom_ModelsMGetName(ID id);			//!< получить имя модели
 SX_LIB_API const char* SGeom_ModelsMGetPathName(ID id);	//!< получить путь до модели относительно стандартного пути
 SX_LIB_API long SGeom_ModelsMGetCountPoly(ID id);		//!< получить количество полигонов модели

@@ -275,7 +275,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		) * mat;
 	camDir = pos - GData::ConstCurrCamPos;
 
-	/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
 		{
@@ -283,7 +283,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 			SXLevelEditor::GeomSel(idmodel);
 		}
 	}
-	else */if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
 	{
 		ID idgreen;
 		ID idsplit;
