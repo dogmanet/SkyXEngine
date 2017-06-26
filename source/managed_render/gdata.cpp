@@ -133,11 +133,8 @@ void GData::InitWin(const char* name, const char* caption)
 		0, 0,
 		GetModuleHandle(0),
 		0);
-	
-	if (GData::IsWindowed)
-		ShowWindow(GData::Handle3D, SW_SHOW);
-	else
-		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
+
+	ShowWindow(GData::Handle3D, SW_HIDE);
 }
 
 #if defined(SX_PARTICLES_EDITOR)

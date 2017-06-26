@@ -9,10 +9,11 @@ See the license in LICENSE
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <SkyXEngine.h>
+#include <SkyXEngine.cpp>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	SkyXEngine_PreviewCreate();
 	SXGUIRegClass::RegGroupBox();
 	SXGUIRegClass::RegButtonImg();
 	srand((unsigned int)time(0));
@@ -39,10 +40,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SXParticlesEditor::EffInitList();
 
+	SkyXEngine_PreviewKill();
+	SXParticlesEditor::JobWindow->Visible(true);
 	int result = SkyXEngine_CycleMain();
-
-	SXParticlesEditor::DeleteAllElements();
 	SkyXEngine_Kill();
-
+	SXParticlesEditor::DeleteAllElements();
 	return result;
 }

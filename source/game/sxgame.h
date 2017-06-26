@@ -34,7 +34,7 @@ SX_LIB_API void SXGame_0Create();
 
 /*! Деинициализирует библиотеку
 */
-SX_LIB_API void SXGame_0Kill();
+SX_LIB_API void SXGame_AKill();
 
 /*! Устанавливает функцию сообщений
 */

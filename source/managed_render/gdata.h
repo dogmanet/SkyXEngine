@@ -61,6 +61,7 @@ namespace GData
 		const char* caption	//!< название окна
 		);
 
+	HWND HandlePreview = 0;
 	HWND HandleParent3D = 0;//!< хэндл окна родителя окна рендера, на случай редакторов
 	HWND Handle3D = 0;		//!< хэндл окна рендера
 

@@ -198,6 +198,10 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
+
+	if (GData::Editors::ObjAxesHelper->m_bIsDragging == false)
+		return 0;
+
 	GData::Editors::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
 	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && GData::Editors::ActiveElement >= 0)
@@ -205,11 +209,16 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 		if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
 		{
 			float3* pos = SGeom_ModelsMGetPosition(GData::Editors::ActiveElement);
-			float3 npos = GData::Editors::ObjAxesHelper->GetPosition();
+			float3 npos = (*pos) + (GData::Editors::ObjAxesHelper->GetPosition() - SXLevelEditor::HelperPos);
 			if ((*pos).x != npos.x || (*pos).y != npos.y || (*pos).z != npos.z)
 			{
-				*pos = GData::Editors::ObjAxesHelper->GetPosition();
+				*pos = npos;
+				
 				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+				float3 min, max;
+				SGeom_ModelsMGetMinMax(GData::Editors::ActiveElement, &min, &max);
+
+				SXLevelEditor::HelperPos = (max + min) * 0.5f;
 			}
 		}
 		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
@@ -225,13 +234,34 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_SCALE)
 		{
 			float3* scale = SGeom_ModelsMGetScale(GData::Editors::ActiveElement);
-			float3 nscale = GData::Editors::ObjAxesHelper->GetScale();
+			float3 nscale = GData::Editors::ObjAxesHelper->GetScale() - float3(1,1,1);
 			if ((*scale).x != nscale.x || (*scale).y != nscale.y || (*scale).z != nscale.z)
 			{
-				*scale = GData::Editors::ObjAxesHelper->GetScale();
+				*scale += nscale;
 				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
 			}
 		}
+	}
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0 && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0)
+	{
+		float3_t pos;
+		SGeom_GreenGetPosObject(GData::Editors::ActiveElement, GData::Editors::ActiveGreenSplit, GData::Editors::ActiveGreenObject, &pos);
+		float3 helperpos = GData::Editors::ObjAxesHelper->GetPosition();
+		if (pos.x != helperpos.x || pos.y != helperpos.y || pos.z != helperpos.z)
+		{
+			SGeom_GreenSetPosObject(GData::Editors::ActiveElement, &GData::Editors::ActiveGreenSplit, &GData::Editors::ActiveGreenObject, &(float3_t)helperpos);
+		}
+	}
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && GData::Editors::ActiveElement >= 0)
+	{
+		SXbaseEntity* bEnt = SXGame_EntGet(GData::Editors::ActiveElement);
+		if (!bEnt)
+			return 0;
+
+		if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
+			bEnt->SetPos(GData::Editors::ObjAxesHelper->GetPosition());
+		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
+			bEnt->SetOrient(GData::Editors::ObjAxesHelper->GetRotationQ());
 	}
 	return 0;
 }
@@ -275,6 +305,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		) * mat;
 	camDir = pos - GData::ConstCurrCamPos;
 
+	if (!SXLevelEditor::CheckBoxTBArrow->GetCheck())
+		return 0;
+
 	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
@@ -304,7 +337,11 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::EditGreenSelX->SetText(String(pos2.x).c_str());
 				SXLevelEditor::EditGreenSelY->SetText(String(pos2.y).c_str());
 				SXLevelEditor::EditGreenSelZ->SetText(String(pos2.z).c_str());
-				//SGeom_GreenDelObject(idgreen, idsplit, idobj);
+				
+				GData::Editors::ObjAxesHelper->SetPosition(pos2);
+				GData::Editors::ObjAxesHelper->SetRotation(float3(0,0,0));
+				GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
+
 				int qwert = 0;
 			}
 		}
@@ -323,6 +360,10 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::EditGreenSelX->SetText(String(_res.x).c_str());
 				SXLevelEditor::EditGreenSelY->SetText(String(_res.y).c_str());
 				SXLevelEditor::EditGreenSelZ->SetText(String(_res.z).c_str());
+
+				GData::Editors::ObjAxesHelper->SetPosition(pos2);
+				GData::Editors::ObjAxesHelper->SetRotation(float3(0, 0, 0));
+				GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
 				
 				int qwert = 0;
 			}
@@ -351,9 +392,6 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 					if(SGeom_ModelsTraceBeam(&npos, &float3(0, -1, 0), &_res, &idmodel, &idmtl))
 						SGeom_GreenAddObject(GData::Editors::ActiveElement, &_res, 0);
 				}
-				//idobj = SGeom_GreenAddObject(0, &_res, &idsplit);
-
-				//int qwert = 0;
 			}
 		}
 
@@ -370,6 +408,10 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				int qwert = 0;
 			}
 		}
+	}
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && GData::Editors::ActiveElement >= 0)
+	{
+
 	}
 	
 	return 0;
@@ -651,24 +693,42 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
 			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+			GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_NONE);
 		}
 		else if (SXLevelEditor::CheckBoxTBPos->GetHWND() == handle_elem)
 		{
+			if (
+				GData::Editors::ActiveElement &&
+				(
+					GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM ||
+					(GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0) ||
+					GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME
+				)
+				)
 			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
 			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+			GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
 		}
 		else if (SXLevelEditor::CheckBoxTBRot->GetHWND() == handle_elem)
 		{
-			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
-			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
-			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+			if ((GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && GData::Editors::ActiveElement >= 0)
+			{
+				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
+				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
+			}
 		}
 		else if (SXLevelEditor::CheckBoxTBScale->GetHWND() == handle_elem)
 		{
-			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
-			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
-			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+			if ((GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && GData::Editors::ActiveElement >= 0)
+			{
+				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
+				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
+				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
+			}
 		}
 
 		else if (SXLevelEditor::ButtonTBNew->GetHWND() == handle_elem)

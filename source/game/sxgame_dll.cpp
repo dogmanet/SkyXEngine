@@ -116,7 +116,7 @@ SX_LIB_API void SXGame_0Create()
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);
 }
-SX_LIB_API void SXGame_0Kill()
+SX_LIB_API void SXGame_AKill()
 {
 	SG_PRECOND(_VOID);
 	mem_delete(g_pGameData);

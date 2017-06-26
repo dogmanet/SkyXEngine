@@ -114,7 +114,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\SkyXEngine.cpp" />
+    <ClCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine_Build.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\gdefines.h" />
@@ -124,6 +124,13 @@
     <ClInclude Include="..\..\..\source\managed_render\model_sim.h" />
     <ClInclude Include="..\..\..\source\managed_render\render_func.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\SkyXEngine_Build\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

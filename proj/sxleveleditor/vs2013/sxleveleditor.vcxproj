@@ -133,6 +133,7 @@
     <ClInclude Include="..\..\..\source\sxleveleditor\resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp" />

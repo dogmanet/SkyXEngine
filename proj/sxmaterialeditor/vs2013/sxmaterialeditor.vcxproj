@@ -118,6 +118,7 @@
     <ClInclude Include="..\..\..\source\sxmaterialeditor\resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
     <Image Include="..\..\..\source\sxmaterialeditor\resource\cam.bmp" />
     <Image Include="..\..\..\source\sxmaterialeditor\resource\open.bmp" />
     <Image Include="..\..\..\source\sxmaterialeditor\resource\r_ad.bmp" />

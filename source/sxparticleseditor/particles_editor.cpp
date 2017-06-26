@@ -284,6 +284,7 @@ namespace SXParticlesEditor
 void SXParticlesEditor::InitAllElements()
 {
 	SXParticlesEditor::JobWindow = SXGUICrBaseWnd("JobWindow","SXParticlesEditor",0,0,247,54,820,675,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
+	SXParticlesEditor::JobWindow->Visible(false);
 	SXGUIBaseHandlers::InitHandlerMsg(SXParticlesEditor::JobWindow);
 
 	SXParticlesEditor::JobWindow->MinSizeX = 820;

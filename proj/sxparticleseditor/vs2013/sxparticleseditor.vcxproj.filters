@@ -78,5 +78,8 @@
     <Image Include="..\..\..\source\sxparticleseditor\resource\stop.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

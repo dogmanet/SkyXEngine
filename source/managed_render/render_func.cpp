@@ -1505,19 +1505,15 @@ void SXRenderFunc::RenderEditorMain()
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		GData::Editors::ObjAxesStatic->Render();
 	}
-
-	if(SSInput_GetKeyState(SIK_R))
-		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
-	if(SSInput_GetKeyState(SIK_T))
-		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
-	if (SSInput_GetKeyState(SIK_Y))
-		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
 	
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	GData::Editors::ObjAxesHelper->Render();
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	if(GData::Editors::ObjAxesHelper)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		GData::Editors::ObjAxesHelper->Render();
+		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	}
 #endif
 }
 

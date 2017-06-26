@@ -91,7 +91,7 @@ void AxesHelper::Render()
 
 void AxesHelper::DrawMove()
 {
-	GData::DXDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_mHelperMat));
+	GData::DXDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * SMMatrixTranslation(Position)));
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, 0);
 	GData::DXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	GData::DXDevice->SetTexture(0, NULL);
@@ -454,22 +454,13 @@ void AxesHelper::DrawScale()
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
 }
 
-namespace SXRenderFunc
-{
-	namespace Delay
-	{
-		extern float FreeValF1;
-		extern float FreeValF2;
-		extern float FreeValF3;
-	};
-};
-
 void AxesHelper::OnMouseMove(int x, int y)
 {
 	if (m_htype == HT_NONE)
 		return;
 	float det = 0;
 	SMMATRIX mat = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMat : m_mHelperMat) * GData::MCamView * GData::MCamProj);
+	SMMATRIX mat2 = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMatPos : SMMatrixTranslation(Position)) * GData::MCamView * GData::MCamProj);
 	D3DVIEWPORT9 vp;
 	GData::DXDevice->GetViewport(&vp);
 
@@ -483,8 +474,15 @@ void AxesHelper::OnMouseMove(int x, int y)
 	pos /= pos.w;
 	dir /= dir.w;
 
+	float3 pos2(px, py, -1);
+	float3 dir2(px, py, 1);
+	pos2 = SMVector3Transform(pos2, mat2);
+	dir2 = SMVector3Transform(dir2, mat2);
+	pos2 /= pos2.w;
+	dir2 /= dir2.w;
+
 	if (m_htype == HT_MOVE)
-		IntersectMove(pos, dir);
+		IntersectMove(pos2, dir2);
 	else if (m_htype == HT_ROTATE)
 		IntersectRotate(pos, dir);
 	else if (m_htype == HT_SCALE)
@@ -495,6 +493,7 @@ void AxesHelper::OnMouseMove(int x, int y)
 		m_bIsDraggingStart = false;
 		m_fStartDragPos = pos;
 		m_mOldDragMat = m_mHelperMat;
+		m_mOldDragMatPos = SMMatrixTranslation(Position);
 		m_mOldHelperMat = m_mHelperMat;
 		ScaleOld = Scale;
 	}
@@ -540,19 +539,8 @@ void AxesHelper::OnMouseMove(int x, int y)
 		m_bIsDraggingStop = false;
 		if (m_htype == HT_SCALE)
 		{
-			//Scale = float3(1, 1, 1);
-			//m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
-			/*m_mHelperMat._11 = 1.0f;
-			m_mHelperMat._12 = 0.0f;
-			m_mHelperMat._13 = 0.0f;
-
-			m_mHelperMat._21 = 0.0f;
-			m_mHelperMat._22 = 1.0f;
-			m_mHelperMat._23 = 0.0f;
-
-			m_mHelperMat._31 = 0.0f;
-			m_mHelperMat._32 = 0.0f;
-			m_mHelperMat._33 = 1.0f;*/
+			Scale = float3(1, 1, 1);
+			m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
 		}
 	}
 }

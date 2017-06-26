@@ -89,6 +89,10 @@ void SXLevelEditor::GameSel(int sel)
 			SXLevelEditor::ListViewGameClass->SetTextItem(txtval, 1, str);
 		}
 	}
+
+	GData::Editors::ObjAxesHelper->SetPosition(bEnt->GetPos());
+	GData::Editors::ObjAxesHelper->SetRotation(bEnt->GetOrient());
+	GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
 }
 
 LRESULT SXLevelEditor_ListViewGameClass_Click()

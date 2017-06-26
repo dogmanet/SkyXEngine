@@ -17,7 +17,7 @@ bool line_intersect_triangle(const float3 &t1, const float3 &t2, const float3 &t
 }
 
 #define AXES_HELPER_MOVE_LENGTH 1.f		/*!< */
-#define AXES_HELPER_MOVE_SPEED 1.f		/*!< */
+#define AXES_HELPER_MOVE_SPEED 5.f		/*!< */
 
 #define AXES_HELPER_ROTATE_LENGTH_WIDTH 1.f	/*!< */
 #define AXES_HELPER_ROTATE_HEIGHT 0.1f		/*!< */
@@ -107,6 +107,7 @@ private:
 	SMMATRIX m_mHelperMatScale2;
 	float dist;
 	SMMATRIX m_mOldDragMat;
+	SMMATRIX m_mOldDragMatPos;
 };
 
 #endif

@@ -163,6 +163,10 @@ namespace SXLevelEditor
 
 	void GameActivateAll(bool bf);
 	void GameSel(int sel);
+
+	float3 HelperPos;
+	float3 HelperRot;
+	float3 HelperScale;
 };
 
 LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -180,6 +184,7 @@ void SXLevelEditor::InitAllElements()
 	InitCommonControlsEx(&icex);
 
 	SXLevelEditor::JobWindow = SXGUICrBaseWnd("JobWindow","SX Level editor",0,0,0,20,820,690,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
+	SXLevelEditor::JobWindow->Visible(false);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::JobWindow);
 
 	SXLevelEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
@@ -189,7 +194,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::JobWindow->MinSizeY = 690;
 	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
-
+	
 	
 
 	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow", "RenderWindow", 0, 0, 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_CHILD | WS_VISIBLE | WS_BORDER, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault);

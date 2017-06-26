@@ -69,8 +69,10 @@ void SXLevelEditor::GeomSel(int sel)
 		float3 min, max;
 		SGeom_ModelsMGetMinMax(sel, &min, &max);
 
-		GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
-		GData::Editors::ObjAxesHelper->SetPosition(*pos/*(max + min) * 0.5f*/);
+		SXLevelEditor::HelperPos = (max + min) * 0.5f;
+		SXLevelEditor::HelperScale = *scale;
+
+		GData::Editors::ObjAxesHelper->SetPosition(SXLevelEditor::HelperPos);
 		GData::Editors::ObjAxesHelper->SetRotation(*rot);
 		GData::Editors::ObjAxesHelper->SetScale(float3(1,1,1));
 

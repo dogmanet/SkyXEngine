@@ -9,12 +9,13 @@ See the license in LICENSE
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <vld.h> 
+//#include <vld.h> 
 
-#include <SkyXEngine.h>
+#include <SkyXEngine.cpp>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	SkyXEngine_PreviewCreate();
 	SXGUIRegClass::RegGroupBox();
 	srand((unsigned int)time(0));
 
@@ -61,7 +62,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
 	SXMaterialEditor::IDMat = GData::Editors::SimModel->GetIDMtl();
 
+	SkyXEngine_PreviewKill();
+	SXMaterialEditor::JobWindow->Visible(true);
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
+	SXMaterialEditor::DeleteAllElements();
 	return result;
 }

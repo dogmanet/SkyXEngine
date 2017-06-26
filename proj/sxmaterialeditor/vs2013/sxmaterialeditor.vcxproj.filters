@@ -105,5 +105,8 @@
     <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -10,6 +10,15 @@ See the license in LICENSE
 */
 
 /*! \defgroup sxscore sxscore - звуковое ядро
+
+ \note Звуковое ядро работает на технологиях:
+ - "DirectInput8"
+ - "Ogg Vorbis" (загрузка ogg файлов).
+ \note Загружаемые звуки wav и ogg формата (автоматическое определение и загрузка нужных данных).
+ \note Поддерживаются 2d и 3d звуки, полная загрузка и потоковое воспроизвдение.
+ \note Также для полностью загруженных (не потоковое воспроизведение) доступно воспроизвдение инстансов (копий), без выдеения дополнительной равноценной памяти, и без дополнительных возможностей управления инстансом.
+Однако источник выдачи инстансов должен быть создан одной из функций #SSCore_SndInstancePlay2d #SSCore_SndInstancePlay3d
+ \note Идентификация звука происходит на основании его числового идентификатора выдаваемого создаваемыми функциями (#SSCore_SndCreate2d/#SSCore_SndCreate2dInst #SSCore_SndCreate3d/#SSCore_SndCreate3dInst) и является константной, идентификатор является порядковым номером
 @{*/
 
 #ifndef __sxsound
@@ -68,21 +77,6 @@ SX_LIB_API void SSCore_AKill();	//!< уничтожение подсистемы
 #define SOUND_EFF_OFF	0	/*!< выключение эффекта */
 #define SOUND_EFF_INVALID_KEY	-1	/*!< неверно указан ключ при обращении к функциям эффектов */
 
-/*! \name Значения эффектов в массиве эффектов
-@{*/
-
-#define SOUND_EFFECT_GARGLE			0
-#define SOUND_EFFECT_CHORUS			1
-#define SOUND_EFFECT_FLANDER		2
-#define SOUND_EFFECT_ECHO			3
-#define SOUND_EFFECT_DISTORTION		4
-#define SOUND_EFFECT_COMPRESSOR		5
-#define SOUND_EFFECT_PARAMEQ		6
-#define SOUND_EFFECT_I3DL2REVERB	7
-#define SOUND_EFFECT_WAVESREVERB	8
-
-//!@}
-
 //! форматы звукрвых файлов
 enum SoundFileFormat
 {
@@ -128,13 +122,29 @@ SX_LIB_API ID SSCore_SndCreate3d(
 	float shift_pan = 0.1f	//!< изменение позиционирования звука [0-1], на сколько будет смещен звук (между ушами слушателя) при поворотах камеры к источнику звука, чем ближе к объекту тем меньше разница в позиционировании при поворотах
 	);
 
-SX_LIB_API void SSCore_SndInstancePlay2d(ID id, int volume = 100, int pan = 0);
-SX_LIB_API void SSCore_SndInstancePlay3d(ID id, float3* pos);
+//! воспроизведение инстанса 2d звука
+SX_LIB_API void SSCore_SndInstancePlay2d(
+	ID id,				//!< идентификатор звука
+	int volume = 100,	//!< громкость [0-100]
+	int pan = 0			//!< смещение между ушами [-100 - 100]
+	);
 
+//! воспроизведение инстанса 3d звука
+SX_LIB_API void SSCore_SndInstancePlay3d(
+	ID id,		//!< идентификатор звука
+	float3* pos	//!< позиция воспроизведения инстанса
+	);
+
+//! загрузка 2d звукового файла и пометка его как объект выдающий инстансы, аргументы аналогичны #SSCore_SndCreate2d
 SX_LIB_API ID SSCore_SndCreate2dInst(const char *file, bool looping = false, DWORD size_stream = 0);
+
+//! загрузка 3d звукового файла и пометка его как объект выдающий инстансы, аргументы аналогичны #SSCore_SndCreate3d
 SX_LIB_API ID SSCore_SndCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
 
+//! поиск 2d звука (выдающего инстансы) по относительному пути загрузки,возвращает его ID (в случае успеха) иначе <0
 SX_LIB_API ID SSCore_SndFind2dInst(const char * file);
+
+//! поиск 3d звука (выдающего инстансы) по относительному пути загрузки,возвращает его ID (в случае успеха) иначе <0
 SX_LIB_API ID SSCore_SndFind3dInst(const char * file);
 
 SX_LIB_API bool SSCore_SndIsInit(ID id);	//!< инициализирован ли звук с идентификатором id
