@@ -45,7 +45,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	/*ID tmpids = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
 	SSCore_SndPosCurrSet(tmpids, 20, SOUND_POS_SEC);
 	SSCore_SndPlay(tmpids);*/
-	ID tmpidsnd = SSCore_SndCreate2d("Exclusion_zone.ogg", false, 0);
+	/*ID tmpidsnd = SSCore_SndCreate2d("Exclusion_zone.ogg", false, 0);
 	if (tmpidsnd >= 0)
 	{
 		SSCore_SndPosCurrSet(tmpidsnd, 20, SOUND_POS_SEC);
@@ -56,7 +56,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 	SSCore_SndInstancePlay2d(tmpidsnd);
-	//SSCore_SndInstancePlay2d(tmpidsnd);
+	//SSCore_SndInstancePlay2d(tmpidsnd);*/
 
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();

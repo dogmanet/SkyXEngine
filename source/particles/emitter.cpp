@@ -1145,6 +1145,13 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 
 		float4x4 vp = MCamView * MCamProj;
 		PESet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(IDTex));
+		if (Data.Soft)
+		{
+			if (PESet::IDsRenderTargets::DepthScene >= 0)
+				PESet::DXDevice->SetTexture(1, SGCore_LoadTexGetTex(PESet::IDsRenderTargets::DepthScene));
+			else
+				reportf(REPORT_MSG_LEVEL_WARRNING, "sxparticles - not init depth map\n");
+		}
 
 		SGCore_ShaderBind(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles);
 

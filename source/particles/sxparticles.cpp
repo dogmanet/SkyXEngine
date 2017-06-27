@@ -15,6 +15,11 @@ namespace PESet
 
 	void Init(IDirect3DDevice9* device);
 
+	namespace IDsRenderTargets
+	{
+		ID DepthScene = -1;
+	};
+
 	namespace IDsShaders
 	{
 		namespace VS
@@ -128,6 +133,11 @@ void SPE_0Create(const char* name, IDirect3DDevice9* device, bool is_unic)
 	}
 	else
 		reportf(-1, "%s - not init argument [name], sxparticles", gen_msg_location);
+}
+
+void SPE_RTDepthSet(ID id)
+{
+	PESet::IDsRenderTargets::DepthScene = id;
 }
 
 void SPE_0Kill()

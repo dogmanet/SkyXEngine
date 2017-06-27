@@ -146,8 +146,13 @@ param.x - радиус \n
 param.y - минимально допустимая разница в глубине между пикселя для просчета затенения \n 
 param.z - освещенность пикселя по дефолту (если разница меньше минимальной) \n 
 param.w - допустимая разница для сравнения \n 
-примерные значения: 0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y*/
-SX_LIB_API void SPP_RenderSSAO(float4_t* param);
+примерные значения: 0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y
+quality - качество (количество выборок)
+quality == 2 - 16
+quality == 3 - 24
+иначе 8
+*/
+SX_LIB_API void SPP_RenderSSAO(float4_t* param, int quality);
 
 /*! motion blur, размытие в движении, использует depth0 \n 
 coef - коэфициент размытия, 0 - 1 \n 

@@ -48,6 +48,8 @@ SX_LIB_API void SPE_0Create(
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
+SX_LIB_API void SPE_RTDepthSet(ID id);
+
 SX_LIB_API void SPE_0Kill();	//!< уничтожить подсистему
 
 //!@}

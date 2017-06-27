@@ -74,13 +74,13 @@ SX_LIB_API float SGeom_0SettGreenGetDistLods1();			//!< получить дис�
 SX_LIB_API void SGeom_0SettGreenSetDistLods1(float val);	//!< установить дистанцию окончания нулевого лода (лода травы) и начало первого лода
 
 SX_LIB_API float SGeom_0SettGreenGetDistLods2();			//!< получить дистанцию окончания первого лода и начало второго лода
-SX_LIB_API void SGeom_SettGreenSetDistLods2(float val);		//!< установить дистанцию окончания первого лода и начало второго лода
+SX_LIB_API void SGeom_0SettGreenSetDistLods2(float val);		//!< установить дистанцию окончания первого лода и начало второго лода
 
 SX_LIB_API int SGeom_0SettGreenGetFreqGrass();				//!< получить текущую частоту (густоту) травы, от 0 до 100
 SX_LIB_API void SGeom_0SettGreenSetFreqGrass(int val);		//!< установить текущую частоту (густоту) травы, от 0 до 100
 
-SX_LIB_API float SGeom_0SettGreenGetBeginEndLessening();		//!< получить начало уменьешния травы,пределы от 0 до DistLods1
-SX_LIB_API void SGeom_0SettGreenSetBeginEndLessening(float val);//!< установить начало уменьешния травы,пределы от 0 до DistLods1
+SX_LIB_API float SGeom_0SettGreenGetBeginEndLessening();		//!< получить начало уменьшения травы, пределы от 0 до DistLods1
+SX_LIB_API void SGeom_0SettGreenSetBeginEndLessening(float val);//!< установить начало уменьшения травы, пределы от 0 до DistLods1
 
 SX_LIB_API bool SGeom_0SettGreenGetSortFrontToBackSplits();			//!< установлена ли сортировка front to back по кускам деления
 SX_LIB_API void SGeom_0SettGreenSetSortFrontToBackSplits(bool val);	//!< установить сортировку front to back по кускам деления

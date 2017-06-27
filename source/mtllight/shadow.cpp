@@ -421,7 +421,7 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 		MatrixTexture = SMMatrixTranspose(MatrixTexture);
 		if (Generating4Slits)
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4, mattex, &MatrixTexture);
-		else
+		else if (i != 3)
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3, mattex, &MatrixTexture);
 	}
 

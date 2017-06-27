@@ -58,13 +58,15 @@ namespace SXRenderFunc
 	//для указанного промежутка групп регистров
 	inline void SetSamplerFilter(DWORD begin_id, DWORD end_id, DWORD value);
 	inline void SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD value);
-	//}
 
-	//! основная функция которая запускает все остальное, вызывается в цикле
-	void MainRender(DWORD timeDelta);
+	void SetRenderSceneFilter();
+	void SetRenderSceneFilterUn();
+	//}
 
 	//! обработка потери и восстановление устройства
 	void ComDeviceLost();
+
+	void UpdateDataCVar();
 
 	void UpdateView();						//!< обработка и установка основных матриц, обработка плоскостей отсечения
 	void OutputDebugInfo(DWORD timeDelta);	//!< вывод отладочной текстовой информации в окно рендера

@@ -17,7 +17,13 @@ half4x4 ViewProj;
 
 half3 ArrRndVecSSAO[24];
 
+#if defined(SSAO_Q_3)
+static int NumSam = 24;
+#elif defined(SSAO_Q_2)
 static int NumSam = 16;
+#else
+static int NumSam = 8;
+#endif
 
 half4 main(vs_out_res_pos IN):COLOR0
 {
@@ -54,7 +60,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 				occlusion += 1-step(difference, Params.w)*distanceCheck;
 		}
 	occlusion = clamp(saturate(occlusion/NumSam)*1.2,0.3,1.f);
-	//occlusion *= occlusion;
+	occlusion *= occlusion;
 	
 	return half4(occlusion,occlusion,occlusion,1.f);
 }

@@ -33,6 +33,52 @@ inline void SXRenderFunc::SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD 
 	}
 }
 
+void SXRenderFunc::SetRenderSceneFilter()
+{
+	static const int * r_s_filter = GET_PCVAR_INT("r_s_filter");
+	static const int * r_s_max_anisotropy = GET_PCVAR_INT("r_s_max_anisotropy");
+	static const int * r_s_max_miplevel = GET_PCVAR_INT("r_s_max_miplevel");
+
+	static int r_s_filter2 = 1;
+	static int r_s_max_anisotropy2 = 0;
+	static int r_s_max_miplevel2 = 0;
+
+	if (r_s_filter)
+		r_s_filter2 = (*r_s_filter);
+	else
+		r_s_filter2 = 1;
+
+	if (r_s_max_anisotropy)
+		r_s_max_anisotropy2 = (*r_s_max_anisotropy);
+	else
+		r_s_max_anisotropy2 = 1;
+
+	if (r_s_max_miplevel)
+		r_s_max_miplevel2 = (*r_s_max_miplevel);
+	else
+		r_s_max_miplevel2 = 1;
+	
+	if (r_s_filter2 == 0)
+		SetSamplerFilter(0, 16, D3DTEXF_POINT);
+	else if (r_s_filter2 == 2)
+	{
+		for (int i = 0; i<16; ++i)
+			GData::DXDevice->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, r_s_max_anisotropy2);
+		SetSamplerFilter(0, 16, D3DTEXF_ANISOTROPIC);
+	}
+	else
+		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
+
+	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, r_s_max_miplevel2);
+
+	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+}
+
+void SXRenderFunc::SetRenderSceneFilterUn()
+{
+	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, 0);
+}
+
 //////
 
 void SXRenderFunc::ComDeviceLost()
@@ -72,6 +118,84 @@ void SXRenderFunc::ComDeviceLost()
 
 			GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 		}
+}
+
+void SXRenderFunc::UpdateDataCVar()
+{
+	ID GlobalLight = SML_LigthsGetGlobal();
+	static const bool * pssm_4or3 = GET_PCVAR_BOOL("pssm_4or3");
+	static bool pssm_4or3_old = true;
+
+	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
+	if (pssm_4or3 && pssm_4or3_old != (*pssm_4or3))
+	{
+		pssm_4or3_old = (*pssm_4or3);
+		SML_LigthsSet4Or3SplitsG(GlobalLight, pssm_4or3_old);
+	}
+
+	static const float * pssm_q = GET_PCVAR_FLOAT("pssm_q");
+	static float pssm_q_old = 1;
+
+	if (pssm_q && pssm_q_old != (*pssm_q))
+	{
+		pssm_q_old = (*pssm_q);
+		SML_LigthsSettGCoefSizeDepth(pssm_q_old);
+	}
+
+	static const float * lsm_q = GET_PCVAR_FLOAT("lsm_q");
+	static float lsm_q_old = 1;
+
+	if (lsm_q && lsm_q_old != (*lsm_q))
+	{
+		lsm_q_old = (*lsm_q);
+		SML_LigthsSettLCoefSizeDepth(lsm_q_old);
+	}
+
+	static const int * grass_frec = GET_PCVAR_INT("grass_frec");
+	static int grass_frec_old = 1;
+
+	if (grass_frec && grass_frec_old != (*grass_frec))
+	{
+		grass_frec_old = (*grass_frec);
+		SGeom_0SettGreenSetFreqGrass(grass_frec_old);
+	}
+
+	static const float * green_lod0 = GET_PCVAR_FLOAT("green_lod0");
+	static float green_lod0_old = 50;
+
+	if (green_lod0 && green_lod0_old != (*green_lod0))
+	{
+		green_lod0_old = (*green_lod0);
+		SGeom_0SettGreenSetDistLods1(green_lod0_old);
+	}
+
+	static const float * green_lod1 = GET_PCVAR_FLOAT("green_lod1");
+	static float green_lod1_old = 50;
+
+	if (green_lod1 && green_lod1_old != (*green_lod1))
+	{
+		green_lod0_old = (*green_lod1);
+		SGeom_0SettGreenSetDistLods2(green_lod1_old);
+	}
+
+	static const float * green_less = GET_PCVAR_FLOAT("green_less");
+	static float green_less_old = 1;
+
+	if (green_lod1 && green_less_old != (*green_less))
+	{
+		green_less_old = (*green_less);
+		SGeom_0SettGreenSetBeginEndLessening(green_less_old);
+	}
+
+	static const float * p_far = GET_PCVAR_FLOAT("p_far");
+	static float p_far_old = 400;
+
+	if (p_far && p_far_old != (*p_far))
+	{
+		p_far_old = (*p_far);
+		GData::NearFar.y = p_far_old;
+		GData::InitAllMatrix();
+	}
 }
 
 void SXRenderFunc::ComVisibleForLight()
@@ -457,8 +581,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
-	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+	SXRenderFunc::SetRenderSceneFilter();
 
 	LPDIRECT3DSURFACE9 BackBuf, ColorSurf, NormalSurf, ParamSurf, DepthMapLinearSurf;
 
@@ -483,16 +606,12 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 
 	SML_MtlNullingCurrCountSurf();
 	SML_MtlSetCurrCountSurf(RENDER_LAYER_UNTRANSPARENT);
+
 //если не объявлен флаг редактора материалов (для него немного другой рендер)
 #if !defined(SX_MATERIAL_EDITOR)
 	//SXDecals_Render();
 	if (SGeom_ModelsGetCount() > 0)
-	{
-		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
-			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, 0, false, GData::Editors::ActiveElement);
-		else*/
 		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
-	}
 
 	SXAnim_Render();
 
@@ -531,8 +650,7 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	SGCore_ScreenQuadDraw();
 
 
-	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
-	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+	SXRenderFunc::SetRenderSceneFilter();
 	//SML_DSGetRT(DS_RT::ds_rt_depth)->GetSurfaceLevel(0, &DepthMapLinearSurf);
 	GData::DXDevice->SetRenderTarget(0, ColorSurf);
 	GData::DXDevice->SetRenderTarget(1, NormalSurf);
@@ -661,6 +779,8 @@ void SXRenderFunc::RenderInMRT(DWORD timeDelta)
 	mem_release(NormalSurf);
 	mem_release(ParamSurf);
 	mem_release(DepthMapLinearSurf);
+
+	SXRenderFunc::SetRenderSceneFilterUn();
 }
 
 
@@ -679,7 +799,6 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 	SetSamplerAddress(0, D3DTADDRESS_WRAP);
 
 	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
-
 
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
@@ -1237,14 +1356,23 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 {
 	SPP_RTNull();
 
-	if (!SSInput_GetKeyState(SIK_X))
-		SPP_RenderSSAO(&float4_t(0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y));
+	static const int * pp_ssao = GET_PCVAR_INT("pp_ssao");
+	if (pp_ssao && (*pp_ssao) > 0)
+		SPP_RenderSSAO(&float4_t(0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y), (*pp_ssao));
 
 	if (!SSInput_GetKeyState(SIK_L))
 		SPP_RenderFog(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 0, 0.1, 0.9));
 	//SPP_RenderWhiteBlack(1);
-	SPP_RenderBloom(&float3_t(1, 0.9, 1));
-	SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), true);
+
+	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
+	if (pp_bloom && (*pp_bloom))
+		SPP_RenderBloom(&float3_t(1, 0.9, 1));
+
+	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
+	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
+	if (pp_lensflare && (*pp_lensflare))
+		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
+
 	SPP_Update(&(float3_t)GData::ConstCurrCamPos, &(float3_t)GData::ConstCurrCamDir, &GData::MCamView, &GData::MCamProj, &GData::WinSize, &GData::NearFar, GData::ProjFov);
 
 	float3 tmpPosition;
@@ -1263,13 +1391,18 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
 
-	if (!SSInput_GetKeyState(SIK_Z))
+	static const bool * pp_dlaa = GET_PCVAR_BOOL("pp_dlaa");
+	if (pp_dlaa && (*pp_dlaa))
 		SPP_RenderDLAA();
 
-	/*if (!SSInput_GetKeyState(SIK_C))
-		SPP_RenderNFAA(&float3_t(1, 1, 0));*/
+	static const bool * pp_nfaa = GET_PCVAR_BOOL("pp_dlaa");
+	if (pp_nfaa && (*pp_nfaa))
+		SPP_RenderNFAA(&float3_t(1, 1, 0));
 
-	//SPP_RenderMotionBlur(0.1, timeDelta);
+	static const bool * pp_motionblur = GET_PCVAR_BOOL("pp_motionblur");
+	static const float * pp_motionblur_coef = GET_PCVAR_FLOAT("pp_motionblur_coef");
+	if (pp_motionblur && (*pp_motionblur))
+		SPP_RenderMotionBlur((pp_motionblur_coef ? (*pp_motionblur_coef) : 0.1), timeDelta);
 }
 
 void SXRenderFunc::ShaderRegisterData()

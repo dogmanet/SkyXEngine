@@ -69,6 +69,7 @@ void SkyXEngine_Init()
 
 	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
 	SPE_Dbg_Set(printflog);
+	SPE_RTDepthSet(SML_DSGetRT_ID(DS_RT::ds_rt_depth));
 	Level::LoadParticles();
 
 	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
@@ -139,6 +140,30 @@ void SkyXEngine_Init()
 	GData::InitAllMatrix();
 
 	GData::IDsShaders::InitAllShaders();
+
+	Core_0RegisterCVarInt("pp_ssao", 1, 0);
+	Core_0RegisterCVarBool("pp_bloom", true, 0);
+	Core_0RegisterCVarBool("pp_lensflare", true, 0);
+	Core_0RegisterCVarBool("pp_lensflare_usebloom", true, 0);
+	Core_0RegisterCVarBool("pp_dlaa", true, 0);
+	Core_0RegisterCVarBool("pp_nfaa", false, 0);
+
+	Core_0RegisterCVarBool("pp_motionblur", true, 0);
+	Core_0RegisterCVarFloat("pp_motionblur_coef", 0.1, 0);
+	Core_0RegisterCVarBool("pssm_4or3", true, 0);
+
+	Core_0RegisterCVarFloat("pssm_q", 1, 0);
+	Core_0RegisterCVarFloat("lsm_q", 1, 0);
+
+	Core_0RegisterCVarInt("grass_frec", 100, 0);
+	Core_0RegisterCVarFloat("green_lod0", 50, 0);
+	Core_0RegisterCVarFloat("green_lod1", 100, 0);
+	Core_0RegisterCVarFloat("green_less", 20, 0);
+	Core_0RegisterCVarFloat("p_far", 400, 0);
+
+	Core_0RegisterCVarInt("r_s_filter", 1, 0);
+	Core_0RegisterCVarInt("r_s_max_anisotropy", 0, 0);
+	Core_0RegisterCVarInt("r_s_max_miplevel", 0, 0);
 
 	Core_0RegisterConcmd("screenshot", SXRenderFunc::SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SXRenderFunc::SaveWorkTex);
@@ -304,6 +329,8 @@ void SkyXEngine_Render(DWORD timeDelta)
 	ttime = TimeGetMcsU(G_Timer_Render_Scene);
 	GData::DXDevice->Present(0, 0, 0, 0);
 	SXRenderFunc::Delay::Present += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+
+	SXRenderFunc::UpdateDataCVar();
 
 #if defined(SX_LEVEL_EDITOR)
 	GData::Editors::LevelEditorUpdateStatusBar();
