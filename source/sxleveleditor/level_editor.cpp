@@ -167,6 +167,8 @@ namespace SXLevelEditor
 	float3 HelperPos;
 	float3 HelperRot;
 	float3 HelperScale;
+
+	ID IdMtl = -1;
 };
 
 LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -308,12 +308,15 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	if (!SXLevelEditor::CheckBoxTBArrow->GetCheck())
 		return 0;
 
+	SXLevelEditor::IdMtl = -1;
+
 	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
 		{
 			SXLevelEditor::ListBoxList->SetSel(idmodel);
 			SXLevelEditor::GeomSel(idmodel);
+			SXLevelEditor::IdMtl = idmtl;
 		}
 	}
 	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
@@ -342,7 +345,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				GData::Editors::ObjAxesHelper->SetRotation(float3(0,0,0));
 				GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
 
-				int qwert = 0;
+				SXLevelEditor::IdMtl = idmtl;
 			}
 		}
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 1)

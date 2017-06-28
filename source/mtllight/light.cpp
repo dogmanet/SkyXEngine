@@ -1098,7 +1098,8 @@ float Lights::GetDistFor(ID id)
 
 IDirect3DTexture9* Lights::GetShadow2()
 {
-	return SGCore_RTGetTexture(ShadowMap);
+	
+	return SGCore_RTGetTexture((HowShadow == 1 ? ShadowMap2 : ShadowMap));
 }
 
 bool Lights::IsEnable(ID id)
@@ -1315,6 +1316,8 @@ void Lights::NullingShadow()
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
+
+	HowShadow = 0;
 }
 
 void Lights::ChangeAngle(ID id, float angle, bool is_create)
@@ -1726,9 +1729,9 @@ void Lights::SoftShadow(bool randomsam, float size, bool isfirst)
 	MLSet::DXDevice->GetRenderTarget(0, &BackBuf);
 	MLSet::DXDevice->SetRenderTarget(0,RenderSurf);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
+	SGCore_SetSamplerFilter(0, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(1, D3DTEXF_LINEAR);
+	SGCore_SetSamplerFilter(1, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
 
 	MLSet::DXDevice->SetTexture(0,SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
@@ -1882,7 +1885,7 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::CalcAdaptedLum);
 
-	float ElapsedTime = float(timeDelta) * 0.001f * factor_adapted;
+	float ElapsedTime = float(timeDelta) * 0.001f * (factor_adapted * 100.f);
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::CalcAdaptedLum, "ElapsedTime", &(ElapsedTime));
 
 	SGCore_ScreenQuadDraw();

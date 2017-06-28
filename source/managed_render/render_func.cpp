@@ -139,6 +139,16 @@ void SXRenderFunc::UpdateDataCVar()
 	if (pssm_q && pssm_q_old != (*pssm_q))
 	{
 		pssm_q_old = (*pssm_q);
+		if (pssm_q_old < 0.5f)
+		{
+			pssm_q_old = 0.5f;
+			Core_0SetCVarFloat("pssm_q", pssm_q_old);
+		}
+		else if (pssm_q_old > 4.f)
+		{
+			pssm_q_old = 4.f;
+			Core_0SetCVarFloat("pssm_q", pssm_q_old);
+		}
 		SML_LigthsSettGCoefSizeDepth(pssm_q_old);
 	}
 
@@ -148,6 +158,16 @@ void SXRenderFunc::UpdateDataCVar()
 	if (lsm_q && lsm_q_old != (*lsm_q))
 	{
 		lsm_q_old = (*lsm_q);
+		if (lsm_q_old < 0.5f)
+		{
+			lsm_q_old = 0.5f;
+			Core_0SetCVarFloat("lsm_q", lsm_q_old);
+		}
+		else if (lsm_q_old > 4.f)
+		{
+			lsm_q_old = 4.f;
+			Core_0SetCVarFloat("lsm_q", lsm_q_old);
+		}
 		SML_LigthsSettLCoefSizeDepth(lsm_q_old);
 	}
 
@@ -157,6 +177,16 @@ void SXRenderFunc::UpdateDataCVar()
 	if (grass_frec && grass_frec_old != (*grass_frec))
 	{
 		grass_frec_old = (*grass_frec);
+		if (grass_frec_old <= 0)
+		{
+			grass_frec_old = 1;
+			Core_0SetCVarInt("grass_frec", grass_frec_old);
+		}
+		else if (grass_frec_old > 100)
+		{
+			grass_frec_old = 100;
+			Core_0SetCVarInt("grass_frec", grass_frec_old);
+		}
 		SGeom_0SettGreenSetFreqGrass(grass_frec_old);
 	}
 
@@ -166,6 +196,16 @@ void SXRenderFunc::UpdateDataCVar()
 	if (green_lod0 && green_lod0_old != (*green_lod0))
 	{
 		green_lod0_old = (*green_lod0);
+		if (green_lod0_old <= 20)
+		{
+			green_lod0_old = 20;
+			Core_0SetCVarFloat("green_lod0", green_lod0_old);
+		}
+		else if (green_lod0_old > 100)
+		{
+			green_lod0_old = 100;
+			Core_0SetCVarFloat("green_lod0", green_lod0_old);
+		}
 		SGeom_0SettGreenSetDistLods1(green_lod0_old);
 	}
 
@@ -174,16 +214,36 @@ void SXRenderFunc::UpdateDataCVar()
 
 	if (green_lod1 && green_lod1_old != (*green_lod1))
 	{
-		green_lod0_old = (*green_lod1);
+		green_lod1_old = (*green_lod1);
+		if (green_lod1_old <= 50)
+		{
+			green_lod1_old = 50;
+			Core_0SetCVarFloat("green_lod1", green_lod1_old);
+		}
+		else if (green_lod1_old > 150)
+		{
+			green_lod1_old = 150;
+			Core_0SetCVarFloat("green_lod1", green_lod1_old);
+		}
 		SGeom_0SettGreenSetDistLods2(green_lod1_old);
 	}
 
 	static const float * green_less = GET_PCVAR_FLOAT("green_less");
-	static float green_less_old = 1;
+	static float green_less_old = 10;
 
-	if (green_lod1 && green_less_old != (*green_less))
+	if (green_less && green_less_old != (*green_less))
 	{
 		green_less_old = (*green_less);
+		if (green_less_old <= 10)
+		{
+			green_less_old = 10;
+			Core_0SetCVarFloat("green_less", green_less_old);
+		}
+		else if (green_less_old > 90)
+		{
+			green_less_old = 90;
+			Core_0SetCVarFloat("green_less", green_less_old);
+		}
 		SGeom_0SettGreenSetBeginEndLessening(green_less_old);
 	}
 
@@ -193,6 +253,18 @@ void SXRenderFunc::UpdateDataCVar()
 	if (p_far && p_far_old != (*p_far))
 	{
 		p_far_old = (*p_far);
+
+		if (p_far_old < 100.f)
+		{
+			p_far_old = 100.f;
+			Core_0SetCVarFloat("p_far", p_far_old);
+		}
+		else if (p_far_old > 1000)
+		{
+			p_far_old = 1000.f;
+			Core_0SetCVarFloat("p_far", p_far_old);
+		}
+
 		GData::NearFar.y = p_far_old;
 		GData::InitAllMatrix();
 	}
@@ -511,40 +583,44 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 
 	++FrameCount;
 	TimeElapsed += ((float)timeDelta) * 0.001f;
-
-		if(TimeElapsed >= 1.0f)
+	static const int * rs_stats = GET_PCVAR_INT("rs_stats");
+		
+		if (TimeElapsed >= 1.0f && rs_stats)
 		{
-			
 			FpsValue	= (float)FrameCount / TimeElapsed;
-			sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
-#if !defined(SX_MATERIAL_EDITOR) && !defined(SX_LEVEL_EDITOR) && !defined(SX_PARTICLES_EDITOR)
-			sprintf(debugstr + strlen(debugstr), "\ncount poly : %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
-			sprintf(debugstr + strlen(debugstr), "count DIPs : %d\n\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
-			sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
-			sprintf(debugstr + strlen(debugstr), "Dir camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamDir.x, GData::ConstCurrCamDir.y, GData::ConstCurrCamDir.z);
+			if ((*rs_stats) > 0)
+				sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
-			sprintf(debugstr + strlen(debugstr), "\nDELAY:\n");
-			sprintf(debugstr + strlen(debugstr), "\tUpdateShadow : %.3f\n", float(SXRenderFunc::Delay::UpdateShadow) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\tRenderMRT : %.3f\n", float(SXRenderFunc::Delay::RenderMRT) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\tComLighting : %.3f\n", float(SXRenderFunc::Delay::ComLighting) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\tPostProcess : %.3f\n", float(SXRenderFunc::Delay::PostProcess) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\tComReflection : %.3f\n", float(SXRenderFunc::Delay::ComReflection) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\tGeomSortGroup : %.3f\n", float(SXRenderFunc::Delay::GeomSortGroup) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\tUpdateParticles : %.3f\n", float(SXRenderFunc::Delay::UpdateParticles) / float(FrameCount) * 0.001f);
+			if ((*rs_stats) == 2)
+			{
+				sprintf(debugstr + strlen(debugstr), "\ncount poly : %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
+				sprintf(debugstr + strlen(debugstr), "count DIPs : %d\n\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
+				sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
+				sprintf(debugstr + strlen(debugstr), "Dir camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamDir.x, GData::ConstCurrCamDir.y, GData::ConstCurrCamDir.z);
 
-			sprintf(debugstr + strlen(debugstr), "\n\tUpdateVisibleFor\n");
-			sprintf(debugstr + strlen(debugstr), "\t\tCamera\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForCamera) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\t\tLight\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForLight) / float(FrameCount) * 0.001f);
-			sprintf(debugstr + strlen(debugstr), "\t\tReflection\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForReflection) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\nDELAY:\n");
+				sprintf(debugstr + strlen(debugstr), "\tUpdateShadow : %.3f\n", float(SXRenderFunc::Delay::UpdateShadow) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\tRenderMRT : %.3f\n", float(SXRenderFunc::Delay::RenderMRT) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\tComLighting : %.3f\n", float(SXRenderFunc::Delay::ComLighting) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\tPostProcess : %.3f\n", float(SXRenderFunc::Delay::PostProcess) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\tComReflection : %.3f\n", float(SXRenderFunc::Delay::ComReflection) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\tGeomSortGroup : %.3f\n", float(SXRenderFunc::Delay::GeomSortGroup) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\tUpdateParticles : %.3f\n", float(SXRenderFunc::Delay::UpdateParticles) / float(FrameCount) * 0.001f);
 
-			sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.3f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\n\tUpdateVisibleFor\n");
+				sprintf(debugstr + strlen(debugstr), "\t\tCamera\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForCamera) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\t\tLight\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForLight) / float(FrameCount) * 0.001f);
+				sprintf(debugstr + strlen(debugstr), "\t\tReflection\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForReflection) / float(FrameCount) * 0.001f);
 
-			sprintf(debugstr + strlen(debugstr), "\n\FreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
-			sprintf(debugstr + strlen(debugstr), "\n\FreeValF1 : %f\n", SXRenderFunc::Delay::FreeValF1);
-			sprintf(debugstr + strlen(debugstr), "\n\FreeValF2 : %f\n", SXRenderFunc::Delay::FreeValF2);
-			sprintf(debugstr + strlen(debugstr), "\n\FreeValF3 : %f\n", SXRenderFunc::Delay::FreeValF3);
-#endif
+				sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.3f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount) * 0.001f);
+
+				sprintf(debugstr + strlen(debugstr), "\n\FreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
+				sprintf(debugstr + strlen(debugstr), "\n\FreeValF1 : %f\n", SXRenderFunc::Delay::FreeValF1);
+				sprintf(debugstr + strlen(debugstr), "\n\FreeValF2 : %f\n", SXRenderFunc::Delay::FreeValF2);
+				sprintf(debugstr + strlen(debugstr), "\n\FreeValF3 : %f\n", SXRenderFunc::Delay::FreeValF3);
+			}
+
 			Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
 			Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
 			TimeElapsed		= 0.0f;
@@ -562,7 +638,8 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 			SXRenderFunc::Delay::Present = 0;
 		}
 			
-	SGCore_DbgMsg(debugstr);
+	if (rs_stats && (*rs_stats) > 0)
+		SGCore_DbgMsg(debugstr);
 }
 
 ////////
@@ -1089,9 +1166,18 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 				SML_LigthsNullingShadow();	//очищаем рт генерации теней
 				SML_LigthsGenShadow(tmpid);	//генерируем тень для света
 
-				//сглаживаем
-				SML_LigthsSoftShadow(false, 4);
-				SML_LigthsSoftShadow(false, 2);
+				static const int * shadow_soft = GET_PCVAR_INT("shadow_soft");
+
+				if (shadow_soft)
+				{
+					if ((*shadow_soft) == 1)
+						SML_LigthsSoftShadow(false, 2);
+					else if ((*shadow_soft) == 2)
+					{
+						SML_LigthsSoftShadow(false, 2);
+						SML_LigthsSoftShadow(false, 2);
+					}
+				}
 
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 				//}}
@@ -1171,8 +1257,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
 	//обратаываем hdr (а если точнее именно tone mapping)
-	SML_LigthsComHDR(timeDelta,30);
+	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
+	SML_LigthsComHDR(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.3f));
 	
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{

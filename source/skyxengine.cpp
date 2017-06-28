@@ -1,7 +1,6 @@
 
 #include <SkyXEngine.h>
 
-//!< инициализация движка
 void SkyXEngine_Init()
 {
 	srand((UINT)time(0));
@@ -154,16 +153,19 @@ void SkyXEngine_Init()
 
 	Core_0RegisterCVarFloat("pssm_q", 1, 0);
 	Core_0RegisterCVarFloat("lsm_q", 1, 0);
+	Core_0RegisterCVarInt("shadow_soft", 1, 0);
 
 	Core_0RegisterCVarInt("grass_frec", 100, 0);
 	Core_0RegisterCVarFloat("green_lod0", 50, 0);
 	Core_0RegisterCVarFloat("green_lod1", 100, 0);
 	Core_0RegisterCVarFloat("green_less", 20, 0);
 	Core_0RegisterCVarFloat("p_far", 400, 0);
+	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, 0);
 
 	Core_0RegisterCVarInt("r_s_filter", 1, 0);
 	Core_0RegisterCVarInt("r_s_max_anisotropy", 0, 0);
 	Core_0RegisterCVarInt("r_s_max_miplevel", 0, 0);
+	Core_0RegisterCVarInt("rs_stats", 1, 0);
 
 	Core_0RegisterConcmd("screenshot", SXRenderFunc::SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SXRenderFunc::SaveWorkTex);
@@ -188,7 +190,8 @@ void SkyXEngine_Init()
 #endif
 }
 
-//!< рендер
+//#############################################################################
+
 void SkyXEngine_Render(DWORD timeDelta)
 {
 	int64_t ttime;
@@ -341,7 +344,8 @@ void SkyXEngine_Render(DWORD timeDelta)
 #endif
 }
 
-//!< запуск основного цикла обработки
+//#############################################################################
+
 int SkyXEngine_CycleMain()
 {
 	MSG msg;
@@ -414,7 +418,8 @@ int SkyXEngine_CycleMain()
 	return msg.wParam;
 }
 
-//!< уничтожение данных движка, освобождение памяти
+//#############################################################################
+
 void SkyXEngine_Kill()
 {
 #if defined(SX_MATERIAL_EDITOR)
@@ -446,6 +451,8 @@ void SkyXEngine_Kill()
 	SGCore_AKill();
 	Core_AKill();
 }
+
+//#############################################################################
 
 LRESULT CALLBACK SkyXEngine_PreviewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

@@ -1082,7 +1082,7 @@ void SPP_RenderMotionBlur(float coef, DWORD timeDelta)
 	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "ParamProj", &float3_t(PPSet::WinSize.x, PPSet::WinSize.y, D3DX_PI / 4.0f));
 
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "ViewPos", &PPSet::ConstCurrCamPos);
-	float tmpcoefblur = exp(-sqrt(float(timeDelta) * 0.001f) * (100.f - ((1 - coef)*100.f)));// 0.3f;// *(float(timeDelta) * 0.001f);
+	float tmpcoefblur = exp(-sqrt(float(timeDelta) * 0.001f) * (((1 - coef)*100.f)));// 0.3f;// *(float(timeDelta) * 0.001f);
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "CoefBlur", &tmpcoefblur);
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "NearFar", &PPSet::NearFar);
 

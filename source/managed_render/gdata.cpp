@@ -244,6 +244,13 @@ void GData::Editors::LevelEditorUpdateStatusBar()
 
 	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
 	SXLevelEditor::StatusBar1->SetTextParts(3, text);
+
+	if(SXLevelEditor::IdMtl >= 0)
+	{
+		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
+		SML_MtlGetTexture(SXLevelEditor::IdMtl,text);
+		SXLevelEditor::StatusBar1->SetTextParts(4, text);
+	}
 }
 
 #endif

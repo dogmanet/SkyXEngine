@@ -485,7 +485,7 @@ SX_LIB_API void SML_LigthsSetIDArr(
 //! обработка hdr
 SX_LIB_API void SML_LigthsComHDR(
 	DWORD timeDelta,			//!< время рендера кадра в млсек
-	float factor_adapted = 10	//!< на сколько быстро "глаз" привыкнет к освещению
+	float factor_adapted = 0.3	//!< на сколько быстро "глаз" привыкнет к освещению (0,1] (медленно, быстро]
 	);
 
 /*! \name Функции обработки удаленного света

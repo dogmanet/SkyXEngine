@@ -29,13 +29,13 @@ namespace Level
 	загрузит геометрию уровня из файла с именем и расширением test_level.geom из той же директории уровня в котором находится заголовочный файл уровня
 	 \todo Расписать организацию конфигурационного файла загрузки/сохранения для уровня
 	 @{*/
-	char Name[OBJECT_NAME_MAX_LEN];
-	void Clear();
+	char Name[OBJECT_NAME_MAX_LEN];	//!< текущее имя уровня
+	void Clear();					//!< очистка уровня
 	void Load(const char* name);	//!< Загрузка уровня с именем name
 	void Save(const char* name);	//!< Сохранение уровня под именем name
 
-	void LoadParticles();
-	void SaveParticles();
+	void LoadParticles();			//!< загрузка файла с инфой о частицах
+	void SaveParticles();			//!< сохранение файла с инфой о частицах
 
 	//!@}
 };

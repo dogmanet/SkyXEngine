@@ -14,6 +14,9 @@ See the license in LICENSE
  \note Система частиц состоит из эффектов. Эффекты состоят из эмиттеров (испускатели).
  \note Идентфиикация эффекта происходит на основании его числового идентификатора выдаваемого создающими функциями (#SPE_EffectAdd) и является константным, идентификатор не является порядковым номером, для идентификации эффекта по порядковому номеру можно воспользоваться функцией #SPE_EffectIdOfKey
  \note Идентификация эмиттера в эффекте происходит на основании его числового идентификатора выдаваемого создающеми функциями (#SPE_EmitterAdd) и не является константным (удаление самого нижнего приведет к смещению всех верхних), идентификатор является порядковым номером
+ \note Часицы эмиттера могут быть освещены (только ambient)
+ \note Часицы эмиттера могут искажать (refraction)
+ \note Часицы эмиттера могут быть мягкими (soft), для этого надо после инициализации библиотеки необходимо передать идентификатор render target глубины сцены #SPE_RTDepthSet
 @{*/
 
 #ifndef __sxparticles
@@ -48,26 +51,31 @@ SX_LIB_API void SPE_0Create(
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
-SX_LIB_API void SPE_RTDepthSet(ID id);
+SX_LIB_API void SPE_RTDepthSet(ID id);	//!< установка илентификатора render target глубины сцены (для маягких/soft частиц)
 
 SX_LIB_API void SPE_0Kill();	//!< уничтожить подсистему
 
 //!@}
 
+//#############################################################################
+
 /*! \name Обработка потери/восстановления устройства
 @{*/
 
 SX_LIB_API void SPE_OnLostDevice();	//!< вызывать при потрете устройства
-
-//! вызывать при восстановлении устройства, с передачей параметров области в которую рисуем
-SX_LIB_API void SPE_OnResetDevice();
+SX_LIB_API void SPE_OnResetDevice();//!< вызывать при восстановлении устройства
 
 //!@}
 
-/*! базовое направления взгляда эффекта*/
+//#############################################################################
+
+/*! базовое направления взгляда эффекта */
 #define SXPARTICLES_BASIS_DIR float3(0,0,1)
 
+/*! время в течении которого эффект полность затухнет в случае установки ложного состояния жизни #SPE_EffectAlifeSet */
 #define SXPARTICLES_DEADTH_TIME 1000
+
+/*! количество новых резервных копий эффекта (в пуле) в случае нехватки */
 #define SXPARTICLES_POOL_RESERVE 8
 
 //#############################################################################
@@ -335,9 +343,9 @@ SX_LIB_API void SPE_EffectLoad(const char* path);	//!< загрузка инфо
 SX_LIB_API void SPE_EffectSave(const char* path);	//!< сохранение информации об эффектах и эмиттерах в файл
 SX_LIB_API void SPE_EffectsClear();	//!< очистка всего списка эффектов и эмиттеров
 
-SX_LIB_API ID SPE_EffectInstanceByName(const char* name);
-SX_LIB_API ID SPE_EffectInstanceByID(ID id);
-SX_LIB_API ID SPE_EffectGetByName(const char* name);
+SX_LIB_API ID SPE_EffectInstanceByName(const char* name);	//!< получить копию эффекта по имени
+SX_LIB_API ID SPE_EffectInstanceByID(ID id);				//!< получить копию эффекта по его идентификатору
+SX_LIB_API ID SPE_EffectGetByName(const char* name);		//!< получить эффект по имени (первый найденый)
 
 SX_LIB_API ID SPE_EffectAdd(const char* name);	//!< добавить эффект и установить ему имя
 SX_LIB_API int SPE_EffectCountGet();			//!< возвращает количество эффектов
@@ -355,7 +363,7 @@ SX_LIB_API void SPE_EffectComputeLightingAll();			//!< просчет света
 SX_LIB_API void SPE_EffectRenderAll(DWORD timeDelta);	//!< отрисовка всех эффектов
 
 SX_LIB_API bool SPE_EffectAlifeGet(ID id);				//<! жив ли эффект, или все частицы в нем уже умерли?
-SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);	//<! установка состояния жизни
+SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);	//<! установка состояния жизни (время затухания #SXPARTICLES_DEADTH_TIME)
 
 SX_LIB_API bool SPE_EffectEnableGet(ID id);				//<! включен ли эффект
 SX_LIB_API void SPE_EffectEnableSet(ID id, bool enable);//<! устанавливает состяние включен/выключен для эффекта

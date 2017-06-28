@@ -27,16 +27,36 @@ See the license in LICENSE
 @{
 */
 
+/*! \name Форматы файлов для диалога загрузки/сохранения
+@{
+*/
+
+/*! текстуры*/
 #define FILE_FILTER_TEXTURE	"All files\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
+
+/*! конфиг файл уровня*/
 #define FILE_FILTER_LEVEL	"SkyX level file(.lvl)\0*.lvl\0All files\0*.*\0\0"
+
+/*! dse модель*/
 #define FILE_FILTER_MODEL	"dse file(.dse)\0*.dse\0All files\0*.*\0\0"
+
+/*! вершинный шейдер*/
 #define FILE_FILTER_VS		"vertex shader file(.vs)\0*.vs\0All files\0*.*\0\0"
+
+/*! пиксельный шейдер*/
 #define FILE_FILTER_PS		"pixel shader file(.ps)\0*.ps\0All files\0*.*\0\0"
 
+//!@}
 
-#define EDITORS_LEVEL_GROUPTYPE_GEOM	1
-#define EDITORS_LEVEL_GROUPTYPE_GREEN	2
-#define EDITORS_LEVEL_GROUPTYPE_GAME	3
+/*! \name Типы возможных выделенных объектов 
+@{
+*/
+
+#define EDITORS_LEVEL_GROUPTYPE_GEOM	1	/*!< статическая геометрия */
+#define EDITORS_LEVEL_GROUPTYPE_GREEN	2	/*!< растительность */
+#define EDITORS_LEVEL_GROUPTYPE_GAME	3	/*!< игровые объекты */
+
+//!@}
 
 #define EDITORS_LEVEL_CAPTION "SXLevelEditor"
 #define EDITORS_LEVEL_STATUSBAR_LEVEL_POLY "Level poly: "
@@ -61,7 +81,7 @@ namespace GData
 		const char* caption	//!< название окна
 		);
 
-	HWND HandlePreview = 0;
+	HWND HandlePreview = 0;	//!< хэндл превью окна
 	HWND HandleParent3D = 0;//!< хэндл окна родителя окна рендера, на случай редакторов
 	HWND Handle3D = 0;		//!< хэндл окна рендера
 
@@ -75,7 +95,7 @@ namespace GData
 	int ReSize = 0;				//!< 0 - ничего не меняли, 1 - ресайз, 2 - переход между фуллскрин и окном
 
 	float2_t NearFar = float2_t(0.025,400);	//!< значение дальней и ближней плоскостей отсечения
-	float ProjFov = SM_PIDIV4;			//!< fov камеры
+	float ProjFov = SM_PIDIV4;				//!< fov камеры
 
 	ID DefaultGeomIDArr = -1;
 	ID DefaultGreenIDArr = -1;
@@ -160,7 +180,7 @@ namespace GData
 		ModelSim* SimModel = 0;			//!< указатель симуляционной модели
 		Grid* ObjGrid = 0;				//!< сетка дял редакторов
 		AxesStatic* ObjAxesStatic = 0;	//!< рендер статический осей в центре координат
-		AxesHelper* ObjAxesHelper = 0;
+		AxesHelper* ObjAxesHelper = 0;	//!< рендер хелпера трансформаций
 		ID3DXMesh* FigureBox;			//!< бокс для определения ограничивающего объема для эммитера партиклов
 		ID3DXMesh* FigureSphere;		//!< сфера для определения ограничивающего объема для эммитера партиклов
 		ID3DXMesh* FigureCone;			//!< конус для определения ограничивающего объема для эммитера партиклов
@@ -175,24 +195,27 @@ namespace GData
 #endif
 
 #if defined(SX_LEVEL_EDITOR)
-		int ActiveGroupType = 0;
-		ID ActiveGreenSplit = -1;
-		ID ActiveGreenObject = -1;
-		ID ActiveElement = -1;
-		bool SelSelection = false;
-		bool SelZTest = false;
-		bool SelMesh = false;
-		bool SelBackFacesCull = false;
-		bool GreenRenderBox = false;
-		float3 GreenBoxPos;
-		float3_t GreenBoxWHD(1,1,1);
+		int ActiveGroupType = 0;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
+		ID ActiveGreenSplit = -1;		//!< текущий идентификатор сплита растительность (если выделена растительность)
+		ID ActiveGreenObject = -1;		//!< текущий идентификатор объекта растительности (если выделена растительность)
+		
+		ID ActiveElement = -1;			//!< текущий идентификатор выделенного элемента из списка
+		bool SelSelection = false;		//!< разрешено ли выделение?
+		bool SelZTest = false;			//!< использовать ли z-test при выделении?
+		bool SelMesh = false;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
+		bool SelBackFacesCull = false;	//!< отсекать ли задние грани при выделении?
+		
+		//bound box для массового создания объектов растительности
+		bool GreenRenderBox = false;	//!< разрешено ли рисовать бокс?
+		float3 GreenBoxPos;				//!< позиция бокса
+		float3_t GreenBoxWHD(1,1,1);	//!< ширина, высота, длина бокса
 
-		void LevelEditorUpdateStatusBar();
+		void LevelEditorUpdateStatusBar();	//!< обновление информации в статус баре
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
 		bool RenderBound = false;				//!< рисовать ли ограничивающий объем для эффекта
-		void ParticlesEditorUpdateStatusBar();
+		void ParticlesEditorUpdateStatusBar();	//!< обновление информации в статус баре
 #endif
 	};
 #endif

@@ -191,8 +191,8 @@ protected:
 	Array<Light*> ArrIDLights;	//массив всех элементов, основанный на id
 	Array<Light*> ArrKeyDelLights;	//массив света который надо удалить
 
-	DWORD ShadowMap;
-	DWORD ShadowMap2;
+	ID ShadowMap;
+	ID ShadowMap2;
 	int HowShadow;
 
 	ID GlobalLight;
