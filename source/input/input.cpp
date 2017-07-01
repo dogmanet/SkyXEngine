@@ -14,7 +14,9 @@
 
 extern report_func reportf;
 
-SXInput::SXInput(const char* name)
+SXInput::SXInput(const char* name):
+	mdelta({0, 0}),
+	mdeltaOld({0, 0})
 {
 	sprintf(Name, "%s", name);
 }

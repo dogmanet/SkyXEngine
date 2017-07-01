@@ -12,6 +12,8 @@ See the license in LICENSE
 
 #include <SkyXEngine.cpp>
 
+#include <physics/sxphysics.h>
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
@@ -38,6 +40,57 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	/*ID tmpid = SPE_EffectGetByName("test");
 	SPE_EffectEnableSet(tmpid, true);*/
+
+	
+#if 0
+	btBoxShape shape(btVector3(0.25, 0.9, 0.25));
+	for(int x = -20; x <= 20; ++x)
+	{
+		for(int y = -20; y <= 20; ++y)
+		{
+			float3 fTopPos(x, 100, y);
+			float3 fBottomPos(x, -100, y);
+
+			float3 n;
+			float3 tsBasis[3];
+			SMMATRIX mBasis;
+			SMMATRIX mBasisInv;
+			float det;
+
+			btDiscreteDynamicsWorld::ClosestConvexResultCallback cb(F3_BTVEC(fTopPos), F3_BTVEC(fBottomPos));
+			btTransform xForm;
+			xForm.setOrigin(F3_BTVEC(fTopPos));
+			xForm.getBasis().setIdentity();
+			btTransform xForm2;
+			xForm2.setOrigin(F3_BTVEC(fBottomPos));
+			xForm2.getBasis().setIdentity();
+			SXPhysics_GetDynWorld()->convexSweepTest(&shape, xForm, xForm2, cb);
+			//AllConvexResultCallback::part * part;
+			if(cb.hasHit())
+			{
+				// Центр бокса: 
+				// cb.m_hitPointWorld + btVector3(0, shape.getHalfExtentsWithoutMargin().getY(), 0)
+
+
+				/* btTransform tr;
+				tr.setOrigin(cb.m_hitPointWorld + btVector3(0, shape.getHalfExtentsWithoutMargin().getY(), 0));
+				tr.getBasis().setIdentity();
+				btDefaultMotionState motionState(tr);
+				btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+					0,                  // mass
+					&motionState,        // initial position
+					&shape,    // collision shape of body
+					btVector3(0, 0, 0)  // local inertia
+					);
+				btRigidBody * body = new btRigidBody(rigidBodyCI);
+
+				//body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+
+				SXPhysics_AddShape(body); */
+			}
+		}
+	}
+#endif
 
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();

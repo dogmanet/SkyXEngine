@@ -1,3 +1,8 @@
+#ifndef _CAMERA_H_
+#define _CAMERA_H_
+
+#include "sxgcore.h"
+
 //класс описывающий фрустум
 class Frustum : public virtual ISXFrustum
 {
@@ -57,4 +62,8 @@ public:
 
 	inline void SetFOV(float fov);
 	inline float GetFOV();
+
+	inline void UpdateView();
 };
+
+#endif

@@ -775,7 +775,10 @@ protected:
 
 	float3 Position;
 
-	float AngleUpDown, AngleRightLeft, AngleRoll;
+	//float AngleUpDown, AngleRightLeft, AngleRoll;
+	
+	float3_t m_vPitchYawRoll;
+
 	float m_fFOV;
 };
 

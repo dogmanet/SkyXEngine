@@ -1,6 +1,6 @@
 
 #pragma once
-#include <gcore\camera.h>
+#include <gcore/camera.h>
 
 Frustum::Frustum()
 {
@@ -128,10 +128,9 @@ Camera::Camera()
 	Up = float3(0.0f, 1.0f, 0.0f);
 	Look = float3(0.0f, 0.0f, 1.0f);
 
-	AngleUpDown=AngleRightLeft=AngleRoll=0;
-
 	ObjFrustum = new Frustum();
 
+	m_vPitchYawRoll = float3_t(0, 0, 0);
 }
 
 Camera::~Camera	()
@@ -159,71 +158,54 @@ inline void Camera::PosFrontBack(float units)
 			
 inline void Camera::RotUpDown(float angle)
 {
-		/*if(AngleUpDown + angle > 1.1f)
-			angle = 1.1f - AngleUpDown;
+	m_vPitchYawRoll.x -= angle;
+	if(m_vPitchYawRoll.x > SM_PIDIV2)
+	{
+		m_vPitchYawRoll.x = SM_PIDIV2;
+	}
+	else if(m_vPitchYawRoll.x < -SM_PIDIV2)
+	{
+		m_vPitchYawRoll.x = -SM_PIDIV2;
+	}
 
-		if(AngleUpDown + angle < -1.2f)
-			angle = -1.2f - AngleUpDown;*/
-
-	float4x4 T = SMMatrixRotationAxis(Right, angle);
-
-	Up = SMVector3Transform(Up, T);
-	Look = SMVector3Transform(Look, T);
-
-	AngleUpDown += angle;
-		if(abs(AngleUpDown) >= SM_2PI)
-			AngleUpDown = SM_2PI * modf((AngleUpDown / SM_2PI),&angle);
-
-	/*D3DXMATRIX T;
-	D3DXMatrixRotationAxis(&T, &Right,	angle);
-
-	D3DXVec3TransformCoord(&Up,&Up, &T);
-	D3DXVec3TransformCoord(&Look,&Look, &T);*/
+	UpdateView();
 }
 
 inline void Camera::RotRightLeft(float angle)
 {
-	float4x4 T = SMMatrixRotationY(angle);
+	m_vPitchYawRoll.y -= angle;
+	while(m_vPitchYawRoll.y < 0.0f)
+	{
+		m_vPitchYawRoll.y += SM_2PI;
+	}
+	while(m_vPitchYawRoll.y > SM_2PI)
+	{
+		m_vPitchYawRoll.y -= SM_2PI;
+	}
 
-	Right = SMVector3Transform(Right, T);
-	Look = SMVector3Transform(Look, T);
-
-	AngleRightLeft += angle;
-		if(abs(AngleRightLeft) >= SM_2PI)
-			AngleRightLeft = SM_2PI * modf((AngleRightLeft / SM_2PI),&angle);
-
-	/*D3DXMATRIX T;
-
-	D3DXMatrixRotationY(&T, angle);
-
-	D3DXVec3TransformCoord(&Right,&Right, &T);
-	D3DXVec3TransformCoord(&Look,&Look, &T);*/
+	UpdateView();
 }
 
 inline void Camera::Roll(float angle)
 {
-	//AngleRoll = angle;
-	float4x4 T = SMMatrixRotationAxis(Look,	angle);
+	m_vPitchYawRoll.z -= angle;
+	UpdateView();
+}
 
-	Right = SMVector3Transform(Right, T);
-	Up = SMVector3Transform(Up, T);
-	/*if(!Rolling)
-	{Rolling = true;
-	AngleRoll = angle;
-		D3DXMATRIX T;
-		D3DXMatrixRotationAxis(&T, &Look,	angle);
+inline void Camera::UpdateView()
+{
+	SMQuaternion q = SMQuaternion(m_vPitchYawRoll.x, 'x')
+		* SMQuaternion(m_vPitchYawRoll.y, 'y')
+		* SMQuaternion(m_vPitchYawRoll.z, 'z');
 
-		D3DXVec3TransformCoord(&Right,&Right, &T);
-		D3DXVec3TransformCoord(&Up,&Up, &T);
-	}*/
+	Right = q * float3(1.0f, 0.0f, 0.0f);
+	Up = q * float3(0.0f, 1.0f, 0.0f);
+	Look = q * float3(0.0f, 0.0f, 1.0f);
 }
 
 inline void Camera::SetOrientation(const SMQuaternion & q)
 {
-	float3 angles = SMMatrixToEuler(q.GetMatrix());
-	AngleUpDown = angles.x;
-	AngleRightLeft = angles.y;
-	AngleRoll = angles.z;
+	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
 
 	Right = q * float3(1.0f, 0.0f, 0.0f);
 	Up = q * float3(0.0f, 1.0f, 0.0f);
@@ -234,40 +216,6 @@ inline void Camera::SetOrientation(const SMQuaternion & q)
 inline void Camera::GetViewMatrix(float4x4* view_matrix)
 {
 	*view_matrix = SMMatrixLookToLH(Position, Look, Up);
-	/*
-	Look = SMVector3Normalize(Look);
-
-	Up = SMVector3Cross(Look, Right);
-	Up = SMVector3Normalize(Up);
-
-	Right = SMVector3Cross(Up, Look);
-	Right = SMVector3Normalize(Right);
-
-	float x = -SMVector3Dot(Right, Position);
-	float y = -SMVector3Dot(Up, Position);
-	float z = -SMVector3Dot(Look, Position);
-
-	(*view_matrix)._11 = Right.x;	(*view_matrix)._12 = Up.x;	(*view_matrix)._13 = Look.x; (*view_matrix)._14 = 0.0f;
-	(*view_matrix)._21 = Right.y;	(*view_matrix)._22 = Up.y;	(*view_matrix)._23 = Look.y; (*view_matrix)._24 = 0.0f;
-	(*view_matrix)._31 = Right.z;	(*view_matrix)._32 = Up.z;	(*view_matrix)._33 = Look.z; (*view_matrix)._34 = 0.0f;
-	(*view_matrix)._41 = x;			(*view_matrix)._42 = y;		(*view_matrix)._43 = z;      (*view_matrix)._44 = 1.0f;
-	*/
-	/*D3DXVec3Normalize(&Look, &Look);
-
-	D3DXVec3Cross(&Up, &Look, &Right);
-	D3DXVec3Normalize(&Up, &Up);
-
-	D3DXVec3Cross(&Right, &Up, &Look);
-	D3DXVec3Normalize(&Right, &Right);
-
-	float x = -D3DXVec3Dot(&Right, &Position);
-	float y = -D3DXVec3Dot(&Up, &Position);
-	float z = -D3DXVec3Dot(&Look, &Position);
-
-	(*view_matrix)(0,0) = Right.x; (*view_matrix)(0, 1) = Up.x; (*view_matrix)(0, 2) = Look.x; (*view_matrix)(0, 3) = 0.0f;
-	(*view_matrix)(1,0) = Right.y; (*view_matrix)(1, 1) = Up.y; (*view_matrix)(1, 2) = Look.y; (*view_matrix)(1, 3) = 0.0f;
-	(*view_matrix)(2,0) = Right.z; (*view_matrix)(2, 1) = Up.z; (*view_matrix)(2, 2) = Look.z; (*view_matrix)(2, 3) = 0.0f;
-	(*view_matrix)(3,0) = x;       (*view_matrix)(3, 1) = y;    (*view_matrix)(3, 2) = z;      (*view_matrix)(3, 3) = 1.0f;*/
 }
 
 			
@@ -310,24 +258,22 @@ inline void Camera::GetLook(float3* look)
 
 inline void Camera::GetRotation(float3* rot)
 {
-	rot->x = AngleUpDown;
-	rot->y = AngleRightLeft;
-	rot->z = AngleRoll;
+	*rot = m_vPitchYawRoll;
 }
 
 inline float Camera::GetRotationX()
 {
-	return AngleUpDown;
+	return m_vPitchYawRoll.x;
 }
 
 inline float Camera::GetRotationY()
 {
-	return AngleRightLeft;
+	return m_vPitchYawRoll.y;
 }
 
 inline float Camera::GetRotationZ()
 {
-	return AngleRoll;
+	return m_vPitchYawRoll.z;
 }
 
 inline void Camera::SetFOV(float fov)
