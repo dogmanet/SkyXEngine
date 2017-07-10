@@ -690,6 +690,29 @@ void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr)
 	ComputeBoundingBoxArr4(bound, bound_arr);
 }
 
+float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
+{
+	float3 v = dir;
+	float3 w = p - start;
+	float c1;
+	if ((c1 = SMVector3Dot(w, v)) <= 0.0f)
+	{
+		return(SMVector3Length2(p - start));
+	}
+	float c2 = SMVector3Dot(v, v);
+
+	float b = c1 / c2;
+	float3 Pb = start + b * v;
+	return(SMVector3Length2(p - Pb));
+}
+
+float SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2)
+{
+	return (!((min1->x > max2->x || max1->x < min2->x)
+		|| (min1->y > max2->y || max1->y < min2->y)
+		|| (min1->z > max2->z || max1->z < min2->z)));
+}
+
 ////////////
 
 ISXFrustum* SGCore_CrFrustum()

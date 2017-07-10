@@ -299,6 +299,13 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <physics/sxphysics.h>
 
 #if defined(_DEBUG)
+#pragma comment(lib, "sxaigrid_d.lib")
+#else
+#pragma comment(lib, "sxaigrid.lib")
+#endif
+#include <aigrid/sxaigrid.h>
+
+#if defined(_DEBUG)
 #pragma comment(lib, "sxdecals_d.lib")
 #else
 #pragma comment(lib, "sxdecals.lib")
@@ -356,6 +363,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <managed_render\\camera_update.cpp>
 #include <managed_render\\render_func.cpp>
 #include <managed_render\\level.cpp>
+
 
 //#############################################################################
 

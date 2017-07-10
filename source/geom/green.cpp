@@ -1826,7 +1826,7 @@ void Green::GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *c
 	float radius;
 	comsegment->BoundVolumeP->GetSphere(&center, &radius);
 
-	float distsqr = UTIL_DistancePointBeam2(center, *pos, *dir);
+	float distsqr = SGCore_0DistancePointBeam2(center, *pos, *dir);
 	if (comsegment->CountAllGreen > 0 && distsqr <= radius*radius)
 	{
 		if (comsegment->BFNonEnd)
@@ -1854,7 +1854,7 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 	if (ArrModels.size() <= 0)
 		return false;
 
-	triangle tmptri;
+	SXTriangle tmptri;
 	float dist;
 	bool tmpiscom = true;
 	float3 ip;
@@ -1942,7 +1942,7 @@ void Green::GetPartBB(float3* bbmin, float3 * bbmax, Segment** arrsplits, DWORD 
 	float radius;
 	comsegment->BoundVolumeP->GetMinMax(&min, &max);
 
-	if (comsegment->CountAllGreen > 0 && UTIL_InretsectBox(bbmin, bbmax, &min, &max))
+	if (comsegment->CountAllGreen > 0 && SGCore_0InretsectBox(bbmin, bbmax, &min, &max))
 	{
 		if (comsegment->BFNonEnd)
 		{
@@ -2043,7 +2043,7 @@ bool Green::GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl
 						if (max.z < p3.z)
 							max.z = p3.z;
 
-						if (UTIL_InretsectBox(bbmin, bbmax, &min, &max))
+						if (SGCore_0InretsectBox(bbmin, bbmax, &min, &max))
 						{
 							isfound = true;
 							break;

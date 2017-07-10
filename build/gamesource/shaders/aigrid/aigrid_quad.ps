@@ -1,0 +1,15 @@
+
+sampler2D BaseSampler:register(s0);
+
+struct VS_OUT 
+{
+	half4 Position	:POSITION0;
+	half2 TexUV		:TEXCOORD0;
+	half4 Pos		:TEXCOORD1;
+	half4 Color		:TEXCOORD2;
+};
+
+half4 main(VS_OUT IN):COLOR0
+{
+	return half4(lerp(tex2D(BaseSampler,IN.TexUV).xyz,IN.Color.xyz,IN.Color.a),1.f);
+}

@@ -3245,42 +3245,13 @@ void StaticGeom::GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane)
 	*plane = AllModels[id]->SubSet[group].Plane;
 }
 
-
-struct triangle
-{
-	float3_t a;
-	float3_t b;
-	float3_t c;
-	triangle()
-	{
-	};
-	triangle(float3_t _a, float3_t _b, float3_t _c) :a(_a), b(_b), c(_c)
-	{
-	};
-
-	//Проверкка пересечения треугольника и отрезка
-	bool IntersectLine(const float3 & l1, const float3 &l2, float3 * p)
-	{
-		float3 n = SMVector3Normalize(SMVector3Cross((b - a), (c - b)));
-		float d1 = SMVector3Dot((l1 - a), n) / SMVector3Length(n);
-		float d2 = SMVector3Dot((l2 - a), n) / SMVector3Length(n);
-		if ((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
-			return(false);
-		*p = l1 + (l2 - l1) * (-d1 / (d2 - d1));
-		if (SMVector3Dot(SMVector3Cross((b - a), (*p - a)), n) <= 0) return(false);
-		if (SMVector3Dot(SMVector3Cross((c - b), (*p - b)), n) <= 0) return(false);
-		if (SMVector3Dot(SMVector3Cross((a - c), (*p - c)), n) <= 0) return(false);
-		return(true);
-	}
-};
-
 void StaticGeom::GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render)
 {
 	float3 center;
 	float radius;
 	comsegment->BoundVolumeP->GetSphere(&center, &radius);
 
-	float distsqr = UTIL_DistancePointBeam2(center, *pos, *dir);
+	float distsqr = SGCore_0DistancePointBeam2(center, *pos, *dir);
 	if (comsegment->CountAllPoly > 0 && distsqr <= radius*radius)
 	{
 		if (comsegment->BFNonEnd)
@@ -3308,7 +3279,7 @@ bool StaticGeom::TraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel
 	if (AllModels.size() <= 0)
 		return false;
 
-	triangle tmptri;
+	SXTriangle tmptri;
 	float dist;
 	bool tmpiscom = true;
 	float3 ip;

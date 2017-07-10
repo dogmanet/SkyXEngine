@@ -1828,6 +1828,25 @@ void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, 100);
+	SAIG_RenderGraphPoints(&GData::ConstCurrCamPos, 100);
+
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+	SAIG_RenderBB();
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+
 #endif
 }
 
@@ -1863,4 +1882,61 @@ void SXRenderFunc::RFuncMtlSet(ID id, float4x4* world)
 ID SXRenderFunc::RFuncMtlLoad(const char* name, int mtl_type)
 {
 	return SML_MtlLoad(name, (MtlTypeModel)mtl_type);
+}
+
+bool SXRenderFunc::AIQuadPhyNavigate(float3_t * pos)
+{
+	static btBoxShape boxfull(btVector3(AIGRID_QUAD_SIZEDIV2, AIGRID_ENTITY_MAX_HEIGHTDIV2, AIGRID_QUAD_SIZEDIV2));
+	float3 start = (*pos);
+	start.y = pos->y + AIGRID_ENTITY_MAX_HEIGHT;
+	float3 end = (*pos);
+	//end.y = min->y - AIGRID_ENTITY_MAX_HEIGHT;
+	static btDiscreteDynamicsWorld::ClosestConvexResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+	cb = btDiscreteDynamicsWorld::ClosestConvexResultCallback(F3_BTVEC(start), F3_BTVEC(end));
+
+	static btTransform xForm;
+	xForm.setOrigin(F3_BTVEC(start));
+	xForm.getBasis().setIdentity();
+	static btTransform xForm2;
+	xForm2.setOrigin(F3_BTVEC(end));
+	xForm2.getBasis().setIdentity();
+	SXPhysics_GetDynWorld()->convexSweepTest(&boxfull, xForm, xForm2, cb);
+
+	if (cb.hasHit())
+	{
+		pos->y = cb.m_hitPointWorld[1];
+		//quad->IsClose = false;
+
+		static btBoxShape boxoff(btVector3(AIGRID_QUAD_SIZEDIV2, (AIGRID_ENTITY_MAX_HEIGHT - AIGRID_QUADS_CENTERS_MAXHEIGHT) * 0.5, AIGRID_QUAD_SIZEDIV2));
+
+		start = (*pos);
+		start.y = pos->y + AIGRID_ENTITY_MAX_HEIGHTDIV2 + AIGRID_QUADS_CENTERS_MAXHEIGHT;
+		static btVector3 vec;
+		vec = btVector3(F3_BTVEC(start));
+		cb = btDiscreteDynamicsWorld::ClosestConvexResultCallback(vec, vec);
+		static btVector3 offs;
+		for (int x = -1; x <= 1; ++x)
+		{
+			for (int z = -1; z <= 1; ++z)
+			{
+				offs[0] = 0.5f*float(x) * 0.01f;
+				offs[1] = 1.f * 0.01f;
+				offs[2] = 0.5f*float(z) * 0.01f;
+				xForm.setOrigin(vec - offs);
+				xForm.getBasis().setIdentity();
+				xForm2.setOrigin(vec + offs);
+				xForm2.getBasis().setIdentity();
+				SXPhysics_GetDynWorld()->convexSweepTest(&boxoff, xForm, xForm2, cb);
+
+				if (cb.hasHit())
+				{
+					return true;
+				}
+			}
+		}
+	}
+	else
+		return true;
+
+	return false;
 }

@@ -649,6 +649,40 @@ SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr);
 */
 SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr);
 
+
+SX_LIB_API float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir);
+
+SX_LIB_API float SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2);
+
+struct SXTriangle
+{
+	float3_t a;
+	float3_t b;
+	float3_t c;
+	SXTriangle()
+	{
+	};
+	SXTriangle(float3_t _a, float3_t _b, float3_t _c) :a(_a), b(_b), c(_c)
+	{
+	};
+
+	//Проверкка пересечения треугольника и отрезка
+	bool IntersectLine(const float3 & l1, const float3 &l2, float3 * p)
+	{
+		float3 n = SMVector3Normalize(SMVector3Cross((b - a), (c - b)));
+		float d1 = SMVector3Dot((l1 - a), n) / SMVector3Length(n);
+		float d2 = SMVector3Dot((l2 - a), n) / SMVector3Length(n);
+		if ((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
+			return(false);
+		*p = l1 + (l2 - l1) * (-d1 / (d2 - d1));
+		if (SMVector3Dot(SMVector3Cross((b - a), (*p - a)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((c - b), (*p - b)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((a - c), (*p - c)), n) <= 0) return(false);
+		return(true);
+	}
+};
+
+
 //!@} sxgcore_bb_intersect
 
 //#############################################################################

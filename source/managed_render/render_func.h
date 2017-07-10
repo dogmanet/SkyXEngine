@@ -87,6 +87,7 @@ namespace SXRenderFunc
 
 	void RenderEditorMain();				//!< рендер основных элементов для редакторов
 	void RenderEditorLE(DWORD timeDelta);	//!< рендер элементов для редактора уровней
+	
 	/*! \name Функции обертки, для передачи графическому ядру для замены стандартных
 	@{*/
 
@@ -98,6 +99,8 @@ namespace SXRenderFunc
 	ID RFuncMtlLoad(const char* name, int mtl_type);
 	
 	//!@}
+
+	bool AIQuadPhyNavigate(float3_t * pos);
 
 	void SaveScreenShot();		//!< сохранить скриншот
 	void SaveWorkTex();			//!< сохранить рабочие текстуры (г-буфер и что к нему прилагается)

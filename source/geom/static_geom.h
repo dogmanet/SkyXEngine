@@ -31,34 +31,6 @@ if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels
 #define GEOM_COUNT_TYPE_SEGMENTATION_OCTO 8
 #define GEOM_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
 
-float UTIL_DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
-{
-	float3 v = dir;
-	float3 w = p - start;
-	float c1;
-	if ((c1 = SMVector3Dot(w, v)) <= 0.0f)
-	{
-		return(SMVector3Length2(p - start));
-	}
-	float c2 = SMVector3Dot(v, v);
-
-	float b = c1 / c2;
-	float3 Pb = start + b * v;
-	return(SMVector3Length2(p - Pb));
-}
-
-float UTIL_InretsectBox(const float3* min1, const float3* max1, const float3* min2, const float3* max2)
-{
-	return (!((min1->x > max2->x || max1->x < min2->x)
-		|| (min1->y > max2->y || max1->y < min2->y)
-		|| (min1->z > max2->z || max1->z < min2->z)));
-	/*return (
-		((min1->x < min2->x && max1->x > min2->x) || (min1->x < max2->x && max1->x > max2->x) || (min2->x < min1->x && max2->x > min1->x) || (min2->x < max1->x && max2->x > max1->x)) &&
-		((min1->y < min2->y && max1->y > min2->y) || (min1->y < max2->y && max1->y > max2->y) || (min2->y < min1->y && max2->y > min1->y) || (min2->y < max1->y && max2->y > max1->y)) &&
-		((min1->z < min2->z && max1->z > min2->z) || (min1->z < max2->z && max1->z > max2->z || (min2->z < min1->z && max2->z > min1->z) || (min2->z < max1->z && max2->z > max1->z)))
-		);*/
-}
-
 class StaticGeom
 {
 public:

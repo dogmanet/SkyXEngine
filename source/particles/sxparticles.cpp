@@ -140,7 +140,7 @@ void SPE_RTDepthSet(ID id)
 	PESet::IDsRenderTargets::DepthScene = id;
 }
 
-void SPE_0Kill()
+void SPE_AKill()
 {
 	PE_PRECOND(_VOID);
 

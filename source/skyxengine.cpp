@@ -92,6 +92,14 @@ void SkyXEngine_Init()
 	SXDecals_0Create();
 	SXDecals_Dbg_Set(printflog);
 
+#if defined(SX_LEVEL_EDITOR)
+	SAIG_0Create("sxaigrid", true, false);
+#else
+	SAIG_0Create("sxaigrid", false, false);
+#endif
+	SAIG_Dbg_Set(printflog);
+	SAIG_SetFunc_QuadPhyNavigate(SXRenderFunc::AIQuadPhyNavigate);
+
 #ifndef SX_PARTICLES_EDITOR
 	SXGame_0Create();
 	SXGame_Dbg_Set(printflog);
@@ -162,8 +170,8 @@ void SkyXEngine_Init()
 	Core_0RegisterCVarFloat("p_far", 400, 0);
 	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, 0);
 
-	Core_0RegisterCVarInt("r_s_filter", 1, 0);
-	Core_0RegisterCVarInt("r_s_max_anisotropy", 0, 0);
+	Core_0RegisterCVarInt("r_s_filter", 2, 0);
+	Core_0RegisterCVarInt("r_s_max_anisotropy", 16, 0);
 	Core_0RegisterCVarInt("r_s_max_miplevel", 0, 0);
 	Core_0RegisterCVarInt("rs_stats", 1, 0);
 
@@ -352,7 +360,8 @@ int SkyXEngine_CycleMain()
 	::ZeroMemory(&msg, sizeof(MSG));
 
 	static DWORD lastTime = TimeGetMls(G_Timer_Render_Scene);
-
+	//SAIG_BBCreate(&float3(0, 0, 0), &float3(50, 30, 50));
+	//SAIG_BBCreateFinish();
 	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
 	{
 		if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
@@ -378,16 +387,77 @@ int SkyXEngine_CycleMain()
 			SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 			SGCore_LoadTexLoadTextures();
 
-			if (SSInput_GetKeyEvents(SIK_T) == InputEvents::iv_k_first)
+			/*if (SSInput_GetKeyEvents(SIK_T) == InputEvents::iv_k_first)
 			{
-				//Core_TimeWorkingSet(G_Timer_Render_Scene, !Core_TimeWorkingGet(G_Timer_Render_Scene));
-				/*for (int i = 0; i < 1; ++i)
-				{
-				ID tmpid = SPE_EffectIdOfKey(i);
-				//SPE_EffectPosSet(tmpid, &float3(i, 0, k));
-				SPE_EffectAlifeSet(tmpid, !SPE_EffectAlifeGet(tmpid));
-				}*/
+				SAIG_GridGenerate();
 			}
+
+			if (SSInput_GetKeyEvents(SIK_G) == InputEvents::iv_k_first)
+			{
+				float3 start = GData::ConstCurrCamPos;
+				float3 dir = GData::ConstCurrCamDir;
+				float3 end = start + dir * 1000.0f;
+				btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+				SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+				if (cb.hasHit())
+				{
+					SAIG_QuadAdd(&BTVEC_F3(cb.m_hitPointWorld));
+				}
+			}
+
+			if (SSInput_GetKeyEvents(SIK_H) == InputEvents::iv_k_first)
+			{
+				ID idaq = SAIG_GridTraceBeam(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);// SAIG_QuadGet(&BTVEC_F3(cb.m_hitPointWorld));
+
+				if (idaq > -1)
+					SAIG_QuadDelete(idaq);
+			}
+
+			if (SSInput_GetKeyEvents(SIK_Y) == InputEvents::iv_k_first)
+			{
+				DWORD ttime = GetTickCount();
+				SAIG_GridTestValidation();
+				ttime = GetTickCount() - ttime;
+				int qwerty = 0;
+			}
+
+			if (SSInput_GetKeyEvents(SIK_U) == InputEvents::iv_k_first)
+			{
+				ID beginq = SAIG_QuadGet(&float3(0, 0, 0), true);
+				ID endq = SAIG_QuadGet(&float3(-10.77, -1.5, 12.8), true);
+				//ObjAIGrid->QuadGetNearG(beginq, endq);
+				SAIG_GridFindPath(beginq, endq);
+
+				Array<ID> tmparr;
+				tmparr.resize(SAIG_GridGetSizePath());
+				SAIG_GridGetPath(&(tmparr[0]), tmparr.size());
+
+				SAIG_GridSetColorArr(&(tmparr[0]), D3DCOLOR_ARGB(128, 200, 200, 0), tmparr.size());
+			}
+
+			if (SSInput_GetKeyEvents(SIK_I) == InputEvents::iv_k_first)
+			{
+				ID idaq = SAIG_GridTraceBeam(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);// SAIG_QuadGet(&BTVEC_F3(cb.m_hitPointWorld));
+
+				if (idaq > -1)
+					SAIG_QuadSelect(idaq, true);
+			}
+
+			if (SSInput_GetKeyEvents(SIK_O) == InputEvents::iv_k_first)
+			{
+				SAIG_GridSetMarkSplits(!SAIG_GridGetMarkSplits());
+			}
+
+			if (SSInput_GetKeyEvents(SIK_P) == InputEvents::iv_k_first)
+			{
+				SAIG_GridSave("D:\\project\\engine\\build\\gamesource\\levels\\stalker_atp\\aigrid.aigrid");
+			}
+
+			if (SSInput_GetKeyEvents(SIK_L) == InputEvents::iv_k_first)
+			{
+				SAIG_GridLoad("D:\\project\\engine\\build\\gamesource\\levels\\stalker_atp\\aigrid.aigrid");
+			}*/
 
 			DWORD currTime = TimeGetMls(G_Timer_Render_Scene);
 			DWORD timeDelta = (currTime - lastTime);
@@ -438,7 +508,7 @@ void SkyXEngine_Kill()
 #if !defined(SX_PARTICLES_EDITOR)
 	SXGame_AKill();
 #endif
-
+	SPE_AKill();
 	SXDecals_AKill();
 	SXPhysics_AKill();
 	SXAnim_AKill();

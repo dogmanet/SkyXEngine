@@ -53,7 +53,7 @@ SX_LIB_API void SPE_0Create(
 
 SX_LIB_API void SPE_RTDepthSet(ID id);	//!< установка илентификатора render target глубины сцены (для маягких/soft частиц)
 
-SX_LIB_API void SPE_0Kill();	//!< уничтожить подсистему
+SX_LIB_API void SPE_AKill();	//!< уничтожить подсистему
 
 //!@}
 
