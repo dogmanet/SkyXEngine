@@ -189,5 +189,23 @@
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resource\aigrid_bound.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_bound.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\aigrid_quad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\aigrid_graphpoint.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_quad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_graphpoint.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

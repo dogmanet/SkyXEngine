@@ -5,7 +5,7 @@
 
 #define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || ArrQuads.size() <= id) {reportf(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", gen_msg_location, id); return retval;}
 
-#define toint100(fnum) (int32_t)((fnum + 0.000001f) * 100)
+#define toint100(fnum) (int32_t)((fnum + 0.0001f) * 100)
 
 //long значения позиций, float3 * 100
 struct int3
@@ -153,6 +153,7 @@ public:
 	inline void BBGetPos(float3* pos) const;
 
 	inline void BBCreateFinish();	//завершение создания ограничивающего объема, после которого изменить какие-либо его данные будет невозможно
+	inline bool BBIsCreatedFinish() const;
 	//}
 
 	//квады
@@ -180,8 +181,10 @@ public:
 	//сетка
 	//{
 	void GridGenerate();											//функция просчетов, ее нужно вызывать чтобы просчитать всю аи сетку
+	void GridClear();
 	ID GridTraceBeam(const float3* start, const float3* dir) const;	//трассировка луча и проверка его пересечения с каким либо квадом сетки
 	void GridTestValidation();										//тест действительности сетки и устранение возможных дефектов
+	inline UINT GridGetCountSplits();										//
 	inline void GridSetMarkSplits(bool mark);						//выделение сплитов
 	inline bool GridGetMarkSplits();								//возвращает состояние выделения сплитов
 	inline UINT GridGetCountQuads();								//возвращает количество квадов в сетке

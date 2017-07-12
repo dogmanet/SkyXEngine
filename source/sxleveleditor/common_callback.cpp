@@ -416,6 +416,50 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	{
 
 	}
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	{
+		if (SXLevelEditor::RadioButtonAIQuadAdd->GetCheck())
+		{
+			float3 start = pos;
+			float3 dir = camDir;
+			float3 end = start + dir * 1000.0f;
+			btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+			if (cb.hasHit())
+			{
+				SAIG_QuadAdd(&BTVEC_F3(cb.m_hitPointWorld));
+			}
+		}
+		else if (SXLevelEditor::RadioButtonAIQuadsMSel->GetCheck())
+		{
+			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
+
+			if (idaq > -1)
+				SAIG_QuadSelect(idaq, true);
+		}
+		else if (SXLevelEditor::RadioButtonAIQuadsSelDel->GetCheck())
+		{
+			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
+
+			if (idaq > -1)
+				SAIG_QuadDelete(idaq);
+		}
+		else if (SXLevelEditor::RadioButtonAIGPAdd->GetCheck())
+		{
+			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
+
+			if (idaq > -1)
+				SAIG_GraphPointAdd(idaq);
+		}
+		else if (SXLevelEditor::RadioButtonAIGPDel->GetCheck())
+		{
+			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
+
+			if (idaq > -1)
+				SAIG_GraphPointDelete(idaq);
+		}
+	}
 	
 	return 0;
 }
@@ -425,26 +469,26 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
+	float3 camDir;
+	float det;
+	SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
+	POINT pt;
+	GetCursorPos(&pt);
+	ScreenToClient(GData::Handle3D, &pt);
+
+	float3 pos = float3(
+		(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
+		-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
+		1.0f
+		) * mat;
+	camDir = pos - GData::ConstCurrCamPos;
+
 	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
 	{
 		float3 _res;
 		float3_t pos2;
 		ID idmodel;
 		ID idmtl;
-
-		float3 camDir;
-		float det;
-		SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
-		POINT pt;
-		GetCursorPos(&pt);
-		ScreenToClient(GData::Handle3D, &pt);
-
-		float3 pos = float3(
-			(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
-			-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
-			1.0f
-			) * mat;
-		camDir = pos - GData::ConstCurrCamPos;
 
 		ID idgreen;
 		ID idsplit;
@@ -455,6 +499,30 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 			if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
 				GData::Editors::GreenBoxPos = _res;
 		}
+	}
+
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	{
+		if (SXLevelEditor::RadioButtonAIQuadsMSel->GetCheck())
+		{
+			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
+
+			if (idaq > -1)
+				SAIG_QuadSelect(idaq, false);
+		}
+	}
+
+	return 0;
+}
+
+LRESULT SXLevelEditor_RenderWindow_MBUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
+		return 0;
+
+	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	{
+		SAIG_QuadSelect(-1, false);
 	}
 
 	return 0;
@@ -494,9 +562,8 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 	}
 
 	SXLevelEditor::GreenActivateAll(false);
-
 	SXLevelEditor::GameActivateAll(false);
-
+	SXLevelEditor::AIGridActivateAll(false);
 	SXLevelEditor::GeomActivateAll(false);
 	SXLevelEditor::GeomActivateCreate(true);
 	//SXLevelEditor::GeomActivateTrans(false);
@@ -530,6 +597,7 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	SXLevelEditor::GreenActivateAll(false);
 	SXLevelEditor::GreenActivateCreate(true);
+	SXLevelEditor::AIGridActivateAll(false);
 	SXLevelEditor::GreenActivateMain(true);
 	
 	//MCActivateTrans(false);
@@ -564,10 +632,27 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 
 	SXLevelEditor::GeomActivateAll(false);
 	SXLevelEditor::GreenActivateAll(false);
-
+	SXLevelEditor::AIGridActivateAll(false);
 	SXLevelEditor::GameActivateAll(true);
 
 	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GAME;
+	GData::Editors::ActiveElement = -1;
+	return 0;
+}
+
+LRESULT SXLevelEditor_ButtonAIGridOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	SXLevelEditor::ListBoxList->Clear();
+
+	SXLevelEditor::StaticListValCount->SetText("0");
+
+	SXLevelEditor::GeomActivateAll(false);
+	SXLevelEditor::GreenActivateAll(false);
+	SXLevelEditor::GameActivateAll(false);
+
+	SXLevelEditor::AIGridActivateAll(true);
+
+	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_AIGRID;
 	GData::Editors::ActiveElement = -1;
 	return 0;
 }
@@ -703,15 +788,19 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			if (
 				GData::Editors::ActiveElement &&
 				(
-					GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM ||
-					(GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0) ||
-					GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME
+				GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM ||
+				(GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0) ||
+				GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME
 				)
 				)
-			SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
-			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
-			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
-			GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
+			{
+				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
+				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
+			}
+			else
+				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
 		}
 		else if (SXLevelEditor::CheckBoxTBRot->GetHWND() == handle_elem)
 		{
@@ -722,6 +811,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
 				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
 			}
+			else
+				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 		}
 		else if (SXLevelEditor::CheckBoxTBScale->GetHWND() == handle_elem)
 		{
@@ -732,6 +823,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
 				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
 			}
+			else
+				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
 		}
 
 		else if (SXLevelEditor::ButtonTBNew->GetHWND() == handle_elem)
@@ -825,6 +918,19 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			GData::Editors::SelBackFacesCull = SXLevelEditor::CheckBoxTBSelCullBack->GetCheck();
 			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, SXLevelEditor::CheckBoxTBSelCullBack->GetCheck());
 		}
+
+		else if (SXLevelEditor::CheckBoxTBAIGBound->GetHWND() == handle_elem)
+		{
+			GData::Editors::AIGBound = SXLevelEditor::CheckBoxTBAIGBound->GetCheck();
+		}
+		else if (SXLevelEditor::CheckBoxTBAIGQuad->GetHWND() == handle_elem)
+		{
+			GData::Editors::AIGQuad = SXLevelEditor::CheckBoxTBAIGQuad->GetCheck();
+		}
+		else if (SXLevelEditor::CheckBoxTBAIGGraphPoint->GetHWND() == handle_elem)
+		{
+			GData::Editors::AIGGraphPoint = SXLevelEditor::CheckBoxTBAIGGraphPoint->GetCheck();
+		}
 	}
 
 	return 0;
@@ -837,7 +943,8 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 	HWND handle_elem = (HWND)(lParam);
 	if (Notification == BN_CLICKED)
 	{
-		
+		if (handle_elem == SXLevelEditor::CheckBoxAIGridMarkedSplits->GetHWND())
+			SAIG_GridSetMarkSplits(SXLevelEditor::CheckBoxAIGridMarkedSplits->GetCheck());
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
@@ -1017,18 +1124,18 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 
 	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		if (::GetAsyncKeyState(VK_LSHIFT) && SGeom_ModelsGetCount() > 0)
+		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_ModelsGetCount() > 0)
 		{
 			DWORD selmodel = SXLevelEditor::ListBoxList->GetSel();
 			if (SXLevelEditor::RadioButtonGeomPosX->GetCheck() || SXLevelEditor::RadioButtonGeomPosY->GetCheck() || SXLevelEditor::RadioButtonGeomPosZ->GetCheck())
 			{
 				float3& pos = *(SGeom_ModelsMGetPosition(selmodel));
 
-				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
-				if (::GetAsyncKeyState(VK_DOWN) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_DOWN))
 					pos[CoordinateTransformation] -= timeDelta * 0.001f;
-				if (::GetAsyncKeyState(VK_LBUTTON) & 0x8000f)
+				if (SSInput_GetKeyState(SIM_LBUTTON))
 				{
 					if (IsSFirstRBMTransform)
 					{
@@ -1073,11 +1180,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			{
 				float3& pos = *(SGeom_ModelsMGetRotation(selmodel));
 
-				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
-				if (::GetAsyncKeyState(VK_DOWN) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_DOWN))
 					pos[CoordinateTransformation] -= timeDelta * 0.001f;
-				if (::GetAsyncKeyState(VK_LBUTTON) & 0x8000f)
+
+				if (SSInput_GetKeyState(SIM_LBUTTON))
 				{
 					if (IsSFirstRBMTransform)
 					{
@@ -1122,11 +1230,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			{
 				float3& pos = *(SGeom_ModelsMGetScale(selmodel));
 
-				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
-				if (::GetAsyncKeyState(VK_DOWN) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_DOWN))
 					pos[CoordinateTransformation] -= timeDelta * 0.001f;
-				if (::GetAsyncKeyState(VK_LBUTTON) & 0x8000f)
+
+				if (SSInput_GetKeyState(SIM_LBUTTON))
 				{
 					if (IsSFirstRBMTransform)
 					{
@@ -1175,7 +1284,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			)
 		)
 	{
-		if (::GetAsyncKeyState(VK_LSHIFT) && SGeom_GreenGetCount() > 0)
+		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_GreenGetCount() > 0)
 		{
 			DWORD selmodel = SXLevelEditor::ListBoxList->GetSel();
 			if (SXLevelEditor::RadioButtonGreenSelX->GetCheck() || SXLevelEditor::RadioButtonGreenSelY->GetCheck() || SXLevelEditor::RadioButtonGreenSelZ->GetCheck())
@@ -1190,11 +1299,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 					pos = pos2;
 				}
 
-				if (::GetAsyncKeyState(VK_UP) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += float(timeDelta) * 0.001f;
-				if (::GetAsyncKeyState(VK_DOWN) & 0x8000f)
+				if (SSInput_GetKeyState(SIK_DOWN))
 					pos[CoordinateTransformation] -= float(timeDelta) * 0.001f;
-				if (::GetAsyncKeyState(VK_LBUTTON) & 0x8000f)
+
+				if (SSInput_GetKeyState(SIM_LBUTTON))
 				{
 					if (IsSFirstRBMTransform)
 					{
@@ -1237,6 +1347,47 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				else
 					SGeom_GreenSetPosObject(GData::Editors::ActiveElement, &GData::Editors::ActiveGreenSplit, &GData::Editors::ActiveGreenObject, &float3_t(pos));
 			}
+		}
+	}
+
+	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	{
+		if (SSInput_GetKeyState(SIK_LSHIFT))
+		{
+			float posy = 0.f;
+
+			if (SSInput_GetKeyState(SIK_UP))
+				posy += float(timeDelta) * 0.001f;
+			if (SSInput_GetKeyState(SIK_DOWN))
+				posy -= float(timeDelta) * 0.001f;
+
+			if (SSInput_GetKeyState(SIM_LBUTTON))
+			{
+				if (IsSFirstRBMTransform)
+				{
+					RECT rc;
+					GetWindowRect(GetForegroundWindow(), &rc);
+					UINT cx = (rc.right + rc.left) / 2;
+					UINT cy = (rc.bottom + rc.top) / 2;
+					POINT p;
+					GetCursorPos(&p);
+					POINT centr;
+					centr.x = cx; centr.y = cy;
+
+					if (cy != UINT(p.y))
+						posy += float(timeDelta) * 0.001f * float(-int(p.y - cy));
+				}
+				else
+					IsSFirstRBMTransform = true;
+				CameraUpdate::CentererCursor();
+			}
+			else
+			{
+				IsSFirstLBMTransform = false;
+				IsSFirstRBMTransform = false;
+			}
+
+			SAIG_QuadSelectedAddPosY(posy);
 		}
 	}
 }

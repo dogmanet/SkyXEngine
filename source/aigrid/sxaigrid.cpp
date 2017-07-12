@@ -140,7 +140,7 @@ void SAIG_BBSetPos(const float3* pos)
 	ObjAIGrid->BBSetPos(pos);
 }
 
-void SAIG_BBGePos(float3* pos)
+void SAIG_BBGetPos(float3* pos)
 {
 	AIG_PRECOND(_VOID);
 
@@ -152,6 +152,13 @@ void SAIG_BBCreateFinish()
 	AIG_PRECOND(_VOID);
 
 	ObjAIGrid->BBCreateFinish();
+}
+
+bool SAIG_BBIsCreatedFinish()
+{
+	AIG_PRECOND(false);
+
+	return ObjAIGrid->BBIsCreatedFinish();
 }
 
 AIQUAD_STATE SAIG_QuadGetState(ID id)
@@ -203,6 +210,14 @@ bool SAIG_QuadDelete(ID id)
 	return ObjAIGrid->QuadDelete(id);
 }
 
+
+void SAIG_GridClear()
+{
+	AIG_PRECOND(_VOID);
+
+	ObjAIGrid->GridClear();
+}
+
 ID SAIG_GridTraceBeam(const float3* start, const float3* dir)
 {
 	AIG_PRECOND(-1);
@@ -250,6 +265,13 @@ void SAIG_GridTestValidation()
 	AIG_PRECOND(_VOID);
 
 	ObjAIGrid->GridTestValidation();
+}
+
+UINT SAIG_GridGetCountSplits()
+{
+	AIG_PRECOND(0);
+
+	return ObjAIGrid->GridGetCountSplits();
 }
 
 void SAIG_GridSetMarkSplits(bool mark)

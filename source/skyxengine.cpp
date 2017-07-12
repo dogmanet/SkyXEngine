@@ -94,6 +94,7 @@ void SkyXEngine_Init()
 
 #if defined(SX_LEVEL_EDITOR)
 	SAIG_0Create("sxaigrid", true, false);
+	SAIG_BBCreate(&float3(0, 0, 0), &float3(10, 10, 10));
 #else
 	SAIG_0Create("sxaigrid", false, false);
 #endif

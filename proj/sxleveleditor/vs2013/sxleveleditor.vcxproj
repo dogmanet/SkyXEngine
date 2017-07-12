@@ -134,6 +134,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_bound.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_graphpoint.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_quad.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp" />
@@ -154,6 +157,9 @@
     <Image Include="..\..\..\source\sxleveleditor\resource\sel_m.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\sel_s.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\sel_z.bmp" />
+    <Image Include="resource\aigrid_bound.bmp" />
+    <Image Include="resource\aigrid_graphpoint.bmp" />
+    <Image Include="resource\aigrid_quad.bmp" />
     <Image Include="resource\arrow.bmp" />
     <Image Include="resource\axes.bmp" />
     <Image Include="resource\grid.bmp" />

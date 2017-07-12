@@ -117,18 +117,19 @@ SX_LIB_API void SAIG_BBGetDimensions(float3* dim);			//!< записывает габариты бб
 
 //установка/получение позиции
 SX_LIB_API void SAIG_BBSetPos(const float3* pos);			//!< установак позиции ббокса
-SX_LIB_API void SAIG_BBGePos(float3* pos);					//!< записывает позицию ббокса
+SX_LIB_API void SAIG_BBGetPos(float3* pos);					//!< записывает позицию ббокса
 
 SX_LIB_API void SAIG_BBCreateFinish();						//!< завершение создания ограничивающего объема, после которого изменить какие-либо его данные будет невозможно
-
+SX_LIB_API bool SAIG_BBIsCreatedFinish();					//!< завершено ли создание ббокса
 //!@}
 
 /*! \name Управление AI сеткой
 @{*/
 
+SX_LIB_API void SAIG_GridClear();							//!< очистка данных сетки
 SX_LIB_API ID SAIG_GridTraceBeam(const float3* start, const float3* dir);	//!< трассировка луча и проверка его пересечения с каким либо квадом сетки, возвращает id квада если было пересечение
 SX_LIB_API void SAIG_GridTestValidation();									//!< тест действительности сетки и устранение возможных дефектов
-
+SX_LIB_API UINT SAIG_GridGetCountSplits();
 SX_LIB_API void SAIG_GridSetMarkSplits(bool mark);			//!< выделение сплитов
 SX_LIB_API bool SAIG_GridGetMarkSplits();					//!< возвращает состояние выделения сплитов
 
@@ -149,7 +150,7 @@ SX_LIB_API void SAIG_GridSetNullColor();					//!< обнуление увета у всех квадов
 SX_LIB_API void SAIG_QuadSetState(ID id, AIQUAD_STATE state);	//!< устанавливает состояние для квада
 SX_LIB_API AIQUAD_STATE SAIG_QuadGetState(ID id);				//!< возвращает текущее состояние квада
 
-SX_LIB_API ID SAIG_QuadGet(const float3* pos, bool isnear_or_permissible);				//!< получить id квада по позиции, isnear_or_permissible - самый ближний квад (true), или самый ближний в пределах допустимой разницы начальной точки (false)?
+SX_LIB_API ID SAIG_QuadGet(const float3* pos, bool isnear_or_permissible);		//!< получить id квада по позиции, isnear_or_permissible - самый ближний квад (true), или самый ближний в пределах допустимой разницы начальной точки (false)?
 
 SX_LIB_API void SAIG_QuadSetPosY(ID id, float posy);			//!< установка позиции по оси Y для квада
 SX_LIB_API float SAIG_QuadGetPosY(ID id);						//!< возвращает позицию по оси Y квада

@@ -132,7 +132,8 @@ void AIGrid::GridLoad(const char* path)
 		fread(&tmpparam, sizeof(float3_t), 1, file);
 
 		BBCreate(&float3(tmpcenter), &float3(tmpparam));
-
+		Max = ArrBound[0]->max;
+		Min = ArrBound[0]->min;
 		int32_t CountObjectBB = 0;
 		fread(&CountObjectBB, sizeof(int32_t), 1, file);
 
@@ -298,6 +299,12 @@ inline bool AIGrid::BBIsCreated() const
 
 void AIGrid::BBSetDimensions(const float3* dim)
 {
+	if (ArrBound.size() <= 0)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "sxaigrid: bound box is not created");
+		return;
+	}
+
 	if (ArrBound.size() > 1)
 	{
 		reportf(REPORT_MSG_LEVEL_WARRNING, "sxaigrid: bound box already splitting, unresolved set dimensions");
@@ -334,6 +341,12 @@ void AIGrid::BBSetDimensions(const float3* dim)
 
 void AIGrid::BBGetDimensions(float3* dim) const
 {
+	if (ArrBound.size() <= 0)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "sxaigrid: bound box is not created");
+		return;
+	}
+
 	if (!dim)
 		return;
 
@@ -344,7 +357,13 @@ void AIGrid::BBGetDimensions(float3* dim) const
 
 void AIGrid::BBSetPos(const float3* pos)
 {
-	if(ArrBound.size() > 1 || !pos)
+	if (ArrBound.size() <= 0)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "sxaigrid: bound box is not created");
+		return;
+	}
+
+	if(ArrBound.size() > 1)
 	{
 		reportf(REPORT_MSG_LEVEL_WARRNING, "sxaigrid: bound box already splitting, unresolved set position");
 		return;
@@ -374,6 +393,12 @@ void AIGrid::BBSetPos(const float3* pos)
 
 void AIGrid::BBGetPos(float3* pos) const
 {
+	if (ArrBound.size() <= 0)
+	{
+		reportf(REPORT_MSG_LEVEL_WARRNING, "sxaigrid: bound box is not created");
+		return;
+	}
+
 	if (!pos)
 		return;
 
@@ -408,6 +433,11 @@ void AIGrid::BBCreateFinish()
 
 		SplitBB(tmpx, tmpy, tmpz);
 	}
+}
+
+bool AIGrid::BBIsCreatedFinish() const
+{
+	return (ArrBound.size() > 1);
 }
 
 AIQUAD_STATE AIGrid::QuadGetState(ID id) const
@@ -730,13 +760,16 @@ void AIGrid::QuadDelete2(ID id)
 
 void AIGrid::QuadSelect(ID id, bool consider_prev)
 {
+	if (id < 0)
+	{
+		ArrSelected.clear();
+		return;
+	}
+
 	AIGRID_QUAD_PRECOND(id, _VOID);
 
 	if (!consider_prev)
 		ArrSelected.clear();
-
-	if (id < 0)
-		return;
 
 	if (QuadSelectedExists(id))
 		return;
@@ -787,7 +820,7 @@ void AIGrid::QuadSelectedAddPosY(float posy)
 	for (int i = 0, il = ArrSelected.size(); i < il; ++i)
 	{
 		if (ArrSelected[i] >= 0 && ArrQuads.size() > ArrSelected[i])
-			ArrQuads[ArrSelected[i]]->pos.x += posy;
+			ArrQuads[ArrSelected[i]]->pos.y += posy;
 	}
 }
 
@@ -797,6 +830,8 @@ void AIGrid::QuadSelectedDelete()
 	{
 		QuadDelete(ArrSelected[i]);
 	}
+
+	ArrSelected.clear();
 }
 
 void AIGrid::PhyNavigate(AIQuad* quad)
@@ -937,16 +972,10 @@ void AIGrid::GraphicsInit()
 
 void AIGrid::Clear()
 {
-	for (int i = 0, il = ArrQuads.size(); i < il; ++i)
-	{
-		AllocAIQuad.Delete(ArrQuads[i]);
-	}
+	AllocAIQuad.clear();
 	ArrQuads.clear();
 
-	for (int i = 0, il = ArrBound.size(); i < il; ++i)
-	{
-		AllocBoundAIQuad.Delete(ArrBound[i]);
-	}
+	AllocBoundAIQuad.clear();
 	ArrBound.clear();
 
 	mem_release_del(TransVertBuf);
@@ -961,6 +990,29 @@ void AIGrid::Clear()
 	ArrGraphPointsIDs.clear();
 	ArrCostGPIDs.clear();
 	mem_release_del(BoundBox);
+}
+
+void AIGrid::GridClear()
+{
+	AllocAIQuad.clear();
+	ArrQuads.clear();
+
+	for (int i = 0, il = ArrBound.size(); i < il; ++i)
+	{
+		ArrBound[i]->ArrIdsQuads.clear();
+	}
+
+	mem_release_del(TransVertBuf);
+	ArrColor.clear();
+	ArrIDsInOpen.clear();
+	ArrCostQuads.clear();
+	ArrOpenIDs.clear();
+	ArrParentIDs.clear();
+	ArrCloseIDs.clear();
+	ArrState.clear();
+	ArrPreCondFreeState.clear();
+	ArrGraphPointsIDs.clear();
+	ArrCostGPIDs.clear();
 }
 
 void AIGrid::SplitBB(int xv,int yv,int zv)
@@ -2074,6 +2126,11 @@ void AIGrid::GridTestValidation()
 	reportf(REPORT_MSG_LEVEL_NOTICE, "sxaigrid: AI grid is validation, deleted quads %d, count splits %d\n", oldcountquads - ArrQuads.size(), CountSplits);
 }
 
+UINT AIGrid::GridGetCountSplits()
+{
+	return CountSplits;
+}
+
 void AIGrid::GridSetMarkSplits(bool mark)
 {
 	IsMarkSplits = mark;
@@ -2231,10 +2288,10 @@ void AIGrid::RenderGraphPoints(const float3 * viewpos, float dist)
 		for (UINT i = 0; i<ArrGraphPointsIDs.size(); ++i)
 		{
 			aq = ArrQuads[ArrGraphPointsIDs[i]];
-			if (!(aq->IsClose) && SMVector3Distance(aq->pos, (*viewpos)) > dist)
+			if (!(aq->IsClose) && SMVector3Distance(aq->pos, (*viewpos)) <= dist)
 			{
 				RTGPUArrVerteces[tmpkey].pos = aq->pos;
-				RTGPUArrVerteces[tmpkey].pos.y += 0.1f;
+				//RTGPUArrVerteces[tmpkey].pos.y += 0.1f;
 
 				if (aq->axisx == 1 && aq->axisy == -1)
 					RTGPUArrVerteces[tmpkey].tex = float4_t(0.25f, 0.25f, 0, 0);

@@ -55,6 +55,7 @@ See the license in LICENSE
 #define EDITORS_LEVEL_GROUPTYPE_GEOM	1	/*!< статическая геометрия */
 #define EDITORS_LEVEL_GROUPTYPE_GREEN	2	/*!< растительность */
 #define EDITORS_LEVEL_GROUPTYPE_GAME	3	/*!< игровые объекты */
+#define EDITORS_LEVEL_GROUPTYPE_AIGRID	4	/*!< ai сетка */
 
 //!@}
 
@@ -204,6 +205,10 @@ namespace GData
 		bool SelZTest = false;			//!< использовать ли z-test при выделении?
 		bool SelMesh = false;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
 		bool SelBackFacesCull = false;	//!< отсекать ли задние грани при выделении?
+
+		bool AIGBound = true;			//!< отрисовка боунда ai сетки
+		bool AIGQuad = true;			//!< отрисовка квадов ai сетки
+		bool AIGGraphPoint = true;		//!< отрисовка графпоинтов ai сетки
 		
 		//bound box для массового создания объектов растительности
 		bool GreenRenderBox = false;	//!< разрешено ли рисовать бокс?

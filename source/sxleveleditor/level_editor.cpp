@@ -31,6 +31,10 @@ namespace SXLevelEditor
 	ISXGUICheckBox* CheckBoxTBSelMesh;
 	ISXGUICheckBox* CheckBoxTBSelCullBack;
 
+	ISXGUICheckBox* CheckBoxTBAIGBound;
+	ISXGUICheckBox* CheckBoxTBAIGQuad;
+	ISXGUICheckBox* CheckBoxTBAIGGraphPoint;
+
 	ISXGUIGroupBox* GroupBoxList;
 	ISXGUIGroupBox* GroupBoxData;
 	ISXGUIListBox* ListBoxList;
@@ -41,7 +45,8 @@ namespace SXLevelEditor
 
 	ISXGUIButton* ButtonGeometryOpen;
 	ISXGUIButton* ButtonGreenOpen;
-	ISXGUIButton* ButtonGameObject;
+	ISXGUIButton* ButtonGameObjectOpen;
+	ISXGUIButton* ButtonAIGridOpen;
 
 
 	//model
@@ -136,6 +141,45 @@ namespace SXLevelEditor
 	ISXGUIButton* ButtonGameCreate;
 	//}
 
+	//aigrid
+	//{
+	ISXGUIButton* ButtonAIQuadsDelSel;
+	ISXGUIButton* ButtonAIGridGen;
+	ISXGUIButton* ButtonAIGridClear;
+	ISXGUIButton* ButtonAIClearAll;
+	ISXGUIStatic* StatiAIBBDimensions;
+	ISXGUIStatic* StaticAIBBDimensionsWidth;
+	ISXGUIEdit* EditAIBBDimensionsWidth;
+	ISXGUIStatic* StaticAIBBDimensionsHeight;
+	ISXGUIEdit* EditAIBBDimensionsHeight;
+	ISXGUIStatic* StaticAIBBDimensionsDepth;
+	ISXGUIEdit* EditAIBBDimensionsDepth;
+	ISXGUIStatic* StaticAIBBPos;
+	ISXGUIStatic* StaticAIBBPosX;
+	ISXGUIEdit* EditAIBBPosX;
+	ISXGUIStatic* StaticAIBBPosY;
+	ISXGUIEdit* EditAIBBPosY;
+	ISXGUIStatic* StaticAIBBPosZ;
+	ISXGUIEdit* EditAIBBPosZ;
+	ISXGUIButton* ButtonAIBBFinish;
+	ISXGUIButton* ButtonAIGPGen;
+	ISXGUIButton* ButtonAIGPClear;
+	ISXGUIRadioButton* RadioButtonAIGPAdd;
+	ISXGUIRadioButton* RadioButtonAIGPDel;
+	ISXGUIRadioButton* RadioButtonAIQuadAdd;
+	ISXGUIRadioButton* RadioButtonAIQuadsMSel;
+	ISXGUIRadioButton* RadioButtonAIQuadsSelDel;
+	ISXGUIButton* ButtonAIGridValidation;
+	ISXGUICheckBox* CheckBoxAIGridMarkedSplits;
+	ISXGUIStatic* StaticAIStatistics;
+	ISXGUIStatic* StaticAIStatsCountQuads;
+	ISXGUIStatic* StaticAIStatsCountGP;
+	ISXGUIStatic* StaticAIStatsCountSplits;
+	ISXGUIEdit* EditAIStatsCountQuads;
+	ISXGUIEdit* EditAIStatsCountGP;
+	ISXGUIEdit* EditAIStatsCountSplits;
+	//}
+
 	ISXGUIStatusBar* StatusBar1;
 
 	void InitAllElements();
@@ -164,6 +208,9 @@ namespace SXLevelEditor
 	void GameActivateAll(bool bf);
 	void GameSel(int sel);
 
+	void AIGridActivateAll(bool bf);
+	void AIGridEnableBB(bool bf);
+
 	float3 HelperPos;
 	float3 HelperRot;
 	float3 HelperScale;
@@ -173,6 +220,7 @@ namespace SXLevelEditor
 
 LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+#include <SXLevelEditor/aigrid_callback.cpp>
 #include <SXLevelEditor/game_callback.cpp>
 #include <SXLevelEditor/green_callback.cpp>
 #include <SXLevelEditor/model_callback.cpp>
@@ -208,6 +256,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_LDown, WM_LBUTTONDOWN);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_LClick, WM_LBUTTONUP);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_RClick, WM_RBUTTONUP);
+	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_MBUp, WM_MBUTTONUP);
 	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYDOWN, VK_DELETE, 1, 0, 0, 0);
 
 	SXLevelEditor::ToolBar1 = SXGUICrToolBar(0, 1, 810, 26, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
@@ -340,6 +389,33 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::CheckBoxTBSelCullBack->GAlign.top = true;
 	SXLevelEditor::CheckBoxTBSelCullBack->SetBmpInResourse(IDB_BITMAP20);
 
+
+	SXLevelEditor::CheckBoxTBAIGBound = SXGUICrCheckBoxEx("", 512, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBAIGBound->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBAIGBound->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBAIGBound->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBAIGBound->SetBmpInResourse(IDB_BITMAP22);
+
+	SXLevelEditor::CheckBoxTBAIGQuad = SXGUICrCheckBoxEx("", 536, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBAIGQuad->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBAIGQuad->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBAIGQuad->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBAIGQuad->SetBmpInResourse(IDB_BITMAP23);
+
+	SXLevelEditor::CheckBoxTBAIGGraphPoint = SXGUICrCheckBoxEx("", 560, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBAIGGraphPoint->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBAIGGraphPoint->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetBmpInResourse(IDB_BITMAP24);
+
+
+	SXLevelEditor::CheckBoxTBAIGBound->SetCheck(true);
+	GData::Editors::AIGBound = true;
+	SXLevelEditor::CheckBoxTBAIGQuad->SetCheck(true);
+	GData::Editors::AIGQuad = true;
+	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetCheck(true);
+	GData::Editors::AIGGraphPoint = true;
+
 	SXLevelEditor::CheckBoxTBGrid->SetCheck(true);
 	SXLevelEditor::CheckBoxTBAxes->SetCheck(true);
 	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
@@ -438,11 +514,17 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ButtonGreenOpen->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXLevelEditor::ButtonGreenOpen->AddHandler(SXLevelEditor_ButtonGreenOpen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonGameObject = SXGUICrButton("Game", 135, 350, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameObject->GAlign.left = true;
-	SXLevelEditor::ButtonGameObject->GAlign.top = true;
-	SXLevelEditor::ButtonGameObject->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameObject->AddHandler(SXLevelEditor_ButtonGameObjectOpen_Click, WM_LBUTTONUP);
+	SXLevelEditor::ButtonGameObjectOpen = SXGUICrButton("Game", 135, 350, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameObjectOpen->GAlign.left = true;
+	SXLevelEditor::ButtonGameObjectOpen->GAlign.top = true;
+	SXLevelEditor::ButtonGameObjectOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonGameObjectOpen->AddHandler(SXLevelEditor_ButtonGameObjectOpen_Click, WM_LBUTTONUP);
+
+	SXLevelEditor::ButtonAIGridOpen = SXGUICrButton("AI Grid", 5, 375, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIGridOpen->GAlign.left = true;
+	SXLevelEditor::ButtonAIGridOpen->GAlign.top = true;
+	SXLevelEditor::ButtonAIGridOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIGridOpen->AddHandler(SXLevelEditor_ButtonAIGridOpen_Click, WM_LBUTTONUP);
 
 	SXLevelEditor::StatusBar1 = SXGUICrStatusBar("StatusBar1", SXLevelEditor::JobWindow->GetHWND(), 0, 0);
 	SXLevelEditor::StatusBar1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1167,6 +1249,354 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ButtonGameCreate->Visible(false);
 	SXLevelEditor::ButtonGameCreate->AddHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
 	//}
+
+	//aigrid
+	//{
+	SXLevelEditor::StatiAIBBDimensions = SXGUICrStatic("Bound box dimensions:", 5, 10, 120, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StatiAIBBDimensions->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StatiAIBBDimensions->SetColorText(0, 0, 0);
+	SXLevelEditor::StatiAIBBDimensions->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StatiAIBBDimensions->SetTransparentTextBk(true);
+	SXLevelEditor::StatiAIBBDimensions->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StatiAIBBDimensions->GAlign.left = true;
+	SXLevelEditor::StatiAIBBDimensions->GAlign.top = true;
+	SXLevelEditor::StatiAIBBDimensions->Visible(false);
+
+	SXLevelEditor::StaticAIBBDimensionsWidth = SXGUICrStatic("Width:", 5, 30, 40, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsWidth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsWidth->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsWidth->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBDimensionsWidth->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBDimensionsWidth->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBDimensionsWidth->GAlign.left = true;
+	SXLevelEditor::StaticAIBBDimensionsWidth->GAlign.top = true;
+	SXLevelEditor::StaticAIBBDimensionsWidth->Visible(false);
+
+	SXLevelEditor::EditAIBBDimensionsWidth = SXGUICrEdit("0", 50, 30, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIBBDimensionsWidth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsWidth->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsWidth->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIBBDimensionsWidth->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIBBDimensionsWidth->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIBBDimensionsWidth->GAlign.left = true;
+	SXLevelEditor::EditAIBBDimensionsWidth->GAlign.top = true;
+	SXLevelEditor::EditAIBBDimensionsWidth->Visible(false);
+	SXLevelEditor::EditAIBBDimensionsWidth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsWidth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
+
+	SXLevelEditor::StaticAIBBDimensionsHeight = SXGUICrStatic("Height:", 5, 50, 40, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsHeight->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsHeight->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsHeight->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBDimensionsHeight->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBDimensionsHeight->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBDimensionsHeight->GAlign.left = true;
+	SXLevelEditor::StaticAIBBDimensionsHeight->GAlign.top = true;
+	SXLevelEditor::StaticAIBBDimensionsHeight->Visible(false);
+
+	SXLevelEditor::EditAIBBDimensionsHeight = SXGUICrEdit("0", 50, 50, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIBBDimensionsHeight->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsHeight->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsHeight->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIBBDimensionsHeight->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIBBDimensionsHeight->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIBBDimensionsHeight->GAlign.left = true;
+	SXLevelEditor::EditAIBBDimensionsHeight->GAlign.top = true;
+	SXLevelEditor::EditAIBBDimensionsHeight->Visible(false);
+	SXLevelEditor::EditAIBBDimensionsHeight->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsHeight->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
+
+	SXLevelEditor::StaticAIBBDimensionsDepth = SXGUICrStatic("Depth:", 5, 70, 40, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsDepth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsDepth->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBDimensionsDepth->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBDimensionsDepth->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBDimensionsDepth->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBDimensionsDepth->GAlign.left = true;
+	SXLevelEditor::StaticAIBBDimensionsDepth->GAlign.top = true;
+	SXLevelEditor::StaticAIBBDimensionsDepth->Visible(false);
+
+	SXLevelEditor::EditAIBBDimensionsDepth = SXGUICrEdit("0", 50, 70, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIBBDimensionsDepth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsDepth->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsDepth->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIBBDimensionsDepth->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIBBDimensionsDepth->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIBBDimensionsDepth->GAlign.left = true;
+	SXLevelEditor::EditAIBBDimensionsDepth->GAlign.top = true;
+	SXLevelEditor::EditAIBBDimensionsDepth->Visible(false);
+	SXLevelEditor::EditAIBBDimensionsDepth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditAIBBDimensionsDepth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
+
+
+	SXLevelEditor::StaticAIBBPos = SXGUICrStatic("Bound box position:", 5, 95, 100, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBPos->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBPos->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBPos->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBPos->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBPos->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBPos->GAlign.left = true;
+	SXLevelEditor::StaticAIBBPos->GAlign.top = true;
+	SXLevelEditor::StaticAIBBPos->Visible(false);
+
+	SXLevelEditor::StaticAIBBPosX = SXGUICrStatic("x:", 5, 115, 10, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBPosX->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBPosX->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBPosX->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBPosX->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBPosX->GAlign.left = true;
+	SXLevelEditor::StaticAIBBPosX->GAlign.top = true;
+	SXLevelEditor::StaticAIBBPosX->Visible(false);
+
+	SXLevelEditor::EditAIBBPosX = SXGUICrEdit("0", 15, 115, 65, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIBBPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIBBPosX->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIBBPosX->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIBBPosX->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIBBPosX->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIBBPosX->GAlign.left = true;
+	SXLevelEditor::EditAIBBPosX->GAlign.top = true;
+	SXLevelEditor::EditAIBBPosX->Visible(false);
+	SXLevelEditor::EditAIBBPosX->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditAIBBPosX->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
+
+	SXLevelEditor::StaticAIBBPosY = SXGUICrStatic("y:", 85, 115, 10, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBPosY->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBPosY->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBPosY->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBPosY->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBPosY->GAlign.left = true;
+	SXLevelEditor::StaticAIBBPosY->GAlign.top = true;
+	SXLevelEditor::StaticAIBBPosY->Visible(false);
+
+	SXLevelEditor::EditAIBBPosY = SXGUICrEdit("0", 95, 115, 65, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIBBPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIBBPosY->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIBBPosY->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIBBPosY->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIBBPosY->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIBBPosY->GAlign.left = true;
+	SXLevelEditor::EditAIBBPosY->GAlign.top = true;
+	SXLevelEditor::EditAIBBPosY->Visible(false);
+	SXLevelEditor::EditAIBBPosY->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditAIBBPosY->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
+
+	SXLevelEditor::StaticAIBBPosZ = SXGUICrStatic("z:", 165, 115, 10, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIBBPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIBBPosZ->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIBBPosZ->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIBBPosZ->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIBBPosZ->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIBBPosZ->GAlign.left = true;
+	SXLevelEditor::StaticAIBBPosZ->GAlign.top = true;
+	SXLevelEditor::StaticAIBBPosZ->Visible(false);
+
+	SXLevelEditor::EditAIBBPosZ = SXGUICrEdit("0", 175, 115, 65, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIBBPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIBBPosZ->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIBBPosZ->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIBBPosZ->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIBBPosZ->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIBBPosZ->GAlign.left = true;
+	SXLevelEditor::EditAIBBPosZ->GAlign.top = true;
+	SXLevelEditor::EditAIBBPosZ->Visible(false);
+	SXLevelEditor::EditAIBBPosZ->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditAIBBPosZ->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
+
+	SXLevelEditor::ButtonAIBBFinish = SXGUICrButton("Create bound box", 15, 140, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIBBFinish->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIBBFinish->GAlign.left = true;
+	SXLevelEditor::ButtonAIBBFinish->GAlign.top = true;
+	SXLevelEditor::ButtonAIBBFinish->Visible(false);
+	SXLevelEditor::ButtonAIBBFinish->AddHandler(SXLevelEditor_ButtonAIBBFinish_Click, WM_LBUTTONUP);
+	
+
+	SXLevelEditor::RadioButtonAIQuadAdd = SXGUICrRadioButton("AI quad add", 250, 10, 130, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::RadioButtonAIQuadAdd->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::RadioButtonAIQuadAdd->SetColorText(0, 0, 0);
+	SXLevelEditor::RadioButtonAIQuadAdd->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::RadioButtonAIQuadAdd->SetTransparentTextBk(true);
+	SXLevelEditor::RadioButtonAIQuadAdd->SetColorBrush(220, 220, 220);
+	SXLevelEditor::RadioButtonAIQuadAdd->GAlign.left = true;
+	SXLevelEditor::RadioButtonAIQuadAdd->GAlign.top = true;
+	SXLevelEditor::RadioButtonAIQuadAdd->Visible(false);
+
+	SXLevelEditor::RadioButtonAIQuadsMSel = SXGUICrRadioButton("AI quads multi select", 250, 40, 130, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::RadioButtonAIQuadsMSel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::RadioButtonAIQuadsMSel->SetColorText(0, 0, 0);
+	SXLevelEditor::RadioButtonAIQuadsMSel->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::RadioButtonAIQuadsMSel->SetTransparentTextBk(true);
+	SXLevelEditor::RadioButtonAIQuadsMSel->SetColorBrush(220, 220, 220);
+	SXLevelEditor::RadioButtonAIQuadsMSel->GAlign.left = true;
+	SXLevelEditor::RadioButtonAIQuadsMSel->GAlign.top = true;
+	SXLevelEditor::RadioButtonAIQuadsMSel->Visible(false);
+
+	SXLevelEditor::RadioButtonAIQuadsSelDel = SXGUICrRadioButton("AI quads select->delete", 250, 70, 130, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::RadioButtonAIQuadsSelDel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::RadioButtonAIQuadsSelDel->SetColorText(0, 0, 0);
+	SXLevelEditor::RadioButtonAIQuadsSelDel->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::RadioButtonAIQuadsSelDel->SetTransparentTextBk(true);
+	SXLevelEditor::RadioButtonAIQuadsSelDel->SetColorBrush(220, 220, 220);
+	SXLevelEditor::RadioButtonAIQuadsSelDel->GAlign.left = true;
+	SXLevelEditor::RadioButtonAIQuadsSelDel->GAlign.top = true;
+	SXLevelEditor::RadioButtonAIQuadsSelDel->Visible(false);
+
+	SXLevelEditor::ButtonAIQuadsDelSel = SXGUICrButton("AI quads delete selected", 250, 100, 130, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIQuadsDelSel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIQuadsDelSel->GAlign.left = true;
+	SXLevelEditor::ButtonAIQuadsDelSel->GAlign.top = true;
+	SXLevelEditor::ButtonAIQuadsDelSel->Visible(false);
+	SXLevelEditor::ButtonAIQuadsDelSel->AddHandler(SXLevelEditor_ButtonAIQuadsDelSel_Click, WM_LBUTTONUP);
+
+	SXLevelEditor::ButtonAIGridGen = SXGUICrButton("AI grid generation", 250, 130, 130, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIGridGen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIGridGen->GAlign.left = true;
+	SXLevelEditor::ButtonAIGridGen->GAlign.top = true;
+	SXLevelEditor::ButtonAIGridGen->Visible(false);
+	SXLevelEditor::ButtonAIGridGen->AddHandler(SXLevelEditor_ButtonAIGridGen_Click, WM_LBUTTONUP);
+
+	SXLevelEditor::ButtonAIGridClear = SXGUICrButton("AI grid clear", 250, 160, 130, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIGridClear->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIGridClear->GAlign.left = true;
+	SXLevelEditor::ButtonAIGridClear->GAlign.top = true;
+	SXLevelEditor::ButtonAIGridClear->Visible(false);
+	SXLevelEditor::ButtonAIGridClear->AddHandler(SXLevelEditor_ButtonAIGridClear_Click, WM_LBUTTONUP);
+	
+	
+	SXLevelEditor::RadioButtonAIGPAdd = SXGUICrRadioButton("Graph point add", 390, 10, 110, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::RadioButtonAIGPAdd->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::RadioButtonAIGPAdd->SetColorText(0, 0, 0);
+	SXLevelEditor::RadioButtonAIGPAdd->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::RadioButtonAIGPAdd->SetTransparentTextBk(true);
+	SXLevelEditor::RadioButtonAIGPAdd->SetColorBrush(220, 220, 220);
+	SXLevelEditor::RadioButtonAIGPAdd->GAlign.left = true;
+	SXLevelEditor::RadioButtonAIGPAdd->GAlign.top = true;
+	SXLevelEditor::RadioButtonAIGPAdd->Visible(false);
+
+	SXLevelEditor::RadioButtonAIGPDel = SXGUICrRadioButton("Graph point delete", 390, 40, 110, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::RadioButtonAIGPDel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::RadioButtonAIGPDel->SetColorText(0, 0, 0);
+	SXLevelEditor::RadioButtonAIGPDel->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::RadioButtonAIGPDel->SetTransparentTextBk(true);
+	SXLevelEditor::RadioButtonAIGPDel->SetColorBrush(220, 220, 220);
+	SXLevelEditor::RadioButtonAIGPDel->GAlign.left = true;
+	SXLevelEditor::RadioButtonAIGPDel->GAlign.top = true;
+	SXLevelEditor::RadioButtonAIGPDel->Visible(false);
+
+	SXLevelEditor::ButtonAIGPGen = SXGUICrButton("Graph points generate", 390, 70, 110, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIGPGen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIGPGen->GAlign.left = true;
+	SXLevelEditor::ButtonAIGPGen->GAlign.top = true;
+	SXLevelEditor::ButtonAIGPGen->Visible(false);
+	SXLevelEditor::ButtonAIGPGen->AddHandler(SXLevelEditor_ButtonAIGPGen_Click, WM_LBUTTONUP);
+
+	SXLevelEditor::ButtonAIGPClear = SXGUICrButton("Graph points clear", 390, 100, 110, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIGPClear->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIGPClear->GAlign.left = true;
+	SXLevelEditor::ButtonAIGPClear->GAlign.top = true;
+	SXLevelEditor::ButtonAIGPClear->Visible(false);
+	SXLevelEditor::ButtonAIGPClear->AddHandler(SXLevelEditor_ButtonAIGPClear_Click, WM_LBUTTONUP);
+
+
+	SXLevelEditor::ButtonAIGridValidation = SXGUICrButton("AI grid validation", 510, 10, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIGridValidation->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIGridValidation->GAlign.left = true;
+	SXLevelEditor::ButtonAIGridValidation->GAlign.top = true;
+	SXLevelEditor::ButtonAIGridValidation->Visible(false);
+	SXLevelEditor::ButtonAIGridValidation->AddHandler(SXLevelEditor_ButtonAIGridValidation_Click, WM_LBUTTONUP);
+
+	SXLevelEditor::CheckBoxAIGridMarkedSplits = SXGUICrCheckBox("Marked splits", 510, 40, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0, false);
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetColorText(0, 0, 0);
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetTransparentTextBk(true);
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetColorBrush(220, 220, 220);
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->GAlign.left = true;
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->GAlign.top = true;
+	SXLevelEditor::CheckBoxAIGridMarkedSplits->Visible(false);
+
+	SXLevelEditor::StaticAIStatistics = SXGUICrStatic("Statistics:", 620, 10, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIStatistics->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIStatistics->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIStatistics->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIStatistics->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIStatistics->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIStatistics->GAlign.left = true;
+	SXLevelEditor::StaticAIStatistics->GAlign.top = true;
+	SXLevelEditor::StaticAIStatistics->Visible(false);
+
+	SXLevelEditor::StaticAIStatsCountQuads = SXGUICrStatic("Count quads:", 620, 40, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIStatsCountQuads->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIStatsCountQuads->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIStatsCountQuads->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIStatsCountQuads->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIStatsCountQuads->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIStatsCountQuads->GAlign.left = true;
+	SXLevelEditor::StaticAIStatsCountQuads->GAlign.top = true;
+	SXLevelEditor::StaticAIStatsCountQuads->Visible(false);
+
+	SXLevelEditor::StaticAIStatsCountGP = SXGUICrStatic("Count graph points:", 620, 70, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIStatsCountGP->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIStatsCountGP->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIStatsCountGP->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIStatsCountGP->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIStatsCountGP->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIStatsCountGP->GAlign.left = true;
+	SXLevelEditor::StaticAIStatsCountGP->GAlign.top = true;
+	SXLevelEditor::StaticAIStatsCountGP->Visible(false);
+
+	SXLevelEditor::StaticAIStatsCountSplits = SXGUICrStatic("Count splits:", 620, 100, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticAIStatsCountSplits->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticAIStatsCountSplits->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticAIStatsCountSplits->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticAIStatsCountSplits->SetTransparentTextBk(true);
+	SXLevelEditor::StaticAIStatsCountSplits->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticAIStatsCountSplits->GAlign.left = true;
+	SXLevelEditor::StaticAIStatsCountSplits->GAlign.top = true;
+	SXLevelEditor::StaticAIStatsCountSplits->Visible(false);
+
+	SXLevelEditor::EditAIStatsCountQuads = SXGUICrEdit("0", 720, 40, 70, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIStatsCountQuads->ReadOnly(true);
+	SXLevelEditor::EditAIStatsCountQuads->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIStatsCountQuads->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIStatsCountQuads->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIStatsCountQuads->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIStatsCountQuads->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIStatsCountQuads->GAlign.left = true;
+	SXLevelEditor::EditAIStatsCountQuads->GAlign.top = true;
+	SXLevelEditor::EditAIStatsCountQuads->Visible(false);
+
+	SXLevelEditor::EditAIStatsCountGP = SXGUICrEdit("0", 720, 70, 70, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIStatsCountGP->ReadOnly(true);
+	SXLevelEditor::EditAIStatsCountGP->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIStatsCountGP->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIStatsCountGP->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIStatsCountGP->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIStatsCountGP->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIStatsCountGP->GAlign.left = true;
+	SXLevelEditor::EditAIStatsCountGP->GAlign.top = true;
+	SXLevelEditor::EditAIStatsCountGP->Visible(false);
+
+	SXLevelEditor::EditAIStatsCountSplits = SXGUICrEdit("0", 720, 100, 70, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditAIStatsCountSplits->ReadOnly(true);
+	SXLevelEditor::EditAIStatsCountSplits->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditAIStatsCountSplits->SetColorText(0, 0, 0);
+	SXLevelEditor::EditAIStatsCountSplits->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditAIStatsCountSplits->SetTransparentTextBk(true);
+	SXLevelEditor::EditAIStatsCountSplits->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditAIStatsCountSplits->GAlign.left = true;
+	SXLevelEditor::EditAIStatsCountSplits->GAlign.top = true;
+	SXLevelEditor::EditAIStatsCountSplits->Visible(false);
+
+	SXLevelEditor::ButtonAIClearAll = SXGUICrButton("Clear all", 660, 130, 130, 30, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonAIClearAll->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonAIClearAll->GAlign.left = true;
+	SXLevelEditor::ButtonAIClearAll->GAlign.top = true;
+	SXLevelEditor::ButtonAIClearAll->Visible(false);
+	SXLevelEditor::ButtonAIClearAll->AddHandler(SXLevelEditor_ButtonAIClearAll_Click, WM_LBUTTONUP);
+	//}
 }
 
 void SXLevelEditor::DeleteAllElements()
@@ -1201,6 +1631,10 @@ void SXLevelEditor::DeleteAllElements()
 	mem_release(CheckBoxTBSelMesh);
 	mem_release(CheckBoxTBSelCullBack);
 
+	mem_release(CheckBoxTBAIGBound);
+	mem_release(CheckBoxTBAIGQuad);
+	mem_release(CheckBoxTBAIGGraphPoint);
+
 	mem_release(GroupBoxList);
 	mem_release(GroupBoxData);
 	mem_release(ListBoxList);
@@ -1211,7 +1645,8 @@ void SXLevelEditor::DeleteAllElements()
 
 	mem_release(ButtonGeometryOpen);
 	mem_release(ButtonGreenOpen);
-	mem_release(ButtonGameObject);
+	mem_release(ButtonGameObjectOpen);
+	mem_release(ButtonAIGridOpen);
 	mem_release(StatusBar1);
 
 	//model
@@ -1297,4 +1732,39 @@ void SXLevelEditor::DeleteAllElements()
 	mem_delete(SXLevelEditor::StaticGameHelp);
 	mem_delete(SXLevelEditor::MemoGameHelp);
 	mem_delete(SXLevelEditor::ButtonGameCreate);
+
+	mem_delete(SXLevelEditor::ButtonAIQuadsDelSel);
+	mem_delete(SXLevelEditor::ButtonAIGridGen);
+	mem_delete(SXLevelEditor::ButtonAIClearAll);
+	mem_delete(SXLevelEditor::StatiAIBBDimensions);
+	mem_delete(SXLevelEditor::StaticAIBBDimensionsWidth);
+	mem_delete(SXLevelEditor::EditAIBBDimensionsWidth);
+	mem_delete(SXLevelEditor::StaticAIBBDimensionsHeight);
+	mem_delete(SXLevelEditor::EditAIBBDimensionsHeight);
+	mem_delete(SXLevelEditor::StaticAIBBDimensionsDepth);
+	mem_delete(SXLevelEditor::EditAIBBDimensionsDepth);
+	mem_delete(SXLevelEditor::StaticAIBBPos);
+	mem_delete(SXLevelEditor::StaticAIBBPosX);
+	mem_delete(SXLevelEditor::EditAIBBPosX);
+	mem_delete(SXLevelEditor::StaticAIBBPosY);
+	mem_delete(SXLevelEditor::EditAIBBPosY);
+	mem_delete(SXLevelEditor::StaticAIBBPosZ);
+	mem_delete(SXLevelEditor::EditAIBBPosZ);
+	mem_delete(SXLevelEditor::ButtonAIBBFinish);
+	mem_delete(SXLevelEditor::ButtonAIGPGen);
+	mem_delete(SXLevelEditor::ButtonAIGPClear);
+	mem_delete(SXLevelEditor::RadioButtonAIGPAdd);
+	mem_delete(SXLevelEditor::RadioButtonAIGPDel);
+	mem_delete(SXLevelEditor::RadioButtonAIQuadAdd);
+	mem_delete(SXLevelEditor::RadioButtonAIQuadsMSel);
+	mem_delete(SXLevelEditor::RadioButtonAIQuadsSelDel);
+	mem_delete(SXLevelEditor::ButtonAIGridValidation);
+	mem_delete(SXLevelEditor::CheckBoxAIGridMarkedSplits);
+	mem_delete(SXLevelEditor::StaticAIStatistics);
+	mem_delete(SXLevelEditor::StaticAIStatsCountQuads);
+	mem_delete(SXLevelEditor::StaticAIStatsCountGP);
+	mem_delete(SXLevelEditor::StaticAIStatsCountSplits);
+	mem_delete(SXLevelEditor::EditAIStatsCountQuads);
+	mem_delete(SXLevelEditor::EditAIStatsCountGP);
+	mem_delete(SXLevelEditor::EditAIStatsCountSplits);
 }

@@ -88,6 +88,18 @@ void Level::Load(const char* name)
 #endif
 	}
 
+	if (config->KeyExists("level", "aigrid"))
+	{
+		char tmppath[1024];
+		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "aigrid"));
+		if (Core_0FileExists(tmppath))
+			SAIG_GridLoad(tmppath);
+		else
+		{
+			//error
+		}
+	}
+
 	SGCore_LoadTexLoadTextures();
 	mem_release(config);
 }
@@ -134,6 +146,13 @@ void Level::Save(const char* name)
 		sprintf(tmppathlevel, "%s%s\\%s.ent", GData::Pathes::Levels, name, name);
 		fprintf(file, "entity = %s.ent\n", name);
 		SXGame_SaveEnts(tmppathlevel);
+	}
+
+	if (SAIG_GridGetCountSplits() > 0)
+	{
+		sprintf(tmppathlevel, "%s%s\\%s.aigrid", GData::Pathes::Levels, name, name);
+		fprintf(file, "aigrid = %s.aigrid\n", name);
+		SAIG_GridSave(tmppathlevel);
 	}
 
 	SXPhysics_LoadGeom();

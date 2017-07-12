@@ -1780,11 +1780,11 @@ void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 
 		/*if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_LIGHT)
 		{
-			if (GData::Editors::ActiveElement > -1)
-			{
-				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-				SML_LigthsRender(GData::Editors::ActiveElement, timeDelta);
-			}
+		if (GData::Editors::ActiveElement > -1)
+		{
+		GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
+		SML_LigthsRender(GData::Editors::ActiveElement, timeDelta);
+		}
 		}*/
 
 		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
@@ -1828,24 +1828,32 @@ void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 
+
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, 100);
-	SAIG_RenderGraphPoints(&GData::ConstCurrCamPos, 100);
 
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	if(GData::Editors::AIGQuad)
+		SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, GData::NearFar.y);
 
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+	if(GData::Editors::AIGGraphPoint)
+		SAIG_RenderGraphPoints(&GData::ConstCurrCamPos, GData::NearFar.y);
 
-	GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
-	GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
-	SAIG_RenderBB();
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	if(GData::Editors::AIGBound)
+	{
+		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+		GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+		GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
+		GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+		SAIG_RenderBB();
+		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	}
 
 #endif
 }
