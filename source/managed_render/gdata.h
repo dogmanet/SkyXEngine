@@ -168,6 +168,8 @@ namespace GData
 
 			ID BlendAmbientSpecDiffColor;
 
+			ID ToneMapping;
+
 			ID StencilStr;
 			ID StencilColumn;
 			ID StencilStrColumn;

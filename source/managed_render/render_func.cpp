@@ -1258,9 +1258,13 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-	//обратаываем hdr (а если точнее именно tone mapping)
+	//обработка tone mapping
+#if defined(SX_GAME)
 	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
-	SML_LigthsComHDR(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.3f));
+	SML_LigthsComToneMapping(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
+#else 
+	SML_LigthsComToneMapping(timeDelta, 1.f);
+#endif
 	
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{
@@ -1273,14 +1277,14 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 
-	//очищаем рт (в старой версии было многопроходное смешинваие)
+	//очищаем рт (в старой версии было многопроходное смешивание)
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0,0,0,0), 1.0f, 0);
 
 	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_color));
 	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_ambient_diff));
 	GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_specular));
 	GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_normal));
-	GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
+	//GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
 	GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT::ds_rt_param));
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
@@ -1373,6 +1377,46 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	if (render_sky && SGCore_SkyBoxIsCr())
 		SXRenderFunc::RenderSky(timeDelta);
 
+
+	SML_DSGetRT(DS_RT::ds_rt_scene_light_com2)->GetSurfaceLevel(0, &ComLightSurf);
+	GData::DXDevice->GetRenderTarget(0, &BackBuf);
+	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
+
+	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, RENDER_DEFAUL_BACKGROUND_COLOR, 1.0f, 0);
+
+	SetSamplerFilter(0, 5, D3DTEXF_NONE);
+	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
+
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_scene_light_com));
+	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
+
+	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ToneMapping);
+
+	SGCore_ScreenQuadDraw();
+
+	SGCore_ShaderUnBind();
+
+	mem_release(ComLightSurf);
+
+	
+	
+	SML_DSGetRT(DS_RT::ds_rt_scene_light_com)->GetSurfaceLevel(0, &ComLightSurf);
+	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
+	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2));
+
+	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
+
+	SGCore_ScreenQuadDraw();
+
+	mem_release(ComLightSurf);
+
+	GData::DXDevice->SetRenderTarget(0, BackBuf);
+	mem_release(BackBuf);
+
+
 	SGCore_ShaderUnBind();
 }
 
@@ -1448,8 +1492,8 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	if (pp_ssao && (*pp_ssao) > 0)
 		SPP_RenderSSAO(&float4_t(0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y), (*pp_ssao));
 
-	if (!SSInput_GetKeyState(SIK_L))
-		SPP_RenderFog(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 0, 0.1, 0.9));
+	/*if (!SSInput_GetKeyState(SIK_L))
+		SPP_RenderFog(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 0, 0.1, 0.9));*/
 	//SPP_RenderWhiteBlack(1);
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
@@ -1477,7 +1521,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
 	}
 
-	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
+	//SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
 
 	static const bool * pp_dlaa = GET_PCVAR_BOOL("pp_dlaa");
 	if (pp_dlaa && (*pp_dlaa))

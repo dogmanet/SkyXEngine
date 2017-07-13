@@ -1,6 +1,11 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
 /*
-Имя файла - struct.h
+struct.h
 Файл включения в шейдеры (вершинные и пиксельные)
 Определены все структуры которые используются
 */
@@ -144,25 +149,25 @@ struct vs_out_skyclouds
 //{
 struct vs_in_particles 
 {
-	float3 Position :POSITION0;
-	float2 TexUV : TEXCOORD0;
+	half3 Position	:POSITION0;
+	half2 TexUV 	:TEXCOORD0;
 	
-	float3 InstancePos :TEXCOORD1;
-	float4 InstanceTex :TEXCOORD2;
-	float InstanceSize :TEXCOORD3;
-	float InstanceAlpha :TEXCOORD4;
+	half3 InstancePos	:TEXCOORD1;
+	half4 InstanceTex	:TEXCOORD2;
+	half InstanceSize	:TEXCOORD3;
+	half InstanceAlpha	:TEXCOORD4;
 	
-	float2 InstanceRot1 :TEXCOORD5;
-	float InstanceLight :TEXCOORD6;
+	half2 InstanceRot1	:TEXCOORD5;
+	half InstanceLight	:TEXCOORD6;
 };
 
 struct vs_out_particles 
 {
-	float4 Position :POSITION0;
-	float2 TexUV 	:TEXCOORD0;
-	float Alpha		:TEXCOORD1;
-	float4 Pos		:TEXCOORD2;
-	float Light	:TEXCOORD3;
-	float2 TexUV2	:TEXCOORD4;
+	half4 Position	:POSITION0;
+	half2 TexUV 	:TEXCOORD0;
+	half Alpha		:TEXCOORD1;
+	half4 Pos		:TEXCOORD2;
+	half Light		:TEXCOORD3;
+	half2 TexUV2	:TEXCOORD4;
 };
 //}

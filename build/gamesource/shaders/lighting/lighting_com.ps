@@ -1,4 +1,14 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*
+lighting_blend.ps
+Расчет освещения и заполнение данными расчетов render targets
+*/
+
 #include <../struct.h>
 #include <../mtrl.h>
 
@@ -6,18 +16,19 @@ half4 LightPos;
 half2 LightPowerDist;
 half4 ViewPos;
 half4 LightColor;
-half2 NearFar;	//!!!пуста€, данные из движка сюда не приход€т, как понадобитьс€ надо включить
+half2 NearFar;	//!!!пустая, данные из движка сюда не приход€т, как понадобитьс€ надо включить
 
 sampler2D ColorSampler:register(s0);
 sampler2D NormalSampler:register(s1);
 sampler2D ParamSampler:register(s2);
-//x - шероховатость
-//y - f0
+//x - шероховатость (roughness)
+//y - отражательная способность поверхности (f0)
+//z - толщина (thickness)
 
 sampler2D DepthSampler:register(s3);
 sampler2D ShadowSampler:register(s4);
 
-///////////////////////////////
+//#############################################################################
 
 half D_Get(half roughness, half NdotH)
 {
@@ -28,18 +39,16 @@ half D_Get(half roughness, half NdotH)
 	half NdotH2 = NdotH * NdotH;
 	return ((1.0f/(PI * a2 * NdotH2 * NdotH2 + 0.001)) * exp((NdotH2 - 1.0f) / ( a2 * NdotH2)));///(1.f+roughness);
 }
-////////////////////////
+
 half F_Get(half f0, half HdotV)
 {
-	//return lerp(pow(1.0 - NoV, 5.0), 1,f0);
-    return (f0 + (1.0f - f0) * pow((1.0f - HdotV), 5)) * (f0 > 0.001f ? 1 : 0);
+    return (f0 + (1.0f - f0) * pow((1.0f - HdotV), 4.9)) * (f0 > 0.001f ? 1 : 0);
 }
-////////////////////////////////
+
 half G_Get(half NdotV, half NdotL, half LdotV, half NdotH,half VdotH)
 {
 	return min(1.0f, min((2.0f * NdotH * NdotV)/VdotH, (2.0f * NdotH * NdotL)/ VdotH));
 }
-//////////////////////////////////////
 
 half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half HdotV)
 {
@@ -50,13 +59,15 @@ half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half
 	return ((D*G)/(PI*NdotL*NdotV))*F;
 }
 
+//#############################################################################
+
 ps_out_com_lighting main(vs_out_res_pos IN)
 {
 	ps_out_com_lighting OUT;
 
 	half4 normalds = tex2D(NormalSampler,IN.TexUV);
 	
-	[branch]if(normalds.w == NOTLIGHTING_NOTTRANSPARENCY || normalds.w == NOTLIGHTING_TRANSPARENCY)
+	[branch]if(normalds.w == SURFACE_NOTLIGHTING_NOTTRANSPARENCY || normalds.w == SURFACE_NOTLIGHTING_TRANSPARENCY)
 	{
 		OUT.Amdient.xyz = 0;
 		OUT.Amdient.w = 0;

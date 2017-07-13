@@ -65,10 +65,10 @@ ps_out_alpha_union main(vs_out_pp IN):COLOR0
 	ArrIDs[2] = int(tex2Dlod(Param, ArrTexUV[2]).w * 256.f);
 	ArrIDs[3] = int(tex2Dlod(Param, ArrTexUV[3]).w * 256.f);
 	
-	ArrIsTransparency[0] = tex2Dlod(Normal, ArrTexUV[0]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
-	ArrIsTransparency[1] = tex2Dlod(Normal, ArrTexUV[1]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
-	ArrIsTransparency[2] = tex2Dlod(Normal, ArrTexUV[2]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
-	ArrIsTransparency[3] = tex2Dlod(Normal, ArrTexUV[3]).w >= NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[0] = tex2Dlod(Normal, ArrTexUV[0]).w >= SURFACE_NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[1] = tex2Dlod(Normal, ArrTexUV[1]).w >= SURFACE_NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[2] = tex2Dlod(Normal, ArrTexUV[2]).w >= SURFACE_NOTLIGHTING_TRANSPARENCY ? 1 : 0;
+	ArrIsTransparency[3] = tex2Dlod(Normal, ArrTexUV[3]).w >= SURFACE_NOTLIGHTING_TRANSPARENCY ? 1 : 0;
 	
 	//в случае если у нас нет ппрозрачных слоев то возвращаем текущий цвет
 	[branch] if((ArrIsTransparency[0] == 0 && ArrIsTransparency[1] == 0 && ArrIsTransparency[2] == 0 && ArrIsTransparency[3] == 0))

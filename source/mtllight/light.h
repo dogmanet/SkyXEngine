@@ -125,7 +125,7 @@ public:
 	bool AllowedRenderLight(ID id, int ghow = -1);
 	inline void SetNullLightCountUpdate(ID id);
 
-	void ComHDR(DWORD timeDelta, float factor_adapted = 10);
+	void ComToneMapping(DWORD timeDelta, float factor_adapted = 10);
 
 	inline void Set4Or3Splits(ID id, bool is4);
 	inline bool Get4Or3Splits(ID id);

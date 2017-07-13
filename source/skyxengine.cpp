@@ -169,7 +169,7 @@ void SkyXEngine_Init()
 	Core_0RegisterCVarFloat("green_lod1", 100, 0);
 	Core_0RegisterCVarFloat("green_less", 20, 0);
 	Core_0RegisterCVarFloat("p_far", 400, 0);
-	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, 0);
+	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.03f, 0);
 
 	Core_0RegisterCVarInt("r_s_filter", 2, 0);
 	Core_0RegisterCVarInt("r_s_max_anisotropy", 16, 0);

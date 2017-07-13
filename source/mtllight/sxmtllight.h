@@ -482,8 +482,8 @@ SX_LIB_API void SML_LigthsSetIDArr(
 
 //!@} sxmtllight_light_shadow
 
-//! обработка hdr
-SX_LIB_API void SML_LigthsComHDR(
+//! обработка tone mapping
+SX_LIB_API void SML_LigthsComToneMapping(
 	DWORD timeDelta,			//!< время рендера кадра в млсек
 	float factor_adapted = 0.3	//!< на сколько быстро "глаз" привыкнет к освещению (0,1] (медленно, быстро]
 	);

@@ -272,6 +272,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditSkyBox->SetTransparentTextBk(true);
 	SXMaterialEditor::EditSkyBox->SetColorBrush(255, 255, 255);
 	SXMaterialEditor::EditSkyBox->AddHandler(SXMaterialEditor_EditSkyBox_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditSkyBox->AddHandler(SXMaterialEditor_EditSkyBox_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::CheckBoxModelRot = SXGUICrCheckBox("rotate", 5, 330, 50, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxModelRot->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -329,6 +330,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditTex->SetTransparentTextBk(true);
 	SXMaterialEditor::EditTex->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditTex->AddHandler(SXMaterialEditor_EditTex_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditTex->AddHandler(SXMaterialEditor_EditTex_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::StaticVS = SXGUICrStatic("VS:",5,420,30,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::StaticVS->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -344,6 +346,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditVS->SetTransparentTextBk(true);
 	SXMaterialEditor::EditVS->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditVS->AddHandler(SXMaterialEditor_EditVS_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditVS->AddHandler(SXMaterialEditor_EditVS_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::StaticPS = SXGUICrStatic("PS:",5,440,30,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::StaticPS->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -359,6 +362,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditPS->SetTransparentTextBk(true);
 	SXMaterialEditor::EditPS->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditPS->AddHandler(SXMaterialEditor_EditPS_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditPS->AddHandler(SXMaterialEditor_EditPS_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::ButtonTex = SXGUICrButton("...", 275, 400, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonTex->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -385,8 +389,10 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditPenetration->SetTransparentTextBk(true);
 	SXMaterialEditor::EditPenetration->SetColorBrush(255, 255, 255);
 	SXMaterialEditor::EditPenetration->AddHandler(SXMaterialEditor_EditPenetration_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditPenetration->AddHandler(SXMaterialEditor_EditPenetration_Enter, WM_KILLFOCUS);
 	SXMaterialEditor::TrackBarPenetration = SXGUICrTrackBar("", 130, 490, 170, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::TrackBarPenetration->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarPenetration->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarPenetration->AddHandler(SXMaterialEditor_TrackBarPenetration_MouseMove, WM_MOUSEMOVE);
 
 
@@ -428,6 +434,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditRoughness->SetTransparentTextBk(true);
 	SXMaterialEditor::EditRoughness->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditRoughness->AddHandler(SXMaterialEditor_EditRoughness_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditRoughness->AddHandler(SXMaterialEditor_EditRoughness_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditF0 = SXGUICrEdit("0",375,70,50,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditF0->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -436,6 +443,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditF0->SetTransparentTextBk(true);
 	SXMaterialEditor::EditF0->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditF0->AddHandler(SXMaterialEditor_EditF0_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditF0->AddHandler(SXMaterialEditor_EditF0_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::StaticThickness = SXGUICrStatic("Thickness:", 305, 30, 70, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::StaticThickness->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -451,9 +459,11 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditThickness->SetTransparentTextBk(true);
 	SXMaterialEditor::EditThickness->SetColorBrush(255, 255, 255);
 	SXMaterialEditor::EditThickness->AddHandler(SXMaterialEditor_EditThickness_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditThickness->AddHandler(SXMaterialEditor_EditThickness_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::TrackBarThickness = SXGUICrTrackBar("", 430, 30, 200, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::TrackBarThickness->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarThickness->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarThickness->AddHandler(SXMaterialEditor_TrackBarThickness_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::EditMR = SXGUICrEdit("0",360,175,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
@@ -463,6 +473,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMR->SetTransparentTextBk(true);
 	SXMaterialEditor::EditMR->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditMR->AddHandler(SXMaterialEditor_EditMR_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditMR->AddHandler(SXMaterialEditor_EditMR_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting", 305, 110, 55, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxLighting->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -473,10 +484,12 @@ void SXMaterialEditor::InitAllElements()
 	
 	SXMaterialEditor::TrackBarRoughness = SXGUICrTrackBar("",430,50,200,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::TrackBarRoughness->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarRoughness->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarRoughness->AddHandler(SXMaterialEditor_TrackBarRoughness_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarF0 = SXGUICrTrackBar("",430,70,200,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::TrackBarF0->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarF0->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarF0->AddHandler(SXMaterialEditor_TrackBarF0_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::StaticMaD = SXGUICrStatic("Microrelief and detail",305,135,100,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
@@ -493,6 +506,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditTexLighting->SetTransparentTextBk(true);
 	SXMaterialEditor::EditTexLighting->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditTexLighting->AddHandler(SXMaterialEditor_EditTexLighting_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditTexLighting->AddHandler(SXMaterialEditor_EditTexLighting_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::ButtonTexLighting = SXGUICrButton("...", 605, 90, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonTexLighting->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -569,6 +583,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMask->SetTransparentTextBk(true);
 	SXMaterialEditor::EditMask->SetColorBrush(255, 255, 255);
 	SXMaterialEditor::EditMask->AddHandler(SXMaterialEditor_EditMask_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditMask->AddHandler(SXMaterialEditor_EditMask_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::ButtonMask = SXGUICrButton("...", 605, 152, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMask->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -604,6 +619,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMG->SetTransparentTextBk(true);
 	SXMaterialEditor::EditMG->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditMG->AddHandler(SXMaterialEditor_EditMG_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditMG->AddHandler(SXMaterialEditor_EditMG_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditMB = SXGUICrEdit("0",360,215,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditMB->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -612,6 +628,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMB->SetTransparentTextBk(true);
 	SXMaterialEditor::EditMB->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditMB->AddHandler(SXMaterialEditor_EditMB_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditMB->AddHandler(SXMaterialEditor_EditMB_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditMA = SXGUICrEdit("0",360,235,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditMA->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -620,6 +637,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditMA->SetTransparentTextBk(true);
 	SXMaterialEditor::EditMA->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditMA->AddHandler(SXMaterialEditor_EditMA_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditMA->AddHandler(SXMaterialEditor_EditMA_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditDR = SXGUICrEdit("0",360,260,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditDR->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -628,6 +646,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDR->SetTransparentTextBk(true);
 	SXMaterialEditor::EditDR->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditDR->AddHandler(SXMaterialEditor_EditDR_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditDR->AddHandler(SXMaterialEditor_EditDR_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::ButtonMG = SXGUICrButton("...", 605, 195, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonMG->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -671,6 +690,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDG->SetTransparentTextBk(true);
 	SXMaterialEditor::EditDG->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditDG->AddHandler(SXMaterialEditor_EditDG_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditDG->AddHandler(SXMaterialEditor_EditDG_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditDB = SXGUICrEdit("0",360,300,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditDB->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -679,6 +699,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDB->SetTransparentTextBk(true);
 	SXMaterialEditor::EditDB->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditDB->AddHandler(SXMaterialEditor_EditDB_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditDB->AddHandler(SXMaterialEditor_EditDB_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditDA = SXGUICrEdit("0",360,320,240,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditDA->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -687,6 +708,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDA->SetTransparentTextBk(true);
 	SXMaterialEditor::EditDA->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditDA->AddHandler(SXMaterialEditor_EditDA_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditDA->AddHandler(SXMaterialEditor_EditDA_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::ButtonDG = SXGUICrButton("...", 605, 280, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
 	SXMaterialEditor::ButtonDG->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -874,6 +896,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDVSX->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDVSX->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDVSX->AddHandler(SXMaterialEditor_EditUDVSX_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDVSX->AddHandler(SXMaterialEditor_EditUDVSX_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditUDVSY = SXGUICrEdit("0",325,480,80,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditUDVSY->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -882,6 +905,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDVSY->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDVSY->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDVSY->AddHandler(SXMaterialEditor_EditUDVSY_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDVSY->AddHandler(SXMaterialEditor_EditUDVSY_Enter, WM_KILLFOCUS);
 
 	
 	SXMaterialEditor::StaticUDVSX = SXGUICrStatic("x:",305,460,15,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
@@ -912,6 +936,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDVSZ->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDVSZ->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDVSZ->AddHandler(SXMaterialEditor_EditUDVSZ_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDVSZ->AddHandler(SXMaterialEditor_EditUDVSZ_Enter, WM_KILLFOCUS);
 
 
 	SXMaterialEditor::StaticUDVSW = SXGUICrStatic("w:",305,520,15,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
@@ -928,21 +953,26 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDVSW->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDVSW->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDVSW->AddHandler(SXMaterialEditor_EditUDVSW_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDVSW->AddHandler(SXMaterialEditor_EditUDVSW_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::TrackBarUDVSX = SXGUICrTrackBar("", 410, 460, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDVSX->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDVSX->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDVSX->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDVSX->AddHandler(SXMaterialEditor_TrackBarUDVSX_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarUDVSY = SXGUICrTrackBar("", 410, 480, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDVSY->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDVSY->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDVSY->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDVSY->AddHandler(SXMaterialEditor_TrackBarUDVSY_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarUDVSZ = SXGUICrTrackBar("", 410, 500, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDVSZ->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDVSZ->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDVSZ->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDVSZ->AddHandler(SXMaterialEditor_TrackBarUDVSZ_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarUDVSW = SXGUICrTrackBar("",410,520,220,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
-	SXMaterialEditor::TrackBarUDVSW->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDVSW->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDVSW->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDVSW->AddHandler(SXMaterialEditor_TrackBarUDVSW_MouseMove, WM_MOUSEMOVE);
 	
 
@@ -999,6 +1029,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDPSX->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDPSX->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDPSX->AddHandler(SXMaterialEditor_EditUDPSX_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDPSX->AddHandler(SXMaterialEditor_EditUDPSX_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditUDPSY = SXGUICrEdit("0",325,590,80,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditUDPSY->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -1007,6 +1038,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDPSY->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDPSY->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDPSY->AddHandler(SXMaterialEditor_EditUDPSY_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDPSY->AddHandler(SXMaterialEditor_EditUDPSY_Enter, WM_KILLFOCUS);
 
 	SXMaterialEditor::EditUDPSZ = SXGUICrEdit("0",325,610,80,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditUDPSZ->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -1015,6 +1047,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDPSZ->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDPSZ->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDPSZ->AddHandler(SXMaterialEditor_EditUDPSZ_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDPSZ->AddHandler(SXMaterialEditor_EditUDPSZ_Enter, WM_KILLFOCUS);
 	
 	SXMaterialEditor::EditUDPSW = SXGUICrEdit("0",325,630,80,15,SXMaterialEditor::JobWindow->GetHWND(),0,0);
 	SXMaterialEditor::EditUDPSW->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -1023,22 +1056,27 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditUDPSW->SetTransparentTextBk(true);
 	SXMaterialEditor::EditUDPSW->SetColorBrush(255,255,255);
 	SXMaterialEditor::EditUDPSW->AddHandler(SXMaterialEditor_EditUDPSW_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditUDPSW->AddHandler(SXMaterialEditor_EditUDPSW_Enter, WM_KILLFOCUS);
 
 
 	SXMaterialEditor::TrackBarUDPSX = SXGUICrTrackBar("", 410, 570, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDPSX->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDPSX->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDPSX->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDPSX->AddHandler(SXMaterialEditor_TrackBarUDPSX_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarUDPSY = SXGUICrTrackBar("", 410, 590, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDPSY->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDPSY->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDPSY->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDPSY->AddHandler(SXMaterialEditor_TrackBarUDPSY_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarUDPSZ = SXGUICrTrackBar("", 410, 610, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDPSZ->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDPSZ->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDPSZ->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDPSZ->AddHandler(SXMaterialEditor_TrackBarUDPSZ_MouseMove, WM_MOUSEMOVE);
 
 	SXMaterialEditor::TrackBarUDPSW = SXGUICrTrackBar("", 410, 630, 220, 15, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
-	SXMaterialEditor::TrackBarUDPSW->SetMinMax(0, 100);
+	SXMaterialEditor::TrackBarUDPSW->SetMinMax(-100, 100);
+	SXMaterialEditor::TrackBarUDPSW->SetTickFrequency(10);
 	SXMaterialEditor::TrackBarUDPSW->AddHandler(SXMaterialEditor_TrackBarUDPSW_MouseMove, WM_MOUSEMOVE);
 	
 }

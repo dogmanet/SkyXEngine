@@ -1780,7 +1780,7 @@ void Lights::SoftShadow(bool randomsam, float size, bool isfirst)
 			HowShadow = 1;
 }
 
-void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
+void Lights::ComToneMapping(DWORD timeDelta, float factor_adapted)
 {
 	MLSet::GetArrDownScale4x4(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::HDRSampleOffsets);
 
@@ -1859,7 +1859,6 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 	}
 
 	IDirect3DTexture9* tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[3]);
-	int qwert = 0;
 
 	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps-1; i++)
 	{
@@ -1868,8 +1867,7 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 	}
 
 	tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[3]);
-	qwert = 0;
-
+	
 	MLSet::IDsRenderTargets::IncrAdaptedLum();
 	LPDIRECT3DSURFACE9 SurfAdaptedLum = NULL;
 	SGCore_RTGetTexture(MLSet::IDsRenderTargets::GetCurrAdaptedLum())->GetSurfaceLevel(0, &SurfAdaptedLum);
@@ -1885,7 +1883,7 @@ void Lights::ComHDR(DWORD timeDelta, float factor_adapted)
 	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::CalcAdaptedLum);
 
-	float ElapsedTime = float(timeDelta) * 0.001f * (factor_adapted * 100.f);
+	float ElapsedTime = float(timeDelta) * 0.001f * (factor_adapted * 1000.f);
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::CalcAdaptedLum, "ElapsedTime", &(ElapsedTime));
 
 	SGCore_ScreenQuadDraw();

@@ -1,0 +1,29 @@
+
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*
+pptm_lum_iterative.ps
+Используется для дополнительных проходов уменьшения текстуры, среднее арифметическое соседних пикселей
+*/
+
+#include <../struct.h>
+#include <pptm_common.h>
+
+sampler2D s0:register(s0);
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half res = 0.0f;
+    
+    for(int i = 0; i < 16; ++i)
+    {
+		res += tex2D(s0, IN.TexUV+ArrOffsets[i]);
+    }
+	
+    res *= 0.0625;
+    
+    return half4(res,0,0,1);
+}

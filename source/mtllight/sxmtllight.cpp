@@ -605,10 +605,10 @@ void SML_LigthsSetNullCountUpdate(ID id)
 	ArrLights->SetNullLightCountUpdate(id);
 }
 
-void SML_LigthsComHDR(DWORD timeDelta, float factor_adapted)
+void SML_LigthsComToneMapping(DWORD timeDelta, float factor_adapted)
 {
 	ML_PRECOND();
-	ArrLights->ComHDR(timeDelta, factor_adapted);
+	ArrLights->ComToneMapping(timeDelta, factor_adapted);
 }
 
 long SML_LigthsDelGetCount()

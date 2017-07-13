@@ -847,14 +847,17 @@ struct ISXGUITrackBar : public virtual ISXGUIComponent
 	virtual void SetPos(int pos) = 0;	//!< устанавливает позицию
 	virtual int GetPos() = 0;			//!< возвращает текущую позицию
 
-	virtual void SetMinMax(int min, int max) = 0;	//устанавливает минимальное (левое) и максимальное (правое) значения позиции
+	virtual void SetMinMax(int min, int max) = 0;	//!< устанавливает минимальное (левое) и максимальное (правое) значения позиции
 	virtual int GetMin() = 0;			//!< возвращает текущее минимальное (левое) значение позиции
 	virtual int GetMax() = 0;			//!< возвращает текущее максимальное (правое) значение позиции
 
-	virtual bool SetTick(int pos) = 0;
-	virtual int GetTick(int index) = 0;
+	/*! установка риски в позиции (между минимумом и максимумом)
+	 \note Элемент trackbar создает две крайние риски сам (если пределы от минуса (-100 к примеру) до плюса (100 к примеру) то тогда будет создана третья риска в нуле)
+	*/
+	virtual bool SetTick(int pos) = 0;	
+	virtual int GetTick(int index) = 0;	//!< возвращает позициюю риски (между минимумом и максимумом) по индексу риски
 
-	virtual void SetTickFrequency(int freq) = 0;
+	virtual void SetTickFrequency(int freq) = 0;	//!< установка промежутков между рисками, значения указываются в интервалах приращения (пунктах)
 };
 
 //! создает экземплляр объекта "TrackBar", и возвращает указатель

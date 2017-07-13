@@ -105,10 +105,9 @@ namespace MLSet
 			ID GenShadowCube1;
 			ID GenShadowCube6;
 
-			ID CalcAdaptedLum;;
+			ID CalcAdaptedLum;
 			ID SampleLumInit;
 			ID SampleLumIterative;
-			ID SampleLumFinal;
 
 			ID ScreenOut;
 
@@ -291,11 +290,10 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	MLSet::IDsShaders::PS::PPBlurDepthBased = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_blur_depth_based.ps", "pp_blur_depth_based", ShaderCheckDouble::scd_path);
 	MLSet::IDsShaders::PS::PPBlurDepthBasedNoise = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_blur_depth_based_noise.ps", "pp_blur_depth_based_noise", ShaderCheckDouble::scd_path);
 
-	MLSet::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_calc_adapted_lum.ps", "pp_hdr_calc_adapted_lum", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_lum_init.ps", "pp_hdr_lum_init", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_lum_iterative.ps", "pp_hdr_lum_iterative", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SampleLumFinal = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_lum_final.ps", "pp_hdr_lum_final", ShaderCheckDouble::scd_path);
-
+	MLSet::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(ShaderType::st_pixel, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(ShaderType::st_pixel, "pptm_lum_init.ps", "pptm_lum_init", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(ShaderType::st_pixel, "pptm_lum_iterative.ps", "pptm_lum_iterative", ShaderCheckDouble::scd_path);
+	
 	MLSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
 	MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
 

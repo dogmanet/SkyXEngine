@@ -1,5 +1,13 @@
 
-//
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*
+skin.h
+Функции/данные трансформации анимационных моделей
+*/
 
 half4 g_BufferBoneWorld[128] : register(c16);
 

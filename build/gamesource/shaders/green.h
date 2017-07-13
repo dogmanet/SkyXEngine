@@ -1,11 +1,21 @@
 
-//функции для трансформации растительности
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
 
+/*
+green.h
+функции для трансформации растительности
+*/
+
+//просчет множителя для уменьшения масштаба травы
 half GrassComMultiplier(half3 vertex_pos, half3 view_pos,half2 dist_bel)
 {
 	return 1.0 - saturate((distance(view_pos,vertex_pos) - dist_bel.x) / (dist_bel.y - dist_bel.x));
 }
 
+//поворот вектора
 half3 GreenComRotation(half3 vec, half2 sincos)
 {
 	half3 tvec;
@@ -15,6 +25,7 @@ half3 GreenComRotation(half3 vec, half2 sincos)
 	return tvec;
 }
 
+//трансформация позиции на основании данных о масштабе и мировом положении
 half4 GreenTransformPos(half3 pos,half scale,half multiplier, half3 translate)
 {
 	half4 tpos = half4(pos,1);

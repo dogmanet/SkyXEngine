@@ -804,7 +804,7 @@ bool SGCore_SkyBoxIsLoadTex()
 void SGCore_SkyBoxLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	ObjSkyBox->ChangeTexture(texture);
+	ObjSkyBox->LoadTextures(texture);
 }
 
 void SGCore_SkyBoxSetStdPathTex(const char* path)
