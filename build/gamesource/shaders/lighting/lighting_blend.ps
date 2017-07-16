@@ -1,12 +1,7 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-See the license in LICENSE
-******************************************************/
-
 /*
 lighting_blend.ps
-Смешивание всех текстур для финального изображения
+CРјРµС€РёРІР°РЅРёРµ РІСЃРµС… С‚РµРєСЃС‚СѓСЂ РґР»z С„РёРЅР°Р»СЊРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёВ¤
 */
 
 #include <../struct.h>
@@ -21,7 +16,7 @@ sampler2D ParamSampler:register(s5);
 half4 main(vs_out_pp IN):COLOR0
 {
 	half isunlit = tex2D(NormalSampler,IN.TexUV).a;
-	half layer = tex2D(ParamSampler,IN.TexUV).z;
+	half layer = tex2D(ParamSampler,IN.TexUV).w;
 	half4 color = tex2D(ColorSampler,IN.TexUV);
 
 	half4 ambient = tex2D(AmbientSampler,IN.TexUV);

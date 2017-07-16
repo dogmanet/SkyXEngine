@@ -1,4 +1,9 @@
 
+/*
+ppe_motion_blur.ps
+Эффект "motion blur" (размытие в движении)
+*/
+
 #include <../struct.h>
 
 half4x4 ViewProjectionPrev;
@@ -21,7 +26,7 @@ half4 main(vs_out_res_pos IN) : COLOR0
 	[branch]if(depth*NearFar.y <= PP_MOTION_BLUR_DISTNOBLUR)
 		return tex2D(SceneMap, IN.TexUV);
 	
-	half4 currentPos = half4(IN.TexUV.x * 2 - 1, (1-IN.TexUV.y) * 2 - 1,tmppos.z, 1);
+	half4 currentPos = half4(IN.TexUV.x * 2.f - 1.f, (1.f-IN.TexUV.y) * 2.f - 1.f,tmppos.z, 1.f);
 	half4 previousPos = mul(tmppos,ViewProjectionPrev);
 	previousPos.xyz /= previousPos.w;
 
@@ -32,7 +37,7 @@ half4 main(vs_out_res_pos IN) : COLOR0
 	half4 original_color = color;
 	half2 SamplePoint;
 	half4 CurrentSample;
-		for(int i = 1; i < NumSam; ++i)
+		for(int i = 1; i < NumSam+1; ++i)
 		{   
 			SamplePoint = velocity * half(i)/half(NumSam) + IN.TexUV;        
 			CurrentSample = tex2D(SceneMap, SamplePoint);

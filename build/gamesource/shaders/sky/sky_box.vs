@@ -1,4 +1,9 @@
 
+/*
+sky_box.vs
+Рендер SkyBox
+*/
+
 #include <../struct.h>
 
 half4x4 WorldViewProjection;

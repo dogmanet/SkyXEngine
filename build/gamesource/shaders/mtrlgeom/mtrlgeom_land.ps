@@ -48,7 +48,7 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 			detcolor *= Param.y * 4.0f;
 			
 			half3 mdetcolor = mdetcolor1 * detmaskcolor.r + mdetcolor2 * detmaskcolor.g + mdetcolor3 * detmaskcolor.b + mdetcolor4 * detmaskcolor.a;
-			mdetcolor *= ((2.f * Param.z) - 1.f) * 2.f;
+			mdetcolor *= Param.z;
 			
 			half4 blend = basecolor * detcolor * (4.0f - detcolor);
 			

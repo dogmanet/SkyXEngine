@@ -1,4 +1,11 @@
 
+/*
+aigrid_quad.ps
+Рендер ai сетки
+*/
+
+#include <../struct.h>
+
 sampler2D BaseSampler:register(s0);
 
 struct VS_OUT 
@@ -9,7 +16,7 @@ struct VS_OUT
 	half4 Color		:TEXCOORD2;
 };
 
-half4 main(VS_OUT IN):COLOR0
+half4 main(in vs_output_aigrid IN):COLOR0
 {
 	return half4(lerp(tex2D(BaseSampler,IN.TexUV).xyz,IN.Color.xyz,IN.Color.a),1.f);
 }

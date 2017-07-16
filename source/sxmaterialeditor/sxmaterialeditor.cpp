@@ -47,12 +47,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::Editors::SimModel->Add("plane.dse");
 
 	SML_LigthsCreatePoint(
-		&float3(10,300,0),
+		&float3(110,110,-110),
 		LIGHTS_GLOBAL_MAX_POWER,
 		LIGHTS_GLOBAL_STD_RADIUS,
 		&float3(1,1,1),
 		true,
-		false);
+		true);
 	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 

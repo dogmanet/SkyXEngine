@@ -7,18 +7,19 @@ void SkyXEngine_Init()
 	InitOutLog();
 	GData::Pathes::InitAllPathes();
 	if (!Core_0IsProcessRun("sxconsole.exe"))
-		ShellExecute(NULL, "open", "sxconsole.exe", NULL, GData::Pathes::ForExe, SW_SHOWNORMAL);
-
-	SetConsoleTitle("sxconsole");
+		ShellExecute(0, "open", "sxconsole.exe", 0, GData::Pathes::ForExe, SW_SHOWNORMAL);
+	//HWND hwnd = GetConsoleWindow();
+	//SetWindowText(hwnd, "hand");
+	//SetConsoleTitle("sxconsole");
 
 #if defined(SX_GAME)
 	GData::InitWin("SkyXEngine", "SkyXEngine");
 #endif
 	Level::Name[0] = 0;
-	SSInput_0Create("sxinput", GData::Handle3D, true);
+	SSInput_0Create("sxinput", GData::Handle3D, false);
 	SSInput_Dbg_Set(printflog);
 
-	Core_0Create("sxcore", true);
+	Core_0Create("sxcore", false);
 	Core_SetOutPtr();
 
 	G_Timer_Render_Scene = Core_TimeAdd();
@@ -35,7 +36,7 @@ void SkyXEngine_Init()
 	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds, false);
 	SSCore_Dbg_Set(printflog);
 
-	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, true);
+	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, false);
 	SGCore_Dbg_Set(printflog);
 	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
@@ -60,7 +61,7 @@ void SkyXEngine_Init()
 	GData::ObjCamera->SetFOV(GData::ProjFov);
 #endif
 
-	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, true);
+	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, false);
 	SGeom_Dbg_Set(printflog);
 
 	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
@@ -256,7 +257,7 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SML_Update(timeDelta, &GData::WinSize, &GData::NearFar, &GData::ConstCurrCamPos, &GData::MCamView, GData::ProjFov);
 
 	GData::DXDevice->BeginScene();
-
+	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 	ttime = TimeGetMcsU(G_Timer_Render_Scene);
 	SXRenderFunc::UpdateReflection(timeDelta);
 	SXRenderFunc::Delay::ComReflection += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
@@ -308,6 +309,9 @@ void SkyXEngine_Render(DWORD timeDelta)
 
 	SXRenderFunc::RenderParticles(timeDelta);
 
+	GData::DXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+	GData::DXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)GData::MCamView));
+	GData::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)GData::MLightProj));
 	SXRenderFunc::RenderEditorMain();
 	SXRenderFunc::RenderEditorLE(timeDelta);
 
@@ -361,8 +365,7 @@ int SkyXEngine_CycleMain()
 	::ZeroMemory(&msg, sizeof(MSG));
 
 	static DWORD lastTime = TimeGetMls(G_Timer_Render_Scene);
-	//SAIG_BBCreate(&float3(0, 0, 0), &float3(50, 30, 50));
-	//SAIG_BBCreateFinish();
+
 	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
 	{
 		if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
@@ -387,78 +390,6 @@ int SkyXEngine_CycleMain()
 			SSInput_Update();
 			SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 			SGCore_LoadTexLoadTextures();
-
-			/*if (SSInput_GetKeyEvents(SIK_T) == InputEvents::iv_k_first)
-			{
-				SAIG_GridGenerate();
-			}
-
-			if (SSInput_GetKeyEvents(SIK_G) == InputEvents::iv_k_first)
-			{
-				float3 start = GData::ConstCurrCamPos;
-				float3 dir = GData::ConstCurrCamDir;
-				float3 end = start + dir * 1000.0f;
-				btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
-				SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
-
-				if (cb.hasHit())
-				{
-					SAIG_QuadAdd(&BTVEC_F3(cb.m_hitPointWorld));
-				}
-			}
-
-			if (SSInput_GetKeyEvents(SIK_H) == InputEvents::iv_k_first)
-			{
-				ID idaq = SAIG_GridTraceBeam(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);// SAIG_QuadGet(&BTVEC_F3(cb.m_hitPointWorld));
-
-				if (idaq > -1)
-					SAIG_QuadDelete(idaq);
-			}
-
-			if (SSInput_GetKeyEvents(SIK_Y) == InputEvents::iv_k_first)
-			{
-				DWORD ttime = GetTickCount();
-				SAIG_GridTestValidation();
-				ttime = GetTickCount() - ttime;
-				int qwerty = 0;
-			}
-
-			if (SSInput_GetKeyEvents(SIK_U) == InputEvents::iv_k_first)
-			{
-				ID beginq = SAIG_QuadGet(&float3(0, 0, 0), true);
-				ID endq = SAIG_QuadGet(&float3(-10.77, -1.5, 12.8), true);
-				//ObjAIGrid->QuadGetNearG(beginq, endq);
-				SAIG_GridFindPath(beginq, endq);
-
-				Array<ID> tmparr;
-				tmparr.resize(SAIG_GridGetSizePath());
-				SAIG_GridGetPath(&(tmparr[0]), tmparr.size());
-
-				SAIG_GridSetColorArr(&(tmparr[0]), D3DCOLOR_ARGB(128, 200, 200, 0), tmparr.size());
-			}
-
-			if (SSInput_GetKeyEvents(SIK_I) == InputEvents::iv_k_first)
-			{
-				ID idaq = SAIG_GridTraceBeam(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);// SAIG_QuadGet(&BTVEC_F3(cb.m_hitPointWorld));
-
-				if (idaq > -1)
-					SAIG_QuadSelect(idaq, true);
-			}
-
-			if (SSInput_GetKeyEvents(SIK_O) == InputEvents::iv_k_first)
-			{
-				SAIG_GridSetMarkSplits(!SAIG_GridGetMarkSplits());
-			}
-
-			if (SSInput_GetKeyEvents(SIK_P) == InputEvents::iv_k_first)
-			{
-				SAIG_GridSave("D:\\project\\engine\\build\\gamesource\\levels\\stalker_atp\\aigrid.aigrid");
-			}
-
-			if (SSInput_GetKeyEvents(SIK_L) == InputEvents::iv_k_first)
-			{
-				SAIG_GridLoad("D:\\project\\engine\\build\\gamesource\\levels\\stalker_atp\\aigrid.aigrid");
-			}*/
 
 			DWORD currTime = TimeGetMls(G_Timer_Render_Scene);
 			DWORD timeDelta = (currTime - lastTime);

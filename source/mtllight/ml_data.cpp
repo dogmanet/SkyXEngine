@@ -272,7 +272,7 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	MLSet::IDsShaders::PS::SMDepthGreenCube = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_green_cube.ps", "sm_depth_green_cube", ShaderCheckDouble::scd_path);
 
 
-	MLSet::IDsShaders::VS::ResPosDepth = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::ResPosDepth = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
 
 
 	MLSet::IDsShaders::PS::PSSM4 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_pssm.ps", "ppgensm_pssm", ShaderCheckDouble::scd_name);

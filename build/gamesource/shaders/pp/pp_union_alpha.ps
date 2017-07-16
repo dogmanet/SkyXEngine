@@ -1,4 +1,9 @@
 
+/*
+pp_union_alpha.ps
+РћР±СЉРµРґРёРЅРµРЅРёРµ РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹С… СЃР»РѕРµРІ
+*/
+
 #include <../struct.h>
 
 sampler2D SceneColor:register(s0);
@@ -22,13 +27,6 @@ bool IsExists(int id)
 	return false;
 }
 
-struct ps_out_alpha_union
-{
-	half4 Color		: COLOR0;
-	half4 Depth0	: COLOR1;
-	half4 Depth1	: COLOR2;
-};
-
 ps_out_alpha_union main(vs_out_pp IN):COLOR0
 {
 	ps_out_alpha_union OUT;
@@ -50,11 +48,6 @@ ps_out_alpha_union main(vs_out_pp IN):COLOR0
 	ArrColor[2] = tex2Dlod(SceneLighting, ArrTexUV[2]);
 	ArrColor[3] = tex2Dlod(SceneLighting, ArrTexUV[3]);
 	
-	/*ArrColor[0].a = tex2Dlod(SceneColor, ArrTexUV[0]).a;
-	ArrColor[1].a = tex2Dlod(SceneColor, ArrTexUV[1]).a;
-	ArrColor[2].a = tex2Dlod(SceneColor, ArrTexUV[2]).a;
-	ArrColor[3].a = tex2Dlod(SceneColor, ArrTexUV[3]).a;*/
-	
 	ArrDepth[0] = tex2Dlod(Depth, ArrTexUV[0]).r;
 	ArrDepth[1] = tex2Dlod(Depth, ArrTexUV[1]).r;
 	ArrDepth[2] = tex2Dlod(Depth, ArrTexUV[2]).r;
@@ -70,7 +63,7 @@ ps_out_alpha_union main(vs_out_pp IN):COLOR0
 	ArrIsTransparency[2] = tex2Dlod(Normal, ArrTexUV[2]).w >= SURFACE_NOTLIGHTING_TRANSPARENCY ? 1 : 0;
 	ArrIsTransparency[3] = tex2Dlod(Normal, ArrTexUV[3]).w >= SURFACE_NOTLIGHTING_TRANSPARENCY ? 1 : 0;
 	
-	//в случае если у нас нет ппрозрачных слоев то возвращаем текущий цвет
+	//РІ СЃР»СѓС‡Р°Рµ РµСЃР»Рё Сѓ РЅР°СЃ РЅРµС‚ РїРїСЂРѕР·СЂР°С‡РЅС‹С… СЃР»РѕРµРІ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµРј С‚РµРєСѓС‰РёР№ С†РІРµС‚
 	[branch] if((ArrIsTransparency[0] == 0 && ArrIsTransparency[1] == 0 && ArrIsTransparency[2] == 0 && ArrIsTransparency[3] == 0))
 	{
 		OUT.Color = ArrColor[0];
@@ -103,8 +96,8 @@ ps_out_alpha_union main(vs_out_pp IN):COLOR0
 	ArrExistsIDs[0] = ArrIDs[ArrSort2[3]];
 	half tmpa2 = 0;
 	
-	//если id текущей поверхности записан либо этот id это нулевая (непрозрачная) поверхность
-	//проверка на непрозрачную поверхность нужна для правильного смешивания нулевого слоя, иначе будет жуткий альясинг
+	//РµСЃР»Рё id С‚РµРєСѓС‰РµР№ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё Р·Р°РїРёСЃР°РЅ Р»РёР±Рѕ СЌС‚РѕС‚ id СЌС‚Рѕ РЅСѓР»РµРІР°СЏ (РЅРµРїСЂРѕР·СЂР°С‡РЅР°СЏ) РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ
+	//РїСЂРѕРІРµСЂРєР° РЅР° РЅРµРїСЂРѕР·СЂР°С‡РЅСѓСЋ РїРѕРІРµСЂС…РЅРѕСЃС‚СЊ РЅСѓР¶РЅР° РґР»СЏ РїСЂР°РІРёР»СЊРЅРѕРіРѕ СЃРјРµС€РёРІР°РЅРёСЏ РЅСѓР»РµРІРѕРіРѕ СЃР»РѕСЏ, РёРЅР°С‡Рµ Р±СѓРґРµС‚ Р¶СѓС‚РєРёР№ Р°Р»СЊСЏСЃРёРЅРі
 	[branch] if(!IsExists(ArrIDs[ArrSort2[2]]) || ArrIDs[ArrSort2[2]] == 0)
 	{
 		tmpa2 = ArrColor[ArrSort2[2]].a;
@@ -134,11 +127,11 @@ ps_out_alpha_union main(vs_out_pp IN):COLOR0
 	OUT.Depth0 = ArrDepth[ArrSort2[0]];
 	OUT.Depth1 = ArrDepth[ArrSort2[0]];
 	
-	//если есть хотя бы один не прозрачный материал
+	//РµСЃР»Рё РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РЅРµ РїСЂРѕР·СЂР°С‡РЅС‹Р№ РјР°С‚РµСЂРёР°Р»
 	[branch] if(!ArrIsTransparency[0] || !ArrIsTransparency[1] || !ArrIsTransparency[2] || !ArrIsTransparency[3])
 		 OUT.Color.a = 1;
 	
-	//если хотя бы один слой полупрозрачный
+	//РµСЃР»Рё С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ СЃР»РѕР№ РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅС‹Р№
 	[branch] if(ArrIsTransparency[0] || ArrIsTransparency[1] || ArrIsTransparency[2] || ArrIsTransparency[3])
 		OUT.Depth1 = 1;
 	

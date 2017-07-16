@@ -1,12 +1,7 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-See the license in LICENSE
-******************************************************/
-
 /*
 lighting_blend.ps
-ђасчет освещениЯ и заполнение данными расчетов render targets
+Р Р°СЃС‡РµС‚ РѕСЃРІРµС‰РµРЅРёСЏ Рё Р·Р°РїРѕР»РЅРµРЅРёРµ РґР°РЅРЅС‹РјРё СЂР°СЃС‡РµС‚РѕРІ render targets
 */
 
 #include <../struct.h>
@@ -16,14 +11,14 @@ half4 LightPos;
 half2 LightPowerDist;
 half4 ViewPos;
 half4 LightColor;
-half2 NearFar;	//!!!пустаЯ, данные из движка сюда не приходят, как понадобиться надо включить
+half2 NearFar;	//!!!РїСѓСЃС‚Р°СЏ, РґР°РЅРЅС‹Рµ РёР· РґРІРёР¶РєР° СЃСЋРґР° РЅРµ РїСЂРёС…РѕРґВ¤С‚, РєР°Рє РїРѕРЅР°РґРѕР±РёС‚СЊСЃВ¤ РЅР°РґРѕ РІРєР»СЋС‡РёС‚СЊ
 
 sampler2D ColorSampler:register(s0);
 sampler2D NormalSampler:register(s1);
 sampler2D ParamSampler:register(s2);
-//x - шероховатость (roughness)
-//y - отражательнаЯ способность поверхности (f0)
-//z - толщина (thickness)
+//x - С€РµСЂРѕС…РѕРІР°С‚РѕСЃС‚СЊ (roughness)
+//y - РѕС‚СЂР°Р¶Р°С‚РµР»СЊРЅР°СЏ СЃРїРѕСЃРѕР±РЅРѕСЃС‚СЊ РїРѕРІРµСЂС…РЅРѕСЃС‚Рё (f0)
+//z - С‚РѕР»С‰РёРЅР° (thickness)
 
 sampler2D DepthSampler:register(s3);
 sampler2D ShadowSampler:register(s4);
@@ -112,7 +107,7 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	half absdiffuse = saturate(NdotL);
 	half diffuse = absdiffuse;
 	
-	//закрываем косяк с отставанием теней
+	//Р·Р°РєСЂС‹РІР°РµРј РєРѕСЃСЏРє СЃ РѕС‚СЃС‚Р°РІР°РЅРёРµРј С‚РµРЅРµР№
 	#ifdef IS_SHADOWED
 	shadow = saturate(min(shadow,absdiffuse-0.02));// + (normalds.w == 1 ? 0.2 : 0));//+0.01;
 	absdiffuse = shadow;
@@ -123,9 +118,9 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	diffuse = lerp(1,diffuse, Param.z);
 	#ifdef IS_SHADOWED
 	if(Param.z < 1.f)
-		diffuse *= max(originshadow,0.1);
+		diffuse *= max(originshadow,0.2);
 	else
-		diffuse *= max(shadow,0.1);
+		diffuse *= max(shadow,0.2);
 	#endif
 
 	half lighting = saturate(max((Param.y) * 0.5f, 0.1f));

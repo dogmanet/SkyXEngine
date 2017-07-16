@@ -1,4 +1,9 @@
 
+/*
+stdr_green.vs
+Обычный рендер растительности
+*/
+
 #include <../struct.h>
 #include <../green.h>
 

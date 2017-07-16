@@ -1,4 +1,9 @@
 
+/*
+stdr_geom.vs
+Обычный рендер статической геометрии
+*/
+
 #include <../struct.h>
 
 half4x4	WorldViewProjection;

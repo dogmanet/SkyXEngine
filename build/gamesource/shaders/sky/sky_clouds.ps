@@ -1,4 +1,9 @@
 
+/*
+sky_clouds.ps
+Рендер облаков (квадрат с натянутой текстурой облаков)
+*/
+
 #include <../struct.h>
 
 sampler2D BaseCloudsTexture: register(s0);
@@ -10,7 +15,7 @@ half Alpha;
 
 half4 main(vs_out_skyclouds IN):COLOR0
 {
-	half dist = (1.0f)-distance(IN.TexUV,half2(1,1));
+	half dist = (1.f)-distance(IN.TexUV,half2(1.f,1.f));
 	IN.TexUV.x += BlendFactorBias.y;
 	
 	half4 Color1 = tex2D(BaseCloudsTexture, IN.TexUV);

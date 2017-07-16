@@ -8,6 +8,7 @@ void Level::Clear()
 	SGeom_GreenClear();
 	SML_LigthsClear();
 	SXPhysics_UnloadGeom();
+	SAIG_Clear();
 	//! \todo добавить очистку игровых объектов в очистку уровня
 }
 

@@ -409,8 +409,8 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetBmpInResourse(IDB_BITMAP24);
 
 
-	SXLevelEditor::CheckBoxTBAIGBound->SetCheck(true);
-	GData::Editors::AIGBound = true;
+	SXLevelEditor::CheckBoxTBAIGBound->SetCheck(false);
+	GData::Editors::AIGBound = false;
 	SXLevelEditor::CheckBoxTBAIGQuad->SetCheck(true);
 	GData::Editors::AIGQuad = true;
 	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetCheck(true);

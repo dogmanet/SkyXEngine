@@ -1,10 +1,16 @@
 
+/*
+ppe_nfaa.ps
+Normal Filter Anti Aliasing
+—глаживание по нормали
+*/
+
 #include <../struct.h>
 
 half3 Param;
 //half Param.x - Strength;
 //half Param.y - Scale;
-//bool Param.z - CountNotmalMap
+//bool Param.z - IsNotmalMap
 
 half2 PixelSize;
 
@@ -14,19 +20,19 @@ half2 GetNormal(half2 texuv)
 {
 	half2 upOffset = half2(0, PixelSize.y) * Param.y;
 	half2 rightOffset = half2(PixelSize.x, 0) * Param.y;
-	half3 topHeight         = saturate(tex2Dlod(FrameSampler, half4(texuv + upOffset, 0, 0)).rgb);
-	half3 bottomHeight      = saturate(tex2Dlod(FrameSampler, half4(texuv - upOffset, 0, 0)).rgb);
-	half3 rightHeight       = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset, 0, 0)).rgb);
-	half3 leftHeight        = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset, 0, 0)).rgb);
-	half3 leftTopHeight     = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset + upOffset, 0, 0)).rgb);
-	half3 leftBottomHeight  = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset - upOffset, 0, 0)).rgb);
+	half3 topHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + upOffset, 0, 0)).rgb);
+	half3 bottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - upOffset, 0, 0)).rgb);
+	half3 rightHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset, 0, 0)).rgb);
+	half3 leftHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset, 0, 0)).rgb);
+	half3 leftTopHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset + upOffset, 0, 0)).rgb);
+	half3 leftBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset - upOffset, 0, 0)).rgb);
 	half3 rightBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset + upOffset, 0, 0)).rgb);
-	half3 rightTopHeight    = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset - upOffset, 0, 0)).rgb);
+	half3 rightTopHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset - upOffset, 0, 0)).rgb);
 
-	half3 sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
-	half3 sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
-	half3 sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
-	half3 sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
+	half3 sum0 = rightTopHeight + bottomHeight + leftTopHeight;
+	half3 sum1 = leftBottomHeight + topHeight + rightBottomHeight;
+	half3 sum2 = leftTopHeight + rightHeight + leftBottomHeight;
+	half3 sum3 = rightBottomHeight + leftHeight + rightTopHeight;
 
 	half vec1 = length(sum0 - sum1) * Param.x;
 	half vec2 = length(sum3 - sum2) * Param.x;

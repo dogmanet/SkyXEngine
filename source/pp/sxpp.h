@@ -139,7 +139,7 @@ param.y - на сколько небо в тумане \n
 param.z - минимальное значение тумана \n 
 param.w - максимальное значение тумана \n 
 примерные значения: 0.8, 1, 0.1, 0.9*/
-SX_LIB_API void SPP_RenderFog(float3_t* color, float4_t* param);
+SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float4_t* param);
 
 /*! space screen ambient occulusion, глобальное освещение (точнее затенение) в пространстве экрана, использует depth1 \n 
 param.x - радиус \n 
@@ -176,17 +176,17 @@ SX_LIB_API void SPP_RenderCBG(float3_t* param);
 //!@}
 
 
-/*! \name Anti aliasing
+/*! \name Anti Aliasing
 @{*/
 
-/*! nfaa \n 
+/*! nfaa (Normal Filter Anti Aliasing) \n 
 param.x - strength, множитель нормали, усиляет влияние нормали \n 
 param.y - scale, охватываемый масштаб \n 
 param.z - notmal map, вывести сформированные нормали \n 
 рекомендуемые параметры: 2, 1, 0*/
 SX_LIB_API void SPP_RenderNFAA(float3_t* param);
 
-SX_LIB_API void SPP_RenderDLAA();	//!< dlaa
+SX_LIB_API void SPP_RenderDLAA();	//!< dlaa (Directionally Localized Anti Aliasing)
 
 //!@}
 

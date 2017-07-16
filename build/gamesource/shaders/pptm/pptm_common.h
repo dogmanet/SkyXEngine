@@ -1,12 +1,7 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
-See the license in LICENSE
-******************************************************/
-
 /*
 pptm_common.h
-Ћсновные данные длЯ tone mapping
+РћСЃРЅРѕРІРЅС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ tone mapping
 */
 
 static const half3 HDRLumsWeights = half3(0.298f, 0.585f, 0.117f);

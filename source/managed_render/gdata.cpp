@@ -59,7 +59,7 @@ void GData::IDsShaders::InitAllShaders()
 
 	GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(ShaderType::st_pixel, "lighting_tone_mapping.ps", "lighting_tone_mapping", ShaderCheckDouble::scd_path);
 
-	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
 
 
 	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(ShaderType::st_pixel, "lighting_com.ps", "lighting_com_nonshadow", ShaderCheckDouble::scd_name);

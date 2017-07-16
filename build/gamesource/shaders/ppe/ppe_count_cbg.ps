@@ -1,4 +1,9 @@
 
+/*
+ppe_count_cbg.ps
+Регулировка контраста, гаммы, освещенности
+*/
+
 #include <../struct.h>
 
 half3 Param;
@@ -12,9 +17,9 @@ half4 main(vs_out_pp IN):COLOR0
 {
 	half4 color = tex2D(FrameSampler,IN.TexUV);
 	
-	color.r = pow(((Param.x * color.r) + Param.z),(1.0/Param.y));
-	color.g = pow(((Param.x * color.g) + Param.z),(1.0/Param.y));
-	color.b = pow(((Param.x * color.b) + Param.z),(1.0/Param.y));
+	color.r = pow(((Param.x * color.r) + Param.z),(1.f/Param.y));
+	color.g = pow(((Param.x * color.g) + Param.z),(1.f/Param.y));
+	color.b = pow(((Param.x * color.b) + Param.z),(1.f/Param.y));
 
 	return color;
 }

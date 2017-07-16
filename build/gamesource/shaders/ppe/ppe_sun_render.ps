@@ -1,4 +1,9 @@
 
+/*
+ppe_sun_render.ps
+Отрисвока солнца, проекция текстуры в screen space.
+*/
+
 #include <../struct.h>
 
 sampler2D DepthSampler:register(s0);
@@ -10,11 +15,10 @@ half4 LightPos;
 half2 SizeMap;
 half2 SizeTexSun;
 half4 LightColor;
-//half2 PixelSize;
 
 half4 main(vs_out_pp IN) : COLOR0
 {
-	half4 colorsun = 0;
+	half4 colorsun = 0.f;
 	half4 screen = tex2D(BaseSampler, IN.TexUV);
 	half2 SunPosProj = LightPos.xy;
 	

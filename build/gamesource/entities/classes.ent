@@ -16,7 +16,7 @@ scale = 0.01
 [weapon_ak74]
 base_class = base_riffle
 show_in_listing = 1
-model = "models/weapons/ak74/ak74.dse"
+//model = "models/weapons/ak74/ak74.dse"
 reload_time = 2.7
 scale = 0.0254
 slot_offset = 0.0620000102 -0.0239999797 0.0879999697

@@ -1,4 +1,9 @@
 
+/*
+sm_depth_green_pssm_direct.vs
+Рендер глубины сцены (растительность) с позиции направленного/глобального источника света
+*/
+
 #include <../struct.h>
 #include <../green.h>
 
@@ -14,7 +19,7 @@ half3 BBMin : register(GREEN_R_BBMIN);
 
 void main(in vs_in_green IN, out vs_out_gcommon OUT) 
 {
-	half multiplier = 1;
+	half multiplier = 1.f;
 	
 	#if defined(_GRASS_)
 	multiplier = GrassComMultiplier(IN.InstancePos,ViewPos,DistBeginEndLessening);
