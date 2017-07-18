@@ -140,7 +140,7 @@ void GData::InitWin(const char* name, const char* caption)
 }
 
 #if defined(SX_PARTICLES_EDITOR)
-void GData::Editors::ParticlesEditorUpdateStatusBar()
+void GData::Editors::ParticlesEditorUpdate()
 {
 	bool whyplay = false;
 	for (int i = 0; i < SPE_EffectCountGet(); ++i)
@@ -220,7 +220,7 @@ void GData::Editors::ParticlesEditorUpdateStatusBar()
 #endif
 
 #if defined(SX_LEVEL_EDITOR)
-void GData::Editors::LevelEditorUpdateStatusBar()
+void GData::Editors::LevelEditorUpdate()
 {
 	long count_poly_green = 0;
 	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
@@ -255,4 +255,32 @@ void GData::Editors::LevelEditorUpdateStatusBar()
 	}
 }
 
+#endif
+
+#if defined(SX_MATERIAL_EDITOR)
+void GData::Editors::MaterialEditorUpdate()
+{
+	char vs[1024];
+	char ps[1024];
+
+	SML_MtlGetVS(SXMaterialEditor::IDMat, vs);
+	SML_MtlGetPS(SXMaterialEditor::IDMat, ps);
+
+	ID skit = -1;
+	if ((skit = SXMaterialEditor::Shaders->Find(vs, ps)) >= 0)
+		SXMaterialEditor::ComboBoxShaders->SetSel(skit + 1);
+	else if(!SXMaterialEditor::ComboBoxShaders->Focus())
+		SXMaterialEditor::ComboBoxShaders->SetSel(0);
+
+
+	float thikcness = SML_MtlGetThickness(SXMaterialEditor::IDMat);
+	float roughness = SML_MtlGetRoughness(SXMaterialEditor::IDMat);
+	float f0 = SML_MtlGetF0(SXMaterialEditor::IDMat);
+
+	skit = -1;
+	if ((skit = SXMaterialEditor::ParamL->Find(thikcness, roughness, f0)) >= 0)
+		SXMaterialEditor::ComboBoxParamL->SetSel(skit + 1);
+	else if (!SXMaterialEditor::ComboBoxParamL->Focus())
+		SXMaterialEditor::ComboBoxParamL->SetSel(0);
+}
 #endif

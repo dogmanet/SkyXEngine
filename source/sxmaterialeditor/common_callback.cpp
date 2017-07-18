@@ -308,6 +308,38 @@ LRESULT SXMaterialEditor_JobWindow_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		{
 			SML_MtlSetPhysicMaterial(SXMaterialEditor::IDMat,(MtlPhysicType)SXMaterialEditor::ComboBoxPhysic->GetSel());
 		}
+		else if (SXMaterialEditor::ComboBoxShaders->GetHWND() == handle_elem)
+		{
+			int sel = SXMaterialEditor::ComboBoxShaders->GetSel();
+			if (sel > 0)
+			{
+				sel -= 1;
+				SML_MtlSetVS(SXMaterialEditor::IDMat, SXMaterialEditor::Shaders->GetVS(sel));
+				SXMaterialEditor::EditVS->SetText(SXMaterialEditor::Shaders->GetVS(sel));
+
+				SML_MtlSetPS(SXMaterialEditor::IDMat, SXMaterialEditor::Shaders->GetPS(sel));
+				SXMaterialEditor::EditPS->SetText(SXMaterialEditor::Shaders->GetPS(sel));
+			}
+		}
+		else if (SXMaterialEditor::ComboBoxParamL->GetHWND() == handle_elem)
+		{
+			int sel = SXMaterialEditor::ComboBoxParamL->GetSel();
+			if (sel > 0)
+			{
+				sel -= 1;
+				SML_MtlSetThickness(SXMaterialEditor::IDMat, SXMaterialEditor::ParamL->GetThickness(sel));
+				SXMaterialEditor::EditThickness->SetText(String(SXMaterialEditor::ParamL->GetThickness(sel)).c_str());
+				SXMaterialEditor::TrackBarThickness->SetPos(SXMaterialEditor::ParamL->GetThickness(sel)*100);
+
+				SML_MtlSetRoughness(SXMaterialEditor::IDMat, SXMaterialEditor::ParamL->GetRoughness(sel));
+				SXMaterialEditor::EditRoughness->SetText(String(SXMaterialEditor::ParamL->GetRoughness(sel)).c_str());
+				SXMaterialEditor::TrackBarRoughness->SetPos(SXMaterialEditor::ParamL->GetRoughness(sel) * 100);
+
+				SML_MtlSetF0(SXMaterialEditor::IDMat, SXMaterialEditor::ParamL->GetF0(sel));
+				SXMaterialEditor::EditF0->SetText(String(SXMaterialEditor::ParamL->GetF0(sel)).c_str());
+				SXMaterialEditor::TrackBarF0->SetPos(SXMaterialEditor::ParamL->GetF0(sel) * 100);
+			}
+		}
 	}
 	return 0;
 }

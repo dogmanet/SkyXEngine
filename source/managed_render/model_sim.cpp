@@ -247,7 +247,7 @@ void ModelSim::RenderGreen(DWORD timeDelta)
 
 	long jCountIndex = 0;
 
-	SGCore_MtlSet(IDsMat, &WorldMat);
+	SGCore_MtlSet(IDsMat, &SMMatrixIdentity());
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->VertexCount[0], jCountIndex, ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3) * 1));
 	jCountIndex += ArrStaticModel[CurrRenderModel]->Model->IndexCount[0];

@@ -1012,8 +1012,10 @@ void SPP_RenderDLAA()
 	PPSet::DXDevice->SetRenderTarget(0, RenderSurf);
 
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+	//SGCore_SetSamplerAddress(1, D3DTADDRESS_MIRROR);
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
+	//PPSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Depth1));
 
 	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::DLAA_Long, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
 

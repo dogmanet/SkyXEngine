@@ -6,11 +6,9 @@ void SkyXEngine_Init()
 	srand((UINT)time(0));
 	InitOutLog();
 	GData::Pathes::InitAllPathes();
+
 	if (!Core_0IsProcessRun("sxconsole.exe"))
 		ShellExecute(0, "open", "sxconsole.exe", 0, GData::Pathes::ForExe, SW_SHOWNORMAL);
-	//HWND hwnd = GetConsoleWindow();
-	//SetWindowText(hwnd, "hand");
-	//SetConsoleTitle("sxconsole");
 
 #if defined(SX_GAME)
 	GData::InitWin("SkyXEngine", "SkyXEngine");
@@ -198,6 +196,11 @@ void SkyXEngine_Init()
 	else
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
 #endif
+
+	/*IAnimPlayer * pl;
+	pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
+	pl->SetPos(float3(-17.18, -1.38f, -32.3));
+	pl->Play("reload");*/
 }
 
 //#############################################################################
@@ -349,11 +352,15 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SXRenderFunc::UpdateDataCVar();
 
 #if defined(SX_LEVEL_EDITOR)
-	GData::Editors::LevelEditorUpdateStatusBar();
+	GData::Editors::LevelEditorUpdate();
+#endif
+
+#if defined(SX_MATERIAL_EDITOR)
+	GData::Editors::MaterialEditorUpdate();
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
-	GData::Editors::ParticlesEditorUpdateStatusBar();
+	GData::Editors::ParticlesEditorUpdate();
 #endif
 }
 

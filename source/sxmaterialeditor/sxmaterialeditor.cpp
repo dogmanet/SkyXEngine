@@ -35,6 +35,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SkyXEngine_Init();
 
+	char shaderskitpath[1024];
+	sprintf(shaderskitpath, "%s%s", GData::Pathes::ForExe, "\\shaders_kit.cfg");
+	SXMaterialEditor::Shaders = new ShadersKit();
+	SXMaterialEditor::Shaders->Load(shaderskitpath);
+
+	for (int i = 0; i < SXMaterialEditor::Shaders->GetCount(); ++i)
+	{
+		SXMaterialEditor::ComboBoxShaders->AddItem(SXMaterialEditor::Shaders->GetName(i));
+	}
+
+	SXMaterialEditor::ComboBoxShaders->SetSel(0);
+
+
+	char paramlpath[1024];
+	sprintf(paramlpath, "%s%s", GData::Pathes::ForExe, "\\paraml_kit.cfg");
+	SXMaterialEditor::ParamL = new ParamLKit();
+	SXMaterialEditor::ParamL->Load(paramlpath);
+
+	for (int i = 0; i < SXMaterialEditor::ParamL->GetCount(); ++i)
+	{
+		SXMaterialEditor::ComboBoxParamL->AddItem(SXMaterialEditor::ParamL->GetName(i));
+	}
+
+	SXMaterialEditor::ComboBoxParamL->SetSel(0);
+
+
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SXMaterialEditor::EditSkyBox->SetText("sky_2_cube.dds");
 		

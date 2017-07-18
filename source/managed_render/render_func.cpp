@@ -615,10 +615,10 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 
 				sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.3f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount) * 0.001f);
 
-				sprintf(debugstr + strlen(debugstr), "\n\FreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
-				sprintf(debugstr + strlen(debugstr), "\n\FreeValF1 : %f\n", SXRenderFunc::Delay::FreeValF1);
-				sprintf(debugstr + strlen(debugstr), "\n\FreeValF2 : %f\n", SXRenderFunc::Delay::FreeValF2);
-				sprintf(debugstr + strlen(debugstr), "\n\FreeValF3 : %f\n", SXRenderFunc::Delay::FreeValF3);
+				sprintf(debugstr + strlen(debugstr), "\nFreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
+				sprintf(debugstr + strlen(debugstr), "\nFreeValF1 : %f\n", SXRenderFunc::Delay::FreeValF1);
+				sprintf(debugstr + strlen(debugstr), "\nFreeValF2 : %f\n", SXRenderFunc::Delay::FreeValF2);
+				sprintf(debugstr + strlen(debugstr), "\nFreeValF3 : %f\n", SXRenderFunc::Delay::FreeValF3);
 			}
 
 			Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
@@ -1688,31 +1688,24 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 	D3DXPLANE plane;
 	float3_t center;
 	GData::Editors::SimModel->GetCenter(&center);
+	SGCore_ShaderUnBind();
 
 	if (typeref == MtlTypeReflect::mtr_plane)
 	{
 		GData::Editors::SimModel->GetPlane(&plane);
-		
 		SML_MtlRefPreRenderPlane(idmat, &plane);
 		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 		SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-		GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-		GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-		GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
-		GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 		Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefPlaneSkyProj);
-		SGCore_SkyBoxRender(timeDelta, &float3(center.x, center.y, center.z));
+		SGCore_SkyBoxRender(timeDelta, &float3(center));
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-
+		
 		SML_MtlRefPostRenderPlane(idmat);
 	}
 	else if (typeref == MtlTypeReflect::mtr_cube_static || typeref == MtlTypeReflect::mtr_cube_dynamic)
@@ -1725,23 +1718,19 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 
 			SML_MtlRefCubePreRender(idmat, j, &(SMMatrixIdentity()));
 
-			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-			GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-			GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-			GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
-			GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 			Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefCubeSkyProj);
-			SGCore_SkyBoxRender(timeDelta, &float3(0, 0, 0));
+			SGCore_SkyBoxRender(timeDelta, &float3(center));
+			
+			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+			SML_MtlRefCubePostRender(idmat, j);
 			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-			GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-
-			SML_MtlRefCubePostRender(idmat, j);
 		}
 		SML_MtlRefCubeEndRender(idmat, &((float3_t)GData::ConstCurrCamPos));
 	}

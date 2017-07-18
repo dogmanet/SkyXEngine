@@ -88,7 +88,7 @@ LRESULT SXMaterialEditor_EditPS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	{
 		MessageBox(0, "shader not found", 0, 0);
 
-		SML_MtlGetVS(SXMaterialEditor::IDMat, tmptextval);
+		SML_MtlGetPS(SXMaterialEditor::IDMat, tmptextval);
 		SXMaterialEditor::EditPS->SetText(tmptextval);
 	}
 
@@ -196,7 +196,7 @@ LRESULT SXMaterialEditor_EditMG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 1, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditMG->SetText(tmptextval);
 	}
 
 	return 0;
@@ -219,7 +219,7 @@ LRESULT SXMaterialEditor_EditMB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 2, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditMB->SetText(tmptextval);
 	}
 
 	return 0;
@@ -242,7 +242,7 @@ LRESULT SXMaterialEditor_EditMA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 3, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditMA->SetText(tmptextval);
 	}
 
 	return 0;
@@ -266,7 +266,7 @@ LRESULT SXMaterialEditor_EditDR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 0, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditDR->SetText(tmptextval);
 	}
 
 	return 0;
@@ -289,7 +289,7 @@ LRESULT SXMaterialEditor_EditDG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 1, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditDR->SetText(tmptextval);
 	}
 
 	return 0;
@@ -312,7 +312,7 @@ LRESULT SXMaterialEditor_EditDB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 2, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditDR->SetText(tmptextval);
 	}
 
 	return 0;
@@ -335,7 +335,7 @@ LRESULT SXMaterialEditor_EditDA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 		MessageBox(0, "texture not found", 0, 0);
 
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 3, tmptextval);
-		SXMaterialEditor::EditMR->SetText(tmptextval);
+		SXMaterialEditor::EditDR->SetText(tmptextval);
 	}
 
 	return 0;

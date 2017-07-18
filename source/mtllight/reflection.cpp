@@ -195,8 +195,8 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 	mem_release_del(SurfaceReflect);
 	TextureReflect->GetSurfaceLevel(0, &SurfaceReflect);
 	MLSet::DXDevice->SetRenderTarget(0, SurfaceReflect);
-	MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
+	//MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
+	//MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
 	MLSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0L);
 }
 
@@ -207,17 +207,18 @@ void Reflection::PostRenderRefPlane()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
-
-	/*if (GetAsyncKeyState(VK_NUMPAD9))
-	{
-		char tmpstr[256];
-		sprintf(tmpstr, "C:\\1\\reflectionreflection.png");
-		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_JPG, SurfaceReflect, NULL, 0);
-	}*/
+	//MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
 
 	mem_release_del(BackBuffer);
 	mem_release_del(LastSurfaceZBuffer);
+	mem_release_del(SurfaceReflect);
+
+	if (GetAsyncKeyState(VK_NUMPAD9))
+	{
+		char tmpstr[256];
+		sprintf(tmpstr, "C:\\1\\reflectionreflection.png");
+		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_PNG, SurfaceReflect, NULL, 0);
+	}
 }
 
 inline IDirect3DTexture9* Reflection::GetRefPlaneTex()
@@ -251,13 +252,13 @@ void Reflection::BeginRenderRefCube(float3_t* center)
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
 	MLSet::DXDevice->GetRenderTarget(0, &BackBuffer);
-	MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
+	//MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
+	//MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
 }
 
 void Reflection::PreRenderRefCube(int cube, float4x4* world)
 {
-	MLSet::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)MLSet::RefMProjCube));
+	//MLSet::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)MLSet::RefMProjCube));
 
 	PositionReflect = SMVector3Transform(Position, *world);
 
@@ -266,9 +267,13 @@ void Reflection::PreRenderRefCube(int cube, float4x4* world)
 		((MLSet::OrientedCube[cube] + PositionReflect)),
 		MLSet::UpVectorsCube[cube]);
 
-	MLSet::DXDevice->SetTransform(D3DTS_VIEW, &MatrixView.operator D3DXMATRIX());
+	/*MLSet::DXDevice->SetTransform(D3DTS_VIEW, &MatrixView.operator D3DXMATRIX());
 
-	MLSet::DXDevice->SetTransform(D3DTS_WORLD1, &((D3DXMATRIX)(MatrixView * MLSet::RefMProjCube)));
+	MLSet::DXDevice->SetTransform(D3DTS_WORLD1, &((D3DXMATRIX)(MatrixView * MLSet::RefMProjCube)));*/
+
+	Core_RMatrixSet(G_RI_MATRIX_VIEW, &MatrixView);
+	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &MLSet::RefMProjCube);
+	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(MatrixView * MLSet::RefMProjCube));
 
 	ReflectFrustum[cube]->Update(&float4x4(MatrixView), &MLSet::RefMProjCube);
 
@@ -284,10 +289,23 @@ void Reflection::PostRenderRefCube(int cube)
 	LPDIRECT3DSURFACE9 BackBuf;
 
 	mem_release_del(CubeReflectSurface[cube]);
+	mem_release(SurfaceReflect);
+
+	DWORD alphablend, alphatest, zenable, zwriteenable;
+
+	MLSet::DXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
+	MLSet::DXDevice->GetRenderState(D3DRS_ALPHATESTENABLE, &alphatest);
+	MLSet::DXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
+	MLSet::DXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
+
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	TextureCubeReflect->GetCubeMapSurface((D3DCUBEMAP_FACES)cube, 0, &CubeReflectSurface[cube]);
 	MLSet::DXDevice->SetRenderTarget(0, CubeReflectSurface[cube]);
-	MLSet::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 255, 255), 1, 0);
+	//MLSet::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 255, 0, 0), 1, 0);
 
 	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::ScreenOut);
@@ -297,14 +315,19 @@ void Reflection::PostRenderRefCube(int cube)
 
 	SGCore_ShaderUnBind();
 
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, alphablend);
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, alphatest);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZENABLE, zenable);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, zwriteenable);
+
 
 	/*if(GetAsyncKeyState(VK_NUMPAD5))
 	{
 		char tmpstr[1024];
-		sprintf(tmpstr,"C:\\1\\reflectioncube_%d.bmp",cube);
+		sprintf(tmpstr,"C:\\1\\reflectioncube_%d.png",cube);
 		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_PNG, CubeReflectSurface[cube], NULL, 0);
 	}*/
-	mem_release(SurfaceReflect);
+	
 	mem_release_del(CubeReflectSurface[cube]);
 }
 
@@ -315,8 +338,8 @@ void Reflection::EndRenderRefCube(float3_t* viewpos)
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
-	mem_release_del(LastSurfaceZBuffer);
+	//MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
+	//mem_release_del(LastSurfaceZBuffer);
 	mem_release_del(BackBuffer);
 
 	UpdateCountUpdate(viewpos);

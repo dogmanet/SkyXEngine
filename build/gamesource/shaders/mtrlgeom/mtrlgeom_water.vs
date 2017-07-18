@@ -1,5 +1,11 @@
 
+/*
+mtrlgeom_water.vs
+Рендер воды (геометрии)
+*/
+
 #include <../struct.h>
+#include <../mtrl.h>
 
 half4x4 WorldViewProjection;
 half2 TimeDelta;

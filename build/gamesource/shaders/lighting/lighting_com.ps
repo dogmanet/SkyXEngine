@@ -47,7 +47,7 @@ half G_Get(half NdotV, half NdotL, half LdotV, half NdotH,half VdotH)
 
 half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half HdotV)
 {
-	matparam.x = lerp(0.0f,0.5f,matparam.x);
+	matparam.x = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, matparam.x);
 	half D = D_Get(matparam.x, NdotH);
 	half G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
 	half3 F = F_Get(matparam.y*matparam.y, HdotV);

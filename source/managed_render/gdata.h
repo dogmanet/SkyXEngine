@@ -195,6 +195,7 @@ namespace GData
 
 #if defined(SX_MATERIAL_EDITOR)
 		bool MoveCamera = false;		//!< разрешено ли двигать камеру
+		void MaterialEditorUpdate();	//!< обновление данных в редакторе материалов
 #endif
 
 #if defined(SX_LEVEL_EDITOR)
@@ -217,12 +218,12 @@ namespace GData
 		float3 GreenBoxPos;				//!< позиция бокса
 		float3_t GreenBoxWHD(1,1,1);	//!< ширина, высота, длина бокса
 
-		void LevelEditorUpdateStatusBar();	//!< обновление информации в статус баре
+		void LevelEditorUpdate();		//!< обновление данных в редакторе уровней
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
-		bool RenderBound = false;				//!< рисовать ли ограничивающий объем для эффекта
-		void ParticlesEditorUpdateStatusBar();	//!< обновление информации в статус баре
+		bool RenderBound = false;		//!< рисовать ли ограничивающий объем для эффекта
+		void ParticlesEditorUpdate();	//!< обновление данных в редакторе партиклов
 #endif
 	};
 #endif

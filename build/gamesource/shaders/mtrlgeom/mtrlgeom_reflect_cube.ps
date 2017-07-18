@@ -1,7 +1,7 @@
 
 /*
-mtrlgeom_base.ps
-Базовый рендер геометрии
+mtrlgeom_reflect_cube.ps
+Рендер геометрии с объемным (кубическим) отражением
 */
 
 #include <../struct.h>
@@ -9,10 +9,11 @@ mtrlgeom_base.ps
 
 sampler2D BaseTex:register(s0);
 sampler2D ParamTex:register(s10);
+samplerCUBE ReflectTex:register(s12);
 
 half4 NearFarIsUnlit;
 
-ps_out_ds_mrt main(vs_out_gcommon IN)
+ps_out_ds_mrt main(vs_out_refcube IN)
 {
 	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
 	
@@ -25,6 +26,10 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 	OUT.Param = tex2D(ParamTex,IN.TexUV);
 	OUT.Param.w = NearFarIsUnlit.w;
 	
+	half MipmapIndex = GetTexLod4Ref(saturate(OUT.Param.r));
+	half4 reflection = texCUBElod(ReflectTex, half4(IN.CubePPos,MipmapIndex));
+	OUT.Color.xyz = lerp(OUT.Color.xyz,reflection.xyz,OUT.Param.y);
+	//OUT.Color.xyz = 2 * IN.CubePPos - 1;
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
 	
 	return OUT;

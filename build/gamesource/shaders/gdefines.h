@@ -60,6 +60,24 @@ const half2 TexUV_Center = half2(0.5f,0.5f);
 #define GREEN_R_BBMIN		c63
 //}
 
+//дистанция на которую распространяется детализированность шейдеров mtrl_land_
+#define MTRL_LAND_DIST	100.f
+
+//на сколько увеличиваем текстурные координаты для текстур микрорельефа и детальных текстур mtrl_land_
+#define MTRL_LAND_TEXUV_SCALE	1024.f
+
+//на сколько увеличиваем текстурные координаты для текстур микрорельефа и детальных текстур
+#define MTRL_TEXUV_SCALE	32.f
+
+//количество возможных лодов для отражений
+#define MTRL_REF_LOD_COUNT	5.f
+
+//параметр освещения "шероховатость поверхности", минимальное значение
+#define PARAM_LIGHTING_ROUGHNESS_MIN	0.05f
+
+//параметр освещения "шероховатость поверхности", максимальное значение
+#define PARAM_LIGHTING_ROUGHNESS_MAX	0.4f
+
 #else
 	#error G_DEFINES double include
 #endif

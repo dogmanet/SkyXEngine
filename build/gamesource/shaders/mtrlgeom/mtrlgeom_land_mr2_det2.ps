@@ -1,0 +1,72 @@
+
+/*
+mtrlgeom_land_mr2_det2.ps
+Рендер ландшафта (геометрии), 2 детальные текстуры и 2 текстуры микрорельефа по маске
+*/
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+sampler2D BaseText:register(s0);
+
+sampler2D MaskTex:register(s1);
+
+sampler2D DetTex0:register(s2);
+sampler2D DetTex1:register(s3);
+
+sampler2D MRTex0:register(s6);
+sampler2D MRTex1:register(s7);
+
+sampler2D ParamTex:register(s10);
+
+half4 Param;
+half4 NearFarIsUnlit;
+
+ps_out_ds_mrt main(vs_out_gcommon IN)
+{
+	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
+	ps_out_ds_mrt OUT;
+	half2 dx = ddx((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE);
+	half2 dy = ddy((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE);
+	half lod = 9.f+log2(max(length(dx), length(dy)));
+
+	half3 NormalPixel;
+	half4 basecolor = tex2D(BaseText, IN.TexUV);
+	half4 detmaskcolor = tex2D(MaskTex, IN.TexUV);
+		[branch]if(IN.Pos.z < MTRL_LAND_DIST)
+		{
+			half4 detcolor1 = tex2Dlod(DetTex0, half4((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE,0.f,lod));
+			half4 detcolor2 = tex2Dlod(DetTex1, half4((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE,0.f,lod));
+			
+			half3 mdetcolor1 = (2.f * (tex2Dlod(MRTex0, half4((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE,0,lod)).rgb)) - 1.f;
+			half3 mdetcolor2 = (2.f * (tex2Dlod(MRTex1, half4((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE,0,lod)).rgb)) - 1.f;
+			
+
+			half4 detcolor = detcolor1 * detmaskcolor.r + detcolor2 * detmaskcolor.g;
+			detcolor *= Param.y * 2.f;
+			
+			half3 mdetcolor = mdetcolor1 * detmaskcolor.r + mdetcolor2 * detmaskcolor.g;
+			mdetcolor *= Param.z;
+			
+			
+			half lerpfactor = IN.Pos.z/MTRL_LAND_DIST;
+			lerpfactor = saturate(lerpfactor*lerpfactor);
+			NormalPixel = lerp(normalize((IN.Normal+half3(mdetcolor.xy,IN.Normal.z)) * 0.5f),IN.Normal,lerpfactor);
+			
+			half4 blend = basecolor * detcolor * (2.f - detcolor);
+			basecolor.rgb = lerp(blend,basecolor,lerpfactor).rgb;
+		}
+		else
+			NormalPixel = IN.Normal;
+	
+
+	OUT.Normal.xyz = 0.5f * NormalPixel + 0.5f;
+	OUT.Normal.w = NearFarIsUnlit.z;
+	
+	OUT.Param = tex2D(ParamTex,IN.TexUV);
+	OUT.Param.w = NearFarIsUnlit.w;
+	OUT.Color = basecolor;
+	
+	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
+	return OUT;
+}

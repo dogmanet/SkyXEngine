@@ -10,8 +10,8 @@ Materials::Materials()
 	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgeom_base.vs", "mtrlgeom_base", ShaderCheckDouble::scd_path);
 	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_base.ps", "mtrlgeom_base", ShaderCheckDouble::scd_path);
 
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_base_tree.vs", "mtrlgreen_base_tree", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_base_grass.vs", "mtrlgreen_base_grass", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", ShaderCheckDouble::scd_path);
 	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgreen_base.ps", "mtrlgreen_base", ShaderCheckDouble::scd_path);
 
 	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_light.ps", "mtrlgeom_light", ShaderCheckDouble::scd_path);
@@ -59,7 +59,7 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "tree");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_tree");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_tree_base");
 	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
 
 	tmpumtl->mtl->MainTexture = -1;
@@ -74,7 +74,7 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "grass");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_grass");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_grass_base");
 	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
 
 	tmpumtl->mtl->MainTexture = -1;
@@ -1419,14 +1419,14 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 	//деревь¤
 	else if (type == MtlTypeModel::tms_tree)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_tree");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_tree_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//трава
 	else if (type == MtlTypeModel::tms_grass)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_grass");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_grass_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
