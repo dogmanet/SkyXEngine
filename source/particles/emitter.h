@@ -122,7 +122,7 @@ public:
 
 	void VertexCreate();
 	
-	void Compute();
+	void Compute(const float4x4 * mat);
 	void ComputeLighting();
 	void Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos);
 

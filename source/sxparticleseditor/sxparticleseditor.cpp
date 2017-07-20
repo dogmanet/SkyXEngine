@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXParticlesEditor::TabsVisible(false);
 	SXParticlesEditor::AllInTabsVisible(false);
 	
-	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+	GData::FinalImage = DS_RT::ds_rt_color;
 
 	GData::Handle3D = SXParticlesEditor::WindowRender->GetHWND();
 	GData::HandleParent3D = SXParticlesEditor::JobWindow->GetHWND();

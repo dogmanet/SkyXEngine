@@ -280,6 +280,7 @@ void Effects::Save(const char* path)
 
 			fprintf(file, "TransparencyCoef = %f\n", part->GetData()->TransparencyCoef);
 			fprintf(file, "Lighting = %d\n", part->GetData()->Lighting);
+			fprintf(file, "CollisionDelete = %d\n", part->GetData()->CollisionDelete);
 			fprintf(file, "\n");
 		}
 		fprintf(file, "----------------------------------------------------------------------\n\n");
@@ -554,6 +555,8 @@ void Effects::Load(const char* path)
 				part.TransparencyCoef = String(config->GetKey(part_section_name, "TransparencyCoef")).ToDouble();
 			if (config->KeyExists(part_section_name, "Lighting"))
 				part.Lighting = String(config->GetKey(part_section_name, "Lighting")).ToBool();
+			if (config->KeyExists(part_section_name, "CollisionDelete"))
+				part.CollisionDelete = String(config->GetKey(part_section_name, "CollisionDelete")).ToBool();
 
 			
 			ID part_id = this->EmitterAdd(eff_id, &part);
@@ -924,11 +927,14 @@ void Effects::EffectCompute(ID id)
 	Effect* eff = ArrID[id];
 	int countlife = 0;
 
+	static float4x4 mattrans;
+	mattrans = eff->MatRotate * eff->MatTranslation;
+
 	int countdead = 0;	//счетик живых партиклов
 	for (int i = 0, l = eff->Arr.size(); i < l; ++i)
 	{
 		if (eff->Arr[i])
-			eff->Arr[i]->Compute();
+			eff->Arr[i]->Compute(&mattrans);
 
 		//если партиклы метрвы то инкрементируем счетчик
 		if (!eff->Arr[i]->EnableGet())
@@ -961,9 +967,6 @@ void Effects::EffectCompute(ID id)
 				if (eff->Arr[i]->CurrMin.z < eff->CurrMin.z)
 					eff->CurrMin.z = eff->Arr[i]->CurrMin.z;
 			}
-
-			static float4x4 mattrans;
-			mattrans = eff->MatRotate * eff->MatTranslation;
 			
 			eff->CurrMin2 = SMVector3Transform(eff->CurrMin, mattrans);
 			eff->CurrMax2 = SMVector3Transform(eff->CurrMax, mattrans);
@@ -1049,7 +1052,7 @@ void Effects::EffectRenderAll(DWORD timeDelta)
 	for (int i = ArrSortSizeCurr-1; i >= 0; --i)
 	{
 		tmpid = ArrSort[i];
-		if (tmpid >= 0)
+		if (tmpid >= 0 && tmpid < ArrID.size() && ArrID[tmpid])
 			EffectRender(tmpid, timeDelta);
 	}
 }

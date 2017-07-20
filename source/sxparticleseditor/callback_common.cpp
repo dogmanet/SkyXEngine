@@ -94,11 +94,12 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 
 		else if (SXParticlesEditor::CheckBoxTBPlay->GetHWND() == handle_elem)
 		{
+			Core_TimeWorkingSet(G_Timer_Render_Scene, SXParticlesEditor::CheckBoxTBPlay->GetCheck());
 			if (SXParticlesEditor::SelEffID >= 0)
 			{
-				if (SXParticlesEditor::SelEmitterID >= 0)
+				if (SXParticlesEditor::SelEmitterID >= 0 && !SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID))
 					SXParticlesEditor_ListBoxEmitters_Click(hwnd, msg, wParam, lParam);
-				else
+				else if (!SPE_EffectEnableGet(SXParticlesEditor::SelEffID))
 					SXParticlesEditor_ListBoxEffects_Click(hwnd, msg, wParam, lParam);
 			}
 			else
@@ -109,13 +110,17 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		}
 		else if (SXParticlesEditor::CheckBoxTBPause->GetHWND() == handle_elem)
 		{
-			Core_TimeWorkingSet(G_Timer_Render_Scene, !SXParticlesEditor::CheckBoxTBPause->GetCheck());
+			if (SXParticlesEditor::CheckBoxTBPlay->GetCheck())
+				Core_TimeWorkingSet(G_Timer_Render_Scene, !SXParticlesEditor::CheckBoxTBPause->GetCheck());
+			else
+				SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
 
 			SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
 			SXParticlesEditor::CheckBoxTBStop->SetCheck(false);
 		}
 		else if (SXParticlesEditor::CheckBoxTBStop->GetHWND() == handle_elem)
 		{
+			Core_TimeWorkingSet(G_Timer_Render_Scene, true);
 			if (SXParticlesEditor::SelEffID >= 0)
 				SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
 
@@ -292,6 +297,11 @@ LRESULT SXParticlesEditor_GroupBoxData2_CallWmCommand(HWND hwnd, UINT msg, WPARA
 		else if (SXParticlesEditor::CheckBoxDeviationTapZ->GetHWND() == handle_elem)
 		{
 			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapZ, SXParticlesEditor::CheckBoxDeviationTapZ->GetCheck());
+		}
+
+		else if (SXParticlesEditor::CheckBoxCollisionDelete->GetHWND() == handle_elem)
+		{
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CollisionDelete, SXParticlesEditor::CheckBoxCollisionDelete->GetCheck());
 		}
 	}
 	else if (Notification == CBN_SELCHANGE)

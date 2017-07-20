@@ -134,6 +134,7 @@ void SXParticlesEditor::BaseVisible(bool visible)
 	EditSizeDisp->Visible(visible);
 	StaticSizeDependAge->Visible(visible);
 	ComboBoxSizeDependAge->Visible(visible);
+	CheckBoxCollisionDelete->Visible(visible);
 }
 
 void SXParticlesEditor::BaseDataInit()
@@ -173,6 +174,7 @@ void SXParticlesEditor::BaseDataInit()
 	SXParticlesEditor::EditSizeY->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Size.y)).c_str());
 	SXParticlesEditor::EditSizeDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDisp)).c_str());
 	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDependAge));
+	SXParticlesEditor::CheckBoxCollisionDelete->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CollisionDelete));
 }
 
 void SXParticlesEditor::BaseNulling()
@@ -199,6 +201,7 @@ void SXParticlesEditor::BaseNulling()
 	SXParticlesEditor::EditSizeY->SetText("0.5");
 	SXParticlesEditor::EditSizeDisp->SetText("0");
 	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(0);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetCheck(false);
 }
 
 void SXParticlesEditor::BoundVisible(bool visible)

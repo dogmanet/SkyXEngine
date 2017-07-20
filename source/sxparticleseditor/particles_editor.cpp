@@ -92,6 +92,7 @@ namespace SXParticlesEditor
 	ISXGUIEdit* EditSizeDisp;
 	ISXGUIStatic* StaticSizeDependAge;
 	ISXGUIComboBox* ComboBoxSizeDependAge;
+	ISXGUICheckBox* CheckBoxCollisionDelete;
 	//}
 
 	//bound
@@ -964,6 +965,15 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(0);
 	SXParticlesEditor::ComboBoxSizeDependAge->GAlign.left = true;
 	SXParticlesEditor::ComboBoxSizeDependAge->GAlign.top = true;
+
+	SXParticlesEditor::CheckBoxCollisionDelete = SXGUICrCheckBox("CollisionDelete", 530, 95, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetColorText(0, 0, 0);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetTransparentTextBk(true);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::CheckBoxCollisionDelete->GAlign.left = true;
+	SXParticlesEditor::CheckBoxCollisionDelete->GAlign.top = true;
 	//}
 
 	//bound
@@ -2032,6 +2042,7 @@ void SXParticlesEditor::DeleteAllElements()
 	mem_release(SXParticlesEditor::EditSizeDisp);
 	mem_release(SXParticlesEditor::StaticSizeDependAge);
 	mem_release(SXParticlesEditor::ComboBoxSizeDependAge);
+	mem_release(SXParticlesEditor::CheckBoxCollisionDelete);
 
 	mem_release(SXParticlesEditor::StaticBoundType);
 	mem_release(SXParticlesEditor::ComboBoxBoundType);

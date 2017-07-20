@@ -20,6 +20,8 @@ LRESULT WndProcGroupBoxPaint(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	POINT arrpoint[6];
 	arrpoint[0].x = clrect.left+5;
+	if (!GroupBox->StrText || (GroupBox->StrText && GroupBox->StrText[0] == 0))
+		arrpoint[0].x += 5;
 	arrpoint[0].y = clrect.top;
 
 	arrpoint[1].x = clrect.left;

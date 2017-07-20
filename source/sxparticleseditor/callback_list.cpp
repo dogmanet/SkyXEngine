@@ -121,11 +121,18 @@ LRESULT SXParticlesEditor_ButtonEffectsDelete_Click(HWND hwnd, UINT msg, WPARAM 
 	}
 	else
 		SXParticlesEditor_ButtonEffectsCreate_Click(hwnd, msg, wParam, lParam);
+
+	if (SXParticlesEditor::SelEffID >= 0)
+		SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
+
 	return 0;
 }
 
 LRESULT SXParticlesEditor_ButtonEmittersCreate_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	if (SXParticlesEditor::SelEffID < 0)
+		return 0;
+
 	SXParticlesEditor::EffVisible(false, false);
 
 	SXParticlesEditor::AllInTabsVisible(false);
@@ -184,6 +191,10 @@ LRESULT SXParticlesEditor_ButtonEmittersDelete_Click(HWND hwnd, UINT msg, WPARAM
 	}
 	else
 		SXParticlesEditor_ButtonEmittersCreate_Click(hwnd, msg, wParam, lParam);
+
+	if (SXParticlesEditor::SelEffID >= 0)
+		SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
+
 	return 0;
 }
 
@@ -354,6 +365,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 
 	pdata.AlphaDependAge = (ParticlesDependType)SXParticlesEditor::ComboBoxAlphaDependAge->GetSel();
 	pdata.SizeDependAge = (ParticlesDependType)SXParticlesEditor::ComboBoxSizeDependAge->GetSel();
+	pdata.CollisionDelete = (ParticlesDependType)SXParticlesEditor::CheckBoxCollisionDelete->GetCheck();
 
 	SXParticlesEditor::EditSizeX->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.Size.x));

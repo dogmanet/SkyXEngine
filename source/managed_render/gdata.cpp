@@ -187,9 +187,9 @@ void GData::Editors::ParticlesEditorUpdate()
 
 	if (SXParticlesEditor::SelEffID >= 0)
 	{
+		emitters_all_count = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
 		if (SXParticlesEditor::SelEmitterID < 0)
 		{
-			emitters_all_count = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
 			for (int k = 0; k < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++k)
 			{
 				if (SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, k))
@@ -202,7 +202,6 @@ void GData::Editors::ParticlesEditorUpdate()
 
 		if (SXParticlesEditor::SelEmitterID >= 0)
 		{
-			emitters_all_count = 1;
 			emitters_count = SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
 			particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
 			particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);

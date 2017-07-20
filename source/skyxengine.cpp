@@ -67,6 +67,7 @@ void SkyXEngine_Init()
 
 	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
 	SPE_Dbg_Set(printflog);
+	SPE_SetFunc_ParticlesPhyCollision(SXRenderFunc::ParticlesPhyCollision);
 	SPE_RTDepthSet(SML_DSGetRT_ID(DS_RT::ds_rt_depth));
 	Level::LoadParticles();
 

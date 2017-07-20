@@ -1977,3 +1977,17 @@ bool SXRenderFunc::AIQuadPhyNavigate(float3_t * pos)
 
 	return false;
 }
+
+bool SXRenderFunc::ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos)
+{
+	if (!lastpos || !nextpos)
+		return false;
+
+	if (lastpos->x == nextpos->x && lastpos->y == nextpos->y && lastpos->z == nextpos->z)
+		return false;
+
+	btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos));
+	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos), cb);
+
+	return cb.hasHit();
+}

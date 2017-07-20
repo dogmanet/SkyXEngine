@@ -8,6 +8,18 @@
 report_func reportf = def_report;
 #endif
 
+bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos)
+{
+	return false;
+}
+
+g_particles_phy_collision GParticlesPhyCollision = ParticlesPhyCollision;
+
+void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision func)
+{
+	GParticlesPhyCollision = func;
+}
+
 namespace PESet
 {
 	IDirect3DDevice9* DXDevice = 0;

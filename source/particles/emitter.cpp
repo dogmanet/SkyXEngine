@@ -164,7 +164,7 @@ void Emitter::ComputeLighting()
 	{
 		float3 tmpPosition;
 		float3 tmpColor;
-		for (int i = 0; i < Count; i++)
+		for (int i = 0; i < Count; ++i)
 		{
 			if (Arr[i].IsAlife)
 			{
@@ -173,7 +173,7 @@ void Emitter::ComputeLighting()
 				for (int k = 0; k<SML_LigthsGetCount(); ++k)
 				{
 					//поулчаем идентификатор света по ключу
-					ID tmpid = SML_LigthsGetIDOfKey(i);
+					ID tmpid = SML_LigthsGetIDOfKey(k);
 
 					//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
 					if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsIsEnable(tmpid))
@@ -724,7 +724,7 @@ inline bool Emitter::IsPointInBox(float3* point)
 		return false;
 }
 
-void Emitter::Compute()
+void Emitter::Compute(const float4x4 * mat)
 {
 	if (!Enable)
 		return;
@@ -780,6 +780,8 @@ void Emitter::Compute()
 	DWORD tmptime = TimeGetMls(G_Timer_Render_Scene);
 	CountLifeParticle = 0;
 
+	float3 tmpoldpos,tmpnewpos;
+
 	for (int i = 0; i<Count && OldTime != 0; i++)
 	{
 		//если время жизни частицы больше либо равно назначенному то значит она уже умерла
@@ -807,6 +809,7 @@ void Emitter::Compute()
 		//если частица жива то обрабатываем поведение
 		if (Arr[i].IsAlife)
 		{
+			tmpoldpos = Arr[i].Pos;
 			//обрабокта возраста
 			Arr[i].Age += tmptime - OldTime;
 
@@ -1010,7 +1013,17 @@ void Emitter::Compute()
 				Arr[i].CharacterDeviationCountDelayMls2 += tmptime - OldTime;
 			}
 
-			
+			if (Data.CollisionDelete)
+			{
+				tmpoldpos = SMVector3Transform(tmpoldpos, *mat);
+				tmpnewpos = SMVector3Transform(Arr[i].Pos, *mat);
+
+				if (GParticlesPhyCollision(&tmpoldpos, &tmpnewpos))
+					Arr[i].IsAlife = false;
+			}
+
+			if (!(Arr[i].IsAlife))
+				continue;
 
 			//считаем ограничивающий объем
 			float tmpmaxedge = Arr[i].Size.x;
@@ -1148,7 +1161,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		if (Data.Soft)
 		{
 			if (PESet::IDsRenderTargets::DepthScene >= 0)
-				PESet::DXDevice->SetTexture(1, SGCore_LoadTexGetTex(PESet::IDsRenderTargets::DepthScene));
+				PESet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PESet::IDsRenderTargets::DepthScene));
 			else
 				reportf(REPORT_MSG_LEVEL_WARRNING, "sxparticles - not init depth map\n");
 		}
