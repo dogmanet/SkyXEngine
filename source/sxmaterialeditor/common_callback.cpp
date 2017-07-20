@@ -18,6 +18,10 @@ void SXMaterialEditor::MtlOpen()
 		StrCutName(tmppath, tmpname);
 		SML_MtlReloadMaterial(GData::Editors::SimModel->GetIDMtl(), tmpname);
 		SGCore_LoadTexLoadTextures();
+
+		char headertest[1024];
+		sprintf(headertest, "SXMaterialEditor - %s", tmpname);
+		SXMaterialEditor::JobWindow->SetText(headertest);
 		SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
 	}
 }

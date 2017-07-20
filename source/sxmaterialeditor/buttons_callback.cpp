@@ -15,6 +15,12 @@ LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	return 0;
 }
 
+LRESULT SXMaterialEditor_ButtonRotAngle0_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	GData::Editors::SimModel->Rotation.y = 0;
+	return 0;
+}
+
 LRESULT SXMaterialEditor_ButtonTex_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char tmppath[1024];

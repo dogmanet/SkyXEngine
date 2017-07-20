@@ -253,6 +253,7 @@ SX_LIB_API ID SGCore_ShaderLoad(
 	D3DXMACRO* macro = 0	//!< макросы
 	);
 
+SX_LIB_API bool SGCore_ShaderFileExists(const char* name);	//!< существует ли файл name в папке с шейдерами
 SX_LIB_API void SGCore_ShaderGetName(ShaderType type_shader, ID id, char* name);	//!< записывает пользовательское имя шейдера в name
 SX_LIB_API void SGCore_ShaderGetPath(ShaderType type_shader, ID id, char* path);	//!< записывает имя шейдер с расширением в path
 SX_LIB_API ID SGCore_ShaderIsExistName(ShaderType type_shader, const char* name);	//!< существует ли шейдер с пользовательским именем name, если да то возвращает id
@@ -377,6 +378,7 @@ enum LoadTexType
 	ltt_self,	
 };
 
+SX_LIB_API bool SGCore_LoadTexFileExists(const char* name);	//!< существует ил файл name в папке с текстурами
 SX_LIB_API void SGCore_LoadTexStdPath(const char* path);	//!< установить стандартный путь откуда брать текстуры
 SX_LIB_API void SGCore_LoadTexClearLoaded();				//!< очистить список загружаемых текстур
 SX_LIB_API void SGCore_LoadTexDelete(ID id);				//!< удалить тектуру по id (независимо от типа)
@@ -649,10 +651,11 @@ SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr);
 */
 SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr);
 
-
+//находит квадрат расстояния между лучем и точкой
 SX_LIB_API float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir);
 
-SX_LIB_API float SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2);
+//возвращает пересекаются ли боксы или нет
+SX_LIB_API bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2);
 
 struct SXTriangle
 {

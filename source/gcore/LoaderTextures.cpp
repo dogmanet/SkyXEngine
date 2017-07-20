@@ -23,6 +23,36 @@ LoaderTextures::~LoaderTextures()
 	Arr.clear();
 }
 
+bool LoaderTextures::FileExists(const char* name)
+{
+	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
+	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];
+	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];
+	
+	bool IsTruePath = false;
+	//обрезаем имя текстуры и папку
+	for (int i = 0; i<strlen(name); i++)
+	{
+		if (name[i] == '_')
+		{
+			memcpy(tmp_path, name, sizeof(char)*i);
+			tmp_path[i] = 0;
+			sprintf(tmp_name, "%s", name + i + 1);
+			IsTruePath = true;
+			break;
+		}
+	}
+
+	if (!IsTruePath)
+	{
+		reportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
+		return false;
+	}
+
+	sprintf(tmppath, "%s%s\\%s", StdPath, tmp_path, name);
+	return Core_0FileExists(tmppath);
+}
+
 void LoaderTextures::ClearLoaded()
 {
 	int tmpcountdel = 0;

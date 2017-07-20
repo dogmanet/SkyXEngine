@@ -297,6 +297,22 @@ ID ShaderManager::IsExistName(ShaderType type_shader, const char* name)
 	return -1;
 }
 
+bool ShaderManager::FileExists(const char* path)
+{
+	char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
+	tmpspath[0] = 0;
+	char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
+	StrParsePathName(path, tmpspath, tmpname);
+
+	if (tmpspath[0] != 0)
+		sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, path);
+	else
+		sprintf(tmppath, "%s%s", StdPath, path);
+
+	return Core_0FileExists(tmppath);
+}
+
 ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
 {
 	if (type_shader == ShaderType::st_vertex)

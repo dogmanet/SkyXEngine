@@ -570,7 +570,7 @@ ID AIGrid::QuadAdd(const float3* pos)
 		ArrQuads[idneighboor]->Arr[0] = idquad;
 	}
 
-	//определяем возможные направления из квада по оси Y
+	//РѕРїСЂРµРґРµР»СЏРµРј РІРѕР·РјРѕР¶РЅС‹Рµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РёР· РєРІР°РґР° РїРѕ РѕСЃРё Y
 	if (IsValidIdInArrQuads(aq->Arr[1]) && IsValidIdInArrQuads(aq->Arr[6]))
 		aq->axisy = AIGRID_QUAD_DIR_ALL;
 	else if (IsValidIdInArrQuads(aq->Arr[1]) && !IsValidIdInArrQuads(aq->Arr[6]))
@@ -580,7 +580,7 @@ ID AIGrid::QuadAdd(const float3* pos)
 	else
 		aq->axisy = AIGRID_QUAD_DIR_NONE;
 
-	//определяем возможные направления из квада по оси X
+	//РѕРїСЂРµРґРµР»СЏРµРј РІРѕР·РјРѕР¶РЅС‹Рµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РёР· РєРІР°РґР° РїРѕ РѕСЃРё X
 	if (IsValidIdInArrQuads(aq->Arr[3]) && IsValidIdInArrQuads(aq->Arr[4]))
 		aq->axisx = AIGRID_QUAD_DIR_ALL;
 	else if (IsValidIdInArrQuads(aq->Arr[3]) && !IsValidIdInArrQuads(aq->Arr[4]))
@@ -1081,7 +1081,7 @@ void AIGrid::GridGenerate()
 	{
 		ID idquadunchecked = -1;
 
-		//поиск первого не входящего ни в какой сплит
+		//РїРѕРёСЃРє РїРµСЂРІРѕРіРѕ РЅРµ РІС…РѕРґСЏС‰РµРіРѕ РЅРё РІ РєР°РєРѕР№ СЃРїР»РёС‚
 		for (int i = 0, il = ArrQuads.size(); i < il; ++i)
 		{
 			if (IsValidIdInArrQuads(i) && ArrQuads[i]->axisx == AIGRID_QUAD_DIR_NONE && ArrQuads[i]->axisy == AIGRID_QUAD_DIR_NONE)
@@ -1091,7 +1091,7 @@ void AIGrid::GridGenerate()
 			}
 		}
 
-		//не входящие в какой-либо сплит не найдены
+		//РЅРµ РІС…РѕРґСЏС‰РёРµ РІ РєР°РєРѕР№-Р»РёР±Рѕ СЃРїР»РёС‚ РЅРµ РЅР°Р№РґРµРЅС‹
 		if (idquadunchecked < 0)
 			break;
 
@@ -1210,7 +1210,7 @@ void AIGrid::AddUniqQuadArrag(const AIQuad* aq)
 	for (int i = 1, il = ArrBound.size(); i < il; ++i)
 	{
 		bound = ArrBound[i];
-		//если центр квада входит в какой-либо бокс
+		//РµСЃР»Рё С†РµРЅС‚СЂ РєРІР°РґР° РІС…РѕРґРёС‚ РІ РєР°РєРѕР№-Р»РёР±Рѕ Р±РѕРєСЃ
 		if (
 			bound->lmin.x <= tmpx && bound->lmin.y <= tmpy && bound->lmin.z <= tmpz &&
 			bound->lmax.x >= tmpx && bound->lmax.y >= tmpy && bound->lmax.z >= tmpz
@@ -1248,14 +1248,14 @@ bool AIGrid::IsUniqQuadArrag(AIQuad* aq, ID * idquad, ID * idbb)
 	for (UINT i = 1, il = ArrBound.size(); i<il; ++i)
 	{
 		bound = ArrBound[i];
-		//если центр квада входит в какой-либо бокс
+		//РµСЃР»Рё С†РµРЅС‚СЂ РєРІР°РґР° РІС…РѕРґРёС‚ РІ РєР°РєРѕР№-Р»РёР±Рѕ Р±РѕРєСЃ
 		if (
 			bound->lmin.x <= tmpx && bound->lmin.y <= tmpy && bound->lmin.z <= tmpz &&
 			bound->lmax.x >= tmpx && bound->lmax.y >= tmpy && bound->lmax.z >= tmpz
 			)
 		{
 			tmpidbb = i;
-			//анализируем все входящие в данный бокс квады
+			//Р°РЅР°Р»РёР·РёСЂСѓРµРј РІСЃРµ РІС…РѕРґСЏС‰РёРµ РІ РґР°РЅРЅС‹Р№ Р±РѕРєСЃ РєРІР°РґС‹
 			for (UINT k = 0, kl = bound->ArrIdsQuads.size(); k < kl; ++k)
 			{
 				l3 = ArrLongCoordQuads[bound->ArrIdsQuads[k]];
@@ -1525,7 +1525,7 @@ void AIGrid::GenQuad(AIQuad* aq)
 		}
 	}
 
-	//определяем возможные направления из квада по оси Y
+	//РѕРїСЂРµРґРµР»СЏРµРј РІРѕР·РјРѕР¶РЅС‹Рµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РёР· РєРІР°РґР° РїРѕ РѕСЃРё Y
 	if (IsValidIdInArrQuads(aq->Arr[1]) && IsValidIdInArrQuads(aq->Arr[6]))
 		aq->axisy = AIGRID_QUAD_DIR_ALL;
 	else if (IsValidIdInArrQuads(aq->Arr[1]) && !IsValidIdInArrQuads(aq->Arr[6]))
@@ -1535,7 +1535,7 @@ void AIGrid::GenQuad(AIQuad* aq)
 	else
 		aq->axisy = AIGRID_QUAD_DIR_NONE;
 
-	//определяем возможные направления из квада по оси X
+	//РѕРїСЂРµРґРµР»СЏРµРј РІРѕР·РјРѕР¶РЅС‹Рµ РЅР°РїСЂР°РІР»РµРЅРёСЏ РёР· РєРІР°РґР° РїРѕ РѕСЃРё X
 	if (IsValidIdInArrQuads(aq->Arr[3]) && IsValidIdInArrQuads(aq->Arr[4]))
 		aq->axisx = AIGRID_QUAD_DIR_ALL;
 	else if (IsValidIdInArrQuads(aq->Arr[3]) && !IsValidIdInArrQuads(aq->Arr[4]))
@@ -1591,17 +1591,17 @@ void AIGrid::ComputeNeighbor(ID id)
 
 		if (aq->Arr[1] != -1)
 		{
-			//указываем самый нижний соседом
+			//СѓРєР°Р·С‹РІР°РµРј СЃР°РјС‹Р№ РЅРёР¶РЅРёР№ СЃРѕСЃРµРґРѕРј
 			aq12->SetNeighbor(6, aq->Id);
-			//если левый нижний создан то он тоже сосед
+			//РµСЃР»Рё Р»РµРІС‹Р№ РЅРёР¶РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[3] != -1)
 				aq12->SetNeighbor(5, aq->Arr[3]);
 
-			//если правый нижний создан то он тоже сосед
+			//РµСЃР»Рё РїСЂР°РІС‹Р№ РЅРёР¶РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[4] != -1)
 				aq12->SetNeighbor(7, aq->Arr[4]);
 
-			//если у обрабатываемого нода есть верхний левый
+			//РµСЃР»Рё Сѓ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ РЅРѕРґР° РµСЃС‚СЊ РІРµСЂС…РЅРёР№ Р»РµРІС‹Р№
 			if (aq->Arr[0] != -1)
 			{
 				if (AIGridCompareHeight(aq->Arr[1], aq->Arr[0]))
@@ -1637,7 +1637,7 @@ void AIGrid::ComputeNeighbor(ID id)
 				}
 			}
 
-			//если у обрабатываемого нода есть верхний правый
+			//РµСЃР»Рё Сѓ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ РЅРѕРґР° РµСЃС‚СЊ РІРµСЂС…РЅРёР№ РїСЂР°РІС‹Р№
 			if (aq->Arr[2] != -1)
 			{
 				if (AIGridCompareHeight(aq->Arr[1], aq->Arr[2]))
@@ -1680,21 +1680,21 @@ void AIGrid::ComputeNeighbor(ID id)
 		}
 
 
-		//если создали нижний нод
+		//РµСЃР»Рё СЃРѕР·РґР°Р»Рё РЅРёР¶РЅРёР№ РЅРѕРґ
 		if (aq->Arr[6] != -1)
 		{
-			//указываем самый верхний соседом
+			//СѓРєР°Р·С‹РІР°РµРј СЃР°РјС‹Р№ РІРµСЂС…РЅРёР№ СЃРѕСЃРµРґРѕРј
 			//aq32->Arr[1] = aq->Id;
 			aq32->SetNeighbor(1, aq->Id);
-			//если левый верхний создан то он тоже сосед
+			//РµСЃР»Рё Р»РµРІС‹Р№ РІРµСЂС…РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[3] != -1)
 				aq32->SetNeighbor(0, aq->Arr[3]);
 
-			//если правый верхний создан то он тоже сосед
+			//РµСЃР»Рё РїСЂР°РІС‹Р№ РІРµСЂС…РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[4] != -1)
 				aq32->SetNeighbor(2, aq->Arr[4]);
 
-			//если у обрабатываемого нода есть нижний левый
+			//РµСЃР»Рё Сѓ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ РЅРѕРґР° РµСЃС‚СЊ РЅРёР¶РЅРёР№ Р»РµРІС‹Р№
 			if (aq->Arr[5] != -1)
 			{
 				if (AIGridCompareHeight(aq->Arr[6], aq->Arr[5]))
@@ -1730,7 +1730,7 @@ void AIGrid::ComputeNeighbor(ID id)
 				}
 			}
 
-			//если у обрабатываемого нода есть нижний правый
+			//РµСЃР»Рё Сѓ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРјРѕРіРѕ РЅРѕРґР° РµСЃС‚СЊ РЅРёР¶РЅРёР№ РїСЂР°РІС‹Р№
 			if (aq->Arr[7] != -1)
 			{
 				if (AIGridCompareHeight(aq->Arr[6], aq->Arr[7]))
@@ -1771,17 +1771,17 @@ void AIGrid::ComputeNeighbor(ID id)
 		}
 
 
-		//если создали левый нод
+		//РµСЃР»Рё СЃРѕР·РґР°Р»Рё Р»РµРІС‹Р№ РЅРѕРґ
 		if (aq->Arr[3] != -1)
 		{
-			//указываем самый правый соседом
+			//СѓРєР°Р·С‹РІР°РµРј СЃР°РјС‹Р№ РїСЂР°РІС‹Р№ СЃРѕСЃРµРґРѕРј
 			//aq21->Arr[4] = aq->Id;
 			aq21->SetNeighbor(4, aq->Id);
-			//если верхний создан то он тоже сосед
+			//РµСЃР»Рё РІРµСЂС…РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[1] != -1)
 				aq21->SetNeighbor(2, aq->Arr[1]);
 
-			//если верхний создан то он тоже сосед
+			//РµСЃР»Рё РІРµСЂС…РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[6] != -1)
 				aq21->SetNeighbor(7, aq->Arr[6]);
 
@@ -1859,16 +1859,16 @@ void AIGrid::ComputeNeighbor(ID id)
 			}
 		}
 
-		//если создали правый нод
+		//РµСЃР»Рё СЃРѕР·РґР°Р»Рё РїСЂР°РІС‹Р№ РЅРѕРґ
 		if (aq->Arr[4] != -1)
 		{
-			//указываем самый левый соседом
+			//СѓРєР°Р·С‹РІР°РµРј СЃР°РјС‹Р№ Р»РµРІС‹Р№ СЃРѕСЃРµРґРѕРј
 			aq23->SetNeighbor(3, aq->Id);
-			//если верхний создан то он тоже сосед
+			//РµСЃР»Рё РІРµСЂС…РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[1] != -1)
 				aq23->SetNeighbor(0, aq->Arr[1]);
 
-			//если нижний создан то он тоже сосед
+			//РµСЃР»Рё РЅРёР¶РЅРёР№ СЃРѕР·РґР°РЅ С‚Рѕ РѕРЅ С‚РѕР¶Рµ СЃРѕСЃРµРґ
 			if (aq->Arr[6] != -1)
 				aq23->SetNeighbor(5, aq->Arr[6]);
 
@@ -2047,8 +2047,8 @@ ID AIGrid::GridTraceBeam(const float3* start, const float3* dir) const
 }
 
 
-//!!! почему то возникла ситуация когда после прохода валидации, у одного (наверное у одного) из квадов айди сплита был == 0, чего в общемто не должно быть
-//возможно надо просто проходится циклом по всему массиву квадов и смотреть где у какого квада айди сплита еще равен нулю, а перед этим проходом обнулить все эти айди
+//!!! РїРѕС‡РµРјСѓ С‚Рѕ РІРѕР·РЅРёРєР»Р° СЃРёС‚СѓР°С†РёСЏ РєРѕРіРґР° РїРѕСЃР»Рµ РїСЂРѕС…РѕРґР° РІР°Р»РёРґР°С†РёРё, Сѓ РѕРґРЅРѕРіРѕ (РЅР°РІРµСЂРЅРѕРµ Сѓ РѕРґРЅРѕРіРѕ) РёР· РєРІР°РґРѕРІ Р°Р№РґРё СЃРїР»РёС‚Р° Р±С‹Р» == 0, С‡РµРіРѕ РІ РѕР±С‰РµРјС‚Рѕ РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ
+//РІРѕР·РјРѕР¶РЅРѕ РЅР°РґРѕ РїСЂРѕСЃС‚Рѕ РїСЂРѕС…РѕРґРёС‚СЃСЏ С†РёРєР»РѕРј РїРѕ РІСЃРµРјСѓ РјР°СЃСЃРёРІСѓ РєРІР°РґРѕРІ Рё СЃРјРѕС‚СЂРµС‚СЊ РіРґРµ Сѓ РєР°РєРѕРіРѕ РєРІР°РґР° Р°Р№РґРё СЃРїР»РёС‚Р° РµС‰Рµ СЂР°РІРµРЅ РЅСѓР»СЋ, Р° РїРµСЂРµРґ СЌС‚РёРј РїСЂРѕС…РѕРґРѕРј РѕР±РЅСѓР»РёС‚СЊ РІСЃРµ СЌС‚Рё Р°Р№РґРё
 
 void AIGrid::GridTestValidation()
 {
@@ -2060,10 +2060,10 @@ void AIGrid::GridTestValidation()
 
 	int oldcountquads = ArrQuads.size();
 
-	//удаление лишних квадов
+	//СѓРґР°Р»РµРЅРёРµ Р»РёС€РЅРёС… РєРІР°РґРѕРІ
 	QuadDeleteInvalidAll();
 
-	//подсчет и пометка сплитов
+	//РїРѕРґСЃС‡РµС‚ Рё РїРѕРјРµС‚РєР° СЃРїР»РёС‚РѕРІ
 	//{
 
 	for (int i = 0, il = ArrQuads.size(); i < il; ++i)
@@ -2078,7 +2078,7 @@ void AIGrid::GridTestValidation()
 	{
 		ID idquadunchecked = -1;
 		
-		//поиск первого не входящего ни в какой сплит
+		//РїРѕРёСЃРє РїРµСЂРІРѕРіРѕ РЅРµ РІС…РѕРґСЏС‰РµРіРѕ РЅРё РІ РєР°РєРѕР№ СЃРїР»РёС‚
 		for (int i = 0, il = ArrQuads.size(); i < il; ++i)
 		{
 			if (ArrQuads[i]->IdSplit == 0 && !ArrQuads[i]->IsClose)
@@ -2088,7 +2088,7 @@ void AIGrid::GridTestValidation()
 			}
 		}
 
-		//не входящие в какой-либо сплит не найдены
+		//РЅРµ РІС…РѕРґСЏС‰РёРµ РІ РєР°РєРѕР№-Р»РёР±Рѕ СЃРїР»РёС‚ РЅРµ РЅР°Р№РґРµРЅС‹
 		if (idquadunchecked < 0)
 			break;
 
@@ -2098,7 +2098,7 @@ void AIGrid::GridTestValidation()
 		ArrTestSplitsIDs[0] = idquadunchecked;
 		++CountSplits;
 
-		//начиная с первого невходящего квада проходимся по всем узлам к которым можно дойти, относя их к текущему идентификатору сплита
+		//РЅР°С‡РёРЅР°СЏ СЃ РїРµСЂРІРѕРіРѕ РЅРµРІС…РѕРґСЏС‰РµРіРѕ РєРІР°РґР° РїСЂРѕС…РѕРґРёРјСЃСЏ РїРѕ РІСЃРµРј СѓР·Р»Р°Рј Рє РєРѕС‚РѕСЂС‹Рј РјРѕР¶РЅРѕ РґРѕР№С‚Рё, РѕС‚РЅРѕСЃСЏ РёС… Рє С‚РµРєСѓС‰РµРјСѓ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ СЃРїР»РёС‚Р°
 		while (ArrTestSplitsIDs.size() > currkey)
 		{
 			tmpid = ArrTestSplitsIDs[currkey];
@@ -2106,7 +2106,7 @@ void AIGrid::GridTestValidation()
 			{
 				ArrQuads[tmpid]->IdSplit = CountSplits;
 
-				//заносим всех соседей в непомеченный список
+				//Р·Р°РЅРѕСЃРёРј РІСЃРµС… СЃРѕСЃРµРґРµР№ РІ РЅРµРїРѕРјРµС‡РµРЅРЅС‹Р№ СЃРїРёСЃРѕРє
 				for (int i = 0; i < 8; ++i)
 				{
 					if (IsValidIdInArrQuads(ArrQuads[tmpid]->Arr[i]))
@@ -2421,7 +2421,7 @@ inline ID AIGrid::AddInOpenList(ID id)
 		if (ArrOpenIDs[i] == -1)
 		{
 			ArrOpenIDs[i] = id;
-			NumLastKeyOpenList = i;	//говорим первый -1 ключ
+			NumLastKeyOpenList = i;	//РіРѕРІРѕСЂРёРј РїРµСЂРІС‹Р№ -1 РєР»СЋС‡
 			if (CountInitOpen2 < i + 1)
 			{
 				CountInitOpen2 = i + 1;
@@ -2625,9 +2625,9 @@ ID AIGrid::GraphPointGetNear(ID beginq, ID endq)
 
 		memset(&(ArrCostGPIDs[0]), -1, ArrCostGPIDs.size() * sizeof(int32_t));
 
-		long tmpcountstepbegin = 0;	//на сколько мы продвинулись от начальной точки до текущей точки графа
-		long tmpcountdel = 0;		//на сколько короче стал путь
-		DWORD tmpbigeff = -1;		//самая эффективная ближайшая точка
+		long tmpcountstepbegin = 0;	//РЅР° СЃРєРѕР»СЊРєРѕ РјС‹ РїСЂРѕРґРІРёРЅСѓР»РёСЃСЊ РѕС‚ РЅР°С‡Р°Р»СЊРЅРѕР№ С‚РѕС‡РєРё РґРѕ С‚РµРєСѓС‰РµР№ С‚РѕС‡РєРё РіСЂР°С„Р°
+		long tmpcountdel = 0;		//РЅР° СЃРєРѕР»СЊРєРѕ РєРѕСЂРѕС‡Рµ СЃС‚Р°Р» РїСѓС‚СЊ
+		DWORD tmpbigeff = -1;		//СЃР°РјР°СЏ СЌС„С„РµРєС‚РёРІРЅР°СЏ Р±Р»РёР¶Р°Р№С€Р°СЏ С‚РѕС‡РєР°
 		long tmpcostbe = -1;
 		long tmpcostagpe = -1;
 		long tmpdist = AIGRID_COST_GPATH;
@@ -2696,7 +2696,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 	int cycnum = 0;
 	long tmpaddcost = 0;
 	long tmphcost = 0;
-	//обнуляем все данные
+	//РѕР±РЅСѓР»СЏРµРј РІСЃРµ РґР°РЅРЅС‹Рµ
 
 	CountInitOpen2 = 0;
 	NumLastKeyOpenList = 0;
@@ -2710,8 +2710,8 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 
 	bool IsFindPath = false;
 
-	//анализируем стоимости для всех соседних квадов и помещаем в открытый список
-	//и назначаем им родителей стартовую точку
+	//Р°РЅР°Р»РёР·РёСЂСѓРµРј СЃС‚РѕРёРјРѕСЃС‚Рё РґР»СЏ РІСЃРµС… СЃРѕСЃРµРґРЅРёС… РєРІР°РґРѕРІ Рё РїРѕРјРµС‰Р°РµРј РІ РѕС‚РєСЂС‹С‚С‹Р№ СЃРїРёСЃРѕРє
+	//Рё РЅР°Р·РЅР°С‡Р°РµРј РёРј СЂРѕРґРёС‚РµР»РµР№ СЃС‚Р°СЂС‚РѕРІСѓСЋ С‚РѕС‡РєСѓ
 
 	for (cycnum = 0; cycnum<8; cycnum++)
 	{
@@ -2749,7 +2749,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 		}
 	}
 
-	//стартовую точку помещаем в закрытый
+	//СЃС‚Р°СЂС‚РѕРІСѓСЋ С‚РѕС‡РєСѓ РїРѕРјРµС‰Р°РµРј РІ Р·Р°РєСЂС‹С‚С‹Р№
 	ArrCloseIDs[beginq] = true;
 
 	bool isfind = false;
@@ -2767,7 +2767,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 		isfind = false;
 		tmpsmallF = -1;
 
-		//находим квад с наименьшей стоимостью F
+		//РЅР°С…РѕРґРёРј РєРІР°Рґ СЃ РЅР°РёРјРµРЅСЊС€РµР№ СЃС‚РѕРёРјРѕСЃС‚СЊСЋ F
 
 		tmpcurrsmall = -1;
 		for (cycnum = 0; cycnum<CountInitOpen2; ++cycnum)
@@ -2787,7 +2787,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 		if (tmpcurrsmall != -1)
 			tmpsmallF = ArrOpenIDs[tmpcurrsmall];
 
-		//анализируем соседей квада на наличие их в открытом списке
+		//Р°РЅР°Р»РёР·РёСЂСѓРµРј СЃРѕСЃРµРґРµР№ РєРІР°РґР° РЅР° РЅР°Р»РёС‡РёРµ РёС… РІ РѕС‚РєСЂС‹С‚РѕРј СЃРїРёСЃРєРµ
 		if (tmpsmallF != -1)
 		{
 			tmpquad = ArrQuads[tmpsmallF];
@@ -2795,12 +2795,12 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 			for (cycnum = 0; cycnum<8; ++cycnum)
 			{
 				tmpcurridquad = tmpquad->Arr[cycnum];
-				//если квад существует
+				//РµСЃР»Рё РєРІР°Рґ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 				if (tmpcurridquad != -1)
 				{
 					if (!ArrCloseIDs[tmpcurridquad])
 					{
-						//если сосденяя точка конечная точка то мы нашли путь!!!
+						//РµСЃР»Рё СЃРѕСЃРґРµРЅСЏСЏ С‚РѕС‡РєР° РєРѕРЅРµС‡РЅР°СЏ С‚РѕС‡РєР° С‚Рѕ РјС‹ РЅР°С€Р»Рё РїСѓС‚СЊ!!!
 						if (tmpcurridquad == endq)
 						{
 							isfind = true;
@@ -2823,10 +2823,10 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 						else
 							tmpaddcost = 0;
 
-						//если есть родитель
+						//РµСЃР»Рё РµСЃС‚СЊ СЂРѕРґРёС‚РµР»СЊ
 						if (ArrParentIDs[tmpcurridquad] != -1)
 						{
-							//считаем а не дешевле ли перейти на соседний квад через этот квад
+							//СЃС‡РёС‚Р°РµРј Р° РЅРµ РґРµС€РµРІР»Рµ Р»Рё РїРµСЂРµР№С‚Рё РЅР° СЃРѕСЃРµРґРЅРёР№ РєРІР°Рґ С‡РµСЂРµР· СЌС‚РѕС‚ РєРІР°Рґ
 							if (ArrCostQuads[tmpcurridquad].G > ArrCostQuads[tmpsmallF].G + tmpcost)
 							{
 								ArrParentIDs[tmpcurridquad] = tmpsmallF;
@@ -2834,8 +2834,8 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 								ArrCostQuads[tmpcurridquad].F = ArrCostQuads[tmpcurridquad].G + ArrCostQuads[tmpcurridquad].H;
 							}
 						}
-						//если нет родителя то назначаем текущий квад родителем и считаем стоимости
-						//и если не в закрытом списке
+						//РµСЃР»Рё РЅРµС‚ СЂРѕРґРёС‚РµР»СЏ С‚Рѕ РЅР°Р·РЅР°С‡Р°РµРј С‚РµРєСѓС‰РёР№ РєРІР°Рґ СЂРѕРґРёС‚РµР»РµРј Рё СЃС‡РёС‚Р°РµРј СЃС‚РѕРёРјРѕСЃС‚Рё
+						//Рё РµСЃР»Рё РЅРµ РІ Р·Р°РєСЂС‹С‚РѕРј СЃРїРёСЃРєРµ
 						else
 						{
 							ArrParentIDs[tmpcurridquad] = tmpsmallF;

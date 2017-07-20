@@ -1,6 +1,6 @@
 
 /******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 

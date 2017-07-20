@@ -10,6 +10,8 @@ public:
 	LoaderTextures();
 	~LoaderTextures();
 
+	bool FileExists(const char* name);
+
 	void ClearLoaded();
 
 	void Delete(ID id);	//удалить текстуру id

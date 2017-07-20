@@ -1,0 +1,498 @@
+\b SXMaterialEditor – редактор материаловдля движка SkyXEngine.
+<em>Основное окно (также как и окно рендера) не изменяемо в размерах.</em>
+
+\image material_editor.files/image1.png "Скришот программы SXMaterialEditor"
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Окно состоит из структурных элементов (сверху вниз):</b></p>
+
+<p class=MsoNormal style='margin-left:35.4pt'><u>Заголовок окна</u>, содержащий
+имя редактор и имя материала.</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'><u>Меню программы:</u></p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><u><span lang=EN-US>File</span>:</u></p>
+
+<p class=MsoNormal style='margin-left:106.2pt'><span lang=EN-US>Open</span> – открыть
+материал</p>
+
+<p class=MsoNormal style='margin-left:106.2pt'><span lang=EN-US>Save</span> – сохранить
+материал</p>
+
+<p class=MsoNormal style='margin-left:106.2pt'><span lang=EN-US>Exit</span> – выход
+из программы</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><u><span lang=EN-US>Final</span><span
+lang=EN-US> </span></u><u><span lang=EN-US>image</span></u> (выводимое
+изображение в окно рендера):</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'>            <span lang=EN-US>Color</span>
+– цвет</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'>            <span lang=EN-US>Normals</span>
+– нормали</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'>            <span lang=EN-US>Parameters</span>
+– параметры освещения</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'>            <span lang=EN-US>Ambient</span><span
+lang=EN-US> </span><span lang=EN-US>diffuse</span> – фоновое и диффузное освещение</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'>            <span lang=EN-US>Specular</span>
+– отраженный свет</p>
+
+<p class=MsoNormal style='margin-left:70.8pt;text-indent:35.4pt'><span
+lang=EN-US>Lighting</span><span lang=EN-US> </span><span lang=EN-US>scene</span><span
+lang=EN-US> </span>– освещенная сцена</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'><u>Панель инструментов</u>, где
+расположены основные управляющие кнопки:</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 4" src="material_editor.files/image2.png" alt="*"> открыть
+материал</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 9" src="material_editor.files/image3.png" alt="*"> сохранить
+материал</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 14" src="material_editor.files/image4.png" alt="*"> возможность
+перемещения камеры</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 19" src="material_editor.files/image5.png" alt="*"> установка
+камере старновой позиции и поворота</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 24" src="material_editor.files/image6.png" alt="*"> вывод на
+рендер цвета</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 26" src="material_editor.files/image7.png" alt="*"> вывод на
+рендер нормалей</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 27" src="material_editor.files/image8.png" alt="*"> вывод на
+рендер параметров освещения</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 29" src="material_editor.files/image9.png"> вывод на рендер
+фонового и диффузного освещения</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 28" src="material_editor.files/image10.png"> вывод на рендер
+отраженного света</p>
+
+<p class=MsoNormal style='margin-left:70.8pt'><img width=20 height=20
+id="Рисунок 25" src="material_editor.files/image11.png"> вывод на рендер
+освещенной сцены</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'><u>Содержимое окна</u> – рабочая
+область по настройке материала.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Управление камерой:</b></p>
+
+<p class=MsoNormal><span lang=EN-US>CTRL</span> + <span lang=EN-US>w</span> –
+движение вперед</p>
+
+<p class=MsoNormal><span lang=EN-US>CTRL</span> + s – движение назад</p>
+
+<p class=MsoNormal><span lang=EN-US>CTRL</span> + <span lang=EN-US>a</span> –
+движение влево</p>
+
+<p class=MsoNormal><span lang=EN-US>CTRL</span> + <span lang=EN-US>d</span> –
+движение вправо</p>
+
+<p class=MsoNormal>SHIFT - ускорение</p>
+
+<p class=MsoNormal><span lang=EN-US>CTRL</span> + ПКМ – движение вверх/вниз</p>
+
+<p class=MsoNormal><span lang=EN-US>CTRL</span> + ЛКМ – вращение</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Общее</b></p>
+
+<p class=MsoNormal><img width=28 height=18
+src="material_editor.files/image12.png" alt="*"> кнопка выбора файлов, после
+нажатия на эту кнопку следует открытие диалога выбора файла</p>
+
+<p class=MsoNormal><img width=175 height=16 id="Рисунок 33"
+src="material_editor.files/image13.png"> поле для ввода цифровой/текстовой
+информации, после ввода при нажатии на клавишу Enter введенные значения будут
+приняты. Также изменения вступят в силу после того как этот элемент потеряет
+фокус (к примеру щелкнув на пустое место/на другой элемент этого же окна)</p>
+
+<p class=MsoNormal>Все текстуры (в том числе и текстуры скайбокса) должны
+находится по относительному пути (относительно запущенной программы) по адресу:
+/gamesource/textures/</p>
+
+<p class=MsoNormal>Все шейдеры должны находится по относительному пути
+(относительно запущенной программы) по адресу: /gamesource/<span lang=EN-US>shaders</span>/</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Редакторные настройки</b></p>
+
+<p class=MsoNormal><img width=89 height=17 id="Рисунок 68"
+src="material_editor.files/image14.png"> вращение модели по оси Y, кнопка 0
+установит угол вращения в 0</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img width=206 height=17 id="Рисунок 71"
+src="material_editor.files/image15.png"> загрузка кубической текстуры
+скайбокса</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 74"
+src="material_editor.files/image16.png"> выбор типа модели, от выбора зависит
+рендер и передаваемые данные (принимаемые шейдером), доступно: </p>
+
+<p class=MsoNormal>geom<span lang=EN-US>etry</span> – статическая геометрия</p>
+
+<p class=MsoNormal><span lang=EN-US>grass</span> - трава</p>
+
+<p class=MsoNormal><span lang=EN-US>tree</span> - дерево</p>
+
+<p class=MsoNormal><span lang=EN-US>skin</span> – анимационная модель</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 77"
+src="material_editor.files/image17.png"> тестовые модели:</p>
+
+<p class=MsoNormal><span lang=EN-US>sphere</span></p>
+
+<p class=MsoNormal><span lang=EN-US>cube</span></p>
+
+<p class=MsoNormal><span lang=EN-US>plane</span></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Базовые настройки</b></p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 80"
+src="material_editor.files/image18.png"> основная текстура материала</p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 83"
+src="material_editor.files/image19.png"> набор комбинаций шейдеров (для
+упрощения выбора шейдеров), если активна нулевая строка (пустая) значит,
+выбрана комбинация которой нет в списке</p>
+
+<p class=MsoNormal><img width=299 height=19 id="Рисунок 95"
+src="material_editor.files/image20.png"> вершинный шейдер</p>
+
+<p class=MsoNormal><img width=299 height=19 id="Рисунок 98"
+src="material_editor.files/image21.png"> пиксельный шейдер</p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 86"
+src="material_editor.files/image22.png"> физический материал:</p>
+
+<p class=MsoNormal><span lang=EN-US>concrete (</span>бетон<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>metal (</span>металл<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>glass (</span>стекло<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>plastic (</span>пластик<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>tree (</span>дерево<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>flesh (</span>плоть<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>ground/sand (</span>земля<span lang=EN-US>/</span>песок<span
+lang=EN-US>)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>water (</span>вода<span lang=EN-US>)</span></p>
+
+<p class=MsoNormal>leaf/grass (листва/трава)</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img width=299 height=19 id="Рисунок 101"
+src="material_editor.files/image23.png"> коэффициент пробиваемости [0,1]</p>
+
+<p class=MsoNormal><img width=60 height=19 id="Рисунок 113"
+src="material_editor.files/image24.png"> нужно ли освещать материал</p>
+
+<p class=MsoNormal><img width=65 height=19 id="Рисунок 116"
+src="material_editor.files/image25.png"> использовать ли альфа тест (отсечение
+пикселей которые не прошли минимальный порог прозрачности)</p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 89"
+src="material_editor.files/image26.png"> тип преломления:</p>
+
+<p class=MsoNormal><span lang=EN-US>none</span> – нет преломления</p>
+
+<p class=MsoNormal><span lang=EN-US>transparency</span><span lang=EN-US> </span><span
+lang=EN-US>lighting</span> – освещаемый полупрозрачный материал</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img width=299 height=24 id="Рисунок 92"
+src="material_editor.files/image27.png"> тип отражения:</p>
+
+<p class=MsoNormal><span lang=EN-US>none</span> – нет отражения</p>
+
+<p class=MsoNormal><span lang=EN-US>reflect</span><span lang=EN-US> </span><span
+lang=EN-US>plane</span> – плоское отражение</p>
+
+<p class=MsoNormal>reflect cube dynamic – динамическое объемное/кубическое
+отражение</p>
+
+<p class=MsoNormal>reflect cube static - статическое объемное/кубическое
+отражение, обновляется только в случае изменения данных самого отражения</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Параметры освещения</b></p>
+
+<p class=MsoNormal><img width=329 height=22 id="Рисунок 125"
+src="material_editor.files/image28.png"> набор параметров освещения (для
+упрощения настройки освещения), если активна нулевая строка (пустая) значит
+выбранных параметров нет в списке</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 128"
+src="material_editor.files/image29.png"> просвечиваемость, коэфициент
+самозатенения (для листвы и травы надо делать меньше 1) [0,1]</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 131"
+src="material_editor.files/image30.png"> шероховатость поверхности, от этого
+зависит рассеиваемость света по поверхности, чем больше тем больше будет
+рассеивание света [0,1]</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 134"
+src="material_editor.files/image31.png"> отражательная способность
+поверхности, чем больше тем меньше будет поглощено света и тем больше будет его
+отражение [0,1]</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 137"
+src="material_editor.files/image32.png"> текстура с параметрами освещения (где
+можно настроить для каждого пикселя, каналы r<span lang=EN-US>ed</span> –
+roughness, <span lang=EN-US>green</span> - <span lang=EN-US>f</span>0, <span
+lang=EN-US>blue</span> – <span lang=EN-US>thickness</span>), если стоит галочка
+на texture то будет использована загруженная текстура с параметрами освещения,
+если текстура не загружена будут использоваться нулевые параметры, если галочка
+не стоит – будут использоваться параметры из редактора</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Микрорельеф и детальные текстуры</b></p>
+
+<p class=MsoNormal>Данные понятия являются очень условными, лишь общая
+рекомендацией, но текстуры могут быть использованы как угодны в шейдерах,
+поэтому необходимо читать описание используемых шейдеров.</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 140"
+src="material_editor.files/image33.png"> текстура маски (условно)</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 143"
+src="material_editor.files/image34.png"> текстура микрорельефа (основная либо первая),
+при использовании шейдером наложения по маске - коэффициент яркости данной
+текстуры в red канале маски</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 146"
+src="material_editor.files/image35.png"> текстура микрорельефа (вторая), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в <span lang=EN-US>green</span> канале маски</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 149"
+src="material_editor.files/image36.png"> текстура микрорельефа (третья), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в <span lang=EN-US>blue</span> канале маски</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 152"
+src="material_editor.files/image37.png"> текстура микрорельефа (четвертая), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в <span lang=EN-US>alpha</span> канале маски</p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 155"
+src="material_editor.files/image38.png"> детальная текстура (первая), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в red канале маски</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 158"
+src="material_editor.files/image39.png"> детальная текстура (вторая), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в green канале маски</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 161"
+src="material_editor.files/image40.png"> детальная текстура (третья), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в <span lang=EN-US>blue</span> канале маски</p>
+
+<p class=MsoNormal><img width=329 height=20 id="Рисунок 164"
+src="material_editor.files/image41.png"> детальная текстура (четвертая), при
+использовании шейдером наложения по маске - коэффициент яркости данной текстуры
+в <span lang=EN-US>alpha</span> канале маски</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Движковые данные отправляемые в шейдеры</b></p>
+
+<p class=MsoNormal><img width=101 height=19 id="Рисунок 167"
+src="material_editor.files/image42.png"> матрица мира</p>
+
+<p class=MsoNormal><img width=101 height=19 id="Рисунок 170"
+src="material_editor.files/image43.png"> матрица вида</p>
+
+<p class=MsoNormal><img width=101 height=19 id="Рисунок 173"
+src="material_editor.files/image44.png"> матрица проекции</p>
+
+<p class=MsoNormal><img width=111 height=19 id="Рисунок 176"
+src="material_editor.files/image45.png"> комбинированная матрица мира вида</p>
+
+<p class=MsoNormal><img width=111 height=19 id="Рисунок 179"
+src="material_editor.files/image46.png"> комбинированная матрица мира вида и
+проекции</p>
+
+<p class=MsoNormal><img width=111 height=19 id="Рисунок 182"
+src="material_editor.files/image47.png"> позиция камеры</p>
+
+<p class=MsoNormal><img width=111 height=19 id="Рисунок 185"
+src="material_editor.files/image48.png"> <span lang=EN-US>float</span>2
+вектор, <span lang=EN-US>x</span><span lang=EN-US> </span>– общее время рендера
+в миллисекундах, <span lang=EN-US>y</span> – текущее время рендера кадра в миллисекундах</p>
+
+<p class=MsoNormal><img width=111 height=19 id="Рисунок 188"
+src="material_editor.files/image49.png"> <span lang=EN-US>float</span>2 вектор
+размеров окна рендера в пикселях, x – ширина, y - высота</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>Пользовательские данные (float4) отправляемые в шейдеры</b></p>
+
+<p class=MsoNormal><img width=89 height=17 id="Рисунок 8"
+src="material_editor.files/image50.png"> отправка пользовательских данных в
+вершинный шейдер</p>
+
+<p class=MsoNormal><img width=48 height=17 id="Рисунок 20"
+src="material_editor.files/image51.png"> отправить эти же данные в пиксельный
+шейдер</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Компоненты вектора пользовательских данных [-1,1] вершинного
+шейдера:</p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 197"
+src="material_editor.files/image52.png"> </p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 200"
+src="material_editor.files/image53.png"></p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 203"
+src="material_editor.files/image54.png"></p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 206"
+src="material_editor.files/image55.png"></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><img width=89 height=17 id="Рисунок 17"
+src="material_editor.files/image56.png"> отправка пользовательских данных в
+пиксельный шейдер</p>
+
+<p class=MsoNormal><img width=48 height=17 id="Рисунок 23"
+src="material_editor.files/image57.png"> отправить эти же данные в вершинный
+шейдер</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Компоненты вектора пользовательских данных [-1,1] пиксельного
+шейдера:</p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 209"
+src="material_editor.files/image52.png"></p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 212"
+src="material_editor.files/image53.png"></p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 215"
+src="material_editor.files/image58.png"></p>
+
+<p class=MsoNormal><img width=331 height=19 id="Рисунок 218"
+src="material_editor.files/image55.png"></p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal align=center style='text-align:center'><b>Наборы данных</b></p>
+
+<p class=MsoNormal>Поддерживаемые наборы данных:</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'>пары шейдеров (расположение
+относительно программы shaders_kit.cfg)</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'>параметры освещения (расположение
+относительно программы paraml_kit.cfg)</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>shaders_kit.cfg</b></p>
+
+<p class=MsoNormal>Файл конфигураций должен содержать секцию <span lang=EN-US>shaders</span>_<span
+lang=EN-US>kit</span> с ключом <span lang=EN-US>count</span> в котором
+храниться количество секций с наборами шейдеров в данном файле. </p>
+
+<p class=MsoNormal>Каждая секция именуется как shader_порядковыйномер,
+нумерация с нуля. Каждая такая секция обязательно должна содержать ключ name с
+именем данного набора, а также ключи:</p>
+
+<p class=MsoNormal style='text-indent:35.4pt'>vs содержищий имя вершинного
+шейдера с расширением</p>
+
+<p class=MsoNormal style='text-indent:35.4pt'>ps содержащий имя пиксельного
+шейдера с расширением.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><b>paraml_kit.cfg</b></p>
+
+<p class=MsoNormal>Файл конфигураций должен содержать секцию <span lang=EN-US>paraml</span>_<span
+lang=EN-US>kit</span> с ключом <span lang=EN-US>count</span> в котором
+храниться количество секций с параметрами освщеения в данном файле.</p>
+
+<p class=MsoNormal>Каждая секция именуется как <span lang=EN-US>paraml</span>_порядковыйномер,
+нумерация с нуля.            Каждая такая секция обязательно должна содержать
+ключ name с именем набора, а также ключи</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'>thickness – <span lang=EN-US>float</span>
+[0,1] параметр просвечиваемости</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'>roughness – <span lang=EN-US>float</span>
+[0,1] параметр шероховатости</p>
+
+<p class=MsoNormal style='margin-left:35.4pt'>f0 – <span lang=EN-US>float</span>
+[0,1] параметр отражательной способности поверхности</p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal>                                                                                                                             </p>
+
+</div>
+
+</body>
+
+</html>

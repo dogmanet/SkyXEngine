@@ -260,27 +260,33 @@ void GData::Editors::LevelEditorUpdate()
 #if defined(SX_MATERIAL_EDITOR)
 void GData::Editors::MaterialEditorUpdate()
 {
-	char vs[1024];
-	char ps[1024];
-
-	SML_MtlGetVS(SXMaterialEditor::IDMat, vs);
-	SML_MtlGetPS(SXMaterialEditor::IDMat, ps);
-
 	ID skit = -1;
-	if ((skit = SXMaterialEditor::Shaders->Find(vs, ps)) >= 0)
-		SXMaterialEditor::ComboBoxShaders->SetSel(skit + 1);
-	else if(!SXMaterialEditor::ComboBoxShaders->Focus())
-		SXMaterialEditor::ComboBoxShaders->SetSel(0);
 
+	if(!SXMaterialEditor::ComboBoxShaders->Focus())
+	{
+		char vs[1024];
+		char ps[1024];
 
-	float thikcness = SML_MtlGetThickness(SXMaterialEditor::IDMat);
-	float roughness = SML_MtlGetRoughness(SXMaterialEditor::IDMat);
-	float f0 = SML_MtlGetF0(SXMaterialEditor::IDMat);
+		SML_MtlGetVS(SXMaterialEditor::IDMat, vs);
+		SML_MtlGetPS(SXMaterialEditor::IDMat, ps);
 
-	skit = -1;
-	if ((skit = SXMaterialEditor::ParamL->Find(thikcness, roughness, f0)) >= 0)
-		SXMaterialEditor::ComboBoxParamL->SetSel(skit + 1);
-	else if (!SXMaterialEditor::ComboBoxParamL->Focus())
-		SXMaterialEditor::ComboBoxParamL->SetSel(0);
+		if ((skit = SXMaterialEditor::Shaders->Find(vs, ps)) >= 0)
+			SXMaterialEditor::ComboBoxShaders->SetSel(skit + 1);
+		else 
+			SXMaterialEditor::ComboBoxShaders->SetSel(0);
+	}
+
+	if(!SXMaterialEditor::ComboBoxParamL->Focus())
+	{
+		float thikcness = SML_MtlGetThickness(SXMaterialEditor::IDMat);
+		float roughness = SML_MtlGetRoughness(SXMaterialEditor::IDMat);
+		float f0 = SML_MtlGetF0(SXMaterialEditor::IDMat);
+
+		skit = -1;
+		if ((skit = SXMaterialEditor::ParamL->Find(thikcness, roughness, f0)) >= 0)
+			SXMaterialEditor::ComboBoxParamL->SetSel(skit + 1);
+		else
+			SXMaterialEditor::ComboBoxParamL->SetSel(0);
+	}
 }
 #endif

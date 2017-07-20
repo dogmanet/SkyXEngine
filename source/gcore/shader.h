@@ -46,6 +46,8 @@ public:
 	ShaderManager();
 	~ShaderManager();
 
+	bool FileExists(const char* path);
+
 	ID Load(ShaderType type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro = 0);
 	void Update(ShaderType type_shader, const char* name, D3DXMACRO macro[] = 0);
 	void Update(ShaderType type_shader, ID id, D3DXMACRO macro[] = 0);

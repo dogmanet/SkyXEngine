@@ -432,6 +432,13 @@ void SGCore_ShaderGetName(ShaderType type_shader, ID id, char* name)
 	MShaders->GetName(type_shader, id, name);
 }
 
+bool SGCore_ShaderFileExists(const char* name)
+{
+	SG_PRECOND(false);
+
+	return MShaders->FileExists(name);
+}
+
 void SGCore_ShaderSetStdPath(const char* path)
 {
 	SG_PRECOND(_VOID);
@@ -447,6 +454,13 @@ void SGCore_ShaderGetStdPath(char* path)
 }
 
 ////////////////////////
+
+bool SGCore_LoadTexFileExists(const char* name)
+{
+	SG_PRECOND(false);
+
+	return MTextures->FileExists(name);
+}
 
 void SGCore_LoadTexStdPath(const char* path)
 {
@@ -706,7 +720,7 @@ float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const f
 	return(SMVector3Length2(p - Pb));
 }
 
-float SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2)
+bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2)
 {
 	return (!((min1->x > max2->x || max1->x < min2->x)
 		|| (min1->y > max2->y || max1->y < min2->y)

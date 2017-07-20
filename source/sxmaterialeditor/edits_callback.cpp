@@ -7,20 +7,17 @@ LRESULT SXMaterialEditor_EditSkyBox_Enter(HWND hwnd, UINT msg, WPARAM wParam, LP
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditSkyBox->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::TexturesSkyBoxes, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SGCore_SkyBoxLoadTex(tmptextval);
 	else
 	{
-		MessageBox(0,"texture not found",0,0);
-
 		SGCore_SkyBoxGetActiveTex(tmptextval);
 		SXMaterialEditor::EditSkyBox->SetText(tmptextval);
+
+		MessageBox(0,"texture not found",0,0);
 	}
 
 	return 0;
@@ -30,20 +27,16 @@ LRESULT SXMaterialEditor_EditTex_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditTex->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
-
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetTexture(SXMaterialEditor::IDMat, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetTexture(SXMaterialEditor::IDMat, tmptextval);
 		SXMaterialEditor::EditTex->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -53,20 +46,17 @@ LRESULT SXMaterialEditor_EditVS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_SHADER_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditVS->GetText(tmptextval, SXGC_SHADER_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Shaders, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_ShaderFileExists(tmptextval))
 		SML_MtlSetVS(SXMaterialEditor::IDMat, tmptextval);
 	else
 	{
-		MessageBox(0, "shader not found", 0, 0);
-
 		SML_MtlGetVS(SXMaterialEditor::IDMat, tmptextval);
 		SXMaterialEditor::EditVS->SetText(tmptextval);
+
+		MessageBox(0, "shader not found", 0, 0);
 	}
 
 	return 0;
@@ -76,20 +66,17 @@ LRESULT SXMaterialEditor_EditPS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_SHADER_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditPS->GetText(tmptextval, SXGC_SHADER_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Shaders, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_ShaderFileExists(tmptextval))
 		SML_MtlSetPS(SXMaterialEditor::IDMat, tmptextval);
 	else
 	{
-		MessageBox(0, "shader not found", 0, 0);
-
 		SML_MtlGetPS(SXMaterialEditor::IDMat, tmptextval);
 		SXMaterialEditor::EditPS->SetText(tmptextval);
+
+		MessageBox(0, "shader not found", 0, 0);
 	}
 
 	return 0;
@@ -119,16 +106,14 @@ LRESULT SXMaterialEditor_EditTexLighting_Enter(HWND hwnd, UINT msg, WPARAM wPara
 	
 	SXMaterialEditor::EditTexLighting->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetTextureLighting(SXMaterialEditor::IDMat, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetTextureLighting(SXMaterialEditor::IDMat, tmptextval);
 		SXMaterialEditor::EditTexLighting->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -142,16 +127,14 @@ LRESULT SXMaterialEditor_EditMask_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	
 	SXMaterialEditor::EditMask->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetMaskTex(SXMaterialEditor::IDMat, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetMaskTex(SXMaterialEditor::IDMat, tmptextval);
 		SXMaterialEditor::EditMask->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -164,16 +147,14 @@ LRESULT SXMaterialEditor_EditMR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	
 	SXMaterialEditor::EditMR->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 0, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 0, tmptextval);
 		SXMaterialEditor::EditMR->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -183,20 +164,17 @@ LRESULT SXMaterialEditor_EditMG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditMG->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 1, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 1, tmptextval);
 		SXMaterialEditor::EditMG->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -206,20 +184,17 @@ LRESULT SXMaterialEditor_EditMB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditMB->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 2, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 2, tmptextval);
 		SXMaterialEditor::EditMB->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -229,20 +204,17 @@ LRESULT SXMaterialEditor_EditMA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditMA->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 3, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 3, tmptextval);
 		SXMaterialEditor::EditMA->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -253,20 +225,17 @@ LRESULT SXMaterialEditor_EditDR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditDR->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetDTex(SXMaterialEditor::IDMat, 0, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 0, tmptextval);
 		SXMaterialEditor::EditDR->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -276,20 +245,17 @@ LRESULT SXMaterialEditor_EditDG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditDG->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetDTex(SXMaterialEditor::IDMat, 1, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 1, tmptextval);
 		SXMaterialEditor::EditDR->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -299,20 +265,17 @@ LRESULT SXMaterialEditor_EditDB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditDB->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetDTex(SXMaterialEditor::IDMat, 2, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 2, tmptextval);
 		SXMaterialEditor::EditDR->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
@@ -322,20 +285,17 @@ LRESULT SXMaterialEditor_EditDA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 {
 	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	tmptextval[0] = 0;
-	float tmpval = 0;
 
 	SXMaterialEditor::EditDA->GetText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmppath, "%s%s", GData::Pathes::Textures, tmptextval);
-	if (Core_0FileExists(tmppath))
+	if (SGCore_LoadTexFileExists(tmptextval))
 		SML_MtlSetDTex(SXMaterialEditor::IDMat, 3, tmptextval);
 	else
 	{
-		MessageBox(0, "texture not found", 0, 0);
-
 		SML_MtlGetDTex(SXMaterialEditor::IDMat, 3, tmptextval);
 		SXMaterialEditor::EditDR->SetText(tmptextval);
+
+		MessageBox(0, "texture not found", 0, 0);
 	}
 
 	return 0;
