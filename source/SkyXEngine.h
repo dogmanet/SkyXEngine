@@ -217,7 +217,8 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
  - \b p_far дальность видимости (отрисовки мира)
 
 \page editors Редакторы
-\link material_editor SXMaterialEditor \endlink \n 
+\link material_editor SXMaterialEditor - редактор материалов \endlink \n 
+\link particles_editor SXParticlesEditor - редактор партиклов \endlink \n
 */
 
 //#############################################################################

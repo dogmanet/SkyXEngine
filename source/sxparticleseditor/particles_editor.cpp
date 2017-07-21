@@ -1379,7 +1379,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::StaticDeviationCountDelayMls->SetColorBrush(220, 220, 220);
 	SXParticlesEditor::StaticDeviationCountDelayMls->GAlign.left = true;
 	SXParticlesEditor::StaticDeviationCountDelayMls->GAlign.top = true;
-	SXParticlesEditor::EditDeviationCountDelayMls = SXGUICrEdit("0", 715, 495, 70, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditDeviationCountDelayMls = SXGUICrEdit("0", 715, 45, 70, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::EditDeviationCountDelayMls->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXParticlesEditor::EditDeviationCountDelayMls->SetColorText(0, 0, 0);
 	SXParticlesEditor::EditDeviationCountDelayMls->SetColorTextBk(255, 255, 255);

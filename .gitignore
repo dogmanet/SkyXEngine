@@ -198,4 +198,6 @@ build/*
 !gamesource/
 build/gamesource/*
 !shaders/
-docs/html
+docs/html/*
+!docs/html/material_editor/
+!docs/html/particles_editor/

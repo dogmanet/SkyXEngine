@@ -19,7 +19,7 @@ See the license in LICENSE
 \image html material_editor/image1.png "Скришот программы SXMaterialEditor"
 
 \section material_editor_window Структура окна
-<u>Окно состоит из структурных элементов (сверху вниз): </u>
+<b>Окно состоит из структурных элементов (сверху вниз): </b>
  - <b>Заголовок окна</b>, содержащий имя редактор и имя материала \n
  - Меню программы:
   - File:

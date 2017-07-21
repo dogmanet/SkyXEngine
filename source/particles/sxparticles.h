@@ -173,6 +173,10 @@ struct ParticlesData
 	////////////////////////////////////////////
 
 	/*! \name Ограничивающий объем
+	 \note Box: Vector1 x y z – минимум, Vector2 x y z – максимум \n
+	Sphere: Vector1 x y z – центр сферы, w – радиус \n
+	Cone: Vector1 x y z – нижняя точка конуса, w – радиус нижней точки, Vector2 y координата Y верхней точки конуса, w – радиус верхней точки \n
+
 	@{*/
 	ParticlesBoundType BoundType;	//!< тип ограничивающего объема, для уничтожения партикла при выходе за пределы
 
@@ -189,7 +193,7 @@ struct ParticlesData
 	@{*/
 	ParticlesSpawnPosType SpawnPosType;	//!< тип спавна партиклов
 
-	float3 SpawnOrigin;					//!< точка из которой идут частицы (обязательно должна быть точка откуда идет спавн частиц если нет BV)
+	float3 SpawnOrigin;					//!< точка из которой идут частицы (обязательно должна быть точка откуда идет спавн частиц если нет ограничивающего объема)
 	float SpawnOriginDisp;				//!< дисперсия для #SpawnOrigin
 
 	bool SpawnBoundBindCreateXNeg;		//!< привязка к BV x-
@@ -232,7 +236,7 @@ struct ParticlesData
 	float2_t Size;						//!< размер частиц
 	float SizeDisp;						//!< разброс для размера части
 
-	ParticlesDependType SizeDependAge;	//!< зависит ли альфа компонента частицы от ее возраста
+	ParticlesDependType SizeDependAge;	//!< зависит ли размер частицы от ее возраста
 
 	//!@}
 
@@ -270,9 +274,9 @@ struct ParticlesData
 	/*! \name Характер: круговое движение
 	@{*/
 
-	bool CharacterCircle;				//!< разрешено ли использовать круговое движение
+	bool CharacterCircle;				//!< испольовать ли использовать круговое движение
 	ParticlesAxis CharacterCircleAxis;	//!< ось для кругового движения
-	float CharacterCircleAngle;			//!< угол
+	float CharacterCircleAngle;			//!< угол (в радианах)
 	float CharacterCircleAngleDisp;		//!< дисперсия для #CharacterCircleAngle
 	bool CharacterCircleAngleDispNeg;	//!< разрешено ли использовать отрицательную дисперсию
 
@@ -283,8 +287,8 @@ struct ParticlesData
 	/*! \name Характер вращение
 	@{*/
 
-	bool CharacterRotate;				//!< разрешено ли использовать вращение
-	float CharacterRotateAngle;			//!< угол
+	bool CharacterRotate;				//!< испольовать ли использовать вращение
+	float CharacterRotateAngle;			//!< угол (в радианах)
 	float CharacterRotateAngleDisp;		//!< дисперсия для #CharacterRotateAngle
 	bool CharacterRotateAngleDispNeg;	//!< разрешено ли использовать отрицательную дисперсию
 
@@ -295,7 +299,7 @@ struct ParticlesData
 	/*! \name Характер: отклонения при движении
 	@{*/
 
-	bool CharacterDeviation;
+	bool CharacterDeviation;						//!< использовать ли отклонения при движении
 	ParticlesDeviationType CharacterDeviationType;	//!< тип смещения
 	float CharacterDeviationAmplitude;				//!< амплитуда, может быть отрицательна
 	float CharacterDeviationCoefAngle;				//!< коэфициент на который будет умножен угол, только для ParticlesDeviationType::ptd_wave
@@ -326,12 +330,12 @@ struct ParticlesData
 	int ReCreateCount;		//!< количество создваваемых/пересоздаваемых, 0< - пересоздание в случае нехватки, 0> - единственное создание при запуске
 
 	bool Soft;				//!< мягкие ли частицы
-	float SoftCoef;			//!< коэфициент для смягчения партиклов (0-1)
+	float SoftCoef;			//!< коэфициент для смягчения партиклов [0-1]
 
 	bool Refraction;		//!< частицы преломляют пространство
-	float RefractionCoef;	//!< коэфициент для преломления партиклов (0-1)
+	float RefractionCoef;	//!< коэфициент для преломления партиклов [0-1]
 
-	float TransparencyCoef;	//!< коэфициент прозрачности (0-1), компонента альфа канала будет домножена на это значение
+	float TransparencyCoef;	//!< коэфициент прозрачности [0-1], компонента альфа канала будет домножена на это значение
 
 	bool Lighting;			//!< освещаемые ли частицы
 
