@@ -951,7 +951,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 			}
 			else if (SML_LigthsGetType(tmpid) == LightsTypeLight::ltl_point)
 			{
-				if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos))
+				if (SML_LigthsGetTypeShadowed(tmpid) != LightsTypeShadow::lts_none && SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos))
 				{
 					SML_LigthsInRenderBegin(tmpid);
 

@@ -1,10 +1,19 @@
 
 #include <managed_render/editor/axes_helper.h>
 
+namespace SXRenderFunc
+{
+	namespace Delay
+	{
+		extern int64_t FreeVal;
+	};
+};
+
 AxesHelper::AxesHelper()
 {
 	m_bIsDragging = m_bIsDraggingStart = m_bIsDraggingStop = false;
 	Scale = float3(1, 1, 1);
+	m_htype = HT_NONE;
 }
 
 AxesHelper::~AxesHelper()
@@ -73,6 +82,9 @@ void AxesHelper::Render()
 {
 	if (m_htype == HT_NONE)
 		return;
+
+	GData::DXDevice->SetTexture(0, 0);
+	SGCore_ShaderUnBind();
 
 	if(!m_bIsDragging)
 	{
@@ -547,6 +559,7 @@ void AxesHelper::OnMouseMove(int x, int y)
 
 void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 {
+	SXRenderFunc::Delay::FreeVal = m_bIsDragging;
 	if (m_bIsDragging)
 		return;
 

@@ -419,6 +419,10 @@ int SkyXEngine_CycleMain()
 #endif
 
 				SkyXEngine_Render(timeDelta);
+
+#if defined(SX_GAME)
+				Level::Update();
+#endif
 			}
 
 			lastTime = currTime;

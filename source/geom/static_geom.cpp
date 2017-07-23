@@ -1372,6 +1372,7 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 
 void StaticGeom::GPURenderSingly(DWORD timeDelta, ID id, ID id_tex)
 {
+	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id, _VOID);
 	Segment** jarrsplits;
 	long jidbuff;
 	long jnumgroup;

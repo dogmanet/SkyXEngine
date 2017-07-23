@@ -105,6 +105,7 @@
     <ClCompile Include="..\..\..\source\game\SXbaseTool.cpp" />
     <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp" />
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp" />
+    <ClCompile Include="..\..\..\source\game\SXLightPoint.cpp" />
     <ClCompile Include="..\..\..\source\game\SXplayer.cpp" />
     <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="..\..\..\source\game\SXbaseTool.h" />
     <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h" />
     <ClInclude Include="..\..\..\source\game\sxgame.h" />
+    <ClInclude Include="..\..\..\source\game\SXLightPoint.h" />
     <ClInclude Include="..\..\..\source\game\SXplayer.h" />
     <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h" />
     <ClInclude Include="..\..\..\source\game\SXpointCamera.h" />

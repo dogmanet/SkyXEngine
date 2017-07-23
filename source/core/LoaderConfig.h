@@ -3,12 +3,69 @@
 
 #pragma once
 
+class ConfigString : public String
+{
+public:
+	ConfigString() : String(){}
+	ConfigString(const char * str) : String(str){}
+	ConfigString(const String & str) : String(str){}
+	ConfigString(const ConfigString & str) : String(str){}
+	ConfigString(const ConfigString * str) : String(str){}
+	ConfigString(const char sym) : String(sym){}
+	~ConfigString() {}
+	
+	const char & operator[](const unsigned long & num) const
+	{
+		return(this->string[num]);
+	}
+
+	char & operator[](const unsigned long & num)
+	{
+		return(this->string[num]);
+	}
+
+	ConfigString & operator=(const ConfigString & str)
+	{
+		Release();
+		string = new char[str.length() + 1];
+		memcpy(string, str.c_str(), str.length() + 1);
+		return(*this);
+	}
+
+	ConfigString & operator=(const ConfigString * str)
+	{
+		Release();
+		string = new char[str->length() + 1];
+		memcpy(string, str->c_str(), str->length() + 1);
+		return(*this);
+	}
+
+	bool operator==(const ConfigString &str) const
+	{
+		return (stricmp(str.string, this->string) == 0);
+	}
+
+	bool operator==(const ConfigString * str) const
+	{
+		return (stricmp(str->string, this->string) == 0);
+	}
+
+	ConfigString & operator+=(const char &	sym)
+	{
+		char * newstring = new char[length() + 2];
+		sprintf(newstring, "%s%c", string, sym);
+		SAFE_DELETE_A(string);
+		string = newstring;
+		return(*this);
+	}
+};
+
 class SXLoaderConfig : public ISXLConfig
 {
 public:
 	struct value
 	{
-		String val;
+		ConfigString val;
 		bool isModified;
 		value():isModified(false)
 		{
@@ -16,10 +73,10 @@ public:
 	};
 	struct section
 	{
-		String parent;
-		AssotiativeArray<String, value> mValues;
+		ConfigString parent;
+		AssotiativeArray<ConfigString, value> mValues;
 		bool native;
-		String Include;
+		ConfigString Include;
 		bool isModified;
 		section():isModified(false)
 		{
@@ -48,45 +105,45 @@ public:
 	void Release();
 	void Clear();
 
-	AssotiativeArray<String, section> * GetSections();
+	AssotiativeArray<ConfigString, section> * GetSections();
 
 	//inline const char* GetPath();
 	const char* GetErrorFile();
 
 protected:
 
-	String ErrorFile;
+	ConfigString ErrorFile;
 	
 	struct include
 	{
-		String name;
+		ConfigString name;
 		SXLoaderConfig *pParser;
 	};
 
-	String BaseFile;
+	ConfigString BaseFile;
 	
 //protected:
-	AssotiativeArray<String, value> m_mFinalValues;
+	AssotiativeArray<ConfigString, value> m_mFinalValues;
 
-	AssotiativeArray<String, section> m_mSections;
+	AssotiativeArray<ConfigString, section> m_mSections;
 
 	Array<include> m_vIncludes;
 //public:
 
-	int WriteFile(const String & name, String section, String key, const String & val);
+	int WriteFile(const ConfigString & name, ConfigString section, ConfigString key, const ConfigString & val);
 	
 
 	int Parse(const char* file);
 
-	int ParseInclude(String & file, const String & dir);
+	int ParseInclude(ConfigString & file, const ConfigString & dir);
 
 
-	String GetIncludeName(int i);
+	ConfigString GetIncludeName(int i);
 
-	String BaseDir(String dir);
-	String BaseName(String dir);
+	ConfigString BaseDir(ConfigString dir);
+	ConfigString BaseName(ConfigString dir);
 
-	void Modify(AssotiativeArray<String, section> & sections, AssotiativeArray<String, value> & values, String IncName);
+	void Modify(AssotiativeArray<ConfigString, section> & sections, AssotiativeArray<ConfigString, value> & values, ConfigString IncName);
 };
 
 #endif

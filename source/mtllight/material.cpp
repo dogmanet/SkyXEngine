@@ -1157,25 +1157,33 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		else
 			tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
 
-		sprintf(tmpMicroDiff[0], "%s", config->GetKey(tmp_name, "mirco_diff_r"));
+		tmpMicroDiff[0][0] = 0;
+		if (config->KeyExists(tmp_name, "mirco_diff_r"))
+			sprintf(tmpMicroDiff[0], "%s", config->GetKey(tmp_name, "mirco_diff_r"));
 
 		if (tmpMicroDiff[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = SGCore_LoadTexAddName(tmpMicroDiff[0], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = -1;
 
-		sprintf(tmpMicroDiff[1], "%s", config->GetKey(tmp_name, "mirco_diff_g"));
+		tmpMicroDiff[1][0] = 0;
+		if (config->KeyExists(tmp_name, "mirco_diff_g"))
+			sprintf(tmpMicroDiff[1], "%s", config->GetKey(tmp_name, "mirco_diff_g"));
 		if (tmpMicroDiff[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = SGCore_LoadTexAddName(tmpMicroDiff[1], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = -1;
 
-		sprintf(tmpMicroDiff[2], "%s", config->GetKey(tmp_name, "mirco_diff_b"));
+		tmpMicroDiff[2][0] = 0;
+		if (config->KeyExists(tmp_name, "mirco_diff_b"))
+			sprintf(tmpMicroDiff[2], "%s", config->GetKey(tmp_name, "mirco_diff_b"));
 		if (tmpMicroDiff[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = SGCore_LoadTexAddName(tmpMicroDiff[2], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = -1;
 
+		tmpMicroDiff[3][0] = 0;
+		if (config->KeyExists(tmp_name, "mirco_diff_a"))
 		sprintf(tmpMicroDiff[3], "%s", config->GetKey(tmp_name, "mirco_diff_a"));
 		if (tmpMicroDiff[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = SGCore_LoadTexAddName(tmpMicroDiff[3], LoadTexType::ltt_load);
@@ -1183,33 +1191,41 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = -1;
 
 
-
-		sprintf(tmpDetail[0], "%s", config->GetKey(tmp_name, "detail_r"));
+		tmpDetail[0][0] = 0;
+		if (config->KeyExists(tmp_name, "detail_r"))
+			sprintf(tmpDetail[0], "%s", config->GetKey(tmp_name, "detail_r"));
 		if (tmpDetail[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[0] = SGCore_LoadTexAddName(tmpDetail[0], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[0] = -1;
 
-		sprintf(tmpDetail[1], "%s", config->GetKey(tmp_name, "detail_g"));
+		tmpDetail[1][0] = 0;
+		if (config->KeyExists(tmp_name, "detail_g"))
+			sprintf(tmpDetail[1], "%s", config->GetKey(tmp_name, "detail_g"));
 		if (tmpDetail[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[1] = SGCore_LoadTexAddName(tmpDetail[1], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[1] = -1;
 
-		sprintf(tmpDetail[2], "%s", config->GetKey(tmp_name, "detail_b"));
+		tmpDetail[2][0] = 0;
+		if (config->KeyExists(tmp_name, "detail_b"))
+			sprintf(tmpDetail[2], "%s", config->GetKey(tmp_name, "detail_b"));
 		if (tmpDetail[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[2] = SGCore_LoadTexAddName(tmpDetail[2], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[2] = -1;
 
-		sprintf(tmpDetail[3], "%s", config->GetKey(tmp_name, "detail_a"));
+		tmpDetail[3][0] = 0;
+		if (config->KeyExists(tmp_name, "detail_a"))
+			sprintf(tmpDetail[3], "%s", config->GetKey(tmp_name, "detail_a"));
 		if (tmpDetail[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[3] = SGCore_LoadTexAddName(tmpDetail[3], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[3] = -1;
 
-
-		sprintf(tmpMask, "%s", config->GetKey(tmp_name, "mask"));
+		tmpMask[0] = 0;
+		if (config->KeyExists(tmp_name, "mask"))
+			sprintf(tmpMask, "%s", config->GetKey(tmp_name, "mask"));
 		if (tmpMask[0] != '0' && tmpMask[0] != 0)
 			tmpMtl->MicroDetail.Mask = SGCore_LoadTexAddName(tmpMask, LoadTexType::ltt_load);
 		else

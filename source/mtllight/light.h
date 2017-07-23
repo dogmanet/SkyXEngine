@@ -75,7 +75,7 @@ public:
 	void ChangeAngle(ID id, float angle, bool is_create);
 	void ChangeTopRadius(ID id, float top_radius);
 	void ChangeRadiusHeight(ID id, float radius_height, bool is_create);
-	void ChangeShadow(ID id, bool is_shadow);
+	//void ChangeShadow(ID id, bool is_shadow);
 	void SetBlurPixel(ID id, float blur_pixel);
 	float GetBlurPixel(ID id);
 	void SetShadowLocalNear(ID id, float slnear);
@@ -118,7 +118,7 @@ public:
 	ID GetLightIDArr(ID id, ID inid, int how);
 	void SetLightIDArr(ID id, ID inid, int how, ID id_arr);
 
-	inline void SetLightTypeShadowed(ID id, LightsTypeShadow type);
+	void SetLightTypeShadowed(ID id, LightsTypeShadow type);
 	inline LightsTypeShadow GetLightTypeShadowed(ID id);
 
 	bool UpdateLightCountUpdate(ID id, float3* viewpos, int ghow = -1);
@@ -145,7 +145,7 @@ public:
 
 		bool IsVisible;
 		bool IsEnable;
-		bool IsShadow;
+		//bool IsShadow;
 		bool IsGlobal;
 
 		LightsTypeShadow TypeShadowed;

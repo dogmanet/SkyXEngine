@@ -95,6 +95,30 @@ void SXLevelEditor::GameSel(int sel)
 	GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
 }
 
+void SXLevelEditor::GameUpdatePosRot()
+{
+	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || GData::Editors::ActiveElement < 0)
+		return;
+
+	SXbaseEntity* bEnt = SXGame_EntGet(GData::Editors::ActiveElement);
+	propdata_t* pd = 0;
+	char txtval[256];
+
+	for (int i = 0; i < SXLevelEditor::ListViewGameClass->GetCountString(); ++i)
+	{
+		pd = (propdata_t*)SXLevelEditor::ListViewGameClass->GetDataItem(i);
+
+		if (pd)
+		{
+			if (stricmp(pd->szKey, "origin") == 0 || stricmp(pd->szKey, "rotation") == 0)
+			{
+				bEnt->GetKV(pd->szKey, txtval, 256);
+				SXLevelEditor::ListViewGameClass->SetTextItem(txtval, 1, i);
+			}
+		}
+	}
+}
+
 LRESULT SXLevelEditor_ListViewGameClass_Click()
 {
 	int str = SXLevelEditor::ListViewGameClass->GetSelString();
@@ -148,12 +172,12 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 		char tval[256];
 		SXLevelEditor::ListViewGameClass->GetTextItem(tval, 1, str, 256);
 
-		char tval2[256];
+		const char* tval2;
 		bool isfound = false;
 
 		for (int i = 0; i < SXLevelEditor::ComboBoxGameValue->GetCount(); ++i)
 		{
-			SXLevelEditor::ComboBoxGameValue->GetItemText(i,tval2);
+			tval2 = (const char*)SXLevelEditor::ComboBoxGameValue->GetItemData(i);
 
 			if (strcmp(tval, tval2) == 0)
 			{

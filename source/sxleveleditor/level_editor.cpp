@@ -207,6 +207,7 @@ namespace SXLevelEditor
 
 	void GameActivateAll(bool bf);
 	void GameSel(int sel);
+	void GameUpdatePosRot();
 
 	void AIGridActivateAll(bool bf);
 	void AIGridEnableBB(bool bf);
@@ -421,9 +422,9 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
 	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
 
-	SXLevelEditor::CheckBoxTBRLighting->SetCheck(true);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+	SXLevelEditor::CheckBoxTBRColor->SetCheck(true);
+	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
+	GData::FinalImage = DS_RT::ds_rt_color;
 
 	SXLevelEditor::CheckBoxTBSelS->SetCheck(true);
 	GData::Editors::SelSelection = true;
@@ -1169,7 +1170,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::StaticGameClass->GAlign.top = true;
 	SXLevelEditor::StaticGameClass->Visible(false);
 
-	SXLevelEditor::ComboBoxGameClass = SXGUICrComboBoxEx("", 455, 15, 230, 100, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ComboBoxGameClass = SXGUICrComboBoxEx("", 455, 15, 230, 180, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::ComboBoxGameClass->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXLevelEditor::ComboBoxGameClass->SetColorText(0, 0, 0);
 	SXLevelEditor::ComboBoxGameClass->SetColorTextBk(255, 255, 255);
@@ -1192,7 +1193,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ListViewGameClass->GAlign.top = true;
 	SXLevelEditor::ListViewGameClass->Visible(false);
 
-	SXLevelEditor::ComboBoxGameValue = SXGUICrComboBox("", 415, 45, 270, 100, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ComboBoxGameValue = SXGUICrComboBox("", 415, 45, 270,180, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::ComboBoxGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXLevelEditor::ComboBoxGameValue->SetColorText(0, 0, 0);
 	SXLevelEditor::ComboBoxGameValue->SetColorTextBk(255, 255, 255);

@@ -99,6 +99,9 @@
     <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp">
       <Filter>Source Files\ents\items\tools</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXLightPoint.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h">
       <Filter>Header Files\ents\items\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXLightPoint.h">
+      <Filter>Header Files\ents</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

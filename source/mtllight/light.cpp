@@ -67,7 +67,7 @@ void Lights::Save(const char* path)
 		fprintf(file, "%s%d%s", "color_g = ", DWORD(tmpcolor.y * 255), "\n");
 		fprintf(file, "%s%d%s", "color_b = ", DWORD(tmpcolor.z * 255), "\n");
 		
-		fprintf(file, "%s%d%s", "is_shadowed = ", ArrKeyLights[i]->IsShadow, "\n");
+		//fprintf(file, "%s%d%s", "is_shadowed = ", ArrKeyLights[i]->IsShadow, "\n");
 
 		fprintf(file, "%s%f%s", "pos_x = ", tmppos.x, "\n");
 		fprintf(file, "%s%f%s", "pos_y = ", tmppos.y, "\n");
@@ -425,7 +425,7 @@ ID Lights::CreateCopy(ID id)
 		tmplight2->GAngleY = tmplight->GAngleY;
 		tmplight2->IsEnable = tmplight->IsEnable;
 		tmplight2->IsGlobal = tmplight->IsGlobal;
-		tmplight2->IsShadow = tmplight->IsShadow;
+		//tmplight2->IsShadow = tmplight->IsShadow;
 		tmplight2->IsVisible = tmplight->IsVisible;
 		tmplight2->IsVisibleFor = false;
 		tmplight2->MatRot = tmplight->MatRot;
@@ -504,7 +504,7 @@ Lights::Light::Light()
 	TypeShadowed = LightsTypeShadow::lts_static;
 	CountUpdate = 0;
 
-	IsVisible = IsEnable = IsShadow = IsGlobal = false;
+	IsVisible = IsEnable = /*IsShadow =*/ IsGlobal = false;
 
 	Mesh = 0;
 	Power = Dist = 0;
@@ -683,7 +683,7 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 		{
 			tmplight->ShadowPSSM = new PSSM();
 			tmplight->ShadowPSSM->Init();
-			tmplight->IsShadow = true;
+			//tmplight->IsShadow = true;
 			tmplight->ShadowPSSM->SetPosition(&float3(center->x, center->y, center->z));
 		}
 		else if (is_shadowed)
@@ -692,11 +692,11 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 			tmplight->ShadowCube->Init();
 			tmplight->ShadowCube->SetPosition(&float3(center->x, center->y, center->z));
 			tmplight->ShadowCube->SetNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->Dist));
-			tmplight->IsShadow = true;
+			//tmplight->IsShadow = true;
 
 		}
-		else
-			tmplight->IsShadow = false;
+		/*else
+			tmplight->IsShadow = false;*/
 
 	ID tmpid = id;
 
@@ -775,7 +775,7 @@ ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* 
 		tmplight->ShadowSM->SetDirection(dir);
 		tmplight->ShadowSM->SetAngleNearFar(&float3(angle, LIGHTS_LOCAL_STD_NEAR, dist));
 	}
-	tmplight->IsShadow = is_shadow;
+	//tmplight->IsShadow = is_shadow;
 
 	tmplight->BoundVolume = SGCore_CrBound();
 	IDirect3DVertexBuffer9* vertexbuf;
@@ -818,7 +818,7 @@ void Lights::SetLightColor(ID id, float3* vec)
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->Color = *vec;
-	SetNullLightCountUpdate(id);
+	//SetNullLightCountUpdate(id);
 }
 
 void Lights::GetLightPos(ID id, float3* vec, bool greal)
@@ -858,7 +858,7 @@ void Lights::SetLightPower(ID id, float power)
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->Power = power;
-	SetNullLightCountUpdate(id);
+	//SetNullLightCountUpdate(id);
 }
 
 float Lights::GetLightDist(ID id)
@@ -1121,7 +1121,7 @@ bool Lights::IsShadow(ID id)
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
-	return ArrIDLights[id]->IsShadow;
+	return (/*ArrIDLights[id]->IsShadow && */ArrIDLights[id]->TypeShadowed != LightsTypeShadow::lts_none);
 }
 
 LightsTypeLight Lights::GetType(ID id)
@@ -1405,10 +1405,10 @@ void Lights::ChangeRadiusHeight(ID id, float radius_height, bool is_create)
 			mem_release_del(vertexbuf);
 		}
 
-		SetNullLightCountUpdate(id);
+	SetNullLightCountUpdate(id);
 }
 
-void Lights::ChangeShadow(ID id, bool is_shadow)
+/*void Lights::ChangeShadow(ID id, bool is_shadow)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1447,7 +1447,7 @@ void Lights::ChangeShadow(ID id, bool is_shadow)
 			}
 		}
 		SetNullLightCountUpdate(id);
-}
+}*/
 
 void Lights::SetBlurPixel(ID id, float blur_pixel)
 {
@@ -1501,34 +1501,33 @@ void Lights::SetShadowLocalFar(ID id, float slfar)
 {
 	LIGHTS_PRE_COND_ID(id);
 
-		if (ArrIDLights[id]->ShadowCube)
-		{
-			float2 tmpnf;
-			ArrIDLights[id]->ShadowCube->GetNearFar(&tmpnf);
-			tmpnf.y = slfar;
-			ArrIDLights[id]->ShadowCube->SetNearFar(&tmpnf);
-		}
-		else if (ArrIDLights[id]->ShadowSM)
-			ArrIDLights[id]->ShadowSM->SetFar(slfar);
+	if (ArrIDLights[id]->ShadowCube)
+	{
+		float2 tmpnf;
+		ArrIDLights[id]->ShadowCube->GetNearFar(&tmpnf);
+		tmpnf.y = slfar;
+		ArrIDLights[id]->ShadowCube->SetNearFar(&tmpnf);
+	}
+	else if (ArrIDLights[id]->ShadowSM)
+		ArrIDLights[id]->ShadowSM->SetFar(slfar);
 
-
-		SetNullLightCountUpdate(id);
+	SetNullLightCountUpdate(id);
 }
 
 float Lights::GetShadowLocalFar(ID id)
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
-		if (ArrIDLights[id]->ShadowCube)
-		{
-			float2 tmpnf;
-			ArrIDLights[id]->ShadowCube->GetNearFar(&tmpnf);
-			return tmpnf.y;
-		}
-		else if (ArrIDLights[id]->ShadowSM)
-			return ArrIDLights[id]->ShadowSM->GetFar();
-		else
-			return ArrIDLights[id]->Dist;
+	if (ArrIDLights[id]->ShadowCube)
+	{
+		float2 tmpnf;
+		ArrIDLights[id]->ShadowCube->GetNearFar(&tmpnf);
+		return tmpnf.y;
+	}
+	else if (ArrIDLights[id]->ShadowSM)
+		return ArrIDLights[id]->ShadowSM->GetFar();
+	else
+		return ArrIDLights[id]->Dist;
 }
 
 void Lights::SetEnableCubeEdge(ID id, int edge, bool enable)
@@ -1596,6 +1595,40 @@ void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->TypeShadowed = type;
+
+	if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction)
+	{
+		if (!ArrIDLights[id]->ShadowSM)
+		{
+			ArrIDLights[id]->ShadowSM = new ShadowMapTech();
+			ArrIDLights[id]->ShadowSM->Init();
+			ArrIDLights[id]->ShadowSM->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
+			ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
+			ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
+		}
+	}
+	else if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_global)
+	{
+		if (ArrIDLights[id]->IsGlobal)
+		{
+			if (!ArrIDLights[id]->ShadowPSSM)
+			{
+				ArrIDLights[id]->ShadowPSSM = new PSSM();
+				ArrIDLights[id]->ShadowPSSM->Init();
+				ArrIDLights[id]->ShadowPSSM->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
+			}
+		}
+	}
+	else if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_point)
+	{
+		if (!ArrIDLights[id]->ShadowCube)
+		{
+			ArrIDLights[id]->ShadowCube = new ShadowMapCubeTech();
+			ArrIDLights[id]->ShadowCube->Init();
+			ArrIDLights[id]->ShadowCube->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
+			ArrIDLights[id]->ShadowCube->SetNearFar(&float2(0.1f, ArrIDLights[id]->Dist));
+		}
+	}
 
 	SetNullLightCountUpdate(id);
 }

@@ -16,6 +16,10 @@ void SXLevelEditor::LevelNew()
 	char tmpcaption[256];
 	sprintf(tmpcaption, "%s: new level ** ", EDITORS_LEVEL_CAPTION);
 	SXLevelEditor::JobWindow->SetText(tmpcaption);
+	GData::Editors::ActiveGroupType = 0;
+	GData::Editors::ActiveElement = -1;
+	GData::Editors::ActiveGreenSplit = -1;
+	GData::Editors::ActiveGreenObject = -1;
 }
 
 void SXLevelEditor::LevelOpen()
@@ -199,10 +203,10 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
+	GData::Editors::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+
 	if (GData::Editors::ObjAxesHelper->m_bIsDragging == false)
 		return 0;
-
-	GData::Editors::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
 	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && GData::Editors::ActiveElement >= 0)
 	{
@@ -262,6 +266,8 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 			bEnt->SetPos(GData::Editors::ObjAxesHelper->GetPosition());
 		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
 			bEnt->SetOrient(GData::Editors::ObjAxesHelper->GetRotationQ());
+
+		SXLevelEditor::GameUpdatePosRot();
 	}
 	return 0;
 }
@@ -786,7 +792,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 		else if (SXLevelEditor::CheckBoxTBPos->GetHWND() == handle_elem)
 		{
 			if (
-				GData::Editors::ActiveElement &&
+				GData::Editors::ActiveElement >= 0 &&
 				(
 				GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM ||
 				(GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0) ||

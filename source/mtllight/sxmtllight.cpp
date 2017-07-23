@@ -490,11 +490,11 @@ void SML_LigthsSetDist(ID id, float radius_height, bool is_create)
 	ArrLights->ChangeRadiusHeight(id, radius_height, is_create);
 }
 
-void SML_LigthsSetShadow(ID id, bool is_shadow)
+/*void SML_LigthsSetShadow(ID id, bool is_shadow)
 {
 	ML_PRECOND();
 	ArrLights->ChangeShadow(id, is_shadow);
-}
+}*/
 
 
 void SML_LigthsSetBlurPixel(ID id, float blur_pixel)

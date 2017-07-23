@@ -102,6 +102,29 @@ void Level::Load(const char* name)
 	}
 
 	SGCore_LoadTexLoadTextures();
+
+	if (config->KeyExists("level", "ambient_sounds"))
+	{
+		if (!Level::AmbientSounds)
+			Level::AmbientSounds = new LevelAmbientSounds();
+		else
+			Level::AmbientSounds->Clear();
+
+		String listsnds = config->GetKey("level", "ambient_sounds");
+		char tmpallpath[4096];
+		sprintf(tmpallpath, "%s", listsnds.c_str());
+		char* tmppath = strtok(tmpallpath, " ,|");
+		if (tmppath)
+			Level::AmbientSounds->Add(tmppath);
+		while (tmppath != NULL)
+		{
+			tmppath = strtok(NULL, " ,|");
+
+			if (tmppath)
+				Level::AmbientSounds->Add(tmppath);
+		}
+	}
+
 	mem_release(config);
 }
 
@@ -161,6 +184,25 @@ void Level::Save(const char* name)
 	fprintf(file, "physic = %s.phy\n", name);
 	SXPhysics_ExportGeom(tmppathlevel);
 
+	if (Level::AmbientSounds)
+	{
+		char ambientsnds[4096];
+		ambientsnds[0] = 0;
+		char tmpsnd[SOUND_MAX_SIZE_PATH];
+		sprintf(ambientsnds, "ambient_sounds = ");
+		for (int i = 0; i < Level::AmbientSounds->GetCount(); ++i)
+		{
+			tmpsnd[0] = 0;
+			Level::AmbientSounds->Get(i, tmpsnd);
+			sprintf(ambientsnds + strlen(ambientsnds), "%s", tmpsnd);
+
+			if (i + 1 < Level::AmbientSounds->GetCount())
+				sprintf(ambientsnds + strlen(ambientsnds), ", ");
+		}
+
+		fprintf(file, ambientsnds);
+	}
+
 
 	fclose(file);
 }
@@ -179,4 +221,15 @@ void Level::SaveParticles()
 	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
 
 	SPE_EffectSave(tmppathsave);
+}
+
+void Level::Update()
+{
+	if (Level::AmbientSounds)
+	{
+		if (!Level::AmbientSounds->IsPlaying())
+			Level::AmbientSounds->Play();
+
+		Level::AmbientSounds->Update();
+	}
 }

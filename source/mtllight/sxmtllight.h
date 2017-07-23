@@ -333,7 +333,6 @@ SX_LIB_API bool SML_LigthsGetEnableCubeEdge(
 @{*/
 
 SX_LIB_API bool SML_LigthsIsShadow(ID id);					//!< отбрасывает ли свет тени
-SX_LIB_API void SML_LigthsSetShadow(ID id, bool is_shadow);	//!< установка наличия теней, автоматическое определение типа техники теней
 
 SX_LIB_API bool SML_LigthsGet4Or3SplitsG(ID id);				//!< возвращает true В случае если установлено 4 сплита для PSSM, иначе (установлено 3 сплита) false
 SX_LIB_API void SML_LigthsSet4Or3SplitsG(ID id, bool bf4or3);	//!< установка количества сплитов (false - 3, true - 4) для PSSM

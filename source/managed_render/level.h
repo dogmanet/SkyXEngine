@@ -16,6 +16,8 @@ See the license in LICENSE
 #ifndef level_h
 #define level_h
 
+#include <managed_render/level_ambient_sounds.cpp>
+
 //! пространство имен для управления уровнем
 namespace Level
 {
@@ -36,6 +38,10 @@ namespace Level
 
 	void LoadParticles();			//!< загрузка файла с инфой о частицах
 	void SaveParticles();			//!< сохранение файла с инфой о частицах
+
+	LevelAmbientSounds* AmbientSounds = 0;
+
+	void Update();
 
 	//!@}
 };
