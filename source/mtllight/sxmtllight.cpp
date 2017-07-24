@@ -155,15 +155,7 @@ float SML_LigthsGettGCoefSizeDepth()
 	return MLSet::CoefSizeDepthMapForGlobal;
 }
 
-
-/*void SML_LigthsUpdate(float3* const_cam_pos, float4x4* camview)
-{
-	ML_PRECOND();
-
-	MLSet::ConstCurrCamPos = *const_cam_pos;
-	MLSet::MCamView = *camview;
-}*/
-
+//#############################################################################
 
 void SML_LigthsClear()
 {
@@ -179,11 +171,11 @@ long SML_LigthsGetCount()
 	return ArrLights->GetCountLights();
 }
 
-ID SML_LigthsGetIDOfKey(ID key)
+ID SML_LigthsGetIDByKey(ID key)
 {
 	ML_PRECOND(-1);
 
-	return ArrLights->GetIdOfKey(key);
+	return ArrLights->GetIdByKey(key);
 }
 
 void SML_LigthsSave(const char* path)
@@ -198,28 +190,16 @@ void SML_LigthsLoad(const char* path)
 	ArrLights->Load(path);
 }
 
-ID SML_LigthsCreatePoint(float3* center, float power, float dist, float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
+ID SML_LigthsCreatePoint(const float3* center, float power, float dist, const float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
 	return ArrLights->CreatePoint(-1,center, power, dist, color, isglobal, is_shadowed, 0);
 }
 
-ID SML_LigthsCreateDirection(float3* pos, float power, float dist, float3* color, float3* dir, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
+ID SML_LigthsCreateDirection(const float3* pos, float power, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
 	return ArrLights->CreateDirection(-1,pos, power, dist, color, dir, top_radius, angle, is_shadow, 0);
-}
-
-ID SML_LigthsReCreatePoint(ID id, float3* center, float power, float dist, float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
-{
-	ML_PRECOND(-1);
-	return ArrLights->CreatePoint(id, center, power, dist, color, isglobal, is_shadowed, 0);
-}
-
-ID SML_LigthsReCreateDirection(ID id, float3* pos, float power, float dist, float3* color, float3* dir, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
-{
-	ML_PRECOND(-1);
-	return ArrLights->CreateDirection(id, pos, power, dist, color, dir, top_radius, angle, is_shadow, 0);
 }
 
 void SML_LigthsRender(ID id, DWORD timeDelta)
@@ -240,17 +220,11 @@ void SML_LigthsGetColor(ID id, float3* color)
 	ArrLights->GetLightColor(id, color);
 }
 
-void SML_LigthsSetColor(ID id, float3* vec)
+void SML_LigthsSetColor(ID id, const float3* vec)
 {
 	ML_PRECOND();
 	ArrLights->SetLightColor(id, vec);
 }
-/*
-void SML_LigthsGetPosW(long id, float4* pos)
-{
-	ML_PRECOND();
-	ArrLights->GetLightPosW(id, pos);
-}*/
 
 void SML_LigthsGetPos(ID id, float3* vec, bool greal)
 {
@@ -282,7 +256,7 @@ float SML_LigthsGetDist(ID id)
 	return ArrLights->GetLightDist(id);
 }
 
-void SML_LigthsSetPos(ID id, float3* vec, bool greal)
+void SML_LigthsSetPos(ID id, const float3* vec, bool greal)
 {
 	ML_PRECOND();
 	ArrLights->SetLightPos(id, vec, greal);
@@ -294,7 +268,7 @@ void SML_LigthsGetRot(ID id, float3* vec)
 	ArrLights->GetLightRot(id, vec);
 }
 
-void SML_LigthsSetRot(ID id, float3* vec)
+void SML_LigthsSetRot(ID id, const float3* vec)
 {
 	ML_PRECOND();
 	ArrLights->SetLightRot(id, vec);
@@ -306,7 +280,7 @@ void SML_LigthsGetDir(ID id, float3* vec)
 	ArrLights->GetLightDir(id, vec);
 }
 
-void SML_LigthsSetDir(ID id, float3* vec)
+void SML_LigthsSetDir(ID id, const float3* vec)
 {
 	ML_PRECOND();
 	ArrLights->SetLightDir(id, vec);
@@ -315,10 +289,10 @@ void SML_LigthsSetDir(ID id, float3* vec)
 LightsTypeLight SML_LigthsGetType(ID id)
 {
 	ML_PRECOND(LightsTypeLight::ltl_none);
-	return ArrLights->GetType(id);
+	return ArrLights->GetLightType(id);
 }
 
-bool SML_LigthsComVisibleForFrustum(ID id, ISXFrustum* frustum)
+bool SML_LigthsComVisibleForFrustum(ID id, const ISXFrustum* frustum)
 {
 	ML_PRECOND(-1);
 	return ArrLights->ComVisibleForFrustum(id, frustum);
@@ -330,7 +304,7 @@ bool SML_LigthsGetVisibleForFrustum(ID id)
 	return ArrLights->GetVisibleForFrustum(id);
 }
 
-float SML_LigthsComDistFor(ID id, float3* vec)
+float SML_LigthsComDistFor(ID id, const float3* vec)
 {
 	ML_PRECOND(-1);
 	return ArrLights->ComDistFor(id, vec);
@@ -342,28 +316,28 @@ float SML_LigthsGetDistFor(ID id)
 	return ArrLights->GetDistFor(id);
 }
 
-void SML_LigthsComVisibleFrustumDistFor(ISXFrustum* frustum, float3* vec)
+void SML_LigthsComVisibleFrustumDistFor(const ISXFrustum* frustum, const float3* vec)
 {
 	ML_PRECOND();
 	return ArrLights->ComVisibleFrustumDistFor(frustum, vec);
 }
 
-bool SML_LigthsIsEnable(ID id)
+bool SML_LigthsGetEnable(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->IsEnable(id);
+	return ArrLights->GetLightEnable(id);
 }
 
 void SML_LigthsSetEnable(ID id, bool val)
 {
 	ML_PRECOND();
-	return ArrLights->SetEnable(id, val);
+	return ArrLights->SetLightEnable(id, val);
 }
 
-bool SML_LigthsIsShadow(ID id)
+bool SML_LigthsGetShadowed(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->IsShadow(id);
+	return ArrLights->GetLightShadowed(id);
 }
 
 bool SML_LigthsGet4Or3SplitsG(ID id)
@@ -385,46 +359,46 @@ IDirect3DTexture9* SML_LigthsGetShadow()
 	return ArrLights->GetShadow2();
 }
 
-void SML_LigthsNullingShadow()
+void SML_LigthsShadowNull()
 {
 	ML_PRECOND();
-	return ArrLights->NullingShadow();
+	return ArrLights->ShadowNull();
 }
 
-void SML_LigthsInRenderBegin(ID id)
+void SML_LigthsShadowRenderBegin(ID id)
 {
 	ML_PRECOND();
-	ArrLights->InRenderBegin(id);
+	ArrLights->ShadowRenderBegin(id);
 }
 
-void SML_LigthsInRenderEnd(ID id)
+void SML_LigthsShadowRenderEnd(ID id)
 {
 	ML_PRECOND();
-	ArrLights->InRenderEnd(id);
+	ArrLights->ShadowRenderEnd(id);
 }
 
-void SML_LigthsInRenderPre(ID id, int cube)
+void SML_LigthsShadowRenderPre(ID id, int cube)
 {
 	ML_PRECOND();
-	ArrLights->InRenderPre(id, cube);
+	ArrLights->ShadowRenderPre(id, cube);
 }
 
-void SML_LigthsInRenderPost(ID id, int cube)
+void SML_LigthsShadowRenderPost(ID id, int cube)
 {
 	ML_PRECOND();
-	ArrLights->InRenderPost(id, cube);
+	ArrLights->ShadowRenderPost(id, cube);
 }
 
 ISXFrustum* SML_LigthsGetFrustum(ID id, int how)
 {
 	ML_PRECOND(0);
-	return ArrLights->GetFrustum(id, how);
+	return ArrLights->GetLightFrustum(id, how);
 }
 
-void SML_LigthsUpdateFrustumsG(ID id, int split, float3* pos, float3* dir)
+void SML_LigthsUpdateGFrustums(ID id, int split, const float3* pos, const float3* dir)
 {
 	ML_PRECOND();
-	return ArrLights->UpdateFrustumsG(id, split, pos,dir);
+	return ArrLights->UpdateLightGFrustums(id, split, pos, dir);
 }
 
 void SML_LigthsShadowSetShaderOfTypeMat(ID id, int typemat, float4x4* wmat)
@@ -433,16 +407,16 @@ void SML_LigthsShadowSetShaderOfTypeMat(ID id, int typemat, float4x4* wmat)
 	ArrLights->InitShaderOfTypeMaterial(id, typemat, wmat);
 }
 
-void SML_LigthsGenShadow(ID id)
+void SML_LigthsShadowGen(ID id)
 {
 	ML_PRECOND();
-	ArrLights->GenShadow2(id);
+	ArrLights->ShadowGen2(id);
 }
 
-void SML_LigthsSoftShadow(bool randomsam, float size, bool isfirst)
+void SML_LigthsShadowSoft(bool randomsam, float size, bool isfirst)
 {
 	ML_PRECOND();
-	ArrLights->SoftShadow(randomsam, size, isfirst);
+	ArrLights->ShadowSoft(randomsam, size, isfirst);
 }
 
 
@@ -475,37 +449,43 @@ void SML_LigthsSetName(ID id, const char* name)
 void SML_LigthsSetAngle(ID id, float angle)
 {
 	ML_PRECOND();
-	ArrLights->ChangeAngle(id, angle, true);
+	ArrLights->SetLightAngle(id, angle, true);
 }
 
 void SML_LigthsSetTopRadius(ID id, float top_radius)
 {
 	ML_PRECOND();
-	ArrLights->ChangeTopRadius(id, top_radius);
+	ArrLights->SetLightTopRadius(id, top_radius);
 }
 
 void SML_LigthsSetDist(ID id, float radius_height, bool is_create)
 {
 	ML_PRECOND();
-	ArrLights->ChangeRadiusHeight(id, radius_height, is_create);
+	ArrLights->SetLightDist(id, radius_height, is_create);
 }
 
-/*void SML_LigthsSetShadow(ID id, bool is_shadow)
-{
-	ML_PRECOND();
-	ArrLights->ChangeShadow(id, is_shadow);
-}*/
 
-
-void SML_LigthsSetBlurPixel(ID id, float blur_pixel)
-{
-	ML_PRECOND();
-	ArrLights->SetBlurPixel(id, blur_pixel);
-}
-float SML_LigthsGetBlurPixel(ID id)
+float SML_LigthsGetShadowBias(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetBlurPixel(id);
+	return ArrLights->GetShadowBias(id);
+}
+
+void SML_LigthsSetShadowBias(ID id, float bias)
+{
+	ML_PRECOND();
+	return ArrLights->SetShadowBias(id, bias);
+}
+
+void SML_LigthsSetShadowBlurPixel(ID id, float blur_pixel)
+{
+	ML_PRECOND();
+	ArrLights->SetShadowBlurPixel(id, blur_pixel);
+}
+float SML_LigthsGetShadowBlurPixel(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrLights->GetShadowBlurPixel(id);
 }
 void SML_LigthsSetShadowLocalNear(ID id, float slnear)
 {
@@ -527,15 +507,15 @@ float SML_LigthsGetShadowLocalFar(ID id)
 	ML_PRECOND(-1);
 	return ArrLights->GetShadowLocalFar(id);
 }
-void SML_LigthsSetEnableCubeEdge(ID id, int edge, bool enable)
+void SML_LigthsSetCubeEdgeEnable(ID id, int edge, bool enable)
 {
 	ML_PRECOND();
-	ArrLights->SetEnableCubeEdge(id, edge, enable);
+	ArrLights->SetLightCubeEdgeEnable(id, edge, enable);
 }
-bool SML_LigthsGetEnableCubeEdge(ID id, int edge)
+bool SML_LigthsGetCubeEdgeEnable(ID id, int edge)
 {
 	ML_PRECOND(false);
-	return ArrLights->GetEnableCubeEdge(id, edge);
+	return ArrLights->GetLightCubeEdgeEnable(id, edge);
 }
 
 
@@ -549,18 +529,6 @@ float SML_LigthsGetTopRadius(ID id)
 {
 	ML_PRECOND(-1);
 	return ArrLights->GetLightTopRadius(id);
-}
-
-float SML_LigthsGetBias(ID id)
-{
-	ML_PRECOND(-1);
-	return ArrLights->GetLightBias(id);
-}
-
-void SML_LigthsSetBias(ID id, float bias)
-{
-	ML_PRECOND();
-	return ArrLights->SetLightBias(id, bias);
 }
 
 ID SML_LigthsGetIDArr(ID id, ID inid, int how)
@@ -587,31 +555,31 @@ LightsTypeShadow SML_LigthsGetTypeShadowed(ID id)
 	return ArrLights->GetLightTypeShadowed(id);
 }
 
-bool SML_LigthsUpdateCountUpdate(ID id, float3* viewpos, int ghow)
+bool SML_LigthsCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 {
 	ML_PRECOND(false);
-	return ArrLights->UpdateLightCountUpdate(id, viewpos, ghow);
+	return ArrLights->LightCountUpdateUpdate(id, viewpos, ghow);
 }
 
-bool SML_LigthsAllowedRender(ID id, int ghow)
+bool SML_LigthsCountUpdateAllowed(ID id, int ghow)
 {
 	ML_PRECOND(false);
-	return ArrLights->AllowedRenderLight(id, ghow);
+	return ArrLights->LightCountUpdateAllowed(id, ghow);
 }
 
-void SML_LigthsSetNullCountUpdate(ID id)
+void SML_LigthsCountUpdateNull(ID id)
 {
 	ML_PRECOND();
-	ArrLights->SetNullLightCountUpdate(id);
+	ArrLights->LightCountUpdateNull(id);
 }
 
-void SML_LigthsComToneMapping(DWORD timeDelta, float factor_adapted)
+void SML_LigthsToneMappingCom(DWORD timeDelta, float factor_adapted)
 {
 	ML_PRECOND();
-	ArrLights->ComToneMapping(timeDelta, factor_adapted);
+	ArrLights->ToneMappingCom(timeDelta, factor_adapted);
 }
 
-long SML_LigthsDelGetCount()
+int SML_LigthsDelGetCount()
 {
 	ML_PRECOND(-1);
 	return ArrLights->DelGetCount();
@@ -635,7 +603,7 @@ ID SML_LigthsDelGetIDArr(ID key, ID inid, int how)
 	return ArrLights->DelGetIDArr(key, inid, how);
 }
 
-////////
+//#############################################################################
 
 ID SML_DSGetRT_ID(DS_RT type)
 {
@@ -680,7 +648,7 @@ IDirect3DTexture9* SML_DSGetRT(DS_RT type)
 		return 0;
 }
 
-////////
+//#############################################################################
 
 ID SML_MtlLoad(const char* name, MtlTypeModel mtl_type)
 {
@@ -709,13 +677,6 @@ void SML_MtlSetTypeModel(ID id, MtlTypeModel type_model)
 
 	ArrMaterials->SetTypeModel(id, type_model);
 }
-
-/*void SML_MtlUpdate(DWORD timeDelta)
-{
-	ML_PRECOND();
-
-	ArrMaterials->Update(timeDelta);
-}*/
 
 long SML_MtlGetCount()
 {
@@ -853,18 +814,6 @@ void SML_MtlDelRefClear()
 	ML_PRECOND();
 	ArrMaterials->DelRefAllDel();
 }
-
-/*void SML_MtlRefSetPlane(ID id, D3DXPLANE* plane)
-{
-	ML_PRECOND();
-	ArrMaterials->MtlRefSetPlane(id, plane);
-}*/
-
-/*void SML_MtlRefSetCenter(ID id, float3_t* center)
-{
-	ML_PRECOND();
-	ArrMaterials->MtlRefSetCenter(id, center);
-}*/
 
 void SML_MtlRefSetMinMax(ID id, float3_t* min, float3_t* max)
 {

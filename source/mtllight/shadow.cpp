@@ -187,7 +187,7 @@ void PSSM::Init()
 }
 
 
-void PSSM::UpdateFrustums(int split, float3* poscam, float3* dircam)
+void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 {
 		Frustums[split]->Update(&(Views[split]), &(Projs[split]));
 
@@ -512,7 +512,7 @@ ShadowMapTech::~ShadowMapTech()
 	mem_release_del(OldColorSurface);
 }
 
-void ShadowMapTech::SetPosition(float3* pos)
+void ShadowMapTech::SetPosition(const float3* pos)
 {
 	Position = *pos;
 }
@@ -522,7 +522,7 @@ void ShadowMapTech::GetPosition(float3* pos)
 	*pos = Position;
 }
 
-void ShadowMapTech::SetDirection(float3* dir)
+void ShadowMapTech::SetDirection(const float3* dir)
 {
 	Direction = *dir;
 }
@@ -532,7 +532,7 @@ void ShadowMapTech::GetDirection(float3* dir)
 	*dir = Direction;
 }
 
-void ShadowMapTech::SetAngleNearFar(float3* anf)
+void ShadowMapTech::SetAngleNearFar(const float3* anf)
 {
 	AngleNearFar = *anf;
 }

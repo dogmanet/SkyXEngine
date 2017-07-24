@@ -12,7 +12,7 @@ Lights::Lights()
 
 Lights::~Lights()
 {
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
+	for (int i = 0; i < ArrKeyLights.size(); ++i)
 	{
 		mem_delete(ArrKeyLights[i]);
 	}
@@ -43,7 +43,7 @@ void Lights::Save(const char* path)
 	fprintf(file, "%s", "[light]\n");
 	fprintf(file, "%s%d%s", "count = ", ArrKeyLights.size(), "\n");
 	fprintf(file, "%s", "\n");
-	long tmpnumll = 0;
+	int tmpnumll = 0;
 
 
 	for (DWORD i = 0; i<ArrKeyLights.size(); i++)
@@ -77,7 +77,7 @@ void Lights::Save(const char* path)
 
 		if (ArrKeyLights[i]->TypeLight != LightsTypeLight::ltl_global)
 		{
-			fprintf(file, "%s%f%s", "shadow_bias = ", GetLightBias(i), "\n");
+			fprintf(file, "%s%f%s", "shadow_bias = ", GetShadowBias(i), "\n");
 			fprintf(file, "%s%f%s", "dist = ", tmpdist, "\n");
 			fprintf(file, "%s%f%s", "dist_for_end_shadow = ", GetShadowLocalFar(i), "\n");
 
@@ -91,12 +91,12 @@ void Lights::Save(const char* path)
 				}
 				else
 				{
-					fprintf(file, "%s%d%s", "enable_edge_0 = ", GetEnableCubeEdge(i, 0), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_1 = ", GetEnableCubeEdge(i, 1), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_2 = ", GetEnableCubeEdge(i, 2), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_3 = ", GetEnableCubeEdge(i, 3), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_4 = ", GetEnableCubeEdge(i, 4), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_5 = ", GetEnableCubeEdge(i, 5), "\n");
+					fprintf(file, "%s%d%s", "enable_edge_0 = ", GetLightCubeEdgeEnable(i, 0), "\n");
+					fprintf(file, "%s%d%s", "enable_edge_1 = ", GetLightCubeEdgeEnable(i, 1), "\n");
+					fprintf(file, "%s%d%s", "enable_edge_2 = ", GetLightCubeEdgeEnable(i, 2), "\n");
+					fprintf(file, "%s%d%s", "enable_edge_3 = ", GetLightCubeEdgeEnable(i, 3), "\n");
+					fprintf(file, "%s%d%s", "enable_edge_4 = ", GetLightCubeEdgeEnable(i, 4), "\n");
+					fprintf(file, "%s%d%s", "enable_edge_5 = ", GetLightCubeEdgeEnable(i, 5), "\n");
 				}
 			}
 			tmpnumll++;
@@ -124,7 +124,7 @@ void Lights::Load(const char* path)
 		return;
 	}
 
-	long CountLight = String(config->GetKey("light", "count")).ToInt();
+	int CountLight = String(config->GetKey("light", "count")).ToInt();
 
 	char text_SectionLight[CONFIG_SECTION_MAX_LEN];
 	char textsource[1024];
@@ -301,12 +301,12 @@ void Lights::Load(const char* path)
 				false,
 				tmpshadow,0);
 
-			SetEnableCubeEdge(tmpidcr, 0, tmp_enable_edge[0]);
-			SetEnableCubeEdge(tmpidcr, 1, tmp_enable_edge[1]);
-			SetEnableCubeEdge(tmpidcr, 2, tmp_enable_edge[2]);
-			SetEnableCubeEdge(tmpidcr, 3, tmp_enable_edge[3]);
-			SetEnableCubeEdge(tmpidcr, 4, tmp_enable_edge[4]);
-			SetEnableCubeEdge(tmpidcr, 5, tmp_enable_edge[5]);
+			SetLightCubeEdgeEnable(tmpidcr, 0, tmp_enable_edge[0]);
+			SetLightCubeEdgeEnable(tmpidcr, 1, tmp_enable_edge[1]);
+			SetLightCubeEdgeEnable(tmpidcr, 2, tmp_enable_edge[2]);
+			SetLightCubeEdgeEnable(tmpidcr, 3, tmp_enable_edge[3]);
+			SetLightCubeEdgeEnable(tmpidcr, 4, tmp_enable_edge[4]);
+			SetLightCubeEdgeEnable(tmpidcr, 5, tmp_enable_edge[5]);
 		}
 		//если направленный
 		else if (tmptype == LightsTypeLight::ltl_direction)
@@ -382,7 +382,7 @@ void Lights::Load(const char* path)
 
 		if (tmptype != LightsTypeLight::ltl_global)
 		{
-			SetLightBias(tmpidcr, tmpshadowbias);
+			SetShadowBias(tmpidcr, tmpshadowbias);
 			
 			if (distforendshadow > 0)
 				SetShadowLocalFar(tmpidcr, distforendshadow);
@@ -396,7 +396,7 @@ void Lights::Load(const char* path)
 			}
 		}
 
-		SetEnable(tmpidcr, tmpenable);
+		SetLightEnable(tmpidcr, tmpenable);
 		SetLightName(tmpidcr, tmpname);
 	}
 
@@ -536,7 +536,7 @@ Lights::Light::~Light()
 
 void Lights::OnLostDevice()
 {
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
+	for (int i = 0; i < ArrKeyLights.size(); ++i)
 	{
 		if (ArrKeyLights[i]->ShadowSM)
 			ArrKeyLights[i]->ShadowSM->OnLostDevice();
@@ -549,7 +549,7 @@ void Lights::OnLostDevice()
 
 void Lights::OnResetDevice()
 {
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
+	for (int i = 0; i < ArrKeyLights.size(); ++i)
 	{
 		if (ArrKeyLights[i]->ShadowSM)
 			ArrKeyLights[i]->ShadowSM->OnResetDevice();
@@ -558,14 +558,14 @@ void Lights::OnResetDevice()
 		else if (ArrKeyLights[i]->ShadowPSSM)
 			ArrKeyLights[i]->ShadowPSSM->OnResetDevice();
 
-		SetNullLightCountUpdate(i);
+		LightCountUpdateNull(i);
 	}
 }
 
 inline ID Lights::AddLight(Light* obj)
 {
 	ID idadd = -1;
-	for (long i = 0; i < ArrIDLights.size(); ++i)
+	for (int i = 0; i < ArrIDLights.size(); ++i)
 	{
 		if (ArrIDLights[i] == 0)
 		{
@@ -587,14 +587,14 @@ inline ID Lights::AddLight(Light* obj)
 	return idadd;
 }
 
-inline long Lights::GetCountLights()
+int Lights::GetCountLights() const 
 {
 	return ArrKeyLights.size();
 }
 
 void Lights::Clear()
 {
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
+	for (int i = 0; i < ArrKeyLights.size(); ++i)
 	{
 		mem_delete(ArrKeyLights[i]);
 	}
@@ -611,7 +611,7 @@ void Lights::DeleteLight(ID id)
 	if (ArrIDLights[id]->IsGlobal)
 		GlobalLight = -1;
 
-	for (long i = ArrIDLights[id]->Key + 1; i < ArrKeyLights.size(); ++i)
+	for (int i = ArrIDLights[id]->Key + 1; i < ArrKeyLights.size(); ++i)
 	{
 		--(ArrKeyLights[i]->Key);
 	}
@@ -620,7 +620,6 @@ void Lights::DeleteLight(ID id)
 	ArrKeyDelLights.push_back(ArrIDLights[id]);
 	ArrKeyLights.erase(ArrIDLights[id]->Key);
 	ArrIDLights[id] = 0;
-	//mem_delete(ArrIDLights[id]);
 }
 
 char* Lights::GetLightName(ID id)
@@ -635,7 +634,7 @@ void Lights::SetLightName(ID id, const char* name)
 	sprintf(ArrIDLights[id]->Name, "%s", name);
 }
 
-ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* color, bool isglobal, bool is_shadowed, const char* bound_volume)
+ID Lights::CreatePoint(ID id, const float3* center, float power, float dist, const float3* color, bool isglobal, bool is_shadow, const char* bound_volume)
 {
 	if (GlobalLight != -1 && isglobal)
 	{
@@ -679,25 +678,26 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 			D3DXCreateSphere(MLSet::DXDevice, tmplight->Dist, 20, 20, &tmplight->Mesh, 0);
 		}
 
-		if (isglobal && is_shadowed)
+		if (isglobal && is_shadow)
 		{
 			tmplight->ShadowPSSM = new PSSM();
 			tmplight->ShadowPSSM->Init();
-			//tmplight->IsShadow = true;
 			tmplight->ShadowPSSM->SetPosition(&float3(center->x, center->y, center->z));
 		}
-		else if (is_shadowed)
+		else if (is_shadow)
 		{
 			tmplight->ShadowCube = new ShadowMapCubeTech();
 			tmplight->ShadowCube->Init();
 			tmplight->ShadowCube->SetPosition(&float3(center->x, center->y, center->z));
 			tmplight->ShadowCube->SetNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->Dist));
-			//tmplight->IsShadow = true;
-
+			
 		}
-		/*else
-			tmplight->IsShadow = false;*/
 
+		if (is_shadow)
+			tmplight->TypeShadowed = LightsTypeShadow::lts_dynamic;
+		else
+			tmplight->TypeShadowed = LightsTypeShadow::lts_none;
+		
 	ID tmpid = id;
 
 	if (id == -1)
@@ -719,7 +719,7 @@ ID Lights::CreatePoint(ID id, float3* center, float power, float dist, float3* c
 	return tmpid;
 }
 
-ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* color, float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume)
+ID Lights::CreateDirection(ID id, const float3* pos, float power, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume)
 {
 	Light* tmplight = 0;
 
@@ -751,7 +751,8 @@ ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* 
 	tmplight->TopBottomRadius = float2_t(top_radius, bottom_radius);
 	tmplight->Color = *color;
 	tmplight->Direction = *dir;
-	float3 f(0, -1, 0);
+
+	static float3 f = LIGHTS_DIR_BASE;
 	float3 a = SMVector3Cross(f, *dir);
 	float ang = acosf(SMVector3Dot(f, *dir));
 	tmplight->MatRot = SMMatrixRotationAxis(a, ang);
@@ -765,7 +766,6 @@ ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* 
 	tmplight->WorldMat = tmplight->MatRot * mpos;
 
 	tmplight->Position = float3(pos->x, pos->y, pos->z);
-	//tmplight->Direction = *dir;
 	
 	if (is_shadow)
 	{
@@ -775,7 +775,11 @@ ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* 
 		tmplight->ShadowSM->SetDirection(dir);
 		tmplight->ShadowSM->SetAngleNearFar(&float3(angle, LIGHTS_LOCAL_STD_NEAR, dist));
 	}
-	//tmplight->IsShadow = is_shadow;
+	
+	if (is_shadow)
+		tmplight->TypeShadowed = LightsTypeShadow::lts_dynamic;
+	else
+		tmplight->TypeShadowed = LightsTypeShadow::lts_none;
 
 	tmplight->BoundVolume = SGCore_CrBound();
 	IDirect3DVertexBuffer9* vertexbuf;
@@ -783,7 +787,7 @@ ID Lights::CreateDirection(ID id, float3* pos, float power, float dist, float3* 
 	tmplight->BoundVolume->CalcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
 	mem_release(vertexbuf);
 
-	long tmpid = id;
+	ID tmpid = id;
 
 	if (id == -1)
 		tmpid = AddLight(tmplight);
@@ -801,27 +805,26 @@ void Lights::Render(ID id, DWORD timeDelta)
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (ArrIDLights[id]->Mesh->GetNumFaces() / 3));
 }
 
-ID Lights::GetLightGlobal()
+ID Lights::GetLightGlobal() const
 {
 	return GlobalLight;
 }
 
-void Lights::GetLightColor(ID id, float3* vec)
+void Lights::GetLightColor(ID id, float3* vec) const
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	(*vec) = ArrIDLights[id]->Color;
 }
 
-void Lights::SetLightColor(ID id, float3* vec)
+void Lights::SetLightColor(ID id, const float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->Color = *vec;
-	//SetNullLightCountUpdate(id);
 }
 
-void Lights::GetLightPos(ID id, float3* vec, bool greal)
+void Lights::GetLightPos(ID id, float3* vec, bool greal) const
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -839,14 +842,14 @@ void Lights::GetLightPos(ID id, float3* vec, bool greal)
 	}
 }
 
-float Lights::GetLightPower(ID id)
+float Lights::GetLightPower(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
 	return ArrIDLights[id]->Power;
 }
 
-float Lights::GetLightPowerDiv(ID id)
+float Lights::GetLightPowerDiv(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -858,17 +861,51 @@ void Lights::SetLightPower(ID id, float power)
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->Power = power;
-	//SetNullLightCountUpdate(id);
 }
 
-float Lights::GetLightDist(ID id)
+float Lights::GetLightDist(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
 	return ArrIDLights[id]->Dist;
 }
 
-void Lights::SetLightPos(ID id, float3* vec, bool greal)
+void Lights::SetLightDist(ID id, float radius_height, bool is_create)
+{
+	LIGHTS_PRE_COND_ID(id);
+
+	ArrIDLights[id]->Dist = radius_height;
+	if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction && is_create)
+	{
+		ArrIDLights[id]->TopBottomRadius.y = ArrIDLights[id]->TopBottomRadius.x + radius_height * tanf(ArrIDLights[id]->Angle / 2.f);
+		mem_release_del(ArrIDLights[id]->Mesh);
+		SGCore_FCreateCone(ArrIDLights[id]->TopBottomRadius.x, ArrIDLights[id]->TopBottomRadius.y, radius_height, &ArrIDLights[id]->Mesh, 32);
+	}
+
+	if (ArrIDLights[id]->ShadowSM)
+		ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
+
+	if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_point && is_create)
+	{
+		mem_release_del(ArrIDLights[id]->Mesh);
+		D3DXCreateSphere(MLSet::DXDevice, radius_height, 20, 20, &ArrIDLights[id]->Mesh, 0);
+	}
+
+	if (ArrIDLights[id]->ShadowCube)
+		ArrIDLights[id]->ShadowCube->SetNearFar(&float2(0.1, ArrIDLights[id]->Dist));
+
+	if (ArrIDLights[id]->Mesh)
+	{
+		IDirect3DVertexBuffer9* vertexbuf;
+		ArrIDLights[id]->Mesh->GetVertexBuffer(&vertexbuf);
+		ArrIDLights[id]->BoundVolume->CalcBound(vertexbuf, ArrIDLights[id]->Mesh->GetNumVertices(), ArrIDLights[id]->Mesh->GetNumBytesPerVertex());
+		mem_release_del(vertexbuf);
+	}
+
+	LightCountUpdateNull(id);
+}
+
+void Lights::SetLightPos(ID id, const float3* vec, bool greal)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -899,38 +936,12 @@ void Lights::SetLightPos(ID id, float3* vec, bool greal)
 	}
 	else
 	{
-			/*if (for_mesh)
-			{
-				if (ArrIDLights[id]->Source && ArrIDLights[id]->Source->IdGroupBind > -1)
-				{
-					ArrIDLights[id]->Source->Position.x = (*vec).x;
-					ArrIDLights[id]->Source->Position.y = (*vec).y;
-					ArrIDLights[id]->Source->Position.z = (*vec).z;
-
-					ArrIDLights[id]->Source->Position = (*vec) - ArrIDLights[id]->Source->LocalPos;
-
-					float determ = 0;
-					ArrIDLights[id]->Source->WorldMatLocal = ArrIDLights[id]->Source->MatRot * SMMatrixTranslation(ArrIDLights[id]->Source->Position);
-					ArrIDLights[id]->Source->WorldMat = ArrIDLights[id]->WorldMat * ArrIDLights[id]->Source->WorldMatLocal;
-
-
-					ArrIDLights[id]->Position.x = (*vec).x - ArrIDLights[id]->Source->LocalPos.x;
-					ArrIDLights[id]->Position.y = (*vec).y - ArrIDLights[id]->Source->LocalPos.y;
-					ArrIDLights[id]->Position.z = (*vec).z - ArrIDLights[id]->Source->LocalPos.z;
-
-					float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-					ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
-				}
-			}
-			else
-			{*/
 				ArrIDLights[id]->Position.x = (*vec).x;
 				ArrIDLights[id]->Position.y = (*vec).y;
 				ArrIDLights[id]->Position.z = (*vec).z;
 
 				float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
 				ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
-			//}
 
 			if (ArrIDLights[id]->ShadowSM)
 			{
@@ -944,24 +955,24 @@ void Lights::SetLightPos(ID id, float3* vec, bool greal)
 			}
 	}
 
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
 
-void Lights::GetLightRot(ID id, float3* vec)
+void Lights::GetLightRot(ID id, float3* vec) const
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	*vec = ArrIDLights[id]->Rotation;
 }
 
-void Lights::SetLightRot(ID id, float3* vec)
+void Lights::SetLightRot(ID id, const  float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	float3 tmpdir = SMEulerToVec((*vec));
 
-	float3 f(0, -1, 0);
+	static float3 f = LIGHTS_DIR_BASE;
 	float3 a = SMVector3Cross(f, tmpdir);
 	float ang = acosf(SMVector3Dot(f, tmpdir));
 	float4x4 tmpmatrot = SMMatrixRotationAxis(a, ang);
@@ -973,48 +984,36 @@ void Lights::SetLightRot(ID id, float3* vec)
 	ArrIDLights[id]->Direction = tmpdir;
 
 	tmpl->MatRot = tmpmatrot;
-	//tmpl->MatRotL = SMMatrixIdentity() * tmpl->MatRot;
-	//tmpl->MatRot = SMMatrixIdentity() * tmpl->MatRotL;
 	float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
 	ArrIDLights[id]->WorldMat = tmpl->MatRot * mpos;
-
 
 	if (ArrIDLights[id]->ShadowSM)
 		ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
 
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
-void Lights::GetLightDir(ID id, float3* vec)
+void Lights::GetLightDir(ID id, float3* vec) const
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	*vec = ArrIDLights[id]->Direction;
 }
 
-void Lights::SetLightDir(ID id, float3* vec)
+void Lights::SetLightDir(ID id, const  float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	float3 tmpdir = *vec;
 
-	float3 f(0, -1, 0);
+	static float3 f = LIGHTS_DIR_BASE;
 	float3 a = SMVector3Cross(f, tmpdir);
 	float ang = acosf(SMVector3Dot(f, tmpdir));
-	//ArrIDLights[id]->MatRot = SMMatrixRotationAxis(a, ang);
-
-	//ArrIDLights[id]->Rotation = SMMatrixToEuler(ArrIDLights[id]->MatRot);
+	
 	SetLightRot(id, &SMMatrixToEuler(SMMatrixRotationAxis(a, ang)));
-	/*float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-	ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
-
-	if (ArrIDLights[id]->ShadowSM)
-	ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
-
-	SetNullLightCountUpdate(id);*/
 }
 
-void Lights::SetLightBias(ID id, float val)
+void Lights::SetShadowBias(ID id, float val)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1023,10 +1022,10 @@ void Lights::SetLightBias(ID id, float val)
 		else if (ArrIDLights[id]->ShadowCube)
 			ArrIDLights[id]->ShadowCube->SetBias(val);
 
-		SetNullLightCountUpdate(id);
+		LightCountUpdateNull(id);
 }
 
-float Lights::GetLightBias(ID id)
+float Lights::GetShadowBias(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -1036,7 +1035,7 @@ float Lights::GetLightBias(ID id)
 		return ArrIDLights[id]->ShadowCube->GetBias();
 }
 
-float Lights::GetLightTopRadius(ID id)
+float Lights::GetLightTopRadius(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -1044,7 +1043,7 @@ float Lights::GetLightTopRadius(ID id)
 		return ArrIDLights[id]->TopBottomRadius.x;
 }
 
-float Lights::GetLightAngle(ID id)
+float Lights::GetLightAngle(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -1053,8 +1052,7 @@ float Lights::GetLightAngle(ID id)
 }
 
 
-
-bool Lights::ComVisibleForFrustum(ID id, ISXFrustum* frustum)
+bool Lights::ComVisibleForFrustum(ID id, const ISXFrustum* frustum)
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
@@ -1073,16 +1071,16 @@ bool Lights::GetVisibleForFrustum(ID id)
 	return ArrIDLights[id]->IsVisibleFor;
 }
 
-float Lights::ComDistFor(ID id, float3* vec)
+float Lights::ComDistFor(ID id, const float3* vec)
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
 	return SMVector3Distance((float3)ArrIDLights[id]->Position, *vec);
 }
 
-void Lights::ComVisibleFrustumDistFor(ISXFrustum* frustum, float3* vec)
+void Lights::ComVisibleFrustumDistFor(const ISXFrustum* frustum, const float3* vec)
 {
-	for (long i = 0; i < ArrKeyLights.size(); ++i)
+	for (int i = 0; i < ArrKeyLights.size(); ++i)
 	{
 		ArrKeyLights[i]->DistFor = SMVector3Distance((float3)ArrKeyLights[i]->Position, *vec);
 		ArrKeyLights[i]->IsVisibleFor = ComVisibleForFrustum(ArrKeyLights[i]->Id, frustum);
@@ -1102,41 +1100,35 @@ IDirect3DTexture9* Lights::GetShadow2()
 	return SGCore_RTGetTexture((HowShadow == 1 ? ShadowMap2 : ShadowMap));
 }
 
-bool Lights::IsEnable(ID id)
+bool Lights::GetLightEnable(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
 	return ArrIDLights[id]->IsEnable;
 }
 
-void Lights::SetEnable(ID id, bool val)
+void Lights::SetLightEnable(ID id, bool val)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->IsEnable = val;
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
-bool Lights::IsShadow(ID id)
+bool Lights::GetLightShadowed(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
-	return (/*ArrIDLights[id]->IsShadow && */ArrIDLights[id]->TypeShadowed != LightsTypeShadow::lts_none);
+	return (ArrIDLights[id]->TypeShadowed != LightsTypeShadow::lts_none);
 }
 
-LightsTypeLight Lights::GetType(ID id)
+LightsTypeLight Lights::GetLightType(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, LightsTypeLight::ltl_none);
 	return ArrIDLights[id]->TypeLight;
-	/*if (ArrIDLights[id]->ShadowPSSM)
-		return LIGHTS_TYPE_GLOBAL;
-	else if (ArrIDLights[id]->ShadowSM)
-		return LIGHTS_TYPE_DIRECTION;
-	else if (ArrIDLights[id]->ShadowCube)
-		return LIGHTS_TYPE_POINT;*/
 }
 
-void Lights::InRenderBegin(ID id)
+void Lights::ShadowRenderBegin(ID id)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1148,7 +1140,7 @@ void Lights::InRenderBegin(ID id)
 		ArrIDLights[id]->ShadowPSSM->Begin();
 }
 
-void Lights::InRenderEnd(ID id)
+void Lights::ShadowRenderEnd(ID id)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1160,7 +1152,7 @@ void Lights::InRenderEnd(ID id)
 		ArrIDLights[id]->ShadowPSSM->End();
 }
 
-void Lights::InRenderPre(ID id, int cube)
+void Lights::ShadowRenderPre(ID id, int cube)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1170,7 +1162,7 @@ void Lights::InRenderPre(ID id, int cube)
 		ArrIDLights[id]->ShadowPSSM->PreRender(cube);
 }
 
-void Lights::InRenderPost(ID id, int cube)
+void Lights::ShadowRenderPost(ID id, int cube)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1251,7 +1243,7 @@ void Lights::InitShaderOfTypeMaterial(ID id, int typemat, float4x4* wmat)
 	}
 }
 
-ISXFrustum* Lights::GetFrustum(ID id, int how)
+ISXFrustum* Lights::GetLightFrustum(ID id, int how) const
 {
 	LIGHTS_PRE_COND_ID(id, 0);
 
@@ -1272,7 +1264,7 @@ ISXFrustum* Lights::GetFrustum(ID id, int how)
 		}
 }
 
-ISXFrustum* Lights::GetFrustumG(ID id, int split)
+ISXFrustum* Lights::GetLightFrustumG(ID id, int split) const
 {
 	LIGHTS_PRE_COND_ID(id, 0);
 
@@ -1280,14 +1272,14 @@ ISXFrustum* Lights::GetFrustumG(ID id, int split)
 		return ArrIDLights[id]->ShadowPSSM->Frustums[split];
 }
 
-void Lights::UpdateFrustumsG(ID id, int split, float3* pos, float3* dir)
+void Lights::UpdateLightGFrustums(ID id, int split, const float3* pos, const float3* dir)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->ShadowPSSM->UpdateFrustums(split, pos, dir);
 }
 
-void Lights::GenShadow2(ID id)
+void Lights::ShadowGen2(ID id)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1299,7 +1291,7 @@ void Lights::GenShadow2(ID id)
 		ArrIDLights[id]->ShadowPSSM->GenShadow2(SGCore_RTGetTexture(ShadowMap));
 }
 
-void Lights::NullingShadow()
+void Lights::ShadowNull()
 {
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
@@ -1320,7 +1312,7 @@ void Lights::NullingShadow()
 	HowShadow = 0;
 }
 
-void Lights::ChangeAngle(ID id, float angle, bool is_create)
+void Lights::SetLightAngle(ID id, float angle, bool is_create)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1331,7 +1323,6 @@ void Lights::ChangeAngle(ID id, float angle, bool is_create)
 			ArrIDLights[id]->TopBottomRadius.y = ArrIDLights[id]->TopBottomRadius.x + ArrIDLights[id]->Dist * tanf(angle / 2.f);
 			ArrIDLights[id]->Angle = angle;
 			SGCore_FCreateCone(ArrIDLights[id]->TopBottomRadius.x, ArrIDLights[id]->TopBottomRadius.y, ArrIDLights[id]->Dist, &ArrIDLights[id]->Mesh, 32);
-			//ArrIDLights[id]->PathVolume[0] = 0;
 		}
 
 		if (ArrIDLights[id]->Mesh)
@@ -1345,10 +1336,10 @@ void Lights::ChangeAngle(ID id, float angle, bool is_create)
 		if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction && ArrIDLights[id]->ShadowSM)
 			ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(angle, 0.1, ArrIDLights[id]->Dist));
 
-		SetNullLightCountUpdate(id);
+		LightCountUpdateNull(id);
 }
 
-void Lights::ChangeTopRadius(ID id, float top_radius)
+void Lights::SetLightTopRadius(ID id, float top_radius)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1357,7 +1348,6 @@ void Lights::ChangeTopRadius(ID id, float top_radius)
 			mem_release_del(ArrIDLights[id]->Mesh);
 			ArrIDLights[id]->TopBottomRadius.x = top_radius;
 			SGCore_FCreateCone(top_radius, ArrIDLights[id]->TopBottomRadius.y, ArrIDLights[id]->Dist, &ArrIDLights[id]->Mesh, 32);
-			//ArrIDLights[id]->PathVolume[0] = 0;
 		}
 
 		if (ArrIDLights[id]->Mesh)
@@ -1368,88 +1358,10 @@ void Lights::ChangeTopRadius(ID id, float top_radius)
 			mem_release_del(vertexbuf);
 		}
 
-		SetNullLightCountUpdate(id);
+		LightCountUpdateNull(id);
 }
 
-void Lights::ChangeRadiusHeight(ID id, float radius_height, bool is_create)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-		ArrIDLights[id]->Dist = radius_height;
-		if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction && is_create)
-		{
-			ArrIDLights[id]->TopBottomRadius.y = ArrIDLights[id]->TopBottomRadius.x + radius_height * tanf(ArrIDLights[id]->Angle / 2.f);
-			mem_release_del(ArrIDLights[id]->Mesh);
-			SGCore_FCreateCone(ArrIDLights[id]->TopBottomRadius.x, ArrIDLights[id]->TopBottomRadius.y, radius_height, &ArrIDLights[id]->Mesh, 32);
-			//PathVolume[0] = 0;
-		}
-
-		if (ArrIDLights[id]->ShadowSM)
-			ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
-
-		if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_point && is_create)
-		{
-			mem_release_del(ArrIDLights[id]->Mesh);
-			D3DXCreateSphere(MLSet::DXDevice, radius_height, 20, 20, &ArrIDLights[id]->Mesh, 0);
-			//PathVolume[0] = 0;
-		}
-
-		if (ArrIDLights[id]->ShadowCube)
-			ArrIDLights[id]->ShadowCube->SetNearFar(&float2(0.1, ArrIDLights[id]->Dist));
-
-		if (ArrIDLights[id]->Mesh)
-		{
-			IDirect3DVertexBuffer9* vertexbuf;
-			ArrIDLights[id]->Mesh->GetVertexBuffer(&vertexbuf);
-			ArrIDLights[id]->BoundVolume->CalcBound(vertexbuf, ArrIDLights[id]->Mesh->GetNumVertices(), ArrIDLights[id]->Mesh->GetNumBytesPerVertex());
-			mem_release_del(vertexbuf);
-		}
-
-	SetNullLightCountUpdate(id);
-}
-
-/*void Lights::ChangeShadow(ID id, bool is_shadow)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-		ArrIDLights[id]->IsShadow = is_shadow;
-		if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction)
-		{
-			if (!ArrIDLights[id]->ShadowSM && ArrIDLights[id]->IsShadow)
-			{
-				ArrIDLights[id]->ShadowSM = new ShadowMapTech();
-				ArrIDLights[id]->ShadowSM->Init();
-				ArrIDLights[id]->ShadowSM->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
-				ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
-				ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
-			}
-		}
-		else if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_global)
-		{
-			if (ArrIDLights[id]->IsGlobal)
-			{
-				if (!ArrIDLights[id]->ShadowPSSM && ArrIDLights[id]->IsShadow)
-				{
-					ArrIDLights[id]->ShadowPSSM = new PSSM();
-					ArrIDLights[id]->ShadowPSSM->Init();
-					ArrIDLights[id]->ShadowPSSM->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
-				}
-			}
-		}
-		else if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_point)
-		{
-			if (!ArrIDLights[id]->ShadowCube && ArrIDLights[id]->IsShadow)
-			{
-				ArrIDLights[id]->ShadowCube = new ShadowMapCubeTech();
-				ArrIDLights[id]->ShadowCube->Init();
-				ArrIDLights[id]->ShadowCube->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
-				ArrIDLights[id]->ShadowCube->SetNearFar(&float2(0.1f, ArrIDLights[id]->Dist));
-			}
-		}
-		SetNullLightCountUpdate(id);
-}*/
-
-void Lights::SetBlurPixel(ID id, float blur_pixel)
+void Lights::SetShadowBlurPixel(ID id, float blur_pixel)
 {
 	LIGHTS_PRE_COND_ID(id);
 
@@ -1460,10 +1372,10 @@ void Lights::SetBlurPixel(ID id, float blur_pixel)
 		else if (ArrIDLights[id]->ShadowPSSM)
 			ArrIDLights[id]->ShadowPSSM->SetBlurPixel(blur_pixel);
 
-		SetNullLightCountUpdate(id);
+		LightCountUpdateNull(id);
 }
 
-float Lights::GetBlurPixel(ID id)
+float Lights::GetShadowBlurPixel(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -1484,10 +1396,10 @@ void Lights::SetShadowLocalNear(ID id, float slnear)
 	else if (ArrIDLights[id]->ShadowSM)
 		ArrIDLights[id]->ShadowSM->SetNear(slnear);
 
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
-float Lights::GetShadowLocalNear(ID id)
+float Lights::GetShadowLocalNear(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -1511,10 +1423,10 @@ void Lights::SetShadowLocalFar(ID id, float slfar)
 	else if (ArrIDLights[id]->ShadowSM)
 		ArrIDLights[id]->ShadowSM->SetFar(slfar);
 
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
-float Lights::GetShadowLocalFar(ID id)
+float Lights::GetShadowLocalFar(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
@@ -1530,17 +1442,17 @@ float Lights::GetShadowLocalFar(ID id)
 		return ArrIDLights[id]->Dist;
 }
 
-void Lights::SetEnableCubeEdge(ID id, int edge, bool enable)
+void Lights::SetLightCubeEdgeEnable(ID id, int edge, bool enable)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	if (ArrIDLights[id]->ShadowCube)
 		ArrIDLights[id]->ShadowCube->SetEnableCubeEdge(edge, enable);
 
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
-bool Lights::GetEnableCubeEdge(ID id, int edge)
+bool Lights::GetLightCubeEdgeEnable(ID id, int edge) const
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
@@ -1630,10 +1542,10 @@ void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
 		}
 	}
 
-	SetNullLightCountUpdate(id);
+	LightCountUpdateNull(id);
 }
 
-LightsTypeShadow Lights::GetLightTypeShadowed(ID id)
+LightsTypeShadow Lights::GetLightTypeShadowed(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, LightsTypeShadow::lts_none);
 
@@ -1641,7 +1553,7 @@ LightsTypeShadow Lights::GetLightTypeShadowed(ID id)
 }
 
 
-bool Lights::UpdateLightCountUpdate(ID id, float3* viewpos, int ghow)
+bool Lights::LightCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
@@ -1710,7 +1622,7 @@ bool Lights::UpdateLightCountUpdate(ID id, float3* viewpos, int ghow)
 		}
 }
 
-bool Lights::AllowedRenderLight(ID id, int ghow)
+bool Lights::LightCountUpdateAllowed(ID id, int ghow) const
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
@@ -1732,7 +1644,7 @@ bool Lights::AllowedRenderLight(ID id, int ghow)
 		}
 }
 
-void Lights::SetNullLightCountUpdate(ID id)
+void Lights::LightCountUpdateNull(ID id)
 {
 	if (id >= 0 && id < ArrIDLights.size())
 	{
@@ -1740,14 +1652,14 @@ void Lights::SetNullLightCountUpdate(ID id)
 	}
 	else if (id < 0)
 	{
-		for (long i = 0; i < ArrKeyLights.size(); ++i)
+		for (int i = 0; i < ArrKeyLights.size(); ++i)
 		{
 			ArrKeyLights[i]->CountUpdate = 0;
 		}
 	}
 }
 
-void Lights::SoftShadow(bool randomsam, float size, bool isfirst)
+void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 {
 	if (isfirst)
 		HowShadow = 0;
@@ -1813,7 +1725,7 @@ void Lights::SoftShadow(bool randomsam, float size, bool isfirst)
 			HowShadow = 1;
 }
 
-void Lights::ComToneMapping(DWORD timeDelta, float factor_adapted)
+void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 {
 	MLSet::GetArrDownScale4x4(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::HDRSampleOffsets);
 
@@ -1836,7 +1748,7 @@ void Lights::ComToneMapping(DWORD timeDelta, float factor_adapted)
 	mem_release(SurfSceneScale);
 
 	MLSet::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
-	long CurrTexture = MLSet::IDsRenderTargets::CountArrToneMaps - 1;
+	int CurrTexture = MLSet::IDsRenderTargets::CountArrToneMaps - 1;
 
 	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps; i++)
 	{
@@ -1950,7 +1862,7 @@ bool Lights::Get4Or3Splits(ID id)
 	return false;
 }
 
-ID Lights::GetIdOfKey(long key)
+ID Lights::GetIdByKey(int key)
 {
 	LIGHTS_PRE_COND_KEY(key, -1);
 
@@ -1959,7 +1871,7 @@ ID Lights::GetIdOfKey(long key)
 
 ///////////////
 
-long Lights::DelGetCount()
+int Lights::DelGetCount()
 {
 	return ArrKeyDelLights.size();
 }

@@ -169,14 +169,18 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 				break;
 		}
 
-		char tval[256];
+		static char tval[256];
+		tval[0] = 0;
 		SXLevelEditor::ListViewGameClass->GetTextItem(tval, 1, str, 256);
 
 		const char* tval2;
+		char tval3[256];
 		bool isfound = false;
 
+		//проверяем в цикле какая строка из комбобокса выбрана
 		for (int i = 0; i < SXLevelEditor::ComboBoxGameValue->GetCount(); ++i)
 		{
+			//сначала проверяем по юзердате (там записано значение)
 			tval2 = (const char*)SXLevelEditor::ComboBoxGameValue->GetItemData(i);
 
 			if (strcmp(tval, tval2) == 0)
@@ -185,11 +189,24 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 				isfound = true;
 				break;
 			}
+
+			//затем проверям по имени строки
+			SXLevelEditor::ComboBoxGameValue->GetItemText(i, tval3);
+			
+			if (strcmp(tval, tval3) == 0)
+			{
+				SXLevelEditor::ComboBoxGameValue->SetSel(i);
+				isfound = true;
+				break;
+			}
 		}
 
+		//если не найдено значение значит надо его добавить
 		if (!isfound)
 		{
+			MessageBox(0,"SXLevelEditor_ListViewGameClass_Click data not found",0,0);
 			SXLevelEditor::ComboBoxGameValue->AddItem(tval);
+			SXLevelEditor::ComboBoxGameValue->SetItemData(SXLevelEditor::ComboBoxGameValue->GetCount() - 1, (LPARAM)tval);
 			SXLevelEditor::ComboBoxGameValue->SetSel(SXLevelEditor::ComboBoxGameValue->GetCount()-1);
 		}
 	}

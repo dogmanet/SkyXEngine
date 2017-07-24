@@ -173,10 +173,10 @@ void Emitter::ComputeLighting()
 				for (int k = 0; k<SML_LigthsGetCount(); ++k)
 				{
 					//поулчаем идентификатор света по ключу
-					ID tmpid = SML_LigthsGetIDOfKey(k);
+					ID tmpid = SML_LigthsGetIDByKey(k);
 
 					//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-					if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsIsEnable(tmpid))
+					if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsGetEnable(tmpid))
 					{
 						SML_LigthsGetColor(tmpid, &tmpColor);
 

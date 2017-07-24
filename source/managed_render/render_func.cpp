@@ -274,8 +274,8 @@ void SXRenderFunc::ComVisibleForLight()
 {
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
-		long tmpid = SML_LigthsGetIDOfKey(i);
-		if (SML_LigthsIsShadow(tmpid) && (SML_LigthsComVisibleForFrustum(tmpid, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(tmpid)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		long tmpid = SML_LigthsGetIDByKey(i);
+		if (SML_LigthsGetShadowed(tmpid) && (SML_LigthsComVisibleForFrustum(tmpid, GData::ObjCamera->ObjFrustum) && SML_LigthsGetEnable(tmpid)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
 		{
 			if (SML_LigthsGetType(tmpid) == LightsTypeLight::ltl_global)
 			{
@@ -290,9 +290,9 @@ void SXRenderFunc::ComVisibleForLight()
 					if(SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k) <= -1)
 						SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
 
-					if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos, k))
+					if (SML_LigthsCountUpdateUpdate(tmpid, &GData::ConstCurrCamPos, k))
 					{
-						SML_LigthsUpdateFrustumsG(tmpid, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+						SML_LigthsUpdateGFrustums(tmpid, k, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 						SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
 						SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
 						SXAnim_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k));
@@ -332,7 +332,7 @@ void SXRenderFunc::ComVisibleForLight()
 						if(SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k) <= -1)
 							SML_LigthsSetIDArr(tmpid, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
 
-						if (SML_LigthsGetEnableCubeEdge(tmpid, k))
+						if (SML_LigthsGetCubeEdgeEnable(tmpid, k))
 						{
 							SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
 							SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
@@ -879,19 +879,19 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
-		long tmpid = SML_LigthsGetIDOfKey(i);
+		long tmpid = SML_LigthsGetIDByKey(i);
 		Core_RIntSet(G_RI_INT_CURRIDLIGHT, tmpid);
-		if (SML_LigthsIsShadow(tmpid) && (SML_LigthsComVisibleForFrustum(tmpid, GData::ObjCamera->ObjFrustum) && SML_LigthsIsEnable(tmpid)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		if (SML_LigthsGetShadowed(tmpid) && (SML_LigthsComVisibleForFrustum(tmpid, GData::ObjCamera->ObjFrustum) && SML_LigthsGetEnable(tmpid)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
 		{
 			if (SML_LigthsGetType(tmpid) == LightsTypeLight::ltl_global)
 			{
-				SML_LigthsInRenderBegin(tmpid);
+				SML_LigthsShadowRenderBegin(tmpid);
 				int countsplits = (SML_LigthsGet4Or3SplitsG(tmpid) ? 4 : 3);
 					for (int k = 0; k<countsplits; k++)
 					{
-						if (SML_LigthsAllowedRender(tmpid, k))
+						if (SML_LigthsCountUpdateAllowed(tmpid, k))
 						{
-							SML_LigthsInRenderPre(tmpid, k);
+							SML_LigthsShadowRenderPre(tmpid, k);
 
 							if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k) > -1)
 								SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
@@ -906,8 +906,8 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 				//КОГДА ИСТОЧНИК БЛИЗОК К ГОРИЗОНТУ ИЗ-ЗА ОБЛАКОВ ВОЗНИКАЕТ БАГ С ТЕНЯМИ В ВИДЕ ФЕЙКОВЫХ ТЕНЕЙ
 				if (SGCore_SkyCloudsIsCr() && SGCore_SkyCloudsIsLoadTex())
 				{
-					SML_LigthsUpdateFrustumsG(tmpid, 4, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
-					SML_LigthsInRenderPre(tmpid, 4);
+					SML_LigthsUpdateGFrustums(tmpid, 4, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
+					SML_LigthsShadowRenderPre(tmpid, 4);
 					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 					GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 					SetSamplerFilter(0, D3DTEXF_LINEAR);
@@ -920,13 +920,13 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 					SetSamplerAddress(0, D3DTADDRESS_WRAP);
 					SetSamplerAddress(1, D3DTADDRESS_WRAP);
 				}
-				SML_LigthsInRenderEnd(tmpid);
+				SML_LigthsShadowRenderEnd(tmpid);
 			}
 			else if (SML_LigthsGetType(tmpid) == LightsTypeLight::ltl_direction)
 			{
-				if (SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos))
+				if (SML_LigthsCountUpdateUpdate(tmpid, &GData::ConstCurrCamPos))
 				{
-					SML_LigthsInRenderBegin(tmpid);
+					SML_LigthsShadowRenderBegin(tmpid);
 
 					if (SML_LigthsGetTypeShadowed(tmpid) == LightsTypeShadow::lts_dynamic)
 					{
@@ -946,20 +946,20 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 						SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, GData::DefaultGreenIDArr);
 					}
 
-					SML_LigthsInRenderEnd(tmpid);
+					SML_LigthsShadowRenderEnd(tmpid);
 				}
 			}
 			else if (SML_LigthsGetType(tmpid) == LightsTypeLight::ltl_point)
 			{
-				if (SML_LigthsGetTypeShadowed(tmpid) != LightsTypeShadow::lts_none && SML_LigthsUpdateCountUpdate(tmpid, &GData::ConstCurrCamPos))
+				if (SML_LigthsGetTypeShadowed(tmpid) != LightsTypeShadow::lts_none && SML_LigthsCountUpdateUpdate(tmpid, &GData::ConstCurrCamPos))
 				{
-					SML_LigthsInRenderBegin(tmpid);
+					SML_LigthsShadowRenderBegin(tmpid);
 
 					for (int k = 0; k < 6; k++)
 					{
-						if (SML_LigthsGetEnableCubeEdge(tmpid, k))
+						if (SML_LigthsGetCubeEdgeEnable(tmpid, k))
 						{
-							SML_LigthsInRenderPre(tmpid, k);
+							SML_LigthsShadowRenderPre(tmpid, k);
 
 							if (SML_LigthsGetTypeShadowed(tmpid) == LightsTypeShadow::lts_dynamic)
 							{
@@ -979,11 +979,11 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, GData::DefaultGreenIDArr);
 							}
 							
-							SML_LigthsInRenderPost(tmpid, k);
+							SML_LigthsShadowRenderPost(tmpid, k);
 						}
 					}
 
-					SML_LigthsInRenderEnd(tmpid);
+					SML_LigthsShadowRenderEnd(tmpid);
 				}
 			}
 		}
@@ -1075,10 +1075,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	for (int i = 0; i<SML_LigthsGetCount(); i++)
 	{
 		//поулчаем идентификатор света по ключу
-		ID tmpid = SML_LigthsGetIDOfKey(i);
+		ID tmpid = SML_LigthsGetIDByKey(i);
 
 		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-		if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsIsEnable(tmpid))
+		if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsGetEnable(tmpid))
 		{
 			//пока что назначаем шейдер без теней
 			ID idshader = GData::IDsShaders::PS::ComLightingNonShadow;
@@ -1150,7 +1150,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 			//если свет отбрасывает тени
-			if (SML_LigthsIsShadow(tmpid))
+			if (SML_LigthsGetShadowed(tmpid))
 			{
 				//генерация теней для текущего света
 				//{{
@@ -1163,19 +1163,19 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 				GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 				GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
 
-				SML_LigthsNullingShadow();	//очищаем рт генерации теней
-				SML_LigthsGenShadow(tmpid);	//генерируем тень для света
+				SML_LigthsShadowNull();	//очищаем рт генерации теней
+				SML_LigthsShadowGen(tmpid);	//генерируем тень для света
 
 				static const int * shadow_soft = GET_PCVAR_INT("shadow_soft");
 
 				if (shadow_soft)
 				{
 					if ((*shadow_soft) == 1)
-						SML_LigthsSoftShadow(false, 2);
+						SML_LigthsShadowSoft(false, 2);
 					else if ((*shadow_soft) == 2)
 					{
-						SML_LigthsSoftShadow(false, 2);
-						SML_LigthsSoftShadow(false, 2);
+						SML_LigthsShadowSoft(false, 2);
+						SML_LigthsShadowSoft(false, 2);
 					}
 				}
 
@@ -1260,7 +1260,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 
 	//обработка tone mapping
 	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
-	SML_LigthsComToneMapping(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
+	SML_LigthsToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
 	
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{

@@ -14,7 +14,7 @@ public:
 
 	void Init();
 
-	void UpdateFrustums(int split, float3* poscam, float3* dircam);
+	void UpdateFrustums(int split, const float3* poscam, const float3* dircam);
 	void PreRender(int spilt);
 	void Begin();
 	void End();
@@ -93,13 +93,13 @@ public:
 
 	void GenShadow2(IDirect3DTexture9* shadowmap);
 
-	void SetPosition(float3* pos);
+	void SetPosition(const float3* pos);
 	void GetPosition(float3* pos);
 
-	void SetDirection(float3* dir);
+	void SetDirection(const float3* dir);
 	void GetDirection(float3* dir);
 
-	inline void SetAngleNearFar(float3* anf);
+	inline void SetAngleNearFar(const float3* anf);
 	inline void GetAngleNearFar(float3* anf);
 
 	inline void SetFar(float sfar);
