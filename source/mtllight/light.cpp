@@ -295,7 +295,6 @@ void Lights::Load(const char* path)
 
 			tmpidcr = CreatePoint(-1,
 				&tmppos,
-				tmppower,
 				tmpdist,
 				&tmpcolor,
 				false,
@@ -351,7 +350,6 @@ void Lights::Load(const char* path)
 
 			tmpidcr = CreateDirection(-1,
 				&tmppos,
-				tmppower,
 				tmpdist,
 				&tmpcolor,
 				&tmprot,
@@ -367,7 +365,6 @@ void Lights::Load(const char* path)
 			tmppos.z = 0;
 			tmpidcr = CreatePoint(-1,
 				&tmppos,
-				LIGHTS_GLOBAL_MAX_POWER,
 				LIGHTS_GLOBAL_STD_RADIUS,
 				&tmpcolor,
 				true,
@@ -634,7 +631,7 @@ void Lights::SetLightName(ID id, const char* name)
 	sprintf(ArrIDLights[id]->Name, "%s", name);
 }
 
-ID Lights::CreatePoint(ID id, const float3* center, float power, float dist, const float3* color, bool isglobal, bool is_shadow, const char* bound_volume)
+ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* color, bool isglobal, bool is_shadow, const char* bound_volume)
 {
 	if (GlobalLight != -1 && isglobal)
 	{
@@ -660,12 +657,10 @@ ID Lights::CreatePoint(ID id, const float3* center, float power, float dist, con
 	if (isglobal)
 	{
 		tmplight->Dist = LIGHTS_GLOBAL_STD_RADIUS;
-		tmplight->Power = LIGHTS_GLOBAL_MAX_POWER;
 	}
 	else
 	{
 		tmplight->Dist = dist;
-		tmplight->Power = power;
 	}
 
 	tmplight->TypeLight = (isglobal ? LightsTypeLight::ltl_global : LightsTypeLight::ltl_point);
@@ -719,7 +714,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float power, float dist, con
 	return tmpid;
 }
 
-ID Lights::CreateDirection(ID id, const float3* pos, float power, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume)
+ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume)
 {
 	Light* tmplight = 0;
 
@@ -757,7 +752,6 @@ ID Lights::CreateDirection(ID id, const float3* pos, float power, float dist, co
 	float ang = acosf(SMVector3Dot(f, *dir));
 	tmplight->MatRot = SMMatrixRotationAxis(a, ang);
 
-	tmplight->Power = power;
 	tmplight->Dist = dist;
 
 	tmplight->Rotation = SMMatrixToEuler(tmplight->MatRot);
@@ -846,21 +840,20 @@ float Lights::GetLightPower(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
-	return ArrIDLights[id]->Power;
-}
+	float power = ArrIDLights[id]->Color.x;
 
-float Lights::GetLightPowerDiv(ID id) const
-{
-	LIGHTS_PRE_COND_ID(id, -1);
+	if (power < ArrIDLights[id]->Color.y)
+		power = ArrIDLights[id]->Color.y;
 
-	return sqrtf(ArrIDLights[id]->Power / LIGHTS_GLOBAL_MAX_POWER);
-}
+	if (power < ArrIDLights[id]->Color.z)
+		power = ArrIDLights[id]->Color.z;
 
-void Lights::SetLightPower(ID id, float power)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-	ArrIDLights[id]->Power = power;
+	if (ArrIDLights[id]->IsGlobal)
+		return power;
+	else
+	{
+		return power * (ArrIDLights[id]->Dist / LIGHTS_LOCAL_MAX_DIST);
+	}
 }
 
 float Lights::GetLightDist(ID id) const

@@ -16,7 +16,6 @@ protected:
 	ID IDLight;
 
 	float3 m_color;
-	float m_power;
 	float m_dist;
 	float m_light_far;
 	int m_typeshadow;

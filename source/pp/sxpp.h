@@ -92,7 +92,7 @@ SX_LIB_API void SPP_Update(
 	float2_t* nearfar,	//!< ближняя и дальняя плоскости отсечения
 	float projfov		//!< угол обзора в радианах
 	);
-SX_LIB_API void SPP_UpdateSun(float3* sunpos);		//!< обвновление позиции солнца
+SX_LIB_API void SPP_UpdateSun(float3* sunpos);		//!< обвновление позиции солнца, если sunpos == 0 тогда солнца в сцене нет
 SX_LIB_API void SPP_ChangeTexSun(const char* str);	//!< сменить текстуру солнца на str
 
 

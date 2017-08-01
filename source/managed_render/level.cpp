@@ -3,7 +3,9 @@
 
 void Level::Clear()
 {
-	Name[0] = 0;
+	Level::Name[0] = 0;
+	Level::StrWeather = "";
+	Level::StrAmbientSounds = "";
 	SGeom_ModelsClear();
 	SGeom_GreenClear();
 	SML_LigthsClear();
@@ -47,7 +49,7 @@ void Level::Load(const char* name)
 		}
 	}
 
-	if (config->KeyExists("level", "light"))
+	/*if (config->KeyExists("level", "light"))
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "light"));
@@ -57,7 +59,7 @@ void Level::Load(const char* name)
 		{
 			//error
 		}
-	}
+	}*/
 
 	if(config->KeyExists("level", "entity"))
 	{
@@ -105,23 +107,52 @@ void Level::Load(const char* name)
 
 	if (config->KeyExists("level", "ambient_sounds"))
 	{
-		if (!Level::AmbientSounds)
-			Level::AmbientSounds = new LevelAmbientSounds();
-		else
-			Level::AmbientSounds->Clear();
+		Level::StrAmbientSounds = config->GetKey("level", "ambient_sounds");
 
-		String listsnds = config->GetKey("level", "ambient_sounds");
+#if defined(SX_GAME)
+		SGame_AmbientSndClear();
 		char tmpallpath[4096];
-		sprintf(tmpallpath, "%s", listsnds.c_str());
+		sprintf(tmpallpath, "%s", Level::StrAmbientSounds.c_str());
 		char* tmppath = strtok(tmpallpath, " ,|");
 		if (tmppath)
-			Level::AmbientSounds->Add(tmppath);
+			SGame_AmbientSndAdd(tmppath);
 		while (tmppath != NULL)
 		{
 			tmppath = strtok(NULL, " ,|");
 
 			if (tmppath)
-				Level::AmbientSounds->Add(tmppath);
+				SGame_AmbientSndAdd(tmppath);
+		}
+
+		SGame_AmbientSndPlay();
+#endif
+	}
+
+	if (config->KeyExists("level", "weather"))
+	{
+		Level::StrWeather = config->GetKey("level", "weather");
+#if defined(SX_GAME)
+		char tmppath[1024];
+		sprintf(tmppath, "%s%s", GData::Pathes::ConfigWeather, StrWeather.c_str());
+		SGame_WeatherLoad(tmppath);
+
+		SGame_WeatherSndPlay();
+#endif
+	}
+
+	if (config->KeyExists("level", "type"))
+	{
+		String str = config->GetKey("level", "type");
+		if (stricmp(str.c_str(), "outdoor") == 0)
+		{
+			ID gid = SML_LigthsCreatePoint(
+				&float3(60, 60, 0),
+				0,
+				&float3(1, 1, 1),
+				true,
+				true);
+			SML_LigthsSetEnable(gid, true);
+			SML_LigthsSetName(gid, "sun");
 		}
 	}
 
@@ -158,12 +189,10 @@ void Level::Save(const char* name)
 		SGeom_GreenSave(tmppathlevel);
 	}
 
-	if (SML_LigthsGetCount() > 0)
-	{
-		sprintf(tmppathlevel, "%s%s\\%s.light", GData::Pathes::Levels, name, name);
-		fprintf(file, "light = %s.light\n", name);
-		SML_LigthsSave(tmppathlevel);
-	}
+	if (SML_LigthsGetGlobal() > 0)
+		fprintf(file, "type = outdoor\n");
+	else
+		fprintf(file, "type = indoor\n");
 
 	if (SXGame_EntGetCount() > 0)
 	{
@@ -184,26 +213,17 @@ void Level::Save(const char* name)
 	fprintf(file, "physic = %s.phy\n", name);
 	SXPhysics_ExportGeom(tmppathlevel);
 
-	if (Level::AmbientSounds)
+	if (Level::StrAmbientSounds[0])
 	{
-		char ambientsnds[4096];
-		ambientsnds[0] = 0;
-		char tmpsnd[SOUND_MAX_SIZE_PATH];
-		sprintf(ambientsnds, "ambient_sounds = ");
-		for (int i = 0; i < Level::AmbientSounds->GetCount(); ++i)
-		{
-			tmpsnd[0] = 0;
-			Level::AmbientSounds->Get(i, tmpsnd);
-			sprintf(ambientsnds + strlen(ambientsnds), "%s", tmpsnd);
-
-			if (i + 1 < Level::AmbientSounds->GetCount())
-				sprintf(ambientsnds + strlen(ambientsnds), ", ");
-		}
-
-		fprintf(file, ambientsnds);
+		fprintf(file, "ambient_sounds = %s\n", Level::StrAmbientSounds.c_str());
 	}
 
+	if (Level::StrWeather[0])
+	{
+		fprintf(file, "weather = %s\n", Level::StrWeather.c_str());
+	}
 
+	fprintf(file, "\n");
 	fclose(file);
 }
 
@@ -221,15 +241,4 @@ void Level::SaveParticles()
 	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
 
 	SPE_EffectSave(tmppathsave);
-}
-
-void Level::Update()
-{
-	if (Level::AmbientSounds)
-	{
-		if (!Level::AmbientSounds->IsPlaying())
-			Level::AmbientSounds->Play();
-
-		Level::AmbientSounds->Update();
-	}
 }

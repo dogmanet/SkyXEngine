@@ -1,12 +1,12 @@
 
-#ifndef __level_ambient_sounds_h
-#define __level_ambient_sounds_h
+#ifndef __ambient_sounds_h
+#define __ambient_sounds_h
 
-class LevelAmbientSounds
+class AmbientSounds
 {
 public:
-	LevelAmbientSounds();
-	~LevelAmbientSounds();
+	AmbientSounds();
+	~AmbientSounds();
 
 	void Add(const char* path);
 	void Get(ID id, char* path);

@@ -160,6 +160,16 @@ void Effects::Save(const char* path)
 			if (tmptex[0] != 0)
 				fprintf(file, "texture = %s\n", tmptex);
 
+			if (part->TextureTrackGetID() >= 0)
+				SGCore_LoadTexGetName(part->TextureTrackGetID(), tmptex);
+
+			if (tmptex[0] != 0)
+				fprintf(file, "texture_track = %s\n", tmptex);
+
+			fprintf(file, "Track = %d\n", part->GetData()->Track);
+			fprintf(file, "TrackSize = %f\n", part->GetData()->TrackSize);
+			fprintf(file, "TrackTime = %d\n", part->GetData()->TrackTime);
+
 			fprintf(file, "BoundType = %d\n", part->GetData()->BoundType);
 
 			fprintf(file, "BoundVec1X = %f\n", part->GetData()->BoundVec1.x);
@@ -558,6 +568,16 @@ void Effects::Load(const char* path)
 			if (config->KeyExists(part_section_name, "CollisionDelete"))
 				part.CollisionDelete = String(config->GetKey(part_section_name, "CollisionDelete")).ToBool();
 
+
+			if (config->KeyExists(part_section_name, "Track"))
+				part.Track = String(config->GetKey(part_section_name, "Track")).ToBool();
+
+			if (config->KeyExists(part_section_name, "TrackSize"))
+				part.TrackSize = String(config->GetKey(part_section_name, "TrackSize")).ToDouble();
+
+			if (config->KeyExists(part_section_name, "TrackTime"))
+				part.TrackTime = String(config->GetKey(part_section_name, "TrackTime")).ToUnsLongInt();
+
 			
 			ID part_id = this->EmitterAdd(eff_id, &part);
 
@@ -569,12 +589,29 @@ void Effects::Load(const char* path)
 
 			if (config->KeyExists(part_section_name, "texture"))
 				EmitterTextureSet(eff_id, part_id, config->GetKey(part_section_name, "texture"));
+
+			if (config->KeyExists(part_section_name, "texture_track"))
+				EmitterTextureTrackSet(eff_id, part_id, config->GetKey(part_section_name, "texture_track"));
 		}
 	}
 
 	mem_release_del(config);
 }
 
+
+int Effects::EmitterTrackCountGet(ID id, ID id_part)
+{
+	EFFECTS_PRECOND(id, id_part, 0);
+
+	return ArrID[id]->Arr[id_part]->TrackCountGet();
+}
+
+int Effects::EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count)
+{
+	EFFECTS_PRECOND(id, id_part, 0);
+
+	return ArrID[id]->Arr[id_part]->TrackPosGet(arr, count);
+}
 
 
 void Effects::EmitterNameSet(ID id, ID id_part, const char* name)
@@ -663,6 +700,7 @@ bool Effects::EmitterEnableGet(ID id, ID id_part)
 	return ArrID[id]->Arr[id_part]->EnableGet();
 }
 
+
 void Effects::EmitterTextureSet(ID id, ID id_part, const char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
@@ -689,6 +727,35 @@ void Effects::EmitterTextureGet(ID id, ID id_part, char* tex)
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
 	ArrID[id]->Arr[id_part]->TextureGet(tex);
+}
+
+
+void Effects::EmitterTextureTrackSet(ID id, ID id_part, const char* tex)
+{
+	EFFECTS_PRECOND(id, id_part, _VOID);
+
+	ArrID[id]->Arr[id_part]->TextureTrackSet(tex);
+}
+
+void Effects::EmitterTextureTrackSetID(ID id, ID id_part, ID tex)
+{
+	EFFECTS_PRECOND(id, id_part, _VOID);
+
+	ArrID[id]->Arr[id_part]->TextureTrackSetID(tex);
+}
+
+ID Effects::EmitterTextureTrackGetID(ID id, ID id_part)
+{
+	EFFECTS_PRECOND(id, id_part, -1);
+
+	return ArrID[id]->Arr[id_part]->TextureTrackGetID();
+}
+
+void Effects::EmitterTextureTrackGet(ID id, ID id_part, char* tex)
+{
+	EFFECTS_PRECOND(id, id_part, _VOID);
+
+	ArrID[id]->Arr[id_part]->TextureTrackGet(tex);
 }
 
 
@@ -1222,7 +1289,7 @@ void Effects::EffectRotSet(ID id, float3* rot)
 
 	ArrID[id]->Direction = SMEulerToVec(ArrID[id]->Rotation);
 
-	static float3 f = SXPARTICLES_BASIS_DIR;
+	static float3 f = SXPARTICLES_BASE_DIR;
 	//float3 f(0, -1, 0);
 	float3 a = SMVector3Cross(f, ArrID[id]->Direction);
 	float ang = acosf(SMVector3Dot(f, ArrID[id]->Direction));

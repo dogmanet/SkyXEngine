@@ -948,6 +948,18 @@ float SGCore_SkyCloudsGetAlpha()
 	return ObjSkyClouds->GetAlpha();
 }
 
+void SGCore_SkyCloudsSetSpeed(float speed)
+{
+	SG_PRECOND_SKY_CLOUDS(_VOID);
+	ObjSkyClouds->SetSpeed(speed);
+}
+
+float SGCore_SkyCloudsGetSpeed()
+{
+	SG_PRECOND_SKY_CLOUDS(0);
+	return ObjSkyClouds->GetSpeed();
+}
+
 void SGCore_SkyCloudsSetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);

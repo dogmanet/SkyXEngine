@@ -1,25 +1,25 @@
 
-#include <managed_render/level_ambient_sounds.h>
+#include <game/ambient_sounds.h>
 
-LevelAmbientSounds::LevelAmbientSounds()
+AmbientSounds::AmbientSounds()
 {
 	playing = false;
 	PlayingLast = 0;
 }
 
-LevelAmbientSounds::~LevelAmbientSounds()
+AmbientSounds::~AmbientSounds()
 {
 	Clear();
 }
 
-void LevelAmbientSounds::Add(const char* path)
+void AmbientSounds::Add(const char* path)
 {
 	ID id = SSCore_SndCreate2d(path);
 	if (id >= 0)
 		ArrIDsSnds.push_back(id);
 }
 
-void LevelAmbientSounds::Get(ID id, char* path)
+void AmbientSounds::Get(ID id, char* path)
 {
 	if (id >= 0 && id < ArrIDsSnds.size())
 	{
@@ -27,12 +27,12 @@ void LevelAmbientSounds::Get(ID id, char* path)
 	}
 }
 
-UINT LevelAmbientSounds::GetCount()
+UINT AmbientSounds::GetCount()
 {
 	return ArrIDsSnds.size();
 }
 
-void LevelAmbientSounds::Clear()
+void AmbientSounds::Clear()
 {
 	for (int i = 0; i < ArrIDsSnds.size(); ++i)
 	{
@@ -42,7 +42,7 @@ void LevelAmbientSounds::Clear()
 	ArrIDsSnds.clear();
 }
 
-void LevelAmbientSounds::Play()
+void AmbientSounds::Play()
 {
 	if (PlayingLast >= 0 && PlayingLast < ArrIDsSnds.size())
 	{
@@ -52,10 +52,13 @@ void LevelAmbientSounds::Play()
 	}
 }
 
-void LevelAmbientSounds::Update()
+void AmbientSounds::Update()
 {
 	if (!playing)
 		return;
+
+	static const float * ambient_snd_volume = GET_PCVAR_FLOAT("ambient_snd_volume");
+	static float ambient_snd_volume_old = 1.f;
 
 	if (SSCore_SndStateGet(ArrIDsSnds[PlayingLast]) != SoundObjState::sos_play)
 	{
@@ -64,12 +67,19 @@ void LevelAmbientSounds::Update()
 		else
 			PlayingLast = 0;
 
-		SSCore_SndVolumeSet(ArrIDsSnds[PlayingLast], 100);
+		SSCore_SndVolumeSet(ArrIDsSnds[PlayingLast], ambient_snd_volume_old*100.f);
 		SSCore_SndPlay(ArrIDsSnds[PlayingLast]);
+	}
+
+	if (ambient_snd_volume && ambient_snd_volume_old != (*ambient_snd_volume))
+	{
+		ambient_snd_volume_old = *ambient_snd_volume;
+		if (PlayingLast >= 0)
+			SSCore_SndVolumeSet(ArrIDsSnds[PlayingLast], ambient_snd_volume_old*100.f);
 	}
 }
 
-void LevelAmbientSounds::Pause()
+void AmbientSounds::Pause()
 {
 	if (!playing)
 		return;
@@ -79,7 +89,7 @@ void LevelAmbientSounds::Pause()
 	playing = false;
 }
 
-bool LevelAmbientSounds::IsPlaying()
+bool AmbientSounds::IsPlaying()
 {
 	return playing;
 }

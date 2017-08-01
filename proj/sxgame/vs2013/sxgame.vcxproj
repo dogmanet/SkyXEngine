@@ -90,6 +90,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\game\ambient_sounds.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
@@ -111,9 +114,13 @@
     <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp" />
+    <ClCompile Include="..\..\..\source\game\weather.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\AAString.h" />
+    <ClInclude Include="..\..\..\source\game\ambient_sounds.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />
     <ClInclude Include="..\..\..\source\game\EntityManager.h" />
     <ClInclude Include="..\..\..\source\game\FuncTrain.h" />
@@ -137,6 +144,7 @@
     <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h" />
     <ClInclude Include="..\..\..\source\game\SXpointCamera.h" />
     <ClInclude Include="..\..\..\source\game\SXpointEntity.h" />
+    <ClInclude Include="..\..\..\source\game\weather.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

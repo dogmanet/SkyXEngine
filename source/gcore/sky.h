@@ -86,6 +86,9 @@ public:
 	inline void SetColor(float4_t* color);
 	inline void GetColor(float4_t* color);
 
+	inline void SetSpeed(float speed);
+	inline float GetSpeed();
+
 	inline void SetStdPath(const char* path);
 	inline void GetStdPath(char* path);
 
@@ -105,6 +108,7 @@ private:
 	bool BFChange;
 	bool BFChangeMainTex;
 
+	float Speed;
 	float Bias;
 	SkyCloudsVertex* Vertices;
 	IDirect3DVertexBuffer9*	SkyCloudsVertices;

@@ -37,8 +37,8 @@ public:
 	inline int GetCountLights() const;
 	void Clear();
 
-	ID CreatePoint(ID id, const  float3* center, float power, float dist, const  float3* color, bool isglobal, bool is_shadow, const char* bound_volume);
-	ID CreateDirection(ID id, const  float3* pos, float power, float dist, const  float3* color, const  float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume);
+	ID CreatePoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow, const char* bound_volume);
+	ID CreateDirection(ID id, const  float3* pos, float dist, const  float3* color, const  float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume);
 
 	void DeleteLight(ID id);
 
@@ -59,9 +59,7 @@ public:
 	void GetLightPos(ID id, float3* vec, bool greal = false) const;
 	void SetLightPos(ID id, const float3* vec, bool greal = false);
 
-	void SetLightPower(ID id, float power);
 	float GetLightPower(ID id) const;
-	float GetLightPowerDiv(ID id) const;
 
 	float GetLightDist(ID id) const;
 	void SetLightDist(ID id, float radius_height, bool is_create);

@@ -127,10 +127,19 @@ void SXRenderFunc::UpdateDataCVar()
 	static bool pssm_4or3_old = true;
 
 	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
-	if (pssm_4or3 && pssm_4or3_old != (*pssm_4or3))
+	if (pssm_4or3 && pssm_4or3_old != (*pssm_4or3) && GlobalLight >= 0)
 	{
 		pssm_4or3_old = (*pssm_4or3);
 		SML_LigthsSet4Or3SplitsG(GlobalLight, pssm_4or3_old);
+	}
+
+	static const bool * pssm_shadowed = GET_PCVAR_BOOL("pssm_shadowed");
+	static bool pssm_shadowed_old = true;
+
+	if (pssm_shadowed && pssm_shadowed_old != (*pssm_shadowed) && GlobalLight >= 0)
+	{
+		pssm_shadowed_old = (*pssm_shadowed);
+		SML_LigthsSetTypeShadowed(GlobalLight, (pssm_shadowed_old ? LightsTypeShadow::lts_dynamic : LightsTypeShadow::lts_none));
 	}
 
 	static const float * pssm_q = GET_PCVAR_FLOAT("pssm_q");
@@ -591,6 +600,14 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 
 			if ((*rs_stats) > 0)
 				sprintf(debugstr, "FPS %.1f\n", FpsValue);
+
+#if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
+			tm g_tm;
+			time_t g_time = Core_TimeUnixCurrGet(G_Timer_Game);
+			localtime_s(&g_tm, &g_time);
+
+			sprintf(debugstr + strlen(debugstr), "\nGame time : %d %d %d %d %d %d\n", 1900 + g_tm.tm_year, g_tm.tm_mon, g_tm.tm_mday, g_tm.tm_hour, g_tm.tm_min, g_tm.tm_sec);
+#endif
 
 			if ((*rs_stats) == 2)
 			{
@@ -1214,8 +1231,22 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 			float3 tmpColor;
 			SML_LigthsGetColor(tmpid, &tmpColor);
 			SML_LigthsGetPos(tmpid, &tmpPosition, true);
-			tmpPowerDist.x = SML_LigthsGetPowerDiv(tmpid);
+			tmpPowerDist.x = SML_LigthsGetPower(tmpid);
 			tmpPowerDist.y = SML_LigthsGetDist(tmpid);
+			
+			if (SML_LigthsGetType(tmpid) != LightsTypeLight::ltl_global)
+			{
+				tmpColor.w = 0.f;
+				ID gl_id = -1;
+				if ((gl_id = SML_LigthsGetGlobal()) >= 0)
+				{
+					float f_dep_coef = clampf(1.f - SML_LigthsGetPower(gl_id), 0.25f, 1.f);
+					tmpPowerDist.x *= f_dep_coef;
+					tmpPowerDist.y *= f_dep_coef;
+				}
+			}
+			else
+				tmpColor.w = 1.f;
 
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, idshader, "ViewPos", &GData::ConstCurrCamPos);
 			SGCore_ShaderSetVRF(ShaderType::st_pixel, idshader, "LightPos", &(tmpPosition));
@@ -1226,13 +1257,14 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 			SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ResPos);
 			SGCore_ShaderBind(ShaderType::st_pixel, idshader);
 
-			SetSamplerFilter(0, 4, D3DTEXF_NONE);
-			SetSamplerAddress(0, 4, D3DTADDRESS_CLAMP);
+			SetSamplerFilter(0, 5, D3DTEXF_NONE);
+			SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
 			
 			GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_color));
 			GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_normal));
 			GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_param));
 			GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_depth));
+			GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
 
 			SGCore_ScreenQuadDraw();
 
@@ -1258,9 +1290,9 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-	//обработка tone mapping
+	/*//обработка tone mapping
 	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
-	SML_LigthsToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
+	SML_LigthsToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));*/
 	
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{
@@ -1280,7 +1312,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_ambient_diff));
 	GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_specular));
 	GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_normal));
-	//GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
+	GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
 	GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT::ds_rt_param));
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
@@ -1414,6 +1446,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 
 
 	SGCore_ShaderUnBind();
+
+	//обработка tone mapping
+	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
+	SML_LigthsToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
 }
 
 void SXRenderFunc::RenderParticles(DWORD timeDelta)
@@ -1488,18 +1524,24 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	if (pp_ssao && (*pp_ssao) > 0)
 		SPP_RenderSSAO(&float4_t(0.3f, 0.1f, 0.8f, 0.3f / GData::NearFar.y), (*pp_ssao));
 
-	if (!SSInput_GetKeyState(SIK_L))
-		SPP_RenderFogLinear(&float3_t(0.5, 0.5, 0.5), &float4_t(0.8, 0, 0.0, 0.9));
+	//создаем статический вектор цвета тумана, затем получаем квар который int типа который будет содеражть указатель на этот вектор, и в него записываем указатель на вектор цвета тумана
+	//static float3_t fog_color(0.5, 0.5, 0.5);
+	static int * e_pp_fog_color = (int*)GET_PCVAR_INT("e_pp_fog_color");
+	static float3_t* fog_color; 
+	fog_color = (float3_t*)(*e_pp_fog_color);
+
+	static const float * pp_fog_density = GET_PCVAR_FLOAT("pp_fog_density");
+	static const float * pp_fog_sky = GET_PCVAR_FLOAT("pp_fog_sky");
+	static const float * pp_fog_min = GET_PCVAR_FLOAT("pp_fog_min");
+	static const float * pp_fog_max = GET_PCVAR_FLOAT("pp_fog_max");
+
+	if (pp_fog_density && *pp_fog_density > 0.f && pp_fog_sky && pp_fog_min && pp_fog_max)
+		SPP_RenderFogLinear(fog_color, &float4_t(*pp_fog_density, *pp_fog_sky, *pp_fog_min, *pp_fog_max));
 	//SPP_RenderWhiteBlack(1);
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
 	if (pp_bloom && (*pp_bloom))
 		SPP_RenderBloom(&float3_t(1, 0.7, 0.1));
-
-	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
-	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
-	if (pp_lensflare && (*pp_lensflare))
-		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
 
 	SPP_Update(&(float3_t)GData::ConstCurrCamPos, &(float3_t)GData::ConstCurrCamDir, &GData::MCamView, &GData::MCamProj, &GData::WinSize, &GData::NearFar, GData::ProjFov);
 
@@ -1514,8 +1556,16 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 		SPP_UpdateSun(&tmpPosition);
 
-		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPowerDiv(0)));
+		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPower(GlobalLight)));
 	}
+	else
+		SPP_UpdateSun(0);
+
+	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
+	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
+	if (pp_lensflare && (*pp_lensflare))
+		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
+
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
 
@@ -1978,7 +2028,7 @@ bool SXRenderFunc::AIQuadPhyNavigate(float3_t * pos)
 	return false;
 }
 
-bool SXRenderFunc::ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos)
+bool SXRenderFunc::ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm)
 {
 	if (!lastpos || !nextpos)
 		return false;
@@ -1989,5 +2039,16 @@ bool SXRenderFunc::ParticlesPhyCollision(const float3 * lastpos, const float3* n
 	btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos));
 	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos), cb);
 
-	return cb.hasHit();
+	if (cb.hasHit())
+	{
+		if (coll_pos)
+			*coll_pos = BTVEC_F3(cb.m_hitPointWorld);
+
+		if (coll_nrm)
+			*coll_nrm = BTVEC_F3(cb.m_hitNormalWorld);
+
+		return true;
+	}
+
+	return false;
 }

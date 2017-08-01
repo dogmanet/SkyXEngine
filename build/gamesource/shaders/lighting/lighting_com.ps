@@ -22,6 +22,7 @@ sampler2D ParamSampler:register(s2);
 
 sampler2D DepthSampler:register(s3);
 sampler2D ShadowSampler:register(s4);
+sampler2D AdaptedLumSampler:register(s5);
 
 //#############################################################################
 
@@ -71,7 +72,7 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	}
 	
 	half depth = GetDepthLinearR(tex2D(DepthSampler,IN.TexUV).r,NearFar);
-	
+	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
 	#ifdef IS_SHADOWED
 	half shadow = tex2D(ShadowSampler,IN.TexUV).r;
 	half originshadow = shadow;
@@ -120,13 +121,16 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	if(Param.z < 1.f)
 		diffuse *= max(originshadow,0.2);
 	else
-		diffuse *= max(shadow,0.2);
+	{
+		diffuse *= max(shadow,lerp(0.01,0.2,LightColor.w));
+	}
 	#endif
-
-	half lighting = saturate(max((Param.y) * 0.5f, 0.1f));
-
-	OUT.Amdient.xyz = lerp(1,LightColor.xyz*0.3,(1-lighting)) * LightPowerDist.x * attenuation;
+	
+	//LightColor.xyz *= max(diffuse,0.2);
+		
+	OUT.Amdient.xyz = lerp(LightPowerDist.x,LightColor.xyz,0.5f) * max(diffuse,0.5) * LightPowerDist.x * attenuation;
 	OUT.Amdient.w = diffuse * LightPowerDist.x * attenuation;
+	
 	OUT.Spec = (specular*absdiffuse * saturate(attenuation * 2) * LightPowerDist.x);
 	
 	return OUT;

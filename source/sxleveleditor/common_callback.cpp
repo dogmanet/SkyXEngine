@@ -187,6 +187,35 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 
+	else if (id >= SX_LE_MMENU_WEATHER_BEGIN_ID)
+	{
+		for (int i = 0; i < SXLevelEditor::MenuWeatherCount; ++i)
+		{
+			SXLevelEditor::MainMenu->CheckItem(SX_LE_MMENU_WEATHER_BEGIN_ID+i, false);
+		}
+		SXLevelEditor::MainMenu->CheckItem(id, true);
+		SXLevelEditor::MenuWeatherCurrID = (id - SX_LE_MMENU_WEATHER_BEGIN_ID) - 1;
+
+		if (SXLevelEditor::MenuWeatherCurrID >= 0)
+		{
+			char tmppath[1024];
+			sprintf(tmppath, "%s%s", GData::Pathes::ConfigWeather, SXLevelEditor::MenuWeatherArr[SXLevelEditor::MenuWeatherCurrID]);
+			SGame_WeatherLoad(tmppath);
+		}
+		else
+		{
+			SGame_WeatherLoad(0);
+
+			ID gid = SML_LigthsGetGlobal();
+			if (gid >= 0)
+			{
+				SML_LigthsSetPos(gid, &float3(60, 60, 0), false);
+				SML_LigthsSetColor(gid, &float3(1, 1, 1));
+				SML_LigthsSetEnable(gid, true);
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -936,6 +965,40 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 		else if (SXLevelEditor::CheckBoxTBAIGGraphPoint->GetHWND() == handle_elem)
 		{
 			GData::Editors::AIGGraphPoint = SXLevelEditor::CheckBoxTBAIGGraphPoint->GetCheck();
+		}
+
+		else if (SXLevelEditor::CheckBoxTBLevelType->GetHWND() == handle_elem)
+		{
+			if (SXLevelEditor::CheckBoxTBLevelType->GetCheck())
+			{
+				ID gid = SML_LigthsGetGlobal();
+				if (gid < 0)
+				{
+					gid = SML_LigthsCreatePoint(
+						&float3(60, 60, 0),
+						0,
+						&float3(1, 1, 1),
+						true,
+						true);
+					SML_LigthsSetEnable(gid, true);
+					SML_LigthsSetName(gid, "sun");
+				}
+			}
+			else
+			{
+				ID gid = SML_LigthsGetGlobal();
+				if (gid >= 0)
+					SML_LigthsDeleteLight(gid);
+			}
+		}
+
+		else if (SXLevelEditor::CheckBoxTBGLightEnable->GetHWND() == handle_elem)
+		{
+			ID gid = SML_LigthsGetGlobal();
+			if (gid >= 0)
+				SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->GetCheck());
+			else
+				SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
 		}
 	}
 

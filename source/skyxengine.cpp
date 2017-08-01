@@ -18,6 +18,7 @@ void SkyXEngine_Init()
 	SSInput_Dbg_Set(printflog);
 
 	Core_0Create("sxcore", false);
+	Core_Dbg_Set(printflog);
 	Core_SetOutPtr();
 
 	G_Timer_Render_Scene = Core_TimeAdd();
@@ -25,11 +26,13 @@ void SkyXEngine_Init()
 	Core_RIntSet(G_RI_INT_TIMER_RENDER, G_Timer_Render_Scene);
 	Core_RIntSet(G_RI_INT_TIMER_GAME, G_Timer_Game);
 
-	tm ct = { 0, 0, 9, 27, 5, 2030 - 1900, 0, 0, 0 };
+	tm ct = { 0, 0, 0, 27, 5, 2030 - 1900, 0, 0, 0 };
 	Core_TimeUnixStartSet(G_Timer_Game, mktime(&ct));
 
 	Core_TimeWorkingSet(G_Timer_Render_Scene, true);
 	Core_TimeWorkingSet(G_Timer_Game, true);
+
+	Core_TimeSpeedSet(G_Timer_Game, 100);
 
 	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds, false);
 	SSCore_Dbg_Set(printflog);
@@ -149,6 +152,8 @@ void SkyXEngine_Init()
 
 	GData::IDsShaders::InitAllShaders();
 
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+
 	Core_0RegisterCVarInt("pp_ssao", 1, 0);
 	Core_0RegisterCVarBool("pp_bloom", true, 0);
 	Core_0RegisterCVarBool("pp_lensflare", true, 0);
@@ -156,10 +161,16 @@ void SkyXEngine_Init()
 	Core_0RegisterCVarBool("pp_dlaa", true, 0);
 	Core_0RegisterCVarBool("pp_nfaa", false, 0);
 
+	Core_0RegisterCVarFloat("pp_fog_density", 0.5, 0);
+	Core_0RegisterCVarFloat("pp_fog_sky", 0.0, 0);
+	Core_0RegisterCVarFloat("pp_fog_min", 0.0, 0);
+	Core_0RegisterCVarFloat("pp_fog_max", 0.9, 0);
+
 	Core_0RegisterCVarBool("pp_motionblur", true, 0);
 	Core_0RegisterCVarFloat("pp_motionblur_coef", 0.1, 0);
 	Core_0RegisterCVarBool("pssm_4or3", true, 0);
 
+	Core_0RegisterCVarBool("pssm_shadowed", true, 0);
 	Core_0RegisterCVarFloat("pssm_q", 1, 0);
 	Core_0RegisterCVarFloat("lsm_q", 1, 0);
 	Core_0RegisterCVarInt("shadow_soft", 1, 0);
@@ -175,6 +186,18 @@ void SkyXEngine_Init()
 	Core_0RegisterCVarInt("r_s_max_anisotropy", 16, 0);
 	Core_0RegisterCVarInt("r_s_max_miplevel", 0, 0);
 	Core_0RegisterCVarInt("rs_stats", 1, 0);
+
+	Core_0RegisterCVarBool("g_time_run", true, 0);
+	Core_0RegisterCVarFloat("g_time_speed", 1.f, 0);
+	
+	Core_0RegisterCVarFloat("main_rain_density", 1.f, 0);
+	Core_0RegisterCVarBool("main_thunderbolt", true, 0);
+
+	Core_0RegisterCVarFloat("weather_snd_volume", 1.f, 0);
+	Core_0RegisterCVarFloat("ambient_snd_volume", 1.f, 0);
+
+	static float3_t fog_color(0.5, 0.5, 0.5);
+	Core_0RegisterCVarInt("e_pp_fog_color", ((int)&fog_color));
 
 	Core_0RegisterConcmd("screenshot", SXRenderFunc::SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SXRenderFunc::SaveWorkTex);
@@ -228,6 +251,8 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SXAnim_Update();
 #ifndef SX_PARTICLES_EDITOR
 	SXGame_Update();
+	SGame_WeatherUpdate();
+	SGame_AmbientSndUpdate();
 #endif
 	SXPhysics_Update();
 
@@ -406,6 +431,26 @@ int SkyXEngine_CycleMain()
 			GData::ObjCamera = SXGame_GetActiveCamera();
 #endif
 
+
+			static const bool * g_time_run = GET_PCVAR_BOOL("g_time_run");
+			static bool g_time_run_old = true;
+
+			if (g_time_run && g_time_run_old != (*g_time_run))
+			{
+				g_time_run_old = (*g_time_run);
+				Core_TimeWorkingSet(G_Timer_Game, g_time_run_old);
+			}
+
+			static const float * g_time_speed = GET_PCVAR_FLOAT("g_time_speed");
+			static float g_time_speed_old = true;
+
+			if (g_time_speed && g_time_speed_old != (*g_time_speed))
+			{
+				g_time_speed_old = (*g_time_speed);
+				Core_TimeSpeedSet(G_Timer_Game, g_time_speed_old);
+			}
+
+
 			if (Core_TimeWorkingGet(G_Timer_Render_Scene) && (GetForegroundWindow() == GData::Handle3D || GetForegroundWindow() == GData::HandleParent3D || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
 			{
 
@@ -419,10 +464,6 @@ int SkyXEngine_CycleMain()
 #endif
 
 				SkyXEngine_Render(timeDelta);
-
-#if defined(SX_GAME)
-				Level::Update();
-#endif
 			}
 
 			lastTime = currTime;

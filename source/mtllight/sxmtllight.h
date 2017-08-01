@@ -105,19 +105,7 @@ Cчитается: LIGHTS_UPDATE_PSSM_SPLIT*number_split
 #define LIGHTS_LOCAL_STD_TOP_RADIUS 0.1	/*!< стандартное значение верхнего/начального радиуса для направленного света  */
 #define LIGHTS_LOCAL_STD_NEAR 0.1		/*!< стандартное значение ближней плоскости отсечения для теней локального света  */
 
-/*! \name Сила света 
-Cила света это вклад освещенности от данного источника.
-Если светит солнце, и оно максимально по силе (#LIGHTS_GLOBAL_MAX_POWER), то локальные источники света будут вносить ничтожный вклад,
-однако, так как это real-time просчеты, были внесены упрощения:
- сила света в шейдеры передается как sqrt(power/#LIGHTS_GLOBAL_MAX_POWER), дабы сократить разрыв между экстремумами сил света.
-Таким образом и самый слабый и самый сильный в по одиночке будут вносить свой вклад,
-однако будет видно некоторое дополнение освещения к глобальному (при максимальной силе) от локальных источников сила которых близка к максимальной (#LIGHTS_LOCAL_MAX_POWER)
-@{*/
-
-#define LIGHTS_GLOBAL_MAX_POWER 200.f	/*!< максимальная сила глобального света */
-#define LIGHTS_LOCAL_MAX_POWER 100.f	/*!< максимальная сила локального света */
-
-//!@}
+#define LIGHTS_LOCAL_MAX_DIST 200.f		/*!< максимальная дистанция локального света */
 
 #define LIGHTS_GLOBAL_STD_RADIUS 999999	/*!< радиус глобального источника */
 #define LIGHTS_POS_G_MAX 1000	/*!< отдаленность глобального света (нужно для корректности теней) */
@@ -171,7 +159,6 @@ SX_LIB_API ID SML_LigthsGetIDByKey(ID key);	//!< получить id по клю
 //! создать точечный свет (светит во все стороны)
 SX_LIB_API ID SML_LigthsCreatePoint(
 	const float3* center,	//!< центр света (мировая)
-	float power,			//!< сила света
 	float dist,				//!< дистанция на которую распространяется свет
 	const float3* color,	//!< цвет в пределах 0-1
 	bool isglobal,			//!< глобальный ли свет (типа солнца)
@@ -181,7 +168,6 @@ SX_LIB_API ID SML_LigthsCreatePoint(
 //! создать направленный свет
 SX_LIB_API ID SML_LigthsCreateDirection(
 	const float3* pos,		//!< позиция света (мировая)
-	float power,			//!< сила света
 	float dist,				//!< дистанция на которую распространяется свет
 	const float3* color,	//!< цвет в пределах 0-1
 	const float3* dir,		//!< направление взгляда (базовый float3(0,-1,0))
@@ -218,13 +204,7 @@ SX_LIB_API void SML_LigthsSetPos(
 	bool greal = false	//!< true - установка реальных координат, false - установка углов, только для глобального света, во всех остальных случаях не имеет смысла
 	);
 
-/*! установка силы света, необходимо ориентироваться пределами: 
- - для глобальных не более #LIGHTS_GLOBAL_MAX_POWER
- - для локальных не более #LIGHTS_LOCAL_MAX_POWER
-*/
-SX_LIB_API void SML_LigthsSetPower(ID id, float power);	
-SX_LIB_API float SML_LigthsGetPower(ID id);		//!< получить силу света
-SX_LIB_API float SML_LigthsGetPowerDiv(ID id);	//!< возвращает "гиперболизированное значение силы света" для отправки в шейдер
+SX_LIB_API float SML_LigthsGetPower(ID id);	//!< возвращает "значение силы света" для отправки в шейдер (максимальная компонента цвет * дистанция покрытия/LIGHTS_LOCAL_MAX_DIST)
 
 SX_LIB_API float SML_LigthsGetDist(ID id);		//!< возвращает дистанцию на которую распространяется свет
 

@@ -28,6 +28,9 @@ struct CommonParticle
 		CharacterDeviationCountDelayMls2 = 0;
 
 		LightingIntens = 1;
+
+		Track = false;
+		TrackTime = 0;
 	}
 
 	float3 PosCreate;	//позиция создания
@@ -58,6 +61,12 @@ struct CommonParticle
 	float AlphaDeath;
 	float LightingIntens;
 	bool IsAlife;
+
+
+	bool Track;
+	float3 TrackPos;
+	float3 TrackNormal;
+	DWORD TrackTime;
 };
 
 //основное представление частицы в шейдере
@@ -120,7 +129,7 @@ public:
 	inline void EnableSet(bool enable);
 	inline bool EnableGet();
 
-	void VertexCreate();
+	void GeomDataCreate();
 	
 	void Compute(const float4x4 * mat);
 	void ComputeLighting();
@@ -131,10 +140,18 @@ public:
 	ID TextureGetID();
 	void TextureGet(char* tex);
 
+	void TextureTrackSet(const char* tex);
+	void TextureTrackSetID(ID tex);
+	ID TextureTrackGetID();
+	void TextureTrackGet(char* tex);
+
 	void AnimTexDataInit();
 
 	inline void AlifeSet(bool alife);
 	inline bool AlifeGet();
+
+	inline int TrackCountGet();
+	int TrackPosGet(float3** arr, int count);
 
 	float3_t CurrMin;
 	float3_t CurrMax;
@@ -153,11 +170,14 @@ protected:
 	void CreateParticles();
 	inline void ReCreateParticles(WORD id);
 
+	void VertexBuffModify();
+
 	void UpdateAnimTex(WORD idparticle, DWORD tmptime);
 	float2_t AnimTexSize;	//размер текстуры
 	float4 AnimSizeCadr;//размер одного кадра, xy - в пикселях, zw - в процентном соотношении к размеру текстуры
 
 	ID IDTex;			//id текстуры, общей на все партиклы текущего организатора
+	ID IDTexTrack;		//id текстуры следа, общей на все партиклы текущего организатора
 	DWORD OldTime;		//прошлое время с которого началось обработка
 	DWORD TimeNextSpawnParticle;	//время спавна будущего партикла
 	
@@ -177,7 +197,12 @@ protected:
 	IDirect3DVertexBuffer9* VertexBuff;
 	IDirect3DIndexBuffer9* IndexBuff;
 
+	IDirect3DVertexBuffer9* VertexBuffQuad;
+	IDirect3DIndexBuffer9* IndexBuffQuad;
+
 	ParticlesData Data;
+
+	float2_t OldSize;
 };
 
 #endif

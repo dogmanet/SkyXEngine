@@ -5,7 +5,6 @@
 
 BEGIN_PROPTABLE(SXLightPoint)
 	DEFINE_FIELD_VECTOR(m_color, 0, "color", "Color", EDITOR_TEXTFIELD)
-	DEFINE_FIELD_FLOAT(m_power, 0, "power", "Power", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_FLOAT(m_dist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_FLOAT(m_light_far, 0, "light_far", "Light far", EDITOR_TEXTFIELD)
 
@@ -24,11 +23,10 @@ BaseClass(pMgr)
 {
 	m_color = float3(1, 1, 1);
 	m_vPosition = float3_t(0, 0, 0);
-	m_power = 10;
 	m_dist = 10;
 	m_light_far = m_dist;
 	m_typeshadow = 1;
-	IDLight = SML_LigthsCreatePoint(&float3(0, 0, 0), m_power, m_dist, &m_color, false, true);
+	IDLight = SML_LigthsCreatePoint(&float3(0, 0, 0), m_dist, &m_color, false, true);
 }
 
 SXLightPoint::~SXLightPoint()
@@ -47,7 +45,6 @@ void SXLightPoint::OnSync()
 		SML_LigthsSetPos(IDLight, &(float3)m_vPosition, false);
 
 	SML_LigthsSetColor(IDLight, &m_color);
-	SML_LigthsSetPower(IDLight, m_power);
 	
 	if (SML_LigthsGetDist(IDLight) != m_dist)
 	{

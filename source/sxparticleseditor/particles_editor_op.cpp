@@ -135,6 +135,22 @@ void SXParticlesEditor::BaseVisible(bool visible)
 	StaticSizeDependAge->Visible(visible);
 	ComboBoxSizeDependAge->Visible(visible);
 	CheckBoxCollisionDelete->Visible(visible);
+
+	SXParticlesEditor::StaticColor->Visible(visible);
+	SXParticlesEditor::StaticColorR->Visible(visible);
+	SXParticlesEditor::EditColorR->Visible(visible);
+	SXParticlesEditor::StaticColorG->Visible(visible);
+	SXParticlesEditor::EditColorG->Visible(visible);
+	SXParticlesEditor::StaticColorB->Visible(visible);
+	SXParticlesEditor::EditColorB->Visible(visible);
+	SXParticlesEditor::StaticColorA->Visible(visible);
+	SXParticlesEditor::EditColorA->Visible(visible);
+
+	SXParticlesEditor::CheckBoxTrack->Visible(visible);
+	SXParticlesEditor::StaticTrackSize->Visible(visible);
+	SXParticlesEditor::EditTrackSize->Visible(visible);
+	SXParticlesEditor::StaticTrackTime->Visible(visible);
+	SXParticlesEditor::EditTrackTime->Visible(visible);
 }
 
 void SXParticlesEditor::BaseDataInit()
@@ -175,6 +191,15 @@ void SXParticlesEditor::BaseDataInit()
 	SXParticlesEditor::EditSizeDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDisp)).c_str());
 	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDependAge));
 	SXParticlesEditor::CheckBoxCollisionDelete->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CollisionDelete));
+
+	SXParticlesEditor::EditColorR->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.x)).c_str());
+	SXParticlesEditor::EditColorG->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.y)).c_str());
+	SXParticlesEditor::EditColorB->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.z)).c_str());
+	SXParticlesEditor::EditColorA->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.w)).c_str());
+
+	SXParticlesEditor::CheckBoxTrack->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Track));
+	SXParticlesEditor::EditTrackSize->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackSize)).c_str());
+	SXParticlesEditor::EditTrackTime->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackTime)).c_str());
 }
 
 void SXParticlesEditor::BaseNulling()
@@ -202,6 +227,15 @@ void SXParticlesEditor::BaseNulling()
 	SXParticlesEditor::EditSizeDisp->SetText("0");
 	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(0);
 	SXParticlesEditor::CheckBoxCollisionDelete->SetCheck(false);
+
+	SXParticlesEditor::EditColorR->SetText("1");
+	SXParticlesEditor::EditColorG->SetText("1");
+	SXParticlesEditor::EditColorB->SetText("1");
+	SXParticlesEditor::EditColorA->SetText("0");
+
+	SXParticlesEditor::CheckBoxTrack->SetCheck(false);
+	SXParticlesEditor::EditTrackSize->SetText("0");
+	SXParticlesEditor::EditTrackTime->SetText("0");
 }
 
 void SXParticlesEditor::BoundVisible(bool visible)

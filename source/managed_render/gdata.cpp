@@ -35,7 +35,8 @@ void GData::Pathes::InitAllPathes()
 	sprintf(GData::Pathes::WorkingTex, "%s%s", GData::Pathes::ForExe, "\\worktex\\");
 	sprintf(GData::Pathes::GameSource, "%s%s", GData::Pathes::ForExe, "\\gamesource\\");
 	sprintf(GData::Pathes::Screenshots, "%s%s", GData::Pathes::ForExe, "\\screenshots\\");
-	sprintf(GData::Pathes::Configs, "%s%s", GData::Pathes::GameSource, "configs\\");
+	sprintf(GData::Pathes::Config, "%s%s", GData::Pathes::GameSource, "config\\");
+	sprintf(GData::Pathes::ConfigWeather, "%s%s", GData::Pathes::Config, "weather\\");
 	sprintf(GData::Pathes::Levels, "%s%s", GData::Pathes::GameSource, "levels\\");
 	sprintf(GData::Pathes::Meshes, "%s%s", GData::Pathes::GameSource, "meshes\\");
 	sprintf(GData::Pathes::Models, "%s%s", GData::Pathes::GameSource, "models\\");

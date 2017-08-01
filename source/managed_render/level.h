@@ -16,8 +16,6 @@ See the license in LICENSE
 #ifndef level_h
 #define level_h
 
-#include <managed_render/level_ambient_sounds.cpp>
-
 //! пространство имен для управления уровнем
 namespace Level
 {
@@ -32,16 +30,14 @@ namespace Level
 	 \todo Расписать организацию конфигурационного файла загрузки/сохранения для уровня
 	 @{*/
 	char Name[OBJECT_NAME_MAX_LEN];	//!< текущее имя уровня
+	String StrAmbientSounds;
+	String StrWeather;
 	void Clear();					//!< очистка уровня
 	void Load(const char* name);	//!< Загрузка уровня с именем name
 	void Save(const char* name);	//!< Сохранение уровня под именем name
 
 	void LoadParticles();			//!< загрузка файла с инфой о частицах
 	void SaveParticles();			//!< сохранение файла с инфой о частицах
-
-	LevelAmbientSounds* AmbientSounds = 0;
-
-	void Update();
 
 	//!@}
 };

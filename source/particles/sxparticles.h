@@ -58,7 +58,7 @@ SX_LIB_API void SPE_AKill();	//!< уничтожить подсистему
 //!@}
 
 //! тип функции для определения пересечения, на вход идет предыдущая и будущая позиции цачицы, возвращает true в случае пересечения, иначе false
-typedef bool(*g_particles_phy_collision) (const float3 * lastpos, const float3* nextpos);
+typedef bool(*g_particles_phy_collision) (const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
 
 /*! переназначение g_aiquad_phy_navigate, обязательное действие для работы с сеткой */
 SX_LIB_API void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision func);
@@ -76,13 +76,19 @@ SX_LIB_API void SPE_OnResetDevice();//!< вызывать при восстан�
 //#############################################################################
 
 /*! базовое направления взгляда эффекта */
-#define SXPARTICLES_BASIS_DIR float3(0,0,1)
+#define SXPARTICLES_BASE_DIR float3(0,0,1)
+
+/*! базовое направления взгляда следа */
+#define SXPARTICLES_TRACK_BASE_DIR float3(0,1,0)
 
 /*! время в течении которого эффект полность затухнет в случае установки ложного состояния жизни #SPE_EffectAlifeSet */
 #define SXPARTICLES_DEADTH_TIME 1000
 
 /*! количество новых резервных копий эффекта (в пуле) в случае нехватки */
 #define SXPARTICLES_POOL_RESERVE 8
+
+/*! на сколько отдаляем частицу от геометрии при отрисовке следа */
+#define SXPARTICLES_TRACK_ADD	0.05f
 
 //#############################################################################
 
@@ -324,9 +330,18 @@ struct ParticlesData
 	bool FigureTapY;				//!< поворачивать ли по оси Y
 	bool FigureTapZ;				//!< поворачивать ли по оси Z
 
+	////////////////////////////////////////////
+
+	//! отрисовка следа от столкновения, только для эмиттеров у которых CollisionDelete == true, рисуется квад и альфа канал уменьшатсья с течением времени 
+	bool Track;
+	float TrackSize;	//!< размер следа, в метрах
+	DWORD TrackTime;	//!< время исчезновения в млсек
+
+	////////////////////////////////////////////
+
 	ParticlesAlphaBlendType AlphaBlendType;	//!< тип смешивания
 	float ColorCoef;		//!< коэфициент на который будет домножен цвет
-
+	float4_t Color;
 	int ReCreateCount;		//!< количество создваваемых/пересоздаваемых, 0< - пересоздание в случае нехватки, 0> - единственное создание при запуске
 
 	bool Soft;				//!< мягкие ли частицы
@@ -470,8 +485,16 @@ SX_LIB_API void SPE_EmitterTextureSetID(ID id, ID id_part, ID tex);
 SX_LIB_API ID SPE_EmitterTextureGetID(ID id, ID id_part);
 SX_LIB_API void SPE_EmitterTextureGet(ID id, ID id_part, char* tex);
 
+SX_LIB_API void SPE_EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
+SX_LIB_API void SPE_EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
+SX_LIB_API ID SPE_EmitterTextureTrackGetID(ID id, ID id_part);
+SX_LIB_API void SPE_EmitterTextureTrackGet(ID id, ID id_part, char* tex);
+
 SX_LIB_API void SPE_EmitterNameSet(ID id, ID id_part, const char* name);	//!< установка имени системе частиц
 SX_LIB_API void SPE_EmitterNameGet(ID id, ID id_part, char* name);			//!< в name записывает имя системы частиц
+
+SX_LIB_API int SPE_EmitterTrackCountGet(ID id, ID id_part);
+SX_LIB_API int SPE_EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);
 
 //!@} sxparticles_part
 

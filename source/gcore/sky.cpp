@@ -122,6 +122,18 @@ void SkyBox::GetStdPath(char* path)
 
 void SkyBox::LoadTextures(const char *texture)
 {
+	mem_release_del(Tex);
+	if (!texture)
+	{
+		mem_release_del(Tex2);
+
+		BFChange = false;
+		BFChangeMainTex = false;
+		FactorBlend = 0.0f;
+
+		return;
+	}
+
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", StdPath, texture);
 	if (FAILED(D3DXCreateCubeTextureFromFile(DXDevice, tmppath, &Tex)))
@@ -303,6 +315,7 @@ SkyClouds::SkyClouds()
 	SkyCloudsIndeces->Unlock();
 
 	Bias = 0.f;
+	Speed = 0.01f;
 
 	SkyCloudsTex = 0;
 	SkyCloudsTex2 = 0;
@@ -388,6 +401,16 @@ inline void SkyClouds::GetColor(float4_t* color)
 	*color = Color;
 }
 
+void SkyClouds::SetSpeed(float speed)
+{
+	Speed = speed;
+}
+
+float SkyClouds::GetSpeed()
+{
+	return Speed;
+}
+
 void SkyClouds::SetStdPath(const char* path)
 {
 	if (path)
@@ -402,6 +425,18 @@ void SkyClouds::GetStdPath(char* path)
 
 void SkyClouds::LoadTextures(const char *texture)
 {
+	mem_release_del(SkyCloudsTex);
+	if (!texture)
+	{
+		mem_release_del(SkyCloudsTex2);
+
+		BFChange = false;
+		BFChangeMainTex = false;
+		FactorBlend = 0.0f;
+
+		return;
+	}
+
 	char tmppath[1024];
 	sprintf(tmppath,"%s%s",StdPath,texture);
 	if (FAILED(D3DXCreateTextureFromFile(DXDevice, tmppath, &SkyCloudsTex)))
@@ -420,7 +455,7 @@ void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 		if(BFChange)
 			FactorBlend += timeDelta * 0.001f * 0.2f;
 
-	Bias += timeDelta * 0.001f * 0.01;
+	Bias += timeDelta * 0.001f * Speed;
 
 		if(Bias >= 2.f)
 			Bias = 0.f;

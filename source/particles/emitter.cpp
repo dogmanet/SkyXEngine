@@ -9,6 +9,8 @@ void Emitter::NullingInit()
 	TimeNextSpawnParticle = 0;
 	VertexBuff = 0;
 	IndexBuff = 0;
+	VertexBuffQuad = 0;
+	IndexBuffQuad = 0;
 	IDTex = -1;
 	Arr = 0;
 	TransVertBuf = 0;
@@ -19,6 +21,10 @@ void Emitter::NullingInit()
 	GTransparency = 1;
 	TimerDeath = 0;
 	SizeAdd = 0;
+
+	IDTexTrack = -1;
+	OldSize.x = 0;
+	OldSize.y = 0;
 }
 
 Emitter::Emitter()
@@ -30,6 +36,7 @@ Emitter::Emitter(Emitter& part)
 {
 	NullingInit();
 	IDTex = part.IDTex;
+	IDTexTrack = part.IDTexTrack;
 	Data = part.Data;
 	CountSet(part.Count);
 }
@@ -40,6 +47,8 @@ Emitter::~Emitter()
 	mem_release_del(TransVertBuf);
 	mem_release_del(VertexBuff);
 	mem_release_del(IndexBuff);
+	mem_release_del(VertexBuffQuad);
+	mem_release_del(IndexBuffQuad);
 }
 
 void Emitter::OnLostDevice()
@@ -66,7 +75,7 @@ void Emitter::Init(ParticlesData* data)
 	if (IDTex >= 0)
 		AnimTexDataInit();
 
-	VertexCreate();
+	GeomDataCreate();
 
 	if (Enable)
 	{
@@ -117,6 +126,32 @@ void Emitter::TextureGet(char* tex)
 		SGCore_LoadTexGetName(IDTex, tex);
 	}
 }
+
+
+void Emitter::TextureTrackSetID(ID tex)
+{
+	IDTexTrack = tex;
+}
+
+void Emitter::TextureTrackSet(const char* tex)
+{
+	IDTexTrack = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
+	SGCore_LoadTexLoadTextures();
+}
+
+ID Emitter::TextureTrackGetID()
+{
+	return IDTexTrack;
+}
+
+void Emitter::TextureTrackGet(char* tex)
+{
+	if (IDTexTrack >= 0)
+	{
+		SGCore_LoadTexGetName(IDTexTrack, tex);
+	}
+}
+
 
 void Emitter::AnimTexDataInit()
 {
@@ -227,7 +262,7 @@ void Emitter::CountSet(int count)
 		&TransVertBuf,
 		0);
 
-	VertexCreate();
+	GeomDataCreate();
 }
 
 int Emitter::CountGet()
@@ -275,27 +310,10 @@ bool Emitter::EnableGet()
 	return Enable;
 }
 
-void Emitter::VertexCreate()
+void Emitter::VertexBuffModify()
 {
-	mem_release_del(VertexBuff);
-	mem_release_del(IndexBuff);
-
-	PESet::DXDevice->CreateVertexBuffer(
-		4 * Data.FigureCountQuads * sizeof(CommonParticleDecl),
-		0,
-		0,
-		D3DPOOL_MANAGED,
-		&VertexBuff,
-		0);
-
-	PESet::DXDevice->CreateIndexBuffer(
-		6 * Data.FigureCountQuads * sizeof(WORD),
-		0,
-		D3DFMT_INDEX16,
-		D3DPOOL_MANAGED,
-		&IndexBuff,
-		0);
-
+	if (!VertexBuff)
+		return;
 
 	CommonParticleDecl* vertices;
 	VertexBuff->Lock(0, 0, (void**)&vertices, 0);
@@ -309,12 +327,15 @@ void Emitter::VertexCreate()
 	static float4x4 mat;
 	mat = SMMatrixIdentity();
 
+	float x = Data.Size.x * 0.5f;
+	float y = Data.Size.y * 0.5f;
+
 	for (int i = 0; i < Data.FigureCountQuads; ++i)
 	{
-		float3 v0(-0.5f, -0.5f, 0.f);
-		float3 v1(-0.5f, 0.5f, 0.f);
-		float3 v2(0.5f, 0.5f, 0.f);
-		float3 v3(0.5f, -0.5f, 0.f);
+		float3 v0(-x, -y, 0.f);
+		float3 v1(-x, y, 0.f);
+		float3 v2(x, y, 0.f);
+		float3 v3(x, -y, 0.f);
 
 		if (Data.FigureTapX)
 		{
@@ -360,13 +381,36 @@ void Emitter::VertexCreate()
 	}
 
 	VertexBuff->Unlock();
+}
 
+void Emitter::GeomDataCreate()
+{
+	mem_release_del(VertexBuff);
+	mem_release_del(IndexBuff);
+
+	PESet::DXDevice->CreateVertexBuffer(
+		4 * Data.FigureCountQuads * sizeof(CommonParticleDecl),
+		0,
+		0,
+		D3DPOOL_MANAGED,
+		&VertexBuff,
+		0);
+
+	PESet::DXDevice->CreateIndexBuffer(
+		6 * Data.FigureCountQuads * sizeof(WORD),
+		0,
+		D3DFMT_INDEX16,
+		D3DPOOL_MANAGED,
+		&IndexBuff,
+		0);
+
+	VertexBuffModify();
 
 	WORD* indices = 0;
 	IndexBuff->Lock(0, 0, (void**)&indices, 0);
 
 	int countind = 0;
-	countvert = 0;
+	int countvert = 0;
 
 	for (int i = 0; i < Data.FigureCountQuads; ++i)
 	{
@@ -378,6 +422,43 @@ void Emitter::VertexCreate()
 	}
 
 	IndexBuff->Unlock();
+
+
+
+	PESet::DXDevice->CreateVertexBuffer(
+		4 * sizeof(CommonParticleDecl),
+		0,
+		0,
+		D3DPOOL_MANAGED,
+		&VertexBuffQuad,
+		0);
+
+	PESet::DXDevice->CreateIndexBuffer(
+		6  * sizeof(WORD),
+		0,
+		D3DFMT_INDEX16,
+		D3DPOOL_MANAGED,
+		&IndexBuffQuad,
+		0);
+
+	CommonParticleDecl* vertices;
+	VertexBuffQuad->Lock(0, 0, (void**)&vertices, 0);
+
+	vertices[0] = CommonParticleDecl(-0.5, 0, -0.5, 0.0f, 1.0f);
+	vertices[1] = CommonParticleDecl(-0.5, 0,  0.5, 0.0f, 0.0f);
+	vertices[2] = CommonParticleDecl( 0.5, 0,  0.5, 1.0f, 0.0f);
+	vertices[3] = CommonParticleDecl( 0.5, 0,  -0.5, 1.0f, 1.0f);
+
+	VertexBuffQuad->Unlock();
+
+
+	indices = 0;
+	IndexBuffQuad->Lock(0, 0, (void**)&indices, 0);
+
+	indices[0] = 0; indices[1] = 1; indices[2] = 2;
+	indices[3] = 0; indices[4] = 2; indices[5] = 3;
+
+	IndexBuffQuad->Unlock();
 }
 
 void Emitter::CreateParticles()
@@ -603,28 +684,35 @@ inline void Emitter::ReCreateParticles(WORD id)
 	}
 
 
-	if (Data.VelocityDisp == 0.0f)
-	{
-		Arr[id].Velocity.x = Data.Velocity.x;
-		Arr[id].Velocity.y = Data.Velocity.y;
-		Arr[id].Velocity.z = Data.Velocity.z;
-	}
-	else if (Data.VelocityDisp != 0.0f)
-	{
-		if (Data.VelocityDispXNeg)
-			Arr[id].Velocity.x = Data.Velocity.x + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
-		else
-			Arr[id].Velocity.x = Data.Velocity.x + (randf(0, Data.VelocityDisp));
+	Arr[id].Velocity.x = Data.Velocity.x;
+	Arr[id].Velocity.y = Data.Velocity.y;
+	Arr[id].Velocity.z = Data.Velocity.z;
 
-		if (Data.VelocityDispYNeg)
-			Arr[id].Velocity.y = Data.Velocity.y + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
-		else
-			Arr[id].Velocity.y = Data.Velocity.y + (randf(0, Data.VelocityDisp));
+	if (Data.VelocityDisp != 0.0f)
+	{
+		if (Arr[id].Velocity.x != 0.f)
+		{
+			if (Data.VelocityDispXNeg)
+				Arr[id].Velocity.x = Data.Velocity.x + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
+			else
+				Arr[id].Velocity.x = Data.Velocity.x + (randf(0, Data.VelocityDisp));
+		}
 
-		if (Data.VelocityDispZNeg)
-			Arr[id].Velocity.z = Data.Velocity.z + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
-		else
-			Arr[id].Velocity.z = Data.Velocity.z + (randf(0, Data.VelocityDisp));
+		if (Arr[id].Velocity.y != 0.f)
+		{
+			if (Data.VelocityDispYNeg)
+				Arr[id].Velocity.y = Data.Velocity.y + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
+			else
+				Arr[id].Velocity.y = Data.Velocity.y + (randf(0, Data.VelocityDisp));
+		}
+
+		if (Arr[id].Velocity.z != 0.f)
+		{
+			if (Data.VelocityDispZNeg)
+				Arr[id].Velocity.z = Data.Velocity.z + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
+			else
+				Arr[id].Velocity.z = Data.Velocity.z + (randf(0, Data.VelocityDisp));
+		}
 	}
 
 
@@ -636,20 +724,29 @@ inline void Emitter::ReCreateParticles(WORD id)
 	}
 	else if (Data.AccelerationDisp != 0.0f)
 	{
-		if (Data.AccelerationDispXNeg)
-			Arr[id].Acceleration.x = Data.Acceleration.x + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
-		else
-			Arr[id].Acceleration.x = Data.Acceleration.x + (randf(0, Data.AccelerationDisp));
+		if (Arr[id].Acceleration.x != 0.f)
+		{
+			if (Data.AccelerationDispXNeg)
+				Arr[id].Acceleration.x = Data.Acceleration.x + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
+			else
+				Arr[id].Acceleration.x = Data.Acceleration.x + (randf(0, Data.AccelerationDisp));
+		}
 
-		if (Data.AccelerationDispYNeg)
-			Arr[id].Acceleration.y = Data.Acceleration.x + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
-		else
-			Arr[id].Acceleration.y = Data.Acceleration.x + (randf(0, Data.AccelerationDisp));
+		if (Arr[id].Acceleration.y != 0.f)
+		{
+			if (Data.AccelerationDispYNeg)
+				Arr[id].Acceleration.y = Data.Acceleration.x + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
+			else
+				Arr[id].Acceleration.y = Data.Acceleration.x + (randf(0, Data.AccelerationDisp));
+		}
 
-		if (Data.AccelerationDispZNeg)
-			Arr[id].Acceleration.z = Data.Acceleration.z + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
-		else
-			Arr[id].Acceleration.z = Data.Acceleration.z + (randf(0, Data.AccelerationDisp));
+		if (Arr[id].Acceleration.z != 0.f)
+		{
+			if (Data.AccelerationDispZNeg)
+				Arr[id].Acceleration.z = Data.Acceleration.z + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
+			else
+				Arr[id].Acceleration.z = Data.Acceleration.z + (randf(0, Data.AccelerationDisp));
+		}
 	}
 }
 
@@ -1018,8 +1115,26 @@ void Emitter::Compute(const float4x4 * mat)
 				tmpoldpos = SMVector3Transform(tmpoldpos, *mat);
 				tmpnewpos = SMVector3Transform(Arr[i].Pos, *mat);
 
-				if (GParticlesPhyCollision(&tmpoldpos, &tmpnewpos))
+				if (GParticlesPhyCollision(&tmpoldpos, &tmpnewpos, &Arr[i].TrackPos, &Arr[i].TrackNormal /*(!Arr[i].Track ? &Arr[i].TrackPos : 0), (!Arr[i].Track ? &Arr[i].TrackNormal : 0)*/))
+				{
 					Arr[i].IsAlife = false;
+
+					if (Data.Track)
+					{
+						Arr[i].TrackPos += Arr[i].TrackNormal * SXPARTICLES_TRACK_ADD;
+						float3 f = SXPARTICLES_TRACK_BASE_DIR;
+						float3 a = SMVector3Cross(f, Arr[i].TrackNormal);
+						float ang = acosf(SMVector3Dot(f, Arr[i].TrackNormal));
+
+						SMQuaternion q(a, ang);
+						Arr[i].TrackNormal.x = q.x;
+						Arr[i].TrackNormal.y = q.y;
+						Arr[i].TrackNormal.z = q.z;
+						Arr[i].TrackNormal.w = q.w;
+						Arr[i].Track = true;
+						Arr[i].TrackTime = TimeGetMls(G_Timer_Render_Scene);
+					}
+				}
 			}
 
 			if (!(Arr[i].IsAlife))
@@ -1094,6 +1209,13 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 
 	if (CountLifeParticle > 0)
 	{
+		//если размер частиц изменился то меняем данные в вершинном буфере на новые
+		if (Data.Size.x != OldSize.x || Data.Size.y != OldSize.y)
+		{
+			OldSize = Data.Size;
+			VertexBuffModify();
+		}
+
 		CommonParticleDecl2* RTGPUArrVerteces;
 		TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		DWORD tmpcount = 0;
@@ -1232,6 +1354,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
 		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, psid, "ColorCoef", &Data.ColorCoef);
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, psid, "Color", &Data.Color);
 
 		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -1262,4 +1385,125 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		PESet::DXDevice->SetStreamSourceFreq(0, 1);
 		PESet::DXDevice->SetStreamSourceFreq(1, 1);
 	}
+
+	if (!Data.Track)
+		return;
+
+	bool exists_track = false;
+
+	for (int i = 0; i < Count; ++i)
+	{
+		if (Arr[i].Track)
+		{
+			exists_track = true;
+			break;
+		}
+	}
+
+	if (exists_track)
+	{
+		CommonParticleDecl2* RTGPUArrVerteces;
+		TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+		int tmpcount = 0;
+		for (int i = 0; i<Count; ++i)
+		{
+			if (TimeGetMls(G_Timer_Render_Scene) - Arr[i].TrackTime > Data.TrackTime)
+				Arr[i].Track = false;
+
+			if (Arr[i].Track)
+			{
+				RTGPUArrVerteces[tmpcount].pos = Arr[i].TrackPos;
+				RTGPUArrVerteces[tmpcount].tex = (float4_t)Arr[i].TrackNormal;
+				RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(G_Timer_Render_Scene) - Arr[i].TrackTime) / float(Data.TrackTime));
+				RTGPUArrVerteces[tmpcount].size = Data.TrackSize;
+				++tmpcount;
+			}
+		}
+
+		TransVertBuf->Unlock();
+
+
+		if (tmpcount <= 0)
+			return;
+
+		PESet::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
+
+		PESet::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
+		PESet::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(CommonParticleDecl2));
+
+		PESet::DXDevice->SetVertexDeclaration(PESet::VertexDeclarationParticles);
+
+		PESet::DXDevice->SetStreamSource(0, VertexBuffQuad, 0, sizeof(CommonParticleDecl));
+		PESet::DXDevice->SetIndices(IndexBuffQuad);
+
+		SGCore_ShaderBind(ShaderType::st_vertex, PESet::IDsShaders::VS::ParticlesTrack);
+		SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesTrack);
+
+		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+		PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+		PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+		static float4x4 MCamView;
+		static float4x4 MCamProj;
+		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &MCamView);
+		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &MCamProj);
+
+		float4x4 vp = MCamView * MCamProj;
+		PESet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(IDTexTrack));
+
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::ParticlesTrack, "WorldViewProjection", &SMMatrixTranspose(vp));
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesTrack, "Color", &Data.Color);
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesTrack, "ColorCoef", &Data.ColorCoef);
+
+		PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+
+		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+
+		SGCore_ShaderUnBind();
+
+		PESet::DXDevice->SetStreamSourceFreq(0, 1);
+		PESet::DXDevice->SetStreamSourceFreq(1, 1);
+	}
+}
+
+int Emitter::TrackCountGet()
+{
+	if (!Enable || !Data.Track || !Data.CollisionDelete)
+		return 0;
+
+	int count_track = 0;
+
+	for (int i = 0; i < Count; ++i)
+	{
+		if (Arr[i].Track)
+			++count_track;
+	}
+
+	return count_track;
+}
+
+int Emitter::TrackPosGet(float3** arr, int count)
+{
+	if (!arr || !Enable || !Data.Track || !Data.CollisionDelete)
+		return 0;
+
+	int count_track = 0;
+
+	for (int i = 0; i < Count; ++i)
+	{
+		if (Arr[i].Track)
+		{
+			if (count_track >= count)
+				break;
+
+			(*arr)[count_track] = Arr[i].TrackPos;
+			++count_track;
+		}
+	}
+
+	return count_track;
 }

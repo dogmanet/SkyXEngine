@@ -101,7 +101,7 @@ namespace SXRenderFunc
 	//!@}
 
 	bool AIQuadPhyNavigate(float3_t * pos);
-	bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos);
+	bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
 
 	void SaveScreenShot();		//!< сохранить скриншот
 	void SaveWorkTex();			//!< сохранить рабочие текстуры (г-буфер и что к нему прилагается)

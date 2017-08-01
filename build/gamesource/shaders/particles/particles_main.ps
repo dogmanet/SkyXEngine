@@ -13,11 +13,13 @@ sampler2D SceneSampler:register(s2);
 half RefractCoef;
 half SoftCoef;
 half ColorCoef;
+half4 Color;
 half2 NearFar;
 
 half4 main(vs_out_particles IN):COLOR0
 {
 	half4 color = tex2D(BaseSampler,IN.TexUV);
+	color.rgb = lerp(color.rgb, Color.rgb, Color.a);
 	color.rgb *= ColorCoef;
 	color.a *= IN.Alpha.x;
 	#if defined(PART_SOFT) || defined(PART_REFRACTION)

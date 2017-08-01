@@ -8,10 +8,12 @@ See the license in LICENSE
 #include <windows.h>
 
 #include "sxgame.h"
-
+#include <cdata.h>
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
+#include <particles/sxparticles.h>
 #include <score/sxscore.h>
+#include <pp/sxpp.h>
 
 #include "EntityManager.h"
 
@@ -29,6 +31,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxanim_d.lib")
 #	pragma comment(lib, "sxparticles_d.lib")
 #	pragma comment(lib, "sxscore_d.lib")
+#	pragma comment(lib, "sxpp_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
@@ -38,6 +41,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxanim.lib")
 #	pragma comment(lib, "sxparticles.lib")
 #	pragma comment(lib, "sxscore.lib")
+#	pragma comment(lib, "sxpp.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -45,10 +49,17 @@ See the license in LICENSE
 report_func reportf = def_report;
 #endif
 
+#include "weather.cpp"
+#include "ambient_sounds.cpp"
+
 GameData * g_pGameData = NULL;
 ID3DXMesh* FigureBox = 0;
+Weather* ObjWeather = 0;
+AmbientSounds* ObjAmbientSounds = 0;
 
 #define SG_PRECOND(ret) if(!g_pGameData){reportf(-1, "%s - sxgame is not init", gen_msg_location);return ret;}
+#define SG_PRECOND_WEATHER(ret) if(!ObjWeather){reportf(-1, "%s - sxgame weather is not init", gen_msg_location);return ret;}
+#define SG_PRECOND_AMBIENTSND(ret) if(!ObjAmbientSounds){reportf(-1, "%s - sxgame ambient sounds is not init", gen_msg_location);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -109,6 +120,11 @@ SX_LIB_API void SXGame_0Create()
 	Core_SetOutPtr();
 
 	g_pGameData = new GameData();
+	ObjWeather = new Weather();
+	ObjAmbientSounds = new AmbientSounds();
+
+	G_Timer_Render_Scene = Core_RIntGet(G_RI_INT_TIMER_RENDER);
+	G_Timer_Game = Core_RIntGet(G_RI_INT_TIMER_GAME);
 
 	//g_pPlayer->Spawn();
 	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &FigureBox, 0);
@@ -334,4 +350,94 @@ SX_LIB_API SXbaseEntity * SXGame_EntGet(ID id)
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pMgr->GetById(id));
+}
+
+//#############################################################################
+
+SX_LIB_API void SGame_AmbientSndAdd(const char* path)
+{
+	SG_PRECOND_AMBIENTSND(_VOID);
+	ObjAmbientSounds->Add(path);
+}
+
+SX_LIB_API void SGame_AmbientSndGet(ID id, char* path)
+{
+	SG_PRECOND_AMBIENTSND(_VOID);
+	ObjAmbientSounds->Get(id, path);
+}
+
+SX_LIB_API UINT SGame_AmbientSndGetCount()
+{
+	SG_PRECOND_AMBIENTSND(0);
+	return ObjAmbientSounds->GetCount();
+}
+
+SX_LIB_API void SGame_AmbientSndClear()
+{
+	SG_PRECOND_AMBIENTSND(_VOID);
+	ObjAmbientSounds->Clear();
+}
+
+
+SX_LIB_API void SGame_AmbientSndPlay()
+{
+	SG_PRECOND_AMBIENTSND(_VOID);
+	ObjAmbientSounds->Play();
+}
+
+SX_LIB_API void SGame_AmbientSndUpdate()
+{
+	SG_PRECOND_AMBIENTSND(_VOID);
+	ObjAmbientSounds->Update();
+}
+
+SX_LIB_API void SGame_AmbientSndPause()
+{
+	SG_PRECOND_AMBIENTSND(_VOID);
+	ObjAmbientSounds->Pause();
+}
+
+SX_LIB_API bool SGame_AmbientSndIsPlaying()
+{
+	SG_PRECOND_AMBIENTSND(false);
+	return ObjAmbientSounds->IsPlaying();
+}
+
+//#############################################################################
+
+SX_LIB_API void SGame_WeatherLoad(const char* path)
+{
+	SG_PRECOND_WEATHER(_VOID);
+	ObjWeather->Load(path);
+}
+
+SX_LIB_API void SGame_WeatherUpdate()
+{
+	SG_PRECOND_WEATHER(_VOID);
+	ObjWeather->Update();
+}
+
+SX_LIB_API float SGame_WeatherGetCurrRainDensity()
+{
+	SG_PRECOND_WEATHER(0.f);
+	return ObjWeather->GetCurrRainDensity();
+}
+
+SX_LIB_API void SGame_WeatherSndPlay()
+{
+	SG_PRECOND_WEATHER(_VOID);
+	ObjWeather->SndPlay();
+}
+
+SX_LIB_API void SGame_WeatherSndPause()
+{
+	SG_PRECOND_WEATHER(_VOID);
+	ObjWeather->SndPause();
+}
+
+SX_LIB_API bool SGame_WeatherSndIsPlaying()
+{
+	SG_PRECOND_WEATHER(false);
+	return ObjWeather->SndIsPlaying();
+
 }

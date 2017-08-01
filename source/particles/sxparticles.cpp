@@ -8,7 +8,7 @@
 report_func reportf = def_report;
 #endif
 
-bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos)
+bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm)
 {
 	return false;
 }
@@ -37,6 +37,7 @@ namespace PESet
 		namespace VS
 		{
 			ID Particles;
+			ID ParticlesTrack;
 		};
 
 		namespace PS
@@ -49,6 +50,7 @@ namespace PESet
 			ID ParticlesSoftLight;
 			ID ParticlesRefractionLight;
 			ID ParticlesSoftRefractionLight;
+			ID ParticlesTrack;
 		};
 	};
 };
@@ -76,6 +78,9 @@ void PESet::Init(IDirect3DDevice9* device)
 	};
 
 	PESet::DXDevice->CreateVertexDeclaration(InstanceParticles, &PESet::VertexDeclarationParticles);
+
+	PESet::IDsShaders::VS::ParticlesTrack = SGCore_ShaderLoad(ShaderType::st_vertex, "particles_track.vs", "particles_track", ShaderCheckDouble::scd_path);
+	PESet::IDsShaders::PS::ParticlesTrack = SGCore_ShaderLoad(ShaderType::st_pixel, "particles_track.ps", "particles_track", ShaderCheckDouble::scd_path);
 
 	PESet::IDsShaders::VS::Particles = SGCore_ShaderLoad(ShaderType::st_vertex, "particles_main.vs", "particles", ShaderCheckDouble::scd_path);
 	PESet::IDsShaders::PS::Particles = SGCore_ShaderLoad(ShaderType::st_pixel, "particles_main.ps", "particles", ShaderCheckDouble::scd_name);
@@ -531,6 +536,36 @@ void SPE_EmitterTextureGet(ID id, ID id_part, char* tex)
 }
 
 
+void SPE_EmitterTextureTrackSet(ID id, ID id_part, const char* tex)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EmitterTextureTrackSet(id, id_part, tex);
+}
+
+void SPE_EmitterTextureTrackSetID(ID id, ID id_part, ID tex)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EmitterTextureTrackSetID(id, id_part, tex);
+}
+
+ID SPE_EmitterTextureTrackGetID(ID id, ID id_part)
+{
+	PE_PRECOND(-1);
+
+	return ArrEffects->EmitterTextureTrackGetID(id, id_part);
+}
+
+void SPE_EmitterTextureTrackGet(ID id, ID id_part, char* tex)
+{
+	PE_PRECOND(_VOID);
+
+	ArrEffects->EmitterTextureTrackGet(id, id_part, tex);
+}
+
+
+
 void SPE_EmitterNameSet(ID id, ID id_part, const char* name)
 {
 	PE_PRECOND(_VOID);
@@ -543,4 +578,19 @@ void SPE_EmitterNameGet(ID id, ID id_part, char* name)
 	PE_PRECOND(_VOID);
 
 	ArrEffects->EmitterNameGet(id, id_part, name);
+}
+
+
+int SPE_EmitterTrackCountGet(ID id, ID id_part)
+{
+	PE_PRECOND(0);
+
+	return ArrEffects->EmitterTrackCountGet(id, id_part);
+}
+
+int SPE_EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count)
+{
+	PE_PRECOND(0);
+
+	return ArrEffects->EmitterTrackPosGet(id, id_part, arr, count);
 }

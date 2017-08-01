@@ -33,7 +33,6 @@ GameData::GameData()
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
 	Core_0RegisterConcmd("observe", ccmd_observe);
 
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 	Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
 	Core_0RegisterCVarBool("cl_grab_cursor", true, "Grab cursor on move");

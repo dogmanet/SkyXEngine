@@ -4,6 +4,8 @@ void SXLevelEditor::GameActivateAll(bool bf)
 	SXLevelEditor::StaticGameClass->Visible(bf);
 	SXLevelEditor::ComboBoxGameClass->Visible(bf);
 	SXLevelEditor::ComboBoxGameClass->SetSel(0);
+	SXLevelEditor::ButtonGameTab->Visible(bf);
+	SXLevelEditor::ButtonGameTab->SetText("Connections");
 	SXLevelEditor::ListViewGameClass->Visible(bf);
 	SXLevelEditor::ListViewGameClass->ClearStrings();
 	SXLevelEditor::ComboBoxGameValue->Visible(false);
@@ -17,6 +19,9 @@ void SXLevelEditor::GameActivateAll(bool bf)
 	SXLevelEditor::MemoGameHelp->SetText("");
 	SXLevelEditor::MemoGameHelp->Visible(bf);
 	SXLevelEditor::ButtonGameCreate->Visible(bf);
+
+	if (!bf)
+		SXLevelEditor::GameVisibleConnections(false);
 }
 
 void SXLevelEditor::GameSel(int sel)
@@ -338,3 +343,42 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 	return 0;
 }
+
+void SXLevelEditor::GameVisibleProperties(bool bf)
+{
+	SXLevelEditor::StaticGameClass->Visible(bf);
+	SXLevelEditor::ComboBoxGameClass->Visible(bf);
+	SXLevelEditor::ListViewGameClass->Visible(bf);
+	//SXLevelEditor::ComboBoxGameValue->Visible(bf);
+	//SXLevelEditor::EditGameValue->Visible(bf);
+	//SXLevelEditor::ButtonGameValue->Visible(bf);
+	SXLevelEditor::StaticGameHelp->Visible(bf);
+	SXLevelEditor::MemoGameHelp->Visible(bf);
+	SXLevelEditor::ButtonGameCreate->Visible(bf);
+}
+
+void SXLevelEditor::GameVisibleConnections(bool bf)
+{
+	SXLevelEditor::ListViewConnections->Visible(bf);
+}
+
+LRESULT SXLevelEditor_ButtonGameTab_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	if (SXLevelEditor::GameTabVal == 1)
+	{
+		SXLevelEditor::ButtonGameTab->SetText("Connections");
+		SXLevelEditor::GameVisibleProperties(true);
+		SXLevelEditor::GameVisibleConnections(false);
+		SXLevelEditor::GameTabVal = 0;
+	}
+	else
+	{
+		SXLevelEditor::ButtonGameTab->SetText("Properties");
+		SXLevelEditor::GameVisibleProperties(false);
+		SXLevelEditor::GameVisibleConnections(true);
+		SXLevelEditor::GameTabVal = 1;
+	}
+
+	return 0;
+}
+

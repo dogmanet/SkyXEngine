@@ -895,6 +895,9 @@ SX_LIB_API float SGCore_SkyCloudsGetRot();			//!< возвращает теку�
 SX_LIB_API void SGCore_SkyCloudsSetAlpha(float alpha);	//!< устанавливает коэфициент прозрачности, в пределах 0-1
 SX_LIB_API float SGCore_SkyCloudsGetAlpha();			//!< возвращает текущий коэфициент прозрачности
 
+SX_LIB_API void SGCore_SkyCloudsSetSpeed(float speed);	//!< устанавливает коэфициент скорости движения
+SX_LIB_API float SGCore_SkyCloudsGetSpeed();			//!< возвращает текущий коэфициент скорости движения
+
 SX_LIB_API void SGCore_SkyCloudsSetColor(float4_t* color);//!< установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен
 SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t* color);//!< в color записывает текущий цвет окраски
 

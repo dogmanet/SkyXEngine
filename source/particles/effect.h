@@ -99,8 +99,16 @@ public:
 	inline ID EmitterTextureGetID(ID id, ID id_part);
 	inline void EmitterTextureGet(ID id, ID id_part, char* tex);
 
+	inline void EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
+	inline void EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
+	inline ID EmitterTextureTrackGetID(ID id, ID id_part);
+	inline void EmitterTextureTrackGet(ID id, ID id_part, char* tex);
+
 	inline void EmitterNameSet(ID id, ID id_part, const char* name);
 	inline void EmitterNameGet(ID id, ID id_part, char* name);
+
+	inline int EmitterTrackCountGet(ID id, ID id_part);
+	inline int EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);
 
 	inline ID EffectInstanceByID(ID id);
 	inline ID EffectInstanceByName(const char* name);

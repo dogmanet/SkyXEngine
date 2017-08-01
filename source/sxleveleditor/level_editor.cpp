@@ -1,4 +1,6 @@
 
+#define SX_LE_MMENU_WEATHER_BEGIN_ID 50001
+
 namespace SXLevelEditor
 {
 	ISXGUIBaseWnd* JobWindow;
@@ -34,6 +36,9 @@ namespace SXLevelEditor
 	ISXGUICheckBox* CheckBoxTBAIGBound;
 	ISXGUICheckBox* CheckBoxTBAIGQuad;
 	ISXGUICheckBox* CheckBoxTBAIGGraphPoint;
+
+	ISXGUICheckBox* CheckBoxTBLevelType;
+	ISXGUICheckBox* CheckBoxTBGLightEnable;
 
 	ISXGUIGroupBox* GroupBoxList;
 	ISXGUIGroupBox* GroupBoxData;
@@ -132,7 +137,10 @@ namespace SXLevelEditor
 	//{
 	ISXGUIStatic* StaticGameClass;
 	ISXGUIComboBox* ComboBoxGameClass;
+	ISXGUIButton* ButtonGameTab;
+	int GameTabVal = 0;
 	ISXGUIListView* ListViewGameClass;
+	ISXGUIListView* ListViewConnections;
 	ISXGUIComboBox* ComboBoxGameValue;
 	ISXGUIEdit* EditGameValue;
 	ISXGUIButton* ButtonGameValue;
@@ -208,6 +216,8 @@ namespace SXLevelEditor
 	void GameActivateAll(bool bf);
 	void GameSel(int sel);
 	void GameUpdatePosRot();
+	void GameVisibleProperties(bool bf);
+	void GameVisibleConnections(bool bf);
 
 	void AIGridActivateAll(bool bf);
 	void AIGridEnableBB(bool bf);
@@ -217,6 +227,9 @@ namespace SXLevelEditor
 	float3 HelperScale;
 
 	ID IdMtl = -1;
+	ID MenuWeatherCurrID = -1;
+	int MenuWeatherCount = 0;
+	Array<String> MenuWeatherArr;
 };
 
 LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -245,7 +258,6 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::JobWindow->MinSizeY = 690;
 	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
-	
 	
 
 	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow", "RenderWindow", 0, 0, 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_CHILD | WS_VISIBLE | WS_BORDER, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault);
@@ -408,6 +420,18 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::CheckBoxTBAIGGraphPoint->GAlign.left = true;
 	SXLevelEditor::CheckBoxTBAIGGraphPoint->GAlign.top = true;
 	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetBmpInResourse(IDB_BITMAP24);
+
+	SXLevelEditor::CheckBoxTBLevelType = SXGUICrCheckBoxEx("", 588, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBLevelType->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBLevelType->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBLevelType->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP24);
+
+	SXLevelEditor::CheckBoxTBGLightEnable = SXGUICrCheckBoxEx("", 612, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
+	SXLevelEditor::CheckBoxTBGLightEnable->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.left = true;
+	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.top = true;
+	SXLevelEditor::CheckBoxTBGLightEnable->SetBmpInResourse(IDB_BITMAP24);
 
 
 	SXLevelEditor::CheckBoxTBAIGBound->SetCheck(false);
@@ -1019,6 +1043,7 @@ void SXLevelEditor::InitAllElements()
 
 	SXLevelEditor::TrackBarGreenDensity = SXGUICrTrackBar("", 330, 65, 280, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::TrackBarGreenDensity->SetMinMax(1, 100);
+	SXLevelEditor::TrackBarGreenDensity->SetTickFrequency(10);
 	SXLevelEditor::TrackBarGreenDensity->AddHandler(SXLevelEditor_TrackBarGreenDensity_MouseMove, WM_MOUSEMOVE);
 	SXLevelEditor::TrackBarGreenDensity->GAlign.left = true;
 	SXLevelEditor::TrackBarGreenDensity->GAlign.top = true;
@@ -1181,6 +1206,14 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ComboBoxGameClass->Visible(false);
 	SXLevelEditor::ComboBoxGameClass->AddItem("");
 
+	SXLevelEditor::ButtonGameTab = SXGUICrButton("Connections", 695, 15, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameTab->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonGameTab->GAlign.left = true;
+	SXLevelEditor::ButtonGameTab->GAlign.top = true;
+	SXLevelEditor::ButtonGameTab->Visible(false);
+	SXLevelEditor::ButtonGameTab->AddHandler(SXLevelEditor_ButtonGameTab_Click, WM_LBUTTONUP);
+	SXLevelEditor::GameTabVal = 0;
+
 	SXLevelEditor::ListViewGameClass = SXGUICrListView("", 5, 5, 400, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
 	SXLevelEditor::ListViewGameClass->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXLevelEditor::ListViewGameClass->SetColorText(0, 0, 0);
@@ -1249,6 +1282,22 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ButtonGameCreate->GAlign.top = true;
 	SXLevelEditor::ButtonGameCreate->Visible(false);
 	SXLevelEditor::ButtonGameCreate->AddHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
+
+
+	SXLevelEditor::ListViewConnections = SXGUICrListView("", 5, 5, 600, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
+	SXLevelEditor::ListViewConnections->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ListViewConnections->SetColorText(0, 0, 0);
+	SXLevelEditor::ListViewConnections->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::ListViewConnections->SetTransparentTextBk(true);
+	SXLevelEditor::ListViewConnections->SetColorBrush(255, 255, 255);
+	SXLevelEditor::ListViewConnections->AddColumn("Event", 120);
+	SXLevelEditor::ListViewConnections->AddColumn("Name", 120);
+	SXLevelEditor::ListViewConnections->AddColumn("Action", 120);
+	SXLevelEditor::ListViewConnections->AddColumn("Delay", 120);
+	SXLevelEditor::ListViewConnections->AddColumn("Parameter", 120);
+	SXLevelEditor::ListViewConnections->GAlign.left = true;
+	SXLevelEditor::ListViewConnections->GAlign.top = true;
+	SXLevelEditor::ListViewConnections->Visible(false);
 	//}
 
 	//aigrid

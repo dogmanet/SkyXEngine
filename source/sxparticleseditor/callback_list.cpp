@@ -1,6 +1,10 @@
 
 LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	int sel = SXParticlesEditor::ListBoxEffects->GetSel();
+	if (sel < 0)
+		return 0;
+
 	SXParticlesEditor::ListBoxEmitters->Clear();
 	if (SPE_EffectCountGet() == 0)
 	{
@@ -9,7 +13,7 @@ LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wPara
 		SXParticlesEditor::TabsVisible(false);
 		return 0;
 	}
-	int sel = SXParticlesEditor::ListBoxEffects->GetSel();
+	
 	SXParticlesEditor::SelEffID = SPE_EffectIdOfKey(sel);
 	int partcount = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
 	char partname[OBJECT_NAME_MAX_LEN];

@@ -190,16 +190,16 @@ void SML_LigthsLoad(const char* path)
 	ArrLights->Load(path);
 }
 
-ID SML_LigthsCreatePoint(const float3* center, float power, float dist, const float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
+ID SML_LigthsCreatePoint(const float3* center, float dist, const float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreatePoint(-1,center, power, dist, color, isglobal, is_shadowed, 0);
+	return ArrLights->CreatePoint(-1,center, dist, color, isglobal, is_shadowed, 0);
 }
 
-ID SML_LigthsCreateDirection(const float3* pos, float power, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
+ID SML_LigthsCreateDirection(const float3* pos, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreateDirection(-1,pos, power, dist, color, dir, top_radius, angle, is_shadow, 0);
+	return ArrLights->CreateDirection(-1,pos, dist, color, dir, top_radius, angle, is_shadow, 0);
 }
 
 void SML_LigthsRender(ID id, DWORD timeDelta)
@@ -232,22 +232,10 @@ void SML_LigthsGetPos(ID id, float3* vec, bool greal)
 	ArrLights->GetLightPos(id, vec, greal);
 }
 
-void SML_LigthsSetPower(ID id, float power)
-{
-	ML_PRECOND();
-	ArrLights->SetLightPower(id, power);
-}
-
 float SML_LigthsGetPower(ID id)
 {
 	ML_PRECOND(-1);
 	return ArrLights->GetLightPower(id);
-}
-
-float SML_LigthsGetPowerDiv(ID id)
-{
-	ML_PRECOND(-1);
-	return ArrLights->GetLightPowerDiv(id);
 }
 
 float SML_LigthsGetDist(ID id)

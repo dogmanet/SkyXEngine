@@ -19,6 +19,8 @@ namespace PPSet
 	float3 ConstCurrCamPos;
 	float3 ConstCurrCamDir;
 	float2_t WinSize = float2_t(640, 480);
+
+	bool SunExists = false;
 	float4 SunPos;
 
 	//fov and ration esesno
@@ -651,6 +653,14 @@ void SPP_RenderDOF(float4_t* param, float sky_blur)
 
 void SPP_UpdateSun(float3* sunpos)
 {
+	if (sunpos == 0)
+	{
+		PPSet::SunExists = false;
+		return;
+	}
+	else
+		PPSet::SunExists = true;
+
 	float3 sunPos = *sunpos;
 
 	sunPos = SMVector4Transform(sunPos, PPSet::MCamView * PPSet::MCamProj);
@@ -684,6 +694,9 @@ void SPP_ChangeTexSun(const char* str)
 
 void SPP_RenderSun(float4_t* sun_color)
 {
+	if (!PPSet::SunExists)
+		return;
+
 	if (PPSet::SunPos.w > PP_MAX_ANGLE_VISIBLE_SUN)
 		return;
 
@@ -781,7 +794,7 @@ void SPP_RenderLensFlare(float3_t* param, bool use_bloom)
 	PPSet::DXDevice->GetRenderTarget(0, &BackBuf);
 	PPSet::DXDevice->SetRenderTarget(0, RenderSurf);
 
-	if (PPSet::SunPos.w < PP_MAX_ANGLE_VISIBLE_SUN)
+	if (PPSet::SunExists && PPSet::SunPos.w < PP_MAX_ANGLE_VISIBLE_SUN)
 	{
 		if (!use_bloom)
 			PPSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);

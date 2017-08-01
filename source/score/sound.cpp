@@ -1060,6 +1060,11 @@ void MainSound::Update(float3* viewpos, float3* viewdir)
 		snd = ArrSounds[i];
 		if (snd)
 		{
+			status = 0;
+			snd->DSBuffer->GetStatus(&status);
+			if (!(status & DSBSTATUS_PLAYING) && snd->State == SoundObjState::sos_play)
+				SoundStateSet(i, SoundObjState::sos_stop);
+
 			++tmpSoundsLoadCount;
 			if (snd->State == SoundObjState::sos_play)
 				++tmpSoundsPlayCount;

@@ -77,6 +77,16 @@ namespace SXParticlesEditor
 	ISXGUIStatic* StaticAlphaBlendType;
 	ISXGUIComboBox* ComboBoxAlphaBlendType;
 
+	ISXGUIStatic* StaticColor;
+	ISXGUIStatic* StaticColorR;
+	ISXGUIEdit* EditColorR;
+	ISXGUIStatic* StaticColorG;
+	ISXGUIEdit* EditColorG;
+	ISXGUIStatic* StaticColorB;
+	ISXGUIEdit* EditColorB;
+	ISXGUIStatic* StaticColorA;
+	ISXGUIEdit* EditColorA;
+
 	ISXGUIStatic* StaticTimeLife;
 	ISXGUIEdit* EditTimeLife;
 	ISXGUIStatic* StaticTimeLifeDisp;
@@ -93,6 +103,13 @@ namespace SXParticlesEditor
 	ISXGUIStatic* StaticSizeDependAge;
 	ISXGUIComboBox* ComboBoxSizeDependAge;
 	ISXGUICheckBox* CheckBoxCollisionDelete;
+
+	ISXGUICheckBox* CheckBoxTrack;
+	ISXGUIStatic* StaticTrackSize;
+	ISXGUIEdit* EditTrackSize;
+	ISXGUIStatic* StaticTrackTime;
+	ISXGUIEdit* EditTrackTime;
+
 	//}
 
 	//bound
@@ -607,6 +624,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditName->GAlign.left = true;
 	SXParticlesEditor::EditName->GAlign.top = true;
 	SXParticlesEditor::EditName->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditName->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticCount = SXGUICrStatic("Count:", 5, 30, 75, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticCount->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -625,6 +643,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditCount->GAlign.left = true;
 	SXParticlesEditor::EditCount->GAlign.top = true;
 	SXParticlesEditor::EditCount->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditCount->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticColorCoef = SXGUICrStatic("ColorCoef:", 130, 30, 75, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticColorCoef->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -643,8 +662,9 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditColorCoef->GAlign.left = true;
 	SXParticlesEditor::EditColorCoef->GAlign.top = true;
 	SXParticlesEditor::EditColorCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditColorCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
-	SXParticlesEditor::ButtonEmitterCreate = SXGUICrButton("CREATE", 725, 115, 70, 25, 0, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::ButtonEmitterCreate = SXGUICrButton("CREATE", 725, 120, 70, 20, 0, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::ButtonEmitterCreate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXParticlesEditor::ButtonEmitterCreate->SetColorText(0, 0, 0);
 	SXParticlesEditor::ButtonEmitterCreate->SetColorTextBk(255, 255, 255);
@@ -671,6 +691,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditReCreateCount->GAlign.left = true;
 	SXParticlesEditor::EditReCreateCount->GAlign.top = true;
 	SXParticlesEditor::EditReCreateCount->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditReCreateCount->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSoftCoef = SXGUICrStatic("SoftCoef:", 5, 70, 50, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSoftCoef->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -689,6 +710,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSoftCoef->GAlign.left = true;
 	SXParticlesEditor::EditSoftCoef->GAlign.top = true;
 	SXParticlesEditor::EditSoftCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSoftCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticRefractionCoef = SXGUICrStatic("RefractionCoef:", 5, 90, 75, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticRefractionCoef->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -707,6 +729,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditRefractionCoef->GAlign.left = true;
 	SXParticlesEditor::EditRefractionCoef->GAlign.top = true;
 	SXParticlesEditor::EditRefractionCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditRefractionCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticTransparencyCoef = SXGUICrStatic("TransparencyCoef:", 5, 110, 90, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticTransparencyCoef->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -725,8 +748,9 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditTransparencyCoef->GAlign.left = true;
 	SXParticlesEditor::EditTransparencyCoef->GAlign.top = true;
 	SXParticlesEditor::EditTransparencyCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditTransparencyCoef->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
-	SXParticlesEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting", 180, 70, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
+	SXParticlesEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting", 180, 50, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxLighting->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXParticlesEditor::CheckBoxLighting->SetColorText(0, 0, 0);
 	SXParticlesEditor::CheckBoxLighting->SetColorTextBk(255, 255, 255);
@@ -734,6 +758,17 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::CheckBoxLighting->SetColorBrush(220, 220, 220);
 	SXParticlesEditor::CheckBoxLighting->GAlign.left = true;
 	SXParticlesEditor::CheckBoxLighting->GAlign.top = true;
+
+	SXParticlesEditor::CheckBoxCollisionDelete = SXGUICrCheckBox("CollisionDelete", 180, 70, 90, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetColorText(0, 0, 0);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetTransparentTextBk(true);
+	SXParticlesEditor::CheckBoxCollisionDelete->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::CheckBoxCollisionDelete->GAlign.left = true;
+	SXParticlesEditor::CheckBoxCollisionDelete->GAlign.top = true;
+
+
 	SXParticlesEditor::StaticFigureType = SXGUICrStatic("FigureType:", 270, 12, 60, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticFigureType->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXParticlesEditor::StaticFigureType->SetColorText(0, 0, 0);
@@ -772,6 +807,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditFigureCountQuads->GAlign.left = true;
 	SXParticlesEditor::EditFigureCountQuads->GAlign.top = true;
 	SXParticlesEditor::EditFigureCountQuads->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditFigureCountQuads->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxFigureRotRand = SXGUICrCheckBox("FigureRotRand", 270, 55, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxFigureRotRand->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -826,6 +862,104 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::ComboBoxAlphaBlendType->GAlign.left = true;
 	SXParticlesEditor::ComboBoxAlphaBlendType->GAlign.top = true;
 
+
+	SXParticlesEditor::StaticColor = SXGUICrStatic("Color:", 270, 120, 30, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticColor->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticColor->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticColor->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticColor->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticColor->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticColor->GAlign.left = true;
+	SXParticlesEditor::StaticColor->GAlign.top = true;
+
+	SXParticlesEditor::StaticColorR = SXGUICrStatic("r:", 302, 120, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticColorR->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticColorR->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticColorR->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticColorR->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticColorR->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticColorR->GAlign.left = true;
+	SXParticlesEditor::StaticColorR->GAlign.top = true;
+
+	SXParticlesEditor::EditColorR = SXGUICrEdit("0", 310, 120, 45, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditColorR->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::EditColorR->SetColorText(0, 0, 0);
+	SXParticlesEditor::EditColorR->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::EditColorR->SetTransparentTextBk(true);
+	SXParticlesEditor::EditColorR->SetColorBrush(255, 255, 255);
+	SXParticlesEditor::EditColorR->GAlign.left = true;
+	SXParticlesEditor::EditColorR->GAlign.top = true;
+	SXParticlesEditor::EditColorR->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditColorR->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
+
+	SXParticlesEditor::StaticColorG = SXGUICrStatic("g:", 356, 120, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticColorG->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticColorG->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticColorG->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticColorG->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticColorG->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticColorG->GAlign.left = true;
+	SXParticlesEditor::StaticColorG->GAlign.top = true;
+
+	SXParticlesEditor::EditColorG = SXGUICrEdit("0", 365, 120, 45, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditColorG->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::EditColorG->SetColorText(0, 0, 0);
+	SXParticlesEditor::EditColorG->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::EditColorG->SetTransparentTextBk(true);
+	SXParticlesEditor::EditColorG->SetColorBrush(255, 255, 255);
+	SXParticlesEditor::EditColorG->GAlign.left = true;
+	SXParticlesEditor::EditColorG->GAlign.top = true;
+	SXParticlesEditor::EditColorG->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditColorG->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
+
+	SXParticlesEditor::StaticColorB = SXGUICrStatic("b:", 411, 120, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticColorB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticColorB->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticColorB->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticColorB->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticColorB->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticColorB->GAlign.left = true;
+	SXParticlesEditor::StaticColorB->GAlign.top = true;
+
+	SXParticlesEditor::EditColorB = SXGUICrEdit("0", 420, 120, 45, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditColorB->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::EditColorB->SetColorText(0, 0, 0);
+	SXParticlesEditor::EditColorB->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::EditColorB->SetTransparentTextBk(true);
+	SXParticlesEditor::EditColorB->SetColorBrush(255, 255, 255);
+	SXParticlesEditor::EditColorB->GAlign.left = true;
+	SXParticlesEditor::EditColorB->GAlign.top = true;
+	SXParticlesEditor::EditColorB->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditColorB->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
+
+	SXParticlesEditor::StaticColorA = SXGUICrStatic("a:", 466, 120, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticColorA->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticColorA->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticColorA->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticColorA->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticColorA->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticColorA->GAlign.left = true;
+	SXParticlesEditor::StaticColorA->GAlign.top = true;
+
+	SXParticlesEditor::EditColorA = SXGUICrEdit("0", 475, 120, 45, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditColorA->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::EditColorA->SetColorText(0, 0, 0);
+	SXParticlesEditor::EditColorA->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::EditColorA->SetTransparentTextBk(true);
+	SXParticlesEditor::EditColorA->SetColorBrush(255, 255, 255);
+	SXParticlesEditor::EditColorA->GAlign.left = true;
+	SXParticlesEditor::EditColorA->GAlign.top = true;
+	SXParticlesEditor::EditColorA->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditColorA->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
+
+	/*ISXGUIStatic* StaticColorG;
+	ISXGUIEdit* EditColorG;
+	ISXGUIStatic* StaticColorB;
+	ISXGUIEdit* EditColorB;
+	ISXGUIStatic* StaticColorA;
+	ISXGUIEdit* EditColorA;*/
+
+
 	SXParticlesEditor::StaticTimeLife = SXGUICrStatic("TimeLife:", 530, 10, 50, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticTimeLife->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXParticlesEditor::StaticTimeLife->SetColorText(0, 0, 0);
@@ -843,6 +977,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditTimeLife->GAlign.left = true;
 	SXParticlesEditor::EditTimeLife->GAlign.top = true;
 	SXParticlesEditor::EditTimeLife->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditTimeLife->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticTimeLifeDisp = SXGUICrStatic("TimeLifeDisp:", 660, 10, 70, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticTimeLifeDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -861,6 +996,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditTimeLifeDisp->GAlign.left = true;
 	SXParticlesEditor::EditTimeLifeDisp->GAlign.top = true;
 	SXParticlesEditor::EditTimeLifeDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditTimeLifeDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAlphaAgeDepend = SXGUICrStatic("AlphaAgeDepend:", 530, 32, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAlphaAgeDepend->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -908,6 +1044,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSizeX->GAlign.left = true;
 	SXParticlesEditor::EditSizeX->GAlign.top = true;
 	SXParticlesEditor::EditSizeX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSizeX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSizeY = SXGUICrStatic("y:", 635, 55, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSizeY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -926,6 +1063,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSizeY->GAlign.left = true;
 	SXParticlesEditor::EditSizeY->GAlign.top = true;
 	SXParticlesEditor::EditSizeY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSizeY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSizeDisp = SXGUICrStatic("Disp:", 710, 55, 25, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSizeDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -944,6 +1082,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSizeDisp->GAlign.left = true;
 	SXParticlesEditor::EditSizeDisp->GAlign.top = true;
 	SXParticlesEditor::EditSizeDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSizeDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSizeDependAge = SXGUICrStatic("SizeDependAge:", 530, 77, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSizeDependAge->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -966,14 +1105,55 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::ComboBoxSizeDependAge->GAlign.left = true;
 	SXParticlesEditor::ComboBoxSizeDependAge->GAlign.top = true;
 
-	SXParticlesEditor::CheckBoxCollisionDelete = SXGUICrCheckBox("CollisionDelete", 530, 95, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
-	SXParticlesEditor::CheckBoxCollisionDelete->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXParticlesEditor::CheckBoxCollisionDelete->SetColorText(0, 0, 0);
-	SXParticlesEditor::CheckBoxCollisionDelete->SetColorTextBk(255, 255, 255);
-	SXParticlesEditor::CheckBoxCollisionDelete->SetTransparentTextBk(true);
-	SXParticlesEditor::CheckBoxCollisionDelete->SetColorBrush(220, 220, 220);
-	SXParticlesEditor::CheckBoxCollisionDelete->GAlign.left = true;
-	SXParticlesEditor::CheckBoxCollisionDelete->GAlign.top = true;
+
+	SXParticlesEditor::CheckBoxTrack = SXGUICrCheckBox("Track", 530, 100, 50, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
+	SXParticlesEditor::CheckBoxTrack->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::CheckBoxTrack->SetColorText(0, 0, 0);
+	SXParticlesEditor::CheckBoxTrack->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::CheckBoxTrack->SetTransparentTextBk(true);
+	SXParticlesEditor::CheckBoxTrack->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::CheckBoxTrack->GAlign.left = true;
+	SXParticlesEditor::CheckBoxTrack->GAlign.top = true;
+
+	SXParticlesEditor::StaticTrackSize = SXGUICrStatic("Size:", 580, 100, 25, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticTrackSize->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticTrackSize->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticTrackSize->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticTrackSize->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticTrackSize->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticTrackSize->GAlign.left = true;
+	SXParticlesEditor::StaticTrackSize->GAlign.top = true;
+
+	SXParticlesEditor::EditTrackSize = SXGUICrEdit("0", 605, 100, 60, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditTrackSize->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::EditTrackSize->SetColorText(0, 0, 0);
+	SXParticlesEditor::EditTrackSize->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::EditTrackSize->SetTransparentTextBk(true);
+	SXParticlesEditor::EditTrackSize->SetColorBrush(255, 255, 255);
+	SXParticlesEditor::EditTrackSize->GAlign.left = true;
+	SXParticlesEditor::EditTrackSize->GAlign.top = true;
+	SXParticlesEditor::EditTrackSize->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditTrackSize->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
+
+	SXParticlesEditor::StaticTrackTime = SXGUICrStatic("Time:", 670, 100, 25, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::StaticTrackTime->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::StaticTrackTime->SetColorText(0, 0, 0);
+	SXParticlesEditor::StaticTrackTime->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::StaticTrackTime->SetTransparentTextBk(true);
+	SXParticlesEditor::StaticTrackTime->SetColorBrush(220, 220, 220);
+	SXParticlesEditor::StaticTrackTime->GAlign.left = true;
+	SXParticlesEditor::StaticTrackTime->GAlign.top = true;
+
+	SXParticlesEditor::EditTrackTime = SXGUICrEdit("0", 700, 100, 60, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
+	SXParticlesEditor::EditTrackTime->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXParticlesEditor::EditTrackTime->SetColorText(0, 0, 0);
+	SXParticlesEditor::EditTrackTime->SetColorTextBk(255, 255, 255);
+	SXParticlesEditor::EditTrackTime->SetTransparentTextBk(true);
+	SXParticlesEditor::EditTrackTime->SetColorBrush(255, 255, 255);
+	SXParticlesEditor::EditTrackTime->GAlign.left = true;
+	SXParticlesEditor::EditTrackTime->GAlign.top = true;
+	SXParticlesEditor::EditTrackTime->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditTrackTime->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 	//}
 
 	//bound
@@ -1024,6 +1204,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec1X->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec1X->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec1X->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec1X->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec1Y = SXGUICrStatic("y:", 150, 40, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec1Y->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1042,6 +1223,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec1Y->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec1Y->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec1Y->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec1Y->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec1Z = SXGUICrStatic("z:", 235, 40, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec1Z->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1060,6 +1242,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec1Z->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec1Z->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec1Z->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec1Z->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec1W = SXGUICrStatic("w:", 320, 40, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec1W->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1078,6 +1261,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec1W->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec1W->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec1W->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec1W->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec2 = SXGUICrStatic("Vector2:", 5, 60, 50, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1104,6 +1288,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec2X->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec2X->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec2X->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec2X->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec2Y = SXGUICrStatic("y:", 150, 60, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec2Y->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1122,6 +1307,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec2Y->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec2Y->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec2Y->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec2Y->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec2Z = SXGUICrStatic("z:", 235, 60, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec2Z->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1140,6 +1326,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec2Z->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec2Z->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec2Z->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec2Z->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticBoundVec2W = SXGUICrStatic("w:", 320, 60, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticBoundVec2W->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1158,6 +1345,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditBoundVec2W->GAlign.left = true;
 	SXParticlesEditor::EditBoundVec2W->GAlign.top = true;
 	SXParticlesEditor::EditBoundVec2W->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditBoundVec2W->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	//}
 
@@ -1208,6 +1396,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditCircleAngle->GAlign.left = true;
 	SXParticlesEditor::EditCircleAngle->GAlign.top = true;
 	SXParticlesEditor::EditCircleAngle->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditCircleAngle->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticCircleAngleDisp = SXGUICrStatic("CircleAngleDisp:", 6, 75, 80, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticCircleAngleDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1226,6 +1415,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditCircleAngleDisp->GAlign.left = true;
 	SXParticlesEditor::EditCircleAngleDisp->GAlign.top = true;
 	SXParticlesEditor::EditCircleAngleDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditCircleAngleDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxRotate = SXGUICrCheckBox("Rotate", 175, 10, 50, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxRotate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1252,6 +1442,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditRotateAngle->GAlign.left = true;
 	SXParticlesEditor::EditRotateAngle->GAlign.top = true;
 	SXParticlesEditor::EditRotateAngle->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditRotateAngle->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticRotateAngleDisp = SXGUICrStatic("RotateAngleDisp:", 175, 50, 85, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticRotateAngleDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1278,6 +1469,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditRotateAngleDisp->GAlign.left = true;
 	SXParticlesEditor::EditRotateAngleDisp->GAlign.top = true;
 	SXParticlesEditor::EditRotateAngleDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditRotateAngleDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxRotateAngleDispNeg = SXGUICrCheckBox("RotateAngleDispNeg", 175, 70, 120, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxRotateAngleDispNeg->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1340,6 +1532,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditDeviationAmplitude->GAlign.left = true;
 	SXParticlesEditor::EditDeviationAmplitude->GAlign.top = true;
 	SXParticlesEditor::EditDeviationAmplitude->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditDeviationAmplitude->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::EditDeviationCoefAngle = SXGUICrEdit("0", 490, 70, 70, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::EditDeviationCoefAngle->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1350,6 +1543,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditDeviationCoefAngle->GAlign.left = true;
 	SXParticlesEditor::EditDeviationCoefAngle->GAlign.top = true;
 	SXParticlesEditor::EditDeviationCoefAngle->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditDeviationCoefAngle->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticDeviationAxis = SXGUICrStatic("DeviationAxis:", 590, 25, 80, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticDeviationAxis->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1388,6 +1582,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditDeviationCountDelayMls->GAlign.left = true;
 	SXParticlesEditor::EditDeviationCountDelayMls->GAlign.top = true;
 	SXParticlesEditor::EditDeviationCountDelayMls->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditDeviationCountDelayMls->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticDeviationCoefAngleDisp = SXGUICrStatic("DeviationCoefAngleDisp:", 350, 90, 120, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticDeviationCoefAngleDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1406,6 +1601,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditDeviationCoefAngleDisp->GAlign.left = true;
 	SXParticlesEditor::EditDeviationCoefAngleDisp->GAlign.top = true;
 	SXParticlesEditor::EditDeviationCoefAngleDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditDeviationCoefAngleDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg = SXGUICrCheckBox("DeviationCoefAngleDispNeg", 350, 110, 160, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1487,6 +1683,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSpawnOriginX->GAlign.left = true;
 	SXParticlesEditor::EditSpawnOriginX->GAlign.top = true;
 	SXParticlesEditor::EditSpawnOriginX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSpawnOriginX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSpawnOriginY = SXGUICrStatic("y:", 180, 40, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSpawnOriginY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1505,6 +1702,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSpawnOriginY->GAlign.left = true;
 	SXParticlesEditor::EditSpawnOriginY->GAlign.top = true;
 	SXParticlesEditor::EditSpawnOriginY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSpawnOriginY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSpawnOriginZ = SXGUICrStatic("z:", 270, 40, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSpawnOriginZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1523,6 +1721,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSpawnOriginZ->GAlign.left = true;
 	SXParticlesEditor::EditSpawnOriginZ->GAlign.top = true;
 	SXParticlesEditor::EditSpawnOriginZ->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSpawnOriginZ->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSpawnOriginDisp = SXGUICrStatic("SpawnOriginDisp:", 370, 40, 85, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSpawnOriginDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1541,6 +1740,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSpawnOriginDisp->GAlign.left = true;
 	SXParticlesEditor::EditSpawnOriginDisp->GAlign.top = true;
 	SXParticlesEditor::EditSpawnOriginDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSpawnOriginDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxSpawnOriginDispXPos = SXGUICrCheckBox("x+", 90, 60, 30, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1607,6 +1807,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSpawnNextTime->GAlign.left = true;
 	SXParticlesEditor::EditSpawnNextTime->GAlign.top = true;
 	SXParticlesEditor::EditSpawnNextTime->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSpawnNextTime->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticSpawnNextTimeDisp = SXGUICrStatic("SpawnNextTimeDisp:", 175, 90, 105, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticSpawnNextTimeDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1625,6 +1826,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditSpawnNextTimeDisp->GAlign.left = true;
 	SXParticlesEditor::EditSpawnNextTimeDisp->GAlign.top = true;
 	SXParticlesEditor::EditSpawnNextTimeDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditSpawnNextTimeDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	//}
 
@@ -1647,6 +1849,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditTexture->GAlign.left = true;
 	SXParticlesEditor::EditTexture->GAlign.top = true;
 	SXParticlesEditor::EditTexture->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditTexture->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 
 	SXParticlesEditor::ButtonTextureSel = SXGUICrButton("...", 355, 10, 25, 15, 0, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
@@ -1680,6 +1883,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAnimTexCountCadrsX->GAlign.left = true;
 	SXParticlesEditor::EditAnimTexCountCadrsX->GAlign.top = true;
 	SXParticlesEditor::EditAnimTexCountCadrsX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAnimTexCountCadrsX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::EditAnimTexCountCadrsY = SXGUICrEdit("0", 310, 35, 70, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::EditAnimTexCountCadrsY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1690,6 +1894,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAnimTexCountCadrsY->GAlign.left = true;
 	SXParticlesEditor::EditAnimTexCountCadrsY->GAlign.top = true;
 	SXParticlesEditor::EditAnimTexCountCadrsY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAnimTexCountCadrsY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAnimTexRate = SXGUICrStatic("AnimTexRate:", 5, 55, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAnimTexRate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1708,6 +1913,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAnimTexRate->GAlign.left = true;
 	SXParticlesEditor::EditAnimTexRate->GAlign.top = true;
 	SXParticlesEditor::EditAnimTexRate->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAnimTexRate->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAnimTexRateDisp = SXGUICrStatic("AnimTexRateDisp:", 200, 55, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAnimTexRateDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1726,6 +1932,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAnimTexRateDisp->GAlign.left = true;
 	SXParticlesEditor::EditAnimTexRateDisp->GAlign.top = true;
 	SXParticlesEditor::EditAnimTexRateDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAnimTexRateDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAnimTexStartCadr = SXGUICrStatic("AnimTexStartCadr:", 5, 75, 100, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAnimTexStartCadr->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1744,6 +1951,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAnimTexStartCadr->GAlign.left = true;
 	SXParticlesEditor::EditAnimTexStartCadr->GAlign.top = true;
 	SXParticlesEditor::EditAnimTexStartCadr->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAnimTexStartCadr->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAnimTexStartCadrDisp = SXGUICrStatic("AnimTexStartCadrDisp:", 200, 75, 110, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAnimTexStartCadrDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1762,6 +1970,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAnimTexStartCadrDisp->GAlign.left = true;
 	SXParticlesEditor::EditAnimTexStartCadrDisp->GAlign.top = true;
 	SXParticlesEditor::EditAnimTexStartCadrDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAnimTexStartCadrDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	//}
 
@@ -1792,6 +2001,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditVelocityX->GAlign.left = true;
 	SXParticlesEditor::EditVelocityX->GAlign.top = true;
 	SXParticlesEditor::EditVelocityX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditVelocityX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticVelocityY = SXGUICrStatic("y:", 170, 15, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticVelocityY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1810,6 +2020,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditVelocityY->GAlign.left = true;
 	SXParticlesEditor::EditVelocityY->GAlign.top = true;
 	SXParticlesEditor::EditVelocityY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditVelocityY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxVelocityDispXNeg = SXGUICrCheckBox("XDispNeg", 80, 35, 80, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxVelocityDispXNeg->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1836,6 +2047,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditVelocityZ->GAlign.left = true;
 	SXParticlesEditor::EditVelocityZ->GAlign.top = true;
 	SXParticlesEditor::EditVelocityZ->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditVelocityZ->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticVelocityDisp = SXGUICrStatic("Dispersion:", 355, 15, 60, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticVelocityDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1854,6 +2066,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditVelocityDisp->GAlign.left = true;
 	SXParticlesEditor::EditVelocityDisp->GAlign.top = true;
 	SXParticlesEditor::EditVelocityDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditVelocityDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxVelocityDispYNeg = SXGUICrCheckBox("YDispNeg", 170, 35, 80, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxVelocityDispYNeg->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1896,6 +2109,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAccelerationX->GAlign.left = true;
 	SXParticlesEditor::EditAccelerationX->GAlign.top = true;
 	SXParticlesEditor::EditAccelerationX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAccelerationX->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAccelerationY = SXGUICrStatic("y:", 170, 65, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAccelerationY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1914,6 +2128,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAccelerationY->GAlign.left = true;
 	SXParticlesEditor::EditAccelerationY->GAlign.top = true;
 	SXParticlesEditor::EditAccelerationY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAccelerationY->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAccelerationZ = SXGUICrStatic("z:", 260, 65, 10, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAccelerationZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1932,6 +2147,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAccelerationZ->GAlign.left = true;
 	SXParticlesEditor::EditAccelerationZ->GAlign.top = true;
 	SXParticlesEditor::EditAccelerationZ->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAccelerationZ->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::StaticAccelerationDisp = SXGUICrStatic("Dispersion:", 355, 65, 60, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0);
 	SXParticlesEditor::StaticAccelerationDisp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1950,6 +2166,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::EditAccelerationDisp->GAlign.left = true;
 	SXParticlesEditor::EditAccelerationDisp->GAlign.top = true;
 	SXParticlesEditor::EditAccelerationDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXParticlesEditor::EditAccelerationDisp->AddHandler(SXParticlesEditor_Edits_Enter, WM_KILLFOCUS);
 
 	SXParticlesEditor::CheckBoxAccelerationDispXNeg = SXGUICrCheckBox("XDispNeg", 80, 85, 80, 15, SXParticlesEditor::GroupBoxData2->GetHWND(), 0, 0, false);
 	SXParticlesEditor::CheckBoxAccelerationDispXNeg->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);

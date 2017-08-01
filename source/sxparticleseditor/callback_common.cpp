@@ -187,7 +187,11 @@ LRESULT SXParticlesEditor_GroupBoxData2_CallWmCommand(HWND hwnd, UINT msg, WPARA
 	{
 		HWND handle_elem = (HWND)(lParam);
 
-		if (SXParticlesEditor::CheckBoxAccelerationDispXNeg->GetHWND() == handle_elem)
+		if (SXParticlesEditor::CheckBoxTrack->GetHWND() == handle_elem)
+		{
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Track, SXParticlesEditor::CheckBoxTrack->GetCheck());
+		}
+		else if (SXParticlesEditor::CheckBoxAccelerationDispXNeg->GetHWND() == handle_elem)
 		{
 			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispXNeg, SXParticlesEditor::CheckBoxAccelerationDispXNeg->GetCheck());
 		}
@@ -418,6 +422,24 @@ LRESULT SXParticlesEditor_Edits_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	{
 		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ColorCoef, String(ttext).ToDouble());
 	}
+
+	else if (hwnd == SXParticlesEditor::EditColorR->GetHWND())
+	{
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.x, String(ttext).ToDouble());
+	}
+	else if (hwnd == SXParticlesEditor::EditColorG->GetHWND())
+	{
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.y, String(ttext).ToDouble());
+	}
+	else if (hwnd == SXParticlesEditor::EditColorB->GetHWND())
+	{
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.z, String(ttext).ToDouble());
+	}
+	else if (hwnd == SXParticlesEditor::EditColorA->GetHWND())
+	{
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.w, String(ttext).ToDouble());
+	}
+
 	else if (hwnd == SXParticlesEditor::EditReCreateCount->GetHWND())
 	{
 		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ReCreateCount, String(ttext).ToInt());
@@ -509,6 +531,15 @@ LRESULT SXParticlesEditor_Edits_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 			MessageBox(0, "unresolved dispersion", 0, 0);
 			return 0;
 		}
+	}
+
+	else if (hwnd == SXParticlesEditor::EditTrackSize->GetHWND())
+	{
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackSize, String(ttext).ToDouble());
+	}
+	else if (hwnd == SXParticlesEditor::EditTrackTime->GetHWND())
+	{
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackTime, String(ttext).ToDouble());
 	}
 
 	else if (hwnd == SXParticlesEditor::EditAnimTexCountCadrsX->GetHWND())
