@@ -1,4 +1,7 @@
 
+#define MAINWIN_SIZE_X	820
+#define MAINWIN_SIZE_Y	675
+
 namespace SXParticlesEditor
 {
 	ISXGUIBaseWnd* JobWindow;
@@ -301,12 +304,17 @@ namespace SXParticlesEditor
 
 void SXParticlesEditor::InitAllElements()
 {
-	SXParticlesEditor::JobWindow = SXGUICrBaseWnd("JobWindow","SXParticlesEditor",0,0,247,54,820,675,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
+	RECT wrect;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
+	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
+	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
+
+	SXParticlesEditor::JobWindow = SXGUICrBaseWnd("JobWindow", "SXParticlesEditor", 0, 0, cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXParticlesEditor::JobWindow->Visible(false);
 	SXGUIBaseHandlers::InitHandlerMsg(SXParticlesEditor::JobWindow);
 
-	SXParticlesEditor::JobWindow->MinSizeX = 820;
-	SXParticlesEditor::JobWindow->MinSizeY = 675;
+	SXParticlesEditor::JobWindow->MinSizeX = MAINWIN_SIZE_X;
+	SXParticlesEditor::JobWindow->MinSizeY = MAINWIN_SIZE_Y;
 
 	SXParticlesEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
 	SXParticlesEditor::JobWindow->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);

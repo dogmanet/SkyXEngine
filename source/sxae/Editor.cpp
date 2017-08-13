@@ -1058,13 +1058,26 @@ Editor * Editor::m_pEditor;
 
 void Editor::InitUI()
 {
-	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, 256, 199, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	RECT wrect;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
+	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
+	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
+
+	if (cx < 0)
+		cx = 0;
+
+	if (cy < 0)
+		cy = 0;
+
+	MainWindow = SXGUICrBaseWnd("SXAnimEditor", "SXAnimEditor", 0, 0, cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(MainWindow);
 	MainWindow->AddHandler(MenuCmd, WM_COMMAND);
 	MainWindow->AddHandler(MenuCmd, WM_CLOSE, 0, 0, 0, 0, 1);
 	MainWindow->AddHandler(MenuCmd, WM_PARENTNOTIFY);
 	MainWindow->AddHandler(MenuCmd, EM_LOADACTIVITIES);
 	//MainWindow->AddHandler(MenuCmd, WM_KEYDOWN);
+	MainWindow->MinSizeX = MAINWIN_SIZE_X;
+	MainWindow->MinSizeY = MAINWIN_SIZE_Y;
 
 
 	MainWindow->SetUserPtr(this);

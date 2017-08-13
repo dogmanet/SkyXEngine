@@ -1,6 +1,9 @@
 #ifndef Editor_H
 #define Editor_H
 
+#define MAINWIN_SIZE_X	1320
+#define MAINWIN_SIZE_Y	730
+
 #define EDITOR_REG_TREE "SOFTWARE\\DogmaNet\\SkyXEngine\\Editor"
 #define EDITOR_REG_KEY_GSDIR "gs_dir"
 

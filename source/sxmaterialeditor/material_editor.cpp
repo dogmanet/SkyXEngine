@@ -1,4 +1,7 @@
 
+#define MAINWIN_SIZE_X	645
+#define MAINWIN_SIZE_Y	700
+
 #include <sxmaterialeditor/shaders_kit.cpp>
 #include <sxmaterialeditor/paraml_kit.cpp>
 
@@ -185,7 +188,12 @@ namespace SXMaterialEditor
 
 void SXMaterialEditor::InitAllElements()
 {
-	SXMaterialEditor::JobWindow = SXGUICrBaseWnd("SXMaterialEditor", "SXMaterialEditor", 0, 0, 366, 18, 645, 700, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	RECT wrect;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
+	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
+	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
+
+	SXMaterialEditor::JobWindow = SXGUICrBaseWnd("SXMaterialEditor", "SXMaterialEditor", 0, 0, cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXMaterialEditor::JobWindow->Visible(false);
 	SXGUIBaseHandlers::InitHandlerMsg(SXMaterialEditor::JobWindow);
 	SXMaterialEditor::JobWindow->AddHandler(SXMaterialEditor_JobWindow_CallWmCommand, WM_COMMAND);

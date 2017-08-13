@@ -30,9 +30,6 @@
     <ClCompile Include="..\..\..\source\sxleveleditor\level_editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\sxleveleditor\light_callback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\sxleveleditor\model_callback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

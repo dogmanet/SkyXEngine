@@ -479,7 +479,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SML_LigthsCreatePoint(
 		&float3(110,110,-110),
-		LIGHTS_GLOBAL_MAX_POWER,
 		LIGHTS_GLOBAL_STD_RADIUS,
 		&float3(1,1,1),
 		true,

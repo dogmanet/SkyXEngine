@@ -1,6 +1,9 @@
 
 #define SX_LE_MMENU_WEATHER_BEGIN_ID 50001
 
+#define MAINWIN_SIZE_X	820
+#define MAINWIN_SIZE_Y	690
+
 namespace SXLevelEditor
 {
 	ISXGUIBaseWnd* JobWindow;
@@ -258,15 +261,20 @@ void SXLevelEditor::InitAllElements()
 	icex.dwICC = ICC_LISTVIEW_CLASSES;
 	InitCommonControlsEx(&icex);
 
-	SXLevelEditor::JobWindow = SXGUICrBaseWnd("JobWindow","SX Level editor",0,0,0,20,820,690,0,0,CreateSolidBrush(RGB(220,220,220)),0,CS_HREDRAW | CS_VREDRAW,WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,0,WndProcAllDefault);
+	RECT wrect;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
+	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
+	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
+
+	SXLevelEditor::JobWindow = SXGUICrBaseWnd("JobWindow", "SX Level editor", 0, 0, cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXLevelEditor::JobWindow->Visible(false);
 	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::JobWindow);
 
 	SXLevelEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
 	SXLevelEditor::JobWindow->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
 	SXLevelEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
-	SXLevelEditor::JobWindow->MinSizeX = 820;
-	SXLevelEditor::JobWindow->MinSizeY = 690;
+	SXLevelEditor::JobWindow->MinSizeX = MAINWIN_SIZE_X;
+	SXLevelEditor::JobWindow->MinSizeY = MAINWIN_SIZE_Y;
 	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
 	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
 	
