@@ -207,5 +207,23 @@
     <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_graphpoint.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resource\lvl_in.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\lvl_out.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sun.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_in.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_out.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sun.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

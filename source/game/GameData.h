@@ -51,6 +51,8 @@ protected:
 
 	static void ccmd_reload();
 
+	static void ccmd_toggleflashlight();
+
 };
 
 #endif

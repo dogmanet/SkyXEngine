@@ -118,9 +118,10 @@ SX_LIB_API void SPP_RenderBloom(float3_t* param);
 param.x - дисперсия (разброс) \n 
 param.y - ширина свечения \n 
 param.z - множитель интенсивности \n 
+sun_color - цвет света солнца (сила) в xyz, w - сила света
 use_bloom - использовать ли в дополнение данные от bloom прохода, если true то этот эффект должен идти поле bloom \n 
 примерные данные для 8 (NumSamples) выборок: 0.25f, 0.3f, 0.9f, use_bloom - на любителя*/
-SX_LIB_API void SPP_RenderLensFlare(float3_t* param, bool use_bloom);
+SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool use_bloom);
 
 /*! depth of field, глубина резкости, использует depth0 \n 
 все компоненты param указываются в метрах \n 

@@ -175,11 +175,32 @@ void SAIG_QuadSetState(ID id, AIQUAD_STATE state)
 	ObjAIGrid->QuadSetState(id, state);
 }
 
+void SAIG_QuadSetStateWho(ID id, ID who)
+{
+	AIG_PRECOND(_VOID);
+
+	ObjAIGrid->QuadSetStateWho(id, who);
+}
+
+ID SAIG_QuadGetStateWho(ID id)
+{
+	AIG_PRECOND(-1);
+
+	return ObjAIGrid->QuadGetStateWho(id);
+}
+
 ID SAIG_QuadGet(const float3* pos, bool isnear_or_permissible)
 {
 	AIG_PRECOND(-1);
 
 	return ObjAIGrid->QuadGet(pos, isnear_or_permissible);
+}
+
+bool SAIG_QuadGetPos(ID id, float3* pos)
+{
+	AIG_PRECOND(false);
+
+	return ObjAIGrid->QuadGetPos(id, pos);
 }
 
 void SAIG_QuadSetPosY(ID id, float posy)
@@ -295,7 +316,7 @@ void SAIG_GridGenerate()
 	ObjAIGrid->GridGenerate();
 }
 
-int SAIG_GridFindPath(ID beginq, ID endq)
+bool SAIG_GridFindPath(ID beginq, ID endq)
 {
 	AIG_PRECOND(false);
 
@@ -309,11 +330,11 @@ UINT SAIG_GridGetSizePath()
 	return ObjAIGrid->GridGetSizePath();
 }
 
-bool SAIG_GridGetPath(ID * pmem, UINT count)
+bool SAIG_GridGetPath(ID * pmem, UINT count, bool reverse)
 {
 	AIG_PRECOND(false);
 
-	return ObjAIGrid->GridGetPath(pmem, count);
+	return ObjAIGrid->GridGetPath(pmem, count, reverse);
 }
 
 void SAIG_GridSetColorArr(const ID * pmem, DWORD color, UINT count)

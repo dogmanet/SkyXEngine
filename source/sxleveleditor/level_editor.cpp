@@ -140,13 +140,24 @@ namespace SXLevelEditor
 	ISXGUIButton* ButtonGameTab;
 	int GameTabVal = 0;
 	ISXGUIListView* ListViewGameClass;
-	ISXGUIListView* ListViewConnections;
 	ISXGUIComboBox* ComboBoxGameValue;
 	ISXGUIEdit* EditGameValue;
 	ISXGUIButton* ButtonGameValue;
 	ISXGUIStatic* StaticGameHelp;
 	ISXGUIMemo* MemoGameHelp;
 	ISXGUIButton* ButtonGameCreate;
+
+	ISXGUIListView* ListViewGameConnections;
+	ISXGUIStatic* StaticGameConnectionsEvent;
+	ISXGUIComboBox* ComboBoxGameConnectionsEvent;
+	ISXGUIStatic* StaticGameConnectionsName;
+	ISXGUIEdit* EditGameConnectionsName;
+	ISXGUIStatic* StaticGameConnectionsAction;
+	ISXGUIComboBox* ComboBoxGameConnectionsAction;
+	ISXGUIStatic* StaticGameConnectionsDelay;
+	ISXGUIEdit* EditGameConnectionsDelay;
+	ISXGUIStatic* StaticGameConnectionsParameter;
+	ISXGUIEdit* EditGameConnectionsParameter;
 	//}
 
 	//aigrid
@@ -194,7 +205,7 @@ namespace SXLevelEditor
 
 	void DeleteAllElements();
 
-	void LevelNew();
+	void LevelNew(bool mess = true);
 	void LevelOpen();
 	void LevelSave();
 	void LevelSaveAs();
@@ -425,13 +436,13 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::CheckBoxTBLevelType->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXLevelEditor::CheckBoxTBLevelType->GAlign.left = true;
 	SXLevelEditor::CheckBoxTBLevelType->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP24);
+	SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
 
 	SXLevelEditor::CheckBoxTBGLightEnable = SXGUICrCheckBoxEx("", 612, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
 	SXLevelEditor::CheckBoxTBGLightEnable->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.left = true;
 	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBGLightEnable->SetBmpInResourse(IDB_BITMAP24);
+	SXLevelEditor::CheckBoxTBGLightEnable->SetBmpInResourse(IDB_BITMAP27);
 
 
 	SXLevelEditor::CheckBoxTBAIGBound->SetCheck(false);
@@ -1284,20 +1295,124 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::ButtonGameCreate->AddHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
 
 
-	SXLevelEditor::ListViewConnections = SXGUICrListView("", 5, 5, 600, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
-	SXLevelEditor::ListViewConnections->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ListViewConnections->SetColorText(0, 0, 0);
-	SXLevelEditor::ListViewConnections->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ListViewConnections->SetTransparentTextBk(true);
-	SXLevelEditor::ListViewConnections->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ListViewConnections->AddColumn("Event", 120);
-	SXLevelEditor::ListViewConnections->AddColumn("Name", 120);
-	SXLevelEditor::ListViewConnections->AddColumn("Action", 120);
-	SXLevelEditor::ListViewConnections->AddColumn("Delay", 120);
-	SXLevelEditor::ListViewConnections->AddColumn("Parameter", 120);
-	SXLevelEditor::ListViewConnections->GAlign.left = true;
-	SXLevelEditor::ListViewConnections->GAlign.top = true;
-	SXLevelEditor::ListViewConnections->Visible(false);
+	SXLevelEditor::ListViewGameConnections = SXGUICrListView("", 5, 5, 550, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
+	SXLevelEditor::ListViewGameConnections->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ListViewGameConnections->SetColorText(0, 0, 0);
+	SXLevelEditor::ListViewGameConnections->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::ListViewGameConnections->SetTransparentTextBk(true);
+	SXLevelEditor::ListViewGameConnections->SetColorBrush(255, 255, 255);
+	SXLevelEditor::ListViewGameConnections->AddColumn("Event", 110);
+	SXLevelEditor::ListViewGameConnections->AddColumn("Name", 110);
+	SXLevelEditor::ListViewGameConnections->AddColumn("Action", 110);
+	SXLevelEditor::ListViewGameConnections->AddColumn("Delay", 110);
+	SXLevelEditor::ListViewGameConnections->AddColumn("Parameter", 110);
+	SXLevelEditor::ListViewGameConnections->GAlign.left = true;
+	SXLevelEditor::ListViewGameConnections->GAlign.top = true;
+	SXLevelEditor::ListViewGameConnections->Visible(false);
+
+	SXLevelEditor::StaticGameConnectionsEvent = SXGUICrStatic("Event:", 560, 50, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticGameConnectionsEvent->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsEvent->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsEvent->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticGameConnectionsEvent->SetTransparentTextBk(true);
+	SXLevelEditor::StaticGameConnectionsEvent->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticGameConnectionsEvent->GAlign.left = true;
+	SXLevelEditor::StaticGameConnectionsEvent->GAlign.top = true;
+	SXLevelEditor::StaticGameConnectionsEvent->Visible(false);
+
+	SXLevelEditor::ComboBoxGameConnectionsEvent = SXGUICrComboBox("", 610, 50, 185, 180, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->SetColorText(0, 0, 0);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->SetTransparentTextBk(true);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->SetColorBrush(255, 255, 255);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->GAlign.left = true;
+	SXLevelEditor::ComboBoxGameConnectionsEvent->GAlign.top = true;
+	SXLevelEditor::ComboBoxGameConnectionsEvent->Visible(false);
+
+	SXLevelEditor::StaticGameConnectionsName = SXGUICrStatic("Name:", 560, 75, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticGameConnectionsName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsName->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsName->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticGameConnectionsName->SetTransparentTextBk(true);
+	SXLevelEditor::StaticGameConnectionsName->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticGameConnectionsName->GAlign.left = true;
+	SXLevelEditor::StaticGameConnectionsName->GAlign.top = true;
+	SXLevelEditor::StaticGameConnectionsName->Visible(false);
+
+	SXLevelEditor::EditGameConnectionsName = SXGUICrEdit("", 610, 75, 185, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditGameConnectionsName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditGameConnectionsName->SetColorText(0, 0, 0);
+	SXLevelEditor::EditGameConnectionsName->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditGameConnectionsName->SetTransparentTextBk(true);
+	SXLevelEditor::EditGameConnectionsName->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditGameConnectionsName->GAlign.left = true;
+	SXLevelEditor::EditGameConnectionsName->GAlign.top = true;
+	SXLevelEditor::EditGameConnectionsName->Visible(false);
+	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_IN, WM_KEYUP);
+	//SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	//SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KILLFOCUS);
+
+	SXLevelEditor::StaticGameConnectionsAction = SXGUICrStatic("Action:", 560, 95, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticGameConnectionsAction->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsAction->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsAction->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticGameConnectionsAction->SetTransparentTextBk(true);
+	SXLevelEditor::StaticGameConnectionsAction->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticGameConnectionsAction->GAlign.left = true;
+	SXLevelEditor::StaticGameConnectionsAction->GAlign.top = true;
+	SXLevelEditor::StaticGameConnectionsAction->Visible(false);
+
+	SXLevelEditor::ComboBoxGameConnectionsAction = SXGUICrComboBox("", 610, 95, 185, 135, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ComboBoxGameConnectionsAction->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ComboBoxGameConnectionsAction->SetColorText(0, 0, 0);
+	SXLevelEditor::ComboBoxGameConnectionsAction->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::ComboBoxGameConnectionsAction->SetTransparentTextBk(true);
+	SXLevelEditor::ComboBoxGameConnectionsAction->SetColorBrush(255, 255, 255);
+	SXLevelEditor::ComboBoxGameConnectionsAction->GAlign.left = true;
+	SXLevelEditor::ComboBoxGameConnectionsAction->GAlign.top = true;
+	SXLevelEditor::ComboBoxGameConnectionsAction->Visible(false);
+
+	SXLevelEditor::StaticGameConnectionsDelay = SXGUICrStatic("Delay:", 560, 120, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticGameConnectionsDelay->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsDelay->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsDelay->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticGameConnectionsDelay->SetTransparentTextBk(true);
+	SXLevelEditor::StaticGameConnectionsDelay->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticGameConnectionsDelay->GAlign.left = true;
+	SXLevelEditor::StaticGameConnectionsDelay->GAlign.top = true;
+	SXLevelEditor::StaticGameConnectionsDelay->Visible(false);
+
+	SXLevelEditor::EditGameConnectionsDelay = SXGUICrEdit("", 610, 120, 185, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditGameConnectionsDelay->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditGameConnectionsDelay->SetColorText(0, 0, 0);
+	SXLevelEditor::EditGameConnectionsDelay->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditGameConnectionsDelay->SetTransparentTextBk(true);
+	SXLevelEditor::EditGameConnectionsDelay->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditGameConnectionsDelay->GAlign.left = true;
+	SXLevelEditor::EditGameConnectionsDelay->GAlign.top = true;
+	SXLevelEditor::EditGameConnectionsDelay->Visible(false);
+
+	SXLevelEditor::StaticGameConnectionsParameter = SXGUICrStatic("Parameter:", 560, 140, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::StaticGameConnectionsParameter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsParameter->SetColorText(0, 0, 0);
+	SXLevelEditor::StaticGameConnectionsParameter->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::StaticGameConnectionsParameter->SetTransparentTextBk(true);
+	SXLevelEditor::StaticGameConnectionsParameter->SetColorBrush(220, 220, 220);
+	SXLevelEditor::StaticGameConnectionsParameter->GAlign.left = true;
+	SXLevelEditor::StaticGameConnectionsParameter->GAlign.top = true;
+	SXLevelEditor::StaticGameConnectionsParameter->Visible(false);
+
+	SXLevelEditor::EditGameConnectionsParameter = SXGUICrEdit("", 610, 140, 185, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::EditGameConnectionsParameter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::EditGameConnectionsParameter->SetColorText(0, 0, 0);
+	SXLevelEditor::EditGameConnectionsParameter->SetColorTextBk(255, 255, 255);
+	SXLevelEditor::EditGameConnectionsParameter->SetTransparentTextBk(true);
+	SXLevelEditor::EditGameConnectionsParameter->SetColorBrush(255, 255, 255);
+	SXLevelEditor::EditGameConnectionsParameter->GAlign.left = true;
+	SXLevelEditor::EditGameConnectionsParameter->GAlign.top = true;
+	SXLevelEditor::EditGameConnectionsParameter->Visible(false);
+	
 	//}
 
 	//aigrid

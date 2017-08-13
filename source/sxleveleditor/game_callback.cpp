@@ -344,6 +344,49 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	return 0;
 }
 
+LRESULT SXLevelEditor_EditGameConnectionsName_IN(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char edit_text[256];
+	SXLevelEditor::EditGameConnectionsName->GetText(edit_text, 256);
+	if (edit_text[0] == 0)
+		return 0;
+
+	if (!(isalpha(wParam) || isdigit(wParam) || (char)wParam == '_'))
+		return 0;
+
+	char* lower_text = CharLower(edit_text);
+	int tmpcoungo = SXGame_EntGetCount();
+	int tmpcoungo2 = 0;
+	char tmpname[256];
+	char* lower_name = 0;
+	char* found = 0;
+	for (int i = 0; i < tmpcoungo; ++i)
+	{
+		SXbaseEntity* bEnt = SXGame_EntGet(i);
+		if (bEnt)
+		{
+			strcpy(tmpname, bEnt->GetName());
+			if (tmpname[0] == 0)
+				continue;
+			lower_name = CharLower(tmpname);
+			if (found = strstr(lower_name, lower_text))
+			{
+				int qq = found - lower_name;
+				if (qq == 0)
+				{
+					SXLevelEditor::EditGameConnectionsName->SetText(lower_name);
+					PostMessage(SXLevelEditor::EditGameConnectionsName->GetHWND(), EM_SETSEL, strlen(edit_text), strlen(lower_name));
+					return 0;
+				}
+				//int qwerty = 0;
+				//return 0;
+			}
+		}
+	}
+
+	return 0;
+}
+
 void SXLevelEditor::GameVisibleProperties(bool bf)
 {
 	SXLevelEditor::StaticGameClass->Visible(bf);
@@ -359,7 +402,17 @@ void SXLevelEditor::GameVisibleProperties(bool bf)
 
 void SXLevelEditor::GameVisibleConnections(bool bf)
 {
-	SXLevelEditor::ListViewConnections->Visible(bf);
+	SXLevelEditor::ListViewGameConnections->Visible(bf);
+	SXLevelEditor::StaticGameConnectionsEvent->Visible(bf);
+	SXLevelEditor::ComboBoxGameConnectionsEvent->Visible(bf);
+	SXLevelEditor::StaticGameConnectionsName->Visible(bf);
+	SXLevelEditor::EditGameConnectionsName->Visible(bf);
+	SXLevelEditor::StaticGameConnectionsAction->Visible(bf);
+	SXLevelEditor::ComboBoxGameConnectionsAction->Visible(bf);
+	SXLevelEditor::StaticGameConnectionsDelay->Visible(bf);
+	SXLevelEditor::EditGameConnectionsDelay->Visible(bf);
+	SXLevelEditor::StaticGameConnectionsParameter->Visible(bf);
+	SXLevelEditor::EditGameConnectionsParameter->Visible(bf);
 }
 
 LRESULT SXLevelEditor_ButtonGameTab_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

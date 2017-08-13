@@ -7,9 +7,9 @@ LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void SXLevelEditor::LevelNew()
+void SXLevelEditor::LevelNew(bool mess)
 {
-	if (SGeom_ModelsGetCount() <= 0 || (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO))
+	if (mess && (SGeom_ModelsGetCount() <= 0 || (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)))
 		return;
 
 	Level::Clear();
@@ -20,12 +20,22 @@ void SXLevelEditor::LevelNew()
 	GData::Editors::ActiveElement = -1;
 	GData::Editors::ActiveGreenSplit = -1;
 	GData::Editors::ActiveGreenObject = -1;
+
+	ID gid = SML_LigthsGetGlobal();
+	if (gid >= 0)
+		SML_LigthsDeleteLight(gid);
+
+	SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
+	SXLevelEditor::CheckBoxTBLevelType->SetCheck(false);
+	SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
 }
 
 void SXLevelEditor::LevelOpen()
 {
 	if (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure that you need to open the level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)
 		return;
+
+	SXLevelEditor::LevelNew(false);
 
 	char tmppath[1024];
 	tmppath[0] = 0;
@@ -38,6 +48,20 @@ void SXLevelEditor::LevelOpen()
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
 		SXLevelEditor::JobWindow->SetText(tmpcaption);
+
+		ID gid = SML_LigthsGetGlobal();
+		if (gid >= 0)
+		{
+			SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP26);
+			SXLevelEditor::CheckBoxTBLevelType->SetCheck(true);
+			SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(true);
+		}
+		else
+		{
+			SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
+			SXLevelEditor::CheckBoxTBLevelType->SetCheck(false);
+			SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
+		}
 	}
 }
 
@@ -84,7 +108,7 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//новый
 	if (id == ID_FILE_NEW)
 	{
-		SXLevelEditor::LevelNew();
+		SXLevelEditor::LevelNew(true);
 	}
 	//открыть
 	else if (id == ID_FILE_OPEN)
@@ -864,7 +888,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 
 		else if (SXLevelEditor::ButtonTBNew->GetHWND() == handle_elem)
 		{
-			SXLevelEditor::LevelNew();
+			SXLevelEditor::LevelNew(true);
 		}
 		else if (SXLevelEditor::ButtonTBOpen->GetHWND() == handle_elem)
 		{
@@ -980,15 +1004,18 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 						&float3(1, 1, 1),
 						true,
 						true);
-					SML_LigthsSetEnable(gid, true);
+					SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->GetCheck());
 					SML_LigthsSetName(gid, "sun");
 				}
+				SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP26);
 			}
 			else
 			{
 				ID gid = SML_LigthsGetGlobal();
 				if (gid >= 0)
 					SML_LigthsDeleteLight(gid);
+				SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
+				SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
 			}
 		}
 
@@ -1005,6 +1032,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 	return 0;
 }
 
+//int recurion = 0;
 
 LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1161,6 +1189,56 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			
 		}
 	}
+	/*else if (Notification == EN_CHANGE)
+	{
+		if (SXLevelEditor::EditGameConnectionsACValue->GetHWND() == handle_elem)
+		{
+			static int recurion = 0;
+			if (recurion > 0)
+			{
+				recurion = 0;
+				return 0;
+			}
+				
+			
+			char edit_text[256];
+			SXLevelEditor::EditGameConnectionsACValue->GetText(edit_text, 256);
+			if (edit_text[0] == 0)
+				return 0;
+
+			//if (!(isalpha(wParam) || isdigit(wParam) || (char)wParam == '_'))
+				//return 0;
+
+			char* lower_text = CharLower(edit_text);
+			int tmpcoungo = SXGame_EntGetCount();
+			int tmpcoungo2 = 0;
+			char tmpname[256];
+			char* lower_name = 0;
+			char* found = 0;
+			for (int i = 0; i < tmpcoungo; ++i)
+			{
+				SXbaseEntity* bEnt = SXGame_EntGet(i);
+				if (bEnt)
+				{
+					strcpy(tmpname, bEnt->GetName());
+					if (tmpname[0] == 0)
+						continue;
+					lower_name = CharLower(tmpname);
+					if (found = strstr(lower_name, lower_text))
+					{
+						int qq = found - lower_name;
+						if (qq == 0)
+						{
+							++recurion;
+							SXLevelEditor::EditGameConnectionsACValue->SetText(lower_name);
+							PostMessage(SXLevelEditor::EditGameConnectionsACValue->GetHWND(), EM_SETSEL, strlen(edit_text), strlen(lower_name));
+							return 0;
+						}
+					}
+				}
+			}
+		}
+	}*/
 
 	return 0;
 }

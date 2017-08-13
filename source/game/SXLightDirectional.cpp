@@ -31,7 +31,8 @@ BaseClass(pMgr)
 	m_typeshadow = 1;
 	m_angle = SM_PI * 0.4f;
 	m_topradius = 0.01f;
-	IDLight = SML_LigthsCreateDirection(&float3(0, 0, 0), m_dist, &m_color, &float3(0, -1, 0), m_topradius, m_angle, true);
+	IDLight = SML_LigthsCreateDirection(&float3(0, 0, 0), m_dist, &m_color, &SMQuaternion(-SM_PI, 'z'), m_topradius, m_angle, true);
+	m_enable = true;
 
 	float3 f = LIGHTS_DIR_BASE;
 	float3 a = SMVector3Cross(f, f);
@@ -44,9 +45,18 @@ SXLightDirectional::~SXLightDirectional()
 	SML_LigthsDeleteLight(IDLight);
 }
 
+void SXLightDirectional::ToggleEnable()
+{
+	m_enable = !m_enable;
+	SML_LigthsSetEnable(IDLight, m_enable);
+}
+
 void SXLightDirectional::OnSync()
 {
 	BaseClass::OnSync();
+
+	if (SML_LigthsGetEnable(IDLight) != m_enable)
+		SML_LigthsSetEnable(IDLight, m_enable);
 	
 	static float3 vec;
 	SML_LigthsGetPos(IDLight, &vec, false);
@@ -69,12 +79,12 @@ void SXLightDirectional::OnSync()
 		SML_LigthsSetTypeShadowed(IDLight, (LightsTypeShadow)m_typeshadow);
 
 
-	static float3 curr_rot;
-	curr_rot = SMMatrixToEuler(m_vOrientation.GetMatrix());
-	SML_LigthsGetRot(IDLight, &vec);
+	static SMQuaternion curr_rot;
+	//curr_rot = SMMatrixToEuler(m_vOrientation.GetMatrix());
+	//SML_LigthsGetOrient(IDLight, &curr_rot);
 
-	if (vec.x != curr_rot.x || vec.y != curr_rot.y || vec.z != curr_rot.z)
-		SML_LigthsSetRot(IDLight, &curr_rot);
+	//if (curr_rot == m_vOrientation)
+		SML_LigthsSetOrient(IDLight, &m_vOrientation);
 
 	if (SML_LigthsGetAngle(IDLight) != m_angle)
 		SML_LigthsSetAngle(IDLight, m_angle);

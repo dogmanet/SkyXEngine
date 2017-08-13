@@ -128,6 +128,14 @@ void SXbaseAnimating::PlayAnimation(const char * name, UINT iFadeTime, UINT slot
 	}
 }
 
+bool SXbaseAnimating::PlayingAnimations(const char* name)
+{
+	if (m_pAnimPlayer)
+	{
+		return m_pAnimPlayer->PlayingAnimations(name);
+	}
+}
+
 void SXbaseAnimating::InitPhysics()
 {
 	if(!m_pAnimPlayer)

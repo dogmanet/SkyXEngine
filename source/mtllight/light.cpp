@@ -24,382 +24,6 @@ Lights::~Lights()
 	SGCore_RTDelete(ShadowMap2);
 }
 
-void Lights::Save(const char* path)
-{
-	FILE* file = 0;
-	file = fopen(path, "w");
-
-	if (!file)
-	{
-		reportf(-1, "%s - light: failed open file '%s'", gen_msg_location, path);
-		return;
-	}
-
-	float3 tmppos;
-	float tmppower;
-	float tmpdist;
-	float3 tmprot;
-	float3 tmpcolor;
-	fprintf(file, "%s", "[light]\n");
-	fprintf(file, "%s%d%s", "count = ", ArrKeyLights.size(), "\n");
-	fprintf(file, "%s", "\n");
-	int tmpnumll = 0;
-
-
-	for (DWORD i = 0; i<ArrKeyLights.size(); i++)
-	{
-		GetLightPos(i, &tmppos,false);
-		tmppower = ArrKeyLights[i]->Power;
-		tmpdist = ArrKeyLights[i]->Dist;
-		tmprot = ArrKeyLights[i]->Rotation;
-		tmpcolor = ArrKeyLights[i]->Color;
-
-		char* tmpname = ArrKeyLights[i]->Name;
-
-		fprintf(file, "%s%d%s", "[light_", i, "]\n");
-
-		fprintf(file, "%s%s%s", "name = ", tmpname, "\n");
-		fprintf(file, "%s%d%s", "enable = ", ArrKeyLights[i]->IsEnable, "\n");
-
-		fprintf(file, "%s%d%s", "type = ", ArrKeyLights[i]->TypeLight, "\n");
-
-		fprintf(file, "%s%d%s", "color_r = ", DWORD(tmpcolor.x * 255), "\n");
-		fprintf(file, "%s%d%s", "color_g = ", DWORD(tmpcolor.y * 255), "\n");
-		fprintf(file, "%s%d%s", "color_b = ", DWORD(tmpcolor.z * 255), "\n");
-		
-		//fprintf(file, "%s%d%s", "is_shadowed = ", ArrKeyLights[i]->IsShadow, "\n");
-
-		fprintf(file, "%s%f%s", "pos_x = ", tmppos.x, "\n");
-		fprintf(file, "%s%f%s", "pos_y = ", tmppos.y, "\n");
-		fprintf(file, "%s%f%s", "pos_z = ", tmppos.z, "\n");
-
-		fprintf(file, "%s%f%s", "power = ", tmppower, "\n");
-
-		if (ArrKeyLights[i]->TypeLight != LightsTypeLight::ltl_global)
-		{
-			fprintf(file, "%s%f%s", "shadow_bias = ", GetShadowBias(i), "\n");
-			fprintf(file, "%s%f%s", "dist = ", tmpdist, "\n");
-			fprintf(file, "%s%f%s", "dist_for_end_shadow = ", GetShadowLocalFar(i), "\n");
-
-				if (ArrKeyLights[i]->TypeLight == LightsTypeLight::ltl_direction)
-				{
-					fprintf(file, "%s%f%s", "rot_x = ", tmprot.x, "\n");
-					fprintf(file, "%s%f%s", "rot_y = ", tmprot.y, "\n");
-					fprintf(file, "%s%f%s", "rot_z = ", tmprot.z, "\n");
-					fprintf(file, "%s%f%s", "angle = ", GetLightAngle(i), "\n");
-					fprintf(file, "%s%f%s", "top_radius = ", GetLightTopRadius(i), "\n");
-				}
-				else
-				{
-					fprintf(file, "%s%d%s", "enable_edge_0 = ", GetLightCubeEdgeEnable(i, 0), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_1 = ", GetLightCubeEdgeEnable(i, 1), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_2 = ", GetLightCubeEdgeEnable(i, 2), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_3 = ", GetLightCubeEdgeEnable(i, 3), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_4 = ", GetLightCubeEdgeEnable(i, 4), "\n");
-					fprintf(file, "%s%d%s", "enable_edge_5 = ", GetLightCubeEdgeEnable(i, 5), "\n");
-				}
-			}
-			tmpnumll++;
-			fprintf(file, "%s", "\n");
-
-		//}
-	}
-
-	fclose(file);
-}
-
-void Lights::Load(const char* path)
-{
-	ISXLConfig* config = Core_OpLConfig(path);
-
-	if (!config->SectionExists("light"))
-	{
-		reportf(-1, "%s - light: not found section 'light', file '%s'", gen_msg_location, path);
-		return;
-	}
-
-	if (!config->KeyExists("light", "count"))
-	{
-		reportf(-1, "%s - light: not found key 'count', file '%s', section 'light'", gen_msg_location);
-		return;
-	}
-
-	int CountLight = String(config->GetKey("light", "count")).ToInt();
-
-	char text_SectionLight[CONFIG_SECTION_MAX_LEN];
-	char textsource[1024];
-	long tmpsourcebindgroup;
-	char tmpname[OBJECT_NAME_MAX_LEN];
-	bool tmpenable;
-	bool tmpshadow;
-	float tmpshadowbias;
-	bool tmpglobal;
-	float distforendshadow;
-	float3 tmppos;
-	float tmppower;
-	float tmpdist;
-	int dir_or_rot;
-	float3 tmprot;
-	int tmptype;
-	float3 tmpcolor;
-
-	float tmptopradius;
-	float tmpangle;
-
-	bool tmp_enable_edge[6];
-
-	for (int i = 0; i<CountLight; i++)
-	{
-		sprintf(text_SectionLight, "%s%d", "light_", i);
-
-		if (!config->SectionExists(text_SectionLight))
-		{
-			reportf(-1, "%s - light: not found section '%s', file '%s', section ''", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-		if (config->KeyExists(text_SectionLight, "enable"))
-			tmpenable = String(config->GetKey(text_SectionLight, "enable")).ToBool();
-
-		if (config->KeyExists(text_SectionLight, "dist_for_end_shadow"))
-			distforendshadow = String(config->GetKey(text_SectionLight, "dist_for_end_shadow")).ToDouble();
-		else
-			distforendshadow = 0;
-
-		if (config->KeyExists(text_SectionLight, "name"))
-			sprintf(tmpname, "%s", config->GetKey(text_SectionLight, "name"));
-		else
-			sprintf(tmpname, "%s", "__noname");
-
-		if (config->KeyExists(text_SectionLight, "source"))
-			sprintf(textsource,"%s",config->GetKey(text_SectionLight, "source"));
-		else
-			textsource[0] = '0';
-
-		if (textsource[0] != 0 && config->KeyExists(text_SectionLight, "source_bind_group"))
-			tmpsourcebindgroup = String(config->GetKey(text_SectionLight, "source_bind_group")).ToInt();
-		else
-			tmpsourcebindgroup = 0;
-
-		if (config->KeyExists(text_SectionLight, "pos_x"))
-			tmppos.x = String(config->GetKey(text_SectionLight, "pos_x")).ToDouble();
-		else
-			tmppos.x = 0;
-
-		if (config->KeyExists(text_SectionLight, "pos_y"))
-			tmppos.y = String(config->GetKey(text_SectionLight, "pos_y")).ToDouble();
-		else
-			tmppos.y = 0;
-
-		if (config->KeyExists(text_SectionLight, "pos_x"))
-			tmppos.z = String(config->GetKey(text_SectionLight, "pos_z")).ToDouble();
-		else
-			tmppos.z = 0;
-
-		if (config->KeyExists(text_SectionLight, "type"))
-			tmptype = String(config->GetKey(text_SectionLight, "type")).ToInt();
-		else
-		{
-			reportf(-1, "%s - light: not found key 'type', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-		if (config->KeyExists(text_SectionLight, "is_shadowed"))
-			tmpshadow = String(config->GetKey(text_SectionLight, "is_shadowed")).ToBool();
-		else
-		{
-			reportf(-1, "%s - light: not found key 'is_shadowed', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-		if (config->KeyExists(text_SectionLight, "shadow_bias"))
-			tmpshadowbias = String(config->GetKey(text_SectionLight, "shadow_bias")).ToDouble();
-		else
-			tmpshadowbias = 0;
-
-		if (config->KeyExists(text_SectionLight, "power"))
-			tmppower = String(config->GetKey(text_SectionLight, "power")).ToDouble();
-		else
-		{
-			reportf(-1, "%s - light: not found key 'power', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-
-		if (config->KeyExists(text_SectionLight, "color_r"))
-			tmpcolor.x = String(config->GetKey(text_SectionLight, "color_r")).ToDouble() / 255.f;
-		else
-		{
-			reportf(-1, "%s - light: not found key 'color_r', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-		
-		if (config->KeyExists(text_SectionLight, "color_g"))
-			tmpcolor.y = String(config->GetKey(text_SectionLight, "color_g")).ToDouble() / 255.f;
-		else
-		{
-			reportf(-1, "%s - light: not found key 'color_g', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-		if (config->KeyExists(text_SectionLight, "color_b"))
-			tmpcolor.z = String(config->GetKey(text_SectionLight, "color_b")).ToDouble() / 255.f;
-		else
-		{
-			reportf(-1, "%s - light: not found key 'color_b', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-		if (config->KeyExists(text_SectionLight, "dist"))
-			tmpdist = String(config->GetKey(text_SectionLight, "dist")).ToDouble();
-		else if (tmptype != LightsTypeLight::ltl_global)
-		{
-			reportf(-1, "%s - light: not found key 'dist', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-			return;
-		}
-
-		long tmpidcr = -1;
-
-		//если источник точечный
-		if (tmptype == LightsTypeLight::ltl_point)
-		{
-			if (config->KeyExists(text_SectionLight, "enable_edge_0"))
-				tmp_enable_edge[0] = String(config->GetKey(text_SectionLight, "enable_edge_0")).ToBool();
-			else
-				tmp_enable_edge[0] = true;
-
-			if (config->KeyExists(text_SectionLight, "enable_edge_1"))
-				tmp_enable_edge[1] = String(config->GetKey(text_SectionLight, "enable_edge_1")).ToBool();
-			else
-				tmp_enable_edge[1] = '1';
-
-			if (config->KeyExists(text_SectionLight, "enable_edge_2"))
-				tmp_enable_edge[2] = String(config->GetKey(text_SectionLight, "enable_edge_2")).ToBool();
-			else
-				tmp_enable_edge[2] = true;
-
-			if (config->KeyExists(text_SectionLight, "enable_edge_3"))
-				tmp_enable_edge[3] = String(config->GetKey(text_SectionLight, "enable_edge_3")).ToBool();
-			else
-				tmp_enable_edge[3] = true;
-
-			if (config->KeyExists(text_SectionLight, "enable_edge_4"))
-				tmp_enable_edge[4] = String(config->GetKey(text_SectionLight, "enable_edge_4")).ToBool();
-			else
-				tmp_enable_edge[4] = true;
-
-			if (config->KeyExists(text_SectionLight, "enable_edge_5"))
-				tmp_enable_edge[5] = String(config->GetKey(text_SectionLight, "enable_edge_5")).ToBool();
-			else
-				tmp_enable_edge[5] = true;
-
-			tmpidcr = CreatePoint(-1,
-				&tmppos,
-				tmpdist,
-				&tmpcolor,
-				false,
-				tmpshadow,0);
-
-			SetLightCubeEdgeEnable(tmpidcr, 0, tmp_enable_edge[0]);
-			SetLightCubeEdgeEnable(tmpidcr, 1, tmp_enable_edge[1]);
-			SetLightCubeEdgeEnable(tmpidcr, 2, tmp_enable_edge[2]);
-			SetLightCubeEdgeEnable(tmpidcr, 3, tmp_enable_edge[3]);
-			SetLightCubeEdgeEnable(tmpidcr, 4, tmp_enable_edge[4]);
-			SetLightCubeEdgeEnable(tmpidcr, 5, tmp_enable_edge[5]);
-		}
-		//если направленный
-		else if (tmptype == LightsTypeLight::ltl_direction)
-		{
-			if (config->KeyExists(text_SectionLight, "dir_x"))
-			{
-				dir_or_rot = 1;
-				tmprot.x = String(config->GetKey(text_SectionLight, "dir_x")).ToDouble();
-				tmprot.y = String(config->GetKey(text_SectionLight, "dir_y")).ToDouble();
-				tmprot.z = String(config->GetKey(text_SectionLight, "dir_z")).ToDouble();
-			}
-			else if (config->KeyExists(text_SectionLight, "rot_x"))
-			{
-				dir_or_rot = 0;
-				tmprot.x = String(config->GetKey(text_SectionLight, "rot_x")).ToDouble();
-				tmprot.y = String(config->GetKey(text_SectionLight, "rot_y")).ToDouble();
-				tmprot.z = String(config->GetKey(text_SectionLight, "rot_z")).ToDouble();
-			}
-			else
-			{
-				dir_or_rot = 1;
-				tmprot.x = 0;
-				tmprot.y = -1;
-				tmprot.z = 0;
-			}
-
-			if (config->KeyExists(text_SectionLight, "top_radius"))
-				tmptopradius = String(config->GetKey(text_SectionLight, "top_radius")).ToDouble();
-			else
-			{
-				reportf(-1, "%s - light: not found key 'top_radius', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-				return;
-			}
-
-			if (config->KeyExists(text_SectionLight, "angle"))
-				tmpangle = String(config->GetKey(text_SectionLight, "angle")).ToDouble();
-			else
-			{
-				reportf(-1, "%s - light: not found key 'angle', file '%s', section '%s'", gen_msg_location, path, text_SectionLight);
-				return;
-			}
-
-			tmpidcr = CreateDirection(-1,
-				&tmppos,
-				tmpdist,
-				&tmpcolor,
-				&tmprot,
-				tmptopradius,
-				tmpangle,
-				tmpshadow,0);
-
-			
-		}
-		//если глобальный
-		else if (tmptype == LightsTypeLight::ltl_global)
-		{
-			tmppos.z = 0;
-			tmpidcr = CreatePoint(-1,
-				&tmppos,
-				LIGHTS_GLOBAL_STD_RADIUS,
-				&tmpcolor,
-				true,
-				tmpshadow,0);
-			
-		}
-		else
-		{
-			reportf(-1, "%s - light: undefined type light '%d', file '%s', section '%s'", gen_msg_location, tmptype, path, text_SectionLight);
-			return;
-		}
-
-		if (tmptype != LightsTypeLight::ltl_global)
-		{
-			SetShadowBias(tmpidcr, tmpshadowbias);
-			
-			if (distforendshadow > 0)
-				SetShadowLocalFar(tmpidcr, distforendshadow);
-
-			if (tmptype == LightsTypeLight::ltl_direction)
-			{
-				if (dir_or_rot == 1)
-					SetLightDir(tmpidcr, &tmprot);
-				else
-					SetLightRot(tmpidcr, &tmprot);
-			}
-		}
-
-		SetLightEnable(tmpidcr, tmpenable);
-		SetLightName(tmpidcr, tmpname);
-	}
-
-	config->Release();
-}
-
 ID Lights::CreateCopy(ID id)
 {
 	LIGHTS_PRE_COND_ID(id,-1);
@@ -416,27 +40,23 @@ ID Lights::CreateCopy(ID id)
 		tmplight2->Power = tmplight->Power;
 		tmplight2->Dist = tmplight->Dist;
 		tmplight2->Color = tmplight->Color;
-		tmplight2->Direction = tmplight->Direction;
 		tmplight2->DistFor = -1;
 		tmplight2->GAngleX = tmplight->GAngleX;
 		tmplight2->GAngleY = tmplight->GAngleY;
 		tmplight2->IsEnable = tmplight->IsEnable;
 		tmplight2->IsGlobal = tmplight->IsGlobal;
-		//tmplight2->IsShadow = tmplight->IsShadow;
 		tmplight2->IsVisible = tmplight->IsVisible;
 		tmplight2->IsVisibleFor = false;
-		tmplight2->MatRot = tmplight->MatRot;
 		sprintf(tmplight2->Name, "%s", tmplight->Name);
 		tmplight2->Position = tmplight->Position;
-		tmplight2->Rotation = tmplight->Rotation;
+		tmplight2->Quaternion = tmplight->Quaternion;
 		tmplight2->TopBottomRadius = tmplight->TopBottomRadius;
 		tmplight2->TypeLight = tmplight->TypeLight;
 		tmplight2->WorldMat = tmplight->WorldMat;
 
 		tmplight2->TypeShadowed = tmplight->TypeShadowed;
 		tmplight2->CountUpdate = tmplight->CountUpdate;
-		tmplight2->MatRotL = tmplight2->MatRotL;
-
+		
 		if (tmplight->ShadowPSSM)
 		{
 			tmplight2->ShadowPSSM = new PSSM();
@@ -455,7 +75,7 @@ ID Lights::CreateCopy(ID id)
 			tmplight2->ShadowSM = new ShadowMapTech();
 			tmplight2->ShadowSM->Init();
 			tmplight2->ShadowSM->SetPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
-			tmplight2->ShadowSM->SetDirection(&tmplight->Direction);
+			tmplight2->ShadowSM->SetDirection(&(tmplight->Quaternion * LIGHTS_DIR_BASE));
 			
 			tmplight2->ShadowSM->SetBias(tmplight->ShadowSM->GetBias());
 			tmplight2->ShadowSM->SetBlurPixel(tmplight->ShadowSM->GetBlurPixel());
@@ -501,7 +121,7 @@ Lights::Light::Light()
 	TypeShadowed = LightsTypeShadow::lts_static;
 	CountUpdate = 0;
 
-	IsVisible = IsEnable = /*IsShadow =*/ IsGlobal = false;
+	IsVisible = IsEnable = IsGlobal = false;
 
 	Mesh = 0;
 	Power = Dist = 0;
@@ -510,11 +130,10 @@ Lights::Light::Light()
 	Angle = 0;
 
 	BoundVolume = 0;
-	WorldMat;
-	MatRot;
 
 	IsVisibleFor = false;
 	DistFor = -1;
+	Quaternion = SMQuaternion(-SM_PI, 'z');
 
 	ShadowPSSM = 0;
 	ShadowSM = 0;
@@ -714,7 +333,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 	return tmpid;
 }
 
-ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume)
+ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow, const char* bound_volume)
 {
 	Light* tmplight = 0;
 
@@ -745,19 +364,15 @@ ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* c
 
 	tmplight->TopBottomRadius = float2_t(top_radius, bottom_radius);
 	tmplight->Color = *color;
-	tmplight->Direction = *dir;
-
-	static float3 f = LIGHTS_DIR_BASE;
-	float3 a = SMVector3Cross(f, *dir);
-	float ang = acosf(SMVector3Dot(f, *dir));
-	tmplight->MatRot = SMMatrixRotationAxis(a, ang);
+	
+	if (orient)
+		tmplight->Quaternion = *orient;
 
 	tmplight->Dist = dist;
 
-	tmplight->Rotation = SMMatrixToEuler(tmplight->MatRot);
 	tmplight->IsEnable = true;
 	float4x4 mpos = SMMatrixTranslation(*pos);
-	tmplight->WorldMat = tmplight->MatRot * mpos;
+	tmplight->WorldMat = tmplight->Quaternion.GetMatrix() * mpos;
 
 	tmplight->Position = float3(pos->x, pos->y, pos->z);
 	
@@ -766,7 +381,7 @@ ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* c
 		tmplight->ShadowSM = new ShadowMapTech();
 		tmplight->ShadowSM->Init();
 		tmplight->ShadowSM->SetPosition(&float3(pos->x, pos->y, pos->z));
-		tmplight->ShadowSM->SetDirection(dir);
+		tmplight->ShadowSM->SetDirection(&(tmplight->Quaternion * LIGHTS_DIR_BASE));
 		tmplight->ShadowSM->SetAngleNearFar(&float3(angle, LIGHTS_LOCAL_STD_NEAR, dist));
 	}
 	
@@ -934,7 +549,7 @@ void Lights::SetLightPos(ID id, const float3* vec, bool greal)
 				ArrIDLights[id]->Position.z = (*vec).z;
 
 				float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-				ArrIDLights[id]->WorldMat = ArrIDLights[id]->MatRot * mpos;
+				ArrIDLights[id]->WorldMat = ArrIDLights[id]->Quaternion.GetMatrix() * mpos;
 
 			if (ArrIDLights[id]->ShadowSM)
 			{
@@ -951,59 +566,23 @@ void Lights::SetLightPos(ID id, const float3* vec, bool greal)
 	LightCountUpdateNull(id);
 }
 
-
-void Lights::GetLightRot(ID id, float3* vec) const
+void Lights::GetLightOrient(ID id, SMQuaternion* q) const
 {
 	LIGHTS_PRE_COND_ID(id);
 
-	*vec = ArrIDLights[id]->Rotation;
+	*q = ArrIDLights[id]->Quaternion;
 }
 
-void Lights::SetLightRot(ID id, const  float3* vec)
+void Lights::SetLightOrient(ID id, const SMQuaternion* q)
 {
 	LIGHTS_PRE_COND_ID(id);
 
-	float3 tmpdir = SMEulerToVec((*vec));
-
-	static float3 f = LIGHTS_DIR_BASE;
-	float3 a = SMVector3Cross(f, tmpdir);
-	float ang = acosf(SMVector3Dot(f, tmpdir));
-	float4x4 tmpmatrot = SMMatrixRotationAxis(a, ang);
-
-	Light* tmpl = ArrIDLights[id];
-	float determ = 0;
-
-	ArrIDLights[id]->Rotation = *vec;
-	ArrIDLights[id]->Direction = tmpdir;
-
-	tmpl->MatRot = tmpmatrot;
-	float4x4 mpos = SMMatrixTranslation(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z);
-	ArrIDLights[id]->WorldMat = tmpl->MatRot * mpos;
+	ArrIDLights[id]->Quaternion = *q;
 
 	if (ArrIDLights[id]->ShadowSM)
-		ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
+		ArrIDLights[id]->ShadowSM->SetDirection(&(ArrIDLights[id]->Quaternion * LIGHTS_DIR_BASE));
 
 	LightCountUpdateNull(id);
-}
-
-void Lights::GetLightDir(ID id, float3* vec) const
-{
-	LIGHTS_PRE_COND_ID(id);
-
-	*vec = ArrIDLights[id]->Direction;
-}
-
-void Lights::SetLightDir(ID id, const  float3* vec)
-{
-	LIGHTS_PRE_COND_ID(id);
-
-	float3 tmpdir = *vec;
-
-	static float3 f = LIGHTS_DIR_BASE;
-	float3 a = SMVector3Cross(f, tmpdir);
-	float ang = acosf(SMVector3Dot(f, tmpdir));
-	
-	SetLightRot(id, &SMMatrixToEuler(SMMatrixRotationAxis(a, ang)));
 }
 
 void Lights::SetShadowBias(ID id, float val)
@@ -1508,7 +1087,7 @@ void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
 			ArrIDLights[id]->ShadowSM = new ShadowMapTech();
 			ArrIDLights[id]->ShadowSM->Init();
 			ArrIDLights[id]->ShadowSM->SetPosition(&float3(ArrIDLights[id]->Position.x, ArrIDLights[id]->Position.y, ArrIDLights[id]->Position.z));
-			ArrIDLights[id]->ShadowSM->SetDirection(&ArrIDLights[id]->Direction);
+			ArrIDLights[id]->ShadowSM->SetDirection(&(ArrIDLights[id]->Quaternion * LIGHTS_DIR_BASE));
 			ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
 		}
 	}

@@ -97,6 +97,8 @@
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
+    <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
+    <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
     <ClCompile Include="..\..\..\source\game\proptable.cpp" />
     <ClCompile Include="..\..\..\source\game\SXbaseAmmo.cpp" />
@@ -125,6 +127,8 @@
     <ClInclude Include="..\..\..\source\game\EntityManager.h" />
     <ClInclude Include="..\..\..\source\game\FuncTrain.h" />
     <ClInclude Include="..\..\..\source\game\GameData.h" />
+    <ClInclude Include="..\..\..\source\game\NPCBase.h" />
+    <ClInclude Include="..\..\..\source\game\NPCZombie.h" />
     <ClInclude Include="..\..\..\source\game\PathCorner.h" />
     <ClInclude Include="..\..\..\source\game\proptable.h" />
     <ClInclude Include="..\..\..\source\game\SXbaseAmmo.h" />

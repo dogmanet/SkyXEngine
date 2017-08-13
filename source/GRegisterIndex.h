@@ -56,6 +56,8 @@ See the license in LICENSE
 
 #define G_RI_INT_TIMER_RENDER	4	/*!< время для рендера */
 #define G_RI_INT_TIMER_GAME		5	/*!< время для игры */
+
+#define G_RI_INT_TIME_DELTA		6	/*!< время рендера кадра */
 //! @}
 
 #endif

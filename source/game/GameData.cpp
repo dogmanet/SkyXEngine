@@ -29,6 +29,7 @@ GameData::GameData()
 	Core_0RegisterConcmd("+attack2", ccmd_attack2_on);
 	Core_0RegisterConcmd("-attack2", ccmd_attack2_off);
 	Core_0RegisterConcmd("reload", ccmd_reload);
+	Core_0RegisterConcmd("flashlight", ccmd_toggleflashlight);
 
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
 	Core_0RegisterConcmd("observe", ccmd_observe);
@@ -164,4 +165,9 @@ void GameData::ccmd_observe()
 void GameData::ccmd_reload()
 {
 	m_pPlayer->Reload();
+}
+
+void GameData::ccmd_toggleflashlight()
+{
+	m_pPlayer->ToggleFlashlight();
 }

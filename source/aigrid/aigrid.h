@@ -161,6 +161,8 @@ public:
 	//установка/возвращение состояния квада
 	inline void QuadSetState(ID id, AIQUAD_STATE state);
 	inline AIQUAD_STATE QuadGetState(ID id) const;
+	inline void QuadSetStateWho(ID id, ID who);
+	inline ID QuadGetStateWho(ID id);
 	
 	//установка/возвращение позиции по оси Y для квада
 	inline void QuadSetPosY(ID id, float posy);
@@ -176,6 +178,7 @@ public:
 	inline bool QuadIsFree(ID id, int radius);		//свободен ли квад id в радиусе radius (radius - количество квадов вокруг указанного в id, 1 - значит только указанный, 2 - значит все соседние и т.д.)
 	ID QuadGetNear(const float3* pos, bool isfree = false, int raius = 1);	//возвращает id ближайшего квада (если isfree == true то ищет только свободные) С радиусом свободности radius
 	inline ID QuadGet(const float3* pos, bool isnear_or_permissible) const;	//получить id квада по позиции, isnear_or_permissible - самый ближний квад, или самый ближний в пределах допустимой разницы начальной точки?
+	inline bool QuadGetPos(ID id, float3* pos);
 	//}
 
 	//сетка
@@ -190,7 +193,7 @@ public:
 	inline UINT GridGetCountQuads();								//возвращает количество квадов в сетке
 	bool GridFindPath(ID beginq, ID endq);							//поиск пути, (beginq,beginq]
 	inline UINT GridGetSizePath();									//размер найденного пути в количестве квадратов
-	inline bool GridGetPath(ID * pmem, UINT count);					//запись найденного пути в уже выделенную память
+	inline bool GridGetPath(ID * pmem, UINT count, bool reverse);	//запись найденного пути в уже выделенную память
 
 	inline void GridSetColorArr(const ID * pmem, DWORD color, UINT count);
 	inline void GridSetNullColor();
@@ -233,6 +236,7 @@ protected:
 	Array<AIQuad*, 1000> ArrQuads;		//массив готовых квадов (порядковый номер и есть id)
 	Array<AIQuad*, 1000> ArrQuadsCheck;	//массив квадов на проверку (используется при генерации)
 	Array<AIQUAD_STATE> ArrState;		//массив состояний для каждого квада (по id квада)
+	Array<ID> ArrStateWho;				//массив идентификаторов объектов которые занимают квады (по id квада)
 	Array<bool> ArrPreCondFreeState;	//массив состояния проверка занятости для каждого квада (по id квада)
 
 	Array<BoundAIQuad*> ArrBound;		//массив ограничивающих объемов для разбиения сетки

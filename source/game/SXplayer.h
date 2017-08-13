@@ -3,7 +3,7 @@
 
 #include "SXbaseAnimating.h"
 #include "SXpointCamera.h"
-
+#include "SXLightDirectional.h"
 
 enum
 {
@@ -50,6 +50,7 @@ public:
 	void Attack(BOOL state);
 	void Attack2(BOOL state);
 	void Reload();
+	void ToggleFlashlight();
 
 	float3 GetWeaponOrigin();
 
@@ -58,6 +59,7 @@ public:
 
 protected:
 
+	SXLightDirectional* m_flashlight;
 	SXpointCamera * m_pCamera;
 
 	UINT m_uMoveDir;

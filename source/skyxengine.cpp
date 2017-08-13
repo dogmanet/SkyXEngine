@@ -99,7 +99,7 @@ void SkyXEngine_Init()
 	SAIG_0Create("sxaigrid", true, false);
 	SAIG_BBCreate(&float3(0, 0, 0), &float3(10, 10, 10));
 #else
-	SAIG_0Create("sxaigrid", false, false);
+	SAIG_0Create("sxaigrid", true, false);
 #endif
 	SAIG_Dbg_Set(printflog);
 	SAIG_SetFunc_QuadPhyNavigate(SXRenderFunc::AIQuadPhyNavigate);
@@ -343,10 +343,10 @@ void SkyXEngine_Render(DWORD timeDelta)
 	GData::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)GData::MLightProj));
 	SXRenderFunc::RenderEditorMain();
 	SXRenderFunc::RenderEditorLE(timeDelta);
-
+	SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, GData::NearFar.y);
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
-	SXPhysics_DebugRender();
+	//SXPhysics_DebugRender();
 
 	SXRenderFunc::ShaderRegisterData();
 
@@ -426,7 +426,7 @@ int SkyXEngine_CycleMain()
 
 			DWORD currTime = TimeGetMls(G_Timer_Render_Scene);
 			DWORD timeDelta = (currTime - lastTime);
-
+			Core_RIntSet(G_RI_INT_TIME_DELTA, timeDelta);
 #ifdef SX_GAME
 			GData::ObjCamera = SXGame_GetActiveCamera();
 #endif

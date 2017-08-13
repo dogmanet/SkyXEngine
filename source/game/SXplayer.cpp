@@ -1,7 +1,7 @@
 #include <input/sxinput.h>
-
+#include <mtllight/sxmtllight.h>
 #include "SXplayer.h"
-
+#include "SXLightDirectional.h"
 #include "SXbaseTool.h"
 
 BEGIN_PROPTABLE(SXplayer)
@@ -48,7 +48,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pCharacter->setFallSpeed(300.0f);
 	//m_pCharacter->setFallSpeed(30.0f);
 
-	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::DebrisFilter);
 
 	m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
@@ -65,6 +65,14 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pActiveTool->SetOrient(GetOrient());
 	m_pActiveTool->SetParent(this);
 
+
+	m_flashlight = (SXLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
+	m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
+	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PI*0.5f, 'x'));
+	m_flashlight->SetParent(this);
+	m_flashlight->m_dist = 10.f;
+	m_flashlight->m_color = float3(3.5, 3.5, 3.5);
+	m_flashlight->m_typeshadow = -1;
 }
 
 SXplayer::~SXplayer()
@@ -352,6 +360,11 @@ void SXplayer::Reload()
 	{
 		m_pActiveTool->Reload();
 	}
+}
+
+void SXplayer::ToggleFlashlight()
+{
+	m_flashlight->ToggleEnable();
 }
 
 void SXplayer::_ccmd_slot_on(int argc, const char ** argv)

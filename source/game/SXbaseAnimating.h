@@ -25,7 +25,7 @@ public:
 	void OnSync();
 
 	void PlayAnimation(const char * name, UINT iFadeTime = 0, UINT slot = 0);
-
+	bool PlayingAnimations(const char* name);
 	void SetPos(const float3 & pos);
 	void SetOrient(const SMQuaternion & q);
 
@@ -34,7 +34,7 @@ protected:
 	const char * m_szModelFile;
 	float m_fBaseScale;
 
-	void InitPhysics();
+	virtual void InitPhysics();
 	void ReleasePhysics();
 
 	btCollisionShape * m_pCollideShape;

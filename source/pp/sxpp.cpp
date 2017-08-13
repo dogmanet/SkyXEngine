@@ -780,7 +780,7 @@ void SPP_RenderSun(float4_t* sun_color)
 	//PPSet::IDsRenderTargets::IncrRT();
 }
 
-void SPP_RenderLensFlare(float3_t* param, bool use_bloom)
+void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool use_bloom)
 {
 	PPSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -810,6 +810,7 @@ void SPP_RenderLensFlare(float3_t* param, bool use_bloom)
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "LightPos", &PPSet::SunPos);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "SizeMap", &tmpSizeMap);
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "RadiusSun", &LensFlareSunRadius);
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "Color", &sun_color);
 		SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0);
 

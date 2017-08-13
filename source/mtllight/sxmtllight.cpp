@@ -178,28 +178,16 @@ ID SML_LigthsGetIDByKey(ID key)
 	return ArrLights->GetIdByKey(key);
 }
 
-void SML_LigthsSave(const char* path)
-{
-	ML_PRECOND();
-	ArrLights->Save(path);
-}
-
-void SML_LigthsLoad(const char* path)
-{
-	ML_PRECOND();
-	ArrLights->Load(path);
-}
-
 ID SML_LigthsCreatePoint(const float3* center, float dist, const float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
 	return ArrLights->CreatePoint(-1,center, dist, color, isglobal, is_shadowed, 0);
 }
 
-ID SML_LigthsCreateDirection(const float3* pos, float dist, const float3* color, const float3* dir, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
+ID SML_LigthsCreateDirection(const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreateDirection(-1,pos, dist, color, dir, top_radius, angle, is_shadow, 0);
+	return ArrLights->CreateDirection(-1, pos, dist, color, orient, top_radius, angle, is_shadow, 0);
 }
 
 void SML_LigthsRender(ID id, DWORD timeDelta)
@@ -250,6 +238,19 @@ void SML_LigthsSetPos(ID id, const float3* vec, bool greal)
 	ArrLights->SetLightPos(id, vec, greal);
 }
 
+void SML_LigthsGetOrient(ID id, SMQuaternion* q)
+{
+	ML_PRECOND();
+	ArrLights->GetLightOrient(id, q);
+}
+
+void SML_LigthsSetOrient(ID id, const SMQuaternion* q)
+{
+	ML_PRECOND();
+	ArrLights->SetLightOrient(id, q);
+}
+
+/*
 void SML_LigthsGetRot(ID id, float3* vec)
 {
 	ML_PRECOND();
@@ -273,6 +274,7 @@ void SML_LigthsSetDir(ID id, const float3* vec)
 	ML_PRECOND();
 	ArrLights->SetLightDir(id, vec);
 }
+*/
 
 LightsTypeLight SML_LigthsGetType(ID id)
 {

@@ -106,6 +106,7 @@ CTRL + ЛКМ – вращение \n
 \image html particles_editor/image34.png коэфициент для преломления партиклов [0-1]
 \image html particles_editor/image35.png коэфициент прозрачности [0-1], компонента альфа канала будет домножена на это значение
 \image html particles_editor/image36.png освещаемые ли частицы
+\image html particles_editor/collision_delete.png удалять ли частицы при столкновении с миром
 
 \image html particles_editor/image37.png тип фигуры партикла, поддерживаются:
  - quad – квадрат (прямоугольник)
@@ -119,6 +120,7 @@ CTRL + ЛКМ – вращение \n
 \image html particles_editor/image43.png тип смешивания, поддерживаемые:
  - pabt_alpha – альфа смешивание на основе альфа канала текстуры
  - pabt_add – аддитивное смешивание, то есть цвет текстуры будет прибавлен к текущему цвету сцены
+\image html particles_editor/color_rgba.png цвет частицы [0-1], rgb - цвет, a - коэфициент интерполяции между этим цветом и цветом в текстуре
 
 \image html particles_editor/image44.png время жизни частиц, если 0 тогда частицы живут все время, иначе это время в миллисекундах
 \image html particles_editor/image45.png дисперсия для времени жизни
@@ -132,7 +134,7 @@ CTRL + ЛКМ – вращение \n
  - none - нет
  - direct – прямая зависимость, чем старше тем больше размер
  - inverse – обратная зависимость, чем старше  тем меньше размер
-\image html particles_editor/image50.png удалять частицы при столкновении их с миром
+\image html particles_editor/track.png след от частиц при столкновении с миром (только для эмиттеров у которых установлен Collision delete), Size - размер в метрах, Time - время показа с плавным затуханием
 
 
 \subsection particles_editor_gui_tex TextureAnimTex - настройка текстуры или анимационной текстуры

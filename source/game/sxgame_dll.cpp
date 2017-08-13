@@ -32,6 +32,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxparticles_d.lib")
 #	pragma comment(lib, "sxscore_d.lib")
 #	pragma comment(lib, "sxpp_d.lib")
+#	pragma comment(lib, "sxaigrid_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
@@ -42,6 +43,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxparticles.lib")
 #	pragma comment(lib, "sxscore.lib")
 #	pragma comment(lib, "sxpp.lib")
+#	pragma comment(lib, "sxaigrid.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)

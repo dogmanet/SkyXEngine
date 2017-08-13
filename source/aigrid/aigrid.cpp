@@ -174,6 +174,7 @@ void AIGrid::GridLoad(const char* path)
 			AIQuad* tmpaq = AllocAIQuad.Alloc();
 			fread(tmpaq, sizeof(AIQuad), 1, file);
 			ArrQuads.push_back(tmpaq);
+			ArrLongCoordQuads[tmpaq->Id] = int3(toint100(tmpaq->pos.x), toint100(tmpaq->pos.y), toint100(tmpaq->pos.z));
 		}
 
 		CountObject = 0;
@@ -225,6 +226,7 @@ void AIGrid::ReCreateBuffs()
 	ArrParentIDs.resize(ArrQuads.size());
 	ArrCloseIDs.resize(ArrQuads.size());
 	ArrState.resize(ArrQuads.size());
+	ArrStateWho.resize(ArrQuads.size());
 	ArrPreCondFreeState.resize(ArrQuads.size());
 	memset(&(ArrColor[0]), 0, ArrColor.size() * sizeof(uint32_t));
 	memset(&(ArrIDsInOpen[0]), -1, ArrIDsInOpen.size() * sizeof(ID));
@@ -233,6 +235,7 @@ void AIGrid::ReCreateBuffs()
 	memset(&(ArrParentIDs[0]), -1, ArrParentIDs.size() * sizeof(ID));
 	memset(&(ArrCloseIDs[0]), 0, ArrCloseIDs.size() * sizeof(bool));
 	memset(&(ArrState[0]), (int)AIQUAD_STATE_FREE, ArrState.size() * sizeof(AIQUAD_STATE));
+	memset(&(ArrStateWho[0]), -1, ArrStateWho.size() * sizeof(ID));
 	memset(&(ArrPreCondFreeState[0]), false, ArrPreCondFreeState.size() * sizeof(bool));
 }
 
@@ -262,6 +265,7 @@ void AIGrid::DefInitBuffs(ID id)
 	ArrParentIDs[id] = -1;
 	ArrCloseIDs[id] = 0;
 	ArrState[id] = AIQUAD_STATE_FREE;
+	ArrStateWho[id] = -1;
 	ArrPreCondFreeState[id] = true;
 }
 
@@ -450,6 +454,18 @@ void AIGrid::QuadSetState(ID id, AIQUAD_STATE state)
 {
 	AIGRID_QUAD_PRECOND(id, _VOID);
 	ArrState[id] = state;
+}
+
+void AIGrid::QuadSetStateWho(ID id, ID who)
+{
+	AIGRID_QUAD_PRECOND(id, _VOID);
+	ArrStateWho[id] = who;
+}
+
+ID AIGrid::QuadGetStateWho(ID id)
+{
+	AIGRID_QUAD_PRECOND(id, -1);
+	return ArrStateWho[id];
 }
 
 void AIGrid::QuadSetPosY(ID id, float posy)
@@ -755,6 +771,7 @@ void AIGrid::QuadDelete2(ID id)
 	ArrParentIDs.erase(id);
 	ArrCloseIDs.erase(id);
 	ArrState.erase(id);
+	ArrStateWho.erase(id);
 	ArrPreCondFreeState.erase(id);
 }
 
@@ -986,6 +1003,7 @@ void AIGrid::Clear()
 	ArrParentIDs.clear();
 	ArrCloseIDs.clear();
 	ArrState.clear();
+	ArrStateWho.clear();
 	ArrPreCondFreeState.clear();
 	ArrGraphPointsIDs.clear();
 	ArrCostGPIDs.clear();
@@ -1010,6 +1028,7 @@ void AIGrid::GridClear()
 	ArrParentIDs.clear();
 	ArrCloseIDs.clear();
 	ArrState.clear();
+	ArrStateWho.clear();
 	ArrPreCondFreeState.clear();
 	ArrGraphPointsIDs.clear();
 	ArrCostGPIDs.clear();
@@ -1958,18 +1977,21 @@ ID AIGrid::QuadGet(const float3* pos, bool isnear_or_permissible) const
 	long tmpy = toint100(pos->y);
 	long tmpz = toint100(pos->z);
 
-	for (long i = 1, il = ArrBound.size(); i<il; ++i)
+	int3 tiv;
+
+	for (int i = 1, il = ArrBound.size(); i<il; ++i)
 	{
 		if (
 			ArrBound[i]->lmin.x - LAIGRID_QUAD_SIZE <= tmpx && ArrBound[i]->lmin.z - LAIGRID_QUAD_SIZE <= tmpz &&
 			ArrBound[i]->lmax.x + LAIGRID_QUAD_SIZE >= tmpx && ArrBound[i]->lmax.z + LAIGRID_QUAD_SIZE >= tmpz
 			)
 		{
-			for (DWORD k = 0, kl = ArrBound[i]->ArrIdsQuads.size(); k<kl; ++k)
+			for (int k = 0, kl = ArrBound[i]->ArrIdsQuads.size(); k<kl; ++k)
 			{
+				tiv = ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]];
 				if (
-					abs((ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].x) - (tmpx)) <= LAIGRID_QUAD_SIZEDIV2 &&
-					abs((ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].z) - (tmpz)) <= LAIGRID_QUAD_SIZEDIV2
+					abs((tiv.x) - (tmpx)) <= LAIGRID_QUAD_SIZEDIV2 &&
+					abs((tiv.z) - (tmpz)) <= LAIGRID_QUAD_SIZEDIV2
 					)
 				{
 
@@ -1988,6 +2010,17 @@ ID AIGrid::QuadGet(const float3* pos, bool isnear_or_permissible) const
 		}
 	}
 	return howf;
+}
+
+bool AIGrid::QuadGetPos(ID id, float3* pos)
+{
+	if (pos && id >= 0 && id < ArrQuads.size())
+	{
+		*pos = ArrQuads[id]->pos;
+		return false;
+	}
+
+	return false;
 }
 
 ID AIGrid::GridTraceBeam(const float3* start, const float3* dir) const
@@ -2889,11 +2922,19 @@ UINT AIGrid::GridGetSizePath()
 	return ArrPathIDs.size();
 }
 
-bool AIGrid::GridGetPath(ID * pmem, UINT count)
+bool AIGrid::GridGetPath(ID * pmem, UINT count, bool reverse)
 {
 	if (pmem)
 	{
-		memcpy(pmem, &(ArrPathIDs[0]), count * sizeof(ID));
+		if (!reverse)
+			memcpy(pmem, &(ArrPathIDs[0]), count * sizeof(ID));
+		else
+		{
+			for (int i = 0, il = ArrPathIDs.size(); i < il; ++i)
+			{
+				pmem[i] = ArrPathIDs[(il - 1) - i];
+			}
+		}
 		return true;
 	}
 

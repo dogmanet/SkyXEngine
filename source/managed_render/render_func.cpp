@@ -1240,7 +1240,11 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 				ID gl_id = -1;
 				if ((gl_id = SML_LigthsGetGlobal()) >= 0)
 				{
-					float f_dep_coef = clampf(1.f - SML_LigthsGetPower(gl_id), 0.25f, 1.f);
+					float gl_power = 0.f;
+					if (SML_LigthsGetEnable(gl_id))
+						gl_power = SML_LigthsGetPower(gl_id);
+
+					float f_dep_coef = clampf(1.f - gl_power, 0.25f, 1.f);
 					tmpPowerDist.x *= f_dep_coef;
 					tmpPowerDist.y *= f_dep_coef;
 				}
@@ -1554,7 +1558,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 		SML_LigthsGetColor(GlobalLight, &tmpColor);
 		SML_LigthsGetPos(GlobalLight, &tmpPosition, true);
 
-		SPP_UpdateSun(&tmpPosition);
+		SPP_UpdateSun((SML_LigthsGetEnable(GlobalLight) ? &tmpPosition : 0));
 
 		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPower(GlobalLight)));
 	}
@@ -1564,7 +1568,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
 	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
 	if (pp_lensflare && (*pp_lensflare))
-		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
+		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), &float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPower(GlobalLight)), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
 
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);

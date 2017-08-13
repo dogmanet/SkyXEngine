@@ -12,8 +12,6 @@ See the license in LICENSE
 
 #include <SkyXEngine.cpp>
 
-#include <physics/sxphysics.h>
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
@@ -27,6 +25,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	Level::Load("stalker_atp");
 
 	SGeom_0SettGreenSetFreqGrass(30);
+
+	/*NPCBase* npc = new NPCBase();
+	npc->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
+	npc->SetPos(&float3(0, 0, 0));*/
+
+	for (int i = 0; i < 10; ++i)
+	{
+		SXbaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
+		bEnt->SetFlags(bEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
+		char pos[256];
+		//sprintf(pos, "%f %f %f", randf(-0.1, 0.1), randf(-0.1, 0.1), randf(-0.1, 0.1));
+		bEnt->SetKV("origin", "0 0 0");
+	}
 
 	/*for (int i = 0; i < 10; ++i)
 	{

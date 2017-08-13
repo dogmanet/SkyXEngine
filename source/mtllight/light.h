@@ -31,14 +31,11 @@ public:
 	void OnLostDevice();
 	void OnResetDevice();
 
-	void Save(const char* path);
-	void Load(const char* path);
-
 	inline int GetCountLights() const;
 	void Clear();
 
 	ID CreatePoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow, const char* bound_volume);
-	ID CreateDirection(ID id, const  float3* pos, float dist, const  float3* color, const  float3* dir, float top_radius, float angle, bool is_shadow, const char* bound_volume);
+	ID CreateDirection(ID id, const  float3* pos, float dist, const  float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow, const char* bound_volume);
 
 	void DeleteLight(ID id);
 
@@ -66,10 +63,8 @@ public:
 
 	//-----------------------------------------------------------------------------
 	
-	void GetLightRot(ID id, float3* vec) const;
-	void SetLightRot(ID id, const  float3* vec);
-	void GetLightDir(ID id, float3* vec) const;
-	void SetLightDir(ID id, const  float3* vec);
+	void GetLightOrient(ID id, SMQuaternion* q) const;
+	void SetLightOrient(ID id, const  SMQuaternion* q);
 
 	float GetLightTopRadius(ID id) const;
 	void SetLightTopRadius(ID id, float top_radius);
@@ -193,8 +188,7 @@ public:
 		float Power;
 		float Dist;
 		float GAngleX, GAngleY; //sun pos
-		float3 Direction;
-		float3 Rotation;
+		SMQuaternion Quaternion;
 		float3 Color;
 
 		float2_t TopBottomRadius;
@@ -202,9 +196,8 @@ public:
 
 		ISXBound* BoundVolume;
 		float4x4 WorldMat;
-		float4x4 MatRot;
-		float4x4 MatRotL;
-
+		//float4x4 MatRot;
+		
 		bool IsVisibleFor;
 		float DistFor;
 

@@ -1287,7 +1287,7 @@ void Effects::EffectRotSet(ID id, float3* rot)
 
 	ArrID[id]->Rotation = *rot;
 
-	ArrID[id]->Direction = SMEulerToVec(ArrID[id]->Rotation);
+	ArrID[id]->Direction = SMEulerToVec(ArrID[id]->Rotation, SXPARTICLES_BASE_DIR);
 
 	static float3 f = SXPARTICLES_BASE_DIR;
 	//float3 f(0, -1, 0);

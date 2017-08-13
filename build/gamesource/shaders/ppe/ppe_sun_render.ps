@@ -23,6 +23,8 @@ half4 main(vs_out_pp IN) : COLOR0
 	half2 SunPosProj = LightPos.xy;
 	
 	half depth = tex2D(DepthSampler, IN.TexUV).r;
+	
+	clip(depth - 0.999f);
 
 	half2 ntc = IN.TexUV;
 	
@@ -33,7 +35,7 @@ half4 main(vs_out_pp IN) : COLOR0
 	
 	half4 texColor = tex2D(SunSampler, fSunTexUV);
 	
-	screen.a *= 1.f - depth;
+	//screen.a *= 1.f - depth;
 
 	texColor.rgb *= LightColor.rgb;
 	texColor.rgb = lerp(texColor.rgb,Color.rgb,Color.a);

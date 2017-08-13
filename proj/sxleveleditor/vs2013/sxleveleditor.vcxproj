@@ -140,6 +140,8 @@
     <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_in.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_out.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\new.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\open.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\pos.bmp" />
@@ -157,12 +159,15 @@
     <Image Include="..\..\..\source\sxleveleditor\resource\sel_m.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\sel_s.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\sel_z.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sun.bmp" />
     <Image Include="resource\aigrid_bound.bmp" />
     <Image Include="resource\aigrid_graphpoint.bmp" />
     <Image Include="resource\aigrid_quad.bmp" />
     <Image Include="resource\arrow.bmp" />
     <Image Include="resource\axes.bmp" />
     <Image Include="resource\grid.bmp" />
+    <Image Include="resource\lvl_in.bmp" />
+    <Image Include="resource\lvl_out.bmp" />
     <Image Include="resource\open.bmp" />
     <Image Include="resource\pos.bmp" />
     <Image Include="resource\rot.bmp" />
@@ -179,6 +184,7 @@
     <Image Include="resource\sel_m.bmp" />
     <Image Include="resource\sel_s.bmp" />
     <Image Include="resource\sel_z.bmp" />
+    <Image Include="resource\sun.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
