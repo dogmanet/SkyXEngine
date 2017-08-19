@@ -153,8 +153,9 @@ SX_LIB_API void SAIG_GridSetNullColor();					//!< обнуление увета 
 
 SX_LIB_API void SAIG_QuadSetState(ID id, AIQUAD_STATE state);	//!< устанавливает состояние для квада
 SX_LIB_API AIQUAD_STATE SAIG_QuadGetState(ID id);				//!< возвращает текущее состояние квада
-SX_LIB_API void SAIG_QuadSetStateWho(ID id, ID who);
-SX_LIB_API ID SAIG_QuadGetStateWho(ID id);
+SX_LIB_API void SAIG_QuadSetStateWho(ID id, ID who);			//!< устанавливает id объекта который занял квад
+SX_LIB_API ID SAIG_QuadGetStateWho(ID id);						//!< возвращает id объекта который занял квад
+SX_LIB_API bool SAIG_QuadIs2Neighbors(ID id, ID idn1, ID idn2);	//!< проверка квада: является ли квад id соседом и idn1 кваду и idn2 кваду
 
 SX_LIB_API ID SAIG_QuadGet(const float3* pos, bool isnear_or_permissible);	//!< получить id квада по позиции, isnear_or_permissible - самый ближний квад (true), или самый ближний в пределах допустимой разницы начальной точки (false)?
 SX_LIB_API bool SAIG_QuadGetPos(ID id, float3* pos);

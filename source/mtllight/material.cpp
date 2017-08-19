@@ -1109,7 +1109,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 	Material* tmpMtl = *mtl;
 
-	sprintf(path, "%s%s\\%s.mtl", MLSet::StdPathMaterial, tmp_path, tmp_name);
+	sprintf(path, "%s%s\\%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path, tmp_name);
 	if (Core_0FileExists(path))
 	{
 		ISXLConfig* config = Core_OpLConfig(path);
@@ -1596,8 +1596,8 @@ void Materials::MtlSave(ID id)
 	}
 
 	tmppath[0] = 0;
-	_mkdir(MLSet::StdPathMaterial);
-	sprintf(tmppath, "%s%s\\", MLSet::StdPathMaterial, tmp_path);
+	_mkdir(Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS));
+	sprintf(tmppath, "%s%s\\", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path);
 	_mkdir(tmppath);
 	sprintf(tmppath, "%s%s.mtl", tmppath, mtrl->Name);
 	FILE* file = 0;
@@ -2035,11 +2035,14 @@ void Materials::Render(ID id, float4x4* world)
 
 	if (tmpmaterial->VS.IsTransPosCam || tmpmaterial->PS.IsTransPosCam)
 	{
+		float3 observerpos;
+		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
+
 		if (tmpmaterial->VS.IsTransPosCam)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "PosCam", &MLSet::ConstCurrCamPos);
+			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "PosCam", &observerpos);
 
 		if (tmpmaterial->PS.IsTransPosCam)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "PosCam", &MLSet::ConstCurrCamPos);
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "PosCam", &observerpos);
 	}
 
 
@@ -2062,10 +2065,10 @@ void Materials::Render(ID id, float4x4* world)
 		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->VS.IsTransWinSize)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WinSize", &MLSet::WinSize);
+		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
 
 	if (tmpmaterial->PS.IsTransWinSize)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WinSize", &MLSet::WinSize);
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (tmpmaterial->IsAlphaTest && !IsForceblyAlphaTest)
@@ -2113,7 +2116,7 @@ void Materials::Render(ID id, float4x4* world)
 		if (tmpmaterial->LightParam.TypeRefraction == mtt_alpha_lighting)
 			++(CurrIdSurf);
 
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(MLSet::NearFar.x, MLSet::NearFar.y, zz, float(CurrIdSurf)/255.f));
+		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR), zz, float(CurrIdSurf) / 255.f));
 	}
 }
 

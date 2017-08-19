@@ -3,7 +3,7 @@
 
 #include "SXbaseAnimating.h"
 #include "SXpointCamera.h"
-#include "SXLightDirectional.h"
+#include "LightDirectional.h"
 
 enum
 {
@@ -59,7 +59,7 @@ public:
 
 protected:
 
-	SXLightDirectional* m_flashlight;
+	CLightDirectional* m_flashlight;
 	SXpointCamera * m_pCamera;
 
 	UINT m_uMoveDir;
@@ -75,13 +75,15 @@ protected:
 
 	SXbaseTool * m_pActiveTool;
 
-	bool m_bCanJump;
+	bool m_canJump;
 
 	float m_fViewbobStep;
 	float m_fViewbobY;
 	float3_t m_fViewbobStrafe;
 
 	int m_iDSM;
+
+	ID m_idQuadCurr;	//текущий квад аи сетки на котором стоит игрок
 };
 
 #endif

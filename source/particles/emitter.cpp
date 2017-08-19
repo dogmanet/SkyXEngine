@@ -293,7 +293,7 @@ void Emitter::EnableSet(bool enable)
 	}
 
 	Alife = enable;
-	OldTime = TimeGetMls(G_Timer_Render_Scene);
+	OldTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Enable = enable;
 
 	if (!Enable)
@@ -479,7 +479,7 @@ void Emitter::CreateParticles()
 			CountReCreate2 = 0;
 			i = Count;
 			if (Data.SpawnNextTime)
-				TimeNextSpawnParticle = TimeGetMls(G_Timer_Render_Scene) + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
+				TimeNextSpawnParticle = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
 		}
 	}
 
@@ -831,7 +831,7 @@ void Emitter::Compute(const float4x4 * mat)
 	CountReCreate2 = 0;
 	if (Alife && OldTime > 0 && Data.ReCreateCount > 0 && Data.ReCreateCount <= Count - CountLifeParticle)
 	{
-		if (TimeGetMls(G_Timer_Render_Scene) > TimeNextSpawnParticle)
+		if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) > TimeNextSpawnParticle)
 		{
 			for (int i = 0; i<Count; i++)
 			{
@@ -845,7 +845,7 @@ void Emitter::Compute(const float4x4 * mat)
 					CountReCreate2 = 0;
 					i = Count;
 					if (Data.SpawnNextTime)
-						TimeNextSpawnParticle = TimeGetMls(G_Timer_Render_Scene) + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
+						TimeNextSpawnParticle = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
 				}
 			}
 		}
@@ -855,11 +855,11 @@ void Emitter::Compute(const float4x4 * mat)
 	{
 		TimeNextSpawnParticle = 0;
 		if (TimerDeath == 0)
-			TimerDeath = TimeGetMls(G_Timer_Render_Scene);
+			TimerDeath = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		else
 		{
-			GTransparency = 1.f - float(TimeGetMls(G_Timer_Render_Scene) - TimerDeath) / float(SXPARTICLES_DEADTH_TIME);
-			if (TimeGetMls(G_Timer_Render_Scene) - TimerDeath > SXPARTICLES_DEADTH_TIME)
+			GTransparency = 1.f - float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - TimerDeath) / float(SXPARTICLES_DEADTH_TIME);
+			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - TimerDeath > SXPARTICLES_DEADTH_TIME)
 			{
 				Enable = false;
 				GTransparency = 1.f;
@@ -874,7 +874,7 @@ void Emitter::Compute(const float4x4 * mat)
 	}
 
 
-	DWORD tmptime = TimeGetMls(G_Timer_Render_Scene);
+	DWORD tmptime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	CountLifeParticle = 0;
 
 	float3 tmpoldpos,tmpnewpos;
@@ -1132,7 +1132,7 @@ void Emitter::Compute(const float4x4 * mat)
 						Arr[i].TrackNormal.z = q.z;
 						Arr[i].TrackNormal.w = q.w;
 						Arr[i].Track = true;
-						Arr[i].TrackTime = TimeGetMls(G_Timer_Render_Scene);
+						Arr[i].TrackTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 					}
 				}
 			}
@@ -1407,14 +1407,14 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		int tmpcount = 0;
 		for (int i = 0; i<Count; ++i)
 		{
-			if (TimeGetMls(G_Timer_Render_Scene) - Arr[i].TrackTime > Data.TrackTime)
+			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - Arr[i].TrackTime > Data.TrackTime)
 				Arr[i].Track = false;
 
 			if (Arr[i].Track)
 			{
 				RTGPUArrVerteces[tmpcount].pos = Arr[i].TrackPos;
 				RTGPUArrVerteces[tmpcount].tex = (float4_t)Arr[i].TrackNormal;
-				RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(G_Timer_Render_Scene) - Arr[i].TrackTime) / float(Data.TrackTime));
+				RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - Arr[i].TrackTime) / float(Data.TrackTime));
 				RTGPUArrVerteces[tmpcount].size = Data.TrackSize;
 				++tmpcount;
 			}

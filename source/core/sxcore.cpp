@@ -4,24 +4,21 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-#pragma once
-
 #define CORE_VERSION 1
 
 #include <core/sxcore.h>
 
-#include <common/Array.h>
-#include <core/loaderconfig.cpp>
+#include <core/loaderconfig.h>
 
-#include <core/file.cpp>
+#include <core/file.h>
 
-#include <core/Task.cpp>
-#include <core/TaskManager.cpp>
+#include <core/Task.h>
+#include <core/TaskManager.h>
 
-#include <core/concmd.cpp>
-#include <core/cvars.cpp>
+#include <core/concmd.h>
+#include <core/cvars.h>
 
-#include <core/time.cpp>
+#include <core/time.h>
 
 char CoreName[CORE_NAME_MAX_LEN];
 
@@ -39,6 +36,7 @@ int32_t GRegistersInt[CORE_REGISTRY_SIZE];
 float32_t GRegistersFloat[CORE_REGISTRY_SIZE];
 float4x4 GRegistersMatrix[CORE_REGISTRY_SIZE];
 float3 GRegistersFloat3[CORE_REGISTRY_SIZE];
+String GRegistersString[CORE_REGISTRY_SIZE];
 
 #define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
@@ -270,6 +268,19 @@ void Core_RFloat3Get(int id, float3* val)
 
 	if (val)
 		memcpy(val, &GRegistersFloat3[id], sizeof(float3));
+}
+
+void Core_RStringSet(int id, const char *val)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
+	if (val)
+		GRegistersString[id] = val;
+}
+
+const char* Core_RStringGet(int id)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id, 0);
+	return GRegistersString[id].c_str();
 }
 
 ////

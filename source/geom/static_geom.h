@@ -38,7 +38,6 @@ public:
 	static bool UseSortFrontToBackSplits;
 	static bool UseSortFrontToBackModels;
 	static IDirect3DDevice9* DXDevice;
-	static char StdPath[1024];
 	static float DistForLod;
 
 	StaticGeom();
@@ -313,8 +312,6 @@ protected:
 bool StaticGeom::UseSortFrontToBackSplits = true;
 bool StaticGeom::UseSortFrontToBackModels = true;
 IDirect3DDevice9* StaticGeom::DXDevice = 0;
-char StaticGeom::StdPath[1024];
-//sprintf(StaticGeom::StdPath, "");
 float StaticGeom::DistForLod = 200.f;
 
 #endif

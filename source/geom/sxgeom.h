@@ -36,8 +36,6 @@ SX_LIB_API long SGeom_0GetVersion();			//!< возвращает версию п
 SX_LIB_API void SGeom_Dbg_Set(report_func rf);	//!< установить новую функцию вывода сообщений
 SX_LIB_API void SGeom_0Create(	//!< инициализация подсистемы
 	const char* name,			//!< имя
-	IDirect3DDevice9* device,	//!< устроство dx
-	const char* std_path_mesh,	//!< путь до папки с моделями (статическая геометрия и растительность)
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 

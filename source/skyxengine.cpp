@@ -5,10 +5,10 @@ void SkyXEngine_Init()
 {
 	srand((UINT)time(0));
 	InitOutLog();
-	GData::Pathes::InitAllPathes();
+	SkyXEngine_InitPaths();
 
 	if (!Core_0IsProcessRun("sxconsole.exe"))
-		ShellExecute(0, "open", "sxconsole.exe", 0, GData::Pathes::ForExe, SW_SHOWNORMAL);
+		ShellExecute(0, "open", "sxconsole.exe", 0, Core_RStringGet(G_RI_STRING_PATH_EXE), SW_SHOWNORMAL);
 
 #if defined(SX_GAME)
 	GData::InitWin("SkyXEngine", "SkyXEngine");
@@ -21,27 +21,25 @@ void SkyXEngine_Init()
 	Core_Dbg_Set(printflog);
 	Core_SetOutPtr();
 
-	G_Timer_Render_Scene = Core_TimeAdd();
-	G_Timer_Game = Core_TimeAdd();
-	Core_RIntSet(G_RI_INT_TIMER_RENDER, G_Timer_Render_Scene);
-	Core_RIntSet(G_RI_INT_TIMER_GAME, G_Timer_Game);
+	ID idTimerRender = Core_TimeAdd();
+	ID idTimerGame = Core_TimeAdd();
+	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
+	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
 
 	tm ct = { 0, 0, 0, 27, 5, 2030 - 1900, 0, 0, 0 };
-	Core_TimeUnixStartSet(G_Timer_Game, mktime(&ct));
+	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
 
-	Core_TimeWorkingSet(G_Timer_Render_Scene, true);
-	Core_TimeWorkingSet(G_Timer_Game, true);
+	Core_TimeWorkingSet(idTimerRender, true);
+	Core_TimeWorkingSet(idTimerGame, true);
 
-	Core_TimeSpeedSet(G_Timer_Game, 100);
+	Core_TimeSpeedSet(idTimerGame, 100);
 
-	SSCore_0Create("sxsound", GData::Handle3D, GData::Pathes::Sounds, false);
+	SSCore_0Create("sxsound", GData::Handle3D, false);
 	SSCore_Dbg_Set(printflog);
 
 	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, false);
 	SGCore_Dbg_Set(printflog);
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
-	SGCore_ShaderSetStdPath(GData::Pathes::Shaders);
-
+	
 	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
 	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
 	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
@@ -49,11 +47,8 @@ void SkyXEngine_Init()
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
 
 	SGCore_SkyBoxCr();
-	SGCore_SkyBoxSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
-
 	SGCore_SkyCloudsCr();
-	SGCore_SkyCloudsSetStdPathTex(GData::Pathes::TexturesSkyBoxes);
-
+	
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 
@@ -62,19 +57,19 @@ void SkyXEngine_Init()
 	GData::ObjCamera->SetFOV(GData::ProjFov);
 #endif
 
-	SGeom_0Create("sxgeom", SGCore_GetDXDevice(), GData::Pathes::Meshes, false);
+	SGeom_0Create("sxgeom", false);
 	SGeom_Dbg_Set(printflog);
 
-	SML_0Create("sxml", SGCore_GetDXDevice(), GData::Pathes::Materials, GData::Pathes::Meshes, &GData::WinSize, GData::ProjFov, false);
+	SML_0Create("sxml", false);
 	SML_Dbg_Set(printflog);
 
-	SPE_0Create("sxparticles", SGCore_GetDXDevice(), false);
+	SPE_0Create("sxparticles", false);
 	SPE_Dbg_Set(printflog);
 	SPE_SetFunc_ParticlesPhyCollision(SXRenderFunc::ParticlesPhyCollision);
 	SPE_RTDepthSet(SML_DSGetRT_ID(DS_RT::ds_rt_depth));
 	Level::LoadParticles();
 
-	SPP_0Create("sxpp", SGCore_GetDXDevice(), &GData::WinSize, false);
+	SPP_0Create("sxpp", false);
 	SPP_Dbg_Set(printflog);
 
 #if defined(SX_GAME)
@@ -227,6 +222,65 @@ void SkyXEngine_Init()
 	pl->Play("reload");*/
 }
 
+void SkyXEngine_InitPaths()
+{
+	char tmppath[MAX_PATH];
+	char tmppathexe[MAX_PATH];
+	GetModuleFileName(NULL, tmppath, MAX_PATH);
+	int len = strlen(tmppath);
+	while (tmppath[len--] != '\\')
+	{
+		if (tmppath[len - 1] == '\\')
+		{
+			len--;
+			memcpy(tmppathexe, tmppath, len);
+			tmppathexe[len] = 0;
+		}
+	}
+
+	Core_RStringSet(G_RI_STRING_PATH_EXE, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\worktex\\");
+	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\");
+	Core_RStringSet(G_RI_STRING_PATH_GAMESOURCE, tmppath);
+	SetCurrentDirectoryA(tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\screenshots\\");
+	Core_RStringSet(G_RI_STRING_PATH_SCREENSHOTS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\config\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_CONFIGS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\levels\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_LEVELS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\meshes\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_MESHES, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\models\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_MODELS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\shaders\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_SHADERS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\sounds\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_SOUNDS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\scripts\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_SCRIPTS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\textures\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_TEXTURES, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\materials\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_MTRLS, tmppath);
+
+	sprintf(tmppath, "%s%s", tmppathexe, "\\gamesource\\resource\\");
+	Core_RStringSet(G_RI_STRING_PATH_GS_GUI, tmppath);
+}
+
 //#############################################################################
 
 void SkyXEngine_Render(DWORD timeDelta)
@@ -262,9 +316,9 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SXGame_Sync();
 #endif
 
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SGeom_ModelsMSortGroups(&GData::ConstCurrCamPos, 2);
-	SXRenderFunc::Delay::GeomSortGroup += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::GeomSortGroup += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (GData::DefaultGeomIDArr < 0)
 		GData::DefaultGeomIDArr = SGeom_ModelsAddArrForCom();
@@ -283,42 +337,42 @@ void SkyXEngine_Render(DWORD timeDelta)
 	/**/
 
 	SXRenderFunc::UpdateView();
-	SML_Update(timeDelta, &GData::WinSize, &GData::NearFar, &GData::ConstCurrCamPos, &GData::MCamView, GData::ProjFov);
+	SML_Update(timeDelta);
 
 	GData::DXDevice->BeginScene();
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::UpdateReflection(timeDelta);
-	SXRenderFunc::Delay::ComReflection += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::ComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
 		//рендерим глубину от света
-		ttime = TimeGetMcsU(G_Timer_Render_Scene);
+		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SXRenderFunc::UpdateShadow(timeDelta);
-		SXRenderFunc::Delay::UpdateShadow += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+		SXRenderFunc::Delay::UpdateShadow += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
 	//рисуем сцену и заполняем mrt данными
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::RenderInMRT(timeDelta);
-	SXRenderFunc::Delay::RenderMRT += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::RenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
 		//освещаем сцену
-		ttime = TimeGetMcsU(G_Timer_Render_Scene);
+		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SXRenderFunc::ComLighting(timeDelta, true);
-		SXRenderFunc::Delay::ComLighting += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+		SXRenderFunc::Delay::ComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 #if defined(SX_GAME)
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::RenderPostProcess(timeDelta);
-	SXRenderFunc::Delay::PostProcess += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::PostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
 	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
@@ -353,27 +407,27 @@ void SkyXEngine_Render(DWORD timeDelta)
 	GData::DXDevice->EndScene();
 
 	//@@@
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::ComVisibleForCamera();
-	SXRenderFunc::Delay::UpdateVisibleForCamera += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::UpdateVisibleForCamera += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::ComVisibleReflection();
-	SXRenderFunc::Delay::UpdateVisibleForReflection += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::UpdateVisibleForReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::ComVisibleForLight();
-	SXRenderFunc::Delay::UpdateVisibleForLight += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::UpdateVisibleForLight += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SPE_EffectVisibleComAll(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
-	SXRenderFunc::Delay::UpdateParticles += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::UpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	ttime = TimeGetMcsU(G_Timer_Render_Scene);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	GData::DXDevice->Present(0, 0, 0, 0);
-	SXRenderFunc::Delay::Present += TimeGetMcsU(G_Timer_Render_Scene) - ttime;
+	SXRenderFunc::Delay::Present += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	SXRenderFunc::UpdateDataCVar();
 
@@ -396,8 +450,6 @@ int SkyXEngine_CycleMain()
 {
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
-
-	static DWORD lastTime = TimeGetMls(G_Timer_Render_Scene);
 
 	while (msg.message != WM_QUIT && IsWindow(GData::Handle3D))
 	{
@@ -424,7 +476,8 @@ int SkyXEngine_CycleMain()
 			SSCore_Update(&GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 			SGCore_LoadTexLoadTextures();
 
-			DWORD currTime = TimeGetMls(G_Timer_Render_Scene);
+			static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+			DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 			DWORD timeDelta = (currTime - lastTime);
 			Core_RIntSet(G_RI_INT_TIME_DELTA, timeDelta);
 #ifdef SX_GAME
@@ -438,7 +491,7 @@ int SkyXEngine_CycleMain()
 			if (g_time_run && g_time_run_old != (*g_time_run))
 			{
 				g_time_run_old = (*g_time_run);
-				Core_TimeWorkingSet(G_Timer_Game, g_time_run_old);
+				Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_run_old);
 			}
 
 			static const float * g_time_speed = GET_PCVAR_FLOAT("g_time_speed");
@@ -447,11 +500,11 @@ int SkyXEngine_CycleMain()
 			if (g_time_speed && g_time_speed_old != (*g_time_speed))
 			{
 				g_time_speed_old = (*g_time_speed);
-				Core_TimeSpeedSet(G_Timer_Game, g_time_speed_old);
+				Core_TimeSpeedSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_speed_old);
 			}
 
 
-			if (Core_TimeWorkingGet(G_Timer_Render_Scene) && (GetForegroundWindow() == GData::Handle3D || GetForegroundWindow() == GData::HandleParent3D || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
+			if (Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) && (GetForegroundWindow() == GData::Handle3D || GetForegroundWindow() == GData::HandleParent3D || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
 			{
 
 #if defined(SX_LEVEL_EDITOR)
@@ -554,7 +607,7 @@ void SkyXEngine_PreviewCreate()
 
 	RegisterClassEx(&wcex);
 
-	int width = 512;
+	int width = 1024;
 	int height = 256;
 
 	int posx = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;

@@ -34,11 +34,6 @@ SX_LIB_API void SML_Dbg_Set(report_func rf);//!< установить функц
 //! инициализция подсистемы
 SX_LIB_API void SML_0Create(
 	const char* name,				//!< присваиваемое имя
-	IDirect3DDevice9* device,		//!< dx устройство (уже инициализированное)
-	const char* std_path_material,	//!< абсолютный путь до директории с материалами
-	const char* std_path_mesh,		//!< абсолютный путь до директории с мешами
-	float2_t* winsize,				//!< размер окна в который происходит рендер
-	float projfov,					//!< fov проекции
 	bool is_unic = true				//!< должна ли подсистема быть уникальной по имени
 	);
 
@@ -52,22 +47,13 @@ SX_LIB_API void SML_AKill();	//!< уничтожить подсистему
 SX_LIB_API void SML_OnLostDevice();	//!< вызывать при потрете устройства
 
 //! вызывать при восстановлении устройства, с передачей параметров области в которую рисуем
-SX_LIB_API void SML_OnResetDevice(
-	int width,		//!< ширина окна
-	int heigth,		//!< высота окна
-	float projfov	//!< fov угол
-	);
+SX_LIB_API void SML_OnResetDevice();
 
 //!@}
 
 //! обновление данных всей библиотеки
 SX_LIB_API void SML_Update(
-	DWORD timeDelta,	//!< время рендера кадра в млсек
-	float2_t* winsize,	//!< размер окна рендера
-	float2_t* nearfar,	//!< ближняя и дальняя плоскости отсечения камеры
-	float3* poscam,		//!< позиция наблюдателя
-	float4x4* mview,	//!< матрица вида наблюдателя
-	float projfov		//!< fov угол
+	DWORD timeDelta	//!< время рендера кадра в млсек
 	);
 
 //#############################################################################

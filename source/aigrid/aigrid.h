@@ -163,6 +163,9 @@ public:
 	inline AIQUAD_STATE QuadGetState(ID id) const;
 	inline void QuadSetStateWho(ID id, ID who);
 	inline ID QuadGetStateWho(ID id);
+
+	//проверка квада: является ли квад id соседом и idn1 кваду и idn2 кваду
+	inline bool QuadIs2Neighbors(ID id, ID idn1, ID idn2);
 	
 	//установка/возвращение позиции по оси Y для квада
 	inline void QuadSetPosY(ID id, float posy);

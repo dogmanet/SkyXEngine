@@ -1,6 +1,5 @@
 
 #include <particles/sxparticles.h>
-#include <cdata.h>
 #define SXPARTICLES_VERSION 1
 
 #if !defined(DEF_STD_REPORT)
@@ -57,9 +56,6 @@ namespace PESet
 
 void PESet::Init(IDirect3DDevice9* device)
 {
-	G_Timer_Render_Scene = Core_RIntGet(G_RI_INT_TIMER_RENDER);
-	G_Timer_Game = Core_RIntGet(G_RI_INT_TIMER_GAME);
-
 	PESet::DXDevice = device;
 
 	D3DVERTEXELEMENT9 InstanceParticles[] =
@@ -124,7 +120,7 @@ void SPE_Dbg_Set(report_func rf)
 	reportf = rf;
 }
 
-void SPE_0Create(const char* name, IDirect3DDevice9* device, bool is_unic)
+void SPE_0Create(const char* name, bool is_unic)
 {
 	if (name && strlen(name) > 1)
 	{
@@ -138,13 +134,13 @@ void SPE_0Create(const char* name, IDirect3DDevice9* device, bool is_unic)
 			}
 			else
 			{
-				PESet::Init(device);
+				PESet::Init(SGCore_GetDXDevice());
 				ArrEffects = new Effects();
 			}
 		}
 		else
 		{
-			PESet::Init(device);
+			PESet::Init(SGCore_GetDXDevice());
 			ArrEffects = new Effects();
 		}
 	}

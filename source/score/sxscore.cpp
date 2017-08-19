@@ -28,7 +28,7 @@ void SSCore_Dbg_Set(report_func rf)
 	reportf = rf;
 }
 
-void SSCore_0Create(const char* name, HWND hwnd, const char* std_path_sound, bool is_unic)
+void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 {
 	if (name && strlen(name) > 1)
 	{
@@ -44,14 +44,12 @@ void SSCore_0Create(const char* name, HWND hwnd, const char* std_path_sound, boo
 			{
 				MSound = new MainSound();
 				MSound->Init(hwnd);
-				MSound->StdPathSet(std_path_sound);
 			}
 		}
 		else
 		{
 			MSound = new MainSound();
 			MSound->Init(hwnd);
-			MSound->StdPathSet(std_path_sound);
 		}
 	}
 	else
@@ -64,20 +62,6 @@ void SSCore_AKill()
 }
 
 //#############################################################################
-
-void SSCore_StdPathSet(const char* path)
-{
-	SCORE_PRECOND(_VOID);
-
-	MSound->StdPathSet(path);
-}
-
-void SSCore_StdPathGet(char* path)
-{
-	SCORE_PRECOND(_VOID);
-
-	MSound->StdPathGet(path);
-}
 
 void SSCore_Clear()
 {

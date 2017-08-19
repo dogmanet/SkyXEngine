@@ -5,14 +5,14 @@
 #include "NPCBase.h"
 
 
-class NPCZombie : public NPCBase
+class CNPCZombie : public CNPCBase
 {
-	DECLARE_CLASS(NPCZombie, NPCBase);
+	DECLARE_CLASS(CNPCZombie, CNPCBase);
 	DECLARE_PROPTABLE();
 
 public:
-	NPCZombie(EntityManager * pMgr);
-	~NPCZombie();
+	CNPCZombie(EntityManager * pMgr);
+	~CNPCZombie();
 
 	void OnSync();
 
@@ -20,10 +20,10 @@ protected:
 
 	//virtual void InitPhysics();
 
-	void RandWalk();
-	ID m_idsnd_idle;
-	ID m_idsnd_idle2;
-	ID m_idsnd_death;
+	void randWalk();
+	ID m_idSndIdle;
+	ID m_idSndIdle2;
+	ID m_idSndDeath;
 };
 
 #endif

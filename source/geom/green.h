@@ -32,7 +32,6 @@ public:
 	static float BeginEndLessening;
 	static bool UseSortFrontToBackSplits;
 	static IDirect3DDevice9* DXDevice;
-	static char StdPath[1024];
 
 	SX_ALIGNED_OP_MEM
 
@@ -210,6 +209,5 @@ float2_t Green::DistLods = float2_t(50, 100);
 float Green::BeginEndLessening = 30;
 bool Green::UseSortFrontToBackSplits = false;
 IDirect3DDevice9* Green::DXDevice = 0;
-char Green::StdPath[1024];
 
 #endif

@@ -77,10 +77,7 @@ public:
 	inline void GetPath(ShaderType type_shader, ID id, char* path);
 	inline void GetName(ShaderType type_shader, ID id, char* name);
 
-	inline void SetStdPath(const char* path){ strcpy(StdPath, path); };
-	inline void GetStdPath(char* path){		if(path) strcpy(path, StdPath); };
 protected:
-	char StdPath[SXGC_SHADER_MAX_SIZE_STDPATH];
 	Array<ShaderVS*> ArrVS;
 	Array<ShaderPS*> ArrPS;
 };

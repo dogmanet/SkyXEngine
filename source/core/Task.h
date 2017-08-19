@@ -1,6 +1,7 @@
 #ifndef _SXTask_H_
 #define _SXTask_H_
 
+#include "sxcore.h"
 #include <memory>
 #define _NTASKMANAGER
 

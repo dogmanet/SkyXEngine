@@ -32,7 +32,7 @@ void SGeom_Dbg_Set(report_func rf)
 	reportf = rf;
 }
 
-void SGeom_0Create(const char* name, IDirect3DDevice9* device, const char* std_path_mesh, bool is_unic)
+void SGeom_0Create(const char* name, bool is_unic)
 {
 	if (name && strlen(name) > 1)
 	{
@@ -46,14 +46,16 @@ void SGeom_0Create(const char* name, IDirect3DDevice9* device, const char* std_p
 			}
 			else
 			{
-				GeomDataInit(device, std_path_mesh);
+				StaticGeom::DXDevice = SGCore_GetDXDevice();
+				Green::DXDevice = SGCore_GetDXDevice();
 				GeometryObj = new StaticGeom();
 				GreenObj = new Green();
 			}
 		}
 		else
 		{
-			GeomDataInit(device, std_path_mesh);
+			StaticGeom::DXDevice = SGCore_GetDXDevice();
+			Green::DXDevice = SGCore_GetDXDevice();
 			GeometryObj = new StaticGeom();
 			GreenObj = new Green();
 		}

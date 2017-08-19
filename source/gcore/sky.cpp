@@ -18,7 +18,6 @@ SkyBox::SkyBox()
 	VS_RenderSkyBox = SGCore_ShaderLoad(ShaderType::st_vertex, "sky_box.vs", "sky_box", ShaderCheckDouble::scd_name);
 	PS_RenderSkyBox = SGCore_ShaderLoad(ShaderType::st_pixel, "sky_box.ps", "sky_box", ShaderCheckDouble::scd_name);
 
-	StdPath[0] = 0;
 	Color = float4(0,0,0,0);
 	RotaionY = 0.f;
 	MatRotation = SMMatrixIdentity();
@@ -108,18 +107,6 @@ SkyBox::~SkyBox()
 	mem_release_del(VertexDeclarationSkyBox);
 }
 
-void SkyBox::SetStdPath(const char* path)
-{
-	if (path)
-		sprintf(StdPath, "%s", path);
-}
-
-void SkyBox::GetStdPath(char* path)
-{
-	if (path)
-		sprintf(path, "%s", StdPath);
-}
-
 void SkyBox::LoadTextures(const char *texture)
 {
 	mem_release_del(Tex);
@@ -135,7 +122,7 @@ void SkyBox::LoadTextures(const char *texture)
 	}
 
 	char tmppath[1024];
-	sprintf(tmppath, "%s%s", StdPath, texture);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
 	if (FAILED(D3DXCreateCubeTextureFromFile(DXDevice, tmppath, &Tex)))
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmppath);
@@ -151,7 +138,7 @@ void SkyBox::ChangeTexture(const char *texture)
 {
 	mem_release_del((BFChangeMainTex ? Tex : Tex2));
 	char tmpsb1[1024];
-	sprintf(tmpsb1,"%s%s",StdPath,texture);
+	sprintf(tmpsb1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
 		if(!FAILED(D3DXCreateCubeTextureFromFile(DXDevice,tmpsb1,(BFChangeMainTex ? &Tex : &Tex2))))
 			BFChange = true;
 		else
@@ -264,7 +251,6 @@ SkyClouds::SkyClouds()
 	D3DXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
 	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(ShaderType::st_pixel, "sky_clouds.ps", "sky_clouds_shadow", ShaderCheckDouble::scd_name, Defines_SHADOW);
 
-	StdPath[0] = 0;
 	RotaionY = 0;
 	Alpha = 1.f;
 	Color = float4_t(0,0,0,0);
@@ -340,7 +326,7 @@ void SkyClouds::ChangeTexture(const char *texture)
 {
 	mem_release_del((BFChangeMainTex ? SkyCloudsTex : SkyCloudsTex2));
 	char tmpsb1[1024];
-	sprintf(tmpsb1,"%s%s",StdPath,texture);
+	sprintf(tmpsb1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
 		if(!FAILED(D3DXCreateTextureFromFile(DXDevice,tmpsb1,(BFChangeMainTex ? &SkyCloudsTex : &SkyCloudsTex2))))
 			BFChange = true;
 		else
@@ -411,18 +397,6 @@ float SkyClouds::GetSpeed()
 	return Speed;
 }
 
-void SkyClouds::SetStdPath(const char* path)
-{
-	if (path)
-		sprintf(StdPath, "%s", path);
-}
-
-void SkyClouds::GetStdPath(char* path)
-{
-	if (path)
-		sprintf(path, "%s", StdPath);
-}
-
 void SkyClouds::LoadTextures(const char *texture)
 {
 	mem_release_del(SkyCloudsTex);
@@ -438,7 +412,7 @@ void SkyClouds::LoadTextures(const char *texture)
 	}
 
 	char tmppath[1024];
-	sprintf(tmppath,"%s%s",StdPath,texture);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
 	if (FAILED(D3DXCreateTextureFromFile(DXDevice, tmppath, &SkyCloudsTex)))
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmppath);

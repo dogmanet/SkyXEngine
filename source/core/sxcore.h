@@ -98,6 +98,9 @@ SX_LIB_API void Core_RMatrixGet(int id, float4x4* val);	//!< получение 
 SX_LIB_API void Core_RFloat3Set(int id, float3* val);	//!< установка значения в регистр float3 типа
 SX_LIB_API void Core_RFloat3Get(int id, float3* val);	//!< получение значения из регистра float3 типа
 
+SX_LIB_API void Core_RStringSet(int id, const char *val);	//!< установка значения в регистр string типа
+SX_LIB_API const char* Core_RStringGet(int id);				//!< получение значения из регистра string типа
+
 //! @}
 
 /*! \name Таймеры

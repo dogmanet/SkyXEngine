@@ -47,7 +47,6 @@ SX_LIB_API void SPE_Dbg_Set(report_func rf);//!< установить функц
 //! инициализция подсистемы
 SX_LIB_API void SPE_0Create(
 	const char* name,			//!< присваиваемое имя
-	IDirect3DDevice9* device,	//!< dx устройство (уже инициализированное)
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 

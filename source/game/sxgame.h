@@ -181,15 +181,6 @@ SX_LIB_API bool SGame_AmbientSndIsPlaying();
 @{
 */
 
-#define WEATHER_RAIN_VOL_SND_UPDATE	1000	/*!< промежутки между обновлениями громоксти звука дождя (млсек) */
-#define WEATHER_RAIN_VOL_SND_DIST	20.f	/*!< дистанция от наблюдателя, в течении которой будут слышны упавшие капли */
-#define WEATHER_RAIN_MIN_Y_OBSERVER	5.f		/*!< на сколько ниже будет минимальная позиция бокса дождя относительно наблюдателя */
-#define WEATHER_RAIN_RECREATE_COUNT	500		/*!< количество перерождаемых частиц при полной плотности дождя (должно быть оптимальнымтак как возможно при чрезмерно больших значениях соотношение дождя может быть неправильным) */
-#define WEATHER_THUNDERBOLT_LIGHT_TIME	500	/*!< время свечения света при молнии (млсек)*/
-#define WEATHER_THUNDERBOLT_WIDTH	100.f	/*!< ширина возможного пространства для молнии */
-#define WEATHER_THUNDERBOLT_LENGTH	10.f	/*!< длина возможного пространства для молнии */
-#define WEATHER_THUNDERBOLT_HEIGHT	100.f	/*!< высота возможного пространства для молнии */
-
 //! загрузка конфига погоды
 SX_LIB_API void SGame_WeatherLoad(const char* path);
 

@@ -99,23 +99,23 @@
     <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp">
       <Filter>Source Files\ents\items\tools</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\game\SXLightPoint.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\SXLightDirectional.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\weather.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\ambient_sounds.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp">
       <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp">
       <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightDirectional.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightPoint.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\AmbientSounds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\Weather.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -185,23 +185,23 @@
     <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h">
       <Filter>Header Files\ents\items\tools</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\game\SXLightPoint.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\SXLightDirectional.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\weather.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\ambient_sounds.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\game\NPCBase.h">
       <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\NPCZombie.h">
       <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LightDirectional.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LightPoint.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\AmbientSounds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Weather.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

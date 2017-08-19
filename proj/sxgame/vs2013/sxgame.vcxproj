@@ -90,13 +90,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
-    <ClCompile Include="..\..\..\source\game\ambient_sounds.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\AmbientSounds.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
+    <ClCompile Include="..\..\..\source\game\LightDirectional.cpp" />
+    <ClCompile Include="..\..\..\source\game\LightPoint.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
@@ -110,23 +110,21 @@
     <ClCompile Include="..\..\..\source\game\SXbaseTool.cpp" />
     <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp" />
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXLightDirectional.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXLightPoint.cpp" />
     <ClCompile Include="..\..\..\source\game\SXplayer.cpp" />
     <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp" />
-    <ClCompile Include="..\..\..\source\game\weather.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\Weather.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\AAString.h" />
-    <ClInclude Include="..\..\..\source\game\ambient_sounds.h" />
+    <ClInclude Include="..\..\..\source\game\AmbientSounds.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />
     <ClInclude Include="..\..\..\source\game\EntityManager.h" />
     <ClInclude Include="..\..\..\source\game\FuncTrain.h" />
     <ClInclude Include="..\..\..\source\game\GameData.h" />
+    <ClInclude Include="..\..\..\source\game\LightDirectional.h" />
+    <ClInclude Include="..\..\..\source\game\LightPoint.h" />
     <ClInclude Include="..\..\..\source\game\NPCBase.h" />
     <ClInclude Include="..\..\..\source\game\NPCZombie.h" />
     <ClInclude Include="..\..\..\source\game\PathCorner.h" />
@@ -142,13 +140,11 @@
     <ClInclude Include="..\..\..\source\game\SXbaseTool.h" />
     <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h" />
     <ClInclude Include="..\..\..\source\game\sxgame.h" />
-    <ClInclude Include="..\..\..\source\game\SXLightDirectional.h" />
-    <ClInclude Include="..\..\..\source\game\SXLightPoint.h" />
     <ClInclude Include="..\..\..\source\game\SXplayer.h" />
     <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h" />
     <ClInclude Include="..\..\..\source\game\SXpointCamera.h" />
     <ClInclude Include="..\..\..\source\game\SXpointEntity.h" />
-    <ClInclude Include="..\..\..\source\game\weather.h" />
+    <ClInclude Include="..\..\..\source\game\Weather.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

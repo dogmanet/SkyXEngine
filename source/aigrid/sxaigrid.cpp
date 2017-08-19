@@ -189,6 +189,13 @@ ID SAIG_QuadGetStateWho(ID id)
 	return ObjAIGrid->QuadGetStateWho(id);
 }
 
+bool SAIG_QuadIs2Neighbors(ID id, ID idn1, ID idn2)
+{
+	AIG_PRECOND(false);
+
+	return ObjAIGrid->QuadIs2Neighbors(id, idn1, idn2);
+}
+
 ID SAIG_QuadGet(const float3* pos, bool isnear_or_permissible)
 {
 	AIG_PRECOND(-1);

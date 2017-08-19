@@ -16,7 +16,7 @@ void GData::InitAllMatrix()
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
 }
-
+/*
 void GData::Pathes::InitAllPathes()
 {
 	char tmppath[1024];
@@ -51,7 +51,7 @@ void GData::Pathes::InitAllPathes()
 	sprintf(GData::Pathes::GUIresources, "%s%s", GData::Pathes::GameSource, "resource\\");
 
 	SetCurrentDirectoryA(GData::Pathes::GameSource);
-}
+}*/
 
 void GData::IDsShaders::InitAllShaders()
 {
@@ -114,25 +114,31 @@ void GData::InitWin(const char* name, const char* caption)
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = GetModuleHandle(0);
-	wcex.hIcon = NULL;
+	wcex.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON_LOGO));
 	wcex.hCursor = 0;
 	wcex.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = name;
-	wcex.hIconSm = 0;
+	wcex.hIconSm = wcex.hIcon;
 
 	RegisterClassEx(&wcex);
 
 	RECT rc = { 0, 0, GData::WinSize.x, GData::WinSize.y };
 	AdjustWindowRect(&rc, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 
+	int width = rc.right - rc.left;
+	int height = rc.bottom - rc.top;
+
+	int posx = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
+	int posy = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
+
 	GData::Handle3D = CreateWindowEx(
 		0,
 		name,
 		caption,
 		WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		rc.right - rc.left, rc.bottom - rc.top,
+		posx, posy,
+		width, height,
 		0, 0,
 		GetModuleHandle(0),
 		0);

@@ -18,7 +18,7 @@ void Level::Load(const char* name)
 {
 	sprintf(Name, "%s", name);
 	char tmppathlevel[1024];
-	sprintf(tmppathlevel, "%s%s\\%s.lvl", GData::Pathes::Levels, name, name);
+	sprintf(tmppathlevel, "%s%s\\%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 	if (!Core_0FileExists(tmppathlevel))
 	{
 
@@ -28,7 +28,7 @@ void Level::Load(const char* name)
 	if (config->KeyExists("level", "geometry"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "geometry"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "geometry"));
 		if (Core_0FileExists(tmppath))
 			SGeom_ModelsLoad(tmppath);
 		else
@@ -40,7 +40,7 @@ void Level::Load(const char* name)
 	if (config->KeyExists("level", "green"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "green"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "green"));
 		if (Core_0FileExists(tmppath))
 			SGeom_GreenLoad(tmppath);
 		else
@@ -64,7 +64,7 @@ void Level::Load(const char* name)
 	if(config->KeyExists("level", "entity"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "entity"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "entity"));
 		if(Core_0FileExists(tmppath))
 			SXGame_LoadEnts(tmppath);
 		else
@@ -76,7 +76,7 @@ void Level::Load(const char* name)
 	if (config->KeyExists("level", "physic"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "physic"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "physic"));
 		if(Core_0FileExists(tmppath))
 			SXPhysics_ImportGeom(tmppath);
 		else
@@ -94,7 +94,7 @@ void Level::Load(const char* name)
 	if (config->KeyExists("level", "aigrid"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "aigrid"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "aigrid"));
 		if (Core_0FileExists(tmppath))
 			SAIG_GridLoad(tmppath);
 		else
@@ -133,7 +133,7 @@ void Level::Load(const char* name)
 		Level::StrWeather = config->GetKey("level", "weather");
 #if defined(SX_GAME)
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s", GData::Pathes::ConfigWeather, StrWeather.c_str());
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), StrWeather.c_str());
 		SGame_WeatherLoad(tmppath);
 
 		SGame_WeatherSndPlay();
@@ -163,7 +163,7 @@ void Level::Save(const char* name)
 {
 	sprintf(Name, "%s", name);
 	char tmppathlevel[1024];
-	sprintf(tmppathlevel, "%s%s\\%s.lvl", GData::Pathes::Levels, name, name);
+	sprintf(tmppathlevel, "%s%s\\%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 	if (!Core_0FileExists(tmppathlevel))
 	{
 
@@ -178,14 +178,14 @@ void Level::Save(const char* name)
 	{
 		fprintf(file, "geometry = %s.geom\n", name);
 
-		sprintf(tmppathlevel, "%s%s\\%s.geom", GData::Pathes::Levels, name, name);
+		sprintf(tmppathlevel, "%s%s\\%s.geom", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 		SGeom_ModelsSave(tmppathlevel);
 	}
 
 	if (SGeom_GreenGetCount() > 0)
 	{
 		fprintf(file, "green = %s.green\n", name);
-		sprintf(tmppathlevel, "%s%s\\%s.green", GData::Pathes::Levels, name, name);
+		sprintf(tmppathlevel, "%s%s\\%s.green", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 		SGeom_GreenSave(tmppathlevel);
 	}
 
@@ -196,20 +196,20 @@ void Level::Save(const char* name)
 
 	if (SXGame_EntGetCount() > 0)
 	{
-		sprintf(tmppathlevel, "%s%s\\%s.ent", GData::Pathes::Levels, name, name);
+		sprintf(tmppathlevel, "%s%s\\%s.ent", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 		fprintf(file, "entity = %s.ent\n", name);
 		SXGame_SaveEnts(tmppathlevel);
 	}
 
 	if (SAIG_GridGetCountSplits() > 0)
 	{
-		sprintf(tmppathlevel, "%s%s\\%s.aigrid", GData::Pathes::Levels, name, name);
+		sprintf(tmppathlevel, "%s%s\\%s.aigrid", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 		fprintf(file, "aigrid = %s.aigrid\n", name);
 		SAIG_GridSave(tmppathlevel);
 	}
 
 	SXPhysics_LoadGeom();
-	sprintf(tmppathlevel, "%s%s\\%s.phy", GData::Pathes::Levels, name, name);
+	sprintf(tmppathlevel, "%s%s\\%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, name);
 	fprintf(file, "physic = %s.phy\n", name);
 	SXPhysics_ExportGeom(tmppathlevel);
 
@@ -230,7 +230,7 @@ void Level::Save(const char* name)
 void Level::LoadParticles()
 {
 	char tmppathsave[1024];
-	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
+	sprintf(tmppathsave, "%seff.eff", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
 
 	SPE_EffectLoad(tmppathsave);
 }
@@ -238,7 +238,7 @@ void Level::LoadParticles()
 void Level::SaveParticles()
 {
 	char tmppathsave[1024];
-	sprintf(tmppathsave, "%seff.eff", GData::Pathes::GameSource);
+	sprintf(tmppathsave, "%seff.eff", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
 
 	SPE_EffectSave(tmppathsave);
 }

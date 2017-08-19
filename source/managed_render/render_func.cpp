@@ -111,7 +111,7 @@ void SXRenderFunc::ComDeviceLost()
 			GData::InitAllMatrix();
 			GData::ReSize = 0;
 			SGCore_OnResetDevice();
-			SML_OnResetDevice(GData::WinSize.x, GData::WinSize.y, GData::ProjFov);
+			SML_OnResetDevice();
 			SGeom_OnResetDevice();
 			SPE_OnResetDevice();
 
@@ -474,15 +474,15 @@ void SXRenderFunc::SaveScreenShot()
 	char tmppath[1024];
 	static int numscreen = 0;
 	
-	if(!Core_0FileExists(GData::Pathes::Screenshots))
+	if (!Core_0FileExists(Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS)))
 	{
-		CreateDirectoryA(GData::Pathes::Screenshots, NULL);
+		CreateDirectoryA(Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS), NULL);
 	}
 
 	do
 	{
 		++numscreen;
-		sprintf(tmppath, "%sscreen_skyxengine_build_%d.jpg", GData::Pathes::Screenshots, numscreen);
+		sprintf(tmppath, "%sscreen_skyxengine_build_%d.jpg", Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS), numscreen);
 	} while (Core_0FileExists(tmppath));
 
 	LPDIRECT3DSURFACE9 BackBuf;
@@ -494,32 +494,32 @@ void SXRenderFunc::SaveScreenShot()
 void SXRenderFunc::SaveWorkTex()
 {
 	char tmppath[1024];
-	sprintf(tmppath, "%scolor.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%scolor.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_color), NULL);
 
-	sprintf(tmppath, "%snormal.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%snormal.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_normal), NULL);
 
-	sprintf(tmppath, "%sdepth.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%sdepth.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth), NULL);
 
-	sprintf(tmppath, "%sdepth0.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%sdepth0.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth0), NULL);
 
-	sprintf(tmppath, "%sparam.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%sparam.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_param), NULL);
 
-	sprintf(tmppath, "%sambient_diff.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%sambient_diff.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_ambient_diff), NULL);
 
-	sprintf(tmppath, "%sspecular.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%sspecular.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_specular), NULL);
 
 
-	sprintf(tmppath, "%slight_com_1.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%slight_com_1.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com), NULL);
 
-	sprintf(tmppath, "%slight_com_2.png", GData::Pathes::WorkingTex);
+	sprintf(tmppath, "%slight_com_2.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2), NULL);
 }
 
@@ -603,7 +603,7 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
 			tm g_tm;
-			time_t g_time = Core_TimeUnixCurrGet(G_Timer_Game);
+			time_t g_time = Core_TimeUnixCurrGet(Core_RIntGet(G_RI_INT_TIMER_GAME));
 			localtime_s(&g_tm, &g_time);
 
 			sprintf(debugstr + strlen(debugstr), "\nGame time : %d %d %d %d %d %d\n", 1900 + g_tm.tm_year, g_tm.tm_mon, g_tm.tm_mday, g_tm.tm_hour, g_tm.tm_min, g_tm.tm_sec);

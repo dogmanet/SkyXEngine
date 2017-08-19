@@ -18,8 +18,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SkyXEngine_Init();
 	SkyXEngine_PreviewKill();
 
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
+	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
+	SGCore_SkyCloudsLoadTex("sky/sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
 	Level::Load("stalker_atp");
@@ -36,6 +36,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		bEnt->SetFlags(bEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
 		char pos[256];
 		//sprintf(pos, "%f %f %f", randf(-0.1, 0.1), randf(-0.1, 0.1), randf(-0.1, 0.1));
+		//bEnt->SetKV("origin", "14.90 0.36 25.56");
 		bEnt->SetKV("origin", "0 0 0");
 	}
 
@@ -53,7 +54,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	/*ID tmpid = SPE_EffectGetByName("test");
 	SPE_EffectEnableSet(tmpid, true);*/
 
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
 	/*ID tmpids = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);

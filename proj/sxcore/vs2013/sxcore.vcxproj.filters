@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\core\sxcore_dll.cpp" />
     <ClCompile Include="..\..\..\source\core\concmd.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -9,6 +8,24 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\cvars.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\sxcore_dll.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\time.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\file.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\loaderconfig.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\Task.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\TaskManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -28,6 +45,36 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\cvars.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\LoaderConfig.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\Task.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\TaskManager.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\time.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\concurrent_queue.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\eventbridge.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\eventchannel.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\eventhandler.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\eventhandlerqueue.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\File.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

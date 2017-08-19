@@ -28,13 +28,10 @@ public:
 	inline void GetColor(float4_t* color);
 	void Render(float timeDelta,float3* pos,bool is_shadow);
 
-	inline void SetStdPath(const char* path);
-	inline void GetStdPath(char* path);
-
 protected:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationSkyBox;
-	char StdPath[1024];
+	
 	char TexActive[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	char TexSecond[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	float RotaionY;
@@ -89,15 +86,11 @@ public:
 	inline void SetSpeed(float speed);
 	inline float GetSpeed();
 
-	inline void SetStdPath(const char* path);
-	inline void GetStdPath(char* path);
-
 	void Render(DWORD timeDetlta,float3* pos,bool is_shadow);
 
 private:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationClouds;
-	char StdPath[1024];
 	float Alpha;
 	float RotaionY;
 	float4x4 MatRotation;

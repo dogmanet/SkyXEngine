@@ -29,6 +29,10 @@ struct ConCmd
 	char * szDesc;
 };
 
+bool ConsoleConnect();
+void ConsoleDisconnect();
 void ConsoleRegisterCmds();
+bool CommandConnect();
+void CommandDisconnect();
 
 #endif

@@ -124,7 +124,7 @@ namespace GData
 	//////
 
 	//! пространство имен с путями
-	namespace Pathes
+	/*namespace Pathes
 	{
 		void InitAllPathes();	//!< инициализация всех путей
 
@@ -145,7 +145,7 @@ namespace GData
 			char Textures[1024];	//!< путь до папки с текстурами
 				char TexturesDetail[1024];	//!< путь до папки с детальными текстурами
 				char TexturesSkyBoxes[1024];//!< путь до папки с текстурами предназначенными для скайбоксов либо для облаков
-	};
+	};*/
 
 	//! пространство имен с идентификаторами шейдеров
 	namespace IDsShaders

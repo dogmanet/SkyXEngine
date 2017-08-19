@@ -1,87 +1,85 @@
 
 #include "NPCBase.h"
 
-BEGIN_PROPTABLE(NPCBase)
+BEGIN_PROPTABLE(CNPCBase)
 // empty
 	
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(NPCBase, npc_base);
+REGISTER_ENTITY_NOLISTING(CNPCBase, npc_base);
 
-NPCBase::NPCBase(EntityManager * pMgr) :
+CNPCBase::CNPCBase(EntityManager * pMgr) :
 	BaseClass(pMgr)
 {
-	m_health = 1.f;
-	m_speed_walk = 0.07f;
-	m_speed_run = 0.12f;
-	m_immunity_weapon = 1.f;
-	m_curr_quaid_in_path = -1;
+	m_fHealth = 1.f;
+	m_fSpeedWalk = 0.07f;
+	m_fSpeedRun = 0.12f;
+	m_idCurrQuaidInPath = -1;
 	m_fBaseScale = 0.01f;
-	m_curr_aiquad = -1;
-	m_move_state = NPC_MOVE_STATE_IDLE;
+	m_idCurrAiQuad = -1;
+	m_stateMove = NPC_STATE_MOVE_IDLE_START;
+	m_statePath = NPC_STATE_PATH_NOTFOUND;
 
-	m_angle_y_last = 0;
-	m_angle_y_next = 0;
-	m_alltime_rot = 0;
-	m_time_rot = 0;
+	m_fAngleYLast = 0;
+	m_fAngleYNext = 0;
+	m_ulTimeAllRot = 0;
+	m_ulTimeRot = 0;
+	m_fStepHeight = 0.4f;
+	m_canJump = false;
+	m_ulColor = D3DCOLOR_ARGB(128, rand() % 255, rand() % 255, rand() % 255);
+	m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
 }
 
-NPCBase::~NPCBase()
+CNPCBase::~CNPCBase()
 {
 
 }
 
-void NPCBase::InitPhysics()
+void CNPCBase::InitPhysics()
 {
 	btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(F3_BTVEC(m_vPosition));
-	//startTransform.setOrigin(btVector3(0, 12, 10));
-
+	
 	m_pGhostObject = new btPairCachingGhostObject();
 	m_pGhostObject->setWorldTransform(startTransform);
-	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 	m_pCollideShape = new btCapsuleShape(0.3f, 1.4f);
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
 	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 
-	btScalar stepHeight = 0.4f;
-	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, stepHeight, btVector3(0.0f, 1.0f, 0.0f));
+	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, m_fStepHeight, btVector3(0.0f, 1.0f, 0.0f));
 	m_pCharacter->setMaxJumpHeight(0.60f);
-	m_pCharacter->setJumpSpeed(3.50f);
+	m_pCharacter->setJumpSpeed(4.50f);
 	m_pCharacter->setGravity(btVector3(0, -10.0f, 0));
 	m_pCharacter->setFallSpeed(300.0f);
 
 	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::DebrisFilter);
-
-	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() /*| btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT*/);
-
 	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
 }
 
-void NPCBase::SetPos(const float3 & pos)
+void CNPCBase::SetPos(const float3 &pos)
 {
 	float3 tpos = pos;
-	m_curr_aiquad = SAIG_QuadGet(&tpos, true);
+	m_idCurrAiQuad = SAIG_QuadGet(&tpos, true);
 
-	if (m_curr_aiquad >= 0)
+	if (m_idCurrAiQuad >= 0)
 	{
-		if (SAIG_QuadGetState(m_curr_aiquad) == AIQUAD_STATE_FREE)
+		if (SAIG_QuadGetState(m_idCurrAiQuad) == AIQUAD_STATE_FREE)
 		{
-			SAIG_QuadSetState(m_curr_aiquad, AIQUAD_STATE_BUSY);
-			SAIG_QuadSetStateWho(m_curr_aiquad, this->GetId());
+			SAIG_QuadSetState(m_idCurrAiQuad, AIQUAD_STATE_BUSY);
+			SAIG_QuadSetStateWho(m_idCurrAiQuad, this->GetId());
 		}
 		else
 		{
-			if (SAIG_QuadGetStateWho(m_curr_aiquad) != this->GetId())
+			if (SAIG_QuadGetStateWho(m_idCurrAiQuad) != this->GetId())
 			{
 				ID idquad = SAIG_QuadGetNear(&(float3)m_vPosition, true, 2);
 				if (idquad >= 0)
 				{
-					m_curr_aiquad = idquad;
-					SAIG_QuadSetState(m_curr_aiquad, AIQUAD_STATE_BUSY);
-					SAIG_QuadSetStateWho(m_curr_aiquad, this->GetId());
-					SAIG_QuadGetPos(m_curr_aiquad, &tpos);
+					m_idCurrAiQuad = idquad;
+					SAIG_QuadSetState(m_idCurrAiQuad, AIQUAD_STATE_BUSY);
+					SAIG_QuadSetStateWho(m_idCurrAiQuad, this->GetId());
+					SAIG_QuadGetPos(m_idCurrAiQuad, &tpos);
 					tpos.y += 0.7f;
 					SetPos(tpos);
 				}
@@ -93,7 +91,7 @@ void NPCBase::SetPos(const float3 & pos)
 	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(tpos));
 }
 
-bool NPCBase::SetKV(const char * name, const char * value)
+bool CNPCBase::SetKV(const char *name, const char *value)
 {
 	if (stricmp("origin", name) == 0)
 	{
@@ -116,26 +114,30 @@ bool NPCBase::SetKV(const char * name, const char * value)
 	return BaseClass::SetKV(name, value);
 }
 
-ID NPCBase::GetAIQuad()
+ID CNPCBase::getAIQuad()
 {
-	return m_curr_aiquad;
+	return m_idCurrAiQuad;
 }
 
-bool NPCBase::PathFind(ID endq)
+bool CNPCBase::pathFind(ID endq)
 {
-	if (m_curr_aiquad >= 0 && SAIG_GridFindPath(m_curr_aiquad, endq))
+	if (m_idCurrAiQuad >= 0 && SAIG_GridFindPath(m_idCurrAiQuad, endq))
 	{
-		m_arr_path.resize(SAIG_GridGetSizePath());
-		SAIG_GridGetPath(&(m_arr_path[0]), m_arr_path.size(), true);
-		SAIG_GridSetColorArr(&(m_arr_path[0]), D3DCOLOR_ARGB(128, 0, 255, 0), m_arr_path.size());
-		m_last_path_pos = m_vPosition;
+		if (m_aPathQuads.size() > 0)
+			SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
+		m_statePath = NPC_STATE_PATH_FOUND;
+		m_aPathQuads.resize(SAIG_GridGetSizePath());
+		SAIG_GridGetPath(&(m_aPathQuads[0]), m_aPathQuads.size(), true);
+		SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
+		m_vLastPathPos = m_vPosition;
 		return true;
 	}
 
+	m_statePath = NPC_STATE_PATH_NOTFOUND;
 	return false;
 }
 
-void NPCBase::OnSync()
+void CNPCBase::OnSync()
 {
 	BaseClass::OnSync();
 
@@ -144,56 +146,189 @@ void NPCBase::OnSync()
 
 	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y()-0.9, trans.getOrigin().z()));
 
-	//определяем текущий id квада аи сетки
-	m_curr_aiquad = SAIG_QuadGet(&(float3)m_vPosition, false);
+	if (m_fHealth <= 0.f)
+		return;
 
-	//если квад найти не удалось
-	if (m_curr_aiquad < 0)
+	//определяем текущий id квада аи сетки
+	m_idCurrAiQuad = SAIG_QuadGet(&(float3)m_vPosition, true);
+
+	//если квад найти не удалось и состояние пути не равно немного/полностью вышел за пределы
+	if (m_idCurrAiQuad < 0 && (m_statePath != NPC_STATE_PATH_BITBEYOND || m_statePath != NPC_STATE_PATH_BEYOND))
 	{
 		//если мы не движемся по пути
-		if (m_curr_quaid_in_path < 0 || m_curr_quaid_in_path >= m_arr_path.size())
+		if (m_idCurrQuaidInPath < 0 || m_idCurrQuaidInPath >= m_aPathQuads.size())
 		{
-			if (m_health > 0.f)
+			gridCheckBeyond();
+		}
+		//иначе мы движемся по пути, проверяем как далеко лежат предыдущий и следующий квады
+		else
+		{
+			//если это не первый квад на пути, и дистанция между центром предыдущего квада и позицией нпс лежит в пределах допустимого
+			if (m_idCurrQuaidInPath > 0 && SMVector3Distance(m_vPosition, m_vPosQuadInPathLast) <= NPC_QUAD_DIST_NOTBEYOND)
+				m_idCurrAiQuad = m_aPathQuads[m_idCurrQuaidInPath-1];
+			//иначе если дистанция между центром следующего квада и позицией нпс лежит в пределах допустимого
+			else if (SMVector3Distance(m_vPosition, m_vPosQuadInPathNext) <= NPC_QUAD_DIST_NOTBEYOND)
+				m_idCurrAiQuad = m_aPathQuads[m_idCurrQuaidInPath];
+			else //иначе что-то не так
 			{
-				//минусуем здоровье нпс, делаем -1 чтобы предки поняли что только что умер нпс
-				m_health = -1.f;
+				gridCheckBeyond();
 			}
+		}
+	}
+
+	//если состояние пути немного вышел за пределы и установлено нужное время для прихода на сетку
+	if (m_statePath == NPC_STATE_PATH_BITBEYOND && m_ulTimeReturnInGrid > 0)
+	{
+		int iTimeDelta = Core_RIntGet(G_RI_INT_TIME_DELTA);
+		m_ulTimeAllReturnInGrid += iTimeDelta;
+
+		//если общее время движения к сетке превысело предел
+		if (m_ulTimeAllReturnInGrid >= m_ulTimeReturnInGrid)
+		{
+			//значит скорее всего нпс уже не вернется, устанавливаем состояние вышел за пределы
+			m_statePath = NPC_STATE_PATH_BEYOND;
+			m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
+			m_pCharacter->setWalkDirection(F3_BTVEC(float3(0, 0, 0)));
+			//если был предыдущий путь
+			if (m_aPathQuads.size() > 0)
+				SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
+		}
+	}
+
+	//если возвращение на сетку не допустимо
+	if (m_statePath == NPC_STATE_PATH_BEYOND)
+	{
+		if (m_fHealth > 0.f)
+		{
+			//минусуем здоровье нпс, делаем -1 чтобы предки поняли что только что умер нпс
+			m_fHealth = -1.f;
 			return;
 		}
-		//иначе мы движемся по пути, присваиваем id текущего квада к котором стремится нпс
-		else
-			m_curr_aiquad = m_arr_path[m_curr_quaid_in_path];
 	}
 	
-	UpdateOrientLerp();
+	updateOrientLerp();
 }
 
-void NPCBase::PathWalk()
+void CNPCBase::gridCheckBeyond()
+{
+	//находим ближайший квад к текущей позиции нпс
+	ID idq = SAIG_QuadGetNear(&(float3)m_vPosition);
+	if (idq >= 0)
+	{
+		float3 tpos;
+		SAIG_QuadGetPos(idq, &tpos);
+		float dist = SMVector3Distance(m_vPosition, tpos);
+		//если дистанция между текущей позицией нпс и позицией ближайшего квада лежит в допустимых пределах возвращения на сетку
+		if (dist <= NPC_QUAD_DIST_BEYOND)
+		{
+			//просто сообщаем что вышли за пределы
+			m_statePath = NPC_STATE_PATH_BITBEYOND;
+
+			//если был предыдущий путь
+			if (m_aPathQuads.size() > 0)
+				SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
+
+			//и устанавливаем путь возвращения
+			m_aPathQuads.resize(1);
+			m_aPathQuads[0] = idq;
+			m_idCurrQuaidInPath = 0;
+			SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
+
+			//просчитываем время хождения по пути до сетки
+			m_ulTimeReturnInGrid = (dist * m_fSpeedWalk) * 1000.f * 20.f;
+			m_ulTimeAllReturnInGrid = 0;
+		}
+		else
+			m_statePath = NPC_STATE_PATH_BEYOND;
+	}
+	else
+		m_statePath = NPC_STATE_PATH_BEYOND;
+}
+
+void CNPCBase::pathWalk()
 {
 	//если текущий ключ квада пути не известен
-	if (m_curr_quaid_in_path >= m_arr_path.size() || m_curr_quaid_in_path < 0)
+	if (m_idCurrQuaidInPath >= m_aPathQuads.size() || m_idCurrQuaidInPath < 0)
 	{
-		m_curr_quaid_in_path = -1;
-		m_move_state = NPC_MOVE_STATE_IDLE_START;
+		m_idCurrQuaidInPath = -1;
+		m_stateMove = NPC_STATE_MOVE_IDLE_START;
 		return;
 	}
 
-	SAIG_QuadGetPos(m_arr_path[m_curr_quaid_in_path], &m_next_path_pos);
+	m_stateMove = NPC_STATE_MOVE_RUN;
 
-	if (m_curr_quaid_in_path == 0)
-		OrientAtPoint(&m_next_path_pos, NPC_TIME_ORIENT_IN_PATH);
-
-	float r_curr = SMVector3Distance(m_vPosition, m_next_path_pos);
-	float r_last = SMVector3Distance(m_last_path_pos, m_next_path_pos);
-
-	if (SMVector3Distance(m_vPosition, m_next_path_pos) <= 0.05f || r_curr > r_last)
+	//если текущий квад больше нуля и текущий квад нпс не явлется предыдущим квадом пути либо следующим квадом пути, значит скорее всего нпс сбился с пути
+	if (m_idCurrQuaidInPath > 0 && (m_idCurrAiQuad != m_aPathQuads[m_idCurrQuaidInPath] && m_idCurrAiQuad != m_aPathQuads[m_idCurrQuaidInPath - 1]))
 	{
-		++m_curr_quaid_in_path;
-
-		if (m_curr_quaid_in_path < m_arr_path.size() && m_curr_quaid_in_path > 0)
+		//если текущий квад нпс не явлется соседом предыдущему и следующему квадам пути, значит нпс вышел за допустимые пределы, а значит сбился с пути
+		if (!SAIG_QuadIs2Neighbors(m_idCurrAiQuad, m_aPathQuads[m_idCurrQuaidInPath], m_aPathQuads[m_idCurrQuaidInPath - 1]))
 		{
-			SAIG_QuadGetPos(m_arr_path[m_curr_quaid_in_path], &m_next_path_pos);
-			OrientAtPoint(&m_next_path_pos, NPC_TIME_ORIENT_IN_PATH);
+			m_statePath = NPC_STATE_PATH_LOST;
+			m_pCharacter->setWalkDirection(F3_BTVEC(float3(0,0,0)));
+			return;
+		}
+		else //иначе нпс чуток отклонился от маршрута, поправляем
+			orientAtPoint(&m_vPosQuadInPathNext, NPC_TIME_ORIENT_IN_PATH);
+	}
+
+	//если следующий квад аи сетки несвободен и занят не текущим нпс
+	if (SAIG_QuadGetState(m_aPathQuads[m_idCurrQuaidInPath]) != AIQUAD_STATE_FREE && SAIG_QuadGetStateWho(m_aPathQuads[m_idCurrQuaidInPath]) != GetId())
+	{
+		//значит он преградил путь и текущий нпс сбился с пути
+		m_statePath = NPC_STATE_PATH_LOST;
+		m_pCharacter->setWalkDirection(F3_BTVEC(float3(0, 0, 0)));
+		return;
+	}
+
+	//занимаем следующий квад аи сетки за текущим нпс
+	SAIG_QuadSetState(m_aPathQuads[m_idCurrQuaidInPath], AIQUAD_STATE_TEMPBUSY);
+	SAIG_QuadSetStateWho(m_aPathQuads[m_idCurrQuaidInPath], GetId());
+
+	SAIG_QuadGetPos(m_aPathQuads[m_idCurrQuaidInPath], &m_vPosQuadInPathNext);
+
+	//если текущая позиция нпс ниже чем позиция квада к которому он стремится, и их разница больше либо равна допустимой
+	if (m_vPosQuadInPathNext.y > m_vPosition.y && abs(m_vPosQuadInPathNext.y - m_vPosition.y) >= m_fStepHeight - NPC_STEP_HEIGHT_EPSILON)
+	{
+		//говорим что надо прыгнуть
+		m_canJump = true;
+	}
+
+	//если разрешен прыжок
+	if (m_canJump)
+	{
+		if (m_pCharacter->canJump())
+		{
+				m_pCharacter->jump();
+				m_canJump = false;
+		}
+	}
+
+	if (m_idCurrQuaidInPath == 0)
+		orientAtPoint(&m_vPosQuadInPathNext, NPC_TIME_ORIENT_IN_PATH);
+
+	float r_curr = SMVector3Distance(m_vPosition, m_vPosQuadInPathNext);
+	float r_last = SMVector3Distance(m_vLastPathPos, m_vPosQuadInPathNext);
+
+	if (SMVector3Distance(m_vPosition, m_vPosQuadInPathNext) <= 0.05f || r_curr > r_last)
+	{
+		if (m_idCurrQuaidInPath + 1 < m_aPathQuads.size())
+			SAIG_QuadSetState(m_aPathQuads[m_idCurrQuaidInPath], AIQUAD_STATE_FREE);
+
+		++m_idCurrQuaidInPath;
+
+		//если было состояние пути немного вышел за пределы
+		if (m_statePath == NPC_STATE_PATH_BITBEYOND)
+		{
+			//устанавилваем состояние не найденный путь
+			m_statePath = NPC_STATE_PATH_NOTFOUND;
+			m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
+		}
+
+		if (m_idCurrQuaidInPath < m_aPathQuads.size() && m_idCurrQuaidInPath > 0)
+		{
+			m_vPosQuadInPathLast = m_vPosQuadInPathNext;
+			SAIG_QuadGetPos(m_aPathQuads[m_idCurrQuaidInPath], &m_vPosQuadInPathNext);
+			orientAtPoint(&m_vPosQuadInPathNext, NPC_TIME_ORIENT_IN_PATH);
 		}
 		else
 		{
@@ -201,10 +336,10 @@ void NPCBase::PathWalk()
 		}
 	}
 
-	m_last_path_pos = m_vPosition;
+	m_vLastPathPos = m_vPosition;
 }
 
-void NPCBase::OrientAtPoint(const float3 * pos, DWORD ttime)
+void CNPCBase::orientAtPoint(const float3 * pos, DWORD ttime)
 {
 	float3 curr_pos = GetPos();
 	curr_pos.y = 0;
@@ -214,38 +349,46 @@ void NPCBase::OrientAtPoint(const float3 * pos, DWORD ttime)
 	
 	float angle = (acosf(SMVector3Dot(NPC_BASE_DIR, dircam)) * sign2(SMVector3Cross(NPC_BASE_DIR, dircam).y));
 	angle = (-angle);
+	
+	//просчитываем направление движения и скорость
 	float3 dir = SMVector3Normalize(SMQuaternion(angle, 'y') * NPC_BASE_DIR);
-	m_pCharacter->setWalkDirection(F3_BTVEC(dir * m_speed_walk));
+	float speed = 0;
+	if (m_stateMove == NPC_STATE_MOVE_WALK)
+		speed = m_fSpeedWalk;
+	else if (m_stateMove == NPC_STATE_MOVE_RUN)
+		speed = m_fSpeedRun;
+	m_pCharacter->setWalkDirection(F3_BTVEC(dir * speed));
+
 	if (ttime > 0)
 	{
-		m_angle_y_next = angle;
-		m_alltime_rot = 0;
-		m_time_rot = ttime;
+		m_fAngleYNext = angle;
+		m_ulTimeAllRot = 0;
+		m_ulTimeRot = ttime;
 	}
 	else
 	{
-		m_angle_y_last = angle;
-		m_angle_y_next = angle;
-		m_alltime_rot = 0;
-		m_time_rot = 0;
+		m_fAngleYLast = angle;
+		m_fAngleYNext = angle;
+		m_ulTimeAllRot = 0;
+		m_ulTimeRot = 0;
 		SetOrient(SMQuaternion(angle, 'y'));
 	}
 }
 
-void NPCBase::UpdateOrientLerp()
+void CNPCBase::updateOrientLerp()
 {
-	if (m_time_rot <= 0)
+	if (m_ulTimeRot <= 0)
 		return;
 
-	int timeDelta = Core_RIntGet(G_RI_INT_TIME_DELTA);
-	m_alltime_rot += timeDelta;
-	float curr_angle = lerpf(m_angle_y_last, m_angle_y_next, saturatef(float(m_alltime_rot) / float(m_time_rot)));
-	SetOrient(SMQuaternion(curr_angle, 'y'));
+	int iTimeDelta = Core_RIntGet(G_RI_INT_TIME_DELTA);
+	m_ulTimeAllRot += iTimeDelta;
+	float fCurrAngle = lerpf(m_fAngleYLast, m_fAngleYNext, saturatef(float(m_ulTimeAllRot) / float(m_ulTimeRot)));
+	SetOrient(SMQuaternion(fCurrAngle, 'y'));
 
-	if (m_alltime_rot >= m_time_rot)
+	if (m_ulTimeAllRot >= m_ulTimeRot)
 	{
-		m_angle_y_last = m_angle_y_next;
-		m_alltime_rot = 0;
-		m_time_rot = 0;
+		m_fAngleYLast = m_fAngleYNext;
+		m_ulTimeAllRot = 0;
+		m_ulTimeRot = 0;
 	}
 }

@@ -439,20 +439,6 @@ bool SGCore_ShaderFileExists(const char* name)
 	return MShaders->FileExists(name);
 }
 
-void SGCore_ShaderSetStdPath(const char* path)
-{
-	SG_PRECOND(_VOID);
-
-	MShaders->SetStdPath(path);
-}
-
-void SGCore_ShaderGetStdPath(char* path)
-{
-	SG_PRECOND(_VOID);
-
-	MShaders->GetStdPath(path);
-}
-
 ////////////////////////
 
 bool SGCore_LoadTexFileExists(const char* name)
@@ -460,15 +446,6 @@ bool SGCore_LoadTexFileExists(const char* name)
 	SG_PRECOND(false);
 
 	return MTextures->FileExists(name);
-}
-
-void SGCore_LoadTexStdPath(const char* path)
-{
-	SG_PRECOND(_VOID);
-
-	MTextures->SetStdPath(path);
-	/*ObjSkyBox->SetStdPath(path);
-	ObjSkyClouds->SetStdPath(path);*/
 }
 
 void SGCore_LoadTexClearLoaded()
@@ -821,18 +798,6 @@ void SGCore_SkyBoxLoadTex(const char *texture)
 	ObjSkyBox->LoadTextures(texture);
 }
 
-void SGCore_SkyBoxSetStdPathTex(const char* path)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	ObjSkyBox->SetStdPath(path);
-}
-
-void SGCore_SkyBoxGetStdPathTex(char* path)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	ObjSkyBox->GetStdPath(path);
-}
-
 void SGCore_SkyBoxChangeTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
@@ -972,17 +937,6 @@ void SGCore_SkyCloudsGetColor(float4_t* color)
 	ObjSkyClouds->GetColor(color);
 }
 
-void SGCore_SkyCloudsSetStdPathTex(const char* path)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	ObjSkyClouds->SetStdPath(path);
-}
-
-void SGCore_SkyCloudsGetStdPathTex(char* path)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	ObjSkyClouds->SetStdPath(path);
-}
 
 void SGCore_SkyCloudsRender(DWORD timeDetlta, float3* pos, bool is_shadow)
 {

@@ -226,7 +226,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>
-#include <cdata.h>
 #include <common\\array.h>
 #include <common\\string.cpp>
 
@@ -373,6 +372,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 //! инициализация движка
 void SkyXEngine_Init();
+void SkyXEngine_InitPaths();
 
 //! рендер
 void SkyXEngine_Render(DWORD timeDelta);

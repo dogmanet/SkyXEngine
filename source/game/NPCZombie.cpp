@@ -2,87 +2,107 @@
 #include "NPCZombie.h"
 #include "score/sxscore.h"
 
-BEGIN_PROPTABLE(NPCZombie)
+BEGIN_PROPTABLE(CNPCZombie)
 // empty
 	
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(NPCZombie, npc_zombie);
+REGISTER_ENTITY_NOLISTING(CNPCZombie, npc_zombie);
 
-NPCZombie::NPCZombie(EntityManager * pMgr) :
+CNPCZombie::CNPCZombie(EntityManager * pMgr) :
 	BaseClass(pMgr)
 {
-	m_speed_walk = 0.07f;
-	m_speed_run = 0.12f;
+	m_fSpeedWalk = 0.07f;
+	m_fSpeedRun = 0.12f;
 
-	m_idsnd_idle = SSCore_SndCreate3d("mobs/zombie/zombie_idle_16.ogg", false, 0, 30);
-	m_idsnd_idle2 = SSCore_SndCreate3d("mobs/zombie/zombie_idle_17.ogg", false, 0, 30);
-	m_idsnd_death = SSCore_SndCreate3d("mobs/zombie/zombie_die_1.ogg", false, 0, 45);
+	m_idSndIdle = SSCore_SndCreate3d("mobs/zombie/zombie_idle_16.ogg", false, 0, 30);
+	m_idSndIdle2 = SSCore_SndCreate3d("mobs/zombie/zombie_idle_17.ogg", false, 0, 30);
+	m_idSndDeath = SSCore_SndCreate3d("mobs/zombie/zombie_die_1.ogg", false, 0, 45);
 }
 
-NPCZombie::~NPCZombie()
+CNPCZombie::~CNPCZombie()
 {
 
 }
 
-void NPCZombie::OnSync()
+void CNPCZombie::OnSync()
 {
 	BaseClass::OnSync();
 
-	SSCore_SndPosWSet(m_idsnd_idle,&GetPos());
-	SSCore_SndPosWSet(m_idsnd_idle2, &GetPos());
-	SSCore_SndPosWSet(m_idsnd_death, &GetPos());
+	SSCore_SndPosWSet(m_idSndIdle,&GetPos());
+	SSCore_SndPosWSet(m_idSndIdle2, &GetPos());
+	SSCore_SndPosWSet(m_idSndDeath, &GetPos());
 
 	//если здоровье меньше нуля
-	if (m_health < 0.0f)
+	if (m_fHealth < 0.0f)
 	{
 		//то воспроизводим анимацию смерти
 		this->PlayAnimation("fake_death0");
-		SSCore_SndPlay(m_idsnd_death);
-		m_health = 0.f;	//обнуляем здоровье говоря что больше проигрывать анимацию не надо
+		SSCore_SndPlay(m_idSndDeath);
+		m_fHealth = 0.f;	//обнуляем здоровье говоря что больше проигрывать анимацию не надо
 		return;
 	}
 
-	if (m_curr_aiquad < 0)
+	if (m_fHealth <= 0.f)
 		return;
 
-	RandWalk();
+	//если сбился с пути, обнуляем путь
+	if (m_statePath == NPC_STATE_PATH_LOST)
+	{
+		//!!!надо искать позицию конца пути
+		m_stateMove = NPC_STATE_MOVE_IDLE_START;
+		m_idCurrQuaidInPath = -1;
+	}
+	//иначе если состояние пути == немного вышел за пределы (допустимые)
+	else if (m_statePath == NPC_STATE_PATH_BITBEYOND)
+	{
+		m_stateMove = NPC_STATE_MOVE_RUN;
+		pathWalk();
+	}
+
+	if (m_idCurrAiQuad < 0)
+		return;
+
+	randWalk();
 }
 
-void NPCZombie::RandWalk()
+void CNPCZombie::randWalk()
 {
-	if (m_curr_quaid_in_path == -1)
+	if (m_idCurrQuaidInPath == -1)
 	{
 		float rndradius = randf(20.f,40.f)*0.5f;
 		float3 rndpos;
 		rndpos.x = m_vPosition.x + randf(-rndradius, rndradius);
 		rndpos.y = m_vPosition.y + randf(-rndradius, rndradius);
 		rndpos.z = m_vPosition.z + randf(-rndradius, rndradius);
-		if (PathFind(SAIG_QuadGetNear(&rndpos)))
+
+		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &rndpos);
+
+		if (pathFind(SAIG_QuadGetNear(&rndpos,true)))
 		{
-			m_curr_quaid_in_path = 0;
-			m_last_path_pos = GetPos();
+			m_idCurrQuaidInPath = 0;
+			m_vLastPathPos = GetPos();
 		}
 
 		return;
 	}
 
-	if (m_move_state == NPC_MOVE_STATE_IDLE_START && !this->PlayingAnimations("idle0"))
+	if (m_stateMove == NPC_STATE_MOVE_IDLE_START && !this->PlayingAnimations("idle0"))
 	{
-		m_move_state = NPC_MOVE_STATE_IDLE;
+		m_stateMove = NPC_STATE_MOVE_IDLE;
 		this->PlayAnimation("idle0");
-		SSCore_SndPlay(m_idsnd_idle);
+		SSCore_SndPlay(m_idSndIdle);
 	}
-	else if (m_move_state == NPC_MOVE_STATE_IDLE && !this->PlayingAnimations("idle0"))
-		m_move_state = NPC_MOVE_STATE_WALK;
-	else if (m_move_state != NPC_MOVE_STATE_IDLE)
+	else if (m_stateMove == NPC_STATE_MOVE_IDLE && !this->PlayingAnimations("idle0"))
+		m_stateMove = NPC_STATE_MOVE_WALK;
+	else if (m_stateMove != NPC_STATE_MOVE_IDLE)
 	{
 		if (!this->PlayingAnimations("walk0"))
 		{
 			this->PlayAnimation("walk0");
-			SSCore_SndPlay(m_idsnd_idle2);
+			SSCore_SndPlay(m_idSndIdle2);
 		}
 
-		PathWalk();
+		pathWalk();
 	}
 }

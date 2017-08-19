@@ -2,8 +2,12 @@
 #ifndef __time_h
 #define __time_h
 
-#include <chrono>
+#include <gdefines.h>
+extern report_func reportf;
 
+#include <common/Array.h>
+
+#include <chrono>
 typedef std::chrono::system_clock::time_point time_point;
 
 #define TIMEMANAGER_PRECOND_ID(id,stdval) \
@@ -35,18 +39,18 @@ public:
 
 	ID TimeAdd();
 
-	inline void TimeSpeedSet(ID id, float speed);
-	inline float TimeSpeedGet(ID id);
+	void TimeSpeedSet(ID id, float speed);
+	float TimeSpeedGet(ID id);
 
-	inline void TimeWorkingSet(ID id, bool working);
-	inline bool TimeWorkingGet(ID id);
+	void TimeWorkingSet(ID id, bool working);
+	bool TimeWorkingGet(ID id);
 
-	inline void TimeUnixStartSet(ID id, int64_t start_time);
-	inline int64_t TimeUnixStartGet(ID id);
-	inline int64_t TimeUnixCurrGet(ID id);
+	void TimeUnixStartSet(ID id, int64_t start_time);
+	int64_t TimeUnixStartGet(ID id);
+	int64_t TimeUnixCurrGet(ID id);
 
-	inline int64_t TimeTotalMcsGet(ID id);
-	inline int64_t TimeTotalMcsGetU(ID id);
+	int64_t TimeTotalMcsGet(ID id);
+	int64_t TimeTotalMcsGetU(ID id);
 
 protected:
 	Array<Time*> ArrTimes;

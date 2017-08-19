@@ -5,7 +5,6 @@ MainSound::MainSound()
 {
 	DeviceSound = 0;
 	DSPrimary = 0;
-	StdPath[0] = 0;
 }
 
 MainSound::~MainSound()
@@ -88,18 +87,6 @@ void MainSound::Init(HWND hwnd)
 
 	DSPrimary->SetVolume(0);
 	DSPrimary->Play(0, 0, DSBPLAY_LOOPING);
-}
-
-void MainSound::StdPathSet(const char* path)
-{
-	if (path)
-		strcpy(StdPath, path);
-}
-
-void MainSound::StdPathGet(char* path)
-{
-	if (path)
-		strcpy(path, StdPath);
 }
 
 //
@@ -440,7 +427,7 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 		return -1;
 
 	char fullpath[SOUND_MAX_SIZE_STDPATH + SOUND_MAX_SIZE_PATH];
-	sprintf(fullpath, "%s%s", StdPath, file);
+	sprintf(fullpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SOUNDS), file);
 
 	if (!Core_0FileExists(fullpath))
 	{

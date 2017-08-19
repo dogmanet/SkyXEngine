@@ -2,6 +2,7 @@
 #ifndef SXFILE_H
 #define SXFILE_H
 
+#include "sxcore.h"
 #include <fstream>
 
 class SXFile : public ISXFile

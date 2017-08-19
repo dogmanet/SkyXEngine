@@ -49,7 +49,7 @@ bool LoaderTextures::FileExists(const char* name)
 		return false;
 	}
 
-	sprintf(tmppath, "%s%s\\%s", StdPath, tmp_path, name);
+	sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmp_path, name);
 	return Core_0FileExists(tmppath);
 }
 
@@ -280,7 +280,7 @@ ID LoaderTextures::Update(const char* name, LoadTexType type)
 	reportf(0,"update texture [%s] ...",name);
 
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	sprintf(tmpPath, "%s%s%s%s%s%s", StdPath, Arr[tmpkey]->Path.c_str(), "\\", Arr[tmpkey]->Path.c_str(), "_", Arr[tmpkey]->ArrTex[tmpKeyName]->name.c_str());
+	sprintf(tmpPath, "%s%s%s%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), Arr[tmpkey]->Path.c_str(), "\\", Arr[tmpkey]->Path.c_str(), "_", Arr[tmpkey]->ArrTex[tmpKeyName]->name.c_str());
 	IDirect3DTexture9* tex=0;
 		if(FAILED(D3DXCreateTextureFromFileEx(
 											DXDevice,
@@ -319,7 +319,7 @@ void LoaderTextures::LoadTextures()
 	{
 		tmpiddir = ArrTextures[ArrIDsLoad[i]]->IDDir;
 		TLPath* tmpdir = Arr[tmpiddir];
-		sprintf(tmpPath, "%s%s%s%s", StdPath, Arr[tmpiddir]->Path.c_str(), "\\", ArrTextures[ArrIDsLoad[i]]->name.c_str());
+		sprintf(tmpPath, "%s%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), Arr[tmpiddir]->Path.c_str(), "\\", ArrTextures[ArrIDsLoad[i]]->name.c_str());
 		IDirect3DTexture9* tex = 0;
 		
 		if (FAILED(D3DXCreateTextureFromFileEx(

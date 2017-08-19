@@ -791,7 +791,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			tmpnewmpdel->TypeGreen = GeomGreenType::ggt_tree;
 
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s", Green::StdPath, path);
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 
 		SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[0]->model);
 		tmpnewmpdel->ArrLod[0]->path = path;
@@ -809,7 +809,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			else
 			{
 				tmpnewmpdel->ArrLod[1] = new Lod();
-				sprintf(tmppath, "%s%s", Green::StdPath, lod1);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), lod1);
 				tmpnewmpdel->ArrLod[1]->path = lod1;
 				SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[1]->model);
 
@@ -830,7 +830,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 			else
 			{
 				tmpnewmpdel->ArrLod[2] = new Lod();
-				sprintf(tmppath, "%s%s", Green::StdPath, lod2);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), lod2);
 				tmpnewmpdel->ArrLod[2]->path = lod2;
 				SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[2]->model);
 
@@ -1337,7 +1337,7 @@ void Green::Load(const char* path)
 		tmpmodel->ArrLod[1] = 0;
 		tmpmodel->ArrLod[2] = 0;
 
-		sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[0]);
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmpstr[0]);
 		SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[0]->model);
 		tmpmodel->ArrLod[0]->path = tmpstr[0];
 		char tmppathtex[1024];
@@ -1355,7 +1355,7 @@ void Green::Load(const char* path)
 			{
 				tmpmodel->ArrLod[1] = new Lod();
 				tmpmodel->ArrLod[1]->path = tmpstr[1];
-				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[1]);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmpstr[1]);
 				SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[1]->model);
 
 				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
@@ -1376,7 +1376,7 @@ void Green::Load(const char* path)
 			{
 				tmpmodel->ArrLod[2] = new Lod();
 				tmpmodel->ArrLod[2]->path = tmpstr[2];
-				sprintf(tmppath, "%s%s", Green::StdPath, tmpstr[2]);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmpstr[2]);
 				SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[2]->model);
 
 				for (int k = 0; k < tmpmodel->ArrLod[2]->model->SubsetCount; ++k)
@@ -1664,7 +1664,7 @@ void Green::SetGreenLod(ID id, int lod, const char* pathname)
 	char tmppath[1024];
 	ArrModels[id]->ArrLod[lod] = new Lod();
 	ArrModels[id]->ArrLod[lod]->path = pathname;
-	sprintf(tmppath, "%s%s", Green::StdPath, pathname);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), pathname);
 	SGCore_StaticModelLoad(tmppath, &ArrModels[id]->ArrLod[lod]->model);
 
 	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->SubsetCount; ++k)
@@ -1686,7 +1686,7 @@ void Green::SetGreenNav(ID id, const char* pathname)
 	ArrModels[id]->NavigateMesh = new Model::NavMesh();
 
 	char tmppath[1024];
-	sprintf(tmppath, "%s%s", Green::StdPath, tmpstr);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmpstr);
 	ArrModels[id]->NavigateMesh->pathname = tmpstr;
 
 	ISXDataStaticModel* nmesh;

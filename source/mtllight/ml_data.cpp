@@ -4,11 +4,11 @@
 namespace MLSet
 {
 	IDirect3DDevice9* DXDevice = 0;
-	float3 ConstCurrCamPos;
-	float2_t WinSize = float2_t(1024, 768);
+	//float3 ConstCurrCamPos;
+	//float2_t WinSize = float2_t(1024, 768);
 	//DWORD CountTimeDelta = 0;
-	char StdPathMaterial[1024];
-	char StdPathMesh[1024];
+	//char StdPathMaterial[1024];
+	//char StdPathMesh[1024];
 	
 	//размер текстуры глубины дл¤ локальных источников света
 	float2_t SizeTexDepthGlobal = float2_t(1024, 768);
@@ -29,23 +29,23 @@ namespace MLSet
 
 	void ReCalcSize()
 	{
-		SizeTexDepthGlobal.x = WinSize.x * CoefSizeDepthMapForGlobal;
-		SizeTexDepthGlobal.y = WinSize.y * CoefSizeDepthMapForGlobal;
+		SizeTexDepthGlobal.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH) * CoefSizeDepthMapForGlobal;
+		SizeTexDepthGlobal.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT) * CoefSizeDepthMapForGlobal;
 
-		SizeTexDepthLocal.x = WinSize.x * CoefSizeDepthMapForLocal;
-		SizeTexDepthLocal.y = WinSize.y * CoefSizeDepthMapForLocal;
+		SizeTexDepthLocal.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH) * CoefSizeDepthMapForLocal;
+		SizeTexDepthLocal.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT) * CoefSizeDepthMapForLocal;
 	}
 
 	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
 
 	//fov and ration esesno
-	float ProjFov = SM_PI * 0.25f;
-	float ProjRatio = WinSize.x / WinSize.y;
+	//float ProjFov = SM_PI * 0.25f;
+	//float ProjRatio = WinSize.x / WinSize.y;
 
 	//ближн¤¤ и дальн¤¤ плоскости
-	float2_t NearFar = float2_t(0.25f, 400.f);
-
-	float4x4 MCamView;
+	//float2_t NearFar = float2_t(0.25f, 400.f);
+	
+	//float4x4 MCamView;
 
 	bool IsHalfGenPCFShadowLocal = false;
 
@@ -163,22 +163,15 @@ namespace MLSet
 	};
 };
 
-void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char* std_path_mesh, float2_t* winsize, float projfov)
+void MLInit()
 {
-	MLSet::DXDevice = device;
+	MLSet::DXDevice = SGCore_GetDXDevice();
 
-	if (std_path_material)
-		sprintf(MLSet::StdPathMaterial, "%s", std_path_material);
-	else
-		MLSet::StdPathMaterial[0] = 0;
-
-	if (std_path_material)
-		sprintf(MLSet::StdPathMesh, "%s", std_path_mesh);
-	else
-		MLSet::StdPathMesh[0] = 0;
+	/*sprintf(MLSet::StdPathMaterial, "%s", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS));
+	sprintf(MLSet::StdPathMesh, "%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
 
 	MLSet::WinSize = *winsize;
-	MLSet::ProjFov = projfov;
+	MLSet::ProjFov = projfov;*/
 	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LoadTexType::ltt_const);
 
 
@@ -320,7 +313,7 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 
 	//////////
 	float tmpcoefsizert = 1;
-	float2_t tmp_sizert = float2_t(MLSet::WinSize.x * tmpcoefsizert, MLSet::WinSize.y * tmpcoefsizert);
+	float2_t tmp_sizert = float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH) * tmpcoefsizert, Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT) * tmpcoefsizert);
 
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
@@ -343,7 +336,7 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	while (true)
 	{
 		int tmpsize = 1 << (2 * tmpcount);
-		if (tmpsize >= MLSet::WinSize.x*0.25 || tmpsize > MLSet::WinSize.y*0.25)
+		if (tmpsize >= Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH)*0.25 || tmpsize > Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)*0.25)
 			break;
 		MLSet::IDsRenderTargets::ToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "qq", 0);
 		MLSet::IDsRenderTargets::SurfToneMap[tmpcount] = 0;
@@ -354,13 +347,13 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	MLSet::IDsRenderTargets::AdaptLumCurr = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 	MLSet::IDsRenderTargets::AdaptLumLast = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 
-	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
-	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
-	MLSet::IDsRenderTargets::LigthCom3 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
+	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
+	MLSet::IDsRenderTargets::LigthCom3 = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
 	
-	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(MLSet::WinSize.x*0.25f, MLSet::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH)*0.25f, Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
 
-	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(MLSet::ProjFov, MLSet::ProjRatio, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(Core_RFloatGet(G_RI_FLOAT_OBSERVER_FOV), Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH) / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 }
 

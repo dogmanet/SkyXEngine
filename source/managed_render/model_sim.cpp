@@ -82,7 +82,7 @@ void ModelSim::Add(const char* path)
 {
 	char tmppath[1024];
 	ISXDataStaticModel* StaticModel = 0;
-	sprintf(tmppath, "%s%s", GData::Pathes::Meshes, path);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 	SGCore_StaticModelLoad(tmppath, &StaticModel);
 
 	if (StaticModel->SubsetCount > 1)

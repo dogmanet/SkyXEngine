@@ -839,9 +839,6 @@ SX_LIB_API void SGCore_SkyBoxCr();	//!< создание
 SX_LIB_API bool SGCore_SkyBoxIsCr();//!< инициализирован ли skybox
 SX_LIB_API bool SGCore_SkyBoxIsLoadTex();//!< загружена ли текстура?
 
-SX_LIB_API void SGCore_SkyBoxSetStdPathTex(const char* path);	//!< установка пути, относительно которого будут загружаться текстуры
-SX_LIB_API void SGCore_SkyBoxGetStdPathTex(char* path);			//!< в path записывает путь относительно которого загружаются текстуры
-
 SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture);	//!< загрузка текстуры, texture - имя текстуры с расширением
 SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture);//!< смена текстуры, texture - имя текстуры с расширением
 
@@ -873,9 +870,6 @@ SX_LIB_API void SGCore_SkyBoxRender(
 SX_LIB_API void SGCore_SkyCloudsCr();		//!< создание
 SX_LIB_API bool SGCore_SkyCloudsIsCr();		//!< инициализирован ли sky clouds
 SX_LIB_API bool SGCore_SkyCloudsIsLoadTex();//!< загружена ли текстура
-
-SX_LIB_API void SGCore_SkyCloudsSetStdPathTex(const char* path);	//!< установка пути, относительно которого будут загружаться текстуры
-SX_LIB_API void SGCore_SkyCloudsGetStdPathTex(char* path);			//!< в path записывает путь относительно которого загружаются текстуры
 
 /*! установка размеров и позиции.
  Так как позиция облаков константна то чтобы была илюзия полного покрытия уровня, необходимо облакам указывать размер в несколько раз больше чем весь доступный уровень, к примеру x2

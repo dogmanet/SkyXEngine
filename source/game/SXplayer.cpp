@@ -1,8 +1,9 @@
 #include <input/sxinput.h>
 #include <mtllight/sxmtllight.h>
 #include "SXplayer.h"
-#include "SXLightDirectional.h"
+#include "LightDirectional.h"
 #include "SXbaseTool.h"
+#include <aigrid/sxaigrid.h>
 
 BEGIN_PROPTABLE(SXplayer)
 // empty
@@ -14,7 +15,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	BaseClass(pMgr),
 	m_uMoveDir(PM_OBSERVER),
 	m_vPitchYawRoll(float3_t(0, 0, 0)),
-	m_bCanJump(true),
+	m_canJump(true),
 	m_fViewbobStep(0.0f),
 	m_fViewbobY(0.0f),
 	m_fViewbobStrafe(float3_t(0, 0, 0)),
@@ -34,7 +35,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pGhostObject = new btPairCachingGhostObject();
 	m_pGhostObject->setWorldTransform(startTransform);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
-	m_pCollideShape = new btCapsuleShape(0.4f, 1.2f);
+	m_pCollideShape = new btCapsuleShape(0.5f, 1.2f);
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
 	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 
@@ -66,13 +67,15 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pActiveTool->SetParent(this);
 
 
-	m_flashlight = (SXLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
+	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
 	m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
 	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PI*0.5f, 'x'));
 	m_flashlight->SetParent(this);
-	m_flashlight->m_dist = 10.f;
-	m_flashlight->m_color = float3(3.5, 3.5, 3.5);
-	m_flashlight->m_typeshadow = -1;
+	m_flashlight->setDist(10.f);
+	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
+	m_flashlight->setShadowType(-1);
+
+	m_idQuadCurr = -1;
 }
 
 SXplayer::~SXplayer()
@@ -186,20 +189,20 @@ void SXplayer::UpdateInput(float dt)
 			{
 				if(m_pCharacter->canJump())
 				{
-					if(m_bCanJump)
+					if(m_canJump)
 					{
 						m_pCharacter->jump();
-						m_bCanJump = false;
+						m_canJump = false;
 					}
 				}
 				else
 				{
-					m_bCanJump = false;
+					m_canJump = false;
 				}
 			}
 			else
 			{
-				m_bCanJump = true;
+				m_canJump = true;
 			}
 			m_pCharacter->setWalkDirection(F3_BTVEC(dir));
 
@@ -296,6 +299,27 @@ void SXplayer::OnSync()
 	trans = m_pGhostObject->getWorldTransform();
 	
 	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() + 0.75f + m_fViewbobY, trans.getOrigin().z()) + m_fViewbobStrafe);
+
+	//находим текущий квад аи сетки на котором находится игрок
+	ID idq = SAIG_QuadGet(&float3(m_vPosition.x, m_vPosition.y - (0.75f + m_fViewbobY), m_vPosition.z), true);
+	
+	//если нашли
+	if (idq >= 0)
+	{
+		//занимаем этот квад
+		SAIG_QuadSetState(idq, AIQUAD_STATE_TEMPBUSY);
+		SAIG_QuadSetStateWho(idq, GetId());
+	}
+
+	//если предыдущий и текущие квады не идентичны
+	if (m_idQuadCurr != idq)
+	{
+		//если предыдщий был действительным, убираем занятость
+		if (m_idQuadCurr >= 0)
+			SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
+
+		m_idQuadCurr = idq;
+	}
 }
 
 float3 SXplayer::GetWeaponOrigin()
@@ -364,7 +388,7 @@ void SXplayer::Reload()
 
 void SXplayer::ToggleFlashlight()
 {
-	m_flashlight->ToggleEnable();
+	m_flashlight->toggleEnable();
 }
 
 void SXplayer::_ccmd_slot_on(int argc, const char ** argv)

@@ -36,7 +36,7 @@ namespace PPSet
 	float4x4 MCamViewPrev;
 	float4x4 MCamProj;
 
-	void Init(float2_t* winsize);
+	void Init();
 	
 	namespace IDsShaders
 	{
@@ -105,9 +105,11 @@ namespace PPSet
 	};
 }
 
-void PPSet::Init(float2_t* winsize)
+void PPSet::Init()
 {
-	PPSet::WinSize = *winsize;
+	PPSet::DXDevice = SGCore_GetDXDevice();
+	PPSet::WinSize.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH);
+	PPSet::WinSize.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
 	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
 
 	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
@@ -194,7 +196,7 @@ void SPP_Dbg_Set(report_func rf)
 }
 
 
-void SPP_0Create(const char* name, IDirect3DDevice9* device, float2_t* winsize, bool is_unic)
+void SPP_0Create(const char* name, bool is_unic)
 {
 	if (name && strlen(name) > 1)
 	{
@@ -208,14 +210,12 @@ void SPP_0Create(const char* name, IDirect3DDevice9* device, float2_t* winsize, 
 			}
 			else
 			{
-				PPSet::DXDevice = device;
-				PPSet::Init(winsize);
+				PPSet::Init();
 			}
 		}
 		else
 		{
-			PPSet::DXDevice = device;
-			PPSet::Init(winsize);
+			PPSet::Init();
 		}
 	}
 	else

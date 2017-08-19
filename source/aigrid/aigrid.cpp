@@ -468,6 +468,23 @@ ID AIGrid::QuadGetStateWho(ID id)
 	return ArrStateWho[id];
 }
 
+bool AIGrid::QuadIs2Neighbors(ID id, ID idn1, ID idn2)
+{
+	AIGRID_QUAD_PRECOND(id, false);
+	AIGRID_QUAD_PRECOND(idn1, false);
+	AIGRID_QUAD_PRECOND(idn2, false);
+
+	AIQuad* aq = ArrQuads[id];
+	int concurrence = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if (aq->Arr[i] == idn1 || aq->Arr[i] == idn2)
+			++concurrence;
+	}
+
+	return (concurrence == 2);
+}
+
 void AIGrid::QuadSetPosY(ID id, float posy)
 {
 	AIGRID_QUAD_PRECOND(id, _VOID);
@@ -1996,8 +2013,8 @@ ID AIGrid::QuadGet(const float3* pos, bool isnear_or_permissible) const
 				{
 
 					if (
-						(isnear_or_permissible && ((heightmin > -1 && heightmin > abs(abs(ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].y) - abs(tmpy))) || heightmin == -1)) ||
-						(!isnear_or_permissible && (abs(abs(ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].y) - abs(tmpy))  < LAIGRID_QUADS_CENTERS_MAXHEIGHT))
+						(isnear_or_permissible && ((heightmin > -1 && heightmin > abs((ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].y) - (tmpy))) || heightmin == -1)) ||
+						(!isnear_or_permissible && (abs((ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].y) - (tmpy)) <= LAIGRID_QUADS_CENTERS_MAXHEIGHT))
 						)
 					{
 						//int3 l3 = ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]];
@@ -2733,7 +2750,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 
 	CountInitOpen2 = 0;
 	NumLastKeyOpenList = 0;
-	memset(&(ArrColor[0]), 0, ArrColor.size() * sizeof(uint32_t));
+	//memset(&(ArrColor[0]), 0, ArrColor.size() * sizeof(uint32_t));
 	memset(&(ArrIDsInOpen[0]), -1, ArrIDsInOpen.size() * sizeof(ID));
 	memset(&(ArrOpenIDs[0]), -1, ArrOpenIDs.size() * sizeof(ID));
 	memset(&(ArrParentIDs[0]), -1, ArrParentIDs.size() * sizeof(ID));

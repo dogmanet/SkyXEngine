@@ -226,7 +226,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 	ISXDataStaticModel* model = 0;
 	
 	char tmppath[1024];
-	sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 	SGCore_StaticModelLoad(tmppath, &model);
 
 	Model* tmpmodel = new Model();
@@ -2900,7 +2900,7 @@ void StaticGeom::SetModelLodPath(ID id, const char* path)
 		AllModels[id]->Lod0.IDsTexs.clear();
 		//AllModels[id]->Lod0.model = new DataStaticModel();
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 		SGCore_StaticModelLoad(tmppath, &(AllModels[id]->Lod0.model));
 
 		char tmptex[1024];

@@ -60,4 +60,24 @@ See the license in LICENSE
 #define G_RI_INT_TIME_DELTA		6	/*!< время рендера кадра */
 //! @}
 
+/*! @name string register */
+//! @{
+#define G_RI_STRING_PATH_EXE			0	/*!< путь до исполняемого файла */
+#define G_RI_STRING_PATH_WORKTEX		1	/*!< путь до сохранения рабочих текстур */
+#define G_RI_STRING_PATH_SCREENSHOTS	2	/*!< путь до скриншотов */
+
+#define G_RI_STRING_PATH_GAMESOURCE		3	/*!< путь до игровых ресурсов */
+#define G_RI_STRING_PATH_GS_CONFIGS		4	/*!< путь до конфигураций */
+#define G_RI_STRING_PATH_GS_LEVELS		5	/*!< путь до уровней */
+#define G_RI_STRING_PATH_GS_MESHES		6	/*!< путь до статический моделей */
+#define G_RI_STRING_PATH_GS_MODELS		7	/*!< путь до анимационных моделей */
+#define G_RI_STRING_PATH_GS_SHADERS		8	/*!< путь до шейдеров */
+#define G_RI_STRING_PATH_GS_SOUNDS		9	/*!< путь до звуков */
+#define G_RI_STRING_PATH_GS_SCRIPTS		10	/*!< путь до скриптов */
+#define G_RI_STRING_PATH_GS_TEXTURES	11	/*!< путь до текстур */
+#define G_RI_STRING_PATH_GS_MTRLS		12	/*!< путь до материалов */
+#define G_RI_STRING_PATH_GS_GUI			13	/*!< путь до gui */
+
+//! @}
+
 #endif

@@ -33,7 +33,7 @@ void SML_Dbg_Set(report_func rf)
 	reportf = rf;
 }
 
-void SML_0Create(const char* name, IDirect3DDevice9* device, const char* std_path_material, const char* std_path_mesh, float2_t* winsize, float projfov, bool is_unic)
+void SML_0Create(const char* name, bool is_unic)
 {
 	if (name && strlen(name) > 1)
 	{
@@ -47,7 +47,7 @@ void SML_0Create(const char* name, IDirect3DDevice9* device, const char* std_pat
 			}
 			else
 			{
-				MLInit(device, std_path_material, std_path_mesh, winsize, projfov);
+				MLInit();
 				MLSet::ReCalcSize();
 				ArrLights = new Lights();
 				ArrMaterials = new Materials();
@@ -55,7 +55,7 @@ void SML_0Create(const char* name, IDirect3DDevice9* device, const char* std_pat
 		}
 		else
 		{
-			MLInit(device, std_path_material, std_path_mesh, winsize, projfov);
+			MLInit();
 			MLSet::ReCalcSize();
 			ArrLights = new Lights();
 			ArrMaterials = new Materials();
@@ -78,13 +78,13 @@ void SML_OnLostDevice()
 	ArrMaterials->OnLostDevice();
 }
 
-void SML_OnResetDevice(int width, int heigth, float projfov)
+void SML_OnResetDevice()
 {
 	ML_PRECOND();
-	MLSet::WinSize.x = width;
+	/*MLSet::WinSize.x = width;
 	MLSet::WinSize.y = heigth;
 	MLSet::ProjFov = projfov;
-	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;
+	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;*/
 	MLSet::ReCalcSize();
 	ArrLights->OnResetDevice();
 	ArrMaterials->OnResetDevice();
@@ -108,14 +108,14 @@ void SML_OnResetDevice(int width, int heigth, float projfov)
 	MLSet::IDsRenderTargets::HowAdaptedLum = 0;
 }
 
-void SML_Update(DWORD timeDelta, float2_t* winsize, float2_t* nearfar, float3* poscam, float4x4* mview, float projfov)
+void SML_Update(DWORD timeDelta)
 {
-	MLSet::WinSize = *winsize;
+	/*MLSet::WinSize = *winsize;
 	MLSet::NearFar = *nearfar;
 	MLSet::ConstCurrCamPos = *poscam;
 	MLSet::MCamView = *mview;
 	MLSet::ProjFov = projfov;
-	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;
+	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;*/
 
 	if (ArrMaterials)
 		ArrMaterials->Update(timeDelta);
@@ -128,7 +128,7 @@ void SML_LigthsSettLCoefSizeDepth(float coef)
 	MLSet::CoefSizeDepthMapForLocal = coef;
 	MLSet::ReCalcSize();
 	SML_OnLostDevice();
-	SML_OnResetDevice(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::ProjFov);
+	SML_OnResetDevice();
 }
 
 void SML_LigthsSettGCoefSizeDepth(float coef)
@@ -138,7 +138,7 @@ void SML_LigthsSettGCoefSizeDepth(float coef)
 	MLSet::CoefSizeDepthMapForGlobal = coef;
 	MLSet::ReCalcSize();
 	SML_OnLostDevice();
-	SML_OnResetDevice(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::ProjFov);
+	SML_OnResetDevice();
 	
 }
 

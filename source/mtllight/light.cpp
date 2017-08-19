@@ -4,8 +4,8 @@
 Lights::Lights()
 {
 	HowShadow = 0;
-	ShadowMap = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
-	ShadowMap2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
+	ShadowMap = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
+	ShadowMap2 = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
 
 	GlobalLight = -1;
 }
@@ -1272,13 +1272,13 @@ void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 	
 		if(randomsam)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "PixelSize", &float2_t(size / MLSet::WinSize.x, size / MLSet::WinSize.x));
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "NearFar", &MLSet::NearFar);
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "PixelSize", &float2_t(size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "NearFar", &float2_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR)));
 		}
 		else
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased, "PixelSize", &float2_t(size / MLSet::WinSize.x, size / MLSet::WinSize.x));
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased, "NearFar", &MLSet::NearFar);
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased, "PixelSize", &float2_t(size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased, "NearFar", &float2_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR)));
 		}
 
 	
@@ -1299,7 +1299,7 @@ void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 
 void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 {
-	MLSet::GetArrDownScale4x4(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::HDRSampleOffsets);
+	MLSet::GetArrDownScale4x4(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), MLSet::HDRSampleOffsets);
 
 	LPDIRECT3DSURFACE9 SurfSceneScale, BackBuf;
 

@@ -1,198 +1,198 @@
 
-#include <game/weather.h>
+#include <game/Weather.h>
 
-WeatherRndSnd::WeatherRndSnd()
+CWeatherRndSnd::CWeatherRndSnd()
 {
-	NextPlay = 0;
-	BVolume = 50;
-	EVolume = 90;
+	m_ulNextPlay = 0;
+	m_iVolumeB = 50;
+	m_iVolumeE = 90;
 
-	BPeriod = 1000;
-	EPeriod = 10000;
+	m_ulPeriodB = 1000;
+	m_ulPeriodE = 10000;
 
-	CurrPlay = -1;
-	Playing = false;
+	m_idCurrPlay = -1;
+	m_isPlaying = false;
 }
 
-WeatherRndSnd::~WeatherRndSnd()
+CWeatherRndSnd::~CWeatherRndSnd()
 {
-	Clear();
+	clear();
 }
 
-void WeatherRndSnd::Clear()
+void CWeatherRndSnd::clear()
 {
-	ResetOld();
+	resetOld();
 
-	for (int i = 0; i < ArrSnd.size(); ++i)
+	for (int i = 0; i < m_aArrSnds.size(); ++i)
 	{
-		if (ArrSnd[i].id >= 0)
+		if (m_aArrSnds[i].m_id >= 0)
 		{
-			SSCore_SndStop(ArrSnd[i].id);
-			SSCore_SndDelete(ArrSnd[i].id);
+			SSCore_SndStop(m_aArrSnds[i].m_id);
+			SSCore_SndDelete(m_aArrSnds[i].m_id);
 		}
 	}
-	ArrSnd.clear();
+	m_aArrSnds.clear();
 }
 
-void WeatherRndSnd::ResetOld()
+void CWeatherRndSnd::resetOld()
 {
-	for (int i = 0; i < CurrentSndIDs.size(); ++i)
+	for (int i = 0; i < m_aCurrSndIDs.size(); ++i)
 	{
-		if (CurrentSndIDs[i] >= 0)
-			SSCore_SndStop(CurrentSndIDs[i]);
+		if (m_aCurrSndIDs[i] >= 0)
+			SSCore_SndStop(m_aCurrSndIDs[i]);
 	}
-	CurrentSndIDs.clear();
+	m_aCurrSndIDs.clear();
 }
 
-void WeatherRndSnd::SetParamPlayVolume(int bvol, int evol)
+void CWeatherRndSnd::setParamPlayVolume(int iBVol, int iEVol)
 {
-	BVolume = bvol;
-	EVolume = evol;
+	m_iVolumeB = iBVol;
+	m_iVolumeE = iEVol;
 }
 
-void WeatherRndSnd::SetParamPlayPeriod(DWORD bper, DWORD eper)
+void CWeatherRndSnd::setParamPlayPeriod(DWORD ulBPer, DWORD ulEPer)
 {
-	BPeriod = bper;
-	EPeriod = eper;
+	m_ulPeriodB = ulBPer;
+	m_ulPeriodE = ulEPer;
 }
 
-void WeatherRndSnd::AddSound(const char* path)
+void CWeatherRndSnd::addSound(const char *szPath)
 {
 	bool isunic = true;
 	ID tmpid = -1;
-	for (int i = 0; i<ArrSnd.size(); i++)
+	for (int i = 0; i<m_aArrSnds.size(); i++)
 	{
-		if (stricmp(ArrSnd[i].path.c_str(), path) == 0)
+		if (stricmp(m_aArrSnds[i].m_sPath.c_str(), szPath) == 0)
 		{
 			isunic = false;
-			tmpid = ArrSnd[i].id;
+			tmpid = m_aArrSnds[i].m_id;
 			break;
 		}
 	}
 
 	if (isunic)
 	{
-		ID tmpid = SSCore_SndCreate2d(path);
-		ArrSnd.push_back(Snd(path, tmpid));
-		CurrentSndIDs.push_back(tmpid);
+		ID tmpid = SSCore_SndCreate2d(szPath);
+		m_aArrSnds.push_back(CSnd(szPath, tmpid));
+		m_aCurrSndIDs.push_back(tmpid);
 	}
 	else
 	{
-		CurrentSndIDs.push_back(tmpid);
+		m_aCurrSndIDs.push_back(tmpid);
 	}
 }
 
-void WeatherRndSnd::Update()
+void CWeatherRndSnd::update()
 {
-	if (!Playing)
+	if (!m_isPlaying)
 		return;
 
-	static const float * weather_snd_volume = GET_PCVAR_FLOAT("weather_snd_volume");
+	static const float * WEATHER_snd_volume = GET_PCVAR_FLOAT("WEATHER_snd_volume");
 
-	if (CurrentSndIDs.size() > 0 && (NextPlay == 0 || NextPlay < TimeGetMls(G_Timer_Render_Scene)))
+	if (m_aCurrSndIDs.size() > 0 && (m_ulNextPlay == 0 || m_ulNextPlay < TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER))))
 	{
-		int tmpkeysnd = rand() % (CurrentSndIDs.size());
-		if (CurrentSndIDs.size() > tmpkeysnd && CurrentSndIDs[tmpkeysnd] && CurrentSndIDs[tmpkeysnd] >= 0)
+		int tmpkeysnd = rand() % (m_aCurrSndIDs.size());
+		if (m_aCurrSndIDs.size() > tmpkeysnd && m_aCurrSndIDs[tmpkeysnd] && m_aCurrSndIDs[tmpkeysnd] >= 0)
 		{
-			CurrPlay = CurrentSndIDs[tmpkeysnd];
-			SSCore_SndPosCurrSet(CurrPlay, 0);
-			int tmprndvol = (rand() % (EVolume - BVolume)) + BVolume;
-			SSCore_SndVolumeSet(CurrPlay, (weather_snd_volume ? (float)tmprndvol * (*weather_snd_volume) : tmprndvol), SOUND_VOL_PCT);
-			SSCore_SndPlay(CurrPlay);
+			m_idCurrPlay = m_aCurrSndIDs[tmpkeysnd];
+			SSCore_SndPosCurrSet(m_idCurrPlay, 0);
+			int tmprndvol = (rand() % (m_iVolumeE - m_iVolumeB)) + m_iVolumeB;
+			SSCore_SndVolumeSet(m_idCurrPlay, (WEATHER_snd_volume ? (float)tmprndvol * (*WEATHER_snd_volume) : tmprndvol), SOUND_VOL_PCT);
+			SSCore_SndPlay(m_idCurrPlay);
 
-			DWORD tmprnd = (rand() % (EPeriod - BPeriod)) + BPeriod;
-			NextPlay = TimeGetMls(G_Timer_Render_Scene) + tmprnd + ((SSCore_SndLengthSecGet(CurrPlay) + 1) * 1000);
+			DWORD tmprnd = (rand() % (m_ulPeriodE - m_ulPeriodB)) + m_ulPeriodB;
+			m_ulNextPlay = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + tmprnd + ((SSCore_SndLengthSecGet(m_idCurrPlay) + 1) * 1000);
 		}
 	}
 }
 
-void WeatherRndSnd::Play()
+void CWeatherRndSnd::play()
 {
-	if (Playing)
+	if (m_isPlaying)
 		return;
 
-	Playing = true;
+	m_isPlaying = true;
 
-	if (CurrPlay >= 0 && SSCore_SndStateGet(CurrPlay) == SoundObjState::sos_pause)
-		SSCore_SndPlay(CurrPlay);
+	if (m_idCurrPlay >= 0 && SSCore_SndStateGet(m_idCurrPlay) == SoundObjState::sos_pause)
+		SSCore_SndPlay(m_idCurrPlay);
 }
 
-void WeatherRndSnd::Pause()
+void CWeatherRndSnd::pause()
 {
-	if (!Playing)
+	if (!m_isPlaying)
 		return;
 
-	Playing = false;
+	m_isPlaying = false;
 
-	if (CurrPlay >= 0 && SSCore_SndStateGet(CurrPlay) == SoundObjState::sos_play)
+	if (m_idCurrPlay >= 0 && SSCore_SndStateGet(m_idCurrPlay) == SoundObjState::sos_play)
 		SSCore_SndPlay(sos_pause);
 }
 
-bool WeatherRndSnd::IsPlaying()
+bool CWeatherRndSnd::getPlaying()
 {
-	return Playing;
+	return m_isPlaying;
 }
 
 //#############################################################################
 
-Weather::Weather()
+CWeather::CWeather()
 {
-	Playing = false;
-	OldSection = -1;
-	CurrSection = -1;
-	HasUpdate = false;
-	TimeRainVolSndLast = 0;
-	OldTimeMlsec = CurrTimeMlsec = 0;
-	LevelMaxY = 20.f;
+	m_isPlaying = false;
+	m_iSectionOld = -1;
+	m_iSectionCurr = -1;
+	m_hasUpdate = false;
+	m_ulTimeRainVolSndLast = 0;
+	m_ulTimeMlsecOld = m_ulTimeMlsecCurr = 0;
+	m_fLevelMaxY = 20.f;
 
-	EffIDRain = SPE_EffectGetByName("rain");
+	m_idEffRain = SPE_EffectGetByName("rain");
 
-	CountArrTrackPos = 0;
-	ArrTrackPos = 0;
-	if (EffIDRain >= 0)
+	m_iTrackPosCount = 0;
+	m_aTrackPos = 0;
+	if (m_idEffRain >= 0)
 	{
-		CountArrTrackPos = SPE_EmitterCountGet(EffIDRain,0);
-		ArrTrackPos = new float3[CountArrTrackPos];
+		m_iTrackPosCount = SPE_EmitterCountGet(m_idEffRain,0);
+		m_aTrackPos = new float3[m_iTrackPosCount];
 	}
 	else
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'rain'", gen_msg_location);
 	}
 
-	EffThunderbolt = SPE_EffectGetByName("thunderbolt");
-	if (EffThunderbolt < 0)
+	m_idEffThunderbolt = SPE_EffectGetByName("thunderbolt");
+	if (m_idEffThunderbolt < 0)
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'thunderbolt'", gen_msg_location);
 	}
-	TimeBoltNext = TimeBoltLast = 0;
+	m_ulTimeBoltNext = m_ulTimeBoltLast = 0;
 
-	LightThunderbolt = SML_LigthsCreatePoint(&float3(0, 0, 0), 200, &float3(1, 1, 1), false, true);
-	SML_LigthsSetEnable(LightThunderbolt, false);
-	SndRain = SSCore_SndCreate2d("nature\\rain.ogg",true);
-	SndThunder = SSCore_SndCreate2d("nature\\thunder.ogg");
+	m_idLightThunderbolt = SML_LigthsCreatePoint(&float3(0, 0, 0), 200, &float3(1, 1, 1), false, true);
+	SML_LigthsSetEnable(m_idLightThunderbolt, false);
+	m_idSndRain = SSCore_SndCreate2d("nature\\rain.ogg",true);
+	m_idSndThunder = SSCore_SndCreate2d("nature\\thunder.ogg");
 
-	RainVolume = 0;
+	m_fRainVolume = 0;
 }
 
-Weather::~Weather()
+CWeather::~CWeather()
 {
-	ArrTimeSection.clear();
-	SML_LigthsDeleteLight(LightThunderbolt);
-	SSCore_SndDelete(SndRain);
-	SSCore_SndDelete(SndThunder);
+	m_aTimeSections.clear();
+	SML_LigthsDeleteLight(m_idLightThunderbolt);
+	SSCore_SndDelete(m_idSndRain);
+	SSCore_SndDelete(m_idSndThunder);
 }
 
-void Weather::Load(const char* file)
+void CWeather::load(const char *szPath)
 {
-	if (file == 0)
+	if (szPath == 0)
 	{
-		ArrTimeSection.clear();
-		OldSection = CurrSection = -1;
-		OldTimeMlsec = CurrTimeMlsec = 0;
-		HasUpdate = false;
-		Playing = false;
-		RndSnd.Pause();
-		RndSnd.ResetOld();
+		m_aTimeSections.clear();
+		m_iSectionOld = m_iSectionCurr = -1;
+		m_ulTimeMlsecOld = m_ulTimeMlsecCurr = 0;
+		m_hasUpdate = false;
+		m_isPlaying = false;
+		m_RndSnd.pause();
+		m_RndSnd.resetOld();
 
 		SGCore_SkyBoxLoadTex(0);
 		SGCore_SkyBoxSetRot(0);
@@ -201,21 +201,21 @@ void Weather::Load(const char* file)
 		SGCore_SkyCloudsSetRot(0);
 
 		
-		SPE_EffectEnableSet(EffIDRain, false);
-		SSCore_SndStop(SndRain);
+		SPE_EffectEnableSet(m_idEffRain, false);
+		SSCore_SndStop(m_idSndRain);
 
-		SPE_EffectEnableSet(EffThunderbolt, false);
-		SML_LigthsSetEnable(LightThunderbolt, false);
-		SSCore_SndStop(SndThunder);
+		SPE_EffectEnableSet(m_idEffThunderbolt, false);
+		SML_LigthsSetEnable(m_idLightThunderbolt, false);
+		SSCore_SndStop(m_idSndThunder);
 
 		return;
 	}
 
-	ISXLConfig* config = Core_OpLConfig(file);
+	ISXLConfig* config = Core_OpLConfig(szPath);
 
 	if (!config->SectionExists("sections"))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", gen_msg_location, file);
+		reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", gen_msg_location, szPath);
 		mem_release_del(config);
 		return;
 	}
@@ -229,7 +229,7 @@ void Weather::Load(const char* file)
 
 		if (strlen(str) != 8)
 		{
-			reportf(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", gen_msg_location, str, file, "sections");
+			reportf(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", gen_msg_location, str, szPath, "sections");
 			mem_release_del(config);
 			return;
 		}
@@ -238,246 +238,246 @@ void Weather::Load(const char* file)
 		sprintf(tmpall, str);
 
 		char* tmpstr = strtok(tmpall, ":");
-		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, file, "sections");
+		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, szPath, "sections");
 		time = atoi(tmpstr) * 10000;
 
 		tmpstr = strtok(NULL, ":");
-		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, file, "sections");
+		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, szPath, "sections");
 		time += atoi(tmpstr) * 100;
 
 		tmpstr = strtok(NULL, ":");
-		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, file, "sections");
+		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, szPath, "sections");
 		time += atoi(tmpstr);
 
-		ArrTimeSection.push_back(TimeSection(time, config->GetKey("sections", str)));
+		m_aTimeSections.push_back(CTimeSection(time, config->GetKey("sections", str)));
 
 		int qwerty = 0;
 	}
 
-	Array<TimeSection> tmpts = ArrTimeSection;
-	ArrTimeSection.clear();
+	Array<CTimeSection> tmpts = m_aTimeSections;
+	m_aTimeSections.clear();
 	for (int i = 0, il = tmpts.size(); i < il; ++i)
 	{
 		int num = 0;
 		for (int k = 0, kl = tmpts.size(); k < kl; ++k)
 		{
-			if (i != k && tmpts[i].time > tmpts[k].time)
+			if (i != k && tmpts[i].m_iTime > tmpts[k].m_iTime)
 				++num;
 		}
 
-		ArrTimeSection[num] = tmpts[i];
+		m_aTimeSections[num] = tmpts[i];
 	}
 
 	tmpts.clear();
 
-	for (int i = 0, il = ArrTimeSection.size(); i < il; ++i)
+	for (int i = 0, il = m_aTimeSections.size(); i < il; ++i)
 	{
-		//reportf(0, "%d\n", ArrTimeSection[i].time);
+		//reportf(0, "%d\n", m_aTimeSections[i].time);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "sky_texture"))
-			sprintf(ArrTimeSection[i].Data.sky_tex, "%s", config->GetKey(ArrTimeSection[i].section, "sky_texture"));
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sky_texture"))
+			sprintf(m_aTimeSections[i].m_DataSection.m_szSkyTex, "%s", config->GetKey(m_aTimeSections[i].m_szSection, "sky_texture"));
 		else
-			WEATHER_CONFIG_LACKS_KEY("sky_texture", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("sky_texture", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "clouds_texture"))
-			sprintf(ArrTimeSection[i].Data.clouds_tex, "%s", config->GetKey(ArrTimeSection[i].section, "clouds_texture"));
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_texture"))
+			sprintf(m_aTimeSections[i].m_DataSection.m_szCloudsTex, "%s", config->GetKey(m_aTimeSections[i].m_szSection, "clouds_texture"));
 		else
-			WEATHER_CONFIG_LACKS_KEY("clouds_texture", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("clouds_texture", szPath, m_aTimeSections[i].m_szSection);
 
 
-		if (config->KeyExists(ArrTimeSection[i].section, "sun_texture"))
-			sprintf(ArrTimeSection[i].Data.sun_tex, "%s", config->GetKey(ArrTimeSection[i].section, "sun_texture"));
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sun_texture"))
+			sprintf(m_aTimeSections[i].m_DataSection.m_szSunTex, "%s", config->GetKey(m_aTimeSections[i].m_szSection, "sun_texture"));
 		else
-			WEATHER_CONFIG_LACKS_KEY("sun_texture", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("sun_texture", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "sun_pos"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sun_pos"))
 		{
-			const char* text_sp = config->GetKey(ArrTimeSection[i].section, "sun_pos");
+			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "sun_pos");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
 			char* tmpstr = strtok(text_sp2, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_pos", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sun_pos.x = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_pos", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSunPos.x = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_pos", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sun_pos.y = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_pos", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSunPos.y = atof(tmpstr);
 		}
 		else
-			WEATHER_CONFIG_LACKS_KEY("sun_pos", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("sun_pos", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "sky_rotation"))
-			ArrTimeSection[i].Data.sky_rotation = String(config->GetKey(ArrTimeSection[i].section, "sky_rotation")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sky_rotation"))
+			m_aTimeSections[i].m_DataSection.m_fSkyRotation = String(config->GetKey(m_aTimeSections[i].m_szSection, "sky_rotation")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("sky_rotation", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("sky_rotation", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "sky_color"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sky_color"))
 		{
-			const char* text_sp = config->GetKey(ArrTimeSection[i].section, "sky_color");
+			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "sky_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
 			char* tmpstr = strtok(text_sp2, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sky_color.x = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.x = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sky_color.y = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.y = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sky_color.z = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.z = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sky_color.w = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.w = atof(tmpstr);
 		}
 		else
-			WEATHER_CONFIG_LACKS_KEY("sky_color", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("sky_color", szPath, m_aTimeSections[i].m_szSection);
 
 
-		if (config->KeyExists(ArrTimeSection[i].section, "clouds_color"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_color"))
 		{
-			const char* text_sp = config->GetKey(ArrTimeSection[i].section, "clouds_color");
+			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "clouds_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
 			char* tmpstr = strtok(text_sp2, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.clouds_color.x = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.x = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.clouds_color.y = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.y = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.clouds_color.z = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.z = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.clouds_color.w = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.w = atof(tmpstr);
 		}
 		else
-			WEATHER_CONFIG_LACKS_KEY("clouds_color", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("clouds_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "clouds_rotate"))
-			ArrTimeSection[i].Data.clouds_rotate = String(config->GetKey(ArrTimeSection[i].section, "clouds_rotate")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_rotate"))
+			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = String(config->GetKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("clouds_rotate", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("clouds_rotate", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "clouds_transparency"))
-			ArrTimeSection[i].Data.clouds_transparency = String(config->GetKey(ArrTimeSection[i].section, "clouds_transparency")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_transparency"))
+			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = String(config->GetKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("clouds_transparency", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("clouds_transparency", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "clouds_speed"))
-			ArrTimeSection[i].Data.clouds_speed = String(config->GetKey(ArrTimeSection[i].section, "clouds_speed")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_speed"))
+			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = String(config->GetKey(m_aTimeSections[i].m_szSection, "clouds_speed")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("clouds_speed", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("clouds_speed", szPath, m_aTimeSections[i].m_szSection);
 
 
-		if (config->KeyExists(ArrTimeSection[i].section, "sun_color"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sun_color"))
 		{
-			const char* text_sp = config->GetKey(ArrTimeSection[i].section, "sun_color");
+			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "sun_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
 			char* tmpstr = strtok(text_sp2, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sun_color.x = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSunColor.x = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sun_color.y = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSunColor.y = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.sun_color.z = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vSunColor.z = atof(tmpstr);
 		}
 		else
-			WEATHER_CONFIG_LACKS_KEY("sun_color", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("sun_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "far"))
-			ArrTimeSection[i].Data.ffar = String(config->GetKey(ArrTimeSection[i].section, "far")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "far"))
+			m_aTimeSections[i].m_DataSection.m_fFar = String(config->GetKey(m_aTimeSections[i].m_szSection, "far")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("far", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("far", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "rain_density"))
-			ArrTimeSection[i].Data.rain_density = String(config->GetKey(ArrTimeSection[i].section, "rain_density")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "rain_density"))
+			m_aTimeSections[i].m_DataSection.m_fRainDensity = String(config->GetKey(m_aTimeSections[i].m_szSection, "rain_density")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("rain_density", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("rain_density", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "rain_color"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "rain_color"))
 		{
-			const char* text_sp = config->GetKey(ArrTimeSection[i].section, "rain_color");
+			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "rain_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
 			char* tmpstr = strtok(text_sp2, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.rain_color.x = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.x = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.rain_color.y = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.y = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.rain_color.z = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.z = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.rain_color.w = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.w = atof(tmpstr);
 		}
 		else
-			WEATHER_CONFIG_LACKS_KEY("rain_color", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("rain_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "fog_density"))
-			ArrTimeSection[i].Data.fog_density = String(config->GetKey(ArrTimeSection[i].section, "fog_density")).ToDouble();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "fog_density"))
+			m_aTimeSections[i].m_DataSection.m_fFogDensity = String(config->GetKey(m_aTimeSections[i].m_szSection, "fog_density")).ToDouble();
 		else
-			WEATHER_CONFIG_LACKS_KEY("fog_density", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("fog_density", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "fog_color"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "fog_color"))
 		{
-			const char* text_sp = config->GetKey(ArrTimeSection[i].section, "fog_color");
+			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "fog_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
 			char* tmpstr = strtok(text_sp2, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.fog_color.x = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vFogColor.x = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.fog_color.y = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vFogColor.y = atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
-			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", file, ArrTimeSection[i].section);
-			ArrTimeSection[i].Data.fog_color.z = atof(tmpstr);
+			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", szPath, m_aTimeSections[i].m_szSection);
+			m_aTimeSections[i].m_DataSection.m_vFogColor.z = atof(tmpstr);
 		}
 		else
-			WEATHER_CONFIG_LACKS_KEY("fog_color", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("fog_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "thunderbolt"))
-			ArrTimeSection[i].Data.thunderbolt = String(config->GetKey(ArrTimeSection[i].section, "thunderbolt")).ToBool();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "thunderbolt"))
+			m_aTimeSections[i].m_DataSection.m_hasThunderbolt = String(config->GetKey(m_aTimeSections[i].m_szSection, "thunderbolt")).ToBool();
 		else
-			WEATHER_CONFIG_LACKS_KEY("thunderbolt", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("thunderbolt", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "thunder_period"))
-			ArrTimeSection[i].Data.thunder_period = String(config->GetKey(ArrTimeSection[i].section, "thunder_period")).ToUnsLongInt();
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "thunder_period"))
+			m_aTimeSections[i].m_DataSection.m_ulThunderPeriod = String(config->GetKey(m_aTimeSections[i].m_szSection, "thunder_period")).ToUnsLongInt();
 		else
-			WEATHER_CONFIG_LACKS_KEY("thunder_period", file, ArrTimeSection[i].section);
+			WEATHER_CONFIG_LACKS_KEY("thunder_period", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(ArrTimeSection[i].section, "env_ambient"))
+		if (config->KeyExists(m_aTimeSections[i].m_szSection, "env_ambient"))
 		{
-			const char* text_env = config->GetKey(ArrTimeSection[i].section, "env_ambient");
+			const char* text_env = config->GetKey(m_aTimeSections[i].m_szSection, "env_ambient");
 
 			if (!config->SectionExists(text_env))
 			{
-				reportf(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nfile '%s' \nsection '%s'", gen_msg_location, text_env, file, ArrTimeSection[i].section);
+				reportf(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nszPath '%s' \nsection '%s'", gen_msg_location, text_env, szPath, m_aTimeSections[i].m_szSection);
 				return;
 			}
 
@@ -488,15 +488,15 @@ void Weather::Load(const char* file)
 				strcpy(text_sp2, text_sp);
 
 				char* tmpstr = strtok(text_sp2, ",");
-				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "period", file, text_env);
-				ArrTimeSection[i].Data.Snds.period_b = atol(tmpstr);
+				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "period", szPath, text_env);
+				m_aTimeSections[i].m_DataSection.Snds.period_b = atol(tmpstr);
 
 				tmpstr = strtok(NULL, ",");
-				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "period", file, text_env);
-				ArrTimeSection[i].Data.Snds.period_e = atol(tmpstr);
+				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "period", szPath, text_env);
+				m_aTimeSections[i].m_DataSection.Snds.period_e = atol(tmpstr);
 			}
 			else
-				WEATHER_CONFIG_LACKS_KEY("period", file, text_env);
+				WEATHER_CONFIG_LACKS_KEY("period", szPath, text_env);
 
 			if (config->KeyExists(text_env, "volume"))
 			{
@@ -505,15 +505,15 @@ void Weather::Load(const char* file)
 				strcpy(text_sp2, text_sp);
 
 				char* tmpstr = strtok(text_sp2, ",");
-				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "volume", file, text_env);
-				ArrTimeSection[i].Data.Snds.volume_b = atol(tmpstr);
+				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "volume", szPath, text_env);
+				m_aTimeSections[i].m_DataSection.Snds.volume_b = atol(tmpstr);
 
 				tmpstr = strtok(NULL, ",");
-				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "volume", file, text_env);
-				ArrTimeSection[i].Data.Snds.volume_e = atol(tmpstr);
+				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "volume", szPath, text_env);
+				m_aTimeSections[i].m_DataSection.Snds.volume_e = atol(tmpstr);
 			}
 			else
-				WEATHER_CONFIG_LACKS_KEY("volume", file, text_env);
+				WEATHER_CONFIG_LACKS_KEY("volume", szPath, text_env);
 
 			if (config->KeyExists(text_env, "sounds"))
 			{
@@ -522,42 +522,42 @@ void Weather::Load(const char* file)
 				strcpy(text_sp2, text_sp);
 
 				char* tmpstr = strtok(text_sp2, ",");
-				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sounds", file, text_env);
-				ArrTimeSection[i].Data.Snds.arr_path.push_back(tmpstr);
+				WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sounds", szPath, text_env);
+				m_aTimeSections[i].m_DataSection.Snds.arr_path.push_back(tmpstr);
 
 				while (tmpstr != NULL)
 				{
 					tmpstr = strtok(NULL, " ,");
 
 					if (tmpstr)
-						ArrTimeSection[i].Data.Snds.arr_path.push_back(tmpstr);
+						m_aTimeSections[i].m_DataSection.Snds.arr_path.push_back(tmpstr);
 				}
 
 			}
 			else
-				WEATHER_CONFIG_LACKS_KEY("sounds", file, text_env);
+				WEATHER_CONFIG_LACKS_KEY("sounds", szPath, text_env);
 		}
 	}
 
 	mem_release_del(config);
 }
 
-void Weather::Update()
+void CWeather::update()
 {
-	if (Playing)
-		RndSnd.Update();
+	if (m_isPlaying)
+		m_RndSnd.update();
 
 	ID gid = SML_LigthsGetGlobal();
 
-	static const float * weather_snd_volume = GET_PCVAR_FLOAT("weather_snd_volume");
+	static const float * WEATHER_snd_volume = GET_PCVAR_FLOAT("WEATHER_snd_volume");
 
 	//если есть дождь то обновл€ем его позицию и громкость
-	if (CurrSection >= 0 && ArrTimeSection.size() > CurrSection && ArrTimeSection[CurrSection].Data.rain_density > 0.f)
+	if (m_iSectionCurr >= 0 && m_aTimeSections.size() > m_iSectionCurr && m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
 	{
 		static float3 campos;
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &campos);
-		SPE_EffectPosSet(EffIDRain, &float3(campos.x, campos.y - WEATHER_RAIN_MIN_Y_OBSERVER, campos.z));
-		UpdateRainSound();
+		SPE_EffectPosSet(m_idEffRain, &float3(campos.x, campos.y - WEATHER_RAIN_MIN_Y_OBSERVER, campos.z));
+		updateRainSound();
 	}
 
 	static float * main_rain_density = (float*)GET_PCVAR_FLOAT("main_rain_density");
@@ -566,13 +566,13 @@ void Weather::Update()
 	if (main_rain_density && (*main_rain_density) != main_rain_density_old)
 	{
 		main_rain_density_old = *main_rain_density;
-		if (ArrTimeSection[CurrSection].Data.rain_density > 0.f)
-			SPE_EmitterSet(EffIDRain, 0, ReCreateCount, main_rain_density_old * ArrTimeSection[CurrSection].Data.rain_density * float(WEATHER_RAIN_RECREATE_COUNT));
+		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
+			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, main_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
 	}
 
 	//получаем текущую игровую дату
 	tm g_tm;
-	time_t g_time = Core_TimeUnixCurrGet(G_Timer_Game);
+	time_t g_time = Core_TimeUnixCurrGet(Core_RIntGet(G_RI_INT_TIMER_GAME));
 	localtime_s(&g_tm, &g_time);
 
 	//цифровое представление времени суток
@@ -583,248 +583,248 @@ void Weather::Update()
 	int curr_section = -1;
 
 	//находим секцию дл€ текущего времени суток
-	for (int i = 0, il = ArrTimeSection.size(); i < il; ++i)
+	for (int i = 0, il = m_aTimeSections.size(); i < il; ++i)
 	{
-		if (ltime >= ArrTimeSection[i].time)
+		if (ltime >= m_aTimeSections[i].m_iTime)
 			curr_section = i;
 	}
 
 	//если только что обновл€емс€ либо сменилась секци€
-	if (curr_section >= 0 && curr_section != CurrSection)
+	if (curr_section >= 0 && curr_section != m_iSectionCurr)
 	{
-		OldSection = CurrSection;
-		OldTimeMlsec = CurrTimeMlsec;
-		if (OldSection < 0)
+		m_iSectionOld = m_iSectionCurr;
+		m_ulTimeMlsecOld = m_ulTimeMlsecCurr;
+		if (m_iSectionOld < 0)
 		{
-			OldSection = curr_section;
-			OldTimeMlsec = ltime_mlsec;
+			m_iSectionOld = curr_section;
+			m_ulTimeMlsecOld = ltime_mlsec;
 		}
 		
-		CurrSection = curr_section;
-		CurrTimeMlsec = ltime_mlsec;
+		m_iSectionCurr = curr_section;
+		m_ulTimeMlsecCurr = ltime_mlsec;
 
-		SGCore_SkyBoxChangeTex(ArrTimeSection[CurrSection].Data.sky_tex);
-		SGCore_SkyBoxSetRot(ArrTimeSection[CurrSection].Data.sky_rotation);
-		SGCore_SkyCloudsChangeTex(ArrTimeSection[CurrSection].Data.clouds_tex);
-		SGCore_SkyCloudsSetSpeed(ArrTimeSection[CurrSection].Data.clouds_speed);
-		SGCore_SkyCloudsSetRot(ArrTimeSection[CurrSection].Data.clouds_rotate);
+		SGCore_SkyBoxChangeTex(m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSkyTex);
+		SGCore_SkyBoxSetRot(m_aTimeSections[m_iSectionCurr].m_DataSection.m_fSkyRotation);
+		SGCore_SkyCloudsChangeTex(m_aTimeSections[m_iSectionCurr].m_DataSection.m_szCloudsTex);
+		SGCore_SkyCloudsSetSpeed(m_aTimeSections[m_iSectionCurr].m_DataSection.m_fCloudsSpeed);
+		SGCore_SkyCloudsSetRot(m_aTimeSections[m_iSectionCurr].m_DataSection.m_fCloudsRotate);
 		
-		if (ArrTimeSection[CurrSection].Data.sun_tex[0] != '0')
-			SPP_ChangeTexSun(ArrTimeSection[CurrSection].Data.sun_tex);
+		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex[0] != '0')
+			SPP_ChangeTexSun(m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex);
 		
 		if (gid >= 0)
-			SML_LigthsSetEnable(gid, ArrTimeSection[CurrSection].Data.sun_tex[0] != '0');
+			SML_LigthsSetEnable(gid, m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex[0] != '0');
 
-		HasUpdate = true;
+		m_hasUpdate = true;
 
 		//если плотность дожд€ больше нул€ тогда включаем дождь
-		if (ArrTimeSection[CurrSection].Data.rain_density > 0.f)
+		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
 		{
-			SPE_EmitterSet(EffIDRain, 0, Color, ArrTimeSection[CurrSection].Data.rain_color);
-			SPE_EmitterSet(EffIDRain, 0, ReCreateCount, main_rain_density_old * ArrTimeSection[CurrSection].Data.rain_density * float(WEATHER_RAIN_RECREATE_COUNT));
-			SPE_EffectEnableSet(EffIDRain, true);
+			SPE_EmitterSet(m_idEffRain, 0, Color, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vRainColor);
+			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, main_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
+			SPE_EffectEnableSet(m_idEffRain, true);
 
-			SSCore_SndPosCurrSet(SndRain, 0);
-			SSCore_SndVolumeSet(SndRain, 0, SOUND_VOL_PCT);
+			SSCore_SndPosCurrSet(m_idSndRain, 0);
+			SSCore_SndVolumeSet(m_idSndRain, 0, SOUND_VOL_PCT);
 
-			if (Playing)
-				SSCore_SndPlay(SndRain);
+			if (m_isPlaying)
+				SSCore_SndPlay(m_idSndRain);
 			else
-				SSCore_SndPause(SndRain);
+				SSCore_SndPause(m_idSndRain);
 		}
 		//иначе выключаем
 		else
 		{
-			SPE_EffectEnableSet(EffIDRain, false);
-			SSCore_SndStop(SndRain);
+			SPE_EffectEnableSet(m_idEffRain, false);
+			SSCore_SndStop(m_idSndRain);
 		}
 
 		//очищаем старые звуки
-		RndSnd.ResetOld();
+		m_RndSnd.resetOld();
 
 		//если есть пути до новых случайных звуков
-		if (ArrTimeSection[CurrSection].Data.Snds.arr_path.size() > 0)
+		if (m_aTimeSections[m_iSectionCurr].m_DataSection.Snds.arr_path.size() > 0)
 		{
 			//загружаем эти звуки
-			DataSection::SndRnd Snds = ArrTimeSection[CurrSection].Data.Snds;
+			CDataSection::CSndRnd Snds = m_aTimeSections[m_iSectionCurr].m_DataSection.Snds;
 
 			for (int i = 0, il = Snds.arr_path.size(); i < il; ++i)
 			{
-				RndSnd.AddSound(Snds.arr_path[i].c_str());
-				RndSnd.SetParamPlayPeriod(Snds.period_b, Snds.period_e);
-				RndSnd.SetParamPlayVolume(Snds.volume_b, Snds.volume_e);
+				m_RndSnd.addSound(Snds.arr_path[i].c_str());
+				m_RndSnd.setParamPlayPeriod(Snds.period_b, Snds.period_e);
+				m_RndSnd.setParamPlayVolume(Snds.volume_b, Snds.volume_e);
 			}
 		}
 	}
 
 	
 	
-	if (HasUpdate)
+	if (m_hasUpdate)
 	{
 		//расчет коэфициента интерпол€ции
 		float lerp_factor = 1.f;
 			
-		if (CurrTimeMlsec - OldTimeMlsec > 0)
-			lerp_factor = float(ltime_mlsec - CurrTimeMlsec) / float(CurrTimeMlsec - OldTimeMlsec);
+		if (m_ulTimeMlsecCurr - m_ulTimeMlsecOld > 0)
+			lerp_factor = float(ltime_mlsec - m_ulTimeMlsecCurr) / float(m_ulTimeMlsecCurr - m_ulTimeMlsecOld);
 
 		//если коэфициент интерпол€ции больше либо равен 1 то значит интерпол€ци€ больше не нужна на текущей секции
 		if (lerp_factor >= 1.f)
-			HasUpdate = false;
+			m_hasUpdate = false;
 
 		//цвет скайбокса
 		float4_t tmp_sky_color;
-		tmp_sky_color.x = lerpf(ArrTimeSection[OldSection].Data.sky_color.x, ArrTimeSection[CurrSection].Data.sky_color.x, lerp_factor);
-		tmp_sky_color.y = lerpf(ArrTimeSection[OldSection].Data.sky_color.y, ArrTimeSection[CurrSection].Data.sky_color.y, lerp_factor);
-		tmp_sky_color.z = lerpf(ArrTimeSection[OldSection].Data.sky_color.z, ArrTimeSection[CurrSection].Data.sky_color.z, lerp_factor);
-		tmp_sky_color.w = lerpf(ArrTimeSection[OldSection].Data.sky_color.w, ArrTimeSection[CurrSection].Data.sky_color.w, lerp_factor);
+		tmp_sky_color.x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSkyColor.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSkyColor.x, lerp_factor);
+		tmp_sky_color.y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSkyColor.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSkyColor.y, lerp_factor);
+		tmp_sky_color.z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSkyColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSkyColor.z, lerp_factor);
+		tmp_sky_color.w = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSkyColor.w, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSkyColor.w, lerp_factor);
 		SGCore_SkyBoxSetColor(&tmp_sky_color);
 
 		//цвет облаков
 		float4_t tmp_clouds_color;
-		tmp_clouds_color.x = lerpf(ArrTimeSection[OldSection].Data.clouds_color.x, ArrTimeSection[CurrSection].Data.clouds_color.x, lerp_factor);
-		tmp_clouds_color.y = lerpf(ArrTimeSection[OldSection].Data.clouds_color.y, ArrTimeSection[CurrSection].Data.clouds_color.y, lerp_factor);
-		tmp_clouds_color.z = lerpf(ArrTimeSection[OldSection].Data.clouds_color.z, ArrTimeSection[CurrSection].Data.clouds_color.z, lerp_factor);
-		tmp_clouds_color.w = lerpf(ArrTimeSection[OldSection].Data.clouds_color.w, ArrTimeSection[CurrSection].Data.clouds_color.w, lerp_factor);
+		tmp_clouds_color.x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vCloudsColor.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vCloudsColor.x, lerp_factor);
+		tmp_clouds_color.y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vCloudsColor.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vCloudsColor.y, lerp_factor);
+		tmp_clouds_color.z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vCloudsColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vCloudsColor.z, lerp_factor);
+		tmp_clouds_color.w = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vCloudsColor.w, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vCloudsColor.w, lerp_factor);
 		SGCore_SkyCloudsSetColor(&tmp_sky_color);
 
 		//прозрачность облаков
-		float tmp_clouds_transparency = lerpf(ArrTimeSection[OldSection].Data.clouds_transparency, ArrTimeSection[CurrSection].Data.clouds_transparency, lerp_factor);
+		float tmp_clouds_transparency = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_fCloudsTransparency, m_aTimeSections[m_iSectionCurr].m_DataSection.m_fCloudsTransparency, lerp_factor);
 		SGCore_SkyCloudsSetAlpha(tmp_clouds_transparency);
 
 		if (gid >= 0)
 		{
 			//цвет солнца
 			float3 tmp_scolor;
-			tmp_scolor.x = lerpf(ArrTimeSection[OldSection].Data.sun_color.x, ArrTimeSection[CurrSection].Data.sun_color.x, lerp_factor);
-			tmp_scolor.y = lerpf(ArrTimeSection[OldSection].Data.sun_color.y, ArrTimeSection[CurrSection].Data.sun_color.y, lerp_factor);
-			tmp_scolor.z = lerpf(ArrTimeSection[OldSection].Data.sun_color.z, ArrTimeSection[CurrSection].Data.sun_color.z, lerp_factor);
+			tmp_scolor.x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunColor.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunColor.x, lerp_factor);
+			tmp_scolor.y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunColor.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunColor.y, lerp_factor);
+			tmp_scolor.z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunColor.z, lerp_factor);
 			SML_LigthsSetColor(gid, &tmp_scolor);
 
 			//позици€ солнца
 			float3 tmp_spos;
-			tmp_spos.x = lerpf(ArrTimeSection[OldSection].Data.sun_pos.x, ArrTimeSection[CurrSection].Data.sun_pos.x, lerp_factor);
-			tmp_spos.y = lerpf(ArrTimeSection[OldSection].Data.sun_pos.y, ArrTimeSection[CurrSection].Data.sun_pos.y, lerp_factor);
+			tmp_spos.x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunPos.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunPos.x, lerp_factor);
+			tmp_spos.y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunPos.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunPos.y, lerp_factor);
 			tmp_spos.z = 0;
 			SML_LigthsSetPos(gid, &tmp_spos, false);
 		}
 
 		//дальность видимости
-		float tmpfar = lerpf(ArrTimeSection[OldSection].Data.ffar, ArrTimeSection[CurrSection].Data.ffar, lerp_factor);
+		float tmpfar = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_fFar, m_aTimeSections[m_iSectionCurr].m_DataSection.m_fFar, lerp_factor);
 		Core_0SetCVarFloat("p_far", tmpfar);
 
 		//плотность тумана
 		static float * pp_fog_density = (float*)GET_PCVAR_FLOAT("pp_fog_density");
 		if (pp_fog_density)
-			*pp_fog_density = lerpf(ArrTimeSection[OldSection].Data.fog_density, ArrTimeSection[CurrSection].Data.fog_density, lerp_factor);
+			*pp_fog_density = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_fFogDensity, m_aTimeSections[m_iSectionCurr].m_DataSection.m_fFogDensity, lerp_factor);
 
 		//цвет тумана
 		static const int * e_pp_fog_color = GET_PCVAR_INT("e_pp_fog_color");
 		if (e_pp_fog_color && *e_pp_fog_color)
 		{
 			float3_t* tmp_fog_color2 = (float3_t*)(*e_pp_fog_color);
-			tmp_fog_color2->x = lerpf(ArrTimeSection[OldSection].Data.fog_color.x, ArrTimeSection[CurrSection].Data.fog_color.x, lerp_factor);
-			tmp_fog_color2->y = lerpf(ArrTimeSection[OldSection].Data.fog_color.y, ArrTimeSection[CurrSection].Data.fog_color.y, lerp_factor);
-			tmp_fog_color2->z = lerpf(ArrTimeSection[OldSection].Data.fog_color.z, ArrTimeSection[CurrSection].Data.fog_color.z, lerp_factor);
+			tmp_fog_color2->x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vFogColor.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vFogColor.x, lerp_factor);
+			tmp_fog_color2->y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vFogColor.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vFogColor.y, lerp_factor);
+			tmp_fog_color2->z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vFogColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vFogColor.z, lerp_factor);
 		}
 		else
 			reportf(REPORT_MSG_LEVEL_WARRNING, "cvar e_pp_fog_color is not init");
 	}
 
 	//если в текущей секции есть частота молнии
-	if (CurrSection >= 0 && ArrTimeSection[CurrSection].Data.thunder_period > 0)
+	if (m_iSectionCurr >= 0 && m_aTimeSections[m_iSectionCurr].m_DataSection.m_ulThunderPeriod > 0)
 	{
 		//если следующее врем€ грозы и предыдущее нулевые, тогда генерируем следующее врем€
-		if (TimeBoltNext == 0 && TimeBoltLast == 0)
-			TimeBoltNext = TimeGetMls(G_Timer_Render_Scene) + (rand() % ArrTimeSection[CurrSection].Data.thunder_period);
+		if (m_ulTimeBoltNext == 0 && m_ulTimeBoltLast == 0)
+			m_ulTimeBoltNext = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + (rand() % m_aTimeSections[m_iSectionCurr].m_DataSection.m_ulThunderPeriod);
 		//иначе если предыдущее врем€ грозы нулевое и врем€ следующей грозы наступило
-		else if (TimeBoltLast == 0 && TimeGetMls(G_Timer_Render_Scene) >= TimeBoltNext)
+		else if (m_ulTimeBoltLast == 0 && TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) >= m_ulTimeBoltNext)
 		{
 			static const bool * main_thunderbolt = GET_PCVAR_BOOL("main_thunderbolt");
 			//если предусмотерна молни€ то показываем
-			if (ArrTimeSection[CurrSection].Data.thunderbolt && (!main_thunderbolt || (main_thunderbolt && *main_thunderbolt)))
+			if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_hasThunderbolt && (!main_thunderbolt || (main_thunderbolt && *main_thunderbolt)))
 			{
 				static float3 campos;
 				Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_POSITION, &campos);
 
-				BoltMin = float3_t(campos.x - WEATHER_THUNDERBOLT_WIDTH * 0.5f, LevelMaxY, campos.z - WEATHER_THUNDERBOLT_LENGTH * 0.5f);
-				BoltMax = float3_t(campos.x + WEATHER_THUNDERBOLT_WIDTH * 0.5f, LevelMaxY + WEATHER_THUNDERBOLT_HEIGHT, campos.z + WEATHER_THUNDERBOLT_LENGTH * 0.5f);
+				m_vBoltMin = float3_t(campos.x - WEATHER_THUNDERBOLT_WIDTH * 0.5f, m_fLevelMaxY, campos.z - WEATHER_THUNDERBOLT_LENGTH * 0.5f);
+				m_vBoltMax = float3_t(campos.x + WEATHER_THUNDERBOLT_WIDTH * 0.5f, m_fLevelMaxY + WEATHER_THUNDERBOLT_HEIGHT, campos.z + WEATHER_THUNDERBOLT_LENGTH * 0.5f);
 
-				float3 tpos = float3(randf(BoltMin.x, BoltMax.x), randf(BoltMin.y, BoltMax.y), randf(BoltMin.z, BoltMax.z));
-				SPE_EffectPosSet(EffThunderbolt, &tpos);
-				SPE_EffectEnableSet(EffThunderbolt, true);
-				SML_LigthsSetPos(LightThunderbolt, &tpos, false);
-				SML_LigthsSetEnable(LightThunderbolt, true);
-				TimeBoltLight = TimeGetMls(G_Timer_Render_Scene);
+				float3 tpos = float3(randf(m_vBoltMin.x, m_vBoltMax.x), randf(m_vBoltMin.y, m_vBoltMax.y), randf(m_vBoltMin.z, m_vBoltMax.z));
+				SPE_EffectPosSet(m_idEffThunderbolt, &tpos);
+				SPE_EffectEnableSet(m_idEffThunderbolt, true);
+				SML_LigthsSetPos(m_idLightThunderbolt, &tpos, false);
+				SML_LigthsSetEnable(m_idLightThunderbolt, true);
+				m_ulTimeBoltLight = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 			}
 			else
 			{
-				SSCore_SndPosCurrSet(SndThunder, 0);
-				SSCore_SndVolumeSet(SndThunder, (weather_snd_volume ? (*weather_snd_volume) : 1.f) * 100.f, SOUND_VOL_PCT);
+				SSCore_SndPosCurrSet(m_idSndThunder, 0);
+				SSCore_SndVolumeSet(m_idSndThunder, (WEATHER_snd_volume ? (*WEATHER_snd_volume) : 1.f) * 100.f, SOUND_VOL_PCT);
 
-				if (Playing)
-					SSCore_SndPlay(SndThunder);
+				if (m_isPlaying)
+					SSCore_SndPlay(m_idSndThunder);
 				else
-					SSCore_SndPause(SndThunder);
+					SSCore_SndPause(m_idSndThunder);
 			}
 
-			TimeBoltNext = 0;	//обнул€ем следующее врем€
+			m_ulTimeBoltNext = 0;	//обнул€ем следующее врем€
 
 			//и устанавливаем прошлому времени грозы текущее значение времени
-			TimeBoltLast = TimeGetMls(G_Timer_Render_Scene);
+			m_ulTimeBoltLast = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 			
 		}
 		//иначе если предыдцщее врем€ грозы не нулевое и оно уже было достаточно давно чтобы дать возможность генерации следующей грозы
-		else if (TimeBoltLast > 0 && TimeGetMls(G_Timer_Render_Scene) - TimeBoltLast >= ArrTimeSection[CurrSection].Data.thunder_period)
-			TimeBoltLast = 0;
+		else if (m_ulTimeBoltLast > 0 && TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_ulTimeBoltLast >= m_aTimeSections[m_iSectionCurr].m_DataSection.m_ulThunderPeriod)
+			m_ulTimeBoltLast = 0;
 
 		//если врем€ света от молнии не нулевое и прошло достаточно времени чтобы выключить свет
-		if (TimeBoltLight > 0 && TimeGetMls(G_Timer_Render_Scene) - TimeBoltLight > WEATHER_THUNDERBOLT_LIGHT_TIME)
+		if (m_ulTimeBoltLight > 0 && TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_ulTimeBoltLight > WEATHER_THUNDERBOLT_LIGHT_TIME)
 		{
-			TimeBoltLight = 0;
-			SML_LigthsSetEnable(LightThunderbolt, false);
+			m_ulTimeBoltLight = 0;
+			SML_LigthsSetEnable(m_idLightThunderbolt, false);
 
 			//и заодно проиграть звук молнии
-			SSCore_SndPosCurrSet(SndThunder, 0);
-			SSCore_SndVolumeSet(SndThunder, clampf(RainVolume*2.f*100.f,0.f,100.f), SOUND_VOL_PCT);
+			SSCore_SndPosCurrSet(m_idSndThunder, 0);
+			SSCore_SndVolumeSet(m_idSndThunder, clampf(m_fRainVolume*2.f*100.f,0.f,100.f), SOUND_VOL_PCT);
 			
-			if (Playing)
-				SSCore_SndPlay(SndThunder);
+			if (m_isPlaying)
+				SSCore_SndPlay(m_idSndThunder);
 			else
-				SSCore_SndPause(SndThunder);
+				SSCore_SndPause(m_idSndThunder);
 		}
 	}
 	else
 	{
-		TimeBoltLast = 0;
-		TimeBoltNext = 0;
-		TimeBoltLight = 0;
+		m_ulTimeBoltLast = 0;
+		m_ulTimeBoltNext = 0;
+		m_ulTimeBoltLight = 0;
 	}
 }
 
-void Weather::UpdateRainSound()
+void CWeather::updateRainSound()
 {
-	if (EffIDRain < 0 || !Playing)
+	if (m_idEffRain < 0 || !m_isPlaying)
 		return;
 
-	static const float * weather_snd_volume = GET_PCVAR_FLOAT("weather_snd_volume");
+	static const float * WEATHER_snd_volume = GET_PCVAR_FLOAT("WEATHER_snd_volume");
 
 	//если пришло врем€ обновл€ть громкость
-	if (TimeRainVolSndLast == 0 || TimeGetMls(G_Timer_Render_Scene) - TimeRainVolSndLast >= WEATHER_RAIN_VOL_SND_UPDATE)
-		TimeRainVolSndLast = TimeGetMls(G_Timer_Render_Scene);
+	if (m_ulTimeRainVolSndLast == 0 || TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_ulTimeRainVolSndLast >= WEATHER_RAIN_VOL_SND_UPDATE)
+		m_ulTimeRainVolSndLast = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	else
 		return;
 
 	//если внезапно количество оставл€ющих след стало больше чем выделено
-	if (SPE_EmitterTrackCountGet(EffIDRain, 0) > CountArrTrackPos)
+	if (SPE_EmitterTrackCountGet(m_idEffRain, 0) > m_iTrackPosCount)
 	{
-		mem_delete(ArrTrackPos);
-		CountArrTrackPos = SPE_EmitterCountGet(EffIDRain, 0);
-		ArrTrackPos = new float3[CountArrTrackPos];
+		mem_delete(m_aTrackPos);
+		m_iTrackPosCount = SPE_EmitterCountGet(m_idEffRain, 0);
+		m_aTrackPos = new float3[m_iTrackPosCount];
 	}
 
 	//получаем массив следов
-	int tmpcount = SPE_EmitterTrackPosGet(EffIDRain, 0, &ArrTrackPos, CountArrTrackPos);
-	RainVolume = 0;
+	int tmpcount = SPE_EmitterTrackPosGet(m_idEffRain, 0, &m_aTrackPos, m_iTrackPosCount);
+	m_fRainVolume = 0;
 	float biger = 0.f;
 
 	static float3 campos;
@@ -832,53 +832,53 @@ void Weather::UpdateRainSound()
 
 	for (int i = 0; i < tmpcount; ++i)
 	{
-		float dist2 = 1.f - SMVector3Distance(campos, ArrTrackPos[i]) / WEATHER_RAIN_VOL_SND_DIST;
-		RainVolume += clampf(dist2, 0.f, 1.f);
+		float dist2 = 1.f - SMVector3Distance(campos, m_aTrackPos[i]) / WEATHER_RAIN_VOL_SND_DIST;
+		m_fRainVolume += clampf(dist2, 0.f, 1.f);
 	}
 
-	RainVolume /= tmpcount / 4;
-	SSCore_SndVolumeSet(SndRain, (weather_snd_volume ? (*weather_snd_volume) : 1.f) *  RainVolume * 100.f, SOUND_VOL_PCT);
+	m_fRainVolume /= tmpcount / 4;
+	SSCore_SndVolumeSet(m_idSndRain, (WEATHER_snd_volume ? (*WEATHER_snd_volume) : 1.f) *  m_fRainVolume * 100.f, SOUND_VOL_PCT);
 }
 
-float Weather::GetCurrRainDensity()
+float CWeather::getCurrRainDensity()
 {
-	if (CurrSection >= 0 && ArrTimeSection.size() > CurrSection)
-		return ArrTimeSection[CurrSection].Data.rain_density;
+	if (m_iSectionCurr >= 0 && m_aTimeSections.size() > m_iSectionCurr)
+		return m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity;
 	
 	return 0.f;
 }
 
-void Weather::SndPlay()
+void CWeather::sndPlay()
 {
-	if (Playing)
+	if (m_isPlaying)
 		return;
 
-	Playing = true;
-	RndSnd.Play();
+	m_isPlaying = true;
+	m_RndSnd.play();
 
-	if (SndRain >= 0 && SSCore_SndStateGet(SndRain) == SoundObjState::sos_pause)
-		SSCore_SndPlay(SndRain);
+	if (m_idSndRain >= 0 && SSCore_SndStateGet(m_idSndRain) == SoundObjState::sos_pause)
+		SSCore_SndPlay(m_idSndRain);
 
-	if (SndThunder >= 0 && SSCore_SndStateGet(SndThunder) == SoundObjState::sos_pause)
-		SSCore_SndPlay(SndThunder);
+	if (m_idSndThunder >= 0 && SSCore_SndStateGet(m_idSndThunder) == SoundObjState::sos_pause)
+		SSCore_SndPlay(m_idSndThunder);
 }
 
-void Weather::SndPause()
+void CWeather::sndPause()
 {
-	if (!Playing)
+	if (!m_isPlaying)
 		return;
 
-	Playing = false;
-	RndSnd.Pause();
+	m_isPlaying = false;
+	m_RndSnd.pause();
 
-	if (SndRain >= 0 && SSCore_SndStateGet(SndRain) == SoundObjState::sos_play)
-		SSCore_SndPause(SndRain);
+	if (m_idSndRain >= 0 && SSCore_SndStateGet(m_idSndRain) == SoundObjState::sos_play)
+		SSCore_SndPause(m_idSndRain);
 
-	if (SndThunder >= 0 && SSCore_SndStateGet(SndThunder) == SoundObjState::sos_play)
-		SSCore_SndPause(SndThunder);
+	if (m_idSndThunder >= 0 && SSCore_SndStateGet(m_idSndThunder) == SoundObjState::sos_play)
+		SSCore_SndPause(m_idSndThunder);
 }
 
-bool Weather::SndIsPlaying()
+bool CWeather::sndGetPlaying()
 {
-	return Playing;
+	return m_isPlaying;
 }

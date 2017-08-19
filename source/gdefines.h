@@ -220,4 +220,5 @@ inline void def_report(int level, const char* format, ...)
 }
 
 #endif
+
 #endif

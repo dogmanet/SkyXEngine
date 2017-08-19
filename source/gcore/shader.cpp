@@ -306,9 +306,9 @@ bool ShaderManager::FileExists(const char* path)
 	StrParsePathName(path, tmpspath, tmpname);
 
 	if (tmpspath[0] != 0)
-		sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, path);
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, path);
 	else
-		sprintf(tmppath, "%s%s", StdPath, path);
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), path);
 
 	return Core_0FileExists(tmppath);
 }
@@ -334,9 +334,9 @@ ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* nam
 
 			ShaderVS* shader = new ShaderVS();
 			if (tmpspath[0] != 0)
-				sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, path);
+				sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, path);
 			else
-				sprintf(tmppath, "%s%s", StdPath, path);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), path);
 			LoadVertexShader(tmppath, shader, macro);
 			sprintf(shader->Name, "%s", name);
 			sprintf(shader->Path, "%s", path);
@@ -366,7 +366,7 @@ ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* nam
 			tmpspath[0] = 0;
 			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
 			StrParsePathName(path, tmpspath, tmpname);
-			sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, path);
+			sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, path);
 			ShaderPS* shader = /*mem_new(ShaderPS);//*/new ShaderPS();
 			LoadPixelShader(tmppath, shader, macro);
 			sprintf(shader->Name, "%s", name);
@@ -446,9 +446,9 @@ void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
 
 			ShaderVS* shader = /*mem_new(ShaderVS);//*/new ShaderVS();
 			if (tmpspath[0] != 0)
-				sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, ArrVS[id]->Path);
+				sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, ArrVS[id]->Path);
 			else
-				sprintf(tmppath, "%s%s", StdPath, ArrVS[id]->Path);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), ArrVS[id]->Path);
 
 			LoadVertexShader(tmppath, shader, macro);
 			sprintf(shader->Name, "%s", ArrVS[id]->Name);
@@ -474,9 +474,9 @@ void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
 
 			ShaderPS* shader = /*mem_new(ShaderVS);//*/new ShaderPS();
 			if (tmpspath[0] != 0)
-				sprintf(tmppath, "%s%s\\%s", StdPath, tmpspath, ArrPS[id]->Path);
+				sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, ArrPS[id]->Path);
 			else
-				sprintf(tmppath, "%s%s", StdPath, ArrPS[id]->Path);
+				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), ArrPS[id]->Path);
 
 			LoadPixelShader(tmppath, shader, macro);
 

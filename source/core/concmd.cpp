@@ -453,9 +453,6 @@ void ConsoleRecv(void*)
 }
 
 
-bool CommandConnect();
-void CommandDisconnect();
-
 int hOut;
 FILE * fOut = NULL;
 

@@ -132,6 +132,7 @@
     <ResourceCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

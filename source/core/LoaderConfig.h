@@ -1,7 +1,12 @@
+
 #ifndef LOADER_CONFIG_H
 #define LOADER_CONFIG_H
 
-#pragma once
+#include "sxcore.h"
+#include <gdefines.h>
+#include <common/String.h>
+#include <common/Array.h>
+#include <common/AssotiativeArray.h>
 
 class ConfigString : public String
 {

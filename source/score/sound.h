@@ -95,9 +95,6 @@ public:
 
 	void Init(HWND hwnd);
 
-	inline void StdPathSet(const char* path);
-	inline void StdPathGet(char* path);
-
 	struct Sound
 	{
 		Sound();
@@ -248,8 +245,6 @@ private:
 	AssotiativeArray<AAStringNR, ID, false, 16> AArr2dInst;
 	AssotiativeArray<AAStringNR, ID, false, 16> AArr3dInst;
 	
-	char StdPath[SOUND_MAX_SIZE_STDPATH];
-
 	IDirectSound8* DeviceSound;		//звуковое устройство
 	IDirectSoundBuffer* DSPrimary;	//первичный буфер
 	int SoundsPlayCount;			//количество проигрываемых звуков

@@ -25,6 +25,7 @@ See the license in LICENSE
 #define __sxsound
 
 #include <gdefines.h>
+#include <GRegisterIndex.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
@@ -40,7 +41,6 @@ SX_LIB_API void SSCore_Dbg_Set(report_func rf);	//!< установить нов
 SX_LIB_API void SSCore_0Create(	//!< инициализация подсистемы
 	const char* name,			//!< имя
 	HWND hwnd,
-	const char* std_path_sound,	//!< путь до папки с моделями (статическая геометрия и растительность)
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
@@ -99,8 +99,6 @@ enum SoundObjState
 
 //#############################################################################
 
-SX_LIB_API void SSCore_StdPathSet(const char* path);	//!< установить путь относительно которого будут загружатсья файлы
-SX_LIB_API void SSCore_StdPathGet(char* path);			//!< в path записывает текущий путь относительно которого происходит загрузка файлов
 SX_LIB_API void SSCore_Clear();	//!< очистка всего списка звуков (полное их удаление)
 
 //! обновление состояний всех звуков

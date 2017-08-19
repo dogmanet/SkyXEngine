@@ -4,6 +4,7 @@
 
 #include "sxcore.h"
 #include <common/AssotiativeArray.h>
+#include <common/String.h>
 
 //! Типы кваров
 enum CVAR_TYPE

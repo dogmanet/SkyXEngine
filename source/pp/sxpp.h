@@ -44,8 +44,6 @@ SX_LIB_API void SPP_Dbg_Set(report_func rf);	//!< установка функц�
 //! инициализация подсистемы
 SX_LIB_API void SPP_0Create(
 	const char* name,			//имя подсистемы
-	IDirect3DDevice9* device,	//dx устройство
-	float2_t* winsize,			//размеры backbuffer (окна рендера)
 	bool is_unic				//должно ли быть имя подсистемы уникальным
 	);
 

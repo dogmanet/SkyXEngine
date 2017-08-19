@@ -28,8 +28,6 @@ public:
 
 	IDirect3DTexture9* GetTexture(ID id);//получить текстуру по id
 
-	inline void SetStdPath(const char* path){ StdPath = path; }
-	inline void GetStdPath(char* path){ if (path)strcpy(path, StdPath.c_str()); }
 private:
 
 	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
@@ -69,7 +67,6 @@ private:
 		
 	};
 
-	String StdPath;
 	Array<TLPath*> Arr;
 	int CurrFirstFree;
 
