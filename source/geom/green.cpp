@@ -875,7 +875,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 	}
 	else
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING,"not found static geometry in level!!!");
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING,"not found static geometry in level!!!");
 	}
 
 	return -1;
@@ -1555,7 +1555,7 @@ char* Green::GetGreenName(ID id)
 	return 0;
 }
 
-inline long Green::GetGreenCountGen(ID id)
+long Green::GetGreenCountGen(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->AllCountGreen;
@@ -1563,7 +1563,7 @@ inline long Green::GetGreenCountGen(ID id)
 	return -1;
 }
 
-inline long Green::GetGreenCountPoly(ID id)
+long Green::GetGreenCountPoly(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->ArrLod[0])
 		return ArrModels[id]->ArrLod[0]->model->AllIndexCount / 3;
@@ -1571,7 +1571,7 @@ inline long Green::GetGreenCountPoly(ID id)
 	return -1;
 }
 
-inline int Green::GetGreenTypeCountGen(ID id)
+int Green::GetGreenTypeCountGen(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->TypeGreen;
@@ -1579,7 +1579,7 @@ inline int Green::GetGreenTypeCountGen(ID id)
 	return -1;
 }
 
-inline const char* Green::GetGreenModel(ID id)
+const char* Green::GetGreenModel(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->ArrLod[0]->path.c_str();
@@ -1587,7 +1587,7 @@ inline const char* Green::GetGreenModel(ID id)
 	return 0;
 }
 
-inline const char* Green::GetGreenLod1(ID id)
+const char* Green::GetGreenLod1(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->ArrLod[1])
 		return ArrModels[id]->ArrLod[1]->path.c_str();
@@ -1595,7 +1595,7 @@ inline const char* Green::GetGreenLod1(ID id)
 	return 0;
 }
 
-inline const char* Green::GetGreenLod2(ID id)
+const char* Green::GetGreenLod2(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->ArrLod[2])
 		return ArrModels[id]->ArrLod[2]->path.c_str();
@@ -1603,7 +1603,7 @@ inline const char* Green::GetGreenLod2(ID id)
 	return 0;
 }
 
-inline const char* Green::GetGreenMask(ID id)
+const char* Green::GetGreenMask(ID id)
 {
 	if (id < ArrModels.size())
 		return ArrModels[id]->MaskName.c_str();
@@ -1611,7 +1611,7 @@ inline const char* Green::GetGreenMask(ID id)
 	return 0;
 }
 
-inline const char* Green::GetGreenNav(ID id)
+const char* Green::GetGreenNav(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->NavigateMesh)
 		return ArrModels[id]->NavigateMesh->pathname.c_str();

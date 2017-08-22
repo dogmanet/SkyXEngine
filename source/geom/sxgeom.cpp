@@ -6,21 +6,31 @@ See the license in LICENSE
 
 #define SXGEOM_VERSION 1
 
+#include "sxgeom.h"
+
+#include "static_geom.h"
+#include "green.h"
+
+bool StaticGeom::UseSortFrontToBackSplits = true;
+bool StaticGeom::UseSortFrontToBackModels = true;
+IDirect3DDevice9* StaticGeom::DXDevice = 0;
+float StaticGeom::DistForLod = 200.f;
+
+int Green::CurrentFreqGrass = 100;
+float2_t Green::DistLods = float2_t(50, 100);
+float Green::BeginEndLessening = 30;
+bool Green::UseSortFrontToBackSplits = false;
+IDirect3DDevice9* Green::DXDevice = 0;
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
-
-#include <geom\\sxgeom.h>
-
-#include <geom\\static_geom.cpp>
-#include <geom\\green.cpp>
-#include <geom\\geom_data.cpp>
 
 StaticGeom* GeometryObj = 0;
 Green* GreenObj = 0;
 
-#define GEOM_PRECOND(retval) if(!GeometryObj || !GreenObj){reportf(-1, "%s - sxgeom is not init", gen_msg_location); return retval;}
+#define GEOM_PRECOND(retval) if(!GeometryObj || !GreenObj){g_fnReportf(-1, "%s - sxgeom is not init", gen_msg_location); return retval;}
 
 long SGeom_0GetVersion()
 {
@@ -29,7 +39,7 @@ long SGeom_0GetVersion()
 
 void SGeom_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 void SGeom_0Create(const char* name, bool is_unic)
@@ -42,7 +52,7 @@ void SGeom_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				reportf(-1, "%s - none unic name, sxgeom", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxgeom", gen_msg_location);
 			}
 			else
 			{
@@ -61,7 +71,7 @@ void SGeom_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		reportf(-1, "%s - not init argument [name], sxgeom", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxgeom", gen_msg_location);
 }
 
 void SGeom_AKill()

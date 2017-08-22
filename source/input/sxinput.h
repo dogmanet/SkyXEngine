@@ -19,6 +19,13 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxcore_d.lib")
+#else
+#pragma comment(lib, "sxcore.lib")
+#endif
+#include <core\\sxcore.h>
+
 /*! \defgroup sxinput_code_keyboard Коды клавиш клавиатуры
  \ingroup sxinput
 @{
@@ -255,6 +262,7 @@ struct InMess
 
 //#############################################################################
 
+#ifdef SX_EXE
 //! коды букв и цифр распределенные по массивам
 namespace InputSymbol
 {
@@ -275,6 +283,7 @@ namespace InputSymbol
 	char NumbersStr[10]				= {'1','2','3','4','5','6','7','8','9','0'};
 	//!@}
 };
+#endif
 
 //#############################################################################
 

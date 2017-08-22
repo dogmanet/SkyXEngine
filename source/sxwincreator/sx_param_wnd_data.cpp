@@ -1126,25 +1126,25 @@ void LoadFile(const char* path)
 {
 	FILE * fp = fopen(path, "rb");
 
-	ISXLConfig* tmpconfig = Core_OpLConfig(path);
+	ISXConfig* tmpconfig = Core_OpConfig(path);
 
 	char CaptionElement[256];
 	CaptionElement[0] = 0;
 
 	char classname[256];
-	sprintf(classname,"%s",tmpconfig->GetKey("JobWindow", "SysClassName"));
+	sprintf(classname,"%s",tmpconfig->getKey("JobWindow", "SysClassName"));
 	
-	sprintf(SXMainWndElem::NameJobWnd, "%s", tmpconfig->GetKey("JobWindow", "Name"));
-	sprintf(CaptionElement, "%s", tmpconfig->GetKey("JobWindow", "CaptionElement"));
+	sprintf(SXMainWndElem::NameJobWnd, "%s", tmpconfig->getKey("JobWindow", "Name"));
+	sprintf(CaptionElement, "%s", tmpconfig->getKey("JobWindow", "CaptionElement"));
 
 	SXMainWndElem::JobMainWnd->SetText(CaptionElement);
 	RECT GClientRect;
 	long Width,Height;
 	
-	sscanf(tmpconfig->GetKey("JobWindow", "left"), "%d", &GClientRect.left);
-	sscanf(tmpconfig->GetKey("JobWindow", "top"), "%d", &GClientRect.top);
-	sscanf(tmpconfig->GetKey("JobWindow", "Width"), "%d", &Width);
-	sscanf(tmpconfig->GetKey("JobWindow", "Height"), "%d", &Height);
+	sscanf(tmpconfig->getKey("JobWindow", "left"), "%d", &GClientRect.left);
+	sscanf(tmpconfig->getKey("JobWindow", "top"), "%d", &GClientRect.top);
+	sscanf(tmpconfig->getKey("JobWindow", "Width"), "%d", &Width);
+	sscanf(tmpconfig->getKey("JobWindow", "Height"), "%d", &Height);
 
 	char FontName[256];
 	long WidthFont,HeightFont,WeightFont;
@@ -1157,37 +1157,37 @@ void LoadFile(const char* path)
 	DWORD ColorText,ColorTextBK,ColorBK;
 	BOOL TransparentTextBK;
 
-	sscanf(tmpconfig->GetKey("JobWindow", "ColorBK"), "%d", &ColorBK);
+	sscanf(tmpconfig->getKey("JobWindow", "ColorBK"), "%d", &ColorBK);
 	SXMainWndElem::JobMainWnd->SetColorBrush(ColorBK);
 
 	BOOL MenuWindow;
-	sscanf(tmpconfig->GetKey("JobWindow", "MenuWindow"), "%d", &MenuWindow);
+	sscanf(tmpconfig->getKey("JobWindow", "MenuWindow"), "%d", &MenuWindow);
 	SXMainWndElem::CheckBoxParamWinMenu->SetCheck(MenuWindow ? SXGUI_CHECKBOX_CHECKED : SXGUI_CHECKBOX_UNCHECKED);
 	InvalidateRect(SXMainWndElem::CheckBoxParamWinMenu->GetHWND(),0,1);
 	SXUpdateParam::SetMenuWindow();
 
 	BOOL HintVisible;
-	sscanf(tmpconfig->GetKey("JobWindow", "HintVisible"), "%d", &HintVisible);
+	sscanf(tmpconfig->getKey("JobWindow", "HintVisible"), "%d", &HintVisible);
 	SXMainWndElem::JobMainWnd->ShowHint(HintVisible);
 	char HintText[1024];
 	HintText[0] = 0;
-	sprintf(HintText, "%s", tmpconfig->GetKey("JobWindow", "HintText"));
+	sprintf(HintText, "%s", tmpconfig->getKey("JobWindow", "HintText"));
 	SXMainWndElem::JobMainWnd->SetHintText(HintText);
 
 	BOOL Visible;
-	sscanf(tmpconfig->GetKey("JobWindow", "Visible"), "%d", &Visible);
+	sscanf(tmpconfig->getKey("JobWindow", "Visible"), "%d", &Visible);
 	SXMainWndElem::JobMainWnd->Visible(Visible);
 	BOOL Enable;
-	sscanf(tmpconfig->GetKey("JobWindow", "Enable"), "%d", &Enable);
+	sscanf(tmpconfig->getKey("JobWindow", "Enable"), "%d", &Enable);
 	SXMainWndElem::JobMainWnd->Enable(Enable);
 
 	int CountObject = 0;
-	WORD CountSave = tmpconfig->GetSectionCount() - 1;
+	WORD CountSave = tmpconfig->getSectionCount() - 1;
 		for(int i=0;i<CountSave;i++)
 		{
 			char sectname[64];
 			sprintf(sectname, "elem_%d", i);
-			if (!tmpconfig->SectionExists(sectname))
+			if (!tmpconfig->sectionExists(sectname))
 				continue;
 
 			char CaptionElement[256];
@@ -1200,11 +1200,11 @@ void LoadFile(const char* path)
 			//считываем sys class, sx class, caption
 			//{
 
-			sprintf(Object->SysClassName, "%s", tmpconfig->GetKey(sectname, "SysClassName"));
-			sprintf(Object->SXClassName, "%s", tmpconfig->GetKey(sectname, "SXClassName"));
-			sprintf(Object->Name, "%s", tmpconfig->GetKey(sectname, "Name"));
-			if (tmpconfig->KeyExists(sectname, "CaptionElement"))
-				sprintf(CaptionElement, "%s", tmpconfig->GetKey(sectname, "CaptionElement"));
+			sprintf(Object->SysClassName, "%s", tmpconfig->getKey(sectname, "SysClassName"));
+			sprintf(Object->SXClassName, "%s", tmpconfig->getKey(sectname, "SXClassName"));
+			sprintf(Object->Name, "%s", tmpconfig->getKey(sectname, "Name"));
+			if (tmpconfig->keyExists(sectname, "CaptionElement"))
+				sprintf(CaptionElement, "%s", tmpconfig->getKey(sectname, "CaptionElement"));
 			//}
 
 			//считываем позицию и размеры
@@ -1212,10 +1212,10 @@ void LoadFile(const char* path)
 			memset(&GClientRect,0,sizeof(RECT));
 			Width = Height = 0;
 
-			sscanf(tmpconfig->GetKey(sectname, "left"), "%d", &GClientRect.left);
-			sscanf(tmpconfig->GetKey(sectname, "top"), "%d", &GClientRect.top);
-			sscanf(tmpconfig->GetKey(sectname, "Width"), "%d", &Width);
-			sscanf(tmpconfig->GetKey(sectname, "Height"), "%d", &Height);
+			sscanf(tmpconfig->getKey(sectname, "left"), "%d", &GClientRect.left);
+			sscanf(tmpconfig->getKey(sectname, "top"), "%d", &GClientRect.top);
+			sscanf(tmpconfig->getKey(sectname, "Width"), "%d", &Width);
+			sscanf(tmpconfig->getKey(sectname, "Height"), "%d", &Height);
 
 			GClientRect.right = Width + GClientRect.left;
 			GClientRect.bottom = Height + GClientRect.top;
@@ -1337,7 +1337,7 @@ void LoadFile(const char* path)
 					strcmp(Object->SXClassName,"SXGUIButton") != 0
 					)
 				{
-					sprintf(FontName, "%s", tmpconfig->GetKey(sectname, "FontName"));
+					sprintf(FontName, "%s", tmpconfig->getKey(sectname, "FontName"));
 
 						//если первый символ конец строки то используем системный шрифт
 						if(FontName[0] == 0)
@@ -1346,13 +1346,13 @@ void LoadFile(const char* path)
 						}
 						else
 						{
-							sscanf(tmpconfig->GetKey(sectname, "WidthFont"), "%d", &WidthFont);
-							sscanf(tmpconfig->GetKey(sectname, "HeightFont"), "%d", &HeightFont);
-							sscanf(tmpconfig->GetKey(sectname, "WeightFont"), "%d", &WeightFont);
+							sscanf(tmpconfig->getKey(sectname, "WidthFont"), "%d", &WidthFont);
+							sscanf(tmpconfig->getKey(sectname, "HeightFont"), "%d", &HeightFont);
+							sscanf(tmpconfig->getKey(sectname, "WeightFont"), "%d", &WeightFont);
 
-							sscanf(tmpconfig->GetKey(sectname, "Italic"), "%d", &Italic);
-							sscanf(tmpconfig->GetKey(sectname, "Underline"), "%d", &Underline);
-							sscanf(tmpconfig->GetKey(sectname, "StrikeOut"), "%d", &StrikeOut);
+							sscanf(tmpconfig->getKey(sectname, "Italic"), "%d", &Italic);
+							sscanf(tmpconfig->getKey(sectname, "Underline"), "%d", &Underline);
+							sscanf(tmpconfig->getKey(sectname, "StrikeOut"), "%d", &StrikeOut);
 
 							Object->Object->SetFont(FontName,HeightFont,WidthFont,WeightFont,Italic,Underline,StrikeOut);
 						}
@@ -1375,9 +1375,9 @@ void LoadFile(const char* path)
 					strcmp(Object->SXClassName,"SXGUIBaseWnd") != 0
 					)
 				{
-					sscanf(tmpconfig->GetKey(sectname, "ColorText"), "%d", &ColorText);
-					sscanf(tmpconfig->GetKey(sectname, "ColorTextBK"), "%d", &ColorTextBK);
-					sscanf(tmpconfig->GetKey(sectname, "TransparentTextBK"), "%d", &TransparentTextBK);
+					sscanf(tmpconfig->getKey(sectname, "ColorText"), "%d", &ColorText);
+					sscanf(tmpconfig->getKey(sectname, "ColorTextBK"), "%d", &ColorTextBK);
+					sscanf(tmpconfig->getKey(sectname, "TransparentTextBK"), "%d", &TransparentTextBK);
 
 					Object->Object->SetColorText(ColorText);
 					Object->Object->SetColorTextBk(ColorTextBK);
@@ -1397,24 +1397,24 @@ void LoadFile(const char* path)
 					strcmp(Object->SXClassName,"SXGUIButtonImg")
 					)
 				{
-					sscanf(tmpconfig->GetKey(sectname, "ColorBK"), "%d", &ColorBK);
+					sscanf(tmpconfig->getKey(sectname, "ColorBK"), "%d", &ColorBK);
 					Object->Object->SetColorBrush(ColorBK);
 				}
 			//}
 
 			BOOL HintVisible;
-			sscanf(tmpconfig->GetKey(sectname, "HintVisible"), "%d", &HintVisible);
+			sscanf(tmpconfig->getKey(sectname, "HintVisible"), "%d", &HintVisible);
 			Object->Object->ShowHint(HintVisible);
 			char HintText[1024];
 			HintText[0] = 0;
-			sprintf(HintText, "%s", tmpconfig->GetKey(sectname, "HintText"));
+			sprintf(HintText, "%s", tmpconfig->getKey(sectname, "HintText"));
 			Object->Object->SetHintText(HintText);
 
 			BOOL Visible;
-			sscanf(tmpconfig->GetKey(sectname, "Visible"), "%d", &Visible);
+			sscanf(tmpconfig->getKey(sectname, "Visible"), "%d", &Visible);
 			Object->Object->Visible(Visible);
 			BOOL Enable;
-			sscanf(tmpconfig->GetKey(sectname, "Enable"), "%d", &Enable);
+			sscanf(tmpconfig->getKey(sectname, "Enable"), "%d", &Enable);
 			Object->Object->Enable(Enable);
 
 				if(strcmp(Object->SXClassName,"SXGUIButtonImg") == 0)
@@ -1422,7 +1422,7 @@ void LoadFile(const char* path)
 					char PathForImg[1024];
 					PathForImg[0] = 0;
 
-					sprintf(PathForImg, "%s", tmpconfig->GetKey(sectname, "PathForImg"));
+					sprintf(PathForImg, "%s", tmpconfig->getKey(sectname, "PathForImg"));
 					ISXGUIButtonImg* tmpImgButton = dynamic_cast<ISXGUIButtonImg*>(Object->Object);
 					tmpImgButton->ReInitImage(PathForImg);
 				}

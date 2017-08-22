@@ -1,5 +1,5 @@
 
-#include <mtllight\\reflection.h>
+#include "reflection.h"
 
 Reflection::Reflection()
 {
@@ -58,12 +58,12 @@ void Reflection::SetIDArr(ID id, int cube, ID idarr)
 	IDArr[id][cube] = idarr;
 }
 
-inline int Reflection::GetCountIDArrs()
+int Reflection::GetCountIDArrs()
 {
 	return IDArr.size();
 }
 
-inline ID Reflection::GetIDArr(ID id, int cube)
+ID Reflection::GetIDArr(ID id, int cube)
 {
 	if (!(cube >= 0 && cube < 6))
 		return -1;
@@ -162,7 +162,7 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 {
 	if (!plane)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - sxmtllight [reflection]: plane is NULL", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: plane is NULL", gen_msg_location);
 		return;
 	}
 
@@ -221,7 +221,7 @@ void Reflection::PostRenderRefPlane()
 	}
 }
 
-inline IDirect3DTexture9* Reflection::GetRefPlaneTex()
+IDirect3DTexture9* Reflection::GetRefPlaneTex()
 {
 	return TextureReflect;
 }
@@ -242,7 +242,7 @@ void Reflection::BeginRenderRefCube(float3_t* center)
 {
 	if (!center)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - sxmtllight [reflection]: position center is NULL", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: position center is NULL", gen_msg_location);
 		return;
 	}
 
@@ -405,7 +405,7 @@ void Reflection::NullingCountUpdate()
 	CountUpdate = 0;
 }
 
-inline IDirect3DCubeTexture9* Reflection::GetRefCubeTex()
+IDirect3DCubeTexture9* Reflection::GetRefCubeTex()
 {
 	return TextureCubeReflect;
 }

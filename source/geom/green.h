@@ -2,8 +2,17 @@
 #ifndef __green
 #define __green
 
+#include <gdefines.h>
+#include <common\\string.h>
 #include <common\array.h>
-#include <common\\string_api.cpp>
+#include <common\SXMath.h>
+
+#include <d3d9.h>
+#include <gcore\\sxgcore.h>
+#include "static_geom.h"
+#include "sxgeom.h"
+
+extern report_func g_fnReportf;
 
 #define GREEN_COUNT_TYPE_SEGMENTATION 4
 #define GREEN_COUNT_LOD 3
@@ -14,13 +23,13 @@
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
 }
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
 if (!(id_model < ArrModels.size() && ArrModels[id_model]))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", gen_msg_location, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", gen_msg_location, id_model); \
 }
 
 class Green
@@ -66,16 +75,16 @@ public:
 	void GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex);
 	void GPURenderObject(DWORD timeDelta, float3* viewpos, ID id, ID split, ID idobj, ID id_tex);
 
-	inline ID GetCountGreen();
-	inline char* GetGreenName(ID id);
-	inline long GetGreenCountGen(ID id);
-	inline long GetGreenCountPoly(ID id);
-	inline int GetGreenTypeCountGen(ID id);
-	inline const char* GetGreenModel(ID id);
-	inline const char* GetGreenLod1(ID id);
-	inline const char* GetGreenLod2(ID id);
-	inline const char* GetGreenMask(ID id);
-	inline const char* GetGreenNav(ID id);
+	ID GetCountGreen();
+	char* GetGreenName(ID id);
+	long GetGreenCountGen(ID id);
+	long GetGreenCountPoly(ID id);
+	int GetGreenTypeCountGen(ID id);
+	const char* GetGreenModel(ID id);
+	const char* GetGreenLod1(ID id);
+	const char* GetGreenLod2(ID id);
+	const char* GetGreenMask(ID id);
+	const char* GetGreenNav(ID id);
 	void SetGreenLod(ID id, int lod, const char* pathname);
 	void SetGreenNav(ID id, const char* pathname);
 
@@ -204,10 +213,6 @@ protected:
 	DWORD jCountIndex;
 };
 
-int Green::CurrentFreqGrass = 100;
-float2_t Green::DistLods = float2_t(50, 100);
-float Green::BeginEndLessening = 30;
-bool Green::UseSortFrontToBackSplits = false;
-IDirect3DDevice9* Green::DXDevice = 0;
+
 
 #endif

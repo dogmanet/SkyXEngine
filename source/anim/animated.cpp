@@ -1374,12 +1374,12 @@ void Animation::Play(const char * name, UINT iFadeTime, UINT slot) // name: Anim
 	}
 	if(slot >= BLEND_MAX)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
+		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
 		return;
 	}
 	if(!m_mSeqIds.KeyExists(name))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to play animation \"%s\"\n", name);
+		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to play animation \"%s\"\n", name);
 		return;
 	}
 	UINT sid = m_mSeqIds[name];
@@ -1659,7 +1659,7 @@ void Animation::Assembly()
 				++sCur;
 				--i;
 				//report error
-				reportf(REPORT_MSG_LEVEL_WARRNING, "Skeleton hierarchy incompatible");
+				reportf(REPORT_MSG_LEVEL_WARNING, "Skeleton hierarchy incompatible");
 				break;
 			}
 		}
@@ -2096,7 +2096,7 @@ void AnimationManager::Update(int thread)
 {
 	if(thread >= m_iThreadNum)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "Requested thread %d but only %d threads allowed\n", thread, m_iThreadNum);
+		reportf(REPORT_MSG_LEVEL_WARNING, "Requested thread %d but only %d threads allowed\n", thread, m_iThreadNum);
 		return;
 	}
 	for(uint32_t i = thread, l = m_pAnimatedList.size(); i < l; i += m_iThreadNum)

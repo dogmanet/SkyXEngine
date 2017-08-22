@@ -1,4 +1,5 @@
 
+#include "Bound.h"
 
 void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IDirect3DDevice9 * pDevice,UINT iSideCount)
 {
@@ -174,7 +175,7 @@ void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,D
 
 //////////////////////////////////
 
-inline bool InPosition2D(float3* min,float3* max,float3* pos)
+bool InPosition2D(float3* min,float3* max,float3* pos)
 {
 		if((max->x >= pos->x && min->x <= pos->x) && (max->z >= pos->z && min->z <= pos->z))
 			return true;
@@ -188,7 +189,7 @@ inline bool InPosition2D(float3* min,float3* max,float3* pos)
 			return false;
 }
 
-inline bool InPositionAbs2D(float3* min,float3* max,float3* pos)
+bool InPositionAbs2D(float3* min,float3* max,float3* pos)
 {
 		if((max->x > pos->x && min->x < pos->x) && (max->z > pos->z && min->z < pos->z))
 			return true;
@@ -197,7 +198,7 @@ inline bool InPositionAbs2D(float3* min,float3* max,float3* pos)
 }
 
 
-inline int CountPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
+int CountPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
 {
 	int Count = 0;
 
@@ -211,7 +212,7 @@ inline int CountPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,f
 	return Count;
 }
 
-inline int CountPositionPointsAbs2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
+int CountPositionPointsAbs2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
 {
 	int Count = 0;
 
@@ -226,7 +227,7 @@ inline int CountPositionPointsAbs2D(float3* min,float3* max,float3* p1,float3* p
 }
 
 
-inline bool InPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
+bool InPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
 {
 		if(CountPositionPointsAbs2D(min,max,p1,p2,p3) >= 1)	
 			return true;
@@ -238,7 +239,7 @@ inline bool InPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,flo
 
 ///////////////////////////////////
 
-inline bool InPosition3D(float3* min,float3* max,float3* pos)
+bool InPosition3D(float3* min,float3* max,float3* pos)
 {
 		if((max->x >= pos->x && min->x <= pos->x) && (max->y >= pos->y && min->y <= pos->y) && (max->z >= pos->z && min->z <= pos->z))
 			return true;
@@ -254,7 +255,7 @@ inline bool InPosition3D(float3* min,float3* max,float3* pos)
 			return false;
 }
 
-inline bool InPositionAbs3D(float3* min,float3* max,float3* pos)
+bool InPositionAbs3D(float3* min,float3* max,float3* pos)
 {
 		if((max->x > pos->x && min->x < pos->x) && (max->y > pos->y && min->y < pos->y) && (max->z > pos->z && min->z < pos->z))
 			return true;
@@ -263,7 +264,7 @@ inline bool InPositionAbs3D(float3* min,float3* max,float3* pos)
 }
 
 
-inline int CountPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
+int CountPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
 {
 	int Count = 0;
 
@@ -277,7 +278,7 @@ inline int CountPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,f
 	return Count;
 }
 
-inline int CountPositionPointsAbs3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
+int CountPositionPointsAbs3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
 {
 	int Count = 0;
 
@@ -292,7 +293,7 @@ inline int CountPositionPointsAbs3D(float3* min,float3* max,float3* p1,float3* p
 }
 
 
-inline bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
+bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3)
 {
 		if(CountPositionPointsAbs3D(min,max,p1,p2,p3) >= 1)	
 			return true;
@@ -580,44 +581,297 @@ void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect
 	(*bbmesh)->UnlockVertexBuffer();
 }
 
-void OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
+
+
+
+float4x4* SXTransObject::CalcWorld()
 {
-	uint16_t* pdwRemap = new uint16_t[numFaces];
-	D3DXOptimizeFaces(ib, numFaces, numVerts, FALSE, (DWORD*)pdwRemap);
-
-	uint16_t* pCopyIB = new uint16_t[numFaces * 3];
-	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(uint16_t));
-
-	for (int i = 0; i<numFaces; ++i)
-	{
-		int newFace = (int)pdwRemap[i];
-		for (int j = 0; j<3; ++j)
-		{
-			ib[i * 3 + j] = pCopyIB[newFace * 3 + j];
-		}
-	}
-
-	mem_delete_a(pCopyIB);
-	mem_delete_a(pdwRemap);
+	World = SMMatrixScaling(Scale) * /*Rotation.GetMatrix()*/SMMatrixRotationX(Rotation.x) * SMMatrixRotationY(Rotation.y) * SMMatrixRotationZ(Rotation.z) * SMMatrixTranslation(Position);
+	return &World;
 }
 
-void OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
+////
+
+void SXBound::CalcBound(IDirect3DVertexBuffer9* vertex_buffer, DWORD count_vert, DWORD bytepervert)
 {
-	uint32_t* pdwRemap = new uint32_t[numFaces];
-	D3DXOptimizeFaces(ib, numFaces, numVerts, TRUE, (DWORD*)pdwRemap);
-
-	uint32_t* pCopyIB = new uint32_t[numFaces * 3];
-	memcpy(pCopyIB, ib, numFaces * 3 * sizeof(uint32_t));
-
-	for (int i = 0; i<numFaces; ++i)
-	{
-		int newFace = (int)pdwRemap[i];
-		for (int j = 0; j<3; ++j)
+	BYTE *V = 0;
+	HRESULT hr = 0;
+	
+		if (vertex_buffer && SUCCEEDED(vertex_buffer->Lock(0, 0, (void **)&V, 0)))
 		{
-			ib[i * 3 + j] = pCopyIB[newFace * 3 + j];
-		}
-	}
+			float3_t tmppos = *(float3_t*)((char*)(V) + bytepervert * 0);
+			Max = tmppos;
+			Min = tmppos;
 
-	mem_delete_a(pCopyIB);
-	mem_delete_a(pdwRemap);
+				for(DWORD i=0;i<count_vert;i++)
+				{
+					float3_t pos = *(float3_t*)((char*)(V) + bytepervert * i);
+
+						if(pos.x > Max.x)
+							Max.x = pos.x;
+
+						if(pos.y > Max.y)
+							Max.y = pos.y;
+
+						if(pos.z > Max.z)
+							Max.z = pos.z;
+
+
+						if(pos.x < Min.x)
+							Min.x = pos.x;
+
+						if(pos.y < Min.y)
+							Min.y = pos.y;
+
+						if(pos.z < Min.z)
+							Min.z = pos.z;
+				}
+			vertex_buffer->Unlock();
+		}
+
+	Center = (Min + Max) * 0.5f;
+	Radius = SMVector3Length(Center-Max);
+}
+
+float4x4* SXBound::CalcWorldAndTrans()
+{
+	CalcWorld();
+
+	Max = SMVector3Transform(Max, World);
+	Min = SMVector3Transform(Min, World);
+
+	Center = (Min + Max) * 0.5f;
+
+	Radius = SMVector3Length(Center - Max);
+	return &World;
+}
+
+void SXBound::GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat)
+{
+	float3 max,min;
+	max = Max;
+	min = Min;
+
+	float2 mins,maxs,minmaxdepth;
+
+	float4 point0 = float4(max.x,max.y,max.z,1.0f);
+	float4 point1 = float4(max.x,max.y,min.z,1.0f);
+	float4 point2 = float4(max.x,min.y,max.z,1.0f);
+	float4 point3 = float4(min.x,max.y,max.z,1.0f);
+	float4 point4 = float4(max.x,min.y,min.z,1.0f);
+	float4 point5 = float4(min.x,min.y,max.z,1.0f);
+	float4 point6 = float4(min.x,max.y,min.z,1.0f);
+	float4 point7 = float4(min.x,min.y,min.z,1.0f);
+
+	point0 = SMVector4Transform(point0,*mat);
+	TRANSFORM_COORD_SCREEN2(point0,sizemapdepth);
+
+	point1 = SMVector4Transform(point1,*mat);
+	TRANSFORM_COORD_SCREEN2(point1,sizemapdepth);
+
+	point2 = SMVector4Transform(point2,*mat);
+	TRANSFORM_COORD_SCREEN2(point2,sizemapdepth);
+
+	point3 = SMVector4Transform(point3,*mat);
+	TRANSFORM_COORD_SCREEN2(point3,sizemapdepth);
+
+	point4 = SMVector4Transform(point4,*mat);
+	TRANSFORM_COORD_SCREEN2(point4,sizemapdepth);
+
+	point5 = SMVector4Transform(point5,*mat);
+	TRANSFORM_COORD_SCREEN2(point5,sizemapdepth);
+
+	point6 = SMVector4Transform(point6,*mat);
+	TRANSFORM_COORD_SCREEN2(point6,sizemapdepth);
+
+	point7 = SMVector4Transform(point7,*mat);
+	TRANSFORM_COORD_SCREEN2(point7,sizemapdepth);
+
+	maxs.x = point0.x;
+	maxs.y = point0.y;
+
+	mins.x = point0.x;
+	mins.y = point0.y;
+
+	minmaxdepth.x = point0.z;
+	minmaxdepth.y = point0.z;
+
+		if(point1.x > maxs.x)
+			maxs.x = point1.x;
+		if(point2.x > maxs.x)
+			maxs.x = point2.x;
+		if(point3.x > maxs.x)
+			maxs.x = point3.x;
+		if(point4.x > maxs.x)
+			maxs.x = point4.x;
+		if(point5.x > maxs.x)
+			maxs.x = point5.x;
+		if(point6.x > maxs.x)
+			maxs.x = point6.x;
+		if(point7.x > maxs.x)
+			maxs.x = point7.x;
+
+		if(point1.y > maxs.y)
+			maxs.y = point1.y;
+		if(point2.y > maxs.y)
+			maxs.y = point2.y;
+		if(point3.y > maxs.y)
+			maxs.y = point3.y;
+		if(point4.y > maxs.y)
+			maxs.y = point4.y;
+		if(point5.y > maxs.y)
+			maxs.y = point5.y;
+		if(point6.y > maxs.y)
+			maxs.y = point6.y;
+		if(point7.y > maxs.y)
+			maxs.y = point7.y;
+
+
+
+
+		if(point1.x < mins.x)
+			mins.x = point1.x;
+		if(point2.x < mins.x)
+			mins.x = point2.x;
+		if(point3.x < mins.x)
+			mins.x = point3.x;
+		if(point4.x < mins.x)
+			mins.x = point4.x;
+		if(point5.x < mins.x)
+			mins.x = point5.x;
+		if(point6.x < mins.x)
+			mins.x = point6.x;
+		if(point7.x < mins.x)
+			mins.x = point7.x;
+
+		if(point1.y < mins.y)
+			mins.y = point1.y;
+		if(point2.y < mins.y)
+			mins.y = point2.y;
+		if(point3.y < mins.y)
+			mins.y = point3.y;
+		if(point4.y < mins.y)
+			mins.y = point4.y;
+		if(point5.y < mins.y)
+			mins.y = point5.y;
+		if(point6.y < mins.y)
+			mins.y = point6.y;
+		if(point7.y < mins.y)
+			mins.y = point7.y;
+
+
+		if(point1.z > minmaxdepth.y)
+			minmaxdepth.y = point1.z;
+		if(point2.z > minmaxdepth.y)
+			minmaxdepth.y = point2.z;
+		if(point3.z > minmaxdepth.y)
+			minmaxdepth.y = point3.z;
+		if(point4.z > minmaxdepth.y)
+			minmaxdepth.y = point4.z;
+		if(point5.z > minmaxdepth.y)
+			minmaxdepth.y = point5.z;
+		if(point6.z > minmaxdepth.y)
+			minmaxdepth.y = point6.z;
+		if(point7.z > minmaxdepth.y)
+			minmaxdepth.y = point7.z;
+
+		if(point1.z < minmaxdepth.x)
+			minmaxdepth.x = point1.z;
+		if(point2.z < minmaxdepth.x)
+			minmaxdepth.x = point2.z;
+		if(point3.z < minmaxdepth.x)
+			minmaxdepth.x = point3.z;
+		if(point4.z < minmaxdepth.x)
+			minmaxdepth.x = point4.z;
+		if(point5.z < minmaxdepth.x)
+			minmaxdepth.x = point5.z;
+		if(point6.z < minmaxdepth.x)
+			minmaxdepth.x = point6.z;
+		if(point7.z < minmaxdepth.x)
+			minmaxdepth.x = point7.z;
+
+	mins.x = (mins.x);
+	mins.y = (mins.y);
+
+	maxs.x = (maxs.x);
+	maxs.y = (maxs.y);
+
+		if(mins.x < 0.f)
+			mins.x = 0.f;
+
+		if(mins.y < 0.f)
+			mins.y = 0.f;
+
+		if(maxs.x > sizemapdepth->x)
+			maxs.x = sizemapdepth->x;
+
+		if(maxs.y > sizemapdepth->y)
+			maxs.y = sizemapdepth->y;
+
+	res->x = (mins.x);
+	res->y = (mins.y);
+
+	res->width = (maxs.x-mins.x);
+	res->height = (maxs.y-mins.y);
+
+
+	res->mindepth = minmaxdepth.x;
+	res->maxdepth = minmaxdepth.y;
+
+		if(res->mindepth < 0.f)
+			res->mindepth = 0.f;
+
+	res->IsVisible = true;
+
+		/*if(campos->x > Min.x && campos->y > Min.y && campos->z > Min.z   &&   campos->x < Max.x && campos->y < Max.y && campos->z < Max.z)
+			res->IsIn = true;*/
+}
+
+void SXBound::SetMinMax(float3* min, float3* max)
+{
+	Min = *min;
+	Max = *max;
+
+	/*float3 vec = (Max - Min) * 0.5f;
+	Radius = sqrt(vec.x * vec.x + vec.y * vec.y + vec.x * vec.z);*/
+
+	Center = (Min + Max) * 0.5f;
+	Radius = SMVector3Length(Center - Max);
+};
+
+void SXBound::GetMinMax(float3* min, float3* max) const
+{
+	*min = Min; *max = Max;
+};
+
+void SXBound::SetSphere(float3* center, float* radius)
+{
+	Center = *center;
+	Radius = *radius;
+
+	Min = Center - float3(Radius, Radius, Radius);
+	Max = Center + float3(Radius, Radius, Radius);
+};
+
+void SXBound::GetSphere(float3* center, float* radius) const
+{
+	*center = Center;
+	*radius = Radius;
+};
+
+bool SXBound::IsPointInSphere(float3* point) const
+{
+	float distsqr = SMVector3Dot(Center - *point);
+	if (distsqr <= Radius*Radius)
+		return true;
+	else
+		return false;
+}
+
+bool SXBound::IsPointInBox(float3* point) const
+{
+	if (point->x >= Min.x && point->y >= Min.y && point->z >= Min.z && point->x <= Max.x && point->y <= Max.y && point->z <= Max.z)
+		return true;
+	else
+		return false;
 }

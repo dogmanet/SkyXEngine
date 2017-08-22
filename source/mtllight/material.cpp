@@ -1,6 +1,5 @@
 
-#include <mtllight\\material.h>
-#include <mtllight\\reflection.cpp>
+#include "material.h"
 
 Materials::Materials()
 {
@@ -1112,37 +1111,37 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 	sprintf(path, "%s%s\\%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path, tmp_name);
 	if (Core_0FileExists(path))
 	{
-		ISXLConfig* config = Core_OpLConfig(path);
+		ISXConfig* config = Core_OpConfig(path);
 
 		//если в конфиге указана текстура то берем ее
-		if (config->KeyExists(tmp_name, "texture"))
-			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->GetKey(tmp_name, "texture"), LoadTexType::ltt_load);
+		if (config->keyExists(tmp_name, "texture"))
+			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->getKey(tmp_name, "texture"), LoadTexType::ltt_load);
 		else //если нет то тогда берем имя материала, может быть он имя текстуры, иначе будет -1
 			tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LoadTexType::ltt_load);
 
 		sprintf(tmpMtl->Name, "%s", tmp_name);
 
 		tmpVS[0] = 0;
-		if (config->KeyExists(tmp_name, "vs"))
-			sprintf(tmpVS, "%s", config->GetKey(tmp_name, "vs"));
+		if (config->keyExists(tmp_name, "vs"))
+			sprintf(tmpVS, "%s", config->getKey(tmp_name, "vs"));
 
 		tmpPS[0] = 0;
-		if (config->KeyExists(tmp_name, "ps"))
-			sprintf(tmpPS, "%s", config->GetKey(tmp_name, "ps"));
+		if (config->keyExists(tmp_name, "ps"))
+			sprintf(tmpPS, "%s", config->getKey(tmp_name, "ps"));
 
 
-		if (config->KeyExists(tmp_name, "is_unlit"))
-			tmpMtl->IsUnlit = String(config->GetKey(tmp_name, "is_unlit")).ToBool();
+		if (config->keyExists(tmp_name, "is_unlit"))
+			tmpMtl->IsUnlit = String(config->getKey(tmp_name, "is_unlit")).ToBool();
 		else
 			tmpMtl->IsUnlit = false;
 
-		if (config->KeyExists(tmp_name, "type"))
-			tmpMtl->Type = (MtlTypeModel)String(config->GetKey(tmp_name, "type")).ToInt();
+		if (config->keyExists(tmp_name, "type"))
+			tmpMtl->Type = (MtlTypeModel)String(config->getKey(tmp_name, "type")).ToInt();
 		else
 			tmpMtl->Type = MtlTypeModel::tms_default;
 
-		if (config->KeyExists(tmp_name, "physmaterial"))
-			tmpMtl->PhysicsMaterial = (MtlPhysicType)String(config->GetKey(tmp_name, "physmaterial")).ToInt();
+		if (config->keyExists(tmp_name, "physmaterial"))
+			tmpMtl->PhysicsMaterial = (MtlPhysicType)String(config->getKey(tmp_name, "physmaterial")).ToInt();
 		else
 			tmpMtl->PhysicsMaterial = MtlPhysicType::mpt_default;
 
@@ -1158,8 +1157,8 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
 
 		tmpMicroDiff[0][0] = 0;
-		if (config->KeyExists(tmp_name, "mirco_diff_r"))
-			sprintf(tmpMicroDiff[0], "%s", config->GetKey(tmp_name, "mirco_diff_r"));
+		if (config->keyExists(tmp_name, "mirco_diff_r"))
+			sprintf(tmpMicroDiff[0], "%s", config->getKey(tmp_name, "mirco_diff_r"));
 
 		if (tmpMicroDiff[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = SGCore_LoadTexAddName(tmpMicroDiff[0], LoadTexType::ltt_load);
@@ -1167,24 +1166,24 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = -1;
 
 		tmpMicroDiff[1][0] = 0;
-		if (config->KeyExists(tmp_name, "mirco_diff_g"))
-			sprintf(tmpMicroDiff[1], "%s", config->GetKey(tmp_name, "mirco_diff_g"));
+		if (config->keyExists(tmp_name, "mirco_diff_g"))
+			sprintf(tmpMicroDiff[1], "%s", config->getKey(tmp_name, "mirco_diff_g"));
 		if (tmpMicroDiff[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = SGCore_LoadTexAddName(tmpMicroDiff[1], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = -1;
 
 		tmpMicroDiff[2][0] = 0;
-		if (config->KeyExists(tmp_name, "mirco_diff_b"))
-			sprintf(tmpMicroDiff[2], "%s", config->GetKey(tmp_name, "mirco_diff_b"));
+		if (config->keyExists(tmp_name, "mirco_diff_b"))
+			sprintf(tmpMicroDiff[2], "%s", config->getKey(tmp_name, "mirco_diff_b"));
 		if (tmpMicroDiff[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = SGCore_LoadTexAddName(tmpMicroDiff[2], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = -1;
 
 		tmpMicroDiff[3][0] = 0;
-		if (config->KeyExists(tmp_name, "mirco_diff_a"))
-		sprintf(tmpMicroDiff[3], "%s", config->GetKey(tmp_name, "mirco_diff_a"));
+		if (config->keyExists(tmp_name, "mirco_diff_a"))
+		sprintf(tmpMicroDiff[3], "%s", config->getKey(tmp_name, "mirco_diff_a"));
 		if (tmpMicroDiff[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = SGCore_LoadTexAddName(tmpMicroDiff[3], LoadTexType::ltt_load);
 		else
@@ -1192,40 +1191,40 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 
 		tmpDetail[0][0] = 0;
-		if (config->KeyExists(tmp_name, "detail_r"))
-			sprintf(tmpDetail[0], "%s", config->GetKey(tmp_name, "detail_r"));
+		if (config->keyExists(tmp_name, "detail_r"))
+			sprintf(tmpDetail[0], "%s", config->getKey(tmp_name, "detail_r"));
 		if (tmpDetail[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[0] = SGCore_LoadTexAddName(tmpDetail[0], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[0] = -1;
 
 		tmpDetail[1][0] = 0;
-		if (config->KeyExists(tmp_name, "detail_g"))
-			sprintf(tmpDetail[1], "%s", config->GetKey(tmp_name, "detail_g"));
+		if (config->keyExists(tmp_name, "detail_g"))
+			sprintf(tmpDetail[1], "%s", config->getKey(tmp_name, "detail_g"));
 		if (tmpDetail[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[1] = SGCore_LoadTexAddName(tmpDetail[1], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[1] = -1;
 
 		tmpDetail[2][0] = 0;
-		if (config->KeyExists(tmp_name, "detail_b"))
-			sprintf(tmpDetail[2], "%s", config->GetKey(tmp_name, "detail_b"));
+		if (config->keyExists(tmp_name, "detail_b"))
+			sprintf(tmpDetail[2], "%s", config->getKey(tmp_name, "detail_b"));
 		if (tmpDetail[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[2] = SGCore_LoadTexAddName(tmpDetail[2], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[2] = -1;
 
 		tmpDetail[3][0] = 0;
-		if (config->KeyExists(tmp_name, "detail_a"))
-			sprintf(tmpDetail[3], "%s", config->GetKey(tmp_name, "detail_a"));
+		if (config->keyExists(tmp_name, "detail_a"))
+			sprintf(tmpDetail[3], "%s", config->getKey(tmp_name, "detail_a"));
 		if (tmpDetail[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[3] = SGCore_LoadTexAddName(tmpDetail[3], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[3] = -1;
 
 		tmpMask[0] = 0;
-		if (config->KeyExists(tmp_name, "mask"))
-			sprintf(tmpMask, "%s", config->GetKey(tmp_name, "mask"));
+		if (config->keyExists(tmp_name, "mask"))
+			sprintf(tmpMask, "%s", config->getKey(tmp_name, "mask"));
 		if (tmpMask[0] != '0' && tmpMask[0] != 0)
 			tmpMtl->MicroDetail.Mask = SGCore_LoadTexAddName(tmpMask, LoadTexType::ltt_load);
 		else
@@ -1236,17 +1235,17 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		tmpMtl->LightParam.F0Value = MTL_LIGHTING_DEFAULT_F0;
 		tmpMtl->LightParam.ThicknessValue = MTL_LIGHTING_DEFAULT_THICKNESS;
 
-		if (config->KeyExists(tmp_name, "roughness"))
-			tmpMtl->LightParam.RoughnessValue = String(config->GetKey(tmp_name, "roughness")).ToDouble();
+		if (config->keyExists(tmp_name, "roughness"))
+			tmpMtl->LightParam.RoughnessValue = String(config->getKey(tmp_name, "roughness")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "f0"))
-			tmpMtl->LightParam.F0Value = String(config->GetKey(tmp_name, "f0")).ToDouble();
+		if (config->keyExists(tmp_name, "f0"))
+			tmpMtl->LightParam.F0Value = String(config->getKey(tmp_name, "f0")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "thickness"))
-			tmpMtl->LightParam.ThicknessValue = String(config->GetKey(tmp_name, "thickness")).ToDouble();
+		if (config->keyExists(tmp_name, "thickness"))
+			tmpMtl->LightParam.ThicknessValue = String(config->getKey(tmp_name, "thickness")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "penetration"))
-			tmpMtl->Penetration = String(config->GetKey(tmp_name, "penetration")).ToDouble();
+		if (config->keyExists(tmp_name, "penetration"))
+			tmpMtl->Penetration = String(config->getKey(tmp_name, "penetration")).ToDouble();
 
 		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
@@ -1254,12 +1253,12 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		int istexparam = -1;
 
 		//если есть ключ использования текстуры то грузим
-		if (config->KeyExists(tmp_name, "is_texture_param"))
-			istexparam = String(config->GetKey(tmp_name, "is_texture_param")).ToBool();
+		if (config->keyExists(tmp_name, "is_texture_param"))
+			istexparam = String(config->getKey(tmp_name, "is_texture_param")).ToBool();
 
 		tmpParamLigth[0] = 0;
-		if (config->KeyExists(tmp_name, "param_ligth"))
-			sprintf(tmpParamLigth, "%s", config->GetKey(tmp_name, "param_ligth"));
+		if (config->keyExists(tmp_name, "param_ligth"))
+			sprintf(tmpParamLigth, "%s", config->getKey(tmp_name, "param_ligth"));
 
 		//если текстура с параметрами освещения была определена
 		if (tmpParamLigth[0] != '0' && tmpParamLigth[0] != 0)
@@ -1278,8 +1277,8 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		}
 		
 
-		if (config->KeyExists(tmp_name, "refraction"))
-			tmpMtl->LightParam.TypeRefraction = (MtlTypeTransparency)String(config->GetKey(tmp_name, "refraction")).ToInt();
+		if (config->keyExists(tmp_name, "refraction"))
+			tmpMtl->LightParam.TypeRefraction = (MtlTypeTransparency)String(config->getKey(tmp_name, "refraction")).ToInt();
 		else
 			tmpMtl->LightParam.TypeRefraction = MtlTypeTransparency::mtt_none;
 
@@ -1288,49 +1287,49 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->VS.IsTransWorldView = tmpMtl->VS.IsTransWorldViewProjection = tmpMtl->VS.IsTransPosCam = 
 			tmpMtl->VS.IsTransTimeDelta = tmpMtl->VS.IsTransWinSize = tmpMtl->VS.IsTransUserData = false;
 
-		if (config->KeyExists(tmp_name, "vs_world"))
-			tmpMtl->VS.IsTransWorld = String(config->GetKey(tmp_name, "vs_world")).ToInt();
+		if (config->keyExists(tmp_name, "vs_world"))
+			tmpMtl->VS.IsTransWorld = String(config->getKey(tmp_name, "vs_world")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_view"))
-			tmpMtl->VS.IsTransView = String(config->GetKey(tmp_name, "vs_view")).ToInt();
+		if (config->keyExists(tmp_name, "vs_view"))
+			tmpMtl->VS.IsTransView = String(config->getKey(tmp_name, "vs_view")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_projection"))
-			tmpMtl->VS.IsTransProjection = String(config->GetKey(tmp_name, "vs_projection")).ToInt();
+		if (config->keyExists(tmp_name, "vs_projection"))
+			tmpMtl->VS.IsTransProjection = String(config->getKey(tmp_name, "vs_projection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_worldview"))
-			tmpMtl->VS.IsTransWorldView = String(config->GetKey(tmp_name, "vs_worldview")).ToInt();
+		if (config->keyExists(tmp_name, "vs_worldview"))
+			tmpMtl->VS.IsTransWorldView = String(config->getKey(tmp_name, "vs_worldview")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_worldviewprojection"))
-			tmpMtl->VS.IsTransWorldViewProjection = String(config->GetKey(tmp_name, "vs_worldviewprojection")).ToInt();
+		if (config->keyExists(tmp_name, "vs_worldviewprojection"))
+			tmpMtl->VS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "vs_worldviewprojection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_poscam"))
-			tmpMtl->VS.IsTransPosCam = String(config->GetKey(tmp_name, "vs_poscam")).ToInt();
+		if (config->keyExists(tmp_name, "vs_poscam"))
+			tmpMtl->VS.IsTransPosCam = String(config->getKey(tmp_name, "vs_poscam")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_timedelta"))
-			tmpMtl->VS.IsTransTimeDelta = String(config->GetKey(tmp_name, "vs_timedelta")).ToInt();
+		if (config->keyExists(tmp_name, "vs_timedelta"))
+			tmpMtl->VS.IsTransTimeDelta = String(config->getKey(tmp_name, "vs_timedelta")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_winsize"))
-			tmpMtl->VS.IsTransWinSize = String(config->GetKey(tmp_name, "vs_winsize")).ToInt();
+		if (config->keyExists(tmp_name, "vs_winsize"))
+			tmpMtl->VS.IsTransWinSize = String(config->getKey(tmp_name, "vs_winsize")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_userdata"))
-			tmpMtl->VS.IsTransUserData = String(config->GetKey(tmp_name, "vs_userdata")).ToInt();
+		if (config->keyExists(tmp_name, "vs_userdata"))
+			tmpMtl->VS.IsTransUserData = String(config->getKey(tmp_name, "vs_userdata")).ToInt();
 
 
 		tmpMtl->VS.Param = float4(0, 0, 0, 0);
-		if (config->KeyExists(tmp_name, "vs_userdata_value_x"))
-			tmpMtl->VS.Param.x = String(config->GetKey(tmp_name, "vs_userdata_value_x")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_x"))
+			tmpMtl->VS.Param.x = String(config->getKey(tmp_name, "vs_userdata_value_x")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_value_y"))
-			tmpMtl->VS.Param.y = String(config->GetKey(tmp_name, "vs_userdata_value_y")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_y"))
+			tmpMtl->VS.Param.y = String(config->getKey(tmp_name, "vs_userdata_value_y")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_value_z"))
-			tmpMtl->VS.Param.z = String(config->GetKey(tmp_name, "vs_userdata_value_z")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_z"))
+			tmpMtl->VS.Param.z = String(config->getKey(tmp_name, "vs_userdata_value_z")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_value_w"))
-			tmpMtl->VS.Param.w = String(config->GetKey(tmp_name, "vs_userdata_value_w")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_w"))
+			tmpMtl->VS.Param.w = String(config->getKey(tmp_name, "vs_userdata_value_w")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_trans_in_ps"))
-			tmpMtl->TransVSDataInPS = String(config->GetKey(tmp_name, "vs_userdata_trans_in_ps")).ToBool();
+		if (config->keyExists(tmp_name, "vs_userdata_trans_in_ps"))
+			tmpMtl->TransVSDataInPS = String(config->getKey(tmp_name, "vs_userdata_trans_in_ps")).ToBool();
 		else
 			tmpMtl->TransVSDataInPS = false;
 
@@ -1339,55 +1338,55 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->PS.IsTransWorldView = tmpMtl->PS.IsTransWorldViewProjection = tmpMtl->PS.IsTransPosCam =
 			tmpMtl->PS.IsTransTimeDelta = tmpMtl->PS.IsTransWinSize = tmpMtl->PS.IsTransUserData = false;
 
-		if (config->KeyExists(tmp_name, "ps_world"))
-			tmpMtl->PS.IsTransWorld = String(config->GetKey(tmp_name, "ps_world")).ToInt();
+		if (config->keyExists(tmp_name, "ps_world"))
+			tmpMtl->PS.IsTransWorld = String(config->getKey(tmp_name, "ps_world")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_view"))
-			tmpMtl->PS.IsTransView = String(config->GetKey(tmp_name, "ps_view")).ToInt();
+		if (config->keyExists(tmp_name, "ps_view"))
+			tmpMtl->PS.IsTransView = String(config->getKey(tmp_name, "ps_view")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_projection"))
-			tmpMtl->PS.IsTransProjection = String(config->GetKey(tmp_name, "ps_projection")).ToInt();
+		if (config->keyExists(tmp_name, "ps_projection"))
+			tmpMtl->PS.IsTransProjection = String(config->getKey(tmp_name, "ps_projection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_worldview"))
-			tmpMtl->PS.IsTransWorldView = String(config->GetKey(tmp_name, "ps_worldview")).ToInt();
+		if (config->keyExists(tmp_name, "ps_worldview"))
+			tmpMtl->PS.IsTransWorldView = String(config->getKey(tmp_name, "ps_worldview")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_worldviewprojection"))
-			tmpMtl->PS.IsTransWorldViewProjection = String(config->GetKey(tmp_name, "ps_worldviewprojection")).ToInt();
+		if (config->keyExists(tmp_name, "ps_worldviewprojection"))
+			tmpMtl->PS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "ps_worldviewprojection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_poscam"))
-			tmpMtl->PS.IsTransPosCam = String(config->GetKey(tmp_name, "ps_poscam")).ToInt();
+		if (config->keyExists(tmp_name, "ps_poscam"))
+			tmpMtl->PS.IsTransPosCam = String(config->getKey(tmp_name, "ps_poscam")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_timedelta"))
-			tmpMtl->PS.IsTransTimeDelta = String(config->GetKey(tmp_name, "ps_timedelta")).ToInt();
+		if (config->keyExists(tmp_name, "ps_timedelta"))
+			tmpMtl->PS.IsTransTimeDelta = String(config->getKey(tmp_name, "ps_timedelta")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_winsize"))
-			tmpMtl->PS.IsTransWinSize = String(config->GetKey(tmp_name, "ps_winsize")).ToInt();
+		if (config->keyExists(tmp_name, "ps_winsize"))
+			tmpMtl->PS.IsTransWinSize = String(config->getKey(tmp_name, "ps_winsize")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_userdata"))
-			tmpMtl->PS.IsTransUserData = String(config->GetKey(tmp_name, "ps_userdata")).ToInt();
+		if (config->keyExists(tmp_name, "ps_userdata"))
+			tmpMtl->PS.IsTransUserData = String(config->getKey(tmp_name, "ps_userdata")).ToInt();
 
 		tmpMtl->PS.Param = float4(0, 0, 0, 0);
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_x"))
-			tmpMtl->PS.Param.x = String(config->GetKey(tmp_name, "ps_userdata_value_x")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_x"))
+			tmpMtl->PS.Param.x = String(config->getKey(tmp_name, "ps_userdata_value_x")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_y"))
-			tmpMtl->PS.Param.y = String(config->GetKey(tmp_name, "ps_userdata_value_y")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_y"))
+			tmpMtl->PS.Param.y = String(config->getKey(tmp_name, "ps_userdata_value_y")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_z"))
-			tmpMtl->PS.Param.z = String(config->GetKey(tmp_name, "ps_userdata_value_z")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_z"))
+			tmpMtl->PS.Param.z = String(config->getKey(tmp_name, "ps_userdata_value_z")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_w"))
-			tmpMtl->PS.Param.w = String(config->GetKey(tmp_name, "ps_userdata_value_w")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_w"))
+			tmpMtl->PS.Param.w = String(config->getKey(tmp_name, "ps_userdata_value_w")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_trans_in_vs"))
-			tmpMtl->TransPSDataInVS = String(config->GetKey(tmp_name, "ps_userdata_trans_in_vs")).ToBool();
+		if (config->keyExists(tmp_name, "ps_userdata_trans_in_vs"))
+			tmpMtl->TransPSDataInVS = String(config->getKey(tmp_name, "ps_userdata_trans_in_vs")).ToBool();
 
-		if (config->KeyExists(tmp_name, "type_reflect"))
-			tmpMtl->LightParam.TypeReflect = (MtlTypeReflect)String(config->GetKey(tmp_name, "type_reflect")).ToInt();
+		if (config->keyExists(tmp_name, "type_reflect"))
+			tmpMtl->LightParam.TypeReflect = (MtlTypeReflect)String(config->getKey(tmp_name, "type_reflect")).ToInt();
 
-		if (config->KeyExists(tmp_name, "alpha_test"))
-			tmpMtl->IsAlphaTest = String(config->GetKey(tmp_name, "alpha_test")).ToBool();
+		if (config->keyExists(tmp_name, "alpha_test"))
+			tmpMtl->IsAlphaTest = String(config->getKey(tmp_name, "alpha_test")).ToBool();
 		else
 			tmpMtl->IsAlphaTest = false;
 
@@ -1745,44 +1744,44 @@ ID Materials::GetID(const char* name)
 	return -1;
 }
 
-inline long Materials::GetCount()
+long Materials::GetCount()
 {
 	return ArrMaterials.size();
 }
 
-inline void Materials::SetForceblyAlphaTest(bool isat)
+void Materials::SetForceblyAlphaTest(bool isat)
 {
 	IsForceblyAlphaTest = isat;
 	if (!isat)
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 }
 
-inline bool Materials::GetForceblyAlphaTest()
+bool Materials::GetForceblyAlphaTest()
 {
 	return IsForceblyAlphaTest;
 }
 
-inline void Materials::SetIsIncrCountSurf(bool bf)
+void Materials::SetIsIncrCountSurf(bool bf)
 {
 	IsIncrCountSurf = bf;
 }
 
-inline bool Materials::GetIsIncrCountSurf()
+bool Materials::GetIsIncrCountSurf()
 {
 	return IsIncrCountSurf;
 }
 
-inline void Materials::NullingCurrCountSurf()
+void Materials::NullingCurrCountSurf()
 {
 	CurrIdSurf = 0;
 }
 
-inline int Materials::GetCurrCountSurf()
+int Materials::GetCurrCountSurf()
 {
 	return CurrIdSurf;
 }
 
-inline void Materials::SetCurrCountSurf(int count)
+void Materials::SetCurrCountSurf(int count)
 {
 	CurrIdSurf = count;
 }

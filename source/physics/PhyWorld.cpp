@@ -526,7 +526,7 @@ void PhyWorld::DebugDrawer::drawContactPoint(const btVector3 & PointOnB, const b
 
 void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 {
-	reportf(REPORT_MSG_LEVEL_WARRNING, "%s\n", warningString);
+	reportf(REPORT_MSG_LEVEL_WARNING, "%s\n", warningString);
 }
 
 void PhyWorld::DebugDrawer::draw3dText(const btVector3& location, const char* textString)

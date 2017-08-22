@@ -1,19 +1,25 @@
 
-#ifndef __sound_h
-#define __sound_h
+#ifndef __SOUND_H
+#define __SOUND_H
 
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dsound.lib")
 #pragma comment(lib, "libogg_static.lib")
 #pragma comment(lib, "libvorbis_static.lib")
 #pragma comment(lib, "libvorbisfile_static.lib")
+#include <gdefines.h>
+#include <windows.h>
 #include <mmsystem.h>
 #include <dsound.h>
 #include <stdint.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
-#include <score/CallBackOgg.cpp>
 #include <common/aastring.h>
+#include <common/array.h>
+#include <common/assotiativearray.h>
+#include "sxscore.h"
+
+extern report_func g_fnReportf;
 
 struct AAStringNR : public AAString
 {
@@ -35,12 +41,10 @@ struct AAStringNR : public AAString
 	}
 };
 
-#include <common/array.h>
-#include <common/assotiativearray.h>
 
 #define SOUND_PRECOND(id, retval) \
 if (id >= ArrSounds.size() || !(ArrSounds[id]))\
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxsound - unresolved address to sound %d", gen_msg_location, id); return retval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxsound - unresolved address to sound %d", gen_msg_location, id); return retval; }
 
 inline long SOUND_3D_COM_VOLUME(const float3 & snd_pos, const float3 & view_pos, const float snd_distaudible)
 {
@@ -54,6 +58,15 @@ inline long SOUND_3D_COM_VOLUME(const float3 & snd_pos, const float3 & view_pos,
 
 	return vol;
 }
+
+//чтение файла
+size_t ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource);
+//закртытие файла
+int ogg_close(void* datasource);
+//позиционирование
+int ogg_seek(void *datasource, ogg_int64_t offset, int whence);
+//размер файла
+long ogg_tell(void* datasource);
 
 inline long SOUND_3D_COM_PAN(const float3 & snd_pos, const float3 & view_pos, const float3 & view_dir, const float snd_distaudible, const float snd_shiftpan)
 {
@@ -182,50 +195,50 @@ public:
 	void SoundInstancePlay2d(ID id, int volume=100, int pan = 0);
 	void SoundInstancePlay3d(ID id, float3* pos);
 
-	inline bool SoundIsInit(ID id);
-	inline void SoundDelete(ID id);
+	bool SoundIsInit(ID id);
+	void SoundDelete(ID id);
 
-	inline void	SoundPlay(ID id, int looping=-1);	//проиграть
-	inline void	SoundPause(ID id);					//приостановить
-	inline void	SoundStop(ID id);					//остановить
+	void	SoundPlay(ID id, int looping=-1);	//проиграть
+	void	SoundPause(ID id);					//приостановить
+	void	SoundStop(ID id);					//остановить
 
-	inline void SoundStateSet(ID id, SoundObjState state);
-	inline SoundObjState SoundStateGet(ID id);
+	void SoundStateSet(ID id, SoundObjState state);
+	SoundObjState SoundStateGet(ID id);
 
 	//текащая позиция проигрывания
 	void SoundPosCurrSet(ID id, DWORD pos, int type = SOUND_POS_BYTES);
-	inline DWORD SoundPosCurrGet(ID id, int type = SOUND_POS_BYTES);
+	DWORD SoundPosCurrGet(ID id, int type = SOUND_POS_BYTES);
 
 	//громкость
-	inline void SoundVolumeSet(ID id, long volume, int type = SOUND_VOL_PCT);
-	inline long SoundVolumeGet(ID id, int type = SOUND_VOL_PCT);
+	void SoundVolumeSet(ID id, long volume, int type = SOUND_VOL_PCT);
+	long SoundVolumeGet(ID id, int type = SOUND_VOL_PCT);
 
 	//позиционирование между динамиками
-	inline void SoundPanSet(ID id, long value, int type = SOUND_VOL_PCT);
-	inline long SoundPanGet(ID id, int type = SOUND_VOL_PCT);
+	void SoundPanSet(ID id, long value, int type = SOUND_VOL_PCT);
+	long SoundPanGet(ID id, int type = SOUND_VOL_PCT);
 
 	//частота
-	inline void SoundFreqCurrSet(ID id, DWORD value);
-	inline DWORD SoundFreqCurrGet(ID id);
-	inline DWORD SoundFreqOriginGet(ID id);
+	void SoundFreqCurrSet(ID id, DWORD value);
+	DWORD SoundFreqCurrGet(ID id);
+	DWORD SoundFreqOriginGet(ID id);
 
-	inline void SoundPosWSet(ID id, float3* pos);
-	inline void SoundPosWGet(ID id, float3* pos);
+	void SoundPosWSet(ID id, float3* pos);
+	void SoundPosWGet(ID id, float3* pos);
 
-	inline int SoundLengthSecGet(ID id);		//длина в секундах
-	inline DWORD SoundBytesPerSecGet(ID id);	//байт в секунде
-	inline DWORD SoundSizeGet(ID id);			//размер в байтах PCM данных
-	inline void SoundFileGet(ID id, char* path);//путь до звукового файла
+	int SoundLengthSecGet(ID id);		//длина в секундах
+	DWORD SoundBytesPerSecGet(ID id);	//байт в секунде
+	DWORD SoundSizeGet(ID id);			//размер в байтах PCM данных
+	void SoundFileGet(ID id, char* path);//путь до звукового файла
 
-	inline float SoundDistAudibleGet(ID id);
-	inline void SoundDistAudibleSet(ID id, float value);
+	float SoundDistAudibleGet(ID id);
+	void SoundDistAudibleSet(ID id, float value);
 
 	void Update(float3* viewpos, float3* viewdir);
 
 	SoundFileFormat FileFormat(const char* file);
 
-	inline int SoundsPlayCountGet();
-	inline int SoundsLoadCountGet();
+	int SoundsPlayCountGet();
+	int SoundsLoadCountGet();
 
 private:
 

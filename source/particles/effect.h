@@ -2,27 +2,36 @@
 #ifndef __effect_h
 #define __effect_h
 
-#include <particles/emitter.h>
+#include <gdefines.h>
+
+#define SM_D3D_CONVERSIONS
+#include <common\SXMath.h>
+
+#include "PESet.h"
+
+extern report_func g_fnReportf;
+
+#include "emitter.h"
 #include <common/array.h>
-#include <common/string.cpp>
+#include <common/string.h>
 
 #define EFFECTS_EFFECT_PRECOND_KEY(key,retval) \
 if (!(key >= 0 && key < ArrKey.size()))\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles: unresolved key of access '%d'", gen_msg_location, key); return retval; }
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles: unresolved key of access '%d'", gen_msg_location, key); return retval; }
 
 #define EFFECTS_EFFECT_PRECOND(id, retval) \
 	if (id < 0 || id >= ArrID.size() || !(ArrID[id]))\
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval; }
+		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval; }
 
 #define EFFECTS_POOL_PRECOND(id, retval) \
 	if (id < 0 || id >= Pools.size())\
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pool %d", gen_msg_location, id); return retval; } \
+		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pool %d", gen_msg_location, id); return retval; } \
 	if (Pools[id]->ideff < 0) \
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pool %d", gen_msg_location, id); return retval; }
+		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pool %d", gen_msg_location, id); return retval; }
 
 #define EFFECTS_PARTICLES_PRECOND(id, id_part, retval) \
 	if (id_part < 0 || id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
-		{reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", gen_msg_location, id_part, id); return retval; }
+		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", gen_msg_location, id_part, id); return retval; }
 
 #define EFFECTS_PRECOND(id, id_part, retval) \
 	EFFECTS_EFFECT_PRECOND(id, retval); \
@@ -43,7 +52,7 @@ public:
 		Effect();
 		Effect(Effect& eff);
 		~Effect();
-		inline void NullingInit();
+		void NullingInit();
 
 		SX_ALIGNED_OP_MEM
 
@@ -78,47 +87,47 @@ public:
 	void Save(const char* file);
 	void Clear();
 
-	inline void OnLostDevice();
-	inline void OnResetDevice();
+	void OnLostDevice();
+	void OnResetDevice();
 
-	inline ID EmitterAdd(ID id, ParticlesData* data);
-	inline void EmitterReInit(ID id, ID id_part, ParticlesData* data);
-	inline int EmitterGetCount(ID id);
-	inline void EmitterDelete(ID id, ID id_part);
-	inline ParticlesData* EmitterGetData(ID id, ID id_part);
+	ID EmitterAdd(ID id, ParticlesData* data);
+	void EmitterReInit(ID id, ID id_part, ParticlesData* data);
+	int EmitterGetCount(ID id);
+	void EmitterDelete(ID id, ID id_part);
+	ParticlesData* EmitterGetData(ID id, ID id_part);
 
-	inline void EmitterCountSet(ID id, ID id_part, int count);
-	inline int EmitterCountGet(ID id, ID id_part);
-	inline int EmitterCountLifeGet(ID id, ID id_part);
+	void EmitterCountSet(ID id, ID id_part, int count);
+	int EmitterCountGet(ID id, ID id_part);
+	int EmitterCountLifeGet(ID id, ID id_part);
 
-	inline void EmitterEnableSet(ID id, ID id_part, bool enable);
-	inline bool EmitterEnableGet(ID id, ID id_part);
+	void EmitterEnableSet(ID id, ID id_part, bool enable);
+	bool EmitterEnableGet(ID id, ID id_part);
 
-	inline void EmitterTextureSet(ID id, ID id_part, const char* tex);
-	inline void EmitterTextureSetID(ID id, ID id_part, ID tex);
-	inline ID EmitterTextureGetID(ID id, ID id_part);
-	inline void EmitterTextureGet(ID id, ID id_part, char* tex);
+	void EmitterTextureSet(ID id, ID id_part, const char* tex);
+	void EmitterTextureSetID(ID id, ID id_part, ID tex);
+	ID EmitterTextureGetID(ID id, ID id_part);
+	void EmitterTextureGet(ID id, ID id_part, char* tex);
 
-	inline void EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
-	inline void EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
-	inline ID EmitterTextureTrackGetID(ID id, ID id_part);
-	inline void EmitterTextureTrackGet(ID id, ID id_part, char* tex);
+	void EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
+	void EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
+	ID EmitterTextureTrackGetID(ID id, ID id_part);
+	void EmitterTextureTrackGet(ID id, ID id_part, char* tex);
 
-	inline void EmitterNameSet(ID id, ID id_part, const char* name);
-	inline void EmitterNameGet(ID id, ID id_part, char* name);
+	void EmitterNameSet(ID id, ID id_part, const char* name);
+	void EmitterNameGet(ID id, ID id_part, char* name);
 
-	inline int EmitterTrackCountGet(ID id, ID id_part);
-	inline int EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);
+	int EmitterTrackCountGet(ID id, ID id_part);
+	int EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);
 
-	inline ID EffectInstanceByID(ID id);
-	inline ID EffectInstanceByName(const char* name);
-	inline ID EffectGetByName(const char* name);
-	inline ID EffectAdd(const char* name);
-	inline int EffectCountGet();
-	inline ID EffectIdOfKey(ID key);
-	inline void EffectDelete(ID id);
-	inline void EffectNameSet(ID id, const char* name);
-	inline void EffectNameGet(ID id, char* name);
+	ID EffectInstanceByID(ID id);
+	ID EffectInstanceByName(const char* name);
+	ID EffectGetByName(const char* name);
+	ID EffectAdd(const char* name);
+	int EffectCountGet();
+	ID EffectIdOfKey(ID key);
+	void EffectDelete(ID id);
+	void EffectNameSet(ID id, const char* name);
+	void EffectNameGet(ID id, char* name);
 
 	void EffectCompute(ID id);
 	void EffectComputeLighting(ID id);
@@ -128,28 +137,28 @@ public:
 	void EffectComputeLightingAll();
 	void EffectRenderAll(DWORD timeDelta);
 
-	inline bool EffectEnableGet(ID id);
-	inline void EffectEnableSet(ID id, bool isenable);
+	bool EffectEnableGet(ID id);
+	void EffectEnableSet(ID id, bool isenable);
 
 	void EffectPlayByID(ID id, float3* pos, float3* dir);
 	void EffectPlayByName(const char* name, float3* pos, float3* dir);
 
-	inline bool EffectAlifeGet(ID id);
-	inline void EffectAlifeSet(ID id, bool alife);
+	bool EffectAlifeGet(ID id);
+	void EffectAlifeSet(ID id, bool alife);
 
-	inline void EffectPosSet(ID id, float3* pos);
-	inline void EffectDirSet(ID id, float3* dir);
-	inline void EffectRotSet(ID id, float3* rot);
-	inline void EffectRotSet(ID id, const SMQuaternion & rot);
+	void EffectPosSet(ID id, float3* pos);
+	void EffectDirSet(ID id, float3* dir);
+	void EffectRotSet(ID id, float3* rot);
+	void EffectRotSet(ID id, const SMQuaternion & rot);
 
-	inline void EffectPosGet(ID id, float3* pos);
-	inline void EffectDirGet(ID id, float3* dir);
-	inline void EffectRotGet(ID id, float3* rot);
+	void EffectPosGet(ID id, float3* pos);
+	void EffectDirGet(ID id, float3* dir);
+	void EffectRotGet(ID id, float3* rot);
 
-	inline bool EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view);
-	inline void EffectVisibleComAll(ISXFrustum* frustum, float3* view);
-	inline bool EffectVisibleGet(ID id);
-	inline float EffectDistToViewGet(ID id);
+	bool EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view);
+	void EffectVisibleComAll(ISXFrustum* frustum, float3* view);
+	bool EffectVisibleGet(ID id);
+	float EffectDistToViewGet(ID id);
 
 protected:
 
@@ -161,15 +170,15 @@ protected:
 		ID ideff;
 	};
 
-	inline ID EffectCopyName(const char* name);
-	inline ID EffectCopyID(ID id);
-	inline void EffectDel(ID id);
+	ID EffectCopyName(const char* name);
+	ID EffectCopyID(ID id);
+	void EffectDel(ID id);
 
-	inline ID AddEffect(Effect* obj);
-	inline ID PoolAdd(ID ideff);
-	inline void PoolDelete(ID id);
-	inline void PoolExtend(ID id);
-	inline ID PoolGet(ID id);
+	ID AddEffect(Effect* obj);
+	ID PoolAdd(ID ideff);
+	void PoolDelete(ID id);
+	void PoolExtend(ID id);
+	ID PoolGet(ID id);
 
 	Array<Effect*> ArrKey;	//массив всех элементов по порядку
 	Array<Effect*> ArrID;	//массив всех элементов, основанный на id

@@ -96,14 +96,14 @@ void printflog(int level, const char* format, ...)
 				printf(COLOR_LRED "! ");
 				fwrite("! ", 1, 2, FileOutLog);
 			}
-			else if (level == REPORT_MSG_LEVEL_WARRNING)
+			else if (level == REPORT_MSG_LEVEL_WARNING)
 			{
 				printf(COLOR_YELLOW "* ");
 				fwrite("* ", 1, 2, FileOutLog);
 			}
 
 			printf(buf);
-			if(level == REPORT_MSG_LEVEL_ERROR || level == REPORT_MSG_LEVEL_WARRNING)
+			if(level == REPORT_MSG_LEVEL_ERROR || level == REPORT_MSG_LEVEL_WARNING)
 			{
 				printf(COLOR_RESET);
 			}

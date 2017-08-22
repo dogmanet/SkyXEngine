@@ -1,76 +1,78 @@
 
-#include <core\\file.h>
+#include "File.h"
 
-SXFile::SXFile()
+CFile::CFile()
 {
-	File = 0;
+	m_pFile = 0;
 }
 
-SXFile::~SXFile()
+CFile::~CFile()
 {
-	
+	if (m_pFile)
+	{
+		fclose(m_pFile);
+		m_pFile = 0;
+	}
 }
 
-void SXFile::Release()
+void CFile::Release()
 {
-		if(File)
-			fclose(File);
 	mem_del(this);
 }
 
-int SXFile::Open(const char* path,int type)
+int CFile::open(const char *szPath, int iType)
 {
 	char* mode;
-	if (type == CORE_FILE_BIN)
+	if (iType == CORE_FILE_BIN)
 			mode = "rb";
-	else if (type == CORE_FILE_TEXT)
+	else if (iType == CORE_FILE_TEXT)
 			mode = "r+";
-	File = fopen(path, mode);
-		if(!File)
+	m_pFile = fopen(szPath, mode);
+		if(!m_pFile)
 			return -1;
 	return 0;
 }
 
-int SXFile::Create(const char* path,int type)
+int CFile::create(const char *szPath, int iType)
 {
 	char* mode;
-	if (type == CORE_FILE_BIN)
+	if (iType == CORE_FILE_BIN)
 			mode = "wb";
-	else if (type == CORE_FILE_TEXT)
+	else if (iType == CORE_FILE_TEXT)
 			mode = "w";
-	File = fopen(path, mode);
-	if (!File)
+	m_pFile = fopen(szPath, mode);
+	if (!m_pFile)
 		return -1;
 	return 0;
 }
 
-int SXFile::Add(const char* path,int type)
+int CFile::add(const char *szPath, int iType)
 {
 	char* mode;
-	if (type == CORE_FILE_BIN)
+	if (iType == CORE_FILE_BIN)
 			mode = "ab";
-	else if (type == CORE_FILE_TEXT)
+	else if (iType == CORE_FILE_TEXT)
 			mode = "a";
-	File = fopen(path, mode);
-	if (!File)
+	m_pFile = fopen(szPath, mode);
+	if (!m_pFile)
 		return -1;
 	return 0;
 }
 
-size_t SXFile::ReadB(void* dest, size_t size)
+size_t CFile::readBin(void *pDest, size_t iSize)
 {
-	return(fread(dest, size, 1, File));
+	return(fread(pDest, iSize, 1, m_pFile));
 }
 
-size_t SXFile::WriteB(void* src, size_t size)
+size_t CFile::writeBin(const void *pSrc, size_t iSize)
 {
-	return(fwrite(src, size, 1, File));
+	return(fwrite(pSrc, iSize, 1, m_pFile));
 }
 
-size_t SXFile::ReadT(const char* format, ...)
+size_t CFile::readText(const char *szFormat, ...)
 {
 	va_list va;
-	va_start(va, format);
+	va_start(va, szFormat);
 	int* argn = va_arg(va, int*);
 	int count = 0;
 	int countwrite = 0;
@@ -78,16 +80,16 @@ size_t SXFile::ReadT(const char* format, ...)
 	char tmpbuf[3];
 	while (1)
 	{
-		if ((format + count * 2)[0] == '\0')
+		if ((szFormat + count * 2)[0] == '\0')
 			break;
 
-		memcpy(tmpbuf, format + count * 2,2);
+		memcpy(tmpbuf, szFormat + count * 2, 2);
 		tmpbuf[2] = 0;
-		int cwr = fscanf_s(File, tmpbuf, argn);
+		int cwr = fscanf_s(m_pFile, tmpbuf, argn);
 		if (cwr == EOF)
 			break;
 		countwrite += cwr;
-		//int tll = ftell(File);
+		//int tll = ftell(m_pFile);
 		argn = va_arg(va, int*);
 		count++;
 	}
@@ -95,48 +97,48 @@ size_t SXFile::ReadT(const char* format, ...)
 	return countwrite;
 }
 
-size_t SXFile::WriteT(const char* format, ...)
+size_t CFile::writeText(const char *szFormat, ...)
 {
 	va_list ptr;
-	va_start(ptr, format);
-	int countout = vfprintf(File, format, ptr);
+	va_start(ptr, szFormat);
+	int countout = vfprintf(m_pFile, szFormat, ptr);
 	va_end(ptr);
 	return countout;
 }
 
-size_t SXFile::GetPos()
+size_t CFile::getPos() const
 {
-	if (IsEOF())
+	if (isEOF())
 		return CORE_FILE_EOF;
-	return ftell(File);
+	return ftell(m_pFile);
 }
 
-void SXFile::SetPos(size_t pos)
+void CFile::setPos(size_t iPos)
 {
-	fseek(File, SEEK_SET, pos);
+	fseek(m_pFile, SEEK_SET, iPos);
 }
 
-size_t SXFile::GetSize()
+size_t CFile::getSize() const
 {
 	long size;
-	long curr_pos = ftell(File);
-	fseek(File, 0, SEEK_END);
-	size = ftell(File);
-	fseek(File, curr_pos, SEEK_SET);
+	long curr_pos = ftell(m_pFile);
+	fseek(m_pFile, 0, SEEK_END);
+	size = ftell(m_pFile);
+	fseek(m_pFile, curr_pos, SEEK_SET);
 	return size;
 }
 
-int SXFile::ReadChar()
+int CFile::readChar()
 {
-	return fgetc(File);
+	return fgetc(m_pFile);
 }
 
-void SXFile::Close()
+void CFile::close()
 {
-	fclose(File);
+	fclose(m_pFile);
 }
 
-bool SXFile::IsEOF()
+bool CFile::isEOF() const
 {
-	return feof(File);
+	return feof(m_pFile);
 }

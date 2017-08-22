@@ -1,15 +1,16 @@
 
-#include <common\array.h>
+#include "ml_data.h"
 
 namespace MLSet
 {
+	void MLInit();
 	IDirect3DDevice9* DXDevice = 0;
 	//float3 ConstCurrCamPos;
 	//float2_t WinSize = float2_t(1024, 768);
 	//DWORD CountTimeDelta = 0;
 	//char StdPathMaterial[1024];
 	//char StdPathMesh[1024];
-	
+
 	//размер текстуры глубины дл¤ локальных источников света
 	float2_t SizeTexDepthGlobal = float2_t(1024, 768);
 
@@ -44,7 +45,7 @@ namespace MLSet
 
 	//ближн¤¤ и дальн¤¤ плоскости
 	//float2_t NearFar = float2_t(0.25f, 400.f);
-	
+
 	//float4x4 MCamView;
 
 	bool IsHalfGenPCFShadowLocal = false;
@@ -63,7 +64,7 @@ namespace MLSet
 		namespace VS
 		{
 			ID ResPosDepth;
-			
+
 			ID ScreenOut;
 
 			ID SMDepthGeomPSSMDirect;
@@ -101,7 +102,7 @@ namespace MLSet
 			ID PPBlurDepthBased;
 			ID GenShadowDirect4;
 			ID GenShadowDirect9;
-			
+
 			ID GenShadowCube1;
 			ID GenShadowCube6;
 
@@ -142,8 +143,8 @@ namespace MLSet
 		ID AdaptLumLast;
 
 		int HowAdaptedLum = 0;
-		inline ID GetCurrAdaptedLum(){ if (HowAdaptedLum == 0) return AdaptLumCurr; else return  AdaptLumLast; };
-		inline ID GetLastAdaptedLum(){ if (HowAdaptedLum == 1) return AdaptLumCurr; else return  AdaptLumLast; };
+		ID GetCurrAdaptedLum(){ if (HowAdaptedLum == 0) return AdaptLumCurr; else return  AdaptLumLast; };
+		ID GetLastAdaptedLum(){ if (HowAdaptedLum == 1) return AdaptLumCurr; else return  AdaptLumLast; };
 		void IncrAdaptedLum(){ if (HowAdaptedLum >= 1) HowAdaptedLum = 0; else HowAdaptedLum = 1; };
 		////
 
@@ -163,7 +164,7 @@ namespace MLSet
 	};
 };
 
-void MLInit()
+void MLSet::MLInit()
 {
 	MLSet::DXDevice = SGCore_GetDXDevice();
 

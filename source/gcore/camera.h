@@ -34,36 +34,36 @@ public:
 	void Release(){ mem_del(this); }
 	SX_ALIGNED_OP_MEM
 
-	inline void PosLeftRight(float units);	//влево/вправо
-	inline void PosUpDown(float units);	//вверх/вниз
-	inline void PosFrontBack(float units);	//вперед/назад
+	void PosLeftRight(float units);	//влево/вправо
+	void PosUpDown(float units);	//вверх/вниз
+	void PosFrontBack(float units);	//вперед/назад
 	
-	inline void RotUpDown(float angle);	//вращение вверх/вниз
-	inline void RotRightLeft(float angle);	//вращение вправо/влево
-	inline void Roll(float angle);	//крен
-	inline void SetOrientation(const SMQuaternion & q);
+	void RotUpDown(float angle);	//вращение вверх/вниз
+	void RotRightLeft(float angle);	//вращение вправо/влево
+	void Roll(float angle);	//крен
+	void SetOrientation(const SMQuaternion & q);
 
-	inline void GetViewMatrix(float4x4* view_matrix);//получаем матрицу вида
+	void GetViewMatrix(float4x4* view_matrix);//получаем матрицу вида
 	
-	inline void GetPosition(float3* pos);
-	inline void SetPosition(float3* pos);
+	void GetPosition(float3* pos);
+	void SetPosition(float3* pos);
 
-	inline void GetDirection(float3* dir);
-	inline void SetDirection(float3* dir);
+	void GetDirection(float3* dir);
+	void SetDirection(float3* dir);
 	
-	inline void GetRight(float3* right);
-	inline void GetUp(float3* up);
-	inline void GetLook(float3* look);
-	inline void GetRotation(float3* rot);
+	void GetRight(float3* right);
+	void GetUp(float3* up);
+	void GetLook(float3* look);
+	void GetRotation(float3* rot);
 
-	inline float GetRotationX();
-	inline float GetRotationY();
-	inline float GetRotationZ();
+	float GetRotationX();
+	float GetRotationY();
+	float GetRotationZ();
 
-	inline void SetFOV(float fov);
-	inline float GetFOV();
+	void SetFOV(float fov);
+	float GetFOV();
 
-	inline void UpdateView();
+	void UpdateView();
 };
 
 #endif

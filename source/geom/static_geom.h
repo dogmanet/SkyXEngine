@@ -2,27 +2,30 @@
 #ifndef __static_geom
 #define __static_geom
 
-#include <common\\string.cpp>
+#include <common\\string.h>
 #include <common\array.h>
-#include <common\\string_api.cpp>
+#include <gcore\\sxgcore.h>
+#include "sxgeom.h"
+
+extern report_func g_fnReportf;
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
 }
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, retval) \
 if (!(id_model < AllModels.size() && AllModels[id_model]))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
 	return retval;\
 }
 
 #define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \
 if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels[id_model]->SubSet.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", gen_msg_location, id_group, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", gen_msg_location, id_group, id_model); \
 	return ret_val; \
 }
 
@@ -191,7 +194,7 @@ public:
 
 	void SortGroup(float3* viewpos, int sort_mtl);
 	
-	inline long GetCountModel();
+	long GetCountModel();
 
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	bool GetIntersectedRayY(float3* pos);
@@ -203,7 +206,7 @@ public:
 	ID AddModel(const char* path, const char* lod1, const char* name);
 	void DelModel(ID id);
 
-	inline void GetMinMax(float3* min,float3* max);
+	void GetMinMax(float3* min,float3* max);
 
 	ID AddArrForCom();
 	void DelArrForCom(ID id_arr);
@@ -308,10 +311,5 @@ protected:
 	long SizeRenderIndexBuffer;	//размер в элементах RenderIndexBuffer
 	IDirect3DIndexBuffer9* RenderIndexBuffer;	//индексный буфер, используется и изменяется в реайлтайме при рендере уровня	
 };
-
-bool StaticGeom::UseSortFrontToBackSplits = true;
-bool StaticGeom::UseSortFrontToBackModels = true;
-IDirect3DDevice9* StaticGeom::DXDevice = 0;
-float StaticGeom::DistForLod = 200.f;
 
 #endif

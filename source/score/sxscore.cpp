@@ -6,17 +6,17 @@ See the license in LICENSE
 
 #define SXSCORE_VERSION 1
 
+#include "sxscore.h"
+#include "sound.h"
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
-
-#include <score\\sxscore.h>
-#include <score\\sound.cpp>
 
 MainSound* MSound = 0;
 
-#define SCORE_PRECOND(retval) if(!MSound){reportf(-1, "%s - sxsound is not init", gen_msg_location); return retval;}
+#define SCORE_PRECOND(retval) if(!MSound){g_fnReportf(-1, "%s - sxsound is not init", gen_msg_location); return retval;}
 
 long SSCore_0GetVersion()
 {
@@ -25,7 +25,7 @@ long SSCore_0GetVersion()
 
 void SSCore_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
@@ -38,7 +38,7 @@ void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				reportf(-1, "%s - none unic name, sxsound", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxsound", gen_msg_location);
 			}
 			else
 			{
@@ -53,7 +53,7 @@ void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 		}
 	}
 	else
-		reportf(-1, "%s - not init argument [name], sxsound", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxsound", gen_msg_location);
 }
 
 void SSCore_AKill()

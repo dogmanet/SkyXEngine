@@ -342,13 +342,13 @@ void exec(int argc, const char ** argv)
 		puts(COLOR_LRED "[exec]: Expected filename" COLOR_RESET);
 		return;
 	}
-	ISXFile * f = Core_CrFile();
-	if(f->Open(argv[1], CORE_FILE_BIN) < 0)
+	IFile * f = Core_CrFile();
+	if(f->open(argv[1], CORE_FILE_BIN) < 0)
 	{
 		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, argv[1]);
 		return;
 	}
-	int len = f->GetSize() + 1;
+	int len = f->getSize() + 1;
 	char * buf, *cbuf = NULL;
 	if(len <= 4096)
 	{
@@ -359,7 +359,7 @@ void exec(int argc, const char ** argv)
 		buf = cbuf = new char[len];
 	}
 
-	f->ReadB(buf, len - 1);
+	f->readBin(buf, len - 1);
 	buf[len - 1] = 0;
 
 	ConsolePushBuffer();

@@ -24,11 +24,11 @@ void Level::Load(const char* name)
 
 	}
 
-	ISXLConfig* config = Core_OpLConfig(tmppathlevel);
-	if (config->KeyExists("level", "geometry"))
+	ISXConfig* config = Core_OpConfig(tmppathlevel);
+	if (config->keyExists("level", "geometry"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "geometry"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->getKey("level", "geometry"));
 		if (Core_0FileExists(tmppath))
 			SGeom_ModelsLoad(tmppath);
 		else
@@ -37,10 +37,10 @@ void Level::Load(const char* name)
 		}
 	}
 
-	if (config->KeyExists("level", "green"))
+	if (config->keyExists("level", "green"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "green"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->getKey("level", "green"));
 		if (Core_0FileExists(tmppath))
 			SGeom_GreenLoad(tmppath);
 		else
@@ -49,10 +49,10 @@ void Level::Load(const char* name)
 		}
 	}
 
-	/*if (config->KeyExists("level", "light"))
+	/*if (config->keyExists("level", "light"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->GetKey("level", "light"));
+		sprintf(tmppath, "%s%s\\%s", GData::Pathes::Levels, name, config->getKey("level", "light"));
 		if (Core_0FileExists(tmppath))
 			SML_LigthsLoad(tmppath);
 		else
@@ -61,10 +61,10 @@ void Level::Load(const char* name)
 		}
 	}*/
 
-	if(config->KeyExists("level", "entity"))
+	if(config->keyExists("level", "entity"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "entity"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->getKey("level", "entity"));
 		if(Core_0FileExists(tmppath))
 			SXGame_LoadEnts(tmppath);
 		else
@@ -73,10 +73,10 @@ void Level::Load(const char* name)
 		}
 	}
 
-	if (config->KeyExists("level", "physic"))
+	if (config->keyExists("level", "physic"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "physic"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->getKey("level", "physic"));
 		if(Core_0FileExists(tmppath))
 			SXPhysics_ImportGeom(tmppath);
 		else
@@ -91,10 +91,10 @@ void Level::Load(const char* name)
 #endif
 	}
 
-	if (config->KeyExists("level", "aigrid"))
+	if (config->keyExists("level", "aigrid"))
 	{
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->GetKey("level", "aigrid"));
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->getKey("level", "aigrid"));
 		if (Core_0FileExists(tmppath))
 			SAIG_GridLoad(tmppath);
 		else
@@ -105,9 +105,9 @@ void Level::Load(const char* name)
 
 	SGCore_LoadTexLoadTextures();
 
-	if (config->KeyExists("level", "ambient_sounds"))
+	if (config->keyExists("level", "ambient_sounds"))
 	{
-		Level::StrAmbientSounds = config->GetKey("level", "ambient_sounds");
+		Level::StrAmbientSounds = config->getKey("level", "ambient_sounds");
 
 #if defined(SX_GAME)
 		SGame_AmbientSndClear();
@@ -128,9 +128,9 @@ void Level::Load(const char* name)
 #endif
 	}
 
-	if (config->KeyExists("level", "weather"))
+	if (config->keyExists("level", "weather"))
 	{
-		Level::StrWeather = config->GetKey("level", "weather");
+		Level::StrWeather = config->getKey("level", "weather");
 #if defined(SX_GAME)
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), StrWeather.c_str());
@@ -140,9 +140,9 @@ void Level::Load(const char* name)
 #endif
 	}
 
-	if (config->KeyExists("level", "type"))
+	if (config->keyExists("level", "type"))
 	{
-		String str = config->GetKey("level", "type");
+		String str = config->getKey("level", "type");
 		if (stricmp(str.c_str(), "outdoor") == 0)
 		{
 			ID gid = SML_LigthsCreatePoint(

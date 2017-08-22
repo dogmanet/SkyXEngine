@@ -71,6 +71,7 @@ struct IBaseObject
  - SX_DLL - данный проект dll бибилиотека
  - SX_LEVEL_EDITOR - данный проект "редактор уровней"
  - SX_MATERIAL_EDITOR - данный проект "редактор материалов"
+ - SX_PARTICLES_EDITOR - данный проект "редактор частиц"
  - SX_GAME - данный проект "билд"
 */
 
@@ -96,11 +97,26 @@ struct IBaseObject
 #include <cstdlib>
 
 /*! \name Некоторые ограничения на размерности */
-///@{
+//!@{
 #define CORE_NAME_MAX_LEN		32	/*!< максимальная длина имени объекта ядра/подсистемы */
 #define OBJECT_NAME_MAX_LEN		64	/*!< максимальная длина имени абстрактного объекта */
 #define CONFIG_SECTION_MAX_LEN	64	/*!< максимальная длина секции конфигурационного файла */
-///@}
+//!@}
+
+/*! Пустые дефайны для визуальной идентификации аргументов функций
+@{
+*/
+
+//! выходной, будет произведена запись
+#define _out
+
+//! входящий, без записи 
+#define _in
+
+//! опциональный, значение может быть недействительным (к примеру вместо указателей можно отправить 0)
+#define _opt
+
+//!@}
 
 //! for warning C4003: not enough actual parameters for macro
 #define _VOID
@@ -152,7 +168,7 @@ typedef void(*report_func) (int level, const char* format, ...);
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{
 #define REPORT_MSG_LEVEL_NOTICE		0	/*!< заметка */
-#define REPORT_MSG_LEVEL_WARRNING	1	/*!< предупреждение */
+#define REPORT_MSG_LEVEL_WARNING	1	/*!< предупреждение */
 #define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, желательно вылетать */
 
 #define REPORT_MSG_MAX_LEN 4096		/*!< максимальный размер сообщения */
@@ -204,13 +220,13 @@ typedef void(*report_func) (int level, const char* format, ...);
 #define DEFAULT_FUNCTION_REPORT
 
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
-inline void def_report(int level, const char* format, ...)
+inline void DefReport(int level, const char* format, ...)
 {
 #if defined(_WINDOWS)
 	AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
 #endif
-	char buf[4096];
+	char buf[REPORT_MSG_MAX_LEN];
 	int strl = sizeof(buf);
 	format_str(buf, format);
 	fprintf(stdout, "!!! report function is not init !!! %s\n", buf);

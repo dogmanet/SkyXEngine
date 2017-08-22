@@ -5,9 +5,9 @@
 #include <thread>
 #include <algorithm>
 #include <atomic>
-#include <core\concurrent_queue.h>
-#include <core\task.h>
-#include <core\eventchannel.h>
+#include "concurrent_queue.h"
+#include "task.h"
+#include "eventchannel.h"
 
 #if defined(_WINDOWS)
 // Это только для того, чтобы задать имя потока в отладччике
@@ -25,53 +25,53 @@ typedef struct tagTHREADNAME_INFO
 
 
 // Внимание, при использовании должна быть создана хотя бы одна фоновая задача!
-class SXTaskManager
+class CTaskManager
 {
 public:
-	typedef std::shared_ptr<SXTask> TaskPtr;
+	typedef std::shared_ptr<CTask> TaskPtr;
 	typedef ConcurrentQueue<TaskPtr> TaskList;
 
 	struct StopEvent
 	{
 	};
 
-	SXTaskManager(unsigned int numThreads = 0); //< Количество рабочих потоков, 0 для автоопределения
-	~SXTaskManager();
+	CTaskManager(unsigned int numThreads = 0); //< Количество рабочих потоков, 0 для автоопределения
+	~CTaskManager();
 
 	void  addTask(TaskPtr task); //< Добавляет задачу в планировщик
-	void  add(THREAD_UPDATE_FUNCTION func, DWORD flag = CoreTF_SINGLETHREADED_REPEATING); //< Добавляет задачу в планировщик
+	void  add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag = CORE_TASK_FLAG_SINGLETHREADED_REPEATING); //< Добавляет задачу в планировщик
 
 	void start(); //< Запускает выполнение планировщика
 	void stop(); //< Останавливает все
 
 	void handle(const StopEvent&);
-	void handle(const SXTask::TaskCompleted& tc);
+	void handle(const CTask::CTaskCompleted &tc);
 
 private:
 	void worker();
 	void execute(TaskPtr task);
 	void synchronize();
 
-	std::list<std::thread*> mThreads;
-	unsigned int mNumThreads;
+	std::list<std::thread*> m_aThreads;
+	unsigned int m_iNumThreads;
 
-	bool mRunning;
+	bool m_isRunning;
 
-	TaskList mTaskList[2];
-	TaskList mBackgroundTasks;
-	TaskList mSyncTasks;
-	TaskList mOnSyncTasks;
+	TaskList m_TaskList[2];
+	TaskList m_BackgroundTasks;
+	TaskList m_SyncTasks;
+	TaskList m_OnSyncTasks;
 
-	unsigned int mReadList;
-	unsigned int mWriteList;
+	unsigned int m_iReadList;
+	unsigned int m_iWriteList;
 
 	typedef std::mutex Mutex;
 	typedef std::condition_variable Condition;
 	typedef std::lock_guard<Mutex> ScopedLock;
 
-	mutable Mutex mSyncMutex;
-	Condition mCondition;
-	int mNumTasksToWaitFor;
+	mutable Mutex m_SyncMutex;
+	Condition m_Condition;
+	int m_iNumTasksToWaitFor;
 };
 
 #endif

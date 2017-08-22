@@ -4,8 +4,8 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-#include <input/sxinput.h>
-#include <input/input.cpp>
+#include "sxinput.h"
+#include "input.h"
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -16,10 +16,10 @@ See the license in LICENSE
 SXInput* ObjectInput = 0;
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
 
-#define SI_PRECOND(retval) if(!ObjectInput){reportf(-1, "%s - sxinput is not init", gen_msg_location); return retval;}
+#define SI_PRECOND(retval) if(!ObjectInput){g_fnReportf(-1, "%s - sxinput is not init", gen_msg_location); return retval;}
 
 long SSInput_0GetVersion()
 {
@@ -28,7 +28,7 @@ long SSInput_0GetVersion()
 
 void SSInput_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 void cmd_bind(int argc, const char ** argv)
@@ -62,14 +62,14 @@ void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							reportf(-1, "%s - none unic name for system input", gen_msg_location);
+							g_fnReportf(-1, "%s - none unic name for system input", gen_msg_location);
 							return;
 						}
 				}
 			InitIntup(name, hwnd);
 		}
 		else
-			reportf(-1, "%s - not init argument [name] for system sound", gen_msg_location);
+			g_fnReportf(-1, "%s - not init argument [name] for system sound", gen_msg_location);
 }
 
 void SSInput_Update()

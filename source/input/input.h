@@ -4,8 +4,6 @@
 
 #include <queue>
 
-#pragma once
-
 #define SXI_KEYMAP_SIZE 256
 
 //элемент карты ввода

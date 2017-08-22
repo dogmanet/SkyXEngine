@@ -211,21 +211,21 @@ void CWeather::load(const char *szPath)
 		return;
 	}
 
-	ISXLConfig* config = Core_OpLConfig(szPath);
+	ISXConfig* config = Core_OpConfig(szPath);
 
-	if (!config->SectionExists("sections"))
+	if (!config->sectionExists("sections"))
 	{
 		reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", gen_msg_location, szPath);
 		mem_release_del(config);
 		return;
 	}
 
-	int key_count = config->GetKeyCount("sections");
+	int key_count = config->getKeyCount("sections");
 
 	for (int i = 0; i < key_count; ++i)
 	{
 		int time = 0;
-		const char* str = config->GetKeyName("sections", i);
+		const char* str = config->getKeyName("sections", i);
 
 		if (strlen(str) != 8)
 		{
@@ -249,7 +249,7 @@ void CWeather::load(const char *szPath)
 		WEATHER_CONFIG_SECTION_KEY(tmpstr, str, szPath, "sections");
 		time += atoi(tmpstr);
 
-		m_aTimeSections.push_back(CTimeSection(time, config->GetKey("sections", str)));
+		m_aTimeSections.push_back(CTimeSection(time, config->getKey("sections", str)));
 
 		int qwerty = 0;
 	}
@@ -274,25 +274,25 @@ void CWeather::load(const char *szPath)
 	{
 		//reportf(0, "%d\n", m_aTimeSections[i].time);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sky_texture"))
-			sprintf(m_aTimeSections[i].m_DataSection.m_szSkyTex, "%s", config->GetKey(m_aTimeSections[i].m_szSection, "sky_texture"));
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "sky_texture"))
+			sprintf(m_aTimeSections[i].m_DataSection.m_szSkyTex, "%s", config->getKey(m_aTimeSections[i].m_szSection, "sky_texture"));
 		else
 			WEATHER_CONFIG_LACKS_KEY("sky_texture", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_texture"))
-			sprintf(m_aTimeSections[i].m_DataSection.m_szCloudsTex, "%s", config->GetKey(m_aTimeSections[i].m_szSection, "clouds_texture"));
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_texture"))
+			sprintf(m_aTimeSections[i].m_DataSection.m_szCloudsTex, "%s", config->getKey(m_aTimeSections[i].m_szSection, "clouds_texture"));
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_texture", szPath, m_aTimeSections[i].m_szSection);
 
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sun_texture"))
-			sprintf(m_aTimeSections[i].m_DataSection.m_szSunTex, "%s", config->GetKey(m_aTimeSections[i].m_szSection, "sun_texture"));
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "sun_texture"))
+			sprintf(m_aTimeSections[i].m_DataSection.m_szSunTex, "%s", config->getKey(m_aTimeSections[i].m_szSection, "sun_texture"));
 		else
 			WEATHER_CONFIG_LACKS_KEY("sun_texture", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sun_pos"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "sun_pos"))
 		{
-			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "sun_pos");
+			const char* text_sp = config->getKey(m_aTimeSections[i].m_szSection, "sun_pos");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
@@ -307,14 +307,14 @@ void CWeather::load(const char *szPath)
 		else
 			WEATHER_CONFIG_LACKS_KEY("sun_pos", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sky_rotation"))
-			m_aTimeSections[i].m_DataSection.m_fSkyRotation = String(config->GetKey(m_aTimeSections[i].m_szSection, "sky_rotation")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "sky_rotation"))
+			m_aTimeSections[i].m_DataSection.m_fSkyRotation = String(config->getKey(m_aTimeSections[i].m_szSection, "sky_rotation")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("sky_rotation", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sky_color"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "sky_color"))
 		{
-			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "sky_color");
+			const char* text_sp = config->getKey(m_aTimeSections[i].m_szSection, "sky_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
@@ -338,9 +338,9 @@ void CWeather::load(const char *szPath)
 			WEATHER_CONFIG_LACKS_KEY("sky_color", szPath, m_aTimeSections[i].m_szSection);
 
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_color"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_color"))
 		{
-			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "clouds_color");
+			const char* text_sp = config->getKey(m_aTimeSections[i].m_szSection, "clouds_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
@@ -363,25 +363,25 @@ void CWeather::load(const char *szPath)
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_rotate"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = String(config->GetKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_rotate"))
+			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_rotate", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_transparency"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = String(config->GetKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_transparency"))
+			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_transparency", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "clouds_speed"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = String(config->GetKey(m_aTimeSections[i].m_szSection, "clouds_speed")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_speed"))
+			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_speed")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_speed", szPath, m_aTimeSections[i].m_szSection);
 
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "sun_color"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "sun_color"))
 		{
-			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "sun_color");
+			const char* text_sp = config->getKey(m_aTimeSections[i].m_szSection, "sun_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
@@ -400,19 +400,19 @@ void CWeather::load(const char *szPath)
 		else
 			WEATHER_CONFIG_LACKS_KEY("sun_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "far"))
-			m_aTimeSections[i].m_DataSection.m_fFar = String(config->GetKey(m_aTimeSections[i].m_szSection, "far")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "far"))
+			m_aTimeSections[i].m_DataSection.m_fFar = String(config->getKey(m_aTimeSections[i].m_szSection, "far")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("far", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "rain_density"))
-			m_aTimeSections[i].m_DataSection.m_fRainDensity = String(config->GetKey(m_aTimeSections[i].m_szSection, "rain_density")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "rain_density"))
+			m_aTimeSections[i].m_DataSection.m_fRainDensity = String(config->getKey(m_aTimeSections[i].m_szSection, "rain_density")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("rain_density", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "rain_color"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "rain_color"))
 		{
-			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "rain_color");
+			const char* text_sp = config->getKey(m_aTimeSections[i].m_szSection, "rain_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
@@ -435,14 +435,14 @@ void CWeather::load(const char *szPath)
 		else
 			WEATHER_CONFIG_LACKS_KEY("rain_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "fog_density"))
-			m_aTimeSections[i].m_DataSection.m_fFogDensity = String(config->GetKey(m_aTimeSections[i].m_szSection, "fog_density")).ToDouble();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "fog_density"))
+			m_aTimeSections[i].m_DataSection.m_fFogDensity = String(config->getKey(m_aTimeSections[i].m_szSection, "fog_density")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("fog_density", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "fog_color"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "fog_color"))
 		{
-			const char* text_sp = config->GetKey(m_aTimeSections[i].m_szSection, "fog_color");
+			const char* text_sp = config->getKey(m_aTimeSections[i].m_szSection, "fog_color");
 			char text_sp2[64];
 			strcpy(text_sp2, text_sp);
 
@@ -461,29 +461,29 @@ void CWeather::load(const char *szPath)
 		else
 			WEATHER_CONFIG_LACKS_KEY("fog_color", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "thunderbolt"))
-			m_aTimeSections[i].m_DataSection.m_hasThunderbolt = String(config->GetKey(m_aTimeSections[i].m_szSection, "thunderbolt")).ToBool();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "thunderbolt"))
+			m_aTimeSections[i].m_DataSection.m_hasThunderbolt = String(config->getKey(m_aTimeSections[i].m_szSection, "thunderbolt")).ToBool();
 		else
 			WEATHER_CONFIG_LACKS_KEY("thunderbolt", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "thunder_period"))
-			m_aTimeSections[i].m_DataSection.m_ulThunderPeriod = String(config->GetKey(m_aTimeSections[i].m_szSection, "thunder_period")).ToUnsLongInt();
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "thunder_period"))
+			m_aTimeSections[i].m_DataSection.m_ulThunderPeriod = String(config->getKey(m_aTimeSections[i].m_szSection, "thunder_period")).ToUnsLongInt();
 		else
 			WEATHER_CONFIG_LACKS_KEY("thunder_period", szPath, m_aTimeSections[i].m_szSection);
 
-		if (config->KeyExists(m_aTimeSections[i].m_szSection, "env_ambient"))
+		if (config->keyExists(m_aTimeSections[i].m_szSection, "env_ambient"))
 		{
-			const char* text_env = config->GetKey(m_aTimeSections[i].m_szSection, "env_ambient");
+			const char* text_env = config->getKey(m_aTimeSections[i].m_szSection, "env_ambient");
 
-			if (!config->SectionExists(text_env))
+			if (!config->sectionExists(text_env))
 			{
 				reportf(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nszPath '%s' \nsection '%s'", gen_msg_location, text_env, szPath, m_aTimeSections[i].m_szSection);
 				return;
 			}
 
-			if (config->KeyExists(text_env, "period"))
+			if (config->keyExists(text_env, "period"))
 			{
-				const char* text_sp = config->GetKey(text_env, "period");
+				const char* text_sp = config->getKey(text_env, "period");
 				char text_sp2[64];
 				strcpy(text_sp2, text_sp);
 
@@ -498,9 +498,9 @@ void CWeather::load(const char *szPath)
 			else
 				WEATHER_CONFIG_LACKS_KEY("period", szPath, text_env);
 
-			if (config->KeyExists(text_env, "volume"))
+			if (config->keyExists(text_env, "volume"))
 			{
-				const char* text_sp = config->GetKey(text_env, "volume");
+				const char* text_sp = config->getKey(text_env, "volume");
 				char text_sp2[64];
 				strcpy(text_sp2, text_sp);
 
@@ -515,9 +515,9 @@ void CWeather::load(const char *szPath)
 			else
 				WEATHER_CONFIG_LACKS_KEY("volume", szPath, text_env);
 
-			if (config->KeyExists(text_env, "sounds"))
+			if (config->keyExists(text_env, "sounds"))
 			{
-				const char* text_sp = config->GetKey(text_env, "sounds");
+				const char* text_sp = config->getKey(text_env, "sounds");
 				char text_sp2[4096];
 				strcpy(text_sp2, text_sp);
 
@@ -727,7 +727,7 @@ void CWeather::update()
 			tmp_fog_color2->z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vFogColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vFogColor.z, lerp_factor);
 		}
 		else
-			reportf(REPORT_MSG_LEVEL_WARRNING, "cvar e_pp_fog_color is not init");
+			reportf(REPORT_MSG_LEVEL_WARNING, "cvar e_pp_fog_color is not init");
 	}
 
 	//если в текущей секции есть частота молнии

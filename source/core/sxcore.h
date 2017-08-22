@@ -30,36 +30,36 @@ See the license in LICENSE
 typedef void(*THREAD_UPDATE_FUNCTION)();
 
 //! значения определющие поведение задачи
-enum CoreTaskFlag
+enum CORE_TASK_FLAG
 {
-	CoreTF_NONE = 0x0,
+	CORE_TASK_FLAG_NONE			= 0x0,
 
-	CoreTF_REPEATING = 0x1 << 0,	//!< Задача будет повторяться, если не указано - выполнится только один раз
-	CoreTF_THREADSAFE = 0x1 << 1,	//!< Задача может быть выполнена в любом потоке
-	CoreTF_FRAME_SYNC = 0x1 << 2,	//!< Задаче необходима синхронизация по границе кадра
-	CoreTF_ON_SYNC = 0x1 << 3,		//!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
+	CORE_TASK_FLAG_REPEATING	= 0x1 << 0,	//!< Задача будет повторяться, если не указано - выполнится только один раз
+	CORE_TASK_FLAG_THREADSAFE	= 0x1 << 1,	//!< Задача может быть выполнена в любом потоке
+	CORE_TASK_FLAG_FRAME_SYNC	= 0x1 << 2,	//!< Задаче необходима синхронизация по границе кадра
+	CORE_TASK_FLAG_ON_SYNC		= 0x1 << 3,	//!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
 
-	CoreTF_SINGLETHREADED = CoreTF_NONE,				//!< Задача выполняется в главном потоке, один раз
-	CoreTF_SINGLETHREADED_REPEATING = CoreTF_REPEATING, //!< Задача выполняется в главном потоке, повторяется
-	CoreTF_BACKGROUND = CoreTF_THREADSAFE,				//!< Задача выполняется в фоне(не ожидает синхронизации) один раз
-	CoreTF_BACKGROUND_REPEATING = CoreTF_THREADSAFE | CoreTF_REPEATING,		//!< Задача выполняется в фоне(не ожидает синхронизации), по завершении повторяется
-	CoreTF_BACKGROUND_SYNC = CoreTF_THREADSAFE | CoreTF_FRAME_SYNC,			//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
-	CoreTF_BACKGROUND_SYNC_REPEATING = CoreTF_THREADSAFE | CoreTF_REPEATING | CoreTF_FRAME_SYNC,	//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
+	CORE_TASK_FLAG_SINGLETHREADED = CORE_TASK_FLAG_NONE,				//!< Задача выполняется в главном потоке, один раз
+	CORE_TASK_FLAG_SINGLETHREADED_REPEATING = CORE_TASK_FLAG_REPEATING, //!< Задача выполняется в главном потоке, повторяется
+	CORE_TASK_FLAG_BACKGROUND = CORE_TASK_FLAG_THREADSAFE,				//!< Задача выполняется в фоне(не ожидает синхронизации) один раз
+	CORE_TASK_FLAG_BACKGROUND_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING,		//!< Задача выполняется в фоне(не ожидает синхронизации), по завершении повторяется
+	CORE_TASK_FLAG_BACKGROUND_SYNC = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_FRAME_SYNC,			//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
+	CORE_TASK_FLAG_BACKGROUND_SYNC_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING | CORE_TASK_FLAG_FRAME_SYNC,	//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
 
-	CoreTF_ALL = ~0x0
+	CORE_TASK_FLAG_ALL = ~0x0
 };
 
 /*!@name Базовые функции ядра */
 //!@{
 SX_LIB_API long Core_0GetVersion();	//!< возвращает версию ядра
-SX_LIB_API void Core_0Create(const char* name, bool is_unic = true); //!< создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
+SX_LIB_API void Core_0Create(const char *szName, bool isUnic = true); //!< создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
 SX_LIB_API void Core_Dbg_Set(report_func rf); //!< установка своего обработчика вывода отладочной информации
-SX_LIB_API bool Core_0FileExists(const char* path);			//!< существует ли файл
-SX_LIB_API bool Core_0ClipBoardCopy(const char *str);		//!< копирует строку в буфер обмена
-SX_LIB_API bool Core_0IsProcessRun(const char* process);	//!< запущен ли процесс
+SX_LIB_API bool Core_0FileExists(const char *szPath);			//!< существует ли файл
+SX_LIB_API bool Core_0ClipBoardCopy(const char *szStr);		//!< копирует строку в буфер обмена
+SX_LIB_API bool Core_0IsProcessRun(const char *szProcess);	//!< запущен ли процесс
 
 SX_LIB_API void Core_AKill(); //!< уничтожить ядро
-SX_LIB_API void Core_AGetName(char* name); ///< получить имя ядра
+SX_LIB_API void Core_AGetName(char *szName); ///< получить имя ядра
 //!@}
 
 /*! @name Менеджер задач 
@@ -70,7 +70,7 @@ SX_LIB_API void Core_AGetName(char* name); ///< получить имя ядра
 //! добавить задачу
 SX_LIB_API void Core_MTaskAdd(	
 								THREAD_UPDATE_FUNCTION func, //!< функция обработки
-								DWORD flag = CoreTF_SINGLETHREADED_REPEATING //!< флаг из #CoreTaskFlag 
+								DWORD flag = CORE_TASK_FLAG_SINGLETHREADED_REPEATING //!< флаг из #CoreTaskFlag 
 								); 
 SX_LIB_API void Core_MTaskStart();	//!< стартовать обрабатывать все задачи
 SX_LIB_API void Core_MTaskStop();	//!< остановить все задачи
@@ -117,13 +117,13 @@ SX_LIB_API ID Core_TimeAdd();		//!< добавление таймера
 
 SX_LIB_API void Core_TimesUpdate();	//!< обновление всех таймеров
 
-SX_LIB_API void Core_TimeSpeedSet(ID id, float speed);	//!< установка скорости течения времени
+SX_LIB_API void Core_TimeSpeedSet(ID id, float fSpeed);	//!< установка скорости течения времени
 SX_LIB_API float Core_TimeSpeedGet(ID id);				//!< возвращает скоротечность времени для таймера
 
-SX_LIB_API void Core_TimeWorkingSet(ID id, bool working);	//!< установка состояния запуска таймера
+SX_LIB_API void Core_TimeWorkingSet(ID id, bool isWorking);	//!< установка состояния запуска таймера
 SX_LIB_API bool Core_TimeWorkingGet(ID id);					//!< запущен ли таймер
 
-SX_LIB_API void Core_TimeUnixStartSet(ID id, int64_t start_time);	//!< установить стартовую дату в Unix в секундах
+SX_LIB_API void Core_TimeUnixStartSet(ID id, int64_t iStartTime);	//!< установить стартовую дату в Unix в секундах
 SX_LIB_API int64_t Core_TimeUnixStartGet(ID id);					//!< возвращает стартовую дату в Unix в секундах
 SX_LIB_API int64_t Core_TimeUnixCurrGet(ID id);						//!< возвращает текущюю дату в Unix в секундах
 
@@ -152,58 +152,58 @@ SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);					//!< возвращает �
 #define CORE_FILE_EOF	EOF	/*!< конец файла */
 
 /*! Интерфейс для записи/чтения файлов
- \note аргумент type - режим отрытия файла
+ \note аргумент iType - режим отрытия файла
 */
-struct ISXFile : public IBaseObject
+struct IFile : public IBaseObject
 {
-	virtual ~ISXFile(){};
+	virtual ~IFile(){};
 	
-	virtual int Open(const char* path, int type = CORE_FILE_TEXT) = 0;	//!<  открыть файл
-	virtual int Create(const char* path, int type = CORE_FILE_TEXT) = 0;//!< создать файл
-	virtual int Add(const char* path, int type = CORE_FILE_TEXT) = 0;	//!< добавить в конец файла
-	virtual size_t ReadB(void* dest, size_t size)=0;	//!< считать в dest количетсво байт size
-	virtual size_t WriteB(void* src, size_t size)=0;	//!< записать src в количетве size байт
-	virtual size_t ReadT(const char* format, ...) = 0;	//!< чтение из файла, в аргументы только указатели
-	virtual size_t WriteT(const char* format, ...) = 0;	//!< запись в файл
-	virtual size_t GetSize()=0;	//!< получить размер файла в байтах
-	virtual int ReadChar()=0;	//!< считать символ
-	virtual size_t GetPos() = 0;//!< текущая позиция курсора в файле
-	virtual void SetPos(size_t pos) = 0; //!< установить позицию
-	virtual void Close()=0;		//!< закрыть файл
-	virtual bool IsEOF()=0;		//!< текущая позиция является концом файла?
+	virtual int open(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< открыть файл
+	virtual int create(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< создать файл
+	virtual int add(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< добавить в конец файла
+	virtual size_t readBin(void *pDest, size_t iSize) = 0;					//!< считать в dest количетсво байт size
+	virtual size_t writeBin(const void *pSrc, size_t iSize) = 0;			//!< записать src в количетве size байт
+	virtual size_t readText(const char *szFormat, ...) = 0;					//!< чтение из файла, в аргументы только указатели
+	virtual size_t writeText(const char *szFormat, ...) = 0;				//!< запись в файл
+	virtual size_t getSize() const = 0;		//!< получить размер файла в байтах
+	virtual int readChar() = 0;				//!< считать символ
+	virtual size_t getPos() const = 0;		//!< текущая позиция курсора в файле
+	virtual void setPos(size_t iPos) = 0;	//!< установить позицию
+	virtual void close() = 0;				//!< закрыть файл
+	virtual bool isEOF() const = 0;			//!< текущая позиция является концом файла?
 };
 
 /*! @name Создание экземпляров файлов */
 //!@{
-SX_LIB_API ISXFile* Core_CrFile(); //!< создать экземпляр класса ISXFile
-SX_LIB_API ISXFile* Core_OpFile(const char* path, int type); //!< открыть файл
+SX_LIB_API IFile* Core_CrFile(); //!< создать экземпляр класса IFile
+SX_LIB_API IFile* Core_OpFile(const char* szPath, int iType); //!< открыть файл
 //!@}
 ////////
 
 /*! интерфейс для работы с файлами конфигурации (ini) 
  \warning секции и ключи хранятся в виде дерева, и нет гарантии что может быть доступ по порядковому номеру, 
 можно получить общее количество секций/ключей, дальше плясать */
-struct ISXLConfig : public IBaseObject
+struct ISXConfig : public IBaseObject
 {
-	virtual ~ISXLConfig(){};
+	virtual ~ISXConfig(){};
 	virtual void New(const char* path) = 0;	//!< новый файл
-	virtual int Open(const char* path) = 0;	//!< открыть файл
-	virtual const char* GetKey(const char* section, const char* key) = 0;	//!< получить значения ключа key который в секции section
-	virtual const char* GetKeyName(const char* section, int key) = 0;		//!< получить имя ключа по номеру
-	virtual const char* GetSectionName(int num) = 0;						//!< получить имя секции по номеру
-	virtual void Set(const char* section, const char* key, const char* val)=0;	//!< установить значение val ключа key котор в секции section
-	virtual int Save()=0;				//!< сохранить файл
-	virtual int GetSectionCount()=0;	//!< количество секций в файле
-	virtual int GetKeyCount()=0;		//!< общее количество ключей
-	virtual int GetKeyCount(const char* section) = 0;				//!< общее количество ключей в секции
-	virtual bool SectionExists(const char* section) = 0;			//!< существует ли секция section
-	virtual bool KeyExists(const char* section, const char* key) = 0;	//!< существует ли ключ key в секции section
+	virtual int open(const char* path) = 0;	//!< открыть файл
+	virtual const char* getKey(const char* section, const char* key) = 0;	//!< получить значения ключа key который в секции section
+	virtual const char* getKeyName(const char* section, int key) = 0;		//!< получить имя ключа по номеру
+	virtual const char* getSectionName(int num) = 0;						//!< получить имя секции по номеру
+	virtual void set(const char* section, const char* key, const char* val)=0;	//!< установить значение val ключа key котор в секции section
+	virtual int save()=0;				//!< сохранить файл
+	virtual int getSectionCount()=0;	//!< количество секций в файле
+	virtual int getKeyCount()=0;		//!< общее количество ключей
+	virtual int getKeyCount(const char* section) = 0;				//!< общее количество ключей в секции
+	virtual bool sectionExists(const char* section) = 0;			//!< существует ли секция section
+	virtual bool keyExists(const char* section, const char* key) = 0;	//!< существует ли ключ key в секции section
 };
 
 /*!@name Создание экземпляров конфигурацииных файлов */
 //!@{
-SX_LIB_API ISXLConfig* Core_CrLConfig(); //!< создать файл экземпляр класса ISXLConfig
-SX_LIB_API ISXLConfig* Core_OpLConfig(const char* path); //!< открыть файл конфигов
+SX_LIB_API ISXConfig* Core_CrConfig(); //!< создать файл экземпляр класса ISXLConfig
+SX_LIB_API ISXConfig* Core_OpConfig(const char* path); //!< открыть файл конфигов
 //!@}
 
 /*!@name Работа с консолью */

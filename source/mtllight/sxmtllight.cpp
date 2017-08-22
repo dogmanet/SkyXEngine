@@ -6,22 +6,21 @@ See the license in LICENSE
 
 #define SXMATERIAL_LIGTH_VERSION 1
 
+#include "sxmtllight.h"
+#include "ml_data.h"
+
+#include "light.h"
+#include "material.h"
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
-#include <common\\string_api.cpp>
-
-#include <mtllight\sxmtllight.h>
-#include <mtllight\\ml_data.cpp>
-
-#include <mtllight\\light.cpp>
-#include <mtllight\\material.cpp>
 
 Lights* ArrLights = 0;
 Materials* ArrMaterials = 0;
 
-#define ML_PRECOND(retval) if(!ArrLights){reportf(-1, "%s - sxmtlligth is not init", gen_msg_location); return retval;}
+#define ML_PRECOND(retval) if(!ArrLights){g_fnReportf(-1, "%s - sxmtlligth is not init", gen_msg_location); return retval;}
 
 long SML_0GetVersion()
 {
@@ -30,7 +29,7 @@ long SML_0GetVersion()
 
 void SML_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 void SML_0Create(const char* name, bool is_unic)
@@ -43,11 +42,11 @@ void SML_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				reportf(-1, "%s - none unic name, sxmaterial_ligth", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxmaterial_ligth", gen_msg_location);
 			}
 			else
 			{
-				MLInit();
+				MLSet::MLInit();
 				MLSet::ReCalcSize();
 				ArrLights = new Lights();
 				ArrMaterials = new Materials();
@@ -55,14 +54,14 @@ void SML_0Create(const char* name, bool is_unic)
 		}
 		else
 		{
-			MLInit();
+			MLSet::MLInit();
 			MLSet::ReCalcSize();
 			ArrLights = new Lights();
 			ArrMaterials = new Materials();
 		}
 	}
 	else
-		reportf(-1, "%s - not init argument [name], sxmaterial_ligth", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxmaterial_ligth", gen_msg_location);
 }
 
 void SML_AKill()

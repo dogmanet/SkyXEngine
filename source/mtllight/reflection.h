@@ -2,6 +2,18 @@
 #ifndef __reflection
 #define __reflection
 
+#include <gdefines.h>
+
+#define SM_D3D_CONVERSIONS
+#include <common/SXMath.h>
+#include <common/Array.h>
+#include <d3d9.h>
+
+#include "sxmtllight.h"
+#include "ml_data.h"
+
+extern report_func g_fnReportf;
+
 class Reflection
 {
 public:
@@ -14,11 +26,11 @@ public:
 	SX_ALIGNED_OP_MEM
 
 	void Init(MtlTypeReflect howref);
-	inline MtlTypeReflect GetTypeReflect(){ return TypeRef; };
+	MtlTypeReflect GetTypeReflect(){ return TypeRef; };
 
 	void PreRenderRefPlane(D3DXPLANE* plane);
 	void PostRenderRefPlane();
-	inline IDirect3DTexture9* GetRefPlaneTex();
+	IDirect3DTexture9* GetRefPlaneTex();
 
 	void BeginRenderRefCube(float3_t* center);
 	void PreRenderRefCube(int cube, float4x4* world);
@@ -27,13 +39,13 @@ public:
 	bool UpdateCountUpdate(float3_t* viewpos);
 	bool AllowedRender();
 	void NullingCountUpdate();
-	inline IDirect3DCubeTexture9* GetRefCubeTex();
+	IDirect3DCubeTexture9* GetRefCubeTex();
 
 	void SetMinMax(float3_t* min, float3_t* max);
 
 	void SetIDArr(ID id, int cube, ID idarr);
-	inline int GetCountIDArrs();
-	inline ID GetIDArr(ID id, int cube);
+	int GetCountIDArrs();
+	ID GetIDArr(ID id, int cube);
 
 	bool IsComNow;	//обрабатывать ли сейчас, на случай еси видно или нет
 	float3 PositionReflect;	//позиция откуда идут отражения, обновляется каждый раз

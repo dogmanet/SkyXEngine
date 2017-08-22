@@ -1,5 +1,5 @@
 
-#include <mtllight\\light.h>
+#include "light.h"
 
 Lights::Lights()
 {
@@ -178,7 +178,7 @@ void Lights::OnResetDevice()
 	}
 }
 
-inline ID Lights::AddLight(Light* obj)
+ID Lights::AddLight(Light* obj)
 {
 	ID idadd = -1;
 	for (int i = 0; i < ArrIDLights.size(); ++i)
@@ -254,7 +254,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 {
 	if (GlobalLight != -1 && isglobal)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", gen_msg_location);
 		return -1;
 	}
 

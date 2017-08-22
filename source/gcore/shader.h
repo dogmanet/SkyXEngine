@@ -1,11 +1,17 @@
 
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef __SHADER_H
+#define __SHADER_H
 
-#include <common\array.h>
-#include <common\string_api.cpp>
+#include <gdefines.h>
+#include <stdio.h>
+#include <d3d9.h>
+#include <common/array.h>
+#include <common\String.h>
+#include "sxgcore.h"
 
-#pragma once
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 struct ShaderVS
 {
@@ -74,8 +80,8 @@ public:
 	ID IsExistName(ShaderType type_shader, const char* name);
 	bool IsValidate(ShaderType type_shader, ID id);
 
-	inline void GetPath(ShaderType type_shader, ID id, char* path);
-	inline void GetName(ShaderType type_shader, ID id, char* name);
+	void GetPath(ShaderType type_shader, ID id, char* path);
+	void GetName(ShaderType type_shader, ID id, char* name);
 
 protected:
 	Array<ShaderVS*> ArrVS;

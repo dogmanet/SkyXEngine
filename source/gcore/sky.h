@@ -1,6 +1,16 @@
 
-#ifndef __sky
-#define __sky
+#ifndef __SKY_H
+#define __SKY_H
+
+#include <gdefines.h>
+#include <d3d9.h>
+#include <common/array.h>
+#include <common/String.h>
+#include "sxgcore.h"
+
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 struct SkyBoxVertex
 {
@@ -18,14 +28,14 @@ public:
 	SkyBox();
 	~SkyBox();
 	void LoadTextures(const char *texture);
-	inline bool IsLoadTex();
+	bool IsLoadTex();
 	void ChangeTexture(const char *texture);
 	void GetActiveTexture(char *texture);
 	void GetSecondTexture(char *texture);
-	inline void SetRotation(float angle);
-	inline float GetRotation();
-	inline void SetColor(float4_t* color);
-	inline void GetColor(float4_t* color);
+	void SetRotation(float angle);
+	float GetRotation();
+	void SetColor(float4_t* color);
+	void GetColor(float4_t* color);
 	void Render(float timeDelta,float3* pos,bool is_shadow);
 
 protected:
@@ -73,18 +83,18 @@ public:
 	//если облака отбрасывают тень, то надо шобы облака покрывали почти весь уровень
 	void SetWidthHeightPos(float width,float height,float3* pos);
 	void LoadTextures(const char *texture);
-	inline bool IsLoadTex();
+	bool IsLoadTex();
 	void ChangeTexture(const char *texture);
 
-	inline void SetRotation(float angle);
-	inline float GetRotation();
-	inline void SetAlpha(float alpha);
-	inline float GetAlpha();
-	inline void SetColor(float4_t* color);
-	inline void GetColor(float4_t* color);
+	void SetRotation(float angle);
+	float GetRotation();
+	void SetAlpha(float alpha);
+	float GetAlpha();
+	void SetColor(float4_t* color);
+	void GetColor(float4_t* color);
 
-	inline void SetSpeed(float speed);
-	inline float GetSpeed();
+	void SetSpeed(float speed);
+	float GetSpeed();
 
 	void Render(DWORD timeDetlta,float3* pos,bool is_shadow);
 

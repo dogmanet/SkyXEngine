@@ -3,13 +3,13 @@
 
 AssotiativeArray<String, CVar> g_mCVars;
 
-extern report_func reportf;
+extern report_func g_fnReportf;
 
 SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "CVar '%s' already registered. Skipping.\n", name);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -37,7 +37,7 @@ SX_LIB_API void Core_0RegisterCVarInt(const char * name, int value, const char *
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "CVar '%s' already registered. Skipping.\n", name);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -62,7 +62,7 @@ SX_LIB_API void Core_0RegisterCVarFloat(const char * name, float value, const ch
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "CVar '%s' already registered. Skipping.\n", name);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -87,7 +87,7 @@ SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "CVar '%s' already registered. Skipping.\n", name);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 

@@ -1,5 +1,5 @@
 
-#include <geom\\static_geom.h>
+#include "static_geom.h"
 
 StaticGeom::Segment::Segment()
 {
@@ -213,14 +213,14 @@ void StaticGeom::OnResetDevice()
 	StaticGeom::DXDevice->CreateIndexBuffer(sizeof(uint32_t)* SizeRenderIndexBuffer, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/, &RenderIndexBuffer, 0);
 }
 
-inline long StaticGeom::GetCountModel()
+long StaticGeom::GetCountModel()
 {
 	return AllModels.size();
 }
 
 ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 {
-	reportf(0, "load geometry: '%s'.. ", path);
+	g_fnReportf(0, "load geometry: '%s'.. ", path);
 	DelArrIndexPtr();
 
 	ISXDataStaticModel* model = 0;
@@ -262,7 +262,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 		//если количество полигонов в подгруппе модели больше разрешенного
 		if (model->IndexCount[i] / 3 > GEOM_MAX_POLY_IN_GROUP)
 		{
-			reportf(-1, "[GEOM] %s count polygons %d in group over default '%d'", gen_msg_location, model->IndexCount[i] / 3, GEOM_MAX_POLY_IN_GROUP);
+			g_fnReportf(-1, "[GEOM] %s count polygons %d in group over default '%d'", gen_msg_location, model->IndexCount[i] / 3, GEOM_MAX_POLY_IN_GROUP);
 			return -1;
 		}
 
@@ -539,7 +539,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 	mem_delete_a(ArrMeshVertex);
 	mem_delete_a(ArrMeshIndex);
 
-	reportf(0, " completed\n", path);
+	g_fnReportf(0, " completed\n", path);
 	return AllModels.size() - 1;
 }
 
@@ -625,7 +625,7 @@ void StaticGeom::DelModel(ID id)
 			if (tmpidingroup == -1)
 			{
 				//то это очень плохо
-				reportf(REPORT_MSG_LEVEL_ERROR, "[GEOM] %s - when deleting the model, it was found in an array of patterns in subgroups of the buffer, it is very bad", gen_msg_location);
+				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[GEOM] %s - when deleting the model, it was found in an array of patterns in subgroups of the buffer, it is very bad", gen_msg_location);
 			}
 
 			//обновляем данные в подгруппе модели о стартовых позициях
@@ -1513,7 +1513,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 
 	mesh->ArrSplits = new Segment();
 	mesh->ArrSplits->CountAllPoly = model->AllIndexCount/3;
-	reportf(REPORT_MSG_LEVEL_NOTICE, "poly: %d, ", mesh->ArrSplits->CountAllPoly);
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "poly: %d, ", mesh->ArrSplits->CountAllPoly);
 
 	mesh->ArrSplits->BoundVolumeP = SGCore_CrBound();
 	mesh->ArrSplits->BoundVolumeP->CalcBound(model->VertexBuffer, model->AllVertexCount, sizeof(vertex_static));
@@ -1535,12 +1535,12 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 		if(dimensions.y >= minOctoHeight)
 		{
 			CountSplitsSys = GEOM_COUNT_TYPE_SEGMENTATION_OCTO;
-			reportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
 		}
 		else
 		{
 			CountSplitsSys = GEOM_COUNT_TYPE_SEGMENTATION_QUAD;
-			reportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
 
 		}
 			
@@ -1559,7 +1559,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 			CountPolyInSegment = GEOM_MAX_COUNT_POLY;
 		}
 
-		reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 	}
 
 #else
@@ -1576,12 +1576,12 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 			{
 				//делим как octo дерево
 				CountSplitsSys = GEOM_COUNT_TYPE_SEGMENTATION_OCTO;
-				reportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
+				g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
 			}
 			else
 			{
 				CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_QUAD;
-				reportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
+				g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
 			}
 
 			//определяем коэфициент интерполяции для определния минимального количества полигонов в сплите
@@ -1591,7 +1591,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 			else if(tmpcoef < 0.f)
 				tmpcoef = 0;
 			CountPolyInSegment = lerpf(STATIC_MIN_COUNT_POLY, STATIC_MAX_COUNT_POLY, tmpcoef);
-			reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 		}
 #endif
 
@@ -2752,7 +2752,7 @@ bool StaticGeom::GetIntersectedRayY(float3* pos)
 	return is_find;
 }
 
-inline void StaticGeom::GetMinMax(float3* min, float3* max)
+void StaticGeom::GetMinMax(float3* min, float3* max)
 {
 	BoundVolume->GetMinMax(min, max);
 }

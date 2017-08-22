@@ -1,7 +1,5 @@
 
-#pragma once
-
-#include <mtllight\\shadow.h>
+#include "shadow.h"
 	
 PSSM::PSSM()
 {
@@ -45,32 +43,32 @@ PSSM::~PSSM()
 	mem_release_del(OldColorSurface);
 }
 
-inline void PSSM::SetPosition(float3* pos)
+void PSSM::SetPosition(float3* pos)
 { 
 	Position = *pos; 
 }
 
-inline void PSSM::GetPosition(float3* pos)
+void PSSM::GetPosition(float3* pos)
 { 
 	*pos = Position; 
 }
 
-inline void PSSM::Set4Or3Splits(bool is4)
+void PSSM::Set4Or3Splits(bool is4)
 { 
 	Generating4Slits = is4; 
 }
 
-inline bool PSSM::Get4Or3Splits()
+bool PSSM::Get4Or3Splits()
 { 
 	return Generating4Slits; 
 }
 
-inline void PSSM::SetBlurPixel(float blur_pixel)
+void PSSM::SetBlurPixel(float blur_pixel)
 {
 	BlurPixel = blur_pixel;
 }
 
-inline bool PSSM::GetBlurPixel()
+bool PSSM::GetBlurPixel()
 {
 	return BlurPixel;
 }
@@ -547,23 +545,23 @@ void ShadowMapTech::GetAngleNearFar(float3* anf)
 	*anf = AngleNearFar;
 }
 
-inline void ShadowMapTech::SetBias(float bias)
+void ShadowMapTech::SetBias(float bias)
 {
 	Bias = bias;
 }
 
-inline float ShadowMapTech::GetBias()
+float ShadowMapTech::GetBias()
 {
 	return Bias;
 }
 
 
-inline void ShadowMapTech::SetBlurPixel(float blur_pixel)
+void ShadowMapTech::SetBlurPixel(float blur_pixel)
 {
 	BlurPixel = blur_pixel;
 }
 
-inline float ShadowMapTech::GetBlurPixel()
+float ShadowMapTech::GetBlurPixel()
 {
 	return BlurPixel;
 }
@@ -585,32 +583,32 @@ void ShadowMapTech::Init()
 								fOffset,	fOffset,	fBias,		1.0f);
 }
 
-inline void ShadowMapTech::SetFar(float sfar)
+void ShadowMapTech::SetFar(float sfar)
 {
 	AngleNearFar.z = sfar;
 }
 
-inline float ShadowMapTech::GetFar()
+float ShadowMapTech::GetFar()
 {
 	return AngleNearFar.z;
 }
 
-inline void ShadowMapTech::SetNear(float snear)
+void ShadowMapTech::SetNear(float snear)
 {
 	AngleNearFar.y = snear;
 }
 
-inline float ShadowMapTech::GetNear()
+float ShadowMapTech::GetNear()
 {
 	return AngleNearFar.y;
 }
 
-inline void ShadowMapTech::SetAngle(float sangle)
+void ShadowMapTech::SetAngle(float sangle)
 {
 	AngleNearFar.x = sangle;
 }
 
-inline float ShadowMapTech::GetAngle()
+float ShadowMapTech::GetAngle()
 {
 	return AngleNearFar.x;
 }
@@ -839,7 +837,7 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 	OldDepthStencilSurface = 0;
 }
 
-inline void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
+void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
 {
 	if (edge >= 0 && edge <= 5)
 	{
@@ -850,28 +848,28 @@ inline void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
 	}
 }
 
-inline bool ShadowMapCubeTech::GetEnableCubeEdge(int edge)
+bool ShadowMapCubeTech::GetEnableCubeEdge(int edge)
 {
 		if(edge >= 0 && edge <= 5)
 			return EnableEdge[edge];
 }
 
-inline void ShadowMapCubeTech::SetBias(float bias)
+void ShadowMapCubeTech::SetBias(float bias)
 { 
 	Bias = bias; 
 }
 
-inline float ShadowMapCubeTech::GetBias()
+float ShadowMapCubeTech::GetBias()
 { 
 	return Bias; 
 }
 
-inline void ShadowMapCubeTech::SetBlurPixel(float blur_pixel)
+void ShadowMapCubeTech::SetBlurPixel(float blur_pixel)
 { 
 	BlurPixel = blur_pixel; 
 }
 
-inline bool ShadowMapCubeTech::GetBlurPixel()
+bool ShadowMapCubeTech::GetBlurPixel()
 { 
 	return BlurPixel; 
 }

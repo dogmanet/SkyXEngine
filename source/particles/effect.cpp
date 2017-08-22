@@ -1,7 +1,5 @@
 
-#include <particles/effect.h>
-
-#pragma once
+#include "effect.h"
 
 Effects::Effects()
 {
@@ -125,7 +123,7 @@ void Effects::Save(const char* path)
 
 	if (!file)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - failed to save %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - failed to save %s", gen_msg_location, path);
 		return;
 	}
 
@@ -303,34 +301,34 @@ void Effects::Load(const char* path)
 {
 	if (!Core_0FileExists(path))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", gen_msg_location, path);
 		return;
 	}
 		
-	ISXLConfig* config = Core_OpLConfig(path);
+	ISXConfig* config = Core_OpConfig(path);
 
-	if (!config->SectionExists("effects"))
+	if (!config->sectionExists("effects"))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "%s - main section 'effects' not found, %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main section 'effects' not found, %s", gen_msg_location, path);
 		return;
 	}
 
-	if (!config->KeyExists("effects", "count"))
+	if (!config->keyExists("effects", "count"))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "%s - main key 'count' in section 'effects' not found, %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main key 'count' in section 'effects' not found, %s", gen_msg_location, path);
 		return;
 	}
 
-	int eff_count = String(config->GetKey("effects", "count")).ToInt();
+	int eff_count = String(config->getKey("effects", "count")).ToInt();
 	char eff_section_name[CONFIG_SECTION_MAX_LEN];
 	char part_section_name[CONFIG_SECTION_MAX_LEN];
 
 	for (int i = 0; i < eff_count; ++i)
 	{
 		sprintf(eff_section_name, "effect_%d", i);
-		if (!config->SectionExists(eff_section_name))
+		if (!config->sectionExists(eff_section_name))
 		{
-			reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", gen_msg_location, eff_section_name, path);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", gen_msg_location, eff_section_name, path);
 			return;
 		}
 
@@ -338,260 +336,260 @@ void Effects::Load(const char* path)
 		ArrID[eff_id]->Original = true;
 		int eff_count_part = 0;
 
-		if (config->KeyExists(eff_section_name, "name"))
-			EffectNameSet(eff_id, config->GetKey(eff_section_name, "name"));
+		if (config->keyExists(eff_section_name, "name"))
+			EffectNameSet(eff_id, config->getKey(eff_section_name, "name"));
 
-		if (config->KeyExists(eff_section_name, "emitters_count"))
-			eff_count_part = String(config->GetKey(eff_section_name, "emitters_count")).ToInt();
+		if (config->keyExists(eff_section_name, "emitters_count"))
+			eff_count_part = String(config->getKey(eff_section_name, "emitters_count")).ToInt();
 
 		for (int k = 0; k < eff_count_part; ++k)
 		{
 			sprintf(part_section_name, "effect_%d_emitter_%d", i, k);
-			if (!config->SectionExists(eff_section_name))
+			if (!config->sectionExists(eff_section_name))
 			{
-				reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", gen_msg_location, part_section_name, path);
+				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", gen_msg_location, part_section_name, path);
 				return;
 			}
 
 			ParticlesData part;
 
 
-			if (config->KeyExists(part_section_name, "BoundType"))
-				part.BoundType = (ParticlesBoundType)String(config->GetKey(part_section_name, "BoundType")).ToInt();
+			if (config->keyExists(part_section_name, "BoundType"))
+				part.BoundType = (ParticlesBoundType)String(config->getKey(part_section_name, "BoundType")).ToInt();
 
-			if (config->KeyExists(part_section_name, "BoundVec1X"))
-				part.BoundVec1.x = String(config->GetKey(part_section_name, "BoundVec1X")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec1Y"))
-				part.BoundVec1.y = String(config->GetKey(part_section_name, "BoundVec1Y")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec1Z"))
-				part.BoundVec1.z = String(config->GetKey(part_section_name, "BoundVec1Z")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec1W"))
-				part.BoundVec1.w = String(config->GetKey(part_section_name, "BoundVec1W")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec1X"))
+				part.BoundVec1.x = String(config->getKey(part_section_name, "BoundVec1X")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec1Y"))
+				part.BoundVec1.y = String(config->getKey(part_section_name, "BoundVec1Y")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec1Z"))
+				part.BoundVec1.z = String(config->getKey(part_section_name, "BoundVec1Z")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec1W"))
+				part.BoundVec1.w = String(config->getKey(part_section_name, "BoundVec1W")).ToDouble();
 
-			if (config->KeyExists(part_section_name, "BoundVec2X"))
-				part.BoundVec2.x = String(config->GetKey(part_section_name, "BoundVec2X")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec2Y"))
-				part.BoundVec2.y = String(config->GetKey(part_section_name, "BoundVec2Y")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec2Z"))
-				part.BoundVec2.z = String(config->GetKey(part_section_name, "BoundVec2Z")).ToDouble();
-			if (config->KeyExists(part_section_name, "BoundVec2W"))
-				part.BoundVec2.w = String(config->GetKey(part_section_name, "BoundVec2W")).ToDouble();
-
-
-			if (config->KeyExists(part_section_name, "SpawnPosType"))
-				part.SpawnPosType = (ParticlesSpawnPosType)String(config->GetKey(part_section_name, "SpawnPosType")).ToInt();
-
-			if (config->KeyExists(part_section_name, "SpawnOriginX"))
-				part.SpawnOrigin.x = String(config->GetKey(part_section_name, "SpawnOriginX")).ToDouble();
-			if (config->KeyExists(part_section_name, "SpawnOriginY"))
-				part.SpawnOrigin.y = String(config->GetKey(part_section_name, "SpawnOriginY")).ToDouble();
-			if (config->KeyExists(part_section_name, "SpawnOriginZ"))
-				part.SpawnOrigin.z = String(config->GetKey(part_section_name, "SpawnOriginZ")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "SpawnOriginDisp"))
-				part.SpawnOriginDisp = String(config->GetKey(part_section_name, "SpawnOriginDisp")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "SpawnBoundBindCreateXNeg"))
-				part.SpawnBoundBindCreateXNeg = String(config->GetKey(part_section_name, "SpawnBoundBindCreateXNeg")).ToBool();
-			if (config->KeyExists(part_section_name, "SpawnBoundBindCreateXPos"))
-				part.SpawnBoundBindCreateXPos = String(config->GetKey(part_section_name, "SpawnBoundBindCreateXPos")).ToBool();
-			if (config->KeyExists(part_section_name, "SpawnBoundBindCreateYNeg"))
-				part.SpawnBoundBindCreateYNeg = String(config->GetKey(part_section_name, "SpawnBoundBindCreateYNeg")).ToBool();
-			if (config->KeyExists(part_section_name, "SpawnBoundBindCreateYPos"))
-				part.SpawnBoundBindCreateYPos = String(config->GetKey(part_section_name, "SpawnBoundBindCreateYPos")).ToBool();
-			if (config->KeyExists(part_section_name, "SpawnBoundBindCreateZNeg"))
-				part.SpawnBoundBindCreateZNeg = String(config->GetKey(part_section_name, "SpawnBoundBindCreateZNeg")).ToBool();
-			if (config->KeyExists(part_section_name, "SpawnBoundBindCreateZPos"))
-				part.SpawnBoundBindCreateZPos = String(config->GetKey(part_section_name, "SpawnBoundBindCreateZPos")).ToBool();
-
-			if (config->KeyExists(part_section_name, "SpawnNextTime"))
-				part.SpawnNextTime = String(config->GetKey(part_section_name, "SpawnNextTime")).ToUnsLongInt();
-			if (config->KeyExists(part_section_name, "SpawnNextTimeDisp"))
-				part.SpawnNextTimeDisp = String(config->GetKey(part_section_name, "SpawnNextTimeDisp")).ToUnsLongInt();
+			if (config->keyExists(part_section_name, "BoundVec2X"))
+				part.BoundVec2.x = String(config->getKey(part_section_name, "BoundVec2X")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec2Y"))
+				part.BoundVec2.y = String(config->getKey(part_section_name, "BoundVec2Y")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec2Z"))
+				part.BoundVec2.z = String(config->getKey(part_section_name, "BoundVec2Z")).ToDouble();
+			if (config->keyExists(part_section_name, "BoundVec2W"))
+				part.BoundVec2.w = String(config->getKey(part_section_name, "BoundVec2W")).ToDouble();
 
 
-			if (config->KeyExists(part_section_name, "AnimTexCountCadrsX"))
-				part.AnimTexCountCadrsX = String(config->GetKey(part_section_name, "AnimTexCountCadrsX")).ToInt();
-			if (config->KeyExists(part_section_name, "AnimTexCountCadrsY"))
-				part.AnimTexCountCadrsY = String(config->GetKey(part_section_name, "AnimTexCountCadrsY")).ToInt();
-			if (config->KeyExists(part_section_name, "AnimTexRate"))
-				part.AnimTexRate = String(config->GetKey(part_section_name, "AnimTexRate")).ToInt();
-			if (config->KeyExists(part_section_name, "AnimTexRateDisp"))
-				part.AnimTexRateDisp = String(config->GetKey(part_section_name, "AnimTexRateDisp")).ToInt();
-			if (config->KeyExists(part_section_name, "AnimTexStartCadr"))
-				part.AnimTexStartCadr = String(config->GetKey(part_section_name, "AnimTexStartCadr")).ToInt();
-			if (config->KeyExists(part_section_name, "AnimTexStartCadrDisp"))
-				part.AnimTexStartCadrDisp = String(config->GetKey(part_section_name, "AnimTexStartCadrDisp")).ToInt();
+			if (config->keyExists(part_section_name, "SpawnPosType"))
+				part.SpawnPosType = (ParticlesSpawnPosType)String(config->getKey(part_section_name, "SpawnPosType")).ToInt();
+
+			if (config->keyExists(part_section_name, "SpawnOriginX"))
+				part.SpawnOrigin.x = String(config->getKey(part_section_name, "SpawnOriginX")).ToDouble();
+			if (config->keyExists(part_section_name, "SpawnOriginY"))
+				part.SpawnOrigin.y = String(config->getKey(part_section_name, "SpawnOriginY")).ToDouble();
+			if (config->keyExists(part_section_name, "SpawnOriginZ"))
+				part.SpawnOrigin.z = String(config->getKey(part_section_name, "SpawnOriginZ")).ToDouble();
+
+			if (config->keyExists(part_section_name, "SpawnOriginDisp"))
+				part.SpawnOriginDisp = String(config->getKey(part_section_name, "SpawnOriginDisp")).ToDouble();
+
+			if (config->keyExists(part_section_name, "SpawnBoundBindCreateXNeg"))
+				part.SpawnBoundBindCreateXNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateXNeg")).ToBool();
+			if (config->keyExists(part_section_name, "SpawnBoundBindCreateXPos"))
+				part.SpawnBoundBindCreateXPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateXPos")).ToBool();
+			if (config->keyExists(part_section_name, "SpawnBoundBindCreateYNeg"))
+				part.SpawnBoundBindCreateYNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateYNeg")).ToBool();
+			if (config->keyExists(part_section_name, "SpawnBoundBindCreateYPos"))
+				part.SpawnBoundBindCreateYPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateYPos")).ToBool();
+			if (config->keyExists(part_section_name, "SpawnBoundBindCreateZNeg"))
+				part.SpawnBoundBindCreateZNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateZNeg")).ToBool();
+			if (config->keyExists(part_section_name, "SpawnBoundBindCreateZPos"))
+				part.SpawnBoundBindCreateZPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateZPos")).ToBool();
+
+			if (config->keyExists(part_section_name, "SpawnNextTime"))
+				part.SpawnNextTime = String(config->getKey(part_section_name, "SpawnNextTime")).ToUnsLongInt();
+			if (config->keyExists(part_section_name, "SpawnNextTimeDisp"))
+				part.SpawnNextTimeDisp = String(config->getKey(part_section_name, "SpawnNextTimeDisp")).ToUnsLongInt();
 
 
-			if (config->KeyExists(part_section_name, "TimeLife"))
-				part.TimeLife = String(config->GetKey(part_section_name, "TimeLife")).ToUnsLongInt();
-			if (config->KeyExists(part_section_name, "TimeLifeDisp"))
-				part.TimeLifeDisp = String(config->GetKey(part_section_name, "TimeLifeDisp")).ToUnsLongInt();
-
-			if (config->KeyExists(part_section_name, "AlphaDependAge"))
-				part.AlphaDependAge = (ParticlesDependType)String(config->GetKey(part_section_name, "AlphaDependAge")).ToInt();
-
-			if (config->KeyExists(part_section_name, "SizeX"))
-				part.Size.x = String(config->GetKey(part_section_name, "SizeX")).ToDouble();
-			if (config->KeyExists(part_section_name, "SizeY"))
-				part.Size.y = String(config->GetKey(part_section_name, "SizeY")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "SizeDisp"))
-				part.SizeDisp = String(config->GetKey(part_section_name, "SizeDisp")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "SizeDependAge"))
-				part.SizeDependAge = (ParticlesDependType)String(config->GetKey(part_section_name, "SizeDependAge")).ToInt();
+			if (config->keyExists(part_section_name, "AnimTexCountCadrsX"))
+				part.AnimTexCountCadrsX = String(config->getKey(part_section_name, "AnimTexCountCadrsX")).ToInt();
+			if (config->keyExists(part_section_name, "AnimTexCountCadrsY"))
+				part.AnimTexCountCadrsY = String(config->getKey(part_section_name, "AnimTexCountCadrsY")).ToInt();
+			if (config->keyExists(part_section_name, "AnimTexRate"))
+				part.AnimTexRate = String(config->getKey(part_section_name, "AnimTexRate")).ToInt();
+			if (config->keyExists(part_section_name, "AnimTexRateDisp"))
+				part.AnimTexRateDisp = String(config->getKey(part_section_name, "AnimTexRateDisp")).ToInt();
+			if (config->keyExists(part_section_name, "AnimTexStartCadr"))
+				part.AnimTexStartCadr = String(config->getKey(part_section_name, "AnimTexStartCadr")).ToInt();
+			if (config->keyExists(part_section_name, "AnimTexStartCadrDisp"))
+				part.AnimTexStartCadrDisp = String(config->getKey(part_section_name, "AnimTexStartCadrDisp")).ToInt();
 
 
-			if (config->KeyExists(part_section_name, "VelocityX"))
-				part.Velocity.x = String(config->GetKey(part_section_name, "VelocityX")).ToDouble();
-			if (config->KeyExists(part_section_name, "VelocityY"))
-				part.Velocity.y = String(config->GetKey(part_section_name, "VelocityY")).ToDouble();
-			if (config->KeyExists(part_section_name, "VelocityZ"))
-				part.Velocity.z = String(config->GetKey(part_section_name, "VelocityZ")).ToDouble();
+			if (config->keyExists(part_section_name, "TimeLife"))
+				part.TimeLife = String(config->getKey(part_section_name, "TimeLife")).ToUnsLongInt();
+			if (config->keyExists(part_section_name, "TimeLifeDisp"))
+				part.TimeLifeDisp = String(config->getKey(part_section_name, "TimeLifeDisp")).ToUnsLongInt();
 
-			if (config->KeyExists(part_section_name, "VelocityDisp"))
-				part.VelocityDisp = String(config->GetKey(part_section_name, "VelocityDisp")).ToDouble();
+			if (config->keyExists(part_section_name, "AlphaDependAge"))
+				part.AlphaDependAge = (ParticlesDependType)String(config->getKey(part_section_name, "AlphaDependAge")).ToInt();
 
-			if (config->KeyExists(part_section_name, "VelocityDispXNeg"))
-				part.VelocityDispXNeg = String(config->GetKey(part_section_name, "VelocityDispXNeg")).ToDouble();
-			if (config->KeyExists(part_section_name, "VelocityDispYNeg"))
-				part.VelocityDispYNeg = String(config->GetKey(part_section_name, "VelocityDispYNeg")).ToDouble();
-			if (config->KeyExists(part_section_name, "VelocityDispZNeg"))
-				part.VelocityDispZNeg = String(config->GetKey(part_section_name, "VelocityDispZNeg")).ToDouble();
+			if (config->keyExists(part_section_name, "SizeX"))
+				part.Size.x = String(config->getKey(part_section_name, "SizeX")).ToDouble();
+			if (config->keyExists(part_section_name, "SizeY"))
+				part.Size.y = String(config->getKey(part_section_name, "SizeY")).ToDouble();
 
+			if (config->keyExists(part_section_name, "SizeDisp"))
+				part.SizeDisp = String(config->getKey(part_section_name, "SizeDisp")).ToDouble();
 
-			if (config->KeyExists(part_section_name, "AccelerationX"))
-				part.Acceleration.x = String(config->GetKey(part_section_name, "AccelerationX")).ToDouble();
-			if (config->KeyExists(part_section_name, "AccelerationY"))
-				part.Acceleration.y = String(config->GetKey(part_section_name, "AccelerationY")).ToDouble();
-			if (config->KeyExists(part_section_name, "AccelerationZ"))
-				part.Acceleration.z = String(config->GetKey(part_section_name, "AccelerationZ")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "AccelerationDisp"))
-				part.AccelerationDisp = String(config->GetKey(part_section_name, "AccelerationDisp")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "AccelerationDispXNeg"))
-				part.AccelerationDispXNeg = String(config->GetKey(part_section_name, "AccelerationDispXNeg")).ToBool();
-			if (config->KeyExists(part_section_name, "AccelerationDispYNeg"))
-				part.AccelerationDispYNeg = String(config->GetKey(part_section_name, "AccelerationDispYNeg")).ToBool();
-			if (config->KeyExists(part_section_name, "AccelerationDispZNeg"))
-				part.AccelerationDispZNeg = String(config->GetKey(part_section_name, "AccelerationDispZNeg")).ToBool();
+			if (config->keyExists(part_section_name, "SizeDependAge"))
+				part.SizeDependAge = (ParticlesDependType)String(config->getKey(part_section_name, "SizeDependAge")).ToInt();
 
 
-			if (config->KeyExists(part_section_name, "CharacterCircle"))
-				part.CharacterCircle = String(config->GetKey(part_section_name, "CharacterCircle")).ToBool();
-			if (config->KeyExists(part_section_name, "CharacterCircleAxis"))
-				part.CharacterCircleAxis = (ParticlesAxis)String(config->GetKey(part_section_name, "CharacterCircleAxis")).ToInt();
-			if (config->KeyExists(part_section_name, "CharacterCircleAngle"))
-				part.CharacterCircleAngle = String(config->GetKey(part_section_name, "CharacterCircleAngle")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterCircleAngleDisp"))
-				part.CharacterCircleAngleDisp = String(config->GetKey(part_section_name, "CharacterCircleAngleDisp")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterCircleAngleDispNeg"))
-				part.CharacterCircleAngleDispNeg = String(config->GetKey(part_section_name, "CharacterCircleAngleDispNeg")).ToBool();
+			if (config->keyExists(part_section_name, "VelocityX"))
+				part.Velocity.x = String(config->getKey(part_section_name, "VelocityX")).ToDouble();
+			if (config->keyExists(part_section_name, "VelocityY"))
+				part.Velocity.y = String(config->getKey(part_section_name, "VelocityY")).ToDouble();
+			if (config->keyExists(part_section_name, "VelocityZ"))
+				part.Velocity.z = String(config->getKey(part_section_name, "VelocityZ")).ToDouble();
+
+			if (config->keyExists(part_section_name, "VelocityDisp"))
+				part.VelocityDisp = String(config->getKey(part_section_name, "VelocityDisp")).ToDouble();
+
+			if (config->keyExists(part_section_name, "VelocityDispXNeg"))
+				part.VelocityDispXNeg = String(config->getKey(part_section_name, "VelocityDispXNeg")).ToDouble();
+			if (config->keyExists(part_section_name, "VelocityDispYNeg"))
+				part.VelocityDispYNeg = String(config->getKey(part_section_name, "VelocityDispYNeg")).ToDouble();
+			if (config->keyExists(part_section_name, "VelocityDispZNeg"))
+				part.VelocityDispZNeg = String(config->getKey(part_section_name, "VelocityDispZNeg")).ToDouble();
 
 
-			if (config->KeyExists(part_section_name, "CharacterRotate"))
-				part.CharacterRotate = String(config->GetKey(part_section_name, "CharacterRotate")).ToBool();
-			if (config->KeyExists(part_section_name, "CharacterRotateAngle"))
-				part.CharacterRotateAngle = String(config->GetKey(part_section_name, "CharacterRotateAngle")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterRotateAngleDisp"))
-				part.CharacterRotateAngleDisp = String(config->GetKey(part_section_name, "CharacterRotateAngleDisp")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterRotateAngleDispNeg"))
-				part.CharacterRotateAngleDispNeg = String(config->GetKey(part_section_name, "CharacterRotateAngleDispNeg")).ToBool();
+			if (config->keyExists(part_section_name, "AccelerationX"))
+				part.Acceleration.x = String(config->getKey(part_section_name, "AccelerationX")).ToDouble();
+			if (config->keyExists(part_section_name, "AccelerationY"))
+				part.Acceleration.y = String(config->getKey(part_section_name, "AccelerationY")).ToDouble();
+			if (config->keyExists(part_section_name, "AccelerationZ"))
+				part.Acceleration.z = String(config->getKey(part_section_name, "AccelerationZ")).ToDouble();
+
+			if (config->keyExists(part_section_name, "AccelerationDisp"))
+				part.AccelerationDisp = String(config->getKey(part_section_name, "AccelerationDisp")).ToDouble();
+
+			if (config->keyExists(part_section_name, "AccelerationDispXNeg"))
+				part.AccelerationDispXNeg = String(config->getKey(part_section_name, "AccelerationDispXNeg")).ToBool();
+			if (config->keyExists(part_section_name, "AccelerationDispYNeg"))
+				part.AccelerationDispYNeg = String(config->getKey(part_section_name, "AccelerationDispYNeg")).ToBool();
+			if (config->keyExists(part_section_name, "AccelerationDispZNeg"))
+				part.AccelerationDispZNeg = String(config->getKey(part_section_name, "AccelerationDispZNeg")).ToBool();
 
 
-			if (config->KeyExists(part_section_name, "CharacterDeviation"))
-				part.CharacterDeviation = String(config->GetKey(part_section_name, "CharacterDeviation")).ToBool();
-			if (config->KeyExists(part_section_name, "CharacterDeviationType"))
-				part.CharacterDeviationType = (ParticlesDeviationType)String(config->GetKey(part_section_name, "CharacterDeviationType")).ToInt();
-			if (config->KeyExists(part_section_name, "CharacterDeviationAmplitude"))
-				part.CharacterDeviationAmplitude = String(config->GetKey(part_section_name, "CharacterDeviationAmplitude")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterDeviationCoefAngle"))
-				part.CharacterDeviationCoefAngle = String(config->GetKey(part_section_name, "CharacterDeviationCoefAngle")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterDeviationAxis"))
-				part.CharacterDeviationAxis = (ParticlesAxis)String(config->GetKey(part_section_name, "CharacterDeviationAxis")).ToInt();
-			if (config->KeyExists(part_section_name, "CharacterDeviationCountDelayMls"))
-				part.CharacterDeviationCountDelayMls = String(config->GetKey(part_section_name, "CharacterDeviationCountDelayMls")).ToUnsLongInt();
-			if (config->KeyExists(part_section_name, "CharacterDeviationCoefAngleDisp"))
-				part.CharacterDeviationCoefAngleDisp = String(config->GetKey(part_section_name, "CharacterDeviationCoefAngleDisp")).ToDouble();
-			if (config->KeyExists(part_section_name, "CharacterDeviationCoefAngleDispNeg"))
-				part.CharacterDeviationCoefAngleDispNeg = String(config->GetKey(part_section_name, "CharacterDeviationCoefAngleDispNeg")).ToBool();
-
-			if (config->KeyExists(part_section_name, "CharacterDeviationTapX"))
-				part.CharacterDeviationTapX = String(config->GetKey(part_section_name, "CharacterDeviationTapX")).ToBool();
-			if (config->KeyExists(part_section_name, "CharacterDeviationTapY"))
-				part.CharacterDeviationTapY = String(config->GetKey(part_section_name, "CharacterDeviationTapY")).ToBool();
-			if (config->KeyExists(part_section_name, "CharacterDeviationTapZ"))
-				part.CharacterDeviationTapZ = String(config->GetKey(part_section_name, "CharacterDeviationTapZ")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterCircle"))
+				part.CharacterCircle = String(config->getKey(part_section_name, "CharacterCircle")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterCircleAxis"))
+				part.CharacterCircleAxis = (ParticlesAxis)String(config->getKey(part_section_name, "CharacterCircleAxis")).ToInt();
+			if (config->keyExists(part_section_name, "CharacterCircleAngle"))
+				part.CharacterCircleAngle = String(config->getKey(part_section_name, "CharacterCircleAngle")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterCircleAngleDisp"))
+				part.CharacterCircleAngleDisp = String(config->getKey(part_section_name, "CharacterCircleAngleDisp")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterCircleAngleDispNeg"))
+				part.CharacterCircleAngleDispNeg = String(config->getKey(part_section_name, "CharacterCircleAngleDispNeg")).ToBool();
 
 
-			if (config->KeyExists(part_section_name, "FigureType"))
-				part.FigureType = (ParticlesFigureType)String(config->GetKey(part_section_name, "FigureType")).ToInt();
-			if (config->KeyExists(part_section_name, "CharacterDeviationAxis"))
-				part.FigureCountQuads = String(config->GetKey(part_section_name, "FigureCountQuads")).ToInt();
-
-			if (config->KeyExists(part_section_name, "FigureRotRand"))
-				part.FigureRotRand = String(config->GetKey(part_section_name, "FigureRotRand")).ToBool();
-
-			if (config->KeyExists(part_section_name, "FigureTapX"))
-				part.FigureTapX = String(config->GetKey(part_section_name, "FigureTapX")).ToBool();
-			if (config->KeyExists(part_section_name, "FigureTapY"))
-				part.FigureTapY = String(config->GetKey(part_section_name, "FigureTapY")).ToBool();
-			if (config->KeyExists(part_section_name, "FigureTapZ"))
-				part.FigureTapZ = String(config->GetKey(part_section_name, "FigureTapZ")).ToBool();
-
-			if (config->KeyExists(part_section_name, "ReCreateCount"))
-				part.ReCreateCount = String(config->GetKey(part_section_name, "ReCreateCount")).ToInt();
-
-			if (config->KeyExists(part_section_name, "AlphaBlendType"))
-				part.AlphaBlendType = (ParticlesAlphaBlendType)String(config->GetKey(part_section_name, "AlphaBlendType")).ToInt();
-
-			if (config->KeyExists(part_section_name, "ColorCoef"))
-				part.ColorCoef = String(config->GetKey(part_section_name, "ColorCoef")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "Soft"))
-				part.Soft = String(config->GetKey(part_section_name, "Soft")).ToBool();
-			if (config->KeyExists(part_section_name, "SoftCoef"))
-				part.SoftCoef = String(config->GetKey(part_section_name, "SoftCoef")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "Refraction"))
-				part.Refraction = String(config->GetKey(part_section_name, "Refraction")).ToBool();
-			if (config->KeyExists(part_section_name, "RefractionCoef"))
-				part.RefractionCoef = String(config->GetKey(part_section_name, "RefractionCoef")).ToDouble();
-
-			if (config->KeyExists(part_section_name, "TransparencyCoef"))
-				part.TransparencyCoef = String(config->GetKey(part_section_name, "TransparencyCoef")).ToDouble();
-			if (config->KeyExists(part_section_name, "Lighting"))
-				part.Lighting = String(config->GetKey(part_section_name, "Lighting")).ToBool();
-			if (config->KeyExists(part_section_name, "CollisionDelete"))
-				part.CollisionDelete = String(config->GetKey(part_section_name, "CollisionDelete")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterRotate"))
+				part.CharacterRotate = String(config->getKey(part_section_name, "CharacterRotate")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterRotateAngle"))
+				part.CharacterRotateAngle = String(config->getKey(part_section_name, "CharacterRotateAngle")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterRotateAngleDisp"))
+				part.CharacterRotateAngleDisp = String(config->getKey(part_section_name, "CharacterRotateAngleDisp")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterRotateAngleDispNeg"))
+				part.CharacterRotateAngleDispNeg = String(config->getKey(part_section_name, "CharacterRotateAngleDispNeg")).ToBool();
 
 
-			if (config->KeyExists(part_section_name, "Track"))
-				part.Track = String(config->GetKey(part_section_name, "Track")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterDeviation"))
+				part.CharacterDeviation = String(config->getKey(part_section_name, "CharacterDeviation")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterDeviationType"))
+				part.CharacterDeviationType = (ParticlesDeviationType)String(config->getKey(part_section_name, "CharacterDeviationType")).ToInt();
+			if (config->keyExists(part_section_name, "CharacterDeviationAmplitude"))
+				part.CharacterDeviationAmplitude = String(config->getKey(part_section_name, "CharacterDeviationAmplitude")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngle"))
+				part.CharacterDeviationCoefAngle = String(config->getKey(part_section_name, "CharacterDeviationCoefAngle")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterDeviationAxis"))
+				part.CharacterDeviationAxis = (ParticlesAxis)String(config->getKey(part_section_name, "CharacterDeviationAxis")).ToInt();
+			if (config->keyExists(part_section_name, "CharacterDeviationCountDelayMls"))
+				part.CharacterDeviationCountDelayMls = String(config->getKey(part_section_name, "CharacterDeviationCountDelayMls")).ToUnsLongInt();
+			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngleDisp"))
+				part.CharacterDeviationCoefAngleDisp = String(config->getKey(part_section_name, "CharacterDeviationCoefAngleDisp")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngleDispNeg"))
+				part.CharacterDeviationCoefAngleDispNeg = String(config->getKey(part_section_name, "CharacterDeviationCoefAngleDispNeg")).ToBool();
 
-			if (config->KeyExists(part_section_name, "TrackSize"))
-				part.TrackSize = String(config->GetKey(part_section_name, "TrackSize")).ToDouble();
+			if (config->keyExists(part_section_name, "CharacterDeviationTapX"))
+				part.CharacterDeviationTapX = String(config->getKey(part_section_name, "CharacterDeviationTapX")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterDeviationTapY"))
+				part.CharacterDeviationTapY = String(config->getKey(part_section_name, "CharacterDeviationTapY")).ToBool();
+			if (config->keyExists(part_section_name, "CharacterDeviationTapZ"))
+				part.CharacterDeviationTapZ = String(config->getKey(part_section_name, "CharacterDeviationTapZ")).ToBool();
 
-			if (config->KeyExists(part_section_name, "TrackTime"))
-				part.TrackTime = String(config->GetKey(part_section_name, "TrackTime")).ToUnsLongInt();
+
+			if (config->keyExists(part_section_name, "FigureType"))
+				part.FigureType = (ParticlesFigureType)String(config->getKey(part_section_name, "FigureType")).ToInt();
+			if (config->keyExists(part_section_name, "CharacterDeviationAxis"))
+				part.FigureCountQuads = String(config->getKey(part_section_name, "FigureCountQuads")).ToInt();
+
+			if (config->keyExists(part_section_name, "FigureRotRand"))
+				part.FigureRotRand = String(config->getKey(part_section_name, "FigureRotRand")).ToBool();
+
+			if (config->keyExists(part_section_name, "FigureTapX"))
+				part.FigureTapX = String(config->getKey(part_section_name, "FigureTapX")).ToBool();
+			if (config->keyExists(part_section_name, "FigureTapY"))
+				part.FigureTapY = String(config->getKey(part_section_name, "FigureTapY")).ToBool();
+			if (config->keyExists(part_section_name, "FigureTapZ"))
+				part.FigureTapZ = String(config->getKey(part_section_name, "FigureTapZ")).ToBool();
+
+			if (config->keyExists(part_section_name, "ReCreateCount"))
+				part.ReCreateCount = String(config->getKey(part_section_name, "ReCreateCount")).ToInt();
+
+			if (config->keyExists(part_section_name, "AlphaBlendType"))
+				part.AlphaBlendType = (ParticlesAlphaBlendType)String(config->getKey(part_section_name, "AlphaBlendType")).ToInt();
+
+			if (config->keyExists(part_section_name, "ColorCoef"))
+				part.ColorCoef = String(config->getKey(part_section_name, "ColorCoef")).ToDouble();
+
+			if (config->keyExists(part_section_name, "Soft"))
+				part.Soft = String(config->getKey(part_section_name, "Soft")).ToBool();
+			if (config->keyExists(part_section_name, "SoftCoef"))
+				part.SoftCoef = String(config->getKey(part_section_name, "SoftCoef")).ToDouble();
+
+			if (config->keyExists(part_section_name, "Refraction"))
+				part.Refraction = String(config->getKey(part_section_name, "Refraction")).ToBool();
+			if (config->keyExists(part_section_name, "RefractionCoef"))
+				part.RefractionCoef = String(config->getKey(part_section_name, "RefractionCoef")).ToDouble();
+
+			if (config->keyExists(part_section_name, "TransparencyCoef"))
+				part.TransparencyCoef = String(config->getKey(part_section_name, "TransparencyCoef")).ToDouble();
+			if (config->keyExists(part_section_name, "Lighting"))
+				part.Lighting = String(config->getKey(part_section_name, "Lighting")).ToBool();
+			if (config->keyExists(part_section_name, "CollisionDelete"))
+				part.CollisionDelete = String(config->getKey(part_section_name, "CollisionDelete")).ToBool();
+
+
+			if (config->keyExists(part_section_name, "Track"))
+				part.Track = String(config->getKey(part_section_name, "Track")).ToBool();
+
+			if (config->keyExists(part_section_name, "TrackSize"))
+				part.TrackSize = String(config->getKey(part_section_name, "TrackSize")).ToDouble();
+
+			if (config->keyExists(part_section_name, "TrackTime"))
+				part.TrackTime = String(config->getKey(part_section_name, "TrackTime")).ToUnsLongInt();
 
 			
 			ID part_id = this->EmitterAdd(eff_id, &part);
 
-			if (config->KeyExists(part_section_name, "name"))
-				EmitterNameSet(eff_id, part_id, config->GetKey(part_section_name, "name"));
+			if (config->keyExists(part_section_name, "name"))
+				EmitterNameSet(eff_id, part_id, config->getKey(part_section_name, "name"));
 
-			if (config->KeyExists(part_section_name, "count"))
-				EmitterCountSet(eff_id, part_id, String(config->GetKey(part_section_name, "count")).ToInt());
+			if (config->keyExists(part_section_name, "count"))
+				EmitterCountSet(eff_id, part_id, String(config->getKey(part_section_name, "count")).ToInt());
 
-			if (config->KeyExists(part_section_name, "texture"))
-				EmitterTextureSet(eff_id, part_id, config->GetKey(part_section_name, "texture"));
+			if (config->keyExists(part_section_name, "texture"))
+				EmitterTextureSet(eff_id, part_id, config->getKey(part_section_name, "texture"));
 
-			if (config->KeyExists(part_section_name, "texture_track"))
-				EmitterTextureTrackSet(eff_id, part_id, config->GetKey(part_section_name, "texture_track"));
+			if (config->keyExists(part_section_name, "texture_track"))
+				EmitterTextureTrackSet(eff_id, part_id, config->getKey(part_section_name, "texture_track"));
 		}
 	}
 
@@ -1185,12 +1183,12 @@ void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 	{
 		for (int i = 0; i < ArrSortSizeCurr; ++i)
 		{
-			//reportf(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
+			//g_fnReportf(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
 			if (ArrSort[i] >= 0)
-				reportf(0, "ViewDist = %f\n", ArrID[ArrSort[i]]->ViewDist);
+				g_fnReportf(0, "ViewDist = %f\n", ArrID[ArrSort[i]]->ViewDist);
 		}
 
-		reportf(0, "%d---------\n", ArrSortSizeCurr);
+		g_fnReportf(0, "%d---------\n", ArrSortSizeCurr);
 	}*/
 }
 

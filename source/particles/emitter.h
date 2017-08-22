@@ -2,6 +2,17 @@
 #ifndef __particles_h
 #define __particles_h
 
+#include <gdefines.h>
+
+#define SM_D3D_CONVERSIONS
+#include <common\SXMath.h>
+
+#include "sxparticles.h"
+#include "PESet.h"
+
+extern report_func g_fnReportf;
+extern g_particles_phy_collision GParticlesPhyCollision;
+
 //структура описывающая партикл
 struct CommonParticle
 {
@@ -119,15 +130,15 @@ public:
 	void Init(ParticlesData* data);
 	ParticlesData* GetData();
 
-	inline void NameSet(const char* name);
-	inline void NameGet(char* name);
+	void NameSet(const char* name);
+	void NameGet(char* name);
 
-	inline void CountSet(int count);
-	inline int CountGet();
-	inline int CountLifeGet();
+	void CountSet(int count);
+	int CountGet();
+	int CountLifeGet();
 
-	inline void EnableSet(bool enable);
-	inline bool EnableGet();
+	void EnableSet(bool enable);
+	bool EnableGet();
 
 	void GeomDataCreate();
 	
@@ -147,10 +158,10 @@ public:
 
 	void AnimTexDataInit();
 
-	inline void AlifeSet(bool alife);
-	inline bool AlifeGet();
+	void AlifeSet(bool alife);
+	bool AlifeGet();
 
-	inline int TrackCountGet();
+	int TrackCountGet();
 	int TrackPosGet(float3** arr, int count);
 
 	float3_t CurrMin;
@@ -159,16 +170,16 @@ public:
 
 protected:
 
-	inline void NullingInit();
+	void NullingInit();
 
 	char Name[OBJECT_NAME_MAX_LEN];
 
-	inline bool IsPointInCone(float3* point);
-	inline bool IsPointInSphere(float3* point);
-	inline bool IsPointInBox(float3* point);
+	bool IsPointInCone(float3* point);
+	bool IsPointInSphere(float3* point);
+	bool IsPointInBox(float3* point);
 
 	void CreateParticles();
-	inline void ReCreateParticles(WORD id);
+	void ReCreateParticles(WORD id);
 
 	void VertexBuffModify();
 

@@ -1,11 +1,12 @@
 
-#include <aigrid/sxaigrid.h>
+#include "sxaigrid.h"
+#include "aigrid.h"
 
 #define SXAIGRID_VERSION 1
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
 
 bool QuadPhyNavigate(float3_t * pos)
@@ -15,11 +16,9 @@ bool QuadPhyNavigate(float3_t * pos)
 
 g_aiquad_phy_navigate AIQuadPhyNavigate = QuadPhyNavigate;
 
-#include <aigrid/aigrid.cpp>
-
 AIGrid* ObjAIGrid = 0;
 
-#define AIG_PRECOND(retval) if(!ObjAIGrid){reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxaigrid is not init", gen_msg_location); return retval;}
+#define AIG_PRECOND(retval) if(!ObjAIGrid){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxaigrid is not init", gen_msg_location); return retval;}
 
 long SAIG_0GetVersion()
 {
@@ -28,7 +27,7 @@ long SAIG_0GetVersion()
 
 void SAIG_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 void SAIG_0Create(const char* name, bool use_graphics, bool is_unic)
@@ -41,7 +40,7 @@ void SAIG_0Create(const char* name, bool use_graphics, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				reportf(-1, "%s - none unic name, sxaigrid", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxaigrid", gen_msg_location);
 			}
 			else
 			{
@@ -58,7 +57,7 @@ void SAIG_0Create(const char* name, bool use_graphics, bool is_unic)
 		}
 	}
 	else
-		reportf(-1, "%s - not init argument [name], sxaigrid", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxaigrid", gen_msg_location);
 }
 
 void SAIG_AKill()

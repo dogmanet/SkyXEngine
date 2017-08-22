@@ -1,6 +1,5 @@
 
-#pragma once
-#include <gcore/camera.h>
+#include "camera.h"
 
 Frustum::Frustum()
 {

@@ -1,6 +1,6 @@
 
-#include <input/sxinput.h>
-#include <input/input.h>
+#include "sxinput.h"
+#include "input.h"
 
 #include <core/sxcore.h>
 
@@ -12,7 +12,7 @@
 
 #pragma once
 
-extern report_func reportf;
+extern report_func g_fnReportf;
 
 SXInput::SXInput(const char* name):
 	mdelta({0, 0}),
@@ -35,7 +35,7 @@ long SXInput::Init(HWND hwnd)
 
 	if(RegisterRawInputDevices(Rid, sizeof(Rid) / sizeof(RAWINPUTDEVICE), sizeof(Rid[0])) == FALSE)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
 		return(-1);
 	}
 #endif

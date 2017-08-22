@@ -8,7 +8,7 @@
 typedef std::chrono::system_clock::time_point time_point;
 
 class SXbaseEntity;
-struct ISXLConfig;
+struct ISXConfig;
 
 #define SET_TIMEOUT(fn, time) m_pMgr->SetTimeout((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
 #define SET_INTERVAL(fn, time) m_pMgr->SetInterval((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
@@ -68,8 +68,8 @@ protected:
 	int m_iThreadNum;
 
 	//! @warning это нужно хранить в течение работы проги, т.к. таблицы дефолтов ссылаются напрямую на этот объект
-	ISXLConfig * m_pDefaultsConf;
-	ISXLConfig * m_pDynClassConf;
+	ISXConfig * m_pDefaultsConf;
+	ISXConfig * m_pDynClassConf;
 };
 
 #endif

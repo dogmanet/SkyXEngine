@@ -21,43 +21,43 @@ DecalManager::DecalManager():
 
 	dev = SGCore_GetDXDevice();
 
-	ISXLConfig * config = Core_OpLConfig(szDecalsIniPath);
+	ISXConfig * config = Core_OpConfig(szDecalsIniPath);
 
-	int sections = config->GetSectionCount();
+	int sections = config->getSectionCount();
 	const char * sect;
 
 	for(int i = 0; i < sections; ++i)
 	{
-		sect = config->GetSectionName(i);
+		sect = config->getSectionName(i);
 
 		int id;
-		if(config->KeyExists(sect, "id") && sscanf(config->GetKey(sect, "id"), "%d", &id))
+		if(config->keyExists(sect, "id") && sscanf(config->getKey(sect, "id"), "%d", &id))
 		{
 			if(id < 0 || id >= DECAL_TYPE_LAST)
 			{
-				reportf(REPORT_MSG_LEVEL_WARRNING, "Incorrect decal type id '%s'\n", sect);
+				reportf(REPORT_MSG_LEVEL_WARNING, "Incorrect decal type id '%s'\n", sect);
 			}
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to read decal id '%s'\n", sect);
+			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal id '%s'\n", sect);
 			continue;
 		}
 		const char * tex;
-		if(config->KeyExists(sect, "tex"))
+		if(config->keyExists(sect, "tex"))
 		{
-			tex = config->GetKey(sect, "tex");
+			tex = config->getKey(sect, "tex");
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to read decal tex '%s'\n", sect);
+			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal tex '%s'\n", sect);
 			continue;
 		}
-		if(config->KeyExists(sect, "base_scale"))
+		if(config->keyExists(sect, "base_scale"))
 		{
-			if(!sscanf(config->GetKey(sect, "base_scale"), "%f", &m_DecalTypes[id].m_fBaseScale))
+			if(!sscanf(config->getKey(sect, "base_scale"), "%f", &m_DecalTypes[id].m_fBaseScale))
 			{
-				reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to read decal base_scale '%s'\n", sect);
+				reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal base_scale '%s'\n", sect);
 				m_DecalTypes[id].m_fBaseScale = 1.0f;
 			}
 		}
@@ -69,11 +69,11 @@ DecalManager::DecalManager():
 
 		DecalTexRange rng;
 		char key[64];
-		while(sprintf(key, "tex%d", j) && config->KeyExists(sect, key))
+		while(sprintf(key, "tex%d", j) && config->keyExists(sect, key))
 		{
-			if(sscanf(config->GetKey(sect, key), "[%d,%d,%d,%d]", &rng.xmin, &rng.ymin, &rng.xmax, &rng.ymax) != 4)
+			if(sscanf(config->getKey(sect, key), "[%d,%d,%d,%d]", &rng.xmin, &rng.ymin, &rng.xmax, &rng.ymax) != 4)
 			{
-				printf("Unable to read decal tex coords \"%s\" \"%s\"\n", config->GetKey(sect, key), sect);
+				printf("Unable to read decal tex coords \"%s\" \"%s\"\n", config->getKey(sect, key), sect);
 			}
 			else
 			{

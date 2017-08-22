@@ -21,168 +21,168 @@ void SetThreadName(DWORD dwThreadID, const char* threadName)
 }
 #endif
 
-SXTaskManager::SXTaskManager(unsigned int numThreads)
+CTaskManager::CTaskManager(unsigned int numThreads)
 {
-	mNumThreads = numThreads;
-	if(numThreads == 0)
+	m_iNumThreads = numThreads;
+	if (numThreads == 0)
 	{
-		mNumThreads = std::thread::hardware_concurrency();
-		if(mNumThreads == 0)
+		m_iNumThreads = std::thread::hardware_concurrency();
+		if(m_iNumThreads == 0)
 		{
-			mNumThreads = 1;
+			m_iNumThreads = 1;
 		}
 	}
 
-	mWriteList = 0;
-	mReadList = 1;
+	m_iWriteList = 0;
+	m_iReadList = 1;
 
-	mNumTasksToWaitFor = 0;
+	m_iNumTasksToWaitFor = 0;
 }
 
-SXTaskManager::~SXTaskManager()
+CTaskManager::~CTaskManager()
 {
-	for(auto itr : mThreads)
+	for(auto itr : m_aThreads)
 		itr->join();
 }
 
-void SXTaskManager::addTask(TaskPtr task)
+void CTaskManager::addTask(TaskPtr task)
 {
 	unsigned flags = task->getTaskFlags();
 
-	if (flags & CoreTF_THREADSAFE)
+	if (flags & CORE_TASK_FLAG_THREADSAFE)
 	{
-		if (flags & CoreTF_FRAME_SYNC)
-		if (flags & CoreTF_ON_SYNC)
-				mOnSyncTasks.push(task);
+		if (flags & CORE_TASK_FLAG_FRAME_SYNC)
+		if (flags & CORE_TASK_FLAG_ON_SYNC)
+				m_OnSyncTasks.push(task);
 			else
-				mSyncTasks.push(task);
+				m_SyncTasks.push(task);
 		else
-			mBackgroundTasks.push(task);
+			m_BackgroundTasks.push(task);
 	}
 	else
-		mTaskList[mWriteList].push(task);
+		m_TaskList[m_iWriteList].push(task);
 }
 
-void SXTaskManager::add(THREAD_UPDATE_FUNCTION func, DWORD flag)
+void CTaskManager::add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag)
 {
-	this->addTask(SXTaskManager::TaskPtr(new SXTask(func, flag)));
+	this->addTask(CTaskManager::TaskPtr(new CTask(fnFunc, dwFlag)));
 }
 
-void SXTaskManager::start()
+void CTaskManager::start()
 {
-	mRunning = true;
+	m_isRunning = true;
 
 	EventChannel chan;
 
-	chan.add<SXTask::TaskCompleted>(*this);
+	chan.add<CTask::CTaskCompleted>(*this);
 	chan.add<StopEvent>(*this);
 
 	char name[64];
 
 
 	//< Инициализируем пул рабочих потоков
-	for(unsigned int i = 0; i < mNumThreads; ++i)
+	for(unsigned int i = 0; i < m_iNumThreads; ++i)
 	{
-		std::thread * t = new std::thread(std::bind(&SXTaskManager::worker, this));
+		std::thread * t = new std::thread(std::bind(&CTaskManager::worker, this));
 #if defined(_WINDOWS)
 		sprintf(name, "Worker qq #%d", i);
 		SetThreadName(GetThreadId(t->native_handle()), name);
 #endif
-		mThreads.push_back(t);
+		m_aThreads.push_back(t);
 	}
-	//mThreads.front()->
+	//m_aThreads.front()->
 
-	while(mRunning)
+	while(m_isRunning)
 	{
-		if(!mTaskList[mReadList].empty())
+		if(!m_TaskList[m_iReadList].empty())
 		{
-			TaskPtr t = mTaskList[mReadList].wait_pop();
+			TaskPtr t = m_TaskList[m_iReadList].wait_pop();
 			execute(t);
 		}
-		/*else if(!mBackgroundTasks.empty())
+		/*else if(!m_BackgroundTasks.empty())
 		{
 
 		}*/
 		else
 		{
 			synchronize();
-			std::swap(mReadList, mWriteList);
+			std::swap(m_iReadList, m_iWriteList);
 		}
 
 		std::this_thread::yield();
 	}
 }
 
-void SXTaskManager::synchronize()
+void CTaskManager::synchronize()
 {
-	std::unique_lock<std::mutex> lock(mSyncMutex);
+	std::unique_lock<std::mutex> lock(m_SyncMutex);
 
-	while(mNumTasksToWaitFor > 0)
-		mCondition.wait(lock);
+	while(m_iNumTasksToWaitFor > 0)
+		m_Condition.wait(lock);
 
-	mNumTasksToWaitFor = mOnSyncTasks.size();
+	m_iNumTasksToWaitFor = m_OnSyncTasks.size();
 
-	while(!mOnSyncTasks.empty())
-		mBackgroundTasks.push(mOnSyncTasks.wait_pop());
-
-
+	while(!m_OnSyncTasks.empty())
+		m_BackgroundTasks.push(m_OnSyncTasks.wait_pop());
 
 
-	while(mNumTasksToWaitFor > 0)
-		mCondition.wait(lock);
 
-	mNumTasksToWaitFor = mSyncTasks.size();
 
-	while(!mSyncTasks.empty())
-		mBackgroundTasks.push(mSyncTasks.wait_pop());
+	while(m_iNumTasksToWaitFor > 0)
+		m_Condition.wait(lock);
+
+	m_iNumTasksToWaitFor = m_SyncTasks.size();
+
+	while(!m_SyncTasks.empty())
+		m_BackgroundTasks.push(m_SyncTasks.wait_pop());
 }
 
-void SXTaskManager::stop()
+void CTaskManager::stop()
 {
-	mRunning = false;
-	mThreads.clear();
+	m_isRunning = false;
+	m_aThreads.clear();
 }
 
-void SXTaskManager::execute(TaskPtr t)
+void CTaskManager::execute(TaskPtr t)
 {
 	EventChannel chan;
 
-	chan.broadcast(SXTask::TaskBeginning(t));
+	chan.broadcast(CTask::CTaskBeginning(t));
 	t->run();
-	chan.broadcast(SXTask::TaskCompleted(t));
+	chan.broadcast(CTask::CTaskCompleted(t));
 }
 
-void SXTaskManager::handle(const SXTaskManager::StopEvent&)
+void CTaskManager::handle(const CTaskManager::StopEvent&)
 {
 	stop();
 }
 
-void SXTaskManager::handle(const SXTask::TaskCompleted& tc)
+void CTaskManager::handle(const CTask::CTaskCompleted& tc)
 {
-	if (tc.mTask->getTaskFlags() & CoreTF_REPEATING)
-		addTask(tc.mTask);
+	if (tc.m_Task->getTaskFlags() & CORE_TASK_FLAG_REPEATING)
+		addTask(tc.m_Task);
 }
 
-void SXTaskManager::worker()
+void CTaskManager::worker()
 {
 	TaskPtr task;
 
-	while(mRunning)
+	while(m_isRunning)
 	{
-		bool exec = mBackgroundTasks.try_pop(task);
+		bool exec = m_BackgroundTasks.try_pop(task);
 
 		if(exec)
 		{
 			execute(task);
 
-			if (task->getTaskFlags() & CoreTF_FRAME_SYNC)
+			if (task->getTaskFlags() & CORE_TASK_FLAG_FRAME_SYNC)
 			{
 				{
-					std::lock_guard<std::mutex> lock(mSyncMutex);
-					mNumTasksToWaitFor -= 1;
+					std::lock_guard<std::mutex> lock(m_SyncMutex);
+					m_iNumTasksToWaitFor -= 1;
 				}
 
-				mCondition.notify_one();
+				m_Condition.notify_one();
 			}
 
 			std::this_thread::yield();

@@ -2,22 +2,34 @@
 #ifndef __light_h
 #define __light_h
 
+#include <gdefines.h>
+
+#define SM_D3D_CONVERSIONS
+#include <common/SXMath.h>
+#include <common/Array.h>
+#include <common/String.h>
+#include <d3d9.h>
+
+#include "sxmtllight.h"
+#include "ml_data.h"
+extern report_func g_fnReportf;
+
 #define LIGHTS_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < ArrIDLights.size()))\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
 	else if (!ArrIDLights[id]) \
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", gen_msg_location, id); return stdval; }
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", gen_msg_location, id); return stdval; }
 
 #define LIGHTS_PRE_COND_KEY(key,stdval) \
 if (!(key >= 0 && key < ArrKeyLights.size()))\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
 
 #define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
 if (!(key >= 0 && key < ArrKeyDelLights.size()))\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
 
-#include <mtllight\\shadow.cpp>
-#include <common\\string.cpp>
+#include "shadow.h"
+//#include <common\\string.cpp>
 
 class Lights
 {
@@ -31,7 +43,7 @@ public:
 	void OnLostDevice();
 	void OnResetDevice();
 
-	inline int GetCountLights() const;
+	int GetCountLights() const;
 	void Clear();
 
 	ID CreatePoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow, const char* bound_volume);
@@ -99,12 +111,12 @@ public:
 
 	//-----------------------------------------------------------------------------
 
-	inline bool GetLightEnable(ID id) const;
+	bool GetLightEnable(ID id) const;
 	void SetLightEnable(ID id, bool val);
-	inline bool GetLightShadowed(ID id) const;
+	bool GetLightShadowed(ID id) const;
 	LightsTypeLight GetLightType(ID id) const;
 	void SetLightTypeShadowed(ID id, LightsTypeShadow type);
-	inline LightsTypeShadow GetLightTypeShadowed(ID id) const;
+	LightsTypeShadow GetLightTypeShadowed(ID id) const;
 
 	//-----------------------------------------------------------------------------
 
@@ -134,8 +146,8 @@ public:
 	//-----------------------------------------------------------------------------
 
 	bool LightCountUpdateUpdate(ID id, const float3* viewpos, int ghow = -1);
-	inline bool LightCountUpdateAllowed(ID id, int ghow = -1) const;
-	inline void LightCountUpdateNull(ID id);
+	bool LightCountUpdateAllowed(ID id, int ghow = -1) const;
+	void LightCountUpdateNull(ID id);
 
 	//-----------------------------------------------------------------------------
 
@@ -143,13 +155,13 @@ public:
 
 	//-----------------------------------------------------------------------------
 
-	inline void Set4Or3Splits(ID id, bool is4);
-	inline bool Get4Or3Splits(ID id);
+	void Set4Or3Splits(ID id, bool is4);
+	bool Get4Or3Splits(ID id);
 
 	//-----------------------------------------------------------------------------
 
 	void ShadowGen(ID id);
-	inline void ShadowNull();
+	void ShadowNull();
 	void ShadowGen2(ID id);
 	void ShadowSoft(bool randomsam, float size, bool isfirst = false);
 
@@ -207,7 +219,7 @@ public:
 	};
 
 protected:
-	inline ID AddLight(Light* obj);
+	ID AddLight(Light* obj);
 
 	Array<Light*> ArrKeyLights;	//массив всех элементов по порядку
 	Array<Light*> ArrIDLights;	//массив всех элементов, основанный на id

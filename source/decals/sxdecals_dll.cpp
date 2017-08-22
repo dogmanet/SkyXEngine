@@ -24,7 +24,7 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func reportf = DefReport;
 #endif
 
 DecalManager * g_pMgr = NULL;
@@ -92,7 +92,7 @@ SX_LIB_API void SXDecals_ShootDecal(DECAL_TYPE type, const float3 & fWorldPos, c
 	SP_PRECOND(_VOID);
 	if(type == DECAL_TYPE_CUSTOM)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "Unable to use DECAL_TYPE_CUSTOM with SXDecals_ShootDecal\n");
+		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to use DECAL_TYPE_CUSTOM with SXDecals_ShootDecal\n");
 		return;
 	}
 	g_pMgr->ShootDecal(type, fWorldPos, 0, 0, 0, 1.0f, 0, &normal);

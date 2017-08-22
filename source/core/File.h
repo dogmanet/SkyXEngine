@@ -1,38 +1,38 @@
 
-#ifndef SXFILE_H
-#define SXFILE_H
+#ifndef __FILE_H
+#define __FILE_H
 
 #include "sxcore.h"
 #include <fstream>
 
-class SXFile : public ISXFile
+class CFile : public IFile
 {
 public:
 
-	SXFile();
-	~SXFile();
+	CFile();
+	~CFile();
 	void Release();
-	int Open(const char* path, int type = CORE_FILE_TEXT);
-	int Create(const char* path, int type = CORE_FILE_TEXT);
-	int Add(const char* path, int type = CORE_FILE_TEXT);
+	int open(const char *szPath, int iType = CORE_FILE_TEXT);
+	int create(const char *szPath, int iType = CORE_FILE_TEXT);
+	int add(const char *szPath, int iType = CORE_FILE_TEXT);
 
-	size_t ReadB(void* dest, size_t size);
-	size_t WriteB(void* src, size_t size);
+	size_t readBin(void *pDest, size_t iSize);
+	size_t writeBin(const void *pSrc, size_t iSize);
 
-	size_t ReadT(const char* format, ...);
-	size_t WriteT(const char* format, ...);
+	size_t readText(const char *szFormat, ...);
+	size_t writeText(const char *szFormat, ...);
 
-	size_t GetSize();
-	int ReadChar();
+	size_t getSize() const;
+	int readChar();
 
-	size_t GetPos();
-	void SetPos(size_t pos);
+	size_t getPos() const;
+	void setPos(size_t iPos);
 
-	void Close();
-	bool IsEOF();
+	void close();
+	bool isEOF() const;
 
 protected:
-	FILE * File;
+	FILE * m_pFile;
 };
 
 #endif

@@ -6,12 +6,12 @@ See the license in LICENSE
 
 #define SXPP_VERSION 1
 
+#include "sxpp.h"
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
-
-#include <pp\\sxpp.h>
 
 namespace PPSet
 {
@@ -182,8 +182,8 @@ void PPSet::Init()
 	PPSet::IDsRenderTargets::Bright2 = SGCore_RTAdd(PPSet::WinSize.x, PPSet::WinSize.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright2", 1);
 }
 
-#define PP_PRECOND(retval) if(!PPSet::DXDevice){reportf(-1, "%s - post process is not init", gen_msg_location); return retval;}
-#define PP_PRECOND_SECOND(retval) if(PPSet::IDsRenderTargets::Input < 0 || PPSet::IDsRenderTargets::Output < 0){reportf(-1, "%s - post process is not init output textures", gen_msg_location); return retval;}
+#define PP_PRECOND(retval) if(!PPSet::DXDevice){g_fnReportf(-1, "%s - post process is not init", gen_msg_location); return retval;}
+#define PP_PRECOND_SECOND(retval) if(PPSet::IDsRenderTargets::Input < 0 || PPSet::IDsRenderTargets::Output < 0){g_fnReportf(-1, "%s - post process is not init output textures", gen_msg_location); return retval;}
 
 long SPP_0GetVersion()
 {
@@ -192,7 +192,7 @@ long SPP_0GetVersion()
 
 void SPP_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 
@@ -206,7 +206,7 @@ void SPP_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				reportf(-1, "%s - none unic name, post process", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, post process", gen_msg_location);
 			}
 			else
 			{
@@ -219,7 +219,7 @@ void SPP_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		reportf(-1, "%s - not init argument [name], post process", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], post process", gen_msg_location);
 }
 
 void SPP_0Kill()
@@ -702,7 +702,7 @@ void SPP_RenderSun(float4_t* sun_color)
 
 	if (PPSet::IDsTexs::Sun < 0 || !SGCore_LoadTexGetTex(PPSet::IDsTexs::Sun))
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "sxpp: %s - sun texture is not init, process can not be started\n", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxpp: %s - sun texture is not init, process can not be started\n", gen_msg_location);
 		return;
 	}
 

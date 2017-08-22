@@ -47,7 +47,7 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func reportf = DefReport;
 #endif
 
 

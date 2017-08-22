@@ -8,10 +8,10 @@
     <ClCompile Include="..\..\..\source\geom\sxgeom.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\geom\geom_data.cpp">
+    <ClCompile Include="..\..\..\source\geom\green.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\geom\green.cpp">
+    <ClCompile Include="..\..\..\source\common\string.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -31,6 +31,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\geom\green.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,133 +1,133 @@
 
-#include <core\\time.h>
+#include "Time.h"
 
-TimeManager::TimeManager()
+CTimeManager::CTimeManager()
 {
 
 }
 
-TimeManager::~TimeManager()
+CTimeManager::~CTimeManager()
 {
-	for (int i = 0; i < ArrTimes.size(); ++i)
+	for (int i = 0; i < m_aTimes.size(); ++i)
 	{
-		mem_delete(ArrTimes[i]);
+		mem_delete(m_aTimes[i]);
 	}
 
-	ArrTimes.clear();
+	m_aTimes.clear();
 }
 
-TimeManager::Time::Time()
+CTimeManager::CTime::CTime()
 {
-	time_total = 0;
-	speed = 1.f;
-	working = false;
-	unixtime_start = time(NULL);
-	unixtime_curr = unixtime_start;
-	tp = std::chrono::high_resolution_clock::now();
-	delta_fraction = 0;
+	m_iTimeTotal = 0;
+	m_fSpeed = 1.f;
+	m_isWorking = false;
+	m_iUnixtimeStart = time(NULL);
+	m_iUnixtimeCurr = m_iUnixtimeStart;
+	m_timePoint = std::chrono::high_resolution_clock::now();
+	m_fDeltaFraction = 0;
 }
 
-TimeManager::Time::~Time()
+CTimeManager::CTime::~CTime()
 {
 	
 }
 
 
 
-void TimeManager::Update()
+void CTimeManager::update()
 {
 	time_point tcurr = std::chrono::high_resolution_clock::now();
 	
-	Time* tobj = 0;
-	for (int i = 0; i < ArrTimes.size(); ++i)
+	CTime* tobj = 0;
+	for (int i = 0; i < m_aTimes.size(); ++i)
 	{
-		tobj = ArrTimes[i];
-		if (tobj->working)
+		tobj = m_aTimes[i];
+		if (tobj->m_isWorking)
 		{
-			tobj->delta_fraction += (long double)std::chrono::duration_cast<std::chrono::microseconds>(tcurr - tobj->tp).count() * tobj->speed;
-			tobj->time_total += (int64_t)tobj->delta_fraction;
-			tobj->delta_fraction -= (int64_t)tobj->delta_fraction;
-			tobj->unixtime_curr = tobj->unixtime_start + (tobj->time_total / 1000000);
+			tobj->m_fDeltaFraction += (long double)std::chrono::duration_cast<std::chrono::microseconds>(tcurr - tobj->m_timePoint).count() * tobj->m_fSpeed;
+			tobj->m_iTimeTotal += (int64_t)tobj->m_fDeltaFraction;
+			tobj->m_fDeltaFraction -= (int64_t)tobj->m_fDeltaFraction;
+			tobj->m_iUnixtimeCurr = tobj->m_iUnixtimeStart + (tobj->m_iTimeTotal / 1000000);
 		}
 
-		tobj->tp = tcurr;
+		tobj->m_timePoint = tcurr;
 	}
 }
 
-ID TimeManager::TimeAdd()
+ID CTimeManager::timeAdd()
 {
-	Time* tobj = new Time();
-	ArrTimes.push_back(tobj);
-	return ArrTimes.size()-1;
+	CTime* tobj = new CTime();
+	m_aTimes.push_back(tobj);
+	return m_aTimes.size()-1;
 }
 
-void TimeManager::TimeSpeedSet(ID id, float speed)
+void CTimeManager::timeSpeedSet(ID id, float fSpeed)
 {
 	TIMEMANAGER_PRECOND_ID(id, _VOID);
-	ArrTimes[id]->speed = speed;
+	m_aTimes[id]->m_fSpeed = fSpeed;
 }
 
-float TimeManager::TimeSpeedGet(ID id)
+float CTimeManager::timeSpeedGet(ID id)
 {
 	TIMEMANAGER_PRECOND_ID(id, 0);
-	return ArrTimes[id]->speed;
+	return m_aTimes[id]->m_fSpeed;
 }
 
-void TimeManager::TimeWorkingSet(ID id, bool working)
+void CTimeManager::timeWorkingSet(ID id, bool isWorking)
 {
 	TIMEMANAGER_PRECOND_ID(id, _VOID);
 
-	if (working && !(ArrTimes[id]->working))
-		ArrTimes[id]->tp = std::chrono::high_resolution_clock::now();
+	if (isWorking && !(m_aTimes[id]->m_isWorking))
+		m_aTimes[id]->m_timePoint = std::chrono::high_resolution_clock::now();
 
-	ArrTimes[id]->working = working;
+	m_aTimes[id]->m_isWorking = isWorking;
 }
 
-bool TimeManager::TimeWorkingGet(ID id)
+bool CTimeManager::timeWorkingGet(ID id)
 {
 	TIMEMANAGER_PRECOND_ID(id, false);
 
-	return ArrTimes[id]->working;
+	return m_aTimes[id]->m_isWorking;
 }
 
-void TimeManager::TimeUnixStartSet(ID id, int64_t start_time)
+void CTimeManager::timeUnixStartSet(ID id, int64_t iStartTime)
 {
 	TIMEMANAGER_PRECOND_ID(id, _VOID);
 
-	ArrTimes[id]->unixtime_start = start_time;
+	m_aTimes[id]->m_iUnixtimeStart = iStartTime;
 }
 
-int64_t TimeManager::TimeUnixStartGet(ID id)
+int64_t CTimeManager::timeUnixStartGet(ID id)
 {
 	TIMEMANAGER_PRECOND_ID(id, 0);
 
-	return ArrTimes[id]->unixtime_start;
+	return m_aTimes[id]->m_iUnixtimeStart;
 }
 
-int64_t TimeManager::TimeUnixCurrGet(ID id)
+int64_t CTimeManager::timeUnixCurrGet(ID id)
 {
 	TIMEMANAGER_PRECOND_ID(id, 0);
 
-	return ArrTimes[id]->unixtime_curr;
+	return m_aTimes[id]->m_iUnixtimeCurr;
 }
 
-int64_t TimeManager::TimeTotalMcsGet(ID id)
+int64_t CTimeManager::timeTotalMcsGet(ID id)
 {
 	TIMEMANAGER_PRECOND_ID(id, 0);
 
-	return ArrTimes[id]->time_total;
+	return m_aTimes[id]->m_iTimeTotal;
 }
 
-int64_t TimeManager::TimeTotalMcsGetU(ID id)
+int64_t CTimeManager::timeTotalMcsGetU(ID id)
 {
 	TIMEMANAGER_PRECOND_ID(id, 0);
 
-	Time* tobj = ArrTimes[id];
+	CTime* tobj = m_aTimes[id];
 
-	if (!tobj->working)
-		return tobj->time_total;
+	if (!tobj->m_isWorking)
+		return tobj->m_iTimeTotal;
 
 	time_point tcurr = std::chrono::high_resolution_clock::now();
 
-	return tobj->time_total + (int64_t)((long double)std::chrono::duration_cast<std::chrono::microseconds>(tcurr - tobj->tp).count() * tobj->speed);
+	return tobj->m_iTimeTotal + (int64_t)((long double)std::chrono::duration_cast<std::chrono::microseconds>(tcurr - tobj->m_timePoint).count() * tobj->m_fSpeed);
 }

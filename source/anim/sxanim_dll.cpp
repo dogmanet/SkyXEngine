@@ -13,7 +13,7 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func reportf = DefReport;
 #endif
 
 #define SA_PRECOND(ret) if(!g_mgr){reportf(-1, "%s - sxanim is not init", gen_msg_location);return ret;}

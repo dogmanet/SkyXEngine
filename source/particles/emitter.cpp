@@ -1,7 +1,5 @@
 
-#include <particles/Emitter.h>
-
-#pragma once
+#include "Emitter.h"
 
 void Emitter::NullingInit()
 {
@@ -245,7 +243,7 @@ void Emitter::CountSet(int count)
 
 	if (Count <= 0)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", gen_msg_location);
 		return;
 	}
 
@@ -485,7 +483,7 @@ void Emitter::CreateParticles()
 
 }
 
-inline void Emitter::ReCreateParticles(WORD id)
+void Emitter::ReCreateParticles(WORD id)
 {
 	//если разброс недопустим то спавним только в точке
 	if (Data.SpawnPosType == ParticlesSpawnPosType::pspt_strictly)
@@ -787,7 +785,7 @@ void Emitter::UpdateAnimTex(WORD idparticle, DWORD tmptime)
 	}
 }
 
-inline bool Emitter::IsPointInCone(float3* point)
+bool Emitter::IsPointInCone(float3* point)
 {
 	if (point->y >= Data.BoundVec1.y && point->y <= Data.BoundVec2.y)
 	{
@@ -804,7 +802,7 @@ inline bool Emitter::IsPointInCone(float3* point)
 	return false;
 }
 
-inline bool Emitter::IsPointInSphere(float3* point)
+bool Emitter::IsPointInSphere(float3* point)
 {
 	float distsqr = SMVector3Dot(Data.BoundVec1 - *point);
 	if (distsqr <= Data.BoundVec1.w*Data.BoundVec1.w)
@@ -813,7 +811,7 @@ inline bool Emitter::IsPointInSphere(float3* point)
 		return false;
 }
 
-inline bool Emitter::IsPointInBox(float3* point)
+bool Emitter::IsPointInBox(float3* point)
 {
 	if (point->x >= Data.BoundVec1.x && point->y >= Data.BoundVec1.y && point->z >= Data.BoundVec1.z && point->x <= Data.BoundVec2.x && point->y <= Data.BoundVec2.y && point->z <= Data.BoundVec2.z)
 		return true;
@@ -1285,7 +1283,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 			if (PESet::IDsRenderTargets::DepthScene >= 0)
 				PESet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PESet::IDsRenderTargets::DepthScene));
 			else
-				reportf(REPORT_MSG_LEVEL_WARRNING, "sxparticles - not init depth map\n");
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
 		}
 
 		SGCore_ShaderBind(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles);

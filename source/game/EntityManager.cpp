@@ -158,14 +158,14 @@ void EntityManager::ClearInterval(ID id)
 
 bool EntityManager::Export(const char * file)
 {
-	ISXLConfig * conf = Core_CrLConfig();
+	ISXConfig * conf = Core_CrConfig();
 	conf->New(file);
 	char buf[512], sect[32];
 	SXbaseEntity * pEnt;
 	proptable_t * pTbl;
 	int ic = 0;
 
-	conf->Set("meta", "count", "0");
+	conf->set("meta", "count", "0");
 
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
@@ -177,16 +177,16 @@ bool EntityManager::Export(const char * file)
 			continue;
 		}
 
-		conf->Set(sect, "classname", pEnt->GetClassName());
+		conf->set(sect, "classname", pEnt->GetClassName());
 		pTbl = EntityFactoryMap::GetInstance()->GetPropTable(pEnt->GetClassName());
 		do
 		{
 			for(int j = 0; j < pTbl->numFields; ++j)
 			{
-				if(pTbl->pData[j].szKey && !conf->KeyExists(sect, pTbl->pData[j].szKey))
+				if(pTbl->pData[j].szKey && !conf->keyExists(sect, pTbl->pData[j].szKey))
 				{
 					pEnt->GetKV(pTbl->pData[j].szKey, buf, sizeof(buf));
-					conf->Set(sect, pTbl->pData[j].szKey, buf);
+					conf->set(sect, pTbl->pData[j].szKey, buf);
 				}
 			}
 		}
@@ -195,31 +195,31 @@ bool EntityManager::Export(const char * file)
 	}
 
 	sprintf(buf, "%d", ic);
-	conf->Set("meta", "count", buf);
+	conf->set("meta", "count", buf);
 
-	bool ret = !conf->Save();
+	bool ret = !conf->save();
 	mem_release(conf);
 	return(ret);
 }
 
 bool EntityManager::Import(const char * file)
 {
-	ISXLConfig * conf = Core_CrLConfig();
+	ISXConfig * conf = Core_CrConfig();
 	char sect[32];
 	SXbaseEntity * pEnt = NULL;
 	Array<SXbaseEntity*> tmpList;
-	if(conf->Open(file))
+	if(conf->open(file))
 	{
 		goto err;
 	}
 
-	if(!conf->KeyExists("meta", "count"))
+	if(!conf->keyExists("meta", "count"))
 	{
 		goto err;
 	}
 
 	int ic;
-	if(sscanf(conf->GetKey("meta", "count"), "%d", &ic) != 1)
+	if(sscanf(conf->getKey("meta", "count"), "%d", &ic) != 1)
 	{
 		goto err;
 	}
@@ -229,29 +229,29 @@ bool EntityManager::Import(const char * file)
 	for(int i = 0; i < ic; ++i)
 	{
 		sprintf(sect, "ent_%d", i);
-		if(!conf->KeyExists(sect, "classname"))
+		if(!conf->keyExists(sect, "classname"))
 		{
 			printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
 			tmpList[i] = NULL;
 			continue;
 		}
-		if(!(pEnt = CREATE_ENTITY(conf->GetKey(sect, "classname"), this)))
+		if(!(pEnt = CREATE_ENTITY(conf->getKey(sect, "classname"), this)))
 		{
-			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->GetKey(sect, "classname"));
+			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
 			tmpList[i] = NULL;
 			continue;
 		}
-		if(conf->KeyExists(sect, "name"))
+		if(conf->keyExists(sect, "name"))
 		{
-			pEnt->SetKV("name", conf->GetKey(sect, "name"));
+			pEnt->SetKV("name", conf->getKey(sect, "name"));
 		}
-		if(conf->KeyExists(sect, "origin"))
+		if(conf->keyExists(sect, "origin"))
 		{
-			pEnt->SetKV("origin", conf->GetKey(sect, "origin"));
+			pEnt->SetKV("origin", conf->getKey(sect, "origin"));
 		}
-		if(conf->KeyExists(sect, "rotation"))
+		if(conf->keyExists(sect, "rotation"))
 		{
-			pEnt->SetKV("rotation", conf->GetKey(sect, "rotation"));
+			pEnt->SetKV("rotation", conf->getKey(sect, "rotation"));
 		}
 		pEnt->SetFlags(pEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
 		tmpList[i] = pEnt;
@@ -264,14 +264,14 @@ bool EntityManager::Import(const char * file)
 		{
 			continue;
 		}
-		int keyc = conf->GetKeyCount(sect);
+		int keyc = conf->getKeyCount(sect);
 		const char * key;
 		for(int j = 0; j < keyc; ++j)
 		{
-			key = conf->GetKeyName(sect, j);
+			key = conf->getKeyName(sect, j);
  			if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
 			{
-				pEnt->SetKV(key, conf->GetKey(sect, key));
+				pEnt->SetKV(key, conf->getKey(sect, key));
 			}
 		}
 		pEnt->OnPostLoad();
@@ -342,8 +342,8 @@ SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity 
 
 void EntityManager::LoadDefaults()
 {
-	m_pDefaultsConf = Core_CrLConfig();
-	if(m_pDefaultsConf->Open("entities/defaults.ent") < 0)
+	m_pDefaultsConf = Core_CrConfig();
+	if(m_pDefaultsConf->open("entities/defaults.ent") < 0)
 	{
 		mem_release(m_pDefaultsConf);
 		return;
@@ -352,25 +352,25 @@ void EntityManager::LoadDefaults()
 	const char * sect, * key;
 	EntDefaultsMap * defs;
 
-	for(int i = 0, l = m_pDefaultsConf->GetSectionCount(); i < l; ++i)
+	for(int i = 0, l = m_pDefaultsConf->getSectionCount(); i < l; ++i)
 	{
-		sect = m_pDefaultsConf->GetSectionName(i);
+		sect = m_pDefaultsConf->getSectionName(i);
 		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(sect)))
 		{
 			continue;
 		}
-		for(int j = 0, jl = m_pDefaultsConf->GetKeyCount(sect); j < jl; ++j)
+		for(int j = 0, jl = m_pDefaultsConf->getKeyCount(sect); j < jl; ++j)
 		{
-			key = m_pDefaultsConf->GetKeyName(sect, j);
-			defs[0][AAString(key)] = m_pDefaultsConf->GetKey(sect, key);
+			key = m_pDefaultsConf->getKeyName(sect, j);
+			defs[0][AAString(key)] = m_pDefaultsConf->getKey(sect, key);
 		}
 	}
 }
 
 void EntityManager::LoadDynClasses()
 {
-	m_pDynClassConf = Core_CrLConfig();
-	if(m_pDynClassConf->Open("entities/classes.ent") < 0)
+	m_pDynClassConf = Core_CrConfig();
+	if(m_pDynClassConf->open("entities/classes.ent") < 0)
 	{
 		mem_release(m_pDynClassConf);
 		return;
@@ -380,10 +380,10 @@ void EntityManager::LoadDynClasses()
 	EntDefaultsMap * defs, *baseDefs;
 	bool bShow = true;
 
-	for(int i = 0, l = m_pDynClassConf->GetSectionCount(); i < l; ++i)
+	for(int i = 0, l = m_pDynClassConf->getSectionCount(); i < l; ++i)
 	{
-		newClass = m_pDynClassConf->GetSectionName(i);
-		if(!(baseClass = m_pDynClassConf->GetKey(newClass, "base_class")))
+		newClass = m_pDynClassConf->getSectionName(i);
+		if(!(baseClass = m_pDynClassConf->getKey(newClass, "base_class")))
 		{
 			printf(COLOR_LRED "Couldn't create entity class '%s': Unknown base class\n" COLOR_RESET, newClass);
 			continue;
@@ -394,7 +394,7 @@ void EntityManager::LoadDynClasses()
 			printf(COLOR_LRED "Couldn't create entity class '%s': Base class '%s' is undefined\n" COLOR_RESET, newClass, baseClass);
 			continue;
 		}
-		if((key = m_pDynClassConf->GetKey(newClass, "show_in_listing")))
+		if((key = m_pDynClassConf->getKey(newClass, "show_in_listing")))
 		{
 			bShow = strcmp(key, "0") && strcmp(key, "false");
 		}
@@ -412,10 +412,10 @@ void EntityManager::LoadDynClasses()
 				defs[0][*i.first] = *i.second;
 			}
 		}
-		for(int j = 0, jl = m_pDynClassConf->GetKeyCount(newClass); j < jl; ++j)
+		for(int j = 0, jl = m_pDynClassConf->getKeyCount(newClass); j < jl; ++j)
 		{
-			key = m_pDynClassConf->GetKeyName(newClass, j);
-			defs[0][AAString(key)] = m_pDynClassConf->GetKey(newClass, key);
+			key = m_pDynClassConf->getKeyName(newClass, j);
+			defs[0][AAString(key)] = m_pDynClassConf->getKey(newClass, key);
 		}
 	}
 }

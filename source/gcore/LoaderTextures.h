@@ -1,8 +1,16 @@
 
-#ifndef LOADER_TEXTURES_H
-#define LOADER_TEXTURES_H
+#ifndef __LOADERTEXTURES_H
+#define __LOADERTEXTURES_H
 
-#pragma once
+#include <gdefines.h>
+#include <d3d9.h>
+#include <common/array.h>
+#include <common/String.h>
+#include "sxgcore.h"
+
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 class LoaderTextures
 {

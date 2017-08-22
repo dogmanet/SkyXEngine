@@ -2,18 +2,23 @@
 #ifndef __sxmaterial
 #define __sxmaterial
 
-#include <mtllight\\reflection.h>
+#include <common/String.h>
+#include <common/Array.h>
+#include "reflection.h"
 #include <direct.h>
+
+extern report_func g_fnReportf;
+
 #define MTL_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < ArrMaterials.size()))\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
 else if (!ArrMaterials[id])\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", gen_msg_location, id); return stdval; }
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", gen_msg_location, id); return stdval; }
 
 #define MTL_REF_PRE_COND_ID(id,stdval) \
 MTL_PRE_COND_ID(id, stdval)\
 if (!(ArrMaterials[id]->Reflect))\
-	{reportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", gen_msg_location, id, ArrMaterials[id]->mtl->Name); return stdval; }
+	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", gen_msg_location, id, ArrMaterials[id]->mtl->Name); return stdval; }
 
 class Materials
 {
@@ -32,16 +37,16 @@ public:
 	void Render(ID id, float4x4* world);
 	void RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl);
 	void RenderLight(float4_t* color, float4x4* world);
-	inline long GetCount();
+	long GetCount();
 
-	inline void SetForceblyAlphaTest(bool isat);
-	inline bool GetForceblyAlphaTest();
+	void SetForceblyAlphaTest(bool isat);
+	bool GetForceblyAlphaTest();
 
-	inline void SetIsIncrCountSurf(bool bf);
-	inline bool GetIsIncrCountSurf();
-	inline void NullingCurrCountSurf();
-	inline int GetCurrCountSurf();
-	inline void SetCurrCountSurf(int count);
+	void SetIsIncrCountSurf(bool bf);
+	bool GetIsIncrCountSurf();
+	void NullingCurrCountSurf();
+	int GetCurrCountSurf();
+	void SetCurrCountSurf(int count);
 
 
 	ID MtlLoad(const char* name, MtlTypeModel type = MtlTypeModel::tms_static);

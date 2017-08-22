@@ -1,32 +1,32 @@
 
 #include <common\\AssotiativeArray.h>
 #include <common\\String.cpp>
-#include <core\\LoaderConfig.h>
-#pragma once
+#include "Config.h"
+
 /*
 1. Проверить обработку циклических зависимостей
 2. Проверить привязку к переводу строки в конце файла
 */
 
 
-SXLoaderConfig::SXLoaderConfig()
+CConfig::CConfig()
 {
 	ErrorFile = "";
 	BaseFile = "";
 }
 
-int SXLoaderConfig::Open(const char* path)
+int CConfig::open(const char* path)
 {
-	return Parse(path);
+	return parse(path);
 }
 
-void SXLoaderConfig::New(const char* path)
+void CConfig::New(const char* path)
 {
-	Clear();
+	clear();
 	BaseFile = path;
 }
 
-ConfigString SXLoaderConfig::BaseDir(ConfigString dir)
+CConfigString CConfig::baseDir(CConfigString dir)
 {
 	int p1 = dir.find_last_of('/');
 	int p2 = dir.find_last_of('\\');
@@ -41,7 +41,7 @@ ConfigString SXLoaderConfig::BaseDir(ConfigString dir)
 	}
 }
 
-ConfigString SXLoaderConfig::BaseName(ConfigString dir)
+CConfigString CConfig::baseName(CConfigString dir)
 {
 	int p1 = dir.find_last_of('/');
 	int p2 = dir.find_last_of('\\');
@@ -56,10 +56,10 @@ ConfigString SXLoaderConfig::BaseName(ConfigString dir)
 	}
 }
 
-int SXLoaderConfig::Parse(const char* file)
+int CConfig::parse(const char* file)
 {
-	Clear();
-	BaseFile = ConfigString(file);
+	clear();
+	BaseFile = CConfigString(file);
 	FILE * fp = fopen(file, "rb");
 		if(!fp)
 		{
@@ -76,10 +76,10 @@ int SXLoaderConfig::Parse(const char* file)
 	bool bFirstChar = true;
 	bool bSectionNameDone = false;
 
-	ConfigString s1 = ""; // some
-	ConfigString s2 = ""; // section
-	ConfigString s3 = ""; // parentS
-	ConfigString s4 = ""; // val
+	CConfigString s1 = ""; // some
+	CConfigString s2 = ""; // section
+	CConfigString s3 = ""; // parentS
+	CConfigString s4 = ""; // val
 
 
 
@@ -110,7 +110,7 @@ int SXLoaderConfig::Parse(const char* file)
 			if(bInclude)
 			{
 				//printf("#include %s\n", s1.c_str());
-				ParseInclude(s1, BaseDir(file));
+				parseInclude(s1, baseDir(file));
 			}
 			if(bValue)
 			{
@@ -139,7 +139,7 @@ int SXLoaderConfig::Parse(const char* file)
 					m_mSections[s2].native = true;
 					if(m_mSections.KeyExists(s3))
 					{
-						for(AssotiativeArray<ConfigString, value>::Iterator i = m_mSections[s3].mValues.begin(); i; i++)
+						for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mSections[s3].mValues.begin(); i; i++)
 						{
 							m_mSections[s2].mValues[i.first].val = i.second->val;
 						}
@@ -174,7 +174,7 @@ int SXLoaderConfig::Parse(const char* file)
 					m_mSections[s2].native = true;
 					if(m_mSections.KeyExists(s3))
 					{
-						for(AssotiativeArray<ConfigString, value>::Iterator i = m_mSections[s3].mValues.begin(); i; i++)
+						for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mSections[s3].mValues.begin(); i; i++)
 						{
 							m_mSections[s2].mValues[i.first].val = i.second->val;
 						}
@@ -317,14 +317,14 @@ int SXLoaderConfig::Parse(const char* file)
 	return 0;
 }
 
-void SXLoaderConfig::Modify(AssotiativeArray<ConfigString, section> & sections, AssotiativeArray<ConfigString, value> & values, ConfigString IncName)
+void CConfig::modify(AssotiativeArray<CConfigString, CSection> & sections, AssotiativeArray<CConfigString, CValue> & values, CConfigString IncName)
 {
-	for(AssotiativeArray<ConfigString, value>::Iterator i = m_mFinalValues.begin(); i; i++)
+	for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mFinalValues.begin(); i; i++)
 	{
 		values[i.first].val = i.second->val;
 	}
 
-	for(AssotiativeArray<ConfigString, section>::Iterator i = m_mSections.begin(); i; i++)
+	for (AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
 	{
 		if(!sections.KeyExists(i.first))
 		{
@@ -332,26 +332,26 @@ void SXLoaderConfig::Modify(AssotiativeArray<ConfigString, section> & sections, 
 			sections[i.first].native = false;
 			sections[i.first].Include = IncName;
 		}
-		for(AssotiativeArray<ConfigString, value>::Iterator j = m_mSections[i.first].mValues.begin(); j; j++)
+		for(AssotiativeArray<CConfigString, CValue>::Iterator j = m_mSections[i.first].mValues.begin(); j; j++)
 		{
 			sections[i.first].mValues[j.first].val = j.second->val;
 		}
 	}
 }
 
-int SXLoaderConfig::ParseInclude(ConfigString & file, const ConfigString & dir)
+int CConfig::parseInclude(CConfigString & file, const CConfigString & dir)
 {
 	//printf("Parsing include %s fromdir = %s\n", file.c_str(), dir.c_str());
 	FILE * pF = fopen((dir + file).c_str(), "r");
 	if(pF)
 	{
 		fclose(pF);
-		include inc;
+		CInclude inc;
 
-		inc.pParser = new SXLoaderConfig(/*(dir + file).c_str()*/);
-		inc.pParser->Open((dir + file).c_str());
+		inc.pParser = new CConfig(/*(dir + file).c_str()*/);
+		inc.pParser->open((dir + file).c_str());
 
-		inc.name = BaseName(dir + file);
+		inc.name = baseName(dir + file);
 /*		if(inc.name == "gl.ltx")
 		{
 			_asm
@@ -359,7 +359,7 @@ int SXLoaderConfig::ParseInclude(ConfigString & file, const ConfigString & dir)
 				int 3;
 			};
 		}*/
-		inc.pParser->Modify(m_mSections, m_mFinalValues, dir + file);
+		inc.pParser->modify(m_mSections, m_mFinalValues, dir + file);
 		m_vIncludes.push_back(inc);
 		return(0);
 	}
@@ -371,15 +371,15 @@ int SXLoaderConfig::ParseInclude(ConfigString & file, const ConfigString & dir)
 	}
 }
 
-const char* SXLoaderConfig::GetErrorFile()
+const char* CConfig::getErrorFile()
 {
 	return ErrorFile.c_str();
 }
 
-const char* SXLoaderConfig::GetKey(const char * section, const char * key)
+const char* CConfig::getKey(const char * section, const char * key)
 {
-	ConfigString keys(key);
-	ConfigString sections(section);
+	CConfigString keys(key);
+	CConfigString sections(section);
 		if(m_mSections.KeyExists(sections))
 		{
 				if(m_mSections[sections].mValues.KeyExists(keys))
@@ -391,16 +391,16 @@ const char* SXLoaderConfig::GetKey(const char * section, const char * key)
 	return 0;
 }
 
-const char* SXLoaderConfig::GetKeyName(const char* section, int key)
+const char* CConfig::getKeyName(const char* section, int key)
 {
-	//ConfigString keys(key);
-	ConfigString sections(section);
+	//CConfigString keys(key);
+	CConfigString sections(section);
 	if (m_mSections.KeyExists(sections))
 	{
 		if (m_mSections[sections].mValues.Size() > key)
 		{
 			int countiter = 0;
-			AssotiativeArray<ConfigString, SXLoaderConfig::value>::Iterator iter = m_mSections[sections].mValues.begin();
+			AssotiativeArray<CConfigString, CConfig::CValue>::Iterator iter = m_mSections[sections].mValues.begin();
 			for (int i = 0; i < key && iter; i++)
 			{
 				iter++;
@@ -414,12 +414,12 @@ const char* SXLoaderConfig::GetKeyName(const char* section, int key)
 	return 0;
 }
 
-const char* SXLoaderConfig::GetSectionName(int num)
+const char* CConfig::getSectionName(int num)
 {
 	if (m_mSections.Size() > num)
 	{
 		int countiter = 0;
-		AssotiativeArray<ConfigString, SXLoaderConfig::section>::Iterator iter = m_mSections.begin();
+		AssotiativeArray<CConfigString, CConfig::CSection>::Iterator iter = m_mSections.begin();
 		for (int i = 0; i < num && iter; i++)
 		{
 			iter++;
@@ -432,24 +432,24 @@ const char* SXLoaderConfig::GetSectionName(int num)
 	return(NULL);
 }
 
-void SXLoaderConfig::Set(const char * sectionp, const char * key, const char * val)
+void CConfig::set(const char * sectionp, const char * key, const char * val)
 {
-	ConfigString sections(sectionp);
-	ConfigString keys(key);
-	ConfigString vals(val);
+	CConfigString sections(sectionp);
+	CConfigString keys(key);
+	CConfigString vals(val);
 
 	if(!m_mSections.KeyExists(sections))
 	{
-		section s;
+		CSection s;
 		s.native = true;
 		m_mSections[sections] = s;
 		//create section
 	}
-	section * s = &m_mSections[sections];
+	CSection *s = &m_mSections[sections];
 	//s->isModified = true;
 	if(s->mValues.KeyExists(keys))
 	{
-		value * v = &s->mValues[keys];
+		CValue * v = &s->mValues[keys];
 		if(v->val != vals)
 		{
 			s->isModified = true;
@@ -459,7 +459,7 @@ void SXLoaderConfig::Set(const char * sectionp, const char * key, const char * v
 	}
 	else
 	{
-		value v;
+		CValue v;
 		v.isModified = true;
 		v.val = vals;
 		s->mValues[keys] = v;
@@ -467,26 +467,26 @@ void SXLoaderConfig::Set(const char * sectionp, const char * key, const char * v
 	}
 }
 
-int SXLoaderConfig::Save()
+int CConfig::save()
 {
 	int terror = 0;
-	for(AssotiativeArray<ConfigString, section>::Iterator i = m_mSections.begin(); i; i++)
+	for (AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
 	{
 		if(i.second->isModified)
 		{
-			for(AssotiativeArray<ConfigString, value>::Iterator j = i.second->mValues.begin(); j; j++)
+			for(AssotiativeArray<CConfigString, CValue>::Iterator j = i.second->mValues.begin(); j; j++)
 			{
 				if(j.second->isModified)
 				{
 					if(i.second->native) // Write to BaseFile
 					{
-						terror = WriteFile(BaseFile, *i.first, *j.first, j.second->val);
+						terror = writeFile(BaseFile, *i.first, *j.first, j.second->val);
 							if(terror!=0)
 								return terror;
 					}
 					else // Write to i.second->Include
 					{
-						terror = WriteFile(i.second->Include, *i.first, *j.first, j.second->val);
+						terror = writeFile(i.second->Include, *i.first, *j.first, j.second->val);
 							if(terror!=0)
 								return terror;
 					}
@@ -498,7 +498,7 @@ int SXLoaderConfig::Save()
 	return 0;
 }
 
-int SXLoaderConfig::WriteFile(const ConfigString & name, ConfigString section, ConfigString key, const ConfigString & val)
+int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfigString key, const CConfigString & val)
 {
 	//printf("W: %s\t[%s]: %s = %s\n", name.c_str(), section.c_str(), key.c_str(), val.c_str());
 	FILE * pF = fopen(name.c_str(), "rb");
@@ -650,7 +650,7 @@ int SXLoaderConfig::WriteFile(const ConfigString & name, ConfigString section, C
 				ErrorFile = name;
 				return -1;
 			}
-			fwrite((ConfigString("\n[") + section + "]\n" + key + " = " + val + "\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 8, pF);
+			fwrite((CConfigString("\n[") + section + "]\n" + key + " = " + val + "\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 8, pF);
 			fclose(pF);
 			return 0;
 		}
@@ -663,39 +663,39 @@ int SXLoaderConfig::WriteFile(const ConfigString & name, ConfigString section, C
 			ErrorFile = name;
 			return -1;
 		}
-		fwrite((ConfigString("[")+section+"]\n"+key+" = "+val+"\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 7, pF);
+		fwrite((CConfigString("[")+section+"]\n"+key+" = "+val+"\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 7, pF);
 		fclose(pF);
 		return 0;
 	}
 return 0;
 }
 
-int SXLoaderConfig::GetSectionCount()
+int CConfig::getSectionCount()
 {
 	int c = m_mSections.Size();
 		int size = m_vIncludes.size();
 		for(int i = 0; i < size; ++i)
 		{
 			//m_vIncludes
-			c += m_vIncludes[i].pParser->GetSectionCount();
+			c += m_vIncludes[i].pParser->getSectionCount();
 	}
 	return(c);
 }
 
-int SXLoaderConfig::GetKeyCount()
+int CConfig::getKeyCount()
 {
 	int c = m_mFinalValues.Size();
 		int size = m_vIncludes.size();
 		for(int i = 0; i < size; ++i)
 		{
-			c += m_vIncludes[i].pParser->GetKeyCount();
+			c += m_vIncludes[i].pParser->getKeyCount();
 	}
 	return(c);
 }
 
-int SXLoaderConfig::GetKeyCount(const char* section)
+int CConfig::getKeyCount(const char* section)
 {
-	ConfigString sections(section);
+	CConfigString sections(section);
 
 	if (m_mSections.KeyExists(sections))
 	{
@@ -704,30 +704,30 @@ int SXLoaderConfig::GetKeyCount(const char* section)
 				return -1;
 		}
 
-bool SXLoaderConfig::SectionExists(const char * section)
+bool CConfig::sectionExists(const char * section)
 {
-	ConfigString sections(section);
+	CConfigString sections(section);
 	if(m_mSections.KeyExists(sections))
 			return(true);
 	return(false);
 //	return(m_mSections.count(section) != 0 && m_mSections[section].native);
 }
 
-bool SXLoaderConfig::KeyExists(const char * section, const char * key)
+bool CConfig::keyExists(const char * section, const char * key)
 {
-	ConfigString sections(section);
+	CConfigString sections(section);
 	if(m_mSections.KeyExists(sections))
 			return(m_mSections[sections].mValues.KeyExists(key));
 	return(false);
 }
 
-void SXLoaderConfig::Release()
+void CConfig::Release()
 {
-	this->Clear();
+	this->clear();
 	mem_del(this);
 }
 
-void SXLoaderConfig::Clear()
+void CConfig::clear()
 {
 	int size = m_vIncludes.size();
 	for (int i = 0; i < size; ++i)
@@ -741,12 +741,12 @@ void SXLoaderConfig::Clear()
 	BaseFile = "\0";
 }
 
-AssotiativeArray<ConfigString, SXLoaderConfig::section> * SXLoaderConfig::GetSections()
+AssotiativeArray<CConfigString, CConfig::CSection> * CConfig::getSections()
 {
 	return(&m_mSections);
 }
 
-ConfigString SXLoaderConfig::GetIncludeName(int i)
+CConfigString CConfig::getIncludeName(int i)
 {
 	if(i >= 0 && i < m_vIncludes.size())
 	{

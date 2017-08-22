@@ -1,5 +1,5 @@
 
-#include <gcore\sky.h>
+#include "sky.h"
 
 SkyBox::SkyBox()
 {
@@ -125,7 +125,7 @@ void SkyBox::LoadTextures(const char *texture)
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
 	if (FAILED(D3DXCreateCubeTextureFromFile(DXDevice, tmppath, &Tex)))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmppath);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmppath);
 	}
 }
 
@@ -143,7 +143,7 @@ void SkyBox::ChangeTexture(const char *texture)
 			BFChange = true;
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmpsb1);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmpsb1);
 		}
 }
 
@@ -159,23 +159,23 @@ void SkyBox::GetSecondTexture(char *texture)
 		strcpy(texture, TexSecond);
 }
 
-inline void SkyBox::SetRotation(float angle)
+void SkyBox::SetRotation(float angle)
 {
 	RotaionY = angle;
 	MatRotation = SMMatrixRotationY(RotaionY);
 }
 
-inline float SkyBox::GetRotation()
+float SkyBox::GetRotation()
 {
 	return RotaionY;
 }
 
-inline void SkyBox::SetColor(float4_t* color)
+void SkyBox::SetColor(float4_t* color)
 {
 	Color = *color;
 }
 
-inline void SkyBox::GetColor(float4_t* color)
+void SkyBox::GetColor(float4_t* color)
 {
 	*color = Color;
 }
@@ -331,7 +331,7 @@ void SkyClouds::ChangeTexture(const char *texture)
 			BFChange = true;
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmpsb1);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmpsb1);
 		}
 }
 
@@ -356,33 +356,33 @@ void SkyClouds::SetWidthHeightPos(float width,float height,float3* pos)
 	SkyCloudsVertices->Unlock();
 }
 
-inline void SkyClouds::SetRotation(float angle)
+void SkyClouds::SetRotation(float angle)
 {
 	RotaionY = angle;
 	MatRotation = SMMatrixRotationY(RotaionY);
 }
 
-inline float SkyClouds::GetRotation()
+float SkyClouds::GetRotation()
 {
 	return RotaionY;
 }
 
-inline void SkyClouds::SetAlpha(float alpha)
+void SkyClouds::SetAlpha(float alpha)
 {
 	Alpha = alpha;
 }
 
-inline float SkyClouds::GetAlpha()
+float SkyClouds::GetAlpha()
 {
 	return Alpha;
 }
 
-inline void SkyClouds::SetColor(float4_t* color)
+void SkyClouds::SetColor(float4_t* color)
 {
 	Color = *color;
 }
 
-inline void SkyClouds::GetColor(float4_t* color)
+void SkyClouds::GetColor(float4_t* color)
 {
 	*color = Color;
 }
@@ -415,7 +415,7 @@ void SkyClouds::LoadTextures(const char *texture)
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
 	if (FAILED(D3DXCreateTextureFromFile(DXDevice, tmppath, &SkyCloudsTex)))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmppath);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmppath);
 	}
 }
 

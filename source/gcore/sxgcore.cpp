@@ -4,24 +4,21 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-#include <gcore\sxgcore.h>
+#include "sxgcore.h"
 
-#pragma once
+#include <gcore\GeomOptimize.h>
+#include <gcore\shader.h>
+#include <gcore\creatortextures.h>
+#include <gcore\loadertextures.h>
+#include <gcore\bound.h>
+#include <gcore\camera.h>
 
-//флаги компил€ции шейдеров
-#define SHADER_DEBUG D3DXSHADER_DEBUG | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_AVOID_FLOW_CONTROL | D3DXSHADER_SKIPOPTIMIZATION
-#define SHADER_RELEASE D3DXSHADER_OPTIMIZATION_LEVEL3 | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_PARTIALPRECISION | D3DXSHADER_PREFER_FLOW_CONTROL
-
-//определ€ем флаг компилции шейдеров
-#if defined(DEBUG) || defined(_DEBUG) 
-#define SHADER_FLAGS SHADER_DEBUG 
-#else 
-#define SHADER_FLAGS SHADER_RELEASE 
-#endif
+#include <gcore\\loader_static.h>
+#include <gcore\\sky.h>
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
 
 IDirect3DDevice9* DXDevice = 0;
@@ -72,17 +69,10 @@ g_func_mtl_get_physic_type FuncMtlGetPhysicType = StdMtlGetPhysicType;
 g_func_mtl_group_render_is_singly FuncMtlGroupRenderIsSingly = StdMtlGroupIsSyngly;
 ///
 
-#include <common\string.cpp>
-#include <gcore\shader.cpp>
-#include <gcore\creatortextures.cpp>
-#include <gcore\loadertextures.cpp>
-#include <gcore\baseobject.cpp>
-#include <gcore\workmodel.cpp>
-#include <gcore\camera.cpp>
+
 
 IDirect3DVertexDeclaration9* StaticVertexDecl = 0;
-#include <gcore\\loader_static.cpp>
-#include <gcore\\sky.cpp>
+
 
 #define SXGCORE_VERSION 1
 
@@ -94,20 +84,98 @@ SkyBox* ObjSkyBox = 0;
 SkyClouds* ObjSkyClouds = 0;
 
 
-#define SG_PRECOND(retval) if(!DXDevice){reportf(-1, "%s - sxgcore is not init", gen_msg_location); return retval;}
-#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!ObjSkyBox){reportf(-1, "%s - sky_box is not init", gen_msg_location); return retval;}
-#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!ObjSkyClouds){reportf(-1, "%s - sky_clouds is not init", gen_msg_location); return retval;}
+#define SG_PRECOND(retval) if(!DXDevice){g_fnReportf(-1, "%s - sxgcore is not init", gen_msg_location); return retval;}
+#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!ObjSkyBox){g_fnReportf(-1, "%s - sky_box is not init", gen_msg_location); return retval;}
+#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!ObjSkyClouds){g_fnReportf(-1, "%s - sky_clouds is not init", gen_msg_location); return retval;}
 
-#include <gcore\dxdevice.cpp>
+//#include <gcore\dxdevice.cpp>
 
 void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags)
 {
-	int cerr = InitD3D(hwnd, windowed, width, heigth, create_device_flags);
-	if (cerr == SXGC_ERR_NON_DETECTED_D3D)
-		reportf(-1, "%s - none detected d3d, sxgcore", gen_msg_location);
-	else if (cerr == SXGC_ERR_FAILED_INIT_D3D)
-		reportf(-1, "%s - failed initialized d3d, sxgcore", gen_msg_location);
+	d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
 
+	if (!d3d9)
+	{
+		g_fnReportf(-1, "%s - none detected d3d, sxgcore", gen_msg_location);
+		return;
+	}
+
+	D3DCAPS9 caps;
+	d3d9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
+
+	memset(&D3DAPP, 0, sizeof(D3DAPP));
+	D3DAPP.BackBufferWidth = width;
+	D3DAPP.BackBufferHeight = heigth;
+	D3DAPP.BackBufferFormat = D3DFMT_A8R8G8B8;
+	D3DAPP.BackBufferCount = 1;
+	D3DAPP.MultiSampleType = D3DMULTISAMPLE_NONE;
+	D3DAPP.MultiSampleQuality = 0;
+	D3DAPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	D3DAPP.hDeviceWindow = hwnd;
+	D3DAPP.Windowed = windowed;
+	D3DAPP.EnableAutoDepthStencil = true;
+	D3DAPP.AutoDepthStencilFormat = D3DFMT_D24S8;
+	D3DAPP.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | create_device_flags | D3DCREATE_MULTITHREADED;
+	D3DAPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	D3DAPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+	if (FAILED(d3d9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING | create_device_flags | D3DCREATE_MULTITHREADED, &D3DAPP, &DXDevice)))
+	{
+		g_fnReportf(-1, "%s - failed initialized d3d, sxgcore", gen_msg_location);
+		return;
+	}
+
+	D3DXFONT_DESC LF;
+	ZeroMemory(&LF, sizeof(D3DXFONT_DESC));
+	LF.Height = 10;    // в логических единицах
+	LF.Width = 6;    // в логических единицах
+	LF.Weight = 6;   // насыщенность, 
+	// диапазон 0(тонкий) - 1000(жирный)
+	LF.Italic = 0;
+	LF.CharSet = DEFAULT_CHARSET;
+	LF.FaceName[0] = 0;
+
+	D3DXCreateFontIndirect(DXDevice, &LF, &FPSText);
+
+	D3DVERTEXELEMENT9 layoutquad[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
+	//IDirect3DVertexDeclaration9* VertexDeclarationQuad;
+	//GData::DXDevice->CreateVertexDeclaration(layoutquad, &VertexDeclarationQuad);
+
+	D3DXCreateMesh(2, 4, D3DXMESH_MANAGED, layoutquad, DXDevice, &ScreenTexture);
+
+	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
+
+	const float offset_pixel_x = 1.0f / float(D3DAPP.BackBufferWidth);
+	const float offset_pixel_y = 1.0f / float(D3DAPP.BackBufferHeight);
+
+	VERTEX_SCREEN_TEXTURE AddVertices[] =
+	{
+		{ -1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 0.0f, 1.0f, 0 },
+		{ -1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 0.0f, 0.0f, 1 },
+		{ 1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 1.0f, 0.0f, 2 },
+		{ 1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 1.0f, 1.0f, 3 },
+	};
+
+	void* Vertices;
+	if (!FAILED(ScreenTexture->LockVertexBuffer(0, (void**)&Vertices)))
+	{
+		memcpy(Vertices, AddVertices, sizeof(AddVertices));
+		ScreenTexture->UnlockVertexBuffer();
+	}
+
+	WORD* i = 0;
+	ScreenTexture->LockIndexBuffer(0, (void**)&i);
+	i[0] = 0; i[1] = 1; i[2] = 2;
+	i[3] = 0; i[4] = 2; i[5] = 3;
+	ScreenTexture->UnlockIndexBuffer();
+
+	
 	//устанавливаем данные в регистры
 	Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
 	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
@@ -135,7 +203,7 @@ long SGCore_0GetVersion()
 
 void SGCore_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags, bool is_unic)
@@ -148,14 +216,14 @@ void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool win
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				reportf(-1, "%s - none unic name, sxgcore", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxgcore", gen_msg_location);
 				return;
 			}
 		}
 		GCoreInit(hwnd, width, heigth, windowed, create_device_flags);
 	}
 	else
-		reportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);
 }
 
 void SGCore_AKill()
@@ -224,7 +292,26 @@ void SGCore_OnResetDevice()
 
 	FPSText->OnResetDevice();
 	MRenderTargets->OnResetDevice();
-	ScreenQuadOnResetDevice();
+	
+	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
+
+	const float offset_pixel_x = 1.0f / float(D3DAPP.BackBufferWidth);
+	const float offset_pixel_y = 1.0f / float(D3DAPP.BackBufferHeight);
+
+	VERTEX_SCREEN_TEXTURE AddVertices[] =
+	{
+		{ -1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 0.0f, 1.0f, 0 },
+		{ -1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 0.0f, 0.0f, 1 },
+		{ 1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 1.0f, 0.0f, 2 },
+		{ 1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 1.0f, 1.0f, 3 },
+	};
+
+	void* Vertices;
+	if (!FAILED(ScreenTexture->LockVertexBuffer(0, (void**)&Vertices)))
+	{
+		memcpy(Vertices, AddVertices, sizeof(AddVertices));
+		ScreenTexture->UnlockVertexBuffer();
+	}
 }
 
 void SGCore_ScreenQuadDraw()
@@ -775,7 +862,7 @@ void SGCore_SkyBoxCr()
 	SG_PRECOND(_VOID);
 
 	if (ObjSkyBox)
-		reportf(1,"sxcore: sky_box is already init");
+		g_fnReportf(1,"sxcore: sky_box is already init");
 	else
 		ObjSkyBox = new SkyBox();
 }
@@ -852,7 +939,7 @@ void SGCore_SkyCloudsCr()
 	SG_PRECOND(_VOID);
 
 	if (ObjSkyClouds)
-		reportf(1, "sxcore: sky_clouds is already init");
+		g_fnReportf(1, "sxcore: sky_clouds is already init");
 	else
 		ObjSkyClouds = new SkyClouds();
 }
