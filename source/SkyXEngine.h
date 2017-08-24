@@ -337,7 +337,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 #include <managed_render\\handler_out_log.cpp>
 #include <managed_render\\gdata.h>
-#include <common\\string_api.cpp>
 #include <managed_render\\camera_update.h>
 #include <managed_render\\render_func.h>
 #include <managed_render\\level.h>
