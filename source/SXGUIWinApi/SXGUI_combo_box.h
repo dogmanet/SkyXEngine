@@ -2,9 +2,7 @@
 #ifndef SXGUI_COMBO_BOX_H
 #define SXGUI_COMBO_BOX_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
+#include "SXGUI_base.h"
 
 class SXGUIComboBox : public SXGUIComponent, public virtual ISXGUIComboBox
 {

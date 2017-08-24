@@ -13,40 +13,40 @@ ShadersKit::~ShadersKit()
 
 void ShadersKit::Load(const char* path)
 {
-	ISXLConfig* config = Core_OpLConfig(path);
+	ISXConfig* config = Core_OpConfig(path);
 
 	if (!config)
 		return;
 
-	if (!config->SectionExists("shaders_kit"))
+	if (!config->sectionExists("shaders_kit"))
 	{
 		return;
 	}
 
-	if (!config->KeyExists("shaders_kit", "count"))
+	if (!config->keyExists("shaders_kit", "count"))
 	{
 		return;
 	}
 
-	int count = String(config->GetKey("shaders_kit", "count")).ToInt();
+	int count = String(config->getKey("shaders_kit", "count")).ToInt();
 	char section_name[CONFIG_SECTION_MAX_LEN];
 
 	for (int i = 0; i < count; ++i)
 	{
 		sprintf(section_name, "shader_%d", i);
-		if (!config->SectionExists(section_name))
+		if (!config->sectionExists(section_name))
 		{
 			//reportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", gen_msg_location, eff_section_name, path);
 			return;
 		}
 
-		if (!(config->KeyExists(section_name, "name") && config->KeyExists(section_name, "vs") && config->KeyExists(section_name, "ps")))
+		if (!(config->keyExists(section_name, "name") && config->keyExists(section_name, "vs") && config->keyExists(section_name, "ps")))
 			continue;
 
 		shaders* tmpshaders = new shaders();
-		tmpshaders->name = config->GetKey(section_name, "name");
-		tmpshaders->vs = config->GetKey(section_name, "vs");
-		tmpshaders->ps = config->GetKey(section_name, "ps");
+		tmpshaders->name = config->getKey(section_name, "name");
+		tmpshaders->vs = config->getKey(section_name, "vs");
+		tmpshaders->ps = config->getKey(section_name, "ps");
 
 		Arr.push_back(tmpshaders);
 	}

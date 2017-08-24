@@ -390,7 +390,6 @@ enum LoadTexType
 };
 
 SX_LIB_API bool SGCore_LoadTexFileExists(const char* name);	//!< существует ил файл name в папке с текстурами
-SX_LIB_API void SGCore_LoadTexStdPath(const char* path);	//!< установить стандартный путь откуда брать текстуры
 SX_LIB_API void SGCore_LoadTexClearLoaded();				//!< очистить список загружаемых текстур
 SX_LIB_API void SGCore_LoadTexDelete(ID id);				//!< удалить тектуру по id (независимо от типа)
 SX_LIB_API ID SGCore_LoadTexAddName(const char* name, LoadTexType type);//!< добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)

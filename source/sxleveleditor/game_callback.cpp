@@ -301,10 +301,10 @@ LRESULT SXLevelEditor_ButtonGameValue_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::GameSource, txtfmt);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), txtfmt);
 	if (def_str_validate(tmppath))
 	{
-		String tmpstr = tmppath + strlen(GData::Pathes::GameSource);
+		String tmpstr = tmppath + strlen(Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
 		tmpstr.ReplaceAll("\\", "/");
 		sprintf(tmpname, "%s", tmpstr.c_str());
 		SXLevelEditor::EditGameValue->SetText(tmpname);

@@ -94,7 +94,7 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 
 		else if (SXParticlesEditor::CheckBoxTBPlay->GetHWND() == handle_elem)
 		{
-			Core_TimeWorkingSet(G_Timer_Render_Scene, SXParticlesEditor::CheckBoxTBPlay->GetCheck());
+			Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_RENDER), SXParticlesEditor::CheckBoxTBPlay->GetCheck());
 			if (SXParticlesEditor::SelEffID >= 0)
 			{
 				if (SXParticlesEditor::SelEmitterID >= 0 && !SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID))
@@ -111,7 +111,7 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		else if (SXParticlesEditor::CheckBoxTBPause->GetHWND() == handle_elem)
 		{
 			if (SXParticlesEditor::CheckBoxTBPlay->GetCheck())
-				Core_TimeWorkingSet(G_Timer_Render_Scene, !SXParticlesEditor::CheckBoxTBPause->GetCheck());
+				Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_RENDER), !SXParticlesEditor::CheckBoxTBPause->GetCheck());
 			else
 				SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
 
@@ -120,7 +120,7 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		}
 		else if (SXParticlesEditor::CheckBoxTBStop->GetHWND() == handle_elem)
 		{
-			Core_TimeWorkingSet(G_Timer_Render_Scene, true);
+			Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_RENDER), true);
 			if (SXParticlesEditor::SelEffID >= 0)
 				SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
 
@@ -162,7 +162,7 @@ LRESULT SXParticlesEditor_ButtonTextureSel_Click(HWND hwnd, UINT msg, WPARAM wPa
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Textures, FILE_FILTER_TEXTURE);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
 	if (def_str_validate(tmppath))
 	{
 		StrCutName(tmppath, tmpname);

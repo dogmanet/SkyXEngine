@@ -116,7 +116,7 @@ LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Meshes, FILE_FILTER_MODEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutMesh(tmppath, tmpname);
@@ -136,7 +136,7 @@ LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Meshes, FILE_FILTER_MODEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutMesh(tmppath, tmpname);
@@ -156,7 +156,7 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Meshes, FILE_FILTER_MODEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutMesh(tmppath, tmpname);
@@ -185,7 +185,7 @@ LRESULT SXLevelEditor_ButtonGreenMask_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Textures, FILE_FILTER_TEXTURE);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_TEXTURE);
 	if (def_str_validate(tmppath))
 	{
 		StrCutName(tmppath, tmpname);
@@ -199,7 +199,7 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Meshes, FILE_FILTER_MODEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutMesh(tmppath, tmpname);
@@ -260,19 +260,19 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		greentype = GeomGreenType::ggt_grass;
 
 	if (tmp_tex[0] != 0)
-		sprintf(path_tex,"%s%s",GData::Pathes::Textures,tmp_tex);
+		sprintf(path_tex, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), tmp_tex);
 
 	if (tmp_model[0] != 0)
-		sprintf(path_model, "%s%s", GData::Pathes::Meshes, tmp_model);
+		sprintf(path_model, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_model);
 
 	if (tmp_lod1[0] != 0)
-		sprintf(path_lod1, "%s%s", GData::Pathes::Meshes, tmp_lod1);
+		sprintf(path_lod1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_lod1);
 
 	if (tmp_lod2[0] != 0)
-		sprintf(path_lod2, "%s%s", GData::Pathes::Meshes, tmp_lod2);
+		sprintf(path_lod2, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_lod2);
 
 	if (tmp_navmesh[0] != 0)
-		sprintf(path_navmesh, "%s%s", GData::Pathes::Meshes, tmp_navmesh);
+		sprintf(path_navmesh, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_navmesh);
 	
 	/*if (!Core_0FileExists(path_tex))
 	{

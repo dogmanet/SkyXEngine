@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_toolbar.h>
-
-#pragma once
+#include "SXGUI_toolbar.h"
 
 SXGUIToolBar::SXGUIToolBar()
 {

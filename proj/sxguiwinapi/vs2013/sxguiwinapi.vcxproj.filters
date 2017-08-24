@@ -63,9 +63,6 @@
     <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar_sx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_track_bar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

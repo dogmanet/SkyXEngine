@@ -113,6 +113,7 @@
     <ResourceCompile Include="..\..\..\source\sxparticleseditor\sxparticleseditor.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
     <Image Include="..\..\..\source\sxparticleseditor\resource\axes.bmp" />
     <Image Include="..\..\..\source\sxparticleseditor\resource\bound.bmp" />

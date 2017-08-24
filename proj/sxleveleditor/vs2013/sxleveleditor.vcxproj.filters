@@ -222,5 +222,8 @@
     <Image Include="..\..\..\source\sxleveleditor\resource\sun.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\source\favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

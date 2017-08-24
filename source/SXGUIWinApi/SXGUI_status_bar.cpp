@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_status_bar.h>
-
-#pragma once
+#include "SXGUI_status_bar.h"
 
 SXGUIStatusBar::SXGUIStatusBar()
 {

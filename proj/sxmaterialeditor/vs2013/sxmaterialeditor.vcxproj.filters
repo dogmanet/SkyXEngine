@@ -33,6 +33,12 @@
     <ClCompile Include="..\..\..\source\sxmaterialeditor\material_editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\shaders_kit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\paraml_kit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\sxmaterialeditor\SXMaterialEditor.rc">
@@ -41,6 +47,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxmaterialeditor\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\paraml_kit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\shaders_kit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -106,6 +118,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\favicon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

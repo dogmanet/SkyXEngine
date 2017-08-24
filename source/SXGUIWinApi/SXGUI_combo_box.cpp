@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_combo_box.h>
-
-#pragma once
+#include "SXGUI_combo_box.h"
 
 SXGUIComboBox::SXGUIComboBox()
 {

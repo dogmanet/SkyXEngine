@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_static.h>
-
-#pragma once
+#include "SXGUI_static.h"
 
 SXGUIStatic::SXGUIStatic()
 {

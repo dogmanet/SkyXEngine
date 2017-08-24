@@ -96,5 +96,8 @@
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\source\favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

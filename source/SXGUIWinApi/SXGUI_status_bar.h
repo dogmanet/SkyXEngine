@@ -2,9 +2,7 @@
 #ifndef SXGUI_STATUS_BAR_H
 #define SXGUI_STATUS_BAR_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
+#include "SXGUI_base.h"
 
 class SXGUIStatusBar : public SXGUIComponent, public virtual ISXGUIStatusBar
 {

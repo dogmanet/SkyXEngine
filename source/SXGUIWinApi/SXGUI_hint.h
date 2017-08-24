@@ -5,9 +5,8 @@
 #include <windows.h>
 #include <commctrl.h>
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
+#include "SXGUI_base.h"
+#include "SXGUI.h"
 
 class SXGUIHint : public virtual ISXGUIHint
 {

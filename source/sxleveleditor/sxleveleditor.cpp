@@ -36,7 +36,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	HANDLE hf;
 	SXLevelEditor::MenuWeatherCount = 1;
 	char tpath[1024];
-	sprintf(tpath, "%sweather\\*.cfg", GData::Pathes::Config);
+	sprintf(tpath, "%sweather\\*.cfg", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS));
 	hf = FindFirstFile(tpath, &FindFileData);
 	if (hf != INVALID_HANDLE_VALUE){
 		do{
@@ -62,7 +62,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_LoadTexLoadTextures();
 	GData::IDSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
 	int countgc = SXGame_EntGetClassListCount();

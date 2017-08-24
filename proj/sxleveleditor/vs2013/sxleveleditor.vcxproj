@@ -129,6 +129,7 @@
     <ClInclude Include="..\..\..\source\sxleveleditor\resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_bound.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_graphpoint.bmp" />

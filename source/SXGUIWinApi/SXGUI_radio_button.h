@@ -2,7 +2,8 @@
 #ifndef SXGUI_RADIO_BUTTON_H
 #define SXGUI_RADIO_BUTTON_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
+#include "SXGUI_base.h"
+#include "SXGUI_button.h"
 
 #pragma once
 

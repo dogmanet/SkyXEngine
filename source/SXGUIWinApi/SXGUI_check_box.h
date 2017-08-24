@@ -2,15 +2,8 @@
 #ifndef SXGUI_CHECK_BOX_H
 #define SXGUI_CHECK_BOX_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
-
-/*
-BST_UNCHECKED
-BST_CHECKED
-BST_INDETERMINATE
-*/
+#include "SXGUI_base.h"
+#include "SXGUI_button.h"
 
 class SXGUICheckBox : public SXGUIButton, public virtual ISXGUICheckBox
 {

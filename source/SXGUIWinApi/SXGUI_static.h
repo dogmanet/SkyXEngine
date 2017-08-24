@@ -2,9 +2,7 @@
 #ifndef SXGUI_STATIC_H
 #define SXGUI_STATIC_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
+#include "SXGUI_base.h"
 
 class SXGUIStatic : public SXGUITextual, public virtual ISXGUIStatic
 {

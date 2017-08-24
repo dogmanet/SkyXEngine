@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_track_bar.h>
-
-#pragma once
+#include "SXGUI_track_bar.h"
 
 SXGUITrackBar::SXGUITrackBar()
 {

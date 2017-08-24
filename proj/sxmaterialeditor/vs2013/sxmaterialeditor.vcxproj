@@ -60,7 +60,7 @@
       </PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;SX_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -105,7 +105,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\sxmaterialeditor\sxmaterialeditor.cpp" />
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\paraml_kit.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\shaders_kit.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\sxmaterialeditor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\sxmaterialeditor\trackbars_callback.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -115,9 +123,12 @@
     <ResourceCompile Include="..\..\..\source\sxmaterialeditor\SXMaterialEditor.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\paraml_kit.h" />
     <ClInclude Include="..\..\..\source\sxmaterialeditor\resource.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\shaders_kit.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
     <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
     <Image Include="..\..\..\source\sxmaterialeditor\resource\cam.bmp" />
     <Image Include="..\..\..\source\sxmaterialeditor\resource\open.bmp" />

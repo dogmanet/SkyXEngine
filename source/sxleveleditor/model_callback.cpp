@@ -131,7 +131,7 @@ LRESULT SXLevelEditor_ButtonGeomModel_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Meshes, FILE_FILTER_MODEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutMesh(tmppath, tmpname);
@@ -145,7 +145,7 @@ LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Meshes, FILE_FILTER_MODEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutMesh(tmppath, tmpname);
@@ -180,7 +180,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 
 	char tmppath[1024];
-	sprintf(tmppath, "%s%s", GData::Pathes::Meshes, path_model);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path_model);
 	if (!Core_0FileExists(tmppath))
 	{
 		char tmpstr[2048];
@@ -189,7 +189,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 		return 0;
 	}
 
-	sprintf(tmppath, "%s%s", GData::Pathes::Meshes, path_model_lod);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path_model_lod);
 	if (def_str_validate(path_model_lod) && !Core_0FileExists(tmppath))
 	{
 		char tmpstr[2048];

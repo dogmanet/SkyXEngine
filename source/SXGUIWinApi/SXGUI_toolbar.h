@@ -2,8 +2,7 @@
 #ifndef SXGUI_TOOLBAR_H
 #define SXGUI_TOOLBAR_H
 
-#pragma once
-
+#include "SXGUI_base.h"
 
 class SXGUIToolBar : public SXGUIComponent, public virtual ISXGUIToolBar
 {

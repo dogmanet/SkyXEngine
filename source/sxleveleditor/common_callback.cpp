@@ -40,7 +40,7 @@ void SXLevelEditor::LevelOpen()
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, GData::Pathes::Levels, FILE_FILTER_LEVEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
 	if (def_str_validate(tmppath))
 	{
 		StrCutNameNEx(tmppath, tmpname);
@@ -89,7 +89,7 @@ void SXLevelEditor::LevelSaveAs()
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, GData::Pathes::Levels, FILE_FILTER_LEVEL);
+	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
 	if (StrValidate(tmppath))
 	{
 		StrCutNameNEx(tmppath, tmpname);
@@ -223,7 +223,7 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (SXLevelEditor::MenuWeatherCurrID >= 0)
 		{
 			char tmppath[1024];
-			sprintf(tmppath, "%s%s", GData::Pathes::ConfigWeather, SXLevelEditor::MenuWeatherArr[SXLevelEditor::MenuWeatherCurrID]);
+			sprintf(tmppath, "%sweather\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), SXLevelEditor::MenuWeatherArr[SXLevelEditor::MenuWeatherCurrID]);
 			SGame_WeatherLoad(tmppath);
 		}
 		else

@@ -238,7 +238,7 @@ void SkyXEngine_InitPaths()
 		}
 	}
 
-	Core_RStringSet(G_RI_STRING_PATH_EXE, tmppath);
+	Core_RStringSet(G_RI_STRING_PATH_EXE, tmppathexe);
 
 	sprintf(tmppath, "%s%s", tmppathexe, "\\worktex\\");
 	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, tmppath);

@@ -441,7 +441,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SkyXEngine_Init();
 
 	char shaderskitpath[1024];
-	sprintf(shaderskitpath, "%s%s", GData::Pathes::ForExe, "\\shaders_kit.cfg");
+	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\shaders_kit.cfg");
 	SXMaterialEditor::Shaders = new ShadersKit();
 	SXMaterialEditor::Shaders->Load(shaderskitpath);
 
@@ -454,7 +454,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 	char paramlpath[1024];
-	sprintf(paramlpath, "%s%s", GData::Pathes::ForExe, "\\paraml_kit.cfg");
+	sprintf(paramlpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\paraml_kit.cfg");
 	SXMaterialEditor::ParamL = new ParamLKit();
 	SXMaterialEditor::ParamL->Load(paramlpath);
 
@@ -466,8 +466,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::ComboBoxParamL->SetSel(0);
 
 
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SXMaterialEditor::EditSkyBox->SetText("sky_2_cube.dds");
+	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
+	SXMaterialEditor::EditSkyBox->SetText("sky/sky_2_cube.dds");
 		
 	GData::ObjCamera->SetPosition(&float3(0, 0, -1.2*100));
 
@@ -486,7 +486,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 
-	SGCore_LoadTexStdPath(GData::Pathes::Textures);
 	SGCore_LoadTexLoadTextures();
 
 	SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
