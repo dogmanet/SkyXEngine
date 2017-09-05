@@ -290,6 +290,12 @@ SX_LIB_API void Core_0RegisterCVarBool(
 	int flags = 0 //!< флаги из CVAR_FLAG
 	);
 
+//! Регистрирует указатель
+SX_LIB_API void Core_0RegisterCVarPointer(
+	const char * name, //!< Имя квара
+	UINT_PTR value  //!< значение по умолчанию
+	);
+
 //! Получает указатель на значение строкового квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const char ** Core_0GetPCVarString(const char * name);
 #define GET_PCVAR_STRING(k) Core_0GetPCVarString(k);
@@ -306,6 +312,9 @@ SX_LIB_API const float * Core_0GetPCVarFloat(const char * name);
 SX_LIB_API const bool * Core_0GetPCVarBool(const char * name);
 #define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k);
 
+//! Получает указатель по имени. При отсутствии квара запрошенного типа возвращает NULL
+SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name);
+#define GET_PCVAR_POINTER(k) Core_0GetPCVarPointer(k);
 
 //! Устанавливает новое значение квара. Должен существовать
 SX_LIB_API void Core_0SetCVarString(const char * name, const char * value);

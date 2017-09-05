@@ -16,7 +16,7 @@ void EntityFactoryMap::AddFactory(IEntityFactory * pFactory, const char * szName
 	}
 	m_mFactories[AAString(szName)] = pFactory;
 }
-SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWorld)
+SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWorld, bool bDelayPostLoad)
 {
 	IEntityFactory * pFactory = GetFactory(szName);
 	if(pFactory)
@@ -45,7 +45,10 @@ SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWo
 				pt = pt->pBaseProptable;
 			}
 		}
-
+		if(!bDelayPostLoad)
+		{
+			pEnt->OnPostLoad();
+		}
 		return(pEnt);
 	}
 	return(NULL);

@@ -52,6 +52,22 @@ class ISXBound;
 typedef void(*AnimStateCB)(int slot, ANIM_STATE as, IAnimPlayer * pAnim);      //!< коллбэк для определения изменения состояния воспроизведения
 typedef void(*AnimProgressCB)(int slot, float progress, IAnimPlayer * pAnim);  //!< коллбэк для определения изменения прогресса воспроизведения
 
+//! Интерфейс рэгдолла
+class IAnimRagdoll
+{
+public:
+	IAnimRagdoll()
+	{
+	};
+	virtual ~IAnimRagdoll()
+	{
+	};
+
+	virtual bool isBoneAffected(ID id) = 0;
+	virtual float3 getBoneOffset(ID id) = 0;
+	virtual SMQuaternion getBoneRotation(ID id) = 0;
+};
+
 //! Интерфейс проигрывателя анимаций
 class IAnimPlayer
 {
@@ -85,7 +101,7 @@ public:
 		@param[in] iFadeTime Время перехода от предыдущей анимации к новой в ms
 		@param[in] slot Слот для воспроизведения. От 0 до BLEND_MAX
 	*/
-	virtual void Play(const char * name, UINT iFadeTime = 0, UINT slot = 0) = 0;
+	virtual void Play(const char * name, UINT iFadeTime = 0, UINT slot = 0, bool bReplaceActivity=true) = 0;
 
 	/*! Останавливает воспроизведения для указанного слота
 		@param[in] slot Слот для остановки. От 0 до BLEND_MAX
@@ -117,7 +133,7 @@ public:
 
 		@warning В данный момент не работат
 	*/
-	virtual void StartActivity(const String & name, UINT iFadeTime = 0, UINT slot = 0) = 0;
+	virtual void StartActivity(const char * name, UINT iFadeTime = 0, UINT slot = 0) = 0;
 
 	/*! Устанавливает значение для заданного контроллера
 		@param[in] name Имя контроллера
@@ -231,6 +247,7 @@ public:
 	/*! Устанавливает масштаб
 	*/
 	virtual void SetScale(float fScale) = 0;
+	virtual float GetScale() = 0;
 
 	virtual void GetPhysData(
 		int32_t * piShapeCount,
@@ -252,6 +269,14 @@ public:
 	virtual int AddModel(ModelPart * mp) = 0;
 	virtual void DelModel(ModelPart * mp) = 0;
 	virtual void Assembly() = 0;
+
+	virtual const ModelHitbox * GetHitbox(uint32_t id) const = 0;
+	virtual uint32_t GetHitboxCount() const = 0;
+
+	virtual void setOverrideMaterial(const char * name) = 0;
+	virtual void enable(bool enable) = 0;
+
+	virtual void setRagdoll(IAnimRagdoll * pRagdoll) = 0;
 };
 
 //! \name Функции управления анимацией

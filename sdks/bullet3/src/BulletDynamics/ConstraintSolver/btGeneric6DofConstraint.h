@@ -45,7 +45,7 @@ class btRigidBody;
 
 
 //! Rotation Limit structure for generic joints
-class btRotationalLimitMotor
+class BULLET_EXPORTS btRotationalLimitMotor
 {
 public:
     //! limit_parameters
@@ -137,7 +137,7 @@ public:
 
 
 
-class btTranslationalLimitMotor
+class BULLET_EXPORTS btTranslationalLimitMotor
 {
 public:
 	btVector3 m_lowerLimit;//!< the constraint lower limits
@@ -276,7 +276,7 @@ This brings support for limit parameters and motors. </li>
 </ul>
 
 */
-ATTRIBUTE_ALIGNED16(class) btGeneric6DofConstraint : public btTypedConstraint
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btGeneric6DofConstraint : public btTypedConstraint
 {
 protected:
 

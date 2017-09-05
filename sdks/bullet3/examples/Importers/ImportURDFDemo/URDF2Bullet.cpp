@@ -166,9 +166,14 @@ void processContactParameters(const URDFLinkContactInfo& contactInfo, btCollisio
 	{
 		col->setContactStiffnessAndDamping(contactInfo.m_contactStiffness, contactInfo.m_contactDamping);
 	}
+	if ((contactInfo.m_flags & URDF_CONTACT_HAS_FRICTION_ANCHOR) != 0)
+	{
+		col->setCollisionFlags(col->getCollisionFlags() | btCollisionObject::CF_HAS_FRICTION_ANCHOR);
+	}
 }
 
 
+btScalar tmpUrdfScaling=2;
 
 
 void ConvertURDF2BulletInternal(
@@ -228,9 +233,11 @@ void ConvertURDF2BulletInternal(
     btScalar jointUpperLimit;
     btScalar jointDamping;
     btScalar jointFriction;
+	btScalar jointMaxForce;
+	btScalar jointMaxVelocity;
 
 
-    bool hasParentJoint = u2b.getJointInfo(urdfLinkIndex, parent2joint, linkTransformInWorldSpace, jointAxisInJointSpace, jointType,jointLowerLimit,jointUpperLimit, jointDamping, jointFriction);
+    bool hasParentJoint = u2b.getJointInfo2(urdfLinkIndex, parent2joint, linkTransformInWorldSpace, jointAxisInJointSpace, jointType,jointLowerLimit,jointUpperLimit, jointDamping, jointFriction,jointMaxForce,jointMaxVelocity);
 	std::string linkName = u2b.getLinkName(urdfLinkIndex);
                           
     if (flags & CUF_USE_SDF)
@@ -266,8 +273,15 @@ void ConvertURDF2BulletInternal(
     {
 
 
-        btVector4 color = selectColor2();
-		u2b.getLinkColor(urdfLinkIndex,color);
+		UrdfMaterialColor matColor;
+        btVector4 color2 = selectColor2();
+		btVector3 specular(0.5,0.5,0.5);
+		if (u2b.getLinkColor2(urdfLinkIndex,matColor))
+		{
+			color2 = matColor.m_rgbaColor;
+			specular = matColor.m_specularColor;
+		}
+
         /*
          if (visual->material.get())
          {
@@ -279,6 +293,9 @@ void ConvertURDF2BulletInternal(
             if (!(flags & CUF_USE_URDF_INERTIA))
             {
                 compoundShape->calculateLocalInertia(mass, localInertiaDiagonal);
+                btAssert(localInertiaDiagonal[0] < 1e10);
+                btAssert(localInertiaDiagonal[1] < 1e10);
+                btAssert(localInertiaDiagonal[2] < 1e10);
             }
             URDFLinkContactInfo contactInfo;
             u2b.getLinkContactInfo(urdfLinkIndex,contactInfo);
@@ -306,12 +323,12 @@ void ConvertURDF2BulletInternal(
 			u2b.getLinkContactInfo(urdfLinkIndex, contactInfo);
 
 			processContactParameters(contactInfo, body);
-            creation.createRigidBodyGraphicsInstance(urdfLinkIndex, body, color, graphicsIndex);
+            creation.createRigidBodyGraphicsInstance2(urdfLinkIndex, body, color2,specular, graphicsIndex);
             cache.registerRigidBody(urdfLinkIndex, body, inertialFrameInWorldSpace, mass, localInertiaDiagonal, compoundShape, localInertialFrame);
             
 
 
-            //untested: u2b.convertLinkVisualShapes2(urdfLinkIndex,pathPrefix,localInertialFrame,body);
+            //untested: u2b.convertLinkVisualShapes2(linkIndex,urdfLinkIndex,pathPrefix,localInertialFrame,body);
         } else
         {
             if (cache.m_bulletMultiBody==0)
@@ -340,21 +357,40 @@ void ConvertURDF2BulletInternal(
             btQuaternion parentRotToThis = offsetInB.getRotation() * offsetInA.inverse().getRotation();
 
             bool disableParentCollision = true;
+
+			if (createMultiBody && cache.m_bulletMultiBody)
+			{
+				cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointDamping = jointDamping;
+				cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointFriction = jointFriction;
+				cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointLowerLimit = jointLowerLimit;
+				cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointUpperLimit = jointUpperLimit;
+				cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointMaxForce = jointMaxForce;
+				cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointMaxVelocity = jointMaxVelocity;
+			}
+
             switch (jointType)
             {
+				case URDFFloatingJoint:
+				case URDFPlanarJoint:
                 case URDFFixedJoint:
                 {
+					if ((jointType==URDFFloatingJoint)||(jointType==URDFPlanarJoint))
+					{
+						printf("Warning: joint unsupported, creating a fixed joint instead.");
+					}
+					creation.addLinkMapping(urdfLinkIndex,mbLinkIndex);
+
                     if (createMultiBody)
                     {
                         //todo: adjust the center of mass transform and pivot axis properly
                         cache.m_bulletMultiBody->setupFixed(mbLinkIndex, mass, localInertiaDiagonal, mbParentIndex,
                                                             parentRotToThis, offsetInA.getOrigin(),-offsetInB.getOrigin());
-                        creation.addLinkMapping(urdfLinkIndex,mbLinkIndex);
+                        
                     } else
                     {
                         //b3Printf("Fixed joint\n");
 						
-						btGeneric6DofSpring2Constraint* dof6 = creation.createFixedJoint(urdfLinkIndex,*linkRigidBody, *parentRigidBody,  offsetInB, offsetInA);
+						btGeneric6DofSpring2Constraint* dof6 = creation.createFixedJoint(urdfLinkIndex,*parentRigidBody, *linkRigidBody,  offsetInA, offsetInB);
                        
                         if (enableConstraints)
                             world1->addConstraint(dof6,true);
@@ -364,15 +400,14 @@ void ConvertURDF2BulletInternal(
                 case URDFContinuousJoint:
                 case URDFRevoluteJoint:
                 {
+					creation.addLinkMapping(urdfLinkIndex,mbLinkIndex);
                     if (createMultiBody)
                     {
                         cache.m_bulletMultiBody->setupRevolute(mbLinkIndex, mass, localInertiaDiagonal, mbParentIndex,
                                                                   parentRotToThis, quatRotate(offsetInB.getRotation(),jointAxisInJointSpace), offsetInA.getOrigin(),//parent2joint.getOrigin(),
                                                                   -offsetInB.getOrigin(),
                                                                   disableParentCollision);
-                        cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointDamping = jointDamping;
-                        cache.m_bulletMultiBody->getLink(mbLinkIndex).m_jointFriction= jointFriction;
-                        creation.addLinkMapping(urdfLinkIndex,mbLinkIndex);
+                        
                         if (jointType == URDFRevoluteJoint && jointLowerLimit <= jointUpperLimit) {
                           //std::string name = u2b.getLinkName(urdfLinkIndex);
                           //printf("create btMultiBodyJointLimitConstraint for revolute link name=%s urdf link index=%d (low=%f, up=%f)\n", name.c_str(), urdfLinkIndex, jointLowerLimit, jointUpperLimit);
@@ -382,7 +417,7 @@ void ConvertURDF2BulletInternal(
                     } else
                     {
 
-						btGeneric6DofSpring2Constraint* dof6 = creation.createRevoluteJoint(urdfLinkIndex,*linkRigidBody, *parentRigidBody, offsetInB, offsetInA,jointAxisInJointSpace,jointLowerLimit, jointUpperLimit);
+						btGeneric6DofSpring2Constraint* dof6 = creation.createRevoluteJoint(urdfLinkIndex,*parentRigidBody, *linkRigidBody,  offsetInA, offsetInB,jointAxisInJointSpace,jointLowerLimit, jointUpperLimit);
 
 						if (enableConstraints)
                                     world1->addConstraint(dof6,true);
@@ -392,13 +427,15 @@ void ConvertURDF2BulletInternal(
                 }
                 case URDFPrismaticJoint:
                 {
+					creation.addLinkMapping(urdfLinkIndex,mbLinkIndex);
+
                     if (createMultiBody)
                     {
                         cache.m_bulletMultiBody->setupPrismatic(mbLinkIndex, mass, localInertiaDiagonal, mbParentIndex,
                                                                    parentRotToThis, quatRotate(offsetInB.getRotation(),jointAxisInJointSpace), offsetInA.getOrigin(),//parent2joint.getOrigin(),
                                                                    -offsetInB.getOrigin(),
                                                                    disableParentCollision);
-                        creation.addLinkMapping(urdfLinkIndex,mbLinkIndex);
+                        
 						if (jointLowerLimit <= jointUpperLimit)
 						{
 							//std::string name = u2b.getLinkName(urdfLinkIndex);
@@ -412,8 +449,7 @@ void ConvertURDF2BulletInternal(
                     } else
                     {
                         
-						btGeneric6DofSpring2Constraint* dof6 = creation.createPrismaticJoint(urdfLinkIndex,*linkRigidBody, *parentRigidBody, offsetInB, offsetInA,jointAxisInJointSpace,jointLowerLimit,jointUpperLimit);
-						
+						btGeneric6DofSpring2Constraint* dof6 = creation.createPrismaticJoint(urdfLinkIndex,*parentRigidBody, *linkRigidBody, offsetInA, offsetInB,jointAxisInJointSpace,jointLowerLimit,jointUpperLimit);
                        
                         if (enableConstraints)
                             world1->addConstraint(dof6,true);
@@ -455,22 +491,29 @@ void ConvertURDF2BulletInternal(
                 int collisionFilterMask = isDynamic? 	int(btBroadphaseProxy::AllFilter) : 	int(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
 
 				int colGroup=0, colMask=0;
-				int flags = u2b.getCollisionGroupAndMask(urdfLinkIndex,colGroup, colMask);
-				if (flags & URDF_HAS_COLLISION_GROUP)
+				int collisionFlags = u2b.getCollisionGroupAndMask(urdfLinkIndex,colGroup, colMask);
+				if (collisionFlags & URDF_HAS_COLLISION_GROUP)
 				{
 					collisionFilterGroup = colGroup;
 				}
-				if (flags & URDF_HAS_COLLISION_MASK)
+				if (collisionFlags & URDF_HAS_COLLISION_MASK)
 				{
 					collisionFilterMask = colMask;
 				}
                 world1->addCollisionObject(col,collisionFilterGroup,collisionFilterMask);
 
-                btVector4 color = selectColor2();//(0.0,0.0,0.5);
-				u2b.getLinkColor(urdfLinkIndex,color);
-                creation.createCollisionObjectGraphicsInstance(urdfLinkIndex,col,color);
-                
-                u2b.convertLinkVisualShapes2(urdfLinkIndex,pathPrefix,localInertialFrame,col, u2b.getBodyUniqueId());
+                btVector4 color2 = selectColor2();//(0.0,0.0,0.5);
+				btVector3 specularColor(1,1,1);
+				UrdfMaterialColor matCol;
+				if (u2b.getLinkColor2(urdfLinkIndex,matCol))
+				{
+					color2 = matCol.m_rgbaColor;
+					specularColor = matCol.m_specularColor;
+				}
+
+                creation.createCollisionObjectGraphicsInstance2(urdfLinkIndex,col,color2,specularColor);
+
+                u2b.convertLinkVisualShapes2(mbLinkIndex, urdfLinkIndex, pathPrefix, localInertialFrame,col, u2b.getBodyUniqueId());
 
 				URDFLinkContactInfo contactInfo;
 				u2b.getLinkContactInfo(urdfLinkIndex,contactInfo);
@@ -480,6 +523,14 @@ void ConvertURDF2BulletInternal(
                 if (mbLinkIndex>=0) //???? double-check +/- 1
                 {
                     cache.m_bulletMultiBody->getLink(mbLinkIndex).m_collider=col;
+					if (flags&CUF_USE_SELF_COLLISION_EXCLUDE_PARENT)
+					{
+						cache.m_bulletMultiBody->getLink(mbLinkIndex).m_flags |= BT_MULTIBODYLINKFLAGS_DISABLE_PARENT_COLLISION;
+					}
+					if (flags&CUF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS)
+					{
+						cache.m_bulletMultiBody->getLink(mbLinkIndex).m_flags |= BT_MULTIBODYLINKFLAGS_DISABLE_ALL_PARENT_COLLISION;
+					}
                 } else
                 {
                     cache.m_bulletMultiBody->setBaseCollider(col);
@@ -487,7 +538,7 @@ void ConvertURDF2BulletInternal(
             }
         } else
         {
-            //u2b.convertLinkVisualShapes2(urdfLinkIndex,pathPrefix,localInertialFrame,compoundShape);
+            //u2b.convertLinkVisualShapes2(urdfLinkIndex,urdfIndex,pathPrefix,localInertialFrame,compoundShape);
         }
     }
 
@@ -521,7 +572,9 @@ void ConvertURDF2Bullet(
 	if (world1 && cache.m_bulletMultiBody)
 	{
 		btMultiBody* mb = cache.m_bulletMultiBody;
-		mb->setHasSelfCollision(false);
+
+		mb->setHasSelfCollision((flags&CUF_USE_SELF_COLLISION)!=0);
+		
 		mb->finalizeMultiDof();
 
 		btTransform localInertialFrameRoot = cache.m_urdfLinkLocalInertialFrames[urdfLinkIndex];

@@ -5,8 +5,6 @@
 #include "sxcore.h"
 #include <common/AssotiativeArray.h>
 
-#define CONSOLE_PORT "59705" /*!< Стандартный порт для подключения консоли */
-#define COMMAND_PORT "59706" /*!< Стандартный порт для команд */
 
 enum ConCmdType
 {
@@ -29,10 +27,8 @@ struct ConCmd
 	char * szDesc;
 };
 
-bool ConsoleConnect();
+bool ConsoleConnect(bool bNewInstance = false);
 void ConsoleDisconnect();
 void ConsoleRegisterCmds();
-bool CommandConnect();
-void CommandDisconnect();
 
 #endif

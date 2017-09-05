@@ -69,18 +69,21 @@ struct ModelBoneName
 
 /*! Структура дескриптор анимации
 */
+#pragma pack(push, 1)
 struct ModelSequence
 {
 	char name[MODEL_MAX_NAME]; /*!< Имя */
 	byte bLooped; /*!< Анимация зациклена */
+	char _padding[3];
 	int32_t framerate; /*!< Скорость кадров в секунду */
 	uint32_t activity; /*!< Идентификатор активности */
 	uint32_t iNumFrames; /*!< Количество кадров */
 	uint32_t act_chance; /*!< Шанс воспроизведения этой анимации в активности */
 	ModelBone ** m_vmAnimData; /*!< Данные анимации */
 };
-
-#define MODEL_SEQUENCE_STRUCT_SIZE (sizeof(char) * MODEL_MAX_NAME + sizeof(byte) + sizeof(uint32_t) * 4) /*!< Файловый размер структуры дескриптора анимации */
+#pragma pack(pop)
+#define MODEL_SEQUENCE_STRUCT_SIZE_OLD (sizeof(char) * MODEL_MAX_NAME + sizeof(byte) + sizeof(uint32_t) * 4) /*!< Файловый размер структуры дескриптора анимации */
+#define MODEL_SEQUENCE_STRUCT_SIZE (MODEL_SEQUENCE_STRUCT_SIZE_OLD + 3)
 
 /*! Устарела, используется для обратной совместимости
 */

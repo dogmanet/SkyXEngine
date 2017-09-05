@@ -4,6 +4,7 @@
 //#define WIN32_LEAN_AND_MEAN
 
 //#include <Windows.h>
+#include <Shellapi.h>
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -24,6 +25,9 @@ AssotiativeArray<String, ConCmd> g_mCmds;
 SOCKET ConnectSocket = INVALID_SOCKET;
 SOCKET CommandSocket = INVALID_SOCKET;
 
+#define CONSOLE_PORT g_szServerPort /*!< Стандартный порт для подключения консоли */
+#define COMMAND_PORT g_szClientPort /*!< Стандартный порт для команд */
+
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
 
@@ -31,6 +35,12 @@ typedef ConcurrentQueue<char *> CommandBuffer;
 typedef std::mutex Mutex;
 CommandBuffer g_vCommandBuffer;
 Stack<CommandBuffer> g_cbufStack;
+
+char g_szServerPort[8];
+char g_szClientPort[8];
+
+bool CommandConnect();
+void CommandDisconnect();
 
 SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc)
 {
@@ -456,17 +466,35 @@ void ConsoleRecv(void*)
 int hOut;
 FILE * fOut = NULL;
 
-bool ConsoleConnect()
+bool ConsoleConnect(bool bNewInstance)
 {
+	if(bNewInstance)
+	{
+		srand((UINT)time(NULL));
+		int port = (rand() % (65536 - 2048) | 1) + 2048;
+		sprintf(g_szServerPort, "%d", port);
+		sprintf(g_szClientPort, "%d", port + 1);
+
+		char str[MAX_PATH];
+		GetModuleFileNameA(NULL, str, MAX_PATH);
+
+		ShellExecuteA(0, "open", "sxconsole.exe", g_szServerPort, dirname(str), SW_SHOWNORMAL);
+	}
+	else
+	{
+		int port = 59705;
+		sprintf(g_szServerPort, "%d", port);
+		sprintf(g_szClientPort, "%d", port + 1);
+	}
 
 	WSADATA wsaData;
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
 	char *sendbuf = "Console initialized...\n";
-	char recvbuf[2048];
+	//char recvbuf[2048];
 	int iResult;
-	int recvbuflen = sizeof(recvbuf);
+	//int recvbuflen = sizeof(recvbuf);
 
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -495,7 +523,7 @@ bool ConsoleConnect()
 	{
 
 		// Create a SOCKET for connecting to server
-		ConnectSocket = WSASocket(ptr->ai_family, ptr->ai_socktype,
+		ConnectSocket = WSASocketW(ptr->ai_family, ptr->ai_socktype,
 			ptr->ai_protocol, NULL, 0, 0);
 		if(ConnectSocket == INVALID_SOCKET)
 		{
@@ -521,7 +549,8 @@ bool ConsoleConnect()
 	{
 		printf("Unable to connect to console!\n");
 		WSACleanup();
-		return(false);
+		return(ConsoleConnect(true));
+		//return(false);
 	}
 
 	// Send an initial buffer
@@ -613,7 +642,7 @@ bool CommandConnect()
 	{
 
 		// Create a SOCKET for connecting to server
-		CommandSocket = WSASocket(ptr->ai_family, ptr->ai_socktype,
+		CommandSocket = WSASocketW(ptr->ai_family, ptr->ai_socktype,
 			ptr->ai_protocol, NULL, 0, 0);
 		if(CommandSocket == INVALID_SOCKET)
 		{

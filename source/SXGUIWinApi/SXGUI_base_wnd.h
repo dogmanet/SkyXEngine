@@ -12,7 +12,7 @@ class SXGUIBaseWnd : public SXGUITextual, public virtual ISXGUIBaseWnd
 public:
 	SXGUIBaseWnd(	
 					const char* class_name,const char* caption,const char* menu,
-					WORD id,WORD x,WORD y,WORD width,WORD heigth,
+					WORD id,int x,int y,WORD width,WORD heigth,
 					HICON icon,HCURSOR cursor, HBRUSH brush,
 					DWORD exstyle,DWORD wndstyle,DWORD style,
 					HWND parent,WNDPROC handler

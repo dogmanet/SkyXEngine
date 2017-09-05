@@ -4,15 +4,12 @@
 
 #include "SXpointEntity.h"
 
-class CLightDirectional : public SXpointEntity
+class CLightDirectional: public SXpointEntity
 {
 	DECLARE_CLASS(CLightDirectional, SXpointEntity);
 	DECLARE_PROPTABLE();
 public:
-
-	SX_ALIGNED_OP_MEM
-
-	CLightDirectional(EntityManager *pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CLightDirectional();
 
 	void toggleEnable();
@@ -44,7 +41,7 @@ protected:
 
 	ID m_idLight;
 
-	float3 m_vColor;
+	float3_t m_vColor;
 	float m_fDist;
 	float m_fShadowDist;
 	int m_iShadowType;

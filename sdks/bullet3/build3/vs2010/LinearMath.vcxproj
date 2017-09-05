@@ -255,6 +255,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\LinearMath\btSerializer.cpp">
     </ClCompile>
+    <ClCompile Include="..\..\src\LinearMath\btSerializer64.cpp" />
     <ClCompile Include="..\..\src\LinearMath\btThreads.cpp">
     </ClCompile>
     <ClCompile Include="..\..\src\LinearMath\btVector3.cpp">

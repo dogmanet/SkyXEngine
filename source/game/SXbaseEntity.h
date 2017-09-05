@@ -22,41 +22,6 @@ class SXGAME_EXPORT SXbaseEntity
 
 	friend class EntityManager;
 
-private:
-	void SetClassName(const char * name);
-	void SetDefaults();
-
-	const char * m_szClassName;
-
-protected:
-	EntityManager * m_pMgr;
-
-	float3_t m_vPosition;
-	float3_t m_vSpeed;
-	SMQuaternion m_vOrientation;
-
-
-	float3_t m_vOffsetPos;
-	SMQuaternion m_vOffsetOrient;
-
-	ID m_iId;
-
-	UINT m_iFlags;
-
-	const char * m_szName;
-
-	SXbaseEntity * m_pParent;
-	int m_iParentAttachment;
-
-	SXbaseEntity * m_pOwner;
-
-	virtual void OnSync();
-	virtual void OnPostLoad();
-	
-	virtual float3 GetAttachmentPos(int id);
-	virtual SMQuaternion GetAttachmentRot(int id);
-
-	void _SetStrVal(const char ** to, const char * value);
 public:
 	SXbaseEntity(EntityManager * pMgr);
 	virtual ~SXbaseEntity();
@@ -88,6 +53,51 @@ public:
 
 	void SetOwner(SXbaseEntity * pEnt);
 	SXbaseEntity * GetOwner();
+
+	EntityManager * getManager();
+
+	//void updateDiscreteLinearVelocity(int step, float dt);
+	//const float3_t & getDiscreteLinearVelocity() const;
+
+private:
+	void SetClassName(const char * name);
+	void SetDefaults();
+
+	const char * m_szClassName;
+
+protected:
+	EntityManager * m_pMgr;
+
+	float3_t m_vPosition;
+	float3_t m_vSpeed;
+	SMQuaternion m_vOrientation;
+	//float3_t m_vDiscreteLinearVelocity;
+	//float3_t m_vOldPosition;
+
+
+	float3_t m_vOffsetPos;
+	SMQuaternion m_vOffsetOrient;
+
+	ID m_iId;
+
+	UINT m_iFlags;
+
+	const char * m_szName;
+
+	SXbaseEntity * m_pParent;
+	int m_iParentAttachment;
+
+	SXbaseEntity * m_pOwner;
+
+	virtual void OnSync();
+	virtual void OnPostLoad();
+
+	virtual float3 GetAttachmentPos(int id);
+	virtual SMQuaternion GetAttachmentRot(int id);
+
+	void _SetStrVal(const char ** to, const char * value);
+
+	void updateOutputs();
 };
 
 #pragma warning(pop)

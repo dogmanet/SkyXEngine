@@ -1,22 +1,29 @@
 [ent_0]
+parent = 
+owner = 
+flags = 0
 classname = func_train
 name = cam_train
-origin = "-106.658783 -0.106368 1.572050"
+origin = -106.658783 -0.106368 1.572050
 start = cam_pt_0
-rotation = "0.000000 0 0"
-speed = 5
+rotation = 0.000000 0.000000 0.000000 1.000000
+speed = 5.000000
 
 [ent_1]
+owner = 
+flags = 0
 classname = point_camera
-origin = "-106.658783 -0.106368 1.572050"
+origin = -106.658783 -0.106368 1.572050
 parent = cam_train
 name = train_camera
-rotation = "0.000000 180 0"
+rotation = -0.000000 1.000000 0.000000 0.000000
 
 [ent_10]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 174.270401 -74.669426 179.999985
+rotation = -0.030311 -0.794113 0.039739 0.605712
 parent = 
 origin = 30.400223 5.038457 24.533363
 next = cam_pt_9
@@ -24,9 +31,11 @@ name = cam_pt_8
 classname = path_corner
 
 [ent_11]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 173.468246 -33.874779 -179.999985
+rotation = 0.016597 0.955070 -0.054498 -0.290853
 parent = 
 origin = 22.309462 5.038457 38.705887
 next = cam_pt_10
@@ -34,9 +43,11 @@ name = cam_pt_9
 classname = path_corner
 
 [ent_12]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 155.706589 8.982540 -179.999985
+rotation = -0.016477 0.974610 -0.209769 0.076554
 parent = 
 origin = 7.407078 14.349155 45.017582
 next = cam_pt_11
@@ -44,9 +55,11 @@ name = cam_pt_10
 classname = path_corner
 
 [ent_13]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 156.852509 26.515091 -179.999985
+rotation = -0.046010 0.953558 -0.195282 0.224666
 parent = 
 origin = -22.641125 18.850998 42.844719
 next = cam_pt_12
@@ -54,9 +67,11 @@ name = cam_pt_11
 classname = path_corner
 
 [ent_14]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 160.748596 55.506725 179.999985
+rotation = 0.077865 -0.872501 0.147975 -0.459110
 parent = 
 origin = -41.062172 16.238222 25.595926
 next = cam_pt_13
@@ -64,9 +79,11 @@ name = cam_pt_12
 classname = path_corner
 
 [ent_15]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 168.311676 68.455612 180.000000
+rotation = 0.057274 -0.822510 0.084188 -0.559561
 parent = 
 origin = -27.214052 10.006430 6.619457
 next = cam_pt_14
@@ -74,9 +91,11 @@ name = cam_pt_13
 classname = path_corner
 
 [ent_16]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 174.155869 74.758255 -179.999954
+rotation = -0.030947 0.793603 -0.040508 0.606297
 parent = 
 origin = -10.673305 7.396099 0.787011
 next = cam_pt_15
@@ -84,9 +103,11 @@ name = cam_pt_14
 classname = path_corner
 
 [ent_17]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -173.811996 87.134262 -179.999924
+rotation = -0.037200 -0.723511 -0.039108 -0.688199
 parent = 
 origin = -1.875340 7.051552 -0.783876
 next = cam_pt_16
@@ -94,9 +115,11 @@ name = cam_pt_15
 classname = path_corner
 
 [ent_18]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -175.760071 77.164619 -179.999969
+rotation = -0.023070 -0.781178 -0.028917 -0.623211
 parent = 
 origin = 13.182630 8.533407 -2.605206
 next = cam_pt_17
@@ -104,18 +127,23 @@ name = cam_pt_16
 classname = path_corner
 
 [ent_19]
+owner = 
+next = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -10.427822 -65.682053 0.000001
+rotation = -0.076351 -0.540066 0.049282 0.836702
 parent = 
 origin = 26.969713 8.383520 -18.184080
 name = cam_pt_17
 classname = path_corner
 
 [ent_2]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 0.000000 89.886360 1.604293
+rotation = 0.009889 0.706336 0.009909 0.707738
 parent = 
 origin = -106.658783 -0.106368 1.572050
 next = cam_pt_1
@@ -123,9 +151,11 @@ name = cam_pt_0
 classname = path_corner
 
 [ent_3]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -0.000010 89.542854 0.000010
+rotation = 0.000000 0.704280 0.000000 0.709922
 parent = 
 origin = -87.406258 -0.449019 1.677870
 next = cam_pt_2
@@ -133,9 +163,11 @@ name = cam_pt_1
 classname = path_corner
 
 [ent_4]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 1.260862 89.544144 0.000348
+rotation = 0.007813 0.704246 0.007751 0.709871
 parent = 
 origin = -58.231617 -0.143631 1.910716
 next = cam_pt_3
@@ -143,9 +175,11 @@ name = cam_pt_2
 classname = path_corner
 
 [ent_5]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -174.614243 89.425964 179.999924
+rotation = 0.033054 0.709855 0.033387 0.702779
 parent = 
 origin = -40.818382 0.838363 1.891964
 next = cam_pt_4
@@ -153,9 +187,11 @@ name = cam_pt_3
 classname = path_corner
 
 [ent_6]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 174.384979 66.622169 179.999985
+rotation = 0.026900 -0.834698 0.040933 -0.548525
 parent = 
 origin = -33.075165 1.703738 8.209880
 next = cam_pt_5
@@ -163,9 +199,11 @@ name = cam_pt_4
 classname = path_corner
 
 [ent_7]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = 178.624893 76.018684 -179.999969
+rotation = -0.007389 0.787854 -0.009455 0.615746
 parent = 
 origin = -8.018185 0.374952 0.224873
 next = cam_pt_6
@@ -173,9 +211,11 @@ name = cam_pt_5
 classname = path_corner
 
 [ent_8]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -9.969482 -33.481724 -0.000000
+rotation = -0.083208 -0.286954 0.025028 0.953996
 parent = 
 origin = 24.394606 2.826913 -2.666729
 next = cam_pt_7
@@ -183,9 +223,11 @@ name = cam_pt_6
 classname = path_corner
 
 [ent_9]
+owner = 
+flags = 0
 type = 0
 speed = 0.000000
-rotation = -8.938160 -69.348839 0.000004
+rotation = -0.064082 -0.567183 0.044330 0.819898
 parent = 
 origin = 27.689428 4.612576 7.771554
 next = cam_pt_8
@@ -193,15 +235,42 @@ name = cam_pt_7
 classname = path_corner
 
 [ent_20]
+parent = 
+owner = 
+name = 
+flags = 0
 classname = info_player_spawn
-origin = "10.0 10.0 10.0"
-rotation = "0 0 0"
+origin = 10.000000 10.000000 10.000000
+rotation = 0.000000 0.980603 0.000000 -0.196004
 team = 0
 
 [ent_21]
-classname = ammobox_5.45x39
-origin = "0.0 -0.75 0.0"
-rotation = "0 0 0"
+type_shadow = 1
+turnOn = 1
+turnOff = 1
+parent = 
+owner = 
+name = test_light
+light_far = 10.000000
+flags = 0
+dist = 10.000000
+color = 50.000000 50.000000 50.000000
+classname = light_point
+origin = 0.000000 -0.750000 0.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+
+[ent_22]
+classname = trigger
+model = "meshes/light/light_1.dse"
+;origin = 0.000000 75.0000 0.000000
+origin = -3.9 -2.750000 22.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+scale = 1
+; Output = "target_name:input_name:delay:parameter
+; target_name:input_name:delay:parameter"
+OnTouchStart = test_light:turnOn:0: ;,test_light:turnOff:10:
+OnTouchEnd = test_light:turnOff:0:
+
 
 [meta]
-count = 22
+count = 23

@@ -19,7 +19,7 @@ subject to the following restrictions:
 #include "btGeneric6DofSpring2Constraint.h"
 
 
-ATTRIBUTE_ALIGNED16(class) btFixedConstraint : public btGeneric6DofSpring2Constraint
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btFixedConstraint : public btGeneric6DofSpring2Constraint
 {
 
 public:

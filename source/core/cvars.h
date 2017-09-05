@@ -31,6 +31,10 @@ struct CVar
 	const char * desc;
 	int flags;
 };
+struct CVarPtr
+{
+	UINT_PTR value;
+};
 
 void PrintCVar(const char * name);
 void SetCVar(const char * name, const char * value);

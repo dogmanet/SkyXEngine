@@ -14,6 +14,12 @@ BEGIN_PROPTABLE(CLightPoint)
 		COMBO_OPTION("Dynamic", "1")
 	EDITOR_COMBO_END()
 
+	DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
+	DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
+
+	DEFINE_OUTPUT(m_onTurnOn, "OnTurnOn", "On Turn On")
+	DEFINE_OUTPUT(m_onTurnOff, "OnTurnOff", "On Turn Off")
+
 END_PROPTABLE()
 
 REGISTER_ENTITY(CLightPoint, light_point);
@@ -22,11 +28,10 @@ CLightPoint::CLightPoint(EntityManager * pMgr) :
 BaseClass(pMgr)
 {
 	m_vColor = float3(1, 1, 1);
-	m_vPosition = float3_t(0, 0, 0);
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
-	m_idLight = SML_LigthsCreatePoint(&float3(0, 0, 0), m_fDist, &m_vColor, false, true);
+	m_idLight = SML_LigthsCreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
 }
 
 CLightPoint::~CLightPoint()
@@ -53,7 +58,7 @@ void CLightPoint::OnSync()
 	if (vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
 		SML_LigthsSetPos(m_idLight, &(float3)m_vPosition, false);
 
-	SML_LigthsSetColor(m_idLight, &m_vColor);
+	SML_LigthsSetColor(m_idLight, &(float3)m_vColor);
 	
 	if (SML_LigthsGetDist(m_idLight) != m_fDist)
 	{
@@ -66,4 +71,37 @@ void CLightPoint::OnSync()
 
 	if (SML_LigthsGetTypeShadowed(m_idLight) != m_iShadowType)
 		SML_LigthsSetTypeShadowed(m_idLight, (LightsTypeShadow)m_iShadowType);
+}
+
+
+void CLightPoint::turnOn(inputdata_t * pInputdata)
+{
+	if(!m_isEnable)
+	{
+		m_isEnable = true;
+		FIRE_OUTPUT(m_onTurnOn, pInputdata->pInflictor);
+	}
+}
+
+void CLightPoint::turnOff(inputdata_t * pInputdata)
+{
+	if(!m_isEnable)
+	{
+		m_isEnable = false;
+		FIRE_OUTPUT(m_onTurnOff, pInputdata->pInflictor);
+	}
+}
+
+void CLightPoint::setEnable(bool isEnable)
+{
+	if(!m_isEnable && isEnable)
+	{
+		m_isEnable = isEnable;
+		FIRE_OUTPUT(m_onTurnOn, this);
+	}
+	else if(m_isEnable && !isEnable)
+	{
+		m_isEnable = isEnable;
+		FIRE_OUTPUT(m_onTurnOff, this);
+	}
 }

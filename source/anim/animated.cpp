@@ -63,6 +63,12 @@ void ModelFile::Load(const char * name)
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION)
 	{
+		if(m_hdr.iVersion == SX_MODEL_VERSION_OLD)
+		{
+			Load6(name);
+			fclose(fp);
+			return;
+		}
 		reportf(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
 		fclose(fp);
 		return;
@@ -146,7 +152,14 @@ void ModelFile::Load(const char * name)
 
 		for(UINT i = 0; i < m_hdr.iAnimationCount; i++)
 		{
-			fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE, 1, fp);
+			if(m_hdr.iFlags & MODEL_FLAG_NEW_PACKED_ANIMS)
+			{
+				fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE, 1, fp);
+			}
+			else
+			{
+				fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE_OLD, 1, fp);
+			}
 			m_pSequences[i].m_vmAnimData = new ModelBone*[m_pSequences[i].iNumFrames];
 
 			for(UINT j = 0; j < m_pSequences[i].iNumFrames; j++)
@@ -175,15 +188,207 @@ void ModelFile::Load(const char * name)
 				fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(uint32_t), 1, fp);
 				fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(uint32_t), 1, fp);
 				fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(uint32_t), 1, fp);
-				m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
 				m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
-				fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+				if(m_hdr.iFlags & MODEL_FLAG_STATIC)
+				{
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+				}
+				else
+				{
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+				}
 				fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, fp);
 
 				iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
 			}
 		}
 	}
+
+	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
+	{
+		_fseeki64(fp, m_hdr2.iHitboxesOffset, SEEK_SET);
+		m_pHitboxes = new ModelHitbox[m_hdr2.iHitboxCount];
+		fread(m_pHitboxes, sizeof(ModelHitbox), m_hdr2.iHitboxCount, fp);
+	}
+
+	fclose(fp);
+	m_bLoaded = true;
+}
+
+
+void ModelFile::Load6(const char * name)
+{
+	strncpy(m_szFileName, name, MODEL_MAX_FILE);
+	m_szFileName[MODEL_MAX_FILE - 1] = 0;
+	FILE * fp = fopen(name, "rb");
+	if(!fp)
+	{
+		reportf(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
+	}
+
+	fread(&m_hdr, sizeof(ModelHeader), 1, fp);
+
+	if(m_hdr.Magick != SX_MODEL_MAGICK)
+	{
+		reportf(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
+		fclose(fp);
+		return;
+	}
+
+	if(m_hdr.iVersion != SX_MODEL_VERSION_OLD)
+	{
+		reportf(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
+		fclose(fp);
+		return;
+	}
+
+	if(m_hdr.iSecondHeaderOffset)
+	{
+		_fseeki64(fp, m_hdr.iSecondHeaderOffset, SEEK_SET);
+		fread(&m_hdr2, sizeof(ModelHeader2), 1, fp);
+	}
+
+	if(m_hdr2.iDepsCount && m_hdr2.iDependensiesOffset)
+	{
+		_fseeki64(fp, m_hdr2.iDependensiesOffset, SEEK_SET);
+		if(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS)
+		{
+			m_pParts = new ModelPart[m_hdr2.iDepsCount];
+			fread(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
+
+		}
+		else
+		{
+			ModelDependensy md;
+
+			m_pDeps = new const ModelFile*[m_hdr2.iDepsCount];
+
+			for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
+			{
+				fread(&md, sizeof(ModelDependensy), 1, fp);
+				m_pDeps[i] = m_pMgr->LoadModel(md.szName);
+			}
+		}
+	}
+
+	if(m_hdr2.iBoneTableOffset)
+	{
+		_fseeki64(fp, m_hdr2.iBoneTableOffset, SEEK_SET);
+		m_pBones = new ModelBoneName[m_hdr2.iBoneTableCount];
+		fread(m_pBones, sizeof(ModelBoneName), m_hdr2.iBoneTableCount, fp);
+	}
+	else
+	{
+		m_hdr.iBoneCount = 0;
+		m_hdr.iBonesOffset = 0;
+	}
+
+	if(m_hdr2.iActivitiesTableCount && m_hdr2.iActivitiesTableOffset)
+	{
+		_fseeki64(fp, m_hdr2.iActivitiesTableOffset, SEEK_SET);
+		pActivities = new ModelActivity[m_hdr2.iActivitiesTableCount];
+		fread(pActivities, sizeof(ModelActivity), m_hdr2.iActivitiesTableCount, fp);
+	}
+
+	if(m_hdr2.iControllersCount && m_hdr2.iControllersOffset)
+	{
+		_fseeki64(fp, m_hdr2.iControllersOffset, SEEK_SET);
+		m_pControllers = new ModelBoneController[m_hdr2.iControllersCount];
+		fread(m_pControllers, sizeof(ModelBoneController), m_hdr2.iControllersCount, fp);
+	}
+
+	if(m_hdr.iMaterialsOffset)
+	{
+		_fseeki64(fp, m_hdr.iMaterialsOffset, SEEK_SET);
+
+		m_iMaterials = new ModelMatrial*[m_hdr.iSkinCount];
+
+		for(UINT j = 0; j < m_hdr.iSkinCount; j++)
+		{
+			m_iMaterials[j] = new ModelMatrial[m_hdr.iMaterialCount];
+			for(uint32_t i = 0; i < m_hdr.iMaterialCount; i++)
+			{
+				int c = 0;
+				while(fread(&(m_iMaterials[j][i].szName[c]), 1, 1, fp) && m_iMaterials[j][i].szName[c++])
+				{
+				}
+				//fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
+
+				m_iMaterials[j][i].iMat = m_pMgr->GetMaterial(m_iMaterials[j][i].szName, true); //3
+
+			}
+		}
+	}
+
+	SGCore_LoadTexLoadTextures();
+
+	if(m_hdr.iAnimationsOffset)
+	{
+		_fseeki64(fp, m_hdr.iAnimationsOffset, SEEK_SET);
+		m_pSequences = new ModelSequence[m_hdr.iAnimationCount];
+
+		for(UINT i = 0; i < m_hdr.iAnimationCount; i++)
+		{
+			if(m_hdr.iFlags & MODEL_FLAG_NEW_PACKED_ANIMS)
+			{
+				fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE, 1, fp);
+			}
+			else
+			{
+				fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE_OLD, 1, fp);
+			}
+			m_pSequences[i].m_vmAnimData = new ModelBone*[m_pSequences[i].iNumFrames];
+
+			for(UINT j = 0; j < m_pSequences[i].iNumFrames; j++)
+			{
+				m_pSequences[i].m_vmAnimData[j] = new ModelBone[m_hdr.iBoneCount];
+				fread(m_pSequences[i].m_vmAnimData[j], sizeof(ModelBone), m_hdr.iBoneCount, fp);
+			}
+			//m_mSeqNames[m_pSequences[i].name] = i;
+		}
+	}
+
+	if((m_hdr.iLODcount || (m_hdr.iFlags & MODEL_FLAG_STATIC)) && m_hdr.iLODoffset)
+	{
+		if(!m_hdr.iLODcount)
+		{
+			m_hdr.iLODcount = 1;
+		}
+		_fseeki64(fp, m_hdr.iLODoffset, SEEK_SET);
+
+		m_pLods = new ModelLoD[m_hdr.iLODcount];
+
+		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
+		{
+			fread(&m_pLods[i], MODEL_LOD_STRUCT_SIZE, 1, fp);
+			int iVC = 0;
+			m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pLods[i].iSubMeshCount];
+			for(uint32_t j = 0; j < m_pLods[i].iSubMeshCount; j++)
+			{
+
+				fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(uint32_t), 1, fp);
+				fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(uint32_t), 1, fp);
+				fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(uint32_t), 1, fp);
+				m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+				m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
+				vertex_animated_ex va;
+				for(int k = 0; k < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++k)
+				{
+					fread(&va, sizeof(vertex_animated_ex), 1, fp);
+					((vertex_static*)m_pLods[i].pSubLODmeshes[j].pVertices)[k].Norm = va.Norm;
+					((vertex_static*)m_pLods[i].pSubLODmeshes[j].pVertices)[k].Pos = va.Pos;
+					((vertex_static*)m_pLods[i].pSubLODmeshes[j].pVertices)[k].Tex = va.Tex;
+				}
+				fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, fp);
+
+				iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
+			}
+		}
+	}
+
+	m_hdr.iFlags |= MODEL_FLAG_STATIC; // Force static model
 
 	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
 	{
@@ -352,7 +557,7 @@ UINT ModelFile::GetControllersCount() const
 	return(m_hdr2.iControllersCount);
 }
 #ifndef _SERVER
-void ModelFile::Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod)
+void ModelFile::Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMaterial)
 {
 	if(nSkin >= m_hdr.iSkinCount)
 	{
@@ -371,15 +576,19 @@ void ModelFile::Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod)
 		sizeof(vertex_animated_ex)
 	};
 
-	m_pMgr->m_pd3dDevice->SetIndices(m_ppIndexBuffer[nLod]);
-	m_pMgr->m_pd3dDevice->SetStreamSource(0, m_ppVertexBuffer[nLod], 0, iVertSize[MVT_DYNAMIC]);
+	MODEL_VERTEX_TYPE vtype = (m_hdr.iFlags & MODEL_FLAG_STATIC) ? MVT_STATIC : MVT_DYNAMIC;
 
-	m_pMgr->SetVertexDeclaration(MVT_DYNAMIC);
+	m_pMgr->m_pd3dDevice->SetIndices(m_ppIndexBuffer[nLod]);
+	m_pMgr->m_pd3dDevice->SetStreamSource(0, m_ppVertexBuffer[nLod], 0, iVertSize[vtype]);
+
+	m_pMgr->SetVertexDeclaration(vtype);
 
 	for(UINT i = 0; i < m_pLods[nLod].iSubMeshCount; i++)
 	{
 		//m_pMgr->SetMaterial(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat);
-		SGCore_MtlSet(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat, mWorld);
+		
+		SGCore_MtlSet(ID_VALID(idOverrideMaterial) ? idOverrideMaterial : m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat, mWorld);
+		
 
 		SGCore_DIP(
 			D3DPT_TRIANGLELIST,
@@ -574,20 +783,30 @@ void ModelFile::BuildMeshBuffers()
 		tmpCountVert = iStartVertex;
 
 		UINT * pIndices = new UINT[iStartIndex];
-		vertex_animated * pVertices = new vertex_animated[iStartVertex];
+		model_vertex * pVertices;
+		bool isStatic = m_hdr.iFlags & MODEL_FLAG_STATIC;
+		if(isStatic)
+		{
+			pVertices = new vertex_static[iStartVertex];
+		}
+		else
+		{
+			pVertices = new vertex_animated[iStartVertex];
+		}
 		ModelLoDSubset * pSM;
+		int vsize = (isStatic ? sizeof(vertex_static) : sizeof(vertex_animated));
 		for(uint32_t i = 0; i < m_pLods[j].iSubMeshCount; ++i)
 		{
 			pSM = &m_pLods[j].pSubLODmeshes[i];
 			memcpy(pIndices + m_pLods[j].pSubLODmeshes[i].iStartIndex, m_pLods[j].pSubLODmeshes[i].pIndices, sizeof(UINT) * m_pLods[j].pSubLODmeshes[i].iIndexCount);
-			memcpy(pVertices + m_pLods[j].pSubLODmeshes[i].iStartVertex, m_pLods[j].pSubLODmeshes[i].pVertices, sizeof(vertex_animated) * m_pLods[j].pSubLODmeshes[i].iVectexCount);
+			memcpy((byte*)pVertices + m_pLods[j].pSubLODmeshes[i].iStartVertex * vsize, m_pLods[j].pSubLODmeshes[i].pVertices, vsize * m_pLods[j].pSubLODmeshes[i].iVectexCount);
 		}
 
-		m_pMgr->m_pd3dDevice->CreateVertexBuffer(sizeof(vertex_animated) * iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &m_ppVertexBuffer[j], 0);
+		m_pMgr->m_pd3dDevice->CreateVertexBuffer(vsize * iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &m_ppVertexBuffer[j], 0);
 		VOID * pData;
-		if(!FAILED(m_ppVertexBuffer[j]->Lock(0, sizeof(vertex_animated) * iStartVertex, (void**)&pData, 0)))
+		if(!FAILED(m_ppVertexBuffer[j]->Lock(0, vsize * iStartVertex, (void**)&pData, 0)))
 		{
-			memcpy(pData, pVertices, sizeof(vertex_animated) * iStartVertex);
+			memcpy(pData, pVertices, vsize * iStartVertex);
 			m_ppVertexBuffer[j]->Unlock();
 		}
 
@@ -602,7 +821,7 @@ void ModelFile::BuildMeshBuffers()
 
 		if(j == 0)
 		{
-			m_pBoundBox->CalcBound(m_ppVertexBuffer[0], iStartVertex, sizeof(vertex_animated));
+			m_pBoundBox->CalcBound(m_ppVertexBuffer[0], iStartVertex, vsize);
 		}
 	}
 
@@ -770,7 +989,7 @@ bool ModelFile::Save(const char * file)
 		fwrite(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
 	}
 
-	m_hdr.iFlags |= MODEL_FLAG_COMPILED | MODEL_FLAG_NEW_STYLE_DEPS;
+	m_hdr.iFlags |= MODEL_FLAG_COMPILED | MODEL_FLAG_NEW_STYLE_DEPS | MODEL_FLAG_NEW_PACKED_ANIMS;
 
 	fseek(fp, 0, SEEK_SET);
 	fwrite(&m_hdr, sizeof(ModelHeader), 1, fp);
@@ -812,7 +1031,10 @@ m_pMgr(pMgr),
 m_pfnCallBack(NULL),
 m_pfnProgressCB(NULL),
 m_fScale(0.01f),
-m_iBoneCount(0)
+m_iBoneCount(0),
+m_idOverrideMaterial(-1),
+m_bEnabled(true),
+m_pRagdoll(0)
 {
 	for(int i = 0; i < BLEND_MAX; i++)
 	{
@@ -825,6 +1047,9 @@ m_iBoneCount(0)
 		m_CurrentBones[i] = NULL;
 		m_bDoAdvance[i] = true;
 		t[i] = 0;
+		m_iCurrentActivity[i] = 0;
+		m_iCurrentActivityFadeTime[i] = 0;
+		m_pIsBoneWorld[i] = NULL;
 	}
 
 	myId = pMgr->Register(this);
@@ -832,6 +1057,11 @@ m_iBoneCount(0)
 
 Animation::~Animation()
 {
+	for(UINT slot = 0; slot < BLEND_MAX; slot++)
+	{
+		mem_delete_a(m_CurrentBones[slot]);
+		mem_delete_a(m_pIsBoneWorld[slot]);
+	}
 	mem_delete_a(m_pBoneControllers);
 	mem_delete_a(m_mfBoneControllerValues);
 	mem_delete_a(m_pBoneMatrix);
@@ -905,6 +1135,11 @@ void Animation::DownloadData()
 	mem_delete_a(m_pBoneMatrix);
 	mem_delete_a(m_FinalBones);
 	mem_delete_a(m_pBoneMatrixRender);
+	for(UINT slot = 0; slot < BLEND_MAX; slot++)
+	{
+		mem_delete_a(m_CurrentBones[slot]);
+		mem_delete_a(m_pIsBoneWorld[slot]);
+	}
 
 	m_iBoneCount = m_pMdl->GetBoneCount();
 
@@ -929,6 +1164,8 @@ void Animation::DownloadData()
 	for(UINT slot = 0; slot < BLEND_MAX; slot++)
 	{
 		m_CurrentBones[slot] = new ModelBone[m_iBoneCount];
+		m_pIsBoneWorld[slot] = new bool[m_iBoneCount];
+		memset(m_pIsBoneWorld[slot], 0, sizeof(bool) * m_iBoneCount);
 	}
 
 	const ModelBoneName * pBindData = m_pMdl->m_pBones;
@@ -947,6 +1184,24 @@ void Animation::DownloadData()
 	FillBoneMatrix();
 }
 
+void Animation::setRagdoll(IAnimRagdoll * pRagdoll)
+{
+	m_pRagdoll = pRagdoll;
+	if(m_pRagdoll)
+	{
+		StopAll();
+		for(UINT i = 0; i < m_iBoneCount; ++i)
+		{
+			if((m_pIsBoneWorld[0][i] = pRagdoll->isBoneAffected(i)))
+			{
+				m_CurrentBones[1][i].orient = m_CurrentBones[0][i].orient * pRagdoll->getBoneRotation(i).Conjugate();
+			}
+		}
+		
+		//m_pMdl->m_bInitPosInvSet = false;
+	}
+}
+
 ModelSequence const * Animation::GetCurAnim(int slot)
 {
 	return(m_pMdl->GetSequence(m_iPlayingAnim[slot]));
@@ -954,6 +1209,10 @@ ModelSequence const * Animation::GetCurAnim(int slot)
 
 void Animation::Advance(unsigned long int dt)
 {
+	if(!m_pMdl || m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC)
+	{
+		return;
+	}
 	int deltat = dt - m_iCurTime;
 	m_iCurTime = dt;
 	UINT deltat_orig = deltat;
@@ -1059,6 +1318,7 @@ void Animation::Advance(unsigned long int dt)
 						if(pCurAnim->bLooped)
 						{
 							RUN_CB(slot, AS_LOOP);
+							PlayActivityNext(slot);
 						}
 						else
 						{
@@ -1267,7 +1527,7 @@ void Animation::FillBoneMatrix()
 
 			for(UINT i = 0; i < m_iBoneCount; i++)
 			{
-				if(m_FinalBones[i].pid != -1 && m_FinalBones[i].id > 0)
+				if((/*!m_pMdl->m_bInitPosInvSet || */!m_pIsBoneWorld[0][i]) && m_FinalBones[i].pid != -1 && m_FinalBones[i].id > 0)
 				{
 					m_pBoneMatrix[i].orient = (m_pBoneMatrix[i].orient * m_pBoneMatrix[m_FinalBones[i].pid].orient).Normalize();
 
@@ -1310,7 +1570,7 @@ void Animation::FillBoneMatrix()
 			m_pBoneMatrix[i].orient = q;
 
 			m_pBoneMatrix[i].position = (float4)(m_pBoneMatrix[i].position + float4(q * (float3)mBonesOrig[i].position, 1.0));
-
+			
 			//m_pBoneMatrix[i].orient = SMQuaternion(0, 0, 0, 1);
 			//m_pBoneMatrix[i].position = float4_t(0, 0, 0, 0);
 		}
@@ -1366,11 +1626,15 @@ inline bool Animation::PlayingAnimations(const char* name)
 	return false;
 }
 
-void Animation::Play(const char * name, UINT iFadeTime, UINT slot) // name: Animation name; changeTime: time to fade to this animation from previous
+void Animation::Play(const char * name, UINT iFadeTime, UINT slot, bool bReplaceActivity) // name: Animation name; changeTime: time to fade to this animation from previous
 {
 	if(!m_pMdl)
 	{
 		return;
+	}
+	if(bReplaceActivity)
+	{
+		m_iCurrentActivity[slot] = 0;
 	}
 	if(slot >= BLEND_MAX)
 	{
@@ -1455,9 +1719,51 @@ void Animation::UpdateControllers()
 	}
 }
 
-void Animation::StartActivity(const String & name, UINT iFadeTime, UINT slot)
+void Animation::StartActivity(const char * name, UINT iFadeTime, UINT slot)
 {
+	for(int i = 0, l = m_pMdl->m_hdr2.iActivitiesTableCount; i < l; ++i)
+	{
+		if(!stricmp(name, m_pMdl->pActivities[i].szName))
+		{
+			m_iCurrentActivity[slot] = i + 1;
+			m_iCurrentActivityFadeTime[slot] = iFadeTime;
+			break;
+		}
+	}
+	PlayActivityNext(slot);
 	//SX_ASSERT_MSG(false, "Implement me first");
+}
+
+void Animation::PlayActivityNext(UINT slot)
+{
+	if(!m_iCurrentActivity[slot])
+	{
+		return;
+	}
+	float fMaxChance = 0.0f;
+	int iCount = 0;
+	for(int i = 0, l = m_pMdl->GetSequenceCount(); i < l; ++i)
+	{
+		if(m_pMdl->GetSequence(i)->activity == m_iCurrentActivity[slot])
+		{
+			fMaxChance += (float)m_pMdl->GetSequence(i)->act_chance;
+			++iCount;
+		}
+	}
+	float fch = randf(0.0f, fMaxChance);
+	fMaxChance = 0.0f;
+	for(int i = 0, l = m_pMdl->GetSequenceCount(); i < l; ++i)
+	{
+		if(m_pMdl->GetSequence(i)->activity == m_iCurrentActivity[slot])
+		{
+			if(fMaxChance >= fch)
+			{
+				Play(m_pMdl->GetSequence(i)->name, m_iCurrentActivityFadeTime[slot], slot, false);
+				break;
+			}
+			fMaxChance += (float)m_pMdl->GetSequence(i)->act_chance;
+		}
+	}
 }
 
 int Animation::GetActiveSkin()
@@ -1497,6 +1803,10 @@ SMQuaternion Animation::GetOrient()
 
 void Animation::Render()
 {
+	if(!m_bEnabled)
+	{
+		return;
+	}
 	if(m_bBoneMatrixReFilled)
 	{
 		m_bBoneMatrixReFilled = false;
@@ -1505,9 +1815,21 @@ void Animation::Render()
 	{
 		return;
 	}
-	m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
+	if(!(m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC))
+	{
+		m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
+	}
 
-	m_pMdl->Render(&(GetWorldTM()), m_iCurrentSkin);
+	m_pMdl->Render(&(GetWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial);
+}
+
+void Animation::setOverrideMaterial(const char *name)
+{
+	m_idOverrideMaterial = SGCore_MtlLoad(name, (m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC) ? MTL_TYPE_GEOM : MTL_TYPE_SKIN);
+}
+void Animation::enable(bool enable)
+{
+	m_bEnabled = enable;
 }
 
 UINT Animation::GetBoneCount() const
@@ -1521,6 +1843,15 @@ void Animation::GetBoneName(UINT id, char * name, int len) const
 UINT Animation::GetBone(const char * str)
 {
 	return(m_pMdl->GetBoneID(str));
+}
+
+const ModelHitbox * Animation::GetHitbox(uint32_t id) const
+{
+	return(m_pMdl->GetHitbox(id));
+}
+uint32_t Animation::GetHitboxCount() const
+{
+	return(m_pMdl->GetHitboxCount());
 }
 
 AnimStateCB Animation::SetCallback(AnimStateCB cb)
@@ -1723,7 +2054,11 @@ void Animation::Assembly()
 					vszMats.push_back(mdl->m_iMaterials[0][ii].szName);
 				}
 			}
-
+			bool isStatic = mdl->m_hdr.iFlags & MODEL_FLAG_STATIC;
+			if(isStatic)
+			{
+				m_pMdl->m_hdr.iFlags |= MODEL_FLAG_STATIC;
+			}
 			for(int ii = 0, ll = mdl->m_hdr.iLODcount; ii < ll; ++ii)
 			{
 				for(uint32_t j = 0; j < mdl->m_pLods[ii].iSubMeshCount; ++j)
@@ -1736,7 +2071,7 @@ void Animation::Assembly()
 							memset(&vvLods[ii][u], 0, sizeof(vvLods[ii][u]));
 						}
 					}
-					AppendMesh(&vvLods[ii][idx], &mdl->m_pLods[ii].pSubLODmeshes[j], vvBoneRelinkList[i]);
+					AppendMesh(&vvLods[ii][idx], &mdl->m_pLods[ii].pSubLODmeshes[j], vvBoneRelinkList[i], isStatic);
 					vvLods[ii][idx].iMaterialID = idx;
 				}
 			}
@@ -1838,30 +2173,43 @@ void Animation::Assembly()
 	m_pMdl->BuildMeshBuffers();
 }
 
-void Animation::AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink)
+void Animation::AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink, bool isStatic)
 {
 	int iNewIdxC = to->iIndexCount + from->iIndexCount;
 	int iNewVtxC = to->iVectexCount + from->iVectexCount;
 
 	UINT * idx = new UINT[iNewIdxC];
-	vertex_animated * vtx = new vertex_animated[iNewVtxC];
+	model_vertex * vtx;
+	if(isStatic)
+	{
+		vtx = new vertex_static[iNewVtxC];
+	}
+	else
+	{
+		vtx = new vertex_animated[iNewVtxC];
+	}
+	int vsize = isStatic ? sizeof(vertex_static) : sizeof(vertex_animated);
 
 	memcpy(idx, to->pIndices, sizeof(UINT) * to->iIndexCount);
-	memcpy(vtx, to->pVertices, sizeof(vertex_animated)* to->iVectexCount);
+	memcpy(vtx, to->pVertices, vsize * to->iVectexCount);
 
 	memcpy(idx + to->iIndexCount, from->pIndices, sizeof(UINT)* from->iIndexCount);
-	memcpy(vtx + to->iVectexCount, from->pVertices, sizeof(vertex_animated)* from->iVectexCount);
+	memcpy((byte*)vtx + to->iVectexCount * vsize, from->pVertices, vsize * from->iVectexCount);
 
 	for(uint32_t i = 0; i < from->iIndexCount; ++i)
 	{
 		idx[to->iIndexCount + i] += to->iVectexCount;
 	}
 
-	for(uint32_t i = 0; i < from->iVectexCount; ++i)
+	if(!isStatic)
 	{
-		for(int j = 0; j < 4; ++j)
+		vertex_animated * vtxa = (vertex_animated*)vtx;
+		for(uint32_t i = 0; i < from->iVectexCount; ++i)
 		{
-			vtx[to->iVectexCount + i].BoneIndices[j] = bone_relink[vtx[to->iVectexCount + i].BoneIndices[j]];
+			for(int j = 0; j < 4; ++j)
+			{
+				vtxa[to->iVectexCount + i].BoneIndices[j] = bone_relink[vtxa[to->iVectexCount + i].BoneIndices[j]];
+			}
 		}
 	}
 
@@ -1878,6 +2226,19 @@ void Animation::SwapBoneBuffs()
 	ModelBoneShader * tmp = m_pBoneMatrixRender;
 	m_pBoneMatrixRender = m_pBoneMatrix;
 	m_pBoneMatrix = tmp;
+
+
+	if(m_pRagdoll)
+	{
+		for(UINT i = 0; i < m_iBoneCount; ++i)
+		{
+			if(m_pIsBoneWorld[0][i])
+			{
+				m_CurrentBones[0][i].position = (float3)(m_pRagdoll->getBoneOffset(i) / m_fScale);
+				m_CurrentBones[0][i].orient = m_pRagdoll->getBoneRotation(i);
+			}
+		}
+	}
 }
 
 
@@ -1917,7 +2278,14 @@ void Animation::GetPhysData(
 		pSM = &m_pMdl->m_pLods[j].pSubLODmeshes[i];
 		for(uint32_t k = 0; k < pSM->iVectexCount; ++k)
 		{
-			(*pppfData)[0][vc++] = (float3)(((vertex_animated*)pSM->pVertices)[k].Pos * m_fScale);
+			if(m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC)
+			{
+				(*pppfData)[0][vc++] = (float3)(((vertex_static*)pSM->pVertices)[k].Pos * m_fScale);
+			}
+			else
+			{
+				(*pppfData)[0][vc++] = (float3)(((vertex_animated*)pSM->pVertices)[k].Pos * m_fScale);
+			}
 		}
 	}
 }
@@ -2113,11 +2481,11 @@ void AnimationManager::Sync()
 	}
 }
 
-UINT AnimationManager::GetMaterial(const char * mat)
+UINT AnimationManager::GetMaterial(const char * mat, bool bStatic)
 {
 	char * tmp = (char*)alloca(sizeof(char)* (strlen(mat) + 5));
 	sprintf(tmp, "%s.dds", mat);
-	return(SGCore_MtlLoad(tmp, MTL_TYPE_SKIN));
+	return(SGCore_MtlLoad(tmp, bStatic ? MTL_TYPE_GEOM : MTL_TYPE_SKIN));
 }
 
 void AnimationManager::ComputeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)

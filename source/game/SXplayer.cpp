@@ -19,6 +19,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_fViewbobStep(0.0f),
 	m_fViewbobY(0.0f),
 	m_fViewbobStrafe(float3_t(0, 0, 0)),
+	m_vWpnShakeAngles(float3_t(0.0f, 0.0f, 0.0f)),
 	m_pActiveTool(NULL),
 	m_iDSM(DSM_NONE)
 {
@@ -35,9 +36,10 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pGhostObject = new btPairCachingGhostObject();
 	m_pGhostObject->setWorldTransform(startTransform);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
-	m_pCollideShape = new btCapsuleShape(0.5f, 1.2f);
+	m_pCollideShape = new btCapsuleShape(0.4f, 1.0f);
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
 	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+	m_pGhostObject->setUserPointer(this);
 
 	btScalar stepHeight = 0.4f;
 	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, stepHeight, btVector3(0.0f, 1.0f, 0.0f));
@@ -57,7 +59,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 
 
 
-
+/*
 	m_pActiveTool = (SXbaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 	m_pActiveTool->SetOwner(this);
 	m_pActiveTool->AttachHands();
@@ -65,6 +67,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pActiveTool->SetPos(GetPos() + float3(1.0f, 0.0f, 1.0f));
 	m_pActiveTool->SetOrient(GetOrient());
 	m_pActiveTool->SetParent(this);
+	*/
 
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
@@ -76,10 +79,13 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_flashlight->setShadowType(-1);
 
 	m_idQuadCurr = -1;
+
+	m_pCrosshair = new Crosshair();
 }
 
 SXplayer::~SXplayer()
 {
+	mem_delete(m_pCrosshair);
 	CLEAR_INTERVAL(m_iUpdIval);
 	REMOVE_ENTITY(m_pCamera);
 }
@@ -96,6 +102,8 @@ void SXplayer::UpdateInput(float dt)
 		m_pCharacter->setWalkDirection(btVector3(0.0f, 0.0f, 0.0f));
 		return;
 	}
+
+	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
 
 	if(!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))
 	{
@@ -117,14 +125,7 @@ void SXplayer::UpdateInput(float dt)
 			m_vPitchYawRoll.y -= dx;
 			m_vPitchYawRoll.x -= dy;
 			//printf(" %f %f\n", m_vPitchYawRoll.x, m_vPitchYawRoll.y);
-			if(m_vPitchYawRoll.x > SM_PIDIV2)
-			{
-				m_vPitchYawRoll.x = SM_PIDIV2;
-			}
-			else if(m_vPitchYawRoll.x < -SM_PIDIV2)
-			{
-				m_vPitchYawRoll.x = -SM_PIDIV2;
-			}
+			m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
 			while(m_vPitchYawRoll.y < 0.0f)
 			{
 				m_vPitchYawRoll.y += SM_2PI;
@@ -133,6 +134,10 @@ void SXplayer::UpdateInput(float dt)
 			{
 				m_vPitchYawRoll.y -= SM_2PI;
 			}
+			m_vWpnShakeAngles.y += dx * 0.05f;
+			m_vWpnShakeAngles.x += dy * 0.05f;
+			const float fMaxAng = SM_PI * 0.1f;
+			m_vWpnShakeAngles.y = clampf(m_vWpnShakeAngles.y, -fMaxAng, fMaxAng);
 
 			m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
 				* SMQuaternion(m_vPitchYawRoll.y, 'y')
@@ -257,6 +262,17 @@ void SXplayer::UpdateInput(float dt)
 				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
 				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;
 			}
+
+
+			//m_vWpnShakeAngles
+			float3 vel = BTVEC_F3(m_pCharacter->getLinearVelocity());
+			//printf("%f, %f, %f\n", vel.x, vel.y, vel.z);
+			//vel = getDiscreteLinearVelocity();
+			//printf("%f, %f, %f\n", vel.x, vel.y, vel.z);
+
+			m_vWpnShakeAngles.x += -vel.y * 0.05f;
+			const float fMaxAng = SM_PI * 0.1f;
+			m_vWpnShakeAngles.x = clampf(m_vWpnShakeAngles.x, -fMaxAng, fMaxAng);
 		}
 
 	}
@@ -269,6 +285,11 @@ void SXplayer::UpdateInput(float dt)
 		SetCursorPos((rc.right + rc.left) / 2, (rc.bottom + rc.top) / 2);
 	}
 #endif
+}
+
+Crosshair * SXplayer::GetCrosshair()
+{
+	return(m_pCrosshair);
 }
 
 void SXplayer::Move(UINT dir, bool start)
@@ -330,19 +351,21 @@ float3 SXplayer::GetWeaponOrigin()
 
 void SXplayer::Spawn()
 {
-	SXbaseEntity * pEnt;
-	pEnt = m_pMgr->FindEntityByClass("info_player_spawn");
-	if(pEnt/* && CanSpawn(pEnt)*/)
+	SXbaseEntity * pEnt = NULL;
+	while((pEnt = m_pMgr->FindEntityByClass("info_player_spawn", pEnt)))
 	{
+		//if(CanSpawn(pEnt))
+		{
 		SetPos(pEnt->GetPos());
 		SetOrient(pEnt->GetOrient());
 		m_uMoveDir &= ~PM_OBSERVER;
+			m_pCrosshair->Enable();
+			return;
+		}
 	}
-	else
-	{
+	
 		printf(COLOR_RED "Cannot find valid spawnpoint\n" COLOR_RESET);
 	}
-}
 
 void SXplayer::SetPos(const float3 & pos)
 {
@@ -391,6 +414,19 @@ void SXplayer::ToggleFlashlight()
 	m_flashlight->toggleEnable();
 }
 
+void SXplayer::nextFireMode()
+{
+	if(m_uMoveDir & PM_OBSERVER)
+	{
+		return;
+	}
+	if(m_pActiveTool)
+	{
+		//@FIXME: Add correct call
+		//m_pActiveTool->nextFireMode();
+	}
+}
+
 void SXplayer::_ccmd_slot_on(int argc, const char ** argv)
 {
 	if(argc != 2)
@@ -424,4 +460,14 @@ void SXplayer::_ccmd_slot_on(int argc, const char ** argv)
 void SXplayer::_ccmd_slot_off()
 {
 	m_iDSM = DSM_NONE;
+}
+
+float3_t & SXplayer::GetWeaponDeltaAngles()
+{
+	return(m_vWpnShakeAngles);
+}
+
+bool SXplayer::onGround()
+{
+	return(m_pCharacter->onGround());
 }

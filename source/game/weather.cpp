@@ -23,7 +23,7 @@ void CWeatherRndSnd::clear()
 {
 	resetOld();
 
-	for (int i = 0; i < m_aArrSnds.size(); ++i)
+	for (UINT i = 0; i < m_aArrSnds.size(); ++i)
 	{
 		if (m_aArrSnds[i].m_id >= 0)
 		{
@@ -36,7 +36,7 @@ void CWeatherRndSnd::clear()
 
 void CWeatherRndSnd::resetOld()
 {
-	for (int i = 0; i < m_aCurrSndIDs.size(); ++i)
+	for (UINT i = 0; i < m_aCurrSndIDs.size(); ++i)
 	{
 		if (m_aCurrSndIDs[i] >= 0)
 			SSCore_SndStop(m_aCurrSndIDs[i]);
@@ -60,7 +60,7 @@ void CWeatherRndSnd::addSound(const char *szPath)
 {
 	bool isunic = true;
 	ID tmpid = -1;
-	for (int i = 0; i<m_aArrSnds.size(); i++)
+	for (UINT i = 0; i<m_aArrSnds.size(); i++)
 	{
 		if (stricmp(m_aArrSnds[i].m_sPath.c_str(), szPath) == 0)
 		{
@@ -92,12 +92,12 @@ void CWeatherRndSnd::update()
 	if (m_aCurrSndIDs.size() > 0 && (m_ulNextPlay == 0 || m_ulNextPlay < TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER))))
 	{
 		int tmpkeysnd = rand() % (m_aCurrSndIDs.size());
-		if (m_aCurrSndIDs.size() > tmpkeysnd && m_aCurrSndIDs[tmpkeysnd] && m_aCurrSndIDs[tmpkeysnd] >= 0)
+		if((int)m_aCurrSndIDs.size() > tmpkeysnd && m_aCurrSndIDs[tmpkeysnd] && m_aCurrSndIDs[tmpkeysnd] >= 0)
 		{
 			m_idCurrPlay = m_aCurrSndIDs[tmpkeysnd];
 			SSCore_SndPosCurrSet(m_idCurrPlay, 0);
 			int tmprndvol = (rand() % (m_iVolumeE - m_iVolumeB)) + m_iVolumeB;
-			SSCore_SndVolumeSet(m_idCurrPlay, (WEATHER_snd_volume ? (float)tmprndvol * (*WEATHER_snd_volume) : tmprndvol), SOUND_VOL_PCT);
+			SSCore_SndVolumeSet(m_idCurrPlay, (long)(WEATHER_snd_volume ? (float)tmprndvol * (*WEATHER_snd_volume) : tmprndvol), SOUND_VOL_PCT);
 			SSCore_SndPlay(m_idCurrPlay);
 
 			DWORD tmprnd = (rand() % (m_ulPeriodE - m_ulPeriodB)) + m_ulPeriodB;
@@ -298,17 +298,17 @@ void CWeather::load(const char *szPath)
 
 			char* tmpstr = strtok(text_sp2, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_pos", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSunPos.x = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSunPos.x = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_pos", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSunPos.y = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSunPos.y = (float)atof(tmpstr);
 		}
 		else
 			WEATHER_CONFIG_LACKS_KEY("sun_pos", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "sky_rotation"))
-			m_aTimeSections[i].m_DataSection.m_fSkyRotation = String(config->getKey(m_aTimeSections[i].m_szSection, "sky_rotation")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fSkyRotation = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "sky_rotation")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("sky_rotation", szPath, m_aTimeSections[i].m_szSection);
 
@@ -320,19 +320,19 @@ void CWeather::load(const char *szPath)
 
 			char* tmpstr = strtok(text_sp2, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSkyColor.x = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.x = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSkyColor.y = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.y = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSkyColor.z = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.z = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sky_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSkyColor.w = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSkyColor.w = (float)atof(tmpstr);
 		}
 		else
 			WEATHER_CONFIG_LACKS_KEY("sky_color", szPath, m_aTimeSections[i].m_szSection);
@@ -346,35 +346,35 @@ void CWeather::load(const char *szPath)
 
 			char* tmpstr = strtok(text_sp2, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vCloudsColor.x = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.x = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vCloudsColor.y = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.y = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vCloudsColor.z = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.z = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "clouds_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vCloudsColor.w = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vCloudsColor.w = (float)atof(tmpstr);
 		}
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_rotate"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_rotate", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_transparency"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_transparency", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_speed"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_speed")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_speed")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_speed", szPath, m_aTimeSections[i].m_szSection);
 
@@ -387,26 +387,26 @@ void CWeather::load(const char *szPath)
 
 			char* tmpstr = strtok(text_sp2, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSunColor.x = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSunColor.x = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSunColor.y = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSunColor.y = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "sun_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vSunColor.z = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vSunColor.z = (float)atof(tmpstr);
 		}
 		else
 			WEATHER_CONFIG_LACKS_KEY("sun_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "far"))
-			m_aTimeSections[i].m_DataSection.m_fFar = String(config->getKey(m_aTimeSections[i].m_szSection, "far")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fFar = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "far")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("far", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "rain_density"))
-			m_aTimeSections[i].m_DataSection.m_fRainDensity = String(config->getKey(m_aTimeSections[i].m_szSection, "rain_density")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fRainDensity = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "rain_density")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("rain_density", szPath, m_aTimeSections[i].m_szSection);
 
@@ -418,25 +418,25 @@ void CWeather::load(const char *szPath)
 
 			char* tmpstr = strtok(text_sp2, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vRainColor.x = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.x = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vRainColor.y = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.y = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vRainColor.z = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.z = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "rain_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vRainColor.w = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vRainColor.w = (float)atof(tmpstr);
 		}
 		else
 			WEATHER_CONFIG_LACKS_KEY("rain_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "fog_density"))
-			m_aTimeSections[i].m_DataSection.m_fFogDensity = String(config->getKey(m_aTimeSections[i].m_szSection, "fog_density")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fFogDensity = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "fog_density")).ToDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("fog_density", szPath, m_aTimeSections[i].m_szSection);
 
@@ -448,15 +448,15 @@ void CWeather::load(const char *szPath)
 
 			char* tmpstr = strtok(text_sp2, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vFogColor.x = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vFogColor.x = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vFogColor.y = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vFogColor.y = (float)atof(tmpstr);
 
 			tmpstr = strtok(NULL, ",");
 			WEATHER_CONFIG_LACKS_COMPONENT(tmpstr, "fog_color", szPath, m_aTimeSections[i].m_szSection);
-			m_aTimeSections[i].m_DataSection.m_vFogColor.z = atof(tmpstr);
+			m_aTimeSections[i].m_DataSection.m_vFogColor.z = (float)atof(tmpstr);
 		}
 		else
 			WEATHER_CONFIG_LACKS_KEY("fog_color", szPath, m_aTimeSections[i].m_szSection);
@@ -552,7 +552,7 @@ void CWeather::update()
 	static const float * WEATHER_snd_volume = GET_PCVAR_FLOAT("WEATHER_snd_volume");
 
 	//если есть дождь то обновляем его позицию и громкость
-	if (m_iSectionCurr >= 0 && m_aTimeSections.size() > m_iSectionCurr && m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
+	if (m_iSectionCurr >= 0 && (int)m_aTimeSections.size() > m_iSectionCurr && m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
 	{
 		static float3 campos;
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &campos);

@@ -1,11 +1,14 @@
 #ifndef _PROPTABLE_H_
 #define _PROPTABLE_H_
 
+#include <common/SXmath.h>
+
 class SXbaseEntity;
 
 //! типы полей данных
 enum PDF_TYPE
 {
+	PDF_NONE,
 	PDF_INT,
 	PDF_FLOAT,
 	PDF_VECTOR,
@@ -14,7 +17,9 @@ enum PDF_TYPE
 	PDF_ANGLES,
 	PDF_ENTITY,
 	PDF_PARENT,
-	PDF_FLAGS
+	PDF_FLAGS,
+
+	PDF_OUTPUT
 };
 
 //! типы редакторов полей
@@ -31,6 +36,8 @@ enum PDF_FLAG
 	PDFF_NONE       = 0x00,
 	PDFF_NOEXPORT   = 0x01, //!< Не экспортировать поле в файл
 	PDFF_NOEDIT     = 0x02, //!< Не отображать поле в редакторе
+	PDFF_INPUT      = 0x04, //!< Поле входа
+	PDFF_OUTPUT     = 0x08, //!< Поле выхода
 };
 
 enum ENT_FLAG
@@ -56,15 +63,106 @@ struct prop_editor_t
 	void * pData;
 };
 
+
+struct inputdata_t
+{
+	SXbaseEntity *pInflictor; //!< Косвенный активатор (вызвавший эту цепочку активаций)
+	SXbaseEntity *pActivator; //!< Непосредственный активатор
+	PDF_TYPE type; //!< Тип аргумента
+	union
+	{
+		int i;
+		bool b;
+		float f;
+		const char * str;
+	}
+	parameter;
+	float3_t v3Parameter;
+};
+
+typedef void(SXbaseEntity::*input_func)(inputdata_t * pInputData);
+
 struct propdata_t
 {
-	fieldtype pField;
+	propdata_t():
+		pField(NULL),
+		type(PDF_NONE),
+		flags(0),
+		szKey(NULL),
+		szEdName(NULL),
+		editor({})
+	{}
+	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, prop_editor_t ed):
+		pField(f),
+		type(t),
+		flags(fl),
+		szKey(key),
+		szEdName(edname),
+		editor(ed)
+	{}
+	propdata_t(input_func d, PDF_TYPE t, int fl, const char *key, const char *edname, prop_editor_t ed):
+		fnInput(d),
+		type(t),
+		flags(fl),
+		szKey(key),
+		szEdName(edname),
+		editor(ed)
+	{}
+	union
+	{
+		fieldtype pField;
+		input_func fnInput;
+	};
 	PDF_TYPE type;
 	int flags;
 	const char * szKey;
 	const char * szEdName;
 	prop_editor_t editor;
 };
+
+
+struct input_t
+{
+	input_func fnInput;
+	SXbaseEntity *pTarget;
+	inputdata_t data;
+};
+
+struct named_output_t
+{
+	named_output_t():
+		iOutCount(0),
+		pOutputs(NULL)
+	{
+	}
+
+	float fDelay;
+	const char *szTargetName;
+	const char *szTargetInput;
+	const char *szTargetData;
+
+	int iOutCount;
+	input_t *pOutputs;
+};
+
+struct output_t
+{
+	output_t():
+		iOutCount(0),
+		pOutputs(NULL),
+		pData(NULL),
+		bDirty(false)
+	{
+	}
+	void fire(SXbaseEntity *pInflictor, SXbaseEntity *pActivator);
+
+	bool bDirty;
+	int iOutCount;
+	named_output_t * pOutputs;
+	void * pData;
+};
+
+#define FIRE_OUTPUT(output, inflictor) (output).fire((inflictor), this)
 
 struct proptable_t
 {
@@ -94,7 +192,7 @@ public:\
 private:
 
 #define _BEGIN_PROPTABLE(cls, bclpt) \
-proptable_t cls::m_pPropTable = {0,0}; \
+proptable_t cls::m_pPropTable = {0,0,0}; \
 void cls::ReleasePropData()\
 {\
 	for(int i = 0; i < m_pPropTable.numFields; ++i)\
@@ -135,7 +233,7 @@ void cls::InitPropData() \
 { \
 	bclpt \
 	typedef cls DataClass; \
-	static propdata_t pData[] = {{0}
+	static propdata_t pData[] = {propdata_t()
 
 #define BEGIN_PROPTABLE(cls) \
 	_BEGIN_PROPTABLE(cls, m_pPropTable.pBaseProptable = BaseClass::SGetPropTable();)
@@ -183,5 +281,8 @@ const char * GetEmptyString();
 #define DEFINE_FIELD_ENTITY(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, editor
 #define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
 #define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, editor
+
+#define DEFINE_INPUT(method, keyname, edname, argtype) , {(input_func)&DataClass::method, argtype, PDFF_NOEDIT | PDFF_INPUT, keyname, edname, EDITOR_NONE
+#define DEFINE_OUTPUT(field, keyname, edname) , {(fieldtype)&DataClass::field, PDF_OUTPUT, PDFF_NOEDIT | PDFF_OUTPUT, keyname, edname, EDITOR_NONE
 
 #endif

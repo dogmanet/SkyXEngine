@@ -59,7 +59,7 @@ enum btConeTwistFlags
 };
 
 ///btConeTwistConstraint can be used to simulate ragdoll joints (upper arm, leg etc)
-ATTRIBUTE_ALIGNED16(class) btConeTwistConstraint : public btTypedConstraint
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btConeTwistConstraint : public btTypedConstraint
 {
 #ifdef IN_PARALLELL_SOLVER
 public:
@@ -260,7 +260,7 @@ public:
 
 	inline int getSolveSwingLimit()
 	{
-		return m_solveTwistLimit;
+		return m_solveSwingLimit;
 	}
 
 	inline btScalar getTwistLimitSign()

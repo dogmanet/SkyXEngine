@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "SXbaseEntity.h"
 
 #include "EntityManager.h"
@@ -44,7 +46,8 @@ SXbaseEntity::SXbaseEntity(EntityManager * pWorld):
 	m_szName(NULL),
 	m_pParent(NULL),
 	m_iParentAttachment(-1),
-	m_pOwner(NULL)
+	m_pOwner(NULL)/*,
+	m_vDiscreteLinearVelocity(float3_t(0.0f, 0.0f, 0.0f))*/
 {
 	m_iId = pWorld->Register(this);
 }
@@ -248,6 +251,52 @@ bool SXbaseEntity::SetKV(const char * name, const char * value)
 			return(true);
 		}
 		return(false);
+	case PDF_OUTPUT:
+		{
+			int len = sizeof(char)* (1 + strlen(value));
+			char * str = new char[len];
+			memcpy(str, value, len);
+			int iConns = parse_str(str, NULL, 0, ',');
+			char ** parts = (char**)alloca(sizeof(char*)*iConns);
+			iConns = parse_str(str, parts, iConns, ',');
+
+			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
+			mem_delete_a(pOutput->pOutputs);
+			mem_delete_a(pOutput->pData);
+			pOutput->pData = str;
+			pOutput->pOutputs = new named_output_t[iConns];
+			pOutput->bDirty = true;
+
+			int curr = 0;
+			for(int i = 0; i < iConns; ++i)
+			{
+				char * fields[4];
+				int iParts = parse_str(parts[i], fields, 4, ':');
+				char * param = NULL;
+				if(iParts != 4 && iParts != 3)
+				{
+					printf(COLOR_LRED "Unable to parse output '%s' ent %s\n" COLOR_RESET, name, m_szName);
+					continue;
+				}
+				if(iParts == 4)
+				{
+					param = fields[3];
+				}
+				if(1 != sscanf(fields[2], "%f", &pOutput->pOutputs[curr].fDelay))
+				{
+					printf(COLOR_LRED "Unable to parse output delay '%s' ent %s\n" COLOR_RESET, name, m_szName);
+					continue;
+				}
+
+				pOutput->pOutputs[curr].szTargetName = fields[0];
+				pOutput->pOutputs[curr].szTargetInput = fields[1];
+				pOutput->pOutputs[curr].szTargetData = param;
+				++curr;
+			}
+			pOutput->iOutCount = curr;
+		}
+		// target_name:input:delay:parameter\n<repeat>
+		return(false);
 	default:
 		return(false);
 	}
@@ -300,6 +349,29 @@ bool SXbaseEntity::GetKV(const char * name, char * out, int bufsize)
 			sprintf_s(out, bufsize, "%s", pEnt->GetName());
 		}
 		break;
+	case PDF_OUTPUT:
+		{
+			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
+			int iWritten = 0;
+			char * szOutBuf = out;
+			if(pOutput->iOutCount == 0)
+			{
+				*out = 0;
+			}
+			for(int i = 0; i < pOutput->iOutCount; ++i)
+			{
+				if(i > 0)
+				{
+					*szOutBuf = ',';
+					++szOutBuf;
+				}
+				int c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s", pOutput->pOutputs[i].szTargetName, pOutput->pOutputs[i].szTargetInput, pOutput->pOutputs[i].fDelay, pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : "");
+				iWritten += c + 1;
+				szOutBuf += c;
+				//iBufSize += 1 + _snprintf(NULL, 0, "%s:%s:%f:%s", pOutput->pOutputs[i].szTargetName, pOutput->pOutputs[i].szTargetInput, pOutput->pOutputs[i].fDelay, pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : "");
+			}
+		}
+		break;
 	default:
 		return(false);
 	}
@@ -329,6 +401,38 @@ SXbaseEntity * SXbaseEntity::GetParent()
 {
 	return(m_pParent);
 }
+
+/*void SXbaseEntity::updateDiscreteLinearVelocity(int step, float dt)
+{
+	if(step == 0)
+	{
+		m_vDiscreteLinearVelocity = (float3)((m_vPosition - m_vOldPosition) / dt);
+		m_vOldPosition = m_vPosition;
+	}
+	return;
+	if(m_pParent || 1)
+	{
+		if(step) // post sync
+		{
+			m_vDiscreteLinearVelocity = (float3)((m_vPosition - m_vOldPosition) / dt);
+		}
+		else // pre sync
+		{
+			m_vOldPosition = m_vPosition;
+		}
+	}
+	else
+	{
+		if(step) // post sync
+		{
+			m_vOldPosition = m_vPosition;
+		}
+		else // pre sync
+		{
+			m_vDiscreteLinearVelocity = (float3)((m_vPosition - m_vOldPosition) / dt);
+		}
+	}
+}*/
 
 void SXbaseEntity::OnSync()
 {
@@ -360,6 +464,7 @@ void SXbaseEntity::OnSync()
 
 void SXbaseEntity::OnPostLoad()
 {
+	updateOutputs();
 }
 
 float3 SXbaseEntity::GetAttachmentPos(int id)
@@ -410,5 +515,117 @@ void SXbaseEntity::_SetStrVal(const char ** to, const char * value)
 		}
 		memcpy(str, value, sizeof(char)* (len + 1));
 		*to = str;
+	}
+}
+
+EntityManager * SXbaseEntity::getManager()
+{
+	return(m_pMgr);
+}
+
+/*const float3_t & SXbaseEntity::getDiscreteLinearVelocity() const
+{
+	return(m_vDiscreteLinearVelocity);
+}*/
+
+void SXbaseEntity::updateOutputs()
+{
+	proptable_t * pt = GetPropTable();
+	while(pt)
+	{
+		for(int i = 0; i < pt->numFields; ++i)
+		{
+			if(pt->pData[i].type == PDF_OUTPUT)
+			{
+				output_t *pOutput = &(this->*((output_t ThisClass::*)pt->pData[i].pField));
+
+				for(int j = 0, jl = pOutput->iOutCount; j < jl; ++j)
+				{
+					named_output_t * pOut = &pOutput->pOutputs[j];
+					mem_delete_a(pOut->pOutputs);
+
+					pOut->iOutCount = m_pMgr->CountEntityByName(pOut->szTargetName);
+					if(!pOut->iOutCount)
+					{
+						printf(COLOR_CYAN "Broken output target '%s' source '%s'.'%s'\n" COLOR_RESET, pOut->szTargetName, GetClassName(), m_szName);
+						continue;
+					}
+					pOut->pOutputs = new input_t[pOut->iOutCount];
+
+					SXbaseEntity * pEnt = NULL;
+					int c = 0;
+					while((pEnt = m_pMgr->FindEntityByName(pOut->szTargetName, pEnt)))
+					{
+						propdata_t * pField = pEnt->GetField(pOut->szTargetInput);
+						if(!pField || !(pField->flags & PDFF_INPUT))
+						{
+							printf(COLOR_CYAN "Class '%s' has no input '%s', obj '%s'\n" COLOR_RESET, pEnt->GetClassName(), pOut->szTargetInput, pOut->szTargetName);
+							--pOut->iOutCount;
+							continue;
+						}
+
+						pOut->pOutputs[c].fnInput = pField->fnInput;
+						pOut->pOutputs[c].pTarget = pEnt;
+						pOut->pOutputs[c].data.type = pField->type;
+						{
+							float3_t f3;
+							SMQuaternion q;
+							int d;
+							float f;
+							const char * value = pOut->szTargetData;
+							bool bParsed = false;
+							switch(pField->type)
+							{
+							case PDF_NONE:
+								bParsed = true;
+								break;
+							case PDF_INT:
+								if(1 == sscanf(value, "%d", &d))
+								{
+									pOut->pOutputs[c].data.parameter.i = d;
+									bParsed = true;
+								}
+								break;
+							case PDF_FLOAT:
+								if(1 == sscanf(value, "%f", &f))
+								{
+									pOut->pOutputs[c].data.parameter.f = f;
+									bParsed = true;
+								}
+								break;
+							case PDF_VECTOR:
+								if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
+								{
+									pOut->pOutputs[c].data.v3Parameter = f3;
+									bParsed = true;
+								}
+								break;
+							case PDF_BOOL:
+								if(1 == sscanf(value, "%d", &d))
+								{
+									pOut->pOutputs[c].data.parameter.b = d != 0;
+									bParsed = true;
+								}
+								break;
+							case PDF_STRING:
+								_SetStrVal(&pOut->pOutputs[c].data.parameter.str, value);
+								bParsed = true;
+								break;
+							}
+
+							if(!bParsed)
+							{
+								printf(COLOR_CYAN "Cannot parse input parameter '%s', class '%s', input '%s', obj '%s'\n" COLOR_RESET, value, pEnt->GetClassName(), pOut->szTargetInput, pOut->szTargetName);
+								--pOut->iOutCount;
+								continue;
+							}
+						}
+
+						++c;
+					}
+				}
+			}
+		}
+		pt = pt->pBaseProptable;
 	}
 }

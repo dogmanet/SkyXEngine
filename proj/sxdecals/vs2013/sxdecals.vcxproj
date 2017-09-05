@@ -75,6 +75,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -36,7 +36,7 @@ public:
 	EntityFactoryMap();
 
 	void AddFactory(IEntityFactory * pFactory, const char * szName);
-	SXbaseEntity * Create(const char * szName, EntityManager * pMgr);
+	SXbaseEntity * Create(const char * szName, EntityManager * pMgr, bool bDelayPostLoad=false);
 	void Destroy(SXbaseEntity * pEnt);
 
 	static EntityFactoryMap * GetInstance();
@@ -130,6 +130,7 @@ private:
 	EntityFactory<cls> ent_ ## name ## _factory(#name, 0)
 
 #define CREATE_ENTITY(cls, mgr) EntityFactoryMap::GetInstance()->Create(cls, mgr)
+#define CREATE_ENTITY_NOPOST(cls, mgr) EntityFactoryMap::GetInstance()->Create(cls, mgr, 1)
 #define REMOVE_ENTITY(ent) EntityFactoryMap::GetInstance()->Destroy(ent)
 
 #endif

@@ -1032,6 +1032,7 @@ LRESULT SXGUIBaseHandlers::CtlColorChange(HWND hwnd, UINT msg, WPARAM wParam, LP
 			SetTextColor((HDC)wParam, Component->GetColorText());
 			return (long)Component->GetBrush();
 		}
+	return((LRESULT)INVALID_HANDLE_VALUE);
 }
 
 LRESULT SXGUIBaseHandlers::SizeChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

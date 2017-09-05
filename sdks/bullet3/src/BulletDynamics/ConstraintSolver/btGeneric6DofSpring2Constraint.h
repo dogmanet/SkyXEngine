@@ -66,7 +66,7 @@ enum RotateOrder
 	RO_ZYX
 };
 
-class btRotationalLimitMotor2
+class BULLET_EXPORTS btRotationalLimitMotor2
 {
 public:
 // upper < lower means free
@@ -162,7 +162,7 @@ public:
 
 
 
-class btTranslationalLimitMotor2
+class BULLET_EXPORTS btTranslationalLimitMotor2
 {
 public:
 // upper < lower means free
@@ -274,7 +274,7 @@ enum bt6DofFlags2
 #define BT_6DOF_FLAGS_AXIS_SHIFT2 4 // bits per axis
 
 
-ATTRIBUTE_ALIGNED16(class) btGeneric6DofSpring2Constraint : public btTypedConstraint
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btGeneric6DofSpring2Constraint : public btTypedConstraint
 {
 protected:
 
@@ -663,6 +663,11 @@ SIMD_FORCE_INLINE const char* btGeneric6DofSpring2Constraint::serialize(void* da
 	}
 
 	dof->m_rotateOrder = m_rotateOrder;
+
+	dof->m_padding1[0] = 0;
+	dof->m_padding1[1] = 0;
+	dof->m_padding1[2] = 0;
+	dof->m_padding1[3] = 0;
 
 	return btGeneric6DofSpring2ConstraintDataName;
 }

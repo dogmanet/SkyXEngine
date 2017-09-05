@@ -4,6 +4,8 @@
 
 #include <core/sxcore.h>
 
+#include <mutex>
+
 EntityManager::EntityManager():
 	m_iThreadNum(1),
 	m_pDefaultsConf(NULL),
@@ -26,27 +28,43 @@ void EntityManager::Update(int thread)
 {
 	time_point tNow = std::chrono::high_resolution_clock::now();
 	timeout_t * t;
+	timeout_output_t * to;
 	long long mksdt;
 
-	if(thread == 0)
+	for(int i = thread, l = m_vOutputTimeout.size(); i < l; i += m_iThreadNum)
 	{
-		for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
+		to = &m_vOutputTimeout[i];
+		if(to->status == TS_WAIT && to->fNextTime < tNow)
 		{
+			//mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
+			//(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
+			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			{
+				to->data.parameter = to->pOutput->pOutputs[j].data.parameter;
+				to->data.type = to->pOutput->pOutputs[j].data.type;
+				to->data.v3Parameter = to->pOutput->pOutputs[j].data.v3Parameter;
+
+				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&to->data);
+			}
+			to->status = TS_DONE;
+		}
+	}
+
+	for(int i = thread, l = m_vTimeout.size(); i < l; i += m_iThreadNum)
+	{
 			t = &m_vTimeout[i];
-			if(t->fNextTime < tNow)
+		if(t->status == TS_WAIT && t->fNextTime < tNow)
 			{
 				mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 				(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
-				m_vTimeout.erase(i);
-				--l;
-				--i;
+			t->status = TS_DONE;
 			}
 		}
-	}
+
 	for(int i = thread, l = m_vInterval.size(); i < l; i += m_iThreadNum)
 	{
 		t = &m_vInterval[i];
-		if(!t->done && t->fNextTime < tNow)
+		if(t->status == TS_WAIT && t->fNextTime < tNow)
 		{
 			mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			t->fNextTime = t->fNextTime - t->fStartTime + tNow;
@@ -67,14 +85,45 @@ void EntityManager::SetThreadNum(int num)
 void EntityManager::Sync()
 {
 	SXbaseEntity * pEnt;
+	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
+	{
+		if(m_vTimeout[i].status == TS_DONE)
+		{
+			m_vTimeout[i].status = TS_EMPTY;
+			m_vFreeTimeout.push_back(i);
+		}
+	}
+	for(int i = 0, l = m_vInterval.size(); i < l; ++i)
+	{
+		if(m_vInterval[i].status == TS_DONE)
+		{
+			m_vInterval[i].status = TS_EMPTY;
+			m_vFreeInterval.push_back(i);
+		}
+	}
+	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
+	{
+		if(m_vOutputTimeout[i].status == TS_DONE)
+		{
+			m_vOutputTimeout.erase(i);
+			--i;
+			--l;
+		}
+	}
+	//static time_point tOld = std::chrono::high_resolution_clock::now();
+	//float dt;
+	//dt = (float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tOld).count() / 1000000.0f;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
 		if(pEnt)
 		{
+			//pEnt->updateDiscreteLinearVelocity(0, dt);
 			pEnt->OnSync();
+			//pEnt->updateDiscreteLinearVelocity(1, dt);
 		}
 	}
+	//tOld = std::chrono::high_resolution_clock::now();
 }
 
 ID EntityManager::Register(SXbaseEntity * pEnt)
@@ -99,6 +148,7 @@ ID EntityManager::Register(SXbaseEntity * pEnt)
 }
 void EntityManager::Unregister(ID ent)
 {
+	//@TODO: Clear all sheduled timeouts and outputs
 	if(m_vEntList.size() <= (UINT)ent || ent < 0)
 	{
 		return;
@@ -107,23 +157,38 @@ void EntityManager::Unregister(ID ent)
 	m_vFreeIDs.push_back(ent);
 }
 
-void EntityManager::SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
+ID EntityManager::SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
 {
 	timeout_t t;
-	t.done = false;
+	t.status = TS_WAIT;
 	t.func = func;
 	t.pEnt = pEnt;
 
 	t.fStartTime = t.fNextTime = std::chrono::high_resolution_clock::now();
 	t.fNextTime += std::chrono::microseconds((long long)(delay * 1000000.0f));
 	
-	m_vTimeout.push_back(t);
+	ID id;
+	{
+		std::unique_lock<std::mutex> lock;
+		if(m_vFreeTimeout.size())
+		{
+			id = m_vFreeTimeout[0];
+			m_vFreeTimeout.erase(0);
+		}
+		else
+		{
+			id = m_vTimeout.size();
+		}
+		m_vTimeout[id] = t;
+	}
+
+	return(id);
 }
 
 ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
 {
 	timeout_t t;
-	t.done = false;
+	t.status = TS_WAIT;
 	t.func = func;
 	t.pEnt = pEnt;
 
@@ -131,6 +196,8 @@ ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity 
 	t.fNextTime += std::chrono::microseconds((long long)(delay * 1000000.0f));
 
 	ID id;
+	{
+		std::unique_lock<std::mutex> lock;
 	if(m_vFreeInterval.size())
 	{
 		id = m_vFreeInterval[0];
@@ -140,8 +207,8 @@ ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity 
 	{
 		id = m_vInterval.size();
 	}
-
 	m_vInterval[id] = t;
+	}
 
 	return(id);
 }
@@ -152,15 +219,28 @@ void EntityManager::ClearInterval(ID id)
 	{
 		return;
 	}
-	m_vInterval[id].done = true;
-	m_vFreeInterval.push_back(id);
+	if(m_vInterval[id].status == TS_WAIT)
+	{
+		m_vInterval[id].status = TS_DONE;
+	}
+}
+void EntityManager::ClearTimeout(ID id)
+{
+	if(id < 0 || (UINT)id >= m_vTimeout.size())
+	{
+		return;
+	}
+	if(m_vTimeout[id].status == TS_WAIT)
+	{
+		m_vTimeout[id].status = TS_DONE;
+	}
 }
 
 bool EntityManager::Export(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	conf->New(file);
-	char buf[512], sect[32];
+	char buf[4096], sect[32];
 	SXbaseEntity * pEnt;
 	proptable_t * pTbl;
 	int ic = 0;
@@ -235,7 +315,7 @@ bool EntityManager::Import(const char * file)
 			tmpList[i] = NULL;
 			continue;
 		}
-		if(!(pEnt = CREATE_ENTITY(conf->getKey(sect, "classname"), this)))
+		if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
 		{
 			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
 			tmpList[i] = NULL;
@@ -313,6 +393,23 @@ SXbaseEntity * EntityManager::FindEntityByName(const char * name, SXbaseEntity *
 		}
 	}
 	return(NULL);
+}
+
+int EntityManager::CountEntityByName(const char * name)
+{
+	if(!name[0])
+	{
+		return(0);
+	}
+	int c = 0;
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		if(!strcmp(m_vEntList[i]->GetName(), name))
+		{
+			++c;
+		}
+	}
+	return(c);
 }
 
 SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity * pStart)
@@ -514,4 +611,17 @@ SXbaseEntity * EntityManager::GetById(ID id)
 		return(NULL);
 	}
 	return(m_vEntList[id]);
+}
+
+void EntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
+{
+	timeout_output_t t;
+	t.status = TS_WAIT;
+	t.pOutput = pOutput;
+	t.data = *pData;
+
+	t.fStartTime = t.fNextTime = std::chrono::high_resolution_clock::now();
+	t.fNextTime += std::chrono::microseconds((long long)(pOutput->fDelay * 1000000.0f));
+
+	m_vOutputTimeout.push_back(t);
 }

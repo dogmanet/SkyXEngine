@@ -31,7 +31,7 @@ BaseClass(pMgr)
 	m_iShadowType = 1;
 	m_fAngle = SM_PI * 0.4f;
 	m_fRadiusTop = 0.01f;
-	m_idLight = SML_LigthsCreateDirection(&float3(0, 0, 0), m_fDist, &m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
+	m_idLight = SML_LigthsCreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
 	m_isEnable = true;
 
 	float3 f = LIGHTS_DIR_BASE;
@@ -64,7 +64,7 @@ void CLightDirectional::OnSync()
 	if (vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
 		SML_LigthsSetPos(m_idLight, &(float3)m_vPosition, false);
 
-	SML_LigthsSetColor(m_idLight, &m_vColor);
+	SML_LigthsSetColor(m_idLight, &(float3)m_vColor);
 	
 	if (SML_LigthsGetDist(m_idLight) != m_fDist)
 	{
