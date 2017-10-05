@@ -76,6 +76,12 @@ public:
 
 	virtual btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult,bool normalInWorldSpace)
 	{
+		//for trigger filtering
+		if(!convexResult.m_hitCollisionObject->hasContactResponse())
+		{
+			return(btScalar(1.0));
+		}
+
 		if (convexResult.m_hitCollisionObject == m_me)
 			return btScalar(1.0);
 
@@ -203,6 +209,14 @@ bool btKinematicCharacterController::recoverFromPenetration ( btCollisionWorld* 
 		m_manifoldArray.resize(0);
 
 		btBroadphasePair* collisionPair = &m_ghostObject->getOverlappingPairCache()->getOverlappingPairArray()[i];
+
+		//for trigger filtering
+		if(!static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject)->hasContactResponse()
+		 || !static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject)->hasContactResponse()
+		)
+		{
+			continue;
+		}
 
 		btCollisionObject* obj0 = static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject);
         btCollisionObject* obj1 = static_cast<btCollisionObject*>(collisionPair->m_pProxy1->m_clientObject);

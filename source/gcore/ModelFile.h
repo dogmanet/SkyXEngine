@@ -106,7 +106,8 @@ enum MODEL_FLAG
 	MODEL_FLAG_HAS_PHYSBOX = 0x800,         /*!< Имеется физическая оболочка (Unused?) */
 	MODEL_FLAG_HAS_HITBOXES = 0x1000,       /*!< Имеются хитбоксы */
 	MODEL_FLAG_HAS_TANGENT_BINORM = 0x2000, /*!< Используются расширенные типы вертексов */
-	MODEL_FLAG_NEW_STYLE_DEPS = 0x4000      /*!< Используется новый тип импортированных моделей */
+	MODEL_FLAG_NEW_STYLE_DEPS = 0x4000,     /*!< Используется новый тип импортированных моделей */
+	MODEL_FLAG_NEW_PACKED_ANIMS = 0x8000    /*!< Сохранено с использованием исправленного размера структуры ModelSequence*/
 };
 
 /*! Типф топологий модели в файле

@@ -4,7 +4,7 @@
 #include "../CommonInterfaces/CommonGUIHelperInterface.h"
 #include "SharedMemoryCommands.h"
 #include "PhysicsCommandProcessorInterface.h"
-
+#include "../Utils/b3Clock.h"
 
 #include "LinearMath/btHashMap.h"
 #include "LinearMath/btAlignedObjectArray.h"
@@ -17,6 +17,7 @@ struct BodyJointInfoCache2
 {
 	std::string m_baseName;
 	btAlignedObjectArray<b3JointInfo> m_jointInfo;
+	std::string m_bodyName;
 };
 
 
@@ -52,16 +53,27 @@ struct PhysicsDirectInternalData
 	btAlignedObjectArray<b3VisualShapeData> m_cachedVisualShapes;
     btAlignedObjectArray<b3VRControllerEvent> m_cachedVREvents;
 
+	btAlignedObjectArray<b3KeyboardEvent> m_cachedKeyboardEvents;
+	btAlignedObjectArray<b3MouseEvent> m_cachedMouseEvents;
+
 	btAlignedObjectArray<b3RayHitInfo>	m_raycastHits;
 
 	PhysicsCommandProcessorInterface* m_commandProcessor;
 	bool m_ownsCommandProcessor;
+	double m_timeOutInSeconds;
 
 	PhysicsDirectInternalData()
 		:m_hasStatus(false),
 		m_verboseOutput(false),
-		m_ownsCommandProcessor(false)
+		m_cachedCameraPixelsWidth(0),
+		m_cachedCameraPixelsHeight(0),
+		m_commandProcessor(NULL),
+		m_ownsCommandProcessor(false),
+		m_timeOutInSeconds(1e30)
 	{
+		memset(&m_command, 0, sizeof(m_command));
+		memset(&m_serverStatus, 0, sizeof(m_serverStatus));
+		memset(m_bulletStreamDataServerToClient, 0, sizeof(m_bulletStreamDataServerToClient));
 	}
 };
 
@@ -137,8 +149,10 @@ bool PhysicsDirect::connect()
 		}
 		else
 		{
-			int timeout = 1024 * 1024 * 1024;
-			while ((!hasStatus) && (timeout-- > 0))
+			b3Clock clock;
+			double timeSec = clock.getTimeInSeconds();
+
+			while ((!hasStatus) && (clock.getTimeInSeconds()-timeSec <10 ))
 			{
 				const  SharedMemoryStatus* stat = processServerStatus();
 				if (stat)
@@ -164,7 +178,8 @@ bool PhysicsDirect::connect(struct GUIHelperInterface* guiHelper)
 
 void PhysicsDirect::renderScene()
 {
-	m_data->m_commandProcessor->renderScene();
+	int renderFlags = 0;
+	m_data->m_commandProcessor->renderScene(renderFlags);
 }
 
 void PhysicsDirect::debugDraw(int debugDrawMode)
@@ -226,8 +241,11 @@ bool PhysicsDirect::processDebugLines(const struct SharedMemoryCommand& orgComma
 
 		bool hasStatus = m_data->m_commandProcessor->processCommand(command,m_data->m_serverStatus,&m_data->m_bulletStreamDataServerToClient[0],SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 
-		int timeout = 1024 * 1024 * 1024;
-		while ((!hasStatus) && (timeout-- > 0))
+		b3Clock clock;
+		double startTime = clock.getTimeInSeconds();
+		double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+		while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 		{
 			const  SharedMemoryStatus* stat = processServerStatus();
 			if (stat)
@@ -308,8 +326,11 @@ bool PhysicsDirect::processVisualShapeData(const struct SharedMemoryCommand& org
 	{
 		bool hasStatus = m_data->m_commandProcessor->processCommand(command, m_data->m_serverStatus, &m_data->m_bulletStreamDataServerToClient[0], SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 
-		int timeout = 1024 * 1024 * 1024;
-		while ((!hasStatus) && (timeout-- > 0))
+		b3Clock clock;
+		double startTime = clock.getTimeInSeconds();
+		double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+		while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 		{
 			const  SharedMemoryStatus* stat = processServerStatus();
 			if (stat)
@@ -359,8 +380,11 @@ bool PhysicsDirect::processOverlappingObjects(const struct SharedMemoryCommand& 
 	{
 		bool hasStatus = m_data->m_commandProcessor->processCommand(command, m_data->m_serverStatus, &m_data->m_bulletStreamDataServerToClient[0], SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 
-		int timeout = 1024 * 1024 * 1024;
-		while ((!hasStatus) && (timeout-- > 0))
+		b3Clock clock;
+		double startTime = clock.getTimeInSeconds();
+		double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+		while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 		{
 			const  SharedMemoryStatus* stat = processServerStatus();
 			if (stat)
@@ -414,8 +438,11 @@ bool PhysicsDirect::processContactPointData(const struct SharedMemoryCommand& or
     {
         bool hasStatus = m_data->m_commandProcessor->processCommand(command,m_data->m_serverStatus,&m_data->m_bulletStreamDataServerToClient[0],SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
         
-		int timeout = 1024 * 1024 * 1024;
-		while ((!hasStatus) && (timeout-- > 0))
+		b3Clock clock;
+		double startTime = clock.getTimeInSeconds();
+		double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+		while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 		{
 			const  SharedMemoryStatus* stat = processServerStatus();
 			if (stat)
@@ -475,8 +502,11 @@ bool PhysicsDirect::processCamera(const struct SharedMemoryCommand& orgCommand)
 
 		bool hasStatus = m_data->m_commandProcessor->processCommand(command,m_data->m_serverStatus,&m_data->m_bulletStreamDataServerToClient[0],SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 		
-		int timeout = 1024 * 1024 * 1024;
-		while ((!hasStatus) && (timeout-- > 0))
+		b3Clock clock;
+		double startTime = clock.getTimeInSeconds();
+		double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+		while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 		{
 			const  SharedMemoryStatus* stat = processServerStatus();
 			if (stat)
@@ -584,6 +614,7 @@ void PhysicsDirect::processBodyJointInfo(int bodyUniqueId, const SharedMemorySta
 	
     BodyJointInfoCache2* bodyJoints = new BodyJointInfoCache2;
     m_data->m_bodyJointMap.insert(bodyUniqueId,bodyJoints);
+	bodyJoints->m_bodyName = serverCmd.m_dataStreamArguments.m_bodyName;
 
     for (int i = 0; i < bf.m_multiBodies.size(); i++) 
     {
@@ -648,10 +679,38 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
 		{
 			b3Printf("Request VR Events completed");
 		}
-		m_data->m_cachedVREvents.clear();
+		m_data->m_cachedVREvents.resize(serverCmd.m_sendVREvents.m_numVRControllerEvents);
 		for (int i=0;i< serverCmd.m_sendVREvents.m_numVRControllerEvents;i++)
 		{
-			m_data->m_cachedVREvents.push_back(serverCmd.m_sendVREvents.m_controllerEvents[i]);
+			m_data->m_cachedVREvents[i] = serverCmd.m_sendVREvents.m_controllerEvents[i];
+		}
+		break;
+	}
+	case CMD_REQUEST_KEYBOARD_EVENTS_DATA_COMPLETED:
+	{
+		if (m_data->m_verboseOutput)
+		{
+			b3Printf("Request keyboard events completed");
+		}
+		m_data->m_cachedKeyboardEvents.resize(serverCmd.m_sendKeyboardEvents.m_numKeyboardEvents);
+		for (int i=0;i<serverCmd.m_sendKeyboardEvents.m_numKeyboardEvents;i++)
+		{
+			m_data->m_cachedKeyboardEvents[i] = serverCmd.m_sendKeyboardEvents.m_keyboardEvents[i];
+		}
+		break;
+	}
+
+	case CMD_REQUEST_MOUSE_EVENTS_DATA_COMPLETED:
+	{
+		B3_PROFILE("CMD_REQUEST_MOUSE_EVENTS_DATA_COMPLETED");
+		if (m_data->m_verboseOutput)
+		{
+			b3Printf("Request mouse events completed");
+		}
+		m_data->m_cachedMouseEvents.resize(serverCmd.m_sendMouseEvents.m_numMouseEvents);
+		for (int i=0;i<serverCmd.m_sendMouseEvents.m_numMouseEvents;i++)
+		{
+			m_data->m_cachedMouseEvents[i] = serverCmd.m_sendMouseEvents.m_mouseEvents[i];
 		}
 		break;
 	}
@@ -688,6 +747,26 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
         m_data->m_userConstraintInfoMap.remove(cid);
         break;
     }
+	case CMD_REMOVE_BODY_FAILED:
+	{
+		b3Warning("Remove body failed\n");
+		break;
+	}
+	case CMD_REMOVE_BODY_COMPLETED:
+	{
+		for (int i=0;i<serverCmd.m_removeObjectArgs.m_numBodies;i++)
+		{
+			int bodyUniqueId = serverCmd.m_removeObjectArgs.m_bodyUniqueIds[i];
+			removeCachedBody(bodyUniqueId);
+		}
+		for (int i=0;i<serverCmd.m_removeObjectArgs.m_numUserConstraints;i++)
+		{
+			int key = serverCmd.m_removeObjectArgs.m_userConstraintUniqueIds[i];
+			m_data->m_userConstraintInfoMap.remove(key);
+		}
+
+		break;
+	}
 	case CMD_CHANGE_USER_CONSTRAINT_COMPLETED:
 	{
         int cid = serverCmd.m_userConstraintResultArgs.m_userConstraintUniqueId;
@@ -735,8 +814,11 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
 			bool hasStatus = m_data->m_commandProcessor->processCommand(infoRequestCommand, infoStatus, &m_data->m_bulletStreamDataServerToClient[0], SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 					
 
-			int timeout = 1024 * 1024 * 1024;
-			while ((!hasStatus) && (timeout-- > 0))
+			b3Clock clock;
+			double startTime = clock.getTimeInSeconds();
+			double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+			while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 			{
 				hasStatus = m_data->m_commandProcessor->receiveStatus(infoStatus, &m_data->m_bulletStreamDataServerToClient[0], SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 			}
@@ -759,8 +841,11 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
 			bool hasStatus = m_data->m_commandProcessor->processCommand(infoRequestCommand, infoStatus, &m_data->m_bulletStreamDataServerToClient[0], SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 					
 
-			int timeout = 1024 * 1024 * 1024;
-			while ((!hasStatus) && (timeout-- > 0))
+			b3Clock clock;
+			double startTime = clock.getTimeInSeconds();
+			double timeOutInSeconds = m_data->m_timeOutInSeconds;
+
+			while ((!hasStatus) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 			{
 				hasStatus = m_data->m_commandProcessor->receiveStatus(infoStatus, &m_data->m_bulletStreamDataServerToClient[0], SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE);
 			}
@@ -772,6 +857,7 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
 		}
 		break;
 	}
+	case CMD_CREATE_MULTI_BODY_COMPLETED:
 	case CMD_URDF_LOADING_COMPLETED:
 	{
 
@@ -792,6 +878,16 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
 		break;
 	}
 	
+	case CMD_REQUEST_OPENGL_VISUALIZER_CAMERA_COMPLETED:
+	{
+		break;
+	}
+
+	case CMD_REQUEST_OPENGL_VISUALIZER_CAMERA_FAILED:
+	{
+		b3Warning("requestOpenGLVisualizeCamera failed");
+		break;
+	}
 	case CMD_REMOVE_USER_CONSTRAINT_FAILED:
 	{
 		b3Warning("removeConstraint failed");
@@ -808,6 +904,42 @@ void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd
 		b3Warning("createConstraint failed");
 		break;
 	}
+	
+	case CMD_CREATE_COLLISION_SHAPE_FAILED:
+	{
+		b3Warning("createCollisionShape failed");
+		break;
+	}
+	case CMD_CREATE_COLLISION_SHAPE_COMPLETED:
+	{
+		break;
+	}
+	
+	case CMD_CREATE_VISUAL_SHAPE_FAILED:
+	{
+		b3Warning("createVisualShape failed");
+		break;
+	}
+	case CMD_CREATE_VISUAL_SHAPE_COMPLETED:
+	{
+		break;
+	}
+	
+	case CMD_CREATE_MULTI_BODY_FAILED:
+	{
+		b3Warning("createMultiBody failed");
+		break;
+	}
+	case CMD_REQUEST_COLLISION_INFO_COMPLETED:
+	{
+		break;
+	}
+	case CMD_REQUEST_COLLISION_INFO_FAILED:
+	{
+		b3Warning("Request getCollisionInfo failed");
+		break;
+	}
+
 	default:
 	{
 		//b3Warning("Unknown server status type");
@@ -857,6 +989,28 @@ int PhysicsDirect::getNumBodies() const
 	return m_data->m_bodyJointMap.size();
 }
 
+void PhysicsDirect::removeCachedBody(int bodyUniqueId)
+{
+	BodyJointInfoCache2** bodyJointsPtr = m_data->m_bodyJointMap[bodyUniqueId];
+	if (bodyJointsPtr && *bodyJointsPtr)
+	{
+		BodyJointInfoCache2* bodyJoints = *bodyJointsPtr;
+		for (int j=0;j<bodyJoints->m_jointInfo.size();j++) {
+			if (bodyJoints->m_jointInfo[j].m_jointName)
+			{
+				free(bodyJoints->m_jointInfo[j].m_jointName);
+			}
+			if (bodyJoints->m_jointInfo[j].m_linkName)
+			{
+				free(bodyJoints->m_jointInfo[j].m_linkName);
+			}
+		}
+		delete (*bodyJointsPtr);
+		m_data->m_bodyJointMap.remove(bodyUniqueId);
+	}
+}
+
+
 int PhysicsDirect::getNumUserConstraints() const
 {
     return m_data->m_userConstraintInfoMap.size();
@@ -873,7 +1027,14 @@ int PhysicsDirect::getUserConstraintInfo(int constraintUniqueId, struct b3UserCo
     return 0;
 }
 
-
+int PhysicsDirect::getUserConstraintId(int serialIndex) const
+{
+	if ((serialIndex >= 0) && (serialIndex < getNumUserConstraints()))
+	{
+		return m_data->m_userConstraintInfoMap.getKeyAtIndex(serialIndex).getUid1();
+	}
+	return -1;
+}
 
 int PhysicsDirect::getBodyUniqueId(int serialIndex) const
 {
@@ -891,6 +1052,7 @@ bool PhysicsDirect::getBodyInfo(int bodyUniqueId, struct b3BodyInfo& info) const
 	{
 		BodyJointInfoCache2* bodyJoints = *bodyJointsPtr;
 		info.m_baseName = bodyJoints->m_baseName.c_str();
+		info.m_bodyName = bodyJoints->m_bodyName.c_str();
 		return true;
 	}
 	
@@ -933,6 +1095,14 @@ void PhysicsDirect::setSharedMemoryKey(int key)
 
 void PhysicsDirect::uploadBulletFileToSharedMemory(const char* data, int len)
 {
+	if (len>SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE)
+	{
+		len = SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE;
+	}
+	for (int i=0;i<len;i++)
+	{
+		m_data->m_bulletStreamDataServerToClient[i] = data[i];
+	}
 	//m_data->m_physicsClient->uploadBulletFileToSharedMemory(data,len);
 }
 
@@ -1006,8 +1176,33 @@ void PhysicsDirect::getCachedVREvents(struct b3VREventsData* vrEventsData)
 							&m_data->m_cachedVREvents[0] : 0;
 }
 
+void PhysicsDirect::getCachedKeyboardEvents(struct b3KeyboardEventsData* keyboardEventsData)
+{
+	keyboardEventsData->m_numKeyboardEvents = m_data->m_cachedKeyboardEvents.size();
+	keyboardEventsData->m_keyboardEvents = keyboardEventsData->m_numKeyboardEvents?
+		&m_data->m_cachedKeyboardEvents[0] : 0;
+}
+
+void PhysicsDirect::getCachedMouseEvents(struct b3MouseEventsData* mouseEventsData)
+{
+	mouseEventsData->m_numMouseEvents = m_data->m_cachedMouseEvents.size();
+	mouseEventsData->m_mouseEvents = mouseEventsData->m_numMouseEvents?
+		&m_data->m_cachedMouseEvents[0] : 0;
+}
+
+
 void PhysicsDirect::getCachedRaycastHits(struct b3RaycastInformation* raycastHits)
 {
 	raycastHits->m_numRayHits = m_data->m_raycastHits.size();
 	raycastHits->m_rayHits = raycastHits->m_numRayHits? &m_data->m_raycastHits[0] : 0;
+}
+
+void PhysicsDirect::setTimeOut(double timeOutInSeconds)
+{
+	m_data->m_timeOutInSeconds = timeOutInSeconds;
+}
+
+double PhysicsDirect::getTimeOut() const
+{
+	return m_data->m_timeOutInSeconds;
 }

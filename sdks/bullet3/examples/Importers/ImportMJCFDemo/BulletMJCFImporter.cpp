@@ -1,6 +1,8 @@
 #include "BulletMJCFImporter.h"
 #include "../../ThirdPartyLibs/tinyxml/tinyxml.h"
 #include "Bullet3Common/b3FileUtils.h"
+#include "Bullet3Common/b3HashMap.h"
+
 #include <string>
 #include "../../Utils/b3ResourcePath.h"
 #include <iostream>
@@ -29,12 +31,6 @@
 
 
 #include <vector>
-
-enum eMJCF_FILE_TYPE_ENUMS
-{
-	MJCF_FILE_STL = 1,
-	MJCF_FILE_OBJ = 2
-};
 
 enum ePARENT_LINK_ENUMS
 {
@@ -85,7 +81,7 @@ static bool parseVector3(btVector3& vec3, const std::string& vector_str, MJCFErr
 	}
 	if (rgba.size() < 3)
 	{
-		logger->reportWarning("Couldn't parse vector3");
+		logger->reportWarning( ("Couldn't parse vector3 '" + vector_str + "'").c_str() );
 		return false;
 	}
     if (lastThree) {
@@ -119,7 +115,8 @@ static bool parseVector6(btVector3& v0, btVector3& v1, const std::string& vector
 	}
 	if (values.size() < 6)
 	{
-		logger->reportWarning("Couldn't parse 6 floats");
+		logger->reportWarning( ("Couldn't parse 6 floats '" + vector_str + "'").c_str() );
+
 		return false;
 	}
 	v0.setValue(values[0],values[1],values[2]);
@@ -134,12 +131,43 @@ struct MyMJCFAsset
 	std::string  m_fileName;
 };
 
+struct MyMJCFDefaults
+{
+	int m_defaultCollisionGroup;
+	int m_defaultCollisionMask;
+	btScalar m_defaultCollisionMargin;
+
+	// joint defaults
+	std::string m_defaultJointLimited;
+
+	// geom defaults
+	std::string m_defaultGeomRgba;
+	int m_defaultConDim;
+	double m_defaultLateralFriction;
+	double m_defaultSpinningFriction;
+	double m_defaultRollingFriction;
+
+	MyMJCFDefaults()
+		:m_defaultCollisionGroup(1),
+		m_defaultCollisionMask(1),
+		m_defaultCollisionMargin(0.001),//assume unit meters, margin is 1mm
+		m_defaultConDim(3),
+		m_defaultLateralFriction(0.5),
+		m_defaultSpinningFriction(0),
+		m_defaultRollingFriction(0)
+	{
+	}
+
+};
+
 struct BulletMJCFImporterInternalData
 {
 	GUIHelperInterface* m_guiHelper;
+	struct LinkVisualShapesConverter* m_customVisualShapesConverter;
 	char m_pathPrefix[1024];
 
-	std::string m_fileModelName;
+	std::string m_sourceFileName; // with path
+	std::string m_fileModelName;  // without path
 	btHashMap<btHashString,MyMJCFAsset> m_assets;
 
 	btAlignedObjectArray<UrdfModel*>	m_models;
@@ -147,24 +175,48 @@ struct BulletMJCFImporterInternalData
 	//<compiler angle="radian" meshdir="mesh/" texturedir="texture/"/>
 	std::string m_meshDir;
 	std::string m_textureDir;
+	std::string m_angleUnits;
 
 
 	int m_activeModel;
-	//todo: for full MJCF compatibility, we would need a stack of default values
-	int m_defaultCollisionGroup;
-	int m_defaultCollisionMask;
-	btScalar m_defaultCollisionMargin;
+	int m_activeBodyUniqueId;
+
+	//todo: for better MJCF compatibility, we would need a stack of default values
+	MyMJCFDefaults m_globalDefaults;
+	b3HashMap<b3HashString, MyMJCFDefaults> m_classDefaults;
 
 	//those collision shapes are deleted by caller (todo: make sure this happens!)
 	btAlignedObjectArray<btCollisionShape*> m_allocatedCollisionShapes;
+	mutable btAlignedObjectArray<btTriangleMesh*> m_allocatedMeshInterfaces;
 
 	BulletMJCFImporterInternalData()
 		:m_activeModel(-1),
-		m_defaultCollisionGroup(1),
-		m_defaultCollisionMask(1),
-		m_defaultCollisionMargin(0.001)//assume unit meters, margin is 1mm
+		m_activeBodyUniqueId(-1)
 	{
 		m_pathPrefix[0] = 0;
+	}
+
+	~BulletMJCFImporterInternalData()
+	{
+		for (int i=0;i<m_models.size();i++)
+		{
+			delete m_models[i];
+		}
+	}
+
+	std::string sourceFileLocation(TiXmlElement* e)
+	{
+#if 0
+	//no C++11 snprintf etc
+		char buf[1024];
+		snprintf(buf, sizeof(buf), "%s:%i", m_sourceFileName.c_str(), e->Row());
+		return buf;
+#else
+		char row[1024];
+		sprintf(row,"%d",e->Row());
+		std::string str = m_sourceFileName.c_str() + std::string(":") + std::string(row);
+		return str;
+#endif
 	}
 	
 	const UrdfLink* getLink(int modelIndex, int linkIndex) const
@@ -194,6 +246,8 @@ struct BulletMJCFImporterInternalData
 		{
 			m_textureDir = textureDirStr;
 		}
+		const char* angle = root_xml->Attribute("angle");
+		m_angleUnits = angle ? angle : "degree";  // degrees by default, http://www.mujoco.org/book/modeling.html#compiler
 #if 0
 		for (TiXmlElement* child_xml = root_xml->FirstChildElement() ; child_xml ; child_xml = child_xml->NextSiblingElement())
 		{
@@ -223,7 +277,9 @@ struct BulletMJCFImporterInternalData
 			
 		}
 	}
-	bool parseDefaults(TiXmlElement* root_xml, MJCFErrorLogger* logger)
+	
+	
+	bool parseDefaults(MyMJCFDefaults& defaults, TiXmlElement* root_xml, MJCFErrorLogger* logger)
 	{
 		bool handled= false;
 		//rudimentary 'default' support, would need more work for better feature coverage
@@ -231,6 +287,27 @@ struct BulletMJCFImporterInternalData
 		{
 			std::string n = child_xml->Value();
 		
+			if (n.find("default")!=std::string::npos)
+			{
+				const char* className = child_xml->Attribute("class");
+
+				if (className)
+				{
+					MyMJCFDefaults* curDefaultsPtr = m_classDefaults[className];
+					if (!curDefaultsPtr)
+					{
+						MyMJCFDefaults def;
+						m_classDefaults.insert(className,def);
+						curDefaultsPtr = m_classDefaults[className];
+					}
+					if (curDefaultsPtr)
+					{
+						MyMJCFDefaults& curDefaults = *curDefaultsPtr; 
+						parseDefaults(curDefaults, child_xml, logger);
+					}
+				}
+			}
+
 			if (n=="inertial")
 			{
 			}
@@ -238,25 +315,77 @@ struct BulletMJCFImporterInternalData
 			{
 				parseAssets(child_xml,logger);
 			}
+			if (n=="joint")
+			{
+				// Other attributes here:
+				// armature="1"
+				// damping="1"
+				// limited="true"
+				if (const char* conTypeStr = child_xml->Attribute("limited"))
+				{
+					defaults.m_defaultJointLimited = child_xml->Attribute("limited");
+				}
+			}
 			if (n=="geom")
 			{
 				//contype, conaffinity 
 				const char* conTypeStr = child_xml->Attribute("contype");
 				if (conTypeStr)
 				{
-					m_defaultCollisionGroup = urdfLexicalCast<int>(conTypeStr);
+					defaults.m_defaultCollisionGroup = urdfLexicalCast<int>(conTypeStr);
 				}
 				const char* conAffinityStr = child_xml->Attribute("conaffinity");
 				if (conAffinityStr)
 				{
-					m_defaultCollisionMask = urdfLexicalCast<int>(conAffinityStr);
+					defaults.m_defaultCollisionMask = urdfLexicalCast<int>(conAffinityStr);
+				}
+				const char* rgba = child_xml->Attribute("rgba");
+				if (rgba)
+				{
+					defaults.m_defaultGeomRgba = rgba;
+				}
+
+				const char* conDimS = child_xml->Attribute("condim");
+				if (conDimS)
+				{
+					defaults.m_defaultConDim=urdfLexicalCast<int>(conDimS);
+				}
+				int conDim = defaults.m_defaultConDim;
+
+				const char* frictionS = child_xml->Attribute("friction");
+				if (frictionS)
+				{
+					btArray<std::string> pieces;
+					btArray<float> frictions;
+					btAlignedObjectArray<std::string> strArray;
+					urdfIsAnyOf(" ", strArray);
+					urdfStringSplit(pieces, frictionS, strArray);
+					for (int i = 0; i < pieces.size(); ++i)
+					{
+						if (!pieces[i].empty())
+						{
+							frictions.push_back(urdfLexicalCast<double>(pieces[i].c_str()));
+						}
+					}
+					if (frictions.size()>0)
+					{
+						defaults.m_defaultLateralFriction = frictions[0];
+					}
+					if (frictions.size()>1)
+					{
+						defaults.m_defaultSpinningFriction = frictions[1];
+					}
+					if (frictions.size()>2)
+					{
+						defaults.m_defaultRollingFriction = frictions[2];
+					}
 				}
 			}
 		}
 		handled=true;
 		return handled;
 	}
-	bool parseRootLevel(TiXmlElement* root_xml,MJCFErrorLogger* logger)
+	bool parseRootLevel(MyMJCFDefaults& defaults,  TiXmlElement* root_xml,MJCFErrorLogger* logger)
 	{
 		for (TiXmlElement* rootxml = root_xml->FirstChildElement() ; rootxml ; rootxml = rootxml->NextSiblingElement())
 		{
@@ -269,7 +398,7 @@ struct BulletMJCFImporterInternalData
 				int modelIndex = m_models.size();
 				UrdfModel* model = new UrdfModel();
 				m_models.push_back(model);
-				parseBody(rootxml,modelIndex, INVALID_LINK_INDEX,logger);
+				parseBody(defaults, rootxml,modelIndex, INVALID_LINK_INDEX,logger);
 				initTreeAndRoot(*model,logger);
 				handled = true;
 			}
@@ -297,7 +426,7 @@ struct BulletMJCFImporterInternalData
 //				modelPtr->m_rootLinks.push_back(linkPtr);
 
 				btVector3 inertialShift(0,0,0);
-				parseGeom(rootxml,modelIndex, linkIndex,logger,inertialShift);
+				parseGeom(defaults, rootxml,modelIndex, linkIndex,logger,inertialShift);
 				initTreeAndRoot(*modelPtr,logger);
 
 				handled = true;
@@ -310,15 +439,15 @@ struct BulletMJCFImporterInternalData
 			}
 			if (!handled)
 			{
-				logger->reportWarning("Unhandled root element");
-				logger->reportWarning(n.c_str());
+				logger->reportWarning( (sourceFileLocation(rootxml) + ": unhandled root element '" + n + "'").c_str() );
 			}
 		}
 		return true;
 	}
 
-	bool parseJoint(TiXmlElement* link_xml, int modelIndex, int parentLinkIndex, int linkIndex, MJCFErrorLogger* logger, const btTransform& parentToLinkTrans, btTransform& jointTransOut)
+	bool parseJoint(MyMJCFDefaults& defaults, TiXmlElement* link_xml, int modelIndex, int parentLinkIndex, int linkIndex, MJCFErrorLogger* logger, const btTransform& parentToLinkTrans, btTransform& jointTransOut)
 	{
+		bool jointHandled = false;
 		const char* jType = link_xml->Attribute("type");
 		const char* limitedStr = link_xml->Attribute("limited");
 		const char* axisStr = link_xml->Attribute("axis");
@@ -348,65 +477,29 @@ struct BulletMJCFImporterInternalData
 				jointTrans.setRotation(orn);
 			}
 		}
-		btVector3 jointAxis(1,0,0);
 
+		btVector3 jointAxis(1,0,0);
 		if (axisStr)
 		{
 			std::string ax = axisStr;
 			parseVector3(jointAxis,ax,logger);
 		} else
 		{
-			logger->reportWarning("joint without axis attribute");
+			logger->reportWarning( (sourceFileLocation(link_xml) + ": joint without axis attribute").c_str() );
 		}
-		bool isLimited = false;
-		double range[2] = {1,0};
 
+		double range[2] = {1,0};
+		std::string lim = m_globalDefaults.m_defaultJointLimited;
 		if (limitedStr)
 		{
-			std::string lim = limitedStr;
-			if (lim=="true")
-			{
-				isLimited = true;
-				//parse the 'range' field
-				btArray<std::string> pieces;
-				btArray<float> sizes;
-				btAlignedObjectArray<std::string> strArray;
-				urdfIsAnyOf(" ", strArray);
-				urdfStringSplit(pieces, rangeStr, strArray);
-				for (int i = 0; i < pieces.size(); ++i)
-				{
-					if (!pieces[i].empty())
-					{
-						sizes.push_back(urdfLexicalCast<double>(pieces[i].c_str()));
-					}
-				}
-				if (sizes.size()==2)
-				{
-					range[0] = sizes[0];
-					range[1] = sizes[1];
-				} else
-				{
-					logger->reportWarning("Expected range[2] in joint with limits");
-				}
-
-			}
-		} else
-		{
-//			logger->reportWarning("joint without limited field");
+			lim = limitedStr;
 		}
+		bool isLimited = lim=="true";
 
-		bool jointHandled = false;
-		const UrdfLink* linkPtr = getLink(modelIndex,linkIndex);
-		
-		btTransform parentLinkToJointTransform;
-		parentLinkToJointTransform.setIdentity();
-		parentLinkToJointTransform = parentToLinkTrans*jointTrans;
-
-		jointTransOut = jointTrans;
 		UrdfJointTypes ejtype;
 		if (jType)
 		{
-			std::string jointType = jType; 
+			std::string jointType = jType;
 			if (jointType == "fixed")
 			{
 				ejtype = URDFFixedJoint;
@@ -430,8 +523,66 @@ struct BulletMJCFImporterInternalData
 			}
 		} else
 		{
-			logger->reportWarning("Expected 'type' attribute for joint");
+			logger->reportWarning( (sourceFileLocation(link_xml) + ": expected 'type' attribute for joint").c_str() );
 		}
+
+		if (isLimited)
+		{
+			//parse the 'range' field
+			btArray<std::string> pieces;
+			btArray<float> limits;
+			btAlignedObjectArray<std::string> strArray;
+			urdfIsAnyOf(" ", strArray);
+			urdfStringSplit(pieces, rangeStr, strArray);
+			for (int i = 0; i < pieces.size(); ++i)
+			{
+				if (!pieces[i].empty())
+				{
+					limits.push_back(urdfLexicalCast<double>(pieces[i].c_str()));
+				}
+			}
+			if (limits.size()==2)
+			{
+				range[0] = limits[0];
+				range[1] = limits[1];
+				if (m_angleUnits=="degree" && ejtype==URDFRevoluteJoint)
+				{
+					range[0] = limits[0] * B3_PI / 180;
+					range[1] = limits[1] * B3_PI / 180;
+				}
+			}
+			else
+			{
+				logger->reportWarning( (sourceFileLocation(link_xml) + ": cannot parse 'range' attribute (units='" + m_angleUnits + "'')").c_str() );
+			}
+		}
+
+		// TODO armature : real, "0" Armature inertia (or rotor inertia) of all
+		// degrees of freedom created by this joint. These are constants added to the
+		// diagonal of the inertia matrix in generalized coordinates. They make the
+		// simulation more stable, and often increase physical realism. This is because
+		// when a motor is attached to the system with a transmission that amplifies
+		// the motor force by c, the inertia of the rotor (i.e. the moving part of the
+		// motor) is amplified by c*c. The same holds for gears in the early stages of
+		// planetary gear boxes. These extra inertias often dominate the inertias of
+		// the robot parts that are represented explicitly in the model, and the
+		// armature attribute is the way to model them.
+
+		// TODO damping : real, "0" Damping applied to all degrees of
+		// freedom created by this joint. Unlike friction loss
+		// which is computed by the constraint solver, damping is
+		// simply a force linear in velocity. It is included in
+		// the passive forces. Despite this simplicity, larger
+		// damping values can make numerical integrators unstable,
+		// which is why our Euler integrator handles damping
+		// implicitly. See Integration in the Computation chapter.
+
+		const UrdfLink* linkPtr = getLink(modelIndex,linkIndex);
+		
+		btTransform parentLinkToJointTransform;
+		parentLinkToJointTransform.setIdentity();
+		parentLinkToJointTransform = parentToLinkTrans*jointTrans;
+		jointTransOut = jointTrans;
 
 		if (jointHandled)
 		{
@@ -443,11 +594,11 @@ struct BulletMJCFImporterInternalData
 			jointPtr->m_parentLinkToJointTransform = parentLinkToJointTransform;
 			jointPtr->m_type = ejtype;
 			int numJoints = m_models[modelIndex]->m_joints.size();
-			
+
 			//range
 			jointPtr->m_lowerLimit = range[0];
 			jointPtr->m_upperLimit = range[1];
-			
+
 			if (nameStr)
 			{
 				jointPtr->m_name =nameStr; 
@@ -470,11 +621,12 @@ struct BulletMJCFImporterInternalData
 		*/
 		return false;
 	}
-	bool parseGeom(TiXmlElement* link_xml, int modelIndex, int linkIndex, MJCFErrorLogger* logger, btVector3& inertialShift)
+	bool parseGeom(MyMJCFDefaults& defaults, TiXmlElement* link_xml, int modelIndex, int linkIndex, MJCFErrorLogger* logger, btVector3& inertialShift)
 	{
 		UrdfLink** linkPtrPtr = m_models[modelIndex]->m_links.getAtIndex(linkIndex);
 		if (linkPtrPtr==0)
 		{
+			// XXX: should it be assert?
 			logger->reportWarning("Invalide linkindex");
 			return false;
 		}
@@ -487,11 +639,79 @@ struct BulletMJCFImporterInternalData
 		bool handledGeomType = false;
 		UrdfGeometry geom;
 
-		
-
-//		const char* rgba = link_xml->Attribute("rgba");
-		const char* gType = link_xml->Attribute("type");
 		const char* sz = link_xml->Attribute("size");
+		int conDim = defaults.m_defaultConDim;
+
+		const char* conDimS = link_xml->Attribute("condim");
+		{
+			if (conDimS)
+			{
+				conDim = urdfLexicalCast<int>(conDimS);
+			} 
+		}
+
+		double lateralFriction = defaults.m_defaultLateralFriction;
+		double spinningFriction = defaults.m_defaultSpinningFriction;
+		double rollingFriction = defaults.m_defaultRollingFriction;
+
+		const char* frictionS = link_xml->Attribute("friction");
+		if (frictionS)
+		{
+			btArray<std::string> pieces;
+			btArray<float> frictions;
+			btAlignedObjectArray<std::string> strArray;
+			urdfIsAnyOf(" ", strArray);
+			urdfStringSplit(pieces, frictionS, strArray);
+			for (int i = 0; i < pieces.size(); ++i)
+			{
+				if (!pieces[i].empty())
+				{
+					frictions.push_back(urdfLexicalCast<double>(pieces[i].c_str()));
+				}
+			}
+			if (frictions.size()>0)
+			{
+				lateralFriction = frictions[0];
+			}
+			if (frictions.size()>1 && conDim>3)
+			{
+				spinningFriction = frictions[1];
+			}
+			if (frictions.size()>2 && conDim>4)
+			{
+				rollingFriction = frictions[2];
+			}
+
+		}
+
+		linkPtr->m_contactInfo.m_lateralFriction=lateralFriction;
+		linkPtr->m_contactInfo.m_spinningFriction=spinningFriction;
+		linkPtr->m_contactInfo.m_rollingFriction=rollingFriction;
+
+		if (conDim>3)
+		{
+			linkPtr->m_contactInfo.m_spinningFriction=defaults.m_defaultSpinningFriction;
+			linkPtr->m_contactInfo.m_flags |= URDF_CONTACT_HAS_SPINNING_FRICTION;
+		}
+		if (conDim>4)
+		{
+			linkPtr->m_contactInfo.m_rollingFriction=defaults.m_defaultRollingFriction;
+			linkPtr->m_contactInfo.m_flags |= URDF_CONTACT_HAS_ROLLING_FRICTION;
+		}
+
+		std::string rgba = defaults.m_defaultGeomRgba;
+		if (const char* rgbattr = link_xml->Attribute("rgba"))
+		{
+			rgba = rgbattr;
+		}
+		if (!rgba.empty())
+		{
+			// "0 0.7 0.7 1"
+			parseVector4(geom.m_localMaterial.m_matColor.m_rgbaColor, rgba);
+			geom.m_hasLocalMaterial = true;
+			geom.m_localMaterial.m_name = rgba;
+		}
+
 		const char* posS = link_xml->Attribute("pos");
 		if (posS)
 		{
@@ -502,18 +722,32 @@ struct BulletMJCFImporterInternalData
 				linkLocalFrame.setOrigin(pos);
 			}
 		}
+
 		const char* ornS = link_xml->Attribute("quat");
 		if (ornS)
 		{
-			std::string ornStr = ornS;
 			btQuaternion orn(0,0,0,1);
 			btVector4 o4;
-			if (parseVector4(o4,ornStr))
+			if (parseVector4(o4, ornS))
 			{
 				orn.setValue(o4[1],o4[2],o4[3],o4[0]);
 				linkLocalFrame.setRotation(orn);
 			}
 		}
+
+		const char* axis_and_angle = link_xml->Attribute("axisangle");
+		if (axis_and_angle)
+		{
+			btQuaternion orn(0,0,0,1);
+			btVector4 o4;
+			if (parseVector4(o4, axis_and_angle))
+			{
+				orn.setRotation(btVector3(o4[0],o4[1],o4[2]), o4[3]);
+				linkLocalFrame.setRotation(orn);
+			}
+		}
+
+		const char* gType = link_xml->Attribute("type");
 		if (gType)
 		{
 			std::string geomType = gType;
@@ -555,15 +789,15 @@ struct BulletMJCFImporterInternalData
 					geom.m_sphereRadius = urdfLexicalCast<double>(sz);
 				} else
 				{
-					logger->reportWarning("Expected size field (scalar) in sphere geom");
+					logger->reportWarning( (sourceFileLocation(link_xml) + ": no size field (scalar) in sphere geom").c_str() );
 				}
 				handledGeomType = true;
 			}
 
-			//todo: capsule, cylinder, meshes or heightfields etc
-			if (geomType == "capsule")
+			if (geomType == "capsule" || geomType == "cylinder")
 			{
-				geom.m_type = URDF_GEOM_CAPSULE;
+				// <geom conaffinity="0" contype="0" fromto="0 0 0 0 0 0.02" name="root" rgba="0.9 0.4 0.6 1" size=".011" type="cylinder"/>
+				geom.m_type = geomType=="cylinder" ? URDF_GEOM_CYLINDER : URDF_GEOM_CAPSULE;
 
 				btArray<std::string> pieces;
 				btArray<float> sizes;
@@ -578,19 +812,19 @@ struct BulletMJCFImporterInternalData
 					}
 				}
 
-				geom.m_capsuleRadius = 0;
-				geom.m_capsuleHalfHeight = 0.f;
+				geom.m_capsuleRadius = 2.00f; // 2 to make it visible if something is wrong
+				geom.m_capsuleHeight = 2.00f;
 
 				if (sizes.size()>0)
 				{
 					geom.m_capsuleRadius = sizes[0];
 					if (sizes.size()>1)
 					{
-						geom.m_capsuleHalfHeight = sizes[1];
+						geom.m_capsuleHeight = 2*sizes[1];
 					}
 				} else
 				{
-					logger->reportWarning("couldn't convert 'size' attribute of capsule geom");
+					logger->reportWarning( (sourceFileLocation(link_xml) + ": couldn't convert 'size' attribute of capsule geom").c_str() );
 				}
 				const char* fromtoStr = link_xml->Attribute("fromto");
 				geom.m_hasFromTo = false;
@@ -606,7 +840,7 @@ struct BulletMJCFImporterInternalData
 				{
 					if (sizes.size()<2)
 					{
-						logger->reportWarning("capsule without fromto attribute requires 2 sizes (radius and halfheight)");
+						logger->reportWarning( (sourceFileLocation(link_xml) + ": capsule without fromto attribute requires 2 sizes (radius and halfheight)").c_str() );
 					} else
 					{
 						handledGeomType = true;
@@ -621,9 +855,14 @@ struct BulletMJCFImporterInternalData
 					MyMJCFAsset* assetPtr = m_assets[meshStr];
 					if (assetPtr)
 					{
-						handledGeomType = true;
 						geom.m_type = URDF_GEOM_MESH;
 						geom.m_meshFileName = assetPtr->m_fileName;
+						bool exists = findExistingMeshFile(
+							m_sourceFileName, assetPtr->m_fileName, sourceFileLocation(link_xml),
+							&geom.m_meshFileName,
+							&geom.m_meshFileType);
+						handledGeomType = exists;
+
 						geom.m_meshScale.setValue(1,1,1);
 						//todo: parse mesh scale
 						if (sz)
@@ -632,22 +871,15 @@ struct BulletMJCFImporterInternalData
 					}
 				}
 			}
-			#if 0
-			if (geomType == "cylinder")
-			{
-				geom.m_type = URDF_GEOM_CYLINDER;
-				handledGeomType = true;
-			}
-#endif
 			if (handledGeomType)
 			{
 						
 				UrdfCollision col;
 				col.m_flags |= URDF_HAS_COLLISION_GROUP;
-				col.m_collisionGroup = m_defaultCollisionGroup;
+				col.m_collisionGroup = defaults.m_defaultCollisionGroup;
 				
 				col.m_flags |= URDF_HAS_COLLISION_MASK;
-				col.m_collisionMask = m_defaultCollisionMask;
+				col.m_collisionMask = defaults.m_defaultCollisionMask;
 				
 				//contype, conaffinity 
 				const char* conTypeStr = link_xml->Attribute("contype");
@@ -665,17 +897,16 @@ struct BulletMJCFImporterInternalData
 
 				col.m_geometry = geom;
 				col.m_linkLocalFrame = linkLocalFrame;
+				col.m_sourceFileLocation = sourceFileLocation(link_xml);
 				linkPtr->m_collisionArray.push_back(col);
 
 			} else
 			{
-				char warn[1024];
-				sprintf(warn,"Unknown/unhandled geom type: %s", geomType.c_str());
-				logger->reportWarning(warn);
+				logger->reportWarning( (sourceFileLocation(link_xml) + ": unhandled geom type '" + geomType + "'").c_str() );
 			}
 		} else
 		{
-			logger->reportWarning("geom requires type");
+			logger->reportWarning( (sourceFileLocation(link_xml) + ": geom requires type").c_str() );
 		}
 
 		return handledGeomType;
@@ -740,12 +971,6 @@ struct BulletMJCFImporterInternalData
 					col->m_geometry.m_boxSize[2];
 				break;
 			}
-
-			case URDF_GEOM_CYLINDER:
-			{
-				//todo
-				break;
-			}
 			case URDF_GEOM_MESH:
 			{
 				//todo (based on mesh bounding box?)
@@ -756,15 +981,25 @@ struct BulletMJCFImporterInternalData
 				//todo
 				break;
 			}
+			case URDF_GEOM_CYLINDER:
 			case URDF_GEOM_CAPSULE:
 			{
 				//one sphere 
 				double r = col->m_geometry.m_capsuleRadius;
-				totalVolume += 4./3.*SIMD_PI*r*r*r;
-				//and one cylinder of 'height'
-				btScalar h = (col->m_geometry.m_capsuleFrom-col->m_geometry.m_capsuleTo).length();
+				if (col->m_geometry.m_type==URDF_GEOM_CAPSULE)
+				{
+					totalVolume += 4./3.*SIMD_PI*r*r*r;
+				}
+				btScalar h(0);
+				if (col->m_geometry.m_hasFromTo)
+				{
+					//and one cylinder of 'height'
+					h = (col->m_geometry.m_capsuleFrom-col->m_geometry.m_capsuleTo).length();
+				} else
+				{
+					h = col->m_geometry.m_capsuleHeight;
+				}
 				totalVolume += SIMD_PI*r*r*h;
-				
 				break;
 			}
 			default:
@@ -791,9 +1026,9 @@ struct BulletMJCFImporterInternalData
 		UrdfModel* modelPtr = m_models[modelIndex];
 		int orgChildLinkIndex = modelPtr->m_links.size();
 		UrdfLink* linkPtr = new UrdfLink();
-		char uniqueLinkName[1024];
-		sprintf(uniqueLinkName,"link%d",orgChildLinkIndex );
-		linkPtr->m_name = uniqueLinkName;
+		char linkn[1024];
+		sprintf(linkn, "link%d_%d", modelIndex, orgChildLinkIndex);
+		linkPtr->m_name = linkn;
 		if (namePtr)
 		{
 			linkPtr->m_name = namePtr;
@@ -803,10 +1038,22 @@ struct BulletMJCFImporterInternalData
 
 		return orgChildLinkIndex;
 	}
-	bool parseBody(TiXmlElement* link_xml, int modelIndex, int orgParentLinkIndex, MJCFErrorLogger* logger)
+
+	bool parseBody(MyMJCFDefaults& defaults, TiXmlElement* link_xml, int modelIndex, int orgParentLinkIndex, MJCFErrorLogger* logger)
 	{
+		MyMJCFDefaults curDefaults = defaults;
+
 		int newParentLinkIndex = orgParentLinkIndex;
 
+		const char* childClassName = link_xml->Attribute("childclass");
+		if (childClassName)
+		{
+			MyMJCFDefaults* classDefaults = m_classDefaults[childClassName];
+			if (classDefaults)
+			{
+				curDefaults = *classDefaults;
+			}
+		}
 		const char* bodyName = link_xml->Attribute("name");
 		int orgChildLinkIndex = createBody(modelIndex,bodyName);
 		btTransform localInertialFrame;
@@ -863,6 +1110,7 @@ struct BulletMJCFImporterInternalData
 					}
 				}
 				const char* o = xml->Attribute("quat");
+				if (o)
 				{
 					std::string ornStr = o;
 					btQuaternion orn(0,0,0,1);
@@ -909,7 +1157,7 @@ struct BulletMJCFImporterInternalData
 						}
 
 						int newLinkIndex = createBody(modelIndex,0);
-						parseJoint(xml,modelIndex,newParentLinkIndex, newLinkIndex,logger,linkTransform,jointTrans);
+						parseJoint(curDefaults,xml,modelIndex,newParentLinkIndex, newLinkIndex,logger,linkTransform,jointTrans);
 						
 						//getLink(modelIndex,newLinkIndex)->m_linkTransformInWorld = jointTrans*linkTransform;
 						
@@ -924,7 +1172,7 @@ struct BulletMJCFImporterInternalData
 					int newLinkIndex = createBody(modelIndex,0);
 					btTransform joint2nextjoint =  jointTrans.inverse();
 					btTransform unused;
-					parseJoint(xml,modelIndex,newParentLinkIndex, newLinkIndex,logger,joint2nextjoint,unused);
+					parseJoint(curDefaults, xml,modelIndex,newParentLinkIndex, newLinkIndex,logger,joint2nextjoint,unused);
 					newParentLinkIndex = newLinkIndex;
 					//todo: compute relative joint transforms (if any) and append to linkTransform
 					hasJoint = true;
@@ -935,7 +1183,7 @@ struct BulletMJCFImporterInternalData
 			if (n == "geom")
 			{
 				btVector3 inertialShift(0,0,0);
-				parseGeom(xml,modelIndex, orgChildLinkIndex , logger,inertialShift);
+				parseGeom(curDefaults, xml,modelIndex, orgChildLinkIndex , logger,inertialShift);
 				if (!massDefined)
 				{
 					localInertialFrame.setOrigin(inertialShift);
@@ -946,7 +1194,7 @@ struct BulletMJCFImporterInternalData
 			//recursive
 			if (n=="body")
 			{
-				parseBody(xml,modelIndex,orgChildLinkIndex,logger);
+				parseBody(curDefaults, xml,modelIndex,orgChildLinkIndex,logger);
 				handled = true;
 			}
 
@@ -954,20 +1202,19 @@ struct BulletMJCFImporterInternalData
 			{
 				handled = true;
 			}
+			if (n=="site")
+			{
+				handled = true;
+			}
+
 			if (!handled)
 			{
-				char warn[1024];
-				std::string n = xml->Value();
-				sprintf(warn,"Unknown/unhandled field: %s", n.c_str());
-				logger->reportWarning(warn);
+				logger->reportWarning( (sourceFileLocation(xml) + ": unknown field '" + n + "'").c_str() );
 			}
 		}
 
 		linkPtr->m_linkTransformInWorld = linkTransform;
-		if (bodyN == "cart1")//front_left_leg")
-		{
-			printf("found!\n");
-		}
+
 		if ((newParentLinkIndex != INVALID_LINK_INDEX) && !skipFixedJoint)
 		{
 			//linkPtr->m_linkTransformInWorld.setIdentity();
@@ -1113,10 +1360,11 @@ struct BulletMJCFImporterInternalData
 
 };
 
-BulletMJCFImporter::BulletMJCFImporter(struct GUIHelperInterface* helper)
+BulletMJCFImporter::BulletMJCFImporter(struct GUIHelperInterface* helper, LinkVisualShapesConverter* customConverter)
 {
 	m_data = new BulletMJCFImporterInternalData();
 	m_data->m_guiHelper = helper;
+	m_data->m_customVisualShapesConverter = customConverter;
 }
 
 BulletMJCFImporter::~BulletMJCFImporter()
@@ -1135,7 +1383,8 @@ bool BulletMJCFImporter::loadMJCF(const char* fileName, MJCFErrorLogger* logger,
 	b3FileUtils fu;
 	
 	//bool fileFound = fu.findFile(fileName, relativeFileName, 1024);
-  	bool fileFound = (b3ResourcePath::findResourcePath(fileName,relativeFileName,1024)>0);
+	bool fileFound = (b3ResourcePath::findResourcePath(fileName,relativeFileName,1024)>0);
+	m_data->m_sourceFileName = relativeFileName;
 	
 	std::string xml_string;
 	m_data->m_pathPrefix[0] = 0;
@@ -1199,7 +1448,7 @@ bool BulletMJCFImporter::parseMJCFString(const char* xmlText, MJCFErrorLogger* l
 
 	for (TiXmlElement* link_xml = mujoco_xml->FirstChildElement("default"); link_xml; link_xml = link_xml->NextSiblingElement("default"))
 	{
-		m_data->parseDefaults(link_xml,logger);
+		m_data->parseDefaults(m_data->m_globalDefaults,link_xml,logger);
 	}
 
 	for (TiXmlElement* link_xml = mujoco_xml->FirstChildElement("compiler"); link_xml; link_xml = link_xml->NextSiblingElement("compiler"))
@@ -1215,12 +1464,12 @@ bool BulletMJCFImporter::parseMJCFString(const char* xmlText, MJCFErrorLogger* l
 	
 	for (TiXmlElement* link_xml = mujoco_xml->FirstChildElement("body"); link_xml; link_xml = link_xml->NextSiblingElement("body"))
 	{
-		m_data->parseRootLevel(link_xml,logger);
+		m_data->parseRootLevel(m_data->m_globalDefaults, link_xml,logger);
 	}
 
 	for (TiXmlElement* link_xml = mujoco_xml->FirstChildElement("worldbody"); link_xml; link_xml = link_xml->NextSiblingElement("worldbody"))
 	{
-		m_data->parseRootLevel(link_xml,logger);
+		m_data->parseRootLevel(m_data->m_globalDefaults, link_xml,logger);
 	}
 
 
@@ -1255,6 +1504,11 @@ int BulletMJCFImporter::getRootLinkIndex() const
 	 }
 	return "";
  }
+
+std::string BulletMJCFImporter::getBodyName() const
+{
+	return m_data->m_fileModelName;
+}
 
 bool BulletMJCFImporter::getLinkColor(int linkIndex, btVector4& colorRGBA) const
 {
@@ -1335,12 +1589,14 @@ void BulletMJCFImporter::getLinkChildIndices(int urdfLinkIndex, btAlignedObjectA
 	}
 }
     
-bool BulletMJCFImporter::getJointInfo(int urdfLinkIndex, btTransform& parent2joint, btTransform& linkTransformInWorld, btVector3& jointAxisInJointSpace, int& jointType, btScalar& jointLowerLimit, btScalar& jointUpperLimit, btScalar& jointDamping, btScalar& jointFriction) const
+bool BulletMJCFImporter::getJointInfo2(int urdfLinkIndex, btTransform& parent2joint, btTransform& linkTransformInWorld, btVector3& jointAxisInJointSpace, int& jointType, btScalar& jointLowerLimit, btScalar& jointUpperLimit, btScalar& jointDamping, btScalar& jointFriction, btScalar& jointMaxForce, btScalar& jointMaxVelocity) const
 {
-    jointLowerLimit = 0.f;
+	jointLowerLimit = 0.f;
     jointUpperLimit = 0.f;
 	jointDamping = 0.f;
 	jointFriction = 0.f;
+	jointMaxForce = 0;
+	jointMaxVelocity = 0;
 
 	const UrdfLink* link = m_data->getLink(m_data->m_activeModel,urdfLinkIndex);
 	if (link)
@@ -1358,7 +1614,9 @@ bool BulletMJCFImporter::getJointInfo(int urdfLinkIndex, btTransform& parent2joi
 			jointUpperLimit = pj->m_upperLimit;
 			jointDamping = pj->m_jointDamping;
 			jointFriction = pj->m_jointFriction;
-
+			jointMaxForce = pj->m_effortLimit;
+			jointMaxVelocity = pj->m_velocityLimit;
+			
 			return true;
 		} else
 		{
@@ -1368,6 +1626,14 @@ bool BulletMJCFImporter::getJointInfo(int urdfLinkIndex, btTransform& parent2joi
 	}
 	
 	return false;
+}
+
+bool BulletMJCFImporter::getJointInfo(int urdfLinkIndex, btTransform& parent2joint, btTransform& linkTransformInWorld, btVector3& jointAxisInJointSpace, int& jointType, btScalar& jointLowerLimit, btScalar& jointUpperLimit, btScalar& jointDamping, btScalar& jointFriction) const
+{
+	//backwards compatibility for custom file importers
+	btScalar jointMaxForce = 0;
+	btScalar jointMaxVelocity = 0;
+	return getJointInfo2(urdfLinkIndex, parent2joint, linkTransformInWorld, jointAxisInJointSpace, jointType, jointLowerLimit, jointUpperLimit, jointDamping, jointFriction,jointMaxForce, jointMaxVelocity);
 }
     
 bool BulletMJCFImporter::getRootTransformInWorld(btTransform& rootTransformInWorld) const
@@ -1399,20 +1665,25 @@ bool BulletMJCFImporter::getLinkContactInfo(int linkIndex, URDFLinkContactInfo& 
 	return false;
 }
 
-
-void BulletMJCFImporter::convertLinkVisualShapes2(int linkIndex, const char* pathPrefix, const btTransform& inertialFrame, class btCollisionObject* colObj, int objectIndex) const
+void BulletMJCFImporter::convertLinkVisualShapes2(int linkIndex, int urdfIndex, const char* pathPrefix, const btTransform& inertialFrame, class btCollisionObject* colObj, int objectIndex) const
 {
+	if (m_data->m_customVisualShapesConverter)
+	{
+		const UrdfLink* link = m_data->getLink(m_data->m_activeModel, urdfIndex);
+		m_data->m_customVisualShapesConverter->convertVisualShapes(linkIndex,pathPrefix,inertialFrame, link, 0, colObj, objectIndex);
+	}
 }
+
 void BulletMJCFImporter::setBodyUniqueId(int bodyId)
 {
-
+	m_data->m_activeBodyUniqueId = bodyId;
 }
 
 int BulletMJCFImporter::getBodyUniqueId() const 
 { 
-	return 0;
+	b3Assert(m_data->m_activeBodyUniqueId != -1);
+	return m_data->m_activeBodyUniqueId;
 }
-
 
 static btCollisionShape* MjcfCreateConvexHullFromShapes(std::vector<tinyobj::shape_t>& shapes, const btVector3& geomScale, btScalar collisionMargin)
 {
@@ -1459,7 +1730,7 @@ static btCollisionShape* MjcfCreateConvexHullFromShapes(std::vector<tinyobj::sha
 }
 
     
-class btCompoundShape* BulletMJCFImporter::convertLinkCollisionShapes(int linkIndex, const char* pathPrefix, const btTransform& localInertiaFrame) const
+class btCompoundShape* BulletMJCFImporter::convertLinkCollisionShapes( int linkIndex, const char* pathPrefix, const btTransform& localInertiaFrame) const
 {
 	btCompoundShape* compound = new btCompoundShape();
 	m_data->m_allocatedCollisionShapes.push_back(compound);
@@ -1491,167 +1762,154 @@ class btCompoundShape* BulletMJCFImporter::convertLinkCollisionShapes(int linkIn
 			}
 			case URDF_GEOM_CYLINDER:
 			{
-//				childShape = new btCylinderShape(col->m_geometry...);
-				break;
-			}
-			case URDF_GEOM_MESH:
-			{
-				//////////////////////
-				if (1)
-			{
-				if (col->m_geometry.m_meshFileName.length())
-				{
-					const char* filename = col->m_geometry.m_meshFileName.c_str();
-					//b3Printf("mesh->filename=%s\n",filename);
-					char fullPath[1024];
-					int fileType = 0;
-					sprintf(fullPath,"%s%s",pathPrefix,filename);
-					b3FileUtils::toLower(fullPath);
-                    char tmpPathPrefix[1024];
-                    int maxPathLen = 1024;
-                    b3FileUtils::extractPath(filename,tmpPathPrefix,maxPathLen);
-                    
-                    char collisionPathPrefix[1024];
-                    sprintf(collisionPathPrefix,"%s%s",pathPrefix,tmpPathPrefix);
-                    
-					if (strstr(fullPath,".stl"))
-					{
-						fileType = MJCF_FILE_STL;
-					}
-                    if (strstr(fullPath,".obj"))
-                   {
-                       fileType = MJCF_FILE_OBJ;
-                   }
-
-					sprintf(fullPath,"%s%s",pathPrefix,filename);
-					FILE* f = fopen(fullPath,"rb");
-					if (f)
-					{
-						fclose(f);
-						GLInstanceGraphicsShape* glmesh = 0;
-						
-						
-						switch (fileType)
-						{
-                            case MJCF_FILE_OBJ:
-                            {
-								if (col->m_flags & URDF_FORCE_CONCAVE_TRIMESH)
-								{
-									glmesh = LoadMeshFromObj(fullPath, collisionPathPrefix);
-								}
-								else
-								{
-									std::vector<tinyobj::shape_t> shapes;
-									std::string err = tinyobj::LoadObj(shapes, fullPath, collisionPathPrefix);
-									//create a convex hull for each shape, and store it in a btCompoundShape
-
-									childShape = MjcfCreateConvexHullFromShapes(shapes, col->m_geometry.m_meshScale, m_data->m_defaultCollisionMargin);
-									
-								}
-                                break;
-                            }
-						case MJCF_FILE_STL:
-							{
-								glmesh = LoadMeshFromSTL(fullPath);
-							break;
-							}
-						
-						default:
-							{
-                                b3Warning("Unsupported file type in Collision: %s\n",fullPath);
-                               
-							}
-						}
-					
-
-						if (!childShape && glmesh && (glmesh->m_numvertices>0))
-						{
-							//b3Printf("extracted %d verticed from STL file %s\n", glmesh->m_numvertices,fullPath);
-							//int shapeId = m_glApp->m_instancingRenderer->registerShape(&gvertices[0].pos[0],gvertices.size(),&indices[0],indices.size());
-							//convex->setUserIndex(shapeId);
-							btAlignedObjectArray<btVector3> convertedVerts;
-							convertedVerts.reserve(glmesh->m_numvertices);
-							for (int i=0;i<glmesh->m_numvertices;i++)
-							{
-								convertedVerts.push_back(btVector3(
-                                           glmesh->m_vertices->at(i).xyzw[0]*col->m_geometry.m_meshScale[0],
-                                           glmesh->m_vertices->at(i).xyzw[1]*col->m_geometry.m_meshScale[1],
-                                           glmesh->m_vertices->at(i).xyzw[2]*col->m_geometry.m_meshScale[2]));
-							}
-							
-							if (col->m_flags & URDF_FORCE_CONCAVE_TRIMESH)
-							{
-								
-								btTriangleMesh* meshInterface = new btTriangleMesh();
-								for (int i=0;i<glmesh->m_numIndices/3;i++)
-								{
-									float* v0 = glmesh->m_vertices->at(glmesh->m_indices->at(i*3)).xyzw;
-									float* v1 = glmesh->m_vertices->at(glmesh->m_indices->at(i*3+1)).xyzw;
-									float* v2 = glmesh->m_vertices->at(glmesh->m_indices->at(i*3+2)).xyzw;
-									meshInterface->addTriangle(btVector3(v0[0],v0[1],v0[2]),
-																btVector3(v1[0],v1[1],v1[2]),
-															btVector3(v2[0],v2[1],v2[2]));
-								}
-								
-								btBvhTriangleMeshShape* trimesh = new btBvhTriangleMeshShape(meshInterface,true,true);
-								childShape = trimesh;
-							} else
-							{
-								btConvexHullShape* convexHull = new btConvexHullShape(&convertedVerts[0].getX(), convertedVerts.size(), sizeof(btVector3));
-								convexHull->optimizeConvexHull();
-								//convexHull->initializePolyhedralFeatures();
-								convexHull->setMargin(m_data->m_defaultCollisionMargin);
-								childShape = convexHull;
-							}
-						} else
-						{
-							b3Warning("issue extracting mesh from STL file %s\n", fullPath);
-						}
-
-                        delete glmesh;
-                       
-					} else
-					{
-						b3Warning("mesh geometry not found %s\n",fullPath);
-					}
-							
-				}
-			}
-
-				//////////////////////
-				break;
-			}
-			
-			case URDF_GEOM_CAPSULE:
-			{
-				//todo: convert fromto to btCapsuleShape + local btTransform
 				if (col->m_geometry.m_hasFromTo)
 				{
 					btVector3 f = col->m_geometry.m_capsuleFrom;
 					btVector3 t = col->m_geometry.m_capsuleTo;
-					//MuJoCo seems to take the average of the spheres as center?
-					//btVector3 c = (f+t)*0.5;
-					//f-=c;
-					//t-=c;
+					
+					//compute the local 'fromto' transform
+					btVector3 localPosition = btScalar(0.5)*(t+f);
+					btQuaternion localOrn;
+					localOrn = btQuaternion::getIdentity();
+
+					btVector3 diff = t-f;
+					btScalar lenSqr = diff.length2();
+					btScalar height = 0.f;
+
+					if (lenSqr > SIMD_EPSILON)
+					{
+						height = btSqrt(lenSqr);
+						btVector3 ax = diff / height;
+
+						btVector3 zAxis(0,0,1);
+						localOrn = shortestArcQuat(zAxis,ax);
+					}
+					btCylinderShapeZ* cyl = new btCylinderShapeZ(btVector3(col->m_geometry.m_capsuleRadius,col->m_geometry.m_capsuleRadius,btScalar(0.5)*height));
+
+					btCompoundShape* compound = new btCompoundShape();
+					btTransform localTransform(localOrn,localPosition);
+					compound->addChildShape(localTransform,cyl);
+					childShape = compound;
+				} else
+				{
+					btCylinderShapeZ* cap = new btCylinderShapeZ(btVector3(col->m_geometry.m_capsuleRadius,
+						col->m_geometry.m_capsuleRadius,btScalar(0.5)*col->m_geometry.m_capsuleHeight));
+					childShape = cap;
+				}
+				break;
+			}
+			case URDF_GEOM_MESH:
+			{
+				GLInstanceGraphicsShape* glmesh = 0;
+				switch (col->m_geometry.m_meshFileType)
+				{
+				case UrdfGeometry::FILE_OBJ:
+					{
+						if (col->m_flags & URDF_FORCE_CONCAVE_TRIMESH)
+						{
+							glmesh = LoadMeshFromObj(col->m_geometry.m_meshFileName.c_str(), 0);
+						}
+						else
+						{
+							std::vector<tinyobj::shape_t> shapes;
+							std::string err = tinyobj::LoadObj(shapes, col->m_geometry.m_meshFileName.c_str());
+							//create a convex hull for each shape, and store it in a btCompoundShape
+
+							childShape = MjcfCreateConvexHullFromShapes( shapes, col->m_geometry.m_meshScale, m_data->m_globalDefaults.m_defaultCollisionMargin);
+
+						}
+						break;
+					}
+				case UrdfGeometry::FILE_STL:
+					{
+						glmesh = LoadMeshFromSTL(col->m_geometry.m_meshFileName.c_str());
+						break;
+					}
+				default:
+					b3Warning("%s: Unsupported file type in Collision: %s (maybe .dae?)\n", col->m_sourceFileLocation.c_str(), col->m_geometry.m_meshFileType);
+				}
+
+				if (childShape)
+				{
+					// okay!
+				}
+				else if (!glmesh || glmesh->m_numvertices<=0)
+				{
+					b3Warning("%s: cannot extract anything useful from mesh '%s'\n", col->m_sourceFileLocation.c_str(), col->m_geometry.m_meshFileName.c_str());
+				}
+				else
+				{
+					//b3Printf("extracted %d verticed from STL file %s\n", glmesh->m_numvertices,fullPath);
+					//int shapeId = m_glApp->m_instancingRenderer->registerShape(&gvertices[0].pos[0],gvertices.size(),&indices[0],indices.size());
+					//convex->setUserIndex(shapeId);
+					btAlignedObjectArray<btVector3> convertedVerts;
+					convertedVerts.reserve(glmesh->m_numvertices);
+					for (int i=0;i<glmesh->m_numvertices;i++)
+					{
+						convertedVerts.push_back(btVector3(
+							glmesh->m_vertices->at(i).xyzw[0]*col->m_geometry.m_meshScale[0],
+							glmesh->m_vertices->at(i).xyzw[1]*col->m_geometry.m_meshScale[1],
+							glmesh->m_vertices->at(i).xyzw[2]*col->m_geometry.m_meshScale[2]));
+					}
+
+					if (col->m_flags & URDF_FORCE_CONCAVE_TRIMESH)
+					{
+
+						btTriangleMesh* meshInterface = new btTriangleMesh();
+						m_data->m_allocatedMeshInterfaces.push_back(meshInterface);
+
+						for (int i=0;i<glmesh->m_numIndices/3;i++)
+						{
+							float* v0 = glmesh->m_vertices->at(glmesh->m_indices->at(i*3)).xyzw;
+							float* v1 = glmesh->m_vertices->at(glmesh->m_indices->at(i*3+1)).xyzw;
+							float* v2 = glmesh->m_vertices->at(glmesh->m_indices->at(i*3+2)).xyzw;
+							meshInterface->addTriangle(btVector3(v0[0],v0[1],v0[2]),
+														btVector3(v1[0],v1[1],v1[2]),
+													btVector3(v2[0],v2[1],v2[2]));
+						}
+
+						btBvhTriangleMeshShape* trimesh = new btBvhTriangleMeshShape(meshInterface,true,true);
+						childShape = trimesh;
+					} else
+					{
+						btConvexHullShape* convexHull = new btConvexHullShape(&convertedVerts[0].getX(), convertedVerts.size(), sizeof(btVector3));
+						convexHull->optimizeConvexHull();
+						//convexHull->initializePolyhedralFeatures();
+						convexHull->setMargin(m_data->m_globalDefaults.m_defaultCollisionMargin);
+						childShape = convexHull;
+					}
+				}
+
+				delete glmesh;
+				break;
+			}
+			case URDF_GEOM_CAPSULE:
+			{
+				if (col->m_geometry.m_hasFromTo)
+				{
+					btVector3 f = col->m_geometry.m_capsuleFrom;
+					btVector3 t = col->m_geometry.m_capsuleTo;
 					btVector3 fromto[2] = {f,t};
 					btScalar radii[2] = {btScalar(col->m_geometry.m_capsuleRadius)
 										,btScalar(col->m_geometry.m_capsuleRadius)};
-			
+
 					btMultiSphereShape* ms = new btMultiSphereShape(fromto,radii,2);
 					childShape = ms;
 				} else
 				{
 					btCapsuleShapeZ* cap = new btCapsuleShapeZ(col->m_geometry.m_capsuleRadius,
-						2.*col->m_geometry.m_capsuleHalfHeight);
+						col->m_geometry.m_capsuleHeight);
 					childShape = cap;
 				}
 				break;
 			}
-			default:
-			{
+			case URDF_GEOM_UNKNOWN:
+                        {
+				break;
+			}
 
-			}
-			}
+			} // switch geom
+
 			if (childShape)
 			{
 				m_data->m_allocatedCollisionShapes.push_back(childShape);
@@ -1671,6 +1929,15 @@ class btCollisionShape* BulletMJCFImporter::getAllocatedCollisionShape(int index
 	return m_data->m_allocatedCollisionShapes[index];
 }
 
+int BulletMJCFImporter::getNumAllocatedMeshInterfaces() const
+{
+    return m_data->m_allocatedMeshInterfaces.size();
+}
+
+btStridingMeshInterface* BulletMJCFImporter::getAllocatedMeshInterface(int index)
+{
+    return m_data->m_allocatedMeshInterfaces[index];
+}
 
 int BulletMJCFImporter::getNumModels() const
 {

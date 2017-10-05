@@ -38,6 +38,9 @@ public:
 	void GetColor(float4_t* color);
 	void Render(float timeDelta,float3* pos,bool is_shadow);
 
+	
+	SX_ALIGNED_OP_MEM
+
 protected:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationSkyBox;
@@ -98,6 +101,7 @@ public:
 
 	void Render(DWORD timeDetlta,float3* pos,bool is_shadow);
 
+	SX_ALIGNED_OP_MEM
 private:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationClouds;

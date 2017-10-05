@@ -381,6 +381,7 @@ ID Materials::GetStdMtl(MtlTypeModel type_model)
 	{
 		return MtrlDefSkin;
 	}
+	return(-1);
 }
 
 MtlTypeModel Materials::GetTypeModel(ID id)
@@ -818,6 +819,8 @@ bool Materials::MtlGetSTDVS(ID id, MtlTransShaderStd type)
 
 	else if (type == MtlTransShaderStd::mtss_winsize)
 		return ArrMaterials[id]->mtl->VS.IsTransWinSize;
+
+	return(false);
 }
 
 void Materials::MtlSetSTDPS(ID id, MtlTransShaderStd type, bool is_send)
@@ -870,6 +873,7 @@ bool Materials::MtlGetSTDPS(ID id, MtlTransShaderStd type)
 
 	else if (type == MtlTransShaderStd::mtss_winsize)
 		return ArrMaterials[id]->mtl->PS.IsTransWinSize;
+	return(false);
 }
 
 

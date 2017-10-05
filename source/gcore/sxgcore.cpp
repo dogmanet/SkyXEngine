@@ -262,6 +262,9 @@ void SGCore_DbgMsg(const char* format, ...)
 	rect.right = D3DAPP.BackBufferWidth - 10;
 	rect.bottom = D3DAPP.BackBufferHeight - 10;
 	FPSText->DrawText(0, buf, -1, &rect, 0, 0xff000000);
+	--rect.top;
+	--rect.left;
+	FPSText->DrawText(0, buf, -1, &rect, 0, 0xffffffff);
 }
 
 void SGCore_OnLostDevice()

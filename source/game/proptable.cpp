@@ -3,6 +3,8 @@
 
 #include "proptable.h"
 
+#include "SXbaseEntity.h"
+
 prop_editor_t _GetEditorCombobox(int start, ...)
 {
 	prop_editor_t out;
@@ -77,4 +79,29 @@ const char * GetEmptyString()
 {
 	static const char * str = "";
 	return(str);
+}
+
+void output_t::fire(SXbaseEntity *pInflictor, SXbaseEntity *pActivator)
+{
+	inputdata_t data = {0};
+	data.pActivator = pActivator;
+	data.pInflictor = pInflictor;
+	for(int i = 0; i < iOutCount; ++i)
+	{
+		if(pOutputs[i].fDelay == 0.0f)
+		{
+			for(int j = 0; j < pOutputs[i].iOutCount; ++j)
+			{
+				data.parameter = pOutputs[i].pOutputs[j].data.parameter;
+				data.type = pOutputs[i].pOutputs[j].data.type;
+				data.v3Parameter = pOutputs[i].pOutputs[j].data.v3Parameter;
+
+				(pOutputs[i].pOutputs[j].pTarget->*(pOutputs[i].pOutputs[j].fnInput))(&data);
+			}
+		}
+		else
+		{
+			pActivator->getManager()->setOutputTimeout(&pOutputs[i], &data);
+		}
+	}
 }

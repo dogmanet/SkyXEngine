@@ -6,11 +6,11 @@
 #include "../ImportObjDemo/Wavefront2GLInstanceGraphicsShape.h"
 #include "../../Utils/b3ResourcePath.h"
 #include "Bullet3Common/b3FileUtils.h"
-#include "../../ThirdPartyLibs/stb_image/stb_image.h"
-
+#include "stb_image/stb_image.h"
+#include "../ImportObjDemo/LoadMeshFromObj.h"
 bool b3ImportMeshUtility::loadAndRegisterMeshFromFileInternal(const std::string& fileName, b3ImportMeshData& meshData)
 {
-
+	B3_PROFILE("loadAndRegisterMeshFromFileInternal");
 	meshData.m_gfxShape = 0;
 	meshData.m_textureImage = 0;
 	meshData.m_textureHeight = 0;
@@ -26,13 +26,17 @@ bool b3ImportMeshUtility::loadAndRegisterMeshFromFileInternal(const std::string&
 		btVector3 shift(0,0,0);
     	
 		std::vector<tinyobj::shape_t> shapes;
-		std::string err = tinyobj::LoadObj(shapes, relativeFileName, pathPrefix);
+		{
+			B3_PROFILE("tinyobj::LoadObj");
+			std::string err = LoadFromCachedOrFromObj(shapes, relativeFileName, pathPrefix);
+			//std::string err = tinyobj::LoadObj(shapes, relativeFileName, pathPrefix);
+		}
 		
 		GLInstanceGraphicsShape* gfxShape = btgCreateGraphicsShapeFromWavefrontObj(shapes);
 		
 		//int textureIndex = -1;
 		//try to load some texture
-		for (int i=0;i<shapes.size();i++)
+		for (int i=0; meshData.m_textureImage==0  && i<shapes.size();i++)
 		{
 			const tinyobj::shape_t& shape = shapes[i];
 			if (shape.material.diffuse_texname.length()>0)
@@ -60,8 +64,10 @@ bool b3ImportMeshUtility::loadAndRegisterMeshFromFileInternal(const std::string&
 							meshData.m_textureHeight = height;
 						} else
 						{
+							b3Warning("Unsupported texture image format [%s]\n",relativeFileName);
 							meshData.m_textureWidth = 0;
 							meshData.m_textureHeight = 0;
+							break;
 						}
 
                     } else

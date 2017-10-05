@@ -23,7 +23,8 @@ enum URDF_LinkContactFlags
     URDF_CONTACT_HAS_ROLLING_FRICTION=32,
     URDF_CONTACT_HAS_SPINNING_FRICTION=64,
 	URDF_CONTACT_HAS_RESTITUTION=128,
-
+	URDF_CONTACT_HAS_FRICTION_ANCHOR=256,
+    
 };
 
 struct URDFLinkContactInfo
@@ -60,6 +61,17 @@ enum UrdfCollisionFlags
 	URDF_FORCE_CONCAVE_TRIMESH=1,
 	URDF_HAS_COLLISION_GROUP=2,
 	URDF_HAS_COLLISION_MASK=4,
+};
+
+struct UrdfMaterialColor
+{
+	btVector4 m_rgbaColor;
+	btVector3 m_specularColor;
+	UrdfMaterialColor()
+		:m_rgbaColor(0.8, 0.8, 0.8, 1),
+		m_specularColor(0.4,0.4,0.4)
+	{
+	}
 };
 
 #endif //URDF_JOINT_TYPES_H

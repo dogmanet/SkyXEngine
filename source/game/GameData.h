@@ -3,6 +3,7 @@
 
 
 #include "SXplayer.h"
+#include "crosshair.h"
 
 class GameData
 {
@@ -15,7 +16,15 @@ public:
 	static SXpointCamera * m_pActiveCamera;
 	static EntityManager * m_pMgr;
 
+	Crosshair * m_pCrosshair;
+
+	void Update();
+	void Render();
+	void RenderHUD();
+	void Sync();
+
 protected:
+
 	static void ccmd_forward_on();
 	static void ccmd_forward_off();
 
@@ -50,6 +59,7 @@ protected:
 	static void ccmd_attack2_off();
 
 	static void ccmd_reload();
+	static void ccmd_switch_firemode();
 
 	static void ccmd_toggleflashlight();
 

@@ -110,6 +110,7 @@ void PPSet::Init()
 	PPSet::DXDevice = SGCore_GetDXDevice();
 	PPSet::WinSize.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH);
 	PPSet::WinSize.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
+	Core_SetOutPtr();
 	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
 
 	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);

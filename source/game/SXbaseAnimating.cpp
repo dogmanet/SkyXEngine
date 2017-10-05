@@ -54,6 +54,12 @@ bool SXbaseAnimating::SetKV(const char * name, const char * value)
 	{
 		SetModel(value);
 	}
+	else if(!strcmp(name, "scale"))
+	{
+		ReleasePhysics();
+		m_pAnimPlayer->SetScale(m_fBaseScale);
+		InitPhysics();
+	}
 	return(true);
 }
 
@@ -136,6 +142,14 @@ bool SXbaseAnimating::PlayingAnimations(const char* name)
 	}
 }
 
+void SXbaseAnimating::PlayActivity(const char * name, UINT iFadeTime, UINT slot)
+{
+	if(m_pAnimPlayer)
+	{
+		m_pAnimPlayer->StartActivity(name, iFadeTime, slot);
+	}
+}
+
 void SXbaseAnimating::InitPhysics()
 {
 	if(!m_pAnimPlayer)
@@ -163,6 +177,11 @@ void SXbaseAnimating::InitPhysics()
 	m_pAnimPlayer->FreePhysData(iShapeCount, phTypes, ppfData, pfDataLen);
 
 
+	CreatePhysBody();
+}
+
+void SXbaseAnimating::CreatePhysBody()
+{
 	if(m_pCollideShape)
 	{
 
@@ -180,15 +199,20 @@ void SXbaseAnimating::InitPhysics()
 		m_pRigidBody = new btRigidBody(rigidBodyCI);
 
 		//m_pRigidBody->setFriction(100.0f);
-
+		m_pRigidBody->setUserPointer(this);
 		SXPhysics_AddShape(m_pRigidBody);
 	}
 }
 
-void SXbaseAnimating::ReleasePhysics()
+void SXbaseAnimating::RemovePhysBody()
 {
 	SXPhysics_RemoveShape(m_pRigidBody);
 	mem_delete(m_pRigidBody);
+}
+
+void SXbaseAnimating::ReleasePhysics()
+{
+	RemovePhysBody();
 	mem_delete(m_pCollideShape);
 }
 

@@ -605,6 +605,7 @@ float Lights::GetShadowBias(ID id) const
 		return ArrIDLights[id]->ShadowSM->GetBias();
 	else if (ArrIDLights[id]->ShadowCube)
 		return ArrIDLights[id]->ShadowCube->GetBias();
+	return(0);
 }
 
 float Lights::GetLightTopRadius(ID id) const
@@ -613,6 +614,7 @@ float Lights::GetLightTopRadius(ID id) const
 
 	if (ArrIDLights[id]->ShadowSM)
 		return ArrIDLights[id]->TopBottomRadius.x;
+	return(0);
 }
 
 float Lights::GetLightAngle(ID id) const
@@ -621,6 +623,7 @@ float Lights::GetLightAngle(ID id) const
 
 	if (ArrIDLights[id]->ShadowSM)
 		return ArrIDLights[id]->Angle;
+	return(0);
 }
 
 
@@ -834,6 +837,7 @@ ISXFrustum* Lights::GetLightFrustum(ID id, int how) const
 			if (how >= 0 && how < 5)
 				return ArrIDLights[id]->ShadowPSSM->Frustums[how];
 		}
+	return(NULL);
 }
 
 ISXFrustum* Lights::GetLightFrustumG(ID id, int split) const
@@ -842,6 +846,7 @@ ISXFrustum* Lights::GetLightFrustumG(ID id, int split) const
 
 	if (ArrIDLights[id]->ShadowPSSM && split >= 0 && split < 4 && ArrIDLights[id]->ShadowPSSM->Frustums[split])
 		return ArrIDLights[id]->ShadowPSSM->Frustums[split];
+	return(NULL);
 }
 
 void Lights::UpdateLightGFrustums(ID id, int split, const float3* pos, const float3* dir)
@@ -957,6 +962,7 @@ float Lights::GetShadowBlurPixel(ID id) const
 			return ArrIDLights[id]->ShadowSM->GetBlurPixel();
 		else if (ArrIDLights[id]->ShadowPSSM)
 			return ArrIDLights[id]->ShadowPSSM->GetBlurPixel();
+	return(0);
 }
 
 void Lights::SetShadowLocalNear(ID id, float slnear)
@@ -979,6 +985,7 @@ float Lights::GetShadowLocalNear(ID id) const
 		return ArrIDLights[id]->ShadowCube->GetNear();
 	else if (ArrIDLights[id]->ShadowSM)
 		return ArrIDLights[id]->ShadowSM->GetNear();
+	return(0);
 }
 
 void Lights::SetShadowLocalFar(ID id, float slfar)
@@ -1030,6 +1037,7 @@ bool Lights::GetLightCubeEdgeEnable(ID id, int edge) const
 
 	if (ArrIDLights[id]->ShadowCube)
 		return ArrIDLights[id]->ShadowCube->GetEnableCubeEdge(edge);
+	return(false);
 }
 
 ID Lights::GetLightIDArr(ID id, ID inid, int how)
@@ -1051,6 +1059,7 @@ ID Lights::GetLightIDArr(ID id, ID inid, int how)
 			if (how >= 0 && how < 5)
 				return ArrIDLights[id]->ShadowPSSM->GetIDArr(inid, how);
 		}
+	return(-1);
 }
 
 void Lights::SetLightIDArr(ID id, ID inid, int how, ID id_arr)
@@ -1192,6 +1201,7 @@ bool Lights::LightCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 
 			return (tmpl->CountUpdate == 0);
 		}
+	return(false);
 }
 
 bool Lights::LightCountUpdateAllowed(ID id, int ghow) const
@@ -1210,10 +1220,7 @@ bool Lights::LightCountUpdateAllowed(ID id, int ghow) const
 			if (ArrIDLights[id]->CountUpdate >= LIGHTS_UPDATE_MAX_COUNT_FOR_STATIC)
 				return false;
 		}
-		else
-		{
-			return (ArrIDLights[id]->CountUpdate == 0);
-		}
+	return(ArrIDLights[id]->CountUpdate == 0);
 }
 
 void Lights::LightCountUpdateNull(ID id)
@@ -1480,4 +1487,5 @@ ID Lights::DelGetIDArr(ID key, ID inid, int how)
 		if (how >= 0 && how < 5)
 			return ArrKeyDelLights[key]->ShadowPSSM->GetIDArr(inid, how);
 	}
+	return(-1);
 }

@@ -75,7 +75,7 @@ ATTRIBUTE_ALIGNED16(struct)	btJointFeedback
 
 
 ///TypedConstraint is the baseclass for Bullet constraints and vehicles
-ATTRIBUTE_ALIGNED16(class) btTypedConstraint : public btTypedObject
+ATTRIBUTE_ALIGNED16(class) BULLET_EXPORTS btTypedConstraint : public btTypedObject
 {
 	int	m_userConstraintType;
 
@@ -444,7 +444,7 @@ SIMD_FORCE_INLINE	int	btTypedConstraint::calculateSerializeBufferSize() const
 
 
 
-class btAngularLimit
+class BULLET_EXPORTS btAngularLimit
 {
 private:
 	btScalar 

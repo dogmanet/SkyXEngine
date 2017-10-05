@@ -139,6 +139,7 @@ SX_LIB_API void SXGame_Update(int thread)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->Update(thread);
+	g_pGameData->Update();
 }
 SX_LIB_API void SXGame_UpdateSetThreadNum(int num)
 {
@@ -149,7 +150,22 @@ SX_LIB_API void SXGame_Sync()
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->Sync();
+	g_pGameData->Sync();
 }
+
+SX_LIB_API void SXGame_Render()
+{
+	SG_PRECOND(_VOID);
+	//GameData::m_pMgr->Render();
+	g_pGameData->Render();
+}
+
+SX_LIB_API void SXGame_RenderHUD()
+{
+	SG_PRECOND(_VOID);
+	g_pGameData->RenderHUD();
+}
+
 
 SX_LIB_API void SXGame_Dbg_Set(report_func rf)
 {

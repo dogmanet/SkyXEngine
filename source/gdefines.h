@@ -121,6 +121,8 @@ struct IBaseObject
 //! for warning C4003: not enough actual parameters for macro
 #define _VOID
 
+#define ID_VALID(id) (id >= 0)
+
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
 

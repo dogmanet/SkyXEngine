@@ -852,6 +852,7 @@ bool ShadowMapCubeTech::GetEnableCubeEdge(int edge)
 {
 		if(edge >= 0 && edge <= 5)
 			return EnableEdge[edge];
+		return(false);
 }
 
 void ShadowMapCubeTech::SetBias(float bias)

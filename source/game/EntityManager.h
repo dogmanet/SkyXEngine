@@ -5,6 +5,8 @@
 #include <common/array.h>
 #include <chrono>
 
+#include "proptable.h"
+
 typedef std::chrono::system_clock::time_point time_point;
 
 class SXbaseEntity;
@@ -14,13 +16,29 @@ struct ISXConfig;
 #define SET_INTERVAL(fn, time) m_pMgr->SetInterval((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
 #define CLEAR_INTERVAL(id) m_pMgr->ClearInterval(id)
 
+enum TIMEOUT_STATUS
+{
+	TS_WAIT = 0,
+	TS_DONE,
+	TS_EMPTY
+};
+
 struct timeout_t
 {
-	bool done;
+	TIMEOUT_STATUS status;
 	void(SXbaseEntity::*func)(float dt);
 	SXbaseEntity * pEnt;
 	time_point fStartTime;
 	time_point fNextTime;
+};
+
+struct timeout_output_t
+{
+	TIMEOUT_STATUS status;
+	named_output_t *pOutput;
+	time_point fStartTime;
+	time_point fNextTime;
+	inputdata_t data;
 };
 
 class EntityManager
@@ -37,10 +55,13 @@ public:
 	void LoadDefaults();
 	void LoadDynClasses();
 
-	void SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
+	ID SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
 	ID SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
+	void setOutputTimeout(named_output_t * pOutput, inputdata_t * pData);
+	void ClearTimeout(ID id);
 	void ClearInterval(ID id);
 
+	int CountEntityByName(const char * name);
 	SXbaseEntity * FindEntityByName(const char * name, SXbaseEntity * pStart = 0);
 
 	SXbaseEntity * FindEntityByClass(const char * name, SXbaseEntity * pStart = 0);
@@ -63,7 +84,9 @@ protected:
 
 	Array<timeout_t> m_vTimeout;
 	Array<timeout_t> m_vInterval;
+	Array<timeout_output_t> m_vOutputTimeout;
 	Array<ID> m_vFreeInterval;
+	Array<ID> m_vFreeTimeout;
 
 	int m_iThreadNum;
 

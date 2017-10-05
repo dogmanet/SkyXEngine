@@ -39,7 +39,7 @@ void SkyXEngine_Init()
 
 	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, false);
 	SGCore_Dbg_Set(printflog);
-	
+
 	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
 	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
 	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
@@ -48,7 +48,7 @@ void SkyXEngine_Init()
 
 	SGCore_SkyBoxCr();
 	SGCore_SkyCloudsCr();
-	
+
 	GData::DXDevice = SGCore_GetDXDevice();
 	GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 
@@ -398,9 +398,14 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SXRenderFunc::RenderEditorMain();
 	SXRenderFunc::RenderEditorLE(timeDelta);
 	SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, GData::NearFar.y);
+
+#if defined(SX_GAME)
+	SXGame_RenderHUD();
+#endif
+
 	SXRenderFunc::OutputDebugInfo(timeDelta);
 
-	//SXPhysics_DebugRender();
+	SXPhysics_DebugRender();
 
 	SXRenderFunc::ShaderRegisterData();
 

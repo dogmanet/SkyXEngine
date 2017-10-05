@@ -1,8 +1,15 @@
 #include "GameData.h"
+#include "CrosshairManager.h"
+
+#include "Ragdoll.h"
+
 
 SXplayer * GameData::m_pPlayer;
 SXpointCamera * GameData::m_pActiveCamera;
 EntityManager * GameData::m_pMgr;
+
+CRagdoll * g_pRagdoll;
+IAnimPlayer * pl;
 
 GameData::GameData()
 {
@@ -29,6 +36,7 @@ GameData::GameData()
 	Core_0RegisterConcmd("+attack2", ccmd_attack2_on);
 	Core_0RegisterConcmd("-attack2", ccmd_attack2_off);
 	Core_0RegisterConcmd("reload", ccmd_reload);
+	Core_0RegisterConcmd("switch_firemode", ccmd_switch_firemode);
 	Core_0RegisterConcmd("flashlight", ccmd_toggleflashlight);
 
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
@@ -47,20 +55,53 @@ GameData::GameData()
 	Core_0RegisterCVarFloat("cl_bob_walk", 0.5f, "View bobbing walk period");
 	Core_0RegisterCVarFloat("cl_bob_run", 1.0f, "View bobbing run period");
 
+	CrosshairManager::loadConfig("config/game/crosshairs.cfg");
 
 	m_pPlayer = (SXplayer*)CREATE_ENTITY("player", m_pMgr);
 	m_pActiveCamera = m_pPlayer->GetCamera();
+	m_pCrosshair = m_pPlayer->GetCrosshair();
+
+	ID idCrosshairDefault = CrosshairManager::getCrosshairID("default");
+	if(ID_VALID(idCrosshairDefault))
+	{
+		CrosshairManager::loadCrosshair(idCrosshairDefault, m_pCrosshair);
+	}
 
 	Core_0RegisterConcmdClsArg("+debug_slot_move", m_pPlayer, (SXCONCMDCLSARG)&SXplayer::_ccmd_slot_on);
 	Core_0RegisterConcmdCls("-debug_slot_move", m_pPlayer, (SXCONCMDCLS)&SXplayer::_ccmd_slot_off);
 
+
 	//m_pPlayer->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
 	//m_pPlayer->PlayAnimation("reload");
+
+	//pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
+	//pl->SetPos(float3(0, 0, 0));
+	//g_pRagdoll = new CRagdoll(pl);
+	//pl->setRagdoll(g_pRagdoll);
 }
 GameData::~GameData()
 {
+	//mem_delete(g_pRagdoll);
+
 	mem_delete(m_pMgr);
 }
+
+void GameData::Update()
+{
+	m_pCrosshair->Update();
+}
+void GameData::Render()
+{
+}
+void GameData::RenderHUD()
+{
+	m_pCrosshair->Render();
+}
+void GameData::Sync()
+{
+	m_pCrosshair->OnSync();
+}
+
 
 void GameData::ccmd_forward_on()
 {
@@ -170,4 +211,9 @@ void GameData::ccmd_reload()
 void GameData::ccmd_toggleflashlight()
 {
 	m_pPlayer->ToggleFlashlight();
+}
+
+void GameData::ccmd_switch_firemode()
+{
+	m_pPlayer->nextFireMode();
 }

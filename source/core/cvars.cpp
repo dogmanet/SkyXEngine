@@ -2,6 +2,7 @@
 #include "cvars.h"
 
 AssotiativeArray<String, CVar> g_mCVars;
+AssotiativeArray<String, CVarPtr> g_mCVarPtrs;
 
 extern report_func g_fnReportf;
 
@@ -108,6 +109,23 @@ SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char
 	g_mCVars[name] = cv;
 }
 
+SX_LIB_API void Core_0RegisterCVarPointer(const char * name, UINT_PTR value)
+{
+	if(g_mCVarPtrs.KeyExists(name))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		return;
+	}
+
+	//!@TODO: make some kind of pool for default values
+	CVarPtr cv;
+
+	cv.value = value;
+
+	g_mCVarPtrs[name] = cv;
+}
+
+
 SX_LIB_API const char ** Core_0GetPCVarString(const char * name)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
@@ -148,6 +166,16 @@ SX_LIB_API const bool * Core_0GetPCVarBool(const char * name)
 	return(NULL);
 }
 
+SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name)
+{
+	const AssotiativeArray<String, CVarPtr>::Node * pNode;
+	if(g_mCVarPtrs.KeyExists(name, &pNode))
+	{
+		return(&pNode->Val->value);
+	}
+	return(NULL);
+}
+
 
 SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
 {
@@ -155,7 +183,7 @@ SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_STRING)
 	{
 		CVar * cv = pNode->Val;
-		int len = strlen(value);
+		size_t len = strlen(value);
 		if(len > strlen(cv->value.c))
 		{
 			mem_delete_a(cv->value.c);

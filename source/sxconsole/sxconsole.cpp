@@ -25,8 +25,8 @@ typedef std::unique_lock<Mutex> ScopedLock;
 #pragma comment (lib, "Ws2_32.lib")
 
 #define DEFAULT_BUFLEN 512
-#define DEFAULT_PORT "59705"
-#define COMMAND_PORT "59706"
+//#define DEFAULT_PORT "59705"
+//#define COMMAND_PORT "59706"
 
 char * g_szUserInp = NULL;
 HANDLE g_hStdOut = NULL;
@@ -38,6 +38,15 @@ SOCKET ClientSocket = INVALID_SOCKET;
 
 AnsiColor g_iCurColorFG;
 AnsiColor g_iCurColorBG;
+
+int g_iServerPort = 59705;
+char g_szServerPort[8];
+char g_szClientPort[8];
+
+bool g_bExitOnDisconnect = false;
+
+#define DEFAULT_PORT g_szServerPort
+#define COMMAND_PORT g_szClientPort
 
 Mutex mx;
 
@@ -429,6 +438,11 @@ void threadServer(void*)
 			SetColor(g_pColor->getDefaultFG());
 			continue;
 		}
+
+
+		// No longer need server socket
+		closesocket(ListenSocket);
+
 		ClearAll();
 		SetColor(ANSI_LGREEN);
 		WriteOutput("Connected!\n");
@@ -477,6 +491,7 @@ void threadServer(void*)
 			SetColor(g_pColor->getDefaultFG());
 			closesocket(_ClientSocket);
 			_ClientSocket = INVALID_SOCKET;
+			break;
 			continue;
 		}
 		_ClientSocket = INVALID_SOCKET;
@@ -488,17 +503,25 @@ void threadServer(void*)
 			SetColor(g_pColor->getDefaultFG());
 			closesocket(ClientSocket);
 			ClientSocket = INVALID_SOCKET;
+			break;
 			continue;
 		}
 		ClientSocket = INVALID_SOCKET;
+		break;
 	}
-
-	// No longer need server socket
-	closesocket(ListenSocket);
 
 
 	closesocket(_ClientSocket);
 	WSACleanup();
+
+	if(g_bExitOnDisconnect)
+	{
+		ExitProcess(0);
+	}
+	else
+	{
+		_beginthread(threadServer, 0, 0);
+	}
 }
 
 void InitCommandChannel(void*)
@@ -661,7 +684,21 @@ void CloseCommandChannel()
 	WSACleanup();
 }
 
-int main(void)
+BOOL WINAPI HandlerRoutine(
+	_In_ DWORD dwCtrlType
+	)
+{
+	if(CTRL_CLOSE_EVENT == dwCtrlType)
+	{
+		if(ClientSocket != INVALID_SOCKET)
+		{
+			send(ClientSocket, "exit\n", strlen("exit\n"), 0);
+		}
+	}
+	return(FALSE);
+}
+
+int main(int argc, char ** argv)
 {
 	g_pColor = new ColorPrint();
 	g_hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -679,7 +716,16 @@ int main(void)
 
 	g_iHistoryPointer = 0;
 	g_vHistory.push_back({NULL, NULL});
+
+	if(argc == 2)
+	{
+		g_bExitOnDisconnect = true;
+		sscanf(argv[1], "%d", &g_iServerPort);
+	}
+	sprintf(g_szServerPort, "%d", g_iServerPort);
+	sprintf(g_szClientPort, "%d", g_iServerPort + 1);
 	
+	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
 	_beginthread(threadServer, 0, 0);
 	_beginthread(InitCommandChannel, 0, 0);

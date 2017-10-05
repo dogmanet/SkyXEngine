@@ -55,16 +55,17 @@ See the license in LICENSE
 /*! \name Цифры основной клавиатуры
 @{
 */
-#define SIK_0               0x02
-#define SIK_1               0x03
-#define SIK_2               0x04
-#define SIK_3               0x05
-#define SIK_4               0x06
-#define SIK_5               0x07
-#define SIK_6               0x08
-#define SIK_7               0x09
-#define SIK_8               0x0A
-#define SIK_9               0x0B
+
+#define SIK_1               0x02
+#define SIK_2               0x03
+#define SIK_3               0x04
+#define SIK_4               0x05
+#define SIK_5               0x06
+#define SIK_6               0x07
+#define SIK_7               0x08
+#define SIK_8               0x09
+#define SIK_9               0x0A
+#define SIK_0               0x0B
 //!@}
 
 /*! \name Стрелки

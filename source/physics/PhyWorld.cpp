@@ -96,7 +96,6 @@ void PhyWorld::RemoveShape(btRigidBody * pBody)
 
 void PhyWorld::LoadGeom(const char * file)
 {
-	file = "cache.phy";
 	if(file && ImportGeom(file))
 	{
 		return;
@@ -507,7 +506,7 @@ void PhyWorld::DebugDrawer::drawLine(const btVector3 & from, const btVector3 & t
 	clr += (int)(color.getY() * 255.0f);
 	clr <<= 8;
 	clr += (int)(color.getZ() * 255.0f);
-	clr <<= 8;
+	//clr <<= 8;
 
 	render_point pt;
 	pt.clr = clr;

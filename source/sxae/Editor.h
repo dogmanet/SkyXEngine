@@ -172,6 +172,9 @@ protected:
 	ID m_pVSH;
 	ID m_pPSH;
 
+	ID m_pVSHs;
+	ID m_pPSHs;
+
 private:
 	void RenderAnimList();
 	void RenderBoneList();

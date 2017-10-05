@@ -39,7 +39,7 @@ public:
 
 	bool Save(const char * name);
 #ifndef _SERVER
-	void Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0);
+	void Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0, ID idOverrideMaterial=-1);
 #endif
 
 	void BuildMeshBuffers();
@@ -74,6 +74,7 @@ protected:
 	MBERR AppendBones(const ModelFile * mdl, char * root=NULL);
 	//void BuildHitboxes();
 	void Load(const char * name);
+	void Load6(const char * name);
 
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
@@ -134,14 +135,14 @@ public:
 
 	void SetModel(const char * file);
 
-	void Play(const char * name, UINT iFadeTime = 0, UINT slot = 0); // name: Animation name; changeTime: time to fade to this animation from previous
+	void Play(const char * name, UINT iFadeTime = 0, UINT slot = 0, bool bReplaceActivity = true); // name: Animation name; changeTime: time to fade to this animation from previous
 	void Stop(UINT slot = 0);
 	void Resume(UINT slot = 0);
 
 	void SetProgress(float progress, UINT slot = 0);
 	void SetAdvance(bool set, UINT slot = 0);
 
-	void StartActivity(const String & name, UINT iFadeTime = 0, UINT slot = 0);
+	void StartActivity(const char * name, UINT iFadeTime = 0, UINT slot = 0);
 
 	void SetBoneController(const String & name, float value, MODEL_BONE_CTL what);
 
@@ -197,6 +198,11 @@ public:
 		m_fScale = fScale;
 	}
 
+	float GetScale()
+	{
+		return(m_fScale);
+	}
+
 	void GetPhysData(
 		int32_t * piShapeCount,
 		HITBOX_TYPE ** phTypes,
@@ -211,14 +217,26 @@ public:
 
 	void RenderSkeleton(int hlBone=-1);
 
+	virtual const ModelHitbox * GetHitbox(uint32_t id) const;
+	virtual uint32_t GetHitboxCount() const;
+
+	virtual void setOverrideMaterial(const char *name);
+	virtual void enable(bool enable);
+
+	virtual void setRagdoll(IAnimRagdoll * pRagdoll);
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
+
+	IAnimRagdoll * m_pRagdoll;
 
 	void DownloadData();
 
 	void FillBoneMatrix();
 
 	void UpdateControllers();
+
+	void PlayActivityNext(UINT slot);
 
 	float3 jcenter2,jcenter;
 	float jradius;
@@ -236,6 +254,9 @@ protected:
 	bool m_bInFade[BLEND_MAX];
 	bool m_bDoAdvance[BLEND_MAX];
 
+	ID m_idOverrideMaterial;
+	bool m_bEnabled;
+
 	float3_t m_vPosition;
 	SMQuaternion m_vOrientation;
 
@@ -245,6 +266,7 @@ protected:
 
 
 	ModelBone * m_CurrentBones[BLEND_MAX];
+	bool *m_pIsBoneWorld[BLEND_MAX];
 	ModelBone * m_FinalBones;
 	ModelBone * m_LastFrameBones[BLEND_MAX];
 	UINT m_iPlayingAnim[BLEND_MAX];
@@ -280,8 +302,11 @@ protected:
 
 	float m_fScale;
 
+	int m_iCurrentActivity[BLEND_MAX];
+	UINT m_iCurrentActivityFadeTime[BLEND_MAX];
+
 private:
-	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink);
+	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink, bool isStatic=false);
 };
 
 class AnimationManager
@@ -301,7 +326,7 @@ public:
 
 	void SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
 
-	UINT GetMaterial(const char * mat);
+	UINT GetMaterial(const char * mat, bool bStatic = false);
 
 	void ComputeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr);
 

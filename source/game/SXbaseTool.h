@@ -24,6 +24,8 @@ public:
 	DECLARE_CONSTRUCTOR();
 	~SXbaseTool();
 
+	virtual void OnPostLoad();
+
 	virtual void PrimaryAction(BOOL st);
 	virtual void SecondaryAction(BOOL st);
 	virtual void Reload();
@@ -70,11 +72,26 @@ protected:
 	float3_t m_vSlotPosAim;
 	SMQuaternion m_qSlotRot;
 	SMQuaternion m_qSlotRotAim;
+	SMQuaternion m_qSlotRotResult;
+
+	int m_iZoomable;
 
 	ID m_iIvalUpdate;
 
 	ID m_iMuzzleFlash;
-	ID m_iSoundShot;
+	ID m_iMuzzleFlash2;
+	ID m_iSoundAction1;
+	ID m_iSoundAction2;
+
+	const char * m_szPrimaryActionSound;
+	const char * m_szSecondaryActionSound;
+
+	const char * m_szPrimaryActionMuzzleflash;
+	const char * m_szSecondaryActionMuzzleflash;
+
+	const char * m_szUsableAmmos;
+
+	float m_fMaxDistance;
 };
 
 #endif

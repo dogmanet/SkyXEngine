@@ -194,6 +194,9 @@ libs/
 source/s4g/tests/failed/
 source/s4g/tests/
 
+*.old
+*.orig
+
 build/*
 !gamesource/
 build/gamesource/*

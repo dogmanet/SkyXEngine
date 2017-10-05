@@ -4,6 +4,7 @@
 #include "SXbaseAnimating.h"
 #include "SXpointCamera.h"
 #include "LightDirectional.h"
+#include "crosshair.h"
 
 enum
 {
@@ -36,6 +37,7 @@ public:
 	void Observe()
 	{
 		m_uMoveDir |= PM_OBSERVER;
+		m_pCrosshair->Enable(false);
 	}
 	void Spawn();
 
@@ -51,11 +53,17 @@ public:
 	void Attack2(BOOL state);
 	void Reload();
 	void ToggleFlashlight();
+	void nextFireMode();
 
 	float3 GetWeaponOrigin();
+	float3_t & GetWeaponDeltaAngles();
 
 	void _ccmd_slot_on(int argc, const char ** argv);
 	void _ccmd_slot_off();
+
+	Crosshair * GetCrosshair();
+
+	bool onGround();
 
 protected:
 
@@ -80,8 +88,11 @@ protected:
 	float m_fViewbobStep;
 	float m_fViewbobY;
 	float3_t m_fViewbobStrafe;
+	float3_t m_vWpnShakeAngles;
 
 	int m_iDSM;
+
+	Crosshair * m_pCrosshair;
 
 	ID m_idQuadCurr;	//текущий квад аи сетки на котором стоит игрок
 };
