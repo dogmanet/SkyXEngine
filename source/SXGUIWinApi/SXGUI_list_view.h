@@ -2,9 +2,7 @@
 #ifndef SXGUI_LIST_VIEW_H
 #define SXGUI_LIST_VIEW_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
+#include "SXGUI_base.h"
 
 class SXGUIListView : public SXGUIComponent, public virtual ISXGUIListView
 {

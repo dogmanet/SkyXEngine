@@ -731,7 +731,7 @@ struct ISXGUIListView : public virtual ISXGUIComponent
 };
 
 //! создает экземплляр объекта "istView", и возвращает указатель
-SX_LIB_API ISXGUIListView* SXGUICrListViewEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
+SX_LIB_API ISXGUIListView* SXGUICrListViewEx,(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
 
 //! создает экземплляр объекта "istView", и возвращает указатель
 SX_LIB_API ISXGUIListView* SXGUICrListView(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id);

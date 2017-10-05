@@ -80,9 +80,7 @@ int SXGUIListBox::GetCountItem()
 
 bool SXGUIListBox::SetSel(int index)
 {
-	if (!SendMessage(this->GetHWND(), LB_SETCURSEL, WPARAM(index), 0))
-		return false;
-	return true;
+	return SendMessage(this->GetHWND(), LB_SETCURSEL, (WPARAM)index, 0);
 }
 
 int SXGUIListBox::GetSel()

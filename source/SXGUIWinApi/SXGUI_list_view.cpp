@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_list_view.h>
-
-#pragma once
+#include "SXGUI_list_view.h"
 
 SXGUIListView::SXGUIListView()
 {

@@ -5,26 +5,26 @@ See the license in LICENSE
 ******************************************************/
 
 #include <SXGUIWinApi\SXGUI.h>
-#include <SXGUIWinApi\SXGUI_base.cpp>
-#include <SXGUIWinApi\SXGUI_base_wnd.cpp>
-#include <SXGUIWinApi\SXGUI_static.cpp>
-#include <SXGUIWinApi\SXGUI_button.cpp>
-#include <SXGUIWinApi\SXGUI_img_button.cpp>
-#include <SXGUIWinApi\SXGUI_edit.cpp>
-#include <SXGUIWinApi\SXGUI_up_down.cpp>
-#include <SXGUIWinApi\SXGUI_memo.cpp>
-#include <SXGUIWinApi\SXGUI_combo_box.cpp>
-#include <SXGUIWinApi\SXGUI_list_box.cpp>
-#include <SXGUIWinApi\SXGUI_list_view.cpp>
-#include <SXGUIWinApi\SXGUI_group_box.cpp>
-#include <SXGUIWinApi\SXGUI_progress_bar.cpp>
-#include <SXGUIWinApi\SXGUI_radio_button.cpp>
-#include <SXGUIWinApi\SXGUI_check_box.cpp>
-#include <SXGUIWinApi\SXGUI_track_bar.cpp>
-#include <SXGUIWinApi\SXGUI_status_bar.cpp>
-#include <SXGUIWinApi\SXGUI_hint.cpp>
-#include <SXGUIWinApi\SXGUI_menu.cpp>
-#include <SXGUIWinApi\SXGUI_toolbar.cpp>
+#include <SXGUIWinApi\SXGUI_base.h>
+#include <SXGUIWinApi\SXGUI_base_wnd.h>
+#include <SXGUIWinApi\SXGUI_static.h>
+#include <SXGUIWinApi\SXGUI_button.h>
+#include <SXGUIWinApi\SXGUI_img_button.h>
+#include <SXGUIWinApi\SXGUI_edit.h>
+#include <SXGUIWinApi\SXGUI_up_down.h>
+#include <SXGUIWinApi\SXGUI_memo.h>
+#include <SXGUIWinApi\SXGUI_combo_box.h>
+#include <SXGUIWinApi\SXGUI_list_box.h>
+#include <SXGUIWinApi\SXGUI_list_view.h>
+#include <SXGUIWinApi\SXGUI_group_box.h>
+#include <SXGUIWinApi\SXGUI_progress_bar.h>
+#include <SXGUIWinApi\SXGUI_radio_button.h>
+#include <SXGUIWinApi\SXGUI_check_box.h>
+#include <SXGUIWinApi\SXGUI_track_bar.h>
+#include <SXGUIWinApi\SXGUI_status_bar.h>
+#include <SXGUIWinApi\SXGUI_hint.h>
+#include <SXGUIWinApi\SXGUI_menu.h>
+#include <SXGUIWinApi\SXGUI_toolbar.h>
 
 ISXGUIBaseWnd* SXGUICrBaseWnd(
 	const char* class_name, const char* caption, const char* menu,
