@@ -76,7 +76,7 @@ void CLightDirectional::OnSync()
 		SML_LigthsSetShadowLocalFar(m_idLight, m_fShadowDist);
 
 	if (SML_LigthsGetTypeShadowed(m_idLight) != m_iShadowType)
-		SML_LigthsSetTypeShadowed(m_idLight, (LightsTypeShadow)m_iShadowType);
+		SML_LigthsSetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 
 
 	static SMQuaternion curr_rot;

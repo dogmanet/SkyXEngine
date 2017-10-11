@@ -2,7 +2,7 @@
 #ifndef axes_helper_h
 #define axes_helper_h
 
-bool line_intersect_triangle(const float3 &t1, const float3 &t2, const float3 &t3,
+inline bool line_intersect_triangle(const float3 &t1, const float3 &t2, const float3 &t3,
 	const float3 &l1, const float3 &l2, float3 &p)
 {
 	float3 n = SMVector3Normalize(SMVector3Cross((t2 - t1), (t3 - t2)));

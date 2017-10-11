@@ -111,51 +111,51 @@ void PPSet::Init()
 	PPSet::WinSize.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH);
 	PPSet::WinSize.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
 	Core_SetOutPtr();
-	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
-	PPSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::FogLinear = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_fog_linear.ps", "ppe_fog_linear", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::FogLinear = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog_linear.ps", "ppe_fog_linear", ShaderCheckDouble::scd_path);
 	
 	D3DXMACRO Defines_SSAO_Q_3[] = { { "SSAO_Q_3", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAO_Q_3 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_ssao.ps", "ppe_ssao_q_3", ShaderCheckDouble::scd_name, Defines_SSAO_Q_3);
+	PPSet::IDsShaders::PS::SSAO_Q_3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3", ShaderCheckDouble::scd_name, Defines_SSAO_Q_3);
 
 	D3DXMACRO Defines_SSAO_Q_2[] = { { "SSAO_Q_2", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAO_Q_2 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_ssao.ps", "ppe_ssao_q_2", ShaderCheckDouble::scd_name, Defines_SSAO_Q_2);
+	PPSet::IDsShaders::PS::SSAO_Q_2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2", ShaderCheckDouble::scd_name, Defines_SSAO_Q_2);
 
 	D3DXMACRO Defines_SSAO_Q_1[] = { { "SSAO_Q_1", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAO_Q_1 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_ssao.ps", "ppe_ssao_q_1", ShaderCheckDouble::scd_name, Defines_SSAO_Q_1);
+	PPSet::IDsShaders::PS::SSAO_Q_1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1", ShaderCheckDouble::scd_name, Defines_SSAO_Q_1);
 
-	PPSet::IDsShaders::PS::SSAOBlur1 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_ssao_blur.ps", "ppe_ssao_blur", ShaderCheckDouble::scd_name);
+	PPSet::IDsShaders::PS::SSAOBlur1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps", "ppe_ssao_blur", ShaderCheckDouble::scd_name);
 	D3DXMACRO Defines_SSAO_BLEND_COLOR[] = { { "_BLEND_COLOR_", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAOBlur2 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_ssao_blur.ps", "ppe_ssao_blur_color", ShaderCheckDouble::scd_name, Defines_SSAO_BLEND_COLOR);
+	PPSet::IDsShaders::PS::SSAOBlur2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps", "ppe_ssao_blur_color", ShaderCheckDouble::scd_name, Defines_SSAO_BLEND_COLOR);
 
-	PPSet::IDsShaders::PS::WhiteBlack = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_black_white.ps", "ppe_black_white", ShaderCheckDouble::scd_path);
-	PPSet::IDsShaders::PS::Sepia = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_sepia.ps", "ppe_sepia", ShaderCheckDouble::scd_path);
-	PPSet::IDsShaders::PS::CBG = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_count_cbg.ps", "ppe_count_cbg", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::WhiteBlack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_black_white.ps", "ppe_black_white", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::Sepia = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sepia.ps", "ppe_sepia", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::CBG = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_count_cbg.ps", "ppe_count_cbg", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::SunRender = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_sun_render.ps", "ppe_sun_render", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::SunRender = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sun_render.ps", "ppe_sun_render", ShaderCheckDouble::scd_path);
 
 	D3DXMACRO Defines_GaussBlur_H[] = { { "_H_", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::GaussBlurH = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_gauss_blur.ps", "ppe_gauss_blur_h", ShaderCheckDouble::scd_name, Defines_GaussBlur_H);
-	PPSet::IDsShaders::PS::GaussBlurW = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_gauss_blur.ps", "ppe_gauss_blur_w", ShaderCheckDouble::scd_name);
-	PPSet::IDsShaders::PS::FreeBlur3x3 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_free_blur_3x3.ps", "ppe_free_blur_3x3", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::GaussBlurH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_h", ShaderCheckDouble::scd_name, Defines_GaussBlur_H);
+	PPSet::IDsShaders::PS::GaussBlurW = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_w", ShaderCheckDouble::scd_name);
+	PPSet::IDsShaders::PS::FreeBlur3x3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_free_blur_3x3.ps", "ppe_free_blur_3x3", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::DOF = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_depth_of_field.ps", "ppe_depth_of_field", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::DOF = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_of_field.ps", "ppe_depth_of_field", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::BloomBP = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_bloom_bp.ps", "ppe_bloom_bp", ShaderCheckDouble::scd_path);
-	PPSet::IDsShaders::PS::BloomFinal = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_bloom_final.ps", "ppe_bloom_final", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::BloomBP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_bp.ps", "ppe_bloom_bp", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::BloomFinal = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_final.ps", "ppe_bloom_final", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::LensFlare0 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_lens_flare0.ps", "ppe_lens_flare0", ShaderCheckDouble::scd_path);
-	PPSet::IDsShaders::PS::LensFlare2 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_lens_flare2.ps", "ppe_lens_flare2", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::LensFlare0 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare0.ps", "ppe_lens_flare0", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::LensFlare2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare2.ps", "ppe_lens_flare2", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::MotionBlur = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_motion_blur.ps", "ppe_motion_blur", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::MotionBlur = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_motion_blur.ps", "ppe_motion_blur", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::NFAA = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_nfaa.ps", "ppe_nfaa", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::NFAA = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_nfaa.ps", "ppe_nfaa", ShaderCheckDouble::scd_path);
 
-	PPSet::IDsShaders::PS::DLAA_Small = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_dlaa_small.ps", "ppe_dlaa_small", ShaderCheckDouble::scd_path);
-	PPSet::IDsShaders::PS::DLAA_Long = SGCore_ShaderLoad(ShaderType::st_pixel, "ppe_dlaa_long.ps", "ppe_dlaa_long", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::DLAA_Small = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_small.ps", "ppe_dlaa_small", ShaderCheckDouble::scd_path);
+	PPSet::IDsShaders::PS::DLAA_Long = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_long.ps", "ppe_dlaa_long", ShaderCheckDouble::scd_path);
 
 	PPSet::IDsTexs::Noise = SGCore_LoadTexAddName("noise_rottex.dds", LoadTexType::ltt_const);
 	PPSet::IDsTexs::Sun = -1;
@@ -333,12 +333,12 @@ void SPP_RenderFogLinear(float3_t* color, float4_t* param)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Depth0));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogLinear, "FogColor", color);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogLinear, "Param", param);
-	//SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogLinear, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "FogColor", color);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "Param", param);
+	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::FogLinear);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear);
 
 	SGCore_ScreenQuadDraw();
 
@@ -382,26 +382,26 @@ void SPP_RenderSSAO(float4_t* param, int quality)
 	else if (quality == 2)
 		idpsshader = PPSet::IDsShaders::PS::SSAO_Q_2;
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, idpsshader, "NearFar", &PPSet::NearFar);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, idpsshader, "Params", &float4(param->x, param->y, param->z, param->w));
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, idpsshader, "ArrRndVecSSAO", &PPSet::ArrRndVecSSAO);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "Params", &float4(param->x, param->y, param->z, param->w));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "ArrRndVecSSAO", &PPSet::ArrRndVecSSAO);
 	//float scale_rnd = PPSet::WinSize.x * 0.25f;
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, idpsshader, "Ratio", &float2_t(PPSet::WinSize.x / PPSet::WinSize.y, 1));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "Ratio", &float2_t(PPSet::WinSize.x / PPSet::WinSize.y, 1));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, idpsshader, "ViewPos", &PPSet::ConstCurrCamPos);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, idpsshader, "ViewProj", &SMMatrixTranspose(PPSet::MCamView * PPSet::MCamProj));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "ViewPos", &PPSet::ConstCurrCamPos);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "ViewProj", &SMMatrixTranspose(PPSet::MCamView * PPSet::MCamProj));
 
 	float determ = 0;
 	float4x4 ViewInv = SMMatrixInverse(&determ, PPSet::MCamView);
 	ViewInv = SMMatrixTranspose(ViewInv);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "ParamProj", &float3_t(PPSet::WinSize.x, PPSet::WinSize.y, PPSet::ProjFov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "ParamProj", &float3_t(PPSet::WinSize.x, PPSet::WinSize.y, PPSet::ProjFov));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos);
-	SGCore_ShaderBind(ShaderType::st_pixel, idpsshader);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, idpsshader);
 
 	SGCore_ScreenQuadDraw();
 
@@ -422,11 +422,11 @@ void SPP_RenderSSAO(float4_t* param, int quality)
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Depth1));
 	PPSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PPSet::IDsRenderTargets::IntermediateWinSize));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SSAOBlur1, "PixelSize", &float2_t(2.0f / PPSet::WinSize.x, 2.0f / PPSet::WinSize.y));
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SSAOBlur1, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SSAOBlur1, "PixelSize", &float2_t(2.0f / PPSet::WinSize.x, 2.0f / PPSet::WinSize.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SSAOBlur1, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::SSAOBlur1);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SSAOBlur1);
 
 	SGCore_ScreenQuadDraw();
 
@@ -446,11 +446,11 @@ void SPP_RenderSSAO(float4_t* param, int quality)
 	PPSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PPSet::IDsRenderTargets::IntermediateWinSize2));
 	PPSet::DXDevice->SetTexture(2, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SSAOBlur2, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SSAOBlur2, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SSAOBlur2, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SSAOBlur2, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::SSAOBlur2);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SSAOBlur2);
 
 	SGCore_ScreenQuadDraw();
 
@@ -480,10 +480,10 @@ void SPP_RenderWhiteBlack(float coef)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::WhiteBlack, "CountPassWB", &coef);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::WhiteBlack, "CountPassWB", &coef);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::WhiteBlack);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::WhiteBlack);
 
 	SGCore_ScreenQuadDraw();
 
@@ -510,14 +510,14 @@ void SPP_RenderSepia(float coef)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::Sepia, "CountSepia", &coef);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::Sepia, "CountSepia", &coef);
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::Sepia, "LightColor", &PP_SEPIA_LIGHT_COLOR);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::Sepia, "DarkColor", &PP_SEPIA_DARK_COLOR);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::Sepia, "LumWeights", &PP_SEPIA_WEIGHTS_COLOR);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::Sepia, "LightColor", &PP_SEPIA_LIGHT_COLOR);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::Sepia, "DarkColor", &PP_SEPIA_DARK_COLOR);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::Sepia, "LumWeights", &PP_SEPIA_WEIGHTS_COLOR);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::Sepia);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::Sepia);
 
 	SGCore_ScreenQuadDraw();
 
@@ -544,10 +544,10 @@ void SPP_RenderCBG(float3_t* param)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::CBG, "Param", &param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::CBG, "Param", &param);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::CBG);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::CBG);
 
 	SGCore_ScreenQuadDraw();
 
@@ -580,11 +580,11 @@ void SPP_RenderDOF(float4_t* param, float sky_blur)
 	float2_t tmpSizeMap = float2_t(desc.Width, desc.Height);
 
 	float tmpcoefblurbloom = 1.f;
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurH, "CoefBlur", &tmpcoefblurbloom);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurH, "SizeMap", &tmpSizeMap);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurH, "CoefBlur", &tmpcoefblurbloom);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurH, "SizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurH);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurH);
 
 	SGCore_ScreenQuadDraw();
 
@@ -605,11 +605,11 @@ void SPP_RenderDOF(float4_t* param, float sky_blur)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetRenderRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurW, "CoefBlur", &tmpcoefblurbloom);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurW, "SizeMap", &tmpSizeMap);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurW, "CoefBlur", &tmpcoefblurbloom);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurW, "SizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurW);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurW);
 
 	SGCore_ScreenQuadDraw();
 
@@ -633,12 +633,12 @@ void SPP_RenderDOF(float4_t* param, float sky_blur)
 	PPSet::DXDevice->SetTexture(2, SGCore_RTGetTexture(PPSet::IDsRenderTargets::IntermediateWinSize));
 
 	float tmpskyblur = 0.0f;
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::DOF, "Param", param);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::DOF, "SkyBlur", &sky_blur);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::DOF, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DOF, "Param", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DOF, "SkyBlur", &sky_blur);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DOF, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::DOF);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DOF);
 
 	SGCore_ScreenQuadDraw();
 
@@ -728,8 +728,8 @@ void SPP_RenderSun(float4_t* sun_color)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::ScreenOut);
 
 	SGCore_ScreenQuadDraw();
 
@@ -754,16 +754,16 @@ void SPP_RenderSun(float4_t* sun_color)
 	PPSet::DXDevice->SetScissorRect(&rectscissor);
 	PPSet::DXDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "Color", sun_color);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "LightPos", &PPSet::SunPos);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "SizeMap", &(PPSet::WinSize));
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "SizeTexSun", &SizeMapSun);
-	//SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "LightColor", sun_color);
-	//SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "Color", sun_color);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "LightPos", &PPSet::SunPos);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "SizeMap", &(PPSet::WinSize));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "SizeTexSun", &SizeMapSun);
+	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "LightColor", sun_color);
+	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::SunRender);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::SunRender);
 
 	SGCore_ScreenQuadDraw();
 
@@ -808,12 +808,12 @@ void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool use_bloom)
 		float2_t tmpSizeMap = float2_t(desc.Width, desc.Height);
 
 		float LensFlareSunRadius = PP_SUN_RADIUS;
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "LightPos", &PPSet::SunPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "SizeMap", &tmpSizeMap);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "RadiusSun", &LensFlareSunRadius);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0, "Color", &sun_color);
-		SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-		SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare0);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "LightPos", &PPSet::SunPos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "SizeMap", &tmpSizeMap);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "RadiusSun", &LensFlareSunRadius);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "Color", &sun_color);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0);
 
 		SGCore_ScreenQuadDraw();
 
@@ -846,10 +846,10 @@ void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool use_bloom)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Bright));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare2, "LensFlareParam", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare2, "LensFlareParam", param);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::LensFlare2);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare2);
 
 	SGCore_ScreenQuadDraw();
 
@@ -875,9 +875,9 @@ void SPP_RenderBloom(float3_t* param)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::BloomBP, "Param", param);
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::BloomBP);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::BloomBP, "Param", param);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::BloomBP);
 
 	SGCore_ScreenQuadDraw();
 
@@ -909,11 +909,11 @@ void SPP_RenderBloom(float3_t* param)
 	float2_t tmpSizeMap = float2_t(desc.Width, desc.Height);
 
 	float tmpcoefblurbloom = 2.f;
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurH, "CoefBlur", &tmpcoefblurbloom);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurH, "SizeMap", &tmpSizeMap);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurH, "CoefBlur", &tmpcoefblurbloom);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurH, "SizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurH);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurH);
 
 	SGCore_ScreenQuadDraw();
 
@@ -932,11 +932,11 @@ void SPP_RenderBloom(float3_t* param)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Bright2));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurW, "CoefBlur", &tmpcoefblurbloom);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurW, "SizeMap", &tmpSizeMap);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurW, "CoefBlur", &tmpcoefblurbloom);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurW, "SizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::GaussBlurW);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::GaussBlurW);
 
 	SGCore_ScreenQuadDraw();
 
@@ -968,8 +968,8 @@ void SPP_RenderBloom(float3_t* param)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Bright));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::BloomFinal);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::BloomFinal);
 
 	SGCore_ScreenQuadDraw();
 
@@ -997,11 +997,11 @@ void SPP_RenderNFAA(float3_t* param)
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::NFAA, "Param", param);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::NFAA, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::NFAA, "Param", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::NFAA, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::NFAA);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::NFAA);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1032,10 +1032,10 @@ void SPP_RenderDLAA()
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT()));
 	//PPSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Depth1));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::DLAA_Long, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DLAA_Long, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::DLAA_Long);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DLAA_Long);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1052,10 +1052,10 @@ void SPP_RenderDLAA()
 
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetRenderRT()));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::DLAA_Small, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DLAA_Small, "PixelSize", &float2_t(1.f / PPSet::WinSize.x, 1.f / PPSet::WinSize.y));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::DLAA_Small);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::DLAA_Small);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1092,19 +1092,19 @@ void SPP_RenderMotionBlur(float coef, DWORD timeDelta)
 
 	float4x4 tmpProj = SMMatrixTranspose(PPSet::MCamView*PPSet::MCamProj);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "NearFar", &PPSet::NearFar);
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos, "ParamProj", &float3_t(PPSet::WinSize.x, PPSet::WinSize.y, D3DX_PI / 4.0f));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "ParamProj", &float3_t(PPSet::WinSize.x, PPSet::WinSize.y, D3DX_PI / 4.0f));
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "ViewPos", &PPSet::ConstCurrCamPos);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "ViewPos", &PPSet::ConstCurrCamPos);
 	float tmpcoefblur = float(timeDelta) * 0.001f * ((coef)*10.f);// 0.3f;// *(float(timeDelta) * 0.001f);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "CoefBlur", &tmpcoefblur);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "NearFar", &PPSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "CoefBlur", &tmpcoefblur);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur, "ViewProjectionPrev", &ViewProjPrevInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "ViewProjectionPrev", &ViewProjPrevInv);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, PPSet::IDsShaders::VS::ResPos);
-	SGCore_ShaderBind(ShaderType::st_pixel, PPSet::IDsShaders::PS::MotionBlur);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur);
 
 	SGCore_ScreenQuadDraw();
 

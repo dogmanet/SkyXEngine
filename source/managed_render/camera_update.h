@@ -13,8 +13,12 @@ See the license in LICENSE
  \ingroup managed_render
 @{*/
 
-#ifndef __camera_update
-#define __camera_update
+#ifndef __CAMERA_UPDATE
+#define __CAMERA_UPDATE
+
+#include <windows.h>
+#include <input/sxinput.h>
+#include <managed_render/gdata.h>
 
 //! пространство имен для управления навигацией
 namespace CameraUpdate

@@ -19,8 +19,8 @@ See the license in LICENSE
  \note Часицы эмиттера могут быть мягкими (soft), для этого надо после инициализации библиотеки необходимо передать идентификатор render target глубины сцены #SPE_RTDepthSet
 @{*/
 
-#ifndef __sxparticles
-#define __sxparticles
+#ifndef __SXPARTICLES_H
+#define __SXPARTICLES_H
 
 #include <gdefines.h>
 
@@ -29,20 +29,32 @@ See the license in LICENSE
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
-#include <gcore\\sxgcore.h>
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#include <gcore/sxgcore.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtllight_d.lib")
 #else
 #pragma comment(lib, "sxmtllight.lib")
 #endif
-#include <mtllight\\sxmtllight.h>
+
+#include <mtllight/sxmtllight.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
+
+//##########################################################################
 
 /*! \name Базовые функции библиотеки
 @{*/
 
-SX_LIB_API long SPE_0GetVersion();			//!< версия подсистемы
-SX_LIB_API void SPE_Dbg_Set(report_func rf);//!< установить функцию обработки сообщений
+//! версия подсистемы
+SX_LIB_API long SPE_0GetVersion();			
+
+//! установить функцию обработки сообщений
+SX_LIB_API void SPE_Dbg_Set(report_func rf);
 
 //! инициализция подсистемы
 SX_LIB_API void SPE_0Create(
@@ -50,11 +62,15 @@ SX_LIB_API void SPE_0Create(
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
-SX_LIB_API void SPE_RTDepthSet(ID id);	//!< установка илентификатора render target глубины сцены (для маягких/soft частиц)
+//! установка илентификатора render target глубины сцены (для маягких/soft частиц)
+SX_LIB_API void SPE_RTDepthSet(ID id);	
 
-SX_LIB_API void SPE_AKill();	//!< уничтожить подсистему
+//! уничтожить подсистему
+SX_LIB_API void SPE_AKill();	
 
 //!@}
+
+//**************************************************************************
 
 //! тип функции для определения пересечения, на вход идет предыдущая и будущая позиции цачицы, возвращает true в случае пересечения, иначе false
 typedef bool(*g_particles_phy_collision) (const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
@@ -62,13 +78,16 @@ typedef bool(*g_particles_phy_collision) (const float3 * lastpos, const float3* 
 /*! переназначение g_aiquad_phy_navigate, обязательное действие для работы с сеткой */
 SX_LIB_API void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision func);
 
-//#############################################################################
+//**************************************************************************
 
 /*! \name Обработка потери/восстановления устройства
 @{*/
 
-SX_LIB_API void SPE_OnLostDevice();	//!< вызывать при потрете устройства
-SX_LIB_API void SPE_OnResetDevice();//!< вызывать при восстановлении устройства
+//! вызывать при потрете устройства
+SX_LIB_API void SPE_OnLostDevice();	
+
+//! вызывать при восстановлении устройства
+SX_LIB_API void SPE_OnResetDevice();
 
 //!@}
 
@@ -175,13 +194,12 @@ struct ParticlesData
 
 	SX_ALIGNED_OP_MEM
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Ограничивающий объем
 	 \note Box: Vector1 x y z – минимум, Vector2 x y z – максимум \n
 	Sphere: Vector1 x y z – центр сферы, w – радиус \n
 	Cone: Vector1 x y z – нижняя точка конуса, w – радиус нижней точки, Vector2 y координата Y верхней точки конуса, w – радиус верхней точки \n
-
 	@{*/
 	ParticlesBoundType BoundType;	//!< тип ограничивающего объема, для уничтожения партикла при выходе за пределы
 
@@ -190,7 +208,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Параметры создания частиц
 	 \note Возможна привязка рандомного создания частиц к осям, для ограничивающих объемов (SpawnBoundBindCreate)
@@ -213,7 +231,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Анимированная текстура
 	@{*/
@@ -228,7 +246,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Время жизни частицы, временные зависимости, размеры
 	@{*/
@@ -245,7 +263,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Скорость
 	@{*/
@@ -259,7 +277,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Ускорение
 	@{*/
@@ -274,7 +292,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Характер: круговое движение
 	@{*/
@@ -287,7 +305,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Характер вращение
 	@{*/
@@ -299,7 +317,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	/*! \name Характер: отклонения при движении
 	@{*/
@@ -320,7 +338,7 @@ struct ParticlesData
 
 	//!@}
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	ParticlesFigureType FigureType;	//!< тип фигуры партикла
 	int FigureCountQuads;			//!< количество квадаратов в случае ParticlesFigureType::pft_quad_composite
@@ -329,14 +347,14 @@ struct ParticlesData
 	bool FigureTapY;				//!< поворачивать ли по оси Y
 	bool FigureTapZ;				//!< поворачивать ли по оси Z
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	//! отрисовка следа от столкновения, только для эмиттеров у которых CollisionDelete == true, рисуется квад и альфа канал уменьшатсья с течением времени 
 	bool Track;
 	float TrackSize;	//!< размер следа, в метрах
 	DWORD TrackTime;	//!< время исчезновения в млсек
 
-	////////////////////////////////////////////
+	//**************************************************************************
 
 	ParticlesAlphaBlendType AlphaBlendType;	//!< тип смешивания
 	float ColorCoef;		//!< коэфициент на который будет домножен цвет
@@ -365,34 +383,79 @@ struct ParticlesData
 передав этот ключ #SPE_EffectIdOfKey, которая в случае успеха вернет идентификатор эффекта.
 @{*/
 
-SX_LIB_API void SPE_EffectLoad(const char* path);	//!< загрузка информации об эффектах и эмиттерах из файла
-SX_LIB_API void SPE_EffectSave(const char* path);	//!< сохранение информации об эффектах и эмиттерах в файл
-SX_LIB_API void SPE_EffectsClear();	//!< очистка всего списка эффектов и эмиттеров
+//! загрузка информации об эффектах и эмиттерах из файла
+SX_LIB_API void SPE_EffectLoad(const char* path);	
 
-SX_LIB_API ID SPE_EffectInstanceByName(const char* name);	//!< получить копию эффекта по имени
-SX_LIB_API ID SPE_EffectInstanceByID(ID id);				//!< получить копию эффекта по его идентификатору
-SX_LIB_API ID SPE_EffectGetByName(const char* name);		//!< получить эффект по имени (первый найденый)
+//! сохранение информации об эффектах и эмиттерах в файл
+SX_LIB_API void SPE_EffectSave(const char* path);	
 
-SX_LIB_API ID SPE_EffectAdd(const char* name);	//!< добавить эффект и установить ему имя
-SX_LIB_API int SPE_EffectCountGet();			//!< возвращает количество эффектов
-SX_LIB_API ID SPE_EffectIdOfKey(ID key);		//!< возвращает идентификатор эффекта по порядковому номеру key
-SX_LIB_API void SPE_EffectDelete(ID id);		//!< удаляет эффект
-SX_LIB_API void SPE_EffectNameSet(ID id, const char* name);	//!< установка имени 
-SX_LIB_API void SPE_EffectNameGet(ID id, char* name);		//!< в name записывает имя эффекта
+//! очистка всего списка эффектов и эмиттеров
+SX_LIB_API void SPE_EffectsClear();	
 
-SX_LIB_API void SPE_EffectCompute(ID id);					//!< просчет и обновление всех партиклов в эффекте
-SX_LIB_API void SPE_EffectComputeLighting(ID id);			//!< просчет света для все частиц эффекта
-SX_LIB_API void SPE_EffectRender(ID id, DWORD timeDelta);	//!< рендер эффекта, timeDelta - время рендера кадра
 
-SX_LIB_API void SPE_EffectComputeAll();					//!< просчет и обновление всех партиклов во всех эффектах
-SX_LIB_API void SPE_EffectComputeLightingAll();			//!< просчет света для все частиц во всех эффектах
-SX_LIB_API void SPE_EffectRenderAll(DWORD timeDelta);	//!< отрисовка всех эффектов
+//! получить копию эффекта по имени
+SX_LIB_API ID SPE_EffectInstanceByName(const char* name);	
 
-SX_LIB_API bool SPE_EffectAlifeGet(ID id);				//<! жив ли эффект, или все частицы в нем уже умерли?
-SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);	//<! установка состояния жизни (время затухания #SXPARTICLES_DEADTH_TIME)
+//! получить копию эффекта по его идентификатору
+SX_LIB_API ID SPE_EffectInstanceByID(ID id);				
 
-SX_LIB_API bool SPE_EffectEnableGet(ID id);				//<! включен ли эффект
-SX_LIB_API void SPE_EffectEnableSet(ID id, bool enable);//<! устанавливает состяние включен/выключен для эффекта
+//!< получить эффект по имени (первый найденый)
+SX_LIB_API ID SPE_EffectGetByName(const char* name);		
+
+
+//! добавить эффект и установить ему имя
+SX_LIB_API ID SPE_EffectAdd(const char* name);	
+
+//! возвращает количество эффектов
+SX_LIB_API int SPE_EffectCountGet();			
+
+//!< возвращает идентификатор эффекта по порядковому номеру key
+SX_LIB_API ID SPE_EffectIdOfKey(ID key);		
+
+
+//! удаляет эффект
+SX_LIB_API void SPE_EffectDelete(ID id);		
+
+//! установка имени 
+SX_LIB_API void SPE_EffectNameSet(ID id, const char* name);	
+
+//! в name записывает имя эффекта
+SX_LIB_API void SPE_EffectNameGet(ID id, char* name);		
+
+
+//! просчет и обновление всех партиклов в эффекте
+SX_LIB_API void SPE_EffectCompute(ID id);					
+
+//! просчет света для все частиц эффекта
+SX_LIB_API void SPE_EffectComputeLighting(ID id);			
+
+//! рендер эффекта, timeDelta - время рендера кадра
+SX_LIB_API void SPE_EffectRender(ID id, DWORD timeDelta);	
+
+
+//! просчет и обновление всех партиклов во всех эффектах
+SX_LIB_API void SPE_EffectComputeAll();					
+
+//! просчет света для все частиц во всех эффектах
+SX_LIB_API void SPE_EffectComputeLightingAll();			
+
+//!< отрисовка всех эффектов
+SX_LIB_API void SPE_EffectRenderAll(DWORD timeDelta);	
+
+
+//! жив ли эффект, или все частицы в нем уже умерли?
+SX_LIB_API bool SPE_EffectAlifeGet(ID id);				
+
+//<! установка состояния жизни (время затухания #SXPARTICLES_DEADTH_TIME)
+SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);	
+
+
+//! включен ли эффект
+SX_LIB_API bool SPE_EffectEnableGet(ID id);				
+
+//! устанавливает состяние включен/выключен для эффекта
+SX_LIB_API void SPE_EffectEnableSet(ID id, bool enable);
+
 
 //! воспроизвести эффект используя при этом копию эффекта с идентификатором id
 SX_LIB_API void SPE_EffectPlayByID(
@@ -408,14 +471,29 @@ SX_LIB_API void SPE_EffectPlayByName(
 	float3* dir			//!< направление взгляда эффекта
 	);
 
-SX_LIB_API void SPE_EffectPosSet(ID id, float3* pos);	//<! установка позиции эффекту
-SX_LIB_API void SPE_EffectDirSet(ID id, float3* dir);	//<! установка направления взгляда эффекта
-SX_LIB_API void SPE_EffectRotSet(ID id, float3* rot);	//<! установка поворотов эффекта (в радианах)
-SX_LIB_API void SPE_EffectRotSetQ(ID id, const SMQuaternion & rot);	//<! установка поворотов эффекта
 
-SX_LIB_API void SPE_EffectPosGet(ID id, float3* pos);	//<! в pos записывает позицию эффекта
-SX_LIB_API void SPE_EffectDirGet(ID id, float3* dir);	//<! в dir записывает  направление взгляда эффекта
-SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot);	//<! в rot записывает повороты эффекта (в радианах)
+//! установка позиции эффекту
+SX_LIB_API void SPE_EffectPosSet(ID id, float3* pos);	
+
+//! установка направления взгляда эффекта
+SX_LIB_API void SPE_EffectDirSet(ID id, float3* dir);	
+
+//! установка поворотов эффекта (в радианах)
+SX_LIB_API void SPE_EffectRotSet(ID id, float3* rot);	
+
+//! установка поворотов эффекта
+SX_LIB_API void SPE_EffectRotSetQ(ID id, const SMQuaternion & rot);	
+
+
+//! в pos записывает позицию эффекта
+SX_LIB_API void SPE_EffectPosGet(ID id, float3* pos);	
+
+//! в dir записывает  направление взгляда эффекта
+SX_LIB_API void SPE_EffectDirGet(ID id, float3* dir);	
+
+//! в rot записывает повороты эффекта (в радианах)
+SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot);	
+
 
 //! просчет видимости эффекта для фрустума frustum, и расчет расстояния от позиции наблюдателя view до эффекта, возвращает виден ли фруустуму эффект
 SX_LIB_API bool SPE_EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view);	
@@ -423,8 +501,12 @@ SX_LIB_API bool SPE_EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view);
 //! просчет видимости всех эффектов для фрустума frustum, и расчет расстояний от позиции наблюдателя view до всех эффектов
 SX_LIB_API void SPE_EffectVisibleComAll(ISXFrustum* frustum, float3* view);
 
-SX_LIB_API bool SPE_EffectVisibleGet(ID id);		//!< виден ли эффект? по результатам просчетов #SPE_EffectVisibleComAll
-SX_LIB_API float SPE_EffectDistToViewGet(ID id);	//!< возвращает расстояние от наблюдателя до эффекта, по результатам просчетов #SPE_EffectVisibleComAll
+
+//! виден ли эффект? по результатам просчетов #SPE_EffectVisibleComAll
+SX_LIB_API bool SPE_EffectVisibleGet(ID id);		
+
+//! возвращает расстояние от наблюдателя до эффекта, по результатам просчетов #SPE_EffectVisibleComAll
+SX_LIB_API float SPE_EffectDistToViewGet(ID id);	
 
 //!@} sxparticles_eff
 
@@ -455,10 +537,20 @@ SX_LIB_API float SPE_EffectDistToViewGet(ID id);	//!< возвращает ра�
 
 //!@}
 
-SX_LIB_API ID SPE_EmitterAdd(ID id, ParticlesData* data);		//!< добавляет систему партиклов к эффекту
-SX_LIB_API int SPE_EmitterSCountGet(ID id);						//!< возвращает количество систем партиклов у эффекта
-SX_LIB_API void SPE_EmitterDelete(ID id, ID id_part);			//!< удаляет из эффекта id систему частиц id_part
-SX_LIB_API ParticlesData* SPE_EmitterGetData(ID id, ID id_part);//!< возвращает структуру данных системы частиц id_part из эффекта id
+//**************************************************************************
+
+//! добавляет систему партиклов к эффекту
+SX_LIB_API ID SPE_EmitterAdd(ID id, ParticlesData* data);		
+
+//! возвращает количество систем партиклов у эффекта
+SX_LIB_API int SPE_EmitterSCountGet(ID id);						
+
+//! удаляет из эффекта id систему частиц id_part
+SX_LIB_API void SPE_EmitterDelete(ID id, ID id_part);			
+
+//! возвращает структуру данных системы частиц id_part из эффекта id
+SX_LIB_API ParticlesData* SPE_EmitterGetData(ID id, ID id_part);
+
 
 //! переустановка структуры данных data для системы частиц id_part у эффекта id, в data можно отправить 0 в случае если необходимо обновить состояния оффлайн данных
 SX_LIB_API void SPE_EmitterReInit(ID id, ID id_part, ParticlesData* data);
@@ -484,13 +576,17 @@ SX_LIB_API void SPE_EmitterTextureSetID(ID id, ID id_part, ID tex);
 SX_LIB_API ID SPE_EmitterTextureGetID(ID id, ID id_part);
 SX_LIB_API void SPE_EmitterTextureGet(ID id, ID id_part, char* tex);
 
+
 SX_LIB_API void SPE_EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
 SX_LIB_API void SPE_EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
 SX_LIB_API ID SPE_EmitterTextureTrackGetID(ID id, ID id_part);
 SX_LIB_API void SPE_EmitterTextureTrackGet(ID id, ID id_part, char* tex);
 
-SX_LIB_API void SPE_EmitterNameSet(ID id, ID id_part, const char* name);	//!< установка имени системе частиц
-SX_LIB_API void SPE_EmitterNameGet(ID id, ID id_part, char* name);			//!< в name записывает имя системы частиц
+//! установка имени системе частиц
+SX_LIB_API void SPE_EmitterNameSet(ID id, ID id_part, const char* name);	
+
+//! в name записывает имя системы частиц
+SX_LIB_API void SPE_EmitterNameGet(ID id, ID id_part, char* name);			
 
 SX_LIB_API int SPE_EmitterTrackCountGet(ID id, ID id_part);
 SX_LIB_API int SPE_EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);

@@ -11,7 +11,7 @@ namespace PESet
 	extern IDirect3DDevice9* DXDevice;
 	extern IDirect3DVertexDeclaration9* VertexDeclarationParticles;
 
-	void Init(IDirect3DDevice9* device);
+	void Init();
 
 	namespace IDsRenderTargets
 	{

@@ -4,25 +4,10 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-/*! 
-\file
-Файл логирования и обработки сообщений
-*/
-
-/*! \defgroup managed_render_out_log out_log - логирование и обработка сообщений
- \ingroup managed_render
-@{*/
-
-#ifndef __handler_out_log_cpp
-#define __handler_out_log_cpp
-
-#include <fstream>
-#include <stdio.h>
-#include <winuser.h>
+#include "handler_log.h"
 
 FILE * FileOutLog = 0;	//!< поток ведения лога
 
-//! перебор всех окон процесса для их сворачивания
 BOOL CALLBACK HE_EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
 	DWORD pid;
@@ -32,7 +17,6 @@ BOOL CALLBACK HE_EnumWindowsProc(HWND hwnd, LPARAM lParam)
 	return TRUE;
 }
 
-//! обработка ошибки
 void HE_HandlerError(const char* format, ...)
 {
 	va_list va;
@@ -48,7 +32,6 @@ void HE_HandlerError(const char* format, ...)
 	exit(0);
 }
 
-//! инициализация потока ведения лога
 void InitOutLog()
 {
 	AllocConsole();
@@ -80,8 +63,7 @@ void InitOutLog()
 		}
 }
 
-//! функция ведения лога и обработки сообщений
-void printflog(int level, const char* format, ...)
+void PrintfLog(int level, const char* format, ...)
 {
 	va_list va;
 	char buf[REPORT_MSG_MAX_LEN];
@@ -117,7 +99,3 @@ void printflog(int level, const char* format, ...)
 			}
 		}
 }
-
-#endif
-
-//!@} managed_render_out_log

@@ -1,5 +1,5 @@
 
-#include <SkyXEngine.h>
+#include "SkyXEngine.h"
 
 void SkyXEngine_Init()
 {
@@ -15,10 +15,10 @@ void SkyXEngine_Init()
 #endif
 	Level::Name[0] = 0;
 	SSInput_0Create("sxinput", GData::Handle3D, false);
-	SSInput_Dbg_Set(printflog);
+	SSInput_Dbg_Set(PrintfLog);
 
 	Core_0Create("sxcore", false);
-	Core_Dbg_Set(printflog);
+	Core_Dbg_Set(PrintfLog);
 	Core_SetOutPtr();
 
 	ID idTimerRender = Core_TimeAdd();
@@ -35,13 +35,13 @@ void SkyXEngine_Init()
 	Core_TimeSpeedSet(idTimerGame, 100);
 
 	SSCore_0Create("sxsound", GData::Handle3D, false);
-	SSCore_Dbg_Set(printflog);
+	SSCore_Dbg_Set(PrintfLog);
 
 	SGCore_0Create("sxgcore", GData::Handle3D, GData::WinSize.x, GData::WinSize.y, GData::IsWindowed, 0, false);
-	SGCore_Dbg_Set(printflog);
+	SGCore_Dbg_Set(PrintfLog);
 
-	SGCore_SetFunc_MtlSet(SXRenderFunc::RFuncMtlSet);
-	SGCore_SetFunc_MtlLoad(SXRenderFunc::RFuncMtlLoad);
+	SGCore_SetFunc_MtlSet(RFuncMtlSet);
+	SGCore_SetFunc_MtlLoad(RFuncMtlLoad);
 	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
@@ -58,19 +58,19 @@ void SkyXEngine_Init()
 #endif
 
 	SGeom_0Create("sxgeom", false);
-	SGeom_Dbg_Set(printflog);
+	SGeom_Dbg_Set(PrintfLog);
 
 	SML_0Create("sxml", false);
-	SML_Dbg_Set(printflog);
+	SML_Dbg_Set(PrintfLog);
 
 	SPE_0Create("sxparticles", false);
-	SPE_Dbg_Set(printflog);
-	SPE_SetFunc_ParticlesPhyCollision(SXRenderFunc::ParticlesPhyCollision);
+	SPE_Dbg_Set(PrintfLog);
+	SPE_SetFunc_ParticlesPhyCollision(RFuncParticlesPhyCollision);
 	SPE_RTDepthSet(SML_DSGetRT_ID(DS_RT::ds_rt_depth));
 	Level::LoadParticles();
 
 	SPP_0Create("sxpp", false);
-	SPP_Dbg_Set(printflog);
+	SPP_Dbg_Set(PrintfLog);
 
 #if defined(SX_GAME)
 	SPP_ChangeTexSun("fx_sun.dds");
@@ -82,13 +82,13 @@ void SkyXEngine_Init()
 	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT::ds_rt_normal));
 
 	SXAnim_0Create();
-	SXAnim_Dbg_Set(printflog);
+	SXAnim_Dbg_Set(PrintfLog);
 
 	SXPhysics_0Create();
-	SXPhysics_Dbg_Set(printflog);
+	SXPhysics_Dbg_Set(PrintfLog);
 
 	SXDecals_0Create();
-	SXDecals_Dbg_Set(printflog);
+	SXDecals_Dbg_Set(PrintfLog);
 
 #if defined(SX_LEVEL_EDITOR)
 	SAIG_0Create("sxaigrid", true, false);
@@ -96,12 +96,12 @@ void SkyXEngine_Init()
 #else
 	SAIG_0Create("sxaigrid", true, false);
 #endif
-	SAIG_Dbg_Set(printflog);
-	SAIG_SetFunc_QuadPhyNavigate(SXRenderFunc::AIQuadPhyNavigate);
+	SAIG_Dbg_Set(PrintfLog);
+	SAIG_SetFunc_QuadPhyNavigate(RFuncAIQuadPhyNavigate);
 
 #ifndef SX_PARTICLES_EDITOR
 	SXGame_0Create();
-	SXGame_Dbg_Set(printflog);
+	SXGame_Dbg_Set(PrintfLog);
 #endif
 
 #ifdef SX_GAME
@@ -221,6 +221,8 @@ void SkyXEngine_Init()
 	pl->SetPos(float3(-17.18, -1.38f, -32.3));
 	pl->Play("reload");*/
 }
+
+//**************************************************************************
 
 void SkyXEngine_InitPaths()
 {
@@ -355,7 +357,7 @@ void SkyXEngine_Render(DWORD timeDelta)
 
 	//рисуем сцену и заполняем mrt данными
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SXRenderFunc::RenderInMRT(timeDelta);
+	SXRenderFunc::BuildMRT(timeDelta);
 	SXRenderFunc::Delay::RenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
@@ -363,6 +365,12 @@ void SkyXEngine_Render(DWORD timeDelta)
 		//освещаем сцену
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SXRenderFunc::ComLighting(timeDelta, true);
+		SXRenderFunc::UnionLayers();
+		if (SGCore_SkyBoxIsCr())
+			SXRenderFunc::RenderSky(timeDelta);
+		SXRenderFunc::ApplyToneMapping();
+		SXRenderFunc::ComToneMapping(timeDelta);
+
 		SXRenderFunc::Delay::ComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
@@ -375,8 +383,8 @@ void SkyXEngine_Render(DWORD timeDelta)
 	SXRenderFunc::Delay::PostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
-	SGCore_ShaderBind(ShaderType::st_vertex, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, GData::IDsShaders::PS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
 
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
@@ -397,7 +405,11 @@ void SkyXEngine_Render(DWORD timeDelta)
 	GData::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)GData::MLightProj));
 	SXRenderFunc::RenderEditorMain();
 	SXRenderFunc::RenderEditorLE(timeDelta);
+	SXRenderFunc::RenderEditorPE(timeDelta);
+
+#ifdef _DEBUG
 	SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, GData::NearFar.y);
+#endif
 
 #if defined(SX_GAME)
 	SXGame_RenderHUD();

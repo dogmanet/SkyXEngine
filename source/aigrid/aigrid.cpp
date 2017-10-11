@@ -951,8 +951,8 @@ void AIGrid::GraphicsInit()
 
 	Tex_AIGrid = SGCore_LoadTexAddName("decal_aigrid1.dds", LoadTexType::ltt_const);
 
-	IDVS = SGCore_ShaderLoad(ShaderType::st_vertex, "aigrid_quad.vs", "aigrid_quad", ShaderCheckDouble::scd_path);
-	IDPS = SGCore_ShaderLoad(ShaderType::st_pixel, "aigrid_quad.ps", "aigrid_quad", ShaderCheckDouble::scd_path);
+	IDVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad", ShaderCheckDouble::scd_path);
+	IDPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad", ShaderCheckDouble::scd_path);
 
 
 	IDirect3DTexture9* TexBB;
@@ -2303,8 +2303,8 @@ void AIGrid::RenderQuads(const ISXFrustum * frustum, const float3 * viewpos, flo
 
 		DXDevice->SetTexture(0, SGCore_LoadTexGetTex(Tex_AIGrid));
 
-		SGCore_ShaderBind(ShaderType::st_vertex, IDVS);
-		SGCore_ShaderBind(ShaderType::st_pixel, IDPS);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, IDVS);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, IDPS);
 
 		D3DXMATRIX tmpview, tmpproj;
 		DXDevice->GetTransform(D3DTS_VIEW, &tmpview);
@@ -2313,7 +2313,7 @@ void AIGrid::RenderQuads(const ISXFrustum * frustum, const float3 * viewpos, flo
 		float4x4 wvp = SMMatrixIdentity() * float4x4(tmpview) * float4x4(tmpproj);
 		wvp = SMMatrixTranspose(wvp);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, IDVS, "WorldViewProjection", &wvp);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, IDVS, "WorldViewProjection", &wvp);
 
 		DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 
@@ -2400,8 +2400,8 @@ void AIGrid::RenderGraphPoints(const float3 * viewpos, float dist)
 
 		DXDevice->SetTexture(0, SGCore_LoadTexGetTex(Tex_AIGrid));
 
-		SGCore_ShaderBind(ShaderType::st_vertex, IDVS);
-		SGCore_ShaderBind(ShaderType::st_pixel, IDPS);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, IDVS);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, IDPS);
 
 		D3DXMATRIX tmpview, tmpproj;
 		DXDevice->GetTransform(D3DTS_VIEW, &tmpview);
@@ -2410,7 +2410,7 @@ void AIGrid::RenderGraphPoints(const float3 * viewpos, float dist)
 		float4x4 wvp = SMMatrixIdentity() * float4x4(tmpview) * float4x4(tmpproj);
 		wvp = SMMatrixTranspose(wvp);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, IDVS, "WorldViewProjection", &wvp);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, IDVS, "WorldViewProjection", &wvp);
 
 		DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 

@@ -21,8 +21,8 @@ See the license in LICENSE
  \note Идентификация звука происходит на основании его числового идентификатора выдаваемого создаваемыми функциями (#SSCore_SndCreate2d/#SSCore_SndCreate2dInst #SSCore_SndCreate3d/#SSCore_SndCreate3dInst) и является константной, идентификатор является порядковым номером
 @{*/
 
-#ifndef __sxsound
-#define __sxsound
+#ifndef __SXSCORE_H
+#define __SXSCORE_H
 
 #include <gdefines.h>
 #include <GRegisterIndex.h>
@@ -32,19 +32,35 @@ See the license in LICENSE
 #else
 #pragma comment(lib, "sxcore.lib")
 #endif
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
 #include <core\\sxcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
+
+//##########################################################################
 
 /*! \name Стандартные функции библиотеки
 @{*/
-SX_LIB_API long SSCore_0GetVersion();			//!< возвращает версию подсистемы геометрии
-SX_LIB_API void SSCore_Dbg_Set(report_func rf);	//!< установить новую функцию вывода сообщений
-SX_LIB_API void SSCore_0Create(	//!< инициализация подсистемы
+
+//! возвращает версию подсистемы геометрии
+SX_LIB_API long SSCore_0GetVersion();			
+
+//! установить новую функцию вывода сообщений
+SX_LIB_API void SSCore_Dbg_Set(report_func rf);	
+
+//! инициализация подсистемы
+SX_LIB_API void SSCore_0Create(	
 	const char* name,			//!< имя
 	HWND hwnd,
 	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
-SX_LIB_API void SSCore_AKill();	//!< уничтожение подсистемы
+//! уничтожение подсистемы
+SX_LIB_API void SSCore_AKill();	
+
 //!@}
 
 //#############################################################################
@@ -54,6 +70,8 @@ SX_LIB_API void SSCore_AKill();	//!< уничтожение подсистемы
 
 #define SOUND_MIN_SIZE_STREAM	1024*64 /*!< минимально возможный размер потока для воспроизведения */
 
+//**************************************************************************
+
 /*! \name Данные для первичного буфера
 @{*/
 
@@ -62,6 +80,8 @@ SX_LIB_API void SSCore_AKill();	//!< уничтожение подсистемы
 #define SOUND_G_BITS_PER_SAMPLE	32		/*!< количество бит в семпле */
 
 //!@}
+
+//**************************************************************************
 
 #define SOUND_OGG_BITS_PER_SAMPLE	16	/*!< количество бит на сэмпл для ogg, возможно 8 или 16 */
 
@@ -99,7 +119,8 @@ enum SoundObjState
 
 //#############################################################################
 
-SX_LIB_API void SSCore_Clear();	//!< очистка всего списка звуков (полное их удаление)
+//! очистка всего списка звуков (полное их удаление)
+SX_LIB_API void SSCore_Clear();	
 
 //! обновление состояний всех звуков
 SX_LIB_API void SSCore_Update(
@@ -107,8 +128,11 @@ SX_LIB_API void SSCore_Update(
 	float3* viewdir		//!< текущее направление взгляда
 	);	
 
-SX_LIB_API int SSCore_SndsPlayCountGet();	//!< количество проигрываемых на данный момент звуков
-SX_LIB_API int SSCore_SndsLoadCountGet();	//!< количество загруженных на данный момент звуков
+//! количество проигрываемых на данный момент звуков
+SX_LIB_API int SSCore_SndsPlayCountGet();	
+
+//! количество загруженных на данный момент звуков
+SX_LIB_API int SSCore_SndsLoadCountGet();	
 
 //! загрузка 2d (фонового) звука
 SX_LIB_API ID SSCore_SndCreate2d(
@@ -151,15 +175,29 @@ SX_LIB_API ID SSCore_SndFind2dInst(const char * file);
 //! поиск 3d звука (выдающего инстансы) по относительному пути загрузки,возвращает его ID (в случае успеха) иначе <0
 SX_LIB_API ID SSCore_SndFind3dInst(const char * file);
 
-SX_LIB_API bool SSCore_SndIsInit(ID id);	//!< инициализирован ли звук с идентификатором id
-SX_LIB_API void SSCore_SndDelete(ID id);	//!< удалить звук по его id
 
-SX_LIB_API void	SSCore_SndPlay(ID id, int looping = -1);	//!< воспроизвести звук, looping зацикливать ли воспроизведение, 0 - нет, >0 да, <0 не учитывать данное значение
-SX_LIB_API void	SSCore_SndPause(ID id);						//!< приостановить
-SX_LIB_API void	SSCore_SndStop(ID id);						//!< остановить
+//! инициализирован ли звук с идентификатором id
+SX_LIB_API bool SSCore_SndIsInit(ID id);	
 
-SX_LIB_API void SSCore_SndStateSet(ID id, SoundObjState state);	//!< устанавливает состояние проигрывания звука
-SX_LIB_API SoundObjState SSCore_SndStateGet(ID id);				//!< возвращает состояние проигрывания звука на данный момент
+//! удалить звук по его id
+SX_LIB_API void SSCore_SndDelete(ID id);	
+
+
+//! воспроизвести звук, looping зацикливать ли воспроизведение, 0 - нет, >0 да, <0 не учитывать данное значение
+SX_LIB_API void	SSCore_SndPlay(ID id, int looping = -1);	
+
+//! приостановить
+SX_LIB_API void	SSCore_SndPause(ID id);						
+
+//! остановить
+SX_LIB_API void	SSCore_SndStop(ID id);						
+
+
+//! устанавливает состояние проигрывания звука
+SX_LIB_API void SSCore_SndStateSet(ID id, SoundObjState state);	
+
+//! возвращает состояние проигрывания звука на данный момент
+SX_LIB_API SoundObjState SSCore_SndStateGet(ID id);				
 
 //! устанавить позицию проигрывания
 SX_LIB_API void SSCore_SndPosCurrSet(
@@ -200,20 +238,42 @@ SX_LIB_API long SSCore_SndPanGet(
 	int type = SOUND_VOL_PCT	//!< тип возвращаемого значения, SOUND_VOL_
 	);
 
-SX_LIB_API void SSCore_SndFreqCurrSet(ID id, DWORD value);	//!< установка частоты воспроизведения
-SX_LIB_API DWORD SSCore_SndFreqCurrGet(ID id);				//!< возвращает текущую частоту воспроизведения
-SX_LIB_API DWORD SSCore_SndFreqOriginGet(ID id);			//!< возвращает оригинальную частоту воспроизведения
 
-SX_LIB_API void SSCore_SndPosWSet(ID id, float3* pos);		//!< установка мировой позиции звука (только для 3d звуков)
-SX_LIB_API void SSCore_SndPosWGet(ID id, float3* pos);		//!< возвращает мировую позицию звука (только для 3d звуков)
+//! установка частоты воспроизведения
+SX_LIB_API void SSCore_SndFreqCurrSet(ID id, DWORD value);	
 
-SX_LIB_API int SSCore_SndLengthSecGet(ID id);				//!< длина в секундах
-SX_LIB_API DWORD SSCore_SndBytesPerSecGet(ID id);			//!< количество байт в секунде
-SX_LIB_API DWORD SSCore_SndSizeGet(ID id);					//!< размер в байтах PCM данных
-SX_LIB_API void SSCore_SndFileGet(ID id, char* path);		//!< относительный путь до звукового файла
+//! возвращает текущую частоту воспроизведения
+SX_LIB_API DWORD SSCore_SndFreqCurrGet(ID id);				
 
-SX_LIB_API float SSCore_SndDistAudibleGet(ID id);				//!< возвращает дистанцию слышимости
-SX_LIB_API void SSCore_SndDistAudibleSet(ID id, float value);	//!< установка дистанции слышимости в метрах
+//! возвращает оригинальную частоту воспроизведения
+SX_LIB_API DWORD SSCore_SndFreqOriginGet(ID id);			
+
+
+//! установка мировой позиции звука (только для 3d звуков)
+SX_LIB_API void SSCore_SndPosWSet(ID id, float3* pos);		
+
+//! возвращает мировую позицию звука (только для 3d звуков)
+SX_LIB_API void SSCore_SndPosWGet(ID id, float3* pos);		
+
+
+//! длина в секундах
+SX_LIB_API int SSCore_SndLengthSecGet(ID id);				
+
+//! количество байт в секунде
+SX_LIB_API DWORD SSCore_SndBytesPerSecGet(ID id);			
+
+//! размер в байтах PCM данных
+SX_LIB_API DWORD SSCore_SndSizeGet(ID id);					
+
+//! относительный путь до звукового файла
+SX_LIB_API void SSCore_SndFileGet(ID id, char* path);		
+
+
+//! возвращает дистанцию слышимости
+SX_LIB_API float SSCore_SndDistAudibleGet(ID id);				
+
+//! установка дистанции слышимости в метрах
+SX_LIB_API void SSCore_SndDistAudibleSet(ID id, float value);	
 
 //!@}
 

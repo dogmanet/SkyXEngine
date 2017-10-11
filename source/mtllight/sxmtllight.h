@@ -13,17 +13,23 @@ See the license in LICENSE
 @{
 */
 
-#ifndef __sxmtlight
-#define __sxmtlight
-
-#include <gdefines.h>
+#ifndef __SXMTLLIGHT_H
+#define __SXMTLLIGHT_H
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
-#include <gcore\\sxgcore.h>
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#include <gcore/sxgcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
+
+#include <gdefines.h>
 
 /*! \name Базовые функции библиотеки
 @{*/
@@ -99,20 +105,20 @@ Cчитается: LIGHTS_UPDATE_PSSM_SPLIT*number_split
 #define LIGHTS_DIR_BASE float3(0, -1, 0) /*!< базовое направление направленноого источника света */
 
 //! типы источников света
-enum LightsTypeLight
+enum LTYPE_LIGHT
 {
-	ltl_none = -1,	//!< не установленный
-	ltl_global,		//!< глобальный
-	ltl_point,		//!< точечный
-	ltl_direction	//!< направленный
+	LTYPE_LIGHT_NONE = -1,	//!< не установленный
+	LTYPE_LIGHT_GLOBAL,		//!< глобальный
+	LTYPE_LIGHT_POINT,		//!< точечный
+	LTYPE_LIGHT_DIR			//!< направленный
 };
 
 //! типы теней источников света
-enum LightsTypeShadow
+enum LTYPE_SHADOW
 {
-	lts_none = -1,	//!< без теней
-	lts_static,		//!< статичные тени, тень обновляется первые несколько кадров (для корректности), далее не обновляется
-	lts_dynamic,	//!< полностью динамические тени
+	LTYPE_SHADOW_NONE = -1,	//!< без теней
+	LTYPE_SHADOW_STATIC,	//!< статичные тени, тень обновляется первые несколько кадров (для корректности), далее не обновляется
+	LTYPE_SHADOW_DYNAMIC,	//!< полностью динамические тени
 };
 
 /*! \name Настройки размеров для теней
@@ -152,7 +158,7 @@ SX_LIB_API ID SML_LigthsCreateDirection(
 	bool is_shadow				//!< отбрасвыает ли тени свет
 	);
 
-SX_LIB_API LightsTypeLight SML_LigthsGetType(ID id);	//!< возвращает тип света
+SX_LIB_API LTYPE_LIGHT SML_LigthsGetType(ID id);	//!< возвращает тип света
 
 SX_LIB_API ID SML_LigthsCreateCopy(ID id);		//!< создать копию объекта и вернуть на нее id
 SX_LIB_API void SML_LigthsDeleteLight(ID id);	//!< удаление света
@@ -284,10 +290,10 @@ SX_LIB_API void SML_LigthsShadowSetShaderOfTypeMat(ID id, int typemat, float4x4*
 //! установка динамики обработки теней
 SX_LIB_API void SML_LigthsSetTypeShadowed(
 	ID id,					//!< идентификатор света
-	LightsTypeShadow type	//!< значение из перечисления #LightsTypeShadow
+	LTYPE_SHADOW type	//!< значение из перечисления #LightsTypeShadow
 	);
 
-SX_LIB_API LightsTypeShadow SML_LigthsGetTypeShadowed(ID id);	//!< возвращает тип динамики теней (одно из значений #LightsTypeShadow)
+SX_LIB_API LTYPE_SHADOW SML_LigthsGetTypeShadowed(ID id);	//!< возвращает тип динамики теней (одно из значений #LightsTypeShadow)
 
 //! производит обработку данных затем возвращает разрешено ли обновлять тени, увеличивает внутрений счетчик, поэтому необходимо вызывать только когда надо
 SX_LIB_API bool SML_LigthsCountUpdateUpdate(
@@ -434,7 +440,7 @@ SX_LIB_API void SML_LigthsToneMappingCom(
 @{*/
 
 SX_LIB_API int SML_LigthsDelGetCount();						//!< возвращает количество удаленных объектов света которые требуют удаления
-SX_LIB_API LightsTypeLight SML_LigthsDelGetType(ID key);		//!< возвращает тип удаленного объекта света, значения из #LightsTypeLight
+SX_LIB_API LTYPE_LIGHT SML_LigthsDelGetType(ID key);		//!< возвращает тип удаленного объекта света, значения из #LightsTypeLight
 SX_LIB_API void SML_LigthsDelDel(ID key);						//!< удаляет (окончательно) удаленный объект света
 
 //! возвращает идентификатор, если был передан, иначе <0

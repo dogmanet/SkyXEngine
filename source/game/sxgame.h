@@ -23,7 +23,12 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
 
 #include "SXbaseEntity.h"
 

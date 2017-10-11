@@ -1,5 +1,13 @@
 
-#include <managed_render\\level.h>
+#include "level.h"
+
+namespace Level
+{
+	char Name[OBJECT_NAME_MAX_LEN];	
+	String StrAmbientSounds;
+	String StrWeather;
+};
+
 
 void Level::Clear()
 {

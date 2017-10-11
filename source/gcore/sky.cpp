@@ -15,8 +15,8 @@ SkyBox::SkyBox()
 
 	DXDevice->CreateVertexDeclaration(layoutskybox, &VertexDeclarationSkyBox);
 
-	VS_RenderSkyBox = SGCore_ShaderLoad(ShaderType::st_vertex, "sky_box.vs", "sky_box", ShaderCheckDouble::scd_name);
-	PS_RenderSkyBox = SGCore_ShaderLoad(ShaderType::st_pixel, "sky_box.ps", "sky_box", ShaderCheckDouble::scd_name);
+	VS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box", ShaderCheckDouble::scd_name);
+	PS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box", ShaderCheckDouble::scd_name);
 
 	Color = float4(0,0,0,0);
 	RotaionY = 0.f;
@@ -218,11 +218,11 @@ void SkyBox::Render(float timeDelta,float3* pos,bool is_shadow)
 			DXDevice->SetTexture(1,Tex2);
 		}
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, VS_RenderSkyBox, "WorldViewProjection", &WVP);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyBox, "Color", &Color);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyBox, "BlendFactor", &FactorBlend);
-	SGCore_ShaderBind(ShaderType::st_vertex, VS_RenderSkyBox);
-	SGCore_ShaderBind(ShaderType::st_pixel, PS_RenderSkyBox);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyBox, "WorldViewProjection", &WVP);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyBox, "Color", &Color);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyBox, "BlendFactor", &FactorBlend);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyBox);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyBox);
 
 	DXDevice->SetStreamSource(0, Vertices, 0, sizeof(SkyBoxVertex));
 	DXDevice->SetIndices(Indeces);
@@ -245,11 +245,11 @@ SkyClouds::SkyClouds()
 
 	DXDevice->CreateVertexDeclaration(layoutclouds, &VertexDeclarationClouds);
 
-	VS_RenderSkyClouds = SGCore_ShaderLoad(ShaderType::st_vertex, "sky_clouds.vs", "sky_clouds", ShaderCheckDouble::scd_name);
-	PS_RenderSkyClouds = SGCore_ShaderLoad(ShaderType::st_pixel, "sky_clouds.ps", "sky_clouds", ShaderCheckDouble::scd_name);
+	VS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds", ShaderCheckDouble::scd_name);
+	PS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds", ShaderCheckDouble::scd_name);
 
 	D3DXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
-	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(ShaderType::st_pixel, "sky_clouds.ps", "sky_clouds_shadow", ShaderCheckDouble::scd_name, Defines_SHADOW);
+	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow", ShaderCheckDouble::scd_name, Defines_SHADOW);
 
 	RotaionY = 0;
 	Alpha = 1.f;
@@ -471,12 +471,12 @@ void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 
 			WVP = SMMatrixTranspose(WVP);
 
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, VS_RenderSkyClouds, "WorldViewProjection", &WVP);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyClouds, "BlendFactorBias", &float2(FactorBlend, Bias));
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyClouds, "Color", &Color);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyClouds, "Alpha", &Alpha);
-			SGCore_ShaderBind(ShaderType::st_vertex, VS_RenderSkyClouds);
-			SGCore_ShaderBind(ShaderType::st_pixel, PS_RenderSkyClouds);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyClouds, "WorldViewProjection", &WVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyClouds, "BlendFactorBias", &float2(FactorBlend, Bias));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyClouds, "Color", &Color);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyClouds, "Alpha", &Alpha);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyClouds);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyClouds);
 		}
 		else
 		{
@@ -488,12 +488,12 @@ void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 
 			WVP = SMMatrixTranspose(WVP);
 
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, VS_RenderSkyClouds, "WorldViewProjection", &WVP);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyCloudsShadow, "BlendFactorBias", &float2(FactorBlend, Bias));
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyClouds, "WorldViewProjection", &WVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow, "BlendFactorBias", &float2(FactorBlend, Bias));
 			//SGCore_ShaderSetVRF(1, PS_RenderSkyCloudsShadow, "Color", &Color);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PS_RenderSkyCloudsShadow, "Alpha", &Alpha);
-			SGCore_ShaderBind(ShaderType::st_vertex, VS_RenderSkyClouds);
-			SGCore_ShaderBind(ShaderType::st_pixel, PS_RenderSkyCloudsShadow);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow, "Alpha", &Alpha);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyClouds);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow);
 		}
 	
 	DXDevice->SetStreamSource(0, SkyCloudsVertices, 0, sizeof(SkyCloudsVertex));

@@ -215,7 +215,7 @@ void Emitter::ComputeLighting()
 
 						float intens = 1;
 
-						if (SML_LigthsGetType(tmpid) != LightsTypeLight::ltl_global)
+						if (SML_LigthsGetType(tmpid) != LTYPE_LIGHT_GLOBAL)
 						{
 							SML_LigthsGetPos(tmpid, &tmpPosition, true);
 
@@ -1286,73 +1286,73 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
 		}
 
-		SGCore_ShaderBind(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles);
 
 		static ID psid = -1;
 
 		if (Data.Soft && !Data.Refraction && !Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesSoft;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoft);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoft, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoft, "NearFar", &NearFar);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoft);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoft, "SoftCoef", &Data.SoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoft, "NearFar", &NearFar);
 		}
 		else if (Data.Soft && Data.Refraction && !Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesSoftRefraction;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction, "NearFar", &NearFar);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefraction, "RefractCoef", &Data.RefractionCoef);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction, "SoftCoef", &Data.SoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction, "NearFar", &NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction, "RefractCoef", &Data.RefractionCoef);
 		}
 		else if (Data.Soft && Data.Refraction && Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesSoftRefractionLight;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "NearFar", &NearFar);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "RefractCoef", &Data.RefractionCoef);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "SoftCoef", &Data.SoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "NearFar", &NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "RefractCoef", &Data.RefractionCoef);
 		}
 		else if (Data.Soft && !Data.Refraction && Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesSoftLight;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight, "NearFar", &NearFar);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesSoftLight, "RefractCoef", &Data.RefractionCoef);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight, "SoftCoef", &Data.SoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight, "NearFar", &NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight, "RefractCoef", &Data.RefractionCoef);
 		}
 		else if (!Data.Soft && Data.Refraction && Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesRefractionLight;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefractionLight);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefractionLight, "RefractCoef", &Data.RefractionCoef);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefractionLight);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefractionLight, "RefractCoef", &Data.RefractionCoef);
 		}
 		else if (!Data.Soft && !Data.Refraction && Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesLight;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesLight);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesLight);
 		}
 		else if (!Data.Soft && Data.Refraction && !Data.Lighting)
 		{
 			psid = PESet::IDsShaders::PS::ParticlesRefraction;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefraction);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesRefraction, "RefractCoef", &Data.RefractionCoef);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefraction);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefraction, "RefractCoef", &Data.RefractionCoef);
 		}
 		else
 		{
 			psid = PESet::IDsShaders::PS::Particles;
-			SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::Particles);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::Particles);
 		}
 
-		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "ViewProjection", &SMMatrixTranspose(vp));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "WorldViewProjection", &SMMatrixTranspose(worldmat * vp));
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "CamRot", &SMMatrixTranspose(cammat));
-		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "World", &SMMatrixTranspose(world));
-		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatRot", &SMMatrixTranspose(tmpmatrot));
-		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
-		//SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, psid, "ColorCoef", &Data.ColorCoef);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, psid, "Color", &Data.Color);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "ViewProjection", &SMMatrixTranspose(vp));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "WorldViewProjection", &SMMatrixTranspose(worldmat * vp));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "CamRot", &SMMatrixTranspose(cammat));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "World", &SMMatrixTranspose(world));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "MatRot", &SMMatrixTranspose(tmpmatrot));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "ColorCoef", &Data.ColorCoef);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "Color", &Data.Color);
 
 		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -1434,8 +1434,8 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		PESet::DXDevice->SetStreamSource(0, VertexBuffQuad, 0, sizeof(CommonParticleDecl));
 		PESet::DXDevice->SetIndices(IndexBuffQuad);
 
-		SGCore_ShaderBind(ShaderType::st_vertex, PESet::IDsShaders::VS::ParticlesTrack);
-		SGCore_ShaderBind(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesTrack);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::ParticlesTrack);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesTrack);
 
 		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -1453,9 +1453,9 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		float4x4 vp = MCamView * MCamProj;
 		PESet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(IDTexTrack));
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, PESet::IDsShaders::VS::ParticlesTrack, "WorldViewProjection", &SMMatrixTranspose(vp));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesTrack, "Color", &Data.Color);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, PESet::IDsShaders::PS::ParticlesTrack, "ColorCoef", &Data.ColorCoef);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::ParticlesTrack, "WorldViewProjection", &SMMatrixTranspose(vp));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesTrack, "Color", &Data.Color);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesTrack, "ColorCoef", &Data.ColorCoef);
 
 		PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 

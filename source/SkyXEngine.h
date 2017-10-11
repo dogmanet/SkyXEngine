@@ -223,11 +223,14 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 //#############################################################################
 
+#ifndef __SKYXENGINE_H
+#define __SKYXENGINE_H
+
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>
-#include <common\\array.h>
-#include <common\\string.cpp>
+#include <common/array.h>
+#include <common/string.h>
 
 //ЗАГРУЗКА БИБЛИОТЕК
 //{
@@ -236,14 +239,14 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #else
 #pragma comment(lib, "sxcore.lib")
 #endif
-#include <core\\sxcore.h>
+#include <core/sxcore.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxinput_d.lib")
 #else
 #pragma comment(lib, "sxinput.lib")
 #endif
-#include <input\\sxinput.h>
+#include <input/sxinput.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxscore_d.lib")
@@ -257,35 +260,35 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
-#include <gcore\\sxgcore.h>
+#include <gcore/sxgcore.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgeom_d.lib")
 #else
 #pragma comment(lib, "sxgeom.lib")
 #endif
-#include <geom\\sxgeom.h>
+#include <geom/sxgeom.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtllight_d.lib")
 #else
 #pragma comment(lib, "sxmtllight.lib")
 #endif
-#include <mtllight\\sxmtllight.h>
+#include <mtllight/sxmtllight.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxparticles_d.lib")
 #else
 #pragma comment(lib, "sxparticles.lib")
 #endif
-#include <particles\\sxparticles.h>
+#include <particles/sxparticles.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxpp_d.lib")
 #else
 #pragma comment(lib, "sxpp.lib")
 #endif
-#include <pp\\sxpp.h>
+#include <pp/sxpp.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxanim_d.lib")
@@ -328,43 +331,40 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #else
 #pragma comment(lib, "sxguiwinapi.lib")
 #endif
-#include <sxguiwinapi\\sxgui.h>
+#include <sxguiwinapi/sxgui.h>
 #endif
 
 //}
 
 //#############################################################################
 
-#include <managed_render\\handler_out_log.cpp>
-#include <managed_render\\gdata.h>
-#include <managed_render\\camera_update.h>
-#include <managed_render\\render_func.h>
-#include <managed_render\\level.h>
+#include <managed_render/handler_log.h>
+#include <managed_render/gdata.h>
+#include <managed_render/camera_update.h>
+#include <managed_render/render_func.h>
+#include <managed_render/level.h>
 
-#if defined(SX_GAME)
+/*#if defined(SX_GAME)
 #include <SkyXEngine_Build/resource.h>
-#endif
+#endif*/
 
 #if defined(SX_LEVEL_EDITOR)
 #include <SXLevelEditor/resource.h>
-#include <SXLevelEditor\\level_editor.cpp>
+#include <SXLevelEditor/level_editor.cpp>
 #endif
 
 #if defined(SX_MATERIAL_EDITOR)
 #include <sxmaterialeditor/resource.h>
-#include <sxmaterialeditor\\material_editor.cpp>
+#include <sxmaterialeditor/material_editor.cpp>
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
 #include <sxparticleseditor/resource.h>
-#include <sxparticleseditor\\particles_editor.cpp>
+#include <sxparticleseditor/particles_editor.cpp>
 #endif
 
-#include <managed_render\\render_func.h>
-#include <managed_render\\gdata.cpp>
-#include <managed_render\\camera_update.cpp>
-#include <managed_render\\render_func.cpp>
-#include <managed_render\\level.cpp>
+#include <managed_render/redefined_func.h>
+#include <managed_render/render_func.h>
 
 
 //#############################################################################
@@ -390,3 +390,5 @@ void SkyXEngine_PreviewCreate();
 
 //! уничтожение превью окна
 void SkyXEngine_PreviewKill();
+
+#endif

@@ -244,18 +244,18 @@ void ShaderManager::ReloadAll()
 
 	for (int i = 0; i<tmpArrVS.size(); i++)
 	{
-		Load(ShaderType::st_vertex, tmpArrVS[i]->Path, tmpArrVS[i]->Name, ShaderCheckDouble::scd_none, tmpArrVS[i]->ArrMacro);
+		Load(SHADER_TYPE_VERTEX, tmpArrVS[i]->Path, tmpArrVS[i]->Name, ShaderCheckDouble::scd_none, tmpArrVS[i]->ArrMacro);
 	}
 
 	for (int i = 0; i<tmpArrPS.size(); i++)
 	{
-		Load(ShaderType::st_pixel, tmpArrPS[i]->Path, tmpArrPS[i]->Name, ShaderCheckDouble::scd_none, tmpArrPS[i]->ArrMacro);
+		Load(SHADER_TYPE_PIXEL, tmpArrPS[i]->Path, tmpArrPS[i]->Name, ShaderCheckDouble::scd_none, tmpArrPS[i]->ArrMacro);
 	}
 }
 
-ID ShaderManager::IsExistPath(ShaderType type_shader, const char* path)
+ID ShaderManager::IsExistPath(SHADER_TYPE type_shader, const char* path)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		for (int i = 0; i<ArrVS.size(); i++)
 		{
@@ -263,7 +263,7 @@ ID ShaderManager::IsExistPath(ShaderType type_shader, const char* path)
 				return i;
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		for (int i = 0; i<ArrPS.size(); i++)
 		{
@@ -274,9 +274,9 @@ ID ShaderManager::IsExistPath(ShaderType type_shader, const char* path)
 	return -1;
 }
 
-ID ShaderManager::IsExistName(ShaderType type_shader, const char* name)
+ID ShaderManager::IsExistName(SHADER_TYPE type_shader, const char* name)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		for (int i = 0; i<ArrVS.size(); i++)
 		{
@@ -284,7 +284,7 @@ ID ShaderManager::IsExistName(ShaderType type_shader, const char* name)
 				return i;
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		for (int i = 0; i<ArrPS.size(); i++)
 		{
@@ -311,9 +311,9 @@ bool ShaderManager::FileExists(const char* path)
 	return Core_0FileExists(tmppath);
 }
 
-ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
+ID ShaderManager::Load(SHADER_TYPE type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		ID id = -1;
 
@@ -349,7 +349,7 @@ ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* nam
 			return id;
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		ID id = -1;
 		if (is_check_double == ShaderCheckDouble::scd_path)
@@ -383,10 +383,10 @@ ID ShaderManager::Load(ShaderType type_shader, const char* path, const char* nam
 	return -1;
 }
 
-void ShaderManager::Update(ShaderType type_shader, const char* name, D3DXMACRO* macro)
+void ShaderManager::Update(SHADER_TYPE type_shader, const char* name, D3DXMACRO* macro)
 {
 	bool isupdate = false;
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		for (int i = 0; i<ArrVS.size(); i++)
 		{
@@ -404,7 +404,7 @@ void ShaderManager::Update(ShaderType type_shader, const char* name, D3DXMACRO* 
 			}
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		for (int i = 0; i<ArrPS.size(); i++)
 		{
@@ -429,10 +429,10 @@ void ShaderManager::Update(ShaderType type_shader, const char* name, D3DXMACRO* 
 		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", name);
 }
 
-void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
+void ShaderManager::Update(SHADER_TYPE type_shader, ID id, D3DXMACRO* macro)
 {
 	bool isupdate = false;
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		if (ArrVS.size() > id && ArrVS[id])
 		{
@@ -460,7 +460,7 @@ void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
 			isupdate = true;
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		if (ArrPS.size() > id  && ArrVS[id])
 		{
@@ -496,9 +496,9 @@ void ShaderManager::Update(ShaderType type_shader, ID id, D3DXMACRO* macro)
 		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", ArrPS[id]->Name);
 }
 
-ID ShaderManager::GetID(ShaderType type_shader, const char* shader)
+ID ShaderManager::GetID(SHADER_TYPE type_shader, const char* shader)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		for (int i = 0; i<ArrVS.size(); i++)
 		{
@@ -508,7 +508,7 @@ ID ShaderManager::GetID(ShaderType type_shader, const char* shader)
 			}
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		for (int i = 0; i<ArrPS.size(); i++)
 		{
@@ -521,10 +521,10 @@ ID ShaderManager::GetID(ShaderType type_shader, const char* shader)
 	return -1;
 }
 
-void ShaderManager::Bind(ShaderType type_shader, const char* shader)
+void ShaderManager::Bind(SHADER_TYPE type_shader, const char* shader)
 {
 	bool isbind = false;
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		for (int i = 0; i<ArrVS.size(); i++)
 		{
@@ -536,7 +536,7 @@ void ShaderManager::Bind(ShaderType type_shader, const char* shader)
 			}
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		for (int i = 0; i<ArrPS.size(); i++)
 		{
@@ -553,10 +553,10 @@ void ShaderManager::Bind(ShaderType type_shader, const char* shader)
 		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: shader not bind, type [%d], name [%s]\n", type_shader, shader);
 }
 
-void ShaderManager::Bind(ShaderType type_shader, ID shader)
+void ShaderManager::Bind(SHADER_TYPE type_shader, ID shader)
 {
 	bool isbind = false;
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		if (shader < ArrVS.size())
 		{
@@ -564,7 +564,7 @@ void ShaderManager::Bind(ShaderType type_shader, ID shader)
 			DXDevice->SetVertexShader(ArrVS[shader]->VertexShader);
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		if (shader < ArrPS.size())
 		{
@@ -584,9 +584,9 @@ void ShaderManager::UnBind()
 }
 
 
-void ShaderManager::SetValueRegisterF(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
+void ShaderManager::SetValueRegisterF(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		int num_shader = -1;
 		int num_var = -1;
@@ -618,7 +618,7 @@ void ShaderManager::SetValueRegisterF(ShaderType type_shader, const char* name_s
 				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		int num_shader = -1;
 		int num_var = -1;
@@ -652,9 +652,9 @@ void ShaderManager::SetValueRegisterF(ShaderType type_shader, const char* name_s
 	}
 }
 
-void ShaderManager::SetValueRegisterI(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
+void ShaderManager::SetValueRegisterI(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		int num_shader = -1;
 		int num_var = -1;
@@ -686,7 +686,7 @@ void ShaderManager::SetValueRegisterI(ShaderType type_shader, const char* name_s
 				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		int num_shader = -1;
 		int num_var = -1;
@@ -720,11 +720,11 @@ void ShaderManager::SetValueRegisterI(ShaderType type_shader, const char* name_s
 	}
 }
 
-void ShaderManager::SetValueRegisterI(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
+void ShaderManager::SetValueRegisterI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
 {
 	if (IsValidate(type_shader, num_shader))
 	{
-		if (type_shader == ShaderType::st_vertex)
+		if (type_shader == SHADER_TYPE_VERTEX)
 		{
 			int num_var = -1;
 
@@ -742,7 +742,7 @@ void ShaderManager::SetValueRegisterI(ShaderType type_shader, ID num_shader, con
 			else if (num_var == -1)
 				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 		}
-		else if (type_shader == ShaderType::st_pixel)
+		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
 			int num_var = -1;
 
@@ -766,11 +766,11 @@ void ShaderManager::SetValueRegisterI(ShaderType type_shader, ID num_shader, con
 }
 
 
-void ShaderManager::SetValueRegisterF(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
+void ShaderManager::SetValueRegisterF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
 {
 	if (IsValidate(type_shader, num_shader))
 	{
-		if (type_shader == ShaderType::st_vertex)
+		if (type_shader == SHADER_TYPE_VERTEX)
 		{
 			int num_var = -1;
 
@@ -788,7 +788,7 @@ void ShaderManager::SetValueRegisterF(ShaderType type_shader, ID num_shader, con
 			else if (num_var == -1)
 				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 		}
-		else if (type_shader == ShaderType::st_pixel)
+		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
 			int num_var = -1;
 
@@ -811,9 +811,9 @@ void ShaderManager::SetValueRegisterF(ShaderType type_shader, ID num_shader, con
 		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", name_var, type_shader, num_shader);
 }
 
-bool ShaderManager::IsValidate(ShaderType type_shader, ID id)
+bool ShaderManager::IsValidate(SHADER_TYPE type_shader, ID id)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		if(id < ArrVS.size())
 		{
@@ -821,7 +821,7 @@ bool ShaderManager::IsValidate(ShaderType type_shader, ID id)
 				return true;
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		if (id < ArrPS.size())
 		{
@@ -832,9 +832,9 @@ bool ShaderManager::IsValidate(ShaderType type_shader, ID id)
 	return false;
 }
 
-void ShaderManager::GetPath(ShaderType type_shader, ID id, char* path)
+void ShaderManager::GetPath(SHADER_TYPE type_shader, ID id, char* path)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		if(id < ArrVS.size())
 		{
@@ -842,7 +842,7 @@ void ShaderManager::GetPath(ShaderType type_shader, ID id, char* path)
 				sprintf(path,"%s",ArrVS[id]->Path);
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		if(id < ArrPS.size())
 		{
@@ -852,9 +852,9 @@ void ShaderManager::GetPath(ShaderType type_shader, ID id, char* path)
 	}
 }
 
-void ShaderManager::GetName(ShaderType type_shader, ID id, char* name)
+void ShaderManager::GetName(SHADER_TYPE type_shader, ID id, char* name)
 {
-	if (type_shader == ShaderType::st_vertex)
+	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		if(id < ArrVS.size())
 		{
@@ -862,7 +862,7 @@ void ShaderManager::GetName(ShaderType type_shader, ID id, char* name)
 				sprintf(name,"%s",ArrVS[id]->Name);
 		}
 	}
-	else if (type_shader == ShaderType::st_pixel)
+	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		if(id < ArrPS.size())
 		{

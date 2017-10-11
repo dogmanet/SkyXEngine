@@ -14,8 +14,8 @@ See the license in LICENSE
 */
 
 
-#ifndef _SXDECALS_H_
-#define _SXDECALS_H_
+#ifndef __SXDECALS_H
+#define __SXDECALS_H
 
 #include <gdefines.h>
 #include <common/SXMath.h>
@@ -25,7 +25,14 @@ See the license in LICENSE
 #else
 #pragma comment(lib, "sxmtllight.lib")
 #endif
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
 #include <mtllight\\sxmtllight.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
+
 
 enum DECAL_TYPE
 {

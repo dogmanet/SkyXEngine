@@ -18,8 +18,8 @@ AI сетка состоит из квадратов (квад), квады им
 @{
 */
 
-#ifndef __sxaigrid
-#define __sxaigrid
+#ifndef __SXAIGRID_H
+#define __SXAIGRID_H
 
 #include <gdefines.h>
 
@@ -28,7 +28,13 @@ AI сетка состоит из квадратов (квад), квады им
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
-#include <gcore\\sxgcore.h>
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#include <gcore/sxgcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
 
 /*! \name Базовые функции библиотеки
 @{*/

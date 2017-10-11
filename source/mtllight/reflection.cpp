@@ -307,8 +307,8 @@ void Reflection::PostRenderRefCube(int cube)
 	MLSet::DXDevice->SetRenderTarget(0, CubeReflectSurface[cube]);
 	//MLSet::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 255, 0, 0), 1, 0);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::ScreenOut);
 
 	MLSet::DXDevice->SetTexture(0, TextureReflect);
 	SGCore_ScreenQuadDraw();

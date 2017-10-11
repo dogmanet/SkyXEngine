@@ -114,9 +114,9 @@ public:
 	bool GetLightEnable(ID id) const;
 	void SetLightEnable(ID id, bool val);
 	bool GetLightShadowed(ID id) const;
-	LightsTypeLight GetLightType(ID id) const;
-	void SetLightTypeShadowed(ID id, LightsTypeShadow type);
-	LightsTypeShadow GetLightTypeShadowed(ID id) const;
+	LTYPE_LIGHT GetLightType(ID id) const;
+	void SetLightTypeShadowed(ID id, LTYPE_SHADOW type);
+	LTYPE_SHADOW GetLightTypeShadowed(ID id) const;
 
 	//-----------------------------------------------------------------------------
 
@@ -168,7 +168,7 @@ public:
 	//-----------------------------------------------------------------------------
 
 	int DelGetCount();
-	LightsTypeLight DelGetType(ID key);
+	LTYPE_LIGHT DelGetType(ID key);
 	void DelDel(ID key);
 	ID DelGetIDArr(ID key, ID inid, int how);
 
@@ -184,14 +184,14 @@ public:
 		ID Id;
 		int Key;
 
-		LightsTypeLight TypeLight;
+		LTYPE_LIGHT TypeLight;
 		char Name[OBJECT_NAME_MAX_LEN];
 
 		bool IsVisible;
 		bool IsEnable;
 		bool IsGlobal;
 
-		LightsTypeShadow TypeShadowed;
+		LTYPE_SHADOW TypeShadowed;
 		int CountUpdate;
 		
 		ID3DXMesh* Mesh;

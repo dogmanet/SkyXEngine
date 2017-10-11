@@ -275,9 +275,9 @@ void SML_LigthsSetDir(ID id, const float3* vec)
 }
 */
 
-LightsTypeLight SML_LigthsGetType(ID id)
+LTYPE_LIGHT SML_LigthsGetType(ID id)
 {
-	ML_PRECOND(LightsTypeLight::ltl_none);
+	ML_PRECOND(LTYPE_LIGHT_NONE);
 	return ArrLights->GetLightType(id);
 }
 
@@ -532,15 +532,15 @@ void SML_LigthsSetIDArr(ID id, ID inid, int how, ID id_arr)
 	ArrLights->SetLightIDArr(id, inid, how, id_arr);
 }
 
-void SML_LigthsSetTypeShadowed(ID id, LightsTypeShadow type)
+void SML_LigthsSetTypeShadowed(ID id, LTYPE_SHADOW type)
 {
 	ML_PRECOND();
 	ArrLights->SetLightTypeShadowed(id, type);
 }
 
-LightsTypeShadow SML_LigthsGetTypeShadowed(ID id)
+LTYPE_SHADOW SML_LigthsGetTypeShadowed(ID id)
 {
-	ML_PRECOND(LightsTypeShadow::lts_none);
+	ML_PRECOND(LTYPE_SHADOW_NONE);
 	return ArrLights->GetLightTypeShadowed(id);
 }
 
@@ -574,9 +574,9 @@ int SML_LigthsDelGetCount()
 	return ArrLights->DelGetCount();
 }
 
-LightsTypeLight SML_LigthsDelGetType(ID key)
+LTYPE_LIGHT SML_LigthsDelGetType(ID key)
 {
-	ML_PRECOND(LightsTypeLight::ltl_none);
+	ML_PRECOND(LTYPE_LIGHT_NONE);
 	return ArrLights->DelGetType(key);
 }
 

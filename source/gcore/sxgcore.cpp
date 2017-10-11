@@ -27,7 +27,7 @@ IDirect3D9* d3d9 = 0;
 ID3DXFont* FPSText = 0;
 
 
-///
+//##########################################################################
 
 void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {
@@ -67,9 +67,8 @@ g_func_mtl_load FuncMtlLoad = StdMtlLoad;
 g_func_mtl_get_sort FuncMtlGetSort = StdMtlGetSort;
 g_func_mtl_get_physic_type FuncMtlGetPhysicType = StdMtlGetPhysicType;
 g_func_mtl_group_render_is_singly FuncMtlGroupRenderIsSingly = StdMtlGroupIsSyngly;
-///
 
-
+//##########################################################################
 
 IDirect3DVertexDeclaration9* StaticVertexDecl = 0;
 
@@ -196,17 +195,17 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 	DXDevice->CreateVertexDeclaration(layoutstatic, &StaticVertexDecl);
 }
 
-long SGCore_0GetVersion()
+SX_LIB_API long SGCore_0GetVersion()
 {
 	return SXGCORE_VERSION;
 }
 
-void SGCore_Dbg_Set(report_func rf)
+SX_LIB_API void SGCore_Dbg_Set(report_func rf)
 {
 	g_fnReportf = rf;
 }
 
-void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags, bool is_unic)
+SX_LIB_API void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags, bool is_unic)
 {
 	if (name && strlen(name) > 1)
 	{
@@ -226,7 +225,7 @@ void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool win
 		g_fnReportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);
 }
 
-void SGCore_AKill()
+SX_LIB_API void SGCore_AKill()
 {
 	mem_delete(MShaders);
 	mem_delete(MRenderTargets);
@@ -241,12 +240,12 @@ void SGCore_AKill()
 	mem_release(d3d9);
 }
 
-IDirect3DDevice9* SGCore_GetDXDevice()
+SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice()
 {
 	return DXDevice;
 }
 
-void SGCore_DbgMsg(const char* format, ...)
+SX_LIB_API void SGCore_DbgMsg(const char* format, ...)
 {
 	SG_PRECOND(_VOID);
 	
@@ -267,7 +266,7 @@ void SGCore_DbgMsg(const char* format, ...)
 	FPSText->DrawText(0, buf, -1, &rect, 0, 0xffffffff);
 }
 
-void SGCore_OnLostDevice()
+SX_LIB_API void SGCore_OnLostDevice()
 {
 	SG_PRECOND(_VOID);
 
@@ -275,7 +274,7 @@ void SGCore_OnLostDevice()
 	MRenderTargets->OnLostDevice();
 }
 
-bool SGCore_OnDeviceReset(int width, int heigth, bool windowed)
+SX_LIB_API bool SGCore_OnDeviceReset(int width, int heigth, bool windowed)
 {
 	SG_PRECOND(false);
 	D3DAPP.BackBufferWidth = width;
@@ -289,7 +288,7 @@ bool SGCore_OnDeviceReset(int width, int heigth, bool windowed)
 	return (FAILED(DXDevice->Reset(&D3DAPP)));
 }
 
-void SGCore_OnResetDevice()
+SX_LIB_API void SGCore_OnResetDevice()
 {
 	SG_PRECOND(_VOID);
 
@@ -317,7 +316,7 @@ void SGCore_OnResetDevice()
 	}
 }
 
-void SGCore_ScreenQuadDraw()
+SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
 	ScreenTexture->DrawSubset(0);
@@ -401,21 +400,21 @@ void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly fun
 
 ////////////
 
-ID SGCore_ShaderLoad(ShaderType type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
+ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->Load(type_shader, path, name, is_check_double, macro);
 }
 
-void SGCore_ShaderUpdateN(ShaderType type_shader, const char* name, D3DXMACRO macro[])
+void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name, D3DXMACRO macro[])
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->Update(type_shader, name, macro);
 }
 
-void SGCore_ShaderUpdate(ShaderType type_shader, ID id, D3DXMACRO macro[])
+void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[])
 {
 	SG_PRECOND(_VOID);
 
@@ -429,21 +428,21 @@ void SGCore_ShaderReloadAll()
 	MShaders->ReloadAll();
 }
 
-ID SGCore_ShaderGetID(ShaderType type_shader, const char* shader)
+ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char* shader)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->GetID(type_shader, shader);
 }
 
-void SGCore_ShaderBindN(ShaderType type_shader, const char* shader)
+void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char* shader)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->Bind(type_shader, shader);
 }
 
-void SGCore_ShaderBind(ShaderType type_shader, ID shader)
+void SGCore_ShaderBind(SHADER_TYPE type_shader, ID shader)
 {
 	SG_PRECOND(_VOID);
 
@@ -458,28 +457,28 @@ void SGCore_ShaderUnBind()
 	return MShaders->UnBind();
 }
 
-void SGCore_ShaderSetVRFN(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
+void SGCore_ShaderSetVRFN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->SetValueRegisterF(type_shader, name_shader, name_var, data, count_float4);
 }
 
-void SGCore_ShaderSetVRF(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
+void SGCore_ShaderSetVRF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->SetValueRegisterF(type_shader, num_shader, name_var, data, count_float4);
 }
 
-void SGCore_ShaderSetVRIN(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
+void SGCore_ShaderSetVRIN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->SetValueRegisterI(type_shader, name_shader, name_var, data, count_int4);
 }
 
-void SGCore_ShaderSetVRI(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
+void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
 {
 	SG_PRECOND(_VOID);
 
@@ -487,35 +486,35 @@ void SGCore_ShaderSetVRI(ShaderType type_shader, ID num_shader, const char* name
 }
 
 
-ID SGCore_ShaderIsExistName(ShaderType type_shader, const char* name)
+ID SGCore_ShaderIsExistName(SHADER_TYPE type_shader, const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->IsExistName(type_shader, name);
 }
 
-ID SGCore_ShaderIsExistPath(ShaderType type_shader, const char* name)
+ID SGCore_ShaderIsExistPath(SHADER_TYPE type_shader, const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->IsExistName(type_shader, name);
 }
 
-bool SGCore_ShaderIsValidate(ShaderType type_shader, ID id)
+bool SGCore_ShaderIsValidate(SHADER_TYPE type_shader, ID id)
 {
 	SG_PRECOND(0);
 
 	return MShaders->IsValidate(type_shader, id);
 }
 
-void SGCore_ShaderGetPath(ShaderType type_shader, ID id, char* path)
+void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID id, char* path)
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->GetPath(type_shader, id, path);
 }
 
-void SGCore_ShaderGetName(ShaderType type_shader, ID id, char* name)
+void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID id, char* name)
 {
 	SG_PRECOND(_VOID);
 

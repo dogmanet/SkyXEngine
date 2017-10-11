@@ -4,7 +4,6 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-#pragma once
 #include <windows.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,

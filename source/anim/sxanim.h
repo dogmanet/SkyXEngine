@@ -14,9 +14,8 @@ See the license in LICENSE
 */
 
 
-#ifndef _SXANIM_H_
-#define _SXANIM_H_
-
+#ifndef __SXANIM_H
+#define __SXANIM_H
 
 #include "ModelFile.h"
 
@@ -29,6 +28,13 @@ See the license in LICENSE
 #endif
 
 #include <gdefines.h>
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#include <gcore/sxgcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
 
 #ifdef _SERVER
 #	define IDirect3DDevice9 void

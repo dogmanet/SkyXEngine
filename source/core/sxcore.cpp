@@ -20,15 +20,22 @@ See the license in LICENSE
 
 #include "Time.h"
 
+//##########################################################################
+
 char g_szCoreName[CORE_NAME_MAX_LEN];
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
 #endif
+
+//**************************************************************************
+
 CTaskManager* g_pTaskManager = 0;
 
 #define SXCORE_PRECOND(retval) if(!g_pTaskManager){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+
+//**************************************************************************
 
 //РЕГИСТРЫ
 bool g_aGRegistersBool[CORE_REGISTRY_SIZE];
@@ -42,9 +49,12 @@ String g_aGRegistersString[CORE_REGISTRY_SIZE];
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
 {g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
 
+//**************************************************************************
 
 CTimeManager* g_pTimers = 0;
 #define CORE_TIME_PRECOND(retval) if(!g_pTimers){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+
+//##########################################################################
 
 //функции обертки
 long Core_0GetVersion()
@@ -68,8 +78,6 @@ bool Core_0FileExists(const char* fname)
 		}
 	return false;
 }
-
-//---------------------------------
 
 bool Core_0ClipBoardCopy(const char *str)
 {
@@ -153,7 +161,7 @@ void Core_AGetName(char* name)
 		g_fnReportf(-1, "%s - invalid argument", gen_msg_location);
 }
 
-////
+//##########################################################################
 
 IFile* Core_CrFile()
 {
@@ -180,7 +188,7 @@ ISXConfig*  Core_OpConfig(const char* path)
 	return pConfig;
 }
 
-////
+//##########################################################################
 
 void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
@@ -200,7 +208,7 @@ void Core_MTaskStop()
 	g_pTaskManager->stop();
 }
 
-//////////////
+//##########################################################################
 
 void Core_RBoolSet(int id, bool val)
 {
@@ -284,8 +292,7 @@ const char* Core_RStringGet(int id)
 	return g_aGRegistersString[id].c_str();
 }
 
-////
-
+//##########################################################################
 
 ID Core_TimeAdd()
 {

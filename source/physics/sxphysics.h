@@ -14,10 +14,16 @@ See the license in LICENSE
 */
 
 
-#ifndef _SXPHYSICS_H_
-#define _SXPHYSICS_H_
+#ifndef __SXPHYSICS_H
+#define __SXPHYSICS_H
 
 #include <gdefines.h>
+#define SX_LIB_API extern "C" __declspec (dllimport)
+//#include <mtllight\\sxmtllight.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
 
 //#ifdef lerp
 //#undef lerp

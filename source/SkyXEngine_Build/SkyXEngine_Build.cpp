@@ -10,7 +10,7 @@ See the license in LICENSE
 #define SX_EXE
 #define SX_GAME
 
-#include <SkyXEngine.cpp>
+#include <SkyXEngine.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {

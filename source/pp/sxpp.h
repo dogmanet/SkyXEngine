@@ -12,8 +12,8 @@ See the license in LICENSE
 /*! \defgroup sxpp sxpp - библиотека постпроцесса
 @{
 */
-#ifndef __sxpostprocess
-#define __sxpostprocess
+#ifndef __SXPP_H
+#define __SXPP_H
 
 #include <gdefines.h>
 
@@ -22,7 +22,15 @@ See the license in LICENSE
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
+
+#define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore\\sxgcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
+
+//##########################################################################
 
 /*! \name Значения цветов для создания эффекта sepia
 @{*/
@@ -33,23 +41,37 @@ See the license in LICENSE
 
 //!@}
 
-#define PP_SUN_RADIUS 30 /*!< радиус солнца в пикселях для lens flare */
-#define PP_MAX_ANGLE_VISIBLE_SUN 1.57 /*!< максимальный угол между взглядом наблюдателя и позицией источнкиа света при котором еще видно солнце, больше этого солнце уже не видно */
+//**************************************************************************
+
+/*! радиус солнца в пикселях для lens flare */
+#define PP_SUN_RADIUS 30 
+
+/*! максимальный угол между взглядом наблюдателя и позицией источнкиа света при котором еще видно солнце, больше этого солнце уже не видно */
+#define PP_MAX_ANGLE_VISIBLE_SUN 1.57 
+
+//##########################################################################
 
 /*! \name Базовые функции библиотеки
 @{*/
-SX_LIB_API long SPP_0GetVersion();				//!< возвращает версию подсистемы
-SX_LIB_API void SPP_Dbg_Set(report_func rf);	//!< установка функции обработки сообщений
+
+//! возвращает версию подсистемы
+SX_LIB_API long SPP_0GetVersion();				
+
+//! установка функции обработки сообщений
+SX_LIB_API void SPP_Dbg_Set(report_func rf);	
 
 //! инициализация подсистемы
 SX_LIB_API void SPP_0Create(
-	const char* name,			//имя подсистемы
-	bool is_unic				//должно ли быть имя подсистемы уникальным
+	const char* name,			//!< имя подсистемы
+	bool is_unic				//!< должно ли быть имя подсистемы уникальным
 	);
 
-SX_LIB_API void SPP_0Kill();	//!< уничтожение подсистемы
+//! уничтожение подсистемы
+SX_LIB_API void SPP_0Kill();	
 
 //!@}
+
+//**************************************************************************
 
 /*! \name Установка основных render targets
  \warning Глубина должна быть линейная, от 0 до 1, где 0 это возле камеры, а 1 это максимальная удаленность от камеры. 
@@ -59,26 +81,46 @@ depth = (z + near)/far \n
 где near и far ближняя и дальняя плоскости отсечения соответственно (к примеру 0.25 и 400), 
 z - z компонента трехмерного вектора отрансформированного wordview projection матрицей и интерпалированного в пиксельный шейдер
 @{*/
-SX_LIB_API void SPP_RTSetInput(ID rt);	//!< входное изображение которое будет модифицироваться
-SX_LIB_API void SPP_RTSetOutput(ID rt);	//!< дополнительное изображение для внутренних нужд
 
-SX_LIB_API void SPP_RTSetDepth0(ID rt);	//!< глубина (линейная 0-1), абсолютно непрозрачные пиксели
+//! входное изображение которое будет модифицироваться
+SX_LIB_API void SPP_RTSetInput(ID rt);	
+
+//! дополнительное изображение для внутренних нужд
+SX_LIB_API void SPP_RTSetOutput(ID rt);	
+
+
+//! глубина (линейная 0-1), абсолютно непрозрачные пиксели
+SX_LIB_API void SPP_RTSetDepth0(ID rt);	
+
 /*! глубина (линейная 0-1), непрозрачные и прозрачные пиксели, однако прозрачные (если есть) будут перекрывать непрозрачные,
 и в этом случае их глубина будет 1 то есть максимальной (для идентификации)*/
 SX_LIB_API void SPP_RTSetDepth1(ID rt);
-SX_LIB_API void SPP_RTSetNormal(ID rt);	//!< нормали (в том числе и микрорейльеф)
+
+//! нормали (в том числе и микрорейльеф)
+SX_LIB_API void SPP_RTSetNormal(ID rt);	
 
 //!@}
+
+//**************************************************************************
 
 /*! \name Переключение очереди и получением текущих rt
 @{*/
 
-SX_LIB_API ID SPP_RTGetCurrRender();	//!< поулчить текущий rt для рендера в него
-SX_LIB_API ID SPP_RTGetCurrSend();		//!< получить текущий rt для отправки в шейдер
-SX_LIB_API void SPP_RTIncr();			//!< переключить очередь между ке в который рисуем и который отправляем
-SX_LIB_API void SPP_RTNull();			//!< обнулить очередь rt, то есть после вызова rt рендера станет input, а дополнительной output
+//! поулчить текущий rt для рендера в него
+SX_LIB_API ID SPP_RTGetCurrRender();	
+
+//! получить текущий rt для отправки в шейдер
+SX_LIB_API ID SPP_RTGetCurrSend();		
+
+//! переключить очередь между ке в который рисуем и который отправляем
+SX_LIB_API void SPP_RTIncr();			
+
+//! обнулить очередь rt, то есть после вызова rt рендера станет input, а дополнительной output
+SX_LIB_API void SPP_RTNull();			
 
 //!@}
+
+//**************************************************************************
 
 /*! обновление данных постпроцессорной подсистемы, необходимо вызывать перед началом рендера постпроцесса*/
 SX_LIB_API void SPP_Update(
@@ -90,9 +132,14 @@ SX_LIB_API void SPP_Update(
 	float2_t* nearfar,	//!< ближняя и дальняя плоскости отсечения
 	float projfov		//!< угол обзора в радианах
 	);
-SX_LIB_API void SPP_UpdateSun(float3* sunpos);		//!< обвновление позиции солнца, если sunpos == 0 тогда солнца в сцене нет
-SX_LIB_API void SPP_ChangeTexSun(const char* str);	//!< сменить текстуру солнца на str
 
+//! обвновление позиции солнца, если sunpos == 0 тогда солнца в сцене нет
+SX_LIB_API void SPP_UpdateSun(float3* sunpos);		
+
+//! сменить текстуру солнца на str
+SX_LIB_API void SPP_ChangeTexSun(const char* str);	
+
+//##########################################################################
 
 /*! \defgroup sxpp_eff Эффекты
  \ingroup sxpp
@@ -158,12 +205,16 @@ coef - коэфициент размытия, 0 - 1 \n
 timeDelta - время рендера текущего кадра в млсек*/
 SX_LIB_API void SPP_RenderMotionBlur(float coef, DWORD timeDelta);
 
+//##########################################################################
 
 /*! \name Стандартные эффекты
 @{*/
 
-SX_LIB_API void SPP_RenderWhiteBlack(float coef);	//!< черно-белое изображение, coef - коэфициент перехода от цветного к черное-белому (0-1)
-SX_LIB_API void SPP_RenderSepia(float coef);		//!< эффект сепия, , coef - коэфициент перехода от цветного к сепии (0-1)
+//! черно-белое изображение, coef - коэфициент перехода от цветного к черное-белому (0-1)
+SX_LIB_API void SPP_RenderWhiteBlack(float coef);	
+
+//! эффект сепия, , coef - коэфициент перехода от цветного к сепии (0-1)
+SX_LIB_API void SPP_RenderSepia(float coef);		
 
 /*! коррекция изображения \n 
 param.x - contrast/контраст \n 
@@ -174,6 +225,7 @@ SX_LIB_API void SPP_RenderCBG(float3_t* param);
 
 //!@}
 
+//##########################################################################
 
 /*! \name Anti Aliasing
 @{*/
@@ -185,7 +237,8 @@ param.z - notmal map, вывести сформированные нормали
 рекомендуемые параметры: 2, 1, 0*/
 SX_LIB_API void SPP_RenderNFAA(float3_t* param);
 
-SX_LIB_API void SPP_RenderDLAA();	//!< dlaa (Directionally Localized Anti Aliasing)
+//! dlaa (Directionally Localized Anti Aliasing)
+SX_LIB_API void SPP_RenderDLAA();	
 
 //!@}
 

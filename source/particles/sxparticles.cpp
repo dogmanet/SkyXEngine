@@ -50,13 +50,13 @@ void SPE_0Create(const char* name, bool is_unic)
 			}
 			else
 			{
-				PESet::Init(SGCore_GetDXDevice());
+				PESet::Init();
 				ArrEffects = new Effects();
 			}
 		}
 		else
 		{
-			PESet::Init(SGCore_GetDXDevice());
+			PESet::Init();
 			ArrEffects = new Effects();
 		}
 	}

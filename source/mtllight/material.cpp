@@ -6,17 +6,17 @@ Materials::Materials()
 	CurrFirstFree = -1;
 	CountTimeDelta = 0;
 	IsForceblyAlphaTest = false;
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgeom_base.vs", "mtrlgeom_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_base.ps", "mtrlgeom_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base", ShaderCheckDouble::scd_path);
 
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgreen_base.ps", "mtrlgreen_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base", ShaderCheckDouble::scd_path);
 
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_light.ps", "mtrlgeom_light", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light", ShaderCheckDouble::scd_path);
 
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlskin_base.vs", "mtrlskin_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlskin_base.ps", "mtrlskin_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base", ShaderCheckDouble::scd_path);
 
 	IsIncrCountSurf = false;
 	CurrIdSurf = 0;
@@ -26,8 +26,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "light");
-	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
-	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_light");
+	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_light");
 
 	tmpMtlDefaultLight->MainTexture = -1;
 	tmpMtlDefaultLight->VS.IsTransWorldViewProjection = true;
@@ -42,8 +42,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "base");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 	tmpumtl->mtl->VS.IsTransWorld = true;
 
 	tmpumtl->mtl->MainTexture = -1;
@@ -58,8 +58,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "tree");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_tree_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 
 	tmpumtl->mtl->MainTexture = -1;
 	tmpumtl->mtl->VS.IsTransWorldViewProjection = true;
@@ -73,8 +73,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "grass");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_grass_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 
 	tmpumtl->mtl->MainTexture = -1;
 	tmpumtl->mtl->VS.IsTransWorldViewProjection = true;
@@ -565,25 +565,25 @@ ID Materials::MtlGetTextureID(ID id)
 void Materials::MtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(ShaderType::st_vertex, path_vs, path_vs, ShaderCheckDouble::scd_path);
+	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, ShaderCheckDouble::scd_path);
 }
 
 void Materials::MtlGetVS(ID id, char* name)
 {
 	MTL_PRE_COND_ID(id);
-	SGCore_ShaderGetPath(ShaderType::st_vertex, ArrMaterials[id]->mtl->PreShaderVS, name);
+	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, ArrMaterials[id]->mtl->PreShaderVS, name);
 }
 
 void Materials::MtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(ShaderType::st_pixel, path_ps, path_ps, ShaderCheckDouble::scd_path);
+	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, ShaderCheckDouble::scd_path);
 }
 
 void Materials::MtlGetPS(ID id, char* name)
 {
 	MTL_PRE_COND_ID(id);
-	SGCore_ShaderGetPath(ShaderType::st_pixel, ArrMaterials[id]->mtl->PreShaderPS, name);
+	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, ArrMaterials[id]->mtl->PreShaderPS, name);
 }
 
 
@@ -1151,14 +1151,14 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 
 		if (def_str_validate(tmpVS))
-			tmpMtl->PreShaderVS = SGCore_ShaderLoad(ShaderType::st_vertex, tmpVS, "main", ShaderCheckDouble::scd_path);
+			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, "main", ShaderCheckDouble::scd_path);
 		else
-			tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
+			tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
 
 		if (def_str_validate(tmpPS))
-			tmpMtl->PreShaderPS = SGCore_ShaderLoad(ShaderType::st_pixel, tmpPS, "main", ShaderCheckDouble::scd_path);
+			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, "main", ShaderCheckDouble::scd_path);
 		else
-			tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
+			tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 
 		tmpMicroDiff[0][0] = 0;
 		if (config->keyExists(tmp_name, "mirco_diff_r"))
@@ -1431,29 +1431,29 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 	//обычна¤ геометри¤
 	if (type == MtlTypeModel::tms_static)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//деревь¤
 	else if (type == MtlTypeModel::tms_tree)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_tree_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//трава
 	else if (type == MtlTypeModel::tms_grass)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_grass_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//анимационная модель
 	else if (type == MtlTypeModel::tms_skin)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlskin_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlskin_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//источник света
@@ -1616,8 +1616,8 @@ void Materials::MtlSave(ID id)
 
 	char tmpPathMaskName[1024];
 
-	SGCore_ShaderGetPath(ShaderType::st_vertex, mtrl->PreShaderVS, tmpPathVSName);
-	SGCore_ShaderGetPath(ShaderType::st_pixel, mtrl->PreShaderPS, tmpPathPSName);
+	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, mtrl->PreShaderVS, tmpPathVSName);
+	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, mtrl->PreShaderPS, tmpPathPSName);
 
 	fprintf(file, "type = %d\n", mtrl->Type);
 	fprintf(file, "is_unlit = %d\n", mtrl->IsUnlit);
@@ -1803,7 +1803,7 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 
 	if (type == MtlTypeModel::tms_static)
 	{
-		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1811,28 +1811,28 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "PlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeom);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeom);
 	}
 	else if (type == MtlTypeModel::tms_grass || type == MtlTypeModel::tms_tree)
 	{
 		ID tmpvs = (type == MtlTypeModel::tms_grass ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
-		SGCore_ShaderBind(ShaderType::st_vertex, tmpvs);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpvs);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1840,27 +1840,27 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "World", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "PlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreen);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreen);
 	}
 	else if (type == MtlTypeModel::tms_skin)
 	{
-		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1868,23 +1868,23 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "World", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "PlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkin);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkin);
 	}
 }
 
@@ -1967,10 +1967,10 @@ void Materials::Render(ID id, float4x4* world)
 
 
 	if (tmpmaterial->PreShaderVS != -1)
-		SGCore_ShaderBind(ShaderType::st_vertex, tmpmaterial->PreShaderVS);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS);
 
 	if (tmpmaterial->PreShaderPS != -1)
-		SGCore_ShaderBind(ShaderType::st_pixel, tmpmaterial->PreShaderPS);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS);
 
 	if (tmpmaterial->VS.IsTransWorld || tmpmaterial->PS.IsTransWorld || tmpmaterial->VS.IsTransWorldView || tmpmaterial->PS.IsTransWorldView || tmpmaterial->VS.IsTransWorldViewProjection || tmpmaterial->PS.IsTransWorldViewProjection)
 		worldtrans = SMMatrixTranspose(*world);
@@ -1991,22 +1991,22 @@ void Materials::Render(ID id, float4x4* world)
 	}
 
 	if (tmpmaterial->VS.IsTransWorld)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "World", &worldtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "World", &worldtrans);
 
 	if (tmpmaterial->PS.IsTransWorld)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "World", &worldtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "World", &worldtrans);
 
 	if (tmpmaterial->VS.IsTransView)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "View", &viewtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "View", &viewtrans);
 
 	if (tmpmaterial->PS.IsTransView)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "View", &viewtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "View", &viewtrans);
 
 	if (tmpmaterial->VS.IsTransProjection)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "Projection", &projtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "Projection", &projtrans);
 
 	if (tmpmaterial->PS.IsTransProjection)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "Projection", &projtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "Projection", &projtrans);
 
 
 	if (tmpmaterial->VS.IsTransWorldView || tmpmaterial->PS.IsTransWorldView)
@@ -2014,10 +2014,10 @@ void Materials::Render(ID id, float4x4* world)
 		float4x4 wv = viewtrans * worldtrans;
 
 		if (tmpmaterial->VS.IsTransWorldView)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WorldView", &wv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WorldView", &wv);
 
 		if (tmpmaterial->PS.IsTransWorldView)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WorldView", &wv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WorldView", &wv);
 	}
 
 	if (tmpmaterial->VS.IsTransWorldViewProjection || tmpmaterial->PS.IsTransWorldViewProjection)
@@ -2030,10 +2030,10 @@ void Materials::Render(ID id, float4x4* world)
 		wvp = SMMatrixTranspose(wvp);
 
 		if (tmpmaterial->VS.IsTransWorldViewProjection)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WorldViewProjection", &wvp);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WorldViewProjection", &wvp);
 
 		if (tmpmaterial->PS.IsTransWorldViewProjection)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WorldViewProjection", &wvp);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WorldViewProjection", &wvp);
 	}
 
 	if (tmpmaterial->VS.IsTransPosCam || tmpmaterial->PS.IsTransPosCam)
@@ -2042,36 +2042,36 @@ void Materials::Render(ID id, float4x4* world)
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 
 		if (tmpmaterial->VS.IsTransPosCam)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "PosCam", &observerpos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "PosCam", &observerpos);
 
 		if (tmpmaterial->PS.IsTransPosCam)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "PosCam", &observerpos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "PosCam", &observerpos);
 	}
 
 
 	if (tmpmaterial->VS.IsTransUserData)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "Param", &(tmpmaterial->VS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "Param", &(tmpmaterial->VS.Param));
 
 	if (tmpmaterial->TransVSDataInPS)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "ParamVS", &(tmpmaterial->VS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "ParamVS", &(tmpmaterial->VS.Param));
 
 	if (tmpmaterial->PS.IsTransUserData)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "Param", &(tmpmaterial->PS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "Param", &(tmpmaterial->PS.Param));
 
 	if (tmpmaterial->TransPSDataInVS)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "ParamPS", &(tmpmaterial->PS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "ParamPS", &(tmpmaterial->PS.Param));
 
 	if (tmpmaterial->VS.IsTransTimeDelta)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->PS.IsTransTimeDelta)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->VS.IsTransWinSize)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
 
 	if (tmpmaterial->PS.IsTransWinSize)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (tmpmaterial->IsAlphaTest && !IsForceblyAlphaTest)
@@ -2119,7 +2119,7 @@ void Materials::Render(ID id, float4x4* world)
 		if (tmpmaterial->LightParam.TypeRefraction == mtt_alpha_lighting)
 			++(CurrIdSurf);
 
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR), zz, float(CurrIdSurf) / 255.f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR), zz, float(CurrIdSurf) / 255.f));
 	}
 }
 

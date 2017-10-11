@@ -1,5 +1,126 @@
 
-#include <managed_render/gdata.h>
+#include "gdata.h"
+/*
+namespace GData
+{
+	IDirect3DDevice9* DXDevice = 0;	//!< dx устройство
+
+	HWND HandlePreview = 0;	//!< хэндл превью окна
+	HWND HandleParent3D = 0;//!< хэндл окна родителя окна рендера, на случай редакторов
+	HWND Handle3D = 0;		//!< хэндл окна рендера
+
+	float2_t WinSize = float2_t(800, 600);	//!< размер окна рендера (области рендера)
+	bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
+
+
+	DS_RT FinalImage = DS_RT::ds_rt_scene_light_com;//!< финальное изображение
+	ISXCamera* ObjCamera = 0;	//!< камера для которой будет рендер
+	ID IDSelectTex = -1;
+	int ReSize = 0;				//!< 0 - ничего не меняли, 1 - ресайз, 2 - переход между фуллскрин и окном
+
+	float2_t NearFar = float2_t(0.025, 400);	//!< значение дальней и ближней плоскостей отсечения
+	float ProjFov = SM_PIDIV4;				//!< fov камеры
+
+	ID DefaultGeomIDArr = -1;
+	ID DefaultGreenIDArr = -1;
+	ID DefaultAnimIDArr = -1;
+
+	//! Параметры перемещения камеры по умолчанию
+	float4_t CamWalkParamEditor = float4_t(
+		10.f,	//!< простое движенеи вперед
+		5.f,	//!< коэфициент ускорения
+		0.7f,	//!< коэфициент от основного движения в стороны 
+		0.5f	//!< коэфициент от основного движения назад
+		);
+};*/
+
+namespace GData
+{
+	 IDirect3DDevice9* DXDevice = 0;	//!< dx устройство
+
+	//! функция обработчик оконных сообщений (окна рендера)
+	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	//! инициализация окна рендера
+	void InitWin(
+		const char* name,	//!< имя окна (только латиница)
+		const char* caption	//!< название окна
+		);
+
+	 HWND HandlePreview = 0;	//!< хэндл превью окна
+	 HWND HandleParent3D = 0;//!< хэндл окна родителя окна рендера, на случай редакторов
+	 HWND Handle3D = 0;		//!< хэндл окна рендера
+
+	 float2_t WinSize = float2_t(800, 600);	//!< размер окна рендера (области рендера)
+	 bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
+
+
+	 DS_RT FinalImage = DS_RT::ds_rt_scene_light_com;//!< финальное изображение
+	 ISXCamera* ObjCamera = 0;	//!< камера для которой будет рендер
+	 ID IDSelectTex = -1;
+	 int ReSize = 0;				//!< 0 - ничего не меняли, 1 - ресайз, 2 - переход между фуллскрин и окном
+
+	 float2_t NearFar = float2_t(0.025, 400);	//!< значение дальней и ближней плоскостей отсечения
+	 float ProjFov = SM_PIDIV4;				//!< fov камеры
+
+	 ID DefaultGeomIDArr = -1;
+	 ID DefaultGreenIDArr = -1;
+	 ID DefaultAnimIDArr = -1;
+
+	 float3 ConstCurrCamPos;	//!< позиция камеры
+	 float3 ConstCurrCamDir;	//!< направление взгляда камеры
+
+	//! Параметры перемещения камеры по умолчанию
+	 float4_t CamWalkParamEditor = float4_t(
+		10.f,	//!< простое движенеи вперед
+		5.f,	//!< коэфициент ускорения
+		0.7f,	//!< коэфициент от основного движения в стороны 
+		0.5f	//!< коэфициент от основного движения назад
+		);
+
+	//матрицы
+	void InitAllMatrix();		//!< инициализация матриц
+	 float4x4 MCamView;			//!< матрица вида камеры
+	 float4x4 MCamProj;			//!< матрица проекции камеры
+	 float4x4 MLightProj;		//!< матрица проекции аналогична¤ камере, только дальна¤¤ плоскость дальше
+	 float4x4 MRefPlaneSkyProj;	//!< матрица проекции дл¤ рендера skybox и sky clouds, дл¤ плоских отражений, аналогична MCamProj
+	 float4x4 MRefCubeSkyProj;	//!< матрица проекции дл¤ рендера skybox и sky clouds, дл¤ куибческих отражений
+
+	//**********************************************************************
+
+	//! пространство имен с идентификаторами шейдеров
+	namespace IDsShaders
+	{
+		//! загрузка всех необходимых шейдеров
+		void InitAllShaders();
+
+		//! вершинные шейдеры
+		namespace VS
+		{
+			 ID ScreenOut;
+			 ID ResPos;
+		};
+
+		//! пиксельные шейдеры
+		namespace PS
+		{
+			 ID ScreenOut;
+			 ID ComLightingNonShadow;
+			 ID ComLightingShadow;
+
+			 ID BlendAmbientSpecDiffColor;
+
+			 ID ToneMapping;
+
+			 ID StencilStr;
+			 ID StencilColumn;
+			 ID StencilStrColumn;
+			 ID UnionAlpha;
+		};
+	};
+};
+
+
 
 void GData::InitAllMatrix()
 {
@@ -55,27 +176,27 @@ void GData::Pathes::InitAllPathes()
 
 void GData::IDsShaders::InitAllShaders()
 {
-	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
-	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
 
-	GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(ShaderType::st_pixel, "lighting_tone_mapping.ps", "lighting_tone_mapping", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_tone_mapping.ps", "lighting_tone_mapping", ShaderCheckDouble::scd_path);
 
-	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
 
 
-	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(ShaderType::st_pixel, "lighting_com.ps", "lighting_com_nonshadow", ShaderCheckDouble::scd_name);
+	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_nonshadow", ShaderCheckDouble::scd_name);
 	D3DXMACRO Defines_IS_SHADOWED[] = { { "IS_SHADOWED", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::ComLightingShadow = SGCore_ShaderLoad(ShaderType::st_pixel, "lighting_com.ps", "lighting_com_shadow", ShaderCheckDouble::scd_name, Defines_IS_SHADOWED);
-	GData::IDsShaders::PS::BlendAmbientSpecDiffColor = SGCore_ShaderLoad(ShaderType::st_pixel, "lighting_blend.ps", "lighting_blend", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::PS::ComLightingShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow", ShaderCheckDouble::scd_name, Defines_IS_SHADOWED);
+	GData::IDsShaders::PS::BlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps", "lighting_blend", ShaderCheckDouble::scd_path);
 
-	GData::IDsShaders::PS::UnionAlpha = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_union_alpha.ps", "pp_union_alpha", ShaderCheckDouble::scd_path);
+	GData::IDsShaders::PS::UnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps", "pp_union_alpha", ShaderCheckDouble::scd_path);
 
 	D3DXMACRO Defines_STR[] = { { "_STR_", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::StencilStr = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_alpha_stencil_mark.ps", "pp_stencil_str", ShaderCheckDouble::scd_name, Defines_STR);
+	GData::IDsShaders::PS::StencilStr = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str", ShaderCheckDouble::scd_name, Defines_STR);
 	D3DXMACRO Defines_COLUMN[] = { { "_COLUMN_", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_alpha_stencil_mark.ps", "pp_stencil_column", ShaderCheckDouble::scd_name, Defines_COLUMN);
+	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_column", ShaderCheckDouble::scd_name, Defines_COLUMN);
 	D3DXMACRO Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column", ShaderCheckDouble::scd_name, Defines_COLUMN_STR);
+	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column", ShaderCheckDouble::scd_name, Defines_COLUMN_STR);
 }
 
 LRESULT CALLBACK GData::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

@@ -4,9 +4,6 @@
     <ClCompile Include="..\..\..\source\managed_render\gdata.cpp">
       <Filter>Source\managed_render</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\managed_render\handler_out_log.cpp">
-      <Filter>Source\managed_render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\managed_render\level.cpp">
       <Filter>Source\managed_render</Filter>
     </ClCompile>
@@ -21,6 +18,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine_Build.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\render\sxrender.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\handler_log.cpp">
+      <Filter>Source\managed_render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\skyxengine.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\managed_render\redefined_func.cpp">
+      <Filter>Source\managed_render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +76,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\SkyXEngine_Build\resource.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\render\sxrender.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\handler_log.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\redefined_func.h">
+      <Filter>Header\managed_render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\managed_render\render_def.h">
+      <Filter>Header\managed_render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,45 +6,36 @@ See the license in LICENSE
 
 /*!
 \file
-Заголовочный файл render_func - пространства имен с орагнизацией рендера*/
+Заголовочный файл render_func - пространства имен с орагнизацией рендера
+*/
 
 /*! \defgroup managed_render_render_func render_func - пространство имен с орагнизацией рендера
  \ingroup managed_render
 @{*/
 
-#ifndef __render_func
-#define __render_func
+#ifndef __RENDER_FUNC_H
+#define __RENDER_FUNC_H
 
 #include <GRegisterIndex.h>
+#include <windows.h>
+#include <common/sxtypes.h>
 
-/*! \name Состояния рендера
-@{*/
+#define SM_D3D_CONVERSIONS
+#include <common/SXMath.h>
 
-#define RENDER_STATE_MATERIAL	0	/*!< отрисовка материалов */
-#define RENDER_STATE_SHADOW		1	/*!< отрисовка теней */
-#define RENDER_STATE_FREE		2	/*!< простая отрисовка (не материальная) */
+#include <managed_render/gdata.h>
+#include <managed_render/handler_log.h>
+#include <managed_render/render_def.h>
 
-//!@}
+#include <geom/sxgeom.h>
+#include <mtllight/sxmtllight.h>
+#include <aigrid/sxaigrid.h>
+#include <physics/sxphysics.h>
+#include <game/sxgame.h>
+#include <particles/sxparticles.h>
+#include <pp/sxpp.h>
+#include <decals/sxdecals.h>
 
-/*! \name Идентификаторы для определяния типа просчетов видимости
-@{*/
-
-#define RENDER_IDARRCOM_GEOM	0	/*!< геометрия */
-#define RENDER_IDARRCOM_GREEN	1	/*!< растительность */
-#define RENDER_IDARRCOM_ANIM	2	/*!< анимации */
-
-//!@}
-
-#define RENDER_PARTICLES_ALPHATEST_VALUE 16	/*!< минимальное значение для альфа теста */
-
-/*! \name Идентификаторы для определяния типа просчетов видимости
-@{*/
-
-#define RENDER_LAYER_NULL			0	/*!< нулевой (пустой слой, здесь будут к примеру скайбокс, облака и т.д.) */
-#define RENDER_LAYER_UNTRANSPARENT	1	/*!< непрозрачный слой */
-#define RENDER_LAYER_TRANSPARENT	2	/*!< первый прозрачный слой, следующие слои могут быть прозрачными */
-
-//!@}
 
 //! пространство имен с орагнизацией рендера
 namespace SXRenderFunc
@@ -63,6 +54,8 @@ namespace SXRenderFunc
 	void SetRenderSceneFilterUn();
 	//}
 
+	//**********************************************************************
+
 	//! обработка потери и восстановление устройства
 	void ComDeviceLost();
 
@@ -75,33 +68,38 @@ namespace SXRenderFunc
 	void ComVisibleForCamera();				//!< обработка видимости для камеры
 	void ComVisibleReflection();			//!< обработка видимости для отражений
 
-	void RenderInMRT(DWORD timeDelta);		//!< построение G буфера, то есть рендер всей сцены
+	void BuildMRT(DWORD timeDelta);		//!< построение G буфера, то есть рендер всей сцены
+
 	void UpdateShadow(DWORD timeDelta);		//!< обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
+	
 	void UpdateReflection(DWORD timeDelta);	//!< обработка/обновление отражений
+	void UpdateReflectionScene(DWORD timeDelta);
+	void UpdateRflectionSimModel(DWORD timeDelta);
 	
 	void RenderSky(DWORD timeDelta);					//!< отрисовка скайбокса и облаков
 	void ComLighting(DWORD timeDelta, bool render_sky);	//!< обработка освещения, render_sky - рисовать ли небо
+	
+	//! объединение слоев прозрачности
+	void UnionLayers();
+
+	//! применение тонмаппинга к рт
+	void ApplyToneMapping();
+
+	//! просчет тонмаппинга
+	void ComToneMapping(DWORD timeDelta);
+	
 	void RenderParticles(DWORD timeDelta);				//!< отрисовка партиклов (эффектов)
 	void RenderPostProcess(DWORD timeDelta);			//!< отрисовка постпроцесса
+
 	void ShaderRegisterData();
+
+	//**********************************************************************
 
 	void RenderEditorMain();				//!< рендер основных элементов для редакторов
 	void RenderEditorLE(DWORD timeDelta);	//!< рендер элементов для редактора уровней
-	
-	/*! \name Функции обертки, для передачи графическому ядру для замены стандартных
-	@{*/
+	void RenderEditorPE(DWORD timeDelta);
 
-	//! функция отрисовки, в данной версии не назначается
-	void RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-	//! функция установки материала по id, world - мировая матрица
-	void RFuncMtlSet(ID id, float4x4* world);
-	//! функция загрузки материала
-	ID RFuncMtlLoad(const char* name, int mtl_type);
-	
-	//!@}
-
-	bool AIQuadPhyNavigate(float3_t * pos);
-	bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
+	//**********************************************************************
 
 	void SaveScreenShot();		//!< сохранить скриншот
 	void SaveWorkTex();			//!< сохранить рабочие текстуры (г-буфер и что к нему прилагается)
@@ -110,24 +108,24 @@ namespace SXRenderFunc
 	//! время задержек/ожидания выполнения некоторых функций рендера
 	namespace Delay
 	{
-		int64_t UpdateVisibleForCamera = 0;
-		int64_t UpdateVisibleForLight = 0;
-		int64_t UpdateVisibleForReflection = 0;
+		extern int64_t UpdateVisibleForCamera;
+		extern int64_t UpdateVisibleForLight;
+		extern int64_t UpdateVisibleForReflection;
 
-		int64_t UpdateShadow = 0;
-		int64_t UpdateParticles = 0;
-		int64_t RenderMRT = 0;
-		int64_t ComLighting = 0;
-		int64_t PostProcess = 0;
-		int64_t ComReflection = 0;
-		int64_t GeomSortGroup = 0;
+		extern int64_t UpdateShadow;
+		extern int64_t UpdateParticles;
+		extern int64_t RenderMRT;
+		extern int64_t ComLighting;
+		extern int64_t PostProcess;
+		extern int64_t ComReflection;
+		extern int64_t GeomSortGroup;
 
-		int64_t Present = 0;
+		extern int64_t Present;
 
-		int64_t FreeVal = 0;
-		float FreeValF1 = 0;
-		float FreeValF2 = 0;
-		float FreeValF3 = 0;
+		extern int64_t FreeVal;
+		extern float FreeValF1;
+		extern float FreeValF2;
+		extern float FreeValF3;
 	};
 };
 

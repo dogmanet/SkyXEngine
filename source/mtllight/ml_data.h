@@ -2,25 +2,21 @@
 #ifndef __ML_DATA_H
 #define __ML_DATA_H
 
-#pragma once
-
 #include <gdefines.h>
 
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <common\array.h>
+
 #include <GRegisterIndex.h>
+
 #include "sxmtllight.h"
 
 namespace MLSet
 {
 	void MLInit();
+
 	extern IDirect3DDevice9* DXDevice;
-	//float3 ConstCurrCamPos;
-	//float2_t WinSize = float2_t(1024, 768);
-	//DWORD CountTimeDelta = 0;
-	//char StdPathMaterial[1024];
-	//char StdPathMesh[1024];
 	
 	//размер текстуры глубины дл¤ локальных источников света
 	extern float2_t SizeTexDepthGlobal;
@@ -43,14 +39,6 @@ namespace MLSet
 
 	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
 
-	//fov and ration esesno
-	//float ProjFov = SM_PI * 0.25f;
-	//float ProjRatio = WinSize.x / WinSize.y;
-
-	//ближн¤¤ и дальн¤¤ плоскости
-	//float2_t NearFar = float2_t(0.25f, 400.f);
-	
-	//float4x4 MCamView;
 
 	extern bool IsHalfGenPCFShadowLocal;
 

@@ -26,6 +26,13 @@ See the license in LICENSE
 #endif
 #include <core\\sxcore.h>
 
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#include <core\\sxcore.h>
+
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#endif
+
 /*! \defgroup sxinput_code_keyboard Коды клавиш клавиатуры
  \ingroup sxinput
 @{
@@ -270,18 +277,18 @@ namespace InputSymbol
 	/*! \name Массивы букв и кодов для них
 	@{*/
 	//! массив с кодами букв
-	InputCode KeyLetters[27]		= { SIK_A, SIK_B, SIK_C, SIK_D, SIK_E, SIK_F, SIK_G, SIK_H, SIK_I, SIK_J, SIK_K, SIK_L, SIK_M, SIK_N, SIK_O, SIK_P, SIK_Q, SIK_R, SIK_S, SIK_T, SIK_U, SIK_V, SIK_W, SIK_X, SIK_Y, SIK_Z, SIK_SPACE };
+	//InputCode KeyLetters[27]		= { SIK_A, SIK_B, SIK_C, SIK_D, SIK_E, SIK_F, SIK_G, SIK_H, SIK_I, SIK_J, SIK_K, SIK_L, SIK_M, SIK_N, SIK_O, SIK_P, SIK_Q, SIK_R, SIK_S, SIK_T, SIK_U, SIK_V, SIK_W, SIK_X, SIK_Y, SIK_Z, SIK_SPACE };
 	//! массив с заглавными буквами
-	char BigLetters[27]				= {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',' '};
+	//char BigLetters[27]				= {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',' '};
 	//!массив с прописными буквами
-	char SmallLetters[27]			= {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' '};
+	//char SmallLetters[27]			= {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',' '};
 	//!@}
 
 	/*! \name Массивы цифр и коды для них, основнйо и цифровой клавиатуры
 	@{*/
-	InputCode KeyNumbers[10]		= { SIK_1, SIK_2, SIK_3, SIK_4, SIK_5, SIK_6, SIK_7, SIK_8, SIK_9, SIK_0 };
-	InputCode KeyNumbers2[10]		= { SIK_NUMPAD1, SIK_NUMPAD2, SIK_NUMPAD3, SIK_NUMPAD4, SIK_NUMPAD5, SIK_NUMPAD6, SIK_NUMPAD7, SIK_NUMPAD8, SIK_NUMPAD9, SIK_NUMPAD0 };
-	char NumbersStr[10]				= {'1','2','3','4','5','6','7','8','9','0'};
+	//InputCode KeyNumbers[10]		= { SIK_1, SIK_2, SIK_3, SIK_4, SIK_5, SIK_6, SIK_7, SIK_8, SIK_9, SIK_0 };
+	//InputCode KeyNumbers2[10]		= { SIK_NUMPAD1, SIK_NUMPAD2, SIK_NUMPAD3, SIK_NUMPAD4, SIK_NUMPAD5, SIK_NUMPAD6, SIK_NUMPAD7, SIK_NUMPAD8, SIK_NUMPAD9, SIK_NUMPAD0 };
+	//char NumbersStr[10]				= {'1','2','3','4','5','6','7','8','9','0'};
 	//!@}
 };
 #endif

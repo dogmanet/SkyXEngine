@@ -13,10 +13,16 @@ See the license in LICENSE
  \ingroup managed_render
 @{*/
 
-#ifndef model_sim_h
-#define model_sim_h
+#ifndef __MODELSIM_H
+#define __MODELSIM_H
 
-#include <common\array.h>
+#include <common/array.h>
+
+#define SM_D3D_CONVERSIONS
+#include <common/SXMath.h>
+#include <mtllight/sxmtllight.h>
+#include <anim/sxanim.h>
+#include <managed_render/gdata.h>
 
 //симул¤ционна¤ модель всех возможных моделей материалов дл¤ редактора материалов
 

@@ -80,19 +80,19 @@ struct IBaseObject
 Заголовочный файл для всех библиотек движка SkyXEngine
 */
 
-#ifndef gdefines_h
-#define gdefines_h
-
 //! макрос экспорта/импорта из библиотек
-#if !defined(SX_LIB_API)
-	#if defined(SX_EXE)
-		#define SX_LIB_API extern "C" __declspec (dllimport)
-	#elif defined(SX_DLL)
-		#define SX_LIB_API extern "C" __declspec (dllexport)
-	#else
-		#define SX_LIB_API 
-	#endif
+/*#if !defined(SX_LIB_API)
+#if defined(SX_EXE)
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#elif defined(SX_DLL)
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#else
+#define SX_LIB_API extern
 #endif
+#endif*/
+
+#ifndef __GDEFINES_H
+#define __GDEFINES_H
 
 #include <cstdlib>
 

@@ -1,6 +1,5 @@
 
-#include <managed_render\\camera_update.h>
-
+#include "camera_update.h"
 
 //обработка вводы информации с клавиатуры
 void CameraUpdate::UpdateInputKeyBoard(DWORD timeDelta)

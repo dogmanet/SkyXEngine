@@ -112,13 +112,13 @@ ID Lights::CreateCopy(ID id)
 
 Lights::Light::Light()
 {
-	TypeLight = LightsTypeLight::ltl_none;
+	TypeLight = LTYPE_LIGHT_NONE;
 	Name[0] = 0;
 
 	Id = -1;
 	Key = -1;
 	
-	TypeShadowed = LightsTypeShadow::lts_static;
+	TypeShadowed = LTYPE_SHADOW_STATIC;
 	CountUpdate = 0;
 
 	IsVisible = IsEnable = IsGlobal = false;
@@ -282,7 +282,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 		tmplight->Dist = dist;
 	}
 
-	tmplight->TypeLight = (isglobal ? LightsTypeLight::ltl_global : LightsTypeLight::ltl_point);
+	tmplight->TypeLight = (isglobal ? LTYPE_LIGHT_GLOBAL : LTYPE_LIGHT_POINT);
 		if(StrValidate(bound_volume))
 		{
 			
@@ -308,9 +308,9 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 		}
 
 		if (is_shadow)
-			tmplight->TypeShadowed = LightsTypeShadow::lts_dynamic;
+			tmplight->TypeShadowed = LTYPE_SHADOW_DYNAMIC;
 		else
-			tmplight->TypeShadowed = LightsTypeShadow::lts_none;
+			tmplight->TypeShadowed = LTYPE_SHADOW_NONE;
 		
 	ID tmpid = id;
 
@@ -349,7 +349,7 @@ ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* c
 	}
 
 	tmplight->IsGlobal = false;
-	tmplight->TypeLight = LightsTypeLight::ltl_direction;
+	tmplight->TypeLight = LTYPE_LIGHT_DIR;
 	tmplight->Angle = angle;
 	float bottom_radius = top_radius + dist * tanf(angle / 2.f);
 	tmplight->TopBottomRadius.x = top_radius;
@@ -386,9 +386,9 @@ ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* c
 	}
 	
 	if (is_shadow)
-		tmplight->TypeShadowed = LightsTypeShadow::lts_dynamic;
+		tmplight->TypeShadowed = LTYPE_SHADOW_DYNAMIC;
 	else
-		tmplight->TypeShadowed = LightsTypeShadow::lts_none;
+		tmplight->TypeShadowed = LTYPE_SHADOW_NONE;
 
 	tmplight->BoundVolume = SGCore_CrBound();
 	IDirect3DVertexBuffer9* vertexbuf;
@@ -483,7 +483,7 @@ void Lights::SetLightDist(ID id, float radius_height, bool is_create)
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->Dist = radius_height;
-	if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction && is_create)
+	if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_DIR && is_create)
 	{
 		ArrIDLights[id]->TopBottomRadius.y = ArrIDLights[id]->TopBottomRadius.x + radius_height * tanf(ArrIDLights[id]->Angle / 2.f);
 		mem_release_del(ArrIDLights[id]->Mesh);
@@ -493,7 +493,7 @@ void Lights::SetLightDist(ID id, float radius_height, bool is_create)
 	if (ArrIDLights[id]->ShadowSM)
 		ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
 
-	if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_point && is_create)
+	if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_POINT && is_create)
 	{
 		mem_release_del(ArrIDLights[id]->Mesh);
 		D3DXCreateSphere(MLSet::DXDevice, radius_height, 20, 20, &ArrIDLights[id]->Mesh, 0);
@@ -694,12 +694,12 @@ bool Lights::GetLightShadowed(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
-	return (ArrIDLights[id]->TypeShadowed != LightsTypeShadow::lts_none);
+	return (ArrIDLights[id]->TypeShadowed != LTYPE_SHADOW_NONE);
 }
 
-LightsTypeLight Lights::GetLightType(ID id) const
+LTYPE_LIGHT Lights::GetLightType(ID id) const
 {
-	LIGHTS_PRE_COND_ID(id, LightsTypeLight::ltl_none);
+	LIGHTS_PRE_COND_ID(id, LTYPE_LIGHT_NONE);
 	return ArrIDLights[id]->TypeLight;
 }
 
@@ -758,62 +758,62 @@ void Lights::InitShaderOfTypeMaterial(ID id, int typemat, float4x4* wmat)
 	{
 		if (typemat == MTL_TYPE_GEOM)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &tmpmat);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &tmpmat);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 		}
 		else if (typemat == MTL_TYPE_GRASS)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGrassPSSMDirect, "WorldViewProjection", &tmpmat);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGrassPSSMDirect);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGreenPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGrassPSSMDirect, "WorldViewProjection", &tmpmat);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGrassPSSMDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGreenPSSMDirect);
 		}
 		else if (typemat == MTL_TYPE_TREE)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthTreePSSMDirect, "WorldViewProjection", &tmpmat);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthTreePSSMDirect);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGreenPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthTreePSSMDirect, "WorldViewProjection", &tmpmat);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthTreePSSMDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGreenPSSMDirect);
 		}
 		else if (typemat == MTL_TYPE_SKIN)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect, "WorldViewProjection", &tmpmat);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthSkinPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect, "WorldViewProjection", &tmpmat);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthSkinPSSMDirect);
 		}
 	}
 	else if (ArrIDLights[id]->ShadowCube)
 	{
 		if (typemat == MTL_TYPE_GEOM)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube, "WorldViewProjection", &tmpmat);
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube, "World", &tmpwmat);
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube, "LightPos", &ArrIDLights[id]->Position);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGeomCube);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "WorldViewProjection", &tmpmat);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "World", &tmpwmat);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "LightPos", &ArrIDLights[id]->Position);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomCube);
 		}
 		else if (typemat == MTL_TYPE_GRASS)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGrassCube, "WorldViewProjection", &tmpmat);
-			//SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGrassCube, "World", &tmpwmat);
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGrassCube, "LightPos", &ArrIDLights[id]->Position);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGrassCube);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGreenCube);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGrassCube, "WorldViewProjection", &tmpmat);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGrassCube, "World", &tmpwmat);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGrassCube, "LightPos", &ArrIDLights[id]->Position);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGrassCube);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGreenCube);
 		}
 		else if (typemat == MTL_TYPE_TREE)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthTreeCube, "WorldViewProjection", &tmpmat);
-			//SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthTreeCube, "World", &tmpwmat);
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthTreeCube, "LightPos", &ArrIDLights[id]->Position);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthTreeCube);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGreenCube);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthTreeCube, "WorldViewProjection", &tmpmat);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthTreeCube, "World", &tmpwmat);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthTreeCube, "LightPos", &ArrIDLights[id]->Position);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthTreeCube);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGreenCube);
 		}
 		else if (typemat == MTL_TYPE_SKIN)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthSkinCube, "WorldViewProjection", &tmpmat);
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthSkinCube, "World", &tmpwmat);
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthSkinCube, "LightPos", &ArrIDLights[id]->Position);
-			SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthSkinCube);
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthSkinCube);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthSkinCube, "WorldViewProjection", &tmpmat);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthSkinCube, "World", &tmpwmat);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthSkinCube, "LightPos", &ArrIDLights[id]->Position);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthSkinCube);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthSkinCube);
 		}
 	}
 }
@@ -894,7 +894,7 @@ void Lights::SetLightAngle(ID id, float angle, bool is_create)
 	LIGHTS_PRE_COND_ID(id);
 
 		ArrIDLights[id]->Angle = angle;
-		if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction && is_create)
+		if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_DIR && is_create)
 		{
 			mem_release_del(ArrIDLights[id]->Mesh);
 			ArrIDLights[id]->TopBottomRadius.y = ArrIDLights[id]->TopBottomRadius.x + ArrIDLights[id]->Dist * tanf(angle / 2.f);
@@ -910,7 +910,7 @@ void Lights::SetLightAngle(ID id, float angle, bool is_create)
 			mem_release(vertexbuf);
 		}
 
-		if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction && ArrIDLights[id]->ShadowSM)
+		if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_DIR && ArrIDLights[id]->ShadowSM)
 			ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(angle, 0.1, ArrIDLights[id]->Dist));
 
 		LightCountUpdateNull(id);
@@ -1083,13 +1083,13 @@ void Lights::SetLightIDArr(ID id, ID inid, int how, ID id_arr)
 		}
 }
 
-void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
+void Lights::SetLightTypeShadowed(ID id, LTYPE_SHADOW type)
 {
 	LIGHTS_PRE_COND_ID(id);
 
 	ArrIDLights[id]->TypeShadowed = type;
 
-	if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_direction)
+	if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_DIR)
 	{
 		if (!ArrIDLights[id]->ShadowSM)
 		{
@@ -1100,7 +1100,7 @@ void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
 			ArrIDLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrIDLights[id]->Angle, 0.1, ArrIDLights[id]->Dist));
 		}
 	}
-	else if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_global)
+	else if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_GLOBAL)
 	{
 		if (ArrIDLights[id]->IsGlobal)
 		{
@@ -1112,7 +1112,7 @@ void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
 			}
 		}
 	}
-	else if (ArrIDLights[id]->TypeLight == LightsTypeLight::ltl_point)
+	else if (ArrIDLights[id]->TypeLight == LTYPE_LIGHT_POINT)
 	{
 		if (!ArrIDLights[id]->ShadowCube)
 		{
@@ -1126,9 +1126,9 @@ void Lights::SetLightTypeShadowed(ID id, LightsTypeShadow type)
 	LightCountUpdateNull(id);
 }
 
-LightsTypeShadow Lights::GetLightTypeShadowed(ID id) const
+LTYPE_SHADOW Lights::GetLightTypeShadowed(ID id) const
 {
-	LIGHTS_PRE_COND_ID(id, LightsTypeShadow::lts_none);
+	LIGHTS_PRE_COND_ID(id, LTYPE_SHADOW_NONE);
 
 	return ArrIDLights[id]->TypeShadowed;
 }
@@ -1161,7 +1161,7 @@ bool Lights::LightCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 			}
 		}
 
-		else if (ArrIDLights[id]->TypeShadowed == LightsTypeShadow::lts_static)
+		else if (ArrIDLights[id]->TypeShadowed == LTYPE_SHADOW_STATIC)
 		{
 			if (ArrIDLights[id]->CountUpdate < LIGHTS_UPDATE_MAX_COUNT_FOR_STATIC)
 			{
@@ -1215,7 +1215,7 @@ bool Lights::LightCountUpdateAllowed(ID id, int ghow) const
 				return (ArrIDLights[id]->ShadowPSSM->IsUpdate[ghow] == 0);
 			}
 		}
-		else if (ArrIDLights[id]->TypeShadowed == LightsTypeShadow::lts_static)
+		else if (ArrIDLights[id]->TypeShadowed == LTYPE_SHADOW_STATIC)
 		{
 			if (ArrIDLights[id]->CountUpdate >= LIGHTS_UPDATE_MAX_COUNT_FOR_STATIC)
 				return false;
@@ -1265,27 +1265,27 @@ void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 		else
 			MLSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(ShadowMap2));
 	
-		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
 
 		if(randomsam)
 		{
 			SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 			SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 			MLSet::DXDevice->SetTexture(2, SGCore_LoadTexGetTex(MLSet::IDsTexs::Tex_NoiseTex));
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased);
 	
 		if(randomsam)
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "PixelSize", &float2_t(size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "NearFar", &float2_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR)));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "PixelSize", &float2_t(size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "NearFar", &float2_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR)));
 		}
 		else
 		{
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased, "PixelSize", &float2_t(size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PPBlurDepthBased, "NearFar", &float2_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR)));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased, "PixelSize", &float2_t(size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), size / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased, "NearFar", &float2_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR)));
 		}
 
 	
@@ -1315,9 +1315,9 @@ void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 	MLSet::DXDevice->GetRenderTarget(0, &BackBuf);
 	MLSet::DXDevice->SetRenderTarget(0, SurfSceneScale);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SampleLumIterative);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::SampleLumIterative, "ArrOffsets", &(MLSet::HDRSampleOffsets));
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative, "ArrOffsets", &(MLSet::HDRSampleOffsets));
 
 	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::LigthCom));
 	SGCore_ScreenQuadDraw();
@@ -1349,9 +1349,9 @@ void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SampleLumInit);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::SampleLumInit, "ArrOffsets", &(MLSet::HDRSampleOffsets));
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumInit);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumInit, "ArrOffsets", &(MLSet::HDRSampleOffsets));
 
 	SGCore_ScreenQuadDraw();
 
@@ -1371,9 +1371,9 @@ void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 		MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 		MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
 
-		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SampleLumIterative);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::SampleLumIterative, "ArrOffsets", &(MLSet::HDRSampleOffsets));
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative, "ArrOffsets", &(MLSet::HDRSampleOffsets));
 
 		MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[CurrTexture + 1]));
 		SGCore_ScreenQuadDraw();
@@ -1404,11 +1404,11 @@ void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::CalcAdaptedLum);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::CalcAdaptedLum);
 
 	float ElapsedTime = float(timeDelta) * 0.001f * (factor_adapted * 1000.f);
-	SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::CalcAdaptedLum, "ElapsedTime", &(ElapsedTime));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::CalcAdaptedLum, "ElapsedTime", &(ElapsedTime));
 
 	SGCore_ScreenQuadDraw();
 
@@ -1455,9 +1455,9 @@ int Lights::DelGetCount()
 	return ArrKeyDelLights.size();
 }
 
-LightsTypeLight Lights::DelGetType(ID key)
+LTYPE_LIGHT Lights::DelGetType(ID key)
 {
-	LIGHTS_PRE_COND_KEY_DEL(key, LightsTypeLight::ltl_none);
+	LIGHTS_PRE_COND_KEY_DEL(key, LTYPE_LIGHT_NONE);
 	return ArrKeyDelLights[key]->TypeLight;
 }
 

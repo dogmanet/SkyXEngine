@@ -13,8 +13,17 @@ See the license in LICENSE
  \ingroup managed_render
 @{*/
 
-#ifndef level_h
-#define level_h
+#ifndef __LEVEL_H
+#define __LEVEL_H
+
+#include <gdefines.h>
+#include <common/string.h>
+#include <geom/sxgeom.h>
+#include <mtllight/sxmtllight.h>
+#include <aigrid/sxaigrid.h>
+#include <physics/sxphysics.h>
+#include <game/sxgame.h>
+#include <particles/sxparticles.h>
 
 //! пространство имен для управления уровнем
 namespace Level
@@ -29,9 +38,9 @@ namespace Level
 	загрузит геометрию уровня из файла с именем и расширением test_level.geom из той же директории уровня в котором находится заголовочный файл уровня
 	 \todo Расписать организацию конфигурационного файла загрузки/сохранения для уровня
 	 @{*/
-	char Name[OBJECT_NAME_MAX_LEN];	//!< текущее имя уровня
-	String StrAmbientSounds;
-	String StrWeather;
+	extern char Name[OBJECT_NAME_MAX_LEN];	//!< текущее имя уровня
+	extern String StrAmbientSounds;
+	extern String StrWeather;
 	void Clear();					//!< очистка уровня
 	void Load(const char* name);	//!< Загрузка уровня с именем name
 	void Save(const char* name);	//!< Сохранение уровня под именем name
