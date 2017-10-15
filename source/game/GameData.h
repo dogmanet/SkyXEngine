@@ -4,6 +4,7 @@
 
 #include "SXplayer.h"
 #include "crosshair.h"
+#include <mtllight/sxmtllight.h>
 
 class GameData
 {
@@ -23,7 +24,14 @@ public:
 	void RenderHUD();
 	void Sync();
 
+	void playFootstepSound(MtlPhysicType mtl_type, const float3 &f3Pos);
+
 protected:
+
+	void loadFoostepsSounds();
+
+	ID *m_pidFootstepSound[MPT_COUNT];
+	int m_iFootstepSoundCount[MPT_COUNT];
 
 	static void ccmd_forward_on();
 	static void ccmd_forward_off();
@@ -64,5 +72,7 @@ protected:
 	static void ccmd_toggleflashlight();
 
 };
+
+extern GameData * g_pGameData;
 
 #endif

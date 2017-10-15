@@ -140,3 +140,10 @@ SX_LIB_API bool SXPhysics_ExportGeom(const char * file)
 	SP_PRECOND(false);
 	return(g_pWorld->ExportGeom(file));
 }
+
+SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+{
+	SP_PRECOND(mpt_default);
+
+	return(g_pWorld->GetMtlType(pBody, pShapeInfo));
+}

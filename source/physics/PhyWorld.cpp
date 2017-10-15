@@ -11,7 +11,8 @@ PhyWorld::PhyWorld():
 	m_pGeomStaticCollideMesh(NULL),
 	m_pGeomStaticCollideShape(NULL),
 	m_pGeomStaticRigidBody(NULL),
-	m_ppGeomMtlTypes(0),
+	m_pGeomMtlTypes(0),
+	m_iGeomFacesCount(0),
 	m_iGeomModelCount(0),
 	m_ppGreenStaticCollideShape(NULL),
 	m_pppGreenStaticRigidBody(NULL),
@@ -111,7 +112,13 @@ void PhyWorld::LoadGeom(const char * file)
 	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 	if(iModelCount > 0)
 	{
-		m_ppGeomMtlTypes = new int*[iModelCount];
+		m_iGeomFacesCount = 0;
+		for(int32_t tc = 0; tc < iModelCount; ++tc)
+		{
+			m_iGeomFacesCount += pIndexCount[tc] / 3;
+		}
+
+		m_pGeomMtlTypes = new MtlPhysicType[m_iGeomFacesCount];
 		m_iGeomModelCount = iModelCount;
 		m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
@@ -129,17 +136,16 @@ void PhyWorld::LoadGeom(const char * file)
 
 		IC = 0;
 		VC = 0;
-
+		int32_t iFace = 0;
 		for(int32_t tc = 0; tc < iModelCount; ++tc)
 		{
-			m_ppGeomMtlTypes[tc] = new int[pIndexCount[tc] / 3];
 			for(int i = 0; i < pVertexCount[tc]; ++i)
 			{
 				m_pGeomStaticCollideMesh->findOrAddVertex(F3_BTVEC(ppVertices[tc][i]), false);
 			}
 			for(int i = 0; i < pIndexCount[tc]; i += 3)
 			{
-				m_ppGeomMtlTypes[tc][i / 3] = SML_MtlGetPhysicMaterial(ppMtls[tc][i]);
+				m_pGeomMtlTypes[iFace++] = SML_MtlGetPhysicMaterial(ppMtls[tc][i]);
 				m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
 			}
 			IC += pIndexCount[tc];
@@ -361,6 +367,8 @@ void PhyWorld::LoadGeom(const char * file)
 
 	}
 	SGeom_GreenClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
+
+	ExportGeom(file);
 }
 
 void PhyWorld::UnloadGeom()
@@ -395,17 +403,25 @@ void PhyWorld::UnloadGeom()
 	mem_delete(m_pGeomStaticCollideShape);
 	mem_delete(m_pGeomStaticCollideMesh);
 
-	for(int i = 0; i < m_iGeomModelCount; ++i)
-	{
-		mem_delete_a(m_ppGeomMtlTypes[i]);
-	}
 	m_iGeomModelCount = 0;
-	mem_delete_a(m_ppGeomMtlTypes);
+	m_iGeomFacesCount = 0;
+	mem_delete_a(m_pGeomMtlTypes);
 }
 
 bool PhyWorld::ImportGeom(const char * file)
 {
 	UnloadGeom();
+	
+	int len = strlen(file) + 1;
+	char * name = (char*)alloca(sizeof(char)*(len + 1));
+	memcpy(name, file, sizeof(char)* len);
+	name[len - 1] = 'm';
+	name[len] = 0;
+
+	if(!Core_0FileExists(file) || !Core_0FileExists(name))
+	{
+		return(false);
+	}
 
 	btBulletWorldImporter * importer = new btBulletWorldImporter(m_pDynamicsWorld);
 
@@ -449,8 +465,40 @@ bool PhyWorld::ImportGeom(const char * file)
 				}
 			}
 		}
+
+		FILE *pF = fopen(name, "rb");
+		if(pF)
+		{
+			PhyMatFile pmf;
+			if(fread(&pmf, sizeof(pmf), 1, pF))
+			{
+				if(pmf.i64Magick == PHY_MAT_FILE_MAGICK)
+				{
+					m_iGeomFacesCount = pmf.uiGeomFaceCount;
+					m_pGeomMtlTypes = new MtlPhysicType[m_iGeomFacesCount];
+					fread(m_pGeomMtlTypes, sizeof(MtlPhysicType), m_iGeomFacesCount, pF);
+				}
+				else
+				{
+					ret = false;
+				}
+			}
+			else
+			{
+				ret = false;
+			}
+			fclose(pF);
+		}
+		else
+		{
+			ret = false;
+		}
 	}
 	mem_delete(importer);
+	if(!ret)
+	{
+		UnloadGeom();
+	}
 	return(ret);
 }
 
@@ -491,7 +539,36 @@ bool PhyWorld::ExportGeom(const char * _file)
 		&& fwrite(serializer->getBufferPointer(), serializer->getCurrentBufferSize(), 1, file)
 		&& !fclose(file);
 	mem_delete(serializer);
+
+	int len = strlen(_file)+1;
+	char * name = (char*)alloca(sizeof(char)*(len + 1));
+	memcpy(name, _file, sizeof(char)* len);
+	name[len - 1] = 'm';
+	name[len] = 0;
+
+	file = fopen(name, "wb");
+	if(!file)
+	{
+		ret = false;
+	}
+	else
+	{
+		PhyMatFile pmf;
+		pmf.uiGeomFaceCount = m_iGeomFacesCount;
+		fwrite(&pmf, sizeof(pmf), 1, file);
+		fwrite(m_pGeomMtlTypes, sizeof(MtlPhysicType), m_iGeomFacesCount, file);
+		fclose(file);
+	}
 	return(ret);
+}
+
+MtlPhysicType PhyWorld::GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+{
+	if(pBody == m_pGeomStaticRigidBody && m_iGeomFacesCount > pShapeInfo->m_triangleIndex)
+	{
+		return(m_pGeomMtlTypes[pShapeInfo->m_triangleIndex]);
+	}
+	return(mpt_default);
 }
 
 //##############################################################

@@ -46,6 +46,7 @@ void CNPCBase::InitPhysics()
 	m_pCollideShape = new btCapsuleShape(0.3f, 1.4f);
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
 	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+	m_pGhostObject->setUserPointer(this);
 
 	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, m_fStepHeight, btVector3(0.0f, 1.0f, 0.0f));
 	m_pCharacter->setMaxJumpHeight(0.60f);

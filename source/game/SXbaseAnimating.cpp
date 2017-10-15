@@ -136,10 +136,11 @@ void SXbaseAnimating::PlayAnimation(const char * name, UINT iFadeTime, UINT slot
 
 bool SXbaseAnimating::PlayingAnimations(const char* name)
 {
-	if (m_pAnimPlayer)
+	if(m_pAnimPlayer)
 	{
-		return m_pAnimPlayer->PlayingAnimations(name);
+		return(m_pAnimPlayer->PlayingAnimations(name));
 	}
+	return(false);
 }
 
 void SXbaseAnimating::PlayActivity(const char * name, UINT iFadeTime, UINT slot)

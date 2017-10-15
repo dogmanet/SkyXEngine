@@ -20,6 +20,7 @@ BEGIN_PROPTABLE(CLightPoint)
 	DEFINE_OUTPUT(m_onTurnOn, "OnTurnOn", "On Turn On")
 	DEFINE_OUTPUT(m_onTurnOff, "OnTurnOff", "On Turn Off")
 
+	DEFINE_FLAG(LIGHT_INITIALLY_DARK, "Initially dark")
 END_PROPTABLE()
 
 REGISTER_ENTITY(CLightPoint, light_point);
@@ -85,7 +86,7 @@ void CLightPoint::turnOn(inputdata_t * pInputdata)
 
 void CLightPoint::turnOff(inputdata_t * pInputdata)
 {
-	if(!m_isEnable)
+	if(m_isEnable)
 	{
 		m_isEnable = false;
 		FIRE_OUTPUT(m_onTurnOff, pInputdata->pInflictor);

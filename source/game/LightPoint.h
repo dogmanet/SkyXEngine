@@ -4,6 +4,8 @@
 
 #include "SXpointEntity.h"
 
+#define LIGHT_INITIALLY_DARK 0x00010000
+
 class CLightPoint : public SXpointEntity
 {
 	DECLARE_CLASS(CLightPoint, SXpointEntity);

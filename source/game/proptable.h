@@ -19,6 +19,8 @@ enum PDF_TYPE
 	PDF_PARENT,
 	PDF_FLAGS,
 
+	PDF_FLAG,
+
 	PDF_OUTPUT
 };
 
@@ -28,7 +30,8 @@ enum PDE_TYPE
 	PDE_NONE = 0,
 	PDE_TEXTFIELD,
 	PDE_COMBOBOX,
-	PDE_FILEFIELD
+	PDE_FILEFIELD,
+	PDE_FLAGS
 };
 
 enum PDF_FLAG
@@ -284,5 +287,7 @@ const char * GetEmptyString();
 
 #define DEFINE_INPUT(method, keyname, edname, argtype) , {(input_func)&DataClass::method, argtype, PDFF_NOEDIT | PDFF_INPUT, keyname, edname, EDITOR_NONE
 #define DEFINE_OUTPUT(field, keyname, edname) , {(fieldtype)&DataClass::field, PDF_OUTPUT, PDFF_NOEDIT | PDFF_OUTPUT, keyname, edname, EDITOR_NONE
+
+#define DEFINE_FLAG(value, edname) , {(fieldtype)NULL, PDF_FLAG, value, NULL, edname, {PDE_FLAGS, NULL}}
 
 #endif

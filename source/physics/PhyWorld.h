@@ -12,6 +12,23 @@
 #include <gdefines.h>
 
 #include <common/SXMath.h>
+#include <mtllight/sxmtllight.h>
+
+#define PHY_MAT_FILE_MAGICK 8386069164979148883
+
+#pragma pack(push,1)
+struct PhyMatFile
+{
+	int64_t i64Magick;
+	uint32_t uiGeomFaceCount;
+	//uint32_t uiGreenObjCount;
+
+	PhyMatFile():
+		i64Magick(PHY_MAT_FILE_MAGICK)
+	{
+	}
+};
+#pragma pack(pop)
 
 extern report_func reportf;
 
@@ -35,6 +52,8 @@ public:
 	bool ExportGeom(const char * file);
 
 	void Render();
+
+	MtlPhysicType GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
 	btDiscreteDynamicsWorld * GetBtWorld()
 	{
@@ -81,7 +100,8 @@ protected:
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;
-	int ** m_ppGeomMtlTypes;
+	MtlPhysicType *m_pGeomMtlTypes;
+	int m_iGeomFacesCount;
 	int m_iGeomModelCount;
 
 	btCollisionShape ** m_ppGreenStaticCollideShape;

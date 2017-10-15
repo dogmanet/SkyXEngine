@@ -3,6 +3,8 @@
 
 #include "Ragdoll.h"
 
+#include <score/sxscore.h>
+
 
 SXplayer * GameData::m_pPlayer;
 SXpointCamera * GameData::m_pActiveCamera;
@@ -13,6 +15,8 @@ IAnimPlayer * pl;
 
 GameData::GameData()
 {
+	loadFoostepsSounds();
+
 	m_pMgr = new EntityManager();
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
@@ -84,6 +88,12 @@ GameData::~GameData()
 	//mem_delete(g_pRagdoll);
 
 	mem_delete(m_pMgr);
+
+	for(int i = 0; i < MPT_COUNT; ++i)
+	{
+		// @TODO: SSCore_SndDelete3dInst()
+		mem_delete_a(m_pidFootstepSound[i]);
+	}
 }
 
 void GameData::Update()
@@ -102,6 +112,67 @@ void GameData::Sync()
 	m_pCrosshair->OnSync();
 }
 
+void GameData::playFootstepSound(MtlPhysicType mtl_type, const float3 &f3Pos)
+{
+	int iCount = m_iFootstepSoundCount[mtl_type];
+	if(!iCount)
+	{
+		return;
+	}
+	ID idSound = m_pidFootstepSound[mtl_type][rand() % iCount];
+	SSCore_SndInstancePlay3d(idSound, (float3*)&f3Pos);
+}
+
+void GameData::loadFoostepsSounds()
+{
+	Array<const char*> aSounds[MPT_COUNT];
+
+	aSounds[mpt_concrete].push_back("actor/step/default1.ogg");
+	aSounds[mpt_concrete].push_back("actor/step/default2.ogg");
+	aSounds[mpt_concrete].push_back("actor/step/default3.ogg");
+	aSounds[mpt_concrete].push_back("actor/step/default4.ogg");
+
+	aSounds[mpt_metal].push_back("actor/step/metal_plate1.ogg");
+	aSounds[mpt_metal].push_back("actor/step/metal_plate2.ogg");
+	aSounds[mpt_metal].push_back("actor/step/metal_plate3.ogg");
+	aSounds[mpt_metal].push_back("actor/step/metal_plate4.ogg");
+
+	aSounds[mpt_tree].push_back("actor/step/new_wood1.ogg");
+	aSounds[mpt_tree].push_back("actor/step/new_wood2.ogg");
+	aSounds[mpt_tree].push_back("actor/step/new_wood3.ogg");
+	aSounds[mpt_tree].push_back("actor/step/new_wood4.ogg");
+
+	aSounds[mpt_ground_sand].push_back("actor/step/earth1.ogg");
+	aSounds[mpt_ground_sand].push_back("actor/step/earth2.ogg");
+	aSounds[mpt_ground_sand].push_back("actor/step/earth3.ogg");
+	aSounds[mpt_ground_sand].push_back("actor/step/earth4.ogg");
+
+	aSounds[mpt_water].push_back("actor/step/t_water1.ogg");
+	aSounds[mpt_water].push_back("actor/step/t_water2.ogg");
+
+	aSounds[mpt_leaf_grass].push_back("actor/step/grass1.ogg");
+	aSounds[mpt_leaf_grass].push_back("actor/step/grass2.ogg");
+	aSounds[mpt_leaf_grass].push_back("actor/step/grass3.ogg");
+	aSounds[mpt_leaf_grass].push_back("actor/step/grass4.ogg");
+
+	//aSounds[mpt_glass].push_back("actor/step/.ogg");
+	//aSounds[mpt_plastic].push_back("actor/step/.ogg");
+	//aSounds[mpt_flesh].push_back("actor/step/.ogg");
+
+	for(int i = 0; i < MPT_COUNT; ++i)
+	{
+		Array<const char*> *paSounds = &aSounds[i];
+		int jl = paSounds->size();
+		m_iFootstepSoundCount[i] = jl;
+		m_pidFootstepSound[i] = jl ? new ID[jl] : NULL;
+		for(int j = 0; j < jl; ++j)
+		{
+			m_pidFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], false, 0, 100);
+		}
+	}
+}
+
+//###################################################################
 
 void GameData::ccmd_forward_on()
 {

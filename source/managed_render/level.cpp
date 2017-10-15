@@ -85,17 +85,10 @@ void Level::Load(const char* name)
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), name, config->getKey("level", "physic"));
-		if(Core_0FileExists(tmppath))
-		{
-			SXPhysics_ImportGeom(tmppath);
-		}
-		else
-		{
-#if defined(SX_GAME)
-			SXPhysics_LoadGeom();
-			SXPhysics_ExportGeom(tmppath);
-#endif
-		}
+		//if(Core_0FileExists(tmppath))
+		//{
+			SXPhysics_LoadGeom(tmppath);
+		//}
 	}
 	else
 	{

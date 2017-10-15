@@ -5,11 +5,37 @@
 #include "SXbaseTool.h"
 #include <aigrid/sxaigrid.h>
 
+#include "GameData.h"
+
 BEGIN_PROPTABLE(SXplayer)
 // empty
 END_PROPTABLE()
 
 REGISTER_ENTITY(SXplayer, player);
+
+class btKinematicClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
+{
+public:
+	btKinematicClosestNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld): btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld)
+	{
+		m_me = me;
+		m_shapeInfo = {-1, -1};
+	}
+
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+	{
+		if(rayResult.m_collisionObject == m_me)
+			return 1.0;
+		if(rayResult.m_localShapeInfo)
+		{
+			m_shapeInfo = *rayResult.m_localShapeInfo;
+		}
+		return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+	}
+	btCollisionWorld::LocalShapeInfo m_shapeInfo;
+protected:
+	btCollisionObject* m_me;
+};
 
 SXplayer::SXplayer(EntityManager * pMgr):
 	BaseClass(pMgr),
@@ -72,9 +98,10 @@ SXplayer::SXplayer(EntityManager * pMgr):
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
 	m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
-	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PI*0.5f, 'x'));
+	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PIDIV2, 'x'));
 	m_flashlight->SetParent(this);
-	m_flashlight->setDist(10.f);
+	m_flashlight->setDist(20.f);
+	m_flashlight->setAngle(SMToRadian(60));
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
 	m_flashlight->setShadowType(-1);
 
@@ -88,6 +115,26 @@ SXplayer::~SXplayer()
 	mem_delete(m_pCrosshair);
 	CLEAR_INTERVAL(m_iUpdIval);
 	REMOVE_ENTITY(m_pCamera);
+}
+
+void SXplayer::playFootstepsSound()
+{
+	if(!(m_uMoveDir & PM_OBSERVER))
+	{
+		if(onGround())
+		{
+			float3 start = GetPos(),
+				end = start + float3(0.0f, -2.0f, 0.0f);
+			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
+			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+			if(cb.hasHit() && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0)
+			{
+				MtlPhysicType type = (MtlPhysicType)SXPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
+				g_pGameData->playFootstepSound(type, BTVEC_F3(cb.m_hitPointWorld));
+			}
+		}
+	}
 }
 
 void SXplayer::UpdateInput(float dt)
@@ -196,6 +243,7 @@ void SXplayer::UpdateInput(float dt)
 				{
 					if(m_canJump)
 					{
+						playFootstepsSound();
 						m_pCharacter->jump();
 						m_canJump = false;
 					}
@@ -225,6 +273,10 @@ void SXplayer::UpdateInput(float dt)
 			{
 				if(mov && m_pCharacter->onGround())
 				{
+					const float fFS1 = SM_PIDIV2;
+					const float fFS2 = SM_PI + SM_PIDIV2;
+					bool bFS1 = m_fViewbobStep < fFS1;
+					bool bFS2 = m_fViewbobStep < fFS2;
 					if(m_uMoveDir & PM_RUN)
 					{
 						m_fViewbobStep += dt * *cl_bob_run * 0.2f;
@@ -233,6 +285,11 @@ void SXplayer::UpdateInput(float dt)
 					{
 						m_fViewbobStep += dt * *cl_bob_walk;
 					}
+					if((bFS1 && m_fViewbobStep > fFS1) || (bFS2 && m_fViewbobStep > fFS2))
+					{
+						playFootstepsSound();
+					}
+					//printf("%f\n", m_fViewbobStep);
 					while(m_fViewbobStep > SM_2PI)
 					{
 						m_fViewbobStep -= SM_2PI;

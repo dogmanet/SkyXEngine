@@ -65,6 +65,8 @@ public:
 
 	bool onGround();
 
+	void playFootstepsSound();
+
 protected:
 
 	CLightDirectional* m_flashlight;

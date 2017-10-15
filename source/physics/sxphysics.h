@@ -85,6 +85,8 @@ SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody);
 */
 SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody);
 
+SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+
 SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld();
 
 #endif

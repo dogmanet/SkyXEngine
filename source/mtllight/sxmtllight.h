@@ -611,6 +611,10 @@ enum MtlTypeModel
 enum MtlPhysicType
 {
 	mpt_concrete = 0,	//!< бетон
+
+	//! значение по умолчанию
+	mpt_default = mpt_concrete,
+
 	mpt_metal,			//!< металл
 	mpt_glass,			//!< стекло
 	mpt_plastic,		//!< пластик
@@ -620,8 +624,8 @@ enum MtlPhysicType
 	mpt_water,			//!< вода
 	mpt_leaf_grass,		//!< листва/трава
 
-	//! значение по умолчанию
-	mpt_default = mpt_concrete,
+	//! количество типов
+	MPT_COUNT
 };
 
 //! данные отправляемые в шейдеры
