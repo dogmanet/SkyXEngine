@@ -188,7 +188,7 @@ void SkyXEngine_Init()
 	Core_0RegisterCVarFloat("main_rain_density", 1.f, 0);
 	Core_0RegisterCVarBool("main_thunderbolt", true, 0);
 
-	Core_0RegisterCVarFloat("weather_snd_volume", 1.f, 0);
+	Core_0RegisterCVarFloat("weather_snd_volume", 1.f, "Р“СЂРѕРјРєРѕСЃС‚СЊ Р·РІСѓРєРѕРІ РїРѕРіРѕРґС‹");
 	Core_0RegisterCVarFloat("ambient_snd_volume", 1.f, 0);
 
 	static float3_t fog_color(0.5, 0.5, 0.5);
@@ -288,12 +288,12 @@ void SkyXEngine_InitPaths()
 void SkyXEngine_Render(DWORD timeDelta)
 {
 	int64_t ttime;
-	//потеряно ли устройство или произошло изменение размеров?
+	//РїРѕС‚РµСЂСЏРЅРѕ Р»Рё СѓСЃС‚СЂРѕР№СЃС‚РІРѕ РёР»Рё РїСЂРѕРёР·РѕС€Р»Рѕ РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂРѕРІ?
 	if (GData::DXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || GData::ReSize)
 	{
-		//если не свернуто окно
+		//РµСЃР»Рё РЅРµ СЃРІРµСЂРЅСѓС‚Рѕ РѕРєРЅРѕ
 		if (!IsIconic(GData::Handle3D) && ((GData::HandleParent3D != 0 && !IsIconic(GData::HandleParent3D)) || GData::HandleParent3D == 0))
-			SXRenderFunc::ComDeviceLost();	//пытаемся восстановить
+			SXRenderFunc::ComDeviceLost();	//РїС‹С‚Р°РµРјСЃСЏ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ
 		return;
 	}
 
@@ -349,20 +349,20 @@ void SkyXEngine_Render(DWORD timeDelta)
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
-		//рендерим глубину от света
+		//СЂРµРЅРґРµСЂРёРј РіР»СѓР±РёРЅСѓ РѕС‚ СЃРІРµС‚Р°
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SXRenderFunc::UpdateShadow(timeDelta);
 		SXRenderFunc::Delay::UpdateShadow += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
-	//рисуем сцену и заполняем mrt данными
+	//СЂРёСЃСѓРµРј СЃС†РµРЅСѓ Рё Р·Р°РїРѕР»РЅСЏРµРј mrt РґР°РЅРЅС‹РјРё
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXRenderFunc::BuildMRT(timeDelta);
 	SXRenderFunc::Delay::RenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (GData::FinalImage == DS_RT::ds_rt_ambient_diff || GData::FinalImage == DS_RT::ds_rt_specular || GData::FinalImage == DS_RT::ds_rt_scene_light_com)
 	{
-		//освещаем сцену
+		//РѕСЃРІРµС‰Р°РµРј СЃС†РµРЅСѓ
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SXRenderFunc::ComLighting(timeDelta, true);
 		SXRenderFunc::UnionLayers();

@@ -21,6 +21,7 @@ SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, 
 
 	cv.value.c = new char[strlen(value) + 1];
 	strcpy((char*)cv.value.c, value);
+	cv.desc = NULL;
 
 	if(desc)
 	{
@@ -47,6 +48,7 @@ SX_LIB_API void Core_0RegisterCVarInt(const char * name, int value, const char *
 	cv.default_val.i = value;
 
 	cv.value.i = value;
+	cv.desc = NULL;
 
 	if(desc)
 	{
@@ -72,7 +74,7 @@ SX_LIB_API void Core_0RegisterCVarFloat(const char * name, float value, const ch
 	cv.default_val.f = value;
 
 	cv.value.f = value;
-
+	cv.desc = NULL;
 	if(desc)
 	{
 		cv.desc = new char[strlen(desc) + 1];
@@ -97,6 +99,7 @@ SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char
 	cv.default_val.b = value;
 
 	cv.value.b = value;
+	cv.desc = NULL;
 
 	if(desc)
 	{
@@ -316,5 +319,63 @@ void SetCVar(const char * name, const char * value)
 	case CVAR_BOOL:
 		Core_0SetCVarBool(name, strcmp(value, "0") && strcmpi(value, "false"));
 		break;
+	}
+}
+
+void DumpCVars()
+{
+	int iLenName = 0,
+		iLenType = 6,
+		iLenVal = 10;
+
+	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; i++)
+	{
+		CVar * pCvar = i.second;
+		int len = i.first->length();
+		if(iLenName < len)
+		{
+			iLenName = len;
+		}
+		if(pCvar->type == CVAR_STRING)
+		{
+			len = strlen(pCvar->value.c);
+			if(iLenVal < len)
+			{
+				iLenVal = len;
+			}
+		}
+	}
+	char szRow[128];
+	sprintf(szRow, COLOR_LGREEN " %%%ds " COLOR_GRAY "| " COLOR_MAGENTA "%%%ds " COLOR_GRAY "|" COLOR_YELLOW " %%%ds " COLOR_GRAY "|" COLOR_GREEN " %%s" COLOR_RESET "\n", iLenName, iLenType, iLenVal);
+	printf(szRow, "Name", "Type", "Value", "Description");
+	char tmp[64];
+	char tmpName[64];
+	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; i++)
+	{
+		CVar * pCvar = i.second;
+		sprintf(tmpName, "%s", i.first->c_str());
+		int j;
+		for(j = i.first->length(); j < iLenName; ++j)
+		{
+			tmpName[j] = ' ';
+		}
+		tmpName[j] = 0;
+		switch(pCvar->type)
+		{
+		case CVAR_STRING:
+			printf(szRow, tmpName, "string", pCvar->value.c, pCvar->desc ? pCvar->desc : "");
+			break;
+		case CVAR_INT:
+			sprintf(tmp, "%d", pCvar->value.i);
+			printf(szRow, tmpName, "int", tmp, pCvar->desc ? pCvar->desc : "");
+			break;
+		case CVAR_FLOAT:
+			sprintf(tmp, "%f", pCvar->value.f);
+			printf(szRow, tmpName, "float", tmp, pCvar->desc ? pCvar->desc : "");
+			break;
+		case CVAR_BOOL:
+			printf(szRow, tmpName, "bool", pCvar->value.b ? "true" : "false", pCvar->desc ? pCvar->desc : "");
+			break;
+		}
 	}
 }

@@ -702,11 +702,13 @@ int main(int argc, char ** argv)
 {
 	g_pColor = new ColorPrint();
 	g_hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleOutputCP(CP_UTF8);
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(g_hStdOut, &csbi);
 
 	g_iCurColorBG = g_pColor->getDefaultBG();
 	g_iCurColorFG = g_pColor->getDefaultFG();
+
 
 	csbi.dwMaximumWindowSize.X;
 	csbi.dwMaximumWindowSize.Y;

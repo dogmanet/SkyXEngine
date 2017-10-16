@@ -421,6 +421,12 @@ void cmd_help(int argc, const char ** argv)
 	}
 }
 
+void DumpCVars();
+void cmd_cvarlist(int argc, const char ** argv)
+{
+	DumpCVars();
+}
+
 void ConsoleRegisterCmds()
 {
 	Core_0RegisterConcmdArg("echo", echo, "Echoes all parameters to console");
@@ -428,6 +434,7 @@ void ConsoleRegisterCmds()
 	Core_0RegisterConcmd("exit", cmd_exit, "Shuts down the engine");
 	Core_0RegisterConcmdArg("cvar_handle", cvar_handle, "Handle to show or set cvar value");
 	Core_0RegisterConcmdArg("help", cmd_help, "Handle to show command description");
+	Core_0RegisterConcmdArg("cvarlist", cmd_cvarlist, "List all CVars");
 }
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler()
