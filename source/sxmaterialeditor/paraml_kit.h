@@ -1,6 +1,10 @@
 
-#ifndef __paraml_kit_h
-#define __paraml_kit_h
+#ifndef __PARAML_KIT_H
+#define __PARAML_KIT_H
+
+#include <common/string.h>
+#include <common/array.h>
+#include <core/sxcore.h>
 
 class ParamLKit
 {

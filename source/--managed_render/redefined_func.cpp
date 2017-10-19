@@ -30,7 +30,7 @@ void RFuncMtlSet(ID id, float4x4* world)
 
 ID RFuncMtlLoad(const char* name, int mtl_type)
 {
-	return SML_MtlLoad(name, (MtlTypeModel)mtl_type);
+	return SML_MtlLoad(name, (MTLTYPE_MODEL)mtl_type);
 }
 
 bool RFuncAIQuadPhyNavigate(float3_t * pos)

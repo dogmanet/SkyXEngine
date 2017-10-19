@@ -205,22 +205,19 @@ void Emitter::ComputeLighting()
 
 				for (int k = 0; k<SML_LigthsGetCount(); ++k)
 				{
-					//поулчаем идентификатор света по ключу
-					ID tmpid = SML_LigthsGetIDByKey(k);
-
 					//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-					if (SML_LigthsGetVisibleForFrustum(tmpid) && SML_LigthsGetEnable(tmpid))
+					if (SML_LigthsGetVisibleForFrustum(k) && SML_LigthsGetEnable(k))
 					{
-						SML_LigthsGetColor(tmpid, &tmpColor);
+						SML_LigthsGetColor(k, &tmpColor);
 
 						float intens = 1;
 
-						if (SML_LigthsGetType(tmpid) != LTYPE_LIGHT_GLOBAL)
+						if (SML_LigthsGetType(k) != LTYPE_LIGHT_GLOBAL)
 						{
-							SML_LigthsGetPos(tmpid, &tmpPosition, true);
+							SML_LigthsGetPos(k, &tmpPosition, true);
 
 							float dist = SMVector3Dot(Arr[i].Pos - float3(tmpPosition.x, tmpPosition.y, tmpPosition.z));
-							float invdist = 1.f - (dist / (SML_LigthsGetDist(tmpid)));
+							float invdist = 1.f - (dist / (SML_LigthsGetDist(k)));
 							if (invdist > 1.f)
 								invdist = 1.f;
 							else if (invdist < 0.f)
@@ -486,14 +483,14 @@ void Emitter::CreateParticles()
 void Emitter::ReCreateParticles(WORD id)
 {
 	//если разброс недопустим то спавним только в точке
-	if (Data.SpawnPosType == ParticlesSpawnPosType::pspt_strictly)
+	if (Data.SpawnPosType == PARTICLESTYPE_SPAWNPOS_STRICTLY)
 	{
 		Arr[id].Pos = Data.SpawnOrigin;
 	}
 	//разрешен рандомный спавн
-	else if (Data.SpawnPosType == ParticlesSpawnPosType::pspt_bound)
+	else if (Data.SpawnPosType == PARTICLESTYPE_SPAWNPOS_BOUND)
 	{
-		if (Data.BoundType == ParticlesBoundType::pbt_cone)
+		if (Data.BoundType == PARTICLESTYPE_BOUND_CONE)
 		{
 			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
 				Arr[id].Pos.y = randf(Data.BoundVec1.y, Data.BoundVec2.y);
@@ -527,7 +524,7 @@ void Emitter::ReCreateParticles(WORD id)
 			else
 				Arr[id].Pos.z = Data.SpawnOrigin.z;
 		}
-		else if (Data.BoundType == ParticlesBoundType::pbt_box)
+		else if (Data.BoundType == PARTICLESTYPE_BOUND_BOX)
 		{
 			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
 				Arr[id].Pos.x = randf(Data.BoundVec1.x, Data.BoundVec2.x);
@@ -556,7 +553,7 @@ void Emitter::ReCreateParticles(WORD id)
 			else
 				Arr[id].Pos.z = Data.SpawnOrigin.z;
 		}
-		else if (Data.BoundType == ParticlesBoundType::pbt_sphere)
+		else if (Data.BoundType == PARTICLESTYPE_BOUND_SPHERE)
 		{
 			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
 				Arr[id].Pos.x = randf(Data.BoundVec1.x - Data.BoundVec1.w, Data.BoundVec1.x + Data.BoundVec1.w);
@@ -585,7 +582,7 @@ void Emitter::ReCreateParticles(WORD id)
 			else
 				Arr[id].Pos.z = Data.SpawnOrigin.z;
 		}
-		else if (Data.BoundType == ParticlesBoundType::pbt_none)
+		else if (Data.BoundType == PARTICLESTYPE_BOUND_NONE)
 		{
 			if (Data.SpawnOriginDisp != 0.0f)
 			{
@@ -669,7 +666,7 @@ void Emitter::ReCreateParticles(WORD id)
 		Arr[id].Size.x = Data.Size.x + tmprand;
 		Arr[id].Size.y = Data.Size.y + tmprand;
 
-		if (Data.SizeDependAge == ParticlesDependType::padt_direct)
+		if (Data.SizeDependAge == PARTICLESTYPE_DEPEND_DIRECT)
 		{
 			Arr[id].Size.y = Arr[id].Size.x;
 			Arr[id].Size.x = Data.SizeDisp;
@@ -678,7 +675,7 @@ void Emitter::ReCreateParticles(WORD id)
 	else
 	{
 		Arr[id].Size.y = Data.Size.x;
-		Arr[id].Size.x = (Data.SizeDependAge == ParticlesDependType::padt_direct ? 0 : Data.Size.x);
+		Arr[id].Size.x = (Data.SizeDependAge == PARTICLESTYPE_DEPEND_DIRECT ? 0 : Data.Size.x);
 	}
 
 
@@ -888,15 +885,15 @@ void Emitter::Compute(const float4x4 * mat)
 		{
 			//если установлен ограничивающий объем то проверяем не выходит ли частица за его пределы, если выходит то значит она умерла
 
-			if (Data.BoundType == ParticlesBoundType::pbt_sphere && IsPointInSphere(&Arr[i].Pos))
+			if (Data.BoundType == PARTICLESTYPE_BOUND_SPHERE && IsPointInSphere(&Arr[i].Pos))
 				CountLifeParticle++;
-			else if (Data.BoundType == ParticlesBoundType::pbt_box && IsPointInBox(&Arr[i].Pos))
+			else if (Data.BoundType == PARTICLESTYPE_BOUND_BOX && IsPointInBox(&Arr[i].Pos))
 				CountLifeParticle++;
-			else if (Data.BoundType == ParticlesBoundType::pbt_cone && IsPointInCone(&(Arr[i].Pos)))
+			else if (Data.BoundType == PARTICLESTYPE_BOUND_CONE && IsPointInCone(&(Arr[i].Pos)))
 				CountLifeParticle++;
-			else if (Data.BoundType != ParticlesBoundType::pbt_none)
+			else if (Data.BoundType != PARTICLESTYPE_BOUND_NONE)
 				Arr[i].IsAlife = false;
-			else if (Data.BoundType == ParticlesBoundType::pbt_none)
+			else if (Data.BoundType == PARTICLESTYPE_BOUND_NONE)
 				CountLifeParticle++;
 		}
 
@@ -909,9 +906,9 @@ void Emitter::Compute(const float4x4 * mat)
 			Arr[i].Age += tmptime - OldTime;
 
 			//обработка зависимости прозрачности от возраста
-			if (Data.AlphaDependAge == ParticlesDependType::padt_direct)
+			if (Data.AlphaDependAge == PARTICLESTYPE_DEPEND_DIRECT)
 				Arr[i].AlphaAgeDependCoef = 1.f - (float(Arr[i].Age) / float(Arr[i].TimeLife));
-			else if (Data.AlphaDependAge == ParticlesDependType::padt_inverse)
+			else if (Data.AlphaDependAge == PARTICLESTYPE_DEPEND_INVERSE)
 				Arr[i].AlphaAgeDependCoef = (float(Arr[i].Age) / float(Arr[i].TimeLife));
 			else
 				Arr[i].AlphaAgeDependCoef = 1;
@@ -925,11 +922,11 @@ void Emitter::Compute(const float4x4 * mat)
 				Arr[i].AlphaDeath = GTransparency;
 
 			//обработка зависимости размера от возвраста
-			if (Data.SizeDependAge == ParticlesDependType::padt_direct)
+			if (Data.SizeDependAge == PARTICLESTYPE_DEPEND_DIRECT)
 			{
 				Arr[i].Size.x = Arr[i].Size.y * (float(Arr[i].Age) / float(Arr[i].TimeLife));
 			}
-			else if (Data.SizeDependAge == ParticlesDependType::padt_inverse)
+			else if (Data.SizeDependAge == PARTICLESTYPE_DEPEND_INVERSE)
 			{
 				Arr[i].Size.x = Arr[i].Size.y * (1.f - (float(Arr[i].Age) / float(Arr[i].TimeLife)));
 			}
@@ -967,11 +964,11 @@ void Emitter::Compute(const float4x4 * mat)
 
 				static float4x4 matrot;
 
-				if (Data.CharacterCircleAxis == ParticlesAxis::pa_x)
+				if (Data.CharacterCircleAxis == PARTICLES_AXIS_X)
 					matrot = SMMatrixRotationX(tmpangle);
-				else if (Data.CharacterCircleAxis == ParticlesAxis::pa_y)
+				else if (Data.CharacterCircleAxis == PARTICLES_AXIS_Y)
 					matrot = SMMatrixRotationY(tmpangle);
-				else if (Data.CharacterCircleAxis == ParticlesAxis::pa_z)
+				else if (Data.CharacterCircleAxis == PARTICLES_AXIS_Z)
 					matrot = SMMatrixRotationZ(tmpangle);
 
 				Arr[i].Pos = SMVector3Transform(Arr[i].Pos, matrot);
@@ -1005,16 +1002,16 @@ void Emitter::Compute(const float4x4 * mat)
 			if (Data.CharacterDeviation)
 			{
 				//если определен волновой тип движения
-				if (Data.CharacterDeviationType == ParticlesDeviationType::pdt_wave)
+				if (Data.CharacterDeviationType == PARTICLESTYPE_DEVIATION_WAVE)
 				{
 					float tmpdist = 0;
 
 					//определяем ось для волны
-					if (Data.CharacterDeviationAxis == ParticlesAxis::pa_x)
+					if (Data.CharacterDeviationAxis == PARTICLES_AXIS_X)
 						tmpdist = Arr[i].Pos.x;
-					else if (Data.CharacterDeviationAxis == ParticlesAxis::pa_y)
+					else if (Data.CharacterDeviationAxis == PARTICLES_AXIS_Y)
 						tmpdist = Arr[i].Pos.y;
-					else if (Data.CharacterDeviationAxis == ParticlesAxis::pa_z)
+					else if (Data.CharacterDeviationAxis == PARTICLES_AXIS_Z)
 						tmpdist = Arr[i].Pos.z;
 
 					//если разрешена дисперсия
@@ -1058,7 +1055,7 @@ void Emitter::Compute(const float4x4 * mat)
 					Arr[i].DeviationVector.x = Arr[i].DeviationVector.y = Arr[i].DeviationVector.z = 0;
 
 					//если простое смещение
-					if (Data.CharacterDeviationType == ParticlesDeviationType::pdt_rnd)
+					if (Data.CharacterDeviationType == PARTICLESTYPE_DEVIATION_RAND)
 					{
 						//если разрешена дисперсия то генерируем
 						if (Data.CharacterDeviationCoefAngleDisp != 0.0f)
@@ -1085,7 +1082,7 @@ void Emitter::Compute(const float4x4 * mat)
 						}
 					}
 					//иначе если равномерное смещение вдоль
-					else if (Data.CharacterDeviationType == ParticlesDeviationType::pdt_along)
+					else if (Data.CharacterDeviationType == PARTICLESTYPE_DEVIATION_ALONG)
 					{
 						Data.CharacterDeviationAmplitude = -Data.CharacterDeviationAmplitude;
 
@@ -1260,7 +1257,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		static float4x4 tmpmatrot = SMMatrixIdentity();
 		tmpmatrot = (matrot ? (*matrot) : SMMatrixIdentity());
 
-		if (Data.FigureType == ParticlesFigureType::pft_billboard)
+		if (Data.FigureType == PARTICLESTYPE_FIGURE_BILLBOARD)
 		{
 			float determ = 0;
 			cammat = SMMatrixInverse(&determ, tmpmatrot * MCamView);
@@ -1356,7 +1353,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 
 		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-		if (Data.AlphaBlendType == pabt_alpha)
+		if (Data.AlphaBlendType == PARTICLESTYPE_ALPHABLEND_ALPHA)
 		{
 			PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 			PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
@@ -1364,14 +1361,14 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 			PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 			PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 		}
-		else if (Data.AlphaBlendType == pabt_add)
+		else if (Data.AlphaBlendType == PARTICLESTYPE_ALPHABLEND_ADD)
 		{
 			PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 			PESet::DXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 		}
 
-		if (Data.FigureType == ParticlesFigureType::pft_quad_composite)
+		if (Data.FigureType == PARTICLESTYPE_FIGURE_QUAD_COMPOSITE)
 			PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4 * Data.FigureCountQuads, 0, 2 * Data.FigureCountQuads);
 		else
 			PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);

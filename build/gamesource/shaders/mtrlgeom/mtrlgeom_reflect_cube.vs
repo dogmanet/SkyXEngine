@@ -23,6 +23,6 @@ vs_out_refcube main(vs_in_geom IN)
 	
 	half3 viewVec= mul(IN.Position, WorldView);
 	OUT.CubePPos = mul((half3x3)(View),reflect(viewVec, mul(OUT.Normal, (half3x3)(View))));
-	//OUT.CubePPos.y = -OUT.CubePPos.y;
+	OUT.CubePPos.y = -OUT.CubePPos.y;
 	return OUT;
 }

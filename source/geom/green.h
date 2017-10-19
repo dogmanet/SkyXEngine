@@ -65,13 +65,14 @@ public:
 	void OnResetDevice();
 	
 	ID AddArrForCom();
+	bool existsArrForCom(ID id);
 	void DelArrForCom(ID id_arr);
 	
 	void Save(const char* path);
 	void Load(const char* path);
 	void Clear();
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
-	void GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID id_arr = 0);
+	void GPURender(DWORD timeDelta, float3* viewpos, GREEN_TYPE type, ID id_arr = 0);
 	void GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex);
 	void GPURenderObject(DWORD timeDelta, float3* viewpos, ID id, ID split, ID idobj, ID id_tex);
 
@@ -145,7 +146,7 @@ public:
 			String pathname;
 		};
 
-		GeomGreenType TypeGreen;	//
+		GREEN_TYPE TypeGreen;	//
 		String MaskName;
 		uint32_t AllCountGreen;	//сколько всего сгенерировано объектов
 		char Name[OBJECT_NAME_MAX_LEN];

@@ -1,5 +1,5 @@
 
-#include <sxmaterialeditor/paraml_kit.h>
+#include "paraml_kit.h"
 
 ParamLKit::ParamLKit()
 {

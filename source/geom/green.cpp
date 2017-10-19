@@ -564,7 +564,7 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_t
 		{
 			SGCore_MtlSet((id_tex > 0 ? id_tex : ArrModels[nm]->ArrLod[lod]->idstex[i]), 0);
 
-			if (ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
+			if (ArrModels[nm]->TypeGreen == GREEN_TYPE_GRASS)
 					Green::DXDevice->SetVertexShaderConstantF(59, (float*)&float2_t(Green::BeginEndLessening, Green::DistLods.x), 1);
 				else
 					Green::DXDevice->SetVertexShaderConstantF(59, (float*)&float2_t(0,0), 1);
@@ -584,7 +584,7 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_t
 	}
 }
 
-void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID id_arr)
+void Green::GPURender(DWORD timeDelta, float3* viewpos, GREEN_TYPE type, ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
@@ -594,7 +594,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 	for (int nm = 0; nm < ArrModels.size(); ++nm)
 	{
 		//если тип не указан
-		if (type != GeomGreenType::ggtr_all && type != ArrModels[nm]->TypeGreen)
+		if (type != GREEN_TYPE_ALL && type != ArrModels[nm]->TypeGreen)
 			continue;
 
 		jarrsplits = ArrComFor[id_arr]->arr[nm]->Arr;
@@ -631,7 +631,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 						)
 					{
 						//если это не трава
-						if (!(lod == 0 && ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass))
+						if (!(lod == 0 && ArrModels[nm]->TypeGreen == GREEN_TYPE_GRASS))
 						{
 							memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 								jarrsplits[i]->Data,
@@ -640,7 +640,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GeomGreenType type, ID i
 							RTCountDrawObj += jarrsplits[i]->CountAllGreen;
 						}
 						//иначе это трава, а ее по особенному рисуем
-						else if (lod == 0 && ArrModels[nm]->TypeGreen == GeomGreenType::ggt_grass)
+						else if (lod == 0 && ArrModels[nm]->TypeGreen == GREEN_TYPE_GRASS)
 						{
 							if (Green::CurrentFreqGrass >= 100)
 							{
@@ -721,7 +721,7 @@ void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 					)
 					)
 				{
-					if (!(lod == 0 && ArrModels[id]->TypeGreen == GeomGreenType::ggt_grass))
+					if (!(lod == 0 && ArrModels[id]->TypeGreen == GREEN_TYPE_GRASS))
 					{
 						memcpy(RTGPUArrVerteces + (RTCountDrawObj),
 							jarrsplits[i]->Data,
@@ -786,9 +786,9 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		tmpnewmpdel->ArrLod[2] = 0;
 
 		if (!lod1 && !lod2)
-			tmpnewmpdel->TypeGreen = GeomGreenType::ggt_grass;
+			tmpnewmpdel->TypeGreen = GREEN_TYPE_GRASS;
 		else
-			tmpnewmpdel->TypeGreen = GeomGreenType::ggt_tree;
+			tmpnewmpdel->TypeGreen = GREEN_TYPE_TREE;
 
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
@@ -799,7 +799,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
 		{
 			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
-			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
 		if (def_str_validate(lod1))
@@ -816,7 +816,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -837,7 +837,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
-					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -950,7 +950,7 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 					tmppos2.x = (tmp2.x - OneEdX*0.5f) + randf(0.0, OneEdX);
 					tmppos2.z = (tmp2.z - OneEdY*0.5f) + randf(0.0, OneEdY);
 
-					if (model->TypeGreen == GeomGreenType::ggt_tree)
+					if (model->TypeGreen == GREEN_TYPE_TREE)
 					{
 						for (int k = 0; k < arrpos.size(); ++k)
 						{
@@ -973,7 +973,7 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 						++model->AllCountGreen;
 
 						//если тип дерево, то на пиксель генерируем только одно дерево
-						if (model->TypeGreen == GeomGreenType::ggt_tree)
+						if (model->TypeGreen == GREEN_TYPE_TREE)
 							break;
 					}
 					else
@@ -1185,7 +1185,7 @@ void Green::Save(const char* path)
 			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
 		}
 
-		if (ArrModels[i]->TypeGreen == GeomGreenType::ggt_grass)
+		if (ArrModels[i]->TypeGreen == GREEN_TYPE_GRASS)
 		{
 			tmpstrlen = strlen(ArrModels[i]->ArrLod[0]->path.c_str());
 			fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
@@ -1316,7 +1316,7 @@ void Green::Load(const char* path)
 			tmpmodel->NavigateMesh->pathname = tmpNameMask;
 		}
 
-		if (tmpmodel->TypeGreen == GeomGreenType::ggt_grass)
+		if (tmpmodel->TypeGreen == GREEN_TYPE_GRASS)
 		{
 			fread(&tmpstrlen, sizeof(int32_t), 1, file);
 			fread(tmpstr[0], sizeof(char), tmpstrlen, file);
@@ -1344,7 +1344,7 @@ void Green::Load(const char* path)
 		for (int k = 0; k < tmpmodel->ArrLod[0]->model->SubsetCount; ++k)
 		{
 			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model->ArrTextures[k]);
-			tmpmodel->ArrLod[0]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+			tmpmodel->ArrLod[0]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
 		if (tmpstr[1][0])
@@ -1361,7 +1361,7 @@ void Green::Load(const char* path)
 				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
-					tmpmodel->ArrLod[1]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+					tmpmodel->ArrLod[1]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -1382,7 +1382,7 @@ void Green::Load(const char* path)
 				for (int k = 0; k < tmpmodel->ArrLod[2]->model->SubsetCount; ++k)
 				{
 					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
-					tmpmodel->ArrLod[2]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+					tmpmodel->ArrLod[2]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
@@ -1505,6 +1505,11 @@ ID Green::AddArrForCom()
 	}
 
 	return id_arr;
+}
+
+bool Green::existsArrForCom(ID id)
+{
+	return (ArrComFor.size() > id);
 }
 
 void Green::DelArrForCom(ID id_arr)
@@ -1670,7 +1675,7 @@ void Green::SetGreenLod(ID id, int lod, const char* pathname)
 	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->SubsetCount; ++k)
 	{
 		sprintf(tmppath, "%s.dds", ArrModels[id]->ArrLod[lod]->model->ArrTextures[k]);
-		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_MtlLoad(tmppath, (ArrModels[id]->TypeGreen == GeomGreenType::ggt_tree ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
+		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_MtlLoad(tmppath, (ArrModels[id]->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 	}
 }
 

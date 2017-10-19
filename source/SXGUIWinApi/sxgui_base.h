@@ -7,7 +7,7 @@ See the license in LICENSE
 #ifndef SXGUI_BASE_H
 #define SXGUI_BASE_H
 
-extern class SXGUIButtonImg;
+class SXGUIButtonImg;
 
 #include "SXGUI_hint.h"
 #include "SXGUI.h"

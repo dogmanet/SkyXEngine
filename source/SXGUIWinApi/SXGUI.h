@@ -41,6 +41,12 @@ InitCommonControlsEx(&icex);
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Comctl32.lib")
 
+#ifdef SX_DLL
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#else
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#endif
+
 /*! \name Определения для полос прокрутки (Scrool bar)
 @{*/
 
@@ -731,7 +737,7 @@ struct ISXGUIListView : public virtual ISXGUIComponent
 };
 
 //! создает экземплляр объекта "istView", и возвращает указатель
-SX_LIB_API ISXGUIListView* SXGUICrListViewEx,(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
+SX_LIB_API ISXGUIListView* SXGUICrListViewEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id);
 
 //! создает экземплляр объекта "istView", и возвращает указатель
 SX_LIB_API ISXGUIListView* SXGUICrListView(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id);

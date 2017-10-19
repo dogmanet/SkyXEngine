@@ -126,6 +126,19 @@ void EntityManager::Sync()
 	//tOld = std::chrono::high_resolution_clock::now();
 }
 
+void EntityManager::unloadObjLevel()
+{
+	SXbaseEntity * pEnt;
+	for (int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if (pEnt && (pEnt->GetFlags() & EF_LEVEL))
+		{
+			REMOVE_ENTITY(pEnt);
+		}
+	}
+}
+
 ID EntityManager::Register(SXbaseEntity * pEnt)
 {
 	ID ent;

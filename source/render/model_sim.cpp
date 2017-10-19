@@ -1,10 +1,10 @@
 
-#include <managed_render/model_sim.h>
+#include "model_sim.h"
 
 ModelSim::ModelSim()
 {
 	CurrRenderModel = 0;
-	TypeModel = MtlTypeModel::tms_static;
+	TypeModel = MTLTYPE_MODEL_STATIC;
 
 	D3DVERTEXELEMENT9 layoutstatic[] =
 	{
@@ -171,22 +171,22 @@ void ModelSim::Add(const char* path)
 	ArrStaticModel[ArrStaticModel.size() - 1]->Anim = Anim;
 }
 
-inline ID ModelSim::GetIDMtl()
+ID ModelSim::GetIDMtl()
 {
 	return IDsMat;
 }
 
-inline void ModelSim::GetPlane(D3DXPLANE* plane)
+void ModelSim::GetPlane(D3DXPLANE* plane)
 {
-	if (TypeModel == MtlTypeModel::tms_static || TypeModel == MtlTypeModel::tms_tree || TypeModel == MtlTypeModel::tms_grass)
+	if (TypeModel == MTLTYPE_MODEL_STATIC || TypeModel == MTLTYPE_MODEL_TREE || TypeModel == MTLTYPE_MODEL_GRASS)
 	{
 		D3DXPlaneTransform(plane, &ArrStaticModel[CurrRenderModel]->Plane, &((D3DXMATRIX)WorldMat));
 	}
 }
 
-inline void ModelSim::GetCenter(float3_t* center)
+void ModelSim::GetCenter(float3_t* center)
 {
-	if (TypeModel == MtlTypeModel::tms_static || TypeModel == MtlTypeModel::tms_tree || TypeModel == MtlTypeModel::tms_grass)
+	if (TypeModel == MTLTYPE_MODEL_STATIC || TypeModel == MTLTYPE_MODEL_TREE || TypeModel == MTLTYPE_MODEL_GRASS)
 	{
 		*center = SMVector3Transform(ArrStaticModel[CurrRenderModel]->Center, WorldMat);
 	}
@@ -198,9 +198,9 @@ void ModelSim::Render(DWORD timeDelta)
 		return;
 
 	WorldMat = SMMatrixRotationX(Rotation.x) * SMMatrixRotationY(Rotation.y) * SMMatrixRotationZ(Rotation.z);
-	if (TypeModel == MtlTypeModel::tms_static)
+	if (TypeModel == MTLTYPE_MODEL_STATIC)
 		RenderStatic(timeDelta);
-	else if (TypeModel == MtlTypeModel::tms_tree || TypeModel == MtlTypeModel::tms_grass)
+	else if (TypeModel == MTLTYPE_MODEL_TREE || TypeModel == MTLTYPE_MODEL_GRASS)
 	{
 		DVGreen.TexCoord.y = Rotation.y;
 		DVGreen.SinCosRot.x = sinf(DVGreen.TexCoord.y);
@@ -213,7 +213,7 @@ void ModelSim::Render(DWORD timeDelta)
 
 		RenderGreen(timeDelta);
 	}
-	else if (TypeModel == MtlTypeModel::tms_skin)
+	else if (TypeModel == MTLTYPE_MODEL_SKIN)
 		RenderSkin(timeDelta);
 }
 

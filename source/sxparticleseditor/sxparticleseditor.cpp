@@ -230,12 +230,10 @@ Cone: Vector1 x y z – нижняя точка конуса, w – радиус
 
 */
 
-#define SX_PARTICLES_EDITOR
-#define SX_EXE
-
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <SkyXEngine.cpp>
+#include <SkyXEngine.h>
+#include "particles_editor.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -249,18 +247,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXParticlesEditor::TabsVisible(false);
 	SXParticlesEditor::AllInTabsVisible(false);
 	
-	GData::FinalImage = DS_RT::ds_rt_color;
-
-	GData::Handle3D = SXParticlesEditor::WindowRender->GetHWND();
-	GData::HandleParent3D = SXParticlesEditor::JobWindow->GetHWND();
-
-	RECT winrndrect;
+	/*RECT winrndrect;
 	SXParticlesEditor::WindowRender->GetClientRect(&winrndrect);
 
 	GData::WinSize.x = winrndrect.right;
-	GData::WinSize.y = winrndrect.bottom;
+	GData::WinSize.y = winrndrect.bottom;*/
 
-	SkyXEngine_Init();
+	SkyXEngine_Init(SXParticlesEditor::WindowRender->GetHWND(), SXParticlesEditor::JobWindow->GetHWND());
+	Core_0SetCVarInt("final_image",DS_RT_COLOR);
+	SRender_GetCamera()->SetPosition(&float3(0, 0.5, -2));
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
+	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, true);
+	SXParticlesEditor::CheckBoxTBGrid->SetCheck(true);
+	SXParticlesEditor::CheckBoxTBAxes->SetCheck(true);
+	SXParticlesEditor::CheckBoxTBBound->SetCheck(true);
+	SRender_EditorSetRenderGrid(true);
+	SRender_EditorSetRenderAxesStatic(true);
+	SXParticlesEditor::canRenderBound = true;
+
+
+	SXParticlesEditor::PEcreateData();
 
 	SGCore_LoadTexLoadTextures();
 
@@ -270,6 +277,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXParticlesEditor::JobWindow->Visible(true);
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
+
+	SXParticlesEditor::PEdeleteData();
+
 	SXParticlesEditor::DeleteAllElements();
 	return result;
 }

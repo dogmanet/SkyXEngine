@@ -1,4 +1,6 @@
 
+#include "model_callback.h"
+
 void SXLevelEditor::GeomActivateAll(bool bf)
 {
 	SXLevelEditor::GeomActivateCreate(bf);
@@ -54,8 +56,8 @@ void SXLevelEditor::GeomSel(int sel)
 {
 	if (sel >= 0 && sel < SGeom_ModelsGetCount())
 	{
-		GData::Editors::ActiveElement = sel;
-		GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
+		SXLevelEditor::ActiveElement = sel;
+		SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
 
 		SXLevelEditor::GeomActivateTrans(true);
 
@@ -72,9 +74,9 @@ void SXLevelEditor::GeomSel(int sel)
 		SXLevelEditor::HelperPos = (max + min) * 0.5f;
 		SXLevelEditor::HelperScale = *scale;
 
-		GData::Editors::ObjAxesHelper->SetPosition(SXLevelEditor::HelperPos);
-		GData::Editors::ObjAxesHelper->SetRotation(*rot);
-		GData::Editors::ObjAxesHelper->SetScale(float3(1,1,1));
+		SXLevelEditor::ObjAxesHelper->SetPosition(SXLevelEditor::HelperPos);
+		SXLevelEditor::ObjAxesHelper->SetRotation(*rot);
+		SXLevelEditor::ObjAxesHelper->SetScale(float3(1,1,1));
 
 		SXLevelEditor::EditGeomName->SetText(tmpname);
 
@@ -118,7 +120,7 @@ void SXLevelEditor::GeomSel(int sel)
 LRESULT SXLevelEditor_EditGeomName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int sel = SXLevelEditor::ListBoxList->GetSel();
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		SXLevelEditor::EditGeomName->GetText(SGeom_ModelsMGetName(sel), 64);
 	}
@@ -151,7 +153,7 @@ LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGeomLod1->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{
 			if (sel >= 0 && sel < SGeom_ModelsGetCount())
 				SGeom_ModelsMSetLodPath(sel, tmpname);
@@ -226,15 +228,15 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	SXLevelEditor::ListBoxList->SetSel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
 	SXLevelEditor::GeomSel(SXLevelEditor::ListBoxList->GetSel());
 
-	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
-	GData::Editors::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
+	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
+	SXLevelEditor::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
 
 	return 0;
 }
 
 LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	float3* pos = SGeom_ModelsMGetPosition(sel);
@@ -262,7 +264,7 @@ LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	float3* rot = SGeom_ModelsMGetRotation(sel);
@@ -290,7 +292,7 @@ LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditTransformScale_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 	float3* scale = SGeom_ModelsMGetScale(sel);

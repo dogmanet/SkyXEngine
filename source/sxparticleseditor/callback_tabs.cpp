@@ -1,4 +1,6 @@
 
+#include "callback_tabs.h"
+
 LRESULT SXParticlesEditor_ButtonBase_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SXParticlesEditor::AllInTabsVisible(false);

@@ -1,4 +1,6 @@
 
+#include "buttons_callback.h"
+
 LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char tmppath[1024];
@@ -17,7 +19,7 @@ LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 LRESULT SXMaterialEditor_ButtonRotAngle0_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GData::Editors::SimModel->Rotation.y = 0;
+	SRender_SimModelSetRotationY(0);
 	return 0;
 }
 

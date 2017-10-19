@@ -52,6 +52,8 @@ public:
 	void SetThreadNum(int num);
 	void Sync();
 
+	void unloadObjLevel();
+
 	void LoadDefaults();
 	void LoadDynClasses();
 

@@ -23,10 +23,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore.lib")
 #endif
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore\\sxgcore.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 

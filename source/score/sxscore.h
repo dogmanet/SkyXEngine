@@ -33,10 +33,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxcore.lib")
 #endif
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <core\\sxcore.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
@@ -65,25 +67,35 @@ SX_LIB_API void SSCore_AKill();
 
 //#############################################################################
 
-#define SOUND_MAX_SIZE_STDPATH	256	/*!< абсолюный путь до директории с файлами */
-#define SOUND_MAX_SIZE_PATH		128	/*!< относительный путь до файла со звуком */
+/*! абсолюный путь до директории с файлами */
+#define SOUND_MAX_SIZE_STDPATH	256	
 
-#define SOUND_MIN_SIZE_STREAM	1024*64 /*!< минимально возможный размер потока для воспроизведения */
+/*! относительный путь до файла со звуком */
+#define SOUND_MAX_SIZE_PATH		128	
+
+/*! минимально возможный размер потока для воспроизведения */
+#define SOUND_MIN_SIZE_STREAM	1024*64 
 
 //**************************************************************************
 
 /*! \name Данные для первичного буфера
 @{*/
 
-#define SOUND_G_CHANELS_COUNT	2		/*!< количество каналов */
-#define SOUND_G_BITS_PER_SEC	48000	/*!< количество бит в секунду */
-#define SOUND_G_BITS_PER_SAMPLE	32		/*!< количество бит в семпле */
+/*! количество каналов */
+#define SOUND_G_CHANELS_COUNT	2		
+
+/*! количество бит в секунду */
+#define SOUND_G_BITS_PER_SEC	48000	
+
+/*! количество бит в семпле */
+#define SOUND_G_BITS_PER_SAMPLE	32		
 
 //!@}
 
 //**************************************************************************
 
-#define SOUND_OGG_BITS_PER_SAMPLE	16	/*!< количество бит на сэмпл для ogg, возможно 8 или 16 */
+/*! количество бит на сэмпл для ogg, возможно 8 или 16 */
+#define SOUND_OGG_BITS_PER_SAMPLE	16	
 
 /*! тип количества бит на сэмпл для ogg, 1 - для 8 бит, 2 - для 16 */
 #define SOUND_OGG_BITS_PER_SAMPLE_WORD SOUND_OGG_BITS_PER_SAMPLE/8
@@ -102,19 +114,19 @@ SX_LIB_API void SSCore_AKill();
 //#############################################################################
 
 //! форматы звукрвых файлов
-enum SoundFileFormat
+enum SOUND_FILEFORMAT
 {
-	sff_unknown,//!< не известный формат
-	sff_wav,	//!< wave формат
-	sff_ogg,	//!< ogg формат
+	SOUND_FILEFORMAT_UNKNOWN,	//!< не известный формат
+	SOUND_FILEFORMAT_WAV,		//!< wave формат
+	SOUND_FILEFORMAT_OGG,		//!< ogg формат
 };
 
 //! состояния воспроизведения звукового объекта
-enum SoundObjState
+enum SOUND_OBJSTATE
 {
-	sos_stop,	//!< остановлен
-	sos_pause,	//!< приостановлен
-	sos_play,	//!< проигрывается
+	SOUND_OBJSTATE_STOP,	//!< остановлен
+	SOUND_OBJSTATE_PAUSE,	//!< приостановлен
+	SOUND_OBJSTATE_PLAY,	//!< проигрывается
 };
 
 //#############################################################################
@@ -124,8 +136,8 @@ SX_LIB_API void SSCore_Clear();
 
 //! обновление состояний всех звуков
 SX_LIB_API void SSCore_Update(
-	float3* viewpos,	//!< текущая позиция наблюдателя
-	float3* viewdir		//!< текущее направление взгляда
+	const float3* viewpos,	//!< текущая позиция наблюдателя
+	const float3* viewdir	//!< текущее направление взгляда
 	);	
 
 //! количество проигрываемых на данный момент звуков
@@ -159,8 +171,8 @@ SX_LIB_API void SSCore_SndInstancePlay2d(
 
 //! воспроизведение инстанса 3d звука
 SX_LIB_API void SSCore_SndInstancePlay3d(
-	ID id,		//!< идентификатор звука
-	float3* pos	//!< позиция воспроизведения инстанса
+	ID id,				//!< идентификатор звука
+	const float3* pos	//!< позиция воспроизведения инстанса
 	);
 
 //! загрузка 2d звукового файла и пометка его как объект выдающий инстансы, аргументы аналогичны #SSCore_SndCreate2d
@@ -194,10 +206,10 @@ SX_LIB_API void	SSCore_SndStop(ID id);
 
 
 //! устанавливает состояние проигрывания звука
-SX_LIB_API void SSCore_SndStateSet(ID id, SoundObjState state);	
+SX_LIB_API void SSCore_SndStateSet(ID id, SOUND_OBJSTATE state);
 
 //! возвращает состояние проигрывания звука на данный момент
-SX_LIB_API SoundObjState SSCore_SndStateGet(ID id);				
+SX_LIB_API SOUND_OBJSTATE SSCore_SndStateGet(ID id);
 
 //! устанавить позицию проигрывания
 SX_LIB_API void SSCore_SndPosCurrSet(
@@ -250,7 +262,7 @@ SX_LIB_API DWORD SSCore_SndFreqOriginGet(ID id);
 
 
 //! установка мировой позиции звука (только для 3d звуков)
-SX_LIB_API void SSCore_SndPosWSet(ID id, float3* pos);		
+SX_LIB_API void SSCore_SndPosWSet(ID id, const float3* pos);		
 
 //! возвращает мировую позицию звука (только для 3d звуков)
 SX_LIB_API void SSCore_SndPosWGet(ID id, float3* pos);		

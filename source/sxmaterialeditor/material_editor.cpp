@@ -1,9 +1,5 @@
 
-#define MAINWIN_SIZE_X	645
-#define MAINWIN_SIZE_Y	700
-
-#include <sxmaterialeditor/shaders_kit.cpp>
-#include <sxmaterialeditor/paraml_kit.cpp>
+#include "material_editor.h"
 
 namespace SXMaterialEditor
 {
@@ -181,10 +177,6 @@ namespace SXMaterialEditor
 	ParamLKit* ParamL = 0;
 };
 
-#include <sxmaterialeditor\\common_callback.cpp>
-#include <sxmaterialeditor\\buttons_callback.cpp>
-#include <sxmaterialeditor\\trackbars_callback.cpp>
-#include <sxmaterialeditor\\edits_callback.cpp>
 
 void SXMaterialEditor::InitAllElements()
 {
@@ -278,12 +270,7 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxTBRLighting->SetBmpInResourse(IDB_BITMAP10);
 
 
-	GData::FinalImage = DS_RT::ds_rt_scene_light_com;
-	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);
-
-	SXMaterialEditor::CheckBoxTBCam->SetCheck(true);
-	GData::Editors::MoveCamera = SXMaterialEditor::CheckBoxTBCam->GetCheck();
+	
 
 	
 	SXMaterialEditor::ButtonSkyBox = SXGUICrButton("...", 275, 330, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->GetHWND(), 0, 0);
@@ -1294,4 +1281,41 @@ void SXMaterialEditor::DeleteAllElements()
 	mem_delete(SXMaterialEditor::EditThickness);
 	mem_delete(SXMaterialEditor::TrackBarThickness);
 	mem_delete(SXMaterialEditor::JobWindow);
+}
+
+//##########################################################################
+
+void SXMaterialEditor::MaterialEditorUpdate(DWORD timeDelta)
+{
+	ID skit = -1;
+
+	if (!SXMaterialEditor::ComboBoxShaders->Focus())
+	{
+		char vs[1024];
+		char ps[1024];
+
+		SML_MtlGetVS(SXMaterialEditor::IDMat, vs);
+		SML_MtlGetPS(SXMaterialEditor::IDMat, ps);
+
+		if ((skit = SXMaterialEditor::Shaders->Find(vs, ps)) >= 0)
+			SXMaterialEditor::ComboBoxShaders->SetSel(skit + 1);
+		else
+			SXMaterialEditor::ComboBoxShaders->SetSel(0);
+	}
+
+	if (!SXMaterialEditor::ComboBoxParamL->Focus())
+	{
+		float thikcness = SML_MtlGetThickness(SXMaterialEditor::IDMat);
+		float roughness = SML_MtlGetRoughness(SXMaterialEditor::IDMat);
+		float f0 = SML_MtlGetF0(SXMaterialEditor::IDMat);
+
+		skit = -1;
+		if ((skit = SXMaterialEditor::ParamL->Find(thikcness, roughness, f0)) >= 0)
+			SXMaterialEditor::ComboBoxParamL->SetSel(skit + 1);
+		else
+			SXMaterialEditor::ComboBoxParamL->SetSel(0);
+	}
+
+	if (SXMaterialEditor::CheckBoxModelRot->GetCheck())
+		SRender_SimModelSetRotationY(SRender_SimModelGetRotationY() - float(timeDelta) * 0.001f * 0.25);
 }

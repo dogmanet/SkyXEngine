@@ -1,4 +1,6 @@
 
+#include "game_callback.h"
+
 void SXLevelEditor::GameActivateAll(bool bf)
 {
 	SXLevelEditor::StaticGameClass->Visible(bf);
@@ -34,8 +36,8 @@ void SXLevelEditor::GameSel(int sel)
 	SXLevelEditor::ListViewGameClass->Enable(true);
 	SXLevelEditor::ListViewGameClass->ClearStrings();
 	ID seldata = SXLevelEditor::ListBoxList->GetItemData(sel);
-	GData::Editors::ActiveElement = seldata;
-	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+	SXLevelEditor::ActiveElement = seldata;
+	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
 	SXbaseEntity* bEnt = SXGame_EntGet(seldata);
 	proptable_t* pt = SXGame_EntGetProptable(bEnt->GetClassName());
 
@@ -95,17 +97,17 @@ void SXLevelEditor::GameSel(int sel)
 		}
 	}
 
-	GData::Editors::ObjAxesHelper->SetPosition(bEnt->GetPos());
-	GData::Editors::ObjAxesHelper->SetRotation(bEnt->GetOrient());
-	GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
+	SXLevelEditor::ObjAxesHelper->SetPosition(bEnt->GetPos());
+	SXLevelEditor::ObjAxesHelper->SetRotation(bEnt->GetOrient());
+	SXLevelEditor::ObjAxesHelper->SetScale(float3(1, 1, 1));
 }
 
 void SXLevelEditor::GameUpdatePosRot()
 {
-	if (GData::Editors::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || GData::Editors::ActiveElement < 0)
+	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || SXLevelEditor::ActiveElement < 0)
 		return;
 
-	SXbaseEntity* bEnt = SXGame_EntGet(GData::Editors::ActiveElement);
+	SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ActiveElement);
 	propdata_t* pd = 0;
 	char txtval[256];
 
@@ -338,8 +340,8 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	int sel = SXLevelEditor::ListBoxList->GetCountItem()-1;
 	SXLevelEditor::ListBoxList->SetSel(sel);
 	SXLevelEditor::GameSel(sel);
-	GData::Editors::ActiveElement = sel;
-	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+	SXLevelEditor::ActiveElement = sel;
+	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
 
 	return 0;
 }

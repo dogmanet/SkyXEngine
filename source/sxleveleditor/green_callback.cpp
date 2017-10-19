@@ -1,4 +1,6 @@
 
+#include "green_callback.h"
+
 void SXLevelEditor::GreenActivateAll(bool bf)
 {
 	SXLevelEditor::GreenActivateMain(bf);
@@ -84,8 +86,8 @@ void SXLevelEditor::GreenSel(int sel)
 {
 	if (sel >= 0 && sel < SGeom_GreenGetCount())
 	{
-		GData::Editors::ActiveElement = sel;
-		GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
+		SXLevelEditor::ActiveElement = sel;
+		SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
 
 		SXLevelEditor::GreenActivateCreate(false);
 		SXLevelEditor::GreenActivateEdit(true);
@@ -103,7 +105,7 @@ void SXLevelEditor::GreenSel(int sel)
 LRESULT SXLevelEditor_EditGreenName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int sel = SXLevelEditor::ListBoxList->GetSel();
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
 		SXLevelEditor::EditGreenName->GetText(SGeom_GreenMGetName(sel), 64);
 	}
@@ -122,7 +124,7 @@ LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam,
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenModel->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetLod(sel, 0, tmpname);
@@ -142,7 +144,7 @@ LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenLod1->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetLod(sel, 1, tmpname);
@@ -162,7 +164,7 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenLod2->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetLod(sel, 2, tmpname);
@@ -205,7 +207,7 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenNav->SetText(tmpname);
 		int sel = SXLevelEditor::ListBoxList->GetSel();
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
 				SGeom_GreenMSetNav(sel, tmpname);
@@ -247,7 +249,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	char tmp_navmesh[1024];
 	tmp_navmesh[0] = 0;
 
-	int greentype = GeomGreenType::ggt_tree;
+	int greentype = GREEN_TYPE_TREE;
 
 	SXLevelEditor::EditGreenName->GetText(tmp_name, 1024);
 	SXLevelEditor::EditGreenMask->GetText(tmp_tex, 1024);
@@ -257,7 +259,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	SXLevelEditor::EditGreenNav->GetText(tmp_navmesh, 1024);
 
 	if (tmp_lod1[0] == 0 && tmp_lod2[0] == 0)
-		greentype = GeomGreenType::ggt_grass;
+		greentype = GREEN_TYPE_GRASS;
 
 	if (tmp_tex[0] != 0)
 		sprintf(path_tex, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), tmp_tex);
@@ -298,7 +300,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 	}
 
-	if (greentype == GeomGreenType::ggt_tree)
+	if (greentype == GREEN_TYPE_TREE)
 	{
 		if (!Core_0FileExists(path_lod1))
 		{
@@ -347,7 +349,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	char tmpnamecountpoly[1024];
 		sprintf(tmpnamecountpoly, "%s | %s | %d",
 			SGeom_GreenMGetName(SGeom_GreenGetCount() - 1),
-			(SGeom_GreenMGetTypeCountGen(SGeom_GreenGetCount() - 1) == GeomGreenType::ggt_grass ? "grass" : "tree/shrub"),
+			(SGeom_GreenMGetTypeCountGen(SGeom_GreenGetCount() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
 			SGeom_GreenMGetCountGen(SGeom_GreenGetCount() - 1));
 		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
 
@@ -356,8 +358,8 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	SXLevelEditor::GreenSel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
 
-	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
-	GData::Editors::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
+	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
+	SXLevelEditor::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
 
 	return 0;
 }

@@ -30,6 +30,7 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore.lib")
 #endif
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 
@@ -42,6 +43,7 @@ See the license in LICENSE
 #include <mtllight/sxmtllight.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
@@ -111,67 +113,67 @@ SX_LIB_API void SPE_OnResetDevice();
 //#############################################################################
 
 //! тип фигуры частицы
-enum ParticlesFigureType
+enum PARTICLESTYPE_FIGURE
 {
-	pft_quad,			//!< обычный квадрат
-	pft_billboard,		//!< билборд (квадрат, лицевая сторона которого всегда направлена на наблюдателя)
-	pft_quad_composite,	//!< составной квадрат (фигура из нескольких квадратов)
+	PARTICLESTYPE_FIGURE_QUAD,			//!< обычный квадрат
+	PARTICLESTYPE_FIGURE_BILLBOARD,		//!< билборд (квадрат, лицевая сторона которого всегда направлена на наблюдателя)
+	PARTICLESTYPE_FIGURE_QUAD_COMPOSITE,//!< составной квадрат (фигура из нескольких квадратов)
 };
 
 //! тип смешивания
-enum ParticlesAlphaBlendType
+enum PARTICLESTYPE_ALPHABLEND
 {
-	pabt_alpha,			//!< на основе альфа канала
-	pabt_add			//!< аддитивное смешивание
+	PARTICLESTYPE_ALPHABLEND_ALPHA,	//!< на основе альфа канала
+	PARTICLESTYPE_ALPHABLEND_ADD	//!< аддитивное смешивание
 };
 
 //! тип ограничивающего объема
-enum ParticlesBoundType
+enum PARTICLESTYPE_BOUND
 {
-	pbt_none,	//!< нет объема
-	pbt_sphere,	//!< сфера
-	pbt_box,	//!< параллелепипед
-	pbt_cone	//!< конус
+	PARTICLESTYPE_BOUND_NONE,	//!< нет объема
+	PARTICLESTYPE_BOUND_SPHERE,	//!< сфера
+	PARTICLESTYPE_BOUND_BOX,	//!< параллелепипед
+	PARTICLESTYPE_BOUND_CONE	//!< конус
 };
 
 //! тип спавна частиц по позиции
-enum ParticlesSpawnPosType
+enum PARTICLESTYPE_SPAWNPOS
 {
-	pspt_strictly,	//!< строгий в указанном месте
-	pspt_bound,		//!< по ограничивающему объему
+	PARTICLESTYPE_SPAWNPOS_STRICTLY,	//!< строгий в указанном месте
+	PARTICLESTYPE_SPAWNPOS_BOUND,		//!< по ограничивающему объему
 };
 
 //! тип поворотов частиц
-enum ParticlesRotType
+enum PARTICLESTYPE_ROT
 {
-	prt_none,	//!< нет поворота
-	prt_normal,	//!< обычный поворот
-	prt_rnd,	//!< рандомный поворот
-	prt_evenly,	//!< равномерный поворот
+	PARTICLESTYPE_ROT_NONE,	//!< нет поворота
+	PARTICLESTYPE_ROT_NORMAL,	//!< обычный поворот
+	PARTICLESTYPE_ROT_RAND,	//!< рандомный поворот
+	PARTICLESTYPE_ROT_EVENLY,	//!< равномерный поворот
 };
 
 //! тип зависимости "чего либо" в частице от времени ее жизни
-enum ParticlesDependType
+enum PARTICLESTYPE_DEPEND
 {
-	padt_none,		//!< нет зависиомсти
-	padt_direct,	//!< прямая зависимость, чем старше тем меньше
-	padt_inverse,	//!< обратная зависимость, чем старше тем больше
+	PARTICLESTYPE_DEPEND_NONE,		//!< нет зависиомсти
+	PARTICLESTYPE_DEPEND_DIRECT,	//!< прямая зависимость, чем старше тем меньше
+	PARTICLESTYPE_DEPEND_INVERSE,	//!< обратная зависимость, чем старше тем больше
 };
 
 //! ось
-enum ParticlesAxis
+enum PARTICLES_AXIS
 {
-	pa_x,
-	pa_y,
-	pa_z,
+	PARTICLES_AXIS_X,
+	PARTICLES_AXIS_Y,
+	PARTICLES_AXIS_Z,
 };
 
 //! тип отклонения при движении частицы
-enum ParticlesDeviationType
+enum PARTICLESTYPE_DEVIATION
 {
-	pdt_rnd,	//!< случайное
-	pdt_along,	//!< вдоль оси
-	pdt_wave,	//!< волновое
+	PARTICLESTYPE_DEVIATION_RAND,	//!< случайное
+	PARTICLESTYPE_DEVIATION_ALONG,	//!< вдоль оси
+	PARTICLESTYPE_DEVIATION_WAVE,	//!< волновое
 };
 
 //#############################################################################
@@ -201,7 +203,7 @@ struct ParticlesData
 	Sphere: Vector1 x y z – центр сферы, w – радиус \n
 	Cone: Vector1 x y z – нижняя точка конуса, w – радиус нижней точки, Vector2 y координата Y верхней точки конуса, w – радиус верхней точки \n
 	@{*/
-	ParticlesBoundType BoundType;	//!< тип ограничивающего объема, для уничтожения партикла при выходе за пределы
+	PARTICLESTYPE_BOUND BoundType;	//!< тип ограничивающего объема, для уничтожения партикла при выходе за пределы
 
 	float4 BoundVec1;
 	float4 BoundVec2;
@@ -212,9 +214,9 @@ struct ParticlesData
 
 	/*! \name Параметры создания частиц
 	 \note Возможна привязка рандомного создания частиц к осям, для ограничивающих объемов (SpawnBoundBindCreate)
-	 \note Bound volume - ограничивающий объем из #ParticlesBoundType
+	 \note Bound volume - ограничивающий объем из #PARTICLESTYPE_BOUND
 	@{*/
-	ParticlesSpawnPosType SpawnPosType;	//!< тип спавна партиклов
+	PARTICLESTYPE_SPAWNPOS SpawnPosType;	//!< тип спавна партиклов
 
 	float3 SpawnOrigin;					//!< точка из которой идут частицы (обязательно должна быть точка откуда идет спавн частиц если нет ограничивающего объема)
 	float SpawnOriginDisp;				//!< дисперсия для #SpawnOrigin
@@ -254,12 +256,12 @@ struct ParticlesData
 	DWORD TimeLife;						//!< время жизни частиц, если time_life == 0 тогда частицы живут все время, иначе это время в млсекундах
 	DWORD TimeLifeDisp;					//!< дисперсия для #TimeLife
 
-	ParticlesDependType AlphaDependAge;	//!< зависит ли альфа компонента частицы от ее возраста
+	PARTICLESTYPE_DEPEND AlphaDependAge;	//!< зависит ли альфа компонента частицы от ее возраста
 	
 	float2_t Size;						//!< размер частиц
 	float SizeDisp;						//!< разброс для размера части
 
-	ParticlesDependType SizeDependAge;	//!< зависит ли размер частицы от ее возраста
+	PARTICLESTYPE_DEPEND SizeDependAge;	//!< зависит ли размер частицы от ее возраста
 
 	//!@}
 
@@ -298,7 +300,7 @@ struct ParticlesData
 	@{*/
 
 	bool CharacterCircle;				//!< испольовать ли использовать круговое движение
-	ParticlesAxis CharacterCircleAxis;	//!< ось для кругового движения
+	PARTICLES_AXIS CharacterCircleAxis;	//!< ось для кругового движения
 	float CharacterCircleAngle;			//!< угол (в радианах)
 	float CharacterCircleAngleDisp;		//!< дисперсия для #CharacterCircleAngle
 	bool CharacterCircleAngleDispNeg;	//!< разрешено ли использовать отрицательную дисперсию
@@ -323,10 +325,10 @@ struct ParticlesData
 	@{*/
 
 	bool CharacterDeviation;						//!< использовать ли отклонения при движении
-	ParticlesDeviationType CharacterDeviationType;	//!< тип смещения
+	PARTICLESTYPE_DEVIATION CharacterDeviationType;	//!< тип смещения
 	float CharacterDeviationAmplitude;				//!< амплитуда, может быть отрицательна
 	float CharacterDeviationCoefAngle;				//!< коэфициент на который будет умножен угол, только для ParticlesDeviationType::ptd_wave
-	ParticlesAxis CharacterDeviationAxis;			//!< ось на основании которой будет вычислен угол поворота, только для ParticlesDeviationType::ptd_wave
+	PARTICLES_AXIS CharacterDeviationAxis;			//!< ось на основании которой будет вычислен угол поворота, только для ParticlesDeviationType::ptd_wave
 	DWORD CharacterDeviationCountDelayMls;			//!< время обновления для #ParticlesDeviationType::ptd_rnd и #ParticlesDeviationType::pdt_along
 
 	float CharacterDeviationCoefAngleDisp;		//!< коэфициент дисперсии, для #CharacterDeviationCoefAngle если #ParticlesDeviationType::ptd_wave, для #CharacterDeviationAmplitude в других случаях
@@ -340,7 +342,7 @@ struct ParticlesData
 
 	//**************************************************************************
 
-	ParticlesFigureType FigureType;	//!< тип фигуры партикла
+	PARTICLESTYPE_FIGURE FigureType;	//!< тип фигуры партикла
 	int FigureCountQuads;			//!< количество квадаратов в случае ParticlesFigureType::pft_quad_composite
 	bool FigureRotRand;				//!< true - случайно генерировать углы поворотов, false - равномерно поворачивать
 	bool FigureTapX;				//!< поворачивать ли по оси X
@@ -356,7 +358,7 @@ struct ParticlesData
 
 	//**************************************************************************
 
-	ParticlesAlphaBlendType AlphaBlendType;	//!< тип смешивания
+	PARTICLESTYPE_ALPHABLEND AlphaBlendType;	//!< тип смешивания
 	float ColorCoef;		//!< коэфициент на который будет домножен цвет
 	float4_t Color;
 	int ReCreateCount;		//!< количество создваваемых/пересоздаваемых, 0< - пересоздание в случае нехватки, 0> - единственное создание при запуске

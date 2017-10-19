@@ -2790,6 +2790,11 @@ ID StaticGeom::AddArrForCom()
 	return id_arr;
 }
 
+bool StaticGeom::existsArrForCom(ID id)
+{
+	return (ArrComFor.size() > id);
+}
+
 void StaticGeom::DelArrForCom(ID id_arr)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);

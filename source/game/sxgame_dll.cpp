@@ -18,9 +18,6 @@ See the license in LICENSE
 
 #include "GameData.h"
 
-#include "AmbientSounds.h"
-#include "Weather.h"
-
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxgcore_d.lib")
@@ -53,12 +50,8 @@ report_func reportf = DefReport;
 
 GameData * g_pGameData = NULL;
 ID3DXMesh* g_pFigureBox = 0;
-CWeather* g_pWeather = 0;
-CAmbientSounds* g_pAmbientSounds = 0;
 
 #define SG_PRECOND(ret) if(!g_pGameData){reportf(-1, "%s - sxgame is not init", gen_msg_location);return ret;}
-#define SG_PRECOND_WEATHER(ret) if(!g_pWeather){reportf(-1, "%s - sxgame weather is not init", gen_msg_location);return ret;}
-#define SG_PRECOND_AMBIENTSND(ret) if(!g_pAmbientSounds){reportf(-1, "%s - sxgame ambient sounds is not init", gen_msg_location);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -119,8 +112,6 @@ SX_LIB_API void SXGame_0Create()
 	Core_SetOutPtr();
 
 	g_pGameData = new GameData();
-	g_pWeather = new CWeather();
-	g_pAmbientSounds = new CAmbientSounds();
 
 	//g_pPlayer->Spawn();
 	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0);
@@ -176,6 +167,12 @@ SX_LIB_API void SXGame_LoadEnts(const char * file)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->Import(file);
+}
+
+SX_LIB_API void SXGame_UnloadObjLevel()
+{
+	SG_PRECOND(_VOID);
+	GameData::m_pMgr->unloadObjLevel();
 }
 
 SX_LIB_API void SXGame_SaveEnts(const char * file)
@@ -362,93 +359,4 @@ SX_LIB_API SXbaseEntity * SXGame_EntGet(ID id)
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pMgr->GetById(id));
-}
-
-//#############################################################################
-
-SX_LIB_API void SGame_AmbientSndAdd(const char* path)
-{
-	SG_PRECOND_AMBIENTSND(_VOID);
-	g_pAmbientSounds->add(path);
-}
-
-SX_LIB_API void SGame_AmbientSndGet(ID id, char* path)
-{
-	SG_PRECOND_AMBIENTSND(_VOID);
-	g_pAmbientSounds->get(id, path);
-}
-
-SX_LIB_API UINT SGame_AmbientSndGetCount()
-{
-	SG_PRECOND_AMBIENTSND(0);
-	return g_pAmbientSounds->getCount();
-}
-
-SX_LIB_API void SGame_AmbientSndClear()
-{
-	SG_PRECOND_AMBIENTSND(_VOID);
-	g_pAmbientSounds->clear();
-}
-
-
-SX_LIB_API void SGame_AmbientSndPlay()
-{
-	SG_PRECOND_AMBIENTSND(_VOID);
-	g_pAmbientSounds->play();
-}
-
-SX_LIB_API void SGame_AmbientSndUpdate()
-{
-	SG_PRECOND_AMBIENTSND(_VOID);
-	g_pAmbientSounds->update();
-}
-
-SX_LIB_API void SGame_AmbientSndPause()
-{
-	SG_PRECOND_AMBIENTSND(_VOID);
-	g_pAmbientSounds->pause();
-}
-
-SX_LIB_API bool SGame_AmbientSndIsPlaying()
-{
-	SG_PRECOND_AMBIENTSND(false);
-	return g_pAmbientSounds->getPlaying();
-}
-
-//#############################################################################
-
-SX_LIB_API void SGame_WeatherLoad(const char* path)
-{
-	SG_PRECOND_WEATHER(_VOID);
-	g_pWeather->load(path);
-}
-
-SX_LIB_API void SGame_WeatherUpdate()
-{
-	SG_PRECOND_WEATHER(_VOID);
-	g_pWeather->update();
-}
-
-SX_LIB_API float SGame_WeatherGetCurrRainDensity()
-{
-	SG_PRECOND_WEATHER(0.f);
-	return g_pWeather->getCurrRainDensity();
-}
-
-SX_LIB_API void SGame_WeatherSndPlay()
-{
-	SG_PRECOND_WEATHER(_VOID);
-	g_pWeather->sndPlay();
-}
-
-SX_LIB_API void SGame_WeatherSndPause()
-{
-	SG_PRECOND_WEATHER(_VOID);
-	g_pWeather->sndPause();
-}
-
-SX_LIB_API bool SGame_WeatherSndIsPlaying()
-{
-	SG_PRECOND_WEATHER(false);
-	return g_pWeather->sndGetPlaying();
 }

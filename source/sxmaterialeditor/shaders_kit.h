@@ -1,6 +1,10 @@
 
-#ifndef __shaders_kit_h
-#define __shaders_kit_h
+#ifndef __SHADERS_KIT_H
+#define __SHADERS_KIT_H
+
+#include <common/string.h>
+#include <common/array.h>
+#include <core/sxcore.h>
 
 class ShadersKit
 {

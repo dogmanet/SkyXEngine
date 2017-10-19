@@ -99,7 +99,6 @@
     <ClCompile Include="..\..\..\source\game\BaseTrigger.cpp" />
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
-    <ClCompile Include="..\..\..\source\game\AmbientSounds.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
@@ -125,11 +124,9 @@
     <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp" />
     <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp" />
-    <ClCompile Include="..\..\..\source\game\Weather.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\AAString.h" />
-    <ClInclude Include="..\..\..\source\game\ambient_sounds.h" />
     <ClInclude Include="..\..\..\source\game\BaseHandle.h" />
     <ClInclude Include="..\..\..\source\game\BaseMag.h" />
     <ClInclude Include="..\..\..\source\game\BaseScope.h" />
@@ -138,7 +135,6 @@
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />
-    <ClInclude Include="..\..\..\source\game\AmbientSounds.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />
     <ClInclude Include="..\..\..\source\game\EntityManager.h" />
     <ClInclude Include="..\..\..\source\game\FuncTrain.h" />
@@ -166,7 +162,6 @@
     <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h" />
     <ClInclude Include="..\..\..\source\game\SXpointCamera.h" />
     <ClInclude Include="..\..\..\source\game\SXpointEntity.h" />
-    <ClInclude Include="..\..\..\source\game\Weather.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -87,7 +87,6 @@ SkyClouds* ObjSkyClouds = 0;
 #define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!ObjSkyBox){g_fnReportf(-1, "%s - sky_box is not init", gen_msg_location); return retval;}
 #define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!ObjSkyClouds){g_fnReportf(-1, "%s - sky_clouds is not init", gen_msg_location); return retval;}
 
-//#include <gcore\dxdevice.cpp>
 
 void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags)
 {
@@ -194,6 +193,8 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 
 	DXDevice->CreateVertexDeclaration(layoutstatic, &StaticVertexDecl);
 }
+
+//##########################################################################
 
 SX_LIB_API long SGCore_0GetVersion()
 {
@@ -324,125 +325,125 @@ SX_LIB_API void SGCore_ScreenQuadDraw()
 
 //////
 
-void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
+SX_LIB_API void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {
 	SG_PRECOND(_VOID);
 	FuncDIP(type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
 }
 
-void SGCore_MtlSet(ID id, float4x4* world)
+SX_LIB_API void SGCore_MtlSet(ID id, float4x4* world)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlSet(id, world);
 }
 
-ID SGCore_MtlLoad(const char* name, int mtl_type)
+SX_LIB_API ID SGCore_MtlLoad(const char* name, int mtl_type)
 {
 	SG_PRECOND(-1);
 	return FuncMtlLoad(name, mtl_type);
 }
 
-int SGCore_MtlGetSort(ID id)
+SX_LIB_API int SGCore_MtlGetSort(ID id)
 {
 	SG_PRECOND(-1);
 	return FuncMtlGetSort(id);
 }
 
-int SGCore_MtlGetPhysicType(ID id)
+SX_LIB_API int SGCore_MtlGetPhysicType(ID id)
 {
 	SG_PRECOND(-1);
 	return FuncMtlGetPhysicType(id);
 }
 
-bool SGCore_MtlGroupRenderIsSingly(ID id)
+SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id)
 {
 	SG_PRECOND(false);
 	return FuncMtlGroupRenderIsSingly(id);
 }
 
 
-void SGCore_SetFunc_DIP(g_func_dip func)
+SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip func)
 {
 	SG_PRECOND(_VOID);
 	FuncDIP = func;
 }
 
-void SGCore_SetFunc_MtlSet(g_func_mtl_set func)
+SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set func)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlSet = func;
 }
 
-void SGCore_SetFunc_MtlLoad(g_func_mtl_load func)
+SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load func)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlLoad = func;
 }
 
-void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort func)
+SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort func)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlGetSort = func;
 }
 
-void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type func)
+SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type func)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlGetPhysicType = func;
 }
 
-void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly func)
+SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly func)
 {
 	SG_PRECOND(_VOID);
 	FuncMtlGroupRenderIsSingly = func;
 }
 
 
-////////////
+//##########################################################################
 
-ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
+SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char* path, const char* name, SHADER_CHECKDOUBLE is_check_double, D3DXMACRO* macro)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->Load(type_shader, path, name, is_check_double, macro);
 }
 
-void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name, D3DXMACRO macro[])
+SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name, D3DXMACRO macro[])
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->Update(type_shader, name, macro);
 }
 
-void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[])
+SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[])
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->Update(type_shader, id, macro);
 }
 
-void SGCore_ShaderReloadAll()
+SX_LIB_API void SGCore_ShaderReloadAll()
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->ReloadAll();
 }
 
-ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char* shader)
+SX_LIB_API ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char* shader)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->GetID(type_shader, shader);
 }
 
-void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char* shader)
+SX_LIB_API void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char* shader)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->Bind(type_shader, shader);
 }
 
-void SGCore_ShaderBind(SHADER_TYPE type_shader, ID shader)
+SX_LIB_API void SGCore_ShaderBind(SHADER_TYPE type_shader, ID shader)
 {
 	SG_PRECOND(_VOID);
 
@@ -450,35 +451,35 @@ void SGCore_ShaderBind(SHADER_TYPE type_shader, ID shader)
 }
 
 
-void SGCore_ShaderUnBind()
+SX_LIB_API void SGCore_ShaderUnBind()
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->UnBind();
 }
 
-void SGCore_ShaderSetVRFN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
+SX_LIB_API void SGCore_ShaderSetVRFN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->SetValueRegisterF(type_shader, name_shader, name_var, data, count_float4);
 }
 
-void SGCore_ShaderSetVRF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
+SX_LIB_API void SGCore_ShaderSetVRF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->SetValueRegisterF(type_shader, num_shader, name_var, data, count_float4);
 }
 
-void SGCore_ShaderSetVRIN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
+SX_LIB_API void SGCore_ShaderSetVRIN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
 {
 	SG_PRECOND(_VOID);
 
 	return MShaders->SetValueRegisterI(type_shader, name_shader, name_var, data, count_int4);
 }
 
-void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
+SX_LIB_API void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
 {
 	SG_PRECOND(_VOID);
 
@@ -486,291 +487,278 @@ void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID num_shader, const char* nam
 }
 
 
-ID SGCore_ShaderIsExistName(SHADER_TYPE type_shader, const char* name)
+SX_LIB_API ID SGCore_ShaderIsExistName(SHADER_TYPE type_shader, const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->IsExistName(type_shader, name);
 }
 
-ID SGCore_ShaderIsExistPath(SHADER_TYPE type_shader, const char* name)
+SX_LIB_API ID SGCore_ShaderIsExistPath(SHADER_TYPE type_shader, const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MShaders->IsExistName(type_shader, name);
 }
 
-bool SGCore_ShaderIsValidate(SHADER_TYPE type_shader, ID id)
+SX_LIB_API bool SGCore_ShaderIsValidate(SHADER_TYPE type_shader, ID id)
 {
 	SG_PRECOND(0);
 
 	return MShaders->IsValidate(type_shader, id);
 }
 
-void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID id, char* path)
+SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID id, char* path)
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->GetPath(type_shader, id, path);
 }
 
-void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID id, char* name)
+SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID id, char* name)
 {
 	SG_PRECOND(_VOID);
 
 	MShaders->GetName(type_shader, id, name);
 }
 
-bool SGCore_ShaderFileExists(const char* name)
+SX_LIB_API bool SGCore_ShaderFileExists(const char* name)
 {
 	SG_PRECOND(false);
 
 	return MShaders->FileExists(name);
 }
 
-////////////////////////
+//##########################################################################
 
-bool SGCore_LoadTexFileExists(const char* name)
+SX_LIB_API bool SGCore_LoadTexFileExists(const char* name)
 {
 	SG_PRECOND(false);
 
 	return MTextures->FileExists(name);
 }
 
-void SGCore_LoadTexClearLoaded()
+SX_LIB_API void SGCore_LoadTexClearLoaded()
 {
 	SG_PRECOND(_VOID);
 
 	MTextures->ClearLoaded();
 }
 
-void SGCore_LoadTexDelete(ID id)
+SX_LIB_API void SGCore_LoadTexDelete(ID id)
 {
 	SG_PRECOND(_VOID);
 
 	MTextures->Delete(id);
 }
 
-ID SGCore_LoadTexAddName(const char* name, LoadTexType type)
+SX_LIB_API ID SGCore_LoadTexAddName(const char* name, LoadTexType type)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->AddName(name, type);
 }
 
-ID SGCore_LoadTexGetID(const char* name)
+SX_LIB_API ID SGCore_LoadTexGetID(const char* name)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->GetID(name);
 }
 
-void SGCore_LoadTexGetName(ID id, char* name)
+SX_LIB_API void SGCore_LoadTexGetName(ID id, char* name)
 {
 	SG_PRECOND(_VOID);
 
 	return MTextures->GetName(id,name);
 }
 
-ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
+SX_LIB_API ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->Create(name, tex);
 }
 
-ID SGCore_LoadTexUpdateN(const char* name, LoadTexType type)
+SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name, LoadTexType type)
 {
 	SG_PRECOND(-1);
 
 	return MTextures->Update(name, type);
 }
 
-void SGCore_LoadTexUpdate(ID id)
+SX_LIB_API void SGCore_LoadTexUpdate(ID id)
 {
 	SG_PRECOND(_VOID);
 
 	return MTextures->Update(id);
 }
 
-IDirect3DTexture9* SGCore_LoadTexGetTex(ID id)
+SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID id)
 {
 	SG_PRECOND(0);
 
 	return MTextures->GetTexture(id);
 }
 
-void SGCore_LoadTexLoadTextures()
+SX_LIB_API void SGCore_LoadTexLoadTextures()
 {
 	SG_PRECOND(_VOID);
 
 	return MTextures->LoadTextures();
 }
 
-//////////////////////////
+//##########################################################################
 
-ID SGCore_RTAdd(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
+SX_LIB_API ID SGCore_RTAdd(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
 {
 	SG_PRECOND(-1);
 
 	return MRenderTargets->Add(width, height, levels, usage, format, pool, name, coeffullscreen);
 }
 
-void SGCore_RTDeleteN(const char* text)
+SX_LIB_API void SGCore_RTDeleteN(const char* text)
 {
 	SG_PRECOND(_VOID);
 
 	return MRenderTargets->Delete(text);
 }
 
-void SGCore_RTDelete(ID num)
+SX_LIB_API void SGCore_RTDelete(ID num)
 {
 	SG_PRECOND(_VOID);
 
 	return MRenderTargets->Delete(num);
 }
 
-ID SGCore_RTGetNum(const char* text)
+SX_LIB_API ID SGCore_RTGetNum(const char* text)
 {
 	SG_PRECOND(-1);
 
 	return MRenderTargets->GetNum(text);
 }
 
-/*void SGCore_RTOnLostDevice()
-{
-	SG_PRECOND();
-
-	return MRenderTargets->OnLostDevice();
-}
-
-void SGCore_RTOnResetDevice()
-{
-	SG_PRECOND();
-
-	return MRenderTargets->OnResetDevice();
-}*/
-
-IDirect3DTexture9* SGCore_RTGetTextureN(const char* text)
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char* text)
 {
 	SG_PRECOND(0);
 
 	return MRenderTargets->GetTexture(text);
 }
 
-IDirect3DTexture9* SGCore_RTGetTexture(ID num)
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID num)
 {
 	SG_PRECOND(0);
 
 	return MRenderTargets->GetTexture(num);
 }
 
-////////////
+//##########################################################################
 
-void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, UINT iSideCount)
+SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, UINT iSideCount)
 {
 	SG_PRECOND(_VOID);
 
 	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, DXDevice, iSideCount);
 }
 
-void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
+SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
 {
 	SG_PRECOND(_VOID);
 
 	ComputeBoundingBox(vertex_buffer, bound, count_vert, bytepervert);
 }
 
-void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
+SX_LIB_API void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
 {
 	SG_PRECOND(_VOID);
 
 	ComputeBoundingBox2(vertex_buffer, bound, count_vert, bytepervert);
 }
 
-void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh)
+SX_LIB_API void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh)
 {
 	SG_PRECOND(_VOID);
 
 	CreateBoundingBoxMesh(min, max, bbmesh,DXDevice);
 }
 
-void SGCore_OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
 {
 	SG_PRECOND(_VOID);
 
 	OptimizeIndecesInSubsetUint16(ib, numFaces, numVerts);
 }
 
-void SGCore_OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
 {
 	SG_PRECOND(_VOID);
 
 	OptimizeIndecesInSubsetUint32(ib, numFaces, numVerts);
 }
 
+//##########################################################################
 
-bool SGCore_0InPos2D(float3* min, float3* max, float3* pos)
+SX_LIB_API bool SGCore_0InPos2D(float3* min, float3* max, float3* pos)
 {
 	return InPosition2D(min, max, pos);
 }
 
-bool SGCore_0InPosAbs2D(float3* min, float3* max, float3* pos)
+SX_LIB_API bool SGCore_0InPosAbs2D(float3* min, float3* max, float3* pos)
 {
 	return InPositionAbs2D(min, max, pos);
 }
 
-int SGCore_0CountPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
+SX_LIB_API int SGCore_0CountPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
 {
 	return CountPositionPoints2D(min, max, p1, p2, p3);
 }
 
-int SGCore_0CountPosPointsAbs2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
+SX_LIB_API int SGCore_0CountPosPointsAbs2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
 {
 	return CountPositionPointsAbs2D(min, max, p1, p2, p3);
 }
 
-bool SGCore_0InPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
+SX_LIB_API bool SGCore_0InPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
 {
 	return InPositionPoints2D(min, max, p1, p2, p3);
 }
 
-bool SGCore_0InPos3D(float3* min, float3* max, float3* pos)
+SX_LIB_API bool SGCore_0InPos3D(float3* min, float3* max, float3* pos)
 {
 	return InPosition3D(min, max, pos);
 }
 
-bool SGCore_0InPosAbs3D(float3* min, float3* max, float3* pos)
+SX_LIB_API bool SGCore_0InPosAbs3D(float3* min, float3* max, float3* pos)
 {
 	return InPositionAbs3D(min, max, pos);
 }
 
-int SGCore_0CountPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
+SX_LIB_API int SGCore_0CountPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
 {
 	return CountPositionPoints3D(min, max, p1, p2, p3);
 }
 
-int SGCore_0CountPosPointsAbs3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
+SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
 {
 	return CountPositionPointsAbs3D(min, max, p1, p2, p3);
 }
 
-bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
+SX_LIB_API bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
 {
 	return InPositionPoints3D(min, max, p1, p2, p3);
 }
 
-void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr)
+SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr)
 {
 	ComputeBoundingBoxArr8(bound, bound_arr);
 }
 
-void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr)
+SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr)
 {
 	ComputeBoundingBoxArr4(bound, bound_arr);
 }
 
-float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
+SX_LIB_API float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
 {
 	float3 v = dir;
 	float3 w = p - start;
@@ -786,38 +774,38 @@ float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const f
 	return(SMVector3Length2(p - Pb));
 }
 
-bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2)
+SX_LIB_API bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2)
 {
 	return (!((min1->x > max2->x || max1->x < min2->x)
 		|| (min1->y > max2->y || max1->y < min2->y)
 		|| (min1->z > max2->z || max1->z < min2->z)));
 }
 
-////////////
+//##########################################################################
 
-ISXFrustum* SGCore_CrFrustum()
+SX_LIB_API ISXFrustum* SGCore_CrFrustum()
 {
 	return new Frustum();
 }
 
-ISXCamera* SGCore_CrCamera()
+SX_LIB_API ISXCamera* SGCore_CrCamera()
 {
 	return new Camera();
 }
 
-ISXTransObject* SGCore_CrTransObject()
+SX_LIB_API ISXTransObject* SGCore_CrTransObject()
 {
 	return new SXTransObject();
 }
 
-ISXBound* SGCore_CrBound()
+SX_LIB_API ISXBound* SGCore_CrBound()
 {
 	return new SXBound();
 }
 
-//////////////////////
+//##########################################################################
 
-void SGCore_SetSamplerFilter(DWORD id, DWORD value)
+SX_LIB_API void SGCore_SetSamplerFilter(DWORD id, DWORD value)
 {
 	SG_PRECOND(_VOID);
 
@@ -826,7 +814,7 @@ void SGCore_SetSamplerFilter(DWORD id, DWORD value)
 	DXDevice->SetSamplerState(id, D3DSAMP_MIPFILTER, value);
 }
 
-void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value)
+SX_LIB_API void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value)
 {
 	SG_PRECOND(_VOID);
 
@@ -837,7 +825,7 @@ void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value)
 	}
 }
 
-void SGCore_SetSamplerAddress(DWORD id, DWORD value)
+SX_LIB_API void SGCore_SetSamplerAddress(DWORD id, DWORD value)
 {
 	SG_PRECOND(_VOID);
 
@@ -846,7 +834,7 @@ void SGCore_SetSamplerAddress(DWORD id, DWORD value)
 	DXDevice->SetSamplerState(id, D3DSAMP_ADDRESSW, value);
 }
 
-void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value)
+SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value)
 {
 	SG_PRECOND(_VOID);
 
@@ -857,9 +845,9 @@ void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value)
 	}
 }
 
-/////////
+//##########################################################################
 
-void SGCore_SkyBoxCr()
+SX_LIB_API void SGCore_SkyBoxCr()
 {
 	SG_PRECOND(_VOID);
 
@@ -869,74 +857,74 @@ void SGCore_SkyBoxCr()
 		ObjSkyBox = new SkyBox();
 }
 
-bool SGCore_SkyBoxIsCr()
+SX_LIB_API bool SGCore_SkyBoxIsCr()
 {
 	SG_PRECOND(false);
 	return (ObjSkyBox != 0);
 }
 
-bool SGCore_SkyBoxIsLoadTex()
+SX_LIB_API bool SGCore_SkyBoxIsLoadTex()
 {
 	SG_PRECOND_SKY_BOX(false);
 	return ObjSkyBox->IsLoadTex();
 }
 
-void SGCore_SkyBoxLoadTex(const char *texture)
+SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->LoadTextures(texture);
 }
 
-void SGCore_SkyBoxChangeTex(const char *texture)
+SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->ChangeTexture(texture);
 }
 
-void SGCore_SkyBoxGetActiveTex(char *texture)
+SX_LIB_API void SGCore_SkyBoxGetActiveTex(char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->GetActiveTexture(texture);
 }
 
-void SGCore_SkyBoxGetSecondTex(char *texture)
+SX_LIB_API void SGCore_SkyBoxGetSecondTex(char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->GetSecondTexture(texture);
 }
 
-void SGCore_SkyBoxSetRot(float angle)
+SX_LIB_API void SGCore_SkyBoxSetRot(float angle)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->SetRotation(angle);
 }
 
-float SGCore_SkyBoxGetRot()
+SX_LIB_API float SGCore_SkyBoxGetRot()
 {
 	SG_PRECOND_SKY_BOX(0);
 	return ObjSkyBox->GetRotation();
 }
 
-void SGCore_SkyBoxSetColor(float4_t* color)
+SX_LIB_API void SGCore_SkyBoxSetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->SetColor(color);
 }
 
-void SGCore_SkyBoxGetColor(float4_t* color)
+SX_LIB_API void SGCore_SkyBoxGetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->GetColor(color);
 }
 
-void SGCore_SkyBoxRender(float timeDelta, float3* pos)
+SX_LIB_API void SGCore_SkyBoxRender(float timeDelta, float3* pos)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
 	ObjSkyBox->Render(timeDelta, pos, false);
 }
 
 
-void SGCore_SkyCloudsCr()
+SX_LIB_API void SGCore_SkyCloudsCr()
 {
 	SG_PRECOND(_VOID);
 
@@ -946,88 +934,88 @@ void SGCore_SkyCloudsCr()
 		ObjSkyClouds = new SkyClouds();
 }
 
-bool SGCore_SkyCloudsIsCr()
+SX_LIB_API bool SGCore_SkyCloudsIsCr()
 {
 	SG_PRECOND(false);
 
 	return (ObjSkyClouds != 0);
 }
 
-bool SGCore_SkyCloudsIsLoadTex()
+SX_LIB_API bool SGCore_SkyCloudsIsLoadTex()
 {
 	SG_PRECOND_SKY_CLOUDS(false);
 
 	return ObjSkyClouds->IsLoadTex();
 }
 
-void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, float3* pos)
+SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, float3* pos)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->SetWidthHeightPos(width, height, pos);
 }
 
-void SGCore_SkyCloudsLoadTex(const char *texture)
+SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->LoadTextures(texture);
 }
 
-void SGCore_SkyCloudsChangeTex(const char *texture)
+SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *texture)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->ChangeTexture(texture);
 }
 
-void SGCore_SkyCloudsSetRot(float angle)
+SX_LIB_API void SGCore_SkyCloudsSetRot(float angle)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->SetRotation(angle);
 }
 
-float SGCore_SkyCloudsGetRot()
+SX_LIB_API float SGCore_SkyCloudsGetRot()
 {
 	SG_PRECOND_SKY_CLOUDS(0);
 	return ObjSkyClouds->GetRotation();
 }
 
-void SGCore_SkyCloudsSetAlpha(float alpha)
+SX_LIB_API void SGCore_SkyCloudsSetAlpha(float alpha)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->SetAlpha(alpha);
 }
 
-float SGCore_SkyCloudsGetAlpha()
+SX_LIB_API float SGCore_SkyCloudsGetAlpha()
 {
 	SG_PRECOND_SKY_CLOUDS(0);
 	return ObjSkyClouds->GetAlpha();
 }
 
-void SGCore_SkyCloudsSetSpeed(float speed)
+SX_LIB_API void SGCore_SkyCloudsSetSpeed(float speed)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->SetSpeed(speed);
 }
 
-float SGCore_SkyCloudsGetSpeed()
+SX_LIB_API float SGCore_SkyCloudsGetSpeed()
 {
 	SG_PRECOND_SKY_CLOUDS(0);
 	return ObjSkyClouds->GetSpeed();
 }
 
-void SGCore_SkyCloudsSetColor(float4_t* color)
+SX_LIB_API void SGCore_SkyCloudsSetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->SetColor(color);
 }
 
-void SGCore_SkyCloudsGetColor(float4_t* color)
+SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->GetColor(color);
 }
 
 
-void SGCore_SkyCloudsRender(DWORD timeDetlta, float3* pos, bool is_shadow)
+SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, float3* pos, bool is_shadow)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	ObjSkyClouds->Render(timeDetlta, pos, is_shadow);

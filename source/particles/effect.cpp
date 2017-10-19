@@ -355,7 +355,7 @@ void Effects::Load(const char* path)
 
 
 			if (config->keyExists(part_section_name, "BoundType"))
-				part.BoundType = (ParticlesBoundType)String(config->getKey(part_section_name, "BoundType")).ToInt();
+				part.BoundType = (PARTICLESTYPE_BOUND)String(config->getKey(part_section_name, "BoundType")).ToInt();
 
 			if (config->keyExists(part_section_name, "BoundVec1X"))
 				part.BoundVec1.x = String(config->getKey(part_section_name, "BoundVec1X")).ToDouble();
@@ -377,7 +377,7 @@ void Effects::Load(const char* path)
 
 
 			if (config->keyExists(part_section_name, "SpawnPosType"))
-				part.SpawnPosType = (ParticlesSpawnPosType)String(config->getKey(part_section_name, "SpawnPosType")).ToInt();
+				part.SpawnPosType = (PARTICLESTYPE_SPAWNPOS)String(config->getKey(part_section_name, "SpawnPosType")).ToInt();
 
 			if (config->keyExists(part_section_name, "SpawnOriginX"))
 				part.SpawnOrigin.x = String(config->getKey(part_section_name, "SpawnOriginX")).ToDouble();
@@ -428,7 +428,7 @@ void Effects::Load(const char* path)
 				part.TimeLifeDisp = String(config->getKey(part_section_name, "TimeLifeDisp")).ToUnsLongInt();
 
 			if (config->keyExists(part_section_name, "AlphaDependAge"))
-				part.AlphaDependAge = (ParticlesDependType)String(config->getKey(part_section_name, "AlphaDependAge")).ToInt();
+				part.AlphaDependAge = (PARTICLESTYPE_DEPEND)String(config->getKey(part_section_name, "AlphaDependAge")).ToInt();
 
 			if (config->keyExists(part_section_name, "SizeX"))
 				part.Size.x = String(config->getKey(part_section_name, "SizeX")).ToDouble();
@@ -439,7 +439,7 @@ void Effects::Load(const char* path)
 				part.SizeDisp = String(config->getKey(part_section_name, "SizeDisp")).ToDouble();
 
 			if (config->keyExists(part_section_name, "SizeDependAge"))
-				part.SizeDependAge = (ParticlesDependType)String(config->getKey(part_section_name, "SizeDependAge")).ToInt();
+				part.SizeDependAge = (PARTICLESTYPE_DEPEND)String(config->getKey(part_section_name, "SizeDependAge")).ToInt();
 
 
 			if (config->keyExists(part_section_name, "VelocityX"))
@@ -481,7 +481,7 @@ void Effects::Load(const char* path)
 			if (config->keyExists(part_section_name, "CharacterCircle"))
 				part.CharacterCircle = String(config->getKey(part_section_name, "CharacterCircle")).ToBool();
 			if (config->keyExists(part_section_name, "CharacterCircleAxis"))
-				part.CharacterCircleAxis = (ParticlesAxis)String(config->getKey(part_section_name, "CharacterCircleAxis")).ToInt();
+				part.CharacterCircleAxis = (PARTICLES_AXIS)String(config->getKey(part_section_name, "CharacterCircleAxis")).ToInt();
 			if (config->keyExists(part_section_name, "CharacterCircleAngle"))
 				part.CharacterCircleAngle = String(config->getKey(part_section_name, "CharacterCircleAngle")).ToDouble();
 			if (config->keyExists(part_section_name, "CharacterCircleAngleDisp"))
@@ -503,13 +503,13 @@ void Effects::Load(const char* path)
 			if (config->keyExists(part_section_name, "CharacterDeviation"))
 				part.CharacterDeviation = String(config->getKey(part_section_name, "CharacterDeviation")).ToBool();
 			if (config->keyExists(part_section_name, "CharacterDeviationType"))
-				part.CharacterDeviationType = (ParticlesDeviationType)String(config->getKey(part_section_name, "CharacterDeviationType")).ToInt();
+				part.CharacterDeviationType = (PARTICLESTYPE_DEVIATION)String(config->getKey(part_section_name, "CharacterDeviationType")).ToInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationAmplitude"))
 				part.CharacterDeviationAmplitude = String(config->getKey(part_section_name, "CharacterDeviationAmplitude")).ToDouble();
 			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngle"))
 				part.CharacterDeviationCoefAngle = String(config->getKey(part_section_name, "CharacterDeviationCoefAngle")).ToDouble();
 			if (config->keyExists(part_section_name, "CharacterDeviationAxis"))
-				part.CharacterDeviationAxis = (ParticlesAxis)String(config->getKey(part_section_name, "CharacterDeviationAxis")).ToInt();
+				part.CharacterDeviationAxis = (PARTICLES_AXIS)String(config->getKey(part_section_name, "CharacterDeviationAxis")).ToInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationCountDelayMls"))
 				part.CharacterDeviationCountDelayMls = String(config->getKey(part_section_name, "CharacterDeviationCountDelayMls")).ToUnsLongInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngleDisp"))
@@ -526,7 +526,7 @@ void Effects::Load(const char* path)
 
 
 			if (config->keyExists(part_section_name, "FigureType"))
-				part.FigureType = (ParticlesFigureType)String(config->getKey(part_section_name, "FigureType")).ToInt();
+				part.FigureType = (PARTICLESTYPE_FIGURE)String(config->getKey(part_section_name, "FigureType")).ToInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationAxis"))
 				part.FigureCountQuads = String(config->getKey(part_section_name, "FigureCountQuads")).ToInt();
 
@@ -544,7 +544,7 @@ void Effects::Load(const char* path)
 				part.ReCreateCount = String(config->getKey(part_section_name, "ReCreateCount")).ToInt();
 
 			if (config->keyExists(part_section_name, "AlphaBlendType"))
-				part.AlphaBlendType = (ParticlesAlphaBlendType)String(config->getKey(part_section_name, "AlphaBlendType")).ToInt();
+				part.AlphaBlendType = (PARTICLESTYPE_ALPHABLEND)String(config->getKey(part_section_name, "AlphaBlendType")).ToInt();
 
 			if (config->keyExists(part_section_name, "ColorCoef"))
 				part.ColorCoef = String(config->getKey(part_section_name, "ColorCoef")).ToDouble();

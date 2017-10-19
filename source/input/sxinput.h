@@ -14,8 +14,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef __sxinput
-#define __sxinput
+#ifndef __SXINPUT_H
+#define __SXINPUT_H
 
 #include <gdefines.h>
 
@@ -24,12 +24,13 @@ See the license in LICENSE
 #else
 #pragma comment(lib, "sxcore.lib")
 #endif
-#include <core\\sxcore.h>
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
-#include <core\\sxcore.h>
+#include <core/sxcore.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 

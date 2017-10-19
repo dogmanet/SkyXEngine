@@ -1,4 +1,6 @@
 
+#include "common_callback.h"
+
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (MessageBox(0, "Exit?", "Exit?!", MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
@@ -12,14 +14,14 @@ void SXLevelEditor::LevelNew(bool mess)
 	if (mess && (SGeom_ModelsGetCount() <= 0 || (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)))
 		return;
 
-	Level::Clear();
+	SLevel_Clear();
 	char tmpcaption[256];
 	sprintf(tmpcaption, "%s: new level ** ", EDITORS_LEVEL_CAPTION);
 	SXLevelEditor::JobWindow->SetText(tmpcaption);
-	GData::Editors::ActiveGroupType = 0;
-	GData::Editors::ActiveElement = -1;
-	GData::Editors::ActiveGreenSplit = -1;
-	GData::Editors::ActiveGreenObject = -1;
+	SXLevelEditor::ActiveGroupType = 0;
+	SXLevelEditor::ActiveElement = -1;
+	SXLevelEditor::ActiveGreenSplit = -1;
+	SXLevelEditor::ActiveGreenObject = -1;
 
 	ID gid = SML_LigthsGetGlobal();
 	if (gid >= 0)
@@ -44,7 +46,7 @@ void SXLevelEditor::LevelOpen()
 	if (def_str_validate(tmppath))
 	{
 		StrCutNameNEx(tmppath, tmpname);
-		Level::Load(tmpname);
+		SLevel_Load(tmpname, false);
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
 		SXLevelEditor::JobWindow->SetText(tmpcaption);
@@ -67,8 +69,8 @@ void SXLevelEditor::LevelOpen()
 
 void SXLevelEditor::LevelSave()
 {
-	if (Level::Name[0])
-		Level::Save(Level::Name);
+	if (SLevel_GetName()[0])
+		SLevel_Save(SLevel_GetName());
 	else
 	{
 		if (SGeom_ModelsGetCount() <= 0)
@@ -93,7 +95,7 @@ void SXLevelEditor::LevelSaveAs()
 	if (StrValidate(tmppath))
 	{
 		StrCutNameNEx(tmppath, tmpname);
-		Level::Save(tmpname);
+		SLevel_Save(tmpname);
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
 		SXLevelEditor::JobWindow->SetText(tmpcaption);
@@ -134,53 +136,53 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	else if (id == ID_VIEW_GRID)
 	{
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
-		GData::Editors::RenderGrid = SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SRender_EditorSetRenderGrid(SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	else if (id == ID_VIEW_AXES)
 	{
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
-		GData::Editors::RenderAxesStatic = SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SRender_EditorSetRenderAxesStatic(SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 
 	//
 	else if (id == ID_FINALIMAGE_COLOR)
 	{
-		GData::FinalImage = DS_RT::ds_rt_color;
+		Core_0SetCVarInt("final_image", DS_RT_COLOR);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_NORMALS)
 	{
-		GData::FinalImage = DS_RT::ds_rt_normal;
+		Core_0SetCVarInt("final_image", DS_RT_NORMAL);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_PARAMETERS)
 	{
-		GData::FinalImage = DS_RT::ds_rt_param;
+		Core_0SetCVarInt("final_image", DS_RT_PARAM);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
 	{
-		GData::FinalImage = DS_RT::ds_rt_ambient_diff;
+		Core_0SetCVarInt("final_image", DS_RT_AMBIENTDIFF);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_SPECULAR)
 	{
-		GData::FinalImage = DS_RT::ds_rt_specular;
+		Core_0SetCVarInt("final_image", DS_RT_SPECULAR);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
 	{
-		GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+		Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
@@ -189,25 +191,25 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//
 	else if (id == ID_SELECTIONSETTINGS_SELECTION)
 	{
-		GData::Editors::SelSelection = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::SelSelection = !SXLevelEditor::MainMenu->GetCheckedItem(id);
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_SELECTIONSETTINGS_ZTEST)
 	{
-		GData::Editors::SelZTest = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::SelZTest = !SXLevelEditor::MainMenu->GetCheckedItem(id);
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_SELECTIONSETTINGS_MESH)
 	{
-		GData::Editors::SelMesh = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::SelMesh = !SXLevelEditor::MainMenu->GetCheckedItem(id);
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_SELECTIONSETTINGS_BACKFACESCULL)
 	{
-		GData::Editors::SelBackFacesCull = !SXLevelEditor::MainMenu->GetCheckedItem(id);
+		SXLevelEditor::SelBackFacesCull = !SXLevelEditor::MainMenu->GetCheckedItem(id);
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 
@@ -224,11 +226,11 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			char tmppath[1024];
 			sprintf(tmppath, "%sweather\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), SXLevelEditor::MenuWeatherArr[SXLevelEditor::MenuWeatherCurrID]);
-			SGame_WeatherLoad(tmppath);
+			SLevel_WeatherLoad(tmppath);
 		}
 		else
 		{
-			SGame_WeatherLoad(0);
+			SLevel_WeatherLoad(0);
 
 			ID gid = SML_LigthsGetGlobal();
 			if (gid >= 0)
@@ -245,7 +247,8 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GData::ReSize = true;
+	static int *resize = (int*)GET_PCVAR_INT("resize");
+	*resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }
 
@@ -256,69 +259,69 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	GData::Editors::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+	SXLevelEditor::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
-	if (GData::Editors::ObjAxesHelper->m_bIsDragging == false)
+	if (SXLevelEditor::ObjAxesHelper->m_bIsDragging == false)
 		return 0;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && GData::Editors::ActiveElement >= 0)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && SXLevelEditor::ActiveElement >= 0)
 	{
-		if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
+		if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
 		{
-			float3* pos = SGeom_ModelsMGetPosition(GData::Editors::ActiveElement);
-			float3 npos = (*pos) + (GData::Editors::ObjAxesHelper->GetPosition() - SXLevelEditor::HelperPos);
+			float3* pos = SGeom_ModelsMGetPosition(SXLevelEditor::ActiveElement);
+			float3 npos = (*pos) + (SXLevelEditor::ObjAxesHelper->GetPosition() - SXLevelEditor::HelperPos);
 			if ((*pos).x != npos.x || (*pos).y != npos.y || (*pos).z != npos.z)
 			{
 				*pos = npos;
 				
-				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+				SGeom_ModelsMApplyTransform(SXLevelEditor::ActiveElement);
 				float3 min, max;
-				SGeom_ModelsMGetMinMax(GData::Editors::ActiveElement, &min, &max);
+				SGeom_ModelsMGetMinMax(SXLevelEditor::ActiveElement, &min, &max);
 
 				SXLevelEditor::HelperPos = (max + min) * 0.5f;
 			}
 		}
-		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
+		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
 		{
-			float3* rot = SGeom_ModelsMGetRotation(GData::Editors::ActiveElement);
-			float3 nrot = GData::Editors::ObjAxesHelper->GetRotation();
+			float3* rot = SGeom_ModelsMGetRotation(SXLevelEditor::ActiveElement);
+			float3 nrot = SXLevelEditor::ObjAxesHelper->GetRotation();
 			if ((*rot).x != nrot.x || (*rot).y != nrot.y || (*rot).z != nrot.z)
 			{
-				*rot = GData::Editors::ObjAxesHelper->GetRotation();
-				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+				*rot = SXLevelEditor::ObjAxesHelper->GetRotation();
+				SGeom_ModelsMApplyTransform(SXLevelEditor::ActiveElement);
 			}
 		}
-		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_SCALE)
+		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_SCALE)
 		{
-			float3* scale = SGeom_ModelsMGetScale(GData::Editors::ActiveElement);
-			float3 nscale = GData::Editors::ObjAxesHelper->GetScale() - float3(1,1,1);
+			float3* scale = SGeom_ModelsMGetScale(SXLevelEditor::ActiveElement);
+			float3 nscale = SXLevelEditor::ObjAxesHelper->GetScale() - float3(1,1,1);
 			if ((*scale).x != nscale.x || (*scale).y != nscale.y || (*scale).z != nscale.z)
 			{
 				*scale += nscale;
-				SGeom_ModelsMApplyTransform(GData::Editors::ActiveElement);
+				SGeom_ModelsMApplyTransform(SXLevelEditor::ActiveElement);
 			}
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0 && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0)
 	{
 		float3_t pos;
-		SGeom_GreenGetPosObject(GData::Editors::ActiveElement, GData::Editors::ActiveGreenSplit, GData::Editors::ActiveGreenObject, &pos);
-		float3 helperpos = GData::Editors::ObjAxesHelper->GetPosition();
+		SGeom_GreenGetPosObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, &pos);
+		float3 helperpos = SXLevelEditor::ObjAxesHelper->GetPosition();
 		if (pos.x != helperpos.x || pos.y != helperpos.y || pos.z != helperpos.z)
 		{
-			SGeom_GreenSetPosObject(GData::Editors::ActiveElement, &GData::Editors::ActiveGreenSplit, &GData::Editors::ActiveGreenObject, &(float3_t)helperpos);
+			SGeom_GreenSetPosObject(SXLevelEditor::ActiveElement, &SXLevelEditor::ActiveGreenSplit, &SXLevelEditor::ActiveGreenObject, &(float3_t)helperpos);
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && GData::Editors::ActiveElement >= 0)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && SXLevelEditor::ActiveElement >= 0)
 	{
-		SXbaseEntity* bEnt = SXGame_EntGet(GData::Editors::ActiveElement);
+		SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ActiveElement);
 		if (!bEnt)
 			return 0;
 
-		if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
-			bEnt->SetPos(GData::Editors::ObjAxesHelper->GetPosition());
-		else if (GData::Editors::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
-			bEnt->SetOrient(GData::Editors::ObjAxesHelper->GetRotationQ());
+		if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
+			bEnt->SetPos(SXLevelEditor::ObjAxesHelper->GetPosition());
+		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
+			bEnt->SetOrient(SXLevelEditor::ObjAxesHelper->GetRotationQ());
 
 		SXLevelEditor::GameUpdatePosRot();
 	}
@@ -329,8 +332,8 @@ LRESULT SXLevelEditor_RenderWindow_LDown(HWND hwnd, UINT msg, WPARAM wParam, LPA
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
-	GData::Editors::ObjAxesHelper->m_bIsDragging = true;
-	GData::Editors::ObjAxesHelper->m_bIsDraggingStart = true;
+	SXLevelEditor::ObjAxesHelper->m_bIsDragging = true;
+	SXLevelEditor::ObjAxesHelper->m_bIsDraggingStart = true;
 	return 0;
 }
 
@@ -339,11 +342,18 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	GData::Editors::ObjAxesHelper->m_bIsDragging = false;
-	GData::Editors::ObjAxesHelper->m_bIsDraggingStop = true;
+	SXLevelEditor::ObjAxesHelper->m_bIsDragging = false;
+	SXLevelEditor::ObjAxesHelper->m_bIsDraggingStop = true;
 
 	/*if (!SSInput_GetKeyState(SIK_LALT))
 		return 0;*/
+
+	static float4x4 mCamView, mCamProj;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mCamProj);
+
+	static float3 vCamPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 
 	float3 _res;
 	float3_t pos2;
@@ -352,33 +362,36 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 	float3 camDir;
 	float det;
-	SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
+	SMMATRIX mat = SMMatrixInverse(&det, mCamView);
 	POINT pt;
 	GetCursorPos(&pt);
-	ScreenToClient(GData::Handle3D, &pt);
+	ScreenToClient(SRender_GetHandleWin3D(), &pt);
+
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
 
 	float3 pos = float3(
-		(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
-		-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
+		(2.0f * (float)pt.x / float(*winr_width) - 1.0f) / mCamProj._11,
+		-(2.0f * (float)pt.y / float(*winr_height) - 1.0f) / mCamProj._22,
 		1.0f
 		) * mat;
-	camDir = pos - GData::ConstCurrCamPos;
+	camDir = pos - vCamPos;
 
 	if (!SXLevelEditor::CheckBoxTBArrow->GetCheck())
 		return 0;
 
 	SXLevelEditor::IdMtl = -1;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || SXLevelEditor::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		if (SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
+		if (SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 		{
 			SXLevelEditor::ListBoxList->SetSel(idmodel);
 			SXLevelEditor::GeomSel(idmodel);
 			SXLevelEditor::IdMtl = idmtl;
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveElement >= 0)
 	{
 		ID idgreen;
 		ID idsplit;
@@ -386,10 +399,10 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 0)
 		{
-			if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_GreenTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
-				GData::Editors::ActiveGreenSplit = idsplit;
-				GData::Editors::ActiveGreenObject = idobj;
+				SXLevelEditor::ActiveGreenSplit = idsplit;
+				SXLevelEditor::ActiveGreenObject = idobj;
 				SGeom_GreenGetPosObject(idgreen, idsplit, idobj, &pos2);
 
 				SXLevelEditor::StaticGreenSelX->SetText("Pos X:");
@@ -400,20 +413,20 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::EditGreenSelY->SetText(String(pos2.y).c_str());
 				SXLevelEditor::EditGreenSelZ->SetText(String(pos2.z).c_str());
 				
-				GData::Editors::ObjAxesHelper->SetPosition(pos2);
-				GData::Editors::ObjAxesHelper->SetRotation(float3(0,0,0));
-				GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
+				SXLevelEditor::ObjAxesHelper->SetPosition(pos2);
+				SXLevelEditor::ObjAxesHelper->SetRotation(float3(0,0,0));
+				SXLevelEditor::ObjAxesHelper->SetScale(float3(1, 1, 1));
 
 				SXLevelEditor::IdMtl = idmtl;
 			}
 		}
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 1)
 		{
-			if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
 				idobj = SGeom_GreenAddObject(0, &_res, &idsplit);
-				GData::Editors::ActiveGreenSplit = idsplit;
-				GData::Editors::ActiveGreenObject = idobj;
+				SXLevelEditor::ActiveGreenSplit = idsplit;
+				SXLevelEditor::ActiveGreenObject = idobj;
 
 				SXLevelEditor::StaticGreenSelX->SetText("Pos X:");
 				SXLevelEditor::StaticGreenSelY->SetText("Pos Y:");
@@ -423,9 +436,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::EditGreenSelY->SetText(String(_res.y).c_str());
 				SXLevelEditor::EditGreenSelZ->SetText(String(_res.z).c_str());
 
-				GData::Editors::ObjAxesHelper->SetPosition(pos2);
-				GData::Editors::ObjAxesHelper->SetRotation(float3(0, 0, 0));
-				GData::Editors::ObjAxesHelper->SetScale(float3(1, 1, 1));
+				SXLevelEditor::ObjAxesHelper->SetPosition(pos2);
+				SXLevelEditor::ObjAxesHelper->SetRotation(float3(0, 0, 0));
+				SXLevelEditor::ObjAxesHelper->SetScale(float3(1, 1, 1));
 				
 				int qwert = 0;
 			}
@@ -433,36 +446,38 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
 		{
-			if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
-				GData::Editors::GreenBoxPos = _res;
+				SXLevelEditor::GreenBoxPos = _res;
 				int density = SXLevelEditor::TrackBarGreenDensity->GetPos();
 
 				float3 min, max, npos;
-				min.x = _res.x - GData::Editors::GreenBoxWHD.x * 0.5f;
-				min.z = _res.z - GData::Editors::GreenBoxWHD.z * 0.5f;
+				min.x = _res.x - SXLevelEditor::GreenBoxWHD.x * 0.5f;
+				min.z = _res.z - SXLevelEditor::GreenBoxWHD.z * 0.5f;
 
-				max.x = _res.x + GData::Editors::GreenBoxWHD.x * 0.5f;
-				max.z = _res.z + GData::Editors::GreenBoxWHD.z * 0.5f;
+				max.x = _res.x + SXLevelEditor::GreenBoxWHD.x * 0.5f;
+				max.z = _res.z + SXLevelEditor::GreenBoxWHD.z * 0.5f;
 
-				npos.y = _res.y + GData::Editors::GreenBoxWHD.y;
+				npos.y = _res.y + SXLevelEditor::GreenBoxWHD.y;
 
 				for (int i = 0; i < density; ++i)
 				{
 					npos.x = randf(min.x, max.x);
 					npos.z = randf(min.z, max.z);
 					if(SGeom_ModelsTraceBeam(&npos, &float3(0, -1, 0), &_res, &idmodel, &idmtl))
-						SGeom_GreenAddObject(GData::Editors::ActiveElement, &_res, 0);
+						SGeom_GreenAddObject(SXLevelEditor::ActiveElement, &_res, 0);
 				}
 			}
 		}
 
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 3)
 		{
-			if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_GreenTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+			static const int *winr_width = GET_PCVAR_INT("winr_width");
+			static const int *winr_height = GET_PCVAR_INT("winr_height");
+			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
-				GData::Editors::ActiveGreenSplit = -1;
-				GData::Editors::ActiveGreenObject = -1;
+				SXLevelEditor::ActiveGreenSplit = -1;
+				SXLevelEditor::ActiveGreenObject = -1;
 				SXLevelEditor::EditGreenSelX->SetText("");
 				SXLevelEditor::EditGreenSelY->SetText("");
 				SXLevelEditor::EditGreenSelZ->SetText("");
@@ -471,11 +486,11 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 			}
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && GData::Editors::ActiveElement >= 0)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && SXLevelEditor::ActiveElement >= 0)
 	{
 
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 	{
 		if (SXLevelEditor::RadioButtonAIQuadAdd->GetCheck())
 		{
@@ -528,21 +543,31 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
+	static float4x4 mCamView, mCamProj;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mCamProj);
+
+	static float3 vCamPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
+
 	float3 camDir;
 	float det;
-	SMMATRIX mat = SMMatrixInverse(&det, GData::MCamView);
+	SMMATRIX mat = SMMatrixInverse(&det, mCamView);
 	POINT pt;
 	GetCursorPos(&pt);
-	ScreenToClient(GData::Handle3D, &pt);
+	ScreenToClient(SRender_GetHandleWin3D(), &pt);
+
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
 
 	float3 pos = float3(
-		(2.0f * (float)pt.x / GData::WinSize.x - 1.0f) / GData::MCamProj._11,
-		-(2.0f * (float)pt.y / GData::WinSize.y - 1.0f) / GData::MCamProj._22,
+		(2.0f * (float)pt.x / float(*winr_width) - 1.0f) / mCamProj._11,
+		-(2.0f * (float)pt.y / float(*winr_height) - 1.0f) / mCamProj._22,
 		1.0f
 		) * mat;
-	camDir = pos - GData::ConstCurrCamPos;
+	camDir = pos - vCamPos;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveElement >= 0)
 	{
 		float3 _res;
 		float3_t pos2;
@@ -555,12 +580,12 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
 		{
-			if (pt.x <= GData::WinSize.x && pt.y <= GData::WinSize.y && SGeom_ModelsTraceBeam(&GData::ConstCurrCamPos, &camDir, &_res, &idmodel, &idmtl))
-				GData::Editors::GreenBoxPos = _res;
+			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+				SXLevelEditor::GreenBoxPos = _res;
 		}
 	}
 
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 	{
 		if (SXLevelEditor::RadioButtonAIQuadsMSel->GetCheck())
 		{
@@ -579,7 +604,7 @@ LRESULT SXLevelEditor_RenderWindow_MBUp(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 	{
 		SAIG_QuadSelect(-1, false);
 	}
@@ -592,11 +617,11 @@ LRESULT SXLevelEditor_RenderWindow_Delete(HWND hwnd, UINT msg, WPARAM wParam, LP
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveElement >= 0 && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0)
 	{
-		SGeom_GreenDelObject(GData::Editors::ActiveElement, GData::Editors::ActiveGreenSplit, GData::Editors::ActiveGreenObject);
-		GData::Editors::ActiveGreenSplit = -1;
-		GData::Editors::ActiveGreenObject = -1;
+		SGeom_GreenDelObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject);
+		SXLevelEditor::ActiveGreenSplit = -1;
+		SXLevelEditor::ActiveGreenObject = -1;
 		SXLevelEditor::EditGreenSelX->SetText("");
 		SXLevelEditor::EditGreenSelY->SetText("");
 		SXLevelEditor::EditGreenSelZ->SetText("");
@@ -627,8 +652,8 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 	SXLevelEditor::GeomActivateCreate(true);
 	//SXLevelEditor::GeomActivateTrans(false);
 
-	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GEOM;
-	GData::Editors::ActiveElement = -1;
+	SXLevelEditor::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GEOM;
+	SXLevelEditor::ActiveElement = -1;
 	return 0;
 }
 
@@ -645,7 +670,7 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	{
 		sprintf(tmpnamecountpoly, "%s | %s | %d", 
 			SGeom_GreenMGetName(i),
-			(SGeom_GreenMGetTypeCountGen(i) == GeomGreenType::ggt_grass ? "grass" : "tree/shrub"),
+			(SGeom_GreenMGetTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
 			SGeom_GreenMGetCountGen(i));
 		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
 	}
@@ -661,8 +686,8 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	
 	//MCActivateTrans(false);
 
-	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GREEN;
-	GData::Editors::ActiveElement = -1;
+	SXLevelEditor::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GREEN;
+	SXLevelEditor::ActiveElement = -1;
 	return 0;
 }
 
@@ -694,8 +719,8 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 	SXLevelEditor::AIGridActivateAll(false);
 	SXLevelEditor::GameActivateAll(true);
 
-	GData::Editors::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GAME;
-	GData::Editors::ActiveElement = -1;
+	SXLevelEditor::ActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GAME;
+	SXLevelEditor::ActiveElement = -1;
 	return 0;
 }
 
@@ -711,8 +736,8 @@ LRESULT SXLevelEditor_ButtonAIGridOpen_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 	SXLevelEditor::AIGridActivateAll(true);
 
-	GData::Editors::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_AIGRID;
-	GData::Editors::ActiveElement = -1;
+	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_AIGRID;
+	SXLevelEditor::ActiveElement = -1;
 	return 0;
 }
 
@@ -720,23 +745,23 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 {
 	int sel = SXLevelEditor::ListBoxList->GetSel();
 
-	GData::Editors::ActiveGreenSplit = -1;
-	GData::Editors::ActiveGreenObject = -1;
+	SXLevelEditor::ActiveGreenSplit = -1;
+	SXLevelEditor::ActiveGreenObject = -1;
 
 	if (sel < 0)
 		return 0;
 
-	if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 			SXLevelEditor::GeomSel(sel);
 	}
-	else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GREEN || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+	else if (SXLevelEditor::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GREEN || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
 		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 			SXLevelEditor::GreenSel(sel);
 	}
-	else if (GData::Editors::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GAME || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+	else if (SXLevelEditor::ActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GAME || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 	{
 		if (SXGame_EntGetCount() > 0 && sel < SXGame_EntGetCount())
 			SXLevelEditor::GameSel(sel);
@@ -752,7 +777,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	if (sel < 0)
 		return 0;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 		{
@@ -774,7 +799,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
 		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 		{
@@ -796,7 +821,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 			}
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 	{
 		if (SXGame_EntGetCount() > 0 && sel < SXGame_EntGetCount())
 		{
@@ -840,47 +865,47 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
 			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
-			GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_NONE);
+			SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_NONE);
 		}
 		else if (SXLevelEditor::CheckBoxTBPos->GetHWND() == handle_elem)
 		{
 			if (
-				GData::Editors::ActiveElement >= 0 &&
+				SXLevelEditor::ActiveElement >= 0 &&
 				(
-				GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM ||
-				(GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0) ||
-				GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME
+				SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM ||
+				(SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0) ||
+				SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME
 				)
 				)
 			{
 				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
 				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
-				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
+				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
 			}
 			else
 				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
 		}
 		else if (SXLevelEditor::CheckBoxTBRot->GetHWND() == handle_elem)
 		{
-			if ((GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && GData::Editors::ActiveElement >= 0)
+			if ((SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && SXLevelEditor::ActiveElement >= 0)
 			{
 				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
 				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
 				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
-				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
+				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
 			}
 			else
 				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 		}
 		else if (SXLevelEditor::CheckBoxTBScale->GetHWND() == handle_elem)
 		{
-			if ((GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && GData::Editors::ActiveElement >= 0)
+			if ((SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && SXLevelEditor::ActiveElement >= 0)
 			{
 				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
 				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
 				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
-				GData::Editors::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
+				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
 			}
 			else
 				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
@@ -906,12 +931,12 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 		else if (SXLevelEditor::CheckBoxTBGrid->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, SXLevelEditor::CheckBoxTBGrid->GetCheck());
-			GData::Editors::RenderGrid = SXLevelEditor::CheckBoxTBGrid->GetCheck();
+			SRender_EditorSetRenderGrid(SXLevelEditor::CheckBoxTBGrid->GetCheck());
 		}
 		else if (SXLevelEditor::CheckBoxTBAxes->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, SXLevelEditor::CheckBoxTBAxes->GetCheck());
-			GData::Editors::RenderAxesStatic = SXLevelEditor::CheckBoxTBAxes->GetCheck();
+			SRender_EditorSetRenderAxesStatic(SXLevelEditor::CheckBoxTBAxes->GetCheck());
 		}
 
 		else if (SXLevelEditor::CheckBoxTBRColor->GetHWND() == handle_elem)
@@ -919,76 +944,76 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
 			SXLevelEditor::CheckBoxTBRColor->SetCheck(true);
-			GData::FinalImage = DS_RT::ds_rt_color;
+			Core_0SetCVarInt("final_image", DS_RT_COLOR);
 		}
 		else if (SXLevelEditor::CheckBoxTBRNormal->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, true);
 			SXLevelEditor::CheckBoxTBRNormal->SetCheck(true);
-			GData::FinalImage = DS_RT::ds_rt_normal;
+			Core_0SetCVarInt("final_image", DS_RT_NORMAL);
 		}
 		else if (SXLevelEditor::CheckBoxTBRParam->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, true);
 			SXLevelEditor::CheckBoxTBRParam->SetCheck(true);
-			GData::FinalImage = DS_RT::ds_rt_param;
+			Core_0SetCVarInt("final_image", DS_RT_PARAM);
 		}
 		else if (SXLevelEditor::CheckBoxTBRAmDiff->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
 			SXLevelEditor::CheckBoxTBRAmDiff->SetCheck(true);
-			GData::FinalImage = DS_RT::ds_rt_ambient_diff;
+			Core_0SetCVarInt("final_image", DS_RT_AMBIENTDIFF);
 		}
 		else if (SXLevelEditor::CheckBoxTBRSpecular->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, true);
 			SXLevelEditor::CheckBoxTBRSpecular->SetCheck(true);
-			GData::FinalImage = DS_RT::ds_rt_specular;
+			Core_0SetCVarInt("final_image", DS_RT_SPECULAR);
 		}
 		else if (SXLevelEditor::CheckBoxTBRLighting->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
 			SXLevelEditor::CheckBoxTBRLighting->SetCheck(true);
-			GData::FinalImage = DS_RT::ds_rt_scene_light_com;
+			Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
 		}
 
 		else if (SXLevelEditor::CheckBoxTBSelS->GetHWND() == handle_elem)
 		{
-			GData::Editors::SelSelection = SXLevelEditor::CheckBoxTBSelS->GetCheck();
+			SXLevelEditor::SelSelection = SXLevelEditor::CheckBoxTBSelS->GetCheck();
 			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, SXLevelEditor::CheckBoxTBSelS->GetCheck());
 		}
 		else if (SXLevelEditor::CheckBoxTBSelZTest->GetHWND() == handle_elem)
 		{
-			GData::Editors::SelZTest = SXLevelEditor::CheckBoxTBSelZTest->GetCheck();
+			SXLevelEditor::SelZTest = SXLevelEditor::CheckBoxTBSelZTest->GetCheck();
 			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_ZTEST, SXLevelEditor::CheckBoxTBSelZTest->GetCheck());
 		}
 		else if (SXLevelEditor::CheckBoxTBSelMesh->GetHWND() == handle_elem)
 		{
-			GData::Editors::SelMesh = SXLevelEditor::CheckBoxTBSelMesh->GetCheck();
+			SXLevelEditor::SelMesh = SXLevelEditor::CheckBoxTBSelMesh->GetCheck();
 			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, SXLevelEditor::CheckBoxTBSelMesh->GetCheck());
 		}
 		else if (SXLevelEditor::CheckBoxTBSelCullBack->GetHWND() == handle_elem)
 		{
-			GData::Editors::SelBackFacesCull = SXLevelEditor::CheckBoxTBSelCullBack->GetCheck();
+			SXLevelEditor::SelBackFacesCull = SXLevelEditor::CheckBoxTBSelCullBack->GetCheck();
 			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, SXLevelEditor::CheckBoxTBSelCullBack->GetCheck());
 		}
 
 		else if (SXLevelEditor::CheckBoxTBAIGBound->GetHWND() == handle_elem)
 		{
-			GData::Editors::AIGBound = SXLevelEditor::CheckBoxTBAIGBound->GetCheck();
+			SXLevelEditor::AIGBound = SXLevelEditor::CheckBoxTBAIGBound->GetCheck();
 		}
 		else if (SXLevelEditor::CheckBoxTBAIGQuad->GetHWND() == handle_elem)
 		{
-			GData::Editors::AIGQuad = SXLevelEditor::CheckBoxTBAIGQuad->GetCheck();
+			SXLevelEditor::AIGQuad = SXLevelEditor::CheckBoxTBAIGQuad->GetCheck();
 		}
 		else if (SXLevelEditor::CheckBoxTBAIGGraphPoint->GetHWND() == handle_elem)
 		{
-			GData::Editors::AIGGraphPoint = SXLevelEditor::CheckBoxTBAIGGraphPoint->GetCheck();
+			SXLevelEditor::AIGGraphPoint = SXLevelEditor::CheckBoxTBAIGGraphPoint->GetCheck();
 		}
 
 		else if (SXLevelEditor::CheckBoxTBLevelType->GetHWND() == handle_elem)
@@ -1026,6 +1051,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->GetCheck());
 			else
 				SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
+
+			//Core_0SetCVarBool("pssm_shadowed", true);
 		}
 	}
 
@@ -1163,7 +1190,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 		else if (SXLevelEditor::ComboBoxGreenSel->GetHWND() == handle_elem)
 		{
 			int sel = SXLevelEditor::ComboBoxGreenSel->GetSel();
-			GData::Editors::GreenRenderBox = false;
+			SXLevelEditor::GreenRenderBox = false;
 			
 			if (sel == 0)
 			{
@@ -1176,14 +1203,14 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			}
 			else if (sel == 2)
 			{
-				GData::Editors::GreenRenderBox = true;
+				SXLevelEditor::GreenRenderBox = true;
 
 				SXLevelEditor::StaticGreenSelX->SetText("Width volume:");
 				SXLevelEditor::StaticGreenSelY->SetText("Height volume:");
 				SXLevelEditor::StaticGreenSelZ->SetText("Depth volume:");
-				SXLevelEditor::EditGreenSelX->SetText(String(GData::Editors::GreenBoxWHD.x).c_str());
-				SXLevelEditor::EditGreenSelY->SetText(String(GData::Editors::GreenBoxWHD.y).c_str());
-				SXLevelEditor::EditGreenSelZ->SetText(String(GData::Editors::GreenBoxWHD.z).c_str());
+				SXLevelEditor::EditGreenSelX->SetText(String(SXLevelEditor::GreenBoxWHD.x).c_str());
+				SXLevelEditor::EditGreenSelY->SetText(String(SXLevelEditor::GreenBoxWHD.y).c_str());
+				SXLevelEditor::EditGreenSelZ->SetText(String(SXLevelEditor::GreenBoxWHD.z).c_str());
 			}
 
 			
@@ -1269,7 +1296,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 	else if (SXLevelEditor::RadioButtonGeomPosZ->GetCheck() || SXLevelEditor::RadioButtonGeomRotZ->GetCheck() || SXLevelEditor::RadioButtonGeomScaleZ->GetCheck() || SXLevelEditor::RadioButtonGreenSelZ->GetCheck())
 		CoordinateTransformation = 2;
 
-	if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_ModelsGetCount() > 0)
 		{
@@ -1300,7 +1327,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 					}
 					else
 						IsSFirstRBMTransform = true;
-					CameraUpdate::CentererCursor();
+					SRender_CentererCursor();
 				}
 				else
 				{
@@ -1350,7 +1377,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 					}
 					else
 						IsSFirstRBMTransform = true;
-					CameraUpdate::CentererCursor();
+					SRender_CentererCursor();
 				}
 				else
 				{
@@ -1400,7 +1427,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 					}
 					else
 						IsSFirstRBMTransform = true;
-					CameraUpdate::CentererCursor();
+					SRender_CentererCursor();
 				}
 				else
 				{
@@ -1424,9 +1451,9 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			}
 		}
 	}
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN &&
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN &&
 			(
-			(SXLevelEditor::ComboBoxGreenSel->GetSel() == 0 && GData::Editors::ActiveElement >= 0 && GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0) ||
+			(SXLevelEditor::ComboBoxGreenSel->GetSel() == 0 && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0) ||
 			(SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
 			)
 		)
@@ -1438,11 +1465,11 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			{
 				float3 pos;
 				if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
-					pos = GData::Editors::GreenBoxWHD;
+					pos = SXLevelEditor::GreenBoxWHD;
 				else
 				{
 					float3_t pos2;
-					SGeom_GreenGetPosObject(GData::Editors::ActiveElement, GData::Editors::ActiveGreenSplit, GData::Editors::ActiveGreenObject, &pos2);
+					SGeom_GreenGetPosObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, &pos2);
 					pos = pos2;
 				}
 
@@ -1469,7 +1496,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 					}
 					else
 						IsSFirstRBMTransform = true;
-					CameraUpdate::CentererCursor();
+					SRender_CentererCursor();
 				}
 				else
 				{
@@ -1490,14 +1517,14 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				SXLevelEditor::EditGreenSelZ->SetText(tmpPosZ);
 
 				if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
-					GData::Editors::GreenBoxWHD = pos;
+					SXLevelEditor::GreenBoxWHD = pos;
 				else
-					SGeom_GreenSetPosObject(GData::Editors::ActiveElement, &GData::Editors::ActiveGreenSplit, &GData::Editors::ActiveGreenObject, &float3_t(pos));
+					SGeom_GreenSetPosObject(SXLevelEditor::ActiveElement, &SXLevelEditor::ActiveGreenSplit, &SXLevelEditor::ActiveGreenObject, &float3_t(pos));
 			}
 		}
 	}
 
-	else if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 	{
 		if (SSInput_GetKeyState(SIK_LSHIFT))
 		{
@@ -1526,7 +1553,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				}
 				else
 					IsSFirstRBMTransform = true;
-				CameraUpdate::CentererCursor();
+				SRender_CentererCursor();
 			}
 			else
 			{

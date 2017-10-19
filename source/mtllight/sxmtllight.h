@@ -22,10 +22,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore.lib")
 #endif
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
@@ -136,7 +138,8 @@ SX_LIB_API float SML_LigthsGettGCoefSizeDepth();	//!< возвращение к�
 
 SX_LIB_API void SML_LigthsClear();		//!< очистить список света
 SX_LIB_API long SML_LigthsGetCount();	//!< общее количество света
-SX_LIB_API ID SML_LigthsGetIDByKey(ID key);	//!< получить id по ключу (порядковому номеру (key) в пределах [0, #SML_LigthsGetCount)), к примеру в случае полного обхода массива
+
+SX_LIB_API bool SML_LigthsGetExists(ID id);
 
 //! создать точечный свет (светит во все стороны)
 SX_LIB_API ID SML_LigthsCreatePoint(
@@ -463,19 +466,19 @@ SX_LIB_API ID SML_LigthsDelGetIDArr(
 //! типы render targets
 enum DS_RT
 {
-	ds_rt_color = 0,		//!< цвет rgba8
-	ds_rt_normal,			//!< нормали (включая микрорельеф) rfb10a2
-	ds_rt_param,			//!< параметры освещения rgba8
-	ds_rt_depth,			//!< глубина r16f, непрозрачные материалы
-	ds_rt_depth0,			//!< глубина r16f, непрозрачные материалы
-	ds_rt_depth1,			//!< глубина r16f, непрозрачные и полупрозрачные пиксели, однако прозрачные (если есть) будут перекрывать непрозрачные, и в этом случае их глубина будет 1 то есть максимальной(для идентификации)
+	DS_RT_COLOR = 0,		//!< цвет rgba8
+	DS_RT_NORMAL,			//!< нормали (включая микрорельеф) rfb10a2
+	DS_RT_PARAM,			//!< параметры освещения rgba8
+	DS_RT_DEPTH,			//!< глубина r16f, непрозрачные материалы
+	DS_RT_DEPTH0,			//!< глубина r16f, непрозрачные материалы
+	DS_RT_DEPTH1,			//!< глубина r16f, непрозрачные и полупрозрачные пиксели, однако прозрачные (если есть) будут перекрывать непрозрачные, и в этом случае их глубина будет 1 то есть максимальной(для идентификации)
 
-	ds_rt_ambient_diff,		//!< эмбиент цвет (цвет света rgb) и диффузное освещение (a) rgba16f
-	ds_rt_specular,			//!< блики r16f
-	ds_rt_scene_light_com,	//!< освещенная сцена rgba16
-	ds_rt_scene_light_com2,	//!< освещенная сцена rgba16
+	DS_RT_AMBIENTDIFF,		//!< эмбиент цвет (цвет света rgb) и диффузное освещение (a) rgba16f
+	DS_RT_SPECULAR,			//!< блики r16f
+	DS_RT_SCENELIGHT,		//!< освещенная сцена rgba16
+	DS_RT_SCENELIGHT2,		//!< освещенная сцена rgba16
 
-	ds_rt_adapted_lum_curr	//!< текущий rt адаптации глаза к освещению r16f
+	DS_RT_ADAPTEDLUM		//!< текущий rt адаптации глаза к освещению r16f
 };
 
 SX_LIB_API ID SML_DSGetRT_ID(DS_RT type);				//!< id render target по его типу
@@ -580,67 +583,65 @@ SX_LIB_API IDirect3DTexture9* SML_DSGetRT(DS_RT type);	//!< текстура ren
 //!@}
 
 //! типы отражений
-enum MtlTypeReflect
+enum MTLTYPE_REFLECT
 {
-	mtr_none,			//!< нет отражения
-	mtr_plane,			//!< плоское
-	mtr_cube_dynamic,	//!< объемное динамическое
-	mtr_cube_static		//!< объемное статическое, обработка идет первые несколько кадров, затем не обновляется
+	MTLTYPE_REFLECT_NONE,			//!< нет отражения
+	MTLTYPE_REFLECT_PLANE,			//!< плоское
+	MTLTYPE_REFLECT_CUBE_DYNAMIC,	//!< объемное динамическое
+	MTLTYPE_REFLECT_CUBE_STATIC		//!< объемное статическое, обработка идет первые несколько кадров, затем не обновляется
 };
 
 //! типы прозрачности
-enum MtlTypeTransparency
+enum MTLTYPE_TRANSPARENCY
 {
-	mtt_none,			//!< нет прозрачности
-	mtt_alpha_lighting,	//!< освещаяемая прозрачность
+	MTLTYPE_TRANSPARENCY_NONE,			//!< нет прозрачности
+	MTLTYPE_TRANSPARENCY_ALPHA_LIGHT,	//!< освещаяемая прозрачность
 };
 
 //! тип модели материала
-enum MtlTypeModel
+enum MTLTYPE_MODEL
 {
-	tms_static = 0,	//!< статическая геометрия
-	tms_grass,		//!< растительность трава
-	tms_tree,		//!< растительность дерево
-	tms_skin,		//!< анимационная модель
+	MTLTYPE_MODEL_STATIC = 0,	//!< статическая геометрия
+	MTLTYPE_MODEL_GRASS,		//!< растительность трава
+	MTLTYPE_MODEL_TREE,		//!< растительность дерево
+	MTLTYPE_MODEL_SKIN,		//!< анимационная модель
 
 	//! значение по умолчанию
-	tms_default = tms_static
+	MTLTYPE_MODEL_DEFAULT = MTLTYPE_MODEL_STATIC
 };
 
 //! физический тип материала
-enum MtlPhysicType
+enum MTLTYPE_PHYSIC
 {
-	mpt_concrete = 0,	//!< бетон
+	MTLTYPE_PHYSIC_CONCRETE = 0,	//!< бетон
+	MTLTYPE_PHYSIC_METAL,			//!< металл
+	MTLTYPE_PHYSIC_GLASS,			//!< стекло
+	MTLTYPE_PHYSIC_PLASTIC,			//!< пластик
+	MTLTYPE_PHYSIC_TREE,			//!< дерево
+	MTLTYPE_PHYSIC_FLESH,			//!< плоть
+	MTLTYPE_PHYSIC_GROUD_SAND,		//!< земля/песок
+	MTLTYPE_PHYSIC_WATER,			//!< вода
+	MTLTYPE_PHYSIC_LEAF_GRASS,		//!< листва/трава
 
 	//! значение по умолчанию
-	mpt_default = mpt_concrete,
-
-	mpt_metal,			//!< металл
-	mpt_glass,			//!< стекло
-	mpt_plastic,		//!< пластик
-	mpt_tree,			//!< дерево
-	mpt_flesh,			//!< плоть
-	mpt_ground_sand,	//!< земля/песок
-	mpt_water,			//!< вода
-	mpt_leaf_grass,		//!< листва/трава
-
+	MTLTYPE_PHYSIC_DEFAULT = MTLTYPE_PHYSIC_CONCRETE,
 	//! количество типов
 	MPT_COUNT
 };
 
 //! данные отправляемые в шейдеры
-enum MtlTransShaderStd
+enum MTL_SHADERSTD
 {
-	mtss_mat_w = 0,	//!< мировая матрица (трансформации модели), world
-	mtss_mat_v,		//!< матрица вида, view
-	mtss_mat_p,		//!< матрица проекции, projection
-	mtss_mat_wv,	//!< world * view
-	mtss_mat_wvp,	//!< world * view * projection
-	mtss_campos,	//!< позиция камеры/наблюдателя
-	mtss_timedelta,	//!< данные о времени float2(CountTimeRender,TimeDelta)
-	mtss_winsize,	//!< размеры окна рендера
+	MTL_SHADERSTD_MATRIX_WORLD = 0,		//!< мировая матрица (трансформации модели), world
+	MTL_SHADERSTD_MATRIX_VIEW,			//!< матрица вида, view
+	MTL_SHADERSTD_MATRIX_PROJECTION,	//!< матрица проекции, projection
+	MTL_SHADERSTD_MATRIX_WORLDVIEW,		//!< world * view
+	MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ,	//!< world * view * projection
+	MTL_SHADERSTD_CAMPOS,				//!< позиция камеры/наблюдателя
+	MTL_SHADERSTD_TIMEDELTA,			//!< данные о времени float2(CountTimeRender,TimeDelta)
+	MTL_SHADERSTD_WINSIZE,				//!< размеры окна рендера
 
-	mtss_ud			//!< пользовательские данные (float4)
+	MTL_SHADERSTD_USERDATA				//!< пользовательские данные (float4)
 };
 
 /*! \name Загрузка/сохранение
@@ -654,7 +655,7 @@ enum MtlTransShaderStd
  */
 SX_LIB_API ID SML_MtlLoad(
 	const char* name,	//!< имя_материала.расширение
-	MtlTypeModel mtl_type = MtlTypeModel::tms_static	//!< тип модели материала на случай если материал не будет загружен/найден
+	MTLTYPE_MODEL mtl_type = MTLTYPE_MODEL_STATIC	//!< тип модели материала на случай если материал не будет загружен/найден
 	);
 
 //! перезагрузка материала
@@ -679,12 +680,12 @@ SX_LIB_API void SML_MtlClear(
 	);	
 
 SX_LIB_API long SML_MtlGetCount();					//!< возвращает общее количество материалов
-SX_LIB_API MtlTypeModel SML_MtlGetTypeModel(ID id);	//!< возвращает тип модели материала по id
+SX_LIB_API MTLTYPE_MODEL SML_MtlGetTypeModel(ID id);	//!< возвращает тип модели материала по id
 
 /*! установка типа модели материала по id
  \warning меняется только внутренний флаг (определение)!!! все остальное для данного типа надо загружать вручную, сделано для больших возможностей построения материалов
 */
-SX_LIB_API void SML_MtlSetTypeModel(ID id, MtlTypeModel type_model);
+SX_LIB_API void SML_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model);
 
 //! установка параметров материала по id, вызывается перед DIP
 SX_LIB_API void SML_MtlRender(
@@ -694,7 +695,7 @@ SX_LIB_API void SML_MtlRender(
 
 //! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
 SX_LIB_API void SML_MtlRenderStd(
-	MtlTypeModel type,			//!< тип материала из MtlTypeModel
+	MTLTYPE_MODEL type,			//!< тип материала из MtlTypeModel
 	float4x4* world,			//!< мировая матрица трансформации, либо 0 и будет применена единичная матрица
 	ID slot,					//!< текстурный слот в который установить текстуру
 	ID id_mtl					//!< идентификатор материала из которого будет браться текстура
@@ -709,11 +710,11 @@ SX_LIB_API void SML_MtlRenderLight(
 SX_LIB_API void SML_MtlSetMainTexture(ID slot, ID id);	//!< установить текстуру из материала id в текстурный слот slot
 
 //физический тип материала
-SX_LIB_API void SML_MtlSetPhysicMaterial(ID id, MtlPhysicType type);	//!< установка физического типа материала
-SX_LIB_API MtlPhysicType SML_MtlGetPhysicMaterial(ID id);				//!< возвращает текущий тип физического материала
+SX_LIB_API void SML_MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type);	//!< установка физического типа материала
+SX_LIB_API MTLTYPE_PHYSIC SML_MtlGetPhysicMaterial(ID id);				//!< возвращает текущий тип физического материала
 
 //! возвращает id стандартного материала для определенной модели материалов указанной в #MtlTypeModel 
-SX_LIB_API ID SML_MtlGetStdMtl(MtlTypeModel type_model);
+SX_LIB_API ID SML_MtlGetStdMtl(MTLTYPE_MODEL type_model);
 
 /*! \name Управление полупрозрачными поверхностями
 Каждый выводимый пиксель помечается номером поверхности к которой он относится
@@ -929,16 +930,16 @@ SX_LIB_API float SML_MtlGetF0(ID id);			//!< возвращает текущее
 Под полупрозрачными материалами следует понимать такие материалы, прозрачность которых в среднем находится в пределах 0.5 и минимальный процент полупрозрачного периметра 50%
 @{*/
 
-SX_LIB_API void SML_MtlSetTypeTransparency(ID id, MtlTypeTransparency type);	//!< установка типа полупрозрачности
-SX_LIB_API MtlTypeTransparency SML_MtlGetTypeTransparency(ID id);				//!< возвращает текущий тип полупрозрачности для материала
+SX_LIB_API void SML_MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type);	//!< установка типа полупрозрачности
+SX_LIB_API MTLTYPE_TRANSPARENCY SML_MtlGetTypeTransparency(ID id);				//!< возвращает текущий тип полупрозрачности для материала
 
 //!@}
 
 /*! \name Отражения окружения, типы из #MtlTypeReflect
 @{*/
 
-SX_LIB_API void SML_MtlSetTypeReflection(ID id, MtlTypeReflect type);	//!< установка типа отражений
-SX_LIB_API MtlTypeReflect SML_MtlGetTypeReflection(ID id);				//!< возвращает текущий тип отражений для материала
+SX_LIB_API void SML_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);	//!< установка типа отражений
+SX_LIB_API MTLTYPE_REFLECT SML_MtlGetTypeReflection(ID id);				//!< возвращает текущий тип отражений для материала
 
 //!@}
 
@@ -981,23 +982,23 @@ SX_LIB_API void SML_MtlGetDTex(ID id, int channel, char* path_tex);
 
 //! отправка стадартных данных в вершинный шейдер
 SX_LIB_API void SML_MtlSetSTDVS(
-	ID id,					//!< идентификатор материала
-	MtlTransShaderStd type,	//!< тип значения которое нужно отправить, одно из значений #MtlTransShaderStd
-	bool is_send			//!< true - отправлять, false - не отправлять
+	ID id,				//!< идентификатор материала
+	MTL_SHADERSTD type,	//!< тип значения которое нужно отправить, одно из значений #MtlTransShaderStd
+	bool is_send		//!< true - отправлять, false - не отправлять
 	);
 
 //! установлена ли отпрвка значения type в вершинный шейдер
-SX_LIB_API bool SML_MtlGetSTDVS(ID id, MtlTransShaderStd type);
+SX_LIB_API bool SML_MtlGetSTDVS(ID id, MTL_SHADERSTD type);
 
 //! отправка стадартных данных в пиксельный шейдер
 SX_LIB_API void SML_MtlSetSTDPS(
-	ID id,					//!< идентификатор материала
-	MtlTransShaderStd type,	//!< тип значения которое нужно отправить, одно из значений #MtlTransShaderStd
-	bool is_send			//!< true - отправлять, false - не отправлять
+	ID id,				//!< идентификатор материала
+	MTL_SHADERSTD type,	//!< тип значения которое нужно отправить, одно из значений #MtlTransShaderStd
+	bool is_send		//!< true - отправлять, false - не отправлять
 	);
 
 //! установлена ли отпрвка значения type в пиксельный шейдер
-SX_LIB_API bool SML_MtlGetSTDPS(ID id, MtlTransShaderStd type);
+SX_LIB_API bool SML_MtlGetSTDPS(ID id, MTL_SHADERSTD type);
 
 //!@}
 

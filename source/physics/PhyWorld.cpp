@@ -200,13 +200,14 @@ void PhyWorld::LoadGeom(const char * file)
 			int iIC = 0;
 			for(int i = 0; i < green_arr_count_index[num_green]; i += 3)
 			{
-				MtlPhysicType type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
-				if(type != mpt_leaf_grass)
+				MTLTYPE_PHYSIC type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
+				if (type != MTLTYPE_PHYSIC_LEAF_GRASS)
 				{
 					iIC += 3;
 				}
 			}
-			MtlPhysicType type;
+
+			MTLTYPE_PHYSIC type;
 
 			{
 				Array<UINT> idxs;
@@ -217,7 +218,7 @@ void PhyWorld::LoadGeom(const char * file)
 				{
 					idx = green_arr_index[num_green][i];
 					type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][idx]);
-					if(type != mpt_leaf_grass)
+					if (type != MTLTYPE_PHYSIC_LEAF_GRASS)
 					{
 						found = false;
 						for(int j = 0, lj = idxs.size(); j < lj; ++j)
@@ -241,7 +242,7 @@ void PhyWorld::LoadGeom(const char * file)
 			for(int i = 0; i < green_arr_count_index[num_green]; i += 3)
 			{
 				type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
-				if(type == mpt_leaf_grass)
+				if (type == MTLTYPE_PHYSIC_LEAF_GRASS)
 				{
 					continue;
 				}

@@ -1,4 +1,6 @@
 
+#include "particles_editor.h"
+
 void SXParticlesEditor::EffInitList()
 {
 	SXParticlesEditor::ListBoxEffects->Clear();

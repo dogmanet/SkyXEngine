@@ -416,7 +416,8 @@ ps - отправка в пиксельный шейдер \n
 
 //#include <vld.h> 
 
-#include <SkyXEngine.cpp>
+#include <SkyXEngine.h>
+#include "material_editor.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -427,18 +428,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::InitAllElements();
 	SXMaterialEditor::Nulling();
 	
-	
 
-	GData::Handle3D = SXMaterialEditor::WindowRender->GetHWND();
-	GData::HandleParent3D = SXMaterialEditor::JobWindow->GetHWND();
+	SkyXEngine_Init(SXMaterialEditor::WindowRender->GetHWND(), SXMaterialEditor::JobWindow->GetHWND());
+	Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
 
-	RECT winrndrect;
-	SXMaterialEditor::WindowRender->GetClientRect(&winrndrect);
+	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);
 
-	GData::WinSize.x = winrndrect.right;
-	GData::WinSize.y = winrndrect.bottom;
-
-	SkyXEngine_Init();
+	SXMaterialEditor::CheckBoxTBCam->SetCheck(true);
+	SRender_EditorCameraSetMove(SXMaterialEditor::CheckBoxTBCam->GetCheck());
 
 	char shaderskitpath[1024];
 	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\shaders_kit.cfg");
@@ -469,13 +467,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
 	SXMaterialEditor::EditSkyBox->SetText("sky/sky_2_cube.dds");
 		
-	GData::ObjCamera->SetPosition(&float3(0, 0, -1.2*100));
+	SRender_GetCamera()->SetPosition(&float3(0, 0, -1.2 * 100));
 
-	GData::Editors::SimModel = new ModelSim();
-
-	GData::Editors::SimModel->Add("sphere.dse");
-	GData::Editors::SimModel->Add("cube.dse");
-	GData::Editors::SimModel->Add("plane.dse");
+	
+	SRender_SimModelAdd("sphere.dse");
+	SRender_SimModelAdd("cube.dse");
+	SRender_SimModelAdd("plane.dse");
 
 	SML_LigthsCreatePoint(
 		&float3(110,110,-110),
@@ -488,8 +485,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SGCore_LoadTexLoadTextures();
 
-	SXMaterialEditor::InitMtl(GData::Editors::SimModel->GetIDMtl());
-	SXMaterialEditor::IDMat = GData::Editors::SimModel->GetIDMtl();
+	SXMaterialEditor::InitMtl(SRender_SimModelGetIDMtl());
+	SXMaterialEditor::IDMat = SRender_SimModelGetIDMtl();
 
 	SkyXEngine_PreviewKill();
 	SXMaterialEditor::JobWindow->Visible(true);

@@ -38,7 +38,7 @@ public:
 
 	void Render(DWORD timeDelta);
 
-	MtlTypeModel TypeModel;
+	MTLTYPE_MODEL TypeModel;
 	int CurrRenderModel;
 	float3 Rotation;
 

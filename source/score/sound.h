@@ -140,7 +140,7 @@ public:
 
 		Array<SIData> DataInstances;
 
-		SoundFileFormat Format;		//формат файла
+		SOUND_FILEFORMAT Format;		//формат файла
 		DWORD SizeFull;				//полный размер в байтах (для wav исключая заголовочную структуру)
 		
 		float3 Position;	//позиция источника звука
@@ -150,7 +150,7 @@ public:
 		//чем ближе к объекту тем меньше разница в позиционировании при поворотах
 		float ShiftPan;		
 
-		SoundObjState State;
+		SOUND_OBJSTATE State;
 		DWORD FrecOrigin;	//оригинальная частота
 
 		float DistAudible;	
@@ -193,17 +193,17 @@ public:
 	ID SoundFind3dInst(const char * file);
 
 	void SoundInstancePlay2d(ID id, int volume=100, int pan = 0);
-	void SoundInstancePlay3d(ID id, float3* pos);
+	void SoundInstancePlay3d(ID id, const float3* pos);
 
 	bool SoundIsInit(ID id);
 	void SoundDelete(ID id);
 
-	void	SoundPlay(ID id, int looping=-1);	//проиграть
-	void	SoundPause(ID id);					//приостановить
-	void	SoundStop(ID id);					//остановить
+	void SoundPlay(ID id, int looping=-1);	//проиграть
+	void SoundPause(ID id);					//приостановить
+	void SoundStop(ID id);					//остановить
 
-	void SoundStateSet(ID id, SoundObjState state);
-	SoundObjState SoundStateGet(ID id);
+	void SoundStateSet(ID id, SOUND_OBJSTATE state);
+	SOUND_OBJSTATE SoundStateGet(ID id);
 
 	//текащая позиция проигрывания
 	void SoundPosCurrSet(ID id, DWORD pos, int type = SOUND_POS_BYTES);
@@ -222,7 +222,7 @@ public:
 	DWORD SoundFreqCurrGet(ID id);
 	DWORD SoundFreqOriginGet(ID id);
 
-	void SoundPosWSet(ID id, float3* pos);
+	void SoundPosWSet(ID id, const float3* pos);
 	void SoundPosWGet(ID id, float3* pos);
 
 	int SoundLengthSecGet(ID id);		//длина в секундах
@@ -233,16 +233,16 @@ public:
 	float SoundDistAudibleGet(ID id);
 	void SoundDistAudibleSet(ID id, float value);
 
-	void Update(float3* viewpos, float3* viewdir);
+	void Update(const float3* viewpos, const float3* viewdir);
 
-	SoundFileFormat FileFormat(const char* file);
+	SOUND_FILEFORMAT FileFormat(const char* file);
 
 	int SoundsPlayCountGet();
 	int SoundsLoadCountGet();
 
 private:
 
-	void Load(Sound* snd, const char* fpath, SoundFileFormat fmt);
+	void Load(Sound* snd, const char* fpath, SOUND_FILEFORMAT fmt);
 
 	void LoadWAV(Sound* snd, const char* fpath);
 	void LoadOGG(Sound* snd, const char* fpath);

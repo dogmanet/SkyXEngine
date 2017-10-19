@@ -15,17 +15,13 @@
 extern report_func g_fnReportf;
 
 #define LIGHTS_PRE_COND_ID(id,stdval) \
-if (!(id >= 0 && id < ArrIDLights.size()))\
+if (!(id >= 0 && id < ArrLights.size()))\
 	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
-	else if (!ArrIDLights[id]) \
+	else if (!ArrLights[id]) \
 	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", gen_msg_location, id); return stdval; }
 
-#define LIGHTS_PRE_COND_KEY(key,stdval) \
-if (!(key >= 0 && key < ArrKeyLights.size()))\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
-
 #define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
-if (!(key >= 0 && key < ArrKeyDelLights.size()))\
+if (!(key >= 0 && key < ArrDelLights.size()))\
 	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
 
 #include "shadow.h"
@@ -46,12 +42,12 @@ public:
 	int GetCountLights() const;
 	void Clear();
 
+	bool getExists(ID id) const;
+
 	ID CreatePoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow, const char* bound_volume);
 	ID CreateDirection(ID id, const  float3* pos, float dist, const  float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow, const char* bound_volume);
 
 	void DeleteLight(ID id);
-
-	ID GetIdByKey(int key);
 
 	void Render(ID id, DWORD timeDelta);
 
@@ -182,8 +178,7 @@ public:
 		SX_ALIGNED_OP_MEM;
 
 		ID Id;
-		int Key;
-
+		
 		LTYPE_LIGHT TypeLight;
 		char Name[OBJECT_NAME_MAX_LEN];
 
@@ -221,9 +216,9 @@ public:
 protected:
 	ID AddLight(Light* obj);
 
-	Array<Light*> ArrKeyLights;	//массив всех элементов по порядку
-	Array<Light*> ArrIDLights;	//массив всех элементов, основанный на id
-	Array<Light*> ArrKeyDelLights;	//массив света который надо удалить
+	Array<Light*> ArrLights;	//массив всех элементов, основанный на id
+	Array<Light*> ArrDelLights;	//массив света который надо удалить
+	Array<ID> ArrFreeIDs;		//массив света который надо удалить
 
 	ID ShadowMap;
 	ID ShadowMap2;

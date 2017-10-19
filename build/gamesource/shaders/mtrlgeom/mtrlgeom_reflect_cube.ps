@@ -29,7 +29,6 @@ ps_out_ds_mrt main(vs_out_refcube IN)
 	half MipmapIndex = GetTexLod4Ref(saturate(OUT.Param.r));
 	half4 reflection = texCUBElod(ReflectTex, half4(IN.CubePPos,MipmapIndex));
 	OUT.Color.xyz = lerp(OUT.Color.xyz,reflection.xyz,OUT.Param.y);
-	//OUT.Color.xyz = 2 * IN.CubePPos - 1;
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
 	
 	return OUT;

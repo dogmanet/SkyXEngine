@@ -1,4 +1,6 @@
 
+#include "aigrid_callback.h"
+
 void SXLevelEditor::AIGridActivateAll(bool bf)
 {
 	ButtonAIQuadsDelSel->Visible(bf);

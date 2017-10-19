@@ -127,12 +127,12 @@ void MainSound::Init(HWND hwnd)
 
 //
 
-SoundFileFormat MainSound::FileFormat(const char* file)
+SOUND_FILEFORMAT MainSound::FileFormat(const char* file)
 {
 	FILE *fp;
 
 	if (!(fp = fopen(file, "rb")))
-		return SoundFileFormat::sff_unknown;
+		return SOUND_FILEFORMAT_UNKNOWN;
 
 	SoundWaveHeader Hdr;
 	fseek(fp, 0, SEEK_SET);
@@ -141,27 +141,27 @@ SoundFileFormat MainSound::FileFormat(const char* file)
 	if (memcmp(Hdr.RiffSig, "RIFF", 4) == 0 || memcmp(Hdr.Sig, "WAVE", 4) == 0 || memcmp(Hdr.FormatSig, "fmt ", 4) == 0)
 	{
 		fclose(fp);
-		return SoundFileFormat::sff_wav;
+		return SOUND_FILEFORMAT_WAV;
 	}
 
 	if (strcmp(fp->_base, "OggS") == 0)
 	{
 		fclose(fp);
-		return SoundFileFormat::sff_ogg;
+		return SOUND_FILEFORMAT_OGG;
 	}
 
 	fclose(fp);
 
-	return SoundFileFormat::sff_unknown;
+	return SOUND_FILEFORMAT_UNKNOWN;
 }
 
 //#############################################################################
 
-void MainSound::Load(Sound* snd, const char* fpath, SoundFileFormat fmt)
+void MainSound::Load(Sound* snd, const char* fpath, SOUND_FILEFORMAT fmt)
 {
-	if (fmt == SoundFileFormat::sff_ogg)
+	if (fmt == SOUND_FILEFORMAT_OGG)
 		LoadOGG(snd, fpath);
-	else if (fmt == SoundFileFormat::sff_wav)
+	else if (fmt == SOUND_FILEFORMAT_WAV)
 		LoadWAV(snd, fpath);
 }
 
@@ -471,9 +471,9 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 		return -1;
 	}
 
-	SoundFileFormat fmt = FileFormat(fullpath);
+	SOUND_FILEFORMAT fmt = FileFormat(fullpath);
 
-	if (fmt == SoundFileFormat::sff_unknown)
+	if (fmt == SOUND_FILEFORMAT_UNKNOWN)
 	{
 		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unknown format [%s]", gen_msg_location, file);
 		return -1;
@@ -615,7 +615,7 @@ void MainSound::SoundInstancePlay2d(ID id, int volume, int pan)
 	}
 }
 
-void MainSound::SoundInstancePlay3d(ID id, float3* pos)
+void MainSound::SoundInstancePlay3d(ID id, const float3* pos)
 {
 	SOUND_PRECOND(id, _VOID);
 
@@ -722,7 +722,7 @@ void MainSound::SoundPlay(ID id, int looping)
 	if (snd->DSBuffer)
 	{
 		snd->DSBuffer->Play(0, 0, (snd->StreamSize || snd->IsLooping ? DSBPLAY_LOOPING : 0));
-		snd->State = SoundObjState::sos_play;
+		snd->State = SOUND_OBJSTATE_PLAY;
 	}
 }
 
@@ -735,7 +735,7 @@ void MainSound::SoundPause(ID id)
 	if (snd->DSBuffer)
 	{
 		snd->DSBuffer->Stop();
-		snd->State = SoundObjState::sos_pause;
+		snd->State = SOUND_OBJSTATE_PAUSE;
 	}
 }
 
@@ -749,25 +749,25 @@ void MainSound::SoundStop(ID id)
 	{
 		snd->DSBuffer->Stop();
 		snd->DSBuffer->SetCurrentPosition(0);
-		snd->State = SoundObjState::sos_stop;
+		snd->State = SOUND_OBJSTATE_STOP;
 	}
 }
 
-void MainSound::SoundStateSet(ID id, SoundObjState state)
+void MainSound::SoundStateSet(ID id, SOUND_OBJSTATE state)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	if (state == SoundObjState::sos_play)
+	if (state == SOUND_OBJSTATE_PLAY)
 		SoundPlay(id);
-	else if (state == SoundObjState::sos_pause)
+	else if (state == SOUND_OBJSTATE_PAUSE)
 		SoundPause(id);
-	else if (state == SoundObjState::sos_stop)
+	else if (state == SOUND_OBJSTATE_STOP)
 		SoundStop(id);
 }
 
-SoundObjState MainSound::SoundStateGet(ID id)
+SOUND_OBJSTATE MainSound::SoundStateGet(ID id)
 {
-	SOUND_PRECOND(id, SoundObjState::sos_stop);
+	SOUND_PRECOND(id, SOUND_OBJSTATE_STOP);
 
 	Sound* snd = ArrSounds[id];
 	return snd->State;
@@ -808,10 +808,10 @@ void MainSound::SoundPosCurrSet(ID id, DWORD pos, int type)
 			}
 
 			//wav
-			if (snd->Format == SoundFileFormat::sff_wav)
+			if (snd->Format == SOUND_FILEFORMAT_WAV)
 				fseek(snd->StreamFile, sizeof(SoundWaveHeader)+(HowCountRePlay  * snd->StreamSize), SEEK_SET);
 			//ogg
-			else if (snd->Format == SoundFileFormat::sff_ogg)
+			else if (snd->Format == SOUND_FILEFORMAT_OGG)
 				ov_pcm_seek(snd->VorbisFile, (HowCountRePlay  * snd->StreamSize) / (2 * snd->ChannelsCount));
 
 			DWORD SizeCountRePlay = PosInBytes - (snd->StreamSize * HowCountRePlay);
@@ -993,7 +993,7 @@ DWORD MainSound::SoundFreqOriginGet(ID id)
 	return 0;
 }
 
-void MainSound::SoundPosWSet(ID id, float3* pos)
+void MainSound::SoundPosWSet(ID id, const float3* pos)
 {
 	SOUND_PRECOND(id, _VOID);
 	if (pos)
@@ -1061,17 +1061,17 @@ void MainSound::ReLoadSplit(ID id, DWORD Pos, DWORD Size)
 	if (snd->DSBuffer)
 	{
 		//wav
-		if (snd->Format == SoundFileFormat::sff_wav)
+		if (snd->Format == SOUND_FILEFORMAT_WAV)
 			SoundDataWAVLoad(snd->DSBuffer, Pos, snd->StreamFile, Size, 0);
 		//ogg
-		else if (snd->Format == SoundFileFormat::sff_ogg)
+		else if (snd->Format == SOUND_FILEFORMAT_OGG)
 		{
 			SoundDataOGGLoad(snd->VorbisFile, snd->DSBuffer, Pos, Size, 0);
 		}
 	}
 }
 
-void MainSound::Update(float3* viewpos, float3* viewdir)
+void MainSound::Update(const float3* viewpos, const float3* viewdir)
 {
 	int tmpSoundsPlayCount = 0;
 	int tmpSoundsLoadCount = 0;
@@ -1085,11 +1085,11 @@ void MainSound::Update(float3* viewpos, float3* viewdir)
 		{
 			status = 0;
 			snd->DSBuffer->GetStatus(&status);
-			if (!(status & DSBSTATUS_PLAYING) && snd->State == SoundObjState::sos_play)
-				SoundStateSet(i, SoundObjState::sos_stop);
+			if (!(status & DSBSTATUS_PLAYING) && snd->State == SOUND_OBJSTATE_PLAY)
+				SoundStateSet(i, SOUND_OBJSTATE_STOP);
 
 			++tmpSoundsLoadCount;
-			if (snd->State == SoundObjState::sos_play)
+			if (snd->State == SOUND_OBJSTATE_PLAY)
 				++tmpSoundsPlayCount;
 			if (snd->Is3d && snd->DSBuffer && viewpos && viewdir)
 			{
@@ -1161,10 +1161,10 @@ void MainSound::Update(float3* viewpos, float3* viewdir)
 							SoundStop(i);
 
 						//wav
-						if (snd->Format == SoundFileFormat::sff_wav)
+						if (snd->Format == SOUND_FILEFORMAT_WAV)
 							fseek(snd->StreamFile, sizeof(SoundWaveHeader), SEEK_SET);
 						//ogg
-						else if (snd->Format == SoundFileFormat::sff_ogg)
+						else if (snd->Format == SOUND_FILEFORMAT_OGG)
 							ov_pcm_seek(snd->VorbisFile, 0);
 
 						ReLoadSplit(i, 0, snd->StreamSize);

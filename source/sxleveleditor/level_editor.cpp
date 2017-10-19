@@ -1,8 +1,5 @@
 
-#define SX_LE_MMENU_WEATHER_BEGIN_ID 50001
-
-#define MAINWIN_SIZE_X	820
-#define MAINWIN_SIZE_Y	690
+#include "level_editor.h"
 
 namespace SXLevelEditor
 {
@@ -208,7 +205,7 @@ namespace SXLevelEditor
 
 	void DeleteAllElements();
 
-	void LevelNew(bool mess = true);
+	void LevelNew(bool mess);
 	void LevelOpen();
 	void LevelSave();
 	void LevelSaveAs();
@@ -236,6 +233,32 @@ namespace SXLevelEditor
 	void AIGridActivateAll(bool bf);
 	void AIGridEnableBB(bool bf);
 
+
+	ID3DXMesh* FigureBox = 0;
+	AxesHelper* ObjAxesHelper = 0;
+
+	int ActiveGroupType = 0;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
+	ID ActiveGreenSplit = -1;		//!< текущий идентификатор сплита растительность (если выделена растительность)
+	ID ActiveGreenObject = -1;		//!< текущий идентификатор объекта растительности (если выделена растительность)
+
+	ID ActiveElement = -1;			//!< текущий идентификатор выделенного элемента из списка
+	bool SelSelection = false;		//!< разрешено ли выделение?
+	bool SelZTest = false;			//!< использовать ли z-test при выделении?
+	bool SelMesh = false;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
+	bool SelBackFacesCull = false;	//!< отсекать ли задние грани при выделении?
+
+	bool AIGBound = true;			//!< отрисовка боунда ai сетки
+	bool AIGQuad = true;			//!< отрисовка квадов ai сетки
+	bool AIGGraphPoint = true;		//!< отрисовка графпоинтов ai сетки
+
+	//bound box для массового создания объектов растительности
+	bool GreenRenderBox = false;	//!< разрешено ли рисовать бокс?
+	float3 GreenBoxPos;				//!< позиция бокса
+	float3_t GreenBoxWHD(1, 1, 1);	//!< ширина, высота, длина бокса
+
+
+
+
 	float3 HelperPos;
 	float3 HelperRot;
 	float3 HelperScale;
@@ -246,13 +269,7 @@ namespace SXLevelEditor
 	Array<String> MenuWeatherArr;
 };
 
-LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-#include <SXLevelEditor/aigrid_callback.cpp>
-#include <SXLevelEditor/game_callback.cpp>
-#include <SXLevelEditor/green_callback.cpp>
-#include <SXLevelEditor/model_callback.cpp>
-#include <SXLevelEditor/common_callback.cpp>
+//
 
 void SXLevelEditor::InitAllElements()
 {
@@ -452,35 +469,6 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.top = true;
 	SXLevelEditor::CheckBoxTBGLightEnable->SetBmpInResourse(IDB_BITMAP27);
 
-
-	SXLevelEditor::CheckBoxTBAIGBound->SetCheck(false);
-	GData::Editors::AIGBound = false;
-	SXLevelEditor::CheckBoxTBAIGQuad->SetCheck(true);
-	GData::Editors::AIGQuad = true;
-	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetCheck(true);
-	GData::Editors::AIGGraphPoint = true;
-
-	SXLevelEditor::CheckBoxTBGrid->SetCheck(true);
-	SXLevelEditor::CheckBoxTBAxes->SetCheck(true);
-	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
-	SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
-
-	SXLevelEditor::CheckBoxTBRColor->SetCheck(true);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
-	GData::FinalImage = DS_RT::ds_rt_color;
-
-	SXLevelEditor::CheckBoxTBSelS->SetCheck(true);
-	GData::Editors::SelSelection = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
-
-	SXLevelEditor::CheckBoxTBSelCullBack->SetCheck(true);
-	GData::Editors::SelBackFacesCull = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
-	GData::Editors::SelZTest = false;
-
-	SXLevelEditor::CheckBoxTBSelMesh->SetCheck(true);
-	GData::Editors::SelMesh = true;
-	SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, true);
 
 	
 	SXLevelEditor::GroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 28, 200, 400, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
@@ -1940,4 +1928,177 @@ void SXLevelEditor::DeleteAllElements()
 	mem_delete(SXLevelEditor::EditAIStatsCountQuads);
 	mem_delete(SXLevelEditor::EditAIStatsCountGP);
 	mem_delete(SXLevelEditor::EditAIStatsCountSplits);
+}
+
+//##########################################################################
+
+void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
+{
+	static float3 vCamPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
+
+	static const float * p_far = GET_PCVAR_FLOAT("p_far");
+
+	long count_poly_green = 0;
+	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
+	{
+		count_poly_green += SGeom_GreenMGetCountGen(i) * SGeom_GreenMGetCountPoly(i);
+	}
+
+	long count_poly_geom = 0;
+	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
+	{
+		count_poly_geom += SGeom_ModelsMGetCountPoly(i);
+	}
+
+	char text[256];
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_LEVEL_POLY, count_poly_geom + count_poly_green);
+	SXLevelEditor::StatusBar1->SetTextParts(0, text);
+
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GEOM_POLY, count_poly_geom);
+	SXLevelEditor::StatusBar1->SetTextParts(1, text);
+
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GREEN_POLY, count_poly_green);
+	SXLevelEditor::StatusBar1->SetTextParts(2, text);
+
+	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
+	SXLevelEditor::StatusBar1->SetTextParts(3, text);
+
+	if (SXLevelEditor::IdMtl >= 0)
+	{
+		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
+		SML_MtlGetTexture(SXLevelEditor::IdMtl, text);
+		SXLevelEditor::StatusBar1->SetTextParts(4, text);
+	}
+
+
+
+	if (SXLevelEditor::GreenRenderBox)
+	{
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+		float3 tmppos = SXLevelEditor::GreenBoxPos;
+		tmppos.y += SXLevelEditor::GreenBoxWHD.y * 0.5f;
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(SXLevelEditor::GreenBoxWHD) * SMMatrixTranslation(tmppos)));
+		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+		SXLevelEditor::FigureBox->DrawSubset(0);
+
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	}
+
+	if (SXLevelEditor::SelSelection)
+	{
+		if (SXLevelEditor::SelZTest)
+		{
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		}
+		else
+		{
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		}
+
+		if (SXLevelEditor::SelMesh)
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		if (SXLevelEditor::SelBackFacesCull)
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+
+
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		{
+			if (SXLevelEditor::ActiveElement > -1)
+			{
+				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+				SGeom_ModelsRenderSingly(timeDelta, SXLevelEditor::ActiveElement, SML_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
+			}
+		}
+
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		{
+			if (SXLevelEditor::ActiveElement > -1)
+			{
+				if (SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0)
+				{
+					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+					SGeom_GreenRenderObject(timeDelta, &vCamPos, SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, SML_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+				}
+				else
+				{
+					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+					SGeom_GreenRenderSingly(timeDelta, &vCamPos, SXLevelEditor::ActiveElement, SML_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+				}
+			}
+		}
+
+		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+		{
+			SXGame_EditorRender(SXLevelEditor::ActiveElement, SRender_EditorGetSelectTex());
+		}
+
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+
+		if (SXLevelEditor::SelMesh)
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+		if (SXLevelEditor::SelBackFacesCull)
+			SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	}
+
+
+	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+	if (SXLevelEditor::AIGQuad)
+		SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *p_far);
+
+	if (SXLevelEditor::AIGGraphPoint)
+		SAIG_RenderGraphPoints(&vCamPos, *p_far);
+
+	if (SXLevelEditor::AIGBound)
+	{
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+		SGCore_GetDXDevice()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		SGCore_GetDXDevice()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+		SAIG_RenderBB();
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	}
+
+	if (SXLevelEditor::ObjAxesHelper)
+	{
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		SXLevelEditor::ObjAxesHelper->Render();
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	}
+}
+
+//##########################################################################
+
+void SXLevelEditor::LEcreateData()
+{
+	SXLevelEditor::ObjAxesHelper = new AxesHelper();
+	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &SXLevelEditor::FigureBox, 0);
+}
+
+void SXLevelEditor::LEdeleteData()
+{
+	mem_delete(SXLevelEditor::ObjAxesHelper);
+	mem_release(SXLevelEditor::FigureBox);
 }

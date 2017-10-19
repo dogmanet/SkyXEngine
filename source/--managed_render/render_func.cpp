@@ -110,15 +110,23 @@ void SXRenderFunc::SetRenderSceneFilterUn()
 
 void SXRenderFunc::ComDeviceLost()
 {
-	if (GData::ReSize != 2)
+	static int *resize = (int*)GET_PCVAR_INT("resize");
+
+	static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
+	static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
+	static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+
+	if (*resize != RENDER_RESIZE_CHANGE)
 	{
 		//получаем текущий размер окна в которое рисовали
 		RECT rect_scene;
 		GetClientRect(GData::Handle3D, &rect_scene);
 
 
-		GData::WinSize.x = rect_scene.right;
-		GData::WinSize.y = rect_scene.bottom;
+		/*GData::WinSize.x = rect_scene.right;
+		GData::WinSize.y = rect_scene.bottom;*/
+		*winr_width = rect_scene.right;
+		*winr_height = rect_scene.bottom;
 	}
 
 	//сбрасываем все что необходимо для восстановления устройства
@@ -127,16 +135,16 @@ void SXRenderFunc::ComDeviceLost()
 	SML_OnLostDevice();
 	SPE_OnLostDevice();
 
-	bool bf = SGCore_OnDeviceReset(GData::WinSize.x, GData::WinSize.y,GData::IsWindowed);
+	bool bf = SGCore_OnDeviceReset(*winr_width, *winr_height, *winr_windowed);
 		if (bf)
 		{
 			//если всетаки функция зашла сюда значит чтото было неосвобождено
-			PrintfLog(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
+			SkyXEngine_PrintfLog(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
 		}
 		else
 		{
 			GData::InitAllMatrix();
-			GData::ReSize = 0;
+			resize = RENDER_RESIZE_NONE;
 			SGCore_OnResetDevice();
 			SML_OnResetDevice();
 			SGeom_OnResetDevice();
@@ -147,164 +155,6 @@ void SXRenderFunc::ComDeviceLost()
 		}
 }
 
-void SXRenderFunc::UpdateDataCVar()
-{
-	ID GlobalLight = SML_LigthsGetGlobal();
-	static const bool * pssm_4or3 = GET_PCVAR_BOOL("pssm_4or3");
-	static bool pssm_4or3_old = true;
-
-	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
-	if (pssm_4or3 && pssm_4or3_old != (*pssm_4or3) && GlobalLight >= 0)
-	{
-		pssm_4or3_old = (*pssm_4or3);
-		SML_LigthsSet4Or3SplitsG(GlobalLight, pssm_4or3_old);
-	}
-
-	static const bool * pssm_shadowed = GET_PCVAR_BOOL("pssm_shadowed");
-	static bool pssm_shadowed_old = true;
-
-	if (pssm_shadowed && pssm_shadowed_old != (*pssm_shadowed) && GlobalLight >= 0)
-	{
-		pssm_shadowed_old = (*pssm_shadowed);
-		SML_LigthsSetTypeShadowed(GlobalLight, (pssm_shadowed_old ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
-	}
-
-	static const float * pssm_q = GET_PCVAR_FLOAT("pssm_q");
-	static float pssm_q_old = 1;
-
-	if (pssm_q && pssm_q_old != (*pssm_q))
-	{
-		pssm_q_old = (*pssm_q);
-		if (pssm_q_old < 0.5f)
-		{
-			pssm_q_old = 0.5f;
-			Core_0SetCVarFloat("pssm_q", pssm_q_old);
-		}
-		else if (pssm_q_old > 4.f)
-		{
-			pssm_q_old = 4.f;
-			Core_0SetCVarFloat("pssm_q", pssm_q_old);
-		}
-		SML_LigthsSettGCoefSizeDepth(pssm_q_old);
-	}
-
-	static const float * lsm_q = GET_PCVAR_FLOAT("lsm_q");
-	static float lsm_q_old = 1;
-
-	if (lsm_q && lsm_q_old != (*lsm_q))
-	{
-		lsm_q_old = (*lsm_q);
-		if (lsm_q_old < 0.5f)
-		{
-			lsm_q_old = 0.5f;
-			Core_0SetCVarFloat("lsm_q", lsm_q_old);
-		}
-		else if (lsm_q_old > 4.f)
-		{
-			lsm_q_old = 4.f;
-			Core_0SetCVarFloat("lsm_q", lsm_q_old);
-		}
-		SML_LigthsSettLCoefSizeDepth(lsm_q_old);
-	}
-
-	static const int * grass_frec = GET_PCVAR_INT("grass_frec");
-	static int grass_frec_old = 1;
-
-	if (grass_frec && grass_frec_old != (*grass_frec))
-	{
-		grass_frec_old = (*grass_frec);
-		if (grass_frec_old <= 0)
-		{
-			grass_frec_old = 1;
-			Core_0SetCVarInt("grass_frec", grass_frec_old);
-		}
-		else if (grass_frec_old > 100)
-		{
-			grass_frec_old = 100;
-			Core_0SetCVarInt("grass_frec", grass_frec_old);
-		}
-		SGeom_0SettGreenSetFreqGrass(grass_frec_old);
-	}
-
-	static const float * green_lod0 = GET_PCVAR_FLOAT("green_lod0");
-	static float green_lod0_old = 50;
-
-	if (green_lod0 && green_lod0_old != (*green_lod0))
-	{
-		green_lod0_old = (*green_lod0);
-		if (green_lod0_old <= 20)
-		{
-			green_lod0_old = 20;
-			Core_0SetCVarFloat("green_lod0", green_lod0_old);
-		}
-		else if (green_lod0_old > 100)
-		{
-			green_lod0_old = 100;
-			Core_0SetCVarFloat("green_lod0", green_lod0_old);
-		}
-		SGeom_0SettGreenSetDistLods1(green_lod0_old);
-	}
-
-	static const float * green_lod1 = GET_PCVAR_FLOAT("green_lod1");
-	static float green_lod1_old = 50;
-
-	if (green_lod1 && green_lod1_old != (*green_lod1))
-	{
-		green_lod1_old = (*green_lod1);
-		if (green_lod1_old <= 50)
-		{
-			green_lod1_old = 50;
-			Core_0SetCVarFloat("green_lod1", green_lod1_old);
-		}
-		else if (green_lod1_old > 150)
-		{
-			green_lod1_old = 150;
-			Core_0SetCVarFloat("green_lod1", green_lod1_old);
-		}
-		SGeom_0SettGreenSetDistLods2(green_lod1_old);
-	}
-
-	static const float * green_less = GET_PCVAR_FLOAT("green_less");
-	static float green_less_old = 10;
-
-	if (green_less && green_less_old != (*green_less))
-	{
-		green_less_old = (*green_less);
-		if (green_less_old <= 10)
-		{
-			green_less_old = 10;
-			Core_0SetCVarFloat("green_less", green_less_old);
-		}
-		else if (green_less_old > 90)
-		{
-			green_less_old = 90;
-			Core_0SetCVarFloat("green_less", green_less_old);
-		}
-		SGeom_0SettGreenSetBeginEndLessening(green_less_old);
-	}
-
-	static const float * p_far = GET_PCVAR_FLOAT("p_far");
-	static float p_far_old = 400;
-
-	if (p_far && p_far_old != (*p_far))
-	{
-		p_far_old = (*p_far);
-
-		if (p_far_old < 100.f)
-		{
-			p_far_old = 100.f;
-			Core_0SetCVarFloat("p_far", p_far_old);
-		}
-		else if (p_far_old > 1000)
-		{
-			p_far_old = 1000.f;
-			Core_0SetCVarFloat("p_far", p_far_old);
-		}
-
-		GData::NearFar.y = p_far_old;
-		GData::InitAllMatrix();
-	}
-}
 
 void SXRenderFunc::ComVisibleForLight()
 {
@@ -446,10 +296,10 @@ void SXRenderFunc::ComVisibleReflection()
 		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
 		{
 			ID idmat = SGeom_ModelsMGetGroupIDMat(i, k);
-			MtlTypeReflect typeref = SML_MtlGetTypeReflection(SGeom_ModelsMGetGroupIDMat(i, k));
+			MTLTYPE_REFLECT typeref = SML_MtlGetTypeReflection(SGeom_ModelsMGetGroupIDMat(i, k));
 			float3_t center;
 
-			if (typeref == MtlTypeReflect::mtr_plane)
+			if (typeref == MTLTYPE_REFLECT_PLANE)
 			{
 				if (!SML_MtlRefIsAllowedRender(idmat))
 					continue;
@@ -469,7 +319,7 @@ void SXRenderFunc::ComVisibleReflection()
 				SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
 				SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0));
 			}
-			else if (typeref == MtlTypeReflect::mtr_cube_dynamic)
+			else if (typeref == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			{
 				SGeom_ModelsMGetGroupCenter(i, k, &center);
 
@@ -522,32 +372,32 @@ void SXRenderFunc::SaveWorkTex()
 {
 	char tmppath[1024];
 	sprintf(tmppath, "%scolor.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_color), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_COLOR), NULL);
 
 	sprintf(tmppath, "%snormal.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_normal), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_NORMAL), NULL);
 
 	sprintf(tmppath, "%sdepth.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_DEPTH), NULL);
 
 	sprintf(tmppath, "%sdepth0.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_depth0), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_DEPTH0), NULL);
 
 	sprintf(tmppath, "%sparam.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_param), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_PARAM), NULL);
 
 	sprintf(tmppath, "%sambient_diff.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_ambient_diff), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_AMBIENTDIFF), NULL);
 
 	sprintf(tmppath, "%sspecular.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_specular), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_SPECULAR), NULL);
 
 
 	sprintf(tmppath, "%slight_com_1.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_SCENELIGHT), NULL);
 
 	sprintf(tmppath, "%slight_com_2.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2), NULL);
+	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_SCENELIGHT2), NULL);
 }
 
 void SXRenderFunc::ChangeModeWindow()
@@ -564,21 +414,26 @@ void SXRenderFunc::ChangeModeWindow()
 	}
 
 	GData::IsWindowed = !GData::IsWindowed;
-	GData::ReSize = 2;
+
+	static int *resize = (int*)GET_PCVAR_INT("resize");
+	*resize = RENDER_RESIZE_CHANGE;
 }
 
 //##########################################################################
 
 void SXRenderFunc::UpdateView()
 {
-	float fov = GData::ObjCamera->GetFOV();
+	/*float fov = GData::ObjCamera->GetFOV();
 	if(fov != GData::ProjFov)
 	{
 		GData::ProjFov = fov;
 		GData::MCamProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
 		GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
 		GData::MRefPlaneSkyProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
-	}
+	}*/
+
+	GData::InitAllMatrix();
+
 	GData::ObjCamera->GetViewMatrix(&GData::MCamView);
 	
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
@@ -602,6 +457,15 @@ void SXRenderFunc::UpdateView()
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
 
 	GData::ObjCamera->ObjFrustum->Update(&(GData::MCamView), &(GData::MCamProj));
+
+	if (GData::DefaultGeomIDArr < 0)
+		GData::DefaultGeomIDArr = SGeom_ModelsAddArrForCom();
+
+	if (GData::DefaultGreenIDArr < 0)
+		GData::DefaultGreenIDArr = SGeom_GreenAddArrForCom();
+
+	if (GData::DefaultAnimIDArr < 0)
+		GData::DefaultAnimIDArr = SXAnim_ModelsAddArrForCom();
 }
 
 void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
@@ -690,6 +554,11 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta)
 
 void SXRenderFunc::BuildMRT(DWORD timeDelta)
 {
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static float2_t vWinSize;
+	vWinSize = float2(*winr_width, *winr_height);
+
 	SGCore_ShaderUnBind();
 
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
@@ -706,10 +575,10 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 
 	LPDIRECT3DSURFACE9 BackBuf, ColorSurf, NormalSurf, ParamSurf, DepthMapLinearSurf;
 
-	SML_DSGetRT(DS_RT::ds_rt_color)->GetSurfaceLevel(0, &ColorSurf);
-	SML_DSGetRT(DS_RT::ds_rt_normal)->GetSurfaceLevel(0, &NormalSurf);
-	SML_DSGetRT(DS_RT::ds_rt_param)->GetSurfaceLevel(0, &ParamSurf);
-	SML_DSGetRT(DS_RT::ds_rt_depth)->GetSurfaceLevel(0, &DepthMapLinearSurf);
+	SML_DSGetRT(DS_RT_COLOR)->GetSurfaceLevel(0, &ColorSurf);
+	SML_DSGetRT(DS_RT_NORMAL)->GetSurfaceLevel(0, &NormalSurf);
+	SML_DSGetRT(DS_RT_PARAM)->GetSurfaceLevel(0, &ParamSurf);
+	SML_DSGetRT(DS_RT_DEPTH)->GetSurfaceLevel(0, &DepthMapLinearSurf);
 
 	//очищаем рт глубины  максимальным значением
 	//чтобы там где нет окружения к примеру был скайбокс, а значит в рт глубины было максимальное значение - максимальная отдаленность
@@ -732,15 +601,13 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 #if !defined(SX_MATERIAL_EDITOR)
 	//SXDecals_Render();
 	if (SGeom_ModelsGetCount() > 0)
-		SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none);
+		SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE);
 
 	SXAnim_Render();
 
 	if (SGeom_GreenGetCount() > 0)
-		SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggtr_all);
+		SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_ALL);
 
-	SGCore_ShaderUnBind();
-	
 	SGCore_ShaderUnBind();
 #endif
 
@@ -759,11 +626,11 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	LPDIRECT3DSURFACE9 DepthSurf2;
-	SML_DSGetRT(DS_RT::ds_rt_depth0)->GetSurfaceLevel(0, &DepthSurf2);
+	SML_DSGetRT(DS_RT_DEPTH0)->GetSurfaceLevel(0, &DepthSurf2);
 
 	GData::DXDevice->SetRenderTarget(0, DepthSurf2);
 
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_depth));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_DEPTH));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
@@ -772,7 +639,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 
 
 	SXRenderFunc::SetRenderSceneFilter();
-	//SML_DSGetRT(DS_RT::ds_rt_depth)->GetSurfaceLevel(0, &DepthMapLinearSurf);
+	//SML_DSGetRT(DS_RT_DEPTH)->GetSurfaceLevel(0, &DepthMapLinearSurf);
 	GData::DXDevice->SetRenderTarget(0, ColorSurf);
 	GData::DXDevice->SetRenderTarget(1, NormalSurf);
 	GData::DXDevice->SetRenderTarget(2, ParamSurf);
@@ -787,7 +654,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 #if !defined(SX_MATERIAL_EDITOR)
 
 	//если есть что к отрисовке из полупрозрачной геометрии
-	if (SGeom_ModelsSortExistsForRender(MtlTypeTransparency::mtt_alpha_lighting))
+	if (SGeom_ModelsSortExistsForRender(MTLTYPE_TRANSPARENCY_ALPHA_LIGHT))
 	{
 		//тут такая ситуация ... есть два рабочих варианта, причем работают чутка по разному, возможно я изработался и не могу сообразить что да как ...
 		//первый вариант, чистим в 4, метим 3 раза начиная с нуля (первый раз 0, второй 1 третий 2 НЕ ИНКРЕМЕНТ а метка)
@@ -818,7 +685,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStr);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStr, "WinSize", &GData::WinSize);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStr, "WinSize", &vWinSize);
 
 		SGCore_ScreenQuadDraw();
 
@@ -827,7 +694,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilColumn);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilColumn, "WinSize", &GData::WinSize);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilColumn, "WinSize", &vWinSize);
 
 		SGCore_ScreenQuadDraw();
 
@@ -836,7 +703,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStrColumn);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStrColumn, "WinSize", &GData::WinSize);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStrColumn, "WinSize", &vWinSize);
 
 		SGCore_ScreenQuadDraw();
 
@@ -863,7 +730,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 			SML_MtlSetIsIncrCountSurf(true);
 			SML_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
 
-			SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_alpha_lighting, 0, true);
+			SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_ALPHA_LIGHT, 0, true);
 		}
 
 
@@ -879,10 +746,10 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta)
 	SXDecals_Render();
 
 #else
-	if(SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
+	if(SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MTLTYPE_TRANSPARENCY_NONE)
 		SML_MtlSetForceblyAlphaTest(true);
 	GData::Editors::SimModel->Render(timeDelta);
-	if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MtlTypeTransparency::mtt_none)
+	if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MTLTYPE_TRANSPARENCY_NONE)
 		SML_MtlSetForceblyAlphaTest(false);
 #endif
 
@@ -935,10 +802,10 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							SML_LigthsShadowRenderPre(tmpid, k);
 
 							if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k) > -1)
-								SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
+								SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
 
 							if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) > -1)
-								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
 
 							SXAnim_Render();
 						}
@@ -972,10 +839,10 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 					if (SML_LigthsGetTypeShadowed(tmpid) == LTYPE_SHADOW_DYNAMIC)
 					{
 						if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0) > -1)
-							SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0));
+							SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, 0));
 							
 						if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0) > -1)
-							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
+							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, 0));
 
 						SXAnim_Render();
 					}
@@ -984,7 +851,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 						SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, GData::DefaultGeomIDArr);
 						SGeom_ModelsRender(timeDelta, -1, GData::DefaultGeomIDArr);
 						SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, 0), &GData::ConstCurrCamPos, GData::DefaultGreenIDArr);
-						SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, GData::DefaultGreenIDArr);
+						SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, GData::DefaultGreenIDArr);
 					}
 
 					SML_LigthsShadowRenderEnd(tmpid);
@@ -1005,10 +872,10 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							if (SML_LigthsGetTypeShadowed(tmpid) == LTYPE_SHADOW_DYNAMIC)
 							{
 								if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k) > -1)
-									SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
+									SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GEOM, k));
 
 								if (SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k) > -1)
-									SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
+									SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(tmpid, RENDER_IDARRCOM_GREEN, k));
 
 								SXAnim_Render();
 							}
@@ -1017,7 +884,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 								SGeom_ModelsComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, GData::DefaultGeomIDArr);
 								SGeom_ModelsRender(timeDelta, -1, GData::DefaultGeomIDArr);
 								SGeom_GreenComVisible(SML_LigthsGetFrustum(tmpid, k), &GData::ConstCurrCamPos, GData::DefaultGreenIDArr);
-								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggt_tree, GData::DefaultGreenIDArr);
+								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, GData::DefaultGreenIDArr);
 							}
 							
 							SML_LigthsShadowRenderPost(tmpid, k);
@@ -1036,7 +903,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 void SXRenderFunc::RenderSky(DWORD timeDelta)
 {
 	LPDIRECT3DSURFACE9 ColorSurf, BackBuf;
-	SML_DSGetRT(DS_RT::ds_rt_scene_light_com)->GetSurfaceLevel(0, &ColorSurf);
+	SML_DSGetRT(DS_RT_SCENELIGHT)->GetSurfaceLevel(0, &ColorSurf);
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ColorSurf);
 
@@ -1068,7 +935,7 @@ void SXRenderFunc::RenderSky(DWORD timeDelta)
 		SGCore_SkyCloudsRender(timeDelta, &float3(GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y + 150, GData::ConstCurrCamPos.z), false);
 	}
 
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENELIGHT2));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
@@ -1085,13 +952,16 @@ void SXRenderFunc::RenderSky(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
-void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
+void SXRenderFunc::ComLighting(DWORD timeDelta)
 {
+	static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
+	static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
+
 	SGCore_ShaderUnBind();
 
 	LPDIRECT3DSURFACE9 AmbientSurf, SpecDiffSurf, BackBuf;
-	SML_DSGetRT(DS_RT::ds_rt_ambient_diff)->GetSurfaceLevel(0, &AmbientSurf);
-	SML_DSGetRT(DS_RT::ds_rt_specular)->GetSurfaceLevel(0, &SpecDiffSurf);
+	SML_DSGetRT(DS_RT_AMBIENTDIFF)->GetSurfaceLevel(0, &AmbientSurf);
+	SML_DSGetRT(DS_RT_SPECULAR)->GetSurfaceLevel(0, &SpecDiffSurf);
 
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 
@@ -1248,7 +1118,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "NearFar", &GData::NearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(GData::WinSize.x, GData::WinSize.y, GData::ProjFov));
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(*winr_width, *winr_height, GData::ProjFov));
 
 			float3 tmpPosition;
 			float2 tmpPowerDist;
@@ -1288,11 +1158,11 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 			SetSamplerFilter(0, 5, D3DTEXF_NONE);
 			SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
 			
-			GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_color));
-			GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_normal));
-			GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_param));
-			GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_depth));
-			GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
+			GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_COLOR));
+			GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_NORMAL));
+			GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT_PARAM));
+			GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT_DEPTH));
+			GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT_ADAPTEDLUM));
 
 			SGCore_ScreenQuadDraw();
 
@@ -1324,7 +1194,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
 	LPDIRECT3DSURFACE9 ComLightSurf;
 
-	SML_DSGetRT(DS_RT::ds_rt_scene_light_com)->GetSurfaceLevel(0, &ComLightSurf);
+	SML_DSGetRT(DS_RT_SCENELIGHT)->GetSurfaceLevel(0, &ComLightSurf);
 
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
@@ -1332,12 +1202,12 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 	//очищаем рт (в старой версии было многопроходное смешивание)
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0,0,0,0), 1.0f, 0);
 
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_color));
-	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_ambient_diff));
-	GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_specular));
-	GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_normal));
-	GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
-	GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT::ds_rt_param));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_COLOR));
+	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_AMBIENTDIFF));
+	GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT_SPECULAR));
+	GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT_NORMAL));
+	GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT_ADAPTEDLUM));
+	GData::DXDevice->SetTexture(5, SML_DSGetRT(DS_RT_PARAM));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::BlendAmbientSpecDiffColor);
@@ -1355,6 +1225,9 @@ void SXRenderFunc::ComLighting(DWORD timeDelta, bool render_sky)
 
 void SXRenderFunc::UnionLayers()
 {
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
+
 	LPDIRECT3DSURFACE9 BackBuf, ComLightSurf;
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 
@@ -1369,22 +1242,22 @@ void SXRenderFunc::UnionLayers()
 	if (CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT)
 	{
 		LPDIRECT3DSURFACE9 ColorSurf, Color2Surf, DepthSurf;
-		SML_DSGetRT(DS_RT::ds_rt_scene_light_com2)->GetSurfaceLevel(0, &ColorSurf);
+		SML_DSGetRT(DS_RT_SCENELIGHT2)->GetSurfaceLevel(0, &ColorSurf);
 		GData::DXDevice->SetRenderTarget(0, ColorSurf);
-		SML_DSGetRT(DS_RT::ds_rt_depth0)->GetSurfaceLevel(0, &DepthSurf);
+		SML_DSGetRT(DS_RT_DEPTH0)->GetSurfaceLevel(0, &DepthSurf);
 		GData::DXDevice->SetRenderTarget(1, DepthSurf);
-		SML_DSGetRT(DS_RT::ds_rt_depth1)->GetSurfaceLevel(0, &Color2Surf);
+		SML_DSGetRT(DS_RT_DEPTH1)->GetSurfaceLevel(0, &Color2Surf);
 		GData::DXDevice->SetRenderTarget(2, Color2Surf);
 		GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-		GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_color));
-		GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_scene_light_com));
-		GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT::ds_rt_depth));
-		GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT::ds_rt_normal));
-		GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT::ds_rt_param));
+		GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_COLOR));
+		GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_SCENELIGHT));
+		GData::DXDevice->SetTexture(2, SML_DSGetRT(DS_RT_DEPTH));
+		GData::DXDevice->SetTexture(3, SML_DSGetRT(DS_RT_NORMAL));
+		GData::DXDevice->SetTexture(4, SML_DSGetRT(DS_RT_PARAM));
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha, "WinSize", &float4_t(GData::WinSize.x, GData::WinSize.y, 1.f / GData::WinSize.x, 1.f / GData::WinSize.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha, "WinSize", &float4_t(*winr_width, *winr_height, 1.f / float(*winr_width), 1.f / float(*winr_height)));
 
 		SGCore_ScreenQuadDraw();
 
@@ -1400,12 +1273,12 @@ void SXRenderFunc::UnionLayers()
 
 		LPDIRECT3DSURFACE9 DepthSurf1;
 
-		SML_DSGetRT(DS_RT::ds_rt_depth1)->GetSurfaceLevel(0, &DepthSurf1);
+		SML_DSGetRT(DS_RT_DEPTH1)->GetSurfaceLevel(0, &DepthSurf1);
 		GData::DXDevice->SetRenderTarget(0, DepthSurf1);
 
 		GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
-		GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_depth));
+		GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_DEPTH));
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
@@ -1417,10 +1290,10 @@ void SXRenderFunc::UnionLayers()
 	}
 
 	//копируем итоговую сцену
-	SML_DSGetRT((CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT::ds_rt_scene_light_com : DS_RT::ds_rt_scene_light_com2))->GetSurfaceLevel(0, &ComLightSurf);
+	SML_DSGetRT((CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT_SCENELIGHT : DS_RT_SCENELIGHT2))->GetSurfaceLevel(0, &ComLightSurf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	GData::DXDevice->SetTexture(0, SML_DSGetRT((CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT::ds_rt_scene_light_com2 : DS_RT::ds_rt_scene_light_com)));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT((CurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT_SCENELIGHT2 : DS_RT_SCENELIGHT)));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
@@ -1438,7 +1311,7 @@ void SXRenderFunc::UnionLayers()
 void SXRenderFunc::ApplyToneMapping()
 {
 	LPDIRECT3DSURFACE9 BackBuf, ComLightSurf;
-	SML_DSGetRT(DS_RT::ds_rt_scene_light_com2)->GetSurfaceLevel(0, &ComLightSurf);
+	SML_DSGetRT(DS_RT_SCENELIGHT2)->GetSurfaceLevel(0, &ComLightSurf);
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 
@@ -1447,8 +1320,8 @@ void SXRenderFunc::ApplyToneMapping()
 	SetSamplerFilter(0, 5, D3DTEXF_NONE);
 	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
 
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_scene_light_com));
-	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT::ds_rt_adapted_lum_curr));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENELIGHT));
+	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_ADAPTEDLUM));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ToneMapping);
@@ -1461,10 +1334,10 @@ void SXRenderFunc::ApplyToneMapping()
 
 
 
-	SML_DSGetRT(DS_RT::ds_rt_scene_light_com)->GetSurfaceLevel(0, &ComLightSurf);
+	SML_DSGetRT(DS_RT_SCENELIGHT)->GetSurfaceLevel(0, &ComLightSurf);
 	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
 	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT::ds_rt_scene_light_com2));
+	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENELIGHT2));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
@@ -1512,6 +1385,11 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 
 void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 {
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static float2_t vWinSize;
+	vWinSize = float2(*winr_width, *winr_height);
+
 	SPP_RTNull();
 
 	static const int * pp_ssao = GET_PCVAR_INT("pp_ssao");
@@ -1520,9 +1398,9 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 	//создаем статический вектор цвета тумана, затем получаем квар который int типа который будет содеражть указатель на этот вектор, и в него записываем указатель на вектор цвета тумана
 	//static float3_t fog_color(0.5, 0.5, 0.5);
-	static int * e_pp_fog_color = (int*)GET_PCVAR_INT("e_pp_fog_color");
-	static float3_t* fog_color; 
-	fog_color = (float3_t*)(*e_pp_fog_color);
+	static UINT_PTR *pp_fog_color = GET_PCVAR_POINTER("pp_fog_color");
+	static float3_t *fog_color; 
+	fog_color = (float3_t*)(*pp_fog_color);
 
 	static const float * pp_fog_density = GET_PCVAR_FLOAT("pp_fog_density");
 	static const float * pp_fog_sky = GET_PCVAR_FLOAT("pp_fog_sky");
@@ -1537,7 +1415,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	if (pp_bloom && (*pp_bloom))
 		SPP_RenderBloom(&float3_t(1, 0.7, 0.1));
 
-	SPP_Update(&(float3_t)GData::ConstCurrCamPos, &(float3_t)GData::ConstCurrCamDir, &GData::MCamView, &GData::MCamProj, &GData::WinSize, &GData::NearFar, GData::ProjFov);
+	SPP_Update(&(float3_t)GData::ConstCurrCamPos, &(float3_t)GData::ConstCurrCamDir, &GData::MCamView, &GData::MCamProj, &vWinSize, &GData::NearFar, GData::ProjFov);
 
 	float3 tmpPosition;
 	float3 tmpColor;
@@ -1593,10 +1471,10 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
 		{
 			ID idmat = SGeom_ModelsMGetGroupIDMat(i, k);
-			MtlTypeReflect typeref = SML_MtlGetTypeReflection(SGeom_ModelsMGetGroupIDMat(i, k));
+			MTLTYPE_REFLECT typeref = SML_MtlGetTypeReflection(SGeom_ModelsMGetGroupIDMat(i, k));
 			D3DXPLANE plane;
 			float3_t center;
-			if (typeref == MtlTypeReflect::mtr_plane)
+			if (typeref == MTLTYPE_REFLECT_PLANE)
 			{
 				if (!SML_MtlRefIsAllowedRender(idmat))
 				{
@@ -1617,10 +1495,10 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_POINT, &float3(center));
 
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
-					SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+					SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
 
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
-					SGeom_GreenRender(timeDelta, &float3(center), GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+					SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
 
 				SXAnim_Render();
 
@@ -1645,7 +1523,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 
 				SML_MtlRefPostRenderPlane(idmat);
 			}
-			else if (typeref == MtlTypeReflect::mtr_cube_static || typeref == MtlTypeReflect::mtr_cube_dynamic)
+			else if (typeref == MTLTYPE_REFLECT_CUBE_STATIC || typeref == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			{
 				SGeom_ModelsMGetGroupCenter(i, k, &center);
 				float3_t min, max;
@@ -1670,22 +1548,22 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 					SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
 					//если статические кубические отражения
-					if (SML_MtlGetTypeReflection(idmat) == MtlTypeReflect::mtr_cube_static)
+					if (SML_MtlGetTypeReflection(idmat) == MTLTYPE_REFLECT_CUBE_STATIC)
 					{
 						//тогда считаем в массив камеры
 						SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGeomIDArr);
-						SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, GData::DefaultGeomIDArr, false, i, k);
+						SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, GData::DefaultGeomIDArr, false, i, k);
 
 						SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGreenIDArr);
-						SGeom_GreenRender(timeDelta, &float3(center), GeomGreenType::ggtr_all, GData::DefaultGreenIDArr);
+						SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, GData::DefaultGreenIDArr);
 					}
 					else
 					{
 						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) >= 0)
-							SGeom_ModelsRender(timeDelta, MtlTypeTransparency::mtt_none, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+							SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
 
 						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) >= 0)
-							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GeomGreenType::ggtr_all, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k));
+							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k));
 
 						SXAnim_Render();
 					}
@@ -1720,7 +1598,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 	}
 }
 
-void SXRenderFunc::UpdateRflectionSimModel(DWORD timeDelta)
+void SXRenderFunc::UpdateReflectionSimModel(DWORD timeDelta)
 {
 #if defined(SX_MATERIAL_EDITOR)
 	ID idmat = GData::Editors::SimModel->GetIDMtl();
@@ -1730,7 +1608,7 @@ void SXRenderFunc::UpdateRflectionSimModel(DWORD timeDelta)
 	GData::Editors::SimModel->GetCenter(&center);
 	SGCore_ShaderUnBind();
 
-	if (typeref == MtlTypeReflect::mtr_plane)
+	if (typeref == MTLTYPE_REFLECT_PLANE)
 	{
 		GData::Editors::SimModel->GetPlane(&plane);
 		SML_MtlRefPreRenderPlane(idmat, &plane);
@@ -1748,7 +1626,7 @@ void SXRenderFunc::UpdateRflectionSimModel(DWORD timeDelta)
 
 		SML_MtlRefPostRenderPlane(idmat);
 	}
-	else if (typeref == MtlTypeReflect::mtr_cube_static || typeref == MtlTypeReflect::mtr_cube_dynamic)
+	else if (typeref == MtlTypeReflect::mtr_cube_static || typeref == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		SML_MtlRefCubeBeginRender(idmat, &center);
 
@@ -1791,7 +1669,7 @@ void SXRenderFunc::UpdateReflection(DWORD timeDelta)
 #if !defined(SX_MATERIAL_EDITOR)
 	SXRenderFunc::UpdateReflectionScene(timeDelta);
 #else
-	SXRenderFunc::UpdateRflectionSimModel(timeDelta);
+	SXRenderFunc::UpdateReflectionSimModel(timeDelta);
 #endif
 }
 

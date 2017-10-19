@@ -59,8 +59,6 @@ namespace SXRenderFunc
 	//! обработка потери и восстановление устройства
 	void ComDeviceLost();
 
-	void UpdateDataCVar();
-
 	void UpdateView();						//!< обработка и установка основных матриц, обработка плоскостей отсечения
 	void OutputDebugInfo(DWORD timeDelta);	//!< вывод отладочной текстовой информации в окно рендера
 
@@ -74,7 +72,7 @@ namespace SXRenderFunc
 	
 	void UpdateReflection(DWORD timeDelta);	//!< обработка/обновление отражений
 	void UpdateReflectionScene(DWORD timeDelta);
-	void UpdateRflectionSimModel(DWORD timeDelta);
+	void UpdateReflectionSimModel(DWORD timeDelta);
 	
 	void RenderSky(DWORD timeDelta);					//!< отрисовка скайбокса и облаков
 	void ComLighting(DWORD timeDelta, bool render_sky);	//!< обработка освещения, render_sky - рисовать ли небо

@@ -4,7 +4,7 @@
 
 #include <gdefines.h>
 #include <common/Array.h>
-#include <score/sxscore.h>
+#include <level/sxlevel.h>
 
 class CAmbientSounds
 {

@@ -1,4 +1,6 @@
 
+#include "trackbars_callback.h"
+
 LRESULT SXMaterialEditor_TrackBarPenetration_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char thickness[64];

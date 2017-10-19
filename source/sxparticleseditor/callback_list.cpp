@@ -1,4 +1,6 @@
 
+#include "callback_list.h"
+
 LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int sel = SXParticlesEditor::ListBoxEffects->GetSel();
@@ -281,7 +283,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	pdata.VelocityDispZNeg = SXParticlesEditor::CheckBoxVelocityDispZNeg->GetCheck();
 
 
-	pdata.BoundType = (ParticlesBoundType)SXParticlesEditor::ComboBoxBoundType->GetSel();
+	pdata.BoundType = (PARTICLESTYPE_BOUND)SXParticlesEditor::ComboBoxBoundType->GetSel();
 
 	SXParticlesEditor::EditBoundVec1X->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.BoundVec1.x));
@@ -298,7 +300,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	sscanf(tmptxt, "%f", &(pdata.BoundVec2.z));
 
 
-	pdata.SpawnPosType = (ParticlesSpawnPosType)SXParticlesEditor::ComboBoxSpawnPosType->GetSel();
+	pdata.SpawnPosType = (PARTICLESTYPE_SPAWNPOS)SXParticlesEditor::ComboBoxSpawnPosType->GetSel();
 	SXParticlesEditor::EditSpawnOriginX->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.SpawnOrigin.x));
 	SXParticlesEditor::EditSpawnOriginY->GetText(tmptxt, 64);
@@ -352,7 +354,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 
 	pdata.Lighting = SXParticlesEditor::CheckBoxLighting->GetCheck();
 
-	pdata.FigureType = (ParticlesFigureType)SXParticlesEditor::ComboBoxFigureType->GetSel();
+	pdata.FigureType = (PARTICLESTYPE_FIGURE)SXParticlesEditor::ComboBoxFigureType->GetSel();
 	SXParticlesEditor::EditFigureCountQuads->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%d", &(pdata.FigureCountQuads));
 	pdata.FigureRotRand = SXParticlesEditor::CheckBoxFigureRotRand->GetCheck();
@@ -360,16 +362,16 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	pdata.FigureTapY = SXParticlesEditor::CheckBoxFigureTapY->GetCheck();
 	pdata.FigureTapZ = SXParticlesEditor::CheckBoxFigureTapZ->GetCheck();
 
-	pdata.AlphaBlendType = (ParticlesAlphaBlendType)SXParticlesEditor::ComboBoxAlphaBlendType->GetSel();
+	pdata.AlphaBlendType = (PARTICLESTYPE_ALPHABLEND)SXParticlesEditor::ComboBoxAlphaBlendType->GetSel();
 
 	SXParticlesEditor::EditTimeLife->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%d", &(pdata.TimeLife));
 	SXParticlesEditor::EditTimeLifeDisp->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%d", &(pdata.TimeLifeDisp));
 
-	pdata.AlphaDependAge = (ParticlesDependType)SXParticlesEditor::ComboBoxAlphaDependAge->GetSel();
-	pdata.SizeDependAge = (ParticlesDependType)SXParticlesEditor::ComboBoxSizeDependAge->GetSel();
-	pdata.CollisionDelete = (ParticlesDependType)SXParticlesEditor::CheckBoxCollisionDelete->GetCheck();
+	pdata.AlphaDependAge = (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxAlphaDependAge->GetSel();
+	pdata.SizeDependAge = (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxSizeDependAge->GetSel();
+	pdata.CollisionDelete = (PARTICLESTYPE_DEPEND)SXParticlesEditor::CheckBoxCollisionDelete->GetCheck();
 
 	SXParticlesEditor::EditSizeX->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.Size.x));
@@ -380,7 +382,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 
 
 	pdata.CharacterCircle = SXParticlesEditor::CheckBoxCircle->GetCheck();
-	pdata.CharacterCircleAxis = (ParticlesAxis)SXParticlesEditor::ComboBoxCircleAxis->GetSel();
+	pdata.CharacterCircleAxis = (PARTICLES_AXIS)SXParticlesEditor::ComboBoxCircleAxis->GetSel();
 	SXParticlesEditor::EditCircleAngle->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.CharacterCircleAngle));
 	SXParticlesEditor::EditCircleAngleDisp->GetText(tmptxt, 64);
@@ -397,7 +399,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 
 
 	pdata.CharacterDeviation = SXParticlesEditor::CheckBoxDeviation->GetCheck();
-	pdata.CharacterDeviationType = (ParticlesDeviationType)SXParticlesEditor::ComboBoxDeviationType->GetSel();
+	pdata.CharacterDeviationType = (PARTICLESTYPE_DEVIATION)SXParticlesEditor::ComboBoxDeviationType->GetSel();
 	SXParticlesEditor::EditDeviationAmplitude->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.CharacterDeviationAmplitude));
 	SXParticlesEditor::EditDeviationCoefAngle->GetText(tmptxt, 64);
@@ -405,7 +407,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	SXParticlesEditor::EditDeviationCoefAngleDisp->GetText(tmptxt, 64);
 	sscanf(tmptxt, "%f", &(pdata.CharacterDeviationCoefAngleDisp));
 	pdata.CharacterDeviationCoefAngleDispNeg = SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->GetCheck();
-	pdata.CharacterDeviationAxis = (ParticlesAxis)SXParticlesEditor::ComboBoxDeviationAxis->GetSel();
+	pdata.CharacterDeviationAxis = (PARTICLES_AXIS)SXParticlesEditor::ComboBoxDeviationAxis->GetSel();
 	pdata.CharacterDeviationTapX = SXParticlesEditor::CheckBoxDeviationTapX->GetCheck();
 	pdata.CharacterDeviationTapY = SXParticlesEditor::CheckBoxDeviationTapY->GetCheck();
 	pdata.CharacterDeviationTapZ = SXParticlesEditor::CheckBoxDeviationTapZ->GetCheck();

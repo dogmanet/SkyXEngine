@@ -25,8 +25,8 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	void Init(MtlTypeReflect howref);
-	MtlTypeReflect GetTypeReflect(){ return TypeRef; };
+	void Init(MTLTYPE_REFLECT howref);
+	MTLTYPE_REFLECT GetTypeReflect(){ return TypeRef; };
 
 	void PreRenderRefPlane(D3DXPLANE* plane);
 	void PostRenderRefPlane();
@@ -58,7 +58,7 @@ public:
 	long CountUpdate;
 
 	//protected:
-	MtlTypeReflect TypeRef;
+	MTLTYPE_REFLECT TypeRef;
 	D3DXPLANE Plane;
 	float ZNear;
 	float4x4 OldMatProj,OldMatView,OldMatViewProj;

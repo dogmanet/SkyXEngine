@@ -92,12 +92,12 @@ void Reflection::OnLostDevice()
 
 void Reflection::OnResetDevice()
 {
-	if (TypeRef == MtlTypeReflect::mtr_plane)
+	if (TypeRef == MTLTYPE_REFLECT_PLANE)
 	{
 		D3DXCreateTexture(MLSet::DXDevice, MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &TextureReflect);
 		MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.y, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, TRUE, &SurfaceZBuffer, NULL);
 	}
-	else if (TypeRef == MtlTypeReflect::mtr_cube_static || TypeRef == MtlTypeReflect::mtr_cube_dynamic)
+	else if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		D3DXCreateTexture(MLSet::DXDevice, MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &TextureReflect);
 		D3DXCreateCubeTexture(MLSet::DXDevice, MLSet::SizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &TextureCubeReflect);
@@ -109,10 +109,10 @@ void Reflection::OnResetDevice()
 	CountUpdate = 0;
 }
 
-void Reflection::Init(MtlTypeReflect howref)
+void Reflection::Init(MTLTYPE_REFLECT howref)
 {
 	TypeRef = howref;
-	if (TypeRef == MtlTypeReflect::mtr_plane)
+	if (TypeRef == MTLTYPE_REFLECT_PLANE)
 	{
 		if (!ReflectFrustum[0])
 			ReflectFrustum[0] = SGCore_CrFrustum();
@@ -124,7 +124,7 @@ void Reflection::Init(MtlTypeReflect howref)
 			MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.y, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, TRUE, &SurfaceZBuffer, NULL);
 	
 	}
-	else if (TypeRef == MtlTypeReflect::mtr_cube_static || TypeRef == MtlTypeReflect::mtr_cube_dynamic)
+	else if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		for (int i = 0; i < 6; ++i)
 		{
@@ -350,7 +350,7 @@ bool Reflection::UpdateCountUpdate(float3_t* viewpos)
 	if (!viewpos)
 		return false;
 
-	if (TypeRef == MtlTypeReflect::mtr_cube_static)
+	if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC)
 	{
 		if (CountUpdate < MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC)
 		{
@@ -386,7 +386,7 @@ bool Reflection::UpdateCountUpdate(float3_t* viewpos)
 
 bool Reflection::AllowedRender()
 {
-	if (TypeRef == MtlTypeReflect::mtr_cube_static)
+	if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC)
 	{
 		if (CountUpdate <= MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC)
 		{

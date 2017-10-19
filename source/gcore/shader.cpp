@@ -244,12 +244,12 @@ void ShaderManager::ReloadAll()
 
 	for (int i = 0; i<tmpArrVS.size(); i++)
 	{
-		Load(SHADER_TYPE_VERTEX, tmpArrVS[i]->Path, tmpArrVS[i]->Name, ShaderCheckDouble::scd_none, tmpArrVS[i]->ArrMacro);
+		Load(SHADER_TYPE_VERTEX, tmpArrVS[i]->Path, tmpArrVS[i]->Name, SHADER_CHECKDOUBLE_NONE, tmpArrVS[i]->ArrMacro);
 	}
 
 	for (int i = 0; i<tmpArrPS.size(); i++)
 	{
-		Load(SHADER_TYPE_PIXEL, tmpArrPS[i]->Path, tmpArrPS[i]->Name, ShaderCheckDouble::scd_none, tmpArrPS[i]->ArrMacro);
+		Load(SHADER_TYPE_PIXEL, tmpArrPS[i]->Path, tmpArrPS[i]->Name, SHADER_CHECKDOUBLE_NONE, tmpArrPS[i]->ArrMacro);
 	}
 }
 
@@ -311,15 +311,15 @@ bool ShaderManager::FileExists(const char* path)
 	return Core_0FileExists(tmppath);
 }
 
-ID ShaderManager::Load(SHADER_TYPE type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro)
+ID ShaderManager::Load(SHADER_TYPE type_shader, const char* path, const char* name, SHADER_CHECKDOUBLE is_check_double, D3DXMACRO* macro)
 {
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		ID id = -1;
 
-		if (is_check_double == ShaderCheckDouble::scd_path)
+		if (is_check_double == SHADER_CHECKDOUBLE_PATH)
 			id = IsExistPath(type_shader, path);
-		else if (is_check_double == ShaderCheckDouble::scd_name)
+		else if (is_check_double == SHADER_CHECKDOUBLE_NAME)
 			id = IsExistName(type_shader, name);
 
 		if (id == -1)
@@ -352,9 +352,9 @@ ID ShaderManager::Load(SHADER_TYPE type_shader, const char* path, const char* na
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		ID id = -1;
-		if (is_check_double == ShaderCheckDouble::scd_path)
+		if (is_check_double == SHADER_CHECKDOUBLE_PATH)
 			id = IsExistPath(type_shader, path);
-		else if (is_check_double == ShaderCheckDouble::scd_name)
+		else if (is_check_double == SHADER_CHECKDOUBLE_NAME)
 			id = IsExistName(type_shader, name);
 
 		if (id == -1)

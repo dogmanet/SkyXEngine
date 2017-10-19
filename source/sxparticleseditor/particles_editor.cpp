@@ -1,6 +1,5 @@
 
-#define MAINWIN_SIZE_X	820
-#define MAINWIN_SIZE_Y	675
+#include "particles_editor.h"
 
 namespace SXParticlesEditor
 {
@@ -292,14 +291,21 @@ namespace SXParticlesEditor
 
 	void DeleteAllElements();
 
+
+	void PEcreateData();
+	void PEdeleteData();
+
+	bool canRenderBound = false;
+
+	ID3DXMesh* FigureBox = 0;
+	ID3DXMesh* FigureSphere = 0;
+	ID3DXMesh* FigureCone = 0;
+	float3_t FigureConeParam;
+	float3 FigureConePos;
+
 	ID SelEffID = -1;
 	ID SelEmitterID = -1;
 };
-
-#include <sxparticleseditor/particles_editor_op.cpp>
-#include <sxparticleseditor/callback_tabs.cpp>
-#include <sxparticleseditor/callback_list.cpp>
-#include <sxparticleseditor/callback_common.cpp>
 
 
 void SXParticlesEditor::InitAllElements()
@@ -392,15 +398,7 @@ void SXParticlesEditor::InitAllElements()
 	SXParticlesEditor::CheckBoxTBStop->GAlign.top = true;
 	SXParticlesEditor::CheckBoxTBStop->SetBmpInResourse(IDB_BITMAP8);
 
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, true);
-	SXParticlesEditor::CheckBoxTBGrid->SetCheck(true);
-	SXParticlesEditor::CheckBoxTBAxes->SetCheck(true);
-	SXParticlesEditor::CheckBoxTBBound->SetCheck(true);
-	GData::Editors::RenderGrid = true;
-	GData::Editors::RenderAxesStatic = true;
-	GData::Editors::RenderBound = true;
+	
 	
 	SXParticlesEditor::GroupBoxList = SXGUICrGroupBox("", 601, 28, 204, 400, SXParticlesEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
 	SXGUIBaseHandlers::InitHandlerMsg(SXParticlesEditor::GroupBoxList);
@@ -2386,4 +2384,127 @@ void SXParticlesEditor::DeleteAllElements()
 	mem_release(SXParticlesEditor::CheckBoxAccelerationDispZNeg);
 
 	mem_release(SXParticlesEditor::JobWindow);
+}
+
+//##########################################################################
+
+void SXParticlesEditor::ParticlesEditorUpdate(DWORD timeDelta)
+{
+	bool whyplay = false;
+	for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	{
+		if (SPE_EffectEnableGet(SPE_EffectIdOfKey(i)))
+		{
+			SXParticlesEditor::CheckBoxTBPlay->SetCheck(true);
+			SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
+			SXParticlesEditor::CheckBoxTBStop->SetCheck(false);
+			whyplay = true;
+			break;
+		}
+	}
+
+	if (!whyplay)
+	{
+		SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
+		SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
+		SXParticlesEditor::CheckBoxTBStop->SetCheck(true);
+	}
+
+	int emitters_count = 0;
+	int emitters_all_count = 0;
+	int particles_life_count = 0;
+	int particles_all_count = 0;
+
+	if (SXParticlesEditor::SelEffID >= 0)
+	{
+		emitters_all_count = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
+		if (SXParticlesEditor::SelEmitterID < 0)
+		{
+			for (int k = 0; k < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++k)
+			{
+				if (SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, k))
+					++emitters_count;
+
+				particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, k);
+				particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, k);
+			}
+		}
+
+		if (SXParticlesEditor::SelEmitterID >= 0)
+		{
+			emitters_count = SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+		}
+	}
+
+	char ttext[256];
+
+	sprintf(ttext, "Playing emitters: %d/%d", emitters_all_count, emitters_count);
+	SXParticlesEditor::StatusBar1->SetTextParts(0, ttext);
+
+	sprintf(ttext, "Living particles: %d/%d", particles_all_count, particles_life_count);
+	SXParticlesEditor::StatusBar1->SetTextParts(1, ttext);
+
+
+	IDirect3DDevice9 *pDXdevice = SGCore_GetDXDevice();
+
+	pDXdevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+
+	if (SXParticlesEditor::canRenderBound && SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType) != PARTICLESTYPE_BOUND_NONE)
+	{
+		pDXdevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		pDXdevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+
+		ParticlesData* pdata = SPE_EmitterGetData(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+		pDXdevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		if (pdata->BoundType == PARTICLESTYPE_BOUND_BOX)
+		{
+			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(float3(pdata->BoundVec2 - pdata->BoundVec1)) * SMMatrixTranslation(float3(pdata->BoundVec2 + pdata->BoundVec1)*0.5f)));
+			SXParticlesEditor::FigureBox->DrawSubset(0);
+		}
+		else if (pdata->BoundType == PARTICLESTYPE_BOUND_SPHERE)
+		{
+			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(pdata->BoundVec1.w, pdata->BoundVec1.w, pdata->BoundVec1.w) * SMMatrixTranslation(float3(pdata->BoundVec1))));
+			SXParticlesEditor::FigureSphere->DrawSubset(0);
+		}
+		else if (pdata->BoundType == PARTICLESTYPE_BOUND_CONE)
+		{
+			if (SXParticlesEditor::FigureConeParam.x != pdata->BoundVec2.w || SXParticlesEditor::FigureConeParam.y != pdata->BoundVec1.w || SXParticlesEditor::FigureConeParam.z != pdata->BoundVec2.y - pdata->BoundVec1.y)
+			{
+				SXParticlesEditor::FigureConeParam.x = pdata->BoundVec2.w;
+				SXParticlesEditor::FigureConeParam.y = pdata->BoundVec1.w;
+				SXParticlesEditor::FigureConeParam.z = pdata->BoundVec2.y - pdata->BoundVec1.y;
+
+				SGCore_FCreateCone(SXParticlesEditor::FigureConeParam.x, SXParticlesEditor::FigureConeParam.y, SXParticlesEditor::FigureConeParam.z, &SXParticlesEditor::FigureCone, 20);
+			}
+
+			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(pdata->BoundVec1.x, pdata->BoundVec2.y, pdata->BoundVec1.z));
+			SXParticlesEditor::FigureCone->DrawSubset(0);
+		}
+
+		pDXdevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+		pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixIdentity());
+	}
+}
+
+//##########################################################################
+
+void SXParticlesEditor::PEcreateData()
+{
+	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &SXParticlesEditor::FigureBox, 0);
+	D3DXCreateSphere(SGCore_GetDXDevice(), 1, 20, 20, &SXParticlesEditor::FigureSphere, 0);
+
+	SXParticlesEditor::FigureConeParam.x = 1;
+	SXParticlesEditor::FigureConeParam.y = 0.1;
+	SXParticlesEditor::FigureConeParam.z = 1;
+
+	SGCore_FCreateCone(SXParticlesEditor::FigureConeParam.x, SXParticlesEditor::FigureConeParam.y, SXParticlesEditor::FigureConeParam.z, &SXParticlesEditor::FigureCone, 20);
+}
+
+void SXParticlesEditor::PEdeleteData()
+{
+	mem_release(SXParticlesEditor::FigureBox);
+	mem_release(SXParticlesEditor::FigureSphere);
 }

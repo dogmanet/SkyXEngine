@@ -1,5 +1,5 @@
 
-#include <sxmaterialeditor/shaders_kit.h>
+#include "shaders_kit.h"
 
 ShadersKit::ShadersKit()
 {

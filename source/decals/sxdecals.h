@@ -26,10 +26,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxmtllight.lib")
 #endif
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <mtllight\\sxmtllight.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 

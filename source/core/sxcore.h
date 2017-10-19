@@ -19,6 +19,7 @@ See the license in LICENSE
 #include <fstream>
 #include <gdefines.h>
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 
 #include <io.h>

@@ -209,6 +209,7 @@ public:
 	void GetMinMax(float3* min,float3* max);
 
 	ID AddArrForCom();
+	bool existsArrForCom(ID id);
 	void DelArrForCom(ID id_arr);
 
 	char* GetModelName(ID id);

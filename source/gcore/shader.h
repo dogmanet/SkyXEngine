@@ -54,7 +54,7 @@ public:
 
 	bool FileExists(const char* path);
 
-	ID Load(SHADER_TYPE type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro = 0);
+	ID Load(SHADER_TYPE type_shader, const char* path, const char* name, SHADER_CHECKDOUBLE is_check_double, D3DXMACRO* macro = 0);
 	void Update(SHADER_TYPE type_shader, const char* name, D3DXMACRO macro[] = 0);
 	void Update(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[] = 0);
 

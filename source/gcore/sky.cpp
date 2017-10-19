@@ -15,8 +15,8 @@ SkyBox::SkyBox()
 
 	DXDevice->CreateVertexDeclaration(layoutskybox, &VertexDeclarationSkyBox);
 
-	VS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box", ShaderCheckDouble::scd_name);
-	PS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box", ShaderCheckDouble::scd_name);
+	VS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box", SHADER_CHECKDOUBLE_NAME);
+	PS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box", SHADER_CHECKDOUBLE_NAME);
 
 	Color = float4(0,0,0,0);
 	RotaionY = 0.f;
@@ -245,11 +245,11 @@ SkyClouds::SkyClouds()
 
 	DXDevice->CreateVertexDeclaration(layoutclouds, &VertexDeclarationClouds);
 
-	VS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds", ShaderCheckDouble::scd_name);
-	PS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds", ShaderCheckDouble::scd_name);
+	VS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds", SHADER_CHECKDOUBLE_NAME);
+	PS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds", SHADER_CHECKDOUBLE_NAME);
 
 	D3DXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
-	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow", ShaderCheckDouble::scd_name, Defines_SHADOW);
+	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
 
 	RotaionY = 0;
 	Alpha = 1.f;

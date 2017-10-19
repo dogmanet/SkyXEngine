@@ -951,8 +951,8 @@ void AIGrid::GraphicsInit()
 
 	Tex_AIGrid = SGCore_LoadTexAddName("decal_aigrid1.dds", LoadTexType::ltt_const);
 
-	IDVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad", ShaderCheckDouble::scd_path);
-	IDPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad", ShaderCheckDouble::scd_path);
+	IDVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad", SHADER_CHECKDOUBLE_PATH);
+	IDPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad", SHADER_CHECKDOUBLE_PATH);
 
 
 	IDirect3DTexture9* TexBB;

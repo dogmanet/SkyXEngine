@@ -1,5 +1,5 @@
 
-#include <game/AmbientSounds.h>
+#include "AmbientSounds.h"
 
 CAmbientSounds::CAmbientSounds()
 {
@@ -60,7 +60,7 @@ void CAmbientSounds::update()
 	static const float * ambient_snd_volume = GET_PCVAR_FLOAT("ambient_snd_volume");
 	static float ambient_snd_volume_old = 1.f;
 
-	if (SSCore_SndStateGet(m_aIDSnds[m_iPlayingLast]) != SoundObjState::sos_play)
+	if (SSCore_SndStateGet(m_aIDSnds[m_iPlayingLast]) != SOUND_OBJSTATE_PLAY)
 	{
 		if (m_iPlayingLast + 1 < m_aIDSnds.size())
 			++m_iPlayingLast;

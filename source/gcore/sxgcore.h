@@ -27,10 +27,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxcore.lib")
 #endif
 
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <core/sxcore.h>
 
 #ifdef SX_DLL
+#undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
@@ -290,11 +292,11 @@ enum SHADER_TYPE
 };
 
 //! типы проверок дубликатов шейдеров
-enum ShaderCheckDouble
+enum SHADER_CHECKDOUBLE
 {
-	scd_none,	//!< нет проверки
-	scd_path,	//!< проверка по пути (имени шейдера с расширением)
-	scd_name	//!< проверка по пользовательскому имени
+	SHADER_CHECKDOUBLE_NONE,	//!< нет проверки
+	SHADER_CHECKDOUBLE_PATH,	//!< проверка по пути (имени шейдера с расширением)
+	SHADER_CHECKDOUBLE_NAME		//!< проверка по пользовательскому имени
 };
 
 //**************************************************************************
@@ -302,10 +304,10 @@ enum ShaderCheckDouble
 //! загрузка шейдера
 SX_LIB_API ID SGCore_ShaderLoad(
 	SHADER_TYPE type_shader,	//!< тип шейдера
-	const char* path,		//!< имя файла шейдера с расширением
-	const char* name,		//!< имя шейдера которое присвоится при загрузке
-	ShaderCheckDouble is_check_double,	//!< проверять ли на уникальность
-	D3DXMACRO* macro = 0	//!< макросы
+	const char* path,			//!< имя файла шейдера с расширением
+	const char* name,			//!< имя шейдера которое присвоится при загрузке
+	SHADER_CHECKDOUBLE is_check_double,	//!< проверять ли на уникальность
+	D3DXMACRO* macro = 0		//!< макросы
 	);
 
 //! существует ли файл name в папке с шейдерами

@@ -6,17 +6,17 @@ Materials::Materials()
 	CurrFirstFree = -1;
 	CountTimeDelta = 0;
 	IsForceblyAlphaTest = false;
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base", SHADER_CHECKDOUBLE_PATH);
 
 	IsIncrCountSurf = false;
 	CurrIdSurf = 0;
@@ -134,9 +134,9 @@ Materials::Material::Material()
 
 	IsUnlit = false;
 	IsAlphaTest = false;
-	PhysicsMaterial = MtlPhysicType::mpt_concrete;
+	PhysicsMaterial = MTLTYPE_PHYSIC_CONCRETE;
 
-	Type = MtlTypeModel::tms_static;
+	Type = MTLTYPE_MODEL_STATIC;
 
 	MainTexture - 1;
 	PreShaderVS - 1;
@@ -151,9 +151,9 @@ void Materials::Material::Nulling()
 	IsDelete = false;
 	IsUnlit = false;
 	IsAlphaTest = false;
-	PhysicsMaterial = MtlPhysicType::mpt_concrete;
+	PhysicsMaterial = MTLTYPE_PHYSIC_CONCRETE;
 
-	Type = MtlTypeModel::tms_static;
+	Type = MTLTYPE_MODEL_STATIC;
 
 	MainTexture-1;
 	PreShaderVS-1;
@@ -219,9 +219,9 @@ Materials::Material::MaterialLightParam::MaterialLightParam()
 	RoughnessValue = 0.f;
 	F0Value = 0.f;
 	ThicknessValue = 1.f;
-	TypeRefraction = MtlTypeTransparency::mtt_none;
+	TypeRefraction = MTLTYPE_TRANSPARENCY_NONE;
 
-	TypeReflect = MtlTypeReflect::mtr_none;
+	TypeReflect = MTLTYPE_REFLECT_NONE;
 	IsTextureParam = true;
 }
 
@@ -363,34 +363,34 @@ void Materials::OnResetDevice()
 
 ////
 
-ID Materials::GetStdMtl(MtlTypeModel type_model)
+ID Materials::GetStdMtl(MTLTYPE_MODEL type_model)
 {
-	if (type_model == MtlTypeModel::tms_static)
+	if (type_model == MTLTYPE_MODEL_STATIC)
 	{
 		return MtrlDefStatic;
 	}
-	else if (type_model == MtlTypeModel::tms_grass)
+	else if (type_model == MTLTYPE_MODEL_GRASS)
 	{
 		return MtrlDefGrass;
 	}
-	else if (type_model == MtlTypeModel::tms_tree)
+	else if (type_model == MTLTYPE_MODEL_TREE)
 	{
 		return MtrlDefTree;
 	}
-	else if (type_model == MtlTypeModel::tms_skin)
+	else if (type_model == MTLTYPE_MODEL_SKIN)
 	{
 		return MtrlDefSkin;
 	}
 	return(-1);
 }
 
-MtlTypeModel Materials::GetTypeModel(ID id)
+MTLTYPE_MODEL Materials::GetTypeModel(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeModel::tms_static);
+	MTL_PRE_COND_ID(id, MTLTYPE_MODEL_STATIC);
 	return ArrMaterials[id]->mtl->Type;
 }
 
-void Materials::SetTypeModel(ID id, MtlTypeModel type_model)
+void Materials::SetTypeModel(ID id, MTLTYPE_MODEL type_model)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->Type = type_model;
@@ -408,9 +408,9 @@ void Materials::MtlSetUsingAlphaTest(ID id, bool is_using)
 	ArrMaterials[id]->mtl->IsAlphaTest = is_using;
 }
 
-MtlTypeReflect Materials::MtlTypeReflection(ID id)
+MTLTYPE_REFLECT Materials::MtlTypeReflection(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeReflect::mtr_none);
+	MTL_PRE_COND_ID(id, MTLTYPE_REFLECT_NONE);
 	return ArrMaterials[id]->mtl->LightParam.TypeReflect;
 }
 
@@ -450,7 +450,7 @@ void Materials::MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
 {
 	MTL_REF_PRE_COND_ID(id,0);
-	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->GetTypeReflect() == MtlTypeReflect::mtr_cube_static || ArrMaterials[id]->Reflect->GetTypeReflect() == MtlTypeReflect::mtr_cube_dynamic)))
+	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)))
 		return ArrMaterials[id]->Reflect->ReflectFrustum[cube];
 	return 0;
 }
@@ -529,15 +529,15 @@ IDirect3DCubeTexture9* Materials::RefCubeGetTex(ID id)
 
 ///////
 
-void Materials::MtlSetPhysicMaterial(ID id, MtlPhysicType type)
+void Materials::MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->PhysicsMaterial = type;
 }
 
-MtlPhysicType Materials::MtlGetPhysicMaterial(ID id)
+MTLTYPE_PHYSIC Materials::MtlGetPhysicMaterial(ID id)
 {
-	MTL_PRE_COND_ID(id, (MtlPhysicType )-1);
+	MTL_PRE_COND_ID(id, MTLTYPE_PHYSIC_CONCRETE);
 	return ArrMaterials[id]->mtl->PhysicsMaterial;
 }
 
@@ -565,7 +565,7 @@ ID Materials::MtlGetTextureID(ID id)
 void Materials::MtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, ShaderCheckDouble::scd_path);
+	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, SHADER_CHECKDOUBLE_PATH);
 }
 
 void Materials::MtlGetVS(ID id, char* name)
@@ -577,7 +577,7 @@ void Materials::MtlGetVS(ID id, char* name)
 void Materials::MtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, ShaderCheckDouble::scd_path);
+	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, SHADER_CHECKDOUBLE_PATH);
 }
 
 void Materials::MtlGetPS(ID id, char* name)
@@ -685,25 +685,25 @@ float Materials::MtlGetPenetration(ID id)
 }
 
 
-void Materials::MtlSetTypeTransparency(ID id, MtlTypeTransparency type)
+void Materials::MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->LightParam.TypeRefraction = type;
 }
 
-MtlTypeTransparency Materials::MtlGetTypeTransparency(ID id)
+MTLTYPE_TRANSPARENCY Materials::MtlGetTypeTransparency(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeTransparency::mtt_none);
+	MTL_PRE_COND_ID(id, MTLTYPE_TRANSPARENCY_NONE);
 	return ArrMaterials[id]->mtl->LightParam.TypeRefraction;
 }
 
 
-void Materials::MtlSetTypeReflection(ID id, MtlTypeReflect type)
+void Materials::MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->LightParam.TypeReflect = type;
 
-	if (ArrMaterials[id]->mtl->LightParam.TypeReflect != MtlTypeReflect::mtr_none)
+	if (ArrMaterials[id]->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 	{
 		if (!ArrMaterials[id]->Reflect)
 			ArrMaterials[id]->Reflect = new Reflection();
@@ -712,9 +712,9 @@ void Materials::MtlSetTypeReflection(ID id, MtlTypeReflect type)
 	}
 }
 
-MtlTypeReflect Materials::MtlGetTypeReflection(ID id)
+MTLTYPE_REFLECT Materials::MtlGetTypeReflection(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeReflect::mtr_none);
+	MTL_PRE_COND_ID(id, MTLTYPE_REFLECT_NONE);
 	return ArrMaterials[id]->mtl->LightParam.TypeReflect;
 }
 
@@ -769,109 +769,109 @@ void Materials::MtlGetDTex(ID id, int channel, char* path_tex)
 
 
 
-void Materials::MtlSetSTDVS(ID id, MtlTransShaderStd type, bool is_send)
+void Materials::MtlSetSTDVS(ID id, MTL_SHADERSTD type, bool is_send)
 {
 	MTL_PRE_COND_ID(id);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		ArrMaterials[id]->mtl->VS.IsTransWorld = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		ArrMaterials[id]->mtl->VS.IsTransView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		ArrMaterials[id]->mtl->VS.IsTransProjection = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		ArrMaterials[id]->mtl->VS.IsTransWorldView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		ArrMaterials[id]->mtl->VS.IsTransWorldViewProjection = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		ArrMaterials[id]->mtl->VS.IsTransPosCam = is_send;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		ArrMaterials[id]->mtl->VS.IsTransTimeDelta = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		ArrMaterials[id]->mtl->VS.IsTransUserData = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		ArrMaterials[id]->mtl->VS.IsTransWinSize = is_send;
 }
 
-bool Materials::MtlGetSTDVS(ID id, MtlTransShaderStd type)
+bool Materials::MtlGetSTDVS(ID id, MTL_SHADERSTD type)
 {
 	MTL_PRE_COND_ID(id,false);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		return ArrMaterials[id]->mtl->VS.IsTransWorld;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		return ArrMaterials[id]->mtl->VS.IsTransView;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		return ArrMaterials[id]->mtl->VS.IsTransProjection;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		return ArrMaterials[id]->mtl->VS.IsTransWorldView;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		return ArrMaterials[id]->mtl->VS.IsTransWorldViewProjection;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		return ArrMaterials[id]->mtl->VS.IsTransPosCam;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		return ArrMaterials[id]->mtl->VS.IsTransTimeDelta;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		return ArrMaterials[id]->mtl->VS.IsTransUserData;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		return ArrMaterials[id]->mtl->VS.IsTransWinSize;
 
 	return(false);
 }
 
-void Materials::MtlSetSTDPS(ID id, MtlTransShaderStd type, bool is_send)
+void Materials::MtlSetSTDPS(ID id, MTL_SHADERSTD type, bool is_send)
 {
 	MTL_PRE_COND_ID(id);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		ArrMaterials[id]->mtl->PS.IsTransWorld = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		ArrMaterials[id]->mtl->PS.IsTransView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		ArrMaterials[id]->mtl->PS.IsTransProjection = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		ArrMaterials[id]->mtl->PS.IsTransWorldView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		ArrMaterials[id]->mtl->PS.IsTransWorldViewProjection = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		ArrMaterials[id]->mtl->PS.IsTransPosCam = is_send;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		ArrMaterials[id]->mtl->PS.IsTransTimeDelta = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		ArrMaterials[id]->mtl->PS.IsTransUserData = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		ArrMaterials[id]->mtl->PS.IsTransWinSize = is_send;
 }
 
-bool Materials::MtlGetSTDPS(ID id, MtlTransShaderStd type)
+bool Materials::MtlGetSTDPS(ID id, MTL_SHADERSTD type)
 {
 	MTL_PRE_COND_ID(id,false);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		return ArrMaterials[id]->mtl->PS.IsTransWorld;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		return ArrMaterials[id]->mtl->PS.IsTransView;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		return ArrMaterials[id]->mtl->PS.IsTransProjection;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		return ArrMaterials[id]->mtl->PS.IsTransWorldView;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		return ArrMaterials[id]->mtl->PS.IsTransWorldViewProjection;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		return ArrMaterials[id]->mtl->PS.IsTransPosCam;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		return ArrMaterials[id]->mtl->PS.IsTransTimeDelta;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		return ArrMaterials[id]->mtl->PS.IsTransUserData;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		return ArrMaterials[id]->mtl->PS.IsTransWinSize;
 	return(false);
 }
@@ -1140,23 +1140,23 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->IsUnlit = false;
 
 		if (config->keyExists(tmp_name, "type"))
-			tmpMtl->Type = (MtlTypeModel)String(config->getKey(tmp_name, "type")).ToInt();
+			tmpMtl->Type = (MTLTYPE_MODEL)String(config->getKey(tmp_name, "type")).ToInt();
 		else
-			tmpMtl->Type = MtlTypeModel::tms_default;
+			tmpMtl->Type = MTLTYPE_MODEL_DEFAULT;
 
 		if (config->keyExists(tmp_name, "physmaterial"))
-			tmpMtl->PhysicsMaterial = (MtlPhysicType)String(config->getKey(tmp_name, "physmaterial")).ToInt();
+			tmpMtl->PhysicsMaterial = (MTLTYPE_PHYSIC)String(config->getKey(tmp_name, "physmaterial")).ToInt();
 		else
-			tmpMtl->PhysicsMaterial = MtlPhysicType::mpt_default;
+			tmpMtl->PhysicsMaterial = MTLTYPE_PHYSIC_DEFAULT;
 
 
 		if (def_str_validate(tmpVS))
-			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, "main", ShaderCheckDouble::scd_path);
+			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, "main", SHADER_CHECKDOUBLE_PATH);
 		else
 			tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
 
 		if (def_str_validate(tmpPS))
-			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, "main", ShaderCheckDouble::scd_path);
+			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, "main", SHADER_CHECKDOUBLE_PATH);
 		else
 			tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 
@@ -1282,9 +1282,9 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		
 
 		if (config->keyExists(tmp_name, "refraction"))
-			tmpMtl->LightParam.TypeRefraction = (MtlTypeTransparency)String(config->getKey(tmp_name, "refraction")).ToInt();
+			tmpMtl->LightParam.TypeRefraction = (MTLTYPE_TRANSPARENCY)String(config->getKey(tmp_name, "refraction")).ToInt();
 		else
-			tmpMtl->LightParam.TypeRefraction = MtlTypeTransparency::mtt_none;
+			tmpMtl->LightParam.TypeRefraction = MTLTYPE_TRANSPARENCY_NONE;
 
 
 		tmpMtl->VS.IsTransWorld = tmpMtl->VS.IsTransView = tmpMtl->VS.IsTransProjection = 
@@ -1387,7 +1387,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->TransPSDataInVS = String(config->getKey(tmp_name, "ps_userdata_trans_in_vs")).ToBool();
 
 		if (config->keyExists(tmp_name, "type_reflect"))
-			tmpMtl->LightParam.TypeReflect = (MtlTypeReflect)String(config->getKey(tmp_name, "type_reflect")).ToInt();
+			tmpMtl->LightParam.TypeReflect = (MTLTYPE_REFLECT)String(config->getKey(tmp_name, "type_reflect")).ToInt();
 
 		if (config->keyExists(tmp_name, "alpha_test"))
 			tmpMtl->IsAlphaTest = String(config->getKey(tmp_name, "alpha_test")).ToBool();
@@ -1422,35 +1422,35 @@ ID Materials::CreateTexParamLighting(float roughness, float f0, float thickness)
 	return SGCore_LoadTexCreate(nametex, TexMaterial);
 }
 
-void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
+void Materials::CreateMtl(const char* name, Material** mtl, MTLTYPE_MODEL type)
 {
 	Material* tmpMtl = *mtl;
 	new(tmpMtl)Material*;
 	//если такого материала не существует, то мы должны были задать примерный тип материала
 	tmpMtl->Type = type;
 	//обычна¤ геометри¤
-	if (type == MtlTypeModel::tms_static)
+	if (type == MTLTYPE_MODEL_STATIC)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//деревь¤
-	else if (type == MtlTypeModel::tms_tree)
+	else if (type == MTLTYPE_MODEL_TREE)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//трава
-	else if (type == MtlTypeModel::tms_grass)
+	else if (type == MTLTYPE_MODEL_GRASS)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//анимационная модель
-	else if (type == MtlTypeModel::tms_skin)
+	else if (type == MTLTYPE_MODEL_SKIN)
 	{
 		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base");
 		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base");
@@ -1494,7 +1494,7 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 	sprintf(tmpMtl->Name, "%s", tmp_name);
 }
 
-ID Materials::MtlLoad(const char* name, MtlTypeModel type)
+ID Materials::MtlLoad(const char* name, MTLTYPE_MODEL type)
 {
 	ID IsLoad = IsExists(name);
 
@@ -1522,7 +1522,7 @@ ID Materials::MtlLoad(const char* name, MtlTypeModel type)
 		}
 		else
 		{
-			if (tmpumtl->mtl->LightParam.TypeReflect != MtlTypeReflect::mtr_none)
+			if (tmpumtl->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 			{
 				tmpumtl->Reflect = new Reflection();
 				tmpumtl->Reflect->Init(tmpumtl->mtl->LightParam.TypeReflect);
@@ -1553,7 +1553,7 @@ void Materials::MtlReLoad(ID id, const char* name)
 	}
 	else
 	{
-		if (tmpumtl->mtl->LightParam.TypeReflect != MtlTypeReflect::mtr_none)
+		if (tmpumtl->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 		{
 			tmpumtl->Reflect = new Reflection();
 			tmpumtl->Reflect->Init(tmpumtl->mtl->LightParam.TypeReflect);
@@ -1790,7 +1790,7 @@ void Materials::SetCurrCountSurf(int count)
 	CurrIdSurf = count;
 }
 
-void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl)
+void Materials::RenderStd(MTLTYPE_MODEL type, float4x4* world, ID slot, ID id_mtl)
 {
 	//может быть случай когда текстура в которую сейчас рисуем еще стоит в текстурных слотах
 	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
@@ -1801,7 +1801,7 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 	if (id_mtl >= 0 && id_mtl < ArrMaterials.size())
 		this->SetMainTexture(slot, id_mtl);
 
-	if (type == MtlTypeModel::tms_static)
+	if (type == MTLTYPE_MODEL_STATIC)
 	{
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom);
 
@@ -1829,9 +1829,9 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		else
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeom);
 	}
-	else if (type == MtlTypeModel::tms_grass || type == MtlTypeModel::tms_tree)
+	else if (type == MTLTYPE_MODEL_GRASS || type == MTLTYPE_MODEL_TREE)
 	{
-		ID tmpvs = (type == MtlTypeModel::tms_grass ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
+		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpvs);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
@@ -1858,7 +1858,7 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		else
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreen);
 	}
-	else if (type == MtlTypeModel::tms_skin)
+	else if (type == MTLTYPE_MODEL_SKIN)
 	{
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin);
 
@@ -1906,9 +1906,9 @@ void Materials::Render(ID id, float4x4* world)
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 	else
 	{
-		if (ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_plane)
+		if (ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_PLANE)
 			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefPlaneTex());
-		else if (ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_cube_static || ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_cube_dynamic)
+		else if (ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefCubeTex());
 	}
 
@@ -2103,20 +2103,20 @@ void Materials::Render(ID id, float4x4* world)
 		float zz;
 		if (tmpmaterial->IsUnlit)
 		{
-			if (tmpmaterial->LightParam.TypeRefraction == MtlTypeTransparency::mtt_none)
+			if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_NONE)
 				zz = 0.0;
 			else
 				zz = 0.66;
 		}
 		else
 		{
-			if (tmpmaterial->LightParam.TypeRefraction == MtlTypeTransparency::mtt_none)
+			if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_NONE)
 				zz = 0.33;
 			else
 				zz = 1;
 		}
 
-		if (tmpmaterial->LightParam.TypeRefraction == mtt_alpha_lighting)
+		if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_ALPHA_LIGHT)
 			++(CurrIdSurf);
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR), zz, float(CurrIdSurf) / 255.f));

@@ -1,4 +1,6 @@
 
+#include "callback_common.h"
+
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (MessageBox(0, "Exit?", "Exit?!", MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
@@ -10,14 +12,14 @@ LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void SXParticlesEditor::EffReOpen()
 {
 	SPE_EffectsClear();
-	Level::LoadParticles();
+	SLevel_LoadParticles();
 
 	SXParticlesEditor::EffInitList();
 }
 
 void SXParticlesEditor::EffSave()
 {
-	Level::SaveParticles();;
+	SLevel_SaveParticles();
 }
 
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -44,17 +46,17 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	else if (id == ID_VIEW_GRID)
 	{
 		SXParticlesEditor::MainMenu->CheckItem(id, !SXParticlesEditor::MainMenu->GetCheckedItem(id));
-		GData::Editors::RenderGrid = SXParticlesEditor::MainMenu->GetCheckedItem(id);
+		SRender_EditorSetRenderGrid(SXParticlesEditor::MainMenu->GetCheckedItem(id));
 	}
 	else if (id == ID_VIEW_AXES)
 	{
 		SXParticlesEditor::MainMenu->CheckItem(id, !SXParticlesEditor::MainMenu->GetCheckedItem(id));
-		GData::Editors::RenderAxesStatic = SXParticlesEditor::MainMenu->GetCheckedItem(id);
+		SRender_EditorSetRenderAxesStatic(SXParticlesEditor::MainMenu->GetCheckedItem(id));
 	}
 	else if (id == ID_VIEW_BOUND)
 	{
 		SXParticlesEditor::MainMenu->CheckItem(id, !SXParticlesEditor::MainMenu->GetCheckedItem(id));
-		GData::Editors::RenderBound = SXParticlesEditor::MainMenu->GetCheckedItem(id);
+		SXParticlesEditor::canRenderBound = SXParticlesEditor::MainMenu->GetCheckedItem(id);
 	}
 
 	return 0;
@@ -79,17 +81,17 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		else if (SXParticlesEditor::CheckBoxTBGrid->GetHWND() == handle_elem)
 		{
 			SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, SXParticlesEditor::CheckBoxTBGrid->GetCheck());
-			GData::Editors::RenderGrid = SXParticlesEditor::CheckBoxTBGrid->GetCheck();
+			SRender_EditorSetRenderGrid(SXParticlesEditor::CheckBoxTBGrid->GetCheck());
 		}
 		else if (SXParticlesEditor::CheckBoxTBAxes->GetHWND() == handle_elem)
 		{
 			SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, SXParticlesEditor::CheckBoxTBAxes->GetCheck());
-			GData::Editors::RenderAxesStatic = SXParticlesEditor::CheckBoxTBAxes->GetCheck();
+			SRender_EditorSetRenderAxesStatic(SXParticlesEditor::CheckBoxTBAxes->GetCheck());
 		}
 		else if (SXParticlesEditor::CheckBoxTBBound->GetHWND() == handle_elem)
 		{
 			SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, SXParticlesEditor::CheckBoxTBBound->GetCheck());
-			GData::Editors::RenderBound = SXParticlesEditor::CheckBoxTBBound->GetCheck();
+			SXParticlesEditor::canRenderBound = SXParticlesEditor::CheckBoxTBBound->GetCheck();
 		}
 
 		else if (SXParticlesEditor::CheckBoxTBPlay->GetHWND() == handle_elem)
@@ -135,7 +137,7 @@ LRESULT SXParticlesEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 LRESULT SXParticlesEditor_ButtonTBReOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SPE_EffectsClear();
-	Level::LoadParticles();
+	SLevel_LoadParticles();
 
 	SXParticlesEditor::EffInitList();
 
@@ -144,14 +146,15 @@ LRESULT SXParticlesEditor_ButtonTBReOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 
 LRESULT SXParticlesEditor_ButtonTBSave_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	Level::SaveParticles();
+	SLevel_SaveParticles();
 
 	return 0;
 }
 
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	GData::ReSize = true;
+	static int *resize = (int*)GET_PCVAR_INT("resize");
+	*resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }
 
@@ -314,42 +317,42 @@ LRESULT SXParticlesEditor_GroupBoxData2_CallWmCommand(HWND hwnd, UINT msg, WPARA
 		
 		if (SXParticlesEditor::ComboBoxBoundType->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType, (ParticlesBoundType)SXParticlesEditor::ComboBoxBoundType->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType, (PARTICLESTYPE_BOUND)SXParticlesEditor::ComboBoxBoundType->GetSel());
 		}
 		else if (SXParticlesEditor::ComboBoxSpawnPosType->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnPosType, (ParticlesSpawnPosType)SXParticlesEditor::ComboBoxSpawnPosType->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnPosType, (PARTICLESTYPE_SPAWNPOS)SXParticlesEditor::ComboBoxSpawnPosType->GetSel());
 		}
 		else if (SXParticlesEditor::ComboBoxFigureType->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSetR(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureType, (ParticlesFigureType)SXParticlesEditor::ComboBoxFigureType->GetSel());
+			SPE_EmitterSetR(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureType, (PARTICLESTYPE_FIGURE)SXParticlesEditor::ComboBoxFigureType->GetSel());
 		}
 		else if (SXParticlesEditor::ComboBoxAlphaBlendType->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType, (ParticlesAlphaBlendType)SXParticlesEditor::ComboBoxAlphaBlendType->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType, (PARTICLESTYPE_ALPHABLEND)SXParticlesEditor::ComboBoxAlphaBlendType->GetSel());
 		}
 
 		else if (SXParticlesEditor::ComboBoxAlphaDependAge->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaDependAge, (ParticlesDependType)SXParticlesEditor::ComboBoxAlphaDependAge->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaDependAge, (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxAlphaDependAge->GetSel());
 		}
 		else if (SXParticlesEditor::ComboBoxSizeDependAge->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDependAge, (ParticlesDependType)SXParticlesEditor::ComboBoxSizeDependAge->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDependAge, (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxSizeDependAge->GetSel());
 		}
 
 		else if (SXParticlesEditor::ComboBoxCircleAxis->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAxis, (ParticlesAxis)SXParticlesEditor::ComboBoxCircleAxis->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAxis, (PARTICLES_AXIS)SXParticlesEditor::ComboBoxCircleAxis->GetSel());
 		}
 
 		else if (SXParticlesEditor::ComboBoxDeviationType->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationType, (ParticlesDeviationType)SXParticlesEditor::ComboBoxDeviationType->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationType, (PARTICLESTYPE_DEVIATION)SXParticlesEditor::ComboBoxDeviationType->GetSel());
 		}
 		else if (SXParticlesEditor::ComboBoxDeviationAxis->GetHWND() == handle_elem)
 		{
-			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationAxis, (ParticlesAxis)SXParticlesEditor::ComboBoxDeviationAxis->GetSel());
+			SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationAxis, (PARTICLES_AXIS)SXParticlesEditor::ComboBoxDeviationAxis->GetSel());
 		}
 	}
 	return 0;

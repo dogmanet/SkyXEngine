@@ -1,7 +1,5 @@
 
-
-
-//////////
+#include "edits_callback.h"
 
 LRESULT SXMaterialEditor_EditSkyBox_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

@@ -18,6 +18,8 @@ MainSound* MSound = 0;
 
 #define SCORE_PRECOND(retval) if(!MSound){g_fnReportf(-1, "%s - sxsound is not init", gen_msg_location); return retval;}
 
+//##########################################################################
+
 long SSCore_0GetVersion()
 {
 	return SXSCORE_VERSION;
@@ -71,7 +73,7 @@ void SSCore_Clear()
 }
 
 
-void SSCore_Update(float3* viewpos, float3* viewdir)
+void SSCore_Update(const float3* viewpos, const float3* viewdir)
 {
 	SCORE_PRECOND(_VOID);
 
@@ -120,14 +122,14 @@ ID SSCore_SndCreate3dInst(const char *file, bool looping, DWORD size_stream, flo
 	return  MSound->SoundCreate3dInst(file, looping, size_stream, dist, shift_pan);
 }
 
-ID SSCore_SndFind2dInst(const char * file)
+ID SSCore_SndFind2dInst(const char *file)
 {
 	SCORE_PRECOND(-1);
 
 	return MSound->SoundFind2dInst(file);
 }
 
-ID SSCore_SndFind3dInst(const char * file)
+ID SSCore_SndFind3dInst(const char *file)
 {
 	SCORE_PRECOND(-1);
 
@@ -141,7 +143,7 @@ void SSCore_SndInstancePlay2d(ID id, int volume, int pan)
 	MSound->SoundInstancePlay2d(id, volume, pan);
 }
 
-void SSCore_SndInstancePlay3d(ID id, float3* pos)
+void SSCore_SndInstancePlay3d(ID id, const float3* pos)
 {
 	SCORE_PRECOND(_VOID);
 
@@ -186,16 +188,16 @@ void SSCore_SndStop(ID id)
 }
 
 
-void SSCore_SndStateSet(ID id, SoundObjState state)
+void SSCore_SndStateSet(ID id, SOUND_OBJSTATE state)
 {
 	SCORE_PRECOND(_VOID);
 
 	MSound->SoundStateSet(id, state);
 }
 
-SoundObjState SSCore_SndStateGet(ID id)
+SOUND_OBJSTATE SSCore_SndStateGet(ID id)
 {
-	SCORE_PRECOND(SoundObjState::sos_stop);
+	SCORE_PRECOND(SOUND_OBJSTATE_STOP);
 
 	return MSound->SoundStateGet(id);
 }
@@ -266,7 +268,7 @@ DWORD SSCore_SndFreqOriginGet(ID id)
 	return MSound->SoundFreqOriginGet(id);
 }
 
-void SSCore_SndPosWSet(ID id, float3* pos)
+void SSCore_SndPosWSet(ID id, const float3* pos)
 {
 	SCORE_PRECOND(_VOID);
 

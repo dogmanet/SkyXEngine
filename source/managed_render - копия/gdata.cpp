@@ -55,7 +55,7 @@ namespace GData
 	 bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
 
 
-	 DS_RT FinalImage = DS_RT::ds_rt_scene_light_com;//!< финальное изображение
+	 DS_RT FinalImage = DS_RT_SCENELIGHT;//!< финальное изображение
 	 ISXCamera* ObjCamera = 0;	//!< камера для которой будет рендер
 	 ID IDSelectTex = -1;
 	 int ReSize = 0;				//!< 0 - ничего не меняли, 1 - ресайз, 2 - переход между фуллскрин и окном

@@ -216,6 +216,8 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
  - \b r_s_max_miplevel максимально возможный mip уровень текстур [0, #SXGC_LOADTEX_COUNT_MIPMAP]
  - \b p_far дальность видимости (отрисовки мира)
 
+//##########################################################################
+
 \page editors Редакторы
 \link material_editor SXMaterialEditor - редактор материалов \endlink \n 
 \link particles_editor SXParticlesEditor - редактор партиклов \endlink \n
@@ -231,6 +233,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <gdefines.h>
 #include <common/array.h>
 #include <common/string.h>
+#include <fstream>
 
 //ЗАГРУЗКА БИБЛИОТЕК
 //{
@@ -319,6 +322,13 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <decals/sxdecals.h>
 
 #if defined(_DEBUG)
+#pragma comment(lib, "sxlevel_d.lib")
+#else
+#pragma comment(lib, "sxlevel.lib")
+#endif
+#include <level/sxlevel.h>
+
+#if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxgame.lib")
@@ -334,47 +344,81 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <sxguiwinapi/sxgui.h>
 #endif
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxrender_d.lib")
+#else
+#pragma comment(lib, "sxrender.lib")
+#endif
+#include <render/sxrender.h>
+
 //}
 
 //#############################################################################
 
-#include <managed_render/handler_log.h>
-#include <managed_render/gdata.h>
+//#include <managed_render/handler_log.h>
+/*#include <managed_render/gdata.h>
 #include <managed_render/camera_update.h>
-#include <managed_render/render_func.h>
-#include <managed_render/level.h>
+#include <managed_render/render_func.h>*/
+//#include <managed_render/level.h>
 
-/*#if defined(SX_GAME)
+#include <render/sxrender.h>
+
+#if defined(SX_GAME)
 #include <SkyXEngine_Build/resource.h>
-#endif*/
+#endif
 
 #if defined(SX_LEVEL_EDITOR)
 #include <SXLevelEditor/resource.h>
-#include <SXLevelEditor/level_editor.cpp>
+#include <SXLevelEditor/level_editor.h>
 #endif
 
 #if defined(SX_MATERIAL_EDITOR)
 #include <sxmaterialeditor/resource.h>
-#include <sxmaterialeditor/material_editor.cpp>
+#include <sxmaterialeditor/material_editor.h>
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
 #include <sxparticleseditor/resource.h>
-#include <sxparticleseditor/particles_editor.cpp>
+#include <sxparticleseditor/particles_editor.h>
 #endif
 
-#include <managed_render/redefined_func.h>
-#include <managed_render/render_func.h>
+//#include <managed_render/redefined_func.h>
+//#include <managed_render/render_func.h>
 
+
+/*#ifndef IDI_ICON_LOGO
+#define IDI_ICON_LOGO 0 
+#endif*/
 
 //#############################################################################
 
 //! инициализация движка
-void SkyXEngine_Init();
+void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0);
 void SkyXEngine_InitPaths();
+void SkyXEngine_CreateLoadCVar();
+LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LPARAM lParam);
+HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWidth, int iHeight);
 
-//! рендер
-void SkyXEngine_Render(DWORD timeDelta);
+//**************************************************************************
+
+//! перебор всех окон процесса для их сворачивания
+BOOL CALLBACK SkyXEngine_EnumWindowsProc(HWND hwnd, LPARAM lParam);
+
+//! обработка ошибки
+void SkyXEngine_HandlerError(const char *szFormat, ...);
+
+//! инициализация потока ведения лога
+void SkyXEngine_InitOutLog();
+
+//! функция ведения лога и обработки сообщений
+void SkyXEngine_PrintfLog(int level, const char *szFormat, ...);
+
+//**************************************************************************
+
+//! кадр
+void SkyXEngine_Frame(DWORD timeDelta);
+
+void SkyXEngind_UpdateDataCVar();
 
 //! запуск основного цикла обработки
 int SkyXEngine_CycleMain();
@@ -390,5 +434,28 @@ void SkyXEngine_PreviewCreate();
 
 //! уничтожение превью окна
 void SkyXEngine_PreviewKill();
+
+//**************************************************************************
+
+/*! \defgroup managed_render_redefined_func redefined_func - Функции обертки, для передачи графическому ядру для замены стандартных
+\ingroup managed_render
+@{*/
+
+//! функция отрисовки, в данной версии не назначается
+void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
+
+//! функция установки материала по id, world - мировая матрица
+void SkyXEngine_RFuncMtlSet(ID id, float4x4* world);
+
+//! функция загрузки материала
+ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type);
+
+//! просчет физики для квада аи сетки
+bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t * pos);
+
+//! просчет столкновения частицы с миром
+bool SkyXEngine_RFuncParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
+
+//!@} managed_render_redefined_func
 
 #endif
