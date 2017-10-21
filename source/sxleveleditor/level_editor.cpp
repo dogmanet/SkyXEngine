@@ -1952,16 +1952,16 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 	}
 
 	char text[256];
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_LEVEL_POLY, count_poly_geom + count_poly_green);
+	sprintf(text, "%s%d", "Level poly: ", count_poly_geom + count_poly_green);
 	SXLevelEditor::StatusBar1->SetTextParts(0, text);
 
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GEOM_POLY, count_poly_geom);
+	sprintf(text, "%s%d", "Geom poly: ", count_poly_geom);
 	SXLevelEditor::StatusBar1->SetTextParts(1, text);
 
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GREEN_POLY, count_poly_green);
+	sprintf(text, "%s%d", "Green poly: ", count_poly_green);
 	SXLevelEditor::StatusBar1->SetTextParts(2, text);
 
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
+	sprintf(text, "%s%d", "Count game object: ", SXGame_EntGetCount());
 	SXLevelEditor::StatusBar1->SetTextParts(3, text);
 
 	if (SXLevelEditor::IdMtl >= 0)

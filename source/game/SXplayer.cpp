@@ -130,7 +130,7 @@ void SXplayer::playFootstepsSound()
 
 			if(cb.hasHit() && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0)
 			{
-				MtlPhysicType type = (MtlPhysicType)SXPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
+				MTLTYPE_PHYSIC type = (MTLTYPE_PHYSIC)SXPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
 				g_pGameData->playFootstepSound(type, BTVEC_F3(cb.m_hitPointWorld));
 			}
 		}

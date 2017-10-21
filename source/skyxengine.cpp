@@ -144,7 +144,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
 	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
 
-	tm ct = { 0, 0, 0, 27, 5, 2030 - 1900, 0, 0, 0 };
+	tm ct = { 0, 0, 6, 27, 5, 2030 - 1900, 0, 0, 0 };
 	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
 
 	Core_TimeWorkingSet(idTimerRender, true);
@@ -489,7 +489,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	{
 		SkyXEngine_PrintfLog(REPORT_MSG_LEVEL_ERROR, "dxdevice not found ...");
 		return;
-}
+	}
 
 	int64_t ttime;
 	//потеряно ли устройство или произошло изменение размеров?
@@ -611,7 +611,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	/*SXRenderFunc::RenderEditorLE(timeDelta);
 	SXRenderFunc::RenderEditorPE(timeDelta);*/
 
-#if  defined(_DEBUG) && !defined(SX_LEVEL_EDITOR)
+#if /*defined(_DEBUG) &&*/ defined(SX_LEVEL_EDITOR)
 	static const float * p_far = GET_PCVAR_FLOAT("p_far");
 	SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *p_far);
 #endif
@@ -804,6 +804,79 @@ void SkyXEngind_UpdateDataCVar()
 			Core_0SetCVarFloat("green_less", green_less_old);
 		}
 		SGeom_0SettGreenSetBeginEndLessening(green_less_old);
+	}
+
+
+	static int * winr_width = (int*)GET_PCVAR_INT("winr_width");
+	static int * winr_height = (int*)GET_PCVAR_INT("winr_height");
+
+
+	if (winr_width && winr_height)
+	{
+
+#ifdef SX_GAME
+		static int winr_width_old = *winr_width;
+		static int winr_height_old = *winr_height;
+
+		static int iCountModes = 0;
+		static const DEVMODE *aModes = SGCore_GetModes(&iCountModes);
+
+		if (winr_width && winr_width_old != (*winr_width) && winr_height && winr_height_old != (*winr_height))
+		{
+			bool isValid = false;
+			for (int i = 0; i < iCountModes; ++i)
+			{
+				if (aModes[i].dmPelsWidth == (*winr_width) && aModes[i].dmPelsHeight == (*winr_height))
+				{
+					isValid = true;
+					break;
+				}
+			}
+
+			if (isValid)
+			{
+				winr_width_old = (*winr_width);
+				winr_height_old = (*winr_height);
+
+
+				RECT rc = { 0, 0, winr_width_old, winr_height_old };
+				AdjustWindowRect(&rc, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
+
+				int iWidth = rc.right - rc.left;
+				int iHeight = rc.bottom - rc.top;
+
+				GetWindowRect(SRender_GetHandleWin3D(), &rc);
+
+				MoveWindow(SRender_GetHandleWin3D(), rc.left, rc.top, iWidth, iHeight, TRUE);
+
+				static int *resize = (int*)GET_PCVAR_INT("resize");
+				*resize = RENDER_RESIZE_RESIZE;
+			}
+			else
+			{
+				*winr_width = winr_width_old;
+				*winr_height = winr_height_old;
+			}
+		}
+
+		static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+
+		if (winr_windowed)
+		{
+			static bool winr_windowed_old = *winr_windowed;
+
+			if (winr_windowed_old != (*winr_windowed))
+			{
+				winr_windowed_old = (*winr_windowed);
+				static int *resize = (int*)GET_PCVAR_INT("resize");
+				*resize = RENDER_RESIZE_CHANGE;
+			}
+		}
+
+#endif
+
+		Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, *winr_width);
+		Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, *winr_height);
 	}
 }
 

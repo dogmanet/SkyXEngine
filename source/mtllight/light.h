@@ -53,6 +53,9 @@ public:
 
 	ID GetLightGlobal() const;
 
+	bool GetCastGlobalShadow() const;
+	void SetCastGlobalShadow(bool isShadowed);
+
 	//-----------------------------------------------------------------------------
 
 	char* GetLightName(ID id);
@@ -225,6 +228,7 @@ protected:
 	int HowShadow;
 
 	ID GlobalLight;
+	bool m_isCastGlobalShadow;
 };
 
 #endif

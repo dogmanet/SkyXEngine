@@ -94,8 +94,8 @@ void CLevel::load(const char *szName, bool isGame)
 		{
 			if (isGame)
 			{
-				SXPhysics_LoadGeom();
-				SXPhysics_ExportGeom(tmppath);
+				SXPhysics_LoadGeom(tmppath);
+				//SXPhysics_ExportGeom(tmppath);
 			}
 		}
 	}

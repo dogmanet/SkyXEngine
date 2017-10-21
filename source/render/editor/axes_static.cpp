@@ -1,9 +1,10 @@
 
 #include "grid.h"
 
-AxesStatic::AxesStatic()
+CAxesStatic::CAxesStatic()
 {
-	VertexBuffer = 0;
+	m_pVertexBuffer = 0;
+	m_pVertexDeclaration = 0;
 
 	D3DVERTEXELEMENT9 DeclGrid[] =
 	{
@@ -13,56 +14,56 @@ AxesStatic::AxesStatic()
 		D3DDECL_END()
 	};
 
-	GData::DXDevice->CreateVertexDeclaration(DeclGrid, &VertexDeclaration);
+	GData::DXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
 }
 
-AxesStatic::~AxesStatic()
+CAxesStatic::~CAxesStatic()
 {
-	mem_release(VertexBuffer);
-	mem_release(VertexDeclaration);
+	mem_release(m_pVertexBuffer);
+	mem_release(m_pVertexDeclaration);
 }
 
-void AxesStatic::Create(float len)
+void CAxesStatic::create(float len)
 {
 	GData::DXDevice->CreateVertexBuffer(
-		3 * 2 * sizeof(Vertex),
+		3 * 2 * sizeof(CVertex),
 		D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_MANAGED,
-		&VertexBuffer,
+		&m_pVertexBuffer,
 		0);
 
-	Vertex* vertices;
-	VertexBuffer->Lock(0, 0, (void**)&vertices, 0);
+	CVertex *pVertices;
+	m_pVertexBuffer->Lock(0, 0, (void**)&pVertices, 0);
 
-	vertices[0].pos = float3_t(0, 0.001, 0);
-	vertices[0].color = D3DCOLOR_ARGB(255, 255, 0, 0);
+	pVertices[0].m_vPos = float3_t(0, 0.001, 0);
+	pVertices[0].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
 
-	vertices[1].pos = float3_t(len, 0.001, 0);
-	vertices[1].color = D3DCOLOR_ARGB(255, 255, 0, 0);
+	pVertices[1].m_vPos = float3_t(len, 0.001, 0);
+	pVertices[1].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
 
-	vertices[2].pos = float3_t(0, 0.001, 0);
-	vertices[2].color = D3DCOLOR_ARGB(255, 0, 255, 0);
+	pVertices[2].m_vPos = float3_t(0, 0.001, 0);
+	pVertices[2].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
 
-	vertices[3].pos = float3_t(0, len, 0);
-	vertices[3].color = D3DCOLOR_ARGB(255, 0, 255, 0);
+	pVertices[3].m_vPos = float3_t(0, len, 0);
+	pVertices[3].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
 
-	vertices[4].pos = float3_t(0, 0.001, 0);
-	vertices[4].color = D3DCOLOR_ARGB(255, 0, 0, 255);
+	pVertices[4].m_vPos = float3_t(0, 0.001, 0);
+	pVertices[4].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
 
-	vertices[5].pos = float3_t(0, 0.001, len);
-	vertices[5].color = D3DCOLOR_ARGB(255, 0, 0, 255);
+	pVertices[5].m_vPos = float3_t(0, 0.001, len);
+	pVertices[5].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
 
-	VertexBuffer->Unlock();
+	m_pVertexBuffer->Unlock();
 }
 
-void AxesStatic::Render()
+void CAxesStatic::render()
 {
 	GData::DXDevice->SetTexture(0, 0);
 	//GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	SGCore_ShaderUnBind();
-	GData::DXDevice->SetVertexDeclaration(VertexDeclaration);
+	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclaration);
 	//GData::DXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-	GData::DXDevice->SetStreamSource(0, VertexBuffer, 0, sizeof(Vertex));
+	GData::DXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
 	GData::DXDevice->DrawPrimitive(D3DPT_LINELIST, 0, 3);
 }

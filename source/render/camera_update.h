@@ -9,8 +9,8 @@ See the license in LICENSE
 Заголвочный файл camera_update - пространства имен для управления навигацией
 */
 
-/*! \defgroup managed_render_camera_update camera_update - пространство имен для управления навигацией
- \ingroup managed_render
+/*! \defgroup render_camera_update camera_update - пространство имен для управления навигацией
+ \ingroup render
 @{*/
 
 #ifndef __CAMERA_UPDATE
@@ -41,4 +41,4 @@ namespace CameraUpdate
 
 #endif
 
-//!@} managed_render_camera_update
+//!@} render_camera_update

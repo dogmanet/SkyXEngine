@@ -1,6 +1,6 @@
 
-#ifndef __axes_static_h
-#define __axes_static_h
+#ifndef __AXES_STATIC_H
+#define __AXES_STATIC_H
 
 #include <windows.h>
 #include <common/sxtypes.h>
@@ -9,24 +9,24 @@
 #include <common/SXMath.h>
 #include <render/gdata.h>
 
-class AxesStatic
+class CAxesStatic
 {
-	struct Vertex
+	struct CVertex
 	{
-		float3_t pos;
-		D3DCOLOR color;
+		float3_t m_vPos;
+		D3DCOLOR m_dwColor;
 	};
 public:
-	AxesStatic();
-	~AxesStatic();
+	CAxesStatic();
+	~CAxesStatic();
 
-	void Create(float len);
-	void Render();
+	void create(float fLen);
+	void render();
 
 protected:
-	long PolyCount;
-	IDirect3DVertexBuffer9* VertexBuffer;
-	IDirect3DVertexDeclaration9* VertexDeclaration;
+
+	IDirect3DVertexBuffer9 *m_pVertexBuffer;
+	IDirect3DVertexDeclaration9 *m_pVertexDeclaration;
 };
 
 #endif

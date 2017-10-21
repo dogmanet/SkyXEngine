@@ -118,7 +118,7 @@ void PhyWorld::LoadGeom(const char * file)
 			m_iGeomFacesCount += pIndexCount[tc] / 3;
 		}
 
-		m_pGeomMtlTypes = new MtlPhysicType[m_iGeomFacesCount];
+		m_pGeomMtlTypes = new MTLTYPE_PHYSIC[m_iGeomFacesCount];
 		m_iGeomModelCount = iModelCount;
 		m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
@@ -346,8 +346,8 @@ void PhyWorld::LoadGeom(const char * file)
 				for(int i = 0; i < green_arr_count_transform[num_green]; ++i)
 				{
 					btTransform tr;
-					tr.setOrigin(F3_BTVEC(green_arr_transform[num_green][i].Position));
-					tr.setRotation(Q4_BTQUAT(SMQuaternion(-green_arr_transform[num_green][i].TexCoord.y, 'y')));
+					tr.setOrigin(F3_BTVEC(green_arr_transform[num_green][i].m_vPosition));
+					tr.setRotation(Q4_BTQUAT(SMQuaternion(-green_arr_transform[num_green][i].m_vTexCoord.y, 'y')));
 					btDefaultMotionState motionState(tr);
 					btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
 						0,                  // mass
@@ -369,7 +369,8 @@ void PhyWorld::LoadGeom(const char * file)
 	}
 	SGeom_GreenClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
 
-	ExportGeom(file);
+	if (file)
+		ExportGeom(file);
 }
 
 void PhyWorld::UnloadGeom()
@@ -476,8 +477,8 @@ bool PhyWorld::ImportGeom(const char * file)
 				if(pmf.i64Magick == PHY_MAT_FILE_MAGICK)
 				{
 					m_iGeomFacesCount = pmf.uiGeomFaceCount;
-					m_pGeomMtlTypes = new MtlPhysicType[m_iGeomFacesCount];
-					fread(m_pGeomMtlTypes, sizeof(MtlPhysicType), m_iGeomFacesCount, pF);
+					m_pGeomMtlTypes = new MTLTYPE_PHYSIC[m_iGeomFacesCount];
+					fread(m_pGeomMtlTypes, sizeof(MTLTYPE_PHYSIC), m_iGeomFacesCount, pF);
 				}
 				else
 				{
@@ -557,19 +558,19 @@ bool PhyWorld::ExportGeom(const char * _file)
 		PhyMatFile pmf;
 		pmf.uiGeomFaceCount = m_iGeomFacesCount;
 		fwrite(&pmf, sizeof(pmf), 1, file);
-		fwrite(m_pGeomMtlTypes, sizeof(MtlPhysicType), m_iGeomFacesCount, file);
+		fwrite(m_pGeomMtlTypes, sizeof(MTLTYPE_PHYSIC), m_iGeomFacesCount, file);
 		fclose(file);
 	}
 	return(ret);
 }
 
-MtlPhysicType PhyWorld::GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+MTLTYPE_PHYSIC PhyWorld::GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
 	if(pBody == m_pGeomStaticRigidBody && m_iGeomFacesCount > pShapeInfo->m_triangleIndex)
 	{
 		return(m_pGeomMtlTypes[pShapeInfo->m_triangleIndex]);
 	}
-	return(mpt_default);
+	return(MTLTYPE_PHYSIC_DEFAULT);
 }
 
 //##############################################################

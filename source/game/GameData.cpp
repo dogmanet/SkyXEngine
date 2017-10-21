@@ -112,7 +112,7 @@ void GameData::Sync()
 	m_pCrosshair->OnSync();
 }
 
-void GameData::playFootstepSound(MtlPhysicType mtl_type, const float3 &f3Pos)
+void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
 {
 	int iCount = m_iFootstepSoundCount[mtl_type];
 	if(!iCount)
@@ -127,33 +127,33 @@ void GameData::loadFoostepsSounds()
 {
 	Array<const char*> aSounds[MPT_COUNT];
 
-	aSounds[mpt_concrete].push_back("actor/step/default1.ogg");
-	aSounds[mpt_concrete].push_back("actor/step/default2.ogg");
-	aSounds[mpt_concrete].push_back("actor/step/default3.ogg");
-	aSounds[mpt_concrete].push_back("actor/step/default4.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default1.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default2.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default3.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default4.ogg");
 
-	aSounds[mpt_metal].push_back("actor/step/metal_plate1.ogg");
-	aSounds[mpt_metal].push_back("actor/step/metal_plate2.ogg");
-	aSounds[mpt_metal].push_back("actor/step/metal_plate3.ogg");
-	aSounds[mpt_metal].push_back("actor/step/metal_plate4.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate1.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate2.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate3.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate4.ogg");
 
-	aSounds[mpt_tree].push_back("actor/step/new_wood1.ogg");
-	aSounds[mpt_tree].push_back("actor/step/new_wood2.ogg");
-	aSounds[mpt_tree].push_back("actor/step/new_wood3.ogg");
-	aSounds[mpt_tree].push_back("actor/step/new_wood4.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood1.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood2.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood3.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood4.ogg");
 
-	aSounds[mpt_ground_sand].push_back("actor/step/earth1.ogg");
-	aSounds[mpt_ground_sand].push_back("actor/step/earth2.ogg");
-	aSounds[mpt_ground_sand].push_back("actor/step/earth3.ogg");
-	aSounds[mpt_ground_sand].push_back("actor/step/earth4.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth1.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth2.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth3.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth4.ogg");
 
-	aSounds[mpt_water].push_back("actor/step/t_water1.ogg");
-	aSounds[mpt_water].push_back("actor/step/t_water2.ogg");
+	aSounds[MTLTYPE_PHYSIC_WATER].push_back("actor/step/t_water1.ogg");
+	aSounds[MTLTYPE_PHYSIC_WATER].push_back("actor/step/t_water2.ogg");
 
-	aSounds[mpt_leaf_grass].push_back("actor/step/grass1.ogg");
-	aSounds[mpt_leaf_grass].push_back("actor/step/grass2.ogg");
-	aSounds[mpt_leaf_grass].push_back("actor/step/grass3.ogg");
-	aSounds[mpt_leaf_grass].push_back("actor/step/grass4.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass1.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass2.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass3.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass4.ogg");
 
 	//aSounds[mpt_glass].push_back("actor/step/.ogg");
 	//aSounds[mpt_plastic].push_back("actor/step/.ogg");

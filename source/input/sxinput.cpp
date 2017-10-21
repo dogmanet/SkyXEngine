@@ -21,12 +21,14 @@ report_func g_fnReportf = DefReport;
 
 #define SI_PRECOND(retval) if(!ObjectInput){g_fnReportf(-1, "%s - sxinput is not init", gen_msg_location); return retval;}
 
-long SSInput_0GetVersion()
+//##########################################################################
+
+SX_LIB_API long SSInput_0GetVersion()
 {
 	return SXINPUT_VERSION;
 }
 
-void SSInput_Dbg_Set(report_func rf)
+SX_LIB_API void SSInput_Dbg_Set(report_func rf)
 {
 	g_fnReportf = rf;
 }
@@ -52,7 +54,7 @@ void InitIntup(const char* name, HWND hwnd)
 	ObjectInput->Init(hwnd);
 }
 
-void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
+SX_LIB_API void SSInput_0Create(const char* name, HWND hwnd, bool is_unic)
 {
 		if(name && strlen(name) > 1)
 		{
@@ -72,56 +74,56 @@ void SSInput_0Create(const char* name,HWND hwnd,bool is_unic)
 			g_fnReportf(-1, "%s - not init argument [name] for system sound", gen_msg_location);
 }
 
-void SSInput_Update()
+SX_LIB_API void SSInput_Update()
 {
 	SI_PRECOND(_VOID);
 	ObjectInput->Update();
 }
 
-bool SSInput_GetKeyState(InputCode Key)
+SX_LIB_API bool SSInput_GetKeyState(InputCode Key)
 {
 	SI_PRECOND(false);
 	return ObjectInput->GetKeyState(Key);
 }
 
-bool SSInput_IsOtherButtonOn(InputCode Button)
+SX_LIB_API bool SSInput_IsOtherButtonOn(InputCode Button)
 {
 	SI_PRECOND(false);
 	return ObjectInput->IsOtherButtonOn(Button);
 }
 
-InputEvents SSInput_GetKeyEvents(InputCode Key)
+SX_LIB_API InputEvents SSInput_GetKeyEvents(InputCode Key)
 {
 	SI_PRECOND(InputEvents::iv_dissable);
 	return ObjectInput->GetKeyEvents(Key);
 }
 
-long SSInput_GetScroll()
+SX_LIB_API long SSInput_GetScroll()
 {
 	SI_PRECOND(0);
 	return ObjectInput->GetScroll();
 }
 
-bool SSInput_GetMouseDouble(InputCode Button)
+SX_LIB_API bool SSInput_GetMouseDouble(InputCode Button)
 {
 	SI_PRECOND(false);
 	return ObjectInput->GetMouseDouble(Button);
 }
 
 
-bool SSInput_GetExeEventsS(InMess *Event)
+SX_LIB_API bool SSInput_GetExeEventsS(InMess *Event)
 {
 	SI_PRECOND(false);
 	return ObjectInput->GetExeEvents(Event);
 }
 
-bool SSInput_GetExeEvents(InputCode sect, InputEvents code)
+SX_LIB_API bool SSInput_GetExeEvents(InputCode sect, InputEvents code)
 {
 	SI_PRECOND(false);
 	return ObjectInput->GetExeEvents(sect,code);
 }
 
-bool SSInput_GetActiveKeyOrButton()
+SX_LIB_API bool SSInput_GetActiveKeyOrButton()
 {
 	SI_PRECOND(false);
 		
@@ -134,7 +136,7 @@ bool SSInput_GetActiveKeyOrButton()
 	return false;
 }
 
-bool SSInput_GetActiveButton()
+SX_LIB_API bool SSInput_GetActiveButton()
 {
 	SI_PRECOND(false);
 	for(int i = SIM_START; i <= SIM_END; i++)
@@ -145,7 +147,7 @@ bool SSInput_GetActiveButton()
 	return false;
 }
 
-bool SSInput_GetActiveKey()
+SX_LIB_API bool SSInput_GetActiveKey()
 {
 	SI_PRECOND(false);
 	for(int i = 0; i<SXI_KEYMAP_SIZE; i++)
@@ -157,7 +159,7 @@ bool SSInput_GetActiveKey()
 	return false;
 }
 
-void SSInput_AddMsg(const IMSG & msg)
+SX_LIB_API void SSInput_AddMsg(const IMSG & msg)
 {
 	if(ObjectInput)
 	{
@@ -165,7 +167,7 @@ void SSInput_AddMsg(const IMSG & msg)
 	}
 }
 
-void SSInput_GetMouseDelta(int * x, int * y)
+SX_LIB_API void SSInput_GetMouseDelta(int * x, int * y)
 {
 	SI_PRECOND(_VOID);
 

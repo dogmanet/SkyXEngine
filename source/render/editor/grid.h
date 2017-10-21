@@ -1,6 +1,6 @@
 
-#ifndef __grid_h
-#define __grid_h
+#ifndef __GRID_H
+#define __GRID_H
 
 #include <windows.h>
 #include <common/sxtypes.h>
@@ -9,25 +9,26 @@
 #include <common/SXMath.h>
 #include <render/gdata.h>
 
-class Grid
+class CGrid
 {
-	struct Vertex
+	struct CVertex
 	{
-		float3_t pos;
-		D3DCOLOR color;
+		float3_t m_vPos;
+		D3DCOLOR m_dwColor;
 	};
 public:
 
-	Grid();
-	~Grid();
+	CGrid();
+	~CGrid();
 
-	void Create(int width, int depth, DWORD color);
-	void Render();
+	void create(int iWidth, int iDepth, DWORD dwColor);
+	void render();
 
 protected:
-	long PolyCount;
-	IDirect3DVertexBuffer9* VertexBuffer;
-	IDirect3DVertexDeclaration9* VertexDeclaration;
+
+	int m_iCountPoly;
+	IDirect3DVertexBuffer9 *m_pVertexBuffer;
+	IDirect3DVertexDeclaration9 *m_pVertexDeclaration;
 };
 
 #endif

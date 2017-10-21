@@ -43,5 +43,5 @@ half4 main(vs_out_pp IN):COLOR0
 		}
 
 	result /= half(NumSamples)*(LensFlareParam.z);
-	return half4(result,0.0);
+	return half4(result+0.1,0.0);
 }

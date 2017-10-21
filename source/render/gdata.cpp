@@ -3,61 +3,59 @@
 
 namespace GData
 {
-	 IDirect3DDevice9* DXDevice = 0;	//!< dx устройство
+	IDirect3DDevice9* DXDevice = 0;
 
-	 HWND HandleParent3D = 0;//!< хэндл окна родителя окна рендера, на случай редакторов
-	 HWND Handle3D = 0;		//!< хэндл окна рендера
+	HWND HandleParent3D = 0;
+	HWND Handle3D = 0;	
 
-	// float2_t WinSize = float2_t(800, 600);	//!< размер окна рендера (области рендера)
-	 bool IsWindowed = true;					//!<использовать ли оконный режим рендера?
+	//bool IsWindowed = true;
 
 
-	 DS_RT FinalImage = DS_RT_SCENELIGHT;//!< финальное изображение
-	 ISXCamera* ObjCamera = 0;	//!< камера для которой будет рендер
-	 ID IDSelectTex = -1;
+	DS_RT FinalImage = DS_RT_SCENELIGHT;
+	ISXCamera* ObjCamera = 0;
+	ID IDSelectTex = -1;
 	
-	 float2_t NearFar = float2_t(0.025, 400);	//!< значение дальней и ближней плоскостей отсечения
-	 float ProjFov = SM_PIDIV4;				//!< fov камеры
+	float2_t NearFar = float2_t(0.025, 400);
+	float ProjFov = SM_PIDIV4;	
 
-	 ID DefaultGeomIDArr = -1;
-	 ID DefaultGreenIDArr = -1;
-	 ID DefaultAnimIDArr = -1;
+	ID DefaultGeomIDArr = -1;
+	ID DefaultGreenIDArr = -1;
+	ID DefaultAnimIDArr = -1;
 
-	 float3 ConstCurrCamPos;	//!< позиция камеры
-	 float3 ConstCurrCamDir;	//!< направление взгляда камеры
+	float3 ConstCurrCamPos;
+	float3 ConstCurrCamDir;
 
-	//! Параметры перемещения камеры по умолчанию
-	 float4_t CamWalkParamEditor = float4_t(
-		10.f,	//!< простое движенеи вперед
-		5.f,	//!< коэфициент ускорения
-		0.7f,	//!< коэфициент от основного движения в стороны 
-		0.5f	//!< коэфициент от основного движения назад
+	float4_t CamWalkParamEditor = float4_t(
+		10.f,	//!< РїСЂРѕСЃС‚РѕРµ РґРІРёР¶РµРЅРµРё РІРїРµСЂРµРґ
+		5.f,	//!< РєРѕСЌС„РёС†РёРµРЅС‚ СѓСЃРєРѕСЂРµРЅРёСЏ
+		0.7f,	//!< РєРѕСЌС„РёС†РёРµРЅС‚ РѕС‚ РѕСЃРЅРѕРІРЅРѕРіРѕ РґРІРёР¶РµРЅРёСЏ РІ СЃС‚РѕСЂРѕРЅС‹ 
+		0.5f	//!< РєРѕСЌС„РёС†РёРµРЅС‚ РѕС‚ РѕСЃРЅРѕРІРЅРѕРіРѕ РґРІРёР¶РµРЅРёСЏ РЅР°Р·Р°Рґ
 		);
 
-	//матрицы
-	void InitAllMatrix();		//!< инициализация матриц
-	 float4x4 MCamView;			//!< матрица вида камеры
-	 float4x4 MCamProj;			//!< матрица проекции камеры
-	 float4x4 MLightProj;		//!< матрица проекции аналогична¤ камере, только дальна¤¤ плоскость дальше
-	 float4x4 MRefPlaneSkyProj;	//!< матрица проекции дл¤ рендера skybox и sky clouds, дл¤ плоских отражений, аналогична MCamProj
-	 float4x4 MRefCubeSkyProj;	//!< матрица проекции дл¤ рендера skybox и sky clouds, дл¤ куибческих отражений
+	//РјР°С‚СЂРёС†С‹
+	void InitAllMatrix();
+	float4x4 MCamView;
+	float4x4 MCamProj;
+	float4x4 MLightProj;
+	float4x4 MRefPlaneSkyProj;
+	float4x4 MRefCubeSkyProj;
 
 	//**********************************************************************
 
-	//! пространство имен с идентификаторами шейдеров
+	//! РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ РёРјРµРЅ СЃ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР°РјРё С€РµР№РґРµСЂРѕРІ
 	namespace IDsShaders
 	{
-		//! загрузка всех необходимых шейдеров
+		//! Р·Р°РіСЂСѓР·РєР° РІСЃРµС… РЅРµРѕР±С…РѕРґРёРјС‹С… С€РµР№РґРµСЂРѕРІ
 		void InitAllShaders();
 
-		//! вершинные шейдеры
+		//! РІРµСЂС€РёРЅРЅС‹Рµ С€РµР№РґРµСЂС‹
 		namespace VS
 		{
 			 ID ScreenOut;
 			 ID ResPos;
 		};
 
-		//! пиксельные шейдеры
+		//! РїРёРєСЃРµР»СЊРЅС‹Рµ С€РµР№РґРµСЂС‹
 		namespace PS
 		{
 			 ID ScreenOut;
@@ -79,25 +77,15 @@ namespace GData
 	{
 		bool MoveCamera = true;
 		ModelSim* SimModel = 0;
-		Grid* ObjGrid = 0;
-		AxesStatic* ObjAxesStatic = 0;
-		/*ID3DXMesh* FigureBox = 0;
-		float3_t vFigureBoxParam;
-		ID3DXMesh* FigureSphere = 0;
-		float3_t vFigureSphereParam;
-		ID3DXMesh* FigureCone = 0;
-		float3_t vFigureConeParam;
-		float3 vFigurePos;*/
+		CGrid* ObjGrid = 0;
+		CAxesStatic* ObjAxesStatic = 0;
 
 		bool RenderGrid = false;
 		bool RenderAxesStatic = false;
-		/*bool RenderBoundBox = false;
-		bool RenderBoundSphere = false;
-		bool RenderBoundCone = false;*/
 	}
 };
 
-
+//##########################################################################
 
 void GData::InitAllMatrix()
 {
@@ -127,42 +115,6 @@ void GData::InitAllMatrix()
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
 }
-/*
-void GData::Pathes::InitAllPathes()
-{
-	char tmppath[1024];
-	GetModuleFileName(NULL, tmppath, 1024);
-	int len = strlen(tmppath);
-	while (tmppath[len--] != '\\')
-	{
-		if (tmppath[len - 1] == '\\')
-		{
-			len--;
-			memcpy(GData::Pathes::ForExe, tmppath, len);
-			GData::Pathes::ForExe[len] = 0;
-		}
-	}
-
-	sprintf(GData::Pathes::WorkingTex, "%s%s", GData::Pathes::ForExe, "\\worktex\\");
-	sprintf(GData::Pathes::GameSource, "%s%s", GData::Pathes::ForExe, "\\gamesource\\");
-	sprintf(GData::Pathes::Screenshots, "%s%s", GData::Pathes::ForExe, "\\screenshots\\");
-	sprintf(GData::Pathes::Config, "%s%s", GData::Pathes::GameSource, "config\\");
-	sprintf(GData::Pathes::ConfigWeather, "%s%s", GData::Pathes::Config, "weather\\");
-	sprintf(GData::Pathes::Levels, "%s%s", GData::Pathes::GameSource, "levels\\");
-	sprintf(GData::Pathes::Meshes, "%s%s", GData::Pathes::GameSource, "meshes\\");
-	sprintf(GData::Pathes::Models, "%s%s", GData::Pathes::GameSource, "models\\");
-	sprintf(GData::Pathes::Shaders, "%s%s", GData::Pathes::GameSource, "shaders\\");
-	sprintf(GData::Pathes::Sounds, "%s%s", GData::Pathes::GameSource, "sounds\\");
-	sprintf(GData::Pathes::Scripts, "%s%s", GData::Pathes::GameSource, "scripts\\");
-
-	sprintf(GData::Pathes::Textures, "%s%s", GData::Pathes::GameSource, "textures\\");
-	sprintf(GData::Pathes::TexturesDetail, "%s%s", GData::Pathes::GameSource, "textures\\detail\\");
-	sprintf(GData::Pathes::TexturesSkyBoxes, "%s%s", GData::Pathes::Textures, "sky\\");
-	sprintf(GData::Pathes::Materials, "%s%s", GData::Pathes::GameSource, "materials\\");
-	sprintf(GData::Pathes::GUIresources, "%s%s", GData::Pathes::GameSource, "resource\\");
-
-	SetCurrentDirectoryA(GData::Pathes::GameSource);
-}*/
 
 void GData::IDsShaders::InitAllShaders()
 {
@@ -188,155 +140,3 @@ void GData::IDsShaders::InitAllShaders()
 	D3DXMACRO Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
 	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN_STR);
 }
-
-
-#if defined(SX_PARTICLES_EDITOR)
-void GData::Editors::ParticlesEditorUpdate()
-{
-	bool whyplay = false;
-	for (int i = 0; i < SPE_EffectCountGet(); ++i)
-	{
-		if (SPE_EffectEnableGet(SPE_EffectIdOfKey(i)))
-		{
-			SXParticlesEditor::CheckBoxTBPlay->SetCheck(true);
-			SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
-			SXParticlesEditor::CheckBoxTBStop->SetCheck(false);
-			whyplay = true;
-			break;
-		}
-	}
-
-	if(!whyplay)
-	{
-		SXParticlesEditor::CheckBoxTBPlay->SetCheck(false);
-		SXParticlesEditor::CheckBoxTBPause->SetCheck(false);
-		SXParticlesEditor::CheckBoxTBStop->SetCheck(true);
-	}
-
-	int emitters_count = 0;
-	int emitters_all_count = 0;
-	int particles_life_count = 0;
-	int particles_all_count = 0;
-	//ID effid = -1;
-	/*for (int i = 0; i < SPE_EffectCountGet(); ++i)
-	{
-		effid = SPE_EffectIdOfKey(i);
-		if (SPE_EffectEnableGet(effid))
-		{
-			for (int k = 0; k < SPE_EmitterSCountGet(effid); ++k)
-			{
-				if (SPE_EmitterEnableGet(effid, k))
-					++emitters_count;
-
-				particles_all_count += SPE_EmitterCountGet(effid, k);
-				particles_life_count += SPE_EmitterCountLifeGet(effid, k);
-			}
-			break;
-		}
-		effid = -1;
-	}*/
-
-	if (SXParticlesEditor::SelEffID >= 0)
-	{
-		emitters_all_count = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
-		if (SXParticlesEditor::SelEmitterID < 0)
-		{
-			for (int k = 0; k < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++k)
-			{
-				if (SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, k))
-					++emitters_count;
-
-				particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, k);
-				particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, k);
-			}
-		}
-
-		if (SXParticlesEditor::SelEmitterID >= 0)
-		{
-			emitters_count = SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
-			particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
-			particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
-		}
-	}
-
-	char ttext[256];
-	
-	sprintf(ttext, "Playing emitters: %d/%d", emitters_all_count, emitters_count);
-	SXParticlesEditor::StatusBar1->SetTextParts(0, ttext);
-
-	sprintf(ttext, "Living particles: %d/%d", particles_all_count, particles_life_count);
-	SXParticlesEditor::StatusBar1->SetTextParts(1, ttext);
-}
-#endif
-
-#if defined(SX_LEVEL_EDITOR)
-void GData::Editors::LevelEditorUpdate()
-{
-	long count_poly_green = 0;
-	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
-	{
-		count_poly_green += SGeom_GreenMGetCountGen(i) * SGeom_GreenMGetCountPoly(i);
-	}
-
-	long count_poly_geom = 0;
-	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
-	{
-		count_poly_geom += SGeom_ModelsMGetCountPoly(i);
-	}
-
-	char text[256];
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_LEVEL_POLY, count_poly_geom + count_poly_green);
-	SXLevelEditor::StatusBar1->SetTextParts(0, text);
-
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GEOM_POLY, count_poly_geom);
-	SXLevelEditor::StatusBar1->SetTextParts(1, text);
-
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GREEN_POLY, count_poly_green);
-	SXLevelEditor::StatusBar1->SetTextParts(2, text);
-
-	sprintf(text, "%s%d", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
-	SXLevelEditor::StatusBar1->SetTextParts(3, text);
-
-	if(SXLevelEditor::IdMtl >= 0)
-	{
-		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
-		SML_MtlGetTexture(SXLevelEditor::IdMtl,text);
-		SXLevelEditor::StatusBar1->SetTextParts(4, text);
-	}
-}
-
-#endif
-
-#if defined(SX_MATERIAL_EDITOR)
-void GData::Editors::MaterialEditorUpdate()
-{
-	ID skit = -1;
-
-	if(!SXMaterialEditor::ComboBoxShaders->Focus())
-	{
-		char vs[1024];
-		char ps[1024];
-
-		SML_MtlGetVS(SXMaterialEditor::IDMat, vs);
-		SML_MtlGetPS(SXMaterialEditor::IDMat, ps);
-
-		if ((skit = SXMaterialEditor::Shaders->Find(vs, ps)) >= 0)
-			SXMaterialEditor::ComboBoxShaders->SetSel(skit + 1);
-		else 
-			SXMaterialEditor::ComboBoxShaders->SetSel(0);
-	}
-
-	if(!SXMaterialEditor::ComboBoxParamL->Focus())
-	{
-		float thikcness = SML_MtlGetThickness(SXMaterialEditor::IDMat);
-		float roughness = SML_MtlGetRoughness(SXMaterialEditor::IDMat);
-		float f0 = SML_MtlGetF0(SXMaterialEditor::IDMat);
-
-		skit = -1;
-		if ((skit = SXMaterialEditor::ParamL->Find(thikcness, roughness, f0)) >= 0)
-			SXMaterialEditor::ComboBoxParamL->SetSel(skit + 1);
-		else
-			SXMaterialEditor::ComboBoxParamL->SetSel(0);
-	}
-}
-#endif

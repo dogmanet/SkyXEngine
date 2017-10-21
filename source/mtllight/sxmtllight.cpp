@@ -204,6 +204,18 @@ SX_LIB_API ID SML_LigthsGetGlobal()
 	return ArrLights->GetLightGlobal();
 }
 
+SX_LIB_API bool SML_LigthsGetCastGlobalShadow()
+{
+	ML_PRECOND(false);
+	return ArrLights->GetCastGlobalShadow();
+}
+
+SX_LIB_API void SML_LigthsSetCastGlobalShadow(bool isShadowed)
+{
+	ML_PRECOND(_VOID);
+	return ArrLights->SetCastGlobalShadow(isShadowed);
+}
+
 SX_LIB_API void SML_LigthsGetColor(ID id, float3* color)
 {
 	ML_PRECOND(_VOID);

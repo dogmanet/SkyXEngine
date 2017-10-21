@@ -8,6 +8,7 @@ Lights::Lights()
 	ShadowMap2 = SGCore_RTAdd(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
 
 	GlobalLight = -1;
+	m_isCastGlobalShadow = false;
 }
 
 Lights::~Lights()
@@ -407,6 +408,16 @@ void Lights::Render(ID id, DWORD timeDelta)
 ID Lights::GetLightGlobal() const
 {
 	return GlobalLight;
+}
+
+bool Lights::GetCastGlobalShadow() const
+{
+	return m_isCastGlobalShadow;
+}
+
+void Lights::SetCastGlobalShadow(bool isShadowed)
+{
+	m_isCastGlobalShadow = isShadowed;
 }
 
 void Lights::GetLightColor(ID id, float3* vec) const
@@ -857,7 +868,12 @@ void Lights::ShadowGen2(ID id)
 	else if (ArrLights[id]->ShadowCube)
 		ArrLights[id]->ShadowCube->GenShadow2(SGCore_RTGetTexture(ShadowMap));
 	else if (ArrLights[id]->ShadowPSSM)
-		ArrLights[id]->ShadowPSSM->GenShadow2(SGCore_RTGetTexture(ShadowMap));
+	{
+		if (!m_isCastGlobalShadow)
+			ArrLights[id]->ShadowPSSM->GenShadow2(SGCore_RTGetTexture(ShadowMap));
+		else
+			ArrLights[id]->ShadowPSSM->GenShadowAll(SGCore_RTGetTexture(ShadowMap));
+	}
 }
 
 void Lights::ShadowNull()

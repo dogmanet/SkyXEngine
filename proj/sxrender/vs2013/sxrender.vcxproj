@@ -96,7 +96,6 @@
     <ClInclude Include="..\..\..\source\render\editor\grid.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
     <ClInclude Include="..\..\..\source\render\model_sim.h" />
-    <ClInclude Include="..\..\..\source\render\render_def.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
   </ItemGroup>

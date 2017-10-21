@@ -1,9 +1,10 @@
 
 #include "grid.h"
 
-Grid::Grid()
+CGrid::CGrid()
 {
-	VertexBuffer = 0;
+	m_pVertexBuffer = 0;
+	m_pVertexDeclaration = 0;
 
 	D3DVERTEXELEMENT9 DeclGrid[] =
 	{
@@ -13,62 +14,62 @@ Grid::Grid()
 		D3DDECL_END()
 	};
 
-	GData::DXDevice->CreateVertexDeclaration(DeclGrid, &VertexDeclaration);
+	GData::DXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
 }
 
-Grid::~Grid()
+CGrid::~CGrid()
 {
-	mem_release(VertexBuffer);
-	mem_release(VertexDeclaration);
+	mem_release(m_pVertexBuffer);
+	mem_release(m_pVertexDeclaration);
 }
 
-void Grid::Create(int width, int depth, DWORD color)
+void CGrid::create(int width, int depth, DWORD color)
 {
 	GData::DXDevice->CreateVertexBuffer(
-		width * depth * 2 * sizeof(Vertex),
+		width * depth * 2 * sizeof(CVertex),
 		D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_MANAGED,
-		&VertexBuffer,
+		&m_pVertexBuffer,
 		0);
 
-	Vertex* vertices;
-	VertexBuffer->Lock(0, 0, (void**)&vertices, 0);
+	CVertex *pVertices;
+	m_pVertexBuffer->Lock(0, 0, (void**)&pVertices, 0);
 
-	long countvert = 0;
+	int oCountVert = 0;
 
 	for (int x = -(width/2); x < (width/2) + 1; ++x)
 	{
-		vertices[countvert].pos = float3_t(x, 0, -(depth/2));
-		vertices[countvert].color = color;
-		++countvert;
-		vertices[countvert].pos = float3_t(x, 0, depth/2);
-		vertices[countvert].color = color;
-		++countvert;
+		pVertices[oCountVert].m_vPos = float3_t(x, 0, -(depth / 2));
+		pVertices[oCountVert].m_dwColor = color;
+		++oCountVert;
+		pVertices[oCountVert].m_vPos = float3_t(x, 0, depth / 2);
+		pVertices[oCountVert].m_dwColor = color;
+		++oCountVert;
 	}
 
 	for (int y = -(depth / 2); y < (depth/2) + 1; ++y)
 	{
-		vertices[countvert].pos = float3_t(-(width/2), 0, y);
-		vertices[countvert].color = color;
-		++countvert;
-		vertices[countvert].pos = float3_t(width/2, 0, y);
-		vertices[countvert].color = color;
-		++countvert;
+		pVertices[oCountVert].m_vPos = float3_t(-(width / 2), 0, y);
+		pVertices[oCountVert].m_dwColor = color;
+		++oCountVert;
+		pVertices[oCountVert].m_vPos = float3_t(width / 2, 0, y);
+		pVertices[oCountVert].m_dwColor = color;
+		++oCountVert;
 	}
 
-	VertexBuffer->Unlock();
+	m_pVertexBuffer->Unlock();
 
-	PolyCount = countvert / 2;
+	m_iCountPoly = oCountVert / 2;
 }
 
-void Grid::Render()
+void CGrid::render()
 {
 	GData::DXDevice->SetTexture(0, 0);
 	//GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	SGCore_ShaderUnBind();
-	GData::DXDevice->SetVertexDeclaration(VertexDeclaration);
+	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclaration);
 	//GData::DXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-	GData::DXDevice->SetStreamSource(0, VertexBuffer, 0, sizeof(Vertex));
-	GData::DXDevice->DrawPrimitive(D3DPT_LINELIST, 0, PolyCount);
+	GData::DXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
+	GData::DXDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_iCountPoly);
 }

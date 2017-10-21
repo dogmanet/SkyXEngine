@@ -619,11 +619,18 @@ void CWeather::update()
 		SGCore_SkyCloudsSetSpeed(m_aTimeSections[m_iSectionCurr].m_DataSection.m_fCloudsSpeed);
 		SGCore_SkyCloudsSetRot(m_aTimeSections[m_iSectionCurr].m_DataSection.m_fCloudsRotate);
 		
-		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex[0] != '0')
+		char *pStrSunTex = m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex;
+		if (pStrSunTex[0] != '0' && pStrSunTex[0] != '1')
 			SPP_ChangeTexSun(m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex);
 		
 		if (gid >= 0)
-			SML_LigthsSetEnable(gid, m_aTimeSections[m_iSectionCurr].m_DataSection.m_szSunTex[0] != '0');
+		{
+			//установка/сброс состояния включения
+			SML_LigthsSetEnable(gid, pStrSunTex[0] != '0');
+
+			//установка/сброс состояния "все в тени от глобального источника"
+			SML_LigthsSetCastGlobalShadow(pStrSunTex[0] == '1');
+		}
 
 		m_hasUpdate = true;
 

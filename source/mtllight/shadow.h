@@ -32,6 +32,7 @@ public:
 	void End();
 
 	void GenShadow2(IDirect3DTexture9* shadowmap);
+	void GenShadowAll(IDirect3DTexture9* shadowmap);
 	
 	void SetPosition(float3* pos);
 	void GetPosition(float3* pos);

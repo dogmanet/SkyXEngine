@@ -53,7 +53,7 @@ public:
 
 	void Render();
 
-	MtlPhysicType GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+	MTLTYPE_PHYSIC GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
 	btDiscreteDynamicsWorld * GetBtWorld()
 	{
@@ -100,7 +100,7 @@ protected:
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;
-	MtlPhysicType *m_pGeomMtlTypes;
+	MTLTYPE_PHYSIC *m_pGeomMtlTypes;
 	int m_iGeomFacesCount;
 	int m_iGeomModelCount;
 

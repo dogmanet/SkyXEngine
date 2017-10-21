@@ -305,9 +305,9 @@ void Green::Segmentation(Segment* Split, Model* mesh)
 		{
 			//если позици¤ провер¤емого полигона находитьс¤ в пределах ограничивающего паралелепипеда
 			if (
-				(long(tmpMax.x * 1000) >= long(Split->Data[j].Position.x * 1000) && long(tmpMin.x * 1000) <= long(Split->Data[j].Position.x * 1000))
+				(long(tmpMax.x * 1000) >= long(Split->Data[j].m_vPosition.x * 1000) && long(tmpMin.x * 1000) <= long(Split->Data[j].m_vPosition.x * 1000))
 				&&
-				(long(tmpMax.z * 1000) >= long(Split->Data[j].Position.z * 1000) && long(tmpMin.z * 1000) <= long(Split->Data[j].Position.z * 1000))
+				(long(tmpMax.z * 1000) >= long(Split->Data[j].m_vPosition.z * 1000) && long(tmpMin.z * 1000) <= long(Split->Data[j].m_vPosition.z * 1000))
 				&&
 				tmp_arr_mesh_poly[j]
 				)
@@ -354,30 +354,30 @@ void Green::AlignBound(Model* model, Segment* split)
 {
 	if (split->CountAllGreen > 0)
 	{
-		float3 comMax = split->Data[0].Position;
-		float3 comMin = split->Data[0].Position;
+		float3 comMax = split->Data[0].m_vPosition;
+		float3 comMin = split->Data[0].m_vPosition;
 
 		for (int k = 0; k<split->CountAllGreen; ++k)
 		{
-			if (split->Data[k].Position.y > comMax.y)
-				comMax.y = split->Data[k].Position.y;
+			if (split->Data[k].m_vPosition.y > comMax.y)
+				comMax.y = split->Data[k].m_vPosition.y;
 
-			if (split->Data[k].Position.y < comMin.y)
-				comMin.y = split->Data[k].Position.y;
-
-
-			if (split->Data[k].Position.x > comMax.x)
-				comMax.x = split->Data[k].Position.x;
-
-			if (split->Data[k].Position.x < comMin.x)
-				comMin.x = split->Data[k].Position.x;
+			if (split->Data[k].m_vPosition.y < comMin.y)
+				comMin.y = split->Data[k].m_vPosition.y;
 
 
-			if (split->Data[k].Position.z > comMax.z)
-				comMax.z = split->Data[k].Position.z;
+			if (split->Data[k].m_vPosition.x > comMax.x)
+				comMax.x = split->Data[k].m_vPosition.x;
 
-			if (split->Data[k].Position.z < comMin.z)
-				comMin.z = split->Data[k].Position.z;
+			if (split->Data[k].m_vPosition.x < comMin.x)
+				comMin.x = split->Data[k].m_vPosition.x;
+
+
+			if (split->Data[k].m_vPosition.z > comMax.z)
+				comMax.z = split->Data[k].m_vPosition.z;
+
+			if (split->Data[k].m_vPosition.z < comMin.z)
+				comMin.z = split->Data[k].m_vPosition.z;
 		}
 
 		float3 tmpMin, tmpMax;
@@ -994,12 +994,12 @@ void Green::GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, flo
 
 	for (DWORD i = 0; i<model->AllCountGreen; i++)
 	{
-		model->AllTrans[i].Position = arrpos[i];
-		model->AllTrans[i].TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
-		model->AllTrans[i].TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
-		model->AllTrans[i].TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
-		model->AllTrans[i].SinCosRot.x = sinf(model->AllTrans[i].TexCoord.y);
-		model->AllTrans[i].SinCosRot.y = cosf(model->AllTrans[i].TexCoord.y);
+		model->AllTrans[i].m_vPosition = arrpos[i];
+		model->AllTrans[i].m_vTexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
+		model->AllTrans[i].m_vTexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
+		model->AllTrans[i].m_vTexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
+		model->AllTrans[i].m_vSinCosRot.x = sinf(model->AllTrans[i].m_vTexCoord.y);
+		model->AllTrans[i].m_vSinCosRot.y = cosf(model->AllTrans[i].m_vTexCoord.y);
 	}
 	arrpos.clear();
 }
@@ -1088,17 +1088,17 @@ ID Green::AddObject(ID id, float3* pos, GreenDataVertex* data, ID* idsplit)
 	GreenDataVertex tmpdvobj;
 	if (!data)
 	{
-		tmpdvobj.Position = *pos;
-		tmpdvobj.TexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
-		tmpdvobj.TexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
-		tmpdvobj.TexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
-		tmpdvobj.SinCosRot.x = sinf(tmpdvobj.TexCoord.y);
-		tmpdvobj.SinCosRot.y = cosf(tmpdvobj.TexCoord.y);
+		tmpdvobj.m_vPosition = *pos;
+		tmpdvobj.m_vTexCoord.x = 1.f + randf(0.f, GREEN_GEN_RAND_SCALE);
+		tmpdvobj.m_vTexCoord.y = randf(0.f, GREEN_GEN_RAND_ROTATE_Y);
+		tmpdvobj.m_vTexCoord.z = 0;// (float(rand() % 200) / 100.f) - 1.f;
+		tmpdvobj.m_vSinCosRot.x = sinf(tmpdvobj.m_vTexCoord.y);
+		tmpdvobj.m_vSinCosRot.y = cosf(tmpdvobj.m_vTexCoord.y);
 	}
 	else
 	{
 		tmpdvobj = *data;
-		tmpdvobj.Position = *pos;
+		tmpdvobj.m_vPosition = *pos;
 	}
 
 	memcpy(tmpdv + oldlen, &tmpdvobj, sizeof(GreenDataVertex));
@@ -1136,7 +1136,7 @@ void Green::GetPosObject(ID id, ID idsplit, ID idobj, float3_t* pos)
 	if (!pos || id < 0 || ArrModels.size() <= id || idsplit < 0 || ArrModels[id]->SplitsArr.size() <= idsplit || idobj < 0 || ArrModels[id]->SplitsArr[idsplit]->CountAllGreen <= idobj)
 		return;
 
-	*pos = ArrModels[id]->SplitsArr[idsplit]->Data[idobj].Position;
+	*pos = ArrModels[id]->SplitsArr[idsplit]->Data[idobj].m_vPosition;
 }
 
 void Green::SetPosObject(ID id, ID* idsplit, ID* idobj, float3_t* pos)
@@ -1145,7 +1145,7 @@ void Green::SetPosObject(ID id, ID* idsplit, ID* idobj, float3_t* pos)
 		return;
 
 	if (GetIDSplit(id, &float3(*pos)) == (*idsplit))
-		ArrModels[id]->SplitsArr[(*idsplit)]->Data[(*idobj)].Position = *pos;
+		ArrModels[id]->SplitsArr[(*idsplit)]->Data[(*idobj)].m_vPosition = *pos;
 	else
 	{
 		GreenDataVertex tmpdv = ArrModels[id]->SplitsArr[(*idsplit)]->Data[(*idobj)];
@@ -1897,8 +1897,8 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 				{
 					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3; ++poly)
 					{
-						float tmpscale = irs->Arr[k]->Data[key].TexCoord.x;
-						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].TexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].Position);
+						float tmpscale = irs->Arr[k]->Data[key].m_vTexCoord.x;
+						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].m_vTexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].m_vPosition);
 
 						tmptri.a = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
 						tmptri.b = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);
@@ -2010,8 +2010,8 @@ bool Green::GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl
 
 					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3 && !isfound; ++poly)
 					{
-						float tmpscale = irs->Arr[k]->Data[key].TexCoord.x;
-						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].TexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].Position);
+						float tmpscale = irs->Arr[k]->Data[key].m_vTexCoord.x;
+						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].m_vTexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].m_vPosition);
 
 						p1 = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
 						p2 = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);

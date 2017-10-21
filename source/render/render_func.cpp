@@ -122,9 +122,6 @@ void SXRenderFunc::ComDeviceLost()
 		RECT rect_scene;
 		GetClientRect(GData::Handle3D, &rect_scene);
 
-
-		/*GData::WinSize.x = rect_scene.right;
-		GData::WinSize.y = rect_scene.bottom;*/
 		*winr_width = rect_scene.right;
 		*winr_height = rect_scene.bottom;
 	}
@@ -135,24 +132,26 @@ void SXRenderFunc::ComDeviceLost()
 	SML_OnLostDevice();
 	SPE_OnLostDevice();
 
+	SXRenderFunc::InitModeWindow();
 	bool bf = SGCore_OnDeviceReset(*winr_width, *winr_height, *winr_windowed);
-		if (bf)
-		{
-			//если всетаки функция зашла сюда значит чтото было неосвобождено
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
-		}
-		else
-		{
-			GData::InitAllMatrix();
-			resize = RENDER_RESIZE_NONE;
-			SGCore_OnResetDevice();
-			SML_OnResetDevice();
-			SGeom_OnResetDevice();
-			SPE_OnResetDevice();
+	
+	if (bf)
+	{
+		//если все-таки функция зашла сюда значит что-то было неосвобождено
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
+	}
+	else
+	{
+		GData::InitAllMatrix();
+		*resize = RENDER_RESIZE_NONE;
+		SGCore_OnResetDevice();
+		SML_OnResetDevice();
+		SGeom_OnResetDevice();
+		SPE_OnResetDevice();
 
 
-			GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-		}
+		GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	}
 }
 
 
@@ -405,9 +404,14 @@ void SXRenderFunc::SaveWorkTex()
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SML_DSGetRT(DS_RT_SCENELIGHT2), NULL);
 }
 
-void SXRenderFunc::ChangeModeWindow()
+void SXRenderFunc::InitModeWindow()
 {
-	if (GData::IsWindowed)
+	static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+
+	if (winr_windowed == NULL)
+		return;
+
+	if (!(*winr_windowed))
 	{
 		SetWindowLong(GData::Handle3D, GWL_STYLE, WS_POPUP);
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
@@ -415,10 +419,31 @@ void SXRenderFunc::ChangeModeWindow()
 	else
 	{
 		SetWindowLong(GData::Handle3D, GWL_STYLE, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
-		SetWindowPos(GData::Handle3D, HWND_NOTOPMOST, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), SWP_SHOWWINDOW);
-	}
 
-	GData::IsWindowed = !GData::IsWindowed;
+		RECT rc;
+		GetWindowRect(GData::Handle3D, &rc);
+		SetWindowPos(GData::Handle3D, HWND_NOTOPMOST, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW);
+	}
+}
+
+void SXRenderFunc::ChangeModeWindow()
+{
+	/*static int * winr_width = (int*)GET_PCVAR_INT("winr_width");
+	*winr_width = 1280;
+
+	static int * winr_height = (int*)GET_PCVAR_INT("winr_height");
+	*winr_height = 768;
+
+	return;*/
+
+	static bool *winr_windowed = (bool*)GET_PCVAR_BOOL("winr_windowed");
+
+	if (winr_windowed == NULL)
+		return;
+
+	*winr_windowed = !(*winr_windowed);
+
+	SXRenderFunc::InitModeWindow();
 
 	static int *resize = (int*)GET_PCVAR_INT("resize");
 	*resize = RENDER_RESIZE_CHANGE;
@@ -428,15 +453,6 @@ void SXRenderFunc::ChangeModeWindow()
 
 void SXRenderFunc::UpdateView()
 {
-	/*float fov = GData::ObjCamera->GetFOV();
-	if(fov != GData::ProjFov)
-	{
-		GData::ProjFov = fov;
-		GData::MCamProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, GData::NearFar.y);
-		GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
-		GData::MRefPlaneSkyProj = SMMatrixPerspectiveFovLH(GData::ProjFov, GData::WinSize.x / GData::WinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
-	}*/
-
 	GData::InitAllMatrix();
 
 	GData::ObjCamera->GetViewMatrix(&GData::MCamView);
@@ -1428,7 +1444,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	if (pp_bloom && (*pp_bloom))
 		SPP_RenderBloom(&float3_t(1, 0.7, 0.1));
 
-	SPP_Update(&(float3_t)GData::ConstCurrCamPos, &(float3_t)GData::ConstCurrCamDir, &GData::MCamView, &GData::MCamProj, &vWinSize, &GData::NearFar, GData::ProjFov);
+	SPP_Update();
 
 	float3 tmpPosition;
 	float3 tmpColor;
@@ -1441,7 +1457,8 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 		SPP_UpdateSun((SML_LigthsGetEnable(GlobalLight) ? &tmpPosition : 0));
 
-		SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPower(GlobalLight)));
+		if (!SML_LigthsGetCastGlobalShadow())
+			SPP_RenderSun(&float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPower(GlobalLight)));
 	}
 	else
 		SPP_UpdateSun(0);
@@ -1449,7 +1466,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
 	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
 	if (pp_lensflare && (*pp_lensflare))
-		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), &float4_t(tmpColor.x, tmpColor.y, tmpColor.z, SML_LigthsGetPower(GlobalLight)), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
+		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), &float4_t(tmpColor.x, tmpColor.y, tmpColor.z, (SML_LigthsGetCastGlobalShadow() ? 0 : SML_LigthsGetPower(GlobalLight))), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
 
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
@@ -1691,217 +1708,13 @@ void SXRenderFunc::RenderEditorMain()
 	{
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::Editors::ObjGrid->Render();
+		GData::Editors::ObjGrid->render();
 	}
 
 	if (GData::Editors::ObjAxesStatic && GData::Editors::RenderAxesStatic)
 	{
 		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::Editors::ObjAxesStatic->Render();
+		GData::Editors::ObjAxesStatic->render();
 	}
-
-	/*if (GData::Editors::RenderBoundBox)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(GData::Editors::vFigureBoxParam) * SMMatrixTranslation(GData::Editors::vFigurePos)));
-		GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-		GData::Editors::FigureBox->DrawSubset(0);
-
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	}
-
-	if (GData::Editors::RenderBoundSphere)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(GData::Editors::vFigureSphereParam) * SMMatrixTranslation(GData::Editors::vFigurePos)));
-		GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex)); 
-		GData::Editors::FigureSphere->DrawSubset(0);
-
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	}
-
-	if (GData::Editors::RenderBoundCone)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(GData::Editors::vFigurePos));
-		GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-		GData::Editors::FigureCone->DrawSubset(0);
-
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	}*/
 }
-/*
-void SXRenderFunc::RenderEditorLE(DWORD timeDelta)
-{
-#if defined(SX_LEVEL_EDITOR)
-
-	if (GData::Editors::GreenRenderBox)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-		float3 tmppos = GData::Editors::GreenBoxPos;
-		tmppos.y += GData::Editors::GreenBoxWHD.y * 0.5f;
-		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(GData::Editors::GreenBoxWHD) * SMMatrixTranslation(tmppos)));
-		GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-		GData::Editors::FigureBox->DrawSubset(0);
-
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	}
-
-	if (GData::Editors::SelSelection)
-	{
-		if (GData::Editors::SelZTest)
-		{
-			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		}
-		else
-		{
-			GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-			GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-		}
-
-		if (GData::Editors::SelMesh)
-			GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-		if (GData::Editors::SelBackFacesCull)
-			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-		
-
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
-		{
-			if (GData::Editors::ActiveElement > -1)
-			{
-				GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-				SGeom_ModelsRenderSingly(timeDelta, GData::Editors::ActiveElement, SML_MtlGetStdMtl(MtlTypeModel::tms_static));
-			}
-		}
-
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
-		{
-			if (GData::Editors::ActiveElement > -1)
-			{
-				if (GData::Editors::ActiveGreenSplit >= 0 && GData::Editors::ActiveGreenObject >= 0)
-				{
-					GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-					SGeom_GreenRenderObject(timeDelta, &GData::ConstCurrCamPos, GData::Editors::ActiveElement, GData::Editors::ActiveGreenSplit, GData::Editors::ActiveGreenObject, SML_MtlGetStdMtl(MtlTypeModel::tms_tree));
-				}
-				else
-				{
-					GData::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(GData::IDSelectTex));
-					SGeom_GreenRenderSingly(timeDelta, &GData::ConstCurrCamPos, GData::Editors::ActiveElement, SML_MtlGetStdMtl(MtlTypeModel::tms_tree));
-				}
-			}
-		}
-
-		if (GData::Editors::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
-		{
-			SXGame_EditorRender(GData::Editors::ActiveElement, GData::IDSelectTex);
-		}
-
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-
-		if (GData::Editors::SelMesh)
-			GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-		if (GData::Editors::SelBackFacesCull)
-			GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	}
-
-
-	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	if(GData::Editors::AIGQuad)
-		SAIG_RenderQuads(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos, GData::NearFar.y);
-
-	if(GData::Editors::AIGGraphPoint)
-		SAIG_RenderGraphPoints(&GData::ConstCurrCamPos, GData::NearFar.y);
-
-	if(GData::Editors::AIGBound)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-		GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-		GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-		GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
-		GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
-		SAIG_RenderBB();
-		GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	}
-
-#endif
-}
-
-void SXRenderFunc::RenderEditorPE(DWORD timeDelta)
-{
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-#if defined(SX_PARTICLES_EDITOR)
-	if (GData::Editors::RenderBound && SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType) != ParticlesBoundType::pbt_none)
-	{
-		GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-
-		ParticlesData* pdata = SPE_EmitterGetData(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-		if (pdata->BoundType == ParticlesBoundType::pbt_box)
-		{
-			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(float3(pdata->BoundVec2 - pdata->BoundVec1)) * SMMatrixTranslation(float3(pdata->BoundVec2 + pdata->BoundVec1)*0.5f)));
-			GData::Editors::FigureBox->DrawSubset(0);
-		}
-		else if (pdata->BoundType == ParticlesBoundType::pbt_sphere)
-		{
-			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(pdata->BoundVec1.w, pdata->BoundVec1.w, pdata->BoundVec1.w) * SMMatrixTranslation(float3(pdata->BoundVec1))));
-			GData::Editors::FigureSphere->DrawSubset(0);
-		}
-		else if (pdata->BoundType == ParticlesBoundType::pbt_cone)
-		{
-			if (GData::Editors::FigureConeParam.x != pdata->BoundVec2.w || GData::Editors::FigureConeParam.y != pdata->BoundVec1.w || GData::Editors::FigureConeParam.z != pdata->BoundVec2.y - pdata->BoundVec1.y)
-			{
-				GData::Editors::FigureConeParam.x = pdata->BoundVec2.w;
-				GData::Editors::FigureConeParam.y = pdata->BoundVec1.w;
-				GData::Editors::FigureConeParam.z = pdata->BoundVec2.y - pdata->BoundVec1.y;
-
-				SGCore_FCreateCone(GData::Editors::FigureConeParam.x, GData::Editors::FigureConeParam.y, GData::Editors::FigureConeParam.z, &GData::Editors::FigureCone, 20);
-			}
-
-			GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(pdata->BoundVec1.x, pdata->BoundVec2.y, pdata->BoundVec1.z));
-			GData::Editors::FigureCone->DrawSubset(0);
-		}
-
-		GData::DXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-		GData::DXDevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixIdentity());
-	}
-
-#endif
-}
-*/

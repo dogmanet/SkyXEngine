@@ -25,7 +25,7 @@ IDirect3DDevice9* DXDevice = 0;
 D3DPRESENT_PARAMETERS D3DAPP;
 IDirect3D9* d3d9 = 0;
 ID3DXFont* FPSText = 0;
-
+Array<DEVMODE> g_aArrModes;
 
 //##########################################################################
 
@@ -192,6 +192,32 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 	};
 
 	DXDevice->CreateVertexDeclaration(layoutstatic, &StaticVertexDecl);
+
+
+	//получение всех возможных разрешений монитора
+	DEVMODE dm;
+	int iNum = 0;
+	while (EnumDisplaySettings(NULL, iNum, &dm))
+	{
+		iNum++;
+		if (dm.dmBitsPerPel >= 32 && dm.dmPelsWidth >= 800 && dm.dmPelsHeight >= 600)
+		{
+			bool isUnic = true;
+			for (int i = 0, il = g_aArrModes.size(); i < il; ++i)
+			{
+				if (g_aArrModes[i].dmPelsWidth == dm.dmPelsWidth && g_aArrModes[i].dmPelsHeight == dm.dmPelsHeight)
+				{
+					isUnic = false;
+					break;
+				}
+			}
+
+			if (isUnic)
+				g_aArrModes.push_back(dm);
+		}
+	}
+
+	int qwerty = 0;
 }
 
 //##########################################################################
@@ -226,8 +252,19 @@ SX_LIB_API void SGCore_0Create(const char* name, HWND hwnd, int width, int heigt
 		g_fnReportf(-1, "%s - not init argument [name], sxgcore", gen_msg_location);
 }
 
+SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount)
+{
+	SG_PRECOND(0);
+
+	if (iCount)
+		*iCount = g_aArrModes.size();
+
+	return &(g_aArrModes[0]);
+}
+
 SX_LIB_API void SGCore_AKill()
 {
+	SG_PRECOND(_VOID);
 	mem_delete(MShaders);
 	mem_delete(MRenderTargets);
 	mem_delete(MTextures);
@@ -243,6 +280,7 @@ SX_LIB_API void SGCore_AKill()
 
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice()
 {
+	SG_PRECOND(0);
 	return DXDevice;
 }
 

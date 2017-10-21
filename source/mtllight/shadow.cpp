@@ -187,114 +187,117 @@ void PSSM::Init()
 
 void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 {
-		Frustums[split]->Update(&(Views[split]), &(Projs[split]));
+	FovRatio.x = Core_RFloatGet(G_RI_FLOAT_OBSERVER_FOV);
+	FovRatio.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH) / Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
 
-		float3 up(0.0f, 1.0f, 0.0f);
-		float3 right = SMVector3Normalize(SMVector3Cross((*dircam), up));
+	Frustums[split]->Update(&(Views[split]), &(Projs[split]));
 
-		float3 fc = (*poscam) + (*dircam)*NearFar[split].y;
-		float3 nc = (*poscam) + (*dircam)*NearFar[split].x;
+	float3 up(0.0f, 1.0f, 0.0f);
+	float3 right = SMVector3Normalize(SMVector3Cross((*dircam), up));
 
-		up = SMVector3Normalize(SMVector3Cross(right, (*dircam)));
+	float3 fc = (*poscam) + (*dircam)*NearFar[split].y;
+	float3 nc = (*poscam) + (*dircam)*NearFar[split].x;
 
-		float near_height = tan(FovRatio.x / 2.f) * NearFar[split].x;
-		float near_width = near_height * FovRatio.y;
-		float far_height = tan(FovRatio.x / 2.f) * NearFar[split].y;
-		float far_width = far_height * FovRatio.y;
+	up = SMVector3Normalize(SMVector3Cross(right, (*dircam)));
 
-		Frustums[split]->Point[0] = nc - up*near_height - right*near_width;
-		Frustums[split]->Point[1] = nc + up*near_height - right*near_width;
-		Frustums[split]->Point[2] = nc + up*near_height + right*near_width;
-		Frustums[split]->Point[3] = nc - up*near_height + right*near_width;
+	float near_height = tan(FovRatio.x / 2.f) * NearFar[split].x;
+	float near_width = near_height * FovRatio.y;
+	float far_height = tan(FovRatio.x / 2.f) * NearFar[split].y;
+	float far_width = far_height * FovRatio.y;
 
-		Frustums[split]->Point[4] = fc - up*far_height - right*far_width;
-		Frustums[split]->Point[5] = fc + up*far_height - right*far_width;
-		Frustums[split]->Point[6] = fc + up*far_height + right*far_width;
-		Frustums[split]->Point[7] = fc - up*far_height + right*far_width;
+	Frustums[split]->Point[0] = nc - up*near_height - right*near_width;
+	Frustums[split]->Point[1] = nc + up*near_height - right*near_width;
+	Frustums[split]->Point[2] = nc + up*near_height + right*near_width;
+	Frustums[split]->Point[3] = nc - up*near_height + right*near_width;
 
-		float3 vCenter(0, 0, 0);
-		for (int i = 0; i < 8; i++)
-			vCenter += Frustums[split]->Point[i];
-		vCenter /= 8;
-		Frustums[split]->Center = vCenter;
+	Frustums[split]->Point[4] = fc - up*far_height - right*far_width;
+	Frustums[split]->Point[5] = fc + up*far_height - right*far_width;
+	Frustums[split]->Point[6] = fc + up*far_height + right*far_width;
+	Frustums[split]->Point[7] = fc - up*far_height + right*far_width;
 
-
-		float dist = 1;
-		float3 DirL = Position;
-		float3 TarG = float3(Frustums[split]->Center.x, Frustums[split]->Center.y, Frustums[split]->Center.z);
-
-		float3 LightPos = TarG + DirL*dist;
-		float3 LightPos2 = DirL;
-		float3 LightTarget = TarG;
-		float3	Lightup(0.0f, 1.0f, 0.0f);
-		Views[split] = SMMatrixLookAtLH(LightPos, LightTarget, Lightup);
-
-		float minX = 0;
-		float minY = 0;
-		float minZ = 0;
-		float maxX = 0;
-		float maxY = 0;
-		float maxZ = 0;
-
-		float4 trans0;
-		float4 transform0(Frustums[split]->Point[0].x, Frustums[split]->Point[0].y, Frustums[split]->Point[0].z, 1);
-		trans0 = SMVector4Transform(transform0, Views[split]);
-
-		minX = trans0.x; maxX = trans0.x;
-		minY = trans0.y; maxY = trans0.y;
-		maxZ = trans0.z;
-
-		for (int i = 0; i<8; i++)
-		{
-			float4 trans;
-			float4 transform(Frustums[split]->Point[i].x, Frustums[split]->Point[i].y, Frustums[split]->Point[i].z, 1);
-
-			trans = SMVector4Transform(transform, Views[split]);
-
-			if (minX>trans.x)
-				minX = trans.x;
-			if (maxX<trans.x)
-				maxX = trans.x;
-			if (minY>trans.y)
-				minY = trans.y;
-			if (maxY < trans.y)
-				maxY = trans.y;
-			if (maxZ<trans.z)
-				maxZ = trans.z;
-			if (minZ>trans.z)
-				minZ = trans.z;
-		}
+	float3 vCenter(0, 0, 0);
+	for (int i = 0; i < 8; i++)
+		vCenter += Frustums[split]->Point[i];
+	vCenter /= 8;
+	Frustums[split]->Center = vCenter;
 
 
-		float2 OrtMax = float2(maxX, maxY);
-		float2 OrtMin = float2(minX, minY);
+	float dist = 1;
+	float3 DirL = Position;
+	float3 TarG = float3(Frustums[split]->Center.x, Frustums[split]->Center.y, Frustums[split]->Center.z);
 
-		float3 Diagonal = Frustums[split]->Point[0] - Frustums[split]->Point[6];
-		float LengthDiagonal = SMVector3Length(Diagonal);
+	float3 LightPos = TarG + DirL*dist;
+	float3 LightPos2 = DirL;
+	float3 LightTarget = TarG;
+	float3	Lightup(0.0f, 1.0f, 0.0f);
+	Views[split] = SMMatrixLookAtLH(LightPos, LightTarget, Lightup);
 
-		float2 BoarderOffset = (float2(LengthDiagonal, LengthDiagonal) - (OrtMax - OrtMin)) * 0.5;
+	float minX = 0;
+	float minY = 0;
+	float minZ = 0;
+	float maxX = 0;
+	float maxY = 0;
+	float maxZ = 0;
 
-		OrtMax += BoarderOffset;
-		OrtMin -= BoarderOffset;
+	float4 trans0;
+	float4 transform0(Frustums[split]->Point[0].x, Frustums[split]->Point[0].y, Frustums[split]->Point[0].z, 1);
+	trans0 = SMVector4Transform(transform0, Views[split]);
 
-		float2 WorldUnitsPerTexel = float2(LengthDiagonal, LengthDiagonal) / float2(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
+	minX = trans0.x; maxX = trans0.x;
+	minY = trans0.y; maxY = trans0.y;
+	maxZ = trans0.z;
 
-		OrtMin /= WorldUnitsPerTexel;
-		OrtMin.x = floor(OrtMin.x);
-		OrtMin.y = floor(OrtMin.y);
-		OrtMin *= WorldUnitsPerTexel;
+	for (int i = 0; i<8; i++)
+	{
+		float4 trans;
+		float4 transform(Frustums[split]->Point[i].x, Frustums[split]->Point[i].y, Frustums[split]->Point[i].z, 1);
 
-		OrtMax /= WorldUnitsPerTexel;
-		OrtMax.x = floor(OrtMax.x);
-		OrtMax.y = floor(OrtMax.y);
-		OrtMax *= WorldUnitsPerTexel;
+		trans = SMVector4Transform(transform, Views[split]);
 
-		D3DXMATRIX tmpproj;
-		D3DXMatrixOrthoOffCenterLH(&tmpproj, OrtMin.x, OrtMax.x, OrtMin.y, OrtMax.y, minZ, maxZ);
-		Projs[split] = float4x4(tmpproj);
+		if (minX>trans.x)
+			minX = trans.x;
+		if (maxX<trans.x)
+			maxX = trans.x;
+		if (minY>trans.y)
+			minY = trans.y;
+		if (maxY < trans.y)
+			maxY = trans.y;
+		if (maxZ<trans.z)
+			maxZ = trans.z;
+		if (minZ>trans.z)
+			minZ = trans.z;
+	}
 
-		ViewProj[split] = Views[split] * Projs[split];
-		Flickering(&ViewProj[split], MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
+
+	float2 OrtMax = float2(maxX, maxY);
+	float2 OrtMin = float2(minX, minY);
+
+	float3 Diagonal = Frustums[split]->Point[0] - Frustums[split]->Point[6];
+	float LengthDiagonal = SMVector3Length(Diagonal);
+
+	float2 BoarderOffset = (float2(LengthDiagonal, LengthDiagonal) - (OrtMax - OrtMin)) * 0.5;
+
+	OrtMax += BoarderOffset;
+	OrtMin -= BoarderOffset;
+
+	float2 WorldUnitsPerTexel = float2(LengthDiagonal, LengthDiagonal) / float2(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
+
+	OrtMin /= WorldUnitsPerTexel;
+	OrtMin.x = floor(OrtMin.x);
+	OrtMin.y = floor(OrtMin.y);
+	OrtMin *= WorldUnitsPerTexel;
+
+	OrtMax /= WorldUnitsPerTexel;
+	OrtMax.x = floor(OrtMax.x);
+	OrtMax.y = floor(OrtMax.y);
+	OrtMax *= WorldUnitsPerTexel;
+
+	D3DXMATRIX tmpproj;
+	D3DXMatrixOrthoOffCenterLH(&tmpproj, OrtMin.x, OrtMax.x, OrtMin.y, OrtMax.y, minZ, maxZ);
+	Projs[split] = float4x4(tmpproj);
+
+	ViewProj[split] = Views[split] * Projs[split];
+	Flickering(&ViewProj[split], MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
 }
 
 void PSSM::PreRender(int split)
@@ -463,6 +466,22 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 
 	MLSet::DXDevice->SetVertexShader(0);
 	MLSet::DXDevice->SetPixelShader(0);
+
+	MLSet::DXDevice->SetRenderTarget(0, BackBuf);
+
+	mem_release_del(RenderSurf);
+	mem_release_del(BackBuf);
+}
+
+void PSSM::GenShadowAll(IDirect3DTexture9* shadowmap)
+{
+	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+
+	shadowmap->GetSurfaceLevel(0, &RenderSurf);
+	MLSet::DXDevice->GetRenderTarget(0, &BackBuf);
+	MLSet::DXDevice->SetRenderTarget(0, RenderSurf);
+
+	MLSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuf);
 

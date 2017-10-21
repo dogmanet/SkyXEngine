@@ -16,7 +16,7 @@ void SXLevelEditor::LevelNew(bool mess)
 
 	SLevel_Clear();
 	char tmpcaption[256];
-	sprintf(tmpcaption, "%s: new level ** ", EDITORS_LEVEL_CAPTION);
+	sprintf(tmpcaption, "%s: new level ** ", "SXLevelEditor");
 	SXLevelEditor::JobWindow->SetText(tmpcaption);
 	SXLevelEditor::ActiveGroupType = 0;
 	SXLevelEditor::ActiveElement = -1;
@@ -48,7 +48,7 @@ void SXLevelEditor::LevelOpen()
 		StrCutNameNEx(tmppath, tmpname);
 		SLevel_Load(tmpname, false);
 		char tmpcaption[256];
-		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
+		sprintf(tmpcaption, "%s: %s", "SXLevelEditor", tmpname);
 		SXLevelEditor::JobWindow->SetText(tmpcaption);
 
 		ID gid = SML_LigthsGetGlobal();
@@ -97,7 +97,7 @@ void SXLevelEditor::LevelSaveAs()
 		StrCutNameNEx(tmppath, tmpname);
 		SLevel_Save(tmpname);
 		char tmpcaption[256];
-		sprintf(tmpcaption, "%s: %s", EDITORS_LEVEL_CAPTION, tmpname);
+		sprintf(tmpcaption, "%s: %s", "SXLevelEditor", tmpname);
 		SXLevelEditor::JobWindow->SetText(tmpcaption);
 	}
 }
@@ -248,6 +248,13 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int *resize = (int*)GET_PCVAR_INT("resize");
+
+	if (!resize)
+		resize = (int*)GET_PCVAR_INT("resize");
+
+	if (!resize)
+		return 0;
+
 	*resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }

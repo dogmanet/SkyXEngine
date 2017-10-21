@@ -1,12 +1,12 @@
 
 /******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
 /*!
 \file
-Заголовочный файл sxrender - библиотека функций рендера
+Р—Р°РіРѕР»РѕРІРѕС‡РЅС‹Р№ С„Р°Р№Р» sxrender - Р±РёР±Р»РёРѕС‚РµРєР° СЂРµРЅРґРµСЂР°
 */
 
 #ifndef __SXRENDER_H
@@ -77,259 +77,309 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
-/*
-//быстрая реализация фильтрации и адресации
-//{
-//индивидуально для регистра
-inline void SetSamplerFilter(DWORD id, DWORD value);
-inline void SetSamplerAddress(DWORD id, DWORD value);
-
-//для указанного промежутка групп регистров
-inline void SetSamplerFilter(DWORD begin_id, DWORD end_id, DWORD value);
-inline void SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD value);
-
-void SetRenderSceneFilter();
-void SetRenderSceneFilterUn();
-//}
-*/
+/*! \defgroup sxrender sxrender - Р±РёР±Р»РёРѕС‚РµРєР° СЂРµРЅРґРµСЂР°
+@{*/
 
 //##########################################################################
 
-/*! \defgroup managed_render_render_def render_def - дефайны/контсанты рендера
-\ingroup managed_render
+/*! \defgroup sxrender_render_def render_def - РґРµС„Р°Р№РЅС‹/РєРѕРЅС‚СЃР°РЅС‚С‹ СЂРµРЅРґРµСЂР°
+\ingroup sxrender
 @{*/
 
-/*! \name Состояния рендера
+/*! \name РЎРѕСЃС‚РѕСЏРЅРёСЏ СЂРµРЅРґРµСЂР°
 @{*/
 
-#define RENDER_STATE_MATERIAL	0	/*!< отрисовка материалов */
-#define RENDER_STATE_SHADOW		1	/*!< отрисовка теней */
-#define RENDER_STATE_FREE		2	/*!< простая отрисовка (не материальная) */
+/*! РѕС‚СЂРёСЃРѕРІРєР° РјР°С‚РµСЂРёР°Р»РѕРІ */
+#define RENDER_STATE_MATERIAL	0	
+
+/*! РѕС‚СЂРёСЃРѕРІРєР° С‚РµРЅРµР№ */
+#define RENDER_STATE_SHADOW		1	
+
+/*! РїСЂРѕСЃС‚Р°СЏ РѕС‚СЂРёСЃРѕРІРєР° (РЅРµ РјР°С‚РµСЂРёР°Р»СЊРЅР°СЏ) */
+#define RENDER_STATE_FREE		2	
 
 //!@}
 
-/*! \name Идентификаторы для определяния типа просчетов видимости
+/*! \name РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РґР»СЏ РѕРїСЂРµРґРµР»СЏРЅРёСЏ С‚РёРїР° РїСЂРѕСЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё
 @{*/
 
-#define RENDER_IDARRCOM_GEOM	0	/*!< геометрия */
-#define RENDER_IDARRCOM_GREEN	1	/*!< растительность */
-#define RENDER_IDARRCOM_ANIM	2	/*!< анимации */
+/*! РіРµРѕРјРµС‚СЂРёСЏ */
+#define RENDER_IDARRCOM_GEOM	0	
+
+/*! СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚СЊ */
+#define RENDER_IDARRCOM_GREEN	1	
+
+/*! Р°РЅРёРјР°С†РёРё */
+#define RENDER_IDARRCOM_ANIM	2	
 
 //!@}
 
-#define RENDER_PARTICLES_ALPHATEST_VALUE 16	/*!< минимальное значение для альфа теста */
 
-/*! \name Идентификаторы для определяния типа просчетов видимости
+/*! РјРёРЅРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РґР»СЏ Р°Р»СЊС„Р° С‚РµСЃС‚Р° */
+#define RENDER_PARTICLES_ALPHATEST_VALUE 16	
+
+
+/*! \name РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РґР»СЏ РѕРїСЂРµРґРµР»СЏРЅРёСЏ С‚РёРїР° РїСЂРѕСЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё
 @{*/
 
-#define RENDER_LAYER_NULL			0	/*!< нулевой (пустой слой, здесь будут к примеру скайбокс, облака и т.д.) */
-#define RENDER_LAYER_UNTRANSPARENT	1	/*!< непрозрачный слой */
-#define RENDER_LAYER_TRANSPARENT	2	/*!< первый прозрачный слой, следующие слои могут быть прозрачными */
+/*! РЅСѓР»РµРІРѕР№ (РїСѓСЃС‚РѕР№ СЃР»РѕР№, Р·РґРµСЃСЊ Р±СѓРґСѓС‚ Рє РїСЂРёРјРµСЂСѓ СЃРєР°Р№Р±РѕРєСЃ, РѕР±Р»Р°РєР° Рё С‚.Рґ.) */
+#define RENDER_LAYER_NULL			0	
+
+/*! РЅРµРїСЂРѕР·СЂР°С‡РЅС‹Р№ СЃР»РѕР№ */
+#define RENDER_LAYER_UNTRANSPARENT	1	
+
+/*! РїРµСЂРІС‹Р№ РїСЂРѕР·СЂР°С‡РЅС‹Р№ СЃР»РѕР№, СЃР»РµРґСѓСЋС‰РёРµ СЃР»РѕРё РјРѕРіСѓС‚ Р±С‹С‚СЊ РїСЂРѕР·СЂР°С‡РЅС‹РјРё */
+#define RENDER_LAYER_TRANSPARENT	2	
 
 //!@}
 
-/*! ничего не меняли */
+/*! РЅРёС‡РµРіРѕ РЅРµ РјРµРЅСЏР»Рё */
 #define RENDER_RESIZE_NONE		0
 
-/*! ресайз */
+/*! СЂРµСЃР°Р№Р· */
 #define RENDER_RESIZE_RESIZE	1
 
-/*! переход между фуллскрин и окном */
+/*! РїРµСЂРµС…РѕРґ РјРµР¶РґСѓ С„СѓР»Р»СЃРєСЂРёРЅ Рё РѕРєРЅРѕРј */
 #define RENDER_RESIZE_CHANGE	2
 
-//! цвет очистки цветового буфера сцены по умолчанию
+//! С†РІРµС‚ РѕС‡РёСЃС‚РєРё С†РІРµС‚РѕРІРѕРіРѕ Р±СѓС„РµСЂР° СЃС†РµРЅС‹ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 #define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
 
-#define G_DATA_LIGHT_FAR 100000 /*!< дальняя плоскость отсечения наблюдателя для света */
+/*! РґР°Р»СЊРЅСЏСЏ РїР»РѕСЃРєРѕСЃС‚СЊ РѕС‚СЃРµС‡РµРЅРёСЏ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ РґР»СЏ СЃРІРµС‚Р° */
+#define G_DATA_LIGHT_FAR 100000 
 
 //**************************************************************************
 
-/*! \name Форматы файлов для диалога загрузки/сохранения
+/*! \name Р¤РѕСЂРјР°С‚С‹ С„Р°Р№Р»РѕРІ РґР»СЏ РґРёР°Р»РѕРіР° Р·Р°РіСЂСѓР·РєРё/СЃРѕС…СЂР°РЅРµРЅРёСЏ
 @{
 */
 
-/*! текстуры*/
+/*! С‚РµРєСЃС‚СѓСЂС‹*/
 #define FILE_FILTER_TEXTURE	"All files\0*.*\0png file(.png)\0*.png\0dds file(.dds)\0*.dds\0\0"
 
-/*! конфиг файл уровня*/
+/*! РєРѕРЅС„РёРі С„Р°Р№Р» СѓСЂРѕРІРЅСЏ*/
 #define FILE_FILTER_LEVEL	"SkyX level file(.lvl)\0*.lvl\0All files\0*.*\0\0"
 
-/*! dse модель*/
+/*! dse РјРѕРґРµР»СЊ*/
 #define FILE_FILTER_MODEL	"dse file(.dse)\0*.dse\0All files\0*.*\0\0"
 
-/*! вершинный шейдер*/
+/*! РІРµСЂС€РёРЅРЅС‹Р№ С€РµР№РґРµСЂ*/
 #define FILE_FILTER_VS		"vertex shader file(.vs)\0*.vs\0All files\0*.*\0\0"
 
-/*! пиксельный шейдер*/
+/*! РїРёРєСЃРµР»СЊРЅС‹Р№ С€РµР№РґРµСЂ*/
 #define FILE_FILTER_PS		"pixel shader file(.ps)\0*.ps\0All files\0*.*\0\0"
 
 //!@}
 
-/*! \name Типы возможных выделенных объектов
+/*! \name РўРёРїС‹ РІРѕР·РјРѕР¶РЅС‹С… РІС‹РґРµР»РµРЅРЅС‹С… РѕР±СЉРµРєС‚РѕРІ
 @{
 */
 
-#define EDITORS_LEVEL_GROUPTYPE_GEOM	1	/*!< статическая геометрия */
-#define EDITORS_LEVEL_GROUPTYPE_GREEN	2	/*!< растительность */
-#define EDITORS_LEVEL_GROUPTYPE_GAME	3	/*!< игровые объекты */
-#define EDITORS_LEVEL_GROUPTYPE_AIGRID	4	/*!< ai сетка */
+/*! СЃС‚Р°С‚РёС‡РµСЃРєР°СЏ РіРµРѕРјРµС‚СЂРёСЏ */
+#define EDITORS_LEVEL_GROUPTYPE_GEOM	1	
+
+/*! СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚СЊ */
+#define EDITORS_LEVEL_GROUPTYPE_GREEN	2	
+
+/*! РёРіСЂРѕРІС‹Рµ РѕР±СЉРµРєС‚С‹ */
+#define EDITORS_LEVEL_GROUPTYPE_GAME	3	
+
+/*! ai СЃРµС‚РєР° */
+#define EDITORS_LEVEL_GROUPTYPE_AIGRID	4	
 
 //!@}
 
-#define EDITORS_LEVEL_CAPTION "SXLevelEditor"
-#define EDITORS_LEVEL_STATUSBAR_LEVEL_POLY "Level poly: "
-#define EDITORS_LEVEL_STATUSBAR_GEOM_POLY "Geom poly: "
-#define EDITORS_LEVEL_STATUSBAR_GREEN_POLY "Green poly: "
-#define EDITORS_LEVEL_STATUSBAR_GAME_COUNT "Count game object: "
+//!@} sxrender_render_def
 
 //##########################################################################
 
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ СЂРµРЅРґРµСЂР°
 SX_LIB_API long SRender_0GetVersion();
 
-//! установить функцию обработки сообщений
+//! СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С„СѓРЅРєС†РёСЋ РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№
 SX_LIB_API void SRender_Dbg_Set(report_func rf);
 
-//! инициализция подсистемы
+//! РёРЅРёС†РёР°Р»РёР·С†РёСЏ РїРѕРґСЃРёСЃС‚РµРјС‹
 SX_LIB_API void SRender_0Create(
-	const char *szName,			//!< присваиваемое имя
-	HWND hWnd3D,
-	HWND hWndParent3D,
-	bool isUnic = true			//!< должна ли подсистема быть уникальной по имени
+	const char *szName,			//!< РїСЂРёСЃРІР°РёРІР°РµРјРѕРµ РёРјСЏ
+	HWND hWnd3D,				//!< С…СЌРЅРґР» РѕРєРЅР° СЂРµРЅРґРµСЂР°
+	HWND hWndParent3D,			//!< С…СЌРЅРґР» СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР° СЂРµРЅРґРµСЂР° (РЅР° СЃР»СѓС‡Р°Р№ РµСЃР»Рё Сѓ РЅР°СЃ СЂРµРґР°РєС‚РѕСЂ)
+	bool isUnic = true			//!< РґРѕР»Р¶РЅР° Р»Рё РїРѕРґСЃРёСЃС‚РµРјР° Р±С‹С‚СЊ СѓРЅРёРєР°Р»СЊРЅРѕР№ РїРѕ РёРјРµРЅРё
 	);
 
-//! уничтожить подсистему
+//! СѓРЅРёС‡С‚РѕР¶РёС‚СЊ РїРѕРґСЃРёСЃС‚РµРјСѓ
 SX_LIB_API void SRender_AKill();
 
 //##########################################################################
 
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ С…СЌРЅРґР» РѕРєРЅР° СЂРµРЅРґРµСЂР°
 SX_LIB_API HWND SRender_GetHandleWin3D();
+
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ С…СЌРЅРґР» СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР° СЂРµРЅРґРµСЂР°
 SX_LIB_API HWND SRender_GetParentHandleWin3D();
 
+
+//! СѓСЃС‚Р°РЅРѕРІРєР° С…СЌРЅРґР»Р° РѕРєРЅР° СЂРµРЅРґРµСЂР°
 SX_LIB_API void SRender_SetHandleWin3D(HWND hWnd);
+
+//! СѓСЃС‚Р°РЅРѕРІРєР° С…СЌРЅРґР»Р° СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕРєРЅР° СЂРµРЅРґРµСЂР°
 SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd);
 
+
+//! СѓСЃС‚Р°РЅРѕРІРєР° С‚РµРєСѓС‰РµР№ РєР°РјРµСЂС‹
 SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera);
+
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰СѓСЋ РєР°РјРµСЂСѓ
 SX_LIB_API ISXCamera* SRender_GetCamera();
 
-SX_LIB_API void SRender_EditorCameraSetMove(bool canMove);
-SX_LIB_API bool SRender_EditorCameraGetMove();
-
 //**************************************************************************
 
-//SX_LIB_API void SRender_SimModelSetPosition(const float3 *pPos);
+/*! \name РЎРёРјСѓР»СЏС†РёРѕРЅРЅР°СЏ РјРѕРґРµР»СЊ СЂРµРЅРґРµСЂР°
+ \note РЎРѕР·РґР°РЅР° РґР»СЏ СЂРµРґР°РєС‚РѕСЂР° РјР°С‚РµСЂРёР°Р»РѕРІ, С‡С‚РѕР±С‹ РѕРґРЅРѕР№ РјРѕРґРµР»СЊСЋ РїСЂРµРґРѕСЃС‚Р°РІРёС‚СЊ СЂРµРЅРґРµСЂ РІСЃРµС… РёРјРµСЋС‰РёС…СЃСЏ С‚РёРїРѕРІ
+ \warning Р”РѕР±Р°РІРёС‚СЊ РІ СЃРёРјСѓР»СЏС†РёРѕРЅРЅСѓСЋ РјРѕРґРµР»СЊ СЂРµРЅРґРµСЂР° РІРѕР·РјРѕР¶РЅРѕ С‚РѕР»СЊРєРѕ СЃС‚Р°С‚РёС‡РµСЃРєСѓСЋ РјРѕРґРµР»СЊ, Сѓ РєРѕС‚РѕСЂРѕР№ РјРѕР¶РµС‚ Р±С‹С‚СЊ С‚РѕР»СЊРєРѕ РѕРґРЅР° РїРѕРґРіСЂСѓРїРїР° СЃ РѕРґРЅРѕР№ С‚РµРєСЃС‚СѓСЂРѕР№
+@{*/
+
+//! РґРѕР±Р°РІРёС‚СЊ СЃС‚Р°С‚РёС‡РµСЃРєСѓСЋ РјРѕРґРµР»СЊ РІ СЃРёРјСѓР»СЏС†РёРѕРЅРЅРѕСѓСЋ РјРѕРґРµР»СЊ СЂРµРЅРґРµСЂР°, szName - РїСѓС‚СЊ РґРѕ СЃС‚Р°С‚РёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїР°РїРєРё РјРµСЃС‚РѕРЅР°С…РѕР¶РґРµРЅРёСЏ
 SX_LIB_API void SRender_SimModelAdd(const char *szName);
+
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ id РјР°С‚РµСЂРёР°Р»Р°
 SX_LIB_API ID SRender_SimModelGetIDMtl();
 
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї РјРѕРґРµР»Рё
 SX_LIB_API MTLTYPE_MODEL SRender_SimModelGetType();
+
+//! СѓСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РёРї РјРѕРґРµР»Рё
 SX_LIB_API void SRender_SimModelSetType(MTLTYPE_MODEL type);
 
+
+//! Р°РєС‚РёРІРёСЂСѓРµС‚ Р·Р°РіСЂСѓР¶РµРЅРЅСѓСЋ СЃС‚Р°С‚РёС‡РµСЃРєСѓСЋ РјРѕРґРµР»СЊ РїРѕ РЅРѕРјРµСЂСѓ
 SX_LIB_API void SRender_SimModelSetNumCurrModel(int iCurrNumModel);
+
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РёР№ РЅРѕРјРµСЂ Р°РєС‚РёРІРЅРѕР№ СЃС‚Р°С‚РёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё
 SX_LIB_API int SRender_SimModelGetNumCurrModel();
 
+//! СѓСЃС‚Р°РЅРѕРІРєР° С‚РµРєСѓС‰РµРіРѕ СѓРіР»Р° РїРѕРІРѕСЂРѕС‚Р° РїРѕ РѕСЃРё Y
 SX_LIB_API void SRender_SimModelSetRotationY(float Rotation);
+
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РёР№ СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р° РїРѕ РѕСЃРё Y
 SX_LIB_API float SRender_SimModelGetRotationY();
 
+//!@}
+
 //**************************************************************************
 
+/*! \name РЎС‚Р°С‚РёС‡РµСЃРєРёРµ РѕР±СЉРµРєС‚С‹ РґР»СЏ СЂРµРЅРґРµСЂР° РІ СЂРµРґР°РєС‚РѕСЂР°С…
+@{*/
+
+//! СѓСЃС‚Р°РЅРѕРІРєР° СЂРµРЅРґРµСЂР° СЃС‚Р°С‚РёС‡РµСЃРєРѕР№ СЃРµС‚РєРё
 SX_LIB_API void SRender_EditorSetRenderGrid(bool canRender);
+
+//! СЂР°Р·СЂРµС€РµРЅ Р»Рё СЂРµРЅРґРµСЂ СЃС‚Р°С‚РёС‡РµСЃРєРѕР№ СЃРµС‚РєРё
 SX_LIB_API bool SRender_EditorGetRenderGrid();
 
+//! СѓСЃС‚Р°РЅРѕРІРєР° СЂРµРЅРґРµСЂР° СЃС‚Р°С‚РёС‡РµСЃРєРёС… РѕСЃРµР№
 SX_LIB_API void SRender_EditorSetRenderAxesStatic(bool canRender);
+
+//! СЂР°Р·СЂРµС€РµРЅ Р»Рё СЂРµРЅРґРµСЂ СЃС‚Р°С‚РёС‡РµСЃРєРёС… РѕСЃРµР№
 SX_LIB_API bool SRender_EditorGetRenderAxesStatic();
 
+//!@}
+
 //**************************************************************************
 
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ id С‚РµРєСЃС‚СѓСЂС‹ РєРѕС‚РѕСЂР°СЏ СЃРѕРґРµСЂР¶РёС‚ С†РІРµС‚ РІС‹РґРµР»РµРЅРёСЏ
 SX_LIB_API ID SRender_EditorGetSelectTex();
 
-//**************************************************************************
+//! СѓСЃС‚Р°РЅРѕРІРєР° РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё СѓРїСЂР°РІР»РµРЅРёСЏ РєР°РјРµСЂРѕР№
+SX_LIB_API void SRender_EditorCameraSetMove(bool canMove);
 
-//##########################################################################
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ РІРѕР·РјРѕР¶РЅРѕ Р»Рё СѓРїСЂР°РІР»СЏС‚СЊ РєР°РјРµСЂРѕР№
+SX_LIB_API bool SRender_EditorCameraGetMove();
 
-//! обработка вводы информации с клавиатуры
-SX_LIB_API void SRender_UpdateInputKeyBoard(DWORD timeDelta);
-
-//! обработка движения мыши вправо и влево
-SX_LIB_API void SRender_UpdateInputMouseRotate(DWORD timeDelta);
-
-//! обработка движения мыши вверх вниз
-SX_LIB_API void SRender_UpdateInputMouseUpDown(DWORD timeDelta);
-
-//! центрирвоание курсора мыши
+//! С†РµРЅС‚СЂРёСЂРІРѕР°РЅРёРµ РєСѓСЂСЃРѕСЂР° РјС‹С€Рё
 SX_LIB_API void SRender_CentererCursor();
 
-//! обновление навигации режим "редактор"
+//! РѕР±РЅРѕРІР»РµРЅРёРµ РЅР°РІРёРіР°С†РёРё СЂРµР¶РёРј "СЂРµРґР°РєС‚РѕСЂ"
 SX_LIB_API void SRender_UpdateEditorial(DWORD timeDelta);
 
 //##########################################################################
 
-//! обработка потери и восстановление устройства
+//! РѕР±СЂР°Р±РѕС‚РєР° РїРѕС‚РµСЂРё Рё РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ СѓСЃС‚СЂРѕР№СЃС‚РІР°
 SX_LIB_API void SRender_ComDeviceLost();
 
-//! обработка видимости для источников света
+//! РѕР±СЂР°Р±РѕС‚РєР° РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
 SX_LIB_API void SRender_ComVisibleForLight();
 
-//! обработка видимости для камеры
+//! РѕР±СЂР°Р±РѕС‚РєР° РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ РєР°РјРµСЂС‹
 SX_LIB_API void SRender_ComVisibleForCamera();
 
-//! обработка видимости для отражений
+//! РѕР±СЂР°Р±РѕС‚РєР° РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ РѕС‚СЂР°Р¶РµРЅРёР№
 SX_LIB_API void SRender_ComVisibleReflection();
 
 
-//! обработка и установка основных матриц, обработка плоскостей отсечения
+//! РѕР±СЂР°Р±РѕС‚РєР° Рё СѓСЃС‚Р°РЅРѕРІРєР° РѕСЃРЅРѕРІРЅС‹С… РјР°С‚СЂРёС†, РѕР±СЂР°Р±РѕС‚РєР° РїР»РѕСЃРєРѕСЃС‚РµР№ РѕС‚СЃРµС‡РµРЅРёСЏ
 SX_LIB_API void SRender_UpdateView();
 
-//! вывод отладочной текстовой информации в окно рендера
+//! РІС‹РІРѕРґ РѕС‚Р»Р°РґРѕС‡РЅРѕР№ С‚РµРєСЃС‚РѕРІРѕР№ РёРЅС„РѕСЂРјР°С†РёРё РІ РѕРєРЅРѕ СЂРµРЅРґРµСЂР°
 SX_LIB_API void SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime);
 
 
-//! построение G буфера, то есть рендер всей сцены
+//! РїРѕСЃС‚СЂРѕРµРЅРёРµ G Р±СѓС„РµСЂР°, С‚Рѕ РµСЃС‚СЊ СЂРµРЅРґРµСЂ РІСЃРµР№ СЃС†РµРЅС‹
 SX_LIB_API void SRender_BuildMRT(DWORD timeDelta, bool isRenderSimulation);
 
-//! обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
+//! РѕР±РЅРѕРІР»РµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Рѕ С‚РµРЅСЏС… (СЂРµРЅРґРµСЂ РІСЃРµРіРѕ С‚РѕРіРѕ С‡С‚Рѕ РѕС‚Р±СЂР°СЃС‹РІР°РµС‚ С‚РµРЅРё РІ Р±СѓС„РµСЂС‹ РіР»СѓР±РёРЅ РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°)
 SX_LIB_API void SRender_UpdateShadow(DWORD timeDelta);
 
-//! обработка/обновление отражений
+
+//! РѕР±СЂР°Р±РѕС‚РєР°/РѕР±РЅРѕРІР»РµРЅРёРµ РѕС‚СЂР°Р¶РµРЅРёР№
 SX_LIB_API void SRender_UpdateReflection(DWORD timeDelta, bool isRenderSimulation);
 
+//! РѕР±РЅРѕРІР»РµРЅРёРµ РѕС‚СЂР°Р¶РµРЅРёР№ РґР»СЏ СЃС†РµРЅС‹
 SX_LIB_API void SRender_UpdateReflectionScene(DWORD timeDelta);
 
+//! РѕР±РЅРѕРІР»РµРЅРёРµ РѕС‚СЂР°Р¶РµРЅРёР№ РґР»СЏ СЃРёРјСѓР»СЏС†РёРѕРЅРЅРѕР№ РјРѕРґРµР»Рё
 SX_LIB_API void SRender_UpdateReflectionSimModel(DWORD timeDelta);
 
-//! отрисовка скайбокса и облаков
+
+//! РѕС‚СЂРёСЃРѕРІРєР° СЃРєР°Р№Р±РѕРєСЃР° Рё РѕР±Р»Р°РєРѕРІ
 SX_LIB_API void SRender_RenderSky(DWORD timeDelta);
 
-//! обработка освещения
+//! РѕР±СЂР°Р±РѕС‚РєР° РѕСЃРІРµС‰РµРЅРёСЏ
 SX_LIB_API void SRender_ComLighting(DWORD timeDelta);
 
-//! объединение слоев прозрачности
+//! РѕР±СЉРµРґРёРЅРµРЅРёРµ СЃР»РѕРµРІ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚Рё
 SX_LIB_API void SRender_UnionLayers();
 
-//! применение тонмаппинга к рт
+//! РїСЂРёРјРµРЅРµРЅРёРµ С‚РѕРЅРјР°РїРїРёРЅРіР° Рє СЂС‚
 SX_LIB_API void SRender_ApplyToneMapping();
 
-//! просчет тонмаппинга
+//! РїСЂРѕСЃС‡РµС‚ С‚РѕРЅРјР°РїРїРёРЅРіР°
 SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta);
 
 
-//! отрисовка партиклов (эффектов)
+//! РѕС‚СЂРёСЃРѕРІРєР° РїР°СЂС‚РёРєР»РѕРІ (СЌС„С„РµРєС‚РѕРІ)
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta);
 
-//! отрисовка постпроцесса
+//! РѕС‚СЂРёСЃРѕРІРєР° РїРѕСЃС‚РїСЂРѕС†РµСЃСЃР°
 SX_LIB_API void SRender_RenderPostProcess(DWORD timeDelta);
 
+//! РѕС‡РёСЃС‚РєР° СЂРµРіРёСЃС‚СЂРѕРІ С€РµР№РґРµСЂРѕРІ (Р±С‹Р»Рё СЃР»СѓС‡Р°Рё РєРѕРіРґР° РЅРµ РёРЅРёС†РёР°РёР»РёР·РёСЂРѕРІР°РІ РѕРїСЂРµРґРµР»РµРЅРЅС‹Р№ СЂРµРіРёСЃС‚ РІ С€РµР№РґРµСЂРµ, С€РµР№РґРµСЂ Р±СЂР°Р» С‚Рѕ С‡С‚Рѕ Р±С‹Р»Рѕ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ РґРѕ РЅРµРіРѕ)
 SX_LIB_API void SRender_ShaderRegisterData();
 
+//! СЂРµРЅРґРµСЂ СЃС‚Р°С‚РёС‡РЅС‹С… РѕР±СЉРµРєС‚РѕРІ РґР»СЏ СЂРµРґР°РєС‚РѕСЂРѕРІ (СЃРµС‚РєР°, РЅР°РїСЂР°РІР»РµРЅРёРµ РѕСЃРµР№ РІ С†РµРЅС‚СЂРµ СЃРёСЃС‚РµРјС‹)
 SX_LIB_API void SRender_RenderEditorMain();
 
 //##########################################################################
 
-//! сохранить скриншот
+//! СЃРѕС…СЂР°РЅРёС‚СЊ СЃРєСЂРёРЅС€РѕС‚
 SX_LIB_API void SRender_SaveScreenShot();
 
-//! сохранить рабочие текстуры (г-буфер и что к нему прилагается)
+//! СЃРѕС…СЂР°РЅРёС‚СЊ СЂР°Р±РѕС‡РёРµ С‚РµРєСЃС‚СѓСЂС‹ (Рі-Р±СѓС„РµСЂ Рё С‡С‚Рѕ Рє РЅРµРјСѓ РїСЂРёР»Р°РіР°РµС‚СЃСЏ)
 SX_LIB_API void SRender_SaveWorkTex();
 
-//! изменить режим рендера (оконный/полноэкранный)
+//! РёР·РјРµРЅРёС‚СЊ СЂРµР¶РёРј СЂРµРЅРґРµСЂР° (РѕРєРѕРЅРЅС‹Р№/РїРѕР»РЅРѕСЌРєСЂР°РЅРЅС‹Р№)
 SX_LIB_API void SRender_ChangeModeWindow();
+
+//!@} sxrender
 
 #endif

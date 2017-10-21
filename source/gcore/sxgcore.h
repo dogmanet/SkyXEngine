@@ -85,6 +85,9 @@ SX_LIB_API void SGCore_AKill();
 //! возвращает dx устройство
 SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	
 
+//! возвращает массив всех доступных разрешений монитора
+SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount);
+
 //!@}
 
 //#############################################################################

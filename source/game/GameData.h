@@ -24,7 +24,7 @@ public:
 	void RenderHUD();
 	void Sync();
 
-	void playFootstepSound(MtlPhysicType mtl_type, const float3 &f3Pos);
+	void playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos);
 
 protected:
 

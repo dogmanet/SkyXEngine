@@ -9,8 +9,8 @@ See the license in LICENSE
 Заголовочный файл render_func - пространства имен с орагнизацией рендера
 */
 
-/*! \defgroup managed_render_render_func render_func - пространство имен с орагнизацией рендера
- \ingroup managed_render
+/*! \defgroup render_render_func render_func - пространство имен с орагнизацией рендера
+ \ingroup render
 @{*/
 
 #ifndef __RENDER_FUNC_H
@@ -24,7 +24,6 @@ See the license in LICENSE
 #include <common/SXMath.h>
 
 #include <render/gdata.h>
-#include <render/render_def.h>
 
 #include <geom/sxgeom.h>
 #include <mtllight/sxmtllight.h>
@@ -59,23 +58,41 @@ namespace SXRenderFunc
 	//! обработка потери и восстановление устройства
 	void ComDeviceLost();
 
-	void UpdateView();						//!< обработка и установка основных матриц, обработка плоскостей отсечения
-	void OutputDebugInfo(DWORD timeDelta, bool needGameTime);	//!< вывод отладочной текстовой информации в окно рендера
+	//! обработка и установка основных матриц, обработка плоскостей отсечения
+	void UpdateView();						
 
-	void ComVisibleForLight();				//!< обработка видимости для источников света
-	void ComVisibleForCamera();				//!< обработка видимости для камеры
-	void ComVisibleReflection();			//!< обработка видимости для отражений
+	//! вывод отладочной текстовой информации в окно рендера
+	void OutputDebugInfo(DWORD timeDelta, bool needGameTime);	
 
-	void BuildMRT(DWORD timeDelta, bool isRenderSimulation);		//!< построение G буфера, то есть рендер всей сцены
+	//! обработка видимости для источников света
+	void ComVisibleForLight();				
 
-	void UpdateShadow(DWORD timeDelta);		//!< обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
+	//! обработка видимости для камеры
+	void ComVisibleForCamera();				
+
+	//! обработка видимости для отражений
+	void ComVisibleReflection();			
+
+
+	//! построение G буфера, то есть рендер всей сцены
+	void BuildMRT(DWORD timeDelta, bool isRenderSimulation);		
+
+
+	//! обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
+	void UpdateShadow(DWORD timeDelta);		
 	
-	void UpdateReflection(DWORD timeDelta, bool isRenderSimulation);	//!< обработка/обновление отражений
+
+	//! обработка/обновление отражений
+	void UpdateReflection(DWORD timeDelta, bool isRenderSimulation);	
 	void UpdateReflectionScene(DWORD timeDelta);
 	void UpdateReflectionSimModel(DWORD timeDelta);
 	
-	void RenderSky(DWORD timeDelta);					//!< отрисовка скайбокса и облаков
-	void ComLighting(DWORD timeDelta);	//!< обработка освещения, render_sky - рисовать ли небо
+
+	//! отрисовка скайбокса и облаков
+	void RenderSky(DWORD timeDelta);					
+
+	//! обработка освещения, render_sky - рисовать ли небо
+	void ComLighting(DWORD timeDelta);	
 	
 	//! объединение слоев прозрачности
 	void UnionLayers();
@@ -86,20 +103,33 @@ namespace SXRenderFunc
 	//! просчет тонмаппинга
 	void ComToneMapping(DWORD timeDelta);
 	
-	void RenderParticles(DWORD timeDelta);				//!< отрисовка партиклов (эффектов)
-	void RenderPostProcess(DWORD timeDelta);			//!< отрисовка постпроцесса
+
+	//! отрисовка партиклов (эффектов)
+	void RenderParticles(DWORD timeDelta);				
+
+	//! отрисовка постпроцесса
+	void RenderPostProcess(DWORD timeDelta);			
 
 	void ShaderRegisterData();
 
 	//**********************************************************************
 
-	void RenderEditorMain();				//!< рендер основных элементов для редакторов
+	//! рендер основных элементов для редакторов
+	void RenderEditorMain();				
 
 	//**********************************************************************
 
-	void SaveScreenShot();		//!< сохранить скриншот
-	void SaveWorkTex();			//!< сохранить рабочие текстуры (г-буфер и что к нему прилагается)
-	void ChangeModeWindow();	//!< изменить режим рендера (оконный/полноэкранный)
+	//! сохранить скриншот
+	void SaveScreenShot();		
+
+	//! сохранить рабочие текстуры (г-буфер и что к нему прилагается)
+	void SaveWorkTex();	
+
+	//! установка режима окна по текущим значениям
+	void InitModeWindow();
+
+	//! изменить режим рендера (оконный/полноэкранный)
+	void ChangeModeWindow();	
 
 	//! время задержек/ожидания выполнения некоторых функций рендера
 	namespace Delay
@@ -127,4 +157,4 @@ namespace SXRenderFunc
 
 #endif
 
-//!@} managed_render_render_func
+//!@} render_render_func

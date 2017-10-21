@@ -44,13 +44,13 @@ SX_LIB_API void SGeom_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGeom_0Create(const char* name, bool is_unic)
+SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 {
-	if (name && strlen(name) > 1)
+	if (szName && strlen(szName) > 1)
 	{
-		if (is_unic)
+		if (isUnic)
 		{
-			HANDLE hMutex = CreateMutex(NULL, FALSE, name);
+			HANDLE hMutex = CreateMutex(NULL, FALSE, szName);
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);

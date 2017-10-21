@@ -58,11 +58,11 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 
 		GData::Editors::SimModel = new ModelSim();
 
-		GData::Editors::ObjGrid = new Grid();
-		GData::Editors::ObjGrid->Create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
+		GData::Editors::ObjGrid = new CGrid();
+		GData::Editors::ObjGrid->create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
 
-		GData::Editors::ObjAxesStatic = new AxesStatic();
-		GData::Editors::ObjAxesStatic->Create(1);
+		GData::Editors::ObjAxesStatic = new CAxesStatic();
+		GData::Editors::ObjAxesStatic->create(1);
 
 		GData::Editors::RenderGrid = GData::Editors::RenderAxesStatic = false;
 
@@ -207,21 +207,6 @@ SX_LIB_API float SRender_SimModelGetRotationY()
 }
 
 //##########################################################################
-
-SX_LIB_API void SRender_UpdateInputKeyBoard(DWORD timeDelta)
-{
-	CameraUpdate::UpdateInputKeyBoard(timeDelta);
-}
-
-SX_LIB_API void SRender_UpdateInputMouseRotate(DWORD timeDelta)
-{
-	CameraUpdate::UpdateInputMouseRotate(timeDelta);
-}
-
-SX_LIB_API void SRender_UpdateInputMouseUpDown(DWORD timeDelta)
-{
-	CameraUpdate::UpdateInputMouseUpDown(timeDelta);
-}
 
 SX_LIB_API void SRender_CentererCursor()
 {

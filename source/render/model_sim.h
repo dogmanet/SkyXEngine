@@ -24,8 +24,7 @@ See the license in LICENSE
 #include <anim/sxanim.h>
 #include <render/gdata.h>
 
-//симул¤ционна¤ модель всех возможных моделей материалов дл¤ редактора материалов
-
+//! симуляционная модель всех возможных моделей материалов для редактора материалов
 class ModelSim
 {
 public:
