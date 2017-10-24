@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\gdefines.h" />
+    <ClInclude Include="..\..\..\source\GRegisterIndex.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine_Build\resource.h" />
   </ItemGroup>

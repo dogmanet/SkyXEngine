@@ -246,8 +246,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 #ifndef SX_GAME
 	ISXCamera *pCamera = SGCore_CrCamera();
-	static const float *cam_fov = GET_PCVAR_FLOAT("cam_fov");
-	pCamera->SetFOV(*cam_fov);
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+	pCamera->SetFOV(*r_default_fov);
 
 	SRender_SetCamera(pCamera);
 #endif
@@ -334,56 +334,54 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarInt("winr_width", 800, 0);
 	Core_0RegisterCVarInt("winr_height", 600, 0);
 	Core_0RegisterCVarBool("winr_windowed", true, 0);
-
-	Core_0RegisterCVarInt("final_image", DS_RT_SCENELIGHT, 0);
-
-	Core_0RegisterCVarInt("resize", RENDER_RESIZE_NONE, 0);
-
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
-	Core_0RegisterCVarFloat("cam_fov", SM_PI * 0.25f, 0);
-
-	Core_0RegisterCVarInt("pp_ssao", 1, 0);
-	Core_0RegisterCVarBool("pp_bloom", true, 0);
-	Core_0RegisterCVarBool("pp_lensflare", true, 0);
-	Core_0RegisterCVarBool("pp_lensflare_usebloom", true, 0);
-	Core_0RegisterCVarBool("pp_dlaa", true, 0);
-	Core_0RegisterCVarBool("pp_nfaa", false, 0);
-
-	Core_0RegisterCVarFloat("pp_fog_density", 0.5, 0);
-	Core_0RegisterCVarFloat("pp_fog_sky", 0.0, 0);
-	Core_0RegisterCVarFloat("pp_fog_min", 0.0, 0);
-	Core_0RegisterCVarFloat("pp_fog_max", 0.9, 0);
-
-	Core_0RegisterCVarBool("pp_motionblur", true, 0);
-	Core_0RegisterCVarFloat("pp_motionblur_coef", 0.1, 0);
-	Core_0RegisterCVarBool("pssm_4or3", true, 0);
-
-	Core_0RegisterCVarBool("pssm_shadowed", true, 0);
-	Core_0RegisterCVarFloat("pssm_q", 1, 0);
-	Core_0RegisterCVarFloat("lsm_q", 1, 0);
-	Core_0RegisterCVarInt("shadow_soft", 1, 0);
-
-	Core_0RegisterCVarInt("grass_frec", 100, 0);
-	Core_0RegisterCVarFloat("green_lod0", 50, 0);
-	Core_0RegisterCVarFloat("green_lod1", 100, 0);
-	Core_0RegisterCVarFloat("green_less", 20, 0);
+	Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarFloat("p_near", 0.025f, 0);
 	Core_0RegisterCVarFloat("p_far", 400, 0);
-	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.03f, 0);
 
-	Core_0RegisterCVarInt("r_s_filter", 2, 0);
-	Core_0RegisterCVarInt("r_s_max_anisotropy", 16, 0);
-	Core_0RegisterCVarInt("r_s_max_miplevel", 0, 0);
-	Core_0RegisterCVarInt("rs_stats", 1, 0);
+	Core_0RegisterCVarInt("final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
 
-	Core_0RegisterCVarBool("g_time_run", true, 0);
-	Core_0RegisterCVarFloat("g_time_speed", 1.f, 0);
+	Core_0RegisterCVarInt("resize", RENDER_RESIZE_NONE, "Тип изменения размеров окан рендера из перечисления RENDER_RESIZE");
+
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+
+	Core_0RegisterCVarInt("pp_ssao", 1, "Рисовать ли эффект ssao? 0 - нет, 1 - на низком качестве, 2 - на среднем, 3 - на высоком");
+	Core_0RegisterCVarBool("pp_bloom", true, "Рисовать ли эффект bloom?");
+	Core_0RegisterCVarBool("pp_lensflare", true, "Рисовать ли эффект lens flare?");
+	Core_0RegisterCVarBool("pp_lensflare_usebloom", true, "При отрисовке эффекта lens flare использовать ли данные от прохода bloom?");
+	Core_0RegisterCVarBool("pp_dlaa", true, "Рисовать ли эффект dlaa?");
+	Core_0RegisterCVarBool("pp_nfaa", false, "Рисовать ли эффект nfaa?");
+
+	Core_0RegisterCVarFloat("pp_fog_density", 0.5, "Плотность тумана");
+
+	Core_0RegisterCVarBool("pp_motionblur", true, "Рисовать ли эффект motion blur?");
+	Core_0RegisterCVarFloat("pp_motionblur_coef", 0.1, "Коэфициент для эффекта motion blur [0,1]");
+	Core_0RegisterCVarBool("pssm_4or3", true, "Для глобальных теней использовать 4 (true) или 3 (false) сплита?");
+
+	Core_0RegisterCVarBool("pssm_shadowed", true, "Глобальный источник отбрасывает тени?");
+	Core_0RegisterCVarFloat("pssm_q", 1, "Коэфициент размера карты глубины глобального источника света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
+	Core_0RegisterCVarFloat("lsm_q", 1, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
+	Core_0RegisterCVarInt("shadow_soft", 1, "Дополнительнео размытие теней, 0 - нет, 1 - 1 проход, 2 - 2 прохода");
+
+	Core_0RegisterCVarInt("grass_frec", 100, "Плотность отрисовки травы [1,100]");
+	Core_0RegisterCVarFloat("green_lod0", 50, "Дистанция отрисовки для первого лода (он же лод травы) растительности, начиная с нуля от камеры");
+	Core_0RegisterCVarFloat("green_lod1", 100, "Дистанция отрисовки второго лода растительности (кусты/деревья), старт с дистанции первого лода");
+	Core_0RegisterCVarFloat("green_less", 20, "Дистанция? после которой трава будет уменьшаться (0,green_lod0)");
 	
-	Core_0RegisterCVarFloat("main_rain_density", 1.f, 0);
-	Core_0RegisterCVarBool("main_thunderbolt", true, 0);
+	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.03f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
 
-	Core_0RegisterCVarFloat("weather_snd_volume", 1.f, "Громкость звуков погоды");
-	Core_0RegisterCVarFloat("ambient_snd_volume", 1.f, 0);
+	Core_0RegisterCVarInt("r_s_filter", 2, "Тип фильтрации текстур, 0 - точечная, 1 - линейная, 2 - анизотропная");
+	Core_0RegisterCVarInt("r_s_max_anisotropy", 16, "Максимальное значение анизотропной фильтрации (если включена) [1,16]");
+	Core_0RegisterCVarInt("r_s_max_miplevel", 0, "Какой mip уровень текстур использовать? 0 - самый высокий, 1 - ниже на один уровень и т.д.");
+	Core_0RegisterCVarInt("rs_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
+
+	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?");
+	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени");
+	
+	Core_0RegisterCVarFloat("main_rain_density", 1.f, "Коэфициент плотности дождя (0,1]");
+	Core_0RegisterCVarBool("main_thunderbolt", true, "Могут ли воспроизводится эффекты молнии?");
+
+	Core_0RegisterCVarFloat("weather_snd_volume", 1.f, "Громкость звуков погоды [0,1]");
+	Core_0RegisterCVarFloat("ambient_snd_volume", 1.f, "Громкость фоновых звуков на уровне [0,1]");
 
 	static float3_t fog_color(0.5, 0.5, 0.5);
 	Core_0RegisterCVarPointer("pp_fog_color", ((UINT_PTR)&fog_color));
@@ -875,8 +873,8 @@ void SkyXEngind_UpdateDataCVar()
 
 #endif
 
-		Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, *winr_width);
-		Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, *winr_height);
+		/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, *winr_width);
+		Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, *winr_height);*/
 	}
 }
 

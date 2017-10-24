@@ -133,14 +133,18 @@ See the license in LICENSE
 
 //!@}
 
-/*! ничего не меняли */
-#define RENDER_RESIZE_NONE		0
+//! тип изменения размеров окна рендера
+enum RENDER_RESIZE
+{
+	/*! ничего не меняли */
+	RENDER_RESIZE_NONE = 0,
 
-/*! ресайз */
-#define RENDER_RESIZE_RESIZE	1
+	/*! ресайз */
+	RENDER_RESIZE_RESIZE,
 
-/*! переход между фуллскрин и окном */
-#define RENDER_RESIZE_CHANGE	2
+	/*! переход между фуллскрин и окном */
+	RENDER_RESIZE_CHANGE,
+};
 
 //! цвет очистки цветового буфера сцены по умолчанию
 #define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)

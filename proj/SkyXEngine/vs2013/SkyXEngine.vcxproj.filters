@@ -35,6 +35,9 @@
     <ClInclude Include="..\..\..\source\common\string.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\GRegisterIndex.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine.rc">

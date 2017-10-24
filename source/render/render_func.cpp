@@ -473,9 +473,9 @@ void SXRenderFunc::UpdateView()
 	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &GData::MCamProj);
 	Core_RMatrixSet(G_RI_MATRIX_LIGHT_PROJ, &GData::MLightProj);
 
-	Core_RFloatSet(G_RI_FLOAT_OBSERVER_NEAR, GData::NearFar.x);
+	/*Core_RFloatSet(G_RI_FLOAT_OBSERVER_NEAR, GData::NearFar.x);
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
-	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);*/
 
 	GData::ObjCamera->ObjFrustum->Update(&(GData::MCamView), &(GData::MCamProj));
 
@@ -1432,12 +1432,12 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	fog_color = (float3_t*)(*pp_fog_color);
 
 	static const float * pp_fog_density = GET_PCVAR_FLOAT("pp_fog_density");
-	static const float * pp_fog_sky = GET_PCVAR_FLOAT("pp_fog_sky");
+	/*static const float * pp_fog_sky = GET_PCVAR_FLOAT("pp_fog_sky");
 	static const float * pp_fog_min = GET_PCVAR_FLOAT("pp_fog_min");
-	static const float * pp_fog_max = GET_PCVAR_FLOAT("pp_fog_max");
+	static const float * pp_fog_max = GET_PCVAR_FLOAT("pp_fog_max");*/
 
-	if (pp_fog_density && *pp_fog_density > 0.f && pp_fog_sky && pp_fog_min && pp_fog_max)
-		SPP_RenderFogLinear(fog_color, &float4_t(*pp_fog_density, *pp_fog_sky, *pp_fog_min, *pp_fog_max));
+	if (pp_fog_density && *pp_fog_density > 0.f /*&& pp_fog_sky && pp_fog_min && pp_fog_max*/)
+		SPP_RenderFogLinear(fog_color, *pp_fog_density /*&float4_t(*pp_fog_density, *pp_fog_sky, *pp_fog_min, *pp_fog_max)*/);
 	//SPP_RenderWhiteBlack(1);
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");

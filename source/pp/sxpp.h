@@ -174,12 +174,9 @@ SX_LIB_API void SPP_RenderDOF(float4_t* param, float sky_blur);
 
 /*! linear fog, линейный туман, использует depth0 \n 
 color - цвет тумана (0-1) \n 
-param.x - интенсивность тумана \n 
-param.y - на сколько небо в тумане \n 
-param.z - минимальное значение тумана \n 
-param.w - максимальное значение тумана \n 
-примерные значения: 0.8, 1, 0.1, 0.9*/
-SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float4_t* param);
+density - интенсивность тумана \n
+примерные значения: 0.8*/
+SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float density);
 
 /*! space screen ambient occulusion, глобальное освещение (точнее затенение) в пространстве экрана, использует depth1 \n 
 param.x - радиус \n 

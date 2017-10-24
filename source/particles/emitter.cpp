@@ -1199,6 +1199,9 @@ void Emitter::Compute(const float4x4 * mat)
 
 void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 {
+	static const float *p_near = GET_PCVAR_FLOAT("p_near");
+	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+
 	if (!Enable)
 		return;
 
@@ -1246,8 +1249,8 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		static float2_t NearFar;
 		static float3 ConstCamPos;
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &ConstCamPos);
-		NearFar.x = Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR);
-		NearFar.y = Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR);
+		NearFar.x = *p_near;
+		NearFar.y = *p_far;
 
 		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &MCamView);
 		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &MCamProj);

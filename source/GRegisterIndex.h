@@ -32,7 +32,7 @@ See the license in LICENSE
 @{*/
 
 #define G_RI_BOOL_CLIPPLANE0		0	/*!< использовать ли плоскость отсечения */
-#define G_RI_BOOL_RENDER_WINDOWED	1	/*!< оконный рендер - true, полноэкранный - false */
+//#define G_RI_BOOL_RENDER_WINDOWED	1	/*!< оконный рендер - true, полноэкранный - false */
 
 //!@}
 
@@ -41,11 +41,11 @@ See the license in LICENSE
 /*! \name float register 
 @{*/
 
-#define G_RI_FLOAT_OBSERVER_NEAR		0	/*!< ближняя плоскость отсечения наблюдателя */
-#define G_RI_FLOAT_OBSERVER_FAR			1	/*!< дальняя плоскость отсечения наблюдателя или дальность видимости */
-#define G_RI_FLOAT_OBSERVER_FOV			2	/*!< fov наблюдателя */
-#define G_RI_FLOAT_WINSIZE_WIDTH		3	/*!< ширина окна рендера */
-#define G_RI_FLOAT_WINSIZE_HEIGHT		4	/*!< высота окна рендера */
+//#define G_RI_FLOAT_OBSERVER_NEAR		0	/*!< ближняя плоскость отсечения наблюдателя */
+//#define G_RI_FLOAT_OBSERVER_FAR			1	/*!< дальняя плоскость отсечения наблюдателя или дальность видимости */
+//#define G_RI_FLOAT_OBSERVER_FOV			2	/*!< fov наблюдателя */
+//#define G_RI_FLOAT_WINSIZE_WIDTH		3	/*!< ширина окна рендера */
+//#define G_RI_FLOAT_WINSIZE_HEIGHT		4	/*!< высота окна рендера */
 
 //!@}
 

@@ -107,9 +107,12 @@ namespace PPSet
 
 void PPSet::Init()
 {
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
+
 	PPSet::DXDevice = SGCore_GetDXDevice();
-	PPSet::WinSize.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH);
-	PPSet::WinSize.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
+	PPSet::WinSize.x = *winr_width;
+	PPSet::WinSize.y = *winr_height;
 	Core_SetOutPtr();
 	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos", SHADER_CHECKDOUBLE_PATH);
 
@@ -302,16 +305,14 @@ SX_LIB_API void SPP_RTNull()
 SX_LIB_API void SPP_Update()
 {
 	PP_PRECOND(_VOID);
-	/*PPSet::ConstCurrCamPos = *viewpos;
-	PPSet::ConstCurrCamDir = *viewdir;
-	PPSet::MCamViewPrev = PPSet::MCamView;
-	PPSet::MCamView = *view;
-	PPSet::MCamProj = *proj;
-	PPSet::WinSize = *winsize;
+	
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
 
-	PPSet::ProjRatio = PPSet::WinSize.x / PPSet::WinSize.y;
-	PPSet::NearFar = *nearfar;
-	PPSet::ProjFov = projfov;*/
+	static const float *p_near = GET_PCVAR_FLOAT("p_near");
+	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
 
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &PPSet::ConstCurrCamPos);
@@ -321,20 +322,20 @@ SX_LIB_API void SPP_Update()
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &PPSet::MCamView);
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &PPSet::MCamProj);
 
-	PPSet::WinSize.x = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH);
-	PPSet::WinSize.y = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
+	PPSet::WinSize.x = *winr_width;
+	PPSet::WinSize.y = *winr_height;
 
 	PPSet::ProjRatio = PPSet::WinSize.x / PPSet::WinSize.y;
 
-	PPSet::NearFar.x = Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR);
-	PPSet::NearFar.y = Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR);
+	PPSet::NearFar.x = *p_near;
+	PPSet::NearFar.y = *p_far;
 
-	PPSet::ProjFov = Core_RFloatGet(G_RI_FLOAT_OBSERVER_FOV);
+	PPSet::ProjFov = *r_default_fov;
 }
 
 //##########################################################################
 
-SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float4_t* param)
+SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float density)
 {
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
@@ -354,7 +355,7 @@ SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float4_t* param)
 	PPSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Depth0));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "FogColor", color);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "Param", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "FogDenisty", &density);
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::FogLinear, "NearFar", &PPSet::NearFar);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);

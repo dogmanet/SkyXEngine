@@ -111,15 +111,16 @@ SX_LIB_API void SML_OnResetDevice()
 
 SX_LIB_API void SML_Update(DWORD timeDelta)
 {
-	/*MLSet::WinSize = *winsize;
-	MLSet::NearFar = *nearfar;
-	MLSet::ConstCurrCamPos = *poscam;
-	MLSet::MCamView = *mview;
-	MLSet::ProjFov = projfov;
-	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;*/
+	static const int *winr_width = GET_PCVAR_INT("winr_width");
+	static const int *winr_height = GET_PCVAR_INT("winr_height");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
 	if (ArrMaterials)
 		ArrMaterials->Update(timeDelta);
+
+	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*winr_width) / float(*winr_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 }
 
 SX_LIB_API void SML_LigthsSettLCoefSizeDepth(float coef)
