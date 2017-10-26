@@ -198,7 +198,7 @@ SX_LIB_API int SRender_SimModelGetNumCurrModel()
 
 SX_LIB_API void SRender_SimModelSetRotationY(float Rotation)
 {
-	GData::Editors::SimModel->Rotation = Rotation;
+	GData::Editors::SimModel->Rotation.y = Rotation;
 }
 
 SX_LIB_API float SRender_SimModelGetRotationY()
@@ -275,9 +275,9 @@ SX_LIB_API void SRender_UpdateView()
 	SXRenderFunc::UpdateView();
 }
 
-SX_LIB_API void SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime)
+SX_LIB_API int SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr)
 {
-	SXRenderFunc::OutputDebugInfo(timeDelta, needGameTime);
+	return SXRenderFunc::OutputDebugInfo(timeDelta, needGameTime, szStr);
 }
 
 
@@ -368,4 +368,9 @@ SX_LIB_API void SRender_SaveWorkTex()
 SX_LIB_API void SRender_ChangeModeWindow()
 {
 	SXRenderFunc::ChangeModeWindow();
+}
+
+SX_LIB_API void SRender_FullScreenChangeSizeAbs()
+{
+	SXRenderFunc::FullScreenChangeSizeAbs();
 }

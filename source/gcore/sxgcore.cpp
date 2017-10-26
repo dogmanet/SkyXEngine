@@ -125,13 +125,12 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 
 	D3DXFONT_DESC LF;
 	ZeroMemory(&LF, sizeof(D3DXFONT_DESC));
-	LF.Height = 10;    // в логических единицах
-	LF.Width = 6;    // в логических единицах
-	LF.Weight = 6;   // насыщенность, 
-	// диапазон 0(тонкий) - 1000(жирный)
+	LF.Height = 14;
+	LF.Width = 7;
+	LF.Weight = 10;
 	LF.Italic = 0;
 	LF.CharSet = DEFAULT_CHARSET;
-	LF.FaceName[0] = 0;
+	sprintf(LF.FaceName, "Courier New");
 
 	D3DXCreateFontIndirect(DXDevice, &LF, &FPSText);
 

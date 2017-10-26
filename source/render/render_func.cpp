@@ -1,7 +1,7 @@
 
 #include "render_func.h"
 
-
+/*
 namespace SXRenderFunc
 {
 	namespace Delay
@@ -26,7 +26,7 @@ namespace SXRenderFunc
 		float FreeValF3 = 0;
 	};
 };
-
+*/
 
 inline void SXRenderFunc::SetSamplerFilter(DWORD id, DWORD value)
 {
@@ -134,7 +134,8 @@ void SXRenderFunc::ComDeviceLost()
 
 	SXRenderFunc::InitModeWindow();
 	bool bf = SGCore_OnDeviceReset(*winr_width, *winr_height, *winr_windowed);
-	
+	g_fnReportf(REPORT_MSG_LEVEL_WARNING, "winr_width %d, winr_height %d, winr_windowed %d \n", *winr_width, *winr_height, *winr_windowed);
+
 	if (bf)
 	{
 		//если все-таки функция зашла сюда значит что-то было неосвобождено
@@ -413,12 +414,12 @@ void SXRenderFunc::InitModeWindow()
 
 	if (!(*winr_windowed))
 	{
-		SetWindowLong(GData::Handle3D, GWL_STYLE, WS_POPUP);
+		SetWindowLong(GData::Handle3D, GWL_STYLE, GetWindowLong(GData::Handle3D, GWL_STYLE) | WS_POPUP);
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
 	}
 	else
 	{
-		SetWindowLong(GData::Handle3D, GWL_STYLE, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+		SetWindowLong(GData::Handle3D, GWL_STYLE, GetWindowLong(GData::Handle3D, GWL_STYLE) ^ WS_POPUP);
 
 		RECT rc;
 		GetWindowRect(GData::Handle3D, &rc);
@@ -444,6 +445,55 @@ void SXRenderFunc::ChangeModeWindow()
 	*winr_windowed = !(*winr_windowed);
 
 	SXRenderFunc::InitModeWindow();
+
+	static int *resize = (int*)GET_PCVAR_INT("resize");
+	*resize = RENDER_RESIZE_CHANGE;
+}
+
+void SXRenderFunc::FullScreenChangeSizeAbs()
+{
+	static bool *winr_windowed = (bool*)GET_PCVAR_BOOL("winr_windowed");
+
+	if (winr_windowed == NULL || (*winr_windowed))
+		return;
+
+	int iCountModes = 0;
+	static const DEVMODE *pModes = SGCore_GetModes(&iCountModes);
+
+	static int iFullScreenWidth = 800;
+	static int iFullScreenHeight = 600;
+
+	if (pModes)
+	{
+		iFullScreenWidth = pModes[iCountModes - 1].dmPelsWidth;
+		iFullScreenHeight = pModes[iCountModes - 1].dmPelsHeight;
+		pModes = 0;
+	}
+
+	static int * winr_width = (int*)GET_PCVAR_INT("winr_width");
+	static int * winr_height = (int*)GET_PCVAR_INT("winr_height");
+
+	if (!winr_width || !winr_height)
+		return;
+
+	static int winr_width_old = *winr_width;
+	static int winr_height_old = *winr_height;
+
+	if (*winr_width == iFullScreenWidth && *winr_height == iFullScreenHeight)
+	{
+		*winr_width = winr_width_old;
+		*winr_height = winr_height_old;
+	}
+	else
+	{
+		winr_width_old = *winr_width;
+		winr_height_old = *winr_height;
+
+		*winr_width = iFullScreenWidth;
+		*winr_height = iFullScreenHeight;
+
+		//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "iFullScreenWidth %d, iFullScreenHeight %d \n", iFullScreenWidth, iFullScreenHeight);
+	}
 
 	static int *resize = (int*)GET_PCVAR_INT("resize");
 	*resize = RENDER_RESIZE_CHANGE;
@@ -489,14 +539,15 @@ void SXRenderFunc::UpdateView()
 		GData::DefaultAnimIDArr = SXAnim_ModelsAddArrForCom();
 }
 
-void SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime)
+int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr)
 {
 	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
-	static DWORD FrameCount=0;
+	static int FrameCount = 0;
+	static int FrameCount2 = 0;
 	static float TimeElapsed=0;
 	static float FpsValue = 0;
 	static char FpsStr[1024];
@@ -505,71 +556,45 @@ void SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime)
 	++FrameCount;
 	TimeElapsed += ((float)timeDelta) * 0.001f;
 	static const int * rs_stats = GET_PCVAR_INT("rs_stats");
+
+	static bool isNulled = false;
 		
-		if (TimeElapsed >= 1.0f && rs_stats)
+	if (TimeElapsed >= 1.0f && rs_stats)
+	{
+		FpsValue = (float)FrameCount / TimeElapsed;
+
+		if ((*rs_stats) > 0)
+			sprintf(debugstr, "FPS %.1f\n", FpsValue);
+
+		if (needGameTime)
 		{
-			FpsValue	= (float)FrameCount / TimeElapsed;
+			tm g_tm;
+			time_t g_time = Core_TimeUnixCurrGet(Core_RIntGet(G_RI_INT_TIMER_GAME));
+			localtime_s(&g_tm, &g_time);
 
-			if ((*rs_stats) > 0)
-				sprintf(debugstr, "FPS %.1f\n", FpsValue);
-
-			if (needGameTime)
-			{
-				tm g_tm;
-				time_t g_time = Core_TimeUnixCurrGet(Core_RIntGet(G_RI_INT_TIMER_GAME));
-				localtime_s(&g_tm, &g_time);
-
-				sprintf(debugstr + strlen(debugstr), "\nGame time : %d %d %d %d %d %d\n", 1900 + g_tm.tm_year, g_tm.tm_mon, g_tm.tm_mday, g_tm.tm_hour, g_tm.tm_min, g_tm.tm_sec);
-			}
-
-			if ((*rs_stats) == 2)
-			{
-				sprintf(debugstr + strlen(debugstr), "\ncount poly : %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
-				sprintf(debugstr + strlen(debugstr), "count DIPs : %d\n\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
-				sprintf(debugstr + strlen(debugstr), "Pos camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamPos.x, GData::ConstCurrCamPos.y, GData::ConstCurrCamPos.z);
-				sprintf(debugstr + strlen(debugstr), "Dir camera : [%.2f, %.2f, %.2f]\n", GData::ConstCurrCamDir.x, GData::ConstCurrCamDir.y, GData::ConstCurrCamDir.z);
-
-				/*sprintf(debugstr + strlen(debugstr), "\nDELAY:\n");
-				sprintf(debugstr + strlen(debugstr), "\tUpdateShadow : %.3f\n", float(SXRenderFunc::Delay::UpdateShadow) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\tRenderMRT : %.3f\n", float(SXRenderFunc::Delay::RenderMRT) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\tComLighting : %.3f\n", float(SXRenderFunc::Delay::ComLighting) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\tPostProcess : %.3f\n", float(SXRenderFunc::Delay::PostProcess) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\tComReflection : %.3f\n", float(SXRenderFunc::Delay::ComReflection) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\tGeomSortGroup : %.3f\n", float(SXRenderFunc::Delay::GeomSortGroup) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\tUpdateParticles : %.3f\n", float(SXRenderFunc::Delay::UpdateParticles) / float(FrameCount) * 0.001f);
-
-				sprintf(debugstr + strlen(debugstr), "\n\tUpdateVisibleFor\n");
-				sprintf(debugstr + strlen(debugstr), "\t\tCamera\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForCamera) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\t\tLight\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForLight) / float(FrameCount) * 0.001f);
-				sprintf(debugstr + strlen(debugstr), "\t\tReflection\t: %.3f\n", float(SXRenderFunc::Delay::UpdateVisibleForReflection) / float(FrameCount) * 0.001f);
-
-				sprintf(debugstr + strlen(debugstr), "\n\tPresent : %.3f\n", float(SXRenderFunc::Delay::Present) / float(FrameCount) * 0.001f);
-
-				sprintf(debugstr + strlen(debugstr), "\nFreeVal : %d\n", SXRenderFunc::Delay::FreeVal);
-				sprintf(debugstr + strlen(debugstr), "\nFreeValF1 : %f\n", SXRenderFunc::Delay::FreeValF1);
-				sprintf(debugstr + strlen(debugstr), "\nFreeValF2 : %f\n", SXRenderFunc::Delay::FreeValF2);
-				sprintf(debugstr + strlen(debugstr), "\nFreeValF3 : %f\n", SXRenderFunc::Delay::FreeValF3);*/
-			}
-
-			Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
-			Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
-			TimeElapsed		= 0.0f;
-			FrameCount		= 0;
-
-			SXRenderFunc::Delay::UpdateShadow = 0;
-			SXRenderFunc::Delay::RenderMRT = 0;
-			SXRenderFunc::Delay::ComLighting = 0;
-			SXRenderFunc::Delay::PostProcess = 0;
-			SXRenderFunc::Delay::ComReflection = 0;
-			SXRenderFunc::Delay::GeomSortGroup = 0;
-			SXRenderFunc::Delay::UpdateVisibleForCamera = 0;
-			SXRenderFunc::Delay::UpdateVisibleForLight = 0;
-			SXRenderFunc::Delay::UpdateVisibleForReflection = 0;
-			SXRenderFunc::Delay::Present = 0;
+			sprintf(debugstr + strlen(debugstr), "\nGame time : %d %d %d %d %d %d\n", 1900 + g_tm.tm_year, g_tm.tm_mon, g_tm.tm_mday, g_tm.tm_hour, g_tm.tm_min, g_tm.tm_sec);
 		}
+
+		if ((*rs_stats) == 2)
+		{
+			sprintf(debugstr + strlen(debugstr), szStr);
+		}
+
+		Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
+		Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
+		TimeElapsed = 0.0f;
+		FrameCount2 = FrameCount;
+		FrameCount = 0;
+
+		isNulled = true;
+	}
+	else
+		isNulled = false;
 			
 	if (rs_stats && (*rs_stats) > 0)
 		SGCore_DbgMsg(debugstr);
+
+	return (isNulled ? FrameCount2 : 0);
 }
 
 //##########################################################################
@@ -1471,13 +1496,15 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
 
+	
+
+	static const bool * pp_nfaa = GET_PCVAR_BOOL("pp_nfaa");
+	if (pp_nfaa && (*pp_nfaa))
+		SPP_RenderNFAA(&float3_t(1, 2, 0));
+
 	static const bool * pp_dlaa = GET_PCVAR_BOOL("pp_dlaa");
 	if (pp_dlaa && (*pp_dlaa))
 		SPP_RenderDLAA();
-
-	static const bool * pp_nfaa = GET_PCVAR_BOOL("pp_dlaa");
-	if (pp_nfaa && (*pp_nfaa))
-		SPP_RenderNFAA(&float3_t(1, 1, 0));
 
 	static const bool * pp_motionblur = GET_PCVAR_BOOL("pp_motionblur");
 	static const float * pp_motionblur_coef = GET_PCVAR_FLOAT("pp_motionblur_coef");

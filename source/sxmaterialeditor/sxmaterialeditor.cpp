@@ -467,7 +467,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
 	SXMaterialEditor::EditSkyBox->SetText("sky/sky_2_cube.dds");
 		
-	SRender_GetCamera()->SetPosition(&float3(0, 0, -1.2 * 100));
+	SRender_GetCamera()->SetPosition(&float3(0, 0, -100));
 
 	
 	SRender_SimModelAdd("sphere.dse");

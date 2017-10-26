@@ -15,6 +15,7 @@ half3 Param;
 half2 PixelSize;
 
 sampler2D FrameSampler:register(s0);
+sampler2D EdgeDetectedSampler:register(s1);
 
 half2 GetNormal(half2 texuv) 
 {
@@ -42,11 +43,16 @@ half2 GetNormal(half2 texuv)
 
 half4 main(vs_out_pp IN) : COLOR0 
 {
+	half4 Scene0 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy, 0, 0));
+	half fEdgeDetected = tex2Dlod(EdgeDetectedSampler, half4(IN.TexUV,0.f,0.f));
+	
+	[branch]if(fEdgeDetected.x == 0.f)
+		return Scene0;
+
 	half2 Normal = GetNormal(IN.TexUV.xy);			
 	
 	Normal = clamp(Normal, -1, 1) * PixelSize;
 
-	half4 Scene0 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy, 0, 0));
 	half4 Scene1 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + Normal.xy, 0, 0));
 	half4 Scene2 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - Normal.xy, 0, 0));
 	half4 Scene3 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + half2(Normal.x, -Normal.y), 0, 0));

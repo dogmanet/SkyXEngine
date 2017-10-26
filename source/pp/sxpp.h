@@ -225,7 +225,7 @@ SX_LIB_API void SPP_RenderCBG(float3_t* param);
 param.x - strength, множитель нормали, усиляет влияние нормали \n 
 param.y - scale, охватываемый масштаб \n 
 param.z - notmal map, вывести сформированные нормали \n 
-рекомендуемые параметры: 2, 1, 0*/
+рекомендуемые параметры: 1, 2, 0*/
 SX_LIB_API void SPP_RenderNFAA(float3_t* param);
 
 //! dlaa (Directionally Localized Anti Aliasing)

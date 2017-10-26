@@ -111,8 +111,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 	SkyXEngine_CreateLoadCVar();
 
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
+	static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
 	static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
 
 	HWND hWnd3DCurr = 0;
@@ -122,9 +122,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	else
 	{
 		hWnd3DCurr = hWnd3D;
-		static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
-		static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
-
+		
 		RECT rect;
 		GetClientRect(hWnd3DCurr, &rect);
 
@@ -150,7 +148,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	Core_TimeWorkingSet(idTimerRender, true);
 	Core_TimeWorkingSet(idTimerGame, true);
 
-	Core_TimeSpeedSet(idTimerGame, 100);
+	Core_TimeSpeedSet(idTimerGame, 10);
 
 	SSCore_0Create("sxsound", hWnd3DCurr, false);
 	SSCore_Dbg_Set(SkyXEngine_PrintfLog);
@@ -392,6 +390,7 @@ void SkyXEngine_CreateLoadCVar()
 
 #if defined(SX_GAME)
 	Core_0RegisterConcmd("change_mode_window", SRender_ChangeModeWindow);
+	Core_0RegisterConcmd("change_mode_window_abs", SRender_FullScreenChangeSizeAbs);
 #endif
 
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
@@ -479,6 +478,28 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	static const int *resize = GET_PCVAR_INT("resize");
 	static bool isSimulationRender = false;
 
+	static uint64_t DelayGeomSortGroup = 0;
+	static uint64_t DelayComReflection = 0;
+	static uint64_t DelayUpdateShadow = 0;
+	static uint64_t DelayRenderMRT = 0;
+	static uint64_t DelayComLighting = 0;
+	static uint64_t DelayPostProcess = 0;
+	static uint64_t DelayUpdateVisibleForCamera = 0;
+	static uint64_t DelayUpdateVisibleForReflection = 0;
+	static uint64_t DelayUpdateVisibleForLight = 0;
+	static uint64_t DelayUpdateParticles = 0;
+
+	static uint64_t DelayLibUpdateGame = 0;
+	static uint64_t DelayLibUpdateLevel = 0;
+	static uint64_t DelayLibUpdatePhysic = 0;
+	static uint64_t DelayLibUpdateAnim = 0;
+
+	static uint64_t DelayLibSyncGame = 0;
+	static uint64_t DelayLibSyncPhysic = 0;
+	static uint64_t DelayLibSyncAnim = 0;
+
+	static uint64_t DelayPresent = 0;
+
 #if defined(SX_MATERIAL_EDITOR)
 	isSimulationRender = true;
 #endif
@@ -506,23 +527,45 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		SRender_UpdateEditorial(timeDelta);
 #endif
 
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXAnim_Update();
+	DelayLibUpdateAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
 #ifndef SX_PARTICLES_EDITOR
+
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXGame_Update();
+	DelayLibUpdateGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SLevel_WeatherUpdate();
 	SLevel_AmbientSndUpdate();
-#endif
-	SXPhysics_Update();
+	DelayLibUpdateLevel += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
+#endif
+
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	SXPhysics_Update();
+	DelayLibUpdatePhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXAnim_Sync();
+	DelayLibSyncAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXPhysics_Sync();
+	DelayLibSyncPhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
 #ifndef SX_PARTICLES_EDITOR
+
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SXGame_Sync();
+	DelayLibSyncGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SGeom_ModelsMSortGroups(&vCamPos, 2);
-	//SXRenderFunc::Delay::GeomSortGroup += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayGeomSortGroup += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 
 
@@ -547,20 +590,20 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
-	//SXRenderFunc::Delay::ComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (*final_image == DS_RT_AMBIENTDIFF || *final_image == DS_RT_SPECULAR || *final_image == DS_RT_SCENELIGHT)
 	{
 		//рендерим глубину от света
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SRender_UpdateShadow(timeDelta);
-		//SXRenderFunc::Delay::UpdateShadow += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+		DelayUpdateShadow += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
 	//рисуем сцену и заполняем mrt данными
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_BuildMRT(timeDelta, isSimulationRender);
-	//SXRenderFunc::Delay::RenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayRenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (*final_image == DS_RT_AMBIENTDIFF || *final_image == DS_RT_SPECULAR || *final_image == DS_RT_SCENELIGHT)
 	{
@@ -573,7 +616,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		SRender_ApplyToneMapping();
 		SRender_ComToneMapping(timeDelta);
 
-		//SXRenderFunc::Delay::ComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+		DelayComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
 	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -582,7 +625,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #if defined(SX_GAME)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_RenderPostProcess(timeDelta);
-	//SXRenderFunc::Delay::PostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
 	SGCore_ShaderBindN(SHADER_TYPE_VERTEX, "pp_quad_render");
@@ -606,8 +649,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 	pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
 	SRender_RenderEditorMain();
-	/*SXRenderFunc::RenderEditorLE(timeDelta);
-	SXRenderFunc::RenderEditorPE(timeDelta);*/
+
 
 #if /*defined(_DEBUG) &&*/ defined(SX_LEVEL_EDITOR)
 	static const float * p_far = GET_PCVAR_FLOAT("p_far");
@@ -618,13 +660,70 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SXGame_RenderHUD();
 #endif
 
+	
+	
+
+	
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
-	SRender_OutputDebugInfo(timeDelta, true);
+	static bool needGameTime = true;
 #else
-	SRender_OutputDebugInfo(timeDelta, false);
+	static bool needGameTime = false;
 #endif
 
+	static char debugstr[4096];
+
+	int FrameCount = 0;
+	if ((FrameCount = SRender_OutputDebugInfo(timeDelta, needGameTime, debugstr)) > 0)
+	{
+		debugstr[0] = 0;
+		
+		sprintf(debugstr + strlen(debugstr), "\nCount poly: %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
+		sprintf(debugstr + strlen(debugstr), "Count DIPs: %d\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
+
+		sprintf(debugstr + strlen(debugstr), "\nPos camera: [ %.2f, %.2f, %.2f ]\n", vCamPos.x, vCamPos.y, vCamPos.z);
+		sprintf(debugstr + strlen(debugstr), "Dir camera: [ %.2f, %.2f, %.2f ]\n", vCamDir.x, vCamDir.y, vCamDir.z);
+
+		sprintf(debugstr + strlen(debugstr), "\nDelay:\n");
+		sprintf(debugstr + strlen(debugstr), " Update shadow...: %.3f\n", float(DelayUpdateShadow) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Build G-buffer..: %.3f\n", float(DelayRenderMRT) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Lighting........: %.3f\n", float(DelayComLighting) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Postprocess.....: %.3f\n", float(DelayPostProcess) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Com reflection..: %.3f\n", float(DelayComReflection) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Geom sort group.: %.3f\n", float(DelayGeomSortGroup) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Update particles: %.3f\n", float(DelayUpdateParticles) / float(FrameCount) * 0.001f);
+
+		sprintf(debugstr + strlen(debugstr), "\n UpdateVisibleFor\n");
+		sprintf(debugstr + strlen(debugstr), "  Camera........: %.3f\n", float(DelayUpdateVisibleForCamera) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "  Light.........: %.3f\n", float(DelayUpdateVisibleForLight) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "  Reflection...: %.3f\n", float(DelayUpdateVisibleForReflection) / float(FrameCount) * 0.001f);
+
+		sprintf(debugstr + strlen(debugstr), "\n LibUpdate. Game: %.3f, Level: %.3f, Physic: %.3f, Anim: %.3f\n", float(DelayLibUpdateGame) / float(FrameCount) * 0.001f, float(DelayLibUpdateLevel) / float(FrameCount) * 0.001f, float(DelayLibUpdatePhysic) / float(FrameCount) * 0.001f, float(DelayLibUpdateAnim) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " LibSync... Game: %.3f, Physic: %.3f, Anim: %.3f\n", float(DelayLibUpdateGame) / float(FrameCount) * 0.001f, float(DelayLibUpdatePhysic) / float(FrameCount) * 0.001f, float(DelayLibUpdateAnim) / float(FrameCount) * 0.001f);
+
+		sprintf(debugstr + strlen(debugstr), "\n Present.........: %.3f\n", float(DelayPresent) / float(FrameCount) * 0.001f);
+
+		sprintf(debugstr + strlen(debugstr), "\n### Engine version %s\n", SKYXENGINE_VERSION);
+
+		Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
+		Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
+
+		DelayUpdateShadow = 0;
+		DelayRenderMRT = 0;
+		DelayComLighting = 0;
+		DelayPostProcess = 0;
+		DelayComReflection = 0;
+		DelayGeomSortGroup = 0;
+		DelayUpdateVisibleForCamera = 0;
+		DelayUpdateVisibleForLight = 0;
+		DelayUpdateVisibleForReflection = 0;
+		DelayLibUpdateGame = DelayLibUpdateLevel = DelayLibUpdatePhysic = DelayLibUpdateAnim = 0;
+		DelayLibSyncGame = DelayLibSyncPhysic = DelayLibSyncAnim = 0;
+		DelayPresent = 0;
+	}
+
+#ifdef _DEBUG
 	SXPhysics_DebugRender();
+#endif
 
 #if defined(SX_LEVEL_EDITOR)
 	SXLevelEditor::LevelEditorUpdate(timeDelta);
@@ -645,25 +744,25 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//@@@
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_ComVisibleForCamera();
-	//SXRenderFunc::Delay::UpdateVisibleForCamera += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayUpdateVisibleForCamera += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_ComVisibleReflection();
-	//SXRenderFunc::Delay::UpdateVisibleForReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayUpdateVisibleForReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_ComVisibleForLight();
-	//SXRenderFunc::Delay::UpdateVisibleForLight += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayUpdateVisibleForLight += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SPE_EffectVisibleComAll(SRender_GetCamera()->ObjFrustum, &vCamPos);
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
-	//SXRenderFunc::Delay::UpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	pDXDevice->Present(0, 0, 0, 0);
-	//SXRenderFunc::Delay::Present += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	SkyXEngind_UpdateDataCVar();
 }
@@ -870,8 +969,11 @@ void SkyXEngind_UpdateDataCVar()
 				*resize = RENDER_RESIZE_CHANGE;
 			}
 		}
-
+#else
+		static bool *winr_windowed = (bool*)GET_PCVAR_BOOL("winr_windowed");
+		*winr_windowed = true;
 #endif
+
 
 		/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, *winr_width);
 		Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, *winr_height);*/

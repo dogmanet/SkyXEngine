@@ -325,7 +325,7 @@ SX_LIB_API void SRender_ComVisibleReflection();
 SX_LIB_API void SRender_UpdateView();
 
 //! вывод отладочной текстовой информации в окно рендера
-SX_LIB_API void SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime);
+SX_LIB_API int SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr = 0);
 
 
 //! построение G буфера, то есть рендер всей сцены
@@ -383,6 +383,9 @@ SX_LIB_API void SRender_SaveWorkTex();
 
 //! изменить режим рендера (оконный/полноэкранный)
 SX_LIB_API void SRender_ChangeModeWindow();
+
+//! переключение в режиме fullscreen в абсолютный fullscreen и обратно
+SX_LIB_API void SRender_FullScreenChangeSizeAbs();
 
 //!@} sxrender
 
