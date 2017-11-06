@@ -1189,12 +1189,18 @@ void Animation::setRagdoll(IAnimRagdoll * pRagdoll)
 	m_pRagdoll = pRagdoll;
 	if(m_pRagdoll)
 	{
+		ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
 		StopAll();
 		for(UINT i = 0; i < m_iBoneCount; ++i)
 		{
-			if((m_pIsBoneWorld[0][i] = pRagdoll->isBoneAffected(i)))
+			if(/*i == 18 && */(m_pIsBoneWorld[0][i] = pRagdoll->isBoneAffected(i)))
 			{
-				m_CurrentBones[1][i].orient = m_CurrentBones[0][i].orient * pRagdoll->getBoneRotation(i).Conjugate();
+				//m_CurrentBones[1][i].orient = m_CurrentBones[0][i].orient * pRagdoll->getBoneRotation(i).Conjugate();
+				//m_CurrentBones[1][i].orient = m_FinalBones[i].orient * pRagdoll->getBoneRotation(i).Conjugate();
+				//m_CurrentBones[0][i].orient = m_pBoneMatrix[i].orient * mBonesOrig[i].orient.Conjugate();
+				m_CurrentBones[1][i].position = (float3)((m_pBoneMatrix[i].position - mBonesOrig[i].position) * m_fScale - pRagdoll->getBoneOffset(i));
+				m_CurrentBones[1][i].orient = m_pBoneMatrix[i].orient * mBonesOrig[i].orient.Conjugate() * pRagdoll->getBoneRotation(i).Conjugate();
+				//break;
 			}
 		}
 		
@@ -1504,8 +1510,11 @@ void Animation::FillBoneMatrix()
 			}*/
 
 
-			m_FinalBones[i].position = (float3)(m_FinalBones[i].position + (m_CurrentBones[slot][i].position - mBonesBind[m_FinalBones[i].id].bone.position));
-			m_FinalBones[i].orient = m_FinalBones[i].orient * (m_CurrentBones[slot][i].orient * mBonesBind[m_FinalBones[i].id].bone.orient.Conjugate());
+			if(slot == 0 || !m_pIsBoneWorld[0][i])
+			{
+				m_FinalBones[i].position = (float3)(m_FinalBones[i].position + (m_CurrentBones[slot][i].position - mBonesBind[m_FinalBones[i].id].bone.position));
+				m_FinalBones[i].orient = m_FinalBones[i].orient * (m_CurrentBones[slot][i].orient * mBonesBind[m_FinalBones[i].id].bone.orient.Conjugate());
+			}
 		}
 	}
 	for(UINT i = 0; i < m_iBoneCount; i++)
@@ -2234,8 +2243,8 @@ void Animation::SwapBoneBuffs()
 		{
 			if(m_pIsBoneWorld[0][i])
 			{
-				m_CurrentBones[0][i].position = (float3)(m_pRagdoll->getBoneOffset(i) / m_fScale);
-				m_CurrentBones[0][i].orient = m_pRagdoll->getBoneRotation(i);
+				m_CurrentBones[0][i].position = (float3)((m_CurrentBones[1][i].position + m_pRagdoll->getBoneOffset(i)) / m_fScale);
+				m_CurrentBones[0][i].orient = m_CurrentBones[1][i].orient * m_pRagdoll->getBoneRotation(i);
 			}
 		}
 	}

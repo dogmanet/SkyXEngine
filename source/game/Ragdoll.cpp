@@ -154,7 +154,9 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//m_bodies[i]->setAngularFactor(0.0f);
 		//m_bodies[i]->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
 	}
-
+	//m_bodies[1]->setAngularFactor(0.0f);
+	//m_bodies[1]->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
+	//UINT bone = pAnimPlayer->GetBone("bip01_head");
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
@@ -451,7 +453,9 @@ SMQuaternion CRagdoll::getBoneRotation(ID id)
 {
 	assert(ID_VALID(m_pidBones[id]));
 	//return(SMQuaternion());
-	return(BTQUAT_Q4(m_bodies[m_pidBones[id]]->getWorldTransform().getRotation())/* * SMQuaternion(-SM_PIDIV2, 'x') * SMQuaternion(-SM_PIDIV2, 'z')*/);
+	return(BTQUAT_Q4(m_bodies[m_pidBones[id]]->getWorldTransform().getRotation()) );
+	// * SMQuaternion(SM_PIDIV2, 'y') * SMQuaternion(-SM_PI, 'z')
+	// * SMQuaternion(-SM_PIDIV2, 'x') * SMQuaternion(-SM_PIDIV2, 'z')
 }
 
 btRigidBody *CRagdoll::localCreateRigidBody(btScalar mass, const btTransform& startTransform, btCollisionShape* shape)
