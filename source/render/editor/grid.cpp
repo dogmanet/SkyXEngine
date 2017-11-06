@@ -40,20 +40,20 @@ void CGrid::create(int width, int depth, DWORD color)
 
 	for (int x = -(width/2); x < (width/2) + 1; ++x)
 	{
-		pVertices[oCountVert].m_vPos = float3_t(x, 0, -(depth / 2));
+		pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(-(depth / 2)));
 		pVertices[oCountVert].m_dwColor = color;
 		++oCountVert;
-		pVertices[oCountVert].m_vPos = float3_t(x, 0, depth / 2);
+		pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(depth / 2));
 		pVertices[oCountVert].m_dwColor = color;
 		++oCountVert;
 	}
 
 	for (int y = -(depth / 2); y < (depth/2) + 1; ++y)
 	{
-		pVertices[oCountVert].m_vPos = float3_t(-(width / 2), 0, y);
+		pVertices[oCountVert].m_vPos = float3_t((float)(-(width / 2)), 0.0f, (float)y);
 		pVertices[oCountVert].m_dwColor = color;
 		++oCountVert;
-		pVertices[oCountVert].m_vPos = float3_t(width / 2, 0, y);
+		pVertices[oCountVert].m_vPos = float3_t((float)(width / 2), 0.0f, (float)y);
 		pVertices[oCountVert].m_dwColor = color;
 		++oCountVert;
 	}

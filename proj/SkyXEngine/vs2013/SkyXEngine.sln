@@ -161,6 +161,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxaigrid", "..\..\sxaigrid\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxlevel", "..\..\sxlevel\vs2013\sxlevel.vcxproj", "{6FE14C5C-6052-4D96-A89F-0843D91F89AD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{718C186E-9155-41DF-B8AB-74ED03E204CD} = {718C186E-9155-41DF-B8AB-74ED03E204CD}
+		{7F0ACED1-6E16-4DD3-800E-0C50150897C2} = {7F0ACED1-6E16-4DD3-800E-0C50150897C2}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxrender", "..\..\sxrender\vs2013\sxrender.vcxproj", "{7F0ACED1-6E16-4DD3-800E-0C50150897C2}"
 EndProject

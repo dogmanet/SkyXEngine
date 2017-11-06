@@ -46,7 +46,7 @@ inline void SXRenderFunc::SetSamplerFilter(DWORD begin_id, DWORD end_id, DWORD v
 {
 	if (begin_id >= 0 && end_id <= 16)
 	{
-		for (int i = begin_id; i<=end_id; i++)
+		for(DWORD i = begin_id; i <= end_id; i++)
 			SXRenderFunc::SetSamplerFilter(i, value);
 	}
 }

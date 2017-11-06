@@ -36,22 +36,22 @@ void CAxesStatic::create(float len)
 	CVertex *pVertices;
 	m_pVertexBuffer->Lock(0, 0, (void**)&pVertices, 0);
 
-	pVertices[0].m_vPos = float3_t(0, 0.001, 0);
+	pVertices[0].m_vPos = float3_t(0, 0.001f, 0);
 	pVertices[0].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
 
-	pVertices[1].m_vPos = float3_t(len, 0.001, 0);
+	pVertices[1].m_vPos = float3_t(len, 0.001f, 0);
 	pVertices[1].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
 
-	pVertices[2].m_vPos = float3_t(0, 0.001, 0);
+	pVertices[2].m_vPos = float3_t(0, 0.001f, 0);
 	pVertices[2].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
 
 	pVertices[3].m_vPos = float3_t(0, len, 0);
 	pVertices[3].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
 
-	pVertices[4].m_vPos = float3_t(0, 0.001, 0);
+	pVertices[4].m_vPos = float3_t(0, 0.001f, 0);
 	pVertices[4].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
 
-	pVertices[5].m_vPos = float3_t(0, 0.001, len);
+	pVertices[5].m_vPos = float3_t(0, 0.001f, len);
 	pVertices[5].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
 
 	m_pVertexBuffer->Unlock();

@@ -17,7 +17,7 @@ public:
 	void toggleEnable();
 
 	void setColor(const float3 &vColor) { m_vColor = vColor; };
-	const float3& getColor() const { return m_vColor; };
+	const float3_t& getColor() const { return m_vColor; };
 
 	void setDist(float fDist) { m_fDist = fDist; };
 	float getDist() const { return m_fDist; };

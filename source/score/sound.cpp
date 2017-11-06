@@ -20,9 +20,9 @@ int ogg_seek(void *datasource, ogg_int64_t offset, int whence)
 	FILE* f = (FILE*)datasource;
 	switch (whence)
 	{
-	case SEEK_SET: return fseek(f, offset, SEEK_SET);  break;
-	case SEEK_CUR: return fseek(f, offset, SEEK_CUR);  break;
-	case SEEK_END: return fseek(f, offset, SEEK_END);  break;
+	case SEEK_SET: return fseek(f, offset, SEEK_SET);
+	case SEEK_CUR: return fseek(f, offset, SEEK_CUR);
+	case SEEK_END: return fseek(f, offset, SEEK_END);
 	default: return -1;
 	}
 	return 1;
@@ -52,7 +52,7 @@ MainSound::~MainSound()
 
 void MainSound::Clear()
 {
-	for (int i = 0; i < ArrSounds.size(); ++i)
+	for(UINT i = 0; i < ArrSounds.size(); ++i)
 	{
 		mem_delete(ArrSounds[i]);
 	}
@@ -577,7 +577,7 @@ void MainSound::SoundInstancePlay2d(ID id, int volume, int pan)
 	}
 
 	ID id_instance = -1;
-	for (int i = 0; i < snd->DataInstances.size(); ++i)
+	for (UINT i = 0; i < snd->DataInstances.size(); ++i)
 	{
 		if (!snd->DataInstances[i].busy)
 		{
@@ -637,9 +637,9 @@ void MainSound::SoundInstancePlay3d(ID id, const float3* pos)
 	}
 
 	ID id_instance = -1;
-	for (int i = 0; i < snd->DataInstances.size(); ++i)
+	for(UINT i = 0; i < snd->DataInstances.size(); ++i)
 	{
-		if (!snd->DataInstances[i].busy)
+		if(!snd->DataInstances[i].busy)
 		{
 			id_instance = i;
 			break;
@@ -691,7 +691,7 @@ ID MainSound::AddSound(Sound* snd)
 
 bool MainSound::SoundIsInit(ID id)
 {
-	return (ArrSounds.size() > id && ArrSounds[id] != 0);
+	return ((ID)ArrSounds.size() > id && ArrSounds[id] != 0);
 }
 
 void MainSound::SoundDelete(ID id)
@@ -717,7 +717,7 @@ void MainSound::SoundPlay(ID id, int looping)
 	Sound* snd = ArrSounds[id];
 
 	if (looping >= 0)
-		snd->IsLooping = looping;
+		snd->IsLooping = looping != 0;
 
 	if (snd->DSBuffer)
 	{
@@ -1078,27 +1078,27 @@ void MainSound::Update(const float3* viewpos, const float3* viewdir)
 
 	Sound* snd;
 	DWORD status = 0;
-	for (int i = 0; i < ArrSounds.size(); ++i)
+	for(UINT i = 0; i < ArrSounds.size(); ++i)
 	{
 		snd = ArrSounds[i];
-		if (snd)
+		if(snd)
 		{
 			status = 0;
 			snd->DSBuffer->GetStatus(&status);
-			if (!(status & DSBSTATUS_PLAYING) && snd->State == SOUND_OBJSTATE_PLAY)
+			if(!(status & DSBSTATUS_PLAYING) && snd->State == SOUND_OBJSTATE_PLAY)
 				SoundStateSet(i, SOUND_OBJSTATE_STOP);
 
 			++tmpSoundsLoadCount;
-			if (snd->State == SOUND_OBJSTATE_PLAY)
+			if(snd->State == SOUND_OBJSTATE_PLAY)
 				++tmpSoundsPlayCount;
-			if (snd->Is3d && snd->DSBuffer && viewpos && viewdir)
+			if(snd->Is3d && snd->DSBuffer && viewpos && viewdir)
 			{
 				snd->DSBuffer->SetVolume(SOUND_3D_COM_VOLUME(snd->Position, (*viewpos), snd->DistAudible));
 				snd->DSBuffer->SetPan(SOUND_3D_COM_PAN(snd->Position, (*viewpos), (*viewdir), snd->DistAudible, snd->ShiftPan));
 
-				if (snd->DataInstances.size() > 0)
+				if(snd->DataInstances.size() > 0)
 				{
-					for (int k = 0, l = snd->DataInstances.size(); k < l; ++k)
+					for(int k = 0, l = snd->DataInstances.size(); k < l; ++k)
 					{
 						snd->DSBuffer->SetVolume(SOUND_3D_COM_VOLUME(snd->DataInstances[k].pos, (*viewpos), snd->DistAudible));
 						snd->DSBuffer->SetPan(SOUND_3D_COM_PAN(snd->DataInstances[k].pos, (*viewpos), (*viewdir), snd->DistAudible, snd->ShiftPan));
@@ -1106,44 +1106,44 @@ void MainSound::Update(const float3* viewpos, const float3* viewdir)
 				}
 			}
 
-			for (int k = 0, l = snd->DataInstances.size(); k < l; ++k)
+			for(int k = 0, l = snd->DataInstances.size(); k < l; ++k)
 			{
 				status = 0;
-				if (SUCCEEDED(snd->DataInstances[k].sbuffer->GetStatus(&status)) && !(status & DSBSTATUS_PLAYING))
+				if(SUCCEEDED(snd->DataInstances[k].sbuffer->GetStatus(&status)) && !(status & DSBSTATUS_PLAYING))
 					snd->DataInstances[k].busy = false;
 			}
 
-			if (snd->StreamSize && snd->DSBuffer != 0)
+			if(snd->StreamSize && snd->DSBuffer != 0)
 			{
 				DWORD pos;
 				snd->DSBuffer->GetCurrentPosition(&pos, 0);
 
-				if (pos >= snd->Split1Size && pos < snd->Split2Size && !snd->BF2)
+				if(pos >= snd->Split1Size && pos < snd->Split2Size && !snd->BF2)
 				{
 					ReLoadSplit(i, 0, snd->Split1Size);
 					snd->BF2 = true;
 					snd->BF1 = false; snd->BF3 = false; snd->BF4 = false;
 					snd->SplitActive = 2;
 				}
-				else if (pos >= snd->Split2Size && pos < snd->Split3Size && !snd->BF3)
+				else if(pos >= snd->Split2Size && pos < snd->Split3Size && !snd->BF3)
 				{
 					snd->BF3 = true;
 					snd->BF1 = false; snd->BF2 = false; snd->BF4 = false;
 					ReLoadSplit(i, snd->Split1Size, snd->Split1Size);
 					snd->SplitActive = 3;
 				}
-				else if (pos >= snd->Split3Size && pos < snd->StreamSize && !snd->BF4)
+				else if(pos >= snd->Split3Size && pos < snd->StreamSize && !snd->BF4)
 				{
 					snd->BF4 = true;
 					snd->BF1 = false; snd->BF2 = false; snd->BF3 = false;
 					ReLoadSplit(i, snd->Split2Size, snd->Split1Size);
 					snd->SplitActive = 4;
 				}
-				else if (pos < snd->Split1Size && !snd->BF1)
+				else if(pos < snd->Split1Size && !snd->BF1)
 				{
 					snd->BF1 = true;
 					snd->BF2 = false; snd->BF3 = false; snd->BF4 = false;
-					if (!snd->IsStarting)
+					if(!snd->IsStarting)
 					{
 						ReLoadSplit(i, snd->Split3Size, snd->Split1Size);
 						snd->RePlayCount++;
@@ -1153,18 +1153,18 @@ void MainSound::Update(const float3* viewpos, const float3* viewdir)
 				}
 
 
-				if (snd->RePlayCount + 1 == snd->RePlayEndCount)
+				if(snd->RePlayCount + 1 == snd->RePlayEndCount)
 				{
-					if (snd->SizeFull <= (snd->StreamSize * snd->RePlayCount + pos))
+					if(snd->SizeFull <= (snd->StreamSize * snd->RePlayCount + pos))
 					{
-						if (!snd->IsLooping)
+						if(!snd->IsLooping)
 							SoundStop(i);
 
 						//wav
-						if (snd->Format == SOUND_FILEFORMAT_WAV)
+						if(snd->Format == SOUND_FILEFORMAT_WAV)
 							fseek(snd->StreamFile, sizeof(SoundWaveHeader), SEEK_SET);
 						//ogg
-						else if (snd->Format == SOUND_FILEFORMAT_OGG)
+						else if(snd->Format == SOUND_FILEFORMAT_OGG)
 							ov_pcm_seek(snd->VorbisFile, 0);
 
 						ReLoadSplit(i, 0, snd->StreamSize);

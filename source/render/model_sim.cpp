@@ -70,7 +70,7 @@ ModelSim::~ModelSim()
 
 	mem_release(TransVertBufGreen);
 
-	for (int i = 0; i < ArrStaticModel.size(); ++i)
+	for (UINT i = 0; i < ArrStaticModel.size(); ++i)
 	{
 		mem_release(ArrStaticModel[i]->Anim);
 		mem_release(ArrStaticModel[i]->Model);
@@ -155,7 +155,7 @@ void ModelSim::Add(const char* path)
 	Anim->Lock(0, 0, (void**)&pDataAnim, 0);
 	StaticModel->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
 	
-	for (int i = 0; i < StaticModel->AllVertexCount; ++i)
+	for (UINT i = 0; i < StaticModel->AllVertexCount; ++i)
 	{
 		pDataAnim[i].Pos = pData[i].Pos;
 		pDataAnim[i].Norm = pData[i].Norm;
@@ -194,7 +194,7 @@ void ModelSim::GetCenter(float3_t* center)
 
 void ModelSim::Render(DWORD timeDelta)
 {
-	if (!(CurrRenderModel >= 0 && ArrStaticModel.size() > CurrRenderModel && ArrStaticModel[CurrRenderModel]))
+	if (!(CurrRenderModel >= 0 && ArrStaticModel.size() > (UINT)CurrRenderModel && ArrStaticModel[CurrRenderModel]))
 		return;
 
 	WorldMat = SMMatrixRotationX(Rotation.x) * SMMatrixRotationY(Rotation.y) * SMMatrixRotationZ(Rotation.z);
@@ -219,7 +219,7 @@ void ModelSim::Render(DWORD timeDelta)
 
 void ModelSim::RenderStatic(DWORD timeDelta)
 {
-	uint32_t* RTGPUArrIndicesPtrs2;
+//	uint32_t* RTGPUArrIndicesPtrs2;
 
 	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Model->VertexBuffer, 0, sizeof(vertex_static));
 	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->IndexBuffer);
