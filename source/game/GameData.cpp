@@ -155,9 +155,9 @@ void GameData::loadFoostepsSounds()
 	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass3.ogg");
 	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass4.ogg");
 
-	//aSounds[mpt_glass].push_back("actor/step/.ogg");
-	//aSounds[mpt_plastic].push_back("actor/step/.ogg");
-	//aSounds[mpt_flesh].push_back("actor/step/.ogg");
+	//aSounds[MTLTYPE_PHYSIC_GLASS].push_back("actor/step/.ogg");
+	//aSounds[MTLTYPE_PHYSIC_PLASTIC].push_back("actor/step/.ogg");
+	//aSounds[MTLTYPE_PHYSIC_FLESH].push_back("actor/step/.ogg");
 
 	for(int i = 0; i < MPT_COUNT; ++i)
 	{
