@@ -97,13 +97,15 @@ SXplayer::SXplayer(EntityManager * pMgr):
 
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
-	m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
+	//m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
+	m_flashlight->SetPos(GetPos() + float3(0.f, 0.2f, 0.1f));
 	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PIDIV2, 'x'));
 	m_flashlight->SetParent(this);
 	m_flashlight->setDist(20.f);
 	m_flashlight->setAngle(SMToRadian(60));
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
-	m_flashlight->setShadowType(-1);
+	//m_flashlight->setShadowType(-1);
+	m_flashlight->setShadowType(1);
 
 	m_idQuadCurr = -1;
 
