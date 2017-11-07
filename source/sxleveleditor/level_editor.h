@@ -165,6 +165,7 @@ namespace SXLevelEditor
 	extern ISXGUIComboBox* ComboBoxGameClass;
 	extern ISXGUIButton* ButtonGameTab;
 
+	//! текущий активный раздел игровых объектов, 0 - своейства, 1 - соединения
 	extern int GameTabVal;
 
 	extern ISXGUIListView* ListViewGameClass;
@@ -174,6 +175,9 @@ namespace SXLevelEditor
 	extern ISXGUIStatic* StaticGameHelp;
 	extern ISXGUIMemo* MemoGameHelp;
 	extern ISXGUIButton* ButtonGameCreate;
+
+	extern ISXGUICheckBox* CheckBoxGameFlags[16];
+	extern const char* aGameObjectFlags[16];
 
 	extern ISXGUIListView* ListViewGameConnections;
 	extern ISXGUIStatic* StaticGameConnectionsEvent;
@@ -186,6 +190,8 @@ namespace SXLevelEditor
 	extern ISXGUIEdit* EditGameConnectionsDelay;
 	extern ISXGUIStatic* StaticGameConnectionsParameter;
 	extern ISXGUIEdit* EditGameConnectionsParameter;
+	extern ISXGUIButton* ButtonGameConnectionsCreate;
+	extern ISXGUIButton* ButtonGameConnectionsDelete;
 	//}
 
 	//aigrid
@@ -229,6 +235,8 @@ namespace SXLevelEditor
 
 	extern ISXGUIStatusBar* StatusBar1;
 
+	//**********************************************************************
+
 	void InitAllElements();
 
 	void DeleteAllElements();
@@ -255,8 +263,13 @@ namespace SXLevelEditor
 	void GameActivateAll(bool bf);
 	void GameSel(int sel);
 	void GameUpdatePosRot();
+
+	//! установка видимости раздела свойств
 	void GameVisibleProperties(bool bf);
+
+	//! установка видимости раздела соединений
 	void GameVisibleConnections(bool bf);
+
 
 	void AIGridActivateAll(bool bf);
 	void AIGridEnableBB(bool bf);
@@ -295,6 +308,11 @@ namespace SXLevelEditor
 	extern float3 HelperPos;
 	extern float3 HelperRot;
 	extern float3 HelperScale;
+
+	/*! добавление (true) либо создание нового (false) соединения для игрового объекта 
+	 \note при добавлении все данные с редакторов записываются в новое соединеие, при создании редакторы отвязывается от таблицы и их можно спокойно изменять
+	*/
+	extern bool isAddGameConections;
 
 	extern ID IdMtl;
 	extern ID MenuWeatherCurrID;

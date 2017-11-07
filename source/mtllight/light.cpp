@@ -5,11 +5,11 @@ Lights::Lights()
 {
 	HowShadow = 0;
 
-	const int *winr_width = GET_PCVAR_INT("winr_width");
-	const int *winr_height = GET_PCVAR_INT("winr_height");
+	const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	ShadowMap = SGCore_RTAdd(*winr_width, *winr_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
-	ShadowMap2 = SGCore_RTAdd(*winr_width, *winr_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
+	ShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
+	ShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
 
 	GlobalLight = -1;
 	m_isCastGlobalShadow = false;
@@ -1257,11 +1257,11 @@ void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 	if (isfirst)
 		HowShadow = 0;
 
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	LPDIRECT3DSURFACE9 RenderSurf,BackBuf;
 
@@ -1299,13 +1299,13 @@ void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 	
 		if(randomsam)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "PixelSize", &float2_t(size / float(*winr_width), size / float(*winr_height)));
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "NearFar", &float2_t(*p_near, *p_far));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "PixelSize", &float2_t(size / float(*r_win_width), size / float(*r_win_height)));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBasedNoise, "NearFar", &float2_t(*r_near, *r_far));
 		}
 		else
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased, "PixelSize", &float2_t(size / float(*winr_width), size / float(*winr_height)));
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased, "NearFar", &float2_t(*p_near, *p_far));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased, "PixelSize", &float2_t(size / float(*r_win_width), size / float(*r_win_height)));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PPBlurDepthBased, "NearFar", &float2_t(*r_near, *r_far));
 		}
 
 	
@@ -1326,10 +1326,10 @@ void Lights::ShadowSoft(bool randomsam, float size, bool isfirst)
 
 void Lights::ToneMappingCom(DWORD timeDelta, float factor_adapted)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	MLSet::GetArrDownScale4x4(*winr_width, *winr_height, MLSet::HDRSampleOffsets);
+	MLSet::GetArrDownScale4x4(*r_win_width, *r_win_height, MLSet::HDRSampleOffsets);
 
 	LPDIRECT3DSURFACE9 SurfSceneScale, BackBuf;
 

@@ -112,12 +112,12 @@ namespace PPSet
 
 void PPSet::Init()
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	PPSet::DXDevice = SGCore_GetDXDevice();
-	PPSet::WinSize.x = *winr_width;
-	PPSet::WinSize.y = *winr_height;
+	PPSet::WinSize.x = *r_win_width;
+	PPSet::WinSize.y = *r_win_height;
 	Core_SetOutPtr();
 	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos", SHADER_CHECKDOUBLE_PATH);
 
@@ -316,11 +316,11 @@ SX_LIB_API void SPP_Update()
 {
 	PP_PRECOND(_VOID);
 	
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
@@ -332,13 +332,13 @@ SX_LIB_API void SPP_Update()
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &PPSet::MCamView);
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &PPSet::MCamProj);
 
-	PPSet::WinSize.x = *winr_width;
-	PPSet::WinSize.y = *winr_height;
+	PPSet::WinSize.x = *r_win_width;
+	PPSet::WinSize.y = *r_win_height;
 
 	PPSet::ProjRatio = PPSet::WinSize.x / PPSet::WinSize.y;
 
-	PPSet::NearFar.x = *p_near;
-	PPSet::NearFar.y = *p_far;
+	PPSet::NearFar.x = *r_near;
+	PPSet::NearFar.y = *r_far;
 
 	PPSet::ProjFov = *r_default_fov;
 }

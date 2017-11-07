@@ -87,7 +87,7 @@ void CWeatherRndSnd::update()
 	if (!m_isPlaying)
 		return;
 
-	static const float * weather_snd_volume = GET_PCVAR_FLOAT("weather_snd_volume");
+	static const float * env_weather_snd_volume = GET_PCVAR_FLOAT("env_weather_snd_volume");
 
 	if (m_aCurrSndIDs.size() > 0 && (m_ulNextPlay == 0 || m_ulNextPlay < TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER))))
 	{
@@ -97,7 +97,7 @@ void CWeatherRndSnd::update()
 			m_idCurrPlay = m_aCurrSndIDs[tmpkeysnd];
 			SSCore_SndPosCurrSet(m_idCurrPlay, 0);
 			int tmprndvol = (rand() % (m_iVolumeE - m_iVolumeB)) + m_iVolumeB;
-			SSCore_SndVolumeSet(m_idCurrPlay, (long)(weather_snd_volume ? (float)tmprndvol * (*weather_snd_volume) : tmprndvol), SOUND_VOL_PCT);
+			SSCore_SndVolumeSet(m_idCurrPlay, (long)(env_weather_snd_volume ? (float)tmprndvol * (*env_weather_snd_volume) : tmprndvol), SOUND_VOL_PCT);
 			SSCore_SndPlay(m_idCurrPlay);
 
 			DWORD tmprnd = (rand() % (m_ulPeriodE - m_ulPeriodB)) + m_ulPeriodB;
@@ -559,7 +559,7 @@ void CWeather::update()
 
 	ID gid = SML_LigthsGetGlobal();
 
-	static const float * weather_snd_volume = GET_PCVAR_FLOAT("weather_snd_volume");
+	static const float * env_weather_snd_volume = GET_PCVAR_FLOAT("env_weather_snd_volume");
 
 	//если есть дождь то обновл¤ем его позицию и громкость
 	if (m_iSectionCurr >= 0 && (int)m_aTimeSections.size() > m_iSectionCurr && m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
@@ -570,14 +570,14 @@ void CWeather::update()
 		updateRainSound();
 	}
 
-	static float * main_rain_density = (float*)GET_PCVAR_FLOAT("main_rain_density");
-	static float main_rain_density_old = 1.f;
+	static float * env_default_rain_density = (float*)GET_PCVAR_FLOAT("env_default_rain_density");
+	static float env_default_rain_density_old = 1.f;
 
-	if (main_rain_density && (*main_rain_density) != main_rain_density_old)
+	if (env_default_rain_density && (*env_default_rain_density) != env_default_rain_density_old)
 	{
-		main_rain_density_old = *main_rain_density;
+		env_default_rain_density_old = *env_default_rain_density;
 		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
-			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, main_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
+			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
 	}
 
 	//получаем текущую игровую дату
@@ -638,7 +638,7 @@ void CWeather::update()
 		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
 		{
 			SPE_EmitterSet(m_idEffRain, 0, Color, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vRainColor);
-			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, main_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
+			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
 			SPE_EffectEnableSet(m_idEffRain, true);
 
 			SSCore_SndPosCurrSet(m_idSndRain, 0);
@@ -727,7 +727,7 @@ void CWeather::update()
 
 		//дальность видимости
 		float tmpfar = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_fFar, m_aTimeSections[m_iSectionCurr].m_DataSection.m_fFar, lerp_factor);
-		Core_0SetCVarFloat("p_far", tmpfar);
+		Core_0SetCVarFloat("r_far", tmpfar);
 
 		//плотность тумана
 		static float * pp_fog_density = (float*)GET_PCVAR_FLOAT("pp_fog_density");
@@ -756,9 +756,9 @@ void CWeather::update()
 		//иначе если предыдущее врем¤ грозы нулевое и врем¤ следующей грозы наступило
 		else if (m_ulTimeBoltLast == 0 && TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) >= m_ulTimeBoltNext)
 		{
-			static const bool * main_thunderbolt = GET_PCVAR_BOOL("main_thunderbolt");
+			static const bool * env_default_thunderbolt = GET_PCVAR_BOOL("env_default_thunderbolt");
 			//если предусмотерна молни¤ то показываем
-			if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_hasThunderbolt && (!main_thunderbolt || (main_thunderbolt && *main_thunderbolt)))
+			if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_hasThunderbolt && (!env_default_thunderbolt || (env_default_thunderbolt && *env_default_thunderbolt)))
 			{
 				static float3 campos;
 				Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_POSITION, &campos);
@@ -776,7 +776,7 @@ void CWeather::update()
 			else
 			{
 				SSCore_SndPosCurrSet(m_idSndThunder, 0);
-				SSCore_SndVolumeSet(m_idSndThunder, (weather_snd_volume ? (*weather_snd_volume) : 1.f) * 100.f, SOUND_VOL_PCT);
+				SSCore_SndVolumeSet(m_idSndThunder, (env_weather_snd_volume ? (*env_weather_snd_volume) : 1.f) * 100.f, SOUND_VOL_PCT);
 
 				if (m_isPlaying)
 					SSCore_SndPlay(m_idSndThunder);
@@ -823,7 +823,7 @@ void CWeather::updateRainSound()
 	if (m_idEffRain < 0 || !m_isPlaying)
 		return;
 
-	static const float * weather_snd_volume = GET_PCVAR_FLOAT("weather_snd_volume");
+	static const float * env_weather_snd_volume = GET_PCVAR_FLOAT("env_weather_snd_volume");
 
 	//если пришло врем¤ обновл¤ть громкость
 	if (m_ulTimeRainVolSndLast == 0 || TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_ulTimeRainVolSndLast >= WEATHER_RAIN_VOL_SND_UPDATE)
@@ -854,7 +854,7 @@ void CWeather::updateRainSound()
 	}
 
 	m_fRainVolume /= tmpcount / 4;
-	SSCore_SndVolumeSet(m_idSndRain, (weather_snd_volume ? (*weather_snd_volume) : 1.f) *  m_fRainVolume * 100.f, SOUND_VOL_PCT);
+	SSCore_SndVolumeSet(m_idSndRain, (env_weather_snd_volume ? (*env_weather_snd_volume) : 1.f) *  m_fRainVolume * 100.f, SOUND_VOL_PCT);
 }
 
 float CWeather::getCurrRainDensity()

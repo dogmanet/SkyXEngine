@@ -115,8 +115,8 @@ void PSSM::OnLostDevice()
 
 void PSSM::OnResetDevice()
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
@@ -135,7 +135,7 @@ void PSSM::OnResetDevice()
 	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
 	FovRatio.x = *r_default_fov;
-	FovRatio.y = float(*winr_width) / float(*winr_height);
+	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
 	float2 fOffset = float2(0.5, 0.5) - (float2(0.5f, 0.5f) / MLSet::SizeTexDepthGlobal);
 	float range = 1.0f;
@@ -148,16 +148,16 @@ void PSSM::OnResetDevice()
 
 void PSSM::Init()
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	FovRatio.x = *r_default_fov;
-	FovRatio.y = float(*winr_width) / float(*winr_height);
+	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
 		for(int i=0;i<5;i++)
 		{
@@ -170,7 +170,7 @@ void PSSM::Init()
 			Frustums[i] = SGCore_CrFrustum();
 		}
 
-	NearFar[0].x = *p_near;
+	NearFar[0].x = *r_near;
 	NearFar[0].y = MLSet::DistForPSSM.x;
 
 	NearFar[1].x = MLSet::DistForPSSM.x;
@@ -183,8 +183,8 @@ void PSSM::Init()
 	NearFar[3].y = MLSet::DistForPSSM.w;
 
 
-	NearFar[4].x = *p_near;
-	NearFar[4].y = *p_far;
+	NearFar[4].x = *r_near;
+	NearFar[4].y = *r_far;
 
 	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
@@ -200,13 +200,13 @@ void PSSM::Init()
 
 void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
 	FovRatio.x = *r_default_fov;
-	FovRatio.y = float(*winr_width) / float(*winr_height);
+	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
 	Frustums[split]->Update(&(Views[split]), &(Projs[split]));
 
@@ -415,13 +415,13 @@ void PSSM::Flickering(float4x4 *matLVP,float size_x,float size_y)
 
 void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
@@ -468,8 +468,8 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 	float3 observerpos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 	
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*winr_width, *winr_height, *r_default_fov));
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*p_near, *p_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
 	
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
 
@@ -477,14 +477,14 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 	{
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "PosCam", &observerpos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "NearFar", &float2_t(*p_near, *p_far));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "NearFar", &float2_t(*r_near, *r_far));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
 	}
 	else
 	{
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "PosCam", &observerpos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "NearFar", &float2_t(*p_near, *p_far));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "NearFar", &float2_t(*r_near, *r_far));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
 	}
 
@@ -742,13 +742,13 @@ void ShadowMapTech::End()
 
 void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	shadowmap->GetSurfaceLevel(0, &RenderSurf);
@@ -786,8 +786,8 @@ void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*winr_width, *winr_height, *r_default_fov));
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*p_near, *p_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
 
 	float3 observerpos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
@@ -1082,13 +1082,13 @@ void ShadowMapCubeTech::End()
 
 void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
@@ -1116,8 +1116,8 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*winr_width, *winr_height, *r_default_fov));
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*p_near, *p_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
 
 	float pixel_size = BlurPixel / MLSet::SizeTexDepthLocal.x;
 	float3 observerpos;

@@ -58,42 +58,42 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//
 	else if (id == ID_FINALIMAGE_COLOR)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_COLOR);
+		Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		SXMaterialEditor::FinalImageUncheckedMenu();
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_NORMALS)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_NORMAL);
+		Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		SXMaterialEditor::FinalImageUncheckedMenu();
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_PARAMETERS)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_PARAM);
+		Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		SXMaterialEditor::FinalImageUncheckedMenu();
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_AMBIENTDIFF);
+		Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		SXMaterialEditor::FinalImageUncheckedMenu();
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_SPECULAR)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_SPECULAR);
+		Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		SXMaterialEditor::FinalImageUncheckedMenu();
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
+		Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		SXMaterialEditor::FinalImageUncheckedMenu();
 		SXMaterialEditor::MainMenu->CheckItem(id, !SXMaterialEditor::MainMenu->GetCheckedItem(id));
 	}
@@ -132,42 +132,42 @@ LRESULT SXMaterialEditor_ToolBar_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPara
 			SXMaterialEditor::FinalImageUncheckedMenu();
 			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
 			SXMaterialEditor::CheckBoxTBRColor->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_COLOR);
+			Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		}
 		else if (SXMaterialEditor::CheckBoxTBRNormal->GetHWND() == handle_elem)
 		{
 			SXMaterialEditor::FinalImageUncheckedMenu();
 			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, true);
 			SXMaterialEditor::CheckBoxTBRNormal->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_NORMAL);
+			Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		}
 		else if (SXMaterialEditor::CheckBoxTBRParam->GetHWND() == handle_elem)
 		{
 			SXMaterialEditor::FinalImageUncheckedMenu();
 			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, true);
 			SXMaterialEditor::CheckBoxTBRParam->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_PARAM);
+			Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		}
 		else if (SXMaterialEditor::CheckBoxTBRAmDiff->GetHWND() == handle_elem)
 		{
 			SXMaterialEditor::FinalImageUncheckedMenu();
 			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
 			SXMaterialEditor::CheckBoxTBRAmDiff->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_AMBIENTDIFF);
+			Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		}
 		else if (SXMaterialEditor::CheckBoxTBRSpecular->GetHWND() == handle_elem)
 		{
 			SXMaterialEditor::FinalImageUncheckedMenu();
 			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, true);
 			SXMaterialEditor::CheckBoxTBRSpecular->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_SPECULAR);
+			Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		}
 		else if (SXMaterialEditor::CheckBoxTBRLighting->GetHWND() == handle_elem)
 		{
 			SXMaterialEditor::FinalImageUncheckedMenu();
 			SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
 			SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
+			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		}
 	}
 
@@ -176,8 +176,8 @@ LRESULT SXMaterialEditor_ToolBar_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPara
 
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static int *resize = (int*)GET_PCVAR_INT("resize");
-	*resize = RENDER_RESIZE_RESIZE;
+	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+	*r_resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }
 

@@ -30,14 +30,14 @@ namespace MLSet
 
 	void ReCalcSize()
 	{
-		static const int *winr_width = GET_PCVAR_INT("winr_width");
-		static const int *winr_height = GET_PCVAR_INT("winr_height");
+		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-		SizeTexDepthGlobal.x = float(*winr_width) * CoefSizeDepthMapForGlobal;
-		SizeTexDepthGlobal.y = float(*winr_height) * CoefSizeDepthMapForGlobal;
+		SizeTexDepthGlobal.x = float(*r_win_width) * CoefSizeDepthMapForGlobal;
+		SizeTexDepthGlobal.y = float(*r_win_height) * CoefSizeDepthMapForGlobal;
 
-		SizeTexDepthLocal.x = float(*winr_width) * CoefSizeDepthMapForLocal;
-		SizeTexDepthLocal.y = float(*winr_height) * CoefSizeDepthMapForLocal;
+		SizeTexDepthLocal.x = float(*r_win_width) * CoefSizeDepthMapForLocal;
+		SizeTexDepthLocal.y = float(*r_win_height) * CoefSizeDepthMapForLocal;
 	}
 
 	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
@@ -171,8 +171,8 @@ void MLSet::MLInit()
 {
 	MLSet::DXDevice = SGCore_GetDXDevice();
 
-	const int *winr_width = GET_PCVAR_INT("winr_width");
-	const int *winr_height = GET_PCVAR_INT("winr_height");
+	const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
@@ -322,7 +322,7 @@ void MLSet::MLInit()
 
 	//////////
 	float tmpcoefsizert = 1;
-	float2_t tmp_sizert = float2_t(float(*winr_width) * tmpcoefsizert, (*winr_height) * tmpcoefsizert);
+	float2_t tmp_sizert = float2_t(float(*r_win_width) * tmpcoefsizert, (*r_win_height) * tmpcoefsizert);
 
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
@@ -345,7 +345,7 @@ void MLSet::MLInit()
 	while (true)
 	{
 		int tmpsize = 1 << (2 * tmpcount);
-		if (tmpsize >= float(*winr_width)*0.25 || tmpsize > (*winr_height)*0.25)
+		if (tmpsize >= float(*r_win_width)*0.25 || tmpsize > (*r_win_height)*0.25)
 			break;
 		MLSet::IDsRenderTargets::ToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "qq", 0);
 		MLSet::IDsRenderTargets::SurfToneMap[tmpcount] = 0;
@@ -356,13 +356,13 @@ void MLSet::MLInit()
 	MLSet::IDsRenderTargets::AdaptLumCurr = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 	MLSet::IDsRenderTargets::AdaptLumLast = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 
-	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(*winr_width, *winr_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
-	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(*winr_width, *winr_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
-	MLSet::IDsRenderTargets::LigthCom3 = SGCore_RTAdd(*winr_width, *winr_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
+	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
+	MLSet::IDsRenderTargets::LigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
 	
-	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(float(*winr_width)*0.25f, float(*winr_height)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(float(*r_win_width)*0.25f, float(*r_win_height)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
 
-	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*winr_width) / float(*winr_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 }
 

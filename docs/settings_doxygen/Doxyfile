@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "3D real-time render"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = 
+PROJECT_LOGO           = ./logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -795,25 +795,23 @@ INPUT                  = ../../source/gdefines.h \
                          ../../source/GRegisterIndex.h \
                          ../../source/input/sxinput.h \
                          ../../source/gcore/sxgcore.h \
+                         ../../source/score/sxscore.h \
                          ../../source/geom/sxgeom.h \
                          ../../source/mtllight/sxmtllight.h \
                          ../../source/pp/sxpp.h \
-                         ../../source/SkyXEngine.h \
-                         ../../source/managed_render/gdata.h \
-                         ../../source/managed_render/camera_update.h \
-                         ../../source/managed_render/handler_out_log.cpp \
-                         ../../source/managed_render/render_func.h \
-                         ../../source/managed_render/level.h \
                          ../../source/anim/sxanim.h \
                          ../../source/anim/ModelFile.h \
                          ../../source/gcore/ModelFile.h \
                          ../../source/SXGUIWinApi/SXGUI.h \
                          ../../source/particles/sxparticles.h \
-                         ../../source/score/sxscore.h \
                          ../../source/decals/sxdecals.h \
                          ../../source/aigrid/sxaigrid.h \
+                         ../../source/render/sxrender.h \
+                         ../../source/level/sxlevel.h \
+                         ../../source/SkyXEngine.h \
                          ../../source/sxmaterialeditor/sxmaterialeditor.cpp \
-                         ../../source/sxparticleseditor/sxparticleseditor.cpp
+                         ../../source/sxparticleseditor/sxparticleseditor.cpp \
+                         ../../source/sxleveleditor/sxleveleditor.cpp
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

@@ -430,7 +430,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	
 
 	SkyXEngine_Init(SXMaterialEditor::WindowRender->GetHWND(), SXMaterialEditor::JobWindow->GetHWND());
-	Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
+	Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 
 	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
 	SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);

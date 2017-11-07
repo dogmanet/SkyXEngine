@@ -265,6 +265,7 @@ const char * GetEmptyString();
 
 #define EDITOR_NONE {PDE_NONE, NULL}}
 #define EDITOR_TEXTFIELD {PDE_TEXTFIELD, NULL}}
+#define EDITOR_FLAGS {PDE_FLAGS, NULL}}
 
 #define EDITOR_COMBOBOX _GetEditorCombobox(0
 #define COMBO_OPTION(name, value) , name, value

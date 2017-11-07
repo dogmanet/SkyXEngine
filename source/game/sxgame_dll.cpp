@@ -355,8 +355,26 @@ SX_LIB_API int SXGame_EntGetCount()
 	return(GameData::m_pMgr->GetCount());
 }
 
-SX_LIB_API SXbaseEntity * SXGame_EntGet(ID id)
+SX_LIB_API SXbaseEntity *SXGame_EntGet(ID id)
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pMgr->GetById(id));
+}
+
+SX_LIB_API SXbaseEntity *SXGame_EntGetByName(const char *szName, ID idStart)
+{
+	SG_PRECOND(NULL);
+
+	SXbaseEntity *pEnt = 0;
+
+	for (int i = 0, il = SXGame_EntGetCount(); i < il; ++i)
+	{
+		pEnt = SXGame_EntGet(i);
+		if (pEnt && strcmp(szName, pEnt->GetName()) == 0)
+		{
+			return pEnt;
+		}
+	}
+
+	return 0;
 }

@@ -62,41 +62,41 @@ inline void SXRenderFunc::SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD 
 
 void SXRenderFunc::SetRenderSceneFilter()
 {
-	static const int * r_s_filter = GET_PCVAR_INT("r_s_filter");
-	static const int * r_s_max_anisotropy = GET_PCVAR_INT("r_s_max_anisotropy");
-	static const int * r_s_max_miplevel = GET_PCVAR_INT("r_s_max_miplevel");
+	static const int * r_texfilter_type = GET_PCVAR_INT("r_texfilter_type");
+	static const int * r_texfilter_max_anisotropy = GET_PCVAR_INT("r_texfilter_max_anisotropy");
+	static const int * r_texfilter_max_miplevel = GET_PCVAR_INT("r_texfilter_max_miplevel");
 
-	static int r_s_filter2 = 1;
-	static int r_s_max_anisotropy2 = 0;
-	static int r_s_max_miplevel2 = 0;
+	static int r_texfilter_type2 = 1;
+	static int r_texfilter_max_anisotropy2 = 0;
+	static int r_texfilter_max_miplevel2 = 0;
 
-	if (r_s_filter)
-		r_s_filter2 = (*r_s_filter);
+	if (r_texfilter_type)
+		r_texfilter_type2 = (*r_texfilter_type);
 	else
-		r_s_filter2 = 1;
+		r_texfilter_type2 = 1;
 
-	if (r_s_max_anisotropy)
-		r_s_max_anisotropy2 = (*r_s_max_anisotropy);
+	if (r_texfilter_max_anisotropy)
+		r_texfilter_max_anisotropy2 = (*r_texfilter_max_anisotropy);
 	else
-		r_s_max_anisotropy2 = 1;
+		r_texfilter_max_anisotropy2 = 1;
 
-	if (r_s_max_miplevel)
-		r_s_max_miplevel2 = (*r_s_max_miplevel);
+	if (r_texfilter_max_miplevel)
+		r_texfilter_max_miplevel2 = (*r_texfilter_max_miplevel);
 	else
-		r_s_max_miplevel2 = 1;
+		r_texfilter_max_miplevel2 = 1;
 	
-	if (r_s_filter2 == 0)
+	if (r_texfilter_type2 == 0)
 		SetSamplerFilter(0, 16, D3DTEXF_POINT);
-	else if (r_s_filter2 == 2)
+	else if (r_texfilter_type2 == 2)
 	{
 		for (int i = 0; i<16; ++i)
-			GData::DXDevice->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, r_s_max_anisotropy2);
+			GData::DXDevice->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, r_texfilter_max_anisotropy2);
 		SetSamplerFilter(0, 16, D3DTEXF_ANISOTROPIC);
 	}
 	else
 		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 
-	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, r_s_max_miplevel2);
+	GData::DXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, r_texfilter_max_miplevel2);
 
 	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 }
@@ -110,20 +110,20 @@ void SXRenderFunc::SetRenderSceneFilterUn()
 
 void SXRenderFunc::ComDeviceLost()
 {
-	static int *resize = (int*)GET_PCVAR_INT("resize");
+	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 
-	static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
-	static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
-	static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
+	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-	if (*resize != RENDER_RESIZE_CHANGE)
+	if (*r_resize != RENDER_RESIZE_CHANGE)
 	{
 		//получаем текущий размер окна в которое рисовали
 		RECT rect_scene;
 		GetClientRect(GData::Handle3D, &rect_scene);
 
-		*winr_width = rect_scene.right;
-		*winr_height = rect_scene.bottom;
+		*r_win_width = rect_scene.right;
+		*r_win_height = rect_scene.bottom;
 	}
 
 	//сбрасываем все что необходимо для восстановления устройства
@@ -133,8 +133,8 @@ void SXRenderFunc::ComDeviceLost()
 	SPE_OnLostDevice();
 
 	SXRenderFunc::InitModeWindow();
-	bool bf = SGCore_OnDeviceReset(*winr_width, *winr_height, *winr_windowed);
-	g_fnReportf(REPORT_MSG_LEVEL_WARNING, "winr_width %d, winr_height %d, winr_windowed %d \n", *winr_width, *winr_height, *winr_windowed);
+	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
+	g_fnReportf(REPORT_MSG_LEVEL_WARNING, "r_win_width %d, r_win_height %d, r_win_windowed %d \n", *r_win_width, *r_win_height, *r_win_windowed);
 
 	if (bf)
 	{
@@ -144,7 +144,7 @@ void SXRenderFunc::ComDeviceLost()
 	else
 	{
 		GData::InitAllMatrix();
-		*resize = RENDER_RESIZE_NONE;
+		*r_resize = RENDER_RESIZE_NONE;
 		SGCore_OnResetDevice();
 		SML_OnResetDevice();
 		SGeom_OnResetDevice();
@@ -407,12 +407,12 @@ void SXRenderFunc::SaveWorkTex()
 
 void SXRenderFunc::InitModeWindow()
 {
-	static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-	if (winr_windowed == NULL)
+	if (r_win_windowed == NULL)
 		return;
 
-	if (!(*winr_windowed))
+	if (!(*r_win_windowed))
 	{
 		SetWindowLong(GData::Handle3D, GWL_STYLE, GetWindowLong(GData::Handle3D, GWL_STYLE) | WS_POPUP);
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
@@ -429,32 +429,32 @@ void SXRenderFunc::InitModeWindow()
 
 void SXRenderFunc::ChangeModeWindow()
 {
-	/*static int * winr_width = (int*)GET_PCVAR_INT("winr_width");
-	*winr_width = 1280;
+	/*static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	*r_win_width = 1280;
 
-	static int * winr_height = (int*)GET_PCVAR_INT("winr_height");
-	*winr_height = 768;
+	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
+	*r_win_height = 768;
 
 	return;*/
 
-	static bool *winr_windowed = (bool*)GET_PCVAR_BOOL("winr_windowed");
+	static bool *r_win_windowed = (bool*)GET_PCVAR_BOOL("r_win_windowed");
 
-	if (winr_windowed == NULL)
+	if (r_win_windowed == NULL)
 		return;
 
-	*winr_windowed = !(*winr_windowed);
+	*r_win_windowed = !(*r_win_windowed);
 
 	SXRenderFunc::InitModeWindow();
 
-	static int *resize = (int*)GET_PCVAR_INT("resize");
-	*resize = RENDER_RESIZE_CHANGE;
+	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+	*r_resize = RENDER_RESIZE_CHANGE;
 }
 
 void SXRenderFunc::FullScreenChangeSizeAbs()
 {
-	static bool *winr_windowed = (bool*)GET_PCVAR_BOOL("winr_windowed");
+	static bool *r_win_windowed = (bool*)GET_PCVAR_BOOL("r_win_windowed");
 
-	if (winr_windowed == NULL || (*winr_windowed))
+	if (r_win_windowed == NULL || (*r_win_windowed))
 		return;
 
 	int iCountModes = 0;
@@ -470,33 +470,33 @@ void SXRenderFunc::FullScreenChangeSizeAbs()
 		pModes = 0;
 	}
 
-	static int * winr_width = (int*)GET_PCVAR_INT("winr_width");
-	static int * winr_height = (int*)GET_PCVAR_INT("winr_height");
+	static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
-	if (!winr_width || !winr_height)
+	if (!r_win_width || !r_win_height)
 		return;
 
-	static int winr_width_old = *winr_width;
-	static int winr_height_old = *winr_height;
+	static int r_win_width_old = *r_win_width;
+	static int r_win_height_old = *r_win_height;
 
-	if (*winr_width == iFullScreenWidth && *winr_height == iFullScreenHeight)
+	if (*r_win_width == iFullScreenWidth && *r_win_height == iFullScreenHeight)
 	{
-		*winr_width = winr_width_old;
-		*winr_height = winr_height_old;
+		*r_win_width = r_win_width_old;
+		*r_win_height = r_win_height_old;
 	}
 	else
 	{
-		winr_width_old = *winr_width;
-		winr_height_old = *winr_height;
+		r_win_width_old = *r_win_width;
+		r_win_height_old = *r_win_height;
 
-		*winr_width = iFullScreenWidth;
-		*winr_height = iFullScreenHeight;
+		*r_win_width = iFullScreenWidth;
+		*r_win_height = iFullScreenHeight;
 
 		//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "iFullScreenWidth %d, iFullScreenHeight %d \n", iFullScreenWidth, iFullScreenHeight);
 	}
 
-	static int *resize = (int*)GET_PCVAR_INT("resize");
-	*resize = RENDER_RESIZE_CHANGE;
+	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+	*r_resize = RENDER_RESIZE_CHANGE;
 }
 
 //##########################################################################
@@ -555,15 +555,15 @@ int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char
 
 	++FrameCount;
 	TimeElapsed += ((float)timeDelta) * 0.001f;
-	static const int * rs_stats = GET_PCVAR_INT("rs_stats");
+	static const int * r_stats = GET_PCVAR_INT("r_stats");
 
 	static bool isNulled = false;
 		
-	if (TimeElapsed >= 1.0f && rs_stats)
+	if (TimeElapsed >= 1.0f && r_stats)
 	{
 		FpsValue = (float)FrameCount / TimeElapsed;
 
-		if ((*rs_stats) > 0)
+		if ((*r_stats) > 0)
 			sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
 		if (needGameTime)
@@ -575,7 +575,7 @@ int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char
 			sprintf(debugstr + strlen(debugstr), "\nGame time : %d %d %d %d %d %d\n", 1900 + g_tm.tm_year, g_tm.tm_mon, g_tm.tm_mday, g_tm.tm_hour, g_tm.tm_min, g_tm.tm_sec);
 		}
 
-		if ((*rs_stats) == 2)
+		if ((*r_stats) == 2)
 		{
 			sprintf(debugstr + strlen(debugstr), szStr);
 		}
@@ -591,7 +591,7 @@ int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char
 	else
 		isNulled = false;
 			
-	if (rs_stats && (*rs_stats) > 0)
+	if (r_stats && (*r_stats) > 0)
 		SGCore_DbgMsg(debugstr);
 
 	return (isNulled ? FrameCount2 : 0);
@@ -601,10 +601,10 @@ int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char
 
 void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static float2_t vWinSize;
-	vWinSize = float2(*winr_width, *winr_height);
+	vWinSize = float2(*r_win_width, *r_win_height);
 
 	SGCore_ShaderUnBind();
 
@@ -1008,8 +1008,8 @@ void SXRenderFunc::RenderSky(DWORD timeDelta)
 
 void SXRenderFunc::ComLighting(DWORD timeDelta)
 {
-	static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
-	static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
+	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
 	SGCore_ShaderUnBind();
 
@@ -1131,13 +1131,13 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 				SML_LigthsShadowNull();	//очищаем рт генерации теней
 				SML_LigthsShadowGen(i);	//генерируем тень для света
 
-				static const int * shadow_soft = GET_PCVAR_INT("shadow_soft");
+				static const int * r_shadow_soft = GET_PCVAR_INT("r_shadow_soft");
 
-				if (shadow_soft)
+				if (r_shadow_soft)
 				{
-					if ((*shadow_soft) == 1)
+					if ((*r_shadow_soft) == 1)
 						SML_LigthsShadowSoft(false, 2);
-					else if ((*shadow_soft) == 2)
+					else if ((*r_shadow_soft) == 2)
 					{
 						SML_LigthsShadowSoft(false, 2);
 						SML_LigthsShadowSoft(false, 2);
@@ -1172,7 +1172,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "NearFar", &GData::NearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(*winr_width, *winr_height, GData::ProjFov));
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(*r_win_width, *r_win_height, GData::ProjFov));
 
 			float3 tmpPosition;
 			float2 tmpPowerDist;
@@ -1279,8 +1279,8 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 
 void SXRenderFunc::UnionLayers()
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	LPDIRECT3DSURFACE9 BackBuf, ComLightSurf;
 	GData::DXDevice->GetRenderTarget(0, &BackBuf);
@@ -1311,7 +1311,7 @@ void SXRenderFunc::UnionLayers()
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha, "WinSize", &float4_t(*winr_width, *winr_height, 1.f / float(*winr_width), 1.f / float(*winr_height)));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha, "WinSize", &float4_t(*r_win_width, *r_win_height, 1.f / float(*r_win_width), 1.f / float(*r_win_height)));
 
 		SGCore_ScreenQuadDraw();
 
@@ -1410,8 +1410,8 @@ void SXRenderFunc::ApplyToneMapping()
 void SXRenderFunc::ComToneMapping(DWORD timeDelta)
 {
 	//обработка tone mapping
-	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
-	SML_LigthsToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
+	static const float * r_hdr_adapted_coef = GET_PCVAR_FLOAT("r_hdr_adapted_coef");
+	SML_LigthsToneMappingCom(timeDelta, (r_hdr_adapted_coef ? (*r_hdr_adapted_coef) : 0.03f));
 }
 
 
@@ -1439,10 +1439,10 @@ void SXRenderFunc::RenderParticles(DWORD timeDelta)
 
 void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static float2_t vWinSize;
-	vWinSize = float2(*winr_width, *winr_height);
+	vWinSize = float2(*r_win_width, *r_win_height);
 
 	SPP_RTNull();
 

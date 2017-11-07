@@ -111,14 +111,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 	SkyXEngine_CreateLoadCVar();
 
-	static int *winr_width = (int*)GET_PCVAR_INT("winr_width");
-	static int *winr_height = (int*)GET_PCVAR_INT("winr_height");
-	static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
+	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
 	HWND hWnd3DCurr = 0;
 
 	if (hWnd3D == 0)
-		hWnd3DCurr = SkyXEngine_CreateWindow("SkyXEngine", "SkyXEngine", *winr_width, *winr_height);
+		hWnd3DCurr = SkyXEngine_CreateWindow("SkyXEngine", "SkyXEngine", *r_win_width, *r_win_height);
 	else
 	{
 		hWnd3DCurr = hWnd3D;
@@ -126,8 +126,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 		RECT rect;
 		GetClientRect(hWnd3DCurr, &rect);
 
-		*winr_width = rect.right;
-		*winr_height = rect.bottom;
+		*r_win_width = rect.right;
+		*r_win_height = rect.bottom;
 	}
 	
 	SSInput_0Create("sxinput", hWnd3DCurr, false);
@@ -155,7 +155,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 
 
-	SGCore_0Create("sxgcore", hWnd3DCurr, *winr_width, *winr_height, *winr_windowed, 0, false);
+	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, 0, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
 
 	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
@@ -259,7 +259,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 #endif
 
 #if defined(SX_GAME)
-	if (*winr_windowed)
+	if (*r_win_windowed)
 		ShowWindow(hWnd3DCurr, SW_SHOW);
 	else
 		ShowWindow(hWnd3DCurr, SW_MAXIMIZE);
@@ -329,16 +329,35 @@ void SkyXEngine_InitPaths()
 
 void SkyXEngine_CreateLoadCVar()
 {
-	Core_0RegisterCVarInt("winr_width", 800, 0);
-	Core_0RegisterCVarInt("winr_height", 600, 0);
-	Core_0RegisterCVarBool("winr_windowed", true, 0);
-	Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
-	Core_0RegisterCVarFloat("p_near", 0.025f, 0);
-	Core_0RegisterCVarFloat("p_far", 400, 0);
+	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)");
+	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)");
+	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный");
+	Core_0RegisterCVarFloat("r_default_fov", SM_PI * 0.25f, "Дефолтный fov в радианах");
+	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения");
+	Core_0RegisterCVarFloat("r_far", 400, "Дальняя плоскость отсечения (дальность видимости)");
 
-	Core_0RegisterCVarInt("final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
+	Core_0RegisterCVarInt("r_final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
 
-	Core_0RegisterCVarInt("resize", RENDER_RESIZE_NONE, "Тип изменения размеров окан рендера из перечисления RENDER_RESIZE");
+	Core_0RegisterCVarInt("r_resize", RENDER_RESIZE_NONE, "Тип изменения размеров окан рендера из перечисления RENDER_RESIZE");
+
+
+	Core_0RegisterCVarBool("r_pssm_4or3", true, "Для глобальных теней использовать 4 (true) или 3 (false) сплита?");
+	Core_0RegisterCVarBool("r_pssm_shadowed", true, "Глобальный источник отбрасывает тени?");
+	Core_0RegisterCVarFloat("r_pssm_quality", 1, "Коэфициент размера карты глубины глобального источника света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
+	Core_0RegisterCVarFloat("r_lsm_quality", 1, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
+	Core_0RegisterCVarInt("r_shadow_soft", 1, "Дополнительнео размытие теней, 0 - нет, 1 - 1 проход, 2 - 2 прохода");
+	Core_0RegisterCVarFloat("r_hdr_adapted_coef", 0.03f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
+
+	Core_0RegisterCVarInt("r_grass_freq", 100, "Плотность отрисовки травы [1,100]");
+	Core_0RegisterCVarFloat("r_green_lod0", 50, "Дистанция отрисовки для первого лода (он же лод травы) растительности, начиная с нуля от камеры");
+	Core_0RegisterCVarFloat("r_green_lod1", 100, "Дистанция отрисовки второго лода растительности (кусты/деревья), старт с дистанции первого лода");
+	Core_0RegisterCVarFloat("r_green_less", 20, "Дистанция? после которой трава будет уменьшаться (0,r_green_lod0)");
+
+	Core_0RegisterCVarInt("r_texfilter_type", 2, "Тип фильтрации текстур, 0 - точечная, 1 - линейная, 2 - анизотропная");
+	Core_0RegisterCVarInt("r_texfilter_max_anisotropy", 16, "Максимальное значение анизотропной фильтрации (если включена) [1,16]");
+	Core_0RegisterCVarInt("r_texfilter_max_miplevel", 0, "Какой mip уровень текстур использовать? 0 - самый высокий, 1 - ниже на один уровень и т.д.");
+	Core_0RegisterCVarInt("r_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
+
 
 	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
@@ -349,40 +368,21 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarBool("pp_dlaa", true, "Рисовать ли эффект dlaa?");
 	Core_0RegisterCVarBool("pp_nfaa", false, "Рисовать ли эффект nfaa?");
 
+	static float3_t fog_color(0.5, 0.5, 0.5);
+	Core_0RegisterCVarPointer("pp_fog_color", ((UINT_PTR)&fog_color));
 	Core_0RegisterCVarFloat("pp_fog_density", 0.5, "Плотность тумана");
 
 	Core_0RegisterCVarBool("pp_motionblur", true, "Рисовать ли эффект motion blur?");
 	Core_0RegisterCVarFloat("pp_motionblur_coef", 0.1, "Коэфициент для эффекта motion blur [0,1]");
-	Core_0RegisterCVarBool("pssm_4or3", true, "Для глобальных теней использовать 4 (true) или 3 (false) сплита?");
-
-	Core_0RegisterCVarBool("pssm_shadowed", true, "Глобальный источник отбрасывает тени?");
-	Core_0RegisterCVarFloat("pssm_q", 1, "Коэфициент размера карты глубины глобального источника света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
-	Core_0RegisterCVarFloat("lsm_q", 1, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
-	Core_0RegisterCVarInt("shadow_soft", 1, "Дополнительнео размытие теней, 0 - нет, 1 - 1 проход, 2 - 2 прохода");
-
-	Core_0RegisterCVarInt("grass_frec", 100, "Плотность отрисовки травы [1,100]");
-	Core_0RegisterCVarFloat("green_lod0", 50, "Дистанция отрисовки для первого лода (он же лод травы) растительности, начиная с нуля от камеры");
-	Core_0RegisterCVarFloat("green_lod1", 100, "Дистанция отрисовки второго лода растительности (кусты/деревья), старт с дистанции первого лода");
-	Core_0RegisterCVarFloat("green_less", 20, "Дистанция? после которой трава будет уменьшаться (0,green_lod0)");
 	
-	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.03f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
-
-	Core_0RegisterCVarInt("r_s_filter", 2, "Тип фильтрации текстур, 0 - точечная, 1 - линейная, 2 - анизотропная");
-	Core_0RegisterCVarInt("r_s_max_anisotropy", 16, "Максимальное значение анизотропной фильтрации (если включена) [1,16]");
-	Core_0RegisterCVarInt("r_s_max_miplevel", 0, "Какой mip уровень текстур использовать? 0 - самый высокий, 1 - ниже на один уровень и т.д.");
-	Core_0RegisterCVarInt("rs_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
-
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?");
 	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени");
 	
-	Core_0RegisterCVarFloat("main_rain_density", 1.f, "Коэфициент плотности дождя (0,1]");
-	Core_0RegisterCVarBool("main_thunderbolt", true, "Могут ли воспроизводится эффекты молнии?");
+	Core_0RegisterCVarFloat("env_default_rain_density", 1.f, "Коэфициент плотности дождя (0,1]");
+	Core_0RegisterCVarBool("env_default_thunderbolt", true, "Могут ли воспроизводится эффекты молнии?");
 
-	Core_0RegisterCVarFloat("weather_snd_volume", 1.f, "Громкость звуков погоды [0,1]");
-	Core_0RegisterCVarFloat("ambient_snd_volume", 1.f, "Громкость фоновых звуков на уровне [0,1]");
-
-	static float3_t fog_color(0.5, 0.5, 0.5);
-	Core_0RegisterCVarPointer("pp_fog_color", ((UINT_PTR)&fog_color));
+	Core_0RegisterCVarFloat("env_weather_snd_volume", 1.f, "Громкость звуков погоды [0,1]");
+	Core_0RegisterCVarFloat("env_ambient_snd_volume", 1.f, "Громкость фоновых звуков на уровне [0,1]");
 
 	Core_0RegisterConcmd("screenshot", SRender_SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SRender_SaveWorkTex);
@@ -474,8 +474,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	static float3 vCamPos, vCamDir;
 	static float4x4 mView, mProjLight;
 
-	static const int *final_image = GET_PCVAR_INT("final_image");
-	static const int *resize = GET_PCVAR_INT("resize");
+	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
+	static const int *r_resize = GET_PCVAR_INT("r_resize");
 	static bool isSimulationRender = false;
 
 	static uint64_t DelayGeomSortGroup = 0;
@@ -512,7 +512,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	int64_t ttime;
 	//потеряно ли устройство или произошло изменение размеров?
-	if (pDXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || *resize)
+	if (pDXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || *r_resize)
 	{
 		//если не свернуто окно
 		if (!IsIconic(SRender_GetHandleWin3D()) && ((SRender_GetParentHandleWin3D() != 0 && !IsIconic(SRender_GetParentHandleWin3D())) || SRender_GetParentHandleWin3D() == 0))
@@ -592,7 +592,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
 	DelayComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	if (*final_image == DS_RT_AMBIENTDIFF || *final_image == DS_RT_SPECULAR || *final_image == DS_RT_SCENELIGHT)
+	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//рендерим глубину от света
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -605,7 +605,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_BuildMRT(timeDelta, isSimulationRender);
 	DelayRenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	if (*final_image == DS_RT_AMBIENTDIFF || *final_image == DS_RT_SPECULAR || *final_image == DS_RT_SCENELIGHT)
+	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//освещаем сцену
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -634,7 +634,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 #if !defined(SX_GAME)
-	pDXDevice->SetTexture(0, SML_DSGetRT((DS_RT)*final_image));
+	pDXDevice->SetTexture(0, SML_DSGetRT((DS_RT)*r_final_image));
 #else
 	pDXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
 #endif
@@ -651,10 +651,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_RenderEditorMain();
 
 
-#if /*defined(_DEBUG) &&*/ defined(SX_LEVEL_EDITOR)
-	static const float * p_far = GET_PCVAR_FLOAT("p_far");
-	SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *p_far);
-#endif
+/*#if defined(_DEBUG)
+	static const float * r_far = GET_PCVAR_FLOAT("r_far");
+	SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *r_far);
+#endif*/
 
 #if defined(SX_GAME)
 	SXGame_RenderHUD();
@@ -770,160 +770,160 @@ void SkyXEngine_Frame(DWORD timeDelta)
 void SkyXEngind_UpdateDataCVar()
 {
 	ID GlobalLight = SML_LigthsGetGlobal();
-	static const bool * pssm_4or3 = GET_PCVAR_BOOL("pssm_4or3");
-	static bool pssm_4or3_old = true;
+	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
+	static bool r_pssm_4or3_old = true;
 
 	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
-	if (pssm_4or3 && pssm_4or3_old != (*pssm_4or3) && GlobalLight >= 0)
+	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && GlobalLight >= 0)
 	{
-		pssm_4or3_old = (*pssm_4or3);
-		SML_LigthsSet4Or3SplitsG(GlobalLight, pssm_4or3_old);
+		r_pssm_4or3_old = (*r_pssm_4or3);
+		SML_LigthsSet4Or3SplitsG(GlobalLight, r_pssm_4or3_old);
 	}
 
-	static const bool * pssm_shadowed = GET_PCVAR_BOOL("pssm_shadowed");
-	static bool pssm_shadowed_old = true;
+	static const bool * r_pssm_shadowed = GET_PCVAR_BOOL("r_pssm_shadowed");
+	static bool r_pssm_shadowed_old = true;
 
-	if (pssm_shadowed && pssm_shadowed_old != (*pssm_shadowed) && GlobalLight >= 0)
+	if (r_pssm_shadowed && r_pssm_shadowed_old != (*r_pssm_shadowed) && GlobalLight >= 0)
 	{
-		pssm_shadowed_old = (*pssm_shadowed);
-		SML_LigthsSetTypeShadowed(GlobalLight, (pssm_shadowed_old ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
+		r_pssm_shadowed_old = (*r_pssm_shadowed);
+		SML_LigthsSetTypeShadowed(GlobalLight, (r_pssm_shadowed_old ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
 	}
 
-	static const float * pssm_q = GET_PCVAR_FLOAT("pssm_q");
-	static float pssm_q_old = 1;
+	static const float * r_pssm_quality = GET_PCVAR_FLOAT("r_pssm_quality");
+	static float r_pssm_quality_old = 1;
 
-	if (pssm_q && pssm_q_old != (*pssm_q))
+	if (r_pssm_quality && r_pssm_quality_old != (*r_pssm_quality))
 	{
-		pssm_q_old = (*pssm_q);
-		if (pssm_q_old < 0.5f)
+		r_pssm_quality_old = (*r_pssm_quality);
+		if (r_pssm_quality_old < 0.5f)
 		{
-			pssm_q_old = 0.5f;
-			Core_0SetCVarFloat("pssm_q", pssm_q_old);
+			r_pssm_quality_old = 0.5f;
+			Core_0SetCVarFloat("r_pssm_quality", r_pssm_quality_old);
 		}
-		else if (pssm_q_old > 4.f)
+		else if (r_pssm_quality_old > 4.f)
 		{
-			pssm_q_old = 4.f;
-			Core_0SetCVarFloat("pssm_q", pssm_q_old);
+			r_pssm_quality_old = 4.f;
+			Core_0SetCVarFloat("r_pssm_quality", r_pssm_quality_old);
 		}
-		SML_LigthsSettGCoefSizeDepth(pssm_q_old);
+		SML_LigthsSettGCoefSizeDepth(r_pssm_quality_old);
 	}
 
-	static const float * lsm_q = GET_PCVAR_FLOAT("lsm_q");
-	static float lsm_q_old = 1;
+	static const float * r_lsm_quality = GET_PCVAR_FLOAT("r_lsm_quality");
+	static float r_lsm_quality_old = 1;
 
-	if (lsm_q && lsm_q_old != (*lsm_q))
+	if (r_lsm_quality && r_lsm_quality_old != (*r_lsm_quality))
 	{
-		lsm_q_old = (*lsm_q);
-		if (lsm_q_old < 0.5f)
+		r_lsm_quality_old = (*r_lsm_quality);
+		if (r_lsm_quality_old < 0.5f)
 		{
-			lsm_q_old = 0.5f;
-			Core_0SetCVarFloat("lsm_q", lsm_q_old);
+			r_lsm_quality_old = 0.5f;
+			Core_0SetCVarFloat("r_lsm_quality", r_lsm_quality_old);
 		}
-		else if (lsm_q_old > 4.f)
+		else if (r_lsm_quality_old > 4.f)
 		{
-			lsm_q_old = 4.f;
-			Core_0SetCVarFloat("lsm_q", lsm_q_old);
+			r_lsm_quality_old = 4.f;
+			Core_0SetCVarFloat("r_lsm_quality", r_lsm_quality_old);
 		}
-		SML_LigthsSettLCoefSizeDepth(lsm_q_old);
+		SML_LigthsSettLCoefSizeDepth(r_lsm_quality_old);
 	}
 
-	static const int * grass_frec = GET_PCVAR_INT("grass_frec");
-	static int grass_frec_old = 1;
+	static const int * r_grass_freq = GET_PCVAR_INT("r_grass_freq");
+	static int r_grass_freq_old = 1;
 
-	if (grass_frec && grass_frec_old != (*grass_frec))
+	if (r_grass_freq && r_grass_freq_old != (*r_grass_freq))
 	{
-		grass_frec_old = (*grass_frec);
-		if (grass_frec_old <= 0)
+		r_grass_freq_old = (*r_grass_freq);
+		if (r_grass_freq_old <= 0)
 		{
-			grass_frec_old = 1;
-			Core_0SetCVarInt("grass_frec", grass_frec_old);
+			r_grass_freq_old = 1;
+			Core_0SetCVarInt("r_grass_freq", r_grass_freq_old);
 		}
-		else if (grass_frec_old > 100)
+		else if (r_grass_freq_old > 100)
 		{
-			grass_frec_old = 100;
-			Core_0SetCVarInt("grass_frec", grass_frec_old);
+			r_grass_freq_old = 100;
+			Core_0SetCVarInt("r_grass_freq", r_grass_freq_old);
 		}
-		SGeom_0SettGreenSetFreqGrass(grass_frec_old);
+		SGeom_0SettGreenSetFreqGrass(r_grass_freq_old);
 	}
 
-	static const float * green_lod0 = GET_PCVAR_FLOAT("green_lod0");
-	static float green_lod0_old = 50;
+	static const float * r_green_lod0 = GET_PCVAR_FLOAT("r_green_lod0");
+	static float r_green_lod0_old = 50;
 
-	if (green_lod0 && green_lod0_old != (*green_lod0))
+	if (r_green_lod0 && r_green_lod0_old != (*r_green_lod0))
 	{
-		green_lod0_old = (*green_lod0);
-		if (green_lod0_old <= 20)
+		r_green_lod0_old = (*r_green_lod0);
+		if (r_green_lod0_old <= 20)
 		{
-			green_lod0_old = 20;
-			Core_0SetCVarFloat("green_lod0", green_lod0_old);
+			r_green_lod0_old = 20;
+			Core_0SetCVarFloat("r_green_lod0", r_green_lod0_old);
 		}
-		else if (green_lod0_old > 100)
+		else if (r_green_lod0_old > 100)
 		{
-			green_lod0_old = 100;
-			Core_0SetCVarFloat("green_lod0", green_lod0_old);
+			r_green_lod0_old = 100;
+			Core_0SetCVarFloat("r_green_lod0", r_green_lod0_old);
 		}
-		SGeom_0SettGreenSetDistLods1(green_lod0_old);
+		SGeom_0SettGreenSetDistLods1(r_green_lod0_old);
 	}
 
-	static const float * green_lod1 = GET_PCVAR_FLOAT("green_lod1");
-	static float green_lod1_old = 50;
+	static const float * r_green_lod1 = GET_PCVAR_FLOAT("r_green_lod1");
+	static float r_green_lod1_old = 50;
 
-	if (green_lod1 && green_lod1_old != (*green_lod1))
+	if (r_green_lod1 && r_green_lod1_old != (*r_green_lod1))
 	{
-		green_lod1_old = (*green_lod1);
-		if (green_lod1_old <= 50)
+		r_green_lod1_old = (*r_green_lod1);
+		if (r_green_lod1_old <= 50)
 		{
-			green_lod1_old = 50;
-			Core_0SetCVarFloat("green_lod1", green_lod1_old);
+			r_green_lod1_old = 50;
+			Core_0SetCVarFloat("r_green_lod1", r_green_lod1_old);
 		}
-		else if (green_lod1_old > 150)
+		else if (r_green_lod1_old > 150)
 		{
-			green_lod1_old = 150;
-			Core_0SetCVarFloat("green_lod1", green_lod1_old);
+			r_green_lod1_old = 150;
+			Core_0SetCVarFloat("r_green_lod1", r_green_lod1_old);
 		}
-		SGeom_0SettGreenSetDistLods2(green_lod1_old);
+		SGeom_0SettGreenSetDistLods2(r_green_lod1_old);
 	}
 
-	static const float * green_less = GET_PCVAR_FLOAT("green_less");
-	static float green_less_old = 10;
+	static const float * r_green_less = GET_PCVAR_FLOAT("r_green_less");
+	static float r_green_less_old = 10;
 
-	if (green_less && green_less_old != (*green_less))
+	if (r_green_less && r_green_less_old != (*r_green_less))
 	{
-		green_less_old = (*green_less);
-		if (green_less_old <= 10)
+		r_green_less_old = (*r_green_less);
+		if (r_green_less_old <= 10)
 		{
-			green_less_old = 10;
-			Core_0SetCVarFloat("green_less", green_less_old);
+			r_green_less_old = 10;
+			Core_0SetCVarFloat("r_green_less", r_green_less_old);
 		}
-		else if (green_less_old > 90)
+		else if (r_green_less_old > 90)
 		{
-			green_less_old = 90;
-			Core_0SetCVarFloat("green_less", green_less_old);
+			r_green_less_old = 90;
+			Core_0SetCVarFloat("r_green_less", r_green_less_old);
 		}
-		SGeom_0SettGreenSetBeginEndLessening(green_less_old);
+		SGeom_0SettGreenSetBeginEndLessening(r_green_less_old);
 	}
 
 
-	static int * winr_width = (int*)GET_PCVAR_INT("winr_width");
-	static int * winr_height = (int*)GET_PCVAR_INT("winr_height");
+	static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
 
-	if (winr_width && winr_height)
+	if (r_win_width && r_win_height)
 	{
 
 #ifdef SX_GAME
-		static int winr_width_old = *winr_width;
-		static int winr_height_old = *winr_height;
+		static int r_win_width_old = *r_win_width;
+		static int r_win_height_old = *r_win_height;
 
 		static int iCountModes = 0;
 		static const DEVMODE *aModes = SGCore_GetModes(&iCountModes);
 
-		if (winr_width && winr_width_old != (*winr_width) && winr_height && winr_height_old != (*winr_height))
+		if (r_win_width && r_win_width_old != (*r_win_width) && r_win_height && r_win_height_old != (*r_win_height))
 		{
 			bool isValid = false;
 			for (int i = 0; i < iCountModes; ++i)
 			{
-				if (aModes[i].dmPelsWidth == (*winr_width) && aModes[i].dmPelsHeight == (*winr_height))
+				if (aModes[i].dmPelsWidth == (*r_win_width) && aModes[i].dmPelsHeight == (*r_win_height))
 				{
 					isValid = true;
 					break;
@@ -932,11 +932,11 @@ void SkyXEngind_UpdateDataCVar()
 
 			if (isValid)
 			{
-				winr_width_old = (*winr_width);
-				winr_height_old = (*winr_height);
+				r_win_width_old = (*r_win_width);
+				r_win_height_old = (*r_win_height);
 
 
-				RECT rc = { 0, 0, winr_width_old, winr_height_old };
+				RECT rc = { 0, 0, r_win_width_old, r_win_height_old };
 				AdjustWindowRect(&rc, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, false);
 
 				int iWidth = rc.right - rc.left;
@@ -946,37 +946,33 @@ void SkyXEngind_UpdateDataCVar()
 
 				MoveWindow(SRender_GetHandleWin3D(), rc.left, rc.top, iWidth, iHeight, TRUE);
 
-				static int *resize = (int*)GET_PCVAR_INT("resize");
-				*resize = RENDER_RESIZE_RESIZE;
+				static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+				*r_resize = RENDER_RESIZE_RESIZE;
 			}
 			else
 			{
-				*winr_width = winr_width_old;
-				*winr_height = winr_height_old;
+				*r_win_width = r_win_width_old;
+				*r_win_height = r_win_height_old;
 			}
 		}
 
-		static const bool *winr_windowed = GET_PCVAR_BOOL("winr_windowed");
+		static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-		if (winr_windowed)
+		if (r_win_windowed)
 		{
-			static bool winr_windowed_old = *winr_windowed;
+			static bool r_win_windowed_old = *r_win_windowed;
 
-			if (winr_windowed_old != (*winr_windowed))
+			if (r_win_windowed_old != (*r_win_windowed))
 			{
-				winr_windowed_old = (*winr_windowed);
-				static int *resize = (int*)GET_PCVAR_INT("resize");
-				*resize = RENDER_RESIZE_CHANGE;
+				r_win_windowed_old = (*r_win_windowed);
+				static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+				*r_resize = RENDER_RESIZE_CHANGE;
 			}
 		}
 #else
-		static bool *winr_windowed = (bool*)GET_PCVAR_BOOL("winr_windowed");
-		*winr_windowed = true;
+		static bool *r_win_windowed = (bool*)GET_PCVAR_BOOL("r_win_windowed");
+		*r_win_windowed = true;
 #endif
-
-
-		/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, *winr_width);
-		Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, *winr_height);*/
 	}
 }
 
