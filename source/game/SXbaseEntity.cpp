@@ -9,7 +9,7 @@ BEGIN_PROPTABLE_NOBASE(SXbaseEntity)
 	DEFINE_FIELD_VECTOR(m_vPosition, 0, "origin", "Origin", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_ANGLES(m_vOrientation, 0, "rotation", "Rotation", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_PARENT(m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
-	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_FLAGS)
 	DEFINE_FIELD_ENTITY(m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
 
 	//DEFINE_FIELD_STRING(m_szName, 0, "some opt", "Option", EDITOR_COMBOBOX)

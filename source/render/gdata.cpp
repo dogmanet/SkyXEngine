@@ -89,18 +89,18 @@ namespace GData
 
 void GData::InitAllMatrix()
 {
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static float2_t vWinSize;
-	vWinSize = float2(*winr_width, *winr_height);
+	vWinSize = float2(*r_win_width, *r_win_height);
 
-	static const float *p_near = GET_PCVAR_FLOAT("p_near");
-	static const float *p_far = GET_PCVAR_FLOAT("p_far");
-	static const float *cam_fov = GET_PCVAR_FLOAT("cam_fov");
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	GData::NearFar.x = *p_near;
-	GData::NearFar.y = *p_far;
-	GData::ProjFov = *cam_fov;
+	GData::NearFar.x = *r_near;
+	GData::NearFar.y = *r_far;
+	GData::ProjFov = *r_default_fov;
 
 	GData::MCamProj = SMMatrixPerspectiveFovLH(GData::ProjFov, vWinSize.x / vWinSize.y, GData::NearFar.x, GData::NearFar.y);
 	GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, vWinSize.x / vWinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
@@ -111,9 +111,9 @@ void GData::InitAllMatrix()
 	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &GData::MCamProj);
 	Core_RMatrixSet(G_RI_MATRIX_LIGHT_PROJ, &GData::MLightProj);
 
-	Core_RFloatSet(G_RI_FLOAT_OBSERVER_NEAR, GData::NearFar.x);
+	/*Core_RFloatSet(G_RI_FLOAT_OBSERVER_NEAR, GData::NearFar.x);
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
-	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);
+	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);*/
 }
 
 void GData::IDsShaders::InitAllShaders()

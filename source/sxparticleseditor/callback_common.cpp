@@ -153,15 +153,15 @@ LRESULT SXParticlesEditor_ButtonTBSave_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static int *resize = (int*)GET_PCVAR_INT("resize");
+	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 
-	if (!resize)
-		resize = (int*)GET_PCVAR_INT("resize");
+	if (!r_resize)
+		r_resize = (int*)GET_PCVAR_INT("r_resize");
 
-	if (!resize)
+	if (!r_resize)
 		return 0;
 
-	*resize = RENDER_RESIZE_RESIZE;
+	*r_resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }
 

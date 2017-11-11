@@ -125,13 +125,12 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 
 	D3DXFONT_DESC LF;
 	ZeroMemory(&LF, sizeof(D3DXFONT_DESC));
-	LF.Height = 10;    // в логических единицах
-	LF.Width = 6;    // в логических единицах
-	LF.Weight = 6;   // насыщенность, 
-	// диапазон 0(тонкий) - 1000(жирный)
+	LF.Height = 14;
+	LF.Width = 7;
+	LF.Weight = 10;
 	LF.Italic = 0;
 	LF.CharSet = DEFAULT_CHARSET;
-	LF.FaceName[0] = 0;
+	sprintf(LF.FaceName, "Courier New");
 
 	D3DXCreateFontIndirect(DXDevice, &LF, &FPSText);
 
@@ -175,9 +174,9 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 
 	
 	//устанавливаем данные в регистры
-	Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
+	/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
 	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
-	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);
+	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);*/
 
 	MShaders = new ShaderManager();
 	MRenderTargets = new CreatorTextures();
@@ -320,9 +319,9 @@ SX_LIB_API bool SGCore_OnDeviceReset(int width, int heigth, bool windowed)
 	D3DAPP.BackBufferHeight = heigth;
 	D3DAPP.Windowed = windowed;
 
-	Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
+	/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
 	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
-	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);
+	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);*/
 
 	return (FAILED(DXDevice->Reset(&D3DAPP)));
 }

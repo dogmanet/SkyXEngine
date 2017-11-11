@@ -111,9 +111,11 @@ SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char 
 */
 SX_LIB_API int SXGame_EntGetCount();
 
-/*! Количество всех entity
+/*! Возвращает entity по его id
 */
-SX_LIB_API SXbaseEntity * SXGame_EntGet(ID id);
+SX_LIB_API SXbaseEntity *SXGame_EntGet(ID id);
+
+SX_LIB_API SXbaseEntity *SXGame_EntGetByName(const char *szName, ID idStart = 0);
 
 #endif
 

@@ -62,7 +62,7 @@ namespace SXRenderFunc
 	void UpdateView();						
 
 	//! вывод отладочной текстовой информации в окно рендера
-	void OutputDebugInfo(DWORD timeDelta, bool needGameTime);	
+	int OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr = 0);
 
 	//! обработка видимости для источников света
 	void ComVisibleForLight();				
@@ -131,8 +131,10 @@ namespace SXRenderFunc
 	//! изменить режим рендера (оконный/полноэкранный)
 	void ChangeModeWindow();	
 
+	void FullScreenChangeSizeAbs();
+
 	//! время задержек/ожидания выполнения некоторых функций рендера
-	namespace Delay
+	/*namespace Delay
 	{
 		extern int64_t UpdateVisibleForCamera;
 		extern int64_t UpdateVisibleForLight;
@@ -152,7 +154,7 @@ namespace SXRenderFunc
 		extern float FreeValF1;
 		extern float FreeValF2;
 		extern float FreeValF3;
-	};
+	};*/
 };
 
 #endif

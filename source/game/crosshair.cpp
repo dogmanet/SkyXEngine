@@ -62,9 +62,13 @@ void Crosshair::Update()
 				return;
 			}
 		}
+
+		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
 		//build new buffer
-		float fScreenWidth = Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH);
-		float fScreenHeight = Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT);
+		float fScreenWidth = *r_win_width;
+		float fScreenHeight = *r_win_height;
 		float fTexWidth = m_f2TexSize.x;
 		float fTexHeight = m_f2TexSize.y;
 		float fXradius = fTexWidth / fScreenWidth * 0.5f;

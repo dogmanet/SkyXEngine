@@ -147,6 +147,9 @@ namespace SXLevelEditor
 	ISXGUIMemo* MemoGameHelp;
 	ISXGUIButton* ButtonGameCreate;
 
+	ISXGUICheckBox* CheckBoxGameFlags[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	const char* aGameObjectFlags[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 	ISXGUIListView* ListViewGameConnections;
 	ISXGUIStatic* StaticGameConnectionsEvent;
 	ISXGUIComboBox* ComboBoxGameConnectionsEvent;
@@ -158,6 +161,8 @@ namespace SXLevelEditor
 	ISXGUIEdit* EditGameConnectionsDelay;
 	ISXGUIStatic* StaticGameConnectionsParameter;
 	ISXGUIEdit* EditGameConnectionsParameter;
+	ISXGUIButton* ButtonGameConnectionsCreate;
+	ISXGUIButton* ButtonGameConnectionsDelete;
 	//}
 
 	//aigrid
@@ -262,6 +267,8 @@ namespace SXLevelEditor
 	float3 HelperPos;
 	float3 HelperRot;
 	float3 HelperScale;
+
+	bool isAddGameConections = false;
 
 	ID IdMtl = -1;
 	ID MenuWeatherCurrID = -1;
@@ -1283,12 +1290,38 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::MemoGameHelp->GAlign.top = true;
 	SXLevelEditor::MemoGameHelp->Visible(false);
 
-	SXLevelEditor::ButtonGameCreate = SXGUICrButton("Create", 695, 160, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameCreate = SXGUICrButton("Create", 695, 165, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::ButtonGameCreate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXLevelEditor::ButtonGameCreate->GAlign.left = true;
 	SXLevelEditor::ButtonGameCreate->GAlign.top = true;
 	SXLevelEditor::ButtonGameCreate->Visible(false);
 	SXLevelEditor::ButtonGameCreate->AddHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
+
+	for (int i = 0; i < 8; ++i)
+	{
+		SXLevelEditor::CheckBoxGameFlags[i] = SXGUICrCheckBox("", 415, 45 + (15*i), 180, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0, false);
+		SXLevelEditor::CheckBoxGameFlags[i]->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+		SXLevelEditor::CheckBoxGameFlags[i]->SetColorText(0, 0, 0);
+		SXLevelEditor::CheckBoxGameFlags[i]->SetColorTextBk(255, 255, 255);
+		SXLevelEditor::CheckBoxGameFlags[i]->SetTransparentTextBk(true);
+		SXLevelEditor::CheckBoxGameFlags[i]->SetColorBrush(220, 220, 220);
+		SXLevelEditor::CheckBoxGameFlags[i]->GAlign.left = true;
+		SXLevelEditor::CheckBoxGameFlags[i]->GAlign.top = true;
+		SXLevelEditor::CheckBoxGameFlags[i]->Visible(false);
+	}
+
+	for (int i = 0; i < 8; ++i)
+	{
+		SXLevelEditor::CheckBoxGameFlags[i + 8] = SXGUICrCheckBox("", 600, 45 + (15 * i), 180, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0, false);
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetColorText(0, 0, 0);
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetColorTextBk(255, 255, 255);
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetTransparentTextBk(true);
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetColorBrush(220, 220, 220);
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->GAlign.left = true;
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->GAlign.top = true;
+		SXLevelEditor::CheckBoxGameFlags[i + 8]->Visible(false);
+	}
 
 
 	SXLevelEditor::ListViewGameConnections = SXGUICrListView("", 5, 5, 550, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
@@ -1346,8 +1379,8 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::EditGameConnectionsName->GAlign.top = true;
 	SXLevelEditor::EditGameConnectionsName->Visible(false);
 	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_IN, WM_KEYUP);
-	//SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	//SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KILLFOCUS);
+	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_Enter, WM_KILLFOCUS);
 
 	SXLevelEditor::StaticGameConnectionsAction = SXGUICrStatic("Action:", 560, 95, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::StaticGameConnectionsAction->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1388,6 +1421,8 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::EditGameConnectionsDelay->GAlign.left = true;
 	SXLevelEditor::EditGameConnectionsDelay->GAlign.top = true;
 	SXLevelEditor::EditGameConnectionsDelay->Visible(false);
+	SXLevelEditor::EditGameConnectionsDelay->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditGameConnectionsDelay->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KILLFOCUS);
 
 	SXLevelEditor::StaticGameConnectionsParameter = SXGUICrStatic("Parameter:", 560, 140, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
 	SXLevelEditor::StaticGameConnectionsParameter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1408,7 +1443,25 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::EditGameConnectionsParameter->GAlign.left = true;
 	SXLevelEditor::EditGameConnectionsParameter->GAlign.top = true;
 	SXLevelEditor::EditGameConnectionsParameter->Visible(false);
+	SXLevelEditor::EditGameConnectionsParameter->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXLevelEditor::EditGameConnectionsParameter->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KILLFOCUS);
+
 	
+	SXLevelEditor::ButtonGameConnectionsCreate = SXGUICrButton("Create", 565, 160, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameConnectionsCreate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonGameConnectionsCreate->GAlign.left = true;
+	SXLevelEditor::ButtonGameConnectionsCreate->GAlign.top = true;
+	SXLevelEditor::ButtonGameConnectionsCreate->Visible(false);
+	SXLevelEditor::ButtonGameConnectionsCreate->AddHandler(SXLevelEditor_ButtonGameConnectionsCreate_Click, WM_LBUTTONUP);
+	SXLevelEditor::isAddGameConections = false;
+
+	SXLevelEditor::ButtonGameConnectionsDelete = SXGUICrButton("Delete", 690, 160, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
+	SXLevelEditor::ButtonGameConnectionsDelete->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXLevelEditor::ButtonGameConnectionsDelete->GAlign.left = true;
+	SXLevelEditor::ButtonGameConnectionsDelete->GAlign.top = true;
+	SXLevelEditor::ButtonGameConnectionsDelete->Visible(false);
+	SXLevelEditor::ButtonGameConnectionsDelete->AddHandler(SXLevelEditor_ButtonGameConnectionsDelete_Click, WM_LBUTTONUP);
+
 	//}
 
 	//aigrid
@@ -1937,7 +1990,7 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 	static float3 vCamPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 
-	static const float * p_far = GET_PCVAR_FLOAT("p_far");
+	static const float * r_far = GET_PCVAR_FLOAT("r_far");
 
 	long count_poly_green = 0;
 	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
@@ -2059,10 +2112,10 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	if (SXLevelEditor::AIGQuad)
-		SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *p_far);
+		SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *r_far);
 
 	if (SXLevelEditor::AIGGraphPoint)
-		SAIG_RenderGraphPoints(&vCamPos, *p_far);
+		SAIG_RenderGraphPoints(&vCamPos, *r_far);
 
 	if (SXLevelEditor::AIGBound)
 	{

@@ -21,7 +21,7 @@ See the license in LICENSE
 
 \section particles_editor_window Структура окна
 <b>Окно состоит из структурных элементов (сверху вниз):</b>
- - Заголовок окна, содержащий имя редактор.
+ - Заголовок окна, содержащий имя редактора.
  - Меню программы:
   - File:
    - ReOpen – переоткрыть файл эффектов eff.eff
@@ -254,7 +254,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::WinSize.y = winrndrect.bottom;*/
 
 	SkyXEngine_Init(SXParticlesEditor::WindowRender->GetHWND(), SXParticlesEditor::JobWindow->GetHWND());
-	Core_0SetCVarInt("final_image",DS_RT_COLOR);
+	Core_0SetCVarInt("r_final_image",DS_RT_COLOR);
 	SRender_GetCamera()->SetPosition(&float3(0, 0.5, -2));
 	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
 	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);

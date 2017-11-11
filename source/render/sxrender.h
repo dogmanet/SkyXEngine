@@ -133,14 +133,18 @@ See the license in LICENSE
 
 //!@}
 
-/*! ничего не меняли */
-#define RENDER_RESIZE_NONE		0
+//! тип изменения размеров окна рендера
+enum RENDER_RESIZE
+{
+	/*! ничего не меняли */
+	RENDER_RESIZE_NONE = 0,
 
-/*! ресайз */
-#define RENDER_RESIZE_RESIZE	1
+	/*! ресайз */
+	RENDER_RESIZE_RESIZE,
 
-/*! переход между фуллскрин и окном */
-#define RENDER_RESIZE_CHANGE	2
+	/*! переход между фуллскрин и окном */
+	RENDER_RESIZE_CHANGE,
+};
 
 //! цвет очистки цветового буфера сцены по умолчанию
 #define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
@@ -321,7 +325,7 @@ SX_LIB_API void SRender_ComVisibleReflection();
 SX_LIB_API void SRender_UpdateView();
 
 //! вывод отладочной текстовой информации в окно рендера
-SX_LIB_API void SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime);
+SX_LIB_API int SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr = 0);
 
 
 //! построение G буфера, то есть рендер всей сцены
@@ -379,6 +383,9 @@ SX_LIB_API void SRender_SaveWorkTex();
 
 //! изменить режим рендера (оконный/полноэкранный)
 SX_LIB_API void SRender_ChangeModeWindow();
+
+//! переключение в режиме fullscreen в абсолютный fullscreen и обратно
+SX_LIB_API void SRender_FullScreenChangeSizeAbs();
 
 //!@} sxrender
 

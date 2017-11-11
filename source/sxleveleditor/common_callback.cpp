@@ -147,42 +147,42 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//
 	else if (id == ID_FINALIMAGE_COLOR)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_COLOR);
+		Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_NORMALS)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_NORMAL);
+		Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_PARAMETERS)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_PARAM);
+		Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_AMBIENTDIFF);
+		Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_SPECULAR)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_SPECULAR);
+		Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
 	{
-		Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
+		Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		SXLevelEditor::FinalImageUncheckedMenu();
 		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
 	}
@@ -247,15 +247,15 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	static int *resize = (int*)GET_PCVAR_INT("resize");
+	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 
-	if (!resize)
-		resize = (int*)GET_PCVAR_INT("resize");
+	if (!r_resize)
+		r_resize = (int*)GET_PCVAR_INT("r_resize");
 
-	if (!resize)
+	if (!r_resize)
 		return 0;
 
-	*resize = RENDER_RESIZE_RESIZE;
+	*r_resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }
 
@@ -311,12 +311,15 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0)
 	{
-		float3_t pos;
-		SGeom_GreenGetPosObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, &pos);
-		float3 helperpos = SXLevelEditor::ObjAxesHelper->GetPosition();
-		if (pos.x != helperpos.x || pos.y != helperpos.y || pos.z != helperpos.z)
+		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 0)
 		{
-			SGeom_GreenSetPosObject(SXLevelEditor::ActiveElement, &SXLevelEditor::ActiveGreenSplit, &SXLevelEditor::ActiveGreenObject, &(float3_t)helperpos);
+			float3_t pos;
+			SGeom_GreenGetPosObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, &pos);
+			float3 helperpos = SXLevelEditor::ObjAxesHelper->GetPosition();
+			if (pos.x != helperpos.x || pos.y != helperpos.y || pos.z != helperpos.z)
+			{
+				SGeom_GreenSetPosObject(SXLevelEditor::ActiveElement, &SXLevelEditor::ActiveGreenSplit, &SXLevelEditor::ActiveGreenObject, &(float3_t)helperpos);
+			}
 		}
 	}
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && SXLevelEditor::ActiveElement >= 0)
@@ -374,12 +377,12 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	GetCursorPos(&pt);
 	ScreenToClient(SRender_GetHandleWin3D(), &pt);
 
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	float3 pos = float3(
-		(2.0f * (float)pt.x / float(*winr_width) - 1.0f) / mCamProj._11,
-		-(2.0f * (float)pt.y / float(*winr_height) - 1.0f) / mCamProj._22,
+		(2.0f * (float)pt.x / float(*r_win_width) - 1.0f) / mCamProj._11,
+		-(2.0f * (float)pt.y / float(*r_win_height) - 1.0f) / mCamProj._22,
 		1.0f
 		) * mat;
 	camDir = pos - vCamPos;
@@ -406,7 +409,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 0)
 		{
-			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
 				SXLevelEditor::ActiveGreenSplit = idsplit;
 				SXLevelEditor::ActiveGreenObject = idobj;
@@ -429,9 +432,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		}
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 1)
 		{
-			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
-				idobj = SGeom_GreenAddObject(0, &_res, &idsplit);
+				idobj = SGeom_GreenAddObject(SXLevelEditor::ActiveElement, &_res, &idsplit);
 				SXLevelEditor::ActiveGreenSplit = idsplit;
 				SXLevelEditor::ActiveGreenObject = idobj;
 
@@ -453,7 +456,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
 		{
-			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
 				SXLevelEditor::GreenBoxPos = _res;
 				int density = SXLevelEditor::TrackBarGreenDensity->GetPos();
@@ -479,9 +482,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 3)
 		{
-			static const int *winr_width = GET_PCVAR_INT("winr_width");
-			static const int *winr_height = GET_PCVAR_INT("winr_height");
-			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
 				SXLevelEditor::ActiveGreenSplit = -1;
 				SXLevelEditor::ActiveGreenObject = -1;
@@ -564,12 +567,12 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	GetCursorPos(&pt);
 	ScreenToClient(SRender_GetHandleWin3D(), &pt);
 
-	static const int *winr_width = GET_PCVAR_INT("winr_width");
-	static const int *winr_height = GET_PCVAR_INT("winr_height");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 	float3 pos = float3(
-		(2.0f * (float)pt.x / float(*winr_width) - 1.0f) / mCamProj._11,
-		-(2.0f * (float)pt.y / float(*winr_height) - 1.0f) / mCamProj._22,
+		(2.0f * (float)pt.x / float(*r_win_width) - 1.0f) / mCamProj._11,
+		-(2.0f * (float)pt.y / float(*r_win_height) - 1.0f) / mCamProj._22,
 		1.0f
 		) * mat;
 	camDir = pos - vCamPos;
@@ -587,7 +590,7 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
 		{
-			if (pt.x <= *winr_width && pt.y <= *winr_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 				SXLevelEditor::GreenBoxPos = _res;
 		}
 	}
@@ -858,6 +861,10 @@ LRESULT SXLevelEditor_GroupBox_Notify(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	{
 		SXLevelEditor_ListViewGameClass_Click();
 	}
+	else if (((NMHDR*)lParam)->hwndFrom == SXLevelEditor::ListViewGameConnections->GetHWND() && ((NMHDR*)lParam)->code == NM_CLICK)
+	{
+		SXLevelEditor_ListViewGameConnections_Click();
+	}
 	return 0;
 }
 
@@ -951,42 +958,42 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
 			SXLevelEditor::CheckBoxTBRColor->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_COLOR);
+			Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		}
 		else if (SXLevelEditor::CheckBoxTBRNormal->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, true);
 			SXLevelEditor::CheckBoxTBRNormal->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_NORMAL);
+			Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		}
 		else if (SXLevelEditor::CheckBoxTBRParam->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, true);
 			SXLevelEditor::CheckBoxTBRParam->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_PARAM);
+			Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		}
 		else if (SXLevelEditor::CheckBoxTBRAmDiff->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
 			SXLevelEditor::CheckBoxTBRAmDiff->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_AMBIENTDIFF);
+			Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		}
 		else if (SXLevelEditor::CheckBoxTBRSpecular->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, true);
 			SXLevelEditor::CheckBoxTBRSpecular->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_SPECULAR);
+			Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		}
 		else if (SXLevelEditor::CheckBoxTBRLighting->GetHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
 			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
 			SXLevelEditor::CheckBoxTBRLighting->SetCheck(true);
-			Core_0SetCVarInt("final_image", DS_RT_SCENELIGHT);
+			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		}
 
 		else if (SXLevelEditor::CheckBoxTBSelS->GetHWND() == handle_elem)
@@ -1058,9 +1065,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->GetCheck());
 			else
 				SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
-
-			//Core_0SetCVarBool("pssm_shadowed", true);
 		}
+		
 	}
 
 	return 0;
@@ -1076,6 +1082,34 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 	{
 		if (handle_elem == SXLevelEditor::CheckBoxAIGridMarkedSplits->GetHWND())
 			SAIG_GridSetMarkSplits(SXLevelEditor::CheckBoxAIGridMarkedSplits->GetCheck());
+		else
+		{
+			ID seldata = SXLevelEditor::ListBoxList->GetItemData(SXLevelEditor::ListBoxList->GetSel());
+			SXbaseEntity* bEnt = SXGame_EntGet(seldata);
+			int str = SXLevelEditor::ListViewGameClass->GetSelString();
+
+			if (seldata < 0 || str < 0)
+				return 0;
+			char txtval[256];
+			SXLevelEditor::ListViewGameClass->GetTextItem(txtval, 1, str, 256);
+			UINT uiFlags;
+			sscanf(txtval, "%d", &uiFlags);
+
+			for (int i = 0; i < 16; ++i)
+			{
+				if (SXLevelEditor::CheckBoxGameFlags[i]->GetHWND() == handle_elem)
+				{
+					if (SXLevelEditor::CheckBoxGameFlags[i]->GetCheck())
+						uiFlags |= (1 << (i + 16));
+					else
+						uiFlags ^= (1 << (i + 16));
+				}
+			}
+
+			sprintf(txtval, "%d", uiFlags);
+			SXLevelEditor::ListViewGameClass->SetTextItem(txtval, 1, str);
+			bEnt->SetKV("flags", txtval);
+		}
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
@@ -1221,6 +1255,35 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			}
 
 			
+		}
+
+		else if (SXLevelEditor::ComboBoxGameConnectionsEvent->GetHWND() == handle_elem)
+		{
+			ID idSelListBoxList = SXLevelEditor::ListBoxList->GetSel();
+			ID idSelStrTable = SXLevelEditor::ListViewGameConnections->GetSelString();
+
+			if (idSelListBoxList < 0 || idSelStrTable < 0)
+				return 0;
+
+			char szBuffer256[256];
+			szBuffer256[0] = 0;
+			SXLevelEditor::ComboBoxGameConnectionsEvent->GetItemText(256, szBuffer256);
+			SXLevelEditor::ListViewGameConnections->SetTextItem(szBuffer256, 0, idSelStrTable);
+			return SXLevelEditor_EditGameConnections_Enter(hwnd, msg, wParam, lParam);
+		}
+		else if (SXLevelEditor::ComboBoxGameConnectionsAction->GetHWND() == handle_elem)
+		{
+			ID idSelListBoxList = SXLevelEditor::ListBoxList->GetSel();
+			ID idSelStrTable = SXLevelEditor::ListViewGameConnections->GetSelString();
+
+			if (idSelListBoxList < 0 || idSelStrTable < 0)
+				return 0;
+
+			char szBuffer256[256];
+			szBuffer256[0] = 0;
+			SXLevelEditor::ComboBoxGameConnectionsAction->GetItemText(SXLevelEditor::ComboBoxGameConnectionsAction->GetSel(), szBuffer256);
+			SXLevelEditor::ListViewGameConnections->SetTextItem(szBuffer256, 2, idSelStrTable);
+			return SXLevelEditor_EditGameConnections_Enter(hwnd, msg, wParam, lParam);
 		}
 	}
 	/*else if (Notification == EN_CHANGE)

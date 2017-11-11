@@ -17,7 +17,11 @@ half2 PixelSize;
 
 half4 main(vs_out_pp IN) : COLOR0
 {
-	half4 sampleCenter = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.f, 0.f) * PixelSize,0.f,0.f)); 
+	half4 sampleCenter = tex2Dlod(Tex0, half4(IN.TexUV,0.f,0.f));
+	half fEdgeDetected = tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
+	
+	[branch]if(fEdgeDetected.x == 0.f)
+		return sampleCenter;
 
 	half4 sampleVertNeg1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -3.5) * PixelSize, 0.f, 0.f)); 
 	half4 sampleVertNeg2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -7.5) * PixelSize, 0.f, 0.f));
@@ -72,5 +76,7 @@ half4 main(vs_out_pp IN) : COLOR0
     	aaResult = lerp(aaResult, longBlurVert, pass1EdgeAvgHoriz);
    }
 
+   //return tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
    return half4(aaResult.rgb, sampleCenter.a);
+   return lerp(half4(aaResult.rgb, sampleCenter.a), sampleCenter, 1-fEdgeDetected.x);
 }

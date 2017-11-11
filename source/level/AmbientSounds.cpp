@@ -57,8 +57,8 @@ void CAmbientSounds::update()
 	if (!m_isPlaying)
 		return;
 
-	static const float * ambient_snd_volume = GET_PCVAR_FLOAT("ambient_snd_volume");
-	static float ambient_snd_volume_old = 1.f;
+	static const float * env_ambient_snd_volume = GET_PCVAR_FLOAT("env_ambient_snd_volume");
+	static float env_ambient_snd_volume_old = 1.f;
 
 	if (SSCore_SndStateGet(m_aIDSnds[m_iPlayingLast]) != SOUND_OBJSTATE_PLAY)
 	{
@@ -67,15 +67,15 @@ void CAmbientSounds::update()
 		else
 			m_iPlayingLast = 0;
 
-		SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], ambient_snd_volume_old*100.f);
+		SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], env_ambient_snd_volume_old*100.f);
 		SSCore_SndPlay(m_aIDSnds[m_iPlayingLast]);
 	}
 
-	if (ambient_snd_volume && ambient_snd_volume_old != (*ambient_snd_volume))
+	if (env_ambient_snd_volume && env_ambient_snd_volume_old != (*env_ambient_snd_volume))
 	{
-		ambient_snd_volume_old = *ambient_snd_volume;
+		env_ambient_snd_volume_old = *env_ambient_snd_volume;
 		if (m_iPlayingLast >= 0)
-			SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], ambient_snd_volume_old*100.f);
+			SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], env_ambient_snd_volume_old*100.f);
 	}
 }
 

@@ -1892,6 +1892,12 @@ void Materials::Render(ID id, float4x4* world)
 {
 	MTL_PRE_COND_ID(id);
 
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
 	if (!world)
 		world = &(SMMatrixIdentity());
 
@@ -2068,10 +2074,10 @@ void Materials::Render(ID id, float4x4* world)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->VS.IsTransWinSize)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WinSize", &float2_t(*r_win_width, *r_win_height));
 
 	if (tmpmaterial->PS.IsTransWinSize)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WinSize", &float2_t(Core_RFloatGet(G_RI_FLOAT_WINSIZE_WIDTH), Core_RFloatGet(G_RI_FLOAT_WINSIZE_HEIGHT)));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WinSize", &float2_t(*r_win_width, *r_win_height));
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (tmpmaterial->IsAlphaTest && !IsForceblyAlphaTest)
@@ -2119,7 +2125,7 @@ void Materials::Render(ID id, float4x4* world)
 		if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_ALPHA_LIGHT)
 			++(CurrIdSurf);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(Core_RFloatGet(G_RI_FLOAT_OBSERVER_NEAR), Core_RFloatGet(G_RI_FLOAT_OBSERVER_FAR), zz, float(CurrIdSurf) / 255.f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(*r_near, *r_far, zz, float(CurrIdSurf) / 255.f));
 	}
 }
 

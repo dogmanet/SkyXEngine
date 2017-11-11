@@ -7,12 +7,13 @@ ppe_fog_linear.ps
 #include <../struct.h>
 
 half3 FogColor;
-half4 Param;
+half FogDenisty;
+/*half4 Param;
 //x - интенсивность тумана
 //y - на сколько небо в тумане
 //z - минимальное значение тумана
 //w - максимальное значение тумана
-
+*/
 
 sampler2D DepthMap:register(s0);
 
@@ -21,10 +22,10 @@ half4 main(vs_out_pp IN) : COLOR0
 	half Depth = tex2D(DepthMap, IN.TexUV).r;
 	
 		[branch]if(Depth >= 1.f)
-			Depth = Param.y;
+			clip(-1);
 		
-	half tmp_alpha = clamp((Param.x * Depth),Param.z,Param.w);
-	half4 cc = half4(FogColor,tmp_alpha);
+	/*half tmp_alpha = clamp((Param.x * Depth),Param.z,Param.w);
+	half4 cc = half4(FogColor,tmp_alpha);*/
 	
-	return cc;
+	return half4(FogColor,FogDenisty * Depth);
 }
