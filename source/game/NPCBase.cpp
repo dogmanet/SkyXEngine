@@ -1,6 +1,10 @@
 
 #include "NPCBase.h"
 
+/*! \skydocent npc_base
+Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РґР»СЏ NPC
+*/
+
 BEGIN_PROPTABLE(CNPCBase)
 // empty
 	
@@ -150,58 +154,58 @@ void CNPCBase::OnSync()
 	if (m_fHealth <= 0.f)
 		return;
 
-	//определяем текущий id квада аи сетки
+	//РѕРїСЂРµРґРµР»СЏРµРј С‚РµРєСѓС‰РёР№ id РєРІР°РґР° Р°Рё СЃРµС‚РєРё
 	m_idCurrAiQuad = SAIG_QuadGet(&(float3)m_vPosition, true);
 
-	//если квад найти не удалось и состояние пути не равно немного/полностью вышел за пределы
+	//РµСЃР»Рё РєРІР°Рґ РЅР°Р№С‚Рё РЅРµ СѓРґР°Р»РѕСЃСЊ Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РїСѓС‚Рё РЅРµ СЂР°РІРЅРѕ РЅРµРјРЅРѕРіРѕ/РїРѕР»РЅРѕСЃС‚СЊСЋ РІС‹С€РµР» Р·Р° РїСЂРµРґРµР»С‹
 	if (m_idCurrAiQuad < 0 && (m_statePath != NPC_STATE_PATH_BITBEYOND || m_statePath != NPC_STATE_PATH_BEYOND))
 	{
-		//если мы не движемся по пути
+		//РµСЃР»Рё РјС‹ РЅРµ РґРІРёР¶РµРјСЃСЏ РїРѕ РїСѓС‚Рё
 		if (m_idCurrQuaidInPath < 0 || m_idCurrQuaidInPath >= m_aPathQuads.size())
 		{
 			gridCheckBeyond();
 		}
-		//иначе мы движемся по пути, проверяем как далеко лежат предыдущий и следующий квады
+		//РёРЅР°С‡Рµ РјС‹ РґРІРёР¶РµРјСЃСЏ РїРѕ РїСѓС‚Рё, РїСЂРѕРІРµСЂСЏРµРј РєР°Рє РґР°Р»РµРєРѕ Р»РµР¶Р°С‚ РїСЂРµРґС‹РґСѓС‰РёР№ Рё СЃР»РµРґСѓСЋС‰РёР№ РєРІР°РґС‹
 		else
 		{
-			//если это не первый квад на пути, и дистанция между центром предыдущего квада и позицией нпс лежит в пределах допустимого
+			//РµСЃР»Рё СЌС‚Рѕ РЅРµ РїРµСЂРІС‹Р№ РєРІР°Рґ РЅР° РїСѓС‚Рё, Рё РґРёСЃС‚Р°РЅС†РёСЏ РјРµР¶РґСѓ С†РµРЅС‚СЂРѕРј РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєРІР°РґР° Рё РїРѕР·РёС†РёРµР№ РЅРїСЃ Р»РµР¶РёС‚ РІ РїСЂРµРґРµР»Р°С… РґРѕРїСѓСЃС‚РёРјРѕРіРѕ
 			if (m_idCurrQuaidInPath > 0 && SMVector3Distance(m_vPosition, m_vPosQuadInPathLast) <= NPC_QUAD_DIST_NOTBEYOND)
 				m_idCurrAiQuad = m_aPathQuads[m_idCurrQuaidInPath-1];
-			//иначе если дистанция между центром следующего квада и позицией нпс лежит в пределах допустимого
+			//РёРЅР°С‡Рµ РµСЃР»Рё РґРёСЃС‚Р°РЅС†РёСЏ РјРµР¶РґСѓ С†РµРЅС‚СЂРѕРј СЃР»РµРґСѓСЋС‰РµРіРѕ РєРІР°РґР° Рё РїРѕР·РёС†РёРµР№ РЅРїСЃ Р»РµР¶РёС‚ РІ РїСЂРµРґРµР»Р°С… РґРѕРїСѓСЃС‚РёРјРѕРіРѕ
 			else if (SMVector3Distance(m_vPosition, m_vPosQuadInPathNext) <= NPC_QUAD_DIST_NOTBEYOND)
 				m_idCurrAiQuad = m_aPathQuads[m_idCurrQuaidInPath];
-			else //иначе что-то не так
+			else //РёРЅР°С‡Рµ С‡С‚Рѕ-С‚Рѕ РЅРµ С‚Р°Рє
 			{
 				gridCheckBeyond();
 			}
 		}
 	}
 
-	//если состояние пути немного вышел за пределы и установлено нужное время для прихода на сетку
+	//РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РїСѓС‚Рё РЅРµРјРЅРѕРіРѕ РІС‹С€РµР» Р·Р° РїСЂРµРґРµР»С‹ Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ РЅСѓР¶РЅРѕРµ РІСЂРµРјСЏ РґР»СЏ РїСЂРёС…РѕРґР° РЅР° СЃРµС‚РєСѓ
 	if (m_statePath == NPC_STATE_PATH_BITBEYOND && m_ulTimeReturnInGrid > 0)
 	{
 		int iTimeDelta = Core_RIntGet(G_RI_INT_TIME_DELTA);
 		m_ulTimeAllReturnInGrid += iTimeDelta;
 
-		//если общее время движения к сетке превысело предел
+		//РµСЃР»Рё РѕР±С‰РµРµ РІСЂРµРјСЏ РґРІРёР¶РµРЅРёСЏ Рє СЃРµС‚РєРµ РїСЂРµРІС‹СЃРµР»Рѕ РїСЂРµРґРµР»
 		if (m_ulTimeAllReturnInGrid >= m_ulTimeReturnInGrid)
 		{
-			//значит скорее всего нпс уже не вернется, устанавливаем состояние вышел за пределы
+			//Р·РЅР°С‡РёС‚ СЃРєРѕСЂРµРµ РІСЃРµРіРѕ РЅРїСЃ СѓР¶Рµ РЅРµ РІРµСЂРЅРµС‚СЃСЏ, СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РІС‹С€РµР» Р·Р° РїСЂРµРґРµР»С‹
 			m_statePath = NPC_STATE_PATH_BEYOND;
 			m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
 			m_pCharacter->setWalkDirection(F3_BTVEC(float3(0, 0, 0)));
-			//если был предыдущий путь
+			//РµСЃР»Рё Р±С‹Р» РїСЂРµРґС‹РґСѓС‰РёР№ РїСѓС‚СЊ
 			if (m_aPathQuads.size() > 0)
 				SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
 		}
 	}
 
-	//если возвращение на сетку не допустимо
+	//РµСЃР»Рё РІРѕР·РІСЂР°С‰РµРЅРёРµ РЅР° СЃРµС‚РєСѓ РЅРµ РґРѕРїСѓСЃС‚РёРјРѕ
 	if (m_statePath == NPC_STATE_PATH_BEYOND)
 	{
 		if (m_fHealth > 0.f)
 		{
-			//минусуем здоровье нпс, делаем -1 чтобы предки поняли что только что умер нпс
+			//РјРёРЅСѓСЃСѓРµРј Р·РґРѕСЂРѕРІСЊРµ РЅРїСЃ, РґРµР»Р°РµРј -1 С‡С‚РѕР±С‹ РїСЂРµРґРєРё РїРѕРЅСЏР»Рё С‡С‚Рѕ С‚РѕР»СЊРєРѕ С‡С‚Рѕ СѓРјРµСЂ РЅРїСЃ
 			m_fHealth = -1.f;
 			return;
 		}
@@ -212,30 +216,30 @@ void CNPCBase::OnSync()
 
 void CNPCBase::gridCheckBeyond()
 {
-	//находим ближайший квад к текущей позиции нпс
+	//РЅР°С…РѕРґРёРј Р±Р»РёР¶Р°Р№С€РёР№ РєРІР°Рґ Рє С‚РµРєСѓС‰РµР№ РїРѕР·РёС†РёРё РЅРїСЃ
 	ID idq = SAIG_QuadGetNear(&(float3)m_vPosition);
 	if (idq >= 0)
 	{
 		float3 tpos;
 		SAIG_QuadGetPos(idq, &tpos);
 		float dist = SMVector3Distance(m_vPosition, tpos);
-		//если дистанция между текущей позицией нпс и позицией ближайшего квада лежит в допустимых пределах возвращения на сетку
+		//РµСЃР»Рё РґРёСЃС‚Р°РЅС†РёСЏ РјРµР¶РґСѓ С‚РµРєСѓС‰РµР№ РїРѕР·РёС†РёРµР№ РЅРїСЃ Рё РїРѕР·РёС†РёРµР№ Р±Р»РёР¶Р°Р№С€РµРіРѕ РєРІР°РґР° Р»РµР¶РёС‚ РІ РґРѕРїСѓСЃС‚РёРјС‹С… РїСЂРµРґРµР»Р°С… РІРѕР·РІСЂР°С‰РµРЅРёСЏ РЅР° СЃРµС‚РєСѓ
 		if (dist <= NPC_QUAD_DIST_BEYOND)
 		{
-			//просто сообщаем что вышли за пределы
+			//РїСЂРѕСЃС‚Рѕ СЃРѕРѕР±С‰Р°РµРј С‡С‚Рѕ РІС‹С€Р»Рё Р·Р° РїСЂРµРґРµР»С‹
 			m_statePath = NPC_STATE_PATH_BITBEYOND;
 
-			//если был предыдущий путь
+			//РµСЃР»Рё Р±С‹Р» РїСЂРµРґС‹РґСѓС‰РёР№ РїСѓС‚СЊ
 			if (m_aPathQuads.size() > 0)
 				SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
 
-			//и устанавливаем путь возвращения
+			//Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїСѓС‚СЊ РІРѕР·РІСЂР°С‰РµРЅРёСЏ
 			m_aPathQuads.resize(1);
 			m_aPathQuads[0] = idq;
 			m_idCurrQuaidInPath = 0;
 			SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
 
-			//просчитываем время хождения по пути до сетки
+			//РїСЂРѕСЃС‡РёС‚С‹РІР°РµРј РІСЂРµРјСЏ С…РѕР¶РґРµРЅРёСЏ РїРѕ РїСѓС‚Рё РґРѕ СЃРµС‚РєРё
 			m_ulTimeReturnInGrid = (dist * m_fSpeedWalk) * 1000.f * 20.f;
 			m_ulTimeAllReturnInGrid = 0;
 		}
@@ -248,7 +252,7 @@ void CNPCBase::gridCheckBeyond()
 
 void CNPCBase::pathWalk()
 {
-	//если текущий ключ квада пути не известен
+	//РµСЃР»Рё С‚РµРєСѓС‰РёР№ РєР»СЋС‡ РєРІР°РґР° РїСѓС‚Рё РЅРµ РёР·РІРµСЃС‚РµРЅ
 	if (m_idCurrQuaidInPath >= m_aPathQuads.size() || m_idCurrQuaidInPath < 0)
 	{
 		m_idCurrQuaidInPath = -1;
@@ -258,43 +262,43 @@ void CNPCBase::pathWalk()
 
 	m_stateMove = NPC_STATE_MOVE_RUN;
 
-	//если текущий квад больше нуля и текущий квад нпс не явлется предыдущим квадом пути либо следующим квадом пути, значит скорее всего нпс сбился с пути
+	//РµСЃР»Рё С‚РµРєСѓС‰РёР№ РєРІР°Рґ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ Рё С‚РµРєСѓС‰РёР№ РєРІР°Рґ РЅРїСЃ РЅРµ СЏРІР»РµС‚СЃСЏ РїСЂРµРґС‹РґСѓС‰РёРј РєРІР°РґРѕРј РїСѓС‚Рё Р»РёР±Рѕ СЃР»РµРґСѓСЋС‰РёРј РєРІР°РґРѕРј РїСѓС‚Рё, Р·РЅР°С‡РёС‚ СЃРєРѕСЂРµРµ РІСЃРµРіРѕ РЅРїСЃ СЃР±РёР»СЃСЏ СЃ РїСѓС‚Рё
 	if (m_idCurrQuaidInPath > 0 && (m_idCurrAiQuad != m_aPathQuads[m_idCurrQuaidInPath] && m_idCurrAiQuad != m_aPathQuads[m_idCurrQuaidInPath - 1]))
 	{
-		//если текущий квад нпс не явлется соседом предыдущему и следующему квадам пути, значит нпс вышел за допустимые пределы, а значит сбился с пути
+		//РµСЃР»Рё С‚РµРєСѓС‰РёР№ РєРІР°Рґ РЅРїСЃ РЅРµ СЏРІР»РµС‚СЃСЏ СЃРѕСЃРµРґРѕРј РїСЂРµРґС‹РґСѓС‰РµРјСѓ Рё СЃР»РµРґСѓСЋС‰РµРјСѓ РєРІР°РґР°Рј РїСѓС‚Рё, Р·РЅР°С‡РёС‚ РЅРїСЃ РІС‹С€РµР» Р·Р° РґРѕРїСѓСЃС‚РёРјС‹Рµ РїСЂРµРґРµР»С‹, Р° Р·РЅР°С‡РёС‚ СЃР±РёР»СЃСЏ СЃ РїСѓС‚Рё
 		if (!SAIG_QuadIs2Neighbors(m_idCurrAiQuad, m_aPathQuads[m_idCurrQuaidInPath], m_aPathQuads[m_idCurrQuaidInPath - 1]))
 		{
 			m_statePath = NPC_STATE_PATH_LOST;
 			m_pCharacter->setWalkDirection(F3_BTVEC(float3(0,0,0)));
 			return;
 		}
-		else //иначе нпс чуток отклонился от маршрута, поправляем
+		else //РёРЅР°С‡Рµ РЅРїСЃ С‡СѓС‚РѕРє РѕС‚РєР»РѕРЅРёР»СЃСЏ РѕС‚ РјР°СЂС€СЂСѓС‚Р°, РїРѕРїСЂР°РІР»СЏРµРј
 			orientAtPoint(&m_vPosQuadInPathNext, NPC_TIME_ORIENT_IN_PATH);
 	}
 
-	//если следующий квад аи сетки несвободен и занят не текущим нпс
+	//РµСЃР»Рё СЃР»РµРґСѓСЋС‰РёР№ РєРІР°Рґ Р°Рё СЃРµС‚РєРё РЅРµСЃРІРѕР±РѕРґРµРЅ Рё Р·Р°РЅСЏС‚ РЅРµ С‚РµРєСѓС‰РёРј РЅРїСЃ
 	if (SAIG_QuadGetState(m_aPathQuads[m_idCurrQuaidInPath]) != AIQUAD_STATE_FREE && SAIG_QuadGetStateWho(m_aPathQuads[m_idCurrQuaidInPath]) != GetId())
 	{
-		//значит он преградил путь и текущий нпс сбился с пути
+		//Р·РЅР°С‡РёС‚ РѕРЅ РїСЂРµРіСЂР°РґРёР» РїСѓС‚СЊ Рё С‚РµРєСѓС‰РёР№ РЅРїСЃ СЃР±РёР»СЃСЏ СЃ РїСѓС‚Рё
 		m_statePath = NPC_STATE_PATH_LOST;
 		m_pCharacter->setWalkDirection(F3_BTVEC(float3(0, 0, 0)));
 		return;
 	}
 
-	//занимаем следующий квад аи сетки за текущим нпс
+	//Р·Р°РЅРёРјР°РµРј СЃР»РµРґСѓСЋС‰РёР№ РєРІР°Рґ Р°Рё СЃРµС‚РєРё Р·Р° С‚РµРєСѓС‰РёРј РЅРїСЃ
 	SAIG_QuadSetState(m_aPathQuads[m_idCurrQuaidInPath], AIQUAD_STATE_TEMPBUSY);
 	SAIG_QuadSetStateWho(m_aPathQuads[m_idCurrQuaidInPath], GetId());
 
 	SAIG_QuadGetPos(m_aPathQuads[m_idCurrQuaidInPath], &m_vPosQuadInPathNext);
 
-	//если текущая позиция нпс ниже чем позиция квада к которому он стремится, и их разница больше либо равна допустимой
+	//РµСЃР»Рё С‚РµРєСѓС‰Р°СЏ РїРѕР·РёС†РёСЏ РЅРїСЃ РЅРёР¶Рµ С‡РµРј РїРѕР·РёС†РёСЏ РєРІР°РґР° Рє РєРѕС‚РѕСЂРѕРјСѓ РѕРЅ СЃС‚СЂРµРјРёС‚СЃСЏ, Рё РёС… СЂР°Р·РЅРёС†Р° Р±РѕР»СЊС€Рµ Р»РёР±Рѕ СЂР°РІРЅР° РґРѕРїСѓСЃС‚РёРјРѕР№
 	if (m_vPosQuadInPathNext.y > m_vPosition.y && abs(m_vPosQuadInPathNext.y - m_vPosition.y) >= m_fStepHeight - NPC_STEP_HEIGHT_EPSILON)
 	{
-		//говорим что надо прыгнуть
+		//РіРѕРІРѕСЂРёРј С‡С‚Рѕ РЅР°РґРѕ РїСЂС‹РіРЅСѓС‚СЊ
 		m_canJump = true;
 	}
 
-	//если разрешен прыжок
+	//РµСЃР»Рё СЂР°Р·СЂРµС€РµРЅ РїСЂС‹Р¶РѕРє
 	if (m_canJump)
 	{
 		if (m_pCharacter->canJump())
@@ -317,10 +321,10 @@ void CNPCBase::pathWalk()
 
 		++m_idCurrQuaidInPath;
 
-		//если было состояние пути немного вышел за пределы
+		//РµСЃР»Рё Р±С‹Р»Рѕ СЃРѕСЃС‚РѕСЏРЅРёРµ РїСѓС‚Рё РЅРµРјРЅРѕРіРѕ РІС‹С€РµР» Р·Р° РїСЂРµРґРµР»С‹
 		if (m_statePath == NPC_STATE_PATH_BITBEYOND)
 		{
-			//устанавилваем состояние не найденный путь
+			//СѓСЃС‚Р°РЅР°РІРёР»РІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРµ РЅР°Р№РґРµРЅРЅС‹Р№ РїСѓС‚СЊ
 			m_statePath = NPC_STATE_PATH_NOTFOUND;
 			m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
 		}
@@ -351,7 +355,7 @@ void CNPCBase::orientAtPoint(const float3 * pos, DWORD ttime)
 	float angle = (acosf(SMVector3Dot(NPC_BASE_DIR, dircam)) * sign2(SMVector3Cross(NPC_BASE_DIR, dircam).y));
 	angle = (-angle);
 	
-	//просчитываем направление движения и скорость
+	//РїСЂРѕСЃС‡РёС‚С‹РІР°РµРј РЅР°РїСЂР°РІР»РµРЅРёРµ РґРІРёР¶РµРЅРёСЏ Рё СЃРєРѕСЂРѕСЃС‚СЊ
 	float3 dir = SMVector3Normalize(SMQuaternion(angle, 'y') * NPC_BASE_DIR);
 	float speed = 0;
 	if (m_stateMove == NPC_STATE_MOVE_WALK)

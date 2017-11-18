@@ -1,9 +1,22 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Направленный свет
+*/
+
 #ifndef __LIGHTDIRECTIONAL_H
 #define __LIGHTDIRECTIONAL_H
 
 #include "SXpointEntity.h"
 
+/*! Направленный свет
+\ingroup clight
+*/
 class CLightDirectional: public SXpointEntity
 {
 	DECLARE_CLASS(CLightDirectional, SXpointEntity);

@@ -1,8 +1,25 @@
+
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Триггеры
+*/
+
+/*! \defgroup cbasetrigger Триггеры
+\ingroup cbaseanimating
+@{
+*/
+
 #ifndef _BaseTrigger_H_
 #define _BaseTrigger_H_
 
 #include "SXbaseAnimating.h"
 
+//! Базовый класс триггера
 class CBaseTrigger: public SXbaseAnimating
 {
 	DECLARE_CLASS(CBaseTrigger, SXbaseAnimating);
@@ -48,3 +65,5 @@ protected:
 };
 
 #endif
+
+/*! @} cbasetrigger */

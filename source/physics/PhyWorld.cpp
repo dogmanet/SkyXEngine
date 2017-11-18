@@ -394,6 +394,7 @@ void PhyWorld::UnloadGeom()
 		}
 		mem_delete(cshape);
 	}
+	m_iGreenShapes = 0;
 	mem_delete_a(m_piGreenTotal);
 	mem_delete_a(m_pppGreenStaticRigidBody);
 	mem_delete_a(m_ppGreenStaticCollideShape);

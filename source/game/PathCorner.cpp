@@ -1,13 +1,20 @@
 #include "PathCorner.h"
 
+/*! \skydocent path_corner
+Точка для формирования пути для #func_train
+*/
 
 BEGIN_PROPTABLE(PathCorner)
+	//! Тип сглаживания пути
 	DEFINE_FIELD_INT(m_type, 0, "type", "Type", EDITOR_COMBOBOX)
-		COMBO_OPTION("Corner", "0")
-		COMBO_OPTION("Spline", "1")
+		COMBO_OPTION("Corner", "0") //!< Нет сглаживания
+		COMBO_OPTION("Spline", "1") //!< Сплайном
 	EDITOR_COMBO_END()
 
+	//! Новая скорость для поезда
 	DEFINE_FIELD_FLOAT(m_fNewSpeed, 0, "speed", "New speed", EDITOR_TEXTFIELD)
+
+	//! Следующая точка пути
 	DEFINE_FIELD_ENTITY(m_pNextStop, 0, "next", "Next stop", EDITOR_TEXTFIELD)
 
 END_PROPTABLE()

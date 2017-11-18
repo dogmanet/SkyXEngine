@@ -7,6 +7,10 @@
 
 #include "GameData.h"
 
+/*! \skydocent player
+ÐžÐ±ÑŠÐµÐºÑ‚ Ð¸Ð³Ñ€Ð¾ÐºÐ° Ð² Ð¼Ð¸Ñ€Ðµ
+*/
+
 BEGIN_PROPTABLE(SXplayer)
 // empty
 END_PROPTABLE()
@@ -380,21 +384,21 @@ void SXplayer::OnSync()
 	
 	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() + 0.75f + m_fViewbobY, trans.getOrigin().z()) + m_fViewbobStrafe);
 
-	//íàõîäèì òåêóùèé êâàä àè ñåòêè íà êîòîðîì íàõîäèòñÿ èãðîê
+	//Ð½Ð°Ñ…Ð¾Ð´Ð¸Ð¼ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ ÐºÐ²Ð°Ð´ Ð°Ð¸ ÑÐµÑ‚ÐºÐ¸ Ð½Ð° ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð¼ Ð½Ð°Ñ…Ð¾Ð´Ð¸Ñ‚ÑÑ Ð¸Ð³Ñ€Ð¾Ðº
 	ID idq = SAIG_QuadGet(&float3(m_vPosition.x, m_vPosition.y - (0.75f + m_fViewbobY), m_vPosition.z), true);
 	
-	//åñëè íàøëè
+	//ÐµÑÐ»Ð¸ Ð½Ð°ÑˆÐ»Ð¸
 	if (idq >= 0)
 	{
-		//çàíèìàåì ýòîò êâàä
+		//Ð·Ð°Ð½Ð¸Ð¼Ð°ÐµÐ¼ ÑÑ‚Ð¾Ñ‚ ÐºÐ²Ð°Ð´
 		SAIG_QuadSetState(idq, AIQUAD_STATE_TEMPBUSY);
 		SAIG_QuadSetStateWho(idq, GetId());
 	}
 
-	//åñëè ïðåäûäóùèé è òåêóùèå êâàäû íå èäåíòè÷íû
+	//ÐµÑÐ»Ð¸ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰Ð¸Ð¹ Ð¸ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ðµ ÐºÐ²Ð°Ð´Ñ‹ Ð½Ðµ Ð¸Ð´ÐµÐ½Ñ‚Ð¸Ñ‡Ð½Ñ‹
 	if (m_idQuadCurr != idq)
 	{
-		//åñëè ïðåäûäùèé áûë äåéñòâèòåëüíûì, óáèðàåì çàíÿòîñòü
+		//ÐµÑÐ»Ð¸ Ð¿Ñ€ÐµÐ´Ñ‹Ð´Ñ‰Ð¸Ð¹ Ð±Ñ‹Ð» Ð´ÐµÐ¹ÑÑ‚Ð²Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ð¼, ÑƒÐ±Ð¸Ñ€Ð°ÐµÐ¼ Ð·Ð°Ð½ÑÑ‚Ð¾ÑÑ‚ÑŒ
 		if (m_idQuadCurr >= 0)
 			SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
 

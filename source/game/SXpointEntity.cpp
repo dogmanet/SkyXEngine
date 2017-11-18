@@ -1,5 +1,8 @@
 #include "SXpointEntity.h"
 
+/*! \skydocent base_point
+Базовый точечный объект
+*/
 
 BEGIN_PROPTABLE(SXpointEntity)
  // empty

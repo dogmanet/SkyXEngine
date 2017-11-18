@@ -1,7 +1,13 @@
 #include "BaseMag.h"
 
+/*! \skydocent base_mag
+Базовый класс магазина
+*/
+
 BEGIN_PROPTABLE(CBaseMag)
+	//! Вместимость
 	DEFINE_FIELD_INT(m_iCapacity, PDFF_NOEDIT | PDFF_NOEXPORT, "capacity", "", EDITOR_NONE)
+	//! Текущая загрузка
 	DEFINE_FIELD_INT(m_iCurrentLoad, PDFF_NOEDIT, "current_load", "", EDITOR_NONE)
 END_PROPTABLE()
 

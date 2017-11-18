@@ -1,6 +1,8 @@
 #ifndef _ENTITY_MANAGER_H_
 #define _ENTITY_MANAGER_H_
 
+/*! \file */
+
 #include <gdefines.h>
 #include <common/array.h>
 #include <chrono>
@@ -12,8 +14,20 @@ typedef std::chrono::system_clock::time_point time_point;
 class SXbaseEntity;
 struct ISXConfig;
 
+/*! Однократно запустить функцию fn через время time
+	\note Должно вызываться изнутри класса объекта
+*/
 #define SET_TIMEOUT(fn, time) m_pMgr->SetTimeout((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
+
+/*! Запускать функцию fn через каждые time секунд
+Возвращает идентификатор таймера
+\note Должно вызываться изнутри класса объекта
+*/
 #define SET_INTERVAL(fn, time) m_pMgr->SetInterval((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
+
+/*! Отменить интервал по идентификатору
+\note Должно вызываться изнутри класса объекта
+*/
 #define CLEAR_INTERVAL(id) m_pMgr->ClearInterval(id)
 
 enum TIMEOUT_STATUS
@@ -92,7 +106,7 @@ protected:
 
 	int m_iThreadNum;
 
-	//! @warning ��� ����� ������� � ������� ������ �����, �.�. ������� �������� ��������� �������� �� ���� ������
+	//! @warning это нужно хранить в течение работы проги, т.к. таблицы дефолтов ссылаются напрямую на этот объект
 	ISXConfig * m_pDefaultsConf;
 	ISXConfig * m_pDynClassConf;
 };

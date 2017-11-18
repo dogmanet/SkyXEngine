@@ -122,7 +122,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	else
 	{
 		hWnd3DCurr = hWnd3D;
-		
+
 		RECT rect;
 		GetClientRect(hWnd3DCurr, &rect);
 
@@ -377,7 +377,7 @@ void SkyXEngine_CreateLoadCVar()
 	
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?");
 	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени");
-	
+
 	Core_0RegisterCVarFloat("env_default_rain_density", 1.f, "Коэфициент плотности дождя (0,1]");
 	Core_0RegisterCVarBool("env_default_thunderbolt", true, "Могут ли воспроизводится эффекты молнии?");
 

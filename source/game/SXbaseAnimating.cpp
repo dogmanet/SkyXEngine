@@ -1,12 +1,17 @@
 #include "SXbaseAnimating.h"
 #include "gcore/sxgcore.h"
 
+/*! \skydocent base_animating
+Базовый класс для объектов, имеющих объем в игровом мире
+*/
+
 BEGIN_PROPTABLE(SXbaseAnimating)
-// empty
+	//! Файл модели. Поддерживаются статические и анимированные модели
 	DEFINE_FIELD_STRING(m_szModelFile, 0, "model", "Model file", EDITOR_FILEFIELD)
 		FILE_OPTION("Model file (*.dse)", "*.dse")
 	EDITOR_FILE_END()
 
+	//! Масштаб модели
 	DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
@@ -23,6 +28,7 @@ SXbaseAnimating::SXbaseAnimating(EntityManager * pMgr):
 
 SXbaseAnimating::~SXbaseAnimating()
 {
+	ReleasePhysics();
 	mem_release(m_pAnimPlayer);
 }
 

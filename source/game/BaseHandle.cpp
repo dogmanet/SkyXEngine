@@ -1,5 +1,9 @@
 #include "BaseHandle.h"
 
+/*! \skydocent base_handle
+Базовый класс ручки
+*/
+
 BEGIN_PROPTABLE(CBaseHandle)
 //empty
 END_PROPTABLE()

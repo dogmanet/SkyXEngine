@@ -1,8 +1,21 @@
+/******************************************************
+Copyright ¬© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+–ê–º–º–æ–±–æ–∫—Å
+*/
+
 #ifndef _SXbaseAmmoBox_H_
 #define _SXbaseAmmoBox_H_
 
 #include "SXbaseItem.h"
 
+/*! –ê–º–º–æ–±–æ–∫—Å
+\ingroup cbaseitem
+*/
 class SXbaseAmmoBox: public SXbaseItem
 {
 	DECLARE_CLASS(SXbaseAmmoBox, SXbaseItem);
@@ -10,11 +23,11 @@ class SXbaseAmmoBox: public SXbaseItem
 public:
 	ThisClass(EntityManager * pMgr);
 
-	int m_iMaxItems; //!< Ã‡ÍÒËÏ‡Î¸ÌÓÂ ÍÓÎË˜ÂÒÚ‚Ó ÔÂ‰ÏÂÚÓ‚, ÍÓÚÓ˚Â ·ÓÍÒ ÏÓÊÂÚ ‚˚‰‡Ú¸
-	int m_iCurItems; //!< —ÍÓÎ¸ÍÓ ÓÒÚ‡ÎÓÒ¸
-	int m_iItemsPerUse; //!< —ÍÓÎ¸ÍÓ ‚˚‰‡‚‡Ú¸ Á‡ ‡Á
+	int m_iMaxItems; //!< –ú–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–µ –∫–æ–ª–∏—á–µ—Å—Ç–≤–æ –ø—Ä–µ–¥–º–µ—Ç–æ–≤, –∫–æ—Ç–æ—Ä—ã–µ –±–æ–∫—Å –º–æ–∂–µ—Ç –≤—ã–¥–∞—Ç—å
+	int m_iCurItems; //!< –°–∫–æ–ª—å–∫–æ –æ—Å—Ç–∞–ª–æ—Å—å
+	int m_iItemsPerUse; //!< –°–∫–æ–ª—å–∫–æ –≤—ã–¥–∞–≤–∞—Ç—å –∑–∞ —Ä–∞–∑
 
-	const char * m_szAmmoType; //!< “ËÔ ÔÂ‰ÏÂÚÓ‚ ‰Îˇ ‚˚‰‡˜Ë
+	const char * m_szAmmoType; //!< –¢–∏–ø –ø—Ä–µ–¥–º–µ—Ç–æ–≤ –¥–ª—è –≤—ã–¥–∞—á–∏
 };
 
 #endif

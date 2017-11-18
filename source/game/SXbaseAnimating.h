@@ -1,9 +1,26 @@
+
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Анимированный игровой объект
+*/
+
+/*! \defgroup cbaseanimating Моделированные объекты
+\ingroup cbaseentity
+@{
+*/
+
 #ifndef _SXbaseAnimating_H_
 #define _SXbaseAnimating_H_
 
 #include "SXbaseEntity.h"
 #include <anim/sxanim.h>
 
+//! Анимированный игровой объект
 class SXbaseAnimating: public SXbaseEntity
 {
 	DECLARE_CLASS(SXbaseAnimating, SXbaseEntity);
@@ -47,3 +64,5 @@ protected:
 };
 
 #endif
+
+/*! @} cbaseanimating */

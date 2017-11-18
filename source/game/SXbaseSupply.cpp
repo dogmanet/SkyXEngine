@@ -1,5 +1,8 @@
 #include "SXbaseSupply.h"
 
+/*! \skydocent base_supply
+Базовый класс припаса (патроны, батарейки, т.д)
+*/
 
 BEGIN_PROPTABLE(SXbaseSupply)
 //empty

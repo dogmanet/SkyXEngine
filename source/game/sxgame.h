@@ -1,18 +1,153 @@
 
 /******************************************************
-Copyright � Vitaliy Buturlin, Evgeny Danilovich, 2017
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
 /*!
 \file
-������������ ���� sxgame - ���������� ������� ��������
+Заголовочный файл sxgame - библиотека игровых объектов
 */
 
-/*! \defgroup sxgame sxgame - ���������� ������� ��������
+
+/*!
+	\page game_doc Игровая библиотека
+	В основе игровой библиотеки лежит понятие "объект". Каждый объект обладает набором свойств, которые можно настраивать. Для взаимодействия объектов между собой используются связи.
+	
+	\subpage game_connections
+	
+	\par Подкатегории
+	- \subpage ent_doc
+*/
+
+/*!
+\page game_connections Соединения
+Соединения используются для осуществления связи между различными объектами. Каждое соединение состоит из двух частей: выхода и входа. Выход - некий сигнал, генерируемый объектом. Вход - функция другого объекта, которая меняет его состояние. Любой выход может быть связан с любым входом с помощью редактора соединений в редакторе уровня.\n
+Для создания соединения нужно выбрать выход, имя целевого объекта, его вход, задержку и параметр.\n
+Любой выход может быть связан с любым количеством входов любых обхектов.\n
+Задержка - определяет, через какое время выбранный вход будет активирован.\n
+*/
+
+/*! \page ent_doc Игровые объекты
+	
+	\subpage base_entity
+	
+	\par Подкатегории
+	- \subpage entcat_point
+	- \subpage entcat_prop
+*/
+
+/*! \page entcat_point Точечные объекты
+
+	\subpage base_point
+	
+	\par Объекты
+	- \subpage func_train
+	- \subpage info_player_spawn
+	- \subpage point_camera
+	- \subpage path_corner
+	
+	\par Подкатегории
+	- \subpage entcat_light
+*/
+
+/*! \page entcat_prop С моделью
+	
+	\subpage base_animating
+	
+	\par Объекты
+	- \subpage player
+	- \ref npc_base
+	- \ref base_item
+	
+	\par Подкатегории
+	- \subpage entcat_trigger
+	- \subpage entcat_npc
+	- \subpage entcat_items
+*/
+
+/*! \page entcat_items Для инвентаря
+	
+	\subpage base_item
+	
+	\par Объекты
+	- \subpage base_ammobox
+	- \ref base_supply
+	- \ref base_tool
+	- \ref base_wpn_addon
+	
+	\par Подкатегории
+	- \subpage entcat_supply
+	- \subpage entcat_tools
+	- \subpage entcat_wpn_addons
+*/
+
+/*! \page entcat_tools Инструменты
+	
+	\subpage base_tool
+	
+	\par Объекты
+	- \ref base_weapon
+	
+	\par Подкатегории
+	- \subpage entcat_weapon
+	
+*/
+
+/*! \page entcat_weapon Оружие
+	
+	\subpage base_weapon
+	
+	\par Объекты
+	- \subpage base_riffle	
+*/
+
+/*! \page entcat_wpn_addons Навесы к оружию
+	
+	\subpage base_wpn_addon
+	
+	\par Объекты
+	- \subpage base_silencer
+	- \subpage base_scope
+	- \subpage base_mag
+	- \subpage base_handle
+	
+*/
+
+/*! \page entcat_supply Припасы
+	
+	\subpage base_supply
+	
+	\par Объекты
+	- \subpage base_ammo
+	
+*/
+
+/*! \page entcat_npc NPC
+	
+	\subpage npc_base
+	
+	\par Объекты
+	- \subpage npc_zombie
+	
+*/
+
+/*! \page entcat_light Свет
+	
+	\par Объекты
+	- \subpage light_directional
+	- \subpage light_point
+*/
+
+/*! \page entcat_trigger Триггеры
+	
+	\par Объекты
+	- \subpage trigger
+*/
+
+/*! \defgroup sxgame sxgame - библиотека игровых объектов
 @{
 */
-
 
 #ifndef _SXGAME_H_
 #define _SXGAME_H_
@@ -35,43 +170,43 @@ See the license in LICENSE
 #include "SXbaseEntity.h"
 
 
-/*! �������������� ����������
+/*! Инициализирует библиотеку
 */
 SX_LIB_API void SXGame_0Create();
 
-/*! ���������������� ����������
+/*! Деинициализирует библиотеку
 */
 SX_LIB_API void SXGame_AKill();
 
-/*! ������������� ������� ���������
+/*! Устанавливает функцию сообщений
 */
 SX_LIB_API void SXGame_Dbg_Set(report_func rf);
 
-/*! ������������� ���������� ������� ����������
+/*! Устанавливает количество потоков обновления
 */
 SX_LIB_API void SXGame_UpdateSetThreadNum(int num);
 
-/*! ��������� ����������
-@param[in] thread ����� ������, ������������ ����������
+/*! Выполняет обновление
+@param[in] thread Номер потока, выполняющего обновление
 */
 SX_LIB_API void SXGame_Update(int thread = 0);
 
-/*! ��������� �������������. ��� �������������� ����������
+/*! Выполняет синхронизацию. Для многопоточного обновления
 */
 SX_LIB_API void SXGame_Sync();
 
-/*! ��������� ������ entity �� �����
+/*! Загружает список entity из файла
 */
 SX_LIB_API void SXGame_LoadEnts(const char * file);
 
-/*! �������� ������� ������� ������ */
+/*! Выгрузка игровых объеков уровня */
 SX_LIB_API void SXGame_UnloadObjLevel();
 
-/*! ��������� ������� � ����
+/*! Сохраняет объекты в файл
 */
 SX_LIB_API void SXGame_SaveEnts(const char * file);
 
-/*! �������� ������ � ���
+/*! Помещает игрока в мир
 */
 SX_LIB_API void SXGame_PlayerSpawn();
 
@@ -82,42 +217,45 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex);
 
 SX_LIB_API ISXCamera * SXGame_GetActiveCamera();
 
-/*! �������� ���������� ������������������ ������� entity
+/*! Получает количество зарегистрированных классов entity
 */
 SX_LIB_API int SXGame_EntGetClassListCount();
 
-/*! �������� ������ ������������������ ������� entity.
-	������ ��� ������ const char * ������ ���� �������� �������
+/*! Получает список зарегистрированных классов entity.
+	Память под массив const char * должна быть выделена заранее
 */
 SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count);
 
-/*! ������� entity ��������� ������
+/*! Создает entity заданного класса
 */
 SX_LIB_API SXbaseEntity * SXGame_CreateEntity(const char * classname);
 
-/*! ���������� entity
+/*! Уничтожает entity
 */
 SX_LIB_API void SXGame_RemoveEntity(SXbaseEntity * pEnt);
 
-/*! �������� ������� ������� ��� ��������� ������
+/*! Получает таблицу свойств для заданного класса
 */
 SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname);
 
-/*! �������� �������� �������� �� ��������� ��� ��������� ������
+/*! Получает значение свойства по умолчанию для заданного класса
 */
 SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key);
 
-/*! ���������� ���� entity
+/*! Количество всех entity
 */
 SX_LIB_API int SXGame_EntGetCount();
 
-/*! ���������� entity �� ��� id
+/*! Возвращает entity по его id
 */
 SX_LIB_API SXbaseEntity *SXGame_EntGet(ID id);
 
 SX_LIB_API SXbaseEntity *SXGame_EntGetByName(const char *szName, ID idStart = 0);
 
+
+
 #endif
 
 /*! @} sxgame*/
+
 

@@ -1,5 +1,9 @@
 #include "BaseScope.h"
 
+/*! \skydocent base_scope
+Базовый класс прицела
+*/
+
 BEGIN_PROPTABLE(CBaseScope)
 	//empty
 END_PROPTABLE()

@@ -453,7 +453,7 @@ SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity 
 void EntityManager::LoadDefaults()
 {
 	m_pDefaultsConf = Core_CrConfig();
-	if(m_pDefaultsConf->open("entities/defaults.ent") < 0)
+	if(m_pDefaultsConf->open("config/entities/defaults.ent") < 0)
 	{
 		mem_release(m_pDefaultsConf);
 		return;
@@ -480,7 +480,7 @@ void EntityManager::LoadDefaults()
 void EntityManager::LoadDynClasses()
 {
 	m_pDynClassConf = Core_CrConfig();
-	if(m_pDynClassConf->open("entities/classes.ent") < 0)
+	if(m_pDynClassConf->open("config/entities/classes.ent") < 0)
 	{
 		mem_release(m_pDynClassConf);
 		return;

@@ -1,5 +1,8 @@
 #include "SXpointCamera.h"
 
+/*! \skydocent point_camera
+Камера
+*/
 
 BEGIN_PROPTABLE(SXpointCamera)
 // empty

@@ -1,4 +1,14 @@
 
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Точечный свет
+*/
+
 #ifndef __LIGHTPOINT_H
 #define __LIGHTPOINT_H
 
@@ -6,6 +16,9 @@
 
 #define LIGHT_INITIALLY_DARK 0x00010000
 
+/*! Точечный источник света
+\ingroup clight
+*/
 class CLightPoint : public SXpointEntity
 {
 	DECLARE_CLASS(CLightPoint, SXpointEntity);

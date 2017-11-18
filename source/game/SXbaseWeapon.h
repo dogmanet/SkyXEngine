@@ -1,3 +1,13 @@
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Базовый класс оружия
+*/
+
 #ifndef _SXbaseWeapon_H_
 #define _SXbaseWeapon_H_
 
@@ -18,7 +28,9 @@ enum FIRE_MODE
 };
 #define FIRE_MODE_COUNT 3
 
-
+/*! Оружие
+\ingroup cbaseitem
+*/
 class SXbaseWeapon: public SXbaseTool
 {
 	DECLARE_CLASS(SXbaseWeapon, SXbaseTool);

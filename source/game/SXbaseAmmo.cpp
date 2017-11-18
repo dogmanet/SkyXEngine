@@ -1,9 +1,15 @@
 #include "SXbaseAmmo.h"
 
+/*! \skydocent base_ammo
+Базовый класс для патронов
+*/
 
 BEGIN_PROPTABLE(SXbaseAmmo)
+	//! Начальная скорость пули
 	DEFINE_FIELD_FLOAT(m_fStartSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "start_speed", "", EDITOR_NONE)
+	//! Масса пули, кг
 	DEFINE_FIELD_FLOAT(m_fBulletMass, PDFF_NOEDIT | PDFF_NOEXPORT, "bullet_mass", "", EDITOR_NONE)
+	//! Бронебойность
 	DEFINE_FIELD_FLOAT(m_fArmorPiercing, PDFF_NOEDIT | PDFF_NOEXPORT, "armor_piercing", "", EDITOR_NONE)
 END_PROPTABLE()
 

@@ -4,23 +4,41 @@
 #include <decals/sxdecals.h>
 #include "SXplayer.h"
 
+/*! \skydocent base_tool
+Базовый класс для инструмента (в т.ч оружие). То, что игрок может взять в руки и использовать
+*/
+
+
 BEGIN_PROPTABLE(SXbaseTool)
+	//! Время перезарядки, с
 	DEFINE_FIELD_FLOAT(m_fReloadTime, PDFF_NOEDIT | PDFF_NOEXPORT, "reload_time", "", EDITOR_NONE)
+	//! Время прицеливания, с
 	DEFINE_FIELD_FLOAT(m_fZoomTime, PDFF_NOEDIT | PDFF_NOEXPORT, "zoom_time", "", EDITOR_NONE)
 
+	//! Смещение визуальной модели
 	DEFINE_FIELD_VECTOR(m_vSlotPos, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_offset", "", EDITOR_NONE)
+	//! Вращение визуальной модели
 	DEFINE_FIELD_ANGLES(m_qSlotRot, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_rotation", "", EDITOR_NONE)
+	//! Смещение визуальной модели в прицеливании
 	DEFINE_FIELD_VECTOR(m_vSlotPosAim, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_offset_aim", "", EDITOR_NONE)
+	//! Вращение визуальной модели в прицеливании
 	DEFINE_FIELD_ANGLES(m_qSlotRotAim, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_rotation_aim", "", EDITOR_NONE)
 	
+	//! Разрешить прицеливание
 	DEFINE_FIELD_INT(m_iZoomable, PDFF_NOEDIT | PDFF_NOEXPORT, "zoomable", "", EDITOR_NONE)
 
+	//! Звук первичного действия
 	DEFINE_FIELD_STRING(m_szPrimaryActionSound, PDFF_NOEDIT | PDFF_NOEXPORT, "action1_sound", "", EDITOR_NONE)
+	//! Звук вторичного действия
 	DEFINE_FIELD_STRING(m_szSecondaryActionSound, PDFF_NOEDIT | PDFF_NOEXPORT, "action2_sound", "", EDITOR_NONE)
+	//! Эффект первичного действия
 	DEFINE_FIELD_STRING(m_szPrimaryActionMuzzleflash, PDFF_NOEDIT | PDFF_NOEXPORT, "action1_muzzle", "", EDITOR_NONE)
+	//! Эффект вторичного действия
 	DEFINE_FIELD_STRING(m_szSecondaryActionMuzzleflash, PDFF_NOEDIT | PDFF_NOEXPORT, "action2_muzzle", "", EDITOR_NONE)
 	
+	//! Максимальная дальность
 	DEFINE_FIELD_FLOAT(m_fMaxDistance, PDFF_NOEDIT | PDFF_NOEXPORT, "max_distance", "", EDITOR_NONE)
+	//! Подходящие типы припасов, классы, через запятую
 	DEFINE_FIELD_STRING(m_szUsableAmmos, PDFF_NOEDIT | PDFF_NOEXPORT, "ammos", "", EDITOR_NONE)
 
 END_PROPTABLE()

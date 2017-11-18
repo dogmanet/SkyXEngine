@@ -1,3 +1,16 @@
+/******************************************************
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ npc
+*/
+
+/*! \ingroup cbaseanimating
+@{
+*/
 
 #ifndef __NPCBASE_H_
 #define __NPCBASE_H_
@@ -5,10 +18,10 @@
 #include "SXbaseAnimating.h"
 #include <aigrid/sxaigrid.h>
 
-//! базовое направление для нпс
+//! Р±Р°Р·РѕРІРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ РґР»СЏ РЅРїСЃ
 #define NPC_BASE_DIR float3(0,0,-1)
 
-//время в млсек для плавной ориентации на проходящий путь
+//РІСЂРµРјСЏ РІ РјР»СЃРµРє РґР»СЏ РїР»Р°РІРЅРѕР№ РѕСЂРёРµРЅС‚Р°С†РёРё РЅР° РїСЂРѕС…РѕРґСЏС‰РёР№ РїСѓС‚СЊ
 #define NPC_TIME_ORIENT_IN_PATH 250
 
 #define NPC_STEP_HEIGHT_EPSILON	0.05f
@@ -16,34 +29,35 @@
 #define NPC_QUAD_DIST_NOTBEYOND	AIGRID_QUAD_SIZE
 #define NPC_QUAD_DIST_BEYOND	AIGRID_QUAD_SIZE*2.f
 
-//! состяния движения
+//! СЃРѕСЃС‚СЏРЅРёСЏ РґРІРёР¶РµРЅРёСЏ
 enum NPC_STATE_MOVE
 {
-	NPC_STATE_MOVE_IDLE_START = 0,	//!< остановился
-	NPC_STATE_MOVE_IDLE = 1,		//!< стоит
-	NPC_STATE_MOVE_WALK = 2,		//!< идет
-	NPC_STATE_MOVE_RUN = 4,			//!< бежит
+	NPC_STATE_MOVE_IDLE_START = 0,	//!< РѕСЃС‚Р°РЅРѕРІРёР»СЃСЏ
+	NPC_STATE_MOVE_IDLE = 1,		//!< СЃС‚РѕРёС‚
+	NPC_STATE_MOVE_WALK = 2,		//!< РёРґРµС‚
+	NPC_STATE_MOVE_RUN = 4,			//!< Р±РµР¶РёС‚
 };
 
-//! состояния опасности
+//! СЃРѕСЃС‚РѕСЏРЅРёСЏ РѕРїР°СЃРЅРѕСЃС‚Рё
 enum NPC_STATE_DANGER
 {
-	NPC_STATE_DANGER_CALM		= 0,	//!< спокоен
-	NPC_STATE_DANGER_UNVISIBLE	= 1,	//!< беспокоен, но не знает где опасность
-	NPC_STATE_DANGER_VISIBLE	= 2,	//!< беспокоен и знает где опасность
+	NPC_STATE_DANGER_CALM		= 0,	//!< СЃРїРѕРєРѕРµРЅ
+	NPC_STATE_DANGER_UNVISIBLE	= 1,	//!< Р±РµСЃРїРѕРєРѕРµРЅ, РЅРѕ РЅРµ Р·РЅР°РµС‚ РіРґРµ РѕРїР°СЃРЅРѕСЃС‚СЊ
+	NPC_STATE_DANGER_VISIBLE	= 2,	//!< Р±РµСЃРїРѕРєРѕРµРЅ Рё Р·РЅР°РµС‚ РіРґРµ РѕРїР°СЃРЅРѕСЃС‚СЊ
 };
 
-//! состояния пути
+//! СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСѓС‚Рё
 enum NPC_STATE_PATH
 {
-	NPC_STATE_PATH_NOTFOUND		= 0,	//!< не найден путь
-	NPC_STATE_PATH_BITBEYOND	= 1,	//!< за пределами (возвращение допустимо)
-	NPC_STATE_PATH_BEYOND		= 2,	//!< за пределами (возвращение не допустимо)
-	NPC_STATE_PATH_LOST			= 3,	//!< сбился с пути
-	NPC_STATE_PATH_FOUND		= 4,	//!< найден
+	NPC_STATE_PATH_NOTFOUND		= 0,	//!< РЅРµ РЅР°Р№РґРµРЅ РїСѓС‚СЊ
+	NPC_STATE_PATH_BITBEYOND	= 1,	//!< Р·Р° РїСЂРµРґРµР»Р°РјРё (РІРѕР·РІСЂР°С‰РµРЅРёРµ РґРѕРїСѓСЃС‚РёРјРѕ)
+	NPC_STATE_PATH_BEYOND		= 2,	//!< Р·Р° РїСЂРµРґРµР»Р°РјРё (РІРѕР·РІСЂР°С‰РµРЅРёРµ РЅРµ РґРѕРїСѓСЃС‚РёРјРѕ)
+	NPC_STATE_PATH_LOST			= 3,	//!< СЃР±РёР»СЃСЏ СЃ РїСѓС‚Рё
+	NPC_STATE_PATH_FOUND		= 4,	//!< РЅР°Р№РґРµРЅ
 };
 
-class CNPCBase : public SXbaseAnimating
+//! Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ npc
+class CNPCBase: public SXbaseAnimating
 {
 	DECLARE_CLASS(CNPCBase, SXbaseAnimating);
 	DECLARE_PROPTABLE();
@@ -55,9 +69,9 @@ public:
 	CNPCBase(EntityManager * pMgr);
 	~CNPCBase();
 
-	ID getAIQuad();	//id квада аи сетки на котором стоит нпс
+	ID getAIQuad();	//!< id РєРІР°РґР° Р°Рё СЃРµС‚РєРё РЅР° РєРѕС‚РѕСЂРѕРј СЃС‚РѕРёС‚ РЅРїСЃ
 
-	//установка позиции сопровождается ориентацией на аи сетке
+	//! СѓСЃС‚Р°РЅРѕРІРєР° РїРѕР·РёС†РёРё СЃРѕРїСЂРѕРІРѕР¶РґР°РµС‚СЃСЏ РѕСЂРёРµРЅС‚Р°С†РёРµР№ РЅР° Р°Рё СЃРµС‚РєРµ
 	void SetPos(const float3 &pos);
 	bool SetKV(const char *name, const char *value);
 	void OnSync();
@@ -69,41 +83,43 @@ protected:
 	btPairCachingGhostObject * m_pGhostObject;
 	btKinematicCharacterController * m_pCharacter;
 
-	bool pathFind(ID endq);	//!< поиск пути от текущего (на котором стоит нпс) до endq
-	void pathWalk();		//!< хождение по пути
-	void gridCheckBeyond();	//!< проверка на выход за пределы сетки, и если так то установка соответсвующего состояния
+	bool pathFind(ID endq);	//!< РїРѕРёСЃРє РїСѓС‚Рё РѕС‚ С‚РµРєСѓС‰РµРіРѕ (РЅР° РєРѕС‚РѕСЂРѕРј СЃС‚РѕРёС‚ РЅРїСЃ) РґРѕ endq
+	void pathWalk();		//!< С…РѕР¶РґРµРЅРёРµ РїРѕ РїСѓС‚Рё
+	void gridCheckBeyond();	//!< РїСЂРѕРІРµСЂРєР° РЅР° РІС‹С…РѕРґ Р·Р° РїСЂРµРґРµР»С‹ СЃРµС‚РєРё, Рё РµСЃР»Рё С‚Р°Рє С‚Рѕ СѓСЃС‚Р°РЅРѕРІРєР° СЃРѕРѕС‚РІРµС‚СЃРІСѓСЋС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ
 
-	//! ориентаци нпс на точку pos, ttime время в млсек за которое нпс будет повернут в/на точку
+	//! РѕСЂРёРµРЅС‚Р°С†Рё РЅРїСЃ РЅР° С‚РѕС‡РєСѓ pos, ttime РІСЂРµРјСЏ РІ РјР»СЃРµРє Р·Р° РєРѕС‚РѕСЂРѕРµ РЅРїСЃ Р±СѓРґРµС‚ РїРѕРІРµСЂРЅСѓС‚ РІ/РЅР° С‚РѕС‡РєСѓ
 	void orientAtPoint(const float3 *pos, DWORD ttime);	
-	void updateOrientLerp();//!< плавная интерполяция поворотов
+	void updateOrientLerp();//!< РїР»Р°РІРЅР°СЏ РёРЅС‚РµСЂРїРѕР»СЏС†РёСЏ РїРѕРІРѕСЂРѕС‚РѕРІ
 
-	float m_fHealth;	//здоровье [0,1]
+	float m_fHealth;	//!< Р·РґРѕСЂРѕРІСЊРµ [0,1]
 
-	float m_fSpeedWalk;	//скорость движения при ходьбе
-	float m_fSpeedRun;	//скорость движения при беге
+	float m_fSpeedWalk;	//!< СЃРєРѕСЂРѕСЃС‚СЊ РґРІРёР¶РµРЅРёСЏ РїСЂРё С…РѕРґСЊР±Рµ
+	float m_fSpeedRun;	//!< СЃРєРѕСЂРѕСЃС‚СЊ РґРІРёР¶РµРЅРёСЏ РїСЂРё Р±РµРіРµ
 
-	ID m_idCurrAiQuad;			//текущий id квада на котором находится нпс
+	ID m_idCurrAiQuad;			//!< С‚РµРєСѓС‰РёР№ id РєРІР°РґР° РЅР° РєРѕС‚РѕСЂРѕРј РЅР°С…РѕРґРёС‚СЃСЏ РЅРїСЃ
 
-	Array<ID> m_aPathQuads;		//массив с идентификаторами квадов пути на аи сетке
-	ID m_idCurrQuaidInPath;		//номер текущего квада из m_arr_path
+	Array<ID> m_aPathQuads;		//!< РјР°СЃСЃРёРІ СЃ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР°РјРё РєРІР°РґРѕРІ РїСѓС‚Рё РЅР° Р°Рё СЃРµС‚РєРµ
+	ID m_idCurrQuaidInPath;		//!< РЅРѕРјРµСЂ С‚РµРєСѓС‰РµРіРѕ РєРІР°РґР° РёР· m_arr_path
 	
-	float3 m_vLastPathPos;		//последняя позиция нпс на пути
+	float3 m_vLastPathPos;		//!< РїРѕСЃР»РµРґРЅСЏСЏ РїРѕР·РёС†РёСЏ РЅРїСЃ РЅР° РїСѓС‚Рё
 
-	float3 m_vPosQuadInPathLast;	//позиция последнего квада на котором был нпс
-	float3 m_vPosQuadInPathNext;	//следующая позици квада на которую стремится нпс
+	float3 m_vPosQuadInPathLast;	//!< РїРѕР·РёС†РёСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РєРІР°РґР° РЅР° РєРѕС‚РѕСЂРѕРј Р±С‹Р» РЅРїСЃ
+	float3 m_vPosQuadInPathNext;	//!< СЃР»РµРґСѓСЋС‰Р°СЏ РїРѕР·РёС†Рё РєРІР°РґР° РЅР° РєРѕС‚РѕСЂСѓСЋ СЃС‚СЂРµРјРёС‚СЃСЏ РЅРїСЃ
 	
-	float m_fAngleYLast;		//предыдущий угол поворота
-	float m_fAngleYNext;		//следующий угол поворота
-	DWORD m_ulTimeAllRot;		//общее время текущей ориентации
-	DWORD m_ulTimeRot;			//время за которое должен быть ориентирован 
+	float m_fAngleYLast;		//!< РїСЂРµРґС‹РґСѓС‰РёР№ СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р°
+	float m_fAngleYNext;		//!< СЃР»РµРґСѓСЋС‰РёР№ СѓРіРѕР» РїРѕРІРѕСЂРѕС‚Р°
+	DWORD m_ulTimeAllRot;		//!< РѕР±С‰РµРµ РІСЂРµРјСЏ С‚РµРєСѓС‰РµР№ РѕСЂРёРµРЅС‚Р°С†РёРё
+	DWORD m_ulTimeRot;			//!< РІСЂРµРјСЏ Р·Р° РєРѕС‚РѕСЂРѕРµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РѕСЂРёРµРЅС‚РёСЂРѕРІР°РЅ 
 
-	float m_fStepHeight;		//высота шага
-	bool m_canJump;				//прыгать ли сейчас
-	NPC_STATE_MOVE m_stateMove;	//состояние движения
-	NPC_STATE_PATH m_statePath;	//состояние пути
-	DWORD m_ulColor;				//случайный (скорее всего уникальный) цвет нпс для метки квадов сетки
-	DWORD m_ulTimeReturnInGrid;		//за сколько млсек нпс должен вернуться на аи сетку
-	DWORD m_ulTimeAllReturnInGrid;	//общее время возвращения нпс на аи сетку
+	float m_fStepHeight;		//!< РІС‹СЃРѕС‚Р° С€Р°РіР°
+	bool m_canJump;				//!< РїСЂС‹РіР°С‚СЊ Р»Рё СЃРµР№С‡Р°СЃ
+	NPC_STATE_MOVE m_stateMove;	//!< СЃРѕСЃС‚РѕСЏРЅРёРµ РґРІРёР¶РµРЅРёСЏ
+	NPC_STATE_PATH m_statePath;	//!< СЃРѕСЃС‚РѕСЏРЅРёРµ РїСѓС‚Рё
+	DWORD m_ulColor;				//!< СЃР»СѓС‡Р°Р№РЅС‹Р№ (СЃРєРѕСЂРµРµ РІСЃРµРіРѕ СѓРЅРёРєР°Р»СЊРЅС‹Р№) С†РІРµС‚ РЅРїСЃ РґР»СЏ РјРµС‚РєРё РєРІР°РґРѕРІ СЃРµС‚РєРё
+	DWORD m_ulTimeReturnInGrid;		//!< Р·Р° СЃРєРѕР»СЊРєРѕ РјР»СЃРµРє РЅРїСЃ РґРѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊСЃСЏ РЅР° Р°Рё СЃРµС‚РєСѓ
+	DWORD m_ulTimeAllReturnInGrid;	//!< РѕР±С‰РµРµ РІСЂРµРјСЏ РІРѕР·РІСЂР°С‰РµРЅРёСЏ РЅРїСЃ РЅР° Р°Рё СЃРµС‚РєСѓ
 };
 
 #endif
+
+//! @}

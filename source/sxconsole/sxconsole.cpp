@@ -700,9 +700,9 @@ BOOL WINAPI HandlerRoutine(
 
 int main(int argc, char ** argv)
 {
+	SetConsoleOutputCP(CP_UTF8);
 	g_pColor = new ColorPrint();
 	g_hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleOutputCP(CP_UTF8);
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(g_hStdOut, &csbi);
 

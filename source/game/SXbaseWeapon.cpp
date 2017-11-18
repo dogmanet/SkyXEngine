@@ -3,30 +3,53 @@
 #include "SXbaseWeapon.h"
 #include "SXplayer.h"
 
+/*! \skydocent base_weapon
+Базовый класс для оружия
+*/
+
 
 BEGIN_PROPTABLE(SXbaseWeapon)
+	//! Совместимые прицелы, классы через запятую
 	DEFINE_FIELD_STRING(m_szAddonScopes, PDFF_NOEDIT | PDFF_NOEXPORT, "addon_scopes", "", EDITOR_NONE)
+	//! Совместимые глушители
 	DEFINE_FIELD_STRING(m_szAddonSilencers, PDFF_NOEDIT | PDFF_NOEXPORT, "addon_silencers", "", EDITOR_NONE)
+	//! Совместимые магазины
 	DEFINE_FIELD_STRING(m_szAddonMags, PDFF_NOEDIT | PDFF_NOEXPORT, "addon_mags", "", EDITOR_NONE)
+	//! Совместимые ручки
 	DEFINE_FIELD_STRING(m_szAddonHandlers, PDFF_NOEDIT | PDFF_NOEXPORT, "addon_handlers", "", EDITOR_NONE)
 
+	//! Доступные режимы стрельбы
 	DEFINE_FIELD_STRING(m_szFireModes, PDFF_NOEDIT | PDFF_NOEXPORT, "fire_modes", "", EDITOR_NONE)
+	//! Скорострельность одиночными
 	DEFINE_FIELD_INT(m_iSingleSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "single_speed", "", EDITOR_NONE)
+	//! Скорострельность в автоматическом режиме
 	DEFINE_FIELD_INT(m_iBurstSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "burst_speed", "", EDITOR_NONE)
+	//! Скорострельность отсечками
 	DEFINE_FIELD_INT(m_iCutoffSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "cutoff_speed", "", EDITOR_NONE)
+	//! Патронов в отсечке
 	DEFINE_FIELD_INT(m_iCutoffSize, PDFF_NOEDIT | PDFF_NOEXPORT, "cutoff_size", "", EDITOR_NONE)
+	//! Текущий режим стрельбы
 	DEFINE_FIELD_INT(m_fireMode, PDFF_NOEDIT, "fire_mode", "", EDITOR_NONE)
 
+	//! Звук извлечения
 	DEFINE_FIELD_STRING(m_szSndDraw, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_draw", "", EDITOR_NONE)
+	//! Звук убирания
 	DEFINE_FIELD_STRING(m_szSndHolster, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_holster", "", EDITOR_NONE)
+	//! Звук выстрела
 	DEFINE_FIELD_STRING(m_szSndShoot, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_shoot", "", EDITOR_NONE)
+	//! Звук попытки выстрела без патрона
 	DEFINE_FIELD_STRING(m_szSndEmpty, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_empty", "", EDITOR_NONE)
+	//! Звук перезарядки
 	DEFINE_FIELD_STRING(m_szSndReload, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_reload", "", EDITOR_NONE)
+	//! Звук переключения
 	DEFINE_FIELD_STRING(m_szSndSwitch, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_switch", "", EDITOR_NONE)
 
+	//! Эффективная дистанция, км
 	DEFINE_FIELD_FLOAT(m_fEffectiveDistance, PDFF_NOEDIT | PDFF_NOEXPORT, "effective_distance", "", EDITOR_NONE)
 
+	//! Вместимость патронов без магазина
 	DEFINE_FIELD_INT(m_iCapacity, PDFF_NOEDIT | PDFF_NOEXPORT, "capacity", "", EDITOR_NONE)
+	//! Текущая загрузка без учета магазина
 	DEFINE_FIELD_INT(m_iCurrentLoad, PDFF_NOEDIT, "current_load", "", EDITOR_NONE)
 END_PROPTABLE()
 

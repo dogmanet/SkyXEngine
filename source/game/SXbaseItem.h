@@ -1,8 +1,24 @@
+/******************************************************
+Copyright ¬© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+–ü—Ä–µ–¥–º–µ—Ç—ã –∏–Ω–≤–µ–Ω—Ç–∞—Ä—è
+*/
+
+/*! \defgroup cbaseitem –ü—Ä–µ–¥–º–µ—Ç—ã –∏–Ω–≤–µ–Ω—Ç–∞—Ä—è
+\ingroup cbaseanimating
+@{
+*/
+
 #ifndef _SXbaseItem_H_
 #define _SXbaseItem_H_
 
 #include "SXbaseAnimating.h"
 
+//! –ë–∞–∑–æ–≤—ã–π –∫–ª–∞—Å—Å –ø—Ä–µ–¥–º–µ—Ç–∞ –∏–Ω–≤–µ–Ω—Ç–∞—Ä—è
 class SXbaseItem: public SXbaseAnimating
 {
 	DECLARE_CLASS(SXbaseItem, SXbaseAnimating);
@@ -10,12 +26,14 @@ class SXbaseItem: public SXbaseAnimating
 public:
 	DECLARE_CONSTRUCTOR();
 
-	const char * m_szInvName; //!< »Ïˇ, ÓÚÓ·‡Ê‡ÂÏÓÂ ‚ ËÌ‚ÂÌÚ‡Â
-	bool m_bInvStackable; //!< ÃÓÊÌÓ ÎË ı‡ÌËÚ¸ ÌÂÒÍÓÎ¸ÍÓ ËÚÂÏÓ‚ ‚ Ó‰ÌÓÈ ˇ˜ÂÈÍÂ
-	int m_iInvStackCurSize; //!<  ÓÎË˜ÂÒÚ‚Ó ËÚÂÏÓ‚ ‚ ÒÚÂÍÂ
-	int m_iInvStackMaxSize; //!< Ã‡ÍÒËÏ‡Î¸ÌÓÂ ÍÓÎË˜ÂÒÚ‚Ó ËÚÂÏÓ‚ ‚ ÒÚÂÍÂ
-	float m_iInvWeight; //!< Ã‡ÒÒ‡ Ó·˙ÂÍÚ‡
-	bool m_bPickable; //!< ÃÓÊÌÓ ÎË ÔÓ‰ÌˇÚ¸ Ó·˙ÂÍÚ
+	const char * m_szInvName; //!< –ò–º—è, –æ—Ç–æ–±—Ä–∞–∂–∞–µ–º–æ–µ –≤ –∏–Ω–≤–µ–Ω—Ç–∞—Ä–µ
+	bool m_bInvStackable; //!< –ú–æ–∂–Ω–æ –ª–∏ —Ö—Ä–∞–Ω–∏—Ç—å –Ω–µ—Å–∫–æ–ª—å–∫–æ –∏—Ç–µ–º–æ–≤ –≤ –æ–¥–Ω–æ–π —è—á–µ–π–∫–µ
+	int m_iInvStackCurSize; //!< –ö–æ–ª–∏—á–µ—Å—Ç–≤–æ –∏—Ç–µ–º–æ–≤ –≤ —Å—Ç–µ–∫–µ
+	int m_iInvStackMaxSize; //!< –ú–∞–∫—Å–∏–º–∞–ª—å–Ω–æ–µ –∫–æ–ª–∏—á–µ—Å—Ç–≤–æ –∏—Ç–µ–º–æ–≤ –≤ —Å—Ç–µ–∫–µ
+	float m_iInvWeight; //!< –ú–∞—Å—Å–∞ –æ–±—ä–µ–∫—Ç–∞
+	bool m_bPickable; //!< –ú–æ–∂–Ω–æ –ª–∏ –ø–æ–¥–Ω—è—Ç—å –æ–±—ä–µ–∫—Ç
 };
 
 #endif
+
+//! @}

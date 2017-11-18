@@ -1,19 +1,32 @@
+/******************************************************
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Р“Р»СѓС€РёС‚РµР»Рё
+*/
+
 #ifndef _BaseSilencer_H_
 #define _BaseSilencer_H_
 
 #include "BaseWeaponAddon.h"
 
+/*! Р“Р»СѓС€РёС‚РµР»Рё
+\ingroup cbaseitem
+*/
 class CBaseSilencer: public CBaseWeaponAddon
 {
 	DECLARE_CLASS(CBaseSilencer, CBaseWeaponAddon);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	// уменьшение разброса
-	// замена звука выстрела
-	// уменьшение урона
-	// уменьшение бронебойности
-	// замена эффекта выстрела
+	// СѓРјРµРЅСЊС€РµРЅРёРµ СЂР°Р·Р±СЂРѕСЃР°
+	// Р·Р°РјРµРЅР° Р·РІСѓРєР° РІС‹СЃС‚СЂРµР»Р°
+	// СѓРјРµРЅСЊС€РµРЅРёРµ СѓСЂРѕРЅР°
+	// СѓРјРµРЅСЊС€РµРЅРёРµ Р±СЂРѕРЅРµР±РѕР№РЅРѕСЃС‚Рё
+	// Р·Р°РјРµРЅР° СЌС„С„РµРєС‚Р° РІС‹СЃС‚СЂРµР»Р°
 };
 
 #endif

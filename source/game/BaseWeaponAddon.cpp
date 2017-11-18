@@ -1,5 +1,9 @@
 #include "BaseWeaponAddon.h"
 
+/*! \skydocent base_wpn_addon
+Базовый класс навеса
+*/
+
 BEGIN_PROPTABLE(CBaseWeaponAddon)
 	//empty
 END_PROPTABLE()

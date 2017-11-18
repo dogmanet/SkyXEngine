@@ -1,3 +1,13 @@
+/******************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Базовый класс инструмента
+*/
+
 #ifndef _SXbaseTool_H_
 #define _SXbaseTool_H_
 
@@ -16,6 +26,9 @@ enum
 	DSM_PRINT
 };
 
+/*! Инструмент
+\ingroup cbaseitem
+*/
 class SXbaseTool: public SXbaseItem
 {
 	DECLARE_CLASS(SXbaseTool, SXbaseItem);

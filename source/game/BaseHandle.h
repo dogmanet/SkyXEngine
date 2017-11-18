@@ -1,8 +1,21 @@
+/******************************************************
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017
+See the license in LICENSE
+******************************************************/
+
+/*!
+\file
+Р СѓС‡РєРё
+*/
+
 #ifndef _BaseHandle_H_
 #define _BaseHandle_H_
 
 #include "BaseWeaponAddon.h"
 
+/*! Р СѓС‡РєРё
+\ingroup cbaseitem
+*/
 class CBaseHandle: public CBaseWeaponAddon
 {
 	DECLARE_CLASS(CBaseHandle, CBaseWeaponAddon);
@@ -10,8 +23,8 @@ class CBaseHandle: public CBaseWeaponAddon
 public:
 	DECLARE_CONSTRUCTOR();
 
-	//уменьшение раскачки
-	//уменьшение разброса
+	//СѓРјРµРЅСЊС€РµРЅРёРµ СЂР°СЃРєР°С‡РєРё
+	//СѓРјРµРЅСЊС€РµРЅРёРµ СЂР°Р·Р±СЂРѕСЃР°
 };
 
 #endif

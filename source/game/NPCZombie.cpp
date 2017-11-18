@@ -2,6 +2,10 @@
 #include "NPCZombie.h"
 #include "score/sxscore.h"
 
+/*! \skydocent npc_zombie
+NPC Р·РѕРјР±Рё
+*/
+
 BEGIN_PROPTABLE(CNPCZombie)
 // empty
 	
@@ -33,27 +37,27 @@ void CNPCZombie::OnSync()
 	SSCore_SndPosWSet(m_idSndIdle2, &GetPos());
 	SSCore_SndPosWSet(m_idSndDeath, &GetPos());
 
-	//если здоровье меньше нуля
+	//РµСЃР»Рё Р·РґРѕСЂРѕРІСЊРµ РјРµРЅСЊС€Рµ РЅСѓР»СЏ
 	if (m_fHealth < 0.0f)
 	{
-		//то воспроизводим анимацию смерти
+		//С‚Рѕ РІРѕСЃРїСЂРѕРёР·РІРѕРґРёРј Р°РЅРёРјР°С†РёСЋ СЃРјРµСЂС‚Рё
 		this->PlayAnimation("fake_death0");
 		SSCore_SndPlay(m_idSndDeath);
-		m_fHealth = 0.f;	//обнуляем здоровье говоря что больше проигрывать анимацию не надо
+		m_fHealth = 0.f;	//РѕР±РЅСѓР»СЏРµРј Р·РґРѕСЂРѕРІСЊРµ РіРѕРІРѕСЂСЏ С‡С‚Рѕ Р±РѕР»СЊС€Рµ РїСЂРѕРёРіСЂС‹РІР°С‚СЊ Р°РЅРёРјР°С†РёСЋ РЅРµ РЅР°РґРѕ
 		return;
 	}
 
 	if (m_fHealth <= 0.f)
 		return;
 
-	//если сбился с пути, обнуляем путь
+	//РµСЃР»Рё СЃР±РёР»СЃСЏ СЃ РїСѓС‚Рё, РѕР±РЅСѓР»СЏРµРј РїСѓС‚СЊ
 	if (m_statePath == NPC_STATE_PATH_LOST)
 	{
-		//!!!надо искать позицию конца пути
+		//!!!РЅР°РґРѕ РёСЃРєР°С‚СЊ РїРѕР·РёС†РёСЋ РєРѕРЅС†Р° РїСѓС‚Рё
 		m_stateMove = NPC_STATE_MOVE_IDLE_START;
 		m_idCurrQuaidInPath = -1;
 	}
-	//иначе если состояние пути == немного вышел за пределы (допустимые)
+	//РёРЅР°С‡Рµ РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РїСѓС‚Рё == РЅРµРјРЅРѕРіРѕ РІС‹С€РµР» Р·Р° РїСЂРµРґРµР»С‹ (РґРѕРїСѓСЃС‚РёРјС‹Рµ)
 	else if (m_statePath == NPC_STATE_PATH_BITBEYOND)
 	{
 		m_stateMove = NPC_STATE_MOVE_RUN;

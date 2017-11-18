@@ -1,9 +1,15 @@
 #include "FuncTrain.h"
 #include "PathCorner.h"
 
+/*! \skydocent func_train
+Поезд, движется по траектории, построенной из path_corner
+*/
 
 BEGIN_PROPTABLE(FuncTrain)
+	//! Скорость движения
 	DEFINE_FIELD_FLOAT(m_fSpeed, 0, "speed", "Move speed", EDITOR_TEXTFIELD)
+
+	//! path_corner, с которого начнется движение
 	DEFINE_FIELD_ENTITY(m_pStartStop, 0, "start", "Start point", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 

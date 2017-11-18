@@ -3,23 +3,36 @@
 
 #include <mtllight/sxmtllight.h>
 
+/*! \skydocent light_point
+Точечный источник света
+*/
+
 BEGIN_PROPTABLE(CLightPoint)
+	//! Цвет
 	DEFINE_FIELD_VECTOR(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
+	//! Дальность
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
+	//! Дальность дальняя
 	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Light far", EDITOR_TEXTFIELD)
 
+	//! Тип тени
 	DEFINE_FIELD_INT(m_iShadowType, 0, "type_shadow", "Type shadow", EDITOR_COMBOBOX)
-		COMBO_OPTION("None", "-1")
-		COMBO_OPTION("Static", "0")
-		COMBO_OPTION("Dynamic", "1")
+		COMBO_OPTION("None", "-1")   //!< Нет
+		COMBO_OPTION("Static", "0")  //!< Статическая тень
+		COMBO_OPTION("Dynamic", "1") //!< Динамическая тень
 	EDITOR_COMBO_END()
 
+	//! Включить
 	DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
+	//! Выключить
 	DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
 
+	//! При включении
 	DEFINE_OUTPUT(m_onTurnOn, "OnTurnOn", "On Turn On")
+	//! При выключении
 	DEFINE_OUTPUT(m_onTurnOff, "OnTurnOff", "On Turn Off")
 
+	//! Изначально выключена
 	DEFINE_FLAG(LIGHT_INITIALLY_DARK, "Initially dark")
 END_PROPTABLE()
 

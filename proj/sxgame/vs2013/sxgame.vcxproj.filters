@@ -129,9 +129,6 @@
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\game\SXbaseSupply.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\BaseWeaponAddon.cpp">
       <Filter>Source Files\ents\items\tools\weapons\addons</Filter>
     </ClCompile>
@@ -152,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\BaseTrigger.cpp">
       <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseSupply.cpp">
+      <Filter>Source Files\ents\items</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -239,9 +239,6 @@
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\game\SXbaseSupply.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\game\BaseWeaponAddon.h">
       <Filter>Header Files\ents\items\tools\weapons\addons</Filter>
     </ClInclude>
@@ -262,6 +259,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h">
       <Filter>Header Files\ents\triggers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseSupply.h">
+      <Filter>Header Files\ents\items</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

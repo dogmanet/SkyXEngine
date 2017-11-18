@@ -3,18 +3,28 @@
 
 #include <mtllight/sxmtllight.h>
 
+/*! \skydocent light_directional
+Направленный источник света
+*/
+
 BEGIN_PROPTABLE(CLightDirectional)
+	//! Цвет
 	DEFINE_FIELD_VECTOR(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
+	//! Дальность
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
+	//! Дальность дальняя
 	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "shadow_dist", "Shadow distance", EDITOR_TEXTFIELD)
 
+	//! Тип тени
 	DEFINE_FIELD_INT(m_iShadowType, 0, "shadow_type", "Shadow type", EDITOR_COMBOBOX)
-		COMBO_OPTION("None", "-1")
-		COMBO_OPTION("Static", "0")
-		COMBO_OPTION("Dynamic", "1")
+		COMBO_OPTION("None", "-1")   //!< Нет
+		COMBO_OPTION("Static", "0")  //!< Статическая тень
+		COMBO_OPTION("Dynamic", "1") //!< Динамическая тень
 	EDITOR_COMBO_END()
 
+	//! Угол
 	DEFINE_FIELD_FLOAT(m_fAngle, 0, "angle", "Angle", EDITOR_TEXTFIELD)
+	//! Верхний радиус
 	DEFINE_FIELD_FLOAT(m_fRadiusTop, 0, "radius_top", "Radius top", EDITOR_TEXTFIELD)
 
 END_PROPTABLE()

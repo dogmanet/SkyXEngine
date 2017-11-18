@@ -2,14 +2,23 @@
 
 #include "BaseTrigger.h"
 
+/*! \skydocent trigger
+Базовый класс триггера. Триггер - область, задаваемая моделью, при входе/выходе из которой игрока или объектов, вызывает заданные события
+*/
 
 BEGIN_PROPTABLE(CBaseTrigger)
+	//! Срабатывает при начале контакта
 	DEFINE_OUTPUT(m_onTouchStart, "OnTouchStart", "On touch start")
+	//! Срабатывает при прекращении контакта
 	DEFINE_OUTPUT(m_onTouchEnd, "OnTouchEnd", "On touch end")
+	//! Срабатывает, когда не осталось контактирующих объектов
 	DEFINE_OUTPUT(m_onTouchEndAll, "OnTouchEndAll", "On touch end all")
 
+	//! Включает триггер
 	DEFINE_INPUT(inEnable, "enable", "Enable", PDF_NONE)
+	//! Выключает триггер
 	DEFINE_INPUT(inDisable, "disable", "Disable", PDF_NONE)
+	//! Переключает состояние триггера
 	DEFINE_INPUT(inToggle, "toggle", "Toggle", PDF_NONE)
 END_PROPTABLE()
 
@@ -26,6 +35,7 @@ CBaseTrigger::CBaseTrigger(EntityManager * pMgr):
 
 CBaseTrigger::~CBaseTrigger()
 {
+	RemovePhysBody();
 	CLEAR_INTERVAL(m_idUpdateInterval);
 }
 

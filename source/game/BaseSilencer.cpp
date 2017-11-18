@@ -1,5 +1,9 @@
 #include "BaseSilencer.h"
 
+/*! \skydocent base_silencer
+Базовый класс глушителя
+*/
+
 BEGIN_PROPTABLE(CBaseSilencer)
 //empty
 END_PROPTABLE()
