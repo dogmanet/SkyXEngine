@@ -29,7 +29,7 @@ void msgbx(int level, const char* format, ...)
 		title = "Error";
 		flags |= MB_ICONSTOP;
 		break;
-	case REPORT_MSG_LEVEL_WARRNING:
+	case REPORT_MSG_LEVEL_WARNING:
 		title = "Warning";
 		flags |= MB_ICONWARNING;
 		break;
@@ -1171,7 +1171,7 @@ void Editor::InitD3D()
 	char tmp[260];
 
 	sprintf(tmp, "%stextures/", m_szGamesourceDir);
-	SGCore_LoadTexStdPath(tmp);
+	//SGCore_LoadTexStdPath(tmp);
 	sprintf(tmp, "%sshaders/", m_szGamesourceDir);
 	SGCore_ShaderSetStdPath(tmp);
 
@@ -1207,11 +1207,11 @@ void Editor::InitD3D()
 	*/
 	m_pd3dDevice->GetSwapChain(0, &m_pSwapChain);
 
-	m_pVSH = SGCore_ShaderLoad(st_vertex, "stdr_skin.vs", "stdr_skin.vs", scd_path);
-	m_pPSH = SGCore_ShaderLoad(st_pixel, "stdr_skin.ps", "stdr_skin.ps", scd_path);
+	m_pVSH = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs", "stdr_skin.vs", SHADER_CHECKDOUBLE_PATH);
+	m_pPSH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin.ps", SHADER_CHECKDOUBLE_PATH);
 
-	m_pVSHs = SGCore_ShaderLoad(st_vertex, "stdr_geom.vs", "stdr_geom.vs", scd_path);
-	m_pPSHs = SGCore_ShaderLoad(st_pixel, "stdr_geom.ps", "stdr_geom.ps", scd_path);
+	m_pVSHs = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs", "stdr_geom.vs", SHADER_CHECKDOUBLE_PATH);
+	m_pPSHs = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom.ps", SHADER_CHECKDOUBLE_PATH);
 
 	m_mProjMat = SMMatrixPerspectiveFovLH(50.0f / 180.0f * SM_PI, (float)width / (float)height, 0.1f, 10000.0f);
 
@@ -1298,13 +1298,13 @@ void Editor::Update()
 
 	if(m_pCurAnim->m_pMdl && (m_pCurAnim->m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC))
 	{
-		SGCore_ShaderBind(st_vertex, m_pVSHs);
-		SGCore_ShaderBind(st_pixel, m_pPSHs);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_pVSHs);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_pPSHs);
 	}
 	else
 	{
-	SGCore_ShaderBind(st_vertex, m_pVSH);
-	SGCore_ShaderBind(st_pixel, m_pPSH);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_pVSH);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_pPSH);
 	}
 	m_pAnimMgr->Render();
 	SGCore_ShaderUnBind();

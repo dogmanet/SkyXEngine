@@ -17,7 +17,7 @@
 #else
 #pragma comment(lib, "sxcore.lib")
 #endif
-#include <core\\sxcore.h>
+#include <core/sxcore.h>
 
 
 #if defined(_DEBUG)
@@ -25,9 +25,9 @@
 #else
 #pragma comment(lib, "sxguiwinapi.lib")
 #endif
-#include <SXGUIWinApi\\sxgui.h>
+#include <SXGUIWinApi/sxgui.h>
 
-#include <common\\Array.h>
+#include <common/Array.h>
 #include <SXWinCreator/resource.h>
 
 

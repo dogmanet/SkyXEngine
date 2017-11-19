@@ -338,12 +338,6 @@ SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name, 
 //! бинд шейдера по id
 SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[] = 0);	
 
-//! установить абсолютный путь откуда брать шейдеры
-SX_LIB_API void SGCore_ShaderSetStdPath(const char* path);	
-
-//! возвращает абсолютный путь откуда берутся шейдеры
-SX_LIB_API void SGCore_ShaderGetStdPath(char* path);		
-
 //! перезагрузить все шейдеры, с учетом макросов
 SX_LIB_API void SGCore_ShaderReloadAll();	
 
