@@ -109,7 +109,28 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	if (!Core_0IsProcessRun("sxconsole.exe"))
 		ShellExecute(0, "open", "sxconsole.exe", 0, Core_RStringGet(G_RI_STRING_PATH_EXE), SW_SHOWNORMAL);
 
+	
+
+	Core_0Create("sxcore", false);
+	Core_Dbg_Set(SkyXEngine_PrintfLog);
+	Core_SetOutPtr();
+
 	SkyXEngine_CreateLoadCVar();
+
+	ID idTimerRender = Core_TimeAdd();
+	ID idTimerGame = Core_TimeAdd();
+	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
+	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
+
+	tm ct = { 0, 0, 10, 27, 5, 2030 - 1900, 0, 0, 0 };
+	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
+
+	Core_TimeWorkingSet(idTimerRender, true);
+	Core_TimeWorkingSet(idTimerGame, true);
+
+	Core_TimeSpeedSet(idTimerGame, 10);
+
+	
 
 	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
@@ -133,27 +154,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	SSInput_0Create("sxinput", hWnd3DCurr, false);
 	SSInput_Dbg_Set(SkyXEngine_PrintfLog);
 
-	Core_0Create("sxcore", false);
-	Core_Dbg_Set(SkyXEngine_PrintfLog);
-	Core_SetOutPtr();
-
-	ID idTimerRender = Core_TimeAdd();
-	ID idTimerGame = Core_TimeAdd();
-	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
-	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
-
-	tm ct = { 0, 0, 6, 27, 5, 2030 - 1900, 0, 0, 0 };
-	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
-
-	Core_TimeWorkingSet(idTimerRender, true);
-	Core_TimeWorkingSet(idTimerGame, true);
-
-	Core_TimeSpeedSet(idTimerGame, 10);
-
 	SSCore_0Create("sxsound", hWnd3DCurr, false);
 	SSCore_Dbg_Set(SkyXEngine_PrintfLog);
-
-
 
 	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, 0, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
@@ -392,6 +394,11 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterConcmd("change_mode_window", SRender_ChangeModeWindow);
 	Core_0RegisterConcmd("change_mode_window_abs", SRender_FullScreenChangeSizeAbs);
 #endif
+
+	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
+	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
+
+	Core_0ConsoleUpdate();
 
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");

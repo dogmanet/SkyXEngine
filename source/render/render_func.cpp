@@ -563,10 +563,12 @@ int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char
 	{
 		FpsValue = (float)FrameCount / TimeElapsed;
 
+		debugstr[0] = 0;
+
 		if ((*r_stats) > 0)
 			sprintf(debugstr, "FPS %.1f\n", FpsValue);
 
-		if (needGameTime)
+		if ((*r_stats) > 0 && needGameTime)
 		{
 			tm g_tm;
 			time_t g_time = Core_TimeUnixCurrGet(Core_RIntGet(G_RI_INT_TIMER_GAME));
