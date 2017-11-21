@@ -31,7 +31,7 @@ SXGUIListBox::SXGUIListBox(const char* caption,WORD x,WORD y,WORD width,WORD hei
 							0,
 							"LISTBOX",
 							0,
-							(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE  | LBS_HASSTRINGS | WS_VSCROLL | WS_BORDER | (miltiple_sel ? LBS_EXTENDEDSEL : 0),
+							(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | LBS_HASSTRINGS | LBS_NOTIFY | WS_VSCROLL | WS_BORDER | (miltiple_sel ? LBS_EXTENDEDSEL : 0),
 							x,y,width,heigth,
 							parent,
 							(HMENU)id,
@@ -80,9 +80,7 @@ int SXGUIListBox::GetCountItem()
 
 bool SXGUIListBox::SetSel(int index)
 {
-		if(!SendMessage(this->GetHWND(),LB_SETCURSEL,WPARAM(index),0))
-			return false;
-	return true;
+	return SendMessage(this->GetHWND(), LB_SETCURSEL, (WPARAM)index, 0);
 }
 
 int SXGUIListBox::GetSel()
@@ -129,14 +127,6 @@ bool SXGUIListBox::SetTextItem(int index,const char* text)
 	return this->SetItemData(index,data);
 }
 
-char* SXGUIListBox::GetItemText(int index)
-{
-	WORD CountLength = GetItemTextLength(index) + 1;
-	char* text = new char[CountLength];
-	SendMessage(this->GetHWND(),LB_GETTEXT,WPARAM(index),LPARAM(text));
-	return text;
-}
-
 void SXGUIListBox::GetItemText(int index,char* buf)
 {
 	SendMessage(this->GetHWND(),LB_GETTEXT,WPARAM(index),LPARAM(buf));
@@ -167,14 +157,16 @@ bool SXGUIListBox::GetMultipleSel(int index)
 	return true;
 }
 
-int* SXGUIListBox::GetMultipleSelArr()
+void SXGUIListBox::GetMultipleSelArr(int** arr)
 {
-	WORD count = this->GetMultipleSelCount();
+	if (!arr)
+		return;
+
+	int count = this->GetMultipleSelCount();
 		if(count <= 0)
-			return 0;
-	int* arr = new int[count];
-	SendMessage(this->GetHWND(),LB_GETSELITEMS,WPARAM(count),LPARAM(arr));
-	return arr;
+			return;
+	*arr = new int[count];
+	SendMessage(this->GetHWND(),LB_GETSELITEMS,WPARAM(count),LPARAM(*arr));
 }
 
 

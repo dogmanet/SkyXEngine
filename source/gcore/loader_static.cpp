@@ -1,102 +1,5 @@
 
-struct DataStaticModel : public ISXDataStaticModel
-{
-	DataStaticModel()
-	{
-		VertexBuffer = 0;
-		IndexBuffer = 0;
-		//ArrVertBuf = 0;
-		//ArrIndBuf = 0;
-
-		SubsetCount = 0;
-		ArrTextures = 0;
-		StartIndex = 0;
-		IndexCount = 0;
-		StartVertex = 0;
-		VertexCount = 0;
-		AllIndexCount = 0;
-		AllVertexCount = 0;
-	}
-
-	void Release(){ mem_del(this); }
-
-	ISXDataStaticModel* GetCopy()
-	{
-		ISXDataStaticModel* nm = new DataStaticModel();
-		nm->ArrTextures = new char*[SubsetCount];
-		for (DWORD i = 0; i < SubsetCount; i++)
-		{
-			nm->ArrTextures[i] = new char[strlen(ArrTextures[i]) + 1];
-			sprintf(nm->ArrTextures[i], "%s", ArrTextures[i]);
-		}
-		nm->SubsetCount = SubsetCount;
-		nm->StartIndex = new UINT[SubsetCount];
-		memcpy(nm->StartIndex, StartIndex, sizeof(UINT)*SubsetCount);
-		nm->IndexCount = new UINT[SubsetCount];
-		memcpy(nm->IndexCount, IndexCount, sizeof(UINT)*SubsetCount);
-		nm->StartVertex = new UINT[SubsetCount];
-		memcpy(nm->StartVertex, StartVertex, sizeof(UINT)*SubsetCount);
-		nm->VertexCount = new UINT[SubsetCount];
-		memcpy(nm->VertexCount, VertexCount, sizeof(UINT)*SubsetCount);
-
-		DWORD tmpvert = 0;
-		DWORD tmpind = 0;
-		for (DWORD i = 0; i < SubsetCount; i++)
-		{
-			tmpvert += nm->VertexCount[i];
-			tmpind += nm->IndexCount[i];
-		}
-
-		DXDevice->CreateVertexBuffer(sizeof(vertex_static)* tmpvert, NULL, NULL, D3DPOOL_MANAGED, &nm->VertexBuffer, 0);
-		//nm->ArrVertBuf = new vertex_static[tmpvert];
-		vertex_static * dstData, *srcData;
-		nm->VertexBuffer->Lock(0, 0, (void**)&dstData, 0);
-		VertexBuffer->Lock(0, 0, (void**)&srcData, 0);
-
-		memcpy(dstData, srcData, sizeof(vertex_static)* tmpvert);
-		//memcpy(nm->ArrVertBuf, srcData, sizeof(vertex_static)* tmpvert);
-
-		nm->VertexBuffer->Unlock();
-		VertexBuffer->Unlock();
-
-
-		DXDevice->CreateIndexBuffer(sizeof(UINT)* tmpind, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &nm->IndexBuffer, 0);
-		//nm->ArrIndBuf = new UINT[tmpind];
-		nm->IndexBuffer->Lock(0, 0, (void**)&dstData, 0);
-		IndexBuffer->Lock(0, 0, (void**)&srcData, 0);
-
-		memcpy(dstData, srcData, sizeof(UINT)* tmpind);
-		//memcpy(nm->ArrIndBuf, srcData, sizeof(UINT)* tmpind);
-
-		nm->IndexBuffer->Unlock();
-		IndexBuffer->Unlock();
-
-		return nm;
-	}
-
-	DataStaticModel::~DataStaticModel()
-	{
-		mem_release_del(VertexBuffer);
-		mem_release_del(IndexBuffer);
-
-		for (DWORD i = 0; i < SubsetCount; ++i)
-		{
-			mem_delete_a(ArrTextures[i]);
-		}
-
-		//mem_delete_a(ArrVertBuf);
-		//mem_delete_a(ArrIndBuf);
-
-		mem_delete_a(ArrTextures);
-		mem_delete_a(StartIndex);
-		mem_delete_a(IndexCount);
-		mem_delete_a(StartVertex);
-		mem_delete_a(VertexCount);
-	}
-};
-
-
-///////////
+#include "loader_static.h"
 
 ISXDataStaticModel* SGCore_StaticModelCr()
 {
@@ -112,7 +15,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 {
 	if (!data)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - ñan not initialize a null pointer 'data', load model '%s'\n", gen_msg_location, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - ñan not initialize a null pointer 'data', load model '%s'\n", gen_msg_location, file);
 		return;
 	}
 
@@ -120,7 +23,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	FILE * pf = fopen(file, "rb");
 	if (!pf)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unable to open model file '%s'\n", gen_msg_location, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unable to open model file '%s'\n", gen_msg_location, file);
 		return;
 	}
 
@@ -130,14 +33,14 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 	if (header.Magick != SX_MODEL_MAGICK)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unsupported file type '%s'\n", gen_msg_location, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unsupported file type '%s'\n", gen_msg_location, file);
 		fclose(pf);
 		return;
 	}
 
 	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unsupported file '%s' version %d'\n", gen_msg_location, header.iVersion, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unsupported file '%s' version %d'\n", gen_msg_location, header.iVersion, file);
 		fclose(pf);
 		return;
 	}
@@ -479,6 +382,42 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	if (!FAILED(tmpmodel->VertexBuffer->Lock(0, sizeof(vertex_static)* countvertex, (void**)&pData, 0)))
 	{
 		memcpy(pData, ArrVertBuf, sizeof(vertex_static)* countvertex);
+
+		float3_t tmppos = pData[0].Pos;
+		tmpmodel->BBMax = tmppos;
+		tmpmodel->BBMin = tmppos;
+		float3_t pos;
+
+		for (long i = 0; i<countvertex; i++)
+		{
+			pos = pData[i].Pos;
+
+			if (pos.x > tmpmodel->BBMax.x)
+				tmpmodel->BBMax.x = pos.x;
+
+			if (pos.y > tmpmodel->BBMax.y)
+				tmpmodel->BBMax.y = pos.y;
+
+			if (pos.z > tmpmodel->BBMax.z)
+				tmpmodel->BBMax.z = pos.z;
+
+
+			if (pos.x < tmpmodel->BBMin.x)
+				tmpmodel->BBMin.x = pos.x;
+
+			if (pos.y < tmpmodel->BBMin.y)
+				tmpmodel->BBMin.y = pos.y;
+
+			if (pos.z < tmpmodel->BBMin.z)
+				tmpmodel->BBMin.z = pos.z;
+		}
+
+		float3 Center = (tmpmodel->BBMin + tmpmodel->BBMax) * 0.5f;
+		tmpmodel->BSphere.x = Center.x;
+		tmpmodel->BSphere.y = Center.y;
+		tmpmodel->BSphere.z = Center.z;
+		tmpmodel->BSphere.w = SMVector3Length(Center - tmpmodel->BBMax);
+
 		tmpmodel->VertexBuffer->Unlock();
 	}
 
@@ -509,7 +448,7 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 
 	if (!pF)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "unable to open model file '%s'\n", file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "unable to open model file '%s'\n", file);
 		return;
 	}
 
@@ -591,7 +530,7 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 		&Mesh))
 		)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "failed loaded X mesh '%s'\n", pathx);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "failed loaded X mesh '%s'\n", pathx);
 		return;
 	}
 

@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_progress_bar.h
-// Краткое описание: стандартный progress bar
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_PROGRESS_BAR_H
 #define SXGUI_PROGRESS_BAR_H
@@ -15,8 +10,6 @@ class SXGUIProgressBar : public  SXGUIComponent, public virtual ISXGUIProgressBa
 {
 public:
 	SXGUIProgressBar();
-	~SXGUIProgressBar(){}
-	void Release(){ mem_del(this); }
 	SXGUIProgressBar(WORD x,WORD y,WORD width,WORD heigth,DWORD exstyle,DWORD style,HWND parent,WNDPROC handler,DWORD id);
 	SXGUIProgressBar(WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPROC handler,DWORD id,bool vertical,bool smooth);
 
@@ -41,11 +34,11 @@ public:
 	int GetMax();
 
 	//установить/получить цвет полоски (дефолтовый цвет определен вручную RGB(51,153,255))
-	bool SetBarColor(WORD r,WORD g,WORD b);	//при удачном выполнении возвращает true, иначе false
+	bool SetBarColor(BYTE r, BYTE g, BYTE b);	//при удачном выполнении возвращает true, иначе false
 	DWORD GetBarColor();
 
 	//установить/получить цвет фона (дефолтовый цвет равен цвету фона родителя)
-	bool SetBkColor(WORD r,WORD g,WORD b); //при удачном выполнении возвращает true, иначе false
+	bool SetBkColor(BYTE r, BYTE g, BYTE b); //при удачном выполнении возвращает true, иначе false
 	DWORD GetBkColor();
 };
 

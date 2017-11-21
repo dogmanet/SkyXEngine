@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\sxleveleditor\sxleveleditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\green_callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\level_editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\model_callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\common_callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\aigrid_callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\game_callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\skyxengine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\sxleveleditor\SXLevelEditor.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\sxleveleditor\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxleveleditor\aigrid_callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxleveleditor\common_callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxleveleditor\game_callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxleveleditor\green_callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxleveleditor\level_editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxleveleditor\model_callback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\SkyXEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gdefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\sxleveleditor\resource\new.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\open.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\open.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\save_as.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\save_as.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\save.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\save.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\arrow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\pos.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\rot.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\scale.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\pos.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\rot.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\scale.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\axes.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_c.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_n.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_c.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_n.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_ad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\r_l.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_p.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_ad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_l.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_z.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_m.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sel_cb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_s.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_z.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_m.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_cb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\aigrid_bound.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_bound.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\aigrid_quad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\aigrid_graphpoint.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_quad.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_graphpoint.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\lvl_in.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\lvl_out.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\sun.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_in.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_out.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\sun.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

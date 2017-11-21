@@ -1,5 +1,7 @@
 #include "Editor.h"
 
+#include <Commdlg.h>
+
 #include <ShlObj.h>
 
 #if defined(_DEBUG)
@@ -27,7 +29,7 @@ void msgbx(int level, const char* format, ...)
 		title = "Error";
 		flags |= MB_ICONSTOP;
 		break;
-	case REPORT_MSG_LEVEL_WARRNING:
+	case REPORT_MSG_LEVEL_WARNING:
 		title = "Warning";
 		flags |= MB_ICONWARNING;
 		break;
@@ -46,13 +48,7 @@ void msgbx(int level, const char* format, ...)
 	}
 }
 
-void Report(int level, const char* format, ...)
-{
-	va_list va;
-	va_start(va, format);
-	msgbx(level, format, va);
-	va_end(va);
-}
+report_func reportf = msgbx;
 
 Editor::Editor():
 m_bCamMove(false),
@@ -292,6 +288,15 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->act_chance = i;
 					((ModelSequence*)m_pEditor->m_pCurAnim->m_pMdl->GetSequence(m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->name))->act_chance = i;
 				}
+			}
+			break;
+
+		case IDC_ANIM_ACT_NAME:
+			if(HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				ISXGUIComboBox * pList = ((TabAnimation*)edt->m_pTM->m_pTabAnimation)->AnimPropActCmb;
+				
+				m_pEditor->m_vAnims[m_pEditor->m_iCurIdx].seq->activity = pList->GetSel();
 			}
 			break;
 
@@ -597,6 +602,7 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case EM_LOADACTIVITIES:
 		TabAnimation * tAnim = (TabAnimation*)edt->m_pTM->m_pTabAnimation;
 		tAnim->AnimPropActCmb->Clear();
+		tAnim->AnimPropActCmb->AddItem("");
 		for(int i = 0, l = edt->m_pvActivities->size(); i < l; ++i)
 		{
 			tAnim->AnimPropActCmb->AddItem(edt->m_pvActivities[0][i].act.c_str());
@@ -810,6 +816,7 @@ void Editor::MenuBrowse(HWND hwnd)
 		}
 		m_pEditor->AddModel(ofn.lpstrFile, MI_ALL, false, true);
 		m_pEditor->m_pCurAnim->Assembly();
+		RenderBoneList();
 		m_bDirty = false;
 	}
 }
@@ -843,6 +850,7 @@ void Editor::MenuBrowseImport(HWND hwnd, bool use)
 		{
 			m_pEditor->AddModel(ofn.lpstrFile, iflags);
 			m_pEditor->m_pCurAnim->Assembly();
+			RenderBoneList();
 		}
 		else
 		{
@@ -1060,13 +1068,15 @@ Editor * Editor::m_pEditor;
 
 void Editor::InitUI()
 {
-	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, 256, 199, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	MainWindow = SXGUICrBaseWnd("MainWindow", "MainWindow", 0, 0, CW_USEDEFAULT, CW_USEDEFAULT, 1320, 730, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	SXGUIBaseHandlers::InitHandlerMsg(MainWindow);
 	MainWindow->AddHandler(MenuCmd, WM_COMMAND);
 	MainWindow->AddHandler(MenuCmd, WM_CLOSE, 0, 0, 0, 0, 1);
 	MainWindow->AddHandler(MenuCmd, WM_PARENTNOTIFY);
 	MainWindow->AddHandler(MenuCmd, EM_LOADACTIVITIES);
 	//MainWindow->AddHandler(MenuCmd, WM_KEYDOWN);
+	MainWindow->MinSizeX = MAINWIN_SIZE_X;
+	MainWindow->MinSizeY = MAINWIN_SIZE_Y;
 
 
 	MainWindow->SetUserPtr(this);
@@ -1161,7 +1171,7 @@ void Editor::InitD3D()
 	char tmp[260];
 
 	sprintf(tmp, "%stextures/", m_szGamesourceDir);
-	SGCore_LoadTexStdPath(tmp);
+	//SGCore_LoadTexStdPath(tmp);
 	sprintf(tmp, "%sshaders/", m_szGamesourceDir);
 	SGCore_ShaderSetStdPath(tmp);
 
@@ -1197,9 +1207,11 @@ void Editor::InitD3D()
 	*/
 	m_pd3dDevice->GetSwapChain(0, &m_pSwapChain);
 
-	m_pVSH = SGCore_ShaderLoad(st_vertex, "mtrlskin_base.vs", "mtrlskin_base", scd_path);
-	//m_pPSH = SGCore_ShaderLoad(st_pixel, "mtrlskin_base.ps", "mtrlskin_base", scd_path);
-	m_pPSH = SGCore_ShaderLoad(st_pixel, "mtrlskin_stdr.ps", "mtrlskin_stdr", scd_path);
+	m_pVSH = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs", "stdr_skin.vs", SHADER_CHECKDOUBLE_PATH);
+	m_pPSH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin.ps", SHADER_CHECKDOUBLE_PATH);
+
+	m_pVSHs = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs", "stdr_geom.vs", SHADER_CHECKDOUBLE_PATH);
+	m_pPSHs = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom.ps", SHADER_CHECKDOUBLE_PATH);
 
 	m_mProjMat = SMMatrixPerspectiveFovLH(50.0f / 180.0f * SM_PI, (float)width / (float)height, 0.1f, 10000.0f);
 
@@ -1212,7 +1224,7 @@ void Editor::InitD3D()
 
 void Editor::DestroyD3D()
 {
-	SGCore_0Kill();
+	SGCore_AKill();
 	//mem_release(m_pd3dDevice);
 	//mem_release(m_pD3D);
 }
@@ -1270,7 +1282,7 @@ void Editor::Update()
 	static VShaderInputCamera VSICData;
 	VSICData.mRes = SMMatrixTranspose(m_mWorldMat * m_mViewMat * m_mProjMat);
 	VSICData.mWorld = SMMatrixTranspose(m_mWorldMat);
-	m_pd3dDevice->SetVertexShaderConstantF(1, (float*)&VSICData, sizeof(VSICData) / sizeof(float) / 4);
+	m_pd3dDevice->SetVertexShaderConstantF(0, (float*)&VSICData, sizeof(VSICData) / sizeof(float) / 4);
 
 	m_pd3dDevice->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&m_mViewMat);
 	m_pd3dDevice->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&m_mProjMat);
@@ -1284,21 +1296,31 @@ void Editor::Update()
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
 	m_pd3dDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC);
 
-	SGCore_ShaderBind(st_vertex, m_pVSH);
-	SGCore_ShaderBind(st_pixel, m_pPSH);
+	if(m_pCurAnim->m_pMdl && (m_pCurAnim->m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC))
+	{
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_pVSHs);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_pPSHs);
+	}
+	else
+	{
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_pVSH);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_pPSH);
+	}
 	m_pAnimMgr->Render();
 	SGCore_ShaderUnBind();
 
 	if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
 	{
 		DrawHitboxes();
-
+		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
+		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixIdentity()));
+		m_pCurAnim->RenderSkeleton(m_iActiveHitbox > 0 ? m_pCurAnim->GetBone(m_vHitboxes[m_iActiveHitbox].hb->bone) : -1);
 		if(m_vHitboxes.size() > m_iActiveHitbox)
 		{
 			HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
 			SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
 
-			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
+			//m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
 
 			m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMat * mBone));
 			switch(m_htype)
@@ -1315,13 +1337,14 @@ void Editor::Update()
 				DrawHandlerScale();
 				break;
 			}
-			m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 1);
 
 		}
+		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 1);
 	}
 	m_pd3dDevice->EndScene();
 
 	m_pAnimMgr->Update();
+	m_pAnimMgr->Sync();
 
 	m_pSwapChain->Present(NULL, NULL, NULL, NULL, D3DSWAPEFFECT_DISCARD);
 }
@@ -1518,6 +1541,7 @@ void Editor::OnAnimListSelChg()
 
 		m_pCurAnim->Play(item->seq->name, 100);
 
+		tab->AnimPropActCmb->SetSel(item->seq->activity);
 		tab->AnimPropActChance->SetText(String((DWORD)item->seq->act_chance).c_str());
 		tab->AnimPropName->SetText(item->seq->name);
 		tab->AnimPropLoopCB->SetCheck(item->seq->bLooped);
@@ -1682,6 +1706,16 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 				m_vAnims.push_back(ai);
 			}
 			RenderAnimList();
+
+			for(int i = 0, l = pMdl->m_hdr2.iActivitiesTableCount; i < l; ++i)
+			{
+				TabActivities::ActivityItem ai;
+				ai.act = pMdl->pActivities[i].szName;
+				ai.mdl = pMdl;
+				ai.isImported = bIsImported;
+				m_pvActivities->push_back(ai);
+		}
+			((TabActivities*)m_pTM->m_pTabActivities)->RenderList();
 		}
 
 		if(flags & MI_HITBOXES)
@@ -1758,6 +1792,16 @@ void Editor::DelModel(UINT id)
 		}
 		RenderHitboxList();
 		OnHitboxListSelChg();
+
+		for(int i = 0, l = m_pvActivities->size(); i < l; ++i)
+		{
+			if(m_pvActivities[0][i].mdl == mdl)
+			{
+				m_pvActivities->erase(i);
+				--i; --l;
+			}
+		}
+		((TabActivities*)m_pTM->m_pTabActivities)->RenderList();
 
 		if(mdl == m_pHitboxesPart)
 		{
@@ -1838,6 +1882,17 @@ void Editor::OnPartApply()
 			RenderHitboxList();
 			OnHitboxListSelChg();
 
+			for(int i = 0, l = m_pvActivities->size(); i < l; ++i)
+			{
+				if(m_pvActivities[0][i].mdl == mdl)
+				{
+					m_pvActivities->erase(i);
+					--i; --l;
+				}
+			}
+			((TabActivities*)m_pTM->m_pTabActivities)->RenderList();
+
+
 			m_pAnimMgr->UnloadModel(mdl);
 			pt->pMdl = NULL;
 		}
@@ -1875,15 +1930,27 @@ void Editor::OnPartApply()
 				m_vAnims.push_back(ai);
 			}
 			RenderAnimList();
+
+			for(int i = 0, l = pMdl->m_hdr2.iActivitiesTableCount; i < l; ++i)
+			{
+				TabActivities::ActivityItem ai;
+				ai.act = pMdl->pActivities[i].szName;
+				ai.mdl = pMdl;
+				ai.isImported = bIsImported;
+				m_pvActivities->push_back(ai);
+			}
+			((TabActivities*)m_pTM->m_pTabActivities)->RenderList();
 		}
 
 		if(flags & MI_HITBOXES)
 		{
 			UpdateHitboxList(pMdl, bIsImported);
 		}
+
 	}
 
 	m_pCurAnim->Assembly();
+	RenderBoneList();
 	//
 }
 

@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B66C63CA-62E0-472F-9D24-070CAC7C8B12}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sxparticleseditor</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/</OutDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;../../../sdks/bullet3/src;</IncludePath>
+    <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/</OutDir>
+    <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;../../../sdks/bullet3/src;</IncludePath>
+    <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level1</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;SX_PARTICLES_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;SX_PARTICLES_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\sxparticleseditor\callback_common.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxparticleseditor\callback_list.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxparticleseditor\callback_tabs.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxparticleseditor\particles_editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxparticleseditor\particles_editor_op.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxparticleseditor\sxparticleseditor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\gdefines.h" />
+    <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\sxparticleseditor\callback_common.h" />
+    <ClInclude Include="..\..\..\source\sxparticleseditor\callback_list.h" />
+    <ClInclude Include="..\..\..\source\sxparticleseditor\callback_tabs.h" />
+    <ClInclude Include="..\..\..\source\sxparticleseditor\particles_editor.h" />
+    <ClInclude Include="..\..\..\source\sxparticleseditor\particles_editor_op.h" />
+    <ClInclude Include="..\..\..\source\sxparticleseditor\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\sxparticleseditor\sxparticleseditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\axes.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\bound.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\open.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\pause.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\play.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\save.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\stop.bmp" />
+    <Image Include="resource\axes.bmp" />
+    <Image Include="resource\bound.bmp" />
+    <Image Include="resource\grid.bmp" />
+    <Image Include="resource\open.bmp" />
+    <Image Include="resource\pause.bmp" />
+    <Image Include="resource\play.bmp" />
+    <Image Include="resource\save.bmp" />
+    <Image Include="resource\stop.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,14 +1,19 @@
 
+/*
+ppe_bloom_final.ps
+Эффект bloom, финальный проход - сложение дополнительной освещенности пикселя и лодов текстуры
+*/
+
 #include <../struct.h>
 
 sampler2D BaseSampler:register(s0);
 
 half4 main(vs_out_pp IN) : COLOR0
 {
-	half4 color = tex2Dlod(BaseSampler, half4(IN.TexUV,0,0));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0,1));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0,2));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0,3));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0,4));
-	return color*0.2;
+	half4 color = tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,0.f));
+	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,1.f));
+	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,2.f));
+	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,3.f));
+	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,4.f));
+	return color*0.2f;
 }

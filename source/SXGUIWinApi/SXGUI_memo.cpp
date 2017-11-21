@@ -50,7 +50,7 @@ bool SXGUIMemo::ScrollBars(bool h,bool v)
 
 bool SXGUIMemo::ScrollBarV()
 {
-	return SXGUIFuctinon::ScrollBarV(this);;
+	return SXGUIFuctinon::ScrollBarV(this);
 }
 
 bool SXGUIMemo::ScrollBarH()

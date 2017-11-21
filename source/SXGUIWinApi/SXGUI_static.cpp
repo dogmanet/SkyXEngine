@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_static.h>
-
-#pragma once
+#include "SXGUI_static.h"
 
 SXGUIStatic::SXGUIStatic()
 {
@@ -59,25 +57,25 @@ SXGUIStatic::SXGUIStatic(WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPRO
 	this->InitComponent();
 }
 
-WORD SXGUIStatic::Align()
+int SXGUIStatic::Align()
 {
 	long style = GetWindowLong(this->GetHWND(),GWL_STYLE);
 		if(style & SS_RIGHT)
-			return SXGUI_STATIC_ALIGN_RIGHT;
+			return SXGUI_TEXT_ALIGN_RIGHT;
 		else if(style & SS_CENTER)
-			return SXGUI_STATIC_ALIGN_CENTER;
+			return SXGUI_TEXT_ALIGN_CENTER;
 		else
-			return SXGUI_STATIC_ALIGN_LEFT;
+			return SXGUI_TEXT_ALIGN_LEFT;
 }
 
-bool SXGUIStatic::Align(WORD align)
+bool SXGUIStatic::Align(int align)
 {
-		if(align == SXGUI_STATIC_ALIGN_LEFT)
-			return this->ModifyStyle(SS_LEFT,0);
-		else if(align == SXGUI_STATIC_ALIGN_RIGHT)
-			return this->ModifyStyle(SS_RIGHT,0);
-		else if(align == SXGUI_STATIC_ALIGN_CENTER)
-			return this->ModifyStyle(SS_CENTER,0);
+	if (align == SXGUI_TEXT_ALIGN_LEFT)
+		return this->ModifyStyle(SS_LEFT,0);
+	else if (align == SXGUI_TEXT_ALIGN_RIGHT)
+		return this->ModifyStyle(SS_RIGHT,0);
+	else if (align == SXGUI_TEXT_ALIGN_CENTER)
+		return this->ModifyStyle(SS_CENTER,0);
 	return false;
 }
 

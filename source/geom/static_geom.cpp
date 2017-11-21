@@ -1,9 +1,9 @@
 
-#include <geom\\static_geom.h>
+#include "static_geom.h"
 
 StaticGeom::Segment::Segment()
 {
-	for (int i = 0; i < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
+	for (int i = 0; i < GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
 	{
 		Splits[i] = 0;
 	}
@@ -23,7 +23,7 @@ StaticGeom::Segment::Segment()
 
 StaticGeom::Segment::~Segment()
 {
-	for (int i = 0; i < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
+	for (int i = 0; i < GEOM_COUNT_TYPE_SEGMENTATION_OCTO; i++)
 	{
 		mem_delete(Splits[i]);
 	}
@@ -136,7 +136,7 @@ StaticGeom::IRSData::IRSData()
 StaticGeom::IRSData::~IRSData()
 {
 	queue.clear();
-	for (long i = 0; i < arr.size(); ++i)
+	for (int i = 0; i < arr.size(); ++i)
 	{
 		mem_delete(arr[i]);
 	}
@@ -213,20 +213,20 @@ void StaticGeom::OnResetDevice()
 	StaticGeom::DXDevice->CreateIndexBuffer(sizeof(uint32_t)* SizeRenderIndexBuffer, D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_DEFAULT/*D3DPOOL_MANAGED*/, &RenderIndexBuffer, 0);
 }
 
-inline long StaticGeom::GetCountModel()
+long StaticGeom::GetCountModel()
 {
 	return AllModels.size();
 }
 
 ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 {
-	reportf(0, "load geometry: '%s'.. ", path);
+	g_fnReportf(0, "load geometry: '%s'.. ", path);
 	DelArrIndexPtr();
 
 	ISXDataStaticModel* model = 0;
 	
 	char tmppath[1024];
-	sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
+	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 	SGCore_StaticModelLoad(tmppath, &model);
 
 	Model* tmpmodel = new Model();
@@ -260,9 +260,9 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 		
 
 		//если количество полигонов в подгруппе модели больше разрешенного
-		if (model->IndexCount[i] / 3 > STATIC_GEOM_MAX_POLY_IN_GROUP)
+		if (model->IndexCount[i] / 3 > GEOM_MAX_POLY_IN_GROUP)
 		{
-			reportf(-1, "[GEOM] %s count polygons %d in group over default '%d'", gen_msg_location, model->IndexCount[i] / 3, STATIC_GEOM_MAX_POLY_IN_GROUP);
+			g_fnReportf(-1, "[GEOM] %s count polygons %d in group over default '%d'", gen_msg_location, model->IndexCount[i] / 3, GEOM_MAX_POLY_IN_GROUP);
 			return -1;
 		}
 
@@ -285,7 +285,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 				vertex_static * pData2;
 
 				//если последний незаполненный буфер не вмещает в себ¤
-				if (AllGroups[k]->CountIndex[AllGroups[k]->CountIndex.size() - 1] / 3 + model->IndexCount[i] / 3 > STATIC_GEOM_MAX_POLY_IN_GROUP)
+				if (AllGroups[k]->CountIndex[AllGroups[k]->CountIndex.size() - 1] / 3 + model->IndexCount[i] / 3 > GEOM_MAX_POLY_IN_GROUP)
 				{
 					//создаем новый
 					gdb.VertexStart = 0;
@@ -539,7 +539,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 	mem_delete_a(ArrMeshVertex);
 	mem_delete_a(ArrMeshIndex);
 
-	reportf(0, " completed\n", path);
+	g_fnReportf(0, " completed\n", path);
 	return AllModels.size() - 1;
 }
 
@@ -625,7 +625,7 @@ void StaticGeom::DelModel(ID id)
 			if (tmpidingroup == -1)
 			{
 				//то это очень плохо
-				reportf(REPORT_MSG_LEVEL_ERROR, "[GEOM] %s - when deleting the model, it was found in an array of patterns in subgroups of the buffer, it is very bad", gen_msg_location);
+				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[GEOM] %s - when deleting the model, it was found in an array of patterns in subgroups of the buffer, it is very bad", gen_msg_location);
 			}
 
 			//обновляем данные в подгруппе модели о стартовых позициях
@@ -644,14 +644,14 @@ void StaticGeom::DelModel(ID id)
 				}
 
 				//обновляем также все индексы во всех сплитах
-				Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+				Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 				queue.push_back(AllGroups[idgroup]->ArrModels[idbuff][k]->ArrSplits);
 
 				while (queue.size())
 				{
 					if (queue[0]->BFNonEnd)
 					{
-						for (int j = 0; j < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+						for (int j = 0; j < GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
 						{
 							if (queue[0]->Splits[j])
 								queue.push_back(queue[0]->Splits[j]);
@@ -718,14 +718,14 @@ void StaticGeom::DelModel(ID id)
 				}
 
 				//также проходимся и по всем сплитам чтобы и там произвести декремент
-				Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+				Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 				queue.push_back(tmptmpmodel->ArrSplits);
 
 				while (queue.size())
 				{
 					if (queue[0]->BFNonEnd)
 					{
-						for (int j = 0; j < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+						for (int j = 0; j < GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
 						{
 							if (queue[0]->Splits[j])
 								queue.push_back(queue[0]->Splits[j]);
@@ -754,7 +754,7 @@ void StaticGeom::DelModel(ID id)
 			for (long k = 0; k < AllGroups[idgroup]->VertexBuffer.size(); ++k)
 			{
 				//можно ли совместить буферы
-				if (idbuff != k && AllGroups[idgroup]->CountIndex[idbuff] / 3 + AllGroups[idgroup]->CountIndex[k] / 3 <= STATIC_GEOM_MAX_POLY_IN_GROUP)
+				if (idbuff != k && AllGroups[idgroup]->CountIndex[idbuff] / 3 + AllGroups[idgroup]->CountIndex[k] / 3 <= GEOM_MAX_POLY_IN_GROUP)
 				{
 					//СОВМЕЩАЕМ ТЕКУЩИЙ ОБРАБАТЫВАЕМЫЙ БУФЕР (idbuff) (ИЗ КОТОРОГО МОДЕЛЬ БЫЛА УДАЛЕНА С БУФЕРОМ В КОТОРЙ ОН ВМЕЩАЕТСЯ (k)
 					//idbuff => k
@@ -808,14 +808,14 @@ void StaticGeom::DelModel(ID id)
 
 						//обновляем все индексы модели текущей подгруппы перемещенного буфера
 						//{
-						Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+						Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 						queue.push_back(tmptmpmodel->ArrSplits);
 
 						while (queue.size())
 						{
 							if (queue[0]->BFNonEnd)
 							{
-								for (int j = 0; j < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+								for (int j = 0; j < GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
 								{
 									if (queue[0]->Splits[j])
 										queue.push_back(queue[0]->Splits[j]);
@@ -912,7 +912,7 @@ void StaticGeom::SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender)
 		{
 			queue[0]->ID = (*SplitsIDs);
 			++(*SplitsIDs);
-			for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
+			for (int i = 0; i<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; i++)
 				queue.push_back(queue[0]->Splits[i]);
 		}
 		else if (queue[0])
@@ -1020,7 +1020,7 @@ void StaticGeom::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID i
 	}
 }
 
-void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
+void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float jradius;
 	float3 jcenter;
@@ -1032,10 +1032,10 @@ void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWOR
 			{
 				if (StaticGeom::UseSortFrontToBackSplits)
 				{
-					long SortId[STATIC_COUNT_TYPE_SEGMENTATION_OCTO];
-					float DistFor[STATIC_COUNT_TYPE_SEGMENTATION_OCTO];
+					long SortId[GEOM_COUNT_TYPE_SEGMENTATION_OCTO];
+					float DistFor[GEOM_COUNT_TYPE_SEGMENTATION_OCTO];
 
-					for (int q = 0; q<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++q)
+					for (int q = 0; q<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++q)
 					{
 						SortId[q] = -1;
 						if (comsegment->Splits[q])
@@ -1047,14 +1047,14 @@ void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWOR
 
 					float pl1, pl2;
 					int tmpCountGreater = 0;
-					for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
+					for (int i = 0; i<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
 					{
 						if (comsegment->Splits[i])
 						{
 							tmpCountGreater = 0;
 							pl1 = DistFor[i];
 
-							for (int k = 0; k<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++k)
+							for (int k = 0; k<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++k)
 							{
 								if (comsegment->Splits[k])
 								{
@@ -1079,15 +1079,15 @@ void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWOR
 						}
 					}
 
-					for (int j = 0; j<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+					for (int j = 0; j<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
 					{
-						if (SortId[(STATIC_COUNT_TYPE_SEGMENTATION_OCTO - 1) - j] != -1 && comsegment->Splits[SortId[(STATIC_COUNT_TYPE_SEGMENTATION_OCTO - 1) - j]])
-							queue->push_back(comsegment->Splits[SortId[(STATIC_COUNT_TYPE_SEGMENTATION_OCTO - 1) - j]]);
+						if (SortId[(GEOM_COUNT_TYPE_SEGMENTATION_OCTO - 1) - j] != -1 && comsegment->Splits[SortId[(GEOM_COUNT_TYPE_SEGMENTATION_OCTO - 1) - j]])
+							queue->push_back(comsegment->Splits[SortId[(GEOM_COUNT_TYPE_SEGMENTATION_OCTO - 1) - j]]);
 					}
 				}
 				else
 				{
-					for (int j = 0; j<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+					for (int j = 0; j<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
 					{
 						if (comsegment->Splits[j])
 							queue->push_back(comsegment->Splits[j]);
@@ -1110,14 +1110,46 @@ void StaticGeom::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWOR
 	}
 }
 
+bool StaticGeom::SortExistsForRender(int sort, ID id_arr)
+{
+	//валиден ли id_arr?
+	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
+
+	Segment** jarrsplits;
+	ID jidbuff;
+	ID jnumgroup;
+
+	//проходимся по всем моделям
+	for (int i = 0, l = AllModels.size(); i < l; ++i)
+	{
+		if (ArrComFor[id_arr]->arr[i]->CountCom > 0)
+		{
+			for (int j = 0, jl = ArrComFor[id_arr]->arr[i]->CountCom; j<jl; j++)
+			{
+				jarrsplits = ArrComFor[id_arr]->arr[i]->Arr;
+				for (int k = 0; k<jarrsplits[j]->CountSubSet; ++k)
+				{
+					jidbuff = AllModels[i]->SubSet[jarrsplits[j]->NumberGroupModel[k]].idbuff;
+					jnumgroup = jarrsplits[j]->NumberGroup[k];
+
+					if (SGCore_MtlGetSort(AllGroups[jnumgroup]->idtex) == sort)
+						return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_model_id, ID exclude_group_id, bool is_sorted)
 {
 	//валиден ли id_arr?
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
 	Segment** jarrsplits;
-	long jidbuff;
-	long jnumgroup;
+	ID jidbuff;
+	ID jnumgroup;
 	
 	//обнуляем все данные об отрисованном в прошлый раз
 	for (int i = 0; i < AllGroups.size(); i++)
@@ -1338,6 +1370,123 @@ void StaticGeom::GPURender(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_
 	}
 }
 
+void StaticGeom::GPURenderSingly(DWORD timeDelta, ID id, ID id_tex)
+{
+	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id, _VOID);
+	Segment** jarrsplits;
+	long jidbuff;
+	long jnumgroup;
+
+	//обнуляем все данные об отрисованном в прошлый раз
+	for (int i = 0; i < AllGroups.size(); i++)
+	{
+		if (AllGroups[i])
+		{
+			for (int k = 0; k < AllGroups[i]->VertexBuffer.size(); ++k)
+			{
+				RTCountDrawPoly[i][k] = 0;
+
+				for (int j = 0; j < AllGroups[i]->ArrModels[k].size(); ++j)
+				{
+					RTCountDrawPolyModel[i][k][j] = 0;
+					RTBeginIndexModel[i][k][j] = -1;
+				}
+			}
+		}
+	}
+
+
+	if (AllModels[id]->IsRenderLod)
+	{
+		StaticGeom::DXDevice->SetStreamSource(0, AllModels[id]->Lod0.model->VertexBuffer, 0, sizeof(vertex_static));
+		StaticGeom::DXDevice->SetIndices(AllModels[id]->Lod0.model->IndexBuffer);
+		StaticGeom::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
+		for (int k = 0, kl = AllModels[id]->Lod0.model->SubsetCount; k < kl; ++k)
+		{
+			SGCore_MtlSet((id_tex > 0 ? id_tex : AllModels[id]->Lod0.IDsTexs[k]), 0);
+			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, AllModels[id]->Lod0.model->VertexCount[k], AllModels[id]->Lod0.model->StartIndex[k], AllModels[id]->Lod0.model->IndexCount[k] / 3);
+			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + AllModels[id]->Lod0.model->IndexCount[k] / 3);
+		}
+	}
+	else if (ArrComFor[0]->arr[id]->CountCom > 0)
+	{
+		for (DWORD j = 0, jl = ArrComFor[0]->arr[id]->CountCom; j < jl; j++)
+		{
+			jarrsplits = ArrComFor[0]->arr[id]->Arr;
+			for (DWORD k = 0; k < jarrsplits[j]->CountSubSet; ++k)
+			{
+				jidbuff = AllModels[id]->SubSet[jarrsplits[j]->NumberGroupModel[k]].idbuff;
+				jnumgroup = jarrsplits[j]->NumberGroup[k];
+
+				ID tmpcurrmodel = -1;
+
+				for (int q = 0, ql = AllGroups[jnumgroup]->ArrModels[jidbuff].size(); q < ql; ++q)
+				{
+					if (AllGroups[jnumgroup]->ArrModels[jidbuff][q] == AllModels[id])
+					{
+						tmpcurrmodel = q;
+						break;
+					}
+				}
+
+				int currsort = AllGroups[jnumgroup]->SortGroup;
+
+				
+					if (
+						jarrsplits[j]->CountPoly[k] > 0 &&	//если количество полигонов больше 0
+						RTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->CountPoly[k] <= AllGroups[jnumgroup]->CountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
+						)
+					{
+						memcpy(RTCPUArrIndicesPtrs[jnumgroup][jidbuff] + (RTCountDrawPoly[jnumgroup][jidbuff] * 3),
+							jarrsplits[j]->ArrPoly[k],
+							jarrsplits[j]->CountPoly[k] * sizeof(uint32_t)* 3);
+
+						if (RTBeginIndexModel[jnumgroup][jidbuff][tmpcurrmodel] == -1)
+						{
+							RTBeginIndexModel[jnumgroup][jidbuff][tmpcurrmodel] = RTCountDrawPoly[jnumgroup][jidbuff];
+						}
+
+						RTCountDrawPoly[jnumgroup][jidbuff] += jarrsplits[j]->CountPoly[k];
+						RTCountDrawPolyModel[jnumgroup][jidbuff][tmpcurrmodel] += jarrsplits[j]->CountPoly[k];
+					}
+			}
+		}
+	}
+
+
+	uint32_t* RTGPUArrIndicesPtrs2;
+	
+	for (int i = 0; i < AllModels[id]->SubSet.size(); ++i)
+	{
+		ID idgroup = AllModels[id]->SubSet[i].idgroup;
+		Group* tmpgroup = AllGroups[AllModels[id]->SubSet[i].idgroup];
+		ID id_buff = AllModels[id]->SubSet[i].idbuff;
+
+		ID id_model;
+		for (int j = 0; j < tmpgroup->ArrModels[id_buff].size(); ++j)
+		{
+			if (tmpgroup->ArrModels[id_buff][j] == AllModels[id])
+			{
+				id_model = j;
+				break;
+			}
+		}
+
+		RenderIndexBuffer->Lock(0, 0, (void**)&(RTGPUArrIndicesPtrs2), D3DLOCK_DISCARD);
+		memcpy(RTGPUArrIndicesPtrs2, RTCPUArrIndicesPtrs[idgroup][id_buff], RTCountDrawPoly[idgroup][id_buff]/*RTCountDrawPolyModel[tmpig->g_group][id_buff][id_model]*/ * 3 * sizeof(uint32_t));
+		RenderIndexBuffer->Unlock();
+
+		StaticGeom::DXDevice->SetStreamSource(0, tmpgroup->VertexBuffer[id_buff], 0, sizeof(vertex_static));
+		StaticGeom::DXDevice->SetIndices(RenderIndexBuffer);
+		StaticGeom::DXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
+
+		SGCore_MtlSet((id_tex > 0 ? id_tex : tmpgroup->idtex), 0);
+
+		SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, tmpgroup->CountVertex[id_buff], 0, RTCountDrawPoly[idgroup][id_buff]);
+		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + RTCountDrawPoly[idgroup][id_buff]);
+	}
+}
+
 void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 {
 	vertex_static *CreateV;
@@ -1364,7 +1513,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 
 	mesh->ArrSplits = new Segment();
 	mesh->ArrSplits->CountAllPoly = model->AllIndexCount/3;
-	reportf(REPORT_MSG_LEVEL_NOTICE, "poly: %d, ", mesh->ArrSplits->CountAllPoly);
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "poly: %d, ", mesh->ArrSplits->CountAllPoly);
 
 	mesh->ArrSplits->BoundVolumeP = SGCore_CrBound();
 	mesh->ArrSplits->BoundVolumeP->CalcBound(model->VertexBuffer, model->AllVertexCount, sizeof(vertex_static));
@@ -1373,44 +1522,44 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 	mesh->ArrSplits->BoundVolumeP->GetMinMax(&tmpMin, &tmpMax);
 
 	int CountSplitsSys = 0;
-	int CountPolyInSegment = STATIC_MIN_COUNT_POLY;
+	int CountPolyInSegment = GEOM_MIN_COUNT_POLY;
 
 	float3 dimensions = tmpMax - tmpMin;	//габариты
 #if 1
 	float allvolume = dimensions.x * dimensions.y * dimensions.z;
-	const float minVol = STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION;
-	const float minLen = STATIC_MIN_LENGTH_FOR_SEGMENTATION;
-	const float minOctoHeight = STATIC_MIN_HEIGHT_FOR_SEGMENTATION;
-	if((allvolume >= minVol || dimensions.x >= minLen || dimensions.y >= minOctoHeight || dimensions.z >= minLen) && (model->AllIndexCount >= STATIC_MIN_POLYGONS_FOR_SEGMENTATION * 3 || allvolume >= STATIC_FORCE_ALLVOLUME_FOR_SEGMENTATION))
+	const float minVol = GEOM_MIN_ALLVOLUME_FOR_SEGMENTATION;
+	const float minLen = GEOM_MIN_LENGTH_FOR_SEGMENTATION;
+	const float minOctoHeight = GEOM_MIN_HEIGHT_FOR_SEGMENTATION;
+	if ((allvolume >= minVol || dimensions.x >= minLen || dimensions.y >= minOctoHeight || dimensions.z >= minLen) && (model->AllIndexCount >= GEOM_MIN_POLYGONS_FOR_SEGMENTATION * 3 || allvolume >= GEOM_FORCE_ALLVOLUME_FOR_SEGMENTATION))
 	{
 		if(dimensions.y >= minOctoHeight)
 		{
-			CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_OCTO;
-			reportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
+			CountSplitsSys = GEOM_COUNT_TYPE_SEGMENTATION_OCTO;
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
 		}
 		else
 		{
-			CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_QUAD;
-			reportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
+			CountSplitsSys = GEOM_COUNT_TYPE_SEGMENTATION_QUAD;
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
 
 		}
 			
-		float4_t tmpmin(dimensions.x / minLen, dimensions.y / minOctoHeight, dimensions.z / minLen, (float)model->AllIndexCount / (float)STATIC_MIN_POLYGONS_FOR_SEGMENTATION / 3.0f);
+		float4_t tmpmin(dimensions.x / minLen, dimensions.y / minOctoHeight, dimensions.z / minLen, (float)model->AllIndexCount / (float)GEOM_MIN_POLYGONS_FOR_SEGMENTATION / 3.0f);
 		tmpmin.x = min(min(min(tmpmin.x, tmpmin.y), min(tmpmin.z, tmpmin.w)), (allvolume / minVol)) * 10.0;
 
 		CountPolyInSegment = (float)model->AllIndexCount / 3.0 / tmpmin.x / CountSplitsSys;
 
-		if(CountPolyInSegment < STATIC_MIN_COUNT_POLY)
+		if (CountPolyInSegment < GEOM_MIN_COUNT_POLY)
 		{
-			CountPolyInSegment = STATIC_MIN_COUNT_POLY;
+			CountPolyInSegment = GEOM_MIN_COUNT_POLY;
 		}
 
-		if(CountPolyInSegment > STATIC_MAX_COUNT_POLY)
+		if (CountPolyInSegment > GEOM_MAX_COUNT_POLY)
 		{
-			CountPolyInSegment = STATIC_MAX_COUNT_POLY;
+			CountPolyInSegment = GEOM_MAX_COUNT_POLY;
 		}
 
-		reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 	}
 
 #else
@@ -1426,13 +1575,13 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 				)
 			{
 				//делим как octo дерево
-				CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_OCTO;
-				reportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
+				CountSplitsSys = GEOM_COUNT_TYPE_SEGMENTATION_OCTO;
+				g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: octo, ");
 			}
 			else
 			{
 				CountSplitsSys = STATIC_COUNT_TYPE_SEGMENTATION_QUAD;
-				reportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
+				g_fnReportf(REPORT_MSG_LEVEL_NOTICE, " div: quad, ");
 			}
 
 			//определяем коэфициент интерполяции для определния минимального количества полигонов в сплите
@@ -1442,7 +1591,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 			else if(tmpcoef < 0.f)
 				tmpcoef = 0;
 			CountPolyInSegment = lerpf(STATIC_MIN_COUNT_POLY, STATIC_MAX_COUNT_POLY, tmpcoef);
-			reportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "poly in split: %d, ", CountPolyInSegment);
 		}
 #endif
 
@@ -1452,7 +1601,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 
 	//выравниваем для равномерного делени
 	//{
-	if (CountSplitsSys == STATIC_COUNT_TYPE_SEGMENTATION_OCTO)
+	if (CountSplitsSys == GEOM_COUNT_TYPE_SEGMENTATION_OCTO)
 	{
 		if (tmpX > tmpY && tmpX > tmpZ)
 		{
@@ -1491,7 +1640,7 @@ void StaticGeom::PreSegmentation(Model* mesh, ISXDataStaticModel* model)
 			tmpMin.y -= tmpY;
 		}
 	}
-	else if (CountSplitsSys == STATIC_COUNT_TYPE_SEGMENTATION_QUAD)
+	else if (CountSplitsSys == GEOM_COUNT_TYPE_SEGMENTATION_QUAD)
 	{
 		if (tmpX > tmpZ)
 		{
@@ -1630,10 +1779,10 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* m
 
 	//получаем ограничивающие для деления и облегаемые объемы
 	//{{
-	if (CountSplitsSys == STATIC_COUNT_TYPE_SEGMENTATION_QUAD)
+	if (CountSplitsSys == GEOM_COUNT_TYPE_SEGMENTATION_QUAD)
 	{
-		ISXBound* ArrBound[STATIC_COUNT_TYPE_SEGMENTATION_QUAD];
-		for (int i = 0; i < STATIC_COUNT_TYPE_SEGMENTATION_QUAD; ++i)
+		ISXBound* ArrBound[GEOM_COUNT_TYPE_SEGMENTATION_QUAD];
+		for (int i = 0; i < GEOM_COUNT_TYPE_SEGMENTATION_QUAD; ++i)
 		{
 			ArrBound[i] = SGCore_CrBound();
 		}
@@ -1647,10 +1796,10 @@ void StaticGeom::Segmentation(Segment* Split, Model* mesh, ISXDataStaticModel* m
 			Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpmin, &tmpmax);
 		}
 	}
-	else if (CountSplitsSys == STATIC_COUNT_TYPE_SEGMENTATION_OCTO)
+	else if (CountSplitsSys == GEOM_COUNT_TYPE_SEGMENTATION_OCTO)
 	{
-		ISXBound* ArrBound[STATIC_COUNT_TYPE_SEGMENTATION_OCTO];
-		for (int i = 0; i < STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
+		ISXBound* ArrBound[GEOM_COUNT_TYPE_SEGMENTATION_OCTO];
+		for (int i = 0; i < GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
 			ArrBound[i] = SGCore_CrBound();
 
 		float3 tmpmin, tmpmax;
@@ -2124,7 +2273,7 @@ void StaticGeom::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 	if (Split->BFNonEnd)
 	{
 		bool isexists = true;
-		for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
+		for (int i = 0; i<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; i++)
 		{
 			if (Split->Splits[i])
 			{
@@ -2401,7 +2550,7 @@ void StaticGeom::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue
 	{
 		bool isexists = false;
 
-		for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; i++)
+		for (int i = 0; i<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; i++)
 		{
 			fread(&isexists, sizeof(int8_t), 1, file);
 			if (isexists)
@@ -2504,7 +2653,7 @@ void StaticGeom::GetIntersectedRayY2(float3* pos, Segment** arrsplits, DWORD *co
 	{
 		if (comsegment->BFNonEnd)
 		{
-			for (int j = 0; j<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; j++)
+			for (int j = 0; j<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; j++)
 			{
 				if (comsegment->Splits[j])
 					GetIntersectedRayY2(pos, arrsplits, count, comsegment->Splits[j], curr_splits_ids_render);
@@ -2603,7 +2752,7 @@ bool StaticGeom::GetIntersectedRayY(float3* pos)
 	return is_find;
 }
 
-inline void StaticGeom::GetMinMax(float3* min, float3* max)
+void StaticGeom::GetMinMax(float3* min, float3* max)
 {
 	BoundVolume->GetMinMax(min, max);
 }
@@ -2612,7 +2761,7 @@ ID StaticGeom::AddArrForCom()
 {
 	IRSData* ttmpdata = new IRSData();
 	
-	for (long i = 0; i < AllModels.size(); ++i)
+	for (int i = 0; i < AllModels.size(); ++i)
 	{
 		InfoRenderSegments* tmpirs = new InfoRenderSegments();
 		tmpirs->Count = AllModels[i]->SplitsIDsRender;
@@ -2621,8 +2770,8 @@ ID StaticGeom::AddArrForCom()
 		ttmpdata->arr.push_back(tmpirs);
 	}
 
-	long id_arr = -1;
-	for (long i = 0; i < ArrComFor.size(); ++i)
+	ID id_arr = -1;
+	for (int i = 0; i < ArrComFor.size(); ++i)
 	{
 		if (ArrComFor[i] == 0)
 		{
@@ -2639,6 +2788,11 @@ ID StaticGeom::AddArrForCom()
 	}
 
 	return id_arr;
+}
+
+bool StaticGeom::existsArrForCom(ID id)
+{
+	return (ArrComFor.size() > id);
 }
 
 void StaticGeom::DelArrForCom(ID id_arr)
@@ -2666,8 +2820,11 @@ void StaticGeom::DelModelInArrCom(ID id_model)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, _VOID);
 
-	for (long i = 0; i < ArrComFor.size(); ++i)
+	for (int i = 0; i < ArrComFor.size(); ++i)
 	{
+		if (!(ArrComFor[i]))
+			continue;
+
 		mem_delete(ArrComFor[i]->arr[id_model]);
 		ArrComFor[i]->arr.erase(id_model);
 	}
@@ -2697,6 +2854,14 @@ long StaticGeom::GetModelCountPoly(ID id)
 		return AllModels[id]->CountPoly;
 
 	return -1;
+}
+
+void StaticGeom::GetModelMinMax(ID id, float3* min, float3* max)
+{
+	if (id >= AllModels.size())
+		return;
+
+	AllModels[id]->ArrSplits->BoundVolumeP->GetMinMax(min, max);
 }
 
 
@@ -2737,14 +2902,15 @@ void StaticGeom::SetModelLodPath(ID id, const char* path)
 	if (id < AllModels.size() && def_str_validate(path))
 	{
 		mem_delete(AllModels[id]->Lod0.model);
+		AllModels[id]->Lod0.IDsTexs.clear();
 		//AllModels[id]->Lod0.model = new DataStaticModel();
 		char tmppath[1024];
-		sprintf(tmppath, "%s%s", StaticGeom::StdPath, path);
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 		SGCore_StaticModelLoad(tmppath, &(AllModels[id]->Lod0.model));
 
 		char tmptex[1024];
 		ID tmpidmat;
-		for (long i = 0; i < AllModels[id]->Lod0.model->SubsetCount; ++i)
+		for (int i = 0; i < AllModels[id]->Lod0.model->SubsetCount; ++i)
 		{
 			sprintf(tmptex, "%s.dds", AllModels[id]->Lod0.model->ArrTextures[i]);
 			tmpidmat = SGCore_MtlLoad(tmptex, MTL_TYPE_GEOM);
@@ -2841,7 +3007,7 @@ void StaticGeom::ApplyTransform(ID id)
 		}
 	}
 
-	Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+	Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 	long tmpcount = 0;
 	queue.push_back(tmpmodel->ArrSplits);
 
@@ -2873,7 +3039,7 @@ void StaticGeom::ApplyTransform(ID id)
 
 		if (queue[0]->BFNonEnd)
 		{
-			for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
+			for (int i = 0; i<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
 			{
 				if (queue[0]->Splits[i])
 					queue.push_back(queue[0]->Splits[i]);
@@ -2960,11 +3126,12 @@ void StaticGeom::Clear()
 	BoundVolume->SetMinMax(&jmin,&jmax);
 }
 
-void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models)
+void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, int32_t* count_models)
 {
 	(*count_models) = AllModels.size();
 	(*arr_vertex) = new float3_t*[AllModels.size()];
 	(*arr_index) = new uint32_t*[AllModels.size()];
+	(*arr_mtl) = new ID*[AllModels.size()];
 	(*arr_count_vertex) = new int32_t[AllModels.size()];
 	(*arr_count_index) = new int32_t[AllModels.size()];
 
@@ -2982,6 +3149,7 @@ void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_ver
 
 		(*arr_vertex)[i] = new float3_t[sizevertex];
 		(*arr_index)[i] = new uint32_t[sizeindex];
+		(*arr_mtl)[i] = new ID[sizeindex];
 
 		(*arr_count_vertex)[i] = sizevertex;
 		(*arr_count_index)[i] = sizeindex;
@@ -3007,7 +3175,7 @@ void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_ver
 			AllGroups[AllModels[i]->SubSet[k].idgroup]->VertexBuffer[AllModels[i]->SubSet[k].idbuff]->Unlock();
 		}
 
-		Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+		Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 		long tmpcount = 0;
 		queue.push_back(AllModels[i]->ArrSplits);
 		long curr_size_index = 0;
@@ -3015,7 +3183,7 @@ void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_ver
 		{
 			if (queue[0]->BFNonEnd)
 			{
-				for (int i = 0; i<STATIC_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
+				for (int i = 0; i<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++i)
 				{
 					if (queue[0]->Splits[i])
 						queue.push_back(queue[0]->Splits[i]);
@@ -3029,7 +3197,7 @@ void StaticGeom::GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_ver
 					for (long j = 0; j < split->CountPoly[k]*3; ++j)
 					{
 						(*arr_index)[i][curr_size_index] = split->ArrPoly[k][j] + tmpbiasindex[split->NumberGroupModel[k]];
-
+						(*arr_mtl)[i][curr_size_index] = AllGroups[split->NumberGroup[k]]->idtex;
 						++curr_size_index;
 					}
 				}
@@ -3081,4 +3249,98 @@ void StaticGeom::GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane)
 	STATIC_PRECOND_ERR_ID_GROUP(id, group, _VOID);
 
 	*plane = AllModels[id]->SubSet[group].Plane;
+}
+
+void StaticGeom::GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render)
+{
+	float3 center;
+	float radius;
+	comsegment->BoundVolumeP->GetSphere(&center, &radius);
+
+	float distsqr = SGCore_0DistancePointBeam2(center, *pos, *dir);
+	if (comsegment->CountAllPoly > 0 && distsqr <= radius*radius)
+	{
+		if (comsegment->BFNonEnd)
+		{
+			for (int j = 0; j<GEOM_COUNT_TYPE_SEGMENTATION_OCTO; ++j)
+			{
+				if (comsegment->Splits[j])
+					GetPartBeam(pos, dir, arrsplits, count, comsegment->Splits[j], curr_splits_ids_render);
+			}
+		}
+		else
+		{
+			if ((*count) < curr_splits_ids_render)
+			{
+				arrsplits[(*count)] = comsegment;
+
+				++(*count);
+			}
+		}
+	}
+}
+
+bool StaticGeom::TraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel, ID* idmtl)
+{
+	if (AllModels.size() <= 0)
+		return false;
+
+	SXTriangle tmptri;
+	float dist;
+	bool tmpiscom = true;
+	float3 ip;
+	float3 res;
+	float3 il;
+	res = (*start) + float3(10000.0f, 10000.0f, 10000.0f);
+	il = (*dir) * 10000.0f;
+	bool found = false;
+
+	for (int id = 0; id < AllModels.size(); ++id)
+	{
+		ArrComFor[1]->arr[id]->CountCom = 0;
+
+		GetPartBeam(start, dir, ArrComFor[1]->arr[id]->Arr, &(ArrComFor[1]->arr[id]->CountCom), AllModels[id]->ArrSplits, ArrComFor[1]->arr[id]->Count);
+
+		for (DWORD k = 0; k<ArrComFor[1]->arr[id]->CountCom; ++k)
+		{
+			for (DWORD group = 0; group<ArrComFor[1]->arr[id]->Arr[k]->CountSubSet; group++)
+			{
+				ID idbuff = AllModels[id]->SubSet[ArrComFor[1]->arr[id]->Arr[k]->NumberGroupModel[group]].idbuff;
+				ID idgroup = ArrComFor[1]->arr[id]->Arr[k]->NumberGroup[group];
+
+				vertex_static* pData = 0;
+				if (FAILED(AllGroups[idgroup]->VertexBuffer[idbuff]->Lock(0, 0, (void**)&pData, 0)))
+					continue;
+
+				for (DWORD numpoly = 0; numpoly<ArrComFor[1]->arr[id]->Arr[k]->CountPoly[group] * 3; numpoly += 3)
+				{
+					tmptri.a = pData[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly]].Pos;
+					tmptri.b = pData[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly + 1]].Pos;
+					tmptri.c = pData[ArrComFor[1]->arr[id]->Arr[k]->ArrPoly[group][numpoly + 2]].Pos;
+
+					if (tmptri.IntersectLine((*start), il, &ip))
+					{
+						if (SMVector3Length2((*start) - res) > SMVector3Length2((*start) - ip))
+						{
+							res = ip;
+							found = true;
+
+							if (idmodel)
+								*idmodel = id;
+
+							if (idmtl)
+								*idmtl = AllGroups[idgroup]->idtex;
+						}
+					}
+				}
+
+				AllGroups[idgroup]->VertexBuffer[idbuff]->Unlock();
+			}
+		}
+	}
+
+	if (found && _res)
+		*_res = res;
+
+	return found;
 }

@@ -1,54 +1,38 @@
 
-/*
-!!!!
-GDataBuff
-тут добавились нвоые данные, которые при трансформации надо менять
-*/
 #ifndef __static_geom
 #define __static_geom
 
-//#include <handler_dx_func.cpp>
-#include <common\\string.cpp>
+#include <common\\string.h>
 #include <common\array.h>
-#include <common\\string_api.cpp>
-//максимальное количество полигонов в буферах
-//или максимальнео количество полигонов на одну подгруппу
-#define STATIC_GEOM_MAX_POLY_IN_GROUP 400000
+#include <gcore\\sxgcore.h>
+#include "sxgeom.h"
+
+extern report_func g_fnReportf;
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
 }
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, retval) \
 if (!(id_model < AllModels.size() && AllModels[id_model]))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
 	return retval;\
 }
 
 #define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \
 if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels[id_model]->SubSet.size()))\
 {\
-	reportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", gen_msg_location, id_group, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", gen_msg_location, id_group, id_model); \
 	return ret_val; \
 }
 
 //типы деления
-#define STATIC_COUNT_TYPE_SEGMENTATION_QUAD 4
-#define STATIC_COUNT_TYPE_SEGMENTATION_OCTO 8
-
-#define STATIC_DIFFERENCE_SIDES_FOR_OCTO 0.3	/* минимальная разница между сторонами для окто деления */
-#define STATIC_MIN_ALLVOLUME_FOR_SEGMENTATION 20 /* минимальный общий объем модели для деления */
-#define STATIC_MIN_LENGTH_FOR_SEGMENTATION 10 /* минимальный длина по горизонтальной оси модели для деления */
-#define STATIC_FORCE_ALLVOLUME_FOR_SEGMENTATION 150 /* минимальный длина по горизонтальной оси модели для деления */
-#define STATIC_MIN_HEIGHT_FOR_SEGMENTATION 14 /* минимальный высота модели для деления окто */
-#define STATIC_MIN_POLYGONS_FOR_SEGMENTATION 5000 /* минимальнео количество полигонов в модели для деления */
-#define STATIC_MIN_COUNT_POLY 500	/* минимальное количество полигонов в сплите */
-#define STATIC_MAX_COUNT_POLY 1000	/* максимальное количество полигонов в сплите */
-
-#define STATIC_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
+#define GEOM_COUNT_TYPE_SEGMENTATION_QUAD 4
+#define GEOM_COUNT_TYPE_SEGMENTATION_OCTO 8
+#define GEOM_DEFAULT_RESERVE_COM 512	/* резервация для просчетов */
 
 class StaticGeom
 {
@@ -57,7 +41,6 @@ public:
 	static bool UseSortFrontToBackSplits;
 	static bool UseSortFrontToBackModels;
 	static IDirect3DDevice9* DXDevice;
-	static char StdPath[1024];
 	static float DistForLod;
 
 	StaticGeom();
@@ -71,7 +54,7 @@ public:
 		Segment();
 		~Segment();
 
-		Segment* Splits[STATIC_COUNT_TYPE_SEGMENTATION_OCTO]; //массив из 4/8 частей данного участка
+		Segment* Splits[GEOM_COUNT_TYPE_SEGMENTATION_OCTO]; //массив из 4/8 частей данного участка
 
 		//для геометрии
 		uint32_t** ArrPoly;	//двумерный массив по количеству подгрупп, вложенный массив - все полигоны для данной подгруппы
@@ -198,7 +181,7 @@ public:
 	{
 		IRSData();
 		~IRSData();
-		Array<Segment*, STATIC_DEFAULT_RESERVE_COM> queue;
+		Array<Segment*, GEOM_DEFAULT_RESERVE_COM> queue;
 		Array<InfoRenderSegments*> arr;
 	};
 
@@ -211,23 +194,28 @@ public:
 
 	void SortGroup(float3* viewpos, int sort_mtl);
 	
-	inline long GetCountModel();
+	long GetCountModel();
 
 	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	bool GetIntersectedRayY(float3* pos);
+
+	bool SortExistsForRender(int sort, ID id_arr = 0);
 	
 	void GPURender(DWORD timeDelta, int sort_mtl, ID id_arr = 0, ID exclude_model_id = -1, ID exclude_group_id = -1, bool is_sorted = false);
+	void GPURenderSingly(DWORD timeDelta, ID id, ID id_tex);
 	ID AddModel(const char* path, const char* lod1, const char* name);
 	void DelModel(ID id);
 
-	inline void GetMinMax(float3* min,float3* max);
+	void GetMinMax(float3* min,float3* max);
 
 	ID AddArrForCom();
+	bool existsArrForCom(ID id);
 	void DelArrForCom(ID id_arr);
 
 	char* GetModelName(ID id);
 	const char* GetModelPathName(ID id);
 	long GetModelCountPoly(ID id);
+	void GetModelMinMax(ID id, float3* min, float3* max);
 
 	float3* GetModelPosition(ID id);
 	float3* GetModelRotation(ID id);
@@ -245,14 +233,18 @@ public:
 	void GetModelGroupMax(ID id, ID group, float3_t* max);
 	void GetModelGroupPlane(ID id, ID group, D3DXPLANE* plane);
 
-	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, int32_t** arr_count_index, int32_t* count_models);
+	void GetArrBuffsGeom(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, int32_t* count_models);
 	/*
 	(*arr_vertex)[num_model][num_vertex] - вершины модели
 	(*arr_count_vertex)[num_model] - количество вершин для модели
 	(*arr_index)[num_model][num_vertex] - индексы модели
+	(*arr_mtl)[num_model][num_vertex] - материал для индекса
 	(*arr_count_index)[num_model] - количество индексов для модели
 	(*count_model); количество моделей
 	*/
+
+	
+	bool TraceBeam(float3* start, float3* dir, float3* _res, ID* idmodel, ID* idmtl);
 
 protected:
 
@@ -275,6 +267,8 @@ protected:
 
 	ISXBound* BoundVolume;
 
+	void GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
+
 	void GetIntersectedRayY2(float3* pos, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 
 	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
@@ -286,7 +280,7 @@ protected:
 	void EditVolume(Model* mesh, Segment* Split);
 	void SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
 	void SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*>* queue);
-	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, STATIC_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
+	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
 	//рабочие данные, используются внутри в методах
 	//{{
@@ -318,12 +312,5 @@ protected:
 	long SizeRenderIndexBuffer;	//размер в элементах RenderIndexBuffer
 	IDirect3DIndexBuffer9* RenderIndexBuffer;	//индексный буфер, используется и изменяется в реайлтайме при рендере уровня	
 };
-
-bool StaticGeom::UseSortFrontToBackSplits = true;
-bool StaticGeom::UseSortFrontToBackModels = true;
-IDirect3DDevice9* StaticGeom::DXDevice = 0;
-char StaticGeom::StdPath[1024];
-//sprintf(StaticGeom::StdPath, "");
-float StaticGeom::DistForLod = 200.f;
 
 #endif

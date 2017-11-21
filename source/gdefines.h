@@ -6,7 +6,7 @@ See the license in LICENSE
 
 /*! \page general_info_libs Общая информация о библиотеках
 \tableofcontents
-\section sec0 Общие правила библиотек
+\section general_info_libs_sec0 Общие правила библиотек
 
 Каждая  функция в библиотеках имеет префикс с именем самой библиотеки которое формируется исходя из назначения. После следует символ _ после которого (желательно) указывается имя объекта/подсистемы/подмодуля если имеется.\n
 Все функции имя которых после _ начинается с 0 можно вызывать без инициализации самой библиотеки, все остальные можно вызывать только после инициализации.\n
@@ -28,7 +28,7 @@ See the license in LICENSE
 
 Имена заголовочного и файла с исходным кодом одинаковые и отражают назначение самой библиотеки. К примеру sxgcore – графическое ядро, sxinput – система ввода (клавиатура/мышь), sxpp – библиотека с постпроцессом и т.д.
 
-\section sec1 Начальный базовый интерфейс IBaseObject
+\section general_info_libs_sec1 Начальный базовый интерфейс IBaseObject
 Начальным родителем всех интерфейсов является базовый интерфейс IBaseObject, который объявлен в файле gdefines.h и имеет следующий вид:\n
 \code 
 struct IBaseObject
@@ -38,13 +38,13 @@ struct IBaseObject
 };
 \endcode
 
-\section sec2 Система вывода сообщений в библиотеках
+\section general_info_libs_sec2 Система вывода сообщений в библиотеках
 
 Во всех библиотеках предусмотрена система вывода сообщений через единую функцию. По умолчанию все сообщения выводятся через стандартную функцию def_report, объявленную в gdefines.h.\n
 Стандартная функция имеет ограничение на длину сообщения которое регулируется макроопределением REPORT_MSG_MAX_LEN объявленном в gdefines.h. При написании своего обработчика сообщений следует использовать данное ограничение.\n
 Уровни критичности сообщений объявлены в gdefines.h: \n
  - #REPORT_MSG_LEVEL_NOTICE
- - #REPORT_MSG_LEVEL_WARRNING
+ - #REPORT_MSG_LEVEL_WARNING
  - #REPORT_MSG_LEVEL_ERROR
 
 В случае переназначения стандартной функции сообщений необходимо самостоятельно(в переназначаемой функции) обрабатывать уровни критичности, для примера можно использовать механизм стандартной функции.\n
@@ -58,12 +58,21 @@ struct IBaseObject
 Данная функция может вызываться в любой момент времени, инициализация библиотеки необязательна.\n
 Для формирования строки вида полный_путь_до_файла : номер_текущей_строки можно воспользоваться макроопределением gen_msg_location объявленной в gdefines.h.
 
-\section sec3 Ограничения на размеры
+\section general_info_libs_sec3 Ограничения на размеры
  - #CORE_NAME_MAX_LEN - максимальная длина имени объекта ядра/подсистемы 
  - #OBJECT_NAME_MAX_LEN - максимальная длина имени абстрактного объекта 
  - #CONFIG_SECTION_MAX_LEN - максимальная длина секции конфигурационного файла
 
 Под абстрактным объектом следует понимать обобщенные элементы движка, к примеру имя статической модели, имя источника света и прочее.
+
+\section general_info_libs_sec4 Макроопределения
+Данные макроопределения необходимо использовать только по назначению и они являются обязательными к использовнаию.
+ - SX_EXE - данный проект исполняемый файл
+ - SX_DLL - данный проект dll бибилиотека
+ - SX_LEVEL_EDITOR - данный проект "редактор уровней"
+ - SX_MATERIAL_EDITOR - данный проект "редактор материалов"
+ - SX_PARTICLES_EDITOR - данный проект "редактор частиц"
+ - SX_GAME - данный проект "билд"
 */
 
 /*!
@@ -71,29 +80,48 @@ struct IBaseObject
 Заголовочный файл для всех библиотек движка SkyXEngine
 */
 
-#ifndef gdefines_h
-#define gdefines_h
-
 //! макрос экспорта/импорта из библиотек
-#if !defined(SX_LIB_API)
-	#if defined(SX_EXE)
-		#define SX_LIB_API extern "C" __declspec (dllimport)
-	#elif defined(SX_DLL)
-		#define SX_LIB_API extern "C" __declspec (dllexport)
-	#else
-		#define SX_LIB_API 
-	#endif
+/*#if !defined(SX_LIB_API)
+#if defined(SX_EXE)
+#define SX_LIB_API extern "C" __declspec (dllimport)
+#elif defined(SX_DLL)
+#define SX_LIB_API extern "C" __declspec (dllexport)
+#else
+#define SX_LIB_API extern
 #endif
+#endif*/
+
+#ifndef __GDEFINES_H
+#define __GDEFINES_H
+
+#include <cstdlib>
 
 /*! \name Некоторые ограничения на размерности */
-///@{
+//!@{
 #define CORE_NAME_MAX_LEN		32	/*!< максимальная длина имени объекта ядра/подсистемы */
 #define OBJECT_NAME_MAX_LEN		64	/*!< максимальная длина имени абстрактного объекта */
 #define CONFIG_SECTION_MAX_LEN	64	/*!< максимальная длина секции конфигурационного файла */
-///@}
+//!@}
+
+/*! Пустые дефайны для визуальной идентификации аргументов функций
+@{
+*/
+
+//! выходной, будет произведена запись
+#define _out
+
+//! входящий, без записи 
+#define _in
+
+//! опциональный, значение может быть недействительным (к примеру вместо указателей можно отправить 0)
+#define _opt
+
+//!@}
 
 //! for warning C4003: not enough actual parameters for macro
 #define _VOID
+
+#define ID_VALID(id) (id >= 0)
 
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
@@ -115,6 +143,11 @@ struct IBaseObject
 //! Считывание неопределенного количества аргументов при форматированнии строки в buf на основании format
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);
 
+#define F3_BTVEC(xmf) (btVector3((xmf).x, (xmf).y, (xmf).z))
+#define BTVEC_F3(btv) (float3((btv).x(), (btv).y(), (btv).z()))
+
+#define Q4_BTQUAT(xmf) (btQuaternion((xmf).x, (xmf).y, (xmf).z, -(xmf).w))
+#define BTQUAT_Q4(btv) (SMQuaternion((btv).x(), (btv).y(), (btv).z(), -(btv).w()))
 
 #define macro_text_(x) #x
 #define macro_text(x) macro_text_(x)
@@ -130,29 +163,72 @@ typedef void(*report_func) (int level, const char* format, ...);
 
 #include <cstdio> 
 #if defined(_WINDOWS)
+#	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
 #endif
 
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{
 #define REPORT_MSG_LEVEL_NOTICE		0	/*!< заметка */
-#define REPORT_MSG_LEVEL_WARRNING	1	/*!< предупреждение */
+#define REPORT_MSG_LEVEL_WARNING	1	/*!< предупреждение */
 #define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, желательно вылетать */
 
 #define REPORT_MSG_MAX_LEN 4096		/*!< максимальный размер сообщения */
+//! @}
+
+/** \name Коды цветов для цветной консоли */
+//! @{
+#define COLOR_RESET "\033[0m" /*!< Сброс на стандартные цвета текста и фона */
+
+#define COLOR_BLACK    "\033[38;5;0m"  /*!< Черный текст */
+#define COLOR_RED      "\033[38;5;1m"  /*!< Красный текст */
+#define COLOR_GREEN    "\033[38;5;2m"  /*!< Зеленый текст */
+#define COLOR_BLUE     "\033[38;5;4m"  /*!< Синий текст */
+#define COLOR_OLIVE    "\033[38;5;3m"  /*!< Темно-желтый текст */
+#define COLOR_MAGENTA  "\033[38;5;5m"  /*!< Пурпурный текст */
+#define COLOR_CYAN     "\033[38;5;6m"  /*!< Темно-бирюзовый текст */
+#define COLOR_GRAY     "\033[38;5;7m"  /*!< Серый текст */
+
+#define COLOR_DARKGRAY "\033[38;5;8m"  /*!< Темно-серый текст */
+#define COLOR_LRED     "\033[38;5;9m"  /*!< Светло красный текст */
+#define COLOR_LGREEN   "\033[38;5;10m" /*!< Зеленый текст */
+#define COLOR_LBLUE    "\033[38;5;12m" /*!< Светло-синий текст */
+#define COLOR_YELLOW   "\033[38;5;11m" /*!< Желтый текст */
+#define COLOR_LMAGENTA "\033[38;5;13m" /*!< Розоывй текст */
+#define COLOR_LCYAN    "\033[38;5;14m" /*!< Бирюзовый текст */
+#define COLOR_WHITE    "\033[38;5;15m" /*!< Белый текст */
+
+#define COLOR_BG_BLACK    "\033[48;5;0m"  /*!< Черный фон */
+#define COLOR_BG_RED      "\033[48;5;1m"  /*!< Красный фон */
+#define COLOR_BG_GREEN    "\033[48;5;2m"  /*!< Зеленый фон */
+#define COLOR_BG_BLUE     "\033[48;5;4m"  /*!< Синий фон */
+#define COLOR_BG_OLIVE    "\033[48;5;3m"  /*!< Темно-желтый фон */
+#define COLOR_BG_MAGENTA  "\033[48;5;5m"  /*!< Пурпурный фон */
+#define COLOR_BG_CYAN     "\033[48;5;6m"  /*!< Темно-бирюзовый фон */
+#define COLOR_BG_GRAY     "\033[48;5;7m"  /*!< Серый фон */
+
+#define COLOR_BG_DARKGRAY "\033[48;5;8m"  /*!< Темно-серый фон */
+#define COLOR_BG_LRED     "\033[48;5;9m"  /*!< Светло красный фон */
+#define COLOR_BG_LGREEN   "\033[48;5;10m" /*!< Зеленый фон */
+#define COLOR_BG_LBLUE    "\033[48;5;12m" /*!< Светло-синий фон */
+#define COLOR_BG_YELLOW   "\033[48;5;11m" /*!< Желтый фон */
+#define COLOR_BG_LMAGENTA "\033[48;5;13m" /*!< Розоывй фон */
+#define COLOR_BG_LCYAN    "\033[48;5;14m" /*!< Бирюзовый фон */
+#define COLOR_BG_WHITE    "\033[48;5;15m" /*!< Белый фон */
+
 //! @}
 
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT
 
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
-inline void def_report(int level, const char* format, ...)
+inline void DefReport(int level, const char* format, ...)
 {
 #if defined(_WINDOWS)
 	AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
 #endif
-	char buf[4096];
+	char buf[REPORT_MSG_MAX_LEN];
 	int strl = sizeof(buf);
 	format_str(buf, format);
 	fprintf(stdout, "!!! report function is not init !!! %s\n", buf);
@@ -162,4 +238,5 @@ inline void def_report(int level, const char* format, ...)
 }
 
 #endif
+
 #endif

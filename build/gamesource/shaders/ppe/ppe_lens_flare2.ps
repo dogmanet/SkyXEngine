@@ -1,17 +1,22 @@
 
+/*
+ppe_lens_flare2.ps
+Эффект "lens flare" (блеск от линз), финальный проход - генерация блеска.
+*/
+
 #include <../struct.h>
 
 static int NumSamples = 8;
-static half3 FLARE_CHROMA_DISTORTION = half3(0.2,0.4,0.6);
+static half3 FLARE_CHROMA_DISTORTION = half3(0.2f,0.4f,0.6f);
 
 sampler2D SunSampler:register(s0);
 
 half3 LensFlareParam;
 //x - FLARE_DISPERSAL
 //y - FLARE_HALO_WIDTH
-//z - ������������� �������
+//z - интенсивность вспышки
 
-half3 textureDistorted(sampler2D tex,half2 sample_center,half2 sample_vector,half3 distortion)
+half3 TexDistored(sampler2D tex,half2 sample_center,half2 sample_vector,half3 distortion)
 {
 	return half3(
 					tex2D(tex, (sample_center + sample_vector * distortion.r)).r,
@@ -23,20 +28,20 @@ half3 textureDistorted(sampler2D tex,half2 sample_center,half2 sample_vector,hal
 half4 main(vs_out_pp IN):COLOR0
 {
 	half2 texcoord = 1.f - IN.TexUV;
-	half2 image_center = 0.5;
+	half2 image_center = 0.5f;
 	half2 sample_vector = (image_center - texcoord) * LensFlareParam.x;
 	
 	half2 halo_vector = normalize(sample_vector) * LensFlareParam.y;
 
 	half3 result = half3(0,0,0);
-	result = textureDistorted(SunSampler, texcoord + halo_vector, halo_vector, FLARE_CHROMA_DISTORTION).rgb;
+	result = TexDistored(SunSampler, texcoord + halo_vector, halo_vector, FLARE_CHROMA_DISTORTION).rgb;
 			
 		for (int i = 0; i < NumSamples; i++)
 		{
 			half2 offset = sample_vector * half(i);
-			result += textureDistorted(SunSampler, texcoord + offset, offset, FLARE_CHROMA_DISTORTION).rgb;
+			result += TexDistored(SunSampler, texcoord + offset, offset, FLARE_CHROMA_DISTORTION).rgb;
 		}
 
 	result /= half(NumSamples)*(LensFlareParam.z);
-	return half4(result,0.0);
+	return half4(result+0.1,0.0);
 }

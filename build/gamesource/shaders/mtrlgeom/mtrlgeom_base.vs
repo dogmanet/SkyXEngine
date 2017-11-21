@@ -1,4 +1,9 @@
 
+/*
+mtrlgeom_base.vs
+Базовый рендер геометрии
+*/
+
 #include <../struct.h>
 
 half4x4	WorldViewProjection;

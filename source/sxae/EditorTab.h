@@ -2,8 +2,8 @@
 #define EditorTab_H
 
 #include "TabManager.h"
-#include <SXGUIWinApi/sxguielements.h>
-#include "../../SkyXEngine/animeditor/resource.h"
+#include <SXGUIWinApi/sxgui.h>
+#include <sxae/resource.h>
 #include "EMessages.h"
 #include "Tools.h"
 

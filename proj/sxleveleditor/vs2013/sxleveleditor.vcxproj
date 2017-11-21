@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A2B9EACA-69C1-4E9D-AF3C-704608DB57DE}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sxleveleditor</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/lib;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include;</SourcePath>
+    <OutDir>../../../build/</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/</OutDir>
+    <IncludePath>../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/lib;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include;</SourcePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;SX_LEVEL_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;SX_LEVEL_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp" />
+    <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\sxleveleditor\aigrid_callback.cpp" />
+    <ClCompile Include="..\..\..\source\sxleveleditor\common_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\game_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\green_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\level_editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\model_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxleveleditor\sxleveleditor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\sxleveleditor\SXLevelEditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h" />
+    <ClInclude Include="..\..\..\source\gdefines.h" />
+    <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\aigrid_callback.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\common_callback.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\game_callback.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\green_callback.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\level_editor.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\model_callback.h" />
+    <ClInclude Include="..\..\..\source\sxleveleditor\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_bound.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_graphpoint.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\aigrid_quad.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\arrow.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\axes.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\grid.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_in.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\lvl_out.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\new.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\open.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\pos.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\rot.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_ad.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_c.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_l.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_n.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_p.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\r_s.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\save.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\save_as.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\scale.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_cb.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_m.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_s.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sel_z.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\sun.bmp" />
+    <Image Include="resource\aigrid_bound.bmp" />
+    <Image Include="resource\aigrid_graphpoint.bmp" />
+    <Image Include="resource\aigrid_quad.bmp" />
+    <Image Include="resource\arrow.bmp" />
+    <Image Include="resource\axes.bmp" />
+    <Image Include="resource\grid.bmp" />
+    <Image Include="resource\lvl_in.bmp" />
+    <Image Include="resource\lvl_out.bmp" />
+    <Image Include="resource\open.bmp" />
+    <Image Include="resource\pos.bmp" />
+    <Image Include="resource\rot.bmp" />
+    <Image Include="resource\r_ad.bmp" />
+    <Image Include="resource\r_c.bmp" />
+    <Image Include="resource\r_l.bmp" />
+    <Image Include="resource\r_n.bmp" />
+    <Image Include="resource\r_p.bmp" />
+    <Image Include="resource\r_s.bmp" />
+    <Image Include="resource\save.bmp" />
+    <Image Include="resource\save_as.bmp" />
+    <Image Include="resource\scale.bmp" />
+    <Image Include="resource\sel_cb.bmp" />
+    <Image Include="resource\sel_m.bmp" />
+    <Image Include="resource\sel_s.bmp" />
+    <Image Include="resource\sel_z.bmp" />
+    <Image Include="resource\sun.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

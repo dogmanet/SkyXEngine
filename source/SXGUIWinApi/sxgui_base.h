@@ -7,11 +7,10 @@ See the license in LICENSE
 #ifndef SXGUI_BASE_H
 #define SXGUI_BASE_H
 
+class SXGUIButtonImg;
 
-extern class SXGUIButtonImg;
-
-#include <SXGUIWinApi\SXGUI_hint.h>
-
+#include "SXGUI_hint.h"
+#include "SXGUI.h"
 
 //первый базовый класс, единственным родителем не используется
 //определяет объект как контрол, то есть содержит в себе минимум данных для 
@@ -35,20 +34,17 @@ public:
 
 	void SetFocus();					//установить фокус на контрол
 	bool Focus();						//установлен ли фокус на контроле?
-	//WNDPROC GetOldProc();// { return OldProc; }
-	//WNDPROC OldProc;					//если устнавливается новый обработчик (через конструктор или Init) то старый сохраняется здесь
-
-/*protected:
-	HWND ParentHandle;
-	HWND WindowHandle;*/
 
 	void * GetUserPtr();
 	void * SetUserPtr(void *);
 
 private:
 	void * UserPtr;
+
+protected:
+	HWND ParentHandle;
+	HWND WindowHandle;
 };
-//WNDPROC SXGUIControl::GetOldProc(){ return this->OldProc; }
 
 //второй в очереди родитель, часто наследование идет именно от него
 //более расширенное управление большинством элементов
@@ -70,7 +66,7 @@ public:
 	//если name[0] == 0 то дефолтный шрифт gui
 	//если остальные значения в -1 то не учитываются
 	void SetFont(const char* name, int height, int width, int weight, int italic, int underline, int strike_out);
-	void SetFont(HFONT* hfont);
+	void SetFont(HFONT hfont);
 	HFONT GetFont();
 	
 	bool IsParentFont();	//наследуется ли шрифт родителя
@@ -89,7 +85,6 @@ public:
 
 	//устанавливает/возвращает клиентскую область RECT элемента в глобальных координатах
 	bool	SetClientRect(RECT* rect, bool alignment_screen_space);	//alignment_screen_space - использовать ли только работчую область (рабочий стол кроме панели задач)
-	RECT*	GetClientRect();
 	void	GetClientRect(RECT* rect);
 
 	//!!!первоначально нужно единожды включить видимость подсказки, ибо в этот момент она инициализируется
@@ -99,7 +94,7 @@ public:
 
 	//работа с текстом подсказки для элемента
 	void SetHintText(const char* text);
-	char* GetHintText();
+	const char* GetHintText();
 	void GetHintText(char* buf);
 
 	//функции для цветов
@@ -132,7 +127,7 @@ public:
 
 	//key - ключ в массиве обработчиков
 	HandlerMsg GetHandlerFunction(int key);	//возвращает функцию обработчик 
-	WORD GetCountKeyArrHandler();			//количество ключей в массиве обработчиков
+	int GetCountKeyArrHandler();			//количество ключей в массиве обработчиков
 
 	//все что касается данных сообщения
 	UINT GetMsgHandler(int key);
@@ -145,28 +140,18 @@ public:
 	LRESULT ExecuteHandler(int key, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);	//выполняет функцию обработчик, в аргументы отправляет свои аргументы
 	///////////////////////////////////////
 
-	//SXRectBool GAlign;	//данные регулирующие размеры элемента при изменении размеров его родителя
-
 	void UpdateSize();
 	void UpdateRect();
 
+
+protected:
+
 	//данные необходимые для UpdateSize
-	/*RECT ParentRect;		//параметры родителя
-	RECT OffsetParentRect;	//на сколько был изменен родитель
-	RECT WinScreenRect;		//параметры текущего окна относительно рабочего стола
+	RECT ParentRect;		//!< координаты родителя
+	RECT OffsetParentRect;	//!< на сколько был изменен родитель
+	RECT WinScreenRect;		//!< координаты текущего окна относительно рабочего стола
 
-	//данные регулирующие будет ли передвигаться определнная сторона
-	bool BFSizingChangeTop;		//за верх окно расширять нельзя ... типа того
-	bool BFSizingChangeBottom;	
-	bool BFSizingChangeRight;	
-	bool BFSizingChangeLeft;	
-
-	bool BFMinSize;	//установлен ли минимальный размер? если да то меньше чем MinSizeX и MinSizeY не будет уменьшаться
-	WORD MinSizeX;
-	WORD MinSizeY;*/
-
-/*protected:
-	SXGUIHint *Hint;
+	ISXGUIHint *Hint;
 	SXHandlerMsgStruct ArrHandler[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];
 	int CountKeyArrHandler;
 
@@ -175,7 +160,7 @@ public:
 
 	DWORD ColorText;	//цвет текста
 	bool TransparenTextBf;	//используется прозрачность? если true то заднего фона у текста не будет
-	DWORD ColorTextBk;	//цвет заднего фона у текста*/
+	DWORD ColorTextBk;	//цвет заднего фона у текста
 };
 
 //третий (если нужен текст) родитель, непосредтсвенно не используется
@@ -187,7 +172,6 @@ public:
 	~SXGUITextual();
 	void Release(){ mem_del(this); }
 	bool	SetText(const char* text);
-	//const char*	GetText();
 	void	GetText(char* buf, int size);
 	int		GetTextLen();
 };

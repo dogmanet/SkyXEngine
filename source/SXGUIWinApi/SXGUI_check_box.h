@@ -1,21 +1,11 @@
-//----------------------------------------
-// Файл: SXGUI_check_box.h
-// Краткое описание: стандартный check box
-// Project S.I.P for SkyXEngine (09,2012)
-//----------------------------------------
 
 #ifndef SXGUI_CHECK_BOX_H
 #define SXGUI_CHECK_BOX_H
 
-#include <SXGUIWinApi\SXGUI_base.h>
+#include "SXGUI_base.h"
+#include "SXGUI_button.h"
 
-#define SXGUI_CB_UNCHECKED		BST_UNCHECKED
-#define SXGUI_CB_CHECKED		BST_CHECKED
-#define SXGUI_CB_INDETERMINATE	BST_INDETERMINATE
-
-#pragma once
-
-class SXGUICheckBox : public SXGUITextual, public virtual ISXGUICheckBox
+class SXGUICheckBox : public SXGUIButton, public virtual ISXGUICheckBox
 {
 public:
 	SXGUICheckBox();

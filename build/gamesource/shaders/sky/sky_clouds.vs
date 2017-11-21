@@ -1,4 +1,9 @@
 
+/*
+sky_clouds.vs
+Рендер облаков (квадрат с натянутой текстурой облаков)
+*/
+
 #include <../struct.h>
 
 half4x4 WorldViewProjection;

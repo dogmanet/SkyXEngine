@@ -1,4 +1,9 @@
 
+/*
+lighting_blend.ps
+Cмешивание всех текстур для финального изображения
+*/
+
 #include <../struct.h>
 
 sampler2D ColorSampler:register(s0);
@@ -11,20 +16,21 @@ sampler2D ParamSampler:register(s5);
 half4 main(vs_out_pp IN):COLOR0
 {
 	half isunlit = tex2D(NormalSampler,IN.TexUV).a;
-	half layer = tex2D(ParamSampler,IN.TexUV).z;
+	half layer = tex2D(ParamSampler,IN.TexUV).w;
 	half4 color = tex2D(ColorSampler,IN.TexUV);
 
 	half4 ambient = tex2D(AmbientSampler,IN.TexUV);
+	//return float4(ambient.w,ambient.w,ambient.w,1);;
 	half spec = tex2D(SpecDiffSampler,IN.TexUV).r;
 	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
 
-	if(isunlit != NOTLIGHTING_NOTTRANSPARENCY && isunlit != NOTLIGHTING_TRANSPARENCY)
-		color.xyz = ((sqrt(ambient.xyz * ambient.w)*color.xyz)) + sqrt(spec*ambient.xyz);
+	if(isunlit != SURFACE_NOTLIGHTING_NOTTRANSPARENCY && isunlit != SURFACE_NOTLIGHTING_TRANSPARENCY)
+		color.xyz = (((ambient.xyz * sqrt(ambient.w))*color.xyz)) + spec*(ambient.xyz);
 		
 	if(int(layer * 255.f) == 1)
 		color.a = 1.f;
 
-	color.rgb *= 0.1/(fAdaptedLum + 0.001f);
+	color.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
 	color.rgb /= (fAdaptedLum + color.rgb);
 	
 	return color;

@@ -38,7 +38,7 @@ PROJECT_NAME           = SkyXEngine
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = 0.9.0
+PROJECT_NUMBER         = 0.9.3
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "3D real-time render"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = 
+PROJECT_LOGO           = ./logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -740,7 +740,7 @@ WARNINGS               = YES
 # will automatically be disabled.
 # The default value is: YES.
 
-WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_UNDOCUMENTED   = NO
 
 # If the WARN_IF_DOC_ERROR tag is set to YES, doxygen will generate warnings for
 # potential errors in the documentation, such as not documenting some parameters
@@ -748,7 +748,7 @@ WARN_IF_UNDOCUMENTED   = YES
 # markup commands wrongly.
 # The default value is: YES.
 
-WARN_IF_DOC_ERROR      = YES
+WARN_IF_DOC_ERROR      = NO
 
 # This WARN_NO_PARAMDOC option can be enabled to get warnings for functions that
 # are documented, but have no documentation for their parameters or return
@@ -795,19 +795,24 @@ INPUT                  = ../../source/gdefines.h \
                          ../../source/GRegisterIndex.h \
                          ../../source/input/sxinput.h \
                          ../../source/gcore/sxgcore.h \
+                         ../../source/score/sxscore.h \
                          ../../source/geom/sxgeom.h \
                          ../../source/mtllight/sxmtllight.h \
                          ../../source/pp/sxpp.h \
-                         ../../source/SkyXEngine.h \
-                         ../../source/managed_render/gdata.h \
-                         ../../source/managed_render/camera_update.h \
-                         ../../source/managed_render/handler_out_log.cpp \
-                         ../../source/managed_render/render_func.h \
-                         ../../source/managed_render/level.h \
-                         ../../source/sxanim/sxanim.h \
-                         ../../source/sxanim/ModelFile.h \
+                         ../../source/anim/sxanim.h \
+                         ../../source/anim/ModelFile.h \
                          ../../source/gcore/ModelFile.h \
-						 
+                         ../../source/SXGUIWinApi/SXGUI.h \
+                         ../../source/particles/sxparticles.h \
+                         ../../source/decals/sxdecals.h \
+                         ../../source/aigrid/sxaigrid.h \
+                         ../../source/render/sxrender.h \
+                         ../../source/level/sxlevel.h \
+                         ../../source/SkyXEngine.h \
+                         ../../source/sxmaterialeditor/sxmaterialeditor.cpp \
+                         ../../source/sxparticleseditor/sxparticleseditor.cpp \
+                         ../../source/sxleveleditor/sxleveleditor.cpp \
+                         ../../source/game/
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -923,7 +928,7 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = 
+EXAMPLE_PATH           = ../html_editors/
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -943,7 +948,7 @@ EXAMPLE_RECURSIVE      = NO
 # that contain images that are to be included in the documentation (see the
 # \image command).
 
-IMAGE_PATH             = 
+IMAGE_PATH             = ../html/
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

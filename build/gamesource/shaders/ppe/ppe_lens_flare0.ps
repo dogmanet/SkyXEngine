@@ -1,9 +1,16 @@
 
+/*
+ppe_lens_flare0.ps
+Эффект "lens flare" (блеск от линз), первый проход - генерация солнца.
+TODO: возможно надо будет в первом проходе обнаружить светлые пиксели (дополнение)
+*/
+
 #include <../struct.h>
 
 half4 LightPos;
 half2 SizeMap;
 half RadiusSun;
+half4 Color;
 
 sampler2D DepthSampler:register(s0);
 
@@ -11,9 +18,10 @@ half4 main(vs_out_pp IN) : COLOR0
 {	
 	half2 SunPosProj = LightPos.xy;
 	half depth = tex2D(DepthSampler,IN.TexUV).r;
+	clip(depth - 0.999f);
 	half2 ntc = IN.TexUV;
 	ntc.y *= SizeMap.y/SizeMap.x;
 	SunPosProj.y *= SizeMap.y/SizeMap.x;
-	half tmpcolor = lerp(0,1,1.0-(saturate((distance(ntc, SunPosProj)) * (1.0 / (((RadiusSun)/0.9)/SizeMap.x))))) * 0.7f * saturate(depth);
-	return tmpcolor;
+	half tmpcolor = lerp(0.f,1.f,1.f-(saturate((distance(ntc, SunPosProj)) * (1.f / (((RadiusSun)/0.9f)/SizeMap.x))))) * 0.7f;// * saturate(depth);
+	return tmpcolor*Color;
 }

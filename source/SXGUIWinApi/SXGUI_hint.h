@@ -1,8 +1,3 @@
-//-----------------------------------------------------
-// Файл: SXGUI_hint.h
-// Краткое описание: стандартная всплывающая подсказка
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_HINT_H
 #define SXGUI_HINT_H
@@ -10,9 +5,8 @@
 #include <windows.h>
 #include <commctrl.h>
 
-#include <SXGUIWinApi\SXGUI_base.h>
-
-#pragma once
+#include "SXGUI_base.h"
+#include "SXGUI.h"
 
 class SXGUIHint : public virtual ISXGUIHint
 {
@@ -34,7 +28,7 @@ public:
 	bool Visible();
 
 	void SetText(const char* text);	//установка текста подсказки
-	char* GetText();				//возвращает указатель на текст подсказки, очищается при вызове деструктора
+	const char* GetText();				//возвращает указатель на текст подсказки, очищается при вызове деструктора
 	void GetText(char* buf);
 
 protected:

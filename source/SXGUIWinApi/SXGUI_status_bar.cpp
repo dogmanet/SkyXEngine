@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_status_bar.h>
-
-#pragma once
+#include "SXGUI_status_bar.h"
 
 SXGUIStatusBar::SXGUIStatusBar()
 {
@@ -24,7 +22,7 @@ SXGUIStatusBar::SXGUIStatusBar(const char* caption,WORD x,WORD y,WORD width,WORD
 	SetWindowLong(GetHWND(),GWL_USERDATA,(LONG)dynamic_cast<ISXGUIComponent*>(this));
 	this->InitComponent();
 	
-	AlignReSizing = SXGUI_SB_ALIGN_RS_PERCENT;
+	AlignReSizing = SXGUI_STATUSBAR_ALIGNRS_PERCENT;
 	ArrWidth = 0;
 	ArrCoef = 0;
 	CountArr = 0;
@@ -51,7 +49,7 @@ SXGUIStatusBar::SXGUIStatusBar(const char* caption,HWND parent,WNDPROC handler,D
 	SetWindowLong(GetHWND(),GWL_USERDATA,(LONG)dynamic_cast<ISXGUIComponent*>(this));
 	this->InitComponent();
 	
-	AlignReSizing = SXGUI_SB_ALIGN_RS_PERCENT;
+	AlignReSizing = SXGUI_STATUSBAR_ALIGNRS_PERCENT;
 	ArrWidth = 0;
 	ArrCoef = 0;
 	CountArr = 0;
@@ -66,17 +64,14 @@ SXGUIStatusBar::SXGUIStatusBar(const char* caption,HWND parent,WNDPROC handler,D
 
 SXGUIStatusBar::~SXGUIStatusBar()
 {
-	delete[] ArrCoef;
-	ArrCoef = 0;
-
-	delete[] ArrWidth;
-	ArrWidth = 0;
+	mem_delete_a(ArrCoef);
+	mem_delete_a(ArrWidth);
 }
 
-bool SXGUIStatusBar::SetCountParts(WORD count,int *arr)
+bool SXGUIStatusBar::SetCountParts(int count, int *arr)
 {
 	CountArr = count;
-	//delete[] ArrWidth;
+	mem_delete_a(ArrWidth);
 	ArrWidth = 0;
 	ArrWidth = arr;
 
@@ -91,57 +86,62 @@ bool SXGUIStatusBar::SetCountParts(WORD count,int *arr)
 void SXGUIStatusBar::ComCoef()
 {
 	WORD GWidth = 0;
-	RECT *rect = new RECT;
-	::GetClientRect(this->GetHWND(),rect);
-	GWidth = rect->right;
+	RECT rect;
+	::GetClientRect(this->GetHWND(),&rect);
+	GWidth = rect.right;
 	float OnePercent = 100.0 / float(GWidth);
 
-	delete[] ArrCoef;
-	ArrCoef = 0;
+	mem_delete_a(ArrCoef);
 	ArrCoef = new float[CountArr];
 
-		for(WORD i=0;i<CountArr;i++)
+		for(int i=0;i<CountArr;i++)
 		{
 			ArrCoef[i] = OnePercent *  ((ArrWidth[i] != -1 ? ArrWidth[i] : GWidth) - (i > 0 ? ArrWidth[i-1] : 0));
 		}
-	//MessageBox(0,ToPointChar(ToString(ArrCoef[0]) + "|" + ToString(ArrCoef[1]) + "|" + ToString(ArrCoef[2])),"ComCoef",0);
 }
 
-bool SXGUIStatusBar::SetTextParts(WORD pos,const char* text)
+bool SXGUIStatusBar::SetTextParts(int pos, const char* text)
 {
 	SendMessage(this->GetHWND(),SB_SETTEXT,pos,(LPARAM)text);
 	return true;
 }
 
-WORD SXGUIStatusBar::GetCountParts(int **arr)
+int SXGUIStatusBar::GetCountParts(int** arr)
 {
-	WORD CountParts = SendMessage(this->GetHWND(),SB_GETPARTS,0,0);
+	int CountParts = SendMessage(this->GetHWND(), SB_GETPARTS, 0, 0);
 	int *parts = new int[CountParts];
 
-	WORD tmpcp = SendMessage(this->GetHWND(),SB_GETPARTS,CountParts,(LPARAM)parts);
+	int tmpcp = SendMessage(this->GetHWND(), SB_GETPARTS, CountParts, (LPARAM)parts);
 
 		if(arr != 0)
 			*arr = parts;
 		else
 		{
-			delete[] parts;
-			parts = 0;
+			mem_delete_a(parts);
 		}
 	return CountParts;
 }
 
-const char* SXGUIStatusBar::GetTextParts(WORD pos)
+bool SXGUIStatusBar::GetTextParts(int pos, char* buf, int len)
 {
-	WORD CountSym = SendMessage(this->GetHWND(),SB_GETTEXTLENGTH,pos,0);
-	const char* text = new const char[CountSym];
-		if(!SendMessage(this->GetHWND(),SB_GETTEXT,pos,(LPARAM)text))
-		{
-			delete[] text;
-			text = 0;
-			return 0;
-		}
-		else
-			return text;
+	int CountSym = SendMessage(this->GetHWND(), SB_GETTEXTLENGTH, pos, 0);
+	if (len < CountSym)
+		return false;
+
+	if (!SendMessage(this->GetHWND(), SB_GETTEXT, pos, (LPARAM)buf))
+		return false;
+
+	return true;
+}
+
+void SXGUIStatusBar::SetAlignRS(int alignrs)
+{
+	AlignReSizing = alignrs;
+}
+
+int SXGUIStatusBar::GetAlignRS()
+{
+	return AlignReSizing;
 }
 
 void SXGUIStatusBar::Update()
@@ -163,7 +163,7 @@ void SXGUIStatusBar::Update()
 	bool UpdateOldRect = true;
 
 	WORD tmpCountParts = (Arr[CountParts-1] == -1 ? CountParts - 1 : CountParts);
-		if(AlignReSizing == SXGUI_SB_ALIGN_RS_PERCENT)
+		if (AlignReSizing == SXGUI_STATUSBAR_ALIGNRS_PERCENT)
 		{
 				for(int i=0;i<tmpCountParts;i++)
 				{
@@ -178,7 +178,7 @@ void SXGUIStatusBar::Update()
 							//MessageBox(0,ToPointChar(ToString(Arr[i]) + "|" + ToString(NewArr[i])),0,0);
 				}
 		}
-		else if(AlignReSizing == SXGUI_SB_ALIGN_RS_PROP)
+		else if (AlignReSizing == SXGUI_STATUSBAR_ALIGNRS_EQUALLY)
 		{
 				for(int i=0;i<tmpCountParts;i++)
 					NewArr[i] = Arr[i] + (width / CountParts);
@@ -196,9 +196,8 @@ void SXGUIStatusBar::Update()
 			::GetClientRect(this->GetHWND(),&this->OldRect);
 
 	SendMessage(this->GetHWND(),SB_SETPARTS,CountParts,(LPARAM)NewArr);
-	delete[] Arr,NewArr;
-	Arr = 0;
-	NewArr = 0;
+	mem_delete_a(Arr);
+	mem_delete_a(NewArr);
 }
 
 void SXGUIStatusBar::UpdateSize()

@@ -1,24 +1,24 @@
 
-#include <core\task.h>
+#include "task.h"
 
-SXTask::SXTask(THREAD_UPDATE_FUNCTION func,unsigned int flags) :mTaskFlags(flags)
+CTask::CTask(THREAD_UPDATE_FUNCTION func,unsigned int flags) :m_iTaskFlags(flags)
 {
-	UpdateFunc = func;
+	m_fnUpdateFunc = func;
 }
 
-SXTask::~SXTask()
-{
-}
-
-unsigned int SXTask::getTaskFlags() const
-{
-	return(mTaskFlags);
-}
-
-SXTask::TaskBeginning::TaskBeginning(TaskPtr t):mTask(t)
+CTask::~CTask()
 {
 }
 
-SXTask::TaskCompleted::TaskCompleted(TaskPtr t):mTask(t)
+unsigned int CTask::getTaskFlags() const
+{
+	return(m_iTaskFlags);
+}
+
+CTask::CTaskBeginning::CTaskBeginning(TaskPtr t):m_Task(t)
+{
+}
+
+CTask::CTaskCompleted::CTaskCompleted(TaskPtr t):m_Task(t)
 {
 }

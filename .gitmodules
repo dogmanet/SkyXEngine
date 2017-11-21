@@ -1,0 +1,6 @@
+[submodule "sdks/bullet3"]
+	path = sdks/bullet3
+	url = https://root@dev.ds-servers.com/sip/bullet3.git
+[submodule "source/common"]
+	path = source/common
+	url = https://root@dev.ds-servers.com/sip/common.git

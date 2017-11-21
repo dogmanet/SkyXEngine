@@ -1,5 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_radio_button.h>
+#include "SXGUI_radio_button.h"
 
 #pragma once
 

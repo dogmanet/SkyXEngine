@@ -1,6 +1,16 @@
 
-#ifndef __sky
-#define __sky
+#ifndef __SKY_H
+#define __SKY_H
+
+#include <gdefines.h>
+#include <d3d9.h>
+#include <common/array.h>
+#include <common/String.h>
+#include "sxgcore.h"
+
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 struct SkyBoxVertex
 {
@@ -18,20 +28,25 @@ public:
 	SkyBox();
 	~SkyBox();
 	void LoadTextures(const char *texture);
+	bool IsLoadTex();
 	void ChangeTexture(const char *texture);
-	inline void SetRotation(float angle);
-	inline float GetRotation();
-	inline void SetColor(float4_t* color);
-	inline void GetColor(float4_t* color);
+	void GetActiveTexture(char *texture);
+	void GetSecondTexture(char *texture);
+	void SetRotation(float angle);
+	float GetRotation();
+	void SetColor(float4_t* color);
+	void GetColor(float4_t* color);
 	void Render(float timeDelta,float3* pos,bool is_shadow);
 
-	inline void SetStdPath(const char* path);
-	inline void GetStdPath(char* path);
+	
+	SX_ALIGNED_OP_MEM
 
 protected:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationSkyBox;
-	char StdPath[1024];
+	
+	char TexActive[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	char TexSecond[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	float RotaionY;
 	float4x4 MatRotation;
 	float4_t Color;
@@ -71,24 +86,25 @@ public:
 	//если облака отбрасывают тень, то надо шобы облака покрывали почти весь уровень
 	void SetWidthHeightPos(float width,float height,float3* pos);
 	void LoadTextures(const char *texture);
+	bool IsLoadTex();
 	void ChangeTexture(const char *texture);
 
-	inline void SetRotation(float angle);
-	inline float GetRotation();
-	inline void SetAlpha(float alpha);
-	inline float GetAlpha();
-	inline void SetColor(float4_t* color);
-	inline void GetColor(float4_t* color);
+	void SetRotation(float angle);
+	float GetRotation();
+	void SetAlpha(float alpha);
+	float GetAlpha();
+	void SetColor(float4_t* color);
+	void GetColor(float4_t* color);
 
-	inline void SetStdPath(const char* path);
-	inline void GetStdPath(char* path);
+	void SetSpeed(float speed);
+	float GetSpeed();
 
 	void Render(DWORD timeDetlta,float3* pos,bool is_shadow);
 
+	SX_ALIGNED_OP_MEM
 private:
 
 	IDirect3DVertexDeclaration9* VertexDeclarationClouds;
-	char StdPath[1024];
 	float Alpha;
 	float RotaionY;
 	float4x4 MatRotation;
@@ -99,6 +115,7 @@ private:
 	bool BFChange;
 	bool BFChangeMainTex;
 
+	float Speed;
 	float Bias;
 	SkyCloudsVertex* Vertices;
 	IDirect3DVertexBuffer9*	SkyCloudsVertices;

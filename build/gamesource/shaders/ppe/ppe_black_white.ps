@@ -1,4 +1,9 @@
 
+/*
+ppe_black_white.ps
+Эффект "черно-белое" с учетом коэфициента
+*/
+
 #include <../struct.h>
 
 half CountPassWB;
@@ -10,7 +15,7 @@ half4 main(vs_out_pp IN):COLOR0
 	half4 color = tex2D(FrameSampler,IN.TexUV);
 	
 	half count_color = color.r + color.g + color.b;
-	count_color *= 0.333;
+	count_color *= 0.333f;
 	
 	return half4(lerp(color.rgb,count_color,CountPassWB),color.a);
 }

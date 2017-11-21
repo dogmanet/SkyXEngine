@@ -1,15 +1,16 @@
 
-#include <common\array.h>
+#include "ml_data.h"
 
 namespace MLSet
 {
+	void MLInit();
 	IDirect3DDevice9* DXDevice = 0;
-	float3 ConstCurrCamPos;
-	float2_t WinSize = float2_t(1024, 768);
+	//float3 ConstCurrCamPos;
+	//float2_t WinSize = float2_t(1024, 768);
 	//DWORD CountTimeDelta = 0;
-	char StdPathMaterial[1024];
-	char StdPathMesh[1024];
-	
+	//char StdPathMaterial[1024];
+	//char StdPathMesh[1024];
+
 	//размер текстуры глубины дл¤ локальных источников света
 	float2_t SizeTexDepthGlobal = float2_t(1024, 768);
 
@@ -29,23 +30,26 @@ namespace MLSet
 
 	void ReCalcSize()
 	{
-		SizeTexDepthGlobal.x = WinSize.x * CoefSizeDepthMapForGlobal;
-		SizeTexDepthGlobal.y = WinSize.y * CoefSizeDepthMapForGlobal;
+		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-		SizeTexDepthLocal.x = WinSize.x * CoefSizeDepthMapForLocal;
-		SizeTexDepthLocal.y = WinSize.y * CoefSizeDepthMapForLocal;
+		SizeTexDepthGlobal.x = float(*r_win_width) * CoefSizeDepthMapForGlobal;
+		SizeTexDepthGlobal.y = float(*r_win_height) * CoefSizeDepthMapForGlobal;
+
+		SizeTexDepthLocal.x = float(*r_win_width) * CoefSizeDepthMapForLocal;
+		SizeTexDepthLocal.y = float(*r_win_height) * CoefSizeDepthMapForLocal;
 	}
 
 	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
 
 	//fov and ration esesno
-	float ProjFov = SM_PI * 0.25f;
-	float ProjRatio = WinSize.x / WinSize.y;
+	//float ProjFov = SM_PI * 0.25f;
+	//float ProjRatio = WinSize.x / WinSize.y;
 
 	//ближн¤¤ и дальн¤¤ плоскости
-	float2_t NearFar = float2_t(0.25f, 400.f);
+	//float2_t NearFar = float2_t(0.25f, 400.f);
 
-	float4x4 MCamView;
+	//float4x4 MCamView;
 
 	bool IsHalfGenPCFShadowLocal = false;
 
@@ -63,7 +67,7 @@ namespace MLSet
 		namespace VS
 		{
 			ID ResPosDepth;
-			
+
 			ID ScreenOut;
 
 			ID SMDepthGeomPSSMDirect;
@@ -101,14 +105,13 @@ namespace MLSet
 			ID PPBlurDepthBased;
 			ID GenShadowDirect4;
 			ID GenShadowDirect9;
-			
+
 			ID GenShadowCube1;
 			ID GenShadowCube6;
 
-			ID CalcAdaptedLum;;
+			ID CalcAdaptedLum;
 			ID SampleLumInit;
 			ID SampleLumIterative;
-			ID SampleLumFinal;
 
 			ID ScreenOut;
 
@@ -143,8 +146,8 @@ namespace MLSet
 		ID AdaptLumLast;
 
 		int HowAdaptedLum = 0;
-		inline ID GetCurrAdaptedLum(){ if (HowAdaptedLum == 0) return AdaptLumCurr; else return  AdaptLumLast; };
-		inline ID GetLastAdaptedLum(){ if (HowAdaptedLum == 1) return AdaptLumCurr; else return  AdaptLumLast; };
+		ID GetCurrAdaptedLum(){ if (HowAdaptedLum == 0) return AdaptLumCurr; else return  AdaptLumLast; };
+		ID GetLastAdaptedLum(){ if (HowAdaptedLum == 1) return AdaptLumCurr; else return  AdaptLumLast; };
 		void IncrAdaptedLum(){ if (HowAdaptedLum >= 1) HowAdaptedLum = 0; else HowAdaptedLum = 1; };
 		////
 
@@ -164,22 +167,20 @@ namespace MLSet
 	};
 };
 
-void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char* std_path_mesh, float2_t* winsize, float projfov)
+void MLSet::MLInit()
 {
-	MLSet::DXDevice = device;
+	MLSet::DXDevice = SGCore_GetDXDevice();
 
-	if (std_path_material)
-		sprintf(MLSet::StdPathMaterial, "%s", std_path_material);
-	else
-		MLSet::StdPathMaterial[0] = 0;
+	const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	if (std_path_material)
-		sprintf(MLSet::StdPathMesh, "%s", std_path_mesh);
-	else
-		MLSet::StdPathMesh[0] = 0;
+	const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	/*sprintf(MLSet::StdPathMaterial, "%s", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS));
+	sprintf(MLSet::StdPathMesh, "%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
 
 	MLSet::WinSize = *winsize;
-	MLSet::ProjFov = projfov;
+	MLSet::ProjFov = projfov;*/
 	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LoadTexType::ltt_const);
 
 
@@ -187,7 +188,7 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	IDirect3DTexture9* NullMaterial;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &NullMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
-	uint32_t tmpColor = D3DCOLOR_ARGB(0, 250, 2, 0);
+	uint32_t tmpColor = D3DCOLOR_ARGB(0, 250, 2, 255);
 
 	NullMaterial->LockRect(0, &LockedRect, 0, 0);
 
@@ -244,85 +245,84 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	MLSet::IDsTexs::NullingTex = SGCore_LoadTexCreate("nulling_tex__", NullingTex);
 
 
-	MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_skin_pssm_direct.vs", "sm_depth_skin_pssm_direct", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_skin_pssm_direct.ps", "sm_depth_skin_pssm_direct", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_pssm_direct.vs", "sm_depth_skin_pssm_direct", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_pssm_direct.ps", "sm_depth_skin_pssm_direct", SHADER_CHECKDOUBLE_PATH);
 
-	MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_geom_pssm_direct.vs", "sm_depth_geom_pssm_direct", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_geom_pssm_direct.ps", "sm_depth_geom_pssm_direct", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_geom_pssm_direct.vs", "sm_depth_geom_pssm_direct", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_geom_pssm_direct.ps", "sm_depth_geom_pssm_direct", SHADER_CHECKDOUBLE_PATH);
 
 
-	MLSet::IDsShaders::VS::SMDepthGeomCube = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_geom_cube.vs", "sm_depth_geom_cube", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SMDepthGeomCube = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_geom_cube.ps", "sm_depth_geom_cube", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::SMDepthGeomCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_geom_cube.vs", "sm_depth_geom_cube", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::SMDepthGeomCube = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_geom_cube.ps", "sm_depth_geom_cube", SHADER_CHECKDOUBLE_PATH);
 
-	MLSet::IDsShaders::VS::SMDepthSkinCube = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_skin_cube.vs", "sm_depth_skin_cube", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SMDepthSkinCube = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_skin_cube.ps", "sm_depth_skin_cube", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::SMDepthSkinCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_cube.vs", "sm_depth_skin_cube", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::SMDepthSkinCube = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_cube.ps", "sm_depth_skin_cube", SHADER_CHECKDOUBLE_PATH);
 
 	
-	MLSet::IDsShaders::VS::SMDepthTreePSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_green_pssm_direct.vs", "sm_depth_tree_pssm_direct", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::VS::SMDepthTreePSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_tree_pssm_direct", SHADER_CHECKDOUBLE_NAME);
 	
 	D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
-	MLSet::IDsShaders::VS::SMDepthGrassPSSMDirect = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_green_pssm_direct.vs", "sm_depth_grass_pssm_direct", ShaderCheckDouble::scd_name, Defines_GRASS);
+	MLSet::IDsShaders::VS::SMDepthGrassPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_grass_pssm_direct", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
 
-	MLSet::IDsShaders::PS::SMDepthGreenPSSMDirect = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_green_pssm_direct.ps", "sm_depth_green_pssm_direct", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::SMDepthGreenPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_pssm_direct.ps", "sm_depth_green_pssm_direct", SHADER_CHECKDOUBLE_PATH);
 
 
-	MLSet::IDsShaders::VS::SMDepthTreeCube = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_green_cube.vs", "sm_depth_tree_cube", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::VS::SMDepthTreeCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_cube.vs", "sm_depth_tree_cube", SHADER_CHECKDOUBLE_NAME);
 
-	MLSet::IDsShaders::VS::SMDepthGrassCube = SGCore_ShaderLoad(ShaderType::st_vertex, "sm_depth_green_cube.vs", "sm_depth_green_cube", ShaderCheckDouble::scd_name, Defines_GRASS);
+	MLSet::IDsShaders::VS::SMDepthGrassCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_cube.vs", "sm_depth_green_cube", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
 	
-	MLSet::IDsShaders::PS::SMDepthGreenCube = SGCore_ShaderLoad(ShaderType::st_pixel, "sm_depth_green_cube.ps", "sm_depth_green_cube", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::SMDepthGreenCube = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_cube.ps", "sm_depth_green_cube", SHADER_CHECKDOUBLE_PATH);
 
 
-	MLSet::IDsShaders::VS::ResPosDepth = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render_res_pos.vs", "pp_quad_render_res_pos", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::VS::ResPosDepth = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos", SHADER_CHECKDOUBLE_PATH);
 
 
-	MLSet::IDsShaders::PS::PSSM4 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_pssm.ps", "ppgensm_pssm", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::PS::PSSM4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps", "ppgensm_pssm", SHADER_CHECKDOUBLE_NAME);
 
 	D3DXMACRO Defines_SPLITS3[] = { { "SPLITS3", "" }, { 0, 0 } };
-	MLSet::IDsShaders::PS::PSSM3 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_pssm.ps", "ppgensm_pssm3split", ShaderCheckDouble::scd_name, Defines_SPLITS3);
+	MLSet::IDsShaders::PS::PSSM3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps", "ppgensm_pssm3split", SHADER_CHECKDOUBLE_NAME, Defines_SPLITS3);
 
-	MLSet::IDsShaders::PS::GenShadowDirect4 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_direct.ps", "ppgensm_direct", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::PS::GenShadowDirect4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct", SHADER_CHECKDOUBLE_NAME);
 	D3DXMACRO Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
-	MLSet::IDsShaders::PS::GenShadowDirect9 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_direct.ps", "ppgensm_direct_9", ShaderCheckDouble::scd_name, Defines_GSD_9);
-	MLSet::IDsShaders::PS::GenShadowCube1 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_point.ps", "ppgensm_point", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::PS::GenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9", SHADER_CHECKDOUBLE_NAME, Defines_GSD_9);
+	MLSet::IDsShaders::PS::GenShadowCube1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point", SHADER_CHECKDOUBLE_NAME);
 	D3DXMACRO Defines_GSC_9[] = { { "GSC_9", "" }, { 0, 0 } };
-	MLSet::IDsShaders::PS::GenShadowCube6 = SGCore_ShaderLoad(ShaderType::st_pixel, "ppgensm_point.ps", "ppgensm_point_9", ShaderCheckDouble::scd_name, Defines_GSC_9);
+	MLSet::IDsShaders::PS::GenShadowCube6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_9", SHADER_CHECKDOUBLE_NAME, Defines_GSC_9);
 
-	MLSet::IDsShaders::PS::PPBlurDepthBased = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_blur_depth_based.ps", "pp_blur_depth_based", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::PPBlurDepthBasedNoise = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_blur_depth_based_noise.ps", "pp_blur_depth_based_noise", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::PPBlurDepthBased = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::PPBlurDepthBasedNoise = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based_noise.ps", "pp_blur_depth_based_noise", SHADER_CHECKDOUBLE_PATH);
 
-	MLSet::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_calc_adapted_lum.ps", "pp_hdr_calc_adapted_lum", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_lum_init.ps", "pp_hdr_lum_init", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_lum_iterative.ps", "pp_hdr_lum_iterative", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::SampleLumFinal = SGCore_ShaderLoad(ShaderType::st_pixel, "pphdr_lum_final.ps", "pp_hdr_lum_final", ShaderCheckDouble::scd_path);
+	MLSet::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_init.ps", "pptm_lum_init", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_iterative.ps", "pptm_lum_iterative", SHADER_CHECKDOUBLE_PATH);
+	
+	MLSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render", SHADER_CHECKDOUBLE_PATH);
+	MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render", SHADER_CHECKDOUBLE_PATH);
 
-	MLSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_vertex, "pp_quad_render.vs", "pp_quad_render", ShaderCheckDouble::scd_path);
-	MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(ShaderType::st_pixel, "pp_quad_render.ps", "pp_quad_render", ShaderCheckDouble::scd_path);
 
-
-	MLSet::IDsShaders::VS::StdGeom = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_geom.vs", "stdr_geom", ShaderCheckDouble::scd_name);
-	MLSet::IDsShaders::PS::StdGeom = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_geom.ps", "stdr_geom", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::VS::StdGeom = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs", "stdr_geom", SHADER_CHECKDOUBLE_NAME);
+	MLSet::IDsShaders::PS::StdGeom = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom", SHADER_CHECKDOUBLE_NAME);
 
 	D3DXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
-	MLSet::IDsShaders::PS::StdGeomCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_geom.ps", "stdr_geom_cp", ShaderCheckDouble::scd_name, Defines_CP);
+	MLSet::IDsShaders::PS::StdGeomCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom_cp", SHADER_CHECKDOUBLE_NAME, Defines_CP);
 
 	//D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
-	MLSet::IDsShaders::VS::StdGrass = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_green.vs", "stdr_grass", ShaderCheckDouble::scd_name, Defines_GRASS);
-	MLSet::IDsShaders::VS::StdTree = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_green.vs", "stdr_tree", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::VS::StdGrass = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_green.vs", "stdr_grass", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
+	MLSet::IDsShaders::VS::StdTree = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_green.vs", "stdr_tree", SHADER_CHECKDOUBLE_NAME);
 
-	MLSet::IDsShaders::PS::StdGreen = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_green.ps", "stdr_green", ShaderCheckDouble::scd_name);
-	MLSet::IDsShaders::PS::StdGreenCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_green.ps", "stdr_green_cp", ShaderCheckDouble::scd_name, Defines_CP);
+	MLSet::IDsShaders::PS::StdGreen = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_green.ps", "stdr_green", SHADER_CHECKDOUBLE_NAME);
+	MLSet::IDsShaders::PS::StdGreenCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_green.ps", "stdr_green_cp", SHADER_CHECKDOUBLE_NAME, Defines_CP);
 
 
-	MLSet::IDsShaders::VS::StdSkin = SGCore_ShaderLoad(ShaderType::st_vertex, "stdr_skin.vs", "stdr_skin", ShaderCheckDouble::scd_name);
-	MLSet::IDsShaders::PS::StdSkin = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_skin.ps", "stdr_skin", ShaderCheckDouble::scd_name);
+	MLSet::IDsShaders::VS::StdSkin = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs", "stdr_skin", SHADER_CHECKDOUBLE_NAME);
+	MLSet::IDsShaders::PS::StdSkin = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin", SHADER_CHECKDOUBLE_NAME);
 
-	MLSet::IDsShaders::PS::StdSkinCP = SGCore_ShaderLoad(ShaderType::st_pixel, "stdr_skin.ps", "stdr_skin_cp", ShaderCheckDouble::scd_name, Defines_CP);
+	MLSet::IDsShaders::PS::StdSkinCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin_cp", SHADER_CHECKDOUBLE_NAME, Defines_CP);
 
 
 	//////////
 	float tmpcoefsizert = 1;
-	float2_t tmp_sizert = float2_t(MLSet::WinSize.x * tmpcoefsizert, MLSet::WinSize.y * tmpcoefsizert);
+	float2_t tmp_sizert = float2_t(float(*r_win_width) * tmpcoefsizert, (*r_win_height) * tmpcoefsizert);
 
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
@@ -345,7 +345,7 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	while (true)
 	{
 		int tmpsize = 1 << (2 * tmpcount);
-		if (tmpsize >= MLSet::WinSize.x*0.25 || tmpsize > MLSet::WinSize.y*0.25)
+		if (tmpsize >= float(*r_win_width)*0.25 || tmpsize > (*r_win_height)*0.25)
 			break;
 		MLSet::IDsRenderTargets::ToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "qq", 0);
 		MLSet::IDsRenderTargets::SurfToneMap[tmpcount] = 0;
@@ -356,13 +356,13 @@ void MLInit(IDirect3DDevice9* device, const char* std_path_material, const char*
 	MLSet::IDsRenderTargets::AdaptLumCurr = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 	MLSet::IDsRenderTargets::AdaptLumLast = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
 
-	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
-	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
-	MLSet::IDsRenderTargets::LigthCom3 = SGCore_RTAdd(MLSet::WinSize.x, MLSet::WinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
+	MLSet::IDsRenderTargets::LigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	MLSet::IDsRenderTargets::LigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
+	MLSet::IDsRenderTargets::LigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
 	
-	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(MLSet::WinSize.x*0.25f, MLSet::WinSize.y*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(float(*r_win_width)*0.25f, float(*r_win_height)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
 
-	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(MLSet::ProjFov, MLSet::ProjRatio, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 }
 

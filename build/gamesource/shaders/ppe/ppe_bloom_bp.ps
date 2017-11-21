@@ -1,25 +1,28 @@
 
+/*
+ppe_bloom_bp.ps
+–≠—Ñ—Ñ–µ–∫—Ç bloom, –ø–µ—Ä–≤—ã–π –ø—Ä–æ—Ö–æ–¥ - –≤—ã—è–≤–ª–µ–Ω–∏–µ —Å–≤–µ—Ç–ª—ã—Ö –ø–∏–∫—Å–µ–ª–µ–π –∏ –∏—Ö —É–≤–µ–ª–∏—á–µ–Ω–∏–µ
+*/
+
 #include <../struct.h>
 
 half3 Param;
-//x - ‚Ó ÒÍÓÎ¸ÍÓ ‡Á Û‚ÂÎË˜Ë‚‡ÂÏ ˆ‚ÂÚ ÔËÍÒÂÎˇ
-//y - ÏËÌËÏ‡Î¸ÌÓÂ ÁÌ‡˜ÂÌËÂ ˆ‚ÂÚ‡
-//z - ‚Ó ÒÍÓÎ¸ÍÓ ‡Á Û‚ÂÎË˜Ë‚‡ÂÏ ˆ‚ÂÚ ÔËÍÒÂÎˇ ÂÒÎË ÓÌ ÔÓ¯ÂÎ ÚÂÒÚ 
+//x - –≤–æ —Å–∫–æ–ª—å–∫–æ —Ä–∞–∑ —É–≤–µ–ª–∏—á–∏–≤–∞–µ–º —Ü–≤–µ—Ç –ø–∏–∫—Å–µ–ª—è
+//y - –º–∏–Ω–∏–º–∞–ª—å–Ω–æ–µ –∑–Ω–∞—á–µ–Ω–∏–µ —Ü–≤–µ—Ç–∞
+//z - –≤–æ —Å–∫–æ–ª—å–∫–æ —Ä–∞–∑ —É–≤–µ–ª–∏—á–∏–≤–∞–µ–º —Ü–≤–µ—Ç –ø–∏–∫—Å–µ–ª—è –µ—Å–ª–∏ –æ–Ω –ø—Ä–æ—à–µ–ª —Ç–µ—Å—Ç 
 
 sampler2D BaseSampler:register(s0);
 
-half4 IsBlooming(half4 c)
-{
-		[branch]if (c.r >= Param.y && c.g >= Param.y && c.b >= Param.y)
-		{
-			half3 tmp = c.rgb * Param.z;
-			return half4(tmp.rgb,1.0);
-		}
-		else
-			return half4(0.0, 0.0, 0.0, 0.0);
-}
-
 half4 main(vs_out_pp IN) : COLOR0
 {
-	return IsBlooming(half4(tex2D(BaseSampler, IN.TexUV).xyz*Param.x, 1.0));
+	half4 color = tex2D(BaseSampler, IN.TexUV);
+	color.rgb *= Param.x;
+	color.a = 1.f;
+	[branch]if (color.r >= Param.y && color.g >= Param.y && color.b >= Param.y)
+	{
+		color.rgb *= Param.z;
+		return color;
+	}
+	else
+		return half4(0.0, 0.0, 0.0, 0.0);
 }

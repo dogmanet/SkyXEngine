@@ -40,7 +40,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
     <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/</IncludePath>
     <LibraryPath>../../../libs/;../../../sdks/dx9sdk/Lib/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
@@ -66,6 +66,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt</IgnoreSpecificDefaultLibraries>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -104,7 +106,7 @@
     <ClCompile Include="..\..\..\source\sxae\TabManager.cpp" />
     <ClCompile Include="..\..\..\source\sxae\TabSkins.cpp" />
     <ClCompile Include="..\..\..\source\sxae\Tools.cpp" />
-    <ClCompile Include="..\..\..\source\sxanim\animated.cpp" />
+    <ClCompile Include="..\..\..\source\anim\animated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxae\Camera.h" />

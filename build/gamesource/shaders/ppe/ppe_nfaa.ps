@@ -1,32 +1,39 @@
 
+/*
+ppe_nfaa.ps
+Normal Filter Anti Aliasing
+—глаживание по нормали
+*/
+
 #include <../struct.h>
 
 half3 Param;
 //half Param.x - Strength;
 //half Param.y - Scale;
-//bool Param.z - CountNotmalMap
+//bool Param.z - IsNotmalMap
 
 half2 PixelSize;
 
 sampler2D FrameSampler:register(s0);
+sampler2D EdgeDetectedSampler:register(s1);
 
 half2 GetNormal(half2 texuv) 
 {
 	half2 upOffset = half2(0, PixelSize.y) * Param.y;
 	half2 rightOffset = half2(PixelSize.x, 0) * Param.y;
-	half3 topHeight         = saturate(tex2Dlod(FrameSampler, half4(texuv + upOffset, 0, 0)).rgb);
-	half3 bottomHeight      = saturate(tex2Dlod(FrameSampler, half4(texuv - upOffset, 0, 0)).rgb);
-	half3 rightHeight       = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset, 0, 0)).rgb);
-	half3 leftHeight        = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset, 0, 0)).rgb);
-	half3 leftTopHeight     = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset + upOffset, 0, 0)).rgb);
-	half3 leftBottomHeight  = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset - upOffset, 0, 0)).rgb);
+	half3 topHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + upOffset, 0, 0)).rgb);
+	half3 bottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - upOffset, 0, 0)).rgb);
+	half3 rightHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset, 0, 0)).rgb);
+	half3 leftHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset, 0, 0)).rgb);
+	half3 leftTopHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset + upOffset, 0, 0)).rgb);
+	half3 leftBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset - upOffset, 0, 0)).rgb);
 	half3 rightBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset + upOffset, 0, 0)).rgb);
-	half3 rightTopHeight    = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset - upOffset, 0, 0)).rgb);
+	half3 rightTopHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset - upOffset, 0, 0)).rgb);
 
-	half3 sum0 = rightTopHeight    + bottomHeight + leftTopHeight;
-	half3 sum1 = leftBottomHeight  + topHeight    + rightBottomHeight;
-	half3 sum2 = leftTopHeight     + rightHeight  + leftBottomHeight;
-	half3 sum3 = rightBottomHeight + leftHeight   + rightTopHeight;
+	half3 sum0 = rightTopHeight + bottomHeight + leftTopHeight;
+	half3 sum1 = leftBottomHeight + topHeight + rightBottomHeight;
+	half3 sum2 = leftTopHeight + rightHeight + leftBottomHeight;
+	half3 sum3 = rightBottomHeight + leftHeight + rightTopHeight;
 
 	half vec1 = length(sum0 - sum1) * Param.x;
 	half vec2 = length(sum3 - sum2) * Param.x;
@@ -36,11 +43,16 @@ half2 GetNormal(half2 texuv)
 
 half4 main(vs_out_pp IN) : COLOR0 
 {
+	half4 Scene0 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy, 0, 0));
+	half fEdgeDetected = tex2Dlod(EdgeDetectedSampler, half4(IN.TexUV,0.f,0.f));
+	
+	[branch]if(fEdgeDetected.x == 0.f)
+		return Scene0;
+
 	half2 Normal = GetNormal(IN.TexUV.xy);			
 	
 	Normal = clamp(Normal, -1, 1) * PixelSize;
 
-	half4 Scene0 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy, 0, 0));
 	half4 Scene1 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + Normal.xy, 0, 0));
 	half4 Scene2 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - Normal.xy, 0, 0));
 	half4 Scene3 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + half2(Normal.x, -Normal.y), 0, 0));

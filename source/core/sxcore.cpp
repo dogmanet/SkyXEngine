@@ -4,43 +4,57 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-#pragma once
-
 #define CORE_VERSION 1
 
-#include <core\\sxcore.h>
+#include"sxcore.h"
 
-#include <common\\Array.h>
-#include <core\loaderconfig.cpp>
+#include "Config.h"
 
-#include <core\\file.cpp>
+#include "File.h"
 
-#include <core\Task.cpp>
-#include <core\TaskManager.cpp>
+#include "Task.h"
+#include "TaskManager.h"
 
-#pragma comment(lib, "winmm.lib")
+#include "concmd.h"
+#include "cvars.h"
 
-char CoreName[CORE_NAME_MAX_LEN];
+#include "Time.h"
+
+//##########################################################################
+
+char g_szCoreName[CORE_NAME_MAX_LEN];
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = def_report;
+report_func g_fnReportf = DefReport;
 #endif
-SXTaskManager* TaskManager = 0;
 
-#define SXCORE_PRECOND(retval) if(!TaskManager){reportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+//**************************************************************************
+
+CTaskManager* g_pTaskManager = 0;
+
+#define SXCORE_PRECOND(retval) if(!g_pTaskManager){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+
+//**************************************************************************
 
 //РЕГИСТРЫ
-bool GRegistersBool[CORE_REGISTRY_SIZE];
-int32_t GRegistersInt[CORE_REGISTRY_SIZE];
-float32_t GRegistersFloat[CORE_REGISTRY_SIZE];
-float4x4 GRegistersMatrix[CORE_REGISTRY_SIZE];
-float3 GRegistersFloat3[CORE_REGISTRY_SIZE];
+bool g_aGRegistersBool[CORE_REGISTRY_SIZE];
+int32_t g_aGRegistersInt[CORE_REGISTRY_SIZE];
+float32_t g_aGRegistersFloat[CORE_REGISTRY_SIZE];
+float4x4 g_aGRegistersMatrix[CORE_REGISTRY_SIZE];
+float3 g_aGRegistersFloat3[CORE_REGISTRY_SIZE];
+String g_aGRegistersString[CORE_REGISTRY_SIZE];
 
 #define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
-{reportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
 
+//**************************************************************************
+
+CTimeManager* g_pTimers = 0;
+#define CORE_TIME_PRECOND(retval) if(!g_pTimers){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+
+//##########################################################################
 
 //функции обертки
 long Core_0GetVersion()
@@ -48,9 +62,9 @@ long Core_0GetVersion()
 	return CORE_VERSION;
 }
 
-void Core_Dbg_Set(report_func rf)
+void Core_Dbg_Set(report_func fnReportFunc)
 {
-	reportf = rf;
+	g_fnReportf = fnReportFunc;
 }
 
 bool Core_0FileExists(const char* fname)
@@ -64,8 +78,6 @@ bool Core_0FileExists(const char* fname)
 		}
 	return false;
 }
-
-//---------------------------------
 
 bool Core_0ClipBoardCopy(const char *str)
 {
@@ -92,6 +104,20 @@ bool Core_0ClipBoardCopy(const char *str)
 	return true;
 }
 
+bool Core_0IsProcessRun(const char* process)
+{
+	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+	PROCESSENTRY32 pe;
+	pe.dwSize = sizeof(PROCESSENTRY32);
+	Process32First(hSnapshot, &pe);
+
+	while (1) {
+		if (stricmp(pe.szExeFile, process) == 0) return true;
+		if (!Process32Next(hSnapshot, &pe)) return false;
+	}
+}
+
 void Core_0Create(const char* name, bool is_unic)
 {
 		if(name && strlen(name) > 1)
@@ -102,29 +128,27 @@ void Core_0Create(const char* name, bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							reportf(-1, "%s - none unic name, sgcore", gen_msg_location);
-						}
-						else
-						{
-							strcpy(CoreName,name);
-							TaskManager = new SXTaskManager();
+							g_fnReportf(-1, "%s - none unic name, sgcore", gen_msg_location);
+							return;
 						}
 				}
-				else
-				{
-					strcpy(CoreName, name);
-					TaskManager = new SXTaskManager();
-				}
+			strcpy(g_szCoreName, name);
+			ConsoleConnect();
+			ConsoleRegisterCmds();
+			g_pTaskManager = new CTaskManager();
+			g_pTimers = new CTimeManager();
 		}
 		else
-			reportf(-1, "%s - not init argument [name], sgcore", gen_msg_location);
+			g_fnReportf(-1, "%s - not init argument [name], sgcore", gen_msg_location);
 }
 
 void Core_AKill()
 {
 	SXCORE_PRECOND(_VOID);
 
-	mem_delete(TaskManager);
+	mem_delete(g_pTaskManager);
+	mem_delete(g_pTimers);
+	ConsoleDisconnect();
 }
 
 void Core_AGetName(char* name)
@@ -132,103 +156,103 @@ void Core_AGetName(char* name)
 	SXCORE_PRECOND(_VOID);
 
 	if(name)
-		strcpy(name, CoreName);
+		strcpy(name, g_szCoreName);
 	else
-		reportf(-1, "%s - invalid argument", gen_msg_location);
+		g_fnReportf(-1, "%s - invalid argument", gen_msg_location);
 }
 
-////
+//##########################################################################
 
-ISXFile* Core_CrFile()
+IFile* Core_CrFile()
 {
-	return new SXFile();
+	return new CFile();
 }
 
-ISXFile* Core_OpFile(const char* path, int type)
+IFile* Core_OpFile(const char *szPath, int iType)
 {
-	SXFile* tmpsxfile = new SXFile();
-	tmpsxfile->Open(path, type);
-	return tmpsxfile;
+	CFile* pFile = new CFile();
+	pFile->open(szPath, iType);
+	return pFile;
 }
 
 
-ISXLConfig*  Core_CrLConfig()
+ISXConfig*  Core_CrConfig()
 {
-	return new SXLoaderConfig();
+	return new CConfig();
 }
 
-ISXLConfig*  Core_OpLConfig(const char* path)
+ISXConfig*  Core_OpConfig(const char* path)
 {
-	SXLoaderConfig* tmplconfig = new SXLoaderConfig();
-	tmplconfig->Open(path);
-	return tmplconfig;
+	CConfig* pConfig = new CConfig();
+	pConfig->open(path);
+	return pConfig;
 }
 
-////
+//##########################################################################
 
 void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
 	SXCORE_PRECOND(_VOID);
-	TaskManager->add(func, flag);
+	g_pTaskManager->add(func, flag);
 }
 
 void Core_MTaskStart()
 {
 	SXCORE_PRECOND(_VOID);
-	TaskManager->start();
+	g_pTaskManager->start();
 }
 
 void Core_MTaskStop()
 {
 	SXCORE_PRECOND(_VOID);
-	TaskManager->stop();
+	g_pTaskManager->stop();
 }
 
-//////////////
+//##########################################################################
 
 void Core_RBoolSet(int id, bool val)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
-	GRegistersBool[id] = val;
+	g_aGRegistersBool[id] = val;
 }
 
 bool Core_RBoolGet(int id)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, 0);
-	return GRegistersBool[id];
+	return g_aGRegistersBool[id];
 }
 
 void Core_RIntSet(int id, int32_t val)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
-	GRegistersInt[id] = val;
+	g_aGRegistersInt[id] = val;
 }
 
 int32_t Core_RIntGet(int id)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id,0);
-	return GRegistersInt[id];
+	return g_aGRegistersInt[id];
 }
 
 void Core_RFloatSet(int id, float32_t val)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
-	GRegistersFloat[id] = val;
+	g_aGRegistersFloat[id] = val;
 }
 
 float32_t Core_RFloatGet(int id)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id,0);
-	return GRegistersFloat[id];
+	return g_aGRegistersFloat[id];
 }
 
 void Core_RMatrixSet(int id, float4x4* val)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	if (val)
-		GRegistersMatrix[id] = *val;
+		g_aGRegistersMatrix[id] = *val;
 	else
-		GRegistersMatrix[id] = SMMatrixIdentity();
+		g_aGRegistersMatrix[id] = SMMatrixIdentity();
 }
 
 void Core_RMatrixGet(int id, float4x4* val)
@@ -236,7 +260,7 @@ void Core_RMatrixGet(int id, float4x4* val)
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 
 	if (val)
-		memcpy(val, &GRegistersMatrix[id], sizeof(float4x4));
+		memcpy(val, &g_aGRegistersMatrix[id], sizeof(float4x4));
 }
 
 
@@ -244,7 +268,7 @@ void Core_RFloat3Set(int id, float3* val)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 	if (val)
-		GRegistersFloat3[id] = *val;
+		g_aGRegistersFloat3[id] = *val;
 }
 
 void Core_RFloat3Get(int id, float3* val)
@@ -252,5 +276,101 @@ void Core_RFloat3Get(int id, float3* val)
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
 
 	if (val)
-		memcpy(val, &GRegistersFloat3[id], sizeof(float3));
+		memcpy(val, &g_aGRegistersFloat3[id], sizeof(float3));
+}
+
+void Core_RStringSet(int id, const char *val)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
+	if (val)
+		g_aGRegistersString[id] = val;
+}
+
+const char* Core_RStringGet(int id)
+{
+	CORE_REGUSTRY_PRE_COND_ID(id, 0);
+	return g_aGRegistersString[id].c_str();
+}
+
+//##########################################################################
+
+ID Core_TimeAdd()
+{
+	CORE_TIME_PRECOND(-1);
+
+	return g_pTimers->timeAdd();
+}
+
+void Core_TimesUpdate()
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	g_pTimers->update();
+}
+
+
+void Core_TimeSpeedSet(ID id, float speed)
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	g_pTimers->timeSpeedSet(id, speed);
+}
+
+float Core_TimeSpeedGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return g_pTimers->timeSpeedGet(id);
+}
+
+
+void Core_TimeWorkingSet(ID id, bool working)
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	g_pTimers->timeWorkingSet(id, working);
+}
+
+bool Core_TimeWorkingGet(ID id)
+{
+	CORE_TIME_PRECOND(false);
+
+	return g_pTimers->timeWorkingGet(id);
+}
+
+
+void Core_TimeUnixStartSet(ID id, int64_t start_time)
+{
+	CORE_TIME_PRECOND(_VOID);
+
+	g_pTimers->timeUnixStartSet(id, start_time);
+}
+
+int64_t Core_TimeUnixStartGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return g_pTimers->timeUnixStartGet(id);
+}
+
+int64_t Core_TimeUnixCurrGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return g_pTimers->timeUnixCurrGet(id);
+}
+
+
+int64_t Core_TimeTotalMcsGet(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return g_pTimers->timeTotalMcsGet(id);
+}
+
+int64_t Core_TimeTotalMcsGetU(ID id)
+{
+	CORE_TIME_PRECOND(0);
+
+	return g_pTimers->timeTotalMcsGetU(id);
 }

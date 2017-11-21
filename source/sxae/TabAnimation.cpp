@@ -120,7 +120,7 @@ TabAnimation::TabAnimation(TabManager * tm):EditorTab(tm)
 	Static10->SetColorBrush(255, 255, 255);
 	Static10->GAlign = {1, 1, 0, 0};
 
-	AnimPropActCmb = SXGUICrComboBoxEx("", 54, 42, 123, 210, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, AnimPropsGB->GetHWND(), 0, 0);
+	AnimPropActCmb = SXGUICrComboBoxEx("", 54, 42, 123, 210, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, AnimPropsGB->GetHWND(), 0, IDC_ANIM_ACT_NAME);
 	AnimPropActCmb->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	AnimPropActCmb->SetColorText(0, 0, 0);
 	AnimPropActCmb->SetColorTextBk(255, 255, 255);

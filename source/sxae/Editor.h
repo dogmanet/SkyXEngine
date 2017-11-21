@@ -1,16 +1,19 @@
 #ifndef Editor_H
 #define Editor_H
 
+#define MAINWIN_SIZE_X	1320
+#define MAINWIN_SIZE_Y	730
+
 #define EDITOR_REG_TREE "SOFTWARE\\DogmaNet\\SkyXEngine\\Editor"
 #define EDITOR_REG_KEY_GSDIR "gs_dir"
 
-#include <SXGUIWinApi/sxguielements.h>
+#include <SXGUIWinApi/sxgui.h>
 #include "resource.h"
 
 #include "TabManager.h"
 
 //#include <anim/ModelFile.h>
-#include <sxanim/animated.h>
+#include <anim/animated.h>
 
 #include "Camera.h"
 #include "EMessages.h"
@@ -168,6 +171,9 @@ protected:
 
 	ID m_pVSH;
 	ID m_pPSH;
+
+	ID m_pVSHs;
+	ID m_pPSHs;
 
 private:
 	void RenderAnimList();

@@ -1,15 +1,8 @@
-//-----------------------------------------------------
-// Файл: SXGUI_memo.h
-// Краткое описание: memo произведенный от edit
-// Project S.I.P for SkyXEngine (09,2012)
-//-----------------------------------------------------
 
 #ifndef SXGUI_MEMO_H
 #define SXGUI_MEMO_H
 
-#if defined(_USRDLL)
-#include <SXGUIWinApi\SXGUI_edit.cpp>
-#endif
+#include <SXGUIWinApi\SXGUI_edit.h>
 
 #pragma once
 

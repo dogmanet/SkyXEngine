@@ -1,24 +1,29 @@
 
+/*
+ppe_sun_render.ps
+Отрисвока солнца, проекция текстуры в screen space.
+*/
+
 #include <../struct.h>
 
 sampler2D DepthSampler:register(s0);
 sampler2D SunSampler:register(s2);
 sampler2D BaseSampler:register(s3);
 
-half4 Color;
 half4 LightPos;
 half2 SizeMap;
 half2 SizeTexSun;
 half4 LightColor;
-//half2 PixelSize;
 
 half4 main(vs_out_pp IN) : COLOR0
 {
-	half4 colorsun = 0;
+	half4 colorsun = 0.f;
 	half4 screen = tex2D(BaseSampler, IN.TexUV);
 	half2 SunPosProj = LightPos.xy;
 	
 	half depth = tex2D(DepthSampler, IN.TexUV).r;
+	
+	clip(depth - 0.999f);
 
 	half2 ntc = IN.TexUV;
 	
@@ -28,15 +33,15 @@ half4 main(vs_out_pp IN) : COLOR0
 	half2 fSunTexUV = ((((ntc - SunPosProj)*SizeMap.x) + SizeTexSun*0.5f) / SizeTexSun);
 	
 	half4 texColor = tex2D(SunSampler, fSunTexUV);
-	
-	screen.a *= 1.f - depth;
+	//clip(texColor.a - 0.001f);
+	//screen.a *= 1.f - depth;
 
-	texColor.rgb *= LightColor.rgb;
-	texColor.rgb = lerp(texColor.rgb,Color.rgb,Color.a);
-	texColor.rgb = lerp(texColor.rgb,screen.rgb,1.f-texColor.a);
-	colorsun.rgb = lerp(screen.rgb,texColor.rgb,1.f-screen.a);
+	texColor.rgb *= saturate(LightColor.rgb*2);
+	texColor.rgb = lerp(texColor.rgb,LightColor.rgb,0.5f/*saturate(LightColor.a*2)*/);
+	//texColor.rgb = lerp(texColor.rgb,screen.rgb,1.f-texColor.a);
+	//colorsun.rgb = lerp(screen.rgb,texColor.rgb,1.f-screen.a);
 
-	colorsun.a = screen.a;
+	//texColor.a = screen.a;
 
-	return colorsun;
+	return texColor;
 }

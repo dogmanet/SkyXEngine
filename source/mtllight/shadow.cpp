@@ -1,7 +1,5 @@
 
-#pragma once
-
-#include <mtllight\\shadow.h>
+#include "shadow.h"
 	
 PSSM::PSSM()
 {
@@ -45,32 +43,32 @@ PSSM::~PSSM()
 	mem_release_del(OldColorSurface);
 }
 
-inline void PSSM::SetPosition(float3* pos)
+void PSSM::SetPosition(float3* pos)
 { 
 	Position = *pos; 
 }
 
-inline void PSSM::GetPosition(float3* pos)
+void PSSM::GetPosition(float3* pos)
 { 
 	*pos = Position; 
 }
 
-inline void PSSM::Set4Or3Splits(bool is4)
+void PSSM::Set4Or3Splits(bool is4)
 { 
 	Generating4Slits = is4; 
 }
 
-inline bool PSSM::Get4Or3Splits()
+bool PSSM::Get4Or3Splits()
 { 
 	return Generating4Slits; 
 }
 
-inline void PSSM::SetBlurPixel(float blur_pixel)
+void PSSM::SetBlurPixel(float blur_pixel)
 {
 	BlurPixel = blur_pixel;
 }
 
-inline bool PSSM::GetBlurPixel()
+bool PSSM::GetBlurPixel()
 {
 	return BlurPixel;
 }
@@ -117,11 +115,16 @@ void PSSM::OnLostDevice()
 
 void PSSM::OnResetDevice()
 {
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
 		for(int i=0;i<5;i++)
 		{
 			IsUpdate[i] = 0;
 
-			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x*(i==4?1:1), MLSet::SizeTexDepthGlobal.y*(i==4?1:1), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
+			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
 
 				/*if(FAILED(hr))
 					reportf(-1,"Ќе удалось создать текстуру глубины PSSM");*/
@@ -131,8 +134,8 @@ void PSSM::OnResetDevice()
 
 	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
-	FovRatio.x = MLSet::ProjFov;
-	FovRatio.y = MLSet::ProjRatio;
+	FovRatio.x = *r_default_fov;
+	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
 	float2 fOffset = float2(0.5, 0.5) - (float2(0.5f, 0.5f) / MLSet::SizeTexDepthGlobal);
 	float range = 1.0f;
@@ -145,21 +148,29 @@ void PSSM::OnResetDevice()
 
 void PSSM::Init()
 {
-	FovRatio.x = MLSet::ProjFov;
-	FovRatio.y = MLSet::ProjRatio;
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	FovRatio.x = *r_default_fov;
+	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
 		for(int i=0;i<5;i++)
 		{
 			IsUpdate[i] = 0;
 
-			MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x*(i==4?1:1), MLSet::SizeTexDepthGlobal.y*(i==4?1:1), 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
+			MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
 
 			DepthSurfaces[i] = 0;
 
 			Frustums[i] = SGCore_CrFrustum();
 		}
 
-	NearFar[0].x = MLSet::NearFar.x;
+	NearFar[0].x = *r_near;
 	NearFar[0].y = MLSet::DistForPSSM.x;
 
 	NearFar[1].x = MLSet::DistForPSSM.x;
@@ -172,8 +183,8 @@ void PSSM::Init()
 	NearFar[3].y = MLSet::DistForPSSM.w;
 
 
-	NearFar[4].x = MLSet::NearFar.x;
-	NearFar[4].y = MLSet::NearFar.y;
+	NearFar[4].x = *r_near;
+	NearFar[4].y = *r_far;
 
 	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
@@ -187,116 +198,124 @@ void PSSM::Init()
 }
 
 
-void PSSM::UpdateFrustums(int split, float3* poscam, float3* dircam)
+void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 {
-		Frustums[split]->Update(&(Views[split]), &(Projs[split]));
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-		float3 up(0.0f, 1.0f, 0.0f);
-		float3 right = SMVector3Normalize(SMVector3Cross((*dircam), up));
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-		float3 fc = (*poscam) + (*dircam)*NearFar[split].y;
-		float3 nc = (*poscam) + (*dircam)*NearFar[split].x;
+	FovRatio.x = *r_default_fov;
+	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
-		up = SMVector3Normalize(SMVector3Cross(right, (*dircam)));
+	Frustums[split]->Update(&(Views[split]), &(Projs[split]));
 
-		float near_height = tan(FovRatio.x / 2.f) * NearFar[split].x;
-		float near_width = near_height * FovRatio.y;
-		float far_height = tan(FovRatio.x / 2.f) * NearFar[split].y;
-		float far_width = far_height * FovRatio.y;
+	float3 up(0.0f, 1.0f, 0.0f);
+	float3 right = SMVector3Normalize(SMVector3Cross((*dircam), up));
 
-		Frustums[split]->Point[0] = nc - up*near_height - right*near_width;
-		Frustums[split]->Point[1] = nc + up*near_height - right*near_width;
-		Frustums[split]->Point[2] = nc + up*near_height + right*near_width;
-		Frustums[split]->Point[3] = nc - up*near_height + right*near_width;
+	float3 fc = (*poscam) + (*dircam)*NearFar[split].y;
+	float3 nc = (*poscam) + (*dircam)*NearFar[split].x;
 
-		Frustums[split]->Point[4] = fc - up*far_height - right*far_width;
-		Frustums[split]->Point[5] = fc + up*far_height - right*far_width;
-		Frustums[split]->Point[6] = fc + up*far_height + right*far_width;
-		Frustums[split]->Point[7] = fc - up*far_height + right*far_width;
+	up = SMVector3Normalize(SMVector3Cross(right, (*dircam)));
 
-		float3 vCenter(0, 0, 0);
-		for (int i = 0; i < 8; i++)
-			vCenter += Frustums[split]->Point[i];
-		vCenter /= 8;
-		Frustums[split]->Center = vCenter;
+	float near_height = tan(FovRatio.x / 2.f) * NearFar[split].x;
+	float near_width = near_height * FovRatio.y;
+	float far_height = tan(FovRatio.x / 2.f) * NearFar[split].y;
+	float far_width = far_height * FovRatio.y;
 
+	Frustums[split]->Point[0] = nc - up*near_height - right*near_width;
+	Frustums[split]->Point[1] = nc + up*near_height - right*near_width;
+	Frustums[split]->Point[2] = nc + up*near_height + right*near_width;
+	Frustums[split]->Point[3] = nc - up*near_height + right*near_width;
 
-		float dist = 1;
-		float3 DirL = Position;
-		float3 TarG = float3(Frustums[split]->Center.x, Frustums[split]->Center.y, Frustums[split]->Center.z);
+	Frustums[split]->Point[4] = fc - up*far_height - right*far_width;
+	Frustums[split]->Point[5] = fc + up*far_height - right*far_width;
+	Frustums[split]->Point[6] = fc + up*far_height + right*far_width;
+	Frustums[split]->Point[7] = fc - up*far_height + right*far_width;
 
-		float3 LightPos = TarG + DirL*dist;
-		float3 LightPos2 = DirL;
-		float3 LightTarget = TarG;
-		float3	Lightup(0.0f, 1.0f, 0.0f);
-		Views[split] = SMMatrixLookAtLH(LightPos, LightTarget, Lightup);
-
-		float minX = 0;
-		float minY = 0;
-		float minZ = 0;
-		float maxX = 0;
-		float maxY = 0;
-		float maxZ = 0;
-
-		float4 trans0;
-		float4 transform0(Frustums[split]->Point[0].x, Frustums[split]->Point[0].y, Frustums[split]->Point[0].z, 1);
-		trans0 = SMVector4Transform(transform0, Views[split]);
-
-		minX = trans0.x; maxX = trans0.x;
-		minY = trans0.y; maxY = trans0.y;
-		maxZ = trans0.z;
-
-		for (int i = 0; i<8; i++)
-		{
-			float4 trans;
-			float4 transform(Frustums[split]->Point[i].x, Frustums[split]->Point[i].y, Frustums[split]->Point[i].z, 1);
-
-			trans = SMVector4Transform(transform, Views[split]);
-
-			if (minX>trans.x)
-				minX = trans.x;
-			if (maxX<trans.x)
-				maxX = trans.x;
-			if (minY>trans.y)
-				minY = trans.y;
-			if (maxY < trans.y)
-				maxY = trans.y;
-			if (maxZ<trans.z)
-				maxZ = trans.z;
-			if (minZ>trans.z)
-				minZ = trans.z;
-		}
+	float3 vCenter(0, 0, 0);
+	for (int i = 0; i < 8; i++)
+		vCenter += Frustums[split]->Point[i];
+	vCenter /= 8;
+	Frustums[split]->Center = vCenter;
 
 
-		float2 OrtMax = float2(maxX, maxY);
-		float2 OrtMin = float2(minX, minY);
+	float dist = 1;
+	float3 DirL = Position;
+	float3 TarG = float3(Frustums[split]->Center.x, Frustums[split]->Center.y, Frustums[split]->Center.z);
 
-		float3 Diagonal = Frustums[split]->Point[0] - Frustums[split]->Point[6];
-		float LengthDiagonal = SMVector3Length(Diagonal);
+	float3 LightPos = TarG + DirL*dist;
+	float3 LightPos2 = DirL;
+	float3 LightTarget = TarG;
+	float3	Lightup(0.0f, 1.0f, 0.0f);
+	Views[split] = SMMatrixLookAtLH(LightPos, LightTarget, Lightup);
 
-		float2 BoarderOffset = (float2(LengthDiagonal, LengthDiagonal) - (OrtMax - OrtMin)) * 0.5;
+	float minX = 0;
+	float minY = 0;
+	float minZ = 0;
+	float maxX = 0;
+	float maxY = 0;
+	float maxZ = 0;
 
-		OrtMax += BoarderOffset;
-		OrtMin -= BoarderOffset;
+	float4 trans0;
+	float4 transform0(Frustums[split]->Point[0].x, Frustums[split]->Point[0].y, Frustums[split]->Point[0].z, 1);
+	trans0 = SMVector4Transform(transform0, Views[split]);
 
-		float2 WorldUnitsPerTexel = float2(LengthDiagonal, LengthDiagonal) / float2(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
+	minX = trans0.x; maxX = trans0.x;
+	minY = trans0.y; maxY = trans0.y;
+	maxZ = trans0.z;
 
-		OrtMin /= WorldUnitsPerTexel;
-		OrtMin.x = floor(OrtMin.x);
-		OrtMin.y = floor(OrtMin.y);
-		OrtMin *= WorldUnitsPerTexel;
+	for (int i = 0; i<8; i++)
+	{
+		float4 trans;
+		float4 transform(Frustums[split]->Point[i].x, Frustums[split]->Point[i].y, Frustums[split]->Point[i].z, 1);
 
-		OrtMax /= WorldUnitsPerTexel;
-		OrtMax.x = floor(OrtMax.x);
-		OrtMax.y = floor(OrtMax.y);
-		OrtMax *= WorldUnitsPerTexel;
+		trans = SMVector4Transform(transform, Views[split]);
 
-		D3DXMATRIX tmpproj;
-		D3DXMatrixOrthoOffCenterLH(&tmpproj, OrtMin.x, OrtMax.x, OrtMin.y, OrtMax.y, minZ, maxZ);
-		Projs[split] = float4x4(tmpproj);
+		if (minX>trans.x)
+			minX = trans.x;
+		if (maxX<trans.x)
+			maxX = trans.x;
+		if (minY>trans.y)
+			minY = trans.y;
+		if (maxY < trans.y)
+			maxY = trans.y;
+		if (maxZ<trans.z)
+			maxZ = trans.z;
+		if (minZ>trans.z)
+			minZ = trans.z;
+	}
 
-		ViewProj[split] = Views[split] * Projs[split];
-		Flickering(&ViewProj[split], MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
+
+	float2 OrtMax = float2(maxX, maxY);
+	float2 OrtMin = float2(minX, minY);
+
+	float3 Diagonal = Frustums[split]->Point[0] - Frustums[split]->Point[6];
+	float LengthDiagonal = SMVector3Length(Diagonal);
+
+	float2 BoarderOffset = (float2(LengthDiagonal, LengthDiagonal) - (OrtMax - OrtMin)) * 0.5;
+
+	OrtMax += BoarderOffset;
+	OrtMin -= BoarderOffset;
+
+	float2 WorldUnitsPerTexel = float2(LengthDiagonal, LengthDiagonal) / float2(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
+
+	OrtMin /= WorldUnitsPerTexel;
+	OrtMin.x = floor(OrtMin.x);
+	OrtMin.y = floor(OrtMin.y);
+	OrtMin *= WorldUnitsPerTexel;
+
+	OrtMax /= WorldUnitsPerTexel;
+	OrtMax.x = floor(OrtMax.x);
+	OrtMax.y = floor(OrtMax.y);
+	OrtMax *= WorldUnitsPerTexel;
+
+	D3DXMATRIX tmpproj;
+	D3DXMatrixOrthoOffCenterLH(&tmpproj, OrtMin.x, OrtMax.x, OrtMin.y, OrtMax.y, minZ, maxZ);
+	Projs[split] = float4x4(tmpproj);
+
+	ViewProj[split] = Views[split] * Projs[split];
+	Flickering(&ViewProj[split], MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y);
 }
 
 void PSSM::PreRender(int split)
@@ -309,9 +328,9 @@ void PSSM::PreRender(int split)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &Projs[split]);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &ViewProj[split]);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(ViewProj[split]));
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(ViewProj[split]));
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 
 	mem_release_del(DepthSurfaces[split]);
 	DepthMaps[split]->GetSurfaceLevel(0, &(DepthSurfaces[split]));
@@ -396,6 +415,14 @@ void PSSM::Flickering(float4x4 *matLVP,float size_x,float size_y)
 
 void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 {
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
 	shadowmap->GetSurfaceLevel(0, &RenderSurf);
@@ -420,46 +447,67 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 		MatrixTexture = ViewProj[i] * ScaleBiasMat;
 		MatrixTexture = SMMatrixTranspose(MatrixTexture);
 		if (Generating4Slits)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4, mattex, &MatrixTexture);
-		else
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3, mattex, &MatrixTexture);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, mattex, &MatrixTexture);
+		else if (i != 3)
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, mattex, &MatrixTexture);
 	}
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth);
 	if (Generating4Slits)
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4);
 	else
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3);
 
+	float4x4 camview;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &camview);
 
 	float determ = 0;
-	float4x4 ViewInv = SMMatrixInverse(&determ, MLSet::MCamView);
+	float4x4 ViewInv = SMMatrixInverse(&determ, camview);
 	ViewInv = SMMatrixTranspose(ViewInv);
+
+	float3 observerpos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 	
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::ProjFov));
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &MLSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
 	
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
 
 	if (Generating4Slits)
 	{
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4, "PosCam", &MLSet::ConstCurrCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4, "NearFar", &MLSet::NearFar);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM4, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "PosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "NearFar", &float2_t(*r_near, *r_far));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
 	}
 	else
 	{
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3, "PosCam", &MLSet::ConstCurrCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3, "NearFar", &MLSet::NearFar);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::PSSM3, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "PosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "NearFar", &float2_t(*r_near, *r_far));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "DistSplit", &float4(NearFar[0].y, NearFar[1].y, NearFar[2].y, NearFar[3].y));
 	}
 
 	SGCore_ScreenQuadDraw();
 
 	MLSet::DXDevice->SetVertexShader(0);
 	MLSet::DXDevice->SetPixelShader(0);
+
+	MLSet::DXDevice->SetRenderTarget(0, BackBuf);
+
+	mem_release_del(RenderSurf);
+	mem_release_del(BackBuf);
+}
+
+void PSSM::GenShadowAll(IDirect3DTexture9* shadowmap)
+{
+	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+
+	shadowmap->GetSurfaceLevel(0, &RenderSurf);
+	MLSet::DXDevice->GetRenderTarget(0, &BackBuf);
+	MLSet::DXDevice->SetRenderTarget(0, RenderSurf);
+
+	MLSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuf);
 
@@ -512,7 +560,7 @@ ShadowMapTech::~ShadowMapTech()
 	mem_release_del(OldColorSurface);
 }
 
-void ShadowMapTech::SetPosition(float3* pos)
+void ShadowMapTech::SetPosition(const float3* pos)
 {
 	Position = *pos;
 }
@@ -522,7 +570,7 @@ void ShadowMapTech::GetPosition(float3* pos)
 	*pos = Position;
 }
 
-void ShadowMapTech::SetDirection(float3* dir)
+void ShadowMapTech::SetDirection(const float3* dir)
 {
 	Direction = *dir;
 }
@@ -532,7 +580,7 @@ void ShadowMapTech::GetDirection(float3* dir)
 	*dir = Direction;
 }
 
-void ShadowMapTech::SetAngleNearFar(float3* anf)
+void ShadowMapTech::SetAngleNearFar(const float3* anf)
 {
 	AngleNearFar = *anf;
 }
@@ -542,23 +590,23 @@ void ShadowMapTech::GetAngleNearFar(float3* anf)
 	*anf = AngleNearFar;
 }
 
-inline void ShadowMapTech::SetBias(float bias)
+void ShadowMapTech::SetBias(float bias)
 {
 	Bias = bias;
 }
 
-inline float ShadowMapTech::GetBias()
+float ShadowMapTech::GetBias()
 {
 	return Bias;
 }
 
 
-inline void ShadowMapTech::SetBlurPixel(float blur_pixel)
+void ShadowMapTech::SetBlurPixel(float blur_pixel)
 {
 	BlurPixel = blur_pixel;
 }
 
-inline float ShadowMapTech::GetBlurPixel()
+float ShadowMapTech::GetBlurPixel()
 {
 	return BlurPixel;
 }
@@ -580,32 +628,32 @@ void ShadowMapTech::Init()
 								fOffset,	fOffset,	fBias,		1.0f);
 }
 
-inline void ShadowMapTech::SetFar(float sfar)
+void ShadowMapTech::SetFar(float sfar)
 {
 	AngleNearFar.z = sfar;
 }
 
-inline float ShadowMapTech::GetFar()
+float ShadowMapTech::GetFar()
 {
 	return AngleNearFar.z;
 }
 
-inline void ShadowMapTech::SetNear(float snear)
+void ShadowMapTech::SetNear(float snear)
 {
 	AngleNearFar.y = snear;
 }
 
-inline float ShadowMapTech::GetNear()
+float ShadowMapTech::GetNear()
 {
 	return AngleNearFar.y;
 }
 
-inline void ShadowMapTech::SetAngle(float sangle)
+void ShadowMapTech::SetAngle(float sangle)
 {
 	AngleNearFar.x = sangle;
 }
 
-inline float ShadowMapTech::GetAngle()
+float ShadowMapTech::GetAngle()
 {
 	return AngleNearFar.x;
 }
@@ -663,9 +711,9 @@ void ShadowMapTech::Begin()
 	
 	Frustum->Update(&(View),&(Proj));
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(View * Proj));
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(View * Proj));
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 
 	mem_release_del(DepthSurface);
 	DepthMap->GetSurfaceLevel(0, &(DepthSurface));
@@ -694,6 +742,14 @@ void ShadowMapTech::End()
 
 void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap)
 {
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	shadowmap->GetSurfaceLevel(0, &RenderSurf);
 	MLSet::DXDevice->GetRenderTarget(0, &BackBuf);
@@ -719,38 +775,44 @@ void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap)
 	MatrixTexture = SMMatrixTranspose(MatrixTexture);
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect4, "MatrixTexture", &MatrixTexture);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "MatrixTexture", &MatrixTexture);
 	else
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect9, "MatrixTexture", &MatrixTexture);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "MatrixTexture", &MatrixTexture);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth);
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect4);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4);
 	else
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect9);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::ProjFov));
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &MLSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
+
+	float3 observerpos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
 	{
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect4, "PosCam", &MLSet::ConstCurrCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect4, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "PosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
 	}
 	else
 	{
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect9, "PosCam", &MLSet::ConstCurrCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect9, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowDirect9, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "PosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
 	}
+
+	float4x4 camview;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &camview);
 
 	float determ = 0;
-	float4x4 ViewInv = SMMatrixInverse(&determ, MLSet::MCamView);
+	float4x4 ViewInv = SMMatrixInverse(&determ, camview);
 	ViewInv = SMMatrixTranspose(ViewInv);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
 
 	SGCore_ScreenQuadDraw();
 
@@ -828,7 +890,7 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 	OldDepthStencilSurface = 0;
 }
 
-inline void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
+void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
 {
 	if (edge >= 0 && edge <= 5)
 	{
@@ -839,28 +901,29 @@ inline void ShadowMapCubeTech::SetEnableCubeEdge(int edge,bool enable)
 	}
 }
 
-inline bool ShadowMapCubeTech::GetEnableCubeEdge(int edge)
+bool ShadowMapCubeTech::GetEnableCubeEdge(int edge)
 {
 		if(edge >= 0 && edge <= 5)
 			return EnableEdge[edge];
+		return(false);
 }
 
-inline void ShadowMapCubeTech::SetBias(float bias)
+void ShadowMapCubeTech::SetBias(float bias)
 { 
 	Bias = bias; 
 }
 
-inline float ShadowMapCubeTech::GetBias()
+float ShadowMapCubeTech::GetBias()
 { 
 	return Bias; 
 }
 
-inline void ShadowMapCubeTech::SetBlurPixel(float blur_pixel)
+void ShadowMapCubeTech::SetBlurPixel(float blur_pixel)
 { 
 	BlurPixel = blur_pixel; 
 }
 
-inline bool ShadowMapCubeTech::GetBlurPixel()
+bool ShadowMapCubeTech::GetBlurPixel()
 { 
 	return BlurPixel; 
 }
@@ -983,11 +1046,11 @@ void ShadowMapCubeTech::Pre(int cube)
 	
 	MLSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,255,255,255), 1.0f, 0);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::SMDepthGeomCube);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomCube);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube, "LightPos", &Position);
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::SMDepthGeomCube, "WorldViewProjection", &vp);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "LightPos", &Position);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "WorldViewProjection", &vp);
 }
 
 void ShadowMapCubeTech::Post(int cube)
@@ -1019,6 +1082,14 @@ void ShadowMapCubeTech::End()
 
 void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 {
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
 	shadowmap->GetSurfaceLevel(0, &RenderSurf);
@@ -1039,38 +1110,44 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 	MLSet::DXDevice->SetTexture(1, DepthMap);
 	MLSet::DXDevice->SetTexture(2, SGCore_LoadTexGetTex(MLSet::IDsTexs::Tex_NoiseTex));
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth);
 	if (MLSet::IsHalfGenPCFShadowLocal)
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube1);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1);
 	else
-		SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(MLSet::WinSize.x, MLSet::WinSize.y, MLSet::ProjFov));
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &MLSet::NearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
 
 	float pixel_size = BlurPixel / MLSet::SizeTexDepthLocal.x;
+	float3 observerpos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
 	{
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube1, "PosCam", &MLSet::ConstCurrCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube1, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube1, "PixelSize", &pixel_size);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "PosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "PixelSize", &pixel_size);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
 	}
 	else
 	{
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "PosCam", &MLSet::ConstCurrCamPos);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
-		//SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 	}
+
+	float4x4 camview;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &camview);
+
 	float determ = 0;
-	float4x4 ViewInv = SMMatrixInverse(&determ, MLSet::MCamView);
+	float4x4 ViewInv = SMMatrixInverse(&determ, camview);
 	ViewInv = SMMatrixTranspose(ViewInv);
 
-	SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
 
 	SGCore_ScreenQuadDraw();
 

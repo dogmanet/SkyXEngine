@@ -1,45 +1,46 @@
-#ifndef _SXTask_H_
-#define _SXTask_H_
+#ifndef _CTask_H_
+#define _CTask_H_
 
+#include "sxcore.h"
 #include <memory>
 #define _NTASKMANAGER
 
 // Ѕазовый класс задачи
-class SXTask
+class CTask
 {
 public:
-	typedef std::shared_ptr<SXTask> TaskPtr;
+	typedef std::shared_ptr<CTask> TaskPtr;
 
-	struct TaskBeginning
+	struct CTaskBeginning
 	{
-		TaskBeginning(TaskPtr t);
-		TaskPtr mTask;
+		CTaskBeginning(TaskPtr t);
+		TaskPtr m_Task;
 	};
 
-	struct TaskCompleted
+	struct CTaskCompleted
 	{
-		TaskCompleted(TaskPtr t);
-		TaskPtr mTask;
+		CTaskCompleted(TaskPtr t);
+		TaskPtr m_Task;
 	};
 
-	SXTask(THREAD_UPDATE_FUNCTION func, unsigned int flags = CoreTF_SINGLETHREADED_REPEATING);
-	~SXTask();
+	CTask(THREAD_UPDATE_FUNCTION fnFunc, unsigned int iFlags = CORE_TASK_FLAG_SINGLETHREADED_REPEATING);
+	~CTask();
 
 	void run() {
-		if (UpdateFunc)
-			(UpdateFunc)();
-	}; //< ‘ункци¤ выполнени¤ задачи, она и вызываетс¤
+		if (m_fnUpdateFunc)
+			(m_fnUpdateFunc)();
+	}; //< функция выполнения задачи, она и вызывается
 
 	void stopRepeating()
 	{
-		mTaskFlags &= ~CoreTF_REPEATING;
+		m_iTaskFlags &= ~CORE_TASK_FLAG_REPEATING;
 	}
 
 	unsigned int getTaskFlags() const;
 
 private:
-	unsigned int mTaskFlags;
-	THREAD_UPDATE_FUNCTION UpdateFunc;
+	unsigned int m_iTaskFlags;
+	THREAD_UPDATE_FUNCTION m_fnUpdateFunc;
 };
 
 

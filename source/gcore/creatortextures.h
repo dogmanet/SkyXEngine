@@ -1,8 +1,15 @@
 
-#ifndef CREATOR_TEXTURES_H
-#define CREATOR_TEXTURES_H
+#ifndef __CREATORTEXTURES_H
+#define __CREATORTEXTURES_H
 
-#pragma once
+#include <gdefines.h>
+#include <stdio.h>
+#include <d3d9.h>
+#include <common/array.h>
+
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 //структура описывающа€ движковые текстуры
 struct CreatedTexture

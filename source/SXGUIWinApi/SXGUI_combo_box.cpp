@@ -1,7 +1,5 @@
 
-#include <SXGUIWinApi\SXGUI_combo_box.h>
-
-#pragma once
+#include "SXGUI_combo_box.h"
 
 SXGUIComboBox::SXGUIComboBox()
 {
@@ -103,13 +101,6 @@ bool SXGUIComboBox::SetItemText(int index,const char* text)
 		if(!this->SetItemData(index,data))
 			return false;
 	return true;
-}
-
-char* SXGUIComboBox::GetItemText(int index)
-{
-	char* text = new char[this->GetItemTextLength(index)+1];
-	SendMessage(this->GetHWND(), CB_GETLBTEXT, WPARAM(index), LPARAM(text));
-	return text;
 }
 
 void SXGUIComboBox::GetItemText(int index,char* buf)

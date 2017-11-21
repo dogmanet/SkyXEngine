@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\sxanim\animated.cpp">
+    <ClCompile Include="..\..\..\source\anim\animated.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\sxanim\sxanim_dll.cpp">
+    <ClCompile Include="..\..\..\source\anim\sxanim_dll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\string.cpp">
@@ -26,13 +26,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\sxanim\ModelFile.h">
+    <ClInclude Include="..\..\..\source\anim\ModelFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\sxanim\sxanim.h">
+    <ClInclude Include="..\..\..\source\anim\sxanim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\sxanim\animated.h">
+    <ClInclude Include="..\..\..\source\anim\animated.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

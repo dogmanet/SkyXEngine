@@ -1,23 +1,22 @@
 
-#include <mtllight\\material.h>
-#include <mtllight\\reflection.cpp>
+#include "material.h"
 
 Materials::Materials()
 {
 	CurrFirstFree = -1;
 	CountTimeDelta = 0;
 	IsForceblyAlphaTest = false;
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgeom_base.vs", "mtrlgeom_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_base.ps", "mtrlgeom_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_base_tree.vs", "mtrlgreen_base_tree", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlgreen_base_grass.vs", "mtrlgreen_base_grass", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgreen_base.ps", "mtrlgreen_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlgeom_light.ps", "mtrlgeom_light", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(ShaderType::st_vertex, "mtrlskin_base.vs", "mtrlskin_base", ShaderCheckDouble::scd_path);
-	SGCore_ShaderLoad(ShaderType::st_pixel, "mtrlskin_base.ps", "mtrlskin_base", ShaderCheckDouble::scd_path);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base", SHADER_CHECKDOUBLE_PATH);
 
 	IsIncrCountSurf = false;
 	CurrIdSurf = 0;
@@ -27,8 +26,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "light");
-	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
-	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_light");
+	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_light");
 
 	tmpMtlDefaultLight->MainTexture = -1;
 	tmpMtlDefaultLight->VS.IsTransWorldViewProjection = true;
@@ -43,8 +42,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "base");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 	tmpumtl->mtl->VS.IsTransWorld = true;
 
 	tmpumtl->mtl->MainTexture = -1;
@@ -59,8 +58,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "tree");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_tree");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 
 	tmpumtl->mtl->MainTexture = -1;
 	tmpumtl->mtl->VS.IsTransWorldViewProjection = true;
@@ -74,8 +73,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "grass");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_grass");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 
 	tmpumtl->mtl->MainTexture = -1;
 	tmpumtl->mtl->VS.IsTransWorldViewProjection = true;
@@ -135,9 +134,9 @@ Materials::Material::Material()
 
 	IsUnlit = false;
 	IsAlphaTest = false;
-	PhysicsMaterial = MtlPhysicType::mpt_concrete;
+	PhysicsMaterial = MTLTYPE_PHYSIC_CONCRETE;
 
-	Type = MtlTypeModel::tms_static;
+	Type = MTLTYPE_MODEL_STATIC;
 
 	MainTexture - 1;
 	PreShaderVS - 1;
@@ -152,9 +151,9 @@ void Materials::Material::Nulling()
 	IsDelete = false;
 	IsUnlit = false;
 	IsAlphaTest = false;
-	PhysicsMaterial = MtlPhysicType::mpt_concrete;
+	PhysicsMaterial = MTLTYPE_PHYSIC_CONCRETE;
 
-	Type = MtlTypeModel::tms_static;
+	Type = MTLTYPE_MODEL_STATIC;
 
 	MainTexture-1;
 	PreShaderVS-1;
@@ -162,6 +161,8 @@ void Materials::Material::Nulling()
 	
 	MicroDetail = MaterialMaskPM();
 	LightParam = MaterialLightParam();
+
+	Penetration = 0.f;
 
 	VS = MaterialDataShader();
 	PS = MaterialDataShader();
@@ -217,9 +218,10 @@ Materials::Material::MaterialLightParam::MaterialLightParam()
 
 	RoughnessValue = 0.f;
 	F0Value = 0.f;
-	TypeRefraction = MtlTypeTransparency::mtt_none;
+	ThicknessValue = 1.f;
+	TypeRefraction = MTLTYPE_TRANSPARENCY_NONE;
 
-	TypeReflect = MtlTypeReflect::mtr_none;
+	TypeReflect = MTLTYPE_REFLECT_NONE;
 	IsTextureParam = true;
 }
 
@@ -361,33 +363,34 @@ void Materials::OnResetDevice()
 
 ////
 
-ID Materials::GetStdMtl(MtlTypeModel type_model)
+ID Materials::GetStdMtl(MTLTYPE_MODEL type_model)
 {
-	if (type_model == MtlTypeModel::tms_static)
+	if (type_model == MTLTYPE_MODEL_STATIC)
 	{
 		return MtrlDefStatic;
 	}
-	else if (type_model == MtlTypeModel::tms_grass)
+	else if (type_model == MTLTYPE_MODEL_GRASS)
 	{
 		return MtrlDefGrass;
 	}
-	else if (type_model == MtlTypeModel::tms_tree)
+	else if (type_model == MTLTYPE_MODEL_TREE)
 	{
 		return MtrlDefTree;
 	}
-	else if (type_model == MtlTypeModel::tms_skin)
+	else if (type_model == MTLTYPE_MODEL_SKIN)
 	{
 		return MtrlDefSkin;
 	}
+	return(-1);
 }
 
-MtlTypeModel Materials::GetTypeModel(ID id)
+MTLTYPE_MODEL Materials::GetTypeModel(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeModel::tms_static);
+	MTL_PRE_COND_ID(id, MTLTYPE_MODEL_STATIC);
 	return ArrMaterials[id]->mtl->Type;
 }
 
-void Materials::SetTypeModel(ID id, MtlTypeModel type_model)
+void Materials::SetTypeModel(ID id, MTLTYPE_MODEL type_model)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->Type = type_model;
@@ -405,9 +408,9 @@ void Materials::MtlSetUsingAlphaTest(ID id, bool is_using)
 	ArrMaterials[id]->mtl->IsAlphaTest = is_using;
 }
 
-MtlTypeReflect Materials::MtlTypeReflection(ID id)
+MTLTYPE_REFLECT Materials::MtlTypeReflection(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeReflect::mtr_none);
+	MTL_PRE_COND_ID(id, MTLTYPE_REFLECT_NONE);
 	return ArrMaterials[id]->mtl->LightParam.TypeReflect;
 }
 
@@ -447,7 +450,7 @@ void Materials::MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
 {
 	MTL_REF_PRE_COND_ID(id,0);
-	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->GetTypeReflect() == MtlTypeReflect::mtr_cube_static || ArrMaterials[id]->Reflect->GetTypeReflect() == MtlTypeReflect::mtr_cube_dynamic)))
+	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)))
 		return ArrMaterials[id]->Reflect->ReflectFrustum[cube];
 	return 0;
 }
@@ -526,15 +529,15 @@ IDirect3DCubeTexture9* Materials::RefCubeGetTex(ID id)
 
 ///////
 
-void Materials::MtlSetPhysicMaterial(ID id, MtlPhysicType type)
+void Materials::MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->PhysicsMaterial = type;
 }
 
-MtlPhysicType Materials::MtlGetPhysicMaterial(ID id)
+MTLTYPE_PHYSIC Materials::MtlGetPhysicMaterial(ID id)
 {
-	MTL_PRE_COND_ID(id, (MtlPhysicType )-1);
+	MTL_PRE_COND_ID(id, MTLTYPE_PHYSIC_CONCRETE);
 	return ArrMaterials[id]->mtl->PhysicsMaterial;
 }
 
@@ -552,28 +555,35 @@ void Materials::MtlGetTexture(ID id, char* name)
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->MainTexture, name);
 }
 
+ID Materials::MtlGetTextureID(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+
+	return ArrMaterials[id]->mtl->MainTexture;
+}
+
 void Materials::MtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(ShaderType::st_vertex, path_vs, path_vs, ShaderCheckDouble::scd_path);
+	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, SHADER_CHECKDOUBLE_PATH);
 }
 
 void Materials::MtlGetVS(ID id, char* name)
 {
 	MTL_PRE_COND_ID(id);
-	SGCore_ShaderGetPath(ShaderType::st_vertex, ArrMaterials[id]->mtl->PreShaderVS, name);
+	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, ArrMaterials[id]->mtl->PreShaderVS, name);
 }
 
 void Materials::MtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(ShaderType::st_pixel, path_ps, path_ps, ShaderCheckDouble::scd_path);
+	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, SHADER_CHECKDOUBLE_PATH);
 }
 
 void Materials::MtlGetPS(ID id, char* name)
 {
 	MTL_PRE_COND_ID(id);
-	SGCore_ShaderGetPath(ShaderType::st_pixel, ArrMaterials[id]->mtl->PreShaderPS, name);
+	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, ArrMaterials[id]->mtl->PreShaderPS, name);
 }
 
 
@@ -650,26 +660,50 @@ float Materials::MtlGetF0(ID id)
 	return ArrMaterials[id]->mtl->LightParam.F0Value;
 }
 
+void Materials::MtlSetThickness(ID id, float thickness)
+{
+	MTL_PRE_COND_ID(id);
+	ArrMaterials[id]->mtl->LightParam.ThicknessValue = thickness;
+}
 
-void Materials::MtlSetTypeTransparency(ID id, MtlTypeTransparency type)
+float Materials::MtlGetThickness(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->mtl->LightParam.ThicknessValue;
+}
+
+void Materials::MtlSetPenetration(ID id, float penetration)
+{
+	MTL_PRE_COND_ID(id, _VOID);
+	ArrMaterials[id]->mtl->Penetration = penetration;
+}
+
+float Materials::MtlGetPenetration(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->mtl->Penetration;
+}
+
+
+void Materials::MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->LightParam.TypeRefraction = type;
 }
 
-MtlTypeTransparency Materials::MtlGetTypeTransparency(ID id)
+MTLTYPE_TRANSPARENCY Materials::MtlGetTypeTransparency(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeTransparency::mtt_none);
+	MTL_PRE_COND_ID(id, MTLTYPE_TRANSPARENCY_NONE);
 	return ArrMaterials[id]->mtl->LightParam.TypeRefraction;
 }
 
 
-void Materials::MtlSetTypeReflection(ID id, MtlTypeReflect type)
+void Materials::MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
 	MTL_PRE_COND_ID(id);
 	ArrMaterials[id]->mtl->LightParam.TypeReflect = type;
 
-	if (ArrMaterials[id]->mtl->LightParam.TypeReflect != MtlTypeReflect::mtr_none)
+	if (ArrMaterials[id]->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 	{
 		if (!ArrMaterials[id]->Reflect)
 			ArrMaterials[id]->Reflect = new Reflection();
@@ -678,9 +712,9 @@ void Materials::MtlSetTypeReflection(ID id, MtlTypeReflect type)
 	}
 }
 
-MtlTypeReflect Materials::MtlGetTypeReflection(ID id)
+MTLTYPE_REFLECT Materials::MtlGetTypeReflection(ID id)
 {
-	MTL_PRE_COND_ID(id, MtlTypeReflect::mtr_none);
+	MTL_PRE_COND_ID(id, MTLTYPE_REFLECT_NONE);
 	return ArrMaterials[id]->mtl->LightParam.TypeReflect;
 }
 
@@ -735,108 +769,111 @@ void Materials::MtlGetDTex(ID id, int channel, char* path_tex)
 
 
 
-void Materials::MtlSetSTDVS(ID id, MtlTransShaderStd type, bool is_send)
+void Materials::MtlSetSTDVS(ID id, MTL_SHADERSTD type, bool is_send)
 {
 	MTL_PRE_COND_ID(id);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		ArrMaterials[id]->mtl->VS.IsTransWorld = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		ArrMaterials[id]->mtl->VS.IsTransView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		ArrMaterials[id]->mtl->VS.IsTransProjection = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		ArrMaterials[id]->mtl->VS.IsTransWorldView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		ArrMaterials[id]->mtl->VS.IsTransWorldViewProjection = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		ArrMaterials[id]->mtl->VS.IsTransPosCam = is_send;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		ArrMaterials[id]->mtl->VS.IsTransTimeDelta = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		ArrMaterials[id]->mtl->VS.IsTransUserData = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		ArrMaterials[id]->mtl->VS.IsTransWinSize = is_send;
 }
 
-bool Materials::MtlGetSTDVS(ID id, MtlTransShaderStd type)
+bool Materials::MtlGetSTDVS(ID id, MTL_SHADERSTD type)
 {
 	MTL_PRE_COND_ID(id,false);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		return ArrMaterials[id]->mtl->VS.IsTransWorld;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		return ArrMaterials[id]->mtl->VS.IsTransView;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		return ArrMaterials[id]->mtl->VS.IsTransProjection;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		return ArrMaterials[id]->mtl->VS.IsTransWorldView;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		return ArrMaterials[id]->mtl->VS.IsTransWorldViewProjection;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		return ArrMaterials[id]->mtl->VS.IsTransPosCam;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		return ArrMaterials[id]->mtl->VS.IsTransTimeDelta;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		return ArrMaterials[id]->mtl->VS.IsTransUserData;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		return ArrMaterials[id]->mtl->VS.IsTransWinSize;
+
+	return(false);
 }
 
-void Materials::MtlSetSTDPS(ID id, MtlTransShaderStd type, bool is_send)
+void Materials::MtlSetSTDPS(ID id, MTL_SHADERSTD type, bool is_send)
 {
 	MTL_PRE_COND_ID(id);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		ArrMaterials[id]->mtl->PS.IsTransWorld = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		ArrMaterials[id]->mtl->PS.IsTransView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		ArrMaterials[id]->mtl->PS.IsTransProjection = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		ArrMaterials[id]->mtl->PS.IsTransWorldView = is_send;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		ArrMaterials[id]->mtl->PS.IsTransWorldViewProjection = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		ArrMaterials[id]->mtl->PS.IsTransPosCam = is_send;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		ArrMaterials[id]->mtl->PS.IsTransTimeDelta = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		ArrMaterials[id]->mtl->PS.IsTransUserData = is_send;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		ArrMaterials[id]->mtl->PS.IsTransWinSize = is_send;
 }
 
-bool Materials::MtlGetSTDPS(ID id, MtlTransShaderStd type)
+bool Materials::MtlGetSTDPS(ID id, MTL_SHADERSTD type)
 {
 	MTL_PRE_COND_ID(id,false);
-	if (type == MtlTransShaderStd::mtss_mat_w)
+	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		return ArrMaterials[id]->mtl->PS.IsTransWorld;
-	else if (type == MtlTransShaderStd::mtss_mat_v)
+	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
 		return ArrMaterials[id]->mtl->PS.IsTransView;
-	else if (type == MtlTransShaderStd::mtss_mat_p)
+	else if (type == MTL_SHADERSTD_MATRIX_PROJECTION)
 		return ArrMaterials[id]->mtl->PS.IsTransProjection;
-	else if (type == MtlTransShaderStd::mtss_mat_wv)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEW)
 		return ArrMaterials[id]->mtl->PS.IsTransWorldView;
-	else if (type == MtlTransShaderStd::mtss_mat_wvp)
+	else if (type == MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ)
 		return ArrMaterials[id]->mtl->PS.IsTransWorldViewProjection;
 
-	else if (type == MtlTransShaderStd::mtss_campos)
+	else if (type == MTL_SHADERSTD_CAMPOS)
 		return ArrMaterials[id]->mtl->PS.IsTransPosCam;
-	else if (type == MtlTransShaderStd::mtss_timedelta)
+	else if (type == MTL_SHADERSTD_TIMEDELTA)
 		return ArrMaterials[id]->mtl->PS.IsTransTimeDelta;
 
-	else if (type == MtlTransShaderStd::mtss_ud)
+	else if (type == MTL_SHADERSTD_USERDATA)
 		return ArrMaterials[id]->mtl->PS.IsTransUserData;
 
-	else if (type == MtlTransShaderStd::mtss_winsize)
+	else if (type == MTL_SHADERSTD_WINSIZE)
 		return ArrMaterials[id]->mtl->PS.IsTransWinSize;
+	return(false);
 }
 
 
@@ -1075,107 +1112,123 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 	Material* tmpMtl = *mtl;
 
-	sprintf(path, "%s%s\\%s.mtl", MLSet::StdPathMaterial, tmp_path, tmp_name);
+	sprintf(path, "%s%s\\%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path, tmp_name);
 	if (Core_0FileExists(path))
 	{
-		ISXLConfig* config = Core_OpLConfig(path);
+		ISXConfig* config = Core_OpConfig(path);
 
 		//если в конфиге указана текстура то берем ее
-		if (config->KeyExists(tmp_name, "texture"))
-			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->GetKey(tmp_name, "texture"), LoadTexType::ltt_load);
+		if (config->keyExists(tmp_name, "texture"))
+			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->getKey(tmp_name, "texture"), LoadTexType::ltt_load);
 		else //если нет то тогда берем имя материала, может быть он имя текстуры, иначе будет -1
 			tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LoadTexType::ltt_load);
 
 		sprintf(tmpMtl->Name, "%s", tmp_name);
 
 		tmpVS[0] = 0;
-		if (config->KeyExists(tmp_name, "vs"))
-			sprintf(tmpVS, "%s", config->GetKey(tmp_name, "vs"));
+		if (config->keyExists(tmp_name, "vs"))
+			sprintf(tmpVS, "%s", config->getKey(tmp_name, "vs"));
 
 		tmpPS[0] = 0;
-		if (config->KeyExists(tmp_name, "ps"))
-			sprintf(tmpPS, "%s", config->GetKey(tmp_name, "ps"));
+		if (config->keyExists(tmp_name, "ps"))
+			sprintf(tmpPS, "%s", config->getKey(tmp_name, "ps"));
 
 
-		if (config->KeyExists(tmp_name, "is_unlit"))
-			tmpMtl->IsUnlit = String(config->GetKey(tmp_name, "is_unlit")).ToBool();
+		if (config->keyExists(tmp_name, "is_unlit"))
+			tmpMtl->IsUnlit = String(config->getKey(tmp_name, "is_unlit")).ToBool();
 		else
 			tmpMtl->IsUnlit = false;
 
-		if (config->KeyExists(tmp_name, "type"))
-			tmpMtl->Type = (MtlTypeModel)String(config->GetKey(tmp_name, "type")).ToInt();
+		if (config->keyExists(tmp_name, "type"))
+			tmpMtl->Type = (MTLTYPE_MODEL)String(config->getKey(tmp_name, "type")).ToInt();
 		else
-			tmpMtl->Type = MtlTypeModel::tms_default;
+			tmpMtl->Type = MTLTYPE_MODEL_DEFAULT;
 
-		if (config->KeyExists(tmp_name, "physmaterial"))
-			tmpMtl->PhysicsMaterial = (MtlPhysicType)String(config->GetKey(tmp_name, "physmaterial")).ToInt();
+		if (config->keyExists(tmp_name, "physmaterial"))
+			tmpMtl->PhysicsMaterial = (MTLTYPE_PHYSIC)String(config->getKey(tmp_name, "physmaterial")).ToInt();
 		else
-			tmpMtl->PhysicsMaterial = MtlPhysicType::mpt_default;
+			tmpMtl->PhysicsMaterial = MTLTYPE_PHYSIC_DEFAULT;
 
 
 		if (def_str_validate(tmpVS))
-			tmpMtl->PreShaderVS = SGCore_ShaderLoad(ShaderType::st_vertex, tmpVS, "main", ShaderCheckDouble::scd_path);
+			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, "main", SHADER_CHECKDOUBLE_PATH);
 		else
-			tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
+			tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
 
 		if (def_str_validate(tmpPS))
-			tmpMtl->PreShaderPS = SGCore_ShaderLoad(ShaderType::st_pixel, tmpPS, "main", ShaderCheckDouble::scd_path);
+			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, "main", SHADER_CHECKDOUBLE_PATH);
 		else
-			tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
+			tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 
-		sprintf(tmpMicroDiff[0], "%s", config->GetKey(tmp_name, "mirco_diff_r"));
+		tmpMicroDiff[0][0] = 0;
+		if (config->keyExists(tmp_name, "mirco_diff_r"))
+			sprintf(tmpMicroDiff[0], "%s", config->getKey(tmp_name, "mirco_diff_r"));
 
 		if (tmpMicroDiff[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = SGCore_LoadTexAddName(tmpMicroDiff[0], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = -1;
 
-		sprintf(tmpMicroDiff[1], "%s", config->GetKey(tmp_name, "mirco_diff_g"));
+		tmpMicroDiff[1][0] = 0;
+		if (config->keyExists(tmp_name, "mirco_diff_g"))
+			sprintf(tmpMicroDiff[1], "%s", config->getKey(tmp_name, "mirco_diff_g"));
 		if (tmpMicroDiff[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = SGCore_LoadTexAddName(tmpMicroDiff[1], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = -1;
 
-		sprintf(tmpMicroDiff[2], "%s", config->GetKey(tmp_name, "mirco_diff_b"));
+		tmpMicroDiff[2][0] = 0;
+		if (config->keyExists(tmp_name, "mirco_diff_b"))
+			sprintf(tmpMicroDiff[2], "%s", config->getKey(tmp_name, "mirco_diff_b"));
 		if (tmpMicroDiff[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = SGCore_LoadTexAddName(tmpMicroDiff[2], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = -1;
 
-		sprintf(tmpMicroDiff[3], "%s", config->GetKey(tmp_name, "mirco_diff_a"));
+		tmpMicroDiff[3][0] = 0;
+		if (config->keyExists(tmp_name, "mirco_diff_a"))
+		sprintf(tmpMicroDiff[3], "%s", config->getKey(tmp_name, "mirco_diff_a"));
 		if (tmpMicroDiff[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = SGCore_LoadTexAddName(tmpMicroDiff[3], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = -1;
 
 
-
-		sprintf(tmpDetail[0], "%s", config->GetKey(tmp_name, "detail_r"));
+		tmpDetail[0][0] = 0;
+		if (config->keyExists(tmp_name, "detail_r"))
+			sprintf(tmpDetail[0], "%s", config->getKey(tmp_name, "detail_r"));
 		if (tmpDetail[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[0] = SGCore_LoadTexAddName(tmpDetail[0], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[0] = -1;
 
-		sprintf(tmpDetail[1], "%s", config->GetKey(tmp_name, "detail_g"));
+		tmpDetail[1][0] = 0;
+		if (config->keyExists(tmp_name, "detail_g"))
+			sprintf(tmpDetail[1], "%s", config->getKey(tmp_name, "detail_g"));
 		if (tmpDetail[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[1] = SGCore_LoadTexAddName(tmpDetail[1], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[1] = -1;
 
-		sprintf(tmpDetail[2], "%s", config->GetKey(tmp_name, "detail_b"));
+		tmpDetail[2][0] = 0;
+		if (config->keyExists(tmp_name, "detail_b"))
+			sprintf(tmpDetail[2], "%s", config->getKey(tmp_name, "detail_b"));
 		if (tmpDetail[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[2] = SGCore_LoadTexAddName(tmpDetail[2], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[2] = -1;
 
-		sprintf(tmpDetail[3], "%s", config->GetKey(tmp_name, "detail_a"));
+		tmpDetail[3][0] = 0;
+		if (config->keyExists(tmp_name, "detail_a"))
+			sprintf(tmpDetail[3], "%s", config->getKey(tmp_name, "detail_a"));
 		if (tmpDetail[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->MicroDetail.ArrDeatail[3] = SGCore_LoadTexAddName(tmpDetail[3], LoadTexType::ltt_load);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[3] = -1;
 
-
-		sprintf(tmpMask, "%s", config->GetKey(tmp_name, "mask"));
+		tmpMask[0] = 0;
+		if (config->keyExists(tmp_name, "mask"))
+			sprintf(tmpMask, "%s", config->getKey(tmp_name, "mask"));
 		if (tmpMask[0] != '0' && tmpMask[0] != 0)
 			tmpMtl->MicroDetail.Mask = SGCore_LoadTexAddName(tmpMask, LoadTexType::ltt_load);
 		else
@@ -1184,25 +1237,32 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 		tmpMtl->LightParam.RoughnessValue = MTL_LIGHTING_DEFAULT_ROUGHNESS;
 		tmpMtl->LightParam.F0Value = MTL_LIGHTING_DEFAULT_F0;
+		tmpMtl->LightParam.ThicknessValue = MTL_LIGHTING_DEFAULT_THICKNESS;
 
-		if (config->KeyExists(tmp_name, "roughness"))
-			tmpMtl->LightParam.RoughnessValue = String(config->GetKey(tmp_name, "roughness")).ToDouble();
+		if (config->keyExists(tmp_name, "roughness"))
+			tmpMtl->LightParam.RoughnessValue = String(config->getKey(tmp_name, "roughness")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "f0"))
-			tmpMtl->LightParam.F0Value = String(config->GetKey(tmp_name, "f0")).ToDouble();
+		if (config->keyExists(tmp_name, "f0"))
+			tmpMtl->LightParam.F0Value = String(config->getKey(tmp_name, "f0")).ToDouble();
 
-		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value);
+		if (config->keyExists(tmp_name, "thickness"))
+			tmpMtl->LightParam.ThicknessValue = String(config->getKey(tmp_name, "thickness")).ToDouble();
+
+		if (config->keyExists(tmp_name, "penetration"))
+			tmpMtl->Penetration = String(config->getKey(tmp_name, "penetration")).ToDouble();
+
+		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
 		//говорим что не установлено использовать ли текстуру или нет
 		int istexparam = -1;
 
 		//если есть ключ использования текстуры то грузим
-		if (config->KeyExists(tmp_name, "is_texture_param"))
-			istexparam = String(config->GetKey(tmp_name, "is_texture_param")).ToBool();
+		if (config->keyExists(tmp_name, "is_texture_param"))
+			istexparam = String(config->getKey(tmp_name, "is_texture_param")).ToBool();
 
 		tmpParamLigth[0] = 0;
-		if (config->KeyExists(tmp_name, "param_ligth"))
-			sprintf(tmpParamLigth, "%s", config->GetKey(tmp_name, "param_ligth"));
+		if (config->keyExists(tmp_name, "param_ligth"))
+			sprintf(tmpParamLigth, "%s", config->getKey(tmp_name, "param_ligth"));
 
 		//если текстура с параметрами освещения была определена
 		if (tmpParamLigth[0] != '0' && tmpParamLigth[0] != 0)
@@ -1221,59 +1281,59 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		}
 		
 
-		if (config->KeyExists(tmp_name, "refraction"))
-			tmpMtl->LightParam.TypeRefraction = (MtlTypeTransparency)String(config->GetKey(tmp_name, "refraction")).ToInt();
+		if (config->keyExists(tmp_name, "refraction"))
+			tmpMtl->LightParam.TypeRefraction = (MTLTYPE_TRANSPARENCY)String(config->getKey(tmp_name, "refraction")).ToInt();
 		else
-			tmpMtl->LightParam.TypeRefraction = MtlTypeTransparency::mtt_none;
+			tmpMtl->LightParam.TypeRefraction = MTLTYPE_TRANSPARENCY_NONE;
 
 
 		tmpMtl->VS.IsTransWorld = tmpMtl->VS.IsTransView = tmpMtl->VS.IsTransProjection = 
 			tmpMtl->VS.IsTransWorldView = tmpMtl->VS.IsTransWorldViewProjection = tmpMtl->VS.IsTransPosCam = 
 			tmpMtl->VS.IsTransTimeDelta = tmpMtl->VS.IsTransWinSize = tmpMtl->VS.IsTransUserData = false;
 
-		if (config->KeyExists(tmp_name, "vs_world"))
-			tmpMtl->VS.IsTransWorld = String(config->GetKey(tmp_name, "vs_world")).ToInt();
+		if (config->keyExists(tmp_name, "vs_world"))
+			tmpMtl->VS.IsTransWorld = String(config->getKey(tmp_name, "vs_world")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_view"))
-			tmpMtl->VS.IsTransView = String(config->GetKey(tmp_name, "vs_view")).ToInt();
+		if (config->keyExists(tmp_name, "vs_view"))
+			tmpMtl->VS.IsTransView = String(config->getKey(tmp_name, "vs_view")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_projection"))
-			tmpMtl->VS.IsTransProjection = String(config->GetKey(tmp_name, "vs_projection")).ToInt();
+		if (config->keyExists(tmp_name, "vs_projection"))
+			tmpMtl->VS.IsTransProjection = String(config->getKey(tmp_name, "vs_projection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_worldview"))
-			tmpMtl->VS.IsTransWorldView = String(config->GetKey(tmp_name, "vs_worldview")).ToInt();
+		if (config->keyExists(tmp_name, "vs_worldview"))
+			tmpMtl->VS.IsTransWorldView = String(config->getKey(tmp_name, "vs_worldview")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_worldviewprojection"))
-			tmpMtl->VS.IsTransWorldViewProjection = String(config->GetKey(tmp_name, "vs_worldviewprojection")).ToInt();
+		if (config->keyExists(tmp_name, "vs_worldviewprojection"))
+			tmpMtl->VS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "vs_worldviewprojection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_poscam"))
-			tmpMtl->VS.IsTransPosCam = String(config->GetKey(tmp_name, "vs_poscam")).ToInt();
+		if (config->keyExists(tmp_name, "vs_poscam"))
+			tmpMtl->VS.IsTransPosCam = String(config->getKey(tmp_name, "vs_poscam")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_timedelta"))
-			tmpMtl->VS.IsTransTimeDelta = String(config->GetKey(tmp_name, "vs_timedelta")).ToInt();
+		if (config->keyExists(tmp_name, "vs_timedelta"))
+			tmpMtl->VS.IsTransTimeDelta = String(config->getKey(tmp_name, "vs_timedelta")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_winsize"))
-			tmpMtl->VS.IsTransWinSize = String(config->GetKey(tmp_name, "vs_winsize")).ToInt();
+		if (config->keyExists(tmp_name, "vs_winsize"))
+			tmpMtl->VS.IsTransWinSize = String(config->getKey(tmp_name, "vs_winsize")).ToInt();
 
-		if (config->KeyExists(tmp_name, "vs_userdata"))
-			tmpMtl->VS.IsTransUserData = String(config->GetKey(tmp_name, "vs_userdata")).ToInt();
+		if (config->keyExists(tmp_name, "vs_userdata"))
+			tmpMtl->VS.IsTransUserData = String(config->getKey(tmp_name, "vs_userdata")).ToInt();
 
 
 		tmpMtl->VS.Param = float4(0, 0, 0, 0);
-		if (config->KeyExists(tmp_name, "vs_userdata_value_x"))
-			tmpMtl->VS.Param.x = String(config->GetKey(tmp_name, "vs_userdata_value_x")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_x"))
+			tmpMtl->VS.Param.x = String(config->getKey(tmp_name, "vs_userdata_value_x")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_value_y"))
-			tmpMtl->VS.Param.y = String(config->GetKey(tmp_name, "vs_userdata_value_y")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_y"))
+			tmpMtl->VS.Param.y = String(config->getKey(tmp_name, "vs_userdata_value_y")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_value_z"))
-			tmpMtl->VS.Param.z = String(config->GetKey(tmp_name, "vs_userdata_value_z")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_z"))
+			tmpMtl->VS.Param.z = String(config->getKey(tmp_name, "vs_userdata_value_z")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_value_w"))
-			tmpMtl->VS.Param.w = String(config->GetKey(tmp_name, "vs_userdata_value_w")).ToDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_w"))
+			tmpMtl->VS.Param.w = String(config->getKey(tmp_name, "vs_userdata_value_w")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "vs_userdata_trans_in_ps"))
-			tmpMtl->TransVSDataInPS = String(config->GetKey(tmp_name, "vs_userdata_trans_in_ps")).ToBool();
+		if (config->keyExists(tmp_name, "vs_userdata_trans_in_ps"))
+			tmpMtl->TransVSDataInPS = String(config->getKey(tmp_name, "vs_userdata_trans_in_ps")).ToBool();
 		else
 			tmpMtl->TransVSDataInPS = false;
 
@@ -1282,55 +1342,55 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->PS.IsTransWorldView = tmpMtl->PS.IsTransWorldViewProjection = tmpMtl->PS.IsTransPosCam =
 			tmpMtl->PS.IsTransTimeDelta = tmpMtl->PS.IsTransWinSize = tmpMtl->PS.IsTransUserData = false;
 
-		if (config->KeyExists(tmp_name, "ps_world"))
-			tmpMtl->PS.IsTransWorld = String(config->GetKey(tmp_name, "ps_world")).ToInt();
+		if (config->keyExists(tmp_name, "ps_world"))
+			tmpMtl->PS.IsTransWorld = String(config->getKey(tmp_name, "ps_world")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_view"))
-			tmpMtl->PS.IsTransView = String(config->GetKey(tmp_name, "ps_view")).ToInt();
+		if (config->keyExists(tmp_name, "ps_view"))
+			tmpMtl->PS.IsTransView = String(config->getKey(tmp_name, "ps_view")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_projection"))
-			tmpMtl->PS.IsTransProjection = String(config->GetKey(tmp_name, "ps_projection")).ToInt();
+		if (config->keyExists(tmp_name, "ps_projection"))
+			tmpMtl->PS.IsTransProjection = String(config->getKey(tmp_name, "ps_projection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_worldview"))
-			tmpMtl->PS.IsTransWorldView = String(config->GetKey(tmp_name, "ps_worldview")).ToInt();
+		if (config->keyExists(tmp_name, "ps_worldview"))
+			tmpMtl->PS.IsTransWorldView = String(config->getKey(tmp_name, "ps_worldview")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_worldviewprojection"))
-			tmpMtl->PS.IsTransWorldViewProjection = String(config->GetKey(tmp_name, "ps_worldviewprojection")).ToInt();
+		if (config->keyExists(tmp_name, "ps_worldviewprojection"))
+			tmpMtl->PS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "ps_worldviewprojection")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_poscam"))
-			tmpMtl->PS.IsTransPosCam = String(config->GetKey(tmp_name, "ps_poscam")).ToInt();
+		if (config->keyExists(tmp_name, "ps_poscam"))
+			tmpMtl->PS.IsTransPosCam = String(config->getKey(tmp_name, "ps_poscam")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_timedelta"))
-			tmpMtl->PS.IsTransTimeDelta = String(config->GetKey(tmp_name, "ps_timedelta")).ToInt();
+		if (config->keyExists(tmp_name, "ps_timedelta"))
+			tmpMtl->PS.IsTransTimeDelta = String(config->getKey(tmp_name, "ps_timedelta")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_winsize"))
-			tmpMtl->PS.IsTransWinSize = String(config->GetKey(tmp_name, "ps_winsize")).ToInt();
+		if (config->keyExists(tmp_name, "ps_winsize"))
+			tmpMtl->PS.IsTransWinSize = String(config->getKey(tmp_name, "ps_winsize")).ToInt();
 
-		if (config->KeyExists(tmp_name, "ps_userdata"))
-			tmpMtl->PS.IsTransUserData = String(config->GetKey(tmp_name, "ps_userdata")).ToInt();
+		if (config->keyExists(tmp_name, "ps_userdata"))
+			tmpMtl->PS.IsTransUserData = String(config->getKey(tmp_name, "ps_userdata")).ToInt();
 
 		tmpMtl->PS.Param = float4(0, 0, 0, 0);
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_x"))
-			tmpMtl->PS.Param.x = String(config->GetKey(tmp_name, "ps_userdata_value_x")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_x"))
+			tmpMtl->PS.Param.x = String(config->getKey(tmp_name, "ps_userdata_value_x")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_y"))
-			tmpMtl->PS.Param.y = String(config->GetKey(tmp_name, "ps_userdata_value_y")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_y"))
+			tmpMtl->PS.Param.y = String(config->getKey(tmp_name, "ps_userdata_value_y")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_z"))
-			tmpMtl->PS.Param.z = String(config->GetKey(tmp_name, "ps_userdata_value_z")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_z"))
+			tmpMtl->PS.Param.z = String(config->getKey(tmp_name, "ps_userdata_value_z")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_value_w"))
-			tmpMtl->PS.Param.w = String(config->GetKey(tmp_name, "ps_userdata_value_w")).ToDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_w"))
+			tmpMtl->PS.Param.w = String(config->getKey(tmp_name, "ps_userdata_value_w")).ToDouble();
 
-		if (config->KeyExists(tmp_name, "ps_userdata_trans_in_vs"))
-			tmpMtl->TransPSDataInVS = String(config->GetKey(tmp_name, "ps_userdata_trans_in_vs")).ToBool();
+		if (config->keyExists(tmp_name, "ps_userdata_trans_in_vs"))
+			tmpMtl->TransPSDataInVS = String(config->getKey(tmp_name, "ps_userdata_trans_in_vs")).ToBool();
 
-		if (config->KeyExists(tmp_name, "type_reflect"))
-			tmpMtl->LightParam.TypeReflect = (MtlTypeReflect)String(config->GetKey(tmp_name, "type_reflect")).ToInt();
+		if (config->keyExists(tmp_name, "type_reflect"))
+			tmpMtl->LightParam.TypeReflect = (MTLTYPE_REFLECT)String(config->getKey(tmp_name, "type_reflect")).ToInt();
 
-		if (config->KeyExists(tmp_name, "alpha_test"))
-			tmpMtl->IsAlphaTest = String(config->GetKey(tmp_name, "alpha_test")).ToBool();
+		if (config->keyExists(tmp_name, "alpha_test"))
+			tmpMtl->IsAlphaTest = String(config->getKey(tmp_name, "alpha_test")).ToBool();
 		else
 			tmpMtl->IsAlphaTest = false;
 
@@ -1340,12 +1400,12 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 	return false;
 }
 
-ID Materials::CreateTexParamLighting(float roughness, float f0)
+ID Materials::CreateTexParamLighting(float roughness, float f0, float thickness)
 {
 	IDirect3DTexture9* TexMaterial;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &TexMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
-	uint32_t tmpColor = D3DCOLOR_ARGB(0, DWORD(roughness*255.f), DWORD(f0*255.f), 0);
+	uint32_t tmpColor = D3DCOLOR_ARGB(0, DWORD(roughness*255.f), DWORD(f0*255.f), DWORD(thickness*255.f));
 
 	TexMaterial->LockRect(0, &LockedRect, 0, 0);
 
@@ -1362,38 +1422,38 @@ ID Materials::CreateTexParamLighting(float roughness, float f0)
 	return SGCore_LoadTexCreate(nametex, TexMaterial);
 }
 
-void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
+void Materials::CreateMtl(const char* name, Material** mtl, MTLTYPE_MODEL type)
 {
 	Material* tmpMtl = *mtl;
 	new(tmpMtl)Material*;
 	//если такого материала не существует, то мы должны были задать примерный тип материала
 	tmpMtl->Type = type;
 	//обычна¤ геометри¤
-	if (type == MtlTypeModel::tms_static)
+	if (type == MTLTYPE_MODEL_STATIC)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgeom_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgeom_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//деревь¤
-	else if (type == MtlTypeModel::tms_tree)
+	else if (type == MTLTYPE_MODEL_TREE)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_tree");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//трава
-	else if (type == MtlTypeModel::tms_grass)
+	else if (type == MTLTYPE_MODEL_GRASS)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlgreen_base_grass");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlgreen_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//анимационная модель
-	else if (type == MtlTypeModel::tms_skin)
+	else if (type == MTLTYPE_MODEL_SKIN)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(ShaderType::st_vertex, "mtrlskin_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(ShaderType::st_pixel, "mtrlskin_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//источник света
@@ -1411,9 +1471,10 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 
 	tmpMtl->LightParam.RoughnessValue = MTL_LIGHTING_DEFAULT_ROUGHNESS;
 	tmpMtl->LightParam.F0Value = MTL_LIGHTING_DEFAULT_F0;
+	tmpMtl->LightParam.ThicknessValue = MTL_LIGHTING_DEFAULT_THICKNESS;
 
 	tmpMtl->LightParam.ParamTex = -1;
-	tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value);
+	tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
 	//char path[1024];
 	char tmp_name[256];
@@ -1433,7 +1494,7 @@ void Materials::CreateMtl(const char* name, Material** mtl, MtlTypeModel type)
 	sprintf(tmpMtl->Name, "%s", tmp_name);
 }
 
-ID Materials::MtlLoad(const char* name, MtlTypeModel type)
+ID Materials::MtlLoad(const char* name, MTLTYPE_MODEL type)
 {
 	ID IsLoad = IsExists(name);
 
@@ -1461,7 +1522,7 @@ ID Materials::MtlLoad(const char* name, MtlTypeModel type)
 		}
 		else
 		{
-			if (tmpumtl->mtl->LightParam.TypeReflect != MtlTypeReflect::mtr_none)
+			if (tmpumtl->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 			{
 				tmpumtl->Reflect = new Reflection();
 				tmpumtl->Reflect->Init(tmpumtl->mtl->LightParam.TypeReflect);
@@ -1492,7 +1553,7 @@ void Materials::MtlReLoad(ID id, const char* name)
 	}
 	else
 	{
-		if (tmpumtl->mtl->LightParam.TypeReflect != MtlTypeReflect::mtr_none)
+		if (tmpumtl->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 		{
 			tmpumtl->Reflect = new Reflection();
 			tmpumtl->Reflect->Init(tmpumtl->mtl->LightParam.TypeReflect);
@@ -1538,8 +1599,8 @@ void Materials::MtlSave(ID id)
 	}
 
 	tmppath[0] = 0;
-	_mkdir(MLSet::StdPathMaterial);
-	sprintf(tmppath, "%s%s\\", MLSet::StdPathMaterial, tmp_path);
+	_mkdir(Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS));
+	sprintf(tmppath, "%s%s\\", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path);
 	_mkdir(tmppath);
 	sprintf(tmppath, "%s%s.mtl", tmppath, mtrl->Name);
 	FILE* file = 0;
@@ -1555,11 +1616,11 @@ void Materials::MtlSave(ID id)
 
 	char tmpPathMaskName[1024];
 
-	SGCore_ShaderGetPath(ShaderType::st_vertex, mtrl->PreShaderVS, tmpPathVSName);
-	SGCore_ShaderGetPath(ShaderType::st_pixel, mtrl->PreShaderPS, tmpPathPSName);
+	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, mtrl->PreShaderVS, tmpPathVSName);
+	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, mtrl->PreShaderPS, tmpPathPSName);
 
 	fprintf(file, "type = %d\n", mtrl->Type);
-	fprintf(file, "is_inlit = %d\n", mtrl->IsUnlit);
+	fprintf(file, "is_unlit = %d\n", mtrl->IsUnlit);
 	fprintf(file, "%s%d%s", "physmaterial = ", mtrl->PhysicsMaterial, "\n");
 
 	fprintf(file, "%s%s%s", "vs = ", tmpPathVSName, "\n");
@@ -1626,6 +1687,8 @@ void Materials::MtlSave(ID id)
 
 	fprintf(file, "roughness = %f\n", mtrl->LightParam.RoughnessValue);
 	fprintf(file, "f0 = %f\n", mtrl->LightParam.F0Value);
+	fprintf(file, "thickness = %f\n", mtrl->LightParam.ThicknessValue);
+	fprintf(file, "penetration = %f\n", mtrl->Penetration);
 
 	fprintf(file, "refraction = %d\n", mtrl->LightParam.TypeRefraction);
 
@@ -1685,49 +1748,49 @@ ID Materials::GetID(const char* name)
 	return -1;
 }
 
-inline long Materials::GetCount()
+long Materials::GetCount()
 {
 	return ArrMaterials.size();
 }
 
-inline void Materials::SetForceblyAlphaTest(bool isat)
+void Materials::SetForceblyAlphaTest(bool isat)
 {
 	IsForceblyAlphaTest = isat;
 	if (!isat)
 		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 }
 
-inline bool Materials::GetForceblyAlphaTest()
+bool Materials::GetForceblyAlphaTest()
 {
 	return IsForceblyAlphaTest;
 }
 
-inline void Materials::SetIsIncrCountSurf(bool bf)
+void Materials::SetIsIncrCountSurf(bool bf)
 {
 	IsIncrCountSurf = bf;
 }
 
-inline bool Materials::GetIsIncrCountSurf()
+bool Materials::GetIsIncrCountSurf()
 {
 	return IsIncrCountSurf;
 }
 
-inline void Materials::NullingCurrCountSurf()
+void Materials::NullingCurrCountSurf()
 {
 	CurrIdSurf = 0;
 }
 
-inline int Materials::GetCurrCountSurf()
+int Materials::GetCurrCountSurf()
 {
 	return CurrIdSurf;
 }
 
-inline void Materials::SetCurrCountSurf(int count)
+void Materials::SetCurrCountSurf(int count)
 {
 	CurrIdSurf = count;
 }
 
-void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl)
+void Materials::RenderStd(MTLTYPE_MODEL type, float4x4* world, ID slot, ID id_mtl)
 {
 	//может быть случай когда текстура в которую сейчас рисуем еще стоит в текстурных слотах
 	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
@@ -1738,9 +1801,9 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 	if (id_mtl >= 0 && id_mtl < ArrMaterials.size())
 		this->SetMainTexture(slot, id_mtl);
 
-	if (type == MtlTypeModel::tms_static)
+	if (type == MTLTYPE_MODEL_STATIC)
 	{
-		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1748,28 +1811,28 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeomCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "PlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGeom);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeom);
 	}
-	else if (type == MtlTypeModel::tms_grass || type == MtlTypeModel::tms_tree)
+	else if (type == MTLTYPE_MODEL_GRASS || type == MTLTYPE_MODEL_TREE)
 	{
-		ID tmpvs = (type == MtlTypeModel::tms_grass ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
-		SGCore_ShaderBind(ShaderType::st_vertex, tmpvs);
+		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpvs);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1777,27 +1840,27 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpvs, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "World", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreenCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "PlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdGreen);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreen);
 	}
-	else if (type == MtlTypeModel::tms_skin)
+	else if (type == MTLTYPE_MODEL_SKIN)
 	{
-		SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin);
 
 		float4x4 wmat = (world ? (*world) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1805,29 +1868,35 @@ void Materials::RenderStd(MtlTypeModel type, float4x4* world, ID slot, ID id_mtl
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, MLSet::IDsShaders::VS::StdSkin, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "WorldViewProjection", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "World", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkinCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "PlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "PlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::StdSkin);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkin);
 	}
 }
 
 void Materials::Render(ID id, float4x4* world)
 {
 	MTL_PRE_COND_ID(id);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
 	if (!world)
 		world = &(SMMatrixIdentity());
@@ -1843,9 +1912,9 @@ void Materials::Render(ID id, float4x4* world)
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 	else
 	{
-		if (ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_plane)
+		if (ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_PLANE)
 			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefPlaneTex());
-		else if (ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_cube_static || ArrMaterials[id]->Reflect->TypeRef == MtlTypeReflect::mtr_cube_dynamic)
+		else if (ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefCubeTex());
 	}
 
@@ -1881,7 +1950,7 @@ void Materials::Render(ID id, float4x4* world)
 	//иначе если берем параметры из ... редактора
 	else if (!tmpmaterial->LightParam.IsTextureParam)
 	{
-		if (tmpmaterial->LightParam.OldRoughnessValue != tmpmaterial->LightParam.RoughnessValue || tmpmaterial->LightParam.OldF0Value != tmpmaterial->LightParam.F0Value)
+		if (tmpmaterial->LightParam.OldRoughnessValue != tmpmaterial->LightParam.RoughnessValue || tmpmaterial->LightParam.OldF0Value != tmpmaterial->LightParam.F0Value || tmpmaterial->LightParam.OldThicknessValue != tmpmaterial->LightParam.ThicknessValue)
 		{
 			//блокируем текстуру 1х1 котора¤ есть параметры освещени¤, и запсиываем туда то что настроили
 			D3DLOCKED_RECT LockedRect;
@@ -1889,11 +1958,12 @@ void Materials::Render(ID id, float4x4* world)
 			ParamLightModelTex->LockRect(0, &LockedRect, 0, 0);
 			DWORD *param = (DWORD*)LockedRect.pBits;
 			//DWORD param = D3DCOLOR_ARGB(0,0,0,0);
-			param[0] = D3DCOLOR_ARGB(0, DWORD(tmpmaterial->LightParam.RoughnessValue*255.f), DWORD(tmpmaterial->LightParam.F0Value*255.f), 0);
+			param[0] = D3DCOLOR_ARGB(0, DWORD(tmpmaterial->LightParam.RoughnessValue*255.f), DWORD(tmpmaterial->LightParam.F0Value*255.f), DWORD(tmpmaterial->LightParam.ThicknessValue*255.f));
 			ParamLightModelTex->UnlockRect(0);
 
 			tmpmaterial->LightParam.OldRoughnessValue = tmpmaterial->LightParam.RoughnessValue;
 			tmpmaterial->LightParam.OldF0Value = tmpmaterial->LightParam.F0Value;
+			tmpmaterial->LightParam.OldThicknessValue = tmpmaterial->LightParam.ThicknessValue;
 		}
 
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(tmpmaterial->LightParam.ParamTexHand));
@@ -1903,10 +1973,10 @@ void Materials::Render(ID id, float4x4* world)
 
 
 	if (tmpmaterial->PreShaderVS != -1)
-		SGCore_ShaderBind(ShaderType::st_vertex, tmpmaterial->PreShaderVS);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS);
 
 	if (tmpmaterial->PreShaderPS != -1)
-		SGCore_ShaderBind(ShaderType::st_pixel, tmpmaterial->PreShaderPS);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS);
 
 	if (tmpmaterial->VS.IsTransWorld || tmpmaterial->PS.IsTransWorld || tmpmaterial->VS.IsTransWorldView || tmpmaterial->PS.IsTransWorldView || tmpmaterial->VS.IsTransWorldViewProjection || tmpmaterial->PS.IsTransWorldViewProjection)
 		worldtrans = SMMatrixTranspose(*world);
@@ -1927,22 +1997,22 @@ void Materials::Render(ID id, float4x4* world)
 	}
 
 	if (tmpmaterial->VS.IsTransWorld)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "World", &worldtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "World", &worldtrans);
 
 	if (tmpmaterial->PS.IsTransWorld)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "World", &worldtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "World", &worldtrans);
 
 	if (tmpmaterial->VS.IsTransView)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "View", &viewtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "View", &viewtrans);
 
 	if (tmpmaterial->PS.IsTransView)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "View", &viewtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "View", &viewtrans);
 
 	if (tmpmaterial->VS.IsTransProjection)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "Projection", &projtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "Projection", &projtrans);
 
 	if (tmpmaterial->PS.IsTransProjection)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "Projection", &projtrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "Projection", &projtrans);
 
 
 	if (tmpmaterial->VS.IsTransWorldView || tmpmaterial->PS.IsTransWorldView)
@@ -1950,10 +2020,10 @@ void Materials::Render(ID id, float4x4* world)
 		float4x4 wv = viewtrans * worldtrans;
 
 		if (tmpmaterial->VS.IsTransWorldView)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WorldView", &wv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WorldView", &wv);
 
 		if (tmpmaterial->PS.IsTransWorldView)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WorldView", &wv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WorldView", &wv);
 	}
 
 	if (tmpmaterial->VS.IsTransWorldViewProjection || tmpmaterial->PS.IsTransWorldViewProjection)
@@ -1966,45 +2036,48 @@ void Materials::Render(ID id, float4x4* world)
 		wvp = SMMatrixTranspose(wvp);
 
 		if (tmpmaterial->VS.IsTransWorldViewProjection)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WorldViewProjection", &wvp);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WorldViewProjection", &wvp);
 
 		if (tmpmaterial->PS.IsTransWorldViewProjection)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WorldViewProjection", &wvp);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WorldViewProjection", &wvp);
 	}
 
 	if (tmpmaterial->VS.IsTransPosCam || tmpmaterial->PS.IsTransPosCam)
 	{
+		float3 observerpos;
+		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
+
 		if (tmpmaterial->VS.IsTransPosCam)
-			SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "PosCam", &MLSet::ConstCurrCamPos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "PosCam", &observerpos);
 
 		if (tmpmaterial->PS.IsTransPosCam)
-			SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "PosCam", &MLSet::ConstCurrCamPos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "PosCam", &observerpos);
 	}
 
 
 	if (tmpmaterial->VS.IsTransUserData)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "Param", &(tmpmaterial->VS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "Param", &(tmpmaterial->VS.Param));
 
 	if (tmpmaterial->TransVSDataInPS)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "ParamVS", &(tmpmaterial->VS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "ParamVS", &(tmpmaterial->VS.Param));
 
 	if (tmpmaterial->PS.IsTransUserData)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "Param", &(tmpmaterial->PS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "Param", &(tmpmaterial->PS.Param));
 
 	if (tmpmaterial->TransPSDataInVS)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "ParamPS", &(tmpmaterial->PS.Param));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "ParamPS", &(tmpmaterial->PS.Param));
 
 	if (tmpmaterial->VS.IsTransTimeDelta)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->PS.IsTransTimeDelta)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "TimeDelta", &float2(CountTimeDelta, float(CurrTimeDelta) * 0.001f));
 
 	if (tmpmaterial->VS.IsTransWinSize)
-		SGCore_ShaderSetVRF(ShaderType::st_vertex, tmpmaterial->PreShaderVS, "WinSize", &MLSet::WinSize);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpmaterial->PreShaderVS, "WinSize", &float2_t(*r_win_width, *r_win_height));
 
 	if (tmpmaterial->PS.IsTransWinSize)
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "WinSize", &MLSet::WinSize);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "WinSize", &float2_t(*r_win_width, *r_win_height));
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (tmpmaterial->IsAlphaTest && !IsForceblyAlphaTest)
@@ -2036,23 +2109,23 @@ void Materials::Render(ID id, float4x4* world)
 		float zz;
 		if (tmpmaterial->IsUnlit)
 		{
-			if (tmpmaterial->LightParam.TypeRefraction == MtlTypeTransparency::mtt_none)
+			if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_NONE)
 				zz = 0.0;
 			else
 				zz = 0.66;
 		}
 		else
 		{
-			if (tmpmaterial->LightParam.TypeRefraction == MtlTypeTransparency::mtt_none)
+			if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_NONE)
 				zz = 0.33;
 			else
 				zz = 1;
 		}
 
-		if (tmpmaterial->LightParam.TypeRefraction == mtt_alpha_lighting)
+		if (tmpmaterial->LightParam.TypeRefraction == MTLTYPE_TRANSPARENCY_ALPHA_LIGHT)
 			++(CurrIdSurf);
 
-		SGCore_ShaderSetVRF(ShaderType::st_pixel, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(MLSet::NearFar.x, MLSet::NearFar.y, zz, float(CurrIdSurf)/255.f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, tmpmaterial->PreShaderPS, "NearFarIsUnlit", &float4_t(*r_near, *r_far, zz, float(CurrIdSurf) / 255.f));
 	}
 }
 

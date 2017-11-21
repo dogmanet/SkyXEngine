@@ -1,0 +1,22 @@
+
+/*
+particles_main.ps
+Рендер партиклов
+*/
+
+#include <../struct.h>
+
+sampler2D BaseSampler:register(s0);
+
+half ColorCoef;
+half4 Color;
+
+half4 main(vs_out_particles IN):COLOR0
+{
+	half4 color = tex2D(BaseSampler,IN.TexUV);
+	color.rgb = lerp(color.rgb, Color.rgb, Color.a);
+	color.rgb *= ColorCoef;
+	color.a *= IN.Alpha.x;
+	
+	return color;
+}

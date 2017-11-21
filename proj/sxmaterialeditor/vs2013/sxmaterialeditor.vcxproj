@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9C34362D-7FA6-4BD1-A48B-8FDE541344B0}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sxmaterialeditor</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/dx9sdk/Include;../../../sdks/bullet3/src</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/lib;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include;</SourcePath>
+    <OutDir>../../../build/</OutDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/</OutDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/dx9sdk/Include;../../../sdks/bullet3/src</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/lib;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include;</SourcePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;SX_MATERIAL_EDITOR;SX_EXE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;SX_MATERIAL_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\buttons_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\common_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\edits_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\material_editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\paraml_kit.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\shaders_kit.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\sxmaterialeditor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\trackbars_callback.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\sxmaterialeditor\SXMaterialEditor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\array.h" />
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\SXMath.h" />
+    <ClInclude Include="..\..\..\source\gdefines.h" />
+    <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\buttons_callback.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\common_callback.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\edits_callback.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\material_editor.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\paraml_kit.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\resource.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\shaders_kit.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\trackbars_callback.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\cam.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\open.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_ad.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_c.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_l.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_n.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_p.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\r_s.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\save.bmp" />
+    <Image Include="..\..\..\source\sxmaterialeditor\resource\view.bmp" />
+    <Image Include="..\..\..\source\sxparticleseditor\resource\grid.bmp" />
+    <Image Include="resource\cam.bmp" />
+    <Image Include="resource\r_ad.bmp" />
+    <Image Include="resource\r_c.bmp" />
+    <Image Include="resource\r_l.bmp" />
+    <Image Include="resource\r_n.bmp" />
+    <Image Include="resource\r_p.bmp" />
+    <Image Include="resource\r_s.bmp" />
+    <Image Include="resource\save.bmp" />
+    <Image Include="resource\view.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

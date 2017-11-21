@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ents">
+      <UniqueIdentifier>{fe80ba2f-c4bf-4847-b1ad-191e125d71cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents">
+      <UniqueIdentifier>{683bc9ab-75e2-483e-824d-037c2c4dd4d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\items">
+      <UniqueIdentifier>{ad8491a4-33cf-4f8d-bb42-8808741767f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\items\tools">
+      <UniqueIdentifier>{dc95d33c-af51-4a94-bef6-e11ba0c3a5eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\items\tools\weapons">
+      <UniqueIdentifier>{d327c624-7899-42aa-ac91-9e8f786c7506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items">
+      <UniqueIdentifier>{5d4f6948-ed8e-4ddd-a372-980bdcb8e585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items\tools">
+      <UniqueIdentifier>{49827d4d-01fe-4980-9844-7bc021b4206c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items\tools\weapons">
+      <UniqueIdentifier>{d8c4fbd2-a078-4fd3-90e7-bd298c1e0640}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\items\tools\weapons\addons">
+      <UniqueIdentifier>{6bbfe7cf-777f-4552-8f06-d463c71e64cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\items\tools\weapons\addons">
+      <UniqueIdentifier>{6612d13b-c7ce-47e0-b04c-5e051e6eec59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\triggers">
+      <UniqueIdentifier>{88259298-9ec2-441f-abdd-3348efe860e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\triggers">
+      <UniqueIdentifier>{a19af9a9-9698-4f6e-94fc-fc12afaa10a2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseEntity.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\proptable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EntityFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EntityManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXplayer.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseAnimating.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PathCorner.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\GameData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseItem.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseAmmo.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseAmmoBox.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseTool.cpp">
+      <Filter>Source Files\ents\items\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseRiffle.cpp">
+      <Filter>Source Files\ents\items\tools\weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp">
+      <Filter>Source Files\ents\items\tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\NPCBase.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\NPCZombie.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightDirectional.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightPoint.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\crosshair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseWeaponAddon.cpp">
+      <Filter>Source Files\ents\items\tools\weapons\addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseScope.cpp">
+      <Filter>Source Files\ents\items\tools\weapons\addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseMag.cpp">
+      <Filter>Source Files\ents\items\tools\weapons\addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseSilencer.cpp">
+      <Filter>Source Files\ents\items\tools\weapons\addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseHandle.cpp">
+      <Filter>Source Files\ents\items\tools\weapons\addons</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\Ragdoll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseTrigger.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXbaseSupply.cpp">
+      <Filter>Source Files\ents\items</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\game\sxgame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseEntity.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseAnimating.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXplayer.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXpointEntity.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\proptable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXpointCamera.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PathCorner.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\FuncTrain.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\GameData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\AAString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseRiffle.h">
+      <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseSnipe.h">
+      <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbasePistol.h">
+      <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseTool.h">
+      <Filter>Header Files\ents\items\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseAmmo.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseItem.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseAmmoBox.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h">
+      <Filter>Header Files\ents\items\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\NPCBase.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\NPCZombie.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LightDirectional.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LightPoint.h">
+      <Filter>Header Files\ents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\crosshair.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\CrosshairManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseWeaponAddon.h">
+      <Filter>Header Files\ents\items\tools\weapons\addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseScope.h">
+      <Filter>Header Files\ents\items\tools\weapons\addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseMag.h">
+      <Filter>Header Files\ents\items\tools\weapons\addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseSilencer.h">
+      <Filter>Header Files\ents\items\tools\weapons\addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseHandle.h">
+      <Filter>Header Files\ents\items\tools\weapons\addons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Ragdoll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseTrigger.h">
+      <Filter>Header Files\ents\triggers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXbaseSupply.h">
+      <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

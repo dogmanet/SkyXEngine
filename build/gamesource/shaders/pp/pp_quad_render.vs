@@ -1,4 +1,9 @@
 
+/*
+pp_quad_render.vs
+Отрисовка полноэкранного квадрата (full screen quad)
+*/
+
 #include <../struct.h>
 
 vs_out_pp main(vs_in_pp IN)

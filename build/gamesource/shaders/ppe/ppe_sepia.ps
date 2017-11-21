@@ -1,4 +1,9 @@
 
+/*
+ppe_sepia.ps
+Эффект "сепия" с учетом коэфициента
+*/
+
 #include <../struct.h>
 
 half3 LightColor;
@@ -15,11 +20,11 @@ half4 main(vs_out_pp IN):COLOR0
 	
 	half lum = dot(LumWeights,color);
 	half4 tmp_color = color;
-	tmp_color.rgb = DarkColor*(1.0-lum) + LightColor*lum;
-	tmp_color.rgb *= CountSepia * 2.0;
-	color.rgb *= 1.0 + (1.0 - (CountSepia * 2.0));
+	tmp_color.rgb = DarkColor*(1.f-lum) + LightColor*lum;
+	tmp_color.rgb *= CountSepia * 2.f;
+	color.rgb *= 1.f + (1.f - (CountSepia * 2.f));
 	color += tmp_color;
-	color /= 2.0;
+	color /= 2.f;
 	
 	return color;
 }

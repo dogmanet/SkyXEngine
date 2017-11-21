@@ -1,4 +1,9 @@
 
+/*
+ppgensm_pssm.ps
+Генерация теней для глобального света
+*/
+
 #include <../struct.h>
 #include <../mtrl.h>
 
@@ -76,7 +81,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
 							Depth = tex2Dlod(DepthSampler1, tmpcoord).r; 
 							tmpShadowTerm = 1.f-((TexCoord1.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,60),72),84);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,60),72),104);
 							tmpShadowTerm /= dx1*dx1;
 
 							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord1.z) ? 0.0f : 1.0f;
@@ -94,7 +99,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
 							Depth = tex2Dlod(DepthSampler2, tmpcoord).r; 
 							tmpShadowTerm = 1.f-((TexCoord2.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,36),48),60);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,36),48),80);
 							tmpShadowTerm /= dx2*dx2;
 
 							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord2.z) ? 0.0f : 1.0f;
@@ -112,7 +117,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
 							Depth = tex2Dlod(DepthSampler3, tmpcoord).r; 
 							tmpShadowTerm = 1.f-((TexCoord3.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,24),36),48);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,24),36),68);
 							tmpShadowTerm /= dx3*dx3;
 
 							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord3.z) ? 0.0f : 1.0f;
@@ -137,7 +142,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
 							Depth = tex2Dlod(DepthSampler4, tmpcoord).r; 
 							tmpShadowTerm = 1.f-((TexCoord4.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,12),24),36);
+							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,12),24),56);
 							tmpShadowTerm /= dx4*dx4;
 
 							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord4.z) ? 0.0f : 1.0f;

@@ -11,7 +11,39 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\core\concmd.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\Config.cpp" />
+    <ClCompile Include="..\..\..\source\core\cvars.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\file.cpp" />
+    <ClCompile Include="..\..\..\source\core\sxcore.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\core\sxcore_dll.cpp" />
+    <ClCompile Include="..\..\..\source\core\Task.cpp" />
+    <ClCompile Include="..\..\..\source\core\TaskManager.cpp" />
+    <ClCompile Include="..\..\..\source\core\time.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\core\concmd.h" />
+    <ClInclude Include="..\..\..\source\core\concurrent_queue.h" />
+    <ClInclude Include="..\..\..\source\core\Config.h" />
+    <ClInclude Include="..\..\..\source\core\cvars.h" />
+    <ClInclude Include="..\..\..\source\core\eventbridge.h" />
+    <ClInclude Include="..\..\..\source\core\eventchannel.h" />
+    <ClInclude Include="..\..\..\source\core\eventhandler.h" />
+    <ClInclude Include="..\..\..\source\core\eventhandlerqueue.h" />
+    <ClInclude Include="..\..\..\source\core\File.h" />
+    <ClInclude Include="..\..\..\source\core\sxcore.h" />
+    <ClInclude Include="..\..\..\source\core\Task.h" />
+    <ClInclude Include="..\..\..\source\core\TaskManager.h" />
+    <ClInclude Include="..\..\..\source\core\time.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C1C1F046-C839-4602-AF70-923CDD237C1B}</ProjectGuid>
@@ -61,16 +93,18 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -81,7 +115,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>

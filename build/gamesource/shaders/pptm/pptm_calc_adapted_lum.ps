@@ -1,0 +1,27 @@
+
+/*
+pptm_calc_adapted_lum.ps
+Расчет коэфициента примерной адаптации глаза к освещению
+*/
+
+#include <../struct.h>
+#include <pptm_common.h>
+
+sampler2D s0:register(s0);
+sampler2D s1:register(s1);
+
+half ElapsedTime;
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half AdaptedLum = (tex2D(s0, TexUV_Center));
+	half CurrLum = sqrt(HDRLumFloor + tex2D(s1, TexUV_Center));
+	
+	return half4(pow( 
+				pow(
+					AdaptedLum, 0.25f) + ( 
+											pow(CurrLum, 0.25f) - pow(AdaptedLum, 0.25f) 
+										) * 
+					(1.f - pow(0.9785f, ElapsedTime)), 
+				4.f),0.f,0.f,1.f);
+}

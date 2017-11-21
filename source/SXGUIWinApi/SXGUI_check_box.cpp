@@ -49,5 +49,5 @@ void SXGUICheckBox::SetCheck(int check)
 
 int SXGUICheckBox::GetCheck()
 {
-	return SendMessage(this->GetHWND(),BM_GETCHECK,0,0);
+	return SendMessage(this->GetHWND(), BM_GETCHECK, 0, 0);
 }

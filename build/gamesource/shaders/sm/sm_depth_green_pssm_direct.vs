@@ -1,17 +1,25 @@
 
+/*
+sm_depth_green_pssm_direct.vs
+Рендер глубины сцены (растительность) с позиции направленного/глобального источника света
+*/
+
 #include <../struct.h>
 #include <../green.h>
 
 float4x4 WorldViewProjection;
 
 #if defined(_GRASS_)
-half2 DistBeginEndLessening : register(c62);
-half3 ViewPos : register(c63);
+half2 DistBeginEndLessening : register(GREEN_R_LESSENING);
+half3 ViewPos : register(GREEN_R_VIEWPOS);
+half4 BSphere : register(GREEN_R_BSPHERE);
+half3 BBMax : register(GREEN_R_BBMAX);
+half3 BBMin : register(GREEN_R_BBMIN);
 #endif
 
 void main(in vs_in_green IN, out vs_out_gcommon OUT) 
 {
-	half multiplier = 1;
+	half multiplier = 1.f;
 	
 	#if defined(_GRASS_)
 	multiplier = GrassComMultiplier(IN.InstancePos,ViewPos,DistBeginEndLessening);

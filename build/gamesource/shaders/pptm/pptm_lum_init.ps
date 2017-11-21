@@ -1,0 +1,28 @@
+
+/*
+pptm_lum_init.ps
+ѕервоначальное заполнение текстуры данными дл¤ tone mapping
+*/
+
+#include <../struct.h>
+#include <pptm_common.h>
+
+sampler2D s0:register(s0);
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+    half3 color = 0.0f;
+    half res = 0.0f;
+	half tmpcolor;
+
+    for(int i = 0; i < 16; ++i)
+    {
+        color = tex2D(s0, IN.TexUV+ArrOffsets[i]).rgb;
+		tmpcolor =  dot(color, HDRLumsWeights);
+        res += tmpcolor * tmpcolor;
+    }
+    
+    res *= 0.0625f;
+	
+    return half4(res,0.f,0.f,1.f);
+}

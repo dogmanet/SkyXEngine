@@ -1,0 +1,31 @@
+
+/*
+ppe_fog_linear.ps
+Эффект "линейный туман" (на основании линейной глубины)
+*/
+
+#include <../struct.h>
+
+half3 FogColor;
+half FogDenisty;
+/*half4 Param;
+//x - интенсивность тумана
+//y - на сколько небо в тумане
+//z - минимальное значение тумана
+//w - максимальное значение тумана
+*/
+
+sampler2D DepthMap:register(s0);
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half Depth = tex2D(DepthMap, IN.TexUV).r;
+	
+		[branch]if(Depth >= 1.f)
+			clip(-1);
+		
+	/*half tmp_alpha = clamp((Param.x * Depth),Param.z,Param.w);
+	half4 cc = half4(FogColor,tmp_alpha);*/
+	
+	return half4(FogColor,FogDenisty * Depth);
+}

@@ -1,0 +1,82 @@
+
+/*
+ppe_dlaa_long.ps
+Directionally Localized Anti Aliasing
+Обнаружение длинных граней и их размытие
+Начало данный шейдер берет отсюда: https://www.gamedev.net/forums/topic/594209-dlaa/
+*/
+
+#include <../struct.h>
+
+#define DLAA_MUL_VAL 0.333f
+
+sampler2D Tex0:register(s0);
+sampler2D Tex1:register(s1);
+
+half2 PixelSize;
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half4 sampleCenter = tex2Dlod(Tex0, half4(IN.TexUV,0.f,0.f));
+	half fEdgeDetected = tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
+	
+	[branch]if(fEdgeDetected.x == 0.f)
+		return sampleCenter;
+
+	half4 sampleVertNeg1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -3.5) * PixelSize, 0.f, 0.f)); 
+	half4 sampleVertNeg2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -7.5) * PixelSize, 0.f, 0.f));
+	half4 sampleVertPos1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, 3.5) * PixelSize, 0.f, 0.f)); 
+	half4 sampleVertPos2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, 7.5) * PixelSize, 0.f, 0.f)); 
+
+	half4 sampleHorizNeg1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(-3.5, 0.0) * PixelSize, 0.f, 0.f)); 
+	half4 sampleHorizNeg2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(-7.5, 0.0) * PixelSize, 0.f, 0.f));
+	half4 sampleHorizPos1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(3.5, 0.0) * PixelSize, 0.f, 0.f)); 
+	half4 sampleHorizPos2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(7.5, 0.0) * PixelSize, 0.f, 0.f)); 
+
+	half pass1EdgeAvgHoriz = (sampleHorizNeg2.a + sampleHorizNeg1.a + sampleCenter.a + sampleHorizPos1.a + sampleHorizPos2.a) * 0.2f;
+	half pass1EdgeAvgVert = (sampleVertNeg2.a + sampleVertNeg1.a + sampleCenter.a + sampleVertPos1.a + sampleVertPos2.a ) * 0.2f;
+	pass1EdgeAvgHoriz = saturate(pass1EdgeAvgHoriz * 2.0f - 1.0f);
+	pass1EdgeAvgVert = saturate(pass1EdgeAvgVert * 2.0f - 1.0f);
+	half longEdge = max(pass1EdgeAvgHoriz, pass1EdgeAvgVert);
+
+	half4 aaResult = sampleCenter;
+	[branch]if (longEdge > 0)
+	{
+    	half4 avgHorizLong = (sampleHorizNeg2 + sampleHorizNeg1 + sampleCenter + sampleHorizPos1 + sampleHorizPos2) * 0.2f;
+    	half4 avgVertLong = (sampleVertNeg2 + sampleVertNeg1 + sampleCenter + sampleVertPos1 + sampleVertPos2) * 0.2f;
+    	half valueHorizLong = dot(avgHorizLong.xyz, DLAA_MUL_VAL);
+    	half valueVertLong = dot(avgVertLong.xyz, DLAA_MUL_VAL);
+
+    	half4 sampleLeft = tex2Dlod(Tex0, half4(IN.TexUV + half2(-1.0,  0.0) * PixelSize, 0.f, 0.f));
+    	half4 sampleRight = tex2Dlod(Tex0, half4(IN.TexUV + half2(1.0,  0.0) * PixelSize, 0.f, 0.f));
+    	half4 sampleUp = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -1.0) * PixelSize, 0.f, 0.f));
+    	half4 sampleDown = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0,  1.0) * PixelSize, 0.f, 0.f));
+
+    	half valueCenter = dot(sampleCenter.xyz, DLAA_MUL_VAL);
+    	half valueLeft = dot(sampleLeft.xyz, DLAA_MUL_VAL);
+    	half valueRight = dot(sampleRight.xyz, DLAA_MUL_VAL);
+    	half valueTop = dot(sampleUp.xyz, DLAA_MUL_VAL);
+    	half valueBottom = dot(sampleDown.xyz, DLAA_MUL_VAL);
+
+    	half4 diffToCenter = valueCenter - half4(valueLeft, valueTop, valueRight, valueBottom);   	
+    	half blurAmountLeft = saturate(0.0 + (valueVertLong - valueLeft) / diffToCenter.x);
+    	half blurAmountUp = saturate(0.0 + (valueHorizLong - valueTop) / diffToCenter.y);
+    	half blurAmountRight = saturate(1.0 + (valueVertLong - valueCenter) / diffToCenter.z);
+    	half blurAmountDown = saturate(1.0 + (valueHorizLong - valueCenter) / diffToCenter.w);  	
+
+    	half4 blurAmounts = half4( blurAmountLeft, blurAmountRight, blurAmountUp, blurAmountDown );
+    	blurAmounts = (blurAmounts == half4(0.f, 0.f, 0.f, 0.f)) ? half4(1.f, 1.f, 1.f, 1.f) : blurAmounts;
+
+    	half4 longBlurHoriz = lerp(sampleLeft, sampleCenter, blurAmounts.x);
+    	longBlurHoriz = lerp(sampleRight, longBlurHoriz, blurAmounts.y);
+    	half4 longBlurVert = lerp(sampleUp,	sampleCenter, blurAmounts.z);
+    	longBlurVert = lerp(sampleDown, longBlurVert, blurAmounts.w);
+
+    	aaResult = lerp(sampleCenter, longBlurHoriz, pass1EdgeAvgVert);
+    	aaResult = lerp(aaResult, longBlurVert, pass1EdgeAvgHoriz);
+   }
+
+   //return tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
+   return half4(aaResult.rgb, sampleCenter.a);
+   return lerp(half4(aaResult.rgb, sampleCenter.a), sampleCenter, 1-fEdgeDetected.x);
+}

@@ -6,20 +6,20 @@ half2 WinSize;
 half4 main(vs_out_pp IN):COLOR0
 {
 	#if defined(_COLUMN_)
-	if(frac(IN.TexUV.y*WinSize.y*0.5) >= 0.5)
+	if(frac(IN.TexUV.y*WinSize.y*0.5f) >= 0.5f)
 		clip(-1);
 
-	clip(frac(IN.TexUV.x*WinSize.x*0.5) - 0.5);
+	clip(frac(IN.TexUV.x*WinSize.x*0.5f) - 0.5f);
 	
 	#elif defined(_STR_)
-	clip(frac(IN.TexUV.y*WinSize.y*0.5) - 0.5);
+	clip(frac(IN.TexUV.y*WinSize.y*0.5f) - 0.5f);
 	
-	[branch]if(frac(IN.TexUV.x*WinSize.x*0.5) >= 0.5)
+	[branch]if(frac(IN.TexUV.x*WinSize.x*0.5f) >= 0.5f)
 		clip(-1);
 	
 	#elif defined(_COLUMN_STR_)
-	clip(frac(IN.TexUV.y*WinSize.y*0.5) - 0.5);
-	clip(frac(IN.TexUV.x*WinSize.x*0.5) - 0.5);
+	clip(frac(IN.TexUV.y*WinSize.y*0.5f) - 0.5f);
+	clip(frac(IN.TexUV.x*WinSize.x*0.5f) - 0.5f);
 	
 	#else
 	#error unexpected operation

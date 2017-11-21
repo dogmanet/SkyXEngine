@@ -1,14 +1,24 @@
 
-#ifndef LOADER_TEXTURES_H
-#define LOADER_TEXTURES_H
+#ifndef __LOADERTEXTURES_H
+#define __LOADERTEXTURES_H
 
-#pragma once
+#include <gdefines.h>
+#include <d3d9.h>
+#include <common/array.h>
+#include <common/String.h>
+#include "sxgcore.h"
+
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 class LoaderTextures
 {
 public:
 	LoaderTextures();
 	~LoaderTextures();
+
+	bool FileExists(const char* name);
 
 	void ClearLoaded();
 
@@ -26,8 +36,6 @@ public:
 
 	IDirect3DTexture9* GetTexture(ID id);//получить текстуру по id
 
-	inline void SetStdPath(const char* path){ StdPath = path; }
-	inline void GetStdPath(char* path){ if (path)strcpy(path, StdPath.c_str()); }
 private:
 
 	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
@@ -67,7 +75,6 @@ private:
 		
 	};
 
-	String StdPath;
 	Array<TLPath*> Arr;
 	int CurrFirstFree;
 

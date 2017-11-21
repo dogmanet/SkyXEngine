@@ -35,7 +35,7 @@ SXGUIUpDown::SXGUIUpDown(WORD x,WORD y,WORD width,WORD heigth,DWORD exstyle,DWOR
 	this->InitComponent();
 }
 
-SXGUIUpDown::SXGUIUpDown(WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPROC handler,DWORD id,HWND buddy,WORD left_right)
+SXGUIUpDown::SXGUIUpDown(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, HWND buddy, bool align_left)
 {
 	/*this->GetHWND() = CreateUpDownControl(
 												WS_CHILD | WS_BORDER | WS_VISIBLE | UDS_WRAP | UDS_SETBUDDYINT | UDS_ARROWKEYS | (left_right == 1 ?UDS_ALIGNRIGHT : UDS_ALIGNLEFT), 
@@ -47,7 +47,7 @@ SXGUIUpDown::SXGUIUpDown(WORD x,WORD y,WORD width,WORD heigth,HWND parent,WNDPRO
 							0,
 							UPDOWN_CLASS,
 							0,
-							(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | UDS_WRAP | UDS_SETBUDDYINT | UDS_ARROWKEYS | (left_right == 1 ?UDS_ALIGNRIGHT : UDS_ALIGNLEFT),
+							(parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | UDS_WRAP | UDS_SETBUDDYINT | UDS_ARROWKEYS | (align_left ? UDS_ALIGNRIGHT : UDS_ALIGNLEFT),
 							x,y,width,heigth,
 							parent,
 							(HMENU)id,

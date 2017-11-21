@@ -63,9 +63,6 @@
     <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar_sx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_track_bar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -76,6 +73,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\SXGUIWinApi\sxgui_base.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_list_view.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -134,12 +137,6 @@
     <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_up_down.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\sxguielements.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUIH.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -147,6 +144,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_base_wnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_list_view.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

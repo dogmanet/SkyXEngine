@@ -20,8 +20,6 @@ SXGUIControl::SXGUIControl(HWND window_handle,HWND parent_handle,WNDPROC handler
 	ParentHandle = parent_handle;
 		if(handler != 0)
 			OldProc = (WNDPROC)SetWindowLong(WindowHandle, GWL_WNDPROC, (LONG)handler);
-
-	//SetWindowLong(WindowHandle,GWL_USERDATA,(LONG)OldProc);
 }
 
 void SXGUIControl::Init(HWND window_handle, HWND parent_handle, WNDPROC handler)
@@ -108,7 +106,7 @@ SXGUIComponent::SXGUIComponent()
 	BFSizingChangeRight = true;
 	BFSizingChangeLeft = true;
 
-	BFMinSize = false;
+	MinSizeX = MinSizeY = 0;
 	//this->Font = 0;
 }
 
@@ -141,8 +139,8 @@ void SXGUIComponent::InitComponent()
 
 	OffsetParentRect.top = OffsetParentRect.bottom = OffsetParentRect.left = OffsetParentRect.right = 0;
 
-	MinSizeX = rc.left - rc.right;
-	MinSizeY = rc.bottom - rc.top;
+	//MinSizeX = rc.right - rc.left;
+	//MinSizeY = rc.bottom - rc.top;
 
 	//HFONT HandleFont;
 	//SystemParametersInfo(SPI_GETICONTITLELOGFONT, 0, &HandleFont, 0);
@@ -170,10 +168,10 @@ void SXGUIComponent::Enable(bool bf)
 
 bool SXGUIComponent::SetWinRect(RECT* rect,bool alignment_screen_space)
 {
-	RECT* wrect = new RECT;
-	SystemParametersInfo(SPI_GETWORKAREA, 0, wrect, 0);
-	UINT width_screen = wrect->right;
-	UINT heigth_screen = wrect->bottom;
+	RECT wrect;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
+	UINT width_screen = wrect.right;
+	UINT heigth_screen = wrect.bottom;
 
 	//MessageBox(0,ToPointChar(ToString(width_screen) + "|" + ToString(heigth_screen)),0,0);
 
@@ -198,13 +196,6 @@ bool SXGUIComponent::SetWinRect(RECT* rect,bool alignment_screen_space)
 	//MessageBox(0,ToPointChar(ToString(width) + "|" + ToString(heigth)),"wh",0);
 		BOOL bf = MoveWindow(this->GetHWND(), x, y, width, heigth, true);
 	return bf == TRUE ? true : false;
-}
-
-RECT* SXGUIComponent::GetWinRect()
-{
-	RECT* rect = new RECT;
-	GetWindowRect(this->GetHWND(), rect);
-	return rect;
 }
 
 void SXGUIComponent::GetWinRect(RECT* rect)
@@ -240,14 +231,6 @@ bool SXGUIComponent::SetClientRect(RECT* rect,bool alignment_screen_space)
 		if(x != qwerr->left || y != qwerr->top || width != qwerr->right - qwerr->left || heigth != qwerr->bottom - qwerr->top)
 			MessageBox(0,0,0,0);*/
 	return bf == TRUE ? true : false;
-}
-
-RECT* SXGUIComponent::GetClientRect()
-{
-	RECT* rect = new RECT;
-	GetWindowRect(this->GetHWND(), rect);
-	MapWindowPoints(NULL, this->Parent(), (LPPOINT)rect, 2);
-	return rect;
 }
 
 void SXGUIComponent::GetClientRect(RECT* rect)
@@ -287,7 +270,7 @@ void SXGUIComponent::SetFont(const char* name,int height,int width,int weight,in
 	SendMessage(this->GetHWND(), WM_SETFONT, WPARAM(hfont), 1);
 }
 
-void SXGUIComponent::SetFont(HFONT* hfont)
+void SXGUIComponent::SetFont(HFONT hfont)
 {
 	SendMessage(this->GetHWND(), WM_SETFONT, WPARAM(hfont), 1);
 }
@@ -424,10 +407,10 @@ void SXGUIComponent::SetHintText(const char* text)
 	Hint->SetText(text);
 }
 
-char* SXGUIComponent::GetHintText()
+const char* SXGUIComponent::GetHintText()
 {
 		if(Hint != 0)
-			Hint->GetText();
+			return Hint->GetText();
 	return 0;
 }
 
@@ -441,9 +424,13 @@ void SXGUIComponent::GetHintText(char* buf)
 
 void SXGUIComponent::UpdateSize()
 {
+	char classname[256];
+	GetClassName(this->GetHWND(), classname, 256);
+	if (strcmp(classname, WC_LISTVIEW) == 0)
+		int qwerty = 0;
 	RECT rect;
 	RECT win_screen_rect;
-	GetWindowRect(this->GetHWND(), &rect);
+	BOOL bf = GetWindowRect(this->GetHWND(), &rect);
 
 	GetWindowRect(this->GetHWND(), &win_screen_rect);
 	//MapWindowPoints(this->ParentHandle, HWND_DESKTOP, (LPPOINT)&win_screen_rect, 2);
@@ -457,18 +444,9 @@ void SXGUIComponent::UpdateSize()
 	//трансляция координат в пространство родителя
 	//MapWindowPoints(NULL, this->ParentHandle, (LPPOINT)&rect, 2);
 
+	if (abs(OffsetParentRect.left) > 30000 || abs(OffsetParentRect.right) > 30000 || abs(OffsetParentRect.top) > 30000 || abs(OffsetParentRect.bottom) > 30000)
+		return;
 
-		/*if(OffsetParentRect.left > 30000)
-			OffsetParentRect.left -= 32000;
-
-		if(OffsetParentRect.right > 30000)
-			OffsetParentRect.right -= 32000;
-
-		if(OffsetParentRect.top > 30000)
-			OffsetParentRect.top -= 32000;
-
-		if(OffsetParentRect.bottom > 30000)
-			OffsetParentRect.bottom -= 32000;*/
 	//смещение по всем направлениям
 	RECT offset;
 	offset.left = OffsetParentRect.left ? OffsetParentRect.left : NewParentRect.left - ParentRect.left;
@@ -526,12 +504,15 @@ void SXGUIComponent::UpdateSize()
 	//MapWindowPoints(this->ParentHandle, HWND_DESKTOP, (LPPOINT)&WinScreenRect, 2);
 	//MessageBox(0,ToPointChar(rect.bottom - rect.top),ToPointChar(rect.bottom - rect.top),0);
 	
-	MoveWindow(this->GetHWND(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+	bf = MoveWindow(this->GetHWND(), rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
 	//SetWinRect(&rect,true);
 	GetWindowRect(this->Parent(),&this->ParentRect);
 	GetWindowRect(this->GetHWND(), &WinScreenRect);
 
 	OffsetParentRect.top = OffsetParentRect.bottom = OffsetParentRect.left = OffsetParentRect.right = 0;
+
+	DWORD err = GetLastError();
+	int qweerty = 0;
 }
 
 void SXGUIComponent::UpdateRect()
@@ -660,7 +641,7 @@ bool SXGUIComponent::AddHandler(HandlerMsg Handler,UINT Msg)
 			return false;
 }
 
-WORD SXGUIComponent::GetCountKeyArrHandler()
+int SXGUIComponent::GetCountKeyArrHandler()
 {
 	return CountKeyArrHandler;
 }
@@ -773,117 +754,122 @@ BOOL IsEdit(HWND hWnd)
 		stricmp(szClassName, "Edit") == 0;
 }
 
+
 LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);//dynamic_cast<ISXGUIComponent*>(((IBaseObject*)((LONG*)GetWindowLong(hwnd, GWL_USERDATA))));
-	//ISXGUIBaseWnd *Component22 = dynamic_cast<ISXGUIBaseWnd*>(Component);//dynamic_cast<ISXGUIComponent*>(((IBaseObject*)((LONG*)GetWindowLong(hwnd, GWL_USERDATA))));
-	//int qwert = 0;
+	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
+
 	if (Component)
 	{
-			if(msg == WM_KEYDOWN)
+		if (msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN)
+		{
+			Component->SetFocus();
+		}
+
+		if (msg == WM_KEYDOWN)
+		{
+			if (wParam == 'A' && (GetKeyState(VK_CONTROL) & 0x80))
 			{
-				if(wParam == 'A' && (GetKeyState(VK_CONTROL) & 0x80))
+				// User pressed Ctrl-A.  Let's select-all
+				if (IsEdit(hwnd))
 				{
-					// User pressed Ctrl-A.  Let's select-all
-					if(IsEdit(hwnd))
-					{
-						SendMessage(hwnd, EM_SETSEL, 0, -1);
-						return(1);
-					}
+					SendMessage(hwnd, EM_SETSEL, 0, -1);
+					return(1);
 				}
 			}
-			HandlerMsg MainFunction = 0;								//главная функция-обработчик, ее значение и будет возвращаться
-			HandlerMsg SecondFunction[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];	//массив дополнительных обработчиков на сообщения, их значения не должны смысла
-			int CountSecond = 0;	//количество дополнительных функций-обработчиков
-				//инициализируем вышеописанные данные
-				for(int i=0;i<Component->GetCountKeyArrHandler();i++)
-				{
-						if(Component->GetMsgHandler(i) == msg)
-						{
-								if(
-									Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam && 
-									Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-								else if(
-									!Component->GetConsiderWParamHandler(i) && 
-									Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-								else if(
-									Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam && 
-									!Component->GetConsiderLParamHandler(i)
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-								else if(
-									!Component->GetConsiderWParamHandler(i) && 
-									!Component->GetConsiderLParamHandler(i)
-									)
-								{
-										if(Component->IsMainFunction(i))
-										{
-											MainFunction = Component->GetHandlerFunction(i);
-										}
-										else
-										{
-											SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
-											CountSecond++;
-										}
-
-								}
-						}
-				}
-
-				//вызываем все дополнительные функции обработчики
-				for(int i=0;i<CountSecond;i++)
-				{
-					SecondFunction[i](hwnd, msg, wParam, lParam);
-				}
-
-					//если была найдена главная функция то вызываем ее и возвраащем ее значение
-					if(MainFunction)
-						return MainFunction(hwnd, msg, wParam, lParam);
-					//else
-						//return Component->OldProc(hwnd, msg, wParam, lParam);
-					//!!!а если нет то что???
-					//else mf
-				//return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
-				return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);;
 		}
-	
+		HandlerMsg MainFunction = 0;								//главная функция-обработчик, ее значение и будет возвращаться
+		HandlerMsg SecondFunction[SXGUI_COUNT_HANDLERS_MSG_IN_ARR];	//массив дополнительных обработчиков на сообщения, их значения не должны смысла
+		int CountSecond = 0;	//количество дополнительных функций-обработчиков
+		//инициализируем вышеописанные данные
+		for (int i = 0; i<Component->GetCountKeyArrHandler(); i++)
+		{
+			if (Component->GetMsgHandler(i) == msg)
+			{
+				if (
+					Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam &&
+					Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+				else if (
+					!Component->GetConsiderWParamHandler(i) &&
+					Component->GetConsiderLParamHandler(i) && Component->GetLParamHandler(i) == lParam
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+				else if (
+					Component->GetConsiderWParamHandler(i) && Component->GetWParamHandler(i) == wParam &&
+					!Component->GetConsiderLParamHandler(i)
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+				else if (
+					!Component->GetConsiderWParamHandler(i) &&
+					!Component->GetConsiderLParamHandler(i)
+					)
+				{
+					if (Component->IsMainFunction(i))
+					{
+						MainFunction = Component->GetHandlerFunction(i);
+					}
+					else
+					{
+						SecondFunction[CountSecond] = Component->GetHandlerFunction(i);
+						CountSecond++;
+					}
+
+				}
+			}
+		}
+
+		//вызываем все дополнительные функции обработчики
+		for (int i = 0; i<CountSecond; i++)
+		{
+			SecondFunction[i](hwnd, msg, wParam, lParam);
+		}
+
+		//если была найдена главная функция то вызываем ее и возвраащем ее значение
+		if (MainFunction)
+			return MainFunction(hwnd, msg, wParam, lParam);
+		//else
+		//return Component->OldProc(hwnd, msg, wParam, lParam);
+		//!!!а если нет то что???
+		//else mf
+		//return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
+		return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);;
+	}
+
 	return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
 }
 
@@ -910,14 +896,14 @@ bool SXGUIFuctinon::ScrollBarH(ISXGUIControl *Control)
 	return false;
 }
 
-bool SXGUIFuctinon::ScrollLine(ISXGUIControl *Control,WORD scroll,WORD dir,int count)
+bool SXGUIFuctinon::ScrollLine(ISXGUIControl *Control,int scroll,int dir,int count)
 {
-	long _scroll = scroll == SXGUI_VERT_SCROLL ? WM_VSCROLL : WM_HSCROLL;
+	long _scroll = scroll == SXGUI_SCROLL_TYPE_VERT ? WM_VSCROLL : WM_HSCROLL;
 	long _dir = 0;
 		if(_scroll == WM_VSCROLL)
-			_dir = dir == SXGUI_DOWN_SCROLL ? SB_LINEDOWN : SB_LINEUP /*SB_BOTTOM :SB_TOP*/;
+			_dir = dir == SXGUI_SCROLL_DIR_DOWN ? SB_LINEDOWN : SB_LINEUP /*SB_BOTTOM :SB_TOP*/;
 		else
-			_dir = dir == SXGUI_RIGTH_SCROLL ? SB_LINERIGHT : SB_LINELEFT /*SB_RIGHT :SB_LEFT*/;
+			_dir = dir == SXGUI_SCROLL_DIR_RIGTH ? SB_LINERIGHT : SB_LINELEFT /*SB_RIGHT :SB_LEFT*/;
 
 	bool bf = true;
 		for(int i=0;i<count;i++)
@@ -936,13 +922,6 @@ bool SXGUIFuctinon::SetText(ISXGUIControl*const Control, const char* text)
 			return true;
 }	
 
-/*char* SXGUIFuctinon::GetTextOut(ISXGUIControl *Control)
-{
-	char* text = new char[GetWindowTextLength(Control->GetHWND()) + 1];
-	GetWindowText(Control->GetHWND(),text,GetWindowTextLength(Control->GetHWND()) + 1);
-	return text;
-}*/
-
 void SXGUIFuctinon::GetText(ISXGUIControl *Control,char* buf,int count)
 {
 	GetWindowText(Control->GetHWND(),buf,count);
@@ -957,46 +936,53 @@ int SXGUIFuctinon::GetTextLen(ISXGUIControl *Control)
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateImgButton(HWND hwnd,LPARAM lParam)
 {
-	//SXGUIButtonImg *Component = (SXGUIButtonImg *)GetWindowLong(hwnd,GWL_USERDATA);
 	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
-	ISXGUIButtonImg *Button = dynamic_cast<ISXGUIButtonImg*>(Component);
-	char ClassName[256];
-	int error = GetClassName(hwnd,ClassName,256);
-		if(error && strcmp(ClassName,"SXGUIBUTTONIMG") == 0 && Component)
-			SendMessage(hwnd,WM_KILLFOCUS,0,lParam);
+	
+	if (Component)
+	{
+		char ClassName[256];
+		int error = GetClassName(hwnd, ClassName, 256);
+		if (error && strcmp(ClassName, "SXGUIBUTTONIMG") == 0 && Component)
+			SendMessage(hwnd, WM_KILLFOCUS, 0, lParam);
+	}
 		
 	return TRUE;
 }
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateSize(HWND hwnd,LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
-	Component->UpdateSize();
-		
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
+	if (Component)
+		Component->UpdateSize();
+
 	return TRUE;
 }
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcUpdateRect(HWND hwnd,LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
-	Component->UpdateRect();
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
+	if (Component)
+		Component->UpdateRect();
 		
 	return TRUE;
 }
 
 BOOL CALLBACK SXGUIEnumChildWindow::EnumChildProcMouseMove(HWND hwnd,LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
 
-	POINT p;
-	GetCursorPos(&p);
-	RECT rect;
-	GetWindowRect(hwnd,&rect);
+	if (Component)
+	{
+		POINT p;
+		GetCursorPos(&p);
+		RECT rect;
+		GetWindowRect(hwnd, &rect);
 
-		if(Component && !((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom)))
+		if (Component && !((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom)))
 		{
-			SendMessage(Component->GetHWND(),WM_NCMOUSEMOVE,lParam,0);
+			SendMessage(Component->GetHWND(), WM_NCMOUSEMOVE, lParam, 0);
 		}
+	}
 
 	return TRUE;
 }
@@ -1035,7 +1021,7 @@ int SXGUIBaseHandlers::InitHandlerMsg(ISXGUIComponent* Component)
 
 LRESULT SXGUIBaseHandlers::CtlColorChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong((HWND)lParam,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong((HWND)lParam, GWL_USERDATA);
 
 		if(Component)
 		{
@@ -1046,6 +1032,7 @@ LRESULT SXGUIBaseHandlers::CtlColorChange(HWND hwnd, UINT msg, WPARAM wParam, LP
 			SetTextColor((HDC)wParam, Component->GetColorText());
 			return (long)Component->GetBrush();
 		}
+	return((LRESULT)INVALID_HANDLE_VALUE);
 }
 
 LRESULT SXGUIBaseHandlers::SizeChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -1056,7 +1043,11 @@ LRESULT SXGUIBaseHandlers::SizeChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXGUIBaseHandlers::SizingChange(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd,GWL_USERDATA);
+	ISXGUIComponent *Component = (ISXGUIComponent *)GetWindowLong(hwnd, GWL_USERDATA);
+	
+	if (!Component)
+		return TRUE;
+
 	RECT rc;
 	GetWindowRect(hwnd, &rc);
 	POINT p;
@@ -1079,7 +1070,7 @@ LRESULT SXGUIBaseHandlers::SizingChange(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 				if(!Component->BFSizingChangeBottom)
 					lpRect.bottom = rc.bottom;
 
-				if(Component->BFMinSize)
+				if (Component->MinSizeX != 0 && Component->MinSizeY != 0)
 				{
 						if(lpRect.right - lpRect.left < Component->MinSizeX && Component->BFSizingChangeRight)
 						{
@@ -1150,26 +1141,6 @@ bool SXGUIRegClass::RegButtonImg()
 	return true;
 }
 
-bool SXGUIRegClass::RegToolBar()
-{
-	WNDCLASS wc;
-
-	wc.style         = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc   =  WndProcAllDefault; 
-	wc.cbClsExtra    = 0;
-	wc.cbWndExtra    = 0;
-	wc.hInstance     = GetModuleHandle(0);
-	wc.hIcon         = 0;
-	wc.hCursor       = 0;
-	wc.hbrBackground = 0;
-	wc.lpszMenuName  = 0;
-	wc.lpszClassName = "SXGUITOOLBAR";
-
-		if(!RegisterClass(&wc)) 
-			return false;
-	return true;
-}
-
 bool SXGUIRegClass::RegGroupBox()
 {
 	WNDCLASS wc;
@@ -1188,4 +1159,63 @@ bool SXGUIRegClass::RegGroupBox()
 	if (!RegisterClass(&wc))
 		return false;
 	return true;
+}
+
+void SXGUIDialogs::SelectFile(int type, char* path, char* name, const char* stdpath, const char* filter)
+{
+	OPENFILENAME ofn;
+
+	char tpath[1024];
+	char tname[256];
+	
+	if (!path && !name)
+		return;
+
+	if (path)
+		tpath[0] = tpath[1] = 0;
+
+	if (name)
+		tname[0] = tname[1] = 0;
+
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hInstance = GetModuleHandle(0);
+	ofn.hwndOwner = 0;
+	ofn.lpstrFilter = filter;
+	ofn.lpstrFile = tpath;
+	ofn.nMaxFile = sizeof(tpath);
+	ofn.lpstrInitialDir = stdpath;
+
+	if (name)
+	{
+		ofn.lpstrFileTitle = tname;
+		ofn.nMaxFileTitle = sizeof(tname);
+	}
+
+	ofn.Flags = 0;
+
+	//if (path)
+	ofn.Flags |= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+
+	/*if (name)
+		ofn.Flags |= OFN_FILEMUSTEXIST;*/
+
+	char bf[256];
+	GetCurrentDirectory(256, bf);
+	BOOL Result = FALSE;
+	if (type == SXGUI_DIALOG_FILE_OPEN)
+		Result = GetOpenFileName(&ofn);
+	else if (type == SXGUI_DIALOG_FILE_SAVE)
+		Result = GetSaveFileName(&ofn);
+
+	SetCurrentDirectory(bf);
+
+	if (Result)
+	{
+		if (path)
+			strcpy(path, tpath);
+
+		if (name)
+			strcpy(name, tname);
+	}
 }

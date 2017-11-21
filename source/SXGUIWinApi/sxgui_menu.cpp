@@ -124,7 +124,7 @@ bool SXGUIMenu::GetCheckedItem(WORD id)
 	return false;
 }
 
-bool SXGUIMenu::EnableItem(WORD id,WORD enable)
+bool SXGUIMenu::EnableItem(WORD id, int enable)
 {
 	/*MENUITEMINFO mi;
 	mi.cbSize=sizeof(MENUITEMINFO);
@@ -148,11 +148,11 @@ bool SXGUIMenu::EnableItem(WORD id,WORD enable)
 			return false;
 	return true;*/
 
-	DWORD Enable = SXGUI_MENU_ENABLED;
+	DWORD Enable = SXGUI_MENU_PART_STATE_ENABLED;
 
-		if(enable == SXGUI_MENU_DISABLED)
+		if (enable == SXGUI_MENU_PART_STATE_DISABLED)
 			Enable = MFS_DISABLED;
-		else if(enable == SXGUI_MENU_GRAYED)
+		else if (enable == SXGUI_MENU_PART_STATE_GRAYED)
 			Enable = MFS_GRAYED;
 		else
 			Enable = MFS_ENABLED;
@@ -162,7 +162,7 @@ bool SXGUIMenu::EnableItem(WORD id,WORD enable)
 	return ((var != 0xFFFFFFFF) || (var == -1)) ? true : false;
 }
 
-WORD SXGUIMenu::GetEnabledItem(WORD id)
+int SXGUIMenu::GetEnabledItem(WORD id)
 {
 	MENUITEMINFO mi;
 	mi.cbSize=sizeof(MENUITEMINFO);
@@ -170,11 +170,11 @@ WORD SXGUIMenu::GetEnabledItem(WORD id)
 	BOOL bf = GetMenuItemInfo(MenuHandle,id,FALSE,&mi);
 
 		if(mi.fState & MFS_DISABLED)
-			return SXGUI_MENU_DISABLED;
+			return SXGUI_MENU_PART_STATE_DISABLED;
 		else if(mi.fState & MFS_GRAYED)
-			return SXGUI_MENU_GRAYED;
+			return SXGUI_MENU_PART_STATE_GRAYED;
 		else
-			return SXGUI_MENU_ENABLED;
+			return SXGUI_MENU_PART_STATE_ENABLED;
 
 	return -1;
 }
@@ -305,13 +305,13 @@ bool SXGUIPopupMenu::GetCheckedItem(WORD id)
 	return false;
 }
 
-bool SXGUIPopupMenu::EnableItem(WORD id,WORD enable)
+bool SXGUIPopupMenu::EnableItem(WORD id, int enable)
 {
-	DWORD Enable = SXGUI_MENU_ENABLED;
+	DWORD Enable = SXGUI_MENU_PART_STATE_ENABLED;
 
-		if(enable == SXGUI_MENU_DISABLED)
+		if (enable == SXGUI_MENU_PART_STATE_DISABLED)
 			Enable = MFS_DISABLED;
-		else if(enable == SXGUI_MENU_GRAYED)
+		else if (enable == SXGUI_MENU_PART_STATE_GRAYED)
 			Enable = MFS_GRAYED;
 		else
 			Enable = MFS_ENABLED;
@@ -321,7 +321,7 @@ bool SXGUIPopupMenu::EnableItem(WORD id,WORD enable)
 	return ((var != 0xFFFFFFFF) || (var == -1)) ? true : false;
 }
 
-WORD SXGUIPopupMenu::GetEnabledItem(WORD id)
+int SXGUIPopupMenu::GetEnabledItem(WORD id)
 {
 	MENUITEMINFO mi;
 	mi.cbSize=sizeof(MENUITEMINFO);
@@ -329,11 +329,11 @@ WORD SXGUIPopupMenu::GetEnabledItem(WORD id)
 	BOOL bf = GetMenuItemInfo(MenuHandle,id,FALSE,&mi);
 
 		if(mi.fState & MFS_DISABLED)
-			return SXGUI_MENU_DISABLED;
+			return SXGUI_MENU_PART_STATE_DISABLED;
 		else if(mi.fState & MFS_GRAYED)
-			return SXGUI_MENU_GRAYED;
+			return SXGUI_MENU_PART_STATE_GRAYED;
 		else
-			return SXGUI_MENU_ENABLED;
+			return SXGUI_MENU_PART_STATE_ENABLED;
 
 	return -1;
 }

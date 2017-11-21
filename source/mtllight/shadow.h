@@ -1,4 +1,16 @@
 
+#ifndef __SHADOW_H
+#define __SHADOW_H
+
+#include <gdefines.h>
+
+#define SM_D3D_CONVERSIONS
+#include <common/SXMath.h>
+#include <common/Array.h>
+#include <d3d9.h>
+#include <gcore/sxgcore.h>
+#include "sxmtllight.h"
+#include "ml_data.h"
 
 class PSSM
 {
@@ -14,25 +26,26 @@ public:
 
 	void Init();
 
-	void UpdateFrustums(int split, float3* poscam, float3* dircam);
+	void UpdateFrustums(int split, const float3* poscam, const float3* dircam);
 	void PreRender(int spilt);
 	void Begin();
 	void End();
 
 	void GenShadow2(IDirect3DTexture9* shadowmap);
+	void GenShadowAll(IDirect3DTexture9* shadowmap);
 	
-	inline void SetPosition(float3* pos);
-	inline void GetPosition(float3* pos);
+	void SetPosition(float3* pos);
+	void GetPosition(float3* pos);
 
-	inline void SetBlurPixel(float blur_pixel);
-	inline bool GetBlurPixel();
+	void SetBlurPixel(float blur_pixel);
+	bool GetBlurPixel();
 
-	inline void Set4Or3Splits(bool is4);
-	inline bool Get4Or3Splits();
+	void Set4Or3Splits(bool is4);
+	bool Get4Or3Splits();
 
 	void SetIDArr(ID id, int split, ID idarr);
-	inline long GetCountIDArrs();
-	inline ID GetIDArr(ID id, int split);
+	long GetCountIDArrs();
+	ID GetIDArr(ID id, int split);
 
 	ISXFrustum* Frustums[5];
 	//long IDArr[5];
@@ -82,38 +95,38 @@ public:
 
 	void Init();
 
-	inline void SetBias(float bias);
-	inline float GetBias();
+	void SetBias(float bias);
+	float GetBias();
 
-	inline void SetBlurPixel(float blur_pixel);
-	inline float GetBlurPixel();
+	void SetBlurPixel(float blur_pixel);
+	float GetBlurPixel();
 
 	void Begin();
 	void End();
 
 	void GenShadow2(IDirect3DTexture9* shadowmap);
 
-	void SetPosition(float3* pos);
+	void SetPosition(const float3* pos);
 	void GetPosition(float3* pos);
 
-	void SetDirection(float3* dir);
+	void SetDirection(const float3* dir);
 	void GetDirection(float3* dir);
 
-	inline void SetAngleNearFar(float3* anf);
-	inline void GetAngleNearFar(float3* anf);
+	void SetAngleNearFar(const float3* anf);
+	void GetAngleNearFar(float3* anf);
 
-	inline void SetFar(float sfar);
-	inline float GetFar();
+	void SetFar(float sfar);
+	float GetFar();
 
-	inline void SetNear(float snear);
-	inline float GetNear();
+	void SetNear(float snear);
+	float GetNear();
 
-	inline void SetAngle(float sangle);
-	inline float GetAngle();
+	void SetAngle(float sangle);
+	float GetAngle();
 
 	void SetIDArr(long id, long idarr);
-	inline long GetCountIDArrs();
-	inline long GetIDArr(long id);
+	long GetCountIDArrs();
+	long GetIDArr(long id);
 
 	ISXFrustum* Frustum;
 	//long IDArr;
@@ -154,14 +167,14 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	inline void SetEnableCubeEdge(int edge,bool enable);
-	inline bool GetEnableCubeEdge(int edge);
+	void SetEnableCubeEdge(int edge,bool enable);
+	bool GetEnableCubeEdge(int edge);
 
-	inline void SetBias(float bias);
-	inline float GetBias();
+	void SetBias(float bias);
+	float GetBias();
 
-	inline void SetBlurPixel(float blur_pixel);
-	inline bool GetBlurPixel();
+	void SetBlurPixel(float blur_pixel);
+	bool GetBlurPixel();
 
 	void Init();
 
@@ -185,8 +198,8 @@ public:
 	void GenShadow2(IDirect3DTexture9* shadowmap);
 
 	void SetIDArr(long id, int split, long idarr);
-	inline long GetCountIDArrs();
-	inline long GetIDArr(long id, int split);
+	long GetCountIDArrs();
+	long GetIDArr(long id, int split);
 
 	ISXFrustum* Frustums[6];
 	//long IDArr[6];
@@ -213,3 +226,5 @@ private:
 	float3 Position;
 	float2 NearFar;
 };
+
+#endif

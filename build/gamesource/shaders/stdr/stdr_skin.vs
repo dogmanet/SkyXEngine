@@ -1,4 +1,9 @@
 
+/*
+stdr_skin.vs
+Обычный рендер анимационной модели
+*/
+
 #include <../struct.h>
 #include <../skin.h>
 

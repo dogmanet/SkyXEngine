@@ -1,11 +1,17 @@
 
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef __SHADER_H
+#define __SHADER_H
 
-#include <common\array.h>
-#include <common\string_api.cpp>
+#include <gdefines.h>
+#include <stdio.h>
+#include <d3d9.h>
+#include <common/array.h>
+#include <common\String.h>
+#include "sxgcore.h"
 
-#pragma once
+extern report_func g_fnReportf;
+extern IDirect3DDevice9* DXDevice;
+extern D3DPRESENT_PARAMETERS D3DAPP;
 
 struct ShaderVS
 {
@@ -46,39 +52,38 @@ public:
 	ShaderManager();
 	~ShaderManager();
 
-	ID Load(ShaderType type_shader, const char* path, const char* name, ShaderCheckDouble is_check_double, D3DXMACRO* macro = 0);
-	void Update(ShaderType type_shader, const char* name, D3DXMACRO macro[] = 0);
-	void Update(ShaderType type_shader, ID id, D3DXMACRO macro[] = 0);
+	bool FileExists(const char* path);
+
+	ID Load(SHADER_TYPE type_shader, const char* path, const char* name, SHADER_CHECKDOUBLE is_check_double, D3DXMACRO* macro = 0);
+	void Update(SHADER_TYPE type_shader, const char* name, D3DXMACRO macro[] = 0);
+	void Update(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[] = 0);
 
 	void ReloadAll();
 
-	ID GetID(ShaderType type_shader, const char* shader);
+	ID GetID(SHADER_TYPE type_shader, const char* shader);
 
-	void Bind(ShaderType type_shader, const char* shader);
-	void Bind(ShaderType type_shader, ID shader);
+	void Bind(SHADER_TYPE type_shader, const char* shader);
+	void Bind(SHADER_TYPE type_shader, ID shader);
 
 	void UnBind();
 
-	void SetValueRegisterF(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_float4=0);
-	void SetValueRegisterF(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_float4 = 0);
+	void SetValueRegisterF(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4=0);
+	void SetValueRegisterF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4 = 0);
 
-	void SetValueRegisterI(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_int4 = 0);
-	void SetValueRegisterI(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_int4 = 0);
+	void SetValueRegisterI(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4 = 0);
+	void SetValueRegisterI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4 = 0);
 
-	void SetValueRegisterB(ShaderType type_shader, const char* name_shader, const char* name_var, void* data, int count_bool4 = 0);
-	void SetValueRegisterB(ShaderType type_shader, ID num_shader, const char* name_var, void* data, int count_bool4 = 0);
+	void SetValueRegisterB(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_bool4 = 0);
+	void SetValueRegisterB(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_bool4 = 0);
 
-	ID IsExistPath(ShaderType type_shader, const char* path);
-	ID IsExistName(ShaderType type_shader, const char* name);
-	bool IsValidate(ShaderType type_shader, ID id);
+	ID IsExistPath(SHADER_TYPE type_shader, const char* path);
+	ID IsExistName(SHADER_TYPE type_shader, const char* name);
+	bool IsValidate(SHADER_TYPE type_shader, ID id);
 
-	inline void GetPath(ShaderType type_shader, ID id, char* path);
-	inline void GetName(ShaderType type_shader, ID id, char* name);
+	void GetPath(SHADER_TYPE type_shader, ID id, char* path);
+	void GetName(SHADER_TYPE type_shader, ID id, char* name);
 
-	inline void SetStdPath(const char* path){ strcpy(StdPath, path); };
-	inline void GetStdPath(char* path){		if(path) strcpy(path, StdPath); };
 protected:
-	char StdPath[SXGC_SHADER_MAX_SIZE_STDPATH];
 	Array<ShaderVS*> ArrVS;
 	Array<ShaderPS*> ArrPS;
 };

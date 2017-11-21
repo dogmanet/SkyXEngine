@@ -1,6 +1,6 @@
 
 /*
-Имя файла - struct.h
+struct.h
 Файл включения в шейдеры (вершинные и пиксельные)
 Определены все структуры которые используются
 */
@@ -31,6 +31,16 @@ struct vs_out_pp
 {
 	half4 Position	:POSITION0;
 	half2 TexUV	:TEXCOORD0;
+};
+//}
+
+//UNION ALPHA, структура результата работы объединения полупрозрачных слоев
+//{
+struct ps_out_alpha_union
+{
+	half4 Color		: COLOR0;
+	half4 Depth0	: COLOR1;
+	half4 Depth1	: COLOR2;
 };
 //}
 
@@ -137,5 +147,53 @@ struct vs_out_skyclouds
 {
 	half4 Position	:POSITION;
 	half2 TexUV		:TEXCOORD0;
+};
+//}
+
+//PARTICLES
+//{
+struct vs_in_particles 
+{
+	half3 Position	:POSITION0;
+	half2 TexUV 	:TEXCOORD0;
+	
+	half3 InstancePos	:TEXCOORD1;
+	half4 InstanceTex	:TEXCOORD2;
+	half InstanceSize	:TEXCOORD3;
+	half InstanceAlpha	:TEXCOORD4;
+	
+	half2 InstanceRot1	:TEXCOORD5;
+	half InstanceLight	:TEXCOORD6;
+};
+
+struct vs_out_particles 
+{
+	half4 Position	:POSITION0;
+	half2 TexUV 	:TEXCOORD0;
+	half Alpha		:TEXCOORD1;
+	half4 Pos		:TEXCOORD2;
+	half Light		:TEXCOORD3;
+	half2 TexUV2	:TEXCOORD4;
+};
+//}
+
+//AIGRID
+//{
+struct vs_input_aigrid 
+{
+	half3 Position		:POSITION0;
+	half2 TexUV 		:TEXCOORD0;
+	
+	half3 InstancePos	:TEXCOORD1;
+	half4 InstanceTex	:TEXCOORD2;
+	half4 InstanceCol	:COLOR0;
+};
+
+struct vs_output_aigrid 
+{
+	half4 Position	:POSITION0;
+	half2 TexUV		:TEXCOORD0;
+	half4 Pos		:TEXCOORD1;
+	half4 Color		:TEXCOORD2;
 };
 //}

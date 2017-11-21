@@ -1,5 +1,5 @@
 
-#include <mtllight\\reflection.h>
+#include "reflection.h"
 
 Reflection::Reflection()
 {
@@ -58,12 +58,12 @@ void Reflection::SetIDArr(ID id, int cube, ID idarr)
 	IDArr[id][cube] = idarr;
 }
 
-inline int Reflection::GetCountIDArrs()
+int Reflection::GetCountIDArrs()
 {
 	return IDArr.size();
 }
 
-inline ID Reflection::GetIDArr(ID id, int cube)
+ID Reflection::GetIDArr(ID id, int cube)
 {
 	if (!(cube >= 0 && cube < 6))
 		return -1;
@@ -92,12 +92,12 @@ void Reflection::OnLostDevice()
 
 void Reflection::OnResetDevice()
 {
-	if (TypeRef == MtlTypeReflect::mtr_plane)
+	if (TypeRef == MTLTYPE_REFLECT_PLANE)
 	{
 		D3DXCreateTexture(MLSet::DXDevice, MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &TextureReflect);
 		MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.y, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, TRUE, &SurfaceZBuffer, NULL);
 	}
-	else if (TypeRef == MtlTypeReflect::mtr_cube_static || TypeRef == MtlTypeReflect::mtr_cube_dynamic)
+	else if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		D3DXCreateTexture(MLSet::DXDevice, MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &TextureReflect);
 		D3DXCreateCubeTexture(MLSet::DXDevice, MLSet::SizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &TextureCubeReflect);
@@ -109,10 +109,10 @@ void Reflection::OnResetDevice()
 	CountUpdate = 0;
 }
 
-void Reflection::Init(MtlTypeReflect howref)
+void Reflection::Init(MTLTYPE_REFLECT howref)
 {
 	TypeRef = howref;
-	if (TypeRef == MtlTypeReflect::mtr_plane)
+	if (TypeRef == MTLTYPE_REFLECT_PLANE)
 	{
 		if (!ReflectFrustum[0])
 			ReflectFrustum[0] = SGCore_CrFrustum();
@@ -124,7 +124,7 @@ void Reflection::Init(MtlTypeReflect howref)
 			MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexReflection.x, MLSet::SizeTexReflection.y, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, TRUE, &SurfaceZBuffer, NULL);
 	
 	}
-	else if (TypeRef == MtlTypeReflect::mtr_cube_static || TypeRef == MtlTypeReflect::mtr_cube_dynamic)
+	else if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		for (int i = 0; i < 6; ++i)
 		{
@@ -162,7 +162,7 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 {
 	if (!plane)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - sxmtllight [reflection]: plane is NULL", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: plane is NULL", gen_msg_location);
 		return;
 	}
 
@@ -195,8 +195,8 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 	mem_release_del(SurfaceReflect);
 	TextureReflect->GetSurfaceLevel(0, &SurfaceReflect);
 	MLSet::DXDevice->SetRenderTarget(0, SurfaceReflect);
-	MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
+	//MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
+	//MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
 	MLSet::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0L);
 }
 
@@ -207,20 +207,21 @@ void Reflection::PostRenderRefPlane()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
-
-	/*if (GetAsyncKeyState(VK_NUMPAD9))
-	{
-		char tmpstr[256];
-		sprintf(tmpstr, "C:\\1\\reflectionreflection.png");
-		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_JPG, SurfaceReflect, NULL, 0);
-	}*/
+	//MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
 
 	mem_release_del(BackBuffer);
 	mem_release_del(LastSurfaceZBuffer);
+	mem_release_del(SurfaceReflect);
+
+	if (GetAsyncKeyState(VK_NUMPAD9))
+	{
+		char tmpstr[256];
+		sprintf(tmpstr, "C:\\1\\reflectionreflection.png");
+		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_PNG, SurfaceReflect, NULL, 0);
+	}
 }
 
-inline IDirect3DTexture9* Reflection::GetRefPlaneTex()
+IDirect3DTexture9* Reflection::GetRefPlaneTex()
 {
 	return TextureReflect;
 }
@@ -241,7 +242,7 @@ void Reflection::BeginRenderRefCube(float3_t* center)
 {
 	if (!center)
 	{
-		reportf(REPORT_MSG_LEVEL_WARRNING, "%s - sxmtllight [reflection]: position center is NULL", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: position center is NULL", gen_msg_location);
 		return;
 	}
 
@@ -251,13 +252,13 @@ void Reflection::BeginRenderRefCube(float3_t* center)
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
 	MLSet::DXDevice->GetRenderTarget(0, &BackBuffer);
-	MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
+	//MLSet::DXDevice->GetDepthStencilSurface(&LastSurfaceZBuffer);
+	//MLSet::DXDevice->SetDepthStencilSurface(SurfaceZBuffer);
 }
 
 void Reflection::PreRenderRefCube(int cube, float4x4* world)
 {
-	MLSet::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)MLSet::RefMProjCube));
+	//MLSet::DXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)MLSet::RefMProjCube));
 
 	PositionReflect = SMVector3Transform(Position, *world);
 
@@ -266,9 +267,13 @@ void Reflection::PreRenderRefCube(int cube, float4x4* world)
 		((MLSet::OrientedCube[cube] + PositionReflect)),
 		MLSet::UpVectorsCube[cube]);
 
-	MLSet::DXDevice->SetTransform(D3DTS_VIEW, &MatrixView.operator D3DXMATRIX());
+	/*MLSet::DXDevice->SetTransform(D3DTS_VIEW, &MatrixView.operator D3DXMATRIX());
 
-	MLSet::DXDevice->SetTransform(D3DTS_WORLD1, &((D3DXMATRIX)(MatrixView * MLSet::RefMProjCube)));
+	MLSet::DXDevice->SetTransform(D3DTS_WORLD1, &((D3DXMATRIX)(MatrixView * MLSet::RefMProjCube)));*/
+
+	Core_RMatrixSet(G_RI_MATRIX_VIEW, &MatrixView);
+	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &MLSet::RefMProjCube);
+	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(MatrixView * MLSet::RefMProjCube));
 
 	ReflectFrustum[cube]->Update(&float4x4(MatrixView), &MLSet::RefMProjCube);
 
@@ -284,27 +289,45 @@ void Reflection::PostRenderRefCube(int cube)
 	LPDIRECT3DSURFACE9 BackBuf;
 
 	mem_release_del(CubeReflectSurface[cube]);
+	mem_release(SurfaceReflect);
+
+	DWORD alphablend, alphatest, zenable, zwriteenable;
+
+	MLSet::DXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
+	MLSet::DXDevice->GetRenderState(D3DRS_ALPHATESTENABLE, &alphatest);
+	MLSet::DXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
+	MLSet::DXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
+
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	TextureCubeReflect->GetCubeMapSurface((D3DCUBEMAP_FACES)cube, 0, &CubeReflectSurface[cube]);
 	MLSet::DXDevice->SetRenderTarget(0, CubeReflectSurface[cube]);
-	MLSet::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 255, 255), 1, 0);
+	//MLSet::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 255, 0, 0), 1, 0);
 
-	SGCore_ShaderBind(ShaderType::st_vertex, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(ShaderType::st_pixel, MLSet::IDsShaders::PS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::ScreenOut);
 
 	MLSet::DXDevice->SetTexture(0, TextureReflect);
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, alphablend);
+	MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, alphatest);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZENABLE, zenable);
+	MLSet::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, zwriteenable);
+
 
 	/*if(GetAsyncKeyState(VK_NUMPAD5))
 	{
 		char tmpstr[1024];
-		sprintf(tmpstr,"C:\\1\\reflectioncube_%d.bmp",cube);
+		sprintf(tmpstr,"C:\\1\\reflectioncube_%d.png",cube);
 		D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_PNG, CubeReflectSurface[cube], NULL, 0);
 	}*/
-	mem_release(SurfaceReflect);
+	
 	mem_release_del(CubeReflectSurface[cube]);
 }
 
@@ -315,8 +338,8 @@ void Reflection::EndRenderRefCube(float3_t* viewpos)
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldMatViewProj);
 
 	MLSet::DXDevice->SetRenderTarget(0, BackBuffer);
-	MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
-	mem_release_del(LastSurfaceZBuffer);
+	//MLSet::DXDevice->SetDepthStencilSurface(LastSurfaceZBuffer);
+	//mem_release_del(LastSurfaceZBuffer);
 	mem_release_del(BackBuffer);
 
 	UpdateCountUpdate(viewpos);
@@ -327,7 +350,7 @@ bool Reflection::UpdateCountUpdate(float3_t* viewpos)
 	if (!viewpos)
 		return false;
 
-	if (TypeRef == MtlTypeReflect::mtr_cube_static)
+	if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC)
 	{
 		if (CountUpdate < MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC)
 		{
@@ -363,7 +386,7 @@ bool Reflection::UpdateCountUpdate(float3_t* viewpos)
 
 bool Reflection::AllowedRender()
 {
-	if (TypeRef == MtlTypeReflect::mtr_cube_static)
+	if (TypeRef == MTLTYPE_REFLECT_CUBE_STATIC)
 	{
 		if (CountUpdate <= MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC)
 		{
@@ -382,7 +405,7 @@ void Reflection::NullingCountUpdate()
 	CountUpdate = 0;
 }
 
-inline IDirect3DCubeTexture9* Reflection::GetRefCubeTex()
+IDirect3DCubeTexture9* Reflection::GetRefCubeTex()
 {
 	return TextureCubeReflect;
 }

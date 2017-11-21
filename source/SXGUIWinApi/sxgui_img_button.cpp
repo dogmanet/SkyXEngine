@@ -45,7 +45,7 @@ SXGUIButtonImg::SXGUIButtonImg(const char* path,WORD x,WORD y,WORD width,WORD he
 			this->IsImages = false;
 		}
 
-	this->Pos = SXGUI_BI_POS_FREE;
+	this->Pos = SXGUI_BUTTONIMG_POS_FREE;
 	this->EnableState = false;
 	this->EnableBf = false;
 	this->FrameColor = RGB(255,255,255);
@@ -84,7 +84,7 @@ SXGUIButtonImg::SXGUIButtonImg(WORD button,WORD x,WORD y,WORD width,WORD heigth,
 
 	GetObject(HBitMap, sizeof(BITMAP), &Bitmap);
 
-	this->Pos = SXGUI_BI_POS_FREE;
+	this->Pos = SXGUI_BUTTONIMG_POS_FREE;
 	this->EnableState = false;
 	this->EnableBf = false;
 	this->FrameColor = RGB(255,255,255);
@@ -120,11 +120,93 @@ void SXGUIButtonImg::GetPathForImg(char* buf)
 	sprintf(buf,"%s",this->PathForImg);
 }
 
+void SXGUIButtonImg::SetEnable(bool bf)
+{
+	EnableState = bf;
+}
+
+bool SXGUIButtonImg::GetEnable()
+{
+	return EnableState;
+}
+
+
+void SXGUIButtonImg::SetEnableActive(bool bf)
+{
+	EnableBf = bf;
+}
+
+bool SXGUIButtonImg::GetEnableActive()
+{
+	return EnableBf;
+}
+
+
+void SXGUIButtonImg::SetParentGroup(bool bf)
+{
+	EnableGroup = bf;
+}
+
+bool SXGUIButtonImg::GetParentGroup()
+{
+	return EnableGroup;
+}
+
+
+void SXGUIButtonImg::SetColorFrame(BYTE r, BYTE g, BYTE b)
+{
+	FrameColor = RGB(r, g, b);
+}
+
+void SXGUIButtonImg::SetColorFrame(DWORD color)
+{
+	FrameColor = color;
+}
+
+DWORD SXGUIButtonImg::GetColorFrame()
+{
+	return FrameColor;
+}
+
+
+void SXGUIButtonImg::SetColorBk(BYTE r, BYTE g, BYTE b)
+{
+	BkColor = RGB(r, g, b);
+}
+
+void SXGUIButtonImg::SetColorBk(DWORD color)
+{
+	BkColor = color;
+}
+
+DWORD SXGUIButtonImg::GetColorBk()
+{
+	return BkColor;
+}
+
+
+void SXGUIButtonImg::SetColorAlpha(BYTE r, BYTE g, BYTE b)
+{
+	AlphaColor = RGB(r, g, b);
+}
+
+void SXGUIButtonImg::SetColorAlpha(DWORD color)
+{
+	AlphaColor = color;
+}
+
+DWORD SXGUIButtonImg::GetColorAlpha()
+{
+	return AlphaColor;
+}
+
+
+
 LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	//SXGUIButtonImg *Button = (SXGUIButtonImg *)GetWindowLong(hwnd,GWL_USERDATA);
 	ISXGUIComponent *Component = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
-	ISXGUIButtonImg *Button = dynamic_cast<ISXGUIButtonImg*>(Component);
+	SXGUIButtonImg *Button = dynamic_cast<SXGUIButtonImg*>(Component);
 	switch(msg)
 	{
 		case WM_MOUSEMOVE:
@@ -132,12 +214,13 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 				SetCapture(hwnd);
 				POINT global_pos_cursor;
 				GetCursorPos(&global_pos_cursor);
-				RECT* grect = Button->GetWinRect();
-					if(global_pos_cursor.x >= grect->left && global_pos_cursor.x <= grect->right && global_pos_cursor.y >= grect->top && global_pos_cursor.y <= grect->bottom)
+				RECT grect;
+				Button->GetWinRect(&grect);
+					if(global_pos_cursor.x >= grect.left && global_pos_cursor.x <= grect.right && global_pos_cursor.y >= grect.top && global_pos_cursor.y <= grect.bottom)
 					{
-							if(Button->Pos != SXGUI_BI_POS_MOUSE_CLICK && !(Button->EnableBf && Button->EnableState))
+							if(Button->Pos != SXGUI_BUTTONIMG_POS_ALLOC && !(Button->EnableBf && Button->EnableState))
 							{
-								Button->Pos = SXGUI_BI_POS_MOUSE_MOVE;
+								Button->Pos = SXGUI_BUTTONIMG_POS_HALF_ALLOC;
 								Button->PosBf[0] = false;
 								Button->PosBf[1] = true;
 								Button->PosBf[2] = false;
@@ -146,9 +229,9 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 					else
 					{
-							if(Button->Pos != SXGUI_BI_POS_FREE)
+							if(Button->Pos != SXGUI_BUTTONIMG_POS_FREE)
 							{
-								Button->Pos = SXGUI_BI_POS_FREE;
+								Button->Pos = SXGUI_BUTTONIMG_POS_FREE;
 								Button->PosBf[0] = true;
 								Button->PosBf[1] = false;
 								Button->PosBf[2] = false;
@@ -163,7 +246,7 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 			{
 				if(Button->EnableGroup && lParam == -1)
 				{
-					Button->Pos = SXGUI_BI_POS_FREE;
+					Button->Pos = SXGUI_BUTTONIMG_POS_FREE;
 					Button->PosBf[0] = true;
 					Button->PosBf[1] = false;
 					Button->PosBf[2] = false;
@@ -174,9 +257,9 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_NCMOUSEMOVE:
-				if(Button->Pos != SXGUI_BI_POS_FREE)
+				if(Button->Pos != SXGUI_BUTTONIMG_POS_FREE)
 				{
-					Button->Pos = SXGUI_BI_POS_FREE;
+					Button->Pos = SXGUI_BUTTONIMG_POS_FREE;
 					Button->PosBf[0] = true;
 					Button->PosBf[1] = false;
 					Button->PosBf[2] = false;
@@ -187,7 +270,7 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONDOWN:
 				if(!(Button->EnableBf && Button->EnableState))
 				{
-					Button->Pos = SXGUI_BI_POS_MOUSE_CLICK;
+					Button->Pos = SXGUI_BUTTONIMG_POS_ALLOC;
 					Button->PosBf[0] = false;
 					Button->PosBf[1] = false;
 					Button->PosBf[2] = true;
@@ -208,14 +291,14 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 					if((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom))
 					{
-						Button->Pos = SXGUI_BI_POS_MOUSE_MOVE;
+						Button->Pos = SXGUI_BUTTONIMG_POS_HALF_ALLOC;
 						Button->PosBf[0] = false;
 						Button->PosBf[1] = true;
 						Button->PosBf[2] = false;
 					}
 					else
 					{
-						Button->Pos = SXGUI_BI_POS_FREE;
+						Button->Pos = SXGUI_BUTTONIMG_POS_FREE;
 						Button->PosBf[0] = true;
 						Button->PosBf[1] = false;
 						Button->PosBf[2] = false;
@@ -255,7 +338,7 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 					}
 				RECT atc;
 
-					if(Button->Pos == SXGUI_BI_POS_FREE && Button->PosBf[0])
+					if(Button->Pos == SXGUI_BUTTONIMG_POS_FREE && Button->PosBf[0])
 					{
 							if(Button->EnableState && Button->EnableBf)
 							{
@@ -287,10 +370,10 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 								FillRect(hDC,&atc,color_rect_white);
 							}
-						//MessageBox(0,ToPointChar(ToString(Button->Pos) + "|" + ToString(Button->PosBf[0])),"SXGUI_BI_POS_FREE",0);
+						//MessageBox(0,ToPointChar(ToString(Button->Pos) + "|" + ToString(Button->PosBf[0])),"SXGUI_BUTTONIMG_POS_FREE",0);
 						Button->PosBf[0] = false;
 					}
-					else if(Button->Pos == SXGUI_BI_POS_MOUSE_MOVE && Button->PosBf[1])
+					else if(Button->Pos == SXGUI_BUTTONIMG_POS_HALF_ALLOC && Button->PosBf[1])
 					{
 						atc.left = rect.left;
 						atc.top = rect.top;
@@ -307,9 +390,9 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 						FillRect(hDC,&atc,color_rect_white);
 
 						Button->PosBf[1] = false;
-						//MessageBox(0,ToPointChar(ToString(Button->Pos) + "|" + ToString(Button->PosBf[1])),"SXGUI_BI_POS_MOUSE_MOVE",0);
+						//MessageBox(0,ToPointChar(ToString(Button->Pos) + "|" + ToString(Button->PosBf[1])),"SXGUI_BUTTONIMG_POS_HALF_ALLOC",0);
 					}
-					else if(Button->Pos == SXGUI_BI_POS_MOUSE_CLICK && Button->PosBf[2])
+					else if(Button->Pos == SXGUI_BUTTONIMG_POS_ALLOC && Button->PosBf[2])
 					{
 						atc.left = rect.right - SXGUI_BI_SIZE_LINE;
 						atc.top = rect.top;
@@ -326,7 +409,7 @@ LRESULT WndProcButtonImgDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 						FillRect(hDC,&atc,color_rect_white);
 						Button->PosBf[2] = false;
 
-						//MessageBox(0,ToPointChar(ToString(Button->Pos) + "|" + ToString(Button->PosBf[2])),"SXGUI_BI_POS_MOUSE_CLICK",0);
+						//MessageBox(0,ToPointChar(ToString(Button->Pos) + "|" + ToString(Button->PosBf[2])),"SXGUI_BUTTONIMG_POS_ALLOC",0);
 					}
 
 					if(Button->IsImages)

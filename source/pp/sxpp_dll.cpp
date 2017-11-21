@@ -4,12 +4,8 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
 See the license in LICENSE
 ******************************************************/
 
-#define SX_DLL
 #pragma once
 #include <windows.h>
-#include <gdefines.h>
-
-#include <pp\\sxpp.cpp>
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
