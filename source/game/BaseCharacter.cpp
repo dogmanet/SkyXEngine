@@ -1,11 +1,11 @@
 
-#include "CBaseCharacter.h"
+#include "BaseCharacter.h"
 #include "GameData.h"
-#include "SXbaseTool.h"
-#include "SXbaseWeapon.h"
+#include "BaseTool.h"
+#include "BaseWeapon.h"
 
 /*! \skydocent base_character
-Áàçîâûé êëàññ ïåðñîíàæà
+Ð‘Ð°Ð·Ð¾Ð²Ñ‹Ð¹ ÐºÐ»Ð°ÑÑ Ð¿ÐµÑ€ÑÐ¾Ð½Ð°Ð¶Ð°
 */
 
 BEGIN_PROPTABLE(CBaseCharacter)
@@ -38,7 +38,7 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CBaseCharacter::CBaseCharacter(EntityManager * pMgr):
+CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_uMoveDir(PM_OBSERVER),
 	m_vPitchYawRoll(float3_t(0, 0, 0)),
@@ -76,10 +76,10 @@ CBaseCharacter::CBaseCharacter(EntityManager * pMgr):
 
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
-	//m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
-	m_flashlight->SetPos(GetPos() + float3(0.f, 0.2f, 0.1f));
-	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PIDIV2, 'x'));
-	m_flashlight->SetParent(this);
+	//m_flashlight->setPos(getPos() + float3(0.f, 0.1f, 0.f));
+	m_flashlight->setPos(getPos() + float3(0.f, 0.2f, 0.1f));
+	m_flashlight->setOrient(getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
+	m_flashlight->setParent(this);
 	m_flashlight->setDist(20.f);
 	m_flashlight->setAngle(SMToRadian(60));
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
@@ -96,7 +96,7 @@ CBaseCharacter::~CBaseCharacter()
 }
 
 
-void CBaseCharacter::Attack(BOOL state)
+void CBaseCharacter::attack(BOOL state)
 {
 	if(m_uMoveDir & PM_OBSERVER)
 	{
@@ -104,11 +104,11 @@ void CBaseCharacter::Attack(BOOL state)
 	}
 	if(m_pActiveTool)
 	{
-		m_pActiveTool->PrimaryAction(state);
+		m_pActiveTool->primaryAction(state);
 	}
 }
 
-void CBaseCharacter::Attack2(BOOL state)
+void CBaseCharacter::attack2(BOOL state)
 {
 	if(m_uMoveDir & PM_OBSERVER)
 	{
@@ -116,11 +116,11 @@ void CBaseCharacter::Attack2(BOOL state)
 	}
 	if(m_pActiveTool)
 	{
-		m_pActiveTool->SecondaryAction(state);
+		m_pActiveTool->secondaryAction(state);
 	}
 }
 
-void CBaseCharacter::Reload()
+void CBaseCharacter::reload()
 {
 	if(m_uMoveDir & PM_OBSERVER)
 	{
@@ -128,11 +128,11 @@ void CBaseCharacter::Reload()
 	}
 	if(m_pActiveTool)
 	{
-		m_pActiveTool->Reload();
+		m_pActiveTool->reload();
 	}
 }
 
-void CBaseCharacter::ToggleFlashlight()
+void CBaseCharacter::toggleFlashlight()
 {
 	m_flashlight->toggleEnable();
 }
@@ -161,7 +161,7 @@ void CBaseCharacter::playFootstepsSound()
 	{
 		if(onGround())
 		{
-			float3 start = GetPos(),
+			float3 start = getPos(),
 				end = start + float3(0.0f, -2.0f, 0.0f);
 			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
 			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
@@ -182,20 +182,20 @@ float CBaseCharacter::getMomentSpread()
 		return(0.0f);
 	}
 
-	SXbaseWeapon *pWpn = (SXbaseWeapon*)m_pActiveTool;
+	CBaseWeapon *pWpn = (CBaseWeapon*)m_pActiveTool;
 
 	float fBaseSpread = pWpn->getBaseSpread();
 
-	const float fIdleSpreadBase = 1.0f, fIdleSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_IDLE), // ñòîÿ
-		fCrouchSpreadBase = 1.0f,       fCrouchSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_CROUCH), // ïðèãóâøèñü
-		fLaySpreadBase = 1.0f,          fLaySpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_CRAWL), // ëåæà
+	const float fIdleSpreadBase = 1.0f, fIdleSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_IDLE), // ÑÑ‚Ð¾Ñ
+		fCrouchSpreadBase = 1.0f,       fCrouchSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_CROUCH), // Ð¿Ñ€Ð¸Ð³ÑƒÐ²ÑˆÐ¸ÑÑŒ
+		fLaySpreadBase = 1.0f,          fLaySpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_CRAWL), // Ð»ÐµÐ¶Ð°
 
-		fWalkSpreadBase = 1.0f,         fWalkSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_WALK), // â õîäüáå
-		fRunSpreadBase = 1.0f,          fRunSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_RUN), // â áåãå
-		fAirborneSpreadBase = 1.0f,     fAirborneSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_AIRBORNE), // â ïðûæêå
-		fConditionSpreadBase = 1.0f,    fConditionSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_CONDITION), // ñîñòîÿíèå îðóæèÿ
-		fArmSpreadBase = 1.0f,          fArmSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_ARM), // ñîñòîÿíèå ðóê
-		fIronSightSpreadBase = 1.0f,    fIronSightSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_IRONSIGHT); // â ïðèöåëèâàíèè
+		fWalkSpreadBase = 1.0f,         fWalkSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_WALK), // Ð² Ñ…Ð¾Ð´ÑŒÐ±Ðµ
+		fRunSpreadBase = 1.0f,          fRunSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_RUN), // Ð² Ð±ÐµÐ³Ðµ
+		fAirborneSpreadBase = 1.0f,     fAirborneSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_AIRBORNE), // Ð² Ð¿Ñ€Ñ‹Ð¶ÐºÐµ
+		fConditionSpreadBase = 1.0f,    fConditionSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_CONDITION), // ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ Ð¾Ñ€ÑƒÐ¶Ð¸Ñ
+		fArmSpreadBase = 1.0f,          fArmSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_ARM), // ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ Ñ€ÑƒÐº
+		fIronSightSpreadBase = 1.0f,    fIronSightSpreadMult = pWpn->getSpreadCoeff(SPREAD_COEFF_IRONSIGHT); // Ð² Ð¿Ñ€Ð¸Ñ†ÐµÐ»Ð¸Ð²Ð°Ð½Ð¸Ð¸
 
 
 

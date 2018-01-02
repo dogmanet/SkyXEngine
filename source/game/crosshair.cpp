@@ -4,7 +4,7 @@
 #include <common/SXMath.h>
 #include "GameData.h"
 
-Crosshair::Crosshair():
+CCrosshair::CCrosshair():
 	m_bDirty(true),
 	m_bBuildBuff(false),
 	m_fSize(0),
@@ -37,12 +37,12 @@ Crosshair::Crosshair():
 	m_pDev->CreateIndexBuffer(sizeof(UINT)* iIC, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, NULL);
 }
 
-Crosshair::~Crosshair()
+CCrosshair::~CCrosshair()
 {
 	mem_delete_a(m_pMemoryBlob);
 }
 
-void Crosshair::SetTexInfo(const float2_t & offs, const float2_t & size)
+void CCrosshair::setTexInfo(const float2_t & offs, const float2_t & size)
 {
 	m_bDirty = true;
 	m_f2TexOffs = offs;
@@ -50,7 +50,7 @@ void Crosshair::SetTexInfo(const float2_t & offs, const float2_t & size)
 }
 
 
-void Crosshair::Update()
+void CCrosshair::update()
 {
 	if(m_bDirty && m_idTexture >= 0)
 	{
@@ -325,7 +325,7 @@ void Crosshair::Update()
 		m_iIndexCount[m_u8ActiveBuffer ? 0 : 1] = iCurIdx;
 	}
 }
-void Crosshair::Render()
+void CCrosshair::render()
 {
 	if(m_bHidden || !m_pTexture)
 	{
@@ -377,7 +377,7 @@ void Crosshair::Render()
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
 	//render
 }
-void Crosshair::OnSync()
+void CCrosshair::onSync()
 {
 	if(m_bDirty)
 	{
@@ -390,12 +390,12 @@ void Crosshair::OnSync()
 	}
 }
 
-void Crosshair::Enable(bool en)
+void CCrosshair::enable(bool en)
 {
 	m_bHidden = !en;
 }
 
-void Crosshair::SetNumSegmens(int num)
+void CCrosshair::setNumSegmens(int num)
 {
 	if(num < 1)
 	{
@@ -411,7 +411,7 @@ void Crosshair::SetNumSegmens(int num)
 		m_iNumSegs = num;
 	}
 }
-void Crosshair::SetAngle(float a)
+void CCrosshair::setAngle(float a)
 {
 	if(m_fAngle != a)
 	{
@@ -419,7 +419,7 @@ void Crosshair::SetAngle(float a)
 		m_fAngle = a;
 	}
 }
-void Crosshair::SetFixedRadius(float r)
+void CCrosshair::setFixedRadius(float r)
 {
 	if(m_fFixedRadius != r)
 	{
@@ -427,7 +427,7 @@ void Crosshair::SetFixedRadius(float r)
 		m_fFixedRadius = r;
 	}
 }
-void Crosshair::SetStyle(STYLE style)
+void CCrosshair::setStyle(STYLE style)
 {
 	if(m_style != style)
 	{
@@ -435,12 +435,12 @@ void Crosshair::SetStyle(STYLE style)
 		m_style = style;
 	}
 }
-void Crosshair::SetMaxSize(float size)
+void CCrosshair::setMaxSize(float size)
 {
 	m_bDirty = true;
 	m_fMaxSize = size;
 }
-void Crosshair::SetTexture(ID id)
+void CCrosshair::setTexture(ID id)
 {
 	if(m_idTexture != id)
 	{
@@ -457,7 +457,7 @@ void Crosshair::SetTexture(ID id)
 	}
 }
 
-void Crosshair::SetSize(float size)
+void CCrosshair::setSize(float size)
 {
 	if(m_fSize != size)
 	{

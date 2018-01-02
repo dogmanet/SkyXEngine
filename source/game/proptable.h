@@ -3,9 +3,9 @@
 
 #include <common/SXmath.h>
 
-class SXbaseEntity;
+class CBaseEntity;
 
-//! типы полей данных
+//! С‚РёРїС‹ РїРѕР»РµР№ РґР°РЅРЅС‹С…
 enum PDF_TYPE
 {
 	PDF_NONE,
@@ -24,7 +24,7 @@ enum PDF_TYPE
 	PDF_OUTPUT
 };
 
-//! типы редакторов полей
+//! С‚РёРїС‹ СЂРµРґР°РєС‚РѕСЂРѕРІ РїРѕР»РµР№
 enum PDE_TYPE
 {
 	PDE_NONE = 0,
@@ -37,10 +37,10 @@ enum PDE_TYPE
 enum PDF_FLAG
 {
 	PDFF_NONE       = 0x00,
-	PDFF_NOEXPORT   = 0x01, //!< Не экспортировать поле в файл
-	PDFF_NOEDIT     = 0x02, //!< Не отображать поле в редакторе
-	PDFF_INPUT      = 0x04, //!< Поле входа
-	PDFF_OUTPUT     = 0x08, //!< Поле выхода
+	PDFF_NOEXPORT   = 0x01, //!< РќРµ СЌРєСЃРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїРѕР»Рµ РІ С„Р°Р№Р»
+	PDFF_NOEDIT     = 0x02, //!< РќРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ РїРѕР»Рµ РІ СЂРµРґР°РєС‚РѕСЂРµ
+	PDFF_INPUT      = 0x04, //!< РџРѕР»Рµ РІС…РѕРґР°
+	PDFF_OUTPUT     = 0x08, //!< РџРѕР»Рµ РІС‹С…РѕРґР°
 };
 
 enum ENT_FLAG
@@ -52,7 +52,7 @@ enum ENT_FLAG
 	EF_LAST           = 0x8000
 };
 
-typedef int SXbaseEntity::*fieldtype;
+typedef int CBaseEntity::*fieldtype;
 
 struct editor_kv
 {
@@ -69,9 +69,9 @@ struct prop_editor_t
 
 struct inputdata_t
 {
-	SXbaseEntity *pInflictor; //!< Косвенный активатор (вызвавший эту цепочку активаций)
-	SXbaseEntity *pActivator; //!< Непосредственный активатор
-	PDF_TYPE type; //!< Тип аргумента
+	CBaseEntity *pInflictor; //!< РљРѕСЃРІРµРЅРЅС‹Р№ Р°РєС‚РёРІР°С‚РѕСЂ (РІС‹Р·РІР°РІС€РёР№ СЌС‚Сѓ С†РµРїРѕС‡РєСѓ Р°РєС‚РёРІР°С†РёР№)
+	CBaseEntity *pActivator; //!< РќРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅС‹Р№ Р°РєС‚РёРІР°С‚РѕСЂ
+	PDF_TYPE type; //!< РўРёРї Р°СЂРіСѓРјРµРЅС‚Р°
 	union
 	{
 		int i;
@@ -83,7 +83,7 @@ struct inputdata_t
 	float3_t v3Parameter;
 };
 
-typedef void(SXbaseEntity::*input_func)(inputdata_t * pInputData);
+typedef void(CBaseEntity::*input_func)(inputdata_t * pInputData);
 
 struct propdata_t
 {
@@ -127,7 +127,7 @@ struct propdata_t
 struct input_t
 {
 	input_func fnInput;
-	SXbaseEntity *pTarget;
+	CBaseEntity *pTarget;
 	inputdata_t data;
 };
 
@@ -157,7 +157,7 @@ struct output_t
 		bDirty(false)
 	{
 	}
-	void fire(SXbaseEntity *pInflictor, SXbaseEntity *pActivator);
+	void fire(CBaseEntity *pInflictor, CBaseEntity *pActivator);
 
 	bool bDirty;
 	int iOutCount;
@@ -181,17 +181,17 @@ prop_editor_t _GetEditorFilefield(int start, ...);
 
 #define DECLARE_PROPTABLE() \
 	\
-	friend class EntityFactoryMap; \
-	friend class EntityFactory<ThisClass>; \
+	friend class CEntityFactoryMap; \
+	friend class CEntityFactory<ThisClass>; \
 	static proptable_t m_pPropTable; \
 	\
 protected:\
 	static void InitPropData(); \
-	virtual proptable_t * GetPropTable(); \
+	virtual proptable_t * getPropTable(); \
 	static proptable_t * SGetPropTable(); \
 	static void ReleasePropData();\
 public:\
-	virtual propdata_t * GetField(const char * name);\
+	virtual propdata_t * getField(const char * name);\
 private:
 
 #define _BEGIN_PROPTABLE(cls, bclpt) \
@@ -210,15 +210,15 @@ proptable_t * cls::SGetPropTable()\
 	return(&m_pPropTable);\
 }\
 \
-proptable_t * cls::GetPropTable()\
+proptable_t * cls::getPropTable()\
 {\
 	if(!m_pPropTable.numFields)\
 		InitPropData(); \
 	return(&m_pPropTable); \
 }\
-propdata_t * cls::GetField(const char * name)\
+propdata_t * cls::getField(const char * name)\
 {\
-	proptable_t * pt = GetPropTable();\
+	proptable_t * pt = getPropTable();\
 	while(pt)\
 	{\
 		for(int i = 0; i < pt->numFields; ++i)\
@@ -258,8 +258,8 @@ void cls::InitPropData() \
 	} \
 } 
 
-#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(EntityManager * pMgr):BaseClass(pMgr){}
-#define DECLARE_CONSTRUCTOR() ThisClass(EntityManager * pMgr);
+#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(CEntityManager * pMgr):BaseClass(pMgr){}
+#define DECLARE_CONSTRUCTOR() ThisClass(CEntityManager * pMgr);
 
 const char * GetEmptyString();
 

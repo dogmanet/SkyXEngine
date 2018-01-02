@@ -15,7 +15,7 @@ See the license in LICENSE
 #ifndef __NPCBASE_H_
 #define __NPCBASE_H_
 
-#include "SXbaseAnimating.h"
+#include "BaseAnimating.h"
 #include <aigrid/sxaigrid.h>
 
 //! базовое направление для нпс
@@ -57,28 +57,28 @@ enum NPC_STATE_PATH
 };
 
 //! Базовый класс npc
-class CNPCBase: public SXbaseAnimating
+class CNPCBase: public CBaseAnimating
 {
-	DECLARE_CLASS(CNPCBase, SXbaseAnimating);
+	DECLARE_CLASS(CNPCBase, CBaseAnimating);
 	DECLARE_PROPTABLE();
 
 public:
 
 	SX_ALIGNED_OP_MEM
 
-	CNPCBase(EntityManager * pMgr);
+	CNPCBase(CEntityManager * pMgr);
 	~CNPCBase();
 
 	ID getAIQuad();	//!< id квада аи сетки на котором стоит нпс
 
 	//! установка позиции сопровождается ориентацией на аи сетке
-	void SetPos(const float3 &pos);
-	bool SetKV(const char *name, const char *value);
-	void OnSync();
+	void setPos(const float3 &pos);
+	bool setKV(const char *name, const char *value);
+	void onSync();
 
 protected:
 
-	virtual void InitPhysics();
+	virtual void initPhysics();
 
 	btPairCachingGhostObject * m_pGhostObject;
 	btKinematicCharacterController * m_pCharacter;

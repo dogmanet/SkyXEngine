@@ -8,10 +8,10 @@ See the license in LICENSE
 Базовый класс инструмента
 */
 
-#ifndef _SXbaseTool_H_
-#define _SXbaseTool_H_
+#ifndef _CBaseTool_H_
+#define _CBaseTool_H_
 
-#include "SXbaseItem.h"
+#include "BaseItem.h"
 #include <score/sxscore.h>
 
 enum
@@ -29,34 +29,34 @@ enum
 /*! Инструмент
 \ingroup cbaseitem
 */
-class SXbaseTool: public SXbaseItem
+class CBaseTool: public CBaseItem
 {
-	DECLARE_CLASS(SXbaseTool, SXbaseItem);
+	DECLARE_CLASS(CBaseTool, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	~SXbaseTool();
+	~CBaseTool();
 
-	virtual void OnPostLoad();
+	virtual void onPostLoad();
 
-	virtual void PrimaryAction(BOOL st);
-	virtual void SecondaryAction(BOOL st);
-	virtual void Reload();
+	virtual void primaryAction(BOOL st);
+	virtual void secondaryAction(BOOL st);
+	virtual void reload();
 
 	//virtual void Deploy() = 0;
 
-	void SetNextUse(float time);
-	bool CanUse();
+	void setNextUse(float time);
+	bool canUse();
 
-	void SetIsWorldModel(bool b);
+	void setIsWorldModel(bool b);
 
-	void AttachHands();
+	void attachHands();
 
-	void DbgMove(int dir, float delta);
+	void dbgMove(int dir, float delta);
 
-	void OnSync();
+	void onSync();
 
-	void SetParent(SXbaseEntity * pEnt, int attachment = -1);
+	void setParent(CBaseEntity * pEnt, int attachment = -1);
 
 	//! Этот инструмент - оружие
 	bool isWeapon() const;
@@ -77,13 +77,13 @@ protected:
 
 	float m_fZoomProgress;
 
-	void _AllowUse(float dt)
+	void _allowUse(float dt)
 	{
 		m_bCanUse = true;
 	}
 
-	void _Update(float dt);
-	void _Rezoom();
+	void _update(float dt);
+	void _rezoom();
 
 	float m_fReloadTime;
 

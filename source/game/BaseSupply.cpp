@@ -1,11 +1,11 @@
-#include "SXbaseSupply.h"
+#include "BaseSupply.h"
 
 /*! \skydocent base_supply
 Базовый класс припаса (патроны, батарейки, т.д)
 */
 
-BEGIN_PROPTABLE(SXbaseSupply)
+BEGIN_PROPTABLE(CBaseSupply)
 //empty
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(SXbaseSupply, base_supply);
+REGISTER_ENTITY_NOLISTING(CBaseSupply, base_supply);

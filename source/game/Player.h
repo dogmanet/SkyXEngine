@@ -13,64 +13,60 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXplayer_H_
-#define _SXplayer_H_
+#ifndef _CPlayer_H_
+#define _CPlayer_H_
 
-#include "CBaseCharacter.h"
-#include "SXpointCamera.h"
+#include "BaseCharacter.h"
+#include "PointCamera.h"
 #include "crosshair.h"
 
 //! Класс игрока  \ingroup cbaseanimating
-class SXplayer: public CBaseCharacter
+class CPlayer: public CBaseCharacter
 {
-	DECLARE_CLASS(SXplayer, CBaseCharacter);
+	DECLARE_CLASS(CPlayer, CBaseCharacter);
 	DECLARE_PROPTABLE();
 public:
-	SXplayer(EntityManager * pMgr);
-	~SXplayer();
+	CPlayer(CEntityManager * pMgr);
+	~CPlayer();
 	
 	//! Возвращает камеру игрока
-	SXpointCamera * GetCamera();
+	CPointCamera * getCamera();
 
 	//! Переключает в режим наблюдателя
-	void Observe()
+	void observe()
 	{
 		m_uMoveDir |= PM_OBSERVER;
-		m_pCrosshair->Enable(false);
+		m_pCrosshair->enable(false);
 	}
 	//! Помещает игрока в мир
-	void Spawn();
+	void spawn();
 
 	/*! Запускает/останавливает движение в заданном направлении
 		@param [in] dir направление движения из #PLAYER_MOVE
 	*/
-	void Move(UINT dir, bool start);
+	void move(UINT dir, bool start);
 
 	//! Обновляет инпут от игрока
-	virtual void UpdateInput(float dt);
+	virtual void updateInput(float dt);
 
-	void OnSync();
+	void onSync();
 
 	//! Устанавливает положение в мире
-	void SetPos(const float3 & pos);
+	void setPos(const float3 & pos);
 	
-	/*! Возаращает мировую позицию для модели оружия
-		\note Устарело?
-	*/
-	float3 GetWeaponOrigin();
 	//! Получает смещения для задержки движения модели оружия при вращении игрока
-	float3_t & GetWeaponDeltaAngles();
+	float3_t & getWeaponDeltaAngles();
 
 	//! Команды для подбора положения визуальной модели оружия на экране
 	void _ccmd_slot_on(int argc, const char ** argv);
 	void _ccmd_slot_off();
 
 	//! Получает объект перекрестия
-	Crosshair * GetCrosshair();
+	CCrosshair * getCrosshair();
 
 protected:
 	//! Камера
-	SXpointCamera * m_pCamera;
+	CPointCamera * m_pCamera;
 
 	//! ID интервала обновления
 	ID m_iUpdIval;
@@ -88,7 +84,7 @@ protected:
 	int m_iDSM;
 
 	//! Перекрестие
-	Crosshair * m_pCrosshair;
+	CCrosshair * m_pCrosshair;
 
 	ID m_idQuadCurr;	//!< текущий квад аи сетки на котором стоит игрок
 

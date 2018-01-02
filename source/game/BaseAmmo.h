@@ -8,17 +8,17 @@ See the license in LICENSE
 Патроны
 */
 
-#ifndef _SXbaseAmmo_H_
-#define _SXbaseAmmo_H_
+#ifndef _CBaseAmmo_H_
+#define _CBaseAmmo_H_
 
-#include "SXbaseSupply.h"
+#include "BaseSupply.h"
 
 /*! Базовый класс патронов
 \ingroup cbaseitem
 */
-class SXbaseAmmo: public SXbaseSupply
+class CBaseAmmo: public CBaseSupply
 {
-	DECLARE_CLASS(SXbaseAmmo, SXbaseSupply);
+	DECLARE_CLASS(CBaseAmmo, CBaseSupply);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();

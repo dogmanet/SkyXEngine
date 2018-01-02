@@ -53,19 +53,19 @@ PhyWorld::~PhyWorld()
 	mem_delete(m_pBroadphase);
 }
 
-void PhyWorld::Render()
+void PhyWorld::render()
 {
 	if(*m_bDebugDraw)
 	{
 		m_pDynamicsWorld->debugDrawWorld();
-		((DebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->Render();
+		((DebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->render();
 	}
 }
 
-void PhyWorld::SetThreadNum(int tnum)
+void PhyWorld::setThreadNum(int tnum)
 {
 }
-void PhyWorld::Update(int thread)
+void PhyWorld::update(int thread)
 {
 	static UINT time0 = GetTickCount();
 	UINT time1 = GetTickCount();
@@ -78,7 +78,7 @@ void PhyWorld::Update(int thread)
 
 	time0 = time1;
 }
-void PhyWorld::Sync()
+void PhyWorld::sync()
 {
 }
 
@@ -623,7 +623,7 @@ int PhyWorld::DebugDrawer::getDebugMode() const
 	return(m_iDebugMode);
 }
 
-void PhyWorld::DebugDrawer::Render()
+void PhyWorld::DebugDrawer::render()
 {
 	if(!m_vDrawData.size())
 	{

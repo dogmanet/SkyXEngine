@@ -118,25 +118,25 @@ public:
 	DecalManager();
 	~DecalManager();
 
-	int AddDecal(Decal * pDecal);
+	int addDecal(Decal * pDecal);
 
-	void RemoveDecal(UINT iDecal);
+	void removeDecal(UINT iDecal);
 
-	const DecalType * GetDecalType(DECAL_TYPE type);
+	const DecalType * getDecalType(DECAL_TYPE type);
 
-	bool Inside(const float3_t * p, char axis, float coord);
+	bool inside(const float3_t * p, char axis, float coord);
 
-	void Render();
+	void render();
 
-	void Update();
-	void Sync();
+	void update();
+	void sync();
 
-	void Intersect(const float3_t * one, const float3_t * two, float3_t * out, char axis, float coord);
+	void intersect(const float3_t * one, const float3_t * two, float3_t * out, char axis, float coord);
 
 
-	void Clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVerts, char axis, float coord);
+	void clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVerts, char axis, float coord);
 
-	void ComputeBasis(float3 const & surfaceNormal, float3 const * pSAxis, float3 * textureSpaceBasis)
+	void computeBasis(float3 const & surfaceNormal, float3 const * pSAxis, float3 * textureSpaceBasis)
 	{
 		// s, t, textureSpaceNormal (T cross S = textureSpaceNormal(N))
 		//   N     
@@ -204,9 +204,9 @@ public:
 		textureSpaceBasis[1] = SMVector3Normalize(textureSpaceBasis[1]);
 	}
 
-	void UpdateBuffer();
+	void updateBuffer();
 
-	void ShootDecal(DECAL_TYPE type, const float3 & position, ID iMaterial = -1, int iEnt = 0, const float3 * saxis = NULL, float scale = 1.0f, int flags = 0, const float3 * normal = NULL);
+	void shootDecal(DECAL_TYPE type, const float3 & position, ID iMaterial = -1, int iEnt = 0, const float3 * saxis = NULL, float scale = 1.0f, int flags = 0, const float3 * normal = NULL);
 };
 
 #endif

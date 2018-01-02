@@ -1,10 +1,10 @@
-#include "SXbaseAmmoBox.h"
+#include "BaseAmmoBox.h"
 
 /*! \skydocent base_ammobox
 Базовый класс коробки с припасами. При использовании, выдает игроку items_per_use объектов item_class, если внутри содержится достаточно
 */
 
-BEGIN_PROPTABLE(SXbaseAmmoBox)
+BEGIN_PROPTABLE(CBaseAmmoBox)
 	//! Объем коробки в итемах
 	DEFINE_FIELD_INT(m_iMaxItems, PDFF_NOEDIT | PDFF_NOEXPORT, "max_items", "", EDITOR_NONE)
 	//! Текущее количество итемов внутри
@@ -15,9 +15,9 @@ BEGIN_PROPTABLE(SXbaseAmmoBox)
 	DEFINE_FIELD_STRING(m_szAmmoType, PDFF_NOEDIT | PDFF_NOEXPORT, "item_class", "", EDITOR_NONE)
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(SXbaseAmmoBox, base_ammobox);
+REGISTER_ENTITY_NOLISTING(CBaseAmmoBox, base_ammobox);
 
-SXbaseAmmoBox::SXbaseAmmoBox(EntityManager * pMgr):
+CBaseAmmoBox::CBaseAmmoBox(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_iMaxItems(0),
 	m_iCurItems(0),

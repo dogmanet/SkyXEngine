@@ -60,7 +60,7 @@ const float3 & AxesHelper::GetRotation()
 	return Rotation;
 }
 
-const float3 & AxesHelper::GetScale()
+const float3 & AxesHelper::getScale()
 {
 	return Scale;
 }

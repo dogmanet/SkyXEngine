@@ -98,7 +98,7 @@ void ModelFile::Load(const char * name)
 			for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
 			{
 				fread(&md, sizeof(ModelDependensy), 1, fp);
-				m_pDeps[i] = m_pMgr->LoadModel(md.szName);
+				m_pDeps[i] = m_pMgr->loadModel(md.szName);
 			}
 		}
 	}
@@ -137,7 +137,7 @@ void ModelFile::Load(const char * name)
 			{
 				fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
 
-				m_iMaterials[j][i].iMat = m_pMgr->GetMaterial(m_iMaterials[j][i].szName); //3
+				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName); //3
 
 			}
 		}
@@ -268,7 +268,7 @@ void ModelFile::Load6(const char * name)
 			for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
 			{
 				fread(&md, sizeof(ModelDependensy), 1, fp);
-				m_pDeps[i] = m_pMgr->LoadModel(md.szName);
+				m_pDeps[i] = m_pMgr->loadModel(md.szName);
 			}
 		}
 	}
@@ -316,7 +316,7 @@ void ModelFile::Load6(const char * name)
 				}
 				//fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
 
-				m_iMaterials[j][i].iMat = m_pMgr->GetMaterial(m_iMaterials[j][i].szName, true); //3
+				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, true); //3
 
 			}
 		}
@@ -405,11 +405,11 @@ void ModelFile::LoadParts()
 {
 	for(uint32_t i = 0; i < m_hdr2.iDepsCount; ++i)
 	{
-		m_pParts[i].pMdl = m_pMgr->LoadModel(m_pParts[i].file);
+		m_pParts[i].pMdl = m_pMgr->loadModel(m_pParts[i].file);
 	}
 }
 
-void ModelFile::GetBoneName(UINT id, char * name, int len) const
+void ModelFile::getBoneName(UINT id, char * name, int len) const
 {
 	if(id >= m_hdr2.iBoneTableCount)
 	{
@@ -432,7 +432,7 @@ UINT ModelFile::GetBoneID(const char * name)
 	return(-1);
 }
 
-const ModelHitbox * ModelFile::GetHitbox(const char * name) const
+const ModelHitbox * ModelFile::getHitbox(const char * name) const
 {
 	for(uint32_t i = 0; i < m_hdr2.iHitboxCount; ++i)
 	{
@@ -443,7 +443,7 @@ const ModelHitbox * ModelFile::GetHitbox(const char * name) const
 	}
 	return(NULL);
 }
-const ModelHitbox * ModelFile::GetHitbox(uint32_t id) const
+const ModelHitbox * ModelFile::getHitbox(uint32_t id) const
 {
 	if(id >= m_hdr2.iHitboxCount)
 	{
@@ -451,7 +451,7 @@ const ModelHitbox * ModelFile::GetHitbox(uint32_t id) const
 	}
 	return(&m_pHitboxes[id]);
 }
-uint32_t ModelFile::GetHitboxCount() const
+uint32_t ModelFile::getHitboxCount() const
 {
 	return(m_hdr2.iHitboxCount);
 }
@@ -544,7 +544,7 @@ const ModelBoneController * ModelFile::GetController(UINT id) const
 	}
 	return(&m_pControllers[id]);
 }
-UINT ModelFile::GetBoneCount() const
+UINT ModelFile::getBoneCount() const
 {
 	return(m_hdr.iBoneCount);
 }
@@ -557,7 +557,7 @@ UINT ModelFile::GetControllersCount() const
 	return(m_hdr2.iControllersCount);
 }
 #ifndef _SERVER
-void ModelFile::Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMaterial)
+void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMaterial)
 {
 	if(nSkin >= m_hdr.iSkinCount)
 	{
@@ -581,7 +581,7 @@ void ModelFile::Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 	m_pMgr->m_pd3dDevice->SetIndices(m_ppIndexBuffer[nLod]);
 	m_pMgr->m_pd3dDevice->SetStreamSource(0, m_ppVertexBuffer[nLod], 0, iVertSize[vtype]);
 
-	m_pMgr->SetVertexDeclaration(vtype);
+	m_pMgr->setVertexDeclaration(vtype);
 
 	for(UINT i = 0; i < m_pLods[nLod].iSubMeshCount; i++)
 	{
@@ -827,7 +827,7 @@ void ModelFile::BuildMeshBuffers()
 
 }
 
-const ISXBound * ModelFile::GetBound() const
+const ISXBound * ModelFile::getBound() const
 {
 	return(m_pBoundBox);
 }
@@ -889,7 +889,7 @@ ModelFile::~ModelFile()
 	{
 		for(uint32_t i = 0; i < m_hdr2.iDepsCount; ++i)
 		{
-			m_pMgr->UnloadModel(m_pParts[i].pMdl);
+			m_pMgr->unloadModel(m_pParts[i].pMdl);
 		}
 	}
 	mem_delete_a(m_pParts);
@@ -1052,7 +1052,7 @@ m_pRagdoll(0)
 		m_pIsBoneWorld[i] = NULL;
 	}
 
-	myId = pMgr->Register(this);
+	myId = pMgr->reg(this);
 }
 
 Animation::~Animation()
@@ -1067,10 +1067,10 @@ Animation::~Animation()
 	mem_delete_a(m_pBoneMatrix);
 	mem_delete_a(m_FinalBones);
 	mem_delete_a(m_pBoneMatrixRender);
-	m_pMgr->UnRegister(myId);
+	m_pMgr->unreg(myId);
 }
 
-SMMATRIX Animation::GetBoneTransform(UINT _id)
+SMMATRIX Animation::getBoneTransform(UINT _id)
 {
 	//id *= 2;
 	int id = m_FinalBones[_id].pid;
@@ -1083,23 +1083,23 @@ SMMATRIX Animation::GetBoneTransform(UINT _id)
 	return(q.GetMatrix() * SMMatrixTranslation(pos));
 }
 
-float3 Animation::GetBoneTransformPos(UINT id)
+float3 Animation::getBoneTransformPos(UINT id)
 {
 	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
-	return(GetOrient() * ((m_pBoneMatrixRender[id].position - m_pBoneMatrixRender[id].orient * (float3)mBonesOrig[id].position) * m_fScale) + GetPos());
+	return(getOrient() * ((m_pBoneMatrixRender[id].position - m_pBoneMatrixRender[id].orient * (float3)mBonesOrig[id].position) * m_fScale) + getPos());
 }
 
-SMQuaternion Animation::GetBoneTransformRot(UINT id)
+SMQuaternion Animation::getBoneTransformRot(UINT id)
 {
 	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
-	return(GetOrient() * m_pBoneMatrixRender[id].orient * mBonesOrig[id].orient.Conjugate());
+	return(getOrient() * m_pBoneMatrixRender[id].orient * mBonesOrig[id].orient.Conjugate());
 }
 
 /*
 bool Animation::IsVisibleFrustum(Core::ControllMoving::Frustum* frustum)
 {
 	m_pMdl->BoundVol.GetSphere(&jcenter2, &jradius);
-	jcenter = SMVector3Transform(jcenter2, GetWorldTM());
+	jcenter = SMVector3Transform(jcenter2, getWorldTM());
 
 	if((frustum->SphereInFrustum(&jcenter, jradius)))
 		return true;
@@ -1118,15 +1118,15 @@ void Animation::SyncAnims()
 	}
 }
 
-void Animation::SetModel(const char * file)
+void Animation::setModel(const char * file)
 {
 	mem_delete(m_pMdl);
-	m_pMdl = const_cast<ModelFile*>(m_pMgr->LoadModel(file));
+	m_pMdl = const_cast<ModelFile*>(m_pMgr->loadModel(file));
 	if(!m_pMdl)
 	{
 		return;
 	}
-	AddModel(m_pMdl);
+	addModel(m_pMdl);
 	DownloadData();
 }
 
@@ -1141,7 +1141,7 @@ void Animation::DownloadData()
 		mem_delete_a(m_pIsBoneWorld[slot]);
 	}
 
-	m_iBoneCount = m_pMdl->GetBoneCount();
+	m_iBoneCount = m_pMdl->getBoneCount();
 
 	SyncAnims();
 
@@ -1190,7 +1190,7 @@ void Animation::setRagdoll(IAnimRagdoll * pRagdoll)
 	if(m_pRagdoll)
 	{
 		ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
-		StopAll();
+		stopAll();
 		for(UINT i = 0; i < m_iBoneCount; ++i)
 		{
 			if(/*i == 18 && */(m_pIsBoneWorld[0][i] = pRagdoll->isBoneAffected(i)))
@@ -1208,12 +1208,12 @@ void Animation::setRagdoll(IAnimRagdoll * pRagdoll)
 	}
 }
 
-ModelSequence const * Animation::GetCurAnim(int slot)
+ModelSequence const * Animation::getCurAnim(int slot)
 {
 	return(m_pMdl->GetSequence(m_iPlayingAnim[slot]));
 }
 
-void Animation::Advance(unsigned long int dt)
+void Animation::advance(unsigned long int dt)
 {
 	if(!m_pMdl || m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC)
 	{
@@ -1390,7 +1390,7 @@ void Animation::Advance(unsigned long int dt)
 	}
 }
 
-inline bool Animation::PlayingAnimations()
+inline bool Animation::playingAnimations()
 {
 	for(int i = 0; i<BLEND_MAX; i++)
 	{
@@ -1400,7 +1400,7 @@ inline bool Animation::PlayingAnimations()
 	return false;
 }
 
-void Animation::StopAll()
+void Animation::stopAll()
 {
 	for(int i = 0; i < BLEND_MAX; ++i)
 	{
@@ -1413,7 +1413,7 @@ void Animation::StopAll()
 	}
 }
 
-void Animation::SetProgress(float progress, UINT slot)
+void Animation::setProgress(float progress, UINT slot)
 {
 	const ModelSequence * pCurAnim = m_pMdl->GetSequence(m_iPlayingAnim[slot]);
 	if(!pCurAnim)
@@ -1431,12 +1431,12 @@ void Animation::SetProgress(float progress, UINT slot)
 
 }
 
-void Animation::SetAdvance(bool set, UINT slot)
+void Animation::setAdvance(bool set, UINT slot)
 {
 	m_bDoAdvance[slot] = set;
 }
 
-void Animation::Stop(UINT slot)
+void Animation::stop(UINT slot)
 {
 	if(m_bIsAnimationPlaying[slot])
 	{
@@ -1445,7 +1445,7 @@ void Animation::Stop(UINT slot)
 	}
 }
 
-void Animation::Resume(UINT slot)
+void Animation::resume(UINT slot)
 {
 	if(!m_bIsAnimationPlaying[slot])
 	{
@@ -1625,7 +1625,7 @@ void Animation::RenderSkeleton(int hlBone)
 	mem_delete_a(verts);
 }
 
-inline bool Animation::PlayingAnimations(const char* name)
+inline bool Animation::playingAnimations(const char* name)
 {
 	for(int i = 0; i<BLEND_MAX; i++)
 	{
@@ -1635,7 +1635,7 @@ inline bool Animation::PlayingAnimations(const char* name)
 	return false;
 }
 
-void Animation::Play(const char * name, UINT iFadeTime, UINT slot, bool bReplaceActivity) // name: Animation name; changeTime: time to fade to this animation from previous
+void Animation::play(const char * name, UINT iFadeTime, UINT slot, bool bReplaceActivity) // name: Animation name; changeTime: time to fade to this animation from previous
 {
 	if(!m_pMdl)
 	{
@@ -1673,7 +1673,7 @@ void Animation::Play(const char * name, UINT iFadeTime, UINT slot, bool bReplace
 	}
 }
 
-void Animation::SetBoneController(const String & name, float value, MODEL_BONE_CTL what)
+void Animation::setBoneController(const String & name, float value, MODEL_BONE_CTL what)
 {
 	if(m_mfBoneControllers.KeyExists(name))
 	{
@@ -1728,7 +1728,7 @@ void Animation::UpdateControllers()
 	}
 }
 
-void Animation::StartActivity(const char * name, UINT iFadeTime, UINT slot)
+void Animation::startActivity(const char * name, UINT iFadeTime, UINT slot)
 {
 	for(int i = 0, l = m_pMdl->m_hdr2.iActivitiesTableCount; i < l; ++i)
 	{
@@ -1767,7 +1767,7 @@ void Animation::PlayActivityNext(UINT slot)
 		{
 			if(fMaxChance >= fch)
 			{
-				Play(m_pMdl->GetSequence(i)->name, m_iCurrentActivityFadeTime[slot], slot, false);
+				play(m_pMdl->GetSequence(i)->name, m_iCurrentActivityFadeTime[slot], slot, false);
 				break;
 			}
 			fMaxChance += (float)m_pMdl->GetSequence(i)->act_chance;
@@ -1775,42 +1775,42 @@ void Animation::PlayActivityNext(UINT slot)
 	}
 }
 
-int Animation::GetActiveSkin()
+int Animation::getActiveSkin()
 {
 	return(m_iCurrentSkin);
 }
 
-void Animation::SetSkin(int n)
+void Animation::setSkin(int n)
 {
 	m_iCurrentSkin = n;
 }
 
-void Animation::SetPos(const float3 & pos)
+void Animation::setPos(const float3 & pos)
 {
 	m_vPosition = pos;
 }
 
-float3 Animation::GetPos()
+float3 Animation::getPos()
 {
 	return(m_vPosition);
 }
 
-SMMATRIX Animation::GetWorldTM()
+SMMATRIX Animation::getWorldTM()
 {
 	return(SMMatrixScaling(m_fScale, m_fScale, m_fScale) * m_vOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
 }
 
-void Animation::SetOrient(const SMQuaternion & pos)
+void Animation::setOrient(const SMQuaternion & pos)
 {
 	m_vOrientation = pos;
 }
 
-SMQuaternion Animation::GetOrient()
+SMQuaternion Animation::getOrient()
 {
 	return(m_vOrientation);
 }
 
-void Animation::Render()
+void Animation::render()
 {
 	if(!m_bEnabled)
 	{
@@ -1829,7 +1829,7 @@ void Animation::Render()
 		m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
 	}
 
-	m_pMdl->Render(&(GetWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial);
+	m_pMdl->render(&(getWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial);
 }
 
 void Animation::setOverrideMaterial(const char *name)
@@ -1841,52 +1841,52 @@ void Animation::enable(bool enable)
 	m_bEnabled = enable;
 }
 
-UINT Animation::GetBoneCount() const
+UINT Animation::getBoneCount() const
 {
-	return(m_pMdl->GetBoneCount());
+	return(m_pMdl->getBoneCount());
 }
-void Animation::GetBoneName(UINT id, char * name, int len) const
+void Animation::getBoneName(UINT id, char * name, int len) const
 {
-	m_pMdl->GetBoneName(id, name, len);
+	m_pMdl->getBoneName(id, name, len);
 }
-UINT Animation::GetBone(const char * str)
+UINT Animation::getBone(const char * str)
 {
 	return(m_pMdl->GetBoneID(str));
 }
 
-const ModelHitbox * Animation::GetHitbox(uint32_t id) const
+const ModelHitbox * Animation::getHitbox(uint32_t id) const
 {
-	return(m_pMdl->GetHitbox(id));
+	return(m_pMdl->getHitbox(id));
 }
-uint32_t Animation::GetHitboxCount() const
+uint32_t Animation::getHitboxCount() const
 {
-	return(m_pMdl->GetHitboxCount());
+	return(m_pMdl->getHitboxCount());
 }
 
-AnimStateCB Animation::SetCallback(AnimStateCB cb)
+AnimStateCB Animation::setCallback(AnimStateCB cb)
 {
 	AnimStateCB old = m_pfnCallBack;
 	m_pfnCallBack = cb;
 	return(old);
 }
 
-AnimProgressCB Animation::SetProgressCB(AnimProgressCB cb)
+AnimProgressCB Animation::setProgressCB(AnimProgressCB cb)
 {
 	AnimProgressCB old = m_pfnProgressCB;
 	m_pfnProgressCB = cb;
 	return(old);
 }
 
-const ModelFile * Animation::AddModel(const char * mdl, UINT flags, char * name)
+const ModelFile * Animation::addModel(const char * mdl, UINT flags, char * name)
 {
-	const ModelFile * pMdl = m_pMgr->LoadModel(mdl);
+	const ModelFile * pMdl = m_pMgr->loadModel(mdl);
 	if(pMdl)
 	{
-		AddModel(pMdl, flags, name);
+		addModel(pMdl, flags, name);
 	}
 	return(pMdl);
 }
-void Animation::AddModel(const ModelFile * mdl, UINT flags, char * name)
+void Animation::addModel(const ModelFile * mdl, UINT flags, char * name)
 {
 	ModelPart pt;
 	pt.pMdl = mdl;
@@ -1902,9 +1902,9 @@ void Animation::AddModel(const ModelFile * mdl, UINT flags, char * name)
 		pt.file[0] = 0;
 	}
 	pt.attachDesc.type = MA_SKIN;
-	AddModel(&pt);
+	addModel(&pt);
 }
-int Animation::AddModel(ModelPart * mp)
+int Animation::addModel(ModelPart * mp)
 {
 	if(!mp)
 	{
@@ -1923,7 +1923,7 @@ ModelPart * Animation::GetPart(UINT idx)
 	return(m_mMdls[idx]);
 }
 
-void Animation::DelModel(ModelPart * mp)
+void Animation::delModel(ModelPart * mp)
 {
 	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
 	{
@@ -1941,12 +1941,12 @@ UINT Animation::GetPartCount()
 	return(m_mMdls.size());
 }
 
-const ISXBound * Animation::GetBound() const
+const ISXBound * Animation::getBound() const
 {
-	return(m_pMdl->GetBound());
+	return(m_pMdl->getBound());
 }
 
-void Animation::Assembly()
+void Animation::assembly()
 {
 	//mem_delete(m_pMdl);
 	///@TODO: clear previous data
@@ -2004,7 +2004,7 @@ void Animation::Assembly()
 			}
 		}
 	}
-	m_iBoneCount = m_pMdl->GetBoneCount();
+	m_iBoneCount = m_pMdl->getBoneCount();
 
 	//build relink lists
 	for(int i = 0, l = m_mMdls.size(); i < l; ++i)
@@ -2014,10 +2014,10 @@ void Animation::Assembly()
 		{
 			continue;
 		}
-		for(int j = 0, ll = mp->pMdl->GetBoneCount(); j < ll; ++j)
+		for(int j = 0, ll = mp->pMdl->getBoneCount(); j < ll; ++j)
 		{
 			vvBoneRelinkList[i][j] = 0;
-			for(int k = 0, lll = m_pMdl->GetBoneCount(); k < lll; ++k)
+			for(int k = 0, lll = m_pMdl->getBoneCount(); k < lll; ++k)
 			{
 				if(!strcmp(mp->pMdl->m_pBones[j].szName, m_pMdl->m_pBones[k].szName))
 				{
@@ -2127,7 +2127,7 @@ void Animation::Assembly()
 			{
 				hb = mdl->m_pHitboxes[j];
 				hb.bone_id = -1;
-				for(int k = 0, lll = m_pMdl->GetBoneCount(); k < lll; ++k)
+				for(int k = 0, lll = m_pMdl->getBoneCount(); k < lll; ++k)
 				{
 					if(!strcmp(hb.bone, m_pMdl->m_pBones[k].szName))
 					{
@@ -2155,7 +2155,7 @@ void Animation::Assembly()
 	for(uint32_t i = 0; i < m_pMdl->m_hdr.iMaterialCount; ++i)
 	{
 		strcpy(m_pMdl->m_iMaterials[0][i].szName, vszMats[i]);
-		m_pMdl->m_iMaterials[0][i].iMat = m_pMgr->GetMaterial(m_pMdl->m_iMaterials[0][i].szName);
+		m_pMdl->m_iMaterials[0][i].iMat = m_pMgr->getMaterial(m_pMdl->m_iMaterials[0][i].szName);
 	}
 
 	SGCore_LoadTexLoadTextures();
@@ -2256,7 +2256,7 @@ void Animation::Release()
 	delete this;
 }
 
-void Animation::GetPhysData(
+void Animation::getPhysData(
 	int32_t * piShapeCount,
 	HITBOX_TYPE ** phTypes,
 	float3_t *** pppfData,
@@ -2299,7 +2299,7 @@ void Animation::GetPhysData(
 	}
 }
 
-void Animation::FreePhysData(
+void Animation::freePhysData(
 	int32_t iShapeCount,
 	HITBOX_TYPE * hTypes,
 	float3_t ** ppfData,
@@ -2320,7 +2320,7 @@ void Animation::FreePhysData(
 *
 */
 
-const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
+const ModelFile * AnimationManager::loadModel(const char * name, bool newInst)
 {
 	if(!newInst && m_pModels.KeyExists(name))
 	{
@@ -2339,12 +2339,12 @@ const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
 		{
 			mdl->LoadParts();
 			Animation tmp(this);
-			tmp.AddModel(mdl);
+			tmp.addModel(mdl);
 			for(uint32_t i = 0; i < mdl->m_hdr2.iDepsCount; ++i)
 			{
-				tmp.AddModel(&mdl->m_pParts[i]);
+				tmp.addModel(&mdl->m_pParts[i]);
 			}
-			tmp.Assembly();
+			tmp.assembly();
 			strcpy(tmp.m_pMdl->m_szFileName, mdl->m_szFileName);
 			ModelFile * tmpmdl = mdl;
 			mdl = tmp.m_pMdl;
@@ -2360,7 +2360,7 @@ const ModelFile * AnimationManager::LoadModel(const char * name, bool newInst)
 	}
 }
 
-void AnimationManager::UnloadModel(const ModelFile * mdl)
+void AnimationManager::unloadModel(const ModelFile * mdl)
 {
 	for(AssotiativeArray<String, ModelFile*>::Iterator i = m_pModels.begin(); i; i++)
 	{
@@ -2378,7 +2378,7 @@ m_pd3dDevice(dev),
 m_iVisID(0),
 m_iThreadNum(1)
 {
-	InitVertexDeclarations();
+	initVertexDeclarations();
 }
 
 AnimationManager::~AnimationManager()
@@ -2389,7 +2389,7 @@ AnimationManager::~AnimationManager()
 	}
 }
 
-void AnimationManager::InitVertexDeclarations()
+void AnimationManager::initVertexDeclarations()
 {
 	D3DVERTEXELEMENT9 layoutStatic[] =
 	{
@@ -2436,26 +2436,26 @@ void AnimationManager::InitVertexDeclarations()
 	m_pd3dDevice->CreateVertexDeclaration(layoutDynamicEx, &pVertexDeclaration[MVT_DYNAMIC_EX]);
 }
 
-void AnimationManager::SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
+void AnimationManager::setVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
 {
 	if(nDecl >= MVT_SIZE)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::SetVertexDeclaration()\n", nDecl);
+		reportf(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::setVertexDeclaration()\n", nDecl);
 		return;
 	}
 	m_pd3dDevice->SetVertexDeclaration(pVertexDeclaration[nDecl]);
 }
 
-UINT AnimationManager::Register(Animation * pAnim)
+UINT AnimationManager::reg(Animation * pAnim)
 {
 	m_pAnimatedList.push_back(pAnim);
 	return(m_pAnimatedList.size() - 1);
 }
-void AnimationManager::UnRegister(UINT id)
+void AnimationManager::unreg(UINT id)
 {
 	m_pAnimatedList.erase(id);
 }
-void AnimationManager::Render(ID for_id)
+void AnimationManager::render(ID for_id)
 {
 #ifndef _SERVER
 	Animation * pAnim;
@@ -2464,12 +2464,12 @@ void AnimationManager::Render(ID for_id)
 		pAnim = m_pAnimatedList[i];
 		if(for_id < 0 || pAnim->m_vIsVisibleFor[for_id])
 		{
-			pAnim->Render();
+			pAnim->render();
 		}
 	}
 #endif
 }
-void AnimationManager::Update(int thread)
+void AnimationManager::update(int thread)
 {
 	if(thread >= m_iThreadNum)
 	{
@@ -2478,11 +2478,11 @@ void AnimationManager::Update(int thread)
 	}
 	for(uint32_t i = thread, l = m_pAnimatedList.size(); i < l; i += m_iThreadNum)
 	{
-		m_pAnimatedList[i]->Advance(GetTickCount());
+		m_pAnimatedList[i]->advance(GetTickCount());
 	}
 }
 
-void AnimationManager::Sync()
+void AnimationManager::sync()
 {
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
@@ -2490,14 +2490,14 @@ void AnimationManager::Sync()
 	}
 }
 
-UINT AnimationManager::GetMaterial(const char * mat, bool bStatic)
+UINT AnimationManager::getMaterial(const char * mat, bool bStatic)
 {
 	char * tmp = (char*)alloca(sizeof(char)* (strlen(mat) + 5));
 	sprintf(tmp, "%s.dds", mat);
 	return(SGCore_MtlLoad(tmp, bStatic ? MTL_TYPE_GEOM : MTL_TYPE_SKIN));
 }
 
-void AnimationManager::ComputeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)
+void AnimationManager::computeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)
 {
 	float3 jcenter;
 	float3 jradius;
@@ -2508,9 +2508,9 @@ void AnimationManager::ComputeVis(const ISXFrustum * frustum, const float3 * vie
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		pAnim = m_pAnimatedList[i];
-		pAnim->GetBound()->GetSphere(&jcenter, &jradius.x);
+		pAnim->getBound()->GetSphere(&jcenter, &jradius.x);
 
-		m = pAnim->GetWorldTM();
+		m = pAnim->getWorldTM();
 		m._11 = SMVector3Length(float3(m._11, m._21, m._31));
 		m._22 = SMVector3Length(float3(m._12, m._22, m._32));
 		m._33 = SMVector3Length(float3(m._13, m._23, m._33));
@@ -2523,7 +2523,7 @@ void AnimationManager::ComputeVis(const ISXFrustum * frustum, const float3 * vie
 	}
 }
 
-ID AnimationManager::GetNextVisId()
+ID AnimationManager::getNextVisId()
 {
 	if(m_vFreeVisIDs.size() > 0)
 	{
@@ -2534,7 +2534,7 @@ ID AnimationManager::GetNextVisId()
 	return(++m_iVisID);
 }
 
-void AnimationManager::FreeVisID(ID id)
+void AnimationManager::freeVisID(ID id)
 {
 	if(id <= m_iVisID)
 	{
@@ -2543,7 +2543,7 @@ void AnimationManager::FreeVisID(ID id)
 }
 
 
-void AnimationManager::SetThreadNum(int num)
+void AnimationManager::setThreadNum(int num)
 {
 	m_iThreadNum = num;
 }

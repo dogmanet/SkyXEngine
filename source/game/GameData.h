@@ -2,7 +2,7 @@
 #define _GameData_H_
 
 
-#include "SXplayer.h"
+#include "Player.h"
 #include "crosshair.h"
 #include <mtllight/sxmtllight.h>
 
@@ -13,16 +13,16 @@ public:
 	~GameData();
 
 
-	static SXplayer * m_pPlayer;
-	static SXpointCamera * m_pActiveCamera;
-	static EntityManager * m_pMgr;
+	static CPlayer * m_pPlayer;
+	static CPointCamera * m_pActiveCamera;
+	static CEntityManager * m_pMgr;
 
-	Crosshair * m_pCrosshair;
+	CCrosshair * m_pCrosshair;
 
-	void Update();
-	void Render();
-	void RenderHUD();
-	void Sync();
+	void update();
+	void render();
+	void renderHUD();
+	void sync();
 
 	void playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos);
 

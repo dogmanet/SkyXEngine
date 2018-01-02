@@ -7,7 +7,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	HITBOX_TYPE * phTypes;
 	float3_t ** ppfData;
 	int32_t * pDataLen;
-	pAnimPlayer->GetPhysData(&iShapeCount, &phTypes, &ppfData, &pDataLen);
+	pAnimPlayer->getPhysData(&iShapeCount, &phTypes, &ppfData, &pDataLen);
 */
 
 	enum JointType
@@ -69,13 +69,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		{"bip01_neck", 1, 0, JOINT_CONETWIST, float3_t(SM_PIDIV4, SM_PIDIV4, SM_PIDIV2)}
 	};
 	btTransform offset; offset.setIdentity();
-	offset.setOrigin(F3_BTVEC(pAnimPlayer->GetPos()));
+	offset.setOrigin(F3_BTVEC(pAnimPlayer->getPos()));
 
 	m_shapes = new btCollisionShape*[m_iBodiesCount];
 	m_bodies = new btRigidBody*[m_iBodiesCount];
 
-	m_pidBones = new ID[pAnimPlayer->GetBoneCount()];
-	for(int i = 0, l = pAnimPlayer->GetBoneCount(); i < l; ++i)
+	m_pidBones = new ID[pAnimPlayer->getBoneCount()];
+	for(int i = 0, l = pAnimPlayer->getBoneCount(); i < l; ++i)
 	{
 		m_pidBones[i] = -1;
 	}
@@ -84,7 +84,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	{
 		if(bones[i].szBone[0])
 		{
-			m_pidBones[pAnimPlayer->GetBone(bones[i].szBone)] = i;
+			m_pidBones[pAnimPlayer->getBone(bones[i].szBone)] = i;
 		}
 
 		m_shapes[i] = new btCapsuleShape(bones[i].fCapsRadius * 0.5f, (bones[i].fCapsLength + bones[i].fCapsRadius) * 0.5f);
@@ -104,11 +104,11 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	m_ppJoints = new btTypedConstraint*[m_iJointsCount];
 
 	/*const ModelHitbox * hb;
-	uint32_t iHitboxes = pAnimPlayer->GetHitboxCount();
-	float fScale = pAnimPlayer->GetScale();
+	uint32_t iHitboxes = pAnimPlayer->getHitboxCount();
+	float fScale = pAnimPlayer->getScale();
 	for(uint32_t i = 0; i < iHitboxes; ++i)
 	{
-		hb = pAnimPlayer->GetHitbox(i);
+		hb = pAnimPlayer->getHitbox(i);
 		switch(hb->type)
 		{
 		case HT_BOX:
@@ -156,12 +156,12 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	}
 	//m_bodies[1]->setAngularFactor(0.0f);
 	//m_bodies[1]->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
-	//UINT bone = pAnimPlayer->GetBone("bip01_head");
+	//UINT bone = pAnimPlayer->getBone("bip01_head");
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_neck"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_neck"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setEulerZYX(SM_PIDIV2, 0, SM_PIDIV2);
@@ -181,7 +181,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_upperarm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_upperarm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -202,7 +202,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_upperarm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_upperarm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -224,7 +224,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_forearm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_forearm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -247,7 +247,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_forearm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_forearm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -270,7 +270,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btFixedConstraint * joint6DOF;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_spine1"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_spine1"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -293,7 +293,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btGeneric6DofConstraint * joint6DOF;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_spine1"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_spine1"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -317,7 +317,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_thigh"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_thigh"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		//localA.getBasis().setIdentity();
@@ -338,7 +338,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_thigh"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_thigh"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		//localA.getBasis().setIdentity();
@@ -359,7 +359,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_calf"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_calf"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -382,7 +382,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_calf"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_calf"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();

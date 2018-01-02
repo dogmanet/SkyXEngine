@@ -13,15 +13,15 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXplayerSpawn_H_
-#define _SXplayerSpawn_H_
+#ifndef _CPlayerSpawn_H_
+#define _CPlayerSpawn_H_
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
 
 //! Точка респауна игрока
-class SXplayerSpawn: public SXpointEntity
+class CPlayerSpawn: public CPointEntity
 {
-	DECLARE_CLASS(SXplayerSpawn, SXpointEntity);
+	DECLARE_CLASS(CPlayerSpawn, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();

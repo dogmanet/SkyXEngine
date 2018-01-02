@@ -5,7 +5,7 @@
 Поезд, движется по траектории, построенной из path_corner
 */
 
-BEGIN_PROPTABLE(FuncTrain)
+BEGIN_PROPTABLE(CFuncTrain)
 	//! Скорость движения
 	DEFINE_FIELD_FLOAT(m_fSpeed, 0, "speed", "Move speed", EDITOR_TEXTFIELD)
 
@@ -13,9 +13,9 @@ BEGIN_PROPTABLE(FuncTrain)
 	DEFINE_FIELD_ENTITY(m_pStartStop, 0, "start", "Start point", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
-REGISTER_ENTITY(FuncTrain, func_train);
+REGISTER_ENTITY(CFuncTrain, func_train);
 
-FuncTrain::FuncTrain(EntityManager * pMgr):
+CFuncTrain::CFuncTrain(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_fSpeed(0.0f),
 	m_pStartStop(NULL),
@@ -24,18 +24,18 @@ FuncTrain::FuncTrain(EntityManager * pMgr):
 {
 }
 
-void FuncTrain::OnPostLoad()
+void CFuncTrain::onPostLoad()
 {
-	BaseClass::OnPostLoad();
+	BaseClass::onPostLoad();
 	m_pCurStop = m_pStartStop;
 	if(m_pStartStop)
 	{
-	//	SetPos(m_pStartStop->GetPos());
-	//	SetOrient(m_pStartStop->GetOrient());
+	//	setPos(m_pStartStop->getPos());
+	//	setOrient(m_pStartStop->getOrient());
 	}
 }
 
-void FuncTrain::Stop()
+void CFuncTrain::stop()
 {
 	if(m_bRunning)
 	{
@@ -44,16 +44,16 @@ void FuncTrain::Stop()
 	}
 }
 
-void FuncTrain::Start()
+void CFuncTrain::start()
 {
 	if(!m_bRunning)
 	{
 		m_bRunning = true;
-		m_iPostIval = SET_INTERVAL(MoveFunc, 1.0f/60.0f);
+		m_iPostIval = SET_INTERVAL(moveFunc, 1.0f/60.0f);
 	}
 }
 
-void FuncTrain::MoveFunc(float dt)
+void CFuncTrain::moveFunc(float dt)
 {
 	m_fCurDist += m_fSpeed * dt;
 	while(m_pCurStop && (m_fCurDist > m_pCurStop->GetLength()))
@@ -63,8 +63,8 @@ void FuncTrain::MoveFunc(float dt)
 	}
 	if(m_pCurStop)
 	{
-		SetPos(m_pCurStop->GetPoint(m_fCurDist));
-		SetOrient(m_pCurStop->GetRot(m_fCurDist));
+		setPos(m_pCurStop->getPoint(m_fCurDist));
+		setOrient(m_pCurStop->getRot(m_fCurDist));
 	}
 	else
 	{
@@ -73,8 +73,8 @@ void FuncTrain::MoveFunc(float dt)
 		{
 			m_pCurStop = m_pCurStop->GetNext();
 		}
-		SetPos(m_pCurStop->GetPoint(m_fCurDist));
-		SetOrient(m_pCurStop->GetRot(m_fCurDist));
-		Stop();
+		setPos(m_pCurStop->getPoint(m_fCurDist));
+		setOrient(m_pCurStop->getRot(m_fCurDist));
+		stop();
 	}
 }

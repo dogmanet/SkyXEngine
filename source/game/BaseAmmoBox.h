@@ -8,20 +8,20 @@ See the license in LICENSE
 Аммобокс
 */
 
-#ifndef _SXbaseAmmoBox_H_
-#define _SXbaseAmmoBox_H_
+#ifndef _CBaseAmmoBox_H_
+#define _CBaseAmmoBox_H_
 
-#include "SXbaseItem.h"
+#include "BaseItem.h"
 
 /*! Аммобокс
 \ingroup cbaseitem
 */
-class SXbaseAmmoBox: public SXbaseItem
+class CBaseAmmoBox: public CBaseItem
 {
-	DECLARE_CLASS(SXbaseAmmoBox, SXbaseItem);
+	DECLARE_CLASS(CBaseAmmoBox, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
-	ThisClass(EntityManager * pMgr);
+	ThisClass(CEntityManager * pMgr);
 
 	int m_iMaxItems; //!< Максимальное количество предметов, которые бокс может выдать
 	int m_iCurItems; //!< Сколько осталось

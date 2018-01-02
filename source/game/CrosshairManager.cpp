@@ -1,27 +1,27 @@
 
 #include "CrosshairManager.h"
 
-AssotiativeArray<AAString, ID> CrosshairManager::m_mIndex;
-Array<CrosshairManager::CrosshairDesc> CrosshairManager::m_vCrosshairList;
+AssotiativeArray<AAString, ID> CCrosshairManager::m_mIndex;
+Array<CCrosshairManager::CrosshairDesc> CCrosshairManager::m_vCrosshairList;
 
 extern report_func reportf;
 
-void CrosshairManager::loadCrosshair(ID id, Crosshair * pCrosshair)
+void CCrosshairManager::loadCrosshair(ID id, CCrosshair * pCCrosshair)
 {
 	if(id < 0 || id >= (ID)m_vCrosshairList.size())
 	{
 		return;
 	}
 	CrosshairDesc * desc = &m_vCrosshairList[id];
-	pCrosshair->SetAngle(desc->fAngle);
-	pCrosshair->SetFixedRadius(desc->fRadius);
-	pCrosshair->SetNumSegmens(desc->iNumSegments);
-	pCrosshair->SetStyle(desc->style);
-	pCrosshair->SetTexInfo(desc->f2TexOffset, desc->f2TexSize);
-	pCrosshair->SetTexture(desc->idTexture);
+	pCCrosshair->setAngle(desc->fAngle);
+	pCCrosshair->setFixedRadius(desc->fRadius);
+	pCCrosshair->setNumSegmens(desc->iNumSegments);
+	pCCrosshair->setStyle(desc->style);
+	pCCrosshair->setTexInfo(desc->f2TexOffset, desc->f2TexSize);
+	pCCrosshair->setTexture(desc->idTexture);
 }
 
-void CrosshairManager::loadConfig(const char * szFile)
+void CCrosshairManager::loadConfig(const char * szFile)
 {
 	ISXConfig * config = Core_OpConfig(szFile);
 	int sections = config->getSectionCount();
@@ -71,15 +71,15 @@ void CrosshairManager::loadConfig(const char * szFile)
 		}
 		if(strcmpi(str, "split_move") == 0)
 		{
-			cd.style = Crosshair::SPLIT_MOVE;
+			cd.style = CCrosshair::SPLIT_MOVE;
 		}
 		else if(strcmpi(str, "scaled") == 0)
 		{
-			cd.style = Crosshair::SCALED;
+			cd.style = CCrosshair::SCALED;
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unknown crosshair style '%s' for '%s'\n", str, sect);
+			reportf(REPORT_MSG_LEVEL_WARNING, "Unknown CCrosshair style '%s' for '%s'\n", str, sect);
 			continue;
 		}
 
@@ -91,7 +91,7 @@ void CrosshairManager::loadConfig(const char * szFile)
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read crosshair tex '%s'\n", sect);
+			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex '%s'\n", sect);
 			continue;
 		}
 		int x, y;
@@ -101,7 +101,7 @@ void CrosshairManager::loadConfig(const char * szFile)
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read crosshair tex_offset '%s'. Expected format: '[x,y]'\n", sect);
+			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex_offset '%s'. Expected format: '[x,y]'\n", sect);
 			continue;
 		}
 		if(config->keyExists(sect, "tex_size") && sscanf(config->getKey(sect, "tex_size"), "[%d,%d]", &x, &y) == 2)
@@ -110,7 +110,7 @@ void CrosshairManager::loadConfig(const char * szFile)
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read crosshair tex_size '%s'. Expected format: '[x,y]'\n", sect);
+			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex_size '%s'. Expected format: '[x,y]'\n", sect);
 			continue;
 		}
 		AAString aas;
@@ -122,7 +122,7 @@ void CrosshairManager::loadConfig(const char * szFile)
 	mem_release(config);
 }
 
-ID CrosshairManager::getCrosshairID(const char * szName)
+ID CCrosshairManager::getCrosshairID(const char * szName)
 {
 	const AssotiativeArray<AAString, ID>::Node * pNode;
 	if(m_mIndex.KeyExists(AAString(szName), &pNode))

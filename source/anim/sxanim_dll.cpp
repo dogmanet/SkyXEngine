@@ -54,22 +54,22 @@ SX_LIB_API void SXAnim_AKill()
 SX_LIB_API void SXAnim_Update(int thread)
 {
 	SA_PRECOND(_VOID);
-	g_mgr->Update(thread);
+	g_mgr->update(thread);
 }
 SX_LIB_API void SXAnim_UpdateSetThreadNum(int num)
 {
 	SA_PRECOND(_VOID);
-	g_mgr->SetThreadNum(num);
+	g_mgr->setThreadNum(num);
 }
 SX_LIB_API void SXAnim_Sync()
 {
 	SA_PRECOND(_VOID);
-	g_mgr->Sync();
+	g_mgr->sync();
 }
 SX_LIB_API void SXAnim_Render(ID for_id)
 {
 	SA_PRECOND(_VOID);
-	g_mgr->Render(for_id);
+	g_mgr->render(for_id);
 }
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
@@ -78,7 +78,7 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 	Animation * anim = new Animation(g_mgr);
 	if(mdl)
 	{
-		anim->SetModel(mdl);
+		anim->setModel(mdl);
 	}
 	return(anim);
 }
@@ -86,18 +86,18 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 SX_LIB_API void SXAnim_ModelsComVisible(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)
 {
 	SA_PRECOND(_VOID);
-	g_mgr->ComputeVis(frustum, viewpos, id_arr);
+	g_mgr->computeVis(frustum, viewpos, id_arr);
 }
 
 SX_LIB_API ID SXAnim_ModelsAddArrForCom()
 {
 	SA_PRECOND(-1);
-	return(g_mgr->GetNextVisId());
+	return(g_mgr->getNextVisId());
 }
 SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
 {
 	SA_PRECOND(_VOID);
-	g_mgr->FreeVisID(id_arr);
+	g_mgr->freeVisID(id_arr);
 }
 
 SX_LIB_API void SXAnim_Dbg_Set(report_func rf)

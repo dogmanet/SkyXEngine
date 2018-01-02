@@ -1,16 +1,16 @@
-#include "SXpointCamera.h"
+#include "PointCamera.h"
 
 /*! \skydocent point_camera
 Камера
 */
 
-BEGIN_PROPTABLE(SXpointCamera)
+BEGIN_PROPTABLE(CPointCamera)
 // empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(SXpointCamera, point_camera);
+REGISTER_ENTITY(CPointCamera, point_camera);
 
-SXpointCamera::SXpointCamera(EntityManager * pMgr):
+CPointCamera::CPointCamera(CEntityManager * pMgr):
 	BaseClass(pMgr)
 {
 	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
@@ -18,19 +18,19 @@ SXpointCamera::SXpointCamera(EntityManager * pMgr):
 	m_pSXC->SetFOV(SMToRadian(*r_default_fov));
 }
 
-SXpointCamera::~SXpointCamera()
+CPointCamera::~CPointCamera()
 {
 	mem_release(m_pSXC);
 }
 
-ISXCamera * SXpointCamera::GetCamera()
+ISXCamera * CPointCamera::getCamera()
 {
 	return(m_pSXC);
 }
 
-void SXpointCamera::OnSync()
+void CPointCamera::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 
 	m_pSXC->SetPosition(&(float3)m_vPosition);
 	m_pSXC->SetOrientation(m_vOrientation);

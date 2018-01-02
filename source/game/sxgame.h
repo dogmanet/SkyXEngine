@@ -167,7 +167,7 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 
 /*! Инициализирует библиотеку
@@ -228,11 +228,11 @@ SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count);
 
 /*! Создает entity заданного класса
 */
-SX_LIB_API SXbaseEntity * SXGame_CreateEntity(const char * classname);
+SX_LIB_API CBaseEntity * SXGame_CreateEntity(const char * classname);
 
 /*! Уничтожает entity
 */
-SX_LIB_API void SXGame_RemoveEntity(SXbaseEntity * pEnt);
+SX_LIB_API void SXGame_RemoveEntity(CBaseEntity * pEnt);
 
 /*! Получает таблицу свойств для заданного класса
 */
@@ -248,9 +248,9 @@ SX_LIB_API int SXGame_EntGetCount();
 
 /*! Возвращает entity по его id
 */
-SX_LIB_API SXbaseEntity *SXGame_EntGet(ID id);
+SX_LIB_API CBaseEntity *SXGame_EntGet(ID id);
 
-SX_LIB_API SXbaseEntity *SXGame_EntGetByName(const char *szName, ID idStart = 0);
+SX_LIB_API CBaseEntity *SXGame_EntGetByName(const char *szName, ID idStart = 0);
 
 
 

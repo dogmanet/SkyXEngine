@@ -8,10 +8,10 @@ See the license in LICENSE
 Базовый класс оружия
 */
 
-#ifndef _SXbaseWeapon_H_
-#define _SXbaseWeapon_H_
+#ifndef _CBaseWeapon_H_
+#define _CBaseWeapon_H_
 
-#include "SXbaseTool.h"
+#include "BaseTool.h"
 
 #include "BaseScope.h"
 #include "BaseHandle.h"
@@ -45,19 +45,19 @@ enum SPREAD_COEFF
 /*! Оружие
 \ingroup cbaseitem
 */
-class SXbaseWeapon: public SXbaseTool
+class CBaseWeapon: public CBaseTool
 {
-	DECLARE_CLASS(SXbaseWeapon, SXbaseTool);
+	DECLARE_CLASS(CBaseWeapon, CBaseTool);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	virtual void OnPostLoad();
+	virtual void onPostLoad();
 
-	virtual void PrimaryAction(BOOL st);
-	virtual void SecondaryAction(BOOL st);
-	virtual void Reload();
+	virtual void primaryAction(BOOL st);
+	virtual void secondaryAction(BOOL st);
+	virtual void reload();
 
-	virtual bool SetKV(const char * name, const char * value);
+	virtual bool setKV(const char * name, const char * value);
 
 	void setFireMode(FIRE_MODE mode);
 	void nextFireMode();

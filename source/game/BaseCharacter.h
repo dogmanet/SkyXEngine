@@ -16,10 +16,10 @@ See the license in LICENSE
 #ifndef _CBaseCharacter_H_
 #define _CBaseCharacter_H_
 
-#include "SXbaseAnimating.h"
+#include "BaseAnimating.h"
 #include "LightDirectional.h"
 
-class SXbaseTool;
+class CBaseTool;
 
 //! Типы движения игрока
 enum PLAYER_MOVE
@@ -39,22 +39,22 @@ enum PLAYER_MOVE
 };
 
 //! Класс игрока  \ingroup cbaseanimating
-class CBaseCharacter: public SXbaseAnimating
+class CBaseCharacter: public CBaseAnimating
 {
-	DECLARE_CLASS(CBaseCharacter, SXbaseAnimating);
+	DECLARE_CLASS(CBaseCharacter, CBaseAnimating);
 	DECLARE_PROPTABLE();
 public:
-	CBaseCharacter(EntityManager * pMgr);
+	CBaseCharacter(CEntityManager * pMgr);
 	~CBaseCharacter();
 
 	//! Запускает/останавливает первичную атаку
-	void Attack(BOOL state);
+	void attack(BOOL state);
 	//! Запускает/останавливает вторичную атаку
-	void Attack2(BOOL state);
+	void attack2(BOOL state);
 	//! Запускает перезарядку активного оружия
-	void Reload();
+	void reload();
 	//! Включает/выключает фонарь
-	void ToggleFlashlight();
+	void toggleFlashlight();
 	//! Переключает режим стрельбы активного оружия
 	void nextFireMode();
 
@@ -76,7 +76,7 @@ protected:
 	UINT m_uMoveDir;
 
 	//! Текущий инструмент в руках
-	SXbaseTool * m_pActiveTool;
+	CBaseTool * m_pActiveTool;
 
 	//! Для физики @{
 	btCollisionShape * m_pCollideShape;

@@ -16,15 +16,15 @@ See the license in LICENSE
 
 //! \defgroup clight Свет
 
-#ifndef _SXpointEntity_H_
-#define _SXpointEntity_H_
+#ifndef _CPointEntity_H_
+#define _CPointEntity_H_
 
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 //! Класс точечного объекта
-class SXpointEntity: public SXbaseEntity
+class CPointEntity: public CBaseEntity
 {
-	DECLARE_CLASS(SXpointEntity, SXbaseEntity);
+	DECLARE_CLASS(CPointEntity, CBaseEntity);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();

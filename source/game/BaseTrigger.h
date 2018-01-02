@@ -17,19 +17,19 @@ See the license in LICENSE
 #ifndef _BaseTrigger_H_
 #define _BaseTrigger_H_
 
-#include "SXbaseAnimating.h"
+#include "BaseAnimating.h"
 
 //! Базовый класс триггера
-class CBaseTrigger: public SXbaseAnimating
+class CBaseTrigger: public CBaseAnimating
 {
-	DECLARE_CLASS(CBaseTrigger, SXbaseAnimating);
+	DECLARE_CLASS(CBaseTrigger, CBaseAnimating);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseTrigger();
 
-	void OnSync();
-	void OnPostLoad();
+	void onSync();
+	void onPostLoad();
 
 	void enable();
 	void disable();
@@ -41,8 +41,8 @@ protected:
 
 	ID m_idDevMaterial;
 	
-	Array<SXbaseEntity*> m_aTouches;
-	Array<SXbaseEntity*> m_aNewTouches;
+	Array<CBaseEntity*> m_aTouches;
+	Array<CBaseEntity*> m_aNewTouches;
 	
 	output_t m_onTouchStart;
 	output_t m_onTouchEnd;
@@ -56,12 +56,12 @@ protected:
 	void inDisable(inputdata_t * pInputdata);
 	void inToggle(inputdata_t * pInputdata);
 
-	virtual void CreatePhysBody();
-	virtual void RemovePhysBody();
+	virtual void createPhysBody();
+	virtual void removePhysBody();
 
-	virtual void onTouchStart(SXbaseEntity *pActivator);
-	virtual void onTouchEnd(SXbaseEntity *pActivator);
-	virtual void onTouchEndAll(SXbaseEntity *pActivator);
+	virtual void onTouchStart(CBaseEntity *pActivator);
+	virtual void onTouchEnd(CBaseEntity *pActivator);
+	virtual void onTouchEndAll(CBaseEntity *pActivator);
 };
 
 #endif

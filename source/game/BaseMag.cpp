@@ -13,7 +13,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseMag, base_mag);
 
-CBaseMag::CBaseMag(EntityManager * pMgr):
+CBaseMag::CBaseMag(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_iCapacity(0),
 	m_iCurrentLoad(0)

@@ -24,7 +24,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CBaseTrigger, trigger);
 
-CBaseTrigger::CBaseTrigger(EntityManager * pMgr):
+CBaseTrigger::CBaseTrigger(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_bEnabled(true),
 	m_pGhostObject(NULL),
@@ -35,13 +35,13 @@ CBaseTrigger::CBaseTrigger(EntityManager * pMgr):
 
 CBaseTrigger::~CBaseTrigger()
 {
-	RemovePhysBody();
+	removePhysBody();
 	CLEAR_INTERVAL(m_idUpdateInterval);
 }
 
-void CBaseTrigger::OnPostLoad()
+void CBaseTrigger::onPostLoad()
 {
-	BaseClass::OnPostLoad();
+	BaseClass::onPostLoad();
 
 	if(m_pAnimPlayer)
 	{
@@ -99,7 +99,7 @@ void CBaseTrigger::inToggle(inputdata_t * pInputdata)
 	toggle();
 }
 
-void CBaseTrigger::CreatePhysBody()
+void CBaseTrigger::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
@@ -113,7 +113,7 @@ void CBaseTrigger::CreatePhysBody()
 	}
 }
 
-void CBaseTrigger::RemovePhysBody()
+void CBaseTrigger::removePhysBody()
 {
 	if(m_pGhostObject)
 	{
@@ -122,22 +122,22 @@ void CBaseTrigger::RemovePhysBody()
 	}
 }
 
-void CBaseTrigger::onTouchStart(SXbaseEntity *pActivator)
+void CBaseTrigger::onTouchStart(CBaseEntity *pActivator)
 {
 	FIRE_OUTPUT(m_onTouchStart, pActivator);
 }
-void CBaseTrigger::onTouchEnd(SXbaseEntity *pActivator)
+void CBaseTrigger::onTouchEnd(CBaseEntity *pActivator)
 {
 	FIRE_OUTPUT(m_onTouchEnd, pActivator);
 }
-void CBaseTrigger::onTouchEndAll(SXbaseEntity *pActivator)
+void CBaseTrigger::onTouchEndAll(CBaseEntity *pActivator)
 {
 	FIRE_OUTPUT(m_onTouchEndAll, pActivator);
 }
 
-void CBaseTrigger::OnSync()
+void CBaseTrigger::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 
 	if(!m_pGhostObject || !m_bEnabled)
 	{
@@ -175,11 +175,11 @@ void CBaseTrigger::OnSync()
 								? manifoldArray[0]->getBody1()
 								: manifoldArray[0]->getBody0();
 
-							SXbaseEntity * pEnt = (SXbaseEntity*)pObject->getUserPointer();
+							CBaseEntity * pEnt = (CBaseEntity*)pObject->getUserPointer();
 							if(pEnt)
 							{
 								m_aNewTouches.push_back(pEnt);
-								//printf("touched %s\n", pEnt->GetClassName());
+								//printf("touched %s\n", pEnt->getClassName());
 							}
 						}
 					}
@@ -218,7 +218,7 @@ void CBaseTrigger::update(float dt)
 			onTouchStart(m_aNewTouches[i]);
 		}
 	}
-	SXbaseEntity * pLastTouch = NULL;
+	CBaseEntity * pLastTouch = NULL;
 	for(int j = 0, jl = m_aTouches.size(); j < jl; ++j)
 	{
 		if(m_aTouches[j])

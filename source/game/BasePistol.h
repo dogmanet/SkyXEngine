@@ -5,29 +5,23 @@ See the license in LICENSE
 
 /*!
 \file
-Винтовки
+Пистолеты
 */
 
-#ifndef _SXbaseRiffle_H_
-#define _SXbaseRiffle_H_
+#ifndef _CBasePistol_H_
+#define _CBasePistol_H_
 
-#include "SXbaseWeapon.h"
-
-/*! Винтовки
+/*! Пистолеты
 \ingroup cbaseitem
 */
-class SXbaseRiffle: public SXbaseWeapon
+#include "BaseWeapon.h"
+
+class CBasePistol: public CBaseWeapon
 {
-	DECLARE_CLASS(SXbaseRiffle, SXbaseWeapon);
+	DECLARE_CLASS(CBasePistol, CBaseWeapon);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
-
-	//void PrimaryAction(BOOL st);
-	//void SecondaryAction(BOOL st);
-	//void Reload();
-
-	//void Deploy();
 };
 
 #endif

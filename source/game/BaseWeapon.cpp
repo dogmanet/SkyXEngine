@@ -1,14 +1,14 @@
 
 #include <particles/sxparticles.h>
-#include "SXbaseWeapon.h"
-#include "SXplayer.h"
+#include "BaseWeapon.h"
+#include "Player.h"
 
 /*! \skydocent base_weapon
 Базовый класс для оружия
 */
 
 
-BEGIN_PROPTABLE(SXbaseWeapon)
+BEGIN_PROPTABLE(CBaseWeapon)
 	//! Совместимые прицелы, классы через запятую
 	DEFINE_FIELD_STRING(m_szAddonScopes, PDFF_NOEDIT | PDFF_NOEXPORT, "addon_scopes", "", EDITOR_NONE)
 	//! Совместимые глушители
@@ -75,9 +75,9 @@ BEGIN_PROPTABLE(SXbaseWeapon)
 	DEFINE_FIELD_FLOAT(m_fSpreadIronSight, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_ironsight", "", EDITOR_NONE)
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(SXbaseWeapon, base_weapon);
+REGISTER_ENTITY_NOLISTING(CBaseWeapon, base_weapon);
 
-SXbaseWeapon::SXbaseWeapon(EntityManager * pMgr):
+CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_pSilencer(NULL),
 	m_pScope(NULL),
@@ -110,9 +110,9 @@ SXbaseWeapon::SXbaseWeapon(EntityManager * pMgr):
 	m_bIsWeapon = true;
 }
 
-void SXbaseWeapon::OnPostLoad()
+void CBaseWeapon::onPostLoad()
 {
-	BaseClass::OnPostLoad();
+	BaseClass::onPostLoad();
 
 	if(m_szSndDraw[0])
 	{
@@ -140,9 +140,9 @@ void SXbaseWeapon::OnPostLoad()
 	}
 }
 
-bool SXbaseWeapon::SetKV(const char * name, const char * value)
+bool CBaseWeapon::setKV(const char * name, const char * value)
 {
-	if(!BaseClass::SetKV(name, value))
+	if(!BaseClass::setKV(name, value))
 	{
 		return(false);
 	}
@@ -176,32 +176,32 @@ bool SXbaseWeapon::SetKV(const char * name, const char * value)
 		}
 		if(!m_iFireModes)
 		{
-			printf(COLOR_LRED "No firemodes defined for '%s'\n" COLOR_RESET, GetClassName());
+			printf(COLOR_LRED "No firemodes defined for '%s'\n" COLOR_RESET, getClassName());
 		}
 	}
 	return(true);
 }
 
-void SXbaseWeapon::PrimaryAction(BOOL st)
+void CBaseWeapon::primaryAction(BOOL st)
 {
 	m_bInPrimaryAction = st != FALSE;
 	if(st)
 	{
-		PlayAnimation("shoot1");
+		playAnimation("shoot1");
 		if(ID_VALID(m_iMuzzleFlash))
 		{
 			SPE_EffectEnableSet(m_iMuzzleFlash, true);
 		}
 		if(ID_VALID(m_iSoundAction1))
 		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, &GetPos());
+			SSCore_SndInstancePlay3d(m_iSoundAction1, &getPos());
 		}
 
-		//((SXplayer*)m_pOwner)->is
+		//((CPlayer*)m_pOwner)->is
 
 		//trace line
-		float3 start = GetPos();
-		float3 dir = m_pParent->GetOrient() * float3(0.0f, 0.0f, 1.0f);
+		float3 start = getPos();
+		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * m_fMaxDistance;
 		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
 		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
@@ -220,16 +220,16 @@ void SXbaseWeapon::PrimaryAction(BOOL st)
 	}
 }
 
-void SXbaseWeapon::SecondaryAction(BOOL st)
+void CBaseWeapon::secondaryAction(BOOL st)
 {
 	m_bInSecondaryAction = st != FALSE;
 	if(m_iZoomable)
 	{
-		((SXplayer*)m_pOwner)->GetCrosshair()->Enable(!st);
+		((CPlayer*)m_pOwner)->getCrosshair()->enable(!st);
 	}
 }
 
-void SXbaseWeapon::Reload()
+void CBaseWeapon::reload()
 {
 	if(!m_pMag)
 	{
@@ -241,7 +241,7 @@ void SXbaseWeapon::Reload()
 		printf(COLOR_MAGENTA "Cannot reload without owner!\n" COLOR_RESET);
 		return;
 	}
-	if(CanUse())
+	if(canUse())
 	{
 		//int count = m_pOwner->getInventory()->consumeItems("ammo_5.45x39ps", m_pMag->getCapacity() - m_pMag->getLoad() + m_iCapacity - m_iCurrentLoad);
 		//count += m_iCurrentLoad;
@@ -249,28 +249,28 @@ void SXbaseWeapon::Reload()
 		//count -= m_iCurrentLoad;
 		//m_pMag->load(count);
 
-		SetNextUse(m_fReloadTime);
-		PlayAnimation("reload");
+		setNextUse(m_fReloadTime);
+		playAnimation("reload");
 		if(ID_VALID(m_idSndReload))
 		{
-			SSCore_SndInstancePlay3d(m_idSndReload, &GetPos());
+			SSCore_SndInstancePlay3d(m_idSndReload, &getPos());
 		}
 	}
 }
 
-void SXbaseWeapon::setFireMode(FIRE_MODE mode)
+void CBaseWeapon::setFireMode(FIRE_MODE mode)
 {
 	if(!(m_iFireModes & mode))
 	{
 		m_fireMode = mode;
 		if(ID_VALID(m_idSndReload))
 		{
-			SSCore_SndInstancePlay3d(m_idSndSwitch, &GetPos());
+			SSCore_SndInstancePlay3d(m_idSndSwitch, &getPos());
 		}
 	}
 }
 
-void SXbaseWeapon::nextFireMode()
+void CBaseWeapon::nextFireMode()
 {
 	int cur = (int)log2f((float)m_fireMode);
 	int newMode = cur;
@@ -285,12 +285,12 @@ void SXbaseWeapon::nextFireMode()
 	}
 }
 
-bool SXbaseWeapon::canShoot()
+bool CBaseWeapon::canShoot()
 {
 	return(m_iCurrentLoad > 0 || (m_pMag && m_pMag->getLoad() > 0));
 }
 
-float SXbaseWeapon::getWeight()
+float CBaseWeapon::getWeight()
 {
 	return(m_iInvWeight +
 		(m_pHandle ? m_pHandle->getWeight() : 0.0f) +
@@ -300,17 +300,17 @@ float SXbaseWeapon::getWeight()
 	);
 }
 
-float SXbaseWeapon::getBaseSpread() const
+float CBaseWeapon::getBaseSpread() const
 {
 	return(m_fBaseSpread);
 }
 
-bool SXbaseWeapon::isIronSight() const
+bool CBaseWeapon::isIronSight() const
 {
 	return(m_iZoomable && m_bInSecondaryAction);
 }
 
-float SXbaseWeapon::getSpreadCoeff(SPREAD_COEFF what) const
+float CBaseWeapon::getSpreadCoeff(SPREAD_COEFF what) const
 {
 	switch(what)
 	{

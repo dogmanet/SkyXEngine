@@ -11,14 +11,14 @@ See the license in LICENSE
 #ifndef _SXbaseSnipe_H_
 #define _SXbaseSnipe_H_
 
-#include "SXbaseWeapon.h"
+#include "BaseWeapon.h"
 
 /*! Снайперские
 \ingroup cbaseitem
 */
-class SXbaseSnipe: public SXbaseWeapon
+class SXbaseSnipe: public CBaseWeapon
 {
-	DECLARE_CLASS(SXbaseSnipe, SXbaseWeapon);
+	DECLARE_CLASS(SXbaseSnipe, CBaseWeapon);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();

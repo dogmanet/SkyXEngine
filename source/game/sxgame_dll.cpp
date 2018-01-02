@@ -75,15 +75,15 @@ void ccmd_cam_pt()
 	static int count = 0;
 	char buf[64];
 	sprintf(buf, "cam_pt_%d", count);
-	PathCorner * pc = (PathCorner*)CREATE_ENTITY("path_corner", GameData::m_pMgr);
-	pc->SetKV("name", buf);
-	pc->SetPos(GameData::m_pActiveCamera->GetPos());
-	pc->SetOrient(GameData::m_pActiveCamera->GetOrient());
+	CPathCorner * pc = (CPathCorner*)CREATE_ENTITY("path_corner", GameData::m_pMgr);
+	pc->setKV("name", buf);
+	pc->setPos(GameData::m_pActiveCamera->getPos());
+	pc->setOrient(GameData::m_pActiveCamera->getOrient());
 
 	sprintf(buf, "cam_pt_%d", count - 1);
-	pc = (PathCorner*)GameData::m_pMgr->FindEntityByName(buf);
+	pc = (CPathCorner*)GameData::m_pMgr->findEntityByName(buf);
 	sprintf(buf, "cam_pt_%d", count);
-	pc->SetKV("next", buf);
+	pc->setKV("next", buf);
 	
 	++count;
 }
@@ -92,14 +92,14 @@ void ccmd_save_as(int argc, const char ** argv)
 {
 	if(argc > 1)
 	{
-		GameData::m_pMgr->Export(argv[1]);
+		GameData::m_pMgr->exportList(argv[1]);
 	}
 }
 
 SX_LIB_API ISXCamera * SXGame_GetActiveCamera()
 {
 	SG_PRECOND(NULL);
-	return(GameData::m_pActiveCamera->GetCamera());
+	return(GameData::m_pActiveCamera->getCamera());
 }
 
 SX_LIB_API void SXGame_0Create()
@@ -113,7 +113,7 @@ SX_LIB_API void SXGame_0Create()
 
 	g_pGameData = new GameData();
 
-	//g_pPlayer->Spawn();
+	//g_pPlayer->spawn();
 	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0);
 
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
@@ -129,32 +129,32 @@ SX_LIB_API void SXGame_AKill()
 SX_LIB_API void SXGame_Update(int thread)
 {
 	SG_PRECOND(_VOID);
-	GameData::m_pMgr->Update(thread);
-	g_pGameData->Update();
+	GameData::m_pMgr->update(thread);
+	g_pGameData->update();
 }
 SX_LIB_API void SXGame_UpdateSetThreadNum(int num)
 {
 	SG_PRECOND(_VOID);
-	GameData::m_pMgr->SetThreadNum(num);
+	GameData::m_pMgr->setThreadNum(num);
 }
 SX_LIB_API void SXGame_Sync()
 {
 	SG_PRECOND(_VOID);
-	GameData::m_pMgr->Sync();
-	g_pGameData->Sync();
+	GameData::m_pMgr->sync();
+	g_pGameData->sync();
 }
 
 SX_LIB_API void SXGame_Render()
 {
 	SG_PRECOND(_VOID);
-	//GameData::m_pMgr->Render();
-	g_pGameData->Render();
+	//GameData::m_pMgr->render();
+	g_pGameData->render();
 }
 
 SX_LIB_API void SXGame_RenderHUD()
 {
 	SG_PRECOND(_VOID);
-	g_pGameData->RenderHUD();
+	g_pGameData->renderHUD();
 }
 
 
@@ -166,7 +166,7 @@ SX_LIB_API void SXGame_Dbg_Set(report_func rf)
 SX_LIB_API void SXGame_LoadEnts(const char * file)
 {
 	SG_PRECOND(_VOID);
-	GameData::m_pMgr->Import(file);
+	GameData::m_pMgr->import(file);
 }
 
 SX_LIB_API void SXGame_UnloadObjLevel()
@@ -178,20 +178,20 @@ SX_LIB_API void SXGame_UnloadObjLevel()
 SX_LIB_API void SXGame_SaveEnts(const char * file)
 {
 	SG_PRECOND(_VOID);
-	GameData::m_pMgr->Export(file);
+	GameData::m_pMgr->exportList(file);
 }
 
 SX_LIB_API void SXGame_PlayerSpawn()
 {
 	SG_PRECOND(_VOID);
-	GameData::m_pPlayer->Spawn();
+	GameData::m_pPlayer->spawn();
 }
 
 SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 {
 	SG_PRECOND(_VOID);
 
-	SXbaseEntity* bEnt = SXGame_EntGet(id);
+	CBaseEntity* bEnt = SXGame_EntGet(id);
 	if (!bEnt)
 		return;
 
@@ -202,26 +202,26 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
 
-	if (strcmp(bEnt->GetClassName(), "path_corner") == 0)
+	if (strcmp(bEnt->getClassName(), "path_corner") == 0)
 	{
-		PathCorner * pStartPoint = (PathCorner*)bEnt;
+		CPathCorner * pStartPoint = (CPathCorner*)bEnt;
 		if (!pStartPoint)
 			return;
 
-		/*FuncTrain * pTrain = (FuncTrain*)(GameData::m_pMgr->FindEntityByClass("func_train"));
+		/*CFuncTrain * pTrain = (CFuncTrain*)(GameData::m_pMgr->findEntityByClass("func_train"));
 		if (pTrain)
 		{
-			pTrain->Start();
+			pTrain->start();
 		}
 
-		SXpointCamera * cam = (SXpointCamera*)(GameData::m_pMgr->FindEntityByName("train_camera"));
+		CPointCamera * cam = (CPointCamera*)(GameData::m_pMgr->findEntityByName("train_camera"));
 		if (cam)
 		{
 			GameData::m_pActiveCamera = cam;
-			cam->SetParent();
+			cam->setParent();
 		}*/
 
-		PathCorner * pCur = pStartPoint;
+		CPathCorner * pCur = pStartPoint;
 		while ((pCur = pCur->GetPrev()))
 		{
 			pStartPoint = pCur;
@@ -234,9 +234,9 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 		{
 			len += pCur->GetLength();
 			++count;
-			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixTranslation(pCur->GetPos()));
+			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixTranslation(pCur->getPos()));
 
-			if (id == pCur->GetId())
+			if (id == pCur->getId())
 				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
 			else
 				SGCore_GetDXDevice()->SetTexture(0, 0);
@@ -256,16 +256,16 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 		
 		for (int i = 0; i < npoints; ++i)
 		{
-			pts[i * 2] = pStartPoint->GetPoint((float)i * (len / (float)npoints));
+			pts[i * 2] = pStartPoint->getPoint((float)i * (len / (float)npoints));
 		}
 		for (int i = 0; i < npoints - 1; ++i)
 		{
 			pts[i * 2 + 1] = pts[(i + 1) * 2];
 		}
-		pts[npoints * 2 - 1] = pStartPoint->GetPoint(len);
+		pts[npoints * 2 - 1] = pStartPoint->getPoint(len);
 
-		//pts[npoints * 2] = pTrain->GetPos();
-		//pts[npoints * 2 + 1] = (float3)(pTrain->GetPos() + (pTrain->GetOrient() * float3(0.0f, 1.0f, 0.0f)));
+		//pts[npoints * 2] = pTrain->getPos();
+		//pts[npoints * 2 + 1] = (float3)(pTrain->getPos() + (pTrain->getOrient() * float3(0.0f, 1.0f, 0.0f)));
 
 		SGCore_ShaderUnBind();
 
@@ -278,7 +278,7 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 	else
 	{
 		float3 min, max;
-		bEnt->GetMinMax(&min, &max);
+		bEnt->getMinMax(&min, &max);
 
 		if (min.x == 0.0f && min.y == 0.0f && min.z == 0.0f && max.x == 0.0f && max.y == 0.0f && max.z == 0.0f)
 			max.x = max.y = max.z = 0.5f;
@@ -288,8 +288,8 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 
 		SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 		SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
-		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling((max.x - min.x), (max.y - min.y), (max.z - min.z)) * SMMatrixTranslation(bEnt->GetPos())));
-		//SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&bEnt->GetWorldTM());
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling((max.x - min.x), (max.y - min.y), (max.z - min.z)) * SMMatrixTranslation(bEnt->getPos())));
+		//SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&bEnt->getWorldTM());
 
 		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
 		g_pFigureBox->DrawSubset(0);
@@ -300,24 +300,24 @@ SX_LIB_API int SXGame_EntGetClassListCount()
 {
 	SG_PRECOND(-1);
 
-	return(EntityFactoryMap::GetInstance()->GetListCount());
+	return(CEntityFactoryMap::GetInstance()->getListCount());
 }
 
 SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count)
 {
 	SG_PRECOND(_VOID);
 
-	EntityFactoryMap::GetInstance()->GetListing(pszClassList, count);
+	CEntityFactoryMap::GetInstance()->getListing(pszClassList, count);
 }
 
-SX_LIB_API SXbaseEntity * SXGame_CreateEntity(const char * classname)
+SX_LIB_API CBaseEntity * SXGame_CreateEntity(const char * classname)
 {
 	SG_PRECOND(NULL);
 
 	return(CREATE_ENTITY(classname, GameData::m_pMgr));
 }
 
-SX_LIB_API void SXGame_RemoveEntity(SXbaseEntity * pEnt)
+SX_LIB_API void SXGame_RemoveEntity(CBaseEntity * pEnt)
 {
 	SG_PRECOND(_VOID);
 
@@ -328,14 +328,14 @@ SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname)
 {
 	SG_PRECOND(NULL);
 
-	return(EntityFactoryMap::GetInstance()->GetPropTable(classname));
+	return(CEntityFactoryMap::GetInstance()->getPropTable(classname));
 }
 
 SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key)
 {
 	SG_PRECOND(NULL);
 
-	EntDefaultsMap * pMap = EntityFactoryMap::GetInstance()->GetDefaults(classname);
+	EntDefaultsMap * pMap = CEntityFactoryMap::GetInstance()->getDefaults(classname);
 	if(!pMap)
 	{
 		return(NULL);
@@ -352,25 +352,25 @@ SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char 
 SX_LIB_API int SXGame_EntGetCount()
 {
 	SG_PRECOND(0);
-	return(GameData::m_pMgr->GetCount());
+	return(GameData::m_pMgr->getCount());
 }
 
-SX_LIB_API SXbaseEntity *SXGame_EntGet(ID id)
+SX_LIB_API CBaseEntity *SXGame_EntGet(ID id)
 {
 	SG_PRECOND(NULL);
-	return(GameData::m_pMgr->GetById(id));
+	return(GameData::m_pMgr->getById(id));
 }
 
-SX_LIB_API SXbaseEntity *SXGame_EntGetByName(const char *szName, ID idStart)
+SX_LIB_API CBaseEntity *SXGame_EntGetByName(const char *szName, ID idStart)
 {
 	SG_PRECOND(NULL);
 
-	SXbaseEntity *pEnt = 0;
+	CBaseEntity *pEnt = 0;
 
 	for (int i = 0, il = SXGame_EntGetCount(); i < il; ++i)
 	{
 		pEnt = SXGame_EntGet(i);
-		if (pEnt && strcmp(szName, pEnt->GetName()) == 0)
+		if (pEnt && strcmp(szName, pEnt->getName()) == 0)
 		{
 			return pEnt;
 		}

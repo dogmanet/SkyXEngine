@@ -8,17 +8,17 @@ See the license in LICENSE
 Базовый класс припаса
 */
 
-#ifndef _SXbaseSupply_H_
-#define _SXbaseSupply_H_
+#ifndef _CBaseSupply_H_
+#define _CBaseSupply_H_
 
-#include "SXbaseItem.h"
+#include "BaseItem.h"
 
 /*! Базовый класс припаса (патроны, батарейки, прочие расходники)
 \ingroup cbaseitem
 */
-class SXbaseSupply: public SXbaseItem
+class CBaseSupply: public CBaseItem
 {
-	DECLARE_CLASS(SXbaseSupply, SXbaseItem);
+	DECLARE_CLASS(CBaseSupply, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();

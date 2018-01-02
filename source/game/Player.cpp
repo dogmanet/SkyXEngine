@@ -1,8 +1,8 @@
 #include <input/sxinput.h>
 #include <mtllight/sxmtllight.h>
-#include "SXplayer.h"
+#include "Player.h"
 #include "LightDirectional.h"
-#include "SXbaseTool.h"
+#include "BaseTool.h"
 #include <aigrid/sxaigrid.h>
 
 #include "GameData.h"
@@ -11,13 +11,13 @@
 Объект игрока в мире
 */
 
-BEGIN_PROPTABLE(SXplayer)
+BEGIN_PROPTABLE(CPlayer)
 // empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(SXplayer, player);
+REGISTER_ENTITY(CPlayer, player);
 
-SXplayer::SXplayer(EntityManager * pMgr):
+CPlayer::CPlayer(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_canJump(true),
 	m_fViewbobStep(0.0f),
@@ -26,33 +26,33 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_vWpnShakeAngles(float3_t(0.0f, 0.0f, 0.0f)),
 	m_iDSM(DSM_NONE)
 {
-	m_pCamera = (SXpointCamera*)CREATE_ENTITY("point_camera", pMgr);
-	m_pCamera->SetParent(this);
+	m_pCamera = (CPointCamera*)CREATE_ENTITY("point_camera", pMgr);
+	m_pCamera->setParent(this);
 
-	m_iUpdIval = SET_INTERVAL(UpdateInput, 0);
+	m_iUpdIval = SET_INTERVAL(updateInput, 0);
 
 
-	m_pActiveTool = (SXbaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
-	m_pActiveTool->SetOwner(this);
-	m_pActiveTool->AttachHands();
-	m_pActiveTool->PlayAnimation("idle");
-	m_pActiveTool->SetPos(GetPos() + float3(1.0f, 0.0f, 1.0f));
-	m_pActiveTool->SetOrient(GetOrient());
-	m_pActiveTool->SetParent(this);
+	m_pActiveTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
+	m_pActiveTool->setOwner(this);
+	m_pActiveTool->attachHands();
+	m_pActiveTool->playAnimation("idle");
+	m_pActiveTool->setPos(getPos() + float3(1.0f, 0.0f, 1.0f));
+	m_pActiveTool->setOrient(getOrient());
+	m_pActiveTool->setParent(this);
 
 	m_idQuadCurr = -1;
 
-	m_pCrosshair = new Crosshair();
+	m_pCrosshair = new CCrosshair();
 }
 
-SXplayer::~SXplayer()
+CPlayer::~CPlayer()
 {
 	mem_delete(m_pCrosshair);
 	CLEAR_INTERVAL(m_iUpdIval);
 	REMOVE_ENTITY(m_pCamera);
 }
 
-void SXplayer::UpdateInput(float dt)
+void CPlayer::updateInput(float dt)
 {
 	int x, y;
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
@@ -75,7 +75,7 @@ void SXplayer::UpdateInput(float dt)
 		float dy = (float)y * *sense * 10.0f /* / dt */;
 		if(m_iDSM && m_pActiveTool)
 		{
-			m_pActiveTool->DbgMove(m_iDSM, dy);
+			m_pActiveTool->dbgMove(m_iDSM, dy);
 			if(m_iDSM == DSM_PRINT)
 			{
 				m_iDSM = DSM_NONE;
@@ -259,12 +259,12 @@ void SXplayer::UpdateInput(float dt)
 #endif
 }
 
-Crosshair * SXplayer::GetCrosshair()
+CCrosshair * CPlayer::getCrosshair()
 {
 	return(m_pCrosshair);
 }
 
-void SXplayer::Move(UINT dir, bool start)
+void CPlayer::move(UINT dir, bool start)
 {
 	if(start)
 	{
@@ -276,14 +276,14 @@ void SXplayer::Move(UINT dir, bool start)
 	}
 }
 
-SXpointCamera * SXplayer::GetCamera()
+CPointCamera * CPlayer::getCamera()
 {
 	return(m_pCamera);
 }
 
-void SXplayer::OnSync()
+void CPlayer::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 	if(m_uMoveDir & PM_OBSERVER)
 	{
 		return;
@@ -301,7 +301,7 @@ void SXplayer::OnSync()
 	{
 		//занимаем этот квад
 		SAIG_QuadSetState(idq, AIQUAD_STATE_TEMPBUSY);
-		SAIG_QuadSetStateWho(idq, GetId());
+		SAIG_QuadSetStateWho(idq, getId());
 	}
 
 	//если предыдущий и текущие квады не идентичны
@@ -315,23 +315,17 @@ void SXplayer::OnSync()
 	}
 }
 
-float3 SXplayer::GetWeaponOrigin()
+void CPlayer::spawn()
 {
-	//@TODO: Implement me
-	return(m_vPosition);
-}
-
-void SXplayer::Spawn()
-{
-	SXbaseEntity * pEnt = NULL;
-	while((pEnt = m_pMgr->FindEntityByClass("info_player_spawn", pEnt)))
+	CBaseEntity * pEnt = NULL;
+	while((pEnt = m_pMgr->findEntityByClass("info_player_spawn", pEnt)))
 	{
 		//if(CanSpawn(pEnt))
 		{
-		SetPos(pEnt->GetPos());
-		SetOrient(pEnt->GetOrient());
+		setPos(pEnt->getPos());
+		setOrient(pEnt->getOrient());
 		m_uMoveDir &= ~PM_OBSERVER;
-			m_pCrosshair->Enable();
+			m_pCrosshair->enable();
 			return;
 		}
 	}
@@ -339,13 +333,13 @@ void SXplayer::Spawn()
 		printf(COLOR_RED "Cannot find valid spawnpoint\n" COLOR_RESET);
 	}
 
-void SXplayer::SetPos(const float3 & pos)
+void CPlayer::setPos(const float3 & pos)
 {
-	BaseClass::SetPos(pos);
+	BaseClass::setPos(pos);
 	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
 }
 
-void SXplayer::_ccmd_slot_on(int argc, const char ** argv)
+void CPlayer::_ccmd_slot_on(int argc, const char ** argv)
 {
 	if(argc != 2)
 	{
@@ -375,21 +369,21 @@ void SXplayer::_ccmd_slot_on(int argc, const char ** argv)
 	}
 }
 
-void SXplayer::_ccmd_slot_off()
+void CPlayer::_ccmd_slot_off()
 {
 	m_iDSM = DSM_NONE;
 }
 
-float3_t & SXplayer::GetWeaponDeltaAngles()
+float3_t & CPlayer::getWeaponDeltaAngles()
 {
 	return(m_vWpnShakeAngles);
 }
 
-void SXplayer::updateSpread(float dt)
+void CPlayer::updateSpread(float dt)
 {
 	BaseClass::updateSpread(dt);
 	if(m_pCrosshair)
 	{
-		m_pCrosshair->SetSize(getCurrentSpread() * 0.1f);
+		m_pCrosshair->setSize(getCurrentSpread() * 0.1f);
 	}
 }
