@@ -28,6 +28,20 @@ enum FIRE_MODE
 };
 #define FIRE_MODE_COUNT 3
 
+//! Идентификаторы для получения коэффициентов разброса
+enum SPREAD_COEFF
+{
+	SPREAD_COEFF_IDLE, //!< стоя
+	SPREAD_COEFF_CROUCH, //!< пригувшись
+	SPREAD_COEFF_CRAWL, //!< лежа
+	SPREAD_COEFF_WALK, //!< в ходьбе
+	SPREAD_COEFF_RUN, //!<  в беге
+	SPREAD_COEFF_AIRBORNE, //!< в прыжке
+	SPREAD_COEFF_CONDITION, //!< состояние оружия
+	SPREAD_COEFF_ARM, //!< состояние рук
+	SPREAD_COEFF_IRONSIGHT, //!< в прицеливании
+};
+
 /*! Оружие
 \ingroup cbaseitem
 */
@@ -49,6 +63,19 @@ public:
 	void nextFireMode();
 
 	bool canShoot();
+
+	//! Масса объекта
+	float getWeight();
+
+
+	//! угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
+	float getBaseSpread() const;
+
+	//! в прицеливании
+	bool isIronSight() const;
+
+	//! Коэффициент разброса
+	float getSpreadCoeff(SPREAD_COEFF what) const;
 
 protected:
 
@@ -94,6 +121,18 @@ protected:
 	// Without mag
 	int m_iCapacity;
 	int m_iCurrentLoad;
+
+	// Spread
+	float m_fBaseSpread;
+	float m_fSpreadIdle;
+	float m_fSpreadCrouch;
+	float m_fSpreadCrawl;
+	float m_fSpreadWalk;
+	float m_fSpreadRun;
+	float m_fSpreadAirborne;
+	float m_fSpreadCondition;
+	float m_fSpreadArm;
+	float m_fSpreadIronSight;
 };
 
 #endif

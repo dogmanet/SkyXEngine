@@ -97,6 +97,7 @@
     <ClCompile Include="..\..\..\source\game\BaseSilencer.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseWeaponAddon.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseTrigger.cpp" />
+    <ClCompile Include="..\..\..\source\game\CBaseCharacter.cpp" />
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="..\..\..\source\game\BaseSilencer.h" />
     <ClInclude Include="..\..\..\source\game\BaseWeaponAddon.h" />
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
+    <ClInclude Include="..\..\..\source\game\CBaseCharacter.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />

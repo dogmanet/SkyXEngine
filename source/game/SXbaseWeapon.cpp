@@ -51,6 +51,28 @@ BEGIN_PROPTABLE(SXbaseWeapon)
 	DEFINE_FIELD_INT(m_iCapacity, PDFF_NOEDIT | PDFF_NOEXPORT, "capacity", "", EDITOR_NONE)
 	//! Текущая загрузка без учета магазина
 	DEFINE_FIELD_INT(m_iCurrentLoad, PDFF_NOEDIT, "current_load", "", EDITOR_NONE)
+
+
+	//! угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
+	DEFINE_FIELD_FLOAT(m_fBaseSpread, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_base", "", EDITOR_NONE)
+	//! коэффициент разброса в стоя
+	DEFINE_FIELD_FLOAT(m_fSpreadIdle, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_idle", "", EDITOR_NONE)
+	//! коэффициент разброса пригнувшись
+	DEFINE_FIELD_FLOAT(m_fSpreadCrouch, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_crouch", "", EDITOR_NONE)
+	//! коэффициент разброса лежа
+	DEFINE_FIELD_FLOAT(m_fSpreadCrawl, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_crawl", "", EDITOR_NONE)
+	//! коэффициент разброса в ходьбе
+	DEFINE_FIELD_FLOAT(m_fSpreadWalk, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_walk", "", EDITOR_NONE)
+	//! коэффициент разброса в беге
+	DEFINE_FIELD_FLOAT(m_fSpreadRun, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_run", "", EDITOR_NONE)
+	//! коэффициент разброса в полете (прыжок)
+	DEFINE_FIELD_FLOAT(m_fSpreadAirborne, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_airborne", "", EDITOR_NONE)
+	//! коэффициент разброса от состояния оружия
+	DEFINE_FIELD_FLOAT(m_fSpreadCondition, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_condition", "", EDITOR_NONE)
+	//! коэффициент разброса от состояния рук
+	DEFINE_FIELD_FLOAT(m_fSpreadArm, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_arm", "", EDITOR_NONE)
+	//! коэффициент разброса в прицеливании
+	DEFINE_FIELD_FLOAT(m_fSpreadIronSight, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_ironsight", "", EDITOR_NONE)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(SXbaseWeapon, base_weapon);
@@ -72,8 +94,21 @@ SXbaseWeapon::SXbaseWeapon(EntityManager * pMgr):
 	m_idSndSwitch(-1),
 
 	m_iCapacity(1),
-	m_iCurrentLoad(0)
-{}
+	m_iCurrentLoad(0),
+
+	m_fBaseSpread(0.33f),
+	m_fSpreadIdle(0.01f),
+	m_fSpreadCrouch(0.007f),
+	m_fSpreadCrawl(0.001f),
+	m_fSpreadWalk(1.0f),
+	m_fSpreadRun(4.0f),
+	m_fSpreadAirborne(5.0f),
+	m_fSpreadCondition(3.0f),
+	m_fSpreadArm(3.0f),
+	m_fSpreadIronSight(-0.8f)
+{
+	m_bIsWeapon = true;
+}
 
 void SXbaseWeapon::OnPostLoad()
 {
@@ -253,4 +288,50 @@ void SXbaseWeapon::nextFireMode()
 bool SXbaseWeapon::canShoot()
 {
 	return(m_iCurrentLoad > 0 || (m_pMag && m_pMag->getLoad() > 0));
+}
+
+float SXbaseWeapon::getWeight()
+{
+	return(m_iInvWeight +
+		(m_pHandle ? m_pHandle->getWeight() : 0.0f) +
+		(m_pScope ? m_pScope->getWeight() : 0.0f) +
+		(m_pMag ? m_pMag->getWeight() : 0.0f) +
+		(m_pSilencer ? m_pSilencer->getWeight() : 0.0f)
+	);
+}
+
+float SXbaseWeapon::getBaseSpread() const
+{
+	return(m_fBaseSpread);
+}
+
+bool SXbaseWeapon::isIronSight() const
+{
+	return(m_iZoomable && m_bInSecondaryAction);
+}
+
+float SXbaseWeapon::getSpreadCoeff(SPREAD_COEFF what) const
+{
+	switch(what)
+	{
+	case SPREAD_COEFF_IDLE:
+		return(m_fSpreadIdle);
+	case SPREAD_COEFF_CROUCH:
+		return(m_fSpreadCrouch);
+	case SPREAD_COEFF_CRAWL:
+		return(m_fSpreadCrawl);
+	case SPREAD_COEFF_WALK:
+		return(m_fSpreadWalk);
+	case SPREAD_COEFF_RUN:
+		return(m_fSpreadRun);
+	case SPREAD_COEFF_AIRBORNE:
+		return(m_fSpreadAirborne);
+	case SPREAD_COEFF_CONDITION:
+		return(m_fSpreadCondition);
+	case SPREAD_COEFF_ARM:
+		return(m_fSpreadArm);
+	case SPREAD_COEFF_IRONSIGHT:
+		return(m_fSpreadIronSight);
+	}
+	return(1.0f);
 }

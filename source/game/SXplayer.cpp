@@ -17,40 +17,13 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(SXplayer, player);
 
-class btKinematicClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
-{
-public:
-	btKinematicClosestNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld): btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld)
-	{
-		m_me = me;
-		m_shapeInfo = {-1, -1};
-	}
-
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(rayResult.m_collisionObject == m_me)
-			return 1.0;
-		if(rayResult.m_localShapeInfo)
-		{
-			m_shapeInfo = *rayResult.m_localShapeInfo;
-		}
-		return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
-	}
-	btCollisionWorld::LocalShapeInfo m_shapeInfo;
-protected:
-	btCollisionObject* m_me;
-};
-
 SXplayer::SXplayer(EntityManager * pMgr):
 	BaseClass(pMgr),
-	m_uMoveDir(PM_OBSERVER),
-	m_vPitchYawRoll(float3_t(0, 0, 0)),
 	m_canJump(true),
 	m_fViewbobStep(0.0f),
 	m_fViewbobY(0.0f),
 	m_fViewbobStrafe(float3_t(0, 0, 0)),
 	m_vWpnShakeAngles(float3_t(0.0f, 0.0f, 0.0f)),
-	m_pActiveTool(NULL),
 	m_iDSM(DSM_NONE)
 {
 	m_pCamera = (SXpointCamera*)CREATE_ENTITY("point_camera", pMgr);
@@ -58,38 +31,7 @@ SXplayer::SXplayer(EntityManager * pMgr):
 
 	m_iUpdIval = SET_INTERVAL(UpdateInput, 0);
 
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(F3_BTVEC(m_vPosition));
-	//startTransform.setOrigin(btVector3(0, 12, 10));
 
-	m_pGhostObject = new btPairCachingGhostObject();
-	m_pGhostObject->setWorldTransform(startTransform);
-	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
-	m_pCollideShape = new btCapsuleShape(0.4f, 1.0f);
-	m_pGhostObject->setCollisionShape(m_pCollideShape);
-	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
-	m_pGhostObject->setUserPointer(this);
-
-	btScalar stepHeight = 0.4f;
-	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, stepHeight, btVector3(0.0f, 1.0f, 0.0f));
-	m_pCharacter->setMaxJumpHeight(0.60f);
-	m_pCharacter->setJumpSpeed(3.50f);
-	//m_pCharacter->setJumpSpeed(3.5f);
-	m_pCharacter->setGravity(btVector3(0, -10.0f, 0));
-	//m_pCharacter->setGravity(1.0f);
-	m_pCharacter->setFallSpeed(300.0f);
-	//m_pCharacter->setFallSpeed(30.0f);
-
-	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::DebrisFilter);
-
-	m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
-
-	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
-
-
-
-/*
 	m_pActiveTool = (SXbaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 	m_pActiveTool->SetOwner(this);
 	m_pActiveTool->AttachHands();
@@ -97,19 +39,6 @@ SXplayer::SXplayer(EntityManager * pMgr):
 	m_pActiveTool->SetPos(GetPos() + float3(1.0f, 0.0f, 1.0f));
 	m_pActiveTool->SetOrient(GetOrient());
 	m_pActiveTool->SetParent(this);
-	*/
-
-
-	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
-	//m_flashlight->SetPos(GetPos() + float3(0.f, 0.1f, 0.f));
-	m_flashlight->SetPos(GetPos() + float3(0.f, 0.2f, 0.1f));
-	m_flashlight->SetOrient(GetOrient() * SMQuaternion(SM_PIDIV2, 'x'));
-	m_flashlight->SetParent(this);
-	m_flashlight->setDist(20.f);
-	m_flashlight->setAngle(SMToRadian(60));
-	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
-	//m_flashlight->setShadowType(-1);
-	m_flashlight->setShadowType(1);
 
 	m_idQuadCurr = -1;
 
@@ -121,26 +50,6 @@ SXplayer::~SXplayer()
 	mem_delete(m_pCrosshair);
 	CLEAR_INTERVAL(m_iUpdIval);
 	REMOVE_ENTITY(m_pCamera);
-}
-
-void SXplayer::playFootstepsSound()
-{
-	if(!(m_uMoveDir & PM_OBSERVER))
-	{
-		if(onGround())
-		{
-			float3 start = GetPos(),
-				end = start + float3(0.0f, -2.0f, 0.0f);
-			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
-
-			if(cb.hasHit() && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0)
-			{
-				MTLTYPE_PHYSIC type = (MTLTYPE_PHYSIC)SXPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
-				g_pGameData->playFootstepSound(type, BTVEC_F3(cb.m_hitPointWorld));
-			}
-		}
-	}
 }
 
 void SXplayer::UpdateInput(float dt)
@@ -436,60 +345,6 @@ void SXplayer::SetPos(const float3 & pos)
 	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
 }
 
-void SXplayer::Attack(BOOL state)
-{
-	if(m_uMoveDir & PM_OBSERVER)
-	{
-		return;
-	}
-	if(m_pActiveTool)
-	{
-		m_pActiveTool->PrimaryAction(state);
-	}
-}
-
-void SXplayer::Attack2(BOOL state)
-{
-	if(m_uMoveDir & PM_OBSERVER)
-	{
-		return;
-	}
-	if(m_pActiveTool)
-	{
-		m_pActiveTool->SecondaryAction(state);
-	}
-}
-
-void SXplayer::Reload()
-{
-	if(m_uMoveDir & PM_OBSERVER)
-	{
-		return;
-	}
-	if(m_pActiveTool)
-	{
-		m_pActiveTool->Reload();
-	}
-}
-
-void SXplayer::ToggleFlashlight()
-{
-	m_flashlight->toggleEnable();
-}
-
-void SXplayer::nextFireMode()
-{
-	if(m_uMoveDir & PM_OBSERVER)
-	{
-		return;
-	}
-	if(m_pActiveTool)
-	{
-		//@FIXME: Add correct call
-		//m_pActiveTool->nextFireMode();
-	}
-}
-
 void SXplayer::_ccmd_slot_on(int argc, const char ** argv)
 {
 	if(argc != 2)
@@ -530,7 +385,11 @@ float3_t & SXplayer::GetWeaponDeltaAngles()
 	return(m_vWpnShakeAngles);
 }
 
-bool SXplayer::onGround()
+void SXplayer::updateSpread(float dt)
 {
-	return(m_pCharacter->onGround());
+	BaseClass::updateSpread(dt);
+	if(m_pCrosshair)
+	{
+		m_pCrosshair->SetSize(getCurrentSpread() * 0.1f);
+	}
 }

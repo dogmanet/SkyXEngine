@@ -67,8 +67,8 @@ void Crosshair::Update()
 		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 		//build new buffer
-		float fScreenWidth = *r_win_width;
-		float fScreenHeight = *r_win_height;
+		float fScreenWidth = (float)*r_win_width;
+		float fScreenHeight = (float)*r_win_height;
 		float fTexWidth = m_f2TexSize.x;
 		float fTexHeight = m_f2TexSize.y;
 		float fXradius = fTexWidth / fScreenWidth * 0.5f;
@@ -359,6 +359,15 @@ void Crosshair::Render()
 	SGCore_ShaderUnBind();
 	m_pDev->SetTexture(0, m_pTexture);
 	m_pDev->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+	// Использовать альфа-канал в качестве источника альфа-компонент
+	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	// Устанавливаем коэффициенты смешивания таким образом,
+	// чтобы альфа-компонента определяла прозрачность
+	m_pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	m_pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	
 	//m_pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
 	//m_pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);

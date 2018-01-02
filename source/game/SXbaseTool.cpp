@@ -59,7 +59,8 @@ SXbaseTool::SXbaseTool(EntityManager * pMgr):
 	m_iSoundAction2(-1),
 	m_iMuzzleFlash(-1),
 	m_iMuzzleFlash2(-1),
-	m_fMaxDistance(1000.0f)
+	m_fMaxDistance(1000.0f),
+	m_bIsWeapon(false)
 {
 	m_bInvStackable = false;
 
@@ -266,4 +267,14 @@ void SXbaseTool::_Rezoom()
 	{
 		((SXplayer*)m_pOwner)->GetCamera()->GetCamera()->SetFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
+}
+
+bool SXbaseTool::isWeapon() const
+{
+	return(m_bIsWeapon);
+}
+
+float SXbaseTool::getCondition() const
+{
+	return(1.0f);
 }

@@ -49,6 +49,18 @@
     <Filter Include="Source Files\ents\triggers">
       <UniqueIdentifier>{a19af9a9-9698-4f6e-94fc-fc12afaa10a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ents\characters">
+      <UniqueIdentifier>{dd25ca33-fbd9-40fb-878e-4d2f1531565f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\characters\npc">
+      <UniqueIdentifier>{befd7b49-c663-45c4-87cf-9d481da7fb90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\characters">
+      <UniqueIdentifier>{9a873af0-2663-4675-9e2e-ce30a5bfc8ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\characters\npc">
+      <UniqueIdentifier>{474c6cbf-9b16-4a74-876b-edd6fc116cbc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -73,9 +85,6 @@
       <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\SXplayer.cpp">
       <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp">
@@ -110,12 +119,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp">
       <Filter>Source Files\ents\items\tools</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\NPCBase.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\NPCZombie.cpp">
-      <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\LightDirectional.cpp">
       <Filter>Source Files\ents</Filter>
@@ -153,6 +156,18 @@
     <ClCompile Include="..\..\..\source\game\SXbaseSupply.cpp">
       <Filter>Source Files\ents\items</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\NPCZombie.cpp">
+      <Filter>Source Files\ents\characters\npc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\NPCBase.cpp">
+      <Filter>Source Files\ents\characters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SXplayer.cpp">
+      <Filter>Source Files\ents\characters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\CBaseCharacter.cpp">
+      <Filter>Source Files\ents\characters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -165,9 +180,6 @@
       <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\SXbaseAnimating.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\SXplayer.h">
       <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\SXpointEntity.h">
@@ -221,12 +233,6 @@
     <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h">
       <Filter>Header Files\ents\items\tools</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\game\NPCBase.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\NPCZombie.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\game\LightDirectional.h">
       <Filter>Header Files\ents</Filter>
     </ClInclude>
@@ -262,6 +268,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\SXbaseSupply.h">
       <Filter>Header Files\ents\items</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SXplayer.h">
+      <Filter>Header Files\ents\characters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\NPCBase.h">
+      <Filter>Header Files\ents\characters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\NPCZombie.h">
+      <Filter>Header Files\ents\characters\npc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\CBaseCharacter.h">
+      <Filter>Header Files\ents\characters</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

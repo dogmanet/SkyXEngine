@@ -32,6 +32,10 @@ public:
 	int m_iInvStackMaxSize; //!< Максимальное количество итемов в стеке
 	float m_iInvWeight; //!< Масса объекта
 	bool m_bPickable; //!< Можно ли поднять объект
+
+
+	//! Масса объекта
+	virtual float getWeight();
 };
 
 #endif

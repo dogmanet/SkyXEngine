@@ -30,3 +30,8 @@ SXbaseItem::SXbaseItem(EntityManager * pMgr):
 	m_bPickable(true)
 {
 }
+
+float SXbaseItem::getWeight()
+{
+	return(m_iInvWeight);
+}

@@ -58,6 +58,12 @@ public:
 
 	void SetParent(SXbaseEntity * pEnt, int attachment = -1);
 
+	//! Этот инструмент - оружие
+	bool isWeapon() const;
+
+	//! Состояние: 1 - целое; 0 - сломанное
+	float getCondition() const;
+
 protected:
 
 	bool m_bInPrimaryAction;
@@ -105,6 +111,9 @@ protected:
 	const char * m_szUsableAmmos;
 
 	float m_fMaxDistance;
+
+	//! Этот инструмент - оружие
+	bool m_bIsWeapon;
 };
 
 #endif
