@@ -90,7 +90,8 @@ int CConfig::parse(const char* file)
 
 	char c;
 	char cn = 0;
-	while(!feof(fp))
+	bool isRunning = true;
+	while(isRunning)
 	{
 		if(cn)
 		{
@@ -100,6 +101,11 @@ int CConfig::parse(const char* file)
 		else
 		{
 			c = fgetc(fp);
+			if(feof(fp))
+			{
+				c = '\n';
+				isRunning = false;
+			}
 		}
 		if(bSectionNameDone)
 		{
