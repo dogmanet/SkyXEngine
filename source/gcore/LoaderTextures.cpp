@@ -343,7 +343,7 @@ void LoaderTextures::LoadTextures()
 		}
 	}
 
-	ArrIDsLoad.clear();
+	ArrIDsLoad.clearFast();
 	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: all loaded textures [%d]\n", ArrTextures.size());
 }
 

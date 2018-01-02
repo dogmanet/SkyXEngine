@@ -41,7 +41,7 @@ void CWeatherRndSnd::resetOld()
 		if (m_aCurrSndIDs[i] >= 0)
 			SSCore_SndStop(m_aCurrSndIDs[i]);
 	}
-	m_aCurrSndIDs.clear();
+	m_aCurrSndIDs.clearFast();
 }
 
 void CWeatherRndSnd::setParamPlayVolume(int iBVol, int iEVol)
