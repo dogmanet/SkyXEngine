@@ -159,13 +159,13 @@ CWeather::CWeather()
 	}
 	else
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'rain'", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'rain'", GEN_MSG_LOCATION);
 	}
 
 	m_idEffThunderbolt = SPE_EffectGetByName("thunderbolt");
 	if (m_idEffThunderbolt < 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'thunderbolt'", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'thunderbolt'", GEN_MSG_LOCATION);
 	}
 	m_ulTimeBoltNext = m_ulTimeBoltLast = 0;
 
@@ -225,7 +225,7 @@ void CWeather::load(const char *szPath)
 
 	if (!config->sectionExists("sections"))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", gen_msg_location, szPath);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", GEN_MSG_LOCATION, szPath);
 		mem_release_del(config);
 		return;
 	}
@@ -239,7 +239,7 @@ void CWeather::load(const char *szPath)
 
 		if (strlen(str) != 8)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", gen_msg_location, str, szPath, "sections");
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", GEN_MSG_LOCATION, str, szPath, "sections");
 			mem_release_del(config);
 			return;
 		}
@@ -487,7 +487,7 @@ void CWeather::load(const char *szPath)
 
 			if (!config->sectionExists(text_env))
 			{
-				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nszPath '%s' \nsection '%s'", gen_msg_location, text_env, szPath, m_aTimeSections[i].m_szSection);
+				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nszPath '%s' \nsection '%s'", GEN_MSG_LOCATION, text_env, szPath, m_aTimeSections[i].m_szSection);
 				return;
 			}
 

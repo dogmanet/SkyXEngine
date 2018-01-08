@@ -17,21 +17,21 @@ extern report_func g_fnReportf;
 
 #define EFFECTS_EFFECT_PRECOND_KEY(key,retval) \
 if (!(key >= 0 && key < ArrKey.size()))\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles: unresolved key of access '%d'", gen_msg_location, key); return retval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return retval; }
 
 #define EFFECTS_EFFECT_PRECOND(id, retval) \
 	if (id < 0 || id >= ArrID.size() || !(ArrID[id]))\
-		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", gen_msg_location, id); return retval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to effect %d", GEN_MSG_LOCATION, id); return retval; }
 
 #define EFFECTS_POOL_PRECOND(id, retval) \
 	if (id < 0 || id >= Pools.size())\
-		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pool %d", gen_msg_location, id); return retval; } \
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to pool %d", GEN_MSG_LOCATION, id); return retval; } \
 	if (Pools[id]->ideff < 0) \
-		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pool %d", gen_msg_location, id); return retval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pool %d", GEN_MSG_LOCATION, id); return retval; }
 
 #define EFFECTS_PARTICLES_PRECOND(id, id_part, retval) \
 	if (id_part < 0 || id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
-		{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", gen_msg_location, id_part, id); return retval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", GEN_MSG_LOCATION, id_part, id); return retval; }
 
 #define EFFECTS_PRECOND(id, id_part, retval) \
 	EFFECTS_EFFECT_PRECOND(id, retval); \

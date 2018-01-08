@@ -13,7 +13,7 @@
 report_func g_fnReportf = DefReport;
 #endif
 
-#define SR_PRECOND(retval) if(!GData::DXDevice){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", gen_msg_location); return retval;}
+#define SR_PRECOND(retval) if(!GData::DXDevice){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -37,7 +37,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxparticles", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxparticles", GEN_MSG_LOCATION);
 				return;
 			}
 		}
@@ -91,13 +91,13 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 
 		SelectMaterial->UnlockRect(0);
 
-		SGCore_LoadTexLoadTextures();
+		//SGCore_LoadTexLoadTextures();
 		GData::IDSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 
-		SGCore_LoadTexLoadTextures();
+		//SGCore_LoadTexLoadTextures();
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxparticles", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxparticles", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SRender_AKill()

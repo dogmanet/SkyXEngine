@@ -16,13 +16,13 @@ extern report_func g_fnReportf;
 
 #define LIGHTS_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < ArrLights.size()))\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
 	else if (!ArrLights[id]) \
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", gen_msg_location, id); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", GEN_MSG_LOCATION, id); return stdval; }
 
 #define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
 if (!(key >= 0 && key < ArrDelLights.size()))\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", gen_msg_location, key); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return stdval; }
 
 #include "shadow.h"
 //#include <common\\string.cpp>
@@ -41,6 +41,9 @@ public:
 
 	int GetCountLights() const;
 	void Clear();
+
+	//очистка массивов идентификацторов (просчетов видимости)
+	void ClearIDArr();
 
 	bool getExists(ID id) const;
 

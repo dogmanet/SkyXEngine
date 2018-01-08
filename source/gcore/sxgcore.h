@@ -31,6 +31,9 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <core/sxcore.h>
 
+//! имя библиотеки
+#define SX_LIB_NAME COLOR_GREEN "CORE" COLOR_RESET
+
 #ifdef SX_DLL
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
@@ -323,20 +326,20 @@ SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID id, char* name)
 SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID id, char* path);	
 
 //! существует ли шейдер с пользовательским именем name, если да то возвращает id
-SX_LIB_API ID SGCore_ShaderIsExistName(SHADER_TYPE type_shader, const char* name);	
+SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char* name);	
 
 //! существует ли шейдер с именем файла и расширением name, если да то возвращает id
-SX_LIB_API ID SGCore_ShaderIsExistPath(SHADER_TYPE type_shader, const char* path);	
+SX_LIB_API ID SGCore_ShaderExistsPath(SHADER_TYPE type_shader, const char* path);	
 
 //! загружен ли шейдер с данным id
-SX_LIB_API bool SGCore_ShaderIsValidate(SHADER_TYPE type_shader, ID id);				
+SX_LIB_API bool SGCore_ShaderIsValidated(SHADER_TYPE type_shader, ID id);				
 
 
-//! бинд шейдера по имени
-SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name, D3DXMACRO macro[] = 0);	
+//! обновление шейдера по имени
+SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name);	
 
-//! бинд шейдера по id
-SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id, D3DXMACRO macro[] = 0);	
+//! обновление шейдера по id
+SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id);	
 
 //! перезагрузить все шейдеры, с учетом макросов
 SX_LIB_API void SGCore_ShaderReloadAll();	

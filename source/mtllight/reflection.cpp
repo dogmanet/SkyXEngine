@@ -162,7 +162,7 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 {
 	if (!plane)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: plane is NULL", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: plane is NULL", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -242,7 +242,7 @@ void Reflection::BeginRenderRefCube(float3_t* center)
 {
 	if (!center)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: position center is NULL", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: position center is NULL", GEN_MSG_LOCATION);
 		return;
 	}
 

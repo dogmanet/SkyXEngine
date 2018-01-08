@@ -216,6 +216,43 @@ void Lights::Clear()
 	GlobalLight = -1;
 }
 
+void Lights::ClearIDArr()
+{
+	for (int i = 0; i < ArrLights.size(); ++i)
+	{
+		if (ArrLights[i]->ShadowSM)
+		{
+			for (int k = 0; k < ArrLights[i]->ShadowSM->GetCountIDArrs(); ++k)
+			{
+				ArrLights[i]->ShadowSM->SetIDArr(k, -1);
+			}
+		}
+		else if (ArrLights[i]->ShadowCube)
+		{
+			for (int k = 0; k < ArrLights[i]->ShadowCube->GetCountIDArrs(); ++k)
+			{
+				ArrLights[i]->ShadowCube->SetIDArr(k, 0, -1);
+				ArrLights[i]->ShadowCube->SetIDArr(k, 1, -1);
+				ArrLights[i]->ShadowCube->SetIDArr(k, 2, -1);
+				ArrLights[i]->ShadowCube->SetIDArr(k, 3, -1);
+				ArrLights[i]->ShadowCube->SetIDArr(k, 4, -1);
+				ArrLights[i]->ShadowCube->SetIDArr(k, 5, -1);
+			}
+		}
+		else if (ArrLights[i]->ShadowPSSM)
+		{
+			for (int k = 0; k < ArrLights[i]->ShadowPSSM->GetCountIDArrs(); ++k)
+			{
+				ArrLights[i]->ShadowPSSM->SetIDArr(k, 0, -1);
+				ArrLights[i]->ShadowPSSM->SetIDArr(k, 1, -1);
+				ArrLights[i]->ShadowPSSM->SetIDArr(k, 2, -1);
+				ArrLights[i]->ShadowPSSM->SetIDArr(k, 3, -1);
+				ArrLights[i]->ShadowPSSM->SetIDArr(k, 4, -1);
+			}
+		}
+	}
+}
+
 bool Lights::getExists(ID id) const
 {
 	return (ArrLights.size() > id && ArrLights[id]);
@@ -251,7 +288,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 {
 	if (GlobalLight != -1 && isglobal)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", GEN_MSG_LOCATION);
 		return -1;
 	}
 

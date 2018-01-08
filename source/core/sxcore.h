@@ -19,6 +19,9 @@ See the license in LICENSE
 #include <fstream>
 #include <gdefines.h>
 
+//! имя библиотеки
+#define SX_LIB_NAME COLOR_BG_WHITE COLOR_GREEN "CORE" COLOR_RESET
+
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 
@@ -65,7 +68,10 @@ SX_LIB_API void Core_0Create(const char *szName, bool isUnic = true);
 SX_LIB_API void Core_Dbg_Set(report_func rf); 
 
 //! существует ли файл
-SX_LIB_API bool Core_0FileExists(const char *szPath);			
+SX_LIB_API bool Core_0FileExists(const char *szPath);
+
+//! возвращает время последнего изменения файла
+SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath);
 
 //! копирует строку в буфер обмена
 SX_LIB_API bool Core_0ClipBoardCopy(const char *szStr);		

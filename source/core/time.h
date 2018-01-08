@@ -10,9 +10,11 @@ extern report_func g_fnReportf;
 #include <chrono>
 typedef std::chrono::system_clock::time_point time_point;
 
+#include <core/sxcore.h>
+
 #define TIMEMANAGER_PRECOND_ID(id,stdval) \
 if (!(id >= 0 && id < m_aTimes.size()))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - time manager: unresolved index of access '%d'", gen_msg_location, id); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - time manager: unresolved index of access '%d'", SX_LIB_NAME, GEN_MSG_LOCATION, id); return stdval; }
 
 class CTimeManager
 {

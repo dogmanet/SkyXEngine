@@ -28,6 +28,8 @@ void CLevel::clear()
 
 	SGeom_ModelsClear();
 	SGeom_GreenClear();
+
+	SML_LigthsClearIDArr();
 	
 	SXGame_UnloadObjLevel();
 	SXPhysics_UnloadGeom();
@@ -117,7 +119,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
 
 	if (config->keyExists("level", "ambient_sounds"))
 	{

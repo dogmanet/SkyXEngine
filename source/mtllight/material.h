@@ -11,14 +11,14 @@ extern report_func g_fnReportf;
 
 #define MTL_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < ArrMaterials.size()))\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", gen_msg_location, id); return stdval; }\
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
 else if (!ArrMaterials[id])\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", gen_msg_location, id); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", GEN_MSG_LOCATION, id); return stdval; }
 
 #define MTL_REF_PRE_COND_ID(id,stdval) \
 MTL_PRE_COND_ID(id, stdval)\
 if (!(ArrMaterials[id]->Reflect))\
-	{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", gen_msg_location, id, ArrMaterials[id]->mtl->Name); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, ArrMaterials[id]->mtl->Name); return stdval; }
 
 class Materials
 {
@@ -122,6 +122,9 @@ public:
 
 	void MtlSetPenetration(ID id, float penetration);
 	float MtlGetPenetration(ID id);
+
+	void MtlSetHitChance(ID id, float fHitChance);
+	float MtlGetHitChance(ID id);
 
 	void MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type);
 	MTLTYPE_TRANSPARENCY MtlGetTypeTransparency(ID id);
@@ -248,6 +251,7 @@ public:
 		bool IsAlphaTest;
 
 		float Penetration;
+		float HitChance;
 
 		MTLTYPE_MODEL Type;
 	};

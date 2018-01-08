@@ -262,7 +262,7 @@ ID StaticGeom::AddModel(const char* path, const char* lod1, const char* name)
 		//если количество полигонов в подгруппе модели больше разрешенного
 		if (model->IndexCount[i] / 3 > GEOM_MAX_POLY_IN_GROUP)
 		{
-			g_fnReportf(-1, "[GEOM] %s count polygons %d in group over default '%d'", gen_msg_location, model->IndexCount[i] / 3, GEOM_MAX_POLY_IN_GROUP);
+			g_fnReportf(-1, "[GEOM] %s count polygons %d in group over default '%d'", GEN_MSG_LOCATION, model->IndexCount[i] / 3, GEOM_MAX_POLY_IN_GROUP);
 			return -1;
 		}
 
@@ -625,7 +625,7 @@ void StaticGeom::DelModel(ID id)
 			if (tmpidingroup == -1)
 			{
 				//то это очень плохо
-				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[GEOM] %s - when deleting the model, it was found in an array of patterns in subgroups of the buffer, it is very bad", gen_msg_location);
+				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[GEOM] %s - when deleting the model, it was found in an array of patterns in subgroups of the buffer, it is very bad", GEN_MSG_LOCATION);
 			}
 
 			//обновляем данные в подгруппе модели о стартовых позициях

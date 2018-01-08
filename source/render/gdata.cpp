@@ -118,25 +118,25 @@ void GData::InitAllMatrix()
 
 void GData::IDsShaders::InitAllShaders()
 {
-	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render",SHADER_CHECKDOUBLE_PATH);
-	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render",SHADER_CHECKDOUBLE_PATH);
+	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs",SHADER_CHECKDOUBLE_PATH);
+	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps",SHADER_CHECKDOUBLE_PATH);
 
-	GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_tone_mapping.ps", "lighting_tone_mapping",SHADER_CHECKDOUBLE_PATH);
+	GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_tone_mapping.ps", "lighting_tone_mapping.ps",SHADER_CHECKDOUBLE_PATH);
 
-	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos",SHADER_CHECKDOUBLE_PATH);
+	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs",SHADER_CHECKDOUBLE_PATH);
 
 
-	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_nonshadow", SHADER_CHECKDOUBLE_NAME);
+	GData::IDsShaders::PS::ComLightingNonShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_nonshadow.ps", SHADER_CHECKDOUBLE_NAME);
 	D3DXMACRO Defines_IS_SHADOWED[] = { { "IS_SHADOWED", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::ComLightingShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow", SHADER_CHECKDOUBLE_NAME, Defines_IS_SHADOWED);
-	GData::IDsShaders::PS::BlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps", "lighting_blend",SHADER_CHECKDOUBLE_PATH);
+	GData::IDsShaders::PS::ComLightingShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow.ps", SHADER_CHECKDOUBLE_NAME, Defines_IS_SHADOWED);
+	GData::IDsShaders::PS::BlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps", "lighting_blend.ps",SHADER_CHECKDOUBLE_PATH);
 
-	GData::IDsShaders::PS::UnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps", "pp_union_alpha",SHADER_CHECKDOUBLE_PATH);
+	GData::IDsShaders::PS::UnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps", "pp_union_alpha.ps",SHADER_CHECKDOUBLE_PATH);
 
 	D3DXMACRO Defines_STR[] = { { "_STR_", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::StencilStr = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str", SHADER_CHECKDOUBLE_NAME, Defines_STR);
+	GData::IDsShaders::PS::StencilStr = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str.ps", SHADER_CHECKDOUBLE_NAME, Defines_STR);
 	D3DXMACRO Defines_COLUMN[] = { { "_COLUMN_", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_column", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN);
+	GData::IDsShaders::PS::StencilColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_column.ps", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN);
 	D3DXMACRO Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
-	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN_STR);
+	GData::IDsShaders::PS::StencilStrColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column.ps", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN_STR);
 }

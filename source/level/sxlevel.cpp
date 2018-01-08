@@ -14,7 +14,7 @@ report_func g_fnReportf = DefReport;
 
 CLevel* g_pLevel = 0;
 
-#define SL_PRECOND(ret) if(!g_pLevel){g_fnReportf(-1, "%s - sxlevel is not init", gen_msg_location);return ret;}
+#define SL_PRECOND(ret) if(!g_pLevel){g_fnReportf(-1, "%s - sxlevel is not init", GEN_MSG_LOCATION);return ret;}
 
 //##########################################################################
 
@@ -38,7 +38,7 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxlevel", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxlevel", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -51,7 +51,7 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxlevel", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxlevel", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SLevel_AKill()

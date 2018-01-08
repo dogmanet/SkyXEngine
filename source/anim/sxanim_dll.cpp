@@ -16,7 +16,7 @@ See the license in LICENSE
 report_func reportf = DefReport;
 #endif
 
-#define SA_PRECOND(ret) if(!g_mgr){reportf(-1, "%s - sxanim is not init", gen_msg_location);return ret;}
+#define SA_PRECOND(ret) if(!g_mgr){reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxanim is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -40,7 +40,7 @@ SX_LIB_API void SXAnim_0Create()
 {
 	if(g_mgr)
 	{
-		reportf(-1, "%s - sxanim double init", gen_msg_location);
+		reportf(-1, "%s - sxanim double init", GEN_MSG_LOCATION);
 		return;
 	}
 	g_mgr = new AnimationManager(SGCore_GetDXDevice());

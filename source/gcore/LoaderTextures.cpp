@@ -43,7 +43,7 @@ bool LoaderTextures::FileExists(const char* name)
 
 	if (!IsTruePath)
 	{
-		g_fnReportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - wrong texture name [%s]!!!", SX_LIB_NAME, GEN_MSG_LOCATION, name);
 		return false;
 	}
 
@@ -122,7 +122,7 @@ ID LoaderTextures::AddName(const char* name, LoadTexType type, ID* iddir, ID* id
 
 		if(!IsTruePath)
 		{
-			g_fnReportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - wrong texture name [%s]!!!", SX_LIB_NAME, GEN_MSG_LOCATION, name);
 		}
 
 	int tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
@@ -275,31 +275,32 @@ ID LoaderTextures::Update(const char* name, LoadTexType type)
 	ID tmpkey, tmpKeyName;
 	ID id = AddName(name, type, &tmpkey, &tmpKeyName);
 
-	g_fnReportf(0,"update texture [%s] ...",name);
+	//g_fnReportf(0,"update texture [%s] ...",name);
 
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	sprintf(tmpPath, "%s%s%s%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), Arr[tmpkey]->Path.c_str(), "\\", Arr[tmpkey]->Path.c_str(), "_", Arr[tmpkey]->ArrTex[tmpKeyName]->name.c_str());
 	IDirect3DTexture9* tex=0;
 		if(FAILED(D3DXCreateTextureFromFileEx(
-											DXDevice,
-											tmpPath,
-											D3DX_DEFAULT,
-											D3DX_DEFAULT,
-											SXGC_LOADTEX_COUNT_MIPMAP,
-											0,
-											SXGC_LOADTEX_FORMAT_TEX,
-											D3DPOOL_MANAGED, 
-											D3DX_FILTER_BOX, 
-											D3DX_FILTER_BOX,  0, 0, 0, &tex
-											)
-			))
+			g_pDXDevice,
+			tmpPath,
+			D3DX_DEFAULT,
+			D3DX_DEFAULT,
+			SXGC_LOADTEX_COUNT_MIPMAP,
+			0,
+			SXGC_LOADTEX_FORMAT_TEX,
+			D3DPOOL_MANAGED, 
+			D3DX_FILTER_BOX, 
+			D3DX_FILTER_BOX,  0, 0, 0, &tex
+			)
+			)
+		)
 		{
-			g_fnReportf(-1, "%s - not found texture [%s]", gen_msg_location, tmpPath);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - not found texture [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, tmpPath);
 		}
 		else
 		{
 			ArrTextures[Arr[tmpkey]->ArrTex[tmpKeyName]->id]->tex = tex;
-			g_fnReportf(0, "is ok\n");
+			//g_fnReportf(0, "is ok\n");
 		}
 	
 	return id;
@@ -309,7 +310,7 @@ void LoaderTextures::LoadTextures()
 {
 	if (ArrIDsLoad.size() <= 0)
 		return;
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: load textures ...\n");
+	//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: load textures ...\n", SX_LIB_NAME);
 
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	ID tmpiddir;
@@ -321,7 +322,7 @@ void LoaderTextures::LoadTextures()
 		IDirect3DTexture9* tex = 0;
 		
 		if (FAILED(D3DXCreateTextureFromFileEx(
-			DXDevice,
+			g_pDXDevice,
 			tmpPath,
 			D3DX_DEFAULT,
 			D3DX_DEFAULT,
@@ -334,17 +335,17 @@ void LoaderTextures::LoadTextures()
 			)))
 		{
 			ArrTextures[ArrIDsLoad[i]]->tex = 0;
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "  {load} - not found texture [%s]\n", ArrTextures[ArrIDsLoad[i]]->name.c_str());
+			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: - not found texture [%s]\n", SX_LIB_NAME, ArrTextures[ArrIDsLoad[i]]->name.c_str());
 		}
 		else
 		{
 			ArrTextures[ArrIDsLoad[i]]->tex = tex;
-			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  texture loaded [%s], id = %d\n", ArrTextures[ArrIDsLoad[i]]->name.c_str(), ArrIDsLoad[i]);
+			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  texture loaded [%s], id = %d\n", ArrTextures[ArrIDsLoad[i]]->name.c_str(), ArrIDsLoad[i]);
 		}
 	}
 
 	ArrIDsLoad.clear();
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: all loaded textures [%d]\n", ArrTextures.size());
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: all loaded textures [%d]\n", SX_LIB_NAME, ArrTextures.size());
 }
 
 IDirect3DTexture9* LoaderTextures::GetTexture(ID id)

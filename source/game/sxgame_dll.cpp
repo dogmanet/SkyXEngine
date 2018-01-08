@@ -51,7 +51,7 @@ report_func reportf = DefReport;
 GameData * g_pGameData = NULL;
 ID3DXMesh* g_pFigureBox = 0;
 
-#define SG_PRECOND(ret) if(!g_pGameData){reportf(-1, "%s - sxgame is not init", gen_msg_location);return ret;}
+#define SG_PRECOND(ret) if(!g_pGameData){reportf(-1, "%s - sxgame is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -106,7 +106,7 @@ SX_LIB_API void SXGame_0Create()
 {
 	if(g_pGameData)
 	{
-		reportf(-1, "%s - sxgame double init", gen_msg_location);
+		reportf(-1, "%s - sxgame double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();

@@ -123,7 +123,7 @@ void Effects::Save(const char* path)
 
 	if (!file)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - failed to save %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - failed to save %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 
@@ -301,7 +301,7 @@ void Effects::Load(const char* path)
 {
 	if (!Core_0FileExists(path))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 		
@@ -309,13 +309,13 @@ void Effects::Load(const char* path)
 
 	if (!config->sectionExists("effects"))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main section 'effects' not found, %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main section 'effects' not found, %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 
 	if (!config->keyExists("effects", "count"))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main key 'count' in section 'effects' not found, %s", gen_msg_location, path);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main key 'count' in section 'effects' not found, %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 
@@ -328,7 +328,7 @@ void Effects::Load(const char* path)
 		sprintf(eff_section_name, "effect_%d", i);
 		if (!config->sectionExists(eff_section_name))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", gen_msg_location, eff_section_name, path);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", GEN_MSG_LOCATION, eff_section_name, path);
 			return;
 		}
 
@@ -347,7 +347,7 @@ void Effects::Load(const char* path)
 			sprintf(part_section_name, "effect_%d_emitter_%d", i, k);
 			if (!config->sectionExists(eff_section_name))
 			{
-				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", gen_msg_location, part_section_name, path);
+				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", GEN_MSG_LOCATION, part_section_name, path);
 				return;
 			}
 

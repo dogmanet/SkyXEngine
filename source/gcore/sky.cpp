@@ -13,15 +13,15 @@ SkyBox::SkyBox()
 		D3DDECL_END()
 	};
 
-	DXDevice->CreateVertexDeclaration(layoutskybox, &VertexDeclarationSkyBox);
+	g_pDXDevice->CreateVertexDeclaration(layoutskybox, &VertexDeclarationSkyBox);
 
-	VS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box", SHADER_CHECKDOUBLE_NAME);
-	PS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box", SHADER_CHECKDOUBLE_NAME);
+	VS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box.vs", SHADER_CHECKDOUBLE_NAME);
+	PS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box.ps", SHADER_CHECKDOUBLE_NAME);
 
 	Color = float4(0,0,0,0);
 	RotaionY = 0.f;
 	MatRotation = SMMatrixIdentity();
-	DXDevice->CreateVertexBuffer(
+	g_pDXDevice->CreateVertexBuffer(
 								8 * sizeof(SkyBoxVertex),
 								0,
 								0,
@@ -30,7 +30,7 @@ SkyBox::SkyBox()
 								0
 								);
 
-	DXDevice->CreateIndexBuffer(
+	g_pDXDevice->CreateIndexBuffer(
                36 * sizeof(WORD),
                0,
                D3DFMT_INDEX16,
@@ -123,9 +123,9 @@ void SkyBox::LoadTextures(const char *texture)
 
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-	if (FAILED(D3DXCreateCubeTextureFromFile(DXDevice, tmppath, &Tex)))
+	if (FAILED(D3DXCreateCubeTextureFromFile(g_pDXDevice, tmppath, &Tex)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmppath);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load cube texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmppath);
 	}
 }
 
@@ -139,11 +139,11 @@ void SkyBox::ChangeTexture(const char *texture)
 	mem_release_del((BFChangeMainTex ? Tex : Tex2));
 	char tmpsb1[1024];
 	sprintf(tmpsb1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-		if(!FAILED(D3DXCreateCubeTextureFromFile(DXDevice,tmpsb1,(BFChangeMainTex ? &Tex : &Tex2))))
+		if(!FAILED(D3DXCreateCubeTextureFromFile(g_pDXDevice,tmpsb1,(BFChangeMainTex ? &Tex : &Tex2))))
 			BFChange = true;
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load cube texture '%s'", gen_msg_location, tmpsb1);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load cube texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmpsb1);
 		}
 }
 
@@ -188,8 +188,8 @@ void SkyBox::Render(float timeDelta,float3* pos,bool is_shadow)
 	float4x4 World = MatRotation * SMMatrixTranslation(pos->x, pos->y, pos->z);
 
 	//D3DXMATRIX tmpdxView, tmpdxProjection;
-	//DXDevice->GetTransform(D3DTS_PROJECTION, &tmpdxProjection);
-	//DXDevice->GetTransform(D3DTS_VIEW, &tmpdxView);
+	//g_pDXDevice->GetTransform(D3DTS_PROJECTION, &tmpdxProjection);
+	//g_pDXDevice->GetTransform(D3DTS_VIEW, &tmpdxView);
 	float4x4 View;// = float4x4(tmpdxView);
 	float4x4 Proj;// = float4x4(tmpdxProjection);
 
@@ -209,13 +209,13 @@ void SkyBox::Render(float timeDelta,float3* pos,bool is_shadow)
 
 		if(BFChangeMainTex)
 		{
-			DXDevice->SetTexture(0,Tex2);
-			DXDevice->SetTexture(1,Tex);
+			g_pDXDevice->SetTexture(0,Tex2);
+			g_pDXDevice->SetTexture(1,Tex);
 		}
 		else
 		{
-			DXDevice->SetTexture(0,Tex);
-			DXDevice->SetTexture(1,Tex2);
+			g_pDXDevice->SetTexture(0,Tex);
+			g_pDXDevice->SetTexture(1,Tex2);
 		}
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyBox, "WorldViewProjection", &WVP);
@@ -224,10 +224,10 @@ void SkyBox::Render(float timeDelta,float3* pos,bool is_shadow)
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyBox);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyBox);
 
-	DXDevice->SetStreamSource(0, Vertices, 0, sizeof(SkyBoxVertex));
-	DXDevice->SetIndices(Indeces);
-	DXDevice->SetVertexDeclaration(VertexDeclarationSkyBox);
-	DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+	g_pDXDevice->SetStreamSource(0, Vertices, 0, sizeof(SkyBoxVertex));
+	g_pDXDevice->SetIndices(Indeces);
+	g_pDXDevice->SetVertexDeclaration(VertexDeclarationSkyBox);
+	g_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
 
 	SGCore_ShaderUnBind();
 };
@@ -243,19 +243,19 @@ SkyClouds::SkyClouds()
 		D3DDECL_END()
 	};
 
-	DXDevice->CreateVertexDeclaration(layoutclouds, &VertexDeclarationClouds);
+	g_pDXDevice->CreateVertexDeclaration(layoutclouds, &VertexDeclarationClouds);
 
-	VS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds", SHADER_CHECKDOUBLE_NAME);
-	PS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds", SHADER_CHECKDOUBLE_NAME);
+	VS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
+	PS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
 
 	D3DXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
-	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
+	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
 
 	RotaionY = 0;
 	Alpha = 1.f;
 	Color = float4_t(0,0,0,0);
 	MatRotation = SMMatrixIdentity();
-	DXDevice->CreateVertexBuffer(
+	g_pDXDevice->CreateVertexBuffer(
 								4 * sizeof(SkyCloudsVertex),
 								0,
 								0,
@@ -264,7 +264,7 @@ SkyClouds::SkyClouds()
 								0
 								);
 
-	DXDevice->CreateIndexBuffer(
+	g_pDXDevice->CreateIndexBuffer(
                6 * sizeof(WORD),
                0,
                D3DFMT_INDEX16,
@@ -327,11 +327,11 @@ void SkyClouds::ChangeTexture(const char *texture)
 	mem_release_del((BFChangeMainTex ? SkyCloudsTex : SkyCloudsTex2));
 	char tmpsb1[1024];
 	sprintf(tmpsb1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-		if(!FAILED(D3DXCreateTextureFromFile(DXDevice,tmpsb1,(BFChangeMainTex ? &SkyCloudsTex : &SkyCloudsTex2))))
+		if(!FAILED(D3DXCreateTextureFromFile(g_pDXDevice,tmpsb1,(BFChangeMainTex ? &SkyCloudsTex : &SkyCloudsTex2))))
 			BFChange = true;
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmpsb1);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmpsb1);
 		}
 }
 
@@ -413,9 +413,9 @@ void SkyClouds::LoadTextures(const char *texture)
 
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-	if (FAILED(D3DXCreateTextureFromFile(DXDevice, tmppath, &SkyCloudsTex)))
+	if (FAILED(D3DXCreateTextureFromFile(g_pDXDevice, tmppath, &SkyCloudsTex)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed load texture '%s'", gen_msg_location, tmppath);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmppath);
 	}
 }
 
@@ -447,20 +447,20 @@ void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 
 		if(BFChangeMainTex)
 		{
-			DXDevice->SetTexture(0,SkyCloudsTex2);
-			DXDevice->SetTexture(1,SkyCloudsTex);
+			g_pDXDevice->SetTexture(0,SkyCloudsTex2);
+			g_pDXDevice->SetTexture(1,SkyCloudsTex);
 		}
 		else
 		{
-			DXDevice->SetTexture(0,SkyCloudsTex);
-			DXDevice->SetTexture(1,SkyCloudsTex2);
+			g_pDXDevice->SetTexture(0,SkyCloudsTex);
+			g_pDXDevice->SetTexture(1,SkyCloudsTex2);
 		}
 
 		if(!is_shadow)
 		{
 			/*D3DXMATRIX tmpdxView, tmpdxProjection;
-			DXDevice->GetTransform(D3DTS_PROJECTION, &tmpdxProjection);
-			DXDevice->GetTransform(D3DTS_VIEW, &tmpdxView);*/
+			g_pDXDevice->GetTransform(D3DTS_PROJECTION, &tmpdxProjection);
+			g_pDXDevice->GetTransform(D3DTS_VIEW, &tmpdxView);*/
 			float4x4 View;// = float4x4(tmpdxView);
 			float4x4 Proj;// = float4x4(tmpdxProjection);
 
@@ -481,7 +481,7 @@ void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 		else
 		{
 			//D3DXMATRIX tmpdxViewProj;
-			//DXDevice->GetTransform(D3DTS_WORLD1, &tmpdxViewProj);
+			//g_pDXDevice->GetTransform(D3DTS_WORLD1, &tmpdxViewProj);
 			float4x4 ViewProj;// = float4x4(tmpdxViewProj);
 			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &ViewProj);
 			float4x4 WVP = (MatRotation * World) * ViewProj;
@@ -496,11 +496,11 @@ void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow);
 		}
 	
-	DXDevice->SetStreamSource(0, SkyCloudsVertices, 0, sizeof(SkyCloudsVertex));
-	DXDevice->SetIndices(this->SkyCloudsIndeces);
-	DXDevice->SetVertexDeclaration(VertexDeclarationClouds);
+	g_pDXDevice->SetStreamSource(0, SkyCloudsVertices, 0, sizeof(SkyCloudsVertex));
+	g_pDXDevice->SetIndices(this->SkyCloudsIndeces);
+	g_pDXDevice->SetVertexDeclaration(VertexDeclarationClouds);
 
-	DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+	g_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 
 	SGCore_ShaderUnBind();
 }

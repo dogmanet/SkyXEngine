@@ -20,7 +20,7 @@ report_func g_fnReportf = DefReport;
 Lights* ArrLights = 0;
 Materials* ArrMaterials = 0;
 
-#define ML_PRECOND(retval) if(!ArrLights){g_fnReportf(-1, "%s - sxmtlligth is not init", gen_msg_location); return retval;}
+#define ML_PRECOND(retval) if(!ArrLights){g_fnReportf(-1, "%s - sxmtlligth is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -44,7 +44,7 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxmaterial_ligth", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxmaterial_ligth", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -63,7 +63,7 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxmaterial_ligth", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxmaterial_ligth", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SML_AKill()
@@ -164,6 +164,13 @@ SX_LIB_API void SML_LigthsClear()
 	ML_PRECOND(_VOID);
 
 	ArrLights->Clear();
+}
+
+SX_LIB_API void SML_LigthsClearIDArr()
+{
+	ML_PRECOND(_VOID);
+
+	ArrLights->ClearIDArr();
 }
 
 SX_LIB_API long SML_LigthsGetCount()
@@ -946,6 +953,18 @@ SX_LIB_API void SML_MtlSetPenetration(ID id, float penetration)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->MtlSetPenetration(id, penetration);
+}
+
+SX_LIB_API float SML_MtlGetHitChance(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrMaterials->MtlGetHitChance(id);
+}
+
+SX_LIB_API void SML_MtlSetHitChance(ID id, float fHitChance)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->MtlSetHitChance(id, fHitChance);
 }
 
 //##########################################################################

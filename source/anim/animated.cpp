@@ -322,7 +322,7 @@ void ModelFile::Load6(const char * name)
 		}
 	}
 
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
 
 	if(m_hdr.iAnimationsOffset)
 	{

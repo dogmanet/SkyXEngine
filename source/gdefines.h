@@ -149,14 +149,14 @@ struct IBaseObject
 #define Q4_BTQUAT(xmf) (btQuaternion((xmf).x, (xmf).y, (xmf).z, -(xmf).w))
 #define BTQUAT_Q4(btv) (SMQuaternion((btv).x(), (btv).y(), (btv).z(), -(btv).w()))
 
-#define macro_text_(x) #x
-#define macro_text(x) macro_text_(x)
+#define MACRO_TEXT_(x) #x
+#define MACRO_TEXT(x) MACRO_TEXT_(x)
 
 //! Формирование строки вида file_name:string_num
-#define gen_msg_location __FILE__ ## ": " ## macro_text(__LINE__)
+#define GEN_MSG_LOCATION __FILE__ ## ": " ## MACRO_TEXT(__LINE__)
 
-#define _assert_s(str,...) AllocConsole();freopen("CONOUT$", "wt", stdout); fprintf(stdout, str, ...); exit(1);
-#define _assert(expr) if(!expr) _assert_s(#expr)
+#define ASSERT_S(str,...) AllocConsole();freopen("CONOUT$", "wt", stdout); fprintf(stdout, str, ...); exit(1);
+#define ASSERT(expr) if(!expr) ASSERT_S(#expr)
 
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int level, const char* format, ...);

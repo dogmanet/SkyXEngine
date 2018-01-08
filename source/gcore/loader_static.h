@@ -10,9 +10,9 @@
 #include "sxgcore.h"
 
 extern report_func g_fnReportf;
-extern IDirect3DDevice9* DXDevice;
+extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DPRESENT_PARAMETERS D3DAPP;
-extern IDirect3DVertexDeclaration9* StaticVertexDecl;
+extern IDirect3DVertexDeclaration9 *g_pStaticVertexDecl;
 
 struct DataStaticModel : public ISXDataStaticModel
 {
@@ -62,7 +62,7 @@ struct DataStaticModel : public ISXDataStaticModel
 			tmpind += nm->IndexCount[i];
 		}
 
-		DXDevice->CreateVertexBuffer(sizeof(vertex_static)* tmpvert, NULL, NULL, D3DPOOL_MANAGED, &nm->VertexBuffer, 0);
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* tmpvert, NULL, NULL, D3DPOOL_MANAGED, &nm->VertexBuffer, 0);
 		//nm->ArrVertBuf = new vertex_static[tmpvert];
 		vertex_static * dstData, *srcData;
 		nm->VertexBuffer->Lock(0, 0, (void**)&dstData, 0);
@@ -75,7 +75,7 @@ struct DataStaticModel : public ISXDataStaticModel
 		VertexBuffer->Unlock();
 
 
-		DXDevice->CreateIndexBuffer(sizeof(UINT)* tmpind, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &nm->IndexBuffer, 0);
+		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* tmpind, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &nm->IndexBuffer, 0);
 		//nm->ArrIndBuf = new UINT[tmpind];
 		nm->IndexBuffer->Lock(0, 0, (void**)&dstData, 0);
 		IndexBuffer->Lock(0, 0, (void**)&srcData, 0);

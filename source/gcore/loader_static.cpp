@@ -8,14 +8,14 @@ ISXDataStaticModel* SGCore_StaticModelCr()
 
 IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl()
 {
-	return StaticVertexDecl;
+	return g_pStaticVertexDecl;
 }
 
 void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 {
 	if (!data)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - ñan not initialize a null pointer 'data', load model '%s'\n", gen_msg_location, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - ñan not initialize a null pointer 'data', load model '%s'\n", SX_LIB_NAME, GEN_MSG_LOCATION, file);
 		return;
 	}
 
@@ -23,7 +23,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	FILE * pf = fopen(file, "rb");
 	if (!pf)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unable to open model file '%s'\n", gen_msg_location, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unable to open model file '%s'\n", SX_LIB_NAME, GEN_MSG_LOCATION, file);
 		return;
 	}
 
@@ -33,14 +33,14 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 	if (header.Magick != SX_MODEL_MAGICK)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unsupported file type '%s'\n", gen_msg_location, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unsupported file type '%s'\n", SX_LIB_NAME, GEN_MSG_LOCATION, file);
 		fclose(pf);
 		return;
 	}
 
 	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SXGCORE] %s - unsupported file '%s' version %d'\n", gen_msg_location, header.iVersion, file);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unsupported file '%s' version %d'\n", SX_LIB_NAME, GEN_MSG_LOCATION, header.iVersion, file);
 		fclose(pf);
 		return;
 	}
@@ -127,7 +127,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 			}
 
 			(*data)->AllVertexCount = iStartVertex;
-			DXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->VertexBuffer, 0);
+			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->VertexBuffer, 0);
 			//(*data)->ArrVertBuf = new vertex_static[iStartVertex];
 			vertex_static * pData;
 			if (!FAILED((*data)->VertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
@@ -145,7 +145,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 			(*data)->AllIndexCount = iStartIndex;
 			DWORD tmpCountIndecex = 0;
-			DXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
+			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
 			//(*data)->ArrIndBuf = new UINT[iStartIndex];
 			if (!FAILED((*data)->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 			{
@@ -253,7 +253,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		}
 
 		(*data)->AllVertexCount = iStartVertex;
-		DXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->VertexBuffer, 0);
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->VertexBuffer, 0);
 		//(*data)->ArrVertBuf = new vertex_static[iStartVertex];
 		vertex_static * pData;
 		if (!FAILED((*data)->VertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
@@ -265,7 +265,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		}
 
 		(*data)->AllIndexCount = iStartIndex;
-		DXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
+		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
 		//(*data)->ArrIndBuf = new UINT[iStartIndex];
 		if (!FAILED((*data)->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 		{
@@ -376,7 +376,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	tmpmodel->AllIndexCount = countindex;
 	tmpmodel->AllVertexCount = countvertex;
 
-	DXDevice->CreateVertexBuffer(sizeof(vertex_static)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->VertexBuffer, 0);
+	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->VertexBuffer, 0);
 
 	vertex_static * pData;
 	if (!FAILED(tmpmodel->VertexBuffer->Lock(0, sizeof(vertex_static)* countvertex, (void**)&pData, 0)))
@@ -421,7 +421,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		tmpmodel->VertexBuffer->Unlock();
 	}
 
-	DXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->IndexBuffer, 0);
+	g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->IndexBuffer, 0);
 
 	if (!FAILED(tmpmodel->IndexBuffer->Lock(0, sizeof(UINT)* countindex, (void**)&pData, 0)))
 	{

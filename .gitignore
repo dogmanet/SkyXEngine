@@ -200,6 +200,7 @@ source/s4g/tests/
 build/*
 !gamesource/
 build/gamesource/*
+/build/gamesource/shaders/cache/*
 !shaders/
 docs/html/*
 !docs/html/material_editor/

@@ -9,6 +9,7 @@ void Emitter::NullingInit()
 	IndexBuff = 0;
 	VertexBuffQuad = 0;
 	IndexBuffQuad = 0;
+	isTexInit = false;
 	IDTex = -1;
 	Arr = 0;
 	TransVertBuf = 0;
@@ -20,6 +21,7 @@ void Emitter::NullingInit()
 	TimerDeath = 0;
 	SizeAdd = 0;
 
+	//isTexTrackInit = false;
 	IDTexTrack = -1;
 	OldSize.x = 0;
 	OldSize.y = 0;
@@ -102,13 +104,22 @@ void Emitter::NameGet(char* name)
 void Emitter::TextureSetID(ID tex)
 {
 	IDTex = tex;
+
+	isTexInit = false;
+	if (SGCore_LoadTexGetTex(IDTex))
+		isTexInit = true;
+
 	AnimTexDataInit();
 }
 
 void Emitter::TextureSet(const char* tex)
 {
 	IDTex = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
+	isTexInit = false;
+	if (SGCore_LoadTexGetTex(IDTex))
+		isTexInit = true;
+
 	AnimTexDataInit();
 }
 
@@ -134,7 +145,7 @@ void Emitter::TextureTrackSetID(ID tex)
 void Emitter::TextureTrackSet(const char* tex)
 {
 	IDTexTrack = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
 }
 
 ID Emitter::TextureTrackGetID()
@@ -153,7 +164,7 @@ void Emitter::TextureTrackGet(char* tex)
 
 void Emitter::AnimTexDataInit()
 {
-	if (Data.AnimTexCountCadrsX != 0 && Data.AnimTexCountCadrsY != 0)
+	if (isTexInit && Data.AnimTexCountCadrsX != 0 && Data.AnimTexCountCadrsY != 0)
 	{
 		D3DSURFACE_DESC desc;
 		SGCore_LoadTexGetTex(IDTex)->GetLevelDesc(0, &desc);
@@ -240,7 +251,7 @@ void Emitter::CountSet(int count)
 
 	if (Count <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -747,6 +758,9 @@ void Emitter::ReCreateParticles(WORD id)
 
 void Emitter::UpdateAnimTex(WORD idparticle, DWORD tmptime)
 {
+	if (!isTexInit)
+		return;
+
 	//если подошло время обновления анимации текстуры
 	if (Arr[idparticle].AnimTexRateMls <= Arr[idparticle].AnimTexCurrentMls)
 	{
@@ -1204,6 +1218,15 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 
 	if (!Enable)
 		return;
+
+	if (!isTexInit)
+	{
+		if (SGCore_LoadTexGetTex(IDTex))
+		{
+			isTexInit = true;
+			AnimTexDataInit();
+		}
+	}
 
 	if (CountLifeParticle > 0)
 	{

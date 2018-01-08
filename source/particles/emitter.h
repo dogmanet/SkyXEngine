@@ -187,8 +187,12 @@ protected:
 	float2_t AnimTexSize;	//размер текстуры
 	float4 AnimSizeCadr;//размер одного кадра, xy - в пикселях, zw - в процентном соотношении к размеру текстуры
 
+	bool isTexInit;
 	ID IDTex;			//id текстуры, общей на все партиклы текущего организатора
+
+	//bool isTexTrackInit;
 	ID IDTexTrack;		//id текстуры следа, общей на все партиклы текущего организатора
+
 	DWORD OldTime;		//прошлое время с которого началось обработка
 	DWORD TimeNextSpawnParticle;	//время спавна будущего партикла
 	

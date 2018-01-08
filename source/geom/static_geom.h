@@ -12,20 +12,20 @@ extern report_func g_fnReportf;
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, retval) \
 if (!(id_model < AllModels.size() && AllModels[id_model]))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", gen_msg_location, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 	return retval;\
 }
 
 #define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \
 if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels[id_model]->SubSet.size()))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", gen_msg_location, id_group, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", GEN_MSG_LOCATION, id_group, id_model); \
 	return ret_val; \
 }
 

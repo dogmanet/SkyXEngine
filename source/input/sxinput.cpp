@@ -19,7 +19,7 @@ SXInput* ObjectInput = 0;
 report_func g_fnReportf = DefReport;
 #endif
 
-#define SI_PRECOND(retval) if(!ObjectInput){g_fnReportf(-1, "%s - sxinput is not init", gen_msg_location); return retval;}
+#define SI_PRECOND(retval) if(!ObjectInput){g_fnReportf(-1, "%s - sxinput is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -64,14 +64,14 @@ SX_LIB_API void SSInput_0Create(const char* name, HWND hwnd, bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							g_fnReportf(-1, "%s - none unic name for system input", gen_msg_location);
+							g_fnReportf(-1, "%s - none unic name for system input", GEN_MSG_LOCATION);
 							return;
 						}
 				}
 			InitIntup(name, hwnd);
 		}
 		else
-			g_fnReportf(-1, "%s - not init argument [name] for system sound", gen_msg_location);
+			g_fnReportf(-1, "%s - not init argument [name] for system sound", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SSInput_Update()

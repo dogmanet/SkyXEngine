@@ -932,7 +932,7 @@ void AIGrid::GraphicsInit()
 
 	if (!DXDevice)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "sxaigrid: %s - dx device is not init", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "sxaigrid: %s - dx device is not init", GEN_MSG_LOCATION);
 	}
 
 	D3DVERTEXELEMENT9 InstanceAIQuad[] =
@@ -951,8 +951,8 @@ void AIGrid::GraphicsInit()
 
 	Tex_AIGrid = SGCore_LoadTexAddName("decal_aigrid1.dds", LoadTexType::ltt_const);
 
-	IDVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad", SHADER_CHECKDOUBLE_PATH);
-	IDPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad", SHADER_CHECKDOUBLE_PATH);
+	IDVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad.vs", SHADER_CHECKDOUBLE_PATH);
+	IDPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad.ps", SHADER_CHECKDOUBLE_PATH);
 
 
 	IDirect3DTexture9* TexBB;
@@ -966,7 +966,7 @@ void AIGrid::GraphicsInit()
 
 	TexBB->UnlockRect(0);
 
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
 	Tex_BB = SGCore_LoadTexCreate("aigrid_tex_bb__", TexBB);
 
 	DXDevice->CreateVertexBuffer(

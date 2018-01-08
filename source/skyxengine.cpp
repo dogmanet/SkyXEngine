@@ -635,8 +635,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
-	SGCore_ShaderBindN(SHADER_TYPE_VERTEX, "pp_quad_render");
-	SGCore_ShaderBindN(SHADER_TYPE_PIXEL, "pp_quad_render");
+	SGCore_ShaderBindN(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	SGCore_ShaderBindN(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 
 	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 

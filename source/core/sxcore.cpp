@@ -33,7 +33,7 @@ report_func g_fnReportf = DefReport;
 
 CTaskManager* g_pTaskManager = 0;
 
-#define SXCORE_PRECOND(retval) if(!g_pTaskManager){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+#define SXCORE_PRECOND(retval) if(!g_pTaskManager){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
 //**************************************************************************
 
@@ -47,12 +47,12 @@ String g_aGRegistersString[CORE_REGISTRY_SIZE];
 
 #define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
+{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unresolved index '%d' of access for registry", SX_LIB_NAME, GEN_MSG_LOCATION, id); return stdval; }
 
 //**************************************************************************
 
 CTimeManager* g_pTimers = 0;
-#define CORE_TIME_PRECOND(retval) if(!g_pTimers){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+#define CORE_TIME_PRECOND(retval) if(!g_pTimers){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - sxcore is not init", SX_LIB_NAME, GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -67,10 +67,10 @@ void Core_Dbg_Set(report_func fnReportFunc)
 	g_fnReportf = fnReportFunc;
 }
 
-bool Core_0FileExists(const char* fname)
+bool Core_0FileExists(const char *szNameFunc)
 {
 	WIN32_FIND_DATA wfd;
-	HANDLE hFind = ::FindFirstFile(fname, &wfd);
+	HANDLE hFind = ::FindFirstFile(szNameFunc, &wfd);
 		if (INVALID_HANDLE_VALUE != hFind)
 		{
 			::FindClose(hFind);
@@ -79,26 +79,52 @@ bool Core_0FileExists(const char* fname)
 	return false;
 }
 
-bool Core_0ClipBoardCopy(const char *str)
+SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath)
+{
+	HANDLE hFile = CreateFile(szPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	
+	if (hFile == INVALID_HANDLE_VALUE)
+		return 0;
+
+	SYSTEMTIME stUTC, stLocal;
+	FILETIME ftCreate, ftAccess, ftWrite;
+	GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite);
+	FileTimeToSystemTime(&ftWrite, &stUTC);
+
+	tm tmObj;
+	ZeroMemory(&tmObj, sizeof(tm));
+	tmObj.tm_year = stUTC.wYear - 1900;
+	tmObj.tm_mon = stUTC.wMonth;
+	tmObj.tm_mday = stUTC.wDay;
+	tmObj.tm_hour = stUTC.wHour;
+	tmObj.tm_min = stUTC.wMinute;
+	tmObj.tm_sec = stUTC.wSecond;
+
+	uint32_t tLastModify = mktime(&tmObj);
+
+	return tLastModify;
+}
+
+bool Core_0ClipBoardCopy(const char *szStr)
 {
     HGLOBAL hglb;
     char *s;
-    int len = strlen(str) + 1;
+	int len = strlen(szStr) + 1;
  
-		if(!(hglb = GlobalAlloc(GHND, len)))
-			return false;
+	if(!(hglb = GlobalAlloc(GHND, len)))
+		return false;
 
-		if(!(s = (char *)GlobalLock(hglb)))
-			return false;
+	if(!(s = (char *)GlobalLock(hglb)))
+		return false;
 
-	strcpy(s, str);
+	strcpy(s, szStr);
 	GlobalUnlock(hglb);
 
-		if(!OpenClipboard(NULL) || !EmptyClipboard()) 
-		{
-			GlobalFree(hglb);
-			return false;
-		}
+	if(!OpenClipboard(NULL) || !EmptyClipboard()) 
+	{
+		GlobalFree(hglb);
+		return false;
+	}
 	SetClipboardData(CF_TEXT, hglb);
 	CloseClipboard();
 	return true;
@@ -128,7 +154,7 @@ void Core_0Create(const char* name, bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							g_fnReportf(-1, "%s - none unic name, sgcore", gen_msg_location);
+							g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - none unic name, score", GEN_MSG_LOCATION);
 							return;
 						}
 				}
@@ -137,9 +163,11 @@ void Core_0Create(const char* name, bool is_unic)
 			ConsoleRegisterCmds();
 			g_pTaskManager = new CTaskManager();
 			g_pTimers = new CTimeManager();
+
+			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "[SCORE]: is init\n");
 		}
 		else
-			g_fnReportf(-1, "%s - not init argument [name], sgcore", gen_msg_location);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - not init argument [name], score", GEN_MSG_LOCATION);
 }
 
 void Core_AKill()
@@ -158,7 +186,7 @@ void Core_AGetName(char* name)
 	if(name)
 		strcpy(name, g_szCoreName);
 	else
-		g_fnReportf(-1, "%s - invalid argument", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - invalid argument", GEN_MSG_LOCATION);
 }
 
 //##########################################################################

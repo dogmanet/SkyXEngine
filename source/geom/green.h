@@ -23,13 +23,13 @@ extern report_func g_fnReportf;
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", gen_msg_location, id_arr); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
 if (!(id_model < ArrModels.size() && ArrModels[id_model]))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", gen_msg_location, id_model); \
+	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 }
 
 class Green

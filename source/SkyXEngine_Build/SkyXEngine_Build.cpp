@@ -50,7 +50,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	/*ID tmpid = SPE_EffectGetByName("test");
 	SPE_EffectEnableSet(tmpid, true);*/
 
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
 
 	/*ID tmpids = SSCore_SndCreate3d("Exclusion_zone.ogg", false, 0, 100, 0.1);
 	SSCore_SndPosCurrSet(tmpids, 20, SOUND_POS_SEC);

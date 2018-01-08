@@ -119,53 +119,53 @@ void PPSet::Init()
 	PPSet::WinSize.x = *r_win_width;
 	PPSet::WinSize.y = *r_win_height;
 	Core_SetOutPtr();
-	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render", SHADER_CHECKDOUBLE_PATH);
-	PPSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::FogLinear = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog_linear.ps", "ppe_fog_linear", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::FogLinear = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog_linear.ps", "ppe_fog_linear.ps", SHADER_CHECKDOUBLE_PATH);
 	
 	D3DXMACRO Defines_SSAO_Q_3[] = { { "SSAO_Q_3", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAO_Q_3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_3);
+	PPSet::IDsShaders::PS::SSAO_Q_3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_3);
 
 	D3DXMACRO Defines_SSAO_Q_2[] = { { "SSAO_Q_2", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAO_Q_2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_2);
+	PPSet::IDsShaders::PS::SSAO_Q_2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_2);
 
 	D3DXMACRO Defines_SSAO_Q_1[] = { { "SSAO_Q_1", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAO_Q_1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_1);
+	PPSet::IDsShaders::PS::SSAO_Q_1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_1);
 
-	PPSet::IDsShaders::PS::SSAOBlur1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps", "ppe_ssao_blur", SHADER_CHECKDOUBLE_NAME);
+	PPSet::IDsShaders::PS::SSAOBlur1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps", "ppe_ssao_blur.ps", SHADER_CHECKDOUBLE_NAME);
 	D3DXMACRO Defines_SSAO_BLEND_COLOR[] = { { "_BLEND_COLOR_", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::SSAOBlur2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps", "ppe_ssao_blur_color", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_BLEND_COLOR);
+	PPSet::IDsShaders::PS::SSAOBlur2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps", "ppe_ssao_blur_color.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_BLEND_COLOR);
 
-	PPSet::IDsShaders::PS::WhiteBlack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_black_white.ps", "ppe_black_white", SHADER_CHECKDOUBLE_PATH);
-	PPSet::IDsShaders::PS::Sepia = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sepia.ps", "ppe_sepia", SHADER_CHECKDOUBLE_PATH);
-	PPSet::IDsShaders::PS::CBG = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_count_cbg.ps", "ppe_count_cbg", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::WhiteBlack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_black_white.ps", "ppe_black_white.ps", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::Sepia = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sepia.ps", "ppe_sepia.ps", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::CBG = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_count_cbg.ps", "ppe_count_cbg.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::SunRender = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sun_render.ps", "ppe_sun_render", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::SunRender = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sun_render.ps", "ppe_sun_render.ps", SHADER_CHECKDOUBLE_PATH);
 
 	D3DXMACRO Defines_GaussBlur_H[] = { { "_H_", "" }, { 0, 0 } };
-	PPSet::IDsShaders::PS::GaussBlurH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_h", SHADER_CHECKDOUBLE_NAME, Defines_GaussBlur_H);
-	PPSet::IDsShaders::PS::GaussBlurW = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_w", SHADER_CHECKDOUBLE_NAME);
-	PPSet::IDsShaders::PS::FreeBlur3x3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_free_blur_3x3.ps", "ppe_free_blur_3x3", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::GaussBlurH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_h.ps", SHADER_CHECKDOUBLE_NAME, Defines_GaussBlur_H);
+	PPSet::IDsShaders::PS::GaussBlurW = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_w.ps", SHADER_CHECKDOUBLE_NAME);
+	PPSet::IDsShaders::PS::FreeBlur3x3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_free_blur_3x3.ps", "ppe_free_blur_3x3.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::DOF = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_of_field.ps", "ppe_depth_of_field", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::DOF = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_of_field.ps", "ppe_depth_of_field.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::BloomBP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_bp.ps", "ppe_bloom_bp", SHADER_CHECKDOUBLE_PATH);
-	PPSet::IDsShaders::PS::BloomFinal = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_final.ps", "ppe_bloom_final", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::BloomBP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_bp.ps", "ppe_bloom_bp.ps", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::BloomFinal = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_final.ps", "ppe_bloom_final.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::LensFlare0 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare0.ps", "ppe_lens_flare0", SHADER_CHECKDOUBLE_PATH);
-	PPSet::IDsShaders::PS::LensFlare2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare2.ps", "ppe_lens_flare2", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::LensFlare0 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare0.ps", "ppe_lens_flare0.ps", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::LensFlare2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare2.ps", "ppe_lens_flare2.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::MotionBlur = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_motion_blur.ps", "ppe_motion_blur", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::MotionBlur = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_motion_blur.ps", "ppe_motion_blur.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::NFAA = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_nfaa.ps", "ppe_nfaa", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::NFAA = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_nfaa.ps", "ppe_nfaa.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::EdgeDetect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_edge_detected.ps", "ppe_edge_detected", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::EdgeDetect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_edge_detected.ps", "ppe_edge_detected.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsShaders::PS::DLAA_Small = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_small.ps", "ppe_dlaa_small", SHADER_CHECKDOUBLE_PATH);
-	PPSet::IDsShaders::PS::DLAA_Long = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_long.ps", "ppe_dlaa_long", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::DLAA_Small = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_small.ps", "ppe_dlaa_small.ps", SHADER_CHECKDOUBLE_PATH);
+	PPSet::IDsShaders::PS::DLAA_Long = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_long.ps", "ppe_dlaa_long.ps", SHADER_CHECKDOUBLE_PATH);
 
 	PPSet::IDsTexs::Noise = SGCore_LoadTexAddName("noise_rottex.dds", LoadTexType::ltt_const);
 	PPSet::IDsTexs::Sun = -1;
@@ -195,8 +195,8 @@ void PPSet::Init()
 	PPSet::IDsRenderTargets::Bright2 = SGCore_RTAdd(PPSet::WinSize.x, PPSet::WinSize.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright2", 1);
 }
 
-#define PP_PRECOND(retval) if(!PPSet::DXDevice){g_fnReportf(-1, "%s - post process is not init", gen_msg_location); return retval;}
-#define PP_PRECOND_SECOND(retval) if(PPSet::IDsRenderTargets::Input < 0 || PPSet::IDsRenderTargets::Output < 0){g_fnReportf(-1, "%s - post process is not init output textures", gen_msg_location); return retval;}
+#define PP_PRECOND(retval) if(!PPSet::DXDevice){g_fnReportf(-1, "%s - post process is not init", GEN_MSG_LOCATION); return retval;}
+#define PP_PRECOND_SECOND(retval) if(PPSet::IDsRenderTargets::Input < 0 || PPSet::IDsRenderTargets::Output < 0){g_fnReportf(-1, "%s - post process is not init output textures", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -221,7 +221,7 @@ SX_LIB_API void SPP_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, post process", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, post process", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -234,7 +234,7 @@ SX_LIB_API void SPP_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], post process", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], post process", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SPP_0Kill()
@@ -734,7 +734,7 @@ SX_LIB_API void SPP_RenderSun(float4_t* sun_color)
 
 	if (PPSet::IDsTexs::Sun < 0 || !SGCore_LoadTexGetTex(PPSet::IDsTexs::Sun))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxpp: %s - sun texture is not init, process can not be started\n", gen_msg_location);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxpp: %s - sun texture is not init, process can not be started\n", GEN_MSG_LOCATION);
 		return;
 	}
 

@@ -8,8 +8,8 @@
 #include <common/array.h>
 
 extern report_func g_fnReportf;
-extern IDirect3DDevice9* DXDevice;
-extern D3DPRESENT_PARAMETERS D3DAPP;
+extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
 //структура описывающа€ движковые текстуры
 struct CreatedTexture

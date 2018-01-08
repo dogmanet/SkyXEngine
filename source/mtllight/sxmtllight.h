@@ -137,6 +137,7 @@ SX_LIB_API float SML_LigthsGettGCoefSizeDepth();	//!< возвращение к�
 //!@}
 
 SX_LIB_API void SML_LigthsClear();		//!< очистить список света
+SX_LIB_API void SML_LigthsClearIDArr();	//!< очистка всех идентификаторов просчетов во всех источниках света
 SX_LIB_API long SML_LigthsGetCount();	//!< общее количество света
 
 SX_LIB_API bool SML_LigthsGetExists(ID id);
@@ -902,6 +903,9 @@ SX_LIB_API void SML_MtlGetPS(ID id, char *szName);			//!< в name записыв
 
 SX_LIB_API float SML_MtlGetPenetration(ID id);
 SX_LIB_API void SML_MtlSetPenetration(ID id, float fPenetration);
+
+SX_LIB_API float SML_MtlGetHitChance(ID id);
+SX_LIB_API void SML_MtlSetHitChance(ID id, float fHitChance);
 
 //использование альфа теста для материала
 SX_LIB_API bool SML_MtlGetUsingAlphaTest(ID id);				//!< используется ли альфа тест для материала

@@ -30,7 +30,7 @@ report_func g_fnReportf = DefReport;
 StaticGeom* GeometryObj = 0;
 Green* GreenObj = 0;
 
-#define GEOM_PRECOND(retval) if(!GeometryObj || !GreenObj){g_fnReportf(-1, "%s - sxgeom is not init", gen_msg_location); return retval;}
+#define GEOM_PRECOND(retval) if(!GeometryObj || !GreenObj){g_fnReportf(-1, "%s - sxgeom is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -54,7 +54,7 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxgeom", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxgeom", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -73,7 +73,7 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxgeom", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxgeom", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SGeom_AKill()

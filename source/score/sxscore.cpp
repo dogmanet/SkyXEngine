@@ -16,7 +16,7 @@ report_func g_fnReportf = DefReport;
 
 MainSound* MSound = 0;
 
-#define SCORE_PRECOND(retval) if(!MSound){g_fnReportf(-1, "%s - sxsound is not init", gen_msg_location); return retval;}
+#define SCORE_PRECOND(retval) if(!MSound){g_fnReportf(-1, "%s - sxsound is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -40,7 +40,7 @@ SX_LIB_API void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxsound", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxsound", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -55,7 +55,7 @@ SX_LIB_API void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxsound", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxsound", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SSCore_AKill()

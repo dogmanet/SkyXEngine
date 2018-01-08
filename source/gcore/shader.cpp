@@ -1,508 +1,794 @@
 
 #include "shader.h"
 
-void LoadVertexShader(const char *path,ShaderVS* shader,D3DXMACRO* macro)
+CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader)
 {
-	ID3DXBuffer* tmpShader	= 0;
-	ID3DXBuffer* tmpError	= 0;
-	ID3DXConstantTable* tmpConstTable;
-	IDirect3DVertexShader9 *tmpVSShader;
+	CShaderFileCache *pSFC = new CShaderFileCache();
+	strcpy(pSFC->m_szName, pShader->m_szName);
+	strcpy(pSFC->m_szPath, pShader->m_szPath);
+	pSFC->m_iCountVar = pShader->m_iCountVar;
+	pSFC->m_pCode = pShader->m_pCode;
+	pSFC->m_pCode->AddRef();
+	memcpy(pSFC->m_aVarDesc, pShader->m_aVarDesc, sizeof(D3DXCONSTANT_DESC) * SXGC_SHADER_VAR_MAX_COUNT);
+	memcpy(pSFC->m_aMacros, pShader->m_aMacros, sizeof(D3DXMACRO) * SXGC_SHADER_COUNT_MACRO);
 
-	HRESULT hr;
+	return pSFC;
+}
 
-	hr = D3DXCompileShaderFromFile(
-									path,
-									macro,
-									0,
-									"main",
-									"vs_3_0",
-									SHADER_FLAGS,
-									&tmpShader,
-									&tmpError,
-									&tmpConstTable
-									);
+void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
+{
+	char szDirPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
+	szDir[0] = 0;
+	char szName[SXGC_SHADER_MAX_SIZE_NAME];
+	StrParsePathName(pShaderFileCache->m_szName, szDir, szName);
+	if (szDir[0] != 0)
+	{
+		sprintf(szDirPath, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir);
+		sprintf(szFullPath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szDir, pShaderFileCache->m_szName);
+		sprintf(szFullPathCache, "%s%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir, pShaderFileCache->m_szName);
+	}
+	else
+	{
+		sprintf(szDirPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
+		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), pShaderFileCache->m_szName);
+		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShaderFileCache->m_szName);
+	}
 
-		if(tmpError && tmpShader == 0)
+	CreateDirectory(szDirPath, 0);
+	//SHCreateDirectory
+
+	FILE *pFile = fopen(szFullPathCache, "wb");
+
+	uint32_t tLastModify = Core_0GetTimeLastModify(szFullPath);
+
+	fwrite(&tLastModify, sizeof(uint32_t), 1, pFile);
+
+	uint32_t iLen = strlen(pShaderFileCache->m_szName);
+	fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
+	fwrite((pShaderFileCache->m_szName), sizeof(char)* iLen, 1, pFile);
+
+	fwrite(&(pShaderFileCache->m_iCountVar), sizeof(uint32_t), 1, pFile);
+
+	for (int i = 0; i < pShaderFileCache->m_iCountVar; ++i)
+	{
+		uint32_t iLen = strlen(pShaderFileCache->m_aVarDesc[i].Name);
+		fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
+		fwrite((pShaderFileCache->m_aVarDesc[i].Name), sizeof(char)* iLen, 1, pFile);
+
+		fwrite(&(pShaderFileCache->m_aVarDesc[i].RegisterSet), sizeof(uint32_t), 1, pFile);
+		fwrite(&(pShaderFileCache->m_aVarDesc[i].RegisterIndex), sizeof(uint32_t), 1, pFile);
+		fwrite(&(pShaderFileCache->m_aVarDesc[i].RegisterCount), sizeof(uint32_t), 1, pFile);
+		fwrite(&(pShaderFileCache->m_aVarDesc[i].Class), sizeof(uint32_t), 1, pFile);
+		fwrite(&(pShaderFileCache->m_aVarDesc[i].Type), sizeof(uint32_t), 1, pFile);
+	}
+
+	uint32_t iCountMacros = 0;
+	for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; ++i)
+	{
+		if ((pShaderFileCache->m_aMacros[i].Name && strlen(pShaderFileCache->m_aMacros[i].Name) > 0))
+			++iCountMacros;
+	}
+
+	fwrite(&iCountMacros, sizeof(uint32_t), 1, pFile);
+
+	if (iCountMacros > 0)
+	{
+		for (int i = 0; i < iCountMacros; ++i)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed to load shader [%s], msg: %s\n", gen_msg_location, path, (char*)tmpError->GetBufferPointer());
+			if (!(pShaderFileCache->m_aMacros[i].Name && strlen(pShaderFileCache->m_aMacros[i].Name) > 0))
+				break;
+
+			uint32_t iLen = strlen(pShaderFileCache->m_aMacros[i].Name);
+			fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
+			fwrite((pShaderFileCache->m_aMacros[i].Name), sizeof(char)* iLen, 1, pFile);
+
+			iLen = strlen(pShaderFileCache->m_aMacros[i].Definition);
+			fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
+			fwrite((pShaderFileCache->m_aMacros[i].Definition), sizeof(char)* iLen, 1, pFile);
+		}
+	}
+
+	uint32_t iSizeBinCode = pShaderFileCache->m_pCode->GetBufferSize();
+	fwrite(&iSizeBinCode, sizeof(uint32_t), 1, pFile);
+	fwrite(pShaderFileCache->m_pCode->GetBufferPointer(), iSizeBinCode, 1, pFile);
+
+	fclose(pFile);
+}
+
+CShaderFileCache* CreateShaderFileCacheFormFile(const char *szPath)
+{
+	if (!Core_0FileExists(szPath))
+		return 0;
+
+	CShaderFileCache *pSFC = new CShaderFileCache();
+
+	FILE *pFile = fopen(szPath, "rb");
+
+	uint32_t tLastModify = 0;
+
+	fread(&(pSFC->m_uiDate), sizeof(uint32_t), 1, pFile);
+
+	uint32_t iLen = 0;
+	fread(&(iLen), sizeof(uint32_t), 1, pFile);
+	fread((pSFC->m_szName), sizeof(char)* iLen, 1, pFile);
+
+	fread(&(pSFC->m_iCountVar), sizeof(uint32_t), 1, pFile);
+
+	for (int i = 0; i < pSFC->m_iCountVar; ++i)
+	{
+		uint32_t iLen = 0;
+		fread(&(iLen), sizeof(uint32_t), 1, pFile);
+		pSFC->m_aVarDesc[i].Name = new const char[iLen + 1];
+		ZeroMemory((void*)(pSFC->m_aVarDesc[i].Name), iLen + 1);
+		fread((void*)(pSFC->m_aVarDesc[i].Name), sizeof(char)* iLen, 1, pFile);
+
+		fread(&(pSFC->m_aVarDesc[i].RegisterSet), sizeof(uint32_t), 1, pFile);
+		fread(&(pSFC->m_aVarDesc[i].RegisterIndex), sizeof(uint32_t), 1, pFile);
+		fread(&(pSFC->m_aVarDesc[i].RegisterCount), sizeof(uint32_t), 1, pFile);
+		fread(&(pSFC->m_aVarDesc[i].Class), sizeof(uint32_t), 1, pFile);
+		fread(&(pSFC->m_aVarDesc[i].Type), sizeof(uint32_t), 1, pFile);
+	}
+
+	uint32_t iCountMacros = 0;
+	fread(&iCountMacros, sizeof(uint32_t), 1, pFile);
+
+	for (int i = 0; i < iCountMacros; ++i)
+	{
+		uint32_t iLen = 0;
+		fread(&(iLen), sizeof(uint32_t), 1, pFile);
+
+		pSFC->m_aMacros[i].Name = new const char[iLen + 1];
+		ZeroMemory((void*)(pSFC->m_aMacros[i].Name), iLen + 1);
+
+		fread((void*)(pSFC->m_aMacros[i].Name), sizeof(char)* iLen, 1, pFile);
+
+
+		iLen = 0;
+		fread(&(iLen), sizeof(uint32_t), 1, pFile);
+
+		pSFC->m_aMacros[i].Definition = new const char[iLen + 1];
+		ZeroMemory((void*)(pSFC->m_aMacros[i].Definition), iLen + 1);
+
+		fread((void*)(pSFC->m_aMacros[i].Definition), sizeof(char)* iLen, 1, pFile);
+	}
+
+	uint32_t iSizeBinCode;
+	fread(&iSizeBinCode, sizeof(uint32_t), 1, pFile);
+
+	D3DXCreateBuffer(iSizeBinCode, &(pSFC->m_pCode));
+	fread(pSFC->m_pCode->GetBufferPointer(), iSizeBinCode, 1, pFile);
+
+	fclose(pFile);
+
+	return pSFC;
+}
+
+uint32_t GetTimeShaderFileCache(const char *szPath)
+{
+	if (!Core_0FileExists(szPath))
+		return 0;
+
+	FILE *pFile = fopen(szPath, "rb");
+
+	uint32_t tLastModify = 0;
+	fread(&tLastModify, sizeof(uint32_t), 1, pFile);
+	fclose(pFile);
+
+	return tLastModify;
+}
+
+//**************************************************************************
+
+void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
+{
+	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
+	szDir[0] = 0;
+	char szName[SXGC_SHADER_MAX_SIZE_NAME];
+	StrParsePathName(szPath, szDir, szName);
+	if (szDir[0] != 0)
+	{
+		sprintf(szFullPath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szDir, szPath);
+		sprintf(szFullPathCache, "%s%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir, pShader->m_szName);
+	}
+	else
+	{
+		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szPath);
+		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
+	}
+
+#ifndef _DEBUG
+	if (Core_0FileExists(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == Core_0GetTimeLastModify(szFullPath))
+	{
+		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
+
+		pShader->m_iCountVar = pSFC->m_iCountVar;
+		//strcpy(pShader->m_szName, pSFC->m_szName);
+		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC) * SXGC_SHADER_VAR_MAX_COUNT);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(D3DXMACRO) * SXGC_SHADER_COUNT_MACRO);
+		pShader->m_pCode = pSFC->m_pCode;
+		pShader->m_pCode->AddRef();
+
+		HRESULT hr = g_pDXDevice->CreateVertexShader(
+			(DWORD*)pShader->m_pCode->GetBufferPointer(),
+			&(pShader->m_pVertexShader)
+			);
+		if (FAILED(hr))
+		{
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			return;
+		}
+
+		mem_delete(pSFC);
+	}
+	else
+	{
+#endif
+		ID3DXBuffer *pBufShader = 0;
+		ID3DXBuffer *pBufError = 0;
+		ID3DXConstantTable *pConstTable;
+		IDirect3DVertexShader9 *pVertexShader;
+		D3DXHANDLE aHandles[SXGC_SHADER_VAR_MAX_COUNT];
+
+		HRESULT hr = D3DXCompileShaderFromFile(
+			szFullPath,
+			aMacro,
+			0,
+			"main",
+			"vs_3_0",
+			SHADER_FLAGS,
+			&pBufShader,
+			&pBufError,
+			&pConstTable
+			);
+
+		if (pBufError && pBufShader == 0)
+		{
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed to load vertex shader [%s], msg: %s\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
 			return;
 		}
 
 		//!!!проанализировать
-		if(FAILED(hr))
+		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "{SGCORE] %s - download function shader fails, path [%s]", gen_msg_location, path);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function vertex shader fails, path [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
-	hr = DXDevice->CreateVertexShader(
-									(DWORD*)tmpShader->GetBufferPointer(),
-									&tmpVSShader
-									);
-		if(FAILED(hr))
+		hr = g_pDXDevice->CreateVertexShader(
+			(DWORD*)pBufShader->GetBufferPointer(),
+			&pVertexShader
+			);
+
+		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error creating shader [%s]", gen_msg_location, path);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
 		D3DXCONSTANTTABLE_DESC desc;
-		tmpConstTable->GetDesc(&desc);
+		pConstTable->GetDesc(&desc);
 
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error, count variable in vertex shader [%s] more standart [%d]", gen_msg_location, path, SXGC_SHADER_VAR_MAX_COUNT);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in vertex shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
 			return;
 		}
 
-		for(int i=0;i<desc.Constants;i++)
+		for (int i = 0; i < desc.Constants; i++)
 		{
-			shader->ArrHandle[i] = tmpConstTable->GetConstant(0,i);
+			aHandles[i] = pConstTable->GetConstant(0, i);
 
 			UINT count = 0;
-			tmpConstTable->GetConstantDesc(shader->ArrHandle[i],&(shader->ArrConst[i]),&count);
+			pConstTable->GetConstantDesc(aHandles[i], &(pShader->m_aVarDesc[i]), &count);
+			int qwert = 0;
 		}
 
-	shader->CountConst = desc.Constants;
-	shader->ConstTable = tmpConstTable;
-	shader->VertexShader = tmpVSShader;
+		pShader->m_pCode = pBufShader;
+		pShader->m_iCountVar = desc.Constants;
+		//pShader->m_pConstTable = tmpConstTable;
+		pShader->m_pVertexShader = pVertexShader;
 
-		if(macro)
+		if (aMacro)
 		{
 			int tmpCountArrM = 0;
 
-			for (int i = 0; i<SXGC_SHADER_COUNT_MACRO; i++)
+			for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
 			{
 				if (i >= SXGC_SHADER_COUNT_MACRO)
 				{
-					g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error, count macro in vertex shader [%s] more standart [%d]", gen_msg_location, path, SXGC_SHADER_COUNT_MACRO);
+					g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count macro in vertex shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_COUNT_MACRO);
 					return;
 				}
-				
-				if(macro[i].Name == 0)
+
+				if (aMacro[i].Name == 0)
 				{
 					tmpCountArrM = i;
 					break;
 				}
 			}
 
-			for(int i=0;i<tmpCountArrM;i++)
+			for (int i = 0; i < tmpCountArrM; i++)
 			{
-				shader->ArrMacro[i] = macro[i];
+				pShader->m_aMacros[i] = aMacro[i];
 			}
 
-			shader->ArrMacro[tmpCountArrM].Name = 0;
-			shader->ArrMacro[tmpCountArrM].Definition = 0;
+			pShader->m_aMacros[tmpCountArrM].Name = 0;
+			pShader->m_aMacros[tmpCountArrM].Definition = 0;
 		}
 		else
 		{
-			shader->ArrMacro[0].Name = 0;
-			shader->ArrMacro[0].Definition = 0;
+			pShader->m_aMacros[0].Name = 0;
+			pShader->m_aMacros[0].Definition = 0;
 		}
+
+		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
+		SaveShaderFileCache(pSFC);
+		mem_delete(pSFC);
+
+#ifndef _DEBUG
+	}
+#endif
 }
 
-void LoadPixelShader(const char *path,ShaderPS* shader,D3DXMACRO* macro)
+void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 {
-	ID3DXBuffer* tmpShader	= 0;
-	ID3DXBuffer* tmpError	= 0;
-	ID3DXConstantTable* tmpConstTable;
-	IDirect3DPixelShader9 *tmpPSShader;
+	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
+	szDir[0] = 0;
+	char szName[SXGC_SHADER_MAX_SIZE_NAME];
+	StrParsePathName(szPath, szDir, szName);
+	if (szDir[0] != 0)
+	{
+		sprintf(szFullPath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szDir, szPath);
+		sprintf(szFullPathCache, "%s%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir, pShader->m_szName);
+	}
+	else
+	{
+		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szPath);
+		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
+	}
 
-	HRESULT hr;
+#ifndef _DEBUG
+	if (Core_0FileExists(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == Core_0GetTimeLastModify(szFullPath))
+	{
+		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 
-	hr = D3DXCompileShaderFromFile(
-									path,
-									macro,
-									0,
-									"main",
-									"ps_3_0",
-									SHADER_FLAGS,
-									&tmpShader,
-									&tmpError,
-									&tmpConstTable
-									);
+		pShader->m_iCountVar = pSFC->m_iCountVar;
+		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(D3DXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		pShader->m_pCode = pSFC->m_pCode;
+		pShader->m_pCode->AddRef();
 
-		if(tmpError && tmpShader == 0)
+		HRESULT hr = g_pDXDevice->CreatePixelShader(
+			(DWORD*)pShader->m_pCode->GetBufferPointer(),
+			&(pShader->m_pPixelShader)
+			);
+		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - failed to load shader [%s], msg: %s\n", gen_msg_location, path, (char*)tmpError->GetBufferPointer());
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating pixel shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			return;
+		}
+
+		mem_delete(pSFC);
+	}
+	else
+	{
+#endif
+		ID3DXBuffer *pBufShader = 0;
+		ID3DXBuffer *pBufError = 0;
+		ID3DXConstantTable *pConstTable;
+		IDirect3DPixelShader9 *pPixelShader;
+		D3DXHANDLE aHandles[SXGC_SHADER_VAR_MAX_COUNT];
+
+		HRESULT hr = D3DXCompileShaderFromFile(
+			szFullPath,
+			aMacro,
+			0,
+			"main",
+			"ps_3_0",
+			SHADER_FLAGS,
+			&pBufShader,
+			&pBufError,
+			&pConstTable
+			);
+
+		if (pBufError && pBufShader == 0)
+		{
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed to load pixel shader [%s], msg: %s\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
 			return;
 		}
 
 		//!!!проанализировать
-		if(FAILED(hr))
+		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - download function shader fails, path [%s]", gen_msg_location, path);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function pixel shader fails, path [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
-	hr = DXDevice->CreatePixelShader(
-									(DWORD*)tmpShader->GetBufferPointer(),
-									&tmpPSShader
-									);
-		if(FAILED(hr))
+		hr = g_pDXDevice->CreatePixelShader(
+			(DWORD*)pBufShader->GetBufferPointer(),
+			&pPixelShader
+			);
+
+		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error creating shader [%s]", gen_msg_location, path);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating pixel shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
 		D3DXCONSTANTTABLE_DESC desc;
-		tmpConstTable->GetDesc(&desc);
-		
+		pConstTable->GetDesc(&desc);
+
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error, count variable in pixel shader [%s] more standart [%d]", gen_msg_location, path, SXGC_SHADER_VAR_MAX_COUNT);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in pixel shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
 			return;
 		}
 
 
-		for(int i=0;i<desc.Constants;i++)
+		for (int i = 0; i < desc.Constants; i++)
 		{
-			shader->ArrHandle[i] = tmpConstTable->GetConstant(0,i);
+			aHandles[i] = pConstTable->GetConstant(0, i);
 
 			UINT count = 0;
-			tmpConstTable->GetConstantDesc(shader->ArrHandle[i],&(shader->ArrConst[i]),&count);
+			pConstTable->GetConstantDesc(aHandles[i], &(pShader->m_aVarDesc[i]), &count);
 		}
 
-	shader->CountConst = desc.Constants;
-	shader->ConstTable = tmpConstTable;
-	shader->PixelShader = tmpPSShader;
+		pShader->m_pCode = pBufShader;
+		pShader->m_iCountVar = desc.Constants;
+		//pShader->m_pConstTable = tmpConstTable;
+		pShader->m_pPixelShader = pPixelShader;
 
-		if(macro)
+		if (aMacro)
 		{
 			int tmpCountArrM = 0;
 
-			for (int i = 0; i<SXGC_SHADER_COUNT_MACRO; i++)
+			for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
 			{
 				if (i >= SXGC_SHADER_COUNT_MACRO)
 				{
-					g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - error, count macro in vertex shader [%s] more standart [%d]", gen_msg_location, path, SXGC_SHADER_COUNT_MACRO);
+					g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count macro in pixel shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_COUNT_MACRO);
 					return;
 				}
 
-				if(macro[i].Name == 0)
+				if (aMacro[i].Name == 0)
 				{
 					tmpCountArrM = i;
 					break;
 				}
 			}
 
-			for(int i=0;i<tmpCountArrM;i++)
+			for (int i = 0; i < tmpCountArrM; i++)
 			{
-				shader->ArrMacro[i] = macro[i];
+				pShader->m_aMacros[i] = aMacro[i];
 			}
 
-			shader->ArrMacro[tmpCountArrM].Name = 0;
-			shader->ArrMacro[tmpCountArrM].Definition = 0;
+			pShader->m_aMacros[tmpCountArrM].Name = 0;
+			pShader->m_aMacros[tmpCountArrM].Definition = 0;
 		}
 		else
 		{
-			shader->ArrMacro[0].Name = 0;
-			shader->ArrMacro[0].Definition = 0;
+			pShader->m_aMacros[0].Name = 0;
+			pShader->m_aMacros[0].Definition = 0;
 		}
+
+		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
+		SaveShaderFileCache(pSFC);
+		mem_delete(pSFC);
+
+#ifndef _DEBUG
+	}
+#endif
 }
 
+//**************************************************************************
 
-
-ShaderManager::ShaderManager()
+CShaderManager::CShaderManager()
 {
 	
 }
 
-ShaderManager::~ShaderManager()
+CShaderManager::~CShaderManager()
 {
-	for (DWORD i = 0; i < ArrVS.size(); i++)
+	for (int i = 0; i < m_aVS.size(); ++i)
 	{
-		mem_delete(ArrVS[i]);
+		mem_delete(m_aVS[i]);
 	}
 			
 
-	for (DWORD i = 0; i < ArrPS.size(); i++)
+	for (int i = 0; i < m_aPS.size(); ++i)
 	{
-		mem_delete(ArrPS[i]);
+		mem_delete(m_aPS[i]);
 	}
 			
-	ArrVS.clear();
-	ArrPS.clear();
+	m_aVS.clear();
+	m_aPS.clear();
 }
 
-void ShaderManager::ReloadAll()
+void CShaderManager::reloadAll()
 {
-	Array<ShaderVS*> tmpArrVS;
-	Array<ShaderPS*> tmpArrPS;
+	Array<CShaderVS*> aVS;
+	Array<CShaderPS*> aPS;
 
-	for (int i = 0; i<ArrVS.size(); i++)
+	for (int i = 0; i < m_aVS.size(); i++)
 	{
-		tmpArrVS.push_back(ArrVS[i]);
+		aVS.push_back(m_aVS[i]);
 	}
 
-	for (int i = 0; i<ArrPS.size(); i++)
+	for (int i = 0; i<m_aPS.size(); i++)
 	{
-		tmpArrPS.push_back(ArrPS[i]);
+		aPS.push_back(m_aPS[i]);
 	}
 
-	ArrVS.clear();
-	ArrPS.clear();
+	m_aVS.clear();
+	m_aPS.clear();
 
-	for (int i = 0; i<tmpArrVS.size(); i++)
+	for (int i = 0; i<aVS.size(); i++)
 	{
-		Load(SHADER_TYPE_VERTEX, tmpArrVS[i]->Path, tmpArrVS[i]->Name, SHADER_CHECKDOUBLE_NONE, tmpArrVS[i]->ArrMacro);
+		load(SHADER_TYPE_VERTEX, aVS[i]->m_szPath, aVS[i]->m_szName, SHADER_CHECKDOUBLE_NONE, aVS[i]->m_aMacros);
 	}
 
-	for (int i = 0; i<tmpArrPS.size(); i++)
+	for (int i = 0; i<aPS.size(); i++)
 	{
-		Load(SHADER_TYPE_PIXEL, tmpArrPS[i]->Path, tmpArrPS[i]->Name, SHADER_CHECKDOUBLE_NONE, tmpArrPS[i]->ArrMacro);
+		load(SHADER_TYPE_PIXEL, aPS[i]->m_szPath, aPS[i]->m_szName, SHADER_CHECKDOUBLE_NONE, aPS[i]->m_aMacros);
 	}
 }
 
-ID ShaderManager::IsExistPath(SHADER_TYPE type_shader, const char* path)
+ID CShaderManager::existsPath(SHADER_TYPE type, const char *szPath)
 {
-	if (type_shader == SHADER_TYPE_VERTEX)
+	if (type == SHADER_TYPE_VERTEX)
 	{
-		for (int i = 0; i<ArrVS.size(); i++)
+		for (int i = 0; i<m_aVS.size(); ++i)
 		{
-			if (strcmp(ArrVS[i]->Path, path) == 0)
+			if (strcmp(m_aVS[i]->m_szPath, szPath) == 0)
 				return i;
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if (type == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<ArrPS.size(); i++)
+		for (int i = 0; i<m_aPS.size(); ++i)
 		{
-			if (strcmp(ArrPS[i]->Path, path) == 0)
+			if (strcmp(m_aPS[i]->m_szPath, szPath) == 0)
 				return i;
 		}
 	}
 	return -1;
 }
 
-ID ShaderManager::IsExistName(SHADER_TYPE type_shader, const char* name)
+ID CShaderManager::existsName(SHADER_TYPE type_shader, const char *szName)
 {
+	if (!isValidateTypeName(type_shader, szName))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		return -1;
+	}
+
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		for (int i = 0; i<ArrVS.size(); i++)
+		for (int i = 0; i<m_aVS.size(); ++i)
 		{
-			if (strcmp(ArrVS[i]->Name, name) == 0)
+			if (strcmp(m_aVS[i]->m_szName, szName) == 0)
 				return i;
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<ArrPS.size(); i++)
+		for (int i = 0; i<m_aPS.size(); ++i)
 		{
-			if (strcmp(ArrPS[i]->Name, name) == 0)
+			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
 				return i;
 		}
 	}
 	return -1;
 }
 
-bool ShaderManager::FileExists(const char* path)
+bool CShaderManager::isValidateTypeName(SHADER_TYPE type, const char *szName)
+{
+	char szEndStr[4];
+	sprintf(szEndStr, "%s", szName + (strlen(szName) - 3));
+	szEndStr[3] = 0;
+
+	return (type == SHADER_TYPE_VERTEX && stricmp(szEndStr, ".vs") == 0) || (type == SHADER_TYPE_PIXEL && stricmp(szEndStr, ".ps") == 0);
+}
+
+bool CShaderManager::existsFile(const char *szPath)
 {
 	char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
 	tmpspath[0] = 0;
 	char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-	StrParsePathName(path, tmpspath, tmpname);
+	StrParsePathName(szPath, tmpspath, tmpname);
 
 	if (tmpspath[0] != 0)
-		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, path);
+		sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, szPath);
 	else
-		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), path);
+		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szPath);
 
 	return Core_0FileExists(tmppath);
 }
 
-ID ShaderManager::Load(SHADER_TYPE type_shader, const char* path, const char* name, SHADER_CHECKDOUBLE is_check_double, D3DXMACRO* macro)
+ID CShaderManager::load(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacro)
 {
+	if (!isValidateTypeName(type_shader, szName))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		return -1;
+	}
+
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		ID id = -1;
 
-		if (is_check_double == SHADER_CHECKDOUBLE_PATH)
-			id = IsExistPath(type_shader, path);
-		else if (is_check_double == SHADER_CHECKDOUBLE_NAME)
-			id = IsExistName(type_shader, name);
+		if (check_double == SHADER_CHECKDOUBLE_PATH)
+			id = existsPath(type_shader, szPath);
+		else if (check_double == SHADER_CHECKDOUBLE_NAME)
+			id = existsName(type_shader, szName);
 
 		if (id == -1)
 		{
-			char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
-			tmpspath[0] = 0;
-			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			StrParsePathName(path, tmpspath, tmpname);
-
-			ShaderVS* shader = new ShaderVS();
-			if (tmpspath[0] != 0)
-				sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, path);
-			else
-				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), path);
-			LoadVertexShader(tmppath, shader, macro);
-			sprintf(shader->Name, "%s", name);
-			sprintf(shader->Path, "%s", path);
-			ArrVS.push_back(shader);
-			id = ArrVS.size() - 1;
-			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is loaded, name[%s], id = [%d]\n", path, ArrVS[id]->Name, id);
+			CShaderVS *pShader = new CShaderVS();
+			sprintf(pShader->m_szName, "%s", szName);
+			sprintf(pShader->m_szPath, "%s", szPath);
+			LoadVertexShader(szPath, pShader, aMacro);
+			
+			m_aVS.push_back(pShader);
+			id = m_aVS.size() - 1;
+			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is loaded, name[%s], id = [%d]\n", SX_LIB_NAME, path, m_aVS[id]->m_szName, id);
 			return id;
 		}
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sgcore: shader [%s] is detected, name[%s], id = [%d]\n", path, ArrVS[id]->Name, id);
+			//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader [%s] is detected, name[%s], id = [%d]\n", SX_LIB_NAME, path, m_aVS[id]->m_szName, id);
 			return id;
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		ID id = -1;
-		if (is_check_double == SHADER_CHECKDOUBLE_PATH)
-			id = IsExistPath(type_shader, path);
-		else if (is_check_double == SHADER_CHECKDOUBLE_NAME)
-			id = IsExistName(type_shader, name);
+		if (check_double == SHADER_CHECKDOUBLE_PATH)
+			id = existsPath(type_shader, szPath);
+		else if (check_double == SHADER_CHECKDOUBLE_NAME)
+			id = existsName(type_shader, szName);
 
 		if (id == -1)
 		{
-			char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
-			tmpspath[0] = 0;
-			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			StrParsePathName(path, tmpspath, tmpname);
-			sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, path);
-			ShaderPS* shader = /*mem_new(ShaderPS);//*/new ShaderPS();
-			LoadPixelShader(tmppath, shader, macro);
-			sprintf(shader->Name, "%s", name);
-			sprintf(shader->Path, "%s", path);
-			ArrPS.push_back(shader);
-			id = ArrPS.size() - 1;
-			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is loaded, name[%s], id [%d]\n", path, ArrPS[id]->Name, id);
+			CShaderPS *pShader = new CShaderPS();
+			sprintf(pShader->m_szName, "%s", szName);
+			sprintf(pShader->m_szPath, "%s", szPath);
+			LoadPixelShader(szPath, pShader, aMacro);
+			
+			m_aPS.push_back(pShader);
+			id = m_aPS.size() - 1;
+			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is loaded, name[%s], id [%d]\n", SX_LIB_NAME, path, m_aPS[id]->m_szName, id);
 			return id;
 		}
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sgcore: shader [%s] is detected, name[%s], id [%d]\n", path, ArrPS[id]->Name, id);
+			//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader [%s] is detected, name[%s], id [%d]\n", SX_LIB_NAME, path, m_aPS[id]->m_szName, id);
 			return id;
 		}
 	}
 	return -1;
 }
 
-void ShaderManager::Update(SHADER_TYPE type_shader, const char* name, D3DXMACRO* macro)
+void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
 {
-	bool isupdate = false;
+	if (!isValidateTypeName(type_shader, szName))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		return;
+	}
+
+	bool isUpdate = false;
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		for (int i = 0; i<ArrVS.size(); i++)
+		for (int i = 0; i<m_aVS.size(); i++)
 		{
-			if (strcmp(ArrVS[i]->Name, name) == 0)
+			if (strcmp(m_aVS[i]->m_szName, szName) == 0)
 			{
-				ShaderVS* shader = new ShaderVS();
-				LoadVertexShader(ArrVS[i]->Path, shader, macro);
+				CShaderVS *pShader = new CShaderVS();
+				LoadVertexShader(m_aVS[i]->m_szPath, pShader, m_aVS[i]->m_aMacros);
 
-				mem_release(ArrVS[i]->VertexShader);
-				mem_release(ArrVS[i]->ConstTable);
+				mem_release(m_aVS[i]->m_pVertexShader);
+				//mem_release(m_aVS[i]->m_pConstTable);
 
-				mem_delete(ArrVS[i]);
-				ArrVS[i] = shader;
-				isupdate = true;
+				mem_delete(m_aVS[i]);
+				m_aVS[i] = pShader;
+				isUpdate = true;
 			}
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<ArrPS.size(); i++)
+		for (int i = 0; i<m_aPS.size(); i++)
 		{
-			if (strcmp(ArrPS[i]->Name, name) == 0)
+			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
 			{
-				ShaderPS* shader = new ShaderPS();
-				LoadPixelShader(ArrPS[i]->Path, shader, macro);
+				CShaderPS *pShader = new CShaderPS();
+				LoadPixelShader(m_aPS[i]->m_szPath, pShader, m_aPS[i]->m_aMacros);
 
-				mem_release(ArrPS[i]->PixelShader);
-				mem_release(ArrPS[i]->ConstTable);
+				mem_release(m_aPS[i]->m_pPixelShader);
+				//mem_release(m_aPS[i]->m_pConstTable);
 
-				mem_delete(ArrPS[i]);
-				ArrPS[i] = shader;
-				isupdate = true;
+				mem_delete(m_aPS[i]);
+				m_aPS[i] = pShader;
+				isUpdate = true;
 			}
 		}
 	}
 
-	if (!isupdate)
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SGCORE] %s - shader [%s] is not detected", gen_msg_location, name);
-	else
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", name);
+	if (!isUpdate)
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - shader [%s] is not detected", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+	/*else
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is update", SX_LIB_NAME, name);*/
 }
 
-void ShaderManager::Update(SHADER_TYPE type_shader, ID id, D3DXMACRO* macro)
+void CShaderManager::update(SHADER_TYPE type_shader, ID id)
 {
-	bool isupdate = false;
+	bool isUpdate = false;
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		if (ArrVS.size() > id && ArrVS[id])
+		if (m_aVS.size() > id && m_aVS[id])
 		{
-			char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
-			tmpspath[0] = 0;
-			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			StrParsePathName(ArrVS[id]->Path, tmpspath, tmpname);
+			CShaderVS *pShader = new CShaderVS();
+			
+			LoadVertexShader(m_aVS[id]->m_szPath, pShader, pShader->m_aMacros);
+			sprintf(pShader->m_szName, "%s", m_aVS[id]->m_szName);
+			sprintf(pShader->m_szPath, "%s", m_aVS[id]->m_szPath);
 
-			ShaderVS* shader = /*mem_new(ShaderVS);//*/new ShaderVS();
-			if (tmpspath[0] != 0)
-				sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, ArrVS[id]->Path);
-			else
-				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), ArrVS[id]->Path);
+			//mem_release(m_aVS[id]->m_pVertexShader);
+			//mem_release(m_aVS[id]->m_pConstTable);
 
-			LoadVertexShader(tmppath, shader, macro);
-			sprintf(shader->Name, "%s", ArrVS[id]->Name);
-			sprintf(shader->Path, "%s", ArrVS[id]->Path);
-
-			mem_release(ArrVS[id]->VertexShader);
-			mem_release(ArrVS[id]->ConstTable);
-
-			mem_delete(ArrVS[id]);
-			ArrVS[id] = shader;
-			isupdate = true;
+			mem_delete(m_aVS[id]);
+			m_aVS[id] = pShader;
+			isUpdate = true;
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (ArrPS.size() > id  && ArrVS[id])
+		if (m_aPS.size() > id  && m_aVS[id])
 		{
-			char tmppath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-			char tmpspath[SXGC_SHADER_MAX_SIZE_DIR];
-			tmpspath[0] = 0;
-			char tmpname[SXGC_SHADER_MAX_SIZE_NAME];
-			StrParsePathName(ArrPS[id]->Path, tmpspath, tmpname);
+			CShaderPS *pShader = new CShaderPS();
 
-			ShaderPS* shader = /*mem_new(ShaderVS);//*/new ShaderPS();
-			if (tmpspath[0] != 0)
-				sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmpspath, ArrPS[id]->Path);
-			else
-				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), ArrPS[id]->Path);
+			LoadPixelShader(m_aPS[id]->m_szPath, pShader, m_aPS[id]->m_aMacros);
 
-			LoadPixelShader(tmppath, shader, macro);
+			sprintf(pShader->m_szName, "%s", m_aPS[id]->m_szName);
+			sprintf(pShader->m_szPath, "%s", m_aPS[id]->m_szPath);
 
-			sprintf(shader->Name, "%s", ArrPS[id]->Name);
-			sprintf(shader->Path, "%s", ArrPS[id]->Path);
+			//mem_release(m_aPS[id]->m_pPixelShader);
+			//mem_release(m_aPS[id]->m_pConstTable);
 
-			mem_release(ArrPS[id]->PixelShader);
-			mem_release(ArrPS[id]->ConstTable);
-
-			mem_delete(ArrPS[id]);
-			ArrPS[id] = shader;
-			isupdate = true;
+			mem_delete(m_aPS[id]);
+			m_aPS[id] = pShader;
+			isUpdate = true;
 		}
 	}
 
-	if (!isupdate)
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, " [SGCORE] %s - shader [%s] is not detected", gen_msg_location, ArrPS[id]->Name);
-	else
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: shader [%s] is update", ArrPS[id]->Name);
+	if (!isUpdate)
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - shader_id [%s] is not detected", SX_LIB_NAME, GEN_MSG_LOCATION, id);
+	/*else
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is update", SX_LIB_NAME, m_aPS[id]->m_szName);*/
 }
 
-ID ShaderManager::GetID(SHADER_TYPE type_shader, const char* shader)
+ID CShaderManager::getID(SHADER_TYPE type_shader, const char *szName)
 {
+	if (!isValidateTypeName(type_shader, szName))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		return -1;
+	}
+
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		for (int i = 0; i<ArrVS.size(); i++)
+		for (int i = 0; i < m_aVS.size(); ++i)
 		{
-			if (strcmp(ArrVS[i]->Name, shader) == 0)
+			if (strcmp(m_aVS[i]->m_szName, szName) == 0)
 			{
 				return i;
 			}
@@ -510,9 +796,9 @@ ID ShaderManager::GetID(SHADER_TYPE type_shader, const char* shader)
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<ArrPS.size(); i++)
+		for (int i = 0; i<m_aPS.size(); ++i)
 		{
-			if (strcmp(ArrPS[i]->Name, shader) == 0)
+			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
 			{
 				return i;
 			}
@@ -521,16 +807,22 @@ ID ShaderManager::GetID(SHADER_TYPE type_shader, const char* shader)
 	return -1;
 }
 
-void ShaderManager::Bind(SHADER_TYPE type_shader, const char* shader)
+void CShaderManager::bind(SHADER_TYPE type_shader, const char *szName)
 {
+	if (!isValidateTypeName(type_shader, szName))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		return;
+	}
+
 	bool isbind = false;
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		for (int i = 0; i<ArrVS.size(); i++)
+		for (int i = 0; i < m_aVS.size(); ++i)
 		{
-			if (strcmp(ArrVS[i]->Name, shader) == 0)
+			if (strcmp(m_aVS[i]->m_szName, szName) == 0)
 			{
-				DXDevice->SetVertexShader(ArrVS[i]->VertexShader);
+				g_pDXDevice->SetVertexShader(m_aVS[i]->m_pVertexShader);
 				isbind = true;
 				break;
 			}
@@ -538,11 +830,11 @@ void ShaderManager::Bind(SHADER_TYPE type_shader, const char* shader)
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<ArrPS.size(); i++)
+		for (int i = 0; i < m_aPS.size(); ++i)
 		{
-			if (strcmp(ArrPS[i]->Name, shader) == 0)
+			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
 			{
-				DXDevice->SetPixelShader(ArrPS[i]->PixelShader);
+				g_pDXDevice->SetPixelShader(m_aPS[i]->m_pPixelShader);
 				isbind = true;
 				break;
 			}
@@ -550,140 +842,78 @@ void ShaderManager::Bind(SHADER_TYPE type_shader, const char* shader)
 	}
 
 	if (!isbind)
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: shader not bind, type [%d], name [%s]\n", type_shader, shader);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader not bind, type [%d], name [%s]\n", SX_LIB_NAME, type_shader, szName);
 }
 
-void ShaderManager::Bind(SHADER_TYPE type_shader, ID shader)
+void CShaderManager::bind(SHADER_TYPE type_shader, ID idShader)
 {
-	bool isbind = false;
+	bool isBind = false;
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		if (shader < ArrVS.size())
+		if (idShader < m_aVS.size())
 		{
-			isbind = true;
-			DXDevice->SetVertexShader(ArrVS[shader]->VertexShader);
+			isBind = true;
+			g_pDXDevice->SetVertexShader(m_aVS[idShader]->m_pVertexShader);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (shader < ArrPS.size())
+		if (idShader < m_aPS.size())
 		{
-			isbind = true;
-			DXDevice->SetPixelShader(ArrPS[shader]->PixelShader);
+			isBind = true;
+			g_pDXDevice->SetPixelShader(m_aPS[idShader]->m_pPixelShader);
 		}
 	}
 
-	if (!isbind)
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: shader not bind, type [%d], id [%d]\n", type_shader, shader);
+	if (!isBind)
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader not bind, type [%d], id [%d]\n", SX_LIB_NAME, type_shader, idShader);
 }
 
-void ShaderManager::UnBind()
+void CShaderManager::unbind()
 {
-	DXDevice->SetVertexShader(0);
-	DXDevice->SetPixelShader(0);
+	g_pDXDevice->SetVertexShader(0);
+	g_pDXDevice->SetPixelShader(0);
 }
 
 
-void ShaderManager::SetValueRegisterF(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
+void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountFloat4)
 {
+	if (!isValidateTypeName(type_shader, szNameShader))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szNameShader);
+		return;
+	}
+
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		int num_shader = -1;
 		int num_var = -1;
 
-		for (int i = 0; i<ArrVS.size(); i++)
+		for (int i = 0; i<m_aVS.size(); i++)
 		{
-			if (strcmp(ArrVS[i]->Name, name_shader) == 0)
+			if (strcmp(m_aVS[i]->m_szName, szNameShader) == 0)
 			{
 				num_shader = i;
-				i = ArrVS.size();
-				for (int k = 0; k<ArrVS[num_shader]->CountConst; k++)
+				i = m_aVS.size();
+				for (int k = 0; k<m_aVS[num_shader]->m_iCountVar; k++)
 				{
-					if (strcmp(ArrVS[num_shader]->ArrConst[k].Name, name_var) == 0)
+					if (strcmp(m_aVS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
 					{
 						num_var = k;
-						k = ArrVS[num_shader]->CountConst;
+						k = m_aVS[num_shader]->m_iCountVar;
 					}
 				}
 			}
 		}
 
 		if (num_shader != -1 && num_var != -1)
-			DXDevice->SetVertexShaderConstantF(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex, (float*)data, (count_float4 == 0 ? ArrVS[num_shader]->ArrConst[num_var].RegisterCount : count_float4));
+			g_pDXDevice->SetVertexShaderConstantF(m_aVS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aVS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 		else
 		{
 			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
-		}
-	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
-	{
-		int num_shader = -1;
-		int num_var = -1;
-
-		for (int i = 0; i<ArrPS.size(); i++)
-		{
-			if (strcmp(ArrPS[i]->Name, name_shader) == 0)
-			{
-				num_shader = i;
-				i = ArrPS.size();
-				for (int k = 0; k<ArrPS[num_shader]->CountConst; k++)
-				{
-					if (strcmp(ArrPS[num_shader]->ArrConst[k].Name, name_var) == 0)
-					{
-						num_var = k;
-						k = ArrPS[num_shader]->CountConst;
-					}
-				}
-			}
-		}
-
-		if (num_shader != -1 && num_var != -1)
-			DXDevice->SetPixelShaderConstantF(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex, (float*)data, (count_float4 == 0 ? ArrPS[num_shader]->ArrConst[num_var].RegisterCount : count_float4));
-		else
-		{
-			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
-			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
-		}
-	}
-}
-
-void ShaderManager::SetValueRegisterI(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
-{
-	if (type_shader == SHADER_TYPE_VERTEX)
-	{
-		int num_shader = -1;
-		int num_var = -1;
-
-		for (int i = 0; i<ArrVS.size(); i++)
-		{
-			if (strcmp(ArrVS[i]->Name, name_shader) == 0)
-			{
-				num_shader = i;
-				i = ArrVS.size();
-				for (int k = 0; k<ArrVS[num_shader]->CountConst; k++)
-				{
-					if (strcmp(ArrVS[num_shader]->ArrConst[k].Name, name_var) == 0)
-					{
-						num_var = k;
-						k = ArrVS[num_shader]->CountConst;
-					}
-				}
-			}
-		}
-
-		if (num_shader != -1 && num_var != -1)
-			DXDevice->SetVertexShaderConstantI(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex, (int*)data, (count_int4 == 0 ? ArrVS[num_shader]->ArrConst[num_var].RegisterCount : count_int4));
-		else
-		{
-			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
-			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
@@ -691,183 +921,257 @@ void ShaderManager::SetValueRegisterI(SHADER_TYPE type_shader, const char* name_
 		int num_shader = -1;
 		int num_var = -1;
 
-		for (int i = 0; i<ArrPS.size(); i++)
+		for (int i = 0; i<m_aPS.size(); i++)
 		{
-			if (strcmp(ArrPS[i]->Name, name_shader) == 0)
+			if (strcmp(m_aPS[i]->m_szName, szNameShader) == 0)
 			{
 				num_shader = i;
-				i = ArrPS.size();
-				for (int k = 0; k<ArrPS[num_shader]->CountConst; k++)
+				i = m_aPS.size();
+				for (int k = 0; k<m_aPS[num_shader]->m_iCountVar; k++)
 				{
-					if (strcmp(ArrPS[num_shader]->ArrConst[k].Name, name_var) == 0)
+					if (strcmp(m_aPS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
 					{
 						num_var = k;
-						k = ArrPS[num_shader]->CountConst;
+						k = m_aPS[num_shader]->m_iCountVar;
 					}
 				}
 			}
 		}
 
 		if (num_shader != -1 && num_var != -1)
-			DXDevice->SetPixelShaderConstantI(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex, (int*)data, (count_int4 == 0 ? ArrPS[num_shader]->ArrConst[num_var].RegisterCount : count_int4));
+			g_pDXDevice->SetPixelShaderConstantF(m_aPS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 		else
 		{
 			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", name_var, type_shader, name_shader);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", name_var, type_shader, name_shader);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
 		}
 	}
 }
 
-void ShaderManager::SetValueRegisterI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
+void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, ID idShader, const char *szNameVar, void *pData, int iCountFloat4)
 {
-	if (IsValidate(type_shader, num_shader))
+	if (isValidated(type_shader, idShader))
 	{
 		if (type_shader == SHADER_TYPE_VERTEX)
 		{
 			int num_var = -1;
 
-			for (int k = 0; k<ArrVS[num_shader]->CountConst; k++)
+			for (int k = 0; k<m_aVS[idShader]->m_iCountVar; k++)
 			{
-				if (strcmp(ArrVS[num_shader]->ArrConst[k].Name, name_var) == 0)
+				if (strcmp(m_aVS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
 				{
 					num_var = k;
-					k = ArrVS[num_shader]->CountConst;
+					k = m_aVS[idShader]->m_iCountVar;
 				}
 			}
 
-			if (num_shader != -1 && num_var != -1)
-				DXDevice->SetVertexShaderConstantI(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex, (int*)data, (count_int4 == 0 ? ArrVS[num_shader]->ArrConst[num_var].RegisterCount : count_int4));
+			if (idShader != -1 && num_var != -1)
+				g_pDXDevice->SetVertexShaderConstantF(m_aVS[idShader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aVS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", name_var, type_shader, num_shader);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
 			int num_var = -1;
 
-			for (int k = 0; k<ArrPS[num_shader]->CountConst; k++)
+			for (int k = 0; k<m_aPS[idShader]->m_iCountVar; k++)
 			{
-				if (strcmp(ArrPS[num_shader]->ArrConst[k].Name, name_var) == 0)
+				if (strcmp(m_aPS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
 				{
 					num_var = k;
-					k = ArrPS[num_shader]->CountConst;
+					k = m_aPS[idShader]->m_iCountVar;
 				}
 			}
 
-			if (num_shader != -1 && num_var != -1)
-				DXDevice->SetPixelShaderConstantI(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex, (int*)data, (count_int4 == 0 ? ArrPS[num_shader]->ArrConst[num_var].RegisterCount : count_int4));
+			if (idShader != -1 && num_var != -1)
+				g_pDXDevice->SetPixelShaderConstantF(m_aPS[idShader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", name_var, type_shader, ArrPS[num_shader]->Path);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, m_aPS[idShader]->m_szPath);
 		}
 	}
 	else
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", name_var, type_shader, num_shader);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
 }
 
-
-void ShaderManager::SetValueRegisterF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
+void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4)
 {
-	if (IsValidate(type_shader, num_shader))
+	if (!isValidateTypeName(type_shader, szNameShader))
+	{
+		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szNameShader);
+		return;
+	}
+
+	if (type_shader == SHADER_TYPE_VERTEX)
+	{
+		int num_shader = -1;
+		int num_var = -1;
+
+		for (int i = 0; i<m_aVS.size(); i++)
+		{
+			if (strcmp(m_aVS[i]->m_szName, szNameShader) == 0)
+			{
+				num_shader = i;
+				i = m_aVS.size();
+				for (int k = 0; k<m_aVS[num_shader]->m_iCountVar; k++)
+				{
+					if (strcmp(m_aVS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
+					{
+						num_var = k;
+						k = m_aVS[num_shader]->m_iCountVar;
+					}
+				}
+			}
+		}
+
+		if (num_shader != -1 && num_var != -1)
+			g_pDXDevice->SetVertexShaderConstantI(m_aVS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aVS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
+		else
+		{
+			if (num_shader == -1)
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+			else if (num_var == -1)
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+		}
+	}
+	else if (type_shader == SHADER_TYPE_PIXEL)
+	{
+		int num_shader = -1;
+		int num_var = -1;
+
+		for (int i = 0; i<m_aPS.size(); i++)
+		{
+			if (strcmp(m_aPS[i]->m_szName, szNameShader) == 0)
+			{
+				num_shader = i;
+				i = m_aPS.size();
+				for (int k = 0; k<m_aPS[num_shader]->m_iCountVar; k++)
+				{
+					if (strcmp(m_aPS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
+					{
+						num_var = k;
+						k = m_aPS[num_shader]->m_iCountVar;
+					}
+				}
+			}
+		}
+
+		if (num_shader != -1 && num_var != -1)
+			g_pDXDevice->SetPixelShaderConstantI(m_aPS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aPS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
+		else
+		{
+			if (num_shader == -1)
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+			else if (num_var == -1)
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+		}
+	}
+}
+
+void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, ID idShader, const char *szNameVar, void *pData, int iCountInt4)
+{
+	if (isValidated(type_shader, idShader))
 	{
 		if (type_shader == SHADER_TYPE_VERTEX)
 		{
 			int num_var = -1;
 
-			for (int k = 0; k<ArrVS[num_shader]->CountConst; k++)
+			for (int k = 0; k<m_aVS[idShader]->m_iCountVar; k++)
 			{
-				if (strcmp(ArrVS[num_shader]->ArrConst[k].Name, name_var) == 0)
+				if (strcmp(m_aVS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
 				{
 					num_var = k;
-					k = ArrVS[num_shader]->CountConst;
+					k = m_aVS[idShader]->m_iCountVar;
 				}
 			}
 
-			if (num_shader != -1 && num_var != -1)
-				DXDevice->SetVertexShaderConstantF(ArrVS[num_shader]->ArrConst[num_var].RegisterIndex, (float*)data, (count_float4 == 0 ? ArrVS[num_shader]->ArrConst[num_var].RegisterCount : count_float4));
+			if (idShader != -1 && num_var != -1)
+				g_pDXDevice->SetVertexShaderConstantI(m_aVS[idShader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aVS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", name_var, type_shader, num_shader);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
 			int num_var = -1;
 
-			for (int k = 0; k<ArrPS[num_shader]->CountConst; k++)
+			for (int k = 0; k<m_aPS[idShader]->m_iCountVar; k++)
 			{
-				if (strcmp(ArrPS[num_shader]->ArrConst[k].Name, name_var) == 0)
+				if (strcmp(m_aPS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
 				{
 					num_var = k;
-					k = ArrPS[num_shader]->CountConst;
+					k = m_aPS[idShader]->m_iCountVar;
 				}
 			}
 
-			if (num_shader != -1 && num_var != -1)
-				DXDevice->SetPixelShaderConstantF(ArrPS[num_shader]->ArrConst[num_var].RegisterIndex, (float*)data, (count_float4 == 0 ? ArrPS[num_shader]->ArrConst[num_var].RegisterCount : count_float4));
+			if (idShader != -1 && num_var != -1)
+				g_pDXDevice->SetPixelShaderConstantI(m_aPS[idShader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aPS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", name_var, type_shader, ArrPS[num_shader]->Path);
+				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, m_aPS[idShader]->m_szPath);
 		}
 	}
 	else
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "!!! sgcore: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", name_var, type_shader, num_shader);
+		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
 }
 
-bool ShaderManager::IsValidate(SHADER_TYPE type_shader, ID id)
+
+bool CShaderManager::isValidated(SHADER_TYPE type_shader, ID idShader)
 {
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		if(id < ArrVS.size())
+		if (idShader < m_aVS.size())
 		{
-			if(ArrVS[id]->VertexShader)
+			if (m_aVS[idShader]->m_pVertexShader)
 				return true;
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (id < ArrPS.size())
+		if (idShader < m_aPS.size())
 		{
-			if (ArrPS[id]->PixelShader)
+			if (m_aPS[idShader]->m_pPixelShader)
 				return true;
 		}
 	}
 	return false;
 }
 
-void ShaderManager::GetPath(SHADER_TYPE type_shader, ID id, char* path)
+void CShaderManager::getPath(SHADER_TYPE type_shader, ID idShader, char *szPath)
 {
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		if(id < ArrVS.size())
+		if (idShader < m_aVS.size())
 		{
-			if(ArrVS[id]->VertexShader)
-				sprintf(path,"%s",ArrVS[id]->Path);
+			if (m_aVS[idShader]->m_pVertexShader)
+				sprintf(szPath, "%s", m_aVS[idShader]->m_szPath);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		if(id < ArrPS.size())
+		if (idShader < m_aPS.size())
 		{
-			if(ArrPS[id]->PixelShader)
-				sprintf(path,"%s",ArrPS[id]->Path);
+			if (m_aPS[idShader]->m_pPixelShader)
+				sprintf(szPath, "%s", m_aPS[idShader]->m_szPath);
 		}
 	}
 }
 
-void ShaderManager::GetName(SHADER_TYPE type_shader, ID id, char* name)
+void CShaderManager::getName(SHADER_TYPE type_shader, ID idShader, char *szName)
 {
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
-		if(id < ArrVS.size())
+		if (idShader < m_aVS.size())
 		{
-			if(ArrVS[id]->VertexShader)
-				sprintf(name,"%s",ArrVS[id]->Name);
+			if (m_aVS[idShader]->m_pVertexShader)
+				sprintf(szName, "%s", m_aVS[idShader]->m_szName);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		if(id < ArrPS.size())
+		if (idShader < m_aPS.size())
 		{
-			if(ArrPS[id]->PixelShader)
-				sprintf(name,"%s",ArrPS[id]->Name);
+			if (m_aPS[idShader]->m_pPixelShader)
+				sprintf(szName, "%s", m_aPS[idShader]->m_szName);
 		}
 	}
 }

@@ -21,7 +21,7 @@ CreatorTextures::~CreatorTextures()
 ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
 {
 	IDirect3DTexture9* objtex;
-	DXDevice->CreateTexture(width, height, levels, usage, format,pool, &objtex, NULL);
+	g_pDXDevice->CreateTexture(width, height, levels, usage, format, pool, &objtex, NULL);
 
 	ID id = -1;
 	bool isadd = true;
@@ -53,8 +53,11 @@ ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFO
 			isadd = false;
 		}
 
-		if(!isadd)
-			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: render target[%s] is created, id = %d\n", name, id);
+		/*if(!isadd)
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: render target[%s] is created, id = %d\n", name, id);*/
+
+		if (isadd)
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "[SGCORE]: render target[%s] is not created\n", name);
 
 	return id;
 }
@@ -116,9 +119,9 @@ void CreatorTextures::OnResetDevice()
 				if(Arr[i]/*->Name[0] != 0*/)
 				{
 						if(Arr[i]->CoefFullScreen > 0.001f)
-							DXDevice->CreateTexture(D3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, D3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+							g_pDXDevice->CreateTexture(g_oD3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, g_oD3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 						else
-							DXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+							g_pDXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 				}
 		}
 	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sgcore: reset render targets success\n");

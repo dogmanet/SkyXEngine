@@ -6,17 +6,17 @@ Materials::Materials()
 	CurrFirstFree = -1;
 	CountTimeDelta = 0;
 	IsForceblyAlphaTest = false;
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base.vs", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base.ps", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base.vs", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base.vs", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base.ps", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light.ps", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base.vs", SHADER_CHECKDOUBLE_PATH);
+	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base.ps", SHADER_CHECKDOUBLE_PATH);
 
 	IsIncrCountSurf = false;
 	CurrIdSurf = 0;
@@ -26,8 +26,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "light");
-	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
-	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_light");
+	tmpMtlDefaultLight->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+	tmpMtlDefaultLight->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
 
 	tmpMtlDefaultLight->MainTexture = -1;
 	tmpMtlDefaultLight->VS.IsTransWorldViewProjection = true;
@@ -42,8 +42,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "base");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 	tmpumtl->mtl->VS.IsTransWorld = true;
 
 	tmpumtl->mtl->MainTexture = -1;
@@ -58,8 +58,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "tree");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 
 	tmpumtl->mtl->MainTexture = -1;
 	tmpumtl->mtl->VS.IsTransWorldViewProjection = true;
@@ -73,8 +73,8 @@ Materials::Materials()
 	AddMaterial(tmpMtlDefaultLight);
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s_%s", MTL_VIRTUAL_DIR_STD_MTL, "grass");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 
 	tmpumtl->mtl->MainTexture = -1;
 	tmpumtl->mtl->VS.IsTransWorldViewProjection = true;
@@ -87,8 +87,8 @@ Materials::Materials()
 	tmpMtlDefaultLight = new Material();
 	tmpumtl->mtl = tmpMtlDefaultLight;
 	sprintf(tmpMtlDefaultLight->Name, "%s", "mtrldef_skin");
-	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlskin_base");
-	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlskin_base");
+	tmpumtl->mtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlskin_base.vs");
+	tmpumtl->mtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlskin_base.ps");
 	tmpumtl->mtl->VS.IsTransWorld = true;
 
 	tmpumtl->mtl->MainTexture = -1;
@@ -163,6 +163,7 @@ void Materials::Material::Nulling()
 	LightParam = MaterialLightParam();
 
 	Penetration = 0.f;
+	HitChance = 1.f;
 
 	VS = MaterialDataShader();
 	PS = MaterialDataShader();
@@ -685,6 +686,19 @@ float Materials::MtlGetPenetration(ID id)
 }
 
 
+void Materials::MtlSetHitChance(ID id, float fHitChance)
+{
+	MTL_PRE_COND_ID(id, _VOID);
+	ArrMaterials[id]->mtl->HitChance = fHitChance;
+}
+
+float Materials::MtlGetHitChance(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->mtl->HitChance;
+}
+
+
 void Materials::MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
 {
 	MTL_PRE_COND_ID(id);
@@ -1151,14 +1165,14 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 
 		if (def_str_validate(tmpVS))
-			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, "main", SHADER_CHECKDOUBLE_PATH);
+			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, tmpVS, SHADER_CHECKDOUBLE_PATH);
 		else
-			tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
+			tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
 
 		if (def_str_validate(tmpPS))
-			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, "main", SHADER_CHECKDOUBLE_PATH);
+			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, tmpPS, SHADER_CHECKDOUBLE_PATH);
 		else
-			tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
+			tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 
 		tmpMicroDiff[0][0] = 0;
 		if (config->keyExists(tmp_name, "mirco_diff_r"))
@@ -1250,6 +1264,9 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 		if (config->keyExists(tmp_name, "penetration"))
 			tmpMtl->Penetration = String(config->getKey(tmp_name, "penetration")).ToDouble();
+
+		if (config->keyExists(tmp_name, "hit_chance"))
+			tmpMtl->HitChance = String(config->getKey(tmp_name, "hit_chance")).ToDouble();
 
 		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
@@ -1414,7 +1431,7 @@ ID Materials::CreateTexParamLighting(float roughness, float f0, float thickness)
 
 	TexMaterial->UnlockRect(0);
 
-	SGCore_LoadTexLoadTextures();
+	//SGCore_LoadTexLoadTextures();
 
 	char nametex[64];
 	sprintf(nametex, "%c_%d_%d_%d", MTL_VIRTUAL_DIR_HAND_MTL, ArrMaterials.size(), rand() % 9999, rand() % 9999);
@@ -1431,36 +1448,36 @@ void Materials::CreateMtl(const char* name, Material** mtl, MTLTYPE_MODEL type)
 	//обычна¤ геометри¤
 	if (type == MTLTYPE_MODEL_STATIC)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//деревь¤
 	else if (type == MTLTYPE_MODEL_TREE)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//трава
 	else if (type == MTLTYPE_MODEL_GRASS)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 		//tmpMtl->RenderStates.IsAlphaTest = true;
 	}
 	//анимационная модель
 	else if (type == MTLTYPE_MODEL_SKIN)
 	{
-		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base");
-		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base");
+		tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
+		tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
 		tmpMtl->VS.IsTransWorld = true;
 	}
 	//источник света
 	/*else if (type == MTL_LIGHT)
 	{
-	tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base");
-	tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgeom_light");
+	tmpMtl->PreShaderVS = SGCore_ShaderGetID(0, "mtrlgeom_base.vs");
+	tmpMtl->PreShaderPS = SGCore_ShaderGetID(1, "mtrlgeom_light.ps");
 	tmpMtl->IsForwardRender = true;
 	tmpMtl->PS.IsTransUserData = true;
 	tmpMtl->PS.Param = float4(0, 0, 0, 0);
@@ -1689,6 +1706,7 @@ void Materials::MtlSave(ID id)
 	fprintf(file, "f0 = %f\n", mtrl->LightParam.F0Value);
 	fprintf(file, "thickness = %f\n", mtrl->LightParam.ThicknessValue);
 	fprintf(file, "penetration = %f\n", mtrl->Penetration);
+	fprintf(file, "hit_chance = %f\n", mtrl->HitChance);
 
 	fprintf(file, "refraction = %d\n", mtrl->LightParam.TypeRefraction);
 

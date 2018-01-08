@@ -21,7 +21,7 @@ g_particles_phy_collision GParticlesPhyCollision = ParticlesPhyCollision;
 
 Effects* ArrEffects = 0;
 
-#define PE_PRECOND(retval) if(!ArrEffects){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles is not init", gen_msg_location); return retval;}
+#define PE_PRECOND(retval) if(!ArrEffects){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -50,7 +50,7 @@ SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxparticles", gen_msg_location);
+				g_fnReportf(-1, "%s - none unic name, sxparticles", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -65,7 +65,7 @@ SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxparticles", gen_msg_location);
+		g_fnReportf(-1, "%s - not init argument [name], sxparticles", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SPE_RTDepthSet(ID id)

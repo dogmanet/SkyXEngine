@@ -37,7 +37,7 @@ report_func reportf = DefReport;
 
 PhyWorld * g_pWorld = NULL;
 
-#define SP_PRECOND(ret) if(!g_pWorld){reportf(-1, "%s - sxphysics is not init", gen_msg_location);return ret;}
+#define SP_PRECOND(ret) if(!g_pWorld){reportf(-1, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -59,7 +59,7 @@ SX_LIB_API void SXPhysics_0Create()
 {
 	if(g_pWorld)
 	{
-		reportf(-1, "%s - sxphysics double init", gen_msg_location);
+		reportf(-1, "%s - sxphysics double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();

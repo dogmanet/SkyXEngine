@@ -29,7 +29,7 @@ report_func reportf = DefReport;
 
 DecalManager * g_pMgr = NULL;
 
-#define SP_PRECOND(ret) if(!g_pMgr){reportf(-1, "%s - sxdecals is not init", gen_msg_location);return ret;}
+#define SP_PRECOND(ret) if(!g_pMgr){reportf(-1, "%s - sxdecals is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -51,7 +51,7 @@ SX_LIB_API void SXDecals_0Create()
 {
 	if(g_pMgr)
 	{
-		reportf(-1, "%s - sxdecals double init", gen_msg_location);
+		reportf(-1, "%s - sxdecals double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();
