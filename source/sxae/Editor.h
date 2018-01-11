@@ -71,8 +71,8 @@ public:
 	
 	void Update();
 
-	ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, bool forceImport = false, bool forceLocal = false);
-	void DelModel(UINT id);
+	ModelFile * addModel(const char * mdl, UINT flags = MI_ALL, bool forceImport = false, bool forceLocal = false);
+	void delModel(UINT id);
 
 	void DelHitbox(UINT id);
 

@@ -11,24 +11,24 @@
 
 typedef std::chrono::system_clock::time_point time_point;
 
-class SXbaseEntity;
+class CBaseEntity;
 struct ISXConfig;
 
 /*! Однократно запустить функцию fn через время time
 	\note Должно вызываться изнутри класса объекта
 */
-#define SET_TIMEOUT(fn, time) m_pMgr->SetTimeout((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
+#define SET_TIMEOUT(fn, time) m_pMgr->setTimeout((void(CBaseEntity::*)(float))&ThisClass::fn, this, time)
 
 /*! Запускать функцию fn через каждые time секунд
 Возвращает идентификатор таймера
 \note Должно вызываться изнутри класса объекта
 */
-#define SET_INTERVAL(fn, time) m_pMgr->SetInterval((void(SXbaseEntity::*)(float))&ThisClass::fn, this, time)
+#define SET_INTERVAL(fn, time) m_pMgr->setInterval((void(CBaseEntity::*)(float))&ThisClass::fn, this, time)
 
 /*! Отменить интервал по идентификатору
 \note Должно вызываться изнутри класса объекта
 */
-#define CLEAR_INTERVAL(id) m_pMgr->ClearInterval(id)
+#define CLEAR_INTERVAL(id) m_pMgr->clearInterval(id)
 
 enum TIMEOUT_STATUS
 {
@@ -40,8 +40,8 @@ enum TIMEOUT_STATUS
 struct timeout_t
 {
 	TIMEOUT_STATUS status;
-	void(SXbaseEntity::*func)(float dt);
-	SXbaseEntity * pEnt;
+	void(CBaseEntity::*func)(float dt);
+	CBaseEntity * pEnt;
 	time_point fStartTime;
 	time_point fNextTime;
 };
@@ -55,47 +55,47 @@ struct timeout_output_t
 	inputdata_t data;
 };
 
-class EntityManager
+class CEntityManager
 {
-	friend class SXbaseEntity;
+	friend class CBaseEntity;
 public:
-	EntityManager();
-	~EntityManager();
+	CEntityManager();
+	~CEntityManager();
 
-	void Update(int thread);
-	void SetThreadNum(int num);
-	void Sync();
+	void update(int thread);
+	void setThreadNum(int num);
+	void sync();
 
 	void unloadObjLevel();
 
-	void LoadDefaults();
-	void LoadDynClasses();
+	void loadDefaults();
+	void loadDynClasses();
 
-	ID SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
-	ID SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay);
+	ID setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay);
+	ID setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay);
 	void setOutputTimeout(named_output_t * pOutput, inputdata_t * pData);
-	void ClearTimeout(ID id);
-	void ClearInterval(ID id);
+	void clearTimeout(ID id);
+	void clearInterval(ID id);
 
-	int CountEntityByName(const char * name);
-	SXbaseEntity * FindEntityByName(const char * name, SXbaseEntity * pStart = 0);
+	int countEntityByName(const char * name);
+	CBaseEntity * findEntityByName(const char * name, CBaseEntity * pStart = 0);
 
-	SXbaseEntity * FindEntityByClass(const char * name, SXbaseEntity * pStart = 0);
+	CBaseEntity * findEntityByClass(const char * name, CBaseEntity * pStart = 0);
 
-	bool Export(const char * file);
-	bool Import(const char * file);
+	bool exportList(const char * file);
+	bool import(const char * file);
 
-	void DumpList(int argc, const char ** argv);
-	void EntKV(int argc, const char ** argv);
+	void dumpList(int argc, const char ** argv);
+	void entKV(int argc, const char ** argv);
 
-	int GetCount();
-	SXbaseEntity * GetById(ID id);
+	int getCount();
+	CBaseEntity * getById(ID id);
 
 protected:
-	ID Register(SXbaseEntity * pEnt);
-	void Unregister(ID ent);
+	ID reg(CBaseEntity * pEnt);
+	void unreg(ID ent);
 
-	Array<SXbaseEntity*, 64> m_vEntList;
+	Array<CBaseEntity*, 64> m_vEntList;
 	Array<ID> m_vFreeIDs;
 
 	Array<timeout_t> m_vTimeout;

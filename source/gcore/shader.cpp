@@ -219,7 +219,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 			);
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -255,7 +255,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 		//!!!проанализировать
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function vertex shader fails, path [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function vertex shader fails, path [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -266,7 +266,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -275,7 +275,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in vertex shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in vertex shader [%s] more standart [%d]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
 			return;
 		}
 
@@ -290,47 +290,12 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 
 		pShader->m_pCode = pBufShader;
 		pShader->m_iCountVar = desc.Constants;
-		//pShader->m_pConstTable = tmpConstTable;
 		pShader->m_pVertexShader = pVertexShader;
 
-		if (aMacro)
-		{
-			int tmpCountArrM = 0;
-
-			for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
-			{
-				if (i >= SXGC_SHADER_COUNT_MACRO)
-				{
-					g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count macro in vertex shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_COUNT_MACRO);
-					return;
-				}
-
-				if (aMacro[i].Name == 0)
-				{
-					tmpCountArrM = i;
-					break;
-				}
-			}
-
-			for (int i = 0; i < tmpCountArrM; i++)
-			{
-				pShader->m_aMacros[i] = aMacro[i];
-			}
-
-			pShader->m_aMacros[tmpCountArrM].Name = 0;
-			pShader->m_aMacros[tmpCountArrM].Definition = 0;
-		}
-		else
-		{
-			pShader->m_aMacros[0].Name = 0;
-			pShader->m_aMacros[0].Definition = 0;
-		}
-
+#ifndef _DEBUG
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
 		SaveShaderFileCache(pSFC);
 		mem_delete(pSFC);
-
-#ifndef _DEBUG
 	}
 #endif
 }
@@ -407,7 +372,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		//!!!проанализировать
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function pixel shader fails, path [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function pixel shader fails, path [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -418,7 +383,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating pixel shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating pixel shader [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -427,7 +392,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in pixel shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
+			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in pixel shader [%s] more standart [%d]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
 			return;
 		}
 
@@ -442,47 +407,12 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 		pShader->m_pCode = pBufShader;
 		pShader->m_iCountVar = desc.Constants;
-		//pShader->m_pConstTable = tmpConstTable;
 		pShader->m_pPixelShader = pPixelShader;
 
-		if (aMacro)
-		{
-			int tmpCountArrM = 0;
-
-			for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
-			{
-				if (i >= SXGC_SHADER_COUNT_MACRO)
-				{
-					g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count macro in pixel shader [%s] more standart [%d]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_COUNT_MACRO);
-					return;
-				}
-
-				if (aMacro[i].Name == 0)
-				{
-					tmpCountArrM = i;
-					break;
-				}
-			}
-
-			for (int i = 0; i < tmpCountArrM; i++)
-			{
-				pShader->m_aMacros[i] = aMacro[i];
-			}
-
-			pShader->m_aMacros[tmpCountArrM].Name = 0;
-			pShader->m_aMacros[tmpCountArrM].Definition = 0;
-		}
-		else
-		{
-			pShader->m_aMacros[0].Name = 0;
-			pShader->m_aMacros[0].Definition = 0;
-		}
-
+#ifndef _DEBUG
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
 		SaveShaderFileCache(pSFC);
 		mem_delete(pSFC);
-
-#ifndef _DEBUG
 	}
 #endif
 }
@@ -491,7 +421,8 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 CShaderManager::CShaderManager()
 {
-	
+	m_iLastAllLoadVS = 0;
+	m_iLastAllLoadPS = 0;
 }
 
 CShaderManager::~CShaderManager()
@@ -513,31 +444,25 @@ CShaderManager::~CShaderManager()
 
 void CShaderManager::reloadAll()
 {
-	Array<CShaderVS*> aVS;
-	Array<CShaderPS*> aPS;
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: reload shaders ...\n", SX_LIB_NAME);
 
-	for (int i = 0; i < m_aVS.size(); i++)
+	for (int i = 0; i<m_aVS.size(); i++)
 	{
-		aVS.push_back(m_aVS[i]);
+		CShaderVS *pShader = m_aVS[i];
+		LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros);
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
 	}
+
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 
 	for (int i = 0; i<m_aPS.size(); i++)
 	{
-		aPS.push_back(m_aPS[i]);
+		CShaderPS *pShader = m_aPS[i];
+		LoadPixelShader(m_aPS[i]->m_szPath, m_aPS[i], m_aPS[i]->m_aMacros);
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
 	}
 
-	m_aVS.clear();
-	m_aPS.clear();
-
-	for (int i = 0; i<aVS.size(); i++)
-	{
-		load(SHADER_TYPE_VERTEX, aVS[i]->m_szPath, aVS[i]->m_szName, SHADER_CHECKDOUBLE_NONE, aVS[i]->m_aMacros);
-	}
-
-	for (int i = 0; i<aPS.size(); i++)
-	{
-		load(SHADER_TYPE_PIXEL, aPS[i]->m_szPath, aPS[i]->m_szName, SHADER_CHECKDOUBLE_NONE, aPS[i]->m_aMacros);
-	}
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: all reloaded shaders\n", SX_LIB_NAME);
 }
 
 ID CShaderManager::existsPath(SHADER_TYPE type, const char *szPath)
@@ -613,68 +538,103 @@ bool CShaderManager::existsFile(const char *szPath)
 	return Core_0FileExists(tmppath);
 }
 
-ID CShaderManager::load(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacro)
+ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacros)
 {
-	if (!isValidateTypeName(type_shader, szName))
+	if (!isValidateTypeName(type, szName))
 	{
 		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
 		return -1;
 	}
 
-	if (type_shader == SHADER_TYPE_VERTEX)
+	ID id = -1;
+
+	if (check_double == SHADER_CHECKDOUBLE_PATH)
+		id = existsPath(type, szPath);
+	else if (check_double == SHADER_CHECKDOUBLE_NAME)
+		id = existsName(type, szName);
+
+	CShader *pShader = 0;
+
+	if (type == SHADER_TYPE_VERTEX)
 	{
-		ID id = -1;
-
-		if (check_double == SHADER_CHECKDOUBLE_PATH)
-			id = existsPath(type_shader, szPath);
-		else if (check_double == SHADER_CHECKDOUBLE_NAME)
-			id = existsName(type_shader, szName);
-
 		if (id == -1)
 		{
-			CShaderVS *pShader = new CShaderVS();
-			sprintf(pShader->m_szName, "%s", szName);
-			sprintf(pShader->m_szPath, "%s", szPath);
-			LoadVertexShader(szPath, pShader, aMacro);
-			
-			m_aVS.push_back(pShader);
-			id = m_aVS.size() - 1;
-			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is loaded, name[%s], id = [%d]\n", SX_LIB_NAME, path, m_aVS[id]->m_szName, id);
-			return id;
-		}
-		else
-		{
-			//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader [%s] is detected, name[%s], id = [%d]\n", SX_LIB_NAME, path, m_aVS[id]->m_szName, id);
-			return id;
+			CShaderVS *pVS = new CShaderVS();
+			sprintf(pVS->m_szName, "%s", szName);
+			sprintf(pVS->m_szPath, "%s", szPath);
+			//sprintf(pVS->m_szFrom, "%s", szFrom);
+			m_aVS.push_back(pVS);
+			id = m_aVS.size() -1;
+			pShader = pVS;
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if (type == SHADER_TYPE_PIXEL)
 	{
-		ID id = -1;
-		if (check_double == SHADER_CHECKDOUBLE_PATH)
-			id = existsPath(type_shader, szPath);
-		else if (check_double == SHADER_CHECKDOUBLE_NAME)
-			id = existsName(type_shader, szName);
-
 		if (id == -1)
 		{
-			CShaderPS *pShader = new CShaderPS();
-			sprintf(pShader->m_szName, "%s", szName);
-			sprintf(pShader->m_szPath, "%s", szPath);
-			LoadPixelShader(szPath, pShader, aMacro);
-			
-			m_aPS.push_back(pShader);
+			CShaderPS *pPS = new CShaderPS();
+			sprintf(pPS->m_szName, "%s", szName);
+			sprintf(pPS->m_szPath, "%s", szPath);
+			//sprintf(pPS->m_szFrom, "%s", szFrom);
+			m_aPS.push_back(pPS);
 			id = m_aPS.size() - 1;
-			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is loaded, name[%s], id [%d]\n", SX_LIB_NAME, path, m_aPS[id]->m_szName, id);
-			return id;
-		}
-		else
-		{
-			//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader [%s] is detected, name[%s], id [%d]\n", SX_LIB_NAME, path, m_aPS[id]->m_szName, id);
-			return id;
+			pShader = pPS;
 		}
 	}
-	return -1;
+
+	if (aMacros)
+	{
+		int iCountMacros = 0;
+		for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
+		{
+			if (aMacros[i].Name == 0)
+			{
+				iCountMacros = i;
+				break;
+			}
+		}
+
+		for (int i = 0; i < iCountMacros; i++)
+		{
+			pShader->m_aMacros[i] = aMacros[i];
+		}
+
+		pShader->m_aMacros[iCountMacros].Name = 0;
+		pShader->m_aMacros[iCountMacros].Definition = 0;
+	}
+
+	return id;
+}
+
+void CShaderManager::allLoad()
+{
+	if (m_aVS.size() == m_iLastAllLoadVS || m_aPS.size() == m_iLastAllLoadPS)
+		return;
+
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: load shaders ...\n", SX_LIB_NAME);
+	
+	for (int i = 0, il = m_aVS.size(); i < il; ++i)
+	{
+		CShaderVS *pShader = m_aVS[i];
+		LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros);
+
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
+	}
+
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
+
+	for (int i = 0, il = m_aPS.size(); i < il; ++i)
+	{
+		CShaderPS *pShader = m_aPS[i];
+		LoadPixelShader(pShader->m_szPath, pShader, pShader->m_aMacros);
+
+		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
+	}
+
+	m_iLastAllLoadVS = m_aVS.size();
+	m_iLastAllLoadPS = m_aPS.size();
+
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: all loaded shaders\n", SX_LIB_NAME);
 }
 
 void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
@@ -692,14 +652,9 @@ void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
 		{
 			if (strcmp(m_aVS[i]->m_szName, szName) == 0)
 			{
-				CShaderVS *pShader = new CShaderVS();
-				LoadVertexShader(m_aVS[i]->m_szPath, pShader, m_aVS[i]->m_aMacros);
-
+				CShaderVS *pShader = m_aVS[i];
 				mem_release(m_aVS[i]->m_pVertexShader);
-				//mem_release(m_aVS[i]->m_pConstTable);
-
-				mem_delete(m_aVS[i]);
-				m_aVS[i] = pShader;
+				LoadVertexShader(m_aVS[i]->m_szPath, pShader, m_aVS[i]->m_aMacros);
 				isUpdate = true;
 			}
 		}
@@ -710,14 +665,9 @@ void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
 		{
 			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
 			{
-				CShaderPS *pShader = new CShaderPS();
-				LoadPixelShader(m_aPS[i]->m_szPath, pShader, m_aPS[i]->m_aMacros);
-
+				CShaderPS *pShader = m_aPS[i];
 				mem_release(m_aPS[i]->m_pPixelShader);
-				//mem_release(m_aPS[i]->m_pConstTable);
-
-				mem_delete(m_aPS[i]);
-				m_aPS[i] = pShader;
+				LoadPixelShader(m_aPS[i]->m_szPath, pShader, m_aPS[i]->m_aMacros);
 				isUpdate = true;
 			}
 		}
@@ -736,36 +686,19 @@ void CShaderManager::update(SHADER_TYPE type_shader, ID id)
 	{
 		if (m_aVS.size() > id && m_aVS[id])
 		{
-			CShaderVS *pShader = new CShaderVS();
-			
+			CShaderVS *pShader = m_aVS[id];
+			mem_release(m_aVS[id]->m_pVertexShader);
 			LoadVertexShader(m_aVS[id]->m_szPath, pShader, pShader->m_aMacros);
-			sprintf(pShader->m_szName, "%s", m_aVS[id]->m_szName);
-			sprintf(pShader->m_szPath, "%s", m_aVS[id]->m_szPath);
-
-			//mem_release(m_aVS[id]->m_pVertexShader);
-			//mem_release(m_aVS[id]->m_pConstTable);
-
-			mem_delete(m_aVS[id]);
-			m_aVS[id] = pShader;
 			isUpdate = true;
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (m_aPS.size() > id  && m_aVS[id])
+		if (m_aPS.size() > id  && m_aPS[id])
 		{
-			CShaderPS *pShader = new CShaderPS();
-
+			CShaderPS *pShader = m_aPS[id];
+			mem_release(m_aPS[id]->m_pPixelShader);
 			LoadPixelShader(m_aPS[id]->m_szPath, pShader, m_aPS[id]->m_aMacros);
-
-			sprintf(pShader->m_szName, "%s", m_aPS[id]->m_szName);
-			sprintf(pShader->m_szPath, "%s", m_aPS[id]->m_szPath);
-
-			//mem_release(m_aPS[id]->m_pPixelShader);
-			//mem_release(m_aPS[id]->m_pConstTable);
-
-			mem_delete(m_aPS[id]);
-			m_aPS[id] = pShader;
 			isUpdate = true;
 		}
 	}

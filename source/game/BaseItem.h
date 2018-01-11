@@ -13,15 +13,15 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXbaseItem_H_
-#define _SXbaseItem_H_
+#ifndef _CBaseItem_H_
+#define _CBaseItem_H_
 
-#include "SXbaseAnimating.h"
+#include "BaseAnimating.h"
 
 //! Базовый класс предмета инвентаря
-class SXbaseItem: public SXbaseAnimating
+class CBaseItem: public CBaseAnimating
 {
-	DECLARE_CLASS(SXbaseItem, SXbaseAnimating);
+	DECLARE_CLASS(CBaseItem, CBaseAnimating);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
@@ -32,6 +32,10 @@ public:
 	int m_iInvStackMaxSize; //!< Максимальное количество итемов в стеке
 	float m_iInvWeight; //!< Масса объекта
 	bool m_bPickable; //!< Можно ли поднять объект
+
+
+	//! Масса объекта
+	virtual float getWeight();
 };
 
 #endif

@@ -67,13 +67,13 @@ SX_LIB_API void SXDecals_AKill()
 SX_LIB_API void SXDecals_Update()
 {
 	SP_PRECOND(_VOID);
-	g_pMgr->Update();
+	g_pMgr->update();
 }
 
 SX_LIB_API void SXDecals_Sync()
 {
 	SP_PRECOND(_VOID);
-	g_pMgr->Sync();
+	g_pMgr->sync();
 }
 
 SX_LIB_API void SXDecals_Dbg_Set(report_func rf)
@@ -84,7 +84,7 @@ SX_LIB_API void SXDecals_Dbg_Set(report_func rf)
 SX_LIB_API void SXDecals_Render()
 {
 	SP_PRECOND(_VOID);
-	g_pMgr->Render();
+	g_pMgr->render();
 }
 
 SX_LIB_API void SXDecals_ShootDecal(DECAL_TYPE type, const float3 & fWorldPos, const float3 & normal)
@@ -95,11 +95,11 @@ SX_LIB_API void SXDecals_ShootDecal(DECAL_TYPE type, const float3 & fWorldPos, c
 		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to use DECAL_TYPE_CUSTOM with SXDecals_ShootDecal\n");
 		return;
 	}
-	g_pMgr->ShootDecal(type, fWorldPos, 0, 0, 0, 1.0f, 0, &normal);
+	g_pMgr->shootDecal(type, fWorldPos, 0, 0, 0, 1.0f, 0, &normal);
 }
 
 SX_LIB_API void SXDecals_ShootDecalEx(DECAL_TYPE type, const float3 & fWorldPos, const float3 & normal, int flags, ID material, float fScale, const float3 * saxis)
 {
 	SP_PRECOND(_VOID);
-	g_pMgr->ShootDecal(type, fWorldPos, material, 0, saxis, fScale, flags, &normal);
+	g_pMgr->shootDecal(type, fWorldPos, material, 0, saxis, fScale, flags, &normal);
 }

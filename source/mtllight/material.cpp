@@ -164,6 +164,7 @@ void Materials::Material::Nulling()
 
 	Penetration = 0.f;
 	HitChance = 1.f;
+	Density = 1500;
 
 	VS = MaterialDataShader();
 	PS = MaterialDataShader();
@@ -697,6 +698,20 @@ float Materials::MtlGetHitChance(ID id)
 	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->mtl->HitChance;
 }
+
+
+void Materials::MtlSetDensity(ID id, float fDensity)
+{
+	MTL_PRE_COND_ID(id, _VOID);
+	ArrMaterials[id]->mtl->Density = fDensity;
+}
+
+float Materials::MtlGetDensity(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return ArrMaterials[id]->mtl->Density;
+}
+
 
 
 void Materials::MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
@@ -1268,6 +1283,9 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "hit_chance"))
 			tmpMtl->HitChance = String(config->getKey(tmp_name, "hit_chance")).ToDouble();
 
+		if (config->keyExists(tmp_name, "density"))
+			tmpMtl->Density = String(config->getKey(tmp_name, "density")).ToDouble();
+
 		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
 		//говорим что не установлено использовать ли текстуру или нет
@@ -1707,6 +1725,7 @@ void Materials::MtlSave(ID id)
 	fprintf(file, "thickness = %f\n", mtrl->LightParam.ThicknessValue);
 	fprintf(file, "penetration = %f\n", mtrl->Penetration);
 	fprintf(file, "hit_chance = %f\n", mtrl->HitChance);
+	fprintf(file, "density = %f\n", mtrl->Density);
 
 	fprintf(file, "refraction = %d\n", mtrl->LightParam.TypeRefraction);
 

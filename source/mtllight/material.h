@@ -126,6 +126,9 @@ public:
 	void MtlSetHitChance(ID id, float fHitChance);
 	float MtlGetHitChance(ID id);
 
+	void MtlSetDensity(ID id, float fDensity);
+	float MtlGetDensity(ID id);
+
 	void MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type);
 	MTLTYPE_TRANSPARENCY MtlGetTypeTransparency(ID id);
 
@@ -252,6 +255,7 @@ public:
 
 		float Penetration;
 		float HitChance;
+		float Density;
 
 		MTLTYPE_MODEL Type;
 	};

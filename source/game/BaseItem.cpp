@@ -1,10 +1,10 @@
-#include "SXbaseItem.h"
+#include "BaseItem.h"
 
 /*! \skydocent base_item
 Базовый объект элемента инвентаря игрока
 */
 
-BEGIN_PROPTABLE(SXbaseItem)
+BEGIN_PROPTABLE(CBaseItem)
 	//! Имя в инвентаре
 	DEFINE_FIELD_STRING(m_szInvName, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_name", "", EDITOR_NONE)
 	//! Может ли стакаться
@@ -19,9 +19,9 @@ BEGIN_PROPTABLE(SXbaseItem)
 	DEFINE_FIELD_BOOL(m_bPickable, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_pickable", "", EDITOR_NONE)
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(SXbaseItem, base_item);
+REGISTER_ENTITY_NOLISTING(CBaseItem, base_item);
 
-SXbaseItem::SXbaseItem(EntityManager * pMgr):
+CBaseItem::CBaseItem(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_bInvStackable(true),
 	m_iInvStackCurSize(0),
@@ -29,4 +29,9 @@ SXbaseItem::SXbaseItem(EntityManager * pMgr):
 	m_iInvWeight(0.0f),
 	m_bPickable(true)
 {
+}
+
+float CBaseItem::getWeight()
+{
+	return(m_iInvWeight);
 }

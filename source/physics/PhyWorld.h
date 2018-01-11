@@ -38,9 +38,9 @@ public:
 	PhyWorld();
 	~PhyWorld();
 
-	void SetThreadNum(int tnum);
-	void Update(int thread = 0);
-	void Sync();
+	void setThreadNum(int tnum);
+	void update(int thread = 0);
+	void sync();
 
 	void AddShape(btRigidBody * pBody);
 	void RemoveShape(btRigidBody * pBody);
@@ -51,7 +51,7 @@ public:
 	bool ImportGeom(const char * file);
 	bool ExportGeom(const char * file);
 
-	void Render();
+	void render();
 
 	MTLTYPE_PHYSIC GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
@@ -82,7 +82,7 @@ public:
 
 		int getDebugMode() const;
 
-		void Render();
+		void render();
 	};
 
 protected:

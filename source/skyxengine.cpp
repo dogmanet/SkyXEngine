@@ -1009,6 +1009,8 @@ int SkyXEngine_CycleMain()
 		}
 		else
 		{
+			SGCore_LoadTexAllLoad();
+			SGCore_ShaderAllLoad();
 			Core_TimesUpdate();
 			Core_0ConsoleUpdate();
 			SSInput_Update();
@@ -1016,7 +1018,6 @@ int SkyXEngine_CycleMain()
 			Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 			Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
 			SSCore_Update(&vCamPos, &vCamDir);
-			SGCore_LoadTexLoadTextures();
 
 			static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 			DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));

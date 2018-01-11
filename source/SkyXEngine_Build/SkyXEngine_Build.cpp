@@ -23,17 +23,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGeom_0SettGreenSetFreqGrass(30);
 
 	/*NPCBase* npc = new NPCBase();
-	npc->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
-	npc->SetPos(&float3(0, 0, 0));*/
+	npc->setModel("models/stalker_zombi/stalker_zombi_a.dse");
+	npc->setPos(&float3(0, 0, 0));*/
 
 	/*for (int i = 0; i < 10; ++i)
 	{
-		SXbaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
-		bEnt->SetFlags(bEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
+		CBaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
+		bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 		char pos[256];
 		//sprintf(pos, "%f %f %f", randf(-0.1, 0.1), randf(-0.1, 0.1), randf(-0.1, 0.1));
-		//bEnt->SetKV("origin", "14.90 0.36 25.56");
-		bEnt->SetKV("origin", "0 0 0");
+		//bEnt->setKV("origin", "14.90 0.36 25.56");
+		bEnt->setKV("origin", "0 0 0");
 	}*/
 
 	/*for (int i = 0; i < 10; ++i)

@@ -445,7 +445,7 @@ void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr
 		tmpcountcom = &(ArrComFor[id_arr]->arr[i]->CountCom);
 		tmpsegments = ArrComFor[id_arr]->arr[i]->Arr;
 		
-		ArrComFor[id_arr]->queue.clear();
+		ArrComFor[id_arr]->queue.clearFast();
 		//long tmpcount = 0;
 		ArrComFor[id_arr]->queue.push_back(ArrModels[i]->SplitsTree);
 
@@ -855,7 +855,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		if (def_str_validate(path_mask))
 		{
 			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LoadTexType::ltt_load);
-			SGCore_LoadTexLoadTextures();
+			SGCore_LoadTexAllLoad();
 
 			GenByTex(geom, tmpnewmpdel, IDTexMask, &mmin, &mmax, count_max);
 		}

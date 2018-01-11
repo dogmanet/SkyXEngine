@@ -15,8 +15,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXbaseEntity_H_
-#define _SXbaseEntity_H_
+#ifndef _CBaseEntity_H_
+#define _CBaseEntity_H_
 
 #include <gdefines.h>
 #include <common/SXMath.h>
@@ -33,80 +33,80 @@ See the license in LICENSE
 #pragma warning(disable:4251)
 
 //! Базовый объект, от которого наследуются все остальные классы объектов.
-class SXGAME_EXPORT SXbaseEntity
+class SXGAME_EXPORT CBaseEntity
 {
-	DECLARE_CLASS_NOBASE(SXbaseEntity);
+	DECLARE_CLASS_NOBASE(CBaseEntity);
 	DECLARE_PROPTABLE();
 
-	friend class EntityManager;
+	friend class CEntityManager;
 
 public:
 	//! Конструктор
-	SXbaseEntity(EntityManager * pMgr);
-	virtual ~SXbaseEntity();
+	CBaseEntity(CEntityManager * pMgr);
+	virtual ~CBaseEntity();
 
 	//! Возвращает имя движкового класса объекта
-	const char * GetClassName();
+	const char * getClassName();
 	
 	//! Возвращает имя объекта
-	const char * GetName();
+	const char * getName();
 	
 	//! Возвращает баунд объекта
-	virtual void GetMinMax(float3 * min, float3 * max);
+	virtual void getMinMax(float3 * min, float3 * max);
 	
 	//! Возвращает баунд сферу объекта
-	virtual void GetSphere(float3 * center, float * radius);
+	virtual void getSphere(float3 * center, float * radius);
 
 	//! Устанавливает мировую позицию объекта
-	virtual void SetPos(const float3 & pos);
+	virtual void setPos(const float3 & pos);
 	//! Получает мировую позицию объекта
-	float3 GetPos();
+	float3 getPos();
 
 	//! Получает ID объекта в системе
-	ID GetId();
+	ID getId();
 
 	//! Получает флаги объекта
-	UINT GetFlags();
+	UINT getFlags();
 	//! Устанавливает флаги объекта
-	void SetFlags(UINT f);
+	void setFlags(UINT f);
 
 	//! Получает мировую матрицу трансформации для объекта
-	SMMATRIX GetWorldTM();
+	SMMATRIX getWorldTM();
 
 	//! Устанавливает вращение объекта
-	virtual void SetOrient(const SMQuaternion & q);
+	virtual void setOrient(const SMQuaternion & q);
 	//! Возвращает вращение объекта
-	SMQuaternion GetOrient();
+	SMQuaternion getOrient();
 
 	//! Устанавливает свойство объекта
-	virtual bool SetKV(const char * name, const char * value);
+	virtual bool setKV(const char * name, const char * value);
 	//! Получает свойство объекта
-	virtual bool GetKV(const char * name, char * out, int bufsize);
+	virtual bool getKV(const char * name, char * out, int bufsize);
 
 	//! Устанавливает родительский объект для объекта
-	void SetParent(SXbaseEntity * pEnt, int attachment = -1);
+	void setParent(CBaseEntity * pEnt, int attachment = -1);
 	//! Возвращает родительский объект объекта
-	SXbaseEntity * GetParent();
+	CBaseEntity * getParent();
 
 	//! Устанавливает владельца
-	void SetOwner(SXbaseEntity * pEnt);
+	void setOwner(CBaseEntity * pEnt);
 	//! Возвращает владельца объекта
-	SXbaseEntity * GetOwner();
+	CBaseEntity * getOwner();
 
 	//! Получает объект менеджера
-	EntityManager * getManager();
+	CEntityManager * getManager();
 
 	//void updateDiscreteLinearVelocity(int step, float dt);
 	//const float3_t & getDiscreteLinearVelocity() const;
 
 private:
-	void SetClassName(const char * name);
-	void SetDefaults();
+	void setClassName(const char * name);
+	void setDefaults();
 
 	const char * m_szClassName;
 
 protected:
-	EntityManager * m_pMgr;
+	CEntityManager * m_pMgr;
 
 	//! Позиция объекта
 	float3_t m_vPosition;
@@ -136,27 +136,27 @@ protected:
 	const char * m_szName;
 
 	//! Родитель
-	SXbaseEntity * m_pParent;
+	CBaseEntity * m_pParent;
 	//! Индекс кости родителя
 	int m_iParentAttachment;
 
 	//! Владелец
-	SXbaseEntity * m_pOwner;
+	CBaseEntity * m_pOwner;
 
 	//! Вызывается на стадии синхронизации
-	virtual void OnSync();
+	virtual void onSync();
 	//! Вызывается при создании после установки всех свойств
-	virtual void OnPostLoad();
+	virtual void onPostLoad();
 
 	//! Получает смещение для кости
-	virtual float3 GetAttachmentPos(int id);
+	virtual float3 getAttachmentPos(int id);
 	//! Получает вращение для кости
-	virtual SMQuaternion GetAttachmentRot(int id);
+	virtual SMQuaternion getAttachmentRot(int id);
 
 	/*! Устанавливает значение строкового свойства
 	\note только для внутреннего использования
 	*/
-	void _SetStrVal(const char ** to, const char * value);
+	void _setStrVal(const char ** to, const char * value);
 
 	/*! Обновляет выходы
 	\note только для внутреннего использования

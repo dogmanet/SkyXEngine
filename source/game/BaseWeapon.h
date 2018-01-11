@@ -8,10 +8,10 @@ See the license in LICENSE
 Базовый класс оружия
 */
 
-#ifndef _SXbaseWeapon_H_
-#define _SXbaseWeapon_H_
+#ifndef _CBaseWeapon_H_
+#define _CBaseWeapon_H_
 
-#include "SXbaseTool.h"
+#include "BaseTool.h"
 
 #include "BaseScope.h"
 #include "BaseHandle.h"
@@ -28,27 +28,54 @@ enum FIRE_MODE
 };
 #define FIRE_MODE_COUNT 3
 
+//! Идентификаторы для получения коэффициентов разброса
+enum SPREAD_COEFF
+{
+	SPREAD_COEFF_IDLE, //!< стоя
+	SPREAD_COEFF_CROUCH, //!< пригувшись
+	SPREAD_COEFF_CRAWL, //!< лежа
+	SPREAD_COEFF_WALK, //!< в ходьбе
+	SPREAD_COEFF_RUN, //!<  в беге
+	SPREAD_COEFF_AIRBORNE, //!< в прыжке
+	SPREAD_COEFF_CONDITION, //!< состояние оружия
+	SPREAD_COEFF_ARM, //!< состояние рук
+	SPREAD_COEFF_IRONSIGHT, //!< в прицеливании
+};
+
 /*! Оружие
 \ingroup cbaseitem
 */
-class SXbaseWeapon: public SXbaseTool
+class CBaseWeapon: public CBaseTool
 {
-	DECLARE_CLASS(SXbaseWeapon, SXbaseTool);
+	DECLARE_CLASS(CBaseWeapon, CBaseTool);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	virtual void OnPostLoad();
+	virtual void onPostLoad();
 
-	virtual void PrimaryAction(BOOL st);
-	virtual void SecondaryAction(BOOL st);
-	virtual void Reload();
+	virtual void primaryAction(BOOL st);
+	virtual void secondaryAction(BOOL st);
+	virtual void reload();
 
-	virtual bool SetKV(const char * name, const char * value);
+	virtual bool setKV(const char * name, const char * value);
 
 	void setFireMode(FIRE_MODE mode);
 	void nextFireMode();
 
 	bool canShoot();
+
+	//! Масса объекта
+	float getWeight();
+
+
+	//! угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
+	float getBaseSpread() const;
+
+	//! в прицеливании
+	bool isIronSight() const;
+
+	//! Коэффициент разброса
+	float getSpreadCoeff(SPREAD_COEFF what) const;
 
 protected:
 
@@ -94,6 +121,18 @@ protected:
 	// Without mag
 	int m_iCapacity;
 	int m_iCurrentLoad;
+
+	// Spread
+	float m_fBaseSpread;
+	float m_fSpreadIdle;
+	float m_fSpreadCrouch;
+	float m_fSpreadCrawl;
+	float m_fSpreadWalk;
+	float m_fSpreadRun;
+	float m_fSpreadAirborne;
+	float m_fSpreadCondition;
+	float m_fSpreadArm;
+	float m_fSpreadIronSight;
 };
 
 #endif

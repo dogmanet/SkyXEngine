@@ -282,16 +282,16 @@ ID LoaderTextures::Update(const char* name, LoadTexType type)
 	IDirect3DTexture9* tex=0;
 		if(FAILED(D3DXCreateTextureFromFileEx(
 			g_pDXDevice,
-			tmpPath,
-			D3DX_DEFAULT,
-			D3DX_DEFAULT,
-			SXGC_LOADTEX_COUNT_MIPMAP,
-			0,
-			SXGC_LOADTEX_FORMAT_TEX,
-			D3DPOOL_MANAGED, 
-			D3DX_FILTER_BOX, 
-			D3DX_FILTER_BOX,  0, 0, 0, &tex
-			)
+											tmpPath,
+											D3DX_DEFAULT,
+											D3DX_DEFAULT,
+											SXGC_LOADTEX_COUNT_MIPMAP,
+											0,
+											SXGC_LOADTEX_FORMAT_TEX,
+											D3DPOOL_MANAGED, 
+											D3DX_FILTER_BOX, 
+											D3DX_FILTER_BOX,  0, 0, 0, &tex
+											)
 			)
 		)
 		{
@@ -310,10 +310,11 @@ void LoaderTextures::LoadTextures()
 {
 	if (ArrIDsLoad.size() <= 0)
 		return;
-	//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: load textures ...\n", SX_LIB_NAME);
+	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: load textures ...\n", SX_LIB_NAME);
 
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	ID tmpiddir;
+	int iCountLoaded = 0;
 	for (int i = 0; i<ArrIDsLoad.size(); i++)
 	{
 		tmpiddir = ArrTextures[ArrIDsLoad[i]]->IDDir;
@@ -335,12 +336,13 @@ void LoaderTextures::LoadTextures()
 			)))
 		{
 			ArrTextures[ArrIDsLoad[i]]->tex = 0;
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: - not found texture [%s]\n", SX_LIB_NAME, ArrTextures[ArrIDsLoad[i]]->name.c_str());
+			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: - not found [%s]\n", SX_LIB_NAME, ArrTextures[ArrIDsLoad[i]]->name.c_str());
 		}
 		else
 		{
 			ArrTextures[ArrIDsLoad[i]]->tex = tex;
-			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  texture loaded [%s], id = %d\n", ArrTextures[ArrIDsLoad[i]]->name.c_str(), ArrIDsLoad[i]);
+			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  texture id [%d], [%s]\n", ArrIDsLoad[i], ArrTextures[ArrIDsLoad[i]]->name.c_str());
+			++iCountLoaded;
 		}
 	}
 

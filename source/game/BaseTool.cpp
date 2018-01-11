@@ -1,15 +1,15 @@
-#include "SXbaseTool.h"
+#include "BaseTool.h"
 
 #include <particles/sxparticles.h>
 #include <decals/sxdecals.h>
-#include "SXplayer.h"
+#include "Player.h"
 
 /*! \skydocent base_tool
 Базовый класс для инструмента (в т.ч оружие). То, что игрок может взять в руки и использовать
 */
 
 
-BEGIN_PROPTABLE(SXbaseTool)
+BEGIN_PROPTABLE(CBaseTool)
 	//! Время перезарядки, с
 	DEFINE_FIELD_FLOAT(m_fReloadTime, PDFF_NOEDIT | PDFF_NOEXPORT, "reload_time", "", EDITOR_NONE)
 	//! Время прицеливания, с
@@ -43,9 +43,9 @@ BEGIN_PROPTABLE(SXbaseTool)
 
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(SXbaseTool, base_tool);
+REGISTER_ENTITY_NOLISTING(CBaseTool, base_tool);
 
-SXbaseTool::SXbaseTool(EntityManager * pMgr):
+CBaseTool::CBaseTool(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_bInPrimaryAction(false),
 	m_bInSecondaryAction(false),
@@ -59,21 +59,22 @@ SXbaseTool::SXbaseTool(EntityManager * pMgr):
 	m_iSoundAction2(-1),
 	m_iMuzzleFlash(-1),
 	m_iMuzzleFlash2(-1),
-	m_fMaxDistance(1000.0f)
+	m_fMaxDistance(1000.0f),
+	m_bIsWeapon(false)
 {
 	m_bInvStackable = false;
 
-	m_iIvalUpdate = SET_INTERVAL(_Update, 0);
+	m_iIvalUpdate = SET_INTERVAL(_update, 0);
 }
 
-SXbaseTool::~SXbaseTool()
+CBaseTool::~CBaseTool()
 {
 	CLEAR_INTERVAL(m_iIvalUpdate);
 }
 
-void SXbaseTool::OnPostLoad()
+void CBaseTool::onPostLoad()
 {
-	BaseClass::OnPostLoad();
+	BaseClass::onPostLoad();
 
 	if(m_szPrimaryActionSound[0])
 	{
@@ -93,36 +94,36 @@ void SXbaseTool::OnPostLoad()
 	}
 }
 
-void SXbaseTool::SetNextUse(float time)
+void CBaseTool::setNextUse(float time)
 {
 	m_bCanUse = false;
-	SET_TIMEOUT(_AllowUse, time);
+	SET_TIMEOUT(_allowUse, time);
 }
-bool SXbaseTool::CanUse()
+bool CBaseTool::canUse()
 {
 	return(m_bCanUse);
 }
 
-void SXbaseTool::PrimaryAction(BOOL st)
+void CBaseTool::primaryAction(BOOL st)
 {
 	m_bInPrimaryAction = st != FALSE;
 	if(st)
 	{
-		PlayAnimation("shoot1");
+		playAnimation("shoot1");
 		if(ID_VALID(m_iMuzzleFlash))
 		{
 			SPE_EffectEnableSet(m_iMuzzleFlash, true);
 		}
 		if(ID_VALID(m_iSoundAction1))
 		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, &GetPos());
+			SSCore_SndInstancePlay3d(m_iSoundAction1, &getPos());
 		}
 
-		//((SXplayer*)m_pOwner)->is
+		//((CPlayer*)m_pOwner)->is
 
 		//trace line
-		float3 start = GetPos();
-		float3 dir = m_pParent->GetOrient() * float3(0.0f, 0.0f, 1.0f);
+		float3 start = getPos();
+		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * m_fMaxDistance;
 		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
 		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
@@ -141,39 +142,39 @@ void SXbaseTool::PrimaryAction(BOOL st)
 	}
 }
 
-void SXbaseTool::SecondaryAction(BOOL st)
+void CBaseTool::secondaryAction(BOOL st)
 {
 	m_bInSecondaryAction = st != FALSE;
 	if(m_iZoomable)
 	{
-		((SXplayer*)m_pOwner)->GetCrosshair()->Enable(!st);
+		((CPlayer*)m_pOwner)->getCrosshair()->enable(!st);
 	}
 }
 
-void SXbaseTool::SetIsWorldModel(bool b)
+void CBaseTool::setIsWorldModel(bool b)
 {
 	m_bWorldModel = b;
 }
 
-void SXbaseTool::Reload()
+void CBaseTool::reload()
 {
-	if(CanUse())
+	if(canUse())
 	{
-		SetNextUse(m_fReloadTime);
-		PlayAnimation("reload");
+		setNextUse(m_fReloadTime);
+		playAnimation("reload");
 	}
 }
 
-void SXbaseTool::AttachHands()
+void CBaseTool::attachHands()
 {
 	if(m_pAnimPlayer)
 	{
-		m_pAnimPlayer->AddModel("models/weapons/hands.dse");
-		m_pAnimPlayer->Assembly();
+		m_pAnimPlayer->addModel("models/weapons/hands.dse");
+		m_pAnimPlayer->assembly();
 	}
 }
 
-void SXbaseTool::DbgMove(int dir, float dy)
+void CBaseTool::dbgMove(int dir, float dy)
 {
 	switch(dir)
 	{
@@ -205,22 +206,22 @@ void SXbaseTool::DbgMove(int dir, float dy)
 	}
 }
 
-void SXbaseTool::OnSync()
+void CBaseTool::onSync()
 {
-	float3_t ang = ((SXplayer*)m_pOwner)->GetWeaponDeltaAngles();
+	float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
 	m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
-	BaseClass::OnSync();
+	BaseClass::onSync();
 	if(m_pAnimPlayer)
 	{
 		//SPE_EffectPlayByID
-		float3 pos = m_pAnimPlayer->GetBoneTransformPos(m_pAnimPlayer->GetBone("muzzle_rifle1"));
+		float3 pos = m_pAnimPlayer->getBoneTransformPos(m_pAnimPlayer->getBone("muzzle_rifle1"));
 		SPE_EffectPosSet(m_iMuzzleFlash, &pos);
 		//pos = m_vOrientation * float3(0, 0, 1);
 		SPE_EffectRotSetQ(m_iMuzzleFlash, m_vOrientation);
 	}
 }
 
-void SXbaseTool::_Update(float dt)
+void CBaseTool::_update(float dt)
 {
 	float speed = 1.0f / m_fZoomTime;
 	if(m_bInSecondaryAction && m_iZoomable)
@@ -232,7 +233,7 @@ void SXbaseTool::_Update(float dt)
 			{
 				m_fZoomProgress = 1.0f;
 			}
-			_Rezoom();
+			_rezoom();
 		}
 	}
 	else
@@ -244,19 +245,19 @@ void SXbaseTool::_Update(float dt)
 			{
 				m_fZoomProgress = 0.0f;
 			}
-			_Rezoom();
+			_rezoom();
 		}
 	}
 }
 
-void SXbaseTool::SetParent(SXbaseEntity * pEnt, int attachment)
+void CBaseTool::setParent(CBaseEntity * pEnt, int attachment)
 {
-	BaseClass::SetParent(pEnt, attachment);
+	BaseClass::setParent(pEnt, attachment);
 
-	_Rezoom();
+	_rezoom();
 }
 
-void SXbaseTool::_Rezoom()
+void CBaseTool::_rezoom()
 {
 	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	m_vOffsetPos = (float3)vlerp(m_vSlotPos, m_vSlotPosAim, m_fZoomProgress);
@@ -264,6 +265,16 @@ void SXbaseTool::_Rezoom()
 	m_qSlotRotResult = SMquaternionSlerp(m_qSlotRot, m_qSlotRotAim, m_fZoomProgress);
 	if(m_pOwner)
 	{
-		((SXplayer*)m_pOwner)->GetCamera()->GetCamera()->SetFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
+		((CPlayer*)m_pOwner)->getCamera()->getCamera()->SetFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
+}
+
+bool CBaseTool::isWeapon() const
+{
+	return(m_bIsWeapon);
+}
+
+float CBaseTool::getCondition() const
+{
+	return(1.0f);
 }

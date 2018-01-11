@@ -13,29 +13,29 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXpointCamera_H_
-#define _SXpointCamera_H_
+#ifndef _CPointCamera_H_
+#define _CPointCamera_H_
 
 #include <gcore/sxgcore.h>
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
 
 //! Класс камеры
-class SXpointCamera: public SXpointEntity
+class CPointCamera: public CPointEntity
 {
-	DECLARE_CLASS(SXpointCamera, SXpointEntity);
+	DECLARE_CLASS(CPointCamera, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	SXpointCamera(EntityManager * pMgr);
-	~SXpointCamera();
+	CPointCamera(CEntityManager * pMgr);
+	~CPointCamera();
 
 	//! Возвращает объект камеры из графической либы
-	ISXCamera * GetCamera();
+	ISXCamera * getCamera();
 
 protected:
 	ISXCamera * m_pSXC;
 
-	void OnSync();
+	void onSync();
 };
 
 #endif

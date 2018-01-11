@@ -1,10 +1,10 @@
-#include "SXbaseAmmo.h"
+#include "BaseAmmo.h"
 
 /*! \skydocent base_ammo
 Базовый класс для патронов
 */
 
-BEGIN_PROPTABLE(SXbaseAmmo)
+BEGIN_PROPTABLE(CBaseAmmo)
 	//! Начальная скорость пули
 	DEFINE_FIELD_FLOAT(m_fStartSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "start_speed", "", EDITOR_NONE)
 	//! Масса пули, кг
@@ -13,9 +13,9 @@ BEGIN_PROPTABLE(SXbaseAmmo)
 	DEFINE_FIELD_FLOAT(m_fArmorPiercing, PDFF_NOEDIT | PDFF_NOEXPORT, "armor_piercing", "", EDITOR_NONE)
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOLISTING(SXbaseAmmo, base_ammo);
+REGISTER_ENTITY_NOLISTING(CBaseAmmo, base_ammo);
 
-SXbaseAmmo::SXbaseAmmo(EntityManager * pMgr):
+CBaseAmmo::CBaseAmmo(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_fStartSpeed(0.0f),
 	m_fBulletMass(0.0f),

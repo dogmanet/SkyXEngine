@@ -967,6 +967,18 @@ SX_LIB_API void SML_MtlSetHitChance(ID id, float fHitChance)
 	ArrMaterials->MtlSetHitChance(id, fHitChance);
 }
 
+SX_LIB_API float SML_MtlGetDensity(ID id)
+{
+	ML_PRECOND(-1);
+	return ArrMaterials->MtlGetDensity(id);
+}
+
+SX_LIB_API void SML_MtlSetDensity(ID id, float fDensity)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->MtlSetDensity(id, fDensity);
+}
+
 //##########################################################################
 
 SX_LIB_API void SML_MtlSetLighting(ID id, bool is_lighting)

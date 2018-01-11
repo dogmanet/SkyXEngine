@@ -11,7 +11,7 @@ See the license in LICENSE
 #ifndef _BaseWeaponAddon_H_
 #define _BaseWeaponAddon_H_
 
-#include "SXbaseItem.h"
+#include "BaseItem.h"
 
 /*! Тип навеса
 \ingroup cbaseitem
@@ -28,9 +28,9 @@ enum WPN_ADDON
 /*! Навесы на оружие
 \ingroup cbaseitem
 */
-class CBaseWeaponAddon: public SXbaseItem
+class CBaseWeaponAddon: public CBaseItem
 {
-	DECLARE_CLASS(CBaseWeaponAddon, SXbaseItem);
+	DECLARE_CLASS(CBaseWeaponAddon, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();

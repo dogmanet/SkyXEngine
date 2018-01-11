@@ -41,6 +41,9 @@ struct CShader
 	//! имя файла шейдера
 	char m_szPath[SXGC_SHADER_MAX_SIZE_DIR];
 
+	//! где был загружен этот шейдер (впервые)
+	//char m_szFrom[SXGC_SHADER_MAX_SIZE_FULLPATH];
+
 	//! количество переменных
 	int m_iCountVar;
 
@@ -138,8 +141,11 @@ public:
 	//! существует ли файл name в папке с шейдерами
 	bool existsFile(const char *szPath);
 
-	//! загрузка шейдера
-	ID load(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacros = 0);
+	//! добавление шейдера в очередь
+	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacros = 0);
+
+	//! загрузка всех шейдеров
+	void allLoad();
 
 	//! обновление шейдера по имени
 	void update(SHADER_TYPE type, const char *szName);
@@ -191,6 +197,7 @@ public:
 	//! загружен ли шейдер с данным id
 	bool isValidated(SHADER_TYPE type, ID id);
 
+	//! валидное ли имя у шейдера (расширение должно совпадать с типом)
 	bool isValidateTypeName(SHADER_TYPE type, const char *szName);
 
 
@@ -203,6 +210,9 @@ public:
 protected:
 	Array<CShaderVS*> m_aVS;
 	Array<CShaderPS*> m_aPS;
+
+	int m_iLastAllLoadVS;
+	int m_iLastAllLoadPS;
 };
 
 #endif

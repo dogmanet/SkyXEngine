@@ -6,9 +6,9 @@
 #include <score/sxscore.h>
 
 
-SXplayer * GameData::m_pPlayer;
-SXpointCamera * GameData::m_pActiveCamera;
-EntityManager * GameData::m_pMgr;
+CPlayer * GameData::m_pPlayer;
+CPointCamera * GameData::m_pActiveCamera;
+CEntityManager * GameData::m_pMgr;
 
 CRagdoll * g_pRagdoll;
 IAnimPlayer * pl;
@@ -17,7 +17,7 @@ GameData::GameData()
 {
 	loadFoostepsSounds();
 
-	m_pMgr = new EntityManager();
+	m_pMgr = new CEntityManager();
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -59,27 +59,27 @@ GameData::GameData()
 	Core_0RegisterCVarFloat("cl_bob_walk", 0.5f, "View bobbing walk period");
 	Core_0RegisterCVarFloat("cl_bob_run", 1.0f, "View bobbing run period");
 
-	CrosshairManager::loadConfig("config/game/crosshairs.cfg");
+	CCrosshairManager::loadConfig("config/game/crosshairs.cfg");
 
-	m_pPlayer = (SXplayer*)CREATE_ENTITY("player", m_pMgr);
-	m_pActiveCamera = m_pPlayer->GetCamera();
-	m_pCrosshair = m_pPlayer->GetCrosshair();
+	m_pPlayer = (CPlayer*)CREATE_ENTITY("player", m_pMgr);
+	m_pActiveCamera = m_pPlayer->getCamera();
+	m_pCrosshair = m_pPlayer->getCrosshair();
 
-	ID idCrosshairDefault = CrosshairManager::getCrosshairID("default");
+	ID idCrosshairDefault = CCrosshairManager::getCrosshairID("default");
 	if(ID_VALID(idCrosshairDefault))
 	{
-		CrosshairManager::loadCrosshair(idCrosshairDefault, m_pCrosshair);
+		CCrosshairManager::loadCrosshair(idCrosshairDefault, m_pCrosshair);
 	}
 
-	Core_0RegisterConcmdClsArg("+debug_slot_move", m_pPlayer, (SXCONCMDCLSARG)&SXplayer::_ccmd_slot_on);
-	Core_0RegisterConcmdCls("-debug_slot_move", m_pPlayer, (SXCONCMDCLS)&SXplayer::_ccmd_slot_off);
+	Core_0RegisterConcmdClsArg("+debug_slot_move", m_pPlayer, (SXCONCMDCLSARG)&CPlayer::_ccmd_slot_on);
+	Core_0RegisterConcmdCls("-debug_slot_move", m_pPlayer, (SXCONCMDCLS)&CPlayer::_ccmd_slot_off);
 
 
-	//m_pPlayer->SetModel("models/stalker_zombi/stalker_zombi_a.dse");
-	//m_pPlayer->PlayAnimation("reload");
+	//m_pPlayer->setModel("models/stalker_zombi/stalker_zombi_a.dse");
+	//m_pPlayer->playAnimation("reload");
 
 	//pl = SXAnim_CreatePlayer("models/stalker_zombi/stalker_zombi_a.dse");
-	//pl->SetPos(float3(0, 0, 0));
+	//pl->setPos(float3(0, 0, 0));
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
 }
@@ -96,20 +96,20 @@ GameData::~GameData()
 	}
 }
 
-void GameData::Update()
+void GameData::update()
 {
-	m_pCrosshair->Update();
+	m_pCrosshair->update();
 }
-void GameData::Render()
+void GameData::render()
 {
 }
-void GameData::RenderHUD()
+void GameData::renderHUD()
 {
-	m_pCrosshair->Render();
+	m_pCrosshair->render();
 }
-void GameData::Sync()
+void GameData::sync()
 {
-	m_pCrosshair->OnSync();
+	m_pCrosshair->onSync();
 }
 
 void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
@@ -176,112 +176,112 @@ void GameData::loadFoostepsSounds()
 
 void GameData::ccmd_forward_on()
 {
-	m_pPlayer->Move(PM_FORWARD, TRUE);
+	m_pPlayer->move(PM_FORWARD, TRUE);
 }
 void GameData::ccmd_forward_off()
 {
-	m_pPlayer->Move(PM_FORWARD, FALSE);
+	m_pPlayer->move(PM_FORWARD, FALSE);
 }
 
 void GameData::ccmd_backward_on()
 {
-	m_pPlayer->Move(PM_BACKWARD, TRUE);
+	m_pPlayer->move(PM_BACKWARD, TRUE);
 }
 void GameData::ccmd_backward_off()
 {
-	m_pPlayer->Move(PM_BACKWARD, FALSE);
+	m_pPlayer->move(PM_BACKWARD, FALSE);
 }
 
 void GameData::ccmd_left_on()
 {
-	m_pPlayer->Move(PM_LEFT, TRUE);
+	m_pPlayer->move(PM_LEFT, TRUE);
 }
 void GameData::ccmd_left_off()
 {
-	m_pPlayer->Move(PM_LEFT, FALSE);
+	m_pPlayer->move(PM_LEFT, FALSE);
 }
 
 void GameData::ccmd_right_on()
 {
-	m_pPlayer->Move(PM_RIGHT, TRUE);
+	m_pPlayer->move(PM_RIGHT, TRUE);
 }
 void GameData::ccmd_right_off()
 {
-	m_pPlayer->Move(PM_RIGHT, FALSE);
+	m_pPlayer->move(PM_RIGHT, FALSE);
 }
 
 void GameData::ccmd_boost_on()
 {
-	m_pPlayer->Move(PM_RUN, TRUE);
+	m_pPlayer->move(PM_RUN, TRUE);
 }
 void GameData::ccmd_boost_off()
 {
-	m_pPlayer->Move(PM_RUN, FALSE);
+	m_pPlayer->move(PM_RUN, FALSE);
 }
 
 void GameData::ccmd_crouch_on()
 {
-	m_pPlayer->Move(PM_CROUCH, TRUE);
+	m_pPlayer->move(PM_CROUCH, TRUE);
 }
 void GameData::ccmd_crouch_off()
 {
-	m_pPlayer->Move(PM_CROUCH, FALSE);
+	m_pPlayer->move(PM_CROUCH, FALSE);
 }
 
 void GameData::ccmd_crawl_on()
 {
-	m_pPlayer->Move(PM_CRAWL, TRUE);
+	m_pPlayer->move(PM_CRAWL, TRUE);
 }
 void GameData::ccmd_crawl_off()
 {
-	m_pPlayer->Move(PM_CRAWL, FALSE);
+	m_pPlayer->move(PM_CRAWL, FALSE);
 }
 
 void GameData::ccmd_jump_on()
 {
-	m_pPlayer->Move(PM_JUMP, TRUE);
+	m_pPlayer->move(PM_JUMP, TRUE);
 }
 void GameData::ccmd_jump_off()
 {
-	m_pPlayer->Move(PM_JUMP, FALSE);
+	m_pPlayer->move(PM_JUMP, FALSE);
 }
 
 void GameData::ccmd_attack_on()
 {
-	m_pPlayer->Attack(TRUE);
+	m_pPlayer->attack(TRUE);
 }
 void GameData::ccmd_attack_off()
 {
-	m_pPlayer->Attack(FALSE);
+	m_pPlayer->attack(FALSE);
 }
 
 void GameData::ccmd_attack2_on()
 {
-	m_pPlayer->Attack2(TRUE);
+	m_pPlayer->attack2(TRUE);
 }
 void GameData::ccmd_attack2_off()
 {
-	m_pPlayer->Attack2(FALSE);
+	m_pPlayer->attack2(FALSE);
 }
 
 void GameData::ccmd_spawn()
 {
 	Core_0ConsoleExecCmd("cl_mode_editor 0");
-	m_pPlayer->Spawn();
+	m_pPlayer->spawn();
 }
 void GameData::ccmd_observe()
 {
-	m_pPlayer->Observe();
+	m_pPlayer->observe();
 }
 
 void GameData::ccmd_reload()
 {
-	m_pPlayer->Reload();
+	m_pPlayer->reload();
 }
 
 void GameData::ccmd_toggleflashlight()
 {
-	m_pPlayer->ToggleFlashlight();
+	m_pPlayer->toggleFlashlight();
 }
 
 void GameData::ccmd_switch_firemode()

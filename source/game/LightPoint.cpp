@@ -38,7 +38,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLightPoint, light_point);
 
-CLightPoint::CLightPoint(EntityManager * pMgr) :
+CLightPoint::CLightPoint(CEntityManager * pMgr) :
 BaseClass(pMgr)
 {
 	m_vColor = float3(1, 1, 1);
@@ -59,9 +59,9 @@ void CLightPoint::toggleEnable()
 	SML_LigthsSetEnable(m_idLight, m_isEnable);
 }
 
-void CLightPoint::OnSync()
+void CLightPoint::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 
 	if (SML_LigthsGetEnable(m_idLight) != m_isEnable)
 		SML_LigthsSetEnable(m_idLight, m_isEnable);

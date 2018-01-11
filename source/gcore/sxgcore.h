@@ -307,7 +307,10 @@ enum SHADER_CHECKDOUBLE
 
 //**************************************************************************
 
-//! загрузка шейдера
+//! загрузить все шейдеры поставленные в очередь
+SX_LIB_API void SGCore_ShaderAllLoad();
+
+//! поставить шейдер в очередь загрузки
 SX_LIB_API ID SGCore_ShaderLoad(
 	SHADER_TYPE type_shader,	//!< тип шейдера
 	const char* path,			//!< имя файла шейдера с расширением
@@ -506,7 +509,7 @@ SX_LIB_API void SGCore_LoadTexUpdate(ID id);
 SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID id);	
 
 //! загрузка всех текстур поставленных в очередь, если есть очередь
-SX_LIB_API void SGCore_LoadTexLoadTextures();	
+SX_LIB_API void SGCore_LoadTexAllLoad();	
 
 //!@} sxgcore_loadtex
 

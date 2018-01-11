@@ -12,14 +12,14 @@ See the license in LICENSE
 #ifndef __LIGHTDIRECTIONAL_H
 #define __LIGHTDIRECTIONAL_H
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
 
 /*! Направленный свет
 \ingroup clight
 */
-class CLightDirectional: public SXpointEntity
+class CLightDirectional: public CPointEntity
 {
-	DECLARE_CLASS(CLightDirectional, SXpointEntity);
+	DECLARE_CLASS(CLightDirectional, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
@@ -50,7 +50,7 @@ public:
 
 protected:
 
-	void OnSync();
+	void onSync();
 
 	ID m_idLight;
 

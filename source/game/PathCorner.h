@@ -13,10 +13,10 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _PathCorner_H_
-#define _PathCorner_H_
+#ifndef _CPathCorner_H_
+#define _CPathCorner_H_
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
 
 //! тип сглаживания пути
 enum PATH_CORNER_TYPE
@@ -25,30 +25,30 @@ enum PATH_CORNER_TYPE
 	PCT_SPLINE = 1 //!< сплайном
 };
 
-//! Точка пути для #FuncTrain
-class PathCorner: public SXpointEntity
+//! Точка пути для #CFuncTrain
+class CPathCorner: public CPointEntity
 {
-	DECLARE_CLASS(PathCorner, SXpointEntity);
+	DECLARE_CLASS(CPathCorner, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	PathCorner(EntityManager * pMgr);
+	CPathCorner(CEntityManager * pMgr);
 
 	//! получает координаты точки на пути на расстоянии dist от начала
-	float3 GetPoint(float dist);
+	float3 getPoint(float dist);
 	//! получает вращение точки на пути на расстоянии dist от начала
-	SMQuaternion GetRot(float dist);
+	SMQuaternion getRot(float dist);
 	//! получает длину пути
 	float GetLength();
 
 	//! Получает следующую точку на пути
-	PathCorner * GetNext();
+	CPathCorner * GetNext();
 	//! Получает предыдущую точку на пути
-	PathCorner * GetPrev();
+	CPathCorner * GetPrev();
 
 protected:
 	//! Пересчитывает путь
 	void RecalcPath(float t);
-	void OnPostLoad();
+	void onPostLoad();
 
 	//! Тип сглаживания
 	int m_type;
@@ -71,9 +71,9 @@ protected:
 	//! @}
 
 	//! Следующая точка
-	PathCorner * m_pNextStop;
+	CPathCorner * m_pNextStop;
 	//! Предыдущая точка
-	PathCorner * m_pPrevStop;
+	CPathCorner * m_pPrevStop;
 };
 
 #endif

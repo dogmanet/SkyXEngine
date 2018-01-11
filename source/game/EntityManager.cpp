@@ -1,30 +1,30 @@
 #include "EntityManager.h"
 
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 #include <core/sxcore.h>
 
 #include <mutex>
 
-EntityManager::EntityManager():
+CEntityManager::CEntityManager():
 	m_iThreadNum(1),
 	m_pDefaultsConf(NULL),
 	m_pDynClassConf(NULL)
 {
-	LoadDefaults();
-	LoadDynClasses();
+	loadDefaults();
+	loadDynClasses();
 
-	Core_0RegisterConcmdClsArg("ent_dump", this, (SXCONCMDCLSARG)&EntityManager::DumpList);
-	Core_0RegisterConcmdClsArg("ent_kv", this, (SXCONCMDCLSARG)&EntityManager::EntKV);
+	Core_0RegisterConcmdClsArg("ent_dump", this, (SXCONCMDCLSARG)&CEntityManager::dumpList);
+	Core_0RegisterConcmdClsArg("ent_kv", this, (SXCONCMDCLSARG)&CEntityManager::entKV);
 }
 
-EntityManager::~EntityManager()
+CEntityManager::~CEntityManager()
 {
 	mem_release(m_pDynClassConf);
 	mem_release(m_pDefaultsConf);
 }
 
-void EntityManager::Update(int thread)
+void CEntityManager::update(int thread)
 {
 	time_point tNow = std::chrono::high_resolution_clock::now();
 	timeout_t * t;
@@ -74,7 +74,7 @@ void EntityManager::Update(int thread)
 	}
 }
 
-void EntityManager::SetThreadNum(int num)
+void CEntityManager::setThreadNum(int num)
 {
 	if(num > 0)
 	{
@@ -82,9 +82,9 @@ void EntityManager::SetThreadNum(int num)
 	}
 }
 
-void EntityManager::Sync()
+void CEntityManager::sync()
 {
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
 	{
 		if(m_vTimeout[i].status == TS_DONE)
@@ -119,27 +119,27 @@ void EntityManager::Sync()
 		if(pEnt)
 		{
 			//pEnt->updateDiscreteLinearVelocity(0, dt);
-			pEnt->OnSync();
+			pEnt->onSync();
 			//pEnt->updateDiscreteLinearVelocity(1, dt);
 		}
 	}
 	//tOld = std::chrono::high_resolution_clock::now();
 }
 
-void EntityManager::unloadObjLevel()
+void CEntityManager::unloadObjLevel()
 {
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for (int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
-		if (pEnt && (pEnt->GetFlags() & EF_LEVEL))
+		if (pEnt && (pEnt->getFlags() & EF_LEVEL))
 		{
 			REMOVE_ENTITY(pEnt);
 		}
 	}
 }
 
-ID EntityManager::Register(SXbaseEntity * pEnt)
+ID CEntityManager::reg(CBaseEntity * pEnt)
 {
 	ID ent;
 	if(!pEnt)
@@ -159,7 +159,7 @@ ID EntityManager::Register(SXbaseEntity * pEnt)
 	}
 	return(ent);
 }
-void EntityManager::Unregister(ID ent)
+void CEntityManager::unreg(ID ent)
 {
 	//@TODO: Clear all sheduled timeouts and outputs
 	if(m_vEntList.size() <= (UINT)ent || ent < 0)
@@ -170,7 +170,7 @@ void EntityManager::Unregister(ID ent)
 	m_vFreeIDs.push_back(ent);
 }
 
-ID EntityManager::SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
+ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -198,7 +198,7 @@ ID EntityManager::SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity *
 	return(id);
 }
 
-ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
+ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -226,7 +226,7 @@ ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity 
 	return(id);
 }
 
-void EntityManager::ClearInterval(ID id)
+void CEntityManager::clearInterval(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vInterval.size())
 	{
@@ -237,7 +237,7 @@ void EntityManager::ClearInterval(ID id)
 		m_vInterval[id].status = TS_DONE;
 	}
 }
-void EntityManager::ClearTimeout(ID id)
+void CEntityManager::clearTimeout(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vTimeout.size())
 	{
@@ -249,12 +249,12 @@ void EntityManager::ClearTimeout(ID id)
 	}
 }
 
-bool EntityManager::Export(const char * file)
+bool CEntityManager::exportList(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	conf->New(file);
 	char buf[4096], sect[32];
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	proptable_t * pTbl;
 	int ic = 0;
 
@@ -265,20 +265,20 @@ bool EntityManager::Export(const char * file)
 		pEnt = m_vEntList[i];
 		sprintf(sect, "ent_%d", ic);
 
-		if(!(pEnt->GetFlags() & EF_EXPORT))
+		if(!(pEnt->getFlags() & EF_EXPORT))
 		{
 			continue;
 		}
 
-		conf->set(sect, "classname", pEnt->GetClassName());
-		pTbl = EntityFactoryMap::GetInstance()->GetPropTable(pEnt->GetClassName());
+		conf->set(sect, "classname", pEnt->getClassName());
+		pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
 		do
 		{
 			for(int j = 0; j < pTbl->numFields; ++j)
 			{
 				if(pTbl->pData[j].szKey && !conf->keyExists(sect, pTbl->pData[j].szKey))
 				{
-					pEnt->GetKV(pTbl->pData[j].szKey, buf, sizeof(buf));
+					pEnt->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
 					conf->set(sect, pTbl->pData[j].szKey, buf);
 				}
 			}
@@ -295,12 +295,12 @@ bool EntityManager::Export(const char * file)
 	return(ret);
 }
 
-bool EntityManager::Import(const char * file)
+bool CEntityManager::import(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	char sect[32];
-	SXbaseEntity * pEnt = NULL;
-	Array<SXbaseEntity*> tmpList;
+	CBaseEntity * pEnt = NULL;
+	Array<CBaseEntity*> tmpList;
 	if(conf->open(file))
 	{
 		goto err;
@@ -336,17 +336,17 @@ bool EntityManager::Import(const char * file)
 		}
 		if(conf->keyExists(sect, "name"))
 		{
-			pEnt->SetKV("name", conf->getKey(sect, "name"));
+			pEnt->setKV("name", conf->getKey(sect, "name"));
 		}
 		if(conf->keyExists(sect, "origin"))
 		{
-			pEnt->SetKV("origin", conf->getKey(sect, "origin"));
+			pEnt->setKV("origin", conf->getKey(sect, "origin"));
 		}
 		if(conf->keyExists(sect, "rotation"))
 		{
-			pEnt->SetKV("rotation", conf->getKey(sect, "rotation"));
+			pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
 		}
-		pEnt->SetFlags(pEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
+		pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 		tmpList[i] = pEnt;
 	}
 
@@ -364,10 +364,10 @@ bool EntityManager::Import(const char * file)
 			key = conf->getKeyName(sect, j);
  			if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
 			{
-				pEnt->SetKV(key, conf->getKey(sect, key));
+				pEnt->setKV(key, conf->getKey(sect, key));
 			}
 		}
-		pEnt->OnPostLoad();
+		pEnt->onPostLoad();
 	}
 
 	mem_release(conf);
@@ -379,20 +379,20 @@ err:
 }
 
 
-SXbaseEntity * EntityManager::FindEntityByName(const char * name, SXbaseEntity * pStart)
+CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * pStart)
 {
 	if(!name[0])
 	{
 		return(NULL);
 	}
 	bool bFound = !pStart;
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
 		if(bFound)
 		{
-			if(!strcmp(pEnt->GetName(), name))
+			if(!strcmp(pEnt->getName(), name))
 			{
 				return(pEnt);
 			}
@@ -408,7 +408,7 @@ SXbaseEntity * EntityManager::FindEntityByName(const char * name, SXbaseEntity *
 	return(NULL);
 }
 
-int EntityManager::CountEntityByName(const char * name)
+int CEntityManager::countEntityByName(const char * name)
 {
 	if(!name[0])
 	{
@@ -417,7 +417,7 @@ int EntityManager::CountEntityByName(const char * name)
 	int c = 0;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
-		if(!strcmp(m_vEntList[i]->GetName(), name))
+		if(!strcmp(m_vEntList[i]->getName(), name))
 		{
 			++c;
 		}
@@ -425,16 +425,16 @@ int EntityManager::CountEntityByName(const char * name)
 	return(c);
 }
 
-SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity * pStart)
+CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity * pStart)
 {
 	bool bFound = !pStart;
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
 		if(bFound)
 		{
-			if(!strcmp(pEnt->GetClassName(), name))
+			if(!strcmp(pEnt->getClassName(), name))
 			{
 				return(pEnt);
 			}
@@ -450,7 +450,7 @@ SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity 
 	return(NULL);
 }
 
-void EntityManager::LoadDefaults()
+void CEntityManager::loadDefaults()
 {
 	m_pDefaultsConf = Core_CrConfig();
 	if(m_pDefaultsConf->open("config/entities/defaults.ent") < 0)
@@ -465,7 +465,7 @@ void EntityManager::LoadDefaults()
 	for(int i = 0, l = m_pDefaultsConf->getSectionCount(); i < l; ++i)
 	{
 		sect = m_pDefaultsConf->getSectionName(i);
-		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(sect)))
+		if(!(defs = CEntityFactoryMap::GetInstance()->getDefaults(sect)))
 		{
 			continue;
 		}
@@ -477,7 +477,7 @@ void EntityManager::LoadDefaults()
 	}
 }
 
-void EntityManager::LoadDynClasses()
+void CEntityManager::loadDynClasses()
 {
 	m_pDynClassConf = Core_CrConfig();
 	if(m_pDynClassConf->open("config/entities/classes.ent") < 0)
@@ -498,7 +498,7 @@ void EntityManager::LoadDynClasses()
 			printf(COLOR_LRED "Couldn't create entity class '%s': Unknown base class\n" COLOR_RESET, newClass);
 			continue;
 		}
-		IEntityFactory * pOldFactory = EntityFactoryMap::GetInstance()->GetFactory(baseClass);
+		IEntityFactory * pOldFactory = CEntityFactoryMap::GetInstance()->getFactory(baseClass);
 		if(!pOldFactory)
 		{
 			printf(COLOR_LRED "Couldn't create entity class '%s': Base class '%s' is undefined\n" COLOR_RESET, newClass, baseClass);
@@ -508,14 +508,14 @@ void EntityManager::LoadDynClasses()
 		{
 			bShow = strcmp(key, "0") && strcmp(key, "false");
 		}
-		IEntityFactory * newFactory = pOldFactory->Copy(newClass, bShow);
-		EntityFactoryMap::GetInstance()->AddFactory(newFactory, newClass);
+		IEntityFactory * newFactory = pOldFactory->copy(newClass, bShow);
+		CEntityFactoryMap::GetInstance()->addFactory(newFactory, newClass);
 
-		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(newClass)))
+		if(!(defs = CEntityFactoryMap::GetInstance()->getDefaults(newClass)))
 		{
 			continue;
 		}
-		if((baseDefs = EntityFactoryMap::GetInstance()->GetDefaults(baseClass)))
+		if((baseDefs = CEntityFactoryMap::GetInstance()->getDefaults(baseClass)))
 		{
 			for(EntDefaultsMap::Iterator i = baseDefs->begin(); i; i++)
 			{
@@ -530,7 +530,7 @@ void EntityManager::LoadDynClasses()
 	}
 }
 
-void EntityManager::DumpList(int argc, const char ** argv)
+void CEntityManager::dumpList(int argc, const char ** argv)
 {
 	const char * filter = "";
 	if(argc > 1)
@@ -548,21 +548,21 @@ void EntityManager::DumpList(int argc, const char ** argv)
 
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
-		SXbaseEntity * pEnt = m_vEntList[i];
+		CBaseEntity * pEnt = m_vEntList[i];
 		if(!pEnt)
 		{
 			continue;
 		}
-		if(!filter[0] || strstr(pEnt->GetClassName(), filter))
+		if(!filter[0] || strstr(pEnt->getClassName(), filter))
 		{
-			printf(" " COLOR_LGREEN "%4d" COLOR_GREEN " | " COLOR_LGREEN "%24s" COLOR_GREEN " | " COLOR_LGREEN "%16s" COLOR_GREEN " |\n", i, pEnt->GetClassName(), pEnt->GetName());
+			printf(" " COLOR_LGREEN "%4d" COLOR_GREEN " | " COLOR_LGREEN "%24s" COLOR_GREEN " | " COLOR_LGREEN "%16s" COLOR_GREEN " |\n", i, pEnt->getClassName(), pEnt->getName());
 		}
 	}
 
 	printf("-----------------------------------------------------\n" COLOR_RESET);
 }
 
-void EntityManager::EntKV(int argc, const char ** argv)
+void CEntityManager::entKV(int argc, const char ** argv)
 {
 	int id = 0;
 	if(argc == 1)
@@ -575,7 +575,7 @@ void EntityManager::EntKV(int argc, const char ** argv)
 		printf("Usage: \n    ent_kv <entid> [keyname [new_value]]\n");
 		return;
 	}
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	if(id < 0 || (UINT)id >= m_vEntList.size() || !(pEnt = m_vEntList[id]))
 	{
 		printf(COLOR_LRED "Invalid entity id\n" COLOR_RESET);
@@ -586,14 +586,14 @@ void EntityManager::EntKV(int argc, const char ** argv)
 	{
 	case 2: // dump all KVs
 		{
-			proptable_t * pt = EntityFactoryMap::GetInstance()->GetPropTable(pEnt->GetClassName());
+			proptable_t * pt = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
 			while(pt)
 			{
 				for(int i = 0; i < pt->numFields; ++i)
 				{
 					if(pt->pData[i].szKey)
 					{
-						pEnt->GetKV(pt->pData[i].szKey, buf, sizeof(buf));
+						pEnt->getKV(pt->pData[i].szKey, buf, sizeof(buf));
 						printf("%s = %s\n", pt->pData[i].szKey, buf);
 					}
 				}
@@ -602,22 +602,22 @@ void EntityManager::EntKV(int argc, const char ** argv)
 		}
 		break;
 	case 3: // show KV
-		pEnt->GetKV(argv[2], buf, sizeof(buf));
+		pEnt->getKV(argv[2], buf, sizeof(buf));
 		printf("%s = %s\n", argv[2], buf);
 		break;
 
 	case 4: // set new KV
-		pEnt->SetKV(argv[2], argv[3]);
+		pEnt->setKV(argv[2], argv[3]);
 		break;
 	}
 }
 
-int EntityManager::GetCount()
+int CEntityManager::getCount()
 {
 	return(m_vEntList.size());
 }
 
-SXbaseEntity * EntityManager::GetById(ID id)
+CBaseEntity * CEntityManager::getById(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vEntList.size())
 	{
@@ -626,7 +626,7 @@ SXbaseEntity * EntityManager::GetById(ID id)
 	return(m_vEntList[id]);
 }
 
-void EntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
+void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
 {
 	timeout_output_t t;
 	t.status = TS_WAIT;

@@ -24,14 +24,14 @@ class CNPCZombie : public CNPCBase
 	DECLARE_PROPTABLE();
 
 public:
-	CNPCZombie(EntityManager * pMgr);
+	CNPCZombie(CEntityManager * pMgr);
 	~CNPCZombie();
 
-	void OnSync();
+	void onSync();
 
 protected:
 
-	//virtual void InitPhysics();
+	//virtual void initPhysics();
 
 	void randWalk();
 	ID m_idSndIdle;

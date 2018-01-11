@@ -1,10 +1,10 @@
-#include "SXplayerSpawn.h"
+#include "PlayerSpawn.h"
 
 /*! \skydocent info_player_spawn
 Камера
 */
 
-BEGIN_PROPTABLE(SXplayerSpawn)
+BEGIN_PROPTABLE(CPlayerSpawn)
 	/*! Команда игроков, для которой работает спавн. 
 	\note Только для многопользовательского режима
 	*/
@@ -17,4 +17,4 @@ BEGIN_PROPTABLE(SXplayerSpawn)
 
 END_PROPTABLE()
 
-REGISTER_ENTITY(SXplayerSpawn, info_player_spawn);
+REGISTER_ENTITY(CPlayerSpawn, info_player_spawn);

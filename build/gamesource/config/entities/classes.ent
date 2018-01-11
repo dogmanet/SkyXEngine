@@ -51,6 +51,10 @@ single_speed = 40; выст/мин
 burst_speed = 100; выст/мин
 
 effective_distance = 650
+
+;разброс
+spread_base       	= 0.33    ;угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
+
 ; Боевая скорострельность (одиночными): 40 выст/мин
 ; Боевая скорострельность (очередями): 100 выст/мин
 ; Дальность, до которой сохраняется убойное действие пули: 1350 м
@@ -80,8 +84,6 @@ durability = 350000
 durability_return_min = 0.7 ; при ремонте:
 durability_return_max = 0.9 ; durability_max = durability_max * rand(durability_return_min, durability_return_max)
 
-;разброс
-fire_dispersion_base       	= 0.33    ;угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
 
 ;отдача
 cam_return					= 0

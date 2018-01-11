@@ -907,6 +907,9 @@ SX_LIB_API void SML_MtlSetPenetration(ID id, float fPenetration);
 SX_LIB_API float SML_MtlGetHitChance(ID id);
 SX_LIB_API void SML_MtlSetHitChance(ID id, float fHitChance);
 
+SX_LIB_API float SML_MtlGetDensity(ID id);
+SX_LIB_API void SML_MtlSetDensity(ID id, float fDensity);
+
 //использование альфа теста для материала
 SX_LIB_API bool SML_MtlGetUsingAlphaTest(ID id);				//!< используется ли альфа тест для материала
 SX_LIB_API void SML_MtlSetUsingAlphaTest(ID id, bool isUsing);	//!< установка использования альфа теста

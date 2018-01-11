@@ -40,10 +40,10 @@ public:
 	void Forward(float fDelta);
 	void Strafe(float fDelta);
 
-	void Move(CAMERA_MOVE m, bool state);
-	void Advance();
+	void move(CAMERA_MOVE m, bool state);
+	void advance();
 
-	float3_t GetPos();
+	float3_t getPos();
 
 	float3_t GetViewDir();
 };

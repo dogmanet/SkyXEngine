@@ -63,7 +63,7 @@ public:
 
 	const float3 & GetPosition();
 	const float3 & GetRotation();
-	const float3 & GetScale();
+	const float3 & getScale();
 	const SMQuaternion & GetRotationQ();
 
 	void OnMouseMove(int x, int y);

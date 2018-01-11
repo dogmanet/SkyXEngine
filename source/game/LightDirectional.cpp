@@ -31,7 +31,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLightDirectional, light_directional);
 
-CLightDirectional::CLightDirectional(EntityManager *pMgr) :
+CLightDirectional::CLightDirectional(CEntityManager *pMgr) :
 BaseClass(pMgr)
 {
 	m_vColor = float3(1, 1, 1);
@@ -61,9 +61,9 @@ void CLightDirectional::toggleEnable()
 	SML_LigthsSetEnable(m_idLight, m_isEnable);
 }
 
-void CLightDirectional::OnSync()
+void CLightDirectional::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 
 	if (SML_LigthsGetEnable(m_idLight) != m_isEnable)
 		SML_LigthsSetEnable(m_idLight, m_isEnable);

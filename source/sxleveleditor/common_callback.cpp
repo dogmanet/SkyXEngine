@@ -301,7 +301,7 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_SCALE)
 		{
 			float3* scale = SGeom_ModelsMGetScale(SXLevelEditor::ActiveElement);
-			float3 nscale = SXLevelEditor::ObjAxesHelper->GetScale() - float3(1,1,1);
+			float3 nscale = SXLevelEditor::ObjAxesHelper->getScale() - float3(1,1,1);
 			if ((*scale).x != nscale.x || (*scale).y != nscale.y || (*scale).z != nscale.z)
 			{
 				*scale += nscale;
@@ -324,14 +324,14 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && SXLevelEditor::ActiveElement >= 0)
 	{
-		SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ActiveElement);
+		CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ActiveElement);
 		if (!bEnt)
 			return 0;
 
 		if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
-			bEnt->SetPos(SXLevelEditor::ObjAxesHelper->GetPosition());
+			bEnt->setPos(SXLevelEditor::ObjAxesHelper->GetPosition());
 		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
-			bEnt->SetOrient(SXLevelEditor::ObjAxesHelper->GetRotationQ());
+			bEnt->setOrient(SXLevelEditor::ObjAxesHelper->GetRotationQ());
 
 		SXLevelEditor::GameUpdatePosRot();
 	}
@@ -710,10 +710,10 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 	char tmpname[1024];
 	for (int i = 0; i < tmpcoungo; ++i)
 	{
-		SXbaseEntity* bEnt = SXGame_EntGet(i);
+		CBaseEntity* bEnt = SXGame_EntGet(i);
 		if (bEnt)
 		{
-			sprintf(tmpname, "%s / %s", bEnt->GetName(), bEnt->GetClassName());
+			sprintf(tmpname, "%s / %s", bEnt->getName(), bEnt->getClassName());
 			SXLevelEditor::ListBoxList->AddItem(tmpname);
 			SXLevelEditor::ListBoxList->SetItemData(SXLevelEditor::ListBoxList->GetCountItem() - 1, i);
 			++tmpcoungo2;
@@ -1085,7 +1085,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 		else
 		{
 			ID seldata = SXLevelEditor::ListBoxList->GetItemData(SXLevelEditor::ListBoxList->GetSel());
-			SXbaseEntity* bEnt = SXGame_EntGet(seldata);
+			CBaseEntity* bEnt = SXGame_EntGet(seldata);
 			int str = SXLevelEditor::ListViewGameClass->GetSelString();
 
 			if (seldata < 0 || str < 0)
@@ -1108,7 +1108,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 
 			sprintf(txtval, "%d", uiFlags);
 			SXLevelEditor::ListViewGameClass->SetTextItem(txtval, 1, str);
-			bEnt->SetKV("flags", txtval);
+			bEnt->setKV("flags", txtval);
 		}
 	}
 	else if (Notification == CBN_SELCHANGE)
@@ -1119,12 +1119,12 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			char txt[256];
 			SXLevelEditor::ComboBoxGameValue->GetItemText(SXLevelEditor::ComboBoxGameValue->GetSel(), txt);
 			SXLevelEditor::ListViewGameClass->SetTextItem(txt, 1, SXLevelEditor::ListViewGameClass->GetSelString());
-			SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
+			CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
 			if (bEnt)
 			{
 				propdata_t* pd = (propdata_t*)SXLevelEditor::ListViewGameClass->GetDataItem(SXLevelEditor::ListViewGameClass->GetSelString());
 				SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel());
-				bEnt->SetKV(pd->szKey, (const char*)SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel()));
+				bEnt->setKV(pd->szKey, (const char*)SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel()));
 			}
 		}
 		else if (SXLevelEditor::ComboBoxGameClass->GetHWND() == handle_elem)
@@ -1137,8 +1137,8 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			if (sel < 0)
 				return 0;
 
-			SXbaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
-			proptable_t* pt = SXGame_EntGetProptable(bEnt->GetClassName());
+			CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
+			proptable_t* pt = SXGame_EntGetProptable(bEnt->getClassName());
 
 			propdata_t* pd;
 			char txtkey[256];
@@ -1177,7 +1177,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 					if (pd->szKey && pd->szEdName && !(pd->flags & PDFF_NOEDIT) && pd->editor.type != PDE_NONE)
 					{
 						sprintf(txtkey, "%s", pd->szEdName);
-						bEnt->GetKV(pd->szKey, txtval, 256);
+						bEnt->getKV(pd->szKey, txtval, 256);
 						tmparrdata.push_back(KeyVal(pd->szKey, txtval));
 					}
 				}
@@ -1191,7 +1191,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				if (pd->szKey && pd->szEdName && !(pd->flags & PDFF_NOEDIT) && pd->editor.type != PDE_NONE)
 				{
 					sprintf(txtkey, "%s", pd->szEdName);
-					bEnt->GetKV(pd->szKey, txtval, 256);
+					bEnt->getKV(pd->szKey, txtval, 256);
 					tmparrdata.push_back(KeyVal(pd->szKey, txtval));
 				}
 			}
@@ -1201,26 +1201,26 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			SXGame_RemoveEntity(bEnt);
 
 			bEnt = SXGame_CreateEntity(txt);
-			bEnt->SetFlags(bEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
+			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 
 
-			for (int i = 0; i < tmparrdata.size(); ++i)
+			for(int i = 0; i < tmparrdata.size(); ++i)
 			{
-				bEnt->SetKV(tmparrdata[i].key.c_str(), tmparrdata[i].val.c_str());
+				bEnt->setKV(tmparrdata[i].key.c_str(), tmparrdata[i].val.c_str());
 			}
 
 			SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
 			sel = -1;
-			for (int i = 0; i < SXLevelEditor::ListBoxList->GetCountItem(); ++i)
+			for(int i = 0; i < SXLevelEditor::ListBoxList->GetCountItem(); ++i)
 			{
-				if (SXLevelEditor::ListBoxList->GetItemData(i) == bEnt->GetId())
+				if(SXLevelEditor::ListBoxList->GetItemData(i) == bEnt->getId())
 				{
 					sel = i;
 					break;
 				}
 			}
 
-			if (sel < 0)
+			if(sel < 0)
 			{
 
 			}
@@ -1314,10 +1314,10 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			char* found = 0;
 			for (int i = 0; i < tmpcoungo; ++i)
 			{
-				SXbaseEntity* bEnt = SXGame_EntGet(i);
+				CBaseEntity* bEnt = SXGame_EntGet(i);
 				if (bEnt)
 				{
-					strcpy(tmpname, bEnt->GetName());
+					strcpy(tmpname, bEnt->getName());
 					if (tmpname[0] == 0)
 						continue;
 					lower_name = CharLower(tmpname);

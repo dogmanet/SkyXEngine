@@ -75,17 +75,17 @@ SX_LIB_API void SXPhysics_AKill()
 SX_LIB_API void SXPhysics_Update(int thread)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->Update(thread);
+	g_pWorld->update(thread);
 }
 SX_LIB_API void SXPhysics_UpdateSetThreadNum(int num)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->SetThreadNum(num);
+	g_pWorld->setThreadNum(num);
 }
 SX_LIB_API void SXPhysics_Sync()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->Sync();
+	g_pWorld->sync();
 }
 
 SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
@@ -108,7 +108,7 @@ SX_LIB_API void SXPhysics_UnloadGeom()
 SX_LIB_API void SXPhysics_DebugRender()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->Render();
+	g_pWorld->render();
 }
 
 SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody)

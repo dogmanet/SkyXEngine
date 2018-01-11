@@ -93,32 +93,32 @@ m_bDirty(false)
 
 	m_pAnimMgr = new AnimationManager(m_pd3dDevice);
 	m_pCurAnim = new Animation(m_pAnimMgr);
-	m_pCurAnim->SetCallback((AnimStateCB)AnimPlayCB);
-	m_pCurAnim->SetProgressCB((::AnimProgressCB)AnimProgressCB);
-	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/krovosos/krovososa.dse");
-	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/spas/spasa.dse");
-	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/pm/pma.dse");
-	//m_pCurAnim->SetModel("C:/DSe/SX/project/gamesource/models/ak74/ak74a.dse");
-	//m_pCurAnim->PlayAnimation("reload", 0);
+	m_pCurAnim->setCallback((AnimStateCB)AnimPlayCB);
+	m_pCurAnim->setProgressCB((::AnimProgressCB)AnimProgressCB);
+	//m_pCurAnim->setModel("C:/DSe/SX/project/gamesource/models/krovosos/krovososa.dse");
+	//m_pCurAnim->setModel("C:/DSe/SX/project/gamesource/models/spas/spasa.dse");
+	//m_pCurAnim->setModel("C:/DSe/SX/project/gamesource/models/pm/pma.dse");
+	//m_pCurAnim->setModel("C:/DSe/SX/project/gamesource/models/ak74/ak74a.dse");
+	//m_pCurAnim->playAnimation("reload", 0);
 
-	//AddModel("C:/revo/build/gamesource/models/krovosos/krovososa.dse");//ak74_ref.dse
-	//AddModel("C:/revo/build/gamesource/models/ak74/ak74_ref.dse");
-	//AddModel("C:/revo/build/gamesource/models/ak74/hands.dse");
-	//AddModel("C:/revo/build/gamesource/models/ak74/reload.dse");
+	//addModel("C:/revo/build/gamesource/models/krovosos/krovososa.dse");//ak74_ref.dse
+	//addModel("C:/revo/build/gamesource/models/ak74/ak74_ref.dse");
+	//addModel("C:/revo/build/gamesource/models/ak74/hands.dse");
+	//addModel("C:/revo/build/gamesource/models/ak74/reload.dse");
 
 	/*ModelPart mp;
 	mp.attachDesc.type = MA_BONE;
 	strcpy(mp.attachDesc.szBone, "bip01_r_hand");
 	mp.uImportFlags = MI_ALL;
-	mp.pMdl = m_pAnimMgr->LoadModel("C:/revo/build/gamesource/models/ak74/ak74.dse", true);
-	m_pCurAnim->AddModel(&mp);*/
+	mp.pMdl = m_pAnimMgr->loadModel("C:/revo/build/gamesource/models/ak74/ak74.dse", true);
+	m_pCurAnim->addModel(&mp);*/
 
 	//bip01_r_hand
-	//AddModel("F:/revo/build/gamesource/models/ak74/ak74.dse");
-	//AddModel("F:/revo/build/gamesource/models/ak74/idle.dse");
-	//AddModel("C:/revo/build/gamesource/models/ak74/reload.dse");
-	//AddModel("C:/revo/build/gamesource/models/ak74/shoot.dse");
-	//m_pCurAnim->Assembly();
+	//addModel("F:/revo/build/gamesource/models/ak74/ak74.dse");
+	//addModel("F:/revo/build/gamesource/models/ak74/idle.dse");
+	//addModel("C:/revo/build/gamesource/models/ak74/reload.dse");
+	//addModel("C:/revo/build/gamesource/models/ak74/shoot.dse");
+	//m_pCurAnim->assembly();
 	//if(m_pCurAnim->m_pMdl)
 	{
 		/*UINT c = m_pCurAnim->m_pMdl->GetSequenceCount();
@@ -225,11 +225,11 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_ANIM_PAUSE:
-			edt->m_pCurAnim->Stop();
+			edt->m_pCurAnim->stop();
 			break;
 
 		case IDC_ANIM_PLAY:
-			edt->m_pCurAnim->Resume();
+			edt->m_pCurAnim->resume();
 			break;
 
 		case IDC_ANIM_LOOPED:
@@ -343,14 +343,14 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				if(Tools::DlgConfirm())
 				{
-					edt->DelModel(sel);
+					edt->delModel(sel);
 				}
 			}
 			break;
 
 		case IDC_PT_ADD:
 			{
-				m_pEditor->AddModel("");
+				m_pEditor->addModel("");
 				ISXGUIListBox * pList = ((TabAttachments*)edt->m_pTM->m_pTabAttachments)->AttachmentsList;
 				pList->SetSel(pList->GetCountItem() - 1);
 				m_pEditor->OnPartListSelChg();
@@ -368,7 +368,7 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case IDC_PT_CB_HIDDEN:
 			edt->SetPartFlag(MP_HIDDEN, (byte)SendMessage((HWND)lParam, BM_GETCHECK, 0, 0));
-			edt->m_pCurAnim->Assembly();
+			edt->m_pCurAnim->assembly();
 			break;
 
 		case IDC_PT_CB_COLLIDE:
@@ -409,14 +409,14 @@ LRESULT Editor::MenuCmd(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				if(!m_pEditor->m_pHitboxesPart)
 				{
-					m_pEditor->m_pHitboxesPart = m_pEditor->AddModel("!hitboxes");
+					m_pEditor->m_pHitboxesPart = m_pEditor->addModel("!hitboxes");
 				}
 				ModelHitbox hb;
 				memset(&hb, 0, sizeof(hb));
 				strcpy(hb.name, "New hitbox");
 
 				m_pEditor->m_pHitboxesPart->AddHitbox(&hb);
-				m_pEditor->m_pCurAnim->Assembly();
+				m_pEditor->m_pCurAnim->assembly();
 				m_pEditor->UpdateHitboxList(m_pEditor->m_pHitboxesPart, false);
 
 				ISXGUIListBox * pList = ((TabHitboxes*)edt->m_pTM->m_pTabHitboxes)->HBList;
@@ -633,16 +633,16 @@ LRESULT Editor::CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case 'W':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_FORWARD, 1);
+			edt->m_cam.move(Camera::CAMERA_MOVE_FORWARD, 1);
 			break;
 		case 'S':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_BACKWARD, 1);
+			edt->m_cam.move(Camera::CAMERA_MOVE_BACKWARD, 1);
 			break;
 		case 'A':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_LEFT, 1);
+			edt->m_cam.move(Camera::CAMERA_MOVE_LEFT, 1);
 			break;
 		case 'D':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_RIGHT, 1);
+			edt->m_cam.move(Camera::CAMERA_MOVE_RIGHT, 1);
 			break;
 		}
 		break;
@@ -650,16 +650,16 @@ LRESULT Editor::CamInput(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case 'W':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_FORWARD, 0);
+			edt->m_cam.move(Camera::CAMERA_MOVE_FORWARD, 0);
 			break;
 		case 'S':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_BACKWARD, 0);
+			edt->m_cam.move(Camera::CAMERA_MOVE_BACKWARD, 0);
 			break;
 		case 'A':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_LEFT, 0);
+			edt->m_cam.move(Camera::CAMERA_MOVE_LEFT, 0);
 			break;
 		case 'D':
-			edt->m_cam.Move(Camera::CAMERA_MOVE_RIGHT, 0);
+			edt->m_cam.move(Camera::CAMERA_MOVE_RIGHT, 0);
 			break;
 		}
 		break;
@@ -694,7 +694,7 @@ LRESULT Editor::AnimListCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if(curSel != -1)
 		{
 			UINT seqi = (UINT)lb->GetItemData(curSel);
-			edt->m_pCurAnim->Play(edt->m_vAnims[seqi].seq->name, 100);
+			edt->m_pCurAnim->play(edt->m_vAnims[seqi].seq->name, 100);
 		}
 		break;
 	}
@@ -716,7 +716,7 @@ LRESULT Editor::AnimFilterCB(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void Editor::AnimPlayCB(int slot, ANIM_STATE state, Animation * pAnim)
 {
-	ModelSequence const * seq = m_pEditor->m_pCurAnim->GetCurAnim(slot);
+	ModelSequence const * seq = m_pEditor->m_pCurAnim->getCurAnim(slot);
 	TabAnimation * ta = (TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation;
 	switch(state)
 	{
@@ -751,13 +751,13 @@ LRESULT Editor::AnimTBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_HSCROLL:
 		pos = ((TabAnimation*)m_pEditor->m_pTM->m_pTabAnimation)->AnimCtlProgressTrack->GetPos();
-		m_pEditor->m_pCurAnim->SetProgress(pos / 1000.0f);
+		m_pEditor->m_pCurAnim->setProgress(pos / 1000.0f);
 		break;
 	case WM_SETFOCUS:
-		m_pEditor->m_pCurAnim->SetAdvance(false);
+		m_pEditor->m_pCurAnim->setAdvance(false);
 		break;
 	case WM_KILLFOCUS:
-		m_pEditor->m_pCurAnim->SetAdvance(true);
+		m_pEditor->m_pCurAnim->setAdvance(true);
 		break;
 	}
 	return(0);
@@ -772,7 +772,7 @@ void Editor::MenuNew(HWND hwnd)
 
 	while(m_pEditor->m_vMdlParts.size())
 	{
-		m_pEditor->DelModel(0);
+		m_pEditor->delModel(0);
 	}
 	m_bDirty = false;
 }
@@ -812,10 +812,10 @@ void Editor::MenuBrowse(HWND hwnd)
 		//unload all parts
 		while(m_pEditor->m_vMdlParts.size())
 		{
-			m_pEditor->DelModel(0);
+			m_pEditor->delModel(0);
 		}
-		m_pEditor->AddModel(ofn.lpstrFile, MI_ALL, false, true);
-		m_pEditor->m_pCurAnim->Assembly();
+		m_pEditor->addModel(ofn.lpstrFile, MI_ALL, false, true);
+		m_pEditor->m_pCurAnim->assembly();
 		RenderBoneList();
 		m_bDirty = false;
 	}
@@ -848,8 +848,8 @@ void Editor::MenuBrowseImport(HWND hwnd, bool use)
 		UINT iflags = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DIALOG_IMPORT), hwnd, DlgImportProc, (LPARAM)&ofn.lpstrFile);
 		if(use)
 		{
-			m_pEditor->AddModel(ofn.lpstrFile, iflags);
-			m_pEditor->m_pCurAnim->Assembly();
+			m_pEditor->addModel(ofn.lpstrFile, iflags);
+			m_pEditor->m_pCurAnim->assembly();
 			RenderBoneList();
 		}
 		else
@@ -1019,17 +1019,17 @@ bool Editor::SaveTo(char * to)
 	strcpy(mp.name, "!bones");
 	mp.pMdl = m_pCurAnim->m_pMdl;
 	mp.attachDesc.type = MA_SKIN;
-	pTmpAnim.AddModel(&mp);
+	pTmpAnim.addModel(&mp);
 	int c = 0;
 	for(int i = 0, l = m_vMdlParts.size(); i < l; ++i)
 	{
 		if(!(m_vMdlParts[i]->uFlags & MP_IMPORTED))
 		{
-			pTmpAnim.AddModel(m_vMdlParts[i]);
+			pTmpAnim.addModel(m_vMdlParts[i]);
 			++c;
 		}
 	}
-	pTmpAnim.Assembly();
+	pTmpAnim.assembly();
 
 	pTmpAnim.m_pMdl->m_hdr2.iActivitiesTableCount = m_pvActivities->size();
 	pTmpAnim.m_pMdl->pActivities = new ModelActivity[pTmpAnim.m_pMdl->m_hdr2.iActivitiesTableCount];
@@ -1272,7 +1272,7 @@ void Editor::Update()
 		{
 			CenterMouse();
 		}
-		m_cam.Advance();
+		m_cam.advance();
 	}
 	m_mViewMat = m_cam.GetMatrix();
 
@@ -1306,7 +1306,7 @@ void Editor::Update()
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_pVSH);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_pPSH);
 	}
-	m_pAnimMgr->Render();
+	m_pAnimMgr->render();
 	SGCore_ShaderUnBind();
 
 	if(((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
@@ -1314,11 +1314,11 @@ void Editor::Update()
 		DrawHitboxes();
 		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
 		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixIdentity()));
-		m_pCurAnim->RenderSkeleton(m_iActiveHitbox > 0 ? m_pCurAnim->GetBone(m_vHitboxes[m_iActiveHitbox].hb->bone) : -1);
+		m_pCurAnim->RenderSkeleton(m_iActiveHitbox > 0 ? m_pCurAnim->getBone(m_vHitboxes[m_iActiveHitbox].hb->bone) : -1);
 		if(m_vHitboxes.size() > m_iActiveHitbox)
 		{
 			HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
-			SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+			SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->getBoneTransform(m_pCurAnim->getBone(hbi->hb->bone)) : SMMatrixIdentity());
 
 			//m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 0);
 
@@ -1343,8 +1343,8 @@ void Editor::Update()
 	}
 	m_pd3dDevice->EndScene();
 
-	m_pAnimMgr->Update();
-	m_pAnimMgr->Sync();
+	m_pAnimMgr->update();
+	m_pAnimMgr->sync();
 
 	m_pSwapChain->Present(NULL, NULL, NULL, NULL, D3DSWAPEFFECT_DISCARD);
 }
@@ -1427,9 +1427,9 @@ void Editor::RenderBoneList()
 	cmb->Clear();
 	cmb_2->Clear();
 	cmb_2->AddItem("");
-	for(int i = 0, l = m_pCurAnim->GetBoneCount(); i < l; ++i)
+	for(int i = 0, l = m_pCurAnim->getBoneCount(); i < l; ++i)
 	{
-		m_pCurAnim->GetBoneName(i, tmp, sizeof(tmp));
+		m_pCurAnim->getBoneName(i, tmp, sizeof(tmp));
 		if(!strcmp(tmp, text))
 		{
 			sel = i;
@@ -1539,7 +1539,7 @@ void Editor::OnAnimListSelChg()
 		item = &m_vAnims[idx];
 		m_iCurIdx = idx;
 
-		m_pCurAnim->Play(item->seq->name, 100);
+		m_pCurAnim->play(item->seq->name, 100);
 
 		tab->AnimPropActCmb->SetSel(item->seq->activity);
 		tab->AnimPropActChance->SetText(String((DWORD)item->seq->act_chance).c_str());
@@ -1664,7 +1664,7 @@ void Editor::OnPartListSelChg()
 	}
 }
 
-ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, bool forceLocal)
+ModelFile * Editor::addModel(const char * mdl, UINT flags, bool forceImport, bool forceLocal)
 {
 	char * mdlFile = (char*)alloca(strlen(mdl) + 2) + 1;
 	strcpy(mdlFile, mdl);
@@ -1674,7 +1674,7 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 	{
 		*(char*)(--localPath) = '@';
 	}
-	ModelFile * pMdl = localPath[0] ? (ModelFile*)m_pAnimMgr->LoadModel(localPath, true) : NULL;
+	ModelFile * pMdl = localPath[0] ? (ModelFile*)m_pAnimMgr->loadModel(localPath, true) : NULL;
 
 	bool bIsImported = forceImport && !forceLocal;
 	if(pMdl)
@@ -1725,7 +1725,7 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 	}
 	//init all sections from mdl data
 
-	m_pCurAnim->AddModel(pMdl, flags);
+	m_pCurAnim->addModel(pMdl, flags);
 
 
 	m_vMdlParts.push_back(m_pCurAnim->GetPart(m_pCurAnim->GetPartCount() - 1));
@@ -1741,7 +1741,7 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 		for(uint32_t i = 0; i < pMdl->m_hdr2.iDepsCount; ++i)
 		{
 			ModelPart * mpSrc = &pMdl->m_pParts[i];
-			AddModel(mpSrc->file, mpSrc->uImportFlags, true);
+			addModel(mpSrc->file, mpSrc->uImportFlags, true);
 			ModelPart * mp = m_vMdlParts[m_vMdlParts.size() - 1];
 			mpSrc->pMdl = mp->pMdl;
 			*mp = *mpSrc;
@@ -1751,7 +1751,7 @@ ModelFile * Editor::AddModel(const char * mdl, UINT flags, bool forceImport, boo
 	return(pMdl);
 }
 
-void Editor::DelModel(UINT id)
+void Editor::delModel(UINT id)
 {
 	if(id >= m_vMdlParts.size())
 	{
@@ -1778,7 +1778,7 @@ void Editor::DelModel(UINT id)
 		OnAnimListSelChg();
 		if(hasAnims)
 		{
-			m_pCurAnim->StopAll();
+			m_pCurAnim->stopAll();
 		}
 
 		for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
@@ -1808,10 +1808,10 @@ void Editor::DelModel(UINT id)
 			m_pHitboxesPart = 0;
 		}
 	}
-	m_pCurAnim->DelModel(pt);
-	m_pCurAnim->Assembly();
+	m_pCurAnim->delModel(pt);
+	m_pCurAnim->assembly();
 
-	m_pAnimMgr->UnloadModel(mdl);
+	m_pAnimMgr->unloadModel(mdl);
 
 
 	RenderPartList();
@@ -1867,7 +1867,7 @@ void Editor::OnPartApply()
 			OnAnimListSelChg();
 			if(hasAnims)
 			{
-				m_pCurAnim->StopAll();
+				m_pCurAnim->stopAll();
 			}
 
 			for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
@@ -1893,14 +1893,14 @@ void Editor::OnPartApply()
 			((TabActivities*)m_pTM->m_pTabActivities)->RenderList();
 
 
-			m_pAnimMgr->UnloadModel(mdl);
+			m_pAnimMgr->unloadModel(mdl);
 			pt->pMdl = NULL;
 		}
 
 		//load new mdl
 		strcpy(pt->file, szFile);
 		UINT flags = tab->m_iflags;
-		ModelFile * pMdl = (ModelFile*)m_pAnimMgr->LoadModel(szFile, true);
+		ModelFile * pMdl = (ModelFile*)m_pAnimMgr->loadModel(szFile, true);
 		pt->pMdl = pMdl;
 		pt->uImportFlags = flags;
 		bool bIsImported = (pMdl->m_hdr.iFlags & MODEL_FLAG_COMPILED);
@@ -1949,7 +1949,7 @@ void Editor::OnPartApply()
 
 	}
 
-	m_pCurAnim->Assembly();
+	m_pCurAnim->assembly();
 	RenderBoneList();
 	//
 }
@@ -2080,11 +2080,11 @@ void Editor::UpdateHitboxList(ModelFile * pMdl, bool bIsImported)
 		}
 	}
 
-	uint32_t c = pMdl->GetHitboxCount();
+	uint32_t c = pMdl->getHitboxCount();
 	HitboxItem hbi;
 	for(uint32_t i = 0; i < c; ++i)
 	{
-		hbi.hb = (ModelHitbox*)pMdl->GetHitbox(i);
+		hbi.hb = (ModelHitbox*)pMdl->getHitbox(i);
 		hbi.mdl = pMdl;
 		hbi.isImported = bIsImported;
 		hbi.id = i;
@@ -2104,7 +2104,7 @@ void Editor::DelHitbox(UINT id)
 	HitboxItem * hbx = &m_vHitboxes[id];
 	
 	((ModelFile*)hbx->mdl)->DelHitbox(hbx->id);
-	m_pCurAnim->Assembly();
+	m_pCurAnim->assembly();
 	
 	UpdateHitboxList((ModelFile*)hbx->mdl, false);
 	OnHitboxListSelChg();
@@ -2122,7 +2122,7 @@ void Editor::DrawHitboxes()
 	for(int i = 0, l = m_vHitboxes.size(); i < l; ++i)
 	{
 		HitboxItem * hbi = &m_vHitboxes[i];
-		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->getBoneTransform(m_pCurAnim->getBone(hbi->hb->bone)) : SMMatrixIdentity());
 		m_pd3dDevice->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&((m_iActiveHitbox == i && m_bIsDragging ? m_mHitboxMat :
 			SMMatrixRotationX(hbi->hb->rot.x)
 			* SMMatrixRotationY(hbi->hb->rot.y)
@@ -2836,7 +2836,7 @@ void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
 	if(line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, 0, 0), float3_t(len * 0.5f, len * 0.5f, 0), start, end, p)
 		|| line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, len * 0.5f, 0), float3_t(0, len * 0.5f, 0), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -2847,7 +2847,7 @@ void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
 	if(line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, 0, 0), float3_t(len * 0.5f, 0, len * 0.5f), start, end, p)
 		|| line_intersect_triangle(float3(0, 0, 0), float3(len * 0.5f, 0, len * 0.5f), float3_t(0, 0, len * 0.5f), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -2858,7 +2858,7 @@ void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
 	if(line_intersect_triangle(float3(0, 0, 0), float3(0, 0, len * 0.5f), float3_t(0, len * 0.5f, len * 0.5f), start, end, p)
 		|| line_intersect_triangle(float3(0, 0, 0), float3(0, len * 0.5f, len * 0.5f), float3_t(0, len * 0.5f, 0), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -2961,7 +2961,7 @@ void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
 	{
 		if(line_intersect_triangle(asX[i], asX[i + 1], asX[i + 2], start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -2974,7 +2974,7 @@ void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
 	{
 		if(line_intersect_triangle(asY[i], asY[i + 1], asY[i + 2], start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -2987,7 +2987,7 @@ void Editor::HandlerIntersectMove(const float3 & start, const float3 & dir)
 	{
 		if(line_intersect_triangle(asZ[i], asZ[i + 1], asZ[i + 2], start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3044,7 +3044,7 @@ void Editor::HandlerIntersectRotate(const float3 & start, const float3 & dir)
 		if(line_intersect_triangle(p1, p2, p4, start, end, p)
 			|| line_intersect_triangle(p1, p4, p3, start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3069,7 +3069,7 @@ void Editor::HandlerIntersectRotate(const float3 & start, const float3 & dir)
 		if(line_intersect_triangle(p1, p2, p4, start, end, p)
 			|| line_intersect_triangle(p1, p4, p3, start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3094,7 +3094,7 @@ void Editor::HandlerIntersectRotate(const float3 & start, const float3 & dir)
 		if(line_intersect_triangle(p1, p2, p4, start, end, p)
 			|| line_intersect_triangle(p1, p4, p3, start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3128,7 +3128,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 	if(line_intersect_triangle(float3(len075, 0, 0), float3(0, len075, 0), float3_t(len05, 0, 0), start, end, p)
 		|| line_intersect_triangle(float3(len05, 0, 0), float3(0, len075, 0), float3_t(0, len05, 0), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -3139,7 +3139,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 	if(line_intersect_triangle(float3(len075, 0, 0), float3(0, 0, len075), float3_t(len05, 0, 0), start, end, p)
 		|| line_intersect_triangle(float3(len05, 0, 0), float3(0, 0, len075), float3_t(0, 0, len05), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -3150,7 +3150,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 	if(line_intersect_triangle(float3(0, len075, 0), float3(0, 0, len075), float3_t(0, len05, 0), start, end, p)
 		|| line_intersect_triangle(float3(0, len05, 0), float3(0, 0, len075), float3_t(0, 0, len05), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -3160,7 +3160,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 
 	if(line_intersect_triangle(float3(0, len05, 0), float3(0, 0, len05), float3_t(len05, 0, 0), start, end, p))
 	{
-		float d = SMVector3Length(p - m_cam.GetPos());
+		float d = SMVector3Length(p - m_cam.getPos());
 		if(d < mind)
 		{
 			mind = d;
@@ -3263,7 +3263,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 	{
 		if(line_intersect_triangle(asX[i], asX[i + 1], asX[i + 2], start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3276,7 +3276,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 	{
 		if(line_intersect_triangle(asY[i], asY[i + 1], asY[i + 2], start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3289,7 +3289,7 @@ void Editor::HandlerIntersectScale(const float3 & start, const float3 & dir)
 	{
 		if(line_intersect_triangle(asZ[i], asZ[i + 1], asZ[i + 2], start, end, p))
 		{
-			float d = SMVector3Length(p - m_cam.GetPos());
+			float d = SMVector3Length(p - m_cam.getPos());
 			if(d < mind)
 			{
 				mind = d;
@@ -3306,7 +3306,7 @@ void Editor::OnMouseDown(int x, int y)
 	if(m_vHitboxes.size() > m_iActiveHitbox && ((TabHitboxes*)m_pTM->m_pTabHitboxes)->m_bShown)
 	{
 		HitboxItem * hbi = &m_vHitboxes[m_iActiveHitbox];
-		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+		SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->getBoneTransform(m_pCurAnim->getBone(hbi->hb->bone)) : SMMatrixIdentity());
 
 		SMMATRIX revMat = SMMatrixInverse(&f, (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMat : m_mHelperMat) * mBone * m_mViewMat * m_mProjMat);
 
@@ -3352,7 +3352,7 @@ void Editor::OnMouseDown(int x, int y)
 					* SMMatrixRotationY(hbi->hb->rot.y)
 					* SMMatrixRotationZ(hbi->hb->rot.z)
 					* SMMatrixTranslation(hbi->hb->pos)
-					//* (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity())
+					//* (hbi->hb->bone[0] ? m_pCurAnim->getBoneTransform(m_pCurAnim->getBone(hbi->hb->bone)) : SMMatrixIdentity())
 					;
 				m_fOldHitboxLWH = hbi->hb->lwh;
 			}
@@ -3360,7 +3360,7 @@ void Editor::OnMouseDown(int x, int y)
 
 		if(m_bIsDragging)
 		{
-			float3 dv = (pos - m_fStartDragPos) * (1000.0f + SMVector3Length(m_cam.GetPos() - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * 10.0f);
+			float3 dv = (pos - m_fStartDragPos) * (1000.0f + SMVector3Length(m_cam.getPos() - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * 10.0f);
 			SMMATRIX m_res;
 			TabHitboxes * tab = (TabHitboxes*)m_pEditor->m_pTM->m_pTabHitboxes;
 			char tmp[64];
@@ -3410,7 +3410,7 @@ void Editor::OnMouseDown(int x, int y)
 					m_res = m_res * m_mOldDragMat;
 					break;
 				}
-				SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->GetBoneTransform(m_pCurAnim->GetBone(hbi->hb->bone)) : SMMatrixIdentity());
+				SMMATRIX mBone = (hbi->hb->bone[0] ? m_pCurAnim->getBoneTransform(m_pCurAnim->getBone(hbi->hb->bone)) : SMMatrixIdentity());
 
 
 				m_mHelperMat = m_res;/* * SMMatrixTranslation(float3(mBone._41, mBone._42, mBone._43));

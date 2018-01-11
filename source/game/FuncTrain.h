@@ -7,36 +7,36 @@ See the license in LICENSE
 \file
 Поезда класс
 */
-#ifndef _FuncTrain_H_
-#define _FuncTrain_H_
+#ifndef _CFuncTrain_H_
+#define _CFuncTrain_H_
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
 
-class PathCorner;
+class CPathCorner;
 
 /*! Поезда класс
 \ingroup cpointentity
 */
-class FuncTrain: public SXpointEntity
+class CFuncTrain: public CPointEntity
 {
-	DECLARE_CLASS(FuncTrain, SXpointEntity);
+	DECLARE_CLASS(CFuncTrain, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	FuncTrain(EntityManager * pMgr);
+	CFuncTrain(CEntityManager * pMgr);
 
 	//! Остановить
-	void Stop();
+	void stop();
 	//! Запустить
-	void Start();
+	void start();
 
 protected:
-	void OnPostLoad();
-	void MoveFunc(float dt);
+	void onPostLoad();
+	void moveFunc(float dt);
 
 	//! Начальная точка движения
-	PathCorner * m_pStartStop;
+	CPathCorner * m_pStartStop;
 	//! Текущая точка
-	PathCorner * m_pCurStop;
+	CPathCorner * m_pCurStop;
 
 	//! Скорость
 	float m_fSpeed;

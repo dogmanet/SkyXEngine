@@ -442,7 +442,14 @@ SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char* path, const
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->load(type_shader, path, name, is_check_double, macro);
+	return g_pManagerShaders->preLoad(type_shader, path, name, is_check_double, macro);
+}
+
+SX_LIB_API void SGCore_ShaderAllLoad()
+{
+	SG_PRECOND();
+
+	return g_pManagerShaders->allLoad();
 }
 
 SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name)
@@ -638,7 +645,7 @@ SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID id)
 	return g_pManagerTextures->GetTexture(id);
 }
 
-SX_LIB_API void SGCore_LoadTexLoadTextures()
+SX_LIB_API void SGCore_LoadTexAllLoad()
 {
 	SG_PRECOND(_VOID);
 

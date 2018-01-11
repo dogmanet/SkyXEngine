@@ -12,7 +12,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CNPCBase, npc_base);
 
-CNPCBase::CNPCBase(EntityManager * pMgr) :
+CNPCBase::CNPCBase(CEntityManager * pMgr) :
 	BaseClass(pMgr)
 {
 	m_fHealth = 1.f;
@@ -39,7 +39,7 @@ CNPCBase::~CNPCBase()
 
 }
 
-void CNPCBase::InitPhysics()
+void CNPCBase::initPhysics()
 {
 	btTransform startTransform;
 	startTransform.setIdentity();
@@ -62,7 +62,7 @@ void CNPCBase::InitPhysics()
 	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
 }
 
-void CNPCBase::SetPos(const float3 &pos)
+void CNPCBase::setPos(const float3 &pos)
 {
 	float3 tpos = pos;
 	m_idCurrAiQuad = SAIG_QuadGet(&tpos, true);
@@ -72,51 +72,51 @@ void CNPCBase::SetPos(const float3 &pos)
 		if (SAIG_QuadGetState(m_idCurrAiQuad) == AIQUAD_STATE_FREE)
 		{
 			SAIG_QuadSetState(m_idCurrAiQuad, AIQUAD_STATE_BUSY);
-			SAIG_QuadSetStateWho(m_idCurrAiQuad, this->GetId());
+			SAIG_QuadSetStateWho(m_idCurrAiQuad, getId());
 		}
 		else
 		{
-			if (SAIG_QuadGetStateWho(m_idCurrAiQuad) != this->GetId())
+			if (SAIG_QuadGetStateWho(m_idCurrAiQuad) != getId())
 			{
 				ID idquad = SAIG_QuadGetNear(&(float3)m_vPosition, true, 2);
 				if (idquad >= 0)
 				{
 					m_idCurrAiQuad = idquad;
 					SAIG_QuadSetState(m_idCurrAiQuad, AIQUAD_STATE_BUSY);
-					SAIG_QuadSetStateWho(m_idCurrAiQuad, this->GetId());
+					SAIG_QuadSetStateWho(m_idCurrAiQuad, getId());
 					SAIG_QuadGetPos(m_idCurrAiQuad, &tpos);
 					tpos.y += 0.7f;
-					SetPos(tpos);
+					setPos(tpos);
 				}
 			}
 		}
 	}
 
-	BaseClass::SetPos(tpos);
+	BaseClass::setPos(tpos);
 	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(tpos));
 }
 
-bool CNPCBase::SetKV(const char *name, const char *value)
+bool CNPCBase::setKV(const char *name, const char *value)
 {
-	if (stricmp("origin", name) == 0)
+	if(stricmp("origin", name) == 0)
 	{
-		propdata_t * field = GetField(name);
+		propdata_t * field = getField(name);
 		if (!field)
 		{
 			return(false);
 		}
 		float3_t f3;
 
-		if (3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
+		if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
 		{
-			SetPos(f3);
+			setPos(f3);
 			return true;
 		}
 		else
 			return false;
 	}
 
-	return BaseClass::SetKV(name, value);
+	return BaseClass::setKV(name, value);
 }
 
 ID CNPCBase::getAIQuad()
@@ -142,14 +142,14 @@ bool CNPCBase::pathFind(ID endq)
 	return false;
 }
 
-void CNPCBase::OnSync()
+void CNPCBase::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 
 	btTransform trans;
 	trans = m_pGhostObject->getWorldTransform();
 
-	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y()-0.9, trans.getOrigin().z()));
+	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y()-0.9f, trans.getOrigin().z()));
 
 	if (m_fHealth <= 0.f)
 		return;
@@ -277,7 +277,7 @@ void CNPCBase::pathWalk()
 	}
 
 	//если следующий квад аи сетки несвободен и занят не текущим нпс
-	if (SAIG_QuadGetState(m_aPathQuads[m_idCurrQuaidInPath]) != AIQUAD_STATE_FREE && SAIG_QuadGetStateWho(m_aPathQuads[m_idCurrQuaidInPath]) != GetId())
+	if (SAIG_QuadGetState(m_aPathQuads[m_idCurrQuaidInPath]) != AIQUAD_STATE_FREE && SAIG_QuadGetStateWho(m_aPathQuads[m_idCurrQuaidInPath]) != getId())
 	{
 		//значит он преградил путь и текущий нпс сбился с пути
 		m_statePath = NPC_STATE_PATH_LOST;
@@ -287,7 +287,7 @@ void CNPCBase::pathWalk()
 
 	//занимаем следующий квад аи сетки за текущим нпс
 	SAIG_QuadSetState(m_aPathQuads[m_idCurrQuaidInPath], AIQUAD_STATE_TEMPBUSY);
-	SAIG_QuadSetStateWho(m_aPathQuads[m_idCurrQuaidInPath], GetId());
+	SAIG_QuadSetStateWho(m_aPathQuads[m_idCurrQuaidInPath], getId());
 
 	SAIG_QuadGetPos(m_aPathQuads[m_idCurrQuaidInPath], &m_vPosQuadInPathNext);
 
@@ -346,7 +346,7 @@ void CNPCBase::pathWalk()
 
 void CNPCBase::orientAtPoint(const float3 * pos, DWORD ttime)
 {
-	float3 curr_pos = GetPos();
+	float3 curr_pos = getPos();
 	curr_pos.y = 0;
 	float3 poscam = float3(pos->x, 0, pos->z);
 	float3 dircam = poscam - curr_pos;
@@ -376,7 +376,7 @@ void CNPCBase::orientAtPoint(const float3 * pos, DWORD ttime)
 		m_fAngleYNext = angle;
 		m_ulTimeAllRot = 0;
 		m_ulTimeRot = 0;
-		SetOrient(SMQuaternion(angle, 'y'));
+		setOrient(SMQuaternion(angle, 'y'));
 	}
 }
 
@@ -388,7 +388,7 @@ void CNPCBase::updateOrientLerp()
 	int iTimeDelta = Core_RIntGet(G_RI_INT_TIME_DELTA);
 	m_ulTimeAllRot += iTimeDelta;
 	float fCurrAngle = lerpf(m_fAngleYLast, m_fAngleYNext, saturatef(float(m_ulTimeAllRot) / float(m_ulTimeRot)));
-	SetOrient(SMQuaternion(fCurrAngle, 'y'));
+	setOrient(SMQuaternion(fCurrAngle, 'y'));
 
 	if (m_ulTimeAllRot >= m_ulTimeRot)
 	{
