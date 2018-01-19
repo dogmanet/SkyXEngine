@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Пистолеты
 */
 
-#ifndef _CBasePistol_H_
-#define _CBasePistol_H_
+#ifndef __BASE_PISTOL_H
+#define __BASE_PISTOL_H
 
 /*! Пистолеты
 \ingroup cbaseitem

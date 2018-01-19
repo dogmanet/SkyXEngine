@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "BaseAnimating.h"
 #include "gcore/sxgcore.h"
 
@@ -37,7 +43,7 @@ void CBaseAnimating::getMinMax(float3 * min, float3 * max)
 	if (m_pAnimPlayer)
 	{
 		const ISXBound * bound = m_pAnimPlayer->getBound();
-		bound->GetMinMax(min, max);
+		bound->getMinMax(min, max);
 	}
 }
 
@@ -46,7 +52,7 @@ void CBaseAnimating::getSphere(float3 * center, float * radius)
 	if(m_pAnimPlayer)
 	{
 		const ISXBound * bound = m_pAnimPlayer->getBound();
-		bound->GetSphere(center, radius);
+		bound->getSphere(center, radius);
 	}
 }
 

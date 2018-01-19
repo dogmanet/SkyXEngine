@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -33,8 +33,6 @@ See the license in LICENSE
 #include <particles/sxparticles.h>
 #include <pp/sxpp.h>
 #include <decals/sxdecals.h>
-
-extern report_func g_fnReportf;
 
 //! пространство имен с орагнизацией рендера
 namespace SXRenderFunc

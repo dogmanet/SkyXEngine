@@ -1,6 +1,11 @@
 
-#ifndef axes_helper_h
-#define axes_helper_h
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __AXES_HELPER_H
+#define __AXES_HELPER_H
 
 #include <windows.h>
 #include <common/sxtypes.h>

@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "material.h"
 
 Materials::Materials()
@@ -546,7 +551,7 @@ MTLTYPE_PHYSIC Materials::MtlGetPhysicMaterial(ID id)
 void Materials::MtlSetTexture(ID id, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->MainTexture = SGCore_LoadTexAddName(path_tex, LoadTexType::ltt_load);
+	ArrMaterials[id]->mtl->MainTexture = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetTexture(ID id, char* name)
@@ -620,7 +625,7 @@ bool Materials::MtlGetIsTextureLighting(ID id)
 void Materials::MtlSetTextureLighting(ID id, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->LightParam.ParamTex = SGCore_LoadTexAddName(path_tex, LoadTexType::ltt_load);
+	ArrMaterials[id]->mtl->LightParam.ParamTex = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetTextureLighting(ID id, char* path_tex)
@@ -753,7 +758,7 @@ MTLTYPE_REFLECT Materials::MtlGetTypeReflection(ID id)
 void Materials::MtlSetMaskTex(ID id, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->MicroDetail.Mask = SGCore_LoadTexAddName(path_tex, LoadTexType::ltt_load);
+	ArrMaterials[id]->mtl->MicroDetail.Mask = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetMaskTex(ID id, char* path_tex)
@@ -768,7 +773,7 @@ void Materials::MtlGetMaskTex(ID id, char* path_tex)
 void Materials::MtlSetMRTex(ID id, int channel, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->MicroDetail.ArrMicroDiffuse[channel] = SGCore_LoadTexAddName(path_tex, LoadTexType::ltt_load);
+	ArrMaterials[id]->mtl->MicroDetail.ArrMicroDiffuse[channel] = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetMRTex(ID id, int channel, char* path_tex)
@@ -784,7 +789,7 @@ void Materials::MtlGetMRTex(ID id, int channel, char* path_tex)
 void Materials::MtlSetDTex(ID id, int channel, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id);
-	ArrMaterials[id]->mtl->MicroDetail.ArrDeatail[channel] = SGCore_LoadTexAddName(path_tex, LoadTexType::ltt_load);
+	ArrMaterials[id]->mtl->MicroDetail.ArrDeatail[channel] = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetDTex(ID id, int channel, char* path_tex)
@@ -980,7 +985,7 @@ ID Materials::IsExists(const char* name)
 	if (!IsTruePath)
 	{
 		return -2;
-		//reportf(-1, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
+		//LibReport(REPORT_MSG_LEVEL_ERROR, "%s - wrong texture name [%s]!!!", gen_msg_location, name);
 	}
 
 	long tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
@@ -1148,9 +1153,9 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 		//если в конфиге указана текстура то берем ее
 		if (config->keyExists(tmp_name, "texture"))
-			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->getKey(tmp_name, "texture"), LoadTexType::ltt_load);
+			tmpMtl->MainTexture = SGCore_LoadTexAddName(config->getKey(tmp_name, "texture"), LOAD_TEXTURE_TYPE_LOAD);
 		else //если нет то тогда берем имя материала, может быть он имя текстуры, иначе будет -1
-			tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LoadTexType::ltt_load);
+			tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
 
 		sprintf(tmpMtl->Name, "%s", tmp_name);
 
@@ -1194,7 +1199,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			sprintf(tmpMicroDiff[0], "%s", config->getKey(tmp_name, "mirco_diff_r"));
 
 		if (tmpMicroDiff[0][0] != '0' && tmpMicroDiff[0][0] != 0)
-			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = SGCore_LoadTexAddName(tmpMicroDiff[0], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = SGCore_LoadTexAddName(tmpMicroDiff[0], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[0] = -1;
 
@@ -1202,7 +1207,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "mirco_diff_g"))
 			sprintf(tmpMicroDiff[1], "%s", config->getKey(tmp_name, "mirco_diff_g"));
 		if (tmpMicroDiff[1][0] != '0' && tmpMicroDiff[1][0] != 0)
-			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = SGCore_LoadTexAddName(tmpMicroDiff[1], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = SGCore_LoadTexAddName(tmpMicroDiff[1], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[1] = -1;
 
@@ -1210,7 +1215,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "mirco_diff_b"))
 			sprintf(tmpMicroDiff[2], "%s", config->getKey(tmp_name, "mirco_diff_b"));
 		if (tmpMicroDiff[2][0] != '0' && tmpMicroDiff[2][0] != 0)
-			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = SGCore_LoadTexAddName(tmpMicroDiff[2], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = SGCore_LoadTexAddName(tmpMicroDiff[2], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[2] = -1;
 
@@ -1218,7 +1223,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "mirco_diff_a"))
 		sprintf(tmpMicroDiff[3], "%s", config->getKey(tmp_name, "mirco_diff_a"));
 		if (tmpMicroDiff[3][0] != '0' && tmpMicroDiff[3][0] != 0)
-			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = SGCore_LoadTexAddName(tmpMicroDiff[3], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = SGCore_LoadTexAddName(tmpMicroDiff[3], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrMicroDiffuse[3] = -1;
 
@@ -1227,7 +1232,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "detail_r"))
 			sprintf(tmpDetail[0], "%s", config->getKey(tmp_name, "detail_r"));
 		if (tmpDetail[0][0] != '0' && tmpMicroDiff[0][0] != 0)
-			tmpMtl->MicroDetail.ArrDeatail[0] = SGCore_LoadTexAddName(tmpDetail[0], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrDeatail[0] = SGCore_LoadTexAddName(tmpDetail[0], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[0] = -1;
 
@@ -1235,7 +1240,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "detail_g"))
 			sprintf(tmpDetail[1], "%s", config->getKey(tmp_name, "detail_g"));
 		if (tmpDetail[1][0] != '0' && tmpMicroDiff[1][0] != 0)
-			tmpMtl->MicroDetail.ArrDeatail[1] = SGCore_LoadTexAddName(tmpDetail[1], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrDeatail[1] = SGCore_LoadTexAddName(tmpDetail[1], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[1] = -1;
 
@@ -1243,7 +1248,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "detail_b"))
 			sprintf(tmpDetail[2], "%s", config->getKey(tmp_name, "detail_b"));
 		if (tmpDetail[2][0] != '0' && tmpMicroDiff[2][0] != 0)
-			tmpMtl->MicroDetail.ArrDeatail[2] = SGCore_LoadTexAddName(tmpDetail[2], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrDeatail[2] = SGCore_LoadTexAddName(tmpDetail[2], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[2] = -1;
 
@@ -1251,7 +1256,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "detail_a"))
 			sprintf(tmpDetail[3], "%s", config->getKey(tmp_name, "detail_a"));
 		if (tmpDetail[3][0] != '0' && tmpMicroDiff[3][0] != 0)
-			tmpMtl->MicroDetail.ArrDeatail[3] = SGCore_LoadTexAddName(tmpDetail[3], LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.ArrDeatail[3] = SGCore_LoadTexAddName(tmpDetail[3], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.ArrDeatail[3] = -1;
 
@@ -1259,7 +1264,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		if (config->keyExists(tmp_name, "mask"))
 			sprintf(tmpMask, "%s", config->getKey(tmp_name, "mask"));
 		if (tmpMask[0] != '0' && tmpMask[0] != 0)
-			tmpMtl->MicroDetail.Mask = SGCore_LoadTexAddName(tmpMask, LoadTexType::ltt_load);
+			tmpMtl->MicroDetail.Mask = SGCore_LoadTexAddName(tmpMask, LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->MicroDetail.Mask = -1;
 
@@ -1302,7 +1307,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		//если текстура с параметрами освещения была определена
 		if (tmpParamLigth[0] != '0' && tmpParamLigth[0] != 0)
 		{
-			tmpMtl->LightParam.ParamTex = SGCore_LoadTexAddName(tmpParamLigth, LoadTexType::ltt_load);
+			tmpMtl->LightParam.ParamTex = SGCore_LoadTexAddName(tmpParamLigth, LOAD_TEXTURE_TYPE_LOAD);
 			//если использование параметров освещения из текстуры не было определено
 			if (istexparam == -1)
 				tmpMtl->LightParam.IsTextureParam = true;
@@ -1501,7 +1506,7 @@ void Materials::CreateMtl(const char* name, Material** mtl, MTLTYPE_MODEL type)
 	tmpMtl->PS.Param = float4(0, 0, 0, 0);
 	}*/
 
-	tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LoadTexType::ltt_load);
+	tmpMtl->MainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
 	tmpMtl->VS.IsTransWorldViewProjection = true;
 
 	tmpMtl->LightParam.RoughnessValue = MTL_LIGHTING_DEFAULT_ROUGHNESS;

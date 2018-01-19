@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Emitter.h"
 
 void Emitter::NullingInit()
@@ -114,7 +119,7 @@ void Emitter::TextureSetID(ID tex)
 
 void Emitter::TextureSet(const char* tex)
 {
-	IDTex = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
+	IDTex = SGCore_LoadTexAddName(tex, LOAD_TEXTURE_TYPE_LOAD);
 	//SGCore_LoadTexLoadTextures();
 	isTexInit = false;
 	if (SGCore_LoadTexGetTex(IDTex))
@@ -144,7 +149,7 @@ void Emitter::TextureTrackSetID(ID tex)
 
 void Emitter::TextureTrackSet(const char* tex)
 {
-	IDTexTrack = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
+	IDTexTrack = SGCore_LoadTexAddName(tex, LOAD_TEXTURE_TYPE_LOAD);
 	//SGCore_LoadTexLoadTextures();
 }
 
@@ -251,7 +256,7 @@ void Emitter::CountSet(int count)
 
 	if (Count <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -1306,7 +1311,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 			if (PESet::IDsRenderTargets::DepthScene >= 0)
 				PESet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PESet::IDsRenderTargets::DepthScene));
 			else
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
+				LibReport(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
 		}
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles);

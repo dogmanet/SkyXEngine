@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define SXSCORE_VERSION 1
 
@@ -16,7 +16,7 @@ report_func g_fnReportf = DefReport;
 
 MainSound* MSound = 0;
 
-#define SCORE_PRECOND(retval) if(!MSound){g_fnReportf(-1, "%s - sxsound is not init", GEN_MSG_LOCATION); return retval;}
+#define SCORE_PRECOND(retval) if(!MSound){LibReport(-1, "%s - sxsound is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -40,7 +40,7 @@ SX_LIB_API void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxsound", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -55,7 +55,7 @@ SX_LIB_API void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxsound", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SSCore_AKill()

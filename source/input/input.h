@@ -1,6 +1,11 @@
 
-#ifndef SX_INPUT_CLASS_H
-#define SX_INPUT_CLASS_H
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __INPUT_H
+#define __INPUT_H
 
 #include <queue>
 

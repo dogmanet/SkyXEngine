@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Снайперские
 */
 
-#ifndef _SXbaseSnipe_H_
-#define _SXbaseSnipe_H_
+#ifndef __BASE_SNIPE_H
+#define __BASE_SNIPE_H
 
 #include "BaseWeapon.h"
 

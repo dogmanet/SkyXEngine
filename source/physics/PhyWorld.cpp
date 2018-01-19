@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "PhyWorld.h"
 #include <core/sxcore.h>
 #include <geom/sxgeom.h>
@@ -605,7 +611,7 @@ void PhyWorld::DebugDrawer::drawContactPoint(const btVector3 & PointOnB, const b
 
 void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 {
-	reportf(REPORT_MSG_LEVEL_WARNING, "%s\n", warningString);
+	LibReport(REPORT_MSG_LEVEL_WARNING, "%s\n", warningString);
 }
 
 void PhyWorld::DebugDrawer::draw3dText(const btVector3& location, const char* textString)

@@ -1,8 +1,8 @@
 ﻿
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -14,8 +14,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _ModelFileAnim_H_
-#define _ModelFileAnim_H_
+#ifndef __MODELFILE_H
+#define __MODELFILE_H
 
 #include <common/sxtypes.h>
 #include <common/SXMath.h>

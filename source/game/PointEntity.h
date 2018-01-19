@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -16,8 +16,8 @@ See the license in LICENSE
 
 //! \defgroup clight Свет
 
-#ifndef _CPointEntity_H_
-#define _CPointEntity_H_
+#ifndef __POINT_ENTITY_H
+#define __POINT_ENTITY_H
 
 #include "BaseEntity.h"
 

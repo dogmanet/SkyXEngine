@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "level.h"
 
 CLevel::CLevel()
@@ -43,7 +48,7 @@ void CLevel::load(const char *szName, bool isGame)
 	sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 	if (!Core_0FileExists(tmppathlevel))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of level '%s'", tmppathlevel);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of level '%s'", tmppathlevel);
 		return;
 	}
 
@@ -56,7 +61,7 @@ void CLevel::load(const char *szName, bool isGame)
 			SGeom_ModelsLoad(tmppath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of geometry '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of geometry '%s'", tmppath);
 		}
 	}
 
@@ -68,7 +73,7 @@ void CLevel::load(const char *szName, bool isGame)
 			SGeom_GreenLoad(tmppath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of green '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of green '%s'", tmppath);
 		}
 	}
 
@@ -80,7 +85,7 @@ void CLevel::load(const char *szName, bool isGame)
 			SXGame_LoadEnts(tmppath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", tmppath);
 		}
 	}
 
@@ -115,7 +120,7 @@ void CLevel::load(const char *szName, bool isGame)
 			SAIG_GridLoad(tmppath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of aigrid '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of aigrid '%s'", tmppath);
 		}
 	}
 
@@ -155,7 +160,7 @@ void CLevel::load(const char *szName, bool isGame)
 				m_pWeather->load(tmppath);
 			else
 			{
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of weather '%s'", tmppath);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of weather '%s'", tmppath);
 			}
 		}
 	}

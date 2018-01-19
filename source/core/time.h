@@ -1,9 +1,13 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __TIME_H
 #define __TIME_H
 
 #include <gdefines.h>
-extern report_func g_fnReportf;
 
 #include <common/Array.h>
 
@@ -14,7 +18,7 @@ typedef std::chrono::system_clock::time_point time_point;
 
 #define TIMEMANAGER_PRECOND_ID(id,stdval) \
 if (!(id >= 0 && id < m_aTimes.size()))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - time manager: unresolved index of access '%d'", SX_LIB_NAME, GEN_MSG_LOCATION, id); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - time manager: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }
 
 class CTimeManager
 {

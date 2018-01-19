@@ -1,16 +1,20 @@
 
-#ifndef __particles_h
-#define __particles_h
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __EMITTER_H
+#define __EMITTER_H
 
 #include <gdefines.h>
 
 #define SM_D3D_CONVERSIONS
-#include <common\SXMath.h>
+#include <common/SXMath.h>
 
 #include "sxparticles.h"
 #include "PESet.h"
 
-extern report_func g_fnReportf;
 extern g_particles_phy_collision GParticlesPhyCollision;
 
 //структура описывающая партикл

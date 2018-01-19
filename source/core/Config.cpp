@@ -1,6 +1,11 @@
 
-#include <common\\AssotiativeArray.h>
-#include <common\\String.cpp>
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#include <common/AssotiativeArray.h>
+#include <common/String.cpp>
 #include "Config.h"
 
 /*

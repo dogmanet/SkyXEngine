@@ -1,10 +1,9 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
-#pragma once
 #include <windows.h>
 
 BOOL APIENTRY DllMain(HMODULE hModule,

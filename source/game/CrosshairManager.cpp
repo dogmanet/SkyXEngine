@@ -1,10 +1,13 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "CrosshairManager.h"
 
 AssotiativeArray<AAString, ID> CCrosshairManager::m_mIndex;
 Array<CCrosshairManager::CrosshairDesc> CCrosshairManager::m_vCrosshairList;
-
-extern report_func reportf;
 
 void CCrosshairManager::loadCrosshair(ID id, CCrosshair * pCCrosshair)
 {
@@ -79,7 +82,7 @@ void CCrosshairManager::loadConfig(const char * szFile)
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unknown CCrosshair style '%s' for '%s'\n", str, sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unknown CCrosshair style '%s' for '%s'\n", str, sect);
 			continue;
 		}
 
@@ -87,11 +90,11 @@ void CCrosshairManager::loadConfig(const char * szFile)
 		if(config->keyExists(sect, "tex"))
 		{
 			tex = config->getKey(sect, "tex");
-			cd.idTexture = SGCore_LoadTexAddName(tex, ltt_const);
+			cd.idTexture = SGCore_LoadTexAddName(tex, LOAD_TEXTURE_TYPE_CONST);
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex '%s'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex '%s'\n", sect);
 			continue;
 		}
 		int x, y;
@@ -101,7 +104,7 @@ void CCrosshairManager::loadConfig(const char * szFile)
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex_offset '%s'. Expected format: '[x,y]'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex_offset '%s'. Expected format: '[x,y]'\n", sect);
 			continue;
 		}
 		if(config->keyExists(sect, "tex_size") && sscanf(config->getKey(sect, "tex_size"), "[%d,%d]", &x, &y) == 2)
@@ -110,7 +113,7 @@ void CCrosshairManager::loadConfig(const char * szFile)
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex_size '%s'. Expected format: '[x,y]'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read CCrosshair tex_size '%s'. Expected format: '[x,y]'\n", sect);
 			continue;
 		}
 		AAString aas;

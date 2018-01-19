@@ -1,14 +1,15 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Поезда класс
 */
-#ifndef _CFuncTrain_H_
-#define _CFuncTrain_H_
+#ifndef __FUNC_TRAIN_H
+#define __FUNC_TRAIN_H
 
 #include "PointEntity.h"
 

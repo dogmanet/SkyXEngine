@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Аммобокс
 */
 
-#ifndef _CBaseAmmoBox_H_
-#define _CBaseAmmoBox_H_
+#ifndef __BASE_AMMO_BOX_H
+#define __BASE_AMMO_BOX_H
 
 #include "BaseItem.h"
 

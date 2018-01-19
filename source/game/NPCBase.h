@@ -1,7 +1,8 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -12,8 +13,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef __NPCBASE_H_
-#define __NPCBASE_H_
+#ifndef __NPCBASE_H
+#define __NPCBASE_H
 
 #include "BaseAnimating.h"
 #include <aigrid/sxaigrid.h>

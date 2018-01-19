@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxrender.h"
 
 #include <render/camera_update.h>
@@ -13,7 +18,7 @@
 report_func g_fnReportf = DefReport;
 #endif
 
-#define SR_PRECOND(retval) if(!GData::DXDevice){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", GEN_MSG_LOCATION); return retval;}
+#define SR_PRECOND(retval) if(!GData::DXDevice){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -37,7 +42,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxparticles", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 				return;
 			}
 		}
@@ -48,7 +53,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		GData::DXDevice = SGCore_GetDXDevice();
 
 		GData::ObjCamera = SGCore_CrCamera();
-		GData::ObjCamera->SetFOV(GData::ProjFov);
+		GData::ObjCamera->setFOV(GData::ProjFov);
 
 		GData::InitAllMatrix();
 
@@ -97,7 +102,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		//SGCore_LoadTexLoadTextures();
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxparticles", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SRender_AKill()

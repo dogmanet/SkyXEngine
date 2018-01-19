@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "PointCamera.h"
 
 /*! \skydocent point_camera
@@ -15,7 +21,7 @@ CPointCamera::CPointCamera(CEntityManager * pMgr):
 {
 	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	m_pSXC = SGCore_CrCamera();
-	m_pSXC->SetFOV(SMToRadian(*r_default_fov));
+	m_pSXC->setFOV(SMToRadian(*r_default_fov));
 }
 
 CPointCamera::~CPointCamera()
@@ -32,6 +38,6 @@ void CPointCamera::onSync()
 {
 	BaseClass::onSync();
 
-	m_pSXC->SetPosition(&(float3)m_vPosition);
-	m_pSXC->SetOrientation(m_vOrientation);
+	m_pSXC->setPosition(&(float3)m_vPosition);
+	m_pSXC->setOrientation(&m_vOrientation);
 }

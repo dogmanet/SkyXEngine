@@ -1,6 +1,11 @@
 
-#ifndef __reflection
-#define __reflection
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __REFLECTION_H
+#define __REFLECTION_H
 
 #include <gdefines.h>
 
@@ -11,8 +16,6 @@
 
 #include "sxmtllight.h"
 #include "ml_data.h"
-
-extern report_func g_fnReportf;
 
 class Reflection
 {

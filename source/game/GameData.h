@@ -1,5 +1,11 @@
-#ifndef _GameData_H_
-#define _GameData_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __GAME_DATA_H
+#define __GAME_DATA_H
 
 
 #include "Player.h"

@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -27,7 +27,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxanim_d.lib")
 #	pragma comment(lib, "sxparticles_d.lib")
 #	pragma comment(lib, "sxscore_d.lib")
-#	pragma comment(lib, "sxpp_d.lib")
+//#	pragma comment(lib, "sxpp_d.lib")
 #	pragma comment(lib, "sxaigrid_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
@@ -38,20 +38,20 @@ See the license in LICENSE
 #	pragma comment(lib, "sxanim.lib")
 #	pragma comment(lib, "sxparticles.lib")
 #	pragma comment(lib, "sxscore.lib")
-#	pragma comment(lib, "sxpp.lib")
+//#	pragma comment(lib, "sxpp.lib")
 #	pragma comment(lib, "sxaigrid.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = DefReport;
+report_func g_fnReportf = DefReport;
 #endif
 
 
 GameData * g_pGameData = NULL;
 ID3DXMesh* g_pFigureBox = 0;
 
-#define SG_PRECOND(ret) if(!g_pGameData){reportf(-1, "%s - sxgame is not init", GEN_MSG_LOCATION);return ret;}
+#define SG_PRECOND(ret) if(!g_pGameData){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgame is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -106,7 +106,7 @@ SX_LIB_API void SXGame_0Create()
 {
 	if(g_pGameData)
 	{
-		reportf(-1, "%s - sxgame double init", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgame double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();
@@ -160,7 +160,7 @@ SX_LIB_API void SXGame_RenderHUD()
 
 SX_LIB_API void SXGame_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 SX_LIB_API void SXGame_LoadEnts(const char * file)

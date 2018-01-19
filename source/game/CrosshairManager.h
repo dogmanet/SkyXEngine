@@ -1,5 +1,11 @@
-#ifndef _CROSSHAIRMANAGER_H
-#define _CROSSHAIRMANAGER_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CROSSHAIRMANAGER_H
+#define __CROSSHAIRMANAGER_H
 
 #include "sxgame.h"
 #include <common/AssotiativeArray.h>

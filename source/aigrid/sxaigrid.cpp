@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxaigrid.h"
 #include "aigrid.h"
 
@@ -18,7 +23,7 @@ g_aiquad_phy_navigate AIQuadPhyNavigate = QuadPhyNavigate;
 
 AIGrid* ObjAIGrid = 0;
 
-#define AIG_PRECOND(retval) if(!ObjAIGrid){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxaigrid is not init", GEN_MSG_LOCATION); return retval;}
+#define AIG_PRECOND(retval) if(!ObjAIGrid){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxaigrid is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -42,7 +47,7 @@ SX_LIB_API void SAIG_0Create(const char* name, bool use_graphics, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxaigrid", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -59,7 +64,7 @@ SX_LIB_API void SAIG_0Create(const char* name, bool use_graphics, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxaigrid", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SAIG_AKill()

@@ -1,6 +1,11 @@
 
-#ifndef __light_h
-#define __light_h
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __LIGHT_H
+#define __LIGHT_H
 
 #include <gdefines.h>
 
@@ -12,17 +17,16 @@
 
 #include "sxmtllight.h"
 #include "ml_data.h"
-extern report_func g_fnReportf;
 
 #define LIGHTS_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < ArrLights.size()))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
 	else if (!ArrLights[id]) \
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", GEN_MSG_LOCATION, id); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", GEN_MSG_LOCATION, id); return stdval; }
 
 #define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
 if (!(key >= 0 && key < ArrDelLights.size()))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return stdval; }
 
 #include "shadow.h"
 //#include <common\\string.cpp>

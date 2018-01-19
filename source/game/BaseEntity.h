@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -15,8 +15,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _CBaseEntity_H_
-#define _CBaseEntity_H_
+#ifndef __BASE_ENTITY_H
+#define __BASE_ENTITY_H
 
 #include <gdefines.h>
 #include <common/SXMath.h>

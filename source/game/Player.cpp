@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include <input/sxinput.h>
 #include <mtllight/sxmtllight.h>
 #include "Player.h"

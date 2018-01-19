@@ -1,16 +1,19 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "cvars.h"
 
 AssotiativeArray<String, CVar> g_mCVars;
 AssotiativeArray<String, CVarPtr> g_mCVarPtrs;
 
-extern report_func g_fnReportf;
-
 SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -39,7 +42,7 @@ SX_LIB_API void Core_0RegisterCVarInt(const char * name, int value, const char *
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -65,7 +68,7 @@ SX_LIB_API void Core_0RegisterCVarFloat(const char * name, float value, const ch
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -90,7 +93,7 @@ SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -116,7 +119,7 @@ SX_LIB_API void Core_0RegisterCVarPointer(const char * name, UINT_PTR value)
 {
 	if(g_mCVarPtrs.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 

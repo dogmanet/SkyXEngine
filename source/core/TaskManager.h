@@ -1,5 +1,11 @@
-#ifndef _SXTaskManager_H_
-#define _SXTaskManager_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TASK_MANAGER_H
+#define __TASK_MANAGER_H
 
 #include <memory>
 #include <thread>

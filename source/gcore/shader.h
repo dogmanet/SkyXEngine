@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __SHADER_H
 #define __SHADER_H
 
@@ -13,7 +18,6 @@
 #include <common/String.h>
 #include "sxgcore.h"
 
-extern report_func g_fnReportf;
 extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
@@ -208,11 +212,12 @@ public:
 	void getName(SHADER_TYPE type, ID idShader, char *szName);
 
 protected:
-	Array<CShaderVS*> m_aVS;
-	Array<CShaderPS*> m_aPS;
 
-	int m_iLastAllLoadVS;
-	int m_iLastAllLoadPS;
+	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
+	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
+
+	int m_iLastAllLoadVS;		//! общее количество загруженных vs шейдеров, с прошлого раза
+	int m_iLastAllLoadPS;		//! общее количество загруженных ps шейдеров, с прошлого раза
 };
 
 #endif

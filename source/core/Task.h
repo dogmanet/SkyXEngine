@@ -1,5 +1,11 @@
-#ifndef _CTask_H_
-#define _CTask_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TASK_H
+#define __TASK_H
 
 #include "sxcore.h"
 #include <memory>

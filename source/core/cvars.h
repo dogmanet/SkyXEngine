@@ -1,6 +1,11 @@
 
-#ifndef SXCVARS_H
-#define SXCVARS_H
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CVARS_H
+#define __CVARS_H
 
 #include "sxcore.h"
 #include <common/AssotiativeArray.h>

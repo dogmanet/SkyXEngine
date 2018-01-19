@@ -1,5 +1,11 @@
-#ifndef TabManager_H
-#define TabManager_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TAB_MANAGER_H
+#define __TAB_MANAGER_H
 
 class EditorTab;
 struct ISXGUIBaseWnd;

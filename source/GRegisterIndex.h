@@ -1,16 +1,16 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*! 
 \file 
  Зарезервированные (именованые) номера регистров 
 */
 
-#ifndef __G_RI
-#define __G_RI
+#ifndef __G_RI_H
+#define __G_RI_H
 
 /*! \name float4x4 register 
 @{*/

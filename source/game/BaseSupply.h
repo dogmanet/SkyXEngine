@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Базовый класс припаса
 */
 
-#ifndef _CBaseSupply_H_
-#define _CBaseSupply_H_
+#ifndef __BASE_SUPPLY_H
+#define __BASE_SUPPLY_H
 
 #include "BaseItem.h"
 

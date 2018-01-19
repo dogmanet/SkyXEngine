@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -13,8 +13,8 @@ See the license in LICENSE
  \ingroup render
 @{*/
 
-#ifndef __CAMERA_UPDATE
-#define __CAMERA_UPDATE
+#ifndef __CAMERA_UPDATE_H
+#define __CAMERA_UPDATE_H
 
 #include <windows.h>
 #include <input/sxinput.h>

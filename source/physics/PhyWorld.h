@@ -1,5 +1,11 @@
-#ifndef SXPHYWORLD_H
-#define SXPHYWORLD_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __PHY_WORLD_H
+#define __PHY_WORLD_H
 
 
 #include <btBulletDynamicsCommon.h>
@@ -29,8 +35,6 @@ struct PhyMatFile
 	}
 };
 #pragma pack(pop)
-
-extern report_func reportf;
 
 class PhyWorld
 {

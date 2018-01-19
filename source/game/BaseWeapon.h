@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Базовый класс оружия
 */
 
-#ifndef _CBaseWeapon_H_
-#define _CBaseWeapon_H_
+#ifndef __BASE_WEAPON_H
+#define __BASE_WEAPON_H
 
 #include "BaseTool.h"
 

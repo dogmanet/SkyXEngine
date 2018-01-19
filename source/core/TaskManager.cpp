@@ -1,4 +1,10 @@
-#include <core\taskManager.h>
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#include <core/taskManager.h>
 
 #if defined(_WINDOWS)
 void SetThreadName(DWORD dwThreadID, const char* threadName)

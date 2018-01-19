@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -13,10 +13,10 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = DefReport;
+report_func g_fnReportf = DefReport;
 #endif
 
-#define SA_PRECOND(ret) if(!g_mgr){reportf(REPORT_MSG_LEVEL_ERROR, "%s - sxanim is not init", GEN_MSG_LOCATION);return ret;}
+#define SA_PRECOND(ret) if(!g_mgr){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxanim is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -40,7 +40,7 @@ SX_LIB_API void SXAnim_0Create()
 {
 	if(g_mgr)
 	{
-		reportf(-1, "%s - sxanim double init", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxanim double init", GEN_MSG_LOCATION);
 		return;
 	}
 	g_mgr = new AnimationManager(SGCore_GetDXDevice());
@@ -102,5 +102,5 @@ SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
 
 SX_LIB_API void SXAnim_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }

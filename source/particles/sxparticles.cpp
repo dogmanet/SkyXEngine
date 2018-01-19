@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxparticles.h"
 #include "emitter.h"
 #include "effect.h"
@@ -21,7 +26,7 @@ g_particles_phy_collision GParticlesPhyCollision = ParticlesPhyCollision;
 
 Effects* ArrEffects = 0;
 
-#define PE_PRECOND(retval) if(!ArrEffects){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles is not init", GEN_MSG_LOCATION); return retval;}
+#define PE_PRECOND(retval) if(!ArrEffects){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -50,7 +55,7 @@ SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxparticles", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -65,7 +70,7 @@ SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxparticles", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SPE_RTDepthSet(ID id)
@@ -321,14 +326,14 @@ SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot)
 }
 
 
-SX_LIB_API bool SPE_EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
+SX_LIB_API bool SPE_EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
 {
 	PE_PRECOND(false);
 
 	return ArrEffects->EffectVisibleCom(id, frustum, view);
 }
 
-SX_LIB_API void SPE_EffectVisibleComAll(ISXFrustum* frustum, float3* view)
+SX_LIB_API void SPE_EffectVisibleComAll(const ISXFrustum* frustum, float3* view)
 {
 	PE_PRECOND(_VOID);
 

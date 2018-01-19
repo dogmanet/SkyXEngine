@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __ML_DATA_H
 #define __ML_DATA_H
 
@@ -6,7 +11,7 @@
 
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
-#include <common\array.h>
+#include <common/array.h>
 
 #include <GRegisterIndex.h>
 

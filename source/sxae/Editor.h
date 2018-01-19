@@ -1,5 +1,11 @@
-#ifndef Editor_H
-#define Editor_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __EDITOR_H
+#define __EDITOR_H
 
 #define MAINWIN_SIZE_X	1320
 #define MAINWIN_SIZE_Y	730

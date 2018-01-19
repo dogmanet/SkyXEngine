@@ -1,5 +1,11 @@
-#ifndef _DecalManager_H_
-#define _DecalManager_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __DECAL_MANAGER_H
+#define __DECAL_MANAGER_H
 
 #include <gdefines.h>
 #include <common/SXMath.h>

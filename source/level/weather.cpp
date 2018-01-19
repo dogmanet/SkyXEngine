@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Weather.h"
 
 CWeatherRndSnd::CWeatherRndSnd()
@@ -159,13 +164,13 @@ CWeather::CWeather()
 	}
 	else
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'rain'", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'rain'", GEN_MSG_LOCATION);
 	}
 
 	m_idEffThunderbolt = SPE_EffectGetByName("thunderbolt");
 	if (m_idEffThunderbolt < 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'thunderbolt'", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found effect 'thunderbolt'", GEN_MSG_LOCATION);
 	}
 	m_ulTimeBoltNext = m_ulTimeBoltLast = 0;
 
@@ -225,7 +230,7 @@ void CWeather::load(const char *szPath)
 
 	if (!config->sectionExists("sections"))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", GEN_MSG_LOCATION, szPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found section 'sections' \nfile '%s'", GEN_MSG_LOCATION, szPath);
 		mem_release_del(config);
 		return;
 	}
@@ -239,7 +244,7 @@ void CWeather::load(const char *szPath)
 
 		if (strlen(str) != 8)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", GEN_MSG_LOCATION, str, szPath, "sections");
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", GEN_MSG_LOCATION, str, szPath, "sections");
 			mem_release_del(config);
 			return;
 		}
@@ -282,7 +287,7 @@ void CWeather::load(const char *szPath)
 
 	for (int i = 0, il = m_aTimeSections.size(); i < il; ++i)
 	{
-		//g_fnReportf(0, "%d\n", m_aTimeSections[i].time);
+		//LibReport(0, "%d\n", m_aTimeSections[i].time);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "sky_texture"))
 			sprintf(m_aTimeSections[i].m_DataSection.m_szSkyTex, "%s", config->getKey(m_aTimeSections[i].m_szSection, "sky_texture"));
@@ -487,7 +492,7 @@ void CWeather::load(const char *szPath)
 
 			if (!config->sectionExists(text_env))
 			{
-				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nszPath '%s' \nsection '%s'", GEN_MSG_LOCATION, text_env, szPath, m_aTimeSections[i].m_szSection);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - lacks env_ambient section '%s' \nszPath '%s' \nsection '%s'", GEN_MSG_LOCATION, text_env, szPath, m_aTimeSections[i].m_szSection);
 				return;
 			}
 
@@ -744,7 +749,7 @@ void CWeather::update()
 			tmp_fog_color2->z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vFogColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vFogColor.z, lerp_factor);
 		}
 		else
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "cvar pp_fog_color is not init");
+			LibReport(REPORT_MSG_LEVEL_WARNING, "cvar pp_fog_color is not init");
 	}
 
 	//если в текущей секции есть частота молнии

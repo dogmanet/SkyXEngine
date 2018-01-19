@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "LoaderTextures.h"
 
 LoaderTextures::LoaderTextures()
@@ -43,7 +48,7 @@ bool LoaderTextures::FileExists(const char* name)
 
 	if (!IsTruePath)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - wrong texture name [%s]!!!", SX_LIB_NAME, GEN_MSG_LOCATION, name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - wrong texture name [%s]!!!", GEN_MSG_LOCATION, name);
 		return false;
 	}
 
@@ -58,7 +63,7 @@ void LoaderTextures::ClearLoaded()
 	{
 		for (int k = 0; k < Arr[i]->ArrTex.size(); ++k)
 		{
-			if (Arr[i]->ArrTex[k]->type == LoadTexType::ltt_load)
+			if (Arr[i]->ArrTex[k]->type == LOAD_TEXTURE_TYPE_LOAD)
 			{
 				mem_release_del(ArrTextures[Arr[i]->ArrTex[k]->id]->tex);
 				++tmpcountdel;
@@ -101,7 +106,7 @@ void LoaderTextures::Delete(ID id)
 	}
 }
 
-ID LoaderTextures::AddName(const char* name, LoadTexType type, ID* iddir, ID* idname)
+ID LoaderTextures::AddName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir, ID* idname)
 {
 	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];//папка
 	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];//само имя текстыр с расширением
@@ -122,7 +127,7 @@ ID LoaderTextures::AddName(const char* name, LoadTexType type, ID* iddir, ID* id
 
 		if(!IsTruePath)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - wrong texture name [%s]!!!", SX_LIB_NAME, GEN_MSG_LOCATION, name);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - wrong texture name [%s]!!!", GEN_MSG_LOCATION, name);
 		}
 
 	int tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
@@ -192,8 +197,8 @@ ID LoaderTextures::AddName(const char* name, LoadTexType type, ID* iddir, ID* id
 			}
 
 			//если тип текстуры самоопределение
-			if (type == LoadTexType::ltt_self)
-				type = LoadTexType::ltt_load;
+			if (type == LOAD_TEXTURE_TYPE_SELF)
+				type = LOAD_TEXTURE_TYPE_LOAD;
 
 			Arr[tmpkey]->ArrTex.push_back(new TLPath::TLTex(id, tmp_name, type));
 
@@ -203,7 +208,7 @@ ID LoaderTextures::AddName(const char* name, LoadTexType type, ID* iddir, ID* id
 			ArrTextures[id]->name = name;
 			ArrTextures[id]->IDDir = tmpkey;
 			
-			if (type != LoadTexType::ltt_custom)
+			if (type != LOAD_TEXTURE_TYPE_CUSTOM)
 				ArrIDsLoad.push_back(id);
 		}
 
@@ -257,7 +262,7 @@ void LoaderTextures::GetName(ID id, char* name)
 ID LoaderTextures::Create(const char* name, IDirect3DTexture9* tex)
 {
 	ID tmpkey, tmpKeyName;
-	ID id = this->AddName(name, LoadTexType::ltt_custom, &tmpkey, &tmpKeyName);
+	ID id = this->AddName(name, LOAD_TEXTURE_TYPE_CUSTOM, &tmpkey, &tmpKeyName);
 	ArrTextures[id]->tex = tex;
 	return id;
 }
@@ -266,16 +271,16 @@ void LoaderTextures::Update(ID id)
 {
 	if(id < ArrTextures.size())
 	{
-		Update(ArrTextures[id]->name.c_str(), LoadTexType::ltt_self);
+		Update(ArrTextures[id]->name.c_str(), LOAD_TEXTURE_TYPE_SELF);
 	}
 }
 
-ID LoaderTextures::Update(const char* name, LoadTexType type)
+ID LoaderTextures::Update(const char* name, LOAD_TEXTURE_TYPE type)
 {
 	ID tmpkey, tmpKeyName;
 	ID id = AddName(name, type, &tmpkey, &tmpKeyName);
 
-	//g_fnReportf(0,"update texture [%s] ...",name);
+	//LibReport(0,"update texture [%s] ...",name);
 
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	sprintf(tmpPath, "%s%s%s%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), Arr[tmpkey]->Path.c_str(), "\\", Arr[tmpkey]->Path.c_str(), "_", Arr[tmpkey]->ArrTex[tmpKeyName]->name.c_str());
@@ -295,12 +300,12 @@ ID LoaderTextures::Update(const char* name, LoadTexType type)
 			)
 		)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - not found texture [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, tmpPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found texture [%s]", GEN_MSG_LOCATION, tmpPath);
 		}
 		else
 		{
 			ArrTextures[Arr[tmpkey]->ArrTex[tmpKeyName]->id]->tex = tex;
-			//g_fnReportf(0, "is ok\n");
+			//LibReport(0, "is ok\n");
 		}
 	
 	return id;
@@ -310,7 +315,7 @@ void LoaderTextures::LoadTextures()
 {
 	if (ArrIDsLoad.size() <= 0)
 		return;
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: load textures ...\n", SX_LIB_NAME);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "load textures ...\n");
 
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	ID tmpiddir;
@@ -336,18 +341,18 @@ void LoaderTextures::LoadTextures()
 			)))
 		{
 			ArrTextures[ArrIDsLoad[i]]->tex = 0;
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: - not found [%s]\n", SX_LIB_NAME, ArrTextures[ArrIDsLoad[i]]->name.c_str());
+			LibReport(REPORT_MSG_LEVEL_WARNING, "  not found [%s]\n", ArrTextures[ArrIDsLoad[i]]->name.c_str());
 		}
 		else
 		{
 			ArrTextures[ArrIDsLoad[i]]->tex = tex;
-			g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  texture id [%d], [%s]\n", ArrIDsLoad[i], ArrTextures[ArrIDsLoad[i]]->name.c_str());
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "  texture id [%d], [%s]\n", ArrIDsLoad[i], ArrTextures[ArrIDsLoad[i]]->name.c_str());
 			++iCountLoaded;
 		}
 	}
 
 	ArrIDsLoad.clear();
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: all loaded textures [%d]\n", SX_LIB_NAME, ArrTextures.size());
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded textures [%d]\n", ArrTextures.size());
 }
 
 IDirect3DTexture9* LoaderTextures::GetTexture(ID id)

@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "BaseTool.h"
 
 #include <particles/sxparticles.h>
@@ -265,7 +271,7 @@ void CBaseTool::_rezoom()
 	m_qSlotRotResult = SMquaternionSlerp(m_qSlotRot, m_qSlotRotAim, m_fZoomProgress);
 	if(m_pOwner)
 	{
-		((CPlayer*)m_pOwner)->getCamera()->getCamera()->SetFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
+		((CPlayer*)m_pOwner)->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
 }
 

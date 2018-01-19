@@ -1,5 +1,11 @@
-#ifndef _CEntityFactory_H_
-#define _CEntityFactory_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __ENTITY_FACTORY_H
+#define __ENTITY_FACTORY_H
 
 #include <gdefines.h>
 #include <common/AssotiativeArray.h>

@@ -1,10 +1,15 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sky.h"
 
-SkyBox::SkyBox()
+CSkyBox::CSkyBox()
 {
-	TexActive[0] = 0;
-	TexSecond[0] = 0;
+	m_szTexActive[0] = 0;
+	m_szTexSecond[0] = 0;
 
 	D3DVERTEXELEMENT9 layoutskybox[] =
 	{
@@ -13,20 +18,20 @@ SkyBox::SkyBox()
 		D3DDECL_END()
 	};
 
-	g_pDXDevice->CreateVertexDeclaration(layoutskybox, &VertexDeclarationSkyBox);
+	g_pDXDevice->CreateVertexDeclaration(layoutskybox, &m_pVertexDeclarationSkyBox);
 
-	VS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box.vs", SHADER_CHECKDOUBLE_NAME);
-	PS_RenderSkyBox = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box.ps", SHADER_CHECKDOUBLE_NAME);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box.vs", SHADER_CHECKDOUBLE_NAME);
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box.ps", SHADER_CHECKDOUBLE_NAME);
 
-	Color = float4(0,0,0,0);
-	RotaionY = 0.f;
-	MatRotation = SMMatrixIdentity();
+	m_vColor = float4(0, 0, 0, 0);
+	m_fRotaionY = 0.f;
+	m_mMatRotation = SMMatrixIdentity();
 	g_pDXDevice->CreateVertexBuffer(
-								8 * sizeof(SkyBoxVertex),
+								8 * sizeof(CSkyBoxVertex),
 								0,
 								0,
 								D3DPOOL_MANAGED,
-								&Vertices,
+								&m_pVertices,
 								0
 								);
 
@@ -35,7 +40,7 @@ SkyBox::SkyBox()
                0,
                D3DFMT_INDEX16,
                D3DPOOL_MANAGED,
-               &Indeces,
+			   &m_pIndeces,
                0);
 
 	float X = 1.0f * 200;
@@ -43,21 +48,21 @@ SkyBox::SkyBox()
 	float Z = 1.0f * 200;
 	float tmpy = 45;
 
-	SkyBoxVertex* tmpVertices;
-	Vertices->Lock(0, 0, (void**)&tmpVertices, 0);
+	CSkyBoxVertex* tmpVertices;
+	m_pVertices->Lock(0, 0, (void**)&tmpVertices, 0);
 
-	tmpVertices[0] = SkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
-	tmpVertices[1] = SkyBoxVertex(-X,  Y-tmpy, Z,-1.0f, 1.0f, 1.0f);
-	tmpVertices[2] = SkyBoxVertex( X, -tmpy, Z, 1.0f,-1.0f, 1.0f);
+	tmpVertices[0] = CSkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
+	tmpVertices[1] = CSkyBoxVertex(-X,  Y-tmpy, Z,-1.0f, 1.0f, 1.0f);
+	tmpVertices[2] = CSkyBoxVertex( X, -tmpy, Z, 1.0f,-1.0f, 1.0f);
 
-	tmpVertices[3] = SkyBoxVertex( X,  Y-tmpy,-Z, 1.0f, 1.0f,-1.0f);
-	tmpVertices[4] = SkyBoxVertex(-X, -tmpy, Z,-1.0f,-1.0f, 1.0f);
-	tmpVertices[5] = SkyBoxVertex( X, -tmpy,-Z, 1.0f,-1.0f,-1.0f);
+	tmpVertices[3] = CSkyBoxVertex( X,  Y-tmpy,-Z, 1.0f, 1.0f,-1.0f);
+	tmpVertices[4] = CSkyBoxVertex(-X, -tmpy, Z,-1.0f,-1.0f, 1.0f);
+	tmpVertices[5] = CSkyBoxVertex( X, -tmpy,-Z, 1.0f,-1.0f,-1.0f);
 
-	tmpVertices[6] = SkyBoxVertex(-X,  Y-tmpy,-Z,-1.0f, 1.0f,-1.0f);
-	tmpVertices[7] = SkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);
+	tmpVertices[6] = CSkyBoxVertex(-X,  Y-tmpy,-Z,-1.0f, 1.0f,-1.0f);
+	tmpVertices[7] = CSkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);
 
-	Vertices->Unlock();
+	m_pVertices->Unlock();
 
 
 	WORD indices_tmp[] =
@@ -82,110 +87,110 @@ SkyBox::SkyBox()
     };
 
 	WORD* indices = 0;
-	Indeces->Lock(0, 0, (void**)&indices, 0);
+	m_pIndeces->Lock(0, 0, (void**)&indices, 0);
 
 	memcpy(indices,indices_tmp,36 * sizeof(WORD));
 
-	Indeces->Unlock();
+	m_pIndeces->Unlock();
 
-	Tex = 0;
-	Tex2 = 0;
+	m_pTexture = 0;
+	m_pTexture2 = 0;
 
-	BFChange = false;
-	BFChangeMainTex = false;
-	FactorBlend = 0.0f;
+	m_isChange = false;
+	m_isChangeMainTex = false;
+	m_fFactorBlend = 0.0f;
 };
 
-SkyBox::~SkyBox()
+CSkyBox::~CSkyBox()
 {
-	mem_release_del(Vertices);
-	mem_release_del(Indeces);
+	mem_release_del(m_pVertices);
+	mem_release_del(m_pIndeces);
 
-	mem_release_del(Tex);
-	mem_release_del(Tex2);
+	mem_release_del(m_pTexture);
+	mem_release_del(m_pTexture2);
 
-	mem_release_del(VertexDeclarationSkyBox);
+	mem_release_del(m_pVertexDeclarationSkyBox);
 }
 
-void SkyBox::LoadTextures(const char *texture)
+void CSkyBox::loadTextures(const char *texture)
 {
-	mem_release_del(Tex);
+	mem_release_del(m_pTexture);
 	if (!texture)
 	{
-		mem_release_del(Tex2);
+		mem_release_del(m_pTexture2);
 
-		BFChange = false;
-		BFChangeMainTex = false;
-		FactorBlend = 0.0f;
+		m_isChange = false;
+		m_isChangeMainTex = false;
+		m_fFactorBlend = 0.0f;
 
 		return;
 	}
 
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-	if (FAILED(D3DXCreateCubeTextureFromFile(g_pDXDevice, tmppath, &Tex)))
+	if (FAILED(D3DXCreateCubeTextureFromFile(g_pDXDevice, tmppath, &m_pTexture)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load cube texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmppath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load cube texture '%s'", GEN_MSG_LOCATION, tmppath);
 	}
 }
 
-bool SkyBox::IsLoadTex()
+bool CSkyBox::isLoadTex()
 {
-	return (Tex != 0 || Tex2 != 0);
+	return (m_pTexture != 0 || m_pTexture2 != 0);
 }
 
-void SkyBox::ChangeTexture(const char *texture)
+void CSkyBox::changeTexture(const char *texture)
 {
-	mem_release_del((BFChangeMainTex ? Tex : Tex2));
+	mem_release_del((m_isChangeMainTex ? m_pTexture : m_pTexture2));
 	char tmpsb1[1024];
 	sprintf(tmpsb1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-		if(!FAILED(D3DXCreateCubeTextureFromFile(g_pDXDevice,tmpsb1,(BFChangeMainTex ? &Tex : &Tex2))))
-			BFChange = true;
+	if (!FAILED(D3DXCreateCubeTextureFromFile(g_pDXDevice, tmpsb1, (m_isChangeMainTex ? &m_pTexture : &m_pTexture2))))
+			m_isChange = true;
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load cube texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmpsb1);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load cube texture '%s'", GEN_MSG_LOCATION, tmpsb1);
 		}
 }
 
-void SkyBox::GetActiveTexture(char *texture)
+void CSkyBox::getActiveTexture(char *texture)
 {
 	if (texture)
-		strcpy(texture, TexActive);
+		strcpy(texture, m_szTexActive);
 }
 
-void SkyBox::GetSecondTexture(char *texture)
+void CSkyBox::getSecondTexture(char *texture)
 {
 	if (texture)
-		strcpy(texture, TexSecond);
+		strcpy(texture, m_szTexSecond);
 }
 
-void SkyBox::SetRotation(float angle)
+void CSkyBox::setRotation(float angle)
 {
-	RotaionY = angle;
-	MatRotation = SMMatrixRotationY(RotaionY);
+	m_fRotaionY = angle;
+	m_mMatRotation = SMMatrixRotationY(m_fRotaionY);
 }
 
-float SkyBox::GetRotation()
+float CSkyBox::getRotation()
 {
-	return RotaionY;
+	return m_fRotaionY;
 }
 
-void SkyBox::SetColor(float4_t* color)
+void CSkyBox::setColor(const float4_t* color)
 {
-	Color = *color;
+	m_vColor = *color;
 }
 
-void SkyBox::GetColor(float4_t* color)
+void CSkyBox::getColor(float4_t* color)
 {
-	*color = Color;
+	*color = m_vColor;
 }
 
-void SkyBox::Render(float timeDelta,float3* pos,bool is_shadow)
+void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 {
-		if(BFChange)
-			FactorBlend += timeDelta * 0.001f * 0.2f;
+	if (m_isChange)
+		m_fFactorBlend += timeDelta * 0.001f * 0.2f;
 
-	float4x4 World = MatRotation * SMMatrixTranslation(pos->x, pos->y, pos->z);
+	float4x4 World = m_mMatRotation * SMMatrixTranslation(pos->x, pos->y, pos->z);
 
 	//D3DXMATRIX tmpdxView, tmpdxProjection;
 	//g_pDXDevice->GetTransform(D3DTS_PROJECTION, &tmpdxProjection);
@@ -200,41 +205,41 @@ void SkyBox::Render(float timeDelta,float3* pos,bool is_shadow)
 
 	WVP = SMMatrixTranspose(WVP);
 
-		if(BFChange && FactorBlend >= 1.0)
-		{
-			FactorBlend = 0.0;
-			BFChangeMainTex = !BFChangeMainTex;
-			BFChange = false;
-		}
+	if (m_isChange && m_fFactorBlend >= 1.0)
+	{
+		m_fFactorBlend = 0.0;
+		m_isChangeMainTex = !m_isChangeMainTex;
+		m_isChange = false;
+	}
 
-		if(BFChangeMainTex)
-		{
-			g_pDXDevice->SetTexture(0,Tex2);
-			g_pDXDevice->SetTexture(1,Tex);
-		}
-		else
-		{
-			g_pDXDevice->SetTexture(0,Tex);
-			g_pDXDevice->SetTexture(1,Tex2);
-		}
+	if (m_isChangeMainTex)
+	{
+		g_pDXDevice->SetTexture(0, m_pTexture2);
+		g_pDXDevice->SetTexture(1, m_pTexture);
+	}
+	else
+	{
+		g_pDXDevice->SetTexture(0, m_pTexture);
+		g_pDXDevice->SetTexture(1, m_pTexture2);
+	}
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyBox, "WorldViewProjection", &WVP);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyBox, "Color", &Color);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyBox, "BlendFactor", &FactorBlend);
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyBox);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyBox);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &WVP);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "Color", &m_vColor);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "BlendFactor", &m_fFactorBlend);
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
 
-	g_pDXDevice->SetStreamSource(0, Vertices, 0, sizeof(SkyBoxVertex));
-	g_pDXDevice->SetIndices(Indeces);
-	g_pDXDevice->SetVertexDeclaration(VertexDeclarationSkyBox);
+	g_pDXDevice->SetStreamSource(0, m_pVertices, 0, sizeof(CSkyBoxVertex));
+	g_pDXDevice->SetIndices(m_pIndeces);
+	g_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationSkyBox);
 	g_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
 
 	SGCore_ShaderUnBind();
 };
 
-/////
+//##########################################################################
 
-SkyClouds::SkyClouds()
+CSkyClouds::CSkyClouds()
 {
 	D3DVERTEXELEMENT9 layoutclouds[] =
 	{
@@ -243,24 +248,24 @@ SkyClouds::SkyClouds()
 		D3DDECL_END()
 	};
 
-	g_pDXDevice->CreateVertexDeclaration(layoutclouds, &VertexDeclarationClouds);
+	g_pDXDevice->CreateVertexDeclaration(layoutclouds, &m_pVertexDeclarationClouds);
 
-	VS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
-	PS_RenderSkyClouds = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
 
 	D3DXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
-	PS_RenderSkyCloudsShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
+	m_idPS_Shadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
 
-	RotaionY = 0;
-	Alpha = 1.f;
-	Color = float4_t(0,0,0,0);
-	MatRotation = SMMatrixIdentity();
+	m_fRotaionY = 0;
+	m_fAlpha = 1.f;
+	m_vColor = float4_t(0, 0, 0, 0);
+	m_mMatRotation = SMMatrixIdentity();
 	g_pDXDevice->CreateVertexBuffer(
-								4 * sizeof(SkyCloudsVertex),
+								4 * sizeof(CSkyCloudsVertex),
 								0,
 								0,
 								D3DPOOL_MANAGED,
-								&SkyCloudsVertices,
+								&m_pSkyCloudsVertices,
 								0
 								);
 
@@ -269,21 +274,21 @@ SkyClouds::SkyClouds()
                0,
                D3DFMT_INDEX16,
                D3DPOOL_MANAGED,
-               &SkyCloudsIndeces,
+			   &m_pSkyCloudsIndeces,
                0);
 
 	float X = 800;
 	float Y = 0;
 	float Z = 800;
 
-	SkyCloudsVertices->Lock(0, 0, (void**)&Vertices, 0);
+	m_pSkyCloudsVertices->Lock(0, 0, (void**)&m_pVertices, 0);
 
-	Vertices[3] = SkyCloudsVertex(-X,  Y, -Z, 0.0f, 2.0f);
-	Vertices[2] = SkyCloudsVertex(-X,  Y,  Z, 0.0f, 0.0f);
-	Vertices[1] = SkyCloudsVertex( X,  Y,  Z, 2.0f,0.0f);
-	Vertices[0] = SkyCloudsVertex( X,  Y, -Z, 2.0f, 2.0f);
+	m_pVertices[3] = CSkyCloudsVertex(-X, Y, -Z, 0.0f, 2.0f);
+	m_pVertices[2] = CSkyCloudsVertex(-X, Y, Z, 0.0f, 0.0f);
+	m_pVertices[1] = CSkyCloudsVertex(X, Y, Z, 2.0f, 0.0f);
+	m_pVertices[0] = CSkyCloudsVertex(X, Y, -Z, 2.0f, 2.0f);
 
-	SkyCloudsVertices->Unlock();
+	m_pSkyCloudsVertices->Unlock();
 
 
 	WORD indices_tmp[] =
@@ -294,211 +299,206 @@ SkyClouds::SkyClouds()
 
 
 	WORD* indices = 0;
-	SkyCloudsIndeces->Lock(0, 0, (void**)&indices, 0);
+	m_pSkyCloudsIndeces->Lock(0, 0, (void**)&indices, 0);
 
 	memcpy(indices,indices_tmp,6 * sizeof(WORD));
 
-	SkyCloudsIndeces->Unlock();
+	m_pSkyCloudsIndeces->Unlock();
 
-	Bias = 0.f;
-	Speed = 0.01f;
+	m_fBias = 0.f;
+	m_fSpeed = 0.01f;
 
-	SkyCloudsTex = 0;
-	SkyCloudsTex2 = 0;
+	m_pSkyCloudsTex = 0;
+	m_pSkyCloudsTex2 = 0;
 
-	BFChange = false;
-	BFChangeMainTex = false;
-	FactorBlend = 0.0f;
+	m_isChange = false;
+	m_isChangeMainTex = false;
+	m_fFactorBlend = 0.0f;
 }
 
-SkyClouds::~SkyClouds()
+CSkyClouds::~CSkyClouds()
 {
-	mem_release_del(SkyCloudsTex);
-	mem_release_del(SkyCloudsTex2);
+	mem_release_del(m_pSkyCloudsTex);
+	mem_release_del(m_pSkyCloudsTex2);
 
-	mem_release_del(SkyCloudsVertices);
-	mem_release_del(SkyCloudsIndeces);
+	mem_release_del(m_pSkyCloudsVertices);
+	mem_release_del(m_pSkyCloudsIndeces);
 
-	mem_release_del(VertexDeclarationClouds);
+	mem_release_del(m_pVertexDeclarationClouds);
 }
 
-void SkyClouds::ChangeTexture(const char *texture)
+void CSkyClouds::changeTexture(const char *texture)
 {
-	mem_release_del((BFChangeMainTex ? SkyCloudsTex : SkyCloudsTex2));
+	mem_release_del((m_isChangeMainTex ? m_pSkyCloudsTex : m_pSkyCloudsTex2));
 	char tmpsb1[1024];
 	sprintf(tmpsb1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-		if(!FAILED(D3DXCreateTextureFromFile(g_pDXDevice,tmpsb1,(BFChangeMainTex ? &SkyCloudsTex : &SkyCloudsTex2))))
-			BFChange = true;
+	if (!FAILED(D3DXCreateTextureFromFile(g_pDXDevice, tmpsb1, (m_isChangeMainTex ? &m_pSkyCloudsTex : &m_pSkyCloudsTex2))))
+			m_isChange = true;
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmpsb1);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, tmpsb1);
 		}
 }
 
-void SkyClouds::SetWidthHeightPos(float width,float height,float3* pos)
+void CSkyClouds::setWidthHeightPos(float width,float height, const float3* pos)
 {
-	SkyCloudsVertices->Lock(0, 0, (void**)&Vertices, 0);
+	m_pSkyCloudsVertices->Lock(0, 0, (void**)&m_pVertices, 0);
 
 	float X = pos->x + (width*0.5f);
 	float Y = pos->y;
 	float Z = pos->z + (height*0.5f);
 
-	WidthHeight.x = width;
-	WidthHeight.y = height;
+	m_vWidthHeight.x = width;
+	m_vWidthHeight.y = height;
 
 	//float2_t tmpwh = float2_t(width*0.5f,height*0.5f);
 
-	Vertices[3] = SkyCloudsVertex(-X,  Y, -Z, 0.0f, 2.0f);
-	Vertices[2] = SkyCloudsVertex(-X,  Y,  Z, 0.0f, 0.0f);
-	Vertices[1] = SkyCloudsVertex( X,  Y,  Z, 2.0f,0.0f);
-	Vertices[0] = SkyCloudsVertex( X,  Y, -Z, 2.0f, 2.0f);
+	m_pVertices[3] = CSkyCloudsVertex(-X, Y, -Z, 0.0f, 2.0f);
+	m_pVertices[2] = CSkyCloudsVertex(-X, Y, Z, 0.0f, 0.0f);
+	m_pVertices[1] = CSkyCloudsVertex(X, Y, Z, 2.0f, 0.0f);
+	m_pVertices[0] = CSkyCloudsVertex(X, Y, -Z, 2.0f, 2.0f);
 
-	SkyCloudsVertices->Unlock();
+	m_pSkyCloudsVertices->Unlock();
 }
 
-void SkyClouds::SetRotation(float angle)
+void CSkyClouds::setRotation(float angle)
 {
-	RotaionY = angle;
-	MatRotation = SMMatrixRotationY(RotaionY);
+	m_fRotaionY = angle;
+	m_mMatRotation = SMMatrixRotationY(m_fRotaionY);
 }
 
-float SkyClouds::GetRotation()
+float CSkyClouds::getRotation()
 {
-	return RotaionY;
+	return m_fRotaionY;
 }
 
-void SkyClouds::SetAlpha(float alpha)
+void CSkyClouds::setAlpha(float alpha)
 {
-	Alpha = alpha;
+	m_fAlpha = alpha;
 }
 
-float SkyClouds::GetAlpha()
+float CSkyClouds::getAlpha()
 {
-	return Alpha;
+	return m_fAlpha;
 }
 
-void SkyClouds::SetColor(float4_t* color)
+void CSkyClouds::setColor(const float4_t* color)
 {
-	Color = *color;
+	m_vColor = *color;
 }
 
-void SkyClouds::GetColor(float4_t* color)
+void CSkyClouds::getColor(float4_t* color)
 {
-	*color = Color;
+	*color = m_vColor;
 }
 
-void SkyClouds::SetSpeed(float speed)
+void CSkyClouds::setSpeed(float speed)
 {
-	Speed = speed;
+	m_fSpeed = speed;
 }
 
-float SkyClouds::GetSpeed()
+float CSkyClouds::getSpeed()
 {
-	return Speed;
+	return m_fSpeed;
 }
 
-void SkyClouds::LoadTextures(const char *texture)
+void CSkyClouds::loadTextures(const char *texture)
 {
-	mem_release_del(SkyCloudsTex);
+	mem_release_del(m_pSkyCloudsTex);
 	if (!texture)
 	{
-		mem_release_del(SkyCloudsTex2);
+		mem_release_del(m_pSkyCloudsTex2);
 
-		BFChange = false;
-		BFChangeMainTex = false;
-		FactorBlend = 0.0f;
+		m_isChange = false;
+		m_isChangeMainTex = false;
+		m_fFactorBlend = 0.0f;
 
 		return;
 	}
 
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), texture);
-	if (FAILED(D3DXCreateTextureFromFile(g_pDXDevice, tmppath, &SkyCloudsTex)))
+	if (FAILED(D3DXCreateTextureFromFile(g_pDXDevice, tmppath, &m_pSkyCloudsTex)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed load texture '%s'", SX_LIB_NAME, GEN_MSG_LOCATION, tmppath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, tmppath);
 	}
 }
 
-bool SkyClouds::IsLoadTex()
+bool CSkyClouds::isLoadTex()
 {
-	return (SkyCloudsTex != 0 || SkyCloudsTex2 != 0);
+	return (m_pSkyCloudsTex != 0 || m_pSkyCloudsTex2 != 0);
 }
 
-void SkyClouds::Render(DWORD timeDelta,float3* pos,bool is_shadow)
+void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 {
-		if(BFChange)
-			FactorBlend += timeDelta * 0.001f * 0.2f;
+	if (m_isChange)
+		m_fFactorBlend += timeDelta * 0.001f * 0.2f;
 
-	Bias += timeDelta * 0.001f * Speed;
+	m_fBias += timeDelta * 0.001f * m_fSpeed;
 
-		if(Bias >= 2.f)
-			Bias = 0.f;
+	if (m_fBias >= 2.f)
+		m_fBias = 0.f;
 
 	//float4x4 World = SMMatrixTranslation(Core::Data::ConstCurrentCameraPosition.x, Core::Data::ConstCurrentCameraPosition.y+50, Core::Data::ConstCurrentCameraPosition.z);
 	//float4x4 World = SMMatrixTranslation(pos->x, pos->y+50, pos->z);
 	float4x4 World = SMMatrixTranslation(0, pos->y, 0);
 
-		if(BFChange && FactorBlend >= 1.0)
+	if (m_isChange && m_fFactorBlend >= 1.0)
 		{
-			FactorBlend = 0.0;
-			BFChangeMainTex = !BFChangeMainTex;
-			BFChange = false;
+		m_fFactorBlend = 0.0;
+			m_isChangeMainTex = !m_isChangeMainTex;
+			m_isChange = false;
 		}
 
-		if(BFChangeMainTex)
-		{
-			g_pDXDevice->SetTexture(0,SkyCloudsTex2);
-			g_pDXDevice->SetTexture(1,SkyCloudsTex);
-		}
-		else
-		{
-			g_pDXDevice->SetTexture(0,SkyCloudsTex);
-			g_pDXDevice->SetTexture(1,SkyCloudsTex2);
-		}
+	if (m_isChangeMainTex)
+	{
+		g_pDXDevice->SetTexture(0, m_pSkyCloudsTex2);
+		g_pDXDevice->SetTexture(1, m_pSkyCloudsTex);
+	}
+	else
+	{
+		g_pDXDevice->SetTexture(0, m_pSkyCloudsTex);
+		g_pDXDevice->SetTexture(1, m_pSkyCloudsTex2);
+	}
 
-		if(!is_shadow)
-		{
-			/*D3DXMATRIX tmpdxView, tmpdxProjection;
-			g_pDXDevice->GetTransform(D3DTS_PROJECTION, &tmpdxProjection);
-			g_pDXDevice->GetTransform(D3DTS_VIEW, &tmpdxView);*/
-			float4x4 View;// = float4x4(tmpdxView);
-			float4x4 Proj;// = float4x4(tmpdxProjection);
+	if(!is_shadow)
+	{
+		float4x4 View;// = float4x4(tmpdxView);
+		float4x4 Proj;// = float4x4(tmpdxProjection);
 
-			Core_RMatrixGet(G_RI_MATRIX_VIEW, &View);
-			Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &Proj);
+		Core_RMatrixGet(G_RI_MATRIX_VIEW, &View);
+		Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &Proj);
 
-			float4x4 WVP = (MatRotation * World) * View * Proj;
+		float4x4 WVP = (m_mMatRotation * World) * View * Proj;
 
-			WVP = SMMatrixTranspose(WVP);
+		WVP = SMMatrixTranspose(WVP);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyClouds, "WorldViewProjection", &WVP);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyClouds, "BlendFactorBias", &float2(FactorBlend, Bias));
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyClouds, "Color", &Color);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyClouds, "Alpha", &Alpha);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyClouds);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyClouds);
-		}
-		else
-		{
-			//D3DXMATRIX tmpdxViewProj;
-			//g_pDXDevice->GetTransform(D3DTS_WORLD1, &tmpdxViewProj);
-			float4x4 ViewProj;// = float4x4(tmpdxViewProj);
-			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &ViewProj);
-			float4x4 WVP = (MatRotation * World) * ViewProj;
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &WVP);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "BlendFactorBias", &float2(m_fFactorBlend, m_fBias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "Color", &m_vColor);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "Alpha", &m_fAlpha);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
+	}
+	else
+	{
+		float4x4 ViewProj;// = float4x4(tmpdxViewProj);
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &ViewProj);
+		float4x4 WVP = (m_mMatRotation * World) * ViewProj;
 
-			WVP = SMMatrixTranspose(WVP);
+		WVP = SMMatrixTranspose(WVP);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, VS_RenderSkyClouds, "WorldViewProjection", &WVP);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow, "BlendFactorBias", &float2(FactorBlend, Bias));
-			//SGCore_ShaderSetVRF(1, PS_RenderSkyCloudsShadow, "Color", &Color);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow, "Alpha", &Alpha);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_RenderSkyClouds);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_RenderSkyCloudsShadow);
-		}
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &WVP);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "BlendFactorBias", &float2(m_fFactorBlend, m_fBias));
+		//SGCore_ShaderSetVRF(1, PS_RenderSkyCloudsShadow, "Color", &Color);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "Alpha", &m_fAlpha);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS_Shadow);
+	}
 	
-	g_pDXDevice->SetStreamSource(0, SkyCloudsVertices, 0, sizeof(SkyCloudsVertex));
-	g_pDXDevice->SetIndices(this->SkyCloudsIndeces);
-	g_pDXDevice->SetVertexDeclaration(VertexDeclarationClouds);
+	g_pDXDevice->SetStreamSource(0, m_pSkyCloudsVertices, 0, sizeof(CSkyCloudsVertex));
+	g_pDXDevice->SetIndices(m_pSkyCloudsIndeces);
+	g_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationClouds);
 
 	g_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 

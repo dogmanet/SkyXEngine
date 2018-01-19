@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sound.h"
 
 size_t ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource)
@@ -81,13 +86,13 @@ void MainSound::Init(HWND hwnd)
 {
 	if (FAILED(DirectSoundCreate8(NULL, &DeviceSound, NULL)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound device", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound device", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_INIT;
 	}
 
 	if (FAILED(DeviceSound->SetCooperativeLevel(hwnd, DSSCL_EXCLUSIVE)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create cooperative level", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create cooperative level", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_CL;
 	}
 
@@ -101,7 +106,7 @@ void MainSound::Init(HWND hwnd)
 
 	if (FAILED(DeviceSound->CreateSoundBuffer(&dsbd, &DSPrimary, NULL)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create primary buffer", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create primary buffer", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_PRIM_BUF;
 	}
 
@@ -117,7 +122,7 @@ void MainSound::Init(HWND hwnd)
 
 	if (FAILED(DSPrimary->SetFormat(&wfex)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not init format", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not init format", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_SET_FORMAT;
 	}
 
@@ -182,7 +187,7 @@ void MainSound::LoadWAV(Sound* snd, const char* fpath)
 	
 	if (!(snd->DSBuffer = SoundBufferCreate(&Hdr)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
@@ -299,7 +304,7 @@ void MainSound::LoadOGG(Sound* snd, const char* fpath)
 
 	if (ov_fopen(fpath, &ogg))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - error reading [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error reading [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
@@ -317,7 +322,7 @@ void MainSound::LoadOGG(Sound* snd, const char* fpath)
 
 	if (!vi)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - error reading (info) [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error reading (info) [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
@@ -342,7 +347,7 @@ void MainSound::LoadOGG(Sound* snd, const char* fpath)
 
 	if (!snd->DSBuffer)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
@@ -421,7 +426,7 @@ void MainSound::SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8
 		else if (bites_read == OV_EINVAL)
 		{
 			//ошибка при декодировании, нужно поставить заглушку
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING,"OV_EINVAL");
+			LibReport(REPORT_MSG_LEVEL_WARNING,"OV_EINVAL");
 		}
 		else
 			break;
@@ -445,7 +450,7 @@ void MainSound::SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8
 			else if (bites_read == OV_EINVAL)
 			{
 				//ошибка при декодировании, нужно поставить заглушку
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "OV_EINVAL");
+				LibReport(REPORT_MSG_LEVEL_WARNING, "OV_EINVAL");
 			}
 			else
 				break;
@@ -467,7 +472,7 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 
 	if (!Core_0FileExists(fullpath))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - file not found [%s]", GEN_MSG_LOCATION, fullpath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - file not found [%s]", GEN_MSG_LOCATION, fullpath);
 		return -1;
 	}
 
@@ -475,7 +480,7 @@ ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
 
 	if (fmt == SOUND_FILEFORMAT_UNKNOWN)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unknown format [%s]", GEN_MSG_LOCATION, file);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unknown format [%s]", GEN_MSG_LOCATION, file);
 		return -1;
 	}
 
@@ -566,13 +571,13 @@ void MainSound::SoundInstancePlay2d(ID id, int volume, int pan)
 
 	if (snd->StreamSize > 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
 	if (snd->Is3d)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create 2d sound instance by 3d [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create 2d sound instance by 3d [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
@@ -593,7 +598,7 @@ void MainSound::SoundInstancePlay2d(ID id, int volume, int pan)
 		DeviceSound->DuplicateSoundBuffer(snd->DSBuffer, &tsb);
 		if (!tsb)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", GEN_MSG_LOCATION, snd->RPath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", GEN_MSG_LOCATION, snd->RPath);
 			return;
 		}
 		tsb->QueryInterface(IID_IDirectSoundBuffer8, (void**)&tsb8);
@@ -626,13 +631,13 @@ void MainSound::SoundInstancePlay3d(ID id, const float3* pos)
 
 	if (snd->StreamSize > 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
 	if (!snd->Is3d)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create 3d sound instance by 2d[%s]", GEN_MSG_LOCATION, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create 3d sound instance by 2d[%s]", GEN_MSG_LOCATION, snd->RPath);
 		return;
 	}
 
@@ -653,7 +658,7 @@ void MainSound::SoundInstancePlay3d(ID id, const float3* pos)
 		DeviceSound->DuplicateSoundBuffer(snd->DSBuffer, &tsb);
 		if (!tsb)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", GEN_MSG_LOCATION, snd->RPath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", GEN_MSG_LOCATION, snd->RPath);
 			return;
 		}
 		tsb->QueryInterface(IID_IDirectSoundBuffer8, (void**)&tsb8);

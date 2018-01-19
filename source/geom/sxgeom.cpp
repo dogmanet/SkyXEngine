@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define SXGEOM_VERSION 1
 
@@ -30,7 +30,7 @@ report_func g_fnReportf = DefReport;
 StaticGeom* GeometryObj = 0;
 Green* GreenObj = 0;
 
-#define GEOM_PRECOND(retval) if(!GeometryObj || !GreenObj){g_fnReportf(-1, "%s - sxgeom is not init", GEN_MSG_LOCATION); return retval;}
+#define GEOM_PRECOND(retval) if(!GeometryObj || !GreenObj){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgeom is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -54,7 +54,7 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxgeom", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -73,7 +73,7 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxgeom", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SGeom_AKill()
@@ -199,7 +199,7 @@ SX_LIB_API long SGeom_ModelsGetCount()
 	return GeometryObj->GetCountModel();
 }
 
-SX_LIB_API void SGeom_ModelsComVisible(ISXFrustum* frustum, float3* viewpos, ID id_arr)
+SX_LIB_API void SGeom_ModelsComVisible(const ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
 	GEOM_PRECOND(_VOID);
 	GeometryObj->CPUFillingArrIndeces(frustum, viewpos, id_arr);
@@ -474,7 +474,7 @@ SX_LIB_API void SGeom_GreenClear()
 	GreenObj->Clear();
 }
 
-SX_LIB_API void SGeom_GreenComVisible(ISXFrustum* frustum, float3* viewpos, ID id_arr)
+SX_LIB_API void SGeom_GreenComVisible(const ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
 	GEOM_PRECOND(_VOID);
 	GreenObj->CPUFillingArrIndeces(frustum, viewpos, id_arr);

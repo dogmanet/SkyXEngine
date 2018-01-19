@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "shader.h"
 
 CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader)
@@ -219,7 +224,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 			);
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating vertex shader [%s]\n", GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -248,14 +253,14 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 
 		if (pBufError && pBufShader == 0)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed to load vertex shader [%s], msg: %s\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed to load vertex shader [%s], msg: %s\n", GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
 			return;
 		}
 
 		//!!!проанализировать
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function vertex shader fails, path [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - download function vertex shader fails, path [%s]\n", GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -266,7 +271,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating vertex shader [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating vertex shader [%s]\n", GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -275,7 +280,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in vertex shader [%s] more standart [%d]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error, count variable in vertex shader [%s] more standart [%d]\n", GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
 			return;
 		}
 
@@ -336,7 +341,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 			);
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating pixel shader [%s]", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating pixel shader [%s]", GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -365,14 +370,14 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 		if (pBufError && pBufShader == 0)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - failed to load pixel shader [%s], msg: %s\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed to load pixel shader [%s], msg: %s\n", GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
 			return;
 		}
 
 		//!!!проанализировать
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - download function pixel shader fails, path [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - download function pixel shader fails, path [%s]\n", GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -383,7 +388,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 		if (FAILED(hr))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error creating pixel shader [%s]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating pixel shader [%s]\n", GEN_MSG_LOCATION, szPath);
 			return;
 		}
 
@@ -392,7 +397,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - error, count variable in pixel shader [%s] more standart [%d]\n", SX_LIB_NAME, GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error, count variable in pixel shader [%s] more standart [%d]\n", GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
 			return;
 		}
 
@@ -444,25 +449,25 @@ CShaderManager::~CShaderManager()
 
 void CShaderManager::reloadAll()
 {
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: reload shaders ...\n", SX_LIB_NAME);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "reload shaders ...\n");
 
 	for (int i = 0; i<m_aVS.size(); i++)
 	{
 		CShaderVS *pShader = m_aVS[i];
 		LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros);
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
 	}
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 
 	for (int i = 0; i<m_aPS.size(); i++)
 	{
 		CShaderPS *pShader = m_aPS[i];
 		LoadPixelShader(m_aPS[i]->m_szPath, m_aPS[i], m_aPS[i]->m_aMacros);
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
 	}
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: all reloaded shaders\n", SX_LIB_NAME);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "all reloaded shaders\n");
 }
 
 ID CShaderManager::existsPath(SHADER_TYPE type, const char *szPath)
@@ -490,7 +495,7 @@ ID CShaderManager::existsName(SHADER_TYPE type_shader, const char *szName)
 {
 	if (!isValidateTypeName(type_shader, szName))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szName);
 		return -1;
 	}
 
@@ -542,7 +547,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 {
 	if (!isValidateTypeName(type, szName))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szName);
 		return -1;
 	}
 
@@ -611,37 +616,37 @@ void CShaderManager::allLoad()
 	if (m_aVS.size() == m_iLastAllLoadVS || m_aPS.size() == m_iLastAllLoadPS)
 		return;
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: load shaders ...\n", SX_LIB_NAME);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "load shaders ...\n");
 	
 	for (int i = 0, il = m_aVS.size(); i < il; ++i)
 	{
 		CShaderVS *pShader = m_aVS[i];
 		LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros);
 
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
 	}
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 
 	for (int i = 0, il = m_aPS.size(); i < il; ++i)
 	{
 		CShaderPS *pShader = m_aPS[i];
 		LoadPixelShader(pShader->m_szPath, pShader, pShader->m_aMacros);
 
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
 	}
 
 	m_iLastAllLoadVS = m_aVS.size();
 	m_iLastAllLoadPS = m_aPS.size();
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: all loaded shaders\n", SX_LIB_NAME);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded shaders\n");
 }
 
 void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
 {
 	if (!isValidateTypeName(type_shader, szName))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szName);
 		return;
 	}
 
@@ -674,9 +679,9 @@ void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
 	}
 
 	if (!isUpdate)
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - shader [%s] is not detected", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - shader [%s] is not detected", GEN_MSG_LOCATION, szName);
 	/*else
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is update", SX_LIB_NAME, name);*/
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "shader [%s] is update", name);*/
 }
 
 void CShaderManager::update(SHADER_TYPE type_shader, ID id)
@@ -704,16 +709,16 @@ void CShaderManager::update(SHADER_TYPE type_shader, ID id)
 	}
 
 	if (!isUpdate)
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - shader_id [%s] is not detected", SX_LIB_NAME, GEN_MSG_LOCATION, id);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - shader_id [%s] is not detected", GEN_MSG_LOCATION, id);
 	/*else
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "%s: shader [%s] is update", SX_LIB_NAME, m_aPS[id]->m_szName);*/
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "shader [%s] is update", m_aPS[id]->m_szName);*/
 }
 
 ID CShaderManager::getID(SHADER_TYPE type_shader, const char *szName)
 {
 	if (!isValidateTypeName(type_shader, szName))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szName);
 		return -1;
 	}
 
@@ -744,7 +749,7 @@ void CShaderManager::bind(SHADER_TYPE type_shader, const char *szName)
 {
 	if (!isValidateTypeName(type_shader, szName))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szName);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szName);
 		return;
 	}
 
@@ -775,7 +780,7 @@ void CShaderManager::bind(SHADER_TYPE type_shader, const char *szName)
 	}
 
 	if (!isbind)
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader not bind, type [%d], name [%s]\n", SX_LIB_NAME, type_shader, szName);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "shader not bind, type [%d], name [%s]\n", type_shader, szName);
 }
 
 void CShaderManager::bind(SHADER_TYPE type_shader, ID idShader)
@@ -799,7 +804,7 @@ void CShaderManager::bind(SHADER_TYPE type_shader, ID idShader)
 	}
 
 	if (!isBind)
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: shader not bind, type [%d], id [%d]\n", SX_LIB_NAME, type_shader, idShader);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "shader not bind, type [%d], id [%d]\n", type_shader, idShader);
 }
 
 void CShaderManager::unbind()
@@ -813,7 +818,7 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 {
 	if (!isValidateTypeName(type_shader, szNameShader))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szNameShader);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szNameShader);
 		return;
 	}
 
@@ -844,9 +849,9 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 		else
 		{
 			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
@@ -876,9 +881,9 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 		else
 		{
 			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
 }
@@ -903,7 +908,7 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, ID idShader, con
 			if (idShader != -1 && num_var != -1)
 				g_pDXDevice->SetVertexShaderConstantF(m_aVS[idShader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aVS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
@@ -921,18 +926,18 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, ID idShader, con
 			if (idShader != -1 && num_var != -1)
 				g_pDXDevice->SetPixelShaderConstantF(m_aPS[idShader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, m_aPS[idShader]->m_szPath);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", szNameVar, type_shader, m_aPS[idShader]->m_szPath);
 		}
 	}
 	else
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 }
 
 void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4)
 {
 	if (!isValidateTypeName(type_shader, szNameShader))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - name of shader [%s] is invalid", SX_LIB_NAME, GEN_MSG_LOCATION, szNameShader);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szNameShader);
 		return;
 	}
 
@@ -963,9 +968,9 @@ void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, const char *szNa
 		else
 		{
 			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
@@ -995,9 +1000,9 @@ void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, const char *szNa
 		else
 		{
 			if (num_shader == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, szNameShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
 }
@@ -1022,7 +1027,7 @@ void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, ID idShader, con
 			if (idShader != -1 && num_var != -1)
 				g_pDXDevice->SetVertexShaderConstantI(m_aVS[idShader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aVS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
@@ -1040,11 +1045,11 @@ void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, ID idShader, con
 			if (idShader != -1 && num_var != -1)
 				g_pDXDevice->SetPixelShaderConstantI(m_aPS[idShader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aPS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
 			else if (num_var == -1)
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", SX_LIB_NAME, szNameVar, type_shader, m_aPS[idShader]->m_szPath);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", szNameVar, type_shader, m_aPS[idShader]->m_szPath);
 		}
 	}
 	else
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", SX_LIB_NAME, szNameVar, type_shader, idShader);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "set shader constant [%s] is failed, shader not validate, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 }
 
 

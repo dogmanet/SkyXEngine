@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __CREATORTEXTURES_H
 #define __CREATORTEXTURES_H
 
@@ -7,7 +12,6 @@
 #include <d3d9.h>
 #include <common/array.h>
 
-extern report_func g_fnReportf;
 extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 

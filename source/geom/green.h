@@ -1,18 +1,21 @@
 
-#ifndef __green
-#define __green
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __GREEN_H
+#define __GREEN_H
 
 #include <gdefines.h>
-#include <common\\string.h>
-#include <common\array.h>
-#include <common\SXMath.h>
+#include <common/string.h>
+#include <common/array.h>
+#include <common/SXMath.h>
 
 #include <d3d9.h>
-#include <gcore\\sxgcore.h>
+#include <gcore/sxgcore.h>
 #include "static_geom.h"
 #include "sxgeom.h"
-
-extern report_func g_fnReportf;
 
 #define GREEN_COUNT_TYPE_SEGMENTATION 4
 #define GREEN_COUNT_LOD 3
@@ -23,13 +26,13 @@ extern report_func g_fnReportf;
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
 if (!(id_model < ArrModels.size() && ArrModels[id_model]))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 }
 
 class Green
@@ -71,7 +74,7 @@ public:
 	void Save(const char* path);
 	void Load(const char* path);
 	void Clear();
-	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
+	void CPUFillingArrIndeces(const ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	void GPURender(DWORD timeDelta, float3* viewpos, GREEN_TYPE type, ID id_arr = 0);
 	void GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex);
 	void GPURenderObject(DWORD timeDelta, float3* viewpos, ID id, ID split, ID idobj, ID id_tex);
@@ -189,7 +192,7 @@ protected:
 	void GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 	void GetPartBB(float3* bbmin, float3 * bbmax, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
 
-	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
+	void ComRecArrIndeces(const ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
 	void AddModelInArrCom(ID id_model);
 	void DelModelInArrCom(ID id_model);

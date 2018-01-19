@@ -1,5 +1,10 @@
 
-#include <geom\\green.h>
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#include "green.h"
 
 Green::Green()
 {
@@ -179,9 +184,9 @@ void Green::PreSegmentation(Model* model, float3* min_level, float3* max_level)
 	float3 tmpMin, tmpMax;
 	float3 tmpMin2, tmpMax2;
 	model->SplitsTree->BoundVolumeSys = SGCore_CrBound();
-	SGCore_FCompBoundBox(model->ArrLod[0]->model->VertexBuffer, &(model->SplitsTree->BoundVolumeSys), model->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
+	SGCore_FCompBoundBox(model->ArrLod[0]->model->m_pVertexBuffer, &(model->SplitsTree->BoundVolumeSys), model->ArrLod[0]->model->m_uiAllVertexCount, sizeof(vertex_static));
 
-	model->SplitsTree->BoundVolumeSys->GetMinMax(&tmpMin2, &tmpMax2);
+	model->SplitsTree->BoundVolumeSys->getMinMax(&tmpMin2, &tmpMax2);
 	model->BBMax = tmpMax2 * (1.f + GREEN_GEN_RAND_SCALE);
 	model->BBMin = tmpMin2 * (1.f + GREEN_GEN_RAND_SCALE);
 	tmpMin = *min_level;
@@ -200,7 +205,7 @@ void Green::PreSegmentation(Model* model, float3* min_level, float3* max_level)
 	float tmpZ = tmpMax.z - tmpMin.z;
 
 	model->SplitsTree->BoundVolumeP = SGCore_CrBound();
-	model->SplitsTree->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+	model->SplitsTree->BoundVolumeP->setMinMax(&tmpMin, &tmpMax);
 
 	//выравниваем по квадрату
 	if (tmpX > tmpZ)
@@ -218,7 +223,7 @@ void Green::PreSegmentation(Model* model, float3* min_level, float3* max_level)
 		tmpMin.x -= tmpX;
 	}
 
-	model->SplitsTree->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+	model->SplitsTree->BoundVolumeSys->setMinMax(&tmpMin, &tmpMax);
 
 	model->SplitsTree->CountAllGreen = model->AllCountGreen;
 	if (model->AllCountGreen > 0)
@@ -246,7 +251,7 @@ void Green::CycleSegmentation(Segment* Split, Model* mesh)
 
 	while (queue.size())
 	{
-		queue[0]->BoundVolumeSys->GetMinMax(&min, &max);
+		queue[0]->BoundVolumeSys->getMinMax(&min, &max);
 		if ((max.x - min.x)*0.5f > GREEN_BB_MIN_X && (max.z - min.z)*0.5f > GREEN_BB_MIN_Z)
 		{
 			Segmentation(queue[0], mesh);
@@ -281,9 +286,9 @@ void Green::Segmentation(Segment* Split, Model* mesh)
 	for (int i = 0; i<4; ++i)
 	{
 		Split->Splits[i]->BoundVolumeSys = ArrBound[i];
-		Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpmin, &tmpmax);
+		Split->Splits[i]->BoundVolumeSys->getMinMax(&tmpmin, &tmpmax);
 		Split->Splits[i]->BoundVolumeP = SGCore_CrBound();
-		Split->Splits[i]->BoundVolumeP->SetMinMax(&tmpmin, &tmpmax);
+		Split->Splits[i]->BoundVolumeP->setMinMax(&tmpmin, &tmpmax);
 	}
 
 	bool *tmp_arr_mesh_poly = 0;
@@ -298,7 +303,7 @@ void Green::Segmentation(Segment* Split, Model* mesh)
 	float3 tmpMin, tmpMax;
 	for (WORD i = 0; i<4; ++i)
 	{
-		Split->Splits[i]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+		Split->Splits[i]->BoundVolumeSys->getMinMax(&tmpMin, &tmpMax);
 		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(Split->Splits[i]->BoundBox));
 
 		for (DWORD j = 0; j<Split->CountAllGreen; ++j)
@@ -383,11 +388,11 @@ void Green::AlignBound(Model* model, Segment* split)
 		float3 tmpMin, tmpMax;
 		float scalecoef = 1.f + GREEN_GEN_RAND_SCALE;
 
-		split->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+		split->BoundVolumeSys->getMinMax(&tmpMin, &tmpMax);
 		tmpMax.y = comMax.y + model->BBMax.y * scalecoef;
 		tmpMin.y = comMin.y + model->BBMin.y * scalecoef;
 
-		split->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+		split->BoundVolumeSys->setMinMax(&tmpMin, &tmpMax);
 
 		tmpMax.x = comMax.x + model->BBMax.x * scalecoef;
 		tmpMax.y = comMax.y + model->BBMax.y * scalecoef;
@@ -397,7 +402,7 @@ void Green::AlignBound(Model* model, Segment* split)
 		tmpMin.y = comMin.y + model->BBMin.y * scalecoef;
 		tmpMin.z = comMin.z + model->BBMin.z * scalecoef;
 
-		split->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+		split->BoundVolumeP->setMinMax(&tmpMin, &tmpMax);
 	}
 }
 
@@ -431,7 +436,7 @@ void Green::SetSplitID2(Model* model, Segment* Split, Array<Segment*, GREEN_DEFA
 	}
 }
 
-void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr)
+void Green::CPUFillingArrIndeces(const ISXFrustum* frustum, float3* viewpos, ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 	
@@ -461,14 +466,14 @@ void Green::CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr
 	int qwert = 0;
 }
 
-void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
+void Green::ComRecArrIndeces(const ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float3 jcenter;
 	float jradius;
 	ID SortId[GREEN_COUNT_TYPE_SEGMENTATION];
-	comsegment->BoundVolumeP->GetSphere(&jcenter, &jradius);
+	comsegment->BoundVolumeP->getSphere(&jcenter, &jradius);
 
-	if (comsegment->CountAllGreen > 0 && frustum->SphereInFrustum(&jcenter, jradius))
+	if (comsegment->CountAllGreen > 0 && frustum->sphereInFrustum(&jcenter, jradius))
 	{
 			if (comsegment->BFNonEnd)
 			{
@@ -479,7 +484,7 @@ void Green::ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *co
 						SortId[q] = -1;
 						if (comsegment->Splits[q])
 						{
-							comsegment->Splits[q]->BoundVolumeP->GetSphere(&jcenter, &jradius);
+							comsegment->Splits[q]->BoundVolumeP->getSphere(&jcenter, &jradius);
 							comsegment->Splits[q]->DistForCamera = SMVector3Length2((jcenter - (*viewpos))) - jradius*jradius;
 						}
 					}
@@ -555,12 +560,12 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_t
 		Green::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 		Green::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(GreenDataVertex));
 
-		Green::DXDevice->SetStreamSource(0, ArrModels[nm]->ArrLod[lod]->model->VertexBuffer, 0, sizeof(vertex_static));
-		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model->IndexBuffer);
+		Green::DXDevice->SetStreamSource(0, ArrModels[nm]->ArrLod[lod]->model->m_pVertexBuffer, 0, sizeof(vertex_static));
+		Green::DXDevice->SetIndices(ArrModels[nm]->ArrLod[lod]->model->m_pIndexBuffer);
 		Green::DXDevice->SetVertexDeclaration(VertexDeclarationGreen);
 
 		jCountIndex = 0;
-		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model->SubsetCount; i++)
+		for (DWORD i = 0; i < ArrModels[nm]->ArrLod[lod]->model->m_uiSubsetCount; i++)
 		{
 			SGCore_MtlSet((id_tex > 0 ? id_tex : ArrModels[nm]->ArrLod[lod]->idstex[i]), 0);
 
@@ -570,13 +575,13 @@ void Green::GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_t
 					Green::DXDevice->SetVertexShaderConstantF(59, (float*)&float2_t(0,0), 1);
 
 			Green::DXDevice->SetVertexShaderConstantF(60, (float*)viewpos, 1);
-			Green::DXDevice->SetVertexShaderConstantF(61, (float*)&(ArrModels[nm]->ArrLod[lod]->model->BSphere), 1);
-			Green::DXDevice->SetVertexShaderConstantF(62, (float*)&(ArrModels[nm]->ArrLod[lod]->model->BBMax), 1);
-			Green::DXDevice->SetVertexShaderConstantF(63, (float*)&(ArrModels[nm]->ArrLod[lod]->model->BBMin), 1);
+			Green::DXDevice->SetVertexShaderConstantF(61, (float*)&(ArrModels[nm]->ArrLod[lod]->model->m_vBSphere), 1);
+			Green::DXDevice->SetVertexShaderConstantF(62, (float*)&(ArrModels[nm]->ArrLod[lod]->model->m_vBBMax), 1);
+			Green::DXDevice->SetVertexShaderConstantF(63, (float*)&(ArrModels[nm]->ArrLod[lod]->model->m_vBBMin), 1);
 
-			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->VertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3);
-			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrModels[nm]->ArrLod[lod]->model->IndexCount[i] / 3) * RTCountDrawObj));
-			jCountIndex += ArrModels[nm]->ArrLod[lod]->model->IndexCount[i];
+			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrModels[nm]->ArrLod[lod]->model->m_pVertexCount[i], jCountIndex, ArrModels[nm]->ArrLod[lod]->model->m_pIndexCount[i] / 3);
+			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrModels[nm]->ArrLod[lod]->model->m_pIndexCount[i] / 3) * RTCountDrawObj));
+			jCountIndex += ArrModels[nm]->ArrLod[lod]->model->m_pIndexCount[i];
 		}
 
 		Green::DXDevice->SetStreamSourceFreq(0, 1);
@@ -618,7 +623,7 @@ void Green::GPURender(DWORD timeDelta, float3* viewpos, GREEN_TYPE type, ID id_a
 						RTCountDrawObj = 0;
 					}
 
-					jarrsplits[i]->BoundVolumeP->GetSphere(&jcenter, &jradius);
+					jarrsplits[i]->BoundVolumeP->getSphere(&jcenter, &jradius);
 					jarrsplits[i]->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
 
 					if (
@@ -709,7 +714,7 @@ void Green::GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex)
 					RTCountDrawObj = 0;
 				}
 
-				jarrsplits[i]->BoundVolumeP->GetSphere(&jcenter, &jradius);
+				jarrsplits[i]->BoundVolumeP->getSphere(&jcenter, &jradius);
 				jarrsplits[i]->DistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
 
 				if (
@@ -796,9 +801,9 @@ ID Green::Init(StaticGeom* geom, const char* name,
 		SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[0]->model);
 		tmpnewmpdel->ArrLod[0]->path = path;
 		char tmppathtex[1024];
-		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->SubsetCount; ++i)
+		for (int i = 0; i < tmpnewmpdel->ArrLod[0]->model->m_uiSubsetCount; ++i)
 		{
-			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->ArrTextures[i]);
+			sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[0]->model->m_ppTextures[i]);
 			tmpnewmpdel->ArrLod[0]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
@@ -813,9 +818,9 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				tmpnewmpdel->ArrLod[1]->path = lod1;
 				SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[1]->model);
 
-				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->SubsetCount; ++i)
+				for (int i = 0; i < tmpnewmpdel->ArrLod[1]->model->m_uiSubsetCount; ++i)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
+					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->m_ppTextures[i]);
 					tmpnewmpdel->ArrLod[1]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
@@ -834,19 +839,19 @@ ID Green::Init(StaticGeom* geom, const char* name,
 				tmpnewmpdel->ArrLod[2]->path = lod2;
 				SGCore_StaticModelLoad(tmppath, &tmpnewmpdel->ArrLod[2]->model);
 
-				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->SubsetCount; ++i)
+				for (int i = 0; i < tmpnewmpdel->ArrLod[2]->model->m_uiSubsetCount; ++i)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->ArrTextures[i]);
+					sprintf(tmppathtex, "%s.dds", tmpnewmpdel->ArrLod[1]->model->m_ppTextures[i]);
 					tmpnewmpdel->ArrLod[2]->idstex[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
 		}
 
 		ISXBound* tmpbb = SGCore_CrBound();
-		SGCore_FCompBoundBox(tmpnewmpdel->ArrLod[0]->model->VertexBuffer, &tmpbb, tmpnewmpdel->ArrLod[0]->model->AllVertexCount, sizeof(vertex_static));
+		SGCore_FCompBoundBox(tmpnewmpdel->ArrLod[0]->model->m_pVertexBuffer, &tmpbb, tmpnewmpdel->ArrLod[0]->model->m_uiAllVertexCount, sizeof(vertex_static));
 
 		float3 mmax, mmin;
-		tmpbb->GetMinMax(&mmin, &mmax);
+		tmpbb->getMinMax(&mmin, &mmax);
 		mem_release(tmpbb);
 
 		float3 tmpmin, tmpmax;
@@ -854,7 +859,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 
 		if (def_str_validate(path_mask))
 		{
-			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LoadTexType::ltt_load);
+			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LOAD_TEXTURE_TYPE_LOAD);
 			SGCore_LoadTexAllLoad();
 
 			GenByTex(geom, tmpnewmpdel, IDTexMask, &mmin, &mmax, count_max);
@@ -875,7 +880,7 @@ ID Green::Init(StaticGeom* geom, const char* name,
 	}
 	else
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING,"not found static geometry in level!!!");
+		LibReport(REPORT_MSG_LEVEL_WARNING,"not found static geometry in level!!!");
 	}
 
 	return -1;
@@ -1019,7 +1024,7 @@ ID Green::GetIDSplit(ID id, float3* pos)
 
 	while (queue.size())
 	{
-		queue[0]->BoundVolumeSys->GetMinMax(&min, &max);
+		queue[0]->BoundVolumeSys->getMinMax(&min, &max);
 		if (max.x >= pos->x && max.z >= pos->z && min.x <= pos->x && min.z <= pos->z)
 		{
 			if (!(queue[0]->Splits[0]))
@@ -1032,14 +1037,14 @@ ID Green::GetIDSplit(ID id, float3* pos)
 				float3 tmpMin, tmpMax;
 				float scalecoef = 1.f + GREEN_GEN_RAND_SCALE;
 
-				queue[0]->BoundVolumeSys->GetMinMax(&tmpMin, &tmpMax);
+				queue[0]->BoundVolumeSys->getMinMax(&tmpMin, &tmpMax);
 				if (tmpMax.y < (pos->y + ArrModels[id]->BBMax.y * scalecoef))
 					tmpMax.y = tmpMax.y + ArrModels[id]->BBMax.y * scalecoef;
 
 				if (tmpMin.y >(pos->y + ArrModels[id]->BBMin.y * scalecoef))
 					tmpMin.y = tmpMin.y + ArrModels[id]->BBMin.y * scalecoef;
 
-				queue[0]->BoundVolumeSys->SetMinMax(&tmpMin, &tmpMax);
+				queue[0]->BoundVolumeSys->setMinMax(&tmpMin, &tmpMax);
 
 				if (tmpMax.x < (pos->x + ArrModels[id]->BBMax.x * scalecoef))
 					tmpMax.x = tmpMax.x + ArrModels[id]->BBMax.x * scalecoef;
@@ -1053,7 +1058,7 @@ ID Green::GetIDSplit(ID id, float3* pos)
 				if (tmpMin.z >(pos->z + ArrModels[id]->BBMin.z * scalecoef))
 					tmpMin.z = tmpMin.z + ArrModels[id]->BBMin.z * scalecoef;
 
-				queue[0]->BoundVolumeP->SetMinMax(&tmpMin, &tmpMax);
+				queue[0]->BoundVolumeP->setMinMax(&tmpMin, &tmpMax);
 			}
 
 			for (int i = 0; i < GREEN_COUNT_TYPE_SEGMENTATION; i++)
@@ -1230,7 +1235,7 @@ void Green::Save(const char* path)
 void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 {
 	float3 jmin, jmax;
-	Split->BoundVolumeSys->GetMinMax(&jmin, &jmax);
+	Split->BoundVolumeSys->getMinMax(&jmin, &jmax);
 	fwrite(&jmin.x, sizeof(float), 1, file);
 	fwrite(&jmin.y, sizeof(float), 1, file);
 	fwrite(&jmin.z, sizeof(float), 1, file);
@@ -1239,7 +1244,7 @@ void Green::SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue)
 	fwrite(&jmax.y, sizeof(float), 1, file);
 	fwrite(&jmax.z, sizeof(float), 1, file);
 
-	Split->BoundVolumeP->GetMinMax(&jmin, &jmax);
+	Split->BoundVolumeP->getMinMax(&jmin, &jmax);
 	fwrite(&jmin.x, sizeof(float), 1, file);
 	fwrite(&jmin.y, sizeof(float), 1, file);
 	fwrite(&jmin.z, sizeof(float), 1, file);
@@ -1341,9 +1346,9 @@ void Green::Load(const char* path)
 		SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[0]->model);
 		tmpmodel->ArrLod[0]->path = tmpstr[0];
 		char tmppathtex[1024];
-		for (int k = 0; k < tmpmodel->ArrLod[0]->model->SubsetCount; ++k)
+		for (int k = 0; k < tmpmodel->ArrLod[0]->model->m_uiSubsetCount; ++k)
 		{
-			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model->ArrTextures[k]);
+			sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[0]->model->m_ppTextures[k]);
 			tmpmodel->ArrLod[0]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
@@ -1358,9 +1363,9 @@ void Green::Load(const char* path)
 				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmpstr[1]);
 				SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[1]->model);
 
-				for (int k = 0; k < tmpmodel->ArrLod[1]->model->SubsetCount; ++k)
+				for (int k = 0; k < tmpmodel->ArrLod[1]->model->m_uiSubsetCount; ++k)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
+					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->m_ppTextures[k]);
 					tmpmodel->ArrLod[1]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
@@ -1379,9 +1384,9 @@ void Green::Load(const char* path)
 				sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmpstr[2]);
 				SGCore_StaticModelLoad(tmppath, &tmpmodel->ArrLod[2]->model);
 
-				for (int k = 0; k < tmpmodel->ArrLod[2]->model->SubsetCount; ++k)
+				for (int k = 0; k < tmpmodel->ArrLod[2]->model->m_uiSubsetCount; ++k)
 				{
-					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->ArrTextures[k]);
+					sprintf(tmppathtex, "%s.dds", tmpmodel->ArrLod[1]->model->m_ppTextures[k]);
 					tmpmodel->ArrLod[2]->idstex[k] = SGCore_MtlLoad(tmppathtex, (tmpmodel->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 				}
 			}
@@ -1436,7 +1441,7 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 	fread(&jmax.z, sizeof(float), 1, file);
 
 	(*Split)->BoundVolumeSys = SGCore_CrBound();
-	(*Split)->BoundVolumeSys->SetMinMax(&jmin, &jmax);
+	(*Split)->BoundVolumeSys->setMinMax(&jmin, &jmax);
 
 
 	fread(&jmin.x, sizeof(float), 1, file);
@@ -1448,7 +1453,7 @@ void Green::LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue)
 	fread(&jmax.z, sizeof(float), 1, file);
 
 	(*Split)->BoundVolumeP = SGCore_CrBound();
-	(*Split)->BoundVolumeP->SetMinMax(&jmin, &jmax);
+	(*Split)->BoundVolumeP->setMinMax(&jmin, &jmax);
 
 	fread(&(*Split)->CountAllGreen, sizeof(uint32_t), 1, file);
 
@@ -1571,7 +1576,7 @@ long Green::GetGreenCountGen(ID id)
 long Green::GetGreenCountPoly(ID id)
 {
 	if (id < ArrModels.size() && ArrModels[id]->ArrLod[0])
-		return ArrModels[id]->ArrLod[0]->model->AllIndexCount / 3;
+		return ArrModels[id]->ArrLod[0]->model->m_uiAllIndexCount / 3;
 
 	return -1;
 }
@@ -1672,9 +1677,9 @@ void Green::SetGreenLod(ID id, int lod, const char* pathname)
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), pathname);
 	SGCore_StaticModelLoad(tmppath, &ArrModels[id]->ArrLod[lod]->model);
 
-	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->SubsetCount; ++k)
+	for (int k = 0; k < ArrModels[id]->ArrLod[lod]->model->m_uiSubsetCount; ++k)
 	{
-		sprintf(tmppath, "%s.dds", ArrModels[id]->ArrLod[lod]->model->ArrTextures[k]);
+		sprintf(tmppath, "%s.dds", ArrModels[id]->ArrLod[lod]->model->m_ppTextures[k]);
 		ArrModels[id]->ArrLod[lod]->idstex[k] = SGCore_MtlLoad(tmppath, (ArrModels[id]->TypeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 	}
 }
@@ -1696,37 +1701,37 @@ void Green::SetGreenNav(ID id, const char* pathname)
 
 	ISXDataStaticModel* nmesh;
 	SGCore_StaticModelLoad(tmppath, &nmesh);
-	ArrModels[id]->NavigateMesh->count_vertex = nmesh->AllVertexCount;
-	ArrModels[id]->NavigateMesh->count_index = nmesh->AllIndexCount;
-	ArrModels[id]->NavigateMesh->arr_vertex = new float3_t[nmesh->AllVertexCount];
+	ArrModels[id]->NavigateMesh->count_vertex = nmesh->m_uiAllVertexCount;
+	ArrModels[id]->NavigateMesh->count_index = nmesh->m_uiAllIndexCount;
+	ArrModels[id]->NavigateMesh->arr_vertex = new float3_t[nmesh->m_uiAllVertexCount];
 	vertex_static *pVert;
-	nmesh->VertexBuffer->Lock(0, 0, (void **)&pVert, 0);
-	for (long i = 0; i < nmesh->AllVertexCount; ++i)
+	nmesh->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
+	for (long i = 0; i < nmesh->m_uiAllVertexCount; ++i)
 	{
 		ArrModels[id]->NavigateMesh->arr_vertex[i] = pVert[i].Pos;
 	}
-	nmesh->VertexBuffer->Unlock();
+	nmesh->m_pVertexBuffer->Unlock();
 	
-	ArrModels[id]->NavigateMesh->arr_index = new uint32_t[nmesh->AllIndexCount];
-	ArrModels[id]->NavigateMesh->arr_mtl = new ID[nmesh->AllIndexCount];
+	ArrModels[id]->NavigateMesh->arr_index = new uint32_t[nmesh->m_uiAllIndexCount];
+	ArrModels[id]->NavigateMesh->arr_mtl = new ID[nmesh->m_uiAllIndexCount];
 	UINT* pInd;
-	nmesh->IndexBuffer->Lock(0, 0, (void **)&pInd, 0);
+	nmesh->m_pIndexBuffer->Lock(0, 0, (void **)&pInd, 0);
 	DWORD prebias = 0;
 	long tmp_countindex = 0;
 	char tmpnametex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	for (int i = 0; i < nmesh->SubsetCount; ++i)
+	for (int i = 0; i < nmesh->m_uiSubsetCount; ++i)
 	{
-		sprintf(tmpnametex, "%s.dds", nmesh->ArrTextures[i]);
+		sprintf(tmpnametex, "%s.dds", nmesh->m_ppTextures[i]);
 		ID tmpidmtl = SGCore_MtlLoad(tmpnametex, MTL_TYPE_TREE);
-		for (int k = 0; k < nmesh->IndexCount[i]; ++k)
+		for (int k = 0; k < nmesh->m_pIndexCount[i]; ++k)
 		{
-			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->StartIndex[i] + k] /*+ prebias*/;
+			ArrModels[id]->NavigateMesh->arr_index[tmp_countindex] = pInd[nmesh->m_pStartIndex[i] + k] /*+ prebias*/;
 			ArrModels[id]->NavigateMesh->arr_mtl[tmp_countindex] = tmpidmtl;
 			++tmp_countindex;
 		}
-		prebias += nmesh->IndexCount[i];
+		prebias += nmesh->m_pIndexCount[i];
 	}
-	nmesh->IndexBuffer->Unlock();
+	nmesh->m_pIndexBuffer->Unlock();
 	mem_release_del(nmesh);
 }
 
@@ -1829,7 +1834,7 @@ void Green::GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *c
 {
 	float3 center;
 	float radius;
-	comsegment->BoundVolumeP->GetSphere(&center, &radius);
+	comsegment->BoundVolumeP->getSphere(&center, &radius);
 
 	float distsqr = SGCore_0DistancePointBeam2(center, *pos, *dir);
 	if (comsegment->CountAllGreen > 0 && distsqr <= radius*radius)
@@ -1881,11 +1886,11 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 		GetPartBeam(start, dir, irs->Arr, &(irs->CountCom), model->SplitsTree, irs->Count);
 
 		vertex_static* pVertData = 0;
-		if (FAILED(model->ArrLod[0]->model->VertexBuffer->Lock(0, 0, (void**)&pVertData, 0)))
+		if (FAILED(model->ArrLod[0]->model->m_pVertexBuffer->Lock(0, 0, (void**)&pVertData, 0)))
 			continue;
 
 		DWORD* pIndData = 0;
-		if (FAILED(model->ArrLod[0]->model->IndexBuffer->Lock(0, 0, (void**)&pIndData, 0)))
+		if (FAILED(model->ArrLod[0]->model->m_pIndexBuffer->Lock(0, 0, (void**)&pIndData, 0)))
 			continue;
 
 		for (int k = 0; k < irs->CountCom; ++k)
@@ -1893,9 +1898,9 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 			for (int key = 0; key < irs->Arr[k]->CountAllGreen; ++key)
 			{
 				UINT tmpcountind = 0;
-				for (int g = 0; g < model->ArrLod[0]->model->SubsetCount; ++g)
+				for (int g = 0; g < model->ArrLod[0]->model->m_uiSubsetCount; ++g)
 				{
-					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3; ++poly)
+					for (int poly = 0; poly < model->ArrLod[0]->model->m_pIndexCount[g] / 3; ++poly)
 					{
 						float tmpscale = irs->Arr[k]->Data[key].m_vTexCoord.x;
 						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].m_vTexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].m_vPosition);
@@ -1926,13 +1931,13 @@ bool Green::TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID*
 						}
 					}
 
-					tmpcountind += model->ArrLod[0]->model->SubsetCount;
+					tmpcountind += model->ArrLod[0]->model->m_uiSubsetCount;
 				}
 			}
 		}
 
-		model->ArrLod[0]->model->VertexBuffer->Unlock();
-		model->ArrLod[0]->model->IndexBuffer->Unlock();
+		model->ArrLod[0]->model->m_pVertexBuffer->Unlock();
+		model->ArrLod[0]->model->m_pIndexBuffer->Unlock();
 	}
 
 	if (found && _res)
@@ -1945,7 +1950,7 @@ void Green::GetPartBB(float3* bbmin, float3 * bbmax, Segment** arrsplits, DWORD 
 {
 	float3 min,max;
 	float radius;
-	comsegment->BoundVolumeP->GetMinMax(&min, &max);
+	comsegment->BoundVolumeP->getMinMax(&min, &max);
 
 	if (comsegment->CountAllGreen > 0 && SGCore_0InretsectBox(bbmin, bbmax, &min, &max))
 	{
@@ -1989,14 +1994,14 @@ bool Green::GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl
 		GetPartBB(bbmin, bbmax, irs->Arr, &(irs->CountCom), model->SplitsTree, irs->Count);
 
 		vertex_static* pVertData = 0;
-		if (FAILED(model->ArrLod[0]->model->VertexBuffer->Lock(0, 0, (void**)&pVertData, 0)))
+		if (FAILED(model->ArrLod[0]->model->m_pVertexBuffer->Lock(0, 0, (void**)&pVertData, 0)))
 			continue;
 
 		DWORD* pIndData = 0;
-		if (FAILED(model->ArrLod[0]->model->IndexBuffer->Lock(0, 0, (void**)&pIndData, 0)))
+		if (FAILED(model->ArrLod[0]->model->m_pIndexBuffer->Lock(0, 0, (void**)&pIndData, 0)))
 			continue;
 
-		for (int g = 0; g < model->ArrLod[0]->model->SubsetCount && !isfound; ++g)
+		for (int g = 0; g < model->ArrLod[0]->model->m_uiSubsetCount && !isfound; ++g)
 		{
 			int pt = SGCore_MtlGetPhysicType(model->ArrLod[0]->idstex[g]);
 			if (SGCore_MtlGetPhysicType(model->ArrLod[0]->idstex[g]) != physic_mtl)
@@ -2008,7 +2013,7 @@ bool Green::GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl
 				{
 
 
-					for (int poly = 0; poly < model->ArrLod[0]->model->IndexCount[g] / 3 && !isfound; ++poly)
+					for (int poly = 0; poly < model->ArrLod[0]->model->m_pIndexCount[g] / 3 && !isfound; ++poly)
 					{
 						float tmpscale = irs->Arr[k]->Data[key].m_vTexCoord.x;
 						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(irs->Arr[k]->Data[key].m_vTexCoord.y) * SMMatrixTranslation(irs->Arr[k]->Data[key].m_vPosition);
@@ -2058,8 +2063,8 @@ bool Green::GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl
 			}
 		}
 
-		model->ArrLod[0]->model->VertexBuffer->Unlock();
-		model->ArrLod[0]->model->IndexBuffer->Unlock();
+		model->ArrLod[0]->model->m_pVertexBuffer->Unlock();
+		model->ArrLod[0]->model->m_pIndexBuffer->Unlock();
 	}
 
 	return isfound;

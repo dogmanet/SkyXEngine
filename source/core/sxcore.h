@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file 
@@ -19,9 +19,6 @@ See the license in LICENSE
 #include <fstream>
 #include <gdefines.h>
 
-//! имя библиотеки
-#define SX_LIB_NAME COLOR_BG_WHITE COLOR_GREEN "CORE" COLOR_RESET
-
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 
@@ -30,7 +27,7 @@ See the license in LICENSE
 #include <tlhelp32.h>
 
 #define SM_D3D_CONVERSIONS
-#include <common\sxmath.h>
+#include <common/sxmath.h>
 
 //! тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();

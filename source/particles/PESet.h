@@ -1,6 +1,11 @@
 
-#ifndef __PESET_H
-#define __PESET_H
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __PE_SET_H
+#define __PE_SET_H
 
 #include <gdefines.h>
 #include <d3d9.h>

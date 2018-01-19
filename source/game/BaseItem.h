@@ -1,7 +1,8 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -13,8 +14,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _CBaseItem_H_
-#define _CBaseItem_H_
+#ifndef __BASE_ITEM_H
+#define __BASE_ITEM_H
 
 #include "BaseAnimating.h"
 

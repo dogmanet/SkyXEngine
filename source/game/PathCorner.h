@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -13,8 +13,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _CPathCorner_H_
-#define _CPathCorner_H_
+#ifndef __PATH_CORNER_H
+#define __PATH_CORNER_H
 
 #include "PointEntity.h"
 

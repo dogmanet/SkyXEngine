@@ -1,10 +1,14 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
 #include <physics/sxphysics.h>
 
 #include "DecalManager.h"
-
-extern report_func reportf;
 
 // Array<float3_t> g_dbgDraw;
 // float4 spherePos;
@@ -35,12 +39,12 @@ DecalManager::DecalManager():
 		{
 			if(id < 0 || id >= DECAL_TYPE_LAST)
 			{
-				reportf(REPORT_MSG_LEVEL_WARNING, "Incorrect decal type id '%s'\n", sect);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Incorrect decal type id '%s'\n", sect);
 			}
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal id '%s'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read decal id '%s'\n", sect);
 			continue;
 		}
 		const char * tex;
@@ -50,14 +54,14 @@ DecalManager::DecalManager():
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal tex '%s'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read decal tex '%s'\n", sect);
 			continue;
 		}
 		if(config->keyExists(sect, "base_scale"))
 		{
 			if(!sscanf(config->getKey(sect, "base_scale"), "%f", &m_DecalTypes[id].m_fBaseScale))
 			{
-				reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal base_scale '%s'\n", sect);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read decal base_scale '%s'\n", sect);
 				m_DecalTypes[id].m_fBaseScale = 1.0f;
 			}
 		}

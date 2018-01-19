@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -186,7 +186,7 @@ SX_LIB_API long SGeom_ModelsGetCount();
 
 //! просчитать видимость всех моделей для фрустума 
 SX_LIB_API void SGeom_ModelsComVisible(	
-	ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
+	const ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
 	float3 *vViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID idArr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);	
@@ -526,7 +526,7 @@ SX_LIB_API void SGeom_GreenClear();
 
 //! просчитать видимость всей растительности для фрустума
 SX_LIB_API void SGeom_GreenComVisible(
-	ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
+	const ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
 	float3 *pViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID idArr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);

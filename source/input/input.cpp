@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxinput.h"
 #include "input.h"
 
@@ -9,10 +14,6 @@
 #else
 #	pragma comment(lib, "sxcore.lib")
 #endif
-
-#pragma once
-
-extern report_func g_fnReportf;
 
 SXInput::SXInput(const char* name):
 	mdelta({0, 0}),
@@ -35,7 +36,7 @@ long SXInput::Init(HWND hwnd)
 
 	if(RegisterRawInputDevices(Rid, sizeof(Rid) / sizeof(RAWINPUTDEVICE), sizeof(Rid[0])) == FALSE)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
 		return(-1);
 	}
 #endif

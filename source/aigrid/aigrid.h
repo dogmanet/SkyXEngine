@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __AIGRID_H
 #define __AIGRID_H
 
@@ -7,13 +12,12 @@
 #include <common/memalloc.h>
 
 #define SM_D3D_CONVERSIONS
-#include <common\SXMath.h>
+#include <common/SXMath.h>
 #include "sxaigrid.h"
 
-extern report_func g_fnReportf;
 extern g_aiquad_phy_navigate AIQuadPhyNavigate;
 
-#define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || ArrQuads.size() <= id) {g_fnReportf(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", GEN_MSG_LOCATION, id); return retval;}
+#define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || ArrQuads.size() <= id) {LibReport(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", GEN_MSG_LOCATION, id); return retval;}
 
 #define toint100(fnum) (int32_t)((fnum + 0.0001f) * 100)
 

@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -14,8 +14,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _CBaseAnimating_H_
-#define _CBaseAnimating_H_
+#ifndef __BASE_ANIMATING_H
+#define __BASE_ANIMATING_H
 
 #include "BaseEntity.h"
 #include <anim/sxanim.h>

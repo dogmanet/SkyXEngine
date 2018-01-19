@@ -1,5 +1,11 @@
-#ifndef _PROPTABLE_H_
-#define _PROPTABLE_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __PROPTABLE_H
+#define __PROPTABLE_H
 
 #include <common/SXmath.h>
 

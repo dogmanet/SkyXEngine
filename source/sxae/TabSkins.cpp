@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "TabSkins.h"
 
 TabSkins::TabSkins(TabManager * tm):EditorTab(tm)

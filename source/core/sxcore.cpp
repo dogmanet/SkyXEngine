@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define CORE_VERSION 1
 
@@ -33,7 +33,7 @@ report_func g_fnReportf = DefReport;
 
 CTaskManager* g_pTaskManager = 0;
 
-#define SXCORE_PRECOND(retval) if(!g_pTaskManager){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
+#define SXCORE_PRECOND(retval) if(!g_pTaskManager){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
 //**************************************************************************
 
@@ -47,12 +47,12 @@ String g_aGRegistersString[CORE_REGISTRY_SIZE];
 
 #define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unresolved index '%d' of access for registry", SX_LIB_NAME, GEN_MSG_LOCATION, id); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s: %s - unresolved index '%d' of access for registry", SX_LIB_NAME, GEN_MSG_LOCATION, id); return stdval; }
 
 //**************************************************************************
 
 CTimeManager* g_pTimers = 0;
-#define CORE_TIME_PRECOND(retval) if(!g_pTimers){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - sxcore is not init", SX_LIB_NAME, GEN_MSG_LOCATION); return retval;}
+#define CORE_TIME_PRECOND(retval) if(!g_pTimers){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -154,7 +154,7 @@ void Core_0Create(const char* name, bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - none unic name, score", GEN_MSG_LOCATION);
+							LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 							return;
 						}
 				}
@@ -164,10 +164,10 @@ void Core_0Create(const char* name, bool is_unic)
 			g_pTaskManager = new CTaskManager();
 			g_pTimers = new CTimeManager();
 
-			//g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "[SCORE]: is init\n");
+			//LibReport(REPORT_MSG_LEVEL_NOTICE, "is init\n");
 		}
 		else
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - not init argument [name], score", GEN_MSG_LOCATION);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 void Core_AKill()
@@ -186,7 +186,7 @@ void Core_AGetName(char* name)
 	if(name)
 		strcpy(name, g_szCoreName);
 	else
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[SCORE]: %s - invalid argument", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid argument", GEN_MSG_LOCATION);
 }
 
 //##########################################################################

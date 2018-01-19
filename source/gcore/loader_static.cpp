@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "loader_static.h"
 
 ISXDataStaticModel* SGCore_StaticModelCr()
@@ -15,7 +20,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 {
 	if (!data)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - ñan not initialize a null pointer 'data', load model '%s'\n", SX_LIB_NAME, GEN_MSG_LOCATION, file);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - ñan not initialize a null pointer 'data', load model '%s'\n", GEN_MSG_LOCATION, file);
 		return;
 	}
 
@@ -23,7 +28,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	FILE * pf = fopen(file, "rb");
 	if (!pf)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unable to open model file '%s'\n", SX_LIB_NAME, GEN_MSG_LOCATION, file);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unable to open model file '%s'\n", GEN_MSG_LOCATION, file);
 		return;
 	}
 
@@ -33,26 +38,26 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 	if (header.Magick != SX_MODEL_MAGICK)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unsupported file type '%s'\n", SX_LIB_NAME, GEN_MSG_LOCATION, file);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unsupported file type '%s'\n", GEN_MSG_LOCATION, file);
 		fclose(pf);
 		return;
 	}
 
 	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - unsupported file '%s' version %d'\n", SX_LIB_NAME, GEN_MSG_LOCATION, header.iVersion, file);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unsupported file '%s' version %d'\n", GEN_MSG_LOCATION, header.iVersion, file);
 		fclose(pf);
 		return;
 	}
 
 	if (header.iVersion == SX_MODEL_VERSION_OLD)
 	{
-		(*data)->ArrTextures = NULL;
+		(*data)->m_ppTextures = NULL;
 		Array<String> tex;
 		if (header.iMaterialsOffset)
 		{
 			fseek(pf, header.iMaterialsOffset, SEEK_SET);
-			(*data)->ArrTextures = new char*[header.iMaterialCount];
+			(*data)->m_ppTextures = new char*[header.iMaterialCount];
 			for (int i = 0; i < header.iMaterialCount; i++)
 			{
 				char c;
@@ -72,11 +77,11 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 			fread(&lh.iSubMeshCount, sizeof(int), 1, pf);
 			lh.pSubLODmeshes = new ModelLoDSubset[lh.iSubMeshCount];
-			(*data)->SubsetCount = lh.iSubMeshCount;
-			(*data)->StartIndex = new UINT[lh.iSubMeshCount];
-			(*data)->IndexCount = new UINT[lh.iSubMeshCount];
-			(*data)->StartVertex = new UINT[lh.iSubMeshCount];
-			(*data)->VertexCount = new UINT[lh.iSubMeshCount];
+			(*data)->m_uiSubsetCount = lh.iSubMeshCount;
+			(*data)->m_pStartIndex = new UINT[lh.iSubMeshCount];
+			(*data)->m_pIndexCount = new UINT[lh.iSubMeshCount];
+			(*data)->m_pStartVertex = new UINT[lh.iSubMeshCount];
+			(*data)->m_pVertexCount = new UINT[lh.iSubMeshCount];
 			int iVC = 0;
 			for (int i = 0; i < lh.iSubMeshCount; i++)
 			{
@@ -90,8 +95,8 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 				iVC += lh.pSubLODmeshes[i].iVectexCount;
 
-				(*data)->ArrTextures[i] = new char[tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1];
-				memcpy((*data)->ArrTextures[i], tex[lh.pSubLODmeshes[i].iMaterialID].c_str(), (tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1) * sizeof(char));
+				(*data)->m_ppTextures[i] = new char[tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1];
+				memcpy((*data)->m_ppTextures[i], tex[lh.pSubLODmeshes[i].iMaterialID].c_str(), (tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1) * sizeof(char));
 			}
 
 			UINT iStartIndex = 0;
@@ -99,10 +104,10 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 			for (int i = 0; i < lh.iSubMeshCount; i++)
 			{
-				(*data)->StartIndex[i] = iStartIndex;
-				(*data)->StartVertex[i] = iStartVertex;
-				(*data)->IndexCount[i] = lh.pSubLODmeshes[i].iIndexCount;
-				(*data)->VertexCount[i] = lh.pSubLODmeshes[i].iVectexCount;
+				(*data)->m_pStartIndex[i] = iStartIndex;
+				(*data)->m_pStartVertex[i] = iStartVertex;
+				(*data)->m_pIndexCount[i] = lh.pSubLODmeshes[i].iIndexCount;
+				(*data)->m_pVertexCount[i] = lh.pSubLODmeshes[i].iVectexCount;
 				lh.pSubLODmeshes[i].iStartIndex = iStartIndex;
 				lh.pSubLODmeshes[i].iStartVertex = iStartVertex;
 
@@ -126,11 +131,11 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 				memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_animated_ex)* lh.pSubLODmeshes[i].iVectexCount);
 			}
 
-			(*data)->AllVertexCount = iStartVertex;
-			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->VertexBuffer, 0);
+			(*data)->m_uiAllVertexCount = iStartVertex;
+			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
 			//(*data)->ArrVertBuf = new vertex_static[iStartVertex];
 			vertex_static * pData;
-			if (!FAILED((*data)->VertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
+			if (!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
 			{
 				for (DWORD i = 0; i < lh.iSubMeshCount; i++)
 				{
@@ -140,18 +145,18 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 						//memcpy((*data)->ArrVertBuf + lh.pSubLODmeshes[i].iStartVertex + k, pVertices + lh.pSubLODmeshes[i].iStartVertex + k, sizeof(vertex_static));
 					}
 				}
-				(*data)->VertexBuffer->Unlock();
+				(*data)->m_pVertexBuffer->Unlock();
 			}
 
-			(*data)->AllIndexCount = iStartIndex;
+			(*data)->m_uiAllIndexCount = iStartIndex;
 			DWORD tmpCountIndecex = 0;
-			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
+			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
 			//(*data)->ArrIndBuf = new UINT[iStartIndex];
-			if (!FAILED((*data)->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
+			if (!FAILED((*data)->m_pIndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 			{
 				memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
 				//memcpy((*data)->ArrIndBuf, pIndices, sizeof(UINT)* iStartIndex);
-				(*data)->IndexBuffer->Unlock();
+				(*data)->m_pIndexBuffer->Unlock();
 			}
 
 			for (int i = 0; i < lh.iSubMeshCount; i++)
@@ -167,12 +172,12 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	}
 	else if (header.iVersion == SX_MODEL_VERSION)
 	{
-		(*data)->ArrTextures = NULL;
+		(*data)->m_ppTextures = NULL;
 		Array<String> tex;
 		if (header.iMaterialsOffset)
 		{
 			fseek(pf, header.iMaterialsOffset, SEEK_SET);
-			(*data)->ArrTextures = new char*[header.iMaterialCount];
+			(*data)->m_ppTextures = new char*[header.iMaterialCount];
 			for (int i = 0; i < header.iMaterialCount; i++)
 			{
 				char c[MODEL_MAX_NAME];
@@ -212,11 +217,11 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 			}
 		}
 
-		(*data)->SubsetCount = m_pLods[0].iSubMeshCount;
-		(*data)->StartIndex = new UINT[m_pLods[0].iSubMeshCount];
-		(*data)->IndexCount = new UINT[m_pLods[0].iSubMeshCount];
-		(*data)->StartVertex = new UINT[m_pLods[0].iSubMeshCount];
-		(*data)->VertexCount = new UINT[m_pLods[0].iSubMeshCount];
+		(*data)->m_uiSubsetCount = m_pLods[0].iSubMeshCount;
+		(*data)->m_pStartIndex = new UINT[m_pLods[0].iSubMeshCount];
+		(*data)->m_pIndexCount = new UINT[m_pLods[0].iSubMeshCount];
+		(*data)->m_pStartVertex = new UINT[m_pLods[0].iSubMeshCount];
+		(*data)->m_pVertexCount = new UINT[m_pLods[0].iSubMeshCount];
 
 		UINT iStartIndex = 0;
 		UINT iStartVertex = 0;
@@ -224,10 +229,10 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 		for (int i = 0; i < lh.iSubMeshCount; i++)
 		{
-			(*data)->StartIndex[i] = iStartIndex;
-			(*data)->StartVertex[i] = iStartVertex;
-			(*data)->IndexCount[i] = lh.pSubLODmeshes[i].iIndexCount;
-			(*data)->VertexCount[i] = lh.pSubLODmeshes[i].iVectexCount;
+			(*data)->m_pStartIndex[i] = iStartIndex;
+			(*data)->m_pStartVertex[i] = iStartVertex;
+			(*data)->m_pIndexCount[i] = lh.pSubLODmeshes[i].iIndexCount;
+			(*data)->m_pVertexCount[i] = lh.pSubLODmeshes[i].iVectexCount;
 			lh.pSubLODmeshes[i].iStartIndex = iStartIndex;
 			lh.pSubLODmeshes[i].iStartVertex = iStartVertex;
 
@@ -239,8 +244,8 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 			iStartIndex += lh.pSubLODmeshes[i].iIndexCount;
 			iStartVertex += lh.pSubLODmeshes[i].iVectexCount;
 
-			(*data)->ArrTextures[i] = new char[tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1];
-			memcpy((*data)->ArrTextures[i], tex[lh.pSubLODmeshes[i].iMaterialID].c_str(), (tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1) * sizeof(char));
+			(*data)->m_ppTextures[i] = new char[tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1];
+			memcpy((*data)->m_ppTextures[i], tex[lh.pSubLODmeshes[i].iMaterialID].c_str(), (tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1) * sizeof(char));
 		}
 
 		UINT * pIndices = new UINT[iStartIndex];
@@ -252,26 +257,26 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 			memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_static)* lh.pSubLODmeshes[i].iVectexCount);
 		}
 
-		(*data)->AllVertexCount = iStartVertex;
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->VertexBuffer, 0);
+		(*data)->m_uiAllVertexCount = iStartVertex;
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
 		//(*data)->ArrVertBuf = new vertex_static[iStartVertex];
 		vertex_static * pData;
-		if (!FAILED((*data)->VertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
+		if (!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
 		{
 			memcpy(pData, pVertices, sizeof(vertex_static)* iStartVertex);
 			//memcpy((*data)->ArrVertBuf, pVertices, sizeof(vertex_static)* iStartVertex);
 
-			(*data)->VertexBuffer->Unlock();
+			(*data)->m_pVertexBuffer->Unlock();
 		}
 
-		(*data)->AllIndexCount = iStartIndex;
-		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->IndexBuffer, 0);
+		(*data)->m_uiAllIndexCount = iStartIndex;
+		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
 		//(*data)->ArrIndBuf = new UINT[iStartIndex];
-		if (!FAILED((*data)->IndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
+		if (!FAILED((*data)->m_pIndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 		{
 			memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
 			//memcpy((*data)->ArrIndBuf, pIndices, sizeof(UINT)* iStartIndex);
-			(*data)->IndexBuffer->Unlock();
+			(*data)->m_pIndexBuffer->Unlock();
 		}
 
 
@@ -295,17 +300,17 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	//ÓÍÈÔÈÊÀÖÈß ÏÎÄÃÐÓÏÏ
 	//{{
 	DataStaticModel* tmpmodel = new DataStaticModel();
-	tmpmodel->SubsetCount = 0;
-	tmpmodel->ArrTextures = new char*[(*data)->SubsetCount];
-	memset(tmpmodel->ArrTextures, 0, (*data)->SubsetCount * sizeof(char));
+	tmpmodel->m_uiSubsetCount = 0;
+	tmpmodel->m_ppTextures = new char*[(*data)->m_uiSubsetCount];
+	memset(tmpmodel->m_ppTextures, 0, (*data)->m_uiSubsetCount * sizeof(char));
 
-	vertex_static* ArrVertBuf = new vertex_static[(*data)->AllVertexCount];
-	UINT* ArrIndBuf = new UINT[(*data)->AllIndexCount];
+	vertex_static* ArrVertBuf = new vertex_static[(*data)->m_uiAllVertexCount];
+	UINT* ArrIndBuf = new UINT[(*data)->m_uiAllIndexCount];
 
-	tmpmodel->StartIndex = new UINT[(*data)->SubsetCount];
-	tmpmodel->StartVertex = new UINT[(*data)->SubsetCount];
-	tmpmodel->IndexCount = new UINT[(*data)->SubsetCount];
-	tmpmodel->VertexCount = new UINT[(*data)->SubsetCount];
+	tmpmodel->m_pStartIndex = new UINT[(*data)->m_uiSubsetCount];
+	tmpmodel->m_pStartVertex = new UINT[(*data)->m_uiSubsetCount];
+	tmpmodel->m_pIndexCount = new UINT[(*data)->m_uiSubsetCount];
+	tmpmodel->m_pVertexCount = new UINT[(*data)->m_uiSubsetCount];
 
 	long startindex = 0;
 	long startvertex = 0;
@@ -316,117 +321,117 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	vertex_static* pVert;
 	UINT* pInd;
 
-	(*data)->VertexBuffer->Lock(0, 0, (void**)&pVert, 0);
+	(*data)->m_pVertexBuffer->Lock(0, 0, (void**)&pVert, 0);
 
-	(*data)->IndexBuffer->Lock(0, 0, (void**)&pInd, 0);
+	(*data)->m_pIndexBuffer->Lock(0, 0, (void**)&pInd, 0);
 
-	for (long i = 0; i < (*data)->SubsetCount; ++i)
+	for (long i = 0; i < (*data)->m_uiSubsetCount; ++i)
 	{
-		if ((*data)->ArrTextures[i][0] == 0)
+		if ((*data)->m_ppTextures[i][0] == 0)
 			continue;
 
-		tmpmodel->ArrTextures[tmpmodel->SubsetCount] = new char[strlen((*data)->ArrTextures[i]) + 1];
-		strcpy(tmpmodel->ArrTextures[tmpmodel->SubsetCount], (*data)->ArrTextures[i]);
+		tmpmodel->m_ppTextures[tmpmodel->m_uiSubsetCount] = new char[strlen((*data)->m_ppTextures[i]) + 1];
+		strcpy(tmpmodel->m_ppTextures[tmpmodel->m_uiSubsetCount], (*data)->m_ppTextures[i]);
 
 		startvertex = countvertex;
 		startindex = countindex;
 
-		tmpmodel->StartIndex[tmpmodel->SubsetCount] = startindex;
-		tmpmodel->StartVertex[tmpmodel->SubsetCount] = startvertex;
+		tmpmodel->m_pStartIndex[tmpmodel->m_uiSubsetCount] = startindex;
+		tmpmodel->m_pStartVertex[tmpmodel->m_uiSubsetCount] = startvertex;
 
-		memcpy(ArrVertBuf + startvertex, pVert + (*data)->StartVertex[i], sizeof(vertex_static)* (*data)->VertexCount[i]);
-		memcpy(ArrIndBuf + startindex, pInd + (*data)->StartIndex[i], sizeof(UINT)* (*data)->IndexCount[i]);
+		memcpy(ArrVertBuf + startvertex, pVert + (*data)->m_pStartVertex[i], sizeof(vertex_static)* (*data)->m_pVertexCount[i]);
+		memcpy(ArrIndBuf + startindex, pInd + (*data)->m_pStartIndex[i], sizeof(UINT)* (*data)->m_pIndexCount[i]);
 
-		for (long j = 0; j < (*data)->IndexCount[i]; ++j)
+		for (long j = 0; j < (*data)->m_pIndexCount[i]; ++j)
 		{
-			ArrIndBuf[countindex + j] = countvertex + (pInd[(*data)->StartIndex[i] + j] - (*data)->StartVertex[i]);
+			ArrIndBuf[countindex + j] = countvertex + (pInd[(*data)->m_pStartIndex[i] + j] - (*data)->m_pStartVertex[i]);
 		}
 
-		countvertex += (*data)->VertexCount[i];
-		countindex += (*data)->IndexCount[i];
+		countvertex += (*data)->m_pVertexCount[i];
+		countindex += (*data)->m_pIndexCount[i];
 
-		for (long k = i + 1; k < (*data)->SubsetCount; ++k)
+		for (long k = i + 1; k < (*data)->m_uiSubsetCount; ++k)
 		{
-			if (strcmp((*data)->ArrTextures[i], (*data)->ArrTextures[k]) == 0)
+			if (strcmp((*data)->m_ppTextures[i], (*data)->m_ppTextures[k]) == 0)
 			{
-				(*data)->ArrTextures[k][0] = 0;
-				memcpy(ArrVertBuf + countvertex, pVert + (*data)->StartVertex[k], sizeof(vertex_static)* (*data)->VertexCount[k]);
+				(*data)->m_ppTextures[k][0] = 0;
+				memcpy(ArrVertBuf + countvertex, pVert + (*data)->m_pStartVertex[k], sizeof(vertex_static)* (*data)->m_pVertexCount[k]);
 
-				memcpy(ArrIndBuf + countindex, pInd + (*data)->StartIndex[k], sizeof(UINT)* (*data)->IndexCount[k]);
+				memcpy(ArrIndBuf + countindex, pInd + (*data)->m_pStartIndex[k], sizeof(UINT)* (*data)->m_pIndexCount[k]);
 
-				for (long j = 0; j < (*data)->IndexCount[k]; ++j)
+				for (long j = 0; j < (*data)->m_pIndexCount[k]; ++j)
 				{
-					ArrIndBuf[countindex + j] = countvertex + (pInd[(*data)->StartIndex[k] + j] - (*data)->StartVertex[k]);
+					ArrIndBuf[countindex + j] = countvertex + (pInd[(*data)->m_pStartIndex[k] + j] - (*data)->m_pStartVertex[k]);
 				}
 
-				countvertex += (*data)->VertexCount[k];
-				countindex += (*data)->IndexCount[k];
+				countvertex += (*data)->m_pVertexCount[k];
+				countindex += (*data)->m_pIndexCount[k];
 			}
 		}
 
-		tmpmodel->VertexCount[tmpmodel->SubsetCount] = countvertex - startvertex;
-		tmpmodel->IndexCount[tmpmodel->SubsetCount] = countindex - startindex;
+		tmpmodel->m_pVertexCount[tmpmodel->m_uiSubsetCount] = countvertex - startvertex;
+		tmpmodel->m_pIndexCount[tmpmodel->m_uiSubsetCount] = countindex - startindex;
 
-		++tmpmodel->SubsetCount;
+		++tmpmodel->m_uiSubsetCount;
 	}
 
-	(*data)->VertexBuffer->Unlock();
-	(*data)->IndexBuffer->Unlock();
+	(*data)->m_pVertexBuffer->Unlock();
+	(*data)->m_pIndexBuffer->Unlock();
 
-	tmpmodel->AllIndexCount = countindex;
-	tmpmodel->AllVertexCount = countvertex;
+	tmpmodel->m_uiAllIndexCount = countindex;
+	tmpmodel->m_uiAllVertexCount = countvertex;
 
-	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->VertexBuffer, 0);
+	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
 
 	vertex_static * pData;
-	if (!FAILED(tmpmodel->VertexBuffer->Lock(0, sizeof(vertex_static)* countvertex, (void**)&pData, 0)))
+	if (!FAILED(tmpmodel->m_pVertexBuffer->Lock(0, sizeof(vertex_static)* countvertex, (void**)&pData, 0)))
 	{
 		memcpy(pData, ArrVertBuf, sizeof(vertex_static)* countvertex);
 
 		float3_t tmppos = pData[0].Pos;
-		tmpmodel->BBMax = tmppos;
-		tmpmodel->BBMin = tmppos;
+		tmpmodel->m_vBBMax = tmppos;
+		tmpmodel->m_vBBMin = tmppos;
 		float3_t pos;
 
 		for (long i = 0; i<countvertex; i++)
 		{
 			pos = pData[i].Pos;
 
-			if (pos.x > tmpmodel->BBMax.x)
-				tmpmodel->BBMax.x = pos.x;
+			if (pos.x > tmpmodel->m_vBBMax.x)
+				tmpmodel->m_vBBMax.x = pos.x;
 
-			if (pos.y > tmpmodel->BBMax.y)
-				tmpmodel->BBMax.y = pos.y;
+			if (pos.y > tmpmodel->m_vBBMax.y)
+				tmpmodel->m_vBBMax.y = pos.y;
 
-			if (pos.z > tmpmodel->BBMax.z)
-				tmpmodel->BBMax.z = pos.z;
+			if (pos.z > tmpmodel->m_vBBMax.z)
+				tmpmodel->m_vBBMax.z = pos.z;
 
 
-			if (pos.x < tmpmodel->BBMin.x)
-				tmpmodel->BBMin.x = pos.x;
+			if (pos.x < tmpmodel->m_vBBMin.x)
+				tmpmodel->m_vBBMin.x = pos.x;
 
-			if (pos.y < tmpmodel->BBMin.y)
-				tmpmodel->BBMin.y = pos.y;
+			if (pos.y < tmpmodel->m_vBBMin.y)
+				tmpmodel->m_vBBMin.y = pos.y;
 
-			if (pos.z < tmpmodel->BBMin.z)
-				tmpmodel->BBMin.z = pos.z;
+			if (pos.z < tmpmodel->m_vBBMin.z)
+				tmpmodel->m_vBBMin.z = pos.z;
 		}
 
-		float3 Center = (tmpmodel->BBMin + tmpmodel->BBMax) * 0.5f;
-		tmpmodel->BSphere.x = Center.x;
-		tmpmodel->BSphere.y = Center.y;
-		tmpmodel->BSphere.z = Center.z;
-		tmpmodel->BSphere.w = SMVector3Length(Center - tmpmodel->BBMax);
+		float3 Center = (tmpmodel->m_vBBMin + tmpmodel->m_vBBMax) * 0.5f;
+		tmpmodel->m_vBSphere.x = Center.x;
+		tmpmodel->m_vBSphere.y = Center.y;
+		tmpmodel->m_vBSphere.z = Center.z;
+		tmpmodel->m_vBSphere.w = SMVector3Length(Center - tmpmodel->m_vBBMax);
 
-		tmpmodel->VertexBuffer->Unlock();
+		tmpmodel->m_pVertexBuffer->Unlock();
 	}
 
-	g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->IndexBuffer, 0);
+	g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->m_pIndexBuffer, 0);
 
-	if (!FAILED(tmpmodel->IndexBuffer->Lock(0, sizeof(UINT)* countindex, (void**)&pData, 0)))
+	if (!FAILED(tmpmodel->m_pIndexBuffer->Lock(0, sizeof(UINT)* countindex, (void**)&pData, 0)))
 	{
 		memcpy(pData, ArrIndBuf, sizeof(UINT)* countindex);
-		tmpmodel->IndexBuffer->Unlock();
+		tmpmodel->m_pIndexBuffer->Unlock();
 	}
 
 	mem_release_del((*data));
@@ -448,7 +453,7 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 
 	if (!pF)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "unable to open model file '%s'\n", file);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "unable to open model file '%s'\n", file);
 		return;
 	}
 
@@ -456,7 +461,7 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 	hdr.iBoneCount = 1;
 	hdr.iFlags = MODEL_FLAG_COMPILED | MODEL_FLAG_STATIC;
 
-	hdr.iMaterialCount = (*data)->SubsetCount;
+	hdr.iMaterialCount = (*data)->m_uiSubsetCount;
 	hdr.iSkinCount = 1;
 	hdr.iVersion = SX_MODEL_VERSION_OLD;
 
@@ -465,7 +470,7 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 	UINT iMaterialsSize = 0;
 	for (UINT i = 0; i < hdr.iMaterialCount; i++)
 	{
-		iMaterialsSize += strlen((*data)->ArrTextures[i]) + 1;
+		iMaterialsSize += strlen((*data)->m_ppTextures[i]) + 1;
 	}
 
 	hdr.iBonesOffset = 0;
@@ -476,8 +481,8 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 	iLodSize += sizeof(int);
 	for (int i = 0; i < hdr.iMaterialCount; i++)
 	{
-		iLodSize += sizeof(vertex_animated_ex)* (*data)->VertexCount[i];
-		iLodSize += sizeof(UINT)* (*data)->IndexCount[i];
+		iLodSize += sizeof(vertex_animated_ex)* (*data)->m_pVertexCount[i];
+		iLodSize += sizeof(UINT)* (*data)->m_pIndexCount[i];
 		iLodSize += sizeof(int)* 3;
 	}
 
@@ -487,29 +492,29 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 	fwrite(&hdr, sizeof(hdr), 1, pF);
 	for (UINT i = 0; i < hdr.iMaterialCount; i++)
 	{
-		fwrite((*data)->ArrTextures[i], 1, strlen((*data)->ArrTextures[i]) + 1, pF);
+		fwrite((*data)->m_ppTextures[i], 1, strlen((*data)->m_ppTextures[i]) + 1, pF);
 	}
 	int smc = hdr.iMaterialCount;
 	fwrite(&smc, sizeof(int), 1, pF);
 	vertex_animated_ex * pVB;
 	UINT * pIB;
-	(*data)->VertexBuffer->Lock(0, 0, (void**)&pVB, 0);
-	(*data)->IndexBuffer->Lock(0, 0, (void**)&pIB, 0);
+	(*data)->m_pVertexBuffer->Lock(0, 0, (void**)&pVB, 0);
+	(*data)->m_pIndexBuffer->Lock(0, 0, (void**)&pIB, 0);
 	UINT iVC = 0;
 	UINT iIC = 0;
 	for (int i = 0; i < hdr.iMaterialCount; i++)
 	{
 		fwrite(&i, sizeof(int), 1, pF);
-		fwrite(&(*data)->VertexCount[i], sizeof(int), 1, pF);
-		fwrite(&(*data)->IndexCount[i], sizeof(int), 1, pF);
+		fwrite(&(*data)->m_pVertexCount[i], sizeof(int), 1, pF);
+		fwrite(&(*data)->m_pIndexCount[i], sizeof(int), 1, pF);
 
-		fwrite(pVB + iVC, sizeof(vertex_animated_ex), (*data)->VertexCount[i], pF);
-		fwrite(pIB + iIC, sizeof(UINT), (*data)->IndexCount[i], pF);
-		iVC += (*data)->VertexCount[i];
-		iIC += (*data)->IndexCount[i];
+		fwrite(pVB + iVC, sizeof(vertex_animated_ex), (*data)->m_pVertexCount[i], pF);
+		fwrite(pIB + iIC, sizeof(UINT), (*data)->m_pIndexCount[i], pF);
+		iVC += (*data)->m_pVertexCount[i];
+		iIC += (*data)->m_pIndexCount[i];
 	}
-	(*data)->VertexBuffer->Unlock();
-	(*data)->IndexBuffer->Unlock();
+	(*data)->m_pVertexBuffer->Unlock();
+	(*data)->m_pIndexBuffer->Unlock();
 	fclose(pF);
 }
 
@@ -530,7 +535,7 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 		&Mesh))
 		)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "failed loaded X mesh '%s'\n", pathx);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "failed loaded X mesh '%s'\n", pathx);
 		return;
 	}
 

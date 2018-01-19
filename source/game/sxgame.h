@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -149,8 +149,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXGAME_H_
-#define _SXGAME_H_
+#ifndef __SXGAME_H
+#define __SXGAME_H
 
 #ifndef SXGAME_EXPORT
 #define SXGAME_EXPORT _declspec(dllimport)

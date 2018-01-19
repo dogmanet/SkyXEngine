@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "animated.h"
 #include <cstdlib>
 #include <cstdio>
@@ -49,14 +54,14 @@ void ModelFile::Load(const char * name)
 	FILE * fp = fopen(name, "rb");
 	if(!fp)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
 	}
 
 	fread(&m_hdr, sizeof(ModelHeader), 1, fp);
 
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
 		fclose(fp);
 		return;
 	}
@@ -69,7 +74,7 @@ void ModelFile::Load(const char * name)
 			fclose(fp);
 			return;
 		}
-		reportf(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
 		fclose(fp);
 		return;
 	}
@@ -225,21 +230,21 @@ void ModelFile::Load6(const char * name)
 	FILE * fp = fopen(name, "rb");
 	if(!fp)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
 	}
 
 	fread(&m_hdr, sizeof(ModelHeader), 1, fp);
 
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
 		fclose(fp);
 		return;
 	}
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION_OLD)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
 		fclose(fp);
 		return;
 	}
@@ -821,7 +826,7 @@ void ModelFile::BuildMeshBuffers()
 
 		if(j == 0)
 		{
-			m_pBoundBox->CalcBound(m_ppVertexBuffer[0], iStartVertex, vsize);
+			m_pBoundBox->calcBound(m_ppVertexBuffer[0], iStartVertex, vsize);
 		}
 	}
 
@@ -1647,12 +1652,12 @@ void Animation::play(const char * name, UINT iFadeTime, UINT slot, bool bReplace
 	}
 	if(slot >= BLEND_MAX)
 	{
-		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to play animation \"%s\" Invalid slot %d, max valid slot is %d\n", name, slot, BLEND_MAX - 1);
 		return;
 	}
 	if(!m_mSeqIds.KeyExists(name))
 	{
-		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to play animation \"%s\"\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to play animation \"%s\"\n", name);
 		return;
 	}
 	UINT sid = m_mSeqIds[name];
@@ -1999,7 +2004,7 @@ void Animation::assembly()
 				++sCur;
 				--i;
 				//report error
-				reportf(REPORT_MSG_LEVEL_WARNING, "Skeleton hierarchy incompatible");
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Skeleton hierarchy incompatible");
 				break;
 			}
 		}
@@ -2440,7 +2445,7 @@ void AnimationManager::setVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
 {
 	if(nDecl >= MVT_SIZE)
 	{
-		reportf(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::setVertexDeclaration()\n", nDecl);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::setVertexDeclaration()\n", nDecl);
 		return;
 	}
 	m_pd3dDevice->SetVertexDeclaration(pVertexDeclaration[nDecl]);
@@ -2473,7 +2478,7 @@ void AnimationManager::update(int thread)
 {
 	if(thread >= m_iThreadNum)
 	{
-		reportf(REPORT_MSG_LEVEL_WARNING, "Requested thread %d but only %d threads allowed\n", thread, m_iThreadNum);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "Requested thread %d but only %d threads allowed\n", thread, m_iThreadNum);
 		return;
 	}
 	for(uint32_t i = thread, l = m_pAnimatedList.size(); i < l; i += m_iThreadNum)
@@ -2508,7 +2513,7 @@ void AnimationManager::computeVis(const ISXFrustum * frustum, const float3 * vie
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		pAnim = m_pAnimatedList[i];
-		pAnim->getBound()->GetSphere(&jcenter, &jradius.x);
+		pAnim->getBound()->getSphere(&jcenter, &jradius.x);
 
 		m = pAnim->getWorldTM();
 		m._11 = SMVector3Length(float3(m._11, m._21, m._31));
@@ -2519,7 +2524,7 @@ void AnimationManager::computeVis(const ISXFrustum * frustum, const float3 * vie
 		m._41 = m._42 = m._43 = 0.0f;
 		jradius = SMVector3Transform(jradius, m);
 		
-		pAnim->m_vIsVisibleFor[id_arr] = frustum->SphereInFrustum(&jcenter, jradius.x);
+		pAnim->m_vIsVisibleFor[id_arr] = frustum->sphereInFrustum(&jcenter, jradius.x);
 	}
 }
 

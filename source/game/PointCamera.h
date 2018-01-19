@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -13,8 +13,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _CPointCamera_H_
-#define _CPointCamera_H_
+#ifndef __POINT_CAMERA_H
+#define __POINT_CAMERA_H
 
 #include <gcore/sxgcore.h>
 

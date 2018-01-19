@@ -1,31 +1,34 @@
 
-#ifndef __static_geom
-#define __static_geom
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
 
-#include <common\\string.h>
-#include <common\array.h>
-#include <gcore\\sxgcore.h>
+#ifndef __STATIC_GEOM_H
+#define __STATIC_GEOM_H
+
+#include <common/string.h>
+#include <common/array.h>
+#include <gcore/sxgcore.h>
 #include "sxgeom.h"
-
-extern report_func g_fnReportf;
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
 if (!(id_arr < ArrComFor.size()))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, retval) \
 if (!(id_model < AllModels.size() && AllModels[id_model]))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 	return retval;\
 }
 
 #define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \
 if (!(id_model < AllModels.size() && AllModels[id_model] && id_group < AllModels[id_model]->SubSet.size()))\
 {\
-	g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", GEN_MSG_LOCATION, id_group, id_model); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", GEN_MSG_LOCATION, id_group, id_model); \
 	return ret_val; \
 }
 
@@ -196,7 +199,7 @@ public:
 	
 	long GetCountModel();
 
-	void CPUFillingArrIndeces(ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
+	void CPUFillingArrIndeces(const ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
 	bool GetIntersectedRayY(float3* pos);
 
 	bool SortExistsForRender(int sort, ID id_arr = 0);
@@ -280,7 +283,7 @@ protected:
 	void EditVolume(Model* mesh, Segment* Split);
 	void SetSplitID(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender);	//установка каждому куску идентификатора, удаление пустых кусков
 	void SetSplitID2(Segment* Split, ID* SplitsIDs, ID* SplitsIDsRender, Array<Segment*>* queue);
-	void ComRecArrIndeces(ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
+	void ComRecArrIndeces(const ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
 
 	//рабочие данные, используются внутри в методах
 	//{{

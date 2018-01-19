@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -13,8 +13,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _CPlayerSpawn_H_
-#define _CPlayerSpawn_H_
+#ifndef __PLAYER_SPAWN_H
+#define __PLAYER_SPAWN_H
 
 #include "PointEntity.h"
 

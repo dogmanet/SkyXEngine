@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "light.h"
 
 Lights::Lights()
@@ -39,7 +44,7 @@ ID Lights::CreateCopy(ID id)
 		tmplight2->BoundVolume = SGCore_CrBound();
 		IDirect3DVertexBuffer9* vertexbuf;
 		tmplight->Mesh->GetVertexBuffer(&vertexbuf);
-		tmplight->BoundVolume->CalcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
+		tmplight->BoundVolume->calcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
 		mem_release(vertexbuf);
 		tmplight2->Power = tmplight->Power;
 		tmplight2->Dist = tmplight->Dist;
@@ -288,7 +293,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 {
 	if (GlobalLight != -1 && isglobal)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: global light exists, you can not create 2 global light sources", GEN_MSG_LOCATION);
 		return -1;
 	}
 
@@ -357,7 +362,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 	tmplight->BoundVolume = SGCore_CrBound();
 	IDirect3DVertexBuffer9* vertexbuf;
 	tmplight->Mesh->GetVertexBuffer(&vertexbuf);
-	tmplight->BoundVolume->CalcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
+	tmplight->BoundVolume->calcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
 	mem_release(vertexbuf);
 
 	if (tmplight->IsGlobal)
@@ -425,7 +430,7 @@ ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* c
 	tmplight->BoundVolume = SGCore_CrBound();
 	IDirect3DVertexBuffer9* vertexbuf;
 	tmplight->Mesh->GetVertexBuffer(&vertexbuf);
-	tmplight->BoundVolume->CalcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
+	tmplight->BoundVolume->calcBound(vertexbuf, tmplight->Mesh->GetNumVertices(), tmplight->Mesh->GetNumBytesPerVertex());
 	mem_release(vertexbuf);
 
 	ID tmpid = id;
@@ -548,7 +553,7 @@ void Lights::SetLightDist(ID id, float radius_height, bool is_create)
 	{
 		IDirect3DVertexBuffer9* vertexbuf;
 		ArrLights[id]->Mesh->GetVertexBuffer(&vertexbuf);
-		ArrLights[id]->BoundVolume->CalcBound(vertexbuf, ArrLights[id]->Mesh->GetNumVertices(), ArrLights[id]->Mesh->GetNumBytesPerVertex());
+		ArrLights[id]->BoundVolume->calcBound(vertexbuf, ArrLights[id]->Mesh->GetNumVertices(), ArrLights[id]->Mesh->GetNumBytesPerVertex());
 		mem_release_del(vertexbuf);
 	}
 
@@ -675,10 +680,10 @@ bool Lights::ComVisibleForFrustum(ID id, const ISXFrustum* frustum)
 
 	float3 tmpcenter;
 	float tmpradius;
-	ArrLights[id]->BoundVolume->GetSphere(&tmpcenter, &tmpradius);
+	ArrLights[id]->BoundVolume->getSphere(&tmpcenter, &tmpradius);
 	tmpcenter = SMVector3Transform(tmpcenter, ArrLights[id]->WorldMat);
 
-	return frustum->SphereInFrustum(&tmpcenter, tmpradius);
+	return frustum->sphereInFrustum(&tmpcenter, tmpradius);
 }
 
 bool Lights::GetVisibleForFrustum(ID id)
@@ -955,7 +960,7 @@ void Lights::SetLightAngle(ID id, float angle, bool is_create)
 		{
 			IDirect3DVertexBuffer9* vertexbuf;
 			ArrLights[id]->Mesh->GetVertexBuffer(&vertexbuf);
-			ArrLights[id]->BoundVolume->CalcBound(vertexbuf, ArrLights[id]->Mesh->GetNumVertices(), ArrLights[id]->Mesh->GetNumBytesPerVertex());
+			ArrLights[id]->BoundVolume->calcBound(vertexbuf, ArrLights[id]->Mesh->GetNumVertices(), ArrLights[id]->Mesh->GetNumBytesPerVertex());
 			mem_release(vertexbuf);
 		}
 
@@ -980,7 +985,7 @@ void Lights::SetLightTopRadius(ID id, float top_radius)
 		{
 			IDirect3DVertexBuffer9* vertexbuf;
 			ArrLights[id]->Mesh->GetVertexBuffer(&vertexbuf);
-			ArrLights[id]->BoundVolume->CalcBound(vertexbuf, ArrLights[id]->Mesh->GetNumVertices(), ArrLights[id]->Mesh->GetNumBytesPerVertex());
+			ArrLights[id]->BoundVolume->calcBound(vertexbuf, ArrLights[id]->Mesh->GetNumVertices(), ArrLights[id]->Mesh->GetNumBytesPerVertex());
 			mem_release_del(vertexbuf);
 		}
 
@@ -1227,7 +1232,7 @@ bool Lights::LightCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 			float3 tmpcenter;
 			float tmpradius;
 
-			tmpl->BoundVolume->GetSphere(&tmpcenter, &tmpradius);
+			tmpl->BoundVolume->getSphere(&tmpcenter, &tmpradius);
 			float dist = SMVector3Distance(tmpl->Position, (*viewpos)) - tmpradius;
 			if (dist < LIGHTS_UPDATE_L0_DIST)
 				tmpl->CountUpdate = -1;

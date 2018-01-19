@@ -1,5 +1,11 @@
-#ifndef _crosshair_H_
-#define _crosshair_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CROSSHAIR_H
+#define __CROSSHAIR_H
 
 //#include <gdefines.h>
 #include "sxgame.h"

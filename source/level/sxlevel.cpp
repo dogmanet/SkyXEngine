@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #define SXLEVEL_VERSION 1
 
 #include "sxlevel.h"
@@ -14,7 +19,7 @@ report_func g_fnReportf = DefReport;
 
 CLevel* g_pLevel = 0;
 
-#define SL_PRECOND(ret) if(!g_pLevel){g_fnReportf(-1, "%s - sxlevel is not init", GEN_MSG_LOCATION);return ret;}
+#define SL_PRECOND(ret) if(!g_pLevel){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxlevel is not init", GEN_MSG_LOCATION);return ret;}
 
 //##########################################################################
 
@@ -38,7 +43,7 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxlevel", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -51,7 +56,7 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxlevel", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SLevel_AKill()

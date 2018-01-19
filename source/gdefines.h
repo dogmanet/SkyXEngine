@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*! \page general_info_libs Общая информация о библиотеках
 \tableofcontents
@@ -159,7 +159,7 @@ struct IBaseObject
 #define ASSERT(expr) if(!expr) ASSERT_S(#expr)
 
 //! Тип функции вывода отладочной информации
-typedef void(*report_func) (int level, const char* format, ...);
+typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFormat, ...);
 
 #include <cstdio> 
 #if defined(_WINDOWS)
@@ -222,7 +222,7 @@ typedef void(*report_func) (int level, const char* format, ...);
 #define DEFAULT_FUNCTION_REPORT
 
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
-inline void DefReport(int level, const char* format, ...)
+inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, ...)
 {
 #if defined(_WINDOWS)
 	AllocConsole();
@@ -230,13 +230,31 @@ inline void DefReport(int level, const char* format, ...)
 #endif
 	char buf[REPORT_MSG_MAX_LEN];
 	int strl = sizeof(buf);
-	format_str(buf, format);
-	fprintf(stdout, "!!! report function is not init !!! %s\n", buf);
+	format_str(buf, szFormat);
+	fprintf(stdout, "!!! report function is not init !!!\n  LibName: %s\n  message: %s\n", szLibName, buf);
 	fprintf(stdout, "work program will be stopped within 5 seconds ...");
 	Sleep(5000);
 	exit(1);
 }
 
 #endif
+
+
+#ifndef SX_LIB_NAME
+#define SX_LIB_NAME "User"
+#endif
+
+inline void LibReport(int iLevel, const char *szFormat, ...)
+{
+	extern report_func g_fnReportf;
+
+	static char szStr[REPORT_MSG_MAX_LEN];
+	szStr[0] = 0;
+	int iStrLen = sizeof(szStr);
+	format_str(szStr, szFormat);
+
+	g_fnReportf(iLevel, SX_LIB_NAME, szStr);
+}
+
 
 #endif

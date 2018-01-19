@@ -1,5 +1,11 @@
-#ifndef TabAttachments_H
-#define TabAttachments_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TAB_ATTACHMENTS_H
+#define __TAB_ATTACHMENTS_H
 
 #include "EditorTab.h"
 

@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "SkyXEngine.h"
 
 //##########################################################################
@@ -61,39 +66,71 @@ void SkyXEngine_InitOutLog()
 	}
 }
 
-void SkyXEngine_PrintfLog(int level, const char *szFormat, ...)
+void SkyXEngine_PrintfLog(int iLevel, const char *szLibName, const char *szFormat, ...)
 {
-	va_list va;
+	/*va_list va;
 	char buf[REPORT_MSG_MAX_LEN];
 	va_start(va, szFormat);
 	vsprintf_s(buf, REPORT_MSG_MAX_LEN, szFormat, va);
+	va_end(va);*/
+
+	static char szStr[REPORT_MSG_MAX_LEN];
+	szStr[0] = 0;
+	static char szStr2[REPORT_MSG_MAX_LEN];
+	szStr2[0] = 0;
+	int iStrLen = sizeof(szStr);
+
+	va_list va;
+	va_start(va, szFormat);
+	vsprintf_s(szStr, REPORT_MSG_MAX_LEN, szFormat, va);
 	va_end(va);
 
 	if (g_pFileOutLog)
 	{
-		if (level == REPORT_MSG_LEVEL_ERROR)
+		if (szStr[0] != ' ' && szStr[0] != '\t')
+			sprintf(szStr2, "%s%s%s: ", COLOR_GREEN, szLibName, COLOR_RESET);
+
+		/*if (iLevel == REPORT_MSG_LEVEL_ERROR)
 		{
 			printf(COLOR_LRED "! ");
 			fwrite("! ", 1, 2, g_pFileOutLog);
 		}
-		else if (level == REPORT_MSG_LEVEL_WARNING)
+		else if (iLevel == REPORT_MSG_LEVEL_WARNING)
 		{
 			printf(COLOR_YELLOW "* ");
 			fwrite("* ", 1, 2, g_pFileOutLog);
 		}
 
 		printf(buf);
-		if (level == REPORT_MSG_LEVEL_ERROR || level == REPORT_MSG_LEVEL_WARNING)
+		if (iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING)
 		{
 			printf(COLOR_RESET);
+		}*/
+
+		if (iLevel == REPORT_MSG_LEVEL_ERROR)
+		{
+			sprintf(szStr2 + strlen(szStr2), "%s", COLOR_LRED);
 		}
-		fwrite(buf, 1, strlen(buf), g_pFileOutLog);
+		else if (iLevel == REPORT_MSG_LEVEL_WARNING)
+		{
+			sprintf(szStr2 + strlen(szStr2), "%s", COLOR_YELLOW);
+		}
+
+		sprintf(szStr2 + strlen(szStr2), "%s", szStr);
+
+		if (iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING)
+		{
+			sprintf(szStr2 + strlen(szStr2), "%s", COLOR_RESET);
+		}
+
+		printf(szStr2);
+		fwrite(szStr2, 1, strlen(szStr2), g_pFileOutLog);
 		//fprintf(FileOutLog, "\n");
 		fflush(g_pFileOutLog);
 
-		if (level == REPORT_MSG_LEVEL_ERROR)
+		if (iLevel == REPORT_MSG_LEVEL_ERROR)
 		{
-			SkyXEngine_HandlerError(buf);
+			SkyXEngine_HandlerError(szStr2);
 		}
 	}
 }
@@ -513,7 +550,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	if (!pDXDevice)
 	{
-		SkyXEngine_PrintfLog(REPORT_MSG_LEVEL_ERROR, "dxdevice not found ...");
+		SkyXEngine_PrintfLog(REPORT_MSG_LEVEL_ERROR, "SkyXEngine_Frame", "dxdevice not found ...");
 		return;
 	}
 
@@ -762,7 +799,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	DelayUpdateVisibleForLight += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SPE_EffectVisibleComAll(SRender_GetCamera()->ObjFrustum, &vCamPos);
+	SPE_EffectVisibleComAll(SRender_GetCamera()->getFrustum(), &vCamPos);
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
 	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;

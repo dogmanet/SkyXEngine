@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __LOADERTEXTURES_H
 #define __LOADERTEXTURES_H
 
@@ -8,7 +13,7 @@
 #include <common/String.h>
 #include "sxgcore.h"
 
-extern report_func g_fnReportf;
+void LibReport(int iLevel, const char *szFormat, ...);
 extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
@@ -24,12 +29,12 @@ public:
 
 	void Delete(ID id);	//удалить текстуру id
 
-	ID AddName(const char* name, LoadTexType type, ID* iddir = 0, ID* idname = 0);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
+	ID AddName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir = 0, ID* idname = 0);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
 	ID GetID(const char* name);		//получить id по имени
 	void GetName(ID id, char* name);//получить имя по id
 
 	ID Create(const char* name, IDirect3DTexture9* tex);	//создать место для текстуры tex
-	ID Update(const char* name, LoadTexType type);			//перезагрузить текстуру name
+	ID Update(const char* name, LOAD_TEXTURE_TYPE type);			//перезагрузить текстуру name
 	void Update(ID id);
 
 	void LoadTextures();	//загрузка всех текстур поставленных в очередь
@@ -54,12 +59,12 @@ private:
 
 		struct TLTex
 		{
-			TLTex(){ id = -1; type = LoadTexType::ltt_load; }
-			TLTex(ID _id, const char* _name, LoadTexType _type){ id = _id; name = _name; type = _type; }
+			TLTex(){ id = -1; type = LOAD_TEXTURE_TYPE_LOAD; }
+			TLTex(ID _id, const char* _name, LOAD_TEXTURE_TYPE _type){ id = _id; name = _name; type = _type; }
 			
 			ID id;
 			String name;
-			LoadTexType type;
+			LOAD_TEXTURE_TYPE type;
 		};
 		
 		Array<TLTex*> ArrTex;

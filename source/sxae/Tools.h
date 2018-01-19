@@ -1,5 +1,11 @@
-#ifndef Tools_H
-#define Tools_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TOOLS_H
+#define __TOOLS_H
 
 #include <Windows.h>
 

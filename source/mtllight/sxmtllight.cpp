@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define SXMATERIAL_LIGTH_VERSION 1
 
@@ -20,7 +20,7 @@ report_func g_fnReportf = DefReport;
 Lights* ArrLights = 0;
 Materials* ArrMaterials = 0;
 
-#define ML_PRECOND(retval) if(!ArrLights){g_fnReportf(-1, "%s - sxmtlligth is not init", GEN_MSG_LOCATION); return retval;}
+#define ML_PRECOND(retval) if(!ArrLights){LibReport(-1, "%s - sxmtlligth is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -44,7 +44,7 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxmaterial_ligth", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -63,7 +63,7 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxmaterial_ligth", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SML_AKill()

@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "reflection.h"
 
 Reflection::Reflection()
@@ -162,7 +167,7 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 {
 	if (!plane)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: plane is NULL", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: plane is NULL", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -180,7 +185,7 @@ void Reflection::PreRenderRefPlane(D3DXPLANE* plane)
 	viewmat._32 = -viewmat._32;
 	viewmat._42 = -viewmat._42;
 
-	ReflectFrustum[0]->Update(&viewmat, &(MLSet::RefMProjPlane));
+	ReflectFrustum[0]->update(&viewmat, &(MLSet::RefMProjPlane));
 
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &OldMatView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldMatProj);
@@ -242,7 +247,7 @@ void Reflection::BeginRenderRefCube(float3_t* center)
 {
 	if (!center)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: position center is NULL", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - sxmtllight [reflection]: position center is NULL", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -275,7 +280,7 @@ void Reflection::PreRenderRefCube(int cube, float4x4* world)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &MLSet::RefMProjCube);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(MatrixView * MLSet::RefMProjCube));
 
-	ReflectFrustum[cube]->Update(&float4x4(MatrixView), &MLSet::RefMProjCube);
+	ReflectFrustum[cube]->update(&float4x4(MatrixView), &MLSet::RefMProjCube);
 
 	mem_release_del(SurfaceReflect);
 	TextureReflect->GetSurfaceLevel(0, &SurfaceReflect);

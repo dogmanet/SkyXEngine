@@ -1,5 +1,11 @@
-#ifndef _ENTITY_MANAGER_H_
-#define _ENTITY_MANAGER_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __ENTITY_MANAGER_H
+#define __ENTITY_MANAGER_H
 
 /*! \file */
 

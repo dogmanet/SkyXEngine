@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "model_sim.h"
 
 ModelSim::ModelSim()
@@ -85,24 +90,24 @@ void ModelSim::Add(const char* path)
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path);
 	SGCore_StaticModelLoad(tmppath, &StaticModel);
 
-	if (StaticModel->SubsetCount > 1)
+	if (StaticModel->m_uiSubsetCount > 1)
 	{
 		//error
 	}
 
-	sprintf(tmppath, "%s.dds", StaticModel->ArrTextures[0]);
+	sprintf(tmppath, "%s.dds", StaticModel->m_ppTextures[0]);
 	IDsMat = SGCore_MtlLoad(tmppath, MTL_TYPE_GEOM);
 
 
 	vertex_static* pData;
-	StaticModel->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
+	StaticModel->m_pVertexBuffer->Lock(0, 0, (void**)&pData, 0);
 
-	float3_t tmppos = pData[StaticModel->StartVertex[0]].Pos;
+	float3_t tmppos = pData[StaticModel->m_pStartVertex[0]].Pos;
 	float3 tmpMax = tmppos;
 	float3 tmpMin = tmppos;
-	for (DWORD k = 0; k<StaticModel->VertexCount[0]; k++)
+	for (DWORD k = 0; k<StaticModel->m_pVertexCount[0]; k++)
 	{
-		tmppos = pData[StaticModel->StartVertex[0] + k].Pos;
+		tmppos = pData[StaticModel->m_pStartVertex[0] + k].Pos;
 
 		if (tmppos.x > tmpMax.x)
 			tmpMax.x = tmppos.x;
@@ -125,16 +130,16 @@ void ModelSim::Add(const char* path)
 	}
 
 	DWORD* indeces;
-	StaticModel->IndexBuffer->Lock(0, 0, (void **)&indeces, 0);
+	StaticModel->m_pIndexBuffer->Lock(0, 0, (void **)&indeces, 0);
 
 	float3 tmpMM = SMVectorLerp(tmpMax, tmpMin, 0.5f);
 	D3DXPLANE Plane;
 	D3DXPlaneFromPoints(&Plane,
-		&D3DXVECTOR3(pData[indeces[StaticModel->StartIndex[0] + 0]].Pos.x, pData[indeces[StaticModel->StartIndex[0] + 0]].Pos.y, pData[indeces[StaticModel->StartIndex[0] + 0]].Pos.z),
-		&D3DXVECTOR3(pData[indeces[StaticModel->StartIndex[0] + 1]].Pos.x, pData[indeces[StaticModel->StartIndex[0] + 1]].Pos.y, pData[indeces[StaticModel->StartIndex[0] + 1]].Pos.z),
-		&D3DXVECTOR3(pData[indeces[StaticModel->StartIndex[0] + 2]].Pos.x, pData[indeces[StaticModel->StartIndex[0] + 2]].Pos.y, pData[indeces[StaticModel->StartIndex[0] + 2]].Pos.z));
-	StaticModel->VertexBuffer->Unlock();
-	StaticModel->IndexBuffer->Unlock();
+		&D3DXVECTOR3(pData[indeces[StaticModel->m_pStartIndex[0] + 0]].Pos.x, pData[indeces[StaticModel->m_pStartIndex[0] + 0]].Pos.y, pData[indeces[StaticModel->m_pStartIndex[0] + 0]].Pos.z),
+		&D3DXVECTOR3(pData[indeces[StaticModel->m_pStartIndex[0] + 1]].Pos.x, pData[indeces[StaticModel->m_pStartIndex[0] + 1]].Pos.y, pData[indeces[StaticModel->m_pStartIndex[0] + 1]].Pos.z),
+		&D3DXVECTOR3(pData[indeces[StaticModel->m_pStartIndex[0] + 2]].Pos.x, pData[indeces[StaticModel->m_pStartIndex[0] + 2]].Pos.y, pData[indeces[StaticModel->m_pStartIndex[0] + 2]].Pos.z));
+	StaticModel->m_pVertexBuffer->Unlock();
+	StaticModel->m_pIndexBuffer->Unlock();
 
 	float3_t Center = (float3_t)((tmpMax + tmpMin) * 0.5);
 	float3_t Min = tmpMin;
@@ -144,7 +149,7 @@ void ModelSim::Add(const char* path)
 
 	IDirect3DVertexBuffer9* Anim;
 	GData::DXDevice->CreateVertexBuffer(
-		StaticModel->AllVertexCount * sizeof(vertex_animated),
+		StaticModel->m_uiAllVertexCount * sizeof(vertex_animated),
 		D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_MANAGED,
@@ -153,9 +158,9 @@ void ModelSim::Add(const char* path)
 
 	vertex_animated* pDataAnim;
 	Anim->Lock(0, 0, (void**)&pDataAnim, 0);
-	StaticModel->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
+	StaticModel->m_pVertexBuffer->Lock(0, 0, (void**)&pData, 0);
 	
-	for (UINT i = 0; i < StaticModel->AllVertexCount; ++i)
+	for (UINT i = 0; i < StaticModel->m_uiAllVertexCount; ++i)
 	{
 		pDataAnim[i].Pos = pData[i].Pos;
 		pDataAnim[i].Norm = pData[i].Norm;
@@ -166,7 +171,7 @@ void ModelSim::Add(const char* path)
 	}
 
 	Anim->Unlock();
-	StaticModel->VertexBuffer->Unlock();
+	StaticModel->m_pVertexBuffer->Unlock();
 
 	ArrStaticModel[ArrStaticModel.size() - 1]->Anim = Anim;
 }
@@ -221,16 +226,16 @@ void ModelSim::RenderStatic(DWORD timeDelta)
 {
 //	uint32_t* RTGPUArrIndicesPtrs2;
 
-	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Model->VertexBuffer, 0, sizeof(vertex_static));
-	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->IndexBuffer);
+	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Model->m_pVertexBuffer, 0, sizeof(vertex_static));
+	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->m_pIndexBuffer);
 	GData::DXDevice->SetVertexDeclaration(VertexDeclarationStatic);
 	long jCountIndex = 0;
 
 
 	SGCore_MtlSet(IDsMat, &WorldMat);
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->VertexCount[0], jCountIndex, ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
-	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
-	jCountIndex += ArrStaticModel[CurrRenderModel]->Model->IndexCount[0];
+	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->m_pVertexCount[0], jCountIndex, ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0] / 3);
+	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0] / 3);
+	jCountIndex += ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0];
 }
 
 void ModelSim::RenderGreen(DWORD timeDelta)
@@ -240,17 +245,17 @@ void ModelSim::RenderGreen(DWORD timeDelta)
 	GData::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 	GData::DXDevice->SetStreamSource(1, TransVertBufGreen, 0, sizeof(DataVertex));
 
-	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Model->VertexBuffer, 0, sizeof(vertex_static));
-	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->IndexBuffer);
+	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Model->m_pVertexBuffer, 0, sizeof(vertex_static));
+	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->m_pIndexBuffer);
 	GData::DXDevice->SetVertexDeclaration(VertexDeclarationGreen);
 
 
 	long jCountIndex = 0;
 
 	SGCore_MtlSet(IDsMat, &SMMatrixIdentity());
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->VertexCount[0], jCountIndex, ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
-	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3) * 1));
-	jCountIndex += ArrStaticModel[CurrRenderModel]->Model->IndexCount[0];
+	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->m_pVertexCount[0], jCountIndex, ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0] / 3);
+	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0] / 3) * 1));
+	jCountIndex += ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0];
 
 	GData::DXDevice->SetStreamSourceFreq(0, 1);
 	GData::DXDevice->SetStreamSourceFreq(1, 1);
@@ -263,11 +268,11 @@ void ModelSim::RenderSkin(DWORD timeDelta)
 	mbs.orient = SMQuaternion();
 
 	GData::DXDevice->SetStreamSource(0, ArrStaticModel[CurrRenderModel]->Anim, 0, sizeof(vertex_animated));
-	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->IndexBuffer);
+	GData::DXDevice->SetIndices(ArrStaticModel[CurrRenderModel]->Model->m_pIndexBuffer);
 	GData::DXDevice->SetVertexDeclaration(VertexDeclarationSkin);
 
 	SGCore_MtlSet(IDsMat, &WorldMat);
 	GData::DXDevice->SetVertexShaderConstantF(16, (float*)&mbs, 2);
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->VertexCount[0], 0, ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
-	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ArrStaticModel[CurrRenderModel]->Model->IndexCount[0] / 3);
+	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, ArrStaticModel[CurrRenderModel]->Model->m_pVertexCount[0], 0, ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0] / 3);
+	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ArrStaticModel[CurrRenderModel]->Model->m_pIndexCount[0] / 3);
 }

@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "ml_data.h"
 
 namespace MLSet
@@ -181,7 +186,7 @@ void MLSet::MLInit()
 
 	MLSet::WinSize = *winsize;
 	MLSet::ProjFov = projfov;*/
-	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LoadTexType::ltt_const);
+	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LOAD_TEXTURE_TYPE_CONST);
 
 
 

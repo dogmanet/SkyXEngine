@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Базовый класс инструмента
 */
 
-#ifndef _CBaseTool_H_
-#define _CBaseTool_H_
+#ifndef __BASE_TOOL_H
+#define __BASE_TOOL_H
 
 #include "BaseItem.h"
 #include <score/sxscore.h>

@@ -1,5 +1,11 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CAMERA_H
+#define __CAMERA_H
 
 #include <common/SXMath.h>
 

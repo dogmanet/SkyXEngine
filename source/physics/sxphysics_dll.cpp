@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -32,12 +32,12 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = DefReport;
+report_func g_fnReportf = DefReport;
 #endif
 
 PhyWorld * g_pWorld = NULL;
 
-#define SP_PRECOND(ret) if(!g_pWorld){reportf(-1, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
+#define SP_PRECOND(ret) if(!g_pWorld){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -59,7 +59,7 @@ SX_LIB_API void SXPhysics_0Create()
 {
 	if(g_pWorld)
 	{
-		reportf(-1, "%s - sxphysics double init", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();
@@ -90,7 +90,7 @@ SX_LIB_API void SXPhysics_Sync()
 
 SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 SX_LIB_API void SXPhysics_LoadGeom(const char * file)

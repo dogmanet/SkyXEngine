@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __BOUND_H
 #define __BOUND_H
 
@@ -32,16 +37,16 @@ void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect
 
 //простой объект с минимальным описанием
 //дл€ корректного использовани€ необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
-struct SXTransObject : public virtual ISXTransObject
+struct CSXTransObject : public virtual ISXTransObject
 {
-	SXTransObject(){};
-	~SXTransObject(){};
+	CSXTransObject(){};
+	~CSXTransObject(){};
 
 	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 
-	float4x4* CalcWorld();
+	float4x4* calcWorld();
 };
 
 #define TRANSFORM_COORD_SCREEN2(point,sizemapdepth)\
@@ -57,31 +62,38 @@ struct SXTransObject : public virtual ISXTransObject
 //дл€ создан€и минимума и максимума необходимо вызвать CalculateBound
 //SetMinMax, GetMinMax до вызова CalculateWorldAndTrans возвращают нетрансформирвоанные данные
 //конечным этапом построени€ Bound и Object €вл€етс€ CalculateWorldAndTrans
-class SXBound : public SXTransObject, public virtual ISXBound
+class CSXBound : public CSXTransObject, public virtual ISXBound
 {
 public:
-	SXBound(){};
-	~SXBound(){};
+	CSXBound(){};
+	~CSXBound(){};
 
 	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 
-	void CalcBound(IDirect3DVertexBuffer9* vertex_buffer, DWORD count_vert, DWORD bytepervert);
+	void calcBound(IDirect3DVertexBuffer9* vertex_buffer, DWORD count_vert, DWORD bytepervert);
 
 	//функци€ просчета мировой матрицы и трансформации минимума и максимума
-	float4x4* CalcWorldAndTrans();
+	float4x4* calcWorldAndTrans();
 
-	void GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat);
+	void getPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat);
 
-	void SetMinMax(float3* min, float3* max);
-	void GetMinMax(float3* min, float3* max) const;
+	void setMinMax(const float3* min, const float3* max);
+	void getMinMax(float3* min, float3* max) const;
 
-	void SetSphere(float3* center, float* radius);
-	void GetSphere(float3* center, float* radius) const;
+	void setSphere(const float3* center, float radius);
+	void getSphere(float3* center, float* radius) const;
 
-	bool IsPointInSphere(float3* point) const;
-	bool IsPointInBox(float3* point) const;
+	bool isPointInSphere(const float3* point) const;
+	bool isPointInBox(const float3* point) const;
+
+protected:
+	float3 m_vMin;
+	float3 m_vMax;
+
+	float3 m_vCenter;
+	float m_fRadius;
 };
 
 #endif

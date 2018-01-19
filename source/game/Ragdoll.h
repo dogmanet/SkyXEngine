@@ -1,5 +1,11 @@
-#ifndef _Ragdoll_H_
-#define _Ragdoll_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __RAGDOLL_H
+#define __RAGDOLL_H
 
 #include "sxgame.h"
 #include <anim/sxanim.h>

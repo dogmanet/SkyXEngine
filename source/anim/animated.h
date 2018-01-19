@@ -1,5 +1,11 @@
-#ifndef _ANIMATED_H_
-#define _ANIMATED_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __ANIMATED_H
+#define __ANIMATED_H
 
 
 #include "ModelFile.h"
@@ -19,8 +25,6 @@
 #endif
 
 #include "sxanim.h"
-
-extern report_func reportf;
 
 class Animation;
 class AnimationManager;

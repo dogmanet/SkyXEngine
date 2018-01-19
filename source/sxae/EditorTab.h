@@ -1,5 +1,11 @@
-#ifndef EditorTab_H
-#define EditorTab_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __EDITOR_TAB_H
+#define __EDITOR_TAB_H
 
 #include "TabManager.h"
 #include <SXGUIWinApi/sxgui.h>

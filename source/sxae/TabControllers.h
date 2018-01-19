@@ -1,5 +1,11 @@
-#ifndef TabControllers_H
-#define TabControllers_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TAB_CONTROLLERS_H
+#define __TAB_CONTROLLERS_H
 
 #include "EditorTab.h"
 

@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "render_func.h"
 
 /*
@@ -134,12 +139,12 @@ void SXRenderFunc::ComDeviceLost()
 
 	SXRenderFunc::InitModeWindow();
 	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
-	g_fnReportf(REPORT_MSG_LEVEL_WARNING, "r_win_width %d, r_win_height %d, r_win_windowed %d \n", *r_win_width, *r_win_height, *r_win_windowed);
+	LibReport(REPORT_MSG_LEVEL_WARNING, "r_win_width %d, r_win_height %d, r_win_windowed %d \n", *r_win_width, *r_win_height, *r_win_windowed);
 
 	if (bf)
 	{
 		//если все-таки функция зашла сюда значит что-то было неосвобождено
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
+		LibReport(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
 	}
 	else
 	{
@@ -163,7 +168,7 @@ void SXRenderFunc::ComVisibleForLight()
 		if (!SML_LigthsGetExists(i))
 			continue;
 
-		if (SML_LigthsGetShadowed(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->ObjFrustum) && SML_LigthsGetEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		if (SML_LigthsGetShadowed(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->getFrustum()) && SML_LigthsGetEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
 		{
 			if (SML_LigthsGetType(i) == LTYPE_LIGHT_GLOBAL)
 			{
@@ -286,12 +291,12 @@ void SXRenderFunc::ComVisibleForLight()
 void SXRenderFunc::ComVisibleForCamera()
 {
 	if (SGeom_ModelsGetCount() > 0)
-		SGeom_ModelsComVisible(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+		SGeom_ModelsComVisible(GData::ObjCamera->getFrustum(), &GData::ConstCurrCamPos);
 
 	if (SGeom_GreenGetCount() > 0)
-		SGeom_GreenComVisible(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+		SGeom_GreenComVisible(GData::ObjCamera->getFrustum(), &GData::ConstCurrCamPos);
 
-	SXAnim_ModelsComVisible(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+	SXAnim_ModelsComVisible(GData::ObjCamera->getFrustum(), &GData::ConstCurrCamPos);
 }
 
 void SXRenderFunc::ComVisibleReflection()
@@ -492,7 +497,7 @@ void SXRenderFunc::FullScreenChangeSizeAbs()
 		*r_win_width = iFullScreenWidth;
 		*r_win_height = iFullScreenHeight;
 
-		//g_fnReportf(REPORT_MSG_LEVEL_WARNING, "iFullScreenWidth %d, iFullScreenHeight %d \n", iFullScreenWidth, iFullScreenHeight);
+		//LibReport(REPORT_MSG_LEVEL_WARNING, "iFullScreenWidth %d, iFullScreenHeight %d \n", iFullScreenWidth, iFullScreenHeight);
 	}
 
 	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
@@ -505,7 +510,7 @@ void SXRenderFunc::UpdateView()
 {
 	GData::InitAllMatrix();
 
-	GData::ObjCamera->GetViewMatrix(&GData::MCamView);
+	GData::ObjCamera->getViewMatrix(&GData::MCamView);
 	
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &GData::MCamView);
@@ -513,8 +518,8 @@ void SXRenderFunc::UpdateView()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(GData::MCamView * GData::MLightProj));
 	Core_RMatrixSet(G_RI_MATRIX_TRANSP_VIEWPROJ, &SMMatrixTranspose(GData::MCamView * GData::MLightProj));
 
-	GData::ObjCamera->GetPosition(&GData::ConstCurrCamPos);
-	GData::ObjCamera->GetLook(&GData::ConstCurrCamDir);
+	GData::ObjCamera->getPosition(&GData::ConstCurrCamPos);
+	GData::ObjCamera->getLook(&GData::ConstCurrCamDir);
 
 	Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_POSITION, &GData::ConstCurrCamPos);
 	Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_DIRECTION, &GData::ConstCurrCamDir);
@@ -527,7 +532,7 @@ void SXRenderFunc::UpdateView()
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, GData::NearFar.y);
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, GData::ProjFov);*/
 
-	GData::ObjCamera->ObjFrustum->Update(&(GData::MCamView), &(GData::MCamProj));
+	GData::ObjCamera->updateFrustum(&GData::MCamProj);
 
 	if (GData::DefaultGeomIDArr < 0)
 		GData::DefaultGeomIDArr = SGeom_ModelsAddArrForCom();
@@ -823,7 +828,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 {
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_SHADOW);
-	SML_LigthsComVisibleFrustumDistFor(GData::ObjCamera->ObjFrustum, &GData::ConstCurrCamPos);
+	SML_LigthsComVisibleFrustumDistFor(GData::ObjCamera->getFrustum(), &GData::ConstCurrCamPos);
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -842,7 +847,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 			continue;
 
 		Core_RIntSet(G_RI_INT_CURRIDLIGHT, i);
-		if (SML_LigthsGetShadowed(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->ObjFrustum) && SML_LigthsGetEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		if (SML_LigthsGetShadowed(i) && (SML_LigthsComVisibleForFrustum(i, GData::ObjCamera->getFrustum()) && SML_LigthsGetEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
 		{
 			if (SML_LigthsGetType(i) == LTYPE_LIGHT_GLOBAL)
 			{

@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "shadow.h"
 	
 PSSM::PSSM()
@@ -127,7 +132,7 @@ void PSSM::OnResetDevice()
 			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMaps[i]), NULL);
 
 				/*if(FAILED(hr))
-					reportf(-1,"Ќе удалось создать текстуру глубины PSSM");*/
+					LibReport(REPORT_MSG_LEVEL_ERROR,"Ќе удалось создать текстуру глубины PSSM");*/
 			
 			DepthSurfaces[i] = 0;
 		}
@@ -208,7 +213,7 @@ void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 	FovRatio.x = *r_default_fov;
 	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
-	Frustums[split]->Update(&(Views[split]), &(Projs[split]));
+	Frustums[split]->update(&(Views[split]), &(Projs[split]));
 
 	float3 up(0.0f, 1.0f, 0.0f);
 	float3 right = SMVector3Normalize(SMVector3Cross((*dircam), up));
@@ -223,26 +228,25 @@ void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 	float far_height = tan(FovRatio.x / 2.f) * NearFar[split].y;
 	float far_width = far_height * FovRatio.y;
 
-	Frustums[split]->Point[0] = nc - up*near_height - right*near_width;
-	Frustums[split]->Point[1] = nc + up*near_height - right*near_width;
-	Frustums[split]->Point[2] = nc + up*near_height + right*near_width;
-	Frustums[split]->Point[3] = nc - up*near_height + right*near_width;
+	Frustums[split]->setPoint(0, &float3(nc - up*near_height - right*near_width));
+	Frustums[split]->setPoint(1, &float3(nc + up*near_height - right*near_width));
+	Frustums[split]->setPoint(2, &float3(nc + up*near_height + right*near_width));
+	Frustums[split]->setPoint(3, &float3(nc - up*near_height + right*near_width));
 
-	Frustums[split]->Point[4] = fc - up*far_height - right*far_width;
-	Frustums[split]->Point[5] = fc + up*far_height - right*far_width;
-	Frustums[split]->Point[6] = fc + up*far_height + right*far_width;
-	Frustums[split]->Point[7] = fc - up*far_height + right*far_width;
+	Frustums[split]->setPoint(4, &float3(fc - up*far_height - right*far_width));
+	Frustums[split]->setPoint(5, &float3(fc + up*far_height - right*far_width));
+	Frustums[split]->setPoint(6, &float3(fc + up*far_height + right*far_width));
+	Frustums[split]->setPoint(7, &float3(fc - up*far_height + right*far_width));
 
 	float3 vCenter(0, 0, 0);
 	for (int i = 0; i < 8; i++)
-		vCenter += Frustums[split]->Point[i];
+		vCenter += Frustums[split]->getPoint(i);
 	vCenter /= 8;
-	Frustums[split]->Center = vCenter;
-
+	Frustums[split]->setCenter(&vCenter);
 
 	float dist = 1;
 	float3 DirL = Position;
-	float3 TarG = float3(Frustums[split]->Center.x, Frustums[split]->Center.y, Frustums[split]->Center.z);
+	float3 TarG = float3(Frustums[split]->getCenter());
 
 	float3 LightPos = TarG + DirL*dist;
 	float3 LightPos2 = DirL;
@@ -258,7 +262,7 @@ void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 	float maxZ = 0;
 
 	float4 trans0;
-	float4 transform0(Frustums[split]->Point[0].x, Frustums[split]->Point[0].y, Frustums[split]->Point[0].z, 1);
+	float4 transform0(Frustums[split]->getPoint(0), 1);
 	trans0 = SMVector4Transform(transform0, Views[split]);
 
 	minX = trans0.x; maxX = trans0.x;
@@ -268,7 +272,7 @@ void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 	for (int i = 0; i<8; i++)
 	{
 		float4 trans;
-		float4 transform(Frustums[split]->Point[i].x, Frustums[split]->Point[i].y, Frustums[split]->Point[i].z, 1);
+		float4 transform(Frustums[split]->getPoint(i), 1);
 
 		trans = SMVector4Transform(transform, Views[split]);
 
@@ -290,7 +294,7 @@ void PSSM::UpdateFrustums(int split, const float3* poscam, const float3* dircam)
 	float2 OrtMax = float2(maxX, maxY);
 	float2 OrtMin = float2(minX, minY);
 
-	float3 Diagonal = Frustums[split]->Point[0] - Frustums[split]->Point[6];
+	float3 Diagonal = Frustums[split]->getPoint(0) - Frustums[split]->getPoint(6);
 	float LengthDiagonal = SMVector3Length(Diagonal);
 
 	float2 BoarderOffset = (float2(LengthDiagonal, LengthDiagonal) - (OrtMax - OrtMin)) * 0.5;
@@ -709,7 +713,7 @@ void ShadowMapTech::Begin()
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &Proj);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(View * Proj));
 	
-	Frustum->Update(&(View),&(Proj));
+	Frustum->update(&(View),&(Proj));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(View * Proj));
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
@@ -1027,7 +1031,7 @@ void ShadowMapCubeTech::Pre(int cube)
 	//MLSet::DXDevice->SetTransform(D3DTS_VIEW,&(View[cube].operator D3DXMATRIX()));
 	//MLSet::DXDevice->SetTransform(D3DTS_PROJECTION,&(Proj[cube].operator D3DXMATRIX()));
 
-	Frustums[cube]->Update(&(View[cube]), &(Proj[cube]));
+	Frustums[cube]->update(&(View[cube]), &(Proj[cube]));
 
 	float4x4 vp = View[cube] * Proj[cube];
 

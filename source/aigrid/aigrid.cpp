@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "aigrid.h"
 
 void AIGrid::CorrectPosXZ(float3* pos)
@@ -61,13 +66,13 @@ void AIGrid::GridSave(const char* path)
 {
 	if (ArrQuads.size() <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: AI grid not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
 		return;
 	}
 
 	if (CountSplits <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: can not find path, because AI grid is not validate splits\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "can not find path, because AI grid is not validate splits\n");
 		return;
 	}
 
@@ -189,7 +194,7 @@ void AIGrid::GridLoad(const char* path)
 	fclose(file);
 	ReCreateBuffs();
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sxaigrid: AI grid is loaded, count quads %d, count graph points %d\n", ArrQuads.size(), ArrGraphPointsIDs.size());
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "AI grid is loaded, count quads %d, count graph points %d\n", ArrQuads.size(), ArrGraphPointsIDs.size());
 
 	GridTestValidation();
 }
@@ -273,7 +278,7 @@ void AIGrid::BBCreate(const float3* center, const float3* param)
 {
 	if (ArrBound.size() > 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box already splitting, unresolved create");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box already splitting, unresolved create");
 		return;
 	}
 
@@ -305,13 +310,13 @@ void AIGrid::BBSetDimensions(const float3* dim)
 {
 	if (ArrBound.size() <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box is not created");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box is not created");
 		return;
 	}
 
 	if (ArrBound.size() > 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box already splitting, unresolved set dimensions");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box already splitting, unresolved set dimensions");
 		return;
 	}
 
@@ -347,7 +352,7 @@ void AIGrid::BBGetDimensions(float3* dim) const
 {
 	if (ArrBound.size() <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box is not created");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box is not created");
 		return;
 	}
 
@@ -363,13 +368,13 @@ void AIGrid::BBSetPos(const float3* pos)
 {
 	if (ArrBound.size() <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box is not created");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box is not created");
 		return;
 	}
 
 	if(ArrBound.size() > 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box already splitting, unresolved set position");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box already splitting, unresolved set position");
 		return;
 	}
 
@@ -399,7 +404,7 @@ void AIGrid::BBGetPos(float3* pos) const
 {
 	if (ArrBound.size() <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: bound box is not created");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "bound box is not created");
 		return;
 	}
 
@@ -932,7 +937,7 @@ void AIGrid::GraphicsInit()
 
 	if (!DXDevice)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "sxaigrid: %s - dx device is not init", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - dx device is not init", GEN_MSG_LOCATION);
 	}
 
 	D3DVERTEXELEMENT9 InstanceAIQuad[] =
@@ -949,7 +954,7 @@ void AIGrid::GraphicsInit()
 
 	DXDevice->CreateVertexDeclaration(InstanceAIQuad, &AIQuadDecl);
 
-	Tex_AIGrid = SGCore_LoadTexAddName("decal_aigrid1.dds", LoadTexType::ltt_const);
+	Tex_AIGrid = SGCore_LoadTexAddName("decal_aigrid1.dds", LOAD_TEXTURE_TYPE_CONST);
 
 	IDVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad.vs", SHADER_CHECKDOUBLE_PATH);
 	IDPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad.ps", SHADER_CHECKDOUBLE_PATH);
@@ -1106,7 +1111,7 @@ void AIGrid::GridGenerate()
 {
 	if (ArrQuads.size() <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: it is necessary one quad in AI grid");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "it is necessary one quad in AI grid");
 		return;
 	}
 
@@ -1147,7 +1152,7 @@ void AIGrid::GridGenerate()
 		ArrQuadsCheck.clear();
 	}
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sxaigrid: AI grid generated, all count = %d, gen count = %d, count time = %d mlsec\n", ArrQuads.size(), ArrQuads.size() - oldsizegrid, GetTickCount() - ttime);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "AI grid generated, all count = %d, gen count = %d, count time = %d mlsec\n", ArrQuads.size(), ArrQuads.size() - oldsizegrid, GetTickCount() - ttime);
 	
 	CountSplits = 0;
 	ReCreateBuffs();
@@ -1157,7 +1162,7 @@ void AIGrid::GraphPointGenerate()
 {
 	if (ArrQuads.size() <= 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: AI grid not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
 		return;
 	}
 
@@ -1189,7 +1194,7 @@ void AIGrid::GraphPointGenerate()
 	if (ArrGraphPointsIDs.size() > 0)
 	{
 		memset(&(ArrCostGPIDs[0]), -1, ArrCostGPIDs.size() * sizeof(int32_t));
-		g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sxaigrid: graph points is generated, count %d\n", ArrGraphPointsIDs.size());
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "graph points is generated, count %d\n", ArrGraphPointsIDs.size());
 	}
 }
 
@@ -2104,7 +2109,7 @@ void AIGrid::GridTestValidation()
 {
 	if (ArrQuads.size() <= 1 || ArrBound.size() <= 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: AI grid is not created, unresolved validation\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid is not created, unresolved validation\n");
 		return;
 	}
 
@@ -2173,7 +2178,7 @@ void AIGrid::GridTestValidation()
 	}
 	//}
 
-	g_fnReportf(REPORT_MSG_LEVEL_NOTICE, "sxaigrid: AI grid is validation, deleted quads %d, count splits %d\n", oldcountquads - ArrQuads.size(), CountSplits);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "AI grid is validation, deleted quads %d, count splits %d\n", oldcountquads - ArrQuads.size(), CountSplits);
 }
 
 UINT AIGrid::GridGetCountSplits()
@@ -2224,7 +2229,7 @@ void AIGrid::RenderQuads(const ISXFrustum * frustum, const float3 * viewpos, flo
 			bound = ArrBound[i];
 			center = (bound->min + bound->max) * 0.5f;
 			radius = SMVector3Length(center - bound->max);
-			if (frustum->SphereInFrustum(&center, radius))
+			if (frustum->sphereInFrustum(&center, radius))
 			{
 				for (int k = 0, kl = bound->ArrIdsQuads.size(); k < kl; ++k)
 				{
@@ -2637,7 +2642,7 @@ ID AIGrid::GraphPointGetNear(ID beginq, ID endq)
 {
 	if (ArrQuads.size() <= 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: AI grid not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
 		return -1;
 	}
 
@@ -2646,25 +2651,25 @@ ID AIGrid::GraphPointGetNear(ID beginq, ID endq)
 
 	if (CountSplits == 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: can not find path, because AI grid is not validate splits\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "can not find path, because AI grid is not validate splits\n");
 		return -1;
 	}
 
 	if (ArrQuads[beginq]->IdSplit != ArrQuads[endq]->IdSplit)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: quads in different splits, path not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "quads in different splits, path not found\n");
 		return -1;
 	}
 
 	if (beginq == endq)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: beginq == endq, path not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "beginq == endq, path not found\n");
 		return -1;
 	}
 
 	if (ArrGraphPointsIDs.size() == 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: graph points not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "graph points not found\n");
 		return -1;
 	}
 	
@@ -2717,7 +2722,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 {
 	if (ArrQuads.size() <= 1)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: AI grid not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
 		return false;
 	}
 
@@ -2726,19 +2731,19 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 
 	if (CountSplits == 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: can not find path, because AI grid is not validate splits\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "can not find path, because AI grid is not validate splits\n");
 		return false;
 	}
 
 	if (ArrQuads[beginq]->IdSplit != ArrQuads[endq]->IdSplit)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: quads in different splits, path not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "quads in different splits, path not found\n");
 		return false;
 	}
 
 	if (beginq == endq)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxaigrid: beginq == endq, path not found\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "beginq == endq, path not found\n");
 		return false;
 	}
 

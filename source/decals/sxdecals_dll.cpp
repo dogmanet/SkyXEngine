@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -24,12 +24,12 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = DefReport;
+report_func g_fnReportf = DefReport;
 #endif
 
 DecalManager * g_pMgr = NULL;
 
-#define SP_PRECOND(ret) if(!g_pMgr){reportf(-1, "%s - sxdecals is not init", GEN_MSG_LOCATION);return ret;}
+#define SP_PRECOND(ret) if(!g_pMgr){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxdecals is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -51,7 +51,7 @@ SX_LIB_API void SXDecals_0Create()
 {
 	if(g_pMgr)
 	{
-		reportf(-1, "%s - sxdecals double init", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxdecals double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();
@@ -78,7 +78,7 @@ SX_LIB_API void SXDecals_Sync()
 
 SX_LIB_API void SXDecals_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
 SX_LIB_API void SXDecals_Render()
@@ -92,7 +92,7 @@ SX_LIB_API void SXDecals_ShootDecal(DECAL_TYPE type, const float3 & fWorldPos, c
 	SP_PRECOND(_VOID);
 	if(type == DECAL_TYPE_CUSTOM)
 	{
-		reportf(REPORT_MSG_LEVEL_WARNING, "Unable to use DECAL_TYPE_CUSTOM with SXDecals_ShootDecal\n");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to use DECAL_TYPE_CUSTOM with SXDecals_ShootDecal\n");
 		return;
 	}
 	g_pMgr->shootDecal(type, fWorldPos, 0, 0, 0, 1.0f, 0, &normal);

@@ -1,24 +1,27 @@
 
-#ifndef __sxmaterial
-#define __sxmaterial
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __MATERIAL_H
+#define __MATERIAL_H
 
 #include <common/String.h>
 #include <common/Array.h>
 #include "reflection.h"
 #include <direct.h>
 
-extern report_func g_fnReportf;
-
 #define MTL_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < ArrMaterials.size()))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
 else if (!ArrMaterials[id])\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", GEN_MSG_LOCATION, id); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", GEN_MSG_LOCATION, id); return stdval; }
 
 #define MTL_REF_PRE_COND_ID(id,stdval) \
 MTL_PRE_COND_ID(id, stdval)\
 if (!(ArrMaterials[id]->Reflect))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, ArrMaterials[id]->mtl->Name); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, ArrMaterials[id]->mtl->Name); return stdval; }
 
 class Materials
 {

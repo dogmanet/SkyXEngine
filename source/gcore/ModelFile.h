@@ -1,8 +1,8 @@
 ﻿
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -14,8 +14,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _ModelFile_H_
-#define _ModelFile_H_
+#ifndef __MODEL_FILE_H
+#define __MODEL_FILE_H
 
 #define SX_MODEL_VERSION_OLD 6 /*!< Старая версия файла модели (для совместимости) */
 #define SX_MODEL_VERSION 7     /*!< Актуальная версия файла модели */

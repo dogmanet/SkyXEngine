@@ -1,8 +1,8 @@
 ﻿
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -28,7 +28,7 @@ See the license in LICENSE
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
-#include <mtllight\\sxmtllight.h>
+#include <mtllight/sxmtllight.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API

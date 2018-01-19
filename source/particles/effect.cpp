@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "effect.h"
 
 Effects::Effects()
@@ -123,7 +128,7 @@ void Effects::Save(const char* path)
 
 	if (!file)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - failed to save %s", GEN_MSG_LOCATION, path);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - failed to save %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 
@@ -301,7 +306,7 @@ void Effects::Load(const char* path)
 {
 	if (!Core_0FileExists(path))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", GEN_MSG_LOCATION, path);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 		
@@ -309,13 +314,13 @@ void Effects::Load(const char* path)
 
 	if (!config->sectionExists("effects"))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main section 'effects' not found, %s", GEN_MSG_LOCATION, path);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - main section 'effects' not found, %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 
 	if (!config->keyExists("effects", "count"))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - main key 'count' in section 'effects' not found, %s", GEN_MSG_LOCATION, path);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - main key 'count' in section 'effects' not found, %s", GEN_MSG_LOCATION, path);
 		return;
 	}
 
@@ -328,7 +333,7 @@ void Effects::Load(const char* path)
 		sprintf(eff_section_name, "effect_%d", i);
 		if (!config->sectionExists(eff_section_name))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", GEN_MSG_LOCATION, eff_section_name, path);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found effect [%s], %s", GEN_MSG_LOCATION, eff_section_name, path);
 			return;
 		}
 
@@ -347,7 +352,7 @@ void Effects::Load(const char* path)
 			sprintf(part_section_name, "effect_%d_emitter_%d", i, k);
 			if (!config->sectionExists(eff_section_name))
 			{
-				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", GEN_MSG_LOCATION, part_section_name, path);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found particles [%s], %s", GEN_MSG_LOCATION, part_section_name, path);
 				return;
 			}
 
@@ -1122,7 +1127,7 @@ void Effects::EffectRenderAll(DWORD timeDelta)
 	}
 }
 
-bool Effects::EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
+bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
@@ -1136,14 +1141,14 @@ bool Effects::EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
 	scenter = (eff->CurrMin2 + eff->CurrMax2) * 0.5f;
 	sradius = SMVector3Length(scenter - eff->CurrMax2);
 	
-	eff->ViewRender = frustum->SphereInFrustum(&scenter, sradius);
+	eff->ViewRender = frustum->sphereInFrustum(&scenter, sradius);
 
 	eff->ViewDist = SMVector3Length((scenter - (*view))) - sradius;
 
 	return eff->ViewRender;
 }
 
-void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
+void Effects::EffectVisibleComAll(const ISXFrustum* frustum, float3* view)
 {
 	for(int i = 0, l = ArrID.size(); i < l; ++i)
 	{
@@ -1183,12 +1188,12 @@ void Effects::EffectVisibleComAll(ISXFrustum* frustum, float3* view)
 	{
 		for (int i = 0; i < ArrSortSizeCurr; ++i)
 		{
-			//g_fnReportf(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
+			//LibReport(0, "ArrSort[%d] = %d\n", i, ArrSort[i]);
 			if (ArrSort[i] >= 0)
-				g_fnReportf(0, "ViewDist = %f\n", ArrID[ArrSort[i]]->ViewDist);
+				LibReport(0, "ViewDist = %f\n", ArrID[ArrSort[i]]->ViewDist);
 		}
 
-		g_fnReportf(0, "%d---------\n", ArrSortSizeCurr);
+		LibReport(0, "%d---------\n", ArrSortSizeCurr);
 	}*/
 }
 

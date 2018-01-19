@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __SKY_H
 #define __SKY_H
 
@@ -8,13 +13,14 @@
 #include <common/String.h>
 #include "sxgcore.h"
 
-extern report_func g_fnReportf;
 extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
-struct SkyBoxVertex
+//##########################################################################
+
+struct CSkyBoxVertex
 {
-	SkyBoxVertex(float x,float y,float z,float u,float v,float w)
+	CSkyBoxVertex(float x,float y,float z,float u,float v,float w)
 	{
 		_x  = x;  _y  = y;  _z  = z; _u = u; _v = v; _w = w;
 	}
@@ -22,52 +28,55 @@ struct SkyBoxVertex
 	float _u, _v, _w;
 };
 
-class SkyBox
+//**************************************************************************
+
+class CSkyBox
 {
 public:
-	SkyBox();
-	~SkyBox();
-	void LoadTextures(const char *texture);
-	bool IsLoadTex();
-	void ChangeTexture(const char *texture);
-	void GetActiveTexture(char *texture);
-	void GetSecondTexture(char *texture);
-	void SetRotation(float angle);
-	float GetRotation();
-	void SetColor(float4_t* color);
-	void GetColor(float4_t* color);
-	void Render(float timeDelta,float3* pos,bool is_shadow);
+	CSkyBox();
+	~CSkyBox();
+	void loadTextures(const char *szTexture);
+	bool isLoadTex();
+	void changeTexture(const char *szTexture);
+	void getActiveTexture(char *szTexture);
+	void getSecondTexture(char *szTexture);
+	void setRotation(float fAngle);
+	float getRotation();
+	void setColor(const float4_t *pColor);
+	void getColor(float4_t *pColor);
+	void render(float timeDelta, const float3 *pPos,bool isShadow);
 
 	
 	SX_ALIGNED_OP_MEM
 
 protected:
 
-	IDirect3DVertexDeclaration9* VertexDeclarationSkyBox;
+	IDirect3DVertexDeclaration9* m_pVertexDeclarationSkyBox;
 	
-	char TexActive[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	char TexSecond[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	float RotaionY;
-	float4x4 MatRotation;
-	float4_t Color;
-	float FactorBlend;
+	char m_szTexActive[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	char m_szTexSecond[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	float m_fRotaionY;
+	float4x4 m_mMatRotation;
+	float4_t m_vColor;
+	float m_fFactorBlend;
 
-	bool BFChange;
-	bool BFChangeMainTex;
+	bool m_isChange;
+	bool m_isChangeMainTex;
 
-	IDirect3DCubeTexture9*	Tex;
-	IDirect3DCubeTexture9*	Tex2;
-	IDirect3DVertexBuffer9*	Vertices;
-	IDirect3DIndexBuffer9*  Indeces;
+	IDirect3DCubeTexture9  *m_pTexture;
+	IDirect3DCubeTexture9  *m_pTexture2;
+	IDirect3DVertexBuffer9 *m_pVertices;
+	IDirect3DIndexBuffer9  *m_pIndeces;
 
-	ID VS_RenderSkyBox;
-	ID PS_RenderSkyBox;
+	ID m_idVS;
+	ID m_idPS;
 };
 
+//##########################################################################
 
-struct SkyCloudsVertex
+struct CSkyCloudsVertex
 {
-	SkyCloudsVertex(float x,float y,float z,float u,float v)
+	CSkyCloudsVertex(float x,float y,float z,float u,float v)
 	{
 	_x  = x;  _y  = y;  _z  = z; _u = u; _v = v;
 	}
@@ -75,59 +84,60 @@ struct SkyCloudsVertex
 	float _u, _v;
 };
 
+//**************************************************************************
 
-class SkyClouds
+class CSkyClouds
 {
 public:
-	SkyClouds();
-	~SkyClouds();
+	CSkyClouds();
+	~CSkyClouds();
 
 	//установить параметры облаков
 	//если облака отбрасывают тень, то надо шобы облака покрывали почти весь уровень
-	void SetWidthHeightPos(float width,float height,float3* pos);
-	void LoadTextures(const char *texture);
-	bool IsLoadTex();
-	void ChangeTexture(const char *texture);
+	void setWidthHeightPos(float iWidth,float iHeight, const float3 *pPos);
+	void loadTextures(const char *szTexture);
+	bool isLoadTex();
+	void changeTexture(const char *szTexture);
 
-	void SetRotation(float angle);
-	float GetRotation();
-	void SetAlpha(float alpha);
-	float GetAlpha();
-	void SetColor(float4_t* color);
-	void GetColor(float4_t* color);
+	void setRotation(float fAngle);
+	float getRotation();
+	void setAlpha(float fAngle);
+	float getAlpha();
+	void setColor(const float4_t *pColor);
+	void getColor(float4_t *pColor);
 
-	void SetSpeed(float speed);
-	float GetSpeed();
+	void setSpeed(float fSpeed);
+	float getSpeed();
 
-	void Render(DWORD timeDetlta,float3* pos,bool is_shadow);
+	void render(DWORD timeDetlta, const float3 *pPos,bool isShadow);
 
 	SX_ALIGNED_OP_MEM
 private:
 
-	IDirect3DVertexDeclaration9* VertexDeclarationClouds;
-	float Alpha;
-	float RotaionY;
-	float4x4 MatRotation;
-	float4_t Color;
+	IDirect3DVertexDeclaration9 *m_pVertexDeclarationClouds;
+	float m_fAlpha;
+	float m_fRotaionY;
+	float4x4 m_mMatRotation;
+	float4_t m_vColor;
 
-	float FactorBlend;
-	float2_t WidthHeight;
-	bool BFChange;
-	bool BFChangeMainTex;
+	float m_fFactorBlend;
+	float2_t m_vWidthHeight;
+	bool m_isChange;
+	bool m_isChangeMainTex;
 
-	float Speed;
-	float Bias;
-	SkyCloudsVertex* Vertices;
-	IDirect3DVertexBuffer9*	SkyCloudsVertices;
-	IDirect3DIndexBuffer9*  SkyCloudsIndeces;
+	float m_fSpeed;
+	float m_fBias;
+	CSkyCloudsVertex *m_pVertices;
+	IDirect3DVertexBuffer9 *m_pSkyCloudsVertices;
+	IDirect3DIndexBuffer9 *m_pSkyCloudsIndeces;
 
-	IDirect3DTexture9*	SkyCloudsTex;
-	IDirect3DTexture9*	SkyCloudsTex2;
+	IDirect3DTexture9 *m_pSkyCloudsTex;
+	IDirect3DTexture9 *m_pSkyCloudsTex2;
 
-	ID VS_RenderSkyClouds;
-	ID PS_RenderSkyClouds;
+	ID m_idVS;
+	ID m_idPS;
 
-	ID PS_RenderSkyCloudsShadow;
+	ID m_idPS_Shadow;
 };
 
 #endif

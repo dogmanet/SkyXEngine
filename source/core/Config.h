@@ -1,6 +1,12 @@
 
-#ifndef LOADER_CONFIG_H
-#define LOADER_CONFIG_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __LOADER_CONFIG_H
+#define __LOADER_CONFIG_H
 
 #include "sxcore.h"
 #include <gdefines.h>

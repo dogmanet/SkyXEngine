@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Патроны
 */
 
-#ifndef _CBaseAmmo_H_
-#define _CBaseAmmo_H_
+#ifndef __BASE_AMMO_H
+#define __BASE_AMMO_H
 
 #include "BaseSupply.h"
 

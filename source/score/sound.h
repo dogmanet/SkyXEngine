@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __SOUND_H
 #define __SOUND_H
 
@@ -18,8 +23,6 @@
 #include <common/array.h>
 #include <common/assotiativearray.h>
 #include "sxscore.h"
-
-extern report_func g_fnReportf;
 
 struct AAStringNR : public AAString
 {
@@ -44,7 +47,7 @@ struct AAStringNR : public AAString
 
 #define SOUND_PRECOND(id, retval) \
 if((UINT)id >= ArrSounds.size() || !(ArrSounds[id]))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxsound - unresolved address to sound %d", GEN_MSG_LOCATION, id); return retval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved address to sound %d", GEN_MSG_LOCATION, id); return retval; }
 
 inline long SOUND_3D_COM_VOLUME(const float3 & snd_pos, const float3 & view_pos, const float snd_distaudible)
 {

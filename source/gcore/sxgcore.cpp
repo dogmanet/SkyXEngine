@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #include "sxgcore.h"
 
@@ -20,6 +20,16 @@ See the license in LICENSE
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
 #endif
+
+/*inline void LibReport(int iLevel, const char *szFormat, ...)
+{
+	static char szStr[REPORT_MSG_MAX_LEN];
+	szStr[0] = 0;
+	int iStrLen = sizeof(szStr);
+	format_str(szStr, szFormat);
+
+	g_fnReportf(iLevel, SX_LIB_NAME, szStr);
+}*/
 
 IDirect3DDevice9 *g_pDXDevice = 0;
 D3DPRESENT_PARAMETERS g_oD3DAPP;
@@ -43,7 +53,7 @@ void StdMtlSet(ID id, float4x4* world)
 
 ID StdMtlLoad(const char* name, int mtl_type)
 {
-	return SGCore_LoadTexAddName(name, LoadTexType::ltt_load);
+	return SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 int StdMtlGetSort(ID id)
@@ -79,23 +89,23 @@ CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
 LoaderTextures *g_pManagerTextures = 0;
 ID3DXMesh *g_pScreenTexture = 0;
-SkyBox *g_pSkyBox = 0;
-SkyClouds *g_pSkyClouds = 0;
+CSkyBox *g_pSkyBox = 0;
+CSkyClouds *g_pSkyClouds = 0;
 
 
-#define SG_PRECOND(retval) if(!g_pDXDevice){ g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - sxgcore is not init", SX_LIB_NAME, GEN_MSG_LOCATION); return retval;}
-#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!g_pSkyBox){ g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - sky_box is not init", SX_LIB_NAME, GEN_MSG_LOCATION); return retval;}
-#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!g_pSkyClouds){ g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - sky_clouds is not init", SX_LIB_NAME, GEN_MSG_LOCATION); return retval;}
+#define SG_PRECOND(retval) if(!g_pDXDevice){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgcore is not init", GEN_MSG_LOCATION); return retval;}
+#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!g_pSkyBox){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sky_box is not init", GEN_MSG_LOCATION); return retval;}
+#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!g_pSkyClouds){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sky_clouds is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
-void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags)
+void GCoreInit(HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlags)
 {
 	g_pD3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
 	if (!g_pD3D9)
 	{
-		g_fnReportf(-1, "%s: %s - none detected d3d, sxgcore", SX_LIB_NAME, GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none detected d3d", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -103,24 +113,24 @@ void GCoreInit(HWND hwnd, int width, int heigth, bool windowed, DWORD create_dev
 	g_pD3D9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
 
 	memset(&g_oD3DAPP, 0, sizeof(g_oD3DAPP));
-	g_oD3DAPP.BackBufferWidth = width;
-	g_oD3DAPP.BackBufferHeight = heigth;
+	g_oD3DAPP.BackBufferWidth = iWidth;
+	g_oD3DAPP.BackBufferHeight = iHeigth;
 	g_oD3DAPP.BackBufferFormat = D3DFMT_A8R8G8B8;
 	g_oD3DAPP.BackBufferCount = 1;
 	g_oD3DAPP.MultiSampleType = D3DMULTISAMPLE_NONE;
 	g_oD3DAPP.MultiSampleQuality = 0;
 	g_oD3DAPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	g_oD3DAPP.hDeviceWindow = hwnd;
-	g_oD3DAPP.Windowed = windowed;
+	g_oD3DAPP.hDeviceWindow = hWnd;
+	g_oD3DAPP.Windowed = isWindowed;
 	g_oD3DAPP.EnableAutoDepthStencil = true;
 	g_oD3DAPP.AutoDepthStencilFormat = D3DFMT_D24S8;
-	g_oD3DAPP.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | create_device_flags | D3DCREATE_MULTITHREADED;
+	g_oD3DAPP.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | dwFlags | D3DCREATE_MULTITHREADED;
 	g_oD3DAPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	g_oD3DAPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
-	if (FAILED(g_pD3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING | create_device_flags | D3DCREATE_MULTITHREADED, &g_oD3DAPP, &g_pDXDevice)))
+	if (FAILED(g_pD3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING | dwFlags | D3DCREATE_MULTITHREADED, &g_oD3DAPP, &g_pDXDevice)))
 	{
-		g_fnReportf(-1, "%s: %s - failed initialized d3d, sxgcore", SX_LIB_NAME, GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed initialized d3d", GEN_MSG_LOCATION);
 		return;
 	}
 
@@ -232,24 +242,24 @@ SX_LIB_API void SGCore_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGCore_0Create(const char* name, HWND hwnd, int width, int heigth, bool windowed, DWORD create_device_flags, bool is_unic)
+SX_LIB_API void SGCore_0Create(const char *szName, HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlags, bool isUnic)
 {
-	if (name && strlen(name) > 1)
+	if (szName && strlen(szName) > 1)
 	{
-		if (is_unic)
+		if (isUnic)
 		{
-			HANDLE hMutex = CreateMutex(NULL, FALSE, name);
+			HANDLE hMutex = CreateMutex(NULL, FALSE, szName);
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - none unic name, sxgcore", SX_LIB_NAME, GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 				return;
 			}
 		}
-		GCoreInit(hwnd, width, heigth, windowed, create_device_flags);
+		GCoreInit(hWnd, iWidth, iHeigth, isWindowed, dwFlags);
 	}
 	else
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s: %s - not init argument [name], sxgcore", SX_LIB_NAME, GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name], sxgcore", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount)
@@ -284,14 +294,14 @@ SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice()
 	return g_pDXDevice;
 }
 
-SX_LIB_API void SGCore_DbgMsg(const char* format, ...)
+SX_LIB_API void SGCore_DbgMsg(const char *szFormat, ...)
 {
 	SG_PRECOND(_VOID);
 	
 	va_list va;
 	char buf[SXGC_STR_SIZE_DBG_MSG];
-	va_start(va, format);
-	vsprintf_s(buf, SXGC_STR_SIZE_DBG_MSG, format, va);
+	va_start(va, szFormat);
+	vsprintf_s(buf, SXGC_STR_SIZE_DBG_MSG, szFormat, va);
 	va_end(va);
 
 	RECT rect;
@@ -363,22 +373,22 @@ SX_LIB_API void SGCore_ScreenQuadDraw()
 
 //##########################################################################
 
-SX_LIB_API void SGCore_DIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
+SX_LIB_API void SGCore_DIP(UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount)
 {
 	SG_PRECOND(_VOID);
-	FuncDIP(type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
+	FuncDIP(uiTypePrimitive, lBaseVertexIndex, uiMinVertexIndex, uiNumVertices, uiStartIndex, uiPrimitiveCount);
 }
 
-SX_LIB_API void SGCore_MtlSet(ID id, float4x4* world)
+SX_LIB_API void SGCore_MtlSet(ID id, float4x4 *pWorld)
 {
 	SG_PRECOND(_VOID);
-	FuncMtlSet(id, world);
+	FuncMtlSet(id, pWorld);
 }
 
-SX_LIB_API ID SGCore_MtlLoad(const char* name, int mtl_type)
+SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType)
 {
 	SG_PRECOND(-1);
-	return FuncMtlLoad(name, mtl_type);
+	return FuncMtlLoad(szName, iMtlType);
 }
 
 SX_LIB_API int SGCore_MtlGetSort(ID id)
@@ -400,49 +410,49 @@ SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id)
 }
 
 
-SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip func)
+SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip fnFunc)
 {
 	SG_PRECOND(_VOID);
-	FuncDIP = func;
+	FuncDIP = fnFunc;
 }
 
-SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set func)
+SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set fnFunc)
 {
 	SG_PRECOND(_VOID);
-	FuncMtlSet = func;
+	FuncMtlSet = fnFunc;
 }
 
-SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load func)
+SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load fnFunc)
 {
 	SG_PRECOND(_VOID);
-	FuncMtlLoad = func;
+	FuncMtlLoad = fnFunc;
 }
 
-SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort func)
+SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort fnFunc)
 {
 	SG_PRECOND(_VOID);
-	FuncMtlGetSort = func;
+	FuncMtlGetSort = fnFunc;
 }
 
-SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type func)
+SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type fnFunc)
 {
 	SG_PRECOND(_VOID);
-	FuncMtlGetPhysicType = func;
+	FuncMtlGetPhysicType = fnFunc;
 }
 
-SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly func)
+SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly fnFunc)
 {
 	SG_PRECOND(_VOID);
-	FuncMtlGroupRenderIsSingly = func;
+	FuncMtlGroupRenderIsSingly = fnFunc;
 }
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char* path, const char* name, SHADER_CHECKDOUBLE is_check_double, D3DXMACRO* macro)
+SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *pMacro)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->preLoad(type_shader, path, name, is_check_double, macro);
+	return g_pManagerShaders->preLoad(type_shader, szPath, szName, check_double, pMacro);
 }
 
 SX_LIB_API void SGCore_ShaderAllLoad()
@@ -452,11 +462,11 @@ SX_LIB_API void SGCore_ShaderAllLoad()
 	return g_pManagerShaders->allLoad();
 }
 
-SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char* name)
+SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char *szName)
 {
 	SG_PRECOND(_VOID);
 
-	g_pManagerShaders->update(type_shader, name);
+	g_pManagerShaders->update(type_shader, szName);
 }
 
 SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id)
@@ -473,25 +483,25 @@ SX_LIB_API void SGCore_ShaderReloadAll()
 	g_pManagerShaders->reloadAll();
 }
 
-SX_LIB_API ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char* shader)
+SX_LIB_API ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char *szNameShader)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->getID(type_shader, shader);
+	return g_pManagerShaders->getID(type_shader, szNameShader);
 }
 
-SX_LIB_API void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char* shader)
+SX_LIB_API void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char *szNameShader)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->bind(type_shader, shader);
+	return g_pManagerShaders->bind(type_shader, szNameShader);
 }
 
-SX_LIB_API void SGCore_ShaderBind(SHADER_TYPE type_shader, ID shader)
+SX_LIB_API void SGCore_ShaderBind(SHADER_TYPE type_shader, ID idShader)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->bind(type_shader, shader);
+	return g_pManagerShaders->bind(type_shader, idShader);
 }
 
 
@@ -596,7 +606,7 @@ SX_LIB_API void SGCore_LoadTexDelete(ID id)
 	g_pManagerTextures->Delete(id);
 }
 
-SX_LIB_API ID SGCore_LoadTexAddName(const char* name, LoadTexType type)
+SX_LIB_API ID SGCore_LoadTexAddName(const char* name, LOAD_TEXTURE_TYPE type)
 {
 	SG_PRECOND(-1);
 
@@ -624,7 +634,7 @@ SX_LIB_API ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
 	return g_pManagerTextures->Create(name, tex);
 }
 
-SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name, LoadTexType type)
+SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name, LOAD_TEXTURE_TYPE type)
 {
 	SG_PRECOND(-1);
 
@@ -829,22 +839,22 @@ SX_LIB_API bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, c
 
 SX_LIB_API ISXFrustum* SGCore_CrFrustum()
 {
-	return new Frustum();
+	return new CFrustum();
 }
 
 SX_LIB_API ISXCamera* SGCore_CrCamera()
 {
-	return new Camera();
+	return new CCamera();
 }
 
 SX_LIB_API ISXTransObject* SGCore_CrTransObject()
 {
-	return new SXTransObject();
+	return new CSXTransObject();
 }
 
 SX_LIB_API ISXBound* SGCore_CrBound()
 {
-	return new SXBound();
+	return new CSXBound();
 }
 
 //##########################################################################
@@ -896,9 +906,9 @@ SX_LIB_API void SGCore_SkyBoxCr()
 	SG_PRECOND(_VOID);
 
 	if (g_pSkyBox)
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: sky_box is already init", SX_LIB_NAME);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_box is already init");
 	else
-		g_pSkyBox = new SkyBox();
+		g_pSkyBox = new CSkyBox();
 }
 
 SX_LIB_API bool SGCore_SkyBoxIsCr()
@@ -910,61 +920,61 @@ SX_LIB_API bool SGCore_SkyBoxIsCr()
 SX_LIB_API bool SGCore_SkyBoxIsLoadTex()
 {
 	SG_PRECOND_SKY_BOX(false);
-	return g_pSkyBox->IsLoadTex();
+	return g_pSkyBox->isLoadTex();
 }
 
 SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->LoadTextures(texture);
+	g_pSkyBox->loadTextures(texture);
 }
 
 SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->ChangeTexture(texture);
+	g_pSkyBox->changeTexture(texture);
 }
 
 SX_LIB_API void SGCore_SkyBoxGetActiveTex(char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->GetActiveTexture(texture);
+	g_pSkyBox->getActiveTexture(texture);
 }
 
 SX_LIB_API void SGCore_SkyBoxGetSecondTex(char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->GetSecondTexture(texture);
+	g_pSkyBox->getSecondTexture(texture);
 }
 
 SX_LIB_API void SGCore_SkyBoxSetRot(float angle)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->SetRotation(angle);
+	g_pSkyBox->setRotation(angle);
 }
 
 SX_LIB_API float SGCore_SkyBoxGetRot()
 {
 	SG_PRECOND_SKY_BOX(0);
-	return g_pSkyBox->GetRotation();
+	return g_pSkyBox->getRotation();
 }
 
-SX_LIB_API void SGCore_SkyBoxSetColor(float4_t* color)
+SX_LIB_API void SGCore_SkyBoxSetColor(const float4_t* color)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->SetColor(color);
+	g_pSkyBox->setColor(color);
 }
 
 SX_LIB_API void SGCore_SkyBoxGetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->GetColor(color);
+	g_pSkyBox->getColor(color);
 }
 
-SX_LIB_API void SGCore_SkyBoxRender(float timeDelta, float3* pos)
+SX_LIB_API void SGCore_SkyBoxRender(float timeDelta, const float3* pos)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->Render(timeDelta, pos, false);
+	g_pSkyBox->render(timeDelta, pos, false);
 }
 
 //**************************************************************************
@@ -974,9 +984,9 @@ SX_LIB_API void SGCore_SkyCloudsCr()
 	SG_PRECOND(_VOID);
 
 	if (g_pSkyClouds)
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s: sky_clouds is already init", SX_LIB_NAME);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_clouds is already init");
 	else
-		g_pSkyClouds = new SkyClouds();
+		g_pSkyClouds = new CSkyClouds();
 }
 
 SX_LIB_API bool SGCore_SkyCloudsIsCr()
@@ -990,77 +1000,77 @@ SX_LIB_API bool SGCore_SkyCloudsIsLoadTex()
 {
 	SG_PRECOND_SKY_CLOUDS(false);
 
-	return g_pSkyClouds->IsLoadTex();
+	return g_pSkyClouds->isLoadTex();
 }
 
-SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, float3* pos)
+SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, const float3* pos)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->SetWidthHeightPos(width, height, pos);
+	g_pSkyClouds->setWidthHeightPos(width, height, pos);
 }
 
 SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->LoadTextures(texture);
+	g_pSkyClouds->loadTextures(texture);
 }
 
 SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *texture)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->ChangeTexture(texture);
+	g_pSkyClouds->changeTexture(texture);
 }
 
 SX_LIB_API void SGCore_SkyCloudsSetRot(float angle)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->SetRotation(angle);
+	g_pSkyClouds->setRotation(angle);
 }
 
 SX_LIB_API float SGCore_SkyCloudsGetRot()
 {
 	SG_PRECOND_SKY_CLOUDS(0);
-	return g_pSkyClouds->GetRotation();
+	return g_pSkyClouds->getRotation();
 }
 
 SX_LIB_API void SGCore_SkyCloudsSetAlpha(float alpha)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->SetAlpha(alpha);
+	g_pSkyClouds->setAlpha(alpha);
 }
 
 SX_LIB_API float SGCore_SkyCloudsGetAlpha()
 {
 	SG_PRECOND_SKY_CLOUDS(0);
-	return g_pSkyClouds->GetAlpha();
+	return g_pSkyClouds->getAlpha();
 }
 
 SX_LIB_API void SGCore_SkyCloudsSetSpeed(float speed)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->SetSpeed(speed);
+	g_pSkyClouds->setSpeed(speed);
 }
 
 SX_LIB_API float SGCore_SkyCloudsGetSpeed()
 {
 	SG_PRECOND_SKY_CLOUDS(0);
-	return g_pSkyClouds->GetSpeed();
+	return g_pSkyClouds->getSpeed();
 }
 
-SX_LIB_API void SGCore_SkyCloudsSetColor(float4_t* color)
+SX_LIB_API void SGCore_SkyCloudsSetColor(const float4_t* color)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->SetColor(color);
+	g_pSkyClouds->setColor(color);
 }
 
 SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t* color)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->GetColor(color);
+	g_pSkyClouds->getColor(color);
 }
 
-SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, float3* pos, bool is_shadow)
+SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, const float3* pos, bool is_shadow)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->Render(timeDetlta, pos, is_shadow);
+	g_pSkyClouds->render(timeDetlta, pos, is_shadow);
 }

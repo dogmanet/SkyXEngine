@@ -1,7 +1,8 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -12,8 +13,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _NPCZombie_H_
-#define _NPCZombie_H_
+#ifndef __NPCZOMBIE_H
+#define __NPCZOMBIE_H
 
 #include "NPCBase.h"
 

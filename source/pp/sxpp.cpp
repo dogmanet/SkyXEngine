@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define SXPP_VERSION 1
 
@@ -167,7 +167,7 @@ void PPSet::Init()
 	PPSet::IDsShaders::PS::DLAA_Small = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_small.ps", "ppe_dlaa_small.ps", SHADER_CHECKDOUBLE_PATH);
 	PPSet::IDsShaders::PS::DLAA_Long = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_long.ps", "ppe_dlaa_long.ps", SHADER_CHECKDOUBLE_PATH);
 
-	PPSet::IDsTexs::Noise = SGCore_LoadTexAddName("noise_rottex.dds", LoadTexType::ltt_const);
+	PPSet::IDsTexs::Noise = SGCore_LoadTexAddName("noise_rottex.dds", LOAD_TEXTURE_TYPE_CONST);
 	PPSet::IDsTexs::Sun = -1;
 
 	
@@ -195,8 +195,8 @@ void PPSet::Init()
 	PPSet::IDsRenderTargets::Bright2 = SGCore_RTAdd(PPSet::WinSize.x, PPSet::WinSize.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright2", 1);
 }
 
-#define PP_PRECOND(retval) if(!PPSet::DXDevice){g_fnReportf(-1, "%s - post process is not init", GEN_MSG_LOCATION); return retval;}
-#define PP_PRECOND_SECOND(retval) if(PPSet::IDsRenderTargets::Input < 0 || PPSet::IDsRenderTargets::Output < 0){g_fnReportf(-1, "%s - post process is not init output textures", GEN_MSG_LOCATION); return retval;}
+#define PP_PRECOND(retval) if(!PPSet::DXDevice){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - post process is not init", GEN_MSG_LOCATION); return retval;}
+#define PP_PRECOND_SECOND(retval) if(PPSet::IDsRenderTargets::Input < 0 || PPSet::IDsRenderTargets::Output < 0){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - post process is not init output textures", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -221,7 +221,7 @@ SX_LIB_API void SPP_0Create(const char* name, bool is_unic)
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, post process", GEN_MSG_LOCATION);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
@@ -234,7 +234,7 @@ SX_LIB_API void SPP_0Create(const char* name, bool is_unic)
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], post process", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SPP_0Kill()
@@ -721,7 +721,7 @@ SX_LIB_API void SPP_UpdateSun(float3* sunpos)
 
 SX_LIB_API void SPP_ChangeTexSun(const char* str)
 {
-	PPSet::IDsTexs::Sun = SGCore_LoadTexAddName(str, LoadTexType::ltt_const);
+	PPSet::IDsTexs::Sun = SGCore_LoadTexAddName(str, LOAD_TEXTURE_TYPE_CONST);
 }
 
 SX_LIB_API void SPP_RenderSun(float4_t* sun_color)
@@ -734,7 +734,7 @@ SX_LIB_API void SPP_RenderSun(float4_t* sun_color)
 
 	if (PPSet::IDsTexs::Sun < 0 || !SGCore_LoadTexGetTex(PPSet::IDsTexs::Sun))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxpp: %s - sun texture is not init, process can not be started\n", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - sun texture is not init, process can not be started\n", GEN_MSG_LOCATION);
 		return;
 	}
 
