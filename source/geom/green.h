@@ -17,204 +17,306 @@ See the license in LICENSE
 #include "static_geom.h"
 #include "sxgeom.h"
 
-#define GREEN_COUNT_TYPE_SEGMENTATION 4
-#define GREEN_COUNT_LOD 3
-
-#define GREEN_DEFAULT_RESERVE_GEN 1024
-#define GREEN_DEFAULT_RESERVE_COM 1024
+//##########################################################################
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
-if (!(id_arr < ArrComFor.size()))\
+if (!(id_arr < m_aArrComFor.size()))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
-if (!(id_model < ArrModels.size() && ArrModels[id_model]))\
+if (!(id_model < m_aGreens.size() && m_aGreens[id_model]))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 }
 
-class Green
+//##########################################################################
+
+//! тип деления пространства для рендера растительности
+#define GREEN_COUNT_TYPE_SEGMENTATION 4
+
+//! количество лодов растительноси
+#define GREEN_COUNT_LOD 3
+
+#define GREEN_DEFAULT_RESERVE_GEN 1024
+#define GREEN_DEFAULT_RESERVE_COM 1024
+
+//##########################################################################
+
+//! класс растительности
+class CGreen
 {
 public:
 
-	static int CurrentFreqGrass;
-	static float2_t DistLods;
-	static float BeginEndLessening;
-	static bool UseSortFrontToBackSplits;
-	static IDirect3DDevice9* DXDevice;
+	//! плотность растительности при рендере (0,100]
+	static int m_iRenderFreqGrass;
+
+	//! дистанция лодов x - где заканчивается первый лод и начинается второй, y - где заканчивается второй и начинается третий лод
+	static float2_t m_vDistLods;
+
+	//! дистанция с которой начнет уменьшаться трава, пределы [0, m_vDistLods.x)
+	static float m_fDistGrassLessening;
+
+	//! использовать ли сортировку от ближнего к дальнему для сплитов
+	static bool m_isUseSortFrontToBackSplits;
+
+	//! direct3d device
+	static IDirect3DDevice9* m_pDXDevice;
+
+	//######################################################################
 
 	SX_ALIGNED_OP_MEM
 
-	Green();
-	~Green();
+	CGreen();
+	~CGreen();
 
-	ID Init(StaticGeom* geom, const char* name,
-		const char* path_mask,
-		float count_max,
-		const char* path, const char* lod1, const char* lod2,
-		const char* navmesh);
+	//**********************************************************************
 
-	ID GetIDSplit(ID id, float3* pos);
-	ID AddObject(ID id, float3* pos, GreenDataVertex* data, ID* idsplit);
-	void DelObject(ID id, ID idsplit, ID idobj);
-	void GetPosObject(ID id, ID idsplit, ID idobj, float3_t* pos);
-	void SetPosObject(ID id, ID* idsplit, ID* idobj, float3_t* pos);
+	ID init(
+		CStaticGeom *pGeom, const char *szName,
+		const char *szPathMask,
+		float fCountMax,
+		const char *szPath, const char *szLod1, const char *szLod2,
+		const char *szPhysMesh
+		);
 
-	void DelGreen(ID id);
+	ID getIDSplit(ID idGreen, float3 *pPos);
+	ID addObject(ID idGreen, float3 *pPos, CGreenDataVertex *pData, ID *pIDsplit);
+	void deleteObject(ID idGreen, ID idSplit, ID idObj);
+	void getPosObject(ID idGreen, ID idSplit, ID idObj, float3_t *pPos);
+	void setPosObject(ID idGreen, ID *pIDsplit, ID *pIDobj, const float3_t *pPos);
+
+	void deleteGreen(ID idGreen);
 	
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 	
-	ID AddArrForCom();
-	bool existsArrForCom(ID id);
-	void DelArrForCom(ID id_arr);
+	ID addArrForCom();
+	bool existsArrForCom(ID idGreen);
+	void deleteArrForCom(ID idArr);
 	
-	void Save(const char* path);
-	void Load(const char* path);
-	void Clear();
-	void CPUFillingArrIndeces(const ISXFrustum* frustum, float3* viewpos, ID id_arr = 0);
-	void GPURender(DWORD timeDelta, float3* viewpos, GREEN_TYPE type, ID id_arr = 0);
-	void GPURenderSingly(DWORD timeDelta, float3* viewpos, ID id, ID id_tex);
-	void GPURenderObject(DWORD timeDelta, float3* viewpos, ID id, ID split, ID idobj, ID id_tex);
+	void save(const char *szPath);
+	void load(const char *szPath);
+	void clear();
+	void comArrIndeces(const ISXFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
+	void render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idArr = 0);
+	void renderSingly(DWORD timeDelta, const float3 *pViewPos, ID id, ID idTexture);
+	void renderObject(DWORD timeDelta, const float3 *pViewPos, ID id, ID idSplit, ID idObj, ID idTexture);
 
-	ID GetCountGreen();
-	char* GetGreenName(ID id);
-	long GetGreenCountGen(ID id);
-	long GetGreenCountPoly(ID id);
-	int GetGreenTypeCountGen(ID id);
-	const char* GetGreenModel(ID id);
-	const char* GetGreenLod1(ID id);
-	const char* GetGreenLod2(ID id);
-	const char* GetGreenMask(ID id);
-	const char* GetGreenNav(ID id);
-	void SetGreenLod(ID id, int lod, const char* pathname);
-	void SetGreenNav(ID id, const char* pathname);
+	ID getCountGreen();
+	char* getGreenName(ID idGreen);
+	int getGreenCountGen(ID idGreen);
+	int getGreenCountPoly(ID idGreen);
+	int getGreenTypeCountGen(ID idGreen);
+	const char* getGreenModel(ID idGreen);
+	const char* getGreenLod1(ID idGreen);
+	const char* getGreenLod2(ID idGreen);
+	const char* getGreenMask(ID idGreen);
+	const char* getGreenNav(ID idGreen);
+	void setGreenLod(ID idGreen, int iLod, const char *szPathName);
+	void setGreenNav(ID idGreen, const char *szPathName);
 
-	void GetNavMeshAndTransform(float3_t*** arr_vertex, int32_t** arr_count_vertex, uint32_t*** arr_index, ID*** arr_mtl, int32_t** arr_count_index, GreenDataVertex*** arr_transform, int32_t** arr_count_transform, int32_t* arr_count_green);
-	bool GetOccurencessLeafGrass(float3* bbmin, float3* bbmax, int physic_mtl);
+	void getNavMeshAndTransform(float3_t ***pppArrVertex, int32_t **ppArrCountVertex, uint32_t ***pppArrIndex, ID ***pppArrMtl, int32_t **ppArrCountIndex, CGreenDataVertex ***pppArrTransform, int32_t **ppArrCountTransform, int32_t *pArrCountGreen);
+	bool getOccurencessLeafGrass(float3 *pMin, float3 *pMax, int iPhysicMtl);
 	
-	bool TraceBeam(float3* start, float3* dir, float3* _res, ID* idgreen, ID* idsplits, ID* idobj, ID* idmtl);
+	bool traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID *pIDgreen, ID *pIDsplits, ID *pIDobj, ID *pIDmtl);
 
-	//
-	struct Segment
+	//######################################################################
+
+	//! сегмент пространства с растительностью
+	struct CSegment
 	{
 		SX_ALIGNED_OP_MEM
 
-		Segment();
-		~Segment();
+		CSegment();
+		~CSegment();
 
-		Segment* Splits[GREEN_COUNT_TYPE_SEGMENTATION]; //массив из 4 частей данного участка
+		//! массив из 4 частей данного участка
+		CSegment *m_aSplits[GREEN_COUNT_TYPE_SEGMENTATION]; 
 
-		GreenDataVertex* Data;
-		DWORD CountAllGreen;	//количество элементов
+		//! массив данных трансформаций каждого элемента данного куска
+		CGreenDataVertex *m_pObjData;
 
-		ISXBound* BoundVolumeSys;	//выравненный ограничивающий объем для равномерного деления
-		ISXBound* BoundVolumeP;		//облегающий ограничивающий объем
+		//! количество элементов
+		int m_iCountObj;	
 
-		float DistForCamera;
+		//! выравненный ограничивающий объем для равномерного деления
+		ISXBound *m_pBoundVolumeSys;
 
-		ID Id;	//идентификатор куска
-	
+		//! облегающий ограничивающий объем
+		ISXBound *m_pBoundVolumeP;		
+
+		//! дистация от камеры
+		float m_fDistForCamera;
+
+		//! идентификатор куска
+		ID m_id;	
+
+		//! имеет ли кусок куски внутри себя?
+		bool m_idNonEnd;
+
 		//ID3DXMesh* BoundBox;	//ограничивающий параллелепипед (меш)
-		bool BFNonEnd;//имеет ли кусок куски внутри себя?
 	};
 
-	struct Lod
+	//**********************************************************************
+
+	//! лод растительности
+	struct CLod
 	{
-		Lod();
-		~Lod();
-		String path;
-		Array<ID> idstex;
-		ISXDataStaticModel* model;
+		CLod();
+		~CLod();
+
+		//! путь до лода
+		String m_sPath;
+
+		//! массив текстур лода
+		Array<ID> m_aIDsTextures;
+
+		//! статическая модель
+		ISXDataStaticModel *m_pModel;
 	};
 
-	struct Model
+	//**********************************************************************
+
+	//! модель растительности, в том числе лоды и навигационные оболочки
+	struct CModel
 	{
 		SX_ALIGNED_OP_MEM
 
-		Model();
-		~Model();
+		CModel();
+		~CModel();
 
-		struct NavMesh
+		//! класс физической модели для растительности, формат модели стандартный
+		struct CPhysMesh
 		{
-			NavMesh();
-			~NavMesh();
-			float3_t* arr_vertex;
-			int32_t count_vertex;
-			uint32_t* arr_index;
-			ID* arr_mtl;
-			int32_t count_index;
-			String pathname;
+			CPhysMesh();
+			~CPhysMesh();
+
+			//! массив вершин
+			float3_t *m_pArrVertex;
+
+			//! количество вершин в массиве m_pArrVertex
+			int32_t m_iCountVertex;
+
+			//! массив индексов
+			uint32_t *m_pArrIndex;
+
+			//! количество индексов в массиве m_pArrIndex
+			int32_t m_iCountIndex;
+
+			//! массив id материалов последовательно для каждого индекса их m_pArrIndex
+			ID *m_pArrMtl;
+
+			//! путь до статической модели
+			String m_sPathName;
 		};
 
-		GREEN_TYPE TypeGreen;	//
-		String MaskName;
-		uint32_t AllCountGreen;	//сколько всего сгенерировано объектов
-		char Name[OBJECT_NAME_MAX_LEN];
-		NavMesh* NavigateMesh;
+		//! тип растительности
+		GREEN_TYPE m_typeGreen;
 
-		Segment* SplitsTree;
-		Array<Segment*> SplitsArr;
-		float3 BBMax, BBMin;
-		GreenDataVertex* AllTrans;//
-		Lod* ArrLod[GREEN_COUNT_LOD];
-		ID SplitsIDs;	//общее количество сегментов/спилтов
+		//! имя текстуры маски
+		String m_szMaskName;
+
+		//! сколько всего сгенерировано объектов
+		uint32_t m_uiCountObj;
+
+		//! имя объекта растительности
+		char m_szName[OBJECT_NAME_MAX_LEN];
+
+		//! физическая модель
+		CPhysMesh *m_pPhysMesh;
+
+		//! начальный/главный сплит пространства
+		CSegment *m_pSplitsTree;
+
+		//! массив всех конечных сплитов пространтва
+		Array<CSegment*> m_aSplitsArr;
+
+		//! экстремумы пространства занимаемого этой растительностью
+		float3 m_vMax, m_vMin;
+
+		//! массив трансформаций всех объектов растительности
+		CGreenDataVertex *m_pAllTrans;
+
+		//! массив лодов
+		CLod *m_aLods[GREEN_COUNT_LOD];
+
+		//! общее количество сегментов/сплитов
+		ID m_idCountSplits;
 	};
 
-	//структура содержащая минимальную необходимую информацию о сегменте модели
-	struct InfoRenderSegments
+	//**********************************************************************
+
+	//! структура содержащая минимальную необходимую информацию о сегменте модели для рендера
+	struct CInfoRenderSegments
 	{
-		InfoRenderSegments();
-		~InfoRenderSegments();
-		Segment** Arr;	//массив хранящий в себе указатели на сегменты REALTIME
-		DWORD Count;	//размер Arr 
-		DWORD CountCom;	//сколько сегментов записано в Arr	REALTIME
+		CInfoRenderSegments();
+		~CInfoRenderSegments();
+
+		//!массив хранящий в себе указатели на сегменты REALTIME
+		CSegment **m_ppSegments;
+
+		//! размер Arr 
+		int m_iCount;
+
+		//! сколько сегментов записано в Arr REALTIME 
+		int m_iCountCom;
 	};
 
-	struct IRSData
+	//**********************************************************************
+
+	//! данные для просчетов видимости
+	struct CIRSData
 	{
-		IRSData();
-		~IRSData();
-		Array<Segment*, GREEN_DEFAULT_RESERVE_COM> queue;
-		Array<InfoRenderSegments*> arr;
+		CIRSData();
+		~CIRSData();
+
+		//! очередь обработки просчетов видимости для каждого сегмента
+		Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> m_aQueue;
+
+		//! массив информации для рендера сегментов
+		Array<CInfoRenderSegments*> m_aIRS;
 	};
 	
 protected:
-	Array<IRSData*> ArrComFor; //информация о сегментах для рендера
-	void SaveSplit(Segment* Split, FILE* file, Array<Segment*> * queue);
-	void LoadSplit(Segment** Split, FILE* file, Array<Segment**> * queue);
-	void GPURender2(DWORD timeDelta, float3* viewpos, ID nm, int lod, ID id_tex);
-	void AlignBound(Model* model, Segment* split);
-	void GenByTex(StaticGeom* geom, Model* model, ID idmask, float3* min, float3* max, float count_max);
-
-	void GetPartBeam(float3* pos, float3 * dir, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
-	void GetPartBB(float3* bbmin, float3 * bbmax, Segment** arrsplits, DWORD *count, Segment* comsegment, ID curr_splits_ids_render);
-
-	void ComRecArrIndeces(const ISXFrustum* frustum, Segment** arrsplits, DWORD *count, Segment* comsegment, float3* viewpos, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render);
-
-	void AddModelInArrCom(ID id_model);
-	void DelModelInArrCom(ID id_model);
-
-	Array<Model*> ArrModels;
-	IDirect3DVertexBuffer9* TransVertBuf;	//буфер вершин с трансформациями растительности
-	IDirect3DVertexDeclaration9* VertexDeclarationGreen;
 	
-	void PreSegmentation(Model* model, float3* min_level, float3* max_level);
-	void CycleSegmentation(Segment* Split, Model* mesh);
-	void Segmentation(Segment* Split, Model* mesh);
-	void SetSplitID(Model* model);
-	void SetSplitID2(Model* model, Segment* Split, Array<Segment*, GREEN_DEFAULT_RESERVE_COM>* queue);
+	void saveSplit(CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue);
+	void loadSplit(CSegment **ppSplit, FILE * file, Array<CSegment**> *pQueue);
+	void render2(DWORD timeDelta, const float3 *pViewPos, ID nm, int iLod, ID idTexture);
+	void alignBound(CModel *pModel, CSegment *pSplit);
+	void genByTex(CStaticGeom *pGeom, CModel *pModel, ID idMask, float3 *pMin, float3 *pMax, float fCountMax);
 
-	long RTCountDrawObj;
-	GreenDataVertex* RTGPUArrVerteces;
-	D3DXMATRIX mat;
+	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
+	void getPartBB(float3 *pMin, float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 
-	Segment** jarrsplits;
-	DWORD jcount;
+	void comRecArrIndeces(const ISXFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
 
-	DWORD jCountIndex;
+	void addModelInArrCom(ID idModel);
+	void deleteModelInArrCom(ID idModel);
+	
+	void preSegmentation(CModel *pModel, float3 *pMinLevel, float3 *pMaxLevel);
+	void cycleSegmentation(CSegment *pSplit, CModel *pMesh);
+	void segmentation(CSegment *pSplit, CModel *pMesh);
+	void setSplitID(CModel *pModel);
+	void setSplitID2(CModel *pModel, CSegment *pSplit, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue);
+
+	//**********************************************************************
+
+	//! информация о сегментах для рендера
+	Array<CIRSData*> m_aArrComFor;
+
+	//! количество элементов текущей растительности для отрисовки
+	int m_iCurrCountDrawObj;
+
+	//! массив всех green
+	Array<CModel*> m_aGreens;
+
+	//! буфер вершин с трансформациями растительности
+	IDirect3DVertexBuffer9 *m_pTransVertBuf;
+
+	//! декларация вершин
+	IDirect3DVertexDeclaration9 *m_pVertexDeclarationGreen;
 };
 
 

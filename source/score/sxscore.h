@@ -35,7 +35,7 @@ See the license in LICENSE
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
-#include <core\\sxcore.h>
+#include <core/sxcore.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API
@@ -51,13 +51,13 @@ See the license in LICENSE
 SX_LIB_API long SSCore_0GetVersion();			
 
 //! установить новую функцию вывода сообщений
-SX_LIB_API void SSCore_Dbg_Set(report_func rf);	
+SX_LIB_API void SSCore_Dbg_Set(report_func fnFunc);	
 
 //! инициализация подсистемы
 SX_LIB_API void SSCore_0Create(	
-	const char* name,			//!< имя
-	HWND hwnd,
-	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
+	const char *szName,	//!< имя
+	HWND hWnd,			//!< хэндл окна к которому привязывается звук
+	bool isUnic = true	//!< должна ли подсистема быть уникальной по имени
 	);
 
 //! уничтожение подсистемы
@@ -136,8 +136,8 @@ SX_LIB_API void SSCore_Clear();
 
 //! обновление состояний всех звуков
 SX_LIB_API void SSCore_Update(
-	const float3* viewpos,	//!< текущая позиция наблюдателя
-	const float3* viewdir	//!< текущее направление взгляда
+	const float3 *pViewPpos,//!< текущая позиция наблюдателя
+	const float3 *pViewDir	//!< текущее направление взгляда
 	);	
 
 //! количество проигрываемых на данный момент звуков
@@ -148,144 +148,144 @@ SX_LIB_API int SSCore_SndsLoadCountGet();
 
 //! загрузка 2d (фонового) звука
 SX_LIB_API ID SSCore_SndCreate2d(
-	const char *file,		//!< путь до файла, относительно стандартного
-	bool looping = false,	//!< зацикливать ли воспроизведение
-	DWORD size_stream = 0	//!< размер потока в байтах для потокового воспроизведения, если 0 тогда полностью грузить в память
+	const char *szFile,		//!< путь до файла, относительно стандартного
+	bool isLooping = false,	//!< зацикливать ли воспроизведение
+	UINT uiSizeStream = 0	//!< размер потока в байтах для потокового воспроизведения, если 0 тогда полностью грузить в память
 	);
 
 //! загрузка 3d звука
 SX_LIB_API ID SSCore_SndCreate3d(
-	const char *file,		//!< путь до файла, относительно стандартного
-	bool looping,			//!< зацикливать ли воспроизведение
-	DWORD size_stream,		//!< размер потока в байтах для потокового воспроизведения, если 0 тогда полностью грузить в память
-	float dist,				//!< радиус слышимости в метрах
-	float shift_pan = 0.1f	//!< изменение позиционирования звука [0-1], на сколько будет смещен звук (между ушами слушателя) при поворотах камеры к источнику звука, чем ближе к объекту тем меньше разница в позиционировании при поворотах
+	const char *szFile,		//!< путь до файла, относительно стандартного
+	bool isLooping,			//!< зацикливать ли воспроизведение
+	UINT uiSizeStream,		//!< размер потока в байтах для потокового воспроизведения, если 0 тогда полностью грузить в память
+	float fDist,			//!< радиус слышимости в метрах
+	float fShiftPan = 0.1f	//!< изменение позиционирования звука [0-1], на сколько будет смещен звук (между ушами слушателя) при поворотах камеры к источнику звука, чем ближе к объекту тем меньше разница в позиционировании при поворотах
 	);
 
 //! воспроизведение инстанса 2d звука
 SX_LIB_API void SSCore_SndInstancePlay2d(
-	ID id,				//!< идентификатор звука
-	int volume = 100,	//!< громкость [0-100]
-	int pan = 0			//!< смещение между ушами [-100 - 100]
+	ID idSound,			//!< идентификатор звука
+	int iVolume = 100,	//!< громкость [0-100]
+	int iPan = 0		//!< смещение между ушами [-100 - 100]
 	);
 
 //! воспроизведение инстанса 3d звука
 SX_LIB_API void SSCore_SndInstancePlay3d(
-	ID id,				//!< идентификатор звука
-	const float3* pos	//!< позиция воспроизведения инстанса
+	ID idSound,			//!< идентификатор звука
+	const float3 *pPos	//!< позиция воспроизведения инстанса
 	);
 
 //! загрузка 2d звукового файла и пометка его как объект выдающий инстансы, аргументы аналогичны #SSCore_SndCreate2d
-SX_LIB_API ID SSCore_SndCreate2dInst(const char *file, bool looping = false, DWORD size_stream = 0);
+SX_LIB_API ID SSCore_SndCreate2dInst(const char *szFile, bool isLooping = false, UINT uiSizeStream = 0);
 
 //! загрузка 3d звукового файла и пометка его как объект выдающий инстансы, аргументы аналогичны #SSCore_SndCreate3d
-SX_LIB_API ID SSCore_SndCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
+SX_LIB_API ID SSCore_SndCreate3dInst(const char *szFile, bool isLooping, UINT uiSizeStream, float fDist, float fShiftPan = 0.1f);
 
 //! поиск 2d звука (выдающего инстансы) по относительному пути загрузки,возвращает его ID (в случае успеха) иначе <0
-SX_LIB_API ID SSCore_SndFind2dInst(const char * file);
+SX_LIB_API ID SSCore_SndFind2dInst(const char *szFile);
 
 //! поиск 3d звука (выдающего инстансы) по относительному пути загрузки,возвращает его ID (в случае успеха) иначе <0
-SX_LIB_API ID SSCore_SndFind3dInst(const char * file);
+SX_LIB_API ID SSCore_SndFind3dInst(const char *szFile);
 
 
 //! инициализирован ли звук с идентификатором id
-SX_LIB_API bool SSCore_SndIsInit(ID id);	
+SX_LIB_API bool SSCore_SndIsInit(ID idSound);
 
 //! удалить звук по его id
-SX_LIB_API void SSCore_SndDelete(ID id);	
+SX_LIB_API void SSCore_SndDelete(ID idSound);
 
 
 //! воспроизвести звук, looping зацикливать ли воспроизведение, 0 - нет, >0 да, <0 не учитывать данное значение
-SX_LIB_API void	SSCore_SndPlay(ID id, int looping = -1);	
+SX_LIB_API void	SSCore_SndPlay(ID idSound, int looping = -1);
 
 //! приостановить
-SX_LIB_API void	SSCore_SndPause(ID id);						
+SX_LIB_API void	SSCore_SndPause(ID idSound);
 
 //! остановить
-SX_LIB_API void	SSCore_SndStop(ID id);						
+SX_LIB_API void	SSCore_SndStop(ID idSound);
 
 
 //! устанавливает состояние проигрывания звука
-SX_LIB_API void SSCore_SndStateSet(ID id, SOUND_OBJSTATE state);
+SX_LIB_API void SSCore_SndStateSet(ID idSound, SOUND_OBJSTATE state);
 
 //! возвращает состояние проигрывания звука на данный момент
-SX_LIB_API SOUND_OBJSTATE SSCore_SndStateGet(ID id);
+SX_LIB_API SOUND_OBJSTATE SSCore_SndStateGet(ID idSound);
 
 //! устанавить позицию проигрывания
 SX_LIB_API void SSCore_SndPosCurrSet(
-	ID id,						//!< идентификатор звука
-	DWORD pos,					//!< значение позиции исходя из параметра type
-	int type = SOUND_POS_BYTES	//!< тип значения pos, SOUND_POS_
+	ID idSound,					//!< идентификатор звука
+	UINT uiPos,					//!< значение позиции исходя из параметра type
+	int iType = SOUND_POS_BYTES	//!< тип значения pos, SOUND_POS_
 	);	
 
 //! возвращает позицию проигрывания
-SX_LIB_API DWORD SSCore_SndPosCurrGet(
-	ID id,						//!< идентификатор звука
-	int type = SOUND_POS_BYTES	//!< тип возвращаемого значения, SOUND_POS_
+SX_LIB_API UINT SSCore_SndPosCurrGet(
+	ID idSound,					//!< идентификатор звука
+	int iType = SOUND_POS_BYTES	//!< тип возвращаемого значения, SOUND_POS_
 	);
 
 //! устанавить громкость
 SX_LIB_API void SSCore_SndVolumeSet(
-	ID id,						//!< идентификатор звука
-	long volume,				//!< значение громкости исходя из параметра type
-	int type = SOUND_VOL_PCT	//!< тип значения volume, SOUND_VOL_
+	ID idSound,					//!< идентификатор звука
+	int iVolume,				//!< значение громкости исходя из параметра type
+	int iType = SOUND_VOL_PCT	//!< тип значения volume, SOUND_VOL_
 	);
 
 //! возвращает громкость
-SX_LIB_API long SSCore_SndVolumeGet(
-	ID id,						//!< идентификатор звука
-	int type = SOUND_VOL_PCT	//!< тип возвращаемого значения, SOUND_VOL_
+SX_LIB_API int SSCore_SndVolumeGet(
+	ID idSound,					//!< идентификатор звука
+	int iType = SOUND_VOL_PCT	//!< тип возвращаемого значения, SOUND_VOL_
 	);
 
 //! установка позиционирования между ушами
 SX_LIB_API void SSCore_SndPanSet(
-	ID id,						//!< идентификатор звука
-	long value,					//!< значение позиционирования исходя из параметра type
-	int type = SOUND_VOL_PCT	//!< тип значения value, SOUND_VOL_
+	ID idSound,					//!< идентификатор звука
+	int iValue,					//!< значение позиционирования исходя из параметра type
+	int iType = SOUND_VOL_PCT	//!< тип значения value, SOUND_VOL_
 	);
 
 //! возвращает позиционирование между ушами
-SX_LIB_API long SSCore_SndPanGet(
-	ID id,						//!< идентификатор звука
+SX_LIB_API int SSCore_SndPanGet(
+	ID idSound,						//!< идентификатор звука
 	int type = SOUND_VOL_PCT	//!< тип возвращаемого значения, SOUND_VOL_
 	);
 
 
 //! установка частоты воспроизведения
-SX_LIB_API void SSCore_SndFreqCurrSet(ID id, DWORD value);	
+SX_LIB_API void SSCore_SndFreqCurrSet(ID idSound, UINT uiValue);
 
 //! возвращает текущую частоту воспроизведения
-SX_LIB_API DWORD SSCore_SndFreqCurrGet(ID id);				
+SX_LIB_API UINT SSCore_SndFreqCurrGet(ID idSound);
 
 //! возвращает оригинальную частоту воспроизведения
-SX_LIB_API DWORD SSCore_SndFreqOriginGet(ID id);			
+SX_LIB_API UINT SSCore_SndFreqOriginGet(ID idSound);
 
 
 //! установка мировой позиции звука (только для 3d звуков)
-SX_LIB_API void SSCore_SndPosWSet(ID id, const float3* pos);		
+SX_LIB_API void SSCore_SndPosWSet(ID idSound, const float3 *pPos);
 
 //! возвращает мировую позицию звука (только для 3d звуков)
-SX_LIB_API void SSCore_SndPosWGet(ID id, float3* pos);		
+SX_LIB_API void SSCore_SndPosWGet(ID idSound, float3 *pPos);
 
 
 //! длина в секундах
-SX_LIB_API int SSCore_SndLengthSecGet(ID id);				
+SX_LIB_API int SSCore_SndLengthSecGet(ID idSound);
 
 //! количество байт в секунде
-SX_LIB_API DWORD SSCore_SndBytesPerSecGet(ID id);			
+SX_LIB_API UINT SSCore_SndBytesPerSecGet(ID idSound);
 
 //! размер в байтах PCM данных
-SX_LIB_API DWORD SSCore_SndSizeGet(ID id);					
+SX_LIB_API UINT SSCore_SndSizeGet(ID idSound);
 
 //! относительный путь до звукового файла
-SX_LIB_API void SSCore_SndFileGet(ID id, char* path);		
+SX_LIB_API void SSCore_SndFileGet(ID idSound, char *szPath);		
 
 
 //! возвращает дистанцию слышимости
-SX_LIB_API float SSCore_SndDistAudibleGet(ID id);				
+SX_LIB_API float SSCore_SndDistAudibleGet(ID idSound);
 
 //! установка дистанции слышимости в метрах
-SX_LIB_API void SSCore_SndDistAudibleSet(ID id, float value);	
+SX_LIB_API void SSCore_SndDistAudibleSet(ID idSound, float fVfalue);
 
 //!@}
 

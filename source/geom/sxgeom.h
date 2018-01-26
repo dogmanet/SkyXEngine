@@ -47,7 +47,7 @@ See the license in LICENSE
 SX_LIB_API long SGeom_0GetVersion();			
 
 //! установить новую функцию вывода сообщений
-SX_LIB_API void SGeom_Dbg_Set(report_func rf);	
+SX_LIB_API void SGeom_Dbg_Set(report_func fnFunc);	
 
 //! инициализация подсистемы
 SX_LIB_API void SGeom_0Create(	
@@ -182,32 +182,32 @@ SX_LIB_API void SGeom_ModelsSave(const char *szPath);
 SX_LIB_API void SGeom_ModelsLoad(const char *szPath);	
 
 //! количество моделей в текущем списке
-SX_LIB_API long SGeom_ModelsGetCount();	
+SX_LIB_API int SGeom_ModelsGetCount();	
 
 //! просчитать видимость всех моделей для фрустума 
 SX_LIB_API void SGeom_ModelsComVisible(	
 	const ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
-	float3 *vViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
-	ID idArr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
+	const float3 *pViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
+	ID idArr = 0				//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);	
 
-//! есть ли сорт материала sort который просчитан к отрисовке в массиве просчетов id_arr
+//! есть ли сорт материала iSort который просчитан к отрисовке в массиве просчетов idArr
 SX_LIB_API bool SGeom_ModelsSortExistsForRender(
 	int iSort, 		//!< искомый сорт
 	ID idArr = 0	//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);
 
-//! отрисовка всех моделей, на основе информации о видимости из массива видимости id_arr
+//! отрисовка всех моделей, на основе информации о видимости из массива видимости idArr
 SX_LIB_API void SGeom_ModelsRender(
-	DWORD timeDelta,			//!< время рендера кадра в млсек
+	DWORD timeDelta,		//!< время рендера кадра в млсек
 	int iSort,				//!< сорт материала, для ранжирования геометрии по "сортам", по умолчанию 0
-	ID idArr = 0,				//!< идентификатор массива с информацией о видимости
-	bool canSorted = false,		//!< использовать ли информацию о сортировке подгрупп front to back
+	ID idArr = 0,			//!< идентификатор массива с информацией о видимости
+	bool canSorted = false,	//!< использовать ли информацию о сортировке подгрупп front to back
 	ID idExcludeModel = -1,	//!< идентификатор модели которую необходимо исключить из рендера (на случай отрисовки отражений)
 	ID idExcludeGroup = -1	//!< идентификатор подгруппы которую надо исключить из рендера, либо указать значение меньше 0, тогда отсекется целая модель с id exclude_model_id	
 	);
 
-//! индивидуальная отрисовка модели, на основе информации о видимости из массива видимости id_arr = 0
+//! индивидуальная отрисовка модели, на основе информации о видимости из массива видимости idArr = 0
 SX_LIB_API void SGeom_ModelsRenderSingly(
 	DWORD timeDelta,//!< время рендера кадра в млсек
 	ID idModel,		//!< идентификатор модели
@@ -227,7 +227,7 @@ SX_LIB_API ID SGeom_ModelsAddModel(
 /*! удалить модель под номером id
  \warning Поверхностные тесты не дали ошибок, однако внутренняя организация хранения данных чрезвычайно сложна (по нашему мнению), поэтому могут быть ошибки, в том числе и критические, но пока обнаружить их не удалось
 */
-SX_LIB_API void SGeom_ModelsDelModel(ID id);	
+SX_LIB_API void SGeom_ModelsDelModel(ID idModel);	
 
 //! получить общий ограничивающий объем всего списка моделей
 SX_LIB_API void SGeom_ModelsGetMinMax(float3 *pMin, float3 *pMax);	
@@ -268,7 +268,7 @@ SX_LIB_API char* SGeom_ModelsMGetName(ID idModel);
 SX_LIB_API const char* SGeom_ModelsMGetPathName(ID idModel);	
 
 //! получить количество полигонов модели
-SX_LIB_API long SGeom_ModelsMGetCountPoly(ID idModel);		
+SX_LIB_API int SGeom_ModelsMGetCountPoly(ID idModel);		
 
 
 //! получить позицию модели
@@ -299,8 +299,8 @@ SX_LIB_API void SGeom_ModelsMApplyTransform(ID idModel);
  \note Рендер по этой сортировке возможен только индивидуально для каждой  подгруппы модели. В данной версии сделано для поддержки полупрозрачных поверхностей.
 */
 SX_LIB_API void SGeom_ModelsMSortGroups(
-	float3 *pViewPos,	//!< позиция наблюдателя относительно которой будет произведена сортировка
-	int iSortMtl		//!< сорт материала для которого будет произведена сортировка
+	const float3 *pViewPos,	//!< позиция наблюдателя относительно которой будет произведена сортировка
+	int iSortMtl			//!< сорт материала для которого будет произведена сортировка
 	);
 
 //**************************************************************************
@@ -326,7 +326,7 @@ SX_LIB_API void SGeom_ModelsMGetGroupCenter(ID idModel, ID idGroup, float3_t *pC
 SX_LIB_API void SGeom_ModelsMGetGroupMin(ID idModel, ID idGroup, float3_t *pMin);
 
 //! записвыает в max максимум (максимальную позицию) центр подгруппы group
-SX_LIB_API void SGeom_ModelsMGetGroupMax(ID idModel, ID idGroup, float3_t* max);
+SX_LIB_API void SGeom_ModelsMGetGroupMax(ID idModel, ID idGroup, float3_t *pMax);
 
 //! записвыает в plane плоскость подгруппы group
 SX_LIB_API void SGeom_ModelsMGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane);
@@ -358,7 +358,14 @@ SX_LIB_API void SGeom_ModelsClearArrBuffsGeom(
 	int32_t CountModels			//!< count_model - количество моделей
 	);
 
-SX_LIB_API bool SGeom_ModelsTraceBeam(float3 *pStart, float3 *pDir, float3 *pRes, ID *idModel, ID *idMtl);
+//! трассировка луча, из pStart в направлении pDir, в случае пересечения возвращает true, иначе false, в pRes записывает координаты пересечения если есть
+SX_LIB_API bool SGeom_ModelsTraceBeam(
+	const float3 *pStart,	//!< стартовая точка луча
+	const float3 *pDir,		//!< направление луча
+	float3 *pRes,			//!< если есть пересечение запишет координаты
+	ID *idModel,			//!< если есть пересечение запишет id модели
+	ID *idMtl				//!< если есть пересечение запишет id материала
+	);
 
 //!@} sxgeom
 
@@ -408,7 +415,7 @@ enum GREEN_TYPE
 };
 
 //! структура трансформаций растительности
-struct GreenDataVertex
+struct CGreenDataVertex
 {
 	float3_t m_vPosition;	//!< позиция
 	float3_t m_vTexCoord;	//!< x - общий масштаб,y - поворот по оси y, z -
@@ -460,21 +467,21 @@ SX_LIB_API ID SGeom_GreenAddGreen(
 
 //! добавить объект растительности
 SX_LIB_API ID SGeom_GreenAddObject(
-	ID id,			//!< идентификатор растительности к которой добавляем
+	ID idGreen,		//!< идентификатор растительности к которой добавляем
 	float3 *vPos,	//!< позиция в которой будет находится объект
 	ID *pIDsplit	//!< запишет идентификатор сплита, в котором был добавлен объект
 	);
 
 //! удалить объект растительности
 SX_LIB_API void SGeom_GreenDelObject(
-	ID id,		//!< идентификатор растительности
+	ID idGreen,	//!< идентификатор растительности
 	ID idSplit,	//!< идентификатор слпита из которого надо удалить
 	ID idObj	//!< идентификатор объекта который надо удалить
 	);
 
 //! в pos записывает позицию объекта растительности
 SX_LIB_API void SGeom_GreenGetPosObject(
-	ID id,			//!< идентификатор растительности
+	ID idGreen,		//!< идентификатор растительности
 	ID idSplit,		//!< идентификатор слпита
 	ID idObj,		//!< идентификатор объекта
 	float3_t *pPos	//!< вектор в который будет записана позиция
@@ -484,14 +491,14 @@ SX_LIB_API void SGeom_GreenGetPosObject(
  \note Так как новая позиция объекта растительности может выходит за пределы текущего сплита и может входить в другой сплит, то указатели idsplit и idobj могут быть изменены после вызова данной функции
 */
 SX_LIB_API void SGeom_GreenSetPosObject(
-	ID id,			//!< идентификатор растительности
+	ID idGreen,		//!< идентификатор растительности
 	ID* idSplit,	//!< идентификатор слпита
 	ID* idObj,		//!< идентификатор объекта
 	float3_t *pPos	//!< пновая позиция объекта растительности
 	);
 
 //! удалить единицу растительности
-SX_LIB_API void SGeom_GreenDelGreen(ID id);	
+SX_LIB_API void SGeom_GreenDelGreen(ID idGreen);
 
 //**************************************************************************
 
@@ -506,7 +513,7 @@ SX_LIB_API void SGeom_GreenDelGreen(ID id);
 SX_LIB_API ID SGeom_GreenAddArrForCom();			
 
 //! существует ли массив просчетов с номером id
-SX_LIB_API bool SGeom_GreenExistsArrForCom(ID id);
+SX_LIB_API bool SGeom_GreenExistsArrForCom(ID idGreen);
 
 //! удалить массив просчетов
 SX_LIB_API void SGeom_GreenDelArrForCom(ID idArr);	
@@ -527,23 +534,23 @@ SX_LIB_API void SGeom_GreenClear();
 //! просчитать видимость всей растительности для фрустума
 SX_LIB_API void SGeom_GreenComVisible(
 	const ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
-	float3 *pViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
-	ID idArr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
+	float3 *pViewPos,			//!< позиция источника фрустума чтобы просчитать дистанцию
+	ID idArr = 0				//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);
 
 //! отрисовка растительности
 SX_LIB_API void SGeom_GreenRender(
-	DWORD timeDelta,	//!< время рендера кадра
-	float3 *pViewPos,	//!< позиция наблюдателя (для которого будет рендер)
-	GREEN_TYPE typeGreen,//!< тип рисуемой растительности из перечисления GeomGreenType, указав GeomGreenType::ggtr_all будут отрисованы все типы растительности
-	ID idArr = 0		//!< идентификатор массива просчетов видимости (создается #SGeom_GreenAddArrForCom)
+	DWORD timeDelta,		//!< время рендера кадра
+	float3 *pViewPos,		//!< позиция наблюдателя (для которого будет рендер)
+	GREEN_TYPE typeGreen,	//!< тип рисуемой растительности из перечисления GeomGreenType, указав GeomGreenType::ggtr_all будут отрисованы все типы растительности
+	ID idArr = 0			//!< идентификатор массива просчетов видимости (создается #SGeom_GreenAddArrForCom)
 	);
 
 //! индивидуальная отрисовка растительности по идентификатору, массив просчетов по умолчанию (0)
 SX_LIB_API void SGeom_GreenRenderSingly(
 	DWORD timeDelta,	//!< время рендера кадра
 	float3 *pViewPos,	//!< позиция наблюдателя (для которого будет рендер)
-	ID id,				//!< идентификатор растительности
+	ID idGreen,			//!< идентификатор растительности
 	ID idTex = -1		//!< идентификатор материала, который будет применен ко всем объектам и подгруппам растительности, -1 если надо использовать назначенные материалы
 	);
 
@@ -551,14 +558,14 @@ SX_LIB_API void SGeom_GreenRenderSingly(
 SX_LIB_API void SGeom_GreenRenderObject(
 	DWORD timeDelta,	//!< время рендера кадра
 	float3 *pViewPos,	//!< позиция наблюдателя (для которого будет рендер)
-	ID id,				//!< идентификатор растительности
+	ID idGreen,			//!< идентификатор растительности
 	ID idSplit,			//!< идентификатор сплита (в котором находится объект)
 	ID idObj,			//!< идентификатор объекта (в сплите)
 	ID idTex = -1		//!< идентификатор материала, который будет применен ко всем объектам и подгруппам растительности, -1 если надо использовать назначенные материалы
 	);
 
 //!< получить количество единиц растительности (по видам есесно)
-SX_LIB_API long SGeom_GreenGetCount();	
+SX_LIB_API int SGeom_GreenGetCount();	
 
 //**************************************************************************
 
@@ -567,38 +574,39 @@ SX_LIB_API long SGeom_GreenGetCount();
 @{*/
 
 //! получить имя
-SX_LIB_API char* SGeom_GreenMGetName(ID id);		
+SX_LIB_API char* SGeom_GreenMGetName(ID idGreen);
 
 //! получить количество сгенерированных элементов
-SX_LIB_API long SGeom_GreenMGetCountGen(ID id);		
+SX_LIB_API int SGeom_GreenMGetCountGen(ID idGreen);
 
 //! получить количество в модели (0 лод)
-SX_LIB_API long SGeom_GreenMGetCountPoly(ID id);	
+SX_LIB_API int SGeom_GreenMGetCountPoly(ID idGreen);
 
 //! получить тип растительности
-SX_LIB_API int SGeom_GreenMGetTypeCountGen(ID id);	
+SX_LIB_API int SGeom_GreenMGetTypeCountGen(ID idGreen);
 
 //! получить путь до модели относительно стандартного пути
-SX_LIB_API const char* SGeom_GreenMGetModel(ID id);	
+SX_LIB_API const char* SGeom_GreenMGetModel(ID idGreen);
 
 //! получить путь до первого лода модели относительно стандартного пути
-SX_LIB_API const char* SGeom_GreenMGetLod1(ID id);	
+SX_LIB_API const char* SGeom_GreenMGetLod1(ID idGreen);
 
 //! получить путь до второго лода модели относительно стандартного пути
-SX_LIB_API const char* SGeom_GreenMGetLod2(ID id);	
+SX_LIB_API const char* SGeom_GreenMGetLod2(ID idGreen);
 
 //! получить путь до маски по которой сгенерирована растительность, относительно стандартного пути
-SX_LIB_API const char* SGeom_GreenMGetMask(ID id);	
+SX_LIB_API const char* SGeom_GreenMGetMask(ID idGreen);
 
 //! получить путь до лода навигации относительно стандартного пути
-SX_LIB_API const char* SGeom_GreenMGetNav(ID id);	
+SX_LIB_API const char* SGeom_GreenMGetNav(ID idGreen);
 
 //! установить лод (для рендера)
 SX_LIB_API void SGeom_GreenMSetLod(
-	ID id,					//!< идентификатор единицы растительности
+	ID idGreen,				//!< идентификатор единицы растительности
 	int iLod,				//!< номер лода от 0 до 2 включительно
 	const char *szPathName	//!< путь до модели относительно стандартного пути
 	);	
+
 SX_LIB_API void SGeom_GreenMSetNav(ID id, const char *szPathName);	//!< установить лод навигации, pathname путь до модели относительно стандартного пути
 
 //!@}
@@ -610,13 +618,13 @@ SX_LIB_API void SGeom_GreenMSetNav(ID id, const char *szPathName);	//!< уста
 */
 SX_LIB_API void SGeom_GreenGetNavMeshAndTransform(
 	float3_t ***pppVertices,			//!< (*arr_vertex)[num_green_mesh_nav][num_vertex] - вершины модели
-	int32_t **ppCountVertices,		//!< (*arr_count_vertex)[num_green_mesh_nav] - количество вершин для модели
-	uint32_t ***pppIndeces,			//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
-	ID ***pppMtl,					//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
-	int32_t **ppCountIndeces,		//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
-	GreenDataVertex ***pppTransforms,//!< (*arr_transform)[num_green_mesh_nav][num_obj] - трансформации модели навигации
-	int32_t **ppCountTransforms,	//!< (*arr_count_transform)[num_green_mesh_nav] - количество матриц для трансформаций
-	int32_t *pCountGreens			//!< (*arr_count_green) - количество единиц растительности по видам
+	int32_t **ppCountVertices,			//!< (*arr_count_vertex)[num_green_mesh_nav] - количество вершин для модели
+	uint32_t ***pppIndeces,				//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
+	ID ***pppMtl,						//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
+	int32_t **ppCountIndeces,			//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
+	CGreenDataVertex ***pppTransforms,	//!< (*arr_transform)[num_green_mesh_nav][num_obj] - трансформации модели навигации
+	int32_t **ppCountTransforms,		//!< (*arr_count_transform)[num_green_mesh_nav] - количество матриц для трансформаций
+	int32_t *pCountGreens				//!< (*arr_count_green) - количество единиц растительности по видам
 	);
 
 /*! Очищает папять, выделенную в SGeom_GreenGetNavMeshAndTransform
@@ -627,7 +635,7 @@ SX_LIB_API void SGeom_GreenClearNavMeshAndTransform(
 	uint32_t **ppIndeces,			//!< (*arr_index)[num_green_mesh_nav][num_vertex] - индексы модели
 	ID **ppMtl,						//!< (*arr_mtl)[num_green_mesh_nav][num_vertex] - материал для индекса
 	int32_t *pCountIndeces,			//!< (*arr_count_index)[num_green_mesh_nav] - количество индексов для модели
-	GreenDataVertex **ppTransforms,	//!< (*arr_transform)[num_type_green][num_elem] - трансформации модели навигации
+	CGreenDataVertex **ppTransforms,//!< (*arr_transform)[num_type_green][num_elem] - трансформации модели навигации
 	int32_t *pCountTransforms,		//!< (*arr_count_transform)[num_type_green] - количество матриц для трансформаций
 	int32_t iCountGreens			//!< (*arr_count_green) - количество единиц растительности по видам
 	);
