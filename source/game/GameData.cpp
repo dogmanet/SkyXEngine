@@ -126,7 +126,7 @@ void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
 		return;
 	}
 	ID idSound = m_pidFootstepSound[mtl_type][rand() % iCount];
-	SSCore_SndInstancePlay3d(idSound, (float3*)&f3Pos);
+	SSCore_SndInstancePlay3d(idSound, false, false, (float3*)&f3Pos);
 }
 
 void GameData::loadFoostepsSounds()
@@ -173,7 +173,7 @@ void GameData::loadFoostepsSounds()
 		m_pidFootstepSound[i] = jl ? new ID[jl] : NULL;
 		for(int j = 0; j < jl; ++j)
 		{
-			m_pidFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], false, 0, 100);
+			m_pidFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
 		}
 	}
 }

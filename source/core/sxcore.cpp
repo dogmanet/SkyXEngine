@@ -86,7 +86,7 @@ SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath)
 	if (hFile == INVALID_HANDLE_VALUE)
 		return 0;
 
-	SYSTEMTIME stUTC, stLocal;
+	SYSTEMTIME stUTC;
 	FILETIME ftCreate, ftAccess, ftWrite;
 	GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite);
 	FileTimeToSystemTime(&ftWrite, &stUTC);

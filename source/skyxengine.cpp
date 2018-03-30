@@ -193,6 +193,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 	SSCore_0Create("sxsound", hWnd3DCurr, false);
 	SSCore_Dbg_Set(SkyXEngine_PrintfLog);
+	SSCore_ChannelAdd(SX_SOUND_CHANNEL_GAME, true);
+	//SSCore_SndkitCreateFromList("test", SX_SOUND_CHANNEL_GAME, false, 0, 1.f, " messages/artefact_lead.ogg  d100   v1.0  300   300    300 , messages/artefact_lose.ogg d50 v0.7 400 400 400, messages/artefact_lost.ogg d30 v1.0 200 200 200, messages/artefact_new.ogg d35 v0.9 250 250 250");
 
 	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, 0, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
@@ -668,7 +670,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SRender_RenderPostProcess(timeDelta);
+	if (!SSInput_GetKeyState(SIK_P))
+		SRender_RenderPostProcess(timeDelta);
 	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
@@ -803,11 +806,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
 	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-
+	
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	pDXDevice->Present(0, 0, 0, 0);
 	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-
+	
 	SkyXEngind_UpdateDataCVar();
 }
 
@@ -1024,6 +1027,7 @@ void SkyXEngind_UpdateDataCVar()
 
 int SkyXEngine_CycleMain()
 {
+	//ID idSnd = SSCore_SndCreate2dInst("ak74_reload.ogg",SX_SOUND_CHANNEL_GAME);
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
 
@@ -1046,8 +1050,28 @@ int SkyXEngine_CycleMain()
 		}
 		else
 		{
-			SGCore_LoadTexAllLoad();
 			SGCore_ShaderAllLoad();
+			SGCore_LoadTexAllLoad();
+
+			/*if (SSInput_GetKeyState(SIK_BACKSPACE))
+				SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
+			else if (SSInput_GetKeyState(SIK_ENTER))
+				SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
+
+			UINT arr[] = {3000, 350, 1000, 800, 300 };
+			if (SSInput_GetKeyState(SIK_RSHIFT))
+				SSCore_SndInstancePlayDelay2d(idSnd, false, true, arr, 5, 1, 0);
+
+			if (SSInput_GetKeyState(SIK_RCONTROL))
+				SSCore_SndStop(idSnd);
+
+			//
+			static uint64_t id2 = SOUND_SNDKIT_INSTANCE_BLOCK;
+			id2 = SSCore_SndkitPlay(0, id2);
+			if (SSInput_GetKeyState(SIK_TAB))
+				SSCore_SndkitStop(0, id2);*/
+
+			
 			Core_TimesUpdate();
 			Core_0ConsoleUpdate();
 			SSInput_Update();

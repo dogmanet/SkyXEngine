@@ -616,6 +616,7 @@ void CShaderManager::allLoad()
 	if (m_aVS.size() == m_iLastAllLoadVS || m_aPS.size() == m_iLastAllLoadPS)
 		return;
 
+	DWORD dwTime = GetTickCount();
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "load shaders ...\n");
 	
 	for (int i = 0, il = m_aVS.size(); i < il; ++i)
@@ -639,7 +640,7 @@ void CShaderManager::allLoad()
 	m_iLastAllLoadVS = m_aVS.size();
 	m_iLastAllLoadPS = m_aPS.size();
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded shaders\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded shaders, time %d\n", GetTickCount() - dwTime);
 }
 
 void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)

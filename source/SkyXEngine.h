@@ -294,6 +294,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 #define SKYXENGINE_VERSION "0.9.3"
 
+#include <vld.h>
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>

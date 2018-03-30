@@ -121,27 +121,27 @@ void CBaseWeapon::onPostLoad()
 
 	if(m_szSndDraw[0])
 	{
-		m_idSndDraw = SSCore_SndCreate3dInst(m_szSndDraw, false, 0, 100);
+		m_idSndDraw = SSCore_SndCreate3dInst(m_szSndDraw, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndHolster[0])
 	{
-		m_idSndHolster = SSCore_SndCreate3dInst(m_szSndHolster, false, 0, 100);
+		m_idSndHolster = SSCore_SndCreate3dInst(m_szSndHolster, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndShoot[0])
 	{
-		m_idSndShoot = SSCore_SndCreate3dInst(m_szSndShoot, false, 0, 100);
+		m_idSndShoot = SSCore_SndCreate3dInst(m_szSndShoot, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndEmpty[0])
 	{
-		m_idSndEmpty = SSCore_SndCreate3dInst(m_szSndEmpty, false, 0, 100);
+		m_idSndEmpty = SSCore_SndCreate3dInst(m_szSndEmpty, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndReload[0])
 	{
-		m_idSndReload = SSCore_SndCreate3dInst(m_szSndReload, false, 0, 100);
+		m_idSndReload = SSCore_SndCreate3dInst(m_szSndReload, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndSwitch[0])
 	{
-		m_idSndSwitch = SSCore_SndCreate3dInst(m_szSndSwitch, false, 0, 100);
+		m_idSndSwitch = SSCore_SndCreate3dInst(m_szSndSwitch, SX_SOUND_CHANNEL_GAME, 100);
 	}
 }
 
@@ -199,7 +199,7 @@ void CBaseWeapon::primaryAction(BOOL st)
 		}
 		if(ID_VALID(m_iSoundAction1))
 		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, &getPos());
+			SSCore_SndInstancePlay3d(m_iSoundAction1, false, false, &getPos());
 		}
 
 		//((CPlayer*)m_pOwner)->is
@@ -258,7 +258,7 @@ void CBaseWeapon::reload()
 		playAnimation("reload");
 		if(ID_VALID(m_idSndReload))
 		{
-			SSCore_SndInstancePlay3d(m_idSndReload, &getPos());
+			SSCore_SndInstancePlay3d(m_idSndReload, false, false, &getPos());
 		}
 	}
 }
@@ -270,7 +270,7 @@ void CBaseWeapon::setFireMode(FIRE_MODE mode)
 		m_fireMode = mode;
 		if(ID_VALID(m_idSndReload))
 		{
-			SSCore_SndInstancePlay3d(m_idSndSwitch, &getPos());
+			SSCore_SndInstancePlay3d(m_idSndSwitch, false, false, &getPos());
 		}
 	}
 }

@@ -95,11 +95,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_func.cpp" />
     <ClCompile Include="..\..\..\source\skyxengine.cpp" />
     <ClCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine_Build.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_func.h" />
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\GRegisterIndex.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />

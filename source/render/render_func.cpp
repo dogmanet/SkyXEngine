@@ -216,11 +216,8 @@ void SXRenderFunc::ComVisibleForLight()
 				{
 					for (int k = 0; k < 6; k++)
 					{
-						ID idarr = -1;
-
-						idarr = SGeom_ModelsAddArrForCom();
 						if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k) <= -1)
-							SML_LigthsSetIDArr(i, RENDER_IDARRCOM_GEOM, k, idarr);
+							SML_LigthsSetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
 
 						if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
 							SML_LigthsSetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());

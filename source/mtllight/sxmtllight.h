@@ -230,7 +230,7 @@ SX_LIB_API void SML_LigthsSetCastGlobalShadow(bool isShadowed);
  \note Предварительный просчет - просчет для всего света (к примеру в другом потоке)
 @{*/
 
-SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const const ISXFrustum *pFrustum);	//!< виден ли свет в данном фрустуме frustum (отдельный просчет)
+SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const ISXFrustum *pFrustum);	//!< виден ли свет в данном фрустуме frustum (отдельный просчет)
 SX_LIB_API float SML_LigthsComDistFor(ID id, const float3 *pViewPos);				//!< дистанция от viewpos до начала света (отдельный просчет)
 
 //! просчет видимости и расстояния от наблюдателя viewpos до начала света, для каждого света (предварительный просчет)

@@ -143,9 +143,9 @@ Materials::Material::Material()
 
 	Type = MTLTYPE_MODEL_STATIC;
 
-	MainTexture - 1;
-	PreShaderVS - 1;
-	PreShaderPS - 1;
+	MainTexture = -1;
+	PreShaderVS = -1;
+	PreShaderPS = -1;
 }
 
 void Materials::Material::Nulling()
@@ -160,9 +160,9 @@ void Materials::Material::Nulling()
 
 	Type = MTLTYPE_MODEL_STATIC;
 
-	MainTexture-1;
-	PreShaderVS-1;
-	PreShaderPS-1;
+	MainTexture = -1;
+	PreShaderVS = -1;
+	PreShaderPS = -1;
 	
 	MicroDetail = MaterialMaskPM();
 	LightParam = MaterialLightParam();
@@ -399,7 +399,7 @@ MTLTYPE_MODEL Materials::GetTypeModel(ID id)
 
 void Materials::SetTypeModel(ID id, MTLTYPE_MODEL type_model)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->Type = type_model;
 }
 
@@ -411,7 +411,7 @@ bool Materials::MtlGetUsingAlphaTest(ID id)
 
 void Materials::MtlSetUsingAlphaTest(ID id, bool is_using)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->IsAlphaTest = is_using;
 }
 
@@ -426,7 +426,7 @@ MTLTYPE_REFLECT Materials::MtlTypeReflection(ID id)
 
 void Materials::MtlRefSetIDArr(ID id, ID inid, int cube, ID idarr)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->SetIDArr(inid, cube, idarr);
 }
 
@@ -450,13 +450,13 @@ ID Materials::MtlRefGetIDArr(ID id, ID inid, int cube)
 
 void Materials::MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->PreRenderRefPlane(plane);
 }
 
 ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
 {
-	MTL_REF_PRE_COND_ID(id,0);
+	MTL_REF_PRE_COND_ID(id, 0);
 	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)))
 		return ArrMaterials[id]->Reflect->ReflectFrustum[cube];
 	return 0;
@@ -464,26 +464,26 @@ ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
 
 void Materials::MtlRefPostRenderPlane(ID id)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->PostRenderRefPlane();
 }
 
 IDirect3DTexture9* Materials::MtlRefPlaneGetTex(ID id)
 {
- 	MTL_REF_PRE_COND_ID(id,0);
+ 	MTL_REF_PRE_COND_ID(id, 0);
 	return ArrMaterials[id]->Reflect->GetRefPlaneTex();
 }
 
 
 void Materials::MtlRefSetMinMax(ID id, float3_t* min, float3_t* max)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->SetMinMax(min,max);
 }
 
 bool Materials::MtlRefIsAllowedRender(ID  id)
 {
-	MTL_REF_PRE_COND_ID(id,false);
+	MTL_REF_PRE_COND_ID(id, false);
 	if (ArrMaterials[id]->Reflect)
 		return ArrMaterials[id]->Reflect->AllowedRender();
 
@@ -493,43 +493,43 @@ bool Materials::MtlRefIsAllowedRender(ID  id)
 
 void Materials::MtlRefCubeBeginRender(ID id, float3_t* center)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->BeginRenderRefCube(center);
 }
 
 void Materials::MtlRefCubePreRender(ID id, int cube, float4x4* world)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->PreRenderRefCube(cube, world);
 }
 
 void Materials::MtlRefCubePostRender(ID id, int cube)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->PostRenderRefCube(cube);
 }
 
 void Materials::MtlRefCubeEndRender(ID id, float3_t* viewpos)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->EndRenderRefCube(viewpos);
 }
 
 bool Materials::MtlRefUpdateCountUpdate( ID id, float3_t* viewpos)
 {
-	MTL_REF_PRE_COND_ID(id,false);
+	MTL_REF_PRE_COND_ID(id, false);
 	return ArrMaterials[id]->Reflect->UpdateCountUpdate(viewpos);
 }
 
 void Materials::MtlRefNullingCountUpdate(ID id)
 {
-	MTL_REF_PRE_COND_ID(id);
+	MTL_REF_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->Reflect->NullingCountUpdate();
 }
 
 IDirect3DCubeTexture9* Materials::RefCubeGetTex(ID id)
 {
-	MTL_REF_PRE_COND_ID(id,0);
+	MTL_REF_PRE_COND_ID(id, 0);
 	return ArrMaterials[id]->Reflect->GetRefCubeTex();
 }
 
@@ -550,13 +550,13 @@ MTLTYPE_PHYSIC Materials::MtlGetPhysicMaterial(ID id)
 
 void Materials::MtlSetTexture(ID id, const char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->MainTexture = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetTexture(ID id, char* name)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 
 	if (name && ArrMaterials[id]->mtl->MainTexture >= 0)
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->MainTexture, name);
@@ -571,25 +571,25 @@ ID Materials::MtlGetTextureID(ID id)
 
 void Materials::MtlSetVS(ID id, const char* path_vs)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, SHADER_CHECKDOUBLE_PATH);
 }
 
 void Materials::MtlGetVS(ID id, char* name)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, ArrMaterials[id]->mtl->PreShaderVS, name);
 }
 
 void Materials::MtlSetPS(ID id, const char* path_ps)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, SHADER_CHECKDOUBLE_PATH);
 }
 
 void Materials::MtlGetPS(ID id, char* name)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, ArrMaterials[id]->mtl->PreShaderPS, name);
 }
 
@@ -598,39 +598,39 @@ void Materials::MtlGetPS(ID id, char* name)
 
 void Materials::MtlSetLighting(ID id, bool is_lighting)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->IsUnlit = !is_lighting;
 }
 
 bool Materials::MtlGetLighting(ID id)
 {
-	MTL_PRE_COND_ID(id,false);
+	MTL_PRE_COND_ID(id, false);
 	return !ArrMaterials[id]->mtl->IsUnlit;
 }
 
 
 void Materials::MtlSetIsTextureLighting(ID id, bool is_tex_lighting)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.IsTextureParam = is_tex_lighting;
 }
 
 bool Materials::MtlGetIsTextureLighting(ID id)
 {
-	MTL_PRE_COND_ID(id,false);
+	MTL_PRE_COND_ID(id, false);
 	return ArrMaterials[id]->mtl->LightParam.IsTextureParam;
 }
 
 
 void Materials::MtlSetTextureLighting(ID id, const char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.ParamTex = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetTextureLighting(ID id, char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && ArrMaterials[id]->mtl->LightParam.ParamTex >= 0)
 	{
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->LightParam.ParamTex, path_tex);
@@ -644,32 +644,32 @@ void Materials::MtlGetTextureLighting(ID id, char* path_tex)
 
 void Materials::MtlSetRoughness(ID id, float roughness)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.RoughnessValue = roughness;
 }
 
 float Materials::MtlGetRoughness(ID id)
 {
-	MTL_PRE_COND_ID(id,-1);
+	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->mtl->LightParam.RoughnessValue;
 }
 
 
 void Materials::MtlSetF0(ID id, float f0)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.F0Value = f0;
 }
 
 float Materials::MtlGetF0(ID id)
 {
-	MTL_PRE_COND_ID(id,-1);
+	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->mtl->LightParam.F0Value;
 }
 
 void Materials::MtlSetThickness(ID id, float thickness)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.ThicknessValue = thickness;
 }
 
@@ -721,7 +721,7 @@ float Materials::MtlGetDensity(ID id)
 
 void Materials::MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.TypeRefraction = type;
 }
 
@@ -734,7 +734,7 @@ MTLTYPE_TRANSPARENCY Materials::MtlGetTypeTransparency(ID id)
 
 void Materials::MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->LightParam.TypeReflect = type;
 
 	if (ArrMaterials[id]->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
@@ -757,13 +757,13 @@ MTLTYPE_REFLECT Materials::MtlGetTypeReflection(ID id)
 
 void Materials::MtlSetMaskTex(ID id, const char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->MicroDetail.Mask = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetMaskTex(ID id, char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && ArrMaterials[id]->mtl->MicroDetail.Mask >= 0)
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->MicroDetail.Mask, path_tex);
 	else if (path_tex)
@@ -772,13 +772,13 @@ void Materials::MtlGetMaskTex(ID id, char* path_tex)
 
 void Materials::MtlSetMRTex(ID id, int channel, const char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->MicroDetail.ArrMicroDiffuse[channel] = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetMRTex(ID id, int channel, char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && ArrMaterials[id]->mtl->MicroDetail.ArrMicroDiffuse[channel] >= 0)
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->MicroDetail.ArrMicroDiffuse[channel], path_tex);
 	else if (path_tex)
@@ -788,13 +788,13 @@ void Materials::MtlGetMRTex(ID id, int channel, char* path_tex)
 
 void Materials::MtlSetDTex(ID id, int channel, const char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->MicroDetail.ArrDeatail[channel] = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 void Materials::MtlGetDTex(ID id, int channel, char* path_tex)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && ArrMaterials[id]->mtl->MicroDetail.ArrDeatail[channel] >= 0)
 		SGCore_LoadTexGetName(ArrMaterials[id]->mtl->MicroDetail.ArrDeatail[channel], path_tex);
 	else if (path_tex)
@@ -805,7 +805,7 @@ void Materials::MtlGetDTex(ID id, int channel, char* path_tex)
 
 void Materials::MtlSetSTDVS(ID id, MTL_SHADERSTD type, bool is_send)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		ArrMaterials[id]->mtl->VS.IsTransWorld = is_send;
 	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
@@ -831,7 +831,7 @@ void Materials::MtlSetSTDVS(ID id, MTL_SHADERSTD type, bool is_send)
 
 bool Materials::MtlGetSTDVS(ID id, MTL_SHADERSTD type)
 {
-	MTL_PRE_COND_ID(id,false);
+	MTL_PRE_COND_ID(id, false);
 	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		return ArrMaterials[id]->mtl->VS.IsTransWorld;
 	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
@@ -859,7 +859,7 @@ bool Materials::MtlGetSTDVS(ID id, MTL_SHADERSTD type)
 
 void Materials::MtlSetSTDPS(ID id, MTL_SHADERSTD type, bool is_send)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		ArrMaterials[id]->mtl->PS.IsTransWorld = is_send;
 	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
@@ -885,7 +885,7 @@ void Materials::MtlSetSTDPS(ID id, MTL_SHADERSTD type, bool is_send)
 
 bool Materials::MtlGetSTDPS(ID id, MTL_SHADERSTD type)
 {
-	MTL_PRE_COND_ID(id,false);
+	MTL_PRE_COND_ID(id, false);
 	if (type == MTL_SHADERSTD_MATRIX_WORLD)
 		return ArrMaterials[id]->mtl->PS.IsTransWorld;
 	else if (type == MTL_SHADERSTD_MATRIX_VIEW)
@@ -913,50 +913,50 @@ bool Materials::MtlGetSTDPS(ID id, MTL_SHADERSTD type)
 
 void Materials::MtlSetUDVS(ID id, int component, float val)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->VS.Param[component] = val;
 }
 
 float Materials::MtlGetUDVS(ID id, int component)
 {
-	MTL_PRE_COND_ID(id,-1);
+	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->mtl->VS.Param[component];
 }
 
 void Materials::MtlSetUDVS_InPS(ID id, bool is_send_ps)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->TransVSDataInPS = is_send_ps;
 }
 
 bool Materials::MtlGetUDVS_InPS(ID id)
 {
-	MTL_PRE_COND_ID(id,false);
+	MTL_PRE_COND_ID(id, false);
 	return ArrMaterials[id]->mtl->TransVSDataInPS;
 }
 
 
 void Materials::MtlSetUDPS(ID id, int component, float val)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->PS.Param[component] = val;
 }
 
 float Materials::MtlGetUDPS(ID id, int component)
 {
-	MTL_PRE_COND_ID(id,-1);
+	MTL_PRE_COND_ID(id, -1);
 	return ArrMaterials[id]->mtl->PS.Param[component];
 }
 
 void Materials::MtlSetUDPS_InPS(ID id, bool is_send_vs)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	ArrMaterials[id]->mtl->TransPSDataInVS = is_send_vs;
 }
 
 bool Materials::MtlGetUDPS_InPS(ID id)
 {
-	MTL_PRE_COND_ID(id,false);
+	MTL_PRE_COND_ID(id, false);
 	return ArrMaterials[id]->mtl->TransPSDataInVS;
 }
 
@@ -1104,7 +1104,6 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 {
 	char* ArrRGBA[4] = { "r", "g", "b", "a" };
 
-	char tmpNameMtl[256];
 	char tmpVS[256];
 	char tmpPS[256];
 
@@ -1603,7 +1602,7 @@ void Materials::MtlReLoad(ID id, const char* name)
 
 void Materials::MtlSave(ID id)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 
 	char tmp_path[256];//папка
 	char tmp_name[256];//само им¤ текстыр с расширением
@@ -1647,9 +1646,6 @@ void Materials::MtlSave(ID id)
 	file = fopen(tmppath, "w");
 
 	fprintf(file, "[%s]\n", mtrl->Name);
-
-	char tmpPathVS[1024];
-	char tmpPathPS[1024];
 
 	char tmpPathVSName[1024];
 	char tmpPathPSName[1024];
@@ -1932,7 +1928,7 @@ void Materials::RenderStd(MTLTYPE_MODEL type, float4x4* world, ID slot, ID id_mt
 
 void Materials::Render(ID id, float4x4* world)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -2173,7 +2169,7 @@ void Materials::Render(ID id, float4x4* world)
 
 void Materials::RenderLight(float4_t* color, float4x4* world)
 {
-	MTL_PRE_COND_ID(MtrlDefLight);
+	MTL_PRE_COND_ID(MtrlDefLight, _VOID);
 
 	ArrMaterials[MtrlDefLight]->mtl->PS.Param = *color;
 	Render(MtrlDefLight, world);

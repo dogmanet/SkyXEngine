@@ -7,6 +7,7 @@ See the license in LICENSE
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <SkyXEngine.h>
+//#include <common/string_func.h>
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {

@@ -623,9 +623,9 @@ bool CommandConnect()
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
-	char recvbuf[2048];
+	
 	int iResult;
-	int recvbuflen = sizeof(recvbuf);
+	
 
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);

@@ -11,11 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_func.cpp" />
     <ClCompile Include="..\..\..\source\score\sound.cpp" />
     <ClCompile Include="..\..\..\source\score\sxscore.cpp" />
     <ClCompile Include="..\..\..\source\score\sxscore_dll.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\array.h" />
+    <ClInclude Include="..\..\..\source\common\string_func.h" />
     <ClInclude Include="..\..\..\source\score\sound.h" />
     <ClInclude Include="..\..\..\source\score\sxscore.h" />
   </ItemGroup>
