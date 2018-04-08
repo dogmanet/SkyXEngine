@@ -1,7 +1,5 @@
 
-extern LRESULT MinimuzeWinInsteadClose(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constructors,bool destructors,bool comments,bool include);
-
+#include "WindowOutput.h"
 
 namespace SXNameSapce
 {
@@ -27,26 +25,26 @@ namespace SXNameSapce
 LRESULT StartButClick(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char PathForFile[1024];
-	SXNameSapce::PathForFile->GetText(PathForFile,1024);
+	SXNameSapce::PathForFile->getText(PathForFile,1024);
 		if(strstr(PathForFile,":\\"))
 		{
 			char name_space[64];
 			bool in_ns,constructors,destructors,comments,include;
-			SXNameSapce::SXNameSpace->GetText(name_space,64);
-			in_ns = SXNameSapce::DetectedNameSpace->GetCheck() == 1 ? true : false;
-			constructors = SXNameSapce::Constructors->GetCheck() == 1 ? true : false;
-			destructors = SXNameSapce::Destructors->GetCheck() == 1 ? true : false;
-			comments = SXNameSapce::Comments->GetCheck() == 1 ? true : false;
-			include = SXNameSapce::Inlude->GetCheck() == 1 ? true : false;
+			SXNameSapce::SXNameSpace->getText(name_space,64);
+			in_ns = SXNameSapce::DetectedNameSpace->getCheck() == 1 ? true : false;
+			constructors = SXNameSapce::Constructors->getCheck() == 1 ? true : false;
+			destructors = SXNameSapce::Destructors->getCheck() == 1 ? true : false;
+			comments = SXNameSapce::Comments->getCheck() == 1 ? true : false;
+			include = SXNameSapce::Inlude->getCheck() == 1 ? true : false;
 
 			OutputInFile(PathForFile,name_space,in_ns,constructors,destructors,comments,include);
 			MessageBox(0,"Output in file is completed! Check result","Completed",MB_TASKMODAL);
-			SXNameSapce::OutputGUIInFile->Visible(false);
-			SXMainWndElem::MainWnd->Enable(true);
-			SXMainWndElem::JobMainWnd->Enable(true);
-			SXMainWndElem::ParamWnd->Enable(true);
-			SXMainWndElem::WndLog->Enable(true);
-			SetActiveWindow(SXMainWndElem::MainWnd->GetHWND());
+			SXNameSapce::OutputGUIInFile->setVisible(false);
+			SXMainWndElem::MainWnd->setEnable(true);
+			SXMainWndElem::JobMainWnd->setEnable(true);
+			SXMainWndElem::ParamWnd->setEnable(true);
+			SXMainWndElem::WndLog->setEnable(true);
+			SetActiveWindow(SXMainWndElem::MainWnd->getHWND());
 		}
 		else
 			MessageBox(0,"Make sure the path to the output file!",0,MB_TASKMODAL);
@@ -77,19 +75,19 @@ LRESULT SelectButClick(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	ofn.Flags		= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
 	//InLog("%s","Дизактивация окон и вызов диалогового окна сохранения файла ...");
-	/*SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);*/
+	/*SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);*/
 		if(GetSaveFileName(&ofn) == TRUE)
 		{
-			SXNameSapce::PathForFile->SetText(szFileName);
+			SXNameSapce::PathForFile->setText(szFileName);
 		}
-	/*SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
-	SetActiveWindow(SXMainWndElem::MainWnd->GetHWND());*/
+	/*SXMainWndElem::MainWnd->setEnable(true);
+	SXMainWndElem::JobMainWnd->setEnable(true);
+	SXMainWndElem::ParamWnd->setEnable(true);
+	SXMainWndElem::WndLog->setEnable(true);
+	SetActiveWindow(SXMainWndElem::MainWnd->getHWND());*/
 	//InLog("%s","Вызов диалогового окна сохранения файла успешно завершен, активация окон");
 		
 	return 0;
@@ -98,11 +96,11 @@ LRESULT SelectButClick(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT HideSettingsWndClose(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ShowWindow(hwnd,SW_HIDE);
-	SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
-	SetActiveWindow(SXMainWndElem::MainWnd->GetHWND());
+	SXMainWndElem::MainWnd->setEnable(true);
+	SXMainWndElem::JobMainWnd->setEnable(true);
+	SXMainWndElem::ParamWnd->setEnable(true);
+	SXMainWndElem::WndLog->setEnable(true);
+	SetActiveWindow(SXMainWndElem::MainWnd->getHWND());
 	return 0;
 }
 
@@ -111,72 +109,72 @@ void SXNameSapce::InitAllElements()
 	RECT wrect;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
 	
-	SXNameSapce::OutputGUIInFile = SXGUICrBaseWnd("OutputGUIInFile", "OutputGUIInFile", 0, 0, ((wrect.right / 2) - 170), ((wrect.bottom / 2) - 115), 340, 230, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED, 0, WndProcAllDefault);
-	SXGUIBaseHandlers::InitHandlerMsg(SXNameSapce::OutputGUIInFile);
-	SXNameSapce::OutputGUIInFile->AddHandler(HideSettingsWndClose,WM_CLOSE,0,0,0,0,true);
-	SXNameSapce::NameSpace = SXGUICrStatic("NameSpace", 13, 13, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
-	SXNameSapce::NameSpace->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::NameSpace->SetColorText(0,0,0);
-	SXNameSapce::NameSpace->SetColorTextBk(255,255,255);
-	SXNameSapce::NameSpace->SetTransparentTextBk(true);
-	SXNameSapce::NameSpace->SetColorBrush(220,220,220);
-	SXNameSapce::SXNameSpace = SXGUICrEdit("SXNameSpace", 119, 11, 199, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
-	SXNameSapce::SXNameSpace->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::SXNameSpace->SetColorText(0,0,0);
-	SXNameSapce::SXNameSpace->SetColorTextBk(255,255,255);
-	SXNameSapce::SXNameSpace->SetTransparentTextBk(true);
-	SXNameSapce::SXNameSpace->SetColorBrush(255,255,255);
-	SXNameSapce::Constructors = SXGUICrCheckBox("Constructors", 15, 60, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::Constructors->SetCheck(SXGUI_CHECKBOX_CHECKED);
-	SXNameSapce::Constructors->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::Constructors->SetColorText(0,0,0);
-	SXNameSapce::Constructors->SetColorTextBk(255,255,255);
-	SXNameSapce::Constructors->SetTransparentTextBk(true);
-	SXNameSapce::Constructors->SetColorBrush(220,220,220);
-	SXNameSapce::Destructors = SXGUICrCheckBox("Destructors", 15, 80, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::Destructors->SetCheck(SXGUI_CHECKBOX_CHECKED);
-	SXNameSapce::Destructors->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::Destructors->SetColorText(0,0,0);
-	SXNameSapce::Destructors->SetColorTextBk(255,255,255);
-	SXNameSapce::Destructors->SetTransparentTextBk(true);
-	SXNameSapce::Destructors->SetColorBrush(220,220,220);
-	SXNameSapce::Comments = SXGUICrCheckBox("Comments", 15, 100, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::Comments->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::Comments->SetColorText(0,0,0);
-	SXNameSapce::Comments->SetColorTextBk(255,255,255);
-	SXNameSapce::Comments->SetTransparentTextBk(true);
-	SXNameSapce::Comments->SetColorBrush(220,220,220);
-	SXNameSapce::Inlude = SXGUICrCheckBox("Inlude", 15, 120, 125, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::Inlude->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::Inlude->SetColorText(0,0,0);
-	SXNameSapce::Inlude->SetColorTextBk(255,255,255);
-	SXNameSapce::Inlude->SetTransparentTextBk(true);
-	SXNameSapce::Inlude->SetColorBrush(220,220,220);
-	SXNameSapce::DetectedNameSpace = SXGUICrCheckBox("In Name Space", 15, 40, 100, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0, false);
-	SXNameSapce::DetectedNameSpace->SetCheck(SXGUI_CHECKBOX_CHECKED);
-	SXNameSapce::DetectedNameSpace->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::DetectedNameSpace->SetColorText(0,0,0);
-	SXNameSapce::DetectedNameSpace->SetColorTextBk(255,255,255);
-	SXNameSapce::DetectedNameSpace->SetTransparentTextBk(true);
-	SXNameSapce::DetectedNameSpace->SetColorBrush(220,220,220);
-	SXNameSapce::SaveFile = SXGUICrStatic("SaveFile", 7, 161, 58, 16, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
-	SXNameSapce::SaveFile->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::SaveFile->SetColorText(0,0,0);
-	SXNameSapce::SaveFile->SetColorTextBk(255,255,255);
-	SXNameSapce::SaveFile->SetTransparentTextBk(true);
-	SXNameSapce::SaveFile->SetColorBrush(220,220,220);
-	SXNameSapce::PathForFile = SXGUICrEdit("PathForFile", 61, 159, 233, 20, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
-	SXNameSapce::PathForFile->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::PathForFile->SetColorText(0,0,0);
-	SXNameSapce::PathForFile->SetColorTextBk(255,255,255);
-	SXNameSapce::PathForFile->SetTransparentTextBk(true);
-	SXNameSapce::PathForFile->SetColorBrush(255,255,255);
-	SXNameSapce::ButtonSelectFile = SXGUICrButton("...", 298, 159, 23, 19, SXGUI_BUTTON_IMAGE_NONE, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
-	SXNameSapce::ButtonSelectFile->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::ButtonSelectFile->AddHandler(SelectButClick,WM_LBUTTONUP);
-	SXNameSapce::StartOutput = SXGUICrButton("Start output", 160, 51, 134, 77, SXGUI_BUTTON_IMAGE_NONE, SXNameSapce::OutputGUIInFile->GetHWND(), 0, 0);
-	SXNameSapce::StartOutput->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXNameSapce::StartOutput->AddHandler(StartButClick,WM_LBUTTONUP);
+	SXNameSapce::OutputGUIInFile = SXGUICrBaseWndEx("OutputGUIInFile", "OutputGUIInFile", ((wrect.right / 2) - 170), ((wrect.bottom / 2) - 115), 340, 230, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED, 0, WndProcAllDefault);
+	gui_func::base_handlers::InitHandlerMsg(SXNameSapce::OutputGUIInFile);
+	SXNameSapce::OutputGUIInFile->addHandler(HideSettingsWndClose,WM_CLOSE,0,0,0,0,true);
+	SXNameSapce::NameSpace = SXGUICrStatic("NameSpace", 13, 13, 100, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0);
+	SXNameSapce::NameSpace->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::NameSpace->setColorText(RGB(0, 0, 0));
+	SXNameSapce::NameSpace->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::NameSpace->setTransparentTextBk(true);
+	SXNameSapce::NameSpace->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::SXNameSpace = SXGUICrEdit("SXNameSpace", 119, 11, 199, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0);
+	SXNameSapce::SXNameSpace->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::SXNameSpace->setColorText(RGB(0, 0, 0));
+	SXNameSapce::SXNameSpace->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::SXNameSpace->setTransparentTextBk(true);
+	SXNameSapce::SXNameSpace->setColorBrush(RGB(255, 255, 255));
+	SXNameSapce::Constructors = SXGUICrCheckBox("Constructors", 15, 60, 100, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0, false);
+	SXNameSapce::Constructors->setCheck(SXGUI_CHECKBOX_STATE_CHECKED);
+	SXNameSapce::Constructors->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::Constructors->setColorText(RGB(0, 0, 0));
+	SXNameSapce::Constructors->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::Constructors->setTransparentTextBk(true);
+	SXNameSapce::Constructors->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::Destructors = SXGUICrCheckBox("Destructors", 15, 80, 100, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0, false);
+	SXNameSapce::Destructors->setCheck(SXGUI_CHECKBOX_STATE_CHECKED);
+	SXNameSapce::Destructors->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::Destructors->setColorText(RGB(0, 0, 0));
+	SXNameSapce::Destructors->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::Destructors->setTransparentTextBk(true);
+	SXNameSapce::Destructors->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::Comments = SXGUICrCheckBox("Comments", 15, 100, 100, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0, false);
+	SXNameSapce::Comments->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::Comments->setColorText(RGB(0, 0, 0));
+	SXNameSapce::Comments->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::Comments->setTransparentTextBk(true);
+	SXNameSapce::Comments->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::Inlude = SXGUICrCheckBox("Inlude", 15, 120, 125, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0, false);
+	SXNameSapce::Inlude->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::Inlude->setColorText(RGB(0, 0, 0));
+	SXNameSapce::Inlude->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::Inlude->setTransparentTextBk(true);
+	SXNameSapce::Inlude->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::DetectedNameSpace = SXGUICrCheckBox("In Name Space", 15, 40, 100, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0, false);
+	SXNameSapce::DetectedNameSpace->setCheck(SXGUI_CHECKBOX_STATE_CHECKED);
+	SXNameSapce::DetectedNameSpace->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::DetectedNameSpace->setColorText(RGB(0, 0, 0));
+	SXNameSapce::DetectedNameSpace->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::DetectedNameSpace->setTransparentTextBk(true);
+	SXNameSapce::DetectedNameSpace->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::SaveFile = SXGUICrStatic("SaveFile", 7, 161, 58, 16, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0);
+	SXNameSapce::SaveFile->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::SaveFile->setColorText(RGB(0, 0, 0));
+	SXNameSapce::SaveFile->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::SaveFile->setTransparentTextBk(true);
+	SXNameSapce::SaveFile->setColorBrush(RGB(220, 220, 220));
+	SXNameSapce::PathForFile = SXGUICrEdit("PathForFile", 61, 159, 233, 20, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0);
+	SXNameSapce::PathForFile->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::PathForFile->setColorText(RGB(0, 0, 0));
+	SXNameSapce::PathForFile->setColorTextBk(RGB(255, 255, 255));
+	SXNameSapce::PathForFile->setTransparentTextBk(true);
+	SXNameSapce::PathForFile->setColorBrush(RGB(255,255,255));
+	SXNameSapce::ButtonSelectFile = SXGUICrButton("...", 298, 159, 23, 19, SXGUI_BUTTON_IMAGE_NONE, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0);
+	SXNameSapce::ButtonSelectFile->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::ButtonSelectFile->addHandler(SelectButClick,WM_LBUTTONUP);
+	SXNameSapce::StartOutput = SXGUICrButton("Start output", 160, 51, 134, 77, SXGUI_BUTTON_IMAGE_NONE, SXNameSapce::OutputGUIInFile->getHWND(), 0, 0);
+	SXNameSapce::StartOutput->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	SXNameSapce::StartOutput->addHandler(StartButClick,WM_LBUTTONUP);
 }
 void SXNameSapce::DeleteAllElements()
 {

@@ -422,21 +422,21 @@ ps - отправка в пиксельный шейдер \n
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
-	SXGUIRegClass::RegGroupBox();
+	SXGUIinit();
 	srand((unsigned int)time(0));
 
 	SXMaterialEditor::InitAllElements();
 	SXMaterialEditor::Nulling();
 	
 
-	SkyXEngine_Init(SXMaterialEditor::WindowRender->GetHWND(), SXMaterialEditor::JobWindow->GetHWND());
+	SkyXEngine_Init(SXMaterialEditor::WindowRender->getHWND(), SXMaterialEditor::JobWindow->getHWND());
 	Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 
-	SXMaterialEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	SXMaterialEditor::CheckBoxTBRLighting->SetCheck(true);
+	SXMaterialEditor::MainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	SXMaterialEditor::CheckBoxTBRLighting->setCheck(true);
 
-	SXMaterialEditor::CheckBoxTBCam->SetCheck(true);
-	SRender_EditorCameraSetMove(SXMaterialEditor::CheckBoxTBCam->GetCheck());
+	SXMaterialEditor::CheckBoxTBCam->setCheck(true);
+	SRender_EditorCameraSetMove(SXMaterialEditor::CheckBoxTBCam->getCheck());
 
 	char shaderskitpath[1024];
 	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\shaders_kit.cfg");
@@ -445,10 +445,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	for (int i = 0; i < SXMaterialEditor::Shaders->GetCount(); ++i)
 	{
-		SXMaterialEditor::ComboBoxShaders->AddItem(SXMaterialEditor::Shaders->GetName(i));
+		SXMaterialEditor::ComboBoxShaders->addItem(SXMaterialEditor::Shaders->GetName(i));
 	}
 
-	SXMaterialEditor::ComboBoxShaders->SetSel(0);
+	SXMaterialEditor::ComboBoxShaders->setSel(0);
 
 
 	char paramlpath[1024];
@@ -458,16 +458,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	for (int i = 0; i < SXMaterialEditor::ParamL->GetCount(); ++i)
 	{
-		SXMaterialEditor::ComboBoxParamL->AddItem(SXMaterialEditor::ParamL->GetName(i));
+		SXMaterialEditor::ComboBoxParamL->addItem(SXMaterialEditor::ParamL->GetName(i));
 	}
 
-	SXMaterialEditor::ComboBoxParamL->SetSel(0);
+	SXMaterialEditor::ComboBoxParamL->setSel(0);
 
 
 	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
-	SXMaterialEditor::EditSkyBox->SetText("sky/sky_2_cube.dds");
+	SXMaterialEditor::EditSkyBox->setText("sky/sky_2_cube.dds");
 		
-	SRender_GetCamera()->SetPosition(&float3(0, 0, -100));
+	SRender_GetCamera()->setPosition(&float3(0, 0, -100));
 
 	
 	SRender_SimModelAdd("sphere.dse");
@@ -483,13 +483,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 
-	SGCore_LoadTexLoadTextures();
+	SGCore_LoadTexAllLoad();
 
 	SXMaterialEditor::InitMtl(SRender_SimModelGetIDMtl());
 	SXMaterialEditor::IDMat = SRender_SimModelGetIDMtl();
 
 	SkyXEngine_PreviewKill();
-	SXMaterialEditor::JobWindow->Visible(true);
+	SXMaterialEditor::JobWindow->setVisible(true);
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
 	SXMaterialEditor::DeleteAllElements();

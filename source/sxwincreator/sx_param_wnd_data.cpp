@@ -1,61 +1,5 @@
 
-extern LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-extern void InLog(const char* format, ...);
-
-namespace SXUpdateParam
-{
-	//обноелние информации активного элемента
-	void PosSize();	// позиция и габариты (x,y width,height)
-	void Caption();
-	void VarName();
-	void Enable();
-	void Visible();
-	void VisibleHint();
-	void HintText();
-	void ColorText();
-	void ColorTextBK();
-	void ColorBK();
-	void TransparentTextBk();
-	void ParentFont();
-	void Font();
-	void MenuWindow();
-
-	void UpdateAll();
-
-	void SetPosX();
-	void SetPosY();
-	void SetWidth();
-	void SetHeight();
-	void SetVisible();
-	void SetEnable();
-	void SetCaption();
-	void SetVarName();
-	void SetVisibleHint();
-	void SetHintText();
-	void SetColorText();
-	void SetColorTextBK();
-	void SetColorBK();
-	void SetTransparentTextBk();
-	void SetParentFont();
-	void SetFont();
-	void SetImgButton();
-	void SetMenuWindow();
-
-	void LockPosSizeBlock();
-	void LockFontBlock();
-	void LockColorBlock();
-	void LockColorTextBlock();
-	void LockImgButton();
-
-	void UnLockPosSizeBlock();
-	void UnLockFontBlock();
-	void UnLockColorBlock();
-	void UnLockColorTextBlock();
-	void UnlockAll();
-	void UnLockImgButton();
-
-	void SetDefaultValue();
-}
+#include "sx_param_wnd_data.h"
 
 void SXUpdateParam::SetDefaultValue()
 {
@@ -64,134 +8,134 @@ void SXUpdateParam::SetDefaultValue()
 
 void SXUpdateParam::LockColorBlock()
 {
-	SXMainWndElem::StaticParamColorText->Enable(false);
-	SXMainWndElem::StaticParamColorBK->Enable(false);
-	SXMainWndElem::StaticParamColorBKText->Enable(false);
-	SXMainWndElem::StaticParamTransparentText->Enable(false);
+	SXMainWndElem::StaticParamColorText->setEnable(false);
+	SXMainWndElem::StaticParamColorBK->setEnable(false);
+	SXMainWndElem::StaticParamColorBKText->setEnable(false);
+	SXMainWndElem::StaticParamTransparentText->setEnable(false);
 
-	SXMainWndElem::EditParamColorTextR->Enable(false);
-	SXMainWndElem::EditParamColorTextG->Enable(false);
-	SXMainWndElem::EditParamColorTextB->Enable(false);
+	SXMainWndElem::EditParamColorTextR->setEnable(false);
+	SXMainWndElem::EditParamColorTextG->setEnable(false);
+	SXMainWndElem::EditParamColorTextB->setEnable(false);
 
-	SXMainWndElem::EditParamColorTextBKR->Enable(false);
-	SXMainWndElem::EditParamColorTextBKG->Enable(false);
-	SXMainWndElem::EditParamColorTextBKB->Enable(false);
+	SXMainWndElem::EditParamColorTextBKR->setEnable(false);
+	SXMainWndElem::EditParamColorTextBKG->setEnable(false);
+	SXMainWndElem::EditParamColorTextBKB->setEnable(false);
 
-	SXMainWndElem::EditParamColorBKR->Enable(false);
-	SXMainWndElem::EditParamColorBKG->Enable(false);
-	SXMainWndElem::EditParamColorBKB->Enable(false);
+	SXMainWndElem::EditParamColorBKR->setEnable(false);
+	SXMainWndElem::EditParamColorBKG->setEnable(false);
+	SXMainWndElem::EditParamColorBKB->setEnable(false);
 
-	SXMainWndElem::ComboBoxParamTransparentText->Enable(false);
+	SXMainWndElem::ComboBoxParamTransparentText->setEnable(false);
 }
 
 void SXUpdateParam::UnLockColorBlock()
 {
-	SXMainWndElem::StaticParamColorText->Enable(true);
-	SXMainWndElem::StaticParamColorBK->Enable(true);
-	SXMainWndElem::StaticParamColorBKText->Enable(true);
-	SXMainWndElem::StaticParamTransparentText->Enable(true);
+	SXMainWndElem::StaticParamColorText->setEnable(true);
+	SXMainWndElem::StaticParamColorBK->setEnable(true);
+	SXMainWndElem::StaticParamColorBKText->setEnable(true);
+	SXMainWndElem::StaticParamTransparentText->setEnable(true);
 
-	SXMainWndElem::EditParamColorTextR->Enable(true);
-	SXMainWndElem::EditParamColorTextG->Enable(true);
-	SXMainWndElem::EditParamColorTextB->Enable(true);
+	SXMainWndElem::EditParamColorTextR->setEnable(true);
+	SXMainWndElem::EditParamColorTextG->setEnable(true);
+	SXMainWndElem::EditParamColorTextB->setEnable(true);
 
-	SXMainWndElem::EditParamColorTextBKR->Enable(true);
-	SXMainWndElem::EditParamColorTextBKG->Enable(true);
-	SXMainWndElem::EditParamColorTextBKB->Enable(true);
+	SXMainWndElem::EditParamColorTextBKR->setEnable(true);
+	SXMainWndElem::EditParamColorTextBKG->setEnable(true);
+	SXMainWndElem::EditParamColorTextBKB->setEnable(true);
 
-	SXMainWndElem::EditParamColorBKR->Enable(true);
-	SXMainWndElem::EditParamColorBKG->Enable(true);
-	SXMainWndElem::EditParamColorBKB->Enable(true);
+	SXMainWndElem::EditParamColorBKR->setEnable(true);
+	SXMainWndElem::EditParamColorBKG->setEnable(true);
+	SXMainWndElem::EditParamColorBKB->setEnable(true);
 
-	SXMainWndElem::ComboBoxParamTransparentText->Enable(true);
+	SXMainWndElem::ComboBoxParamTransparentText->setEnable(true);
 }
 
 void SXUpdateParam::LockColorTextBlock()
 {
-	SXMainWndElem::StaticParamColorText->Enable(false);
-	SXMainWndElem::StaticParamColorBKText->Enable(false);
-	SXMainWndElem::StaticParamTransparentText->Enable(false);
+	SXMainWndElem::StaticParamColorText->setEnable(false);
+	SXMainWndElem::StaticParamColorBKText->setEnable(false);
+	SXMainWndElem::StaticParamTransparentText->setEnable(false);
 
-	SXMainWndElem::EditParamColorTextR->Enable(false);
-	SXMainWndElem::EditParamColorTextG->Enable(false);
-	SXMainWndElem::EditParamColorTextB->Enable(false);
+	SXMainWndElem::EditParamColorTextR->setEnable(false);
+	SXMainWndElem::EditParamColorTextG->setEnable(false);
+	SXMainWndElem::EditParamColorTextB->setEnable(false);
 
-	SXMainWndElem::EditParamColorTextBKR->Enable(false);
-	SXMainWndElem::EditParamColorTextBKG->Enable(false);
-	SXMainWndElem::EditParamColorTextBKB->Enable(false);
+	SXMainWndElem::EditParamColorTextBKR->setEnable(false);
+	SXMainWndElem::EditParamColorTextBKG->setEnable(false);
+	SXMainWndElem::EditParamColorTextBKB->setEnable(false);
 
-	SXMainWndElem::ComboBoxParamTransparentText->Enable(false);
+	SXMainWndElem::ComboBoxParamTransparentText->setEnable(false);
 }
 
 void SXUpdateParam::UnLockColorTextBlock()
 {
-	SXMainWndElem::StaticParamColorText->Enable(true);
-	SXMainWndElem::StaticParamColorBKText->Enable(true);
-	SXMainWndElem::StaticParamTransparentText->Enable(true);
+	SXMainWndElem::StaticParamColorText->setEnable(true);
+	SXMainWndElem::StaticParamColorBKText->setEnable(true);
+	SXMainWndElem::StaticParamTransparentText->setEnable(true);
 
-	SXMainWndElem::EditParamColorTextR->Enable(true);
-	SXMainWndElem::EditParamColorTextG->Enable(true);
-	SXMainWndElem::EditParamColorTextB->Enable(true);
+	SXMainWndElem::EditParamColorTextR->setEnable(true);
+	SXMainWndElem::EditParamColorTextG->setEnable(true);
+	SXMainWndElem::EditParamColorTextB->setEnable(true);
 
-	SXMainWndElem::EditParamColorTextBKR->Enable(true);
-	SXMainWndElem::EditParamColorTextBKG->Enable(true);
-	SXMainWndElem::EditParamColorTextBKB->Enable(true);
+	SXMainWndElem::EditParamColorTextBKR->setEnable(true);
+	SXMainWndElem::EditParamColorTextBKG->setEnable(true);
+	SXMainWndElem::EditParamColorTextBKB->setEnable(true);
 
-	SXMainWndElem::ComboBoxParamTransparentText->Enable(true);
+	SXMainWndElem::ComboBoxParamTransparentText->setEnable(true);
 }
 
 void SXUpdateParam::LockFontBlock()
 {
-	SXMainWndElem::StaticParamFont->Enable(false);
-	SXMainWndElem::StaticParamFontParent->Enable(false);
-	SXMainWndElem::ComboBoxParamParentFont->Enable(false);
-	SXMainWndElem::ButtonParamSelectFont->Enable(false);
+	SXMainWndElem::StaticParamFont->setEnable(false);
+	SXMainWndElem::StaticParamFontParent->setEnable(false);
+	SXMainWndElem::ComboBoxParamParentFont->setEnable(false);
+	SXMainWndElem::ButtonParamSelectFont->setEnable(false);
 }
 
 void SXUpdateParam::UnLockFontBlock()
 {
-	SXMainWndElem::StaticParamFont->Enable(true);
-	SXMainWndElem::StaticParamFontParent->Enable(true);
-	SXMainWndElem::ComboBoxParamParentFont->Enable(true);
-	SXMainWndElem::ButtonParamSelectFont->Enable(true);
+	SXMainWndElem::StaticParamFont->setEnable(true);
+	SXMainWndElem::StaticParamFontParent->setEnable(true);
+	SXMainWndElem::ComboBoxParamParentFont->setEnable(true);
+	SXMainWndElem::ButtonParamSelectFont->setEnable(true);
 }
 
 void SXUpdateParam::LockPosSizeBlock()
 {
-	SXMainWndElem::StaticParamPosX->Enable(false);
-	SXMainWndElem::StaticParamPosY->Enable(false);
-	SXMainWndElem::StaticParamWidth->Enable(false);
-	SXMainWndElem::StaticParamHeight->Enable(false);
+	SXMainWndElem::StaticParamPosX->setEnable(false);
+	SXMainWndElem::StaticParamPosY->setEnable(false);
+	SXMainWndElem::StaticParamWidth->setEnable(false);
+	SXMainWndElem::StaticParamHeight->setEnable(false);
 
-	SXMainWndElem::EditParamPosX->Enable(false);
-	SXMainWndElem::EditParamPosY->Enable(false);
-	SXMainWndElem::EditParamWidth->Enable(false);
-	SXMainWndElem::EditParamHeight->Enable(false);
+	SXMainWndElem::EditParamPosX->setEnable(false);
+	SXMainWndElem::EditParamPosY->setEnable(false);
+	SXMainWndElem::EditParamWidth->setEnable(false);
+	SXMainWndElem::EditParamHeight->setEnable(false);
 }
 
 void SXUpdateParam::UnLockPosSizeBlock()
 {
-	SXMainWndElem::StaticParamPosX->Enable(true);
-	SXMainWndElem::StaticParamPosY->Enable(true);
-	SXMainWndElem::StaticParamWidth->Enable(true);
-	SXMainWndElem::StaticParamHeight->Enable(true);
+	SXMainWndElem::StaticParamPosX->setEnable(true);
+	SXMainWndElem::StaticParamPosY->setEnable(true);
+	SXMainWndElem::StaticParamWidth->setEnable(true);
+	SXMainWndElem::StaticParamHeight->setEnable(true);
 
-	SXMainWndElem::EditParamPosX->Enable(true);
-	SXMainWndElem::EditParamPosY->Enable(true);
-	SXMainWndElem::EditParamWidth->Enable(true);
-	SXMainWndElem::EditParamHeight->Enable(true);
+	SXMainWndElem::EditParamPosX->setEnable(true);
+	SXMainWndElem::EditParamPosY->setEnable(true);
+	SXMainWndElem::EditParamWidth->setEnable(true);
+	SXMainWndElem::EditParamHeight->setEnable(true);
 }
 
 void SXUpdateParam::LockImgButton()
 {
-	SXMainWndElem::StaticParamImgBLoadImg->Enable(false);
-	SXMainWndElem::ButtomParamImgBLoadImg->Enable(false);
+	SXMainWndElem::StaticParamImgBLoadImg->setEnable(false);
+	SXMainWndElem::ButtomParamImgBLoadImg->setEnable(false);
 }
 
 void SXUpdateParam::UnLockImgButton()
 {
-	SXMainWndElem::StaticParamImgBLoadImg->Enable(true);
-	SXMainWndElem::ButtomParamImgBLoadImg->Enable(true);
+	SXMainWndElem::StaticParamImgBLoadImg->setEnable(true);
+	SXMainWndElem::ButtomParamImgBLoadImg->setEnable(true);
 }
 
 void SXUpdateParam::UnlockAll()
@@ -208,9 +152,9 @@ void SXUpdateParam::UpdateAll()
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
 			char ClassName[256];
-			int error = GetClassName(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(),ClassName,256);
+			int error = GetClassName(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND(),ClassName,256);
 				//обычная кнопка
-				if (strcmp(ClassName, "SXGUIGROUPBOX") == 0) //strcmp(ClassName, "Button") == 0 && !(GetWindowLong(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(), GWL_STYLE) & BS_GROUPBOX))
+				if (strcmp(ClassName, "SXGUIGROUPBOX") == 0) //strcmp(ClassName, "Button") == 0 && !(GetWindowLong(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND(), GWL_STYLE) & BS_GROUPBOX))
 				{
 					SXUpdateParam::UnlockAll();
 					//SXUpdateParam::LockColorBlock();
@@ -231,7 +175,7 @@ void SXUpdateParam::UpdateAll()
 				}
 				else if(
 						strcmp(ClassName,"Static") == 0 || 
-						(strcmp(ClassName,"Button") == 0 && GetWindowLong(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(),GWL_STYLE) & BS_GROUPBOX) ||
+						(strcmp(ClassName,"Button") == 0 && GetWindowLong(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND(),GWL_STYLE) & BS_GROUPBOX) ||
 						strcmp(ClassName,"ListBox") == 0 || 
 						strcmp(ClassName,"Edit") == 0 ||
 						strcmp(ClassName,"ComboBox") == 0
@@ -285,20 +229,20 @@ void SXUpdateParam::PosSize()
 {
 	RECT cr;
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetClientRect(&cr);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getClientRect(&cr);
 		else
-			SXMainWndElem::JobMainWnd->GetClientRect(&cr);
-	//GetWindowRect(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement].Object->GetHWND(),&gr);
+			SXMainWndElem::JobMainWnd->getClientRect(&cr);
+	//GetWindowRect(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement].Object->getHWND(),&gr);
 	char tmp[32];
 	sprintf(tmp,"%d",cr.right - cr.left);
-	SXMainWndElem::EditParamWidth->SetText(tmp);
+	SXMainWndElem::EditParamWidth->setText(tmp);
 	sprintf(tmp,"%d",cr.bottom - cr.top);
-	SXMainWndElem::EditParamHeight->SetText(tmp);
+	SXMainWndElem::EditParamHeight->setText(tmp);
 
 	sprintf(tmp,"%d",cr.left);
-	SXMainWndElem::EditParamPosX->SetText(tmp);
+	SXMainWndElem::EditParamPosX->setText(tmp);
 	sprintf(tmp,"%d",cr.top);
-	SXMainWndElem::EditParamPosY->SetText(tmp);
+	SXMainWndElem::EditParamPosY->setText(tmp);
 }
 
 void SXUpdateParam::Caption()
@@ -307,15 +251,15 @@ void SXUpdateParam::Caption()
 	str[0] = 0;
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
-			SXGUIFuctinon::GetText(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object,str,256);
+			gui_func::text::GetText(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object,str,256);
 				if(str[0] == 0)
 				{
 					sprintf(str,"%s",SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Name);
 				}
 		}
 		else
-			SXMainWndElem::JobMainWnd->GetText(str,256);
-	SXMainWndElem::EditParamCaption->SetText(str);
+			SXMainWndElem::JobMainWnd->getText(str,256);
+	SXMainWndElem::EditParamCaption->setText(str);
 }
 
 void SXUpdateParam::VarName()
@@ -331,51 +275,50 @@ void SXUpdateParam::VarName()
 		}
 		else
 			sprintf(str,"%s",SXMainWndElem::NameJobWnd);
-	SXMainWndElem::EditParamVarName->SetText(str);
+	SXMainWndElem::EditParamVarName->setText(str);
 }
 
 void SXUpdateParam::Enable()
 {
 	bool enable;
 		if(SXMainWndElem::NumActiveElement != -1)
-			enable = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->Enable();
+			enable = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getEnable();
 		else
-			enable = SXMainWndElem::JobMainWnd->Enable();
+			enable = SXMainWndElem::JobMainWnd->getEnable();
 	
-	SXMainWndElem::ComboBoxParamEnabled->SetSel((enable ? 0 : 1));
+	SXMainWndElem::ComboBoxParamEnabled->setSel((enable ? 0 : 1));
 }
 
 void SXUpdateParam::Visible()
 {
 	bool visible;
 		if(SXMainWndElem::NumActiveElement != -1)
-			visible = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->Visible();
+			visible = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getVisible();
 		else
-			visible = SXMainWndElem::JobMainWnd->Visible();
+			visible = SXMainWndElem::JobMainWnd->getVisible();
 	
-	SXMainWndElem::ComboBoxParamVisible->SetSel((visible ? 0 : 1));
+	SXMainWndElem::ComboBoxParamVisible->setSel((visible ? 0 : 1));
 }
 
 void SXUpdateParam::VisibleHint()
 {
 	bool visible;
 		if(SXMainWndElem::NumActiveElement != -1)
-			visible = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->ShowHint();
+			visible = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getShowHint();
 		else
-			visible = SXMainWndElem::JobMainWnd->ShowHint();
+			visible = SXMainWndElem::JobMainWnd->getShowHint();
 	
-	SXMainWndElem::ComboBoxParamHintVisible->SetSel((visible ? 0 : 1));
+	SXMainWndElem::ComboBoxParamHintVisible->setSel((visible ? 0 : 1));
 }
 
 void SXUpdateParam::HintText()
 {
-	char str[1024];
-	str[0] = 0;
+	const char *str = 0;
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHintText(str);
+			str = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHintText();
 		else
-			SXMainWndElem::JobMainWnd->GetHintText(str);
-	SXMainWndElem::EditParamHintText->SetText(str);
+			str = SXMainWndElem::JobMainWnd->getHintText();
+	SXMainWndElem::EditParamHintText->setText(str);
 }
 
 void SXUpdateParam::ColorText()
@@ -383,13 +326,13 @@ void SXUpdateParam::ColorText()
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
 			char bufr[16],bufg[16],bufb[16];
-			DWORD color = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetColorText();
+			DWORD color = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getColorText();
 			sprintf(bufr, "%d", GetRValue(color));
 			sprintf(bufg, "%d", GetGValue(color));
 			sprintf(bufb, "%d", GetBValue(color));
-			SXMainWndElem::EditParamColorTextR->SetText(bufr);
-			SXMainWndElem::EditParamColorTextG->SetText(bufg);
-			SXMainWndElem::EditParamColorTextB->SetText(bufb);
+			SXMainWndElem::EditParamColorTextR->setText(bufr);
+			SXMainWndElem::EditParamColorTextG->setText(bufg);
+			SXMainWndElem::EditParamColorTextB->setText(bufb);
 		}
 }
 
@@ -398,13 +341,13 @@ void SXUpdateParam::ColorTextBK()
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
 			char bufr[16],bufg[16],bufb[16];
-			DWORD color = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetColorTextBk();
+			DWORD color = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getColorTextBk();
 			sprintf(bufr, "%d", GetRValue(color));
 			sprintf(bufg, "%d", GetGValue(color));
 			sprintf(bufb, "%d", GetBValue(color));
-			SXMainWndElem::EditParamColorTextBKR->SetText(bufr);
-			SXMainWndElem::EditParamColorTextBKG->SetText(bufg);
-			SXMainWndElem::EditParamColorTextBKB->SetText(bufb);
+			SXMainWndElem::EditParamColorTextBKR->setText(bufr);
+			SXMainWndElem::EditParamColorTextBKG->setText(bufg);
+			SXMainWndElem::EditParamColorTextBKB->setText(bufb);
 		}
 }
 
@@ -414,27 +357,27 @@ void SXUpdateParam::ColorBK()
 	DWORD color;
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
-			color = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetColorBrush();
+			color = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getColorBrush();
 		}
 		else
 		{
-			color = SXMainWndElem::JobMainWnd->GetColorBrush();
+			color = SXMainWndElem::JobMainWnd->getColorBrush();
 		}
 		sprintf(bufr, "%d", GetRValue(color));
 		sprintf(bufg, "%d", GetGValue(color));
 		sprintf(bufb, "%d", GetBValue(color));
-	SXMainWndElem::EditParamColorBKR->SetText(bufr);
-	SXMainWndElem::EditParamColorBKG->SetText(bufg);
-	SXMainWndElem::EditParamColorBKB->SetText(bufb);
+	SXMainWndElem::EditParamColorBKR->setText(bufr);
+	SXMainWndElem::EditParamColorBKG->setText(bufg);
+	SXMainWndElem::EditParamColorBKB->setText(bufb);
 }
 
 void SXUpdateParam::TransparentTextBk()
 {
 	bool ttbk = false;
 		if(SXMainWndElem::NumActiveElement != -1)
-			ttbk = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetTransparentTextBk();
+			ttbk = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getTransparentTextBk();
 	
-	SXMainWndElem::ComboBoxParamTransparentText->SetSel((ttbk ? 0 : 1));
+	SXMainWndElem::ComboBoxParamTransparentText->setSel((ttbk ? 0 : 1));
 }
 
 /*void SXUpdateParam::ParentFont()
@@ -443,7 +386,7 @@ void SXUpdateParam::TransparentTextBk()
 		if(SXMainWndElem::NumActiveElement != -1)
 			pf = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->IsParentFont();
 	
-	SXMainWndElem::ComboBoxParamParentFont->SetSel((pf ? 0 : 1));
+	SXMainWndElem::ComboBoxParamParentFont->setSel((pf ? 0 : 1));
 }*/
 
 void SXUpdateParam::Font()
@@ -451,10 +394,10 @@ void SXUpdateParam::Font()
 	
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
-			HFONT hfont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetFont();
+			HFONT hfont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHFont();
 				if(hfont == 0)
 				{
-					SXMainWndElem::ButtonParamSelectFont->SetText("System font ...");
+					SXMainWndElem::ButtonParamSelectFont->setText("System font ...");
 				}
 				else
 				{
@@ -467,7 +410,7 @@ void SXUpdateParam::Font()
 					font_size = (font_size < 0) ? - font_size : font_size;
 					ReleaseDC(NULL, hDC);
 					sprintf(buf,"%s%s%d",lf.lfFaceName,", ",font_size);
-					SXMainWndElem::ButtonParamSelectFont->SetText(buf);
+					SXMainWndElem::ButtonParamSelectFont->setText(buf);
 				}
 		}
 }
@@ -477,7 +420,7 @@ void SXUpdateParam::ParentFont()
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
 			HFONT defgui = (HFONT)GetStockObject(/*ANSI_VAR_FONT*/ANSI_VAR_FONT);
-			HFONT hfont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetFont();
+			HFONT hfont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHFont();
 			
 			/*LOGFONT LogFontDefGUI,LogFontCurrent;
 			ZeroMemory(&LogFontDefGUI,sizeof(&LogFontDefGUI));
@@ -486,7 +429,7 @@ void SXUpdateParam::ParentFont()
 			GetObject(hfont, sizeof(LOGFONT), &LogFontCurrent);*/
 				if(hfont == 0)
 				{
-					SXMainWndElem::ComboBoxParamParentFont->SetSel(0);
+					SXMainWndElem::ComboBoxParamParentFont->setSel(0);
 				}
 				else if(defgui == hfont
 							/*strcmp(LogFontDefGUI.lfFaceName,LogFontCurrent.lfFaceName) == 0 &&
@@ -498,11 +441,11 @@ void SXUpdateParam::ParentFont()
 							LogFontDefGUI.lfStrikeOut == LogFontCurrent.lfStrikeOut*/
 							)
 				{
-					SXMainWndElem::ComboBoxParamParentFont->SetSel(1);
+					SXMainWndElem::ComboBoxParamParentFont->setSel(1);
 				}
 				else
 				{
-					SXMainWndElem::ComboBoxParamParentFont->SetSel(2);
+					SXMainWndElem::ComboBoxParamParentFont->setSel(2);
 				}
 			//DeleteObject(hfont);
 			DeleteObject(defgui);
@@ -520,13 +463,13 @@ void SXUpdateParam::SetPosX()
 {
 	RECT cr;
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetClientRect(&cr);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getClientRect(&cr);
 		else
-			SXMainWndElem::JobMainWnd->GetClientRect(&cr);
+			SXMainWndElem::JobMainWnd->getClientRect(&cr);
 	RECT dtrect;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &dtrect, 0);
 	char posxtext[16];
-	SXMainWndElem::EditParamPosX->GetText(posxtext,16);
+	SXMainWndElem::EditParamPosX->getText(posxtext,16);
 	int posxnum = 0;
 	sscanf(posxtext,"%d",&posxnum);
 	int tmpright = (cr.right - cr.left) + posxnum;
@@ -540,22 +483,22 @@ void SXUpdateParam::SetPosX()
 	cr.left = tmpleft;
 
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetClientRect(&cr,true);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setClientRect(&cr,true);
 		else
-			SXMainWndElem::JobMainWnd->SetClientRect(&cr,true);
+			SXMainWndElem::JobMainWnd->setClientRect(&cr,true);
 }
 
 void SXUpdateParam::SetPosY()
 {
 	RECT cr;
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetClientRect(&cr);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getClientRect(&cr);
 		else
-			SXMainWndElem::JobMainWnd->GetClientRect(&cr);
+			SXMainWndElem::JobMainWnd->getClientRect(&cr);
 	RECT dtrect;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &dtrect, 0);
 	char posytext[16];
-	SXMainWndElem::EditParamPosY->GetText(posytext,16);
+	SXMainWndElem::EditParamPosY->getText(posytext,16);
 	int posynum = 0;
 	sscanf(posytext,"%d",&posynum);
 	int tmpbottom = (cr.bottom - cr.top) + posynum;
@@ -569,22 +512,22 @@ void SXUpdateParam::SetPosY()
 	cr.top = tmptop;
 
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetClientRect(&cr,true);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setClientRect(&cr,true);
 		else
-			SXMainWndElem::JobMainWnd->SetClientRect(&cr,true);
+			SXMainWndElem::JobMainWnd->setClientRect(&cr,true);
 }
 
 void SXUpdateParam::SetWidth()
 {
 	RECT cr;
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetClientRect(&cr);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getClientRect(&cr);
 		else
-			SXMainWndElem::JobMainWnd->GetClientRect(&cr);
+			SXMainWndElem::JobMainWnd->getClientRect(&cr);
 	RECT dtrect;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &dtrect, 0);
 	char widthtext[16];
-	SXMainWndElem::EditParamWidth->GetText(widthtext,16);
+	SXMainWndElem::EditParamWidth->getText(widthtext,16);
 	int widthnum = 0;
 	sscanf(widthtext,"%d",&widthnum);
 		if(widthnum + cr.left > dtrect.right)
@@ -592,22 +535,22 @@ void SXUpdateParam::SetWidth()
 	cr.right = widthnum + cr.left;
 
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetClientRect(&cr,true);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setClientRect(&cr,true);
 		else
-			SXMainWndElem::JobMainWnd->SetClientRect(&cr,true);
+			SXMainWndElem::JobMainWnd->setClientRect(&cr,true);
 }
 
 void SXUpdateParam::SetHeight()
 {
 	RECT cr;
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetClientRect(&cr);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getClientRect(&cr);
 		else
-			SXMainWndElem::JobMainWnd->GetClientRect(&cr);
+			SXMainWndElem::JobMainWnd->getClientRect(&cr);
 	RECT dtrect;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &dtrect, 0);
 	char heighttext[16];
-	SXMainWndElem::EditParamHeight->GetText(heighttext,16);
+	SXMainWndElem::EditParamHeight->getText(heighttext,16);
 	int heightnum = 0;
 	sscanf(heighttext,"%d",&heightnum);
 		if(heightnum + cr.top > dtrect.bottom)
@@ -615,34 +558,34 @@ void SXUpdateParam::SetHeight()
 	cr.bottom = heightnum + cr.top;
 
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetClientRect(&cr,true);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setClientRect(&cr,true);
 		else
-			SXMainWndElem::JobMainWnd->SetClientRect(&cr,true);
+			SXMainWndElem::JobMainWnd->setClientRect(&cr,true);
 }
 
 void SXUpdateParam::SetVisible()
 {
-	int sel = SXMainWndElem::ComboBoxParamVisible->GetSel();
+	int sel = SXMainWndElem::ComboBoxParamVisible->getSel();
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->Visible(sel==0 ? true : false);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setVisible(sel==0 ? true : false);
 		else
-			SXMainWndElem::JobMainWnd->Visible(sel==0 ? true : false);
+			SXMainWndElem::JobMainWnd->setVisible(sel==0 ? true : false);
 }
 
 void SXUpdateParam::SetEnable()
 {
-	int sel = SXMainWndElem::ComboBoxParamEnabled->GetSel();
+	int sel = SXMainWndElem::ComboBoxParamEnabled->getSel();
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->Enable(sel==0 ? true : false);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setEnable(sel==0 ? true : false);
 		else
-			SXMainWndElem::JobMainWnd->Enable(sel==0 ? true : false);
+			SXMainWndElem::JobMainWnd->setEnable(sel==0 ? true : false);
 }
 
 void SXUpdateParam::SetCaption()
 {
 	char str[256];
 	str[0] = 0;
-	SXMainWndElem::EditParamCaption->GetText(str,256);
+	SXMainWndElem::EditParamCaption->getText(str,256);
 		//если юзер удалил все символы из названия
 		//он творит однозначную херню
 		//то присваиваем старое имя
@@ -652,15 +595,15 @@ void SXUpdateParam::SetCaption()
 		{
 				if(SXMainWndElem::NumActiveElement != -1)
 				{
-					SXGUIFuctinon::SetText(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object,str);
+					gui_func::text::SetText(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object, str);
 					/*sprintf(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Name,"%s",str);
 					char tmpAddItem[256];
 					sprintf(tmpAddItem,"%s%s%s%s%s",str, " - ",SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName," : ",SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SysClassName);
-					SXMainWndElem::ListBoxAllElements->SetTextItem(SXMainWndElem::NumActiveElement,tmpAddItem);
-					SXMainWndElem::ListBoxAllElements->SetSel(SXMainWndElem::NumActiveElement);*/
+					SXMainWndElem::ListBoxAllElements->setTextItem(SXMainWndElem::NumActiveElement,tmpAddItem);
+					SXMainWndElem::ListBoxAllElements->setSel(SXMainWndElem::NumActiveElement);*/
 				}
 				else
-					SXMainWndElem::JobMainWnd->SetText(str);
+					SXMainWndElem::JobMainWnd->setText(str);
 		}
 }
 
@@ -668,7 +611,7 @@ void SXUpdateParam::SetVarName()
 {
 	char str[256];
 	str[0] = 0;
-	SXMainWndElem::EditParamVarName->GetText(str,256);
+	SXMainWndElem::EditParamVarName->getText(str,256);
 		//если юзер удалил все символы из названия
 		//он творит однозначную херню
 		//то присваиваем старое имя
@@ -678,41 +621,41 @@ void SXUpdateParam::SetVarName()
 		{
 				if(SXMainWndElem::NumActiveElement != -1)
 				{
-					//SXGUIFuctinon::SetText(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object,str);
+					//gui_func::text::SetText(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object,str);
 					sprintf(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Name,"%s",str);
 					char tmpAddItem[256];
 					sprintf(tmpAddItem,"%s%s%s%s%s",str, " - ",SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName," : ",SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SysClassName);
-					SXMainWndElem::ListBoxAllElements->SetTextItem(SXMainWndElem::NumActiveElement,tmpAddItem);
-					SXMainWndElem::ListBoxAllElements->SetSel(SXMainWndElem::NumActiveElement);
+					SXMainWndElem::ListBoxAllElements->setItemText(SXMainWndElem::NumActiveElement, tmpAddItem);
+					SXMainWndElem::ListBoxAllElements->setSel(SXMainWndElem::NumActiveElement);
 				}
 				else
-					sprintf(SXMainWndElem::NameJobWnd,"%s",str);//SXMainWndElem::JobMainWnd->SetText(str);
+					sprintf(SXMainWndElem::NameJobWnd,"%s",str);//SXMainWndElem::JobMainWnd->setText(str);
 		}
 }
 
 void SXUpdateParam::SetVisibleHint()
 {
-	int sel = SXMainWndElem::ComboBoxParamHintVisible->GetSel();
+	int sel = SXMainWndElem::ComboBoxParamHintVisible->getSel();
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->ShowHint(sel==0 ? true : false);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setShowHint(sel==0 ? true : false);
 		else
-			SXMainWndElem::JobMainWnd->ShowHint(sel==0 ? true : false);
+			SXMainWndElem::JobMainWnd->setShowHint(sel==0 ? true : false);
 }
 
 void SXUpdateParam::SetHintText()
 {
 	char str[1024];
-	SXMainWndElem::EditParamHintText->GetText(str,1024);
-	int sel = SXMainWndElem::ComboBoxParamHintVisible->GetSel();
+	SXMainWndElem::EditParamHintText->getText(str,1024);
+	int sel = SXMainWndElem::ComboBoxParamHintVisible->getSel();
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetHintText(str);
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->ShowHint(sel==0 ? true : false);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setHintText(str);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setShowHint(sel==0 ? true : false);
 		}
 		else
 		{
-			SXMainWndElem::JobMainWnd->SetHintText(str);
-			SXMainWndElem::JobMainWnd->ShowHint(sel==0 ? true : false);
+			SXMainWndElem::JobMainWnd->setHintText(str);
+			SXMainWndElem::JobMainWnd->setShowHint(sel==0 ? true : false);
 		}
 }
 
@@ -720,37 +663,37 @@ void SXUpdateParam::SetColorText()
 {
 	char bufr[16],bufg[16],bufb[16];
 	int numr,numg,numb;
-	SXMainWndElem::EditParamColorTextR->GetText(bufr,4);
-	SXMainWndElem::EditParamColorTextG->GetText(bufg,4);
-	SXMainWndElem::EditParamColorTextB->GetText(bufb,4);
+	SXMainWndElem::EditParamColorTextR->getText(bufr,4);
+	SXMainWndElem::EditParamColorTextG->getText(bufg,4);
+	SXMainWndElem::EditParamColorTextB->getText(bufb,4);
 	sscanf(bufr,"%d",&numr);
 	sscanf(bufg,"%d",&numg);
 	sscanf(bufb,"%d",&numb);
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetColorText(numr,numg,numb);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setColorText(RGB(numr, numg, numb));
 }
 
 void SXUpdateParam::SetColorTextBK()
 {
 	char bufr[16],bufg[16],bufb[16];
 	int numr,numg,numb;
-	SXMainWndElem::EditParamColorTextBKR->GetText(bufr,4);
-	SXMainWndElem::EditParamColorTextBKG->GetText(bufg,4);
-	SXMainWndElem::EditParamColorTextBKB->GetText(bufb,4);
+	SXMainWndElem::EditParamColorTextBKR->getText(bufr,4);
+	SXMainWndElem::EditParamColorTextBKG->getText(bufg,4);
+	SXMainWndElem::EditParamColorTextBKB->getText(bufb,4);
 	sscanf(bufr,"%d",&numr);
 	sscanf(bufg,"%d",&numg);
 	sscanf(bufb,"%d",&numb);
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetColorTextBk(numr,numg,numb);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setColorTextBk(RGB(numr, numg, numb));
 }
 
 void SXUpdateParam::SetColorBK()
 {
 	char bufr[16],bufg[16],bufb[16];
 	int numr,numg,numb;
-	SXMainWndElem::EditParamColorBKR->GetText(bufr,4);
-	SXMainWndElem::EditParamColorBKG->GetText(bufg,4);
-	SXMainWndElem::EditParamColorBKB->GetText(bufb,4);
+	SXMainWndElem::EditParamColorBKR->getText(bufr,4);
+	SXMainWndElem::EditParamColorBKG->getText(bufg,4);
+	SXMainWndElem::EditParamColorBKB->getText(bufb,4);
 	sscanf(bufr,"%d",&numr);
 	sscanf(bufg,"%d",&numg);
 	sscanf(bufb,"%d",&numb);
@@ -758,29 +701,29 @@ void SXUpdateParam::SetColorBK()
 		if(SXMainWndElem::NumActiveElement != -1)
 		{
 				if(strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName,"SXGUIBaseWnd") == 0)
-					dynamic_cast<ISXGUIBaseWnd*>(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object)->SetColorBrush(numr, numg, numb);
+					dynamic_cast<ISXGUIBaseWnd*>(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object)->setColorBrush(RGB(numr, numg, numb));
 				else
-					SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetColorBrush(numr,numg,numb);
+					SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setColorBrush(RGB(numr, numg, numb));
 		}
 		else
-			SXMainWndElem::JobMainWnd->SetColorBrush(numr,numg,numb);
+			SXMainWndElem::JobMainWnd->setColorBrush(RGB(numr, numg, numb));
 }
 
 void SXUpdateParam::SetTransparentTextBk()
 {
-	int sel = SXMainWndElem::ComboBoxParamTransparentText->GetSel();
+	int sel = SXMainWndElem::ComboBoxParamTransparentText->getSel();
 		if(SXMainWndElem::NumActiveElement != -1)
-			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetTransparentTextBk(sel==0 ? true : false);
+			SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setTransparentTextBk(sel==0 ? true : false);
 }
 
 void SXUpdateParam::SetParentFont()
 {
-	int sel = SXMainWndElem::ComboBoxParamParentFont->GetSel();
+	int sel = SXMainWndElem::ComboBoxParamParentFont->getSel();
 		if(SXMainWndElem::NumActiveElement != -1 && sel == 0)
 		{	
-			HFONT ParentFont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->ParentFont();
+			HFONT ParentFont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getParentHFont();
 
-			SendMessage(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(),WM_SETFONT,WPARAM(ParentFont),1);
+			SendMessage(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND(),WM_SETFONT,WPARAM(ParentFont),1);
 			DeleteObject(ParentFont);
 
 			SXUpdateParam::Font();
@@ -789,7 +732,7 @@ void SXUpdateParam::SetParentFont()
 		{
 			HFONT DefaultFont = (HFONT) GetStockObject(ANSI_VAR_FONT);
 
-			SendMessage(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(),WM_SETFONT,WPARAM(DefaultFont),1);
+			SendMessage(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND(),WM_SETFONT,WPARAM(DefaultFont),1);
 			DeleteObject(DefaultFont);
 
 			SXUpdateParam::Font();
@@ -804,7 +747,7 @@ void SXUpdateParam::SetFont()
 {
 	HFONT hfont;
 		if(SXMainWndElem::NumActiveElement != -1)
-			hfont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetFont();
+			hfont = SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHFont();
 	
 	CHOOSEFONT cf;
 
@@ -818,26 +761,26 @@ void SXUpdateParam::SetFont()
 	cf.lpLogFont = &lf;
 	cf.Flags = CF_SCREENFONTS | CF_INITTOLOGFONTSTRUCT;
 
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
 		if(ChooseFont(&cf))
 		{
 				if(SXMainWndElem::NumActiveElement != -1)
-					SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->SetFont(lf.lfFaceName,lf.lfHeight,lf.lfWidth,lf.lfWeight,lf.lfItalic,lf.lfUnderline,lf.lfStrikeOut);
+					SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->setFont(lf.lfFaceName,lf.lfHeight,lf.lfWidth,lf.lfWeight,lf.lfItalic,lf.lfUnderline,lf.lfStrikeOut);
 			char buf[256];
 			HDC hDC = ::GetDC(NULL);
 			int font_size = -MulDiv(lf.lfHeight, 72, GetDeviceCaps(hDC, LOGPIXELSY));
 			font_size = (font_size < 0) ? - font_size : font_size;
 			ReleaseDC(NULL, hDC);
 			sprintf(buf,"%s%s%d",lf.lfFaceName,", ",font_size);
-			SXMainWndElem::ButtonParamSelectFont->SetText(buf);
+			SXMainWndElem::ButtonParamSelectFont->setText(buf);
 		}
-	SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
+	SXMainWndElem::MainWnd->setEnable(true);
+	SXMainWndElem::JobMainWnd->setEnable(true);
+	SXMainWndElem::ParamWnd->setEnable(true);
+	SXMainWndElem::WndLog->setEnable(true);
 }
 
 void SXUpdateParam::SetImgButton()
@@ -862,35 +805,35 @@ void SXUpdateParam::SetImgButton()
 
 	ofn.Flags		= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
 		if(GetOpenFileName(&ofn) == TRUE)
 		{
 				if(SXMainWndElem::NumActiveElement != -1 && strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName,"SXGUIButtonImg") == 0)
 				{
 					ISXGUIButtonImg* bimg = dynamic_cast<ISXGUIButtonImg*>(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object);
-					bimg->ReInitImage(szFileName);
-					InvalidateRect(bimg->GetHWND(),0,1);
-					SXMainWndElem::ButtomParamImgBLoadImg->SetText(szFileTitle);
+					bimg->reInitImage(szFileName);
+					InvalidateRect(bimg->getHWND(),0,1);
+					SXMainWndElem::ButtomParamImgBLoadImg->setText(szFileTitle);
 				}
 		}
-	SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
+	SXMainWndElem::MainWnd->setEnable(true);
+	SXMainWndElem::JobMainWnd->setEnable(true);
+	SXMainWndElem::ParamWnd->setEnable(true);
+	SXMainWndElem::WndLog->setEnable(true);
 }
 
 void SXUpdateParam::SetMenuWindow()
 {
-	int check = SXMainWndElem::CheckBoxParamWinMenu->GetCheck();
+	int check = SXMainWndElem::CheckBoxParamWinMenu->getCheck();
 		if(check == 1)
 		{
-			SXMainWndElem::MenuWindow->SetToWindow(SXMainWndElem::JobMainWnd->GetHWND());
+			SXMainWndElem::MenuWindow->setToWindow(SXMainWndElem::JobMainWnd->getHWND());
 		}
 		else
-			SetMenu(SXMainWndElem::JobMainWnd->GetHWND(),0);
+			SetMenu(SXMainWndElem::JobMainWnd->getHWND(),0);
 }
 
 void SaveFile(const char* path)
@@ -904,11 +847,11 @@ void SaveFile(const char* path)
 	//{
 	fprintf(file, "[JobWindow]\n");
 	char classname[32];
-	GetClassName(SXMainWndElem::JobMainWnd->GetHWND(),classname,31);
+	GetClassName(SXMainWndElem::JobMainWnd->getHWND(),classname,31);
 	fprintf(file, "SysClassName = %s\n", classname);
 	fprintf(file, "Name = %s\n", SXMainWndElem::NameJobWnd);
 	char textwnd[256];
-	SXMainWndElem::JobMainWnd->GetText(textwnd,255);
+	SXMainWndElem::JobMainWnd->getText(textwnd,255);
 	fprintf(file, "CaptionElement = %s\n", textwnd);
 	
 	//}
@@ -917,7 +860,7 @@ void SaveFile(const char* path)
 	//{
 	RECT GClientRect;
 	long Width,Height;
-	SXMainWndElem::JobMainWnd->GetClientRect(&GClientRect);
+	SXMainWndElem::JobMainWnd->getClientRect(&GClientRect);
 
 	fprintf(file, "left = %d\n", GClientRect.left);
 	fprintf(file, "top = %d\n", GClientRect.top);
@@ -937,28 +880,28 @@ void SaveFile(const char* path)
 
 	//записываем задний фон
 	//{
-	ColorBK = SXMainWndElem::JobMainWnd->GetColorBrush();
+	ColorBK = SXMainWndElem::JobMainWnd->getColorBrush();
 	fprintf(file, "ColorBK = %d\n", ColorBK);
 	//}
 
 	//записываем использование меню
-	bool MenuWindow = (SXMainWndElem::CheckBoxParamWinMenu->GetCheck() == 1) ? true : false;
+	bool MenuWindow = (SXMainWndElem::CheckBoxParamWinMenu->getCheck() == 1) ? true : false;
 	fprintf(file, "MenuWindow = %d\n", MenuWindow);
 
 	//записываем информацию о подсказках
 	//{
-	bool HintVisible = SXMainWndElem::JobMainWnd->ShowHint();
+	bool HintVisible = SXMainWndElem::JobMainWnd->getShowHint();
 	fprintf(file, "HintVisible = %d\n", HintVisible);
-	char HintText[1024];
-	HintText[0] = 0;
-	SXMainWndElem::JobMainWnd->GetHintText(HintText);
+	/*char HintText[1024];
+	HintText[0] = 0;*/
+	const char *HintText = SXMainWndElem::JobMainWnd->getHintText();
 	fprintf(file, "HintText = %s\n", HintText);
 	//}
 
 	//параметры видимости и действительности
-	bool Visible = SXMainWndElem::JobMainWnd->Visible();
+	bool Visible = SXMainWndElem::JobMainWnd->getVisible();
 	fprintf(file, "Visible = %d\n", Visible);
-	bool Enable = SXMainWndElem::JobMainWnd->Enable();
+	bool Enable = SXMainWndElem::JobMainWnd->getEnable();
 	fprintf(file, "Enable = %d\n", Enable);
 
 		for(int i=0;i<CountSave;i++)
@@ -985,7 +928,7 @@ void SaveFile(const char* path)
 				{
 					//char* tmptxt = SXMainWndElem::CreateElements[i]->SysClassName;
 					ISXGUITextual* textual = dynamic_cast<ISXGUITextual*>(SXMainWndElem::CreateElements[i]->Object);
-					textual->GetText(CaptionElement,256);
+					textual->getText(CaptionElement,256);
 					fprintf(file, "CaptionElement = %s\n", CaptionElement);
 			}
 
@@ -994,7 +937,7 @@ void SaveFile(const char* path)
 			memset(&GClientRect,0,sizeof(RECT));
 			Width = Height = 0;
 
-			SXMainWndElem::CreateElements[i]->Object->GetClientRect(&GClientRect);
+			SXMainWndElem::CreateElements[i]->Object->getClientRect(&GClientRect);
 
 			fprintf(file, "left = %d\n", GClientRect.left);
 			fprintf(file, "top = %d\n", GClientRect.top);
@@ -1016,7 +959,7 @@ void SaveFile(const char* path)
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButton") != 0
 					)
 				{
-					HFONT hfont = SXMainWndElem::CreateElements[i]->Object->GetFont();
+					HFONT hfont = SXMainWndElem::CreateElements[i]->Object->getHFont();
 					LOGFONT LogFont;
 						if(hfont == 0)
 						{
@@ -1067,12 +1010,12 @@ void SaveFile(const char* path)
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIBaseWnd") != 0
 					)
 				{
-					ColorText = SXMainWndElem::CreateElements[i]->Object->GetColorText();
-					ColorTextBK = SXMainWndElem::CreateElements[i]->Object->GetColorTextBk();
+					ColorText = SXMainWndElem::CreateElements[i]->Object->getColorText();
+					ColorTextBK = SXMainWndElem::CreateElements[i]->Object->getColorTextBk();
 
 					fprintf(file, "ColorText = %d\n", ColorText);
 					fprintf(file, "ColorTextBK = %d\n", ColorTextBK);
-					TransparentTextBK = SXMainWndElem::CreateElements[i]->Object->GetTransparentTextBk();
+					TransparentTextBK = SXMainWndElem::CreateElements[i]->Object->getTransparentTextBk();
 					fprintf(file, "TransparentTextBK = %d\n", TransparentTextBK);
 				}
 
@@ -1088,25 +1031,25 @@ void SaveFile(const char* path)
 					strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg")
 					)
 				{
-					ColorBK = SXMainWndElem::CreateElements[i]->Object->GetColorBrush();
+					ColorBK = SXMainWndElem::CreateElements[i]->Object->getColorBrush();
 					fprintf(file, "ColorBK = %d\n", ColorBK);
 				}
 			//}
 
 			//записываем информацию о подсказках
 			//{
-			bool HintVisible = SXMainWndElem::CreateElements[i]->Object->ShowHint();
+			bool HintVisible = SXMainWndElem::CreateElements[i]->Object->getShowHint();
 			fprintf(file, "HintVisible = %d\n", HintVisible);
-			char HintText[1024];
-			HintText[0] = 0;
-			SXMainWndElem::CreateElements[i]->Object->GetHintText(HintText);
+			/*char HintText[1024];
+			HintText[0] = 0;*/
+			const char *HintText = SXMainWndElem::CreateElements[i]->Object->getHintText();
 			fprintf(file, "HintText = %s\n", HintText);
 			//}
 
 			//параметры видимости и действительности
-			bool Visible = SXMainWndElem::CreateElements[i]->Object->Visible();
+			bool Visible = SXMainWndElem::CreateElements[i]->Object->getVisible();
 			fprintf(file, "Visible = %d\n", Visible);
-			bool Enable = SXMainWndElem::CreateElements[i]->Object->Enable();
+			bool Enable = SXMainWndElem::CreateElements[i]->Object->getEnable();
 			fprintf(file, "Enable = %d\n", Enable);
 
 				if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIButtonImg") == 0)
@@ -1114,7 +1057,7 @@ void SaveFile(const char* path)
 					char PathForImg[1024];
 					PathForImg[0] = 0;
 					ISXGUIButtonImg* tmpImgButton = dynamic_cast<ISXGUIButtonImg*>(SXMainWndElem::CreateElements[i]->Object);
-					tmpImgButton->GetPathForImg(PathForImg);
+					tmpImgButton->getPathForImg(PathForImg);
 					fprintf(file, "PathForImg = %s\n", PathForImg);
 				}
 		}
@@ -1137,7 +1080,7 @@ void LoadFile(const char* path)
 	sprintf(SXMainWndElem::NameJobWnd, "%s", tmpconfig->getKey("JobWindow", "Name"));
 	sprintf(CaptionElement, "%s", tmpconfig->getKey("JobWindow", "CaptionElement"));
 
-	SXMainWndElem::JobMainWnd->SetText(CaptionElement);
+	SXMainWndElem::JobMainWnd->setText(CaptionElement);
 	RECT GClientRect;
 	long Width,Height;
 	
@@ -1152,34 +1095,34 @@ void LoadFile(const char* path)
 
 	GClientRect.right = Width + GClientRect.left;
 	GClientRect.bottom = Height + GClientRect.top;
-	SXMainWndElem::JobMainWnd->SetClientRect(&GClientRect,false);
+	SXMainWndElem::JobMainWnd->setClientRect(&GClientRect,false);
 
 	DWORD ColorText,ColorTextBK,ColorBK;
 	BOOL TransparentTextBK;
 
 	sscanf(tmpconfig->getKey("JobWindow", "ColorBK"), "%d", &ColorBK);
-	SXMainWndElem::JobMainWnd->SetColorBrush(ColorBK);
+	SXMainWndElem::JobMainWnd->setColorBrush(ColorBK);
 
 	BOOL MenuWindow;
 	sscanf(tmpconfig->getKey("JobWindow", "MenuWindow"), "%d", &MenuWindow);
-	SXMainWndElem::CheckBoxParamWinMenu->SetCheck(MenuWindow ? SXGUI_CHECKBOX_CHECKED : SXGUI_CHECKBOX_UNCHECKED);
-	InvalidateRect(SXMainWndElem::CheckBoxParamWinMenu->GetHWND(),0,1);
+	SXMainWndElem::CheckBoxParamWinMenu->setCheck(MenuWindow ? SXGUI_CHECKBOX_STATE_CHECKED : SXGUI_CHECKBOX_STATE_UNCHECKED);
+	InvalidateRect(SXMainWndElem::CheckBoxParamWinMenu->getHWND(),0,1);
 	SXUpdateParam::SetMenuWindow();
 
 	BOOL HintVisible;
 	sscanf(tmpconfig->getKey("JobWindow", "HintVisible"), "%d", &HintVisible);
-	SXMainWndElem::JobMainWnd->ShowHint(HintVisible);
+	SXMainWndElem::JobMainWnd->setShowHint(HintVisible);
 	char HintText[1024];
 	HintText[0] = 0;
 	sprintf(HintText, "%s", tmpconfig->getKey("JobWindow", "HintText"));
-	SXMainWndElem::JobMainWnd->SetHintText(HintText);
+	SXMainWndElem::JobMainWnd->setHintText(HintText);
 
 	BOOL Visible;
 	sscanf(tmpconfig->getKey("JobWindow", "Visible"), "%d", &Visible);
-	SXMainWndElem::JobMainWnd->Visible(Visible);
+	SXMainWndElem::JobMainWnd->setVisible(Visible);
 	BOOL Enable;
 	sscanf(tmpconfig->getKey("JobWindow", "Enable"), "%d", &Enable);
-	SXMainWndElem::JobMainWnd->Enable(Enable);
+	SXMainWndElem::JobMainWnd->setEnable(Enable);
 
 	int CountObject = 0;
 	WORD CountSave = tmpconfig->getSectionCount() - 1;
@@ -1226,97 +1169,97 @@ void LoadFile(const char* path)
 				if(strcmp(Object->SXClassName,"SXGUIButton") == 0)
 				{
 					CountObject = 0;
-					Object->Object = SXGUICrButton(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrButton(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIButtonImg") == 0)
 				{
 					CountObject = 1;
-					ISXGUIButtonImg* tmpButtonImg = SXGUICrButtonImgLoad("",GClientRect.left,GClientRect.top,Width,Height,RGB(0,0,0),RGB(100,100,100),SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
-					tmpButtonImg->SetColorFrame(100, 100, 100);
-					tmpButtonImg->SetEnable(true);
-					tmpButtonImg->SetEnableActive(true);
+					ISXGUIButtonImg* tmpButtonImg = SXGUICrButtonImgLoad("",GClientRect.left,GClientRect.top,Width,Height,RGB(0,0,0),RGB(100,100,100),SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
+					tmpButtonImg->setColorFrame(RGB(100, 100, 100));
+					tmpButtonImg->setEnable(true);
+					tmpButtonImg->setActive(true);
 
 					Object->Object = tmpButtonImg;
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIEdit") == 0)
 				{
 					CountObject = 2;
-					Object->Object = SXGUICrEdit(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrEdit(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUICheckBox") == 0)
 				{
 					CountObject = 3;
-					Object->Object = SXGUICrCheckBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, true);
+					Object->Object = SXGUICrCheckBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0, true);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIComboBox") == 0)
 				{
 					CountObject = 4;
-					Object->Object = SXGUICrComboBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrComboBox(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIGroupBox") == 0)
 				{
 					CountObject = 5;
-					Object->Object = SXGUICrGroupBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrGroupBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIListBox") == 0)
 				{
 					CountObject = 6;
-					Object->Object = SXGUICrListBox(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, true);
-					SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
+					Object->Object = SXGUICrListBox(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0, true);
+					SendMessage(Object->Object->getHWND(),LB_SETITEMHEIGHT,0,1);
 				}
 				else if (strcmp(Object->SXClassName, "SXGUIListView") == 0)
 				{
 					CountObject = 7;
-					Object->Object = SXGUICrListView(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrListView(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIMemo") == 0)
 				{
 					CountObject = 8;
-					Object->Object = SXGUICrMemo(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrMemo(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIProgressBar") == 0)
 				{
 					CountObject = 9;
-					Object->Object = SXGUICrProgressBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, true, true);
+					Object->Object = SXGUICrProgressBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0, true, true);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIRadioButton") == 0)
 				{
 					CountObject = 10;
-					Object->Object = SXGUICrRadioButton(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrRadioButton(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIStatic") == 0)
 				{
 					CountObject = 11;
-					Object->Object = SXGUICrStatic(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrStatic(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUITrackBar") == 0)
 				{
 					CountObject = 12;
-					Object->Object = SXGUICrTrackBar(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrTrackBar(CaptionElement, GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIStatusBar") == 0)
 				{
 					CountObject = 13;
-					Object->Object = SXGUICrStatusBar(CaptionElement, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrStatusBar(CaptionElement, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIToolBar") == 0)
 				{
 					CountObject = 14;
-					Object->Object = SXGUICrToolBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
+					Object->Object = SXGUICrToolBar(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIUpDown") == 0)
 				{
 					CountObject = 15;
-					Object->Object = SXGUICrUpDown(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0, 0, 0);
+					Object->Object = SXGUICrUpDown(GClientRect.left, GClientRect.top, Width, Height, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0, 0, 0);
 				}
 				else if(strcmp(Object->SXClassName,"SXGUIBaseWnd") == 0)
 				{
 					CountObject = 16;
-					Object->Object = SXGUICrBaseWnd(Object->Name, CaptionElement, 0,
-													0,GClientRect.left,GClientRect.top,Width,Height,
+					Object->Object = SXGUICrBaseWndEx(Object->Name, CaptionElement,
+													GClientRect.left,GClientRect.top,Width,Height,
 													0,0,CreateSolidBrush(RGB(200,200,200)),
 													0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,
-													SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob);
+													SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob);
 				}
 				//}
 
@@ -1342,7 +1285,7 @@ void LoadFile(const char* path)
 						//если первый символ конец строки то используем системный шрифт
 						if(FontName[0] == 0)
 						{
-							Object->Object->SetFont(0);
+							Object->Object->setHFont(0);
 						}
 						else
 						{
@@ -1354,7 +1297,7 @@ void LoadFile(const char* path)
 							sscanf(tmpconfig->getKey(sectname, "Underline"), "%d", &Underline);
 							sscanf(tmpconfig->getKey(sectname, "StrikeOut"), "%d", &StrikeOut);
 
-							Object->Object->SetFont(FontName,HeightFont,WidthFont,WeightFont,Italic,Underline,StrikeOut);
+							Object->Object->setFont(FontName,HeightFont,WidthFont,WeightFont,Italic,Underline,StrikeOut);
 						}
 				}
 				//}
@@ -1379,9 +1322,9 @@ void LoadFile(const char* path)
 					sscanf(tmpconfig->getKey(sectname, "ColorTextBK"), "%d", &ColorTextBK);
 					sscanf(tmpconfig->getKey(sectname, "TransparentTextBK"), "%d", &TransparentTextBK);
 
-					Object->Object->SetColorText(ColorText);
-					Object->Object->SetColorTextBk(ColorTextBK);
-					Object->Object->SetTransparentTextBk(TransparentTextBK);
+					Object->Object->setColorText(ColorText);
+					Object->Object->setColorTextBk(ColorTextBK);
+					Object->Object->setTransparentTextBk(TransparentTextBK);
 				}
 				//}
 
@@ -1398,24 +1341,24 @@ void LoadFile(const char* path)
 					)
 				{
 					sscanf(tmpconfig->getKey(sectname, "ColorBK"), "%d", &ColorBK);
-					Object->Object->SetColorBrush(ColorBK);
+					Object->Object->setColorBrush(ColorBK);
 				}
 			//}
 
 			BOOL HintVisible;
 			sscanf(tmpconfig->getKey(sectname, "HintVisible"), "%d", &HintVisible);
-			Object->Object->ShowHint(HintVisible);
+			Object->Object->setShowHint(HintVisible);
 			char HintText[1024];
 			HintText[0] = 0;
 			sprintf(HintText, "%s", tmpconfig->getKey(sectname, "HintText"));
-			Object->Object->SetHintText(HintText);
+			Object->Object->setHintText(HintText);
 
 			BOOL Visible;
 			sscanf(tmpconfig->getKey(sectname, "Visible"), "%d", &Visible);
-			Object->Object->Visible(Visible);
+			Object->Object->setVisible(Visible);
 			BOOL Enable;
 			sscanf(tmpconfig->getKey(sectname, "Enable"), "%d", &Enable);
-			Object->Object->Enable(Enable);
+			Object->Object->setEnable(Enable);
 
 				if(strcmp(Object->SXClassName,"SXGUIButtonImg") == 0)
 				{
@@ -1424,7 +1367,7 @@ void LoadFile(const char* path)
 
 					sprintf(PathForImg, "%s", tmpconfig->getKey(sectname, "PathForImg"));
 					ISXGUIButtonImg* tmpImgButton = dynamic_cast<ISXGUIButtonImg*>(Object->Object);
-					tmpImgButton->ReInitImage(PathForImg);
+					tmpImgButton->reInitImage(PathForImg);
 				}
 
 			SXMainWndElem::CountCreateNewElem++;
@@ -1438,21 +1381,21 @@ void LoadFile(const char* path)
 			//устнавливаем в юзердату строки порядковый номер созданного элемента
 			char tmpAddItem[256];
 			sprintf(tmpAddItem,"%s%s%s%s%s",Object->Name, " - ",Object->SXClassName," : ",Object->SysClassName);
-			SXMainWndElem::ListBoxAllElements->AddItem(tmpAddItem);
+			SXMainWndElem::ListBoxAllElements->addItem(tmpAddItem);
 
-			int countitem = SXMainWndElem::ListBoxAllElements->GetCountItem();
-			SXMainWndElem::ListBoxAllElements->SetItemData(SXMainWndElem::ListBoxAllElements->GetCountItem()-1,(LPARAM)SXMainWndElem::CreateElements.size()-1);
-			SXMainWndElem::ListBoxAllElements->SetSel(SXMainWndElem::NumActiveElement);
+			int countitem = SXMainWndElem::ListBoxAllElements->getItemCount();
+			SXMainWndElem::ListBoxAllElements->setItemData(SXMainWndElem::ListBoxAllElements->getItemCount() - 1, (LPARAM)SXMainWndElem::CreateElements.size() - 1);
+			SXMainWndElem::ListBoxAllElements->setSel(SXMainWndElem::NumActiveElement);
 
 			InLog("%s","Parameters ParamWnd overwritten, serial number of elements writed (userdata32)");
 		}
 
 		for(int e=0;e<SXMainWndElem::CreateElements.size();e++)
 		{
-			InvalidateRect(SXMainWndElem::CreateElements[e]->Object->GetHWND(),0,1);
+			InvalidateRect(SXMainWndElem::CreateElements[e]->Object->getHWND(),0,1);
 		}
 		
-	InvalidateRect(SXMainWndElem::JobMainWnd->GetHWND(),0,TRUE);
+	InvalidateRect(SXMainWndElem::JobMainWnd->getHWND(),0,TRUE);
 }
 
 
@@ -1466,7 +1409,7 @@ void CreateNew(bool reestablish)
 		{
 			InLog("%s%s%s","Deletion of object [",SXMainWndElem::CreateElements[0]->Name,"] ...");
 			SXMainWndElem::CountDeleteElem++;
-			SXMainWndElem::ListBoxAllElements->DeleteItem(0);
+			SXMainWndElem::ListBoxAllElements->deleteItem(0);
 			delete SXMainWndElem::CreateElements[0]->Object;
 			SXMainWndElem::CreateElements.erase(0);
 			InLog("%s","Deleting of object completed");
@@ -1477,13 +1420,13 @@ void CreateNew(bool reestablish)
 		{
 			RECT wrect;
 			SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
-			SXMainWndElem::JobMainWnd->SetText("JobWindow");
+			SXMainWndElem::JobMainWnd->setText("JobWindow");
 			RECT rc;// = {100,250,wrect.right - 456,wrect.bottom-350};
 			rc.left = 100;
 			rc.top = 250;
 			rc.right = rc.left + (wrect.right - 456);
 			rc.bottom = rc.top + (wrect.bottom - 350);
-			SXMainWndElem::JobMainWnd->SetClientRect(&rc,true);
+			SXMainWndElem::JobMainWnd->setClientRect(&rc,true);
 		}
 	//говорим что проект пустой
 	SXMainWndElem::IsCreatedEl = SXMainWndElem::IsLoadedEl = false;
@@ -1534,7 +1477,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 		}
 
 	char NameJobWnd[256];
-	SXMainWndElem::JobMainWnd->GetText(NameJobWnd,256);
+	SXMainWndElem::JobMainWnd->getText(NameJobWnd,256);
 		for(int i=0;i<strlen(NameJobWnd);i++)
 		{
 				if(NameJobWnd[i] == ' ')
@@ -1576,7 +1519,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 			long Width,Height;
 
 			fprintf(file,"\t%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd," = SXGUICrBaseWnd(");
-			SXMainWndElem::JobMainWnd->GetClientRect(&GClientRect);
+			SXMainWndElem::JobMainWnd->getClientRect(&GClientRect);
 			Width = GClientRect.right - GClientRect.left;
 			Height = GClientRect.bottom - GClientRect.top;
 
@@ -1593,7 +1536,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 
 			ISXGUIBaseWnd* tmpwnd = dynamic_cast<ISXGUIBaseWnd*>(SXMainWndElem::JobMainWnd);
 			DWORD SXColorBK;
-			SXColorBK = tmpwnd->GetColorBrush();
+			SXColorBK = tmpwnd->getColorBrush();
 			fprintf(file, "%s%d%s%d%s%d%s", "CreateSolidBrush(RGB(", GetRValue(SXColorBK), ",", GetGValue(SXColorBK), ",", GetBValue(SXColorBK), ")),"); //CreateSolidBrush(RGB(200,200,200))
 
 			fprintf(file,"%d%s",0,",");
@@ -1623,12 +1566,12 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							//char* tmpstr = 0;
 							//tmpstr = SXMainWndElem::CreateElements[i]->SysClassName;
 							ISXGUITextual* textual = dynamic_cast<ISXGUITextual*>(SXMainWndElem::CreateElements[i]->Object);
-							textual->GetText(CaptionElement,256);
+							textual->getText(CaptionElement,256);
 						}
 
 					fprintf(file,"%s%s%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name," = SXGUICr",SXMainWndElem::CreateElements[i]->SXClassName+5,"(");
 					
-					SXMainWndElem::CreateElements[i]->Object->GetClientRect(&GClientRect);
+					SXMainWndElem::CreateElements[i]->Object->getClientRect(&GClientRect);
 					Width = GClientRect.right - GClientRect.left;
 					Height = GClientRect.bottom - GClientRect.top;
 
@@ -1640,7 +1583,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
 							fprintf(file,"%d%s",0,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
 							
@@ -1649,7 +1592,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 						{
 							ISXGUIButtonImg* tmpButtonImg = dynamic_cast<ISXGUIButtonImg*>(SXMainWndElem::CreateElements[i]->Object);
 							char path[1024];
-							tmpButtonImg->GetPathForImg(path);
+							tmpButtonImg->getPathForImg(path);
 							fprintf(file,"%s%s%s","\"",path,"\",");
 							fprintf(file,"%d%s",GClientRect.left,",");
 							fprintf(file,"%d%s",GClientRect.top,",");
@@ -1657,12 +1600,12 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",Height,",");
 							fprintf(file,"%s%s","RGB(0,0,0)",",");
 							fprintf(file,"%s%s","RGB(100,100,100)",",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,");\n");
 
 							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetColorFrame(100,100,100);\n");
 							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetEnableActive(true);\n");
-							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetEnable(true);\n");
+							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetsetEnable(true);\n");
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIEdit") == 0)
 						{
@@ -1671,11 +1614,11 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
 							
-							//Object->Object = new SXGUIEdit(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIEdit(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUICheckBox") == 0)
 						{
@@ -1684,11 +1627,11 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%s%s","true",");\n");
-							//Object->Object = new SXGUICheckBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,true);
+							//Object->Object = new SXGUICheckBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0,true);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIComboBox") == 0)
 						{
@@ -1697,10 +1640,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIComboBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIComboBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIGroupBox") == 0)
 						{
@@ -1709,10 +1652,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIGroupBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIGroupBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIListBox") == 0)
 						{
@@ -1721,12 +1664,12 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%s%s","true",");\n");
-							//Object->Object = new SXGUIListBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,true);
-							//SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
+							//Object->Object = new SXGUIListBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0,true);
+							//SendMessage(Object->Object->getHWND(),LB_SETITEMHEIGHT,0,1);
 						}
 						else if (strcmp(SXMainWndElem::CreateElements[i]->SXClassName, "SXGUIListView") == 0)
 						{
@@ -1735,11 +1678,11 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file, "%d%s", GClientRect.top, ",");
 							fprintf(file, "%d%s", Width, ",");
 							fprintf(file, "%d%s", Height, ",");
-							fprintf(file, "%s%s%s", NameSpacePP, SXMainWndElem::NameJobWnd, "->GetHWND(),");
+							fprintf(file, "%s%s%s", NameSpacePP, SXMainWndElem::NameJobWnd, "->getHWND(),");
 							fprintf(file, "%d%s", 0, ",");
 							fprintf(file, "%d%s", 0, ");\n");
-							//Object->Object = new SXGUIListBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,true);
-							//SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
+							//Object->Object = new SXGUIListBox(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0,true);
+							//SendMessage(Object->Object->getHWND(),LB_SETITEMHEIGHT,0,1);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIMemo") == 0)
 						{
@@ -1748,10 +1691,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIMemo(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIMemo(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIProgressBar") == 0)
 						{
@@ -1760,12 +1703,12 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%s%s","true",",");
 							fprintf(file,"%s%s","true",");\n");
-							//Object->Object = new SXGUIProgressBar(GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,true,true);
+							//Object->Object = new SXGUIProgressBar(GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0,true,true);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIRadioButton") == 0)
 						{
@@ -1774,10 +1717,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIRadioButton(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIRadioButton(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIStatic") == 0)
 						{
@@ -1786,10 +1729,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIStatic(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIStatic(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUITrackBar") == 0)
 						{
@@ -1798,18 +1741,18 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUITrackBar(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUITrackBar(Object->Name,GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIStatusBar") == 0)
 						{
 							fprintf(file,"%s%s%s","\"",CaptionElement,"\",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIStatusBar(Object->Name,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIStatusBar(Object->Name,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIToolBar") == 0)
 						{
@@ -1820,10 +1763,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",Height,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIToolBar(Object->Name,GClientRect.left,GClientRect.top,Width,Height,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0);
+							//Object->Object = new SXGUIToolBar(Object->Name,GClientRect.left,GClientRect.top,Width,Height,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIUpDown") == 0)
 						{
@@ -1831,10 +1774,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",GClientRect.top,",");
 							fprintf(file,"%d%s",Width,",");
 							fprintf(file,"%d%s",Height,",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%d%s",0,");\n");
-							//Object->Object = new SXGUIUpDown(GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob,0,0,0);
+							//Object->Object = new SXGUIUpDown(GClientRect.left,GClientRect.top,Width,Height,SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob,0,0,0);
 						}
 						else if(strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIBaseWnd") == 0)
 						{
@@ -1850,18 +1793,18 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							fprintf(file,"%d%s",0,",");
 
 							ISXGUIBaseWnd* tmpwnd = dynamic_cast<ISXGUIBaseWnd*>(SXMainWndElem::CreateElements[i]->Object);
-							DWORD SXColorBK = tmpwnd->GetColorBrush();
+							DWORD SXColorBK = tmpwnd->getColorBrush();
 							fprintf(file, "%s%d%s%d%s%d%s", "CreateSolidBrush(RGB(", GetRValue(SXColorBK), ",", GetGValue(SXColorBK), ",", GetBValue(SXColorBK), ")),"); //CreateSolidBrush(RGB(200,200,200))
 
 							fprintf(file,"%d%s",0,",");
 							fprintf(file,"%s%s","CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER",",");
-							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->GetHWND(),");
+							fprintf(file,"%s%s%s",NameSpacePP,SXMainWndElem::NameJobWnd,"->getHWND(),");
 							fprintf(file,"%d%s",0,");\n");
 							/*Object->Object = new SXGUIBaseWnd(Object->Name,Object->Name,0,
 															0,GClientRect.left,GClientRect.top,Width,Height,
 															0,0,CreateSolidBrush(RGB(200,200,200)),
 															0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER,
-															SXMainWndElem::JobMainWnd->GetHWND(),WndProcChildJob);*/
+															SXMainWndElem::JobMainWnd->getHWND(),WndProcChildJob);*/
 						}
 
 
@@ -1874,7 +1817,7 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIBaseWnd") != 0
 							)
 						{
-							HFONT hfont = SXMainWndElem::CreateElements[i]->Object->GetFont();
+							HFONT hfont = SXMainWndElem::CreateElements[i]->Object->getHFont();
 
 								if(hfont != 0)
 								{
@@ -1896,10 +1839,10 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIBaseWnd") != 0
 							)
 						{
-							DWORD SXColorText = SXMainWndElem::CreateElements[i]->Object->GetColorText();
-							DWORD SXColorTextBK = SXMainWndElem::CreateElements[i]->Object->GetColorTextBk();
+							DWORD SXColorText = SXMainWndElem::CreateElements[i]->Object->getColorText();
+							DWORD SXColorTextBK = SXMainWndElem::CreateElements[i]->Object->getColorTextBk();
 
-							bool TransparentTextBK = SXMainWndElem::CreateElements[i]->Object->GetTransparentTextBk();
+							bool TransparentTextBK = SXMainWndElem::CreateElements[i]->Object->getTransparentTextBk();
 
 							fprintf(file, "%s%s%s%s%d%s%d%s%d%s", "\t", NameSpacePP, SXMainWndElem::CreateElements[i]->Name, "->SetColorText(", GetRValue(SXColorText), ",", GetGValue(SXColorText), ",", GetBValue(SXColorText), ");\n");
 							fprintf(file, "%s%s%s%s%d%s%d%s%d%s", "\t", NameSpacePP, SXMainWndElem::CreateElements[i]->Name, "->SetColorTextBk(", GetRValue(SXColorTextBK), ",", GetGValue(SXColorTextBK), ",", GetBValue(SXColorTextBK), ");\n");
@@ -1919,25 +1862,25 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 							strcmp(SXMainWndElem::CreateElements[i]->SXClassName,"SXGUIBaseWnd") != 0
 							)
 						{
-							DWORD SXColorBrush = SXMainWndElem::CreateElements[i]->Object->GetColorBrush();
-							fprintf(file, "%s%s%s%s%d%s%d%s%d%s", "\t", NameSpacePP, SXMainWndElem::CreateElements[i]->Name, "->SetColorBrush(", GetRValue(SXColorBrush), ",", GetGValue(SXColorBrush), ",", GetBValue(SXColorBrush), ");\n");
+							DWORD SXColorBrush = SXMainWndElem::CreateElements[i]->Object->getColorBrush();
+							fprintf(file, "%s%s%s%s%d%s%d%s%d%s", "\t", NameSpacePP, SXMainWndElem::CreateElements[i]->Name, "->setColorBrush(", GetRValue(SXColorBrush), ",", GetGValue(SXColorBrush), ",", GetBValue(SXColorBrush), ");\n");
 						}
 					//}
 
 					//{
-						if(SXMainWndElem::CreateElements[i]->Object->ShowHint())
+						if(SXMainWndElem::CreateElements[i]->Object->getShowHint())
 						{
 							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->ShowHint(true);\n");
-							char HintText[1024];
-							HintText[0] = 0;
-							SXMainWndElem::CreateElements[i]->Object->GetHintText(HintText);
+							/*char HintText[1024];
+							HintText[0] = 0;*/
+							const char *HintText = SXMainWndElem::CreateElements[i]->Object->getHintText();
 							fprintf(file,"%s%s%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetHintText(",HintText,");\n");
 						}
 						else
 						{
-							char HintText[1024];
-							HintText[0] = 0;
-							SXMainWndElem::CreateElements[i]->Object->GetHintText(HintText);
+							/*char HintText[1024];
+							HintText[0] = 0;*/
+							const char *HintText = SXMainWndElem::CreateElements[i]->Object->getHintText();
 								if(HintText[0] != 0)
 								{
 									fprintf(file,"%s%s%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->SetHintText(",HintText,");\n");
@@ -1947,14 +1890,14 @@ void OutputInFile(const char* path,const char* name_space,bool in_ns,bool constr
 					
 					//}
 
-						if(!SXMainWndElem::CreateElements[i]->Object->Visible())
+						if(!SXMainWndElem::CreateElements[i]->Object->getVisible())
 						{
 							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->Visible(false);\n");
 						}
 
-						if(!SXMainWndElem::CreateElements[i]->Object->Enable())
+						if(!SXMainWndElem::CreateElements[i]->Object->getEnable())
 						{
-							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->Enable(false);\n");
+							fprintf(file,"%s%s%s%s","\t",NameSpacePP,SXMainWndElem::CreateElements[i]->Name,"->setEnable(false);\n");
 						}
 				}
 

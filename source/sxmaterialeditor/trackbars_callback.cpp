@@ -6,9 +6,9 @@ LRESULT SXMaterialEditor_TrackBarPenetration_MouseMove(HWND hwnd, UINT msg, WPAR
 	char thickness[64];
 	thickness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarPenetration->GetPos();
+	int pos = SXMaterialEditor::TrackBarPenetration->getPos();
 	sprintf(thickness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditPenetration->SetText(thickness);
+	SXMaterialEditor::EditPenetration->setText(thickness);
 
 	SML_MtlSetPenetration(SXMaterialEditor::IDMat, float(pos)*0.01f);
 
@@ -20,9 +20,9 @@ LRESULT SXMaterialEditor_TrackBarRoughness_MouseMove(HWND hwnd, UINT msg, WPARAM
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarRoughness->GetPos();
+	int pos = SXMaterialEditor::TrackBarRoughness->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditRoughness->SetText(roughness);
+	SXMaterialEditor::EditRoughness->setText(roughness);
 
 	SML_MtlSetRoughness(SXMaterialEditor::IDMat, float(pos)*0.01f);
 
@@ -34,9 +34,9 @@ LRESULT SXMaterialEditor_TrackBarThickness_MouseMove(HWND hwnd, UINT msg, WPARAM
 	char thickness[64];
 	thickness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarThickness->GetPos();
+	int pos = SXMaterialEditor::TrackBarThickness->getPos();
 	sprintf(thickness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditThickness->SetText(thickness);
+	SXMaterialEditor::EditThickness->setText(thickness);
 
 	SML_MtlSetThickness(SXMaterialEditor::IDMat, float(pos)*0.01f);
 
@@ -48,9 +48,9 @@ LRESULT SXMaterialEditor_TrackBarF0_MouseMove(HWND hwnd, UINT msg, WPARAM wParam
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarF0->GetPos();
+	int pos = SXMaterialEditor::TrackBarF0->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditF0->SetText(roughness);
+	SXMaterialEditor::EditF0->setText(roughness);
 
 	SML_MtlSetF0(SXMaterialEditor::IDMat, float(pos)*0.01f);
 
@@ -64,9 +64,9 @@ LRESULT SXMaterialEditor_TrackBarUDVSX_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSX->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDVSX->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSX->SetText(roughness);
+	SXMaterialEditor::EditUDVSX->setText(roughness);
 
 	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 0, float(pos)*0.01f);
 
@@ -78,9 +78,9 @@ LRESULT SXMaterialEditor_TrackBarUDVSY_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSY->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDVSY->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSY->SetText(roughness);
+	SXMaterialEditor::EditUDVSY->setText(roughness);
 
 	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 1, float(pos)*0.01f);
 
@@ -92,9 +92,9 @@ LRESULT SXMaterialEditor_TrackBarUDVSZ_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSZ->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDVSZ->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSZ->SetText(roughness);
+	SXMaterialEditor::EditUDVSZ->setText(roughness);
 
 	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 2, float(pos)*0.01f);
 
@@ -106,9 +106,9 @@ LRESULT SXMaterialEditor_TrackBarUDVSW_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSW->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDVSW->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSW->SetText(roughness);
+	SXMaterialEditor::EditUDVSW->setText(roughness);
 
 	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 3, float(pos)*0.01f);
 
@@ -122,9 +122,9 @@ LRESULT SXMaterialEditor_TrackBarUDPSX_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSX->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDPSX->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSX->SetText(roughness);
+	SXMaterialEditor::EditUDPSX->setText(roughness);
 
 	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 0, float(pos)*0.01f);
 
@@ -136,9 +136,9 @@ LRESULT SXMaterialEditor_TrackBarUDPSY_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSY->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDPSY->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSY->SetText(roughness);
+	SXMaterialEditor::EditUDPSY->setText(roughness);
 
 	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 1, float(pos)*0.01f);
 
@@ -150,9 +150,9 @@ LRESULT SXMaterialEditor_TrackBarUDPSZ_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSZ->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDPSZ->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSZ->SetText(roughness);
+	SXMaterialEditor::EditUDPSZ->setText(roughness);
 
 	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 2, float(pos)*0.01f);
 
@@ -164,9 +164,9 @@ LRESULT SXMaterialEditor_TrackBarUDPSW_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSW->GetPos();
+	int pos = SXMaterialEditor::TrackBarUDPSW->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSW->SetText(roughness);
+	SXMaterialEditor::EditUDPSW->setText(roughness);
 
 	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 3, float(pos)*0.01f);
 

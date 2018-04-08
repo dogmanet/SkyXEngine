@@ -11,109 +11,51 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\base.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\base_wnd.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\button.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\checkbox.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\combobox.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\edit.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\groupbox.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\hint.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\img_button.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\listbox.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\listview.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\memo.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\menu.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\progressbar.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\radiobutton.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\static.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\statusbar.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\sxguiwinapi_dll.cpp" />
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\sxgui_base.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_base_wnd.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_button.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_check_box.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_combo_box.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_edit.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_group_box.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_hint.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\sxgui_img_button.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_list_box.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_list_view.cpp" />
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_memo.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\sxgui_menu.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_progress_bar.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_radio_button.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_static.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_status_bar.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_track_bar.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\SXGUIWinApi\SXGUI_up_down.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\toolbar.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\trackbar.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\updown.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\base.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\base_wnd.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\button.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\checkbox.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\combobox.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\edit.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\groupbox.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\hint.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\img_button.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\listbox.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\listview.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\memo.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\menu.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\progressbar.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\radiobutton.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\static.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\statusbar.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\sxgui_base.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_base_wnd.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\sxgui_button.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_check_box.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_combo_box.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\sxgui_edit.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_group_box.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_hint.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_img_button.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_list_box.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_list_view.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_memo.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_menu.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_progress_bar.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_radio_button.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_static.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_status_bar.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_toolbar_sx.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_track_bar.h" />
-    <ClInclude Include="..\..\..\source\SXGUIWinApi\SXGUI_up_down.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\toolbar.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\trackbar.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\updown.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0292BE32-298E-4E18-BC42-5A39F9487EBA}</ProjectGuid>

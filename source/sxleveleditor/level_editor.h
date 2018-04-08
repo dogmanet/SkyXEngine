@@ -30,7 +30,7 @@
 namespace SXLevelEditor
 {
 	extern ISXGUIBaseWnd* JobWindow;
-	extern ISXGUIMenu* MainMenu;
+	extern ISXGUIMenuWindow* MainMenu;
 	extern ISXGUIBaseWnd* RenderWindow;
 
 	extern ISXGUIToolBar* ToolBar1;

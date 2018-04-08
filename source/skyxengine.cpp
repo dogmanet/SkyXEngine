@@ -286,7 +286,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 #ifndef SX_GAME
 	ISXCamera *pCamera = SGCore_CrCamera();
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
-	pCamera->SetFOV(*r_default_fov);
+	pCamera->setFOV(*r_default_fov);
 
 	SRender_SetCamera(pCamera);
 #endif
