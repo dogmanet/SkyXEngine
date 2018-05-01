@@ -15,15 +15,12 @@ See the license in LICENSE
 #	pragma comment(lib, "sxguiwinapi.lib")
 #endif
 
-int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-	_In_opt_ HINSTANCE hPrevInstance,
-	_In_ LPTSTR    lpCmdLine,
-	_In_ int       nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	SXGUIRegClass::RegGroupBox();
+	SXGUIinit();
 
 	Editor edt;
 

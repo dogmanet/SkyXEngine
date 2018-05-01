@@ -725,11 +725,21 @@ int main(int argc, char ** argv)
 	g_iHistoryPointer = 0;
 	g_vHistory.push_back({NULL, NULL});
 
-	if(argc == 2)
+	char szTitle[64];
+
+	if (argc >= 2)
 	{
-		g_bExitOnDisconnect = true;
-		sscanf(argv[1], "%d", &g_iServerPort);
+		int iPort = 0;
+		sscanf(argv[1], "%d", &iPort);
+		if (iPort > 0)
+		{
+			g_bExitOnDisconnect = true;
+			g_iServerPort = iPort;
+		}
 	}
+	sprintf(szTitle, "sxconsole - %s", argc >= 3 ? argv[2] : "");
+	SetConsoleTitleA(szTitle);
+
 	sprintf(g_szServerPort, "%d", g_iServerPort);
 	sprintf(g_szClientPort, "%d", g_iServerPort + 1);
 	
@@ -746,7 +756,7 @@ int main(int argc, char ** argv)
 	//strcpy(str, "Some " COLOR_RED "red " COLOR_RESET "text\n");
 	//WriteColored(str);
 
-	SetConsoleTitle(L"sxconsole");
+	//SetConsoleTitle(L"sxconsole");
 
 	while(1)
 	{

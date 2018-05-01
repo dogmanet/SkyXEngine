@@ -14,6 +14,7 @@ See the license in LICENSE
 
 #include <common/AssotiativeArray.h>
 #include <common/Array.h>
+#include <common/file_utils.h>
 
 #include <gdefines.h>
 

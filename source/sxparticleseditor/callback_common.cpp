@@ -172,10 +172,10 @@ LRESULT SXParticlesEditor_ButtonTextureSel_Click(HWND hwnd, UINT msg, WPARAM wPa
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXParticlesEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
-		StrCutName(tmppath, tmpname);
+		//StrCutName(tmppath, tmpname);
 		SXParticlesEditor::EditTexture->setText(tmpname);
 
 		if (SXParticlesEditor::SelEffID >= 0 && SXParticlesEditor::SelEmitterID >= 0)

@@ -1146,7 +1146,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 	Material* tmpMtl = *mtl;
 
 	sprintf(path, "%s%s\\%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path, tmp_name);
-	if (Core_0FileExists(path))
+	if (FileExistsFile(path))
 	{
 		ISXConfig* config = Core_OpConfig(path);
 

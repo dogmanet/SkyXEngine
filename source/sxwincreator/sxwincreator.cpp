@@ -338,7 +338,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		0, CS_HREDRAW | CS_VREDRAW, WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,
 		0, WndProcAllDefault);
-
+	SXMainWndElem::MainWnd->setVisible(true);
 	gui_func::base_handlers::InitHandlerMsg(SXMainWndElem::MainWnd);
 	SXMainWndElem::MainWnd->addHandler(ComMenuId, WM_COMMAND);
 	SXMainWndElem::MainWnd->addHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
@@ -358,7 +358,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		WS_EX_TOOLWINDOW, CS_HREDRAW | CS_VREDRAW, WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED,
 		0, WndProcAllDefault);
-
+	SXMainWndElem::ParamWnd->setVisible(true);
 	gui_func::base_handlers::InitHandlerMsg(SXMainWndElem::ParamWnd);
 	SXMainWndElem::ParamWnd->addHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
 	SXMainWndElem::ParamWnd->addHandler(CallWmCommand, WM_COMMAND, 0, 0, 0, 0, true);
@@ -447,6 +447,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,
 		0, WndProcAllDefault);
+	SXMainWndElem::JobMainWnd->setVisible(true);
 	gui_func::base_handlers::InitHandlerMsg(SXMainWndElem::JobMainWnd);
 	SXMainWndElem::JobMainWnd->addHandler(AddElement, WM_LBUTTONUP);
 	SXMainWndElem::JobMainWnd->addHandler(MouseMove, WM_MOUSEMOVE);
@@ -751,6 +752,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		WS_EX_TOOLWINDOW, CS_HREDRAW | CS_VREDRAW, WS_CAPTION | WS_MINIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED,
 		0, WndProcAllDefault);
+	SXMainWndElem::WndLog->setVisible(true);
 	SXMainWndElem::WndLog->addHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
 	RECT crWndLog;
 	GetClientRect(SXMainWndElem::WndLog->getHWND(), &crWndLog);

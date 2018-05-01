@@ -864,7 +864,7 @@ ID CSoundManager::soundCreate2d(const char *szFile, ID idChannel, UINT uiSizeStr
 	char fullpath[SOUND_MAX_SIZE_STDPATH + SOUND_MAX_SIZE_PATH];
 	sprintf(fullpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SOUNDS), sFileData.c_str());
 
-	if (!Core_0FileExists(fullpath))
+	if (!FileExistsFile(fullpath))
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - file not found [%s]", GEN_MSG_LOCATION, fullpath);
 		return SOUND_FAIL_ID;

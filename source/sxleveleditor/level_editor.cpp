@@ -290,7 +290,7 @@ void SXLevelEditor::InitAllElements()
 	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
 	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
 
-	SXLevelEditor::JobWindow = SXGUICrBaseWndEx("JobWindow", "SX Level editor", cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	SXLevelEditor::JobWindow = SXGUICrBaseWndEx("LevelEditor", "LevelEditor", cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	//SXLevelEditor::JobWindow->setVisible(false);
 	gui_func::base_handlers::InitHandlerMsg(SXLevelEditor::JobWindow);
 
@@ -299,18 +299,7 @@ void SXLevelEditor::InitAllElements()
 	SXLevelEditor::JobWindow->addHandler(MsgEditSize, WM_SIZE);
 	SXLevelEditor::JobWindow->setMixSize(MAINWIN_SIZE_X, MAINWIN_SIZE_Y);
 	SXLevelEditor::MainMenu = SXGUICrMenuWindowEx(IDR_MENU1);
-	SXLevelEditor::MainMenu->setToWindow(SXLevelEditor::JobWindow->getHWND());
-
-
-	ISXGUIPopupMenu *pPMenu = SXGUICrPopupMenu();
-	pPMenu->insertItem(0, "1", 0, 0);
-	pPMenu->insertItem(0, "1", 0, 0);
-	pPMenu->insertItem(0, "1", 0, 0);
-	pPMenu->insertItem(0, "1", 0, 0);
-	pPMenu->insertItem(0, "1", 0, 0);
-	pPMenu->insertItem(0, "1", 0, 0);
-	pPMenu->track(SXLevelEditor::JobWindow->getHWND(), 150, 150);
-	
+	SXLevelEditor::MainMenu->setToWindow(SXLevelEditor::JobWindow->getHWND());	
 
 	SXLevelEditor::RenderWindow = SXGUICrBaseWndEx("RenderWindow", "RenderWindow", 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_VISIBLE | WS_BORDER, SXLevelEditor::JobWindow->getHWND(), WndProcAllDefault);
 	SXLevelEditor::RenderWindow->setFollowParentSides(true, true, true, true);

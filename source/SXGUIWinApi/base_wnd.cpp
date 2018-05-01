@@ -50,7 +50,8 @@ CGUIBaseWnd::CGUIBaseWnd(
 	this->init(m_hWindow, parent, handler, idObj);
 	SetWindowLong(m_hWindow, GWL_USERDATA, (LONG)dynamic_cast<ISXGUIComponent*>(this));
 	this->initComponent();
-	ShowWindow(m_hWindow, SW_SHOW);
+	if (style & WS_VISIBLE)
+		ShowWindow(m_hWindow, SW_SHOW);
 	UpdateWindow(m_hWindow);
 }
 

@@ -200,14 +200,20 @@ CTRL + ЛКМ – вращение \n
 //#include <vld.h> 
 #include <skyxengine.h>
 #include "level_editor.h"
+#include <io.h>
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
 	SXGUIinit();
+
 	SXLevelEditor::InitAllElements();
 
 	SkyXEngine_Init(SXLevelEditor::RenderWindow->getHWND(), SXLevelEditor::JobWindow->getHWND());
+
+	SkyXEngine_RunGenPreview();
+
 	SRender_GetCamera()->setPosition(&float3(0, 0.5, -2));
 	SXLevelEditor::MainMenu->insertPopupItem(4, "Weather", 4, 0);
 	SXLevelEditor::MainMenu->insertItem(4, "none", SX_LE_MMENU_WEATHER_BEGIN_ID, 4);

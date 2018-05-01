@@ -581,8 +581,70 @@ struct ISXDataStaticModel : public IBaseObject
 	float3_t m_vBBMax, m_vBBMin;
 };
 
+//! типы dse файлов
+enum DSE_TYPE
+{
+	//! статика
+	DSE_TYPE_STATIC,
+
+	//! анимация
+	DSE_TYPE_ANIMATION,
+
+	//! анимационная модель
+	DSE_TYPE_ANIM_MESH,
+};
+
+//! возможная информация о dse файле
+struct CDSEinfo
+{
+	//! тип файла
+	DSE_TYPE type;
+
+	//! количество вершин
+	int iCountVertex;
+
+	//! количество индексов
+	int iCountIndex;
+
+	//! количество подгрупп
+	int iCountSubsets;
+
+	//! версия
+	int iVersion;
+
+	//! количество скинов
+	int iCountSkin;
+
+	//! количество хитбоксов
+	int iCountHitbox;
+
+	//! количество костей
+	int iCountBone;
+
+	//! количетсов анимаций
+	int iCountAnimation;
+
+	//! габариты в метрах
+	float3_t vDimensions;
+
+	//! центр модели в метрах
+	float3_t vCenter;
+};
+
+//! получить информацию о dse файле pInfo != 0, путь абсолютный
+SX_LIB_API bool SGCore_DSEgetInfo(const char *szPath, CDSEinfo *pOutInfo);
+
 //! создать статическую модель
 SX_LIB_API ISXDataStaticModel* SGCore_StaticModelCr();	
+
+//! является ли файл в пути szPath dse форматом? путь абсолютный
+SX_LIB_API bool SGCore_DSE_IsDSE(const char *szPath);
+
+//! является ли файл в пути szPath dse моделью? путь абсолютный
+SX_LIB_API bool SGCore_DSE_IsModel(const char *szPath);
+
+//! является ли файл в пути szPath dse анимацией? путь абсолютный
+SX_LIB_API bool SGCore_DSE_IsAnimation(const char *szPath);
 
 //! загрузить статическую модель, data инициализируется внутри
 SX_LIB_API void SGCore_StaticModelLoad(const char *szFile, ISXDataStaticModel **ppData);	

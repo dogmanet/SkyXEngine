@@ -1,6 +1,17 @@
 
 #include "common_callback.h"
 
+bool HandlerPreviewLevel(const char *szPath, char *szBuff)
+{
+	String sPathImg = FileAppendSlash(szPath) + "preview.bmp";
+	if (FileExistsFile(sPathImg.c_str()))
+	{
+		sprintf(szBuff, "%s", sPathImg.c_str());
+		return true;
+	}
+	return false;
+}
+
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (MessageBox(0, "Exit?", "Exit?!", MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
@@ -42,10 +53,14 @@ void SXLevelEditor::LevelOpen()
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	//char szSelName[MAX_PATH];
+	//char szSelPath[2014];
+	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false, 0, HandlerPreviewLevel);
+	
 	if (def_str_validate(tmppath))
 	{
-		StrCutNameNEx(tmppath, tmpname);
+		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Load(tmpname, false);
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", "SXLevelEditor", tmpname);
@@ -91,10 +106,11 @@ void SXLevelEditor::LevelSaveAs()
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0/*, HandlerPreviewLevel*/);
 	if (StrValidate(tmppath))
 	{
-		StrCutNameNEx(tmppath, tmpname);
+		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Save(tmpname);
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", "SXLevelEditor", tmpname);

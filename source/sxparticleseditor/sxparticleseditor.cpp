@@ -253,6 +253,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::WinSize.y = winrndrect.bottom;*/
 
 	SkyXEngine_Init(SXParticlesEditor::WindowRender->getHWND(), SXParticlesEditor::JobWindow->getHWND());
+	SkyXEngine_RunGenPreview();
 	Core_0SetCVarInt("r_final_image",DS_RT_COLOR);
 	SRender_GetCamera()->setPosition(&float3(0, 0.5, -2));
 	SXParticlesEditor::MainMenu->setCheckItem(ID_VIEW_GRID, true);

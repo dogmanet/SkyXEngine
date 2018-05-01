@@ -199,7 +199,7 @@ bool CGUIMenuWindow::setToWindow(HWND hwnd)
 {
 		if(!hwnd)
 			return false;
-		if(!SetMenu(hwnd,this->MenuHandle))
+		if(!SetMenu(hwnd,MenuHandle))
 			return false;
 	return true;
 }

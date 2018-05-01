@@ -11,11 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\base.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\base_wnd.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\button.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\checkbox.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\combobox.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\dialog_select_dir.cpp" />
+    <ClCompile Include="..\..\..\source\SXGUIWinApi\dialog_select_file.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\edit.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\groupbox.cpp" />
     <ClCompile Include="..\..\..\source\SXGUIWinApi\hint.cpp" />
@@ -35,11 +40,16 @@
     <ClCompile Include="..\..\..\source\SXGUIWinApi\updown.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\base.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\base_wnd.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\button.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\checkbox.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\combobox.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\dialog_select_dir.h" />
+    <ClInclude Include="..\..\..\source\SXGUIWinApi\dialog_select_file.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\edit.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\groupbox.h" />
     <ClInclude Include="..\..\..\source\SXGUIWinApi\hint.h" />

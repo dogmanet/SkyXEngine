@@ -53,7 +53,7 @@ bool LoaderTextures::FileExists(const char* name)
 	}
 
 	sprintf(tmppath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), tmp_path, name);
-	return Core_0FileExists(tmppath);
+	return FileExistsFile(tmppath);
 }
 
 void LoaderTextures::ClearLoaded()

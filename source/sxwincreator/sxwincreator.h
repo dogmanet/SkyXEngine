@@ -38,9 +38,6 @@
 #include <sxwincreator\callbacks.h>
 
 
-#define SX_SAFE_DELETE_A
-#define SX_SAFE_DELETE
-
 #define SX_WINCREATOR_COUNT_ELEMENT 17
 
 #define SX_WINCREATOR_STAT_CUR_TEXT "Statistic for cursor:"

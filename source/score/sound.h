@@ -22,7 +22,8 @@ See the license in LICENSE
 #include <common/aastring.h>
 #include <common/array.h>
 #include <common/string.h>
-#include <common/string_func.h>
+#include <common/string_utils.h>
+#include <common/file_utils.h>
 #include <common/assotiativearray.h>
 #include "sxscore.h"
 

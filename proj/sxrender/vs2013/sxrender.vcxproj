@@ -40,7 +40,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
@@ -93,6 +93,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\render\camera_update.h" />
     <ClInclude Include="..\..\..\source\render\editor\axes_static.h" />
     <ClInclude Include="..\..\..\source\render\editor\grid.h" />
@@ -102,6 +105,9 @@
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\render\camera_update.cpp" />
     <ClCompile Include="..\..\..\source\render\editor\axes_static.cpp" />
     <ClCompile Include="..\..\..\source\render\editor\grid.cpp" />

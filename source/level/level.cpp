@@ -46,7 +46,7 @@ void CLevel::load(const char *szName, bool isGame)
 	sprintf(m_szName, "%s", szName);
 	char tmppathlevel[1024];
 	sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
-	if (!Core_0FileExists(tmppathlevel))
+	if (!FileExistsFile(tmppathlevel))
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of level '%s'", tmppathlevel);
 		return;
@@ -57,7 +57,7 @@ void CLevel::load(const char *szName, bool isGame)
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "geometry"));
-		if (Core_0FileExists(tmppath))
+		if (FileExistsFile(tmppath))
 			SGeom_ModelsLoad(tmppath);
 		else
 		{
@@ -69,7 +69,7 @@ void CLevel::load(const char *szName, bool isGame)
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "green"));
-		if (Core_0FileExists(tmppath))
+		if (FileExistsFile(tmppath))
 			SGeom_GreenLoad(tmppath);
 		else
 		{
@@ -81,7 +81,7 @@ void CLevel::load(const char *szName, bool isGame)
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "entity"));
-		if (Core_0FileExists(tmppath))
+		if (FileExistsFile(tmppath))
 			SXGame_LoadEnts(tmppath);
 		else
 		{
@@ -93,7 +93,7 @@ void CLevel::load(const char *szName, bool isGame)
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "physic"));
-		if (Core_0FileExists(tmppath))
+		if (FileExistsFile(tmppath))
 		{
 			SXPhysics_ImportGeom(tmppath);
 		}
@@ -116,7 +116,7 @@ void CLevel::load(const char *szName, bool isGame)
 	{
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "aigrid"));
-		if (Core_0FileExists(tmppath))
+		if (FileExistsFile(tmppath))
 			SAIG_GridLoad(tmppath);
 		else
 		{
@@ -156,7 +156,7 @@ void CLevel::load(const char *szName, bool isGame)
 			char tmppath[1024];
 			sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), m_sWeather.c_str());
 
-			if (Core_0FileExists(tmppath))
+			if (FileExistsFile(tmppath))
 				m_pWeather->load(tmppath);
 			else
 			{

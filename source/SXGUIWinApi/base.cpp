@@ -1033,7 +1033,7 @@ LRESULT gui_func::base_handlers::WinDestroy(HWND hwnd, UINT msg, WPARAM wParam, 
 
 //##########################################################################
 
-void gui_func::dialogs::SelectFile(int type, char* path, char* name, const char* stdpath, const char* filter)
+void gui_func::dialogs::SelectFileStd(int type, char* path, char* name, const char* stdpath, const char* filter)
 {
 	OPENFILENAME ofn;
 
@@ -1090,4 +1090,14 @@ void gui_func::dialogs::SelectFile(int type, char* path, char* name, const char*
 		if (name)
 			strcpy(name, tname);
 	}
+}
+
+SX_LIB_API bool gui_func::dialogs::SelectDirOwn(char *szOutName, char *szOutPath, const char *szStartPath, const char *szDialogName, bool canExplore, bool canCreateNew, const char *szDownPath, HandlerDialogOwndGetPreview lpfnHandlerPreview)
+{
+	return DialogOwnSelectDirRun(szOutName, szOutPath, szStartPath, szDialogName, canExplore, canCreateNew, szDownPath, lpfnHandlerPreview);
+}
+
+SX_LIB_API bool gui_func::dialogs::SelectFileOwn(char *szOutName, char *szOutPath, const char *szStartPath, const char *szFilterExt, const char *szDialogName, bool canExplore, const char *szDownPath, HWND hWndLock, HandlerDialogOwndGetPreview2 lpfnHandlerPreview, HandlerDialogOwndGetInfo lpfnHandlerInfo)
+{
+	return DialogOwnSelectFileRun(szOutName, szOutPath, szStartPath, szFilterExt, szDialogName, canExplore, szDownPath, hWndLock, lpfnHandlerPreview, lpfnHandlerInfo);
 }

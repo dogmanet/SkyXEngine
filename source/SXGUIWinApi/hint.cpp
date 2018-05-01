@@ -10,6 +10,8 @@ See the license in LICENSE
 CGUIHint::CGUIHint()
 {
 	WindowHandle = 0;ParentHandle = 0;IsVisible = false;
+	ZeroMemory(&Hint, sizeof(Hint));
+	int qwert = 0;
 }
 
 CGUIHint::CGUIHint(HWND parent)
@@ -44,6 +46,8 @@ CGUIHint::CGUIHint(HWND parent)
 				);
  
 	GetClientRect (ParentHandle, &rect);
+
+	ZeroMemory(&Hint, sizeof(Hint));
 
 	hint[0] = 0;
 

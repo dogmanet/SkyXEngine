@@ -67,7 +67,7 @@ void Core_Dbg_Set(report_func fnReportFunc)
 	g_fnReportf = fnReportFunc;
 }
 
-bool Core_0FileExists(const char *szNameFunc)
+/*bool Core_0FileExists(const char *szNameFunc)
 {
 	WIN32_FIND_DATA wfd;
 	HANDLE hFind = ::FindFirstFile(szNameFunc, &wfd);
@@ -77,9 +77,9 @@ bool Core_0FileExists(const char *szNameFunc)
 			return true;
 		}
 	return false;
-}
+}*/
 
-SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath)
+/*SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath)
 {
 	HANDLE hFile = CreateFile(szPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	
@@ -103,7 +103,7 @@ SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath)
 	uint32_t tLastModify = mktime(&tmObj);
 
 	return tLastModify;
-}
+}*/
 
 bool Core_0ClipBoardCopy(const char *szStr)
 {
@@ -144,7 +144,7 @@ bool Core_0IsProcessRun(const char* process)
 	}
 }
 
-void Core_0Create(const char* name, bool is_unic)
+void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 {
 		if(name && strlen(name) > 1)
 		{
@@ -159,7 +159,7 @@ void Core_0Create(const char* name, bool is_unic)
 						}
 				}
 			strcpy(g_szCoreName, name);
-			ConsoleConnect();
+			ConsoleConnect(szNameConsole);
 			ConsoleRegisterCmds();
 			g_pTaskManager = new CTaskManager();
 			g_pTimers = new CTimeManager();

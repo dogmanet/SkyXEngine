@@ -16,6 +16,317 @@ IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl()
 	return g_pStaticVertexDecl;
 }
 
+bool SGCore_DSE_IsDSE(const char *szPath)
+{
+	FILE * pf = fopen(szPath, "rb");
+	if (!pf)
+		return false;
+
+	ModelHeader header;
+
+	fread(&header, sizeof(ModelHeader), 1, pf);
+	fclose(pf);
+
+	if (header.Magick != SX_MODEL_MAGICK)
+		return false;
+
+	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+		return false;
+
+	return true;
+}
+
+SX_LIB_API bool SGCore_DSE_IsModel(const char *szPath)
+{
+	FILE * pf = fopen(szPath, "rb");
+	if (!pf)
+		return false;
+
+	ModelHeader header;
+
+	fread(&header, sizeof(ModelHeader), 1, pf);
+	fclose(pf);
+
+	if (header.Magick != SX_MODEL_MAGICK)
+		return false;
+
+	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+		return false;
+
+	return !(header.iFlags & MODEL_FLAG_SOURCE_ANIMATION);
+}
+
+
+SX_LIB_API bool SGCore_DSE_IsAnimation(const char *szPath)
+{
+	FILE * pf = fopen(szPath, "rb");
+	if (!pf)
+		return false;
+
+	ModelHeader header;
+
+	fread(&header, sizeof(ModelHeader), 1, pf);
+	fclose(pf);
+
+	if (header.Magick != SX_MODEL_MAGICK)
+		return false;
+
+	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+		return false;
+
+	return (header.iFlags & MODEL_FLAG_SOURCE_ANIMATION);
+}
+
+SX_LIB_API bool SGCore_DSEgetInfo(const char *szPath, CDSEinfo *pInfo)
+{
+	FILE * pf = fopen(szPath, "rb");
+	if (!pf)
+		return false;
+
+	ModelHeader header;
+
+	fread(&header, sizeof(ModelHeader), 1, pf);
+
+	if (header.Magick != SX_MODEL_MAGICK)
+	{
+		fclose(pf);
+		return false;
+	}
+
+	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+	{
+		fclose(pf);
+		return false;
+	}
+
+	pInfo->iVersion = header.iVersion;
+	pInfo->iCountSkin = header.iSkinCount;
+	pInfo->iCountSubsets = header.iMaterialCount;
+	pInfo->iCountBone = header.iBoneCount;
+	pInfo->iCountAnimation = header.iAnimationCount;
+
+	fseek(pf, header.iSecondHeaderOffset, SEEK_SET);
+
+	ModelHeader2 header2;
+	fread(&header2, sizeof(ModelHeader2), 1, pf);
+
+	pInfo->iCountHitbox = header2.iHitboxCount;
+
+	//если файл это анимация
+	if (header.iFlags & MODEL_FLAG_SOURCE_ANIMATION)
+	{
+		fclose(pf);
+		pInfo->type = DSE_TYPE_ANIMATION;
+		return true;
+	}
+
+
+	if (header.iFlags & MODEL_FLAG_STATIC)
+		pInfo->type = DSE_TYPE_STATIC;
+	else if (header.iFlags & MODEL_FLAG_COMPILED || header.iFlags & MODEL_FLAG_SOURCE_MESH)
+		pInfo->type = DSE_TYPE_ANIM_MESH;
+	else
+	{
+		// что тогда?
+	}
+
+
+	if (header.iVersion == SX_MODEL_VERSION_OLD)
+	{
+		if (header.iMaterialsOffset)
+		{
+			fseek(pf, header.iMaterialsOffset, SEEK_SET);
+			for (int i = 0; i < header.iMaterialCount; i++)
+			{
+				char c;
+				while (c = getc(pf))
+				{
+					
+				}
+			}
+		}
+
+		if (header.iFlags & (MODEL_FLAG_SOURCE_MESH | MODEL_FLAG_COMPILED))
+		{
+			ModelLoD lh;
+
+			fread(&lh.iSubMeshCount, sizeof(int), 1, pf);
+			lh.pSubLODmeshes = new ModelLoDSubset[lh.iSubMeshCount];
+			
+			int iVC = 0;
+			int iIC = 0;
+			float3 vMin, vMax;
+
+			for (int i = 0; i < lh.iSubMeshCount; i++)
+			{
+				fread(&lh.pSubLODmeshes[i].iMaterialID, sizeof(int), 1, pf);
+				fread(&lh.pSubLODmeshes[i].iVectexCount, sizeof(int), 1, pf);
+				fread(&lh.pSubLODmeshes[i].iIndexCount, sizeof(int), 1, pf);
+				lh.pSubLODmeshes[i].pVertices = new vertex_animated_ex[lh.pSubLODmeshes[i].iVectexCount];
+				lh.pSubLODmeshes[i].pIndices = new UINT[lh.pSubLODmeshes[i].iIndexCount];
+				fread(lh.pSubLODmeshes[i].pVertices, sizeof(vertex_animated_ex), lh.pSubLODmeshes[i].iVectexCount, pf);
+				fread(lh.pSubLODmeshes[i].pIndices, sizeof(UINT), lh.pSubLODmeshes[i].iIndexCount, pf);
+
+				iVC += lh.pSubLODmeshes[i].iVectexCount;
+				iIC += lh.pSubLODmeshes[i].iIndexCount;
+
+				vertex_animated_ex* pArrVertex = (vertex_animated_ex*)lh.pSubLODmeshes[i].pVertices;
+
+				if (i == 0)
+				{
+					vMin = pArrVertex[0].Pos;
+					vMax = pArrVertex[0].Pos;
+				}
+
+				for (int k = 0; k < lh.pSubLODmeshes[i].iVectexCount; ++k)
+				{
+					if (pArrVertex[k].Pos.x > vMax.x)
+						vMax.x = pArrVertex[k].Pos.x;
+
+					if (pArrVertex[k].Pos.y > vMax.y)
+						vMax.y = pArrVertex[k].Pos.y;
+
+					if (pArrVertex[k].Pos.z > vMax.z)
+						vMax.z = pArrVertex[k].Pos.z;
+
+
+					if (pArrVertex[k].Pos.x < vMin.x)
+						vMin.x = pArrVertex[k].Pos.x;
+
+					if (pArrVertex[k].Pos.y < vMin.y)
+						vMin.y = pArrVertex[k].Pos.y;
+
+					if (pArrVertex[k].Pos.z < vMin.z)
+						vMin.z = pArrVertex[k].Pos.z;
+				}
+			}
+
+			pInfo->iCountVertex = iVC;
+			pInfo->iCountIndex = iIC;
+			pInfo->vDimensions = float3_t(vMax - vMin);
+			pInfo->vCenter = float3_t((vMax + vMin) * 0.5f);
+
+			for (int i = 0; i < lh.iSubMeshCount; i++)
+			{
+				mem_delete_a(lh.pSubLODmeshes[i].pVertices);
+				mem_delete_a(lh.pSubLODmeshes[i].pIndices);
+			}
+
+			mem_delete_a(lh.pSubLODmeshes);
+		}
+	}
+	else if (header.iVersion == SX_MODEL_VERSION)
+	{
+		if (header.iMaterialsOffset)
+		{
+			fseek(pf, header.iMaterialsOffset, SEEK_SET);
+			fseek(pf, header.iMaterialCount * MODEL_MAX_NAME, SEEK_CUR);
+		}
+
+		ModelLoD *m_pLods;
+		if (header.iLODcount && header.iLODoffset)
+		{
+
+			fseek(pf, header.iLODoffset, SEEK_SET);
+
+			m_pLods = new ModelLoD[header.iLODcount];
+
+			for (int i = 0; i < header.iLODcount; i++)
+			{
+				fread(&m_pLods[i], MODEL_LOD_STRUCT_SIZE, 1, pf);
+				int iVC = 0;
+				int iIC = 0;
+				float3 vMin, vMax;
+
+				m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pLods[i].iSubMeshCount];
+				for (int j = 0; j < m_pLods[i].iSubMeshCount; j++)
+				{
+
+					fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(int), 1, pf);
+					fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(int), 1, pf);
+					fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(int), 1, pf);
+
+					if (header.iFlags & MODEL_FLAG_STATIC)
+						m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+					else
+						m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+
+					m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
+
+					if (header.iFlags & MODEL_FLAG_STATIC)
+						fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
+					else
+						fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
+
+					fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, pf);
+
+					iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
+					iIC += m_pLods[i].pSubLODmeshes[j].iIndexCount;
+
+					
+					if (j == 0)
+					{
+						vMin = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices);
+						vMax = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices);
+					}
+
+					float3_t vPos;
+					int iSizeVertex = sizeof(vertex_animated);
+
+					if (header.iFlags & MODEL_FLAG_STATIC)
+						iSizeVertex = sizeof(vertex_static);
+
+					for (int k = 0; k < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++k)
+					{
+						vPos = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices + k*iSizeVertex);
+						if (vPos.x > vMax.x)
+							vMax.x = vPos.x;
+
+						if (vPos.y > vMax.y)
+							vMax.y = vPos.y;
+
+						if (vPos.z > vMax.z)
+							vMax.z = vPos.z;
+
+
+						if (vPos.x < vMin.x)
+							vMin.x = vPos.x;
+
+						if (vPos.y < vMin.y)
+							vMin.y = vPos.y;
+
+						if (vPos.z < vMin.z)
+							vMin.z = vPos.z;
+					}
+				}
+
+				if (i == 0)
+				{
+					pInfo->iCountVertex = iVC;
+					pInfo->iCountIndex = iIC;
+					pInfo->vDimensions = float3_t(vMax - vMin);
+					pInfo->vCenter = float3_t((vMax +vMin) * 0.5f);
+				}
+			}
+		}
+
+		for (int i = 0; i < header.iLODcount; i++)
+		{
+			for (int j = 0; j < m_pLods[i].iSubMeshCount; j++)
+			{
+				mem_delete_a(m_pLods[i].pSubLODmeshes[j].pVertices);
+				mem_delete_a(m_pLods[i].pSubLODmeshes[j].pIndices);
+			}
+			mem_delete_a(m_pLods[i].pSubLODmeshes);
+		}
+		mem_delete(m_pLods);
+	}
+
+	fclose(pf);
+
+	return true;
+}
+
 void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 {
 	if (!data)

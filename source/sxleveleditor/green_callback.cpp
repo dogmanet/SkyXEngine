@@ -118,8 +118,9 @@ LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+	
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenModel->setText(tmpname);
@@ -138,8 +139,9 @@ LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenLod1->setText(tmpname);
@@ -158,8 +160,9 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenLod2->setText(tmpname);
@@ -187,8 +190,9 @@ LRESULT SXLevelEditor_ButtonGreenMask_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_TEXTURE);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_TEXTURE);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture mask", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		StrCutName(tmppath, tmpname);
 		SXLevelEditor::EditGreenMask->setText(tmpname);
@@ -201,8 +205,9 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGreenNav->setText(tmpname);
@@ -284,7 +289,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 	}*/
 
-	if (!Core_0FileExists(path_model))
+	if (!FileExistsFile(path_model))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model [", path_model, "] not found");
@@ -292,7 +297,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 	}
 
-	if (def_str_validate(tmp_navmesh) && !Core_0FileExists(path_navmesh))
+	if (def_str_validate(tmp_navmesh) && !FileExistsFile(path_navmesh))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model [", path_navmesh, "] not found");
@@ -302,7 +307,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	if (greentype == GREEN_TYPE_TREE)
 	{
-		if (!Core_0FileExists(path_lod1))
+		if (!FileExistsFile(path_lod1))
 		{
 			char tmpstr[2048];
 			sprintf(tmpstr, "%s%s%s", "Model [", path_lod1, "] not found");
@@ -310,7 +315,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 			return 0;
 		}
 
-		if (!Core_0FileExists(path_lod2))
+		if (!FileExistsFile(path_lod2))
 		{
 			char tmpstr[2048];
 			sprintf(tmpstr, "%s%s%s", "Model [", path_lod2, "] not found");

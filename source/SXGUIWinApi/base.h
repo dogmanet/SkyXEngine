@@ -9,6 +9,8 @@ See the license in LICENSE
 
 #include "hint.h"
 #include "SXGUI.h"
+#include "dialog_select_dir.h"
+#include "dialog_select_file.h"
 #include <common/array.h>
 
 

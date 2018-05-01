@@ -99,6 +99,8 @@ See the license in LICENSE
 #define G_RI_STRING_PATH_GS_MTRLS		12	/*!< путь до материалов */
 #define G_RI_STRING_PATH_GS_GUI			13	/*!< путь до gui */
 
+#define G_RI_STRING_PATH_EDITOR_CACHE	14	/*!< путь до кэша редакторов */
+
 //!@}
 
 #endif

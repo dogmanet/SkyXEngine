@@ -17,6 +17,7 @@ See the license in LICENSE
 #include "emitter.h"
 #include <common/array.h>
 #include <common/string.h>
+#include <common/file_utils.h>
 
 #define EFFECTS_EFFECT_PRECOND_KEY(key,retval) \
 if (!(key >= 0 && key < ArrKey.size()))\

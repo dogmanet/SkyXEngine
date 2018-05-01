@@ -358,7 +358,7 @@ void SXRenderFunc::SaveScreenShot()
 	char tmppath[1024];
 	static int numscreen = 0;
 	
-	if (!Core_0FileExists(Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS)))
+	if (!FileExistsFile(Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS)))
 	{
 		CreateDirectoryA(Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS), NULL);
 	}
@@ -367,7 +367,7 @@ void SXRenderFunc::SaveScreenShot()
 	{
 		++numscreen;
 		sprintf(tmppath, "%sscreen_skyxengine_build_%d.jpg", Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS), numscreen);
-	} while (Core_0FileExists(tmppath));
+	} while (FileExistsFile(tmppath));
 
 	LPDIRECT3DSURFACE9 BackBuf;
 	GData::DXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);

@@ -67,6 +67,9 @@ SX_LIB_API void SXGUIinit()
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
 	icex.dwICC = ICC_BAR_CLASSES;
 	InitCommonControlsEx(&icex);
+
+	DialogOwnSelectDirInit();
+	DialogOwnSelectFileInit();
 }
 
 //##########################################################################

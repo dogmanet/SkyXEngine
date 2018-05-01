@@ -367,7 +367,7 @@ struct ISXGUITextual : public virtual ISXGUIComponent
 /*! \defgroup sxguiwinapi_elements Элементы интерфейса
  \note Инициализировав элемент можно установить на него стандартные обработчики:
 \code
-SXGUIBaseHandlers::InitHandlerMsg(HWND);
+gui_func::base_handlers::InitHandlerMsg(HWND);
 \endcode
  \note Во многих функциях создания элементов используются одни и теже именования аргументов:
  - const char *szCaption - название окна
@@ -1209,7 +1209,7 @@ SX_LIB_API ISXGUIToolBar* SXGUICrToolBar(int iPosX, int iPosY, int iWidth, int i
 
 //**************************************************************************
 
-/*! \name Состояния элементов меню #ISXGUIMenu и #ISXGUIPopupMenu
+/*! \name Состояния элементов меню
 @{*/
 
 #define SXGUI_MENU_PART_STATE_ENABLED	0	/*!< действительно */
@@ -1340,6 +1340,14 @@ enum SXGUI_SCROLL_DIR
 	SXGUI_SCROLL_DIR_RIGTH = 4,	/*!< направление вправо */
 };
 
+//! тип обработчика для диалогов с превью, szPath - целевой путь, szBuf в который будет записан путь до превью, возвращает true если удалось
+typedef bool (*HandlerDialogOwndGetPreview) (const char *szPath, char *szBuf);
+
+typedef bool(*HandlerDialogOwndGetPreview2) (const char *szPath, void **pBuf, int *pSizeBuf, int *pWidth, int *pHeight);
+
+//! тип обработчика для диалогов с информацией для выделенного объекта, szPath - целевой путь, szBuf в который будет записана информация, возвращает true если удалось
+typedef bool (*HandlerDialogOwndGetInfo) (const char *szPath, char *szBuf);
+
 //! функции для управления gui
 namespace gui_func
 {
@@ -1436,12 +1444,42 @@ namespace gui_func
 		/*! диалог выбора файла
 		\note path или name должен быть не 0, иначе результат вызова диалога некуда будет записать и как следствие диалог не будет вызван
 		*/
-		SX_LIB_API void SelectFile(
+		SX_LIB_API void SelectFileStd(
 			int type,				//!< тип диалога SXGUI_DIALOG_FILE_
 			char* path,				//!< если не 0 то запишется путь до файла
 			char* name,				//!< если не 0 то запишется имя файла
 			const char* stdpath,	//!< путь относительно которого открывать диалог
 			const char* filter		//!< фильтр расширений
+			);
+
+		/*! свой диалог выбора директории 
+		 \note szOutName должен быть не 0, иначе результат вызова диалога некуда будет записать
+		*/
+		SX_LIB_API bool SelectDirOwn(
+			char *szOutName,			//!< имя выбранной директории
+			char *szOutPath,			//!< полный путь вместе с выбранной директорией
+			const char *szStartPath,	//!< начальный путь
+			const char *szDialogName = 0,//!< название окна, если надо
+			bool canExplore = true,		//!< возможно ли перемещаться по директориям, если нужен выбор только из одной директории то false
+			bool canCreateNew = true,	//!< возможно ли создание новой директории
+			const char *szDownPath = 0,	//!< путь ниже которого нельзя заходить
+			HandlerDialogOwndGetPreview lpfnHandlerPreview = 0 //!< если требуется предпросмотр тогда нужно указать обработчик #HandlerDialogOwndSelDir, который получит аргумент с полным текущим путем, а должен вернуть полный путь на bmp файл
+			);
+
+		/*! свой диалог выбора директории
+		\note szOutName должен быть не 0, иначе результат вызова диалога некуда будет записать
+		*/
+		SX_LIB_API bool SelectFileOwn(
+			char *szOutName,			//!< имя выбранной директории
+			char *szOutPath,			//!< полный путь вместе с выбранной директорией
+			const char *szStartPath,	//!< начальный путь
+			const char *szFilterExt,	//!< расширение файлов, которые надо отобразить, либо 0 или "" если нужны все файлы
+			const char *szDialogName = 0,//!< название окна, если надо
+			bool canExplore = true,		//!< возможно ли перемещаться по директориям, если нужен выбор только из одной директории то false
+			const char *szDownPath = 0,	//!< путь ниже которого нельзя заходить,
+			HWND hWndLock = 0,			//!< окно для блокировки во время работы диалога
+			HandlerDialogOwndGetPreview2 lpfnHandlerPreview = 0, //!< если требуется предпросмотр тогда нужно указать обработчик #HandlerDialogOwndSelDir, который получит аргумент с полным текущим путем, а должен вернуть полный путь на bmp файл
+			HandlerDialogOwndGetInfo lpfnHandlerInfo = 0
 			);
 	};
 };

@@ -47,7 +47,7 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 
 	FILE *pFile = fopen(szFullPathCache, "wb");
 
-	uint32_t tLastModify = Core_0GetTimeLastModify(szFullPath);
+	uint32_t tLastModify = FileGetTimeLastModify(szFullPath);
 
 	fwrite(&tLastModify, sizeof(uint32_t), 1, pFile);
 
@@ -105,7 +105,7 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 
 CShaderFileCache* CreateShaderFileCacheFormFile(const char *szPath)
 {
-	if (!Core_0FileExists(szPath))
+	if (!FileExistsFile(szPath))
 		return 0;
 
 	CShaderFileCache *pSFC = new CShaderFileCache();
@@ -173,7 +173,7 @@ CShaderFileCache* CreateShaderFileCacheFormFile(const char *szPath)
 
 uint32_t GetTimeShaderFileCache(const char *szPath)
 {
-	if (!Core_0FileExists(szPath))
+	if (!FileExistsFile(szPath))
 		return 0;
 
 	FILE *pFile = fopen(szPath, "rb");
@@ -207,7 +207,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 	}
 
 #ifndef _DEBUG
-	if (Core_0FileExists(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == Core_0GetTimeLastModify(szFullPath))
+	if (FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 
@@ -325,7 +325,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 	}
 
 #ifndef _DEBUG
-	if (Core_0FileExists(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == Core_0GetTimeLastModify(szFullPath))
+	if (FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 
@@ -540,7 +540,7 @@ bool CShaderManager::existsFile(const char *szPath)
 	else
 		sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szPath);
 
-	return Core_0FileExists(tmppath);
+	return FileExistsFile(tmppath);
 }
 
 ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacros)
@@ -1081,7 +1081,7 @@ void CShaderManager::getPath(SHADER_TYPE type_shader, ID idShader, char *szPath)
 	{
 		if (idShader < m_aVS.size())
 		{
-			if (m_aVS[idShader]->m_pVertexShader)
+			//if (m_aVS[idShader]->m_pVertexShader)
 				sprintf(szPath, "%s", m_aVS[idShader]->m_szPath);
 		}
 	}
@@ -1089,7 +1089,7 @@ void CShaderManager::getPath(SHADER_TYPE type_shader, ID idShader, char *szPath)
 	{
 		if (idShader < m_aPS.size())
 		{
-			if (m_aPS[idShader]->m_pPixelShader)
+			//if (m_aPS[idShader]->m_pPixelShader)
 				sprintf(szPath, "%s", m_aPS[idShader]->m_szPath);
 		}
 	}

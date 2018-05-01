@@ -9,6 +9,7 @@ See the license in LICENSE
 
 #include <common/String.h>
 #include <common/Array.h>
+#include <common/file_utils.h>
 #include "reflection.h"
 #include <direct.h>
 

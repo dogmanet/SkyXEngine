@@ -133,8 +133,9 @@ LRESULT SXLevelEditor_ButtonGeomModel_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGeomModel->setText(tmpname);
@@ -147,8 +148,9 @@ LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
 		SXLevelEditor::EditGeomLod1->setText(tmpname);
@@ -183,7 +185,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 	char tmppath[1024];
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path_model);
-	if (!Core_0FileExists(tmppath))
+	if (!FileExistsFile(tmppath))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model [", tmppath, "] not found");
@@ -192,7 +194,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path_model_lod);
-	if (def_str_validate(path_model_lod) && !Core_0FileExists(tmppath))
+	if (def_str_validate(path_model_lod) && !FileExistsFile(tmppath))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model/lod [", path_model_lod, "] not found");
