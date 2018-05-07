@@ -2,6 +2,7 @@
 #ifndef __GAME_CALLBACK_H
 #define __GAME_CALLBACK_H
 
+#include "skyxengine.h"
 #include "level_editor.h"
 
 //! переключатель между свойствами и соединениями игрового объекта 

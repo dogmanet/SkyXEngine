@@ -457,7 +457,7 @@ SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, con
 
 SX_LIB_API void SGCore_ShaderAllLoad()
 {
-	SG_PRECOND();
+	SG_PRECOND(_VOID);
 
 	return g_pManagerShaders->allLoad();
 }

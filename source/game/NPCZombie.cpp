@@ -24,9 +24,9 @@ CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
 	m_fSpeedWalk = 0.07f;
 	m_fSpeedRun = 0.12f;
 
-	m_idSndIdle = SSCore_SndCreate3d("mobs/zombie/zombie_idle_16.ogg", false, 0, 30);
-	m_idSndIdle2 = SSCore_SndCreate3d("mobs/zombie/zombie_idle_17.ogg", false, 0, 30);
-	m_idSndDeath = SSCore_SndCreate3d("mobs/zombie/zombie_die_1.ogg", false, 0, 45);
+	m_idSndIdle = SSCore_SndCreate3d("mobs/zombie/zombie_idle_16.ogg", SX_SOUND_CHANNEL_GAME, 0, 30);
+	m_idSndIdle2 = SSCore_SndCreate3d("mobs/zombie/zombie_idle_17.ogg", SX_SOUND_CHANNEL_GAME, 0, 30);
+	m_idSndDeath = SSCore_SndCreate3d("mobs/zombie/zombie_die_1.ogg", SX_SOUND_CHANNEL_GAME, 0, 45);
 }
 
 CNPCZombie::~CNPCZombie()
@@ -38,9 +38,9 @@ void CNPCZombie::onSync()
 {
 	BaseClass::onSync();
 
-	SSCore_SndPosWSet(m_idSndIdle, &getPos());
-	SSCore_SndPosWSet(m_idSndIdle2, &getPos());
-	SSCore_SndPosWSet(m_idSndDeath, &getPos());
+	SSCore_SndSetPosWorld(m_idSndIdle, &getPos());
+	SSCore_SndSetPosWorld(m_idSndIdle2, &getPos());
+	SSCore_SndSetPosWorld(m_idSndDeath, &getPos());
 
 	//если здоровье меньше нуля
 	if (m_fHealth < 0.0f)
@@ -106,9 +106,9 @@ void CNPCZombie::randWalk()
 		m_stateMove = NPC_STATE_MOVE_WALK;
 	else if (m_stateMove != NPC_STATE_MOVE_IDLE)
 	{
-		if (!playingAnimations("reload"))
+		if (!playingAnimations("walk0"))
 		{
-			playAnimation("reload");
+			playAnimation("walk0");
 			SSCore_SndPlay(m_idSndIdle2);
 		}
 

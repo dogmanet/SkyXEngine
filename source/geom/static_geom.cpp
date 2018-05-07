@@ -2959,7 +2959,6 @@ void CStaticGeom::applyTransform(ID id)
 	applyTransformLod(id);
 
 	vertex_static* pData;
-	float3_t* pData2;
 	int idgroup;
 	int idbuff;
 
@@ -3298,7 +3297,6 @@ bool CStaticGeom::traceBeam(const float3* start, const float3* dir, float3* _res
 		return false;
 
 	SXTriangle tmptri;
-	float dist;
 	bool tmpiscom = true;
 	float3 ip;
 	float3 res;

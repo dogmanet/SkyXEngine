@@ -87,11 +87,11 @@ void CBaseTool::onPostLoad()
 
 	if(m_szPrimaryActionSound[0])
 	{
-		m_iSoundAction1 = SSCore_SndCreate3dInst(m_szPrimaryActionSound, false, 0, 100);
+		m_iSoundAction1 = SSCore_SndCreate3dInst(m_szPrimaryActionSound, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSecondaryActionSound[0])
 	{
-		m_iSoundAction2 = SSCore_SndCreate3dInst(m_szSecondaryActionSound, false, 0, 100);
+		m_iSoundAction2 = SSCore_SndCreate3dInst(m_szSecondaryActionSound, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szPrimaryActionMuzzleflash[0])
 	{
@@ -125,7 +125,7 @@ void CBaseTool::primaryAction(BOOL st)
 		}
 		if(ID_VALID(m_iSoundAction1))
 		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, &getPos());
+			SSCore_SndInstancePlay3d(m_iSoundAction1, false, false, &getPos());
 		}
 
 		//((CPlayer*)m_pOwner)->is

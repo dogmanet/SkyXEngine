@@ -21,9 +21,15 @@ See the license in LICENSE
 #include <vorbis/vorbisfile.h>
 #include <common/aastring.h>
 #include <common/array.h>
+#include <common/string.h>
+#include <common/string_utils.h>
+#include <common/file_utils.h>
 #include <common/assotiativearray.h>
 #include "sxscore.h"
 
+//##########################################################################
+
+//перенести в common
 struct AAStringNR : public AAString
 {
 	__forceinline AAStringNR(const char * str)
@@ -44,44 +50,145 @@ struct AAStringNR : public AAString
 	}
 };
 
+//##########################################################################
 
+/*! проверка допустимости id звука, в случае провала вылет */
 #define SOUND_PRECOND(id, retval) \
-if((UINT)id >= ArrSounds.size() || !(ArrSounds[id]))\
+if (id >= m_aSounds.size() || id < 0 || !(m_aSounds[id]))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved address to sound %d", GEN_MSG_LOCATION, id); return retval; }
 
-inline long SOUND_3D_COM_VOLUME(const float3 & snd_pos, const float3 & view_pos, const float snd_distaudible)
+/*! создание имени звука (нужно для разделения между каналами */
+#define SOUND_CREATE_NAME(szStr, szFile, idChannel) sprintf(szStr, "%d|%s", idChannel, szFile);
+
+/*! проверка допустимости id канала, в случае провала вылет */
+#define SOUND_CHANNEL_PRECOND(id, retval) \
+if (!(id >= 0 && id < SOUND_CHANNELS_COUNT)) \
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved id channel %d", GEN_MSG_LOCATION, id); return retval; }
+
+/*! проверка проигрываемости канала */
+#define SOUND_CHANNEL_PLAYING(id, retval) \
+if (m_aChannels[id] != 1) \
+{return retval; }
+
+/*! проверка допустимости id набора звуков, в случае провала вылет */
+#define SOUND_SNDKIT_PRECOND(id, retval) \
+if (!(id >= 0 && id < m_aSoundKits.size() && m_aSoundKits[id])) \
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved id sound kit %d", GEN_MSG_LOCATION, id); return retval; }
+
+//##########################################################################
+
+//! просчет громкости звука, пределы [0, 1]
+inline float Snd3dComVolume(
+	const float3 &vSndPos,		//!< позиция звука
+	const float3 &vViewPos,		//!< позиция слушателя
+	const float fDistAudible	//!< дистанция слышимости
+	)
 {
-	long vol = (SMVector3Distance(snd_pos, view_pos) / snd_distaudible) * (-10000);
+	float fVolume = 1.f - (SMVector3Distance(vSndPos, vViewPos) / fDistAudible);// *(-10000);
 
-	if (vol > 0)
-		vol = 0;
-
-	if (vol < -10000)
-		vol = -10000;
-
-	return vol;
+	return saturatef(fVolume);
 }
 
-//чтение файла
-size_t ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource);
-//закртытие файла
-int ogg_close(void* datasource);
-//позиционирование
-int ogg_seek(void *datasource, ogg_int64_t offset, int whence);
-//размер файла
-long ogg_tell(void* datasource);
-
-inline long SOUND_3D_COM_PAN(const float3 & snd_pos, const float3 & view_pos, const float3 & view_dir, const float snd_distaudible, const float snd_shiftpan)
+//! просчет смещения звука между ушами слушателя
+inline int Snd3dComPan(
+	const float3 &vSndPos,		//!< позиция звука
+	const float3 &vViewPos,		//!< позиция слушателя
+	const float3 &vViewDir,		//!< направление взгляда слушателя
+	const float fDistAudible,	//!< дистанция слышимости
+	const float fShiftPan		//!< коэфициент смещения между ушами слушателя
+	)
 {
-	float dist = SMVector3Distance(snd_pos, view_pos);
-	float3 vec = view_pos + view_dir;
+	float fDist = SMVector3Distance(vSndPos, vViewPos);
+	float3 fVec = vViewPos + vViewDir;
 
-	float str = (snd_pos.x - view_pos.x)*(snd_pos.z - vec.z) - (snd_pos.z - view_pos.z)*(snd_pos.x - vec.x);
-	return ((str * (dist / snd_distaudible)) * snd_shiftpan * (-10000));
+	float str = (vSndPos.x - vViewPos.x)*(vSndPos.z - fVec.z) - (vSndPos.z - vViewPos.z)*(vSndPos.x - fVec.x);
+	return ((str * (fDist / fDistAudible)) * fShiftPan * float(-10000));
 }
+
+//! парсинг строки szSrcStr на составляющие элементы (если есть): путь до звука и параметры воспроизведения
+inline bool SndGetDataFromStr(const char *szSrcStr, String &sFile, float &fDistAudible, float &fVolume, Array<UINT> &aDelays)
+{
+	bool existsData = false;
+
+	Array<String> aStrConfig = StrExplode(szSrcStr, " ", false);
+
+	if (aStrConfig[0].length() == 0)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid file", GEN_MSG_LOCATION);
+		return false;
+	}
+
+	sFile = StrTrim(aStrConfig[0].c_str());
+
+	if (aStrConfig.size() >= 2)
+	{
+		if (aStrConfig[1][0] == 'd' || aStrConfig[1][0] == 'v')
+			existsData = true;
+
+		if (aStrConfig[1][0] == 'd')
+			sscanf(aStrConfig[1].c_str() + 1, "%f", &fDistAudible);
+		else if (aStrConfig[1][0] == 'v')
+			sscanf(aStrConfig[1].c_str() + 1, "%f", &fVolume);
+	}
+
+	if (aStrConfig.size() >= 3)
+	{
+		if (aStrConfig[2][0] == 'd' && fDistAudible > -2.f)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved double instruction for 'distance of audibility'", GEN_MSG_LOCATION);
+			return false;
+		}
+
+		if (aStrConfig[2][0] == 'v' && fVolume > -2.f)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved double instruction for 'volume'", GEN_MSG_LOCATION);
+			return false;
+		}
+
+		if (aStrConfig[2][0] == 'd' || aStrConfig[2][0] == 'v')
+			existsData = true;
+
+		if (aStrConfig[2][0] == 'd')
+			sscanf(aStrConfig[2].c_str() + 1, "%f", &fDistAudible);
+		else if (aStrConfig[2][0] == 'v')
+			sscanf(aStrConfig[2].c_str() + 1, "%f", &fVolume);
+	}
+
+	for (int k = 3, kl = aStrConfig.size(); k < kl; ++k)
+	{
+		String str = aStrConfig[k];
+		aDelays.push_back(aStrConfig[k].ToUnsLongInt());
+	}
+
+	if (aDelays.size() > 0)
+		existsData = true;
+
+	return existsData;
+}
+
+//##########################################################################
+
+/*! \name Обработчики ogg
+@{*/
+
+//! чтение файла
+size_t OggCallbackRead(void *ptr, size_t size, size_t nmemb, void *datasource);
+
+//! закртытие файла
+int OggCallbackClose(void* datasource);
+
+//! позиционирование
+int OggCallbackSeek(void *datasource, ogg_int64_t offset, int whence);
+
+//! размер файла
+long OggCallbackTell(void* datasource);
+
+//!@}
+
+//##########################################################################
 
 //структура для загрузки wave файла
-struct SoundWaveHeader
+struct CSoundWaveHeader
 {
 	char	RiffSig[4];
 	int32_t	ChunkSize;
@@ -98,176 +205,450 @@ struct SoundWaveHeader
 	int32_t	DataSize;
 };
 
+//##########################################################################
 
-class MainSound
+//! менеджер звуков
+class CSoundManager
 {
 public:
-	MainSound();
-	~MainSound();
+	CSoundManager();
+	~CSoundManager();
 
 	SX_ALIGNED_OP_MEM
 
-	void Clear();
+	void clear();
 
-	void Init(HWND hwnd);
+	void init(HWND hWnd);
 
-	struct Sound
+	//! структура данных для воспроизведения с задержками
+	struct CPlayDelay
 	{
-		Sound();
-		~Sound();
-		SX_ALIGNED_OP_MEM
-
-		char RPath[SOUND_MAX_SIZE_PATH];
-		ID Id;
-		bool IsInst;
-		FILE* StreamFile;
-		IDirectSoundBuffer8* DSBuffer;	//звуковой буфер
-		OggVorbis_File* VorbisFile;		//поток для декодирования ogg
-
-		struct SIData
+		CPlayDelay()
 		{
-			SIData(){ sbuffer = 0; busy = false; }
-			SIData(IDirectSoundBuffer8* _sbuffer, float3_t* _pos, bool _busy)
+			m_iCurrPlayDelay = 0;
+			m_uiPlayDelayStart = 0;
+		}
+
+		//! структура для хранения данных о текущей настройке проигрывания
+		struct CTimeDelay
+		{
+			CTimeDelay(){ m_uiTime = 0; m_isDelay = false; }
+			CTimeDelay(UINT uiTime, bool isDelay)
 			{
-				sbuffer = _sbuffer; if (_pos) pos = *_pos; busy = _busy;
-			}
-			~SIData()
-			{
-				mem_release(sbuffer);
+				m_uiTime = uiTime; m_isDelay = isDelay;
 			}
 
-			IDirectSoundBuffer8* sbuffer;
-			float3_t pos;
-			bool busy;
+			//! время в млсек
+			UINT m_uiTime;
+
+			//! это время задержки в проигрывании или нет?
+			bool m_isDelay;
 		};
 
-		Array<SIData> DataInstances;
+		//! массив настроек прогирывания
+		Array<CTimeDelay> m_aPlayDelay;
 
-		SOUND_FILEFORMAT Format;		//формат файла
-		DWORD SizeFull;				//полный размер в байтах (для wav исключая заголовочную структуру)
-		
-		float3 Position;	//позиция источника звука
-		//float Damping;	//сброс громкости при отдалении на метр, т.е. count_volume = volume - dist * Damping %
-		
-		//изменение позиционирования звука, на сколько будет смещен звук при поворотах камеры к источнику звука
-		//чем ближе к объекту тем меньше разница в позиционировании при поворотах
-		float ShiftPan;		
+		//! текущий индекс в #m_aPlayDelay
+		int m_iCurrPlayDelay;
 
-		SOUND_OBJSTATE State;
-		DWORD FrecOrigin;	//оригинальная частота
+		//! стартовое время задержки в млсек (если засекали время)
+		UINT m_uiPlayDelayStart;
 
-		float DistAudible;	
-
-		DWORD StreamSize;//размер потока в байтах
-		int LengthSec;
-		int ChannelsCount;
-		int RateSample;
-		int BitsPerSample;
-		DWORD BytesPerSec;
-		long Volume;	
-
-		//размеры сплитов потока
-		DWORD Split1Size;
-		DWORD Split2Size;
-		DWORD Split3Size;
-
-		//заглушки для работы апдейта на каждый сплит в отдельности
-		bool BF1;
-		bool BF2;
-		bool BF3;
-		bool BF4;
-
-		bool IsLooping;		//зацикливать воспроизведние?
-		bool IsStarting;	//воспроизведение только началось? (для потока)
-		bool Is3d;
-
-		short SplitActive;	//активный сплит
-		int RePlayCount;	//сколько раз был полностью перезагружен поток
-		int	RePlayEndCount;	//сколько раз нужно полностью перезагрузить поток чтоб дойти до конца
 	};
 
-	ID SoundCreate2d(const char *file, bool looping = false, DWORD size_stream = 0);
-	ID SoundCreate3d(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
+	//! структура данных базового понятия звука
+	struct CSoundBase
+	{
+		CSoundBase()
+		{ 
+			m_pSoundBuffer = 0; m_state = SOUND_OBJSTATE_STOP; m_isLooping = false; m_isPlayDelay = false; m_uiBytesPerSec = 0; m_fVolume = 1.f; m_fPan = 0;
+		}
 
-	ID SoundCreate2dInst(const char *file, bool looping = false, DWORD size_stream = 0);
-	ID SoundCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan = 0.1f);
+		~CSoundBase()
+		{
+			mem_release(m_pSoundBuffer);
+		}
 
-	ID SoundFind2dInst(const char * file);
-	ID SoundFind3dInst(const char * file);
+		//! звуковой буфер инстанса
+		IDirectSoundBuffer8 *m_pSoundBuffer;
 
-	void SoundInstancePlay2d(ID id, int volume=100, int pan = 0);
-	void SoundInstancePlay3d(ID id, const float3* pos);
+		//! количество байт в секунде
+		UINT m_uiBytesPerSec;
 
-	bool SoundIsInit(ID id);
-	void SoundDelete(ID id);
+		//! состояние воспроизведения
+		SOUND_OBJSTATE m_state;
 
-	void SoundPlay(ID id, int looping=-1);	//проиграть
-	void SoundPause(ID id);					//приостановить
-	void SoundStop(ID id);					//остановить
+		//! зацикливать ли воспроизведение
+		bool m_isLooping;
 
-	void SoundStateSet(ID id, SOUND_OBJSTATE state);
-	SOUND_OBJSTATE SoundStateGet(ID id);
+		//! используется ли воспроизведение с задержками
+		bool m_isPlayDelay;
+
+		//! объект с данными проигрывания
+		CPlayDelay oPlayDelay;
+
+		//! громкость [0, 1]
+		float m_fVolume;
+
+		//! смещение между ушами слушателя [-1, 1]
+		float m_fPan;
+	};
+
+	//! структура данных инстанса звука
+	struct CSoundInstance : public CSoundBase
+	{
+		CSoundInstance(){ m_pSoundBuffer = 0; m_uiBytesPerSec = 0; m_busy = SOUND_SNDINSTANCE_BUSY_FREE; m_state = SOUND_OBJSTATE_STOP; m_isPlayDelay = false; }
+		CSoundInstance(IDirectSoundBuffer8 *pBuffer, UINT uiBytesPerSec, const float3_t *vPos, SOUND_SNDINSTANCE_BUSY busy)
+		{
+			m_pSoundBuffer = pBuffer; 
+			m_uiBytesPerSec = uiBytesPerSec;
+			if (vPos) 
+				m_vPos = *vPos; 
+			m_busy = busy;
+			m_state = SOUND_OBJSTATE_STOP;
+			m_isPlayDelay = false;
+		}
+
+		//! позиция воспроизведения (если надо)
+		float3_t m_vPos;
+
+		//! занят ли инстанс в данный момент #SOUND_SNDINSTANCE_BUSY
+		SOUND_SNDINSTANCE_BUSY m_busy;
+	};
+
+	//! расширенное понятие звука
+	struct CSound : public CSoundBase
+	{
+		CSound();
+		~CSound();
+		SX_ALIGNED_OP_MEM
+
+		//! путь загруженного звука
+		char m_szRPath[SOUND_MAX_SIZE_PATH];
+
+		//! идентификатор (номер в общем массиве звуков)
+		ID m_id;
+
+		//! канал
+		ID m_idChannel;
+
+		//! 3д воспроизвдеение звука?
+		bool m_is3d;
+
+		/*! количество загрузок звука, в основном сделано для инстансовых, если один и тот же звук загружался несколько раз то он будет загружен единожды, но счетчик будет показывать колиество,
+		 и звук удалиться только тогда когда последний объект его удалит
+		*/
+		int m_iCountLoad;
+
+		//! изменение позиционирования звука, на сколько будет смещен звук при поворотах камеры к источнику звука, чем ближе к объекту тем меньше разница в позиционировании при поворотах
+		float m_fShiftPan;
+
+		//! дистанция слышимости
+		float m_fDistAudible;
+
+		//! разрешено ли создавать инстансы звука (false по дефолту)
+		bool m_isInst;
+
+		//! потом чтения файла
+		FILE *m_pStream;
+
+		//! поток для декодирования ogg
+		OggVorbis_File *m_pVorbisFile;		
+
+		//! массив инстансов
+		Array<CSoundInstance> m_aInstances;
+
+		//! формат файла
+		SOUND_FILEFORMAT m_format;		
+
+		//! полный размер в байтах (для wav исключая заголовочную структуру)
+		UINT m_uiSizeFull;				
+		
+		//! позиция источника звука (если используется без инстансов, хотя устанавливается главному и при инстансах)
+		float3 m_vPosition;	
+
+		//сброс громкости при отдалении на метр, т.е. count_volume = volume - dist * Damping %
+		//float Damping;	
+
+		//! оригинальная частота
+		UINT m_uiFrecOrigin;	
+
+		//! размер потока в байтах
+		UINT m_uiStreamSize;
+
+		//! длина звука в секундах
+		int m_iLengthSec;
+
+		//! количество каналов
+		int m_iChannelsCount;
+
+		//! частота дискретизации
+		int m_iSampleRate;
+
+		//! количество бит в сэмпле
+		int m_iBitsPerSample;
+
+		//размеры сплитов потока
+		UINT m_uiSplit1Size;
+		UINT m_uiSplit2Size;
+		UINT m_uiSplit3Size;
+
+		//заглушки для работы апдейта на каждый сплит в отдельности
+		bool m_isWork1;
+		bool m_isWork2;
+		bool m_isWork3;
+		bool m_isWork4;
+
+		//! воспроизведение только началось? (для потока)
+		bool m_isStarting;
+
+		//! номер текущего активного сплита
+		int m_iSplitActive;	
+
+		//! сколько раз был полностью перезагружен поток
+		int m_iRePlayCount;	
+
+		//! сколько раз нужно полностью перезагрузить поток чтоб дойти до конца
+		int	m_iRePlayEndCount;
+	};
+
+	//**********************************************************************
+
+	//! набор звуков, для случайного воспроизведения звуков из массива однотипных звуков
+	struct СSoundKit
+	{
+		СSoundKit();
+		~СSoundKit();
+		
+		//! имя набора
+		char m_szName[SOUND_MAX_SIZE_SNDKIT_NAME];
+
+		//! объект набора
+		struct CSoundKitObject
+		{
+			//! идентификатор звука
+			ID m_id;
+
+			//! массив задержек
+			Array<UINT> m_aDelays;
+
+			//! громкость звука [0,1]
+			float m_fVolume;
+		};
+
+		//! массив звуков
+		Array<CSoundKitObject> m_aSounds;
+
+		//! канал набора звуков
+		ID m_idChannel;
+
+		//! 3d (true) или 2d (false) набор?
+		bool m_is3D;
+
+		//! общая дистанция слышимости для 3д звуков
+		float m_fDistAudible;
+	};
+
+	//! создать набор
+	ID sndkitCreate(const char *szName, ID idChannel, bool is3D, float fDistAudible = SOUND_DIST_AUDIBLE_DEFAULT);
+
+	ID sndkitCreateFromList(const char *szName, ID idChannel, Array<String> aStrings, bool is3D, float fDistAudible = SOUND_DIST_AUDIBLE_DEFAULT, float fVolume = 1.f);
+
+	//! добавить звук в набор, если fDistAudible < 0 то будут задействованы настройки самого набора
+	void sndkitAddSound(ID idSndKit, const char *szFile, float fDistAudible, float fVolume = 1.f, UINT *pArrDelay = 0, int iSizeArrDelay = 0);
+
+	//! получить id по имени набора
+	ID sndkitGetID(const char *szName);
+
+	//! получить номер канала
+	ID sndkitGetChannel(ID idSndKit);
+
+	//! получить имя по id набора
+	void sndkitGetName(ID idSndKit, char *szName);
+
+	//! удалить набор
+	void sndkitDelete(ID idSndKit);
+
+	//! удалить все наборы
+	void sndkitDeleteAll();
+
+	/*! проиграть случайный звук
+	 \note если набор 3д звуков, то позиция обязательна
+	 \note id2 должен принимать либо #SOUND_SNDKIT_INSTANCE_BLOCK либо #SOUND_SNDKIT_INSTANCE_NOTBLOCK либо должен быть упакованным значением идентификаторов заблокированного инстанса звука
+	  если инстанс воспроизводимого звука заблокирован, то он не будет использоваться другими пока владелец его не разблокирует
+	 \return возвращает упакованные значения порядкового номера звука (в массиве набора) в 32 старших битах и id инстанса звука в 32 младших битах
+	*/
+	uint64_t sndkitPlay(ID idSndKit, uint64_t id2, const float3 *pPos = 0, float fVolume = -1.f, float fPan = 0.f);
+
+	//! остановить проигрывание звуков в наборе
+	void sndkitStop(ID idSndKit, uint64_t id2);
+
+	//**********************************************************************
+
+	//! добавить канал
+	void channelAdd(ID idChannel, bool isPlaying = false);
+
+	//! существует ил канал
+	bool channelExists(ID idChannel);
+
+	//! количество звуков в канале
+	int channelGetSndCount(ID idChannel);
+
+	//! проигрывать звуки канала
+	void channelPlay(ID idChannel);
+
+	//! проигрывается ли канал?
+	bool channelPlaying(ID idChannel);
+
+	//! остановить проигрывание звуков канала
+	void channelStop(ID idChannel);
+
+	//! проигрывать звуки только этого канала
+	void channelPlayOnly(ID idChannel);
+
+	//! воспроизвести звук канала (используется внутри функций каналов для воспроизведения каналов)
+	void channelSndPlay(ID idChannel, ID idSound);
+
+	//! остановить звук канала (используется внутри функций каналов для воспроизведения каналов)
+	void channelSndStop(ID idChannel, ID idSound);
+
+	//**********************************************************************
+
+	ID soundCreate2d(const char *szFile, ID idChannel, UINT uiSizeStream = 0);
+	ID soundCreate3d(const char *szFile, ID idChannel, UINT uiSizeStream, float fDist);
+
+	ID soundCreate2dInst(const char *szFile, ID idChannel);
+	ID soundCreate3dInst(const char *szFile, ID idChannel, float fDist);
+
+	ID soundFind2dInst(const char *szFile, ID idChannel);
+	ID soundFind3dInst(const char *szFile, ID idChannel);
+
+	/*! воспроизведение инстанса звука, если нужны задержки то надо их указывать в pArrDelay и iSizeArrDelay, иначе в обоих 0, 
+	если нужен 3д звук (если это на самом деле 3д звук) то надо указать pPos, иначе 0 и будет 2д, для 2д по желанию можно указать громкость iVolume и смещение между ушами iPan
+	*/
+	ID soundInstancePlay(ID idSound, bool isBlocked, bool isLooping, UINT *pArrDelay, int iSizeArrDelay, const float3 *pPos, float fVolume = 1.f, float fPan = 0.f);
+
+	bool soundInstancePlaying(ID idSound, ID idInstance);
+	void soundInstanceStop(ID idSound, ID idInstance);
+	void soundInstanceFree(ID idSound, ID idInstance);
+
+	bool soundIsInit(ID idSound);
+	void soundDelete(ID idSound);
+
+	//! проиграть
+	void soundPlay(ID idSound, bool isLooping = false, UINT *pArrDelay = 0, int iSizeArrDelay = 0);
+
+	//! инициализация масисва задержек для воспроизведения звука, если указать iSizeArrDelay = -1 тогда будут задействованы прошлые настройки
+	void soundInitPlayDelay(CSoundBase *pSndbase, UINT *pArrDelay, int iSizeArrDelay);
+
+	//! продолжить воспроизведение (с задержками) остановленного звука
+	void soundResumePlayDelay(CSoundBase *pSndBase);
+
+	//! приостановить
+	void soundPause(ID idSound);
+
+	//! остановить
+	void soundStop(ID idSound);
+
+	void soundSetState(ID idSound, SOUND_OBJSTATE state);
+	SOUND_OBJSTATE soundGetState(ID idSound);
 
 	//текащая позиция проигрывания
-	void SoundPosCurrSet(ID id, DWORD pos, int type = SOUND_POS_BYTES);
-	DWORD SoundPosCurrGet(ID id, int type = SOUND_POS_BYTES);
+	void soundSetPosPlay(ID idSound, UINT uiPos);
+	UINT soundGetPosPlay(ID idSound);
 
 	//громкость
-	void SoundVolumeSet(ID id, long volume, int type = SOUND_VOL_PCT);
-	long SoundVolumeGet(ID id, int type = SOUND_VOL_PCT);
+	void soundSetVolume(ID idSound, float fVolume);
+	float soundGetVolume(ID idSound);
 
 	//позиционирование между динамиками
-	void SoundPanSet(ID id, long value, int type = SOUND_VOL_PCT);
-	long SoundPanGet(ID id, int type = SOUND_VOL_PCT);
+	void soundSetPan(ID idSound, float fPan);
+	float soundGetPan(ID idSound);
 
 	//частота
-	void SoundFreqCurrSet(ID id, DWORD value);
-	DWORD SoundFreqCurrGet(ID id);
-	DWORD SoundFreqOriginGet(ID id);
+	void soundSetFreqCurr(ID idSound, UINT uiFrec);
+	UINT soundGetFreqCurr(ID idSound);
+	UINT soundGetFreqOrigin(ID idSound);
 
-	void SoundPosWSet(ID id, const float3* pos);
-	void SoundPosWGet(ID id, float3* pos);
+	void soundSetPosWorld(ID idSound, const float3 *pPos);
+	void soundGetPosWorld(ID idSound, float3 *pPos);
 
-	int SoundLengthSecGet(ID id);		//длина в секундах
-	DWORD SoundBytesPerSecGet(ID id);	//байт в секунде
-	DWORD SoundSizeGet(ID id);			//размер в байтах PCM данных
-	void SoundFileGet(ID id, char* path);//путь до звукового файла
 
-	float SoundDistAudibleGet(ID id);
-	void SoundDistAudibleSet(ID id, float value);
+	//длина в секундах
+	int soundGetLengthSec(ID idSound);
 
-	void Update(const float3* viewpos, const float3* viewdir);
+	//байт в секунде
+	UINT soundGetBytesPerSec(ID idSound);
 
-	SOUND_FILEFORMAT FileFormat(const char* file);
+	//размер в байтах PCM данных
+	UINT soundGetSize(ID idSound);
 
-	int SoundsPlayCountGet();
-	int SoundsLoadCountGet();
+	//путь до звукового файла
+	void soundGetFile(ID idSound, char *szPath);
+
+	float soundGetDistAudible(ID idSound);
+	void soundSetDistAudible(ID idSound, float fDistAudible);
+
+	void UpdatePlayDelay(CSoundBase *pSndBase);
+
+	void update(const float3 *pViewPos, const float3 *pViewDir);
+
+	SOUND_FILEFORMAT fileFormat(const char *szFile);
+
+	int soundsGetPlayCount();
+	int soundsGetLoadCount();
 
 private:
 
-	void Load(Sound* snd, const char* fpath, SOUND_FILEFORMAT fmt);
+	void load(CSound *pSnd, const char *szPath, SOUND_FILEFORMAT fmt);
 
-	void LoadWAV(Sound* snd, const char* fpath);
-	void LoadOGG(Sound* snd, const char* fpath);
-	IDirectSoundBuffer8* SoundBufferCreate(SoundWaveHeader* hdr);
-	void SoundDataWAVLoad(IDirectSoundBuffer8* DSBuffer, long LockPos, FILE* data, long Size, DWORD flag = 0);
-	void SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8 *DSBuffer, long LockPos, long Size, DWORD flag);
+	void loadWAV(CSound *pSnd, const char *szPath);
 
-	void ReLoadSplit(ID id, DWORD Pos, DWORD Size);
+	void loadOGG(CSound *pSnd, const char *szPath);
 
-	ID AddSound(Sound* snd);
+	IDirectSoundBuffer8* soundBufferCreate(CSoundWaveHeader *pHeader);
 
-	Array<Sound*> ArrSounds;	//массив со всеми звуковыми объектами
-	AssotiativeArray<AAStringNR, ID, false, 16> AArr2dInst;
-	AssotiativeArray<AAStringNR, ID, false, 16> AArr3dInst;
+	void soundDataWAVLoad(IDirectSoundBuffer8 *pBuffer, int iLockPos, FILE *pData, int iSize, UINT uiFlag = 0);
+	void soundDataOGGLoad(OggVorbis_File *pVorbisFile, IDirectSoundBuffer8 *pBuffer, int iLockPos, int iSize, UINT uiFlag);
+
+	void reLoadSplit(ID id, UINT Pos, UINT Size);
+
+	ID addSound(CSound *pSnd);
+
+	//**********************************************************************
+
+	//! массив со всеми звуковыми объектами
+	Array<CSound*> m_aSounds;
+
+	//! ассоциативный массив всех 2д звуков arr[name] = id;
+	AssotiativeArray<AAStringNR, ID, false, 16> m_a2dInst;
+
+	//! ассоциативный массив всех 3д звуков arr[name] = id;
+	AssotiativeArray<AAStringNR, ID, false, 16> m_a3dInst;
+
+	//! массив наборов звуков
+	Array<СSoundKit*> m_aSoundKits;
+
+	//! массив каналов
+	int m_aChannels[SOUND_CHANNELS_COUNT];
 	
-	IDirectSound8* DeviceSound;		//звуковое устройство
-	IDirectSoundBuffer* DSPrimary;	//первичный буфер
-	int SoundsPlayCount;			//количество проигрываемых звуков
-	int SoundsLoadCount;			//количество загруженных звуков (с учетом как проигрывающихся так и простаивающих)
+	//! звуковое устройство
+	IDirectSound8 *m_pDeviceSound;		
 
-	float3 OldViewPos;
-	float3 OldViewDir;
+	//! первичный буфер
+	IDirectSoundBuffer *m_pPrimaryBuffer;	
+
+	//! количество проигрываемых звуков
+	int m_iSoundsPlayCount;
+
+	//! количество загруженных звуков (с учетом как проигрывающихся так и простаивающих)
+	int m_iSoundsLoadCount;
+
+	//! предыдущая позиция наблюдателя
+	float3 m_vOldViewPos;
+
+	//! предыдущее направление взгляда наблюдателя
+	float3 m_vOldViewDir;
 };
 
 #endif

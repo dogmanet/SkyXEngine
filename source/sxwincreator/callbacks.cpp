@@ -1,5 +1,5 @@
 
-#pragma once
+#include "callbacks.h"
 
 LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -34,12 +34,12 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 			}*/
 		
 		//если мышка перемещаетс€ и зажата нужна€ кнопка дл€ перемещени€
-		if(msg == WM_MOUSEMOVE && SXMainWndElem::NumActiveElement != -1 && SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND() == hwnd)
+		if(msg == WM_MOUSEMOVE && SXMainWndElem::NumActiveElement != -1 && SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND() == hwnd)
 		{
 			POINT global_pos_cursor;
 			GetCursorPos(&global_pos_cursor);
 			RECT grect;
-			Component->GetWinRect(&grect);
+			Component->getWinRect(&grect);
 				//если не объ€влено действие перемещение
 				if(HowComDown != 0 && WhereResize == -1)
 				{
@@ -126,7 +126,7 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 						else
 						{
 							RECT rect;
-							Component->GetClientRect(&rect);
+							Component->getClientRect(&rect);
 								
 								if(HowComDown == 1)
 								{
@@ -205,7 +205,7 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 									rect.left += moveX;
 									rect.right += moveX;									
 								}
-							bool bf = Component->SetClientRect(&rect,true);
+							bool bf = Component->setClientRect(&rect,true);
 							LastPosCursor = global_pos_cursor;
 							InvalidateRect(hwnd,0,1);
 
@@ -238,13 +238,13 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 		{
 				for(int i=0;i<SXMainWndElem::CreateElements.size();i++)
 				{
-						if(hwnd == SXMainWndElem::CreateElements[i]->Object->GetHWND())
+						if(hwnd == SXMainWndElem::CreateElements[i]->Object->getHWND())
 						{
 							SXMainWndElem::NumActiveElement = i;
-							SXMainWndElem::ListBoxAllElements->SetSel(i);
+							SXMainWndElem::ListBoxAllElements->setSel(i);
 							//break;
 						}
-					InvalidateRect(SXMainWndElem::CreateElements[i]->Object->GetHWND(),0,1);
+					InvalidateRect(SXMainWndElem::CreateElements[i]->Object->getHWND(),0,1);
 				}
 			
 				if (SXMainWndElem::NumActiveElement != -1)
@@ -260,14 +260,14 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 		//и есть активный элемент
 		//и тот кому пришло это сообщение и есть актинвный элемент
 		//то дорисовываем ему рамку
-		else if(msg == WM_PAINT && SXMainWndElem::NumActiveElement != -1 && SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND() == hwnd)
+		else if(msg == WM_PAINT && SXMainWndElem::NumActiveElement != -1 && SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND() == hwnd)
 		{
 			if (strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName, "SXGUIButtonImg") == 0)
 				WndProcButtonImgDefault(hwnd, msg, wParam, lParam);
 			else if (strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName, "SXGUIGroupBox") == 0)
 				WndProcGroupBoxPaint(hwnd, msg, wParam, lParam);
 			else
-					CallWindowProc(Component->OldProc,hwnd, msg, wParam, lParam);
+					CallWindowProc(Component->getPrevWndProc(),hwnd, msg, wParam, lParam);
 
 			HDC hdcp = GetDC(hwnd);
 			RECT clrect;
@@ -298,11 +298,11 @@ LRESULT CALLBACK WndProcChildJob(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 				else if (strcmp(ClassName, "SXGUIGROUPBOX") == 0)
 					WndProcGroupBoxPaint(hwnd, msg, wParam, lParam);
 				else
-					CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
+					CallWindowProc(Component->getPrevWndProc(), hwnd, msg, wParam, lParam);
 			return 1;
 		}
 
-	return CallWindowProc(Component->OldProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(Component->getPrevWndProc(), hwnd, msg, wParam, lParam);
 }
 
 LRESULT WndProcChildJob2(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -329,7 +329,7 @@ BOOL CALLBACK GroupBoxLButtonDown(HWND hwnd,LPARAM lParam)
 
 				if(((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom)))
 				{
-					SendMessage(Component->GetHWND(),WM_LBUTTONDOWN,0,lParam);
+					SendMessage(Component->getHWND(),WM_LBUTTONDOWN,0,lParam);
 					IsFindGroupBox = true;
 				}
 		}
@@ -347,7 +347,7 @@ LRESULT AddElement(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			WORD yPos   = HIWORD(lParam);
 				for(int i=0;i<SX_WINCREATOR_COUNT_ELEMENT;i++)
 				{
-						if (SXMainWndElem::Elements[i].Object->GetEnable())
+						if (SXMainWndElem::Elements[i].Object->getEnable())
 						{
 							SXCreateElement* Object = new SXCreateElement();
 							Object->SysClassName[0] = 0;
@@ -357,115 +357,115 @@ LRESULT AddElement(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								if(strcmp(SXMainWndElem::Elements[i].Name,"Button") == 0)
 								{
 									Object->Object = SXGUICrButton(NameElem, xPos, yPos, 100, 20, SXGUI_BUTTON_IMAGE_NONE, hwnd, WndProcChildJob, 0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIButton");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"ImgButton") == 0)
 								{
 									ISXGUIButtonImg* tmpButtonImg = SXGUICrButtonImgLoad("",xPos,yPos,24,24,RGB(0,0,0),RGB(100,100,100),hwnd,WndProcChildJob,0);
-									tmpButtonImg->SetColorFrame(100, 100, 100);
-									tmpButtonImg->SetEnable(true);
-									tmpButtonImg->SetEnableActive(true);
+									tmpButtonImg->setColorFrame(RGB(100, 100, 100));
+									tmpButtonImg->setEnable(true);
+									tmpButtonImg->setActive(true);
 
 									Object->Object = tmpButtonImg;
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIButtonImg");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"Edit") == 0)
 								{
 									Object->Object = SXGUICrEdit(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIEdit");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"CheckBox") == 0)
 								{
 									Object->Object = SXGUICrCheckBox(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0,true);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUICheckBox");
 								}
 
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"ComboBox") == 0)
 								{
-									Object->Object = SXGUICrComboBox(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									Object->Object = SXGUICrComboBox(xPos,yPos,100,20,hwnd,WndProcChildJob,0);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIComboBox");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"GroupBox") == 0)
 								{
 									Object->Object = SXGUICrGroupBox(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIGroupBox");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"ListBox") == 0)
 								{
-									Object->Object = SXGUICrListBox(NameElem,xPos,yPos,100,100,hwnd,WndProcChildJob,0,true);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									Object->Object = SXGUICrListBox(xPos,yPos,100,100,hwnd,WndProcChildJob,0,true);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIListBox");
-									SendMessage(Object->Object->GetHWND(),LB_SETITEMHEIGHT,0,1);
+									SendMessage(Object->Object->getHWND(),LB_SETITEMHEIGHT,0,1);
 								}
 								else if (strcmp(SXMainWndElem::Elements[i].Name, "ListView") == 0)
 								{
-									Object->Object = SXGUICrListView(NameElem, xPos, yPos, 200, 100, hwnd, WndProcChildJob, 0);
-									GetClassName(Object->Object->GetHWND(), Object->SysClassName, 64);
+									Object->Object = SXGUICrListView(xPos, yPos, 200, 100, hwnd, WndProcChildJob, 0);
+									GetClassName(Object->Object->getHWND(), Object->SysClassName, 64);
 									sprintf(Object->SXClassName, "%s", "SXGUIListView");
-									SendMessage(Object->Object->GetHWND(), LB_SETITEMHEIGHT, 0, 1);
+									SendMessage(Object->Object->getHWND(), LB_SETITEMHEIGHT, 0, 1);
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"Memo") == 0)
 								{
 									Object->Object = SXGUICrMemo(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIMemo");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"ProgressBar") == 0)
 								{
 									Object->Object = SXGUICrProgressBar(xPos,yPos,100,20,hwnd,WndProcChildJob,0,true,true);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIProgressBar");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"RadioButton") == 0)
 								{
 									Object->Object = SXGUICrRadioButton(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIRadioButton");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"Static") == 0)
 								{
 									Object->Object = SXGUICrStatic(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIStatic");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"TrackBar") == 0)
 								{
 									Object->Object = SXGUICrTrackBar(NameElem,xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUITrackBar");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"StatusBar") == 0)
 								{
 									Object->Object = SXGUICrStatusBar(NameElem,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIStatusBar");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"ToolBar") == 0)
 								{
 									Object->Object = SXGUICrToolBar(xPos,yPos,100,20,hwnd,WndProcChildJob,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIToolBar");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"UpDown") == 0)
 								{
 									Object->Object = SXGUICrUpDown(xPos,yPos,100,20,hwnd,WndProcChildJob,0,0,0);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIUpDown");
 								}
 								else if(strcmp(SXMainWndElem::Elements[i].Name,"Window") == 0)
 								{
-									Object->Object = SXGUICrBaseWnd(NameElem,NameElem,0,
-																	0,xPos,yPos,200,200,
+									Object->Object = SXGUICrBaseWndEx(NameElem,NameElem,
+																	xPos,yPos,200,200,
 																	0,0,CreateSolidBrush(RGB(200,200,200)),
 																	0,CS_HREDRAW | CS_VREDRAW,WS_CHILD | WS_VISIBLE | WS_BORDER /*| WS_CAPTION | WS_MAXIMIZEBOX | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME*/,
 																	hwnd,WndProcChildJob);
-									GetClassName(Object->Object->GetHWND(),Object->SysClassName,64);
+									GetClassName(Object->Object->getHWND(),Object->SysClassName,64);
 									sprintf(Object->SXClassName,"%s","SXGUIBaseWnd");
 								}
 
@@ -484,7 +484,7 @@ LRESULT AddElement(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 										//заново отрисовываем все созданные элементы
 										for(int e=0;e<SXMainWndElem::CreateElements.size();e++)
 										{
-											InvalidateRect(SXMainWndElem::CreateElements[e]->Object->GetHWND(),0,1);
+											InvalidateRect(SXMainWndElem::CreateElements[e]->Object->getHWND(),0,1);
 										}
 									IsCreateNewObject = true;
 									
@@ -496,16 +496,16 @@ LRESULT AddElement(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 									//устнавливаем в юзердату строки пор€дковый номер созданного элемента
 									char tmpAddItem[256];
 									sprintf(tmpAddItem,"%s%s%s%s%s",NameElem, " - ",Object->SXClassName," : ",Object->SysClassName);
-									SXMainWndElem::ListBoxAllElements->AddItem(tmpAddItem);
+									SXMainWndElem::ListBoxAllElements->addItem(tmpAddItem);
 
-									int countitem = SXMainWndElem::ListBoxAllElements->GetCountItem();
-									SXMainWndElem::ListBoxAllElements->SetItemData(SXMainWndElem::ListBoxAllElements->GetCountItem()-1,(LPARAM)SXMainWndElem::CreateElements.size()-1);
-									SXMainWndElem::ListBoxAllElements->SetSel(SXMainWndElem::NumActiveElement);
+									int countitem = SXMainWndElem::ListBoxAllElements->getItemCount();
+									SXMainWndElem::ListBoxAllElements->setItemData(SXMainWndElem::ListBoxAllElements->getItemCount() - 1, (LPARAM)SXMainWndElem::CreateElements.size() - 1);
+									SXMainWndElem::ListBoxAllElements->setSel(SXMainWndElem::NumActiveElement);
 
 									//обновл€ем все данные
 									//SXUpdateParam::PosSize();
 									InLog("%s","Parameters ParamWnd overwritten, serial number of elements writed (userdata32)");
-									SendMessage(SXMainWndElem::ButtonArrow->GetHWND(),WM_LBUTTONUP,0,0);
+									SendMessage(SXMainWndElem::ButtonArrow->getHWND(),WM_LBUTTONUP,0,0);
 
 									SXMainWndElem::IsCreatedEl = true;
 								}
@@ -518,7 +518,7 @@ LRESULT AddElement(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					int tmptmp = SXMainWndElem::NumActiveElement;
 					SXMainWndElem::NumActiveElement = -1;
-					InvalidateRect(SXMainWndElem::CreateElements[tmptmp]->Object->GetHWND(),0,1);
+					InvalidateRect(SXMainWndElem::CreateElements[tmptmp]->Object->getHWND(),0,1);
 					InLog("%s","Elements of job window deactivated (AddElement)");
 				}
 		}
@@ -545,7 +545,7 @@ BOOL CALLBACK GroupBoxMouseMove(HWND hwnd,LPARAM lParam)
 
 				if(((p.x >= rect.left && p.x <= rect.right) && (p.y >= rect.top && p.y <= rect.bottom)))
 				{
-					SendMessage(Component->GetHWND(),WM_MOUSEMOVE,lParam,0);
+					SendMessage(Component->getHWND(),WM_MOUSEMOVE,lParam,0);
 				}
 		}
 	return TRUE;
@@ -560,7 +560,7 @@ BOOL CALLBACK GroupBoxRButtonUp(HWND hwnd,LPARAM lParam)
 		{
 			int Style;
 			Style = GetWindowLong(hwnd,GWL_STYLE);
-			SendMessage(Component->GetHWND(),WM_RBUTTONUP,0,lParam);
+			SendMessage(Component->getHWND(),WM_RBUTTONUP,0,lParam);
 		}
 	return TRUE;
 }
@@ -584,20 +584,20 @@ LRESULT RButtonUp(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 LRESULT ListBoxAllElementsDBLClick(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int tmpNumSel = SXMainWndElem::ListBoxAllElements->GetSel();
+	int tmpNumSel = SXMainWndElem::ListBoxAllElements->getSel();
 		if(tmpNumSel != -1)
 		{
-			int tmpNumElem = (SXMainWndElem::ListBoxAllElements->GetItemData(tmpNumSel));
+			int tmpNumElem = (SXMainWndElem::ListBoxAllElements->getItemData(tmpNumSel));
 			SXMainWndElem::NumActiveElement = tmpNumElem;
 
 				for(int i=0;i<SXMainWndElem::CreateElements.size();i++)
-					InvalidateRect(SXMainWndElem::CreateElements[i]->Object->GetHWND(),0,1);
+					InvalidateRect(SXMainWndElem::CreateElements[i]->Object->getHWND(),0,1);
 
-			InvalidateRect(SXMainWndElem::JobMainWnd->GetHWND(),0,1);
+			InvalidateRect(SXMainWndElem::JobMainWnd->getHWND(),0,1);
 			SXUpdateParam::UpdateAll();
 		}
 
-	return CallWindowProc(SXMainWndElem::ListBoxAllElements->OldProc,hwnd, msg, wParam, lParam);
+	return CallWindowProc(SXMainWndElem::ListBoxAllElements->getPrevWndProc(),hwnd, msg, wParam, lParam);
 }
 
 LRESULT InitColorText(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -609,23 +609,23 @@ LRESULT InitColorText(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	COLORREF cust_colors[16];
 	cc.lpCustColors = cust_colors;
 	char bufr[160],bufg[160],bufb[160];
-		if(hwnd == SXMainWndElem::EditParamColorTextR->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextG->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextB->GetHWND())
+		if(hwnd == SXMainWndElem::EditParamColorTextR->getHWND() || hwnd == SXMainWndElem::EditParamColorTextG->getHWND() || hwnd == SXMainWndElem::EditParamColorTextB->getHWND())
 		{
-			SXMainWndElem::EditParamColorTextR->GetText(bufr,4);
-			SXMainWndElem::EditParamColorTextG->GetText(bufg,4);
-			SXMainWndElem::EditParamColorTextB->GetText(bufb,4);
+			SXMainWndElem::EditParamColorTextR->getText(bufr,4);
+			SXMainWndElem::EditParamColorTextG->getText(bufg,4);
+			SXMainWndElem::EditParamColorTextB->getText(bufb,4);
 		}
-		else if(hwnd == SXMainWndElem::EditParamColorTextBKR->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextBKG->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextBKB->GetHWND())
+		else if(hwnd == SXMainWndElem::EditParamColorTextBKR->getHWND() || hwnd == SXMainWndElem::EditParamColorTextBKG->getHWND() || hwnd == SXMainWndElem::EditParamColorTextBKB->getHWND())
 		{
-			SXMainWndElem::EditParamColorTextBKR->GetText(bufr,4);
-			SXMainWndElem::EditParamColorTextBKG->GetText(bufg,4);
-			SXMainWndElem::EditParamColorTextBKB->GetText(bufb,4);
+			SXMainWndElem::EditParamColorTextBKR->getText(bufr,4);
+			SXMainWndElem::EditParamColorTextBKG->getText(bufg,4);
+			SXMainWndElem::EditParamColorTextBKB->getText(bufb,4);
 		}
-		else if(hwnd == SXMainWndElem::EditParamColorBKR->GetHWND() || hwnd == SXMainWndElem::EditParamColorBKG->GetHWND() || hwnd == SXMainWndElem::EditParamColorBKB->GetHWND())
+		else if(hwnd == SXMainWndElem::EditParamColorBKR->getHWND() || hwnd == SXMainWndElem::EditParamColorBKG->getHWND() || hwnd == SXMainWndElem::EditParamColorBKB->getHWND())
 		{
-			SXMainWndElem::EditParamColorBKR->GetText(bufr,4);
-			SXMainWndElem::EditParamColorBKG->GetText(bufg,4);
-			SXMainWndElem::EditParamColorBKB->GetText(bufb,4);
+			SXMainWndElem::EditParamColorBKR->getText(bufr,4);
+			SXMainWndElem::EditParamColorBKG->getText(bufg,4);
+			SXMainWndElem::EditParamColorBKB->getText(bufb,4);
 		}
 	int tmpr=0,tmpg=0,tmpb=0;
 	sscanf(bufr,"%d",&tmpr);
@@ -634,10 +634,10 @@ LRESULT InitColorText(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	cc.rgbResult = RGB(tmpr,tmpg,tmpb);
 	cc.Flags = CC_FULLOPEN | CC_RGBINIT;
  
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
 		if(ChooseColor(&cc)) 
 		{
 				if(cc.rgbResult != RGB(tmpr,tmpg,tmpb))
@@ -649,33 +649,33 @@ LRESULT InitColorText(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					sprintf(bufg,"%d",tmpg);
 					sprintf(bufb,"%d",tmpb);
 
-						if(hwnd == SXMainWndElem::EditParamColorTextR->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextG->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextB->GetHWND())
+						if(hwnd == SXMainWndElem::EditParamColorTextR->getHWND() || hwnd == SXMainWndElem::EditParamColorTextG->getHWND() || hwnd == SXMainWndElem::EditParamColorTextB->getHWND())
 						{
-							SXMainWndElem::EditParamColorTextR->SetText(bufr);
-							SXMainWndElem::EditParamColorTextG->SetText(bufg);
-							SXMainWndElem::EditParamColorTextB->SetText(bufb);
+							SXMainWndElem::EditParamColorTextR->setText(bufr);
+							SXMainWndElem::EditParamColorTextG->setText(bufg);
+							SXMainWndElem::EditParamColorTextB->setText(bufb);
 							SXUpdateParam::SetColorText();
 						}
-						else if(hwnd == SXMainWndElem::EditParamColorTextBKR->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextBKG->GetHWND() || hwnd == SXMainWndElem::EditParamColorTextBKB->GetHWND())
+						else if(hwnd == SXMainWndElem::EditParamColorTextBKR->getHWND() || hwnd == SXMainWndElem::EditParamColorTextBKG->getHWND() || hwnd == SXMainWndElem::EditParamColorTextBKB->getHWND())
 						{
-							SXMainWndElem::EditParamColorTextBKR->SetText(bufr);
-							SXMainWndElem::EditParamColorTextBKG->SetText(bufg);
-							SXMainWndElem::EditParamColorTextBKB->SetText(bufb);
+							SXMainWndElem::EditParamColorTextBKR->setText(bufr);
+							SXMainWndElem::EditParamColorTextBKG->setText(bufg);
+							SXMainWndElem::EditParamColorTextBKB->setText(bufb);
 							SXUpdateParam::SetColorTextBK();
 						}
-						else if(hwnd == SXMainWndElem::EditParamColorBKR->GetHWND() || hwnd == SXMainWndElem::EditParamColorBKG->GetHWND() || hwnd == SXMainWndElem::EditParamColorBKB->GetHWND())
+						else if(hwnd == SXMainWndElem::EditParamColorBKR->getHWND() || hwnd == SXMainWndElem::EditParamColorBKG->getHWND() || hwnd == SXMainWndElem::EditParamColorBKB->getHWND())
 						{
-							SXMainWndElem::EditParamColorBKR->SetText(bufr);
-							SXMainWndElem::EditParamColorBKG->SetText(bufg);
-							SXMainWndElem::EditParamColorBKB->SetText(bufb);
+							SXMainWndElem::EditParamColorBKR->setText(bufr);
+							SXMainWndElem::EditParamColorBKG->setText(bufg);
+							SXMainWndElem::EditParamColorBKB->setText(bufb);
 							SXUpdateParam::SetColorBK();
 						}
 				}
 		}
-	SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
+	SXMainWndElem::MainWnd->setEnable(true);
+	SXMainWndElem::JobMainWnd->setEnable(true);
+	SXMainWndElem::ParamWnd->setEnable(true);
+	SXMainWndElem::WndLog->setEnable(true);
 
 	return 1;
 }
@@ -686,75 +686,75 @@ LRESULT InputInfoEdit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if(wParam == VK_RETURN)
 		{
 			bool is_execute = false;
-				if(hwnd == SXMainWndElem::EditParamPosX->GetHWND())
+				if(hwnd == SXMainWndElem::EditParamPosX->getHWND())
 				{
 					//InLog("%s","Ћог создан, запуск цикла ...");
 					SXUpdateParam::SetPosX();
 					is_execute = true;
 				}
-				else if(hwnd == SXMainWndElem::EditParamPosY->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamPosY->getHWND())
 				{
 					SXUpdateParam::SetPosY();
 					is_execute = true;
 				}
-				else if(hwnd == SXMainWndElem::EditParamWidth->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamWidth->getHWND())
 				{
 					SXUpdateParam::SetWidth();
 					is_execute = true;
 				}
-				else if(hwnd == SXMainWndElem::EditParamHeight->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamHeight->getHWND())
 				{
 					SXUpdateParam::SetHeight();
 					is_execute = true;
 				}
-				else if(hwnd == SXMainWndElem::EditParamHintText->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamHintText->getHWND())
 				{
 					SXUpdateParam::SetHintText();
 				}
-				else if(hwnd == SXMainWndElem::EditParamCaption->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamCaption->getHWND())
 				{
 					SXUpdateParam::SetCaption();
 				}
-				else if(hwnd == SXMainWndElem::EditParamVarName->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamVarName->getHWND())
 				{
 					SXUpdateParam::SetVarName();
 				}
 
-				else if(hwnd == SXMainWndElem::EditParamColorBKR->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorBKR->getHWND())
 				{
 					SXUpdateParam::SetColorBK();
 				}
-				else if(hwnd == SXMainWndElem::EditParamColorBKG->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorBKG->getHWND())
 				{
 					SXUpdateParam::SetColorBK();
 				}
-				else if(hwnd == SXMainWndElem::EditParamColorBKB->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorBKB->getHWND())
 				{
 					SXUpdateParam::SetColorBK();
 				}
 
-				else if(hwnd == SXMainWndElem::EditParamColorTextR->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorTextR->getHWND())
 				{
 					SXUpdateParam::SetColorText();
 				}
-				else if(hwnd == SXMainWndElem::EditParamColorTextG->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorTextG->getHWND())
 				{
 					SXUpdateParam::SetColorText();
 				}
-				else if(hwnd == SXMainWndElem::EditParamColorTextB->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorTextB->getHWND())
 				{
 					SXUpdateParam::SetColorText();
 				}
 
-				else if(hwnd == SXMainWndElem::EditParamColorTextBKR->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorTextBKR->getHWND())
 				{
 					SXUpdateParam::SetColorTextBK();
 				}
-				else if(hwnd == SXMainWndElem::EditParamColorTextBKG->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorTextBKG->getHWND())
 				{
 					SXUpdateParam::SetColorTextBK();
 				}
-				else if(hwnd == SXMainWndElem::EditParamColorTextBKB->GetHWND())
+				else if(hwnd == SXMainWndElem::EditParamColorTextBKB->getHWND())
 				{
 					SXUpdateParam::SetColorTextBK();
 				}
@@ -770,27 +770,27 @@ LRESULT InputInfoEdit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 LRESULT InputInfoComboBox(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	bool is_execute = false;
-		if(hwnd == SXMainWndElem::ComboBoxParamEnabled->GetHWND())
+		if(hwnd == SXMainWndElem::ComboBoxParamEnabled->getHWND())
 		{
 			SXUpdateParam::SetEnable();
 			is_execute = true;
 		}
-		else if(hwnd == SXMainWndElem::ComboBoxParamVisible->GetHWND())
+		else if(hwnd == SXMainWndElem::ComboBoxParamVisible->getHWND())
 		{
 			SXUpdateParam::SetVisible();
 			is_execute = true;
 		}
-		else if(hwnd == SXMainWndElem::ComboBoxParamHintVisible->GetHWND())
+		else if(hwnd == SXMainWndElem::ComboBoxParamHintVisible->getHWND())
 		{
 			SXUpdateParam::SetVisibleHint();
 			is_execute = true;
 		}
-		else if(hwnd == SXMainWndElem::ComboBoxParamTransparentText->GetHWND())
+		else if(hwnd == SXMainWndElem::ComboBoxParamTransparentText->getHWND())
 		{
 			SXUpdateParam::SetTransparentTextBk();
 			is_execute = true;
 		}
-		else if(hwnd == SXMainWndElem::ComboBoxParamParentFont->GetHWND())
+		else if(hwnd == SXMainWndElem::ComboBoxParamParentFont->getHWND())
 		{
 			SXUpdateParam::SetParentFont();
 			is_execute = true;
@@ -811,13 +811,13 @@ LRESULT InputToEditColor(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	ISXGUIEdit *Component = dynamic_cast<ISXGUIEdit*>((ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA));// (ISXGUIEdit*)GetWindowLong(hwnd, GWL_USERDATA);
 	char buf[32];
-	Component->GetText(buf,32);
+	Component->getText(buf,32);
 	int numbuf;
 	sscanf(buf,"%d",&numbuf);
 		if(numbuf > 255 || strlen(buf) > 3)
-			Component->SetText("255");
+			Component->setText("255");
 		else if(numbuf < 0 )
-			Component->SetText("0");
+			Component->setText("0");
 	InvalidateRect(hwnd,0,1);
 	return 0;
 }
@@ -842,7 +842,7 @@ LRESULT CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if(Notification == BN_CLICKED)
 		{
 			HWND handle_elem = (HWND)(lParam);
-				if(handle_elem == SXMainWndElem::CheckBoxParamWinMenu->GetHWND())
+				if(handle_elem == SXMainWndElem::CheckBoxParamWinMenu->getHWND())
 					SXUpdateParam::SetMenuWindow();
 		}
 			
@@ -873,21 +873,21 @@ void SaveResult()
 	ofn.Flags		= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
 	InLog("%s","Deactivation windows and a dialog box to save the file ...");
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
 		if(GetSaveFileName(&ofn) == TRUE)
 		{
 				if(ofn.nFileExtension == 0 || strcmp(szFileName+ofn.nFileExtension,"bin") != 0)
 					sprintf(szFileName+strlen(szFileName),"%s",".bin");
 			SaveFile(szFileName);
 		}
-	SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
-	SetActiveWindow(SXMainWndElem::MainWnd->GetHWND());
+		SXMainWndElem::MainWnd->setEnable(true);
+		SXMainWndElem::JobMainWnd->setEnable(true);
+		SXMainWndElem::ParamWnd->setEnable(true);
+		SXMainWndElem::WndLog->setEnable(true);
+	SetActiveWindow(SXMainWndElem::MainWnd->getHWND());
 	InLog("%s","Call dialog box to save the file successfully completed, activation window");
 }
 
@@ -916,21 +916,21 @@ void LoadResult()
 	ofn.Flags		= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
 
 	InLog("%s","Deactivation windows and a dialog box to open the file ...");
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
 		if(GetOpenFileName(&ofn) == TRUE)
 		{
 			CreateNew(false);
 			LoadFile(szFileName);
 			SXMainWndElem::IsLoadedEl = true;
 		}
-	SXMainWndElem::MainWnd->Enable(true);
-	SXMainWndElem::JobMainWnd->Enable(true);
-	SXMainWndElem::ParamWnd->Enable(true);
-	SXMainWndElem::WndLog->Enable(true);
-	SetActiveWindow(SXMainWndElem::MainWnd->GetHWND());
+		SXMainWndElem::MainWnd->setEnable(true);
+		SXMainWndElem::JobMainWnd->setEnable(true);
+		SXMainWndElem::ParamWnd->setEnable(true);
+		SXMainWndElem::WndLog->setEnable(true);
+	SetActiveWindow(SXMainWndElem::MainWnd->getHWND());
 	InLog("%s","Call dialog box to open the file successfully completed, activation window");
 }
 
@@ -947,22 +947,22 @@ void CallLoadResult()
 
 void CallOutputWnd()
 {
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
 
-	SXNameSapce::OutputGUIInFile->Enable(true);
-	SXNameSapce::OutputGUIInFile->Visible(true);
+	SXNameSapce::OutputGUIInFile->setEnable(true);
+	SXNameSapce::OutputGUIInFile->setVisible(true);
 }
 
 void CallAboutSXWinCreator()
 {	
-	SXMainWndElem::MainWnd->Enable(false);
-	SXMainWndElem::JobMainWnd->Enable(false);
-	SXMainWndElem::ParamWnd->Enable(false);
-	SXMainWndElem::WndLog->Enable(false);
-	AboutSXWinCreator::JobWindow->Visible(true);
+	SXMainWndElem::MainWnd->setEnable(false);
+	SXMainWndElem::JobMainWnd->setEnable(false);
+	SXMainWndElem::ParamWnd->setEnable(false);
+	SXMainWndElem::WndLog->setEnable(false);
+	AboutSXWinCreator::JobWindow->setVisible(true);
 }
 
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -973,42 +973,42 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	 //{
 		if(id == ID_VIEW_JOB)
 		{
-				if(!SXMainWndElem::MainMenu->GetCheckedItem(id))
+				if(!SXMainWndElem::MainMenu->getCheckedItem(id))
 				{
-					ShowWindow(SXMainWndElem::JobMainWnd->GetHWND(),SW_SHOW);
-					SetActiveWindow(SXMainWndElem::JobMainWnd->GetHWND());
-					SXMainWndElem::MainMenu->CheckItem(id,true);
+					ShowWindow(SXMainWndElem::JobMainWnd->getHWND(),SW_SHOW);
+					SetActiveWindow(SXMainWndElem::JobMainWnd->getHWND());
+					SXMainWndElem::MainMenu->setCheckItem(id,true);
 				}
 				else
 				{
-					ShowWindow(SXMainWndElem::JobMainWnd->GetHWND(),SW_HIDE);
-					SXMainWndElem::MainMenu->CheckItem(id,false);
+					ShowWindow(SXMainWndElem::JobMainWnd->getHWND(),SW_HIDE);
+					SXMainWndElem::MainMenu->setCheckItem(id,false);
 				}
 		}
 		else if(id == ID_VIEW_PARAM)
 		{
-				if(!SXMainWndElem::MainMenu->GetCheckedItem(id))
+				if(!SXMainWndElem::MainMenu->getCheckedItem(id))
 				{
-					ShowWindow(SXMainWndElem::ParamWnd->GetHWND(),SW_SHOW);
-					SetActiveWindow(SXMainWndElem::ParamWnd->GetHWND());
+					ShowWindow(SXMainWndElem::ParamWnd->getHWND(),SW_SHOW);
+					SetActiveWindow(SXMainWndElem::ParamWnd->getHWND());
 				}
 				else
 				{
-					ShowWindow(SXMainWndElem::ParamWnd->GetHWND(),SW_HIDE);
-					SXMainWndElem::MainMenu->CheckItem(id,false);
+					ShowWindow(SXMainWndElem::ParamWnd->getHWND(),SW_HIDE);
+					SXMainWndElem::MainMenu->setCheckItem(id, false);
 				}
 		}
 		else if(id == ID_VIEW_LOGWINDOW)
 		{
-				if(!SXMainWndElem::MainMenu->GetCheckedItem(id))
+				if(!SXMainWndElem::MainMenu->getCheckedItem(id))
 				{
-					ShowWindow(SXMainWndElem::WndLog->GetHWND(),SW_SHOW);
-					SetActiveWindow(SXMainWndElem::WndLog->GetHWND());
+					ShowWindow(SXMainWndElem::WndLog->getHWND(),SW_SHOW);
+					SetActiveWindow(SXMainWndElem::WndLog->getHWND());
 				}
 				else
 				{
-					ShowWindow(SXMainWndElem::WndLog->GetHWND(),SW_HIDE);
-					SXMainWndElem::MainMenu->CheckItem(id,false);
+					ShowWindow(SXMainWndElem::WndLog->getHWND(),SW_HIDE);
+					SXMainWndElem::MainMenu->setCheckItem(id, false);
 				}
 		}
 	//}

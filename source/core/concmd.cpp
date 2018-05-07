@@ -478,8 +478,13 @@ void ConsoleRecv(void*)
 int hOut;
 FILE * fOut = NULL;
 
-bool ConsoleConnect(bool bNewInstance)
+bool ConsoleConnect(const char *szName, bool bNewInstance)
 {
+	char szNameConsole[64];
+
+	char str[MAX_PATH];
+	GetModuleFileNameA(NULL, str, MAX_PATH);
+
 	if(bNewInstance)
 	{
 		srand((UINT)time(NULL));
@@ -487,17 +492,19 @@ bool ConsoleConnect(bool bNewInstance)
 		sprintf(g_szServerPort, "%d", port);
 		sprintf(g_szClientPort, "%d", port + 1);
 
-		char str[MAX_PATH];
-		GetModuleFileNameA(NULL, str, MAX_PATH);
-
-		ShellExecuteA(0, "open", "sxconsole.exe", g_szServerPort, dirname(str), SW_SHOWNORMAL);
+		sprintf(szNameConsole, "%s %s", g_szServerPort, szName);
 	}
 	else
 	{
 		int port = 59705;
 		sprintf(g_szServerPort, "%d", port);
 		sprintf(g_szClientPort, "%d", port + 1);
+
+		sprintf(szNameConsole, "0 %s", szName);
 	}
+
+	if (bNewInstance || !Core_0IsProcessRun("sxconsole.exe"))
+		ShellExecuteA(0, "open", "sxconsole.exe", szNameConsole, dirname(str), SW_SHOWNORMAL);
 
 	WSADATA wsaData;
 	struct addrinfo *result = NULL,
@@ -561,7 +568,7 @@ bool ConsoleConnect(bool bNewInstance)
 	{
 		printf("Unable to connect to console!\n");
 		WSACleanup();
-		return(ConsoleConnect(true));
+		return(ConsoleConnect(szName, true));
 		//return(false);
 	}
 
@@ -623,9 +630,9 @@ bool CommandConnect()
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
-	char recvbuf[2048];
+	
 	int iResult;
-	int recvbuflen = sizeof(recvbuf);
+	
 
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);

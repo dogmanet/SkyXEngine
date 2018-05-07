@@ -77,7 +77,7 @@ void CWeatherRndSnd::addSound(const char *szPath)
 
 	if (isunic)
 	{
-		ID tmpid = SSCore_SndCreate2d(szPath);
+		ID tmpid = SSCore_SndCreate2d(szPath, SX_SOUND_CHANNEL_GAME);
 		m_aArrSnds.push_back(CSnd(szPath, tmpid));
 		m_aCurrSndIDs.push_back(tmpid);
 	}
@@ -100,13 +100,13 @@ void CWeatherRndSnd::update()
 		if((int)m_aCurrSndIDs.size() > tmpkeysnd && m_aCurrSndIDs[tmpkeysnd] && m_aCurrSndIDs[tmpkeysnd] >= 0)
 		{
 			m_idCurrPlay = m_aCurrSndIDs[tmpkeysnd];
-			SSCore_SndPosCurrSet(m_idCurrPlay, 0);
+			SSCore_SndSetPosPlay(m_idCurrPlay, 0);
 			int tmprndvol = (rand() % (m_iVolumeE - m_iVolumeB)) + m_iVolumeB;
-			SSCore_SndVolumeSet(m_idCurrPlay, (long)(env_weather_snd_volume ? (float)tmprndvol * (*env_weather_snd_volume) : tmprndvol), SOUND_VOL_PCT);
+			SSCore_SndSetVolume(m_idCurrPlay, ((float)(env_weather_snd_volume ? (float)tmprndvol * (*env_weather_snd_volume) : tmprndvol))*0.01f);
 			SSCore_SndPlay(m_idCurrPlay);
 
 			DWORD tmprnd = (rand() % (m_ulPeriodE - m_ulPeriodB)) + m_ulPeriodB;
-			m_ulNextPlay = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + tmprnd + ((SSCore_SndLengthSecGet(m_idCurrPlay) + 1) * 1000);
+			m_ulNextPlay = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + tmprnd + ((SSCore_SndGetLengthSec(m_idCurrPlay) + 1) * 1000);
 		}
 	}
 }
@@ -118,7 +118,7 @@ void CWeatherRndSnd::play()
 
 	m_isPlaying = true;
 
-	if (m_idCurrPlay >= 0 && SSCore_SndStateGet(m_idCurrPlay) == SOUND_OBJSTATE_PAUSE)
+	if (m_idCurrPlay >= 0 && SSCore_SndGetState(m_idCurrPlay) == SOUND_OBJSTATE_PAUSE)
 		SSCore_SndPlay(m_idCurrPlay);
 }
 
@@ -129,7 +129,7 @@ void CWeatherRndSnd::pause()
 
 	m_isPlaying = false;
 
-	if (m_idCurrPlay >= 0 && SSCore_SndStateGet(m_idCurrPlay) == SOUND_OBJSTATE_PLAY)
+	if (m_idCurrPlay >= 0 && SSCore_SndGetState(m_idCurrPlay) == SOUND_OBJSTATE_PLAY)
 		SSCore_SndPlay(SOUND_OBJSTATE_PAUSE);
 }
 
@@ -176,8 +176,8 @@ CWeather::CWeather()
 
 	m_idLightThunderbolt = SML_LigthsCreatePoint(&float3(0, 0, 0), 200, &float3(1, 1, 1), false, true);
 	SML_LigthsSetEnable(m_idLightThunderbolt, false);
-	m_idSndRain = SSCore_SndCreate2d("nature/rain.ogg",true);
-	m_idSndThunder = SSCore_SndCreate2d("nature/thunder.ogg");
+	m_idSndRain = SSCore_SndCreate2d("nature/rain.ogg", SX_SOUND_CHANNEL_GAME, true);
+	m_idSndThunder = SSCore_SndCreate2d("nature/thunder.ogg", SX_SOUND_CHANNEL_GAME);
 
 	m_fRainVolume = 0;
 }
@@ -646,8 +646,8 @@ void CWeather::update()
 			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
 			SPE_EffectEnableSet(m_idEffRain, true);
 
-			SSCore_SndPosCurrSet(m_idSndRain, 0);
-			SSCore_SndVolumeSet(m_idSndRain, 0, SOUND_VOL_PCT);
+			SSCore_SndSetPosPlay(m_idSndRain, 0);
+			SSCore_SndSetVolume(m_idSndRain, 0);
 
 			if (m_isPlaying)
 				SSCore_SndPlay(m_idSndRain);
@@ -780,8 +780,8 @@ void CWeather::update()
 			}
 			else
 			{
-				SSCore_SndPosCurrSet(m_idSndThunder, 0);
-				SSCore_SndVolumeSet(m_idSndThunder, (env_weather_snd_volume ? (*env_weather_snd_volume) : 1.f) * 100.f, SOUND_VOL_PCT);
+				SSCore_SndSetPosPlay(m_idSndThunder, 0);
+				SSCore_SndSetVolume(m_idSndThunder, (env_weather_snd_volume ? (*env_weather_snd_volume) : 1.f));
 
 				if (m_isPlaying)
 					SSCore_SndPlay(m_idSndThunder);
@@ -806,8 +806,8 @@ void CWeather::update()
 			SML_LigthsSetEnable(m_idLightThunderbolt, false);
 
 			//и заодно проиграть звук молнии
-			SSCore_SndPosCurrSet(m_idSndThunder, 0);
-			SSCore_SndVolumeSet(m_idSndThunder, clampf(m_fRainVolume*2.f*100.f,0.f,100.f), SOUND_VOL_PCT);
+			SSCore_SndSetPosPlay(m_idSndThunder, 0);
+			SSCore_SndSetVolume(m_idSndThunder, clampf(m_fRainVolume*2.f, 0.f, 1.f));
 			
 			if (m_isPlaying)
 				SSCore_SndPlay(m_idSndThunder);
@@ -859,7 +859,7 @@ void CWeather::updateRainSound()
 	}
 
 	m_fRainVolume /= tmpcount / 4;
-	SSCore_SndVolumeSet(m_idSndRain, (env_weather_snd_volume ? (*env_weather_snd_volume) : 1.f) *  m_fRainVolume * 100.f, SOUND_VOL_PCT);
+	SSCore_SndSetVolume(m_idSndRain, (env_weather_snd_volume ? (*env_weather_snd_volume) : 1.f) *  m_fRainVolume);
 }
 
 float CWeather::getCurrRainDensity()
@@ -878,10 +878,10 @@ void CWeather::sndPlay()
 	m_isPlaying = true;
 	m_RndSnd.play();
 
-	if (m_idSndRain >= 0 && SSCore_SndStateGet(m_idSndRain) == SOUND_OBJSTATE_PAUSE)
+	if (m_idSndRain >= 0 && SSCore_SndGetState(m_idSndRain) == SOUND_OBJSTATE_PAUSE)
 		SSCore_SndPlay(m_idSndRain);
 
-	if (m_idSndThunder >= 0 && SSCore_SndStateGet(m_idSndThunder) == SOUND_OBJSTATE_PAUSE)
+	if (m_idSndThunder >= 0 && SSCore_SndGetState(m_idSndThunder) == SOUND_OBJSTATE_PAUSE)
 		SSCore_SndPlay(m_idSndThunder);
 }
 
@@ -893,10 +893,10 @@ void CWeather::sndPause()
 	m_isPlaying = false;
 	m_RndSnd.pause();
 
-	if (m_idSndRain >= 0 && SSCore_SndStateGet(m_idSndRain) == SOUND_OBJSTATE_PLAY)
+	if (m_idSndRain >= 0 && SSCore_SndGetState(m_idSndRain) == SOUND_OBJSTATE_PLAY)
 		SSCore_SndPause(m_idSndRain);
 
-	if (m_idSndThunder >= 0 && SSCore_SndStateGet(m_idSndThunder) == SOUND_OBJSTATE_PLAY)
+	if (m_idSndThunder >= 0 && SSCore_SndGetState(m_idSndThunder) == SOUND_OBJSTATE_PLAY)
 		SSCore_SndPause(m_idSndThunder);
 }
 

@@ -291,8 +291,6 @@ void Reflection::PreRenderRefCube(int cube, float4x4* world)
 
 void Reflection::PostRenderRefCube(int cube)
 {
-	LPDIRECT3DSURFACE9 BackBuf;
-
 	mem_release_del(CubeReflectSurface[cube]);
 	mem_release(SurfaceReflect);
 

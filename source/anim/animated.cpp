@@ -1079,7 +1079,7 @@ SMMATRIX Animation::getBoneTransform(UINT _id, bool bWithScale)
 {
 	//id *= 2;
 	int id = m_FinalBones[_id].pid;
-	if(id < 0)
+	if(id < 0 || id >= m_pMdl->m_hdr2.iBoneTableCount)
 	{
 		return(SMMatrixIdentity());
 	}

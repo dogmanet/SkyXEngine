@@ -294,11 +294,20 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 #define SKYXENGINE_VERSION "0.9.3"
 
+#define SKYXENGINE_PREVIEW_SIZE 256
+
+#define SKYXENGINE_PREVIEWBUF_SIZE (SKYXENGINE_PREVIEW_SIZE * SKYXENGINE_PREVIEW_SIZE * 4)
+
+#define SKYXENGINE_RELPATH_GAMESOURCE "gamesource"
+#define SKYXENGINE_RELPATH_EDITOR_CACHE "editors_cache"
+
+#include <vld.h>
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>
 #include <common/array.h>
 #include <common/string.h>
+#include <common/file_utils.h>
 #include <fstream>
 
 //ЗАГРУЗКА БИБЛИОТЕК
@@ -472,7 +481,7 @@ void SkyXEngine_HandlerError(const char *szFormat, ...);
 void SkyXEngine_InitOutLog();
 
 //! функция ведения лога и обработки сообщений
-void SkyXEngine_PrintfLog(int level, const char *szFormat, ...);
+void SkyXEngine_PrintfLog(int level, const char *szLibName, const char *szFormat, ...);
 
 //**************************************************************************
 
@@ -493,6 +502,7 @@ void SkyXEngine_Kill();
 /*! \name skyxengine_preview_wnd preview_wnd - Функции превью окна движка
 @{*/
 
+#ifdef IDB_BITMAP_PREVIEW
 //! обработчик для превьюокна
 LRESULT CALLBACK SkyXEngine_PreviewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -502,6 +512,7 @@ void SkyXEngine_PreviewCreate();
 //! уничтожение превью окна
 void SkyXEngine_PreviewKill();
 
+#endif
 //!@} 
 
 //**************************************************************************
@@ -525,6 +536,48 @@ bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t * pos);
 bool SkyXEngine_RFuncParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
 
 //!@}
+
+//##########################################################################
+
+/*! \name skyxengine_preview_genload Генерация/загрузка превью игровых ресурсов
+@{*/
+
+//! загружает текстуру по указанному пути как превью изображение и возвращает
+IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath);
+
+//! возвращает загруженную текстуру с превью, в szPath путь до оригинала
+IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath);
+
+//! запускает генератор создания превью для игровых ресурсов
+void SkyXEngine_RunGenPreview();
+
+//!@}
+
+//##########################################################################
+
+/*! \name skyxengine_preview_editor_handlers Данные и обработчики для превью игровых ресурсов
+@{*/
+
+//! буфер для превью
+extern BYTE *g_pPreviewBuffer;
+
+//! записывает в аргументы данные, если все прошло удачно возвращает true
+bool SkyXEngine_EditorHandlerGetPreviewData(
+	const char *szPath, //!< полный путь до оригинального файла
+	void **pOutBuf,		//!< указатель на буфер, сюда будет записан указатель на g_pPreviewBuffer
+	int *pOutSizeBuf,	//!< размер буфера в байтах
+	int *pOutWidth,		//!< ширина изображения в пикселях
+	int *pOutHeight		//!< высота изображения в пикселях
+	);
+
+//! в szBuf записывает информацию о текстуре szPath
+bool SkyXEngine_EditorHandlerGetTextureInfo(const char *szPath, char *szBuf);
+
+//! в szBuf записывает информацию о dse модели szPath
+bool SkyXEngine_EditorHandlerGetDSEinfo(const char *szPath, char *szBuf);
+
+//!@}
+
 
 //!@} skyxengine
 

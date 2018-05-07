@@ -18,6 +18,8 @@ See the license in LICENSE
 
 #include "TabManager.h"
 
+#include <skyxengine.h>
+
 //#include <anim/ModelFile.h>
 #include <anim/animated.h>
 
@@ -89,6 +91,8 @@ public:
 		_In_ LPARAM lParam
 		);
 
+	HWND getRenderHWND();
+
 protected:
 	void InitUI();
 	void DestroyUI();
@@ -109,7 +113,7 @@ protected:
 
 	ISXGUIStatic* CurAnimName;
 
-	ISXGUIMenu * Menu;
+	ISXGUIMenuWindow * Menu;
 
 	TabManager * m_pTM;
 

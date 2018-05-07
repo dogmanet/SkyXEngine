@@ -1,5 +1,5 @@
 
-
+/*
 void CreateCursor()
 {
 	SXMainWndElem::CurSE = LoadCursor(0,IDC_SIZENWSE);
@@ -8,4 +8,4 @@ void CreateCursor()
 
 	SXMainWndElem::CurNS = LoadCursor(0,IDC_SIZENS);
 	SXMainWndElem::CurWE = LoadCursor(0,IDC_SIZEWE);
-}
+}*/

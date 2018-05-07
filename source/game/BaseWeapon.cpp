@@ -136,27 +136,27 @@ void CBaseWeapon::onPostLoad()
 
 	if(m_szSndDraw[0])
 	{
-		m_idSndDraw = SSCore_SndCreate3dInst(m_szSndDraw, false, 0, 100);
+		m_idSndDraw = SSCore_SndCreate3dInst(m_szSndDraw, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndHolster[0])
 	{
-		m_idSndHolster = SSCore_SndCreate3dInst(m_szSndHolster, false, 0, 100);
+		m_idSndHolster = SSCore_SndCreate3dInst(m_szSndHolster, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndShoot[0])
 	{
-		m_idSndShoot = SSCore_SndCreate3dInst(m_szSndShoot, false, 0, 100);
+		m_idSndShoot = SSCore_SndCreate3dInst(m_szSndShoot, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndEmpty[0])
 	{
-		m_idSndEmpty = SSCore_SndCreate3dInst(m_szSndEmpty, false, 0, 100);
+		m_idSndEmpty = SSCore_SndCreate3dInst(m_szSndEmpty, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndReload[0])
 	{
-		m_idSndReload = SSCore_SndCreate3dInst(m_szSndReload, false, 0, 100);
+		m_idSndReload = SSCore_SndCreate3dInst(m_szSndReload, SX_SOUND_CHANNEL_GAME, 100);
 	}
 	if(m_szSndSwitch[0])
 	{
-		m_idSndSwitch = SSCore_SndCreate3dInst(m_szSndSwitch, false, 0, 100);
+		m_idSndSwitch = SSCore_SndCreate3dInst(m_szSndSwitch, SX_SOUND_CHANNEL_GAME, 100);
 	}
 }
 
@@ -212,7 +212,7 @@ void CBaseWeapon::primaryAction(BOOL st)
 		{
 			m_bInPrimaryAction = true;
 			switch(m_fireMode)
-			{
+		{
 			case FIRE_MODE_BURST:
 				m_idTaskShoot = SET_INTERVAL(taskShoot, 60.0f / (float)m_iBurstRate);
 				break;
@@ -223,14 +223,14 @@ void CBaseWeapon::primaryAction(BOOL st)
 			case FIRE_MODE_SINGLE:
 				setNextUse(60.0f / (float)m_iSingleRate);
 				break;
-			}
+		}
 			taskShoot(0.0f);
 		}
 	}
 	else
-	{
-		if(m_fireMode != FIRE_MODE_CUTOFF)
 		{
+		if(m_fireMode != FIRE_MODE_CUTOFF)
+			{
 			if(ID_VALID(m_idTaskShoot))
 			{
 				CLEAR_INTERVAL(m_idTaskShoot);
@@ -280,7 +280,7 @@ void CBaseWeapon::reload()
 			count -= m_iCurrentLoad;
 			m_pMag->load(count);
 
-			setNextUse(m_fReloadTime);
+		setNextUse(m_fReloadTime);
 			playAnimation(isFast ? "reload_fast" : "reload");
 			if(isFast)
 			{
@@ -291,12 +291,12 @@ void CBaseWeapon::reload()
 			}
 			else
 			{
-				if(ID_VALID(m_idSndReload))
-				{
-					SSCore_SndInstancePlay3d(m_idSndReload, &getPos());
-				}
-			}
+		if(ID_VALID(m_idSndReload))
+		{
+			SSCore_SndInstancePlay3d(m_idSndReload, false, false, &getPos());
 		}
+	}
+}
 		else
 		{
 			printf(COLOR_MAGENTA "No more bullets!\n" COLOR_RESET);
@@ -312,7 +312,7 @@ void CBaseWeapon::setFireMode(FIRE_MODE mode)
 		m_fireMode = mode;
 		if(ID_VALID(m_idSndSwitch))
 		{
-			SSCore_SndInstancePlay3d(m_idSndSwitch, &getPos());
+			SSCore_SndInstancePlay3d(m_idSndSwitch, false, false, &getPos());
 		}
 	}
 }
@@ -444,7 +444,7 @@ void CBaseWeapon::taskShoot(float dt)
 	{
 		if(ID_VALID(m_idSndEmpty))
 		{
-			SSCore_SndInstancePlay3d(m_idSndEmpty, &getPos());
+			SSCore_SndInstancePlay3d(m_idSndEmpty, false, false, &getPos());
 		}
 		if(ID_VALID(m_idTaskShoot))
 		{
@@ -462,7 +462,7 @@ void CBaseWeapon::taskShoot(float dt)
 	}
 	if(ID_VALID(m_idSndShoot))
 	{
-		SSCore_SndInstancePlay3d(m_idSndShoot, &getPos());
+		SSCore_SndInstancePlay3d(m_idSndShoot, false, false, &getPos());
 	}
 
 	//((CPlayer*)m_pOwner)->is

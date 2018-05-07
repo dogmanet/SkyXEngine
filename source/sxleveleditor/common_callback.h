@@ -2,6 +2,7 @@
 #ifndef __COMMON_CALLBACK_H
 #define __COMMON_CALLBACK_H
 
+#include <common/file_utils.h>
 #include "level_editor.h"
 
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

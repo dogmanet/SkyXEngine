@@ -19,6 +19,7 @@ See the license in LICENSE
 #include <GRegisterIndex.h>
 #include <windows.h>
 #include <common/sxtypes.h>
+#include <common/file_utils.h>
 
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>

@@ -103,6 +103,12 @@ struct IBaseObject
 #define CONFIG_SECTION_MAX_LEN	64	/*!< максимальная длина секции конфигурационного файла */
 //!@}
 
+/*! звуковой канал самой игры */
+#define SX_SOUND_CHANNEL_GAME	0
+
+/*! звуковой канал главного меню */
+#define SX_SOUND_CHANNEL_MAIN_MENU	1
+
 /*! Пустые дефайны для визуальной идентификации аргументов функций
 @{
 */

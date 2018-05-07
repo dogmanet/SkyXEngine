@@ -20,14 +20,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -42,13 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
-    <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/</IncludePath>
+    <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/;../../../sdks/bullet3/src</IncludePath>
     <LibraryPath>../../../libs/;../../../sdks/dx9sdk/Lib/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
-    <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/</IncludePath>
+    <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/;../../../sdks/bullet3/src</IncludePath>
     <LibraryPath>../../../libs/;../../../sdks/dx9sdk/Lib/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -93,7 +93,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
+    <ClCompile Include="..\..\..\source\skyxengine.cpp" />
     <ClCompile Include="..\..\..\source\sxae\Camera.cpp" />
     <ClCompile Include="..\..\..\source\sxae\Editor.cpp" />
     <ClCompile Include="..\..\..\source\sxae\EditorTab.cpp" />
@@ -110,6 +113,10 @@
     <ClCompile Include="..\..\..\source\anim\animated.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\SkyXEngine.h" />
     <ClInclude Include="..\..\..\source\sxae\Camera.h" />
     <ClInclude Include="..\..\..\source\sxae\Editor.h" />
     <ClInclude Include="..\..\..\source\sxae\EditorTab.h" />

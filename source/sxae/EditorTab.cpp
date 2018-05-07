@@ -26,10 +26,10 @@ void EditorTab::Show()
 
 void EditorTab::Show(bool bShow)
 {
-	m_pRoot->Visible(bShow);
+	m_pRoot->setVisible(bShow);
 
-	m_pTabBtn->Enable(!bShow);
-	SendMessage(m_pTabBtn->GetHWND(), BM_SETCHECK, bShow ? BST_CHECKED : BST_UNCHECKED, 0);
+	m_pTabBtn->setEnable(!bShow);
+	SendMessage(m_pTabBtn->getHWND(), BM_SETCHECK, bShow ? BST_CHECKED : BST_UNCHECKED, 0);
 }
 
 LRESULT EditorTab::TabBtnHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -38,7 +38,7 @@ LRESULT EditorTab::TabBtnHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPar
 	{
 		ISXGUIComponent * cmp = (ISXGUIComponent*)GetWindowLong(hwnd, GWL_USERDATA);
 		//cmp->Enable(false);
-		EditorTab * tab = (EditorTab*)cmp->GetUserPtr();
+		EditorTab * tab = (EditorTab*)cmp->getUserPtr();
 		tab->Show();
 	}
 	return(0);

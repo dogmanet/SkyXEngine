@@ -32,7 +32,7 @@ struct ConCmd
 	char * szDesc;
 };
 
-bool ConsoleConnect(bool bNewInstance = false);
+bool ConsoleConnect(const char *szName = 0, bool bNewInstance = false);
 void ConsoleDisconnect();
 void ConsoleRegisterCmds();
 

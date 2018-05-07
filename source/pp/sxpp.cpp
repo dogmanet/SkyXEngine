@@ -865,12 +865,13 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 	RenderSurf->Release();
 	BackBuf->Release();
 
-	if (GetKeyState('N'))
+	/*if (GetKeyState('N'))
 	{
+		//MessageBox(0,"PP GetKeyState",0,0);
 		char tmppath[1024];
-		sprintf(tmppath, "%sbp.png", "C:\\1\\");
-		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Bright), NULL);
-	}
+		sprintf(tmppath, "%sbp.jpg", "C:\\1\\");
+		D3DXSaveTextureToFile(tmppath, D3DXIFF_JPG, SGCore_RTGetTexture(PPSet::IDsRenderTargets::Bright), NULL);
+	}*/
 
 
 	SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);

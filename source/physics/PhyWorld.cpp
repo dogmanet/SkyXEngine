@@ -433,7 +433,7 @@ bool PhyWorld::ImportGeom(const char * file)
 	name[len - 1] = 'm';
 	name[len] = 0;
 
-	if(!Core_0FileExists(file) || !Core_0FileExists(name))
+	if (!FileExistsFile(file) || !FileExistsFile(name))
 	{
 		return(false);
 	}

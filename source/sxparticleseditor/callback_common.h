@@ -12,6 +12,8 @@
 #include "particles_editor.h"
 #include "callback_list.h"
 
+#include <skyxengine.h>
+
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

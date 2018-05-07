@@ -9,6 +9,8 @@
 #include <render/sxrender.h>
 #include <sxmaterialeditor/resource.h>
 
+#include <skyxengine.h>
+
 #include "material_editor.h"
 
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

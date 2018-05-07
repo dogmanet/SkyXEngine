@@ -11,6 +11,7 @@ See the license in LICENSE
 #include <d3d9.h>
 #include <common/array.h>
 #include <common/String.h>
+#include <common/file_utils.h>
 #include "sxgcore.h"
 
 void LibReport(int iLevel, const char *szFormat, ...);

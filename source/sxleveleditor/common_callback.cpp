@@ -1,6 +1,17 @@
 
 #include "common_callback.h"
 
+bool HandlerPreviewLevel(const char *szPath, char *szBuff)
+{
+	String sPathImg = FileAppendSlash(szPath) + "preview.bmp";
+	if (FileExistsFile(sPathImg.c_str()))
+	{
+		sprintf(szBuff, "%s", sPathImg.c_str());
+		return true;
+	}
+	return false;
+}
+
 LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	if (MessageBox(0, "Exit?", "Exit?!", MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
@@ -17,7 +28,7 @@ void SXLevelEditor::LevelNew(bool mess)
 	SLevel_Clear();
 	char tmpcaption[256];
 	sprintf(tmpcaption, "%s: new level ** ", "SXLevelEditor");
-	SXLevelEditor::JobWindow->SetText(tmpcaption);
+	SXLevelEditor::JobWindow->setText(tmpcaption);
 	SXLevelEditor::ActiveGroupType = 0;
 	SXLevelEditor::ActiveElement = -1;
 	SXLevelEditor::ActiveGreenSplit = -1;
@@ -27,9 +38,9 @@ void SXLevelEditor::LevelNew(bool mess)
 	if (gid >= 0)
 		SML_LigthsDeleteLight(gid);
 
-	SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
-	SXLevelEditor::CheckBoxTBLevelType->SetCheck(false);
-	SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
+	SXLevelEditor::CheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+	SXLevelEditor::CheckBoxTBLevelType->setCheck(false);
+	SXLevelEditor::CheckBoxTBGLightEnable->setCheck(false);
 }
 
 void SXLevelEditor::LevelOpen()
@@ -42,27 +53,31 @@ void SXLevelEditor::LevelOpen()
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	//char szSelName[MAX_PATH];
+	//char szSelPath[2014];
+	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false, 0, HandlerPreviewLevel);
+	
 	if (def_str_validate(tmppath))
 	{
-		StrCutNameNEx(tmppath, tmpname);
+		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Load(tmpname, false);
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", "SXLevelEditor", tmpname);
-		SXLevelEditor::JobWindow->SetText(tmpcaption);
+		SXLevelEditor::JobWindow->setText(tmpcaption);
 
 		ID gid = SML_LigthsGetGlobal();
 		if (gid >= 0)
 		{
-			SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP26);
-			SXLevelEditor::CheckBoxTBLevelType->SetCheck(true);
-			SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(true);
+			SXLevelEditor::CheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP26);
+			SXLevelEditor::CheckBoxTBLevelType->setCheck(true);
+			SXLevelEditor::CheckBoxTBGLightEnable->setCheck(true);
 		}
 		else
 		{
-			SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
-			SXLevelEditor::CheckBoxTBLevelType->SetCheck(false);
-			SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
+			SXLevelEditor::CheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+			SXLevelEditor::CheckBoxTBLevelType->setCheck(false);
+			SXLevelEditor::CheckBoxTBGLightEnable->setCheck(false);
 		}
 	}
 }
@@ -91,14 +106,15 @@ void SXLevelEditor::LevelSaveAs()
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
+	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0/*, HandlerPreviewLevel*/);
 	if (StrValidate(tmppath))
 	{
-		StrCutNameNEx(tmppath, tmpname);
+		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Save(tmpname);
 		char tmpcaption[256];
 		sprintf(tmpcaption, "%s: %s", "SXLevelEditor", tmpname);
-		SXLevelEditor::JobWindow->SetText(tmpcaption);
+		SXLevelEditor::JobWindow->setText(tmpcaption);
 	}
 }
 
@@ -135,13 +151,13 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	else if (id == ID_VIEW_GRID)
 	{
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
-		SRender_EditorSetRenderGrid(SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
+		SRender_EditorSetRenderGrid(SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	else if (id == ID_VIEW_AXES)
 	{
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
-		SRender_EditorSetRenderAxesStatic(SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
+		SRender_EditorSetRenderAxesStatic(SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 
 	//
@@ -149,77 +165,77 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		SXLevelEditor::FinalImageUncheckedMenu();
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_NORMALS)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		SXLevelEditor::FinalImageUncheckedMenu();
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_PARAMETERS)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		SXLevelEditor::FinalImageUncheckedMenu();
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		SXLevelEditor::FinalImageUncheckedMenu();
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_SPECULAR)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		SXLevelEditor::FinalImageUncheckedMenu();
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		SXLevelEditor::FinalImageUncheckedMenu();
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 
 
 	//
 	else if (id == ID_SELECTIONSETTINGS_SELECTION)
 	{
-		SXLevelEditor::SelSelection = !SXLevelEditor::MainMenu->GetCheckedItem(id);
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::SelSelection = !SXLevelEditor::MainMenu->getCheckedItem(id);
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_SELECTIONSETTINGS_ZTEST)
 	{
-		SXLevelEditor::SelZTest = !SXLevelEditor::MainMenu->GetCheckedItem(id);
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::SelZTest = !SXLevelEditor::MainMenu->getCheckedItem(id);
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_SELECTIONSETTINGS_MESH)
 	{
-		SXLevelEditor::SelMesh = !SXLevelEditor::MainMenu->GetCheckedItem(id);
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::SelMesh = !SXLevelEditor::MainMenu->getCheckedItem(id);
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_SELECTIONSETTINGS_BACKFACESCULL)
 	{
-		SXLevelEditor::SelBackFacesCull = !SXLevelEditor::MainMenu->GetCheckedItem(id);
-		SXLevelEditor::MainMenu->CheckItem(id, !SXLevelEditor::MainMenu->GetCheckedItem(id));
+		SXLevelEditor::SelBackFacesCull = !SXLevelEditor::MainMenu->getCheckedItem(id);
+		SXLevelEditor::MainMenu->setCheckItem(id, !SXLevelEditor::MainMenu->getCheckedItem(id));
 	}
 
 	else if (id >= SX_LE_MMENU_WEATHER_BEGIN_ID)
 	{
 		for (int i = 0; i < SXLevelEditor::MenuWeatherCount; ++i)
 		{
-			SXLevelEditor::MainMenu->CheckItem(SX_LE_MMENU_WEATHER_BEGIN_ID+i, false);
+			SXLevelEditor::MainMenu->setCheckItem(SX_LE_MMENU_WEATHER_BEGIN_ID+i, false);
 		}
-		SXLevelEditor::MainMenu->CheckItem(id, true);
+		SXLevelEditor::MainMenu->setCheckItem(id, true);
 		SXLevelEditor::MenuWeatherCurrID = (id - SX_LE_MMENU_WEATHER_BEGIN_ID) - 1;
 
 		if (SXLevelEditor::MenuWeatherCurrID >= 0)
@@ -311,7 +327,7 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0)
 	{
-		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 0)
+		if (SXLevelEditor::ComboBoxGreenSel->getSel() == 0)
 		{
 			float3_t pos;
 			SGeom_GreenGetPosObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, &pos);
@@ -387,7 +403,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		) * mat;
 	camDir = pos - vCamPos;
 
-	if (!SXLevelEditor::CheckBoxTBArrow->GetCheck())
+	if (!SXLevelEditor::CheckBoxTBArrow->getCheck())
 		return 0;
 
 	SXLevelEditor::IdMtl = -1;
@@ -396,7 +412,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	{
 		if (SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 		{
-			SXLevelEditor::ListBoxList->SetSel(idmodel);
+			SXLevelEditor::ListBoxList->setSel(idmodel);
 			SXLevelEditor::GeomSel(idmodel);
 			SXLevelEditor::IdMtl = idmtl;
 		}
@@ -407,7 +423,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		ID idsplit;
 		ID idobj;
 
-		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 0)
+		if (SXLevelEditor::ComboBoxGreenSel->getSel() == 0)
 		{
 			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
@@ -415,13 +431,13 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::ActiveGreenObject = idobj;
 				SGeom_GreenGetPosObject(idgreen, idsplit, idobj, &pos2);
 
-				SXLevelEditor::StaticGreenSelX->SetText("Pos X:");
-				SXLevelEditor::StaticGreenSelY->SetText("Pos Y:");
-				SXLevelEditor::StaticGreenSelZ->SetText("Pos Z:");
+				SXLevelEditor::StaticGreenSelX->setText("Pos X:");
+				SXLevelEditor::StaticGreenSelY->setText("Pos Y:");
+				SXLevelEditor::StaticGreenSelZ->setText("Pos Z:");
 
-				SXLevelEditor::EditGreenSelX->SetText(String(pos2.x).c_str());
-				SXLevelEditor::EditGreenSelY->SetText(String(pos2.y).c_str());
-				SXLevelEditor::EditGreenSelZ->SetText(String(pos2.z).c_str());
+				SXLevelEditor::EditGreenSelX->setText(String(pos2.x).c_str());
+				SXLevelEditor::EditGreenSelY->setText(String(pos2.y).c_str());
+				SXLevelEditor::EditGreenSelZ->setText(String(pos2.z).c_str());
 				
 				SXLevelEditor::ObjAxesHelper->SetPosition(pos2);
 				SXLevelEditor::ObjAxesHelper->SetRotation(float3(0,0,0));
@@ -430,7 +446,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::IdMtl = idmtl;
 			}
 		}
-		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 1)
+		else if (SXLevelEditor::ComboBoxGreenSel->getSel() == 1)
 		{
 			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
@@ -438,13 +454,13 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::ActiveGreenSplit = idsplit;
 				SXLevelEditor::ActiveGreenObject = idobj;
 
-				SXLevelEditor::StaticGreenSelX->SetText("Pos X:");
-				SXLevelEditor::StaticGreenSelY->SetText("Pos Y:");
-				SXLevelEditor::StaticGreenSelZ->SetText("Pos Z:");
+				SXLevelEditor::StaticGreenSelX->setText("Pos X:");
+				SXLevelEditor::StaticGreenSelY->setText("Pos Y:");
+				SXLevelEditor::StaticGreenSelZ->setText("Pos Z:");
 
-				SXLevelEditor::EditGreenSelX->SetText(String(_res.x).c_str());
-				SXLevelEditor::EditGreenSelY->SetText(String(_res.y).c_str());
-				SXLevelEditor::EditGreenSelZ->SetText(String(_res.z).c_str());
+				SXLevelEditor::EditGreenSelX->setText(String(_res.x).c_str());
+				SXLevelEditor::EditGreenSelY->setText(String(_res.y).c_str());
+				SXLevelEditor::EditGreenSelZ->setText(String(_res.z).c_str());
 
 				SXLevelEditor::ObjAxesHelper->SetPosition(pos2);
 				SXLevelEditor::ObjAxesHelper->SetRotation(float3(0, 0, 0));
@@ -454,12 +470,12 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 			}
 		}
 
-		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
+		else if (SXLevelEditor::ComboBoxGreenSel->getSel() == 2)
 		{
 			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
 				SXLevelEditor::GreenBoxPos = _res;
-				int density = SXLevelEditor::TrackBarGreenDensity->GetPos();
+				int density = SXLevelEditor::TrackBarGreenDensity->getPos();
 
 				float3 min, max, npos;
 				min.x = _res.x - SXLevelEditor::GreenBoxWHD.x * 0.5f;
@@ -480,7 +496,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 			}
 		}
 
-		else if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 3)
+		else if (SXLevelEditor::ComboBoxGreenSel->getSel() == 3)
 		{
 			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -488,9 +504,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 			{
 				SXLevelEditor::ActiveGreenSplit = -1;
 				SXLevelEditor::ActiveGreenObject = -1;
-				SXLevelEditor::EditGreenSelX->SetText("");
-				SXLevelEditor::EditGreenSelY->SetText("");
-				SXLevelEditor::EditGreenSelZ->SetText("");
+				SXLevelEditor::EditGreenSelX->setText("");
+				SXLevelEditor::EditGreenSelY->setText("");
+				SXLevelEditor::EditGreenSelZ->setText("");
 				SGeom_GreenDelObject(idgreen, idsplit, idobj);
 				int qwert = 0;
 			}
@@ -502,7 +518,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 	}
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 	{
-		if (SXLevelEditor::RadioButtonAIQuadAdd->GetCheck())
+		if (SXLevelEditor::RadioButtonAIQuadAdd->getCheck())
 		{
 			float3 start = pos;
 			float3 dir = camDir;
@@ -515,28 +531,28 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SAIG_QuadAdd(&BTVEC_F3(cb.m_hitPointWorld));
 			}
 		}
-		else if (SXLevelEditor::RadioButtonAIQuadsMSel->GetCheck())
+		else if (SXLevelEditor::RadioButtonAIQuadsMSel->getCheck())
 		{
 			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
 
 			if (idaq > -1)
 				SAIG_QuadSelect(idaq, true);
 		}
-		else if (SXLevelEditor::RadioButtonAIQuadsSelDel->GetCheck())
+		else if (SXLevelEditor::RadioButtonAIQuadsSelDel->getCheck())
 		{
 			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
 
 			if (idaq > -1)
 				SAIG_QuadDelete(idaq);
 		}
-		else if (SXLevelEditor::RadioButtonAIGPAdd->GetCheck())
+		else if (SXLevelEditor::RadioButtonAIGPAdd->getCheck())
 		{
 			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
 
 			if (idaq > -1)
 				SAIG_GraphPointAdd(idaq);
 		}
-		else if (SXLevelEditor::RadioButtonAIGPDel->GetCheck())
+		else if (SXLevelEditor::RadioButtonAIGPDel->getCheck())
 		{
 			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
 
@@ -588,7 +604,7 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		ID idsplit;
 		ID idobj;
 
-		if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
+		if (SXLevelEditor::ComboBoxGreenSel->getSel() == 2)
 		{
 			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 				SXLevelEditor::GreenBoxPos = _res;
@@ -597,7 +613,7 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 	{
-		if (SXLevelEditor::RadioButtonAIQuadsMSel->GetCheck())
+		if (SXLevelEditor::RadioButtonAIQuadsMSel->getCheck())
 		{
 			ID idaq = SAIG_GridTraceBeam(&pos, &camDir);
 
@@ -632,9 +648,9 @@ LRESULT SXLevelEditor_RenderWindow_Delete(HWND hwnd, UINT msg, WPARAM wParam, LP
 		SGeom_GreenDelObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject);
 		SXLevelEditor::ActiveGreenSplit = -1;
 		SXLevelEditor::ActiveGreenObject = -1;
-		SXLevelEditor::EditGreenSelX->SetText("");
-		SXLevelEditor::EditGreenSelY->SetText("");
-		SXLevelEditor::EditGreenSelZ->SetText("");
+		SXLevelEditor::EditGreenSelX->setText("");
+		SXLevelEditor::EditGreenSelY->setText("");
+		SXLevelEditor::EditGreenSelZ->setText("");
 	}
 
 	return 0;
@@ -642,17 +658,17 @@ LRESULT SXLevelEditor_RenderWindow_Delete(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	SXLevelEditor::ListBoxList->Clear();
+	SXLevelEditor::ListBoxList->clear();
 	long tmpcountmodel = SGeom_ModelsGetCount();
 	char tmptextvalcountmodel[64];
 	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
-	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountmodel);
+	SXLevelEditor::StaticListValCount->setText(tmptextvalcountmodel);
 
 	char tmpnamecountpoly[1024];
 	for (int i = 0; i < tmpcountmodel;++i)
 	{
 		sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelsMGetName(i), SGeom_ModelsMGetCountPoly(i));
-		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
+		SXLevelEditor::ListBoxList->addItem(tmpnamecountpoly);
 	}
 
 	SXLevelEditor::GreenActivateAll(false);
@@ -669,11 +685,11 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 
 LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	SXLevelEditor::ListBoxList->Clear();
+	SXLevelEditor::ListBoxList->clear();
 	long tmpcountmodel = SGeom_GreenGetCount();
 	char tmptextvalcountmodel[64];
 	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
-	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountmodel);
+	SXLevelEditor::StaticListValCount->setText(tmptextvalcountmodel);
 
 	char tmpnamecountpoly[1024];
 	for (int i = 0; i < tmpcountmodel; ++i)
@@ -682,7 +698,7 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 			SGeom_GreenMGetName(i),
 			(SGeom_GreenMGetTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
 			SGeom_GreenMGetCountGen(i));
-		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
+		SXLevelEditor::ListBoxList->addItem(tmpnamecountpoly);
 	}
 
 	SXLevelEditor::GeomActivateAll(false);
@@ -703,7 +719,7 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	SXLevelEditor::ListBoxList->Clear();
+	SXLevelEditor::ListBoxList->clear();
 
 	int tmpcoungo = SXGame_EntGetCount();
 	int tmpcoungo2 = 0;
@@ -714,15 +730,15 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 		if (bEnt)
 		{
 			sprintf(tmpname, "%s / %s", bEnt->getName(), bEnt->getClassName());
-			SXLevelEditor::ListBoxList->AddItem(tmpname);
-			SXLevelEditor::ListBoxList->SetItemData(SXLevelEditor::ListBoxList->GetCountItem() - 1, i);
+			SXLevelEditor::ListBoxList->addItem(tmpname);
+			SXLevelEditor::ListBoxList->setItemData(SXLevelEditor::ListBoxList->getItemCount() - 1, i);
 			++tmpcoungo2;
 		}
 	}
 
 	char tmptextvalcountgo[64];
 	sprintf(tmptextvalcountgo, "%d", tmpcoungo2);
-	SXLevelEditor::StaticListValCount->SetText(tmptextvalcountgo);
+	SXLevelEditor::StaticListValCount->setText(tmptextvalcountgo);
 
 	SXLevelEditor::GeomActivateAll(false);
 	SXLevelEditor::GreenActivateAll(false);
@@ -736,9 +752,9 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hwnd, UINT msg, WPARAM wPa
 
 LRESULT SXLevelEditor_ButtonAIGridOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	SXLevelEditor::ListBoxList->Clear();
+	SXLevelEditor::ListBoxList->clear();
 
-	SXLevelEditor::StaticListValCount->SetText("0");
+	SXLevelEditor::StaticListValCount->setText("0");
 
 	SXLevelEditor::GeomActivateAll(false);
 	SXLevelEditor::GreenActivateAll(false);
@@ -753,7 +769,7 @@ LRESULT SXLevelEditor_ButtonAIGridOpen_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int sel = SXLevelEditor::ListBoxList->GetSel();
+	int sel = SXLevelEditor::ListBoxList->getSel();
 
 	SXLevelEditor::ActiveGreenSplit = -1;
 	SXLevelEditor::ActiveGreenObject = -1;
@@ -782,7 +798,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int sel = SXLevelEditor::ListBoxList->GetSel();
+	int sel = SXLevelEditor::ListBoxList->getSel();
 
 	if (sel < 0)
 		return 0;
@@ -792,7 +808,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
 		{
 			SGeom_ModelsDelModel(sel);
-			SXLevelEditor::ListBoxList->DeleteItem(sel);
+			SXLevelEditor::ListBoxList->deleteItem(sel);
 			if (SGeom_ModelsGetCount() > 0)
 			{
 				if (sel > 0)
@@ -800,7 +816,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 					if (SGeom_ModelsGetCount() <= sel)
 						sel -= 1;
 				}
-				SXLevelEditor::ListBoxList->SetSel(sel);
+				SXLevelEditor::ListBoxList->setSel(sel);
 				SXLevelEditor::GeomSel(sel);
 			}
 			else
@@ -814,7 +830,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
 		{
 			SGeom_GreenDelGreen(sel);
-			SXLevelEditor::ListBoxList->DeleteItem(sel);
+			SXLevelEditor::ListBoxList->deleteItem(sel);
 			if (SGeom_GreenGetCount() > 0)
 			{
 				if (sel > 0)
@@ -822,7 +838,7 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 					if (SGeom_GreenGetCount() <= sel)
 						sel -= 1;
 				}
-				SXLevelEditor::ListBoxList->SetSel(sel);
+				SXLevelEditor::ListBoxList->setSel(sel);
 				SXLevelEditor::GreenSel(sel);
 			}
 			else
@@ -835,14 +851,14 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	{
 		if (SXGame_EntGetCount() > 0 && sel < SXGame_EntGetCount())
 		{
-			SXGame_RemoveEntity(SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel)));
+			SXGame_RemoveEntity(SXGame_EntGet(SXLevelEditor::ListBoxList->getItemData(sel)));
 			SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
 
-			if (sel >= SXLevelEditor::ListBoxList->GetCountItem())
+			if (sel >= SXLevelEditor::ListBoxList->getItemCount())
 				--sel;
 			if (sel >= 0)
 			{
-				SXLevelEditor::ListBoxList->SetSel(sel);
+				SXLevelEditor::ListBoxList->setSel(sel);
 				SXLevelEditor::GameSel(sel);
 			}
 		}
@@ -857,11 +873,11 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 LRESULT SXLevelEditor_GroupBox_Notify(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (((NMHDR*)lParam)->hwndFrom == SXLevelEditor::ListViewGameClass->GetHWND() && ((NMHDR*)lParam)->code == NM_CLICK)
+	if (((NMHDR*)lParam)->hwndFrom == SXLevelEditor::ListViewGameClass->getHWND() && ((NMHDR*)lParam)->code == NM_CLICK)
 	{
 		SXLevelEditor_ListViewGameClass_Click();
 	}
-	else if (((NMHDR*)lParam)->hwndFrom == SXLevelEditor::ListViewGameConnections->GetHWND() && ((NMHDR*)lParam)->code == NM_CLICK)
+	else if (((NMHDR*)lParam)->hwndFrom == SXLevelEditor::ListViewGameConnections->getHWND() && ((NMHDR*)lParam)->code == NM_CLICK)
 	{
 		SXLevelEditor_ListViewGameConnections_Click();
 	}
@@ -874,14 +890,14 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 	HWND handle_elem = (HWND)(lParam);
 	if (Notification == BN_CLICKED)
 	{
-		if (SXLevelEditor::CheckBoxTBArrow->GetHWND() == handle_elem)
+		if (SXLevelEditor::CheckBoxTBArrow->getHWND() == handle_elem)
 		{
-			SXLevelEditor::CheckBoxTBPos->SetCheck(false);
-			SXLevelEditor::CheckBoxTBRot->SetCheck(false);
-			SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+			SXLevelEditor::CheckBoxTBPos->setCheck(false);
+			SXLevelEditor::CheckBoxTBRot->setCheck(false);
+			SXLevelEditor::CheckBoxTBScale->setCheck(false);
 			SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_NONE);
 		}
-		else if (SXLevelEditor::CheckBoxTBPos->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBPos->getHWND() == handle_elem)
 		{
 			if (
 				SXLevelEditor::ActiveElement >= 0 &&
@@ -892,147 +908,147 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				)
 				)
 			{
-				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
-				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
-				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+				SXLevelEditor::CheckBoxTBArrow->setCheck(false);
+				SXLevelEditor::CheckBoxTBRot->setCheck(false);
+				SXLevelEditor::CheckBoxTBScale->setCheck(false);
 				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
 			}
 			else
-				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
+				SXLevelEditor::CheckBoxTBPos->setCheck(false);
 		}
-		else if (SXLevelEditor::CheckBoxTBRot->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRot->getHWND() == handle_elem)
 		{
 			if ((SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && SXLevelEditor::ActiveElement >= 0)
 			{
-				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
-				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
-				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+				SXLevelEditor::CheckBoxTBArrow->setCheck(false);
+				SXLevelEditor::CheckBoxTBPos->setCheck(false);
+				SXLevelEditor::CheckBoxTBScale->setCheck(false);
 				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
 			}
 			else
-				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
+				SXLevelEditor::CheckBoxTBRot->setCheck(false);
 		}
-		else if (SXLevelEditor::CheckBoxTBScale->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBScale->getHWND() == handle_elem)
 		{
 			if ((SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && SXLevelEditor::ActiveElement >= 0)
 			{
-				SXLevelEditor::CheckBoxTBPos->SetCheck(false);
-				SXLevelEditor::CheckBoxTBRot->SetCheck(false);
-				SXLevelEditor::CheckBoxTBArrow->SetCheck(false);
+				SXLevelEditor::CheckBoxTBPos->setCheck(false);
+				SXLevelEditor::CheckBoxTBRot->setCheck(false);
+				SXLevelEditor::CheckBoxTBArrow->setCheck(false);
 				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
 			}
 			else
-				SXLevelEditor::CheckBoxTBScale->SetCheck(false);
+				SXLevelEditor::CheckBoxTBScale->setCheck(false);
 		}
 
-		else if (SXLevelEditor::ButtonTBNew->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ButtonTBNew->getHWND() == handle_elem)
 		{
 			SXLevelEditor::LevelNew(true);
 		}
-		else if (SXLevelEditor::ButtonTBOpen->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ButtonTBOpen->getHWND() == handle_elem)
 		{
 			SXLevelEditor::LevelOpen();
 		}
-		else if (SXLevelEditor::ButtonTBSave->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ButtonTBSave->getHWND() == handle_elem)
 		{
 			SXLevelEditor::LevelSave();
 		}
-		else if (SXLevelEditor::ButtonTBSaveAs->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ButtonTBSaveAs->getHWND() == handle_elem)
 		{
 			SXLevelEditor::LevelSaveAs();
 		}
 
-		else if (SXLevelEditor::CheckBoxTBGrid->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBGrid->getHWND() == handle_elem)
 		{
-			SXLevelEditor::MainMenu->CheckItem(ID_VIEW_GRID, SXLevelEditor::CheckBoxTBGrid->GetCheck());
-			SRender_EditorSetRenderGrid(SXLevelEditor::CheckBoxTBGrid->GetCheck());
+			SXLevelEditor::MainMenu->setCheckItem(ID_VIEW_GRID, SXLevelEditor::CheckBoxTBGrid->getCheck());
+			SRender_EditorSetRenderGrid(SXLevelEditor::CheckBoxTBGrid->getCheck());
 		}
-		else if (SXLevelEditor::CheckBoxTBAxes->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBAxes->getHWND() == handle_elem)
 		{
-			SXLevelEditor::MainMenu->CheckItem(ID_VIEW_AXES, SXLevelEditor::CheckBoxTBAxes->GetCheck());
-			SRender_EditorSetRenderAxesStatic(SXLevelEditor::CheckBoxTBAxes->GetCheck());
+			SXLevelEditor::MainMenu->setCheckItem(ID_VIEW_AXES, SXLevelEditor::CheckBoxTBAxes->getCheck());
+			SRender_EditorSetRenderAxesStatic(SXLevelEditor::CheckBoxTBAxes->getCheck());
 		}
 
-		else if (SXLevelEditor::CheckBoxTBRColor->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRColor->getHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
-			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, true);
-			SXLevelEditor::CheckBoxTBRColor->SetCheck(true);
+			SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_COLOR, true);
+			SXLevelEditor::CheckBoxTBRColor->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		}
-		else if (SXLevelEditor::CheckBoxTBRNormal->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRNormal->getHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
-			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, true);
-			SXLevelEditor::CheckBoxTBRNormal->SetCheck(true);
+			SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, true);
+			SXLevelEditor::CheckBoxTBRNormal->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		}
-		else if (SXLevelEditor::CheckBoxTBRParam->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRParam->getHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
-			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, true);
-			SXLevelEditor::CheckBoxTBRParam->SetCheck(true);
+			SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, true);
+			SXLevelEditor::CheckBoxTBRParam->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		}
-		else if (SXLevelEditor::CheckBoxTBRAmDiff->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRAmDiff->getHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
-			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
-			SXLevelEditor::CheckBoxTBRAmDiff->SetCheck(true);
+			SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
+			SXLevelEditor::CheckBoxTBRAmDiff->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		}
-		else if (SXLevelEditor::CheckBoxTBRSpecular->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRSpecular->getHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
-			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, true);
-			SXLevelEditor::CheckBoxTBRSpecular->SetCheck(true);
+			SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, true);
+			SXLevelEditor::CheckBoxTBRSpecular->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		}
-		else if (SXLevelEditor::CheckBoxTBRLighting->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBRLighting->getHWND() == handle_elem)
 		{
 			SXLevelEditor::FinalImageUncheckedMenu();
-			SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-			SXLevelEditor::CheckBoxTBRLighting->SetCheck(true);
+			SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+			SXLevelEditor::CheckBoxTBRLighting->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		}
 
-		else if (SXLevelEditor::CheckBoxTBSelS->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBSelS->getHWND() == handle_elem)
 		{
-			SXLevelEditor::SelSelection = SXLevelEditor::CheckBoxTBSelS->GetCheck();
-			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_SELECTION, SXLevelEditor::CheckBoxTBSelS->GetCheck());
+			SXLevelEditor::SelSelection = SXLevelEditor::CheckBoxTBSelS->getCheck();
+			SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_SELECTION, SXLevelEditor::CheckBoxTBSelS->getCheck());
 		}
-		else if (SXLevelEditor::CheckBoxTBSelZTest->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBSelZTest->getHWND() == handle_elem)
 		{
-			SXLevelEditor::SelZTest = SXLevelEditor::CheckBoxTBSelZTest->GetCheck();
-			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_ZTEST, SXLevelEditor::CheckBoxTBSelZTest->GetCheck());
+			SXLevelEditor::SelZTest = SXLevelEditor::CheckBoxTBSelZTest->getCheck();
+			SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_ZTEST, SXLevelEditor::CheckBoxTBSelZTest->getCheck());
 		}
-		else if (SXLevelEditor::CheckBoxTBSelMesh->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBSelMesh->getHWND() == handle_elem)
 		{
-			SXLevelEditor::SelMesh = SXLevelEditor::CheckBoxTBSelMesh->GetCheck();
-			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_MESH, SXLevelEditor::CheckBoxTBSelMesh->GetCheck());
+			SXLevelEditor::SelMesh = SXLevelEditor::CheckBoxTBSelMesh->getCheck();
+			SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_MESH, SXLevelEditor::CheckBoxTBSelMesh->getCheck());
 		}
-		else if (SXLevelEditor::CheckBoxTBSelCullBack->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBSelCullBack->getHWND() == handle_elem)
 		{
-			SXLevelEditor::SelBackFacesCull = SXLevelEditor::CheckBoxTBSelCullBack->GetCheck();
-			SXLevelEditor::MainMenu->CheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, SXLevelEditor::CheckBoxTBSelCullBack->GetCheck());
-		}
-
-		else if (SXLevelEditor::CheckBoxTBAIGBound->GetHWND() == handle_elem)
-		{
-			SXLevelEditor::AIGBound = SXLevelEditor::CheckBoxTBAIGBound->GetCheck();
-		}
-		else if (SXLevelEditor::CheckBoxTBAIGQuad->GetHWND() == handle_elem)
-		{
-			SXLevelEditor::AIGQuad = SXLevelEditor::CheckBoxTBAIGQuad->GetCheck();
-		}
-		else if (SXLevelEditor::CheckBoxTBAIGGraphPoint->GetHWND() == handle_elem)
-		{
-			SXLevelEditor::AIGGraphPoint = SXLevelEditor::CheckBoxTBAIGGraphPoint->GetCheck();
+			SXLevelEditor::SelBackFacesCull = SXLevelEditor::CheckBoxTBSelCullBack->getCheck();
+			SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, SXLevelEditor::CheckBoxTBSelCullBack->getCheck());
 		}
 
-		else if (SXLevelEditor::CheckBoxTBLevelType->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBAIGBound->getHWND() == handle_elem)
 		{
-			if (SXLevelEditor::CheckBoxTBLevelType->GetCheck())
+			SXLevelEditor::AIGBound = SXLevelEditor::CheckBoxTBAIGBound->getCheck();
+		}
+		else if (SXLevelEditor::CheckBoxTBAIGQuad->getHWND() == handle_elem)
+		{
+			SXLevelEditor::AIGQuad = SXLevelEditor::CheckBoxTBAIGQuad->getCheck();
+		}
+		else if (SXLevelEditor::CheckBoxTBAIGGraphPoint->getHWND() == handle_elem)
+		{
+			SXLevelEditor::AIGGraphPoint = SXLevelEditor::CheckBoxTBAIGGraphPoint->getCheck();
+		}
+
+		else if (SXLevelEditor::CheckBoxTBLevelType->getHWND() == handle_elem)
+		{
+			if (SXLevelEditor::CheckBoxTBLevelType->getCheck())
 			{
 				ID gid = SML_LigthsGetGlobal();
 				if (gid < 0)
@@ -1043,28 +1059,28 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 						&float3(1, 1, 1),
 						true,
 						true);
-					SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->GetCheck());
+					SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->getCheck());
 					SML_LigthsSetName(gid, "sun");
 				}
-				SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP26);
+				SXLevelEditor::CheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP26);
 			}
 			else
 			{
 				ID gid = SML_LigthsGetGlobal();
 				if (gid >= 0)
 					SML_LigthsDeleteLight(gid);
-				SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
-				SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
+				SXLevelEditor::CheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+				SXLevelEditor::CheckBoxTBGLightEnable->setCheck(false);
 			}
 		}
 
-		else if (SXLevelEditor::CheckBoxTBGLightEnable->GetHWND() == handle_elem)
+		else if (SXLevelEditor::CheckBoxTBGLightEnable->getHWND() == handle_elem)
 		{
 			ID gid = SML_LigthsGetGlobal();
 			if (gid >= 0)
-				SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->GetCheck());
+				SML_LigthsSetEnable(gid, SXLevelEditor::CheckBoxTBGLightEnable->getCheck());
 			else
-				SXLevelEditor::CheckBoxTBGLightEnable->SetCheck(false);
+				SXLevelEditor::CheckBoxTBGLightEnable->setCheck(false);
 		}
 		
 	}
@@ -1080,26 +1096,26 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 	HWND handle_elem = (HWND)(lParam);
 	if (Notification == BN_CLICKED)
 	{
-		if (handle_elem == SXLevelEditor::CheckBoxAIGridMarkedSplits->GetHWND())
-			SAIG_GridSetMarkSplits(SXLevelEditor::CheckBoxAIGridMarkedSplits->GetCheck());
+		if (handle_elem == SXLevelEditor::CheckBoxAIGridMarkedSplits->getHWND())
+			SAIG_GridSetMarkSplits(SXLevelEditor::CheckBoxAIGridMarkedSplits->getCheck());
 		else
 		{
-			ID seldata = SXLevelEditor::ListBoxList->GetItemData(SXLevelEditor::ListBoxList->GetSel());
+			ID seldata = SXLevelEditor::ListBoxList->getItemData(SXLevelEditor::ListBoxList->getSel());
 			CBaseEntity* bEnt = SXGame_EntGet(seldata);
-			int str = SXLevelEditor::ListViewGameClass->GetSelString();
+			int str = SXLevelEditor::ListViewGameClass->getSelString();
 
 			if (seldata < 0 || str < 0)
 				return 0;
 			char txtval[256];
-			SXLevelEditor::ListViewGameClass->GetTextItem(txtval, 1, str, 256);
+			SXLevelEditor::ListViewGameClass->getItemText(txtval, 1, str, 256);
 			UINT uiFlags;
 			sscanf(txtval, "%d", &uiFlags);
 
 			for (int i = 0; i < 16; ++i)
 			{
-				if (SXLevelEditor::CheckBoxGameFlags[i]->GetHWND() == handle_elem)
+				if (SXLevelEditor::CheckBoxGameFlags[i]->getHWND() == handle_elem)
 				{
-					if (SXLevelEditor::CheckBoxGameFlags[i]->GetCheck())
+					if (SXLevelEditor::CheckBoxGameFlags[i]->getCheck())
 						uiFlags |= (1 << (i + 16));
 					else
 						uiFlags ^= (1 << (i + 16));
@@ -1107,37 +1123,37 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			}
 
 			sprintf(txtval, "%d", uiFlags);
-			SXLevelEditor::ListViewGameClass->SetTextItem(txtval, 1, str);
+			SXLevelEditor::ListViewGameClass->setItemText(txtval, 1, str);
 			bEnt->setKV("flags", txtval);
 		}
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
-		if (SXLevelEditor::ComboBoxGameValue->GetHWND() == handle_elem)
+		if (SXLevelEditor::ComboBoxGameValue->getHWND() == handle_elem)
 		{
-			int sel = SXLevelEditor::ListBoxList->GetSel();
+			int sel = SXLevelEditor::ListBoxList->getSel();
 			char txt[256];
-			SXLevelEditor::ComboBoxGameValue->GetItemText(SXLevelEditor::ComboBoxGameValue->GetSel(), txt);
-			SXLevelEditor::ListViewGameClass->SetTextItem(txt, 1, SXLevelEditor::ListViewGameClass->GetSelString());
-			CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
+			SXLevelEditor::ComboBoxGameValue->getItemText(SXLevelEditor::ComboBoxGameValue->getSel(), txt);
+			SXLevelEditor::ListViewGameClass->setItemText(txt, 1, SXLevelEditor::ListViewGameClass->getSelString());
+			CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->getItemData(sel));
 			if (bEnt)
 			{
-				propdata_t* pd = (propdata_t*)SXLevelEditor::ListViewGameClass->GetDataItem(SXLevelEditor::ListViewGameClass->GetSelString());
-				SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel());
-				bEnt->setKV(pd->szKey, (const char*)SXLevelEditor::ComboBoxGameValue->GetItemData(SXLevelEditor::ComboBoxGameValue->GetSel()));
+				propdata_t* pd = (propdata_t*)SXLevelEditor::ListViewGameClass->getItemData(SXLevelEditor::ListViewGameClass->getSelString());
+				SXLevelEditor::ComboBoxGameValue->getItemData(SXLevelEditor::ComboBoxGameValue->getSel());
+				bEnt->setKV(pd->szKey, (const char*)SXLevelEditor::ComboBoxGameValue->getItemData(SXLevelEditor::ComboBoxGameValue->getSel()));
 			}
 		}
-		else if (SXLevelEditor::ComboBoxGameClass->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ComboBoxGameClass->getHWND() == handle_elem)
 		{
-			if (SXLevelEditor::ComboBoxGameClass->GetSel() == 0)
+			if (SXLevelEditor::ComboBoxGameClass->getSel() == 0)
 				return 0;
 
-			int sel = SXLevelEditor::ListBoxList->GetSel();
+			int sel = SXLevelEditor::ListBoxList->getSel();
 
 			if (sel < 0)
 				return 0;
 
-			CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->GetItemData(sel));
+			CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->getItemData(sel));
 			proptable_t* pt = SXGame_EntGetProptable(bEnt->getClassName());
 
 			propdata_t* pd;
@@ -1197,7 +1213,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			}
 
 			char txt[256];
-			SXLevelEditor::ComboBoxGameClass->GetItemText(SXLevelEditor::ComboBoxGameClass->GetSel(), txt);
+			SXLevelEditor::ComboBoxGameClass->getItemText(SXLevelEditor::ComboBoxGameClass->getSel(), txt);
 			SXGame_RemoveEntity(bEnt);
 
 			bEnt = SXGame_CreateEntity(txt);
@@ -1211,9 +1227,9 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 
 			SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
 			sel = -1;
-			for(int i = 0; i < SXLevelEditor::ListBoxList->GetCountItem(); ++i)
+			for (int i = 0; i < SXLevelEditor::ListBoxList->getItemCount(); ++i)
 			{
-				if(SXLevelEditor::ListBoxList->GetItemData(i) == bEnt->getId())
+				if(SXLevelEditor::ListBoxList->getItemData(i) == bEnt->getId())
 				{
 					sel = i;
 					break;
@@ -1225,70 +1241,70 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 
 			}
 
-			SXLevelEditor::ListBoxList->SetSel(sel);
+			SXLevelEditor::ListBoxList->setSel(sel);
 			SXLevelEditor::GameSel(sel);
 		}
-		else if (SXLevelEditor::ComboBoxGreenSel->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ComboBoxGreenSel->getHWND() == handle_elem)
 		{
-			int sel = SXLevelEditor::ComboBoxGreenSel->GetSel();
+			int sel = SXLevelEditor::ComboBoxGreenSel->getSel();
 			SXLevelEditor::GreenRenderBox = false;
 			
 			if (sel == 0)
 			{
-				SXLevelEditor::StaticGreenSelX->SetText("Position X:");
-				SXLevelEditor::StaticGreenSelY->SetText("Position Y:");
-				SXLevelEditor::StaticGreenSelZ->SetText("Position Z:");
-				SXLevelEditor::EditGreenSelX->SetText("");
-				SXLevelEditor::EditGreenSelY->SetText("");
-				SXLevelEditor::EditGreenSelZ->SetText("");
+				SXLevelEditor::StaticGreenSelX->setText("Position X:");
+				SXLevelEditor::StaticGreenSelY->setText("Position Y:");
+				SXLevelEditor::StaticGreenSelZ->setText("Position Z:");
+				SXLevelEditor::EditGreenSelX->setText("");
+				SXLevelEditor::EditGreenSelY->setText("");
+				SXLevelEditor::EditGreenSelZ->setText("");
 			}
 			else if (sel == 2)
 			{
 				SXLevelEditor::GreenRenderBox = true;
 
-				SXLevelEditor::StaticGreenSelX->SetText("Width volume:");
-				SXLevelEditor::StaticGreenSelY->SetText("Height volume:");
-				SXLevelEditor::StaticGreenSelZ->SetText("Depth volume:");
-				SXLevelEditor::EditGreenSelX->SetText(String(SXLevelEditor::GreenBoxWHD.x).c_str());
-				SXLevelEditor::EditGreenSelY->SetText(String(SXLevelEditor::GreenBoxWHD.y).c_str());
-				SXLevelEditor::EditGreenSelZ->SetText(String(SXLevelEditor::GreenBoxWHD.z).c_str());
+				SXLevelEditor::StaticGreenSelX->setText("Width volume:");
+				SXLevelEditor::StaticGreenSelY->setText("Height volume:");
+				SXLevelEditor::StaticGreenSelZ->setText("Depth volume:");
+				SXLevelEditor::EditGreenSelX->setText(String(SXLevelEditor::GreenBoxWHD.x).c_str());
+				SXLevelEditor::EditGreenSelY->setText(String(SXLevelEditor::GreenBoxWHD.y).c_str());
+				SXLevelEditor::EditGreenSelZ->setText(String(SXLevelEditor::GreenBoxWHD.z).c_str());
 			}
 
 			
 		}
 
-		else if (SXLevelEditor::ComboBoxGameConnectionsEvent->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ComboBoxGameConnectionsEvent->getHWND() == handle_elem)
 		{
-			ID idSelListBoxList = SXLevelEditor::ListBoxList->GetSel();
-			ID idSelStrTable = SXLevelEditor::ListViewGameConnections->GetSelString();
+			ID idSelListBoxList = SXLevelEditor::ListBoxList->getSel();
+			ID idSelStrTable = SXLevelEditor::ListViewGameConnections->getSelString();
 
 			if (idSelListBoxList < 0 || idSelStrTable < 0)
 				return 0;
 
 			char szBuffer256[256];
 			szBuffer256[0] = 0;
-			SXLevelEditor::ComboBoxGameConnectionsEvent->GetItemText(256, szBuffer256);
-			SXLevelEditor::ListViewGameConnections->SetTextItem(szBuffer256, 0, idSelStrTable);
+			SXLevelEditor::ComboBoxGameConnectionsEvent->getItemText(256, szBuffer256);
+			SXLevelEditor::ListViewGameConnections->setItemText(szBuffer256, 0, idSelStrTable);
 			return SXLevelEditor_EditGameConnections_Enter(hwnd, msg, wParam, lParam);
 		}
-		else if (SXLevelEditor::ComboBoxGameConnectionsAction->GetHWND() == handle_elem)
+		else if (SXLevelEditor::ComboBoxGameConnectionsAction->getHWND() == handle_elem)
 		{
-			ID idSelListBoxList = SXLevelEditor::ListBoxList->GetSel();
-			ID idSelStrTable = SXLevelEditor::ListViewGameConnections->GetSelString();
+			ID idSelListBoxList = SXLevelEditor::ListBoxList->getSel();
+			ID idSelStrTable = SXLevelEditor::ListViewGameConnections->getSelString();
 
 			if (idSelListBoxList < 0 || idSelStrTable < 0)
 				return 0;
 
 			char szBuffer256[256];
 			szBuffer256[0] = 0;
-			SXLevelEditor::ComboBoxGameConnectionsAction->GetItemText(SXLevelEditor::ComboBoxGameConnectionsAction->GetSel(), szBuffer256);
-			SXLevelEditor::ListViewGameConnections->SetTextItem(szBuffer256, 2, idSelStrTable);
+			SXLevelEditor::ComboBoxGameConnectionsAction->getItemText(SXLevelEditor::ComboBoxGameConnectionsAction->getSel(), szBuffer256);
+			SXLevelEditor::ListViewGameConnections->setItemText(szBuffer256, 2, idSelStrTable);
 			return SXLevelEditor_EditGameConnections_Enter(hwnd, msg, wParam, lParam);
 		}
 	}
 	/*else if (Notification == EN_CHANGE)
 	{
-		if (SXLevelEditor::EditGameConnectionsACValue->GetHWND() == handle_elem)
+		if (SXLevelEditor::EditGameConnectionsACValue->getHWND() == handle_elem)
 		{
 			static int recurion = 0;
 			if (recurion > 0)
@@ -1327,8 +1343,8 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 						if (qq == 0)
 						{
 							++recurion;
-							SXLevelEditor::EditGameConnectionsACValue->SetText(lower_name);
-							PostMessage(SXLevelEditor::EditGameConnectionsACValue->GetHWND(), EM_SETSEL, strlen(edit_text), strlen(lower_name));
+							SXLevelEditor::EditGameConnectionsACValue->setText(lower_name);
+							PostMessage(SXLevelEditor::EditGameConnectionsACValue->getHWND(), EM_SETSEL, strlen(edit_text), strlen(lower_name));
 							return 0;
 						}
 					}
@@ -1346,7 +1362,7 @@ LRESULT SXLevelEditor_GroupBoxList_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 	HWND handle_elem = (HWND)(lParam);
 	if (Notification == LBN_SELCHANGE)
 	{
-		if (handle_elem == SXLevelEditor::ListBoxList->GetHWND())
+		if (handle_elem == SXLevelEditor::ListBoxList->getHWND())
 			SXLevelEditor_ListBoxList_Click(hwnd, msg, wParam, lParam);
 	}
 
@@ -1359,19 +1375,19 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 	static bool IsSFirstRBMTransform = false;
 	static int CoordinateTransformation = -1;
 
-	if (SXLevelEditor::RadioButtonGeomPosX->GetCheck() || SXLevelEditor::RadioButtonGeomRotX->GetCheck() || SXLevelEditor::RadioButtonGeomScaleX->GetCheck() || SXLevelEditor::RadioButtonGreenSelX->GetCheck())
+	if (SXLevelEditor::RadioButtonGeomPosX->getCheck() || SXLevelEditor::RadioButtonGeomRotX->getCheck() || SXLevelEditor::RadioButtonGeomScaleX->getCheck() || SXLevelEditor::RadioButtonGreenSelX->getCheck())
 		CoordinateTransformation = 0;
-	else if (SXLevelEditor::RadioButtonGeomPosY->GetCheck() || SXLevelEditor::RadioButtonGeomRotY->GetCheck() || SXLevelEditor::RadioButtonGeomScaleY->GetCheck() || SXLevelEditor::RadioButtonGreenSelY->GetCheck())
+	else if (SXLevelEditor::RadioButtonGeomPosY->getCheck() || SXLevelEditor::RadioButtonGeomRotY->getCheck() || SXLevelEditor::RadioButtonGeomScaleY->getCheck() || SXLevelEditor::RadioButtonGreenSelY->getCheck())
 		CoordinateTransformation = 1;
-	else if (SXLevelEditor::RadioButtonGeomPosZ->GetCheck() || SXLevelEditor::RadioButtonGeomRotZ->GetCheck() || SXLevelEditor::RadioButtonGeomScaleZ->GetCheck() || SXLevelEditor::RadioButtonGreenSelZ->GetCheck())
+	else if (SXLevelEditor::RadioButtonGeomPosZ->getCheck() || SXLevelEditor::RadioButtonGeomRotZ->getCheck() || SXLevelEditor::RadioButtonGeomScaleZ->getCheck() || SXLevelEditor::RadioButtonGreenSelZ->getCheck())
 		CoordinateTransformation = 2;
 
 	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
 		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_ModelsGetCount() > 0)
 		{
-			DWORD selmodel = SXLevelEditor::ListBoxList->GetSel();
-			if (SXLevelEditor::RadioButtonGeomPosX->GetCheck() || SXLevelEditor::RadioButtonGeomPosY->GetCheck() || SXLevelEditor::RadioButtonGeomPosZ->GetCheck())
+			DWORD selmodel = SXLevelEditor::ListBoxList->getSel();
+			if (SXLevelEditor::RadioButtonGeomPosX->getCheck() || SXLevelEditor::RadioButtonGeomPosY->getCheck() || SXLevelEditor::RadioButtonGeomPosZ->getCheck())
 			{
 				float3& pos = *(SGeom_ModelsMGetPosition(selmodel));
 
@@ -1413,14 +1429,14 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				sprintf(tmpPosY, "%f", pos.y);
 				sprintf(tmpPosZ, "%f", pos.z);
 
-				SXLevelEditor::EditGeomPosX->SetText(tmpPosX);
-				SXLevelEditor::EditGeomPosY->SetText(tmpPosY);
-				SXLevelEditor::EditGeomPosZ->SetText(tmpPosZ);
+				SXLevelEditor::EditGeomPosX->setText(tmpPosX);
+				SXLevelEditor::EditGeomPosY->setText(tmpPosY);
+				SXLevelEditor::EditGeomPosZ->setText(tmpPosZ);
 
 				SGeom_ModelsMApplyTransform(selmodel);
 			}
 
-			else if (SXLevelEditor::RadioButtonGeomRotX->GetCheck() || SXLevelEditor::RadioButtonGeomRotY->GetCheck() || SXLevelEditor::RadioButtonGeomRotZ->GetCheck())
+			else if (SXLevelEditor::RadioButtonGeomRotX->getCheck() || SXLevelEditor::RadioButtonGeomRotY->getCheck() || SXLevelEditor::RadioButtonGeomRotZ->getCheck())
 			{
 				float3& pos = *(SGeom_ModelsMGetRotation(selmodel));
 
@@ -1463,14 +1479,14 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				sprintf(tmpPosY, "%f", pos.y);
 				sprintf(tmpPosZ, "%f", pos.z);
 
-				SXLevelEditor::EditGeomRotX->SetText(tmpPosX);
-				SXLevelEditor::EditGeomRotY->SetText(tmpPosY);
-				SXLevelEditor::EditGeomRotZ->SetText(tmpPosZ);
+				SXLevelEditor::EditGeomRotX->setText(tmpPosX);
+				SXLevelEditor::EditGeomRotY->setText(tmpPosY);
+				SXLevelEditor::EditGeomRotZ->setText(tmpPosZ);
 
 				SGeom_ModelsMApplyTransform(selmodel);
 			}
 
-			else if (SXLevelEditor::RadioButtonGeomScaleX->GetCheck() || SXLevelEditor::RadioButtonGeomScaleY->GetCheck() || SXLevelEditor::RadioButtonGeomScaleZ->GetCheck())
+			else if (SXLevelEditor::RadioButtonGeomScaleX->getCheck() || SXLevelEditor::RadioButtonGeomScaleY->getCheck() || SXLevelEditor::RadioButtonGeomScaleZ->getCheck())
 			{
 				float3& pos = *(SGeom_ModelsMGetScale(selmodel));
 
@@ -1513,9 +1529,9 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				sprintf(tmpPosY, "%f", pos.y);
 				sprintf(tmpPosZ, "%f", pos.z);
 
-				SXLevelEditor::EditGeomScaleX->SetText(tmpPosX);
-				SXLevelEditor::EditGeomScaleY->SetText(tmpPosY);
-				SXLevelEditor::EditGeomScaleZ->SetText(tmpPosZ);
+				SXLevelEditor::EditGeomScaleX->setText(tmpPosX);
+				SXLevelEditor::EditGeomScaleY->setText(tmpPosY);
+				SXLevelEditor::EditGeomScaleZ->setText(tmpPosZ);
 
 				SGeom_ModelsMApplyTransform(selmodel);
 			}
@@ -1523,18 +1539,18 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 	}
 	else if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN &&
 			(
-			(SXLevelEditor::ComboBoxGreenSel->GetSel() == 0 && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0) ||
-			(SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
+			(SXLevelEditor::ComboBoxGreenSel->getSel() == 0 && SXLevelEditor::ActiveElement >= 0 && SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0) ||
+			(SXLevelEditor::ComboBoxGreenSel->getSel() == 2)
 			)
 		)
 	{
 		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_GreenGetCount() > 0)
 		{
-			DWORD selmodel = SXLevelEditor::ListBoxList->GetSel();
-			if (SXLevelEditor::RadioButtonGreenSelX->GetCheck() || SXLevelEditor::RadioButtonGreenSelY->GetCheck() || SXLevelEditor::RadioButtonGreenSelZ->GetCheck())
+			DWORD selmodel = SXLevelEditor::ListBoxList->getSel();
+			if (SXLevelEditor::RadioButtonGreenSelX->getCheck() || SXLevelEditor::RadioButtonGreenSelY->getCheck() || SXLevelEditor::RadioButtonGreenSelZ->getCheck())
 			{
 				float3 pos;
-				if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
+				if (SXLevelEditor::ComboBoxGreenSel->getSel() == 2)
 					pos = SXLevelEditor::GreenBoxWHD;
 				else
 				{
@@ -1582,11 +1598,11 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				sprintf(tmpPosY, "%f", pos.y);
 				sprintf(tmpPosZ, "%f", pos.z);
 
-				SXLevelEditor::EditGreenSelX->SetText(tmpPosX);
-				SXLevelEditor::EditGreenSelY->SetText(tmpPosY);
-				SXLevelEditor::EditGreenSelZ->SetText(tmpPosZ);
+				SXLevelEditor::EditGreenSelX->setText(tmpPosX);
+				SXLevelEditor::EditGreenSelY->setText(tmpPosY);
+				SXLevelEditor::EditGreenSelZ->setText(tmpPosZ);
 
-				if (SXLevelEditor::ComboBoxGreenSel->GetSel() == 2)
+				if (SXLevelEditor::ComboBoxGreenSel->getSel() == 2)
 					SXLevelEditor::GreenBoxWHD = pos;
 				else
 					SGeom_GreenSetPosObject(SXLevelEditor::ActiveElement, &SXLevelEditor::ActiveGreenSplit, &SXLevelEditor::ActiveGreenObject, &float3_t(pos));
@@ -1638,17 +1654,17 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 
 void SXLevelEditor::FinalImageUncheckedMenu()
 {
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_COLOR, false);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_NORMALS, false);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_PARAMETERS, false);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_SPECULAR, false);
-	SXLevelEditor::MainMenu->CheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
+	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_COLOR, false);
+	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, false);
+	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, false);
+	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
+	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, false);
+	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
 
-	SXLevelEditor::CheckBoxTBRColor->SetCheck(false);
-	SXLevelEditor::CheckBoxTBRNormal->SetCheck(false);
-	SXLevelEditor::CheckBoxTBRParam->SetCheck(false);
-	SXLevelEditor::CheckBoxTBRAmDiff->SetCheck(false);
-	SXLevelEditor::CheckBoxTBRSpecular->SetCheck(false);
-	SXLevelEditor::CheckBoxTBRLighting->SetCheck(false);
+	SXLevelEditor::CheckBoxTBRColor->setCheck(false);
+	SXLevelEditor::CheckBoxTBRNormal->setCheck(false);
+	SXLevelEditor::CheckBoxTBRParam->setCheck(false);
+	SXLevelEditor::CheckBoxTBRAmDiff->setCheck(false);
+	SXLevelEditor::CheckBoxTBRSpecular->setCheck(false);
+	SXLevelEditor::CheckBoxTBRLighting->setCheck(false);
 }

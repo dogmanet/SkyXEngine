@@ -59,16 +59,10 @@ enum CORE_TASK_FLAG
 SX_LIB_API long Core_0GetVersion();	
 
 //! создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
-SX_LIB_API void Core_0Create(const char *szName, bool isUnic = true); 
+SX_LIB_API void Core_0Create(const char *szName, const char *szNameConsole, bool isUnic = true);
 
 //! установка своего обработчика вывода отладочной информации
 SX_LIB_API void Core_Dbg_Set(report_func rf); 
-
-//! существует ли файл
-SX_LIB_API bool Core_0FileExists(const char *szPath);
-
-//! возвращает время последнего изменения файла
-SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath);
 
 //! копирует строку в буфер обмена
 SX_LIB_API bool Core_0ClipBoardCopy(const char *szStr);		

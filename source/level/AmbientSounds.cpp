@@ -19,7 +19,7 @@ CAmbientSounds::~CAmbientSounds()
 
 void CAmbientSounds::add(const char *szPath)
 {
-	ID id = SSCore_SndCreate2d(szPath);
+	ID id = SSCore_SndCreate2d(szPath, SX_SOUND_CHANNEL_GAME);
 	if (id >= 0)
 		m_aIDSnds.push_back(id);
 }
@@ -28,7 +28,7 @@ void CAmbientSounds::get(ID id, char *szPath)
 {
 	if (id >= 0 && id < m_aIDSnds.size())
 	{
-		SSCore_SndFileGet(m_aIDSnds[id], szPath);
+		SSCore_SndGetFile(m_aIDSnds[id], szPath);
 	}
 }
 
@@ -51,7 +51,7 @@ void CAmbientSounds::play()
 {
 	if (m_iPlayingLast >= 0 && m_iPlayingLast < m_aIDSnds.size())
 	{
-		SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], 100);
+		SSCore_SndSetVolume(m_aIDSnds[m_iPlayingLast], 100);
 		SSCore_SndPlay(m_aIDSnds[m_iPlayingLast]);
 		m_isPlaying = true;
 	}
@@ -65,14 +65,14 @@ void CAmbientSounds::update()
 	static const float * env_ambient_snd_volume = GET_PCVAR_FLOAT("env_ambient_snd_volume");
 	static float env_ambient_snd_volume_old = 1.f;
 
-	if (SSCore_SndStateGet(m_aIDSnds[m_iPlayingLast]) != SOUND_OBJSTATE_PLAY)
+	if (SSCore_SndGetState(m_aIDSnds[m_iPlayingLast]) != SOUND_OBJSTATE_PLAY)
 	{
 		if (m_iPlayingLast + 1 < m_aIDSnds.size())
 			++m_iPlayingLast;
 		else
 			m_iPlayingLast = 0;
 
-		SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], env_ambient_snd_volume_old*100.f);
+		SSCore_SndSetVolume(m_aIDSnds[m_iPlayingLast], env_ambient_snd_volume_old*100.f);
 		SSCore_SndPlay(m_aIDSnds[m_iPlayingLast]);
 	}
 
@@ -80,7 +80,7 @@ void CAmbientSounds::update()
 	{
 		env_ambient_snd_volume_old = *env_ambient_snd_volume;
 		if (m_iPlayingLast >= 0)
-			SSCore_SndVolumeSet(m_aIDSnds[m_iPlayingLast], env_ambient_snd_volume_old*100.f);
+			SSCore_SndSetVolume(m_aIDSnds[m_iPlayingLast], env_ambient_snd_volume_old*100.f);
 	}
 }
 

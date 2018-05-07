@@ -1871,7 +1871,6 @@ bool CGreen::traceBeam(const float3* start, const float3* dir, float3* _res, ID*
 		return false;
 
 	SXTriangle tmptri;
-	float dist;
 	bool tmpiscom = true;
 	float3 ip;
 	float3 res;
@@ -1955,7 +1954,6 @@ bool CGreen::traceBeam(const float3* start, const float3* dir, float3* _res, ID*
 void CGreen::getPartBB(float3* bbmin, float3 * bbmax, CSegment** arrsplits, int *count, CSegment* comsegment, ID curr_splits_ids_render)
 {
 	float3 min,max;
-	float radius;
 	comsegment->m_pBoundVolumeP->getMinMax(&min, &max);
 
 	if (comsegment->m_iCountObj > 0 && SGCore_0InretsectBox(bbmin, bbmax, &min, &max))

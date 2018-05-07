@@ -304,7 +304,7 @@ void Effects::Save(const char* path)
 
 void Effects::Load(const char* path)
 {
-	if (!Core_0FileExists(path))
+	if (!FileExistsFile(path))
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed to save, %s", GEN_MSG_LOCATION, path);
 		return;

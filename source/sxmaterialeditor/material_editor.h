@@ -23,7 +23,7 @@
 namespace SXMaterialEditor
 {
 	extern ISXGUIBaseWnd* JobWindow;
-	extern ISXGUIMenu* MainMenu;
+	extern ISXGUIMenuWindow* MainMenu;
 	extern ISXGUIBaseWnd* WindowRender;
 
 	extern ISXGUIToolBar* ToolBar;

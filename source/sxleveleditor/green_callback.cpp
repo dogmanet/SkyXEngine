@@ -10,76 +10,76 @@ void SXLevelEditor::GreenActivateAll(bool bf)
 
 void SXLevelEditor::GreenActivateMain(bool bf)
 {
-	SXLevelEditor::StaticGreenName->Visible(bf);
-	SXLevelEditor::EditGreenName->Visible(bf);
-	SXLevelEditor::EditGreenName->SetText("");
+	SXLevelEditor::StaticGreenName->setVisible(bf);
+	SXLevelEditor::EditGreenName->setVisible(bf);
+	SXLevelEditor::EditGreenName->setText("");
 
-	SXLevelEditor::StaticGreenModel->Visible(bf);
-	SXLevelEditor::EditGreenModel->Visible(bf);
-	SXLevelEditor::EditGreenModel->SetText("");
-	SXLevelEditor::ButtonGreenModel->Visible(bf);
+	SXLevelEditor::StaticGreenModel->setVisible(bf);
+	SXLevelEditor::EditGreenModel->setVisible(bf);
+	SXLevelEditor::EditGreenModel->setText("");
+	SXLevelEditor::ButtonGreenModel->setVisible(bf);
 
-	SXLevelEditor::StaticGreenLod1->Visible(bf);
-	SXLevelEditor::EditGreenLod1->Visible(bf);
-	SXLevelEditor::EditGreenLod1->SetText("");
-	SXLevelEditor::ButtonGreenLod1->Visible(bf);
+	SXLevelEditor::StaticGreenLod1->setVisible(bf);
+	SXLevelEditor::EditGreenLod1->setVisible(bf);
+	SXLevelEditor::EditGreenLod1->setText("");
+	SXLevelEditor::ButtonGreenLod1->setVisible(bf);
 	
-	SXLevelEditor::StaticGreenLod2->Visible(bf);
-	SXLevelEditor::EditGreenLod2->Visible(bf);
-	SXLevelEditor::EditGreenLod2->SetText("");
-	SXLevelEditor::ButtonGreenLod2->Visible(bf);
+	SXLevelEditor::StaticGreenLod2->setVisible(bf);
+	SXLevelEditor::EditGreenLod2->setVisible(bf);
+	SXLevelEditor::EditGreenLod2->setText("");
+	SXLevelEditor::ButtonGreenLod2->setVisible(bf);
 
-	SXLevelEditor::StaticGreenMask->Visible(bf);
-	SXLevelEditor::EditGreenMask->Visible(bf);
-	SXLevelEditor::EditGreenMask->SetText("");
-	SXLevelEditor::ButtonGreenMask->Visible(bf);
+	SXLevelEditor::StaticGreenMask->setVisible(bf);
+	SXLevelEditor::EditGreenMask->setVisible(bf);
+	SXLevelEditor::EditGreenMask->setText("");
+	SXLevelEditor::ButtonGreenMask->setVisible(bf);
 
-	SXLevelEditor::StaticGreenNav->Visible(bf);
-	SXLevelEditor::EditGreenNav->Visible(bf);
-	SXLevelEditor::EditGreenNav->SetText("");
-	SXLevelEditor::ButtonGreenNav->Visible(bf);
+	SXLevelEditor::StaticGreenNav->setVisible(bf);
+	SXLevelEditor::EditGreenNav->setVisible(bf);
+	SXLevelEditor::EditGreenNav->setText("");
+	SXLevelEditor::ButtonGreenNav->setVisible(bf);
 }
 
 void SXLevelEditor::GreenActivateCreate(bool bf)
 {
-	SXLevelEditor::StaticGreenMask->Enable(bf);
-	SXLevelEditor::EditGreenMask->Enable(bf);
-	SXLevelEditor::ButtonGreenMask->Enable(bf);
+	SXLevelEditor::StaticGreenMask->setEnable(bf);
+	SXLevelEditor::EditGreenMask->setEnable(bf);
+	SXLevelEditor::ButtonGreenMask->setEnable(bf);
 
-	SXLevelEditor::ButtonGreenGenerate->Visible(bf);
+	SXLevelEditor::ButtonGreenGenerate->setVisible(bf);
 
-	SXLevelEditor::TrackBarGreenDensity->Visible(bf);
-	SXLevelEditor::TrackBarGreenDensity->SetPos(0);
+	SXLevelEditor::TrackBarGreenDensity->setVisible(bf);
+	SXLevelEditor::TrackBarGreenDensity->setPos(0);
 
-	SXLevelEditor::StaticGreenDensityVal->Visible(bf);
-	SXLevelEditor::StaticGreenDensityText->Visible(bf);
+	SXLevelEditor::StaticGreenDensityVal->setVisible(bf);
+	SXLevelEditor::StaticGreenDensityText->setVisible(bf);
 }
 
 void SXLevelEditor::GreenActivateEdit(bool bf)
 {
-	SXLevelEditor::ButtonGreenGenerate->Visible(bf);
+	SXLevelEditor::ButtonGreenGenerate->setVisible(bf);
 
-	SXLevelEditor::TrackBarGreenDensity->Visible(bf);
-	SXLevelEditor::TrackBarGreenDensity->SetPos(0);
+	SXLevelEditor::TrackBarGreenDensity->setVisible(bf);
+	SXLevelEditor::TrackBarGreenDensity->setPos(0);
 
-	SXLevelEditor::StaticGreenDensityVal->Visible(bf);
-	SXLevelEditor::StaticGreenDensityText->Visible(bf);
+	SXLevelEditor::StaticGreenDensityVal->setVisible(bf);
+	SXLevelEditor::StaticGreenDensityText->setVisible(bf);
 
-	//SXLevelEditor::CheckBoxSingleSel->Visible(bf);
-	//SXLevelEditor::StaticSingleSelPos->Visible(bf);
-	SXLevelEditor::EditGreenSelX->Visible(bf);
-	SXLevelEditor::EditGreenSelX->SetText("");
-	SXLevelEditor::EditGreenSelY->Visible(bf);
-	SXLevelEditor::EditGreenSelY->SetText("");
-	SXLevelEditor::EditGreenSelZ->Visible(bf);
-	SXLevelEditor::EditGreenSelZ->SetText("");
-	SXLevelEditor::RadioButtonGreenSelX->Visible(bf);
-	SXLevelEditor::RadioButtonGreenSelY->Visible(bf);
-	SXLevelEditor::RadioButtonGreenSelZ->Visible(bf);
-	SXLevelEditor::ComboBoxGreenSel->Visible(bf);
-	SXLevelEditor::StaticGreenSelX->Visible(bf);
-	SXLevelEditor::StaticGreenSelY->Visible(bf);
-	SXLevelEditor::StaticGreenSelZ->Visible(bf);
+	//SXLevelEditor::CheckBoxSingleSel->setVisible(bf);
+	//SXLevelEditor::StaticSingleSelPos->setVisible(bf);
+	SXLevelEditor::EditGreenSelX->setVisible(bf);
+	SXLevelEditor::EditGreenSelX->setText("");
+	SXLevelEditor::EditGreenSelY->setVisible(bf);
+	SXLevelEditor::EditGreenSelY->setText("");
+	SXLevelEditor::EditGreenSelZ->setVisible(bf);
+	SXLevelEditor::EditGreenSelZ->setText("");
+	SXLevelEditor::RadioButtonGreenSelX->setVisible(bf);
+	SXLevelEditor::RadioButtonGreenSelY->setVisible(bf);
+	SXLevelEditor::RadioButtonGreenSelZ->setVisible(bf);
+	SXLevelEditor::ComboBoxGreenSel->setVisible(bf);
+	SXLevelEditor::StaticGreenSelX->setVisible(bf);
+	SXLevelEditor::StaticGreenSelY->setVisible(bf);
+	SXLevelEditor::StaticGreenSelZ->setVisible(bf);
 }
 
 void SXLevelEditor::GreenSel(int sel)
@@ -91,23 +91,23 @@ void SXLevelEditor::GreenSel(int sel)
 
 		SXLevelEditor::GreenActivateCreate(false);
 		SXLevelEditor::GreenActivateEdit(true);
-		SXLevelEditor::ButtonGreenGenerate->Visible(false);
+		SXLevelEditor::ButtonGreenGenerate->setVisible(false);
 
-		SXLevelEditor::EditGreenModel->SetText(SGeom_GreenMGetModel(sel));
-		SXLevelEditor::EditGreenLod1->SetText((SGeom_GreenMGetLod1(sel) ? SGeom_GreenMGetLod1(sel) : ""));
-		SXLevelEditor::EditGreenLod2->SetText((SGeom_GreenMGetLod2(sel) ? SGeom_GreenMGetLod2(sel) : ""));
-		SXLevelEditor::EditGreenMask->SetText(SGeom_GreenMGetMask(sel));
-		SXLevelEditor::EditGreenName->SetText(SGeom_GreenMGetName(sel));
-		SXLevelEditor::EditGreenNav->SetText(SGeom_GreenMGetNav(sel));
+		SXLevelEditor::EditGreenModel->setText(SGeom_GreenMGetModel(sel));
+		SXLevelEditor::EditGreenLod1->setText((SGeom_GreenMGetLod1(sel) ? SGeom_GreenMGetLod1(sel) : ""));
+		SXLevelEditor::EditGreenLod2->setText((SGeom_GreenMGetLod2(sel) ? SGeom_GreenMGetLod2(sel) : ""));
+		SXLevelEditor::EditGreenMask->setText(SGeom_GreenMGetMask(sel));
+		SXLevelEditor::EditGreenName->setText(SGeom_GreenMGetName(sel));
+		SXLevelEditor::EditGreenNav->setText(SGeom_GreenMGetNav(sel));
 	}
 }
 
 LRESULT SXLevelEditor_EditGreenName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int sel = SXLevelEditor::ListBoxList->GetSel();
+	int sel = SXLevelEditor::ListBoxList->getSel();
 	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
-		SXLevelEditor::EditGreenName->GetText(SGeom_GreenMGetName(sel), 64);
+		SXLevelEditor::EditGreenName->getText(SGeom_GreenMGetName(sel), 64);
 	}
 
 	return 0;
@@ -118,12 +118,13 @@ LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+	
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenModel->SetText(tmpname);
-		int sel = SXLevelEditor::ListBoxList->GetSel();
+		SXLevelEditor::EditGreenModel->setText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
@@ -138,12 +139,13 @@ LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenLod1->SetText(tmpname);
-		int sel = SXLevelEditor::ListBoxList->GetSel();
+		SXLevelEditor::EditGreenLod1->setText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
@@ -158,12 +160,13 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenLod2->SetText(tmpname);
-		int sel = SXLevelEditor::ListBoxList->GetSel();
+		SXLevelEditor::EditGreenLod2->setText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
@@ -176,9 +179,9 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 LRESULT SXLevelEditor_TrackBarGreenDensity_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char freqstr[64];
-	int pos = SXLevelEditor::TrackBarGreenDensity->GetPos();
+	int pos = SXLevelEditor::TrackBarGreenDensity->getPos();
 	sprintf(freqstr, "%d%", pos);
-	SXLevelEditor::StaticGreenDensityVal->SetText(freqstr);
+	SXLevelEditor::StaticGreenDensityVal->setText(freqstr);
 	return 0;
 }
 
@@ -187,11 +190,12 @@ LRESULT SXLevelEditor_ButtonGreenMask_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_TEXTURE);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_TEXTURE);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture mask", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		StrCutName(tmppath, tmpname);
-		SXLevelEditor::EditGreenMask->SetText(tmpname);
+		SXLevelEditor::EditGreenMask->setText(tmpname);
 	}
 	return 0;
 }
@@ -201,12 +205,13 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
-	SXGUIDialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-	if (def_str_validate(tmppath))
+	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenNav->SetText(tmpname);
-		int sel = SXLevelEditor::ListBoxList->GetSel();
+		SXLevelEditor::EditGreenNav->setText(tmpname);
+		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
@@ -251,12 +256,12 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	int greentype = GREEN_TYPE_TREE;
 
-	SXLevelEditor::EditGreenName->GetText(tmp_name, 1024);
-	SXLevelEditor::EditGreenMask->GetText(tmp_tex, 1024);
-	SXLevelEditor::EditGreenModel->GetText(tmp_model, 1024);
-	SXLevelEditor::EditGreenLod1->GetText(tmp_lod1, 1024);
-	SXLevelEditor::EditGreenLod2->GetText(tmp_lod2, 1024);
-	SXLevelEditor::EditGreenNav->GetText(tmp_navmesh, 1024);
+	SXLevelEditor::EditGreenName->getText(tmp_name, 1024);
+	SXLevelEditor::EditGreenMask->getText(tmp_tex, 1024);
+	SXLevelEditor::EditGreenModel->getText(tmp_model, 1024);
+	SXLevelEditor::EditGreenLod1->getText(tmp_lod1, 1024);
+	SXLevelEditor::EditGreenLod2->getText(tmp_lod2, 1024);
+	SXLevelEditor::EditGreenNav->getText(tmp_navmesh, 1024);
 
 	if (tmp_lod1[0] == 0 && tmp_lod2[0] == 0)
 		greentype = GREEN_TYPE_GRASS;
@@ -284,7 +289,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 	}*/
 
-	if (!Core_0FileExists(path_model))
+	if (!FileExistsFile(path_model))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model [", path_model, "] not found");
@@ -292,7 +297,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 	}
 
-	if (def_str_validate(tmp_navmesh) && !Core_0FileExists(path_navmesh))
+	if (def_str_validate(tmp_navmesh) && !FileExistsFile(path_navmesh))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model [", path_navmesh, "] not found");
@@ -302,7 +307,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	if (greentype == GREEN_TYPE_TREE)
 	{
-		if (!Core_0FileExists(path_lod1))
+		if (!FileExistsFile(path_lod1))
 		{
 			char tmpstr[2048];
 			sprintf(tmpstr, "%s%s%s", "Model [", path_lod1, "] not found");
@@ -310,7 +315,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 			return 0;
 		}
 
-		if (!Core_0FileExists(path_lod2))
+		if (!FileExistsFile(path_lod2))
 		{
 			char tmpstr[2048];
 			sprintf(tmpstr, "%s%s%s", "Model [", path_lod2, "] not found");
@@ -336,7 +341,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 			return 0;
 	}
 
-	float pos = SXLevelEditor::TrackBarGreenDensity->GetPos();
+	float pos = SXLevelEditor::TrackBarGreenDensity->getPos();
 
 	SGeom_GreenAddGreen(tmp_name,
 		tmp_tex,
@@ -351,15 +356,15 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 			SGeom_GreenMGetName(SGeom_GreenGetCount() - 1),
 			(SGeom_GreenMGetTypeCountGen(SGeom_GreenGetCount() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
 			SGeom_GreenMGetCountGen(SGeom_GreenGetCount() - 1));
-		SXLevelEditor::ListBoxList->AddItem(tmpnamecountpoly);
+		SXLevelEditor::ListBoxList->addItem(tmpnamecountpoly);
 
 	SXLevelEditor::GreenActivateCreate(false);
-	SXLevelEditor::ListBoxList->SetSel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
+	SXLevelEditor::ListBoxList->setSel(SXLevelEditor::ListBoxList->getItemCount() - 1);
 
-	SXLevelEditor::GreenSel(SXLevelEditor::ListBoxList->GetCountItem() - 1);
+	SXLevelEditor::GreenSel(SXLevelEditor::ListBoxList->getItemCount() - 1);
 
 	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
-	SXLevelEditor::ActiveElement = SXLevelEditor::ListBoxList->GetSel();
+	SXLevelEditor::ActiveElement = SXLevelEditor::ListBoxList->getSel();
 
 	return 0;
 }

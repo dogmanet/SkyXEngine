@@ -3,8 +3,8 @@
 
 void SXParticlesEditor::EffInitList()
 {
-	SXParticlesEditor::ListBoxEffects->Clear();
-	SXParticlesEditor::ListBoxEmitters->Clear();
+	SXParticlesEditor::ListBoxEffects->clear();
+	SXParticlesEditor::ListBoxEmitters->clear();
 	int effcount = SPE_EffectCountGet();
 	char effname[OBJECT_NAME_MAX_LEN];
 	for (int i = 0; i < effcount; ++i)
@@ -12,13 +12,13 @@ void SXParticlesEditor::EffInitList()
 		effname[0] = '!';
 		effname[1] = 0;
 		SPE_EffectNameGet(SPE_EffectIdOfKey(i), effname);
-		SXParticlesEditor::ListBoxEffects->AddItem(effname);
+		SXParticlesEditor::ListBoxEffects->addItem(effname);
 		if (effname[0] == 0)
 			effname[0] = '!';
 	}
 
-	SXParticlesEditor::StaticEffectsCount->SetText(String(effcount).c_str());
-	SXParticlesEditor::StaticEmittersCount->SetText("0");
+	SXParticlesEditor::StaticEffectsCount->setText(String(effcount).c_str());
+	SXParticlesEditor::StaticEmittersCount->setText("0");
 	SXParticlesEditor::TabsVisible(false);
 
 	SXParticlesEditor::SelEffID = SXParticlesEditor::SelEmitterID = -1;
@@ -26,32 +26,32 @@ void SXParticlesEditor::EffInitList()
 
 void SXParticlesEditor::EffVisible(bool visible, bool iscreate)
 {
-	StaticEffName->Visible(visible);
-	EditEffName->Visible(visible);
-	ButtonEffCreate->Visible(iscreate);
+	StaticEffName->setVisible(visible);
+	EditEffName->setVisible(visible);
+	ButtonEffCreate->setVisible(iscreate);
 }
 
 void SXParticlesEditor::EffNulling()
 {
-	EditEffName->SetText("0");
+	EditEffName->setText("0");
 }
 
 void SXParticlesEditor::EffDataInit()
 {
 	char effname[OBJECT_NAME_MAX_LEN];
 	SPE_EffectNameGet(SXParticlesEditor::SelEffID, effname);
-	SXParticlesEditor::EditEffName->SetText(effname);
+	SXParticlesEditor::EditEffName->setText(effname);
 }
 
 void SXParticlesEditor::TabsVisible(bool visible)
 {
-	SXParticlesEditor::GroupBoxTabs->Visible(visible);
+	SXParticlesEditor::GroupBoxTabs->setVisible(visible);
 
 	if (visible == false)
 	{
 		AllInTabsVisible(false);
 	}
-	else if (!(SXParticlesEditor::GroupBoxTabs->Visible()) && visible)
+	else if (!(SXParticlesEditor::GroupBoxTabs->getVisible()) && visible)
 	{
 		SXParticlesEditor::BaseVisible(true);
 	}
@@ -68,13 +68,13 @@ void SXParticlesEditor::AllInTabsVisible(bool visible)
 
 	if (!visible)
 	{
-		SXParticlesEditor::ButtonBase->SetCheck(false);
-		SXParticlesEditor::ButtonBound->SetCheck(false);
-		SXParticlesEditor::ButtonCharacters->SetCheck(false);
-		SXParticlesEditor::ButtonSpawn->SetCheck(false);
-		SXParticlesEditor::ButtonTextureAnimTex->SetCheck(false);
-		SXParticlesEditor::ButtonVelocityAcceleration->SetCheck(false);
-		SXParticlesEditor::ButtonEmitterCreate->Visible(false);
+		SXParticlesEditor::ButtonBase->setCheck(false);
+		SXParticlesEditor::ButtonBound->setCheck(false);
+		SXParticlesEditor::ButtonCharacters->setCheck(false);
+		SXParticlesEditor::ButtonSpawn->setCheck(false);
+		SXParticlesEditor::ButtonTextureAnimTex->setCheck(false);
+		SXParticlesEditor::ButtonVelocityAcceleration->setCheck(false);
+		SXParticlesEditor::ButtonEmitterCreate->setVisible(false);
 	}
 }
 
@@ -90,69 +90,69 @@ void SXParticlesEditor::AllInTabsNulling()
 
 void SXParticlesEditor::EmitterCreateVisible(bool visible)
 {
-	SXParticlesEditor::ButtonEmitterCreate->Visible(visible);
+	SXParticlesEditor::ButtonEmitterCreate->setVisible(visible);
 }
 
 void SXParticlesEditor::BaseVisible(bool visible)
 {
-	StaticName->Visible(visible);
-	EditName->Visible(visible);
+	StaticName->setVisible(visible);
+	EditName->setVisible(visible);
 	
-	StaticReCreateCount->Visible(visible);
-	EditReCreateCount->Visible(visible);
-	StaticCount->Visible(visible);
-	EditCount->Visible(visible);
-	StaticColorCoef->Visible(visible);
-	EditColorCoef->Visible(visible);
-	StaticSoftCoef->Visible(visible);
-	EditSoftCoef->Visible(visible);
-	StaticRefractionCoef->Visible(visible);
-	EditRefractionCoef->Visible(visible);
-	StaticTransparencyCoef->Visible(visible);
-	EditTransparencyCoef->Visible(visible);
-	CheckBoxLighting->Visible(visible);
-	StaticFigureType->Visible(visible);
-	ComboBoxFigureType->Visible(visible);
-	StaticFigureCountQuads->Visible(visible);
-	EditFigureCountQuads->Visible(visible);
-	CheckBoxFigureRotRand->Visible(visible);
-	CheckBoxFigureTapX->Visible(visible);
-	CheckBoxFigureTapY->Visible(visible);
-	CheckBoxFigureTapZ->Visible(visible);
-	StaticAlphaBlendType->Visible(visible);
-	ComboBoxAlphaBlendType->Visible(visible);
-	StaticTimeLife->Visible(visible);
-	EditTimeLife->Visible(visible);
-	StaticTimeLifeDisp->Visible(visible);
-	EditTimeLifeDisp->Visible(visible);
-	StaticAlphaAgeDepend->Visible(visible);
-	ComboBoxAlphaDependAge->Visible(visible);
-	StaticSize->Visible(visible);
-	StaticSizeX->Visible(visible);
-	EditSizeX->Visible(visible);
-	StaticSizeY->Visible(visible);
-	EditSizeY->Visible(visible);
-	StaticSizeDisp->Visible(visible);
-	EditSizeDisp->Visible(visible);
-	StaticSizeDependAge->Visible(visible);
-	ComboBoxSizeDependAge->Visible(visible);
-	CheckBoxCollisionDelete->Visible(visible);
+	StaticReCreateCount->setVisible(visible);
+	EditReCreateCount->setVisible(visible);
+	StaticCount->setVisible(visible);
+	EditCount->setVisible(visible);
+	StaticColorCoef->setVisible(visible);
+	EditColorCoef->setVisible(visible);
+	StaticSoftCoef->setVisible(visible);
+	EditSoftCoef->setVisible(visible);
+	StaticRefractionCoef->setVisible(visible);
+	EditRefractionCoef->setVisible(visible);
+	StaticTransparencyCoef->setVisible(visible);
+	EditTransparencyCoef->setVisible(visible);
+	CheckBoxLighting->setVisible(visible);
+	StaticFigureType->setVisible(visible);
+	ComboBoxFigureType->setVisible(visible);
+	StaticFigureCountQuads->setVisible(visible);
+	EditFigureCountQuads->setVisible(visible);
+	CheckBoxFigureRotRand->setVisible(visible);
+	CheckBoxFigureTapX->setVisible(visible);
+	CheckBoxFigureTapY->setVisible(visible);
+	CheckBoxFigureTapZ->setVisible(visible);
+	StaticAlphaBlendType->setVisible(visible);
+	ComboBoxAlphaBlendType->setVisible(visible);
+	StaticTimeLife->setVisible(visible);
+	EditTimeLife->setVisible(visible);
+	StaticTimeLifeDisp->setVisible(visible);
+	EditTimeLifeDisp->setVisible(visible);
+	StaticAlphaAgeDepend->setVisible(visible);
+	ComboBoxAlphaDependAge->setVisible(visible);
+	StaticSize->setVisible(visible);
+	StaticSizeX->setVisible(visible);
+	EditSizeX->setVisible(visible);
+	StaticSizeY->setVisible(visible);
+	EditSizeY->setVisible(visible);
+	StaticSizeDisp->setVisible(visible);
+	EditSizeDisp->setVisible(visible);
+	StaticSizeDependAge->setVisible(visible);
+	ComboBoxSizeDependAge->setVisible(visible);
+	CheckBoxCollisionDelete->setVisible(visible);
 
-	SXParticlesEditor::StaticColor->Visible(visible);
-	SXParticlesEditor::StaticColorR->Visible(visible);
-	SXParticlesEditor::EditColorR->Visible(visible);
-	SXParticlesEditor::StaticColorG->Visible(visible);
-	SXParticlesEditor::EditColorG->Visible(visible);
-	SXParticlesEditor::StaticColorB->Visible(visible);
-	SXParticlesEditor::EditColorB->Visible(visible);
-	SXParticlesEditor::StaticColorA->Visible(visible);
-	SXParticlesEditor::EditColorA->Visible(visible);
+	SXParticlesEditor::StaticColor->setVisible(visible);
+	SXParticlesEditor::StaticColorR->setVisible(visible);
+	SXParticlesEditor::EditColorR->setVisible(visible);
+	SXParticlesEditor::StaticColorG->setVisible(visible);
+	SXParticlesEditor::EditColorG->setVisible(visible);
+	SXParticlesEditor::StaticColorB->setVisible(visible);
+	SXParticlesEditor::EditColorB->setVisible(visible);
+	SXParticlesEditor::StaticColorA->setVisible(visible);
+	SXParticlesEditor::EditColorA->setVisible(visible);
 
-	SXParticlesEditor::CheckBoxTrack->Visible(visible);
-	SXParticlesEditor::StaticTrackSize->Visible(visible);
-	SXParticlesEditor::EditTrackSize->Visible(visible);
-	SXParticlesEditor::StaticTrackTime->Visible(visible);
-	SXParticlesEditor::EditTrackTime->Visible(visible);
+	SXParticlesEditor::CheckBoxTrack->setVisible(visible);
+	SXParticlesEditor::StaticTrackSize->setVisible(visible);
+	SXParticlesEditor::EditTrackSize->setVisible(visible);
+	SXParticlesEditor::StaticTrackTime->setVisible(visible);
+	SXParticlesEditor::EditTrackTime->setVisible(visible);
 }
 
 void SXParticlesEditor::BaseDataInit()
@@ -169,99 +169,99 @@ void SXParticlesEditor::BaseDataInit()
 
 	char tmpname[OBJECT_NAME_MAX_LEN];
 	SPE_EmitterNameGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, tmpname);
-	SXParticlesEditor::EditName->SetText(tmpname);
-	SXParticlesEditor::EditCount->SetText(String(SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID)).c_str());
-	SXParticlesEditor::EditReCreateCount->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ReCreateCount)).c_str());
-	SXParticlesEditor::EditColorCoef->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ColorCoef)).c_str());
-	SXParticlesEditor::EditSoftCoef->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SoftCoef)).c_str());
-	SXParticlesEditor::EditRefractionCoef->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, RefractionCoef)).c_str());
-	SXParticlesEditor::EditTransparencyCoef->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TransparencyCoef)).c_str());
-	SXParticlesEditor::CheckBoxLighting->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Lighting));
-	SXParticlesEditor::ComboBoxFigureType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureType));
-	SXParticlesEditor::ComboBoxAlphaBlendType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType));
-	SXParticlesEditor::EditFigureCountQuads->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureCountQuads)).c_str());
-	SXParticlesEditor::CheckBoxFigureRotRand->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureRotRand));
-	SXParticlesEditor::CheckBoxFigureTapX->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapX));
-	SXParticlesEditor::CheckBoxFigureTapY->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapY));
-	SXParticlesEditor::CheckBoxFigureTapZ->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapZ));
-	SXParticlesEditor::ComboBoxAlphaBlendType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType));
-	SXParticlesEditor::EditTimeLife->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TimeLife)).c_str());
-	SXParticlesEditor::EditTimeLifeDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TimeLifeDisp)).c_str());
-	SXParticlesEditor::ComboBoxAlphaDependAge->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaDependAge));
-	SXParticlesEditor::EditSizeX->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Size.x)).c_str());
-	SXParticlesEditor::EditSizeY->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Size.y)).c_str());
-	SXParticlesEditor::EditSizeDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDisp)).c_str());
-	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDependAge));
-	SXParticlesEditor::CheckBoxCollisionDelete->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CollisionDelete));
+	SXParticlesEditor::EditName->setText(tmpname);
+	SXParticlesEditor::EditCount->setText(String(SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID)).c_str());
+	SXParticlesEditor::EditReCreateCount->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ReCreateCount)).c_str());
+	SXParticlesEditor::EditColorCoef->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ColorCoef)).c_str());
+	SXParticlesEditor::EditSoftCoef->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SoftCoef)).c_str());
+	SXParticlesEditor::EditRefractionCoef->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, RefractionCoef)).c_str());
+	SXParticlesEditor::EditTransparencyCoef->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TransparencyCoef)).c_str());
+	SXParticlesEditor::CheckBoxLighting->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Lighting));
+	SXParticlesEditor::ComboBoxFigureType->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureType));
+	SXParticlesEditor::ComboBoxAlphaBlendType->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType));
+	SXParticlesEditor::EditFigureCountQuads->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureCountQuads)).c_str());
+	SXParticlesEditor::CheckBoxFigureRotRand->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureRotRand));
+	SXParticlesEditor::CheckBoxFigureTapX->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapX));
+	SXParticlesEditor::CheckBoxFigureTapY->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapY));
+	SXParticlesEditor::CheckBoxFigureTapZ->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, FigureTapZ));
+	SXParticlesEditor::ComboBoxAlphaBlendType->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaBlendType));
+	SXParticlesEditor::EditTimeLife->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TimeLife)).c_str());
+	SXParticlesEditor::EditTimeLifeDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TimeLifeDisp)).c_str());
+	SXParticlesEditor::ComboBoxAlphaDependAge->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AlphaDependAge));
+	SXParticlesEditor::EditSizeX->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Size.x)).c_str());
+	SXParticlesEditor::EditSizeY->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Size.y)).c_str());
+	SXParticlesEditor::EditSizeDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDisp)).c_str());
+	SXParticlesEditor::ComboBoxSizeDependAge->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SizeDependAge));
+	SXParticlesEditor::CheckBoxCollisionDelete->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CollisionDelete));
 
-	SXParticlesEditor::EditColorR->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.x)).c_str());
-	SXParticlesEditor::EditColorG->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.y)).c_str());
-	SXParticlesEditor::EditColorB->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.z)).c_str());
-	SXParticlesEditor::EditColorA->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.w)).c_str());
+	SXParticlesEditor::EditColorR->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.x)).c_str());
+	SXParticlesEditor::EditColorG->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.y)).c_str());
+	SXParticlesEditor::EditColorB->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.z)).c_str());
+	SXParticlesEditor::EditColorA->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.w)).c_str());
 
-	SXParticlesEditor::CheckBoxTrack->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Track));
-	SXParticlesEditor::EditTrackSize->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackSize)).c_str());
-	SXParticlesEditor::EditTrackTime->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackTime)).c_str());
+	SXParticlesEditor::CheckBoxTrack->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Track));
+	SXParticlesEditor::EditTrackSize->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackSize)).c_str());
+	SXParticlesEditor::EditTrackTime->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackTime)).c_str());
 }
 
 void SXParticlesEditor::BaseNulling()
 {
-	SXParticlesEditor::EditName->SetText("");
-	SXParticlesEditor::EditCount->SetText("0");
-	SXParticlesEditor::EditReCreateCount->SetText("0");
-	SXParticlesEditor::EditColorCoef->SetText("1");
-	SXParticlesEditor::EditSoftCoef->SetText("0");
-	SXParticlesEditor::EditRefractionCoef->SetText("0");
-	SXParticlesEditor::EditTransparencyCoef->SetText("1");
-	SXParticlesEditor::CheckBoxLighting->SetCheck(false);
-	SXParticlesEditor::ComboBoxFigureType->SetSel(0);
-	SXParticlesEditor::EditFigureCountQuads->SetText("1");
-	SXParticlesEditor::CheckBoxFigureRotRand->SetCheck(false);
-	SXParticlesEditor::CheckBoxFigureTapX->SetCheck(false);
-	SXParticlesEditor::CheckBoxFigureTapY->SetCheck(false);
-	SXParticlesEditor::CheckBoxFigureTapZ->SetCheck(false);
-	SXParticlesEditor::ComboBoxAlphaBlendType->SetSel(0);
-	SXParticlesEditor::EditTimeLife->SetText("0");
-	SXParticlesEditor::EditTimeLifeDisp->SetText("0");
-	SXParticlesEditor::ComboBoxAlphaDependAge->SetSel(0);
-	SXParticlesEditor::EditSizeX->SetText("0.5");
-	SXParticlesEditor::EditSizeY->SetText("0.5");
-	SXParticlesEditor::EditSizeDisp->SetText("0");
-	SXParticlesEditor::ComboBoxSizeDependAge->SetSel(0);
-	SXParticlesEditor::CheckBoxCollisionDelete->SetCheck(false);
+	SXParticlesEditor::EditName->setText("");
+	SXParticlesEditor::EditCount->setText("0");
+	SXParticlesEditor::EditReCreateCount->setText("0");
+	SXParticlesEditor::EditColorCoef->setText("1");
+	SXParticlesEditor::EditSoftCoef->setText("0");
+	SXParticlesEditor::EditRefractionCoef->setText("0");
+	SXParticlesEditor::EditTransparencyCoef->setText("1");
+	SXParticlesEditor::CheckBoxLighting->setCheck(false);
+	SXParticlesEditor::ComboBoxFigureType->setSel(0);
+	SXParticlesEditor::EditFigureCountQuads->setText("1");
+	SXParticlesEditor::CheckBoxFigureRotRand->setCheck(false);
+	SXParticlesEditor::CheckBoxFigureTapX->setCheck(false);
+	SXParticlesEditor::CheckBoxFigureTapY->setCheck(false);
+	SXParticlesEditor::CheckBoxFigureTapZ->setCheck(false);
+	SXParticlesEditor::ComboBoxAlphaBlendType->setSel(0);
+	SXParticlesEditor::EditTimeLife->setText("0");
+	SXParticlesEditor::EditTimeLifeDisp->setText("0");
+	SXParticlesEditor::ComboBoxAlphaDependAge->setSel(0);
+	SXParticlesEditor::EditSizeX->setText("0.5");
+	SXParticlesEditor::EditSizeY->setText("0.5");
+	SXParticlesEditor::EditSizeDisp->setText("0");
+	SXParticlesEditor::ComboBoxSizeDependAge->setSel(0);
+	SXParticlesEditor::CheckBoxCollisionDelete->setCheck(false);
 
-	SXParticlesEditor::EditColorR->SetText("1");
-	SXParticlesEditor::EditColorG->SetText("1");
-	SXParticlesEditor::EditColorB->SetText("1");
-	SXParticlesEditor::EditColorA->SetText("0");
+	SXParticlesEditor::EditColorR->setText("1");
+	SXParticlesEditor::EditColorG->setText("1");
+	SXParticlesEditor::EditColorB->setText("1");
+	SXParticlesEditor::EditColorA->setText("0");
 
-	SXParticlesEditor::CheckBoxTrack->SetCheck(false);
-	SXParticlesEditor::EditTrackSize->SetText("0");
-	SXParticlesEditor::EditTrackTime->SetText("0");
+	SXParticlesEditor::CheckBoxTrack->setCheck(false);
+	SXParticlesEditor::EditTrackSize->setText("0");
+	SXParticlesEditor::EditTrackTime->setText("0");
 }
 
 void SXParticlesEditor::BoundVisible(bool visible)
 {
-	SXParticlesEditor::StaticBoundType->Visible(visible);
-	SXParticlesEditor::ComboBoxBoundType->Visible(visible);
-	SXParticlesEditor::StaticBoundVec1->Visible(visible);
-	SXParticlesEditor::StaticBoundVec1X->Visible(visible);
-	SXParticlesEditor::EditBoundVec1X->Visible(visible);
-	SXParticlesEditor::StaticBoundVec1Y->Visible(visible);
-	SXParticlesEditor::EditBoundVec1Y->Visible(visible);
-	SXParticlesEditor::StaticBoundVec1Z->Visible(visible);
-	SXParticlesEditor::EditBoundVec1Z->Visible(visible);
-	SXParticlesEditor::StaticBoundVec1W->Visible(visible);
-	SXParticlesEditor::EditBoundVec1W->Visible(visible);
-	SXParticlesEditor::StaticBoundVec2->Visible(visible);
-	SXParticlesEditor::StaticBoundVec2X->Visible(visible);
-	SXParticlesEditor::EditBoundVec2X->Visible(visible);
-	SXParticlesEditor::StaticBoundVec2Y->Visible(visible);
-	SXParticlesEditor::EditBoundVec2Y->Visible(visible);
-	SXParticlesEditor::StaticBoundVec2Z->Visible(visible);
-	SXParticlesEditor::EditBoundVec2Z->Visible(visible);
-	SXParticlesEditor::StaticBoundVec2W->Visible(visible);
-	SXParticlesEditor::EditBoundVec2W->Visible(visible);
+	SXParticlesEditor::StaticBoundType->setVisible(visible);
+	SXParticlesEditor::ComboBoxBoundType->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec1->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec1X->setVisible(visible);
+	SXParticlesEditor::EditBoundVec1X->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec1Y->setVisible(visible);
+	SXParticlesEditor::EditBoundVec1Y->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec1Z->setVisible(visible);
+	SXParticlesEditor::EditBoundVec1Z->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec1W->setVisible(visible);
+	SXParticlesEditor::EditBoundVec1W->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec2->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec2X->setVisible(visible);
+	SXParticlesEditor::EditBoundVec2X->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec2Y->setVisible(visible);
+	SXParticlesEditor::EditBoundVec2Y->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec2Z->setVisible(visible);
+	SXParticlesEditor::EditBoundVec2Z->setVisible(visible);
+	SXParticlesEditor::StaticBoundVec2W->setVisible(visible);
+	SXParticlesEditor::EditBoundVec2W->setVisible(visible);
 }
 
 void SXParticlesEditor::BoundDataInit()
@@ -276,63 +276,63 @@ void SXParticlesEditor::BoundDataInit()
 		return;
 	}
 
-	SXParticlesEditor::ComboBoxBoundType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType));
-	SXParticlesEditor::EditBoundVec1X->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.x)).c_str());
-	SXParticlesEditor::EditBoundVec1Y->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.y)).c_str());
-	SXParticlesEditor::EditBoundVec1Z->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.z)).c_str());
-	SXParticlesEditor::EditBoundVec1W->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.w)).c_str());
-	SXParticlesEditor::EditBoundVec2X->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.x)).c_str());
-	SXParticlesEditor::EditBoundVec2Y->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.y)).c_str());
-	SXParticlesEditor::EditBoundVec2Z->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.z)).c_str());
-	SXParticlesEditor::EditBoundVec2W->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.w)).c_str());
+	SXParticlesEditor::ComboBoxBoundType->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType));
+	SXParticlesEditor::EditBoundVec1X->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.x)).c_str());
+	SXParticlesEditor::EditBoundVec1Y->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.y)).c_str());
+	SXParticlesEditor::EditBoundVec1Z->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.z)).c_str());
+	SXParticlesEditor::EditBoundVec1W->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec1.w)).c_str());
+	SXParticlesEditor::EditBoundVec2X->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.x)).c_str());
+	SXParticlesEditor::EditBoundVec2Y->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.y)).c_str());
+	SXParticlesEditor::EditBoundVec2Z->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.z)).c_str());
+	SXParticlesEditor::EditBoundVec2W->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundVec2.w)).c_str());
 }
 
 void SXParticlesEditor::BoundNulling()
 {
-	SXParticlesEditor::ComboBoxBoundType->SetSel(0);
-	SXParticlesEditor::EditBoundVec1X->SetText("0");
-	SXParticlesEditor::EditBoundVec1Y->SetText("0");
-	SXParticlesEditor::EditBoundVec1Z->SetText("0");
-	SXParticlesEditor::EditBoundVec1W->SetText("0");
-	SXParticlesEditor::EditBoundVec2X->SetText("0");
-	SXParticlesEditor::EditBoundVec2Y->SetText("0");
-	SXParticlesEditor::EditBoundVec2Z->SetText("0");
-	SXParticlesEditor::EditBoundVec2W->SetText("0");
+	SXParticlesEditor::ComboBoxBoundType->setSel(0);
+	SXParticlesEditor::EditBoundVec1X->setText("0");
+	SXParticlesEditor::EditBoundVec1Y->setText("0");
+	SXParticlesEditor::EditBoundVec1Z->setText("0");
+	SXParticlesEditor::EditBoundVec1W->setText("0");
+	SXParticlesEditor::EditBoundVec2X->setText("0");
+	SXParticlesEditor::EditBoundVec2Y->setText("0");
+	SXParticlesEditor::EditBoundVec2Z->setText("0");
+	SXParticlesEditor::EditBoundVec2W->setText("0");
 }
 
 void SXParticlesEditor::CharacterVisible(bool visible)
 {
-	SXParticlesEditor::CheckBoxCircle->Visible(visible);
-	SXParticlesEditor::StaticCircleAxis->Visible(visible);
-	SXParticlesEditor::ComboBoxCircleAxis->Visible(visible);
-	SXParticlesEditor::StaticCircleAngle->Visible(visible);
-	SXParticlesEditor::EditCircleAngle->Visible(visible);
-	SXParticlesEditor::StaticCircleAngleDisp->Visible(visible);
-	SXParticlesEditor::EditCircleAngleDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxRotate->Visible(visible);
-	SXParticlesEditor::StaticRotateAngle->Visible(visible);
-	SXParticlesEditor::EditRotateAngle->Visible(visible);
-	SXParticlesEditor::StaticRotateAngleDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxCircleAngleDispNeg->Visible(visible);
-	SXParticlesEditor::EditRotateAngleDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxRotateAngleDispNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxDeviation->Visible(visible);
-	SXParticlesEditor::StaticDeviationType->Visible(visible);
-	SXParticlesEditor::ComboBoxDeviationType->Visible(visible);
-	SXParticlesEditor::StaticDeviationAmplitude->Visible(visible);
-	SXParticlesEditor::StaticDeviationCoefAngle->Visible(visible);
-	SXParticlesEditor::EditDeviationAmplitude->Visible(visible);
-	SXParticlesEditor::EditDeviationCoefAngle->Visible(visible);
-	SXParticlesEditor::StaticDeviationAxis->Visible(visible);
-	SXParticlesEditor::ComboBoxDeviationAxis->Visible(visible);
-	SXParticlesEditor::StaticDeviationCountDelayMls->Visible(visible);
-	SXParticlesEditor::EditDeviationCountDelayMls->Visible(visible);
-	SXParticlesEditor::StaticDeviationCoefAngleDisp->Visible(visible);
-	SXParticlesEditor::EditDeviationCoefAngleDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxDeviationTapX->Visible(visible);
-	SXParticlesEditor::CheckBoxDeviationTapY->Visible(visible);
-	SXParticlesEditor::CheckBoxDeviationTapZ->Visible(visible);
+	SXParticlesEditor::CheckBoxCircle->setVisible(visible);
+	SXParticlesEditor::StaticCircleAxis->setVisible(visible);
+	SXParticlesEditor::ComboBoxCircleAxis->setVisible(visible);
+	SXParticlesEditor::StaticCircleAngle->setVisible(visible);
+	SXParticlesEditor::EditCircleAngle->setVisible(visible);
+	SXParticlesEditor::StaticCircleAngleDisp->setVisible(visible);
+	SXParticlesEditor::EditCircleAngleDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxRotate->setVisible(visible);
+	SXParticlesEditor::StaticRotateAngle->setVisible(visible);
+	SXParticlesEditor::EditRotateAngle->setVisible(visible);
+	SXParticlesEditor::StaticRotateAngleDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxCircleAngleDispNeg->setVisible(visible);
+	SXParticlesEditor::EditRotateAngleDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxRotateAngleDispNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxDeviation->setVisible(visible);
+	SXParticlesEditor::StaticDeviationType->setVisible(visible);
+	SXParticlesEditor::ComboBoxDeviationType->setVisible(visible);
+	SXParticlesEditor::StaticDeviationAmplitude->setVisible(visible);
+	SXParticlesEditor::StaticDeviationCoefAngle->setVisible(visible);
+	SXParticlesEditor::EditDeviationAmplitude->setVisible(visible);
+	SXParticlesEditor::EditDeviationCoefAngle->setVisible(visible);
+	SXParticlesEditor::StaticDeviationAxis->setVisible(visible);
+	SXParticlesEditor::ComboBoxDeviationAxis->setVisible(visible);
+	SXParticlesEditor::StaticDeviationCountDelayMls->setVisible(visible);
+	SXParticlesEditor::EditDeviationCountDelayMls->setVisible(visible);
+	SXParticlesEditor::StaticDeviationCoefAngleDisp->setVisible(visible);
+	SXParticlesEditor::EditDeviationCoefAngleDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxDeviationTapX->setVisible(visible);
+	SXParticlesEditor::CheckBoxDeviationTapY->setVisible(visible);
+	SXParticlesEditor::CheckBoxDeviationTapZ->setVisible(visible);
 }
 
 void SXParticlesEditor::CharacterDataInit()
@@ -347,75 +347,75 @@ void SXParticlesEditor::CharacterDataInit()
 		return;
 	}
 
-	SXParticlesEditor::CheckBoxCircle->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircle));
-	SXParticlesEditor::ComboBoxCircleAxis->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAxis));
-	SXParticlesEditor::EditCircleAngle->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAngle)).c_str());
-	SXParticlesEditor::EditCircleAngleDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAngleDisp)).c_str());
-	SXParticlesEditor::CheckBoxRotate->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotate));
-	SXParticlesEditor::EditRotateAngle->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotateAngle)).c_str());
-	SXParticlesEditor::CheckBoxCircleAngleDispNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAngleDispNeg));
-	SXParticlesEditor::EditRotateAngleDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotateAngleDisp)).c_str());
-	SXParticlesEditor::CheckBoxRotateAngleDispNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotateAngleDispNeg));
-	SXParticlesEditor::CheckBoxDeviation->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviation));
-	SXParticlesEditor::ComboBoxDeviationType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationType));
-	SXParticlesEditor::EditDeviationAmplitude->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationAmplitude)).c_str());
-	SXParticlesEditor::EditDeviationCoefAngle->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCoefAngle)).c_str());
-	SXParticlesEditor::ComboBoxDeviationAxis->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationAxis));
-	SXParticlesEditor::EditDeviationCountDelayMls->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCountDelayMls)).c_str());
-	SXParticlesEditor::EditDeviationCoefAngleDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCoefAngleDisp)).c_str());
-	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCoefAngleDispNeg));
-	SXParticlesEditor::CheckBoxDeviationTapX->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapX));
-	SXParticlesEditor::CheckBoxDeviationTapY->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapY));
-	SXParticlesEditor::CheckBoxDeviationTapZ->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapZ));
+	SXParticlesEditor::CheckBoxCircle->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircle));
+	SXParticlesEditor::ComboBoxCircleAxis->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAxis));
+	SXParticlesEditor::EditCircleAngle->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAngle)).c_str());
+	SXParticlesEditor::EditCircleAngleDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAngleDisp)).c_str());
+	SXParticlesEditor::CheckBoxRotate->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotate));
+	SXParticlesEditor::EditRotateAngle->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotateAngle)).c_str());
+	SXParticlesEditor::CheckBoxCircleAngleDispNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterCircleAngleDispNeg));
+	SXParticlesEditor::EditRotateAngleDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotateAngleDisp)).c_str());
+	SXParticlesEditor::CheckBoxRotateAngleDispNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterRotateAngleDispNeg));
+	SXParticlesEditor::CheckBoxDeviation->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviation));
+	SXParticlesEditor::ComboBoxDeviationType->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationType));
+	SXParticlesEditor::EditDeviationAmplitude->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationAmplitude)).c_str());
+	SXParticlesEditor::EditDeviationCoefAngle->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCoefAngle)).c_str());
+	SXParticlesEditor::ComboBoxDeviationAxis->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationAxis));
+	SXParticlesEditor::EditDeviationCountDelayMls->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCountDelayMls)).c_str());
+	SXParticlesEditor::EditDeviationCoefAngleDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCoefAngleDisp)).c_str());
+	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationCoefAngleDispNeg));
+	SXParticlesEditor::CheckBoxDeviationTapX->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapX));
+	SXParticlesEditor::CheckBoxDeviationTapY->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapY));
+	SXParticlesEditor::CheckBoxDeviationTapZ->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, CharacterDeviationTapZ));
 }
 
 void SXParticlesEditor::CharacterNulling()
 {
-	SXParticlesEditor::CheckBoxCircle->SetCheck(false);
-	SXParticlesEditor::ComboBoxCircleAxis->SetSel(0);
-	SXParticlesEditor::EditCircleAngle->SetText("0");
-	SXParticlesEditor::EditCircleAngleDisp->SetText("0");
-	SXParticlesEditor::CheckBoxRotate->SetCheck(false);
-	SXParticlesEditor::EditRotateAngle->SetText("0");
-	SXParticlesEditor::CheckBoxCircleAngleDispNeg->SetCheck(false);
-	SXParticlesEditor::EditRotateAngleDisp->SetText("0");
-	SXParticlesEditor::CheckBoxRotateAngleDispNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxDeviation->SetCheck(false);
-	SXParticlesEditor::ComboBoxDeviationType->SetSel(0);
-	SXParticlesEditor::EditDeviationAmplitude->SetText("0");
-	SXParticlesEditor::EditDeviationCoefAngle->SetText("0");
-	SXParticlesEditor::ComboBoxDeviationAxis->SetSel(0);
-	SXParticlesEditor::EditDeviationCountDelayMls->SetText("0");
-	SXParticlesEditor::EditDeviationCoefAngleDisp->SetText("0");
-	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxDeviationTapX->SetCheck(false);
-	SXParticlesEditor::CheckBoxDeviationTapY->SetCheck(false);
-	SXParticlesEditor::CheckBoxDeviationTapZ->SetCheck(false);
+	SXParticlesEditor::CheckBoxCircle->setCheck(false);
+	SXParticlesEditor::ComboBoxCircleAxis->setSel(0);
+	SXParticlesEditor::EditCircleAngle->setText("0");
+	SXParticlesEditor::EditCircleAngleDisp->setText("0");
+	SXParticlesEditor::CheckBoxRotate->setCheck(false);
+	SXParticlesEditor::EditRotateAngle->setText("0");
+	SXParticlesEditor::CheckBoxCircleAngleDispNeg->setCheck(false);
+	SXParticlesEditor::EditRotateAngleDisp->setText("0");
+	SXParticlesEditor::CheckBoxRotateAngleDispNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxDeviation->setCheck(false);
+	SXParticlesEditor::ComboBoxDeviationType->setSel(0);
+	SXParticlesEditor::EditDeviationAmplitude->setText("0");
+	SXParticlesEditor::EditDeviationCoefAngle->setText("0");
+	SXParticlesEditor::ComboBoxDeviationAxis->setSel(0);
+	SXParticlesEditor::EditDeviationCountDelayMls->setText("0");
+	SXParticlesEditor::EditDeviationCoefAngleDisp->setText("0");
+	SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxDeviationTapX->setCheck(false);
+	SXParticlesEditor::CheckBoxDeviationTapY->setCheck(false);
+	SXParticlesEditor::CheckBoxDeviationTapZ->setCheck(false);
 }
 
 void SXParticlesEditor::SpawnVisible(bool visible)
 {
-	SXParticlesEditor::StaticSpawnPosType->Visible(visible);
-	SXParticlesEditor::ComboBoxSpawnPosType->Visible(visible);
-	SXParticlesEditor::StaticSpawnOrigin->Visible(visible);
-	SXParticlesEditor::StaticSpawnOriginX->Visible(visible);
-	SXParticlesEditor::EditSpawnOriginX->Visible(visible);
-	SXParticlesEditor::StaticSpawnOriginY->Visible(visible);
-	SXParticlesEditor::EditSpawnOriginY->Visible(visible);
-	SXParticlesEditor::StaticSpawnOriginZ->Visible(visible);
-	SXParticlesEditor::EditSpawnOriginZ->Visible(visible);
-	SXParticlesEditor::StaticSpawnOriginDisp->Visible(visible);
-	SXParticlesEditor::EditSpawnOriginDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->Visible(visible);
-	SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxSpawnOriginDispYPos->Visible(visible);
-	SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxSpawnOriginDispZPos->Visible(visible);
-	SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->Visible(visible);
-	SXParticlesEditor::StaticSpawnNextTime->Visible(visible);
-	SXParticlesEditor::EditSpawnNextTime->Visible(visible);
-	SXParticlesEditor::StaticSpawnNextTimeDisp->Visible(visible);
-	SXParticlesEditor::EditSpawnNextTimeDisp->Visible(visible);
+	SXParticlesEditor::StaticSpawnPosType->setVisible(visible);
+	SXParticlesEditor::ComboBoxSpawnPosType->setVisible(visible);
+	SXParticlesEditor::StaticSpawnOrigin->setVisible(visible);
+	SXParticlesEditor::StaticSpawnOriginX->setVisible(visible);
+	SXParticlesEditor::EditSpawnOriginX->setVisible(visible);
+	SXParticlesEditor::StaticSpawnOriginY->setVisible(visible);
+	SXParticlesEditor::EditSpawnOriginY->setVisible(visible);
+	SXParticlesEditor::StaticSpawnOriginZ->setVisible(visible);
+	SXParticlesEditor::EditSpawnOriginZ->setVisible(visible);
+	SXParticlesEditor::StaticSpawnOriginDisp->setVisible(visible);
+	SXParticlesEditor::EditSpawnOriginDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->setVisible(visible);
+	SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxSpawnOriginDispYPos->setVisible(visible);
+	SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxSpawnOriginDispZPos->setVisible(visible);
+	SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->setVisible(visible);
+	SXParticlesEditor::StaticSpawnNextTime->setVisible(visible);
+	SXParticlesEditor::EditSpawnNextTime->setVisible(visible);
+	SXParticlesEditor::StaticSpawnNextTimeDisp->setVisible(visible);
+	SXParticlesEditor::EditSpawnNextTimeDisp->setVisible(visible);
 }
 
 void SXParticlesEditor::SpawnDataInit()
@@ -430,55 +430,55 @@ void SXParticlesEditor::SpawnDataInit()
 		return;
 	}
 
-	SXParticlesEditor::ComboBoxSpawnPosType->SetSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnPosType));
-	SXParticlesEditor::EditSpawnOriginX->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOrigin.x)).c_str());
-	SXParticlesEditor::EditSpawnOriginY->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOrigin.y)).c_str());
-	SXParticlesEditor::EditSpawnOriginZ->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOrigin.z)).c_str());
-	SXParticlesEditor::EditSpawnOriginDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOriginDisp)).c_str());
-	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateXPos));
-	SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateXNeg));
-	SXParticlesEditor::CheckBoxSpawnOriginDispYPos->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateYPos));
-	SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateYNeg));
-	SXParticlesEditor::CheckBoxSpawnOriginDispZPos->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateZPos));
-	SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateZNeg));
-	SXParticlesEditor::EditSpawnNextTime->SetText(String((DWORD)SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnNextTime)).c_str());
-	SXParticlesEditor::EditSpawnNextTimeDisp->SetText(String((DWORD)SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnNextTimeDisp)).c_str());
+	SXParticlesEditor::ComboBoxSpawnPosType->setSel(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnPosType));
+	SXParticlesEditor::EditSpawnOriginX->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOrigin.x)).c_str());
+	SXParticlesEditor::EditSpawnOriginY->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOrigin.y)).c_str());
+	SXParticlesEditor::EditSpawnOriginZ->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOrigin.z)).c_str());
+	SXParticlesEditor::EditSpawnOriginDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnOriginDisp)).c_str());
+	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateXPos));
+	SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateXNeg));
+	SXParticlesEditor::CheckBoxSpawnOriginDispYPos->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateYPos));
+	SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateYNeg));
+	SXParticlesEditor::CheckBoxSpawnOriginDispZPos->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateZPos));
+	SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnBoundBindCreateZNeg));
+	SXParticlesEditor::EditSpawnNextTime->setText(String((DWORD)SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnNextTime)).c_str());
+	SXParticlesEditor::EditSpawnNextTimeDisp->setText(String((DWORD)SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SpawnNextTimeDisp)).c_str());
 }
 
 void SXParticlesEditor::SpawnNulling()
 {
-	SXParticlesEditor::ComboBoxSpawnPosType->SetSel(0);
-	SXParticlesEditor::EditSpawnOriginX->SetText("0");
-	SXParticlesEditor::EditSpawnOriginY->SetText("0");
-	SXParticlesEditor::EditSpawnOriginZ->SetText("0");
-	SXParticlesEditor::EditSpawnOriginDisp->SetText("0");
-	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->SetCheck(false);
-	SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxSpawnOriginDispYPos->SetCheck(false);
-	SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxSpawnOriginDispZPos->SetCheck(false);
-	SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->SetCheck(false);
-	SXParticlesEditor::EditSpawnNextTime->SetText("0");
-	SXParticlesEditor::EditSpawnNextTimeDisp->SetText("0");
+	SXParticlesEditor::ComboBoxSpawnPosType->setSel(0);
+	SXParticlesEditor::EditSpawnOriginX->setText("0");
+	SXParticlesEditor::EditSpawnOriginY->setText("0");
+	SXParticlesEditor::EditSpawnOriginZ->setText("0");
+	SXParticlesEditor::EditSpawnOriginDisp->setText("0");
+	SXParticlesEditor::CheckBoxSpawnOriginDispXPos->setCheck(false);
+	SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxSpawnOriginDispYPos->setCheck(false);
+	SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxSpawnOriginDispZPos->setCheck(false);
+	SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->setCheck(false);
+	SXParticlesEditor::EditSpawnNextTime->setText("0");
+	SXParticlesEditor::EditSpawnNextTimeDisp->setText("0");
 }
 
 void SXParticlesEditor::TexVisible(bool visible)
 {
-	SXParticlesEditor::StaticTexture->Visible(visible);
-	SXParticlesEditor::EditTexture->Visible(visible);
-	SXParticlesEditor::ButtonTextureSel->Visible(visible);
-	SXParticlesEditor::StaticAnimTexCountCadrsX->Visible(visible);
-	SXParticlesEditor::StaticAnimTexCountCadrsY->Visible(visible);
-	SXParticlesEditor::EditAnimTexCountCadrsX->Visible(visible);
-	SXParticlesEditor::EditAnimTexCountCadrsY->Visible(visible);
-	SXParticlesEditor::StaticAnimTexRate->Visible(visible);
-	SXParticlesEditor::EditAnimTexRate->Visible(visible);
-	SXParticlesEditor::StaticAnimTexRateDisp->Visible(visible);
-	SXParticlesEditor::EditAnimTexRateDisp->Visible(visible);
-	SXParticlesEditor::StaticAnimTexStartCadr->Visible(visible);
-	SXParticlesEditor::EditAnimTexStartCadr->Visible(visible);
-	SXParticlesEditor::StaticAnimTexStartCadrDisp->Visible(visible);
-	SXParticlesEditor::EditAnimTexStartCadrDisp->Visible(visible);
+	SXParticlesEditor::StaticTexture->setVisible(visible);
+	SXParticlesEditor::EditTexture->setVisible(visible);
+	SXParticlesEditor::ButtonTextureSel->setVisible(visible);
+	SXParticlesEditor::StaticAnimTexCountCadrsX->setVisible(visible);
+	SXParticlesEditor::StaticAnimTexCountCadrsY->setVisible(visible);
+	SXParticlesEditor::EditAnimTexCountCadrsX->setVisible(visible);
+	SXParticlesEditor::EditAnimTexCountCadrsY->setVisible(visible);
+	SXParticlesEditor::StaticAnimTexRate->setVisible(visible);
+	SXParticlesEditor::EditAnimTexRate->setVisible(visible);
+	SXParticlesEditor::StaticAnimTexRateDisp->setVisible(visible);
+	SXParticlesEditor::EditAnimTexRateDisp->setVisible(visible);
+	SXParticlesEditor::StaticAnimTexStartCadr->setVisible(visible);
+	SXParticlesEditor::EditAnimTexStartCadr->setVisible(visible);
+	SXParticlesEditor::StaticAnimTexStartCadrDisp->setVisible(visible);
+	SXParticlesEditor::EditAnimTexStartCadrDisp->setVisible(visible);
 }
 
 void SXParticlesEditor::TexDataInit()
@@ -496,52 +496,52 @@ void SXParticlesEditor::TexDataInit()
 	char tmptex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 	SPE_EmitterTextureGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, tmptex);
 
-	SXParticlesEditor::EditTexture->SetText(tmptex);
-	SXParticlesEditor::EditAnimTexCountCadrsX->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexCountCadrsX)).c_str());
-	SXParticlesEditor::EditAnimTexCountCadrsY->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexCountCadrsY)).c_str());
-	SXParticlesEditor::EditAnimTexRate->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexRate)).c_str());
-	SXParticlesEditor::EditAnimTexRateDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexRateDisp)).c_str());
-	SXParticlesEditor::EditAnimTexStartCadr->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexStartCadr)).c_str());
-	SXParticlesEditor::EditAnimTexStartCadrDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexStartCadrDisp)).c_str());
+	SXParticlesEditor::EditTexture->setText(tmptex);
+	SXParticlesEditor::EditAnimTexCountCadrsX->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexCountCadrsX)).c_str());
+	SXParticlesEditor::EditAnimTexCountCadrsY->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexCountCadrsY)).c_str());
+	SXParticlesEditor::EditAnimTexRate->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexRate)).c_str());
+	SXParticlesEditor::EditAnimTexRateDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexRateDisp)).c_str());
+	SXParticlesEditor::EditAnimTexStartCadr->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexStartCadr)).c_str());
+	SXParticlesEditor::EditAnimTexStartCadrDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AnimTexStartCadrDisp)).c_str());
 }
 
 void SXParticlesEditor::TexNulling()
 {
-	SXParticlesEditor::EditTexture->SetText("");
-	SXParticlesEditor::EditAnimTexCountCadrsX->SetText("0");
-	SXParticlesEditor::EditAnimTexCountCadrsY->SetText("0");
-	SXParticlesEditor::EditAnimTexRate->SetText("0");
-	SXParticlesEditor::EditAnimTexRateDisp->SetText("0");
-	SXParticlesEditor::EditAnimTexStartCadr->SetText("0");
-	SXParticlesEditor::EditAnimTexStartCadrDisp->SetText("0");
+	SXParticlesEditor::EditTexture->setText("");
+	SXParticlesEditor::EditAnimTexCountCadrsX->setText("0");
+	SXParticlesEditor::EditAnimTexCountCadrsY->setText("0");
+	SXParticlesEditor::EditAnimTexRate->setText("0");
+	SXParticlesEditor::EditAnimTexRateDisp->setText("0");
+	SXParticlesEditor::EditAnimTexStartCadr->setText("0");
+	SXParticlesEditor::EditAnimTexStartCadrDisp->setText("0");
 }
 
 void SXParticlesEditor::VelocityAccVisible(bool visible)
 {
-	SXParticlesEditor::StaticVelocity->Visible(visible);
-	SXParticlesEditor::StaticVelocityX->Visible(visible);
-	SXParticlesEditor::EditVelocityX->Visible(visible);
-	SXParticlesEditor::StaticVelocityY->Visible(visible);
-	SXParticlesEditor::EditVelocityY->Visible(visible);
-	SXParticlesEditor::CheckBoxVelocityDispXNeg->Visible(visible);
-	SXParticlesEditor::StaticVelocityZ->Visible(visible);
-	SXParticlesEditor::EditVelocityZ->Visible(visible);
-	SXParticlesEditor::StaticVelocityDisp->Visible(visible);
-	SXParticlesEditor::EditVelocityDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxVelocityDispYNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxVelocityDispZNeg->Visible(visible);
-	SXParticlesEditor::StaticAcceleration->Visible(visible);
-	SXParticlesEditor::StaticAccelerationX->Visible(visible);
-	SXParticlesEditor::EditAccelerationX->Visible(visible);
-	SXParticlesEditor::StaticAccelerationY->Visible(visible);
-	SXParticlesEditor::EditAccelerationY->Visible(visible);
-	SXParticlesEditor::StaticAccelerationZ->Visible(visible);
-	SXParticlesEditor::EditAccelerationZ->Visible(visible);
-	SXParticlesEditor::StaticAccelerationDisp->Visible(visible);
-	SXParticlesEditor::EditAccelerationDisp->Visible(visible);
-	SXParticlesEditor::CheckBoxAccelerationDispXNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxAccelerationDispYNeg->Visible(visible);
-	SXParticlesEditor::CheckBoxAccelerationDispZNeg->Visible(visible);
+	SXParticlesEditor::StaticVelocity->setVisible(visible);
+	SXParticlesEditor::StaticVelocityX->setVisible(visible);
+	SXParticlesEditor::EditVelocityX->setVisible(visible);
+	SXParticlesEditor::StaticVelocityY->setVisible(visible);
+	SXParticlesEditor::EditVelocityY->setVisible(visible);
+	SXParticlesEditor::CheckBoxVelocityDispXNeg->setVisible(visible);
+	SXParticlesEditor::StaticVelocityZ->setVisible(visible);
+	SXParticlesEditor::EditVelocityZ->setVisible(visible);
+	SXParticlesEditor::StaticVelocityDisp->setVisible(visible);
+	SXParticlesEditor::EditVelocityDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxVelocityDispYNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxVelocityDispZNeg->setVisible(visible);
+	SXParticlesEditor::StaticAcceleration->setVisible(visible);
+	SXParticlesEditor::StaticAccelerationX->setVisible(visible);
+	SXParticlesEditor::EditAccelerationX->setVisible(visible);
+	SXParticlesEditor::StaticAccelerationY->setVisible(visible);
+	SXParticlesEditor::EditAccelerationY->setVisible(visible);
+	SXParticlesEditor::StaticAccelerationZ->setVisible(visible);
+	SXParticlesEditor::EditAccelerationZ->setVisible(visible);
+	SXParticlesEditor::StaticAccelerationDisp->setVisible(visible);
+	SXParticlesEditor::EditAccelerationDisp->setVisible(visible);
+	SXParticlesEditor::CheckBoxAccelerationDispXNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxAccelerationDispYNeg->setVisible(visible);
+	SXParticlesEditor::CheckBoxAccelerationDispZNeg->setVisible(visible);
 }
 
 void SXParticlesEditor::VelocityDataInit()
@@ -556,36 +556,36 @@ void SXParticlesEditor::VelocityDataInit()
 		return;
 	}
 
-	SXParticlesEditor::EditVelocityX->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Velocity.x)).c_str());
-	SXParticlesEditor::EditVelocityY->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Velocity.y)).c_str());
-	SXParticlesEditor::EditVelocityZ->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Velocity.z)).c_str());
-	SXParticlesEditor::EditVelocityDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDisp)).c_str());
-	SXParticlesEditor::CheckBoxVelocityDispYNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDispYNeg));
-	SXParticlesEditor::CheckBoxVelocityDispZNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDispZNeg));
-	SXParticlesEditor::CheckBoxVelocityDispXNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDispXNeg));
-	SXParticlesEditor::EditAccelerationX->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Acceleration.x)).c_str());
-	SXParticlesEditor::EditAccelerationY->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Acceleration.y)).c_str());
-	SXParticlesEditor::EditAccelerationZ->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Acceleration.z)).c_str());
-	SXParticlesEditor::EditAccelerationDisp->SetText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDisp)).c_str());
-	SXParticlesEditor::CheckBoxAccelerationDispXNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispXNeg));
-	SXParticlesEditor::CheckBoxAccelerationDispYNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispYNeg));
-	SXParticlesEditor::CheckBoxAccelerationDispZNeg->SetCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispZNeg));
+	SXParticlesEditor::EditVelocityX->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Velocity.x)).c_str());
+	SXParticlesEditor::EditVelocityY->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Velocity.y)).c_str());
+	SXParticlesEditor::EditVelocityZ->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Velocity.z)).c_str());
+	SXParticlesEditor::EditVelocityDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDisp)).c_str());
+	SXParticlesEditor::CheckBoxVelocityDispYNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDispYNeg));
+	SXParticlesEditor::CheckBoxVelocityDispZNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDispZNeg));
+	SXParticlesEditor::CheckBoxVelocityDispXNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, VelocityDispXNeg));
+	SXParticlesEditor::EditAccelerationX->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Acceleration.x)).c_str());
+	SXParticlesEditor::EditAccelerationY->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Acceleration.y)).c_str());
+	SXParticlesEditor::EditAccelerationZ->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Acceleration.z)).c_str());
+	SXParticlesEditor::EditAccelerationDisp->setText(String(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDisp)).c_str());
+	SXParticlesEditor::CheckBoxAccelerationDispXNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispXNeg));
+	SXParticlesEditor::CheckBoxAccelerationDispYNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispYNeg));
+	SXParticlesEditor::CheckBoxAccelerationDispZNeg->setCheck(SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, AccelerationDispZNeg));
 }
 
 void SXParticlesEditor::VelocityAccNulling()
 {
-	SXParticlesEditor::EditVelocityX->SetText("0");
-	SXParticlesEditor::EditVelocityY->SetText("0");
-	SXParticlesEditor::EditVelocityZ->SetText("0");
-	SXParticlesEditor::EditVelocityDisp->SetText("0");
-	SXParticlesEditor::CheckBoxVelocityDispYNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxVelocityDispZNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxVelocityDispXNeg->SetCheck(false);
-	SXParticlesEditor::EditAccelerationX->SetText("0");
-	SXParticlesEditor::EditAccelerationY->SetText("0");
-	SXParticlesEditor::EditAccelerationZ->SetText("0");
-	SXParticlesEditor::EditAccelerationDisp->SetText("0");
-	SXParticlesEditor::CheckBoxAccelerationDispXNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxAccelerationDispYNeg->SetCheck(false);
-	SXParticlesEditor::CheckBoxAccelerationDispZNeg->SetCheck(false);
+	SXParticlesEditor::EditVelocityX->setText("0");
+	SXParticlesEditor::EditVelocityY->setText("0");
+	SXParticlesEditor::EditVelocityZ->setText("0");
+	SXParticlesEditor::EditVelocityDisp->setText("0");
+	SXParticlesEditor::CheckBoxVelocityDispYNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxVelocityDispZNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxVelocityDispXNeg->setCheck(false);
+	SXParticlesEditor::EditAccelerationX->setText("0");
+	SXParticlesEditor::EditAccelerationY->setText("0");
+	SXParticlesEditor::EditAccelerationZ->setText("0");
+	SXParticlesEditor::EditAccelerationDisp->setText("0");
+	SXParticlesEditor::CheckBoxAccelerationDispXNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxAccelerationDispYNeg->setCheck(false);
+	SXParticlesEditor::CheckBoxAccelerationDispZNeg->setCheck(false);
 }

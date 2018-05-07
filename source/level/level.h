@@ -18,6 +18,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <common/string.h>
+#include <common/file_utils.h>
 #include <level/sxlevel.h>
 
 #include "ambientsounds.h"

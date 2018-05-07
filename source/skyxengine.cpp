@@ -143,12 +143,21 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	SkyXEngine_InitOutLog();
 	SkyXEngine_InitPaths();
 
-	if (!Core_0IsProcessRun("sxconsole.exe"))
-		ShellExecute(0, "open", "sxconsole.exe", 0, Core_RStringGet(G_RI_STRING_PATH_EXE), SW_SHOWNORMAL);
+	char szConsoleName[64];
 
+	if (hWnd3D == 0)
+		sprintf(szConsoleName, "build");
+	else
+	{
+		GetWindowText(hWndParent3D, szConsoleName, 64);
+	}
+
+	/*if (!Core_0IsProcessRun("sxconsole.exe"))
+		ShellExecute(0, "open", "sxconsole.exe", (String("0 ") + szConsoleName).c_str(), Core_RStringGet(G_RI_STRING_PATH_EXE), SW_SHOWNORMAL);
+*/
 	
 
-	Core_0Create("sxcore", false);
+	Core_0Create("sxcore", szConsoleName,  false);
 	Core_Dbg_Set(SkyXEngine_PrintfLog);
 	Core_SetOutPtr();
 
@@ -193,6 +202,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 	SSCore_0Create("sxsound", hWnd3DCurr, false);
 	SSCore_Dbg_Set(SkyXEngine_PrintfLog);
+	SSCore_ChannelAdd(SX_SOUND_CHANNEL_GAME, true);
+	//SSCore_SndkitCreateFromList("test", SX_SOUND_CHANNEL_GAME, false, 0, 1.f, " messages/artefact_lead.ogg  d100   v1.0  300   300    300 , messages/artefact_lose.ogg d50 v0.7 400 400 400, messages/artefact_lost.ogg d30 v1.0 200 200 200, messages/artefact_new.ogg d35 v0.9 250 250 250");
 
 	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, 0, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
@@ -284,7 +295,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 #ifndef SX_GAME
 	ISXCamera *pCamera = SGCore_CrCamera();
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
-	pCamera->SetFOV(*r_default_fov);
+	pCamera->setFOV(*r_default_fov);
 
 	SRender_SetCamera(pCamera);
 #endif
@@ -327,42 +338,47 @@ void SkyXEngine_InitPaths()
 
 	sprintf(tmppath, "%s%s", tmppathexe, "/worktex/");
 	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, tmppath);
+	FileCreateDir(tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/");
+	sprintf(tmppath, "%s/%s/", tmppathexe, SKYXENGINE_RELPATH_GAMESOURCE);
 	Core_RStringSet(G_RI_STRING_PATH_GAMESOURCE, tmppath);
 	SetCurrentDirectoryA(tmppath);
 
+	sprintf(tmppath, "%s/%s/", tmppathexe, SKYXENGINE_RELPATH_EDITOR_CACHE);
+	Core_RStringSet(G_RI_STRING_PATH_EDITOR_CACHE, tmppath);
+
 	sprintf(tmppath, "%s%s", tmppathexe, "/screenshots/");
 	Core_RStringSet(G_RI_STRING_PATH_SCREENSHOTS, tmppath);
+	FileCreateDir(tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/config/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "config");
 	Core_RStringSet(G_RI_STRING_PATH_GS_CONFIGS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/levels/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "levels");
 	Core_RStringSet(G_RI_STRING_PATH_GS_LEVELS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/meshes/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "meshes");
 	Core_RStringSet(G_RI_STRING_PATH_GS_MESHES, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/models/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "models");
 	Core_RStringSet(G_RI_STRING_PATH_GS_MODELS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/shaders/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "shaders");
 	Core_RStringSet(G_RI_STRING_PATH_GS_SHADERS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/sounds/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "sounds");
 	Core_RStringSet(G_RI_STRING_PATH_GS_SOUNDS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/scripts/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "scripts");
 	Core_RStringSet(G_RI_STRING_PATH_GS_SCRIPTS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/textures/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "textures");
 	Core_RStringSet(G_RI_STRING_PATH_GS_TEXTURES, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/materials/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "materials");
 	Core_RStringSet(G_RI_STRING_PATH_GS_MTRLS, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/gamesource/resource/");
+	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "resource");
 	Core_RStringSet(G_RI_STRING_PATH_GS_GUI, tmppath);
 }
 
@@ -455,7 +471,7 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 	SSInput_AddMsg(msg);
 
 	switch (uiMessage)
-{
+	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		EndPaint(hWnd, &ps);
@@ -467,7 +483,7 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 		}
 
 	return(DefWindowProc(hWnd, uiMessage, wParam, lParam));
-	}
+}
 
 HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWidth, int iHeight)
 {
@@ -478,7 +494,11 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = GetModuleHandle(0);
+#ifdef IDI_ICON_LOGO
 	wcex.hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON_LOGO));
+#else
+	wcex.hIcon = 0;
+#endif
 	wcex.hCursor = 0;
 	wcex.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	wcex.lpszMenuName = NULL;
@@ -669,7 +689,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SRender_RenderPostProcess(timeDelta);
+	if (!SSInput_GetKeyState(SIK_P))
+		SRender_RenderPostProcess(timeDelta);
 	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
@@ -808,11 +829,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
 	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-
+	
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	pDXDevice->Present(0, 0, 0, 0);
 	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-
+	
 	SkyXEngind_UpdateDataCVar();
 }
 
@@ -1029,6 +1050,7 @@ void SkyXEngind_UpdateDataCVar()
 
 int SkyXEngine_CycleMain()
 {
+	//ID idSnd = SSCore_SndCreate2dInst("ak74_reload.ogg",SX_SOUND_CHANNEL_GAME);
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
 
@@ -1051,8 +1073,28 @@ int SkyXEngine_CycleMain()
 		}
 		else
 		{
-			SGCore_LoadTexAllLoad();
 			SGCore_ShaderAllLoad();
+			SGCore_LoadTexAllLoad();
+
+			/*if (SSInput_GetKeyState(SIK_BACKSPACE))
+				SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
+			else if (SSInput_GetKeyState(SIK_ENTER))
+				SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
+
+			UINT arr[] = {3000, 350, 1000, 800, 300 };
+			if (SSInput_GetKeyState(SIK_RSHIFT))
+				SSCore_SndInstancePlayDelay2d(idSnd, false, true, arr, 5, 1, 0);
+
+			if (SSInput_GetKeyState(SIK_RCONTROL))
+				SSCore_SndStop(idSnd);
+
+			//
+			static uint64_t id2 = SOUND_SNDKIT_INSTANCE_BLOCK;
+			id2 = SSCore_SndkitPlay(0, id2);
+			if (SSInput_GetKeyState(SIK_TAB))
+				SSCore_SndkitStop(0, id2);*/
+
+			
 			Core_TimesUpdate();
 			Core_0ConsoleUpdate();
 			SSInput_Update();
@@ -1136,10 +1178,13 @@ void SkyXEngine_Kill()
 	SSCore_AKill();
 	SGCore_AKill();
 	Core_AKill();
+
+	mem_delete(g_pPreviewBuffer);
 }
 
 //#############################################################################
 
+#ifdef IDB_BITMAP_PREVIEW
 LRESULT CALLBACK SkyXEngine_PreviewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -1229,7 +1274,7 @@ void SkyXEngine_PreviewKill()
 	DestroyWindow(g_hWinPreview);
 	g_hWinPreview = 0;
 }
-
+#endif
 //##########################################################################
 
 void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
@@ -1345,3 +1390,145 @@ bool SkyXEngine_RFuncParticlesPhyCollision(const float3 * lastpos, const float3*
 
 	return false;
 }
+
+
+IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath)
+{
+	D3DXIMAGE_INFO imageinfo;
+	memset(&imageinfo, 0, sizeof(D3DXIMAGE_INFO));
+
+	D3DXGetImageInfoFromFile(szPath, &imageinfo);
+
+	float fCoef = float(SKYXENGINE_PREVIEW_SIZE) / (imageinfo.Width > imageinfo.Height ? imageinfo.Width : imageinfo.Height);
+
+	int iNewWidth = float(imageinfo.Width) * fCoef;
+	int iNewHeight = float(imageinfo.Height) * fCoef;
+
+	IDirect3DTexture9 *pTexture = 0;
+
+	if (FAILED(D3DXCreateTextureFromFileEx(
+		SGCore_GetDXDevice(),
+		szPath,
+		iNewWidth,
+		iNewHeight,
+		0,
+		0,
+		D3DFMT_A8R8G8B8,
+		D3DPOOL_SYSTEMMEM,
+		D3DX_FILTER_BOX,
+		D3DX_FILTER_BOX,
+		0,
+		0,
+		0,
+		&pTexture
+		)
+		)
+		)
+	{
+		return 0;
+	}
+
+	return pTexture;
+}
+
+IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath)
+{
+	String sPath = szPath;
+	sPath.Replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
+	sPath = FileSetStrExt(sPath.c_str(), "jpg");
+
+	if (FileExistsFile(sPath.c_str()))
+		return SkyXEngine_LoadAsPreviewData(sPath.c_str());
+	/*else
+	{
+		String sDir = FileGetPrevDir(sPath.c_str());
+		FileCreateDir(sDir.c_str());
+		return SkyXEngine_LoadCacheTexture(szPath, sPath.c_str());
+	}*/
+
+	return 0;
+}
+
+void SkyXEngine_RunGenPreview()
+{
+	String sRunGenPreview = (FileAppendSlash(Core_RStringGet(G_RI_STRING_PATH_EXE)) + "sxgenpreview.exe").c_str();
+
+	SHELLEXECUTEINFO ShExecInfo = { 0 };
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = NULL;
+	ShExecInfo.lpFile = sRunGenPreview.c_str();
+	ShExecInfo.lpParameters = "";
+	ShExecInfo.lpDirectory = NULL;
+	ShExecInfo.nShow = SW_SHOW;
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
+	WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+}
+
+//##########################################################################
+
+BYTE *g_pPreviewBuffer = new BYTE[SKYXENGINE_PREVIEWBUF_SIZE];
+
+bool SkyXEngine_EditorHandlerGetPreviewData(const char *szPath, void **pBuf, int *pSizeBuf, int *pWidth, int *pHeight)
+{
+	if (!pBuf || !pSizeBuf || !pWidth || !pHeight)
+		return false;
+
+	IDirect3DTexture9 *pTexture = SkyXEngine_GetPreviewData(szPath);
+
+	if (!pTexture)
+		return false;
+
+	D3DSURFACE_DESC desc;
+	pTexture->GetLevelDesc(0, &desc);
+
+	D3DLOCKED_RECT LockedRect;
+	pTexture->LockRect(0, &LockedRect, 0, 0);
+
+	int iSizeBuf = (desc.Width * desc.Height * 4);
+	memcpy(g_pPreviewBuffer, LockedRect.pBits, iSizeBuf);
+
+	pTexture->UnlockRect(0);
+	mem_release(pTexture);
+
+	*pBuf = g_pPreviewBuffer;
+	*pSizeBuf = iSizeBuf;
+	*pWidth = desc.Width;
+	*pHeight = desc.Height;
+
+	return true;
+}
+
+bool SkyXEngine_EditorHandlerGetTextureInfo(const char *szPath, char *szBuf)
+{
+	D3DXIMAGE_INFO imageinfo;
+	memset(&imageinfo, 0, sizeof(D3DXIMAGE_INFO));
+
+	if (FAILED(D3DXGetImageInfoFromFile(szPath, &imageinfo)))
+		return false;
+
+	sprintf(szBuf, "Width: %d\nHeight: %d\nSize: %d kb", imageinfo.Width, imageinfo.Height, (FileGetSizeFile(szPath) / 1024));
+	return true;
+}
+
+bool SkyXEngine_EditorHandlerGetDSEinfo(const char *szPath, char *szBuf)
+{
+	CDSEinfo info;
+
+	if (!SGCore_DSEgetInfo(szPath, &info))
+		return false;
+
+	if (info.type == DSE_TYPE_STATIC)
+		sprintf(szBuf, "Count subset: %d\nCount poly: %d\nCount vertex: %d\nDimensions: %.2f | %.2f | %.2f\nCenter: %.2f | %.2f | %.2f\nSize: %d kb", info.iCountSubsets, info.iCountIndex / 3, info.iCountVertex, info.vDimensions.x, info.vDimensions.y, info.vDimensions.z, info.vCenter.x, info.vCenter.y, info.vCenter.z, (FileGetSizeFile(szPath) / 1024));
+	else if (info.type == DSE_TYPE_ANIMATION)
+		sprintf(szBuf, "Count bone: %d\nCount animations: %d\nSize: %d kb", info.iCountBone, info.iCountAnimation, (FileGetSizeFile(szPath) / 1024));
+	else if (info.type == DSE_TYPE_ANIM_MESH)
+		sprintf(szBuf, "Count subset: %d\nCount poly: %d\nCount vertex: %d\nDimensions: %.2f | %.2f | %.2f\nCenter: %.2f | %.2f | %.2f\nCount bone: %d\nCount animations: %d\nSize: %d kb", info.iCountSubsets, info.iCountIndex / 3, info.iCountVertex, info.vDimensions.x, info.vDimensions.y, info.vDimensions.z, info.vCenter.x, info.vCenter.y, info.vCenter.z, info.iCountBone, info.iCountAnimation, (FileGetSizeFile(szPath) / 1024));
+	else
+		return false;
+
+	return true;
+}
+
