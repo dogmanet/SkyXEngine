@@ -166,9 +166,10 @@ public:
 
 	/*! Возвращает трансформацию указанной кости
 		@param[in] id Номер кости
+		@param[in] bWithScale Учитывать ли масштабирование
 		@return Матрица трансформации кости
 	*/
-	virtual SMMATRIX getBoneTransform(UINT id) = 0;
+	virtual SMMATRIX getBoneTransform(UINT id, bool bWithScale = false) = 0;
 
 	/*! Возвращает идентификатор указанной кости
 		@param[in] str Имя кости

@@ -181,7 +181,7 @@ public:
 		}
 
 		// floor/ceiling?
-		if(fabs(surfaceNormal.z) > SIN_45_DEGREES)
+		if(fabs(surfaceNormal.y) > SIN_45_DEGREES)
 		{
 			textureSpaceBasis[0].x = 1.0f;
 			textureSpaceBasis[0].y = 0.0f;
@@ -197,8 +197,8 @@ public:
 		else
 		{
 			textureSpaceBasis[1].x = 0.0f;
-			textureSpaceBasis[1].y = 0.0f;
-			textureSpaceBasis[1].z = -1.0f;
+			textureSpaceBasis[1].y = -1.0f;
+			textureSpaceBasis[1].z = 0.0f;
 
 			// S = N cross T
 			textureSpaceBasis[0] = SMVector3Cross(textureSpaceBasis[2], textureSpaceBasis[1]);

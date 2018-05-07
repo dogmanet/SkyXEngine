@@ -106,9 +106,9 @@ void CNPCZombie::randWalk()
 		m_stateMove = NPC_STATE_MOVE_WALK;
 	else if (m_stateMove != NPC_STATE_MOVE_IDLE)
 	{
-		if (!playingAnimations("walk0"))
+		if (!playingAnimations("reload"))
 		{
-			playAnimation("walk0");
+			playAnimation("reload");
 			SSCore_SndPlay(m_idSndIdle2);
 		}
 

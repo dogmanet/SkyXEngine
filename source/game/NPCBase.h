@@ -16,7 +16,7 @@ See the license in LICENSE
 #ifndef __NPCBASE_H
 #define __NPCBASE_H
 
-#include "BaseAnimating.h"
+#include "BaseCharacter.h"
 #include <aigrid/sxaigrid.h>
 
 //! базовое направление для нпс
@@ -58,9 +58,9 @@ enum NPC_STATE_PATH
 };
 
 //! Базовый класс npc
-class CNPCBase: public CBaseAnimating
+class CNPCBase: public CBaseCharacter
 {
-	DECLARE_CLASS(CNPCBase, CBaseAnimating);
+	DECLARE_CLASS(CNPCBase, CBaseCharacter);
 	DECLARE_PROPTABLE();
 
 public:
@@ -79,10 +79,8 @@ public:
 
 protected:
 
-	virtual void initPhysics();
-
-	btPairCachingGhostObject * m_pGhostObject;
-	btKinematicCharacterController * m_pCharacter;
+	//btPairCachingGhostObject * m_pGhostObject;
+	//btKinematicCharacterController * m_pCharacter;
 
 	bool pathFind(ID endq);	//!< поиск пути от текущего (на котором стоит нпс) до endq
 	void pathWalk();		//!< хождение по пути
@@ -91,9 +89,7 @@ protected:
 	//! ориентаци нпс на точку pos, ttime время в млсек за которое нпс будет повернут в/на точку
 	void orientAtPoint(const float3 *pos, DWORD ttime);	
 	void updateOrientLerp();//!< плавная интерполяция поворотов
-
-	float m_fHealth;	//!< здоровье [0,1]
-
+	
 	float m_fSpeedWalk;	//!< скорость движения при ходьбе
 	float m_fSpeedRun;	//!< скорость движения при беге
 

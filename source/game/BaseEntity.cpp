@@ -27,6 +27,8 @@ BEGIN_PROPTABLE_NOBASE(CBaseEntity)
 	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_FLAGS)
 	//! Объект-владелец
 	DEFINE_FIELD_ENTITY(m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
+	//! Здоровье
+	DEFINE_FIELD_FLOAT(m_fHealth, PDFF_NOEXPORT | PDFF_NOEDIT, "health", "", EDITOR_NONE)
 
 	//DEFINE_FIELD_STRING(m_szName, 0, "some opt", "Option", EDITOR_COMBOBOX)
 	//	COMBO_OPTION("Option 1", "value 1")
@@ -62,7 +64,8 @@ CBaseEntity::CBaseEntity(CEntityManager * pWorld):
 	m_szName(NULL),
 	m_pParent(NULL),
 	m_iParentAttachment(-1),
-	m_pOwner(NULL)/*,
+	m_pOwner(NULL),
+	m_fHealth(100.0f)/*,
 	m_vDiscreteLinearVelocity(float3_t(0.0f, 0.0f, 0.0f))*/
 {
 	m_iId = pWorld->reg(this);
@@ -644,4 +647,37 @@ void CBaseEntity::updateOutputs()
 		}
 		pt = pt->pBaseProptable;
 	}
+}
+
+void CBaseEntity::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
+{
+	float fHealth = takeDamageInfo.m_fDamage * 0.1f;
+	if(takeDamageInfo.m_pInflictor)
+	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "%s damaged (" COLOR_LRED "%.2f" COLOR_RESET ") by " COLOR_YELLOW "%s\n", getClassName(), fHealth, takeDamageInfo.m_pInflictor->getClassName());
+	}
+	else
+	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "%s damaged (" COLOR_LRED "%.2f" COLOR_RESET ")\n", getClassName(), fHealth);
+	}
+	takeHealth(fHealth);
+}
+
+void CBaseEntity::takeHealth(float fVal)
+{
+	if(m_fHealth <= 0.0f)
+	{
+		return;
+	}
+	m_fHealth -= fVal;
+	if(m_fHealth <= 0.0f)
+	{
+		onDeath();
+	}
+}
+
+void CBaseEntity::onDeath()
+{
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "Entity %s died!\n", getClassName());
+	// do nothing
 }

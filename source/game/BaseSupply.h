@@ -23,6 +23,11 @@ class CBaseSupply: public CBaseItem
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
+
+	virtual bool isAmmo() const
+	{
+		return(false);
+	}
 };
 
 #endif

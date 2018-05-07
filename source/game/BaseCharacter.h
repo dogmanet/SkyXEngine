@@ -18,6 +18,7 @@ See the license in LICENSE
 
 #include "BaseAnimating.h"
 #include "LightDirectional.h"
+#include "CharacterInventory.h"
 
 class CBaseTool;
 
@@ -68,6 +69,26 @@ public:
 	//! Получает рассчитанный для текущего оружия коэффициент разброса (с учетом задержки сведения)
 	float getCurrentSpread();
 
+	btCollisionObject *getBtCollisionObject() const
+	{
+		return(m_pGhostObject);
+	}
+	void initHitboxes();
+	void releaseHitboxes();
+	void updateHitboxes();
+
+	void onSync();
+
+	void initPhysics();
+	void releasePhysics();
+
+	//void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
+
+	CCharacterInventory * getInventory()
+	{
+		return(m_pInventory);
+	}
+
 protected:
 	//! Фонарик
 	CLightDirectional* m_flashlight;
@@ -83,6 +104,7 @@ protected:
 	btRigidBody * m_pRigidBody;
 	btPairCachingGhostObject * m_pGhostObject;
 	btKinematicCharacterController * m_pCharacter;
+	btRigidBody ** m_pHitboxBodies;
 	//! @}
 
 	//! Углы вращения игрока
@@ -99,6 +121,10 @@ protected:
 
 	//! Действующее значение разброса
 	float m_fCurrentSpread;
+
+	CCharacterInventory * m_pInventory;
+
+
 };
 
 #endif

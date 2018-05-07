@@ -31,7 +31,7 @@ CBaseItem::CBaseItem(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_bInvStackable(true),
 	m_iInvStackCurSize(0),
-	m_iInvStackMaxSize(0),
+	m_iInvStackMaxSize(1),
 	m_iInvWeight(0.0f),
 	m_bPickable(true)
 {

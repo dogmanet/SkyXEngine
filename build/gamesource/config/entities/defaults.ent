@@ -1,3 +1,5 @@
 
 [npc_zombie]
-model = "models/zombie/zombie.dse"
+; model = "models/zombie/zombie.dse"
+; model = "models/zombie/zombie_hb.dse"
+model = "models/stalker_zombi/stalker_zombi_a.dse"

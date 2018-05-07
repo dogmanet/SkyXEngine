@@ -150,7 +150,7 @@ public:
 
 	void setBoneController(const String & name, float value, MODEL_BONE_CTL what);
 
-	SMMATRIX getBoneTransform(UINT id);
+	SMMATRIX getBoneTransform(UINT id, bool bWithScale = false);
 	float3 getBoneTransformPos(UINT id);
 	SMQuaternion getBoneTransformRot(UINT id);
 	UINT getBone(const char * str);

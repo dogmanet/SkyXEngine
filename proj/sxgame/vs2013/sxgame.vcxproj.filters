@@ -168,6 +168,12 @@
     <ClCompile Include="..\..\..\source\game\BaseAmmoBox.cpp">
       <Filter>Source Files\ents\items</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\Tracer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\CharacterInventory.cpp">
+      <Filter>Source Files\ents</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -280,6 +286,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\BasePistol.h">
       <Filter>Header Files\ents\items\tools\weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Random.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Tracer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\TakeDamageInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\CharacterInventory.h">
+      <Filter>Header Files\ents</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

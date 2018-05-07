@@ -436,6 +436,7 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
 
 	Core_0ConsoleUpdate();
+	Core_0ConsoleUpdate();
 
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
@@ -767,6 +768,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #ifdef _DEBUG
 	SXPhysics_DebugRender();
+#endif
+
+#if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
+	SXGame_Render();
 #endif
 
 #if defined(SX_LEVEL_EDITOR)

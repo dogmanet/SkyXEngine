@@ -99,6 +99,7 @@
     <ClCompile Include="..\..\..\source\game\BaseWeaponAddon.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseTrigger.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseCharacter.cpp" />
+    <ClCompile Include="..\..\..\source\game\CharacterInventory.cpp" />
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
@@ -126,6 +127,7 @@
     <ClCompile Include="..\..\..\source\game\PlayerSpawn.cpp" />
     <ClCompile Include="..\..\..\source\game\PointCamera.cpp" />
     <ClCompile Include="..\..\..\source\game\PointEntity.cpp" />
+    <ClCompile Include="..\..\..\source\game\Tracer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\AAString.h" />
@@ -136,6 +138,8 @@
     <ClInclude Include="..\..\..\source\game\BaseWeaponAddon.h" />
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
     <ClInclude Include="..\..\..\source\game\BaseCharacter.h" />
+    <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />
+    <ClInclude Include="..\..\..\source\game\Random.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />
@@ -165,6 +169,8 @@
     <ClInclude Include="..\..\..\source\game\PlayerSpawn.h" />
     <ClInclude Include="..\..\..\source\game\PointCamera.h" />
     <ClInclude Include="..\..\..\source\game\PointEntity.h" />
+    <ClInclude Include="..\..\..\source\game\TakeDamageInfo.h" />
+    <ClInclude Include="..\..\..\source\game\Tracer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

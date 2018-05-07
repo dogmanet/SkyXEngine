@@ -40,4 +40,8 @@ int CBaseMag::getCapacity()
 void CBaseMag::load(int count)
 {
 	m_iCurrentLoad += count;
+	if(m_iCurrentLoad > m_iCapacity)
+	{
+		m_iCurrentLoad = m_iCapacity;
+	}
 }

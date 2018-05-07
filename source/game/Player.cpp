@@ -10,6 +10,9 @@ See the license in LICENSE
 #include "LightDirectional.h"
 #include "BaseTool.h"
 #include <aigrid/sxaigrid.h>
+#include "BaseAmmo.h"
+
+#include "BaseWeapon.h"
 
 #include "GameData.h"
 
@@ -37,7 +40,6 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 
 	m_iUpdIval = SET_INTERVAL(updateInput, 0);
 
-
 	m_pActiveTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 	m_pActiveTool->setOwner(this);
 	m_pActiveTool->attachHands();
@@ -46,9 +48,21 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 	m_pActiveTool->setOrient(getOrient());
 	m_pActiveTool->setParent(this);
 
+	CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
+	m_pActiveTool->chargeAmmo(pAmmo);
+
+	CBaseMag *pMag = (CBaseMag*)CREATE_ENTITY("mag_ak74_30", m_pMgr);
+	pMag->load(30);
+	((CBaseWeapon*)m_pActiveTool)->attachMag(pMag);
+
+	getInventory()->putItems("ammo_5.45x39ps", 60);
+
+
 	m_idQuadCurr = -1;
 
 	m_pCrosshair = new CCrosshair();
+
+	m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 }
 
 CPlayer::~CPlayer()

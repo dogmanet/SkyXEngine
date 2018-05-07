@@ -146,6 +146,11 @@ Materials::Material::Material()
 	MainTexture - 1;
 	PreShaderVS - 1;
 	PreShaderPS - 1;
+
+	HitChance = 1.0f;
+	Penetration = 100.0f;
+	Density = 1000.0f;
+
 }
 
 void Materials::Material::Nulling()

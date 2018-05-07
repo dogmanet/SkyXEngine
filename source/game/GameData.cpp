@@ -11,6 +11,8 @@ See the license in LICENSE
 
 #include <score/sxscore.h>
 
+#include "Tracer.h"
+
 
 CPlayer * GameData::m_pPlayer;
 CPointCamera * GameData::m_pActiveCamera;
@@ -18,6 +20,8 @@ CEntityManager * GameData::m_pMgr;
 
 CRagdoll * g_pRagdoll;
 IAnimPlayer * pl;
+
+CTracer *g_pTracer;
 
 GameData::GameData()
 {
@@ -80,6 +84,7 @@ GameData::GameData()
 	Core_0RegisterConcmdClsArg("+debug_slot_move", m_pPlayer, (SXCONCMDCLSARG)&CPlayer::_ccmd_slot_on);
 	Core_0RegisterConcmdCls("-debug_slot_move", m_pPlayer, (SXCONCMDCLS)&CPlayer::_ccmd_slot_off);
 
+	g_pTracer = new CTracer(5000);
 
 	//m_pPlayer->setModel("models/stalker_zombi/stalker_zombi_a.dse");
 	//m_pPlayer->playAnimation("reload");
@@ -93,6 +98,7 @@ GameData::~GameData()
 {
 	//mem_delete(g_pRagdoll);
 
+	mem_delete(g_pTracer);
 	mem_delete(m_pMgr);
 
 	for(int i = 0; i < MPT_COUNT; ++i)
@@ -108,6 +114,7 @@ void GameData::update()
 }
 void GameData::render()
 {
+	//g_pTracer->render();
 }
 void GameData::renderHUD()
 {

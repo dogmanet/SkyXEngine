@@ -7,6 +7,8 @@ See the license in LICENSE
 #include <particles/sxparticles.h>
 #include "BaseWeapon.h"
 #include "Player.h"
+#include "BaseAmmo.h"
+#include "Random.h"
 
 /*! \skydocent base_weapon
 Базовый класс для оружия
@@ -26,11 +28,11 @@ BEGIN_PROPTABLE(CBaseWeapon)
 	//! Доступные режимы стрельбы
 	DEFINE_FIELD_STRING(m_szFireModes, PDFF_NOEDIT | PDFF_NOEXPORT, "fire_modes", "", EDITOR_NONE)
 	//! Скорострельность одиночными
-	DEFINE_FIELD_INT(m_iSingleSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "single_speed", "", EDITOR_NONE)
+	DEFINE_FIELD_INT(m_iSingleRate, PDFF_NOEDIT | PDFF_NOEXPORT, "single_rate", "", EDITOR_NONE)
 	//! Скорострельность в автоматическом режиме
-	DEFINE_FIELD_INT(m_iBurstSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "burst_speed", "", EDITOR_NONE)
+	DEFINE_FIELD_INT(m_iBurstRate, PDFF_NOEDIT | PDFF_NOEXPORT, "burst_rate", "", EDITOR_NONE)
 	//! Скорострельность отсечками
-	DEFINE_FIELD_INT(m_iCutoffSpeed, PDFF_NOEDIT | PDFF_NOEXPORT, "cutoff_speed", "", EDITOR_NONE)
+	DEFINE_FIELD_INT(m_iCutoffRate, PDFF_NOEDIT | PDFF_NOEXPORT, "cutoff_rate", "", EDITOR_NONE)
 	//! Патронов в отсечке
 	DEFINE_FIELD_INT(m_iCutoffSize, PDFF_NOEDIT | PDFF_NOEXPORT, "cutoff_size", "", EDITOR_NONE)
 	//! Текущий режим стрельбы
@@ -78,12 +80,23 @@ BEGIN_PROPTABLE(CBaseWeapon)
 	DEFINE_FIELD_FLOAT(m_fSpreadArm, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_arm", "", EDITOR_NONE)
 	//! коэффициент разброса в прицеливании
 	DEFINE_FIELD_FLOAT(m_fSpreadIronSight, PDFF_NOEDIT | PDFF_NOEXPORT, "spread_ironsight", "", EDITOR_NONE)
+
+	//! Дальность пристрелки
+	DEFINE_FIELD_FLOAT(m_fAimingRange, PDFF_NOEDIT | PDFF_NOEXPORT, "aiming_range", "", EDITOR_NONE)
+
+	//! тип нарезки ствола: 0 - гладкоствольное; -1 - левая; 1 - правая
+	DEFINE_FIELD_INT(m_rifleType, PDFF_NOEDIT | PDFF_NOEXPORT, "rifle_type", "", EDITOR_NONE)
+	//! шаг нарезки ствола (мм)
+	DEFINE_FIELD_FLOAT(m_fRifleStep, PDFF_NOEDIT | PDFF_NOEXPORT, "rifle_step", "", EDITOR_NONE)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseWeapon, base_weapon);
 
 CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
 	BaseClass(pMgr),
+
+	m_idTaskShoot(-1),
+
 	m_pSilencer(NULL),
 	m_pScope(NULL),
 	m_pHandle(NULL),
@@ -110,7 +123,9 @@ CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
 	m_fSpreadAirborne(5.0f),
 	m_fSpreadCondition(3.0f),
 	m_fSpreadArm(3.0f),
-	m_fSpreadIronSight(-0.8f)
+	m_fSpreadIronSight(-0.8f),
+
+	m_fAimingRange(100.f)
 {
 	m_bIsWeapon = true;
 }
@@ -189,38 +204,39 @@ bool CBaseWeapon::setKV(const char * name, const char * value)
 
 void CBaseWeapon::primaryAction(BOOL st)
 {
-	m_bInPrimaryAction = st != FALSE;
+	//m_bInPrimaryAction = st != FALSE;
+	
 	if(st)
 	{
-		playAnimation("shoot1");
-		if(ID_VALID(m_iMuzzleFlash))
+		if(canUse())
 		{
-			SPE_EffectEnableSet(m_iMuzzleFlash, true);
-		}
-		if(ID_VALID(m_iSoundAction1))
-		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, &getPos());
-		}
-
-		//((CPlayer*)m_pOwner)->is
-
-		//trace line
-		float3 start = getPos();
-		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
-		float3 end = start + dir * m_fMaxDistance;
-		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
-
-		if(cb.hasHit())
-		{
-			//shoot decal
-			//SXDecals_ShootDecal(DECAL_TYPE_CONCRETE, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
-			SPE_EffectPlayByName("fire", &BTVEC_F3(cb.m_hitPointWorld), &BTVEC_F3(cb.m_hitNormalWorld));
-			if(!cb.m_collisionObject->isStaticOrKinematicObject())
+			m_bInPrimaryAction = true;
+			switch(m_fireMode)
 			{
-				((btRigidBody*)cb.m_collisionObject)->applyCentralImpulse(F3_BTVEC(dir * 10.0f));
-				cb.m_collisionObject->activate();
+			case FIRE_MODE_BURST:
+				m_idTaskShoot = SET_INTERVAL(taskShoot, 60.0f / (float)m_iBurstRate);
+				break;
+			case FIRE_MODE_CUTOFF:
+				m_iCutoffCurrent = 0;
+				m_idTaskShoot = SET_INTERVAL(taskShoot, 60.0f / (float)m_iCutoffRate);
+				break;
+			case FIRE_MODE_SINGLE:
+				setNextUse(60.0f / (float)m_iSingleRate);
+				break;
 			}
+			taskShoot(0.0f);
+		}
+	}
+	else
+	{
+		if(m_fireMode != FIRE_MODE_CUTOFF)
+		{
+			if(ID_VALID(m_idTaskShoot))
+			{
+				CLEAR_INTERVAL(m_idTaskShoot);
+				m_idTaskShoot = -1;
+			}
+			m_bInPrimaryAction = false;
 		}
 	}
 }
@@ -248,27 +264,53 @@ void CBaseWeapon::reload()
 	}
 	if(canUse())
 	{
-		//int count = m_pOwner->getInventory()->consumeItems("ammo_5.45x39ps", m_pMag->getCapacity() - m_pMag->getLoad() + m_iCapacity - m_iCurrentLoad);
-		//count += m_iCurrentLoad;
-		//m_iCurrentLoad = min(count, m_iCapacity);
-		//count -= m_iCurrentLoad;
-		//m_pMag->load(count);
-
-		setNextUse(m_fReloadTime);
-		playAnimation("reload");
-		if(ID_VALID(m_idSndReload))
+		int iWantLoad = m_pMag->getCapacity() - m_pMag->getLoad()/* + m_iCapacity - m_iCurrentLoad */;
+		if(iWantLoad <= 0)
 		{
-			SSCore_SndInstancePlay3d(m_idSndReload, &getPos());
+			printf(COLOR_MAGENTA "Mag full!\n" COLOR_RESET);
+			return;
+		}
+		int count = ((CBaseCharacter*)m_pOwner)->getInventory()->consumeItems(m_szLoadedAmmo, iWantLoad);
+		if(count)
+		{
+			bool isFast = m_iCapacity == m_iCurrentLoad;
+
+			count += m_iCurrentLoad;
+			m_iCurrentLoad = min(count, m_iCapacity);
+			count -= m_iCurrentLoad;
+			m_pMag->load(count);
+
+			setNextUse(m_fReloadTime);
+			playAnimation(isFast ? "reload_fast" : "reload");
+			if(isFast)
+			{
+				/*if(ID_VALID(m_idSndReloadFast))
+				{
+					SSCore_SndInstancePlay3d(m_idSndReloadFast, &getPos());
+				}*/
+			}
+			else
+			{
+				if(ID_VALID(m_idSndReload))
+				{
+					SSCore_SndInstancePlay3d(m_idSndReload, &getPos());
+				}
+			}
+		}
+		else
+		{
+			printf(COLOR_MAGENTA "No more bullets!\n" COLOR_RESET);
+			return;
 		}
 	}
 }
 
 void CBaseWeapon::setFireMode(FIRE_MODE mode)
 {
-	if(!(m_iFireModes & mode))
+	if((m_iFireModes & mode) && canUse())
 	{
 		m_fireMode = mode;
-		if(ID_VALID(m_idSndReload))
+		if(ID_VALID(m_idSndSwitch))
 		{
 			SSCore_SndInstancePlay3d(m_idSndSwitch, &getPos());
 		}
@@ -286,7 +328,7 @@ void CBaseWeapon::nextFireMode()
 	while(newMode != cur && !(m_iFireModes & (1 << newMode)));
 	if(newMode != cur)
 	{
-		setFireMode((FIRE_MODE)newMode);
+		setFireMode((FIRE_MODE)(1 << newMode));
 	}
 }
 
@@ -339,4 +381,129 @@ float CBaseWeapon::getSpreadCoeff(SPREAD_COEFF what) const
 		return(m_fSpreadIronSight);
 	}
 	return(1.0f);
+}
+
+float3 CBaseWeapon::applySpread(const float3 &vDir, float fSpread)
+{
+	float3 vRight, vUp;
+
+	if(vDir.x == 0.0f && vDir.y == 0.0f)
+	{
+		vRight = float3(0.0f, -1.0f, 0.0f);
+		vUp = float3(-vDir.z, 0.0f, 0.0f);
+	}
+	else
+	{
+		vRight = SMVector3Normalize(SMVector3Cross(vDir, float3((0.0f, 0.0f, 1.0f))));
+		vUp = SMVector2Normalize(SMVector3Cross(vRight, vDir));
+	}
+
+
+
+	float x, y, z;
+	const float flatness = 0.5f;
+	CRandom random;
+
+	do
+	{
+		x = random.getRandomFloat(-1, 1) * flatness + random.getRandomFloat(-1, 1) * (1 - flatness);
+		y = random.getRandomFloat(-1, 1) * flatness + random.getRandomFloat(-1, 1) * (1 - flatness);
+
+		z = x*x + y*y;
+	}
+	while(z > 1);
+
+	fSpread = tanf(fSpread);
+
+	return(vDir + x * fSpread * vRight + y * fSpread * vUp);
+}
+
+void CBaseWeapon::taskShoot(float dt)
+{
+	if(m_fireMode == FIRE_MODE_CUTOFF)
+	{
+		++m_iCutoffCurrent;
+		if(m_iCutoffCurrent > m_iCutoffSize)
+		{
+			if(ID_VALID(m_idTaskShoot))
+			{
+				CLEAR_INTERVAL(m_idTaskShoot);
+				m_idTaskShoot = -1;
+			}
+			m_bInPrimaryAction = false;
+			return;
+		}
+	}
+
+	CBaseAmmo *pAmmo = NULL;
+	if(canShoot() && getAmmo() && getAmmo()->isAmmo())
+	{
+		pAmmo = (CBaseAmmo*)getAmmo();
+	}
+	else
+	{
+		if(ID_VALID(m_idSndEmpty))
+		{
+			SSCore_SndInstancePlay3d(m_idSndEmpty, &getPos());
+		}
+		if(ID_VALID(m_idTaskShoot))
+		{
+			CLEAR_INTERVAL(m_idTaskShoot);
+			m_idTaskShoot = -1;
+		}
+		m_bInPrimaryAction = false;
+		return;
+	}
+
+	playAnimation("shoot1");
+	if(ID_VALID(m_iMuzzleFlash))
+	{
+		SPE_EffectEnableSet(m_iMuzzleFlash, true);
+	}
+	if(ID_VALID(m_idSndShoot))
+	{
+		SSCore_SndInstancePlay3d(m_idSndShoot, &getPos());
+	}
+
+	//((CPlayer*)m_pOwner)->is
+
+	//trace line
+	float3 start = getPos();
+	float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
+
+	dir = SMQuaternion(m_pParent->getOrient() * float3(1.0f, 0.0f, 0.0f), asinf(m_fAimingRange * 10.0f / (pAmmo->getStartSpeed() * pAmmo->getStartSpeed())) * 0.5f) * dir;
+
+
+	dir = applySpread(dir, SMToRadian(((CBaseCharacter*)getOwner())->getCurrentSpread()));
+
+	pAmmo->fire(start, dir, (CBaseCharacter*)getOwner());
+
+	if(m_pMag && m_pMag->getLoad() > 0)
+	{
+		m_pMag->load(-1);
+	}
+	else
+	{
+		--m_iCurrentLoad;
+	}
+}
+
+void CBaseWeapon::attachMag(CBaseMag * pMag)
+{
+	m_pMag = pMag;
+
+	int iNeedLoad = m_iCapacity - m_iCurrentLoad;
+	if(iNeedLoad > 0)
+	{
+		if(m_pMag->getLoad() >= iNeedLoad)
+		{
+			m_iCurrentLoad += iNeedLoad;
+			m_pMag->load(-iNeedLoad);
+		}
+		else
+		{
+			m_iCurrentLoad += m_pMag->getLoad();
+			m_pMag->load(-m_pMag->getLoad());
+		}
+	}
 }

@@ -1075,7 +1075,7 @@ Animation::~Animation()
 	m_pMgr->unreg(myId);
 }
 
-SMMATRIX Animation::getBoneTransform(UINT _id)
+SMMATRIX Animation::getBoneTransform(UINT _id, bool bWithScale)
 {
 	//id *= 2;
 	int id = m_FinalBones[_id].pid;
@@ -1084,6 +1084,10 @@ SMMATRIX Animation::getBoneTransform(UINT _id)
 		return(SMMatrixIdentity());
 	}
 	float3 pos = m_pBoneMatrixRender[id].position/* * m_fScale*/;
+	if(bWithScale)
+	{
+		pos *= m_fScale;
+	}
 	SMQuaternion q = m_pBoneMatrixRender[id].orient;
 	return(q.GetMatrix() * SMMatrixTranslation(pos));
 }

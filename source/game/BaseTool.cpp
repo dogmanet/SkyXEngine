@@ -46,6 +46,8 @@ BEGIN_PROPTABLE(CBaseTool)
 	DEFINE_FIELD_FLOAT(m_fMaxDistance, PDFF_NOEDIT | PDFF_NOEXPORT, "max_distance", "", EDITOR_NONE)
 	//! Подходящие типы припасов, классы, через запятую
 	DEFINE_FIELD_STRING(m_szUsableAmmos, PDFF_NOEDIT | PDFF_NOEXPORT, "ammos", "", EDITOR_NONE)
+	//! Класс заряженного в данный момент припаса
+	DEFINE_FIELD_STRING(m_szLoadedAmmo, PDFF_NOEDIT | PDFF_NOEXPORT, "loaded_ammo", "", EDITOR_NONE)
 
 END_PROPTABLE()
 
@@ -66,7 +68,8 @@ CBaseTool::CBaseTool(CEntityManager * pMgr):
 	m_iMuzzleFlash(-1),
 	m_iMuzzleFlash2(-1),
 	m_fMaxDistance(1000.0f),
-	m_bIsWeapon(false)
+	m_bIsWeapon(false),
+	m_pLoadedAmmo(NULL)
 {
 	m_bInvStackable = false;
 
@@ -107,7 +110,7 @@ void CBaseTool::setNextUse(float time)
 }
 bool CBaseTool::canUse()
 {
-	return(m_bCanUse);
+	return(m_bCanUse && !m_bInPrimaryAction);
 }
 
 void CBaseTool::primaryAction(BOOL st)
@@ -283,4 +286,52 @@ bool CBaseTool::isWeapon() const
 float CBaseTool::getCondition() const
 {
 	return(1.0f);
+}
+
+CBaseSupply *CBaseTool::getAmmo() const
+{
+	return(m_pLoadedAmmo);
+}
+
+void CBaseTool::chargeAmmo(CBaseSupply *pAmmo)
+{
+	if(!pAmmo || !isValidAmmo(pAmmo))
+	{
+		return;
+	}
+	if(getAmmo())
+	{
+		uncharge();
+	}
+	m_pLoadedAmmo = pAmmo;
+	m_pLoadedAmmo->setParent(this);
+	_setStrVal(&m_szLoadedAmmo, m_pLoadedAmmo->getClassName());
+}
+
+void CBaseTool::uncharge()
+{
+	if(!getAmmo())
+	{
+		return;
+	}
+	_setStrVal(&m_szLoadedAmmo, "");
+	m_pLoadedAmmo->setParent(NULL);
+	//getOwner()->getInventory()->put(getAmmo());
+	m_pLoadedAmmo = NULL;
+}
+
+bool CBaseTool::isValidAmmo(CBaseSupply *pAmmo)
+{
+	const char * str = strstr(m_szUsableAmmos, pAmmo->getClassName());
+	if(str)
+	{
+		char chr = str[strlen(pAmmo->getClassName())];
+		return(chr == ',' || chr == 0);
+	}
+	return(false);
+}
+
+float CBaseTool::getMaxDistance() const
+{
+	return(m_fMaxDistance);
 }

@@ -27,6 +27,8 @@ See the license in LICENSE
 
 #include "proptable.h"
 
+#include "TakeDamageInfo.h"
+
 #pragma pointers_to_members(full_generality, virtual_inheritance)
 
 #pragma warning(push)
@@ -99,6 +101,10 @@ public:
 	//void updateDiscreteLinearVelocity(int step, float dt);
 	//const float3_t & getDiscreteLinearVelocity() const;
 
+	virtual void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
+
+	virtual void onDeath();
+
 private:
 	void setClassName(const char * name);
 	void setDefaults();
@@ -162,6 +168,11 @@ protected:
 	\note только для внутреннего использования
 	*/
 	void updateOutputs();
+	
+	//! здоровье [0,+inf]
+	float m_fHealth;
+
+	void takeHealth(float fVal);
 };
 
 #pragma warning(pop)
