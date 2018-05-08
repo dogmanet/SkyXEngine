@@ -51,8 +51,8 @@ public:
 
 	bool getExists(ID id) const;
 
-	ID CreatePoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow, const char* bound_volume);
-	ID CreateDirection(ID id, const  float3* pos, float dist, const  float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow, const char* bound_volume);
+	ID CreatePoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow/*, const char* bound_volume*/);
+	ID CreateDirection(ID id, const  float3* pos, float dist, const  float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/);
 
 	void DeleteLight(ID id);
 

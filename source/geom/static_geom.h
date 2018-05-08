@@ -8,6 +8,7 @@ See the license in LICENSE
 #define __STATIC_GEOM_H
 
 #include <common/string.h>
+#include <common/string_utils.h>
 #include <common/array.h>
 #include <gcore/sxgcore.h>
 #include "sxgeom.h"

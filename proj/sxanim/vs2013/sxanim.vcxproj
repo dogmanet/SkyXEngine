@@ -41,7 +41,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>

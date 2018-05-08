@@ -11,6 +11,7 @@ See the license in LICENSE
 #include <common/string.h>
 #include <common/array.h>
 #include <common/SXMath.h>
+#include <common/string_utils.h>
 
 #include <d3d9.h>
 #include <gcore/sxgcore.h>

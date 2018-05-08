@@ -406,7 +406,7 @@ const char* CConfig::getKeyName(const char* section, int key)
 	CConfigString sections(section);
 	if (m_mSections.KeyExists(sections))
 	{
-		if (m_mSections[sections].mValues.Size() > key)
+		if ((int)m_mSections[sections].mValues.Size() > key)
 		{
 			int countiter = 0;
 			AssotiativeArray<CConfigString, CConfig::CValue>::Iterator iter = m_mSections[sections].mValues.begin();
@@ -425,7 +425,7 @@ const char* CConfig::getKeyName(const char* section, int key)
 
 const char* CConfig::getSectionName(int num)
 {
-	if (m_mSections.Size() > num)
+	if((int)m_mSections.Size() > num)
 	{
 		int countiter = 0;
 		AssotiativeArray<CConfigString, CConfig::CSection>::Iterator iter = m_mSections.begin();
@@ -526,12 +526,12 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 		bool kf = false;
 		bool se = false;
 		UINT sp = 0;
-		for(int i = 0; i < fl; ++i)
+		for(UINT i = 0; i < fl; ++i)
 		{
 			if(szData[i] == '[' && ((i > 0 && (szData[i - 1] == '\r' || szData[i - 1] == '\n')) || i == 0))
 			{
 				bool cmp = true;
-				int j;
+				UINT j;
 				for(j = i + 1; j < fl - 1 && j - i - 1 < sl; ++j)
 				{
 					if(szData[j] != section[j - i - 1])
@@ -757,7 +757,7 @@ AssotiativeArray<CConfigString, CConfig::CSection> * CConfig::getSections()
 
 CConfigString CConfig::getIncludeName(int i)
 {
-	if(i >= 0 && i < m_vIncludes.size())
+	if(i >= 0 && i < (int)m_vIncludes.size())
 	{
 		return(m_vIncludes[i].name);
 	}

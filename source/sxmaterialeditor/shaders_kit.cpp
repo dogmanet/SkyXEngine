@@ -28,7 +28,7 @@ void ShadersKit::Load(const char* path)
 		return;
 	}
 
-	int count = String(config->getKey("shaders_kit", "count")).ToInt();
+	int count = String(config->getKey("shaders_kit", "count")).toInt();
 	char section_name[CONFIG_SECTION_MAX_LEN];
 
 	for (int i = 0; i < count; ++i)

@@ -1434,7 +1434,7 @@ IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath)
 IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath)
 {
 	String sPath = szPath;
-	sPath.Replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
+	sPath.replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
 	sPath = FileSetStrExt(sPath.c_str(), "jpg");
 
 	if (FileExistsFile(sPath.c_str()))
