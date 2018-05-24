@@ -5,6 +5,7 @@ particles_main.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 sampler2D BaseSampler:register(s0);
 sampler2D DepthSampler:register(s1);
@@ -29,7 +30,7 @@ half4 main(vs_out_particles IN):COLOR0
 	#endif
 	
 	#if defined(PART_SOFT)
-	half depthmap = tex2D(DepthSampler,texuv);
+	half depthmap = tex2D(DepthSampler,texuv).r;
 	half curdepth = IN.Pos.z / NearFar.y;
 	
 	color.a *= saturate((depthmap - curdepth)*NearFar.y)*SoftCoef;

@@ -5,13 +5,12 @@ pp_blur_depth_based.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 half4 PixelSize;
-
+half2 NearFar;
 sampler2D DepthMap:register(s0);
 sampler2D BlurMap:register(s1);
-
-half2 NearFar;
 
 half4 main(vs_out_pp IN) : COLOR0
 {

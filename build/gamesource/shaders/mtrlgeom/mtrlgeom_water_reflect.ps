@@ -45,7 +45,7 @@ ps_out_ds_mrt main(vs_out_water IN)
 	half3 normaloffset = normalize(tc_offset+tc_offset2)*Param.x;
 
 	half4 TexUVRefractProj = mul(IN.Pos,MatrixRefraction);
-	half depth = tex2D(DepthTex, TexUVRefractProj.xy/TexUVRefractProj.w + half2(0.5f/WinSize.x,0.5f/WinSize.y)).r;
+	half depth = LinearizeDepth(tex2D(DepthTex, TexUVRefractProj.xy/TexUVRefractProj.w + half2(0.5f/WinSize.x,0.5f/WinSize.y)).r, NearFarIsUnlit.xy);
 	half intens = saturate(abs(((IN.Pos.z/NearFarIsUnlit.y) - depth)*NearFarIsUnlit.y) / (Param.y * 100.f));
 	
 	normaloffset *= intens;

@@ -43,6 +43,7 @@ void CLevel::clear()
 
 void CLevel::load(const char *szName, bool isGame)
 {
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "load level '%s' ...\n", szName);
 	sprintf(m_szName, "%s", szName);
 	char tmppathlevel[1024];
 	sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
@@ -55,6 +56,7 @@ void CLevel::load(const char *szName, bool isGame)
 	ISXConfig* config = Core_OpConfig(tmppathlevel);
 	if (config->keyExists("level", "geometry"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load geometry\n");
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "geometry"));
 		if (FileExistsFile(tmppath))
@@ -67,6 +69,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "green"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load green\n");
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "green"));
 		if (FileExistsFile(tmppath))
@@ -79,6 +82,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "entity"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load entity\n");
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "entity"));
 		if (FileExistsFile(tmppath))
@@ -91,6 +95,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "physic"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load physic\n");
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "physic"));
 		if (FileExistsFile(tmppath))
@@ -114,6 +119,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "aigrid"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load aigrid\n");
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "aigrid"));
 		if (FileExistsFile(tmppath))
@@ -128,6 +134,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "ambient_sounds"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load ambient_sounds\n");
 		m_sAmbientSounds = config->getKey("level", "ambient_sounds");
 
 		if (isGame)
@@ -150,6 +157,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "weather"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load weather\n");
 		m_sWeather = config->getKey("level", "weather");
 		if (isGame)
 		{
@@ -167,6 +175,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	if (config->keyExists("level", "type"))
 	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  init type\n");
 		String str = config->getKey("level", "type");
 		if (stricmp(str.c_str(), "outdoor") == 0)
 		{
@@ -182,6 +191,8 @@ void CLevel::load(const char *szName, bool isGame)
 	}
 
 	mem_release(config);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
 }
 
 void CLevel::save(const char *szName)

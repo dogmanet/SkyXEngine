@@ -5,6 +5,7 @@ ppe_motion_blur.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 half4x4 ViewProjectionPrev;
 
@@ -21,32 +22,36 @@ half4 main(vs_out_res_pos IN) : COLOR0
 {
 	half depth = tex2D(DepthMap, IN.TexUV).r; 
 	
-	half4 tmppos = half4(ViewPos.xyz + IN.WorldRay * depth,1.f);
+	half4 vWorldPos = half4(ViewPos.xyz + IN.WorldRay * depth,1.f);
 	
 	[branch]if(depth*NearFar.y <= PP_MOTION_BLUR_DISTNOBLUR)
 		return tex2D(SceneMap, IN.TexUV);
 	
-	half4 currentPos = half4(IN.TexUV.x * 2.f - 1.f, (1.f-IN.TexUV.y) * 2.f - 1.f,tmppos.z, 1.f);
-	half4 previousPos = mul(tmppos,ViewProjectionPrev);
+	half4 currentPos = half4(IN.TexUV.x * 2.f - 1.f, (1.f-IN.TexUV.y) * 2.f - 1.f, vWorldPos.z, 1.f);
+	half4 previousPos = mul(vWorldPos,ViewProjectionPrev);
 	previousPos.xyz /= previousPos.w;
 
 	half2 velocity = (currentPos.xy - previousPos.xy) * CoefBlur;
-	velocity.y = -velocity.y;
+	velocity.x = -velocity.x;
 
 	half4 color = tex2D(SceneMap, IN.TexUV);
 	half4 original_color = color;
-	half2 SamplePoint;
+	half2 SamplePoint = IN.TexUV + velocity;
 	half4 CurrentSample;
-		for(int i = 1; i < NumSam+1; ++i)
-		{   
-			SamplePoint = velocity * half(i)/half(NumSam) + IN.TexUV;        
-			CurrentSample = tex2D(SceneMap, SamplePoint);
-			depth = tex2D(DepthMap, SamplePoint).r;
-			[branch]if(depth*NearFar.y > PP_MOTION_BLUR_DISTNOBLUR)
-				color += CurrentSample;
-			else 
-				color += original_color;
-		}
+		
+	for(int i = 1; i < NumSam+1; ++i)
+	{   
+		SamplePoint = IN.TexUV + (velocity * i * (1.f - depth));
+		CurrentSample = tex2D(SceneMap, SamplePoint);
+		
+		depth = tex2D(DepthMap, SamplePoint).r;
+		
+		[branch]if(depth*NearFar.y > PP_MOTION_BLUR_DISTNOBLUR)
+			color += CurrentSample;
+		else 
+			color += original_color;
+	}
+		
 	color /= half(NumSam);
 	return half4(color.rgb,original_color.a);
 }

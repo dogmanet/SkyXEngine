@@ -138,6 +138,8 @@ public:
 		//! массив данных трансформаций каждого элемента данного куска
 		CGreenDataVertex *m_pObjData;
 
+		ID *m_pArrIDs;
+
 		//! количество элементов
 		int m_iCountObj;	
 
@@ -237,7 +239,11 @@ public:
 		float3 m_vMax, m_vMin;
 
 		//! массив трансформаций всех объектов растительности
-		CGreenDataVertex *m_pAllTrans;
+		//CGreenDataVertex *m_pAllTrans;
+		Array<CGreenDataVertex> m_pAllTrans;
+		Array<CBoundBox> m_aTransW;
+
+		Array<ID> m_aDeleteObj;
 
 		//! массив лодов
 		CLod *m_aLods[GREEN_COUNT_LOD];
@@ -277,6 +283,8 @@ public:
 
 		//! массив информации для рендера сегментов
 		Array<CInfoRenderSegments*> m_aIRS;
+
+		Array<Array<bool>> m_aVisible;
 	};
 	
 protected:
@@ -290,7 +298,7 @@ protected:
 	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 	void getPartBB(float3 *pMin, float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 
-	void comRecArrIndeces(const ISXFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
+	void comRecArrIndeces(ID idGreen, ID idArr, const ISXFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
 
 	void addModelInArrCom(ID idModel);
 	void deleteModelInArrCom(ID idModel);
@@ -300,6 +308,9 @@ protected:
 	void segmentation(CSegment *pSplit, CModel *pMesh);
 	void setSplitID(CModel *pModel);
 	void setSplitID2(CModel *pModel, CSegment *pSplit, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue);
+
+	void ComputeBBtrans(ID idGreen);
+	void ComputeBB(const CGreenDataVertex &oTrans, CBoundBox &oBox);
 
 	//**********************************************************************
 

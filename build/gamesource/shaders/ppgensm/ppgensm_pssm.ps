@@ -20,6 +20,8 @@ sampler2D DepthSampler4:register(s4);
 sampler2D DepthSampler5:register(s5);
 sampler2D NoiseSampler:register(s6);
 
+half4x4 InvViewProj;
+
 half4x4 MatrixTexture1;
 half4x4 MatrixTexture2;
 half4x4 MatrixTexture3;
@@ -33,9 +35,9 @@ half4 main(vs_out_res_pos IN):COLOR0
 	half4 tmpcoord;
 	half Depth;
 	half tmpShadowTerm = 0;
-	half tmpdepth2 = GetDepthLinearR(tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r,NearFar);
+	half fDepth = tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r;;
 	
-	half4 Position = half4(PosCam + IN.WorldRay * (tmpdepth2),1.f);
+	half4 Position = half4(PosCam + IN.WorldRay * (fDepth),1.f);
 
 	half4 TexCoord1	= mul(Position, MatrixTexture1);
 	half4 TexCoord2	= mul(Position, MatrixTexture2);
@@ -61,7 +63,15 @@ half4 main(vs_out_res_pos IN):COLOR0
 				
 	alphaskyclouds /= 9.f;
 	
-	half l = tmpdepth2*NearFar.y;
+	half l = fDepth*NearFar.y;
+	
+	half fAttenuation = 1.f;
+	
+	#ifdef SPLITS3
+	fAttenuation = saturate(l / DistSplit.z);
+	#else
+	fAttenuation = saturate(l / DistSplit.w);
+	#endif
 
 	half dx1 = max(abs(ddx(TexCoord1.z)),abs(ddy(TexCoord1.z)));
 	half dx2 = max(abs(ddx(TexCoord2.z)),abs(ddy(TexCoord2.z)));
@@ -125,10 +135,12 @@ half4 main(vs_out_res_pos IN):COLOR0
 				}
 			ShadowTerm /= 9.f;
 			
-			#ifdef SPLITS3
+			/*#ifdef SPLITS3
 			half coefz = (l - DistSplit.y) / (DistSplit.z - DistSplit.y);
 			ShadowTerm = lerp(ShadowTerm,PSSM_SHADING_LAST,coefz);
-			#endif
+			#endif*/
+			
+			//ShadowTerm = 0;
 		}
 		
 		#if	!defined(SPLITS3)
@@ -150,8 +162,8 @@ half4 main(vs_out_res_pos IN):COLOR0
 				}
 			ShadowTerm /= 9.f;
 
-			half coefz = (l - DistSplit.z) / (DistSplit.w - DistSplit.z);
-			ShadowTerm = lerp(saturate(ShadowTerm),PSSM_SHADING_LAST,coefz);
+			/*half coefz = (l - DistSplit.z) / (DistSplit.w - DistSplit.z);
+			ShadowTerm = lerp(saturate(ShadowTerm),PSSM_SHADING_LAST,coefz);*/
 		}
 		#endif
 		else
@@ -159,5 +171,5 @@ half4 main(vs_out_res_pos IN):COLOR0
 			ShadowTerm = PSSM_SHADING_LAST;
 		}
 			
-	return (saturate(alphaskyclouds*(ShadowTerm)));
+	return (saturate(alphaskyclouds*(ShadowTerm * (1.f - fAttenuation))));
 } 

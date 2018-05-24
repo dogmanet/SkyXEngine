@@ -24,6 +24,7 @@ CStaticGeom::CSegment::CSegment()
 	m_ID = -1;
 	m_SID = -1;
 	m_isNonEnd = false;
+	m_pBoundBox = 0;
 }
 
 CStaticGeom::CSegment::~CSegment()
@@ -928,6 +929,11 @@ void CStaticGeom::setSplitID(CSegment* Split, ID* SplitsIDs, ID* SplitsIDsRender
 			queue[0]->m_SID = (*SplitsIDsRender);
 			++(*SplitsIDs);
 			++(*SplitsIDsRender);
+
+			float3 tmpMin, tmpMax;
+
+			queue[0]->m_pBoundVolumeP->getMinMax(&tmpMin, &tmpMax);
+			SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(queue[0]->m_pBoundBox));
 		}
 		
 		queue.erase(0);
@@ -988,6 +994,8 @@ void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
+	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+
 	int tmpcount = 0;
 	int* tmpcountcom = 0;
 	CSegment** tmpsegments = 0;
@@ -1000,7 +1008,13 @@ void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos
 		{
 			m_aAllModels[i]->m_pArrSplits->m_pBoundVolumeP->getSphere(&jcenter, &jradius);
 			m_aAllModels[i]->m_pArrSplits->m_fDistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
+
+			float3 vMin, vMax;
+			m_aAllModels[i]->m_pArrSplits->m_pBoundVolumeP->getMinMax(&vMin, &vMax);
+			if (!SGCore_OC_IsVisible(&vMax, &vMin))
+				continue;
 		}
+
 
 		if (m_aAllModels[i]->m_pArrSplits->m_fDistForCamera >= CStaticGeom::m_fDistForLod && m_aAllModels[i]->m_oLod0.m_pModel)
 			m_aAllModels[i]->m_isRenderLod = true;
@@ -1016,7 +1030,7 @@ void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos
 
 			while (m_aArrComFor[id_arr]->m_aQueue.size())
 			{
-				comRecArrIndeces(frustum, tmpsegments, tmpcountcom, m_aArrComFor[id_arr]->m_aQueue[0], viewpos, &m_aArrComFor[id_arr]->m_aQueue, tmpcount);
+				comRecArrIndeces(id_arr, frustum, tmpsegments, tmpcountcom, m_aArrComFor[id_arr]->m_aQueue[0], viewpos, &m_aArrComFor[id_arr]->m_aQueue, tmpcount);
 
 				m_aArrComFor[id_arr]->m_aQueue.erase(0);
 				++tmpcount;
@@ -1029,7 +1043,7 @@ void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos
 	}
 }
 
-void CStaticGeom::comRecArrIndeces(const ISXFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
+void CStaticGeom::comRecArrIndeces(ID idArr, const ISXFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float jradius;
 	float3 jcenter;
@@ -1107,9 +1121,23 @@ void CStaticGeom::comRecArrIndeces(const ISXFrustum* frustum, CSegment** arrspli
 			{
 				if ((*count) < curr_splits_ids_render)
 				{
-					arrsplits[(*count)] = comsegment;
-					comsegment->m_fDistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
-					(*count)++;
+					bool isVisible = true;
+					
+					if (idArr == 0)
+					{
+						float3 vMin, vMax;
+						comsegment->m_pBoundVolumeP->getMinMax(&vMin, &vMax);
+						isVisible = SGCore_OC_IsVisible(&vMax, &vMin);
+					}
+					
+					if (isVisible)
+					{
+						arrsplits[(*count)] = comsegment;
+						comsegment->m_fDistForCamera = SMVector3Length((jcenter - (*viewpos))) - jradius;
+						(*count)++;
+					}
+					else
+						int qwerty = 0;
 				}
 				/*else
 				{
@@ -1248,6 +1276,16 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 
 							m_ppRTCountDrawPoly[jnumgroup][jidbuff] += jarrsplits[j]->m_pCountPoly[k];
 							m_pppRTCountDrawPolyModel[jnumgroup][jidbuff][tmpcurrmodel] += jarrsplits[j]->m_pCountPoly[k];
+
+							/*if (jarrsplits[j]->m_pBoundBox)
+							{
+								CStaticGeom::m_pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+								//CStaticGeom::m_pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+								CStaticGeom::m_pDXDevice->SetTexture(0, 0);
+								jarrsplits[j]->m_pBoundBox->DrawSubset(0);
+								//CStaticGeom::m_pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+								CStaticGeom::m_pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+							}*/
 						}
 					}
 				}
@@ -1832,8 +1870,9 @@ void CStaticGeom::segmentation(CSegment* Split, CModel* mesh, ISXDataStaticModel
 	float3 tmpMin, tmpMax;
 	for (int i = 0; i<CountSplitsSys; i++)
 	{
+		//Split->m_aSplits[i]->m_pBoundVolumeP->getMinMax(&tmpMin, &tmpMax);
+		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(Split->m_aSplits[i]->m_pBoundBox));
 		Split->m_aSplits[i]->m_pBoundVolumeSys->getMinMax(&tmpMin, &tmpMax);
-		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(Split->m_aSplits[i]->BoundBox));
 		DWORD tmpNumCurrentPoly = 0;
 		for (DWORD j = 0; j<Split->m_uiCountSubSet; j++)
 		{

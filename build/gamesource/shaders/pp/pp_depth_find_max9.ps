@@ -1,0 +1,44 @@
+
+#include <../struct.h>
+
+sampler2D DepthSampler:register(s0);
+half2 PixelSize;
+
+half4 main(vs_out_pp IN) : COLOR0
+{
+	half depth = max (
+						tex2D(DepthSampler, IN.TexUV),
+						tex2D(DepthSampler, IN.TexUV + half2(PixelSize.x, 0.0))
+					);
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV + half2(0.0, PixelSize.y))
+					);
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV + PixelSize)
+					);
+				
+				
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV - PixelSize)
+					);
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV + half2(0.0, -PixelSize.y))
+					);
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV + half2(PixelSize.x, -PixelSize.y))
+					);
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV + half2(-PixelSize.x, 0.0))
+					);
+	depth = max (
+						depth,
+						tex2D(DepthSampler, IN.TexUV + half2(-PixelSize.x, PixelSize.y))
+					);
+	return depth;
+}

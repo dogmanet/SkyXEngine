@@ -3,7 +3,7 @@
 gdefines.h
 Макроопределения
 */
-
+ 
 #ifndef G_DEFINES
 #define G_DEFINES
 
@@ -19,7 +19,7 @@ const half2 TexUV_Center = half2(0.5f,0.5f);
 #define SHADOWGEN_JITTER_SCALE 1024.0
 
 //дистанция от камеры на которую не будет растространяться эффект motion blur (сделано для того чтобы не размывать худ)
-#define PP_MOTION_BLUR_DISTNOBLUR 0.8
+#define PP_MOTION_BLUR_DISTNOBLUR 1.f
 
 #define PI 3.141592654f
 

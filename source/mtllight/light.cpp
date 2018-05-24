@@ -225,6 +225,9 @@ void Lights::ClearIDArr()
 {
 	for (int i = 0; i < ArrLights.size(); ++i)
 	{
+		if (!ArrLights[i])
+			continue;
+
 		if (ArrLights[i]->ShadowSM)
 		{
 			for (int k = 0; k < ArrLights[i]->ShadowSM->GetCountIDArrs(); ++k)

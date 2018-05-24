@@ -33,5 +33,5 @@ half4 main(vs_out_pp IN):COLOR0
 	color.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
 	color.rgb /= (fAdaptedLum + color.rgb);
 	
-	return color;
+	return /*half4(ambient.xyz, 1.f);//*/color;
 }

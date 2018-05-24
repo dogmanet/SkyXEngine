@@ -16,6 +16,7 @@ See the license in LICENSE
 #include <gcore/loader_static.h>
 #include <gcore/sky.h>
 
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
@@ -36,6 +37,29 @@ D3DPRESENT_PARAMETERS g_oD3DAPP;
 IDirect3D9 *g_pD3D9 = 0;
 ID3DXFont *g_pFPStext = 0;
 Array<DEVMODE> g_aArrModes;
+
+IDirect3DSurface9 *g_pOCsurfDepthBuffer[3];
+float *g_pOCarrDepthBuffer = 0;
+float4 *g_pOCarrWorldPos = 0;
+float *g_pOCarrDepthBufferReProjection = 0;
+float *g_pOCarrDepthBufferRasterize = 0;
+bool g_isOCenable = false;
+float4x4 g_mOColdView;
+float4x4 g_mOColdProj;
+ID RT_DepthOC[2];
+int g_iOCcurrDepth = 0;
+ID VS_ScreenOut = -1;
+ID PS_ScreenOut = -1;
+ID PS_FindMax9 = -1;
+
+//! погрешность разниц глубин для теста occlusion culling
+#define OC_CMP_BIAS 0.0001f
+
+//! коэфициент размера буфера глубины occlusion culling
+#define OC_SIZE_COEF 0.25f
+
+//! дистанция (в метрах) при которой тест occlusion culling всегда будет давать true
+#define OC_DIST_NEAR_NOT_CULL 4.f
 
 //##########################################################################
 
@@ -99,7 +123,7 @@ CSkyClouds *g_pSkyClouds = 0;
 
 //##########################################################################
 
-void GCoreInit(HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlags)
+void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags)
 {
 	g_pD3D9 = Direct3DCreate9(D3D_SDK_VERSION);
 
@@ -114,7 +138,7 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlag
 
 	memset(&g_oD3DAPP, 0, sizeof(g_oD3DAPP));
 	g_oD3DAPP.BackBufferWidth = iWidth;
-	g_oD3DAPP.BackBufferHeight = iHeigth;
+	g_oD3DAPP.BackBufferHeight = iHeight;
 	g_oD3DAPP.BackBufferFormat = D3DFMT_A8R8G8B8;
 	g_oD3DAPP.BackBufferCount = 1;
 	g_oD3DAPP.MultiSampleType = D3DMULTISAMPLE_NONE;
@@ -227,7 +251,20 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlag
 		}
 	}
 
-	int qwerty = 0;
+	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[0], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[1], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[2], 0);
+	g_pOCarrDepthBuffer = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_pOCarrWorldPos = new float4[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_pOCarrDepthBufferReProjection = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_pOCarrDepthBufferRasterize = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+
+	RT_DepthOC[0] = SGCore_RTAdd(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc", 0.25f);
+	RT_DepthOC[1] = SGCore_RTAdd(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc2", 0.25f);
+	
+	VS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
+	PS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	PS_FindMax9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_depth_find_max9.ps", "pp_depth_find_max9.ps", SHADER_CHECKDOUBLE_NAME);
 }
 
 //##########################################################################
@@ -275,6 +312,15 @@ SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount)
 SX_LIB_API void SGCore_AKill()
 {
 	SG_PRECOND(_VOID);
+
+	mem_release(g_pOCsurfDepthBuffer[0]);
+	mem_release(g_pOCsurfDepthBuffer[1]);
+	mem_release(g_pOCsurfDepthBuffer[2]);
+	mem_delete_a(g_pOCarrDepthBuffer);
+	mem_delete_a(g_pOCarrDepthBufferReProjection);
+	mem_delete_a(g_pOCarrWorldPos);
+	mem_delete_a(g_pOCarrDepthBufferRasterize);
+
 	mem_delete(g_pManagerShaders);
 	mem_delete(g_pManagerRenderTargets);
 	mem_delete(g_pManagerTextures);
@@ -319,15 +365,32 @@ SX_LIB_API void SGCore_OnLostDevice()
 {
 	SG_PRECOND(_VOID);
 
+	mem_release(g_pOCsurfDepthBuffer[0]);
+	mem_release(g_pOCsurfDepthBuffer[1]);
+	mem_release(g_pOCsurfDepthBuffer[2]);
+	mem_delete_a(g_pOCarrDepthBuffer);
+	mem_delete_a(g_pOCarrDepthBufferReProjection);
+	mem_delete_a(g_pOCarrWorldPos);
+	mem_delete_a(g_pOCarrDepthBufferRasterize);
+
 	g_pFPStext->OnLostDevice();
 	g_pManagerRenderTargets->OnLostDevice();
 }
 
-SX_LIB_API bool SGCore_OnDeviceReset(int width, int heigth, bool windowed)
+SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool windowed)
 {
 	SG_PRECOND(false);
-	g_oD3DAPP.BackBufferWidth = width;
-	g_oD3DAPP.BackBufferHeight = heigth;
+
+	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[0], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[1], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[2], 0);
+	g_pOCarrDepthBuffer = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_pOCarrWorldPos = new float4[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_pOCarrDepthBufferReProjection = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_pOCarrDepthBufferRasterize = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+
+	g_oD3DAPP.BackBufferWidth = iWidth;
+	g_oD3DAPP.BackBufferHeight = iHeight;
 	g_oD3DAPP.Windowed = windowed;
 
 	/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
@@ -444,6 +507,830 @@ SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is
 {
 	SG_PRECOND(_VOID);
 	FuncMtlGroupRenderIsSingly = fnFunc;
+}
+
+//##########################################################################
+
+//! небольшео расширение бокса для теста occlusion culling
+const float3 g_cvOCext(0.05f, 0.05f, 0.05f);
+
+SX_LIB_API void SGCore_OC_SetEnable(bool isEnable)
+{
+	SG_PRECOND(_VOID);
+	g_isOCenable = isEnable;
+}
+
+SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
+{
+	SG_PRECOND(_VOID);
+
+	if (!g_isOCenable)
+		return;
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	// если нет кваров плоскостей отсечения значит что-то не так
+	if (!r_near || !r_far)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - cvar r_near or r_far is not found!", GEN_MSG_LOCATION);
+		return;
+	}
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	//если нет квара fov значит что-то не так
+	if (!r_default_fov)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - cvar r_default_fov is not found!", GEN_MSG_LOCATION);
+		return;
+	}
+
+	float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+
+	IDirect3DTexture9 *pTexDepth = SGCore_RTGetTexture(idDepthMap);
+	IDirect3DTexture9 *pTexDepthOC = SGCore_RTGetTexture(RT_DepthOC[g_iOCcurrDepth]);
+
+	//рисуем глубину с максимальной выборкой в уменьшенный буфер
+	g_pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	g_pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	g_pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	g_pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	LPDIRECT3DSURFACE9 RenderSurf2, BackBuf2;
+
+	pTexDepthOC->GetSurfaceLevel(0, &RenderSurf2);
+	g_pDXDevice->GetRenderTarget(0, &BackBuf2);
+	g_pDXDevice->SetRenderTarget(0, RenderSurf2);
+
+	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+
+	g_pDXDevice->SetTexture(0, pTexDepth);
+
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_ScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_FindMax9);
+
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_FindMax9, "PixelSize", (&float2(1.f / float(g_oD3DAPP.BackBufferWidth), 1.f / float(g_oD3DAPP.BackBufferHeight))));
+
+	SGCore_ScreenQuadDraw();
+
+	SGCore_ShaderUnBind();
+
+	g_pDXDevice->SetRenderTarget(0, BackBuf2);
+
+	mem_release(RenderSurf2);
+	mem_release(BackBuf2);
+
+	//**********************************************************************
+
+	//копируем отрисованную глубину в массив
+	LPDIRECT3DSURFACE9 pDepthSurf;
+
+	int iCurrOld = 1 - g_iOCcurrDepth;
+
+	pTexDepthOC = SGCore_RTGetTexture(RT_DepthOC[g_iOCcurrDepth]);
+	
+	pTexDepthOC->GetSurfaceLevel(0, &pDepthSurf);
+	g_pDXDevice->GetRenderTargetData(pDepthSurf, g_pOCsurfDepthBuffer[g_iOCcurrDepth]);
+
+	D3DLOCKED_RECT  srect;
+	g_pOCsurfDepthBuffer[iCurrOld]->LockRect(&srect, 0, D3DLOCK_READONLY | D3DLOCK_DONOTWAIT);
+	
+	memcpy(g_pOCarrDepthBuffer, srect.pBits, sizeof(float)* fWidth * fHeight);
+	g_pOCsurfDepthBuffer[iCurrOld]->UnlockRect();
+
+	mem_release(pDepthSurf);
+
+	//**********************************************************************
+	
+	int iCountPixels = fWidth * fHeight;
+
+	float fPosX = 0, fPosY = 0;
+	
+	float4 vWorldPos;
+
+	float4x4 mView, mProjection;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mProjection);
+
+	float4x4 mViewProj = g_mOColdView * g_mOColdProj;// = mView * mProjection;
+	float fD = 0.f;
+	float4x4 mInvVP = SMMatrixInverse(&fD, mViewProj);
+
+	//цикл восстановления мировой позиции каждого пикселя по глубине
+	/*for (int i = 0; i < iCountPixels; ++i)
+	{
+		fPosY = int(float(i) / fWidth);
+		fPosX = int(i - (fPosY * fWidth));
+
+		fPosX = fPosX / fWidth;
+		fPosY = fPosY / fHeight;
+
+		fPosX = 2.f * fPosX - 1.f;
+		fPosY = 2.f * (1.f - fPosY) - 1.f;
+		
+		vWorldPos = SMVector4Transform(float4(fPosX, fPosY, g_pOCarrDepthBuffer[i], 1.f), mInvVP);
+		vWorldPos /= vWorldPos.w;
+		g_pOCarrWorldPos[i] = vWorldPos;
+
+		//g_pOCarrDepthBuffer[i] = (*r_near) / ((*r_far) + (*r_near) - g_pOCarrDepthBuffer[i] * ((*r_far) - (*r_near))); //vWorldPos.z / (*r_far);
+	}*/
+
+	float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
+	float fTanHalfFOV = tan((*r_default_fov) * 0.5f);
+	float fAspectRatio = fWidth / fHeight;
+	float fFarY = fTanHalfFOV * (*r_far);
+	float fFarX = fFarY * fAspectRatio;
+
+	float4 vEyeRay, vWorldRay;
+	float4x4 mInvView = SMMatrixInverse(&fD, g_mOColdView);
+
+	/*for (int i = 0; i < iCountPixels; ++i)
+	{
+		//float linearDepth = (2.0 * (*r_near)) / ((*r_far) + (*r_near) - g_pArrDepthBufferOC[i] * ((*r_far) - (*r_near)));
+		//g_pArrDepthBufferOC[i] = linearDepth;
+
+		fPosY = int(float(i) / fWidth);
+		fPosX = int(i - (fPosY * fWidth));
+
+		fPosX = fPosX / fWidth;
+		fPosY = fPosY / fHeight;
+
+		fPosX = 2.f * fPosX - 1.f;
+		fPosY = 2.f * (1.f - fPosY) - 1.f;
+		vEyeRay = float4((fPosX)* fFarX, (fPosY)* fFarY, (*r_far), 0.f);
+		vWorldRay = SMVector4Transform(vEyeRay, mInvView);
+
+		vWorldPos = float4(vObserverPos + vWorldRay * g_pOCarrDepthBuffer[i], 1.f);
+		g_pOCarrWorldPos[i] = vWorldPos;
+		int qwerty = 0;
+	}*/
+
+	float4 aWorldRays[4];
+	aWorldRays[0] = SMVector4Transform(float4(-1.f * fFarX, -1.f * fFarY, (*r_far), 0.f), mInvView);
+	aWorldRays[1] = SMVector4Transform(float4(1.f * fFarX, -1.f * fFarY, (*r_far), 0.f), mInvView);
+	aWorldRays[2] = SMVector4Transform(float4(1.f * fFarX, 1.f * fFarY, (*r_far), 0.f), mInvView);
+	aWorldRays[3] = SMVector4Transform(float4(-1.f * fFarX, 1.f * fFarY, (*r_far), 0.f), mInvView);
+
+	float4 vWorldRay0, vWorldRay1;
+
+	for (int x = 0; x < fWidth; ++x)
+	{
+		vWorldRay0 = SMVectorLerp(aWorldRays[0], aWorldRays[1], float(x) / fWidth);
+		vWorldRay1 = SMVectorLerp(aWorldRays[3], aWorldRays[2], float(x) / fWidth);
+		for (int y = 0; y < fHeight; ++y)
+		{
+			int iPosPixel = (y * fWidth) + x;
+			vWorldRay = SMVectorLerp(vWorldRay1, vWorldRay0,float(y) / fHeight);
+			vWorldPos = vObserverPos + vWorldRay * g_pOCarrDepthBuffer[iPosPixel];
+			vWorldPos.w = 1.f;
+			g_pOCarrWorldPos[iPosPixel] = vWorldPos;
+		}
+	}
+
+	g_mOColdView = mView;
+	g_mOColdProj = mProjection;
+
+	++g_iOCcurrDepth;
+
+	if (g_iOCcurrDepth >= 2)
+		g_iOCcurrDepth = 0;
+
+	
+	if (GetKeyState('M'))
+	{
+		g_pOCsurfDepthBuffer[2]->LockRect(&srect, 0, D3DLOCK_READONLY);
+
+		memcpy(srect.pBits, g_pOCarrDepthBuffer, sizeof(float)* float(g_oD3DAPP.BackBufferWidth)*0.25 * float(g_oD3DAPP.BackBufferHeight)*0.25);
+		g_pOCsurfDepthBuffer[2]->UnlockRect();
+
+		D3DXSaveSurfaceToFile("C:/1/g_pOCsurfDepthBuffer.jpg", D3DXIFF_JPG, g_pOCsurfDepthBuffer[2], NULL, NULL);
+	}
+}
+
+
+/*struct CTriV
+{
+	float3_t m_vA;
+	float3_t m_vB;
+	float3_t m_vC;
+};
+
+Array<CTriV> g_aVetrs;*/
+
+SX_LIB_API void SGCore_OC_Reprojection()
+{
+	SG_PRECOND(_VOID);
+
+	if (!g_isOCenable)
+		return;
+
+	/*if (GetAsyncKeyState('C'))
+		g_aVetrs.clear();*/
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	if (!r_near || !r_far)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - cvar r_near or r_far is not found!", GEN_MSG_LOCATION);
+		return;
+	}
+
+	float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+
+	float4x4 mView, mProjection;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mProjection);
+
+	float4x4 mViewProj = mView * mProjection;
+
+	int iCountPixels = fWidth * fHeight;
+
+	float4 vNewPos;
+
+	for (int i = 0; i < iCountPixels; ++i)
+	{
+		g_pOCarrDepthBufferReProjection[i] = 1.f;
+		g_pOCarrDepthBufferRasterize[i] = 1.f;
+	}
+
+	float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
+	float2 vNewPos2;
+
+	//цикл репроекции каждого пикселя, расчет новой позиции в screen-space и новой глубины
+	for (int i = 0; i < iCountPixels; ++i)
+	{
+		vNewPos = SMVector4Transform(g_pOCarrWorldPos[i], mViewProj);
+
+		vNewPos.x /= abs(vNewPos.w);
+		vNewPos.y /= abs(vNewPos.w);
+		vNewPos.z = (vNewPos.z + (*r_near)) / (*r_far);
+		/*vNewPos.x /= abs(vNewPos.w);
+		vNewPos.y /= abs(vNewPos.w);
+		vNewPos.z /= abs(vNewPos.w);*/
+
+		vNewPos.x = vNewPos.x * 0.5f + 0.5f;
+		vNewPos.y = (vNewPos.y * (-0.5f) + 0.5f);
+		
+		//костыль решения проблем округления, без этого будут белые линии
+		
+		vNewPos2.x = float(int(vNewPos.x * 10000.f) / 10000.f);
+		vNewPos2.y = float(int(vNewPos.y * 10000.f) / 10000.f);
+
+		if (vNewPos2.x == 0.f || vNewPos2.x == 1.f)
+			vNewPos.x = vNewPos2.x;
+
+		if (vNewPos2.y == 0.f || vNewPos2.y == 1.f)
+			vNewPos.y = vNewPos2.y;
+
+		//******************************************************************
+
+		if ((vNewPos.x <= 1.f && vNewPos.x >= 0.f) && (vNewPos.y <= 1.f && vNewPos.y >= 0.f))
+		{
+			int x = floor(vNewPos.x * fWidth + 0.5f);
+			int y = floor(vNewPos.y * fHeight + 0.5f);
+			int iPosPixel = int(y * fWidth) + x;
+
+			if (iPosPixel > iCountPixels)
+				int qwerty = 0;
+			else
+			{
+				//если в буфере репроекции нет записей для текущего пикселя, либо записанная глубина меньше чем новая
+				if (g_pOCarrDepthBufferReProjection[iPosPixel] >= 1.f || vNewPos.z > g_pOCarrDepthBufferReProjection[iPosPixel])
+					g_pOCarrDepthBufferReProjection[iPosPixel] = vNewPos.z;
+			}
+		}
+	}
+
+	
+	if (GetKeyState('N'))
+	{
+		D3DLOCKED_RECT  srect;
+		g_pOCsurfDepthBuffer[2]->LockRect(&srect, 0, D3DLOCK_READONLY);
+
+		memcpy(srect.pBits, g_pOCarrDepthBufferReProjection, sizeof(float)* float(g_oD3DAPP.BackBufferWidth)*0.25 * float(g_oD3DAPP.BackBufferHeight)*0.25);
+		g_pOCsurfDepthBuffer[2]->UnlockRect();
+		D3DXSaveSurfaceToFile("C:/1/g_pSurfDepthBufferOCreproj.jpg", D3DXIFF_JPG, g_pOCsurfDepthBuffer[2], NULL, NULL);
+	}
+}
+
+inline void SwapFloat3(float3 &vA, float3 &vB)
+{
+	float3 vV;
+	vV = vA;
+	vA = vB;
+	vB = vV;
+}
+
+inline void TriGetSphere(const float3 &vA, const float3 &vB, const float3 &vC, float &fRadius, float2 &vCenter)
+{
+	float x12 = vA.x - vB.x;
+	float x23 = vB.x - vC.x;
+	float x31 = vC.x - vA.x;
+
+	float y12 = vA.y - vB.y;
+	float y23 = vB.y - vC.y;
+	float y31 = vC.y - vA.y;
+
+	float z1 = (vA.x * vA.x) + (vA.y * vA.y);
+	float z2 = (vB.x * vB.x) + (vB.y * vB.y);
+	float z3 = (vC.x * vC.x) + (vC.y * vC.y);
+
+	float zx = y12 * z3 + y23 * z1 + y31 * z2;
+	float zy = x12 * z3 + x23 * z1 + x31 * z2;
+	float z = x12 * y31 - y12 * x31;
+
+	vCenter.x = -(zx / (2 * z));
+	vCenter.y = zy / (2 * z);
+
+	fRadius = sqrt(pow(vA.x - vCenter.x, 2) + (vA.y - vCenter.y, 2));
+}
+
+inline void QuadGetSphere(const float2 &vMin, const float2 &vMax, float &fRadius, float2 &vCenter)
+{
+	vCenter = (vMin + vMax) / 2;
+
+	fRadius = SMVector2Length(vCenter - vMin);
+}
+
+
+inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float4 &vC, bool isRasterize, const float3 &vNormal2, const float2_t &vNearFar)
+{
+	if (vA.z < 0.f && vB.z < 0.f && vC.z < 0.f)
+		return false;
+
+	float3 vNormal = SMVector3Normalize(SMVector3Cross(vC - vA, vB - vA));
+
+	float3 vPointA = vA;
+	float3 vPointB = vB;
+	float3 vPointC = vC;
+
+	int iWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	int iHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+
+	int iCountPixels = iWidth * iHeight;
+
+	//для нахождения D достаточно использовать произвольюную точку треугольника
+	float fD = -(vNormal.x * vPointA.x + vNormal.y * vPointA.y + vNormal.z * vPointA.z);
+
+	/*
+	получить интерполированное значение глубины можно так: -(N.x * x + N.y * y + D) / N.z
+	N - нормаль
+	x и y - текущие координаты на треугольнике
+	*/
+
+	//сортировка точек по убыванию координаты Y
+	if (vPointB.y < vPointA.y)
+		SwapFloat3(vPointA, vPointB);
+	
+	if (vPointC.y < vPointA.y)
+		SwapFloat3(vPointA, vPointC);
+
+	if (vPointB.y > vPointC.y)
+		SwapFloat3(vPointB, vPointC);
+
+
+	bool isVisible = false;
+
+	//расширение треугольника, на случай неправильно округления, закрыло много багов
+	vPointA.y -= 1.f;
+	vPointC.y += 1.f;
+
+	int iTotalHeight = vPointC.y - vPointA.y;
+
+	if (iTotalHeight == 0)
+		return false;
+
+	int iSegmentHeight = vPointB.y - vPointA.y + 1;
+
+	if (iSegmentHeight == 0)
+		return false;
+
+	int iStartY = clampf(vPointA.y, 0, iHeight-1);
+	int iFinishY = clampf(vPointB.y, 0, iHeight-1);
+
+	for (int y = iStartY; y <= iFinishY; ++y)
+	{
+		/*if (!(y >= 0 && y <= iHeight - 1))
+			continue;*/
+
+		float fA = (y - vPointA.y) / iTotalHeight;
+		float fB = (y - vPointA.y) / iSegmentHeight;
+		fA = vPointA.x + (vPointC.x - vPointA.x) * fA;
+		fB = vPointA.x + (vPointB.x - vPointA.x) * fB;
+
+		if (fA > fB)
+			std::swap(fA, fB);
+
+		fA = clampf(fA - 1, 0, iWidth - 1);
+		fB = clampf(fB + 1, 0, iWidth - 1);
+
+		//в оригинале отнимать и прибавлять единицу не надо, но пришлось сделать чтобы закрыть баги отсечения
+		for (int x = fA; x <= fB; ++x)
+		{
+			/*if (x < 0 || x > iWidth - 1)
+				continue;*/
+
+			int iPosPixel = (y * iWidth) + x;
+			if (iPosPixel < iCountPixels)
+			{
+				float fCurrDepth = (-(vNormal.x * float(x) + vNormal.y * float(y) + fD) / vNormal.z);
+				
+				/*if (isRasterize)
+					g_pOCarrDepthBufferRasterize[iPosPixel] = 0;*/
+
+				if (fCurrDepth >= 0.f && g_pOCarrDepthBufferReProjection[iPosPixel] >= (fCurrDepth - OC_CMP_BIAS))
+				{
+					//if (!isRasterize)
+						return true;
+					/*else
+						isVisible = true;*/
+				}
+			}
+		}
+	}
+
+
+	iSegmentHeight = vPointC.y - vPointB.y + 1;
+
+	if (iSegmentHeight == 0)
+		return false;
+
+	iStartY = clampf(vPointB.y, 0, iHeight-1);
+	iFinishY = clampf(vPointC.y, 0, iHeight-1);
+
+	for (int y = iStartY; y <= iFinishY; ++y)
+	{
+		/*if (!(y >= 0 && y <= iHeight - 1))
+			continue;*/
+
+		float fA = (y - vPointA.y) / iTotalHeight;
+		float fB = (y - vPointB.y) / iSegmentHeight;
+		fA = vPointA.x + (vPointC.x - vPointA.x) * fA;
+		fB = vPointB.x + (vPointC.x - vPointB.x) * fB;
+       
+		if (fA > fB)
+			std::swap(fA, fB);
+
+		fA = clampf(fA - 1, 0, iWidth - 1);
+		fB = clampf(fB + 1, 0, iWidth - 1);
+
+		//в оригинале отнимать и прибавлять единицу не надо, но пришлось сделать чтобы закрыть баги отсечения
+		for (int x = fA; x <= fB; ++x)
+		{
+			/*if (x < 0 || x > iWidth - 1)
+				continue;*/
+
+			int iPosPixel = (y * iWidth) + x;
+			if (iPosPixel < iCountPixels)
+			{
+				float fCurrDepth = (-(vNormal.x * float(x) + vNormal.y * float(y) + fD) / vNormal.z);
+				
+				/*if (isRasterize)
+					g_pOCarrDepthBufferRasterize[iPosPixel] = 0;*/
+
+				if (fCurrDepth >= 0.f && g_pOCarrDepthBufferReProjection[iPosPixel] >= (fCurrDepth - OC_CMP_BIAS))
+				{
+					//if (!isRasterize)
+						return true;
+					/*else
+						isVisible = true;*/
+				}
+			}
+        }
+    }
+
+	return isVisible;
+}
+
+inline bool OC_RasterizeQuad(const float3 &vA, const float3 &vB, const float3 &vC, const float3 &vD, const float2 &vNearFar)
+{
+	float3 vNormal = TriGetNormal(vA, vB, vC);
+	return (OC_TriangleRasterize(vA, vB, vC, false, vNormal, vNearFar) || OC_TriangleRasterize(vB, vC, vD, false, vNormal, vNearFar));
+}
+
+
+
+SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
+{
+	SG_PRECOND(false);
+
+	if (!pMax || !pMin)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - min or max is null!", GEN_MSG_LOCATION);
+		return false;
+	}
+
+	if (!g_isOCenable)
+		return true;
+
+	float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
+	static const float *r_near = GET_PCVAR_FLOAT("r_near");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	if (!r_near || !r_far)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - cvar r_near or r_far is not found!", GEN_MSG_LOCATION);
+		return false;
+	}
+
+	float3 vMax, vMin;
+	vMax = *pMax;
+	vMin = *pMin;
+
+	//вычисление центра и радиуса по xz чтобы определить дистанцию до наблюдателя
+	float3 vCenter = (vMin + vMax) * 0.5f;
+	float fRadius = SMVector3Length2(float3(vCenter.x, 0.f, vCenter.z) - float3(vMax.x, 0, vMax.z));
+
+	float fDist = SMVector3Length2(vObserverPos - vCenter);
+
+	//если дистанция до наблюдаеля меньше либо равна радиусу бокса по xz значит наблюдатель в боксе
+	if (fDist <= fRadius)
+		return true;
+
+	fDist -= fRadius;
+
+	//если бокс в пределах ближнего расстояния неотсечения от наблюдателя, значит он виден
+	if (fDist >= 0.f && fDist <= OC_DIST_NEAR_NOT_CULL*OC_DIST_NEAR_NOT_CULL)
+		return true;
+
+	//закрывало много багов ложного отсечения, однако на дальних дистанциях не отсекает как надо, возможно просто буфер глубины слишком уменьшенный
+	vMax += g_cvOCext;
+	vMin -= g_cvOCext;
+
+
+	float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+
+	int iCountPixels = fWidth * fHeight;
+
+	float4x4 mWorld, mView, mProjection;
+	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mProjection);
+
+	float4x4 mWVP = mWorld * mView *mProjection;
+	
+
+	float4 aSSPoints[8];
+	float4 aWPoints[8];
+	aWPoints[0] = float4(vMax.x, vMax.y, vMax.z, 1.0f);
+	aWPoints[1] = float4(vMax.x, vMax.y, vMin.z, 1.0f);
+	aWPoints[2] = float4(vMax.x, vMin.y, vMax.z, 1.0f);
+	aWPoints[3] = float4(vMin.x, vMax.y, vMax.z, 1.0f);
+	aWPoints[4] = float4(vMax.x, vMin.y, vMin.z, 1.0f);
+	aWPoints[5] = float4(vMin.x, vMin.y, vMax.z, 1.0f);
+	aWPoints[6] = float4(vMin.x, vMax.y, vMin.z, 1.0f);
+	aWPoints[7] = float4(vMin.x, vMin.y, vMin.z, 1.0f);
+
+	for (int i = 0; i < 8; ++i)
+	{
+		aSSPoints[i] = SMVector4Transform(aWPoints[i], mWVP);
+
+		aSSPoints[i].x /= abs(aSSPoints[i].w);
+		aSSPoints[i].y /= abs(aSSPoints[i].w);
+		aSSPoints[i].z = ((aSSPoints[i].z + (*r_near)) / (*r_far));// *sign(aSSPoints[i].w);
+
+		//просчет линейной глубины из нелинейной
+		//float fLinearDepth = (*r_near) / ((*r_far) + (*r_near) - aPoints[i].w * ((*r_far) - (*r_near)));
+		
+		aSSPoints[i].x = aSSPoints[i].x * 0.5 + 0.5;
+		aSSPoints[i].y = aSSPoints[i].y * (-0.5) + 0.5;
+
+		aSSPoints[i].x *= fWidth;
+		aSSPoints[i].y *= fHeight;
+
+		aSSPoints[i].x = int(aSSPoints[i].x);
+		aSSPoints[i].y = int(aSSPoints[i].y);
+
+		/*float2 vNewPos2;
+		vNewPos2.x = float(int(aPoints[i].x * 1000) / 1000.f);
+		vNewPos2.y = float(int(aPoints[i].y * 1000) / 1000.f);
+
+		if (vNewPos2.x == 0.f || vNewPos2.x == 1.f)
+			aPoints[i].x = vNewPos2.x;
+
+		if (vNewPos2.y == 0.f || vNewPos2.y == 1.f)
+			aPoints[i].y = vNewPos2.y;
+
+		aPoints[i].x = int(floor(aPoints[i].x * fMapWidth + 0.5f));
+		aPoints[i].y = int(floor(aPoints[i].y * fMapHeight + 0.5f));*/
+	}
+
+	float2 vNearFar((*r_near), (*r_far));
+
+	/*float3 aCenters[6];
+
+	//зад
+	aCenters[0] = (aWPoints[7] + aWPoints[1]) * 0.5f;// SMVectorLerp(aWPoints[7], aWPoints[1], 0.5f);
+	//перед
+	aCenters[1] = (aWPoints[0] + aWPoints[5]) * 0.5f;// SMVectorLerp(aWPoints[0], aWPoints[5], 0.5f);
+
+	//верх
+	aCenters[2] = (aWPoints[0] + aWPoints[6]) * 0.5f;// SMVectorLerp(aWPoints[0], aWPoints[6], 0.5f);
+	//низ
+	aCenters[3] = (aWPoints[7] + aWPoints[2]) * 0.5f;// SMVectorLerp(aWPoints[7], aWPoints[2], 0.5f);
+
+	//лево
+	aCenters[4] = (aWPoints[7] + aWPoints[3]) * 0.5f;// SMVectorLerp(aWPoints[7], aWPoints[3], 0.5f);
+	//право
+	aCenters[5] = (aWPoints[0] + aWPoints[4]) * 0.5f;// SMVectorLerp(aWPoints[0], aWPoints[4], 0.5f);
+
+
+	float aDist2[6];
+
+	for (int i = 0; i < 6; ++i)
+	{
+		aDist2[i] = SMVector3Length2(aCenters[i] - vObserverPos);
+	}*/
+
+
+
+	//bool isVisible = (
+		//(/*(aDist2[0] <= aDist2[1] || GetAsyncKeyState('F')*) &&*/ OC_RasterizeQuad(aSSPoints[6], aSSPoints[1], aSSPoints[4], aSSPoints[7], vNearFar)) ||
+
+		//(/*(aDist2[1] <= aDist2[0] || GetAsyncKeyState('F')) &&*/ OC_RasterizeQuad(aSSPoints[0], aSSPoints[3], aSSPoints[5], aSSPoints[2], vNearFar)) ||
+
+		//(/*(aDist2[2] <= aDist2[3] || GetAsyncKeyState('F')) &&*/ OC_RasterizeQuad(aSSPoints[3], aSSPoints[0], aSSPoints[1], aSSPoints[6], vNearFar)) ||
+
+		//(/*(aDist2[3] <= aDist2[2] || GetAsyncKeyState('F')) &&*/ OC_RasterizeQuad(aSSPoints[7], aSSPoints[4], aSSPoints[2], aSSPoints[5], vNearFar)) ||
+
+		//(/*(aDist2[4] <= aDist2[5] || GetAsyncKeyState('F')) &&*/ OC_RasterizeQuad(aSSPoints[3], aSSPoints[6], aSSPoints[7], aSSPoints[5], vNearFar)) ||
+
+		//(/*(aDist2[5] <= aDist2[4] || GetAsyncKeyState('F')) &&*/ OC_RasterizeQuad(aSSPoints[1], aSSPoints[0], aSSPoints[2], aSSPoints[4], vNearFar))
+		//);
+
+	/*bool isVisible = (
+		((aDist2[0] <= aDist2[1] || GetAsyncKeyState('F')) && 
+		OC_TriangleRasterize(aSSPoints[6], aSSPoints[1], aSSPoints[4], false, aSSPoints[7], vNearFar) && 
+		OC_TriangleRasterize(aSSPoints[6], aSSPoints[4], aSSPoints[7], false, aSSPoints[7], vNearFar)) ||
+
+		((aDist2[1] <= aDist2[0] || GetAsyncKeyState('F')) && 
+		OC_TriangleRasterize(aSSPoints[0], aSSPoints[3], aSSPoints[5], false, aSSPoints[2], vNearFar) &&
+		OC_TriangleRasterize(aSSPoints[0], aSSPoints[5], aSSPoints[2], false, aSSPoints[2], vNearFar)) ||
+
+		((aDist2[2] <= aDist2[3] || GetAsyncKeyState('F')) && 
+		OC_TriangleRasterize(aSSPoints[3], aSSPoints[0], aSSPoints[1], false, aSSPoints[6], vNearFar) &&
+		OC_TriangleRasterize(aSSPoints[3], aSSPoints[1], aSSPoints[6], false, aSSPoints[6], vNearFar)) ||
+
+		((aDist2[3] <= aDist2[2] || GetAsyncKeyState('F')) && 
+		OC_TriangleRasterize(aSSPoints[7], aSSPoints[4], aSSPoints[2], false, aSSPoints[5], vNearFar) &&
+		OC_TriangleRasterize(aSSPoints[7], aSSPoints[2], aSSPoints[5], false, aSSPoints[5], vNearFar)) ||
+
+		((aDist2[4] <= aDist2[5] || GetAsyncKeyState('F')) && 
+		OC_TriangleRasterize(aSSPoints[3], aSSPoints[6], aSSPoints[7], false, aSSPoints[5], vNearFar) &&
+		OC_TriangleRasterize(aSSPoints[3], aSSPoints[7], aSSPoints[5], false, aSSPoints[5], vNearFar)) ||
+
+		((aDist2[5] <= aDist2[4] || GetAsyncKeyState('F')) && 
+		OC_TriangleRasterize(aSSPoints[1], aSSPoints[0], aSSPoints[2], false, aSSPoints[4], vNearFar) &&
+		OC_TriangleRasterize(aSSPoints[1], aSSPoints[2], aSSPoints[4], false, aSSPoints[4], vNearFar))
+		);*/
+
+
+	//зад
+	/*TriangleRasterize((float3)aPoints[7], (float3)aPoints[6], (float3)aPoints[1], aNormals[0], vNearFar);
+	TriangleRasterize((float3)aPoints[7], (float3)aPoints[1], (float3)aPoints[4], aNormals[0], vNearFar);
+
+	//перед
+	TriangleRasterize((float3)aPoints[0], (float3)aPoints[5], (float3)aPoints[2], aNormals[0], vNearFar);
+	TriangleRasterize((float3)aPoints[0], (float3)aPoints[3], (float3)aPoints[5], aNormals[0], vNearFar);
+
+	//----
+
+	//верх
+	TriangleRasterize((float3)aPoints[0], (float3)aPoints[1], (float3)aPoints[3], aNormals[0], vNearFar);
+	TriangleRasterize((float3)aPoints[1], (float3)aPoints[6], (float3)aPoints[3], aNormals[0], vNearFar);
+
+	//низ
+	TriangleRasterize((float3)aPoints[5], (float3)aPoints[4], (float3)aPoints[2], aNormals[0], vNearFar);
+	TriangleRasterize((float3)aPoints[4], (float3)aPoints[5], (float3)aPoints[7], aNormals[0], vNearFar);
+
+	//----
+
+	//лево
+	TriangleRasterize((float3)aPoints[0], (float3)aPoints[2], (float3)aPoints[1], aNormals[0], vNearFar);
+	TriangleRasterize((float3)aPoints[1], (float3)aPoints[2], (float3)aPoints[4], aNormals[0], vNearFar);
+
+	//право
+	TriangleRasterize((float3)aPoints[6], (float3)aPoints[5], (float3)aPoints[3], aNormals[0], vNearFar);
+	TriangleRasterize((float3)aPoints[5], (float3)aPoints[6], (float3)aPoints[7], aNormals[0], vNearFar);*/
+
+	//float3 aNormals[12];
+	/*aNormals[0] = TriGetNormal(aWPoints[7], aWPoints[6], aWPoints[1]);
+	aNormals[1] = TriGetNormal(aWPoints[7], aWPoints[1], aWPoints[4]);
+	aNormals[2] = TriGetNormal(aWPoints[0], aWPoints[5], aWPoints[2]);
+	aNormals[3] = TriGetNormal(aWPoints[0], aWPoints[3], aWPoints[5]);
+	aNormals[4] = TriGetNormal(aWPoints[0], aWPoints[1], aWPoints[3]);
+	aNormals[5] = TriGetNormal(aWPoints[1], aWPoints[6], aWPoints[3]);
+	aNormals[6] = TriGetNormal(aWPoints[5], aWPoints[4], aWPoints[2]);
+	aNormals[7] = TriGetNormal(aWPoints[4], aWPoints[5], aWPoints[7]);
+	aNormals[8] = TriGetNormal(aWPoints[0], aWPoints[2], aWPoints[1]);
+	aNormals[9] = TriGetNormal(aWPoints[1], aWPoints[2], aWPoints[4]);
+	aNormals[10] = TriGetNormal(aWPoints[6], aWPoints[5], aWPoints[3]);
+	aNormals[11] = TriGetNormal(aWPoints[5], aWPoints[6], aWPoints[7]);
+
+	float3 vObserverDir;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vObserverDir);*/
+
+	//-13.92, 0.25, -52.76
+	/*if (GetAsyncKeyState('C') 
+		)
+	{
+		if (aNormals[0].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[7]), float3_t(aWPoints[6]), float3_t(aWPoints[1]) });
+
+		if (aNormals[1].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[7]), float3_t(aWPoints[1]), float3_t(aWPoints[4]) });
+
+		if (aNormals[2].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[0]), float3_t(aWPoints[5]), float3_t(aWPoints[2]) });
+
+		if (aNormals[3].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[0]), float3_t(aWPoints[3]), float3_t(aWPoints[5]) });
+
+		if (aNormals[4].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[0]), float3_t(aWPoints[1]), float3_t(aWPoints[3]) });
+
+		if (aNormals[5].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[1]), float3_t(aWPoints[6]), float3_t(aWPoints[3]) });
+
+		if (aNormals[6].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[5]), float3_t(aWPoints[4]), float3_t(aWPoints[2]) });
+
+		if (aNormals[7].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[4]), float3_t(aWPoints[5]), float3_t(aWPoints[7]) });
+
+		if (aNormals[8].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[0]), float3_t(aWPoints[2]), float3_t(aWPoints[1]) });
+
+		if (aNormals[9].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[1]), float3_t(aWPoints[2]), float3_t(aWPoints[4]) });
+
+		if (aNormals[10].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[6]), float3_t(aWPoints[5]), float3_t(aWPoints[3]) });
+
+		if (aNormals[11].z > 0.f)
+			g_aVetrs.push_back({ float3_t(aWPoints[5]), float3_t(aWPoints[6]), float3_t(aWPoints[7]) });
+	}*/
+
+	/*if (g_aVetrs.size() > 0)
+	{
+		SGCore_ShaderUnBind();
+
+		g_pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+		g_pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
+		g_pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjection));
+		g_pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		g_pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		g_pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		//g_pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+		g_pDXDevice->SetTexture(0, 0);
+		g_pDXDevice->SetFVF(D3DFVF_XYZ);
+		g_pDXDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, g_aVetrs.size(), &(g_aVetrs[0]), sizeof(float3_t));
+		//g_pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	}*/
+
+
+	/*bool isVisible = (
+		((SMVector3Dot(aNormals[0], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[7], aSSPoints[6], aSSPoints[1], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[1], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[7], aSSPoints[1], aSSPoints[4], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[2], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[5], aSSPoints[2], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[3], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[3], aSSPoints[5], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[4], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[1], aSSPoints[3], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[5], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[1], aSSPoints[6], aSSPoints[3], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[6], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[5], aSSPoints[4], aSSPoints[2], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[7], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[4], aSSPoints[5], aSSPoints[7], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[8], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[2], aSSPoints[1], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[9], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[1], aSSPoints[2], aSSPoints[4], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[10], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[6], aSSPoints[5], aSSPoints[3], false, vNearFar)) ||
+		((SMVector3Dot(aNormals[11], vObserverDir) <= 0.f || GetAsyncKeyState('F')) && OC_TriangleRasterize(aSSPoints[5], aSSPoints[6], aSSPoints[7], false, vNearFar))
+		);*/
+
+	bool isVisible = (
+		(OC_TriangleRasterize(aSSPoints[7], aSSPoints[6], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[7], aSSPoints[1], aSSPoints[4], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[5], aSSPoints[2], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[3], aSSPoints[5], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[1], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[1], aSSPoints[6], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[5], aSSPoints[4], aSSPoints[2], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[4], aSSPoints[5], aSSPoints[7], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[2], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[1], aSSPoints[2], aSSPoints[4], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[6], aSSPoints[5], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
+		(OC_TriangleRasterize(aSSPoints[5], aSSPoints[6], aSSPoints[7], false, aSSPoints[0], vNearFar))
+		);
+
+	return isVisible;
 }
 
 //##########################################################################

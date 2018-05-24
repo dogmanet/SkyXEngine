@@ -8,7 +8,7 @@ ppgensm_point.ps
 #include <../mtrl.h>
 
 half3 PosCam;
-half2 NearFar;
+//half2 NearFar;
 half2 SizeMapBias;
 half PixelSize;
 half3 LightPos;
@@ -23,7 +23,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 {
 	half ShadowTerm = 0.0f;
 	
-	half tmpdepth = GetDepthLinearR(tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r,NearFar);
+	half tmpdepth = tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r;
 	
 	half4 Position = half4(PosCam + IN.WorldRay * (tmpdepth),1.f);
 	

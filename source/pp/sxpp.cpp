@@ -120,7 +120,7 @@ void PPSet::Init()
 	PPSet::WinSize.y = *r_win_height;
 	Core_SetOutPtr();
 	PPSet::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs", SHADER_CHECKDOUBLE_PATH);
-
+	
 	PPSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
 	PPSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
 
@@ -349,6 +349,7 @@ SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float density)
 {
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
+
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
 	PPSet::DXDevice->GetRenderTarget(0, &BackBuf);
@@ -848,6 +849,7 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "SizeMap", &tmpSizeMap);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "RadiusSun", &LensFlareSunRadius);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "Color", sun_color);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0, "NearFar", &PPSet::NearFar);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::LensFlare0);
 
@@ -1157,23 +1159,24 @@ SX_LIB_API void SPP_RenderMotionBlur(float coef, DWORD timeDelta)
 
 	float determ = 0;
 	float4x4 ViewInv = SMMatrixTranspose(SMMatrixInverse(&determ, PPSet::MCamView));
-	float4x4 ViewPrevInv = SMMatrixTranspose(SMMatrixInverse(&determ, PPSet::MCamViewPrev));
+	//float4x4 ViewPrevInv = SMMatrixTranspose(SMMatrixInverse(&determ, PPSet::MCamViewPrev));
 
-	float4x4 ViewProjInv = SMMatrixTranspose(SMMatrixInverse(&determ, PPSet::MCamView * PPSet::MCamProj));
-	float4x4 ViewProjPrevInv = (SMMatrixTranspose(PPSet::MCamViewPrev * PPSet::MCamProj));
+	//float4x4 ViewProjInv = SMMatrixTranspose(SMMatrixInverse(&determ, PPSet::MCamView * PPSet::MCamProj));
+	float4x4 ViewProjPrev = (SMMatrixTranspose(PPSet::MCamViewPrev * PPSet::MCamProj));
 
-	float4x4 tmpProj = SMMatrixTranspose(PPSet::MCamView*PPSet::MCamProj);
+	//float4x4 tmpProj = SMMatrixTranspose(PPSet::MCamView*PPSet::MCamProj);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "NearFar", &PPSet::NearFar);
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos, "ParamProj", &float3_t(PPSet::WinSize.x, PPSet::WinSize.y, PPSet::ProjFov));
-
+	
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "ViewPos", &PPSet::ConstCurrCamPos);
 	float tmpcoefblur = float(timeDelta) * 0.001f * ((coef)*10.f);// 0.3f;// *(float(timeDelta) * 0.001f);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "CoefBlur", &tmpcoefblur);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "NearFar", &PPSet::NearFar);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "ViewProjectionPrev", &ViewProjPrevInv);
+	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "InvViewProj", &ViewProjInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur, "ViewProjectionPrev", &ViewProjPrev);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, PPSet::IDsShaders::VS::ResPos);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PPSet::IDsShaders::PS::MotionBlur);

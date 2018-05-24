@@ -5,6 +5,7 @@ ppe_sun_render.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 sampler2D DepthSampler:register(s0);
 sampler2D SunSampler:register(s2);
@@ -14,6 +15,7 @@ half4 LightPos;
 half2 SizeMap;
 half2 SizeTexSun;
 half4 LightColor;
+//half2 NearFar;
 
 half4 main(vs_out_pp IN) : COLOR0
 {

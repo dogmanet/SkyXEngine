@@ -418,7 +418,7 @@ enum GREEN_TYPE
 struct CGreenDataVertex
 {
 	float3_t m_vPosition;	//!< позиция
-	float3_t m_vTexCoord;	//!< x - общий масштаб,y - поворот по оси y, z -
+	float3_t m_vTexCoord;	//!< x - общий масштаб, y - поворот по оси y, z -
 	float2_t m_vSinCosRot;	//!< синус и косинус (угол TexCoord.y) для поворота
 };
 

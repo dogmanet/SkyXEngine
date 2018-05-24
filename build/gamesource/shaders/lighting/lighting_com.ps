@@ -11,7 +11,7 @@ half4 LightPos;
 half2 LightPowerDist;
 half4 ViewPos;
 half4 LightColor;
-half2 NearFar;	//!!!пустая, данные из движка сюда не приход¤т, как понадобитьс¤ надо включить
+//half2 NearFar;	//!!!пустая, данные из движка сюда не приход¤т, как понадобитьс¤ надо включить
 
 sampler2D ColorSampler:register(s0);
 sampler2D NormalSampler:register(s1);
@@ -71,7 +71,7 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 		return OUT;
 	}
 	
-	half depth = GetDepthLinearR(tex2D(DepthSampler,IN.TexUV).r,NearFar);
+	half depth = tex2D(DepthSampler,IN.TexUV).r;
 	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
 	#ifdef IS_SHADOWED
 	half shadow = tex2D(ShadowSampler,IN.TexUV).r;
@@ -128,7 +128,7 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	
 	//LightColor.xyz *= max(diffuse,0.2);
 		
-	OUT.Amdient.xyz = lerp(LightPowerDist.x,LightColor.xyz,0.5f) * max(diffuse,0.5) * LightPowerDist.x * attenuation;
+	OUT.Amdient.xyz = LightColor.xyz * LightPowerDist.x * max(diffuse,0.5) * attenuation;//LightColor.xyz * attenuation * max(diffuse,0.5);//lerp(LightPowerDist.x,LightColor.xyz,0.5f) * max(diffuse,0.5) * LightPowerDist.x * attenuation;
 	OUT.Amdient.w = diffuse * LightPowerDist.x * attenuation;
 	
 	OUT.Spec = (specular*absdiffuse * saturate(attenuation * 2) * LightPowerDist.x);

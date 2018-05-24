@@ -6,6 +6,8 @@ See the license in LICENSE
 
 #include "shader.h"
 
+bool g_useCache = true;
+
 CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader)
 {
 	CShaderFileCache *pSFC = new CShaderFileCache();
@@ -207,7 +209,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 	}
 
 #ifndef _DEBUG
-	if (FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
+	if (g_useCache && FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 
@@ -325,7 +327,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 	}
 
 #ifndef _DEBUG
-	if (FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
+	if (g_useCache && FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 
@@ -426,8 +428,47 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 
 CShaderManager::CShaderManager()
 {
+	g_useCache = true;
 	m_iLastAllLoadVS = 0;
 	m_iLastAllLoadPS = 0;
+
+	char szFullPathCache[1024];
+	sprintf(szFullPathCache, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
+
+	if (!FileExistsDir(szFullPathCache))
+		FileCreateDir(szFullPathCache);
+
+	loadCacheInclude();
+
+	Array<String> aIncludes = FileGetListRec(Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), FILE_LIST_TYPE_FILES, "h");
+
+	if (aIncludes.size() != m_aIncludes.size())
+		g_useCache = false;
+	else
+	{
+		for (int i = 0, il = m_aIncludes.size(); i < il; ++i)
+		{
+			if (
+				!(stricmp(m_aIncludes[i].m_szFile, aIncludes[i].c_str()) == 0 &&
+				FileGetTimeLastModify((String(Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS)) + aIncludes[i]).c_str()) == m_aIncludes[i].m_uiDate)
+				)
+				g_useCache = false;
+		}
+	}
+
+	if (!g_useCache)
+	{
+		m_aIncludes.clearFast();
+		for (int i = 0, il = aIncludes.size(); i < il; ++i)
+		{
+			sprintf(m_aIncludes[i].m_szFile, "%s", aIncludes[i].c_str());
+			m_aIncludes[i].m_uiDate = FileGetTimeLastModify((String(Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS)) + aIncludes[i]).c_str());
+		}
+
+		saveCacheInclude();
+	}
+
+	int qwerty = 0;
 }
 
 CShaderManager::~CShaderManager()
@@ -445,6 +486,49 @@ CShaderManager::~CShaderManager()
 			
 	m_aVS.clear();
 	m_aPS.clear();
+}
+
+void CShaderManager::loadCacheInclude()
+{
+	char szFullPathCacheInc[1024];
+	sprintf(szFullPathCacheInc, "%s%s/includes", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
+
+	if (!FileExistsFile(szFullPathCacheInc))
+		return;
+
+	FILE *pFile = fopen(szFullPathCacheInc, "rb");
+
+	int32_t iCount = 0;
+
+	fread(&iCount, sizeof(int32_t), 1, pFile);
+
+	for (int i = 0; i < iCount; ++i)
+	{
+		CShaderInclude oInc;
+		fread(&oInc, sizeof(CShaderInclude), 1, pFile);
+		m_aIncludes.push_back(oInc);
+	}
+
+	fclose(pFile);
+}
+
+void CShaderManager::saveCacheInclude()
+{
+	char szFullPathCacheInc[1024];
+	sprintf(szFullPathCacheInc, "%s%s/includes", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
+
+	FILE *pFile = fopen(szFullPathCacheInc, "wb");
+
+	int32_t iCount = m_aIncludes.size();
+
+	fwrite(&iCount, sizeof(int32_t), 1, pFile);
+
+	for (int i = 0; i < iCount; ++i)
+	{
+		fwrite(&(m_aIncludes[i]), sizeof(CShaderInclude), 1, pFile);
+	}
+
+	fclose(pFile);
 }
 
 void CShaderManager::reloadAll()

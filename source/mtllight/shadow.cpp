@@ -462,12 +462,15 @@ void PSSM::GenShadow2(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3);
 
-	float4x4 camview;
+	float4x4 camview, mProjection;
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &camview);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mProjection);
 
 	float determ = 0;
 	float4x4 ViewInv = SMMatrixInverse(&determ, camview);
 	ViewInv = SMMatrixTranspose(ViewInv);
+
+	float4x4 mInvVP = SMMatrixTranspose(SMMatrixInverse(&determ, camview * mProjection));
 
 	float3 observerpos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
@@ -801,12 +804,14 @@ void ShadowMapTech::GenShadow2(IDirect3DTexture9* shadowmap)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "PosCam", &observerpos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "NearFar", &float2_t(*r_near, *r_far));
 	}
 	else
 	{
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "PosCam", &observerpos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "NearFar", &float2_t(*r_near, *r_far));
 	}
 
 	float4x4 camview;
@@ -1140,7 +1145,7 @@ void ShadowMapCubeTech::GenShadow2(IDirect3DTexture9* shadowmap)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PosCam", &observerpos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
-		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
 	}
 

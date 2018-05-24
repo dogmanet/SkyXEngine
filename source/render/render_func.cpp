@@ -237,51 +237,52 @@ void SXRenderFunc::ComVisibleForLight()
 		}
 	}
 
-	long tmpidarr = -1;
-	for (long i = 0; i < SML_LigthsDelGetCount(); ++i)
+	ID tmpidarr = -1;
+	while (SML_LigthsDelGetCount() > 0)
 	{
-		if (SML_LigthsDelGetType(i) == LTYPE_LIGHT_GLOBAL)
+		int iCurrKey = 0;
+		if (SML_LigthsDelGetType(iCurrKey) == LTYPE_LIGHT_GLOBAL)
 		{
 			for (int k = 0; k<4; k++)
 			{
-				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(tmpidarr))
+				if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(tmpidarr))
 					SGeom_ModelsDelArrForCom(tmpidarr);
 
-				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGeom_GreenExistsArrForCom(tmpidarr))
+				if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGeom_GreenExistsArrForCom(tmpidarr))
 					SGeom_GreenDelArrForCom(tmpidarr);
 
-				if((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_ANIM, k)) >= 0)
+				if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, k)) >= 0)
 					SXAnim_ModelsDelArrForCom(tmpidarr);
 			}
 		}
-		else if (SML_LigthsDelGetType(i) == LTYPE_LIGHT_DIR)
+		else if (SML_LigthsDelGetType(iCurrKey) == LTYPE_LIGHT_DIR)
 		{
-			if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GEOM, 0)) >= 0 && SGeom_ModelsExistsArrForCom(tmpidarr))
+			if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, 0)) >= 0 && SGeom_ModelsExistsArrForCom(tmpidarr))
 				SGeom_ModelsDelArrForCom(tmpidarr);
 
-			if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGeom_GreenExistsArrForCom(tmpidarr))
+			if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGeom_GreenExistsArrForCom(tmpidarr))
 				SGeom_GreenDelArrForCom(tmpidarr);
 
-			if((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_ANIM, 0)) >= 0)
+			if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, 0)) >= 0)
 				SXAnim_ModelsDelArrForCom(tmpidarr);
 
 		}
-		else if (SML_LigthsDelGetType(i) == LTYPE_LIGHT_POINT)
+		else if (SML_LigthsDelGetType(iCurrKey) == LTYPE_LIGHT_POINT)
 		{
 			for (int k = 0; k<6; k++)
 			{
-				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(tmpidarr))
+				if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(tmpidarr))
 					SGeom_ModelsDelArrForCom(tmpidarr);
 
-				if ((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGeom_GreenExistsArrForCom(tmpidarr))
+				if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGeom_GreenExistsArrForCom(tmpidarr))
 					SGeom_GreenDelArrForCom(tmpidarr);
 
-				if((tmpidarr = SML_LigthsDelGetIDArr(i, RENDER_IDARRCOM_ANIM, k)) >= 0)
+				if ((tmpidarr = SML_LigthsDelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, k)) >= 0)
 					SXAnim_ModelsDelArrForCom(tmpidarr);
 			}
 		}
 
-		SML_LigthsDelDel(i);
+		SML_LigthsDelDel(iCurrKey);
 	}
 }
 
@@ -584,8 +585,6 @@ int SXRenderFunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char
 			sprintf(debugstr + strlen(debugstr), szStr);
 		}
 
-		Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
-		Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
 		TimeElapsed = 0.0f;
 		FrameCount2 = FrameCount;
 		FrameCount = 0;
@@ -1161,6 +1160,12 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 				//устанавливаем текстуру с тенями и переназначаем шейдер, теперь уже с тенями
 				GData::DXDevice->SetTexture(4, SML_LigthsGetShadow());
 				idshader = GData::IDsShaders::PS::ComLightingShadow;
+
+				if (GetAsyncKeyState('Q'))
+					D3DXSaveTextureToFile((String("C:/1/SML_LigthsGetShadow") + String(i) + ".jpg").c_str(), D3DXIFF_JPG, SML_LigthsGetShadow(), NULL);
+
+				/*if (i == SML_LigthsGetGlobal())
+					GData::DXDevice->SetTexture(4, SGCore_LoadTexGetTex(SGCore_LoadTexGetID("g_shadow")));*/
 			}
 
 			SGCore_ShaderUnBind();
@@ -1461,12 +1466,8 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	fog_color = (float3_t*)(*pp_fog_color);
 
 	static const float * pp_fog_density = GET_PCVAR_FLOAT("pp_fog_density");
-	/*static const float * pp_fog_sky = GET_PCVAR_FLOAT("pp_fog_sky");
-	static const float * pp_fog_min = GET_PCVAR_FLOAT("pp_fog_min");
-	static const float * pp_fog_max = GET_PCVAR_FLOAT("pp_fog_max");*/
-
-	if (pp_fog_density && *pp_fog_density > 0.f /*&& pp_fog_sky && pp_fog_min && pp_fog_max*/)
-		SPP_RenderFogLinear(fog_color, *pp_fog_density /*&float4_t(*pp_fog_density, *pp_fog_sky, *pp_fog_min, *pp_fog_max)*/);
+	if (pp_fog_density && *pp_fog_density > 0.f )
+		SPP_RenderFogLinear(fog_color, *pp_fog_density);
 	//SPP_RenderWhiteBlack(1);
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
@@ -1494,7 +1495,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
 	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
-	if (pp_lensflare && (*pp_lensflare))
+	if (pp_lensflare && (*pp_lensflare) && GlobalLight >= 0)
 		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), &float4_t(tmpColor.x, tmpColor.y, tmpColor.z, (SML_LigthsGetCastGlobalShadow() ? 0 : SML_LigthsGetPower(GlobalLight))), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
 
 

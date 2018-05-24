@@ -1143,6 +1143,9 @@ bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
 	
 	eff->ViewRender = frustum->sphereInFrustum(&scenter, sradius);
 
+	if (eff->ViewRender)
+		eff->ViewRender = SGCore_OC_IsVisible(&(eff->CurrMin2), &(eff->CurrMax2));
+
 	eff->ViewDist = SMVector3Length((scenter - (*view))) - sradius;
 
 	return eff->ViewRender;
@@ -1150,6 +1153,8 @@ bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
 
 void Effects::EffectVisibleComAll(const ISXFrustum* frustum, float3* view)
 {
+	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+
 	for(int i = 0, l = ArrID.size(); i < l; ++i)
 	{
 		if (ArrID[i])

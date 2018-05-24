@@ -19,6 +19,14 @@ struct vs_out_res_pos
 	half3 WorldRay	:TEXCOORD2;
 };
 
+struct vs_out_res_pos_nl
+{
+	half4 Position	:POSITION0;
+	half2 TexUV		:TEXCOORD0;
+	
+	half2 ScreenPos	:TEXCOORD1;
+};
+
 //стандартная структура постпроцесса, на вход врешинному шейдеру
 struct vs_in_pp
 {

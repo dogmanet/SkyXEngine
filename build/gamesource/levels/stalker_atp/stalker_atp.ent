@@ -255,7 +255,7 @@ light_far = 10.000000
 flags = 0
 dist = 10.000000
 color = 50.000000 50.000000 50.000000
-classname = light_point
+classname = light_point_qqqq
 origin = 0.000000 -0.750000 0.000000
 rotation = 0.000000 0.000000 0.000000 1.000000
 

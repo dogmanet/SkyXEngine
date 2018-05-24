@@ -22,6 +22,9 @@ See the license in LICENSE
 extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
+//! используется ли в данный момент кэш шейдеров?
+extern bool g_useCache;
+
 //! базовый класс шейдера
 struct CShader
 {
@@ -101,6 +104,22 @@ struct CShaderFileCache : public CShader
 	}
 
 	//! время последнего изменения оригинального шейдера
+	uint32_t m_uiDate;
+};
+
+//! представление инлюда шейдеров
+struct CShaderInclude
+{
+	CShaderInclude()
+	{
+		m_szFile[0] = 0;
+		m_uiDate = 0;
+	}
+
+	//! имя файла
+	char m_szFile[SXGC_SHADER_MAX_SIZE_DIRNAME];
+
+	//! время последнего изменения
 	uint32_t m_uiDate;
 };
 
@@ -216,6 +235,17 @@ protected:
 
 	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
 	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
+
+	//! массив всех инклюдов
+	Array<CShaderInclude> m_aIncludes;
+
+	//! загрузить текущий кэш инклюдов
+	void loadCacheInclude();
+
+	//! сохранить текущий кэш инклюдов
+	void saveCacheInclude();
+
+	//bool m_useCache;
 
 	int m_iLastAllLoadVS;		//! общее количество загруженных vs шейдеров, с прошлого раза
 	int m_iLastAllLoadPS;		//! общее количество загруженных ps шейдеров, с прошлого раза

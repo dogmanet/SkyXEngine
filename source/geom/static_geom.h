@@ -137,7 +137,7 @@ public:
 		//! имеет ли кусок куски внутри себя?
 		bool m_isNonEnd;
 
-		//ID3DXMesh* BoundBox;	//ограничивающий параллелепипед (меш)
+		ID3DXMesh *m_pBoundBox;	//ограничивающий параллелепипед (меш)
 	};
 
 	//**********************************************************************
@@ -402,6 +402,7 @@ public:
 
 	bool traceBeam(const float3 *pStart, const float3 *Dir, float3 *pResult, ID *pIDmodel, ID *pIDmtl);
 
+
 protected:
 
 	//! структура для сортировки моделей и их подгрупп по дальности от камеры
@@ -466,7 +467,7 @@ protected:
 
 	void getIntersectedRayY2(float3 *pPos, CSegment **ppSplits, int *iCount, CSegment *pSegment, ID idCurrSplitRender);
 
-	void comRecArrIndeces(const ISXFrustum *pFrustum, CSegment **ppSplits, int *iCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
+	void comRecArrIndeces(ID idArr, const ISXFrustum *pFrustum, CSegment **ppSplits, int *iCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
 
 	//*************************************************************************
 
