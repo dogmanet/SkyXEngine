@@ -117,7 +117,7 @@ void CCrosshairManager::loadConfig(const char * szFile)
 			continue;
 		}
 		AAString aas;
-		aas.SetName(sect);
+		aas.setName(sect);
 		m_mIndex[aas] = m_vCrosshairList.size();
 		m_vCrosshairList.push_back(cd);
 	}

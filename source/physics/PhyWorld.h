@@ -48,7 +48,9 @@ public:
 	void sync();
 
 	void AddShape(btRigidBody * pBody);
+	void addShape(btRigidBody * pBody, int group, int mask);
 	void RemoveShape(btRigidBody * pBody);
+
 
 	void LoadGeom(const char * file=NULL);
 	void UnloadGeom();
@@ -59,6 +61,8 @@ public:
 	void render();
 
 	MTLTYPE_PHYSIC GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+	
+	ID GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
 	btDiscreteDynamicsWorld * GetBtWorld()
 	{
@@ -105,7 +109,8 @@ protected:
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;
-	MTLTYPE_PHYSIC *m_pGeomMtlTypes;
+	//MTLTYPE_PHYSIC *m_pGeomMtlTypes;
+	ID *m_pGeomMtlIDs;
 	int m_iGeomFacesCount;
 	int m_iGeomModelCount;
 

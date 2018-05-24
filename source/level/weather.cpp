@@ -323,7 +323,7 @@ void CWeather::load(const char *szPath)
 			WEATHER_CONFIG_LACKS_KEY("sun_pos", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "sky_rotation"))
-			m_aTimeSections[i].m_DataSection.m_fSkyRotation = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "sky_rotation")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fSkyRotation = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "sky_rotation")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("sky_rotation", szPath, m_aTimeSections[i].m_szSection);
 
@@ -379,17 +379,17 @@ void CWeather::load(const char *szPath)
 			WEATHER_CONFIG_LACKS_KEY("clouds_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_rotate"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fCloudsRotate = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_rotate")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_rotate", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_transparency"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fCloudsTransparency = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_transparency")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_transparency", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "clouds_speed"))
-			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_speed")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fCloudsSpeed = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "clouds_speed")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("clouds_speed", szPath, m_aTimeSections[i].m_szSection);
 
@@ -416,12 +416,12 @@ void CWeather::load(const char *szPath)
 			WEATHER_CONFIG_LACKS_KEY("sun_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "far"))
-			m_aTimeSections[i].m_DataSection.m_fFar = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "far")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fFar = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "far")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("far", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "rain_density"))
-			m_aTimeSections[i].m_DataSection.m_fRainDensity = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "rain_density")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fRainDensity = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "rain_density")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("rain_density", szPath, m_aTimeSections[i].m_szSection);
 
@@ -451,7 +451,7 @@ void CWeather::load(const char *szPath)
 			WEATHER_CONFIG_LACKS_KEY("rain_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "fog_density"))
-			m_aTimeSections[i].m_DataSection.m_fFogDensity = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "fog_density")).ToDouble();
+			m_aTimeSections[i].m_DataSection.m_fFogDensity = (float)String(config->getKey(m_aTimeSections[i].m_szSection, "fog_density")).toDouble();
 		else
 			WEATHER_CONFIG_LACKS_KEY("fog_density", szPath, m_aTimeSections[i].m_szSection);
 
@@ -477,12 +477,12 @@ void CWeather::load(const char *szPath)
 			WEATHER_CONFIG_LACKS_KEY("fog_color", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "thunderbolt"))
-			m_aTimeSections[i].m_DataSection.m_hasThunderbolt = String(config->getKey(m_aTimeSections[i].m_szSection, "thunderbolt")).ToBool();
+			m_aTimeSections[i].m_DataSection.m_hasThunderbolt = String(config->getKey(m_aTimeSections[i].m_szSection, "thunderbolt")).toBool();
 		else
 			WEATHER_CONFIG_LACKS_KEY("thunderbolt", szPath, m_aTimeSections[i].m_szSection);
 
 		if (config->keyExists(m_aTimeSections[i].m_szSection, "thunder_period"))
-			m_aTimeSections[i].m_DataSection.m_ulThunderPeriod = String(config->getKey(m_aTimeSections[i].m_szSection, "thunder_period")).ToUnsLongInt();
+			m_aTimeSections[i].m_DataSection.m_ulThunderPeriod = String(config->getKey(m_aTimeSections[i].m_szSection, "thunder_period")).toUnsLongInt();
 		else
 			WEATHER_CONFIG_LACKS_KEY("thunder_period", szPath, m_aTimeSections[i].m_szSection);
 

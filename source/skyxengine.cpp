@@ -481,6 +481,7 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
 
 	Core_0ConsoleUpdate();
+	Core_0ConsoleUpdate();
 
 	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
 	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
@@ -861,6 +862,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #ifdef _DEBUG
 	SXPhysics_DebugRender();
+#endif
+
+#if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
+	SXGame_Render();
 #endif
 
 #if defined(SX_LEVEL_EDITOR)
@@ -1527,7 +1532,7 @@ IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath)
 IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath)
 {
 	String sPath = szPath;
-	sPath.Replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
+	sPath.replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
 	sPath = FileSetStrExt(sPath.c_str(), "jpg");
 
 	if (FileExistsFile(sPath.c_str()))

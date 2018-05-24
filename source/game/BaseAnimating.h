@@ -48,7 +48,7 @@ public:
 	bool playingAnimations(const char* name);
 	void setPos(const float3 & pos);
 	void setOrient(const SMQuaternion & q);
-
+	
 protected:
 	IAnimPlayer * m_pAnimPlayer;
 	const char * m_szModelFile;
@@ -56,7 +56,7 @@ protected:
 
 	virtual void initPhysics();
 	virtual void createPhysBody();
-	void releasePhysics();
+	virtual void releasePhysics();
 	virtual void removePhysBody();
 
 	btCollisionShape * m_pCollideShape;

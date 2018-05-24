@@ -27,46 +27,46 @@ public:
 	
 	const char & operator[](const unsigned long & num) const
 	{
-		return(this->string[num]);
+		return(m_szString[num]);
 	}
 
 	char & operator[](const unsigned long & num)
 	{
-		return(this->string[num]);
+		return(m_szString[num]);
 	}
 
 	CConfigString & operator=(const CConfigString & str)
 	{
-		Release();
-		string = new char[str.length() + 1];
-		memcpy(string, str.c_str(), str.length() + 1);
+		release();
+		m_szString = new char[str.length() + 1];
+		memcpy(m_szString, str.c_str(), str.length() + 1);
 		return(*this);
 	}
 
 	CConfigString & operator=(const CConfigString * str)
 	{
-		Release();
-		string = new char[str->length() + 1];
-		memcpy(string, str->c_str(), str->length() + 1);
+		release();
+		m_szString = new char[str->length() + 1];
+		memcpy(m_szString, str->c_str(), str->length() + 1);
 		return(*this);
 	}
 
 	bool operator==(const CConfigString &str) const
 	{
-		return (stricmp(str.string, this->string) == 0);
+		return (stricmp(str.m_szString, m_szString) == 0);
 	}
 
 	bool operator==(const CConfigString * str) const
 	{
-		return (stricmp(str->string, this->string) == 0);
+		return (stricmp(str->m_szString, m_szString) == 0);
 	}
 
 	CConfigString & operator+=(const char &	sym)
 	{
 		char * newstring = new char[length() + 2];
-		sprintf(newstring, "%s%c", string, sym);
-		SAFE_DELETE_A(string);
-		string = newstring;
+		sprintf(newstring, "%s%c", m_szString, sym);
+		mem_delete_a(m_szString);
+		m_szString = newstring;
 		return(*this);
 	}
 };

@@ -117,6 +117,12 @@ SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody)
 	g_pWorld->AddShape(pBody);
 }
 
+SX_LIB_API void SXPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask)
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->addShape(pBody, group, mask);
+}
+
 SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);
@@ -146,4 +152,11 @@ SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btColl
 	SP_PRECOND(MTLTYPE_PHYSIC_DEFAULT);
 
 	return(g_pWorld->GetMtlType(pBody, pShapeInfo));
+}
+
+SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+{
+	SP_PRECOND(-1);
+
+	return(g_pWorld->GetMtlID(pBody, pShapeInfo));
 }

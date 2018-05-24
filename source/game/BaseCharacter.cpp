@@ -48,7 +48,8 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_uMoveDir(PM_OBSERVER),
 	m_vPitchYawRoll(float3_t(0, 0, 0)),
 	m_pActiveTool(NULL),
-	m_fCurrentSpread(0.0f)
+	m_fCurrentSpread(0.0f),
+	m_pHitboxBodies(NULL)
 {
 	btTransform startTransform;
 	startTransform.setIdentity();
@@ -73,9 +74,9 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_pCharacter->setFallSpeed(300.0f);
 	//m_pCharacter->setFallSpeed(30.0f);
 
-	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::DebrisFilter);
+	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
 
-	m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
 	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
 
@@ -90,14 +91,18 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
 	//m_flashlight->setShadowType(-1);
 	m_flashlight->setShadowType(1);
+	m_flashlight->setEnable(false);
 
 	m_idTaskSpread = SET_INTERVAL(updateSpread, 1.0f / 30.0f);
+
+	m_pInventory = new CCharacterInventory(this);
 }
 
 CBaseCharacter::~CBaseCharacter()
 {
 	CLEAR_INTERVAL(m_idTaskSpread);
 	REMOVE_ENTITY(m_flashlight);
+	mem_delete(m_pInventory);
 }
 
 
@@ -148,10 +153,9 @@ void CBaseCharacter::nextFireMode()
 	{
 		return;
 	}
-	if(m_pActiveTool)
+	if(m_pActiveTool && m_pActiveTool->isWeapon())
 	{
-		//@FIXME: Add correct call
-		//m_pActiveTool->nextFireMode();
+		((CBaseWeapon*)m_pActiveTool)->nextFireMode();
 	}
 }
 
@@ -171,7 +175,7 @@ void CBaseCharacter::playFootstepsSound()
 			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
 			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
-			if(cb.hasHit() && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0)
+			if(cb.hasHit()/* && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0*/)
 			{
 				MTLTYPE_PHYSIC type = (MTLTYPE_PHYSIC)SXPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
 				g_pGameData->playFootstepSound(type, BTVEC_F3(cb.m_hitPointWorld));
@@ -249,3 +253,131 @@ float CBaseCharacter::getCurrentSpread()
 {
 	return(m_fCurrentSpread);
 }
+
+void CBaseCharacter::initHitboxes()
+{
+	if(!m_pAnimPlayer)
+	{
+		return;
+	}
+
+	int l = m_pAnimPlayer->getHitboxCount();
+	m_pHitboxBodies = new btRigidBody*[l];
+
+	const ModelHitbox * hb;
+	for(int i = 0; i < l; ++i)
+	{
+		hb = m_pAnimPlayer->getHitbox(i);
+		btCollisionShape *pShape;
+		switch(hb->type)
+		{
+		case HT_BOX:
+			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f * m_fBaseScale));
+			break;
+		case HT_CAPSULE:
+			pShape = new btCapsuleShape(hb->lwh.y * 0.5f * m_fBaseScale, hb->lwh.z * m_fBaseScale);
+			break;
+		case HT_CYLINDER:
+			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f * m_fBaseScale));
+			break;
+		case HT_ELIPSOID:
+			// @FIXME: Add actual elipsoid shape
+			pShape = new btSphereShape(hb->lwh.x);
+			break;
+		case HT_CONVEX:
+			assert(false && "Not supported here");
+		}
+		btVector3 vInertia;
+		const float fMass = 1.0f;
+		pShape->calculateLocalInertia(fMass, vInertia);
+
+		btDefaultMotionState * motionState = new btDefaultMotionState();
+
+		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
+			fMass,                  // mass
+			motionState,        // initial position
+			pShape,    // collision shape of body
+			vInertia  // local inertia
+			);
+		btRigidBody * pRigidBody = new btRigidBody(rigidBodyCI);
+		pRigidBody->setUserPointer(this);
+
+		pRigidBody->setAngularFactor(0.0f);
+		pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
+
+		SXPhysics_AddShapeEx(pRigidBody, CG_HITBOX, CG_BULLETFIRE);
+		m_pHitboxBodies[i] = pRigidBody;
+	}
+
+	updateHitboxes();
+}
+
+void CBaseCharacter::updateHitboxes()
+{
+	if(!m_pAnimPlayer || !m_pHitboxBodies)
+	{
+		return;
+	}
+
+	const ModelHitbox * hb;
+	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
+	{
+		hb = m_pAnimPlayer->getHitbox(i);
+		
+		//SMMATRIX mBone = m_pAnimPlayer->getBoneTransformPos(hb->bone_id);
+
+		m_pHitboxBodies[i]->getWorldTransform().setFromOpenGLMatrix((btScalar*)&(SMMatrixRotationX(hb->rot.x)
+			* SMMatrixRotationY(hb->rot.y)
+			* SMMatrixRotationZ(hb->rot.z)
+			* SMMatrixTranslation(hb->pos * m_fBaseScale)
+			* m_pAnimPlayer->getBoneTransform(hb->bone_id, true)
+			* getWorldTM()
+			));
+	}
+}
+
+void CBaseCharacter::releaseHitboxes()
+{
+	if(!m_pAnimPlayer || !m_pHitboxBodies)
+	{
+		return;
+	}
+
+	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
+	{
+		SXPhysics_RemoveShape(m_pHitboxBodies[i]);
+
+		btMotionState * motionState = m_pHitboxBodies[i]->getMotionState();
+
+		mem_delete(motionState);
+
+		btCollisionShape * pShape = m_pHitboxBodies[i]->getCollisionShape();
+		mem_delete(pShape);
+		mem_delete(m_pHitboxBodies[i]);
+	}
+
+	mem_delete_a(m_pHitboxBodies);
+}
+
+void CBaseCharacter::onSync()
+{
+	BaseClass::onSync();
+
+	updateHitboxes();
+}
+
+void CBaseCharacter::initPhysics()
+{
+	initHitboxes();
+}
+
+void CBaseCharacter::releasePhysics()
+{
+	releaseHitboxes();
+}
+
+/*void CBaseCharacter::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
+{
+	// adjust damage by bodypart
+	BaseClass::dispatchDamage(takeDamageInfo);
+}*/

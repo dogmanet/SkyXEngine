@@ -17,7 +17,7 @@ PhyWorld::PhyWorld():
 	m_pGeomStaticCollideMesh(NULL),
 	m_pGeomStaticCollideShape(NULL),
 	m_pGeomStaticRigidBody(NULL),
-	m_pGeomMtlTypes(0),
+	m_pGeomMtlIDs(0),
 	m_iGeomFacesCount(0),
 	m_iGeomModelCount(0),
 	m_ppGreenStaticCollideShape(NULL),
@@ -36,7 +36,7 @@ PhyWorld::PhyWorld():
 	
 	Core_0RegisterCVarString("phy_world_gravity", "0 -10 0", "World gravity (x y z)");
 	m_pDynamicsWorld->setGravity(btVector3(0, -10, 0));
-		
+			
 	m_pDebugDrawer = new DebugDrawer();
 	m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	//m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
@@ -93,6 +93,11 @@ void PhyWorld::AddShape(btRigidBody * pBody)
 	m_pDynamicsWorld->addRigidBody(pBody);
 }
 
+void PhyWorld::addShape(btRigidBody * pBody, int group, int mask)
+{
+	m_pDynamicsWorld->addRigidBody(pBody, group, mask);
+}
+
 void PhyWorld::RemoveShape(btRigidBody * pBody)
 {
 	if(pBody)
@@ -124,7 +129,7 @@ void PhyWorld::LoadGeom(const char * file)
 			m_iGeomFacesCount += pIndexCount[tc] / 3;
 		}
 
-		m_pGeomMtlTypes = new MTLTYPE_PHYSIC[m_iGeomFacesCount];
+		m_pGeomMtlIDs = new ID[m_iGeomFacesCount];
 		m_iGeomModelCount = iModelCount;
 		m_pGeomStaticCollideMesh = new btTriangleMesh(true, false);
 
@@ -151,7 +156,8 @@ void PhyWorld::LoadGeom(const char * file)
 			}
 			for(int i = 0; i < pIndexCount[tc]; i += 3)
 			{
-				m_pGeomMtlTypes[iFace++] = SML_MtlGetPhysicMaterial(ppMtls[tc][i]);
+				//m_pGeomMtlTypes[iFace++] = SML_MtlGetPhysicMaterial(ppMtls[tc][i]);
+				m_pGeomMtlIDs[iFace++] = ppMtls[tc][i];
 				m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
 			}
 			IC += pIndexCount[tc];
@@ -182,14 +188,14 @@ void PhyWorld::LoadGeom(const char * file)
 
 
 
-	float3_t** green_arr_vertex;
-	int32_t* green_arr_count_vertex;
-	uint32_t** green_arr_index;
-	ID** green_arr_mtl;
-	int32_t* green_arr_count_index;
-	CGreenDataVertex** green_arr_transform;
-	int32_t* green_arr_count_transform;
-	int32_t green_arr_count_green;
+	float3_t** green_arr_vertex = 0;
+	int32_t* green_arr_count_vertex = 0;
+	uint32_t** green_arr_index = 0;
+	ID** green_arr_mtl = 0;
+	int32_t* green_arr_count_index = 0;
+	CGreenDataVertex** green_arr_transform = 0;
+	int32_t* green_arr_count_transform = 0;
+	int32_t green_arr_count_green = 0;
 
 	SGeom_GreenGetNavMeshAndTransform(&green_arr_vertex, &green_arr_count_vertex, &green_arr_index, &green_arr_mtl, &green_arr_count_index, &green_arr_transform, &green_arr_count_transform, &green_arr_count_green);
 
@@ -414,7 +420,7 @@ void PhyWorld::UnloadGeom()
 
 	m_iGeomModelCount = 0;
 	m_iGeomFacesCount = 0;
-	mem_delete_a(m_pGeomMtlTypes);
+	mem_delete_a(m_pGeomMtlIDs);
 }
 
 bool PhyWorld::ImportGeom(const char * file)
@@ -484,8 +490,8 @@ bool PhyWorld::ImportGeom(const char * file)
 				if(pmf.i64Magick == PHY_MAT_FILE_MAGICK)
 				{
 					m_iGeomFacesCount = pmf.uiGeomFaceCount;
-					m_pGeomMtlTypes = new MTLTYPE_PHYSIC[m_iGeomFacesCount];
-					fread(m_pGeomMtlTypes, sizeof(MTLTYPE_PHYSIC), m_iGeomFacesCount, pF);
+					m_pGeomMtlIDs = new ID[m_iGeomFacesCount];
+					fread(m_pGeomMtlIDs, sizeof(ID), m_iGeomFacesCount, pF);
 				}
 				else
 				{
@@ -565,7 +571,7 @@ bool PhyWorld::ExportGeom(const char * _file)
 		PhyMatFile pmf;
 		pmf.uiGeomFaceCount = m_iGeomFacesCount;
 		fwrite(&pmf, sizeof(pmf), 1, file);
-		fwrite(m_pGeomMtlTypes, sizeof(MTLTYPE_PHYSIC), m_iGeomFacesCount, file);
+		fwrite(m_pGeomMtlIDs, sizeof(ID), m_iGeomFacesCount, file);
 		fclose(file);
 	}
 	return(ret);
@@ -573,11 +579,21 @@ bool PhyWorld::ExportGeom(const char * _file)
 
 MTLTYPE_PHYSIC PhyWorld::GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
-	if(pBody == m_pGeomStaticRigidBody && m_iGeomFacesCount > pShapeInfo->m_triangleIndex)
+	ID idMtl = GetMtlID(pBody, pShapeInfo);
+	if(ID_VALID(idMtl))
 	{
-		return(m_pGeomMtlTypes[pShapeInfo->m_triangleIndex]);
+		return(SML_MtlGetPhysicMaterial(idMtl));
 	}
 	return(MTLTYPE_PHYSIC_DEFAULT);
+}
+
+ID PhyWorld::GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+{
+	if(pBody == m_pGeomStaticRigidBody && m_iGeomFacesCount > pShapeInfo->m_triangleIndex)
+	{
+		return(m_pGeomMtlIDs[pShapeInfo->m_triangleIndex]);
+	}
+	return(-1);
 }
 
 //##############################################################
@@ -646,8 +662,8 @@ void PhyWorld::DebugDrawer::render()
 	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFF);
+	//SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
+	//SGCore_GetDXDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFF);
 
 	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 

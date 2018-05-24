@@ -1,12 +1,19 @@
 [ammo_5.45x39ps]
 base_class = base_ammo
 show_in_listing = 1
-model = "models/ammo/ammo_5.45x39.dse"
+inv_stackable = 1
+inv_stack_max = 300
+; model = "models/ammo/ammo_5.45x39.dse"
 inv_name = "5.45x39ps"
 ;начальная скорость пули, ее масса, бронепробиваемость, останавливающее действие
 start_speed = 900 ; м/с
 bullet_mass = 3.4 ; г
 armor_piercing = 500 ; ед/дж
+is_expansive = 0 ; экспансивная
+is_bursting = 0 ; разрывная
+; коэффициент формы 
+; наличие/отсутствие сердечника
+; вращение об/с - зависит от шачальной скорости, шага нареза
 
 [ammobox_5.45x39ps]
 base_class = base_ammobox
@@ -44,16 +51,22 @@ addon_handlers = ""
 zoom_time = 0.125
 zoomable = 1
 
-fire_modes = "single,burst"; single/burst/cutoff
-; cutoff_size = 3
-; cutoff_speed = 100
-single_speed = 40; выст/мин
-burst_speed = 100; выст/мин
+aiming_range = 200 ; м, дистанция пристрелки
+
+fire_modes = "single,burst,cutoff"; single/burst/cutoff
+cutoff_size = 3
+single_rate = 400; выст/мин
+burst_rate = 600; выст/мин
+cutoff_rate = 600; выст/мин
 
 effective_distance = 650
 
 ;разброс
 spread_base       	= 0.33    ;угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
+
+; тип нарезки ствола: 0 - гладкоствольное; -1 - левая; 1 - правая
+rifle_type = 1 ; 
+rifle_step = 200 ; шаг нарезки, мм
 
 ; Боевая скорострельность (одиночными): 40 выст/мин
 ; Боевая скорострельность (очередями): 100 выст/мин
@@ -71,12 +84,12 @@ spread_base       	= 0.33    ;угол (в градусах) базовой ди
 
 
 ; звуки
-snd_draw         =  ; Достать
-snd_holster      =  ; Убрать
-snd_shoot        = "ak74_shoot2.ogg" ; Стрелять
-snd_empty        =  ; Пустой
-snd_reload       =  ; Перезарядка
-snd_switch       =  ; Переключение режима
+snd_draw         = "wpn/ak74_draw.ogg" ; Достать
+snd_holster      = "wpn/generic_holster.ogg" ; Убрать
+snd_shoot        = "wpn/ak74_shoot2.ogg" ; Стрелять
+snd_empty        = "wpn/gen_empty.ogg" ; Пустой
+snd_reload       = "wpn/ak74_reload.ogg" ; Перезарядка
+snd_switch       = "wpn/generic_close.ogg" ; Переключение режима
 
 ;прочность
 durability_max = 350000

@@ -28,7 +28,7 @@ void ParamLKit::Load(const char* path)
 		return;
 	}
 
-	int count = String(config->getKey("paraml_kit", "count")).ToInt();
+	int count = String(config->getKey("paraml_kit", "count")).toInt();
 	char section_name[CONFIG_SECTION_MAX_LEN];
 
 	for (int i = 0; i < count; ++i)
@@ -45,9 +45,9 @@ void ParamLKit::Load(const char* path)
 
 		paraml* tmpparaml = new paraml();
 		tmpparaml->name = config->getKey(section_name, "name");
-		tmpparaml->thickness = String(config->getKey(section_name, "thickness")).ToDouble();
-		tmpparaml->roughness = String(config->getKey(section_name, "roughness")).ToDouble();
-		tmpparaml->f0 = String(config->getKey(section_name, "f0")).ToDouble();
+		tmpparaml->thickness = String(config->getKey(section_name, "thickness")).toDouble();
+		tmpparaml->roughness = String(config->getKey(section_name, "roughness")).toDouble();
+		tmpparaml->f0 = String(config->getKey(section_name, "f0")).toDouble();
 
 		Arr.push_back(tmpparaml);
 	}

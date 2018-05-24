@@ -49,6 +49,12 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 
 	FILE *pFile = fopen(szFullPathCache, "wb");
 
+	if(!pFile)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to open file '%s' for writing", szFullPathCache);
+		return;
+	}
+
 	uint32_t tLastModify = FileGetTimeLastModify(szFullPath);
 
 	fwrite(&tLastModify, sizeof(uint32_t), 1, pFile);

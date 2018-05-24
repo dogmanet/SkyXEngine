@@ -446,7 +446,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 					btTriangleMeshShape * shape = (btTriangleMeshShape*)part->m_hitCollisionObject->getCollisionShape();
 					btStridingMeshInterface * iface = shape->getMeshInterface();
 
-					float3_t * verices;
+					float3 * verices;
 					int numverts;
 					PHY_ScalarType type = PHY_INTEGER;
 					int stride = 0;
@@ -526,6 +526,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							vClippedVerts[ii + 1].z = nn; // fix normal
 							//Transform to World
 							vDecalVerts.push_back(vert0);
+							//m_dbgRender.push_back(vert0.pos);
 
 							vert.pos = mBasis * vClippedVerts[ii];
 							vert.normal = n;
@@ -533,11 +534,14 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
 
 							vDecalVerts.push_back(vert);
+							//m_dbgRender.push_back(vert.pos);
 
 							vert.pos = mBasis * vClippedVerts[ii + 1];
 							vert.tex = float2((vClippedVerts[ii + 1].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[ii + 1].y - tBound.x) / (tBound.y - tBound.x));
 							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
 							vDecalVerts.push_back(vert);
+							//m_dbgRender.push_back(vert.pos);
+
 							//m_dbgRender.push_back(mBasis * vClippedVerts[ii]);
 							//m_dbgRender.push_back(mBasis * vClippedVerts[(ii + 1) % len]);
 
@@ -560,12 +564,12 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 
 void DecalManager::render()
 {
-	/*for(int i = 0, l = g_dbgDraw.size(); i < l; i += 3)
+	/*for(int i = 0, l = m_dbgRender.size(); i < l; i += 3)
 	{
-		SXPhysics_GetDynWorld()->getDebugDrawer()->drawTriangle(F3_BTVEC(g_dbgDraw[i]), F3_BTVEC(g_dbgDraw[i + 1]), F3_BTVEC(g_dbgDraw[i + 2]), btVector3(1.0f, 1.0f, 1.0f), 1.0f);
-	}
-	SXPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(spherePos), spherePos.w, btVector3(1, 1, 1));
-	*/
+		SXPhysics_GetDynWorld()->getDebugDrawer()->drawTriangle(F3_BTVEC(m_dbgRender[i]), F3_BTVEC(m_dbgRender[i + 1]), F3_BTVEC(m_dbgRender[i + 2]), btVector3(1.0f, 1.0f, 1.0f), 1.0f);
+	}*/
+	//SXPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(spherePos), spherePos.w, btVector3(1, 1, 1));
+	
 	updateBuffer();
 
 	if(!m_pVertexBuffer)
@@ -573,10 +577,7 @@ void DecalManager::render()
 		return;
 	}
 
-
 	dev->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
-	
-	//SkyXEngine::Core::Data::Device->SetTexture(0, SkyXEngine::Core::Data::LoadedTextures->GetTexture(3));
 
 	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 

@@ -108,7 +108,7 @@ void SXLevelEditor::LevelSaveAs()
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
 	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0/*, HandlerPreviewLevel*/);
-	if (StrValidate(tmppath))
+	if(def_str_validate(tmppath))
 	{
 		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Save(tmpname);

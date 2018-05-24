@@ -143,9 +143,14 @@ Materials::Material::Material()
 
 	Type = MTLTYPE_MODEL_STATIC;
 
-	MainTexture = -1;
-	PreShaderVS = -1;
-	PreShaderPS = -1;
+	MainTexture - 1;
+	PreShaderVS - 1;
+	PreShaderPS - 1;
+
+	HitChance = 1.0f;
+	Penetration = 100.0f;
+	Density = 1000.0f;
+
 }
 
 void Materials::Material::Nulling()
@@ -1168,17 +1173,17 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 
 		if (config->keyExists(tmp_name, "is_unlit"))
-			tmpMtl->IsUnlit = String(config->getKey(tmp_name, "is_unlit")).ToBool();
+			tmpMtl->IsUnlit = String(config->getKey(tmp_name, "is_unlit")).toBool();
 		else
 			tmpMtl->IsUnlit = false;
 
 		if (config->keyExists(tmp_name, "type"))
-			tmpMtl->Type = (MTLTYPE_MODEL)String(config->getKey(tmp_name, "type")).ToInt();
+			tmpMtl->Type = (MTLTYPE_MODEL)String(config->getKey(tmp_name, "type")).toInt();
 		else
 			tmpMtl->Type = MTLTYPE_MODEL_DEFAULT;
 
 		if (config->keyExists(tmp_name, "physmaterial"))
-			tmpMtl->PhysicsMaterial = (MTLTYPE_PHYSIC)String(config->getKey(tmp_name, "physmaterial")).ToInt();
+			tmpMtl->PhysicsMaterial = (MTLTYPE_PHYSIC)String(config->getKey(tmp_name, "physmaterial")).toInt();
 		else
 			tmpMtl->PhysicsMaterial = MTLTYPE_PHYSIC_DEFAULT;
 
@@ -1273,22 +1278,22 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		tmpMtl->LightParam.ThicknessValue = MTL_LIGHTING_DEFAULT_THICKNESS;
 
 		if (config->keyExists(tmp_name, "roughness"))
-			tmpMtl->LightParam.RoughnessValue = String(config->getKey(tmp_name, "roughness")).ToDouble();
+			tmpMtl->LightParam.RoughnessValue = String(config->getKey(tmp_name, "roughness")).toDouble();
 
 		if (config->keyExists(tmp_name, "f0"))
-			tmpMtl->LightParam.F0Value = String(config->getKey(tmp_name, "f0")).ToDouble();
+			tmpMtl->LightParam.F0Value = String(config->getKey(tmp_name, "f0")).toDouble();
 
 		if (config->keyExists(tmp_name, "thickness"))
-			tmpMtl->LightParam.ThicknessValue = String(config->getKey(tmp_name, "thickness")).ToDouble();
+			tmpMtl->LightParam.ThicknessValue = String(config->getKey(tmp_name, "thickness")).toDouble();
 
 		if (config->keyExists(tmp_name, "penetration"))
-			tmpMtl->Penetration = String(config->getKey(tmp_name, "penetration")).ToDouble();
+			tmpMtl->Penetration = String(config->getKey(tmp_name, "penetration")).toDouble();
 
 		if (config->keyExists(tmp_name, "hit_chance"))
-			tmpMtl->HitChance = String(config->getKey(tmp_name, "hit_chance")).ToDouble();
+			tmpMtl->HitChance = String(config->getKey(tmp_name, "hit_chance")).toDouble();
 
 		if (config->keyExists(tmp_name, "density"))
-			tmpMtl->Density = String(config->getKey(tmp_name, "density")).ToDouble();
+			tmpMtl->Density = String(config->getKey(tmp_name, "density")).toDouble();
 
 		tmpMtl->LightParam.ParamTexHand = CreateTexParamLighting(tmpMtl->LightParam.RoughnessValue, tmpMtl->LightParam.F0Value, tmpMtl->LightParam.ThicknessValue);
 
@@ -1297,7 +1302,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 
 		//если есть ключ использования текстуры то грузим
 		if (config->keyExists(tmp_name, "is_texture_param"))
-			istexparam = String(config->getKey(tmp_name, "is_texture_param")).ToBool();
+			istexparam = String(config->getKey(tmp_name, "is_texture_param")).toBool();
 
 		tmpParamLigth[0] = 0;
 		if (config->keyExists(tmp_name, "param_ligth"))
@@ -1321,7 +1326,7 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 		
 
 		if (config->keyExists(tmp_name, "refraction"))
-			tmpMtl->LightParam.TypeRefraction = (MTLTYPE_TRANSPARENCY)String(config->getKey(tmp_name, "refraction")).ToInt();
+			tmpMtl->LightParam.TypeRefraction = (MTLTYPE_TRANSPARENCY)String(config->getKey(tmp_name, "refraction")).toInt();
 		else
 			tmpMtl->LightParam.TypeRefraction = MTLTYPE_TRANSPARENCY_NONE;
 
@@ -1331,48 +1336,48 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->VS.IsTransTimeDelta = tmpMtl->VS.IsTransWinSize = tmpMtl->VS.IsTransUserData = false;
 
 		if (config->keyExists(tmp_name, "vs_world"))
-			tmpMtl->VS.IsTransWorld = String(config->getKey(tmp_name, "vs_world")).ToInt();
+			tmpMtl->VS.IsTransWorld = String(config->getKey(tmp_name, "vs_world")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_view"))
-			tmpMtl->VS.IsTransView = String(config->getKey(tmp_name, "vs_view")).ToInt();
+			tmpMtl->VS.IsTransView = String(config->getKey(tmp_name, "vs_view")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_projection"))
-			tmpMtl->VS.IsTransProjection = String(config->getKey(tmp_name, "vs_projection")).ToInt();
+			tmpMtl->VS.IsTransProjection = String(config->getKey(tmp_name, "vs_projection")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_worldview"))
-			tmpMtl->VS.IsTransWorldView = String(config->getKey(tmp_name, "vs_worldview")).ToInt();
+			tmpMtl->VS.IsTransWorldView = String(config->getKey(tmp_name, "vs_worldview")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_worldviewprojection"))
-			tmpMtl->VS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "vs_worldviewprojection")).ToInt();
+			tmpMtl->VS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "vs_worldviewprojection")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_poscam"))
-			tmpMtl->VS.IsTransPosCam = String(config->getKey(tmp_name, "vs_poscam")).ToInt();
+			tmpMtl->VS.IsTransPosCam = String(config->getKey(tmp_name, "vs_poscam")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_timedelta"))
-			tmpMtl->VS.IsTransTimeDelta = String(config->getKey(tmp_name, "vs_timedelta")).ToInt();
+			tmpMtl->VS.IsTransTimeDelta = String(config->getKey(tmp_name, "vs_timedelta")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_winsize"))
-			tmpMtl->VS.IsTransWinSize = String(config->getKey(tmp_name, "vs_winsize")).ToInt();
+			tmpMtl->VS.IsTransWinSize = String(config->getKey(tmp_name, "vs_winsize")).toInt();
 
 		if (config->keyExists(tmp_name, "vs_userdata"))
-			tmpMtl->VS.IsTransUserData = String(config->getKey(tmp_name, "vs_userdata")).ToInt();
+			tmpMtl->VS.IsTransUserData = String(config->getKey(tmp_name, "vs_userdata")).toInt();
 
 
 		tmpMtl->VS.Param = float4(0, 0, 0, 0);
 		if (config->keyExists(tmp_name, "vs_userdata_value_x"))
-			tmpMtl->VS.Param.x = String(config->getKey(tmp_name, "vs_userdata_value_x")).ToDouble();
+			tmpMtl->VS.Param.x = String(config->getKey(tmp_name, "vs_userdata_value_x")).toDouble();
 
 		if (config->keyExists(tmp_name, "vs_userdata_value_y"))
-			tmpMtl->VS.Param.y = String(config->getKey(tmp_name, "vs_userdata_value_y")).ToDouble();
+			tmpMtl->VS.Param.y = String(config->getKey(tmp_name, "vs_userdata_value_y")).toDouble();
 
 		if (config->keyExists(tmp_name, "vs_userdata_value_z"))
-			tmpMtl->VS.Param.z = String(config->getKey(tmp_name, "vs_userdata_value_z")).ToDouble();
+			tmpMtl->VS.Param.z = String(config->getKey(tmp_name, "vs_userdata_value_z")).toDouble();
 
 		if (config->keyExists(tmp_name, "vs_userdata_value_w"))
-			tmpMtl->VS.Param.w = String(config->getKey(tmp_name, "vs_userdata_value_w")).ToDouble();
+			tmpMtl->VS.Param.w = String(config->getKey(tmp_name, "vs_userdata_value_w")).toDouble();
 
 		if (config->keyExists(tmp_name, "vs_userdata_trans_in_ps"))
-			tmpMtl->TransVSDataInPS = String(config->getKey(tmp_name, "vs_userdata_trans_in_ps")).ToBool();
+			tmpMtl->TransVSDataInPS = String(config->getKey(tmp_name, "vs_userdata_trans_in_ps")).toBool();
 		else
 			tmpMtl->TransVSDataInPS = false;
 
@@ -1382,54 +1387,54 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->PS.IsTransTimeDelta = tmpMtl->PS.IsTransWinSize = tmpMtl->PS.IsTransUserData = false;
 
 		if (config->keyExists(tmp_name, "ps_world"))
-			tmpMtl->PS.IsTransWorld = String(config->getKey(tmp_name, "ps_world")).ToInt();
+			tmpMtl->PS.IsTransWorld = String(config->getKey(tmp_name, "ps_world")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_view"))
-			tmpMtl->PS.IsTransView = String(config->getKey(tmp_name, "ps_view")).ToInt();
+			tmpMtl->PS.IsTransView = String(config->getKey(tmp_name, "ps_view")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_projection"))
-			tmpMtl->PS.IsTransProjection = String(config->getKey(tmp_name, "ps_projection")).ToInt();
+			tmpMtl->PS.IsTransProjection = String(config->getKey(tmp_name, "ps_projection")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_worldview"))
-			tmpMtl->PS.IsTransWorldView = String(config->getKey(tmp_name, "ps_worldview")).ToInt();
+			tmpMtl->PS.IsTransWorldView = String(config->getKey(tmp_name, "ps_worldview")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_worldviewprojection"))
-			tmpMtl->PS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "ps_worldviewprojection")).ToInt();
+			tmpMtl->PS.IsTransWorldViewProjection = String(config->getKey(tmp_name, "ps_worldviewprojection")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_poscam"))
-			tmpMtl->PS.IsTransPosCam = String(config->getKey(tmp_name, "ps_poscam")).ToInt();
+			tmpMtl->PS.IsTransPosCam = String(config->getKey(tmp_name, "ps_poscam")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_timedelta"))
-			tmpMtl->PS.IsTransTimeDelta = String(config->getKey(tmp_name, "ps_timedelta")).ToInt();
+			tmpMtl->PS.IsTransTimeDelta = String(config->getKey(tmp_name, "ps_timedelta")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_winsize"))
-			tmpMtl->PS.IsTransWinSize = String(config->getKey(tmp_name, "ps_winsize")).ToInt();
+			tmpMtl->PS.IsTransWinSize = String(config->getKey(tmp_name, "ps_winsize")).toInt();
 
 		if (config->keyExists(tmp_name, "ps_userdata"))
-			tmpMtl->PS.IsTransUserData = String(config->getKey(tmp_name, "ps_userdata")).ToInt();
+			tmpMtl->PS.IsTransUserData = String(config->getKey(tmp_name, "ps_userdata")).toInt();
 
 		tmpMtl->PS.Param = float4(0, 0, 0, 0);
 
 		if (config->keyExists(tmp_name, "ps_userdata_value_x"))
-			tmpMtl->PS.Param.x = String(config->getKey(tmp_name, "ps_userdata_value_x")).ToDouble();
+			tmpMtl->PS.Param.x = String(config->getKey(tmp_name, "ps_userdata_value_x")).toDouble();
 
 		if (config->keyExists(tmp_name, "ps_userdata_value_y"))
-			tmpMtl->PS.Param.y = String(config->getKey(tmp_name, "ps_userdata_value_y")).ToDouble();
+			tmpMtl->PS.Param.y = String(config->getKey(tmp_name, "ps_userdata_value_y")).toDouble();
 
 		if (config->keyExists(tmp_name, "ps_userdata_value_z"))
-			tmpMtl->PS.Param.z = String(config->getKey(tmp_name, "ps_userdata_value_z")).ToDouble();
+			tmpMtl->PS.Param.z = String(config->getKey(tmp_name, "ps_userdata_value_z")).toDouble();
 
 		if (config->keyExists(tmp_name, "ps_userdata_value_w"))
-			tmpMtl->PS.Param.w = String(config->getKey(tmp_name, "ps_userdata_value_w")).ToDouble();
+			tmpMtl->PS.Param.w = String(config->getKey(tmp_name, "ps_userdata_value_w")).toDouble();
 
 		if (config->keyExists(tmp_name, "ps_userdata_trans_in_vs"))
-			tmpMtl->TransPSDataInVS = String(config->getKey(tmp_name, "ps_userdata_trans_in_vs")).ToBool();
+			tmpMtl->TransPSDataInVS = String(config->getKey(tmp_name, "ps_userdata_trans_in_vs")).toBool();
 
 		if (config->keyExists(tmp_name, "type_reflect"))
-			tmpMtl->LightParam.TypeReflect = (MTLTYPE_REFLECT)String(config->getKey(tmp_name, "type_reflect")).ToInt();
+			tmpMtl->LightParam.TypeReflect = (MTLTYPE_REFLECT)String(config->getKey(tmp_name, "type_reflect")).toInt();
 
 		if (config->keyExists(tmp_name, "alpha_test"))
-			tmpMtl->IsAlphaTest = String(config->getKey(tmp_name, "alpha_test")).ToBool();
+			tmpMtl->IsAlphaTest = String(config->getKey(tmp_name, "alpha_test")).toBool();
 		else
 			tmpMtl->IsAlphaTest = false;
 

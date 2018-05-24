@@ -17,10 +17,9 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CNPCBase, npc_base);
 
-CNPCBase::CNPCBase(CEntityManager * pMgr) :
+CNPCBase::CNPCBase(CEntityManager * pMgr):
 	BaseClass(pMgr)
 {
-	m_fHealth = 1.f;
 	m_fSpeedWalk = 0.07f;
 	m_fSpeedRun = 0.12f;
 	m_idCurrQuaidInPath = -1;
@@ -42,29 +41,6 @@ CNPCBase::CNPCBase(CEntityManager * pMgr) :
 CNPCBase::~CNPCBase()
 {
 
-}
-
-void CNPCBase::initPhysics()
-{
-	btTransform startTransform;
-	startTransform.setIdentity();
-	startTransform.setOrigin(F3_BTVEC(m_vPosition));
-	
-	m_pGhostObject = new btPairCachingGhostObject();
-	m_pGhostObject->setWorldTransform(startTransform);
-	m_pCollideShape = new btCapsuleShape(0.3f, 1.4f);
-	m_pGhostObject->setCollisionShape(m_pCollideShape);
-	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
-	m_pGhostObject->setUserPointer(this);
-
-	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, m_fStepHeight, btVector3(0.0f, 1.0f, 0.0f));
-	m_pCharacter->setMaxJumpHeight(0.60f);
-	m_pCharacter->setJumpSpeed(4.50f);
-	m_pCharacter->setGravity(btVector3(0, -10.0f, 0));
-	m_pCharacter->setFallSpeed(300.0f);
-
-	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter & ~btBroadphaseProxy::DebrisFilter);
-	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
 }
 
 void CNPCBase::setPos(const float3 &pos)
@@ -131,7 +107,7 @@ ID CNPCBase::getAIQuad()
 
 bool CNPCBase::pathFind(ID endq)
 {
-	if (m_idCurrAiQuad >= 0 && SAIG_GridFindPath(m_idCurrAiQuad, endq))
+	if(m_idCurrAiQuad >= 0 && SAIG_GridFindPath(m_idCurrAiQuad, endq))
 	{
 		if (m_aPathQuads.size() > 0)
 			SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
@@ -142,7 +118,7 @@ bool CNPCBase::pathFind(ID endq)
 		m_vLastPathPos = m_vPosition;
 		return true;
 	}
-
+	
 	m_statePath = NPC_STATE_PATH_NOTFOUND;
 	return false;
 }

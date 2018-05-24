@@ -1075,15 +1075,19 @@ Animation::~Animation()
 	m_pMgr->unreg(myId);
 }
 
-SMMATRIX Animation::getBoneTransform(UINT _id)
+SMMATRIX Animation::getBoneTransform(UINT _id, bool bWithScale)
 {
 	//id *= 2;
 	int id = m_FinalBones[_id].pid;
-	if(id < 0)
+	if(id < 0 || id >= m_pMdl->m_hdr2.iBoneTableCount)
 	{
 		return(SMMatrixIdentity());
 	}
 	float3 pos = m_pBoneMatrixRender[id].position/* * m_fScale*/;
+	if(bWithScale)
+	{
+		pos *= m_fScale;
+	}
 	SMQuaternion q = m_pBoneMatrixRender[id].orient;
 	return(q.GetMatrix() * SMMatrixTranslation(pos));
 }

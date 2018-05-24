@@ -430,42 +430,42 @@ LRESULT SXParticlesEditor_Edits_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	}
 	else if (hwnd == SXParticlesEditor::EditColorCoef->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ColorCoef, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ColorCoef, String(ttext).toDouble());
 	}
 
 	else if (hwnd == SXParticlesEditor::EditColorR->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.x, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.x, String(ttext).toDouble());
 	}
 	else if (hwnd == SXParticlesEditor::EditColorG->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.y, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.y, String(ttext).toDouble());
 	}
 	else if (hwnd == SXParticlesEditor::EditColorB->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.z, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.z, String(ttext).toDouble());
 	}
 	else if (hwnd == SXParticlesEditor::EditColorA->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.w, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, Color.w, String(ttext).toDouble());
 	}
 
 	else if (hwnd == SXParticlesEditor::EditReCreateCount->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ReCreateCount, String(ttext).ToInt());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, ReCreateCount, String(ttext).toInt());
 	}
 
 	else if (hwnd == SXParticlesEditor::EditSoftCoef->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SoftCoef, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, SoftCoef, String(ttext).toDouble());
 	}
 	else if (hwnd == SXParticlesEditor::EditRefractionCoef->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, RefractionCoef, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, RefractionCoef, String(ttext).toDouble());
 	}
 	else if (hwnd == SXParticlesEditor::EditTransparencyCoef->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TransparencyCoef, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TransparencyCoef, String(ttext).toDouble());
 	}
 
 	else if (hwnd == SXParticlesEditor::EditFigureCountQuads->getHWND())
@@ -545,11 +545,11 @@ LRESULT SXParticlesEditor_Edits_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 	else if (hwnd == SXParticlesEditor::EditTrackSize->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackSize, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackSize, String(ttext).toDouble());
 	}
 	else if (hwnd == SXParticlesEditor::EditTrackTime->getHWND())
 	{
-		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackTime, String(ttext).ToDouble());
+		SPE_EmitterSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, TrackTime, String(ttext).toDouble());
 	}
 
 	else if (hwnd == SXParticlesEditor::EditAnimTexCountCadrsX->getHWND())

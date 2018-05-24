@@ -13,6 +13,7 @@ See the license in LICENSE
 #define __BASE_TOOL_H
 
 #include "BaseItem.h"
+#include "BaseSupply.h"
 #include <score/sxscore.h>
 
 enum
@@ -65,7 +66,18 @@ public:
 	//! Состояние: 1 - целое; 0 - сломанное
 	float getCondition() const;
 
+	//! Объект заряженного припаса
+	CBaseSupply *getAmmo() const;
+	//! Зарядить
+	void chargeAmmo(CBaseSupply *pAmmo);
+	//! Разрядить
+	void uncharge();
+
+	float getMaxDistance() const;
+
 protected:
+
+	bool isValidAmmo(CBaseSupply *pAmmo);
 
 	bool m_bInPrimaryAction;
 	bool m_bInSecondaryAction;
@@ -110,6 +122,8 @@ protected:
 	const char * m_szSecondaryActionMuzzleflash;
 
 	const char * m_szUsableAmmos;
+	const char * m_szLoadedAmmo;
+	CBaseSupply * m_pLoadedAmmo;
 
 	float m_fMaxDistance;
 

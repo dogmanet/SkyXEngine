@@ -64,7 +64,7 @@ void CBaseTrigger::enable()
 		m_idUpdateInterval = SET_INTERVAL(update, 0);
 		if(m_pGhostObject)
 		{
-			SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::CharacterFilter);
+			SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
 		}
 	}
 }
@@ -115,7 +115,7 @@ void CBaseTrigger::createPhysBody()
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-		SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, btBroadphaseProxy::SensorTrigger, btBroadphaseProxy::CharacterFilter);
+		SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
 	}
 }
 

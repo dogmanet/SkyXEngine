@@ -43,6 +43,16 @@ enum SPREAD_COEFF
 	SPREAD_COEFF_IRONSIGHT, //!< в прицеливании
 };
 
+//! Тип нарезки ствола
+enum RIFLE_TYPE
+{
+	RIFLE_TYPE_LEFT = -1, //!< Левая
+	RIFLE_TYPE_UNRIFLED = 0, //!< Гладкоствольное
+	RIFLE_TYPE_RIGHT = 1, //!< Правая
+
+	RIFLE_TYPE_FORCE_DWORD = 0x7fffffff  /* force 32-bit size enum */
+};
+
 /*! Оружие
 \ingroup cbaseitem
 */
@@ -78,7 +88,20 @@ public:
 	//! Коэффициент разброса
 	float getSpreadCoeff(SPREAD_COEFF what) const;
 
+	//! Тип нарезки ствола
+	RIFLE_TYPE getRifleType() const {return(m_rifleType);}
+
+	//! Подсоединить магазин
+	void attachMag(CBaseMag * pMag);
 protected:
+
+	//! Распределение гаусса вектора vDir в телесном угле fSpread
+	float3 applySpread(const float3 &vDir, float fSpread);
+
+	//! Задача стрельбы
+	void taskShoot(float dt);
+
+	ID m_idTaskShoot;
 
 	// Compatible addons
 	const char * m_szAddonScopes;
@@ -96,10 +119,12 @@ protected:
 	FIRE_MODE m_fireMode;
 	int m_iFireModes;
 	const char * m_szFireModes;
-	int m_iSingleSpeed;
-	int m_iBurstSpeed;
-	int m_iCutoffSpeed;
+	int m_iSingleRate;
+	int m_iBurstRate;
+	int m_iCutoffRate;
 	int m_iCutoffSize;
+
+	int m_iCutoffCurrent;
 
 	// Sounds
 	const char * m_szSndDraw;
@@ -118,6 +143,9 @@ protected:
 
 	// Shooting
 	float m_fEffectiveDistance;
+	RIFLE_TYPE m_rifleType;
+	float m_fRifleStep;
+	float m_fAimingRange;
 
 	// Without mag
 	int m_iCapacity;

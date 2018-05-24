@@ -26,7 +26,7 @@ UINT CreatePreviewTextures()
 	UINT uStartTime = GetTickCount();
 	String sGameTextures = Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES);
 	String sPreviewTextures = Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES);
-	sPreviewTextures.Replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
+	sPreviewTextures.replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
 
 	Array<String> aDirs = FileGetListDirs(sGameTextures.c_str());
 
@@ -113,7 +113,7 @@ UINT CreatePreviewModels()
 		//printf("%s\n", aFiles[i].c_str());
 
 		String sPreview = aFiles[i];
-		sPreview.Replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
+		sPreview.replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
 		sPreview = FileSetStrExt(sPreview.c_str(), "jpg");
 
 		if (FileGetTimeLastModify(sPreview.c_str()) >= FileGetTimeLastModify(aFiles[i].c_str()))

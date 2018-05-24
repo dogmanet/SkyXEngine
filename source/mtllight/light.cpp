@@ -292,7 +292,7 @@ void Lights::SetLightName(ID id, const char* name)
 	sprintf(ArrLights[id]->Name, "%s", name);
 }
 
-ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* color, bool isglobal, bool is_shadow, const char* bound_volume)
+ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* color, bool isglobal, bool is_shadow/*, const char* bound_volume*/)
 {
 	if (GlobalLight != -1 && isglobal)
 	{
@@ -324,14 +324,14 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 	}
 
 	tmplight->TypeLight = (isglobal ? LTYPE_LIGHT_GLOBAL : LTYPE_LIGHT_POINT);
-		if(StrValidate(bound_volume))
+		/*if(StrValidate(bound_volume))
 		{
 			
 		}
 		else
-		{
+		{*/
 			D3DXCreateSphere(MLSet::DXDevice, tmplight->Dist, 20, 20, &tmplight->Mesh, 0);
-		}
+		//}
 
 		if (isglobal && is_shadow)
 		{
@@ -374,7 +374,7 @@ ID Lights::CreatePoint(ID id, const float3* center, float dist, const float3* co
 	return tmpid;
 }
 
-ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow, const char* bound_volume)
+ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
 {
 	Light* tmplight = 0;
 
@@ -395,11 +395,11 @@ ID Lights::CreateDirection(ID id, const float3* pos, float dist, const float3* c
 	tmplight->TopBottomRadius.x = top_radius;
 	tmplight->TopBottomRadius.y = bottom_radius;
 
-	if (StrValidate(bound_volume))
+	/*if (StrValidate(bound_volume))
 	{
 		
 	}
-	else
+	else*/
 		SGCore_FCreateCone(top_radius, bottom_radius, dist, &tmplight->Mesh, 32);
 
 	tmplight->TopBottomRadius = float2_t(top_radius, bottom_radius);

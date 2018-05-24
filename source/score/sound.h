@@ -29,29 +29,6 @@ See the license in LICENSE
 
 //##########################################################################
 
-//перенести в common
-struct AAStringNR : public AAString
-{
-	__forceinline AAStringNR(const char * str)
-	{
-		tmpName = str;
-		Name[0] = 0;
-	}
-
-	__forceinline AAStringNR()
-	{
-		tmpName = NULL;
-		Name[0] = 0;
-	}
-
-	__forceinline bool operator==(const AAStringNR & str) const
-	{
-		return(stricmp(tmpName ? tmpName : Name, str.tmpName ? str.tmpName : str.Name) == 0);
-	}
-};
-
-//##########################################################################
-
 /*! проверка допустимости id звука, в случае провала вылет */
 #define SOUND_PRECOND(id, retval) \
 if (id >= m_aSounds.size() || id < 0 || !(m_aSounds[id]))\
@@ -157,7 +134,7 @@ inline bool SndGetDataFromStr(const char *szSrcStr, String &sFile, float &fDistA
 	for (int k = 3, kl = aStrConfig.size(); k < kl; ++k)
 	{
 		String str = aStrConfig[k];
-		aDelays.push_back(aStrConfig[k].ToUnsLongInt());
+		aDelays.push_back(aStrConfig[k].toUnsLongInt());
 	}
 
 	if (aDelays.size() > 0)
