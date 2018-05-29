@@ -927,6 +927,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
 	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
+	SAIG_GridQueryFindPathUpdate(25);
 	
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	pDXDevice->Present(0, 0, 0, 0);
@@ -1407,12 +1409,12 @@ ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type)
 	return SML_MtlLoad(name, (MTLTYPE_MODEL)mtl_type);
 }
 
-bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t * pos)
+bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t *pPos)
 {
 	static btBoxShape boxfull(btVector3(AIGRID_QUAD_SIZEDIV2, AIGRID_ENTITY_MAX_HEIGHTDIV2, AIGRID_QUAD_SIZEDIV2));
-	float3 start = (*pos);
-	start.y = pos->y + AIGRID_ENTITY_MAX_HEIGHT;
-	float3 end = (*pos);
+	float3 start = (*pPos);
+	start.y = pPos->y + AIGRID_ENTITY_MAX_HEIGHT;
+	float3 end = (*pPos);
 	//end.y = min->y - AIGRID_ENTITY_MAX_HEIGHT;
 	static btDiscreteDynamicsWorld::ClosestConvexResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
 	cb = btDiscreteDynamicsWorld::ClosestConvexResultCallback(F3_BTVEC(start), F3_BTVEC(end));
@@ -1427,13 +1429,13 @@ bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t * pos)
 
 	if (cb.hasHit())
 	{
-		pos->y = cb.m_hitPointWorld[1];
+		pPos->y = cb.m_hitPointWorld[1];
 		//quad->IsClose = false;
 
 		static btBoxShape boxoff(btVector3(AIGRID_QUAD_SIZEDIV2, (AIGRID_ENTITY_MAX_HEIGHT - AIGRID_QUADS_CENTERS_MAXHEIGHT) * 0.5, AIGRID_QUAD_SIZEDIV2));
 
-		start = (*pos);
-		start.y = pos->y + AIGRID_ENTITY_MAX_HEIGHTDIV2 + AIGRID_QUADS_CENTERS_MAXHEIGHT;
+		start = (*pPos);
+		start.y = pPos->y + AIGRID_ENTITY_MAX_HEIGHTDIV2 + AIGRID_QUADS_CENTERS_MAXHEIGHT;
 		static btVector3 vec;
 		vec = btVector3(F3_BTVEC(start));
 		cb = btDiscreteDynamicsWorld::ClosestConvexResultCallback(vec, vec);

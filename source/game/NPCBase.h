@@ -97,6 +97,8 @@ protected:
 
 	Array<ID> m_aPathQuads;		//!< массив с идентификаторами квадов пути на аи сетке
 	ID m_idCurrQuaidInPath;		//!< номер текущего квада из m_arr_path
+
+	ID m_idQueueFindPath;
 	
 	float3 m_vLastPathPos;		//!< последняя позиция нпс на пути
 

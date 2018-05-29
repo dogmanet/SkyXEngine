@@ -51,6 +51,10 @@ AIGrid::AIGrid()
 	IDPS = -1;
 
 	UseGraphics = false;
+
+	m_iLastWait = 0;
+
+	m_aQueueFind.resize(1024);
 }
 
 AIGrid::~AIGrid()
@@ -2718,34 +2722,12 @@ ID AIGrid::GraphPointGetNear(ID beginq, ID endq)
 	return -1;
 }
 
-bool AIGrid::GridFindPath(ID beginq, ID endq)
+bool AIGrid::gridFindPath(ID idQueueObject)
 {
-	if (ArrQuads.size() <= 1)
-	{
-		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
-		return false;
-	}
-
-	AIGRID_QUAD_PRECOND(beginq, false);
-	AIGRID_QUAD_PRECOND(endq, false);
-
-	if (CountSplits == 0)
-	{
-		LibReport(REPORT_MSG_LEVEL_WARNING, "can not find path, because AI grid is not validate splits\n");
-		return false;
-	}
-
-	if (ArrQuads[beginq]->IdSplit != ArrQuads[endq]->IdSplit)
-	{
-		LibReport(REPORT_MSG_LEVEL_WARNING, "quads in different splits, path not found\n");
-		return false;
-	}
-
-	if (beginq == endq)
-	{
-		LibReport(REPORT_MSG_LEVEL_WARNING, "beginq == endq, path not found\n");
-		return false;
-	}
+	ID idStart = m_aQueueFind[idQueueObject].m_idStart;
+	ID idFinish = m_aQueueFind[idQueueObject].m_idFinish;
+	Array<ID> &aQuads = m_aQueueFind[idQueueObject].m_aQuads;
+	aQuads.clearFast();
 
 	int tmpcost = AIGRID_COST_DIAGONAL;
 	int cycnum = 0;
@@ -2761,7 +2743,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 	memset(&(ArrParentIDs[0]), -1, ArrParentIDs.size() * sizeof(ID));
 	memset(&(ArrCostQuads[0]), 0, ArrCostQuads.size() * sizeof(CostAIQuad));
 	memset(&(ArrCloseIDs[0]), 0, ArrCloseIDs.size() * sizeof(bool));
-	ArrPathIDs.clear();
+	//ArrPathIDs.clear();
 
 	bool IsFindPath = false;
 
@@ -2771,12 +2753,12 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 	for (cycnum = 0; cycnum<8; cycnum++)
 	{
 		if (
-			ArrQuads[beginq]->Arr[cycnum] != -1)
+			ArrQuads[idStart]->Arr[cycnum] != -1)
 		{
-			if (ArrQuads[beginq]->Arr[cycnum] == endq)
+			if (ArrQuads[idStart]->Arr[cycnum] == idFinish)
 			{
-				ArrPathIDs.push_back(endq);
-				ArrPathIDs.push_back(ArrQuads[beginq]->Arr[cycnum]);
+				aQuads.push_back(idFinish);
+				aQuads.push_back(ArrQuads[idStart]->Arr[cycnum]);
 				return true;
 			}
 			tmpcost = AIGRID_COST_DIAGONAL;
@@ -2784,28 +2766,28 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 			if (cycnum == 1 || cycnum == 3 || cycnum == 4 || cycnum == 6)
 				tmpcost = AIGRID_COST_DIRECT;
 
-			if (QuadGetState(ArrQuads[beginq]->Arr[cycnum]) != AIQUAD_STATE::AIQUAD_STATE_FREE)
+			if (QuadGetState(ArrQuads[idStart]->Arr[cycnum]) != AIQUAD_STATE::AIQUAD_STATE_FREE)
 			{
-				if (QuadGetState(ArrQuads[beginq]->Arr[cycnum]) == AIQUAD_STATE::AIQUAD_STATE_TEMPBUSY)
+				if (QuadGetState(ArrQuads[idStart]->Arr[cycnum]) == AIQUAD_STATE::AIQUAD_STATE_TEMPBUSY)
 					tmpcost += AIGRID_COSTADD_TEMPBUSY;
-				else if (QuadGetState(ArrQuads[beginq]->Arr[cycnum]) == AIQUAD_STATE::AIQUAD_STATE_BUSY)
+				else if (QuadGetState(ArrQuads[idStart]->Arr[cycnum]) == AIQUAD_STATE::AIQUAD_STATE_BUSY)
 					tmpcost += AIGRID_COSTADD_BUSY;
 			}
 			else
 				tmpaddcost = 0;
 
-			ArrParentIDs[ArrQuads[beginq]->Arr[cycnum]] = beginq;
-			ArrCostQuads[ArrQuads[beginq]->Arr[cycnum]].G = tmpcost;
-			ArrCostQuads[ArrQuads[beginq]->Arr[cycnum]].H = CalcHCost(ArrQuads[beginq]->Arr[cycnum], endq);
+			ArrParentIDs[ArrQuads[idStart]->Arr[cycnum]] = idStart;
+			ArrCostQuads[ArrQuads[idStart]->Arr[cycnum]].G = tmpcost;
+			ArrCostQuads[ArrQuads[idStart]->Arr[cycnum]].H = CalcHCost(ArrQuads[idStart]->Arr[cycnum], idFinish);
 
-			ArrCostQuads[ArrQuads[beginq]->Arr[cycnum]].F = ArrCostQuads[ArrQuads[beginq]->Arr[cycnum]].G + ArrCostQuads[ArrQuads[beginq]->Arr[cycnum]].H + tmpaddcost;
+			ArrCostQuads[ArrQuads[idStart]->Arr[cycnum]].F = ArrCostQuads[ArrQuads[idStart]->Arr[cycnum]].G + ArrCostQuads[ArrQuads[idStart]->Arr[cycnum]].H + tmpaddcost;
 
-			ArrIDsInOpen[ArrQuads[beginq]->Arr[cycnum]] = AddInOpenList(ArrQuads[beginq]->Arr[cycnum]);
+			ArrIDsInOpen[ArrQuads[idStart]->Arr[cycnum]] = AddInOpenList(ArrQuads[idStart]->Arr[cycnum]);
 		}
 	}
 
 	//стартовую точку помещаем в закрытый
-	ArrCloseIDs[beginq] = true;
+	ArrCloseIDs[idStart] = true;
 
 	bool isfind = false;
 	ID tmpsmallF = -1;
@@ -2856,7 +2838,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 					if (!ArrCloseIDs[tmpcurridquad])
 					{
 						//если сосденяя точка конечная точка то мы нашли путь!!!
-						if (tmpcurridquad == endq)
+						if (tmpcurridquad == idFinish)
 						{
 							isfind = true;
 							break;
@@ -2866,7 +2848,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 						if (cycnum == 1 || cycnum == 3 || cycnum == 4 || cycnum == 6)
 							tmpcost = AIGRID_COST_DIRECT;
 
-						tmphcost = CalcHCost(tmpcurridquad, endq);
+						tmphcost = CalcHCost(tmpcurridquad, idFinish);
 
 						if (QuadGetState(tmpcurridquad) != AIQUAD_STATE::AIQUAD_STATE_FREE && tmphcost / 10 < AIGRID_QUADSCOUNT_BUSY)
 						{
@@ -2895,7 +2877,7 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 						{
 							ArrParentIDs[tmpcurridquad] = tmpsmallF;
 							ArrCostQuads[tmpcurridquad].G = ArrCostQuads[tmpsmallF].G + tmpcost;
-							ArrCostQuads[tmpcurridquad].H = tmphcost;// CalcHCost(tmpcurridquad, endq);
+							ArrCostQuads[tmpcurridquad].H = tmphcost;// CalcHCost(tmpcurridquad, idFinish);
 							ArrCostQuads[tmpcurridquad].F = ArrCostQuads[tmpcurridquad].G + ArrCostQuads[tmpcurridquad].H;
 							ArrIDsInOpen[tmpcurridquad] = AddInOpenList(tmpcurridquad);
 						}
@@ -2913,16 +2895,16 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 			if (isfind)
 			{
 				IsFindPath = true;
-				ArrPathIDs.push_back(endq);
-				ArrPathIDs.push_back(tmpsmallF);
+				aQuads.push_back(idFinish);
+				aQuads.push_back(tmpsmallF);
 				ID tmpquad = tmpsmallF;
 				ID tmpparent = -1;
 				/*ArrColor[tmpsmallF] = D3DCOLOR_ARGB(200,0,255,0);
-				ArrColor[beginq] = D3DCOLOR_ARGB(255, 0, 255, 0);
-				ArrColor[endq] = D3DCOLOR_ARGB(255, 0, 255, 0);*/
-				while ((tmpparent = ArrParentIDs[tmpquad]) != -1 && beginq != tmpparent)
+				ArrColor[idStart] = D3DCOLOR_ARGB(255, 0, 255, 0);
+				ArrColor[idFinish] = D3DCOLOR_ARGB(255, 0, 255, 0);*/
+				while ((tmpparent = ArrParentIDs[tmpquad]) != -1 && idStart != tmpparent)
 				{
-					ArrPathIDs.push_back(tmpparent);
+					aQuads.push_back(tmpparent);
 					//ArrColor[tmpparent] = D3DCOLOR_ARGB(128, 0, 255, 0);
 					tmpquad = tmpparent;
 				}
@@ -2939,25 +2921,34 @@ bool AIGrid::GridFindPath(ID beginq, ID endq)
 	return IsFindPath;
 }
 
-UINT AIGrid::GridGetSizePath()
+int AIGrid::gridGetSizePath(ID idQueueObject)
 {
-	return ArrPathIDs.size();
+	if (idQueueObject >= 0 && idQueueObject < m_aQueueFind.size() && m_aQueueFind[idQueueObject].m_state == QUEUE_OBJ_STATE_COMPLITE)
+		return m_aQueueFind[idQueueObject].m_aQuads.size();
+
+	return -1;
 }
 
-bool AIGrid::GridGetPath(ID * pmem, UINT count, bool reverse)
+bool AIGrid::gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canReverse)
 {
-	if (pmem)
+	if (idQueueObject >= 0 && idQueueObject < m_aQueueFind.size() && m_aQueueFind[idQueueObject].m_state == QUEUE_OBJ_STATE_COMPLITE)
 	{
-		if (!reverse)
-			memcpy(pmem, &(ArrPathIDs[0]), count * sizeof(ID));
-		else
+		if (pMemory)
 		{
-			for (int i = 0, il = ArrPathIDs.size(); i < il; ++i)
+			if (!canReverse)
+				memcpy(pMemory, &(m_aQueueFind[idQueueObject].m_aQuads[0]), uiCount * sizeof(ID));
+			else
 			{
-				pmem[i] = ArrPathIDs[(il - 1) - i];
+				for (int i = 0, il = m_aQueueFind[idQueueObject].m_aQuads.size(); i < il; ++i)
+				{
+					pMemory[i] = m_aQueueFind[idQueueObject].m_aQuads[(il - 1) - i];
+				}
 			}
+			m_aQueueFind[idQueueObject].m_aQuads.clearFast();
+			m_aQueueFind[idQueueObject].m_state = QUEUE_OBJ_STATE_IDLE;
+			m_aQueueFind[idQueueObject].m_idStart = m_aQueueFind[idQueueObject].m_idFinish = -1;
+			return true;
 		}
-		return true;
 	}
 
 	return false;
@@ -2978,4 +2969,119 @@ void AIGrid::GridSetColorArr(const ID * pmem, DWORD color, UINT count)
 void AIGrid::GridSetNullColor()
 {
 	memset(&(ArrColor[0]), 0, sizeof(uint32_t)* ArrColor.size());
+}
+
+//##########################################################################
+
+ID AIGrid::getQueueWaiting()
+{
+	for (int i = m_iLastWait, il = m_aQueueFind.size(); i < il; ++i)
+	{
+		if (m_aQueueFind[i].m_state == QUEUE_OBJ_STATE_WAIT)
+		{
+			m_iLastWait = i;
+			return i;
+		}
+	}
+
+	m_iLastWait = 0;
+
+	for (int i = m_iLastWait, il = m_aQueueFind.size(); i < il; ++i)
+	{
+		if (m_aQueueFind[i].m_state == QUEUE_OBJ_STATE_WAIT)
+		{
+			m_iLastWait = i;
+			return i;
+		}
+	}
+
+	if (m_iLastWait >= m_aQueueFind.size() - 1)
+		m_iLastWait = 0;
+
+	return -1;
+}
+
+ID AIGrid::getQueueIdle()
+{
+	for (int i = m_iLastWait, il = m_aQueueFind.size(); i < il; ++i)
+	{
+		if (m_aQueueFind[i].m_state == QUEUE_OBJ_STATE_IDLE)
+			return i;
+	}
+
+	for (int i = 0, il = m_iLastWait; i < il; ++i)
+	{
+		if (m_aQueueFind[i].m_state == QUEUE_OBJ_STATE_IDLE)
+			return i;
+	}
+
+	m_aQueueFind.push_back(CQueueObject());
+
+	return m_aQueueFind.size() - 1;
+}
+
+ID AIGrid::gridQueryFindPath(ID idStart, ID idFinish)
+{
+	if (ArrQuads.size() <= 1)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
+		return -1;
+	}
+
+	if (idStart < 0 || ArrQuads.size() <= idStart)
+	{ 
+		LibReport(REPORT_MSG_LEVEL_WARNING, " %s - unresolved index '%d' of quad, sxaigrid\n", GEN_MSG_LOCATION, idStart);
+		return -1; 
+	}
+
+	if (idFinish < 0 || ArrQuads.size() <= idFinish)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, " %s - unresolved index '%d' of quad, sxaigrid\n", GEN_MSG_LOCATION, idFinish);
+		return -1;
+	}
+
+	if (CountSplits == 0)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "can not find path, because AI grid is not validate splits\n");
+		return -1;
+	}
+
+	if (ArrQuads[idStart]->IdSplit != ArrQuads[idFinish]->IdSplit)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "quads in different splits, path not found\n");
+		return -1;
+	}
+
+	if (idStart == idFinish)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "idStart == idFinish, path not found\n");
+		return -1;
+	}
+
+	ID idQueueObject = getQueueIdle();
+
+	m_aQueueFind[idQueueObject].m_aQuads.clearFast();
+	m_aQueueFind[idQueueObject].m_state = QUEUE_OBJ_STATE_WAIT;
+	m_aQueueFind[idQueueObject].m_idStart = idStart;
+	m_aQueueFind[idQueueObject].m_idFinish = idFinish;
+
+	return idQueueObject;
+}
+
+void AIGrid::gridQueryFindPathUpdate(UINT uiLimitMls)
+{
+	UINT uiStartTime = GetTickCount();
+
+	while ((GetTickCount() - uiStartTime < uiLimitMls) || uiLimitMls == 0)
+	{
+		ID idQueueObject = getQueueWaiting();
+
+		if (idQueueObject >= 0)
+		{
+			if (gridFindPath(idQueueObject))
+				m_aQueueFind[idQueueObject].m_state = QUEUE_OBJ_STATE_COMPLITE;
+			else
+				m_aQueueFind[idQueueObject].m_state = QUEUE_OBJ_STATE_ERROR;
+		}
+	}
 }

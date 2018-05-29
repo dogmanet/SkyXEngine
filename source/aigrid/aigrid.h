@@ -208,9 +208,12 @@ public:
 	void GridSetMarkSplits(bool mark);						//выделение сплитов
 	bool GridGetMarkSplits();								//возвращает состояние выделения сплитов
 	UINT GridGetCountQuads();								//возвращает количество квадов в сетке
-	bool GridFindPath(ID beginq, ID endq);							//поиск пути, (beginq,beginq]
-	UINT GridGetSizePath();									//размер найденного пути в количестве квадратов
-	bool GridGetPath(ID * pmem, UINT count, bool reverse);	//запись найденного пути в уже выделенную память
+	
+	int gridGetSizePath(ID idQueueObject);									//размер найденного пути в количестве квадратов
+	bool gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canReverse);	//запись найденного пути в уже выделенную память
+
+	ID gridQueryFindPath(ID idStart, ID idFinish);
+	void gridQueryFindPathUpdate(UINT uiLimitMls);
 
 	void GridSetColorArr(const ID * pmem, DWORD color, UINT count);
 	void GridSetNullColor();
@@ -266,7 +269,49 @@ protected:
 	Array<ID> ArrIDsInOpen;				//значение квада в открытом списке, по id квада
 	Array<ID> ArrParentIDs;				//список родителей (по id квада)
 	Array<CostAIQuad> ArrCostQuads;		//список стоимостей проходов по каждому кваду (по id квада)
-	Array<ID> ArrPathIDs;				//массив с id квадов наденного пути
+	//Array<ID> ArrPathIDs;				//массив с id квадов наденного пути
+
+	enum QUEUE_OBJ_STATE
+	{
+		QUEUE_OBJ_STATE_IDLE,
+		QUEUE_OBJ_STATE_WAIT,
+		QUEUE_OBJ_STATE_COMPLITE,
+		QUEUE_OBJ_STATE_ERROR,
+	};
+
+	//! объект очереди
+	struct CQueueObject
+	{
+		CQueueObject()
+		{
+			m_state = QUEUE_OBJ_STATE_IDLE;
+			m_idStart = m_idFinish = -1;
+		}
+
+		//! ожидает ли текущий объект поиска?
+		QUEUE_OBJ_STATE m_state;
+
+		//! стартовый квад
+		ID m_idStart;
+
+		//! финальный квад
+		ID m_idFinish;
+
+		//! массив id квадов найденного пути
+		Array<ID> m_aQuads;
+	};
+
+	//! массив очереди запросов на поиск пути
+	Array<CQueueObject> m_aQueueFind;
+
+	int m_iLastWait;
+
+	ID getQueueWaiting();
+
+	ID getQueueIdle();
+
+	bool gridFindPath(ID idQueueObject);							//поиск пути, (beginq,beginq]
+
 
 	Array<ID> ArrSelected;				//массив выделенных в данный момент квадов
 

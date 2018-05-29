@@ -28,6 +28,8 @@ CNPCBase::CNPCBase(CEntityManager * pMgr):
 	m_stateMove = NPC_STATE_MOVE_IDLE_START;
 	m_statePath = NPC_STATE_PATH_NOTFOUND;
 
+	m_idQueueFindPath = -1;
+
 	m_fAngleYLast = 0;
 	m_fAngleYNext = 0;
 	m_ulTimeAllRot = 0;
@@ -107,16 +109,23 @@ ID CNPCBase::getAIQuad()
 
 bool CNPCBase::pathFind(ID endq)
 {
-	if(m_idCurrAiQuad >= 0 && SAIG_GridFindPath(m_idCurrAiQuad, endq))
+	if(m_idCurrAiQuad >= 0)
 	{
-		if (m_aPathQuads.size() > 0)
-			SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
-		m_statePath = NPC_STATE_PATH_FOUND;
-		m_aPathQuads.resize(SAIG_GridGetSizePath());
-		SAIG_GridGetPath(&(m_aPathQuads[0]), m_aPathQuads.size(), true);
-		SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
-		m_vLastPathPos = m_vPosition;
-		return true;
+		if (m_idQueueFindPath >= 0 && SAIG_GridGetSizePath(m_idQueueFindPath) >= 0)
+		{
+			if (m_aPathQuads.size() > 0)
+				SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
+			m_statePath = NPC_STATE_PATH_FOUND;
+			int iCount = SAIG_GridGetSizePath(m_idQueueFindPath);
+			m_aPathQuads.resize(iCount);
+			SAIG_GridGetPath(m_idQueueFindPath, &(m_aPathQuads[0]), m_aPathQuads.size(), true);
+			SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
+			m_vLastPathPos = m_vPosition;
+			m_idQueueFindPath = -1;
+			return true;
+		}
+		else if (m_idQueueFindPath <= -1)
+			m_idQueueFindPath = SAIG_GridQueryFindPath(m_idCurrAiQuad, endq);
 	}
 	
 	m_statePath = NPC_STATE_PATH_NOTFOUND;
