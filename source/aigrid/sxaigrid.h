@@ -113,7 +113,11 @@ typedef bool(*g_aiquad_phy_navigate) (float3_t *pPos);
 SX_LIB_API void SAIG_SetFunc_QuadPhyNavigate(g_aiquad_phy_navigate func);
 
 //! очистка всех данных
-SX_LIB_API void SAIG_Clear();						
+SX_LIB_API void SAIG_Clear();
+
+
+//! есть ли валидные квады на аи сетке
+SX_LIB_API bool SAIG_ExistsQuads();
 
 
 //! сохранение сетки
@@ -185,6 +189,9 @@ SX_LIB_API void SAIG_GridQueryFindPathUpdate(UINT uiLimitMls);
 
 //! поиск пути, (beginq,beginq]
 SX_LIB_API ID SAIG_GridQueryFindPath(ID idBegin, ID idEnd);
+
+//! отмена запроса поиска пути, idQuery - идентификатор запроса, возвращает удалось ли отменить
+SX_LIB_API bool SAIG_GridCancelQueryFindPath(ID idQuery);
 
 //! размер найденного пути в количестве квадратов
 SX_LIB_API int SAIG_GridGetSizePath(ID idQueueObject);

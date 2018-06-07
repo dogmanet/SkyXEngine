@@ -627,7 +627,46 @@ void PhyWorld::DebugDrawer::drawContactPoint(const btVector3 & PointOnB, const b
 
 void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 {
-	LibReport(REPORT_MSG_LEVEL_WARNING, "%s\n", warningString);
+	if (m_bExpectObject)
+	{
+		m_bExpectObject = false;
+		btCollisionObject *pObj = (btCollisionObject*)warningString;
+
+		btVector3 vOrigin = pObj->getWorldTransform().getOrigin();
+		LibReport(REPORT_MSG_LEVEL_WARNING, "Object world position: %.2f, %.2f, %.2f\n", vOrigin.x(), vOrigin.y(), vOrigin.z());
+
+		btVector3 minAabb, maxAabb;
+		pObj->getCollisionShape()->getAabb(pObj->getWorldTransform(), minAabb, maxAabb);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AABBmin: %.2f, %.2f, %.2f\n", minAabb.x(), minAabb.y(), minAabb.z());
+		LibReport(REPORT_MSG_LEVEL_WARNING, "AABBmax: %.2f, %.2f, %.2f\n", maxAabb.x(), maxAabb.y(), maxAabb.z());
+		if (pObj->getCollisionShape()->getShapeType() == CAPSULE_SHAPE_PROXYTYPE)
+		{
+			btCapsuleShape *pCaps = (btCapsuleShape*)pObj->getCollisionShape();
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Radius: %.2f; HalfHeight: %.2f\n", pCaps->getRadius(), pCaps->getHalfHeight());
+			SMMATRIX mat;
+			pObj->getWorldTransform().getOpenGLMatrix((float*)&mat);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Transform:\n");
+			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3]);
+			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3]);
+			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3]);
+			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3]);
+		}
+
+		if (!pObj->getUserPointer())
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, "getUserPointer() is NULL.\n");
+			return;
+		}
+		Core_0ConsoleExecCmd("ent_dump_info %x", pObj->getUserPointer());
+		return;
+	}
+	if (!strcmp(warningString, "@@@obj"))
+	{
+		m_bExpectObject = true;
+		return;
+	}
+
+	LibReport(REPORT_MSG_LEVEL_WARNING, "%s", warningString);
 }
 
 void PhyWorld::DebugDrawer::draw3dText(const btVector3& location, const char* textString)

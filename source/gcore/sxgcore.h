@@ -59,6 +59,8 @@ See the license in LICENSE
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
+class ISXFrustum;
+
 //! \name Базовые функции библиотеки 
 //!@{
 
@@ -258,7 +260,7 @@ SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is
 SX_LIB_API void SGCore_OC_SetEnable(bool isEnable);
 
 //! обновление буфера глубины для теста, должна вызываться в старом кадре, к примеру после всего рендера (глубина и матрицы для текущего)
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap);
+SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const ISXFrustum *pFrustum);
 
 //! репроекция глубины, должна вызываться в новом кадре до основного рендера всего того, что подвергается тесту на загороженность, матрицы должны быть от нового кадра
 SX_LIB_API void SGCore_OC_Reprojection();

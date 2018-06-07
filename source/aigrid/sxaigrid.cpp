@@ -90,6 +90,13 @@ SX_LIB_API void SAIG_Clear()
 	g_pAIGrid->Clear();
 }
 
+SX_LIB_API bool SAIG_ExistsQuads()
+{
+	AIG_PRECOND(false);
+
+	return g_pAIGrid->existsQuads();
+}
+
 SX_LIB_API void SAIG_GridSave(const char *szPath)
 {
 	AIG_PRECOND(_VOID);
@@ -341,6 +348,13 @@ SX_LIB_API ID SAIG_GridQueryFindPath(ID idBegin, ID idEnd)
 	AIG_PRECOND(-1);
 
 	return g_pAIGrid->gridQueryFindPath(idBegin, idEnd);
+}
+
+SX_LIB_API bool SAIG_GridCancelQueryFindPath(ID idQuery)
+{
+	AIG_PRECOND(false);
+
+	return g_pAIGrid->gridCancelQueryFindPath(idQuery);
 }
 
 SX_LIB_API int SAIG_GridGetSizePath(ID idQueueObject)

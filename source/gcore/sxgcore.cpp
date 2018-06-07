@@ -46,6 +46,9 @@ float *g_pOCarrDepthBufferRasterize = 0;
 bool g_isOCenable = false;
 float4x4 g_mOColdView;
 float4x4 g_mOColdProj;
+int g_iOCcountPixels = 0;
+int g_iOCWidth = 0;
+int g_iOCHeight = 0;
 ID RT_DepthOC[2];
 int g_iOCcurrDepth = 0;
 ID VS_ScreenOut = -1;
@@ -53,7 +56,10 @@ ID PS_ScreenOut = -1;
 ID PS_FindMax9 = -1;
 
 //! погрешность разниц глубин для теста occlusion culling
-#define OC_CMP_BIAS 0.0001f
+float g_fOCbiasDEpth = 0.0001f;
+
+//! количество пикселей расширения треугольников для 
+float g_fOCextTriangle = 2.f;
 
 //! коэфициент размера буфера глубины occlusion culling
 #define OC_SIZE_COEF 0.25f
@@ -251,16 +257,21 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 		}
 	}
 
-	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[0], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[1], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[2], 0);
-	g_pOCarrDepthBuffer = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
-	g_pOCarrWorldPos = new float4[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
-	g_pOCarrDepthBufferReProjection = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
-	g_pOCarrDepthBufferRasterize = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	
+	g_iOCWidth = float(iWidth * OC_SIZE_COEF);
+	g_iOCHeight = float(iHeight * OC_SIZE_COEF);
+	g_iOCcountPixels = g_iOCWidth * g_iOCHeight;
 
-	RT_DepthOC[0] = SGCore_RTAdd(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc", 0.25f);
-	RT_DepthOC[1] = SGCore_RTAdd(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc2", 0.25f);
+	g_pDXDevice->CreateOffscreenPlainSurface(g_iOCWidth, g_iOCHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[0], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(g_iOCWidth, g_iOCHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[1], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(g_iOCWidth, g_iOCHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[2], 0);
+	g_pOCarrDepthBuffer = new float[g_iOCcountPixels+1];
+	g_pOCarrWorldPos = new float4[g_iOCcountPixels+1];
+	g_pOCarrDepthBufferReProjection = new float[g_iOCcountPixels+1];
+	g_pOCarrDepthBufferRasterize = new float[g_iOCcountPixels];
+
+	RT_DepthOC[0] = SGCore_RTAdd(g_iOCWidth, g_iOCHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc", 0.25f);
+	RT_DepthOC[1] = SGCore_RTAdd(g_iOCWidth, g_iOCHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc2", 0.25f);
 	
 	VS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
 	PS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
@@ -381,13 +392,17 @@ SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool windowed)
 {
 	SG_PRECOND(false);
 
-	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[0], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[1], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(float(iWidth) * OC_SIZE_COEF, float(iHeight) * OC_SIZE_COEF, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[2], 0);
-	g_pOCarrDepthBuffer = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
-	g_pOCarrWorldPos = new float4[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
-	g_pOCarrDepthBufferReProjection = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
-	g_pOCarrDepthBufferRasterize = new float[int(float(iWidth) * OC_SIZE_COEF * float(iHeight) * OC_SIZE_COEF) + 1];
+	g_iOCWidth = float(iWidth * OC_SIZE_COEF);
+	g_iOCHeight = float(iHeight * OC_SIZE_COEF);
+	g_iOCcountPixels = g_iOCWidth * g_iOCHeight;
+
+	g_pDXDevice->CreateOffscreenPlainSurface(g_iOCWidth, g_iOCHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[0], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(g_iOCWidth, g_iOCHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[1], 0);
+	g_pDXDevice->CreateOffscreenPlainSurface(g_iOCWidth, g_iOCHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &g_pOCsurfDepthBuffer[2], 0);
+	g_pOCarrDepthBuffer = new float[g_iOCcountPixels + 1];
+	g_pOCarrWorldPos = new float4[g_iOCcountPixels + 1];
+	g_pOCarrDepthBufferReProjection = new float[g_iOCcountPixels + 1];
+	g_pOCarrDepthBufferRasterize = new float[g_iOCcountPixels];
 
 	g_oD3DAPP.BackBufferWidth = iWidth;
 	g_oD3DAPP.BackBufferHeight = iHeight;
@@ -520,12 +535,22 @@ SX_LIB_API void SGCore_OC_SetEnable(bool isEnable)
 	g_isOCenable = isEnable;
 }
 
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
+const ISXFrustum *g_pFrustum = 0;
+int g_iOCcountFC = 0;
+int g_iOCcountFCfail = 0;
+
+SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const ISXFrustum *pFrustum)
 {
 	SG_PRECOND(_VOID);
 
 	if (!g_isOCenable)
 		return;
+
+	g_pFrustum = pFrustum;
+	g_iOCcountFC = 0;
+	g_iOCcountFCfail = 0;
+
+	
 
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
@@ -546,8 +571,10 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
 		return;
 	}
 
-	float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
-	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+	g_fOCbiasDEpth = 1.f / (*r_far);
+
+	/*float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;*/
 
 	IDirect3DTexture9 *pTexDepth = SGCore_RTGetTexture(idDepthMap);
 	IDirect3DTexture9 *pTexDepthOC = SGCore_RTGetTexture(RT_DepthOC[g_iOCcurrDepth]);
@@ -597,15 +624,13 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
 	D3DLOCKED_RECT  srect;
 	g_pOCsurfDepthBuffer[iCurrOld]->LockRect(&srect, 0, D3DLOCK_READONLY | D3DLOCK_DONOTWAIT);
 	
-	memcpy(g_pOCarrDepthBuffer, srect.pBits, sizeof(float)* fWidth * fHeight);
+	memcpy(g_pOCarrDepthBuffer, srect.pBits, sizeof(float)* g_iOCcountPixels);
 	g_pOCsurfDepthBuffer[iCurrOld]->UnlockRect();
 
 	mem_release(pDepthSurf);
 
 	//**********************************************************************
 	
-	int iCountPixels = fWidth * fHeight;
-
 	float fPosX = 0, fPosY = 0;
 	
 	float4 vWorldPos;
@@ -641,23 +666,23 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
 
 	float fTanHalfFOV = tan((*r_default_fov) * 0.5f);
-	float fAspectRatio = fWidth / fHeight;
+	float fAspectRatio = float(g_iOCWidth) / float(g_iOCHeight);
 	float fFarY = fTanHalfFOV * (*r_far);
 	float fFarX = fFarY * fAspectRatio;
 
 	float4 vEyeRay, vWorldRay;
 	float4x4 mInvView = SMMatrixInverse(&fD, g_mOColdView);
 
-	/*for (int i = 0; i < iCountPixels; ++i)
+	/*for (int i = 0; i < g_iOCcountPixels; ++i)
 	{
 		//float linearDepth = (2.0 * (*r_near)) / ((*r_far) + (*r_near) - g_pArrDepthBufferOC[i] * ((*r_far) - (*r_near)));
 		//g_pArrDepthBufferOC[i] = linearDepth;
 
-		fPosY = int(float(i) / fWidth);
-		fPosX = int(i - (fPosY * fWidth));
+		fPosY = int(float(i) / g_iOCWidth);
+		fPosX = int(i - (fPosY * g_iOCWidth));
 
-		fPosX = fPosX / fWidth;
-		fPosY = fPosY / fHeight;
+		fPosX = fPosX / g_iOCWidth;
+		fPosY = fPosY / g_iOCHeight;
 
 		fPosX = 2.f * fPosX - 1.f;
 		fPosY = 2.f * (1.f - fPosY) - 1.f;
@@ -677,14 +702,14 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
 
 	float4 vWorldRay0, vWorldRay1;
 
-	for (int x = 0; x < fWidth; ++x)
+	for (int x = 0; x < g_iOCWidth; ++x)
 	{
-		vWorldRay0 = SMVectorLerp(aWorldRays[0], aWorldRays[1], float(x) / fWidth);
-		vWorldRay1 = SMVectorLerp(aWorldRays[3], aWorldRays[2], float(x) / fWidth);
-		for (int y = 0; y < fHeight; ++y)
+		vWorldRay0 = SMVectorLerp(aWorldRays[0], aWorldRays[1], float(x) / g_iOCWidth);
+		vWorldRay1 = SMVectorLerp(aWorldRays[3], aWorldRays[2], float(x) / g_iOCWidth);
+		for (int y = 0; y < g_iOCHeight; ++y)
 		{
-			int iPosPixel = (y * fWidth) + x;
-			vWorldRay = SMVectorLerp(vWorldRay1, vWorldRay0,float(y) / fHeight);
+			int iPosPixel = (y * g_iOCWidth) + x;
+			vWorldRay = SMVectorLerp(vWorldRay1, vWorldRay0, float(y) / g_iOCHeight);
 			vWorldPos = vObserverPos + vWorldRay * g_pOCarrDepthBuffer[iPosPixel];
 			vWorldPos.w = 1.f;
 			g_pOCarrWorldPos[iPosPixel] = vWorldPos;
@@ -704,7 +729,7 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap)
 	{
 		g_pOCsurfDepthBuffer[2]->LockRect(&srect, 0, D3DLOCK_READONLY);
 
-		memcpy(srect.pBits, g_pOCarrDepthBuffer, sizeof(float)* float(g_oD3DAPP.BackBufferWidth)*0.25 * float(g_oD3DAPP.BackBufferHeight)*0.25);
+		memcpy(srect.pBits, g_pOCarrDepthBuffer, sizeof(float) * g_iOCcountPixels);
 		g_pOCsurfDepthBuffer[2]->UnlockRect();
 
 		D3DXSaveSurfaceToFile("C:/1/g_pOCsurfDepthBuffer.jpg", D3DXIFF_JPG, g_pOCsurfDepthBuffer[2], NULL, NULL);
@@ -740,8 +765,8 @@ SX_LIB_API void SGCore_OC_Reprojection()
 		return;
 	}
 
-	float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
-	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+	/*float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;*/
 
 	float4x4 mView, mProjection;
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
@@ -749,11 +774,11 @@ SX_LIB_API void SGCore_OC_Reprojection()
 
 	float4x4 mViewProj = mView * mProjection;
 
-	int iCountPixels = fWidth * fHeight;
+	//int iCountPixels = fWidth * fHeight;
 
 	float4 vNewPos;
 
-	for (int i = 0; i < iCountPixels; ++i)
+	for (int i = 0; i < g_iOCcountPixels; ++i)
 	{
 		g_pOCarrDepthBufferReProjection[i] = 1.f;
 		g_pOCarrDepthBufferRasterize[i] = 1.f;
@@ -765,7 +790,7 @@ SX_LIB_API void SGCore_OC_Reprojection()
 	float2 vNewPos2;
 
 	//цикл репроекции каждого пикселя, расчет новой позиции в screen-space и новой глубины
-	for (int i = 0; i < iCountPixels; ++i)
+	for (int i = 0; i < g_iOCcountPixels; ++i)
 	{
 		vNewPos = SMVector4Transform(g_pOCarrWorldPos[i], mViewProj);
 
@@ -794,11 +819,11 @@ SX_LIB_API void SGCore_OC_Reprojection()
 
 		if ((vNewPos.x <= 1.f && vNewPos.x >= 0.f) && (vNewPos.y <= 1.f && vNewPos.y >= 0.f))
 		{
-			int x = floor(vNewPos.x * fWidth + 0.5f);
-			int y = floor(vNewPos.y * fHeight + 0.5f);
-			int iPosPixel = int(y * fWidth) + x;
+			int x = floor(vNewPos.x * float(g_iOCWidth) + 0.5f);
+			int y = floor(vNewPos.y * g_iOCHeight + 0.5f);
+			int iPosPixel = int(y * g_iOCWidth) + x;
 
-			if (iPosPixel > iCountPixels)
+			if (iPosPixel > g_iOCcountPixels)
 				int qwerty = 0;
 			else
 			{
@@ -815,7 +840,7 @@ SX_LIB_API void SGCore_OC_Reprojection()
 		D3DLOCKED_RECT  srect;
 		g_pOCsurfDepthBuffer[2]->LockRect(&srect, 0, D3DLOCK_READONLY);
 
-		memcpy(srect.pBits, g_pOCarrDepthBufferReProjection, sizeof(float)* float(g_oD3DAPP.BackBufferWidth)*0.25 * float(g_oD3DAPP.BackBufferHeight)*0.25);
+		memcpy(srect.pBits, g_pOCarrDepthBufferReProjection, sizeof(float) * g_iOCcountPixels);
 		g_pOCsurfDepthBuffer[2]->UnlockRect();
 		D3DXSaveSurfaceToFile("C:/1/g_pSurfDepthBufferOCreproj.jpg", D3DXIFF_JPG, g_pOCsurfDepthBuffer[2], NULL, NULL);
 	}
@@ -872,10 +897,10 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 	float3 vPointB = vB;
 	float3 vPointC = vC;
 
-	int iWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
-	int iHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
+	/*int iWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	int iHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;*/
 
-	int iCountPixels = iWidth * iHeight;
+	//int iCountPixels = iWidth * iHeight;
 
 	//для нахождения D достаточно использовать произвольюную точку треугольника
 	float fD = -(vNormal.x * vPointA.x + vNormal.y * vPointA.y + vNormal.z * vPointA.z);
@@ -900,8 +925,8 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 	bool isVisible = false;
 
 	//расширение треугольника, на случай неправильно округления, закрыло много багов
-	vPointA.y -= 1.f;
-	vPointC.y += 1.f;
+	vPointA.y -= g_fOCextTriangle;
+	vPointC.y += g_fOCextTriangle;
 
 	int iTotalHeight = vPointC.y - vPointA.y;
 
@@ -913,8 +938,8 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 	if (iSegmentHeight == 0)
 		return false;
 
-	int iStartY = clampf(vPointA.y, 0, iHeight-1);
-	int iFinishY = clampf(vPointB.y, 0, iHeight-1);
+	int iStartY = clampf(vPointA.y, 0, g_iOCHeight - 1);
+	int iFinishY = clampf(vPointB.y, 0, g_iOCHeight - 1);
 
 	for (int y = iStartY; y <= iFinishY; ++y)
 	{
@@ -929,8 +954,8 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 		if (fA > fB)
 			std::swap(fA, fB);
 
-		fA = clampf(fA - 1, 0, iWidth - 1);
-		fB = clampf(fB + 1, 0, iWidth - 1);
+		fA = clampf(fA - g_fOCextTriangle, 0, g_iOCWidth - 1);
+		fB = clampf(fB + g_fOCextTriangle, 0, g_iOCWidth - 1);
 
 		//в оригинале отнимать и прибавлять единицу не надо, но пришлось сделать чтобы закрыть баги отсечения
 		for (int x = fA; x <= fB; ++x)
@@ -938,15 +963,15 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 			/*if (x < 0 || x > iWidth - 1)
 				continue;*/
 
-			int iPosPixel = (y * iWidth) + x;
-			if (iPosPixel < iCountPixels)
+			int iPosPixel = (y * g_iOCWidth) + x;
+			if (iPosPixel < g_iOCcountPixels)
 			{
 				float fCurrDepth = (-(vNormal.x * float(x) + vNormal.y * float(y) + fD) / vNormal.z);
 				
 				/*if (isRasterize)
 					g_pOCarrDepthBufferRasterize[iPosPixel] = 0;*/
 
-				if (fCurrDepth >= 0.f && g_pOCarrDepthBufferReProjection[iPosPixel] >= (fCurrDepth - OC_CMP_BIAS))
+				if (fCurrDepth >= 0.f && g_pOCarrDepthBufferReProjection[iPosPixel] >= (fCurrDepth - g_fOCbiasDEpth))
 				{
 					//if (!isRasterize)
 						return true;
@@ -963,8 +988,8 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 	if (iSegmentHeight == 0)
 		return false;
 
-	iStartY = clampf(vPointB.y, 0, iHeight-1);
-	iFinishY = clampf(vPointC.y, 0, iHeight-1);
+	iStartY = clampf(vPointB.y, 0, g_iOCHeight - 1);
+	iFinishY = clampf(vPointC.y, 0, g_iOCHeight - 1);
 
 	for (int y = iStartY; y <= iFinishY; ++y)
 	{
@@ -979,8 +1004,8 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 		if (fA > fB)
 			std::swap(fA, fB);
 
-		fA = clampf(fA - 1, 0, iWidth - 1);
-		fB = clampf(fB + 1, 0, iWidth - 1);
+		fA = clampf(fA - g_fOCextTriangle, 0, g_iOCWidth - 1);
+		fB = clampf(fB + g_fOCextTriangle, 0, g_iOCWidth - 1);
 
 		//в оригинале отнимать и прибавлять единицу не надо, но пришлось сделать чтобы закрыть баги отсечения
 		for (int x = fA; x <= fB; ++x)
@@ -988,15 +1013,15 @@ inline bool OC_TriangleRasterize(const float4 &vA, const float4 &vB, const float
 			/*if (x < 0 || x > iWidth - 1)
 				continue;*/
 
-			int iPosPixel = (y * iWidth) + x;
-			if (iPosPixel < iCountPixels)
+			int iPosPixel = (y * g_iOCWidth) + x;
+			if (iPosPixel < g_iOCcountPixels)
 			{
 				float fCurrDepth = (-(vNormal.x * float(x) + vNormal.y * float(y) + fD) / vNormal.z);
 				
 				/*if (isRasterize)
 					g_pOCarrDepthBufferRasterize[iPosPixel] = 0;*/
 
-				if (fCurrDepth >= 0.f && g_pOCarrDepthBufferReProjection[iPosPixel] >= (fCurrDepth - OC_CMP_BIAS))
+				if (fCurrDepth >= 0.f && g_pOCarrDepthBufferReProjection[iPosPixel] >= (fCurrDepth - g_fOCbiasDEpth))
 				{
 					//if (!isRasterize)
 						return true;
@@ -1016,6 +1041,18 @@ inline bool OC_RasterizeQuad(const float3 &vA, const float3 &vB, const float3 &v
 	return (OC_TriangleRasterize(vA, vB, vC, false, vNormal, vNearFar) || OC_TriangleRasterize(vB, vC, vD, false, vNormal, vNearFar));
 }
 
+
+
+inline bool OC_FrustumCulling(const float3 &vA, const float3 &vB, const float3 &vC)
+{
+	if (GetAsyncKeyState('P'))
+		return true;
+	++g_iOCcountFC;
+	bool isVisible = (!g_pFrustum || g_pFrustum->polyInFrustum(&vA, &vB, &vC));
+	if (!isVisible)
+		++g_iOCcountFCfail;
+	return isVisible;
+}
 
 
 SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
@@ -1068,10 +1105,10 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 	vMin -= g_cvOCext;
 
 
-	float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
+	/*float fWidth = g_oD3DAPP.BackBufferWidth * OC_SIZE_COEF;
 	float fHeight = g_oD3DAPP.BackBufferHeight * OC_SIZE_COEF;
 
-	int iCountPixels = fWidth * fHeight;
+	int iCountPixels = fWidth * fHeight;*/
 
 	float4x4 mWorld, mView, mProjection;
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
@@ -1106,8 +1143,8 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 		aSSPoints[i].x = aSSPoints[i].x * 0.5 + 0.5;
 		aSSPoints[i].y = aSSPoints[i].y * (-0.5) + 0.5;
 
-		aSSPoints[i].x *= fWidth;
-		aSSPoints[i].y *= fHeight;
+		aSSPoints[i].x *= g_iOCWidth;
+		aSSPoints[i].y *= g_iOCHeight;
 
 		aSSPoints[i].x = int(aSSPoints[i].x);
 		aSSPoints[i].y = int(aSSPoints[i].y);
@@ -1316,18 +1353,18 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 		);*/
 
 	bool isVisible = (
-		(OC_TriangleRasterize(aSSPoints[7], aSSPoints[6], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[7], aSSPoints[1], aSSPoints[4], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[5], aSSPoints[2], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[3], aSSPoints[5], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[1], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[1], aSSPoints[6], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[5], aSSPoints[4], aSSPoints[2], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[4], aSSPoints[5], aSSPoints[7], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[0], aSSPoints[2], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[1], aSSPoints[2], aSSPoints[4], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[6], aSSPoints[5], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
-		(OC_TriangleRasterize(aSSPoints[5], aSSPoints[6], aSSPoints[7], false, aSSPoints[0], vNearFar))
+		(OC_FrustumCulling(aWPoints[7], aWPoints[6], aWPoints[1]) && OC_TriangleRasterize(aSSPoints[7], aSSPoints[6], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[7], aWPoints[1], aWPoints[4]) && OC_TriangleRasterize(aSSPoints[7], aSSPoints[1], aSSPoints[4], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[0], aWPoints[5], aWPoints[2]) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[5], aSSPoints[2], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[0], aWPoints[3], aWPoints[5]) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[3], aSSPoints[5], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[0], aWPoints[1], aWPoints[3]) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[1], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[1], aWPoints[6], aWPoints[3]) && OC_TriangleRasterize(aSSPoints[1], aSSPoints[6], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[5], aWPoints[4], aWPoints[2]) && OC_TriangleRasterize(aSSPoints[5], aSSPoints[4], aSSPoints[2], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[4], aWPoints[5], aWPoints[7]) && OC_TriangleRasterize(aSSPoints[4], aSSPoints[5], aSSPoints[7], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[0], aWPoints[2], aWPoints[1]) && OC_TriangleRasterize(aSSPoints[0], aSSPoints[2], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[1], aWPoints[2], aWPoints[4]) && OC_TriangleRasterize(aSSPoints[1], aSSPoints[2], aSSPoints[4], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[6], aWPoints[5], aWPoints[3]) && OC_TriangleRasterize(aSSPoints[6], aSSPoints[5], aSSPoints[3], false, aSSPoints[0], vNearFar)) ||
+		(OC_FrustumCulling(aWPoints[5], aWPoints[6], aWPoints[7]) && OC_TriangleRasterize(aSSPoints[5], aSSPoints[6], aSSPoints[7], false, aSSPoints[0], vNearFar))
 		);
 
 	return isVisible;

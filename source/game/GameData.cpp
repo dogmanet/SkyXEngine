@@ -69,6 +69,22 @@ GameData::GameData()
 	Core_0RegisterCVarFloat("cl_bob_walk", 0.5f, "View bobbing walk period");
 	Core_0RegisterCVarFloat("cl_bob_run", 1.0f, "View bobbing run period");
 
+
+	Core_0RegisterConcmdArg("ent_dump_info", [](int argc, const char ** argv)
+	{
+		if (argc != 2)
+		{
+			printf("Usage: ent_dump_info <hexaddress>");
+			return;
+		}
+
+		CBaseEntity *pEnt;
+		if (sscanf(argv[1], "%x", &pEnt))
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: id:%d; cls:'%s'; name:'%s'\n", pEnt->getId(), pEnt->getClassName(), pEnt->getName());
+		}
+	});
+
 	CCrosshairManager::loadConfig("config/game/crosshairs.cfg");
 
 	m_pPlayer = (CPlayer*)CREATE_ENTITY("player", m_pMgr);

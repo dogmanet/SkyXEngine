@@ -78,7 +78,14 @@ public:
 		};
 		int m_iDebugMode;
 		Array<render_point, 16384> m_vDrawData;
+
+		bool m_bExpectObject;
 	public:
+		DebugDrawer():
+			m_bExpectObject(false)
+		{
+		}
+
 		void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 
 		void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);

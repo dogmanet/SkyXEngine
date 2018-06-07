@@ -207,3 +207,5 @@ docs/html/*
 !docs/html/particles_editor/
 
 /source/game/ents_doc.h
+
+/build/config_game_user.cfg

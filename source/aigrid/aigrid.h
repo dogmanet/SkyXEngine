@@ -149,6 +149,8 @@ public:
 	void GraphicsInit();//инициализация графических данных, если надо
 	void Clear();		//очистка всех данных
 
+	bool existsQuads();
+
 	//сохранение/загрузка
 	void GridSave(const char* path);
 	void GridLoad(const char* path);
@@ -213,6 +215,7 @@ public:
 	bool gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canReverse);	//запись найденного пути в уже выделенную память
 
 	ID gridQueryFindPath(ID idStart, ID idFinish);
+	bool gridCancelQueryFindPath(ID idQuery);
 	void gridQueryFindPathUpdate(UINT uiLimitMls);
 
 	void GridSetColorArr(const ID * pmem, DWORD color, UINT count);

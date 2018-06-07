@@ -37,12 +37,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		bEnt->setKV("origin", "0 0 0");
 	}*/
 
-	for (int i = 0; i < 100; ++i)
+	/*for (int i = 0; i < 100; ++i)
 	{
 		CBaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
 		bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 		bEnt->setKV("origin", "0 1 0");
-	}
+	}*/
 	/*for (int i = 0; i < 10; ++i)
 	{
 	for (int k = 0; k < 10; ++k)

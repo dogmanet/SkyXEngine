@@ -113,7 +113,7 @@ void SXRenderFunc::SetRenderSceneFilterUn()
 
 //##########################################################################
 
-void SXRenderFunc::ComDeviceLost()
+void SXRenderFunc::ComDeviceLost(bool isSetWindowSize)
 {
 	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 
@@ -121,7 +121,7 @@ void SXRenderFunc::ComDeviceLost()
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-	if (*r_resize != RENDER_RESIZE_CHANGE)
+	if (isSetWindowSize && *r_resize != RENDER_RESIZE_CHANGE)
 	{
 		//получаем текущий размер окна в которое рисовали
 		RECT rect_scene;
@@ -410,23 +410,38 @@ void SXRenderFunc::SaveWorkTex()
 
 void SXRenderFunc::InitModeWindow()
 {
+	static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
+
 	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
+
+	static DWORD dwStyle = GetWindowLong(GData::Handle3D, GWL_STYLE);
 
 	if (r_win_windowed == NULL)
 		return;
 
 	if (!(*r_win_windowed))
 	{
-		SetWindowLong(GData::Handle3D, GWL_STYLE, GetWindowLong(GData::Handle3D, GWL_STYLE) | WS_POPUP);
+		SetWindowLong(GData::Handle3D, GWL_STYLE, dwStyle | WS_POPUP);
 		ShowWindow(GData::Handle3D, SW_MAXIMIZE);
 	}
 	else
 	{
-		SetWindowLong(GData::Handle3D, GWL_STYLE, GetWindowLong(GData::Handle3D, GWL_STYLE) ^ WS_POPUP);
+		SetWindowLong(GData::Handle3D, GWL_STYLE, dwStyle);
 
-		RECT rc;
-		GetWindowRect(GData::Handle3D, &rc);
-		SetWindowPos(GData::Handle3D, HWND_NOTOPMOST, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_SHOWWINDOW);
+		/*RECT rc;
+		GetWindowRect(GData::Handle3D, &rc);*/
+
+		RECT rc2 = { 0, 0, *r_win_width, *r_win_height };
+		AdjustWindowRect(&rc2, dwStyle, false);
+
+		int iWidth = rc2.right - rc2.left;
+		int iHeight = rc2.bottom - rc2.top;
+		int iPosX = (GetSystemMetrics(SM_CXSCREEN) - iWidth) / 2;
+		int iPosY = (GetSystemMetrics(SM_CYSCREEN) - iHeight) / 2;
+		SetWindowPos(GData::Handle3D, HWND_NOTOPMOST, iPosX, iPosY, iWidth, iHeight, SWP_SHOWWINDOW);
+
+		SetForegroundWindow(GData::Handle3D);
 	}
 }
 

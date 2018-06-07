@@ -308,8 +308,8 @@ SX_LIB_API void SRender_UpdateEditorial(DWORD timeDelta);
 
 //##########################################################################
 
-//! обработка потери и восстановление устройства
-SX_LIB_API void SRender_ComDeviceLost();
+//! обработка потери и восстановление устройства, isSetWindowSize - устанавливать ли размеры окна (сделано для редакторов)
+SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize);
 
 //! обработка видимости для источников света
 SX_LIB_API void SRender_ComVisibleForLight();

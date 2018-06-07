@@ -330,9 +330,20 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	SRender_SetCamera(SXGame_GetActiveCamera());
 #endif
 
-#if !defined(SX_GAME)
-	Core_0ConsoleExecCmd("exec ../editor.cfg");
+
+#if defined(SX_GAME)
+	Core_0ConsoleExecCmd("exec ../config_sys.cfg");
+	Core_0ConsoleExecCmd("exec ../config_game.cfg");
+	Core_0ConsoleExecCmd("exec ../config_game_user.cfg");
 #endif
+
+#if !defined(SX_GAME)
+	Core_0ConsoleExecCmd("exec ../config_sys.cfg");
+	Core_0ConsoleExecCmd("exec ../config_editor.cfg");
+#endif
+
+	Core_0ConsoleUpdate();
+
 
 #if defined(SX_GAME)
 	if (*r_win_windowed)
@@ -477,15 +488,6 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterConcmd("change_mode_window_abs", SRender_FullScreenChangeSizeAbs);
 #endif
 
-	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
-	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
-
-	Core_0ConsoleUpdate();
-	Core_0ConsoleUpdate();
-
-	Core_0ConsoleExecCmd("exec ../sysconfig.cfg");
-	Core_0ConsoleExecCmd("exec ../userconfig.cfg");
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "CVar initialized\n");
 }
 
@@ -511,9 +513,22 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-		}
+	}
 
-	return(DefWindowProc(hWnd, uiMessage, wParam, lParam));
+	// системная обработка F10 (вызов меню) не надо, останавливает главный цикл
+	if ((uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP) && wParam == VK_F10)
+		return 0;
+
+	// системная обработка Alt (вызов меню) не надо, останавливает главный цикл
+	if (
+		(uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP) 
+		&& !GetAsyncKeyState(VK_TAB) 
+		&& (wParam == VK_MENU || wParam == VK_LMENU || wParam == VK_RMENU)
+		)
+		return 0;
+
+	LRESULT lRes = DefWindowProc(hWnd, uiMessage, wParam, lParam);
+	return(lRes);
 }
 
 HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWidth, int iHeight)
@@ -620,7 +635,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	{
 		//если не свернуто окно
 		if (!IsIconic(SRender_GetHandleWin3D()) && ((SRender_GetParentHandleWin3D() != 0 && !IsIconic(SRender_GetParentHandleWin3D())) || SRender_GetParentHandleWin3D() == 0))
-			SRender_ComDeviceLost();	//пытаемся восстановить
+		{
+#if defined(SX_GAME)
+			SRender_ComDeviceLost(false);	//пытаемся восстановить
+#else
+			SRender_ComDeviceLost(true);	//пытаемся восстановить
+#endif
+		}
 		return;
 	}
 
@@ -905,7 +926,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SGCore_OC_Update(SML_DSGetRT_ID(DS_RT_DEPTH0));
+	SGCore_OC_Update(SML_DSGetRT_ID(DS_RT_DEPTH0), SRender_GetCamera()->getFrustum());
 	DelayUpdateOC += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
 
@@ -1114,7 +1135,11 @@ void SkyXEngind_UpdateDataCVar()
 
 				GetWindowRect(SRender_GetHandleWin3D(), &rc);
 
-				MoveWindow(SRender_GetHandleWin3D(), rc.left, rc.top, iWidth, iHeight, TRUE);
+				int iPosX = (GetSystemMetrics(SM_CXSCREEN) - iWidth) / 2;
+				int iPosY = (GetSystemMetrics(SM_CYSCREEN) - iHeight) / 2;
+
+				MoveWindow(SRender_GetHandleWin3D(), iPosX, iPosY, iWidth, iHeight, TRUE);
+				SetForegroundWindow(SRender_GetHandleWin3D());
 
 				static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 				*r_resize = RENDER_RESIZE_RESIZE;
@@ -1150,7 +1175,6 @@ void SkyXEngind_UpdateDataCVar()
 
 int SkyXEngine_CycleMain()
 {
-	//ID idSnd = SSCore_SndCreate2dInst("ak74_reload.ogg",SX_SOUND_CHANNEL_GAME);
 	MSG msg;
 	::ZeroMemory(&msg, sizeof(MSG));
 
@@ -1158,8 +1182,9 @@ int SkyXEngine_CycleMain()
 	{
 		if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
+			
 			::TranslateMessage(&msg);
-
+			
 #if !defined(SX_GAME)
 			IMSG imsg;
 			imsg.lParam = msg.lParam;
@@ -1168,7 +1193,6 @@ int SkyXEngine_CycleMain()
 
 			SSInput_AddMsg(imsg);
 #endif
-
 			::DispatchMessage(&msg);
 		}
 		else
@@ -1231,13 +1255,14 @@ int SkyXEngine_CycleMain()
 			}
 
 
-			if (Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) && (GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole")))
+			if (Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) && 
+				(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
+				)
 			{
 
 #if defined(SX_LEVEL_EDITOR)
 				SXLevelEditor_Transform(10);
 #endif
-
 				SkyXEngine_Frame(timeDelta);
 			}
 
@@ -1252,19 +1277,6 @@ int SkyXEngine_CycleMain()
 
 void SkyXEngine_Kill()
 {
-/*#if defined(SX_MATERIAL_EDITOR)
-	mem_delete(GData::Editors::SimModel);
-#endif
-
-#if !defined(SX_GAME)
-	mem_delete(GData::Editors::ObjGrid);
-	mem_delete(GData::Editors::ObjAxesStatic);
-	mem_release(GData::Editors::FigureBox);
-	mem_release(GData::Editors::FigureSphere);
-	mem_release(GData::Editors::FigureCone);
-	mem_delete(GData::Editors::ObjAxesHelper);
-#endif
-*/
 #if !defined(SX_PARTICLES_EDITOR)
 	SXGame_AKill();
 #endif

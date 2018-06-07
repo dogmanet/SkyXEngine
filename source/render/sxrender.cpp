@@ -254,9 +254,9 @@ SX_LIB_API ID SRender_EditorGetSelectTex()
 //##########################################################################
 
 
-SX_LIB_API void SRender_ComDeviceLost()
+SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize)
 {
-	SXRenderFunc::ComDeviceLost();
+	SXRenderFunc::ComDeviceLost(isSetWindowSize);
 }
 
 SX_LIB_API void SRender_ComVisibleForLight()
@@ -372,7 +372,9 @@ SX_LIB_API void SRender_SaveWorkTex()
 
 SX_LIB_API void SRender_ChangeModeWindow()
 {
+	//LibReport(REPORT_MSG_LEVEL_NOTICE, "SRender_ChangeModeWindow\n");
 	SXRenderFunc::ChangeModeWindow();
+	//LibReport(REPORT_MSG_LEVEL_NOTICE, "SRender_ChangeModeWindow --\n");
 }
 
 SX_LIB_API void SRender_FullScreenChangeSizeAbs()

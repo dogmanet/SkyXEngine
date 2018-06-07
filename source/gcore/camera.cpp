@@ -66,23 +66,30 @@ void CFrustum::update(const float4x4* view,const float4x4* proj)
 
 bool CFrustum::pointInFrustum(const float3 *point) const
 {
-		for (int i=0; i<6; i++)
+	for (int i=0; i<6; ++i)
+	{
+		float tmp = m_aFrustumPlanes[i].m_vNormal.x*(point->x) + m_aFrustumPlanes[i].m_vNormal.y*(point->y) +  m_aFrustumPlanes[i].m_vNormal.z*(point->z) + m_aFrustumPlanes[i].m_fDistance;
+		if(int(tmp * 1000.0f) <= 0)
 		{
-			float tmp = m_aFrustumPlanes[i].m_vNormal.x*(point->x) + m_aFrustumPlanes[i].m_vNormal.y*(point->y) +  m_aFrustumPlanes[i].m_vNormal.z*(point->z) + m_aFrustumPlanes[i].m_fDistance;
-				if(long(tmp * 1000.0f) <= long(0 * 1000.0f))
-				{
-					return false;
-				}
+			return false;
 		}
+	}
     return true;
 }
 
 bool CFrustum::polyInFrustum(const float3* p1, const float3* p2, const float3* p3) const
 {
-		if(pointInFrustum(p1) || pointInFrustum(p2) || pointInFrustum(p3))
-			return true;
+	/*if(pointInFrustum(p1) || pointInFrustum(p2) || pointInFrustum(p3))
+		return true;*/
 
-	return false;
+	for (int i = 0; i<6; i++)
+	{
+		if (int((m_aFrustumPlanes[i].m_vNormal.x * (p1->x) + m_aFrustumPlanes[i].m_vNormal.y * (p1->y) + m_aFrustumPlanes[i].m_vNormal.z * (p1->z) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if (int((m_aFrustumPlanes[i].m_vNormal.x * (p2->x) + m_aFrustumPlanes[i].m_vNormal.y * (p2->y) + m_aFrustumPlanes[i].m_vNormal.z * (p2->z) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if (int((m_aFrustumPlanes[i].m_vNormal.x * (p3->x) + m_aFrustumPlanes[i].m_vNormal.y * (p3->y) + m_aFrustumPlanes[i].m_vNormal.z * (p3->z) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		return false;
+	}
+	return true;
 }
 
 bool CFrustum::polyInFrustumAbs(const float3* p1, const float3* p2, const float3* p3) const
@@ -107,8 +114,8 @@ bool CFrustum::sphereInFrustumAbs(const float3 *point, float radius) const
 {
 		for (int i=0; i<6; i++)
 		{
-				if (m_aFrustumPlanes[i].m_vNormal.x*point->x + m_aFrustumPlanes[i].m_vNormal.y*point->y + m_aFrustumPlanes[i].m_vNormal.z*point->z + m_aFrustumPlanes[i].m_fDistance > -radius)
-					return false;
+			if (m_aFrustumPlanes[i].m_vNormal.x*point->x + m_aFrustumPlanes[i].m_vNormal.y*point->y + m_aFrustumPlanes[i].m_vNormal.z*point->z + m_aFrustumPlanes[i].m_fDistance > -radius)
+				return false;
 		}
 	return true;
 }

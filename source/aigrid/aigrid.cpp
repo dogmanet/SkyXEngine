@@ -1036,6 +1036,11 @@ void AIGrid::Clear()
 	mem_release_del(BoundBox);
 }
 
+bool AIGrid::existsQuads()
+{
+	return (ArrQuads.size() > 0);
+}
+
 void AIGrid::GridClear()
 {
 	AllocAIQuad.clear();
@@ -2724,6 +2729,9 @@ ID AIGrid::GraphPointGetNear(ID beginq, ID endq)
 
 bool AIGrid::gridFindPath(ID idQueueObject)
 {
+	if (!existsQuads())
+		return false;
+
 	ID idStart = m_aQueueFind[idQueueObject].m_idStart;
 	ID idFinish = m_aQueueFind[idQueueObject].m_idFinish;
 	Array<ID> &aQuads = m_aQueueFind[idQueueObject].m_aQuads;
@@ -2923,6 +2931,9 @@ bool AIGrid::gridFindPath(ID idQueueObject)
 
 int AIGrid::gridGetSizePath(ID idQueueObject)
 {
+	if (!existsQuads())
+		return -1;
+
 	if (idQueueObject >= 0 && idQueueObject < m_aQueueFind.size() && m_aQueueFind[idQueueObject].m_state == QUEUE_OBJ_STATE_COMPLITE)
 		return m_aQueueFind[idQueueObject].m_aQuads.size();
 
@@ -2931,6 +2942,9 @@ int AIGrid::gridGetSizePath(ID idQueueObject)
 
 bool AIGrid::gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canReverse)
 {
+	if (!existsQuads())
+		return false;
+
 	if (idQueueObject >= 0 && idQueueObject < m_aQueueFind.size() && m_aQueueFind[idQueueObject].m_state == QUEUE_OBJ_STATE_COMPLITE)
 	{
 		if (pMemory)
@@ -2956,7 +2970,7 @@ bool AIGrid::gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canRe
 
 void AIGrid::GridSetColorArr(const ID * pmem, DWORD color, UINT count)
 {
-	if (!pmem)
+	if (ArrColor.size() > 0 || !pmem)
 		return;
 
 	for (int i = 0; i < count; ++i)
@@ -2968,7 +2982,8 @@ void AIGrid::GridSetColorArr(const ID * pmem, DWORD color, UINT count)
 
 void AIGrid::GridSetNullColor()
 {
-	memset(&(ArrColor[0]), 0, sizeof(uint32_t)* ArrColor.size());
+	if (ArrColor.size() > 0)
+		memset(&(ArrColor[0]), 0, sizeof(uint32_t)* ArrColor.size());
 }
 
 //##########################################################################
@@ -3022,6 +3037,9 @@ ID AIGrid::getQueueIdle()
 
 ID AIGrid::gridQueryFindPath(ID idStart, ID idFinish)
 {
+	if (!existsQuads())
+		return -1;
+
 	if (ArrQuads.size() <= 1)
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "AI grid not found\n");
@@ -3068,8 +3086,26 @@ ID AIGrid::gridQueryFindPath(ID idStart, ID idFinish)
 	return idQueueObject;
 }
 
+bool AIGrid::gridCancelQueryFindPath(ID idQuery)
+{
+	if (!existsQuads())
+		return false;
+
+	if (idQuery >= 0 && idQuery < m_aQueueFind.size())
+	{
+		m_aQueueFind[idQuery].m_state = QUEUE_OBJ_STATE_IDLE;
+		m_aQueueFind[idQuery].m_idStart = m_aQueueFind[idQuery].m_idFinish = -1;
+		return true;
+	}
+
+	return false;
+}
+
 void AIGrid::gridQueryFindPathUpdate(UINT uiLimitMls)
 {
+	if (!existsQuads())
+		return;
+
 	UINT uiStartTime = GetTickCount();
 
 	while ((GetTickCount() - uiStartTime < uiLimitMls) || uiLimitMls == 0)
@@ -3083,5 +3119,7 @@ void AIGrid::gridQueryFindPathUpdate(UINT uiLimitMls)
 			else
 				m_aQueueFind[idQueueObject].m_state = QUEUE_OBJ_STATE_ERROR;
 		}
+		else
+			break;
 	}
 }
