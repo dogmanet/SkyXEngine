@@ -17,64 +17,122 @@ See the license in LICENSE
 #include "sxmtllight.h"
 #include "ml_data.h"
 
-class Reflection
+/*! класс отражений, возможны плоские отражения и кубические
+ \note автогенерация мип уровней не работала, пришлось сделать небольшой костыль:\n
+  - рисуем отражения в рабочую текстуру
+  - эту текстуру рисуем в текстуру отражений\n
+  при таком подходе все мип уровни генерируются
+*/
+class CReflection
 {
 public:
-	Reflection();
-	~Reflection();
+	CReflection();
+	~CReflection();
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
 	SX_ALIGNED_OP_MEM
 
-	void Init(MTLTYPE_REFLECT howref);
-	MTLTYPE_REFLECT GetTypeReflect(){ return TypeRef; };
+	//! инициализация отражений
+	void init(MTLTYPE_REFLECT type);
 
-	void PreRenderRefPlane(D3DXPLANE* plane);
-	void PostRenderRefPlane();
-	IDirect3DTexture9* GetRefPlaneTex();
+	//! возвращает тип отражения
+	MTLTYPE_REFLECT getTypeReflect();
 
-	void BeginRenderRefCube(float3_t* center);
-	void PreRenderRefCube(int cube, float4x4* world);
-	void PostRenderRefCube(int cube);
-	void EndRenderRefCube(float3_t* viewpos);
-	bool UpdateCountUpdate(float3_t* viewpos);
-	bool AllowedRender();
-	void NullingCountUpdate();
-	IDirect3DCubeTexture9* GetRefCubeTex();
+	//! возвращает фрустум по id, для плоских отражений 0, для кубических [0,5] 
+	const ISXFrustum* getFrustum(ID id);
 
-	void SetMinMax(float3_t* min, float3_t* max);
+	//! обновление количесвтенных данных обновления, возаращет true в случае если можно рисовать отражения, false если отражения рисовать не надо, pViewPos - позиция наблюдателя (обязательно)
+	bool updateCountUpdate(const float3_t *pViewPos);
+	
+	//! разрешен ли рендер отражений
+	bool allowedRender();
 
-	void SetIDArr(ID id, int cube, ID idarr);
-	int GetCountIDArrs();
-	ID GetIDArr(ID id, int cube);
+	//! обнуление информации об обновлении
+	void nullingCountUpdate();
 
-	bool IsComNow;	//обрабатывать ли сейчас, на случай еси видно или нет
-	float3 PositionReflect;	//позиция откуда идут отражения, обновляется каждый раз
-	float3 Position;
-	float3 PosMin, PosMax;
-	float4x4 MatrixView;
-	ISXFrustum* ReflectFrustum[6];
-	Array<ID*> IDArr;
+	//**********************************************************************
 
-	long CountUpdate;
+	//! подготовка в рендеру плоских отражений, pPlane - плоскость отражения (обязательно)
+	void preRenderRefPlane(const D3DXPLANE *pPlane);
 
-	//protected:
-	MTLTYPE_REFLECT TypeRef;
-	D3DXPLANE Plane;
-	float ZNear;
-	float4x4 OldMatProj,OldMatView,OldMatViewProj;
-	IDirect3DSurface9* BackBuffer;
+	//! окончание рендера плоских отражений
+	void postRenderRefPlane();
 
-	IDirect3DSurface9* SurfaceZBuffer;
-	IDirect3DSurface9* LastSurfaceZBuffer;
+	//! возвращает текстуру с плоским отражением
+	IDirect3DTexture9* getRefPlaneTex();
 
-	IDirect3DTexture9* TextureReflect;
-	IDirect3DSurface9* SurfaceReflect;
+	//**********************************************************************
 
-	IDirect3DSurface9* CubeReflectSurface[6];
-	IDirect3DCubeTexture9* TextureCubeReflect;
+	//! подготовка данных кубических отражений
+	void beginRenderRefCube(const float3_t *pCenter);
+
+	//! подготвка к рендеру кубических отражений грани, pWorld - мировая матрица модели которая принимает эти отражения
+	void preRenderRefCube(ID idFace, const float4x4 *pWorld);
+
+	//! окончание рендера кубических отражений для грани
+	void postRenderRefCube(ID idFace);
+
+	//! окончание подготовки кубических отражений, pViewPos - позиция наблюдателя (обязательно)
+	void endRenderRefCube(const float3_t *pViewPos);
+	
+
+	//! возвращает кубическую текстуру с отражением
+	IDirect3DCubeTexture9* getRefCubeTex();
+
+	//! установить экстремумы
+	void setMinMax(const float3_t *pMin, const float3_t *pMax);
+
+	//! запись данных массива прсочетов
+	void setIDArr(ID id, ID idFace, ID idArr);
+
+	//! размер массива массивов идентификаторов просчета 
+	int getCountIDArrs();
+
+	//! получить идентификатор массива просчета
+	ID getIDArr(ID id, ID idFace);
+
+protected:
+
+	//! позиция камеры для кубческих отражений
+	float3 m_vPosition;
+
+	//! экстремумы геометрии кубических отражений, по ним определяется необходимость обновления статических отражений, измеряется расстояние до камеры
+	float3 m_vMin, m_vMax;
+
+	//! матрица вида для отражений
+	float4x4 m_mView;
+
+	//! массив фрустумов, для плоских отражений используется только нулевой, для кубических все
+	ISXFrustum *m_aFrustums[6];
+
+	//! массивы идентификаторов для просчета видимости
+	Array<ID*> m_aIDsArr;
+
+	//! количество обновлений отражения
+	int m_iCountUpdate;
+
+	//! тип отражений
+	MTLTYPE_REFLECT type_reflection;
+
+	//! предыдущие матрицы
+	float4x4 m_mOldMatProj, m_mOldMatView, m_mOldMatViewProj;
+
+	//! указатель на бэк буфер
+	IDirect3DSurface9 *m_pBackBuffer;
+
+	//! текстура плоских отражений
+	IDirect3DTexture9 *m_pTexPlaneRef;
+
+	//! рабочий сюрфейс
+	IDirect3DSurface9 *m_pSurface;
+
+	//! рабочая текстура
+	IDirect3DTexture9 *m_pTexWork;
+
+	//! текстура кубических отражений
+	IDirect3DCubeTexture9 *m_pTexCubeRef;
 };
 
 #endif

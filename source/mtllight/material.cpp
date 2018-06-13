@@ -286,7 +286,7 @@ ID Materials::DelRefGetIDArr(ID key, ID inid, int cube)
 	if (!(key >= 0 && key < ArrDelRefMtrls.size()))
 		return -1;
 
-	return ArrDelRefMtrls[key]->GetIDArr(inid, cube);
+	return ArrDelRefMtrls[key]->getIDArr(inid, cube);
 }
 
 void Materials::DelRefAllDel()
@@ -360,7 +360,7 @@ void Materials::OnLostDevice()
 	for (long i = 0; i < ArrMaterials.size(); ++i)
 	{
 		if (ArrMaterials[i] && ArrMaterials[i]->Reflect)
-			ArrMaterials[i]->Reflect->OnLostDevice();
+			ArrMaterials[i]->Reflect->onLostDevice();
 	}
 }
 
@@ -369,7 +369,7 @@ void Materials::OnResetDevice()
 	for (long i = 0; i < ArrMaterials.size(); ++i)
 	{
 		if (ArrMaterials[i] && ArrMaterials[i]->Reflect)
-			ArrMaterials[i]->Reflect->OnResetDevice();
+			ArrMaterials[i]->Reflect->onResetDevice();
 	}
 }
 
@@ -432,13 +432,13 @@ MTLTYPE_REFLECT Materials::MtlTypeReflection(ID id)
 void Materials::MtlRefSetIDArr(ID id, ID inid, int cube, ID idarr)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->SetIDArr(inid, cube, idarr);
+	ArrMaterials[id]->Reflect->setIDArr(inid, cube, idarr);
 }
 
 ID Materials::MtlRefGetIDArr(ID id, ID inid, int cube)
 {
 	MTL_REF_PRE_COND_ID(id,- 1);
-	return ArrMaterials[id]->Reflect->GetIDArr(inid, cube);
+	return ArrMaterials[id]->Reflect->getIDArr(inid, cube);
 }
 
 /*void Materials::MtlRefSetPlane(ID id, D3DXPLANE* plane)
@@ -456,41 +456,41 @@ ID Materials::MtlRefGetIDArr(ID id, ID inid, int cube)
 void Materials::MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->PreRenderRefPlane(plane);
+	ArrMaterials[id]->Reflect->preRenderRefPlane(plane);
 }
 
-ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
+const ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
 {
 	MTL_REF_PRE_COND_ID(id, 0);
-	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->GetTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)))
-		return ArrMaterials[id]->Reflect->ReflectFrustum[cube];
+	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)))
+		return ArrMaterials[id]->Reflect->getFrustum(cube);
 	return 0;
 }
 
 void Materials::MtlRefPostRenderPlane(ID id)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->PostRenderRefPlane();
+	ArrMaterials[id]->Reflect->postRenderRefPlane();
 }
 
 IDirect3DTexture9* Materials::MtlRefPlaneGetTex(ID id)
 {
  	MTL_REF_PRE_COND_ID(id, 0);
-	return ArrMaterials[id]->Reflect->GetRefPlaneTex();
+	return ArrMaterials[id]->Reflect->getRefPlaneTex();
 }
 
 
 void Materials::MtlRefSetMinMax(ID id, float3_t* min, float3_t* max)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->SetMinMax(min,max);
+	ArrMaterials[id]->Reflect->setMinMax(min,max);
 }
 
 bool Materials::MtlRefIsAllowedRender(ID  id)
 {
 	MTL_REF_PRE_COND_ID(id, false);
 	if (ArrMaterials[id]->Reflect)
-		return ArrMaterials[id]->Reflect->AllowedRender();
+		return ArrMaterials[id]->Reflect->allowedRender();
 
 	return false;
 }
@@ -499,43 +499,43 @@ bool Materials::MtlRefIsAllowedRender(ID  id)
 void Materials::MtlRefCubeBeginRender(ID id, float3_t* center)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->BeginRenderRefCube(center);
+	ArrMaterials[id]->Reflect->beginRenderRefCube(center);
 }
 
 void Materials::MtlRefCubePreRender(ID id, int cube, float4x4* world)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->PreRenderRefCube(cube, world);
+	ArrMaterials[id]->Reflect->preRenderRefCube(cube, world);
 }
 
 void Materials::MtlRefCubePostRender(ID id, int cube)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->PostRenderRefCube(cube);
+	ArrMaterials[id]->Reflect->postRenderRefCube(cube);
 }
 
 void Materials::MtlRefCubeEndRender(ID id, float3_t* viewpos)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->EndRenderRefCube(viewpos);
+	ArrMaterials[id]->Reflect->endRenderRefCube(viewpos);
 }
 
 bool Materials::MtlRefUpdateCountUpdate( ID id, float3_t* viewpos)
 {
 	MTL_REF_PRE_COND_ID(id, false);
-	return ArrMaterials[id]->Reflect->UpdateCountUpdate(viewpos);
+	return ArrMaterials[id]->Reflect->updateCountUpdate(viewpos);
 }
 
 void Materials::MtlRefNullingCountUpdate(ID id)
 {
 	MTL_REF_PRE_COND_ID(id, _VOID);
-	ArrMaterials[id]->Reflect->NullingCountUpdate();
+	ArrMaterials[id]->Reflect->nullingCountUpdate();
 }
 
 IDirect3DCubeTexture9* Materials::RefCubeGetTex(ID id)
 {
 	MTL_REF_PRE_COND_ID(id, 0);
-	return ArrMaterials[id]->Reflect->GetRefCubeTex();
+	return ArrMaterials[id]->Reflect->getRefCubeTex();
 }
 
 
@@ -745,9 +745,9 @@ void Materials::MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 	if (ArrMaterials[id]->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 	{
 		if (!ArrMaterials[id]->Reflect)
-			ArrMaterials[id]->Reflect = new Reflection();
+			ArrMaterials[id]->Reflect = new CReflection();
 
-		ArrMaterials[id]->Reflect->Init(ArrMaterials[id]->mtl->LightParam.TypeReflect);
+		ArrMaterials[id]->Reflect->init(ArrMaterials[id]->mtl->LightParam.TypeReflect);
 	}
 }
 
@@ -1549,8 +1549,8 @@ ID Materials::MtlLoad(const char* name, MTLTYPE_MODEL type)
 
 		if (ArrMaterials[IsLoad]->Reflect){
 			UnitMaterial* tmpmtl = ArrMaterials[IsLoad];
-			tmpumtl->Reflect = new Reflection();
-			tmpumtl->Reflect->Init(ArrMaterials[IsLoad]->Reflect->TypeRef);
+			tmpumtl->Reflect = new CReflection();
+			tmpumtl->Reflect->init(ArrMaterials[IsLoad]->Reflect->getTypeReflect());
 		}
 
 		return AddUnitMaterial(tmpumtl);
@@ -1568,8 +1568,8 @@ ID Materials::MtlLoad(const char* name, MTLTYPE_MODEL type)
 		{
 			if (tmpumtl->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 			{
-				tmpumtl->Reflect = new Reflection();
-				tmpumtl->Reflect->Init(tmpumtl->mtl->LightParam.TypeReflect);
+				tmpumtl->Reflect = new CReflection();
+				tmpumtl->Reflect->init(tmpumtl->mtl->LightParam.TypeReflect);
 			}
 		}
 
@@ -1599,8 +1599,8 @@ void Materials::MtlReLoad(ID id, const char* name)
 	{
 		if (tmpumtl->mtl->LightParam.TypeReflect != MTLTYPE_REFLECT_NONE)
 		{
-			tmpumtl->Reflect = new Reflection();
-			tmpumtl->Reflect->Init(tmpumtl->mtl->LightParam.TypeReflect);
+			tmpumtl->Reflect = new CReflection();
+			tmpumtl->Reflect->init(tmpumtl->mtl->LightParam.TypeReflect);
 		}
 	}
 }
@@ -1955,10 +1955,10 @@ void Materials::Render(ID id, float4x4* world)
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 	else
 	{
-		if (ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_PLANE)
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefPlaneTex());
-		else if (ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->TypeRef == MTLTYPE_REFLECT_CUBE_DYNAMIC)
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->GetRefCubeTex());
+		if (ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_PLANE)
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->getRefPlaneTex());
+		else if (ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)
+			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, ArrMaterials[id]->Reflect->getRefCubeTex());
 	}
 
 	MLSet::DXDevice->SetTexture(MTL_TEX_R_CURR_DEPTH, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene0));

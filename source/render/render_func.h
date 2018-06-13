@@ -35,6 +35,14 @@ See the license in LICENSE
 #include <pp/sxpp.h>
 #include <decals/sxdecals.h>
 
+enum REFLECTION_RENDER
+{
+	REFLECTION_RENDER_ONLY_SKY	= 0,
+	REFLECTION_RENDER_GEOM		= 1,
+	REFLECTION_RENDER_GREEN		= 2,
+	REFLECTION_RENDER_ANIM		= 3,
+};
+
 //! пространство имен с орагнизацией рендера
 namespace SXRenderFunc
 {

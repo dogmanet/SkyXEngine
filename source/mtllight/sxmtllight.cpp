@@ -819,7 +819,7 @@ SX_LIB_API void SML_MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 	ArrMaterials->MtlRefPreRenderPlane(id, plane);
 }
 
-SX_LIB_API ISXFrustum* SML_MtlRefGetfrustum(ID id, int cube)
+SX_LIB_API const ISXFrustum* SML_MtlRefGetfrustum(ID id, int cube)
 {
 	ML_PRECOND(0);
 	return ArrMaterials->MtlRefGetfrustum(id, cube);

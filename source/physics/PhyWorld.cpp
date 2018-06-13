@@ -652,6 +652,15 @@ void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3]);
 		}
 
+		btTransform &trans = pObj->getWorldTransform();
+
+		LibReport(REPORT_MSG_LEVEL_WARNING, " 0x%08xf\n", &trans);
+		byte * pByte = (byte*)&trans;
+		for (int i = 0, l = sizeof(trans); i < l; ++i)
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, " %02x", pByte[i]);
+		}
+
 		if (!pObj->getUserPointer())
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, "getUserPointer() is NULL.\n");

@@ -77,7 +77,7 @@ public:
 	//void MtlRefSetPlane(ID id, D3DXPLANE* plane);
 	//void MtlRefSetCenter(ID id, float3_t* center);
 	void MtlRefPreRenderPlane(ID id, D3DXPLANE* plane);
-	ISXFrustum* MtlRefGetfrustum(ID id, int cube);
+	const ISXFrustum* MtlRefGetfrustum(ID id, int cube);
 	void MtlRefPostRenderPlane(ID id);
 	IDirect3DTexture9* MtlRefPlaneGetTex(ID id);
 
@@ -270,7 +270,7 @@ public:
 		~UnitMaterial();
 
 		Material* mtl;
-		Reflection* Reflect;
+		CReflection* Reflect;
 	};
 
 protected:
@@ -306,7 +306,7 @@ protected:
 
 	Array<UnitMaterial*> ArrMaterials;
 	Array<Material*> ArrMtrls;
-	Array<Reflection*> ArrDelRefMtrls;
+	Array<CReflection*> ArrDelRefMtrls;
 
 	bool IsIncrCountSurf;
 	int CurrIdSurf;

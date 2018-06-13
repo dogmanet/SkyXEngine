@@ -299,6 +299,11 @@ void SXRenderFunc::ComVisibleForCamera()
 
 void SXRenderFunc::ComVisibleReflection()
 {
+	static const int *r_reflection_render = GET_PCVAR_INT("r_reflection_render");
+
+	if (r_reflection_render && (*r_reflection_render) == REFLECTION_RENDER_ONLY_SKY)
+		return;
+
 	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
 	{
 		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
@@ -314,18 +319,32 @@ void SXRenderFunc::ComVisibleReflection()
 
 				SGeom_ModelsMGetGroupCenter(i, k, &center);
 				
-				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) < 0)
-					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+				{
+					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) < 0)
+						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
+				}
 
-				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) < 0)
-					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+				{
+					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) < 0)
+						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
+				}
 
-				if(SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0) < 0)
-					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+				{
+					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0) < 0)
+						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
+				}
 
-				SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0));
-				SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
-				SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0));
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+					SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0));
+
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+					SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+				
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+					SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0));
 			}
 			else if (typeref == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			{
@@ -336,18 +355,32 @@ void SXRenderFunc::ComVisibleReflection()
 
 				for (int j = 0; j<6; j++)
 				{
-					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) < 0)
-						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+					{
+						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) < 0)
+							SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+					}
 
-					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) < 0)
-						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+					{
+						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) < 0)
+							SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+					}
 
-					if(SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k) < 0)
-						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+					{
+						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k) < 0)
+							SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
+					}
 					
-					SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
-					SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
-					SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k));
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+						SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
+					
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+						SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
+					
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+						SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k));
 				}
 			}
 		}
@@ -1543,6 +1576,11 @@ void SXRenderFunc::ShaderRegisterData()
 
 void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 {
+	static const int *r_reflection_render = GET_PCVAR_INT("r_reflection_render");
+
+	float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
 	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
 	{
 		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
@@ -1553,6 +1591,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 			float3_t center;
 			if (typeref == MTLTYPE_REFLECT_PLANE)
 			{
+				
 				if (!SML_MtlRefIsAllowedRender(idmat))
 				{
 					SML_MtlRefUpdateCountUpdate(idmat, &((float3_t)GData::ConstCurrCamPos));
@@ -1565,38 +1604,51 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-
 				Core_RBoolSet(G_RI_BOOL_CLIPPLANE0, true);
 
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &float3(plane.a, plane.b, plane.c));
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_POINT, &float3(center));
 
-				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
-					SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+				{
+					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
+						SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+				}
 
-				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
-					SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+				{
+					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
+						SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+				}
 
-				SXAnim_Render();
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+				{
+					SXAnim_Render();
+				}
 
 				SGCore_ShaderUnBind();
 
+				if (SGCore_SkyBoxIsCr())
+				{
+					GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+					GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+					GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 
-				GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-				GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+					GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+					GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
 
-				GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
-				GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+					SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
 
-				GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-				GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-				Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefPlaneSkyProj);
-				SGCore_SkyBoxRender(timeDelta, &float3(center));
-				GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-				GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+					GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+					GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+					Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefPlaneSkyProj);
+					SGCore_SkyBoxRender(timeDelta, &float3(center));
+					GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+					GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+					GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+				}
 
 				SML_MtlRefPostRenderPlane(idmat);
 			}
@@ -1616,58 +1668,79 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 
 				SML_MtlRefCubeBeginRender(idmat, &center);
 
-				for (int j = 0; j<6; j++)
+				for (int j = 0; j < 6; j++)
 				{
-					Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+					Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
 					SML_MtlRefCubePreRender(idmat, j, &(SMMatrixIdentity()));
 					SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 					SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-					//если статические кубические отражения
-					if (SML_MtlGetTypeReflection(idmat) == MTLTYPE_REFLECT_CUBE_STATIC)
+					if (r_reflection_render && (*r_reflection_render) != 0)
 					{
-						//тогда считаем в массив камеры
-						SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGeomIDArr);
-						SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, GData::DefaultGeomIDArr, false, i, k);
+						//если статические кубические отражения
+						if (SML_MtlGetTypeReflection(idmat) == MTLTYPE_REFLECT_CUBE_STATIC)
+						{
+							//тогда считаем в массив камеры
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+							{
+								SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGeomIDArr);
+								SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, GData::DefaultGeomIDArr, false, i, k);
+							}
 
-						SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGreenIDArr);
-						SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, GData::DefaultGreenIDArr);
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+							{
+								SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGreenIDArr);
+								SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, GData::DefaultGreenIDArr);
+							}
+						}
+						else
+						{
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+							{
+								if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) >= 0)
+									SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+							}
+
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+							{
+								if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) >= 0)
+									SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k));
+							}
+
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+							{
+								SXAnim_Render();
+							}
+						}
 					}
-					else
+
+					if (SGCore_SkyBoxIsCr())
 					{
-						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) >= 0)
-							SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+						GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) >= 0)
-							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k));
+						GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+						GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 
-						SXAnim_Render();
+						GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+						GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+
+						GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+						GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+						GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+						SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
+
+						Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefCubeSkyProj);
+
+						SGCore_SkyBoxRender(timeDelta, &float3(center));
+						GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+
+						SML_MtlRefCubePostRender(idmat, j);
+
+						GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+						GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 					}
-
-					GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-					GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-					GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-
-					GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
-					GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
-
-					GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-					GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-					SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
-
-					Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefCubeSkyProj);
-
-					SGCore_SkyBoxRender(timeDelta, &float3(center));
-					GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-
-					SML_MtlRefCubePostRender(idmat, j);
-
-					GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-					GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 				}
 				SML_MtlRefCubeEndRender(idmat, &((float3_t)GData::ConstCurrCamPos));
 			}

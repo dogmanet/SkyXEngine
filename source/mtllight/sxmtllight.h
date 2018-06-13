@@ -807,7 +807,7 @@ SX_LIB_API void SML_MtlRefNullingCountUpdate(ID id);
 SX_LIB_API void SML_MtlRefSetMinMax(ID id, float3_t *pMin, float3_t *pMax);//!< установка экстремумов материала
 
 //! возвращает фрустум отражения, cube - сторона куба
-SX_LIB_API ISXFrustum* SML_MtlRefGetfrustum(
+SX_LIB_API const ISXFrustum* SML_MtlRefGetfrustum(
 	ID id,		//!< идентификатора материала
 	int iCube	//!< сторона куба, если отражение плоское то необходимо указать в cube передать 0, иначе вернет NULL
 	);
