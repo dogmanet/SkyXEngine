@@ -174,7 +174,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
 	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
 
-	tm ct = { 0, 0, 10, 27, 5, 2030 - 1900, 0, 0, 0 };
+	tm ct = { 0, 0, 8, 27, 5, 2030 - 1900, 0, 0, 0 };
 	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
 
 	Core_TimeWorkingSet(idTimerRender, true);
@@ -351,6 +351,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	else
 		ShowWindow(hWnd3DCurr, SW_MAXIMIZE);
 #endif
+
+	SkyXEngind_UpdateDataCVar();
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
@@ -719,6 +721,17 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
 
+	//сделал для тестов, убрать если будет мешать
+	/*ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	//ID idQuad = SAIG_QuadGetNear(&vCamPos, true, 1);
+	ID idQuad = -1;
+	for (int i = 0; i < 100;++i)
+		idQuad = SAIG_QuadGet(&vCamPos, true);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "ttime = %lld, idQuad = %d \n", ttime, idQuad);
+	SAIG_GridSetNullColor();
+	SAIG_GridSetColorArr(&idQuad, D3DCOLOR_RGBA(255, 0, 0, 255), 1);*/
+
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
 	Core_RMatrixGet(G_RI_MATRIX_LIGHT_PROJ, &mProjLight);
 
@@ -739,25 +752,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}
 
 
-	
-	/*IDirect3DTexture9 *pINTZ = SGCore_RTGetTextureN("intz");
-	IDirect3DSurface9 *pINTZSurface = 0;
-
-	if (pINTZ)
-	{
-		pINTZ->GetSurfaceLevel(0, &pINTZSurface);
-		pDXDevice->SetDepthStencilSurface(pINTZSurface);
-		mem_release(pINTZSurface);
-	}*/
-
 	//рисуем сцену и заполняем mrt данными
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_BuildMRT(timeDelta, isSimulationRender);
 	DelayRenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-
-	//mem_release(pINTZSurface);
-
-	
 
 
 	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
@@ -807,10 +805,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_RenderEditorMain();
 
 
-/*#if defined(_DEBUG)
-	static const float * r_far = GET_PCVAR_FLOAT("r_far");
-	SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *r_far);
-#endif*/
+#if defined(SX_GAME) && defined(SX_AIGRID_RENDER)
+	//static const float * r_far = GET_PCVAR_FLOAT("r_far");
+	SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
+#endif
 
 #if defined(SX_GAME)
 	SXGame_RenderHUD();
@@ -1109,16 +1107,23 @@ void SkyXEngind_UpdateDataCVar()
 
 		static int iCountModes = 0;
 		static const DEVMODE *aModes = SGCore_GetModes(&iCountModes);
+		static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-		if (r_win_width && r_win_width_old != (*r_win_width) && r_win_height && r_win_height_old != (*r_win_height))
+		if (r_win_width_old != (*r_win_width) || r_win_height_old != (*r_win_height))
 		{
 			bool isValid = false;
-			for (int i = 0; i < iCountModes; ++i)
+
+			if (r_win_windowed && (*r_win_windowed) == true)
+				isValid = true;
+			else
 			{
-				if (aModes[i].dmPelsWidth == (*r_win_width) && aModes[i].dmPelsHeight == (*r_win_height))
+				for (int i = 0; i < iCountModes; ++i)
 				{
-					isValid = true;
-					break;
+					if (aModes[i].dmPelsWidth == (*r_win_width) && aModes[i].dmPelsHeight == (*r_win_height))
+					{
+						isValid = true;
+						break;
+					}
 				}
 			}
 
@@ -1152,7 +1157,7 @@ void SkyXEngind_UpdateDataCVar()
 			}
 		}
 
-		static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
+		
 
 		if (r_win_windowed)
 		{

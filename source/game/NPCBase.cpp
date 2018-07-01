@@ -207,7 +207,7 @@ void CNPCBase::onSync()
 void CNPCBase::gridCheckBeyond()
 {
 	//находим ближайший квад к текущей позиции нпс
-	ID idq = SAIG_QuadGetNear(&(float3)m_vPosition);
+	ID idq = SAIG_QuadGetNear(&(float3)m_vPosition, 5);
 	if (idq >= 0)
 	{
 		float3 tpos;

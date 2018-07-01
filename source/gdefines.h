@@ -257,7 +257,12 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 	static char szStr[REPORT_MSG_MAX_LEN];
 	szStr[0] = 0;
 	int iStrLen = sizeof(szStr);
-	format_str(szStr, szFormat);
+	//format_str(szStr, szFormat);
+
+	va_list va; 
+	va_start(va, szFormat);
+	vsprintf_s(szStr, sizeof(szStr), szFormat, va);
+	va_end(va);
 
 	g_fnReportf(iLevel, SX_LIB_NAME, szStr);
 }

@@ -21,7 +21,7 @@ bool QuadPhyNavigate(float3_t *pPos)
 
 g_aiquad_phy_navigate AIQuadPhyNavigate = QuadPhyNavigate;
 
-AIGrid* g_pAIGrid = 0;
+CAIGrid* g_pAIGrid = 0;
 
 #define AIG_PRECOND(retval) if(!g_pAIGrid){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxaigrid is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -51,16 +51,16 @@ SX_LIB_API void SAIG_0Create(const char *szName, bool useGraphics, bool isUnic)
 			}
 			else
 			{
-				g_pAIGrid = new AIGrid();
+				g_pAIGrid = new CAIGrid();
 				if (useGraphics)
-					g_pAIGrid->GraphicsInit();
+					g_pAIGrid->initGraphics();
 			}
 		}
 		else
 		{
-			g_pAIGrid = new AIGrid();
+			g_pAIGrid = new CAIGrid();
 			if (useGraphics)
-				g_pAIGrid->GraphicsInit();
+				g_pAIGrid->initGraphics();
 		}
 	}
 	else
@@ -87,7 +87,7 @@ SX_LIB_API void SAIG_Clear()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->Clear();
+	g_pAIGrid->clear();
 }
 
 SX_LIB_API bool SAIG_ExistsQuads()
@@ -101,154 +101,154 @@ SX_LIB_API void SAIG_GridSave(const char *szPath)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridSave(szPath);
+	g_pAIGrid->save(szPath);
 }
 
 SX_LIB_API void SAIG_GridLoad(const char* szPath)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridLoad(szPath);
+	g_pAIGrid->load(szPath);
 }
 
 SX_LIB_API UINT SAIG_GridGetCountQuads()
 {
 	AIG_PRECOND(0);
 
-	return g_pAIGrid->GridGetCountQuads();
+	return g_pAIGrid->gridGetCountQuads();
 }
 
 SX_LIB_API void SAIG_BBCreate(const float3 *pCenter, const float3 *pParam)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->BBCreate(pCenter, pParam);
+	g_pAIGrid->bbCreate(pCenter, pParam);
 }
 
 SX_LIB_API bool SAIG_BBIsCreated()
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->BBIsCreated();
+	return g_pAIGrid->bbIsCreated();
 }
 
 SX_LIB_API void SAIG_BBSetDimensions(const float3 *pDimensions)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->BBSetDimensions(pDimensions);
+	g_pAIGrid->bbSetDimensions(pDimensions);
 }
 
 SX_LIB_API void SAIG_BBGetDimensions(float3 *pDimensions)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->BBGetDimensions(pDimensions);
+	g_pAIGrid->bbGetDimensions(pDimensions);
 }
 
 SX_LIB_API void SAIG_BBSetPos(const float3 *pPos)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->BBSetPos(pPos);
+	g_pAIGrid->bbSetPos(pPos);
 }
 
 SX_LIB_API void SAIG_BBGetPos(float3 *pPos)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->BBGetPos(pPos);
+	g_pAIGrid->bbGetPos(pPos);
 }
 
 SX_LIB_API void SAIG_BBCreateFinish()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->BBCreateFinish();
+	g_pAIGrid->bbCreateFinish();
 }
 
 SX_LIB_API bool SAIG_BBIsCreatedFinish()
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->BBIsCreatedFinish();
+	return g_pAIGrid->bbIsCreatedFinish();
 }
 
 SX_LIB_API AIQUAD_STATE SAIG_QuadGetState(ID idQuad)
 {
 	AIG_PRECOND(AIQUAD_STATE::AIQUAD_STATE_FREE);
 
-	return g_pAIGrid->QuadGetState(idQuad);
+	return g_pAIGrid->quadGetState(idQuad);
 }
 
 SX_LIB_API void SAIG_QuadSetState(ID idQuad, AIQUAD_STATE state)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->QuadSetState(idQuad, state);
+	g_pAIGrid->quadSetState(idQuad, state);
 }
 
 SX_LIB_API void SAIG_QuadSetStateWho(ID idQuad, ID idWho)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->QuadSetStateWho(idQuad, idWho);
+	g_pAIGrid->quadSetStateWho(idQuad, idWho);
 }
 
 SX_LIB_API ID SAIG_QuadGetStateWho(ID idQuad)
 {
 	AIG_PRECOND(-1);
 
-	return g_pAIGrid->QuadGetStateWho(idQuad);
+	return g_pAIGrid->quadGetStateWho(idQuad);
 }
 
 SX_LIB_API bool SAIG_QuadIs2Neighbors(ID idQuad, ID idQuad1, ID idQuad2)
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->QuadIs2Neighbors(idQuad, idQuad1, idQuad2);
+	return g_pAIGrid->quadIs2Neighbors(idQuad, idQuad1, idQuad2);
 }
 
 SX_LIB_API ID SAIG_QuadGet(const float3 *pPos, bool isNearOrPermissible)
 {
 	AIG_PRECOND(-1);
 
-	return g_pAIGrid->QuadGet(pPos, isNearOrPermissible);
+	return g_pAIGrid->quadGet(pPos, isNearOrPermissible);
 }
 
 SX_LIB_API bool SAIG_QuadGetPos(ID idQuad, float3 *pPos)
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->QuadGetPos(idQuad, pPos);
+	return g_pAIGrid->quadGetPos(idQuad, pPos);
 }
 
 SX_LIB_API void SAIG_QuadSetPosY(ID idQuad, float fPosY)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->QuadSetPosY(idQuad, fPosY);
+	g_pAIGrid->quadSetPosY(idQuad, fPosY);
 }
 
 SX_LIB_API float SAIG_QuadGetPosY(ID idQuad)
 {
 	AIG_PRECOND(0);
 
-	return g_pAIGrid->QuadGetPosY(idQuad);
+	return g_pAIGrid->quadGetPosY(idQuad);
 }
 
 SX_LIB_API ID SAIG_QuadAdd(const float3 *pPos)
 {
 	AIG_PRECOND(-1);
 
-	return g_pAIGrid->QuadAdd(pPos);
+	return g_pAIGrid->quadAdd(pPos);
 }
 
 SX_LIB_API bool SAIG_QuadDelete(ID idQuad)
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->QuadDelete(idQuad);
+	return g_pAIGrid->quadDelete(idQuad);
 }
 
 
@@ -256,84 +256,84 @@ SX_LIB_API void SAIG_GridClear()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridClear();
+	g_pAIGrid->gridClear();
 }
 
 SX_LIB_API ID SAIG_GridTraceBeam(const float3 *pStart, const float3 *pDir)
 {
 	AIG_PRECOND(-1);
 
-	return g_pAIGrid->GridTraceBeam(pStart, pDir);
+	return g_pAIGrid->gridTraceBeam(pStart, pDir);
 }
 
 SX_LIB_API void SAIG_QuadSelect(ID pStart, bool useConsiderPrev)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->QuadSelect(pStart, useConsiderPrev);
+	g_pAIGrid->quadSelect(pStart, useConsiderPrev);
 }
 
 SX_LIB_API void SAIG_QuadSelectedAddPosY(float fPosY)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->QuadSelectedAddPosY(fPosY);
+	g_pAIGrid->quadSelectedAddPosY(fPosY);
 }
 
 SX_LIB_API void SAIG_QuadSelectedDelete()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->QuadSelectedDelete();
+	g_pAIGrid->quadSelectedDelete();
 }
 
 SX_LIB_API bool SAIG_QuadIsFree(ID idQuad, int fRadius)
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->QuadIsFree(idQuad, fRadius);
+	return g_pAIGrid->quadIsFree(idQuad, fRadius);
 }
 
-SX_LIB_API ID SAIG_QuadGetNear(const float3 *pPos, bool isFree, int iRadius)
+SX_LIB_API ID SAIG_QuadGetNear(const float3 *pPos, float fRadius, bool isFree, int iQuadRadius)
 {
 	AIG_PRECOND(-1);
 
-	return g_pAIGrid->QuadGetNear(pPos, isFree, iRadius);
+	return g_pAIGrid->quadGetNear(pPos, fRadius, isFree, iQuadRadius);
 }
 
 SX_LIB_API void SAIG_GridTestValidation()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridTestValidation();
+	g_pAIGrid->gridTestValidation();
 }
 
 SX_LIB_API UINT SAIG_GridGetCountSplits()
 {
 	AIG_PRECOND(0);
 
-	return g_pAIGrid->GridGetCountSplits();
+	return g_pAIGrid->gridGetCountSplits();
 }
 
 SX_LIB_API void SAIG_GridSetMarkSplits(bool isMark)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridSetMarkSplits(isMark);
+	g_pAIGrid->gridSetMarkSplits(isMark);
 }
 
 SX_LIB_API bool SAIG_GridGetMarkSplits()
 {
 	AIG_PRECOND(false);
 
-	return g_pAIGrid->GridGetMarkSplits();
+	return g_pAIGrid->gridGetMarkSplits();
 }
 
 SX_LIB_API void SAIG_GridGenerate()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridGenerate();
+	g_pAIGrid->gridGenerate();
 }
 
 SX_LIB_API void SAIG_GridQueryFindPathUpdate(UINT uiLimitMls)
@@ -375,14 +375,14 @@ SX_LIB_API void SAIG_GridSetColorArr(const ID *pMem, DWORD dwColor, UINT uiCount
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridSetColorArr(pMem, dwColor, uiCount);
+	g_pAIGrid->gridSetColorArr(pMem, dwColor, uiCount);
 }
 
 SX_LIB_API void SAIG_GridSetNullColor()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GridSetNullColor();
+	g_pAIGrid->gridSetNullColor();
 }
 
 
@@ -390,42 +390,42 @@ SX_LIB_API void SAIG_GraphPointGenerate()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GraphPointGenerate();
+	g_pAIGrid->graphPointGenerate();
 }
 
 SX_LIB_API UINT SAIG_GraphPointGetCount()
 {
 	AIG_PRECOND(0);
 
-	return g_pAIGrid->GraphPointGetCount();
+	return g_pAIGrid->graphPointGetCount();
 }
 
 SX_LIB_API void SAIG_GraphPointClear()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GraphPointClear();
+	g_pAIGrid->graphPointClear();
 }
 
 SX_LIB_API void SAIG_GraphPointAdd(ID idQuad)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GraphPointAdd(idQuad);
+	g_pAIGrid->graphPointAdd(idQuad);
 }
 
 SX_LIB_API void SAIG_GraphPointDelete(ID idQuad)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->GraphPointDelete(idQuad);
+	g_pAIGrid->graphPointDelete(idQuad);
 }
 
 SX_LIB_API ID SAIG_GraphPointGetNear(ID idBegin, ID idEnd)
 {
 	AIG_PRECOND(-1);
 
-	return g_pAIGrid->GraphPointGetNear(idBegin, idEnd);
+	return g_pAIGrid->graphPointGetNear(idBegin, idEnd);
 }
 
 
@@ -433,19 +433,19 @@ SX_LIB_API void SAIG_RenderQuads(const ISXFrustum *pFrustum, const float3 *pView
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->RenderQuads(pFrustum, pViewPos, fDist);
+	g_pAIGrid->renderQuads(pFrustum, pViewPos, fDist);
 }
 
 SX_LIB_API void SAIG_RenderGraphPoints(const float3 *pViewPos, float fDist)
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->RenderGraphPoints(pViewPos, fDist);
+	g_pAIGrid->renderGraphPoints(pViewPos, fDist);
 }
 
 SX_LIB_API void SAIG_RenderBB()
 {
 	AIG_PRECOND(_VOID);
 
-	g_pAIGrid->RenderBB();
+	g_pAIGrid->renderBB();
 }
