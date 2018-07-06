@@ -30,10 +30,10 @@ public:
 	~CPointCamera();
 
 	//! Возвращает объект камеры из графической либы
-	ISXCamera * getCamera();
+	ICamera * getCamera();
 
 protected:
-	ISXCamera * m_pSXC;
+	ICamera * m_pSXC;
 
 	void onSync();
 };

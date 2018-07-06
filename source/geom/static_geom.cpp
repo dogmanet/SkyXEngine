@@ -239,7 +239,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 
 	CModel* tmpmodel = new CModel();
 	ID tmpidmodel = m_aAllModels.size() - 1;
-	if (!def_str_validate(name))
+	if (!STR_VALIDATE(name))
 		sprintf(tmpmodel->m_szName, "");
 	else
 		sprintf(tmpmodel->m_szName, "%s", name);
@@ -990,7 +990,7 @@ void CStaticGeom::initArrIndexPtr()
 }
 
 
-void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos, ID id_arr)
+void CStaticGeom::comArrIndeces(const IFrustum* frustum, const float3* viewpos, ID id_arr)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
@@ -1043,7 +1043,7 @@ void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos
 	}
 }
 
-void CStaticGeom::comRecArrIndeces(ID idArr, const ISXFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
+void CStaticGeom::comRecArrIndeces(ID idArr, const IFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float jradius;
 	float3 jcenter;
@@ -2950,7 +2950,7 @@ const char* CStaticGeom::getModelLodPath(ID id)
 
 void CStaticGeom::setModelLodPath(ID id, const char* path)
 {
-	if (id < m_aAllModels.size() && def_str_validate(path))
+	if (id < m_aAllModels.size() && STR_VALIDATE(path))
 	{
 		mem_delete(m_aAllModels[id]->m_oLod0.m_pModel);
 		m_aAllModels[id]->m_oLod0.m_aIDsTextures.clear();
@@ -3335,7 +3335,7 @@ bool CStaticGeom::traceBeam(const float3* start, const float3* dir, float3* _res
 	if (m_aAllModels.size() <= 0)
 		return false;
 
-	SXTriangle tmptri;
+	CTriangle tmptri;
 	bool tmpiscom = true;
 	float3 ip;
 	float3 res;
@@ -3363,9 +3363,9 @@ bool CStaticGeom::traceBeam(const float3* start, const float3* dir, float3* _res
 
 				for (DWORD numpoly = 0; numpoly<m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pCountPoly[group] * 3; numpoly += 3)
 				{
-					tmptri.a = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]].Pos;
-					tmptri.b = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]].Pos;
-					tmptri.c = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]].Pos;
+					tmptri.m_vA = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]].Pos;
+					tmptri.m_vB = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]].Pos;
+					tmptri.m_vC = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]].Pos;
 
 					if (tmptri.IntersectLine((*start), il, &ip))
 					{

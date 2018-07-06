@@ -17,7 +17,7 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
-Lights* ArrLights = 0;
+CLights* ArrLights = 0;
 Materials* ArrMaterials = 0;
 
 #define ML_PRECOND(retval) if(!ArrLights){LibReport(-1, "%s - sxmtlligth is not init", GEN_MSG_LOCATION); return retval;}
@@ -50,7 +50,7 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 			{
 				MLSet::MLInit();
 				MLSet::ReCalcSize();
-				ArrLights = new Lights();
+				ArrLights = new CLights();
 				ArrMaterials = new Materials();
 			}
 		}
@@ -58,7 +58,7 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 		{
 			MLSet::MLInit();
 			MLSet::ReCalcSize();
-			ArrLights = new Lights();
+			ArrLights = new CLights();
 			ArrMaterials = new Materials();
 		}
 	}
@@ -75,7 +75,7 @@ SX_LIB_API void SML_AKill()
 SX_LIB_API void SML_OnLostDevice()
 {
 	ML_PRECOND(_VOID);
-	ArrLights->OnLostDevice();
+	ArrLights->onLostDevice();
 	ArrMaterials->OnLostDevice();
 }
 
@@ -87,7 +87,7 @@ SX_LIB_API void SML_OnResetDevice()
 	MLSet::ProjFov = projfov;
 	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;*/
 	MLSet::ReCalcSize();
-	ArrLights->OnResetDevice();
+	ArrLights->onResetDevice();
 	ArrMaterials->OnResetDevice();
 
 	//MLSet::IDsRenderTargets::ToneMaps.clear();
@@ -163,21 +163,21 @@ SX_LIB_API void SML_LigthsClear()
 {
 	ML_PRECOND(_VOID);
 
-	ArrLights->Clear();
+	ArrLights->clear();
 }
 
 SX_LIB_API void SML_LigthsClearIDArr()
 {
 	ML_PRECOND(_VOID);
 
-	ArrLights->ClearIDArr();
+	ArrLights->clearIDArr();
 }
 
 SX_LIB_API long SML_LigthsGetCount()
 {
 	ML_PRECOND(-1);
 
-	return ArrLights->GetCountLights();
+	return ArrLights->getCountLights();
 }
 
 SX_LIB_API bool SML_LigthsGetExists(ID id)
@@ -191,218 +191,218 @@ SX_LIB_API bool SML_LigthsGetExists(ID id)
 SX_LIB_API ID SML_LigthsCreatePoint(const float3* center, float dist, const float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreatePoint(-1,center, dist, color, isglobal, is_shadowed/*, 0*/);
+	return ArrLights->createPoint(-1,center, dist, color, isglobal, is_shadowed/*, 0*/);
 }
 
 SX_LIB_API ID SML_LigthsCreateDirection(const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreateDirection(-1, pos, dist, color, orient, top_radius, angle, is_shadow/*, 0*/);
+	return ArrLights->createDirection(-1, pos, dist, color, orient, top_radius, angle, is_shadow/*, 0*/);
 }
 
 SX_LIB_API void SML_LigthsRender(ID id, DWORD timeDelta)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->Render(id, timeDelta);
+	ArrLights->render(id, timeDelta);
 }
 
 SX_LIB_API ID SML_LigthsGetGlobal()
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightGlobal();
+	return ArrLights->getLightGlobal();
 }
 
 SX_LIB_API bool SML_LigthsGetCastGlobalShadow()
 {
 	ML_PRECOND(false);
-	return ArrLights->GetCastGlobalShadow();
+	return ArrLights->getCastGlobalShadow();
 }
 
 SX_LIB_API void SML_LigthsSetCastGlobalShadow(bool isShadowed)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->SetCastGlobalShadow(isShadowed);
+	return ArrLights->setCastGlobalShadow(isShadowed);
 }
 
 SX_LIB_API void SML_LigthsGetColor(ID id, float3* color)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->GetLightColor(id, color);
+	ArrLights->getLightColor(id, color);
 }
 
 SX_LIB_API void SML_LigthsSetColor(ID id, const float3* vec)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightColor(id, vec);
+	ArrLights->setLightColor(id, vec);
 }
 
 SX_LIB_API void SML_LigthsGetPos(ID id, float3* vec, bool greal)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->GetLightPos(id, vec, greal);
+	ArrLights->getLightPos(id, vec, greal);
 }
 
 SX_LIB_API float SML_LigthsGetPower(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightPower(id);
+	return ArrLights->getLightPower(id);
 }
 
 SX_LIB_API float SML_LigthsGetDist(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightDist(id);
+	return ArrLights->getLightDist(id);
 }
 
 SX_LIB_API void SML_LigthsSetPos(ID id, const float3* vec, bool greal)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightPos(id, vec, greal);
+	ArrLights->setLightPos(id, vec, greal);
 }
 
 SX_LIB_API void SML_LigthsGetOrient(ID id, SMQuaternion* q)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->GetLightOrient(id, q);
+	ArrLights->getLightOrient(id, q);
 }
 
 SX_LIB_API void SML_LigthsSetOrient(ID id, const SMQuaternion* q)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightOrient(id, q);
+	ArrLights->setLightOrient(id, q);
 }
 
 SX_LIB_API LTYPE_LIGHT SML_LigthsGetType(ID id)
 {
 	ML_PRECOND(LTYPE_LIGHT_NONE);
-	return ArrLights->GetLightType(id);
+	return ArrLights->getLightType(id);
 }
 
-SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const ISXFrustum* frustum)
+SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const IFrustum* frustum)
 {
 	ML_PRECOND(-1);
-	return ArrLights->ComVisibleForFrustum(id, frustum);
+	return ArrLights->comVisibleForFrustum(id, frustum);
 }
 
 SX_LIB_API bool SML_LigthsGetVisibleForFrustum(ID id)
 {
 	ML_PRECOND(false);
-	return ArrLights->GetVisibleForFrustum(id);
+	return ArrLights->getVisibleForFrustum(id);
 }
 
 SX_LIB_API float SML_LigthsComDistFor(ID id, const float3* vec)
 {
 	ML_PRECOND(-1);
-	return ArrLights->ComDistFor(id, vec);
+	return ArrLights->comDistFor(id, vec);
 }
 
 SX_LIB_API float SML_LigthsGetDistFor(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetDistFor(id);
+	return ArrLights->getDistFor(id);
 }
 
-SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const ISXFrustum* frustum, const float3* vec)
+SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const IFrustum* frustum, const float3* vec)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->ComVisibleFrustumDistFor(frustum, vec);
+	return ArrLights->comVisibleFrustumDistFor(frustum, vec);
 }
 
 SX_LIB_API bool SML_LigthsGetEnable(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightEnable(id);
+	return ArrLights->getLightEnable(id);
 }
 
 SX_LIB_API void SML_LigthsSetEnable(ID id, bool val)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->SetLightEnable(id, val);
+	return ArrLights->setLightEnable(id, val);
 }
 
 SX_LIB_API bool SML_LigthsGetShadowed(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightShadowed(id);
+	return ArrLights->getLightShadowed(id);
 }
 
 SX_LIB_API bool SML_LigthsGet4Or3SplitsG(ID id)
 {
 	ML_PRECOND(0);
-	return ArrLights->Get4Or3Splits(id);
+	return ArrLights->get4Or3Splits(id);
 }
 
 SX_LIB_API void SML_LigthsSet4Or3SplitsG(ID id, bool bf4or3)
 {
 	ML_PRECOND(_VOID);
 
-	ArrLights->Set4Or3Splits(id, bf4or3);
+	ArrLights->set4Or3Splits(id, bf4or3);
 }
 
 SX_LIB_API IDirect3DTexture9* SML_LigthsGetShadow()
 {
 	ML_PRECOND(0);
-	return ArrLights->GetShadow2();
+	return ArrLights->getShadow2();
 }
 
 SX_LIB_API void SML_LigthsShadowNull()
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->ShadowNull();
+	return ArrLights->shadowNull();
 }
 
 SX_LIB_API void SML_LigthsShadowRenderBegin(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderBegin(id);
+	ArrLights->shadowRenderBegin(id);
 }
 
 SX_LIB_API void SML_LigthsShadowRenderEnd(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderEnd(id);
+	ArrLights->shadowRenderEnd(id);
 }
 
 SX_LIB_API void SML_LigthsShadowRenderPre(ID id, int cube)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderPre(id, cube);
+	ArrLights->shadowRenderPre(id, cube);
 }
 
 SX_LIB_API void SML_LigthsShadowRenderPost(ID id, int cube)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderPost(id, cube);
+	ArrLights->shadowRenderPost(id, cube);
 }
 
-SX_LIB_API ISXFrustum* SML_LigthsGetFrustum(ID id, int how)
+SX_LIB_API IFrustum* SML_LigthsGetFrustum(ID id, int how)
 {
 	ML_PRECOND(0);
-	return ArrLights->GetLightFrustum(id, how);
+	return ArrLights->getLightFrustum(id, how);
 }
 
 SX_LIB_API void SML_LigthsUpdateGFrustums(ID id, int split, const float3* pos, const float3* dir)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->UpdateLightGFrustums(id, split, pos, dir);
+	return ArrLights->updateLightGFrustums(id, split, pos, dir);
 }
 
 SX_LIB_API void SML_LigthsShadowSetShaderOfTypeMat(ID id, int typemat, float4x4* wmat)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->InitShaderOfTypeMaterial(id, typemat, wmat);
+	ArrLights->initShaderOfTypeMaterial(id, typemat, wmat);
 }
 
 SX_LIB_API void SML_LigthsShadowGen(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowGen2(id);
+	ArrLights->shadowGen2(id);
 }
 
 SX_LIB_API void SML_LigthsShadowSoft(bool randomsam, float size, bool isfirst)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowSoft(randomsam, size, isfirst);
+	ArrLights->shadowSoft(randomsam, size, isfirst);
 }
 
 
@@ -410,189 +410,189 @@ SX_LIB_API void SML_LigthsShadowSoft(bool randomsam, float size, bool isfirst)
 SX_LIB_API ID SML_LigthsCreateCopy(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreateCopy(id);
+	return ArrLights->createCopy(id);
 }
 
 SX_LIB_API void SML_LigthsDeleteLight(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->DeleteLight(id);
+	ArrLights->deleteLight(id);
 }
 
 SX_LIB_API char* SML_LigthsGetName(ID id)
 {
 	ML_PRECOND(0);
-	return ArrLights->GetLightName(id);
+	return ArrLights->getLightName(id);
 }
 
 SX_LIB_API void SML_LigthsSetName(ID id, const char* name)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightName(id, name);
+	ArrLights->setLightName(id, name);
 }
 
 
 SX_LIB_API void SML_LigthsSetAngle(ID id, float angle)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightAngle(id, angle, true);
+	ArrLights->setLightAngle(id, angle, true);
 }
 
 SX_LIB_API void SML_LigthsSetTopRadius(ID id, float top_radius)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightTopRadius(id, top_radius);
+	ArrLights->setLightTopRadius(id, top_radius);
 }
 
 SX_LIB_API void SML_LigthsSetDist(ID id, float radius_height, bool is_create)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightDist(id, radius_height, is_create);
+	ArrLights->setLightDist(id, radius_height, is_create);
 }
 
 
 SX_LIB_API float SML_LigthsGetShadowBias(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowBias(id);
+	return ArrLights->getShadowBias(id);
 }
 
 SX_LIB_API void SML_LigthsSetShadowBias(ID id, float bias)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->SetShadowBias(id, bias);
+	return ArrLights->setShadowBias(id, bias);
 }
 
 SX_LIB_API void SML_LigthsSetShadowBlurPixel(ID id, float blur_pixel)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetShadowBlurPixel(id, blur_pixel);
+	ArrLights->setShadowBlurPixel(id, blur_pixel);
 }
 
 SX_LIB_API float SML_LigthsGetShadowBlurPixel(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowBlurPixel(id);
+	return ArrLights->getShadowBlurPixel(id);
 }
 SX_LIB_API void SML_LigthsSetShadowLocalNear(ID id, float slnear)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetShadowLocalNear(id, slnear);
+	ArrLights->setShadowLocalNear(id, slnear);
 }
 
 SX_LIB_API float SML_LigthsGetShadowLocalNear(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowLocalNear(id);
+	return ArrLights->getShadowLocalNear(id);
 }
 
 SX_LIB_API void SML_LigthsSetShadowLocalFar(ID id, float slfar)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetShadowLocalFar(id, slfar);
+	ArrLights->setShadowLocalFar(id, slfar);
 }
 
 SX_LIB_API float SML_LigthsGetShadowLocalFar(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowLocalFar(id);
+	return ArrLights->getShadowLocalFar(id);
 }
 
 SX_LIB_API void SML_LigthsSetCubeEdgeEnable(ID id, int edge, bool enable)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightCubeEdgeEnable(id, edge, enable);
+	ArrLights->setLightCubeEdgeEnable(id, edge, enable);
 }
 
 SX_LIB_API bool SML_LigthsGetCubeEdgeEnable(ID id, int edge)
 {
 	ML_PRECOND(false);
-	return ArrLights->GetLightCubeEdgeEnable(id, edge);
+	return ArrLights->getLightCubeEdgeEnable(id, edge);
 }
 
 
 SX_LIB_API float SML_LigthsGetAngle(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightAngle(id);
+	return ArrLights->getLightAngle(id);
 }
 
 SX_LIB_API float SML_LigthsGetTopRadius(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightTopRadius(id);
+	return ArrLights->getLightTopRadius(id);
 }
 
 SX_LIB_API ID SML_LigthsGetIDArr(ID id, ID inid, int how)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightIDArr(id, inid, how);
+	return ArrLights->getLightIDArr(id, inid, how);
 }
 
 SX_LIB_API void SML_LigthsSetIDArr(ID id, ID inid, int how, ID id_arr)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightIDArr(id, inid, how, id_arr);
+	ArrLights->setLightIDArr(id, inid, how, id_arr);
 }
 
 SX_LIB_API void SML_LigthsSetTypeShadowed(ID id, LTYPE_SHADOW type)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightTypeShadowed(id, type);
+	ArrLights->setLightTypeShadowed(id, type);
 }
 
 SX_LIB_API LTYPE_SHADOW SML_LigthsGetTypeShadowed(ID id)
 {
 	ML_PRECOND(LTYPE_SHADOW_NONE);
-	return ArrLights->GetLightTypeShadowed(id);
+	return ArrLights->getLightTypeShadowed(id);
 }
 
 SX_LIB_API bool SML_LigthsCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 {
 	ML_PRECOND(false);
-	return ArrLights->LightCountUpdateUpdate(id, viewpos, ghow);
+	return ArrLights->lightCountUpdateUpdate(id, viewpos, ghow);
 }
 
 SX_LIB_API bool SML_LigthsCountUpdateAllowed(ID id, int ghow)
 {
 	ML_PRECOND(false);
-	return ArrLights->LightCountUpdateAllowed(id, ghow);
+	return ArrLights->lightCountUpdateAllowed(id, ghow);
 }
 
 SX_LIB_API void SML_LigthsCountUpdateNull(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->LightCountUpdateNull(id);
+	ArrLights->lightCountUpdateNull(id);
 }
 
 SX_LIB_API void SML_LigthsToneMappingCom(DWORD timeDelta, float factor_adapted)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ToneMappingCom(timeDelta, factor_adapted);
+	ArrLights->toneMappingCom(timeDelta, factor_adapted);
 }
 
 SX_LIB_API int SML_LigthsDelGetCount()
 {
 	ML_PRECOND(-1);
-	return ArrLights->DelGetCount();
+	return ArrLights->delGetCount();
 }
 
 SX_LIB_API LTYPE_LIGHT SML_LigthsDelGetType(ID key)
 {
 	ML_PRECOND(LTYPE_LIGHT_NONE);
-	return ArrLights->DelGetType(key);
+	return ArrLights->delGetType(key);
 }
 
 SX_LIB_API void SML_LigthsDelDel(ID key)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->DelDel(key);
+	ArrLights->delDel(key);
 }
 
 SX_LIB_API ID SML_LigthsDelGetIDArr(ID key, ID inid, int how)
 {
 	ML_PRECOND(-1);
-	return ArrLights->DelGetIDArr(key, inid, how);
+	return ArrLights->delGetIDArr(key, inid, how);
 }
 
 //#############################################################################
@@ -819,7 +819,7 @@ SX_LIB_API void SML_MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 	ArrMaterials->MtlRefPreRenderPlane(id, plane);
 }
 
-SX_LIB_API const ISXFrustum* SML_MtlRefGetfrustum(ID id, int cube)
+SX_LIB_API const IFrustum* SML_MtlRefGetfrustum(ID id, int cube)
 {
 	ML_PRECOND(0);
 	return ArrMaterials->MtlRefGetfrustum(id, cube);

@@ -1127,7 +1127,7 @@ void Effects::EffectRenderAll(DWORD timeDelta)
 	}
 }
 
-bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
+bool Effects::EffectVisibleCom(ID id, const IFrustum* frustum, float3* view)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
@@ -1151,7 +1151,7 @@ bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
 	return eff->ViewRender;
 }
 
-void Effects::EffectVisibleComAll(const ISXFrustum* frustum, float3* view)
+void Effects::EffectVisibleComAll(const IFrustum* frustum, float3* view)
 {
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 

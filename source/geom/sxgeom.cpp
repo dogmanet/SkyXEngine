@@ -201,7 +201,7 @@ SX_LIB_API int SGeom_ModelsGetCount()
 	return g_pGeometry->getCountModel();
 }
 
-SX_LIB_API void SGeom_ModelsComVisible(const ISXFrustum *pFrustum, const float3 *pViewPos, ID idArr)
+SX_LIB_API void SGeom_ModelsComVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr)
 {
 	GEOM_PRECOND(_VOID);
 	g_pGeometry->comArrIndeces(pFrustum, pViewPos, idArr);
@@ -477,7 +477,7 @@ SX_LIB_API void SGeom_GreenClear()
 	g_pGreen->clear();
 }
 
-SX_LIB_API void SGeom_GreenComVisible(const ISXFrustum* frustum, float3 *pViewPos, ID idArr)
+SX_LIB_API void SGeom_GreenComVisible(const IFrustum* frustum, float3 *pViewPos, ID idArr)
 {
 	GEOM_PRECOND(_VOID);
 	g_pGreen->comArrIndeces(frustum, pViewPos, idArr);

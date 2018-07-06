@@ -16,7 +16,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert);
 void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert);
 
-bool InPosition2D(float3* min,float3* max,float3* pos);
+bool InPosition2D(const float3* min, const float3* max, const float3* pos);
 bool InPositionAbs2D(float3* min,float3* max,float3* pos);
 
 int CountPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3);
@@ -33,7 +33,7 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound** bound_arr);
 void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound** bound_arr);
 
-void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device);
+void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device);
 
 //простой объект с минимальным описанием
 //для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld

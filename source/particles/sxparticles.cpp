@@ -326,14 +326,14 @@ SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot)
 }
 
 
-SX_LIB_API bool SPE_EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
+SX_LIB_API bool SPE_EffectVisibleCom(ID id, const IFrustum* frustum, float3* view)
 {
 	PE_PRECOND(false);
 
 	return ArrEffects->EffectVisibleCom(id, frustum, view);
 }
 
-SX_LIB_API void SPE_EffectVisibleComAll(const ISXFrustum* frustum, float3* view)
+SX_LIB_API void SPE_EffectVisibleComAll(const IFrustum* frustum, float3* view)
 {
 	PE_PRECOND(_VOID);
 

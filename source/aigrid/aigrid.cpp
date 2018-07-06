@@ -2343,7 +2343,7 @@ bool CAIGrid::quadGetPos(ID id, float3* pos) const
 ID CAIGrid::gridTraceBeam(const float3* start, const float3* dir) const
 {
 	ID idf = -1;
-	SXTriangle tmptri;
+	CTriangle tmptri;
 	float3 ip;
 	float3 res;
 	float3 ildir;
@@ -2366,9 +2366,9 @@ ID CAIGrid::gridTraceBeam(const float3* start, const float3* dir) const
 			for (int k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
 			{
 				posquad = (float3)m_aQuads[bound->m_aIdsQuads[k]]->m_vPos;
-				tmptri.a = (float3_t)(posquad + float3(-AIGRID_QUAD_SIZEDIV2, 0, -AIGRID_QUAD_SIZEDIV2));
-				tmptri.b = (float3_t)(posquad + float3(AIGRID_QUAD_SIZEDIV2, 0, AIGRID_QUAD_SIZEDIV2));
-				tmptri.c = (float3_t)(posquad + float3(AIGRID_QUAD_SIZEDIV2, 0, -AIGRID_QUAD_SIZEDIV2));
+				tmptri.m_vA = (float3_t)(posquad + float3(-AIGRID_QUAD_SIZEDIV2, 0, -AIGRID_QUAD_SIZEDIV2));
+				tmptri.m_vB = (float3_t)(posquad + float3(AIGRID_QUAD_SIZEDIV2, 0, AIGRID_QUAD_SIZEDIV2));
+				tmptri.m_vC = (float3_t)(posquad + float3(AIGRID_QUAD_SIZEDIV2, 0, -AIGRID_QUAD_SIZEDIV2));
 				if (tmptri.IntersectLine((*start), ildir, &ip))
 				{
 					if (SMVector3Length2((*start) - res) > SMVector3Length2((*start) - ip))
@@ -2378,9 +2378,9 @@ ID CAIGrid::gridTraceBeam(const float3* start, const float3* dir) const
 					}
 				}
 
-				tmptri.a = (float3_t)(posquad + float3(-AIGRID_QUAD_SIZEDIV2, 0, -AIGRID_QUAD_SIZEDIV2));
-				tmptri.b = (float3_t)(posquad + float3(-AIGRID_QUAD_SIZEDIV2, 0, AIGRID_QUAD_SIZEDIV2));
-				tmptri.c = (float3_t)(posquad + float3(AIGRID_QUAD_SIZEDIV2, 0, AIGRID_QUAD_SIZEDIV2));
+				tmptri.m_vA = (float3_t)(posquad + float3(-AIGRID_QUAD_SIZEDIV2, 0, -AIGRID_QUAD_SIZEDIV2));
+				tmptri.m_vB = (float3_t)(posquad + float3(-AIGRID_QUAD_SIZEDIV2, 0, AIGRID_QUAD_SIZEDIV2));
+				tmptri.m_vC = (float3_t)(posquad + float3(AIGRID_QUAD_SIZEDIV2, 0, AIGRID_QUAD_SIZEDIV2));
 				if (tmptri.IntersectLine((*start), ildir, &ip))
 				{
 					if (SMVector3Length2((*start) - res) > SMVector3Length2((*start) - ip))
@@ -2510,7 +2510,7 @@ void CAIGrid::renderBB()
 		m_pBoundBox->DrawSubset(0);
 }
 
-void CAIGrid::renderQuads(const ISXFrustum * frustum, const float3 * viewpos, float dist)
+void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, float dist)
 {
 	if (!m_useGraphics)
 		return;

@@ -41,7 +41,7 @@ public:
 	MTLTYPE_REFLECT getTypeReflect();
 
 	//! возвращает фрустум по id, для плоских отражений 0, для кубических [0,5] 
-	const ISXFrustum* getFrustum(ID id);
+	const IFrustum* getFrustum(ID id);
 
 	//! обновление количесвтенных данных обновления, возаращет true в случае если можно рисовать отражения, false если отражения рисовать не надо, pViewPos - позиция наблюдателя (обязательно)
 	bool updateCountUpdate(const float3_t *pViewPos);
@@ -105,7 +105,7 @@ protected:
 	float4x4 m_mView;
 
 	//! массив фрустумов, для плоских отражений используется только нулевой, для кубических все
-	ISXFrustum *m_aFrustums[6];
+	IFrustum *m_aFrustums[6];
 
 	//! массивы идентификаторов для просчета видимости
 	Array<ID*> m_aIDsArr;

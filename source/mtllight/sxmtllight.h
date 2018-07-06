@@ -230,11 +230,11 @@ SX_LIB_API void SML_LigthsSetCastGlobalShadow(bool isShadowed);
  \note Предварительный просчет - просчет для всего света (к примеру в другом потоке)
 @{*/
 
-SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const ISXFrustum *pFrustum);	//!< виден ли свет в данном фрустуме frustum (отдельный просчет)
+SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const IFrustum *pFrustum);	//!< виден ли свет в данном фрустуме frustum (отдельный просчет)
 SX_LIB_API float SML_LigthsComDistFor(ID id, const float3 *pViewPos);				//!< дистанция от viewpos до начала света (отдельный просчет)
 
 //! просчет видимости и расстояния от наблюдателя viewpos до начала света, для каждого света (предварительный просчет)
-SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const ISXFrustum *pFrustum, const float3 *pViewPos);
+SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const IFrustum *pFrustum, const float3 *pViewPos);
 SX_LIB_API bool SML_LigthsGetVisibleForFrustum(ID id);	//!< виден ли свет в просчитанном фрустуме
 SX_LIB_API float SML_LigthsGetDistFor(ID id);			//!< просчитанная дистанция от позиции наблюдателя до начала света
 
@@ -375,7 +375,7 @@ SX_LIB_API void SML_LigthsShadowSoft(
 	);
 
 //! возвращает указатель фрустума света
-SX_LIB_API ISXFrustum* SML_LigthsGetFrustum(
+SX_LIB_API IFrustum* SML_LigthsGetFrustum(
 	ID id,	//!< идентификатор света
 	int iHow	//!< номер сплита для глобального, 0 для направленного, и номер стороны для точечного
 	);
@@ -807,7 +807,7 @@ SX_LIB_API void SML_MtlRefNullingCountUpdate(ID id);
 SX_LIB_API void SML_MtlRefSetMinMax(ID id, float3_t *pMin, float3_t *pMax);//!< установка экстремумов материала
 
 //! возвращает фрустум отражения, cube - сторона куба
-SX_LIB_API const ISXFrustum* SML_MtlRefGetfrustum(
+SX_LIB_API const IFrustum* SML_MtlRefGetfrustum(
 	ID id,		//!< идентификатора материала
 	int iCube	//!< сторона куба, если отражение плоское то необходимо указать в cube передать 0, иначе вернет NULL
 	);

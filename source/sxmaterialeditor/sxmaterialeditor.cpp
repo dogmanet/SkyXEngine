@@ -467,8 +467,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::ComboBoxParamL->setSel(0);
 
 
-	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
-	SXMaterialEditor::EditSkyBox->setText("sky/sky_2_cube.dds");
+	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SXMaterialEditor::EditSkyBox->setText("sky_2_cube.dds");
 		
 	SRender_GetCamera()->setPosition(&float3(0, 0, -100));
 

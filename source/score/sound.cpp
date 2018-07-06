@@ -1157,6 +1157,7 @@ ID CSoundManager::addSound(CSound* snd)
 	}
 
 	m_aSounds.push_back(snd);
+
 	return m_aSounds.size() - 1;
 }
 
@@ -1186,7 +1187,7 @@ void CSoundManager::soundDelete(ID id)
 		else
 			m_a2dInst.erase(szStr);
 	}
-	mem_delete(snd);
+	mem_delete(m_aSounds[id]);
 }
 
 //#############################################################################

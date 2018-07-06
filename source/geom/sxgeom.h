@@ -186,7 +186,7 @@ SX_LIB_API int SGeom_ModelsGetCount();
 
 //! просчитать видимость всех моделей для фрустума 
 SX_LIB_API void SGeom_ModelsComVisible(	
-	const ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
+	const IFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
 	const float3 *pViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID idArr = 0				//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);	
@@ -533,7 +533,7 @@ SX_LIB_API void SGeom_GreenClear();
 
 //! просчитать видимость всей растительности для фрустума
 SX_LIB_API void SGeom_GreenComVisible(
-	const ISXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
+	const IFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
 	float3 *pViewPos,			//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID idArr = 0				//!< идентификатор массива информации о видимости для фрустума, создается через #SGeom_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);

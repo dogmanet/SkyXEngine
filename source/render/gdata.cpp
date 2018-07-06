@@ -17,7 +17,7 @@ namespace GData
 
 
 	DS_RT FinalImage = DS_RT_SCENELIGHT;
-	ISXCamera* ObjCamera = 0;
+	ICamera* ObjCamera = 0;
 	ID IDSelectTex = -1;
 	
 	float2_t NearFar = float2_t(0.025, 400);

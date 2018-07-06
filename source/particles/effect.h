@@ -159,8 +159,8 @@ public:
 	void EffectDirGet(ID id, float3* dir);
 	void EffectRotGet(ID id, float3* rot);
 
-	bool EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view);
-	void EffectVisibleComAll(const ISXFrustum* frustum, float3* view);
+	bool EffectVisibleCom(ID id, const IFrustum* frustum, float3* view);
+	void EffectVisibleComAll(const IFrustum* frustum, float3* view);
 	bool EffectVisibleGet(ID id);
 	float EffectDistToViewGet(ID id);
 

@@ -130,7 +130,7 @@ MTLTYPE_REFLECT CReflection::getTypeReflect()
 	return type_reflection; 
 }
 
-const ISXFrustum* CReflection::getFrustum(ID id)
+const IFrustum* CReflection::getFrustum(ID id)
 { 
 	return m_aFrustums[id]; 
 }

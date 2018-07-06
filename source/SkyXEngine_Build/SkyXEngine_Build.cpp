@@ -15,8 +15,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SkyXEngine_Init();
 	SkyXEngine_PreviewKill();
 
-	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky/sky_oblaka.dds");
+	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
 	SLevel_Load("stalker_atp", true);

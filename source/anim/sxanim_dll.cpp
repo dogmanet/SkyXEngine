@@ -83,7 +83,7 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 	return(anim);
 }
 
-SX_LIB_API void SXAnim_ModelsComVisible(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr)
+SX_LIB_API void SXAnim_ModelsComVisible(const IFrustum * frustum, const float3 * viewpos, ID id_arr)
 {
 	SA_PRECOND(_VOID);
 	g_mgr->computeVis(frustum, viewpos, id_arr);

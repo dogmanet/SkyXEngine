@@ -459,7 +459,7 @@ void Materials::MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
 	ArrMaterials[id]->Reflect->preRenderRefPlane(plane);
 }
 
-const ISXFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
+const IFrustum* Materials::MtlRefGetfrustum(ID id, int cube)
 {
 	MTL_REF_PRE_COND_ID(id, 0);
 	if (cube == 0 || (cube > 0 && (ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || ArrMaterials[id]->Reflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)))
@@ -1188,12 +1188,12 @@ bool Materials::LoadMtl(const char* name, Material** mtl)
 			tmpMtl->PhysicsMaterial = MTLTYPE_PHYSIC_DEFAULT;
 
 
-		if (def_str_validate(tmpVS))
+		if (STR_VALIDATE(tmpVS))
 			tmpMtl->PreShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, tmpVS, tmpVS, SHADER_CHECKDOUBLE_PATH);
 		else
 			tmpMtl->PreShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
 
-		if (def_str_validate(tmpPS))
+		if (STR_VALIDATE(tmpPS))
 			tmpMtl->PreShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, tmpPS, tmpPS, SHADER_CHECKDOUBLE_PATH);
 		else
 			tmpMtl->PreShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");

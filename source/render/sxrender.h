@@ -231,10 +231,10 @@ SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd);
 
 
 //! установка текущей камеры
-SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera);
+SX_LIB_API void SRender_SetCamera(ICamera *pCamera);
 
 //! возвращает текущую камеру
-SX_LIB_API ISXCamera* SRender_GetCamera();
+SX_LIB_API ICamera* SRender_GetCamera();
 
 //**************************************************************************
 

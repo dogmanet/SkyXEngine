@@ -137,8 +137,8 @@ LRESULT SXLevelEditor_ButtonGeomModel_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGeomModel->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGeomModel->setText(sRpath.c_str());
 	}
 	return 0;
 }
@@ -152,13 +152,13 @@ LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGeomLod1->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGeomLod1->setText(sRpath.c_str());
 		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{
 			if (sel >= 0 && sel < SGeom_ModelsGetCount())
-				SGeom_ModelsMSetLodPath(sel, tmpname);
+				SGeom_ModelsMSetLodPath(sel, sRpath.c_str());
 		}
 	}
 	return 0;

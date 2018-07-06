@@ -386,7 +386,7 @@ public:
 	//{
 
 	//! отрисовка сетки
-	void renderQuads(const ISXFrustum *pFrustum, const float3 *pViewPos, float fDist);
+	void renderQuads(const IFrustum *pFrustum, const float3 *pViewPos, float fDist);
 
 	//! отрисовка графпоинтов
 	void renderGraphPoints(const float3 *pViewPos, float fDist);

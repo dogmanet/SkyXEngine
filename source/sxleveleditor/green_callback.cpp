@@ -122,13 +122,13 @@ LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenModel->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGreenModel->setText(sRpath.c_str());
 		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetLod(sel, 0, tmpname);
+				SGeom_GreenMSetLod(sel, 0, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -143,13 +143,13 @@ LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenLod1->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGreenLod1->setText(sRpath.c_str());
 		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetLod(sel, 1, tmpname);
+				SGeom_GreenMSetLod(sel, 1, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -164,13 +164,13 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenLod2->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGreenLod2->setText(sRpath.c_str());
 		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetLod(sel, 2, tmpname);
+				SGeom_GreenMSetLod(sel, 2, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -209,13 +209,13 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGreenNav->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGreenNav->setText(sRpath.c_str());
 		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetNav(sel, tmpname);
+				SGeom_GreenMSetNav(sel, sRpath.c_str());
 		}
 	}
 	return 0;

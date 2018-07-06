@@ -75,15 +75,15 @@ void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT mi
 	g_pDXDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
 }
 
-void StdMtlSet(ID id, float4x4* world)
+void StdMtlSet(ID id, float4x4 *pWorld)
 {
 
 	g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(id));
 }
 
-ID StdMtlLoad(const char* name, int mtl_type)
+ID StdMtlLoad(const char *szName, int iMtlType)
 {
-	return SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
+	return SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
 }
 
 int StdMtlGetSort(ID id)
@@ -117,7 +117,7 @@ IDirect3DVertexDeclaration9 *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
-LoaderTextures *g_pManagerTextures = 0;
+СLoaderTextures *g_pManagerTextures = 0;
 ID3DXMesh *g_pScreenTexture = 0;
 CSkyBox *g_pSkyBox = 0;
 CSkyClouds *g_pSkyClouds = 0;
@@ -175,7 +175,7 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 
 	D3DXCreateFontIndirect(g_pDXDevice, &LF, &g_pFPStext);
 
-	D3DVERTEXELEMENT9 layoutquad[] =
+	D3DVERTEXELEMENT9 oLayoutQuad[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -185,45 +185,40 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 	//IDirect3DVertexDeclaration9* VertexDeclarationQuad;
 	//GData::g_pDXDevice->CreateVertexDeclaration(layoutquad, &VertexDeclarationQuad);
 
-	D3DXCreateMesh(2, 4, D3DXMESH_MANAGED, layoutquad, g_pDXDevice, &g_pScreenTexture);
+	D3DXCreateMesh(2, 4, D3DXMESH_MANAGED, oLayoutQuad, g_pDXDevice, &g_pScreenTexture);
 
-	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
+	struct VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
 
-	const float offset_pixel_x = 1.0f / float(g_oD3DAPP.BackBufferWidth);
-	const float offset_pixel_y = 1.0f / float(g_oD3DAPP.BackBufferHeight);
+	const float fOffsetPixelX = 1.0f / float(g_oD3DAPP.BackBufferWidth);
+	const float fOffsetPixelY = 1.0f / float(g_oD3DAPP.BackBufferHeight);
 
-	VERTEX_SCREEN_TEXTURE AddVertices[] =
+	VERTEX_SCREEN_TEXTURE aVertices[] =
 	{
-		{ -1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 0.0f, 1.0f, 0 },
-		{ -1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 0.0f, 0.0f, 1 },
-		{ 1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 1.0f, 0.0f, 2 },
-		{ 1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 1.0f, 1.0f, 3 },
+		{ -1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 0.0f, 1.0f, 0 },
+		{ -1.0f - fOffsetPixelX,  1.0f + fOffsetPixelY, 1.0f, 0.0f, 0.0f, 1 },
+		{  1.0f - fOffsetPixelX,  1.0f + fOffsetPixelY, 1.0f, 1.0f, 0.0f, 2 },
+		{  1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 1.0f, 1.0f, 3 },
 	};
 
-	void* Vertices;
-	if (!FAILED(g_pScreenTexture->LockVertexBuffer(0, (void**)&Vertices)))
+	void * pVertices;
+	if (!FAILED(g_pScreenTexture->LockVertexBuffer(0, (void**)&pVertices)))
 	{
-		memcpy(Vertices, AddVertices, sizeof(AddVertices));
+		memcpy(pVertices, aVertices, sizeof(aVertices));
 		g_pScreenTexture->UnlockVertexBuffer();
 	}
 
-	WORD* i = 0;
-	g_pScreenTexture->LockIndexBuffer(0, (void**)&i);
-	i[0] = 0; i[1] = 1; i[2] = 2;
-	i[3] = 0; i[4] = 2; i[5] = 3;
+	WORD *pIndeces = 0;
+	g_pScreenTexture->LockIndexBuffer(0, (void**)&pIndeces);
+	pIndeces[0] = 0; pIndeces[1] = 1; pIndeces[2] = 2;
+	pIndeces[3] = 0; pIndeces[4] = 2; pIndeces[5] = 3;
 	g_pScreenTexture->UnlockIndexBuffer();
 
 	
-	//устанавливаем данные в регистры
-	/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
-	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
-	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);*/
-
 	g_pManagerShaders = new CShaderManager();
 	g_pManagerRenderTargets = new CreatorTextures();
-	g_pManagerTextures = new LoaderTextures();
+	g_pManagerTextures = new СLoaderTextures();
 
-	D3DVERTEXELEMENT9 layoutstatic[] =
+	D3DVERTEXELEMENT9 oLayoutStatic[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -231,21 +226,21 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 		D3DDECL_END()
 	};
 
-	g_pDXDevice->CreateVertexDeclaration(layoutstatic, &g_pStaticVertexDecl);
+	g_pDXDevice->CreateVertexDeclaration(oLayoutStatic, &g_pStaticVertexDecl);
 
 
 	//получение всех возможных разрешений монитора
-	DEVMODE dm;
+	DEVMODE oDevMode;
 	int iNum = 0;
-	while (EnumDisplaySettings(NULL, iNum, &dm))
+	while (EnumDisplaySettings(NULL, iNum, &oDevMode))
 	{
 		iNum++;
-		if (dm.dmBitsPerPel >= 32 && dm.dmPelsWidth >= 800 && dm.dmPelsHeight >= 600)
+		if (oDevMode.dmBitsPerPel >= 32 && oDevMode.dmPelsWidth >= 800 && oDevMode.dmPelsHeight >= 600)
 		{
 			bool isUnic = true;
 			for (int i = 0, il = g_aArrModes.size(); i < il; ++i)
 			{
-				if (g_aArrModes[i].dmPelsWidth == dm.dmPelsWidth && g_aArrModes[i].dmPelsHeight == dm.dmPelsHeight)
+				if (g_aArrModes[i].dmPelsWidth == oDevMode.dmPelsWidth && g_aArrModes[i].dmPelsHeight == oDevMode.dmPelsHeight)
 				{
 					isUnic = false;
 					break;
@@ -253,7 +248,7 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 			}
 
 			if (isUnic)
-				g_aArrModes.push_back(dm);
+				g_aArrModes.push_back(oDevMode);
 		}
 	}
 
@@ -310,12 +305,12 @@ SX_LIB_API void SGCore_0Create(const char *szName, HWND hWnd, int iWidth, int iH
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name], sxgcore", GEN_MSG_LOCATION);
 }
 
-SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount)
+SX_LIB_API const DEVMODE* SGCore_GetModes(int *pCount)
 {
 	SG_PRECOND(0);
 
-	if (iCount)
-		*iCount = g_aArrModes.size();
+	if (pCount)
+		*pCount = g_aArrModes.size();
 
 	return &(g_aArrModes[0]);
 }
@@ -388,7 +383,7 @@ SX_LIB_API void SGCore_OnLostDevice()
 	g_pManagerRenderTargets->OnLostDevice();
 }
 
-SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool windowed)
+SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool isWindowed)
 {
 	SG_PRECOND(false);
 
@@ -406,11 +401,7 @@ SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool windowed)
 
 	g_oD3DAPP.BackBufferWidth = iWidth;
 	g_oD3DAPP.BackBufferHeight = iHeight;
-	g_oD3DAPP.Windowed = windowed;
-
-	/*Core_RFloatSet(G_RI_FLOAT_WINSIZE_WIDTH, (float)width);
-	Core_RFloatSet(G_RI_FLOAT_WINSIZE_HEIGHT, (float)heigth);
-	Core_RBoolSet(G_RI_BOOL_RENDER_WINDOWED, windowed);*/
+	g_oD3DAPP.Windowed = isWindowed;
 
 	return (FAILED(g_pDXDevice->Reset(&g_oD3DAPP)));
 }
@@ -424,21 +415,21 @@ SX_LIB_API void SGCore_OnResetDevice()
 	
 	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
 
-	const float offset_pixel_x = 1.0f / float(g_oD3DAPP.BackBufferWidth);
-	const float offset_pixel_y = 1.0f / float(g_oD3DAPP.BackBufferHeight);
+	const float fOffsetPixelX = 1.0f / float(g_oD3DAPP.BackBufferWidth);
+	const float fOffsetPixelY = 1.0f / float(g_oD3DAPP.BackBufferHeight);
 
-	VERTEX_SCREEN_TEXTURE AddVertices[] =
+	VERTEX_SCREEN_TEXTURE aVertices[] =
 	{
-		{ -1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 0.0f, 1.0f, 0 },
-		{ -1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 0.0f, 0.0f, 1 },
-		{ 1.0f - offset_pixel_x, 1.0f + offset_pixel_y, 1.0f, 1.0f, 0.0f, 2 },
-		{ 1.0f - offset_pixel_x, -1.0f + offset_pixel_y, 1.0f, 1.0f, 1.0f, 3 },
+		{ -1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 0.0f, 1.0f, 0 },
+		{ -1.0f - fOffsetPixelX,  1.0f + fOffsetPixelY, 1.0f, 0.0f, 0.0f, 1 },
+		{  1.0f - fOffsetPixelX,  1.0f + fOffsetPixelY, 1.0f, 1.0f, 0.0f, 2 },
+		{  1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 1.0f, 1.0f, 3 },
 	};
 
-	void* Vertices;
-	if (!FAILED(g_pScreenTexture->LockVertexBuffer(0, (void**)&Vertices)))
+	void * pVertices;
+	if (!FAILED(g_pScreenTexture->LockVertexBuffer(0, (void**)&pVertices)))
 	{
-		memcpy(Vertices, AddVertices, sizeof(AddVertices));
+		memcpy(pVertices, aVertices, sizeof(aVertices));
 		g_pScreenTexture->UnlockVertexBuffer();
 	}
 }
@@ -535,11 +526,11 @@ SX_LIB_API void SGCore_OC_SetEnable(bool isEnable)
 	g_isOCenable = isEnable;
 }
 
-const ISXFrustum *g_pFrustum = 0;
+const IFrustum *g_pFrustum = 0;
 int g_iOCcountFC = 0;
 int g_iOCcountFCfail = 0;
 
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const ISXFrustum *pFrustum)
+SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum)
 {
 	SG_PRECOND(_VOID);
 
@@ -549,8 +540,7 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const ISXFrustum *pFrustum)
 	g_pFrustum = pFrustum;
 	g_iOCcountFC = 0;
 	g_iOCcountFCfail = 0;
-
-	
+		
 
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
@@ -1436,198 +1426,212 @@ SX_LIB_API void SGCore_ShaderUnBind()
 	return g_pManagerShaders->unbind();
 }
 
-SX_LIB_API void SGCore_ShaderSetVRFN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_float4)
+SX_LIB_API void SGCore_ShaderSetVRFN(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountFloat4)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->setValueRegisterF(type_shader, name_shader, name_var, data, count_float4);
+	return g_pManagerShaders->setValueRegisterF(type_shader, szNameShader, szNameVar, pData, iCountFloat4);
 }
 
-SX_LIB_API void SGCore_ShaderSetVRF(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_float4)
+SX_LIB_API void SGCore_ShaderSetVRF(SHADER_TYPE type_shader, ID idShader, const char *szNameVar, void *pData, int iCountFloat4)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->setValueRegisterF(type_shader, num_shader, name_var, data, count_float4);
+	return g_pManagerShaders->setValueRegisterF(type_shader, idShader, szNameVar, pData, iCountFloat4);
 }
 
-SX_LIB_API void SGCore_ShaderSetVRIN(SHADER_TYPE type_shader, const char* name_shader, const char* name_var, void* data, int count_int4)
+SX_LIB_API void SGCore_ShaderSetVRIN(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->setValueRegisterI(type_shader, name_shader, name_var, data, count_int4);
+	return g_pManagerShaders->setValueRegisterI(type_shader, szNameShader, szNameVar, pData, iCountInt4);
 }
 
-SX_LIB_API void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID num_shader, const char* name_var, void* data, int count_int4)
+SX_LIB_API void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID idShader, const char* szNameVar, void *pData, int iCountInt4)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->setValueRegisterI(type_shader, num_shader, name_var, data, count_int4);
+	return g_pManagerShaders->setValueRegisterI(type_shader, idShader, szNameVar, pData, iCountInt4);
 }
 
 
-SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char* name)
+SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char *szName)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->existsName(type_shader, name);
+	return g_pManagerShaders->existsName(type_shader, szName);
 }
 
-SX_LIB_API ID SGCore_ShaderExistsPath(SHADER_TYPE type_shader, const char* name)
+SX_LIB_API ID SGCore_ShaderExistsPath(SHADER_TYPE type_shader, const char *szName)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->existsName(type_shader, name);
+	return g_pManagerShaders->existsName(type_shader, szName);
 }
 
-SX_LIB_API bool SGCore_ShaderIsValidated(SHADER_TYPE type_shader, ID id)
+SX_LIB_API bool SGCore_ShaderIsValidated(SHADER_TYPE type_shader, ID idShader)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerShaders->isValidated(type_shader, id);
+	return g_pManagerShaders->isValidated(type_shader, idShader);
 }
 
-SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID id, char* path)
+SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID idShader, char *szPath)
 {
 	SG_PRECOND(_VOID);
 
-	g_pManagerShaders->getPath(type_shader, id, path);
+	g_pManagerShaders->getPath(type_shader, idShader, szPath);
 }
 
-SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID id, char* name)
+SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID idShader, char *szName)
 {
 	SG_PRECOND(_VOID);
 
-	g_pManagerShaders->getName(type_shader, id, name);
+	g_pManagerShaders->getName(type_shader, idShader, szName);
 }
 
-SX_LIB_API bool SGCore_ShaderFileExists(const char* name)
+SX_LIB_API bool SGCore_ShaderFileExists(const char *szName)
 {
 	SG_PRECOND(false);
 
-	return g_pManagerShaders->existsFile(name);
+	return g_pManagerShaders->existsFile(szName);
 }
 
 //##########################################################################
 
-SX_LIB_API bool SGCore_LoadTexFileExists(const char* name)
+SX_LIB_API bool SGCore_LoadTexFileExists(const char *szName)
 {
 	SG_PRECOND(false);
 
-	return g_pManagerTextures->FileExists(name);
+	return g_pManagerTextures->fileExists(szName);
 }
 
 SX_LIB_API void SGCore_LoadTexClearLoaded()
 {
 	SG_PRECOND(_VOID);
 
-	g_pManagerTextures->ClearLoaded();
+	g_pManagerTextures->clearLoaded();
 }
 
 SX_LIB_API void SGCore_LoadTexDelete(ID id)
 {
 	SG_PRECOND(_VOID);
 
-	g_pManagerTextures->Delete(id);
+	g_pManagerTextures->deleteTexture(id);
 }
 
-SX_LIB_API ID SGCore_LoadTexAddName(const char* name, LOAD_TEXTURE_TYPE type)
+SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerTextures->AddName(name, type);
+	return g_pManagerTextures->addName(szName, type);
 }
 
-SX_LIB_API ID SGCore_LoadTexGetID(const char* name)
+SX_LIB_API ID SGCore_LoadTexAddConstAllInDir(const char *szDir)
+{
+	SG_PRECOND(false);
+
+	return g_pManagerTextures->addConstAllInDir(szDir);
+}
+
+SX_LIB_API ID SGCore_LoadTexGetID(const char *szName)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerTextures->GetID(name);
+	return g_pManagerTextures->getID(szName);
 }
 
-SX_LIB_API void SGCore_LoadTexGetName(ID id, char* name)
+SX_LIB_API void SGCore_LoadTexGetName(ID id, char *szName)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerTextures->GetName(id, name);
+	return g_pManagerTextures->getName(id, szName);
 }
 
-SX_LIB_API ID SGCore_LoadTexCreate(const char* name, IDirect3DTexture9* tex)
+SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IDirect3DTexture9 *pTex)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerTextures->Create(name, tex);
+	return g_pManagerTextures->create(szName, pTex);
 }
 
-SX_LIB_API ID SGCore_LoadTexUpdateN(const char* name, LOAD_TEXTURE_TYPE type)
+SX_LIB_API ID SGCore_LoadTexUpdateN(const char *szName, LOAD_TEXTURE_TYPE type)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerTextures->Update(name, type);
+	return g_pManagerTextures->update(szName, type);
 }
 
 SX_LIB_API void SGCore_LoadTexUpdate(ID id)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerTextures->Update(id);
+	return g_pManagerTextures->update(id);
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID id)
+SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID idTexture)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerTextures->GetTexture(id);
+	return g_pManagerTextures->getTexture2d(idTexture);
+}
+
+SX_LIB_API IDirect3DCubeTexture9* SGCore_LoadTexGetTexCube(ID idTexture)
+{
+	SG_PRECOND(0);
+
+	return g_pManagerTextures->getTextureCube(idTexture);
 }
 
 SX_LIB_API void SGCore_LoadTexAllLoad()
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerTextures->LoadTextures();
+	return g_pManagerTextures->loadTextures();
 }
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_RTAdd(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
+SX_LIB_API ID SGCore_RTAdd(UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fCoefFullScreen)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerRenderTargets->Add(width, height, levels, usage, format, pool, name, coeffullscreen);
+	return g_pManagerRenderTargets->Add(uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, fCoefFullScreen);
 }
 
-SX_LIB_API void SGCore_RTDeleteN(const char* text)
+SX_LIB_API void SGCore_RTDeleteN(const char *szName)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerRenderTargets->Delete(text);
+	return g_pManagerRenderTargets->Delete(szName);
 }
 
-SX_LIB_API void SGCore_RTDelete(ID num)
+SX_LIB_API void SGCore_RTDelete(ID id)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerRenderTargets->Delete(num);
+	return g_pManagerRenderTargets->Delete(id);
 }
 
-SX_LIB_API ID SGCore_RTGetNum(const char* text)
+SX_LIB_API ID SGCore_RTGetId(const char *szName)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerRenderTargets->GetNum(text);
+	return g_pManagerRenderTargets->GetNum(szName);
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char* text)
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerRenderTargets->GetTexture(text);
+	return g_pManagerRenderTargets->GetTexture(szName);
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID num)
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerRenderTargets->GetTexture(num);
+	return g_pManagerRenderTargets->GetTexture(id);
 }
 
 //##########################################################################
@@ -1639,44 +1643,44 @@ SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float 
 	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, g_pDXDevice, iSideCount);
 }
 
-SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
+SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9 *pVertexBuffer, ISXBound **ppBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
 {
 	SG_PRECOND(_VOID);
 
-	ComputeBoundingBox(vertex_buffer, bound, count_vert, bytepervert);
+	ComputeBoundingBox(pVertexBuffer, ppBound, dwCountVertices, dwBytesPerVertex);
 }
 
-SX_LIB_API void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
+SX_LIB_API void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9 *pVertexBuffer, ISXBound *pBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
 {
 	SG_PRECOND(_VOID);
 
-	ComputeBoundingBox2(vertex_buffer, bound, count_vert, bytepervert);
+	ComputeBoundingBox2(pVertexBuffer, pBound, dwCountVertices, dwBytesPerVertex);
 }
 
-SX_LIB_API void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh)
+SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *pMax, ID3DXMesh **ppBBmesh)
 {
 	SG_PRECOND(_VOID);
 
-	CreateBoundingBoxMesh(min, max, bbmesh,g_pDXDevice);
+	CreateBoundingBoxMesh(pMin, pMax, ppBBmesh, g_pDXDevice);
 }
 
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(uint16_t *pIndecesBuffer, uint16_t numFaces, uint16_t numVerts)
 {
 	SG_PRECOND(_VOID);
 
-	OptimizeIndecesInSubsetUint16(ib, numFaces, numVerts);
+	OptimizeIndecesInSubsetUint16(pIndecesBuffer, numFaces, numVerts);
 }
 
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
+SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(uint32_t *pIndecesBuffer, uint32_t numFaces, uint32_t numVerts)
 {
 	SG_PRECOND(_VOID);
 
-	OptimizeIndecesInSubsetUint32(ib, numFaces, numVerts);
+	OptimizeIndecesInSubsetUint32(pIndecesBuffer, numFaces, numVerts);
 }
 
 //##########################################################################
 
-SX_LIB_API bool SGCore_0InPos2D(float3* min, float3* max, float3* pos)
+SX_LIB_API bool SGCore_0InPos2D(const float3* min, const float3* max, const float3* pos)
 {
 	return InPosition2D(min, max, pos);
 }
@@ -1761,12 +1765,12 @@ SX_LIB_API bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, c
 
 //##########################################################################
 
-SX_LIB_API ISXFrustum* SGCore_CrFrustum()
+SX_LIB_API IFrustum* SGCore_CrFrustum()
 {
 	return new CFrustum();
 }
 
-SX_LIB_API ISXCamera* SGCore_CrCamera()
+SX_LIB_API ICamera* SGCore_CrCamera()
 {
 	return new CCamera();
 }
@@ -1850,7 +1854,7 @@ SX_LIB_API bool SGCore_SkyBoxIsLoadTex()
 SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->loadTextures(texture);
+	g_pSkyBox->loadTexture(texture);
 }
 
 SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture)
@@ -1936,7 +1940,7 @@ SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, con
 SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *texture)
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->loadTextures(texture);
+	g_pSkyClouds->loadTexture(texture);
 }
 
 SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *texture)

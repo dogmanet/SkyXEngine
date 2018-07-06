@@ -226,7 +226,10 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
 
 	SGCore_SkyBoxCr();
+#if !defined(SX_MATERIAL_EDITOR)
 	SGCore_SkyCloudsCr();
+#endif
+	SGCore_LoadTexAddConstAllInDir("sky");
 
 //#if defined(SX_GAME)
 	SGCore_OC_SetEnable(true);
@@ -375,20 +378,22 @@ void SkyXEngine_InitPaths()
 		}
 	}
 
-	Core_RStringSet(G_RI_STRING_PATH_EXE, tmppathexe);
+	const char *szPathToExe = FileCanonizePath(tmppathexe);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/worktex/");
+	Core_RStringSet(G_RI_STRING_PATH_EXE, szPathToExe);
+
+	sprintf(tmppath, "%s%s", szPathToExe, "/worktex/");
 	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, tmppath);
 	FileCreateDir(tmppath);
 
-	sprintf(tmppath, "%s/%s/", tmppathexe, SKYXENGINE_RELPATH_GAMESOURCE);
+	sprintf(tmppath, "%s/%s/", szPathToExe, SKYXENGINE_RELPATH_GAMESOURCE);
 	Core_RStringSet(G_RI_STRING_PATH_GAMESOURCE, tmppath);
 	SetCurrentDirectoryA(tmppath);
 
-	sprintf(tmppath, "%s/%s/", tmppathexe, SKYXENGINE_RELPATH_EDITOR_CACHE);
+	sprintf(tmppath, "%s/%s/", szPathToExe, SKYXENGINE_RELPATH_EDITOR_CACHE);
 	Core_RStringSet(G_RI_STRING_PATH_EDITOR_CACHE, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/screenshots/");
+	sprintf(tmppath, "%s%s", szPathToExe, "/screenshots/");
 	Core_RStringSet(G_RI_STRING_PATH_SCREENSHOTS, tmppath);
 	FileCreateDir(tmppath);
 
@@ -584,6 +589,13 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 
 void SkyXEngine_Frame(DWORD timeDelta)
 {
+
+	if (SSInput_GetKeyState(SIK_O))
+	{
+		SLevel_Clear();
+		SLevel_Load("stalker_atp", true);
+	}
+
 	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
 	static float3 vCamPos, vCamDir;
 	static float4x4 mView, mProjLight;
@@ -959,24 +971,22 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 void SkyXEngind_UpdateDataCVar()
 {
-	ID GlobalLight = SML_LigthsGetGlobal();
+	ID idGlobalLight = SML_LigthsGetGlobal();
 	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
 	static bool r_pssm_4or3_old = true;
 
 	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
-	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && GlobalLight >= 0)
+	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && idGlobalLight >= 0)
 	{
 		r_pssm_4or3_old = (*r_pssm_4or3);
-		SML_LigthsSet4Or3SplitsG(GlobalLight, r_pssm_4or3_old);
+		SML_LigthsSet4Or3SplitsG(idGlobalLight, r_pssm_4or3_old);
 	}
 
 	static const bool * r_pssm_shadowed = GET_PCVAR_BOOL("r_pssm_shadowed");
-	static bool r_pssm_shadowed_old = true;
 
-	if (r_pssm_shadowed && r_pssm_shadowed_old != (*r_pssm_shadowed) && GlobalLight >= 0)
+	if (r_pssm_shadowed && idGlobalLight >= 0)
 	{
-		r_pssm_shadowed_old = (*r_pssm_shadowed);
-		SML_LigthsSetTypeShadowed(GlobalLight, (r_pssm_shadowed_old ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
+		SML_LigthsSetTypeShadowed(idGlobalLight, ((*r_pssm_shadowed) ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
 	}
 
 	static const float * r_pssm_quality = GET_PCVAR_FLOAT("r_pssm_quality");

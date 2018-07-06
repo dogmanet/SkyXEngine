@@ -77,7 +77,7 @@ public:
 	//void MtlRefSetPlane(ID id, D3DXPLANE* plane);
 	//void MtlRefSetCenter(ID id, float3_t* center);
 	void MtlRefPreRenderPlane(ID id, D3DXPLANE* plane);
-	const ISXFrustum* MtlRefGetfrustum(ID id, int cube);
+	const IFrustum* MtlRefGetfrustum(ID id, int cube);
 	void MtlRefPostRenderPlane(ID id);
 	IDirect3DTexture9* MtlRefPlaneGetTex(ID id);
 

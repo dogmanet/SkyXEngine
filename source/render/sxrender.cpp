@@ -144,12 +144,12 @@ SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd)
 	GData::HandleParent3D = hWnd;
 }
 
-SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera)
+SX_LIB_API void SRender_SetCamera(ICamera *pCamera)
 {
 	GData::ObjCamera = pCamera;
 }
 
-SX_LIB_API ISXCamera* SRender_GetCamera()
+SX_LIB_API ICamera* SRender_GetCamera()
 {
 	return GData::ObjCamera;
 }

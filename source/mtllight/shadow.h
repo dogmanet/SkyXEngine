@@ -52,7 +52,7 @@ public:
 	long GetCountIDArrs();
 	ID GetIDArr(ID id, int split);
 
-	ISXFrustum* Frustums[5];
+	IFrustum* Frustums[5];
 	//long IDArr[5];
 
 	int IsUpdate[5];
@@ -133,7 +133,7 @@ public:
 	long GetCountIDArrs();
 	long GetIDArr(long id);
 
-	ISXFrustum* Frustum;
+	IFrustum* Frustum;
 	//long IDArr;
 
 	float4x4 View;
@@ -206,7 +206,7 @@ public:
 	long GetCountIDArrs();
 	long GetIDArr(long id, int split);
 
-	ISXFrustum* Frustums[6];
+	IFrustum* Frustums[6];
 	//long IDArr[6];
 
 private:

@@ -251,7 +251,8 @@ LRESULT SelFile_ButtonSelect_Click(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 	if (iSel < 0)
 	{
-		MessageBox(hWnd, "No select file", 0, 0);
+		if (hWnd == dialog_selfile::ButtonSelect->getHWND())
+			MessageBox(hWnd, "No select file", 0, 0);
 		return 0;
 	}
 
@@ -372,6 +373,7 @@ void dialog_selfile::InitAllElements()
 	dialog_selfile::ListBoxFiles->setTransparentTextBk(true);
 	dialog_selfile::ListBoxFiles->setColorBrush(RGB(255, 255, 255));
 	dialog_selfile::ListBoxFiles->addHandler(SelFile_ListBoxFiles_Click, WM_LBUTTONUP);
+	dialog_selfile::ListBoxFiles->addHandler(SelFile_ButtonSelect_Click, WM_LBUTTONDBLCLK);
 
 	dialog_selfile::StaticPreview = SXGUICrStatic("Preview:", 470, 5, 50, 15, dialog_selfile::SelectFile->getHWND(), 0, 0);
 	dialog_selfile::StaticPreview->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);

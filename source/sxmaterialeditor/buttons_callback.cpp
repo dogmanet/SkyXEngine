@@ -3,17 +3,14 @@
 
 LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char* tmpname = 0;
+	char szName[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
 	
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(szName, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
-		tmpname = tmppath + strlen(Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES));
-		SXMaterialEditor::EditSkyBox->setText(tmpname);
+		SXMaterialEditor::EditSkyBox->setText(szName);
 
-		SGCore_SkyBoxLoadTex(tmpname);
+		SGCore_SkyBoxLoadTex(szName);
 	}
 	return 0;
 }

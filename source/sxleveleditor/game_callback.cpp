@@ -432,17 +432,18 @@ LRESULT SXLevelEditor_ButtonGameValue_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		String tmpstr = tmppath + strlen(Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS));
+		/*String tmpstr = tmppath + strlen(Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
 		tmpstr.replaceAll("\\", "/");
-		sprintf(tmpname, "%s", tmpstr.c_str());
-		SXLevelEditor::EditGameValue->setText(tmpname);
+		sprintf(tmpname, "%s", tmpstr.c_str());*/
+		SXLevelEditor::EditGameValue->setText(sRpath.c_str());
 
 		int sel = SXLevelEditor::ListBoxList->getSel();
-		SXLevelEditor::ListViewGameClass->setItemText(tmpname, 1, str);
+		SXLevelEditor::ListViewGameClass->setItemText((char*)sRpath.c_str(), 1, str);
 		CBaseEntity* bEnt = SXGame_EntGet(SXLevelEditor::ListBoxList->getItemData(sel));
 		if (bEnt)
 		{
-			bEnt->setKV(pd->szKey, tmpname);
+			bEnt->setKV(pd->szKey, sRpath.c_str());
 		}
 	}
 

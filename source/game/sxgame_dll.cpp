@@ -96,7 +96,7 @@ void ccmd_save_as(int argc, const char ** argv)
 	}
 }
 
-SX_LIB_API ISXCamera * SXGame_GetActiveCamera()
+SX_LIB_API ICamera * SXGame_GetActiveCamera()
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pActiveCamera->getCamera());
