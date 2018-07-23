@@ -35,15 +35,16 @@ static int NumSam = 8;
 half4 main(vs_out_res_pos IN):COLOR0
 {
 	half depth = tex2D(DepthSampler, IN.TexUV).r;
+	half3 random = normalize(2.f * tex2D(RndSampler, IN.TexUV*Ratio*96.f).rgb - 1.f);
 	
 	[branch]if(depth >= 1.f)
-		return 1.f;
-	
-	half3 position = half3(ViewPos + (IN.WorldRay) * (depth));
-	half3 normal = normalize(2.f * tex2D(NormalSampler, IN.TexUV).rgb - 1.f);
-	half3 random = normalize(2.f * tex2D(RndSampler, IN.TexUV*Ratio*96.f).rgb - 1.f);
-
-	half occlusion = 0.f;
+		return half4(1,1,1,1);
+	else
+	{
+		half3 position = half3(ViewPos + (IN.WorldRay) * (depth));
+		half3 normal = normalize(NormalDecode(tex2Dlod(NormalSampler, half4(IN.TexUV, 0, 0)).xy));
+		
+		half occlusion = 0.f;
 		for(int i=0; i < NumSam; i++)
 		{
 			half3 ray = (reflect(ArrRndVecSSAO[i],random));
@@ -55,7 +56,7 @@ half4 main(vs_out_res_pos IN):COLOR0
 			newpos.x = newpos.x * 0.5f + 0.5f;
 			newpos.y = newpos.y * (-0.5f) + 0.5f;
 
-			half newdepth = tex2D(DepthSampler, (newpos.xy)).r;
+			half newdepth = tex2Dlod(DepthSampler, half4(newpos.xy, 0, 0)).r;
 				[branch]if(newdepth >= 1.f)
 					occlusion += 1.f;
 			half difference = (newdepth - depth)*NearFar.y;
@@ -66,8 +67,9 @@ half4 main(vs_out_res_pos IN):COLOR0
 			else
 				occlusion += 1-step(difference, Params.w)*distanceCheck;
 		}
-	occlusion = clamp(saturate(occlusion/NumSam)*1.2f,0.3f,1.f);
-	occlusion *= occlusion;
+		occlusion = clamp(saturate(occlusion/NumSam)*1.2f,0.3f,1.f);
+		occlusion *= occlusion;
 	
-	return half4(occlusion,occlusion,occlusion,1.f);
+		return half4(occlusion,occlusion,occlusion,1.f);
+	}
 }

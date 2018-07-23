@@ -23,13 +23,15 @@ ps_out_ds_mrt main(vs_out_refcube IN)
 	
 	half3 NormalMicro = ((2.f * (tex2D(MRTex0, IN.TexUV).rgb)) - 1.f);
 	NormalMicro *= Param.z;
+	IN.Normal = normalize(IN.Normal);
 	half3 NormalPixel = normalize((IN.Normal+half3(NormalMicro.xy,IN.Normal.z)) * 0.5f);
 	
-	OUT.Normal.xyz = 0.5f * NormalPixel + 0.5f;
+	OUT.Normal.xy = NormalEncode(NormalPixel);
 	OUT.Normal.w = NearFarIsUnlit.z;
+	OUT.Normal.z = NearFarIsUnlit.w;
 	
 	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
+	//OUT.Param.w = NearFarIsUnlit.w;
 	
 	half MipmapIndex = GetTexLod4Ref(saturate(OUT.Param.r - 0.1f));
 	half4 reflection = texCUBElod(ReflectTex, half4(IN.CubePPos,MipmapIndex));

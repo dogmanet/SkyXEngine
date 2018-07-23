@@ -510,7 +510,7 @@ protected:
 	//! закрытый список (по id квада)
 	Array<bool> m_aCloseIDs;			
 
-	//! закрытый список, ArrIDsInOpen[id квада]
+	//! открытый список, ArrIDsInOpen[id квада]
 	Array<ID> m_aOpenIDs;
 
 	//! значение квада в открытом списке, по id квада

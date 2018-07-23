@@ -6,33 +6,6 @@ See the license in LICENSE
 
 #include "render_func.h"
 
-/*
-namespace SXRenderFunc
-{
-	namespace Delay
-	{
-		int64_t UpdateVisibleForCamera = 0;
-		int64_t UpdateVisibleForLight = 0;
-		int64_t UpdateVisibleForReflection = 0;
-
-		int64_t UpdateShadow = 0;
-		int64_t UpdateParticles = 0;
-		int64_t RenderMRT = 0;
-		int64_t ComLighting = 0;
-		int64_t PostProcess = 0;
-		int64_t ComReflection = 0;
-		int64_t GeomSortGroup = 0;
-
-		int64_t Present = 0;
-
-		int64_t FreeVal = 0;
-		float FreeValF1 = 0;
-		float FreeValF2 = 0;
-		float FreeValF3 = 0;
-	};
-};
-*/
-
 inline void SXRenderFunc::SetSamplerFilter(DWORD id, DWORD value)
 {
 	GData::DXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, value);
@@ -700,7 +673,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	{
 		//SXDecals_Render();
 		if (SGeom_ModelsGetCount() > 0)
-			SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE);
+			SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE);
 
 		SXAnim_Render();
 
@@ -753,7 +726,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	if (!isRenderSimulation)
 	{
 		//если есть что к отрисовке из полупрозрачной геометрии
-		if (SGeom_ModelsSortExistsForRender(MTLTYPE_TRANSPARENCY_ALPHA_LIGHT))
+		if (SGeom_ModelsSortExistsForRender(MTLTYPE_TRANSPARENCY))
 		{
 			//тут такая ситуация ... есть два рабочих варианта, причем работают чутка по разному, возможно я изработался и не могу сообразить что да как ...
 			//первый вариант, чистим в 4, метим 3 раза начиная с нуля (первый раз 0, второй 1 третий 2 НЕ ИНКРЕМЕНТ а метка)
@@ -829,7 +802,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 				SML_MtlSetIsIncrCountSurf(true);
 				SML_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
 
-				SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_ALPHA_LIGHT, 0, true);
+				SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY, 0, true);
 			}
 
 
@@ -846,10 +819,10 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	}
 	else
 	{
-		if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MTLTYPE_TRANSPARENCY_NONE)
+		if (SML_MtlGetSort(GData::Editors::SimModel->GetIDMtl()) != MTLSORT_OPAQUE)
 			SML_MtlSetForceblyAlphaTest(true);
 		GData::Editors::SimModel->Render(timeDelta);
-		if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MTLTYPE_TRANSPARENCY_NONE)
+		if (SML_MtlGetSort(GData::Editors::SimModel->GetIDMtl()) != MTLSORT_OPAQUE)
 			SML_MtlSetForceblyAlphaTest(false);
 	}
 
@@ -904,7 +877,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							SML_LigthsShadowRenderPre(i, k);
 
 							if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-								SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+								SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 							if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
 								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k));
@@ -944,7 +917,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 					if (SML_LigthsGetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 					{
 						if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, 0) > -1)
-							SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
+							SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
 							
 						if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, 0) > -1)
 							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
@@ -977,7 +950,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							if (SML_LigthsGetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 							{
 								if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-									SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 								if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
 									SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k));
@@ -1612,7 +1585,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 				{
 					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
-						SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+						SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
@@ -1685,7 +1658,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 							{
 								SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGeomIDArr);
-								SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, GData::DefaultGeomIDArr, false, i, k);
+								SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, GData::DefaultGeomIDArr, false, i, k);
 							}
 
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
@@ -1699,7 +1672,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 							{
 								if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) >= 0)
-									SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
 							}
 
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)

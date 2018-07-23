@@ -281,7 +281,7 @@ namespace SXLevelEditor
 	void LEdeleteData();
 
 	extern ID3DXMesh* FigureBox;
-	extern AxesHelper* ObjAxesHelper;	//!< рендер хелпера трансформаций
+	extern CAxesHelper* ObjAxesHelper;	//!< рендер хелпера трансформаций
 
 	extern int ActiveGroupType;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
 	extern ID ActiveGreenSplit;		//!< текущий идентификатор сплита растительность (если выделена растительность)

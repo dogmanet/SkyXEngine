@@ -6,7 +6,7 @@ See the license in LICENSE
 
 #include "Emitter.h"
 
-void Emitter::NullingInit()
+void Emitter::initNulling()
 {
 	OldTime = 0;
 	TimeNextSpawnParticle = 0;
@@ -34,16 +34,16 @@ void Emitter::NullingInit()
 
 Emitter::Emitter()
 {
-	NullingInit();
+	initNulling();
 }
 
 Emitter::Emitter(Emitter& part)
 {
-	NullingInit();
+	initNulling();
 	IDTex = part.IDTex;
 	IDTexTrack = part.IDTexTrack;
 	Data = part.Data;
-	CountSet(part.Count);
+	setCount(part.Count);
 }
 
 Emitter::~Emitter()
@@ -56,12 +56,12 @@ Emitter::~Emitter()
 	mem_release_del(IndexBuffQuad);
 }
 
-void Emitter::OnLostDevice()
+void Emitter::onLostDevice()
 {
 	mem_release_del(TransVertBuf);
 }
 
-void Emitter::OnResetDevice()
+void Emitter::onResetDevice()
 {
 	PESet::DXDevice->CreateVertexBuffer(
 		Count * sizeof(CommonParticleDecl2),
@@ -72,41 +72,41 @@ void Emitter::OnResetDevice()
 		0);
 }
 
-void Emitter::Init(ParticlesData* data)
+void Emitter::init(ParticlesData* data)
 {
 	if (data)
 		memcpy(&Data, data, sizeof(ParticlesData));
 
 	if (IDTex >= 0)
-		AnimTexDataInit();
+		initAnimTexData();
 
-	GeomDataCreate();
+	createGeomData();
 
 	if (Enable)
 	{
-		EnableSet(false);
-		EnableSet(true);
+		setEnable(false);
+		setEnable(true);
 	}
 }
 
-ParticlesData* Emitter::GetData()
+ParticlesData* Emitter::getData()
 {
 	return &Data;
 }
 
-void Emitter::NameSet(const char* name)
+void Emitter::setName(const char* name)
 {
 	if (name)
 		strcpy(Name,name);
 }
 
-void Emitter::NameGet(char* name)
+void Emitter::getName(char* name)
 {
 	if (name)
 		strcpy(name, Name);
 }
 
-void Emitter::TextureSetID(ID tex)
+void Emitter::setTextureID(ID tex)
 {
 	IDTex = tex;
 
@@ -114,10 +114,10 @@ void Emitter::TextureSetID(ID tex)
 	if (SGCore_LoadTexGetTex(IDTex))
 		isTexInit = true;
 
-	AnimTexDataInit();
+	initAnimTexData();
 }
 
-void Emitter::TextureSet(const char* tex)
+void Emitter::setTexture(const char* tex)
 {
 	IDTex = SGCore_LoadTexAddName(tex, LOAD_TEXTURE_TYPE_LOAD);
 	//SGCore_LoadTexLoadTextures();
@@ -125,15 +125,15 @@ void Emitter::TextureSet(const char* tex)
 	if (SGCore_LoadTexGetTex(IDTex))
 		isTexInit = true;
 
-	AnimTexDataInit();
+	initAnimTexData();
 }
 
-ID Emitter::TextureGetID()
+ID Emitter::getTextureID()
 {
 	return IDTex;
 }
 
-void Emitter::TextureGet(char* tex)
+void Emitter::getTexture(char* tex)
 {
 	if (IDTex >= 0)
 	{
@@ -142,23 +142,23 @@ void Emitter::TextureGet(char* tex)
 }
 
 
-void Emitter::TextureTrackSetID(ID tex)
+void Emitter::setTextureTrackID(ID tex)
 {
 	IDTexTrack = tex;
 }
 
-void Emitter::TextureTrackSet(const char* tex)
+void Emitter::setTextureTrack(const char* tex)
 {
 	IDTexTrack = SGCore_LoadTexAddName(tex, LOAD_TEXTURE_TYPE_LOAD);
 	//SGCore_LoadTexLoadTextures();
 }
 
-ID Emitter::TextureTrackGetID()
+ID Emitter::getTextureTrackID()
 {
 	return IDTexTrack;
 }
 
-void Emitter::TextureTrackGet(char* tex)
+void Emitter::getTextureTrack(char* tex)
 {
 	if (IDTexTrack >= 0)
 	{
@@ -167,7 +167,7 @@ void Emitter::TextureTrackGet(char* tex)
 }
 
 
-void Emitter::AnimTexDataInit()
+void Emitter::initAnimTexData()
 {
 	if (isTexInit && Data.AnimTexCountCadrsX != 0 && Data.AnimTexCountCadrsY != 0)
 	{
@@ -184,7 +184,7 @@ void Emitter::AnimTexDataInit()
 	}
 }
 
-void Emitter::AlifeSet(bool alife)
+void Emitter::setAlife(bool alife)
 {
 	if (Alife != alife)
 	{
@@ -197,14 +197,14 @@ void Emitter::AlifeSet(bool alife)
 		Enable = Alife;
 }
 
-bool Emitter::AlifeGet()
+bool Emitter::getAlife()
 {
 	return Alife;
 }
 
 ////////////////////
 
-void Emitter::ComputeLighting()
+void Emitter::computeLighting()
 {
 	if (!Enable)
 		return;
@@ -250,7 +250,7 @@ void Emitter::ComputeLighting()
 	}
 }
 
-void Emitter::CountSet(int count)
+void Emitter::setCount(int count)
 {
 	Count = count;
 
@@ -273,24 +273,24 @@ void Emitter::CountSet(int count)
 		&TransVertBuf,
 		0);
 
-	GeomDataCreate();
+	createGeomData();
 }
 
-int Emitter::CountGet()
+int Emitter::getCount()
 {
 	return Count;
 }
 
-int Emitter::CountLifeGet()
+int Emitter::getCountLife()
 {
 	return CountLifeParticle;
 }
 
-void Emitter::EnableSet(bool enable)
+void Emitter::setEnable(bool enable)
 {
 	if (!Enable && enable)
 	{
-		CreateParticles();
+		createParticles();
 
 		for (int i = 0; i < Count; ++i)
 		{
@@ -316,12 +316,12 @@ void Emitter::EnableSet(bool enable)
 	}
 }
 
-bool Emitter::EnableGet()
+bool Emitter::getEnable()
 {
 	return Enable;
 }
 
-void Emitter::VertexBuffModify()
+void Emitter::modifyVertexBuff()
 {
 	if (!VertexBuff)
 		return;
@@ -394,7 +394,7 @@ void Emitter::VertexBuffModify()
 	VertexBuff->Unlock();
 }
 
-void Emitter::GeomDataCreate()
+void Emitter::createGeomData()
 {
 	mem_release_del(VertexBuff);
 	mem_release_del(IndexBuff);
@@ -415,7 +415,7 @@ void Emitter::GeomDataCreate()
 		&IndexBuff,
 		0);
 
-	VertexBuffModify();
+	modifyVertexBuff();
 
 	WORD* indices = 0;
 	IndexBuff->Lock(0, 0, (void**)&indices, 0);
@@ -472,7 +472,7 @@ void Emitter::GeomDataCreate()
 	IndexBuffQuad->Unlock();
 }
 
-void Emitter::CreateParticles()
+void Emitter::createParticles()
 {
 	CountReCreate2 = 0;
 	CountLifeParticle = 0;
@@ -481,7 +481,7 @@ void Emitter::CreateParticles()
 	{
 		if (abs(Data.ReCreateCount) > CountReCreate2 || Data.ReCreateCount == 0)
 		{
-			ReCreateParticles(i);
+			reCreateParticles(i);
 			CountReCreate2++;
 			CountLifeParticle++;
 		}
@@ -496,7 +496,7 @@ void Emitter::CreateParticles()
 
 }
 
-void Emitter::ReCreateParticles(WORD id)
+void Emitter::reCreateParticles(WORD id)
 {
 	//если разброс недопустим то спавним только в точке
 	if (Data.SpawnPosType == PARTICLESTYPE_SPAWNPOS_STRICTLY)
@@ -761,7 +761,7 @@ void Emitter::ReCreateParticles(WORD id)
 	}
 }
 
-void Emitter::UpdateAnimTex(WORD idparticle, DWORD tmptime)
+void Emitter::updateAnimTex(WORD idparticle, DWORD tmptime)
 {
 	if (!isTexInit)
 		return;
@@ -835,7 +835,7 @@ bool Emitter::IsPointInBox(float3* point)
 		return false;
 }
 
-void Emitter::Compute(const float4x4 * mat)
+void Emitter::compute(const float4x4 * mat)
 {
 	if (!Enable)
 		return;
@@ -851,7 +851,7 @@ void Emitter::Compute(const float4x4 * mat)
 			{
 				if (!(Arr[i].IsAlife) && Data.ReCreateCount > CountReCreate2)
 				{
-					ReCreateParticles(i);
+					reCreateParticles(i);
 					CountReCreate2++;
 				}
 				else if (Data.ReCreateCount <= CountReCreate2)
@@ -956,7 +956,7 @@ void Emitter::Compute(const float4x4 * mat)
 
 			//если назначена анимация текстуры то обрабатываем
 			if (Arr[i].AnimTexRateMls > 0)
-				UpdateAnimTex(i, tmptime);
+				updateAnimTex(i, tmptime);
 			/*else if (Data.AnimTexRate > 0 && Data.AnimTexCountCadrsX > 0 && Data.AnimTexCountCadrsY > 0)
 			{
 				Arr[i].AnimTexRateMls = Data.AnimTexRate + (Data.AnimTexRateDisp>0 ? ((rand() % (Data.AnimTexRateDisp / 2)) - (Data.AnimTexRateDisp / 2)) : 0);
@@ -1216,7 +1216,7 @@ void Emitter::Compute(const float4x4 * mat)
 
 
 
-void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
+void Emitter::render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 {
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
@@ -1229,7 +1229,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		if (SGCore_LoadTexGetTex(IDTex))
 		{
 			isTexInit = true;
-			AnimTexDataInit();
+			initAnimTexData();
 		}
 	}
 
@@ -1239,7 +1239,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		if (Data.Size.x != OldSize.x || Data.Size.y != OldSize.y)
 		{
 			OldSize = Data.Size;
-			VertexBuffModify();
+			modifyVertexBuff();
 		}
 
 		CommonParticleDecl2* RTGPUArrVerteces;
@@ -1496,7 +1496,7 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 	}
 }
 
-int Emitter::TrackCountGet()
+int Emitter::getTrackCount()
 {
 	if (!Enable || !Data.Track || !Data.CollisionDelete)
 		return 0;
@@ -1512,7 +1512,7 @@ int Emitter::TrackCountGet()
 	return count_track;
 }
 
-int Emitter::TrackPosGet(float3** arr, int count)
+int Emitter::getTrackPos(float3** arr, int count)
 {
 	if (!arr || !Enable || !Data.Track || !Data.CollisionDelete)
 		return 0;

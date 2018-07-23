@@ -15,23 +15,27 @@ sampler2D ParamSampler:register(s5);
 
 half4 main(vs_out_pp IN):COLOR0
 {
-	half isunlit = tex2D(NormalSampler,IN.TexUV).a;
-	half layer = tex2D(ParamSampler,IN.TexUV).w;
-	half4 color = tex2D(ColorSampler,IN.TexUV);
+	half4 normal = tex2D(NormalSampler,IN.TexUV);
+	half sort = normal.w;
+	half layer = normal.z;
+	half4 color = pow(tex2D(ColorSampler,IN.TexUV),2.2);
+	half4 param = tex2D(ParamSampler,IN.TexUV);
 
 	half4 ambient = tex2D(AmbientSampler,IN.TexUV);
+	half3 ambient_color = lerp((ambient.x + ambient.y + ambient.z)/3.0, ambient.xyz, ambient.w*2);
+	ambient_color = lerp(ambient_color.xyz, 1.0, clamp(param.y, 0.25, param.y));
 	//return float4(ambient.w,ambient.w,ambient.w,1);;
 	half spec = tex2D(SpecDiffSampler,IN.TexUV).r;
 	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
 
-	if(isunlit != SURFACE_NOTLIGHTING_NOTTRANSPARENCY && isunlit != SURFACE_NOTLIGHTING_TRANSPARENCY)
-		color.xyz = (((ambient.xyz * sqrt(ambient.w))*color.xyz)) + spec*(ambient.xyz);
+	if(!(EQUAL_LAYER(sort, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(sort, MTLTYPE_LAYER_TRANSPARENT_UNLIT)))
+		color.xyz = (((ambient_color * (ambient.w))*color.xyz)) + spec*0.5*(ambient.xyz);
 		
-	if(int(layer * 255.f) == 1)
+	if(int(layer * 256.f) == 1)
 		color.a = 1.f;
 
 	color.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
 	color.rgb /= (fAdaptedLum + color.rgb);
 	
-	return /*half4(ambient.xyz, 1.f);//*/color;
+	return /*half4(ambient.xyz, 1.f);//*/pow(color, 1/2.2);
 }

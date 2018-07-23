@@ -90,14 +90,14 @@ SX_LIB_API void SPE_OnLostDevice()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->OnLostDevice();
+	ArrEffects->onLostDevice();
 }
 
 SX_LIB_API void SPE_OnResetDevice()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->OnResetDevice();
+	ArrEffects->onResetDevice();
 }
 
 //**************************************************************************
@@ -106,21 +106,21 @@ SX_LIB_API void SPE_EffectLoad(const char* path)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->Load(path);
+	ArrEffects->load(path);
 }
 
 SX_LIB_API void SPE_EffectSave(const char* path)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->Save(path);
+	ArrEffects->save(path);
 }
 
 SX_LIB_API void SPE_EffectsClear()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->Clear();
+	ArrEffects->clear();
 }
 
 SX_LIB_API ID SPE_EffectInstanceByName(const char* name)
@@ -141,28 +141,28 @@ SX_LIB_API ID SPE_EffectGetByName(const char* name)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectGetByName(name);
+	return ArrEffects->effectGetByName(name);
 }
 
 SX_LIB_API ID SPE_EffectAdd(const char* name)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectAdd(name);
+	return ArrEffects->effectAdd(name);
 }
 
 SX_LIB_API int SPE_EffectCountGet()
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EffectCountGet();
+	return ArrEffects->effectGetCount();
 }
 
 SX_LIB_API ID SPE_EffectIdOfKey(ID key)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectIdOfKey(key);
+	return ArrEffects->effectGetIdOfKey(key);
 }
 
 SX_LIB_API void SPE_EffectDelete(ID id)
@@ -360,70 +360,70 @@ SX_LIB_API ID SPE_EmitterAdd(ID id, ParticlesData* data)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EmitterAdd(id, data);
+	return ArrEffects->emitterAdd(id, data);
 }
 
 SX_LIB_API int SPE_EmitterSCountGet(ID id)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterGetCount(id);
+	return ArrEffects->emitterGetCount(id);
 }
 
 SX_LIB_API void SPE_EmitterDelete(ID id, ID id_part)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterDelete(id, id_part);
+	ArrEffects->emitterDelete(id, id_part);
 }
 
 SX_LIB_API ParticlesData* SPE_EmitterGetData(ID id, ID id_part)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterGetData(id, id_part);
+	return ArrEffects->emitterGetData(id, id_part);
 }
 
 SX_LIB_API void SPE_EmitterReInit(ID id, ID id_part, ParticlesData* data)
 {
 	PE_PRECOND(_VOID);
 
-	return ArrEffects->EmitterReInit(id, id_part, data);
+	return ArrEffects->emitterReInit(id, id_part, data);
 }
 
 SX_LIB_API void SPE_EmitterCountSet(ID id, ID id_part, int count)
 {
 	PE_PRECOND(_VOID);
 
-	return ArrEffects->EmitterCountSet(id, id_part, count);
+	return ArrEffects->emitterSetCount(id, id_part, count);
 }
 
 SX_LIB_API int SPE_EmitterCountGet(ID id, ID id_part)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterCountGet(id, id_part);
+	return ArrEffects->emitterGetCount(id, id_part);
 }
 
 SX_LIB_API int SPE_EmitterCountLifeGet(ID id, ID id_part)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterCountLifeGet(id, id_part);
+	return ArrEffects->emitterGetCountLife(id, id_part);
 }
 
 SX_LIB_API void SPE_EmitterEnableSet(ID id, ID id_part, bool enable)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterEnableSet(id, id_part, enable);
+	ArrEffects->emitterSetEnable(id, id_part, enable);
 }
 
 SX_LIB_API bool SPE_EmitterEnableGet(ID id, ID id_part)
 {
 	PE_PRECOND(false);
 
-	return ArrEffects->EmitterEnableGet(id, id_part);
+	return ArrEffects->emitterGetEnable(id, id_part);
 }
 
 
@@ -431,28 +431,28 @@ SX_LIB_API void SPE_EmitterTextureSet(ID id, ID id_part, const char* tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureSet(id, id_part, tex);
+	ArrEffects->emitterSetTexture(id, id_part, tex);
 }
 
 SX_LIB_API void SPE_EmitterTextureSetID(ID id, ID id_part, ID tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureSetID(id, id_part, tex);
+	ArrEffects->emitterSetTextureID(id, id_part, tex);
 }
 
 SX_LIB_API ID SPE_EmitterTextureGetID(ID id, ID id_part)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EmitterTextureGetID(id, id_part);
+	return ArrEffects->emitterGetTextureID(id, id_part);
 }
 
 SX_LIB_API void SPE_EmitterTextureGet(ID id, ID id_part, char* tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureGet(id, id_part, tex);
+	ArrEffects->emitterGetTexture(id, id_part, tex);
 }
 
 
@@ -460,28 +460,28 @@ SX_LIB_API void SPE_EmitterTextureTrackSet(ID id, ID id_part, const char* tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureTrackSet(id, id_part, tex);
+	ArrEffects->emitterSetTextureTrack(id, id_part, tex);
 }
 
 SX_LIB_API void SPE_EmitterTextureTrackSetID(ID id, ID id_part, ID tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureTrackSetID(id, id_part, tex);
+	ArrEffects->emitterSetTextureTrackID(id, id_part, tex);
 }
 
 SX_LIB_API ID SPE_EmitterTextureTrackGetID(ID id, ID id_part)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EmitterTextureTrackGetID(id, id_part);
+	return ArrEffects->emitterGetTextureTrackID(id, id_part);
 }
 
 SX_LIB_API void SPE_EmitterTextureTrackGet(ID id, ID id_part, char* tex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureTrackGet(id, id_part, tex);
+	ArrEffects->emitterGetTextureTrack(id, id_part, tex);
 }
 
 
@@ -490,14 +490,14 @@ SX_LIB_API void SPE_EmitterNameSet(ID id, ID id_part, const char* name)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterNameSet(id, id_part, name);
+	ArrEffects->emitterSetName(id, id_part, name);
 }
 
 SX_LIB_API void SPE_EmitterNameGet(ID id, ID id_part, char* name)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterNameGet(id, id_part, name);
+	ArrEffects->emitterGetName(id, id_part, name);
 }
 
 
@@ -505,12 +505,12 @@ SX_LIB_API int SPE_EmitterTrackCountGet(ID id, ID id_part)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterTrackCountGet(id, id_part);
+	return ArrEffects->emitterGetTrackCount(id, id_part);
 }
 
 SX_LIB_API int SPE_EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterTrackPosGet(id, id_part, arr, count);
+	return ArrEffects->emitterGetTrackPos(id, id_part, arr, count);
 }

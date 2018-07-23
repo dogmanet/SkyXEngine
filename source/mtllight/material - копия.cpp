@@ -231,7 +231,7 @@ CMaterials::CMaterial::CLightParam::CLightParam()
 	m_fRoughness = 0.f;
 	m_fF0 = 0.f;
 	m_fThickness = 1.f;
-	m_isTransparent = false;
+	m_type_transparency = MTLTYPE_TRANSPARENCY_NONE;
 
 	m_type_reflect = MTLTYPE_REFLECT_NONE;
 	m_isTextureParam = true;
@@ -392,32 +392,49 @@ ID CMaterials::addMaterial(CMaterial* mtl)
 
 void CMaterials::addName(const char *szName, ID id)
 {
+	/*char tmp_path[MTL_MAX_SIZE_DIR];//папка
+	char tmp_name[MTL_MAX_SIZE_NAME];//само имя текстыр с расширением
+
+	bool IsTruePath = false;
+	//обрезаем имя текстуры и папку
+	for (int i = 0; i<strlen(name); i++)
+	{
+		if (name[i] == '_')
+		{
+			memcpy(tmp_path, name, sizeof(char)*i);
+			tmp_path[i] = 0;
+			sprintf(tmp_name, "%s", name + i + 1);
+			IsTruePath = true;
+			break;
+		}
+	}*/
+
 	String sDir = StrSubstrSpre(szName, "_");
 	String sName = StrSubstrSpost(szName, "_");
 
-	ID idTex = -1;
+	int tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
 	for (int i = 0; i<m_aMtrlPathes.size(); ++i)
 	{
 		if (m_aMtrlPathes[i] && strcmp(m_aMtrlPathes[i]->m_sPath.c_str(), sDir.c_str()) == 0)
 		{
-			idTex = i;
+			tmpkey = i;
 			break;
 		}
 	}
 
 	//если мы не нашли совпадений значит путь уникален ...
-	if (idTex == -1)
+	if (tmpkey == -1)
 	{
-		idTex = m_aMtrlPathes.size();
+		tmpkey = m_aMtrlPathes.size();
 		CPath* tmpntlp = new CPath();
 		m_aMtrlPathes.push_back(tmpntlp);
-		m_aMtrlPathes[idTex]->m_sPath = sDir;
+		m_aMtrlPathes[tmpkey]->m_sPath = sDir;
 	}
 
-	m_aMtrlPathes[idTex]->m_aObjects.push_back(new CPath::CObject(id, sName.c_str()));
+	m_aMtrlPathes[tmpkey]->m_aObjects.push_back(new CPath::CObject(id, sName.c_str()));
 }
 
-bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
+bool CMaterials::loadMtl(const char* name, CMaterial** mtl)
 {
 	char* ArrRGBA[4] = { "r", "g", "b", "a" };
 
@@ -430,46 +447,72 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 
 	char tmpParamLigth[256];
 
-	String sDir = StrSubstrSpre(szName, "_");
-	String sName = StrSubstrSpre(szName, ".");
+	char tmp_path[256];//папка
+	char tmp_name[256];//само им¤ текстыр с расширением
 
-	CMaterial* tmpMtl = *ppMtrl;
-
-	char szPath[1024];
-	sprintf(szPath, "%s%s/%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), sDir.c_str(), sName.c_str());
-	if (FileExistsFile(szPath))
+	bool IsTruePath = false;
+	//обрезаем им¤ текстуры и папку
+	for (int k = 0; k< strlen(name); k++)
 	{
-		ISXConfig* config = Core_OpConfig(szPath);
+		if (name[k] == '_')
+		{
+			memcpy(tmp_path, name, sizeof(char)*k);
+			tmp_path[k] = 0;
+			sprintf(tmp_name, "%s", name + k + 1);
+			IsTruePath = true;
+			break;
+		}
+	}
+
+	char path[1024];
+
+	for (DWORD k = 0; k<strlen(name); k++)
+	{
+		if (name[k] == '.')
+		{
+			sprintf(tmp_name, "%s", name);
+			tmp_name[k] = 0;
+			IsTruePath = true;
+			break;
+		}
+	}
+
+	CMaterial* tmpMtl = *mtl;
+
+	sprintf(path, "%s%s\\%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), tmp_path, tmp_name);
+	if (FileExistsFile(path))
+	{
+		ISXConfig* config = Core_OpConfig(path);
 
 		//если в конфиге указана текстура то берем ее
-		if (config->keyExists(sName.c_str(), "texture"))
-			tmpMtl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(config->getKey(sName.c_str(), "texture"), LOAD_TEXTURE_TYPE_LOAD);
+		if (config->keyExists(tmp_name, "texture"))
+			tmpMtl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(config->getKey(tmp_name, "texture"), LOAD_TEXTURE_TYPE_LOAD);
 		else //если нет то тогда берем имя материала, может быть он имя текстуры, иначе будет -1
-			tmpMtl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
+			tmpMtl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
 
-		tmpMtl->m_sName = sName.c_str();
+		tmpMtl->m_sName = tmp_name;
 
 		tmpVS[0] = 0;
-		if (config->keyExists(sName.c_str(), "vs"))
-			sprintf(tmpVS, "%s", config->getKey(sName.c_str(), "vs"));
+		if (config->keyExists(tmp_name, "vs"))
+			sprintf(tmpVS, "%s", config->getKey(tmp_name, "vs"));
 
 		tmpPS[0] = 0;
-		if (config->keyExists(sName.c_str(), "ps"))
-			sprintf(tmpPS, "%s", config->getKey(sName.c_str(), "ps"));
+		if (config->keyExists(tmp_name, "ps"))
+			sprintf(tmpPS, "%s", config->getKey(tmp_name, "ps"));
 
 
-		if (config->keyExists(sName.c_str(), "lighted"))
-			tmpMtl->m_oMainGraphics.m_isUnlit = String(config->getKey(sName.c_str(), "lighted")).toBool();
+		if (config->keyExists(tmp_name, "is_unlit"))
+			tmpMtl->m_oMainGraphics.m_isUnlit = String(config->getKey(tmp_name, "is_unlit")).toBool();
 		else
 			tmpMtl->m_oMainGraphics.m_isUnlit = false;
 
-		if (config->keyExists(sName.c_str(), "model"))
-			tmpMtl->m_oMainGraphics.type_model = (MTLTYPE_MODEL)String(config->getKey(sName.c_str(), "model")).toInt();
+		if (config->keyExists(tmp_name, "type"))
+			tmpMtl->m_oMainGraphics.type_model = (MTLTYPE_MODEL)String(config->getKey(tmp_name, "type")).toInt();
 		else
 			tmpMtl->m_oMainGraphics.type_model = MTLTYPE_MODEL_DEFAULT;
 
-		if (config->keyExists(sName.c_str(), "physmaterial"))
-			tmpMtl->m_oPhysics.type_physics = (MTLTYPE_PHYSIC)String(config->getKey(sName.c_str(), "physmaterial")).toInt();
+		if (config->keyExists(tmp_name, "physmaterial"))
+			tmpMtl->m_oPhysics.type_physics = (MTLTYPE_PHYSIC)String(config->getKey(tmp_name, "physmaterial")).toInt();
 		else
 			tmpMtl->m_oPhysics.type_physics = MTLTYPE_PHYSIC_DEFAULT;
 
@@ -485,8 +528,8 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 			tmpMtl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 
 		tmpMicroDiff[0][0] = 0;
-		if (config->keyExists(sName.c_str(), "microrelief_r"))
-			sprintf(tmpMicroDiff[0], "%s", config->getKey(sName.c_str(), "microrelief_r"));
+		if (config->keyExists(tmp_name, "mirco_diff_r"))
+			sprintf(tmpMicroDiff[0], "%s", config->getKey(tmp_name, "mirco_diff_r"));
 
 		if (tmpMicroDiff[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[0] = SGCore_LoadTexAddName(tmpMicroDiff[0], LOAD_TEXTURE_TYPE_LOAD);
@@ -494,24 +537,24 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[0] = -1;
 
 		tmpMicroDiff[1][0] = 0;
-		if (config->keyExists(sName.c_str(), "microrelief_g"))
-			sprintf(tmpMicroDiff[1], "%s", config->getKey(sName.c_str(), "microrelief_g"));
+		if (config->keyExists(tmp_name, "mirco_diff_g"))
+			sprintf(tmpMicroDiff[1], "%s", config->getKey(tmp_name, "mirco_diff_g"));
 		if (tmpMicroDiff[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[1] = SGCore_LoadTexAddName(tmpMicroDiff[1], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[1] = -1;
 
 		tmpMicroDiff[2][0] = 0;
-		if (config->keyExists(sName.c_str(), "microrelief_b"))
-			sprintf(tmpMicroDiff[2], "%s", config->getKey(sName.c_str(), "microrelief_b"));
+		if (config->keyExists(tmp_name, "mirco_diff_b"))
+			sprintf(tmpMicroDiff[2], "%s", config->getKey(tmp_name, "mirco_diff_b"));
 		if (tmpMicroDiff[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[2] = SGCore_LoadTexAddName(tmpMicroDiff[2], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[2] = -1;
 
 		tmpMicroDiff[3][0] = 0;
-		if (config->keyExists(sName.c_str(), "microrelief_a"))
-			sprintf(tmpMicroDiff[3], "%s", config->getKey(sName.c_str(), "microrelief_a"));
+		if (config->keyExists(tmp_name, "mirco_diff_a"))
+			sprintf(tmpMicroDiff[3], "%s", config->getKey(tmp_name, "mirco_diff_a"));
 		if (tmpMicroDiff[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aMicroRelief[3] = SGCore_LoadTexAddName(tmpMicroDiff[3], LOAD_TEXTURE_TYPE_LOAD);
 		else
@@ -519,40 +562,40 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 
 
 		tmpDetail[0][0] = 0;
-		if (config->keyExists(sName.c_str(), "detail_r"))
-			sprintf(tmpDetail[0], "%s", config->getKey(sName.c_str(), "detail_r"));
+		if (config->keyExists(tmp_name, "detail_r"))
+			sprintf(tmpDetail[0], "%s", config->getKey(tmp_name, "detail_r"));
 		if (tmpDetail[0][0] != '0' && tmpMicroDiff[0][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aDetail[0] = SGCore_LoadTexAddName(tmpDetail[0], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->m_oMicroDetail.m_aDetail[0] = -1;
 
 		tmpDetail[1][0] = 0;
-		if (config->keyExists(sName.c_str(), "detail_g"))
-			sprintf(tmpDetail[1], "%s", config->getKey(sName.c_str(), "detail_g"));
+		if (config->keyExists(tmp_name, "detail_g"))
+			sprintf(tmpDetail[1], "%s", config->getKey(tmp_name, "detail_g"));
 		if (tmpDetail[1][0] != '0' && tmpMicroDiff[1][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aDetail[1] = SGCore_LoadTexAddName(tmpDetail[1], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->m_oMicroDetail.m_aDetail[1] = -1;
 
 		tmpDetail[2][0] = 0;
-		if (config->keyExists(sName.c_str(), "detail_b"))
-			sprintf(tmpDetail[2], "%s", config->getKey(sName.c_str(), "detail_b"));
+		if (config->keyExists(tmp_name, "detail_b"))
+			sprintf(tmpDetail[2], "%s", config->getKey(tmp_name, "detail_b"));
 		if (tmpDetail[2][0] != '0' && tmpMicroDiff[2][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aDetail[2] = SGCore_LoadTexAddName(tmpDetail[2], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->m_oMicroDetail.m_aDetail[2] = -1;
 
 		tmpDetail[3][0] = 0;
-		if (config->keyExists(sName.c_str(), "detail_a"))
-			sprintf(tmpDetail[3], "%s", config->getKey(sName.c_str(), "detail_a"));
+		if (config->keyExists(tmp_name, "detail_a"))
+			sprintf(tmpDetail[3], "%s", config->getKey(tmp_name, "detail_a"));
 		if (tmpDetail[3][0] != '0' && tmpMicroDiff[3][0] != 0)
 			tmpMtl->m_oMicroDetail.m_aDetail[3] = SGCore_LoadTexAddName(tmpDetail[3], LOAD_TEXTURE_TYPE_LOAD);
 		else
 			tmpMtl->m_oMicroDetail.m_aDetail[3] = -1;
 
 		tmpMask[0] = 0;
-		if (config->keyExists(sName.c_str(), "mask"))
-			sprintf(tmpMask, "%s", config->getKey(sName.c_str(), "mask"));
+		if (config->keyExists(tmp_name, "mask"))
+			sprintf(tmpMask, "%s", config->getKey(tmp_name, "mask"));
 		if (tmpMask[0] != '0' && tmpMask[0] != 0)
 			tmpMtl->m_oMicroDetail.m_idMask = SGCore_LoadTexAddName(tmpMask, LOAD_TEXTURE_TYPE_LOAD);
 		else
@@ -563,23 +606,23 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 		tmpMtl->m_oLightParam.m_fF0 = MTL_LIGHTING_DEFAULT_F0;
 		tmpMtl->m_oLightParam.m_fThickness = MTL_LIGHTING_DEFAULT_THICKNESS;
 
-		if (config->keyExists(sName.c_str(), "roughness"))
-			tmpMtl->m_oLightParam.m_fRoughness = String(config->getKey(sName.c_str(), "roughness")).toDouble();
+		if (config->keyExists(tmp_name, "roughness"))
+			tmpMtl->m_oLightParam.m_fRoughness = String(config->getKey(tmp_name, "roughness")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "f0"))
-			tmpMtl->m_oLightParam.m_fF0 = String(config->getKey(sName.c_str(), "f0")).toDouble();
+		if (config->keyExists(tmp_name, "f0"))
+			tmpMtl->m_oLightParam.m_fF0 = String(config->getKey(tmp_name, "f0")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "thickness"))
-			tmpMtl->m_oLightParam.m_fThickness = String(config->getKey(sName.c_str(), "thickness")).toDouble();
+		if (config->keyExists(tmp_name, "thickness"))
+			tmpMtl->m_oLightParam.m_fThickness = String(config->getKey(tmp_name, "thickness")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "durability"))
-			tmpMtl->m_oPhysics.m_fDurability = String(config->getKey(sName.c_str(), "durability")).toDouble();
+		if (config->keyExists(tmp_name, "penetration"))
+			tmpMtl->m_oPhysics.m_fDurability = String(config->getKey(tmp_name, "penetration")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "hit_chance"))
-			tmpMtl->m_oPhysics.m_fHitChance = String(config->getKey(sName.c_str(), "hit_chance")).toDouble();
+		if (config->keyExists(tmp_name, "hit_chance"))
+			tmpMtl->m_oPhysics.m_fHitChance = String(config->getKey(tmp_name, "hit_chance")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "density"))
-			tmpMtl->m_oPhysics.m_fDensity = String(config->getKey(sName.c_str(), "density")).toDouble();
+		if (config->keyExists(tmp_name, "density"))
+			tmpMtl->m_oPhysics.m_fDensity = String(config->getKey(tmp_name, "density")).toDouble();
 
 		tmpMtl->m_oLightParam.m_idTexParamHand = createTexParamLighting(tmpMtl->m_oLightParam.m_fRoughness, tmpMtl->m_oLightParam.m_fF0, tmpMtl->m_oLightParam.m_fThickness);
 
@@ -587,12 +630,12 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 		int istexparam = -1;
 
 		//если есть ключ использования текстуры то грузим
-		if (config->keyExists(sName.c_str(), "use_texparamlight"))
-			istexparam = String(config->getKey(sName.c_str(), "use_texparamlight")).toBool();
+		if (config->keyExists(tmp_name, "is_texture_param"))
+			istexparam = String(config->getKey(tmp_name, "is_texture_param")).toBool();
 
 		tmpParamLigth[0] = 0;
-		if (config->keyExists(sName.c_str(), "texparamligth"))
-			sprintf(tmpParamLigth, "%s", config->getKey(sName.c_str(), "texparamligth"));
+		if (config->keyExists(tmp_name, "param_ligth"))
+			sprintf(tmpParamLigth, "%s", config->getKey(tmp_name, "param_ligth"));
 
 		//если текстура с параметрами освещения была определена
 		if (tmpParamLigth[0] != '0' && tmpParamLigth[0] != 0)
@@ -611,59 +654,59 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 		}
 
 
-		if (config->keyExists(sName.c_str(), "transparent"))
-			tmpMtl->m_oLightParam.m_isTransparent = String(config->getKey(sName.c_str(), "transparent")).toBool();
+		if (config->keyExists(tmp_name, "refraction"))
+			tmpMtl->m_oLightParam.m_type_transparency = (MTLTYPE_TRANSPARENCY)String(config->getKey(tmp_name, "refraction")).toInt();
 		else
-			tmpMtl->m_oLightParam.m_isTransparent = false;
+			tmpMtl->m_oLightParam.m_type_transparency = MTLTYPE_TRANSPARENCY_NONE;
 
 
 		tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorld = tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransView = tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransProjection =
 			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorldView = tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransPosCam =
 			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransTimeDelta = tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWinSize = tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransUserData = false;
 
-		if (config->keyExists(sName.c_str(), "vs_world"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorld = String(config->getKey(sName.c_str(), "vs_world")).toInt();
+		if (config->keyExists(tmp_name, "vs_world"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorld = String(config->getKey(tmp_name, "vs_world")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_view"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransView = String(config->getKey(sName.c_str(), "vs_view")).toInt();
+		if (config->keyExists(tmp_name, "vs_view"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransView = String(config->getKey(tmp_name, "vs_view")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_projection"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransProjection = String(config->getKey(sName.c_str(), "vs_projection")).toInt();
+		if (config->keyExists(tmp_name, "vs_projection"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransProjection = String(config->getKey(tmp_name, "vs_projection")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_worldview"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorldView = String(config->getKey(sName.c_str(), "vs_worldview")).toInt();
+		if (config->keyExists(tmp_name, "vs_worldview"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorldView = String(config->getKey(tmp_name, "vs_worldview")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_worldviewprojection"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = String(config->getKey(sName.c_str(), "vs_worldviewprojection")).toInt();
+		if (config->keyExists(tmp_name, "vs_worldviewprojection"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = String(config->getKey(tmp_name, "vs_worldviewprojection")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_poscam"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransPosCam = String(config->getKey(sName.c_str(), "vs_poscam")).toInt();
+		if (config->keyExists(tmp_name, "vs_poscam"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransPosCam = String(config->getKey(tmp_name, "vs_poscam")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_timedelta"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransTimeDelta = String(config->getKey(sName.c_str(), "vs_timedelta")).toInt();
+		if (config->keyExists(tmp_name, "vs_timedelta"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransTimeDelta = String(config->getKey(tmp_name, "vs_timedelta")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_winsize"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWinSize = String(config->getKey(sName.c_str(), "vs_winsize")).toInt();
+		if (config->keyExists(tmp_name, "vs_winsize"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransWinSize = String(config->getKey(tmp_name, "vs_winsize")).toInt();
 
-		if (config->keyExists(sName.c_str(), "vs_userdata"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransUserData = String(config->getKey(sName.c_str(), "vs_userdata")).toInt();
+		if (config->keyExists(tmp_name, "vs_userdata"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransUserData = String(config->getKey(tmp_name, "vs_userdata")).toInt();
 
 
 		tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData = float4(0, 0, 0, 0);
-		if (config->keyExists(sName.c_str(), "vs_userdata_x"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.x = String(config->getKey(sName.c_str(), "vs_userdata_x")).toDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_x"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.x = String(config->getKey(tmp_name, "vs_userdata_value_x")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "vs_userdata_y"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.y = String(config->getKey(sName.c_str(), "vs_userdata_y")).toDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_y"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.y = String(config->getKey(tmp_name, "vs_userdata_value_y")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "vs_userdata_z"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.z = String(config->getKey(sName.c_str(), "vs_userdata_z")).toDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_z"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.z = String(config->getKey(tmp_name, "vs_userdata_value_z")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "vs_userdata_w"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.w = String(config->getKey(sName.c_str(), "vs_userdata_w")).toDouble();
+		if (config->keyExists(tmp_name, "vs_userdata_value_w"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_vUserData.w = String(config->getKey(tmp_name, "vs_userdata_value_w")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "vs_userdata_trans_ps"))
-			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransUserDataInOtherShader = String(config->getKey(sName.c_str(), "vs_userdata_trans_ps")).toBool();
+		if (config->keyExists(tmp_name, "vs_userdata_trans_in_ps"))
+			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransUserDataInOtherShader = String(config->getKey(tmp_name, "vs_userdata_trans_in_ps")).toBool();
 		else
 			tmpMtl->m_oMainGraphics.m_oDataVS.m_isTransUserDataInOtherShader = false;
 
@@ -672,57 +715,57 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorldView = tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection = tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransPosCam =
 			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransTimeDelta = tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWinSize = tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransUserData = false;
 
-		if (config->keyExists(sName.c_str(), "ps_world"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorld = String(config->getKey(sName.c_str(), "ps_world")).toInt();
+		if (config->keyExists(tmp_name, "ps_world"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorld = String(config->getKey(tmp_name, "ps_world")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_view"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransView = String(config->getKey(sName.c_str(), "ps_view")).toInt();
+		if (config->keyExists(tmp_name, "ps_view"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransView = String(config->getKey(tmp_name, "ps_view")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_projection"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransProjection = String(config->getKey(sName.c_str(), "ps_projection")).toInt();
+		if (config->keyExists(tmp_name, "ps_projection"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransProjection = String(config->getKey(tmp_name, "ps_projection")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_worldview"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorldView = String(config->getKey(sName.c_str(), "ps_worldview")).toInt();
+		if (config->keyExists(tmp_name, "ps_worldview"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorldView = String(config->getKey(tmp_name, "ps_worldview")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_worldviewprojection"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection = String(config->getKey(sName.c_str(), "ps_worldviewprojection")).toInt();
+		if (config->keyExists(tmp_name, "ps_worldviewprojection"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection = String(config->getKey(tmp_name, "ps_worldviewprojection")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_poscam"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransPosCam = String(config->getKey(sName.c_str(), "ps_poscam")).toInt();
+		if (config->keyExists(tmp_name, "ps_poscam"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransPosCam = String(config->getKey(tmp_name, "ps_poscam")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_timedelta"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransTimeDelta = String(config->getKey(sName.c_str(), "ps_timedelta")).toInt();
+		if (config->keyExists(tmp_name, "ps_timedelta"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransTimeDelta = String(config->getKey(tmp_name, "ps_timedelta")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_winsize"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWinSize = String(config->getKey(sName.c_str(), "ps_winsize")).toInt();
+		if (config->keyExists(tmp_name, "ps_winsize"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransWinSize = String(config->getKey(tmp_name, "ps_winsize")).toInt();
 
-		if (config->keyExists(sName.c_str(), "ps_userdata"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransUserData = String(config->getKey(sName.c_str(), "ps_userdata")).toInt();
+		if (config->keyExists(tmp_name, "ps_userdata"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransUserData = String(config->getKey(tmp_name, "ps_userdata")).toInt();
 
 		tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData = float4(0, 0, 0, 0);
 
-		if (config->keyExists(sName.c_str(), "ps_userdata_x"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.x = String(config->getKey(sName.c_str(), "ps_userdata_x")).toDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_x"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.x = String(config->getKey(tmp_name, "ps_userdata_value_x")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "ps_userdata_y"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.y = String(config->getKey(sName.c_str(), "ps_userdata_y")).toDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_y"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.y = String(config->getKey(tmp_name, "ps_userdata_value_y")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "ps_userdata_z"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.z = String(config->getKey(sName.c_str(), "ps_userdata_z")).toDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_z"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.z = String(config->getKey(tmp_name, "ps_userdata_value_z")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "ps_userdata_w"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.w = String(config->getKey(sName.c_str(), "ps_userdata_w")).toDouble();
+		if (config->keyExists(tmp_name, "ps_userdata_value_w"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_vUserData.w = String(config->getKey(tmp_name, "ps_userdata_value_w")).toDouble();
 
-		if (config->keyExists(sName.c_str(), "ps_userdata_trans_vs"))
-			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransUserDataInOtherShader = String(config->getKey(sName.c_str(), "ps_userdata_trans_vs")).toBool();
+		if (config->keyExists(tmp_name, "ps_userdata_trans_in_vs"))
+			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransUserDataInOtherShader = String(config->getKey(tmp_name, "ps_userdata_trans_in_vs")).toBool();
 		else
 			tmpMtl->m_oMainGraphics.m_oDataPS.m_isTransUserDataInOtherShader = false;
 
-		if (config->keyExists(sName.c_str(), "reflection"))
-			tmpMtl->m_oLightParam.m_type_reflect = (MTLTYPE_REFLECT)String(config->getKey(sName.c_str(), "reflection")).toInt();
+		if (config->keyExists(tmp_name, "type_reflect"))
+			tmpMtl->m_oLightParam.m_type_reflect = (MTLTYPE_REFLECT)String(config->getKey(tmp_name, "type_reflect")).toInt();
 
-		if (config->keyExists(sName.c_str(), "alphatest"))
-			tmpMtl->m_oMainGraphics.m_useAlphaTest = String(config->getKey(sName.c_str(), "alphatest")).toBool();
+		if (config->keyExists(tmp_name, "alpha_test"))
+			tmpMtl->m_oMainGraphics.m_useAlphaTest = String(config->getKey(tmp_name, "alpha_test")).toBool();
 		else
 			tmpMtl->m_oMainGraphics.m_useAlphaTest = false;
 
@@ -737,7 +780,7 @@ ID CMaterials::createTexParamLighting(float roughness, float f0, float thickness
 	IDirect3DTexture9* TexMaterial;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &TexMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
-	uint32_t tmpColor = D3DCOLOR_ARGB(255, DWORD(roughness*255.f), DWORD(f0*255.f), DWORD(thickness*255.f));
+	uint32_t tmpColor = D3DCOLOR_ARGB(0, DWORD(roughness*255.f), DWORD(f0*255.f), DWORD(thickness*255.f));
 
 	TexMaterial->LockRect(0, &LockedRect, 0, 0);
 
@@ -922,20 +965,20 @@ void CMaterials::mtlSave(ID id)
 	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, mtrl->m_oMainGraphics.m_idShaderVS, tmpPathVSName);
 	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, mtrl->m_oMainGraphics.m_idShaderPS, tmpPathPSName);
 
-	fprintf(file, "model = %d\n", mtrl->m_oMainGraphics.type_model);
-	fprintf(file, "lighted = %d\n", mtrl->m_oMainGraphics.m_isUnlit);
-	fprintf(file, "physmaterial = %d\n", mtrl->m_oPhysics.type_physics);
+	fprintf(file, "type = %d\n", mtrl->m_oMainGraphics.type_model);
+	fprintf(file, "is_unlit = %d\n", mtrl->m_oMainGraphics.m_isUnlit);
+	fprintf(file, "%s%d%s", "physmaterial = ", mtrl->m_oPhysics.type_physics, "\n");
 
-	fprintf(file, "vs = %s\n", tmpPathVSName);
-	fprintf(file, "ps = %s\n", tmpPathPSName);
+	fprintf(file, "%s%s%s", "vs = ", tmpPathVSName, "\n");
+	fprintf(file, "%s%s%s", "ps = ", tmpPathPSName, "\n");
 
-	fprintf(file, "alphatest = %d\n", mtrl->m_oMainGraphics.m_useAlphaTest);
+	fprintf(file, "%s%d%s", "alpha_test = ", mtrl->m_oMainGraphics.m_useAlphaTest, "\n");
 
 	char namebasetex[256];
 	namebasetex[0] = '0';
 	namebasetex[1] = '\0';
 	SGCore_LoadTexGetName(mtrl->m_oMainGraphics.m_idMainTexture, namebasetex);
-	fprintf(file, "texture = %s\n\n", namebasetex);
+	fprintf(file, "%s%s%s", "texture = ", namebasetex, "\n");
 
 	if (mtrl->m_oMicroDetail.m_idMask == -1)
 	{
@@ -945,7 +988,7 @@ void CMaterials::mtlSave(ID id)
 	else
 		SGCore_LoadTexGetName(mtrl->m_oMicroDetail.m_idMask, tmpPathMaskName);
 
-	fprintf(file, "mask = %s\n", tmpPathMaskName);
+	fprintf(file, "%s%s%s", "mask = ", tmpPathMaskName, "\n");
 
 	for (int k = 0; k<4; k++)
 	{
@@ -957,7 +1000,7 @@ void CMaterials::mtlSave(ID id)
 		else
 			SGCore_LoadTexGetName(mtrl->m_oMicroDetail.m_aMicroRelief[k], tmpPathMaskName);
 
-		fprintf(file, "microrelief_%s = %s\n", ArrRGBA[k], tmpPathMaskName);
+		fprintf(file, "mirco_diff_%s = %s\n", ArrRGBA[k], tmpPathMaskName);
 	}
 
 	for (int k = 0; k<4; k++)
@@ -973,7 +1016,29 @@ void CMaterials::mtlSave(ID id)
 		fprintf(file, "detail_%s = %s\n", ArrRGBA[k], tmpPathMaskName);
 	}
 
-	fprintf(file, "\n");
+	if (mtrl->m_oLightParam.m_idTexParam == -1)
+	{
+		tmpPathMaskName[0] = '0';
+		tmpPathMaskName[1] = 0;
+	}
+	else
+		SGCore_LoadTexGetName(mtrl->m_oLightParam.m_idTexParam, tmpPathMaskName);
+
+	if (tmpPathMaskName[0] == MTL_VIRTUAL_DIR_HAND_MTL)
+		sprintf(tmpPathMaskName, "0");
+	else
+		fprintf(file, "is_texture_param = %d\n", mtrl->m_oLightParam.m_isTextureParam);
+
+	fprintf(file, "param_ligth = %s\n", tmpPathMaskName);
+
+	fprintf(file, "roughness = %f\n", mtrl->m_oLightParam.m_fRoughness);
+	fprintf(file, "f0 = %f\n", mtrl->m_oLightParam.m_fF0);
+	fprintf(file, "thickness = %f\n", mtrl->m_oLightParam.m_fThickness);
+	fprintf(file, "penetration = %f\n", mtrl->m_oPhysics.m_fDurability);
+	fprintf(file, "hit_chance = %f\n", mtrl->m_oPhysics.m_fHitChance);
+	fprintf(file, "density = %f\n", mtrl->m_oPhysics.m_fDensity);
+
+	fprintf(file, "refraction = %d\n", mtrl->m_oLightParam.m_type_transparency);
 
 	fprintf(file, "vs_world = %d\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld);
 	fprintf(file, "vs_view = %d\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransView);
@@ -985,8 +1050,8 @@ void CMaterials::mtlSave(ID id)
 	fprintf(file, "vs_timedelta = %d\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransTimeDelta);
 	fprintf(file, "vs_winsize = %d\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransWinSize);
 	fprintf(file, "vs_userdata = %d\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransUserData);
-	fprintf(file, "vs_userdata_x = %f\nvs_userdata_y = %f\nvs_userdata_z = %f\nvs_userdata_w = %f\n", mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.x, mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.y, mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.z, mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.w);
-	fprintf(file, "vs_userdata_trans_ps = %d\n\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransUserDataInOtherShader);
+	fprintf(file, "vs_userdata_value_x = %f\nvs_userdata_value_y = %f\nvs_userdata_value_z = %f\nvs_userdata_value_w = %f\n", mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.x, mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.y, mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.z, mtrl->m_oMainGraphics.m_oDataVS.m_vUserData.w);
+	fprintf(file, "vs_userdata_trans_in_ps = %d\n", mtrl->m_oMainGraphics.m_oDataVS.m_isTransUserDataInOtherShader);
 
 	fprintf(file, "ps_world = %d\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransWorld);
 	fprintf(file, "ps_view = %d\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransView);
@@ -998,34 +1063,12 @@ void CMaterials::mtlSave(ID id)
 	fprintf(file, "ps_timedelta = %d\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransTimeDelta);
 	fprintf(file, "ps_winsize = %d\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransWinSize);
 	fprintf(file, "ps_userdata = %d\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransUserData);
-	fprintf(file, "ps_userdata_x = %f\nps_userdata_y = %f\nps_userdata_z = %f\nps_userdata_w = %f\n", mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.x, mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.y, mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.z, mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.w);
-	fprintf(file, "ps_userdata_trans_vs = %d\n\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransUserDataInOtherShader);
+	fprintf(file, "ps_userdata_value_x = %f\nps_userdata_value_y = %f\nps_userdata_value_z = %f\nps_userdata_value_w = %f\n", mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.x, mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.y, mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.z, mtrl->m_oMainGraphics.m_oDataPS.m_vUserData.w);
+	fprintf(file, "ps_userdata_trans_in_vs = %d\n", mtrl->m_oMainGraphics.m_oDataPS.m_isTransUserDataInOtherShader);
 
-	if (mtrl->m_oLightParam.m_idTexParam == -1)
-	{
-		tmpPathMaskName[0] = '0';
-		tmpPathMaskName[1] = 0;
-	}
-	else
-		SGCore_LoadTexGetName(mtrl->m_oLightParam.m_idTexParam, tmpPathMaskName);
+	fprintf(file, "type_reflect = %d\n", mtrl->m_oLightParam.m_type_reflect);
 
-	if (tmpPathMaskName[0] == MTL_VIRTUAL_DIR_HAND_MTL)
-		sprintf(tmpPathMaskName, "0");
-	//else
-		fprintf(file, "use_texparamlight = %d\n", mtrl->m_oLightParam.m_isTextureParam);
-
-	fprintf(file, "texparamligth = %s\n", tmpPathMaskName);
-
-	fprintf(file, "roughness = %f\n", mtrl->m_oLightParam.m_fRoughness);
-	fprintf(file, "f0 = %f\n", mtrl->m_oLightParam.m_fF0);
-	fprintf(file, "thickness = %f\n", mtrl->m_oLightParam.m_fThickness);
-	fprintf(file, "durability = %f\n", mtrl->m_oPhysics.m_fDurability);
-	fprintf(file, "hit_chance = %f\n", mtrl->m_oPhysics.m_fHitChance);
-	fprintf(file, "density = %f\n\n", mtrl->m_oPhysics.m_fDensity);
-
-	fprintf(file, "transparent = %d\n", mtrl->m_oLightParam.m_isTransparent);
-	fprintf(file, "reflection = %d\n", mtrl->m_oLightParam.m_type_reflect);
-
+	fprintf(file, "\n");
 	fclose(file);
 }
 
@@ -1342,16 +1385,6 @@ IDirect3DCubeTexture9* CMaterials::refCubeGetTex(ID id)
 
 //**************************************************************************
 
-UINT CMaterials::mtlGetSort(ID id)
-{
-	MTL_PRE_COND_ID(id, 0);
-	
-	UINT uiSort = 0;
-	uiSort |= (m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isTransparent ? MTLTYPE_TRANSPARENCY : MTLSORT_OPAQUE);
-	uiSort |= (m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_isUnlit ? MTLTYPE_ULIT : MTLSORT_LIGHTED);
-	return uiSort;
-}
-
 void CMaterials::mtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type)
 {
 	MTL_PRE_COND_ID(id);
@@ -1535,16 +1568,16 @@ float CMaterials::mtlGetDensity(ID id)
 
 
 
-void CMaterials::mtlSetTransparency(ID id, bool isTransparent)
+void CMaterials::mtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isTransparent = isTransparent;
+	m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_type_transparency = type;
 }
 
-bool CMaterials::mtlGetTransparency(ID id)
+MTLTYPE_TRANSPARENCY CMaterials::mtlGetTypeTransparency(ID id)
 {
-	MTL_PRE_COND_ID(id, false);
-	return m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isTransparent;
+	MTL_PRE_COND_ID(id, MTLTYPE_TRANSPARENCY_NONE);
+	return m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_type_transparency;
 }
 
 
@@ -1969,7 +2002,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 			ParamLightModelTex->LockRect(0, &LockedRect, 0, 0);
 			DWORD *param = (DWORD*)LockedRect.pBits;
 			//DWORD param = D3DCOLOR_ARGB(0,0,0,0);
-			param[0] = D3DCOLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
+			param[0] = D3DCOLOR_ARGB(0, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
 			ParamLightModelTex->UnlockRect(0);
 
 			pMtrl->m_oLightParam.m_fOldRoughness = pMtrl->m_oLightParam.m_fRoughness;
@@ -2116,20 +2149,20 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		float fLayer;
 		if (pMtrl->m_oMainGraphics.m_isUnlit)
 		{
-			if (!(pMtrl->m_oLightParam.m_isTransparent))
+			if (pMtrl->m_oLightParam.m_type_transparency == MTLTYPE_TRANSPARENCY_NONE)
 				fLayer = MTLTYPE_LAYER_OPAQUE_UNLIT;
 			else
 				fLayer = MTLTYPE_LAYER_TRANSPARENT_UNLIT;
 		}
 		else
 		{
-			if (!(pMtrl->m_oLightParam.m_isTransparent))
+			if (pMtrl->m_oLightParam.m_type_transparency == MTLTYPE_TRANSPARENCY_NONE)
 				fLayer = MTLTYPE_LAYER_OPAQUE_LIGHT;
 			else
 				fLayer = MTLTYPE_LAYER_TRANSPARENT_LIGHT;
 		}
 
-		if (m_useCountSurface && pMtrl->m_oLightParam.m_isTransparent)
+		if (m_useCountSurface && (pMtrl->m_oLightParam.m_type_transparency == MTLTYPE_TRANSPARENCY_ALPHA_LIGHT || pMtrl->m_oLightParam.m_type_transparency == MTLTYPE_TRANSPARENCY_ALPHA_UNLIT))
 			++(m_idCurrIdSurface);
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "NearFarIsUnlit", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface) / 255.f));

@@ -187,9 +187,9 @@ void SXLevelEditor::GameSel(int sel)
 	}
 	//-------
 	
-	SXLevelEditor::ObjAxesHelper->SetPosition(bEnt->getPos());
-	SXLevelEditor::ObjAxesHelper->SetRotation(bEnt->getOrient());
-	SXLevelEditor::ObjAxesHelper->SetScale(float3(1, 1, 1));
+	SXLevelEditor::ObjAxesHelper->setPosition(bEnt->getPos());
+	SXLevelEditor::ObjAxesHelper->setRotation(bEnt->getOrient());
+	SXLevelEditor::ObjAxesHelper->setScale(float3(1, 1, 1));
 }
 
 void SXLevelEditor::GameUpdatePosRot()

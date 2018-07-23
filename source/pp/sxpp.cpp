@@ -389,6 +389,8 @@ SX_LIB_API void SPP_RenderSSAO(float4_t* param, int quality)
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
 
+	PPSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(PPSet::IDsRenderTargets::IntermediateWinSize)/*SGCore_RTGetTexture(PPSet::IDsRenderTargets::GetSendRT())*/->GetSurfaceLevel(0, &RenderSurf);
 	PPSet::DXDevice->GetRenderTarget(0, &BackBuf);
@@ -495,6 +497,14 @@ SX_LIB_API void SPP_RenderSSAO(float4_t* param, int quality)
 
 	PPSet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	PPSet::IDsRenderTargets::IncrRT();
+
+	if (GetKeyState('N'))
+	{
+		//MessageBox(0,"PP GetKeyState",0,0);
+		char tmppath[1024];
+		sprintf(tmppath, "%sssao.jpg", "C:\\1\\");
+		D3DXSaveTextureToFile(tmppath, D3DXIFF_JPG, SGCore_RTGetTexture(PPSet::IDsRenderTargets::IntermediateWinSize), NULL);
+	}
 }
 
 

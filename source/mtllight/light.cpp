@@ -69,12 +69,12 @@ ID CLights::createCopy(ID id)
 		if (tmplight->ShadowPSSM)
 		{
 			tmplight2->ShadowPSSM = new PSSM();
-			tmplight2->ShadowPSSM->Init();
+			tmplight2->ShadowPSSM->init();
 			tmplight2->GAngleX = tmplight->GAngleX;
 			tmplight2->GAngleY = tmplight->GAngleY;
-			tmplight2->ShadowPSSM->SetPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
-			memcpy((tmplight2->ShadowPSSM->NearFar), (tmplight->ShadowPSSM->NearFar), sizeof(float2)* 5);
-			memcpy((tmplight2->ShadowPSSM->IsUpdate), (tmplight->ShadowPSSM->IsUpdate), sizeof(int) * 5);
+			tmplight2->ShadowPSSM->setPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
+			memcpy((tmplight2->ShadowPSSM->m_aNearFar), (tmplight->ShadowPSSM->m_aNearFar), sizeof(float2)* 5);
+			memcpy((tmplight2->ShadowPSSM->m_aIsUpdate), (tmplight->ShadowPSSM->m_aIsUpdate), sizeof(int)* 5);
 		}
 		else
 			tmplight2->ShadowPSSM = 0;
@@ -82,15 +82,15 @@ ID CLights::createCopy(ID id)
 		if (tmplight->ShadowSM)
 		{
 			tmplight2->ShadowSM = new ShadowMapTech();
-			tmplight2->ShadowSM->Init();
-			tmplight2->ShadowSM->SetPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
-			tmplight2->ShadowSM->SetDirection(&(tmplight->Quaternion * LIGHTS_DIR_BASE));
+			tmplight2->ShadowSM->init();
+			tmplight2->ShadowSM->setPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
+			tmplight2->ShadowSM->setDirection(&(tmplight->Quaternion * LIGHTS_DIR_BASE));
 			
-			tmplight2->ShadowSM->SetBias(tmplight->ShadowSM->GetBias());
-			tmplight2->ShadowSM->SetBlurPixel(tmplight->ShadowSM->GetBlurPixel());
+			tmplight2->ShadowSM->setBias(tmplight->ShadowSM->getBias());
+			tmplight2->ShadowSM->setBlurPixel(tmplight->ShadowSM->getBlurPixel());
 			float3 anf;
-			tmplight2->ShadowSM->GetAngleNearFar(&anf);
-			tmplight2->ShadowSM->SetAngleNearFar(&anf);
+			tmplight2->ShadowSM->getAngleNearFar(&anf);
+			tmplight2->ShadowSM->setAngleNearFar(&anf);
 		}
 		else
 			tmplight2->ShadowSM = 0;
@@ -98,17 +98,17 @@ ID CLights::createCopy(ID id)
 		if (tmplight->ShadowCube)
 		{
 			tmplight2->ShadowCube = new ShadowMapCubeTech();
-			tmplight2->ShadowCube->Init();
-			tmplight2->ShadowCube->SetPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
-			tmplight2->ShadowCube->SetNearFar(&float2(0.1f, tmplight->Dist));
-			tmplight2->ShadowCube->SetNear(tmplight2->ShadowCube->GetNear());
-			tmplight2->ShadowCube->SetFar(tmplight2->ShadowCube->GetFar());
-			tmplight2->ShadowCube->SetBias(tmplight->ShadowCube->GetBias());
-			tmplight2->ShadowCube->SetBlurPixel(tmplight->ShadowCube->GetBlurPixel());
+			tmplight2->ShadowCube->init();
+			tmplight2->ShadowCube->setPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
+			tmplight2->ShadowCube->setNearFar(&float2(0.1f, tmplight->Dist));
+			tmplight2->ShadowCube->setNear(tmplight2->ShadowCube->getNear());
+			tmplight2->ShadowCube->setFar(tmplight2->ShadowCube->getFar());
+			tmplight2->ShadowCube->setBias(tmplight->ShadowCube->getBias());
+			tmplight2->ShadowCube->setBlurPixel(tmplight->ShadowCube->getBlurPixel());
 
 			for (int i = 0; i < 6; ++i)
 			{
-				tmplight2->ShadowCube->SetEnableCubeEdge(i, tmplight2->ShadowCube->GetEnableCubeEdge(i));
+				tmplight2->ShadowCube->setEnableCubeEdge(i, tmplight2->ShadowCube->getEnableCubeEdge(i));
 			}
 		}
 		else
@@ -163,11 +163,11 @@ void CLights::onLostDevice()
 	for (int i = 0; i < ArrLights.size(); ++i)
 	{
 		if (ArrLights[i]->ShadowSM)
-			ArrLights[i]->ShadowSM->OnLostDevice();
+			ArrLights[i]->ShadowSM->onLostDevice();
 		else if (ArrLights[i]->ShadowCube)
-			ArrLights[i]->ShadowCube->OnLostDevice();
+			ArrLights[i]->ShadowCube->onLostDevice();
 		else if (ArrLights[i]->ShadowPSSM)
-			ArrLights[i]->ShadowPSSM->OnLostDevice();
+			ArrLights[i]->ShadowPSSM->onLostDevice();
 	}
 }
 
@@ -176,11 +176,11 @@ void CLights::onResetDevice()
 	for (int i = 0; i < ArrLights.size(); ++i)
 	{
 		if (ArrLights[i]->ShadowSM)
-			ArrLights[i]->ShadowSM->OnResetDevice();
+			ArrLights[i]->ShadowSM->onResetDevice();
 		else if (ArrLights[i]->ShadowCube)
-			ArrLights[i]->ShadowCube->OnResetDevice();
+			ArrLights[i]->ShadowCube->onResetDevice();
 		else if (ArrLights[i]->ShadowPSSM)
-			ArrLights[i]->ShadowPSSM->OnResetDevice();
+			ArrLights[i]->ShadowPSSM->onResetDevice();
 
 		lightCountUpdateNull(i);
 	}
@@ -230,32 +230,32 @@ void CLights::clearIDArr()
 
 		if (ArrLights[i]->ShadowSM)
 		{
-			for (int k = 0; k < ArrLights[i]->ShadowSM->GetCountIDArrs(); ++k)
+			for (int k = 0; k < ArrLights[i]->ShadowSM->getCountIDArrs(); ++k)
 			{
-				ArrLights[i]->ShadowSM->SetIDArr(k, -1);
+				ArrLights[i]->ShadowSM->setIDArr(k, -1);
 			}
 		}
 		else if (ArrLights[i]->ShadowCube)
 		{
-			for (int k = 0; k < ArrLights[i]->ShadowCube->GetCountIDArrs(); ++k)
+			for (int k = 0; k < ArrLights[i]->ShadowCube->getCountIDArrs(); ++k)
 			{
-				ArrLights[i]->ShadowCube->SetIDArr(k, 0, -1);
-				ArrLights[i]->ShadowCube->SetIDArr(k, 1, -1);
-				ArrLights[i]->ShadowCube->SetIDArr(k, 2, -1);
-				ArrLights[i]->ShadowCube->SetIDArr(k, 3, -1);
-				ArrLights[i]->ShadowCube->SetIDArr(k, 4, -1);
-				ArrLights[i]->ShadowCube->SetIDArr(k, 5, -1);
+				ArrLights[i]->ShadowCube->setIDArr(k, 0, -1);
+				ArrLights[i]->ShadowCube->setIDArr(k, 1, -1);
+				ArrLights[i]->ShadowCube->setIDArr(k, 2, -1);
+				ArrLights[i]->ShadowCube->setIDArr(k, 3, -1);
+				ArrLights[i]->ShadowCube->setIDArr(k, 4, -1);
+				ArrLights[i]->ShadowCube->setIDArr(k, 5, -1);
 			}
 		}
 		else if (ArrLights[i]->ShadowPSSM)
 		{
-			for (int k = 0; k < ArrLights[i]->ShadowPSSM->GetCountIDArrs(); ++k)
+			for (int k = 0; k < ArrLights[i]->ShadowPSSM->getCountIDArrs(); ++k)
 			{
-				ArrLights[i]->ShadowPSSM->SetIDArr(k, 0, -1);
-				ArrLights[i]->ShadowPSSM->SetIDArr(k, 1, -1);
-				ArrLights[i]->ShadowPSSM->SetIDArr(k, 2, -1);
-				ArrLights[i]->ShadowPSSM->SetIDArr(k, 3, -1);
-				ArrLights[i]->ShadowPSSM->SetIDArr(k, 4, -1);
+				ArrLights[i]->ShadowPSSM->setIDArr(k, 0, -1);
+				ArrLights[i]->ShadowPSSM->setIDArr(k, 1, -1);
+				ArrLights[i]->ShadowPSSM->setIDArr(k, 2, -1);
+				ArrLights[i]->ShadowPSSM->setIDArr(k, 3, -1);
+				ArrLights[i]->ShadowPSSM->setIDArr(k, 4, -1);
 			}
 		}
 	}
@@ -339,15 +339,15 @@ ID CLights::createPoint(ID id, const float3* center, float dist, const float3* c
 		if (isglobal && is_shadow)
 		{
 			tmplight->ShadowPSSM = new PSSM();
-			tmplight->ShadowPSSM->Init();
-			tmplight->ShadowPSSM->SetPosition(&float3(center->x, center->y, center->z));
+			tmplight->ShadowPSSM->init();
+			tmplight->ShadowPSSM->setPosition(&float3(center->x, center->y, center->z));
 		}
 		else if (is_shadow)
 		{
 			tmplight->ShadowCube = new ShadowMapCubeTech();
-			tmplight->ShadowCube->Init();
-			tmplight->ShadowCube->SetPosition(&float3(center->x, center->y, center->z));
-			tmplight->ShadowCube->SetNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->Dist));
+			tmplight->ShadowCube->init();
+			tmplight->ShadowCube->setPosition(&float3(center->x, center->y, center->z));
+			tmplight->ShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->Dist));
 			
 		}
 
@@ -422,10 +422,10 @@ ID CLights::createDirection(ID id, const float3* pos, float dist, const float3* 
 	if (is_shadow)
 	{
 		tmplight->ShadowSM = new ShadowMapTech();
-		tmplight->ShadowSM->Init();
-		tmplight->ShadowSM->SetPosition(&float3(pos->x, pos->y, pos->z));
-		tmplight->ShadowSM->SetDirection(&(tmplight->Quaternion * LIGHTS_DIR_BASE));
-		tmplight->ShadowSM->SetAngleNearFar(&float3(angle, LIGHTS_LOCAL_STD_NEAR, dist));
+		tmplight->ShadowSM->init();
+		tmplight->ShadowSM->setPosition(&float3(pos->x, pos->y, pos->z));
+		tmplight->ShadowSM->setDirection(&(tmplight->Quaternion * LIGHTS_DIR_BASE));
+		tmplight->ShadowSM->setAngleNearFar(&float3(angle, LIGHTS_LOCAL_STD_NEAR, dist));
 	}
 	
 	if (is_shadow)
@@ -544,7 +544,7 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 	}
 
 	if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrLights[id]->Angle, 0.1, ArrLights[id]->Dist));
+		ArrLights[id]->ShadowSM->setAngleNearFar(&float3(ArrLights[id]->Angle, 0.1, ArrLights[id]->Dist));
 
 	if (ArrLights[id]->TypeLight == LTYPE_LIGHT_POINT && is_create)
 	{
@@ -553,7 +553,7 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 	}
 
 	if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->SetNearFar(&float2(0.1, ArrLights[id]->Dist));
+		ArrLights[id]->ShadowCube->setNearFar(&float2(0.1, ArrLights[id]->Dist));
 
 	if (ArrLights[id]->Mesh)
 	{
@@ -593,7 +593,7 @@ void CLights::setLightPos(ID id, const float3* vec, bool greal)
 
 		tmplight->WorldMat = SMMatrixTranslation(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z);
 		if (tmplight->ShadowPSSM)
-			tmplight->ShadowPSSM->SetPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
+			tmplight->ShadowPSSM->setPosition(&float3(tmplight->Position.x, tmplight->Position.y, tmplight->Position.z));
 	}
 	else
 	{
@@ -606,13 +606,13 @@ void CLights::setLightPos(ID id, const float3* vec, bool greal)
 
 			if (ArrLights[id]->ShadowSM)
 			{
-				ArrLights[id]->ShadowSM->SetPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
+				ArrLights[id]->ShadowSM->setPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
 			}
 
 			if (ArrLights[id]->ShadowCube)
 			{
 				ArrLights[id]->WorldMat = SMMatrixTranslation(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z);
-				ArrLights[id]->ShadowCube->SetPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
+				ArrLights[id]->ShadowCube->setPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
 			}
 	}
 
@@ -633,7 +633,7 @@ void CLights::setLightOrient(ID id, const SMQuaternion* q)
 	ArrLights[id]->Quaternion = *q;
 
 	if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->SetDirection(&(ArrLights[id]->Quaternion * LIGHTS_DIR_BASE));
+		ArrLights[id]->ShadowSM->setDirection(&(ArrLights[id]->Quaternion * LIGHTS_DIR_BASE));
 
 	lightCountUpdateNull(id);
 }
@@ -643,9 +643,9 @@ void CLights::setShadowBias(ID id, float val)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 		if (ArrLights[id]->ShadowSM)
-			ArrLights[id]->ShadowSM->SetBias(val);
+			ArrLights[id]->ShadowSM->setBias(val);
 		else if (ArrLights[id]->ShadowCube)
-			ArrLights[id]->ShadowCube->SetBias(val);
+			ArrLights[id]->ShadowCube->setBias(val);
 
 		lightCountUpdateNull(id);
 }
@@ -655,9 +655,9 @@ float CLights::getShadowBias(ID id) const
 	LIGHTS_PRE_COND_ID(id, -1);
 
 	if (ArrLights[id]->ShadowSM)
-		return ArrLights[id]->ShadowSM->GetBias();
+		return ArrLights[id]->ShadowSM->getBias();
 	else if (ArrLights[id]->ShadowCube)
-		return ArrLights[id]->ShadowCube->GetBias();
+		return ArrLights[id]->ShadowCube->getBias();
 	return(0);
 }
 
@@ -763,11 +763,11 @@ void CLights::shadowRenderBegin(ID id)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->Begin();
+		ArrLights[id]->ShadowSM->begin();
 	else if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->Begin();
+		ArrLights[id]->ShadowCube->begin();
 	else if (ArrLights[id]->ShadowPSSM)
-		ArrLights[id]->ShadowPSSM->Begin();
+		ArrLights[id]->ShadowPSSM->begin();
 }
 
 void CLights::shadowRenderEnd(ID id)
@@ -775,11 +775,11 @@ void CLights::shadowRenderEnd(ID id)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->End();
+		ArrLights[id]->ShadowSM->end();
 	else if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->End();
+		ArrLights[id]->ShadowCube->end();
 	else if (ArrLights[id]->ShadowPSSM)
-		ArrLights[id]->ShadowPSSM->End();
+		ArrLights[id]->ShadowPSSM->end();
 }
 
 void CLights::shadowRenderPre(ID id, int cube)
@@ -787,9 +787,9 @@ void CLights::shadowRenderPre(ID id, int cube)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->Pre(cube);
+		ArrLights[id]->ShadowCube->pre(cube);
 	else if (ArrLights[id]->ShadowPSSM && cube >= 0 && cube < 5)
-		ArrLights[id]->ShadowPSSM->PreRender(cube);
+		ArrLights[id]->ShadowPSSM->preRender(cube);
 }
 
 void CLights::shadowRenderPost(ID id, int cube)
@@ -797,18 +797,17 @@ void CLights::shadowRenderPost(ID id, int cube)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->Post(cube);
+		ArrLights[id]->ShadowCube->post(cube);
 }
 
-void CLights::initShaderOfTypeMaterial(ID id, int typemat, float4x4* wmat)
+void CLights::initShaderOfTypeMaterial(ID id, int typemat, const float4x4* wmat)
 {
-	if (!wmat)
-		wmat = &SMMatrixIdentity();
+	float4x4 mWorld = (wmat ? (*wmat) : SMMatrixIdentity());
 	
 	float4x4 tmpmat;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &tmpmat);
-	tmpmat = SMMatrixTranspose((*wmat) * tmpmat);
-	float4x4 tmpwmat = SMMatrixTranspose(*wmat);
+	tmpmat = SMMatrixTranspose(mWorld * tmpmat);
+	float4x4 tmpwmat = SMMatrixTranspose(mWorld);
 	if (ArrLights[id]->ShadowSM || ArrLights[id]->ShadowPSSM)
 	{
 		if (typemat == MTL_TYPE_GEOM)
@@ -885,12 +884,12 @@ IFrustum* CLights::getLightFrustum(ID id, int how) const
 		else if (ArrLights[id]->ShadowCube)
 		{
 			if (how >= 0 && how < 6)
-				return ArrLights[id]->ShadowCube->Frustums[how];
+				return ArrLights[id]->ShadowCube->m_aFrustums[how];
 		}
 		else if (ArrLights[id]->ShadowPSSM)
 		{
 			if (how >= 0 && how < 5)
-				return ArrLights[id]->ShadowPSSM->Frustums[how];
+				return ArrLights[id]->ShadowPSSM->m_aFrustums[how];
 		}
 	return(NULL);
 }
@@ -899,8 +898,8 @@ IFrustum* CLights::getLightFrustumG(ID id, int split) const
 {
 	LIGHTS_PRE_COND_ID(id, 0);
 
-	if (ArrLights[id]->ShadowPSSM && split >= 0 && split < 4 && ArrLights[id]->ShadowPSSM->Frustums[split])
-		return ArrLights[id]->ShadowPSSM->Frustums[split];
+	if (ArrLights[id]->ShadowPSSM && split >= 0 && split < 4 && ArrLights[id]->ShadowPSSM->m_aFrustums[split])
+		return ArrLights[id]->ShadowPSSM->m_aFrustums[split];
 	return(NULL);
 }
 
@@ -908,7 +907,7 @@ void CLights::updateLightGFrustums(ID id, int split, const float3* pos, const fl
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	ArrLights[id]->ShadowPSSM->UpdateFrustums(split, pos, dir);
+	ArrLights[id]->ShadowPSSM->updateFrustums(split, pos, dir);
 }
 
 void CLights::shadowGen2(ID id)
@@ -916,15 +915,15 @@ void CLights::shadowGen2(ID id)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->GenShadow2(SGCore_RTGetTexture(ShadowMap));
+		ArrLights[id]->ShadowSM->genShadow(SGCore_RTGetTexture(ShadowMap));
 	else if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->GenShadow2(SGCore_RTGetTexture(ShadowMap));
+		ArrLights[id]->ShadowCube->genShadow(SGCore_RTGetTexture(ShadowMap));
 	else if (ArrLights[id]->ShadowPSSM)
 	{
 		if (!m_isCastGlobalShadow)
-			ArrLights[id]->ShadowPSSM->GenShadow2(SGCore_RTGetTexture(ShadowMap));
+			ArrLights[id]->ShadowPSSM->genShadow(SGCore_RTGetTexture(ShadowMap));
 		else
-			ArrLights[id]->ShadowPSSM->GenShadowAll(SGCore_RTGetTexture(ShadowMap));
+			ArrLights[id]->ShadowPSSM->genShadowAll(SGCore_RTGetTexture(ShadowMap));
 	}
 }
 
@@ -971,7 +970,7 @@ void CLights::setLightAngle(ID id, float angle, bool is_create)
 		}
 
 		if (ArrLights[id]->TypeLight == LTYPE_LIGHT_DIR && ArrLights[id]->ShadowSM)
-			ArrLights[id]->ShadowSM->SetAngleNearFar(&float3(angle, 0.1, ArrLights[id]->Dist));
+			ArrLights[id]->ShadowSM->setAngleNearFar(&float3(angle, 0.1, ArrLights[id]->Dist));
 
 		lightCountUpdateNull(id);
 }
@@ -1003,11 +1002,11 @@ void CLights::setShadowBlurPixel(ID id, float blur_pixel)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 		if (ArrLights[id]->ShadowCube)
-			ArrLights[id]->ShadowCube->SetBlurPixel(blur_pixel);
+			ArrLights[id]->ShadowCube->setBlurPixel(blur_pixel);
 		else if (ArrLights[id]->ShadowSM)
-			ArrLights[id]->ShadowSM->SetBlurPixel(blur_pixel);
+			ArrLights[id]->ShadowSM->setBlurPixel(blur_pixel);
 		else if (ArrLights[id]->ShadowPSSM)
-			ArrLights[id]->ShadowPSSM->SetBlurPixel(blur_pixel);
+			ArrLights[id]->ShadowPSSM->setBlurPixel(blur_pixel);
 
 		lightCountUpdateNull(id);
 }
@@ -1017,11 +1016,11 @@ float CLights::getShadowBlurPixel(ID id) const
 	LIGHTS_PRE_COND_ID(id, -1);
 
 		if (ArrLights[id]->ShadowCube)
-			return ArrLights[id]->ShadowCube->GetBlurPixel();
+			return ArrLights[id]->ShadowCube->getBlurPixel();
 		else if (ArrLights[id]->ShadowSM)
-			return ArrLights[id]->ShadowSM->GetBlurPixel();
+			return ArrLights[id]->ShadowSM->getBlurPixel();
 		else if (ArrLights[id]->ShadowPSSM)
-			return ArrLights[id]->ShadowPSSM->GetBlurPixel();
+			return ArrLights[id]->ShadowPSSM->getBlurPixel();
 	return(0);
 }
 
@@ -1030,9 +1029,9 @@ void CLights::setShadowLocalNear(ID id, float slnear)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->SetNear(slnear);
+		ArrLights[id]->ShadowCube->setNear(slnear);
 	else if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->SetNear(slnear);
+		ArrLights[id]->ShadowSM->setNear(slnear);
 
 	lightCountUpdateNull(id);
 }
@@ -1042,9 +1041,9 @@ float CLights::getShadowLocalNear(ID id) const
 	LIGHTS_PRE_COND_ID(id, -1);
 
 	if (ArrLights[id]->ShadowCube)
-		return ArrLights[id]->ShadowCube->GetNear();
+		return ArrLights[id]->ShadowCube->getNear();
 	else if (ArrLights[id]->ShadowSM)
-		return ArrLights[id]->ShadowSM->GetNear();
+		return ArrLights[id]->ShadowSM->getNear();
 	return(0);
 }
 
@@ -1055,12 +1054,12 @@ void CLights::setShadowLocalFar(ID id, float slfar)
 	if (ArrLights[id]->ShadowCube)
 	{
 		float2 tmpnf;
-		ArrLights[id]->ShadowCube->GetNearFar(&tmpnf);
+		ArrLights[id]->ShadowCube->getNearFar(&tmpnf);
 		tmpnf.y = slfar;
-		ArrLights[id]->ShadowCube->SetNearFar(&tmpnf);
+		ArrLights[id]->ShadowCube->setNearFar(&tmpnf);
 	}
 	else if (ArrLights[id]->ShadowSM)
-		ArrLights[id]->ShadowSM->SetFar(slfar);
+		ArrLights[id]->ShadowSM->setFar(slfar);
 
 	lightCountUpdateNull(id);
 }
@@ -1072,11 +1071,11 @@ float CLights::getShadowLocalFar(ID id) const
 	if (ArrLights[id]->ShadowCube)
 	{
 		float2 tmpnf;
-		ArrLights[id]->ShadowCube->GetNearFar(&tmpnf);
+		ArrLights[id]->ShadowCube->getNearFar(&tmpnf);
 		return tmpnf.y;
 	}
 	else if (ArrLights[id]->ShadowSM)
-		return ArrLights[id]->ShadowSM->GetFar();
+		return ArrLights[id]->ShadowSM->getFar();
 	else
 		return ArrLights[id]->Dist;
 }
@@ -1086,7 +1085,7 @@ void CLights::setLightCubeEdgeEnable(ID id, int edge, bool enable)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowCube)
-		ArrLights[id]->ShadowCube->SetEnableCubeEdge(edge, enable);
+		ArrLights[id]->ShadowCube->setEnableCubeEdge(edge, enable);
 
 	lightCountUpdateNull(id);
 }
@@ -1096,7 +1095,7 @@ bool CLights::getLightCubeEdgeEnable(ID id, int edge) const
 	LIGHTS_PRE_COND_ID(id, false);
 
 	if (ArrLights[id]->ShadowCube)
-		return ArrLights[id]->ShadowCube->GetEnableCubeEdge(edge);
+		return ArrLights[id]->ShadowCube->getEnableCubeEdge(edge);
 	return(false);
 }
 
@@ -1107,17 +1106,17 @@ ID CLights::getLightIDArr(ID id, ID inid, int how)
 		if (ArrLights[id]->ShadowSM)
 		{
 			if (how == 0)
-				return ArrLights[id]->ShadowSM->GetIDArr(inid);
+				return ArrLights[id]->ShadowSM->getIDArr(inid);
 		}
 		else if (ArrLights[id]->ShadowCube)
 		{
 			if (how >= 0 && how < 6)
-				return ArrLights[id]->ShadowCube->GetIDArr(inid, how);
+				return ArrLights[id]->ShadowCube->getIDArr(inid, how);
 		}
 		else if (ArrLights[id]->ShadowPSSM)
 		{
 			if (how >= 0 && how < 5)
-				return ArrLights[id]->ShadowPSSM->GetIDArr(inid, how);
+				return ArrLights[id]->ShadowPSSM->getIDArr(inid, how);
 		}
 	return(-1);
 }
@@ -1129,17 +1128,17 @@ void CLights::setLightIDArr(ID id, ID inid, int how, ID id_arr)
 		if (ArrLights[id]->ShadowSM)
 		{
 			if (how == 0)
-				ArrLights[id]->ShadowSM->SetIDArr(inid, id_arr);
+				ArrLights[id]->ShadowSM->setIDArr(inid, id_arr);
 		}
 		else if (ArrLights[id]->ShadowCube)
 		{
 			if (how >= 0 && how < 6)
-				ArrLights[id]->ShadowCube->SetIDArr(inid, how, id_arr);
+				ArrLights[id]->ShadowCube->setIDArr(inid, how, id_arr);
 		}
 		else if (ArrLights[id]->ShadowPSSM)
 		{
 			if (how >= 0 && how < 5)
-				ArrLights[id]->ShadowPSSM->SetIDArr(inid, how, id_arr);
+				ArrLights[id]->ShadowPSSM->setIDArr(inid, how, id_arr);
 		}
 }
 
@@ -1157,10 +1156,10 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 		if (!ArrLights[id]->ShadowSM)
 		{
 			ArrLights[id]->ShadowSM = new ShadowMapTech();
-			ArrLights[id]->ShadowSM->Init();
-			ArrLights[id]->ShadowSM->SetPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
-			ArrLights[id]->ShadowSM->SetDirection(&(ArrLights[id]->Quaternion * LIGHTS_DIR_BASE));
-			ArrLights[id]->ShadowSM->SetAngleNearFar(&float3(ArrLights[id]->Angle, 0.1, ArrLights[id]->Dist));
+			ArrLights[id]->ShadowSM->init();
+			ArrLights[id]->ShadowSM->setPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
+			ArrLights[id]->ShadowSM->setDirection(&(ArrLights[id]->Quaternion * LIGHTS_DIR_BASE));
+			ArrLights[id]->ShadowSM->setAngleNearFar(&float3(ArrLights[id]->Angle, 0.1, ArrLights[id]->Dist));
 		}
 	}
 	else if (ArrLights[id]->TypeLight == LTYPE_LIGHT_GLOBAL)
@@ -1170,8 +1169,8 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 			if (!ArrLights[id]->ShadowPSSM)
 			{
 				ArrLights[id]->ShadowPSSM = new PSSM();
-				ArrLights[id]->ShadowPSSM->Init();
-				ArrLights[id]->ShadowPSSM->SetPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
+				ArrLights[id]->ShadowPSSM->init();
+				ArrLights[id]->ShadowPSSM->setPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
 			}
 		}
 	}
@@ -1180,9 +1179,9 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 		if (!ArrLights[id]->ShadowCube)
 		{
 			ArrLights[id]->ShadowCube = new ShadowMapCubeTech();
-			ArrLights[id]->ShadowCube->Init();
-			ArrLights[id]->ShadowCube->SetPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
-			ArrLights[id]->ShadowCube->SetNearFar(&float2(0.1f, ArrLights[id]->Dist));
+			ArrLights[id]->ShadowCube->init();
+			ArrLights[id]->ShadowCube->setPosition(&float3(ArrLights[id]->Position.x, ArrLights[id]->Position.y, ArrLights[id]->Position.z));
+			ArrLights[id]->ShadowCube->setNearFar(&float2(0.1f, ArrLights[id]->Dist));
 		}
 	}
 
@@ -1208,19 +1207,19 @@ bool CLights::lightCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 			{
 				if (ghow >= 0 && ghow < 4)
 				{
-					if (tmpl->ShadowPSSM->IsUpdate[ghow] >= ghow*LIGHTS_UPDATE_PSSM_SPLIT)
-						tmpl->ShadowPSSM->IsUpdate[ghow] = -1;
+					if (tmpl->ShadowPSSM->m_aIsUpdate[ghow] >= ghow*LIGHTS_UPDATE_PSSM_SPLIT)
+						tmpl->ShadowPSSM->m_aIsUpdate[ghow] = -1;
 				}
 				else
 				{
-					if (tmpl->ShadowPSSM->IsUpdate[ghow] >= LIGHTS_UPDATE_PSSM_SPLIT_5)
-						tmpl->ShadowPSSM->IsUpdate[ghow] = -1;
+					if (tmpl->ShadowPSSM->m_aIsUpdate[ghow] >= LIGHTS_UPDATE_PSSM_SPLIT_5)
+						tmpl->ShadowPSSM->m_aIsUpdate[ghow] = -1;
 					
 				}
 
-				++(tmpl->ShadowPSSM->IsUpdate[ghow]);
+				++(tmpl->ShadowPSSM->m_aIsUpdate[ghow]);
 				
-				return (tmpl->ShadowPSSM->IsUpdate[ghow] == 0);
+				return (tmpl->ShadowPSSM->m_aIsUpdate[ghow] == 0);
 			}
 		}
 
@@ -1275,7 +1274,7 @@ bool CLights::lightCountUpdateAllowed(ID id, int ghow) const
 		{
 			if (ArrLights[id]->ShadowPSSM)
 			{
-				return (ArrLights[id]->ShadowPSSM->IsUpdate[ghow] == 0);
+				return (ArrLights[id]->ShadowPSSM->m_aIsUpdate[ghow] == 0);
 			}
 		}
 		else if (ArrLights[id]->TypeShadowed == LTYPE_SHADOW_STATIC)
@@ -1502,7 +1501,7 @@ void CLights::set4Or3Splits(ID id, bool is4)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (ArrLights[id]->ShadowPSSM)
-		ArrLights[id]->ShadowPSSM->Set4Or3Splits(is4);
+		ArrLights[id]->ShadowPSSM->set4Or3Splits(is4);
 }
 
 bool CLights::get4Or3Splits(ID id)
@@ -1510,7 +1509,7 @@ bool CLights::get4Or3Splits(ID id)
 	LIGHTS_PRE_COND_ID(id, false);
 
 	if (ArrLights[id]->ShadowPSSM)
-		return ArrLights[id]->ShadowPSSM->Get4Or3Splits();
+		return ArrLights[id]->ShadowPSSM->get4Or3Splits();
 
 	return false;
 }
@@ -1542,17 +1541,17 @@ ID CLights::delGetIDArr(ID key, ID inid, int how)
 	if (ArrDelLights[key]->ShadowSM)
 	{
 		if (how == 0)
-			return ArrDelLights[key]->ShadowSM->GetIDArr(inid);
+			return ArrDelLights[key]->ShadowSM->getIDArr(inid);
 	}
 	else if (ArrDelLights[key]->ShadowCube)
 	{
 		if (how >= 0 && how < 6)
-			return ArrDelLights[key]->ShadowCube->GetIDArr(inid, how);
+			return ArrDelLights[key]->ShadowCube->getIDArr(inid, how);
 	}
 	else if (ArrDelLights[key]->ShadowPSSM)
 	{
 		if (how >= 0 && how < 5)
-			return ArrDelLights[key]->ShadowPSSM->GetIDArr(inid, how);
+			return ArrDelLights[key]->ShadowPSSM->getIDArr(inid, how);
 	}
 	return(-1);
 }

@@ -54,3 +54,30 @@ half GetTexLod4Ref(half roughness)
 {
 	return depth;//(NearFar.x / (NearFar.y + NearFar.x - depth * (NearFar.y - NearFar.x)));
 }*/
+
+half3 NormalEncode(half3 n)
+{
+    /*half p = sqrt(n.z*8+8);
+    return half4(n.xy/p + 0.5,0,0);*/
+	
+	half2 enc = normalize(n.xy) * (sqrt(-n.z*0.5+0.5));
+    enc = enc*0.5+0.5;
+    return half3(enc, 0);
+}
+
+half3 NormalDecode(half2 enc)
+{
+   /* half2 fenc = enc*4-2;
+    half f = dot(fenc,fenc);
+    half g = sqrt(1-f/4);
+    half3 n;
+    n.xy = fenc*g;
+    n.z = 1-f/2;
+    return n;*/
+	
+	half4 nn = half4(enc, enc)*half4(2,2,0,0) + half4(-1,-1,1,-1);
+    half l = dot(nn.xyz,-nn.xyw);
+    nn.z = l;
+    nn.xy *= sqrt(l);
+    return nn.xyz * 2 + half3(0,0,-1);
+}

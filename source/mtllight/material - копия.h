@@ -68,8 +68,6 @@ public:
 	void mtlSetUsingAlphaTest(ID id, bool isUsing);
 	MTLTYPE_REFLECT mtlTypeReflection(ID id);
 
-	UINT mtlGetSort(ID id);
-
 	void mtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type);
 	MTLTYPE_PHYSIC mtlGetPhysicMaterial(ID id);
 
@@ -109,8 +107,8 @@ public:
 	void mtlSetDensity(ID id, float fDensity);
 	float mtlGetDensity(ID id);
 
-	void mtlSetTransparency(ID id, bool isTransparent);
-	bool mtlGetTransparency(ID id);
+	void mtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type);
+	MTLTYPE_TRANSPARENCY mtlGetTypeTransparency(ID id);
 
 	void mtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);
 	MTLTYPE_REFLECT mtlGetTypeReflection(ID id);
@@ -303,9 +301,11 @@ public:
 			//! тип отражений
 			MTLTYPE_REFLECT m_type_reflect;
 
-			//! прозрачный ли материал
-			bool m_isTransparent;
+			//! тип прозрачности
+			MTLTYPE_TRANSPARENCY m_type_transparency;
 		};
+
+		
 
 		//! физические свойства
 		struct CPhysics
@@ -348,7 +348,7 @@ public:
 		CUnitMaterial();
 		~CUnitMaterial();
 
-		//! указатель материала
+		//! объект материала
 		CMaterial *m_pMtrl;
 
 		//! объект отражений

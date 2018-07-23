@@ -34,6 +34,7 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 	half2 dy = ddy((IN.TexUV) * Param.x * MTRL_LAND_TEXUV_SCALE);
 	half lod = 9.f+log2(max(length(dx), length(dy)));
 
+	IN.Normal = normalize(IN.Normal);
 	half3 NormalPixel;
 	half4 basecolor = tex2D(BaseTex, IN.TexUV);
 	half4 detmaskcolor = tex2D(MaskTex, IN.TexUV);
@@ -68,11 +69,12 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 			NormalPixel = IN.Normal;
 	
 
-	OUT.Normal.xyz = 0.5f * NormalPixel + 0.5f;
+	OUT.Normal.xy = NormalEncode(NormalPixel);
 	OUT.Normal.w = NearFarIsUnlit.z;
+	OUT.Normal.z = NearFarIsUnlit.w;
 	
 	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
+	//OUT.Param.w = NearFarIsUnlit.w;
 	OUT.Color = basecolor;
 	
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);

@@ -644,13 +644,6 @@ SX_LIB_API MTLTYPE_MODEL SML_MtlGetTypeModel(ID id)
 	return ArrMaterials->getTypeModel(id);
 }
 
-SX_LIB_API UINT SML_MtlGetSort(ID id)
-{
-	ML_PRECOND(0);
-
-	return ArrMaterials->mtlGetSort(id);
-}
-
 SX_LIB_API void SML_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model)
 {
 	ML_PRECOND(_VOID);
@@ -1041,16 +1034,16 @@ SX_LIB_API float SML_MtlGetF0(ID id)
 	return ArrMaterials->mtlGetF0(id);
 }
 
-SX_LIB_API void SML_MtlSetTransparency(ID id, bool isTransparent)
+SX_LIB_API void SML_MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->mtlSetTransparency(id, isTransparent);
+	ArrMaterials->mtlSetTypeTransparency(id, type);
 }
 
-SX_LIB_API bool SML_MtlGetTransparency(ID id)
+SX_LIB_API MTLTYPE_TRANSPARENCY SML_MtlGetTypeTransparency(ID id)
 {
-	ML_PRECOND(false);
-	return ArrMaterials->mtlGetTransparency(id);
+	ML_PRECOND(MTLTYPE_TRANSPARENCY_NONE);
+	return ArrMaterials->mtlGetTypeTransparency(id);
 }
 
 SX_LIB_API void SML_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)

@@ -547,6 +547,11 @@ SOUND_FILEFORMAT CSoundManager::fileFormat(const char* file)
 	return SOUND_FILEFORMAT_UNKNOWN;
 }
 
+void CSoundManager::setMainVolume(float fVolume)
+{
+	m_pPrimaryBuffer->SetVolume(lerpf(-10000, 0, fVolume));
+}
+
 //#############################################################################
 
 void CSoundManager::load(CSound* snd, const char* fpath, SOUND_FILEFORMAT fmt)

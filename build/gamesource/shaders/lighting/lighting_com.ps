@@ -38,7 +38,7 @@ half D_Get(half roughness, half NdotH)
 
 half F_Get(half f0, half HdotV)
 {
-    return (f0 + (1.0f - f0) * pow((1.0f - HdotV), 4.9)) * (f0 > 0.001f ? 1 : 0);
+    return (f0 + (1.0 - f0) * pow((1.0 - HdotV), 5));
 }
 
 half G_Get(half NdotV, half NdotL, half LdotV, half NdotH,half VdotH)
@@ -51,8 +51,8 @@ half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half
 	matparam.x = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, matparam.x);
 	half D = D_Get(matparam.x, NdotH);
 	half G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
-	half3 F = F_Get(matparam.y*matparam.y, HdotV);
-	return ((D*G)/(PI*NdotL*NdotV))*F;
+	half3 F = F_Get(matparam.y, HdotV)*saturate(matparam.y*2);
+	return ((D*G*F)/(PI*NdotL*NdotV+0.001));
 }
 
 //#############################################################################
@@ -63,7 +63,7 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 
 	half4 normalds = tex2D(NormalSampler,IN.TexUV);
 	
-	[branch]if(normalds.w == SURFACE_NOTLIGHTING_NOTTRANSPARENCY || normalds.w == SURFACE_NOTLIGHTING_TRANSPARENCY)
+	[branch]if(EQUAL_LAYER(normalds.w, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(normalds.w, MTLTYPE_LAYER_TRANSPARENT_UNLIT))
 	{
 		OUT.Amdient.xyz = 0;
 		OUT.Amdient.w = 0;
@@ -90,12 +90,12 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	
 	half4 Param = tex2D(ParamSampler,IN.TexUV);
 	
-	normalds.xyz = 2.f * normalds.xyz - 1.f;
+	//normalds.xyz = NormalDecode(normalds.xy);//2.f * normalds.xyz - 1.f;
 	
-	half3 NormalPixel = normalize(normalds.xyz);
+	half3 NormalPixel = normalize(NormalDecode(normalds.xy));
 	half3 Ligth  = normalize(LightPos.xyz - Position.xyz); 
 	half3 VertexToEye = normalize(ViewPos.xyz - Position.xyz);
-	half3 HalfVector = normalize((Ligth.xyz + VertexToEye));
+	half3 HalfVector = normalize(VertexToEye + Ligth.xyz);
 	
 	half NdotH = dot(NormalPixel, HalfVector);
 	half NdotV = dot(NormalPixel, VertexToEye);
@@ -127,11 +127,12 @@ ps_out_com_lighting main(vs_out_res_pos IN)
 	#endif
 	
 	//LightColor.xyz *= max(diffuse,0.2);
-		
-	OUT.Amdient.xyz = LightColor.xyz * LightPowerDist.x * max(diffuse,0.5) * attenuation;//LightColor.xyz * attenuation * max(diffuse,0.5);//lerp(LightPowerDist.x,LightColor.xyz,0.5f) * max(diffuse,0.5) * LightPowerDist.x * attenuation;
-	OUT.Amdient.w = diffuse * LightPowerDist.x * attenuation;
 	
-	OUT.Spec = (specular*absdiffuse * saturate(attenuation * 2) * LightPowerDist.x);
+	//OUT.Amdient.xyz = lerp(LightColor.xyz, 1.0, clamp((1.0 - Param.y - 0.001), 0.25, 1.0));
+	OUT.Amdient.xyz = LightColor.xyz * LightColor.xyz * LightPowerDist.x * attenuation;
+	OUT.Amdient.w = diffuse * Param.w * LightPowerDist.x * attenuation;
+	
+	OUT.Spec = (specular*absdiffuse * attenuation * LightPowerDist.x);
 	
 	return OUT;
 }

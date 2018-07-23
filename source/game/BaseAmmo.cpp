@@ -312,7 +312,7 @@ bool CBaseAmmo::shouldRecochet(const float3 &vPos, const float3 &vNormal, const 
 	bool isNewSpeedSet = false;
 	if(ID_VALID(idMtl))
 	{
-		fDurability = SML_MtlGetPenetration(idMtl); // прочность
+		fDurability = SML_MtlGetDurability(idMtl); // прочность
 		fDensity = SML_MtlGetDensity(idMtl); // плотность
 		if(fDurability <= 0)
 		{

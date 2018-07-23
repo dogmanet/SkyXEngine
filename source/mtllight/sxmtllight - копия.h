@@ -753,33 +753,17 @@ enum MTLTYPE_REFLECT
 	MTLTYPE_REFLECT_CUBE_STATIC		
 };
 
-//! сорт материала
-enum MTLSORT
+//! типы прозрачности
+enum MTLTYPE_TRANSPARENCY
 {
-	//! непрозрачный
-	MTLSORT_OPAQUE = 0x00000001,
+	//! нет прозрачности
+	MTLTYPE_TRANSPARENCY_NONE,			
 
-	//! прозрачный
-	MTLTYPE_TRANSPARENCY = 0x00000010,
+	//! освещаяемая прозрачность
+	MTLTYPE_TRANSPARENCY_ALPHA_LIGHT,	
 
-	//! непрозрачный
-	MTLSORT_LIGHTED = 0x00000100,
-
-	//! прозрачный
-	MTLTYPE_ULIT = 0x00001000,
-
-	//! непрозрачный освещаемый
-	/*MTLSORT_OPAQUE_LIGHTED,
-
-	//! непрозрачный не освещаемый
-	MTLSORT_OPAQUE_UNLIT,*/
-
-
-	//! полупрозрачный освещаемый
-	/*MTLTYPE_TRANSPARENCY_LIGHTED,	
-
-	//! полупрозрачный не освещаемый
-	MTLTYPE_TRANSPARENCY_UNLIT,*/
+	//! неосвещаяемая прозрачность
+	MTLTYPE_TRANSPARENCY_ALPHA_UNLIT,
 };
 
 /*! \name Возможные слои
@@ -789,10 +773,10 @@ enum MTLSORT
 #define MTLTYPE_LAYER_OPAQUE_UNLIT		0.0f
 
 //! прозрачные неосвещаемые
-#define MTLTYPE_LAYER_TRANSPARENT_UNLIT	0.666667f
+#define MTLTYPE_LAYER_TRANSPARENT_UNLIT	0.66f
 
 //! непрозрачные освещаемые
-#define MTLTYPE_LAYER_OPAQUE_LIGHT		0.333333f
+#define MTLTYPE_LAYER_OPAQUE_LIGHT		0.33f
 
 //! прозрачные освещаемые
 #define MTLTYPE_LAYER_TRANSPARENT_LIGHT	1.0f
@@ -924,10 +908,7 @@ SX_LIB_API void SML_MtlClear(
 SX_LIB_API long SML_MtlGetCount();					
 
 //! возвращает тип модели материала по id
-SX_LIB_API MTLTYPE_MODEL SML_MtlGetTypeModel(ID id);
-
-//! возвращает сорт материала по id
-SX_LIB_API UINT SML_MtlGetSort(ID id);
+SX_LIB_API MTLTYPE_MODEL SML_MtlGetTypeModel(ID id);	
 
 /*! установка типа модели материала по id
  \warning меняется только внутренний флаг (определение)!!! все остальное для данного типа надо загружать вручную, сделано для больших возможностей построения материалов
@@ -1245,15 +1226,15 @@ SX_LIB_API float SML_MtlGetF0(ID id);
 
 //!@}
 
-/*! \name Полупрозрачность
-Под полупрозрачными материалами следует понимать такие материалы, прозрачность которых в среднем находится в пределах [0.5, 1) и минимальный процент полупрозрачного периметра 50%
+/*! \name Полупрозрачность, типы из #MtlTypeTransparency
+Под полупрозрачными материалами следует понимать такие материалы, прозрачность которых в среднем находится в пределах 0.5 и минимальный процент полупрозрачного периметра 50%
 @{*/
 
-//! установка свойства полупрозрачности
-SX_LIB_API void SML_MtlSetTransparency(ID id, bool isTransparent);
+//! установка типа полупрозрачности
+SX_LIB_API void SML_MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type);	
 
-//! возвращает текущее значение свойства полупрозрачности для материала
-SX_LIB_API bool SML_MtlGetTransparency(ID id);				
+//! возвращает текущий тип полупрозрачности для материала
+SX_LIB_API MTLTYPE_TRANSPARENCY SML_MtlGetTypeTransparency(ID id);				
 
 //!@}
 

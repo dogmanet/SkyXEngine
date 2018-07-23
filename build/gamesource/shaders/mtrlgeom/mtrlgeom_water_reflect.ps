@@ -29,6 +29,7 @@ ps_out_ds_mrt main(vs_out_water IN)
 	
 	ps_out_ds_mrt OUT;
 	
+	IN.Normal = normalize(IN.Normal);
 	half3 normal1 = 2.0f * tex2D(NormalTex, IN.Tex2.xy) - 1.0f;
 	half3 normal2 = 2.0f * tex2D(NormalTex, IN.Tex3.xy*0.5) - 1.0f;
 	normal1.z = IN.Normal.z;
@@ -37,8 +38,9 @@ ps_out_ds_mrt main(vs_out_water IN)
 	normal2 *= Param.z;
 	half3 normal = normalize((normal1+normal2+IN.Normal));
 	
-	OUT.Normal.xyz = 0.5f * normal + 0.5;
+	OUT.Normal.xy = NormalEncode(normal);
 	OUT.Normal.w = NearFarIsUnlit.z;
+	OUT.Normal.z = NearFarIsUnlit.w;
 	
 	half3 tc_offset = 2.0f * tex2D(DUDVTex,IN.Tex2.xy) - 1.0f;
 	half3 tc_offset2= 2.0f * tex2D(DUDVTex,IN.Tex3.xy*0.5) - 1.0f;
@@ -56,7 +58,7 @@ ps_out_ds_mrt main(vs_out_water IN)
 	half4 colorbase = tex2D(BaseTex, IN.TexUV);
 	
 	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
+	//OUT.Param.w = NearFarIsUnlit.w;
 	
 	half MipmapIndex = lerp(0.f, MTRL_REF_LOD_COUNT, saturate(OUT.Param.r - 0.1f));
 	half4 TexUVReflectProj = mul(tpos,MatrixReflection);

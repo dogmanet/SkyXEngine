@@ -297,7 +297,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 	}
 
-	if (def_str_validate(tmp_navmesh) && !FileExistsFile(path_navmesh))
+	if (STR_VALIDATE(tmp_navmesh) && !FileExistsFile(path_navmesh))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model [", path_navmesh, "] not found");
@@ -324,7 +324,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 		}
 	}
 
-	if (!def_str_validate(tmp_name))
+	if (!STR_VALIDATE(tmp_name))
 	{
 		if (MessageBox(0, "No name for the model, enter the file name automatically?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
 		{

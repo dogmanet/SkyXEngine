@@ -11,7 +11,7 @@
 
 #include "material_editor.h"
 
-LRESULT SXMaterialEditor_TrackBarPenetration_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT SXMaterialEditor_TrackBarHitChance_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT SXMaterialEditor_TrackBarRoughness_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

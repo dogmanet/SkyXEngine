@@ -58,7 +58,7 @@ void SXLevelEditor::LevelOpen()
 	//char szSelPath[2014];
 	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false, 0, HandlerPreviewLevel);
 	
-	if (def_str_validate(tmppath))
+	if (STR_VALIDATE(tmppath))
 	{
 		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Load(tmpname, false);
@@ -108,7 +108,7 @@ void SXLevelEditor::LevelSaveAs()
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_SAVE, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), FILE_FILTER_LEVEL);
 	gui_func::dialogs::SelectDirOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0/*, HandlerPreviewLevel*/);
-	if(def_str_validate(tmppath))
+	if (STR_VALIDATE(tmppath))
 	{
 		//StrCutNameNEx(tmppath, tmpname);
 		SLevel_Save(tmpname);
@@ -282,17 +282,17 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	SXLevelEditor::ObjAxesHelper->OnMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+	SXLevelEditor::ObjAxesHelper->onMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
 	if (SXLevelEditor::ObjAxesHelper->m_bIsDragging == false)
 		return 0;
 
 	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && SXLevelEditor::ActiveElement >= 0)
 	{
-		if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
+		if (SXLevelEditor::ObjAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
 		{
 			float3* pos = SGeom_ModelsMGetPosition(SXLevelEditor::ActiveElement);
-			float3 npos = (*pos) + (SXLevelEditor::ObjAxesHelper->GetPosition() - SXLevelEditor::HelperPos);
+			float3 npos = (*pos) + (SXLevelEditor::ObjAxesHelper->getPosition() - SXLevelEditor::HelperPos);
 			if ((*pos).x != npos.x || (*pos).y != npos.y || (*pos).z != npos.z)
 			{
 				*pos = npos;
@@ -304,17 +304,17 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 				SXLevelEditor::HelperPos = (max + min) * 0.5f;
 			}
 		}
-		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
+		else if (SXLevelEditor::ObjAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_ROTATE)
 		{
 			float3* rot = SGeom_ModelsMGetRotation(SXLevelEditor::ActiveElement);
-			float3 nrot = SXLevelEditor::ObjAxesHelper->GetRotation();
+			float3 nrot = SXLevelEditor::ObjAxesHelper->getRotation();
 			if ((*rot).x != nrot.x || (*rot).y != nrot.y || (*rot).z != nrot.z)
 			{
-				*rot = SXLevelEditor::ObjAxesHelper->GetRotation();
+				*rot = SXLevelEditor::ObjAxesHelper->getRotation();
 				SGeom_ModelsMApplyTransform(SXLevelEditor::ActiveElement);
 			}
 		}
-		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_SCALE)
+		else if (SXLevelEditor::ObjAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_SCALE)
 		{
 			float3* scale = SGeom_ModelsMGetScale(SXLevelEditor::ActiveElement);
 			float3 nscale = SXLevelEditor::ObjAxesHelper->getScale() - float3(1,1,1);
@@ -331,7 +331,7 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 		{
 			float3_t pos;
 			SGeom_GreenGetPosObject(SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, &pos);
-			float3 helperpos = SXLevelEditor::ObjAxesHelper->GetPosition();
+			float3 helperpos = SXLevelEditor::ObjAxesHelper->getPosition();
 			if (pos.x != helperpos.x || pos.y != helperpos.y || pos.z != helperpos.z)
 			{
 				SGeom_GreenSetPosObject(SXLevelEditor::ActiveElement, &SXLevelEditor::ActiveGreenSplit, &SXLevelEditor::ActiveGreenObject, &(float3_t)helperpos);
@@ -344,10 +344,10 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 		if (!bEnt)
 			return 0;
 
-		if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_MOVE)
-			bEnt->setPos(SXLevelEditor::ObjAxesHelper->GetPosition());
-		else if (SXLevelEditor::ObjAxesHelper->GetType() == AxesHelper::HT_ROTATE)
-			bEnt->setOrient(SXLevelEditor::ObjAxesHelper->GetRotationQ());
+		if (SXLevelEditor::ObjAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
+			bEnt->setPos(SXLevelEditor::ObjAxesHelper->getPosition());
+		else if (SXLevelEditor::ObjAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_ROTATE)
+			bEnt->setOrient(SXLevelEditor::ObjAxesHelper->getRotationQ());
 
 		SXLevelEditor::GameUpdatePosRot();
 	}
@@ -439,9 +439,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::EditGreenSelY->setText(String(pos2.y).c_str());
 				SXLevelEditor::EditGreenSelZ->setText(String(pos2.z).c_str());
 				
-				SXLevelEditor::ObjAxesHelper->SetPosition(pos2);
-				SXLevelEditor::ObjAxesHelper->SetRotation(float3(0,0,0));
-				SXLevelEditor::ObjAxesHelper->SetScale(float3(1, 1, 1));
+				SXLevelEditor::ObjAxesHelper->setPosition(pos2);
+				SXLevelEditor::ObjAxesHelper->setRotation(float3(0,0,0));
+				SXLevelEditor::ObjAxesHelper->setScale(float3(1, 1, 1));
 
 				SXLevelEditor::IdMtl = idmtl;
 			}
@@ -462,9 +462,9 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				SXLevelEditor::EditGreenSelY->setText(String(_res.y).c_str());
 				SXLevelEditor::EditGreenSelZ->setText(String(_res.z).c_str());
 
-				SXLevelEditor::ObjAxesHelper->SetPosition(pos2);
-				SXLevelEditor::ObjAxesHelper->SetRotation(float3(0, 0, 0));
-				SXLevelEditor::ObjAxesHelper->SetScale(float3(1, 1, 1));
+				SXLevelEditor::ObjAxesHelper->setPosition(pos2);
+				SXLevelEditor::ObjAxesHelper->setRotation(float3(0, 0, 0));
+				SXLevelEditor::ObjAxesHelper->setScale(float3(1, 1, 1));
 				
 				int qwert = 0;
 			}
@@ -895,7 +895,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 			SXLevelEditor::CheckBoxTBPos->setCheck(false);
 			SXLevelEditor::CheckBoxTBRot->setCheck(false);
 			SXLevelEditor::CheckBoxTBScale->setCheck(false);
-			SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_NONE);
+			SXLevelEditor::ObjAxesHelper->setType(CAxesHelper::HANDLER_TYPE_NONE);
 		}
 		else if (SXLevelEditor::CheckBoxTBPos->getHWND() == handle_elem)
 		{
@@ -911,7 +911,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SXLevelEditor::CheckBoxTBArrow->setCheck(false);
 				SXLevelEditor::CheckBoxTBRot->setCheck(false);
 				SXLevelEditor::CheckBoxTBScale->setCheck(false);
-				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_MOVE);
+				SXLevelEditor::ObjAxesHelper->setType(CAxesHelper::HANDLER_TYPE_MOVE);
 			}
 			else
 				SXLevelEditor::CheckBoxTBPos->setCheck(false);
@@ -923,7 +923,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SXLevelEditor::CheckBoxTBArrow->setCheck(false);
 				SXLevelEditor::CheckBoxTBPos->setCheck(false);
 				SXLevelEditor::CheckBoxTBScale->setCheck(false);
-				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_ROTATE);
+				SXLevelEditor::ObjAxesHelper->setType(CAxesHelper::HANDLER_TYPE_ROTATE);
 			}
 			else
 				SXLevelEditor::CheckBoxTBRot->setCheck(false);
@@ -935,7 +935,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hwnd, UINT msg, WPARAM wParam,
 				SXLevelEditor::CheckBoxTBPos->setCheck(false);
 				SXLevelEditor::CheckBoxTBRot->setCheck(false);
 				SXLevelEditor::CheckBoxTBArrow->setCheck(false);
-				SXLevelEditor::ObjAxesHelper->SetType(AxesHelper::HT_SCALE);
+				SXLevelEditor::ObjAxesHelper->setType(CAxesHelper::HANDLER_TYPE_SCALE);
 			}
 			else
 				SXLevelEditor::CheckBoxTBScale->setCheck(false);

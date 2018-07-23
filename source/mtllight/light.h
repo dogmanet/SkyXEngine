@@ -135,7 +135,7 @@ public:
 
 	//-----------------------------------------------------------------------------
 
-	void initShaderOfTypeMaterial(ID id, int typemat, float4x4* wmat);
+	void initShaderOfTypeMaterial(ID id, int typemat, const float4x4* wmat);
 
 	//-----------------------------------------------------------------------------
 

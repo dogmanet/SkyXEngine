@@ -26,13 +26,15 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 
 	half3 NormalMicro = ((2.f * (tex2D(MRTex, IN.TexUV).rgb)) - 1.f);
 	NormalMicro *= Param.z;
+	IN.Normal = normalize(IN.Normal);
 	half3 NormalPixel = normalize((IN.Normal+half3(NormalMicro.xy,IN.Normal.z)) * 0.5f);
 	
-	OUT.Normal.xyz = 0.5f * NormalPixel + 0.5f;
+	OUT.Normal.xy = NormalEncode(NormalPixel);
 	OUT.Normal.w = NearFarIsUnlit.z;
+	OUT.Normal.z = NearFarIsUnlit.w;
 	
 	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
+	//OUT.Param.w = NearFarIsUnlit.w;
 	
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
 	

@@ -43,7 +43,7 @@ half4 main(vs_out_pp IN) : COLOR0
 		}
 
 	Color /= SumWeight;
-	
+	//return tex2D(BlurMap,IN.TexUV);//saturate(Color);
 	#if defined(_BLEND_COLOR_)
 	half4 ScreenColor = tex2D(ScreenMap,IN.TexUV);
 	return ScreenColor*saturate(Color);

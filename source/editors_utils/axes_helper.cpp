@@ -6,78 +6,78 @@ See the license in LICENSE
 
 #include "axes_helper.h"
 
-AxesHelper::AxesHelper()
+CAxesHelper::CAxesHelper()
 {
 	m_bIsDragging = m_bIsDraggingStart = m_bIsDraggingStop = false;
-	Scale = float3(1, 1, 1);
-	m_htype = HT_NONE;
+	m_vScale = float3(1, 1, 1);
+	m_htype = HANDLER_TYPE_NONE;
 }
 
-AxesHelper::~AxesHelper()
+CAxesHelper::~CAxesHelper()
 {
 
 }
 
-void AxesHelper::SetType(AxesHelper::HANDLER_TYPE type)
+void CAxesHelper::setType(CAxesHelper::HANDLER_TYPE type)
 {
 	m_htype = type;
 }
 
-AxesHelper::HANDLER_TYPE AxesHelper::GetType()
+CAxesHelper::HANDLER_TYPE CAxesHelper::getType()
 {
 	return m_htype;
 }
 
-void AxesHelper::SetPosition(const float3 & pos)
+void CAxesHelper::setPosition(const float3 & pos)
 {
-	Position = pos;
-	m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
+	m_vPosition = pos;
+	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
-void AxesHelper::SetRotation(const SMQuaternion & rot)
+void CAxesHelper::setRotation(const SMQuaternion & rot)
 {
-	QRotation = rot;
-	Rotation = SMMatrixToEuler(rot.GetMatrix());
-	m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
+	m_qRotation = rot;
+	m_vRotation = SMMatrixToEuler(rot.GetMatrix());
+	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
-void AxesHelper::SetRotation(const float3 & rot)
+void CAxesHelper::setRotation(const float3 & rot)
 {
-	Rotation = rot;
-	QRotation = SMQuaternion(rot.x, 'x') * SMQuaternion(rot.y, 'y') * SMQuaternion(rot.z, 'z');
-	m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
+	m_vRotation = rot;
+	m_qRotation = SMQuaternion(rot.x, 'x') * SMQuaternion(rot.y, 'y') * SMQuaternion(rot.z, 'z');
+	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
-void AxesHelper::SetScale(const float3 & scale)
+void CAxesHelper::setScale(const float3 & scale)
 {
-	Scale = scale;
-	m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
+	m_vScale = scale;
+	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
 
-const float3 & AxesHelper::GetPosition()
+const float3 & CAxesHelper::getPosition()
 {
-	return Position;
+	return m_vPosition;
 }
 
-const float3 & AxesHelper::GetRotation()
+const float3 & CAxesHelper::getRotation()
 {
-	return Rotation;
+	return m_vRotation;
 }
 
-const float3 & AxesHelper::getScale()
+const float3 & CAxesHelper::getScale()
 {
-	return Scale;
+	return m_vScale;
 }
 
-const SMQuaternion & AxesHelper::GetRotationQ()
+const SMQuaternion & CAxesHelper::getRotationQ()
 {
-	return(QRotation);
+	return(m_qRotation);
 }
 
-void AxesHelper::Render()
+void CAxesHelper::render()
 {
-	if (m_htype == HT_NONE)
+	if (m_htype == HANDLER_TYPE_NONE)
 		return;
 
 	static float3 vCamPos;
@@ -87,22 +87,22 @@ void AxesHelper::Render()
 
 	if(!m_bIsDragging)
 	{
-		dist = SMVector3Distance(Position, vCamPos) * 0.20f;
-		dist = (dist > 0.25f ? dist : 0.25f);
-		m_mHelperMatScale2 = SMMatrixScaling(dist, dist, dist);
+		float fDist = SMVector3Distance(m_vPosition, vCamPos) * 0.20f;
+		fDist = (fDist > 0.25f ? fDist : 0.25f);
+		m_mHelperMatScale2 = SMMatrixScaling(fDist, fDist, fDist);
 	}
 
-	if (m_htype == HT_MOVE)
-		DrawMove();
-	else if (m_htype == HT_ROTATE)
-		DrawRotate();
-	else if (m_htype == HT_SCALE)
-		DrawScale();
+	if (m_htype == HANDLER_TYPE_MOVE)
+		drawMove();
+	else if (m_htype == HANDLER_TYPE_ROTATE)
+		drawRotate();
+	else if (m_htype == HANDLER_TYPE_SCALE)
+		drawScale();
 }
 
-void AxesHelper::DrawMove()
+void CAxesHelper::drawMove()
 {
-	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * SMMatrixTranslation(Position)));
+	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * SMMatrixTranslation(m_vPosition)));
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, 0);
 	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	SGCore_GetDXDevice()->SetTexture(0, NULL);
@@ -116,27 +116,27 @@ void AxesHelper::DrawMove()
 
 	float len = AXES_HELPER_MOVE_LENGTH;
 	vert l[] = {
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
 
-		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFFFF0000 },
-		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0x3FFF0000 },
-		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFFFF0000 },
-		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0x3FFF0000 },
+		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0xFFFF0000 },
+		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0x3FFF0000 },
+		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFFFF0000 },
+		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0x3FFF0000 },
 
-		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0x3F00FF00 },
-		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFF00FF00 },
-		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0x3F00FF00 },
+		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0x3F00FF00 },
+		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0xFF00FF00 },
+		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0x3F00FF00 },
 
-		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF0000FF },
-		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0x3F0000FF },
-		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFF0000FF },
-		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0x3F0000FF },
+		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0xFF0000FF },
+		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0x3F0000FF },
+		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFF0000FF },
+		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0x3F0000FF },
 	};
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, sizeof(l) / sizeof(vert) / 2, l, sizeof(vert));
 
@@ -146,117 +146,117 @@ void AxesHelper::DrawMove()
 
 	vert l2[] = {
 		//arrow X
-		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
 
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
 
 		//arrow Y
-		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
 
-		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
 
 		//arrow Z
-		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
 
-		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
 
 
 		//plane XY
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFFFF00 },
-		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len * 0.5f, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFFFF00 },
+		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
 
 		//plane XZ
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
-		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(len * 0.5f, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
+		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF00FF },
 
 		//plane YZ
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
-		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
+		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
 	};
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, sizeof(l2) / sizeof(vert) / 3, l2, sizeof(vert));
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
 }
 
-void AxesHelper::DrawCylinder(float3_t lwh, DWORD color)
+void CAxesHelper::drawCylinder(float3_t lwh, DWORD color)
 {
 	const int segs = 16;
 
@@ -281,7 +281,7 @@ void AxesHelper::DrawCylinder(float3_t lwh, DWORD color)
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, l.size() / 2, &l[0], sizeof(vert));
 }
 
-void AxesHelper::DrawRotate()
+void CAxesHelper::drawRotate()
 {
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_mHelperMat));
 	DWORD color_act = 0xFFFFFF00;
@@ -289,17 +289,17 @@ void AxesHelper::DrawRotate()
 	SMMATRIX mOld;
 	SGCore_GetDXDevice()->GetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
 
-	DrawCylinder(float3_t(AXES_HELPER_ROTATE_LENGTH_WIDTH, AXES_HELPER_ROTATE_HEIGHT, AXES_HELPER_ROTATE_LENGTH_WIDTH), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00);
+	drawCylinder(float3_t(AXES_HELPER_ROTATE_LENGTH_WIDTH, AXES_HELPER_ROTATE_HEIGHT, AXES_HELPER_ROTATE_LENGTH_WIDTH), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixRotationZ(SM_PIDIV2) * mOld));
-	DrawCylinder(float3_t(AXES_HELPER_ROTATE_LENGTH_WIDTH, AXES_HELPER_ROTATE_HEIGHT, AXES_HELPER_ROTATE_LENGTH_WIDTH), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000);
+	drawCylinder(float3_t(AXES_HELPER_ROTATE_LENGTH_WIDTH, AXES_HELPER_ROTATE_HEIGHT, AXES_HELPER_ROTATE_LENGTH_WIDTH), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixRotationX(SM_PIDIV2) * mOld));
-	DrawCylinder(float3_t(AXES_HELPER_ROTATE_LENGTH_WIDTH, AXES_HELPER_ROTATE_HEIGHT, AXES_HELPER_ROTATE_LENGTH_WIDTH), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF);
+	drawCylinder(float3_t(AXES_HELPER_ROTATE_LENGTH_WIDTH, AXES_HELPER_ROTATE_HEIGHT, AXES_HELPER_ROTATE_LENGTH_WIDTH), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF);
 
 
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
 }
 
-void AxesHelper::DrawScale()
+void CAxesHelper::drawScale()
 {
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_mHelperMat));
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, 0);
@@ -317,27 +317,27 @@ void AxesHelper::DrawScale()
 	float len05 = len * 0.5f;
 	float len075 = len * 0.75f;
 	vert l[] = {
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, 0, 0), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, 0, 0), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
 
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFFFF0000 },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFF00FF00 },
-		{ float3_t(len075, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFFFF0000 },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act : 0xFF00FF00 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0xFFFF0000 },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0xFF00FF00 },
+		{ float3_t(len075, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0xFFFF0000 },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act : 0xFF00FF00 },
 
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFFFF0000 },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFF0000FF },
-		{ float3_t(len075, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFFFF0000 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act : 0xFF0000FF },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFFFF0000 },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFF0000FF },
+		{ float3_t(len075, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFFFF0000 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFF0000FF },
 
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF0000FF },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF00FF00 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF0000FF },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act : 0xFF00FF00 },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0xFF0000FF },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0xFF00FF00 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0xFF0000FF },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act : 0xFF00FF00 },
 	};
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, sizeof(l) / sizeof(vert) / 2, l, sizeof(vert));
 
@@ -347,127 +347,127 @@ void AxesHelper::DrawScale()
 
 	vert l2[] = {
 		//arrow X
-		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
 
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
-		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HA_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * 0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * -0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len, asize * 0.5f, asize * -0.5f), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
+		{ float3_t(len + asize * 2.0f, 0, 0), (m_currentAxe & HANDLER_AXE_X) ? color_act : 0xFFFF0000 },
 
 		//arrow Y
-		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
 
-		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
-		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HA_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * 0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * 0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(asize * -0.5f, len, asize * -0.5f), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
+		{ float3_t(0, len + asize * 2.0f, 0), (m_currentAxe & HANDLER_AXE_Y) ? color_act : 0xFF00FF00 },
 
 		//arrow Z
-		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
 
-		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
-		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HA_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * 0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * 0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(asize * -0.5f, asize * -0.5f, len), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
+		{ float3_t(0, 0, len + asize * 2.0f), (m_currentAxe & HANDLER_AXE_Z) ? color_act : 0xFF0000FF },
 
 
 		//plane XY
-		{ float3_t(len075, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
-		{ float3_t(len075, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_XY) == HA_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(len075, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(len075, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY ? color_act2 : 0x1F00FF00 },
 
 		//plane XZ
-		{ float3_t(len075, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(len075, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_XZ) == HA_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(len075, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(len075, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act2 : 0x1F0000FF },
 
 		//plane YZ
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, len075, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, len075), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_YZ) == HA_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, len075, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, len075), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F0000FF },
 
 		//plane XYZ
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F0000FF },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, len05, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F00FF00 },
-		{ float3_t(len05, 0, 0), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1FFF0000 },
-		{ float3_t(0, 0, len05), (m_currentAxe & HA_XYZ) == HA_XYZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ ? color_act2 : 0x1F0000FF },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, len05, 0), (m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ ? color_act2 : 0x1F00FF00 },
+		{ float3_t(len05, 0, 0), (m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ ? color_act2 : 0x1FFF0000 },
+		{ float3_t(0, 0, len05), (m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ ? color_act2 : 0x1F0000FF },
 	};
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, sizeof(l2) / sizeof(vert) / 3, l2, sizeof(vert));
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
 }
 
-void AxesHelper::OnMouseMove(int x, int y)
+void CAxesHelper::onMouseMove(int x, int y)
 {
-	if (m_htype == HT_NONE)
+	if (m_htype == HANDLER_TYPE_NONE)
 		return;
 
 	static float4x4 mCamView, mCamProj;
@@ -476,7 +476,7 @@ void AxesHelper::OnMouseMove(int x, int y)
 
 	float det = 0;
 	SMMATRIX mat = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMat : m_mHelperMat) * mCamView * mCamProj);
-	SMMATRIX mat2 = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMatPos : SMMatrixTranslation(Position)) * mCamView * mCamProj);
+	SMMATRIX mat2 = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMatPos : SMMatrixTranslation(m_vPosition)) * mCamView * mCamProj);
 	D3DVIEWPORT9 vp;
 	SGCore_GetDXDevice()->GetViewport(&vp);
 
@@ -497,21 +497,21 @@ void AxesHelper::OnMouseMove(int x, int y)
 	pos2 /= pos2.w;
 	dir2 /= dir2.w;
 
-	if (m_htype == HT_MOVE)
-		IntersectMove(pos2, dir2);
-	else if (m_htype == HT_ROTATE)
-		IntersectRotate(pos, dir);
-	else if (m_htype == HT_SCALE)
-		IntersectScale(pos, dir);
+	if (m_htype == HANDLER_TYPE_MOVE)
+		intersectMove(pos2, dir2);
+	else if (m_htype == HANDLER_TYPE_ROTATE)
+		intersectRotate(pos, dir);
+	else if (m_htype == HANDLER_TYPE_SCALE)
+		intersectScale(pos, dir);
 
 	if (m_bIsDraggingStart)
 	{
 		m_bIsDraggingStart = false;
 		m_fStartDragPos = pos;
 		m_mOldDragMat = m_mHelperMat;
-		m_mOldDragMatPos = SMMatrixTranslation(Position);
+		m_mOldDragMatPos = SMMatrixTranslation(m_vPosition);
 		m_mOldHelperMat = m_mHelperMat;
-		ScaleOld = Scale;
+		m_vScaleOld = m_vScale;
 	}
 
 	static float3 vCamPos;
@@ -522,33 +522,33 @@ void AxesHelper::OnMouseMove(int x, int y)
 		float3 dv = (pos - m_fStartDragPos) * (1000.f + SMVector3Length(vCamPos - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * AXES_HELPER_MOVE_SPEED);
 		float4x4 m_res;
 
-		if (m_htype == HT_MOVE)
+		if (m_htype == HANDLER_TYPE_MOVE)
 		{
-			m_res = SMMatrixTranslation((m_currentAxe & HA_X) ? dv.x : 0, (m_currentAxe & HA_Y) ? dv.y : 0, (m_currentAxe & HA_Z) ? dv.z : 0);
+			m_res = SMMatrixTranslation((m_currentAxe & HANDLER_AXE_X) ? dv.x : 0, (m_currentAxe & HANDLER_AXE_Y) ? dv.y : 0, (m_currentAxe & HANDLER_AXE_Z) ? dv.z : 0);
 			m_mHelperMat = m_mOldHelperMat * m_res;
-			Position = m_mHelperMat.r[3];
+			m_vPosition = m_mHelperMat.r[3];
 		}
-		else if (m_htype == HT_ROTATE)
+		else if (m_htype == HANDLER_TYPE_ROTATE)
 		{
-			m_res = SMMatrixRotationX((m_currentAxe & HA_X) ? dv.x : 0) * SMMatrixRotationY((m_currentAxe & HA_Y) ? dv.y : 0) * SMMatrixRotationZ((m_currentAxe & HA_Z) ? dv.z : 0);
+			m_res = SMMatrixRotationX((m_currentAxe & HANDLER_AXE_X) ? dv.x : 0) * SMMatrixRotationY((m_currentAxe & HANDLER_AXE_Y) ? dv.y : 0) * SMMatrixRotationZ((m_currentAxe & HANDLER_AXE_Z) ? dv.z : 0);
 			m_mHelperMat = m_res * m_mOldHelperMat;
-			QRotation = SMQuaternion(m_mHelperMat);
-			Rotation = SMMatrixToEuler(QRotation.GetMatrix());
+			m_qRotation = SMQuaternion(m_mHelperMat);
+			m_vRotation = SMMatrixToEuler(m_qRotation.GetMatrix());
 		}
-		else if (m_htype == HT_SCALE)
+		else if (m_htype == HANDLER_TYPE_SCALE)
 		{
 			//dv = (pos - m_fStartDragPos) * (1000.0f + SMVector3Length(GData::ConstCurrCamPos - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * AXES_HELPER_SCALE_SPEED);
 			//dv /= 10.0f;
 			dv += float3(1.0f, 1.0f, 1.0f);
-			if ((m_currentAxe & HA_XY) == HA_XY)
+			if ((m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY)
 				dv.x = dv.z = dv.y;
-			else if ((m_currentAxe & HA_YZ) == HA_YZ)
+			else if ((m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ)
 				dv.y = dv.z;
-			else if ((m_currentAxe & HA_XZ) == HA_XZ)
+			else if ((m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ)
 				dv.x = dv.z;
 
-			m_mHelperMat = SMMatrixScaling((m_currentAxe & HA_X) ? dv.x : 1, (m_currentAxe & HA_Y) ? dv.y : 1, (m_currentAxe & HA_Z) ? dv.z : 1) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
-			Scale = (SMVECTOR)ScaleOld * float3(SMVector3Length(float3(m_mHelperMat._11, m_mHelperMat._12, m_mHelperMat._13)),
+			m_mHelperMat = SMMatrixScaling((m_currentAxe & HANDLER_AXE_X) ? dv.x : 1, (m_currentAxe & HANDLER_AXE_Y) ? dv.y : 1, (m_currentAxe & HANDLER_AXE_Z) ? dv.z : 1) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
+			m_vScale = (SMVECTOR)m_vScaleOld * float3(SMVector3Length(float3(m_mHelperMat._11, m_mHelperMat._12, m_mHelperMat._13)),
 				SMVector3Length(float3(m_mHelperMat._21, m_mHelperMat._22, m_mHelperMat._23)),
 				SMVector3Length(float3(m_mHelperMat._31, m_mHelperMat._32, m_mHelperMat._33)));
 		}
@@ -556,15 +556,15 @@ void AxesHelper::OnMouseMove(int x, int y)
 	if (m_bIsDraggingStop)
 	{
 		m_bIsDraggingStop = false;
-		if (m_htype == HT_SCALE)
+		if (m_htype == HANDLER_TYPE_SCALE)
 		{
-			Scale = float3(1, 1, 1);
-			m_mHelperMat = SMMatrixScaling(Scale) * QRotation.GetMatrix() * SMMatrixTranslation(Position);
+			m_vScale = float3(1, 1, 1);
+			m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 		}
 	}
 }
 
-void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
+void CAxesHelper::intersectMove(const float3 & start, const float3 & dir)
 {
 	if (m_bIsDragging)
 		return;
@@ -577,7 +577,7 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 	float asize = 0.1f;
 	float a2size = 0.3f;
 
-	m_currentAxe = HA_NONE;
+	m_currentAxe = HANDLER_AXE_NONE;
 
 	float3 p;
 
@@ -590,7 +590,7 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_XY;
+			m_currentAxe = HANDLER_AXE_XY;
 		}
 	}
 
@@ -601,7 +601,7 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_XZ;
+			m_currentAxe = HANDLER_AXE_XZ;
 		}
 	}
 
@@ -612,7 +612,7 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_YZ;
+			m_currentAxe = HANDLER_AXE_YZ;
 		}
 	}
 
@@ -715,7 +715,7 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_X;
+				m_currentAxe = HANDLER_AXE_X;
 				break;
 			}
 		}
@@ -728,7 +728,7 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_Y;
+				m_currentAxe = HANDLER_AXE_Y;
 				break;
 			}
 		}
@@ -741,14 +741,14 @@ void AxesHelper::IntersectMove(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_Z;
+				m_currentAxe = HANDLER_AXE_Z;
 				break;
 			}
 		}
 	}
 }
 
-void AxesHelper::IntersectRotate(const float3 & start, const float3 & dir)
+void CAxesHelper::intersectRotate(const float3 & start, const float3 & dir)
 {
 	if (m_bIsDragging)
 	{
@@ -763,7 +763,7 @@ void AxesHelper::IntersectRotate(const float3 & start, const float3 & dir)
 	float h = AXES_HELPER_ROTATE_HEIGHT;
 
 
-	m_currentAxe = HA_NONE;
+	m_currentAxe = HANDLER_AXE_NONE;
 
 	float3 p;
 
@@ -802,7 +802,7 @@ void AxesHelper::IntersectRotate(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_Y;
+				m_currentAxe = HANDLER_AXE_Y;
 				break;
 			}
 		}
@@ -827,7 +827,7 @@ void AxesHelper::IntersectRotate(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_X;
+				m_currentAxe = HANDLER_AXE_X;
 				break;
 			}
 		}
@@ -852,14 +852,14 @@ void AxesHelper::IntersectRotate(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_Z;
+				m_currentAxe = HANDLER_AXE_Z;
 				break;
 			}
 		}
 	}
 }
 
-void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
+void CAxesHelper::intersectScale(const float3 & start, const float3 & dir)
 {
 	if (m_bIsDragging)
 		return;
@@ -874,7 +874,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 	float asize = AXES_HELPER_SCALE_ASIZE;
 	float a2size = AXES_HELPER_SCALE_A2SIZE;
 
-	m_currentAxe = HA_NONE;
+	m_currentAxe = HANDLER_AXE_NONE;
 
 	float3 p;
 
@@ -887,7 +887,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_XY;
+			m_currentAxe = HANDLER_AXE_XY;
 		}
 	}
 
@@ -898,7 +898,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_XZ;
+			m_currentAxe = HANDLER_AXE_XZ;
 		}
 	}
 
@@ -909,7 +909,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_YZ;
+			m_currentAxe = HANDLER_AXE_YZ;
 		}
 	}
 
@@ -919,7 +919,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 		if (d < mind)
 		{
 			mind = d;
-			m_currentAxe = HA_XYZ;
+			m_currentAxe = HANDLER_AXE_XYZ;
 		}
 	}
 
@@ -1022,7 +1022,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_X;
+				m_currentAxe = HANDLER_AXE_X;
 				break;
 			}
 		}
@@ -1035,7 +1035,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_Y;
+				m_currentAxe = HANDLER_AXE_Y;
 				break;
 			}
 		}
@@ -1048,7 +1048,7 @@ void AxesHelper::IntersectScale(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
-				m_currentAxe = HA_Z;
+				m_currentAxe = HANDLER_AXE_Z;
 				break;
 			}
 		}

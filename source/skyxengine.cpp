@@ -174,7 +174,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
 	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
 
-	tm ct = { 0, 0, 8, 27, 5, 2030 - 1900, 0, 0, 0 };
+	tm ct = { 0, 0, 5, 27, 5, 2030 - 1900, 0, 0, 0 };
 	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
 
 	Core_TimeWorkingSet(idTimerRender, true);
@@ -221,7 +221,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
 	SGCore_SetFunc_MtlLoad(SkyXEngine_RFuncMtlLoad);
-	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
+	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetSort);
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
 
@@ -322,7 +322,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 
 #ifndef SX_GAME
-	ISXCamera *pCamera = SGCore_CrCamera();
+	ICamera *pCamera = SGCore_CrCamera();
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	pCamera->setFOV(*r_default_fov);
 
@@ -487,6 +487,8 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarFloat("env_weather_snd_volume", 1.f, "Громкость звуков погоды [0,1]");
 	Core_0RegisterCVarFloat("env_ambient_snd_volume", 1.f, "Громкость фоновых звуков на уровне [0,1]");
 
+	Core_0RegisterCVarFloat("snd_main_volume", 1.f, "Общая громкость звуков (первичного звукового буфера) [0, 1] ");
+
 	Core_0RegisterConcmd("screenshot", SRender_SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SRender_SaveWorkTex);
 	Core_0RegisterConcmd("shader_reload", SGCore_ShaderReloadAll);
@@ -589,13 +591,6 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 
 void SkyXEngine_Frame(DWORD timeDelta)
 {
-
-	if (SSInput_GetKeyState(SIK_O))
-	{
-		SLevel_Clear();
-		SLevel_Load("stalker_atp", true);
-	}
-
 	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
 	static float3 vCamPos, vCamDir;
 	static float4x4 mView, mProjLight;
@@ -786,6 +781,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 
 #if defined(SX_GAME)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1185,6 +1183,10 @@ void SkyXEngind_UpdateDataCVar()
 		*r_win_windowed = true;
 #endif
 	}
+
+	static const float * snd_main_volume = GET_PCVAR_FLOAT("snd_main_volume");
+	if (snd_main_volume)
+		SSCore_SetMainVolume(*snd_main_volume);
 }
 
 //#############################################################################

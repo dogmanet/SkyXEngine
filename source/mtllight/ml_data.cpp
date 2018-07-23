@@ -10,11 +10,6 @@ namespace MLSet
 {
 	void MLInit();
 	IDirect3DDevice9* DXDevice = 0;
-	//float3 ConstCurrCamPos;
-	//float2_t WinSize = float2_t(1024, 768);
-	//DWORD CountTimeDelta = 0;
-	//char StdPathMaterial[1024];
-	//char StdPathMesh[1024];
 
 	//размер текстуры глубины дл¤ локальных источников света
 	float2_t SizeTexDepthGlobal = float2_t(1024, 768);
@@ -46,15 +41,6 @@ namespace MLSet
 	}
 
 	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
-
-	//fov and ration esesno
-	//float ProjFov = SM_PI * 0.25f;
-	//float ProjRatio = WinSize.x / WinSize.y;
-
-	//ближн¤¤ и дальн¤¤ плоскости
-	//float2_t NearFar = float2_t(0.25f, 400.f);
-
-	//float4x4 MCamView;
 
 	bool IsHalfGenPCFShadowLocal = false;
 
@@ -181,14 +167,7 @@ void MLSet::MLInit()
 
 	const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	/*sprintf(MLSet::StdPathMaterial, "%s", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS));
-	sprintf(MLSet::StdPathMesh, "%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
-
-	MLSet::WinSize = *winsize;
-	MLSet::ProjFov = projfov;*/
 	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LOAD_TEXTURE_TYPE_CONST);
-
-
 
 	IDirect3DTexture9* NullMaterial;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &NullMaterial, NULL);
@@ -331,7 +310,7 @@ void MLSet::MLInit()
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
 	//номрали + микрорельеф
-	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
+	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
 	//параметры освещени¤
 	MLSet::IDsRenderTargets::ParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
 	

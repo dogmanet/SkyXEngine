@@ -87,48 +87,50 @@ public:
 		bool Original;
 	};
 
-	void Load(const char* file);
-	void Save(const char* file);
-	void Clear();
+	void load(const char* file);
+	void save(const char* file);
+	void clear();
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
-	ID EmitterAdd(ID id, ParticlesData* data);
-	void EmitterReInit(ID id, ID id_part, ParticlesData* data);
-	int EmitterGetCount(ID id);
-	void EmitterDelete(ID id, ID id_part);
-	ParticlesData* EmitterGetData(ID id, ID id_part);
+	ID emitterAdd(ID id, ParticlesData* data);
+	void emitterReInit(ID id, ID id_part, ParticlesData* data);
+	int emitterGetCount(ID id);
+	void emitterDelete(ID id, ID id_part);
+	ParticlesData* emitterGetData(ID id, ID id_part);
 
-	void EmitterCountSet(ID id, ID id_part, int count);
-	int EmitterCountGet(ID id, ID id_part);
-	int EmitterCountLifeGet(ID id, ID id_part);
+	void emitterSetCount(ID id, ID id_part, int count);
+	int emitterGetCount(ID id, ID id_part);
+	int emitterGetCountLife(ID id, ID id_part);
 
-	void EmitterEnableSet(ID id, ID id_part, bool enable);
-	bool EmitterEnableGet(ID id, ID id_part);
+	void emitterSetEnable(ID id, ID id_part, bool enable);
+	bool emitterGetEnable(ID id, ID id_part);
 
-	void EmitterTextureSet(ID id, ID id_part, const char* tex);
-	void EmitterTextureSetID(ID id, ID id_part, ID tex);
-	ID EmitterTextureGetID(ID id, ID id_part);
-	void EmitterTextureGet(ID id, ID id_part, char* tex);
+	void emitterSetTexture(ID id, ID id_part, const char* tex);
+	void emitterSetTextureID(ID id, ID id_part, ID tex);
+	ID emitterGetTextureID(ID id, ID id_part);
+	void emitterGetTexture(ID id, ID id_part, char* tex);
 
-	void EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
-	void EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
-	ID EmitterTextureTrackGetID(ID id, ID id_part);
-	void EmitterTextureTrackGet(ID id, ID id_part, char* tex);
+	void emitterSetTextureTrack(ID id, ID id_part, const char* tex);
+	void emitterSetTextureTrackID(ID id, ID id_part, ID tex);
+	ID emitterGetTextureTrackID(ID id, ID id_part);
+	void emitterGetTextureTrack(ID id, ID id_part, char* tex);
 
-	void EmitterNameSet(ID id, ID id_part, const char* name);
-	void EmitterNameGet(ID id, ID id_part, char* name);
+	void emitterSetName(ID id, ID id_part, const char* name);
+	void emitterGetName(ID id, ID id_part, char* name);
 
-	int EmitterTrackCountGet(ID id, ID id_part);
-	int EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);
+	int emitterGetTrackCount(ID id, ID id_part);
+	int emitterGetTrackPos(ID id, ID id_part, float3** arr, int count);
 
 	ID EffectInstanceByID(ID id);
 	ID EffectInstanceByName(const char* name);
-	ID EffectGetByName(const char* name);
-	ID EffectAdd(const char* name);
-	int EffectCountGet();
-	ID EffectIdOfKey(ID key);
+	
+	ID effectGetByName(const char* name);
+	ID effectAdd(const char* name);
+	int effectGetCount();
+	ID effectGetIdOfKey(ID key);
+
 	void EffectDelete(ID id);
 	void EffectNameSet(ID id, const char* name);
 	void EffectNameGet(ID id, char* name);

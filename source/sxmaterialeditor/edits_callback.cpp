@@ -99,18 +99,51 @@ LRESULT SXMaterialEditor_EditPS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 	return 0;
 }
 
-LRESULT SXMaterialEditor_EditPenetration_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXMaterialEditor_EditHitChance_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char szStr[256];
 	szStr[0] = 0;
-	float tmpval = 0;
+	float fValue = 0;
 
-	SXMaterialEditor::EditPenetration->getText(szStr, 256);
+	SXMaterialEditor::EditHitChance->getText(szStr, 256);
 
-	sscanf(szStr, "%f", &tmpval);
+	sscanf(szStr, "%f", &fValue);
 
-	SXMaterialEditor::TrackBarPenetration->setPos(tmpval * 100);
-	SML_MtlSetPenetration(SXMaterialEditor::IDMat, tmpval*0.01f);
+	SXMaterialEditor::TrackBarHitChance->setPos(fValue * 100);
+	SML_MtlSetHitChance(SXMaterialEditor::IDMat, fValue*0.01f);
+	SXMaterialEditor::EditHitChance->setText(String(fValue).c_str());
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditDurability_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[256];
+	szStr[0] = 0;
+	float fValue = 0;
+
+	SXMaterialEditor::EditDurability->getText(szStr, 256);
+
+	sscanf(szStr, "%f", &fValue);
+
+	SML_MtlSetDurability(SXMaterialEditor::IDMat, fValue);
+	SXMaterialEditor::EditDurability->setText(String(fValue).c_str());
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditDensity_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[256];
+	szStr[0] = 0;
+	float fValue = 0;
+
+	SXMaterialEditor::EditDensity->getText(szStr, 256);
+
+	sscanf(szStr, "%f", &fValue);
+
+	SML_MtlSetDensity(SXMaterialEditor::IDMat, fValue);
+	SXMaterialEditor::EditDensity->setText(String(fValue).c_str());
 
 	return 0;
 }
@@ -399,7 +432,7 @@ LRESULT SXMaterialEditor_EditUDVSX_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSX->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 0, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 0, tmpval);
 	return 0;
 }
 
@@ -414,7 +447,7 @@ LRESULT SXMaterialEditor_EditUDVSY_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSY->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 1, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 1, tmpval);
 	return 0;
 }
 
@@ -429,7 +462,7 @@ LRESULT SXMaterialEditor_EditUDVSZ_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSZ->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 2, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 2, tmpval);
 	return 0;
 }
 
@@ -444,7 +477,7 @@ LRESULT SXMaterialEditor_EditUDVSW_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSW->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 3, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 3, tmpval);
 	return 0;
 }
 
@@ -460,7 +493,7 @@ LRESULT SXMaterialEditor_EditUDPSX_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSX->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 0, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 0, tmpval);
 	return 0;
 }
 
@@ -475,7 +508,7 @@ LRESULT SXMaterialEditor_EditUDPSY_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSY->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 1, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 1, tmpval);
 	return 0;
 }
 
@@ -490,7 +523,7 @@ LRESULT SXMaterialEditor_EditUDPSZ_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSZ->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 2, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 2, tmpval);
 	return 0;
 }
 
@@ -505,6 +538,6 @@ LRESULT SXMaterialEditor_EditUDPSW_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSW->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 3, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 3, tmpval);
 	return 0;
 }

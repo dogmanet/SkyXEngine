@@ -23,11 +23,13 @@ ps_out_ds_mrt main(vs_out_gcommon IN)
 	half4 detcolor1 = tex2D(DetTex0, (IN.TexUV) * Param.x * MTRL_TEXUV_SCALE);
 	OUT.Color.rgb *= detcolor1.rgb;
 
-	OUT.Normal.xyz = 0.5f * NormalPixel + 0.5f;
+	IN.Normal = normalize(IN.Normal);
+	OUT.Normal.xy = NormalEncode(IN.Normal);
 	OUT.Normal.w = NearFarIsUnlit.z;
+	OUT.Normal.z = NearFarIsUnlit.w;
 	
 	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
+	//OUT.Param.w = NearFarIsUnlit.w;
 	
 	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
 	

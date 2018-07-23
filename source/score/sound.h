@@ -197,6 +197,8 @@ public:
 
 	void init(HWND hWnd);
 
+	void setMainVolume(float fVolume);
+
 	//! структура данных для воспроизведения с задержками
 	struct CPlayDelay
 	{

@@ -23,22 +23,24 @@ const half2 TexUV_Center = half2(0.5f,0.5f);
 
 #define PI 3.141592654f
 
-//свойства поверхности (освещаемая ли, прозрачная ли)
-//{
-	
-//неосвещаемая и не прозрачная
-#define SURFACE_NOTLIGHTING_NOTTRANSPARENCY 0.0
+/*! \name Возможные слои
+@{*/
 
-//освещаемая и непрозрачная
-#define SURFACE_LIGHTING_NOTTRANSPARENCY 	0.333333
+//! непрозрачные неосвещаемые
+#define MTLTYPE_LAYER_OPAQUE_UNLIT		0.0
 
-//неосвещаемая и прозрачная
-#define SURFACE_NOTLIGHTING_TRANSPARENCY 	0.666667
+//! прозрачные неосвещаемые
+#define MTLTYPE_LAYER_TRANSPARENT_UNLIT	0.666667
 
-//освещаемая и прозрачная
-#define SURFACE_LIGHTING_TRANSPARENCY 		1.0
+//! непрозрачные освещаемые
+#define MTLTYPE_LAYER_OPAQUE_LIGHT		0.333333
 
-//}
+//! прозрачные освещаемые
+#define MTLTYPE_LAYER_TRANSPARENT_LIGHT	1.0
+
+#define EQUAL_LAYER(layer1, layer2) (abs(layer1 - layer2) < 0.1)
+
+//!@}
 
 //парметры для tone mapping
 //{

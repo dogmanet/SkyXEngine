@@ -80,6 +80,13 @@ SX_LIB_API void SSCore_Update(const float3 *pViewPos, const float3 *pViewDir)
 	g_pManagerSound->update(pViewPos, pViewDir);
 }
 
+SX_LIB_API void SSCore_SetMainVolume(float fVolume)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->setMainVolume(fVolume);
+}
+
 SX_LIB_API int SSCore_SndsGetCountPlay()
 {
 	SCORE_PRECOND(0);
