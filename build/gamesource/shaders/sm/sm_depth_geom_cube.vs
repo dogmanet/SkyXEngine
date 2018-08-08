@@ -5,19 +5,24 @@ sm_depth_geom_cube.vs
 */
 
 #include <../struct.h>
+#include <../shadow.h>
 
-half4x4 WorldViewProjection;
-half4x4 World;
-half3 LightPos;
+//##########################################################################
 
-vs_out_gcommon main(vs_in_geom IN)
+half4x4 g_mWVP;
+half4x4 g_mW;
+half3 g_vLightPos;
+
+//##########################################################################
+
+VSO_SceneCommon main(VSI_Geometry IN)
 {
-	vs_out_gcommon OUT;
+	VSO_SceneCommon OUT;
 	
-	OUT.Position= mul(half4(IN.Position.xyz,1.f),WorldViewProjection);
-	OUT.TexUV = IN.TexUV;
-	OUT.Pos = mul(half4(IN.Position.xyz,1.f),World);
-	OUT.Pos = half4(LightPos - OUT.Pos.xyz,1.f);
+	OUT.vPosition= mul(half4(IN.vPosition.xyz, 1.0),g_mWVP);
+	OUT.vTexUV = IN.vTexUV;
+	OUT.vPos = mul(half4(IN.vPosition.xyz, 1.0),g_mW);
+	OUT.vPos = half4(g_vLightPos - OUT.vPos.xyz, 1.0);
 
 	return OUT;
 }

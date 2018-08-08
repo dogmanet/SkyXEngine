@@ -6,42 +6,53 @@ ppe_lens_flare2.ps
 
 #include <../struct.h>
 
-static int NumSamples = 8;
-static half3 FLARE_CHROMA_DISTORTION = half3(0.2f,0.4f,0.6f);
+//##########################################################################
 
-sampler2D SunSampler:register(s0);
+static int g_vCountSamples = 8;
+static half3 FLARE_CHROMA_DISTORTION = half3(0.2, 0.4, 0.6);
 
-half3 LensFlareParam;
+half3 g_vLensFlareParam;
 //x - FLARE_DISPERSAL
 //y - FLARE_HALO_WIDTH
 //z - интенсивность вспышки
 
-half3 TexDistored(sampler2D tex,half2 sample_center,half2 sample_vector,half3 distortion)
+//##########################################################################
+
+sampler2D g_sBright:register(s0);
+
+//##########################################################################
+
+half3 TexDistoring(half2 vSampleCenter, half2 vSampleVector, half3 vDistortion)
 {
 	return half3(
-					tex2D(tex, (sample_center + sample_vector * distortion.r)).r,
-					tex2D(tex, (sample_center + sample_vector * distortion.g)).g,
-					tex2D(tex, (sample_center + sample_vector * distortion.b)).b
+					tex2D(g_sBright, (vSampleCenter + vSampleVector * vDistortion.r)).r,
+					tex2D(g_sBright, (vSampleCenter + vSampleVector * vDistortion.g)).g,
+					tex2D(g_sBright, (vSampleCenter + vSampleVector * vDistortion.b)).b
 				);
 }
 
-half4 main(vs_out_pp IN):COLOR0
+//##########################################################################
+
+half4 main(VSO_PP IN):COLOR0
 {
-	half2 texcoord = 1.f - IN.TexUV;
-	half2 image_center = 0.5f;
-	half2 sample_vector = (image_center - texcoord) * LensFlareParam.x;
+	half2 vInvTexUV = 1.0 - IN.vTexUV;
+	half2 vSample = (g_vTexUVcenter - vInvTexUV) * g_vLensFlareParam.x;
 	
-	half2 halo_vector = normalize(sample_vector) * LensFlareParam.y;
+	half2 vHalo = normalize(vSample) * g_vLensFlareParam.y;
+	
+	half3 vDistortion = lerp(FLARE_CHROMA_DISTORTION, tex2D(g_sBright, IN.vTexUV), PP_LENS_FLARE_COUNT_DEST_COLOR);
 
-	half3 result = half3(0,0,0);
-	result = TexDistored(SunSampler, texcoord + halo_vector, halo_vector, FLARE_CHROMA_DISTORTION).rgb;
+	half3 vResult = half3(0, 0, 0);
+	vResult = TexDistoring(vInvTexUV + vHalo, vHalo, vDistortion).rgb;
 			
-		for (int i = 0; i < NumSamples; i++)
-		{
-			half2 offset = sample_vector * half(i);
-			result += TexDistored(SunSampler, texcoord + offset, offset, FLARE_CHROMA_DISTORTION).rgb;
-		}
+	for (int i = 0; i < g_vCountSamples; i++)
+	{
+		half2 vOffset = vSample * half(i);
+		vResult += TexDistoring(vInvTexUV + vOffset, vOffset, vDistortion).rgb;
+	}
 
-	result /= half(NumSamples)*(LensFlareParam.z);
-	return half4(result,0.0);
+	vResult /= half(g_vCountSamples);
+	vResult *= g_vLensFlareParam.z * 10.0;
+	
+	return half4(vResult, 0.0);
 }

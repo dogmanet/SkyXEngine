@@ -152,9 +152,9 @@ namespace MLSet
 	namespace IDsTexs
 	{
 		ID Tex_NoiseTex;
-		ID ParamLight;
-		ID NullMaterial;
-		ID NullingTex;
+		//ID ParamLight;
+		//ID NullMaterial;
+		//ID NullingTex;
 	};
 };
 
@@ -167,26 +167,28 @@ void MLSet::MLInit()
 
 	const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LOAD_TEXTURE_TYPE_CONST);
+	//MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexAddName("noise_rottex.dds", LOAD_TEXTURE_TYPE_CONST);
 
-	IDirect3DTexture9* NullMaterial;
-	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &NullMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
-	uint32_t tmpColor = D3DCOLOR_ARGB(0, 250, 2, 255);
+	uint32_t* tmpOldColor;
+	IDirect3DTexture9 *pRnsSampler;
+	MLSet::DXDevice->CreateTexture(4, 4, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pRnsSampler, NULL);
+	
+	uint32_t aRndColors[16];// = D3DCOLOR_ARGB(0, 250, 2, 255);
 
-	NullMaterial->LockRect(0, &LockedRect, 0, 0);
+	for (int i = 0; i < 16; ++i)
+		aRndColors[i] = D3DCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
 
-	uint32_t* tmpOldColor = (uint32_t*)LockedRect.pBits + 0 * LockedRect.Pitch + 0 * sizeof(uint32_t);
-	memcpy(tmpOldColor, &tmpColor, sizeof(uint32_t));
-
-	NullMaterial->UnlockRect(0);
+	pRnsSampler->LockRect(0, &LockedRect, 0, 0);
+	memcpy(LockedRect.pBits, aRndColors, sizeof(uint32_t));
+	pRnsSampler->UnlockRect(0);
 
 	//SGCore_LoadTexLoadTextures();
-	MLSet::IDsTexs::NullMaterial = SGCore_LoadTexCreate("null_material__", NullMaterial);
+	MLSet::IDsTexs::Tex_NoiseTex = SGCore_LoadTexCreate("noise_rottex__", pRnsSampler);
+	
 
 
-
-	IDirect3DTexture9* ParamLightModelTex;
+	/*IDirect3DTexture9* ParamLightModelTex;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &ParamLightModelTex, NULL);
 
 	DWORD tmpcolorparamlight = D3DCOLOR_ARGB(0, 0, 0, 0);
@@ -204,11 +206,11 @@ void MLSet::MLInit()
 	ParamLightModelTex->UnlockRect(0);
 
 	//SGCore_LoadTexLoadTextures();
-	MLSet::IDsTexs::ParamLight = SGCore_LoadTexCreate("param_light__", ParamLightModelTex);
+	MLSet::IDsTexs::ParamLight = SGCore_LoadTexCreate("param_light__", ParamLightModelTex);*/
 
 
 
-	IDirect3DTexture9* NullingTex;
+	/*IDirect3DTexture9* NullingTex;
 	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &NullingTex, NULL);
 
 	DWORD tmpcolornulling = D3DCOLOR_ARGB(10, 10, 10, 10);
@@ -226,7 +228,7 @@ void MLSet::MLInit()
 	NullingTex->UnlockRect(0);
 
 	//SGCore_LoadTexLoadTextures();
-	MLSet::IDsTexs::NullingTex = SGCore_LoadTexCreate("nulling_tex__", NullingTex);
+	MLSet::IDsTexs::NullingTex = SGCore_LoadTexCreate("nulling_tex__", NullingTex);*/
 
 
 	MLSet::IDsShaders::VS::SMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_pssm_direct.vs", "sm_depth_skin_pssm_direct.vs", SHADER_CHECKDOUBLE_PATH);

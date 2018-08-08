@@ -290,7 +290,9 @@ origin = -3.900000 -2.750000 22.000000
 rotation = 0.000000 0.000000 0.000000 1.000000
 
 [ent_22]
-classname = trigger
+OnTurnOn = 
+OnTurnOff = 
+classname = light_point
 model = "meshes/light/light_1.dse"
 ;origin = 0.000000 75.0000 0.000000
 origin = -3.9 -2.750000 22.000000

@@ -7,22 +7,26 @@ mtrlgreen_tree_base.ps
 #include <../struct.h>
 #include <../green.h>
 
-half4x4 WorldViewProjection;
+//##########################################################################
 
-void main(in vs_in_green IN, out vs_out_gcommon OUT) 
+half4x4 g_mWVP;
+
+//##########################################################################
+
+void main(in VSI_Green IN, out VSO_SceneCommon OUT) 
 {
-	OUT.Normal = (GreenComRotation(IN.Normal,IN.InstanceSinCosRot));
+	OUT.vNormal = (GreenComRotation(IN.vNormal,IN.vInstSinCosRot));
 	
-	OUT.Position = GreenTransformPos(
-						GreenComRotation(IN.Position,IN.InstanceSinCosRot),
-						IN.InstanceTrans.x,
+	OUT.vPosition = GreenTransformPos(
+						GreenComRotation(IN.vPosition,IN.vInstSinCosRot),
+						IN.vInstTrans.x,
 						1,
-						IN.InstancePos
+						IN.vInstPos
 					);
 	
-	OUT.Position = mul(OUT.Position, WorldViewProjection);
+	OUT.vPosition = mul(OUT.vPosition, g_mWVP);
 	
-	OUT.Pos = OUT.Position;
+	OUT.vPos = OUT.vPosition;
 	
-	OUT.TexUV = IN.TexUV;
+	OUT.vTexUV = IN.vTexUV;
 }

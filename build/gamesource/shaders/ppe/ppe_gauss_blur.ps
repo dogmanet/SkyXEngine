@@ -6,40 +6,42 @@ ppe_gauss_blur.ps
 
 #include <../struct.h>
 
-half2	SizeMap;
+//##########################################################################
 
-sampler2D BaseSampler:register(s0);
+half2 g_vSizeMap;
+half g_fCoefBlur;
 
-half CoefBlur;
+//##########################################################################
 
-half4 main(vs_out_pp IN) : COLOR0
+sampler2D g_sTexture:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half2 tx  = IN.TexUV;
-	
 	#ifdef _H_
-    half2 dx  = half2(0.f,1.f/SizeMap.y)*CoefBlur;
+    half2 vPixelOffset  = half2(0.0,1.0/g_vSizeMap.y)*g_fCoefBlur;
 	#else
-    half2 dx  = half2(1.f/SizeMap.x,0.f)*CoefBlur;
+    half2 vPixelOffset  = half2(1.0/g_vSizeMap.x,0.f)*g_fCoefBlur;
 	#endif
 	
-	half2 sdx = dx;
+	half2 vOffset = vPixelOffset;
 	
-    half4 color = tex2D(BaseSampler,tx) * 0.134598f;
-	//half alpha = color.a;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.127325f;
-    sdx += dx;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.107778f;
-    sdx += dx;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.081638f;
-    sdx += dx;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.055335f;
-    sdx += dx;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.033562f;
-    sdx += dx;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.018216f;
-    sdx += dx;
-    color += (tex2D(BaseSampler,tx+sdx) + tex2D(BaseSampler,tx-sdx))*0.008847f;
-    sdx += dx;
+    half4 vColor = tex2D(g_sTexture, IN.vTexUV) * 0.134598;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.127325;
+    vOffset += vPixelOffset;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.107778;
+    vOffset += vPixelOffset;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.081638;
+    vOffset += vPixelOffset;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.055335;
+    vOffset += vPixelOffset;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.033562;
+    vOffset += vPixelOffset;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.018216;
+    vOffset += vPixelOffset;
+    vColor += (tex2D(g_sTexture, IN.vTexUV + vOffset) + tex2D(g_sTexture, IN.vTexUV - vOffset)) * 0.008847;
+    vOffset += vPixelOffset;
 	
-	return color;
+	return vColor;
 }

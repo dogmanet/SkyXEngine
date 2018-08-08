@@ -1823,8 +1823,8 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "g_mWVP", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "g_mW", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
@@ -1835,8 +1835,8 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "g_vPlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeom);
@@ -1852,8 +1852,8 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "g_mWVP", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "g_mW", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
@@ -1864,8 +1864,8 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "g_vPlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreen);
@@ -1880,8 +1880,8 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "WorldViewProjection", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "World", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "g_mWVP", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "g_mW", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
@@ -1892,8 +1892,8 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "PlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "PlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "g_vPlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkin);
@@ -1959,7 +1959,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParam));
 	}
 	//иначе если берем параметры из ... редактора
-	else if (!pMtrl->m_oLightParam.m_isTextureParam)
+	else //if (!pMtrl->m_oLightParam.m_isTextureParam)
 	{
 		if (pMtrl->m_oLightParam.m_fOldRoughness != pMtrl->m_oLightParam.m_fRoughness || pMtrl->m_oLightParam.m_fOldF0 != pMtrl->m_oLightParam.m_fF0 || pMtrl->m_oLightParam.m_fOldThickness != pMtrl->m_oLightParam.m_fThickness)
 		{
@@ -1979,8 +1979,8 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 
 		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand));
 	}
-	else
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(MLSet::IDsTexs::NullMaterial));
+	/*else
+		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(MLSet::IDsTexs::NullMaterial));*/
 
 
 	if (pMtrl->m_oMainGraphics.m_idShaderVS != -1)
@@ -1994,36 +1994,30 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)
 	{
-		//float4x4 view;
 		Core_RMatrixGet(G_RI_MATRIX_VIEW, &m_mViewTrans);
-		//MLSet::DXDevice->GetTransform(D3DTS_VIEW, &tmpView);
-		//view = float4x4(tmpView);
 		m_mViewTrans = SMMatrixTranspose(m_mViewTrans);
 
-		//float4x4 proj;
 		Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &m_mProjTrans);
-		//MLSet::DXDevice->GetTransform(D3DTS_PROJECTION, &tmpProjection);
-		//proj = float4x4(tmpProjection);
 		m_mProjTrans = SMMatrixTranspose(m_mProjTrans);
 	}
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "World", &m_mWorldTrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_mW", &m_mWorldTrans);
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorld)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "World", &m_mWorldTrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_mW", &m_mWorldTrans);
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransView)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "View", &m_mViewTrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_mV", &m_mViewTrans);
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransView)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "View", &m_mViewTrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_mV", &m_mViewTrans);
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransProjection)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "Projection", &m_mProjTrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_mP", &m_mProjTrans);
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransProjection)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "Projection", &m_mProjTrans);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_mP", &m_mProjTrans);
 
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView)
@@ -2031,10 +2025,10 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		float4x4 wv = m_mViewTrans * m_mWorldTrans;
 
 		if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView)
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "WorldView", &wv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_mWV", &wv);
 
 		if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView)
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "WorldView", &wv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_mWV", &wv);
 	}
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)
@@ -2045,10 +2039,10 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		mWVP = SMMatrixTranspose(mWVP);
 
 		if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection)
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "WorldViewProjection", &mWVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_mWVP", &mWVP);
 
 		if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "WorldViewProjection", &mWVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_mWVP", &mWVP);
 	}
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransPosCam || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransPosCam)
@@ -2057,36 +2051,36 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
 
 		if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransPosCam)
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "PosCam", &vObserverPos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vPosCam", &vObserverPos);
 
 		if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransPosCam)
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "PosCam", &vObserverPos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vPosCam", &vObserverPos);
 	}
 
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransUserData)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "Param", &(pMtrl->m_oMainGraphics.m_oDataVS.m_vUserData));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vParam", &(pMtrl->m_oMainGraphics.m_oDataVS.m_vUserData));
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransUserDataInOtherShader)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "ParamVS", &(pMtrl->m_oMainGraphics.m_oDataVS.m_vUserData));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vParamVS", &(pMtrl->m_oMainGraphics.m_oDataVS.m_vUserData));
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransUserData)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "Param", &(pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vParam", &(pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData));
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransUserDataInOtherShader)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "ParamPS", &(pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vParamPS", &(pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData));
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransTimeDelta)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "TimeDelta", &float2(m_uiCountTimeDelta, float(m_uiCurrTimeDelta) * 0.001f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vTimeDelta", &float2(m_uiCountTimeDelta, float(m_uiCurrTimeDelta) * 0.001f));
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransTimeDelta)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "TimeDelta", &float2(m_uiCountTimeDelta, float(m_uiCurrTimeDelta) * 0.001f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vTimeDelta", &float2(m_uiCountTimeDelta, float(m_uiCurrTimeDelta) * 0.001f));
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWinSize)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "WinSize", &float2_t(*r_win_width, *r_win_height));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vWinSize", &float2_t(*r_win_width, *r_win_height));
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWinSize)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "WinSize", &float2_t(*r_win_width, *r_win_height));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vWinSize", &float2_t(*r_win_width, *r_win_height));
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
@@ -2132,7 +2126,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		if (m_useCountSurface && pMtrl->m_oLightParam.m_isTransparent)
 			++(m_idCurrIdSurface);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "NearFarIsUnlit", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface) / 255.f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vNearFarLayers", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface) / 255.f));
 	}
 }
 

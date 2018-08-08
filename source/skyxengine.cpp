@@ -174,7 +174,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
 	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
 
-	tm ct = { 0, 0, 5, 27, 5, 2030 - 1900, 0, 0, 0 };
+	tm ct = { 0, 0, 10, 27, 5, 2030 - 1900, 0, 0, 0 };
 	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
 
 	Core_TimeWorkingSet(idTimerRender, true);
@@ -771,13 +771,18 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SRender_ComLighting(timeDelta);
 		SRender_UnionLayers();
+
 		if (SGCore_SkyBoxIsCr())
 			SRender_RenderSky(timeDelta);
-		SRender_ApplyToneMapping();
+
 		SRender_ComToneMapping(timeDelta);
 
 		DelayComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
+
+	SGCore_ShaderUnBind();
+
+	SRender_RenderParticles(timeDelta);
 
 	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);

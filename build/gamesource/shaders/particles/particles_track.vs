@@ -6,7 +6,11 @@ particles_main.vs
 
 #include <../struct.h>
 
+//##########################################################################
+
 half4x4 WorldViewProjection;
+
+//##########################################################################
 
 half3 RotateVec(half4 q, half3 p)
 {
@@ -24,16 +28,18 @@ half3 RotateVec(half4 q, half3 p)
 	return(oout);
 }
 
-void main(in vs_in_particles IN, out vs_out_particles OUT) 
+//##########################################################################
+
+void main(in VSI_Particles IN, out VSO_Particles OUT) 
 {
 	half2 tvec;
-	IN.Position.xyz *= IN.InstanceSize;
-	IN.Position.xyz = RotateVec(IN.InstanceTex,IN.Position.xyz);
-	OUT.Position.xyz = IN.Position + IN.InstancePos;
-	OUT.Position.w = 1.f;
+	IN.vPosition.xyz *= IN.vInstSize;
+	IN.vPosition.xyz = RotateVec(IN.vInstTex,IN.vPosition.xyz);
+	OUT.vPosition.xyz = IN.vPosition + IN.vInstPos;
+	OUT.vPosition.w = 1.f;
 	
-	OUT.Position = mul(OUT.Position, WorldViewProjection);
-	OUT.Pos = OUT.Position;
-	OUT.TexUV = IN.TexUV;
-	OUT.Alpha = IN.InstanceAlpha;
+	OUT.vPosition = mul(OUT.vPosition, WorldViewProjection);
+	OUT.vPos = OUT.vPosition;
+	OUT.vTexUV = IN.vTexUV;
+	OUT.Alpha = IN.vInstAlpha;
 }

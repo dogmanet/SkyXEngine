@@ -7,43 +7,39 @@ ppe_sun_render.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-sampler2D DepthSampler:register(s0);
-sampler2D SunSampler:register(s2);
-sampler2D BaseSampler:register(s3);
+//##########################################################################
 
-half4 LightPos;
-half2 SizeMap;
-half2 SizeTexSun;
-half4 LightColor;
-//half2 NearFar;
+sampler2D g_sDepth:register(s0);
+sampler2D g_sSun:register(s2);
+sampler2D g_sColor:register(s3);
 
-half4 main(vs_out_pp IN) : COLOR0
+//##########################################################################
+
+half4 g_vLightPos;
+half2 g_vSizeMap;
+half2 g_vSizeTexSun;
+half4 g_vLightColor;
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 colorsun = 0.f;
-	half4 screen = tex2D(BaseSampler, IN.TexUV);
-	half2 SunPosProj = LightPos.xy;
+	half2 vSunPosProj = g_vLightPos.xy;
 	
-	half depth = tex2D(DepthSampler, IN.TexUV).r;
+	half fDepth = tex2D(g_sDepth, IN.vTexUV).r;
+	clip(fDepth - 0.999);
+
+	half2 vNewTC = IN.vTexUV;
 	
-	clip(depth - 0.999f);
+	vNewTC.y *= g_vSizeMap.y/g_vSizeMap.x;
+	vSunPosProj.y *= g_vSizeMap.y/g_vSizeMap.x;
 
-	half2 ntc = IN.TexUV;
+	half2 fSunTexUV = ((((vNewTC - vSunPosProj) * g_vSizeMap.x) + g_vSizeTexSun * 0.5) / g_vSizeTexSun);
 	
-	ntc.y *= SizeMap.y/SizeMap.x;
-	SunPosProj.y *= SizeMap.y/SizeMap.x;
+	half4 vTexColor = tex2D(g_sSun, fSunTexUV);
 
-	half2 fSunTexUV = ((((ntc - SunPosProj)*SizeMap.x) + SizeTexSun*0.5f) / SizeTexSun);
-	
-	half4 texColor = tex2D(SunSampler, fSunTexUV);
-	//clip(texColor.a - 0.001f);
-	//screen.a *= 1.f - depth;
+	vTexColor.rgb *= saturate(g_vLightColor.rgb * 2.0);
+	vTexColor.rgb = lerp(vTexColor.rgb, g_vLightColor.rgb, 0.5);
 
-	texColor.rgb *= saturate(LightColor.rgb*2);
-	texColor.rgb = lerp(texColor.rgb,LightColor.rgb,0.5f/*saturate(LightColor.a*2)*/);
-	//texColor.rgb = lerp(texColor.rgb,screen.rgb,1.f-texColor.a);
-	//colorsun.rgb = lerp(screen.rgb,texColor.rgb,1.f-screen.a);
-
-	//texColor.a = screen.a;
-
-	return texColor;
+	return vTexColor;
 }

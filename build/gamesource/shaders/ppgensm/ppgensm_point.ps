@@ -5,38 +5,41 @@ ppgensm_point.ps
 */
 
 #include <../struct.h>
+#include <../shadow.h>
 #include <../mtrl.h>
+#include <../ps.h>
 
-half3 PosCam;
-//half2 NearFar;
-half2 SizeMapBias;
-half PixelSize;
-half3 LightPos;
+//##########################################################################
 
-sampler2D DepthLinearSampler:register(s0);
-samplerCUBE DepthSampler1:register(s1);
-sampler2D NoiseSampler:register(s2);
+half3 g_vPosCam;
+half2 g_vSizeMapBias;
+half g_fPixelSize;
+half3 g_vLightPos;
+half4x4	g_vMatrixTexture;
 
-half4x4	MatrixTexture;
+//##########################################################################
 
-half4 main(vs_out_res_pos IN):COLOR0
+sampler2D g_sDepthView:register(s0);
+samplerCUBE g_sDepthShadow:register(s1);
+
+//##########################################################################
+
+half4 main(VSO_ResPos IN):COLOR0
 {
-	half ShadowTerm = 0.0f;
+	half fShadow = 0.0;
 	
-	half tmpdepth = tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r;
+	half fDepth = tex2Dlod2(g_sDepthView, IN.vTexUV, 0).r;
 	
-	half4 Position = half4(PosCam + IN.WorldRay * (tmpdepth),1.f);
+	half4 vPosition = half4(g_vPosCam + IN.vWorldRay * fDepth, 1.0);
 	
-	half3 PLightDirection = 0.0f;
-    PLightDirection = LightPos - Position.xyz;
-    half distance = length(PLightDirection);
-	half ddist = 1.f/distance;
+	half3 vDir = g_vLightPos - vPosition.xyz;
+    half fDistance = length(vDir);
+	half fDivDist = 1.0/fDistance;
 
-	half3 jitter = half3(0,0,0);//(normalize(tex2D(NoiseSampler, -PLightDirection.xy*ddist * SHADOWGEN_JITTER_SCALE).xyz * 2.0 - 1.0 )*0.01);
-	half3 tmpcoord = PLightDirection.xyz;
-	tmpcoord.xyz += jitter;
+	half3 vTexUV = vDir.xyz;
 	
-	ShadowTerm = (texCUBE( DepthSampler1 , -(tmpcoord)*ddist ).x + SizeMapBias.y) > distance ? 1 : 0;
+	//fShadow = (texCUBE(g_sDepthShadow , -(vTexUV) * fDivDist ).x + g_vSizeMapBias.y) > fDistance ? 1 : 0;
+	fShadow = ShadowCalcShading(texCUBE(g_sDepthShadow , -(vTexUV) * fDivDist).x, fDistance, g_vSizeMapBias.y);
 	
 	#ifdef GSC_6
 	for(int x=0;x<=1;++x)
@@ -45,14 +48,15 @@ half4 main(vs_out_res_pos IN):COLOR0
 		{
 			for(int z=0;z<=1;++z)
 			{
-				tmpcoord = PLightDirection + half3(PixelSize*x, PixelSize*y,PixelSize*z) + jitter;
-				ShadowTerm += texCUBE(DepthSampler1, -(tmpcoord)*ddist).x + SizeMapBias.y < distance ? 0 : 1;
+				vTexUV = vDir + half3(g_fPixelSize * x, g_fPixelSize * y, g_fPixelSize * z);
+				//fShadow += texCUBE(g_sDepthShadow, -(vTexUV) * fDivDist).x + g_vSizeMapBias.y < fDistance ? 0 : 1;
+				fShadow += ShadowCalcShading(texCUBE(g_sDepthShadow , -(vTexUV) * fDivDist).x, fDistance, g_vSizeMapBias.y);
 			}
 		}
 	}
 	
-	ShadowTerm *= 0.125;
+	fShadow *= 0.125;
 	#endif
 
-	return saturate(ShadowTerm);
+	return saturate(fShadow);
 } 

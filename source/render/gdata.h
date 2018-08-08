@@ -126,7 +126,7 @@ namespace GData
 
 			extern ID BlendAmbientSpecDiffColor;
 
-			extern ID ToneMapping;
+			//extern ID ToneMapping;
 
 			extern ID StencilStr;
 			extern ID StencilColumn;

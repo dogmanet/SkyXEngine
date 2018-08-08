@@ -6,12 +6,16 @@ sky_box.vs
 
 #include <../struct.h>
 
-half4x4 WorldViewProjection;
+//##########################################################################
 
-vs_out_skybox main(vs_in_skybox IN)
+half4x4 g_mWVP;
+
+//##########################################################################
+
+VSO_SkyBox main(VSI_SkyBox IN)
 {
-	vs_out_skybox OUT = (vs_out_skybox)0;
-	OUT.Position = mul(half4(IN.Position.xyz,1),WorldViewProjection);
-	OUT.TexUV = IN.TexUV;
+	VSO_SkyBox OUT = (VSO_SkyBox)0;
+	OUT.vPosition = mul(half4(IN.vPosition.xyz,1), g_mWVP);
+	OUT.vTexUV = IN.vTexUV;
 	return OUT;
 }

@@ -7,36 +7,33 @@ mtrlgeom_reflect_cube_mrbase.vs
 #include <../struct.h>
 #include <../mtrl.h>
 
-sampler2D BaseTex:register(s0);
-sampler2D MRTex0:register(s6);
+//##########################################################################
 
-sampler2D ParamTex:register(s10);
-samplerCUBE ReflectTex:register(s12);
+sampler2D g_sColor:register(s0);
+sampler2D g_sNormals0:register(s6);
 
-half4 Param;
-half4 NearFarIsUnlit;
+sampler2D g_sParameters:register(s10);
+samplerCUBE g_sReflection:register(s12);
 
-ps_out_ds_mrt main(vs_out_refcube IN)
+//##########################################################################
+
+half4 g_vParam;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_RefCube IN)
 {
-	ps_out_ds_mrt OUT; 
-	OUT.Color = tex2D(BaseTex,IN.TexUV);
+	IN.vNormal = normalize(IN.vNormal);
 	
-	half3 NormalMicro = ((2.f * (tex2D(MRTex0, IN.TexUV).rgb)) - 1.f);
-	NormalMicro *= Param.z;
-	IN.Normal = normalize(IN.Normal);
-	half3 NormalPixel = normalize((IN.Normal+half3(NormalMicro.xy,IN.Normal.z)) * 0.5f);
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
+	half4 vParam = tex2D(g_sParameters,IN.vTexUV);
 	
-	OUT.Normal.xy = NormalEncode(NormalPixel);
-	OUT.Normal.w = NearFarIsUnlit.z;
-	OUT.Normal.z = NearFarIsUnlit.w;
+	half fLod = GetTexLod4Ref(saturate(vParam.r));
+	half4 vReflection = texCUBElod(g_sReflection, half4(IN.vCubePPos, fLod));
+	vColor.xyz = lerp(vColor.xyz, vReflection.xyz, vParam.y);
 	
-	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	//OUT.Param.w = NearFarIsUnlit.w;
+	half3 vNormal = MixNormalMicro(IN.vNormal, Color2Normal(tex2D(g_sNormals0, IN.vTexUV).rgb) * g_vParam.z);
 	
-	half MipmapIndex = GetTexLod4Ref(saturate(OUT.Param.r - 0.1f));
-	half4 reflection = texCUBElod(ReflectTex, half4(IN.CubePPos,MipmapIndex));
-	OUT.Color.xyz = lerp(OUT.Color.xyz,reflection.xyz,OUT.Param.y);
-	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
-	
-	return OUT;
+	return CreateGbuffer(vColor, vNormal, vParam, IN.vPos, g_vNearFarLayers);
 }

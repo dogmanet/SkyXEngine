@@ -5,171 +5,127 @@ ppgensm_pssm.ps
 */
 
 #include <../struct.h>
+#include <../shadow.h>
 #include <../mtrl.h>
+#include <../ps.h>
 
-half3 PosCam;
-half4 DistSplit;
-half2 NearFar;
-half2 PixelSize;
+//##########################################################################
 
-sampler2D DepthLinearSampler:register(s0);
-sampler2D DepthSampler1:register(s1);
-sampler2D DepthSampler2:register(s2);
-sampler2D DepthSampler3:register(s3);
-sampler2D DepthSampler4:register(s4);
-sampler2D DepthSampler5:register(s5);
-sampler2D NoiseSampler:register(s6);
+//! позиция наблюдателя
+half3 g_vPosCam;
 
-half4x4 InvViewProj;
+//! дистанции до концов каждого сплита
+half4 g_vDistSplit;
 
-half4x4 MatrixTexture1;
-half4x4 MatrixTexture2;
-half4x4 MatrixTexture3;
-half4x4 MatrixTexture4;
-half4x4 MatrixTexture5;
+//! ближняя и дальняя плоскости
+half2 g_vNearFar;
 
+//! размеры пикселей
+half2 g_vPixelSize;
 
-half4 main(vs_out_res_pos IN):COLOR0
+half4x4 g_aMatrixTexture[5];
+
+//! позиция пикселя в пространстве света
+static half4 g_vTexCoord[5];
+
+//! смещение глубины для каждого сплита
+static half g_aBias[4] = {0.00001, 0.00009, 0.0003, 0.001};
+
+//##########################################################################
+
+sampler2D g_sDepthView:register(s0);
+sampler2D g_sNormals:register(s6);
+
+texture2D g_sDepthShadow0:register(s1);
+texture2D g_sDepthShadow1:register(s2);
+texture2D g_sDepthShadow2:register(s3);
+texture2D g_sDepthShadow3:register(s4);
+texture2D g_sDepthShadow4:register(s5);
+
+sampler2D g_aDepthShadow[5] = 
 {
-	half ShadowTerm = 0.0f;
-	half4 tmpcoord;
-	half Depth;
-	half tmpShadowTerm = 0;
-	half fDepth = tex2Dlod(DepthLinearSampler,half4(IN.TexUV,0,0)).r;;
-	
-	half4 Position = half4(PosCam + IN.WorldRay * (fDepth),1.f);
+	sampler_state{Texture = <g_sDepthShadow0>;}, 
+	sampler_state{Texture = <g_sDepthShadow1>;},
+	sampler_state{Texture = <g_sDepthShadow2>;}, 
+	sampler_state{Texture = <g_sDepthShadow3>;},
+	sampler_state{Texture = <g_sDepthShadow4>;}
+};
 
-	half4 TexCoord1	= mul(Position, MatrixTexture1);
-	half4 TexCoord2	= mul(Position, MatrixTexture2);
-	half4 TexCoord3	= mul(Position, MatrixTexture3);
+//##########################################################################
+
+//! считает есть ли тень для данного сплита текущего пикселя
+half GetShadow(int iSplit)
+{
+	half fShadow = 0.0;
+	half2 vTexUV = half2(0,0);
+	half fDepth;
+	
+	[unroll]for(int x=-1; x<=1; x++)
+	{
+		[unroll]for(int y=-1; y<=1; y++)
+		{
+			vTexUV = g_vTexCoord[iSplit].xy + half2(x * g_vPixelSize.x, y * g_vPixelSize.y);
+			fDepth = tex2Dlod2(g_aDepthShadow[iSplit], vTexUV, 0).r; 
+
+			fShadow += ShadowCalcShading(fDepth, g_vTexCoord[iSplit].z, g_aBias[iSplit]);
+		}
+	}
+
+	return (fShadow / 9.0);
+}
+
+//##########################################################################
+
+half4 main(VSO_ResPos IN):COLOR0
+{
+	half fShadow = 0.0;
+	half fDepth = tex2Dlod(g_sDepthView, half4(IN.vTexUV,0,0)).r;
+	
+	half3 vNormal = Color2Normal(tex2Dlod(g_sNormals, half4(IN.vTexUV,0,0)).rgb);
+	
+	half4 vPosition = half4(g_vPosCam + IN.vWorldRay * fDepth, 1.0);
+	vPosition.xyz = ShadowPosScopeBias(vPosition.xyz, vNormal);
+	
+	g_vTexCoord[0]	= mul(vPosition, g_aMatrixTexture[0]);
+	g_vTexCoord[1]	= mul(vPosition, g_aMatrixTexture[1]);
+	g_vTexCoord[2]	= mul(vPosition, g_aMatrixTexture[2]);
 	
 	#if	!defined(SPLITS3)
-	half4 TexCoord4	= mul(Position, MatrixTexture4);
+	g_vTexCoord[3]	= mul(vPosition, g_aMatrixTexture[3]);
 	#endif
 	
-	half4 TexCoord5	= mul(Position, MatrixTexture5);
+	g_vTexCoord[4]	= mul(vPosition, g_aMatrixTexture[4]);
 	
-	half alphaskyclouds = 0;
+	//тень от облаков
+	half fShadowSky = 1.f - tex2Dlod2(g_aDepthShadow[4], g_vTexCoord[4].xy, 0).r;
+	fShadowSky = fShadowSky * fShadowSky * fShadowSky;
 	
-		for(int x=-1;x<=1;x++)
-		{
-				for(int y=-1;y<=1;y++)
-				{
-					tmpcoord = TexCoord5;
-					tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
-					alphaskyclouds += 1.f-tex2Dlod(DepthSampler5, tmpcoord).r; 
-				}
-		}
-				
-	alphaskyclouds /= 9.f;
 	
-	half l = fDepth*NearFar.y;
+	half fDistance = fDepth * g_vNearFar.y;
 	
+	//затухание теней
 	half fAttenuation = 1.f;
 	
 	#ifdef SPLITS3
-	fAttenuation = saturate(l / DistSplit.z);
+	fAttenuation = saturate(fDistance / g_vDistSplit[2]);
 	#else
-	fAttenuation = saturate(l / DistSplit.w);
-	#endif
-
-	half dx1 = max(abs(ddx(TexCoord1.z)),abs(ddy(TexCoord1.z)));
-	half dx2 = max(abs(ddx(TexCoord2.z)),abs(ddy(TexCoord2.z)));
-	half dx3 = max(abs(ddx(TexCoord3.z)),abs(ddy(TexCoord3.z)));
-	
-	#if	!defined(SPLITS3)
-	half dx4 = max(abs(ddx(TexCoord4.z)),abs(ddy(TexCoord4.z)));
+	fAttenuation = saturate(fDistance / g_vDistSplit[3]);
 	#endif
 	
-		[branch]if(l >= 0.0 && l < DistSplit.x)
-		{
-				for(int x=-1;x<=1;x++)
-				{
-						for(int y=-1;y<=1;y++)
-						{
-							tmpcoord = TexCoord1;
-							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
-							Depth = tex2Dlod(DepthSampler1, tmpcoord).r; 
-							tmpShadowTerm = 1.f-((TexCoord1.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,60),72),104);
-							tmpShadowTerm /= dx1*dx1;
-
-							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord1.z) ? 0.0f : 1.0f;
-						}
-				}
-			ShadowTerm /= 9.f;
-		}
-		else [branch]if(l >= 0.0 && l < DistSplit.y)
-		{
-				for(int x=-1;x<=1;x++)
-				{
-						for(int y=-1;y<=1;y++)
-						{
-							tmpcoord = TexCoord2;
-							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
-							Depth = tex2Dlod(DepthSampler2, tmpcoord).r; 
-							tmpShadowTerm = 1.f-((TexCoord2.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,36),48),80);
-							tmpShadowTerm /= dx2*dx2;
-
-							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord2.z) ? 0.0f : 1.0f;
-						}
-				}
-			ShadowTerm /= 9.f;
-		}
-		else [branch]if(l >= 0.0 && l < DistSplit.z)
-		{
-				for(int x=-1;x<=1;x++)
-				{
-						for(int y=-1;y<=1;y++)
-						{
-							tmpcoord = TexCoord3;
-							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
-							Depth = tex2Dlod(DepthSampler3, tmpcoord).r; 
-							tmpShadowTerm = 1.f-((TexCoord3.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,24),36),68);
-							tmpShadowTerm /= dx3*dx3;
-
-							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord3.z) ? 0.0f : 1.0f;
-						}
-				}
-			ShadowTerm /= 9.f;
-			
-			/*#ifdef SPLITS3
-			half coefz = (l - DistSplit.y) / (DistSplit.z - DistSplit.y);
-			ShadowTerm = lerp(ShadowTerm,PSSM_SHADING_LAST,coefz);
-			#endif*/
-			
-			//ShadowTerm = 0;
-		}
+	[branch]if(fDistance >= 0.0 && fDistance < g_vDistSplit[0])
+		fShadow = GetShadow(0);
+	else [branch]if(fDistance >= 0.0 && fDistance < g_vDistSplit[1])
+		fShadow = GetShadow(1);
+	else [branch]if(fDistance >= 0.0 && fDistance < g_vDistSplit[2])
+		fShadow = GetShadow(2);
 		
-		#if	!defined(SPLITS3)
-		else [branch]if(l >= 0.0 && l < DistSplit.w)
-		{
-			for(int x=-1;x<=1;x++)
-				{
-						for(int y=-1;y<=1;y++)
-						{
-							tmpcoord = TexCoord4;
-							tmpcoord.xy += half2(x*PixelSize.x, y*PixelSize.y);
-							Depth = tex2Dlod(DepthSampler4, tmpcoord).r; 
-							tmpShadowTerm = 1.f-((TexCoord4.z) - Depth);
-							tmpShadowTerm = pow(pow(pow(tmpShadowTerm,12),24),56);
-							tmpShadowTerm /= dx4*dx4;
-
-							ShadowTerm += ((Depth + tmpShadowTerm) < TexCoord4.z) ? 0.0f : 1.0f;
-						}
-				}
-			ShadowTerm /= 9.f;
-
-			/*half coefz = (l - DistSplit.z) / (DistSplit.w - DistSplit.z);
-			ShadowTerm = lerp(saturate(ShadowTerm),PSSM_SHADING_LAST,coefz);*/
-		}
-		#endif
-		else
-		{
-			ShadowTerm = PSSM_SHADING_LAST;
-		}
+	#if	!defined(SPLITS3)
+	else [branch]if(fDistance >= 0.0 && fDistance < g_vDistSplit[3])
+		fShadow = GetShadow(3);
+	#endif
+	
+	else
+		fShadow = PSSM_SHADING_LAST;
 			
-	return (saturate(alphaskyclouds*(ShadowTerm * (1.f - fAttenuation))));
+	return saturate(fShadowSky*(fShadow * (1.f - fAttenuation)));
 } 

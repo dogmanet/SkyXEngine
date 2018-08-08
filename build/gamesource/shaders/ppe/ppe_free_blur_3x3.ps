@@ -6,27 +6,33 @@ ppe_free_blur_3x3.ps
 
 #include <../struct.h>
 
-half2 PixelSize;
+//##########################################################################
 
-sampler2D BlurMap:register(s0);
+half2 g_vPixelSize;
 
-half4 main(vs_out_pp IN) : COLOR0
+//##########################################################################
+
+sampler2D g_sTexture:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 CountColor = tex2D(BlurMap,IN.TexUV);
+	half4 vColor = tex2D(g_sTexture, IN.vTexUV);
 	
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(-PixelSize.x,0.f)));
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(PixelSize.x,0.f)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(-g_vPixelSize.x, 0.0)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(g_vPixelSize.x, 0.0)));
 	
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(0.f,-PixelSize.y)));
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(0.f,PixelSize.y)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(0.0, -g_vPixelSize.y)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(0.0, g_vPixelSize.y)));
 	
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(-PixelSize.x,PixelSize.y)));
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(PixelSize.x,PixelSize.y)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(-g_vPixelSize.x, g_vPixelSize.y)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(g_vPixelSize.x,g_vPixelSize.y)));
 	
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(-PixelSize.x,-PixelSize.y)));
-	CountColor += tex2D(BlurMap,half2(IN.TexUV + half2(PixelSize.x,-PixelSize.y)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(-g_vPixelSize.x, -g_vPixelSize.y)));
+	vColor += tex2D(g_sTexture, half2(IN.vTexUV + half2(g_vPixelSize.x, -g_vPixelSize.y)));
 	
-	CountColor *= 0.333f;
+	vColor *= 0.333;
 
-	return CountColor;
+	return vColor;
 }

@@ -6,17 +6,21 @@ stdr_geom.vs
 
 #include <../struct.h>
 
-half4x4	WorldViewProjection;
-half4x4	World;
+//##########################################################################
 
-vs_out_gcommon main(vs_in_geom IN)
+half4x4	g_mWVP;
+half4x4	g_mW;
+
+//##########################################################################
+
+VSO_SceneCommon main(VSI_Geometry IN)
 {
-	vs_out_gcommon OUT;
+	VSO_SceneCommon OUT;
 
-	OUT.Position = mul(half4(IN.Position,1.f),WorldViewProjection);
-	OUT.Normal = IN.Normal;
-	OUT.TexUV = IN.TexUV;
-	OUT.Pos = mul(half4(IN.Position,1.f),World);
+	OUT.vPosition = mul(half4(IN.vPosition,1.f), g_mWVP);
+	OUT.vNormal = IN.vNormal;
+	OUT.vTexUV = IN.vTexUV;
+	OUT.vPos = mul(half4(IN.vPosition,1.f), g_mW);
 
 	return OUT;
 }

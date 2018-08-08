@@ -6,23 +6,27 @@ pp_res_pos.vs
 
 #include <../struct.h>
 
-half4x4 ViewInv;
-half2 NearFar;
-half3 ParamProj;
+//##########################################################################
 
-vs_out_res_pos main(vs_out_pp IN)
+half4x4 g_mViewInv;
+half2 g_vNearFar;
+half3 g_vParamProj;
+
+//##########################################################################
+
+VSO_ResPos main(VSO_PP IN)
 {
-	vs_out_res_pos OUT;
-	OUT.Position = IN.Position;
-	OUT.TexUV = IN.TexUV.xy;
+	VSO_ResPos OUT;
+	OUT.vPosition = IN.vPosition;
+	OUT.vTexUV = IN.vTexUV.xy;
 	
-	half tanHalfFOV = tan( ParamProj.z * 0.5f) ; 
-	half aspectRatio = ParamProj.x / ParamProj.y; 
-	half farY = tanHalfFOV * NearFar.y; 
-	half farX = farY * aspectRatio; 
+	half fTanHalfFOV = tan(g_vParamProj.z * 0.5) ; 
+	half aspectRatio = g_vParamProj.x / g_vParamProj.y; 
+	half fFarY = fTanHalfFOV * g_vNearFar.y; 
+	half fFarX = fFarY * aspectRatio; 
 	
-	OUT.EyeRay = half3(sign(OUT.Position.x) * farX, sign(OUT.Position.y) * farY, NearFar.y); 
-	OUT.WorldRay = mul(half4(OUT.EyeRay, 0.0), ViewInv).xyz;
+	OUT.vEyeRay = half3(sign(OUT.vPosition.x) * fFarX, sign(OUT.vPosition.y) * fFarY, g_vNearFar.y); 
+	OUT.vWorldRay = mul(half4(OUT.vEyeRay, 0.0), g_mViewInv).xyz;
   
 	return OUT;
 }

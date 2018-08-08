@@ -215,7 +215,12 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 	}
 
 #ifndef _DEBUG
-	if (g_useCache && FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
+	if (
+		//если юзаем кэш и файл кэша существует
+		(g_useCache && FileExistsFile(szFullPathCache)) && 
+		//если время изменения кэша такое же как и время изменения файла шейдера или файла шейдера нет
+		(GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath) || !FileExistsFile(szFullPath))
+		)
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 
@@ -333,7 +338,12 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 	}
 
 #ifndef _DEBUG
-	if (g_useCache && FileExistsFile(szFullPathCache) && GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath))
+	if (
+		//если юзаем кэш и файл кэша существует
+		(g_useCache && FileExistsFile(szFullPathCache)) &&
+		//если время изменения кэша такое же как и время изменения файла шейдера или файла шейдера нет
+		(GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath) || !FileExistsFile(szFullPath))
+		)
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
 

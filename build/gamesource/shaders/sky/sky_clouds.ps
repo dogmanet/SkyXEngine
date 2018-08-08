@@ -6,32 +6,38 @@ sky_clouds.ps
 
 #include <../struct.h>
 
-sampler2D BaseCloudsTexture: register(s0);
-sampler2D SecondCloudsTexture: register(s1);
+//##########################################################################
 
-half2 BlendFactorBias;
-half4 Color;
-half Alpha;
+sampler2D g_sCurrent: register(s0);
+sampler2D g_sNext: register(s1);
 
-half4 main(vs_out_skyclouds IN):COLOR0
+//##########################################################################
+
+half2 g_vBlendFactorBias;
+half4 g_vColor;
+half g_fAlpha;
+
+//##########################################################################
+
+half4 main(VSO_SkyClouds IN):COLOR0
 {
-	half dist = (1.f)-distance(IN.TexUV,half2(1.f,1.f));
-	IN.TexUV.x += BlendFactorBias.y;
+	half fDist = 1.0 - distance(IN.vTexUV, half2(1.f,1.f));
+	IN.vTexUV.x += g_vBlendFactorBias.y;
 	
-	half4 Color1 = tex2D(BaseCloudsTexture, IN.TexUV);
-	half4 Color2 = tex2D(SecondCloudsTexture, IN.TexUV);
-	half4 FinalColor = lerp(Color1,Color2,BlendFactorBias.x);
-	dist *= 1.f + dist;
-	FinalColor.a *= saturate(dist);
+	half4 vColor1 = tex2D(g_sCurrent, IN.vTexUV);
+	half4 vColor2 = tex2D(g_sNext, IN.vTexUV);
+	half4 vFinalColor = lerp(vColor1, vColor2, g_vBlendFactorBias.x);
+	fDist *= 1.f + fDist;
+	vFinalColor.a *= saturate(fDist);
 	
 	#ifndef SHADOW
-	FinalColor.rgb = lerp(FinalColor.rgb,Color.rgb,Color.a);
+	vFinalColor.rgb = lerp(vFinalColor.rgb, g_vColor.rgb, g_vColor.a);
 	#endif
-	FinalColor.a *= Alpha;
+	vFinalColor.a *= g_fAlpha;
 	
 	#ifdef SHADOW
-	return FinalColor.a;
+	return vFinalColor.a;
 	#else
-	return FinalColor;
+	return vFinalColor;
 	#endif
 }

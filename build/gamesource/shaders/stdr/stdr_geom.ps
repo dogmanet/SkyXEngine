@@ -7,18 +7,24 @@ stdr_geom.ps
 
 #include <../struct.h>
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
 
 #ifdef _CLIP_PLANE_
-half3 PlaneNormal;
-half3 PlanePoint;
+half3 g_vPlaneNormal;
+half3 g_vPlanePoint;
 #endif
 
-half4 main(vs_out_gcommon IN) : COLOR0
+//##########################################################################
+
+half4 main(VSO_SceneCommon IN) : COLOR0
 {
 #ifdef _CLIP_PLANE_
-	clip(dot(IN.Pos.xyz - PlanePoint, PlaneNormal));
+	clip(dot(IN.vPos.xyz - g_vPlanePoint, g_vPlaneNormal));
 #endif
 	
-	return tex2D(BaseSampler,IN.TexUV);
+	return tex2D(g_sColor,IN.vTexUV);
 }

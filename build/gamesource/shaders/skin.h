@@ -22,53 +22,53 @@ half3 SkinRotateVec(half4 q, half3 p)
 	return(oout);
 }
 
-vs_out_gcommon SkinBoneTransform(uint iBone, half weight, vs_in_anim v)
+VSO_SceneCommon SkinBoneTransform(uint iBone, half weight, VSI_Animation v)
 {
-	vs_out_gcommon Output = (vs_out_gcommon)0;
+	VSO_SceneCommon Output = (VSO_SceneCommon)0;
 	iBone *= 2;
 	half4 bpos = g_BufferBoneWorld[iBone];
 	half4 q = g_BufferBoneWorld[iBone + 1];
-	Output.Position = half4((SkinRotateVec(q, v.Pos) + bpos) * weight, 1.0);
-	Output.Normal = SkinRotateVec(q, v.Norm) * weight;
+	Output.vPosition = half4((SkinRotateVec(q, v.vPosition) + bpos) * weight, 1.0);
+	Output.vNormal = SkinRotateVec(q, v.vNormal) * weight;
 
 	return(Output);
 }
 
 
-vs_out_gcommon SkinAllTransform(vs_in_anim v)
+VSO_SceneCommon SkinAllTransform(VSI_Animation v)
 {
-	vs_out_gcommon Output = (vs_out_gcommon)0;
-	vs_out_gcommon o = (vs_out_gcommon)0;
+	VSO_SceneCommon Output = (VSO_SceneCommon)0;
+	VSO_SceneCommon o = (VSO_SceneCommon)0;
 	
 	//Bone0
-    uint iBone = v.Bones.x;
-    float fWeight = v.Weights.x;
+    uint iBone = v.vBones.x;
+    float fWeight = v.vWeights.x;
 	o = SkinBoneTransform(iBone, fWeight, v);
-	Output.Position += o.Position;
-	Output.Normal += o.Normal;
+	Output.vPosition += o.vPosition;
+	Output.vNormal += o.vNormal;
     
     //Bone1
-    iBone = v.Bones.y;
-    fWeight = v.Weights.y;
+    iBone = v.vBones.y;
+    fWeight = v.vWeights.y;
 	o = SkinBoneTransform(iBone, fWeight, v);
-	Output.Position += o.Position;
-	Output.Normal += o.Normal;
+	Output.vPosition += o.vPosition;
+	Output.vNormal += o.vNormal;
     
     //Bone2
-    iBone = v.Bones.z;
-    fWeight = v.Weights.z;
+    iBone = v.vBones.z;
+    fWeight = v.vWeights.z;
 	o = SkinBoneTransform(iBone, fWeight, v);
-	Output.Position += o.Position;
-	Output.Normal += o.Normal;
+	Output.vPosition += o.vPosition;
+	Output.vNormal += o.vNormal;
     
     //Bone3
-    iBone = v.Bones.w;
-    fWeight = v.Weights.w;
+    iBone = v.vBones.w;
+    fWeight = v.vWeights.w;
 	o = SkinBoneTransform(iBone, fWeight, v);
-	Output.Position += o.Position;
-	Output.Normal += o.Normal;
+	Output.vPosition += o.vPosition;
+	Output.vNormal += o.vNormal;
 
-	Output.Position.w = 1.0;
+	Output.vPosition.w = 1.0;
 	
 	return(Output);
 }

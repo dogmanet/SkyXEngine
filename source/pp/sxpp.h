@@ -68,6 +68,11 @@ SX_LIB_API void SPP_0Create(
 	bool is_unic				//!< должно ли быть имя подсистемы уникальным
 	);
 
+SX_LIB_API void SPP_OnLostDevice();
+
+//! вызывать при попытке сброса устройства
+SX_LIB_API void SPP_OnDeviceReset();
+
 //! уничтожение подсистемы
 SX_LIB_API void SPP_0Kill();	
 

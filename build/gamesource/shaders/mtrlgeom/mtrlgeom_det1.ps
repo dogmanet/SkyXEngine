@@ -7,31 +7,29 @@ mtrlgeom_det1.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-sampler2D BaseTex:register(s0);
-sampler2D DetTex0:register(s2);
-sampler2D ParamTex:register(s10);
+//##########################################################################
 
-half4 Param;
-half4 NearFarIsUnlit;
+sampler2D g_sColor:register(s0);
+sampler2D g_sDetails0:register(s2);
+sampler2D g_sParameters:register(s10);
 
-ps_out_ds_mrt main(vs_out_gcommon IN)
+//##########################################################################
+
+half4 g_vParam;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
 {
-	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
-
-	ps_out_ds_mrt OUT; 
-	OUT.Color = tex2D(BaseTex,IN.TexUV);
-	half4 detcolor1 = tex2D(DetTex0, (IN.TexUV) * Param.x * MTRL_TEXUV_SCALE);
-	OUT.Color.rgb *= detcolor1.rgb;
-
-	IN.Normal = normalize(IN.Normal);
-	OUT.Normal.xy = NormalEncode(IN.Normal);
-	OUT.Normal.w = NearFarIsUnlit.z;
-	OUT.Normal.z = NearFarIsUnlit.w;
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
 	
-	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	//OUT.Param.w = NearFarIsUnlit.w;
-	
-	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
-	
-	return OUT;
+	return CreateGbuffer(
+		MixColorDetail(tex2D(g_sColor,IN.vTexUV), tex2D(g_sDetails0, IN.vTexUV * g_vParam.x * MTRL_TEXUV_SCALE), GetLerpFactorDetail(IN.vPos.z)), 
+		IN.vNormal, 
+		tex2D(g_sParameters,IN.vTexUV), 
+		IN.vPos, 
+		g_vNearFarLayers
+		);
 }

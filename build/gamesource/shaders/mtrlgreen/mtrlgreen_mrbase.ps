@@ -6,34 +6,26 @@ mtrlgreen_mrbase.ps
 
 #include <../struct.h>
 #include <../mtrl.h>
+#include <../green.h>
 
-sampler2D BaseTex:register(s0);
-sampler2D MRTex:register(s6);
-sampler2D ParamTex:register(s10);
+//##########################################################################
 
-half4 Param;
-half4 NearFarIsUnlit;
+sampler2D g_sColor:register(s0);
+sampler2D g_sNormals0:register(s6);
+sampler2D g_sParameters:register(s10);
 
-ps_out_ds_mrt main(vs_out_gcommon IN)
+//##########################################################################
+
+half4 g_vParam;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
 {
-	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
-	ps_out_ds_mrt OUT; 
-	OUT.Color = tex2D(BaseTex,IN.TexUV);
-	clip(OUT.Color.a - GREEN_ALPHATEST_VALUE);
-	OUT.Color.a = 1.f;
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
 	
-	half3 NormalMicro = ((2.f * (tex2D(MRTex, IN.TexUV).rgb)) - 1.f);
-	NormalMicro *= Param.z;
-	half3 NormalPixel = normalize((IN.Normal+half3(NormalMicro.xy,IN.Normal.z)) * 0.5f);
-	
-	OUT.Normal.xy = NormalEncode(NormalPixel);
-	OUT.Normal.w = NearFarIsUnlit.z;
-	OUT.Normal.z = NearFarIsUnlit.w;
-	
-	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	//OUT.Param.w = NearFarIsUnlit.w;
-	
-	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
-	
-	return OUT;
+	half4 vColor = GreenAlphaTest(tex2D(g_sColor,IN.vTexUV));
+	half3 vNormal = MixNormalMicro(IN.vNormal, Color2Normal(tex2D(g_sNormals0, IN.vTexUV).xyz) * g_vParam.z);
+	return CreateGbuffer(vColor, vNormal, tex2D(g_sParameters,IN.vTexUV), IN.vPos, g_vNearFarLayers);
 }

@@ -6,36 +6,52 @@ Cмешивание всех текстур для финального изоб
 
 #include <../struct.h>
 
-sampler2D ColorSampler:register(s0);
-sampler2D AmbientSampler:register(s1);
-sampler2D SpecDiffSampler:register(s2);
-sampler2D NormalSampler:register(s3);
-sampler2D AdaptedLumSampler:register(s4);
-sampler2D ParamSampler:register(s5);
+//##########################################################################
 
-half4 main(vs_out_pp IN):COLOR0
+sampler2D g_sColor:register(s0);
+sampler2D g_sAmbient:register(s1);
+sampler2D g_sSpecDiff:register(s2);
+sampler2D g_sNormals:register(s3);
+sampler2D g_sAdaptedLum:register(s4);
+sampler2D g_sParameters:register(s5);
+
+//##########################################################################
+
+half4 main(VSO_PP IN):COLOR0
 {
-	half4 normal = tex2D(NormalSampler,IN.TexUV);
-	half sort = normal.w;
-	half layer = normal.z;
-	half4 color = pow(tex2D(ColorSampler,IN.TexUV),2.2);
-	half4 param = tex2D(ParamSampler,IN.TexUV);
-
-	half4 ambient = tex2D(AmbientSampler,IN.TexUV);
-	half3 ambient_color = lerp((ambient.x + ambient.y + ambient.z)/3.0, ambient.xyz, ambient.w*2);
-	ambient_color = lerp(ambient_color.xyz, 1.0, clamp(param.y, 0.25, param.y));
-	//return float4(ambient.w,ambient.w,ambient.w,1);;
-	half spec = tex2D(SpecDiffSampler,IN.TexUV).r;
-	half fAdaptedLum = tex2D(AdaptedLumSampler, half2(0.5f, 0.5f));
-
-	if(!(EQUAL_LAYER(sort, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(sort, MTLTYPE_LAYER_TRANSPARENT_UNLIT)))
-		color.xyz = (((ambient_color * (ambient.w))*color.xyz)) + spec*0.5*(ambient.xyz);
-		
-	if(int(layer * 256.f) == 1)
-		color.a = 1.f;
-
-	color.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
-	color.rgb /= (fAdaptedLum + color.rgb);
+	half4 vNormal = tex2D(g_sNormals,IN.vTexUV);
+	half fSort = vNormal.w;
+	half fLayer = vNormal.z;
 	
-	return /*half4(ambient.xyz, 1.f);//*/pow(color, 1/2.2);
+	//цвет приводим к sRGB
+	half4 vColor = pow(tex2D(g_sColor,IN.vTexUV), 2.2);
+	half4 vParameters = tex2D(g_sParameters,IN.vTexUV);
+
+	half4 vAmbient = tex2D(g_sAmbient,IN.vTexUV);
+	
+	/* расчет фонового цвета
+	1) интерполяция от чернобелого до цветного, на основании затенения, то есть чем больше тень тем меньше там фонового цвета
+	*/
+	half3 vAmbientColor = lerp((vAmbient.x + vAmbient.y + vAmbient.z)/3.0, vAmbient.xyz, vAmbient.w*2);
+	
+	/* 2) интерполяция приема цвета материалом, чем больше отражательная способность (f0) тем меньше примет цвета материал*/
+	vAmbientColor = lerp(vAmbientColor.xyz, 1.0, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, vParameters.y));
+	
+	half fSpecular = tex2D(g_sSpecDiff,IN.vTexUV).r;
+	half fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
+
+	// если материал освещаемый то надо вычислить его освещенность
+	if(!(EQUAL_LAYER(fSort, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(fSort, MTLTYPE_LAYER_TRANSPARENT_UNLIT)))
+		vColor.xyz = (vAmbientColor * vAmbient.w*vColor.xyz) + (fSpecular * 0.5 * vAmbient.xyz);
+		
+	// если слой материала относится к непрозрачной геометрии, тогда не нужна прозрачность
+	if(int(fLayer * LAYERS_COUNT_MAX) == LAYER_OPAQUE)
+		vColor.a = 1.0;
+
+	//применение тонмапинга
+	vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
+	vColor.rgb /= (fAdaptedLum + vColor.rgb);
+	
+	//приводим цвет к линейному пространству
+	return pow(vColor, 1.0/2.2);
 }

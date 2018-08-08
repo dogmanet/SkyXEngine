@@ -6,12 +6,16 @@ sky_clouds.vs
 
 #include <../struct.h>
 
-half4x4 WorldViewProjection;
+//##########################################################################
 
-vs_out_skyclouds main(vs_in_skyclouds IN)
+half4x4 g_mWVP;
+
+//##########################################################################
+
+VSO_SkyClouds main(VSI_SkyClouds IN)
 {
-	vs_out_skyclouds OUT = (vs_out_skyclouds)0;
-	OUT.Position = mul(half4(IN.Position.xyz,1),WorldViewProjection);
-	OUT.TexUV = IN.TexUV;
+	VSO_SkyClouds OUT = (VSO_SkyClouds)0;
+	OUT.vPosition = mul(half4(IN.vPosition.xyz,1), g_mWVP);
+	OUT.vTexUV = IN.vTexUV;
 	return OUT;
 }

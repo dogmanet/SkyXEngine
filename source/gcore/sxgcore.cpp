@@ -588,7 +588,7 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum)
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, VS_ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, PS_FindMax9);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_FindMax9, "PixelSize", (&float2(1.f / float(g_oD3DAPP.BackBufferWidth), 1.f / float(g_oD3DAPP.BackBufferHeight))));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PS_FindMax9, "g_vPixelSize", (&float2(1.f / float(g_oD3DAPP.BackBufferWidth), 1.f / float(g_oD3DAPP.BackBufferHeight))));
 
 	SGCore_ScreenQuadDraw();
 

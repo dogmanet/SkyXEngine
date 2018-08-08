@@ -17,7 +17,6 @@ PSSM::PSSM()
 			m_aDepthMaps[i] = 0;
 			m_aFrustums[i] = 0;
 			m_aIsUpdate[i] = 0;
-
 			//IDArr[i] = -1;
 		}
 
@@ -174,6 +173,8 @@ void PSSM::init()
 
 			m_aFrustums[i] = SGCore_CrFrustum();
 		}
+
+		//m_aMask[]
 
 	m_aNearFar[0].x = *r_near;
 	m_aNearFar[0].y = MLSet::DistForPSSM.x;
@@ -332,7 +333,8 @@ void PSSM::preRender(int split)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &Projs[split]);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &ViewProj[split]);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(ViewProj[split]));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "g_mWVP", &SMMatrixTranspose(ViewProj[split]));
+	//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "g_vLigthPos", &Position);
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 
@@ -377,12 +379,14 @@ void PSSM::end()
 
 	/*if (GetAsyncKeyState(VK_NUMPAD1))
 	{
-		D3DXSaveTextureToFile("C:\\1\\depthmapshadow0.bmp", D3DXIFF_PNG, m_aDepthMaps[0], NULL);
-		D3DXSaveTextureToFile("C:\\1\\depthmapshadow1.bmp", D3DXIFF_PNG, m_aDepthMaps[1], NULL);
-		D3DXSaveTextureToFile("C:\\1\\depthmapshadow2.bmp", D3DXIFF_PNG, m_aDepthMaps[2], NULL);
-		D3DXSaveTextureToFile("C:\\1\\depthmapshadow3.bmp", D3DXIFF_PNG, m_aDepthMaps[3], NULL);
-		D3DXSaveTextureToFile("C:\\1\\depthmapshadow4.bmp", D3DXIFF_PNG, m_aDepthMaps[4], NULL);
+		D3DXSaveTextureToFile("C:\\1\\depthmapshadow0.png", D3DXIFF_PNG, m_aDepthMaps[0], NULL);
+		D3DXSaveTextureToFile("C:\\1\\depthmapshadow1.png", D3DXIFF_PNG, m_aDepthMaps[1], NULL);
+		D3DXSaveTextureToFile("C:\\1\\depthmapshadow2.png", D3DXIFF_PNG, m_aDepthMaps[2], NULL);
+		D3DXSaveTextureToFile("C:\\1\\depthmapshadow3.png", D3DXIFF_PNG, m_aDepthMaps[3], NULL);
+		D3DXSaveTextureToFile("C:\\1\\depthmapshadow4.png", D3DXIFF_PNG, m_aDepthMaps[4], NULL);
 	}*/
+
+	
 }
 
 void PSSM::flickering(float4x4 *matLVP,float size_x,float size_y)
@@ -441,20 +445,21 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	SGCore_SetSamplerAddress2(1, 6, D3DTADDRESS_CLAMP);
 
 	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
+	MLSet::DXDevice->SetTexture(6, SGCore_RTGetTexture(MLSet::IDsRenderTargets::NormalScene));
+
+	float4x4 aMatrixTexture[5];
 
 	float4x4 MatrixTexture;
 	char mattex[16];
 	for (int i = 0; i<5; i++)
 	{
 		MLSet::DXDevice->SetTexture(1 + i, m_aDepthMaps[i]);
-		sprintf(mattex, "MatrixTexture%d", 1 + i);
 		MatrixTexture = ViewProj[i] * ScaleBiasMat;
 		MatrixTexture = SMMatrixTranspose(MatrixTexture);
-		if (Generating4Slits)
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, mattex, &MatrixTexture);
-		else if (i != 3)
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, mattex, &MatrixTexture);
+		aMatrixTexture[i] = MatrixTexture;
 	}
+
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "g_aMatrixTexture", &aMatrixTexture);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth);
 	if (Generating4Slits)
@@ -475,25 +480,19 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	float3 observerpos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 	
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
 	
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_mViewInv", &ViewInv);
 
-	if (Generating4Slits)
-	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "PosCam", &observerpos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "NearFar", &float2_t(*r_near, *r_far));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM4, "DistSplit", &float4(m_aNearFar[0].y, m_aNearFar[1].y, m_aNearFar[2].y, m_aNearFar[3].y));
-	}
-	else
-	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "PosCam", &observerpos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "NearFar", &float2_t(*r_near, *r_far));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::PSSM3, "DistSplit", &float4(m_aNearFar[0].y, m_aNearFar[1].y, m_aNearFar[2].y, m_aNearFar[3].y));
-	}
+	float aDistSplits[4] = { m_aNearFar[0].y, m_aNearFar[1].y, m_aNearFar[2].y, m_aNearFar[3].y };
+
+	ID idShader = (Generating4Slits ? MLSet::IDsShaders::PS::PSSM4 : MLSet::IDsShaders::PS::PSSM3);
+
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idShader, "g_vPosCam", &observerpos);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idShader, "g_vPixelSize", &float2(BlurPixel / MLSet::SizeTexDepthGlobal.x, BlurPixel / MLSet::SizeTexDepthGlobal.y));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idShader, "g_vNearFar", &float2_t(*r_near, *r_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idShader, "g_vDistSplit", &float4(m_aNearFar[0].y, m_aNearFar[1].y, m_aNearFar[2].y, m_aNearFar[3].y));
 
 	SGCore_ScreenQuadDraw();
 
@@ -504,6 +503,11 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
+
+	if (GetAsyncKeyState(VK_NUMPAD1))
+	{
+		D3DXSaveTextureToFile("C:\\1\\pssm.png", D3DXIFF_PNG, shadowmap, NULL);
+	}
 }
 
 void PSSM::genShadowAll(IDirect3DTexture9* shadowmap)
@@ -718,7 +722,7 @@ void ShadowMapTech::begin()
 	
 	Frustum->update(&(View),&(Proj));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "WorldViewProjection", &SMMatrixTranspose(View * Proj));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect, "g_mWVP", &SMMatrixTranspose(View * Proj));
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomPSSMDirect);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomPSSMDirect);
 
@@ -782,9 +786,9 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	MatrixTexture = SMMatrixTranspose(MatrixTexture);
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "MatrixTexture", &MatrixTexture);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "g_mMatrixTexture", &MatrixTexture);
 	else
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "MatrixTexture", &MatrixTexture);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "g_mMatrixTexture", &MatrixTexture);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth);
 
@@ -793,24 +797,24 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
 
 	float3 observerpos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
 	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "PosCam", &observerpos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "g_vPosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "g_vPixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "g_vSizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
 		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect4, "NearFar", &float2_t(*r_near, *r_far));
 	}
 	else
 	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "PosCam", &observerpos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "PixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "SizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "g_vPosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "g_vPixelSize", &float2(BlurPixel / MLSet::SizeTexDepthLocal.x, BlurPixel / MLSet::SizeTexDepthLocal.y));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "g_vSizeMapBias", &float3(MLSet::SizeTexDepthLocal.x, MLSet::SizeTexDepthLocal.y, Bias));
 		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9, "NearFar", &float2_t(*r_near, *r_far));
 	}
 
@@ -821,7 +825,7 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	float4x4 ViewInv = SMMatrixInverse(&determ, camview);
 	ViewInv = SMMatrixTranspose(ViewInv);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_mViewInv", &ViewInv);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1058,8 +1062,8 @@ void ShadowMapCubeTech::pre(int cube)
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SMDepthGeomCube);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "LightPos", &Position);
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "WorldViewProjection", &vp);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "g_vLightPos", &Position);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::SMDepthGeomCube, "g_mWVP", &vp);
 }
 
 void ShadowMapCubeTech::post(int cube)
@@ -1125,8 +1129,8 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "NearFar", &float2_t(*r_near, *r_far));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
 
 	float pixel_size = BlurPixel / MLSet::SizeTexDepthLocal.x;
 	float3 observerpos;
@@ -1134,19 +1138,19 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 
 	if (MLSet::IsHalfGenPCFShadowLocal)
 	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "PosCam", &observerpos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "PixelSize", &pixel_size);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "LightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "g_vPosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "g_vLightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "g_vSizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "g_fPixelSize", &pixel_size);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube1, "g_vLightPos", &Position);
 	}
 	else
 	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PosCam", &observerpos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "SizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "PixelSize", &pixel_size);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "LightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "g_vPosCam", &observerpos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "g_vLightPos", &Position);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "g_vSizeMapBias", &float2(MLSet::SizeTexDepthLocal.x, Bias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "g_fPixelSize", &pixel_size);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6, "g_vLightPos", &Position);
 	}
 
 	float4x4 camview;
@@ -1156,7 +1160,7 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 	float4x4 ViewInv = SMMatrixInverse(&determ, camview);
 	ViewInv = SMMatrixTranspose(ViewInv);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "ViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_mViewInv", &ViewInv);
 
 	SGCore_ScreenQuadDraw();
 

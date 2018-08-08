@@ -219,9 +219,9 @@ void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 		g_pDXDevice->SetTexture(1, SGCore_LoadTexGetTexCube(m_idTex2));
 	}
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &WVP);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "Color", &m_vColor);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "BlendFactor", &m_fFactorBlend);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fFactorBlend);
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
 
@@ -471,10 +471,10 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 
 		WVP = SMMatrixTranspose(WVP);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &WVP);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "BlendFactorBias", &float2(m_fFactorBlend, m_fBias));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "Color", &m_vColor);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "Alpha", &m_fAlpha);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vBlendFactorBias", &float2(m_fFactorBlend, m_fBias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fAlpha", &m_fAlpha);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
 	}
@@ -486,9 +486,9 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 
 		WVP = SMMatrixTranspose(WVP);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &WVP);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "BlendFactorBias", &float2(m_fFactorBlend, m_fBias));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "Alpha", &m_fAlpha);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_vBlendFactorBias", &float2(m_fFactorBlend, m_fBias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_fAlpha", &m_fAlpha);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS_Shadow);
 	}

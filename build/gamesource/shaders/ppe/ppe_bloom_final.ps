@@ -5,15 +5,20 @@ ppe_bloom_final.ps
 */
 
 #include <../struct.h>
+#include <../ps.h>
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
 
-half4 main(vs_out_pp IN) : COLOR0
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 color = tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,0.f));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,1.f));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,2.f));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,3.f));
-	color += tex2Dlod(BaseSampler, half4(IN.TexUV,0.f,4.f));
-	return color*0.2f;
+	half4 vColor = tex2Dlod2(g_sColor, IN.vTexUV, 0);
+	vColor += tex2Dlod2(g_sColor, IN.vTexUV, 1);
+	vColor += tex2Dlod2(g_sColor, IN.vTexUV, 2);
+	vColor += tex2Dlod2(g_sColor, IN.vTexUV, 3);
+	vColor += tex2Dlod2(g_sColor, IN.vTexUV, 4);
+	return vColor*0.2f;
 }

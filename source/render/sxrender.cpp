@@ -326,11 +326,6 @@ SX_LIB_API void SRender_UnionLayers()
 	SXRenderFunc::UnionLayers();
 }
 
-SX_LIB_API void SRender_ApplyToneMapping()
-{
-	SXRenderFunc::ApplyToneMapping();
-}
-
 SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta)
 {
 	SXRenderFunc::ComToneMapping(timeDelta);

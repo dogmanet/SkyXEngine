@@ -8,46 +8,50 @@ ppe_ssao_blur.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-half4 PixelSize;
+//##########################################################################
 
-sampler2D DepthMap:register(s0);
-sampler2D BlurMap:register(s1);
-sampler2D ScreenMap:register(s2);
+half4 g_vPixelSize;
+half2 g_vNearFar;
 
-half2 NearFar;
+//##########################################################################
 
-half4 main(vs_out_pp IN) : COLOR0
+sampler2D g_sDepth:register(s0);
+sampler2D g_sBlur:register(s1);
+sampler2D g_sColor:register(s2);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half2 BlurOffset = PixelSize;
-	half2 CenterTC = IN.TexUV;
+	half2 vCenterTC = IN.vTexUV;
 
-	half SumWeight = 0.125f;
-	half4 Color = tex2D(BlurMap,CenterTC) * SumWeight;
+	half fSumWeight = 0.125f;
+	half4 vColor = tex2D(g_sBlur, vCenterTC) * fSumWeight;
 
-	half CenterDepth = tex2D(DepthMap, CenterTC).r * NearFar.y;
+	half fCenterDepth = tex2D(g_sDepth, vCenterTC).r * g_vNearFar.y;
 
+	[unroll]
+	for(half x=-2;x<=2;x++)
+	{
 		[unroll]
-		for(half x=-1;x<=1;x++)
+		for(half y=-2;y<=2;y++)
 		{
-				[unroll]
-				for(half y=-1;y<=1;y++)
-				{
-					half2 SampleTC = CenterTC + half2(x * PixelSize.x,y * PixelSize.y);
-					half Depth = tex2D(DepthMap, SampleTC).r;
-					Depth *= NearFar.y;
-					half Diff = 9.f*(1.f - Depth/CenterDepth);
-					half Weight = saturate(0.5f - 0.75f*abs(Diff) - 0.25f*(Diff));
-					Color += tex2D(BlurMap,SampleTC) * Weight;
-					SumWeight += Weight;
-				}
+			half2 SampleTC = vCenterTC + half2(x * g_vPixelSize.x,y * g_vPixelSize.y);
+			half fDepth = tex2D(g_sDepth, SampleTC).r;
+			fDepth *= g_vNearFar.y;
+			half fDiff = 9.0 * (1.0 - fDepth/fCenterDepth);
+			half Weight = saturate(0.5 - 0.75 * abs(fDiff) - 0.25 * (fDiff));
+			vColor += tex2D(g_sBlur,SampleTC) * Weight;
+			fSumWeight += Weight;
 		}
+	}
 
-	Color /= SumWeight;
-	//return tex2D(BlurMap,IN.TexUV);//saturate(Color);
+	vColor /= fSumWeight;
+	
 	#if defined(_BLEND_COLOR_)
-	half4 ScreenColor = tex2D(ScreenMap,IN.TexUV);
-	return ScreenColor*saturate(Color);
+	half4 ScreenColor = tex2D(g_sColor,IN.vTexUV);
+	return ScreenColor * saturate(vColor.r);
 	#else
-	return saturate(Color);
+	return saturate(vColor);
 	#endif
 }

@@ -105,7 +105,7 @@ namespace SXRenderFunc
 	void UnionLayers();
 
 	//! применение тонмаппинга к рт
-	void ApplyToneMapping();
+	//void ApplyToneMapping();
 
 	//! просчет тонмаппинга
 	void ComToneMapping(DWORD timeDelta);
