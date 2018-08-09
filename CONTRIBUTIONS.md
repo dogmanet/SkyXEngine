@@ -1,4 +1,4 @@
-==ОПИСАНИЕ И УСЛОВИЯ ВКЛАДОВ В ПРОЕКТ==
+# ОПИСАНИЕ И УСЛОВИЯ ВКЛАДОВ В ПРОЕКТ
 
 Нижеперечисленные понятия не ограничиваются перечисленным толкованием, но задают лишь общий толк:
  - Вклад (контрибьюция) - как правило исходный код, которыЙ контрибьютор вносит в проект. Может быть представлен и другими данными, не только исходным кодом.
@@ -12,11 +12,11 @@
  
 ЕСЛИ ВКЛАДЧИК ВНОСИТ ВКЛАД В ПРОЕКТ, ТО ОН АВТОМАТИЧЕСКИ СОГЛАШАЕТСЯ С ДАННЫМ ДОКУМЕНТОМ И ДЛЯ ЛЮБОГО ИЗ ПУНКТОВ ДАННОГО СОГЛАШЕНИЯ НЕ ТРЕБУЕТСЯ КАКИХ-ЛИБО ПОДТВЕРЖДАЮЩИХ ДОКУМЕНТОВ.
 
-----------------------------------------------------------------------------
+--------------------------------
 
-!!!Текст ниже, переведен при помощи средства автоматического перевода и может содержать ошибки!!!
+**!!!Текст ниже, переведен при помощи средства автоматического перевода и может содержать ошибки!!!**
 
-== DESCRIPTION AND CONDITIONS OF CONTRIBUTIONS TO THE PROJECT ==
+# DESCRIPTION AND CONDITIONS OF CONTRIBUTIONS TO THE PROJECT
 
 The following concepts are not limited to the above interpretation, but they only ask a general sense:
  - Contribution is usually the source code that the contributor contributes to the project. Can be represented by other data, not just the source code.
@@ -29,3 +29,5 @@ Each contributor (contributor) contributing to the project agrees with the condi
  - the contributor refuses his copyright to the deposit and has no complaints about any matter.
  
 IF THE CONTRIBUTOR MAKES THE CONTRIBUTION TO THE PROJECT, THEN HE AUTOMATICALLY AGREES WITH THIS DOCUMENT AND ANY CONFIRMING DOCUMENTS ARE REQUIRED FOR ANY OF THE ITEMS OF THIS AGREEMENT.
+
+--------------------------------
