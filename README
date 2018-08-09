@@ -1,84 +1,43 @@
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017. All rights reserved.
-
 SkyXEngine - движок для создания 3D игр с real-time рендером, использует технологии DirectX 9.
-Документация по использованию: docs/html/index.html Онлайн версия: https://doc.skyxengine.com/
+Автодокументация по использованию: docs/html/index.html 
+Онлайн версия автодокументации: https://doc.skyxengine.com/
 Официальный сайт: https://skyxengine.com/
+Wiki ресурс с обучающими материалами: https://wiki.skyxengine.com/
 
-ИДЕОЛОГИЯ
-Основной технической идеей при разработке движка была идея о том что программист должен иметь контроль над объектами, которыми он оперирует, НО этот контроль должен быть в меру.
-Основной идеей предназначения служила и служит идея о том чтобы предоставляемый инструментарий мог полностью удовлетворять потребностям разработчика, без необходимости со стороны разработчика вникать в детали реализации, но чтобы этот инструментарий имел прозрачную, открытую, свободную, бесплатную лицензию, и разработчик мог спокойно податься в стихию сотворения своего мира.
+==ИДЕОЛОГИЯ==
+Основной технической идеей при разработке движка была идея о том, что программист должен иметь контроль над объектами, которыми он оперирует, НО этот контроль должен быть в меру.
+Основной идеей предназначения служила и служит идея о том, чтобы предоставляемый инструментарий мог полностью удовлетворять потребностям разработчика, без необходимости со стороны разработчика вникать в детали реализации, но чтобы этот инструментарий имел прозрачную, открытую, свободную, бесплатную лицензию, и разработчик мог спокойно податься в стихию сотворения своего мира.
 
-КРАТКОЕ ОПИСАНИЕ ВОЗМОЖНОСТЕЙ
-Формирование уровня осуществляется посредством:
-	загрузки статических моделей формата dse, с их автоматическим разбиением на "куски рендера" как quad или octo дерево, возможны сохранение/загрузка в бинарный файл всей геометрии уровня
-	генерации растительности по маске, возможны 2 вида: трава (чем дальше тем меньше размер объекта) и деревья (с возможностью загрузки лодов), возможны возможны сохранение/загрузка в бинарный файл всей растительности уровня.
-	
-Скелетная анимация моделей:
-    экспорт из 3ds max в формат dse
-    возможно автоматическое совмещение моделей, для реализации динамически подключаемых частей
-    редактор анимированных моделей
-    поддерживаются динамические хитбоксы
+==ЦЕЛЬ==
+Самая главная цель, которую мы преследуем это разработка движка, на котором в дальнейшем можно разрабатывать игры, ибо в первую очередь разработка движка ведется в своем инетресе.
+Дополнительная и немаловажная цель это оценка нашего труда со стороны таких же как и мы - разработчиков (без разницы, игр или другого ПО), которым  нужен подобный движок.
 
-Освещение представлено 3 видами источников света (опционально поддерживается генерация теней от каждого исчтоника света):
-	глобальный (солнце), тени - PSSM
-	локальный - точечный, тени - Cube Shadow Mapping
-	локальный - направленный? тени - Shadow Mapping.
-HDR эффект присутсвует.
+==ОСОБЕННОСТИ==
+Если углубится в суть разработки, то можно выявить несколько концептуальных элементов, отличающих наш движок от других:
+ - open-source
+ - стремление сделать из движка инструмент для модмейкеров с помощью которого, можно будет только разрабатывать игры, без вмешательства в код игры
+ - монолитная архитектура
+ - только те технологии, которые действительно нужны
 
-Система материалов pbr, то есть построенная на физичеки корретных, но апроксимированных вычислениях. 
-Для формирования данных для освещения используется техника Deferred shading, что позволяет обрабатывать неограниченное количество источников света. 
-Поддерживаются отражения 2 видов:
-	плоские (планарные)
-	объемные (кубические).
-Поддерживается до 3 полупрозрачных поверхностей в кадре (пока только тестовый режим, в планах улучшения качества). 
-Поддерживаемые эффекты поверхностей:
-	микрорельеф
-	микрорельеф по маске (до 4 текстур)
-	детальность
-	детальность по маске (до 4 текстур)
-	комбинированный микрорельеф с детальностью по маске (до 4 текстур)
-	альфа тест
-	просвечиваемость (для освещения тонких поверхностей, к примеру листвы и травы).
-Вся система материалов является открытой и практически любой функционал системы доступен для собственной интерпретации, посредством шейдеров. Имеется встроенный набор данных.
-Поддерживаются различные пользовательские данные которые интерпретируются только создающим материалы.
+==ТЕХНОЛОГИИ==
+Мы используем достаточный набор современных технологий для возможности реализация красивой и современной 3d игры жанра FPS. реализованы:
+ - статическая геометрия
+ - растительность
+ - скелетная анимация
+ - освещение (deferred shading)
+ - HDR
+ - система материалов PBR
+ - постпроцесс
+ - декали
+ - физика
+ - звук
+ - частицы
+ - искусственный интеллект
+ - эффекты окружения
+ - игровой движок
+ - редакторы
 
-Постпроцесс состоит из эффектов:
-	черно-белое изображение
-	эффект сепия
-	коррекция изображения
-	рендер солнца
-	bloom
-	lens flare, эффект восприятия яркого света линзами
-	depth of field, глубина резкости
-	linear fog, линейный туман
-	space screen ambient occulusion, глобальное освещение (точнее затенение) в пространстве экрана
-	motion blur, размытие в движении
-	nfaa
-	dlaa.
-	
-Декали - следы от пуль, взрывов, трещины. Рисуются поверх основной геометрии.
-
-Физика - для симуляции физики используется физический движок Bullet.
-
-Звуковой движок поддерживает воспроизведение в пространстве и в фоне. Поддерживаемые форматы ogg, wav. Доступно создание инстансов без возможности управления.
-
-Партиклы с необходимым набором логики и с многочисленными и простыми настроками.
-
-AI сетка для навигации живых игровых объектов.
-
-Игровой движок - основа для построения игровой логики. Предоставляет набор игровых объектов и обеспечивает их взаимодействие.
-
-Эффекты окружения представлены фоновыми ambient звуками, погодой, определяемой для каждого уровня, с различными погодными эффектами.
-
-Real-time конфигурация (cvars) позволяет в режиме реального времени через консоль изменять разного рода установки движка
-
-Редакторы:
-	SXLevelEditor - редактор уровней
-	SXMaterialEditor - редактор материалов
-	SXParticlesEditor - редактор партиклов
- 
-	
-СТРУКТУРА ПРОЕКТА
+==СТРУКТУРА ПРОЕКТА==
 build - директория для сборки движка (сюда приходят после компиляции exe, dll), здесь же игровые ресурсы
 docs - документация, настройки для Doxygen
 	html - документация в виде html файлов, открывать index.html
@@ -88,6 +47,55 @@ proj - директория с проектами для сред разрабо
 sdks - сторонние библиотеки, которые используются
 source - директория с файлами исходного кода
 
-ЦЕЛЬ
-Самую главную цель которую мы преследуем это разработка движка, на котором в дальнейшем можно разрабатывать игры, ибо в первую очередь разработка движка ведется в своем инетресе.
-Дополонительная и немаловажная цель это оценка нашего труда со стороны таких же как и мы - разработчиков (без разницы, игр или другого ПО), которым  нужен подобный движок.
+----------------------------------------------------------------------------
+
+!!!Текст ниже, переведен при помощи средства автоматического перевода и может содержать ошибки!!!
+
+SkyXEngine - engine for creating 3D games with real-time rendering, uses DirectX 9 technologies.
+Autodocumentation for use: docs / html / index.html
+Online version of auto-documentation: https://doc.skyxengine.com/
+Official website: https://skyxengine.com/
+Wiki resource with training materials: https://wiki.skyxengine.com/
+
+== IDEOLOGY ==
+The main technical idea in the development of the engine was the idea that the programmer must have control over the objects he operates with, but this control should be in moderation.
+The main idea of ​​the purpose was served by the idea that the provided toolkit could fully satisfy the developer's needs, without the need for the developer to delve into the implementation details, but that this toolkit had a transparent, open, free, free license, and the developer could calmly move into the elements the creation of his world.
+
+== OBJECTIVE ==
+The most important goal that we pursue is the development of the engine, on which it is possible to develop games in the future, for the first time the engine is developed in its Internet.
+Additional and important goal is to evaluate our work on the part of the same as we - the developers (no difference, games or other software) that need a similar engine.
+
+== FEATURES ==
+If you delve into the essence of development, you can identify several conceptual elements that differentiate our engine from others:
+ - open-source
+ - the desire to make the engine tool for modmeykerov with which you can only develop games, without interfering with the code of the game
+ - monolithic architecture
+ - only those technologies that are really needed
+ 
+== TECHNOLOGIES ==
+We use a sufficient set of modern technologies for the possibility of realizing a beautiful and modern 3d game of the FPS genre. implemented:
+ - static geometry
+ - vegetation
+ - skeletal animation
+ - lighting (deferred shading)
+ - HDR
+ - Material system PBR
+ - postprocess
+ - decals
+ - Physics
+ - sound
+ - particles
+ - artificial intelligence
+ - environment effects
+ - game engine
+ - Editors
+
+==PROJECT STRUCTURE==
+build - directory for building the engine (here comes after compiling exe, dll), here are the game resources
+docs - documentation, settings for Doxygen
+	html - documentation in the form of html files, open index.html
+	settings_doxygen - settings file for Doxygen
+libs - directory with lib files (here all the generated libs come)
+proj - directory with projects for development environments
+sdks are third-party libraries that are used
+source - directory with source files
