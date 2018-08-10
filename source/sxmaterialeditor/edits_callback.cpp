@@ -34,6 +34,70 @@ LRESULT SXMaterialEditor_EditSkyBox_Enter(HWND hwnd, UINT msg, WPARAM wParam, LP
 	return 0;
 }
 
+LRESULT SXMaterialEditor_EditLigthColorR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[32];
+	szStr[0] = 0;
+
+	SXMaterialEditor::EditLigthColorR->getText(szStr, 32);
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+
+	if (idGlobalLight > -1)
+	{
+		float3 vColor;
+		SML_LigthsGetColor(idGlobalLight, &vColor);
+		sscanf(szStr, "%f", &vColor.x);
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0)));
+	}
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditLigthColorG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[32];
+	szStr[0] = 0;
+
+	SXMaterialEditor::EditLigthColorG->getText(szStr, 32);
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+
+	if (idGlobalLight > -1)
+	{
+		float3 vColor;
+		SML_LigthsGetColor(idGlobalLight, &vColor);
+		sscanf(szStr, "%f", &vColor.y);
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0)));
+	}
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditLigthColorB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[32];
+	szStr[0] = 0;
+
+	SXMaterialEditor::EditLigthColorB->getText(szStr, 32);
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+
+	if (idGlobalLight > -1)
+	{
+		float3 vColor;
+		SML_LigthsGetColor(idGlobalLight, &vColor);
+		sscanf(szStr, "%f", &vColor.z);
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0)));
+	}
+
+	return 0;
+}
+
+
 LRESULT SXMaterialEditor_EditTex_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];

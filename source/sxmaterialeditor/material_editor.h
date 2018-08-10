@@ -47,6 +47,16 @@ namespace SXMaterialEditor
 	extern ISXGUIStatic* StaticTypeModel;
 	extern ISXGUIComboBox* ComboBoxTypeModel;
 
+	extern ISXGUIStatic* StaticLigthColorText;
+	extern ISXGUIStatic* StaticLigthColorR;
+	extern ISXGUIEdit* EditLigthColorR;
+	extern ISXGUIStatic* StaticLigthColorG;
+	extern ISXGUIEdit* EditLigthColorG;
+	extern ISXGUIStatic* StaticLigthColorB;
+	extern ISXGUIEdit* EditLigthColorB;
+	extern ISXGUIButton* ButtonLigthColor;
+	extern ISXGUIStatic* StaticLigthColor;
+
 	extern ISXGUIStatic* StaticPenetration;
 	extern ISXGUIEdit* EditHitChance;
 	extern ISXGUITrackBar* TrackBarHitChance;

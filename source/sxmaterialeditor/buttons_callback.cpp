@@ -21,6 +21,38 @@ LRESULT SXMaterialEditor_ButtonRotAngle0_Click(HWND hwnd, UINT msg, WPARAM wPara
 	return 0;
 }
 
+LRESULT SXMaterialEditor_ButtonLigthColor_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	static COLORREF aCustClr[16];
+	CHOOSECOLOR oChooseColor;
+	ZeroMemory(&oChooseColor, sizeof(CHOOSECOLOR));
+	oChooseColor.hwndOwner = hwnd;
+	oChooseColor.lStructSize = sizeof(CHOOSECOLOR);
+	oChooseColor.lpCustColors = aCustClr;
+	oChooseColor.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+	float3 vColor;
+	SML_LigthsGetColor(idGlobalLight, &vColor);
+
+	oChooseColor.rgbResult = RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0));
+
+	if (ChooseColor(&oChooseColor))
+	{
+		vColor.x = float(GetRValue(oChooseColor.rgbResult)) / 255.0;
+		vColor.y = float(GetGValue(oChooseColor.rgbResult)) / 255.0;
+		vColor.z = float(GetBValue(oChooseColor.rgbResult)) / 255.0;
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(oChooseColor.rgbResult);
+
+		SXMaterialEditor::EditLigthColorR->setText(String(vColor.x).c_str());
+		SXMaterialEditor::EditLigthColorG->setText(String(vColor.y).c_str());
+		SXMaterialEditor::EditLigthColorB->setText(String(vColor.z).c_str());
+	}
+
+	return 0;
+}
+
 LRESULT SXMaterialEditor_ButtonTex_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	char tmppath[1024];

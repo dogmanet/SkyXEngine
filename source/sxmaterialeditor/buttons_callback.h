@@ -3,7 +3,7 @@
 #define __BUTTONS_CALLBACK_H
 
 #include <common/string.h>
-
+#include <windows.h>
 #include <sxguiwinapi/sxgui.h>
 #include <mtllight/sxmtllight.h>
 #include <render/sxrender.h>
@@ -14,6 +14,8 @@
 LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT SXMaterialEditor_ButtonRotAngle0_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT SXMaterialEditor_ButtonLigthColor_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT SXMaterialEditor_ButtonTex_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

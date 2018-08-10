@@ -21,7 +21,7 @@ half3 g_vBoundMin		: register(GREEN_R_BBMIN);
 
 void main(in VSI_Green IN, out VSO_SceneCommon OUT) 
 {
-	OUT.vNormal = GreenComRotation(IN.vNormal, IN.vInstSinCosRot);
+	OUT.vNormal = GreenComRotation(normalize(IN.vNormal), IN.vInstSinCosRot);
 	
 	OUT.vPosition = GreenTransformPos(
 						GreenComRotation(IN.vPosition, IN.vInstSinCosRot),

@@ -28,6 +28,16 @@ namespace SXMaterialEditor
 	ISXGUIStatic* StaticTypeModel;
 	ISXGUIComboBox* ComboBoxTypeModel;
 
+	ISXGUIStatic* StaticLigthColorText;
+	ISXGUIStatic* StaticLigthColorR;
+	ISXGUIEdit* EditLigthColorR;
+	ISXGUIStatic* StaticLigthColorG;
+	ISXGUIEdit* EditLigthColorG;
+	ISXGUIStatic* StaticLigthColorB;
+	ISXGUIEdit* EditLigthColorB;
+	ISXGUIButton* ButtonLigthColor;
+	ISXGUIStatic* StaticLigthColor;
+
 	ISXGUIStatic* StaticHitChance;
 	ISXGUIEdit* EditHitChance;
 	ISXGUITrackBar* TrackBarHitChance;
@@ -313,15 +323,101 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ButtonRotAngle0 = SXGUICrButton("0", 60, 330, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ButtonRotAngle0->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ButtonRotAngle0->addHandler(SXMaterialEditor_ButtonRotAngle0_Click, WM_LBUTTONUP);
+
+	SXMaterialEditor::StaticTestModel = SXGUICrStatic("Test model:", 5, 350, 70, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticTestModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticTestModel->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::StaticTestModel->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::StaticTestModel->setTransparentTextBk(true);
+	SXMaterialEditor::StaticTestModel->setColorBrush(RGB(220, 220, 220));
+	SXMaterialEditor::ComboBoxTestModel = SXGUICrComboBox(100, 350, 200, 70, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ComboBoxTestModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::ComboBoxTestModel->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::ComboBoxTestModel->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::ComboBoxTestModel->setTransparentTextBk(true);
+	SXMaterialEditor::ComboBoxTestModel->setColorBrush(RGB(255, 255, 255));
+	SXMaterialEditor::ComboBoxTestModel->addItem("sphere");
+	SXMaterialEditor::ComboBoxTestModel->addItem("cube");
+	SXMaterialEditor::ComboBoxTestModel->addItem("plane");
+	SXMaterialEditor::ComboBoxTestModel->setSel(0);
+
+
+
+	SXMaterialEditor::StaticLigthColorText = SXGUICrStatic("Color:", 5, 375, 35, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticLigthColorText->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticLigthColorText->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::StaticLigthColorText->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::StaticLigthColorText->setTransparentTextBk(true);
+	SXMaterialEditor::StaticLigthColorText->setColorBrush(RGB(220, 220, 220));
+
+	SXMaterialEditor::StaticLigthColorR = SXGUICrStatic("r:", 45, 375, 70, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticLigthColorR->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticLigthColorR->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::StaticLigthColorR->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::StaticLigthColorR->setTransparentTextBk(true);
+	SXMaterialEditor::StaticLigthColorR->setColorBrush(RGB(220, 220, 220));
+	SXMaterialEditor::EditLigthColorR = SXGUICrEdit("0", 55, 375, 55, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::EditLigthColorR->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::EditLigthColorR->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::EditLigthColorR->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::EditLigthColorR->setTransparentTextBk(true);
+	SXMaterialEditor::EditLigthColorR->setColorBrush(RGB(255, 255, 255));
+	SXMaterialEditor::EditLigthColorR->addHandler(SXMaterialEditor_EditLigthColorR_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditLigthColorR->addHandler(SXMaterialEditor_EditLigthColorR_Enter, WM_KILLFOCUS);
+
+
+	SXMaterialEditor::StaticLigthColorG = SXGUICrStatic("g:", 115, 375, 70, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticLigthColorG->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticLigthColorG->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::StaticLigthColorG->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::StaticLigthColorG->setTransparentTextBk(true);
+	SXMaterialEditor::StaticLigthColorG->setColorBrush(RGB(220, 220, 220));
+	SXMaterialEditor::EditLigthColorG = SXGUICrEdit("0", 125, 375, 55, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::EditLigthColorG->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::EditLigthColorG->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::EditLigthColorG->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::EditLigthColorG->setTransparentTextBk(true);
+	SXMaterialEditor::EditLigthColorG->setColorBrush(RGB(255, 255, 255));
+	SXMaterialEditor::EditLigthColorG->addHandler(SXMaterialEditor_EditLigthColorG_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditLigthColorG->addHandler(SXMaterialEditor_EditLigthColorG_Enter, WM_KILLFOCUS);
+
+
+	SXMaterialEditor::StaticLigthColorB = SXGUICrStatic("b:", 185, 375, 70, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticLigthColorB->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticLigthColorB->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::StaticLigthColorB->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::StaticLigthColorB->setTransparentTextBk(true);
+	SXMaterialEditor::StaticLigthColorB->setColorBrush(RGB(220, 220, 220));
+	SXMaterialEditor::EditLigthColorB = SXGUICrEdit("0", 195, 375, 55, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::EditLigthColorB->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::EditLigthColorB->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::EditLigthColorB->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::EditLigthColorB->setTransparentTextBk(true);
+	SXMaterialEditor::EditLigthColorB->setColorBrush(RGB(255, 255, 255));
+	SXMaterialEditor::EditLigthColorB->addHandler(SXMaterialEditor_EditLigthColorB_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMaterialEditor::EditLigthColorB->addHandler(SXMaterialEditor_EditLigthColorB_Enter, WM_KILLFOCUS);
+
+	SXMaterialEditor::ButtonLigthColor = SXGUICrButton("...", 275, 375, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ButtonLigthColor->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::ButtonLigthColor->addHandler(SXMaterialEditor_ButtonLigthColor_Click, WM_LBUTTONUP);
+
+	SXMaterialEditor::StaticLigthColor = SXGUICrStatic("", 5, 395, 295, 10, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticLigthColor->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	SXMaterialEditor::StaticLigthColor->setColorText(RGB(0, 0, 0));
+	SXMaterialEditor::StaticLigthColor->setColorTextBk(RGB(255, 255, 255));
+	SXMaterialEditor::StaticLigthColor->setTransparentTextBk(true);
+	SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(220, 220, 220));
+
+
 	
-	SXMaterialEditor::StaticTypeModel = SXGUICrStatic("Type model:",5,385,70,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::StaticTypeModel = SXGUICrStatic("Type model:",5,415,70,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::StaticTypeModel->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::StaticTypeModel->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticTypeModel->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticTypeModel->setTransparentTextBk(true);
 	SXMaterialEditor::StaticTypeModel->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::ComboBoxTypeModel = SXGUICrComboBox(100,385,200,100,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::ComboBoxTypeModel = SXGUICrComboBox(100,415,200,100,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::ComboBoxTypeModel->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ComboBoxTypeModel->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::ComboBoxTypeModel->setColorTextBk(RGB(255, 255, 255));
@@ -333,30 +429,15 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ComboBoxTypeModel->addItem("skin");
 	SXMaterialEditor::ComboBoxTypeModel->setSel(0);
 
-	SXMaterialEditor::StaticTestModel = SXGUICrStatic("Test model:",5,350,70,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
-	SXMaterialEditor::StaticTestModel->setFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXMaterialEditor::StaticTestModel->setColorText(RGB(0, 0, 0));
-	SXMaterialEditor::StaticTestModel->setColorTextBk(RGB(255, 255, 255));
-	SXMaterialEditor::StaticTestModel->setTransparentTextBk(true);
-	SXMaterialEditor::StaticTestModel->setColorBrush(RGB(220, 220, 220));
-	SXMaterialEditor::ComboBoxTestModel = SXGUICrComboBox(100,350,200,70,SXMaterialEditor::JobWindow->getHWND(),0,0);
-	SXMaterialEditor::ComboBoxTestModel->setFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXMaterialEditor::ComboBoxTestModel->setColorText(RGB(0, 0, 0));
-	SXMaterialEditor::ComboBoxTestModel->setColorTextBk(RGB(255, 255, 255));
-	SXMaterialEditor::ComboBoxTestModel->setTransparentTextBk(true);
-	SXMaterialEditor::ComboBoxTestModel->setColorBrush(RGB(255, 255, 255));
-	SXMaterialEditor::ComboBoxTestModel->addItem("sphere");
-	SXMaterialEditor::ComboBoxTestModel->addItem("cube");
-	SXMaterialEditor::ComboBoxTestModel->addItem("plane");
-	SXMaterialEditor::ComboBoxTestModel->setSel(0);
+	
 
-	SXMaterialEditor::StaticTex = SXGUICrStatic("Tex:",5,410,30,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::StaticTex = SXGUICrStatic("Tex:",5,440,30,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::StaticTex->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::StaticTex->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticTex->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticTex->setTransparentTextBk(true);
 	SXMaterialEditor::StaticTex->setColorBrush(RGB(220, 220, 220));
-	SXMaterialEditor::EditTex = SXGUICrEdit("0",40,410,230,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::EditTex = SXGUICrEdit("0",40,440,230,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::EditTex->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::EditTex->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::EditTex->setColorTextBk(RGB(255, 255, 255));
@@ -365,27 +446,27 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditTex->addHandler(SXMaterialEditor_EditTex_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 	SXMaterialEditor::EditTex->addHandler(SXMaterialEditor_EditTex_Enter, WM_KILLFOCUS);
 
-	SXMaterialEditor::ButtonTex = SXGUICrButton("...", 275, 410, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ButtonTex = SXGUICrButton("...", 275, 440, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ButtonTex->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ButtonTex->addHandler(SXMaterialEditor_ButtonTex_Click, WM_LBUTTONUP);
 
 
 
-	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting", 5, 430, 55, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0, false);
+	SXMaterialEditor::CheckBoxLighting = SXGUICrCheckBox("Lighting", 5, 460, 55, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxLighting->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::CheckBoxLighting->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::CheckBoxLighting->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::CheckBoxLighting->setTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxLighting->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("Use AlphaTest", 65, 430, 90, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0, false);
+	SXMaterialEditor::CheckBoxAlphaTest = SXGUICrCheckBox("Use AlphaTest", 65, 460, 90, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxAlphaTest->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::CheckBoxAlphaTest->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::CheckBoxAlphaTest->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::CheckBoxAlphaTest->setTransparentTextBk(true);
 	SXMaterialEditor::CheckBoxAlphaTest->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::CheckBoxTransparent = SXGUICrCheckBox("Transparent", 160, 430, 90, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0, false);
+	SXMaterialEditor::CheckBoxTransparent = SXGUICrCheckBox("Transparent", 160, 460, 90, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0, false);
 	SXMaterialEditor::CheckBoxTransparent->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::CheckBoxTransparent->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::CheckBoxTransparent->setColorTextBk(RGB(255, 255, 255));
@@ -393,14 +474,14 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::CheckBoxTransparent->setColorBrush(RGB(220, 220, 220));
 
 
-	SXMaterialEditor::StaticTypeReflect = SXGUICrStatic("Reflection:", 5, 450, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticTypeReflect = SXGUICrStatic("Reflection:", 5, 480, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::StaticTypeReflect->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::StaticTypeReflect->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticTypeReflect->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticTypeReflect->setTransparentTextBk(true);
 	SXMaterialEditor::StaticTypeReflect->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::ComboBoxTypeReflect = SXGUICrComboBox(70, 448, 230, 115, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ComboBoxTypeReflect = SXGUICrComboBox(70, 478, 230, 115, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ComboBoxTypeReflect->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ComboBoxTypeReflect->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::ComboBoxTypeReflect->setColorTextBk(RGB(255, 255, 255));
@@ -414,14 +495,14 @@ void SXMaterialEditor::InitAllElements()
 
 
 
-	SXMaterialEditor::StaticShaders = SXGUICrStatic("Shaders:", 5, 485, 40, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticShaders = SXGUICrStatic("Shaders:", 5, 515, 40, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::StaticShaders->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::StaticShaders->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticShaders->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticShaders->setTransparentTextBk(true);
 	SXMaterialEditor::StaticShaders->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::ComboBoxShaders = SXGUICrComboBoxEx(60, 483, 240, 150, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ComboBoxShaders = SXGUICrComboBoxEx(60, 513, 240, 150, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ComboBoxShaders->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ComboBoxShaders->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::ComboBoxShaders->setColorTextBk(RGB(255, 255, 255));
@@ -430,14 +511,14 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ComboBoxShaders->addItem("");
 
 
-	SXMaterialEditor::StaticVS = SXGUICrStatic("VS:",5,505,30,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::StaticVS = SXGUICrStatic("VS:",5,535,30,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::StaticVS->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::StaticVS->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticVS->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticVS->setTransparentTextBk(true);
 	SXMaterialEditor::StaticVS->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::EditVS = SXGUICrEdit("0",40,505,230,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::EditVS = SXGUICrEdit("0",40,535,230,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::EditVS->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::EditVS->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::EditVS->setColorTextBk(RGB(255, 255, 255));
@@ -446,18 +527,18 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditVS->addHandler(SXMaterialEditor_EditVS_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 	SXMaterialEditor::EditVS->addHandler(SXMaterialEditor_EditVS_Enter, WM_KILLFOCUS);
 
-	SXMaterialEditor::ButtonVS = SXGUICrButton("...", 275, 505, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ButtonVS = SXGUICrButton("...", 275, 535, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ButtonVS->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ButtonVS->addHandler(SXMaterialEditor_ButtonVS_Click, WM_LBUTTONUP);
 
-	SXMaterialEditor::StaticPS = SXGUICrStatic("PS:",5,525,30,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::StaticPS = SXGUICrStatic("PS:",5,555,30,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::StaticPS->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::StaticPS->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticPS->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticPS->setTransparentTextBk(true);
 	SXMaterialEditor::StaticPS->setColorBrush(RGB(220, 220, 220));
 
-	SXMaterialEditor::EditPS = SXGUICrEdit("0",40,525,230,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
+	SXMaterialEditor::EditPS = SXGUICrEdit("0",40,555,230,15,SXMaterialEditor::JobWindow->getHWND(),0,0);
 	SXMaterialEditor::EditPS->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::EditPS->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::EditPS->setColorTextBk(RGB(255, 255, 255));
@@ -466,18 +547,18 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditPS->addHandler(SXMaterialEditor_EditPS_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 	SXMaterialEditor::EditPS->addHandler(SXMaterialEditor_EditPS_Enter, WM_KILLFOCUS);
 
-	SXMaterialEditor::ButtonPS = SXGUICrButton("...", 275, 525, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ButtonPS = SXGUICrButton("...", 275, 555, 25, 15, SXGUI_BUTTON_IMAGE_NONE, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ButtonPS->setFont("MS Shell Dlg",-11,0,400,0,0,0);
 	SXMaterialEditor::ButtonPS->addHandler(SXMaterialEditor_ButtonPS_Click, WM_LBUTTONUP);
 
 
-	SXMaterialEditor::StaticPhysic = SXGUICrStatic("Physic material:", 5, 555, 80, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticPhysic = SXGUICrStatic("Physic material:", 5, 585, 80, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::StaticPhysic->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::StaticPhysic->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticPhysic->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticPhysic->setTransparentTextBk(true);
 	SXMaterialEditor::StaticPhysic->setColorBrush(RGB(220, 220, 220));
-	SXMaterialEditor::ComboBoxPhysic = SXGUICrComboBox(100, 553, 200, 120, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::ComboBoxPhysic = SXGUICrComboBox(100, 583, 200, 120, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::ComboBoxPhysic->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::ComboBoxPhysic->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::ComboBoxPhysic->setColorTextBk(RGB(255, 255, 255));
@@ -494,13 +575,13 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::ComboBoxPhysic->addItem("leaf/grass (листва/трава)");
 	SXMaterialEditor::ComboBoxPhysic->setSel(0);
 
-	SXMaterialEditor::StaticHitChance = SXGUICrStatic("Hit chance:", 5, 575, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticHitChance = SXGUICrStatic("Hit chance:", 5, 605, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::StaticHitChance->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::StaticHitChance->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticHitChance->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticHitChance->setTransparentTextBk(true);
 	SXMaterialEditor::StaticHitChance->setColorBrush(RGB(220, 220, 220));
-	SXMaterialEditor::EditHitChance = SXGUICrEdit("0", 60, 575, 65, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::EditHitChance = SXGUICrEdit("0", 60, 605, 65, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::EditHitChance->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::EditHitChance->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::EditHitChance->setColorTextBk(RGB(255, 255, 255));
@@ -508,18 +589,18 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditHitChance->setColorBrush(RGB(255, 255, 255));
 	SXMaterialEditor::EditHitChance->addHandler(SXMaterialEditor_EditHitChance_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 	SXMaterialEditor::EditHitChance->addHandler(SXMaterialEditor_EditHitChance_Enter, WM_KILLFOCUS);
-	SXMaterialEditor::TrackBarHitChance = SXGUICrTrackBar("", 130, 575, 170, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::TrackBarHitChance = SXGUICrTrackBar("", 130, 605, 170, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::TrackBarHitChance->setMinMax(0, 100);
 	SXMaterialEditor::TrackBarHitChance->setTickFrequency(10);
 	SXMaterialEditor::TrackBarHitChance->addHandler(SXMaterialEditor_TrackBarHitChance_MouseMove, WM_MOUSEMOVE);
 
-	SXMaterialEditor::StaticDurability = SXGUICrStatic("Durability:", 5, 595, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticDurability = SXGUICrStatic("Durability:", 5, 625, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::StaticDurability->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::StaticDurability->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticDurability->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticDurability->setTransparentTextBk(true);
 	SXMaterialEditor::StaticDurability->setColorBrush(RGB(220, 220, 220));
-	SXMaterialEditor::EditDurability = SXGUICrEdit("0", 60, 595, 65, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::EditDurability = SXGUICrEdit("0", 60, 625, 65, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::EditDurability->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::EditDurability->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::EditDurability->setColorTextBk(RGB(255, 255, 255));
@@ -528,13 +609,13 @@ void SXMaterialEditor::InitAllElements()
 	SXMaterialEditor::EditDurability->addHandler(SXMaterialEditor_EditDurability_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 	SXMaterialEditor::EditDurability->addHandler(SXMaterialEditor_EditDurability_Enter, WM_KILLFOCUS);
 
-	SXMaterialEditor::StaticDensity = SXGUICrStatic("Density:", 135, 595, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::StaticDensity = SXGUICrStatic("Density:", 135, 625, 60, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::StaticDensity->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::StaticDensity->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::StaticDensity->setColorTextBk(RGB(255, 255, 255));
 	SXMaterialEditor::StaticDensity->setTransparentTextBk(true);
 	SXMaterialEditor::StaticDensity->setColorBrush(RGB(220, 220, 220));
-	SXMaterialEditor::EditDensity = SXGUICrEdit("0", 180, 595, 65, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
+	SXMaterialEditor::EditDensity = SXGUICrEdit("0", 180, 625, 65, 15, SXMaterialEditor::JobWindow->getHWND(), 0, 0);
 	SXMaterialEditor::EditDensity->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	SXMaterialEditor::EditDensity->setColorText(RGB(0, 0, 0));
 	SXMaterialEditor::EditDensity->setColorTextBk(RGB(255, 255, 255));
@@ -1205,6 +1286,16 @@ void SXMaterialEditor::DeleteAllElements()
 	mem_delete(SXMaterialEditor::ComboBoxTestModel);
 	mem_delete(SXMaterialEditor::StaticTex);
 	mem_delete(SXMaterialEditor::EditTex);
+
+	mem_delete(StaticLigthColorText);
+	mem_delete(StaticLigthColorR);
+	mem_delete(EditLigthColorR);
+	mem_delete(StaticLigthColorG);
+	mem_delete(EditLigthColorG);
+	mem_delete(StaticLigthColorB);
+	mem_delete(EditLigthColorB);
+	mem_delete(ButtonLigthColor);
+	mem_delete(StaticLigthColor);
 
 	mem_delete(SXMaterialEditor::StaticShaders);
 	mem_delete(SXMaterialEditor::ComboBoxShaders);

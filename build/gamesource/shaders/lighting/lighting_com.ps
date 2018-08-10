@@ -107,6 +107,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	half fSpecular = GetSpecular(vParam, fNdotH, fNdotV, fNdotL, fLdotV, fHdotV);
 
 	half fAbsDiffuse = saturate(fNdotL);
+	half fMdiffuse = saturate(fNdotL * 0.5 + 0.5);
 	half fDiffuse = fAbsDiffuse;
 	
 	//закрываем баг с отставанием теней
@@ -124,13 +125,13 @@ PSO_Lbuffer main(VSO_ResPos IN)
 		fDiffuse *= max(fOriginShadow, 0.2);
 	else
 		//иначе выбираем значения тени из диапазона, на основании силы света
-		fDiffuse *= max(fShadow, lerp(0.01, 0.07,g_vLightColor.w));
+		fDiffuse *= max(fShadow, lerp(0.01, 0.07, g_vLightColor.w));
 	#endif
 	
 	OUT.vAmdient.xyz = g_vLightColor.xyz * g_vLightColor.xyz * g_vLightPowerDist.x * fAttenuation;
-	OUT.vAmdient.w = fDiffuse * vParam.w * g_vLightPowerDist.x * fAttenuation;
+	OUT.vAmdient.w = fDiffuse * fMdiffuse * vParam.w * g_vLightPowerDist.x * fAttenuation;
 	
-	OUT.vSpecular = fSpecular * fDiffuse * fAttenuation * g_vLightPowerDist.x;
+	OUT.vSpecular = fSpecular * fAbsDiffuse * fAttenuation * g_vLightPowerDist.x;
 	
 	return OUT;
 }

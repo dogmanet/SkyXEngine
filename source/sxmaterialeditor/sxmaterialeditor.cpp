@@ -486,6 +486,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 
+	SXMaterialEditor::EditLigthColorR->setText("1");
+	SXMaterialEditor::EditLigthColorG->setText("1");
+	SXMaterialEditor::EditLigthColorB->setText("1");
+	SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(255, 255, 255));
+
+
 	SGCore_LoadTexAllLoad();
 
 	SXMaterialEditor::InitMtl(SRender_SimModelGetIDMtl());

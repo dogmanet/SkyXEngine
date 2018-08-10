@@ -190,11 +190,19 @@ void PPSet::Init()
 	
 
 	pRnsSampler->LockRect(0, &LockedRect, 0, 0);
+	
+	float3 vRnd;
+
 	for (int i = 0; i < (*r_win_width) * (*r_win_height); ++i)
 	{
-		((DWORD*)LockedRect.pBits)[i] = D3DCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
-		//memcpy(LockedRect.pBits + (i * sizeof(DWORD)), aRndColors, sizeof(uint32_t));
+		vRnd.x = randf(0, 1);
+		vRnd.y = randf(0, 1);
+		vRnd.z = randf(0, 1);
+		vRnd = SMVector3Normalize(vRnd);
+
+		((DWORD*)LockedRect.pBits)[i] = D3DCOLOR_ARGB(255, DWORD(vRnd.x * 255.0), DWORD(vRnd.y * 255.0), DWORD(vRnd.z * 255.0));
 	}
+
 	pRnsSampler->UnlockRect(0);
 
 	//SGCore_LoadTexLoadTextures();
@@ -294,8 +302,17 @@ SX_LIB_API void SPP_OnDeviceReset()
 
 	pRnsSampler->LockRect(0, &LockedRect, 0, 0);
 
+	float3 vRnd;
+
 	for (int i = 0; i < (*r_win_width) * (*r_win_height); ++i)
-		((DWORD*)LockedRect.pBits)[i] = D3DCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
+	{
+		vRnd.x = randf(0, 1);
+		vRnd.y = randf(0, 1);
+		vRnd.z = randf(0, 1);
+		vRnd = SMVector3Normalize(vRnd);
+
+		((DWORD*)LockedRect.pBits)[i] = D3DCOLOR_ARGB(255, DWORD(vRnd.x * 255.0), DWORD(vRnd.y * 255.0), DWORD(vRnd.z * 255.0));
+	}
 
 	pRnsSampler->UnlockRect(0);
 

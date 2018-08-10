@@ -111,6 +111,7 @@ PSO_Gbuffer CreateGbuffer(half4 vColor, half3 vNormal, half4 vParam, half4 vPosi
 	OUT.vColor = vColor;
 	
 	vNormal = normalize(vNormal);
+	//OUT.vNormal.xyz = vNormal;
 	OUT.vNormal.xy = NormalEncode(vNormal);
 	OUT.vNormal.w = vNearFarLayers.z;
 	OUT.vNormal.z = vNearFarLayers.w;
