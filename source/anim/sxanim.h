@@ -56,8 +56,10 @@ See the license in LICENSE
 class IAnimPlayer;
 class ISXFrustum;
 class ISXBound;
+class CBaseAnimating;
 
 typedef void(*AnimStateCB)(int slot, ANIM_STATE as, IAnimPlayer * pAnim);      //!< коллбэк для определения изменения состояния воспроизведения
+typedef void(CBaseAnimating::*AnimStateEntCB)(int slot, ANIM_STATE as);      //!< коллбэк для определения изменения состояния воспроизведения
 typedef void(*AnimProgressCB)(int slot, float progress, IAnimPlayer * pAnim);  //!< коллбэк для определения изменения прогресса воспроизведения
 
 //! Интерфейс рэгдолла
@@ -236,6 +238,10 @@ public:
 	/*! Устанавливает коллбэк на изменение состояния объекта
 	*/
 	virtual AnimStateCB setCallback(AnimStateCB cb) = 0;
+
+	/*! Устанавливает коллбэк на изменение состояния объекта
+	*/
+	virtual void setCallback(CBaseAnimating *pEnt, AnimStateEntCB cb) = 0;
 
 	/*! Устанавливает коллбэк на изменение состояния воспроизведения
 	*/

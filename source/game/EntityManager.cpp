@@ -44,28 +44,37 @@ void CEntityManager::update(int thread)
 		{
 			//mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			//(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
+			to->status = TS_DONE;
 			for(int j = 0; j < to->pOutput->iOutCount; ++j)
 			{
+				if(!to->pOutput->pOutputs[j].pTarget)
+				{
+					continue;
+				}
 				to->data.parameter = to->pOutput->pOutputs[j].data.parameter;
 				to->data.type = to->pOutput->pOutputs[j].data.type;
 				to->data.v3Parameter = to->pOutput->pOutputs[j].data.v3Parameter;
 
 				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&to->data);
+
+				// Update pointer. Array can be reallocated during previous function call
+				to = &m_vOutputTimeout[i];
 			}
-			to->status = TS_DONE;
 		}
 	}
 
 	for(int i = thread, l = m_vTimeout.size(); i < l; i += m_iThreadNum)
 	{
-			t = &m_vTimeout[i];
+		t = &m_vTimeout[i];
 		if(t->status == TS_WAIT && t->fNextTime < tNow)
-			{
-				mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
-				(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
+		{
+			mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			t->status = TS_DONE;
-			}
+
+			// m_vTimeout array can be reallocated during this function call
+			(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
 		}
+	}
 
 	for(int i = thread, l = m_vInterval.size(); i < l; i += m_iThreadNum)
 	{
@@ -75,6 +84,8 @@ void CEntityManager::update(int thread)
 			mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			t->fNextTime = t->fNextTime - t->fStartTime + tNow;
 			t->fStartTime = tNow;
+
+			// m_vInterval array can be reallocated during this function call
 			(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
 		}
 	}
@@ -91,6 +102,19 @@ void CEntityManager::setThreadNum(int num)
 void CEntityManager::sync()
 {
 	CBaseEntity * pEnt;
+
+	// do not store m_vEntRemoveList.size()! It can change during iteration
+	for(int i = 0; i < (int)m_vEntRemoveList.size(); ++i)
+	{
+		pEnt = m_vEntRemoveList[i];
+		if(pEnt)
+		{
+			pEnt->_cleanup();
+			delete pEnt;
+		}
+	}
+	m_vEntRemoveList.clearFast();
+
 	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
 	{
 		if(m_vTimeout[i].status == TS_DONE)
@@ -123,6 +147,15 @@ void CEntityManager::sync()
 	{
 		pEnt = m_vEntList[i];
 		if(pEnt)
+		{
+			pEnt->m_bSynced = false;
+		}
+	}
+	
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if(pEnt && !pEnt->m_bSynced)
 		{
 			//pEnt->updateDiscreteLinearVelocity(0, dt);
 			pEnt->onSync();
@@ -167,11 +200,51 @@ ID CEntityManager::reg(CBaseEntity * pEnt)
 }
 void CEntityManager::unreg(ID ent)
 {
-	//@TODO: Clear all sheduled timeouts and outputs
+	//@TODO: Clear all outputs
 	if(m_vEntList.size() <= (UINT)ent || ent < 0)
 	{
 		return;
 	}
+
+	timeout_t * t;
+	timeout_output_t * to;
+
+	CBaseEntity * pEnt = m_vEntList[ent];
+
+	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
+	{
+		to = &m_vOutputTimeout[i];
+		if(to->status == TS_WAIT)
+		{
+			to->status = TS_DONE;
+			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			{
+				if(to->pOutput->pOutputs[j].pTarget == pEnt)
+				{
+					to->pOutput->pOutputs[j].pTarget = NULL;
+				}
+			}
+		}
+	}
+
+	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
+	{
+		t = &m_vTimeout[i];
+		if(t->status == TS_WAIT && t->pEnt == pEnt)
+		{
+			t->status = TS_DONE;
+		}
+	}
+
+	for(int i = 0, l = m_vInterval.size(); i < l; ++i)
+	{
+		t = &m_vInterval[i];
+		if(t->status == TS_WAIT && t->pEnt == pEnt)
+		{
+			t->status = TS_DONE;
+		}
+	}
+
 	m_vEntList[ent] = NULL;
 	m_vFreeIDs.push_back(ent);
 }
@@ -269,6 +342,10 @@ bool CEntityManager::exportList(const char * file)
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
 		sprintf(sect, "ent_%d", ic);
 
 		if(!(pEnt->getFlags() & EF_EXPORT))
@@ -396,6 +473,10 @@ CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * 
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
 		if(bFound)
 		{
 			if(!strcmp(pEnt->getName(), name))
@@ -423,7 +504,7 @@ int CEntityManager::countEntityByName(const char * name)
 	int c = 0;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
-		if(!strcmp(m_vEntList[i]->getName(), name))
+		if(m_vEntList[i] && !strcmp(m_vEntList[i]->getName(), name))
 		{
 			++c;
 		}
@@ -438,9 +519,42 @@ CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity *
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
 		if(bFound)
 		{
 			if(!strcmp(pEnt->getClassName(), name))
+			{
+				return(pEnt);
+			}
+		}
+		else
+		{
+			if(pEnt == pStart)
+			{
+				bFound = true;
+			}
+		}
+	}
+	return(NULL);
+}
+
+CBaseEntity * CEntityManager::findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart)
+{
+	bool bFound = !pStart;
+	CBaseEntity * pEnt;
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
+		if(bFound)
+		{
+			if(SMVector3Length2(pEnt->getPos() - f3Origin) < fRadius * fRadius)
 			{
 				return(pEnt);
 			}
@@ -643,4 +757,9 @@ void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pD
 	t.fNextTime += std::chrono::microseconds((long long)(pOutput->fDelay * 1000000.0f));
 
 	m_vOutputTimeout.push_back(t);
+}
+
+void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
+{
+	m_vEntRemoveList.push_back(pEnt);
 }

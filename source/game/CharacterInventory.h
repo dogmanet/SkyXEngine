@@ -13,6 +13,7 @@ public:
 
 	bool hasItems(const char * szClassName, int iCount = 1);
 	int consumeItems(const char *szClassName, int iCount = 1);
+	int getItemCount(const char *szClassName);
 
 	void putItems(const char *szClassName, int iCount = 1);
 	//void putItems(CBaseItem *pItem);

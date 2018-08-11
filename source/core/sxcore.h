@@ -56,10 +56,20 @@ enum CORE_TASK_FLAG
 !@{*/
 
 //! возвращает версию ядра
-SX_LIB_API long Core_0GetVersion();	
+SX_LIB_API long Core_0GetVersion();
 
 //! создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
 SX_LIB_API void Core_0Create(const char *szName, const char *szNameConsole, bool isUnic = true);
+
+//! Загружает командную строку
+SX_LIB_API void Core_0LoadCommandLine(const char *szCommandLine);
+
+//! Выполняет консольные команды из командной строки
+SX_LIB_API void Core_0ExecCommandLine();
+
+//! Выполняет консольные команды из командной строки
+SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault=NULL);
+
 
 //! установка своего обработчика вывода отладочной информации
 SX_LIB_API void Core_Dbg_Set(report_func rf); 
@@ -353,7 +363,8 @@ enum CVAR_FLAG
 {
 	FCVAR_NONE     = 0x00, //!< нет
 	FCVAR_CHEAT    = 0x01, //!< Изменение этой переменной с дефолтного значения разрешено только в режиме разработки
-	FCVAR_READONLY = 0x02  //!< Только для чтения
+	FCVAR_READONLY = 0x02,  //!< Только для чтения
+	FCVAR_NOTIFY   = 0x04  //!< Оповещать об изменениях
 };
 
 //! Регистрирует строковую переменную
@@ -425,6 +436,9 @@ SX_LIB_API void Core_0SetCVarFloat(const char * name, float value);
 
 //! Устанавливает новое значение квара. Должен существовать
 SX_LIB_API void Core_0SetCVarBool(const char * name, bool value);
+
+//! Получает значение квара в виде строки
+SX_LIB_API void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength);
 
 
 //!@}

@@ -1,0 +1,47 @@
+<html onkeyup="return_ingame">
+	<head>
+		<link type="text/css" rel="stylesheet" href="settings_menu.css"/>
+	</head>
+	<body style="font-name: quick-junky-regular;color: #c6f0fd;">
+		<div id="background">
+			<div id="title">Видео</div>
+			<div id="left_menu">
+				<div class="menu-item">Разрешение</div>
+				<div class="menu-item">Во весь экран</div>				
+				<div class="menu-item">Сглаживание</div>				
+				<div class="menu-item">Разрешение текстур</div>				
+				
+				<div class="menu-item" onclick="engine_command" args="
+				    gui_load menu_settings_video_ex menu/settings_video_ex.html
+				    gui_push menu_settings_video_ex
+					gui_settings_init
+				">Расширенные настройки</div>		
+				
+				<div class="menu-item bottom" onclick="on_cancel">Назад</div>
+			</div>
+			<div id="center_menu">
+				<select class="set_item" id="modes_list" cvar="r_win_width|r_win_height">
+					<option value="1">1920x1080</option>
+					<option value="0">1366x768</option>
+				</select>
+				<select class="set_item" cvar="r_win_windowed">
+					<option value="0">Да</option>
+					<option value="1">Нет</option>
+				</select>
+				<select class="set_item" cvar="pp_dlaa|pp_nfaa">
+					<option value="0|0">Нет</option>
+					<option value="1|0">DLAA</option>
+					<option value="0|1">NFAA</option>
+					<option value="1|1">NFAA+DLAA</option>
+				</select>
+				<select class="set_item" cvar="r_texfilter_max_miplevel">
+					<option value="0">Высокое</option>
+					<option value="1">Среднее</option>
+					<option value="2">Низкое</option>
+				</select>
+				
+				<div class="menu-item bottom" onclick="settings_commit" style="text-align: right;">Применить</div>
+			</div>
+		</div>
+	</body>
+</html>

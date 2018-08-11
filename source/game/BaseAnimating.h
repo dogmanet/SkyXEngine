@@ -34,20 +34,26 @@ public:
 
 	bool setKV(const char * name, const char * value);
 
-	void setModel(const char * mdl);
+	virtual void setModel(const char * mdl);
 
 	float3 getAttachmentPos(int id);
 	SMQuaternion getAttachmentRot(int id);
 
 	void onSync();
 
-	void playAnimation(const char * name, UINT iFadeTime = 0, UINT slot = 0);
-	void playActivity(const char * name, UINT iFadeTime = 0, UINT slot = 0);
+	void playAnimation(const char * name, UINT uFadeTime = 0, UINT slot = 0);
+	void playActivity(const char * name, UINT uFadeTime = 0, UINT slot = 0);
 
+	void playAnimationNext(const char * name, UINT uFadeTime = 0, UINT slot = 0);
+	void playActivityNext(const char * name, UINT uFadeTime = 0, UINT slot = 0);
+
+	void cancelNextAnimation(int iSlot = -1);
 
 	bool playingAnimations(const char* name);
 	void setPos(const float3 & pos);
 	void setOrient(const SMQuaternion & q);
+
+
 	
 protected:
 	IAnimPlayer * m_pAnimPlayer;
@@ -61,6 +67,17 @@ protected:
 
 	btCollisionShape * m_pCollideShape;
 	btRigidBody * m_pRigidBody;
+
+	virtual void _cleanup();
+
+	virtual void onAnimationStateChanged(int slot, ANIM_STATE as);
+
+	struct
+	{
+		char szName[MODEL_MAX_NAME];
+		UINT uFadeTime;
+		bool isActivity;
+	} m_vNextAnim[BLEND_MAX];
 };
 
 #endif

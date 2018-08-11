@@ -30,7 +30,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAmmo, base_ammo);
 
-struct	AllHitsNotMeRayResultCallback: public btCollisionWorld::AllHitsRayResultCallback
+struct AllHitsNotMeRayResultCallback: public btCollisionWorld::AllHitsRayResultCallback
 {
 	AllHitsNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld):
 		AllHitsRayResultCallback(rayFromWorld, rayToWorld)
@@ -75,6 +75,8 @@ void CBaseAmmo::fire(const float3 &vStart, const float3 &vDir, CBaseCharacter *p
 {
 	extern CTracer *g_pTracer;
 
+	broadcastMessage("firingHere", 50.0f);
+
 	fire(vStart, vDir, pAttacker, m_fStartSpeed);
 }
 
@@ -94,6 +96,8 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 	bool isY0set = false;
 	float fSpeedY0;
 	g_pTracer->begin(vStart);
+
+	bool isBloody = false;
 
 	while(iJump < BULLET_MAX_JUMPS && fSpeed > 0.5f && fMaxDistance > 0.0f)
 	{
@@ -168,7 +172,14 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 					}
 				}
 				g_pTracer->lineTo(aHitPoints[i].vPosition, aHitPoints[i].isExit ? 0.0f : 1.0f);
-				shootDecal(aHitPoints[i].vPosition, aHitPoints[i].vNormal, idMtl);
+				if(isBloody)
+				{
+					shootBlood(aHitPoints[i].vPosition, aHitPoints[i].vNormal);
+				}
+				else
+				{
+					shootDecal(aHitPoints[i].vPosition, aHitPoints[i].vNormal, idMtl);
+				}
 				if(!aHitPoints[i].isExit)
 				{
 					m_fNextBarrierDepth = 0.0f;
@@ -195,6 +206,8 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 					{
 						CTakeDamageInfo takeDamageInfo(pAttacker, fEnergyDelta);
 						takeDamageInfo.m_pInflictor = getParent();
+
+						isBloody = true;
 
 						((CBaseEntity*)aHitPoints[i].pCollisionObject->getUserPointer())->dispatchDamage(takeDamageInfo);
 					}
@@ -282,6 +295,11 @@ void CBaseAmmo::shootDecal(const float3 &vPos, const float3 &vNormal, ID idMtl)
 
 		//SPE_EffectPlayByName("create_decal_test", &aHitPoints[i].vPosition, &aHitPoints[i].vNormal);
 	}
+}
+
+void CBaseAmmo::shootBlood(const float3 &vPos, const float3 &vNormal)
+{
+	SXDecals_ShootDecal(DECAL_TYPE_BLOOD_BIG, vPos, vNormal);
 }
 
 bool CBaseAmmo::shouldRecochet(const float3 &vPos, const float3 &vNormal, const float3 &vDir, ID idMtl, float fSpeed, float3 *pvNewDir, float *pfNewSpeed)

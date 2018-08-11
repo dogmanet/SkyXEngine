@@ -301,7 +301,9 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #define SKYXENGINE_RELPATH_GAMESOURCE "gamesource"
 #define SKYXENGINE_RELPATH_EDITOR_CACHE "editors_cache"
 
+#ifdef ENABLE_VLD
 #include <vld.h>
+#endif
 #include <windows.h>
 #include <ctime>
 #include <gdefines.h>
@@ -455,7 +457,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 @{*/
 
 //! инициализация движка
-void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0);
+void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0, const char * szCmdLine = NULL);
 
 //! инициализация путей в регистрах
 void SkyXEngine_InitPaths();

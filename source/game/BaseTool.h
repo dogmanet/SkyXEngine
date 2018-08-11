@@ -75,6 +75,8 @@ public:
 
 	float getMaxDistance() const;
 
+	virtual void stopAction();
+
 protected:
 
 	bool isValidAmmo(CBaseSupply *pAmmo);

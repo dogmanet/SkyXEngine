@@ -108,7 +108,9 @@ void GData::InitAllMatrix()
 	GData::ProjFov = *r_default_fov;
 
 	GData::MCamProj = SMMatrixPerspectiveFovLH(GData::ProjFov, vWinSize.x / vWinSize.y, GData::NearFar.x, GData::NearFar.y);
+	//GData::MCamProj = SMMatrixOrthographicLH(vWinSize.x / 4, vWinSize.y / 4, GData::NearFar.x, GData::NearFar.y);
 	GData::MLightProj = SMMatrixPerspectiveFovLH(GData::ProjFov, vWinSize.x / vWinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
+	//GData::MLightProj = SMMatrixOrthographicLH(vWinSize.x / 4, vWinSize.y / 4, GData::NearFar.x, G_DATA_LIGHT_FAR);
 
 	GData::MRefPlaneSkyProj = SMMatrixPerspectiveFovLH(GData::ProjFov, vWinSize.x / vWinSize.y, GData::NearFar.x, G_DATA_LIGHT_FAR);
 	GData::MRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, GData::NearFar.x, G_DATA_LIGHT_FAR);

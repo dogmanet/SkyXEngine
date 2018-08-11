@@ -635,6 +635,8 @@ void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 		btVector3 vOrigin = pObj->getWorldTransform().getOrigin();
 		LibReport(REPORT_MSG_LEVEL_WARNING, "Object world position: %.2f, %.2f, %.2f\n", vOrigin.x(), vOrigin.y(), vOrigin.z());
 
+		MessageBoxA(NULL, "found", "bug", MB_OK | MB_ICONSTOP);
+
 		btVector3 minAabb, maxAabb;
 		pObj->getCollisionShape()->getAabb(pObj->getWorldTransform(), minAabb, maxAabb);
 		LibReport(REPORT_MSG_LEVEL_WARNING, "AABBmin: %.2f, %.2f, %.2f\n", minAabb.x(), minAabb.y(), minAabb.z());
@@ -650,6 +652,15 @@ void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3]);
 			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3]);
 			LibReport(REPORT_MSG_LEVEL_WARNING, " %5.4f %5.4f %5.4f %5.4f\n", mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3]);
+		}
+
+		btTransform &trans = pObj->getWorldTransform();
+
+		LibReport(REPORT_MSG_LEVEL_WARNING, " 0x%08xf\n", &trans);
+		byte * pByte = (byte*)&trans;
+		for(int i = 0, l = sizeof(trans); i < l; ++i)
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, " %02x", pByte[i]);
 		}
 
 		if (!pObj->getUserPointer())

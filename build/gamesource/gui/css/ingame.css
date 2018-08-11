@@ -1,19 +1,48 @@
 
-#healthbar_wrap
+
+#tset
 {
-	width: 300px;
-	height: 10px;
+	width: 200px;
+	height: 150px;
+	border-width: 3px;
+	border-color: #FF000088;
+	border-radius: 15px;
+	padding: 20px;
+	font-size: 38px;
+	
+	background-color: #00FF0044;
+	//background-image: !traceroute_38+0-0#0;
+	
 	position: fixed;
-	bottom: 20px;
-	right: 20px;
-	border-style: solid;
-	border-width: 1px;
-	border-color: #FFFFFFCC;
+	bottom: 50px;
+	right: 50px;
+	
+	color: #6ac0f3cc;
+	
+	transform: rotateY(-15deg);
+	
+	text-align: center;
+	
+	//font-weight: bold;
+	
+	text-shadow: 0px 0px 10px #f00;
 }
 
-#healthbar_inner
+#tset_left
 {
-	width: 47%;
-	background-color: #FF7700;
-	height: 10px;
+	width: 200px;
+	height: 150px;
+	border-width: 3px;
+	border-color: #FF000088;
+	border-radius: 15px;
+	padding: 20px;
+	font-size: 26px;
+	
+	background-color: #00FF0044;
+	
+	position: fixed;
+	bottom: 50px;
+	left: 50px;
+	
+	transform: rotateY(15deg);
 }

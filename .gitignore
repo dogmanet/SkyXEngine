@@ -197,6 +197,8 @@ source/s4g/tests/
 *.old
 *.orig
 
+*.sxf
+
 build/*
 !gamesource/
 build/gamesource/*

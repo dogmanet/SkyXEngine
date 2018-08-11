@@ -1,6 +1,6 @@
 body{
 	color: #ffffff;
-	font-name: cour;
+	font-name: quick-junky-regular;
 }
 
 html, body
@@ -52,6 +52,9 @@ button
 	color: #FFFFFF;
 	
 	font-size: 20px;
+	
+	transition-property: background-color;
+	transition-duration: 0.2s;
 }
 
 button:focus

@@ -63,6 +63,7 @@ protected:
 
 	//! Рисует декаль в точке попадания
 	void shootDecal(const float3 &vPos, const float3 &vNormal, ID idMtl);
+	void shootBlood(const float3 &vPos, const float3 &vNormal);
 
 	//! Определяет, был ли рикошет
 	bool shouldRecochet(const float3 &vPos, const float3 &vNormal, const float3 &vDir, ID idMtl, float fSpeed, float3 *pvNewDir, float *pfNewSpeed);

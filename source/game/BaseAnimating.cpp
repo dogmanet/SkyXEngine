@@ -30,6 +30,7 @@ CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
 	m_pCollideShape(NULL),
 	m_pRigidBody(NULL)
 {
+	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -87,6 +88,7 @@ void CBaseAnimating::setModel(const char * mdl)
 	if(!m_pAnimPlayer)
 	{
 		m_pAnimPlayer = SXAnim_CreatePlayer(mdl);
+		m_pAnimPlayer->setCallback(this, &ThisClass::onAnimationStateChanged);
 	}
 	else
 	{
@@ -98,23 +100,23 @@ void CBaseAnimating::setModel(const char * mdl)
 float3 CBaseAnimating::getAttachmentPos(int id)
 {
 	float3 pos;
-	if(!m_pAnimPlayer && id >= 0)
+	if(m_pAnimPlayer && id >= 0)
 	{
 		pos = m_pAnimPlayer->getBoneTransformPos(id);
 	}
 
-	return(getOrient() * pos + getPos());
+	return(/*getOrient() * */pos/* + getPos()*/);
 }
 
 SMQuaternion CBaseAnimating::getAttachmentRot(int id)
 {
 	SMQuaternion rot;
-	if(!m_pAnimPlayer && id >= 0)
+	if(m_pAnimPlayer && id >= 0)
 	{
 		rot = m_pAnimPlayer->getBoneTransformRot(id);
 	}
 
-	return(getOrient() * rot);
+	return(/*getOrient() * */rot);
 }
 
 void CBaseAnimating::onSync()
@@ -244,5 +246,66 @@ void CBaseAnimating::setOrient(const SMQuaternion & q)
 	if(m_pRigidBody)
 	{
 		m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(q));
+	}
+}
+
+void CBaseAnimating::_cleanup()
+{
+	releasePhysics();
+
+	BaseClass::_cleanup();
+}
+
+void CBaseAnimating::onAnimationStateChanged(int slot, ANIM_STATE as)
+{
+	if(as == AS_STOP && m_vNextAnim[slot].szName[0] != 0)
+	{
+		if(m_vNextAnim[slot].isActivity)
+		{
+			playActivity(m_vNextAnim[slot].szName, m_vNextAnim[slot].uFadeTime, slot);
+		}
+		else
+		{
+			playAnimation(m_vNextAnim[slot].szName, m_vNextAnim[slot].uFadeTime, slot);
+		}
+
+		m_vNextAnim[slot].szName[0] = 0;
+	}
+}
+
+void CBaseAnimating::playAnimationNext(const char * name, UINT uFadeTime, UINT slot)
+{
+	assert(slot < BLEND_MAX);
+
+	strncpy(m_vNextAnim[slot].szName, name, MODEL_MAX_NAME);
+	m_vNextAnim[slot].szName[MODEL_MAX_NAME - 1] = 0;
+	m_vNextAnim[slot].isActivity = false;
+	m_vNextAnim[slot].uFadeTime = uFadeTime;
+}
+
+void CBaseAnimating::playActivityNext(const char * name, UINT uFadeTime, UINT slot)
+{
+	assert(slot < BLEND_MAX);
+
+	strncpy(m_vNextAnim[slot].szName, name, MODEL_MAX_NAME);
+	m_vNextAnim[slot].szName[MODEL_MAX_NAME - 1] = 0;
+	m_vNextAnim[slot].isActivity = true;
+	m_vNextAnim[slot].uFadeTime = uFadeTime;
+}
+
+void CBaseAnimating::cancelNextAnimation(int iSlot)
+{
+	assert(iSlot < BLEND_MAX);
+
+	if(iSlot >= 0)
+	{
+		m_vNextAnim[iSlot].szName[0] = 0;
+	}
+	else
+	{
+		for(int i = 0; i < BLEND_MAX; ++i)
+		{
+			m_vNextAnim[i].szName[0] = 0;
+		}
 	}
 }

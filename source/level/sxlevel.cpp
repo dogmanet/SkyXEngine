@@ -194,3 +194,70 @@ SX_LIB_API bool SLevel_WeatherSndIsPlaying()
 	SL_PRECOND(false);
 	return g_pLevel->weatherSndGetPlaying();
 }
+
+//#############################################################################
+
+SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo * pInfo)
+{
+	WIN32_FIND_DATA fd;
+	bool bFound = false;
+	if(!pInfo->m_hFind)
+	{
+		if((pInfo->m_hFind = ::FindFirstFile((String(Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS)) + "*").c_str(), &fd)) != INVALID_HANDLE_VALUE)
+		{
+			bFound = true;
+		}
+	}
+	else
+	{
+		if(::FindNextFile(pInfo->m_hFind, &fd))
+		{
+			bFound = true;
+		}
+	}
+
+	if(bFound)
+	{
+		while(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")))
+		{
+			bFound = false;
+			if(::FindNextFile(pInfo->m_hFind, &fd) && (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
+			{
+				bFound = true;
+				break;
+			}
+		}
+	}
+
+	if(!bFound)
+	{
+		if(INVALID_HANDLE_VALUE != pInfo->m_hFind)
+		{
+			::FindClose(pInfo->m_hFind);
+		}
+		return(FALSE);
+	}
+	
+	strncpy(pInfo->m_szName, fd.cFileName, MAX_LEVEL_STRING - 1);
+
+	{
+		char tmppathlevel[1024];
+		sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
+
+		ISXConfig *config = Core_OpConfig(tmppathlevel);
+		if(config->keyExists("level", "local_name"))
+		{
+			strncpy(pInfo->m_szLocalName, config->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+		}
+		else
+		{
+			strncpy(pInfo->m_szLocalName, fd.cFileName, MAX_LEVEL_STRING - 1);
+		}
+		mem_release(config);
+
+		sprintf(tmppathlevel, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
+		pInfo->m_bHasPreview = FileExistsFile(tmppathlevel);
+	}
+
+	return(TRUE);
+}

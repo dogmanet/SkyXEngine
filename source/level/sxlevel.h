@@ -66,18 +66,28 @@ See the license in LICENSE
 #endif
 #include <physics/sxphysics.h>
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxgame_d.lib")
-#else
-#pragma comment(lib, "sxgame.lib")
-#endif
-#include <game/sxgame.h>
+//#include <game/sxgame.h>
 
 
 #ifdef SX_DLL
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
+
+//#############################################################################
+
+#define MAX_LEVEL_STRING 128
+struct CLevelInfo
+{
+	char m_szName[MAX_LEVEL_STRING]; //!< имя папки уровня
+	char m_szLocalName[MAX_LEVEL_STRING]; //!< Отображаемое имя уровня
+	bool m_bHasPreview;
+
+	HANDLE m_hFind; //!< для внутреннего использования
+};
+
+//! Возвращает информацию об следующем уровне
+SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo * pInfo);
 
 //#############################################################################
 

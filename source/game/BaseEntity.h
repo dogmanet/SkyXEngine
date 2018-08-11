@@ -61,6 +61,8 @@ public:
 
 	//! Устанавливает мировую позицию объекта
 	virtual void setPos(const float3 & pos);
+	//! Устанавливает относительное смещение объекта
+	virtual void setOffsetPos(const float3 & pos);
 	//! Получает мировую позицию объекта
 	float3 getPos();
 
@@ -77,6 +79,8 @@ public:
 
 	//! Устанавливает вращение объекта
 	virtual void setOrient(const SMQuaternion & q);
+	//! Устанавливает относительное вращение объекта
+	virtual void setOffsetOrient(const SMQuaternion & q);
 	//! Возвращает вращение объекта
 	SMQuaternion getOrient();
 
@@ -105,6 +109,14 @@ public:
 
 	virtual void onDeath();
 
+	void broadcastMessage(const char * szInputName, inputdata_t inputData, float fRadius);
+	void broadcastMessage(const char * szInputName, float fArg, float fRadius);
+	void broadcastMessage(const char * szInputName, int iArg, float fRadius);
+	void broadcastMessage(const char * szInputName, bool bArg, float fRadius);
+	void broadcastMessage(const char * szInputName, const char *szArg, float fRadius);
+	void broadcastMessage(const char * szInputName, const float3_t &f3Arg, float fRadius);
+	void broadcastMessage(const char * szInputName, float fRadius);
+
 private:
 	void setClassName(const char * name);
 	void setDefaults();
@@ -112,6 +124,8 @@ private:
 	const char * m_szClassName;
 
 protected:
+	virtual void _cleanup();
+
 	CEntityManager * m_pMgr;
 
 	//! Позиция объекта
@@ -173,6 +187,8 @@ protected:
 	float m_fHealth;
 
 	void takeHealth(float fVal);
+
+	bool m_bSynced;
 };
 
 #pragma warning(pop)

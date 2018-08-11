@@ -36,6 +36,11 @@ struct ISXConfig;
 */
 #define CLEAR_INTERVAL(id) m_pMgr->clearInterval(id)
 
+/*! Отменить таймер по идентификатору
+\note Должно вызываться изнутри класса объекта
+*/
+#define CLEAR_TIMEOUT(id) m_pMgr->clearTimeout(id)
+
 enum TIMEOUT_STATUS
 {
 	TS_WAIT = 0,
@@ -88,6 +93,8 @@ public:
 
 	CBaseEntity * findEntityByClass(const char * name, CBaseEntity * pStart = 0);
 
+	CBaseEntity * findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart = 0);
+
 	bool exportList(const char * file);
 	bool import(const char * file);
 
@@ -97,11 +104,14 @@ public:
 	int getCount();
 	CBaseEntity * getById(ID id);
 
+	void sheduleDestroy(CBaseEntity *pEnt);
+
 protected:
 	ID reg(CBaseEntity * pEnt);
 	void unreg(ID ent);
 
 	Array<CBaseEntity*, 64> m_vEntList;
+	Array<CBaseEntity*> m_vEntRemoveList;
 	Array<ID> m_vFreeIDs;
 
 	Array<timeout_t> m_vTimeout;

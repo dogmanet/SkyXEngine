@@ -18,7 +18,7 @@ BEGIN_PROPTABLE_NOBASE(CBaseEntity)
 	//! Имя объекта
 	DEFINE_FIELD_STRING(m_szName, 0, "name", "Name", EDITOR_TEXTFIELD)
 	//! Позиция в мире
-	DEFINE_FIELD_VECTOR(m_vPosition, 0, "origin", "Origin", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_VECTORFN(m_vPosition, 0, "origin", "Origin", setPos, EDITOR_TEXTFIELD)
 	//! Ориентация в мире, углы эйлера или кватернион
 	DEFINE_FIELD_ANGLES(m_vOrientation, 0, "rotation", "Rotation", EDITOR_TEXTFIELD)
 	//! Родительский объект в иерархии движения
@@ -67,6 +67,7 @@ CBaseEntity::CBaseEntity(CEntityManager * pWorld):
 	m_pOwner(NULL),
 	m_fHealth(100.0f)/*,
 	m_vDiscreteLinearVelocity(float3_t(0.0f, 0.0f, 0.0f))*/
+	, m_bSynced(false)
 {
 	m_iId = pWorld->reg(this);
 }
@@ -159,6 +160,15 @@ void CBaseEntity::setOrient(const SMQuaternion & q)
 {
 	m_vOrientation = q;
 }
+void CBaseEntity::setOffsetOrient(const SMQuaternion & q)
+{
+	m_vOffsetOrient = q;
+}
+
+void CBaseEntity::setOffsetPos(const float3 & pos)
+{
+	m_vOffsetPos = pos;
+}
 
 SMQuaternion CBaseEntity::getOrient()
 {
@@ -203,28 +213,56 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 	case PDF_INT:
 		if(1 == sscanf(value, "%d", &d))
 		{
-			this->*((int ThisClass::*)field->pField) = d;
+			if(field->fnSet.i)
+			{
+				(this->*(field->fnSet.i))(d);
+			}
+			else
+			{
+				this->*((int ThisClass::*)field->pField) = d;
+			}
 			return(true);
 		}
 		return(false);
 	case PDF_FLOAT:
 		if(1 == sscanf(value, "%f", &f))
 		{
-			this->*((float ThisClass::*)field->pField) = f;
+			if(field->fnSet.f)
+			{
+				(this->*(field->fnSet.f))(f);
+			}
+			else
+			{
+				this->*((float ThisClass::*)field->pField) = f;
+			}
 			return(true);
 		}
 		return(false);
 	case PDF_VECTOR:
 		if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
 		{
-			this->*((float3_t ThisClass::*)field->pField) = f3;
+			if(field->fnSet.v3)
+			{
+				(this->*(field->fnSet.v3))(f3);
+			}
+			else
+			{
+				this->*((float3_t ThisClass::*)field->pField) = f3;
+			}
 			return(true);
 		}
 		return(false);
 	case PDF_BOOL:
 		if(1 == sscanf(value, "%d", &d))
 		{
-			this->*((bool ThisClass::*)field->pField) = d != 0;
+			if(field->fnSet.b)
+			{
+				(this->*(field->fnSet.b))(d != 0);
+			}
+			else
+			{
+				this->*((bool ThisClass::*)field->pField) = d != 0;
+			}
 			return(true);
 		}
 		return(false);
@@ -234,14 +272,28 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 	case PDF_ANGLES:
 		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
 		{
-			this->*((SMQuaternion ThisClass::*)field->pField) = q;
+			if(field->fnSet.q)
+			{
+				(this->*(field->fnSet.q))(q);
+			}
+			else
+			{
+				this->*((SMQuaternion ThisClass::*)field->pField) = q;
+			}
 			return(true);
 		}
 		if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
 		{
 			SMQuaternion q;
 			q = SMQuaternion(SMToRadian(f3.x), 'x') * SMQuaternion(SMToRadian(f3.y), 'y') * SMQuaternion(SMToRadian(f3.z), 'z');
-			this->*((SMQuaternion ThisClass::*)field->pField) = q;
+			if(field->fnSet.q)
+			{
+				(this->*(field->fnSet.q))(q);
+			}
+			else
+			{
+				this->*((SMQuaternion ThisClass::*)field->pField) = q;
+			}
 			return(true);
 		}
 		return(false);
@@ -256,7 +308,14 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			}
 			else
 			{
-				this->*((CBaseEntity * ThisClass::*)field->pField) = pEnt;
+				if(field->fnSet.e)
+				{
+					(this->*(field->fnSet.e))(pEnt);
+				}
+				else
+				{
+					this->*((CBaseEntity * ThisClass::*)field->pField) = pEnt;
+				}
 			}
 			return(true);
 		}
@@ -457,7 +516,10 @@ void CBaseEntity::onSync()
 {
 	if(m_pParent)
 	{
-		m_pParent->onSync();
+		if(!m_pParent->m_bSynced)
+		{
+			m_pParent->onSync();
+		}
 		if(m_iParentAttachment >= 0)
 		{
 			m_vPosition = (float3)(m_pParent->getAttachmentPos(m_iParentAttachment) + m_vOffsetPos);
@@ -479,6 +541,8 @@ void CBaseEntity::onSync()
 	//	m_vPosition = m_pPhysObj->GetPos();
 	//	m_vOrientation = m_pPhysObj->getOrient();
 	//}
+
+	m_bSynced = true;
 }
 
 void CBaseEntity::onPostLoad()
@@ -680,4 +744,74 @@ void CBaseEntity::onDeath()
 {
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Entity %s died!\n", getClassName());
 	// do nothing
+}
+
+void CBaseEntity::broadcastMessage(const char * szInputName, float fArg, float fRadius)
+{
+	inputdata_t inputData;
+	memset(&inputData, 0, sizeof(inputData));
+	inputData.type = PDF_FLOAT;
+	inputData.parameter.f = fArg;
+	broadcastMessage(szInputName, inputData, fRadius);
+}
+
+void CBaseEntity::broadcastMessage(const char * szInputName, int iArg, float fRadius)
+{
+	inputdata_t inputData;
+	memset(&inputData, 0, sizeof(inputData));
+	inputData.type = PDF_INT;
+	inputData.parameter.i = iArg;
+	broadcastMessage(szInputName, inputData, fRadius);
+}
+void CBaseEntity::broadcastMessage(const char * szInputName, bool bArg, float fRadius)
+{
+	inputdata_t inputData;
+	memset(&inputData, 0, sizeof(inputData));
+	inputData.type = PDF_BOOL;
+	inputData.parameter.f = bArg;
+	broadcastMessage(szInputName, inputData, fRadius);
+}
+void CBaseEntity::broadcastMessage(const char * szInputName, const char *szArg, float fRadius)
+{
+	inputdata_t inputData;
+	memset(&inputData, 0, sizeof(inputData));
+	inputData.type = PDF_STRING;
+	inputData.parameter.str = szArg;
+	broadcastMessage(szInputName, inputData, fRadius);
+}
+void CBaseEntity::broadcastMessage(const char * szInputName, const float3_t &f3Arg, float fRadius)
+{
+	inputdata_t inputData;
+	memset(&inputData, 0, sizeof(inputData));
+	inputData.type = PDF_VECTOR;
+	inputData.v3Parameter = f3Arg;
+	broadcastMessage(szInputName, inputData, fRadius);
+}
+void CBaseEntity::broadcastMessage(const char * szInputName, float fRadius)
+{
+	inputdata_t inputData;
+	memset(&inputData, 0, sizeof(inputData));
+	inputData.type = PDF_NONE;
+	broadcastMessage(szInputName, inputData, fRadius);
+}
+
+void CBaseEntity::broadcastMessage(const char * szInputName, inputdata_t inputData, float fRadius)
+{
+	inputData.pActivator = this;
+	inputData.pInflictor = this;
+
+	CBaseEntity *pEnt = NULL;
+	while((pEnt = m_pMgr->findEntityInSphere(getPos(), fRadius, pEnt)))
+	{
+		if(pEnt == this) continue;
+		propdata_t * pField = pEnt->getField(szInputName);
+		if(pField && (pField->flags & PDFF_MESSAGE))
+		{
+			(pEnt->*(pField->fnInput))(&inputData);
+		}
+	}
+}
+
+void CBaseEntity::_cleanup()
+{
 }

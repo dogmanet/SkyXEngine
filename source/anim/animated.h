@@ -175,6 +175,7 @@ public:
 	SMMATRIX getWorldTM();
 
 	AnimStateCB setCallback(AnimStateCB cb);
+	void setCallback(CBaseAnimating *pEnt, AnimStateEntCB cb);
 	AnimProgressCB setProgressCB(AnimProgressCB cb);
 
 	ModelSequence const * getCurAnim(int slot);
@@ -296,6 +297,8 @@ protected:
 	AnimationManager * m_pMgr;
 
 	AnimStateCB m_pfnCallBack;
+	CBaseAnimating *m_pCallbackEnt;
+	AnimStateEntCB m_pfnCallBackEnt;
 	AnimProgressCB m_pfnProgressCB;
 
 

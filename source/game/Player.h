@@ -33,11 +33,8 @@ public:
 	CPointCamera * getCamera();
 
 	//! Переключает в режим наблюдателя
-	void observe()
-	{
-		m_uMoveDir |= PM_OBSERVER;
-		m_pCrosshair->enable(false);
-	}
+	void observe();
+
 	//! Помещает игрока в мир
 	void spawn();
 
@@ -50,9 +47,6 @@ public:
 	virtual void updateInput(float dt);
 
 	void onSync();
-
-	//! Устанавливает положение в мире
-	void setPos(const float3 & pos);
 	
 	//! Получает смещения для задержки движения модели оружия при вращении игрока
 	float3_t & getWeaponDeltaAngles();
@@ -63,6 +57,22 @@ public:
 
 	//! Получает объект перекрестия
 	CCrosshair * getCrosshair();
+
+	CHUDcontroller * getHUDcontroller();
+
+	void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
+
+	//! Temp method
+	void setActiveTool(CBaseTool *pTool)
+	{
+		m_pActiveTool = pTool;
+	}
+
+	void attack(BOOL state);
+
+	void onDeath();
+
+	void respawn();
 
 protected:
 	//! Камера
@@ -86,10 +96,10 @@ protected:
 	//! Перекрестие
 	CCrosshair * m_pCrosshair;
 
-	ID m_idQuadCurr;	//!< текущий квад аи сетки на котором стоит игрок
-
 	//! Обновляет разброса значение
 	virtual void updateSpread(float dt);
+
+	bool m_bCanRespawn;
 };
 
 #endif

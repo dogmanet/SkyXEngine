@@ -36,7 +36,8 @@ void CLevel::clear()
 
 	SML_LigthsClearIDArr();
 	
-	SXGame_UnloadObjLevel();
+	//SXGame_UnloadObjLevel();
+	Core_0ConsoleExecCmd("ent_unload_level");
 	SXPhysics_UnloadGeom();
 	SAIG_Clear();
 }
@@ -79,17 +80,19 @@ void CLevel::load(const char *szName, bool isGame)
 			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of green '%s'", tmppath);
 		}
 	}
-
+	char tmppathEntity[1024];
 	if (config->keyExists("level", "entity"))
 	{
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load entity\n");
-		char tmppath[1024];
-		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "entity"));
-		if (FileExistsFile(tmppath))
-			SXGame_LoadEnts(tmppath);
+		//LibReport(REPORT_MSG_LEVEL_NOTICE, "  load entity\n");
+		sprintf(tmppathEntity, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "entity"));
+		FileCanonizePath(tmppathEntity);
+		if(FileExistsFile(tmppathEntity))
+		{
+			//SXGame_LoadEnts(tmppathEntity);
+		}
 		else
 		{
-			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", tmppathEntity);
 		}
 	}
 
@@ -190,6 +193,10 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
+	Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", tmppathEntity, szName);
+
+	//SXGame_OnLevelLoad(szName);
+
 	mem_release(config);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
@@ -226,11 +233,15 @@ void CLevel::save(const char *szName)
 	else
 		fprintf(file, "type = indoor\n");
 
-	if (SXGame_EntGetCount() > 0)
+	
+
+	//if (SXGame_EntGetCount() > 0)
 	{
 		sprintf(tmppathlevel, "%s%s/%s.ent", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 		fprintf(file, "entity = %s.ent\n", szName);
-		SXGame_SaveEnts(tmppathlevel);
+		FileCanonizePath(tmppathlevel);
+		Core_0ConsoleExecCmd("ent_save_level \"%s\"", tmppathlevel);
+		//SXGame_SaveEnts(tmppathlevel);
 	}
 
 	if (SAIG_GridGetCountSplits() > 0)

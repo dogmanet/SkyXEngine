@@ -2,7 +2,37 @@
 	<head>
 		<link type="text/css" rel="stylesheet" href="ingame.css"/>
 	</head>
-	<body>
-		<div id="healthbar_wrap"><div id="healthbar_inner" style="width: 0%;"></div></div>
+	<body style="font-name: traceroute;color: #c6f0fd;">
+		<!-- <element id="wpn_info"> -->
+		<div style="position: fixed; width: 300px; height: 300px; bottom: 10px;left:10px;">
+			<div id="minimap_spin" style="top: 0px;left:0px;right: 0; bottom: 0; position:absolute;background-image: /hud/map.png;background-size-x: 100%;background-size-y: 100%;">
+				<div style="top: 20%;left:20%;right: 20%; bottom: 20%; position:absolute;border-color: #b7ecff;border-width: 2px; background-color: #2138695B;border-radius:500px; //background-image: /hud/map_placeholder.png;">
+					<div style="top: 50%;left:50%;bottom: 0; right: 0; position:absolute;">
+						<div id="minimap_pan" style="top: 0px;left:0px;width: 512px; height: 512px; position:absolute;background-image: /hud/map_placeholder.png; ;background-size-x: 100%;background-size-y: 100%;"> </div>
+					</div>
+				</div>
+			</div>
+			<div style="top: 0px;left:0px;right: 0; bottom: 0; position:absolute;background-image: /hud/map_ptr.png; background-position-x: 50%; background-position-y: 50%;background-repeat: no-repeat;background-size-x: 7%;background-size-y: 14%;"> </div>
+		</div>
+		<!-- <div id="tset" style="font-name: traceroute;-gui-spin-percent: 30%;">AK74<br/>18 / 30</div> -->
+		<!-- </element> -->
+		
+		<div style="position: fixed; width: 250px; height: 250px; bottom: 10px;right:10px;">
+			<div style="top: 0px;left:0px;right: 0; bottom: 0; position:absolute;background-image: /hud/wpn_spin.png;background-size-x: 100%;background-size-y: 100%;">
+				<div id="wpn_spin" style="top: 0;left:0;right: 0; bottom: 0; position:absolute;background-image: /hud/wpn_spin_act.png;background-size-x: 100%;background-size-y: 100%; -gui-spin-percent: 30%;"> </div>
+				<div id="wpn_img" style="top: 10%;left:10%;right: 10%; bottom: 10%; position:absolute;border-radius: 500px; background-image: /hud/wpn/ak74.png;background-size-x: 100%;background-size-y: 100%;"> </div>
+				<div id="wpn_name" style="top: 30%;left:10%;right: 10%; bottom: 10%; position:absolute;text-align: center; font-size: 17%;">AK-74</div>
+				<div id="wpn_current" style="top: 60%;left:10%;right: 10%; bottom: 10%; position:absolute;text-align: center; font-size: 30%;">18 / 30</div>
+				<div id="wpn_max" style="top: 70%;left:10%;right: 10%; bottom: 10%; position:absolute;text-align: center; font-size: 30%;">0000</div>
+			</div>
+		</div>
+		
+		<div style="position: fixed; width: 270px; height: 270px; bottom: 0px;right:0px;">
+			<div id="health_spin" style="top: 0;left:0;right: 0; bottom: 0; position:absolute;background-image: /hud/meter_g.png;background-size-x: 100%;background-size-y: 100%; transform: rotateX(180deg); -gui-spin-percent: 30%; transition-property: -gui-spin-percent; transition-duration: 0.3s;"> </div>
+			<div style="top: 0px;left:0px;right: 0; bottom: 0; position:absolute;background-image: /hud/meters.png;background-size-x: 100%;background-size-y: 100%;"> </div>
+		</div>
+		
+		<div style="position: fixed; top: 50%; left: 0; right: 0; bottom: 0;"><div id="aim_range" style="position: relative; top: 20px; text-align: center;font-size: 12px">1</div></div>
+		<div id="dmg_overlay" style="position: fixed; top: 0px; left: 0px; bottom: 0px; right: 0px; background-image: /hud/damage_overlay.png;background-size-x: 100%;background-size-y: 100%; visisbility: hidden;"> </div>
 	</body>
 </html>

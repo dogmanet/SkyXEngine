@@ -12,16 +12,19 @@ See the license in LICENSE
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
-	SkyXEngine_Init();
+	SkyXEngine_Init(0, 0, lpCmdLine);
 	SkyXEngine_PreviewKill();
 
 	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky/sky_oblaka.dds");
 	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
 
-	SLevel_Load("stalker_atp", true);
+	SGCore_OC_SetEnable(false);
 
-	SGeom_0SettGreenSetFreqGrass(30);
+	//SLevel_Load("stalker_atp", true);
+	//SLevel_Load("sga", true);
+
+	SGeom_0SettGreenSetFreqGrass(100);
 
 	/*NPCBase* npc = new NPCBase();
 	npc->setModel("models/stalker_zombi/stalker_zombi_a.dse");
@@ -37,12 +40,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		bEnt->setKV("origin", "0 0 0");
 	}*/
 
-	/*for (int i = 0; i < 100; ++i)
-	{
-		CBaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
-		bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-		bEnt->setKV("origin", "0 1 0");
-	}*/
 	/*for (int i = 0; i < 10; ++i)
 	{
 	for (int k = 0; k < 10; ++k)

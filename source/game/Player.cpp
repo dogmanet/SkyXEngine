@@ -9,12 +9,15 @@ See the license in LICENSE
 #include "Player.h"
 #include "LightDirectional.h"
 #include "BaseTool.h"
-#include <aigrid/sxaigrid.h>
 #include "BaseAmmo.h"
 
 #include "BaseWeapon.h"
 
 #include "GameData.h"
+
+#include "HUDcontroller.h"
+
+#include <aigrid/sxaigrid.h>
 
 /*! \skydocent player
 Объект игрока в мире
@@ -33,30 +36,33 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 	m_fViewbobY(0.0f),
 	m_fViewbobStrafe(float3_t(0, 0, 0)),
 	m_vWpnShakeAngles(float3_t(0.0f, 0.0f, 0.0f)),
-	m_iDSM(DSM_NONE)
+	m_iDSM(DSM_NONE),
+	m_bCanRespawn(false)
 {
 	m_pCamera = (CPointCamera*)CREATE_ENTITY("point_camera", pMgr);
-	m_pCamera->setParent(this);
+	m_pCamera->setPos(m_pHeadEnt->getPos());
+	m_pCamera->setParent(m_pHeadEnt);
 
 	m_iUpdIval = SET_INTERVAL(updateInput, 0);
 
-	m_pActiveTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
+	/*m_pActiveTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 	m_pActiveTool->setOwner(this);
 	m_pActiveTool->attachHands();
 	m_pActiveTool->playAnimation("idle");
-	m_pActiveTool->setPos(getPos() + float3(1.0f, 0.0f, 1.0f));
-	m_pActiveTool->setOrient(getOrient());
-	m_pActiveTool->setParent(this);
+	m_pActiveTool->setPos(getPos() + float3(1.0f, m_fCapsHeight - 0.1f, 1.0f));
+	m_pActiveTool->setOrient(m_pHeadEnt->getOrient());
+	m_pActiveTool->setParent(m_pHeadEnt);
 
 	CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
 	m_pActiveTool->chargeAmmo(pAmmo);
+
+	getInventory()->putItems("ammo_5.45x39ps", 60);
 
 	CBaseMag *pMag = (CBaseMag*)CREATE_ENTITY("mag_ak74_30", m_pMgr);
 	pMag->load(30);
 	((CBaseWeapon*)m_pActiveTool)->attachMag(pMag);
 
-	getInventory()->putItems("ammo_5.45x39ps", 60);
-
+	*/
 
 	m_idQuadCurr = -1;
 
@@ -121,9 +127,13 @@ void CPlayer::updateInput(float dt)
 			const float fMaxAng = SM_PI * 0.1f;
 			m_vWpnShakeAngles.y = clampf(m_vWpnShakeAngles.y, -fMaxAng, fMaxAng);
 
-			m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
-				* SMQuaternion(m_vPitchYawRoll.y, 'y')
-				* SMQuaternion(m_vPitchYawRoll.z, 'z');
+			//m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
+			//	* SMQuaternion(m_vPitchYawRoll.y, 'y')
+			//	* SMQuaternion(m_vPitchYawRoll.z, 'z');
+			setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
+			m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
+			
+			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
 		}
 
 	}
@@ -162,7 +172,7 @@ void CPlayer::updateInput(float dt)
 
 		if(m_uMoveDir & PM_OBSERVER)
 		{
-			m_vPosition = (float3)(m_vPosition + m_vOrientation * (SMVector3Normalize(dir) * dt));
+			m_vPosition = (float3)(m_vPosition + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt));
 		}
 		else
 		{
@@ -267,6 +277,8 @@ void CPlayer::updateInput(float dt)
 			m_vWpnShakeAngles.x = clampf(m_vWpnShakeAngles.x, -fMaxAng, fMaxAng);
 		}
 
+		GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+
 	}
 
 #ifndef _SERVER
@@ -304,34 +316,26 @@ CPointCamera * CPlayer::getCamera()
 void CPlayer::onSync()
 {
 	BaseClass::onSync();
+
 	if(m_uMoveDir & PM_OBSERVER)
 	{
 		return;
 	}
-	btTransform trans;
-	trans = m_pGhostObject->getWorldTransform();
-	
-	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() + 0.75f + m_fViewbobY, trans.getOrigin().z()) + m_fViewbobStrafe);
 
-	//находим текущий квад аи сетки на котором находится игрок
-	ID idq = SAIG_QuadGet(&float3(m_vPosition.x, m_vPosition.y - (0.75f + m_fViewbobY), m_vPosition.z), true);
-	
-	//если нашли
-	if (idq >= 0)
+	m_vPosition.y += m_fViewbobY;
+	m_vPosition = (float3)(m_vPosition + m_fViewbobStrafe);
+}
+
+void CPlayer::observe()
+{
+	m_uMoveDir |= PM_OBSERVER;
+	m_pCrosshair->enable(false);
+
+
+	if(ID_VALID(m_idQuadCurr))
 	{
-		//занимаем этот квад
-		SAIG_QuadSetState(idq, AIQUAD_STATE_TEMPBUSY);
-		SAIG_QuadSetStateWho(idq, getId());
-	}
-
-	//если предыдущий и текущие квады не идентичны
-	if (m_idQuadCurr != idq)
-	{
-		//если предыдщий был действительным, убираем занятость
-		if (m_idQuadCurr >= 0)
-			SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
-
-		m_idQuadCurr = idq;
+		SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
+		m_idQuadCurr = -1;
 	}
 }
 
@@ -342,21 +346,18 @@ void CPlayer::spawn()
 	{
 		//if(CanSpawn(pEnt))
 		{
-		setPos(pEnt->getPos());
-		setOrient(pEnt->getOrient());
-		m_uMoveDir &= ~PM_OBSERVER;
+			setPos(pEnt->getPos());
+			setOrient(pEnt->getOrient());
+			m_uMoveDir &= ~PM_OBSERVER;
 			m_pCrosshair->enable();
+
+			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
+			GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+			GameData::m_pHUDcontroller->setPlayerHealth(m_fHealth);
 			return;
 		}
 	}
-	
-		printf(COLOR_RED "Cannot find valid spawnpoint\n" COLOR_RESET);
-	}
-
-void CPlayer::setPos(const float3 & pos)
-{
-	BaseClass::setPos(pos);
-	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
+	printf(COLOR_RED "Cannot find valid spawnpoint\n" COLOR_RESET);
 }
 
 void CPlayer::_ccmd_slot_on(int argc, const char ** argv)
@@ -406,4 +407,47 @@ void CPlayer::updateSpread(float dt)
 	{
 		m_pCrosshair->setSize(getCurrentSpread() * 0.1f);
 	}
+}
+
+CHUDcontroller * CPlayer::getHUDcontroller()
+{
+	return(GameData::m_pHUDcontroller);
+}
+
+void CPlayer::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
+{
+	BaseClass::dispatchDamage(takeDamageInfo);
+	getHUDcontroller()->setPlayerHealth(m_fHealth);
+	getHUDcontroller()->fadeScreenDmg();
+}
+
+void CPlayer::attack(BOOL state)
+{
+	BaseClass::attack(state);
+
+	if(state)
+	{
+		respawn();
+	}
+}
+
+void CPlayer::respawn()
+{
+	if(m_fHealth <= 0.0f && m_bCanRespawn)
+	{
+		m_fHealth = 100.0f;
+
+		SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+		SXPhysics_GetDynWorld()->addAction(m_pCharacter);
+		spawn();
+	}
+}
+
+void CPlayer::onDeath()
+{
+	BaseClass::onDeath();
+
+	observe();
+
+	m_bCanRespawn = true;
 }

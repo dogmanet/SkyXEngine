@@ -141,8 +141,13 @@ void SkyXEngine_PrintfLog(int iLevel, const char *szLibName, const char *szForma
 
 //##########################################################################
 
-void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
+void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 {
+	if(szCmdLine)
+	{
+		Core_0LoadCommandLine(szCmdLine);
+	}
+
 	srand((UINT)time(0));
 	SkyXEngine_InitOutLog();
 	SkyXEngine_InitPaths();
@@ -306,7 +311,13 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 
 
 #ifndef SX_PARTICLES_EDITOR
-	SXGame_0Create();
+	SXGame_0Create(hWnd3DCurr, 
+#ifdef SX_GAME
+		true
+#else
+		false
+#endif
+		);
 	SXGame_Dbg_Set(SkyXEngine_PrintfLog);
 #endif
 	
@@ -341,6 +352,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D)
 	Core_0ConsoleExecCmd("exec ../config_sys.cfg");
 	Core_0ConsoleExecCmd("exec ../config_editor.cfg");
 #endif
+
+	Core_0ExecCommandLine();
 
 	Core_0ConsoleUpdate();
 
@@ -479,6 +492,8 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarFloat("env_weather_snd_volume", 1.f, "Громкость звуков погоды [0,1]");
 	Core_0RegisterCVarFloat("env_ambient_snd_volume", 1.f, "Громкость фоновых звуков на уровне [0,1]");
 
+	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);
+
 	Core_0RegisterConcmd("screenshot", SRender_SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SRender_SaveWorkTex);
 	Core_0RegisterConcmd("shader_reload", SGCore_ShaderReloadAll);
@@ -503,7 +518,7 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 
 	SSInput_AddMsg(msg);
 
-	switch (uiMessage)
+	switch(uiMessage)
 	{
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
@@ -515,14 +530,19 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 		break;
 	}
 
+	if(!SXGame_AddWMsg(uiMessage, wParam, lParam))
+	{
+		return(TRUE);
+	}
+
 	// системная обработка F10 (вызов меню) не надо, останавливает главный цикл
-	if ((uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP) && wParam == VK_F10)
+	if((uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP) && wParam == VK_F10)
 		return 0;
 
 	// системная обработка Alt (вызов меню) не надо, останавливает главный цикл
-	if (
-		(uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP) 
-		&& !GetAsyncKeyState(VK_TAB) 
+	if(
+		(uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP)
+		&& !GetAsyncKeyState(VK_TAB)
 		&& (wParam == VK_MENU || wParam == VK_LMENU || wParam == VK_RMENU)
 		)
 		return 0;
@@ -806,10 +826,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_RenderEditorMain();
 
 
-/*#if defined(_DEBUG)
-	static const float * r_far = GET_PCVAR_FLOAT("r_far");
-	SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *r_far);
-#endif*/
+#if defined(_DEBUG)
+	//SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
+#endif
 
 #if defined(SX_GAME)
 	SXGame_RenderHUD();
@@ -949,7 +968,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SPE_EffectComputeLightingAll();
 	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	SAIG_GridQueryFindPathUpdate(25);
+	SAIG_GridQueryFindPathUpdate(3);
 	
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	pDXDevice->Present(0, 0, 0, 0);
@@ -1184,7 +1203,7 @@ int SkyXEngine_CycleMain()
 		{
 			
 			::TranslateMessage(&msg);
-			
+
 #if !defined(SX_GAME)
 			IMSG imsg;
 			imsg.lParam = msg.lParam;

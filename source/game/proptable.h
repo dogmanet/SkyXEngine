@@ -47,6 +47,7 @@ enum PDF_FLAG
 	PDFF_NOEDIT     = 0x02, //!< Не отображать поле в редакторе
 	PDFF_INPUT      = 0x04, //!< Поле входа
 	PDFF_OUTPUT     = 0x08, //!< Поле выхода
+	PDFF_MESSAGE    = 0x10, //!< Поле сообщения
 };
 
 enum ENT_FLAG
@@ -59,6 +60,57 @@ enum ENT_FLAG
 };
 
 typedef int CBaseEntity::*fieldtype;
+
+typedef void (CBaseEntity::*PFNFIELDSETV3)(const float3&);
+typedef void (CBaseEntity::*PFNFIELDSETF)(float);
+typedef void (CBaseEntity::*PFNFIELDSETSZ)(const char*);
+typedef void (CBaseEntity::*PFNFIELDSETI)(int);
+typedef void (CBaseEntity::*PFNFIELDSETB)(bool);
+typedef void (CBaseEntity::*PFNFIELDSETQ)(const SMQuaternion&);
+typedef void (CBaseEntity::*PFNFIELDSETE)(CBaseEntity*);
+union PFNFIELDSET
+{
+	PFNFIELDSET():
+		__(0)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETV3 arg):
+		v3(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETF arg):
+		f(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETSZ arg):
+		sz(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETI arg):
+		i(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETB arg):
+		b(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETQ arg):
+		q(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETE arg):
+		e(arg)
+	{
+	}
+	PFNFIELDSETV3 v3;
+	PFNFIELDSETF f;
+	PFNFIELDSETSZ sz;
+	PFNFIELDSETI i;
+	PFNFIELDSETB b;
+	PFNFIELDSETQ q;
+	PFNFIELDSETE e;
+	int __;
+};
 
 struct editor_kv
 {
@@ -109,6 +161,15 @@ struct propdata_t
 		szEdName(edname),
 		editor(ed)
 	{}
+	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, PFNFIELDSET _fnSet, prop_editor_t ed):
+		pField(f),
+		type(t),
+		flags(fl),
+		szKey(key),
+		szEdName(edname),
+		editor(ed),
+		fnSet(_fnSet)
+	{}
 	propdata_t(input_func d, PDF_TYPE t, int fl, const char *key, const char *edname, prop_editor_t ed):
 		fnInput(d),
 		type(t),
@@ -127,6 +188,7 @@ struct propdata_t
 	const char * szKey;
 	const char * szEdName;
 	prop_editor_t editor;
+	PFNFIELDSET fnSet;
 };
 
 
@@ -292,8 +354,19 @@ const char * GetEmptyString();
 #define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
 #define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, editor
 
+#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, &ThisClass::fn, editor
+//#define DEFINE_FIELD_PARENTFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, fn, editor
+//#define DEFINE_FIELD_FLAGSFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, fn, editor
+
 #define DEFINE_INPUT(method, keyname, edname, argtype) , {(input_func)&DataClass::method, argtype, PDFF_NOEDIT | PDFF_INPUT, keyname, edname, EDITOR_NONE
 #define DEFINE_OUTPUT(field, keyname, edname) , {(fieldtype)&DataClass::field, PDF_OUTPUT, PDFF_NOEDIT | PDFF_OUTPUT, keyname, edname, EDITOR_NONE
+#define DEFINE_MESSAGE(method, keyname, edname, argtype) , {(input_func)&DataClass::method, argtype, PDFF_NOEDIT | PDFF_MESSAGE, keyname, edname, EDITOR_NONE
 
 #define DEFINE_FLAG(value, edname) , {(fieldtype)NULL, PDF_FLAG, value, NULL, edname, {PDE_FLAGS, NULL}}
 

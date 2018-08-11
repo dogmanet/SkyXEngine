@@ -29,6 +29,8 @@ See the license in LICENSE
 #	pragma comment(lib, "sxscore_d.lib")
 //#	pragma comment(lib, "sxpp_d.lib")
 #	pragma comment(lib, "sxaigrid_d.lib")
+#	pragma comment(lib, "sxgeom_d.lib")
+#	pragma comment(lib, "sxlevel_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
@@ -40,6 +42,8 @@ See the license in LICENSE
 #	pragma comment(lib, "sxscore.lib")
 //#	pragma comment(lib, "sxpp.lib")
 #	pragma comment(lib, "sxaigrid.lib")
+#	pragma comment(lib, "sxgeom.lib")
+#	pragma comment(lib, "sxlevel.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -102,7 +106,7 @@ SX_LIB_API ISXCamera * SXGame_GetActiveCamera()
 	return(GameData::m_pActiveCamera->getCamera());
 }
 
-SX_LIB_API void SXGame_0Create()
+SX_LIB_API void SXGame_0Create(HWND hWnd, bool isGame)
 {
 	if(g_pGameData)
 	{
@@ -111,7 +115,7 @@ SX_LIB_API void SXGame_0Create()
 	}
 	Core_SetOutPtr();
 
-	g_pGameData = new GameData();
+	g_pGameData = new GameData(hWnd, isGame);
 
 	//g_pPlayer->spawn();
 	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0);
@@ -130,7 +134,10 @@ SX_LIB_API void SXGame_Update(int thread)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->update(thread);
-	g_pGameData->update();
+	if(thread == 0)
+	{
+		g_pGameData->update();
+	}
 }
 SX_LIB_API void SXGame_UpdateSetThreadNum(int num)
 {
@@ -377,4 +384,35 @@ SX_LIB_API CBaseEntity *SXGame_EntGetByName(const char *szName, ID idStart)
 	}
 
 	return 0;
+}
+
+SX_LIB_API BOOL SXGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if(!GameData::m_pGUI)
+	{
+		return(TRUE);
+	}
+
+	return(GameData::m_pGUI->putMessage(message, wParam, lParam));
+}
+
+SX_LIB_API void SXGame_OnLostDevice()
+{
+	if(GameData::m_pGUI)
+	{
+		GameData::m_pGUI->onLostDevice();
+	}
+}
+
+SX_LIB_API void SXGame_OnResetDevice()
+{
+	if(GameData::m_pGUI)
+	{
+		GameData::m_pGUI->onResetDevice();
+	}
+}
+
+SX_LIB_API void SXGame_OnLevelLoad(const char *szName)
+{
+	GameData::m_pHUDcontroller->loadMap(szName);
 }

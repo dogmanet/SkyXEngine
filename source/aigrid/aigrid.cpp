@@ -2035,6 +2035,7 @@ ID AIGrid::QuadGet(const float3* pos, bool isnear_or_permissible) const
 						//AIQuad* aq22 = ArrQuads[ArrBound[i]->ArrIdsQuads[k]];
 						heightmin = abs(abs(ArrLongCoordQuads[ArrBound[i]->ArrIdsQuads[k]].y) - abs(tmpy));
 						howf = ArrBound[i]->ArrIdsQuads[k];
+						return howf;
 					}
 				}
 			}
@@ -2983,7 +2984,7 @@ void AIGrid::GridSetColorArr(const ID * pmem, DWORD color, UINT count)
 void AIGrid::GridSetNullColor()
 {
 	if (ArrColor.size() > 0)
-		memset(&(ArrColor[0]), 0, sizeof(uint32_t)* ArrColor.size());
+	memset(&(ArrColor[0]), 0, sizeof(uint32_t)* ArrColor.size());
 }
 
 //##########################################################################

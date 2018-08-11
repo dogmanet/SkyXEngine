@@ -43,6 +43,7 @@ SX_LIB_API void SXAnim_0Create()
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxanim double init", GEN_MSG_LOCATION);
 		return;
 	}
+	Core_SetOutPtr();
 	g_mgr = new AnimationManager(SGCore_GetDXDevice());
 }
 SX_LIB_API void SXAnim_AKill()

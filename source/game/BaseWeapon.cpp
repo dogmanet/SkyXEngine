@@ -9,6 +9,7 @@ See the license in LICENSE
 #include "Player.h"
 #include "BaseAmmo.h"
 #include "Random.h"
+#include "HUDcontroller.h"
 
 /*! \skydocent base_weapon
 Базовый класс для оружия
@@ -280,23 +281,30 @@ void CBaseWeapon::reload()
 			count -= m_iCurrentLoad;
 			m_pMag->load(count);
 
-		setNextUse(m_fReloadTime);
+			setNextUse(m_fReloadTime);
 			playAnimation(isFast ? "reload_fast" : "reload");
 			if(isFast)
 			{
 				/*if(ID_VALID(m_idSndReloadFast))
 				{
-					SSCore_SndInstancePlay3d(m_idSndReloadFast, &getPos());
+				SSCore_SndInstancePlay3d(m_idSndReloadFast, &getPos());
 				}*/
 			}
 			else
 			{
-		if(ID_VALID(m_idSndReload))
-		{
-			SSCore_SndInstancePlay3d(m_idSndReload, false, false, &getPos());
+				if(ID_VALID(m_idSndReload))
+				{
+					SSCore_SndInstancePlay3d(m_idSndReload, false, false, &getPos());
+				}
+			}
+
+			CHUDcontroller * pHUD = ((CBaseCharacter*)getOwner())->getHUDcontroller();
+			if(pHUD)
+			{
+				pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
+				pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+			}
 		}
-	}
-}
 		else
 		{
 			printf(COLOR_MAGENTA "No more bullets!\n" COLOR_RESET);
@@ -473,10 +481,11 @@ void CBaseWeapon::taskShoot(float dt)
 
 	dir = SMQuaternion(m_pParent->getOrient() * float3(1.0f, 0.0f, 0.0f), asinf(m_fAimingRange * 10.0f / (pAmmo->getStartSpeed() * pAmmo->getStartSpeed())) * 0.5f) * dir;
 
+	CBaseCharacter * pOwner = (CBaseCharacter*)getOwner();
 
-	dir = applySpread(dir, SMToRadian(((CBaseCharacter*)getOwner())->getCurrentSpread()));
+	dir = applySpread(dir, SMToRadian(pOwner->getCurrentSpread()));
 
-	pAmmo->fire(start, dir, (CBaseCharacter*)getOwner());
+	pAmmo->fire(start, dir, pOwner);
 
 	if(m_pMag && m_pMag->getLoad() > 0)
 	{
@@ -485,6 +494,12 @@ void CBaseWeapon::taskShoot(float dt)
 	else
 	{
 		--m_iCurrentLoad;
+	}
+
+	CHUDcontroller * pHUD = pOwner->getHUDcontroller();
+	if(pHUD)
+	{
+		pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
 	}
 }
 
@@ -505,5 +520,12 @@ void CBaseWeapon::attachMag(CBaseMag * pMag)
 			m_iCurrentLoad += m_pMag->getLoad();
 			m_pMag->load(-m_pMag->getLoad());
 		}
+	}
+	CHUDcontroller * pHUD = ((CBaseCharacter*)getOwner())->getHUDcontroller();
+	if(pHUD)
+	{
+		pHUD->setWeaponMaxLoad((m_pMag ? m_pMag->getCapacity() : 0)/* + m_iCapacity*/);
+		pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
+		pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
 	}
 }

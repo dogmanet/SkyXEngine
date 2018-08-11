@@ -172,7 +172,7 @@ See the license in LICENSE
 
 /*! Инициализирует библиотеку
 */
-SX_LIB_API void SXGame_0Create();
+SX_LIB_API void SXGame_0Create(HWND hWnd, bool isGame);
 
 /*! Деинициализирует библиотеку
 */
@@ -252,6 +252,13 @@ SX_LIB_API CBaseEntity *SXGame_EntGet(ID id);
 
 SX_LIB_API CBaseEntity *SXGame_EntGetByName(const char *szName, ID idStart = 0);
 
+SX_LIB_API BOOL SXGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam);
+
+SX_LIB_API void SXGame_OnLostDevice();
+
+SX_LIB_API void SXGame_OnResetDevice();
+
+SX_LIB_API void SXGame_OnLevelLoad(const char *szName);
 
 
 #endif

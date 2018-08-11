@@ -9,6 +9,8 @@ See the license in LICENSE
 #include "BaseTool.h"
 #include "BaseWeapon.h"
 
+#include <aigrid/sxaigrid.h>
+
 /*! \skydocent base_character
 Базовый класс персонажа
 */
@@ -49,20 +51,32 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_vPitchYawRoll(float3_t(0, 0, 0)),
 	m_pActiveTool(NULL),
 	m_fCurrentSpread(0.0f),
-	m_pHitboxBodies(NULL)
+	m_pHitboxBodies(NULL),
+	m_fCapsHeight(1.7f),
+	m_fCapsRadius(0.4f),
+	m_idQuadLast(-1)
 {
+	m_pCollideShape = new btCapsuleShape(m_fCapsRadius, m_fCapsHeight - m_fCapsRadius * 2.0f);
+
 	btTransform startTransform;
 	startTransform.setIdentity();
-	startTransform.setOrigin(F3_BTVEC(m_vPosition));
+	startTransform.setOrigin(F3_BTVEC(m_vPosition + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f)));
 	//startTransform.setOrigin(btVector3(0, 12, 10));
 
 	m_pGhostObject = new btPairCachingGhostObject();
+	void *p1 = m_pGhostObject;
+	void *p2 = &m_pGhostObject->getWorldTransform();
+	printf(COLOR_LRED "p1: 0x%08x; p2: 0x%08x" COLOR_RESET "\n", p1, p2);
 	m_pGhostObject->setWorldTransform(startTransform);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
-	m_pCollideShape = new btCapsuleShape(0.4f, 1.0f);
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
 	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 	m_pGhostObject->setUserPointer(this);
+
+	m_pHeadEnt = (CPointEntity*)CREATE_ENTITY("base_point", m_pMgr);
+	m_pHeadEnt->setPos(getPos() + float3(0.0f, m_fCapsHeight - 0.1f, 0.0f));
+	m_pHeadEnt->setOrient(getOrient());
+	m_pHeadEnt->setParent(this);
 
 	btScalar stepHeight = 0.4f;
 	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, stepHeight, btVector3(0.0f, 1.0f, 0.0f));
@@ -83,9 +97,9 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
 	//m_flashlight->setPos(getPos() + float3(0.f, 0.1f, 0.f));
-	m_flashlight->setPos(getPos() + float3(0.f, 0.2f, 0.1f));
+	m_flashlight->setPos(getPos() + float3(0.0f, 0.1f, 0.1f));
 	m_flashlight->setOrient(getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
-	m_flashlight->setParent(this);
+	m_flashlight->setParent(m_pHeadEnt);
 	m_flashlight->setDist(20.f);
 	m_flashlight->setAngle(SMToRadian(60));
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
@@ -101,8 +115,14 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 CBaseCharacter::~CBaseCharacter()
 {
 	CLEAR_INTERVAL(m_idTaskSpread);
+	REMOVE_ENTITY(m_pHeadEnt);
 	REMOVE_ENTITY(m_flashlight);
 	mem_delete(m_pInventory);
+
+	if(m_idQuadCurr >= 0)
+	{
+		//SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
+	}
 }
 
 
@@ -182,6 +202,28 @@ void CBaseCharacter::playFootstepsSound()
 			}
 		}
 	}
+}
+
+void CBaseCharacter::setPos(const float3 & pos)
+{
+	BaseClass::setPos(pos);
+	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f)));
+}
+
+float CBaseCharacter::getAimRange()
+{
+	float3 start = getPos();
+	float3 dir = getOrient() * float3(0.0f, 0.0f, 1.0f);
+	float3 end = start + dir * 1000.0f;
+
+	btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
+	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+	if(cb.hasHit())
+	{
+		return(SMVector3Length(BTVEC_F3(cb.m_hitPointWorld) - start));
+	}
+	return(-1.0f);
 }
 
 float CBaseCharacter::getMomentSpread()
@@ -305,6 +347,8 @@ void CBaseCharacter::initHitboxes()
 		pRigidBody->setAngularFactor(0.0f);
 		pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
 
+		pRigidBody->setCollisionFlags(pRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+
 		SXPhysics_AddShapeEx(pRigidBody, CG_HITBOX, CG_BULLETFIRE);
 		m_pHitboxBodies[i] = pRigidBody;
 	}
@@ -314,7 +358,7 @@ void CBaseCharacter::initHitboxes()
 
 void CBaseCharacter::updateHitboxes()
 {
-	if(!m_pAnimPlayer || !m_pHitboxBodies)
+	if(!m_pAnimPlayer || !m_pHitboxBodies || !m_pAnimPlayer->playingAnimations())
 	{
 		return;
 	}
@@ -364,6 +408,38 @@ void CBaseCharacter::onSync()
 	BaseClass::onSync();
 
 	updateHitboxes();
+
+	if(m_uMoveDir & PM_OBSERVER)
+	{
+		return;
+	}
+	btTransform &trans = m_pGhostObject->getWorldTransform();
+	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() - m_fCapsHeight * 0.5f, trans.getOrigin().z()));
+
+
+
+	//находим текущий квад аи сетки на котором находится игрок
+	ID idq = SAIG_QuadGet(&float3(m_vPosition), true);
+	//если нашли
+	if(ID_VALID(idq))
+	{
+		//занимаем этот квад
+		SAIG_QuadSetState(idq, AIQUAD_STATE_TEMPBUSY);
+		SAIG_QuadSetStateWho(idq, getId());
+		m_idQuadLast = idq;
+	}
+
+	//если предыдущий и текущие квады не идентичны
+	if(m_idQuadCurr != idq)
+	{
+		//если предыдщий был действительным, убираем занятость
+		if(ID_VALID(m_idQuadCurr))
+		{
+			SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
+		}
+
+		m_idQuadCurr = idq;
+	}
 }
 
 void CBaseCharacter::initPhysics()
@@ -376,8 +452,39 @@ void CBaseCharacter::releasePhysics()
 	releaseHitboxes();
 }
 
+CHUDcontroller * CBaseCharacter::getHUDcontroller()
+{
+	return(NULL);
+}
+
+void CBaseCharacter::onDeath()
+{
+	if(m_idQuadCurr >= 0)
+	{
+		SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);
+		m_idQuadCurr = -1;
+	}
+
+	SXPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+	SXPhysics_GetDynWorld()->removeAction(m_pCharacter);
+
+	cancelNextAnimation();
+
+	BaseClass::onDeath();
+}
+
 /*void CBaseCharacter::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
 {
 	// adjust damage by bodypart
 	BaseClass::dispatchDamage(takeDamageInfo);
 }*/
+
+CBaseEntity * CBaseCharacter::getHead()
+{
+	return(m_pHeadEnt);
+}
+
+bool CBaseCharacter::isObserver()
+{
+	return((m_uMoveDir & PM_OBSERVER) != 0);
+}

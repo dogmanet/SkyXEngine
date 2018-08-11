@@ -20,6 +20,8 @@ See the license in LICENSE
 
 #include "Time.h"
 
+#include <shellapi.h>
+
 //##########################################################################
 
 char g_szCoreName[CORE_NAME_MAX_LEN];
@@ -401,4 +403,65 @@ int64_t Core_TimeTotalMcsGetU(ID id)
 	CORE_TIME_PRECOND(0);
 
 	return g_pTimers->timeTotalMcsGetU(id);
+}
+
+
+//##########################################################################
+
+static AssotiativeArray<String, String> g_mCommandLine;
+static Array<String> g_aConsoleLine;
+
+void Core_0LoadCommandLine(const char *szCommandLine)
+{
+	StringW wsCmdLine = StringW(String(szCommandLine));
+	int argc;
+	wchar_t **argv = CommandLineToArgvW(wsCmdLine.c_str(), &argc);
+
+
+	const WCHAR * key = NULL;
+	bool isCvar = true;
+	for(int i = 0; i < argc; ++i)
+	{
+		if(argv[i][0] == L'-') ///< startup param
+		{
+			key = &argv[i][1];
+			isCvar = false;
+		}
+		else if(argv[i][0] == L'+') ///< cvar param (or cmd)
+		{
+			key = &argv[i][1];
+			isCvar = true;
+		}
+		else if(key != NULL) ///< arg
+		{
+			if(isCvar)
+			{
+				g_aConsoleLine.push_back(String(StringW(key)) + " " + String(StringW(argv[i])));
+			}
+			else
+			{
+				g_mCommandLine[String(StringW(key))] = String(StringW(argv[i]));
+			}
+			//store val
+			key = NULL;
+		}
+	}
+}
+
+void Core_0ExecCommandLine()
+{
+	for(int i = 0, l = g_aConsoleLine.size(); i < l; ++i)
+	{
+		Core_0ConsoleExecCmd("%s\n", g_aConsoleLine[i].c_str());
+	}
+}
+
+const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault)
+{
+	const AssotiativeArray<String, String>::Node *pNode;
+	if(g_mCommandLine.KeyExists(szArg, &pNode))
+	{
+		return(pNode->Val->c_str());
+	}
+	return(szDefault);
 }

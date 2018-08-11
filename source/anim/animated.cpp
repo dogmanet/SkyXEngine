@@ -1012,34 +1012,36 @@ bool ModelFile::Save(const char * file)
 *
 */
 
-#define RUN_CB(slot, state) if(m_pfnCallBack) m_pfnCallBack(slot, state, this)
+#define RUN_CB(slot, state) if(m_pfnCallBack) m_pfnCallBack(slot, state, this); if(m_pCallbackEnt) (m_pCallbackEnt->*m_pfnCallBackEnt)(slot, state)
 #define RUN_P_CB(slot, state) if(m_pfnProgressCB) m_pfnProgressCB(slot, state, this)
 
 Animation::Animation(AnimationManager * pMgr):
-//m_bUpdating(false),
-m_pBoneControllers(NULL),
-//m_fTestBoneCtl(NULL),
-m_bBoneMatrixReFilled(false),
-m_pMdl(NULL),
-//m_bRendering(false),
-//m_mfBoneControllers(NULL),
-m_vPosition(float3_t(0.0f, 0.0f, 0.0f)),
-m_vOrientation(SMQuaternion(0.0f, 0.0f, 0.0f, 1.0f)),
-m_iCurTime(0),
-//m_bRenderReady(false),
-m_pBoneMatrix(NULL),
-m_FinalBones(NULL),
-m_pBoneMatrixRender(NULL),
-m_mfBoneControllerValues(NULL),
-m_iCurrentSkin(0),
-m_pMgr(pMgr),
-m_pfnCallBack(NULL),
-m_pfnProgressCB(NULL),
-m_fScale(0.01f),
-m_iBoneCount(0),
-m_idOverrideMaterial(-1),
-m_bEnabled(true),
-m_pRagdoll(0)
+	//m_bUpdating(false),
+	m_pBoneControllers(NULL),
+	//m_fTestBoneCtl(NULL),
+	m_bBoneMatrixReFilled(false),
+	m_pMdl(NULL),
+	//m_bRendering(false),
+	//m_mfBoneControllers(NULL),
+	m_vPosition(float3_t(0.0f, 0.0f, 0.0f)),
+	m_vOrientation(SMQuaternion(0.0f, 0.0f, 0.0f, 1.0f)),
+	m_iCurTime(0),
+	//m_bRenderReady(false),
+	m_pBoneMatrix(NULL),
+	m_FinalBones(NULL),
+	m_pBoneMatrixRender(NULL),
+	m_mfBoneControllerValues(NULL),
+	m_iCurrentSkin(0),
+	m_pMgr(pMgr),
+	m_pfnCallBack(NULL),
+	m_pfnProgressCB(NULL),
+	m_fScale(0.01f),
+	m_iBoneCount(0),
+	m_idOverrideMaterial(-1),
+	m_bEnabled(true),
+	m_pRagdoll(0),
+	m_pfnCallBackEnt(NULL),
+	m_pCallbackEnt(NULL)
 {
 	for(int i = 0; i < BLEND_MAX; i++)
 	{
@@ -1100,8 +1102,8 @@ float3 Animation::getBoneTransformPos(UINT id)
 
 SMQuaternion Animation::getBoneTransformRot(UINT id)
 {
-	ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
-	return(getOrient() * m_pBoneMatrixRender[id].orient * mBonesOrig[id].orient.Conjugate());
+	//ModelBone * mBonesOrig = m_pMdl->m_pBonesBindPoseInv;
+	return(m_pBoneMatrixRender[id].orient * getOrient()/* * mBonesOrig[id].orient.Conjugate()*/);
 }
 
 /*
@@ -1774,12 +1776,12 @@ void Animation::PlayActivityNext(UINT slot)
 	{
 		if(m_pMdl->GetSequence(i)->activity == m_iCurrentActivity[slot])
 		{
+			fMaxChance += (float)m_pMdl->GetSequence(i)->act_chance;
 			if(fMaxChance >= fch)
 			{
 				play(m_pMdl->GetSequence(i)->name, m_iCurrentActivityFadeTime[slot], slot, false);
 				break;
 			}
-			fMaxChance += (float)m_pMdl->GetSequence(i)->act_chance;
 		}
 	}
 }
@@ -1877,6 +1879,12 @@ AnimStateCB Animation::setCallback(AnimStateCB cb)
 	AnimStateCB old = m_pfnCallBack;
 	m_pfnCallBack = cb;
 	return(old);
+}
+
+void Animation::setCallback(CBaseAnimating *pEnt, AnimStateEntCB cb)
+{
+	m_pfnCallBackEnt = cb;
+	m_pCallbackEnt = pEnt;
 }
 
 AnimProgressCB Animation::setProgressCB(AnimProgressCB cb)
@@ -2462,7 +2470,8 @@ UINT AnimationManager::reg(Animation * pAnim)
 }
 void AnimationManager::unreg(UINT id)
 {
-	m_pAnimatedList.erase(id);
+	//@TODO: add free list
+	m_pAnimatedList[id] = NULL;
 }
 void AnimationManager::render(ID for_id)
 {
@@ -2471,7 +2480,7 @@ void AnimationManager::render(ID for_id)
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		pAnim = m_pAnimatedList[i];
-		if(for_id < 0 || pAnim->m_vIsVisibleFor[for_id])
+		if(pAnim && (for_id < 0 || pAnim->m_vIsVisibleFor[for_id]))
 		{
 			pAnim->render();
 		}
@@ -2487,7 +2496,10 @@ void AnimationManager::update(int thread)
 	}
 	for(uint32_t i = thread, l = m_pAnimatedList.size(); i < l; i += m_iThreadNum)
 	{
-		m_pAnimatedList[i]->advance(GetTickCount());
+		if(m_pAnimatedList[i])
+		{
+			m_pAnimatedList[i]->advance(GetTickCount());
+		}
 	}
 }
 
@@ -2495,7 +2507,10 @@ void AnimationManager::sync()
 {
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
-		m_pAnimatedList[i]->SwapBoneBuffs();
+		if(m_pAnimatedList[i])
+		{
+			m_pAnimatedList[i]->SwapBoneBuffs();
+		}
 	}
 }
 
@@ -2517,18 +2532,21 @@ void AnimationManager::computeVis(const ISXFrustum * frustum, const float3 * vie
 	for(uint32_t i = 0, l = m_pAnimatedList.size(); i < l; ++i)
 	{
 		pAnim = m_pAnimatedList[i];
-		pAnim->getBound()->getSphere(&jcenter, &jradius.x);
+		if(pAnim)
+		{
+			pAnim->getBound()->getSphere(&jcenter, &jradius.x);
 
-		m = pAnim->getWorldTM();
-		m._11 = SMVector3Length(float3(m._11, m._21, m._31));
-		m._22 = SMVector3Length(float3(m._12, m._22, m._32));
-		m._33 = SMVector3Length(float3(m._13, m._23, m._33));
-		m._12 = m._13 = m._21 = m._23 = m._31 = m._32 = 0.0f;
-		jcenter = SMVector3Transform(jcenter, m);
-		m._41 = m._42 = m._43 = 0.0f;
-		jradius = SMVector3Transform(jradius, m);
-		
-		pAnim->m_vIsVisibleFor[id_arr] = frustum->sphereInFrustum(&jcenter, jradius.x);
+			m = pAnim->getWorldTM();
+			m._11 = SMVector3Length(float3(m._11, m._21, m._31));
+			m._22 = SMVector3Length(float3(m._12, m._22, m._32));
+			m._33 = SMVector3Length(float3(m._13, m._23, m._33));
+			m._12 = m._13 = m._21 = m._23 = m._31 = m._32 = 0.0f;
+			jcenter = SMVector3Transform(jcenter, m);
+			m._41 = m._42 = m._43 = 0.0f;
+			jradius = SMVector3Transform(jradius, m);
+
+			pAnim->m_vIsVisibleFor[id_arr] = frustum->sphereInFrustum(&jcenter, jradius.x);
+		}
 	}
 }
 

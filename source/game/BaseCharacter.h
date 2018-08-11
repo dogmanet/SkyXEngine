@@ -19,6 +19,7 @@ See the license in LICENSE
 #include "BaseAnimating.h"
 #include "LightDirectional.h"
 #include "CharacterInventory.h"
+#include "PointEntity.h"
 
 class CBaseTool;
 
@@ -38,6 +39,8 @@ enum PLAYER_MOVE
 
 	PM_STOP = 0xFFFF
 };
+
+class CHUDcontroller;
 
 //! Класс игрока  \ingroup cbaseanimating
 class CBaseCharacter: public CBaseAnimating
@@ -65,6 +68,8 @@ public:
 	//! Воспроизводит звук шагов с учетом материала на котором стоит игрок
 	void playFootstepsSound();
 
+	float getAimRange();
+
 
 	//! Получает рассчитанный для текущего оружия коэффициент разброса (с учетом задержки сведения)
 	float getCurrentSpread();
@@ -82,12 +87,24 @@ public:
 	void initPhysics();
 	void releasePhysics();
 
+	//! Устанавливает положение в мире
+	void setPos(const float3 & pos);
+
 	//void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
 
 	CCharacterInventory * getInventory()
 	{
 		return(m_pInventory);
 	}
+
+	virtual CHUDcontroller * getHUDcontroller();
+
+	void onDeath();
+
+	CBaseEntity *getHead();
+
+
+	bool isObserver();
 
 protected:
 	//! Фонарик
@@ -124,7 +141,13 @@ protected:
 
 	CCharacterInventory * m_pInventory;
 
+	ID m_idQuadCurr;	//!< текущий квад аи сетки на котором стоит игрок
+	ID m_idQuadLast;	//!< Последний валидный квад аи сетки на котором стоял игрок
 
+	float m_fCapsHeight;
+	float m_fCapsRadius;
+
+	CPointEntity * m_pHeadEnt;
 };
 
 #endif

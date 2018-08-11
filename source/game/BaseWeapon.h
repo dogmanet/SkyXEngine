@@ -99,7 +99,7 @@ protected:
 	float3 applySpread(const float3 &vDir, float fSpread);
 
 	//! Задача стрельбы
-	void taskShoot(float dt);
+	virtual void taskShoot(float dt);
 
 	ID m_idTaskShoot;
 

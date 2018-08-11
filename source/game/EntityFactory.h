@@ -93,7 +93,7 @@ public:
 	{
 		if(pEnt)
 		{
-			delete pEnt;
+			pEnt->getManager()->sheduleDestroy(pEnt);
 		}
 	}
 

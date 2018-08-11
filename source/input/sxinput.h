@@ -322,6 +322,12 @@ SX_LIB_API bool SSInput_GetActiveKey();			//!< нажата ли хоть как
 
 SX_LIB_API void SSInput_GetMouseDelta(int * x, int * y);//!< получает изменение координат мыши
 
+SX_LIB_API void SSInput_SetEnable(bool bEnable);//!< Включает/отключает обработку событий
+
+SX_LIB_API int SSInput_GetKeymapSize();//!< Количество клавиш
+SX_LIB_API void SSInput_GetBindEntry(int n, const char **pszKey, const char **pszCmd);//!< строка таблицы биндов
+SX_LIB_API void SSInput_OnNextKeyPress(void(*pfnCallback)(const char *szKey));//!< Вызвать функцию при следующем нажатии клавиши
+
 #endif
 
 //!@} sxinput

@@ -11,17 +11,24 @@ See the license in LICENSE
 #include "Player.h"
 #include "crosshair.h"
 #include <mtllight/sxmtllight.h>
+#include <gui/guimain.h>
+#include "HUDcontroller.h"
+#include "GameStateManager.h"
 
 class GameData
 {
 public:
-	GameData();
+	GameData(HWND hWnd, bool isGame);
 	~GameData();
 
 
 	static CPlayer * m_pPlayer;
 	static CPointCamera * m_pActiveCamera;
 	static CEntityManager * m_pMgr;
+	static gui::IGUI * m_pGUI;
+	static CHUDcontroller * m_pHUDcontroller;
+	static CGameStateManager * m_pGameStateManager;
+	HWND m_hWnd;
 
 	CCrosshair * m_pCrosshair;
 
@@ -31,6 +38,8 @@ public:
 	void sync();
 
 	void playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos);
+
+	static gui::dom::IDOMnode *m_pCell;
 
 protected:
 
@@ -76,6 +85,10 @@ protected:
 	static void ccmd_switch_firemode();
 
 	static void ccmd_toggleflashlight();
+
+	static void ccmd_game_menu();
+
+	bool m_isGame;
 
 };
 

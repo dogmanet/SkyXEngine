@@ -703,7 +703,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 
 void CShaderManager::allLoad()
 {
-	if (m_aVS.size() == m_iLastAllLoadVS || m_aPS.size() == m_iLastAllLoadPS)
+	if (m_aVS.size() == m_iLastAllLoadVS && m_aPS.size() == m_iLastAllLoadPS)
 		return;
 
 	DWORD dwTime = GetTickCount();

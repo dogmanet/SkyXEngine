@@ -212,33 +212,55 @@ checkbox:active
 	background-image: /dev/checkbox_act.png;
 }
 
-radio
-{
-	border-radius: 6px;
-	//-image: /dev/checkbox.png;
-	width: 12px;
-	height: 12px;
-	
-	border-top-color: #3d3d3d;
-	border-left-color: #3d3d3d;
-	
-	border-right-color: #fbfbfb;
-	border-bottom-color: #fbfbfb;
-	
-	border-width: 2px;
-	
-	background-color: #FFFFFF;
-	cursor: pointer;
-}
-
-radio:active
-{
-	background-image: /dev/radio.png;
-}
-
 label
 {
 	display: inline-block;
 	font-size: 13px;
 	padding-left: 5px;
+}
+
+range
+{
+	position: relative;
+	//background-color: #00ff0033;
+	display: block;
+	height: 30px;
+}
+
+range-bar
+{
+	display: block;
+	//background-color: #ff000066;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 70px;
+	bottom: 0;
+}
+range-text
+{
+	display: block;
+	//background-color: #0000ff66;
+	position: absolute;
+	top: 4px;
+	right: 0;
+	width: 70px;
+	text-align: center;
+	bottom: 4px;
+	font-size: 100%;
+}
+
+range-drag
+{
+	display: none;
+}
+range-meter
+{
+	display: block;
+	background-color: #ff00FFcc;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 33%;
+	bottom: 0;
 }

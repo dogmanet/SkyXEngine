@@ -272,7 +272,7 @@ void CBaseTool::_rezoom()
 	m_vOffsetPos = (float3)vlerp(m_vSlotPos, m_vSlotPosAim, m_fZoomProgress);
 	//m_vWpnShakeAngles
 	m_qSlotRotResult = SMquaternionSlerp(m_qSlotRot, m_qSlotRotAim, m_fZoomProgress);
-	if(m_pOwner)
+	if(m_pOwner && m_pOwner->getClassName() && !fstrcmp(m_pOwner->getClassName(), "player"))
 	{
 		((CPlayer*)m_pOwner)->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
@@ -334,4 +334,8 @@ bool CBaseTool::isValidAmmo(CBaseSupply *pAmmo)
 float CBaseTool::getMaxDistance() const
 {
 	return(m_fMaxDistance);
+}
+
+void CBaseTool::stopAction()
+{
 }

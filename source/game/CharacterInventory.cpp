@@ -161,3 +161,15 @@ float CCharacterInventory::getTotalWeight() const
 	return(fTotal);
 }
 
+int CCharacterInventory::getItemCount(const char * szClassName)
+{
+	int iCount = 0;
+	for(int i = 0; i < m_iSlotCount; ++i)
+	{
+		if(m_ppSlots[i] && !fstrcmp(m_ppSlots[i]->getClassName(), szClassName))
+		{
+			iCount += m_ppSlots[i]->m_iInvStackCurSize;
+		}
+	}
+	return(iCount);
+}

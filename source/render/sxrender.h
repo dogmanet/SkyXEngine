@@ -62,6 +62,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxdecals.lib")
 #endif
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxgame_d.lib")
+#else
+#pragma comment(lib, "sxgame.lib")
+#endif
+
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>

@@ -54,7 +54,9 @@ void msgbx(int level, const char* format, ...)
 	}
 }
 
-report_func g_fnReportf = SkyXEngine_PrintfLog;// msgbx;
+//report_func g_fnReportf = SkyXEngine_PrintfLog;// msgbx;
+
+extern report_func g_fnReportf;
 
 Editor::Editor():
 m_bCamMove(false),

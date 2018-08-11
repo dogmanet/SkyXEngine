@@ -1,0 +1,453 @@
+[ent_0]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+parent = 
+owner = 
+flags = 0
+classname = npc_zombie
+name = 
+origin = -56.242832 -1.500525 34.197109
+start = cam_pt_0
+rotation = 0.000000 -0.227660 0.000000 0.936027
+speed = 5.000000
+
+[ent_1]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+classname = npc_zombie
+origin = -53.200039 -1.500525 26.577320
+parent = 
+name = 
+rotation = 0.000000 -0.000000 0.000000 -0.000000
+
+[ent_10]
+start = cam_pt_0
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 5.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -106.658783 -0.106368 1.572050
+next = cam_pt_9
+name = cam_train
+classname = func_train
+
+[ent_11]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 1.000000 0.000000 0.000000
+parent = cam_train
+origin = -106.658783 -0.106368 1.572050
+next = cam_pt_10
+name = train_camera
+classname = point_camera
+
+[ent_12]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.009889 0.706336 0.009909 0.707738
+parent = 
+origin = -106.658783 -0.106368 1.572050
+next = cam_pt_1
+name = cam_pt_0
+classname = path_corner
+
+[ent_13]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.704280 0.000000 0.709922
+parent = 
+origin = -87.406258 -0.449019 1.677870
+next = cam_pt_2
+name = cam_pt_1
+classname = path_corner
+
+[ent_14]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.007813 0.704246 0.007751 0.709871
+parent = 
+origin = -58.231617 -0.143631 1.910716
+next = cam_pt_3
+name = cam_pt_2
+classname = path_corner
+
+[ent_15]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.033054 0.709855 0.033387 0.702779
+parent = 
+origin = -40.818382 0.838363 1.891964
+next = cam_pt_4
+name = cam_pt_3
+classname = path_corner
+
+[ent_16]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.026900 -0.834698 0.040933 -0.548525
+parent = 
+origin = -33.075165 1.703738 8.209880
+next = cam_pt_5
+name = cam_pt_4
+classname = path_corner
+
+[ent_17]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = -0.007389 0.787854 -0.009455 0.615746
+parent = 
+origin = -8.018185 0.374952 0.224873
+next = cam_pt_6
+name = cam_pt_5
+classname = path_corner
+
+[ent_18]
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = -0.083208 -0.286954 0.025028 0.953996
+parent = 
+origin = 24.394606 2.826913 -2.666729
+next = cam_pt_7
+name = cam_pt_6
+classname = path_corner
+
+[ent_19]
+health = 100.000000
+owner = 
+next = cam_pt_8
+flags = 0
+type = 0
+speed = 0.000000
+rotation = -0.064082 -0.567183 0.044330 0.819898
+parent = 
+origin = 27.689428 4.612576 7.771554
+name = cam_pt_7
+classname = path_corner
+
+[ent_2]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 -0.373673 0.000000 0.887725
+parent = 
+origin = -54.275375 -1.500525 32.933720
+next = cam_pt_1
+name = 
+classname = npc_zombie
+
+[ent_3]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.553893 0.000000 0.306866
+parent = 
+origin = -52.856964 -1.500525 30.356119
+next = cam_pt_2
+name = 
+classname = npc_zombie
+
+[ent_4]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.648220 0.000000 0.382360
+parent = 
+origin = -53.998669 -1.500525 31.598392
+next = cam_pt_3
+name = 
+classname = npc_zombie
+
+[ent_5]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.650063 0.000000 0.381053
+parent = 
+origin = -54.786385 -1.500525 32.352581
+next = cam_pt_4
+name = 
+classname = npc_zombie
+
+[ent_6]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 -0.000000 0.000000 -0.000000
+parent = 
+origin = -53.200039 -1.500525 28.051968
+next = cam_pt_5
+name = 
+classname = npc_zombie
+
+[ent_7]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.583373 0.000000 0.328470
+parent = 
+origin = -55.457680 -1.500524 32.995049
+next = cam_pt_6
+name = 
+classname = npc_zombie
+
+[ent_8]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.125773 0.000000 0.063271
+parent = 
+origin = -52.517471 -1.500525 29.566217
+next = cam_pt_7
+name = 
+classname = npc_zombie
+
+[ent_9]
+scale = 0.010000
+model = models/zombie/zombie.dse
+health = 100.000000
+owner = 
+flags = 0
+type = 0
+speed = 0.000000
+rotation = 0.000000 0.293677 0.000000 0.150805
+parent = 
+origin = -56.161362 -1.500525 33.422466
+next = cam_pt_8
+name = 
+classname = npc_zombie
+
+[ent_20]
+type = 0
+speed = 0.000000
+next = cam_pt_9
+health = 100.000000
+parent = 
+owner = 
+name = cam_pt_8
+flags = 0
+classname = path_corner
+origin = 30.400223 5.038457 24.533363
+rotation = -0.030311 -0.794113 0.039739 0.605712
+team = 0
+
+[ent_21]
+type = 0
+speed = 0.000000
+next = cam_pt_10
+health = 100.000000
+type_shadow = 1
+turnOn = 1
+turnOff = 1
+parent = 
+owner = 
+name = cam_pt_9
+light_far = 10.000000
+flags = 0
+dist = 10.000000
+color = 50.000000 50.000000 50.000000
+classname = path_corner
+origin = 22.309462 5.038457 38.705887
+rotation = 0.016597 0.955070 -0.054498 -0.290853
+
+[ent_22]
+type = 0
+speed = 0.000000
+parent = 
+owner = 
+next = cam_pt_11
+name = cam_pt_10
+health = 100.000000
+flags = 0
+classname = path_corner
+model = "meshes/light/light_1.dse"
+;origin = 0.000000 75.0000 0.000000
+origin = 7.407078 14.349155 45.017582
+rotation = -0.016477 0.974610 -0.209769 0.076554
+scale = 1
+; Output = "target_name:input_name:delay:parameter
+; target_name:input_name:delay:parameter"
+OnTouchStart = test_light:turnOn:0: ;,test_light:turnOff:10:
+OnTouchEnd = test_light:turnOff:0:
+
+
+[meta]
+count = 32
+
+[ent_23]
+type = 0
+speed = 0.000000
+rotation = -0.046010 0.953558 -0.195282 0.224666
+parent = 
+owner = 
+origin = -22.641125 18.850998 42.844719
+next = cam_pt_12
+name = cam_pt_11
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_24]
+type = 0
+speed = 0.000000
+rotation = 0.077865 -0.872501 0.147975 -0.459110
+parent = 
+owner = 
+origin = -41.062172 16.238222 25.595926
+next = cam_pt_13
+name = cam_pt_12
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_25]
+type = 0
+speed = 0.000000
+rotation = 0.057274 -0.822510 0.084188 -0.559561
+parent = 
+owner = 
+origin = -27.214052 10.006430 6.619457
+next = cam_pt_14
+name = cam_pt_13
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_26]
+type = 0
+speed = 0.000000
+rotation = -0.030947 0.793603 -0.040508 0.606297
+parent = 
+owner = 
+origin = -10.673305 7.396099 0.787011
+next = cam_pt_15
+name = cam_pt_14
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_27]
+type = 0
+speed = 0.000000
+rotation = -0.037200 -0.723511 -0.039108 -0.688199
+parent = 
+owner = 
+origin = -1.875340 7.051552 -0.783876
+next = cam_pt_16
+name = cam_pt_15
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_28]
+type = 0
+speed = 0.000000
+rotation = -0.023070 -0.781178 -0.028917 -0.623211
+parent = 
+owner = 
+origin = 13.182630 8.533407 -2.605206
+next = cam_pt_17
+name = cam_pt_16
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_29]
+type = 0
+speed = 0.000000
+rotation = -0.076351 -0.540066 0.049282 0.836702
+parent = 
+owner = 
+origin = 26.969713 8.383520 -18.184080
+next = 
+name = cam_pt_17
+health = 100.000000
+flags = 0
+classname = path_corner
+
+[ent_30]
+team = 0
+rotation = 0.000000 0.980603 0.000000 -0.196004
+parent = 
+owner = 
+origin = 10.000000 10.000000 10.000000
+name = 
+health = 100.000000
+flags = 0
+classname = info_player_spawn
+
+[ent_31]
+toggle = 
+scale = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+owner = 
+origin = -3.900000 -2.750000 22.000000
+name = 
+model = meshes/light/light_1.dse
+health = 100.000000
+flags = 0
+enable = 
+disable = 
+classname = trigger
+OnTouchStart = test_light:turnOn:0.000000:
+OnTouchEndAll = 
+OnTouchEnd = test_light:turnOff:0.000000:

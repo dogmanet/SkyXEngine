@@ -136,6 +136,7 @@ void SXRenderFunc::ComDeviceLost(bool isSetWindowSize)
 	SGeom_OnLostDevice();
 	SML_OnLostDevice();
 	SPE_OnLostDevice();
+	SXGame_OnLostDevice();
 
 	SXRenderFunc::InitModeWindow();
 	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
@@ -154,6 +155,7 @@ void SXRenderFunc::ComDeviceLost(bool isSetWindowSize)
 		SML_OnResetDevice();
 		SGeom_OnResetDevice();
 		SPE_OnResetDevice();
+		SXGame_OnResetDevice();
 
 
 		GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
