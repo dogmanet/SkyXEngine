@@ -116,6 +116,7 @@
     <ClCompile Include="..\..\..\source\game\HUDcontroller.cpp" />
     <ClCompile Include="..\..\..\source\game\LightDirectional.cpp" />
     <ClCompile Include="..\..\..\source\game\LightPoint.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicRelay.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="..\..\..\source\game\GameStates.h" />
     <ClInclude Include="..\..\..\source\game\HUDcontroller.h" />
     <ClInclude Include="..\..\..\source\game\IGameState.h" />
+    <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
     <ClInclude Include="..\..\..\source\game\Random.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />
