@@ -125,12 +125,12 @@ void CNPCBase::setPos(const float3 &pos)
 				SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_BUSY);
 				SAIG_QuadSetStateWho(m_idQuadCurr, getId());
 				SAIG_QuadGetPos(m_idQuadCurr, &tpos);
-				tpos.y += 0.7f;
-				setPos(tpos);
+					tpos.y += 0.7f;
+					setPos(tpos);
 				return;
+				}
 			}
 		}
-	}
 
 	if(ID_VALID(m_idQuadGoingTo))
 	{
@@ -149,13 +149,13 @@ ID CNPCBase::getAIQuad()
 }
 
 void CNPCBase::goTo(ID idQuad, bool bRun)
-{
+	{
 	m_bRunMode = bRun;
 
 	stopOrientAt();
 
 	if(!ID_VALID(idQuad))
-	{
+		{
 		stopMotion();
 		m_idQuadGoingTo = -1;
 		m_statePath = NPC_STATE_PATH_NOTFOUND;
@@ -338,8 +338,8 @@ void CNPCBase::pathFollowThinker(float fDelta)
 			//}
 			return;
 		}
-	}
-	else
+		}
+		else
 	{
 		m_iStuckCount = 0;
 	}
@@ -385,7 +385,7 @@ float CNPCBase::canSee(CBaseEntity *pOther)
 	float3 vDir = pOther->getPos() - m_pHeadEnt->getPos();
 	float fDirLen = SMVector3Length(vDir);
 
-	if(fDirLen > m_fViewDistance)
+	if(fDirLen > m_fViewDistance || fDirLen <= 0.00001f)
 	{
 		return(0.0f);
 	}
@@ -397,7 +397,7 @@ float CNPCBase::canSee(CBaseEntity *pOther)
 	if(SMVector3Dot(vDir, vEyeDir) < cosf(m_fViewConeAngle))
 	{
 		return(0.0f);
-	}
+}
 
 	CClosestNotMeRayResultCallback cb(getBtCollisionObject(), F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()));
 	cb.m_collisionFilterGroup = CG_NPCVIEW;
@@ -408,7 +408,7 @@ float CNPCBase::canSee(CBaseEntity *pOther)
 	{
 		CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
 		if(!pEnt || pEnt != pOther)
-		{
+{
 			return(0.0f);
 		}
 	}
@@ -427,18 +427,18 @@ bool CNPCBase::pathFind(ID endq)
 	if(ID_VALID(m_idQuadCurr))
 	{
 		if(ID_VALID(m_idQueueFindPath))
-		{
+	{
 			if(SAIG_GridGetSizePath(m_idQueueFindPath) >= 0)
-			{
+		{
 				if(m_aPathQuads.size() > 0)
-					SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
-				m_statePath = NPC_STATE_PATH_FOUND;
-				int iCount = SAIG_GridGetSizePath(m_idQueueFindPath);
-				m_aPathQuads.resize(iCount);
-				SAIG_GridGetPath(m_idQueueFindPath, &(m_aPathQuads[0]), m_aPathQuads.size(), true);
-				SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
-				m_vLastPathPos = m_vPosition;
-				m_idQueueFindPath = -1;
+				SAIG_GridSetColorArr(&(m_aPathQuads[0]), 0, m_aPathQuads.size());
+			m_statePath = NPC_STATE_PATH_FOUND;
+			int iCount = SAIG_GridGetSizePath(m_idQueueFindPath);
+			m_aPathQuads.resize(iCount);
+			SAIG_GridGetPath(m_idQueueFindPath, &(m_aPathQuads[0]), m_aPathQuads.size(), true);
+			SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
+			m_vLastPathPos = m_vPosition;
+			m_idQueueFindPath = -1;
 				return(true);
 			}
 		}
@@ -514,7 +514,7 @@ void CNPCBase::think(float fDelta)
 			return;
 		}
 	}
-
+	
 	m_idQuadCurr = SAIG_QuadGet(&float3(m_vPosition), true);
 
 	updateOrientLerp();
@@ -590,7 +590,7 @@ void CNPCBase::onSync()
 void CNPCBase::gridCheckBeyond()
 {
 	//находим ближайший квад к текущей позиции нпс
-	ID idq = SAIG_QuadGetNear(&(float3)m_vPosition);
+	ID idq = SAIG_QuadGetNear(&(float3)m_vPosition, 5);
 	if(ID_VALID(idq))
 	{
 		float3 tpos;
@@ -621,12 +621,12 @@ void CNPCBase::gridCheckBeyond()
 		else
 		{
 			m_statePath = NPC_STATE_PATH_BEYOND;
-		}
+	}
 	}
 	else
 	{
 		m_statePath = NPC_STATE_PATH_BEYOND;
-	}
+}
 }
 #endif 
 

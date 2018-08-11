@@ -7,9 +7,10 @@ ppe_fog_linear.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-half3 FogColor;
-half FogDenisty;
-//half2 NearFar;
+//##########################################################################
+
+half3 g_vFogColor;
+half g_fFogDenisty;
 /*half4 Param;
 //x - интенсивность тумана
 //y - на сколько небо в тумане
@@ -17,17 +18,21 @@ half FogDenisty;
 //w - максимальное значение тумана
 */
 
-sampler2D DepthMap:register(s0);
+//##########################################################################
 
-half4 main(vs_out_pp IN) : COLOR0
+sampler2D g_sDepth:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half Depth = tex2D(DepthMap, IN.TexUV).r;
+	half fDepth = tex2D(g_sDepth, IN.vTexUV).r;
 	
-		[branch]if(Depth >= 1.f)
+		[branch]if(fDepth >= 1.0)
 			clip(-1);
 		
 	/*half tmp_alpha = clamp((Param.x * Depth),Param.z,Param.w);
 	half4 cc = half4(FogColor,tmp_alpha);*/
 	
-	return half4(FogColor,FogDenisty * Depth);
+	return half4(g_vFogColor, g_fFogDenisty * fDepth);
 }

@@ -17,7 +17,7 @@ namespace GData
 
 
 	DS_RT FinalImage = DS_RT_SCENELIGHT;
-	ISXCamera* ObjCamera = 0;
+	ICamera* ObjCamera = 0;
 	ID IDSelectTex = -1;
 	
 	float2_t NearFar = float2_t(0.025, 400);
@@ -69,7 +69,7 @@ namespace GData
 
 			 ID BlendAmbientSpecDiffColor;
 
-			 ID ToneMapping;
+			//ID ToneMapping;
 
 			 ID StencilStr;
 			 ID StencilColumn;
@@ -128,7 +128,7 @@ void GData::IDsShaders::InitAllShaders()
 	GData::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs",SHADER_CHECKDOUBLE_PATH);
 	GData::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps",SHADER_CHECKDOUBLE_PATH);
 
-	GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_tone_mapping.ps", "lighting_tone_mapping.ps",SHADER_CHECKDOUBLE_PATH);
+	//GData::IDsShaders::PS::ToneMapping = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_tone_mapping.ps", "lighting_tone_mapping.ps",SHADER_CHECKDOUBLE_PATH);
 
 	GData::IDsShaders::VS::ResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs",SHADER_CHECKDOUBLE_PATH);
 

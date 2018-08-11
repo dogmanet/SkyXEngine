@@ -658,7 +658,7 @@ void PhyWorld::DebugDrawer::reportErrorWarning(const char * warningString)
 
 		LibReport(REPORT_MSG_LEVEL_WARNING, " 0x%08xf\n", &trans);
 		byte * pByte = (byte*)&trans;
-		for(int i = 0, l = sizeof(trans); i < l; ++i)
+		for (int i = 0, l = sizeof(trans); i < l; ++i)
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, " %02x", pByte[i]);
 		}

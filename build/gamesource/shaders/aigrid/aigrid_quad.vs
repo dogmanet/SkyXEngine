@@ -6,15 +6,22 @@ aigrid_quad.vs
 
 #include <../struct.h>
 
-half4x4 WorldViewProjection;
+//##########################################################################
 
-void main(in vs_input_aigrid IN, out vs_output_aigrid OUT) 
+half4x4 g_mWVP;
+
+//##########################################################################
+
+VSO_AIgrid main(in VSI_AIgrid IN) 
 {
-	OUT.Position.xyz = IN.Position + IN.InstancePos;
-	OUT.Position.w = 1.f;
-	OUT.Position = mul(OUT.Position, WorldViewProjection);
+	VSO_AIgrid OUT;
+	OUT.vPosition.xyz = IN.vPosition + IN.vInstPos;
+	OUT.vPosition.w = 1.0;
+	OUT.vPosition = mul(OUT.vPosition, g_mWVP);
 	
-	OUT.Pos = OUT.Position;
-	OUT.Color = IN.InstanceCol;
-	OUT.TexUV = (IN.TexUV * IN.InstanceTex.xy)+IN.InstanceTex.zw;
+	OUT.vPos = OUT.vPosition;
+	OUT.vColor = IN.vInstColor;
+	OUT.vTexUV = (IN.vTexUV * IN.vInstTex.xy)+IN.vInstTex.zw;
+	
+	return OUT;
 }

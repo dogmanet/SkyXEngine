@@ -1,4 +1,5 @@
 [ent_0]
+health = 100.000000
 parent = 
 owner = 
 flags = 0
@@ -10,15 +11,17 @@ rotation = 0.000000 0.000000 0.000000 1.000000
 speed = 5.000000
 
 [ent_1]
+health = 100.000000
 owner = 
 flags = 0
 classname = point_camera
 origin = -106.658783 -0.106368 1.572050
 parent = cam_train
 name = train_camera
-rotation = -0.000000 1.000000 0.000000 0.000000
+rotation = 0.000000 1.000000 0.000000 0.000000
 
 [ent_10]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -31,6 +34,7 @@ name = cam_pt_8
 classname = path_corner
 
 [ent_11]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -43,6 +47,7 @@ name = cam_pt_9
 classname = path_corner
 
 [ent_12]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -55,6 +60,7 @@ name = cam_pt_10
 classname = path_corner
 
 [ent_13]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -67,6 +73,7 @@ name = cam_pt_11
 classname = path_corner
 
 [ent_14]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -79,6 +86,7 @@ name = cam_pt_12
 classname = path_corner
 
 [ent_15]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -91,6 +99,7 @@ name = cam_pt_13
 classname = path_corner
 
 [ent_16]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -103,6 +112,7 @@ name = cam_pt_14
 classname = path_corner
 
 [ent_17]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -115,6 +125,7 @@ name = cam_pt_15
 classname = path_corner
 
 [ent_18]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -127,6 +138,7 @@ name = cam_pt_16
 classname = path_corner
 
 [ent_19]
+health = 100.000000
 owner = 
 next = 
 flags = 0
@@ -139,6 +151,7 @@ name = cam_pt_17
 classname = path_corner
 
 [ent_2]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -151,6 +164,7 @@ name = cam_pt_0
 classname = path_corner
 
 [ent_3]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -163,6 +177,7 @@ name = cam_pt_1
 classname = path_corner
 
 [ent_4]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -175,6 +190,7 @@ name = cam_pt_2
 classname = path_corner
 
 [ent_5]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -187,6 +203,7 @@ name = cam_pt_3
 classname = path_corner
 
 [ent_6]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -199,6 +216,7 @@ name = cam_pt_4
 classname = path_corner
 
 [ent_7]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -211,6 +229,7 @@ name = cam_pt_5
 classname = path_corner
 
 [ent_8]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -223,6 +242,7 @@ name = cam_pt_6
 classname = path_corner
 
 [ent_9]
+health = 100.000000
 owner = 
 flags = 0
 type = 0
@@ -235,6 +255,7 @@ name = cam_pt_7
 classname = path_corner
 
 [ent_20]
+health = 100.000000
 parent = 
 owner = 
 name = 
@@ -245,22 +266,33 @@ rotation = 0.000000 0.980603 0.000000 -0.196004
 team = 0
 
 [ent_21]
+toggle = 
+scale = 1.000000
+model = meshes/light/light_1.dse
+health = 100.000000
+enable = 
+disable = 
+OnTouchStart = test_light:turnOn:0.000000:
+OnTouchEndAll = 
+OnTouchEnd = test_light:turnOff:0.000000:
 type_shadow = 1
 turnOn = 1
 turnOff = 1
 parent = 
 owner = 
-name = test_light
+name = 
 light_far = 10.000000
 flags = 0
 dist = 10.000000
 color = 50.000000 50.000000 50.000000
-classname = light_point_qqqq
-origin = 0.000000 -0.750000 0.000000
+classname = trigger
+origin = -3.900000 -2.750000 22.000000
 rotation = 0.000000 0.000000 0.000000 1.000000
 
 [ent_22]
-classname = trigger
+OnTurnOn = 
+OnTurnOff = 
+classname = light_point
 model = "meshes/light/light_1.dse"
 ;origin = 0.000000 75.0000 0.000000
 origin = -3.9 -2.750000 22.000000
@@ -273,4 +305,4 @@ OnTouchEnd = test_light:turnOff:0:
 
 
 [meta]
-count = 23
+count = 22

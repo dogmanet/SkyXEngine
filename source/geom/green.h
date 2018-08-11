@@ -100,7 +100,7 @@ public:
 	void save(const char *szPath);
 	void load(const char *szPath);
 	void clear();
-	void comArrIndeces(const ISXFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
+	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
 	void render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idArr = 0);
 	void renderSingly(DWORD timeDelta, const float3 *pViewPos, ID id, ID idTexture);
 	void renderObject(DWORD timeDelta, const float3 *pViewPos, ID id, ID idSplit, ID idObj, ID idTexture);
@@ -299,7 +299,7 @@ protected:
 	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 	void getPartBB(float3 *pMin, float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 
-	void comRecArrIndeces(ID idGreen, ID idArr, const ISXFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
+	void comRecArrIndeces(ID idGreen, ID idArr, const IFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
 
 	void addModelInArrCom(ID idModel);
 	void deleteModelInArrCom(ID idModel);

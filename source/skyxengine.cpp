@@ -226,12 +226,15 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
 	SGCore_SetFunc_MtlLoad(SkyXEngine_RFuncMtlLoad);
-	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetTypeTransparency);
+	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetSort);
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
 
 	SGCore_SkyBoxCr();
+#if !defined(SX_MATERIAL_EDITOR)
 	SGCore_SkyCloudsCr();
+#endif
+	SGCore_LoadTexAddConstAllInDir("sky");
 
 //#if defined(SX_GAME)
 	SGCore_OC_SetEnable(true);
@@ -330,7 +333,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 
 #ifndef SX_GAME
-	ISXCamera *pCamera = SGCore_CrCamera();
+	ICamera *pCamera = SGCore_CrCamera();
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	pCamera->setFOV(*r_default_fov);
 
@@ -365,6 +368,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		ShowWindow(hWnd3DCurr, SW_MAXIMIZE);
 #endif
 
+	SkyXEngind_UpdateDataCVar();
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
 
@@ -386,20 +391,22 @@ void SkyXEngine_InitPaths()
 		}
 	}
 
-	Core_RStringSet(G_RI_STRING_PATH_EXE, tmppathexe);
+	const char *szPathToExe = FileCanonizePath(tmppathexe);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/worktex/");
+	Core_RStringSet(G_RI_STRING_PATH_EXE, szPathToExe);
+
+	sprintf(tmppath, "%s%s", szPathToExe, "/worktex/");
 	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, tmppath);
 	FileCreateDir(tmppath);
 
-	sprintf(tmppath, "%s/%s/", tmppathexe, SKYXENGINE_RELPATH_GAMESOURCE);
+	sprintf(tmppath, "%s/%s/", szPathToExe, SKYXENGINE_RELPATH_GAMESOURCE);
 	Core_RStringSet(G_RI_STRING_PATH_GAMESOURCE, tmppath);
 	SetCurrentDirectoryA(tmppath);
 
-	sprintf(tmppath, "%s/%s/", tmppathexe, SKYXENGINE_RELPATH_EDITOR_CACHE);
+	sprintf(tmppath, "%s/%s/", szPathToExe, SKYXENGINE_RELPATH_EDITOR_CACHE);
 	Core_RStringSet(G_RI_STRING_PATH_EDITOR_CACHE, tmppath);
 
-	sprintf(tmppath, "%s%s", tmppathexe, "/screenshots/");
+	sprintf(tmppath, "%s%s", szPathToExe, "/screenshots/");
 	Core_RStringSet(G_RI_STRING_PATH_SCREENSHOTS, tmppath);
 	FileCreateDir(tmppath);
 
@@ -466,6 +473,7 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarInt("r_texfilter_max_miplevel", 0, "Какой mip уровень текстур использовать? 0 - самый высокий, 1 - ниже на один уровень и т.д.");
 	Core_0RegisterCVarInt("r_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
 
+	Core_0RegisterCVarInt("r_reflection_render", 0, "Режим рендера отражений 0 - отражения только от skybox, 1 - геометрия, 2 - растительность, 3 - анимационные модели");
 
 	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
@@ -491,6 +499,8 @@ void SkyXEngine_CreateLoadCVar()
 
 	Core_0RegisterCVarFloat("env_weather_snd_volume", 1.f, "Громкость звуков погоды [0,1]");
 	Core_0RegisterCVarFloat("env_ambient_snd_volume", 1.f, "Громкость фоновых звуков на уровне [0,1]");
+
+	Core_0RegisterCVarFloat("snd_main_volume", 1.f, "Общая громкость звуков (первичного звукового буфера) [0, 1] ");
 
 	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);
 
@@ -541,8 +551,8 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 
 	// системная обработка Alt (вызов меню) не надо, останавливает главный цикл
 	if(
-		(uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP)
-		&& !GetAsyncKeyState(VK_TAB)
+		(uiMessage == WM_SYSKEYDOWN || uiMessage == WM_SYSKEYUP) 
+		&& !GetAsyncKeyState(VK_TAB) 
 		&& (wParam == VK_MENU || wParam == VK_LMENU || wParam == VK_RMENU)
 		)
 		return 0;
@@ -738,6 +748,17 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
 
+	//сделал для тестов, убрать если будет мешать
+	/*ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	//ID idQuad = SAIG_QuadGetNear(&vCamPos, true, 1);
+	ID idQuad = -1;
+	for (int i = 0; i < 100;++i)
+		idQuad = SAIG_QuadGet(&vCamPos, true);
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "ttime = %lld, idQuad = %d \n", ttime, idQuad);
+	SAIG_GridSetNullColor();
+	SAIG_GridSetColorArr(&idQuad, D3DCOLOR_RGBA(255, 0, 0, 255), 1);*/
+
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
 	Core_RMatrixGet(G_RI_MATRIX_LIGHT_PROJ, &mProjLight);
 
@@ -758,43 +779,36 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}
 
 
-	
-	/*IDirect3DTexture9 *pINTZ = SGCore_RTGetTextureN("intz");
-	IDirect3DSurface9 *pINTZSurface = 0;
-
-	if (pINTZ)
-	{
-		pINTZ->GetSurfaceLevel(0, &pINTZSurface);
-		pDXDevice->SetDepthStencilSurface(pINTZSurface);
-		mem_release(pINTZSurface);
-	}*/
-
 	//рисуем сцену и заполняем mrt данными
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_BuildMRT(timeDelta, isSimulationRender);
 	DelayRenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	//mem_release(pINTZSurface);
-
 	
-
-
 	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//освещаем сцену
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		SRender_ComLighting(timeDelta);
 		SRender_UnionLayers();
+
 		if (SGCore_SkyBoxIsCr())
 			SRender_RenderSky(timeDelta);
-		SRender_ApplyToneMapping();
+
 		SRender_ComToneMapping(timeDelta);
 
 		DelayComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
+	SGCore_ShaderUnBind();
+
+	SRender_RenderParticles(timeDelta);
+
 	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 
 #if defined(SX_GAME)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -826,8 +840,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_RenderEditorMain();
 
 
-#if defined(_DEBUG)
-	//SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
+#if defined(SX_GAME) && defined(SX_AIGRID_RENDER)
+	//static const float * r_far = GET_PCVAR_FLOAT("r_far");
+	SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
 #endif
 
 #if defined(SX_GAME)
@@ -979,24 +994,22 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 void SkyXEngind_UpdateDataCVar()
 {
-	ID GlobalLight = SML_LigthsGetGlobal();
+	ID idGlobalLight = SML_LigthsGetGlobal();
 	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
 	static bool r_pssm_4or3_old = true;
 
 	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
-	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && GlobalLight >= 0)
+	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && idGlobalLight >= 0)
 	{
 		r_pssm_4or3_old = (*r_pssm_4or3);
-		SML_LigthsSet4Or3SplitsG(GlobalLight, r_pssm_4or3_old);
+		SML_LigthsSet4Or3SplitsG(idGlobalLight, r_pssm_4or3_old);
 	}
 
 	static const bool * r_pssm_shadowed = GET_PCVAR_BOOL("r_pssm_shadowed");
-	static bool r_pssm_shadowed_old = true;
 
-	if (r_pssm_shadowed && r_pssm_shadowed_old != (*r_pssm_shadowed) && GlobalLight >= 0)
+	if (r_pssm_shadowed && idGlobalLight >= 0)
 	{
-		r_pssm_shadowed_old = (*r_pssm_shadowed);
-		SML_LigthsSetTypeShadowed(GlobalLight, (r_pssm_shadowed_old ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
+		SML_LigthsSetTypeShadowed(idGlobalLight, ((*r_pssm_shadowed) ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
 	}
 
 	static const float * r_pssm_quality = GET_PCVAR_FLOAT("r_pssm_quality");
@@ -1127,10 +1140,16 @@ void SkyXEngind_UpdateDataCVar()
 
 		static int iCountModes = 0;
 		static const DEVMODE *aModes = SGCore_GetModes(&iCountModes);
+		static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-		if (r_win_width && r_win_width_old != (*r_win_width) && r_win_height && r_win_height_old != (*r_win_height))
+		if (r_win_width_old != (*r_win_width) || r_win_height_old != (*r_win_height))
 		{
 			bool isValid = false;
+
+			if (r_win_windowed && (*r_win_windowed) == true)
+				isValid = true;
+			else
+			{
 			for (int i = 0; i < iCountModes; ++i)
 			{
 				if (aModes[i].dmPelsWidth == (*r_win_width) && aModes[i].dmPelsHeight == (*r_win_height))
@@ -1138,6 +1157,7 @@ void SkyXEngind_UpdateDataCVar()
 					isValid = true;
 					break;
 				}
+			}
 			}
 
 			if (isValid)
@@ -1170,7 +1190,7 @@ void SkyXEngind_UpdateDataCVar()
 			}
 		}
 
-		static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
+		
 
 		if (r_win_windowed)
 		{
@@ -1188,6 +1208,10 @@ void SkyXEngind_UpdateDataCVar()
 		*r_win_windowed = true;
 #endif
 	}
+
+	static const float * snd_main_volume = GET_PCVAR_FLOAT("snd_main_volume");
+	if (snd_main_volume)
+		SSCore_SetMainVolume(*snd_main_volume);
 }
 
 //#############################################################################
@@ -1203,7 +1227,7 @@ int SkyXEngine_CycleMain()
 		{
 			
 			::TranslateMessage(&msg);
-
+			
 #if !defined(SX_GAME)
 			IMSG imsg;
 			imsg.lParam = msg.lParam;

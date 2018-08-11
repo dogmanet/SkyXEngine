@@ -17,8 +17,8 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
-Lights* ArrLights = 0;
-Materials* ArrMaterials = 0;
+CLights* ArrLights = 0;
+CMaterials* ArrMaterials = 0;
 
 #define ML_PRECOND(retval) if(!ArrLights){LibReport(-1, "%s - sxmtlligth is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -34,13 +34,13 @@ SX_LIB_API void SML_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SML_0Create(const char* name, bool is_unic)
+SX_LIB_API void SML_0Create(const char *szName, bool isUnic)
 {
-	if (name && strlen(name) > 1)
+	if (szName && strlen(szName) > 1)
 	{
-		if (is_unic)
+		if (isUnic)
 		{
-			HANDLE hMutex = CreateMutex(NULL, FALSE, name);
+			HANDLE hMutex = CreateMutex(NULL, FALSE, szName);
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
@@ -50,16 +50,16 @@ SX_LIB_API void SML_0Create(const char* name, bool is_unic)
 			{
 				MLSet::MLInit();
 				MLSet::ReCalcSize();
-				ArrLights = new Lights();
-				ArrMaterials = new Materials();
+				ArrLights = new CLights();
+				ArrMaterials = new CMaterials();
 			}
 		}
 		else
 		{
 			MLSet::MLInit();
 			MLSet::ReCalcSize();
-			ArrLights = new Lights();
-			ArrMaterials = new Materials();
+			ArrLights = new CLights();
+			ArrMaterials = new CMaterials();
 		}
 	}
 	else
@@ -75,37 +75,18 @@ SX_LIB_API void SML_AKill()
 SX_LIB_API void SML_OnLostDevice()
 {
 	ML_PRECOND(_VOID);
-	ArrLights->OnLostDevice();
-	ArrMaterials->OnLostDevice();
+	ArrLights->onLostDevice();
+	ArrMaterials->onLostDevice();
 }
 
 SX_LIB_API void SML_OnResetDevice()
 {
 	ML_PRECOND(_VOID);
-	/*MLSet::WinSize.x = width;
-	MLSet::WinSize.y = heigth;
-	MLSet::ProjFov = projfov;
-	MLSet::ProjRatio = MLSet::WinSize.x / MLSet::WinSize.y;*/
-	MLSet::ReCalcSize();
-	ArrLights->OnResetDevice();
-	ArrMaterials->OnResetDevice();
 
-	//MLSet::IDsRenderTargets::ToneMaps.clear();
-	//MLSet::IDsRenderTargets::SurfToneMap.clear();
-	/*int tmpcount = 0;
-	while (true)
-	{
-		int tmpsize = 1 << (2 * tmpcount);
-		if (tmpsize >= MLSet::WinSize.x*0.25 || tmpsize > MLSet::WinSize.y*0.25)
-			break;
-		if (MLSet::IDsRenderTargets::CountArrToneMaps <= tmpcount)
-		{
-			MLSet::IDsRenderTargets::ToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "", 0);
-			MLSet::IDsRenderTargets::SurfToneMap[tmpcount] = 0;
-		}
-		++tmpcount;
-	}
-	MLSet::IDsRenderTargets::CountArrToneMaps = tmpcount;*/
+	MLSet::ReCalcSize();
+	ArrLights->onResetDevice();
+	ArrMaterials->onResetDevice();
+
 	MLSet::IDsRenderTargets::HowAdaptedLum = 0;
 }
 
@@ -117,27 +98,27 @@ SX_LIB_API void SML_Update(DWORD timeDelta)
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
 	if (ArrMaterials)
-		ArrMaterials->Update(timeDelta);
+		ArrMaterials->update(timeDelta);
 
 	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 }
 
-SX_LIB_API void SML_LigthsSettLCoefSizeDepth(float coef)
+SX_LIB_API void SML_LigthsSettLCoefSizeDepth(float fCoef)
 {
 	ML_PRECOND(_VOID);
 
-	MLSet::CoefSizeDepthMapForLocal = coef;
+	MLSet::CoefSizeDepthMapForLocal = fCoef;
 	MLSet::ReCalcSize();
 	SML_OnLostDevice();
 	SML_OnResetDevice();
 }
 
-SX_LIB_API void SML_LigthsSettGCoefSizeDepth(float coef)
+SX_LIB_API void SML_LigthsSettGCoefSizeDepth(float fCoef)
 {
 	ML_PRECOND(_VOID);
 
-	MLSet::CoefSizeDepthMapForGlobal = coef;
+	MLSet::CoefSizeDepthMapForGlobal = fCoef;
 	MLSet::ReCalcSize();
 	SML_OnLostDevice();
 	SML_OnResetDevice();
@@ -163,21 +144,21 @@ SX_LIB_API void SML_LigthsClear()
 {
 	ML_PRECOND(_VOID);
 
-	ArrLights->Clear();
+	ArrLights->clear();
 }
 
 SX_LIB_API void SML_LigthsClearIDArr()
 {
 	ML_PRECOND(_VOID);
 
-	ArrLights->ClearIDArr();
+	ArrLights->clearIDArr();
 }
 
-SX_LIB_API long SML_LigthsGetCount()
+SX_LIB_API int SML_LigthsGetCount()
 {
 	ML_PRECOND(-1);
 
-	return ArrLights->GetCountLights();
+	return ArrLights->getCountLights();
 }
 
 SX_LIB_API bool SML_LigthsGetExists(ID id)
@@ -188,221 +169,221 @@ SX_LIB_API bool SML_LigthsGetExists(ID id)
 }
 
 
-SX_LIB_API ID SML_LigthsCreatePoint(const float3* center, float dist, const float3* color, bool isglobal, bool is_shadowed/*, const char* bound_volume*/)
+SX_LIB_API ID SML_LigthsCreatePoint(const float3 *pCenter, float fDist, const float3 *pColor, bool isGlobal, bool isShadowed/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreatePoint(-1,center, dist, color, isglobal, is_shadowed/*, 0*/);
+	return ArrLights->createPoint(-1, pCenter, fDist, pColor, isGlobal, isShadowed/*, 0*/);
 }
 
-SX_LIB_API ID SML_LigthsCreateDirection(const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
+SX_LIB_API ID SML_LigthsCreateDirection(const float3 *pPos, float fDist, const float3 *pColor, const SMQuaternion *qOrient, float fTopRadius, float fAngle, bool isShadow/*, const char* bound_volume*/)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreateDirection(-1, pos, dist, color, orient, top_radius, angle, is_shadow/*, 0*/);
+	return ArrLights->createDirection(-1, pPos, fDist, pColor, qOrient, fTopRadius, fAngle, isShadow/*, 0*/);
 }
 
 SX_LIB_API void SML_LigthsRender(ID id, DWORD timeDelta)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->Render(id, timeDelta);
+	ArrLights->render(id, timeDelta);
 }
 
 SX_LIB_API ID SML_LigthsGetGlobal()
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightGlobal();
+	return ArrLights->getLightGlobal();
 }
 
 SX_LIB_API bool SML_LigthsGetCastGlobalShadow()
 {
 	ML_PRECOND(false);
-	return ArrLights->GetCastGlobalShadow();
+	return ArrLights->getCastGlobalShadow();
 }
 
 SX_LIB_API void SML_LigthsSetCastGlobalShadow(bool isShadowed)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->SetCastGlobalShadow(isShadowed);
+	return ArrLights->setCastGlobalShadow(isShadowed);
 }
 
-SX_LIB_API void SML_LigthsGetColor(ID id, float3* color)
+SX_LIB_API void SML_LigthsGetColor(ID id, float3 *pColor)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->GetLightColor(id, color);
+	ArrLights->getLightColor(id, pColor);
 }
 
-SX_LIB_API void SML_LigthsSetColor(ID id, const float3* vec)
+SX_LIB_API void SML_LigthsSetColor(ID id, const float3 *pColor)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightColor(id, vec);
+	ArrLights->setLightColor(id, pColor);
 }
 
-SX_LIB_API void SML_LigthsGetPos(ID id, float3* vec, bool greal)
+SX_LIB_API void SML_LigthsGetPos(ID id, float3 *pPos, bool isGreal)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->GetLightPos(id, vec, greal);
+	ArrLights->getLightPos(id, pPos, isGreal);
 }
 
 SX_LIB_API float SML_LigthsGetPower(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightPower(id);
+	return ArrLights->getLightPower(id);
 }
 
 SX_LIB_API float SML_LigthsGetDist(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightDist(id);
+	return ArrLights->getLightDist(id);
 }
 
-SX_LIB_API void SML_LigthsSetPos(ID id, const float3* vec, bool greal)
+SX_LIB_API void SML_LigthsSetPos(ID id, const float3 *pPos, bool isGreal)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightPos(id, vec, greal);
+	ArrLights->setLightPos(id, pPos, isGreal);
 }
 
-SX_LIB_API void SML_LigthsGetOrient(ID id, SMQuaternion* q)
+SX_LIB_API void SML_LigthsGetOrient(ID id, SMQuaternion *pQ)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->GetLightOrient(id, q);
+	ArrLights->getLightOrient(id, pQ);
 }
 
-SX_LIB_API void SML_LigthsSetOrient(ID id, const SMQuaternion* q)
+SX_LIB_API void SML_LigthsSetOrient(ID id, const SMQuaternion *pQ)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightOrient(id, q);
+	ArrLights->setLightOrient(id, pQ);
 }
 
 SX_LIB_API LTYPE_LIGHT SML_LigthsGetType(ID id)
 {
 	ML_PRECOND(LTYPE_LIGHT_NONE);
-	return ArrLights->GetLightType(id);
+	return ArrLights->getLightType(id);
 }
 
-SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const ISXFrustum* frustum)
+SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const IFrustum *pFrustum)
 {
 	ML_PRECOND(-1);
-	return ArrLights->ComVisibleForFrustum(id, frustum);
+	return ArrLights->comVisibleForFrustum(id, pFrustum);
 }
 
 SX_LIB_API bool SML_LigthsGetVisibleForFrustum(ID id)
 {
 	ML_PRECOND(false);
-	return ArrLights->GetVisibleForFrustum(id);
+	return ArrLights->getVisibleForFrustum(id);
 }
 
-SX_LIB_API float SML_LigthsComDistFor(ID id, const float3* vec)
+SX_LIB_API float SML_LigthsComDistFor(ID id, const float3 *pPos)
 {
 	ML_PRECOND(-1);
-	return ArrLights->ComDistFor(id, vec);
+	return ArrLights->comDistFor(id, pPos);
 }
 
 SX_LIB_API float SML_LigthsGetDistFor(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetDistFor(id);
+	return ArrLights->getDistFor(id);
 }
 
-SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const ISXFrustum* frustum, const float3* vec)
+SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const IFrustum *pFrustum, const float3 *pPos)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->ComVisibleFrustumDistFor(frustum, vec);
+	return ArrLights->comVisibleFrustumDistFor(pFrustum, pPos);
 }
 
 SX_LIB_API bool SML_LigthsGetEnable(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightEnable(id);
+	return ArrLights->getLightEnable(id);
 }
 
-SX_LIB_API void SML_LigthsSetEnable(ID id, bool val)
+SX_LIB_API void SML_LigthsSetEnable(ID id, bool isEnable)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->SetLightEnable(id, val);
+	return ArrLights->setLightEnable(id, isEnable);
 }
 
 SX_LIB_API bool SML_LigthsGetShadowed(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightShadowed(id);
+	return ArrLights->getLightShadowed(id);
 }
 
 SX_LIB_API bool SML_LigthsGet4Or3SplitsG(ID id)
 {
 	ML_PRECOND(0);
-	return ArrLights->Get4Or3Splits(id);
+	return ArrLights->get4Or3Splits(id);
 }
 
-SX_LIB_API void SML_LigthsSet4Or3SplitsG(ID id, bool bf4or3)
+SX_LIB_API void SML_LigthsSet4Or3SplitsG(ID id, bool is4or3)
 {
 	ML_PRECOND(_VOID);
 
-	ArrLights->Set4Or3Splits(id, bf4or3);
+	ArrLights->set4Or3Splits(id, is4or3);
 }
 
 SX_LIB_API IDirect3DTexture9* SML_LigthsGetShadow()
 {
 	ML_PRECOND(0);
-	return ArrLights->GetShadow2();
+	return ArrLights->getShadow2();
 }
 
 SX_LIB_API void SML_LigthsShadowNull()
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->ShadowNull();
+	return ArrLights->shadowNull();
 }
 
 SX_LIB_API void SML_LigthsShadowRenderBegin(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderBegin(id);
+	ArrLights->shadowRenderBegin(id);
 }
 
 SX_LIB_API void SML_LigthsShadowRenderEnd(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderEnd(id);
+	ArrLights->shadowRenderEnd(id);
 }
 
-SX_LIB_API void SML_LigthsShadowRenderPre(ID id, int cube)
+SX_LIB_API void SML_LigthsShadowRenderPre(ID id, int iCube)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderPre(id, cube);
+	ArrLights->shadowRenderPre(id, iCube);
 }
 
-SX_LIB_API void SML_LigthsShadowRenderPost(ID id, int cube)
+SX_LIB_API void SML_LigthsShadowRenderPost(ID id, int iCube)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowRenderPost(id, cube);
+	ArrLights->shadowRenderPost(id, iCube);
 }
 
-SX_LIB_API ISXFrustum* SML_LigthsGetFrustum(ID id, int how)
+SX_LIB_API IFrustum* SML_LigthsGetFrustum(ID id, int iHow)
 {
 	ML_PRECOND(0);
-	return ArrLights->GetLightFrustum(id, how);
+	return ArrLights->getLightFrustum(id, iHow);
 }
 
-SX_LIB_API void SML_LigthsUpdateGFrustums(ID id, int split, const float3* pos, const float3* dir)
+SX_LIB_API void SML_LigthsUpdateGFrustums(ID id, int iSplit, const float3 *pPos, const float3 *pDir)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->UpdateLightGFrustums(id, split, pos, dir);
+	return ArrLights->updateLightGFrustums(id, iSplit, pPos, pDir);
 }
 
-SX_LIB_API void SML_LigthsShadowSetShaderOfTypeMat(ID id, int typemat, float4x4* wmat)
+SX_LIB_API void SML_LigthsShadowSetShaderOfTypeMat(ID id, int iTypeMaterial, const float4x4 *pWorld)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->InitShaderOfTypeMaterial(id, typemat, wmat);
+	ArrLights->initShaderOfTypeMaterial(id, iTypeMaterial, pWorld);
 }
 
 SX_LIB_API void SML_LigthsShadowGen(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowGen2(id);
+	ArrLights->shadowGen2(id);
 }
 
-SX_LIB_API void SML_LigthsShadowSoft(bool randomsam, float size, bool isfirst)
+SX_LIB_API void SML_LigthsShadowSoft(bool isRandom, float fSize, bool isFirst)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ShadowSoft(randomsam, size, isfirst);
+	ArrLights->shadowSoft(isRandom, fSize, isFirst);
 }
 
 
@@ -410,189 +391,189 @@ SX_LIB_API void SML_LigthsShadowSoft(bool randomsam, float size, bool isfirst)
 SX_LIB_API ID SML_LigthsCreateCopy(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->CreateCopy(id);
+	return ArrLights->createCopy(id);
 }
 
 SX_LIB_API void SML_LigthsDeleteLight(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->DeleteLight(id);
+	ArrLights->deleteLight(id);
 }
 
 SX_LIB_API char* SML_LigthsGetName(ID id)
 {
 	ML_PRECOND(0);
-	return ArrLights->GetLightName(id);
+	return ArrLights->getLightName(id);
 }
 
-SX_LIB_API void SML_LigthsSetName(ID id, const char* name)
+SX_LIB_API void SML_LigthsSetName(ID id, const char *szName)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightName(id, name);
+	ArrLights->setLightName(id, szName);
 }
 
 
-SX_LIB_API void SML_LigthsSetAngle(ID id, float angle)
+SX_LIB_API void SML_LigthsSetAngle(ID id, float fAngle)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightAngle(id, angle, true);
+	ArrLights->setLightAngle(id, fAngle, true);
 }
 
-SX_LIB_API void SML_LigthsSetTopRadius(ID id, float top_radius)
+SX_LIB_API void SML_LigthsSetTopRadius(ID id, float fTopRadius)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightTopRadius(id, top_radius);
+	ArrLights->setLightTopRadius(id, fTopRadius);
 }
 
-SX_LIB_API void SML_LigthsSetDist(ID id, float radius_height, bool is_create)
+SX_LIB_API void SML_LigthsSetDist(ID id, float fRadiusHeight, bool isCreate)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightDist(id, radius_height, is_create);
+	ArrLights->setLightDist(id, fRadiusHeight, isCreate);
 }
 
 
 SX_LIB_API float SML_LigthsGetShadowBias(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowBias(id);
+	return ArrLights->getShadowBias(id);
 }
 
-SX_LIB_API void SML_LigthsSetShadowBias(ID id, float bias)
+SX_LIB_API void SML_LigthsSetShadowBias(ID id, float fBias)
 {
 	ML_PRECOND(_VOID);
-	return ArrLights->SetShadowBias(id, bias);
+	return ArrLights->setShadowBias(id, fBias);
 }
 
-SX_LIB_API void SML_LigthsSetShadowBlurPixel(ID id, float blur_pixel)
+SX_LIB_API void SML_LigthsSetShadowBlurPixel(ID id, float fBlurPixel)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetShadowBlurPixel(id, blur_pixel);
+	ArrLights->setShadowBlurPixel(id, fBlurPixel);
 }
 
 SX_LIB_API float SML_LigthsGetShadowBlurPixel(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowBlurPixel(id);
+	return ArrLights->getShadowBlurPixel(id);
 }
-SX_LIB_API void SML_LigthsSetShadowLocalNear(ID id, float slnear)
+SX_LIB_API void SML_LigthsSetShadowLocalNear(ID id, float fNear)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetShadowLocalNear(id, slnear);
+	ArrLights->setShadowLocalNear(id, fNear);
 }
 
 SX_LIB_API float SML_LigthsGetShadowLocalNear(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowLocalNear(id);
+	return ArrLights->getShadowLocalNear(id);
 }
 
-SX_LIB_API void SML_LigthsSetShadowLocalFar(ID id, float slfar)
+SX_LIB_API void SML_LigthsSetShadowLocalFar(ID id, float fFar)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetShadowLocalFar(id, slfar);
+	ArrLights->setShadowLocalFar(id, fFar);
 }
 
 SX_LIB_API float SML_LigthsGetShadowLocalFar(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetShadowLocalFar(id);
+	return ArrLights->getShadowLocalFar(id);
 }
 
-SX_LIB_API void SML_LigthsSetCubeEdgeEnable(ID id, int edge, bool enable)
+SX_LIB_API void SML_LigthsSetCubeEdgeEnable(ID id, int iEdge, bool isEnable)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightCubeEdgeEnable(id, edge, enable);
+	ArrLights->setLightCubeEdgeEnable(id, iEdge, isEnable);
 }
 
-SX_LIB_API bool SML_LigthsGetCubeEdgeEnable(ID id, int edge)
+SX_LIB_API bool SML_LigthsGetCubeEdgeEnable(ID id, int iEdge)
 {
 	ML_PRECOND(false);
-	return ArrLights->GetLightCubeEdgeEnable(id, edge);
+	return ArrLights->getLightCubeEdgeEnable(id, iEdge);
 }
 
 
 SX_LIB_API float SML_LigthsGetAngle(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightAngle(id);
+	return ArrLights->getLightAngle(id);
 }
 
 SX_LIB_API float SML_LigthsGetTopRadius(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightTopRadius(id);
+	return ArrLights->getLightTopRadius(id);
 }
 
-SX_LIB_API ID SML_LigthsGetIDArr(ID id, ID inid, int how)
+SX_LIB_API ID SML_LigthsGetIDArr(ID id, ID idOwner, int iHow)
 {
 	ML_PRECOND(-1);
-	return ArrLights->GetLightIDArr(id, inid, how);
+	return ArrLights->getLightIDArr(id, idOwner, iHow);
 }
 
-SX_LIB_API void SML_LigthsSetIDArr(ID id, ID inid, int how, ID id_arr)
+SX_LIB_API void SML_LigthsSetIDArr(ID id, ID idOwner, int iHow, ID idArr)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightIDArr(id, inid, how, id_arr);
+	ArrLights->setLightIDArr(id, idOwner, iHow, idArr);
 }
 
 SX_LIB_API void SML_LigthsSetTypeShadowed(ID id, LTYPE_SHADOW type)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->SetLightTypeShadowed(id, type);
+	ArrLights->setLightTypeShadowed(id, type);
 }
 
 SX_LIB_API LTYPE_SHADOW SML_LigthsGetTypeShadowed(ID id)
 {
 	ML_PRECOND(LTYPE_SHADOW_NONE);
-	return ArrLights->GetLightTypeShadowed(id);
+	return ArrLights->getLightTypeShadowed(id);
 }
 
-SX_LIB_API bool SML_LigthsCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
+SX_LIB_API bool SML_LigthsCountUpdateUpdate(ID id, const float3 *pViewPos, int iHow)
 {
 	ML_PRECOND(false);
-	return ArrLights->LightCountUpdateUpdate(id, viewpos, ghow);
+	return ArrLights->lightCountUpdateUpdate(id, pViewPos, iHow);
 }
 
-SX_LIB_API bool SML_LigthsCountUpdateAllowed(ID id, int ghow)
+SX_LIB_API bool SML_LigthsCountUpdateAllowed(ID id, int iHow)
 {
 	ML_PRECOND(false);
-	return ArrLights->LightCountUpdateAllowed(id, ghow);
+	return ArrLights->lightCountUpdateAllowed(id, iHow);
 }
 
 SX_LIB_API void SML_LigthsCountUpdateNull(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->LightCountUpdateNull(id);
+	ArrLights->lightCountUpdateNull(id);
 }
 
-SX_LIB_API void SML_LigthsToneMappingCom(DWORD timeDelta, float factor_adapted)
+SX_LIB_API void SML_LigthsToneMappingCom(DWORD timeDelta, float fAdapted)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->ToneMappingCom(timeDelta, factor_adapted);
+	ArrLights->toneMappingCom(timeDelta, fAdapted);
 }
 
 SX_LIB_API int SML_LigthsDelGetCount()
 {
 	ML_PRECOND(-1);
-	return ArrLights->DelGetCount();
+	return ArrLights->delGetCount();
 }
 
-SX_LIB_API LTYPE_LIGHT SML_LigthsDelGetType(ID key)
+SX_LIB_API LTYPE_LIGHT SML_LigthsDelGetType(ID idKey)
 {
 	ML_PRECOND(LTYPE_LIGHT_NONE);
-	return ArrLights->DelGetType(key);
+	return ArrLights->delGetType(idKey);
 }
 
-SX_LIB_API void SML_LigthsDelDel(ID key)
+SX_LIB_API void SML_LigthsDelDel(ID idKey)
 {
 	ML_PRECOND(_VOID);
-	ArrLights->DelDel(key);
+	ArrLights->delDel(idKey);
 }
 
-SX_LIB_API ID SML_LigthsDelGetIDArr(ID key, ID inid, int how)
+SX_LIB_API ID SML_LigthsDelGetIDArr(ID idKey, ID idOwner, int iHow)
 {
 	ML_PRECOND(-1);
-	return ArrLights->DelGetIDArr(key, inid, how);
+	return ArrLights->delGetIDArr(idKey, idOwner, iHow);
 }
 
 //#############################################################################
@@ -642,548 +623,555 @@ SX_LIB_API IDirect3DTexture9* SML_DSGetRT(DS_RT type)
 
 //#############################################################################
 
-SX_LIB_API ID SML_MtlLoad(const char* name, MTLTYPE_MODEL mtl_type)
+SX_LIB_API ID SML_MtlLoad(const char *szName, MTLTYPE_MODEL mtl_type)
 {
 	ML_PRECOND(-1);
 
-	return ArrMaterials->MtlLoad(name, mtl_type);
+	return ArrMaterials->mtlLoad(szName, mtl_type);
 }
 
 SX_LIB_API void SML_MtlSave(ID id)
 {
 	ML_PRECOND(_VOID);
 
-	ArrMaterials->MtlSave(id);
+	ArrMaterials->mtlSave(id);
 }
 
 SX_LIB_API MTLTYPE_MODEL SML_MtlGetTypeModel(ID id)
 {
 	ML_PRECOND(MTLTYPE_MODEL_STATIC);
 
-	return ArrMaterials->GetTypeModel(id);
+	return ArrMaterials->getTypeModel(id);
+}
+
+SX_LIB_API UINT SML_MtlGetSort(ID id)
+{
+	ML_PRECOND(0);
+
+	return ArrMaterials->mtlGetSort(id);
 }
 
 SX_LIB_API void SML_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model)
 {
 	ML_PRECOND(_VOID);
 
-	ArrMaterials->SetTypeModel(id, type_model);
+	ArrMaterials->setTypeModel(id, type_model);
 }
 
 SX_LIB_API long SML_MtlGetCount()
 {
 	ML_PRECOND(-1);
 
-	return ArrMaterials->GetCount();
+	return ArrMaterials->getCount();
 }
 
-SX_LIB_API void SML_MtlRender(ID id, float4x4* world)
+SX_LIB_API void SML_MtlRender(ID id, const float4x4 *pWorld)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->Render(id, world);
+	ArrMaterials->render(id, pWorld);
 }
 
-SX_LIB_API void SML_MtlRenderStd(MTLTYPE_MODEL type, float4x4* world, ID slot, ID id_mtl)
+SX_LIB_API void SML_MtlRenderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->RenderStd(type, world, slot, id_mtl);
+	ArrMaterials->renderStd(type, pWorld, idSlot, idMtl);
 }
 
-SX_LIB_API void SML_MtlRenderLight(float4_t* color, float4x4* world)
+SX_LIB_API void SML_MtlRenderLight(const float4_t *pColor, const float4x4 *pWorld)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->RenderLight(color, world);
+	ArrMaterials->renderLight(pColor, pWorld);
 }
 
 SX_LIB_API void SML_MtlSetMainTexture(ID slot, ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->SetMainTexture(slot, id);
+	ArrMaterials->setMainTexture(slot, id);
 }
 
 SX_LIB_API void SML_MtlSetIsIncrCountSurf(bool bf)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->SetIsIncrCountSurf(bf);
+	ArrMaterials->setIsIncrCountSurf(bf);
 }
 
 SX_LIB_API bool SML_MtlGetIsIncrCountSurf()
 {
 	ML_PRECOND(false);
-	return ArrMaterials->GetIsIncrCountSurf();
+	return ArrMaterials->getIsIncrCountSurf();
 }
 
 SX_LIB_API void SML_MtlNullingCurrCountSurf()
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->NullingCurrCountSurf();
+	ArrMaterials->nullingCurrCountSurf();
 }
 
 SX_LIB_API int SML_MtlGetCurrCountSurf()
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->GetCurrCountSurf();
+	return ArrMaterials->getCurrCountSurf();
 }
 
-SX_LIB_API void SML_MtlSetCurrCountSurf(int count)
+SX_LIB_API void SML_MtlSetCurrCountSurf(int iCount)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->SetCurrCountSurf(count);
+	ArrMaterials->setCurrCountSurf(iCount);
 }
 
-SX_LIB_API void SML_MtlSetForceblyAlphaTest(bool isat)
+SX_LIB_API void SML_MtlSetForceblyAlphaTest(bool isAlphaTest)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->SetForceblyAlphaTest(isat);
+	ArrMaterials->setForceblyAlphaTest(isAlphaTest);
 }
 
 SX_LIB_API bool SML_MtlGetForceblyAlphaTest()
 {
 	ML_PRECOND(false);
-	return ArrMaterials->GetForceblyAlphaTest();
+	return ArrMaterials->getForceblyAlphaTest();
 }
 
 
 SX_LIB_API ID SML_MtlGetStdMtl(MTLTYPE_MODEL type_model)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->GetStdMtl(type_model);
+	return ArrMaterials->getStdMtl(type_model);
 }
 
 
 SX_LIB_API void SML_MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetPhysicMaterial(id, type);
+	ArrMaterials->mtlSetPhysicMaterial(id, type);
 }
 
 SX_LIB_API MTLTYPE_PHYSIC SML_MtlGetPhysicMaterial(ID id)
 {
 	ML_PRECOND(MTLTYPE_PHYSIC_DEFAULT);
-	return ArrMaterials->MtlGetPhysicMaterial(id);
+	return ArrMaterials->mtlGetPhysicMaterial(id);
 }
 
 SX_LIB_API bool SML_MtlGetUsingAlphaTest(ID id)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetUsingAlphaTest(id);
+	return ArrMaterials->mtlGetUsingAlphaTest(id);
 }
 
-SX_LIB_API void SML_MtlSetUsingAlphaTest(ID id, bool is_using)
+SX_LIB_API void SML_MtlSetUsingAlphaTest(ID id, bool isUsing)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetUsingAlphaTest(id, is_using);
+	ArrMaterials->mtlSetUsingAlphaTest(id, isUsing);
 }
 
 
 
-SX_LIB_API void SML_MtlRefSetIDArr(ID id, ID inid, int cube, ID idarr)
+SX_LIB_API void SML_MtlRefSetIDArr(ID id, ID idOwner, int iCube, ID idArr)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefSetIDArr(id, inid, cube, idarr);
+	ArrMaterials->mtlRefSetIDArr(id, idOwner, iCube, idArr);
 }
 
-SX_LIB_API ID SML_MtlRefGetIDArr(ID id, ID inid, int cube)
+SX_LIB_API ID SML_MtlRefGetIDArr(ID id, ID idOwner, int iCube)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlRefGetIDArr(id, inid, cube);
+	return ArrMaterials->mtlRefGetIDArr(id, idOwner, iCube);
 }
 
 SX_LIB_API int SML_MtlDelRefGetCount()
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->DelRefCount();
+	return ArrMaterials->delRefCount();
 }
 
-SX_LIB_API ID SML_MtlDelRefGetIDArr(ID key, ID inid, int cube)
+SX_LIB_API ID SML_MtlDelRefGetIDArr(ID idKey, ID idOwner, int iCube)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->DelRefGetIDArr(key, inid, cube);
+	return ArrMaterials->delRefGetIDArr(idKey, idOwner, iCube);
 }
 
 SX_LIB_API void SML_MtlDelRefClear()
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->DelRefAllDel();
+	ArrMaterials->delRefAllDel();
 }
 
-SX_LIB_API void SML_MtlRefSetMinMax(ID id, float3_t* min, float3_t* max)
+SX_LIB_API void SML_MtlRefSetMinMax(ID id, const float3_t *pMin, const float3_t *pMax)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefSetMinMax(id, min, max);
+	ArrMaterials->mtlRefSetMinMax(id, pMin, pMax);
 }
 
-SX_LIB_API void SML_MtlRefPreRenderPlane(ID id, D3DXPLANE* plane)
+SX_LIB_API void SML_MtlRefPreRenderPlane(ID id, D3DXPLANE *pPlane)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefPreRenderPlane(id, plane);
+	ArrMaterials->mtlRefPreRenderPlane(id, pPlane);
 }
 
-SX_LIB_API ISXFrustum* SML_MtlRefGetfrustum(ID id, int cube)
+SX_LIB_API const IFrustum* SML_MtlRefGetfrustum(ID id, int iCube)
 {
 	ML_PRECOND(0);
-	return ArrMaterials->MtlRefGetfrustum(id, cube);
+	return ArrMaterials->mtlRefGetfrustum(id, iCube);
 }
 
 SX_LIB_API bool SML_MtlRefIsAllowedRender(ID id)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlRefIsAllowedRender(id);
+	return ArrMaterials->mtlRefIsAllowedRender(id);
 }
 
 SX_LIB_API void SML_MtlRefPostRenderPlane(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefPostRenderPlane(id);
+	ArrMaterials->mtlRefPostRenderPlane(id);
 }
 
 SX_LIB_API IDirect3DTexture9* SML_MtlRefGetTexPlane(ID id)
 {
 	ML_PRECOND(0);
-	return ArrMaterials->MtlRefPlaneGetTex(id);
+	return ArrMaterials->mtlRefPlaneGetTex(id);
 }
 
 
 
-SX_LIB_API void SML_MtlRefCubeBeginRender(ID id, float3_t* center)
+SX_LIB_API void SML_MtlRefCubeBeginRender(ID id, const float3_t *pCenter)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefCubeBeginRender(id, center);
+	ArrMaterials->mtlRefCubeBeginRender(id, pCenter);
 }
 
-SX_LIB_API void SML_MtlRefCubePreRender(ID id, int cube, float4x4* world)
+SX_LIB_API void SML_MtlRefCubePreRender(ID id, int iCube, const float4x4 *pWorld)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefCubePreRender(id, cube, world);
+	ArrMaterials->mtlRefCubePreRender(id, iCube, pWorld);
 }
 
-SX_LIB_API void SML_MtlRefCubePostRender(ID id, int cube)
+SX_LIB_API void SML_MtlRefCubePostRender(ID id, int iCube)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefCubePostRender(id, cube);
+	ArrMaterials->mtlRefCubePostRender(id, iCube);
 }
 
-SX_LIB_API void SML_MtlRefCubeEndRender(ID id, float3_t* viewpos)
+SX_LIB_API void SML_MtlRefCubeEndRender(ID id, const float3_t *pViewPos)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefCubeEndRender(id, viewpos);
+	ArrMaterials->mtlRefCubeEndRender(id, pViewPos);
 }
 
-SX_LIB_API bool SML_MtlRefUpdateCountUpdate(ID id, float3_t* viewpos)
+SX_LIB_API bool SML_MtlRefUpdateCountUpdate(ID id, const float3_t *pViewPos)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlRefUpdateCountUpdate(id, viewpos);
+	return ArrMaterials->mtlRefUpdateCountUpdate(id, pViewPos);
 }
 
 SX_LIB_API void SML_MtlRefNullingCountUpdate(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlRefNullingCountUpdate(id);
+	ArrMaterials->mtlRefNullingCountUpdate(id);
 }
 
 SX_LIB_API IDirect3DCubeTexture9* SML_MtlRefCubeGetTex(ID id)
 {
 	ML_PRECOND(0);
-	return ArrMaterials->RefCubeGetTex(id);
+	return ArrMaterials->refCubeGetTex(id);
 }
 
 //##########################################################################
 
-SX_LIB_API void SML_MtlReloadMaterial(ID id, const char* name)
+SX_LIB_API void SML_MtlReloadMaterial(ID id, const char *szName)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlReLoad(id, name);
+	ArrMaterials->mtlReLoad(id, szName);
 }
 
-SX_LIB_API void SML_MtlClear(bool clear_ref_del)
+SX_LIB_API void SML_MtlClear(bool isClearRefDel)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->Clear(clear_ref_del);
+	ArrMaterials->clear(isClearRefDel);
 }
 
-SX_LIB_API void SML_MtlSetTexture(ID id, const char* path_tex)
+SX_LIB_API void SML_MtlSetTexture(ID id, const char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetTexture(id, path_tex);
+	ArrMaterials->mtlSetTexture(id, szTexture);
 }
 
-SX_LIB_API void SML_MtlGetTexture(ID id, char* name)
+SX_LIB_API void SML_MtlGetTexture(ID id, char *szName)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetTexture(id, name);
+	ArrMaterials->mtlGetTexture(id, szName);
 }
 
 SX_LIB_API ID SML_MtlGetTextureID(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetTextureID(id);
+	return ArrMaterials->mtlGetTextureID(id);
 }
 
-SX_LIB_API void SML_MtlSetVS(ID id, const char* path_vs)
+SX_LIB_API void SML_MtlSetVS(ID id, const char *szPath)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetVS(id, path_vs);
+	ArrMaterials->mtlSetVS(id, szPath);
 }
 
-SX_LIB_API void SML_MtlGetVS(ID id, char* name)
+SX_LIB_API void SML_MtlGetVS(ID id, char *szName)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetVS(id, name);
+	ArrMaterials->mtlGetVS(id, szName);
 }
 
-SX_LIB_API void SML_MtlSetPS(ID id, const char* path_ps)
+SX_LIB_API void SML_MtlSetPS(ID id, const char *szPath)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetPS(id, path_ps);
+	ArrMaterials->mtlSetPS(id, szPath);
 }
 
-SX_LIB_API void SML_MtlGetPS(ID id, char* name)
+SX_LIB_API void SML_MtlGetPS(ID id, char *szName)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetPS(id, name);
+	ArrMaterials->mtlGetPS(id, szName);
 }
 
-SX_LIB_API float SML_MtlGetPenetration(ID id)
+SX_LIB_API float SML_MtlGetDurability(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetPenetration(id);
+	return ArrMaterials->mtlGetDurability(id);
 }
 
-SX_LIB_API void SML_MtlSetPenetration(ID id, float penetration)
+SX_LIB_API void SML_MtlSetDurability(ID id, float fDurability)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetPenetration(id, penetration);
+	ArrMaterials->mtlSetDurability(id, fDurability);
 }
 
 SX_LIB_API float SML_MtlGetHitChance(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetHitChance(id);
+	return ArrMaterials->mtlGetHitChance(id);
 }
 
 SX_LIB_API void SML_MtlSetHitChance(ID id, float fHitChance)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetHitChance(id, fHitChance);
+	ArrMaterials->mtlSetHitChance(id, fHitChance);
 }
 
 SX_LIB_API float SML_MtlGetDensity(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetDensity(id);
+	return ArrMaterials->mtlGetDensity(id);
 }
 
 SX_LIB_API void SML_MtlSetDensity(ID id, float fDensity)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetDensity(id, fDensity);
+	ArrMaterials->mtlSetDensity(id, fDensity);
 }
 
 //##########################################################################
 
-SX_LIB_API void SML_MtlSetLighting(ID id, bool is_lighting)
+SX_LIB_API void SML_MtlSetLighting(ID id, bool isLighting)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetLighting(id, is_lighting);
+	ArrMaterials->mtlSetLighting(id, isLighting);
 }
 
 SX_LIB_API bool SML_MtlGetLighting(ID id)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetLighting(id);
+	return ArrMaterials->mtlGetLighting(id);
 }
 
-SX_LIB_API void SML_MtlSetIsTextureLighting(ID id, bool is_tex_lighting)
+SX_LIB_API void SML_MtlSetIsTextureLighting(ID id, bool isTexLighting)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetIsTextureLighting(id, is_tex_lighting);
+	ArrMaterials->mtlSetIsTextureLighting(id, isTexLighting);
 }
 
 SX_LIB_API bool SML_MtlGetIsTextureLighting(ID id)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetIsTextureLighting(id);
+	return ArrMaterials->mtlGetIsTextureLighting(id);
 }
 
-SX_LIB_API void SML_MtlSetTextureLighting(ID id, const char* path_tex)
+SX_LIB_API void SML_MtlSetTextureLighting(ID id, const char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetTextureLighting(id, path_tex);
+	ArrMaterials->mtlSetTextureLighting(id, szTexture);
 }
 
-SX_LIB_API void SML_MtlGetTextureLighting(ID id, char* path_tex)
+SX_LIB_API void SML_MtlGetTextureLighting(ID id, char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetTextureLighting(id, path_tex);
+	ArrMaterials->mtlGetTextureLighting(id, szTexture);
 }
 
-SX_LIB_API void SML_MtlSetRoughness(ID id, float roughness)
+SX_LIB_API void SML_MtlSetRoughness(ID id, float fRoughness)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetRoughness(id, roughness);
+	ArrMaterials->mtlSetRoughness(id, fRoughness);
 }
 
 SX_LIB_API float SML_MtlGetRoughness(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetRoughness(id);
+	return ArrMaterials->mtlGetRoughness(id);
 }
 
-SX_LIB_API void SML_MtlSetThickness(ID id, float thickness)
+SX_LIB_API void SML_MtlSetThickness(ID id, float fThickness)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetThickness(id, thickness);
+	ArrMaterials->mtlSetThickness(id, fThickness);
 }
 
 SX_LIB_API float SML_MtlGetThickness(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetThickness(id);
+	return ArrMaterials->mtlGetThickness(id);
 }
 
-SX_LIB_API void SML_MtlSetF0(ID id, float f0)
+SX_LIB_API void SML_MtlSetF0(ID id, float fF0)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetF0(id, f0);
+	ArrMaterials->mtlSetF0(id, fF0);
 }
 
 SX_LIB_API float SML_MtlGetF0(ID id)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetF0(id);
+	return ArrMaterials->mtlGetF0(id);
 }
 
-SX_LIB_API void SML_MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type)
+SX_LIB_API void SML_MtlSetTransparency(ID id, bool isTransparent)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetTypeTransparency(id, type);
+	ArrMaterials->mtlSetTransparency(id, isTransparent);
 }
 
-SX_LIB_API MTLTYPE_TRANSPARENCY SML_MtlGetTypeTransparency(ID id)
+SX_LIB_API bool SML_MtlGetTransparency(ID id)
 {
-	ML_PRECOND(MTLTYPE_TRANSPARENCY_NONE);
-	return ArrMaterials->MtlGetTypeTransparency(id);
+	ML_PRECOND(false);
+	return ArrMaterials->mtlGetTransparency(id);
 }
 
 SX_LIB_API void SML_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetTypeReflection(id, type);
+	ArrMaterials->mtlSetTypeReflection(id, type);
 }
 
 SX_LIB_API MTLTYPE_REFLECT SML_MtlGetTypeReflection(ID id)
 {
 	ML_PRECOND(MTLTYPE_REFLECT_NONE);
-	return ArrMaterials->MtlGetTypeReflection(id);
+	return ArrMaterials->mtlGetTypeReflection(id);
 }
 
 //**************************************************************************
 
-SX_LIB_API void SML_MtlSetMaskTex(ID id, const char* path_tex)
+SX_LIB_API void SML_MtlSetMaskTex(ID id, const char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetMaskTex(id, path_tex);
+	ArrMaterials->mtlSetMaskTex(id, szTexture);
 }
 
-SX_LIB_API void SML_MtlGetMaskTex(ID id, char* path_tex)
+SX_LIB_API void SML_MtlGetMaskTex(ID id, char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetMaskTex(id, path_tex);
+	ArrMaterials->mtlGetMaskTex(id, szTexture);
 }
 
-SX_LIB_API void SML_MtlSetMRTex(ID id, int channel, const char* path_tex)
+SX_LIB_API void SML_MtlSetMRTex(ID id, int iChannel, const char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetMRTex(id, channel, path_tex);
+	ArrMaterials->mtlSetMRTex(id, iChannel, szTexture);
 }
 
-SX_LIB_API void SML_MtlGetMRTex(ID id, int channel, char* path_tex)
+SX_LIB_API void SML_MtlGetMRTex(ID id, int iChannel, char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetMRTex(id, channel, path_tex);
+	ArrMaterials->mtlGetMRTex(id, iChannel, szTexture);
 }
 
-SX_LIB_API void SML_MtlSetDTex(ID id, int channel, const char* path_tex)
+SX_LIB_API void SML_MtlSetDTex(ID id, int iChannel, const char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetDTex(id, channel, path_tex);
+	ArrMaterials->mtlSetDTex(id, iChannel, szTexture);
 }
 
-SX_LIB_API void SML_MtlGetDTex(ID id, int channel, char* path_tex)
+SX_LIB_API void SML_MtlGetDTex(ID id, int iChannel, char *szTexture)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlGetDTex(id, channel, path_tex);
+	ArrMaterials->mtlGetDTex(id, iChannel, szTexture);
 }
 
-SX_LIB_API void SML_MtlSetSTDVS(ID id, MTL_SHADERSTD type, bool is_send)
+SX_LIB_API void SML_MtlSetStdVS(ID id, MTL_SHADERSTD type, bool isSend)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetSTDVS(id, type, is_send);
+	ArrMaterials->mtlSetStdVS(id, type, isSend);
 }
 
-SX_LIB_API bool SML_MtlGetSTDVS(ID id, MTL_SHADERSTD type)
+SX_LIB_API bool SML_MtlGetStdVS(ID id, MTL_SHADERSTD type)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetSTDVS(id, type);
+	return ArrMaterials->mtlGetStdVS(id, type);
 }
 
-SX_LIB_API void SML_MtlSetSTDPS(ID id, MTL_SHADERSTD type, bool is_send)
+SX_LIB_API void SML_MtlSetStdPS(ID id, MTL_SHADERSTD type, bool isSend)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetSTDPS(id, type, is_send);
+	ArrMaterials->mtlSetStdPS(id, type, isSend);
 }
 
-SX_LIB_API bool SML_MtlGetSTDPS(ID id, MTL_SHADERSTD type)
+SX_LIB_API bool SML_MtlGetStdPS(ID id, MTL_SHADERSTD type)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetSTDPS(id, type);
+	return ArrMaterials->mtlGetStdPS(id, type);
 }
 
 
-SX_LIB_API void SML_MtlSetUDVS(ID id, int component, float val)
+SX_LIB_API void SML_MtlSetUserDataVS(ID id, int iComponent, float fValue)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetUDVS(id, component, val);
+	ArrMaterials->mtlSetUserDataVS(id, iComponent, fValue);
 }
 
-SX_LIB_API float SML_MtlGetUDVS(ID id, int component)
+SX_LIB_API float SML_MtlGetUserDataVS(ID id, int iComponent)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetUDVS(id, component);
+	return ArrMaterials->mtlGetUserDataVS(id, iComponent);
 }
 
-SX_LIB_API void SML_MtlSetUDVS_InPS(ID id, bool is_send_ps)
+SX_LIB_API void SML_MtlSetUserDataVS_InPS(ID id, bool isSendPS)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetUDVS_InPS(id, is_send_ps);
+	ArrMaterials->mtlSetUserDataVS_InPS(id, isSendPS);
 }
 
-SX_LIB_API bool SML_MtlGetUDVS_InPS(ID id)
+SX_LIB_API bool SML_MtlGetUserDataVS_InPS(ID id)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetUDVS_InPS(id);
+	return ArrMaterials->mtlGetUserDataVS_InPS(id);
 }
 
-SX_LIB_API void SML_MtlSetUDPS(ID id, int component, float val)
+SX_LIB_API void SML_MtlSetUserDataPS(ID id, int iComponent, float fValue)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetUDPS(id, component, val);
+	ArrMaterials->mtlSetUserDataPS(id, iComponent, fValue);
 }
 
-SX_LIB_API float SML_MtlGetUDPS(ID id, int component)
+SX_LIB_API float SML_MtlGetUserDataPS(ID id, int iComponent)
 {
 	ML_PRECOND(-1);
-	return ArrMaterials->MtlGetUDPS(id, component);
+	return ArrMaterials->mtlGetUserDataPS(id, iComponent);
 }
 
-SX_LIB_API void SML_MtlSetUDPS_InVS(ID id, bool is_send_vs)
+SX_LIB_API void SML_MtlSetUserDataPS_InVS(ID id, bool isSendVS)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->MtlSetUDPS_InPS(id, is_send_vs);
+	ArrMaterials->mtlSetUserDataPS_InPS(id, isSendVS);
 }
 
-SX_LIB_API bool SML_MtlGetUDPS_InVS(ID id)
+SX_LIB_API bool SML_MtlGetUserDataPS_InVS(ID id)
 {
 	ML_PRECOND(false);
-	return ArrMaterials->MtlGetUDPS_InPS(id);
+	return ArrMaterials->mtlGetUserDataPS_InPS(id);
 }

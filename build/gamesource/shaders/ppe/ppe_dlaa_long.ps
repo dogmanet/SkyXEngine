@@ -7,76 +7,70 @@ Directionally Localized Anti Aliasing
 */
 
 #include <../struct.h>
+#include <../ps.h>
 
-#define DLAA_MUL_VAL 0.333f
+//##########################################################################
 
-sampler2D Tex0:register(s0);
-sampler2D Tex1:register(s1);
+#define DLAA_MUL_VAL 0.333
 
-half2 PixelSize;
+half2 g_vPixelSize;
 
-half4 main(vs_out_pp IN) : COLOR0
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 sampleCenter = tex2Dlod(Tex0, half4(IN.TexUV,0.f,0.f));
-	half fEdgeDetected = tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
-	
-	[branch]if(fEdgeDetected.x == 0.f)
-		return sampleCenter;
+	half4 vColorCenter = tex2Dlod2(g_sColor, IN.vTexUV, 0.0);
 
-	half4 sampleVertNeg1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -3.5) * PixelSize, 0.f, 0.f)); 
-	half4 sampleVertNeg2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -7.5) * PixelSize, 0.f, 0.f));
-	half4 sampleVertPos1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, 3.5) * PixelSize, 0.f, 0.f)); 
-	half4 sampleVertPos2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, 7.5) * PixelSize, 0.f, 0.f)); 
+	half4 vSampleVertNeg1 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, -3.5) * g_vPixelSize, 0.0); 
+	half4 vSampleVertNeg2 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, -7.5) * g_vPixelSize, 0.0);
+	half4 vSampleVertPos1 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, 3.5) * g_vPixelSize, 0.0); 
+	half4 vSampleVertPos2 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, 7.5) * g_vPixelSize, 0.0); 
 
-	half4 sampleHorizNeg1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(-3.5, 0.0) * PixelSize, 0.f, 0.f)); 
-	half4 sampleHorizNeg2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(-7.5, 0.0) * PixelSize, 0.f, 0.f));
-	half4 sampleHorizPos1 = tex2Dlod(Tex0, half4(IN.TexUV + half2(3.5, 0.0) * PixelSize, 0.f, 0.f)); 
-	half4 sampleHorizPos2 = tex2Dlod(Tex0, half4(IN.TexUV + half2(7.5, 0.0) * PixelSize, 0.f, 0.f)); 
+	half4 vSampleHorizNeg1 = tex2Dlod2(g_sColor, IN.vTexUV + half2(-3.5, 0.0) * g_vPixelSize, 0.0); 
+	half4 vSampleHorizNeg2 = tex2Dlod2(g_sColor, IN.vTexUV + half2(-7.5, 0.0) * g_vPixelSize, 0.0);
+	half4 vSampleHorizPos1 = tex2Dlod2(g_sColor, IN.vTexUV + half2(3.5, 0.0) * g_vPixelSize, 0.0); 
+	half4 vSampleHorizPos2 = tex2Dlod2(g_sColor, IN.vTexUV + half2(7.5, 0.0) * g_vPixelSize, 0.0); 
 
-	half pass1EdgeAvgHoriz = (sampleHorizNeg2.a + sampleHorizNeg1.a + sampleCenter.a + sampleHorizPos1.a + sampleHorizPos2.a) * 0.2f;
-	half pass1EdgeAvgVert = (sampleVertNeg2.a + sampleVertNeg1.a + sampleCenter.a + sampleVertPos1.a + sampleVertPos2.a ) * 0.2f;
-	pass1EdgeAvgHoriz = saturate(pass1EdgeAvgHoriz * 2.0f - 1.0f);
-	pass1EdgeAvgVert = saturate(pass1EdgeAvgVert * 2.0f - 1.0f);
-	half longEdge = max(pass1EdgeAvgHoriz, pass1EdgeAvgVert);
+	half4 vEdgeAvgH = (vSampleHorizNeg2 + vSampleHorizNeg1 + vColorCenter + vSampleHorizPos1 + vSampleHorizPos2) * 0.2;
+	half4 vEdgeAvgV = (vSampleVertNeg2 + vSampleVertNeg1 + vColorCenter + vSampleVertPos1 + vSampleVertPos2) * 0.2;
+	vEdgeAvgH.a = saturate(vEdgeAvgH.a * 2.0 - 1.0);
+	vEdgeAvgV.a = saturate(vEdgeAvgV.a * 2.0 - 1.0);
 
-	half4 aaResult = sampleCenter;
-	[branch]if (longEdge > 0)
-	{
-    	half4 avgHorizLong = (sampleHorizNeg2 + sampleHorizNeg1 + sampleCenter + sampleHorizPos1 + sampleHorizPos2) * 0.2f;
-    	half4 avgVertLong = (sampleVertNeg2 + sampleVertNeg1 + sampleCenter + sampleVertPos1 + sampleVertPos2) * 0.2f;
-    	half valueHorizLong = dot(avgHorizLong.xyz, DLAA_MUL_VAL);
-    	half valueVertLong = dot(avgVertLong.xyz, DLAA_MUL_VAL);
+	half4 vResult = vColorCenter;
 
-    	half4 sampleLeft = tex2Dlod(Tex0, half4(IN.TexUV + half2(-1.0,  0.0) * PixelSize, 0.f, 0.f));
-    	half4 sampleRight = tex2Dlod(Tex0, half4(IN.TexUV + half2(1.0,  0.0) * PixelSize, 0.f, 0.f));
-    	half4 sampleUp = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0, -1.0) * PixelSize, 0.f, 0.f));
-    	half4 sampleDown = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.0,  1.0) * PixelSize, 0.f, 0.f));
+	half fValueLongH = dot(vEdgeAvgH.xyz, DLAA_MUL_VAL);
+	half fValueLongV = dot(vEdgeAvgV.xyz, DLAA_MUL_VAL);
 
-    	half valueCenter = dot(sampleCenter.xyz, DLAA_MUL_VAL);
-    	half valueLeft = dot(sampleLeft.xyz, DLAA_MUL_VAL);
-    	half valueRight = dot(sampleRight.xyz, DLAA_MUL_VAL);
-    	half valueTop = dot(sampleUp.xyz, DLAA_MUL_VAL);
-    	half valueBottom = dot(sampleDown.xyz, DLAA_MUL_VAL);
+	half4 vSampleLeft = tex2Dlod2(g_sColor, IN.vTexUV + half2(-1.0,  0.0) * g_vPixelSize, 0.0);
+	half4 vSampleRight = tex2Dlod2(g_sColor, IN.vTexUV + half2(1.0,  0.0) * g_vPixelSize, 0.0);
+	half4 vSampleUp = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, -1.0) * g_vPixelSize, 0.0);
+	half4 vSampleDown = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0,  1.0) * g_vPixelSize, 0.0);
 
-    	half4 diffToCenter = valueCenter - half4(valueLeft, valueTop, valueRight, valueBottom);   	
-    	half blurAmountLeft = saturate(0.0 + (valueVertLong - valueLeft) / diffToCenter.x);
-    	half blurAmountUp = saturate(0.0 + (valueHorizLong - valueTop) / diffToCenter.y);
-    	half blurAmountRight = saturate(1.0 + (valueVertLong - valueCenter) / diffToCenter.z);
-    	half blurAmountDown = saturate(1.0 + (valueHorizLong - valueCenter) / diffToCenter.w);  	
+	half fDotCenter = dot(vColorCenter.xyz, DLAA_MUL_VAL);
+	half fDotLeft = dot(vSampleLeft.xyz, DLAA_MUL_VAL);
+	half fDotRight = dot(vSampleRight.xyz, DLAA_MUL_VAL);
+	half fDotTop = dot(vSampleUp.xyz, DLAA_MUL_VAL);
+	half fDotBottom = dot(vSampleDown.xyz, DLAA_MUL_VAL);
 
-    	half4 blurAmounts = half4( blurAmountLeft, blurAmountRight, blurAmountUp, blurAmountDown );
-    	blurAmounts = (blurAmounts == half4(0.f, 0.f, 0.f, 0.f)) ? half4(1.f, 1.f, 1.f, 1.f) : blurAmounts;
+	half4 vDiffToCenter = fDotCenter - half4(fDotLeft, fDotTop, fDotRight, fDotBottom);
+		
+	half4 vBlurAmounts;
+	vBlurAmounts.x = saturate(0.0 + (fValueLongV - fDotLeft) / vDiffToCenter.x);
+	vBlurAmounts.z = saturate(0.0 + (fValueLongH - fDotTop) / vDiffToCenter.y);
+	vBlurAmounts.y = saturate(1.0 + (fValueLongV - fDotCenter) / vDiffToCenter.z);
+	vBlurAmounts.w = saturate(1.0 + (fValueLongH - fDotCenter) / vDiffToCenter.w); 
 
-    	half4 longBlurHoriz = lerp(sampleLeft, sampleCenter, blurAmounts.x);
-    	longBlurHoriz = lerp(sampleRight, longBlurHoriz, blurAmounts.y);
-    	half4 longBlurVert = lerp(sampleUp,	sampleCenter, blurAmounts.z);
-    	longBlurVert = lerp(sampleDown, longBlurVert, blurAmounts.w);
+	half4 vLongBlurH = lerp(vSampleLeft, vColorCenter, vBlurAmounts.x);
+	vLongBlurH = lerp(vSampleRight, vLongBlurH, vBlurAmounts.y);
+	half4 vLongBlurV = lerp(vSampleUp, vColorCenter, vBlurAmounts.z);
+	vLongBlurV = lerp(vSampleDown, vLongBlurV, vBlurAmounts.w);
 
-    	aaResult = lerp(sampleCenter, longBlurHoriz, pass1EdgeAvgVert);
-    	aaResult = lerp(aaResult, longBlurVert, pass1EdgeAvgHoriz);
-   }
+	vResult = lerp(vColorCenter, vLongBlurH, vEdgeAvgV.a);
+	vResult = lerp(vResult, vLongBlurV, vEdgeAvgH.a);
 
-   //return tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
-   return half4(aaResult.rgb, sampleCenter.a);
-   return lerp(half4(aaResult.rgb, sampleCenter.a), sampleCenter, 1-fEdgeDetected.x);
+	return half4(vResult.rgb, vColorCenter.a);
 }

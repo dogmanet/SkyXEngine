@@ -7,51 +7,49 @@ Directionally Localized Anti Aliasing
 */
 
 #include <../struct.h>
+#include <../ps.h>
 
-#define DLAA_MUL_VAL 0.333f
+//##########################################################################
 
-sampler2D Tex0:register(s0);
-sampler2D Tex1:register(s1);
+#define DLAA_MUL_VAL 0.333
 
-half2 PixelSize;
+half2 g_vPixelSize;
 
-half4 main(vs_out_pp IN) : COLOR0
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 sampleCenter = tex2Dlod(Tex0, half4(IN.TexUV,0.f,0.f));
-	half fEdgeDetected = tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
+	half4 vColorCenter = tex2Dlod2(g_sColor, IN.vTexUV, 0.0);
+
+	half4 vHorizNeg0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(-1.5, 0.0) * g_vPixelSize, 0.0);
+	half4 vHorizPos0 = tex2Dlod2(g_sColor, IN.vTexUV + half2( 1.5, 0.0) * g_vPixelSize, 0.0); 
+	half4 vVertNeg0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, -1.5) * g_vPixelSize, 0.0); 
+	half4 vVertPos0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, 1.5) * g_vPixelSize, 0.0);
+
+	half4 vSumHoriz = vHorizNeg0 + vHorizPos0;
+	half4 vSumVert = vVertNeg0  + vVertPos0;
+
+	half4 vDiffToCenterH = abs(vSumHoriz - (2.0 * vColorCenter)) * 0.5;  
+	half4 vDiffToCenterV = abs(vSumVert - (2.0 * vColorCenter)) * 0.5;
+
+	half fEdgeH = dot(vDiffToCenterH.xyz, DLAA_MUL_VAL);
+	half fEdgeV = dot(vDiffToCenterV.xyz, DLAA_MUL_VAL);
 	
-	[branch]if(fEdgeDetected.x == 0.f)
-		return sampleCenter;
+	half vEdgeDetectH = saturate((3.0 * fEdgeH) - 0.1);
+	half vEdgeDetectV = saturate((3.0 * fEdgeV)  - 0.1);
 
-	half4 sampleHorizNeg0 = tex2Dlod(Tex0, half4(IN.TexUV + half2(-1.5f, 0.f) * PixelSize, 0.f, 0.f));
-	half4 sampleHorizPos0 = tex2Dlod(Tex0, half4(IN.TexUV + half2( 1.5f, 0.f) * PixelSize, 0.f, 0.f)); 
-	half4 sampleVertNeg0 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.f, -1.5f) * PixelSize, 0.f, 0.f)); 
-	half4 sampleVertPos0 = tex2Dlod(Tex0, half4(IN.TexUV + half2(0.f, 1.5f) * PixelSize, 0.f, 0.f));
+	half4 vAvgH = (vSumHoriz + vColorCenter) * DLAA_MUL_VAL;
+	half4 vAvgV = (vSumVert + vColorCenter) * DLAA_MUL_VAL;
 
-	half4 sumHoriz = sampleHorizNeg0 + sampleHorizPos0;
-	half4 sumVert = sampleVertNeg0  + sampleVertPos0;
+	half fBlurAmountH = saturate(vEdgeDetectH / dot(vAvgH.xyz, DLAA_MUL_VAL));
+	half fBlurAmountV = saturate(vEdgeDetectV / dot(vAvgV.xyz, DLAA_MUL_VAL));
 
-	half4 diffToCenterHoriz = abs(sumHoriz - (2.f * sampleCenter)) * 0.5f;  
+	half4 vResult = lerp(vColorCenter, vAvgH, fBlurAmountH);
+	vResult = lerp(vResult, vAvgV, fBlurAmountV);
 
-	half valueEdgeHoriz = dot(diffToCenterHoriz.xyz, DLAA_MUL_VAL);
-	half valueEdgeVert = dot(diffToCenterHoriz.xyz, DLAA_MUL_VAL);
-	
-	half edgeDetectHoriz = saturate((3.f * valueEdgeHoriz) - 0.1f);
-	half edgeDetectVert = saturate((3.f * valueEdgeVert)  - 0.1f);
-
-	half4 avgHoriz = (sumHoriz + sampleCenter) * 0.333f;
-	half4 avgVert = (sumVert + sampleCenter) * 0.333f;
-
-	half valueHoriz = dot(avgHoriz.xyz, DLAA_MUL_VAL);
-	half valueVert = dot(avgVert.xyz, DLAA_MUL_VAL);
-
-	half blurAmountHoriz = saturate(edgeDetectHoriz / valueHoriz);
-	half blurAmountVert = saturate(edgeDetectVert / valueVert);
-
-	half4 aaResult = lerp(sampleCenter, avgHoriz, blurAmountHoriz);
-	aaResult = lerp(aaResult, avgVert, blurAmountVert);
-
-	//return tex2Dlod(Tex1, half4(IN.TexUV,0.f,0.f));
-	return half4(aaResult.rgb, sampleCenter.a);
-	return lerp(half4(aaResult.rgb, sampleCenter.a), sampleCenter, 1-fEdgeDetected.x);
+	return half4(vResult.rgb, vColorCenter.a);
 }

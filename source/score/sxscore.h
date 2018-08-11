@@ -184,7 +184,10 @@ SX_LIB_API void SSCore_Clear();
 SX_LIB_API void SSCore_Update(
 	const float3 *pViewPpos,//!< текущая позиция наблюдателя
 	const float3 *pViewDir	//!< текущее направление взгляда
-	);	
+	);
+
+//! установка общей громкости
+SX_LIB_API void SSCore_SetMainVolume(float fVolume);
 
 //! количество проигрываемых на данный момент звуков
 SX_LIB_API int SSCore_SndsGetCountPlay();

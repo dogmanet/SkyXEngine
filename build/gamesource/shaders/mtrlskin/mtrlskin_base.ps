@@ -7,26 +7,20 @@ mtrlskin_base.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-sampler2D BaseTex:register(s0);
-sampler2D ParamTex:register(s10);
+//##########################################################################
 
-half4 NearFarIsUnlit;
+sampler2D g_sColor:register(s0);
+sampler2D g_sParameters:register(s10);
 
-ps_out_ds_mrt main(vs_out_gcommon IN)
+//##########################################################################
+
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
 {
-	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
-	ps_out_ds_mrt OUT; 
-	OUT.Color = tex2D(BaseTex,IN.TexUV);
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
 	
-	half3 NormalPixel = normalize(IN.Normal);
-	
-	OUT.Normal.xyz = 0.5f * NormalPixel + 0.5f;
-	OUT.Normal.w = NearFarIsUnlit.z;
-	
-	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
-	
-	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
-	
-	return OUT;
+	return CreateGbuffer(tex2D(g_sColor,IN.vTexUV), normalize(IN.vNormal), tex2D(g_sParameters,IN.vTexUV), IN.vPos, g_vNearFarLayers);
 }

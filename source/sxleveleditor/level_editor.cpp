@@ -240,7 +240,7 @@ namespace SXLevelEditor
 
 
 	ID3DXMesh* FigureBox = 0;
-	AxesHelper* ObjAxesHelper = 0;
+	CAxesHelper* ObjAxesHelper = 0;
 
 	int ActiveGroupType = 0;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
 	ID ActiveGreenSplit = -1;		//!< текущий идентификатор сплита растительность (если выделена растительность)
@@ -2161,7 +2161,7 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 	{
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-		SXLevelEditor::ObjAxesHelper->Render();
+		SXLevelEditor::ObjAxesHelper->render();
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	}
@@ -2171,7 +2171,7 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 
 void SXLevelEditor::LEcreateData()
 {
-	SXLevelEditor::ObjAxesHelper = new AxesHelper();
+	SXLevelEditor::ObjAxesHelper = new CAxesHelper();
 	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &SXLevelEditor::FigureBox, 0);
 }
 

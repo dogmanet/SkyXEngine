@@ -333,7 +333,7 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl = NULL);
 
 //! просчитать видимость всех моделей для фрустума 
 SX_LIB_API void SXAnim_ModelsComVisible(
-	const ISXFrustum * frustum,	//!< фрустум для которого считаем видимость моделей
+	const IFrustum * frustum,	//!< фрустум для которого считаем видимость моделей
 	const float3 * viewpos,		//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID id_arr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через SXAnim_ModelsAddArrForCom, если 0 то считаем в дефолтный
 	);

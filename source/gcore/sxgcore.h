@@ -59,7 +59,7 @@ See the license in LICENSE
 #define SXGC_ERR_NON_DETECTED_D3D -1
 #define SXGC_ERR_FAILED_INIT_D3D -2
 
-class ISXFrustum;
+class IFrustum;
 
 //! \name Базовые функции библиотеки 
 //!@{
@@ -260,7 +260,7 @@ SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is
 SX_LIB_API void SGCore_OC_SetEnable(bool isEnable);
 
 //! обновление буфера глубины для теста, должна вызываться в старом кадре, к примеру после всего рендера (глубина и матрицы для текущего)
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const ISXFrustum *pFrustum);
+SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum);
 
 //! репроекция глубины, должна вызываться в новом кадре до основного рендера всего того, что подвергается тесту на загороженность, матрицы должны быть от нового кадра
 SX_LIB_API void SGCore_OC_Reprojection();
@@ -319,16 +319,24 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
 //! типы шейдеров (int type_shader)
 enum SHADER_TYPE
 {
-	SHADER_TYPE_VERTEX,	//!< вершинный
-	SHADER_TYPE_PIXEL	//!< пиксельный
+	//! вершинный
+	SHADER_TYPE_VERTEX,	
+
+	//! пиксельный
+	SHADER_TYPE_PIXEL	
 };
 
 //! типы проверок дубликатов шейдеров
 enum SHADER_CHECKDOUBLE
 {
-	SHADER_CHECKDOUBLE_NONE,	//!< нет проверки
-	SHADER_CHECKDOUBLE_PATH,	//!< проверка по пути (имени шейдера с расширением)
-	SHADER_CHECKDOUBLE_NAME		//!< проверка по пользовательскому имени
+	//! нет проверки
+	SHADER_CHECKDOUBLE_NONE,	
+
+	//! проверка по пути (имени шейдера с расширением)
+	SHADER_CHECKDOUBLE_PATH,	
+
+	//! проверка по пользовательскому имени
+	SHADER_CHECKDOUBLE_NAME		
 };
 
 //**************************************************************************
@@ -474,10 +482,18 @@ SX_LIB_API void SGCore_ShaderSetVRI(
 /*! \name Типы материалов
 !@{*/
 
-#define MTL_TYPE_GEOM 0		/*!< статическая геометрия */
-#define MTL_TYPE_GRASS 1	/*!< растительность - трава */
-#define MTL_TYPE_TREE 2		/*!< растительность - деревья */
-#define MTL_TYPE_SKIN 3		/*!< скелетная модель */
+//! статическая геометрия
+#define MTL_TYPE_GEOM 0		
+
+//! растительность - трава
+#define MTL_TYPE_GRASS 1	
+
+//! растительность - деревья 
+#define MTL_TYPE_TREE 2		
+
+//! скелетная модель
+#define MTL_TYPE_SKIN 3	
+
 //#define MTL_LIGHT 4
 
 //!@}
@@ -485,9 +501,14 @@ SX_LIB_API void SGCore_ShaderSetVRI(
 //! типы текстур
 enum LOAD_TEXTURE_TYPE
 {
-	LOAD_TEXTURE_TYPE_LOAD,		//!< загружаемая
-	LOAD_TEXTURE_TYPE_CONST,	//!< неудаляемая загружаемая
-	LOAD_TEXTURE_TYPE_CUSTOM,	//!< созданная пользователем
+	//! загружаемая
+	LOAD_TEXTURE_TYPE_LOAD,		
+
+	//! неудаляемая загружаемая
+	LOAD_TEXTURE_TYPE_CONST,	
+
+	//! созданная пользователем
+	LOAD_TEXTURE_TYPE_CUSTOM,	
 
 	/*! самоопределение типа, на тот случай когда обновляем текстуру которая точно есть.
 	Если определить этот тип, а внутри у текстуры на самом деле нет типа (скорее всего нет текстуры)
@@ -509,6 +530,8 @@ SX_LIB_API void SGCore_LoadTexDelete(ID idTexture);
 
 //! добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
 SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type);
+
+SX_LIB_API ID SGCore_LoadTexAddConstAllInDir(const char *szDir);
 
 //! получить id по имени
 SX_LIB_API ID SGCore_LoadTexGetID(const char *szName);
@@ -533,6 +556,9 @@ SX_LIB_API void SGCore_LoadTexUpdate(ID idTexture);
 
 //! возвращает текстуру по id
 SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID idTexture);
+
+//! возвращает текстуру по id
+SX_LIB_API IDirect3DCubeTexture9* SGCore_LoadTexGetTexCube(ID idTexture);
 
 //! загрузка всех текстур поставленных в очередь, если есть очередь
 SX_LIB_API void SGCore_LoadTexAllLoad();	
@@ -569,7 +595,7 @@ SX_LIB_API void SGCore_RTDeleteN(const char *szName);
 SX_LIB_API void SGCore_RTDelete(ID id);				
 
 //! возвращает id по имени
-SX_LIB_API ID SGCore_RTGetNum(const char *szName);
+SX_LIB_API ID SGCore_RTGetId(const char *szName);
 
 //! возвращает текстуру по имени
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName);
@@ -806,7 +832,7 @@ SX_LIB_API void SGCore_FCompBoundBox(
 	);
 
 //! создание меша (ID3DXMesh) ограничивающего объема
-SX_LIB_API void SGCore_FCreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh);
+SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh);
 
 /*! \name Оптимизация индексных буферов
 @{*/
@@ -839,37 +865,37 @@ Abs - абсолютное нахождение внутри, не на гран
 @{*/
 
 //! находится ли точка pos в пределах [min,max] по осям x z
-SX_LIB_API bool SGCore_0InPos2D(float3* min, float3* max, float3* pos);		
+SX_LIB_API bool SGCore_0InPos2D(const float3 *pMin, const float3 *pMax, const float3 *pPos);
 
 //! находится ли точка pos в пределах (min,max) по осям x z
-SX_LIB_API bool SGCore_0InPosAbs2D(float3* min, float3* max, float3* pos);	
+SX_LIB_API bool SGCore_0InPosAbs2D(float3 *pMin, float3 *pMax, float3 *pPos);
 
 
 //! возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]  по осям x z
-SX_LIB_API int SGCore_0CountPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
+SX_LIB_API int SGCore_0CountPosPoints2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
 
 //! возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max)  по осям x z
-SX_LIB_API int SGCore_0CountPosPointsAbs2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
+SX_LIB_API int SGCore_0CountPosPointsAbs2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
 
 //! лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3, по осям x z
-SX_LIB_API bool SGCore_0InPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
+SX_LIB_API bool SGCore_0InPosPoints2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
 
 
 //! находится ли точка pos в пределах [min,max]
-SX_LIB_API bool SGCore_0InPos3D(float3* min, float3* max, float3* pos);		
+SX_LIB_API bool SGCore_0InPos3D(float3 *pMin, float3 *pMax, float3 *pPos);
 
 //! находится ли точка pos в пределах (min,max)
-SX_LIB_API bool SGCore_0InPosAbs3D(float3* min, float3* max, float3* pos);	
+SX_LIB_API bool SGCore_0InPosAbs3D(float3 *pMin, float3 *pMax, float3 *pPos);
 
 
 //! возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]
-SX_LIB_API int SGCore_0CountPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
+SX_LIB_API int SGCore_0CountPosPoints3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
 
 //! возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max)
-SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
+SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
 
 //! лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3
-SX_LIB_API bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3);
+SX_LIB_API bool SGCore_0InPosPoints3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
 
 //!@}
 
@@ -878,43 +904,46 @@ SX_LIB_API bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, floa
 /*! кубическое (octo) деление объема (по всем трем осям)
  \warning массивы и объекты должны быть заранее инициализированны
  */
-SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr);
+SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound *pBound, ISXBound **ppBoundArr);
 
 /*! квадратичное (quad) деление объема (по двум осям x и z)
  \warning массивы и объекты должны быть заранее инициализированны
 */
-SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr);
+SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound *pBound, ISXBound **ppBoundArr);
 
 //! находит квадрат расстояния между лучем и точкой
-SX_LIB_API float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir);
+SX_LIB_API float SGCore_0DistancePointBeam2(const float3 &vPoint, const float3 &vStart, const float3 &vDir);
 
 //! возвращает пересекаются ли боксы или нет
-SX_LIB_API bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2);
+SX_LIB_API bool SGCore_0InretsectBox(const float3 *pMin1, const float3 *pMax1, const float3 *pMin2, const float3 *pMax2);
 
-struct SXTriangle
+struct CTriangle
 {
-	float3_t a;
-	float3_t b;
-	float3_t c;
-	SXTriangle()
+	float3_t m_vA;
+	float3_t m_vB;
+	float3_t m_vC;
+
+	CTriangle()
 	{
 	};
-	SXTriangle(float3_t _a, float3_t _b, float3_t _c) :a(_a), b(_b), c(_c)
+	CTriangle(float3_t vA, float3_t vB, float3_t vC) :m_vA(vA), m_vB(vB), m_vC(vC)
 	{
 	};
 
 	//Проверкка пересечения треугольника и отрезка
 	bool IntersectLine(const float3 & l1, const float3 &l2, float3 * p)
 	{
-		float3 n = SMVector3Normalize(SMVector3Cross((b - a), (c - b)));
-		float d1 = SMVector3Dot((l1 - a), n) / SMVector3Length(n);
-		float d2 = SMVector3Dot((l2 - a), n) / SMVector3Length(n);
+		float3 n = SMVector3Normalize(SMVector3Cross((m_vB - m_vA), (m_vC - m_vB)));
+		float d1 = SMVector3Dot((l1 - m_vA), n) / SMVector3Length(n);
+		float d2 = SMVector3Dot((l2 - m_vA), n) / SMVector3Length(n);
+
 		if ((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
 			return(false);
+
 		*p = l1 + (l2 - l1) * (-d1 / (d2 - d1));
-		if (SMVector3Dot(SMVector3Cross((b - a), (*p - a)), n) <= 0) return(false);
-		if (SMVector3Dot(SMVector3Cross((c - b), (*p - b)), n) <= 0) return(false);
-		if (SMVector3Dot(SMVector3Cross((a - c), (*p - c)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((m_vB - m_vA), (*p - m_vA)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((m_vC - m_vB), (*p - m_vB)), n) <= 0) return(false);
+		if (SMVector3Dot(SMVector3Cross((m_vA - m_vC), (*p - m_vC)), n) <= 0) return(false);
 		return(true);
 	}
 };
@@ -932,7 +961,7 @@ struct SXTriangle
 */
 
 //! структура описание плоскости
-struct CSXFrustumPlane
+struct CFrustumPlane
 {
 	float3_t m_vNormal;
 	float m_fDistance;
@@ -950,10 +979,10 @@ struct CSXFrustumPlane
 };
 
 //! класс описывающий фрустум
-class ISXFrustum : public IBaseObject
+class IFrustum : public IBaseObject
 {
 public:
-	virtual ~ISXFrustum(){};
+	virtual ~IFrustum(){};
 
 	SX_ALIGNED_OP_MEM
 
@@ -997,15 +1026,15 @@ public:
 };
 
 //! создать ISXFrustum
-SX_LIB_API ISXFrustum* SGCore_CrFrustum(); 
+SX_LIB_API IFrustum* SGCore_CrFrustum(); 
 
 //**************************************************************************
 
 //! камера
-class ISXCamera : public IBaseObject
+class ICamera : public IBaseObject
 {
 public:
-	virtual ~ISXCamera(){};
+	virtual ~ICamera(){};
 
 	SX_ALIGNED_OP_MEM
 
@@ -1092,11 +1121,11 @@ public:
 	virtual void updateFrustum(const float4x4 *mProjection) = 0;
 
 	//! возвращает константный указатель фрустума
-	virtual const ISXFrustum* getFrustum() = 0;
+	virtual const IFrustum* getFrustum() = 0;
 };
 
 //! создать ISXCamera
-SX_LIB_API ISXCamera* SGCore_CrCamera();	
+SX_LIB_API ICamera* SGCore_CrCamera();	
 
 //!@} sxgcore_camera
 

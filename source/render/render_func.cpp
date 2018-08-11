@@ -6,33 +6,6 @@ See the license in LICENSE
 
 #include "render_func.h"
 
-/*
-namespace SXRenderFunc
-{
-	namespace Delay
-	{
-		int64_t UpdateVisibleForCamera = 0;
-		int64_t UpdateVisibleForLight = 0;
-		int64_t UpdateVisibleForReflection = 0;
-
-		int64_t UpdateShadow = 0;
-		int64_t UpdateParticles = 0;
-		int64_t RenderMRT = 0;
-		int64_t ComLighting = 0;
-		int64_t PostProcess = 0;
-		int64_t ComReflection = 0;
-		int64_t GeomSortGroup = 0;
-
-		int64_t Present = 0;
-
-		int64_t FreeVal = 0;
-		float FreeValF1 = 0;
-		float FreeValF2 = 0;
-		float FreeValF3 = 0;
-	};
-};
-*/
-
 inline void SXRenderFunc::SetSamplerFilter(DWORD id, DWORD value)
 {
 	GData::DXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, value);
@@ -136,6 +109,7 @@ void SXRenderFunc::ComDeviceLost(bool isSetWindowSize)
 	SGeom_OnLostDevice();
 	SML_OnLostDevice();
 	SPE_OnLostDevice();
+	SPP_OnLostDevice();
 	SXGame_OnLostDevice();
 
 	SXRenderFunc::InitModeWindow();
@@ -156,7 +130,7 @@ void SXRenderFunc::ComDeviceLost(bool isSetWindowSize)
 		SGeom_OnResetDevice();
 		SPE_OnResetDevice();
 		SXGame_OnResetDevice();
-
+		SPP_OnDeviceReset();
 
 		GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	}
@@ -301,6 +275,11 @@ void SXRenderFunc::ComVisibleForCamera()
 
 void SXRenderFunc::ComVisibleReflection()
 {
+	static const int *r_reflection_render = GET_PCVAR_INT("r_reflection_render");
+
+	if (r_reflection_render && (*r_reflection_render) == REFLECTION_RENDER_ONLY_SKY)
+		return;
+
 	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
 	{
 		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
@@ -316,17 +295,31 @@ void SXRenderFunc::ComVisibleReflection()
 
 				SGeom_ModelsMGetGroupCenter(i, k, &center);
 				
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+				{
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) < 0)
 					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
+				}
 
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+				{
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) < 0)
 					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
+				}
 
-				if(SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0) < 0)
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+				{
+					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0) < 0)
 					SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
+				}
 
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 				SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0));
+
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 				SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+				
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
 				SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, 0), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, 0));
 			}
 			else if (typeref == MTLTYPE_REFLECT_CUBE_DYNAMIC)
@@ -338,17 +331,31 @@ void SXRenderFunc::ComVisibleReflection()
 
 				for (int j = 0; j<6; j++)
 				{
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+					{
 					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) < 0)
 						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+					}
 
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+					{
 					if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) < 0)
 						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+					}
 
-					if(SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k) < 0)
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+					{
+						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k) < 0)
 						SML_MtlRefSetIDArr(idmat, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
+					}
 					
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 					SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
+					
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 					SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k));
+					
+					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
 					SXAnim_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_ANIM, k));
 				}
 			}
@@ -669,7 +676,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	{
 		//SXDecals_Render();
 		if (SGeom_ModelsGetCount() > 0)
-			SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE);
+			SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE);
 
 		SXAnim_Render();
 
@@ -722,7 +729,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	if (!isRenderSimulation)
 	{
 		//если есть что к отрисовке из полупрозрачной геометрии
-		if (SGeom_ModelsSortExistsForRender(MTLTYPE_TRANSPARENCY_ALPHA_LIGHT))
+		if (SGeom_ModelsSortExistsForRender(MTLTYPE_TRANSPARENCY))
 		{
 			//тут такая ситуация ... есть два рабочих варианта, причем работают чутка по разному, возможно я изработался и не могу сообразить что да как ...
 			//первый вариант, чистим в 4, метим 3 раза начиная с нуля (первый раз 0, второй 1 третий 2 НЕ ИНКРЕМЕНТ а метка)
@@ -753,7 +760,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStr);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStr, "WinSize", &vWinSize);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStr, "g_vWinSize", &vWinSize);
 
 			SGCore_ScreenQuadDraw();
 
@@ -762,7 +769,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilColumn);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilColumn, "WinSize", &vWinSize);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilColumn, "g_vWinSize", &vWinSize);
 
 			SGCore_ScreenQuadDraw();
 
@@ -771,7 +778,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStrColumn);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStrColumn, "WinSize", &vWinSize);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::StencilStrColumn, "g_vWinSize", &vWinSize);
 
 			SGCore_ScreenQuadDraw();
 
@@ -798,7 +805,7 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 				SML_MtlSetIsIncrCountSurf(true);
 				SML_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
 
-				SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_ALPHA_LIGHT, 0, true);
+				SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY, 0, true);
 			}
 
 
@@ -815,10 +822,10 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	}
 	else
 	{
-		if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MTLTYPE_TRANSPARENCY_NONE)
+		if (SML_MtlGetSort(GData::Editors::SimModel->GetIDMtl()) != MTLSORT_OPAQUE)
 			SML_MtlSetForceblyAlphaTest(true);
 		GData::Editors::SimModel->Render(timeDelta);
-		if (SML_MtlGetTypeTransparency(GData::Editors::SimModel->GetIDMtl()) != MTLTYPE_TRANSPARENCY_NONE)
+		if (SML_MtlGetSort(GData::Editors::SimModel->GetIDMtl()) != MTLSORT_OPAQUE)
 			SML_MtlSetForceblyAlphaTest(false);
 	}
 
@@ -846,7 +853,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 	SetSamplerFilter(0, D3DTEXF_LINEAR);
@@ -873,7 +880,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							SML_LigthsShadowRenderPre(i, k);
 
 							if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-								SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+								SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 							if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
 								SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k));
@@ -887,7 +894,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 				{
 					SML_LigthsUpdateGFrustums(i, 4, &GData::ConstCurrCamPos, &GData::ConstCurrCamDir);
 					SML_LigthsShadowRenderPre(i, 4);
-					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 					GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 					SetSamplerFilter(0, D3DTEXF_LINEAR);
 					SetSamplerFilter(1, D3DTEXF_LINEAR);
@@ -906,6 +913,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 			}
 			else if (SML_LigthsGetType(i) == LTYPE_LIGHT_DIR)
 			{
+				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 				if (SML_LigthsCountUpdateUpdate(i, &GData::ConstCurrCamPos))
 				{
 					SML_LigthsShadowRenderBegin(i);
@@ -913,7 +921,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 					if (SML_LigthsGetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 					{
 						if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, 0) > -1)
-							SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
+							SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
 							
 						if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, 0) > -1)
 							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
@@ -933,6 +941,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 			}
 			else if (SML_LigthsGetType(i) == LTYPE_LIGHT_POINT)
 			{
+				GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 				if (SML_LigthsGetTypeShadowed(i) != LTYPE_SHADOW_NONE && SML_LigthsCountUpdateUpdate(i, &GData::ConstCurrCamPos))
 				{
 					SML_LigthsShadowRenderBegin(i);
@@ -946,7 +955,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 							if (SML_LigthsGetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 							{
 								if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-									SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 								if (SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
 									SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_TREE, SML_LigthsGetIDArr(i, RENDER_IDARRCOM_GREEN, k));
@@ -972,6 +981,7 @@ void SXRenderFunc::UpdateShadow(DWORD timeDelta)
 	}
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
 	GData::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+	GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 }
 
 void SXRenderFunc::RenderSky(DWORD timeDelta)
@@ -1196,9 +1206,9 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 			float4x4 ViewInv = SMMatrixInverse(&determ, GData::MCamView);
 			ViewInv = SMMatrixTranspose(ViewInv);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ViewInv", &ViewInv);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "NearFar", &GData::NearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "ParamProj", &float3_t(*r_win_width, *r_win_height, GData::ProjFov));
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "g_mViewInv", &ViewInv);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "g_vNearFar", &GData::NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, GData::ProjFov));
 
 			float3 tmpPosition;
 			float2 tmpPowerDist;
@@ -1226,10 +1236,10 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 			else
 				tmpColor.w = 1.f;
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "ViewPos", &GData::ConstCurrCamPos);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "LightPos", &(tmpPosition));
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "LightPowerDist", &(tmpPowerDist));
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "LightColor", &tmpColor);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &GData::ConstCurrCamPos);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPos", &(tmpPosition));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPowerDist", &(tmpPowerDist));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightColor", &tmpColor);
 			//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "NearFar", &GData::NearFar);
 
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ResPos);
@@ -1337,7 +1347,7 @@ void SXRenderFunc::UnionLayers()
 
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha, "WinSize", &float4_t(*r_win_width, *r_win_height, 1.f / float(*r_win_width), 1.f / float(*r_win_height)));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::UnionAlpha, "g_vWinSize", &float4_t(*r_win_width, *r_win_height, 1.f / float(*r_win_width), 1.f / float(*r_win_height)));
 
 		SGCore_ScreenQuadDraw();
 
@@ -1388,51 +1398,6 @@ void SXRenderFunc::UnionLayers()
 	mem_release(BackBuf);
 }
 
-void SXRenderFunc::ApplyToneMapping()
-{
-	LPDIRECT3DSURFACE9 BackBuf, ComLightSurf;
-	SML_DSGetRT(DS_RT_SCENELIGHT2)->GetSurfaceLevel(0, &ComLightSurf);
-	GData::DXDevice->GetRenderTarget(0, &BackBuf);
-	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
-
-	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, RENDER_DEFAUL_BACKGROUND_COLOR, 1.0f, 0);
-
-	SetSamplerFilter(0, 5, D3DTEXF_NONE);
-	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
-
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENELIGHT));
-	GData::DXDevice->SetTexture(1, SML_DSGetRT(DS_RT_ADAPTEDLUM));
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ToneMapping);
-
-	SGCore_ScreenQuadDraw();
-
-	SGCore_ShaderUnBind();
-
-	mem_release(ComLightSurf);
-
-
-
-	SML_DSGetRT(DS_RT_SCENELIGHT)->GetSurfaceLevel(0, &ComLightSurf);
-	GData::DXDevice->SetRenderTarget(0, ComLightSurf);
-	GData::DXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
-	GData::DXDevice->SetTexture(0, SML_DSGetRT(DS_RT_SCENELIGHT2));
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, GData::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, GData::IDsShaders::PS::ScreenOut);
-
-	SGCore_ScreenQuadDraw();
-
-	mem_release(ComLightSurf);
-
-	GData::DXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
-
-
-	SGCore_ShaderUnBind();
-}
-
 void SXRenderFunc::ComToneMapping(DWORD timeDelta)
 {
 	//обработка tone mapping
@@ -1470,6 +1435,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	static float2_t vWinSize;
 	vWinSize = float2(*r_win_width, *r_win_height);
 
+	SPP_Update();
 	SPP_RTNull();
 
 	static const int * pp_ssao = GET_PCVAR_INT("pp_ssao");
@@ -1489,9 +1455,9 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
 	if (pp_bloom && (*pp_bloom))
-		SPP_RenderBloom(&float3_t(1, 0.7, 0.1));
+		SPP_RenderBloom(&float3_t(1, 0.7, 1.0));
 
-	SPP_Update();
+
 
 	float3 tmpPosition;
 	float3 tmpColor;
@@ -1513,16 +1479,16 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
 	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
 	if (pp_lensflare && (*pp_lensflare) && GlobalLight >= 0)
-		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.9f), &float4_t(tmpColor.x, tmpColor.y, tmpColor.z, (SML_LigthsGetCastGlobalShadow() ? 0 : SML_LigthsGetPower(GlobalLight))), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
+		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.2f), &float4_t(tmpColor.x, tmpColor.y, tmpColor.z, (SML_LigthsGetCastGlobalShadow() ? 0 : SML_LigthsGetPower(GlobalLight))), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
 
 
-	SPP_RenderDOF(&float4_t(0, 200, 0, 100), 0);
+	SPP_RenderDOF(&float4_t(0, 100, 0, 20), 0);
 
 	
 
 	static const bool * pp_nfaa = GET_PCVAR_BOOL("pp_nfaa");
 	if (pp_nfaa && (*pp_nfaa))
-		SPP_RenderNFAA(&float3_t(1, 2, 0));
+		SPP_RenderNFAA(&float3_t(1, 1, 0));
 
 	static const bool * pp_dlaa = GET_PCVAR_BOOL("pp_dlaa");
 	if (pp_dlaa && (*pp_dlaa))
@@ -1545,6 +1511,11 @@ void SXRenderFunc::ShaderRegisterData()
 
 void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 {
+	static const int *r_reflection_render = GET_PCVAR_INT("r_reflection_render");
+
+	float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
 	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
 	{
 		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
@@ -1555,6 +1526,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 			float3_t center;
 			if (typeref == MTLTYPE_REFLECT_PLANE)
 			{
+				
 				if (!SML_MtlRefIsAllowedRender(idmat))
 				{
 					SML_MtlRefUpdateCountUpdate(idmat, &((float3_t)GData::ConstCurrCamPos));
@@ -1567,23 +1539,32 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-
 				Core_RBoolSet(G_RI_BOOL_CLIPPLANE0, true);
 
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &float3(plane.a, plane.b, plane.c));
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_POINT, &float3(center));
 
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+				{
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0) >= 0)
-					SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+						SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+				}
 
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+				{
 				if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0) >= 0)
 					SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, 0));
+				}
 
+				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+				{
 				SXAnim_Render();
+				}
 
 				SGCore_ShaderUnBind();
 
-
+				if (SGCore_SkyBoxIsCr())
+				{
 				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 				GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
@@ -1592,6 +1573,9 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 				GData::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
 				GData::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
 
+					GData::DXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+					SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
+
 				GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 				GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 				Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &GData::MRefPlaneSkyProj);
@@ -1599,6 +1583,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 				GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 				GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 				GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+				}
 
 				SML_MtlRefPostRenderPlane(idmat);
 			}
@@ -1618,35 +1603,55 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 
 				SML_MtlRefCubeBeginRender(idmat, &center);
 
-				for (int j = 0; j<6; j++)
+				for (int j = 0; j < 6; j++)
 				{
-					Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+					Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
 					SML_MtlRefCubePreRender(idmat, j, &(SMMatrixIdentity()));
 					SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 					SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
+					if (r_reflection_render && (*r_reflection_render) != 0)
+					{
 					//если статические кубические отражения
 					if (SML_MtlGetTypeReflection(idmat) == MTLTYPE_REFLECT_CUBE_STATIC)
 					{
 						//тогда считаем в массив камеры
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+							{
 						SGeom_ModelsComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGeomIDArr);
-						SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, GData::DefaultGeomIDArr, false, i, k);
+								SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, GData::DefaultGeomIDArr, false, i, k);
+							}
 
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+							{
 						SGeom_GreenComVisible(SML_MtlRefGetfrustum(idmat, j), &float3(center), GData::DefaultGreenIDArr);
 						SGeom_GreenRender(timeDelta, &float3(center), GREEN_TYPE_ALL, GData::DefaultGreenIDArr);
 					}
+						}
 					else
 					{
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
+							{
 						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k) >= 0)
-							SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY_NONE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+							}
 
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
+							{
 						if (SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k) >= 0)
 							SGeom_GreenRender(timeDelta, &GData::ConstCurrCamPos, GREEN_TYPE_ALL, SML_MtlRefGetIDArr(idmat, RENDER_IDARRCOM_GREEN, k));
+							}
 
+							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
+							{
 						SXAnim_Render();
 					}
+						}
+					}
 
+					if (SGCore_SkyBoxIsCr())
+					{
 					GData::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 					GData::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
@@ -1670,6 +1675,7 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 
 					GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 					GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+				}
 				}
 				SML_MtlRefCubeEndRender(idmat, &((float3_t)GData::ConstCurrCamPos));
 			}

@@ -51,7 +51,7 @@ namespace GData
 	extern DS_RT FinalImage;
 
 	//!< камера для которой будет рендер
-	extern ISXCamera* ObjCamera;	
+	extern ICamera* ObjCamera;	
 
 	//! id текстуры с цветмо выделения (для редакторов)
 	extern ID IDSelectTex;
@@ -126,7 +126,7 @@ namespace GData
 
 			extern ID BlendAmbientSpecDiffColor;
 
-			extern ID ToneMapping;
+			//extern ID ToneMapping;
 
 			extern ID StencilStr;
 			extern ID StencilColumn;

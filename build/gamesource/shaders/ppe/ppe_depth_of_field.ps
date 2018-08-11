@@ -6,40 +6,50 @@ ppe_depth_of_field.ps
 
 #include <../struct.h>
 #include <../mtrl.h>
+#include <../ps.h>
 
-half4 Param;
+//##########################################################################
+
+half4 g_vParam;
 //x - откуда начинается нормальное видиние
 //y - где оно заканчивается
 //z - постепенный переход на ближней плоскости
 //w - постепенный переход на дальней плоскости
-half SkyBlur;//на сколько блюрить небо
 
-half2 NearFar;
+//! на сколько блюрить небо
+half g_fSkyBlur;
 
-sampler2D FrameSampler:register(s0);
-sampler2D DepthSampler:register(s1);
-sampler2D BlurSampler:register(s2);
+half2 g_vNearFar;
 
-half4 main(vs_out_pp IN) : COLOR0
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+sampler2D g_sDepth:register(s1);
+sampler2D g_sBlur:register(s2);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 color = tex2D(FrameSampler,IN.TexUV);
-	half tmp_DOF_NearDist = Param.x / NearFar.y;
-	half tmp_DOF_FarDist = Param.y / NearFar.y;
-	half tmp_DOF_NearRange = Param.z / NearFar.y;
-	half tmp_DOF_FarRange = Param.w / NearFar.y;
+	half4 vColor = tex2Dlod2(g_sColor, IN.vTexUV, 0);
+	half fNearDist = g_vParam.x / g_vNearFar.y;
+	half fFarDist = g_vParam.y / g_vNearFar.y;
+	half fNearRange = g_vParam.z / g_vNearFar.y;
+	half fFarRange = g_vParam.w / g_vNearFar.y;
 
-	half Depth = tex2D(DepthSampler, IN.TexUV).r;
+	half fDepth = tex2Dlod2(g_sDepth, IN.vTexUV, 0).r;
 			
-	half4 BlurColor = tex2D(BlurSampler,IN.TexUV);
+	half4 vBlurColor = tex2Dlod2(g_sBlur, IN.vTexUV, 0);
 	
-    half Blur = max(
-						saturate(1.f - (Depth - tmp_DOF_NearDist) / tmp_DOF_NearRange),
-						saturate((Depth - (tmp_DOF_FarDist - tmp_DOF_FarRange)) / tmp_DOF_FarRange)
+    half fBlur = max(
+						saturate(1.f - (fDepth - fNearDist) / fNearRange),
+						saturate((fDepth - (fFarDist - fFarRange)) / fFarRange)
 					);
-	Blur = clamp(0.f, 1.f, Blur);
-	Blur = lerp(Blur, SkyBlur, clamp(sign(Depth - 0.99f)+1.f, 0.f, 1.f));
-		/*if(Depth >= 0.99)
-			Blur = SkyBlur;*/
+	fBlur = clamp(0.f, 1.f, fBlur);
+	fBlur = lerp(fBlur, g_fSkyBlur, clamp(sign(fDepth - 0.99f)+1.f, 0.f, 1.f));
+	
+	/*if(fDepth >= 0.99)
+		fBlur = g_fSkyBlur;*/
 
-	return lerp(color, BlurColor, Blur);
+	return lerp(vColor, vBlurColor, fBlur);
 }

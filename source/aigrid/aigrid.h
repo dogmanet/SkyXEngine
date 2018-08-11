@@ -14,100 +14,155 @@ See the license in LICENSE
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include "sxaigrid.h"
+#include <math.h>
 
 extern g_aiquad_phy_navigate AIQuadPhyNavigate;
 
-#define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || ArrQuads.size() <= id) {LibReport(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", GEN_MSG_LOCATION, id); return retval;}
+#define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || m_aQuads.size() <= id) {LibReport(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", GEN_MSG_LOCATION, id); return retval;}
 
-#define toint100(fnum) (int32_t)((fnum + 0.0001f) * 100)
-
-//long значения позиций, float3 * 100
+//! int значения позиций полученные путем AIGRID_TOINT
 struct int3
 {
-	int3(){ this->x = this->y = this->z = 0; }
-	int3(long _x, long _y, long _z){ this->x = _x; this->y = _y; this->z = _z; }
-	int32_t x,y,z;
-};
-
-//структура описывающая квадрат на аи сетке
-struct AIQuad
-{
-	AIQuad()
-	{
-		axisx = axisy = 0;
-		IsClose = false;
-		Id = -1;
-			for(int i=0;i<8;++i)
-				Arr[i] = -1;
-
-		IdSplit = 0;
+	int3()
+	{ 
+		x = y = z = 0; 
 	}
 
-	//направления по осям
-	//если равно 0 то в обоих направлениях, иначе еси 1 то положительное направление, иначе -1 то отрицательное, 2 - хода нет
-	char axisx;
-	char axisy;
+	int3(int32_t iX, int32_t iY, int32_t iZ)
+	{ 
+		x = iX; y = iY; z = iZ; 
+	}
+
+	int32_t x, y, z;
+};
+
+//! структура описывающая квадрат на аи сетке
+struct CAIquad
+{
+	CAIquad()
+	{
+		m_chAxisX = m_chAxisY = 0;
+		m_isClose = false;
+		m_id = -1;
+
+		for(int i=0;i<8;++i)
+			m_aNeighbors[i] = -1;
+
+		m_iSplit = 0;
+	}
 
 	//установка соседа для квада
-	void SetNeighbor(int key,ID id)
+	void setNeighbor(int iKey,ID idQuad)
 	{
-		Arr[key] = id;
+		m_aNeighbors[iKey] = idQuad;
 
-			if(key == 1)
-			{
-					if(axisy == -1)
-						axisy = 0;
-					else if(axisy == 2)
-						axisy = 1;
-			}
+		if (iKey == 1)
+		{
+			if (m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
+				m_chAxisY = AIGRID_QUAD_DIR_ALL;
+			else if (m_chAxisY == AIGRID_QUAD_DIR_NONE)
+				m_chAxisY = AIGRID_QUAD_DIR_POSITIVE;
+		}
 
-			if(key == 6)
-			{
-					if(axisy == 1)
-						axisy = 0;
-					else if(axisy == 2)
-						axisy = -1;
-			}
+		if (iKey == 6)
+		{
+			if (m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
+				m_chAxisY = AIGRID_QUAD_DIR_ALL;
+			else if (m_chAxisY == AIGRID_QUAD_DIR_NONE)
+				m_chAxisY = AIGRID_QUAD_DIR_NEGATIVE;
+		}
 
-			if(key == 3)
-			{
-					if(axisx == 1)
-						axisx = 0;
-					else if(axisx == 2)
-						axisx = -1;
-			}
+		if (iKey == 3)
+		{
+			if (m_chAxisX == AIGRID_QUAD_DIR_POSITIVE)
+				m_chAxisX = AIGRID_QUAD_DIR_ALL;
+			else if (m_chAxisX == AIGRID_QUAD_DIR_NONE)
+				m_chAxisX = AIGRID_QUAD_DIR_NEGATIVE;
+		}
 
-			if(key == 4)
-			{
-					if(axisx == -1)
-						axisx = 0;
-					else if(axisx == 2)
-						axisx = 1;
-			}
+		if (iKey == 4)
+		{
+			if (m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE)
+				m_chAxisX = AIGRID_QUAD_DIR_ALL;
+			else if (m_chAxisX == AIGRID_QUAD_DIR_NONE)
+				m_chAxisX = AIGRID_QUAD_DIR_POSITIVE;
+		}
 	}
 
-	float3_t pos;		//позиция квада
-	bool IsClose;		//закрытый ли квад
-	ID Arr[8];			//id соседей
-	ID Id;				//идентификатор-ключ для обращения к массиву
-	uint16_t IdSplit;	//идентификатор сплита к которому отсносится данный квад (в случае если сетка не цельная)
+
+	//! направления по осям, значения из AIGRID_QUAD_DIR_
+	char m_chAxisX, m_chAxisY;
+
+	//! позиция квада
+	float3_t m_vPos;		
+
+	//! закрытый ли квад
+	bool m_isClose;		
+
+	//! id соседей
+	ID m_aNeighbors[8];
+
+	//! идентификатор-ключ для обращения к массиву
+	ID m_id;				
+
+	//! идентификатор сплита к которому отсносится данный квад (в случае если сетка не цельная)
+	uint16_t m_iSplit;	
 };
 
-//ограничивающий объем для квадов
-struct BoundAIQuad
+//! ограничивающий объем для квадов
+struct CBoundAIquad
 {
-	BoundAIQuad(){}
-	~BoundAIQuad(){}
+	CBoundAIquad(){}
+	~CBoundAIquad(){}
 
-	float3_t min,max;
-	int3 lmin, lmax;
-	Array<ID> ArrIdsQuads;
+	//! float экстремумы
+	float3_t m_f3Min, m_f3Max;
+
+	//! int (#AIGRID_TOINT) экстремумы 
+	int3 m_i3Min, m_i3Max;
+
+	//! массив идентификаторов квадов
+	Array<ID> m_aIdsQuads;
 };
 
-//структура стоимости перехода по кваду
-struct CostAIQuad
+//! нод дерева боксов
+struct CTreeBoundAIquad
 {
-	CostAIQuad()
+	CTreeBoundAIquad()
+	{
+		m_aSplits[0] = 0;
+		m_aSplits[1] = 0;
+		m_aSplits[2] = 0;
+		m_aSplits[3] = 0;
+		m_pBoundBox = 0;
+	}
+
+	~CTreeBoundAIquad()
+	{
+		mem_delete(m_aSplits[0]);
+		mem_delete(m_aSplits[1]);
+		mem_delete(m_aSplits[2]);
+		mem_delete(m_aSplits[3]);
+		mem_release(m_pBoundBox);
+	}
+
+	//! входящие ноды
+	CTreeBoundAIquad *m_aSplits[4];
+
+	//! ограничивающий объем
+	ISXBound *m_pBoundBox;
+
+	//! int данные ограничивающего объема
+	int3 m_i3Min, m_i3Max;
+
+	//! входящие боксы
+	Array<CBoundAIquad*, 64> m_pBounds;
+};
+
+//!структура стоимости перехода по кваду
+struct CCostTransit
+{
+	CCostTransit()
 	{
 		F=G=H=0;
 	}
@@ -115,170 +170,249 @@ struct CostAIQuad
 	uint32_t F,G,H;
 };
 
-struct AIQuadVertexData
+//! вершина квада AI сетки
+struct CAIQuadVertexData
 {
-	AIQuadVertexData(){}
-	AIQuadVertexData(float px,float py,float pz,float tcx,float tcy)
+	CAIQuadVertexData(){}
+	CAIQuadVertexData(float fX, float fY, float fZ, float fTCX, float fTCY)
 	{
-		pos.x = px;
-		pos.y = py;
-		pos.z = pz;
+		m_vPos.x = fX;
+		m_vPos.y = fY;
+		m_vPos.z = fZ;
 
-		tc.x = tcx;
-		tc.y = tcy;
+		m_vTC.x = fTCX;
+		m_vTC.y = fTCY;
 	}
-	float3_t pos;
-	float2_t tc;
+
+	//! позиция
+	float3_t m_vPos;
+
+	//! текстурные координаты
+	float2_t m_vTC;
 };
 
-//
-struct AIQuadVertexDataInst
+//! вершина трансформации для hardware instancing
+struct CAIQuadVertexDataInst
 {
-	float3_t pos;
-	float4_t tex;
-	uint32_t color;
+	//! позиция
+	float3_t m_vPos;
+
+	//! текстурные координаты
+	float4_t m_vTC;
+
+	//! цвет
+	uint32_t m_uiColor;
 };
 
+//##########################################################################
 
-class AIGrid
+//! класс AI сетки
+class CAIGrid
 {
 public:
-	AIGrid();
-	~AIGrid();
+	CAIGrid();
+	~CAIGrid();
 
-	void GraphicsInit();//инициализация графических данных, если надо
-	void Clear();		//очистка всех данных
+	//!инициализация графических данных, если надо
+	void initGraphics();
 
-	bool existsQuads();
+	//! очистка всех данных
+	void clear();		
 
-	//сохранение/загрузка
-	void GridSave(const char* path);
-	void GridLoad(const char* path);
+	//! есть ли квады в сетке?
+	bool existsQuads() const;
+
+	//! сохранение данных о сетке, путь абсолютный
+	void save(const char *szPath);
+
+	//! загрузка данных о сетке, путь абсолютный
+	void load(const char *szPath);
 	
 	//ограничивающий объем
 	//{
-	void BBCreate(const float3* center, const float3* param);	//создать ограничивающий объем по параметрам
-	bool BBIsCreated() const;									//создан ли ограничивающий объем
+
+	//! создать ограничивающий объем по параметрам
+	void bbCreate(const float3 *pCenter, const float3 *pParam);	
+
+	//! создан ли ограничивающий объем
+	bool bbIsCreated() const;									
 	
-	//установка/получение габаритов
-	void BBSetDimensions(const float3* dim);						
-	void BBGetDimensions(float3* dim) const;
+	//! установка габаритов
+	void bbSetDimensions(const float3 *pDimensions);
 
-	//установка/получение позиции
-	void BBSetPos(const float3* pos);
-	void BBGetPos(float3* pos) const;
+	//! получение габаритов
+	void bbGetDimensions(float3 *pDimensions) const;
 
-	void BBCreateFinish();	//завершение создания ограничивающего объема, после которого изменить какие-либо его данные будет невозможно
-	bool BBIsCreatedFinish() const;
+	//! установка позиции
+	void bbSetPos(const float3 *pPos);
+
+	//! получение позиции
+	void bbGetPos(float3 *pPos) const;
+
+	//! завершение создания ограничивающего объема, после которого изменить какие-либо его данные будет невозможно
+	void bbCreateFinish();
+
+	//! окончательно ли создан ограничивающий объем сетки?
+	bool bbIsCreatedFinish() const;
 	//}
 
 	//квады
 	//{
 	//установка/возвращение состояния квада
-	void QuadSetState(ID id, AIQUAD_STATE state);
-	AIQUAD_STATE QuadGetState(ID id) const;
-	void QuadSetStateWho(ID id, ID who);
-	ID QuadGetStateWho(ID id);
+	void quadSetState(ID id, AIQUAD_STATE state);
 
-	//проверка квада: является ли квад id соседом и idn1 кваду и idn2 кваду
-	bool QuadIs2Neighbors(ID id, ID idn1, ID idn2);
-	
-	//установка/возвращение позиции по оси Y для квада
-	void QuadSetPosY(ID id, float posy);
-	float QuadGetPosY(ID id) const;
+	//! возвращает состояние квада
+	AIQUAD_STATE quadGetState(ID id) const;
 
-	ID QuadAdd(const float3* pos);					//добавление квада в позицию
-	bool QuadDelete(ID id);							//удаление квада по его id
+	//! установка занятости квада, idWho - идентификатор того кто занял квад
+	void quadSetStateWho(ID id, ID idWho);
+
+	//! возвращает идентификатор того кто занял квад
+	ID quadGetStateWho(ID id) const;
+
+	//! проверка квада: является ли квад id соседом и idn1 кваду и idn2 кваду
+	bool quadIs2Neighbors(ID id, ID idn1, ID idn2) const;
 	
-	void QuadSelect(ID id, bool consider_prev);		//добавление квада к списку выделения, id - идентификатор квада, если -1 то очищает список, consider_prev - учитывать ли предыдущие записанные, если нет то очищает массив и записывает туда, если да то записывает сверху
-	void QuadSelectedAddPosY(float posy);	//добавление к позиции по оси Y для выделенных квадов
-	void QuadSelectedDelete();						//удаление выделенных квадов
+	//! установка/возвращение позиции по оси Y для квада
+	void quadSetPosY(ID id, float fPosY);
+
+	//! возвращение позиции по оси Y для квада
+	float quadGetPosY(ID id) const;
+
+
+	//! добавление квада в позицию
+	ID quadAdd(const float3 *pPos);					
+
+	//! удаление квада по его id
+	bool quadDelete(ID id);							
 	
-	bool QuadIsFree(ID id, int radius);		//свободен ли квад id в радиусе radius (radius - количество квадов вокруг указанного в id, 1 - значит только указанный, 2 - значит все соседние и т.д.)
-	ID QuadGetNear(const float3* pos, bool isfree = false, int raius = 1);	//возвращает id ближайшего квада (если isfree == true то ищет только свободные) С радиусом свободности radius
-	ID QuadGet(const float3* pos, bool isnear_or_permissible) const;	//получить id квада по позиции, isnear_or_permissible - самый ближний квад, или самый ближний в пределах допустимой разницы начальной точки?
-	bool QuadGetPos(ID id, float3* pos);
+
+	//! добавление квада к списку выделения, id - идентификатор квада, если -1 то очищает список, isConsiderPrev - учитывать ли предыдущие записанные, если нет то очищает массив и записывает туда, если да то записывает сверху
+	void quadSelect(ID id, bool isConsiderPrev);		
+
+	//! добавление к позиции по оси Y для выделенных квадов
+	void quadSelectedAddPosY(float fPosY);	
+
+	//! удаление выделенных квадов
+	void quadSelectedDelete();						
+	
+	//! свободен ли квад id в радиусе radius (iRadius - количество квадов вокруг указанного в id, 1 - значит только указанный, 2 - значит все соседние и т.д.)
+	bool quadIsFree(ID id, int iRadius);		
+
+	//! возвращает id ближайшего квада в радиусе fRadius от pPos (если isFree == true то ищет только свободные) c радиусом свободности iQuadRadius
+	ID quadGetNear(const float3 *pPos, float fRadius, bool isFree = false, int iQuadRadius = 1);	
+
+	//! получить id квада по позиции, isNearOrPermissible - самый ближний квад, или самый ближний в пределах допустимой разницы по оси Y
+	ID quadGet(const float3 *pPos, bool isNearOrPermissible) const;
+
+	//! возвращает позицию квада по его id
+	bool quadGetPos(ID id, float3 *pPos) const;
 	//}
 
 	//сетка
 	//{
-	void GridGenerate();											//функция просчетов, ее нужно вызывать чтобы просчитать всю аи сетку
-	void GridClear();
-	ID GridTraceBeam(const float3* start, const float3* dir) const;	//трассировка луча и проверка его пересечения с каким либо квадом сетки
-	void GridTestValidation();										//тест действительности сетки и устранение возможных дефектов
-	UINT GridGetCountSplits();										//
-	void GridSetMarkSplits(bool mark);						//выделение сплитов
-	bool GridGetMarkSplits();								//возвращает состояние выделения сплитов
-	UINT GridGetCountQuads();								//возвращает количество квадов в сетке
-	
-	int gridGetSizePath(ID idQueueObject);									//размер найденного пути в количестве квадратов
-	bool gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canReverse);	//запись найденного пути в уже выделенную память
 
+	//! функция генерации сетки, должен быть хотя бы один квад для начала генерации
+	void gridGenerate();	
+
+	//! очистка сетки, полное удаление данных
+	void gridClear();
+
+	//! трассировка луча и проверка его пересечения с каким либо квадом сетки
+	ID gridTraceBeam(const float3 *pStart, const float3 *pDir) const;	
+
+	//! тест действительности сетки и устранение возможных дефектов
+	void gridTestValidation();
+
+	//! возвращает количество сплитов сетки
+	UINT gridGetCountSplits() const;
+
+	//! выделение сплитов
+	void gridSetMarkSplits(bool isMark);						
+
+	//! возвращает состояние выделения сплитов
+	bool gridGetMarkSplits() const;
+
+	//! возвращает количество квадов в сетке
+	UINT gridGetCountQuads() const;								
+	
+	//! возвращает размер найденного пути в количестве квадратов, idQueueObject - идентификатор запроса
+	int gridGetSizePath(ID idQueueObject) const;
+
+	//! запись найденного пути в уже выделенную память
+	bool gridGetPath(ID idQueueObject, ID *pMemory, UINT uiCount, bool canReverse);	
+
+	//! запрос на поиск пути, возвращает идентификатор запроса
 	ID gridQueryFindPath(ID idStart, ID idFinish);
+
+	//! отменить запрос поиска пути по идентификатору запроса idQuery
 	bool gridCancelQueryFindPath(ID idQuery);
+
+	//! обновление запросов поиска пути, uiLimitMls количество млсекунд выделяемых на работу функции, но минимум один поиск
 	void gridQueryFindPathUpdate(UINT uiLimitMls);
 
-	void GridSetColorArr(const ID * pmem, DWORD color, UINT count);
-	void GridSetNullColor();
+	//! установить квадам сетки цвета
+	void gridSetColorArr(const ID *pMem, DWORD dwColor, UINT uiCount);
+
+	//! обнулить все цвета сетки
+	void gridSetNullColor();
+
 	//}
 
 	//графпоинты
 	//{
-	void GraphPointGenerate();					//автоматическая генерация графпоинтов в центрах играничивающих боксов
-	UINT GraphPointGetCount();			//возвращает количество графпоинтов
-	void GraphPointClear();				//очистка списка графпоинтов
-	void GraphPointAdd(ID id);			//добавление графпоинта (id - идентификатор квада сетки)
-	void GraphPointDelete(ID id);		//удаление графпоинта (id - идентификатор квада сетки)
-	ID GraphPointGetNear(ID beginq, ID endq);	//поиск наиболее близкого графпоинта между стартовой и конецной точкой следования
+
+	//! автоматическая генерация графпоинтов в центрах ограничивающих боксов
+	void graphPointGenerate();
+
+	//! возвращает количество графпоинтов
+	UINT graphPointGetCount() const;
+
+	//! очистка списка графпоинтов
+	void graphPointClear();
+
+	//! добавление графпоинта (id - идентификатор квада сетки)
+	void graphPointAdd(ID id);
+
+	//! удаление графпоинта (id - идентификатор квада сетки)
+	void graphPointDelete(ID id);
+
+	//! поиск наиболее близкого графпоинта между стартовой и конецной точкой следования
+	ID graphPointGetNear(ID idStart, ID idFinish);
+
 	//}
 	
-	//ренер
+	//рендер
 	//{
-	void RenderQuads(const ISXFrustum * frustum, const float3 * viewpos, float dist);	//отрисовка сетки
-	void RenderGraphPoints(const float3 * viewpos, float dist);							//отрисовка графпоинтов
-	void RenderBB();			//отрисовка ограничивающих объемов
+
+	//! отрисовка сетки
+	void renderQuads(const IFrustum *pFrustum, const float3 *pViewPos, float fDist);
+
+	//! отрисовка графпоинтов
+	void renderGraphPoints(const float3 *pViewPos, float fDist);
+
+	//! отрисовка ограничивающих объемов
+	void renderBB();
+
 	//}
 	
 protected:
 
-	bool UseGraphics;	//использовать ли графику
+	//**********************************************************************
 
-	IDirect3DDevice9* DXDevice;
-	IDirect3DVertexDeclaration9* AIQuadDecl;
-	ID Tex_AIGrid;
-	ID IDVS;
-	ID IDPS;
-	ID Tex_BB;
-
-	MemAlloc<AIQuad> AllocAIQuad;			//выделенная память для квадов
-	MemAlloc<BoundAIQuad> AllocBoundAIQuad;	//выделенная память для баундов
-
-	Array<uint32_t,1000> ArrColor;		//массив цвета для каждого квада сетки (по id квада)
-	Array<uint32_t> ArrSplitsColor;		//массив цвета для каждого сплита (если сетка не цельная)
-	Array<int3, 1000> ArrLongCoordQuads;//массив long значений координат для каждого квада (по id квада)
-	Array<AIQuad*, 1000> ArrQuads;		//массив готовых квадов (порядковый номер и есть id)
-	Array<AIQuad*, 1000> ArrQuadsCheck;	//массив квадов на проверку (используется при генерации)
-	Array<AIQUAD_STATE> ArrState;		//массив состояний для каждого квада (по id квада)
-	Array<ID> ArrStateWho;				//массив идентификаторов объектов которые занимают квады (по id квада)
-	Array<bool> ArrPreCondFreeState;	//массив состояния проверка занятости для каждого квада (по id квада)
-
-	Array<BoundAIQuad*> ArrBound;		//массив ограничивающих объемов для разбиения сетки
-	Array<ID> ArrGraphPointsIDs;		//массив навигационных квадов, они такие же как и обычные квады, длинные пути удобнее строить через них
-	Array<int32_t> ArrCostGPIDs;		//массив со стоимостями перемещения по навигационным квадам
-
-	Array<ID, 1000> ArrTestSplitsIDs;	//массив id квадов которые мы проверяем при тесте целостности сетки
-	Array<bool> ArrCloseIDs;			//закрытый список (по id квада)
-	Array<ID> ArrOpenIDs;				//закрытый список, ArrIDsInOpen[id квада]
-	Array<ID> ArrIDsInOpen;				//значение квада в открытом списке, по id квада
-	Array<ID> ArrParentIDs;				//список родителей (по id квада)
-	Array<CostAIQuad> ArrCostQuads;		//список стоимостей проходов по каждому кваду (по id квада)
-	//Array<ID> ArrPathIDs;				//массив с id квадов наденного пути
-
+	//! состояния элемента очереди запросов на поиск пути
 	enum QUEUE_OBJ_STATE
 	{
+		//! простой
 		QUEUE_OBJ_STATE_IDLE,
+
+		//! ожидает поиска
 		QUEUE_OBJ_STATE_WAIT,
+
+		//! путь найден
 		QUEUE_OBJ_STATE_COMPLITE,
+
+		//! при поиске возникли проблемы
 		QUEUE_OBJ_STATE_ERROR,
 	};
 
@@ -304,63 +438,210 @@ protected:
 		Array<ID> m_aQuads;
 	};
 
+	//**********************************************************************
+
+	//! использовать ли графику, точнее: будет ли осуществляться рендер
+	bool m_useGraphics;
+
+	//! dx9 устройство
+	IDirect3DDevice9 *m_pDXDevice;
+
+	//! декларация вершин сетки
+	IDirect3DVertexDeclaration9 *m_pDecl;
+
+	//! текстура сетки
+	ID m_idTex;
+
+	//! вершинный шейдер
+	ID m_idVS;
+
+	//! пиксельный шейдер
+	ID m_idPS;
+
+	//! текстура для ограничивающих объемов
+	ID m_idTexBB;
+
+	//! выделенная память для квадов
+	MemAlloc<CAIquad> m_oAllocQuad;			
+
+	//! выделенная память для баундов
+	MemAlloc<CBoundAIquad> m_oAllocBound;
+
+	//! массив цвета для каждого квада сетки (по id квада)
+	Array<uint32_t, 1000> m_aQuadColors;		
+
+	//! массив цветов сплитов
+	Array<uint32_t> m_aSplitsColor;		
+
+	//! массив int значений координат для каждого квада (по id квада)
+	Array<int3, 1000> m_aLongCoordQuads;
+
+	//! массив готовых квадов (порядковый номер и есть id)
+	Array<CAIquad*, 1000> m_aQuads;		
+
+	//! массив состояний для каждого квада (по id квада)
+	Array<AIQUAD_STATE> m_aQuadState;		
+
+	//! массив квадов на проверку (используется при генерации)
+	Array<CAIquad*, 1000> m_aQuadsCheck;	
+	
+	//! массив идентификаторов объектов которые занимают квады (по id квада)
+	Array<ID> m_aStateWho;				
+
+	//! массив состояния проверка занятости для каждого квада (по id квада)
+	Array<bool> m_aPreCondFreeState;	
+
+	//! дерево (quad) боксов
+	CTreeBoundAIquad *m_pTreeBound;
+	
+	//! массив ограничивающих объемов для разбиения сетки
+	Array<CBoundAIquad*> m_aBound;		
+
+	//! массив навигационных квадов, они такие же как и обычные квады, длинные пути удобнее строить через них
+	Array<ID> m_aGraphPointsIDs;		
+
+	//! массив со стоимостями перемещения по навигационным квадам
+	Array<int32_t> m_aCostGraphPointsIDs;
+
+
+	//! массив id квадов которые мы проверяем при тесте целостности сетки
+	Array<ID, 1000> m_aTestSplitsIDs;	
+
+	//! закрытый список (по id квада)
+	Array<bool> m_aCloseIDs;			
+
+	//! открытый список, ArrIDsInOpen[id квада]
+	Array<ID> m_aOpenIDs;
+
+	//! значение квада в открытом списке, по id квада
+	Array<ID> m_aIDsInOpen;				
+
+	//! список родителей (по id квада)
+	Array<ID> m_aParentIDs;				
+
+	//! список стоимостей проходов по каждому кваду (по id квада)
+	Array<CCostTransit> m_aCostQuads;
+
+	//! массив выделенных в данный момент квадов
+	Array<ID> m_aSelectedQuads;
+
+	//! выделить ли цветом сплиты сетки
+	bool m_isMarkSplits;
+
+	//! примерный размер открытого списка, бывает чуть больше чем надо, но не выходит за пределы массива
+	int NumLastKeyOpenList;
+
+	//! номер последнего занесенного квада в открытый список
+	ID CountInitOpen2;
+
+	//! количество сплитов сетки
+	uint16_t m_uiCountSplits;
+
+	//! вершинный буфер квада
+	IDirect3DVertexBuffer9 *m_pVertexQuad;
+
+	//! индексный буфер квада
+	IDirect3DIndexBuffer9 *m_pIndexQuad;
+
+	//! вершинный буфер с данными трансформаций
+	IDirect3DVertexBuffer9 *m_pTransVertBuf;
+
+	//! меш главного ограничивающего объема
+	ID3DXMesh *m_pBoundBox;
+
+	//! значения ограничивающего объема
+	float3_t m_vMax, m_vMin;
+
 	//! массив очереди запросов на поиск пути
 	Array<CQueueObject> m_aQueueFind;
 
+	//! номер последнего ожидающего запроса на поиск пути
 	int m_iLastWait;
+	
+	//**********************************************************************
 
+	//! генерация дерева боксов
+	void createTreeBound();
+
+	//! возвращает найденный ожидающий запрос на поиск пути
 	ID getQueueWaiting();
 
+
+	//! возвращает найденный простаивающий запрос на поиск пути
 	ID getQueueIdle();
 
-	bool gridFindPath(ID idQueueObject);							//поиск пути, (beginq,beginq]
+
+	//! поиск пути
+	bool gridFindPath(ID idQueueObject);							
+
+	//! является ил квад с id графпоинтом
+	ID graphPointGetKey(ID id);			
+
+	//! рекурсивная функция проверки свободности квада
+	bool isFreeQuad2(ID id, int iRadius);	
+
+	//! выделен ли квад с id
+	bool quadSelectedExists(ID id);					
+
+	//! есть ли у квада с id сосед по прямому направлению который сейчас выделен
+	bool quadSelectedExistsNeightborDirect(ID id);	
 
 
-	Array<ID> ArrSelected;				//массив выделенных в данный момент квадов
+	//! коррекция позиции под центр ближайшего квада (по xz)
+	void correctPosXZ(float3 *pPos);				
 
-	bool IsMarkSplits;		//true - выделить цветом сплиты сетки
-	int NumLastKeyOpenList;	//примерный размер открытого списка, бывает чуть больше чем надо, но не выходит за пределы массива
-	ID CountInitOpen2;		//номер последнего занесенного квада в открытый список
-	uint16_t CountSplits;	//количество сплитов сетки
+	//! валидный ли квад с указанным id
+	bool isValidIdInArrQuads(ID id);		
 
-	//данные гпу, отрисовка по методу hardware instancing
-	IDirect3DVertexBuffer9* VertexQuad;
-	IDirect3DIndexBuffer9*  IndexQuad;
-	IDirect3DVertexBuffer9* TransVertBuf;
-	ID3DXMesh* BoundBox;
+	//! удалить все невалидные квады (это те которые по каким-то причинам оказались закрытыми или не имеют прямого направления)
+	void quadDeleteInvalidAll();				
 
-	//значения ограничивающего объема
-	float3_t Max, Min;
-	
+	//! удаление информации о кваде из всех возможных источников (с изменением всех идентификаторов которые идут после него)
+	void quadDelete2(ID id);					
 
-	ID GraphPointGetKey(ID id);			//является ил квад с id графпоинтом
-	bool IsFreeQuad2(ID id, int radius);	//рекурсивная функция проверки свободности квада
 
-	bool QuadSelectedExists(ID id);					//выделен ли квад с id
-	bool QuadSelectedExistsNeightborDirect(ID id);	//есть ли у квада с id сосед по прямому направлению который сейчас выделен
+	//! физическая навигация  квада
+	void phyNavigate(CAIquad *pQuad);	
 
-	void CorrectPosXZ(float3* pos);				//коррекция позиции под центр ближайшего квада (по xz)
-	bool IsValidIdInArrQuads(ID id);		//валидный ли квад с указанным id
-	void QuadDeleteInvalidAll();				//удалить все невалидные квады (это те которые по каким-то причинам оказались закрытыми или не имеют прямого направления)
-	void QuadDelete2(ID id);					//удаление информации о кваде из всех возможных источников (с изменением всех идентификаторов которые идут после него)
+	//! находится ли разница между высотами центров квадов в допустимом пределе
+	bool gridCompareHeight(ID id1, ID id2);				
 
-	void PhyNavigate(AIQuad* quad);	//физическая навигация  квада
-	bool AIGridCompareHeight(ID id1, ID id2);				//находится ли разница между высотами центров квадов в допустимом пределе
-	void ReCreateBuffs();											//пересоздание буферов
-	void DefInitBuffs(ID id);										//установка значений по умолчанию для квада id
+	//! пересоздание буферов
+	void reCreateBuffs();											
 
-	void AddUniqQuadArrag(const AIQuad* aq);					//добавление квада в подходящий ббокс и запись его позиции в int3
-	void AddUniqQuadArrag2(const AIQuad* aq, ID idbb);		//добавление квада в указанный ббокс и запись его позиции в int3
-	void GenQuad(AIQuad* aq);										//генерация соседей квада по прямым направлениям и полный просчет квада
-	void ComputeNeighbor(ID id);									//просчет и назначение соседей для квада
-	bool IsUniqQuadArrag(AIQuad* aq, ID * idquad, ID * idbb);//является ли квад уникальным
-	void SplitBB(int x,int y,int z);								//деление пространства ограничивающего объема на более мелкие части
+	//! установка значений по умолчанию для квада id
+	void defInitBuffs(ID id);										
 
-	//pathfind
-	bool IsOpen(ID id);				//находится ли квад в открытом списке
-	int CalcHCost(ID id, ID endid);	//просчет H стоимости, диагональные шаги не в счет
-	int CalcH2Cost(ID id1, ID id2);	//просчет H стоимости, просчет расстояния между квадами * 100
-	ID AddInOpenList(ID id);			//добавить квад в открытый список
+
+	//! добавление квада в подходящий ббокс и запись его позиции в int3
+	void addUniqQuadArrag(const CAIquad *pQuad);					
+
+	//! добавление квада в указанный ббокс и запись его позиции в int3
+	void addUniqQuadArrag2(const CAIquad *pQuad, CBoundAIquad *pBB);		
+
+	//! генерация соседей квада по прямым направлениям и полный просчет квада
+	void genQuad(CAIquad *pQuad);										
+
+	//! просчет и назначение соседей для квада
+	void computeNeighbor(ID id);									
+
+	//! является ли квад уникальным
+	bool isUniqQuadArrag(CAIquad *pQuad, ID *pIdQuad, CBoundAIquad **ppBB);
+
+	//! деление пространства ограничивающего объема на более мелкие части
+	void splitBB(int iX,int iY,int iZ);								
+
+	//! находится ли квад в открытом списке
+	bool IsOpen(ID id);				
+
+	//! просчет H стоимости, диагональные шаги не в счет
+	int CalcHCost(ID id1, ID id2);	
+
+	//! просчет H стоимости, просчет расстояния между квадами * 100
+	int CalcH2Cost(ID id1, ID id2);	
+
+	//! добавить квад в открытый список
+	ID AddInOpenList(ID id);			
 };
 
 #endif

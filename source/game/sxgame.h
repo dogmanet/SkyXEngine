@@ -215,7 +215,7 @@ SX_LIB_API void SXGame_RenderHUD();
 
 SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex);
 
-SX_LIB_API ISXCamera * SXGame_GetActiveCamera();
+SX_LIB_API ICamera * SXGame_GetActiveCamera();
 
 /*! Получает количество зарегистрированных классов entity
 */

@@ -144,12 +144,12 @@ SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd)
 	GData::HandleParent3D = hWnd;
 }
 
-SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera)
+SX_LIB_API void SRender_SetCamera(ICamera *pCamera)
 {
 	GData::ObjCamera = pCamera;
 }
 
-SX_LIB_API ISXCamera* SRender_GetCamera()
+SX_LIB_API ICamera* SRender_GetCamera()
 {
 	return GData::ObjCamera;
 }
@@ -324,11 +324,6 @@ SX_LIB_API void SRender_ComLighting(DWORD timeDelta)
 SX_LIB_API void SRender_UnionLayers()
 {
 	SXRenderFunc::UnionLayers();
-}
-
-SX_LIB_API void SRender_ApplyToneMapping()
-{
-	SXRenderFunc::ApplyToneMapping();
 }
 
 SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta)

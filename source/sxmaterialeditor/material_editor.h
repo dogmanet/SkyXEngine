@@ -47,9 +47,23 @@ namespace SXMaterialEditor
 	extern ISXGUIStatic* StaticTypeModel;
 	extern ISXGUIComboBox* ComboBoxTypeModel;
 
+	extern ISXGUIStatic* StaticLigthColorText;
+	extern ISXGUIStatic* StaticLigthColorR;
+	extern ISXGUIEdit* EditLigthColorR;
+	extern ISXGUIStatic* StaticLigthColorG;
+	extern ISXGUIEdit* EditLigthColorG;
+	extern ISXGUIStatic* StaticLigthColorB;
+	extern ISXGUIEdit* EditLigthColorB;
+	extern ISXGUIButton* ButtonLigthColor;
+	extern ISXGUIStatic* StaticLigthColor;
+
 	extern ISXGUIStatic* StaticPenetration;
-	extern ISXGUIEdit* EditPenetration;
-	extern ISXGUITrackBar* TrackBarPenetration;
+	extern ISXGUIEdit* EditHitChance;
+	extern ISXGUITrackBar* TrackBarHitChance;
+	extern ISXGUIStatic* StaticDurability;
+	extern ISXGUIEdit* EditDurability;
+	extern ISXGUIStatic* StaticDensity;
+	extern ISXGUIEdit* EditDensity;
 
 	extern ISXGUIStatic* StaticTestModel;
 	extern ISXGUIComboBox* ComboBoxTestModel;
@@ -67,6 +81,7 @@ namespace SXMaterialEditor
 	extern ISXGUIButton* ButtonVS;
 	extern ISXGUIButton* ButtonPS;
 	extern ISXGUICheckBox* CheckBoxAlphaTest;
+	extern ISXGUICheckBox* CheckBoxTransparent;
 	extern ISXGUIStatic* StaticMR;
 	extern ISXGUIStatic* StaticRoughness;
 	extern ISXGUIStatic* StaticF0;
@@ -91,8 +106,6 @@ namespace SXMaterialEditor
 	extern ISXGUIStatic* StaticParamL;
 	extern ISXGUIComboBox* ComboBoxParamL;
 
-	extern ISXGUIStatic* StaticTypeRefract;
-	extern ISXGUIComboBox* ComboBoxTypeRefract;
 	extern ISXGUICheckBox* CheckBoxDoSVVS;
 	extern ISXGUIStatic* StaticTypeReflect;
 	extern ISXGUIComboBox* ComboBoxTypeReflect;

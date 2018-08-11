@@ -6,67 +6,75 @@ mtrlgeom_water_reflect.ps
 
 #include <../struct.h>
 #include <../mtrl.h>
+#include <../ps.h>
+
+//##########################################################################
  
-half2 WinSize;
-half4 Param;		
-//x - коэфициент смещения текстурных координат 
-//y - коэфициент прозрачности
-//z - коэфициент микрорельефа
-//w - коэфициент смешивания между отражением и основной текстурой (чем больше тем больше будет преобладать цвет основной текстуры, чем меньше тем больше будет преобладать цвет отражения)
+half2 g_vWinSize;
 
-half4 NearFarIsUnlit;
+/*
+x - коэфициент смещения текстурных координат 
+y - коэфициент прозрачности
+z - коэфициент микрорельефа
+w - коэфициент смешивания между отражением и основной текстурой (чем больше тем больше будет преобладать цвет основной текстуры, чем меньше тем больше будет преобладать цвет отражения)
+*/
+half4 g_vParam;	
 
-sampler2D BaseTex:register(s0);		//основная текстура
-sampler2D DUDVTex:register(s2);		//текстура смещений координат
-sampler2D NormalTex:register(s6);	//текстура нормалей
-sampler2D ParamTex:register(s10);	//параметры для освещения
-sampler2D ReflectTex:register(s12);	//текстура отражений того что над водой, рефлексия
-sampler2D DepthTex:register(s14);	//текстура глубины
+half3 g_vPosCam;
+half4 g_vNearFarLayers;
 
-ps_out_ds_mrt main(vs_out_water IN)
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+
+//!текстура DUDV смещений координат 
+sampler2D g_sDetails0:register(s2);		
+
+//! текстура каустики
+sampler2D g_sDetails1:register(s3);
+
+sampler2D g_sNormals0:register(s6);
+sampler2D g_sParameters:register(s10);
+sampler2D g_sReflection:register(s12);
+sampler2D g_sDepth:register(s14);
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_WaterPlane IN)
 {	
-	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
 	
-	ps_out_ds_mrt OUT;
+	IN.vNormal = normalize(IN.vNormal);
+	half3 vNormal1 = Color2Normal(tex2D(g_sNormals0, IN.vTexUV2.xy).xyz) * g_vParam.z;
+	half3 vNormal2 = Color2Normal(tex2D(g_sNormals0, IN.vTexUV3.xy * 0.5).xyz) * g_vParam.z;
+	vNormal1.z = IN.vNormal.z;
+	vNormal2.z = IN.vNormal.z;
+	half3 vNormal = normalize(vNormal1+vNormal2+IN.vNormal);
 	
-	half3 normal1 = 2.0f * tex2D(NormalTex, IN.Tex2.xy) - 1.0f;
-	half3 normal2 = 2.0f * tex2D(NormalTex, IN.Tex3.xy*0.5) - 1.0f;
-	normal1.z = IN.Normal.z;
-	normal2.z = IN.Normal.z;
-	normal1 *= Param.z;
-	normal2 *= Param.z;
-	half3 normal = normalize((normal1+normal2+IN.Normal));
-	
-	OUT.Normal.xyz = 0.5f * normal + 0.5;
-	OUT.Normal.w = NearFarIsUnlit.z;
-	
-	half3 tc_offset = 2.0f * tex2D(DUDVTex,IN.Tex2.xy) - 1.0f;
-	half3 tc_offset2= 2.0f * tex2D(DUDVTex,IN.Tex3.xy*0.5) - 1.0f;
-	half3 normaloffset = normalize(tc_offset+tc_offset2)*Param.x;
+	half3 vNormalOffset = normalize(Color2Normal(tex2D(g_sDetails1,IN.vTexUV2.xy)) + Color2Normal(tex2D(g_sDetails1,IN.vTexUV3.xy * 0.5)))*g_vParam.x;
 
-	half4 TexUVRefractProj = mul(IN.Pos,MatrixRefraction);
-	half depth = tex2D(DepthTex, TexUVRefractProj.xy/TexUVRefractProj.w + half2(0.5f/WinSize.x,0.5f/WinSize.y)).r;
-	half intens = saturate(abs(((IN.Pos.z/NearFarIsUnlit.y) - depth)*NearFarIsUnlit.y) / (Param.y * 100.f));
+	half4 vTexUVRefractProj = mul(IN.vPos, MatrixRefraction);
+	half fDepth = tex2D(g_sDepth, vTexUVRefractProj.xy/vTexUVRefractProj.w + half2(0.5/g_vWinSize.x,0.5/g_vWinSize.y)).r;
+	half fTransparency = saturate(abs(((IN.vPos.z/g_vNearFarLayers.y) - fDepth)*g_vNearFarLayers.y) / (g_vParam.y * 100.0));
 	
-	normaloffset *= intens;
+	vNormalOffset *= fTransparency;
 	
-	half4 tpos = IN.Pos;
-	tpos.xyz += normaloffset;
-	IN.TexUV += normaloffset.xy*0.1f;
-	half4 colorbase = tex2D(BaseTex, IN.TexUV);
+	IN.vTexUV += vNormalOffset.xy*0.5;
+	half4 vColor = tex2D(g_sColor, IN.vTexUV);
 	
-	OUT.Param = tex2D(ParamTex,IN.TexUV);
-	OUT.Param.w = NearFarIsUnlit.w;
+	half4 vParam = tex2D(g_sParameters,IN.vTexUV);
 	
-	half MipmapIndex = lerp(0.f, MTRL_REF_LOD_COUNT, saturate(OUT.Param.r - 0.1f));
-	half4 TexUVReflectProj = mul(tpos,MatrixReflection);
-	half4 reflection = tex2Dlod(ReflectTex, half4(TexUVReflectProj.xy/TexUVReflectProj.w,0,MipmapIndex));
-	colorbase = lerp(reflection,colorbase,Param.w);
+	half fLodReflection = GetTexLod4Ref(saturate(vParam.r - 0.1));
 	
-	OUT.Color.rgb = colorbase.rgb;
-	OUT.Color.a = intens;
+	half4 vPos4Ref = IN.vPos;
+	vPos4Ref.xyz += vNormalOffset;
+	half4 vTexUVReflectProj = mul(vPos4Ref,MatrixReflection);
+	half4 vReflection = tex2Dlod2(g_sReflection, vTexUVReflectProj.xy/vTexUVReflectProj.w, fLodReflection);
+	vColor = lerp(vReflection, vColor, g_vParam.w);
+	vColor.a = fTransparency;
 	
-	OUT.Depth = GetDepthW(IN.Pos,NearFarIsUnlit.xy);
+	//half caustic = (tex2D(DetTex2, IN.vTexUV2.xy*0.5).r + tex2D(DetTex2, IN.vTexUV3.xy*2).r) * 0.5;
+	//vColor.rgba = lerp(vColor.rgba, half4(0.9,0.8,0.7, saturate(fTransparency * 4)), clamp(pow(saturate(1.f - (caustic)), 2), 0, 0.4) * (1.0 - fTransparency));
 	
-	return OUT;
+	return CreateGbuffer(vColor, vNormal, vParam, IN.vPos, g_vNearFarLayers);
 }

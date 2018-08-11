@@ -15,9 +15,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SkyXEngine_Init(0, 0, lpCmdLine);
 	SkyXEngine_PreviewKill();
 
-	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky/sky_oblaka.dds");
-	SGCore_SkyCloudsSetWidthHeightPos(2000, 2000, &float3(0, 0, 0));
+	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
+	//SGCore_SkyCloudsSetWidthHeightPos(1000, 1000, &float3(0, 0, 0));
 
 	SGCore_OC_SetEnable(false);
 

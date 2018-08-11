@@ -73,7 +73,7 @@ void Effects::Effect::NullingInit()
 	Original = true;
 }
 
-void Effects::OnLostDevice()
+void Effects::onLostDevice()
 {
 	for (int i = 0; i < ArrID.size(); ++i)
 	{
@@ -82,13 +82,13 @@ void Effects::OnLostDevice()
 			for (int k = 0; k < ArrID[i]->Arr.size(); ++k)
 			{
 				if (ArrID[i]->Arr[k])
-					ArrID[i]->Arr[k]->OnLostDevice();
+					ArrID[i]->Arr[k]->onLostDevice();
 			}
 		}
 	}
 }
 
-void Effects::OnResetDevice()
+void Effects::onResetDevice()
 {
 	for (int i = 0; i < ArrID.size(); ++i)
 	{
@@ -97,13 +97,13 @@ void Effects::OnResetDevice()
 			for (int k = 0; k < ArrID[i]->Arr.size(); ++k)
 			{
 				if (ArrID[i]->Arr[k])
-					ArrID[i]->Arr[k]->OnResetDevice();
+					ArrID[i]->Arr[k]->onResetDevice();
 			}
 		}
 	}
 }
 
-void Effects::Clear()
+void Effects::clear()
 {
 	for (int i = 0; i < ArrKey.size(); ++i)
 	{
@@ -121,7 +121,7 @@ void Effects::Clear()
 	Pools.clear();
 }
 
-void Effects::Save(const char* path)
+void Effects::save(const char* path)
 {
 	FILE* file = 0;
 	file = fopen(path, "w");
@@ -132,7 +132,7 @@ void Effects::Save(const char* path)
 		return;
 	}
 
-	int eff_count = EffectCountGet();
+	int eff_count = effectGetCount();
 
 	fprintf(file, "[effects]\n");
 	fprintf(file, "count = %d\n\n", eff_count);
@@ -149,151 +149,151 @@ void Effects::Save(const char* path)
 		{
 			Emitter* part = ArrKey[i]->Arr[k];
 			char tmpname[CONFIG_SECTION_MAX_LEN];
-			part->NameGet(tmpname);
+			part->getName(tmpname);
 			char tmptex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
 			tmptex[0] = 0;
 
-			if (part->TextureGetID() >= 0)
-				SGCore_LoadTexGetName(part->TextureGetID(), tmptex);
+			if (part->getTextureID() >= 0)
+				SGCore_LoadTexGetName(part->getTextureID(), tmptex);
 
 			fprintf(file, "[effect_%d_emitter_%d]\n", i, k);
 			fprintf(file, "name = %s\n", tmpname);
-			fprintf(file, "count = %d\n", part->CountGet());
+			fprintf(file, "count = %d\n", part->getCount());
 
 			if (tmptex[0] != 0)
 				fprintf(file, "texture = %s\n", tmptex);
 
-			if (part->TextureTrackGetID() >= 0)
-				SGCore_LoadTexGetName(part->TextureTrackGetID(), tmptex);
+			if (part->getTextureTrackID() >= 0)
+				SGCore_LoadTexGetName(part->getTextureTrackID(), tmptex);
 
 			if (tmptex[0] != 0)
 				fprintf(file, "texture_track = %s\n", tmptex);
 
-			fprintf(file, "Track = %d\n", part->GetData()->Track);
-			fprintf(file, "TrackSize = %f\n", part->GetData()->TrackSize);
-			fprintf(file, "TrackTime = %d\n", part->GetData()->TrackTime);
+			fprintf(file, "Track = %d\n", part->getData()->Track);
+			fprintf(file, "TrackSize = %f\n", part->getData()->TrackSize);
+			fprintf(file, "TrackTime = %d\n", part->getData()->TrackTime);
 
-			fprintf(file, "BoundType = %d\n", part->GetData()->BoundType);
+			fprintf(file, "BoundType = %d\n", part->getData()->BoundType);
 
-			fprintf(file, "BoundVec1X = %f\n", part->GetData()->BoundVec1.x);
-			fprintf(file, "BoundVec1Y = %f\n", part->GetData()->BoundVec1.y);
-			fprintf(file, "BoundVec1Z = %f\n", part->GetData()->BoundVec1.z);
-			fprintf(file, "BoundVec1W = %f\n", part->GetData()->BoundVec1.w);
+			fprintf(file, "BoundVec1X = %f\n", part->getData()->BoundVec1.x);
+			fprintf(file, "BoundVec1Y = %f\n", part->getData()->BoundVec1.y);
+			fprintf(file, "BoundVec1Z = %f\n", part->getData()->BoundVec1.z);
+			fprintf(file, "BoundVec1W = %f\n", part->getData()->BoundVec1.w);
 
-			fprintf(file, "BoundVec2X = %f\n", part->GetData()->BoundVec2.x);
-			fprintf(file, "BoundVec2Y = %f\n", part->GetData()->BoundVec2.y);
-			fprintf(file, "BoundVec2Z = %f\n", part->GetData()->BoundVec2.z);
-			fprintf(file, "BoundVec2W = %f\n", part->GetData()->BoundVec2.w);
-
-
-			fprintf(file, "SpawnPosType = %d\n", part->GetData()->SpawnPosType);
-			fprintf(file, "SpawnOriginX = %f\n", part->GetData()->SpawnOrigin.x);
-			fprintf(file, "SpawnOriginY = %f\n", part->GetData()->SpawnOrigin.y);
-			fprintf(file, "SpawnOriginZ = %f\n", part->GetData()->SpawnOrigin.z);
-
-			fprintf(file, "SpawnOriginDisp = %f\n", part->GetData()->SpawnOriginDisp);
-
-			fprintf(file, "SpawnBoundBindCreateXNeg = %d\n", part->GetData()->SpawnBoundBindCreateXNeg);
-			fprintf(file, "SpawnBoundBindCreateXPos = %d\n", part->GetData()->SpawnBoundBindCreateXPos);
-			fprintf(file, "SpawnBoundBindCreateYNeg = %d\n", part->GetData()->SpawnBoundBindCreateYNeg);
-			fprintf(file, "SpawnBoundBindCreateYPos = %d\n", part->GetData()->SpawnBoundBindCreateYPos);
-			fprintf(file, "SpawnBoundBindCreateZNeg = %d\n", part->GetData()->SpawnBoundBindCreateZNeg);
-			fprintf(file, "SpawnBoundBindCreateZPos = %d\n", part->GetData()->SpawnBoundBindCreateZPos);
-
-			fprintf(file, "SpawnNextTime = %d\n", part->GetData()->SpawnNextTime);
-			fprintf(file, "SpawnNextTimeDisp = %d\n", part->GetData()->SpawnNextTimeDisp);
+			fprintf(file, "BoundVec2X = %f\n", part->getData()->BoundVec2.x);
+			fprintf(file, "BoundVec2Y = %f\n", part->getData()->BoundVec2.y);
+			fprintf(file, "BoundVec2Z = %f\n", part->getData()->BoundVec2.z);
+			fprintf(file, "BoundVec2W = %f\n", part->getData()->BoundVec2.w);
 
 
-			fprintf(file, "AnimTexCountCadrsX = %d\n", part->GetData()->AnimTexCountCadrsX);
-			fprintf(file, "AnimTexCountCadrsY = %d\n", part->GetData()->AnimTexCountCadrsY);
+			fprintf(file, "SpawnPosType = %d\n", part->getData()->SpawnPosType);
+			fprintf(file, "SpawnOriginX = %f\n", part->getData()->SpawnOrigin.x);
+			fprintf(file, "SpawnOriginY = %f\n", part->getData()->SpawnOrigin.y);
+			fprintf(file, "SpawnOriginZ = %f\n", part->getData()->SpawnOrigin.z);
 
-			fprintf(file, "AnimTexRate = %d\n", part->GetData()->AnimTexRate);
-			fprintf(file, "AnimTexRateDisp = %d\n", part->GetData()->AnimTexRateDisp);
-			fprintf(file, "AnimTexStartCadr = %d\n", part->GetData()->AnimTexStartCadr);
-			fprintf(file, "AnimTexStartCadrDisp = %d\n", part->GetData()->AnimTexStartCadrDisp);
+			fprintf(file, "SpawnOriginDisp = %f\n", part->getData()->SpawnOriginDisp);
 
+			fprintf(file, "SpawnBoundBindCreateXNeg = %d\n", part->getData()->SpawnBoundBindCreateXNeg);
+			fprintf(file, "SpawnBoundBindCreateXPos = %d\n", part->getData()->SpawnBoundBindCreateXPos);
+			fprintf(file, "SpawnBoundBindCreateYNeg = %d\n", part->getData()->SpawnBoundBindCreateYNeg);
+			fprintf(file, "SpawnBoundBindCreateYPos = %d\n", part->getData()->SpawnBoundBindCreateYPos);
+			fprintf(file, "SpawnBoundBindCreateZNeg = %d\n", part->getData()->SpawnBoundBindCreateZNeg);
+			fprintf(file, "SpawnBoundBindCreateZPos = %d\n", part->getData()->SpawnBoundBindCreateZPos);
 
-			fprintf(file, "TimeLife = %d\n", part->GetData()->TimeLife);
-			fprintf(file, "TimeLifeDisp = %d\n", part->GetData()->TimeLifeDisp);
-			fprintf(file, "AlphaDependAge = %d\n", part->GetData()->AlphaDependAge);
-
-			fprintf(file, "SizeX = %f\n", part->GetData()->Size.x);
-			fprintf(file, "SizeY = %f\n", part->GetData()->Size.y);
-			fprintf(file, "SizeDisp = %f\n", part->GetData()->SizeDisp);
-
-			fprintf(file, "SizeDependAge = %d\n", part->GetData()->SizeDependAge);
+			fprintf(file, "SpawnNextTime = %d\n", part->getData()->SpawnNextTime);
+			fprintf(file, "SpawnNextTimeDisp = %d\n", part->getData()->SpawnNextTimeDisp);
 
 
-			fprintf(file, "VelocityX = %f\n", part->GetData()->Velocity.x);
-			fprintf(file, "VelocityY = %f\n", part->GetData()->Velocity.y);
-			fprintf(file, "VelocityZ = %f\n", part->GetData()->Velocity.z);
-			fprintf(file, "VelocityDisp = %f\n", part->GetData()->VelocityDisp);
+			fprintf(file, "AnimTexCountCadrsX = %d\n", part->getData()->AnimTexCountCadrsX);
+			fprintf(file, "AnimTexCountCadrsY = %d\n", part->getData()->AnimTexCountCadrsY);
 
-			fprintf(file, "VelocityDispXNeg = %d\n", part->GetData()->VelocityDispXNeg);
-			fprintf(file, "VelocityDispYNeg = %d\n", part->GetData()->VelocityDispYNeg);
-			fprintf(file, "VelocityDispZNeg = %d\n", part->GetData()->VelocityDispZNeg);
-
-
-			fprintf(file, "AccelerationX = %f\n", part->GetData()->Acceleration.x);
-			fprintf(file, "AccelerationY = %f\n", part->GetData()->Acceleration.y);
-			fprintf(file, "AccelerationZ = %f\n", part->GetData()->Acceleration.z);
-			fprintf(file, "AccelerationDisp = %f\n", part->GetData()->AccelerationDisp);
-
-			fprintf(file, "AccelerationDispXNeg = %d\n", part->GetData()->AccelerationDispXNeg);
-			fprintf(file, "AccelerationDispYNeg = %d\n", part->GetData()->AccelerationDispYNeg);
-			fprintf(file, "AccelerationDispZNeg = %d\n", part->GetData()->AccelerationDispZNeg);
+			fprintf(file, "AnimTexRate = %d\n", part->getData()->AnimTexRate);
+			fprintf(file, "AnimTexRateDisp = %d\n", part->getData()->AnimTexRateDisp);
+			fprintf(file, "AnimTexStartCadr = %d\n", part->getData()->AnimTexStartCadr);
+			fprintf(file, "AnimTexStartCadrDisp = %d\n", part->getData()->AnimTexStartCadrDisp);
 
 
-			fprintf(file, "CharacterCircle = %d\n", part->GetData()->CharacterCircle);
-			fprintf(file, "CharacterCircleAxis = %d\n", part->GetData()->CharacterCircleAxis);
-			fprintf(file, "CharacterCircleAngle = %f\n", part->GetData()->CharacterCircleAngle);
-			fprintf(file, "CharacterCircleAngleDisp = %f\n", part->GetData()->CharacterCircleAngleDisp);
-			fprintf(file, "CharacterCircleAngleDispNeg = %d\n", part->GetData()->CharacterCircleAngleDispNeg);
+			fprintf(file, "TimeLife = %d\n", part->getData()->TimeLife);
+			fprintf(file, "TimeLifeDisp = %d\n", part->getData()->TimeLifeDisp);
+			fprintf(file, "AlphaDependAge = %d\n", part->getData()->AlphaDependAge);
+
+			fprintf(file, "SizeX = %f\n", part->getData()->Size.x);
+			fprintf(file, "SizeY = %f\n", part->getData()->Size.y);
+			fprintf(file, "SizeDisp = %f\n", part->getData()->SizeDisp);
+
+			fprintf(file, "SizeDependAge = %d\n", part->getData()->SizeDependAge);
 
 
-			fprintf(file, "CharacterRotate = %d\n", part->GetData()->CharacterRotate);
-			fprintf(file, "CharacterRotateAngle = %f\n", part->GetData()->CharacterRotateAngle);
-			fprintf(file, "CharacterRotateAngleDisp = %f\n", part->GetData()->CharacterRotateAngleDisp);
-			fprintf(file, "CharacterRotateAngleDispNeg = %d\n", part->GetData()->CharacterRotateAngleDispNeg);
+			fprintf(file, "VelocityX = %f\n", part->getData()->Velocity.x);
+			fprintf(file, "VelocityY = %f\n", part->getData()->Velocity.y);
+			fprintf(file, "VelocityZ = %f\n", part->getData()->Velocity.z);
+			fprintf(file, "VelocityDisp = %f\n", part->getData()->VelocityDisp);
+
+			fprintf(file, "VelocityDispXNeg = %d\n", part->getData()->VelocityDispXNeg);
+			fprintf(file, "VelocityDispYNeg = %d\n", part->getData()->VelocityDispYNeg);
+			fprintf(file, "VelocityDispZNeg = %d\n", part->getData()->VelocityDispZNeg);
 
 
-			fprintf(file, "CharacterDeviation = %d\n", part->GetData()->CharacterDeviation);
-			fprintf(file, "CharacterDeviationType = %d\n", part->GetData()->CharacterDeviationType);
-			fprintf(file, "CharacterDeviationAmplitude = %f\n", part->GetData()->CharacterDeviationAmplitude);
-			fprintf(file, "CharacterDeviationCoefAngle = %f\n", part->GetData()->CharacterDeviationCoefAngle);
-			fprintf(file, "CharacterDeviationAxis = %d\n", part->GetData()->CharacterDeviationAxis);
-			fprintf(file, "CharacterDeviationCountDelayMls = %d\n", part->GetData()->CharacterDeviationCountDelayMls);
-			fprintf(file, "CharacterDeviationCoefAngleDisp = %f\n", part->GetData()->CharacterDeviationCoefAngleDisp);
-			fprintf(file, "CharacterDeviationCoefAngleDispNeg = %d\n", part->GetData()->CharacterDeviationCoefAngleDispNeg);
+			fprintf(file, "AccelerationX = %f\n", part->getData()->Acceleration.x);
+			fprintf(file, "AccelerationY = %f\n", part->getData()->Acceleration.y);
+			fprintf(file, "AccelerationZ = %f\n", part->getData()->Acceleration.z);
+			fprintf(file, "AccelerationDisp = %f\n", part->getData()->AccelerationDisp);
 
-			fprintf(file, "CharacterDeviationTapX = %d\n", part->GetData()->CharacterDeviationTapX);
-			fprintf(file, "CharacterDeviationTapY = %d\n", part->GetData()->CharacterDeviationTapY);
-			fprintf(file, "CharacterDeviationTapZ = %d\n", part->GetData()->CharacterDeviationTapZ);
+			fprintf(file, "AccelerationDispXNeg = %d\n", part->getData()->AccelerationDispXNeg);
+			fprintf(file, "AccelerationDispYNeg = %d\n", part->getData()->AccelerationDispYNeg);
+			fprintf(file, "AccelerationDispZNeg = %d\n", part->getData()->AccelerationDispZNeg);
 
 
-			fprintf(file, "FigureType = %d\n", part->GetData()->FigureType);
-			fprintf(file, "FigureCountQuads = %d\n", part->GetData()->FigureCountQuads);
-			fprintf(file, "FigureRotRand = %d\n", part->GetData()->FigureRotRand);
+			fprintf(file, "CharacterCircle = %d\n", part->getData()->CharacterCircle);
+			fprintf(file, "CharacterCircleAxis = %d\n", part->getData()->CharacterCircleAxis);
+			fprintf(file, "CharacterCircleAngle = %f\n", part->getData()->CharacterCircleAngle);
+			fprintf(file, "CharacterCircleAngleDisp = %f\n", part->getData()->CharacterCircleAngleDisp);
+			fprintf(file, "CharacterCircleAngleDispNeg = %d\n", part->getData()->CharacterCircleAngleDispNeg);
 
-			fprintf(file, "FigureTapX = %d\n", part->GetData()->FigureTapX);
-			fprintf(file, "FigureTapY = %d\n", part->GetData()->FigureTapY);
-			fprintf(file, "FigureTapZ = %d\n", part->GetData()->FigureTapZ);
 
-			fprintf(file, "ReCreateCount = %d\n", part->GetData()->ReCreateCount);
+			fprintf(file, "CharacterRotate = %d\n", part->getData()->CharacterRotate);
+			fprintf(file, "CharacterRotateAngle = %f\n", part->getData()->CharacterRotateAngle);
+			fprintf(file, "CharacterRotateAngleDisp = %f\n", part->getData()->CharacterRotateAngleDisp);
+			fprintf(file, "CharacterRotateAngleDispNeg = %d\n", part->getData()->CharacterRotateAngleDispNeg);
 
-			fprintf(file, "AlphaBlendType = %d\n", part->GetData()->AlphaBlendType);
 
-			fprintf(file, "ColorCoef = %f\n", part->GetData()->ColorCoef);
+			fprintf(file, "CharacterDeviation = %d\n", part->getData()->CharacterDeviation);
+			fprintf(file, "CharacterDeviationType = %d\n", part->getData()->CharacterDeviationType);
+			fprintf(file, "CharacterDeviationAmplitude = %f\n", part->getData()->CharacterDeviationAmplitude);
+			fprintf(file, "CharacterDeviationCoefAngle = %f\n", part->getData()->CharacterDeviationCoefAngle);
+			fprintf(file, "CharacterDeviationAxis = %d\n", part->getData()->CharacterDeviationAxis);
+			fprintf(file, "CharacterDeviationCountDelayMls = %d\n", part->getData()->CharacterDeviationCountDelayMls);
+			fprintf(file, "CharacterDeviationCoefAngleDisp = %f\n", part->getData()->CharacterDeviationCoefAngleDisp);
+			fprintf(file, "CharacterDeviationCoefAngleDispNeg = %d\n", part->getData()->CharacterDeviationCoefAngleDispNeg);
 
-			fprintf(file, "Soft = %d\n", part->GetData()->Soft);
-			fprintf(file, "SoftCoef = %f\n", part->GetData()->SoftCoef);
+			fprintf(file, "CharacterDeviationTapX = %d\n", part->getData()->CharacterDeviationTapX);
+			fprintf(file, "CharacterDeviationTapY = %d\n", part->getData()->CharacterDeviationTapY);
+			fprintf(file, "CharacterDeviationTapZ = %d\n", part->getData()->CharacterDeviationTapZ);
 
-			fprintf(file, "Refraction = %d\n", part->GetData()->Refraction);
-			fprintf(file, "RefractionCoef = %f\n", part->GetData()->RefractionCoef);
 
-			fprintf(file, "TransparencyCoef = %f\n", part->GetData()->TransparencyCoef);
-			fprintf(file, "Lighting = %d\n", part->GetData()->Lighting);
-			fprintf(file, "CollisionDelete = %d\n", part->GetData()->CollisionDelete);
+			fprintf(file, "FigureType = %d\n", part->getData()->FigureType);
+			fprintf(file, "FigureCountQuads = %d\n", part->getData()->FigureCountQuads);
+			fprintf(file, "FigureRotRand = %d\n", part->getData()->FigureRotRand);
+
+			fprintf(file, "FigureTapX = %d\n", part->getData()->FigureTapX);
+			fprintf(file, "FigureTapY = %d\n", part->getData()->FigureTapY);
+			fprintf(file, "FigureTapZ = %d\n", part->getData()->FigureTapZ);
+
+			fprintf(file, "ReCreateCount = %d\n", part->getData()->ReCreateCount);
+
+			fprintf(file, "AlphaBlendType = %d\n", part->getData()->AlphaBlendType);
+
+			fprintf(file, "ColorCoef = %f\n", part->getData()->ColorCoef);
+
+			fprintf(file, "Soft = %d\n", part->getData()->Soft);
+			fprintf(file, "SoftCoef = %f\n", part->getData()->SoftCoef);
+
+			fprintf(file, "Refraction = %d\n", part->getData()->Refraction);
+			fprintf(file, "RefractionCoef = %f\n", part->getData()->RefractionCoef);
+
+			fprintf(file, "TransparencyCoef = %f\n", part->getData()->TransparencyCoef);
+			fprintf(file, "Lighting = %d\n", part->getData()->Lighting);
+			fprintf(file, "CollisionDelete = %d\n", part->getData()->CollisionDelete);
 			fprintf(file, "\n");
 		}
 		fprintf(file, "----------------------------------------------------------------------\n\n");
@@ -302,7 +302,7 @@ void Effects::Save(const char* path)
 	fclose(file);
 }
 
-void Effects::Load(const char* path)
+void Effects::load(const char* path)
 {
 	if (!FileExistsFile(path))
 	{
@@ -337,7 +337,7 @@ void Effects::Load(const char* path)
 			return;
 		}
 
-		ID eff_id = this->EffectAdd(0);
+		ID eff_id = this->effectAdd(0);
 		ArrID[eff_id]->Original = true;
 		int eff_count_part = 0;
 
@@ -582,19 +582,19 @@ void Effects::Load(const char* path)
 				part.TrackTime = String(config->getKey(part_section_name, "TrackTime")).toUnsLongInt();
 
 			
-			ID part_id = this->EmitterAdd(eff_id, &part);
+			ID part_id = this->emitterAdd(eff_id, &part);
 
 			if (config->keyExists(part_section_name, "name"))
-				EmitterNameSet(eff_id, part_id, config->getKey(part_section_name, "name"));
+				emitterSetName(eff_id, part_id, config->getKey(part_section_name, "name"));
 
 			if (config->keyExists(part_section_name, "count"))
-				EmitterCountSet(eff_id, part_id, String(config->getKey(part_section_name, "count")).toInt());
+				emitterSetCount(eff_id, part_id, String(config->getKey(part_section_name, "count")).toInt());
 
 			if (config->keyExists(part_section_name, "texture"))
-				EmitterTextureSet(eff_id, part_id, config->getKey(part_section_name, "texture"));
+				emitterSetTexture(eff_id, part_id, config->getKey(part_section_name, "texture"));
 
 			if (config->keyExists(part_section_name, "texture_track"))
-				EmitterTextureTrackSet(eff_id, part_id, config->getKey(part_section_name, "texture_track"));
+				emitterSetTextureTrack(eff_id, part_id, config->getKey(part_section_name, "texture_track"));
 		}
 	}
 
@@ -602,163 +602,163 @@ void Effects::Load(const char* path)
 }
 
 
-int Effects::EmitterTrackCountGet(ID id, ID id_part)
+int Effects::emitterGetTrackCount(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->TrackCountGet();
+	return ArrID[id]->Arr[id_part]->getTrackCount();
 }
 
-int Effects::EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count)
+int Effects::emitterGetTrackPos(ID id, ID id_part, float3** arr, int count)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->TrackPosGet(arr, count);
+	return ArrID[id]->Arr[id_part]->getTrackPos(arr, count);
 }
 
 
-void Effects::EmitterNameSet(ID id, ID id_part, const char* name)
+void Effects::emitterSetName(ID id, ID id_part, const char* name)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->NameSet(name);
+	ArrID[id]->Arr[id_part]->setName(name);
 }
 
-void Effects::EmitterNameGet(ID id, ID id_part, char* name)
+void Effects::emitterGetName(ID id, ID id_part, char* name)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->NameGet(name);
+	ArrID[id]->Arr[id_part]->getName(name);
 }
 
-ID Effects::EmitterAdd(ID id, ParticlesData* data)
+ID Effects::emitterAdd(ID id, ParticlesData* data)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 
 	Emitter* tmppart = new Emitter();
-	tmppart->Init(data);
+	tmppart->init(data);
 	ArrID[id]->Arr.push_back(tmppart);
 	return ArrID[id]->Arr.size() - 1;
 }
 
-void Effects::EmitterReInit(ID id, ID id_part, ParticlesData* data)
+void Effects::emitterReInit(ID id, ID id_part, ParticlesData* data)
 {
 	EFFECTS_PARTICLES_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->Init(data);
+	ArrID[id]->Arr[id_part]->init(data);
 }
 
-int Effects::EmitterGetCount(ID id)
+int Effects::emitterGetCount(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 	return ArrID[id]->Arr.size();
 }
 
-void Effects::EmitterDelete(ID id, ID id_part)
+void Effects::emitterDelete(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 	mem_delete(ArrID[id]->Arr[id_part]);
 	ArrID[id]->Arr.erase(id_part);
 }
 
-ParticlesData* Effects::EmitterGetData(ID id, ID id_part)
+ParticlesData* Effects::emitterGetData(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->GetData();
+	return ArrID[id]->Arr[id_part]->getData();
 }
 
-void Effects::EmitterCountSet(ID id, ID id_part, int count)
+void Effects::emitterSetCount(ID id, ID id_part, int count)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->CountSet(count);
+	ArrID[id]->Arr[id_part]->setCount(count);
 }
 
-int Effects::EmitterCountGet(ID id, ID id_part)
+int Effects::emitterGetCount(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->CountGet();
+	return ArrID[id]->Arr[id_part]->getCount();
 }
 
-int Effects::EmitterCountLifeGet(ID id, ID id_part)
+int Effects::emitterGetCountLife(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->CountLifeGet();
+	return ArrID[id]->Arr[id_part]->getCountLife();
 }
 
-void Effects::EmitterEnableSet(ID id, ID id_part, bool enable)
+void Effects::emitterSetEnable(ID id, ID id_part, bool enable)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->EnableSet(enable);
+	ArrID[id]->Arr[id_part]->setEnable(enable);
 }
 
-bool Effects::EmitterEnableGet(ID id, ID id_part)
+bool Effects::emitterGetEnable(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, false);
 
-	return ArrID[id]->Arr[id_part]->EnableGet();
+	return ArrID[id]->Arr[id_part]->getEnable();
 }
 
 
-void Effects::EmitterTextureSet(ID id, ID id_part, const char* tex)
+void Effects::emitterSetTexture(ID id, ID id_part, const char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->TextureSet(tex);
+	ArrID[id]->Arr[id_part]->setTexture(tex);
 }
 
-void Effects::EmitterTextureSetID(ID id, ID id_part, ID tex)
+void Effects::emitterSetTextureID(ID id, ID id_part, ID tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->TextureSetID(tex);
+	ArrID[id]->Arr[id_part]->setTextureID(tex);
 }
 
-ID Effects::EmitterTextureGetID(ID id, ID id_part)
+ID Effects::emitterGetTextureID(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, -1);
 
-	return ArrID[id]->Arr[id_part]->TextureGetID();
+	return ArrID[id]->Arr[id_part]->getTextureID();
 }
 
-void Effects::EmitterTextureGet(ID id, ID id_part, char* tex)
+void Effects::emitterGetTexture(ID id, ID id_part, char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->TextureGet(tex);
+	ArrID[id]->Arr[id_part]->getTexture(tex);
 }
 
 
-void Effects::EmitterTextureTrackSet(ID id, ID id_part, const char* tex)
+void Effects::emitterSetTextureTrack(ID id, ID id_part, const char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->TextureTrackSet(tex);
+	ArrID[id]->Arr[id_part]->setTextureTrack(tex);
 }
 
-void Effects::EmitterTextureTrackSetID(ID id, ID id_part, ID tex)
+void Effects::emitterSetTextureTrackID(ID id, ID id_part, ID tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->TextureTrackSetID(tex);
+	ArrID[id]->Arr[id_part]->setTextureTrackID(tex);
 }
 
-ID Effects::EmitterTextureTrackGetID(ID id, ID id_part)
+ID Effects::emitterGetTextureTrackID(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, -1);
 
-	return ArrID[id]->Arr[id_part]->TextureTrackGetID();
+	return ArrID[id]->Arr[id_part]->getTextureTrackID();
 }
 
-void Effects::EmitterTextureTrackGet(ID id, ID id_part, char* tex)
+void Effects::emitterGetTextureTrack(ID id, ID id_part, char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->TextureTrackGet(tex);
+	ArrID[id]->Arr[id_part]->getTextureTrack(tex);
 }
 
 
@@ -776,10 +776,10 @@ ID Effects::EffectCopyID(ID id)
 
 ID Effects::EffectCopyName(const char* name)
 {
-	return EffectCopyID(EffectGetByName(name));
+	return EffectCopyID(effectGetByName(name));
 }
 
-ID Effects::EffectGetByName(const char* name)
+ID Effects::effectGetByName(const char* name)
 {
 	for (int i = 0; i < ArrKey.size(); ++i)
 	{
@@ -790,7 +790,7 @@ ID Effects::EffectGetByName(const char* name)
 	return -1;
 }
 
-ID Effects::EffectAdd(const char* name)
+ID Effects::effectAdd(const char* name)
 {
 	Effect* tmpeffect = new Effect();
 	if (name)
@@ -881,7 +881,7 @@ ID Effects::EffectInstanceByID(ID id)
 
 ID Effects::EffectInstanceByName(const char* name)
 {
-	return EffectInstanceByID(EffectGetByName(name));
+	return EffectInstanceByID(effectGetByName(name));
 }
 
 void Effects::EffectPlayByID(ID id, float3* pos, float3* dir)
@@ -901,7 +901,7 @@ void Effects::EffectPlayByID(ID id, float3* pos, float3* dir)
 
 void Effects::EffectPlayByName(const char* name, float3* pos, float3* dir)
 {
-	EffectPlayByID(EffectGetByName(name), pos, dir);
+	EffectPlayByID(effectGetByName(name), pos, dir);
 }
 
 ID Effects::AddEffect(Effect* obj)
@@ -929,12 +929,12 @@ ID Effects::AddEffect(Effect* obj)
 	return idadd;
 }
 
-int Effects::EffectCountGet()
+int Effects::effectGetCount()
 {
 	return ArrKey.size();
 }
 
-ID Effects::EffectIdOfKey(ID key)
+ID Effects::effectGetIdOfKey(ID key)
 {
 	EFFECTS_EFFECT_PRECOND_KEY(key, -1);
 
@@ -1004,10 +1004,10 @@ void Effects::EffectCompute(ID id)
 	for (int i = 0, l = eff->Arr.size(); i < l; ++i)
 	{
 		if (eff->Arr[i])
-			eff->Arr[i]->Compute(&mattrans);
+			eff->Arr[i]->compute(&mattrans);
 
 		//если партиклы метрвы то инкрементируем счетчик
-		if (!eff->Arr[i]->EnableGet())
+		if (!eff->Arr[i]->getEnable())
 			++countdead;
 		else //иначе партиклы живы, считаем объем эффекта
 		{
@@ -1067,9 +1067,9 @@ void Effects::EffectComputeLighting(ID id)
 
 	for(int i = 0, l = eff->Arr.size(); i < l; ++i)
 	{
-		if (eff->Arr[i] && eff->Arr[i]->EnableGet())
+		if (eff->Arr[i] && eff->Arr[i]->getEnable())
 		{
-			eff->Arr[i]->ComputeLighting();
+			eff->Arr[i]->computeLighting();
 		}
 	}
 }
@@ -1088,9 +1088,9 @@ void Effects::EffectRender(ID id, DWORD timeDelta)
 
 	for(int i = 0, l = eff->Arr.size(); i < l; ++i)
 	{
-		if(eff->Arr[i] && eff->Arr[i]->EnableGet())
+		if(eff->Arr[i] && eff->Arr[i]->getEnable())
 		{
-			eff->Arr[i]->Render(timeDelta, &eff->MatRotate, &eff->MatTranslation);
+			eff->Arr[i]->render(timeDelta, &eff->MatRotate, &eff->MatTranslation);
 		}
 	}
 }
@@ -1127,7 +1127,7 @@ void Effects::EffectRenderAll(DWORD timeDelta)
 	}
 }
 
-bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
+bool Effects::EffectVisibleCom(ID id, const IFrustum* frustum, float3* view)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
@@ -1151,7 +1151,7 @@ bool Effects::EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view)
 	return eff->ViewRender;
 }
 
-void Effects::EffectVisibleComAll(const ISXFrustum* frustum, float3* view)
+void Effects::EffectVisibleComAll(const IFrustum* frustum, float3* view)
 {
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
@@ -1231,7 +1231,7 @@ void Effects::EffectEnableSet(ID id, bool isenable)
 	
 	for (int i = 0; i < eff->Arr.size(); ++i)
 	{
-		eff->Arr[i]->EnableSet(isenable);
+		eff->Arr[i]->setEnable(isenable);
 	}
 
 	eff->Enable = isenable;
@@ -1259,7 +1259,7 @@ void Effects::EffectAlifeSet(ID id, bool alife)
 
 	for (int i = 0; i < eff->Arr.size(); ++i)
 	{
-		eff->Arr[i]->AlifeSet(alife);
+		eff->Arr[i]->setAlife(alife);
 	}
 }
 

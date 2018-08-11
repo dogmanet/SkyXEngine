@@ -6,18 +6,23 @@ sm_depth_skin_cube.vs
 
 #include <../struct.h>
 #include <../skin.h>
+#include <../shadow.h>
 
-half4x4	WorldViewProjection;
-half4x4	World;
-half3 LightPos;
+//##########################################################################
 
-vs_out_gcommon main(vs_in_anim input)
+half4x4	g_mWVP;
+half4x4	g_mW;
+half3 g_vLightPos;
+
+//##########################################################################
+
+VSO_SceneCommon main(VSI_Animation IN)
 {
-	vs_out_gcommon Output = SkinAllTransform(input);
+	VSO_SceneCommon OUT = SkinAllTransform(IN);
 	
-	Output.Pos = half4(LightPos - mul(Output.Position, World).xyz,1);
-	Output.Position = mul(Output.Position, WorldViewProjection);
-	Output.TexUV = input.Tex;
+	OUT.vPos = half4(g_vLightPos - mul(OUT.vPosition, g_mW).xyz, 1);
+	OUT.vPosition = mul(OUT.vPosition, g_mWVP);
+	OUT.vTexUV = IN.vTexUV;
 	
-	return(Output);
+	return(OUT);
 }

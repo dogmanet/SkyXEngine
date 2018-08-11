@@ -1,40 +1,119 @@
 
 #include "edits_callback.h"
 
+void TexProcInputString(const char *szStr)
+{
+	if (StrTrim(szStr).length() > 0)
+	{
+		char szMessage[1024];
+		szMessage[0] = 0;
+		sprintf(szMessage, "Texture '%s' not found", szStr);
+		MessageBox(0, szMessage, 0, 0);
+	}
+}
+
 LRESULT SXMaterialEditor_EditSkyBox_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditSkyBox->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditSkyBox->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SGCore_SkyBoxLoadTex(tmptextval);
+	//MessageBox(0, "it is not done yet :)", 0, 0);
+	if (SGCore_LoadTexFileExists(szStr))
+		SGCore_SkyBoxLoadTex(szStr);
 	else
 	{
-		SGCore_SkyBoxGetActiveTex(tmptextval);
-		SXMaterialEditor::EditSkyBox->setText(tmptextval);
-
-		MessageBox(0,"texture not found",0,0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SGCore_SkyBoxGetActiveTex(szStr2);
+		SXMaterialEditor::EditSkyBox->setText(szStr2);
+		TexProcInputString(szStr);
 	}
 
 	return 0;
 }
 
+LRESULT SXMaterialEditor_EditLigthColorR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[32];
+	szStr[0] = 0;
+
+	SXMaterialEditor::EditLigthColorR->getText(szStr, 32);
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+
+	if (idGlobalLight > -1)
+	{
+		float3 vColor;
+		SML_LigthsGetColor(idGlobalLight, &vColor);
+		sscanf(szStr, "%f", &vColor.x);
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0)));
+	}
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditLigthColorG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[32];
+	szStr[0] = 0;
+
+	SXMaterialEditor::EditLigthColorG->getText(szStr, 32);
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+
+	if (idGlobalLight > -1)
+	{
+		float3 vColor;
+		SML_LigthsGetColor(idGlobalLight, &vColor);
+		sscanf(szStr, "%f", &vColor.y);
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0)));
+	}
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditLigthColorB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[32];
+	szStr[0] = 0;
+
+	SXMaterialEditor::EditLigthColorB->getText(szStr, 32);
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+
+	if (idGlobalLight > -1)
+	{
+		float3 vColor;
+		SML_LigthsGetColor(idGlobalLight, &vColor);
+		sscanf(szStr, "%f", &vColor.z);
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0)));
+	}
+
+	return 0;
+}
+
+
 LRESULT SXMaterialEditor_EditTex_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditTex->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetTexture(SXMaterialEditor::IDMat, tmptextval);
+	SXMaterialEditor::EditTex->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetTexture(SXMaterialEditor::IDMat, szStr);
 	else
 	{
-		SML_MtlGetTexture(SXMaterialEditor::IDMat, tmptextval);
-		SXMaterialEditor::EditTex->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetTexture(SXMaterialEditor::IDMat, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditTex->setText(szStr);
 	}
 
 	return 0;
@@ -42,19 +121,21 @@ LRESULT SXMaterialEditor_EditTex_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARA
 
 LRESULT SXMaterialEditor_EditVS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_SHADER_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_SHADER_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditVS->getText(tmptextval, SXGC_SHADER_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditVS->getText(szStr, SXGC_SHADER_MAX_SIZE_DIRNAME);
 
-	if (SGCore_ShaderFileExists(tmptextval))
-		SML_MtlSetVS(SXMaterialEditor::IDMat, tmptextval);
+	if (SGCore_ShaderFileExists(szStr))
+		SML_MtlSetVS(SXMaterialEditor::IDMat, szStr);
 	else
 	{
-		SML_MtlGetVS(SXMaterialEditor::IDMat, tmptextval);
-		SXMaterialEditor::EditVS->setText(tmptextval);
-
-		MessageBox(0, "shader not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetVS(SXMaterialEditor::IDMat, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditVS->setText(szStr);
 	}
 
 	return 0;
@@ -62,36 +143,71 @@ LRESULT SXMaterialEditor_EditVS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditPS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_SHADER_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_SHADER_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditPS->getText(tmptextval, SXGC_SHADER_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditPS->getText(szStr, SXGC_SHADER_MAX_SIZE_DIRNAME);
 
-	if (SGCore_ShaderFileExists(tmptextval))
-		SML_MtlSetPS(SXMaterialEditor::IDMat, tmptextval);
+	if (SGCore_ShaderFileExists(szStr))
+		SML_MtlSetPS(SXMaterialEditor::IDMat, szStr);
 	else
 	{
-		SML_MtlGetPS(SXMaterialEditor::IDMat, tmptextval);
-		SXMaterialEditor::EditPS->setText(tmptextval);
-
-		MessageBox(0, "shader not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetPS(SXMaterialEditor::IDMat, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditPS->setText(szStr);
 	}
 
 	return 0;
 }
 
-LRESULT SXMaterialEditor_EditPenetration_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXMaterialEditor_EditHitChance_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
-	float tmpval = 0;
+	char szStr[256];
+	szStr[0] = 0;
+	float fValue = 0;
 
-	SXMaterialEditor::EditPenetration->getText(tmptextval, 256);
+	SXMaterialEditor::EditHitChance->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &fValue);
 
-	SXMaterialEditor::TrackBarPenetration->setPos(tmpval * 100);
-	SML_MtlSetPenetration(SXMaterialEditor::IDMat, tmpval*0.01f);
+	SXMaterialEditor::TrackBarHitChance->setPos(fValue * 100);
+	SML_MtlSetHitChance(SXMaterialEditor::IDMat, fValue*0.01f);
+	SXMaterialEditor::EditHitChance->setText(String(fValue).c_str());
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditDurability_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[256];
+	szStr[0] = 0;
+	float fValue = 0;
+
+	SXMaterialEditor::EditDurability->getText(szStr, 256);
+
+	sscanf(szStr, "%f", &fValue);
+
+	SML_MtlSetDurability(SXMaterialEditor::IDMat, fValue);
+	SXMaterialEditor::EditDurability->setText(String(fValue).c_str());
+
+	return 0;
+}
+
+LRESULT SXMaterialEditor_EditDensity_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[256];
+	szStr[0] = 0;
+	float fValue = 0;
+
+	SXMaterialEditor::EditDensity->getText(szStr, 256);
+
+	sscanf(szStr, "%f", &fValue);
+
+	SML_MtlSetDensity(SXMaterialEditor::IDMat, fValue);
+	SXMaterialEditor::EditDensity->setText(String(fValue).c_str());
 
 	return 0;
 }
@@ -99,19 +215,21 @@ LRESULT SXMaterialEditor_EditPenetration_Enter(HWND hwnd, UINT msg, WPARAM wPara
 
 LRESULT SXMaterialEditor_EditTexLighting_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 	
-	SXMaterialEditor::EditTexLighting->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditTexLighting->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetTextureLighting(SXMaterialEditor::IDMat, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetTextureLighting(SXMaterialEditor::IDMat, szStr);
 	else
 	{
-		SML_MtlGetTextureLighting(SXMaterialEditor::IDMat, tmptextval);
-		SXMaterialEditor::EditTexLighting->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetTextureLighting(SXMaterialEditor::IDMat, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditTexLighting->setText(szStr);
 	}
 
 	return 0;
@@ -120,19 +238,21 @@ LRESULT SXMaterialEditor_EditTexLighting_Enter(HWND hwnd, UINT msg, WPARAM wPara
 
 LRESULT SXMaterialEditor_EditMask_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 	
-	SXMaterialEditor::EditMask->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditMask->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetMaskTex(SXMaterialEditor::IDMat, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetMaskTex(SXMaterialEditor::IDMat, szStr);
 	else
 	{
-		SML_MtlGetMaskTex(SXMaterialEditor::IDMat, tmptextval);
-		SXMaterialEditor::EditMask->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetMaskTex(SXMaterialEditor::IDMat, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditMask->setText(szStr);
 	}
 
 	return 0;
@@ -140,19 +260,21 @@ LRESULT SXMaterialEditor_EditMask_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT SXMaterialEditor_EditMR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 	
-	SXMaterialEditor::EditMR->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditMR->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 0, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 0, szStr);
 	else
 	{
-		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 0, tmptextval);
-		SXMaterialEditor::EditMR->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 0, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditMR->setText(szStr);
 	}
 
 	return 0;
@@ -160,19 +282,21 @@ LRESULT SXMaterialEditor_EditMR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditMG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditMG->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditMG->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 1, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 1, szStr);
 	else
 	{
-		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 1, tmptextval);
-		SXMaterialEditor::EditMG->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 1, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditMG->setText(szStr);
 	}
 
 	return 0;
@@ -180,19 +304,21 @@ LRESULT SXMaterialEditor_EditMG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditMB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditMB->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditMB->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 2, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 2, szStr);
 	else
 	{
-		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 2, tmptextval);
-		SXMaterialEditor::EditMB->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 2, szStr2);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditMB->setText(szStr);
 	}
 
 	return 0;
@@ -200,19 +326,21 @@ LRESULT SXMaterialEditor_EditMB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditMA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditMA->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditMA->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 3, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 3, szStr);
 	else
 	{
-		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 3, tmptextval);
-		SXMaterialEditor::EditMA->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetMRTex(SXMaterialEditor::IDMat, 3, szStr);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditMA->setText(szStr);
 	}
 
 	return 0;
@@ -221,19 +349,21 @@ LRESULT SXMaterialEditor_EditMA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditDR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditDR->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditDR->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 0, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetDTex(SXMaterialEditor::IDMat, 0, szStr);
 	else
 	{
-		SML_MtlGetDTex(SXMaterialEditor::IDMat, 0, tmptextval);
-		SXMaterialEditor::EditDR->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetDTex(SXMaterialEditor::IDMat, 0, szStr);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditDR->setText(szStr);
 	}
 
 	return 0;
@@ -241,19 +371,21 @@ LRESULT SXMaterialEditor_EditDR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditDG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditDG->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditDG->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 1, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetDTex(SXMaterialEditor::IDMat, 1, szStr);
 	else
 	{
-		SML_MtlGetDTex(SXMaterialEditor::IDMat, 1, tmptextval);
-		SXMaterialEditor::EditDR->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetDTex(SXMaterialEditor::IDMat, 1, szStr);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditDR->setText(szStr);
 	}
 
 	return 0;
@@ -261,19 +393,21 @@ LRESULT SXMaterialEditor_EditDG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditDB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditDB->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditDB->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 2, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetDTex(SXMaterialEditor::IDMat, 2, szStr);
 	else
 	{
-		SML_MtlGetDTex(SXMaterialEditor::IDMat, 2, tmptextval);
-		SXMaterialEditor::EditDR->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetDTex(SXMaterialEditor::IDMat, 2, szStr);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditDR->setText(szStr);
 	}
 
 	return 0;
@@ -281,35 +415,37 @@ LRESULT SXMaterialEditor_EditDB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditDA_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	tmptextval[0] = 0;
+	char szStr[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+	szStr[0] = 0;
 
-	SXMaterialEditor::EditDA->getText(tmptextval, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
+	SXMaterialEditor::EditDA->getText(szStr, SXGC_LOADTEX_MAX_SIZE_DIRNAME);
 
-	if (SGCore_LoadTexFileExists(tmptextval))
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 3, tmptextval);
+	if (SGCore_LoadTexFileExists(szStr))
+		SML_MtlSetDTex(SXMaterialEditor::IDMat, 3, szStr);
 	else
 	{
-		SML_MtlGetDTex(SXMaterialEditor::IDMat, 3, tmptextval);
-		SXMaterialEditor::EditDR->setText(tmptextval);
-
-		MessageBox(0, "texture not found", 0, 0);
+		char szStr2[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
+		szStr2[0] = 0;
+		SML_MtlGetDTex(SXMaterialEditor::IDMat, 3, szStr);
+		TexProcInputString(szStr);
+		
+		SXMaterialEditor::EditDR->setText(szStr);
 	}
 
 	return 0;
 }
 
-/////////////
+//##########################################################################
 
 LRESULT SXMaterialEditor_EditRoughness_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditRoughness->getText(tmptextval, 256);
+	SXMaterialEditor::EditRoughness->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarRoughness->setPos(tmpval*100);
 	SML_MtlSetRoughness(SXMaterialEditor::IDMat, tmpval);
@@ -319,13 +455,13 @@ LRESULT SXMaterialEditor_EditRoughness_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXMaterialEditor_EditF0_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditF0->getText(tmptextval, 256);
+	SXMaterialEditor::EditF0->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarF0->setPos(tmpval * 100);
 	SML_MtlSetF0(SXMaterialEditor::IDMat, tmpval);
@@ -334,13 +470,13 @@ LRESULT SXMaterialEditor_EditF0_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM
 
 LRESULT SXMaterialEditor_EditThickness_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditThickness->getText(tmptextval, 256);
+	SXMaterialEditor::EditThickness->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarThickness->setPos(tmpval * 100);
 	SML_MtlSetThickness(SXMaterialEditor::IDMat, tmpval);
@@ -351,121 +487,121 @@ LRESULT SXMaterialEditor_EditThickness_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXMaterialEditor_EditUDVSX_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDVSX->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDVSX->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSX->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 0, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 0, tmpval);
 	return 0;
 }
 
 LRESULT SXMaterialEditor_EditUDVSY_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDVSY->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDVSY->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSY->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 1, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 1, tmpval);
 	return 0;
 }
 
 LRESULT SXMaterialEditor_EditUDVSZ_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDVSZ->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDVSZ->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSZ->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 2, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 2, tmpval);
 	return 0;
 }
 
 LRESULT SXMaterialEditor_EditUDVSW_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDVSW->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDVSW->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDVSW->setPos(tmpval * 100);
-	SML_MtlSetUDVS(SXMaterialEditor::IDMat, 3, tmpval);
+	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 3, tmpval);
 	return 0;
 }
 
 
 LRESULT SXMaterialEditor_EditUDPSX_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDPSX->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDPSX->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSX->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 0, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 0, tmpval);
 	return 0;
 }
 
 LRESULT SXMaterialEditor_EditUDPSY_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDPSY->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDPSY->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSY->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 1, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 1, tmpval);
 	return 0;
 }
 
 LRESULT SXMaterialEditor_EditUDPSZ_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDPSZ->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDPSZ->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSZ->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 2, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 2, tmpval);
 	return 0;
 }
 
 LRESULT SXMaterialEditor_EditUDPSW_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmptextval[256];
-	tmptextval[0] = 0;
+	char szStr[256];
+	szStr[0] = 0;
 	float tmpval = 0;
 
-	SXMaterialEditor::EditUDPSW->getText(tmptextval, 256);
+	SXMaterialEditor::EditUDPSW->getText(szStr, 256);
 
-	sscanf(tmptextval, "%f", &tmpval);
+	sscanf(szStr, "%f", &tmpval);
 
 	SXMaterialEditor::TrackBarUDPSW->setPos(tmpval * 100);
-	SML_MtlSetUDPS(SXMaterialEditor::IDMat, 3, tmpval);
+	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 3, tmpval);
 	return 0;
 }

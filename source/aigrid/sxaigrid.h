@@ -59,48 +59,101 @@ SX_LIB_API void SAIG_AKill();
 
 //!@}
 
-#define AIGRID_QUADS_CENTERS_MAXHEIGHT	0.6f	/*!< максимальная высота между центрами соседних квадов */
+/*! преобразование float в int
+ \warning осторожно, изменения  могут повлечь баги в генерации и некоторых иных функция. Когда было *100 то в некоторых местах генерировались дубликаты, и поиск квада по позиции не всегда работал корректно
+*/
+#define AIGRID_TOINT(fNum) (int32_t)(roundf(fNum * 10.f))
 
-#define AIGRID_BBOXSIZE					5.f		/*!< размеры ограничивающих боксов */
+/*! максимальная высота между центрами соседних квадов */
+#define AIGRID_QUADS_CENTERS_MAXHEIGHT	0.6f	
 
-#define LAIGRID_QUADS_CENTERS_MAXHEIGHT	60		/*!< int*100 максимальная высота между центрами соседних квадов */
-#define LAIGRID_QUAD_SIZE				70		/*!< int*100 размеры квада */
-#define LAIGRID_QUAD_SIZEDIV2			35		/*!< int*100 половинный размер квада */
+/*! размеры ограничивающих боксов */
+#define AIGRID_BBOXSIZE					5.f		
+
+/*! минимально допустимый размер дял деления сплита дерева боксов */
+#define AIGRID_SPLIT_MIN_SIZE AIGRID_BBOXSIZE*5.f		
+
+/*! #AIGRID_TOINT максимальная высота между центрами соседних квадов */
+#define LAIGRID_QUADS_CENTERS_MAXHEIGHT	6		
+
+/*! #AIGRID_TOINT размеры квада */
+#define LAIGRID_QUAD_SIZE				7		
 
 //направления
-#define AIGRID_QUAD_DIR_ALL				0		/*!< квад имеет переходы в положительное и отрицательное направления */
-#define AIGRID_QUAD_DIR_POSITIVE		1		/*!< квад имеет только положительный переход */
-#define AIGRID_QUAD_DIR_NEGATIVE		-1		/*!< квад имеет только отрицательный переход */
-#define AIGRID_QUAD_DIR_NONE			2		/*!< квад не имеет переходов */
+/*! квад имеет переходы в положительное и отрицательное направления */
+#define AIGRID_QUAD_DIR_ALL				0		
 
-#define AIGRID_QUAD_SIZE				0.7f	/*!< размеры квада */
-#define AIGRID_QUAD_SIZEDIV2			0.35f	/*!< половинный размер квада */
-#define AIGRID_QUAD_ADDYPOS				0.01f;	/*!< на сколько метров будет приподнят квад */
+/*! квад имеет только положительный переход */
+#define AIGRID_QUAD_DIR_POSITIVE		1		
+
+/*! квад имеет только отрицательный переход */
+#define AIGRID_QUAD_DIR_NEGATIVE		-1		
+
+/*! квад не имеет переходов */
+#define AIGRID_QUAD_DIR_NONE			2		
+
+
+/*! размеры квада */
+#define AIGRID_QUAD_SIZE				0.7f	
+
+/*! половинный размер квада */
+#define AIGRID_QUAD_SIZEDIV2			0.35f	
+
+/*! на сколько метров будет приподнят квад */
+#define AIGRID_QUAD_ADDYPOS				0.01f;	
+
 
 //цена перемещения
-#define AIGRID_COST_DIRECT				10		/*!< цена прямого перемещения */
-#define AIGRID_COST_DIAGONAL			14		/*!< цена перемещения по диагонали */
+/*! цена прямого перемещения */
+#define AIGRID_COST_DIRECT				10		
 
-#define AIGRID_COST_GPATH				500		/*!< минимально необходимая дистанция (int(dist * 100)) для нахождения ближайшего графпоинта */
+/*! цена перемещения по диагонали */
+#define AIGRID_COST_DIAGONAL			14		
 
-#define AIGRID_COSTADD_TEMPBUSY			50		/*!< добавочна стоимость для прохода через квад который временно занят */
-#define AIGRID_COSTADD_BUSY				250		/*!< добавочна стоимость для прохода через квад который занят */
 
-#define AIGRID_QUADSCOUNT_BUSY			50		/*!< дистанция (ходы по горизонтали и вертикали, но не по диагонали) в пределах которой будет учитываться занятость квада */
+/*! минимально необходимая дистанция (int(dist * 100)) для нахождения ближайшего графпоинта */
+#define AIGRID_COST_GPATH				500		
 
-#define AIGRID_ENTITY_MAX_HEIGHT		1.5f								/*!< максимальная высота сущности, которая будет передвигаться по сетке */
-#define AIGRID_ENTITY_MAX_HEIGHTDIV2	(AIGRID_ENTITY_MAX_HEIGHT * 0.5f)	/*!< половинная максимальная высота сущности */
 
-#define AIGRID_COLOR_GBBOX				D3DCOLOR_ARGB(128, 0, 255, 0)		/*!< цвет главного ограничивающего объема */
-#define AIGRID_COLOR_SEL_MAIN			D3DCOLOR_ARGB(220, 255, 255, 255)	/*!< цвет выделенного квада */
-#define AIGRID_COLOR_SEL_ADD			D3DCOLOR_ARGB(100, 255, 255, 255)	/*!< цвет соседей (прямых) выделенного квада */
+/*! добавочная стоимость для прохода через квад который временно занят */
+#define AIGRID_COSTADD_TEMPBUSY			50		
+
+/*! добавочная стоимость для прохода через квад который занят */
+#define AIGRID_COSTADD_BUSY				250		
+
+
+/*! дистанция (ходы по горизонтали и вертикали, но не по диагонали) в пределах которой будет учитываться занятость квада */
+#define AIGRID_QUADSCOUNT_BUSY			50		
+
+
+/*! максимальная высота сущности, которая будет передвигаться по сетке */
+#define AIGRID_ENTITY_MAX_HEIGHT		1.5f								
+
+/*! половинная максимальная высота сущности */
+#define AIGRID_ENTITY_MAX_HEIGHTDIV2	(AIGRID_ENTITY_MAX_HEIGHT * 0.5f)	
+
+
+/*! цвет главного ограничивающего объема */
+#define AIGRID_COLOR_GBBOX				D3DCOLOR_ARGB(128, 0, 255, 0)		
+
+/*! цвет выделенного квада */
+#define AIGRID_COLOR_SEL_MAIN			D3DCOLOR_ARGB(220, 255, 255, 255)	
+
+/*! цвет соседей (прямых) выделенного квада */
+#define AIGRID_COLOR_SEL_ADD			D3DCOLOR_ARGB(100, 255, 255, 255)	
 
 //! состояния занятости квада
 enum AIQUAD_STATE
 {
-	AIQUAD_STATE_FREE = 0,		//!< свободен
-	AIQUAD_STATE_TEMPBUSY = 1,	//!< временно занят
-	AIQUAD_STATE_BUSY = 2,		//!< занят
+
+	//! свободен
+	AIQUAD_STATE_FREE = 0,		
+
+	//! временно занят
+	AIQUAD_STATE_TEMPBUSY = 1,	
+
+	//! занят
+	AIQUAD_STATE_BUSY = 2,		
 };
 
 /*! тип функции для навигации квада по уровню, 
@@ -108,6 +161,8 @@ enum AIQUAD_STATE
 возвращает false в случае удачи (изъянов не найдено) и true в случае неудачи(есть боковые пересечения или нет персечения с уровнем вообще, либо по высоте не вмещается) 
 */
 typedef bool(*g_aiquad_phy_navigate) (float3_t *pPos);
+
+//##########################################################################
 
 /*! переназначение g_aiquad_phy_navigate, обязательное действие для работы с сеткой */
 SX_LIB_API void SAIG_SetFunc_QuadPhyNavigate(g_aiquad_phy_navigate func);
@@ -259,8 +314,8 @@ SX_LIB_API void SAIG_QuadSelectedDelete();
 //! свободен ли квад idQuad в радиусе iRadius (iRadius - количество квадов вокруг указанного в idQuad, 1 - значит только указанный, 2 - значит все соседние и так далее)
 SX_LIB_API bool SAIG_QuadIsFree(ID idQuad, int iRadius);
 
-//! возвращает id ближайшего квада (если isFree == true то ищет только свободные) с радиусом свободности iRadius
-SX_LIB_API ID SAIG_QuadGetNear(const float3 *pPos, bool isFree = false, int iRadius = 1);	
+//! возвращает id ближайшего квада (если isFree == true то ищет только свободные) с радиусом свободности iQuadRadius
+SX_LIB_API ID SAIG_QuadGetNear(const float3 *pPos, float fRadius, bool isFree = false, int iQuadRadius = 1);
 
 #define SAIG_QuadSetColor(id, color) SAIG_GridSetColorArr(&id, color, 1)
 
@@ -295,7 +350,7 @@ SX_LIB_API ID SAIG_GraphPointGetNear(ID idBegin, ID idEnd);
 @{*/
 
 //! отрисовка сетки
-SX_LIB_API void SAIG_RenderQuads(const ISXFrustum *pFrustum, const float3 *pViewPos, float fDist);	
+SX_LIB_API void SAIG_RenderQuads(const IFrustum *pFrustum, const float3 *pViewPos, float fDist);	
 
 //! отрисовка графпоинтов
 SX_LIB_API void SAIG_RenderGraphPoints(const float3 *pViewPos, float fDist);			

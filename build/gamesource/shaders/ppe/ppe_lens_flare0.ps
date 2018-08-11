@@ -8,22 +8,27 @@ TODO: возможно надо будет в первом проходе обн
 #include <../struct.h>
 #include <../mtrl.h>
 
-half4 LightPos;
-half2 SizeMap;
-half RadiusSun;
-half4 Color;
-//half2 NearFar;
+//##########################################################################
 
-sampler2D DepthSampler:register(s0);
+half4 g_vLightPos;
+half2 g_vSizeMap;
+half g_fRadiusSun;
+half4 g_vColor;
 
-half4 main(vs_out_pp IN) : COLOR0
+//##########################################################################
+
+sampler2D g_sDepth:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {	
-	half2 SunPosProj = LightPos.xy;
-	half depth = tex2D(DepthSampler,IN.TexUV).r;
-	clip(depth - 0.999f);
-	half2 ntc = IN.TexUV;
-	ntc.y *= SizeMap.y/SizeMap.x;
-	SunPosProj.y *= SizeMap.y/SizeMap.x;
-	half tmpcolor = lerp(0.f,1.f,1.f-(saturate((distance(ntc, SunPosProj)) * (1.f / (((RadiusSun)/0.9f)/SizeMap.x))))) * 0.7f;// * saturate(depth);
-	return tmpcolor*Color;
+	half2 vSunPosProj = g_vLightPos.xy;
+	half fDepth = tex2D(g_sDepth, IN.vTexUV).r;
+	clip(fDepth - 0.999);
+	half2 vNewTC = IN.vTexUV;
+	vNewTC.y *= g_vSizeMap.y/g_vSizeMap.x;
+	vSunPosProj.y *= g_vSizeMap.y/g_vSizeMap.x;
+	half vColor = lerp(0.0, 1.0, 1.0 - (saturate((distance(vNewTC, vSunPosProj)) * (1.0 / (((g_fRadiusSun)/0.9)/g_vSizeMap.x))))) * 0.7;// * saturate(fDepth);
+	return vColor*g_vColor;
 }

@@ -6,9 +6,13 @@ pp_quad_render.ps
 
 #include <../struct.h>
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
 
-half4 main(vs_out_pp IN):COLOR0
+sampler2D g_sTexture:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN):COLOR0
 {
-	return tex2D(BaseSampler,IN.TexUV);
+	return tex2D(g_sTexture,IN.vTexUV);
 }

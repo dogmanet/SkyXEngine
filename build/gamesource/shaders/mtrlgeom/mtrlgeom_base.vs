@@ -6,17 +6,21 @@ mtrlgeom_base.vs
 
 #include <../struct.h>
 
-half4x4	WorldViewProjection;
-half4x4	World;
+//##########################################################################
 
-vs_out_gcommon main(vs_in_geom IN)
+half4x4	g_mWVP;
+half4x4	g_mW;
+
+//##########################################################################
+
+VSO_SceneCommon main(VSI_Geometry IN)
 {
-	vs_out_gcommon OUT;
+	VSO_SceneCommon OUT;
 
-	OUT.Position = mul(half4(IN.Position,1.f),WorldViewProjection);
-	OUT.Normal = mul(IN.Normal,World);
-	OUT.TexUV = IN.TexUV;
-	OUT.Pos = OUT.Position;
+	OUT.vPosition = mul(half4(IN.vPosition,1.f),g_mWVP);
+	OUT.vNormal = mul(IN.vNormal,g_mW);
+	OUT.vTexUV = IN.vTexUV;
+	OUT.vPos = OUT.vPosition;
 
 	return OUT;
 }

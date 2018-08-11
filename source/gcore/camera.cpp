@@ -337,7 +337,7 @@ void CCamera::updateFrustum(const float4x4 *pProjection)
 	m_oFrustum.update(&m_mView, pProjection);
 }
 
-const ISXFrustum* CCamera::getFrustum()
+const IFrustum* CCamera::getFrustum()
 {
 	return &m_oFrustum;
 }

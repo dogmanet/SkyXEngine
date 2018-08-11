@@ -28,3 +28,10 @@ half4 GreenTransformPos(half3 pos,half scale,half multiplier, half3 translate)
 	tpos.xyz += translate;
 	return tpos;
 }
+
+half4 GreenAlphaTest(half4 vColor)
+{
+	clip(vColor.a - GREEN_ALPHATEST_VALUE);
+	vColor.a = 1.f;
+	return vColor;
+}

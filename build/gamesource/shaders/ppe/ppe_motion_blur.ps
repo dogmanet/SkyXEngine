@@ -7,51 +7,58 @@ ppe_motion_blur.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-half4x4 ViewProjectionPrev;
+//##########################################################################
 
-half3 ViewPos;
-half CoefBlur;
-half2 NearFar;
+half4x4 g_mVPprev;
 
-static int NumSam = 16;
+half3 g_vViewPos;
+half g_fCoefBlur;
+half2 g_vNearFar;
 
-sampler2D DepthMap:register(s1);
-sampler2D SceneMap:register(s0);
+static int g_vCountSamples = 16;
 
-half4 main(vs_out_res_pos IN) : COLOR0
+//##########################################################################
+
+sampler2D g_sDepth:register(s1);
+sampler2D g_sScene:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_ResPos IN) : COLOR0
 {
-	half depth = tex2D(DepthMap, IN.TexUV).r; 
+	half fDepth = tex2D(g_sDepth, IN.vTexUV).r; 
 	
-	half4 vWorldPos = half4(ViewPos.xyz + IN.WorldRay * depth,1.f);
+	half4 vWorldPos = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0);
 	
-	[branch]if(depth*NearFar.y <= PP_MOTION_BLUR_DISTNOBLUR)
-		return tex2D(SceneMap, IN.TexUV);
+	[branch]if(fDepth * g_vNearFar.y <= PP_MOTION_BLUR_DISTNOBLUR)
+		return tex2D(g_sScene, IN.vTexUV);
 	
-	half4 currentPos = half4(IN.TexUV.x * 2.f - 1.f, (1.f-IN.TexUV.y) * 2.f - 1.f, vWorldPos.z, 1.f);
-	half4 previousPos = mul(vWorldPos,ViewProjectionPrev);
-	previousPos.xyz /= previousPos.w;
+	half4 vCurrentPos = half4(IN.vTexUV.x * 2.0 - 1.0, (1.0 - IN.vTexUV.y) * 2.0 - 1.0, vWorldPos.z, 1.0);
+	half4 vPrevPos = mul(vWorldPos, g_mVPprev);
+	vPrevPos.xyz /= vPrevPos.w;
 
-	half2 velocity = (currentPos.xy - previousPos.xy) * CoefBlur;
-	velocity.x = -velocity.x;
+	half2 vVelocity = (vCurrentPos.xy - vPrevPos.xy) * g_fCoefBlur;
+	vVelocity.x = -vVelocity.x;
 
-	half4 color = tex2D(SceneMap, IN.TexUV);
-	half4 original_color = color;
-	half2 SamplePoint = IN.TexUV + velocity;
-	half4 CurrentSample;
+	half4 vColor = tex2D(g_sScene, IN.vTexUV);
+	half4 vOriginColor = vColor;
+	half2 vSamplePoint = IN.vTexUV + vVelocity;
+	half4 vCurrentSample;
 		
-	for(int i = 1; i < NumSam+1; ++i)
+	for(int i = 1; i < g_vCountSamples + 1; ++i)
 	{   
-		SamplePoint = IN.TexUV + (velocity * i * (1.f - depth));
-		CurrentSample = tex2D(SceneMap, SamplePoint);
+		vSamplePoint = IN.vTexUV + (vVelocity * i * (1.0 - fDepth));
+		vCurrentSample = tex2D(g_sScene, vSamplePoint);
 		
-		depth = tex2D(DepthMap, SamplePoint).r;
+		fDepth = tex2D(g_sDepth, vSamplePoint).r;
 		
-		[branch]if(depth*NearFar.y > PP_MOTION_BLUR_DISTNOBLUR)
-			color += CurrentSample;
+		[branch]if(fDepth * g_vNearFar.y > PP_MOTION_BLUR_DISTNOBLUR)
+			vColor += vCurrentSample;
 		else 
-			color += original_color;
+			vColor += vOriginColor;
 	}
 		
-	color /= half(NumSam);
-	return half4(color.rgb,original_color.a);
+	vColor /= half(g_vCountSamples);
+	
+	return half4(vColor.rgb, vOriginColor.a);
 }

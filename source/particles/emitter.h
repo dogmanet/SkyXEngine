@@ -128,45 +128,45 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
-	void Init(ParticlesData* data);
-	ParticlesData* GetData();
+	void init(ParticlesData* data);
+	ParticlesData* getData();
 
-	void NameSet(const char* name);
-	void NameGet(char* name);
+	void setName(const char* name);
+	void getName(char* name);
 
-	void CountSet(int count);
-	int CountGet();
-	int CountLifeGet();
+	void setCount(int count);
+	int getCount();
+	int getCountLife();
 
-	void EnableSet(bool enable);
-	bool EnableGet();
+	void setEnable(bool enable);
+	bool getEnable();
 
-	void GeomDataCreate();
+	void createGeomData();
 	
-	void Compute(const float4x4 * mat);
-	void ComputeLighting();
-	void Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos);
+	void compute(const float4x4 * mat);
+	void computeLighting();
+	void render(DWORD timeDelta, float4x4* matrot, float4x4* matpos);
 
-	void TextureSet(const char* tex);
-	void TextureSetID(ID tex);
-	ID TextureGetID();
-	void TextureGet(char* tex);
+	void setTexture(const char* tex);
+	void setTextureID(ID tex);
+	ID getTextureID();
+	void getTexture(char* tex);
 
-	void TextureTrackSet(const char* tex);
-	void TextureTrackSetID(ID tex);
-	ID TextureTrackGetID();
-	void TextureTrackGet(char* tex);
+	void setTextureTrack(const char* tex);
+	void setTextureTrackID(ID tex);
+	ID getTextureTrackID();
+	void getTextureTrack(char* tex);
 
-	void AnimTexDataInit();
+	void initAnimTexData();
 
-	void AlifeSet(bool alife);
-	bool AlifeGet();
+	void setAlife(bool alife);
+	bool getAlife();
 
-	int TrackCountGet();
-	int TrackPosGet(float3** arr, int count);
+	int getTrackCount();
+	int getTrackPos(float3** arr, int count);
 
 	float3_t CurrMin;
 	float3_t CurrMax;
@@ -174,7 +174,7 @@ public:
 
 protected:
 
-	void NullingInit();
+	void initNulling();
 
 	char Name[OBJECT_NAME_MAX_LEN];
 
@@ -182,12 +182,12 @@ protected:
 	bool IsPointInSphere(float3* point);
 	bool IsPointInBox(float3* point);
 
-	void CreateParticles();
-	void ReCreateParticles(WORD id);
+	void createParticles();
+	void reCreateParticles(WORD id);
 
-	void VertexBuffModify();
+	void modifyVertexBuff();
 
-	void UpdateAnimTex(WORD idparticle, DWORD tmptime);
+	void updateAnimTex(WORD idparticle, DWORD tmptime);
 	float2_t AnimTexSize;	//размер текстуры
 	float4 AnimSizeCadr;//размер одного кадра, xy - в пикселях, zw - в процентном соотношении к размеру текстуры
 

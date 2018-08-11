@@ -74,9 +74,9 @@ void SXLevelEditor::GeomSel(int sel)
 		SXLevelEditor::HelperPos = (max + min) * 0.5f;
 		SXLevelEditor::HelperScale = *scale;
 
-		SXLevelEditor::ObjAxesHelper->SetPosition(SXLevelEditor::HelperPos);
-		SXLevelEditor::ObjAxesHelper->SetRotation(*rot);
-		SXLevelEditor::ObjAxesHelper->SetScale(float3(1,1,1));
+		SXLevelEditor::ObjAxesHelper->setPosition(SXLevelEditor::HelperPos);
+		SXLevelEditor::ObjAxesHelper->setRotation(*rot);
+		SXLevelEditor::ObjAxesHelper->setScale(float3(1,1,1));
 
 		SXLevelEditor::EditGeomName->setText(tmpname);
 
@@ -137,8 +137,8 @@ LRESULT SXLevelEditor_ButtonGeomModel_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGeomModel->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGeomModel->setText(sRpath.c_str());
 	}
 	return 0;
 }
@@ -152,13 +152,13 @@ LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		StrCutMesh(tmppath, tmpname);
-		SXLevelEditor::EditGeomLod1->setText(tmpname);
+		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		SXLevelEditor::EditGeomLod1->setText(sRpath.c_str());
 		int sel = SXLevelEditor::ListBoxList->getSel();
 		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{
 			if (sel >= 0 && sel < SGeom_ModelsGetCount())
-				SGeom_ModelsMSetLodPath(sel, tmpname);
+				SGeom_ModelsMSetLodPath(sel, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -178,7 +178,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	SXLevelEditor::EditGeomModel->getText(path_model, 1024);
 	SXLevelEditor::EditGeomLod1->getText(path_model_lod, 1024);
 
-	if (!def_str_validate(path_model))
+	if (!STR_VALIDATE(path_model))
 	{
 		return 0;
 	}
@@ -194,7 +194,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 
 	sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), path_model_lod);
-	if (def_str_validate(path_model_lod) && !FileExistsFile(tmppath))
+	if (STR_VALIDATE(path_model_lod) && !FileExistsFile(tmppath))
 	{
 		char tmpstr[2048];
 		sprintf(tmpstr, "%s%s%s", "Model/lod [", path_model_lod, "] not found");
@@ -202,7 +202,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 		return 0;
 	}
 
-	if (!def_str_validate(model_name))
+	if (!STR_VALIDATE(model_name))
 	{
 		if (MessageBox(0, "No name for the model, enter the file name automatically?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
 		{
@@ -220,7 +220,7 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 
 
-	SGeom_ModelsAddModel(path_model, (def_str_validate(path_model_lod) ? path_model_lod : 0), model_name);
+	SGeom_ModelsAddModel(path_model, (STR_VALIDATE(path_model_lod) ? path_model_lod : 0), model_name);
 
 	char tmpnamecountpoly[1024];
 	sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelsMGetName(SGeom_ModelsGetCount() - 1), SGeom_ModelsMGetCountPoly(SGeom_ModelsGetCount() - 1));

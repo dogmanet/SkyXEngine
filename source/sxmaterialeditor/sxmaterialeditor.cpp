@@ -467,8 +467,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::ComboBoxParamL->setSel(0);
 
 
-	SGCore_SkyBoxLoadTex("sky/sky_2_cube.dds");
-	SXMaterialEditor::EditSkyBox->setText("sky/sky_2_cube.dds");
+	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SXMaterialEditor::EditSkyBox->setText("sky_2_cube.dds");
 		
 	SRender_GetCamera()->setPosition(&float3(0, 0, -100));
 
@@ -485,6 +485,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		true);
 	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
+
+	SXMaterialEditor::EditLigthColorR->setText("1");
+	SXMaterialEditor::EditLigthColorG->setText("1");
+	SXMaterialEditor::EditLigthColorB->setText("1");
+	SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(255, 255, 255));
+
 
 	SGCore_LoadTexAllLoad();
 

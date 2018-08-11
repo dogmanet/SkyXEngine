@@ -335,7 +335,7 @@ public:
 
 	UINT getMaterial(const char * mat, bool bStatic = false);
 
-	void computeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr);
+	void computeVis(const IFrustum * frustum, const float3 * viewpos, ID id_arr);
 
 	ID getNextVisId();
 	void freeVisID(ID id);

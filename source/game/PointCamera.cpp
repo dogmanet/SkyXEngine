@@ -29,7 +29,7 @@ CPointCamera::~CPointCamera()
 	mem_release(m_pSXC);
 }
 
-ISXCamera * CPointCamera::getCamera()
+ICamera * CPointCamera::getCamera()
 {
 	return(m_pSXC);
 }

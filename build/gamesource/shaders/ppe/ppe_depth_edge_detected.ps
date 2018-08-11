@@ -1,0 +1,36 @@
+
+/*
+ppe_depth_edge_detected.ps
+выделение границ
+*/
+
+#include <../struct.h>
+
+//##########################################################################
+
+half2 g_vPixelSize;
+
+//##########################################################################
+
+sampler2D g_sDepth:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
+{
+	half fDepthCenter = tex2D(g_sDepth, IN.vTexUV);
+	half fDepth0 = tex2D(g_sDepth, IN.vTexUV + half2(-1, -1) * g_vPixelSize);
+	half fDepth1 = tex2D(g_sDepth, IN.vTexUV + half2( 1, -1) * g_vPixelSize);
+	half fDepth2 = tex2D(g_sDepth, IN.vTexUV + half2(-1,  1) * g_vPixelSize);
+	half fDepth3 = tex2D(g_sDepth, IN.vTexUV + half2( 1,  1) * g_vPixelSize);
+	
+	half fDepth4 = tex2D(g_sDepth, IN.vTexUV + half2( 0,  1) * g_vPixelSize);
+	half fDepth5 = tex2D(g_sDepth, IN.vTexUV + half2( 1,  0) * g_vPixelSize);
+	half fDepth6 = tex2D(g_sDepth, IN.vTexUV + half2(-1,  0) * g_vPixelSize);
+	half fDepth7 = tex2D(g_sDepth, IN.vTexUV + half2(0,  -1) * g_vPixelSize);
+	
+	half fDiff		= abs(((fDepth0 + fDepth1 + fDepth2 + fDepth3 + fDepth4 + fDepth5 + fDepth6 + fDepth7) / 8) - (fDepthCenter));
+	half fEdgeMask	= step(0.00001 + (0.01 * (fDepthCenter)), fDiff);//step(lerp(0.00001, 0.001, fDepthCenter), fDiff);
+	
+	return half4(fEdgeMask, fEdgeMask, fEdgeMask, 1);
+}

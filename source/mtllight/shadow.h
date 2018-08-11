@@ -24,47 +24,46 @@ public:
 	PSSM();
 	~PSSM();
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
 	SX_ALIGNED_OP_MEM
 
-	void Init();
+	void init();
 
-	void UpdateFrustums(int split, const float3* poscam, const float3* dircam);
-	void PreRender(int spilt);
-	void Begin();
-	void End();
+	void updateFrustums(int iSplit, const float3 *pPosCam, const float3 *pDirCam);
+	void preRender(int iSplit);
+	void begin();
+	void end();
 
-	void GenShadow2(IDirect3DTexture9* shadowmap);
-	void GenShadowAll(IDirect3DTexture9* shadowmap);
+	void genShadow(IDirect3DTexture9 *pShadowMap);
+	void genShadowAll(IDirect3DTexture9 *pShadowMap);
 	
-	void SetPosition(float3* pos);
-	void GetPosition(float3* pos);
+	void setPosition(const float3 *pPos);
+	void getPosition(float3 *pPos);
 
-	void SetBlurPixel(float blur_pixel);
-	bool GetBlurPixel();
+	void setBlurPixel(float fBlurPixel);
+	bool getBlurPixel();
 
-	void Set4Or3Splits(bool is4);
-	bool Get4Or3Splits();
+	void set4Or3Splits(bool is4);
+	bool get4Or3Splits();
 
-	void SetIDArr(ID id, int split, ID idarr);
-	long GetCountIDArrs();
-	ID GetIDArr(ID id, int split);
+	void setIDArr(ID id, int iSplit, ID idArr);
+	long getCountIDArrs();
+	ID getIDArr(ID id, int iSplit);
 
-	ISXFrustum* Frustums[5];
-	//long IDArr[5];
+	IFrustum *m_aFrustums[5];
 
-	int IsUpdate[5];
-	float2 NearFar[5];
-	IDirect3DTexture9*	DepthMaps[5];
+	int m_aIsUpdate[5];
+	float2 m_aNearFar[5];
+	IDirect3DTexture9 *m_aDepthMaps[5];
 
 protected:
 
 	Array<ID*> IDArr;
 	float3 Position;
 
-	void Flickering(float4x4 *matLVP,float size_x,float size_y);
+	void flickering(float4x4 *matLVP,float size_x,float size_y);
 
 	float BlurPixel;
 	
@@ -85,7 +84,7 @@ protected:
 	IDirect3DSurface9* OldColorSurface;
 };
 
-////////////////////////
+//##########################################################################
 
 class ShadowMapTech
 {
@@ -93,48 +92,47 @@ public:
 	ShadowMapTech();
 	~ShadowMapTech();
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
 	SX_ALIGNED_OP_MEM
 
-	void Init();
+	void init();
 
-	void SetBias(float bias);
-	float GetBias();
+	void setBias(float bias);
+	float getBias();
 
-	void SetBlurPixel(float blur_pixel);
-	float GetBlurPixel();
+	void setBlurPixel(float blur_pixel);
+	float getBlurPixel();
 
-	void Begin();
-	void End();
+	void begin();
+	void end();
 
-	void GenShadow2(IDirect3DTexture9* shadowmap);
+	void genShadow(IDirect3DTexture9* shadowmap);
 
-	void SetPosition(const float3* pos);
-	void GetPosition(float3* pos);
+	void setPosition(const float3* pos);
+	void getPosition(float3* pos);
 
-	void SetDirection(const float3* dir);
-	void GetDirection(float3* dir);
+	void setDirection(const float3* dir);
+	void getDirection(float3* dir);
 
-	void SetAngleNearFar(const float3* anf);
-	void GetAngleNearFar(float3* anf);
+	void setAngleNearFar(const float3* anf);
+	void getAngleNearFar(float3* anf);
 
-	void SetFar(float sfar);
-	float GetFar();
+	void setFar(float sfar);
+	float getFar();
 
-	void SetNear(float snear);
-	float GetNear();
+	void setNear(float snear);
+	float getNear();
 
-	void SetAngle(float sangle);
-	float GetAngle();
+	void setAngle(float sangle);
+	float getAngle();
 
-	void SetIDArr(long id, long idarr);
-	long GetCountIDArrs();
-	long GetIDArr(long id);
+	void setIDArr(long id, long idarr);
+	long getCountIDArrs();
+	long getIDArr(long id);
 
-	ISXFrustum* Frustum;
-	//long IDArr;
+	IFrustum* Frustum;
 
 	float4x4 View;
 	float4x4 Proj;
@@ -160,6 +158,7 @@ private:
 	IDirect3DSurface9*  OldColorSurface;
 };
 
+//##########################################################################
 
 class ShadowMapCubeTech
 {
@@ -167,47 +166,46 @@ public:
 	ShadowMapCubeTech();
 	~ShadowMapCubeTech();
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
 	SX_ALIGNED_OP_MEM
 
-	void SetEnableCubeEdge(int edge,bool enable);
-	bool GetEnableCubeEdge(int edge);
+	void setEnableCubeEdge(int edge,bool enable);
+	bool getEnableCubeEdge(int edge);
 
-	void SetBias(float bias);
-	float GetBias();
+	void setBias(float bias);
+	float getBias();
 
-	void SetBlurPixel(float blur_pixel);
-	bool GetBlurPixel();
+	void setBlurPixel(float blur_pixel);
+	bool getBlurPixel();
 
-	void Init();
+	void init();
 
-	void SetPosition(float3* pos);
-	void GetPosition(float3* pos);
+	void setPosition(float3* pos);
+	void getPosition(float3* pos);
 
-	void SetNearFar(float2* nf);
-	void GetNearFar(float2* nf);
+	void setNearFar(float2* nf);
+	void getNearFar(float2* nf);
 
-	void SetNear(float val);
-	float GetNear();
+	void setNear(float val);
+	float getNear();
 
-	void SetFar(float val);
-	float GetFar();
+	void setFar(float val);
+	float getFar();
 	
-	void Begin();
-	void Pre(int cube);
-	void Post(int cube);
-	void End();
+	void begin();
+	void pre(int cube);
+	void post(int cube);
+	void end();
 
-	void GenShadow2(IDirect3DTexture9* shadowmap);
+	void genShadow(IDirect3DTexture9* shadowmap);
 
-	void SetIDArr(long id, int split, long idarr);
-	long GetCountIDArrs();
-	long GetIDArr(long id, int split);
+	void setIDArr(long id, int split, long idarr);
+	long getCountIDArrs();
+	long getIDArr(long id, int split);
 
-	ISXFrustum* Frustums[6];
-	//long IDArr[6];
+	IFrustum *m_aFrustums[6];
 
 private:
 
@@ -229,7 +227,7 @@ private:
 	IDirect3DSurface9*  OldColorSurface;
 
 	float3 Position;
-	float2 NearFar;
+	float2 m_vNearFar;
 };
 
 #endif

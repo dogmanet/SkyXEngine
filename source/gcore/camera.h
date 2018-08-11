@@ -10,7 +10,7 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 //класс описывающий фрустум
-class CFrustum : public virtual ISXFrustum
+class CFrustum : public virtual IFrustum
 {
 public:
 	CFrustum();
@@ -38,7 +38,7 @@ public:
 
 private:
 
-	CSXFrustumPlane m_aFrustumPlanes[6];
+	CFrustumPlane m_aFrustumPlanes[6];
 
 	float3 m_aPoints[8];
 	float3 m_vCenter;
@@ -46,7 +46,7 @@ private:
 
 //**************************************************************************
 
-class CCamera : public virtual ISXCamera
+class CCamera : public virtual ICamera
 {
 public:
 	CCamera	();
@@ -86,7 +86,7 @@ public:
 	void updateView();
 
 	void updateFrustum(const float4x4 *pmProjection);
-	const ISXFrustum* getFrustum();
+	const IFrustum* getFrustum();
 
 protected:
 	CFrustum m_oFrustum;	//!< фрустум этой камеры

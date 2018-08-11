@@ -7,14 +7,20 @@ mtrlgeom_decal.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-sampler2D BaseTex:register(s0);
+//##########################################################################
 
-half4 NearFarIsUnlit;
+sampler2D g_sColor:register(s0);
 
-half4 main(vs_out_gcommon IN) : COLOR0
+//##########################################################################
+
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+half4 main(VSO_SceneCommon IN) : COLOR0
 {
-	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
-	half4 color = tex2D(BaseTex,IN.TexUV);
-	clip(color.a - 0.5f);
-	return color;
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
+	clip(vColor.a - 0.5);
+	return vColor;
 }

@@ -3,17 +3,14 @@
 
 LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char* tmpname = 0;
+	char szName[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
 	
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(szName, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
-		tmpname = tmppath + strlen(Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES));
-		SXMaterialEditor::EditSkyBox->setText(tmpname);
+		SXMaterialEditor::EditSkyBox->setText(szName);
 
-		SGCore_SkyBoxLoadTex(tmpname);
+		SGCore_SkyBoxLoadTex(szName);
 	}
 	return 0;
 }
@@ -21,6 +18,38 @@ LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 LRESULT SXMaterialEditor_ButtonRotAngle0_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SRender_SimModelSetRotationY(0);
+	return 0;
+}
+
+LRESULT SXMaterialEditor_ButtonLigthColor_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	static COLORREF aCustClr[16];
+	CHOOSECOLOR oChooseColor;
+	ZeroMemory(&oChooseColor, sizeof(CHOOSECOLOR));
+	oChooseColor.hwndOwner = hwnd;
+	oChooseColor.lStructSize = sizeof(CHOOSECOLOR);
+	oChooseColor.lpCustColors = aCustClr;
+	oChooseColor.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+	ID idGlobalLight = SML_LigthsGetGlobal();
+	float3 vColor;
+	SML_LigthsGetColor(idGlobalLight, &vColor);
+
+	oChooseColor.rgbResult = RGB(DWORD(vColor.x * 255.0), DWORD(vColor.y * 255.0), DWORD(vColor.z * 255.0));
+
+	if (ChooseColor(&oChooseColor))
+	{
+		vColor.x = float(GetRValue(oChooseColor.rgbResult)) / 255.0;
+		vColor.y = float(GetGValue(oChooseColor.rgbResult)) / 255.0;
+		vColor.z = float(GetBValue(oChooseColor.rgbResult)) / 255.0;
+		SML_LigthsSetColor(idGlobalLight, &vColor);
+		SXMaterialEditor::StaticLigthColor->setColorBrush(oChooseColor.rgbResult);
+
+		SXMaterialEditor::EditLigthColorR->setText(String(vColor.x).c_str());
+		SXMaterialEditor::EditLigthColorG->setText(String(vColor.y).c_str());
+		SXMaterialEditor::EditLigthColorB->setText(String(vColor.z).c_str());
+	}
+
 	return 0;
 }
 

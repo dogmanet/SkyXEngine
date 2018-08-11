@@ -637,7 +637,7 @@ void CGreen::ComputeBBtrans(ID idGreen)
 	}
 }
 
-void CGreen::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos, ID id_arr)
+void CGreen::comArrIndeces(const IFrustum* frustum, const float3* viewpos, ID id_arr)
 {
 	GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
@@ -670,7 +670,7 @@ void CGreen::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos, ID 
 	int qwert = 0;
 }
 
-void CGreen::comRecArrIndeces(ID idGreen, ID idArr, const ISXFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
+void CGreen::comRecArrIndeces(ID idGreen, ID idArr, const IFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float3 jcenter;
 	float jradius;
@@ -1044,7 +1044,7 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 	const char* path, const char* lod1, const char* lod2, 
 	const char* navmesh)
 {
-	if (geom->getCountModel() > 0 && def_str_validate(path))
+	if (geom->getCountModel() > 0 && STR_VALIDATE(path))
 	{
 		CModel* tmpnewmpdel = new CModel();
 		sprintf(tmpnewmpdel->m_szName, name);
@@ -1070,7 +1070,7 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 			tmpnewmpdel->m_aLods[0]->m_aIDsTextures[i] = SGCore_MtlLoad(tmppathtex, (tmpnewmpdel->m_typeGreen == GREEN_TYPE_TREE ? MTL_TYPE_TREE : MTL_TYPE_GRASS));
 		}
 
-		if (def_str_validate(lod1))
+		if (STR_VALIDATE(lod1))
 		{
 			if (stricmp(path, lod1) == 0)
 				tmpnewmpdel->m_aLods[1] = tmpnewmpdel->m_aLods[0];
@@ -1089,7 +1089,7 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 			}
 		}
 
-		if (def_str_validate(lod2))
+		if (STR_VALIDATE(lod2))
 		{
 			if (stricmp(path, lod2) == 0)
 				tmpnewmpdel->m_aLods[2] = tmpnewmpdel->m_aLods[0];
@@ -1120,7 +1120,7 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 		float3 tmpmin, tmpmax;
 		geom->getMinMax(&tmpmin, &tmpmax);
 
-		if (def_str_validate(path_mask))
+		if (STR_VALIDATE(path_mask))
 		{
 			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LOAD_TEXTURE_TYPE_LOAD);
 			SGCore_LoadTexAllLoad();
@@ -1137,7 +1137,7 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 
 		ComputeBBtrans(m_aGreens.size() - 1);
 
-		if (def_str_validate(navmesh))
+		if (STR_VALIDATE(navmesh))
 		{
 			setGreenNav(m_aGreens.size() - 1, navmesh);
 		}
@@ -2309,7 +2309,7 @@ bool CGreen::traceBeam(const float3* start, const float3* dir, float3* _res, ID*
 	if (m_aGreens.size() <= 0)
 		return false;
 
-	SXTriangle tmptri;
+	CTriangle tmptri;
 	bool tmpiscom = true;
 	float3 ip;
 	float3 res;
@@ -2354,9 +2354,9 @@ bool CGreen::traceBeam(const float3* start, const float3* dir, float3* _res, ID*
 						float tmpscale = oDataVertex.m_vTexCoord.x;
 						mat = SMMatrixScaling(tmpscale, tmpscale, tmpscale) * SMMatrixRotationY(oDataVertex.m_vTexCoord.y) * SMMatrixTranslation(oDataVertex.m_vPosition);
 
-						tmptri.a = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
-						tmptri.b = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);
-						tmptri.c = SMVector3Transform(pVertData[pIndData[poly + 2]].Pos, mat);
+						tmptri.m_vA = SMVector3Transform(pVertData[pIndData[poly]].Pos, mat);
+						tmptri.m_vB = SMVector3Transform(pVertData[pIndData[poly + 1]].Pos, mat);
+						tmptri.m_vC = SMVector3Transform(pVertData[pIndData[poly + 2]].Pos, mat);
 
 						if (tmptri.IntersectLine((*start), il, &ip))
 						{

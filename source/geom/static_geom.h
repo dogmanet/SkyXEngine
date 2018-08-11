@@ -355,7 +355,7 @@ public:
 	
 	int getCountModel();
 
-	void comArrIndeces(const ISXFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
+	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
 	bool getIntersectedRayY(float3 *pPos);
 
 	bool sortExistsForRender(int iSortMtl, ID idArr = 0);
@@ -468,7 +468,7 @@ protected:
 
 	void getIntersectedRayY2(float3 *pPos, CSegment **ppSplits, int *iCount, CSegment *pSegment, ID idCurrSplitRender);
 
-	void comRecArrIndeces(ID idArr, const ISXFrustum *pFrustum, CSegment **ppSplits, int *iCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
+	void comRecArrIndeces(ID idArr, const IFrustum *pFrustum, CSegment **ppSplits, int *iCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
 
 	//*************************************************************************
 

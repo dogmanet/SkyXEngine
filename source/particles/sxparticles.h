@@ -498,10 +498,10 @@ SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot);
 
 
 //! просчет видимости эффекта для фрустума frustum, и расчет расстояния от позиции наблюдателя view до эффекта, возвращает виден ли фруустуму эффект
-SX_LIB_API bool SPE_EffectVisibleCom(ID id, const ISXFrustum* frustum, float3* view);	
+SX_LIB_API bool SPE_EffectVisibleCom(ID id, const IFrustum* frustum, float3* view);	
 
 //! просчет видимости всех эффектов для фрустума frustum, и расчет расстояний от позиции наблюдателя view до всех эффектов
-SX_LIB_API void SPE_EffectVisibleComAll(const ISXFrustum* frustum, float3* view);
+SX_LIB_API void SPE_EffectVisibleComAll(const IFrustum* frustum, float3* view);
 
 
 //! виден ли эффект? по результатам просчетов #SPE_EffectVisibleComAll

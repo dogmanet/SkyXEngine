@@ -424,7 +424,7 @@ void ComputeBoundingBoxArr4(ISXBound* bound, ISXBound** bound_arr)
 
 //##########################################################################
 
-bool InPosition2D(float3* min,float3* max,float3* pos)
+bool InPosition2D(const float3* min, const float3* max, const float3* pos)
 {
 		if((max->x >= pos->x && min->x <= pos->x) && (max->z >= pos->z && min->z <= pos->z))
 			return true;
@@ -554,7 +554,7 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 
 //##########################################################################
 
-void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device)
+void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device)
 {
 	float dist_x = abs(max->x - min->x);
 	float dist_y = abs(max->y - min->y);

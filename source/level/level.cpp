@@ -182,6 +182,13 @@ void CLevel::load(const char *szName, bool isGame)
 		String str = config->getKey("level", "type");
 		if (stricmp(str.c_str(), "outdoor") == 0)
 		{
+			SGCore_SkyBoxCr();
+			SGCore_SkyCloudsCr();
+
+			float3 vMin, vMax;
+			SGeom_ModelsGetMinMax(&vMin, &vMax);
+			SGCore_SkyCloudsSetWidthHeightPos((vMax.x - vMin.x) * 2.f, (vMax.z - vMin.z) * 2.f, &float3((vMax + vMin) * 0.5));
+
 			ID gid = SML_LigthsCreatePoint(
 				&float3(60, 60, 0),
 				0,

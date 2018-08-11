@@ -239,7 +239,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 
 	CModel* tmpmodel = new CModel();
 	ID tmpidmodel = m_aAllModels.size() - 1;
-	if (!def_str_validate(name))
+	if (!STR_VALIDATE(name))
 		sprintf(tmpmodel->m_szName, "");
 	else
 		sprintf(tmpmodel->m_szName, "%s", name);
@@ -990,7 +990,7 @@ void CStaticGeom::initArrIndexPtr()
 }
 
 
-void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos, ID id_arr)
+void CStaticGeom::comArrIndeces(const IFrustum* frustum, const float3* viewpos, ID id_arr)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr);
 
@@ -1043,7 +1043,7 @@ void CStaticGeom::comArrIndeces(const ISXFrustum* frustum, const float3* viewpos
 	}
 }
 
-void CStaticGeom::comRecArrIndeces(ID idArr, const ISXFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
+void CStaticGeom::comRecArrIndeces(ID idArr, const IFrustum* frustum, CSegment** arrsplits, int *count, CSegment* comsegment, const float3* viewpos, Array<CSegment*, GEOM_DEFAULT_RESERVE_COM>* queue, ID curr_splits_ids_render)
 {
 	float jradius;
 	float3 jcenter;
@@ -1169,7 +1169,7 @@ bool CStaticGeom::sortExistsForRender(int sort, ID id_arr)
 					jidbuff = m_aAllModels[i]->m_aSubSets[jarrsplits[j]->m_pNumberGroupModel[k]].m_idBuff;
 					jnumgroup = jarrsplits[j]->m_pNumberGroup[k];
 
-					if (SGCore_MtlGetSort(m_aAllGroups[jnumgroup]->m_idTexture) == sort)
+					if (SGCore_MtlGetSort(m_aAllGroups[jnumgroup]->m_idTexture) & sort)
 						return true;
 				}
 			}
@@ -1219,7 +1219,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 			CStaticGeom::m_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
 			for (int k = 0, kl = m_aAllModels[i]->m_oLod0.m_pModel->m_uiSubsetCount; k < kl; ++k)
 			{
-				if (m_aAllModels[i]->m_oLod0.m_iSortGroup == sort_mtl || sort_mtl == -1)
+				if ((m_aAllModels[i]->m_oLod0.m_iSortGroup & sort_mtl) || sort_mtl == -1)
 				{
 					SGCore_MtlSet(m_aAllModels[i]->m_oLod0.m_aIDsTextures[k], 0);
 					SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aAllModels[i]->m_oLod0.m_pModel->m_pVertexCount[k], m_aAllModels[i]->m_oLod0.m_pModel->m_pStartIndex[k], m_aAllModels[i]->m_oLod0.m_pModel->m_pIndexCount[k] / 3);
@@ -1258,7 +1258,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 
 					int currsort = m_aAllGroups[jnumgroup]->m_iSortGroup;
 
-					if (m_aAllGroups[jnumgroup]->m_iSortGroup == sort_mtl || sort_mtl == -1)
+					if ((m_aAllGroups[jnumgroup]->m_iSortGroup & sort_mtl) || sort_mtl == -1)
 					{
 						if (
 							jarrsplits[j]->m_pCountPoly[k] > 0 &&	//если количество полигонов больше 0
@@ -1303,7 +1303,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 		for(int i = 0, l = m_aAllGroups.size(); i < l; ++i)
 		{
 			CGroup* tmpgroup = m_aAllGroups[i];
-			if (!tmpgroup || tmpgroup->m_aCountVertex.size() <= 0 || !(tmpgroup->m_iSortGroup == sort_mtl || sort_mtl == -1))
+			if (!tmpgroup || tmpgroup->m_aCountVertex.size() <= 0 || !((tmpgroup->m_iSortGroup & sort_mtl) || sort_mtl == -1))
 				continue;
 
 			//проходимся по всем буферам
@@ -1364,7 +1364,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 			CInfoGroup* tmpig = m_aDistGroup[i];
 			CGroup* tmpgroup = m_aAllGroups[tmpig->m_idGlobalGroup];
 
-			if (!tmpgroup || tmpgroup->m_aCountVertex.size() <= 0 || !(tmpgroup->m_iSortGroup == sort_mtl || sort_mtl == -1))
+			if (!tmpgroup || tmpgroup->m_aCountVertex.size() <= 0 || !((tmpgroup->m_iSortGroup & sort_mtl) || sort_mtl == -1))
 				continue;
 
 			if (exclude_model_id == tmpig->m_idModel && (exclude_group_id < 0 || exclude_group_id == tmpig->m_idGroup))
@@ -2742,8 +2742,8 @@ bool CStaticGeom::getIntersectedRayY(float3* pos)
 		{
 			for (DWORD group = 0; group<m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_uiCountSubSet; group++)
 			{
-				if (m_aAllGroups[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroup[group]]->m_iSortGroup > 0)
-					continue;
+				/*if (m_aAllGroups[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroup[group]]->m_iSortGroup > 0)
+					continue;*/
 
 				ID idbuff = m_aAllModels[id]->m_aSubSets[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroupModel[group]].m_idBuff;
 				ID idgroup = m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroup[group];
@@ -2950,7 +2950,7 @@ const char* CStaticGeom::getModelLodPath(ID id)
 
 void CStaticGeom::setModelLodPath(ID id, const char* path)
 {
-	if (id < m_aAllModels.size() && def_str_validate(path))
+	if (id < m_aAllModels.size() && STR_VALIDATE(path))
 	{
 		mem_delete(m_aAllModels[id]->m_oLod0.m_pModel);
 		m_aAllModels[id]->m_oLod0.m_aIDsTextures.clear();
@@ -3335,7 +3335,7 @@ bool CStaticGeom::traceBeam(const float3* start, const float3* dir, float3* _res
 	if (m_aAllModels.size() <= 0)
 		return false;
 
-	SXTriangle tmptri;
+	CTriangle tmptri;
 	bool tmpiscom = true;
 	float3 ip;
 	float3 res;
@@ -3363,9 +3363,9 @@ bool CStaticGeom::traceBeam(const float3* start, const float3* dir, float3* _res
 
 				for (DWORD numpoly = 0; numpoly<m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pCountPoly[group] * 3; numpoly += 3)
 				{
-					tmptri.a = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]].Pos;
-					tmptri.b = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]].Pos;
-					tmptri.c = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]].Pos;
+					tmptri.m_vA = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]].Pos;
+					tmptri.m_vB = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]].Pos;
+					tmptri.m_vC = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]].Pos;
 
 					if (tmptri.IntersectLine((*start), il, &ip))
 					{

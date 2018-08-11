@@ -14,307 +14,410 @@ See the license in LICENSE
 #include <direct.h>
 
 #define MTL_PRE_COND_ID(id,stdval) \
-if (!(id >= 0 && id < ArrMaterials.size()))\
+if (!(id >= 0 && id < m_aUnitMtrls.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
-else if (!ArrMaterials[id])\
+else if (!m_aUnitMtrls[id])\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material '%d' is not init", GEN_MSG_LOCATION, id); return stdval; }
 
 #define MTL_REF_PRE_COND_ID(id,stdval) \
 MTL_PRE_COND_ID(id, stdval)\
-if (!(ArrMaterials[id]->Reflect))\
-{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, ArrMaterials[id]->mtl->Name); return stdval; }
+if (!(m_aUnitMtrls[id]->m_pReflect))\
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, m_aUnitMtrls[id]->m_pMtrl->m_sName.c_str()); return stdval; }
 
-class Materials
+class CMaterials
 {
 public:
-	Materials();
-	~Materials();
+	CMaterials();
+	~CMaterials();
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
 	SX_ALIGNED_OP_MEM
 
-	void Clear(bool clear_del);
-	void Update(DWORD timeDelta);
-	void SetMainTexture(ID slot, ID id);
-	void Render(ID id, float4x4* world);
-	void RenderStd(MTLTYPE_MODEL type, float4x4* world, ID slot, ID id_mtl);
-	void RenderLight(float4_t* color, float4x4* world);
-	long GetCount();
+	void clear(bool isClearRefDel);
+	void update(UINT timeDelta);
+	void setMainTexture(ID idSlot, ID idTexure);
+	void render(ID id, const float4x4 *pWorld);
+	void renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl);
+	void renderLight(const float4_t *pColor, const float4x4 *pWorld);
+	int getCount();
 
-	void SetForceblyAlphaTest(bool isat);
-	bool GetForceblyAlphaTest();
+	void setForceblyAlphaTest(bool useAlphaTest);
+	bool getForceblyAlphaTest();
 
-	void SetIsIncrCountSurf(bool bf);
-	bool GetIsIncrCountSurf();
-	void NullingCurrCountSurf();
-	int GetCurrCountSurf();
-	void SetCurrCountSurf(int count);
+	void setIsIncrCountSurf(bool bf);
+	bool getIsIncrCountSurf();
+	void nullingCurrCountSurf();
+	int getCurrCountSurf();
+	void setCurrCountSurf(int iCount);
 
+	ID mtlLoad(const char *szName, MTLTYPE_MODEL type = MTLTYPE_MODEL_STATIC);
+	void mtlReLoad(ID id, const char *szName = 0);
+	void mtlSave(ID id);
 
-	ID MtlLoad(const char* name, MTLTYPE_MODEL type = MTLTYPE_MODEL_STATIC);
-	void MtlReLoad(ID id, const char* name = 0);
-	void MtlSave(ID id);
-	
-	bool MtlGetUsingAlphaTest(ID id);
-	void MtlSetUsingAlphaTest(ID id, bool is_using);
-	MTLTYPE_REFLECT MtlTypeReflection(ID id);
+	ID getStdMtl(MTLTYPE_MODEL type_model);
+	ID exists(const char *szName);
+	MTLTYPE_MODEL getTypeModel(ID id);
+	void setTypeModel(ID id, MTLTYPE_MODEL type_model);
+	ID getID(const char *szName);
 
-	ID GetStdMtl(MTLTYPE_MODEL type_model);
-	ID IsExists(const char* name);
-	MTLTYPE_MODEL GetTypeModel(ID id);
-	void SetTypeModel(ID id, MTLTYPE_MODEL type_model);
-	ID GetID(const char* name);
+	//######################################################################
 
-	
+	bool mtlGetUsingAlphaTest(ID id);
+	void mtlSetUsingAlphaTest(ID id, bool isUsing);
+	MTLTYPE_REFLECT mtlTypeReflection(ID id);
 
-	///////
+	UINT mtlGetSort(ID id);
 
-	void MtlRefSetIDArr(ID id, ID inid, int cube, ID idarr);
-	ID MtlRefGetIDArr(ID id, ID inid, int cube);
+	void mtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type);
+	MTLTYPE_PHYSIC mtlGetPhysicMaterial(ID id);
 
-	//void MtlRefSetPlane(ID id, D3DXPLANE* plane);
-	//void MtlRefSetCenter(ID id, float3_t* center);
-	void MtlRefPreRenderPlane(ID id, D3DXPLANE* plane);
-	ISXFrustum* MtlRefGetfrustum(ID id, int cube);
-	void MtlRefPostRenderPlane(ID id);
-	IDirect3DTexture9* MtlRefPlaneGetTex(ID id);
-
-	void MtlRefSetMinMax(ID id, float3_t* min, float3_t* max);
-	bool MtlRefIsAllowedRender(ID id);
-
-	void MtlRefCubeBeginRender(ID id, float3_t* center);
-	void MtlRefCubePreRender(ID id, int cube, float4x4* world);
-	void MtlRefCubePostRender(ID id, int cube);
-	void MtlRefCubeEndRender(ID id, float3_t* viewpos);
-	bool MtlRefUpdateCountUpdate(ID id, float3_t* viewpos);
-	void MtlRefNullingCountUpdate(ID id);
-	IDirect3DCubeTexture9* RefCubeGetTex(ID id);
-
-	//////
-
-	void MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type);
-	MTLTYPE_PHYSIC MtlGetPhysicMaterial(ID id);
-
-	void MtlSetTexture(ID id, const char* path_tex);
-	void MtlGetTexture(ID id, char* name);
-	ID MtlGetTextureID(ID id);
-	void MtlSetVS(ID id, const char* path_vs);
-	void MtlGetVS(ID id, char* name);
-	void MtlSetPS(ID id, const char* path_vs);
-	void MtlGetPS(ID id, char* name);
+	void mtlSetTexture(ID id, const char *szTexture);
+	void mtlGetTexture(ID id, char *szName);
+	ID mtlGetTextureID(ID id);
+	void mtlSetVS(ID id, const char *szNameVS);
+	void mtlGetVS(ID id, char *szNamePS);
+	void mtlSetPS(ID id, const char *szNamePS);
+	void mtlGetPS(ID id, char *szNamePS);
 
 
-	void MtlSetLighting(ID id, bool is_lighting);
-	bool MtlGetLighting(ID id);
+	void mtlSetLighting(ID id, bool isLighting);
+	bool mtlGetLighting(ID id);
 
-	void MtlSetIsTextureLighting(ID id, bool is_tex_lighting);
-	bool MtlGetIsTextureLighting(ID id);
+	void mtlSetIsTextureLighting(ID id, bool isTexLighting);
+	bool mtlGetIsTextureLighting(ID id);
 
-	void MtlSetTextureLighting(ID id, const char* path_tex);
-	void MtlGetTextureLighting(ID id, char* path_tex);
+	void mtlSetTextureLighting(ID id, const char *szTex);
+	void mtlGetTextureLighting(ID id, char *szTex);
 
-	void MtlSetRoughness(ID id, float roughness);
-	float MtlGetRoughness(ID id);
+	void mtlSetRoughness(ID id, float fRroughness);
+	float mtlGetRoughness(ID id);
 
-	void MtlSetF0(ID id, float f0);
-	float MtlGetF0(ID id);
+	void mtlSetF0(ID id, float fF0);
+	float mtlGetF0(ID id);
 
-	void MtlSetThickness(ID id, float thickness);
-	float MtlGetThickness(ID id);
+	void mtlSetThickness(ID id, float fThickness);
+	float mtlGetThickness(ID id);
 
-	void MtlSetPenetration(ID id, float penetration);
-	float MtlGetPenetration(ID id);
+	void mtlSetDurability(ID id, float fDurability);
+	float mtlGetDurability(ID id);
 
-	void MtlSetHitChance(ID id, float fHitChance);
-	float MtlGetHitChance(ID id);
+	void mtlSetHitChance(ID id, float fHitChance);
+	float mtlGetHitChance(ID id);
 
-	void MtlSetDensity(ID id, float fDensity);
-	float MtlGetDensity(ID id);
+	void mtlSetDensity(ID id, float fDensity);
+	float mtlGetDensity(ID id);
 
-	void MtlSetTypeTransparency(ID id, MTLTYPE_TRANSPARENCY type);
-	MTLTYPE_TRANSPARENCY MtlGetTypeTransparency(ID id);
+	void mtlSetTransparency(ID id, bool isTransparent);
+	bool mtlGetTransparency(ID id);
 
-	void MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);
-	MTLTYPE_REFLECT MtlGetTypeReflection(ID id);
-
-
-	void MtlSetMaskTex(ID id, const char* path_tex);
-	void MtlGetMaskTex(ID id, char* path_tex);
-
-	void MtlSetMRTex(ID id, int channel, const char* path_tex);
-	void MtlGetMRTex(ID id, int channel, char* path_tex);
-
-	void MtlSetDTex(ID id, int channel, const char* path_tex);
-	void MtlGetDTex(ID id, int channel, char* path_tex);
+	void mtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);
+	MTLTYPE_REFLECT mtlGetTypeReflection(ID id);
 
 
-	void MtlSetSTDVS(ID id, MTL_SHADERSTD type, bool is_send);
-	bool MtlGetSTDVS(ID id, MTL_SHADERSTD type);
-	void MtlSetSTDPS(ID id, MTL_SHADERSTD type, bool is_send);
-	bool MtlGetSTDPS(ID id, MTL_SHADERSTD type);
+	void mtlSetMaskTex(ID id, const char *szTexture);
+	void mtlGetMaskTex(ID id, char *szTexture);
+
+	void mtlSetMRTex(ID id, int iChannel, const char *szTexture);
+	void mtlGetMRTex(ID id, int iChannel, char *szTexture);
+
+	void mtlSetDTex(ID id, int iChannel, const char *szTexture);
+	void mtlGetDTex(ID id, int iChannel, char *szTexture);
 
 
-	void MtlSetUDVS(ID id, int component, float val);
-	float MtlGetUDVS(ID id, int component);
-	void MtlSetUDVS_InPS(ID id, bool is_send_ps);
-	bool MtlGetUDVS_InPS(ID id);
-	void MtlSetUDPS(ID id, int component, float val);
-	float MtlGetUDPS(ID id, int component);
-	void MtlSetUDPS_InPS(ID id, bool is_send_vs);
-	bool MtlGetUDPS_InPS(ID id);
+	void mtlSetStdVS(ID id, MTL_SHADERSTD type, bool isSend);
+	bool mtlGetStdVS(ID id, MTL_SHADERSTD type);
+	void mtlSetStdPS(ID id, MTL_SHADERSTD type, bool isSend);
+	bool mtlGetStdPS(ID id, MTL_SHADERSTD type);
 
-	//////
 
-	int DelRefCount();
-	ID DelRefGetIDArr(ID key, ID inid, int cube);
-	void DelRefAllDel();
+	void mtlSetUserDataVS(ID id, int iComponent, float val);
+	float mtlGetUserDataVS(ID id, int iComponent);
+	void mtlSetUserDataVS_InPS(ID id, bool isSendPS);
+	bool mtlGetUserDataVS_InPS(ID id);
+	void mtlSetUserDataPS(ID id, int iComponent, float fValue);
+	float mtlGetUserDataPS(ID id, int iComponent);
+	void mtlSetUserDataPS_InPS(ID id, bool isSendVS);
+	bool mtlGetUserDataPS_InPS(ID id);
 
-	//////
+	//**********************************************************************
 
-	struct Material
+	void mtlRefSetIDArr(ID id, ID idOwner, int iCube, ID idArr);
+	ID mtlRefGetIDArr(ID id, ID idOwner, int iCube);
+
+	void mtlRefPreRenderPlane(ID id, D3DXPLANE *pPlane);
+	const IFrustum* mtlRefGetfrustum(ID id, int iCube);
+	void mtlRefPostRenderPlane(ID id);
+	IDirect3DTexture9* mtlRefPlaneGetTex(ID id);
+
+	void mtlRefSetMinMax(ID id, const float3_t *pMin, const float3_t *pMax);
+	bool mtlRefIsAllowedRender(ID id);
+
+	void mtlRefCubeBeginRender(ID id, const float3_t *pCenter);
+	void mtlRefCubePreRender(ID id, int iCube, const float4x4 *pWorld);
+	void mtlRefCubePostRender(ID id, int iCube);
+	void mtlRefCubeEndRender(ID id, const float3_t *pViewPos);
+	bool mtlRefUpdateCountUpdate(ID id, const float3_t *pViewPos);
+	void mtlRefNullingCountUpdate(ID id);
+	IDirect3DCubeTexture9* refCubeGetTex(ID id);
+
+	//######################################################################
+
+	int delRefCount();
+	ID delRefGetIDArr(ID idKey, ID idOwner, int iCube);
+	void delRefAllDel();
+
+	//######################################################################
+
+	struct CMaterial
 	{
-		Material();
-		~Material();
+		CMaterial();
+		~CMaterial();
 
 		SX_ALIGNED_OP_MEM
 
-		void Nulling();
+		//! обнуление всех данных в материале
+		void nulling();
 
-		bool IsDelete;
+		//! удален ли материал
+		bool m_isDelete;
 
-		//структура из материала указывающая на маску и 4 детальных и 4 микрорельефных карты
-		struct MaterialMaskPM
+		//! основные графические свойства
+		struct CMainGraphics
 		{
-			MaterialMaskPM();
-			~MaterialMaskPM();
+			CMainGraphics();
+			~CMainGraphics();
 
-			ID Mask;
-			ID ArrDeatail[4];
-			ID ArrMicroDiffuse[4];
+			//! основная текстура
+			ID m_idMainTexture;
+
+			//! вершинный шейдер
+			ID m_idShaderVS;
+
+			//! пиксельный шейдер
+			ID m_idShaderPS;
+
+			//! неосвещаемый материал
+			bool m_isUnlit;
+
+			//! использовать ли альфа тест
+			bool m_useAlphaTest;
+
+			//! тип модели для рендера
+			MTLTYPE_MODEL type_model;
+
+			//! отправляемые данные в шейдеры
+			struct СDataShader
+			{
+				СDataShader();
+				~СDataShader();
+
+				SX_ALIGNED_OP_MEM
+
+					//! отправлять ли мировую матрицу
+					bool m_isTransWorld;
+
+				//! отправлять ли видову матрицу
+				bool m_isTransView;
+
+				//! отправлять ли проекционную матрицу
+				bool m_isTransProjection;
+
+				//! отправлять ли world * view
+				bool m_isTransWorldView;
+
+				//! отправлять ли world * view * projection
+				bool m_isTransWorldViewProjection;
+
+				//! отправлять ли позицию камеры/наблюдателя
+				bool m_isTransPosCam;
+
+				//! отправлять время кадра
+				bool m_isTransTimeDelta;
+
+				//! отправлять ли пользовательские данные
+				bool m_isTransUserData;
+
+				//! отправлять ли пользовательские данные в другой шейдер
+				bool m_isTransUserDataInOtherShader;
+
+				//! отправлять ли размер окна рендера
+				bool m_isTransWinSize;
+
+				//! пользовательские данные, значения [0, 1]
+				float4 m_vUserData;
+			};
+
+			//! отправляемые данные в вершинный шейдер
+			СDataShader m_oDataVS;
+
+			//! отправляемые данные в пиксельный шейдер
+			СDataShader m_oDataPS;
 		};
 
-		//структура из материала определяющая основные характеристики просчета освещения
-		struct MaterialLightParam
+		//! детализированные свойства, маска и 4 детальных и 4 микрорельефных карты
+		struct CMaskDetailMicroRelief
 		{
-			MaterialLightParam();
-			~MaterialLightParam();
+			CMaskDetailMicroRelief();
+			~CMaskDetailMicroRelief();
 
-			ID ParamTex;
-			ID ParamTexHand;
+			//! идентификатор текстуры маски, где к каждому каналу привязаны 4 детальных и микрорельефных текстуры
+			ID m_idMask;
 
-			//FOR EDITORS
-			bool IsTextureParam;
+			//! массив идентификаторов детальных текстур, для каждого канала маски
+			ID m_aDetail[4];
 
-			float RoughnessValue;
-			float F0Value;
-			float ThicknessValue;
-
-			float OldRoughnessValue;
-			float OldF0Value;
-			float OldThicknessValue;
-
-			MTLTYPE_REFLECT TypeReflect;
-			MTLTYPE_TRANSPARENCY TypeRefraction;
+			//! массив идентификаторов микрорельефных текстур (normal map), для каждого канала маски
+			ID m_aMicroRelief[4];
 		};
 
-		struct MaterialDataShader
+		//! световые свойсвта, основные характеристики просчета освещения
+		struct CLightParam
 		{
-			MaterialDataShader();
-			~MaterialDataShader();
+			CLightParam();
+			~CLightParam();
 
-			SX_ALIGNED_OP_MEM
+			//! текстура с параметрами материала (созданная пользователем)
+			ID m_idTexParam;
 
-			bool IsTransWorld;
-			bool IsTransView;
-			bool IsTransProjection;
-			bool IsTransWorldView;
-			bool IsTransWorldViewProjection;
-			bool IsTransPosCam;
-			bool IsTransTimeDelta;
-			bool IsTransUserData;
-			bool IsTransWinSize;
-			float4 Param;
+			//! текстура с параметрами материала, размер 1х1, параметры взяты из текущей структуры
+			ID m_idTexParamHand;
+
+			//! назначена ли (true) текстура для параметров материала (или данные берем из параметров и кладем в рабочую текстуру)
+			bool m_isTextureParam;
+
+			//! шероховатость [0 - гладкий, 1 - полностью шершавый]
+			float m_fRoughness;
+
+			//! отражательная способность [0 - ничего не отражает, 1 - все отражает]
+			float m_fF0;
+
+			//! толщина/просвечиваемость [0 - просвечивается, 1 - не просвечивается]
+			float m_fThickness;
+
+			float m_fOldRoughness;
+			float m_fOldF0;
+			float m_fOldThickness;
+
+			//! тип отражений
+			MTLTYPE_REFLECT m_type_reflect;
+
+			//! прозрачный ли материал
+			bool m_isTransparent;
 		};
 
-		MTLTYPE_PHYSIC PhysicsMaterial;
+		//! физические свойства
+		struct CPhysics
+		{
+			CPhysics();
+			~CPhysics();
 
-		char Name[64];
-		ID MainTexture;
-		ID PreShaderVS;
-		ID PreShaderPS;
+			//! тип физического материала
+			MTLTYPE_PHYSIC type_physics;
+
+			//! коэффициент пробиваемости [0, ], чем больше тем сложнее пробить
+			float m_fDurability;
+
+			//! шанс пробиваемости [0 - пуля летит насквозь, 1 - пуля ударяется]
+			float m_fHitChance;
+
+			//! плотность материала кг/м3
+			float m_fDensity;
+		};
+
+		//! имя материала
+		String m_sName;
+
+		//! основные графические свойства
+		CMainGraphics m_oMainGraphics;
 		
-		MaterialMaskPM MicroDetail;
-		MaterialLightParam LightParam;
+		//! параметры детальности
+		CMaskDetailMicroRelief m_oMicroDetail;
 
-		MaterialDataShader VS;
-		MaterialDataShader PS;
+		//! параметры освещения
+		CLightParam m_oLightParam;
 
-		bool TransVSDataInPS;
-		bool TransPSDataInVS;
-
-		bool IsUnlit;
-		bool IsAlphaTest;
-
-		float Penetration;
-		float HitChance;
-		float Density;
-
-		MTLTYPE_MODEL Type;
+		//! физические свойства
+		CPhysics m_oPhysics;
 	};
 
-	struct UnitMaterial
+	//! юнит материала
+	struct CUnitMaterial
 	{
-		UnitMaterial();
-		~UnitMaterial();
+		CUnitMaterial();
+		~CUnitMaterial();
 
-		Material* mtl;
-		Reflection* Reflect;
+		//! указатель материала
+		CMaterial *m_pMtrl;
+
+		//! объект отражений
+		CReflection *m_pReflect;
 	};
 
 protected:
 
-	bool IsForceblyAlphaTest;
+	//! использовать ли принудительный альфа тест
+	bool m_useForceblyAlphaTest;
 
-	bool LoadMtl(const char* name, Material** mtl);
-	void CreateMtl(const char* name, Material** mtl, MTLTYPE_MODEL type);
-	ID CreateTexParamLighting(float roughness, float f0, float thickness);
+	bool loadMtl(const char *szName, CMaterial **ppMtrl);
+	void createMtl(const char *szName, CMaterial **ppMtrl, MTLTYPE_MODEL type);
+	ID createTexParamLighting(float fRoughness, float fF0, float fThickness);
 
-	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
-	struct TLPath
+	void addName(const char *szName, ID id);
+	ID addUnitMaterial(CUnitMaterial *pUnitMtrl);
+	ID addMaterial(CMaterial *pMtrl);
+
+	//! структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
+	struct CPath
 	{
-		TLPath(){}
+		CPath(){}
 
-		String Path;
+		//! путь
+		String m_sPath;
 
-		struct TLTex
+		struct CObject
 		{
-			TLTex(){ id = -1; }
-			TLTex(ID _id, const char* _name){ id = _id; name = _name; }
-			ID id;
-			String name;
+			CObject(){ m_id = -1; }
+			CObject(ID id, const char *szName){ m_id = id; m_sName = szName; }
+
+			//! идентификатор
+			ID m_id;
+
+			//! имя
+			String m_sName;
 		};
 
-		Array<TLTex*> ArrTex;
+		//! массив CObject
+		Array<CObject*> m_aObjects;
 	};
-	Array<TLPath*> ArrHMtls;
 
-	void AddName(const char* name, ID id);
-	ID AddUnitMaterial(UnitMaterial* umtl);
-	ID AddMaterial(Material* mtl);
+	//! массив путей до текстур/материалов
+	Array<CPath*> m_aMtrlPathes;
 
-	Array<UnitMaterial*> ArrMaterials;
-	Array<Material*> ArrMtrls;
-	Array<Reflection*> ArrDelRefMtrls;
+	//! массив юнитов материалов
+	Array<CUnitMaterial*> m_aUnitMtrls;
 
-	bool IsIncrCountSurf;
-	int CurrIdSurf;
+	//! массив материалов
+	Array<CMaterial*> m_aMtrls;
+
+	//! массив отражений
+	Array<CReflection*> m_aReflections;
+
+	//! использовать ли подсчет поверхностей
+	bool m_useCountSurface;
+
+	//! текущий индентификатор поверхности
+	ID m_idCurrIdSurface;
 
 	int CurrFirstFree;
 
-	DWORD CurrTimeDelta;
-	DWORD CountTimeDelta;
+	//! текущее время кадра в млсек
+	UINT m_uiCurrTimeDelta;
+
+	//! общее время кадров в млсек
+	UINT m_uiCountTimeDelta;
+
 	ID MtrlDefLight;
 	ID MtrlDefTree;
 	ID MtrlDefGrass;
@@ -322,7 +425,7 @@ protected:
 	ID MtrlDefSkin;
 	ID BeginNonDef;
 
-	float4x4 view, proj, worldtrans, viewtrans, projtrans;
+	float4x4 m_mWorld, m_mViewProj, m_mWorldTrans, m_mViewTrans, m_mProjTrans;
 };
 
 #endif

@@ -237,10 +237,10 @@ SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd);
 
 
 //! установка текущей камеры
-SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera);
+SX_LIB_API void SRender_SetCamera(ICamera *pCamera);
 
 //! возвращает текущую камеру
-SX_LIB_API ISXCamera* SRender_GetCamera();
+SX_LIB_API ICamera* SRender_GetCamera();
 
 //**************************************************************************
 
@@ -359,9 +359,6 @@ SX_LIB_API void SRender_ComLighting(DWORD timeDelta);
 
 //! объединение слоев прозрачности
 SX_LIB_API void SRender_UnionLayers();
-
-//! применение тонмаппинга к рт
-SX_LIB_API void SRender_ApplyToneMapping();
 
 //! просчет тонмаппинга
 SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta);

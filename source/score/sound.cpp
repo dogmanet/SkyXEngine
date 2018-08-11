@@ -547,6 +547,11 @@ SOUND_FILEFORMAT CSoundManager::fileFormat(const char* file)
 	return SOUND_FILEFORMAT_UNKNOWN;
 }
 
+void CSoundManager::setMainVolume(float fVolume)
+{
+	m_pPrimaryBuffer->SetVolume(lerpf(-10000, 0, fVolume));
+}
+
 //#############################################################################
 
 void CSoundManager::load(CSound* snd, const char* fpath, SOUND_FILEFORMAT fmt)
@@ -1157,6 +1162,7 @@ ID CSoundManager::addSound(CSound* snd)
 	}
 
 	m_aSounds.push_back(snd);
+
 	return m_aSounds.size() - 1;
 }
 
@@ -1186,7 +1192,7 @@ void CSoundManager::soundDelete(ID id)
 		else
 			m_a2dInst.erase(szStr);
 	}
-	mem_delete(snd);
+	mem_delete(m_aSounds[id]);
 }
 
 //#############################################################################

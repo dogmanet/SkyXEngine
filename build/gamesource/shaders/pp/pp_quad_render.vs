@@ -6,10 +6,12 @@ pp_quad_render.vs
 
 #include <../struct.h>
 
-vs_out_pp main(vs_in_pp IN)
+//##########################################################################
+
+VSO_PP main(VSI_PP IN)
 {
-	vs_out_pp OUT;
-	OUT.Position = IN.Position;
-	OUT.TexUV = IN.TexUV;
+	VSO_PP OUT;
+	OUT.vPosition = IN.vPosition;
+	OUT.vTexUV = IN.vTexUV;
 	return OUT;
 }
