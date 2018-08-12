@@ -61,4 +61,6 @@ void CLogicRelay::trigger(inputdata_t * pInputdata)
 void CLogicRelay::onPostLoad()
 {
 	m_isEnabled = !(getFlags() & LOGIC_START_DISABLED);
+
+	BaseClass::onPostLoad();
 }

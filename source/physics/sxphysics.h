@@ -126,6 +126,14 @@ SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisi
 
 SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld();
 
+/*! Запускает симуляцию
+*/
+SX_LIB_API void SXPhysics_EnableSimulation();
+
+/*! Останавливает симуляцию
+*/
+SX_LIB_API void SXPhysics_DisableSimulation();
+
 #endif
 
 /*! @} */

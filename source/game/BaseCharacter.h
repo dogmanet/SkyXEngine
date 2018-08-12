@@ -106,6 +106,8 @@ public:
 
 	bool isObserver();
 
+	void use(bool start);
+
 protected:
 	//! Фонарик
 	CLightDirectional* m_flashlight;

@@ -23,7 +23,8 @@ PhyWorld::PhyWorld():
 	m_ppGreenStaticCollideShape(NULL),
 	m_pppGreenStaticRigidBody(NULL),
 	m_iGreenShapes(0),
-	m_piGreenTotal(NULL)
+	m_piGreenTotal(NULL),
+	m_isRunning(false)
 {
 	printf("Initializing physics engine...   ");
 	m_pBroadphase = new btDbvtBroadphase();
@@ -73,6 +74,11 @@ void PhyWorld::setThreadNum(int tnum)
 }
 void PhyWorld::update(int thread)
 {
+	if(!m_isRunning)
+	{
+		return;
+	}
+
 	static UINT time0 = GetTickCount();
 	UINT time1 = GetTickCount();
 
@@ -594,6 +600,15 @@ ID PhyWorld::GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::Lo
 		return(m_pGeomMtlIDs[pShapeInfo->m_triangleIndex]);
 	}
 	return(-1);
+}
+
+void PhyWorld::disableSimulation()
+{
+	m_isRunning = false;
+}
+void PhyWorld::enableSimulation()
+{
+	m_isRunning = true;
 }
 
 //##############################################################

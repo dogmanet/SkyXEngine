@@ -14,7 +14,7 @@ See the license in LICENSE
 
 #include "PointEntity.h"
 
-#define LOGIC_START_DISABLED 0x00010000
+#define LOGIC_START_DISABLED ENT_FLAG_0
 
 /*! Логическое реле
 \ingroup cpointentity

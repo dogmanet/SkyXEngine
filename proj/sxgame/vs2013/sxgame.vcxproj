@@ -120,6 +120,7 @@
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropButton.cpp" />
     <ClCompile Include="..\..\..\source\game\proptable.cpp" />
     <ClCompile Include="..\..\..\source\game\Ragdoll.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseAmmo.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="..\..\..\source\game\HUDcontroller.h" />
     <ClInclude Include="..\..\..\source\game\IGameState.h" />
     <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
+    <ClInclude Include="..\..\..\source\game\PropButton.h" />
     <ClInclude Include="..\..\..\source\game\Random.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />

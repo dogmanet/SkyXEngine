@@ -117,6 +117,8 @@ public:
 	void broadcastMessage(const char * szInputName, const float3_t &f3Arg, float fRadius);
 	void broadcastMessage(const char * szInputName, float fRadius);
 
+	virtual void onUse(CBaseEntity *pUser);
+
 private:
 	void setClassName(const char * name);
 	void setDefaults();

@@ -56,9 +56,14 @@ public:
 
 	
 protected:
+
+	void inputPlayAnim(inputdata_t * pInputdata);
+	void inputPlayAnimNext(inputdata_t * pInputdata);
+
 	IAnimPlayer * m_pAnimPlayer;
 	const char * m_szModelFile;
 	float m_fBaseScale;
+	bool m_isStatic;
 
 	virtual void initPhysics();
 	virtual void createPhysBody();
@@ -71,6 +76,8 @@ protected:
 	virtual void _cleanup();
 
 	virtual void onAnimationStateChanged(int slot, ANIM_STATE as);
+
+	void onIsStaticChange(bool isStatic);
 
 	struct
 	{

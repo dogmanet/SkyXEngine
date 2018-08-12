@@ -130,6 +130,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterConcmd("reload", ccmd_reload);
 	Core_0RegisterConcmd("switch_firemode", ccmd_switch_firemode);
 	Core_0RegisterConcmd("flashlight", ccmd_toggleflashlight);
+	Core_0RegisterConcmd("+use", ccmd_use_on);
+	Core_0RegisterConcmd("-use", ccmd_use_off);
 
 	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv){
 		if(argc != 3)
@@ -215,7 +217,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		Core_0ConsoleExecCmd("spawn");
 
-		for(int i = 0; i < 10; ++i)
+		for(int i = 0; i < 0; ++i)
 		{
 			CBaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
 			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
@@ -976,4 +978,13 @@ void GameData::ccmd_switch_firemode()
 void GameData::ccmd_game_menu()
 {
 	m_pGameStateManager->activate("ingame_menu");
+}
+
+void GameData::ccmd_use_on()
+{
+	m_pPlayer->use(TRUE);
+}
+void GameData::ccmd_use_off()
+{
+	m_pPlayer->use(FALSE);
 }

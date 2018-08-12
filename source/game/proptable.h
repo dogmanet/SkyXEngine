@@ -11,6 +11,23 @@ See the license in LICENSE
 
 class CBaseEntity;
 
+#define ENT_FLAG_0 0x00010000
+#define ENT_FLAG_1 0x00020000
+#define ENT_FLAG_2 0x00040000
+#define ENT_FLAG_3 0x00080000
+#define ENT_FLAG_4 0x00100000
+#define ENT_FLAG_5 0x00200000
+#define ENT_FLAG_6 0x00400000
+#define ENT_FLAG_7 0x00800000
+#define ENT_FLAG_8 0x01000000
+#define ENT_FLAG_9 0x02000000
+#define ENT_FLAG_10 0x04000000
+#define ENT_FLAG_11 0x08000000
+#define ENT_FLAG_12 0x10000000
+#define ENT_FLAG_13 0x20000000
+#define ENT_FLAG_14 0x40000000
+#define ENT_FLAG_15 0x80000000
+
 //! типы полей данных
 enum PDF_TYPE
 {
@@ -354,13 +371,13 @@ const char * GetEmptyString();
 #define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
 #define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, editor
 
-#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, &ThisClass::fn, editor
-#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, &ThisClass::fn, editor
-#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, &ThisClass::fn, editor
-#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, &ThisClass::fn, editor
-#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, &ThisClass::fn, editor
-#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, &ThisClass::fn, editor
-#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, &ThisClass::fn, editor
+#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, (void(CBaseEntity::*)(const char*))&ThisClass::fn, editor
+#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, (void(CBaseEntity::*)(const float3&))&ThisClass::fn, editor
+#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, (void(CBaseEntity::*)(const SMQuaternion&))&ThisClass::fn, editor
+#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, (void(CBaseEntity::*)(int))&ThisClass::fn, editor
+#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, (void(CBaseEntity::*)(float))&ThisClass::fn, editor
+#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, (void(CBaseEntity::*)(bool))&ThisClass::fn, editor
+#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, (void(CBaseEntity::*)(CBaseEntity*))&ThisClass::fn, editor
 //#define DEFINE_FIELD_PARENTFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, fn, editor
 //#define DEFINE_FIELD_FLAGSFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, fn, editor
 

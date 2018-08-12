@@ -19,6 +19,14 @@ BEGIN_PROPTABLE(CBaseAnimating)
 
 	//! Масштаб модели
 	DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
+
+	DEFINE_FIELD_BOOLFN(m_isStatic, 0, "is_static", "Is static", onIsStaticChange, EDITOR_COMBOBOX)
+		COMBO_OPTION("Yes", "1")
+		COMBO_OPTION("No", "0")
+	EDITOR_COMBO_END()
+
+	DEFINE_INPUT(inputPlayAnim, "playAnim", "Play animation", PDF_STRING)
+	DEFINE_INPUT(inputPlayAnimNext, "playAnimNext", "Play animation next", PDF_STRING)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
@@ -28,7 +36,8 @@ CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
 	m_pAnimPlayer(NULL),
 	m_fBaseScale(1.0f),
 	m_pCollideShape(NULL),
-	m_pRigidBody(NULL)
+	m_pRigidBody(NULL),
+	m_isStatic(false)
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
 }
@@ -216,6 +225,12 @@ void CBaseAnimating::createPhysBody()
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
 		SXPhysics_AddShape(m_pRigidBody);
+
+		if(m_isStatic)
+		{
+			m_pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
+			m_pRigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		}
 	}
 }
 
@@ -308,4 +323,42 @@ void CBaseAnimating::cancelNextAnimation(int iSlot)
 			m_vNextAnim[i].szName[0] = 0;
 		}
 	}
+}
+
+void CBaseAnimating::onIsStaticChange(bool isStatic)
+{
+	if(m_pRigidBody && m_isStatic != isStatic)
+	{
+		if(isStatic)
+		{
+			m_pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
+			m_pRigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		}
+		else
+		{
+			m_pRigidBody->setLinearFactor(btVector3(1.0f, 1.0f, 1.0f));
+			m_pRigidBody->setAngularFactor(btVector3(1.0f, 1.0f, 1.0f));
+		}
+	}
+	m_isStatic = isStatic;
+}
+
+void CBaseAnimating::inputPlayAnim(inputdata_t * pInputdata)
+{
+	if(pInputdata->type != PDF_STRING)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CBaseAnimating::inputPlayAnim() expected parameter type string");
+		return;
+	}
+	playAnimation(pInputdata->parameter.str);
+}
+
+void CBaseAnimating::inputPlayAnimNext(inputdata_t * pInputdata)
+{
+	if(pInputdata->type != PDF_STRING)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CBaseAnimating::inputPlayAnimNext() expected parameter type string");
+		return;
+	}
+	playAnimationNext(pInputdata->parameter.str);
 }
