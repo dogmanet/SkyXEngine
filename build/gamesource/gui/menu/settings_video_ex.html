@@ -1,11 +1,13 @@
 <html onkeyup="return_ingame">
 	<head>
 		<link type="text/css" rel="stylesheet" href="settings_menu.css"/>
+		<link type="text/css" rel="stylesheet" href="settings_menu_video_ex.css"/>
+		<link type="text/css" rel="stylesheet" href="settings_menu_800x600.css" max-width="800" />
 	</head>
 	<body style="font-name: quick-junky-regular;color: #c6f0fd;">
 		<div id="background">
 			<div id="title">Расширенные</div>
-			<div id="left_menu" style="top: 25%">	
+			<div id="left_menu">	
 				<div class="menu-item">Фильтрация текстур</div>	
 				<div class="menu-item">Эффект bloom</div>			
 				<div class="menu-item">Эффект lensflare</div>				
@@ -17,7 +19,7 @@
 				
 				<div class="menu-item bottom" onclick="on_cancel">Назад</div>
 			</div>
-			<div id="center_menu" style="top: 25%">
+			<div id="center_menu">
 				<select class="set_item" cvar="r_texfilter_type|r_texfilter_max_anisotropy">
 					<option value="0|1">Точечная</option>
 					<option value="1|1">Линейная</option>

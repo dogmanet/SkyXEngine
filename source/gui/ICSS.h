@@ -154,6 +154,16 @@ namespace gui
 			}
 			void loadFromString(const WCHAR * str);
 
+			void setMaxWidth(int iMaxWidth)
+			{
+				m_iMaxWidth = iMaxWidth;
+			}
+
+			bool isEnabledForWidth(int iWidth)
+			{
+				return(m_iMaxWidth < 0 || m_iMaxWidth >= iWidth);
+			}
+
 #ifdef _DEBUG
 			void debugDumpStyles();
 #endif
@@ -162,6 +172,8 @@ namespace gui
 			Array<CCSSstyle> m_pRules;
 
 			ICSS * m_pCSS;
+
+			int m_iMaxWidth = -1;
 		};
 
 		class ICSS
@@ -174,7 +186,7 @@ namespace gui
 				dropStyles();
 			}
 
-			void addFile(const WCHAR * szFile);
+			void addFile(const WCHAR * szFile, int iMaxWidth = -1);
 			void dropStyles();
 
 			//	void RebuildIndex();

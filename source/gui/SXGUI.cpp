@@ -544,6 +544,7 @@ namespace gui
 			{
 				pDsk->updateSize();
 			}
+			((dom::CDOMdocument*)pDsk->getDocument())->calculateStyles();
 			((dom::CDOMnode*)((dom::CDOMdocument*)pDsk->getDocument())->getRootNode())->updateLayout(true);
 		}
 	}
