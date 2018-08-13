@@ -305,6 +305,10 @@ ID ÑLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
 		else
 			m_aTextures[m_aPathes[tmpkey]->m_aTextures[tmpKeyName]->m_id]->m_pTexCube = pTex;
 	}
+	else
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "  file not a texture [%s]\n", tmpPath);
+	}
 	
 	return id;
 }
@@ -356,8 +360,12 @@ void ÑLoaderTextures::loadTextures()
 				++iCountLoaded;
 			}
 		}
+		else
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, "  file not a texture [%s]\n", m_aTextures[m_aQueueToLoadIDs[i]]->m_sName.c_str());
+		}
 	}
-
+	
 	m_aQueueToLoadIDs.clear();
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded textures [%d]\n", m_aTextures.size());
 }

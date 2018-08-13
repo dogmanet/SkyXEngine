@@ -38,6 +38,10 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_oMainGraphics.m_idMainTexture = -1;
 	tmpMtlDefaultLight->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
+	tmpMtlDefaultLight->m_oLightParam.m_idTexParam = -1;
+	tmpMtlDefaultLight->m_oLightParam.m_isTextureParam = false;
+	tmpMtlDefaultLight->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+
 	MtrlDefLight = addUnitMaterial(tmpumtl);
 	addName(tmpMtlDefaultLight->m_sName.c_str(), MtrlDefLight);
 
@@ -55,6 +59,10 @@ CMaterials::CMaterials()
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+
 	MtrlDefStatic = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), MtrlDefStatic);
 
@@ -69,6 +77,10 @@ CMaterials::CMaterials()
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 
 	MtrlDefTree = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), MtrlDefTree);
@@ -85,6 +97,10 @@ CMaterials::CMaterials()
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+
 	MtrlDefGrass = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), MtrlDefGrass);
 
@@ -99,6 +115,10 @@ CMaterials::CMaterials()
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 
 	m_aUnitMtrls.push_back(tmpumtl);
 	AddName(tmpumtl->m_pMtrl->Name, m_aUnitMtrls.size() - 1);
