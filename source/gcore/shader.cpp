@@ -652,11 +652,15 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 	}
 
 	ID id = -1;
+	bool isUnic = true;
 
 	if (check_double == SHADER_CHECKDOUBLE_PATH)
 		id = existsPath(type, szPath);
 	else if (check_double == SHADER_CHECKDOUBLE_NAME)
 		id = existsName(type, szName);
+
+	if (id >= 0)
+		isUnic = false;
 
 	CShader *pShader = 0;
 
@@ -687,7 +691,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 		}
 	}
 
-	if (aMacros)
+	if (aMacros && isUnic)
 	{
 		int iCountMacros = 0;
 		for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)

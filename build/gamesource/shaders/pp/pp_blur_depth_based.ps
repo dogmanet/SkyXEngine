@@ -7,10 +7,17 @@ pp_blur_depth_based.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
+#ifdef SAMPLES_25
+	#define COUNT_PIXELS 2
+#else
+	#define COUNT_PIXELS 1
+#endif
+
 //##########################################################################
 
 sampler2D g_sDepth:register(s0);
 sampler2D g_sBlur:register(s1);
+sampler2D g_sColor:register(s2);
 
 //##########################################################################
 
@@ -23,27 +30,33 @@ half4 main(VSO_PP IN) : COLOR0
 {
 	half2 vCenterTC = IN.vTexUV;
 
-	half fSumWeight = 0.125f;
-	half4 vColor = tex2D(g_sBlur, vCenterTC) * fSumWeight;
+	half fSumWeight = 0.125;
+	half4 vBlurColor = tex2D(g_sBlur, vCenterTC) * fSumWeight;
 
 	half vCenterDepth = tex2D(g_sDepth, vCenterTC).r * g_vNearFar.y;
 
 	[unroll]
-	for(half x=-1; x<=1; x++)
+	for(half x=-COUNT_PIXELS; x<=COUNT_PIXELS; x++)
 	{
 		[unroll]
-		for(half y=-1; y<=1; y++)
+		for(half y=-COUNT_PIXELS; y<=COUNT_PIXELS; y++)
 		{
 			half2 vSampleTC = vCenterTC + half2(x * g_vPixelSize.x,y * g_vPixelSize.y);
 			half fDepth = tex2D(g_sDepth, vSampleTC).r;
 			fDepth *= g_vNearFar.y;
-			half fDiff = 9.0f*(1.0f - fDepth/vCenterDepth);
-			half fWeight = saturate(0.5 - 0.75f*abs(fDiff) - 0.25f*(fDiff));
-			vColor += tex2D(g_sBlur, vSampleTC) * fWeight;
+			half fDiff = 9.0*(1.0 - fDepth/vCenterDepth);
+			half fWeight = saturate(0.5 - 0.75 * abs(fDiff) - 0.25 * (fDiff));
+			vBlurColor += tex2D(g_sBlur, vSampleTC) * fWeight;
 			fSumWeight += fWeight;
 		}
 	}
 
-	vColor /= fSumWeight;
-	return vColor;
+	vBlurColor /= fSumWeight;
+	
+	#if defined(BLEND_COLOR)
+	half4 vColor = tex2D(g_sColor, IN.vTexUV);
+	return vColor * saturate(vBlurColor);
+	#else
+	return saturate(vBlurColor);
+	#endif
 }

@@ -15,12 +15,12 @@ See the license in LICENSE
 #ifndef __GDATA_H
 #define __GDATA_H
 
-class ModelSim;
+class CSimulationModel;
 class CAxesStatic;
 class CGrid;
 
 #include <input/sxinput.h>
-#include <render/model_sim.h>
+#include <render/simulation_model.h>
 #include <render/editor/grid.h>
 #include <render/editor/axes_static.h>
 #include <render/sxrender.h>
@@ -141,7 +141,7 @@ namespace GData
 		extern bool MoveCamera;
 
 		//! указатель симуляционной модели
-		extern ModelSim* SimModel;			
+		extern CSimulationModel* SimModel;
 
 		//! сетка дял редакторов
 		extern CGrid* ObjGrid;				

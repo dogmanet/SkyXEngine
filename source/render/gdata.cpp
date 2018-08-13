@@ -81,7 +81,7 @@ namespace GData
 	namespace Editors
 	{
 		bool MoveCamera = true;
-		ModelSim* SimModel = 0;
+		CSimulationModel* SimModel = 0;
 		CGrid* ObjGrid = 0;
 		CAxesStatic* ObjAxesStatic = 0;
 

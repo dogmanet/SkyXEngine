@@ -93,7 +93,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 	half4 vParam = tex2D(g_sParameters, IN.vTexUV);
 	
-	half3 vNormalPixel = normalize(NormalDecode(vNormals.xy));
+	half3 vNormalPixel = normalize(/*vNormals.xyz * 2 - 1*/NormalDecode(vNormals.xyz).xyz);
 	half3 vLigth  = normalize(g_vLightPos.xyz - vPosition.xyz); 
 	half3 vVertexToEye = normalize(g_vViewPos.xyz - vPosition.xyz);
 	half3 vHalfVector = normalize(vVertexToEye + vLigth.xyz);

@@ -78,22 +78,41 @@ half GetTextureLod4Scene(half2 vTexUV)
 //##########################################################################
 
 //! кодирование xyz нормали в xy
-half3 NormalEncode(half3 n)
+half3 NormalEncode(half3 vNormal, half fLayer)
 {
-	half2 enc = normalize(n.xy) * (sqrt(-n.z*0.5+0.5));
+	/*half2 enc = normalize(n.xy) * (sqrt(-n.z*0.5+0.5));
     enc = enc*0.5+0.5;
-    return half3(enc, 0);
+    return half3(enc, 0);*/
+	vNormal.xy = vNormal.xy * 0.5 + 0.5;
+	vNormal.z = (sign(vNormal.z) * 0.5 + 0.5) * 0.5 + fLayer;
+	return vNormal;
 }
 
 //! декодирование нормали xy в xyz
-half3 NormalDecode(half2 enc)
+half4 NormalDecode(half3 vNormal)
 {
-	half4 nn = half4(enc, enc)*half4(2,2,0,0) + half4(-1,-1,1,-1);
+	/*half4 nn = half4(enc, enc)*half4(2,2,0,0) + half4(-1,-1,1,-1);
     half l = dot(nn.xyz,-nn.xyw);
     nn.z = l;
     nn.xy *= sqrt(l);
-    return nn.xyz * 2 + half3(0,0,-1);
+    return nn.xyz * 2 + half3(0,0,-1);*/
+	
+	vNormal.xy = vNormal.xy * 2.0 - 1.0;
+	half fValue = vNormal.z;
+	vNormal.z = sign(fValue * 2.0 - 1.0);
+
+	vNormal.z = sqrt(1 - pow(vNormal.x, 2) - pow(vNormal.y, 2)) * vNormal.z;
+
+	half fLayer;
+	if(vNormal.z > 0.0)
+		fLayer = fValue - 0.5;
+	else
+		fLayer = fValue;
+	
+	return half4(vNormal, fLayer);
 }
+
+#define NormalEncodeLayer(vNormal)(NormalDecode(vNormal).w)
 
 //! преобразвоание цвета в нормаль (если конечно цвет содержит нормаль)
 half3 Color2Normal(half3 vColor)
@@ -111,10 +130,10 @@ PSO_Gbuffer CreateGbuffer(half4 vColor, half3 vNormal, half4 vParam, half4 vPosi
 	OUT.vColor = vColor;
 	
 	vNormal = normalize(vNormal);
-	//OUT.vNormal.xyz = vNormal;
-	OUT.vNormal.xy = NormalEncode(vNormal);
+	//OUT.vNormal.xyz = vNormal * 0.5 + 0.5;
+	OUT.vNormal.xyz = NormalEncode(vNormal, vNearFarLayers.w);
 	OUT.vNormal.w = vNearFarLayers.z;
-	OUT.vNormal.z = vNearFarLayers.w;
+	//OUT.vNormal.z = vNearFarLayers.w;
 	
 	OUT.vParam = vParam;
 	

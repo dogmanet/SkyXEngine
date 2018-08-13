@@ -6,11 +6,11 @@ LRESULT SXMaterialEditor_TrackBarHitChance_MouseMove(HWND hwnd, UINT msg, WPARAM
 	char thickness[64];
 	thickness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarHitChance->getPos();
+	int pos = SXMaterialEditor::pTrackBarHitChance->getPos();
 	sprintf(thickness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditHitChance->setText(thickness);
+	SXMaterialEditor::pEditHitChance->setText(thickness);
 
-	SML_MtlSetHitChance(SXMaterialEditor::IDMat, float(pos)*0.01f);
+	SML_MtlSetHitChance(SXMaterialEditor::idMat, float(pos)*0.01f);
 
 	return 0;
 }
@@ -20,11 +20,11 @@ LRESULT SXMaterialEditor_TrackBarRoughness_MouseMove(HWND hwnd, UINT msg, WPARAM
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarRoughness->getPos();
+	int pos = SXMaterialEditor::pTrackBarRoughness->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditRoughness->setText(roughness);
+	SXMaterialEditor::pEditRoughness->setText(roughness);
 
-	SML_MtlSetRoughness(SXMaterialEditor::IDMat, float(pos)*0.01f);
+	SML_MtlSetRoughness(SXMaterialEditor::idMat, float(pos)*0.01f);
 
 	return 0;
 }
@@ -34,11 +34,11 @@ LRESULT SXMaterialEditor_TrackBarThickness_MouseMove(HWND hwnd, UINT msg, WPARAM
 	char thickness[64];
 	thickness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarThickness->getPos();
+	int pos = SXMaterialEditor::pTrackBarThickness->getPos();
 	sprintf(thickness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditThickness->setText(thickness);
+	SXMaterialEditor::pEditThickness->setText(thickness);
 
-	SML_MtlSetThickness(SXMaterialEditor::IDMat, float(pos)*0.01f);
+	SML_MtlSetThickness(SXMaterialEditor::idMat, float(pos)*0.01f);
 
 	return 0;
 }
@@ -48,11 +48,11 @@ LRESULT SXMaterialEditor_TrackBarF0_MouseMove(HWND hwnd, UINT msg, WPARAM wParam
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarF0->getPos();
+	int pos = SXMaterialEditor::pTrackBarF0->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditF0->setText(roughness);
+	SXMaterialEditor::pEditF0->setText(roughness);
 
-	SML_MtlSetF0(SXMaterialEditor::IDMat, float(pos)*0.01f);
+	SML_MtlSetF0(SXMaterialEditor::idMat, float(pos)*0.01f);
 
 	return 0;
 }
@@ -64,11 +64,11 @@ LRESULT SXMaterialEditor_TrackBarUDVSX_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSX->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDVSX->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSX->setText(roughness);
+	SXMaterialEditor::pEditUDVSX->setText(roughness);
 
-	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 0, float(pos)*0.01f);
+	SML_MtlSetUserDataVS(SXMaterialEditor::idMat, 0, float(pos)*0.01f);
 
 	return 0;
 }
@@ -78,11 +78,11 @@ LRESULT SXMaterialEditor_TrackBarUDVSY_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSY->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDVSY->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSY->setText(roughness);
+	SXMaterialEditor::pEditUDVSY->setText(roughness);
 
-	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 1, float(pos)*0.01f);
+	SML_MtlSetUserDataVS(SXMaterialEditor::idMat, 1, float(pos)*0.01f);
 
 	return 0;
 }
@@ -92,11 +92,11 @@ LRESULT SXMaterialEditor_TrackBarUDVSZ_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSZ->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDVSZ->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSZ->setText(roughness);
+	SXMaterialEditor::pEditUDVSZ->setText(roughness);
 
-	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 2, float(pos)*0.01f);
+	SML_MtlSetUserDataVS(SXMaterialEditor::idMat, 2, float(pos)*0.01f);
 
 	return 0;
 }
@@ -106,11 +106,11 @@ LRESULT SXMaterialEditor_TrackBarUDVSW_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDVSW->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDVSW->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDVSW->setText(roughness);
+	SXMaterialEditor::pEditUDVSW->setText(roughness);
 
-	SML_MtlSetUserDataVS(SXMaterialEditor::IDMat, 3, float(pos)*0.01f);
+	SML_MtlSetUserDataVS(SXMaterialEditor::idMat, 3, float(pos)*0.01f);
 
 	return 0;
 }
@@ -122,11 +122,11 @@ LRESULT SXMaterialEditor_TrackBarUDPSX_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSX->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDPSX->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSX->setText(roughness);
+	SXMaterialEditor::pEditUDPSX->setText(roughness);
 
-	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 0, float(pos)*0.01f);
+	SML_MtlSetUserDataPS(SXMaterialEditor::idMat, 0, float(pos)*0.01f);
 
 	return 0;
 }
@@ -136,11 +136,11 @@ LRESULT SXMaterialEditor_TrackBarUDPSY_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSY->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDPSY->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSY->setText(roughness);
+	SXMaterialEditor::pEditUDPSY->setText(roughness);
 
-	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 1, float(pos)*0.01f);
+	SML_MtlSetUserDataPS(SXMaterialEditor::idMat, 1, float(pos)*0.01f);
 
 	return 0;
 }
@@ -150,11 +150,11 @@ LRESULT SXMaterialEditor_TrackBarUDPSZ_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSZ->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDPSZ->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSZ->setText(roughness);
+	SXMaterialEditor::pEditUDPSZ->setText(roughness);
 
-	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 2, float(pos)*0.01f);
+	SML_MtlSetUserDataPS(SXMaterialEditor::idMat, 2, float(pos)*0.01f);
 
 	return 0;
 }
@@ -164,11 +164,11 @@ LRESULT SXMaterialEditor_TrackBarUDPSW_MouseMove(HWND hwnd, UINT msg, WPARAM wPa
 	char roughness[64];
 	roughness[0] = '0';
 
-	int pos = SXMaterialEditor::TrackBarUDPSW->getPos();
+	int pos = SXMaterialEditor::pTrackBarUDPSW->getPos();
 	sprintf(roughness, "%.2f", float(pos)*0.01f);
-	SXMaterialEditor::EditUDPSW->setText(roughness);
+	SXMaterialEditor::pEditUDPSW->setText(roughness);
 
-	SML_MtlSetUserDataPS(SXMaterialEditor::IDMat, 3, float(pos)*0.01f);
+	SML_MtlSetUserDataPS(SXMaterialEditor::idMat, 3, float(pos)*0.01f);
 
 	return 0;
 }

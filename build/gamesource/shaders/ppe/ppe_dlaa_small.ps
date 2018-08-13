@@ -25,10 +25,10 @@ half4 main(VSO_PP IN) : COLOR0
 {
 	half4 vColorCenter = tex2Dlod2(g_sColor, IN.vTexUV, 0.0);
 
-	half4 vHorizNeg0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(-1.5, 0.0) * g_vPixelSize, 0.0);
-	half4 vHorizPos0 = tex2Dlod2(g_sColor, IN.vTexUV + half2( 1.5, 0.0) * g_vPixelSize, 0.0); 
-	half4 vVertNeg0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, -1.5) * g_vPixelSize, 0.0); 
-	half4 vVertPos0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, 1.5) * g_vPixelSize, 0.0);
+	half4 vHorizNeg0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(-1.0, 0.0) * g_vPixelSize, 0.0);
+	half4 vHorizPos0 = tex2Dlod2(g_sColor, IN.vTexUV + half2( 1.0, 0.0) * g_vPixelSize, 0.0); 
+	half4 vVertNeg0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, -1.0) * g_vPixelSize, 0.0); 
+	half4 vVertPos0 = tex2Dlod2(g_sColor, IN.vTexUV + half2(0.0, 1.0) * g_vPixelSize, 0.0);
 
 	half4 vSumHoriz = vHorizNeg0 + vHorizPos0;
 	half4 vSumVert = vVertNeg0  + vVertPos0;

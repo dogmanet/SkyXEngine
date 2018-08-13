@@ -6,31 +6,31 @@
 #include <common/array.h>
 #include <core/sxcore.h>
 
-class ShadersKit
+class CShadersKit
 {
 public:
-	ShadersKit();
-	~ShadersKit();
+	CShadersKit();
+	~CShadersKit();
 
-	void Load(const char* path);
+	void load(const char *szPath);
 
-	UINT GetCount() const;
-	const char* GetName(ID id) const;
-	const char* GetVS(ID id) const;
-	const char* GetPS(ID id) const;
+	UINT getCount() const;
+	const char* getName(ID id) const;
+	const char* getVS(ID id) const;
+	const char* getPS(ID id) const;
 
-	ID Find(const char* vs, const char* ps) const;
+	ID find(const char *m_szVS, const char *m_szPS) const;
 
 protected:
 
-	struct shaders
+	struct CShaders
 	{
-		String name;
-		String vs;
-		String ps;
+		String m_sName;
+		String m_sVS;
+		String m_sPS;
 	};
 
-	Array<shaders*> Arr;
+	Array<CShaders*> m_aShaders;
 };
 
 #endif

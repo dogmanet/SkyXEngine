@@ -6,33 +6,33 @@
 #include <common/array.h>
 #include <core/sxcore.h>
 
-class ParamLKit
+class CParamLigthKit
 {
 public:
-	ParamLKit();
-	~ParamLKit();
+	CParamLigthKit();
+	~CParamLigthKit();
 
-	void Load(const char* path);
+	void load(const char *szPath);
 
-	UINT GetCount() const;
-	const char* GetName(ID id) const;
-	float GetThickness(ID id) const;
-	float GetRoughness(ID id) const;
-	float GetF0(ID id) const;
+	UINT getCount() const;
+	const char* getName(ID id) const;
+	float getThickness(ID id) const;
+	float getRoughness(ID id) const;
+	float getF0(ID id) const;
 
-	ID Find(float thickness, float roughness, float f0) const;
+	ID find(float fThickness, float fRoughness, float fF0) const;
 
 protected:
 
-	struct paraml
+	struct CParamLigth
 	{
-		String name;
-		float thickness;
-		float roughness;
-		float f0;
+		String m_sName;
+		float m_fThickness;
+		float m_fRoughness;
+		float m_fF0;
 	};
 
-	Array<paraml*> Arr;
+	Array<CParamLigth*> m_aParameters;
 };
 
 #endif

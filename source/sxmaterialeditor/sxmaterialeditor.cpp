@@ -429,46 +429,46 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::Nulling();
 	
 
-	SkyXEngine_Init(SXMaterialEditor::WindowRender->getHWND(), SXMaterialEditor::JobWindow->getHWND());
+	SkyXEngine_Init(SXMaterialEditor::pWindowRender->getHWND(), SXMaterialEditor::pJobWindow->getHWND());
 	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 	SkyXEngine_RunGenPreview();
 	Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 
-	SXMaterialEditor::MainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	SXMaterialEditor::CheckBoxTBRLighting->setCheck(true);
+	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	SXMaterialEditor::pCheckBoxTBRLighting->setCheck(true);
 
-	SXMaterialEditor::CheckBoxTBCam->setCheck(true);
-	SRender_EditorCameraSetMove(SXMaterialEditor::CheckBoxTBCam->getCheck());
+	SXMaterialEditor::pCheckBoxTBCam->setCheck(true);
+	SRender_EditorCameraSetMove(SXMaterialEditor::pCheckBoxTBCam->getCheck());
 
 	char shaderskitpath[1024];
 	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\shaders_kit.cfg");
-	SXMaterialEditor::Shaders = new ShadersKit();
-	SXMaterialEditor::Shaders->Load(shaderskitpath);
+	SXMaterialEditor::pShaders = new CShadersKit();
+	SXMaterialEditor::pShaders->load(shaderskitpath);
 
-	for (int i = 0; i < SXMaterialEditor::Shaders->GetCount(); ++i)
+	for (int i = 0; i < SXMaterialEditor::pShaders->getCount(); ++i)
 	{
-		SXMaterialEditor::ComboBoxShaders->addItem(SXMaterialEditor::Shaders->GetName(i));
+		SXMaterialEditor::pComboBoxShaders->addItem(SXMaterialEditor::pShaders->getName(i));
 	}
 
-	SXMaterialEditor::ComboBoxShaders->setSel(0);
+	SXMaterialEditor::pComboBoxShaders->setSel(0);
 
 
 	char paramlpath[1024];
 	sprintf(paramlpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\paraml_kit.cfg");
-	SXMaterialEditor::ParamL = new ParamLKit();
-	SXMaterialEditor::ParamL->Load(paramlpath);
+	SXMaterialEditor::pParamL = new CParamLigthKit();
+	SXMaterialEditor::pParamL->load(paramlpath);
 
-	for (int i = 0; i < SXMaterialEditor::ParamL->GetCount(); ++i)
+	for (int i = 0; i < SXMaterialEditor::pParamL->getCount(); ++i)
 	{
-		SXMaterialEditor::ComboBoxParamL->addItem(SXMaterialEditor::ParamL->GetName(i));
+		SXMaterialEditor::pComboBoxParamL->addItem(SXMaterialEditor::pParamL->getName(i));
 	}
 
-	SXMaterialEditor::ComboBoxParamL->setSel(0);
+	SXMaterialEditor::pComboBoxParamL->setSel(0);
 
 
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SXMaterialEditor::EditSkyBox->setText("sky_2_cube.dds");
+	SXMaterialEditor::pEditSkyBox->setText("sky_2_cube.dds");
 		
 	SRender_GetCamera()->setPosition(&float3(0, 0, -100));
 
@@ -486,19 +486,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
 	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
 
-	SXMaterialEditor::EditLigthColorR->setText("1");
-	SXMaterialEditor::EditLigthColorG->setText("1");
-	SXMaterialEditor::EditLigthColorB->setText("1");
-	SXMaterialEditor::StaticLigthColor->setColorBrush(RGB(255, 255, 255));
+	SXMaterialEditor::pEditLigthColorR->setText("1");
+	SXMaterialEditor::pEditLigthColorG->setText("1");
+	SXMaterialEditor::pEditLigthColorB->setText("1");
+	SXMaterialEditor::pStaticLigthColor->setColorBrush(RGB(255, 255, 255));
 
 
 	SGCore_LoadTexAllLoad();
 
 	SXMaterialEditor::InitMtl(SRender_SimModelGetIDMtl());
-	SXMaterialEditor::IDMat = SRender_SimModelGetIDMtl();
+	SXMaterialEditor::idMat = SRender_SimModelGetIDMtl();
 
 	SkyXEngine_PreviewKill();
-	SXMaterialEditor::JobWindow->setVisible(true);
+	SXMaterialEditor::pJobWindow->setVisible(true);
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
 	SXMaterialEditor::DeleteAllElements();

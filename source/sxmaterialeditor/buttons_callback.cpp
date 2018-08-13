@@ -6,9 +6,9 @@ LRESULT SXMaterialEditor_ButtonSkyBox_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char szName[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
 	
-	if (gui_func::dialogs::SelectFileOwn(szName, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(szName, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
-		SXMaterialEditor::EditSkyBox->setText(szName);
+		SXMaterialEditor::pEditSkyBox->setText(szName);
 
 		SGCore_SkyBoxLoadTex(szName);
 	}
@@ -43,11 +43,11 @@ LRESULT SXMaterialEditor_ButtonLigthColor_Click(HWND hwnd, UINT msg, WPARAM wPar
 		vColor.y = float(GetGValue(oChooseColor.rgbResult)) / 255.0;
 		vColor.z = float(GetBValue(oChooseColor.rgbResult)) / 255.0;
 		SML_LigthsSetColor(idGlobalLight, &vColor);
-		SXMaterialEditor::StaticLigthColor->setColorBrush(oChooseColor.rgbResult);
+		SXMaterialEditor::pStaticLigthColor->setColorBrush(oChooseColor.rgbResult);
 
-		SXMaterialEditor::EditLigthColorR->setText(String(vColor.x).c_str());
-		SXMaterialEditor::EditLigthColorG->setText(String(vColor.y).c_str());
-		SXMaterialEditor::EditLigthColorB->setText(String(vColor.z).c_str());
+		SXMaterialEditor::pEditLigthColorR->setText(String(vColor.x).c_str());
+		SXMaterialEditor::pEditLigthColorG->setText(String(vColor.y).c_str());
+		SXMaterialEditor::pEditLigthColorB->setText(String(vColor.z).c_str());
 	}
 
 	return 0;
@@ -60,12 +60,12 @@ LRESULT SXMaterialEditor_ButtonTex_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
 	
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditTex->setText(tmpname);
+		SXMaterialEditor::pEditTex->setText(tmpname);
 		
-		SML_MtlSetTexture(SXMaterialEditor::IDMat, tmpname);
+		SML_MtlSetTexture(SXMaterialEditor::idMat, tmpname);
 	}
 	return 0;
 }
@@ -77,12 +77,12 @@ LRESULT SXMaterialEditor_ButtonVS_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), FILE_FILTER_VS);
 
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), "vs", "Select vertex shader", true, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SXMaterialEditor::JobWindow->getHWND()))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), "vs", "Select vertex shader", true, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SXMaterialEditor::pJobWindow->getHWND()))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditVS->setText(tmpname);
+		SXMaterialEditor::pEditVS->setText(tmpname);
 
-		SML_MtlSetVS(SXMaterialEditor::IDMat, tmpname);
+		SML_MtlSetVS(SXMaterialEditor::idMat, tmpname);
 	}
 	return 0;
 }
@@ -94,12 +94,12 @@ LRESULT SXMaterialEditor_ButtonPS_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), FILE_FILTER_PS);
 	
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), "ps", "Select pixel shader", true, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SXMaterialEditor::JobWindow->getHWND()))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), "ps", "Select pixel shader", true, Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SXMaterialEditor::pJobWindow->getHWND()))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditPS->setText(tmpname);
+		SXMaterialEditor::pEditPS->setText(tmpname);
 
-		SML_MtlSetPS(SXMaterialEditor::IDMat, tmpname);
+		SML_MtlSetPS(SXMaterialEditor::idMat, tmpname);
 	}
 	return 0;
 }
@@ -110,12 +110,12 @@ LRESULT SXMaterialEditor_ButtonTexLighting_Click(HWND hwnd, UINT msg, WPARAM wPa
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditTexLighting->setText(tmpname);
+		SXMaterialEditor::pEditTexLighting->setText(tmpname);
 
-		SML_MtlSetTextureLighting(SXMaterialEditor::IDMat, tmpname);
+		SML_MtlSetTextureLighting(SXMaterialEditor::idMat, tmpname);
 	}
 	return 0;
 }
@@ -126,12 +126,12 @@ LRESULT SXMaterialEditor_ButtonMask_Click(HWND hwnd, UINT msg, WPARAM wParam, LP
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditMask->setText(tmpname);
+		SXMaterialEditor::pEditMask->setText(tmpname);
 
-		SML_MtlSetMaskTex(SXMaterialEditor::IDMat, tmpname);
+		SML_MtlSetMaskTex(SXMaterialEditor::idMat, tmpname);
 	}
 	return 0;
 }
@@ -142,12 +142,12 @@ LRESULT SXMaterialEditor_ButtonMR_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditMR->setText(tmpname);
+		SXMaterialEditor::pEditMR->setText(tmpname);
 
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 0, tmpname);
+		SML_MtlSetMRTex(SXMaterialEditor::idMat, 0, tmpname);
 	}
 	return 0;
 }
@@ -158,12 +158,12 @@ LRESULT SXMaterialEditor_ButtonMG_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditMG->setText(tmpname);
+		SXMaterialEditor::pEditMG->setText(tmpname);
 
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 1, tmpname);
+		SML_MtlSetMRTex(SXMaterialEditor::idMat, 1, tmpname);
 	}
 	return 0;
 }
@@ -174,12 +174,12 @@ LRESULT SXMaterialEditor_ButtonMB_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditMB->setText(tmpname);
+		SXMaterialEditor::pEditMB->setText(tmpname);
 
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 2, tmpname);
+		SML_MtlSetMRTex(SXMaterialEditor::idMat, 2, tmpname);
 	}
 	return 0;
 }
@@ -190,12 +190,12 @@ LRESULT SXMaterialEditor_ButtonMA_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditMA->setText(tmpname);
+		SXMaterialEditor::pEditMA->setText(tmpname);
 
-		SML_MtlSetMRTex(SXMaterialEditor::IDMat, 3, tmpname);
+		SML_MtlSetMRTex(SXMaterialEditor::idMat, 3, tmpname);
 	}
 	return 0;
 }
@@ -207,12 +207,12 @@ LRESULT SXMaterialEditor_ButtonDR_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditDR->setText(tmpname);
+		SXMaterialEditor::pEditDR->setText(tmpname);
 
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 0, tmpname);
+		SML_MtlSetDTex(SXMaterialEditor::idMat, 0, tmpname);
 	}
 	return 0;
 }
@@ -223,12 +223,12 @@ LRESULT SXMaterialEditor_ButtonDG_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditDG->setText(tmpname);
+		SXMaterialEditor::pEditDG->setText(tmpname);
 
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 1, tmpname);
+		SML_MtlSetDTex(SXMaterialEditor::idMat, 1, tmpname);
 	}
 	return 0;
 }
@@ -239,12 +239,12 @@ LRESULT SXMaterialEditor_ButtonDB_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditDB->setText(tmpname);
+		SXMaterialEditor::pEditDB->setText(tmpname);
 
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 2, tmpname);
+		SML_MtlSetDTex(SXMaterialEditor::idMat, 2, tmpname);
 	}
 	return 0;
 }
@@ -255,12 +255,12 @@ LRESULT SXMaterialEditor_ButtonDA_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		//StrCutName(tmppath, tmpname);
-		SXMaterialEditor::EditDA->setText(tmpname);
+		SXMaterialEditor::pEditDA->setText(tmpname);
 
-		SML_MtlSetDTex(SXMaterialEditor::IDMat, 3, tmpname);
+		SML_MtlSetDTex(SXMaterialEditor::idMat, 3, tmpname);
 	}
 	return 0;
 }

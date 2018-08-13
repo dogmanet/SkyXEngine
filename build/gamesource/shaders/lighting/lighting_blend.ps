@@ -5,6 +5,7 @@ Cмешивание всех текстур для финального изоб
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 //##########################################################################
 
@@ -21,7 +22,7 @@ half4 main(VSO_PP IN):COLOR0
 {
 	half4 vNormal = tex2D(g_sNormals,IN.vTexUV);
 	half fSort = vNormal.w;
-	half fLayer = vNormal.z;
+	half fLayer = NormalEncodeLayer(vNormal.xyz);
 	
 	//цвет приводим к sRGB
 	half4 vColor = pow(tex2D(g_sColor,IN.vTexUV), 2.2);

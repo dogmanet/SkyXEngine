@@ -61,7 +61,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 
 		//**********************
 
-		GData::Editors::SimModel = new ModelSim();
+		GData::Editors::SimModel = new CSimulationModel();
 
 		GData::Editors::ObjGrid = new CGrid();
 		GData::Editors::ObjGrid->create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
@@ -173,42 +173,42 @@ SX_LIB_API bool SRender_EditorCameraGetMove()
 
 SX_LIB_API void SRender_SimModelAdd(const char *szName)
 {
-	GData::Editors::SimModel->Add(szName);
+	GData::Editors::SimModel->add(szName);
 }
 
 SX_LIB_API ID SRender_SimModelGetIDMtl()
 {
-	return GData::Editors::SimModel->GetIDMtl();
+	return GData::Editors::SimModel->getIdMtl();
 }
 
 SX_LIB_API MTLTYPE_MODEL SRender_SimModelGetType()
 {
-	return GData::Editors::SimModel->TypeModel;
+	return GData::Editors::SimModel->m_type_model;
 }
 
 SX_LIB_API void SRender_SimModelSetType(MTLTYPE_MODEL type)
 {
-	GData::Editors::SimModel->TypeModel = type;
+	GData::Editors::SimModel->m_type_model = type;
 }
 
 SX_LIB_API void SRender_SimModelSetNumCurrModel(int iCurrNumModel)
 {
-	GData::Editors::SimModel->CurrRenderModel = iCurrNumModel;
+	GData::Editors::SimModel->m_iCurrRenderModel = iCurrNumModel;
 }
 
 SX_LIB_API int SRender_SimModelGetNumCurrModel()
 {
-	return GData::Editors::SimModel->CurrRenderModel;
+	return GData::Editors::SimModel->m_iCurrRenderModel;
 }
 
 SX_LIB_API void SRender_SimModelSetRotationY(float Rotation)
 {
-	GData::Editors::SimModel->Rotation.y = Rotation;
+	GData::Editors::SimModel->m_vRotation.y = Rotation;
 }
 
 SX_LIB_API float SRender_SimModelGetRotationY()
 {
-	return GData::Editors::SimModel->Rotation.y;
+	return GData::Editors::SimModel->m_vRotation.y;
 }
 
 //##########################################################################

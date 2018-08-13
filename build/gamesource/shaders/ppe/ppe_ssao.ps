@@ -47,8 +47,8 @@ half4 main(VSO_ResPos IN):COLOR0
 	else
 	{
 		half3 vPosition = half3(g_vViewPos + IN.vWorldRay * fDepth);
-		half3 vNormal = normalize(NormalDecode(tex2Dlod(g_sNormals, half4(IN.vTexUV, 0, 0)).xy));
-		
+		half3 vNormal = normalize(NormalDecode(tex2Dlod(g_sNormals, half4(IN.vTexUV, 0, 0)).xyz).xyz);
+		//return half4(vNormal /** 0.5 + 0.5*/, 1);
 		half fOcclusion = 0.0;
 		for(int i=0; i < g_fNumSam; i++)
 		{
@@ -77,6 +77,6 @@ half4 main(VSO_ResPos IN):COLOR0
 		fOcclusion = pow(fOcclusion, 2);
 		fOcclusion = lerp(1.0, fOcclusion, saturate((fDepth * g_vNearFar.y)/PP_SSAO_DIST_EMERSION));
 		//fOcclusion = pow(fOcclusion, 2);
-		return half4(fOcclusion,fOcclusion,fOcclusion,1.0);
+		return half4(fOcclusion, fOcclusion, fOcclusion, 1);
 	}
 }

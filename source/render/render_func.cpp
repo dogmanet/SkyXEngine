@@ -822,10 +822,10 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	}
 	else
 	{
-		if (SML_MtlGetSort(GData::Editors::SimModel->GetIDMtl()) != MTLSORT_OPAQUE)
+		if (SML_MtlGetSort(GData::Editors::SimModel->getIdMtl()) != MTLSORT_OPAQUE)
 			SML_MtlSetForceblyAlphaTest(true);
-		GData::Editors::SimModel->Render(timeDelta);
-		if (SML_MtlGetSort(GData::Editors::SimModel->GetIDMtl()) != MTLSORT_OPAQUE)
+		GData::Editors::SimModel->render(timeDelta);
+		if (SML_MtlGetSort(GData::Editors::SimModel->getIdMtl()) != MTLSORT_OPAQUE)
 			SML_MtlSetForceblyAlphaTest(false);
 	}
 
@@ -1685,16 +1685,16 @@ void SXRenderFunc::UpdateReflectionScene(DWORD timeDelta)
 
 void SXRenderFunc::UpdateReflectionSimModel(DWORD timeDelta)
 {
-	ID idmat = GData::Editors::SimModel->GetIDMtl();
+	ID idmat = GData::Editors::SimModel->getIdMtl();
 	MTLTYPE_REFLECT typeref = SML_MtlGetTypeReflection(idmat);
 	D3DXPLANE plane;
 	float3_t center;
-	GData::Editors::SimModel->GetCenter(&center);
+	GData::Editors::SimModel->getCenter(&center);
 	SGCore_ShaderUnBind();
 
 	if (typeref == MTLTYPE_REFLECT_PLANE)
 	{
-		GData::Editors::SimModel->GetPlane(&plane);
+		GData::Editors::SimModel->getPlane(&plane);
 		SML_MtlRefPreRenderPlane(idmat, &plane);
 		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 		SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);

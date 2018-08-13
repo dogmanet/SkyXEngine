@@ -1,17 +1,17 @@
 
 #include "shaders_kit.h"
 
-ShadersKit::ShadersKit()
+CShadersKit::CShadersKit()
 {
 
 }
 
-ShadersKit::~ShadersKit()
+CShadersKit::~CShadersKit()
 {
 
 }
 
-void ShadersKit::Load(const char* path)
+void CShadersKit::load(const char* path)
 {
 	ISXConfig* config = Core_OpConfig(path);
 
@@ -43,52 +43,52 @@ void ShadersKit::Load(const char* path)
 		if (!(config->keyExists(section_name, "name") && config->keyExists(section_name, "vs") && config->keyExists(section_name, "ps")))
 			continue;
 
-		shaders* tmpshaders = new shaders();
-		tmpshaders->name = config->getKey(section_name, "name");
-		tmpshaders->vs = config->getKey(section_name, "vs");
-		tmpshaders->ps = config->getKey(section_name, "ps");
+		CShaders* tmpshaders = new CShaders();
+		tmpshaders->m_sName = config->getKey(section_name, "name");
+		tmpshaders->m_sVS = config->getKey(section_name, "vs");
+		tmpshaders->m_sPS = config->getKey(section_name, "ps");
 
-		Arr.push_back(tmpshaders);
+		m_aShaders.push_back(tmpshaders);
 	}
 }
 
-UINT ShadersKit::GetCount() const
+UINT CShadersKit::getCount() const
 {
-	return Arr.size();
+	return m_aShaders.size();
 }
 
-const char* ShadersKit::GetName(ID id) const
+const char* CShadersKit::getName(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->name.c_str();
+	if (id >= 0 && m_aShaders.size() > id && m_aShaders[id])
+		return m_aShaders[id]->m_sName.c_str();
 
 	return 0;
 }
 
-const char* ShadersKit::GetVS(ID id) const
+const char* CShadersKit::getVS(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->vs.c_str();
+	if (id >= 0 && m_aShaders.size() > id && m_aShaders[id])
+		return m_aShaders[id]->m_sVS.c_str();
 	
 	return 0;
 }
 
-const char* ShadersKit::GetPS(ID id) const
+const char* CShadersKit::getPS(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->ps.c_str();
+	if (id >= 0 && m_aShaders.size() > id && m_aShaders[id])
+		return m_aShaders[id]->m_sPS.c_str();
 	
 	return 0;
 }
 
-ID ShadersKit::Find(const char* vs, const char* ps) const
+ID CShadersKit::find(const char* vs, const char* ps) const
 {
 	if (!vs || !ps)
 		return -1;
 
-	for (int i = 0, il = Arr.size(); i < il; ++i)
+	for (int i = 0, il = m_aShaders.size(); i < il; ++i)
 	{
-		if (stricmp(vs, Arr[i]->vs.c_str()) == 0 && stricmp(ps, Arr[i]->ps.c_str()) == 0)
+		if (stricmp(vs, m_aShaders[i]->m_sVS.c_str()) == 0 && stricmp(ps, m_aShaders[i]->m_sPS.c_str()) == 0)
 			return i;
 	}
 
