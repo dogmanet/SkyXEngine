@@ -624,17 +624,21 @@ LRESULT SXLevelEditor_ListViewGameConnections_Click()
 		if (pEnt2 && strcmp(pEnt2->getName(), szStr) == 0)
 		{
 			proptable_t *pPropTable = SXGame_EntGetProptable(pEnt2->getClassName());
-			propdata_t *pPropData = 0;
-
-			//проходимся по всем полям класса
-			for (int k = 0; k < pPropTable->numFields; ++k)
+			while(pPropTable)
 			{
-				pPropData = &pPropTable->pData[k];
-				if (pPropData->flags & PDFF_INPUT)
+				propdata_t *pPropData = 0;
+
+				//проходимся по всем полям класса
+				for(int k = 0; k < pPropTable->numFields; ++k)
 				{
-					SXLevelEditor::ComboBoxGameConnectionsAction->addItem(pPropData->szEdName);
-					SXLevelEditor::ComboBoxGameConnectionsAction->setItemData(SXLevelEditor::ComboBoxGameConnectionsAction->getCount() - 1, (LPARAM)(pPropData->szKey));
+					pPropData = &pPropTable->pData[k];
+					if(pPropData->flags & PDFF_INPUT)
+					{
+						SXLevelEditor::ComboBoxGameConnectionsAction->addItem(pPropData->szEdName);
+						SXLevelEditor::ComboBoxGameConnectionsAction->setItemData(SXLevelEditor::ComboBoxGameConnectionsAction->getCount() - 1, (LPARAM)(pPropData->szKey));
+					}
 				}
+				pPropTable = pPropTable->pBaseProptable;
 			}
 		}
 	}
@@ -696,25 +700,29 @@ LRESULT SXLevelEditor_EditGameConnectionsName_Enter(HWND hwnd, UINT msg, WPARAM 
 		propdata_t *pPropData2 = 0;
 		SXLevelEditor::ComboBoxGameConnectionsAction->clear();
 
-		//проходимся по всем данным таблицы свойств
-		for (int j = 0; j < pPropTable2->numFields; ++j)
+		while(pPropTable2)
 		{
-			pPropData2 = &pPropTable2->pData[j];
-
-			//если свойство input
-			if (pPropData2->flags & PDFF_INPUT)
+		//проходимся по всем данным таблицы свойств
+			for(int j = 0; j < pPropTable2->numFields; ++j)
 			{
-				//добавляем в комбобокс action
-				SXLevelEditor::ComboBoxGameConnectionsAction->addItem(pPropData2->szEdName);
-				SXLevelEditor::ComboBoxGameConnectionsAction->setItemData(SXLevelEditor::ComboBoxGameConnectionsEvent->getCount() - 1, (LPARAM)(pPropData2->szKey));
+				pPropData2 = &pPropTable2->pData[j];
 
-				//если предыдущее имя action равно последнему вставленному
-				if (strcmp(pPropData2->szEdName, szBuffer256) == 0)
+				//если свойство input
+				if(pPropData2->flags & PDFF_INPUT)
 				{
-					//активируем эту строку в комбобоксе
-					SXLevelEditor::ComboBoxGameConnectionsAction->setSel(SXLevelEditor::ComboBoxGameConnectionsAction->getCount() - 1);
+					//добавляем в комбобокс action
+					SXLevelEditor::ComboBoxGameConnectionsAction->addItem(pPropData2->szEdName);
+					SXLevelEditor::ComboBoxGameConnectionsAction->setItemData(SXLevelEditor::ComboBoxGameConnectionsEvent->getCount() - 1, (LPARAM)(pPropData2->szKey));
+
+					//если предыдущее имя action равно последнему вставленному
+					if(strcmp(pPropData2->szEdName, szBuffer256) == 0)
+					{
+						//активируем эту строку в комбобоксе
+						SXLevelEditor::ComboBoxGameConnectionsAction->setSel(SXLevelEditor::ComboBoxGameConnectionsAction->getCount() - 1);
+					}
 				}
 			}
+			pPropTable2 = pPropTable2->pBaseProptable;
 		}
 	}
 	// если такого энтитя не существует

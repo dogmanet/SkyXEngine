@@ -247,7 +247,13 @@ namespace gui
 					IDOMnode * node = (*nodes)[i];
 					if(node->getAttribute(L"rel") == L"stylesheet")
 					{
-						m_pCSS->addFile(node->getAttribute(L"href").c_str());
+						const StringW &wsMaxWidth = node->getAttribute(L"max-width");
+						int iMaxWidth = -1;
+						if(wsMaxWidth.length() > 0)
+						{
+							iMaxWidth = wsMaxWidth.toInt();
+						}
+						m_pCSS->addFile(node->getAttribute(L"href").c_str(), iMaxWidth);
 					}
 				}
 			}
@@ -645,22 +651,25 @@ namespace gui
 			for(UINT i = 0; i < icount; i++)
 			{
 				css = m_pCSS->m_styleOrder[i];
-				UINT iRuleCount = css->m_pRules.size();
-				css::ICSSstyle * pStyle;
-				for(UINT j = 0; j < iRuleCount; j++)
+				if(css->isEnabledForWidth(GetGUI()->getScreenWidth()))
 				{
-					pStyle = &css->m_pRules[j];
-					IDOMnodeCollection els = querySelectorAll(&((css::CCSSstyle*)pStyle)->m_pRules);
-					UINT iNodeCount = els.size();
-					for(UINT k = 0; k < iNodeCount; k++)
+					UINT iRuleCount = css->m_pRules.size();
+					css::ICSSstyle * pStyle;
+					for(UINT j = 0; j < iRuleCount; j++)
 					{
-						bool cf = false;
-						for(int ii = 0, l = m_UpdateStyleQueue.size(); ii < l && !cf; ++ii)
+						pStyle = &css->m_pRules[j];
+						IDOMnodeCollection els = querySelectorAll(&((css::CCSSstyle*)pStyle)->m_pRules);
+						UINT iNodeCount = els.size();
+						for(UINT k = 0; k < iNodeCount; k++)
 						{
-							if(!IsIncremental || els[k] == m_UpdateStyleQueue[ii] || els[k]->isChildOf(m_UpdateStyleQueue[ii]))
+							bool cf = false;
+							for(int ii = 0, l = m_UpdateStyleQueue.size(); ii < l && !cf; ++ii)
 							{
-								CDOMnode::applyCSSrules(pStyle, (CDOMnode*)els[k]);
-								cf = true;
+								if(!IsIncremental || els[k] == m_UpdateStyleQueue[ii] || els[k]->isChildOf(m_UpdateStyleQueue[ii]))
+								{
+									CDOMnode::applyCSSrules(pStyle, (CDOMnode*)els[k]);
+									cf = true;
+								}
 							}
 						}
 					}

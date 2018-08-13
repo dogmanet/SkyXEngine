@@ -359,7 +359,7 @@ bool CEntityManager::exportList(const char * file)
 		{
 			for(int j = 0; j < pTbl->numFields; ++j)
 			{
-				if(pTbl->pData[j].szKey && !conf->keyExists(sect, pTbl->pData[j].szKey))
+				if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & PDFF_INPUT) && !conf->keyExists(sect, pTbl->pData[j].szKey))
 				{
 					pEnt->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
 					conf->set(sect, pTbl->pData[j].szKey, buf);

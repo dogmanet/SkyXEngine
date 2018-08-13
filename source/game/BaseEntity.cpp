@@ -47,7 +47,7 @@ void CBaseEntity::setDefaults()
 	{
 		for(int i = 0; i < pt->numFields; ++i)
 		{
-			if(pt->pData[i].type == PDF_STRING)
+			if(pt->pData[i].type == PDF_STRING && !(pt->pData[i].flags & PDFF_INPUT))
 			{
 				this->*((const char * ThisClass::*)pt->pData[i].pField) = estr;
 			}
@@ -100,7 +100,7 @@ CBaseEntity::~CBaseEntity()
 	{
 		for(int i = 0; i < pt->numFields; ++i)
 		{
-			if(pt->pData[i].type == PDF_STRING)
+			if(pt->pData[i].type == PDF_STRING && !(pt->pData[i].flags & PDFF_INPUT))
 			{
 				const char * str = this->*((const char * ThisClass::*)pt->pData->pField);
 				if(str && str != estr)
@@ -199,7 +199,7 @@ SMMATRIX CBaseEntity::getWorldTM()
 bool CBaseEntity::setKV(const char * name, const char * value)
 {
 	propdata_t * field = getField(name);
-	if(!field)
+	if(!field || (field->flags & PDFF_INPUT))
 	{
 		return(false);
 	}
@@ -634,6 +634,8 @@ void CBaseEntity::updateOutputs()
 						continue;
 					}
 					pOut->pOutputs = new input_t[pOut->iOutCount];
+					memset(pOut->pOutputs, 0, sizeof(input_t) * pOut->iOutCount);
+
 
 					CBaseEntity * pEnt = NULL;
 					int c = 0;
@@ -813,5 +815,9 @@ void CBaseEntity::broadcastMessage(const char * szInputName, inputdata_t inputDa
 }
 
 void CBaseEntity::_cleanup()
+{
+}
+
+void CBaseEntity::onUse(CBaseEntity *pUser)
 {
 }

@@ -73,7 +73,7 @@ public:
 	void onDeath();
 
 	void respawn();
-
+	
 protected:
 	//! Камера
 	CPointCamera * m_pCamera;

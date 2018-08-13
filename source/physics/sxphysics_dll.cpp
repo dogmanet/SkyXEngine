@@ -160,3 +160,17 @@ SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisi
 
 	return(g_pWorld->GetMtlID(pBody, pShapeInfo));
 }
+
+SX_LIB_API void SXPhysics_EnableSimulation()
+{
+	SP_PRECOND(_VOID);
+
+	g_pWorld->enableSimulation();
+}
+
+SX_LIB_API void SXPhysics_DisableSimulation()
+{
+	SP_PRECOND(_VOID);
+
+	g_pWorld->disableSimulation();
+}

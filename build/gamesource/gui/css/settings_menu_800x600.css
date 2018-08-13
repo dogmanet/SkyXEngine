@@ -1,0 +1,67 @@
+#title
+{
+	top: 10%; 
+	left: 10%;
+	width: 30%;
+	position: absolute;
+	font-size: 24px;
+	transform: rotateY(10deg);
+}
+
+#left_menu
+{
+	//background-color: #00FF0088;
+	top: 20%; 
+	left: 10%; 
+	bottom: 10%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(10deg);
+}
+
+#right_menu
+{
+	//background-color: #00FF0088;
+	height: 10%; 
+	right: 10%; 
+	bottom: 5%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(-10deg);
+}
+
+#center_menu
+{
+	//background-color: #0000FF88;
+	top: 20%; 
+	left: 40%; 
+	bottom: 10%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(-8deg);
+	overflow-y: hidden;
+}
+
+.menu-item
+{
+	font-size: 18px;
+}
+
+.settings_snd .menu-item
+{
+	font-size: 20px;
+}
+
+select
+{
+	margin-bottom: 10px;
+	
+	font-size: 16px;
+}
+
+select:checked
+{
+	max-height: 501px;
+}
+
+

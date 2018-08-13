@@ -312,6 +312,8 @@ protected:
 	int m_iCurrentActivity[BLEND_MAX];
 	UINT m_iCurrentActivityFadeTime[BLEND_MAX];
 
+	bool m_isMdlManaged;
+
 private:
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink, bool isStatic=false);
 };

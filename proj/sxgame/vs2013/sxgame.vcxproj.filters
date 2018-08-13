@@ -61,6 +61,18 @@
     <Filter Include="Source Files\ents\characters\npc">
       <UniqueIdentifier>{474c6cbf-9b16-4a74-876b-edd6fc116cbc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ents\logic">
+      <UniqueIdentifier>{dddf693a-9b9e-4a8a-92fc-de390c057fd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\logic">
+      <UniqueIdentifier>{3ff8d3f9-f238-400c-903f-7239b3e229ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\props">
+      <UniqueIdentifier>{97846957-4c2e-44f1-8e9c-d852e3783baf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\props">
+      <UniqueIdentifier>{f33fe13e-64ab-4a37-8f3e-3ae63c99cc9d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -194,6 +206,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\SettingsWriter.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LogicRelay.cpp">
+      <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PropButton.cpp">
+      <Filter>Source Files\ents\props</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -343,6 +361,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\SettingsWriter.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LogicRelay.h">
+      <Filter>Header Files\ents\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PropButton.h">
+      <Filter>Header Files\ents\props</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

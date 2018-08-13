@@ -58,6 +58,9 @@ public:
 	bool ImportGeom(const char * file);
 	bool ExportGeom(const char * file);
 
+	void disableSimulation();
+	void enableSimulation();
+
 	void render();
 
 	MTLTYPE_PHYSIC GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
@@ -125,6 +128,8 @@ protected:
 	btRigidBody *** m_pppGreenStaticRigidBody;
 	int m_iGreenShapes;
 	int * m_piGreenTotal;
+
+	bool m_isRunning;
 };
 
 #endif

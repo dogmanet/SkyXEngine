@@ -118,7 +118,7 @@ void CNPCBase::setPos(const float3 &pos)
 		}
 		else if(SAIG_QuadGetStateWho(m_idQuadCurr) != getId())
 		{
-			ID idquad = SAIG_QuadGetNear(&pos, true, 2);
+			ID idquad = SAIG_QuadGetNear(&pos, 2.0f, true, 2);
 			if(ID_VALID(idquad))
 			{
 				m_idQuadCurr = idquad;
@@ -368,7 +368,7 @@ void CNPCBase::stopMotion(bool runIdleAnim)
 
 void CNPCBase::goTo(const float3 &vPos, bool bRun)
 {
-	goTo(SAIG_QuadGetNear(&vPos, true, 3), bRun);
+	goTo(SAIG_QuadGetNear(&vPos, 3.0f, true, 3), bRun);
 }
 
 float CNPCBase::canSee(CBaseCharacter *pOther)

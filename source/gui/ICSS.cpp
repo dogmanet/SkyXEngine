@@ -310,7 +310,7 @@ namespace gui
 		}
 #endif
 	
-		void ICSS::addFile(const WCHAR * szFile)
+		void ICSS::addFile(const WCHAR * szFile, int iMaxWidth)
 		{
 			StringW file(StringW(GetGUI()->getResourceDir()) + L"/css/" + szFile);
 			FILE * pF;
@@ -333,6 +333,7 @@ namespace gui
 			str[fread(str, sizeof(wchar_t), fs, pF)] = 0;
 			fclose(pF);
 			ICSSstyleSet css(this);
+			css.setMaxWidth(iMaxWidth);
 			css.loadFromString(str);
 			m_styleSets[szFile] = css;
 			m_styleOrder.push_back(&m_styleSets[szFile]);

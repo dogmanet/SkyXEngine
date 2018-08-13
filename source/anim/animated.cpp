@@ -1041,7 +1041,8 @@ Animation::Animation(AnimationManager * pMgr):
 	m_bEnabled(true),
 	m_pRagdoll(0),
 	m_pfnCallBackEnt(NULL),
-	m_pCallbackEnt(NULL)
+	m_pCallbackEnt(NULL),
+	m_isMdlManaged(false)
 {
 	for(int i = 0; i < BLEND_MAX; i++)
 	{
@@ -1075,6 +1076,11 @@ Animation::~Animation()
 	mem_delete_a(m_FinalBones);
 	mem_delete_a(m_pBoneMatrixRender);
 	m_pMgr->unreg(myId);
+
+	if(!m_isMdlManaged)
+	{
+		mem_delete(m_pMdl);
+	}
 }
 
 SMMATRIX Animation::getBoneTransform(UINT _id, bool bWithScale)
@@ -1131,8 +1137,12 @@ void Animation::SyncAnims()
 
 void Animation::setModel(const char * file)
 {
-	mem_delete(m_pMdl);
+	if(!m_isMdlManaged)
+	{
+		mem_delete(m_pMdl);
+	}
 	m_pMdl = const_cast<ModelFile*>(m_pMgr->loadModel(file));
+	m_isMdlManaged = true;
 	if(!m_pMdl)
 	{
 		return;

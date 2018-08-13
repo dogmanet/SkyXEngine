@@ -266,15 +266,18 @@ rotation = 0.000000 0.980603 0.000000 -0.196004
 team = 0
 
 [ent_21]
+OnTouchStart = 
+OnTouchEndAll = 
+OnTouchEnd = 
+playAnimNext = 0
+playAnim = 0
+is_static = 0
 toggle = 
 scale = 1.000000
 model = meshes/light/light_1.dse
 health = 100.000000
 enable = 
 disable = 
-OnTouchStart = test_light:turnOn:0.000000:
-OnTouchEndAll = 
-OnTouchEnd = test_light:turnOff:0.000000:
 type_shadow = 1
 turnOn = 1
 turnOff = 1
@@ -290,19 +293,39 @@ origin = -3.900000 -2.750000 22.000000
 rotation = 0.000000 0.000000 0.000000 1.000000
 
 [ent_22]
+playAnimNext = 1
+playAnim = 1
+is_static = 1
+turnOn = 100.000000
+turnOff = 100.000000
+toggle = 100.000000
+pushUp = 100.000000
+pushDown = 100.000000
+press = 100.000000
+parent = 
+owner = 
+name = test_btn
+health = 100.000000
+flags = -859176960
+OnUseDisabled = 
+OnToggle = 
+OnPressed = 
 OnTurnOn = 
 OnTurnOff = 
-classname = light_point
-model = "meshes/light/light_1.dse"
+classname = prop_button
+model = models/electro/switch.dse
 ;origin = 0.000000 75.0000 0.000000
-origin = -3.9 -2.750000 22.000000
-rotation = 0.000000 0.000000 0.000000 1.000000
-scale = 1
+origin = -1.912139 0.175923 1.525868
+rotation = 0.000000 0.000000 0.000000 -1.000000
+scale = 1.000000
 ; Output = "target_name:input_name:delay:parameter
 ; target_name:input_name:delay:parameter"
 OnTouchStart = test_light:turnOn:0: ;,test_light:turnOff:10:
 OnTouchEnd = test_light:turnOff:0:
 
+OnPushDown = test_btn:playAnim:0.000000:turn_on
+OnPushUp = test_btn:playAnim:0.000000:turn_off
+
 
 [meta]
-count = 22
+count = 23

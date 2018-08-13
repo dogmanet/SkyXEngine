@@ -88,6 +88,9 @@ protected:
 
 	static void ccmd_game_menu();
 
+	static void ccmd_use_on();
+	static void ccmd_use_off();
+
 	bool m_isGame;
 
 };

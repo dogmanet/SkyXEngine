@@ -14,7 +14,7 @@ See the license in LICENSE
 
 #include "PointEntity.h"
 
-#define LIGHT_INITIALLY_DARK 0x00010000
+#define LIGHT_INITIALLY_DARK ENT_FLAG_0
 
 /*! Точечный источник света
 \ingroup clight

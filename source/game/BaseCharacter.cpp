@@ -212,8 +212,8 @@ void CBaseCharacter::setPos(const float3 & pos)
 
 float CBaseCharacter::getAimRange()
 {
-	float3 start = getPos();
-	float3 dir = getOrient() * float3(0.0f, 0.0f, 1.0f);
+	float3 start = getHead()->getPos();
+	float3 dir = getHead()->getOrient() * float3(0.0f, 0.0f, 1.0f);
 	float3 end = start + dir * 1000.0f;
 
 	btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
@@ -487,4 +487,31 @@ CBaseEntity * CBaseCharacter::getHead()
 bool CBaseCharacter::isObserver()
 {
 	return((m_uMoveDir & PM_OBSERVER) != 0);
+}
+
+void CBaseCharacter::use(bool start)
+{
+	if(isObserver())
+	{
+		return;
+	}
+
+	if(start)
+	{
+		float3 start = getHead()->getPos();
+		float3 dir = getHead()->getOrient() * float3(0.0f, 0.0f, 1.0f);
+		float3 end = start + dir * 1.0f;
+
+		btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
+		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+		if(cb.hasHit())
+		{
+			CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
+			if(pEnt)
+			{
+				pEnt->onUse(this);
+			}
+		}
+	}
 }
