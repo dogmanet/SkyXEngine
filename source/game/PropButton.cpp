@@ -147,4 +147,6 @@ void CPropButton::onUse(CBaseEntity *pUser)
 	inputdata.type = PDF_NONE;
 
 	press(&inputdata);
+
+	BaseClass::onUse(pUser);
 }

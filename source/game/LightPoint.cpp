@@ -124,3 +124,10 @@ void CLightPoint::setEnable(bool isEnable)
 		FIRE_OUTPUT(m_onTurnOff, this);
 	}
 }
+
+void CLightPoint::onPostLoad()
+{
+	m_isEnable = !(getFlags() & LIGHT_INITIALLY_DARK);
+
+	BaseClass::onPostLoad();
+}

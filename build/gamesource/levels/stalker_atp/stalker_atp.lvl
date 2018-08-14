@@ -7,4 +7,4 @@ aigrid = stalker_atp.aigrid
 physic = stalker_atp.phy
 ambient_sounds = music/amb08.ogg, music/amb22.ogg
 weather = weather/test.cfg
-local_name = АТП "Локомотив"
+

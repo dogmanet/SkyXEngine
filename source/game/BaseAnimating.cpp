@@ -25,8 +25,15 @@ BEGIN_PROPTABLE(CBaseAnimating)
 		COMBO_OPTION("No", "0")
 	EDITOR_COMBO_END()
 
+	DEFINE_FIELD_INTFN(m_iSkin, 0, "skin", "Skin", setSkin, EDITOR_TEXTFIELD)
+
 	DEFINE_INPUT(inputPlayAnim, "playAnim", "Play animation", PDF_STRING)
 	DEFINE_INPUT(inputPlayAnimNext, "playAnimNext", "Play animation next", PDF_STRING)
+
+	DEFINE_INPUT(inputPlayActivity, "playActivity", "Play activity", PDF_STRING)
+	DEFINE_INPUT(inputPlayActivityNext, "playActivityNext", "Play activity next", PDF_STRING)
+
+	DEFINE_INPUT(inputSetSkin, "setSkin", "Set skin", PDF_STRING)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
@@ -79,7 +86,10 @@ bool CBaseAnimating::setKV(const char * name, const char * value)
 	else if(!strcmp(name, "scale"))
 	{
 		releasePhysics();
-		m_pAnimPlayer->setScale(m_fBaseScale);
+		if(m_pAnimPlayer)
+		{
+			m_pAnimPlayer->setScale(m_fBaseScale);
+		}
 		initPhysics();
 	}
 	return(true);
@@ -103,6 +113,7 @@ void CBaseAnimating::setModel(const char * mdl)
 	{
 		m_pAnimPlayer->setModel(mdl);
 	}
+	m_pAnimPlayer->setSkin(m_iSkin);
 	initPhysics();
 }
 
@@ -361,4 +372,65 @@ void CBaseAnimating::inputPlayAnimNext(inputdata_t * pInputdata)
 		return;
 	}
 	playAnimationNext(pInputdata->parameter.str);
+}
+
+
+void CBaseAnimating::inputPlayActivity(inputdata_t * pInputdata)
+{
+	if(pInputdata->type != PDF_STRING)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CBaseAnimating::inputPlayActivity() expected parameter type string");
+		return;
+	}
+	playActivity(pInputdata->parameter.str);
+}
+
+void CBaseAnimating::inputPlayActivityNext(inputdata_t * pInputdata)
+{
+	if(pInputdata->type != PDF_STRING)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CBaseAnimating::inputPlayActivityNext() expected parameter type string");
+		return;
+	}
+	playActivityNext(pInputdata->parameter.str);
+}
+
+void CBaseAnimating::inputSetSkin(inputdata_t * pInputdata)
+{
+	int iSkin;
+	switch(pInputdata->type)
+	{
+	case PDF_INT:
+		iSkin = pInputdata->parameter.i;
+		break;
+
+	case PDF_FLOAT:
+		iSkin = (int)pInputdata->parameter.f;
+		break;
+
+	case PDF_BOOL:
+		iSkin = pInputdata->parameter.b ? 1 : 0;
+		break;
+
+	case PDF_STRING:
+		if(sscanf(pInputdata->parameter.str, "%d", &iSkin))
+		{
+			break;
+		}
+
+	default:
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CBaseAnimating::inputSetSkin() expected parameter type int");
+		return;
+	}
+
+	setSkin(iSkin);
+}
+
+void CBaseAnimating::setSkin(int iSkin)
+{
+	if(m_pAnimPlayer)
+	{
+		m_pAnimPlayer->setSkin(iSkin);
+	}
+	m_iSkin = iSkin;
 }

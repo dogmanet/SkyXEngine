@@ -97,8 +97,8 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
 	//m_flashlight->setPos(getPos() + float3(0.f, 0.1f, 0.f));
-	m_flashlight->setPos(getPos() + float3(0.0f, 0.1f, 0.1f));
-	m_flashlight->setOrient(getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
+	m_flashlight->setPos(m_pHeadEnt->getPos() + float3(0.0f, 0.1f, 0.1f));
+	m_flashlight->setOrient(m_pHeadEnt->getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
 	m_flashlight->setParent(m_pHeadEnt);
 	m_flashlight->setDist(20.f);
 	m_flashlight->setAngle(SMToRadian(60));
@@ -500,7 +500,7 @@ void CBaseCharacter::use(bool start)
 	{
 		float3 start = getHead()->getPos();
 		float3 dir = getHead()->getOrient() * float3(0.0f, 0.0f, 1.0f);
-		float3 end = start + dir * 1.0f;
+		float3 end = start + dir * 1.5f;
 
 		btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
 		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);

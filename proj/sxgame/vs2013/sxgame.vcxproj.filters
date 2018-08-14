@@ -213,6 +213,9 @@
     <ClCompile Include="..\..\..\source\game\PropButton.cpp">
       <Filter>Source Files\ents\props</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PropDynamic.cpp">
+      <Filter>Source Files\ents\props</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -366,6 +369,9 @@
       <Filter>Header Files\ents\logic</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\PropButton.h">
+      <Filter>Header Files\ents\props</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PropDynamic.h">
       <Filter>Header Files\ents\props</Filter>
     </ClInclude>
   </ItemGroup>

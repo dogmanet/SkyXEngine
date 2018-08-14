@@ -47,6 +47,8 @@ public:
 protected:
 	ID m_idLight;
 
+	void onPostLoad();
+
 	float3_t m_vColor;
 	float m_fDist;
 	float m_fShadowDist;

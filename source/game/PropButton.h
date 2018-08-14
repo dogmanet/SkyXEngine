@@ -12,7 +12,7 @@ See the license in LICENSE
 #ifndef __PROP_BUTTON_H
 #define __PROP_BUTTON_H
 
-#include "BaseAnimating.h"
+#include "PropDynamic.h"
 
 #define BUTTON_START_DISABLED ENT_FLAG_0
 #define BUTTON_TOGGLEABLE ENT_FLAG_1
@@ -21,9 +21,9 @@ See the license in LICENSE
 /*! Кнопка
 \ingroup cbaseanimating
 */
-class CPropButton: public CBaseAnimating
+class CPropButton: public CPropDynamic
 {
-	DECLARE_CLASS(CPropButton, CBaseAnimating);
+	DECLARE_CLASS(CPropButton, CPropDynamic);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();

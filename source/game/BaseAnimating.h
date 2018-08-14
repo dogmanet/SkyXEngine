@@ -53,12 +53,18 @@ public:
 	void setPos(const float3 & pos);
 	void setOrient(const SMQuaternion & q);
 
+	void setSkin(int iSkin);
 
 	
 protected:
 
 	void inputPlayAnim(inputdata_t * pInputdata);
 	void inputPlayAnimNext(inputdata_t * pInputdata);
+
+	void inputPlayActivity(inputdata_t * pInputdata);
+	void inputPlayActivityNext(inputdata_t * pInputdata);
+
+	void inputSetSkin(inputdata_t * pInputdata);
 
 	IAnimPlayer * m_pAnimPlayer;
 	const char * m_szModelFile;
@@ -78,6 +84,8 @@ protected:
 	virtual void onAnimationStateChanged(int slot, ANIM_STATE as);
 
 	void onIsStaticChange(bool isStatic);
+
+	int m_iSkin = 0;
 
 	struct
 	{

@@ -27,3 +27,5 @@ snd_shoot        = "mobs/zombie/zombie_attack_1.ogg" ; Стрелять
 
 damage = 100
 
+[prop_dynamic]
+is_static = 1

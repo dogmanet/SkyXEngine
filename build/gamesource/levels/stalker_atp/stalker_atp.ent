@@ -323,9 +323,26 @@ scale = 1.000000
 OnTouchStart = test_light:turnOn:0: ;,test_light:turnOff:10:
 OnTouchEnd = test_light:turnOff:0:
 
-OnPushDown = test_btn:playAnim:0.000000:turn_on
-OnPushUp = test_btn:playAnim:0.000000:turn_off
+OnPushDown = test_btn:playAnim:0.000000:turn_on,test_light:turnOn:0.200000:
+OnPushUp = test_btn:playAnim:0.000000:turn_off,test_light:turnOff:0.000000:
 
+[ent_23]
+health = 100.000000
+OnTurnOn = 
+OnTurnOff = 
+type_shadow = 1
+turnOn = 1
+turnOff = 1
+parent = 
+owner = 
+light_far = 10.000000
+flags = 65536
+dist = 10.000000
+color = 50.000000 50.000000 50.000000
+classname = light_point
+origin = 0.000000 -0.750000 0.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+name = test_light
 
 [meta]
-count = 23
+count = 24
