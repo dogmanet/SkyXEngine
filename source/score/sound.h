@@ -31,7 +31,7 @@ See the license in LICENSE
 
 /*! проверка допустимости id звука, в случае провала вылет */
 #define SOUND_PRECOND(id, retval) \
-if (id >= m_aSounds.size() || id < 0 || !(m_aSounds[id]))\
+if ((UINT)id >= m_aSounds.size() || id < 0 || !(m_aSounds[id]))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved address to sound %d", GEN_MSG_LOCATION, id); return retval; }
 
 /*! создание имени звука (нужно для разделения между каналами */
@@ -49,7 +49,7 @@ if (m_aChannels[id] != 1) \
 
 /*! проверка допустимости id набора звуков, в случае провала вылет */
 #define SOUND_SNDKIT_PRECOND(id, retval) \
-if (!(id >= 0 && id < m_aSoundKits.size() && m_aSoundKits[id])) \
+if (!(id >= 0 && (UINT)id < m_aSoundKits.size() && m_aSoundKits[id])) \
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved id sound kit %d", GEN_MSG_LOCATION, id); return retval; }
 
 //##########################################################################

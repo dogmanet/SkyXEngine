@@ -261,7 +261,7 @@ SX_LIB_API LTYPE_LIGHT SML_LigthsGetType(ID id)
 
 SX_LIB_API bool SML_LigthsComVisibleForFrustum(ID id, const IFrustum *pFrustum)
 {
-	ML_PRECOND(-1);
+	ML_PRECOND(false);
 	return ArrLights->comVisibleForFrustum(id, pFrustum);
 }
 
@@ -291,7 +291,7 @@ SX_LIB_API void SML_LigthsComVisibleFrustumDistFor(const IFrustum *pFrustum, con
 
 SX_LIB_API bool SML_LigthsGetEnable(ID id)
 {
-	ML_PRECOND(-1);
+	ML_PRECOND(false);
 	return ArrLights->getLightEnable(id);
 }
 
@@ -303,7 +303,7 @@ SX_LIB_API void SML_LigthsSetEnable(ID id, bool isEnable)
 
 SX_LIB_API bool SML_LigthsGetShadowed(ID id)
 {
-	ML_PRECOND(-1);
+	ML_PRECOND(false);
 	return ArrLights->getLightShadowed(id);
 }
 

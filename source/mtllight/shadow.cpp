@@ -35,7 +35,7 @@ PSSM::~PSSM()
 		mem_release_del(m_aFrustums[i]);
 	}
 
-	for (int i = 0; i < IDArr.size(); i++)
+	for (UINT i = 0; i < IDArr.size(); i++)
 	{
 		mem_delete_a(IDArr[i]);
 	}
@@ -82,7 +82,7 @@ void PSSM::setIDArr(ID id, int split, ID idarr)
 	if (id < 0 || !(split >= 0 && split < 5))
 		return;
 
-	if (id >= IDArr.size())
+	if (id >= (ID)IDArr.size())
 	{
 		ID* tmparr = new ID[5];
 		for (int i = 0; i < 5; ++i)
@@ -100,7 +100,7 @@ long PSSM::getCountIDArrs()
 
 ID PSSM::getIDArr(ID id, int split)
 {
-	if (id < 0 || !(split >= 0 && split < 5) || !(id < IDArr.size()))
+	if (id < 0 || !(split >= 0 && split < 5) || !(id < (ID)IDArr.size()))
 		return -2;
 
 	return IDArr[id][split];
@@ -128,7 +128,7 @@ void PSSM::onResetDevice()
 		{
 			m_aIsUpdate[i] = 0;
 
-			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
+			HRESULT hr = MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
 
 				/*if(FAILED(hr))
 					LibReport(REPORT_MSG_LEVEL_ERROR,"Ќе удалось создать текстуру глубины PSSM");*/
@@ -136,7 +136,7 @@ void PSSM::onResetDevice()
 			DepthSurfaces[i] = 0;
 		}
 
-	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
 	FovRatio.x = *r_default_fov;
 	FovRatio.y = float(*r_win_width) / float(*r_win_height);
@@ -167,7 +167,7 @@ void PSSM::init()
 		{
 			m_aIsUpdate[i] = 0;
 
-			MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
+			MLSet::DXDevice->CreateTexture(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
 
 			DepthSurfaces[i] = 0;
 
@@ -192,7 +192,7 @@ void PSSM::init()
 	m_aNearFar[4].x = *r_near;
 	m_aNearFar[4].y = *r_far;
 
-	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+	MLSet::DXDevice->CreateDepthStencilSurface(MLSet::SizeTexDepthGlobal.x, MLSet::SizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
 	float2 fOffset = float2(0.5,0.5) + (float2(0.5f,0.5)/MLSet::SizeTexDepthGlobal);
 	float range = 1.0f;
@@ -450,7 +450,7 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	float4x4 aMatrixTexture[5];
 
 	float4x4 MatrixTexture;
-	char mattex[16];
+	//char mattex[16];
 	for (int i = 0; i<5; i++)
 	{
 		MLSet::DXDevice->SetTexture(1 + i, m_aDepthMaps[i]);
@@ -480,7 +480,7 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	float3 observerpos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &observerpos);
 	
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t((float)*r_win_width, (float)*r_win_height, (float)*r_default_fov));
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
 	
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_mViewInv", &ViewInv);
@@ -543,8 +543,8 @@ void ShadowMapTech::onResetDevice()
 
 ShadowMapTech::ShadowMapTech()
 {
-	Bias = 0.0001;
-	BlurPixel = 0.5;
+	Bias = 0.0001f;
+	BlurPixel = 0.5f;
 
 	Frustum = 0;
 
@@ -684,7 +684,7 @@ long ShadowMapTech::getCountIDArrs()
 
 long ShadowMapTech::getIDArr(long id)
 {
-	if (id < 0 || !(id < IDArr.size()))
+	if (id < 0 || !(id < (ID)IDArr.size()))
 		return -2;
 
 	return IDArr[id];
@@ -707,7 +707,7 @@ void ShadowMapTech::begin()
 	float3 upvec = float3(0, 1, 0);
 	
 	if (Direction.x == 0 && Direction.y == -1 && Direction.z == 0)
-		upvec = SMVector3Transform(Direction, SMMatrixRotationZ(1.57));
+		upvec = SMVector3Transform(Direction, SMMatrixRotationZ(1.57f));
 
 	View = SMMatrixLookAtLH(Position, Position + Direction, upvec);
 	Proj = SMMatrixPerspectiveFovLH(AngleNearFar.x,MLSet::SizeTexDepthLocal.x / MLSet::SizeTexDepthLocal.y,AngleNearFar.y,AngleNearFar.z);
@@ -797,7 +797,7 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowDirect9);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t((float)*r_win_width, (float)*r_win_height, (float)*r_default_fov));
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
 
 	float3 observerpos;
@@ -870,7 +870,7 @@ ShadowMapCubeTech::~ShadowMapCubeTech()
 		mem_release_del(DepthSurface[i]);
 	}
 
-	for (int i = 0; i < IDArr.size(); i++)
+	for (UINT i = 0; i < IDArr.size(); i++)
 	{
 		mem_delete_a(IDArr[i]);
 	}
@@ -894,8 +894,8 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 	EnableEdge[0] = EnableEdge[1] = EnableEdge[2] = EnableEdge[3] = EnableEdge[4] = EnableEdge[5] = true;
 	EnableEdgeNulled[0] = EnableEdgeNulled[1] = EnableEdgeNulled[2] = EnableEdgeNulled[3] = EnableEdgeNulled[4] = EnableEdgeNulled[5] = false;
 
-	Bias = 0.1;
-	BlurPixel = 16;
+	Bias = 0.1f;
+	BlurPixel = 16.0f;
 
 	DepthMap = 0;
 	DepthStencilSurface = 0;
@@ -1129,7 +1129,7 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 	else
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::GenShadowCube6);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, *r_default_fov));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vParamProj", &float3_t((float)(float)*r_win_width, *r_win_height, (float)*r_default_fov));
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
 
 	float pixel_size = BlurPixel / MLSet::SizeTexDepthLocal.x;
@@ -1176,7 +1176,7 @@ void ShadowMapCubeTech::setIDArr(long id, int split, long idarr)
 	if (id < 0 || !(split >= 0 && split < 6))
 		return;
 
-	if (id >= IDArr.size())
+	if (id >= (long)IDArr.size())
 	{
 		long* tmparr = new long[6];
 		for (int i = 0; i < 6; ++i)
@@ -1194,7 +1194,7 @@ long ShadowMapCubeTech::getCountIDArrs()
 
 long ShadowMapCubeTech::getIDArr(long id, int split)
 {
-	if (id < 0 || !(split >= 0 && split < 6) || !(id < IDArr.size()))
+	if (id < 0 || !(split >= 0 && split < 6) || !(id < (long)IDArr.size()))
 		return -2;
 
 	return IDArr[id][split];

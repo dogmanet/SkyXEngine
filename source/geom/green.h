@@ -21,13 +21,13 @@ See the license in LICENSE
 //##########################################################################
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
-if (!(id_arr < m_aArrComFor.size()))\
+if(!(id_arr < (ID)m_aArrComFor.size()))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
-if (!(id_model < m_aGreens.size() && m_aGreens[id_model]))\
+if(!(id_model < (ID)m_aGreens.size() && m_aGreens[id_model]))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 }

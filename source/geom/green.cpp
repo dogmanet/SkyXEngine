@@ -1343,7 +1343,7 @@ ID CGreen::getIDSplit(ID id, float3* pos)
 
 ID CGreen::addObject(ID id, float3* pos, CGreenDataVertex* data, ID* idsplit)
 {
-	if (id < 0 || m_aGreens.size() <= id)
+	if(id < 0 || (ID)m_aGreens.size() <= id)
 		return -1;
 
 	ID tmpidsplit = getIDSplit(id, pos);

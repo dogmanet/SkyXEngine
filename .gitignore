@@ -210,4 +210,7 @@ docs/html/*
 
 /source/game/ents_doc.h
 
+/build/config_game_user_auto.cfg
 /build/config_game_user.cfg
+
+/sdks/freetype-2.6/objs/

@@ -16,20 +16,20 @@ See the license in LICENSE
 //##########################################################################
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
-if (!(id_arr < m_aArrComFor.size()))\
+if (!(id_arr < (int)m_aArrComFor.size()))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
 #define STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, retval) \
-if (!(id_model < m_aAllModels.size() && m_aAllModels[id_model]))\
+if (!(id_model < (int)m_aAllModels.size() && m_aAllModels[id_model]))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
 	return retval;\
 }
 
 #define STATIC_PRECOND_ERR_ID_GROUP(id_model,id_group, ret_val) \
-if (!(id_model < m_aAllModels.size() && m_aAllModels[id_model] && id_group < m_aAllModels[id_model]->m_aSubSets.size()))\
+if (!(id_model < (int)m_aAllModels.size() && m_aAllModels[id_model] && id_group < (int)m_aAllModels[id_model]->m_aSubSets.size()))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of group in model '%d'", GEN_MSG_LOCATION, id_group, id_model); \
 	return ret_val; \

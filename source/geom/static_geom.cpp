@@ -78,7 +78,7 @@ CStaticGeom::CGroup::~CGroup()
 	m_aCountVertex.clear();
 	m_aCountIndex.clear();
 
-	for (int i = 0; i < m_aVertexBuffers.size(); ++i)
+	for(int i = 0, l = m_aVertexBuffers.size(); i < l; ++i)
 	{
 		mem_release_del(m_aVertexBuffers[i]);
 		//mem_delete(VertexBufferOrigin[i]);
@@ -184,7 +184,7 @@ CStaticGeom::CStaticGeom()
 
 CStaticGeom::~CStaticGeom()
 {
-	for (int i = 0; i < m_aArrComFor.size(); ++i)
+	for(int i = 0, l = m_aArrComFor.size(); i < l; ++i)
 	{
 		mem_delete(m_aArrComFor[i]);
 	}
@@ -198,13 +198,13 @@ CStaticGeom::~CStaticGeom()
 
 	deleteArrIndexPtr();
 
-	for (int i = 0; i < m_aAllModels.size(); ++i)
+	for(int i = 0, l = m_aAllModels.size(); i < l; ++i)
 	{
 		mem_delete(m_aAllModels[i]);
 	}
 	m_aAllModels.clear();
 
-	for (int i = 0; i < m_aAllGroups.size(); ++i)
+	for(int i = 0, l = m_aAllGroups.size(); i < l; ++i)
 	{
 		mem_delete(m_aAllGroups[i]);
 	}
@@ -257,7 +257,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 	if (FAILED(model->m_pIndexBuffer->Lock(0, 0, (void**)&pInd, 0)))
 		return -1;
 
-	for (int i = 0; i < model->m_uiSubsetCount; ++i)
+	for (UINT i = 0; i < model->m_uiSubsetCount; ++i)
 	{
 		tmpmodel->m_uiCountPoly += model->m_pIndexCount[i] / 3;
 
@@ -276,7 +276,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 
 		isunictex = true;
 
-		for (int k = 0; k < m_aAllGroups.size(); ++k)
+		for (UINT k = 0; k < m_aAllGroups.size(); ++k)
 		{
 			//сравниваем подгруппы только по имени, если имена одинаковые значит это одна и та же подгруппа
 			if (stricmp(m_aAllGroups[k]->m_sName.c_str(), model->m_ppTextures[i]) == 0)
@@ -331,7 +331,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 
 					m_aAllGroups[k]->m_aModels[gdb.m_idBuff].push_back(tmpmodel);
 
-					if (m_iSizeRenderIndexBuffer < model->m_pIndexCount[i])
+					if (m_iSizeRenderIndexBuffer < (int)model->m_pIndexCount[i])
 					{
 						mem_release(m_pRenderIndexBuffer);
 						m_iSizeRenderIndexBuffer = model->m_pIndexCount[i];
@@ -386,7 +386,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 					m_aAllGroups[k]->m_iCountIndex += model->m_pIndexCount[i];
 					m_aAllGroups[k]->m_aCountIndex[lastvbnum] += model->m_pIndexCount[i];
 
-					if (m_iSizeRenderIndexBuffer < (m_aAllGroups[k]->m_aCountIndex[lastvbnum] + model->m_pIndexCount[i]))
+					if (m_iSizeRenderIndexBuffer < (int)(m_aAllGroups[k]->m_aCountIndex[lastvbnum] + model->m_pIndexCount[i]))
 					{
 						mem_release(m_pRenderIndexBuffer);
 						m_iSizeRenderIndexBuffer = (m_aAllGroups[k]->m_aCountIndex[lastvbnum] + model->m_pIndexCount[i]);
@@ -441,7 +441,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 			ngroup->m_aVertexBuffers.push_back(vb);
 			//ngroup->VertexBufferOrigin.push_back(vborigin);
 			
-			if (m_iSizeRenderIndexBuffer < model->m_pIndexCount[i])
+			if (m_iSizeRenderIndexBuffer < (int)model->m_pIndexCount[i])
 			{
 				mem_release(m_pRenderIndexBuffer);
 				m_iSizeRenderIndexBuffer = model->m_pIndexCount[i];
@@ -553,7 +553,7 @@ ID CStaticGeom::addModel(const char* path, const char* lod1, const char* name)
 
 void CStaticGeom::deleteModel(ID id)
 {
-	if (id >= m_aAllModels.size())
+	if(id >= (int)m_aAllModels.size())
 		return;
 
 	CModel* tmpmodel = m_aAllModels[id];
@@ -565,7 +565,7 @@ void CStaticGeom::deleteModel(ID id)
 	ID idgroup;
 	ID idbuff;
 
-	for (int i = 0; i < tmpmodel->m_aSubSets.size(); ++i)
+	for (UINT i = 0; i < tmpmodel->m_aSubSets.size(); ++i)
 	{
 		idgroup = tmpmodel->m_aSubSets[i].m_idGroup;
 		idbuff = tmpmodel->m_aSubSets[i].m_idBuff;
@@ -619,7 +619,7 @@ void CStaticGeom::deleteModel(ID id)
 		{
 			//находим удаляемую модель в массиве моделей в буфере данной подгруппы
 			int tmpidingroup = -1;	//id модели в текущем массиве, в подгруппе
-			for (int k = 0; k < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++k)
+			for (UINT k = 0; k < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++k)
 			{
 				CModel* tmptmpmodel = m_aAllGroups[idgroup]->m_aModels[idbuff][k];
 				if (m_aAllGroups[idgroup]->m_aModels[idbuff][k] == tmpmodel)
@@ -637,10 +637,10 @@ void CStaticGeom::deleteModel(ID id)
 			}
 
 			//обновляем данные в подгруппе модели о стартовых позициях
-			for (int k = tmpidingroup + 1; k < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++k)
+			for (UINT k = tmpidingroup + 1; k < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++k)
 			{
 				CModel* tmptmpmodel = m_aAllGroups[idgroup]->m_aModels[idbuff][k];
-				for (int j = 0; j < m_aAllGroups[idgroup]->m_aModels[idbuff][k]->m_aSubSets.size(); ++j)
+				for (UINT j = 0; j < m_aAllGroups[idgroup]->m_aModels[idbuff][k]->m_aSubSets.size(); ++j)
 				{
 					if (tmptmpmodel->m_aSubSets[j].m_idGroup == idgroup)
 					{
@@ -667,11 +667,11 @@ void CStaticGeom::deleteModel(ID id)
 					}
 					else
 					{
-						for (int j = 0; j < queue[0]->m_uiCountSubSet; ++j)
+						for (UINT j = 0; j < queue[0]->m_uiCountSubSet; ++j)
 						{
 							if (queue[0]->m_pNumberGroup[j] == idgroup )
 							{
-								for (int q = 0; q < queue[0]->m_pCountPoly[j]*3; ++q)
+								for (UINT q = 0; q < queue[0]->m_pCountPoly[j]*3; ++q)
 								{
 									queue[0]->m_ppArrPoly[j][q] -= tmpmodel->m_aSubSets[i].m_uiVertexCount;
 								}
@@ -715,11 +715,11 @@ void CStaticGeom::deleteModel(ID id)
 			
 			//то есть декрементируем все идентфиикаторы подгрупп которые больше чем текущая удаляемая подгруппа
 			//декремент произодим и у текущей удаляемой модели, ибо все будет смещено, а значит и в этой моделе должно быть все смещенно для корретных просчетов
-			for (int k = 0; k < m_aAllModels.size(); ++k)
+			for (UINT k = 0; k < m_aAllModels.size(); ++k)
 			{
 				CModel* tmptmpmodel = m_aAllModels[k];
 
-				for (int j = 0; j < tmptmpmodel->m_aSubSets.size(); ++j)
+				for(UINT j = 0; j < tmptmpmodel->m_aSubSets.size(); ++j)
 				{
 					if (tmptmpmodel->m_aSubSets[j].m_idGroup > idgroup)
 						--(tmptmpmodel->m_aSubSets[j].m_idGroup);
@@ -741,9 +741,9 @@ void CStaticGeom::deleteModel(ID id)
 					}
 					else
 					{
-						for (int j = 0; j < queue[0]->m_uiCountSubSet; ++j)
+						for(UINT j = 0; j < queue[0]->m_uiCountSubSet; ++j)
 						{
-							if (queue[0]->m_pNumberGroup[j] > idgroup)
+							if ((int)queue[0]->m_pNumberGroup[j] > idgroup)
 								--(queue[0]->m_pNumberGroup[j]);
 						}
 					}
@@ -759,7 +759,7 @@ void CStaticGeom::deleteModel(ID id)
 		//если подгруппа не пустая то может быть тогда можно где-то совместить буферы?
 		else
 		{
-			for (int k = 0; k < m_aAllGroups[idgroup]->m_aVertexBuffers.size(); ++k)
+			for (UINT k = 0; k < m_aAllGroups[idgroup]->m_aVertexBuffers.size(); ++k)
 			{
 				//можно ли совместить буферы
 				if (idbuff != k && m_aAllGroups[idgroup]->m_aCountIndex[idbuff] / 3 + m_aAllGroups[idgroup]->m_aCountIndex[k] / 3 <= GEOM_MAX_POLY_IN_GROUP)
@@ -792,12 +792,12 @@ void CStaticGeom::deleteModel(ID id)
 					//}
 
 					//обновляем данные во всех моделях которые есть в текущем буфере
-					for (int m = 0; m < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++m)
+					for (UINT m = 0; m < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++m)
 					{
 						int tmpsizearrmodls = m_aAllGroups[idgroup]->m_aModels[idbuff].size();
 						CModel* tmptmpmodel = m_aAllGroups[idgroup]->m_aModels[idbuff][m];
 						//обновляем данные в структуре инфе о перемещенном буфере
-						for (int j = 0; j < tmptmpmodel->m_aSubSets.size(); ++j)
+						for(UINT j = 0; j < tmptmpmodel->m_aSubSets.size(); ++j)
 						{
 							if (tmptmpmodel->m_aSubSets[j].m_idGroup == idgroup)
 							{
@@ -831,11 +831,11 @@ void CStaticGeom::deleteModel(ID id)
 							}
 							else
 							{
-								for (int j = 0; j < queue[0]->m_uiCountSubSet; ++j)
+								for(UINT j = 0; j < queue[0]->m_uiCountSubSet; ++j)
 								{
 									if (queue[0]->m_pNumberGroup[j] == idgroup)
 									{
-										for (int q = 0; q < queue[0]->m_pCountPoly[j] * 3; ++q)
+										for(UINT q = 0; q < queue[0]->m_pCountPoly[j] * 3; ++q)
 										{
 											queue[0]->m_ppArrPoly[j][q] += m_aAllGroups[idgroup]->m_aCountVertex[k];
 										}
@@ -851,11 +851,11 @@ void CStaticGeom::deleteModel(ID id)
 					//обновляем информацию во всех моделях у которых такая же подгруппа, но которые находились в буферах "выше"
 					//сообщаем что они стали ниже на единицу
 					//{
-					for (int j = idbuff+1; j < m_aAllGroups[idgroup]->m_aModels.size(); ++j)
+					for(UINT j = idbuff + 1; j < m_aAllGroups[idgroup]->m_aModels.size(); ++j)
 					{
-						for (int q = 0; q < m_aAllGroups[idgroup]->m_aModels[j].size(); ++q)
+						for(UINT q = 0; q < m_aAllGroups[idgroup]->m_aModels[j].size(); ++q)
 						{
-							for (int g = 0; g < m_aAllGroups[idgroup]->m_aModels[j][q]->m_aSubSets.size(); ++g)
+							for(UINT g = 0; g < m_aAllGroups[idgroup]->m_aModels[j][q]->m_aSubSets.size(); ++g)
 							{
 								if (m_aAllGroups[idgroup]->m_aModels[j][q]->m_aSubSets[g].m_idGroup == idgroup && m_aAllGroups[idgroup]->m_aModels[j][q]->m_aSubSets[g].m_idBuff > idbuff)
 								{
@@ -880,7 +880,7 @@ void CStaticGeom::deleteModel(ID id)
 					m_aAllGroups[idgroup]->VertexBufferOrigin[k] = vborigin;*/
 
 					//перемещаем все модели из idbuff буфера в тот с которым совмещаем
-					for (int m = 0; m < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++m)
+					for(UINT m = 0; m < m_aAllGroups[idgroup]->m_aModels[idbuff].size(); ++m)
 						m_aAllGroups[idgroup]->m_aModels[k].push_back(m_aAllGroups[idgroup]->m_aModels[idbuff][m]);
 
 					m_aAllGroups[idgroup]->m_aCountVertex.erase(idbuff);
@@ -945,9 +945,9 @@ void CStaticGeom::deleteArrIndexPtr()
 {
 	if (m_pppRTArrIndices)
 	{
-		for (int i = 0; i < m_aAllGroups.size(); ++i)
+		for(UINT i = 0, l = m_aAllGroups.size(); i < l; ++i)
 		{
-			for (int k = 0; k < m_aAllGroups[i]->m_aVertexBuffers.size(); ++k)
+			for(UINT k = 0, lk = m_aAllGroups[i]->m_aVertexBuffers.size(); k < lk; ++k)
 			{
 				mem_delete_a(m_pppRTArrIndices[i][k]);
 				mem_delete_a(m_pppRTCountDrawPolyModel[i][k]);
@@ -973,14 +973,14 @@ void CStaticGeom::initArrIndexPtr()
 	m_pppRTCountDrawPolyModel = new uint32_t**[m_aAllGroups.size()];
 	m_pppRTBeginIndexModel = new uint32_t**[m_aAllGroups.size()];
 
-	for (int i = 0; i<m_aAllGroups.size(); i++)
+	for(UINT i = 0, l = m_aAllGroups.size(); i<l; i++)
 	{
 		m_ppRTCountDrawPoly[i] = new uint32_t[m_aAllGroups[i]->m_aVertexBuffers.size()];
 		m_pppRTArrIndices[i] = new uint32_t*[m_aAllGroups[i]->m_aVertexBuffers.size()];
 		m_pppRTCountDrawPolyModel[i] = new uint32_t*[m_aAllGroups[i]->m_aVertexBuffers.size()];
 		m_pppRTBeginIndexModel[i] = new uint32_t*[m_aAllGroups[i]->m_aVertexBuffers.size()];
 
-		for (int k = 0; k < m_aAllGroups[i]->m_aVertexBuffers.size(); ++k)
+		for(UINT k = 0, kl = m_aAllGroups[i]->m_aVertexBuffers.size(); k < kl; ++k)
 		{
 			m_pppRTArrIndices[i][k] = new uint32_t[m_aAllGroups[i]->m_aCountIndex[k]];
 			m_pppRTCountDrawPolyModel[i][k] = new uint32_t[m_aAllGroups[i]->m_aModels[k].size()];
@@ -1002,7 +1002,7 @@ void CStaticGeom::comArrIndeces(const IFrustum* frustum, const float3* viewpos, 
 	float jradius;
 	float3 jcenter;
 
-	for(int i = 0, l = m_aAllModels.size(); i < l; ++i)
+	for(UINT i = 0, l = m_aAllModels.size(); i < l; ++i)
 	{
 		if (id_arr == 0)
 		{
@@ -1157,14 +1157,14 @@ bool CStaticGeom::sortExistsForRender(int sort, ID id_arr)
 	ID jnumgroup;
 
 	//проходимся по всем моделям
-	for (int i = 0, l = m_aAllModels.size(); i < l; ++i)
+	for (UINT i = 0, l = m_aAllModels.size(); i < l; ++i)
 	{
 		if (m_aArrComFor[id_arr]->m_aIRS[i]->m_iCountCom > 0)
 		{
-			for (int j = 0, jl = m_aArrComFor[id_arr]->m_aIRS[i]->m_iCountCom; j<jl; j++)
+			for(UINT j = 0, jl = m_aArrComFor[id_arr]->m_aIRS[i]->m_iCountCom; j<jl; j++)
 			{
 				jarrsplits = m_aArrComFor[id_arr]->m_aIRS[i]->m_ppSegments;
-				for (int k = 0; k<jarrsplits[j]->m_uiCountSubSet; ++k)
+				for(UINT k = 0; k<jarrsplits[j]->m_uiCountSubSet; ++k)
 				{
 					jidbuff = m_aAllModels[i]->m_aSubSets[jarrsplits[j]->m_pNumberGroupModel[k]].m_idBuff;
 					jnumgroup = jarrsplits[j]->m_pNumberGroup[k];
@@ -1189,15 +1189,15 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 	ID jnumgroup;
 	
 	//обнуляем все данные об отрисованном в прошлый раз
-	for (int i = 0; i < m_aAllGroups.size(); i++)
+	for(UINT i = 0, l = m_aAllGroups.size(); i < l; ++i)
 	{
 		if (m_aAllGroups[i])
 		{
-			for (int k = 0; k < m_aAllGroups[i]->m_aVertexBuffers.size(); ++k)
+			for(UINT k = 0, kl = m_aAllGroups[i]->m_aVertexBuffers.size(); k < kl; ++k)
 			{
 				m_ppRTCountDrawPoly[i][k] = 0;
 
-				for (int j = 0; j < m_aAllGroups[i]->m_aModels[k].size(); ++j)
+				for(UINT j = 0, jl = m_aAllGroups[i]->m_aModels[k].size(); j < jl; ++j)
 				{
 					m_pppRTCountDrawPolyModel[i][k][j] = 0;
 					m_pppRTBeginIndexModel[i][k][j] = -1;
@@ -1262,7 +1262,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 					{
 						if (
 							jarrsplits[j]->m_pCountPoly[k] > 0 &&	//если количество полигонов больше 0
-							m_ppRTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->m_pCountPoly[k] <= m_aAllGroups[jnumgroup]->m_aCountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
+							m_ppRTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->m_pCountPoly[k] <= (UINT)m_aAllGroups[jnumgroup]->m_aCountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
 							)
 						{
 							memcpy(m_pppRTArrIndices[jnumgroup][jidbuff] + (m_ppRTCountDrawPoly[jnumgroup][jidbuff] * 3),
@@ -1325,13 +1325,13 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 					{
 						int tmpprevcountindex = 0;
 
-						for(int j = 0, jl = tmpgroup->m_aModels[k].size(); j < jl; ++j)
+						for(UINT j = 0, jl = tmpgroup->m_aModels[k].size(); j < jl; ++j)
 						{
 							if (m_pppRTCountDrawPolyModel[i][k][j] > 0)
 							{
 								//ищем id материала подгруппы
 								//общий id использовать нельзя так как не зря стоит раздельный рендер
-								for (int q = 0; q < tmpgroup->m_aModels[k][j]->m_aIDsTexures.size(); ++q)
+								for(UINT q = 0; q < tmpgroup->m_aModels[k][j]->m_aIDsTexures.size(); ++q)
 								{
 									if (i == tmpgroup->m_aModels[k][j]->m_aSubSets[q].m_idGroup)
 									{
@@ -1359,7 +1359,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 	//иначе рисуем по сортированному списку
 	else
 	{
-		for (int i = 0; i < m_aDistGroup.size(); ++i)
+		for(UINT i = 0, l = m_aDistGroup.size(); i < l; ++i)
 		{
 			CInfoGroup* tmpig = m_aDistGroup[i];
 			CGroup* tmpgroup = m_aAllGroups[tmpig->m_idGlobalGroup];
@@ -1375,7 +1375,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 			if (m_ppRTCountDrawPoly[tmpig->m_idGlobalGroup][id_buff] > 0)
 			{
 				ID id_model;
-				for (int j = 0; j < tmpgroup->m_aModels[id_buff].size(); ++j)
+				for(UINT j = 0, jl = tmpgroup->m_aModels[id_buff].size(); j < jl; ++j)
 				{
 					if (tmpgroup->m_aModels[id_buff][j] == m_aAllModels[tmpig->m_idModel])
 					{
@@ -1400,7 +1400,7 @@ void CStaticGeom::render(DWORD timeDelta, int sort_mtl, ID id_arr, ID exclude_mo
 				if (m_pppRTCountDrawPolyModel[tmpig->m_idGlobalGroup][id_buff][id_model] > 0)
 				{
 					//ищем id материала подгруппы
-					for (int q = 0; q < tmpgroup->m_aModels[id_buff][id_model]->m_aIDsTexures.size(); ++q)
+					for(UINT q = 0, ql = tmpgroup->m_aModels[id_buff][id_model]->m_aIDsTexures.size(); q < ql; ++q)
 					{
 						if (tmpig->m_idGlobalGroup == tmpgroup->m_aModels[id_buff][id_model]->m_aSubSets[q].m_idGroup)
 						{
@@ -1425,15 +1425,15 @@ void CStaticGeom::renderSingly(DWORD timeDelta, ID id, ID id_tex)
 	int jnumgroup;
 
 	//обнуляем все данные об отрисованном в прошлый раз
-	for (int i = 0; i < m_aAllGroups.size(); i++)
+	for(UINT i = 0, l = m_aAllGroups.size(); i < l; ++i)
 	{
 		if (m_aAllGroups[i])
 		{
-			for (int k = 0; k < m_aAllGroups[i]->m_aVertexBuffers.size(); ++k)
+			for(UINT k = 0, kl = m_aAllGroups[i]->m_aVertexBuffers.size(); k < kl; ++k)
 			{
 				m_ppRTCountDrawPoly[i][k] = 0;
 
-				for (int j = 0; j < m_aAllGroups[i]->m_aModels[k].size(); ++j)
+				for(UINT j = 0, jl = m_aAllGroups[i]->m_aModels[k].size(); j < jl; ++j)
 				{
 					m_pppRTCountDrawPolyModel[i][k][j] = 0;
 					m_pppRTBeginIndexModel[i][k][j] = -1;
@@ -1481,7 +1481,7 @@ void CStaticGeom::renderSingly(DWORD timeDelta, ID id, ID id_tex)
 				
 					if (
 						jarrsplits[j]->m_pCountPoly[k] > 0 &&	//если количество полигонов больше 0
-						m_ppRTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->m_pCountPoly[k] <= m_aAllGroups[jnumgroup]->m_aCountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
+						m_ppRTCountDrawPoly[jnumgroup][jidbuff] + jarrsplits[j]->m_pCountPoly[k] <= (UINT)m_aAllGroups[jnumgroup]->m_aCountIndex[jidbuff] / 3 	//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
 						)
 					{
 						memcpy(m_pppRTArrIndices[jnumgroup][jidbuff] + (m_ppRTCountDrawPoly[jnumgroup][jidbuff] * 3),
@@ -1503,14 +1503,14 @@ void CStaticGeom::renderSingly(DWORD timeDelta, ID id, ID id_tex)
 
 	uint32_t* RTGPUArrIndicesPtrs2;
 	
-	for (int i = 0; i < m_aAllModels[id]->m_aSubSets.size(); ++i)
+	for(UINT i = 0, l = m_aAllModels[id]->m_aSubSets.size(); i < l; ++i)
 	{
 		ID idgroup = m_aAllModels[id]->m_aSubSets[i].m_idGroup;
 		CGroup* tmpgroup = m_aAllGroups[m_aAllModels[id]->m_aSubSets[i].m_idGroup];
 		ID id_buff = m_aAllModels[id]->m_aSubSets[i].m_idBuff;
 
 		ID id_model;
-		for (int j = 0; j < tmpgroup->m_aModels[id_buff].size(); ++j)
+		for(UINT j = 0, jl = tmpgroup->m_aModels[id_buff].size(); j < jl; ++j)
 		{
 			if (tmpgroup->m_aModels[id_buff][j] == m_aAllModels[id])
 			{
@@ -1592,9 +1592,9 @@ void CStaticGeom::preSegmentation(CModel* mesh, ISXDataStaticModel* model)
 		}
 			
 		float4_t tmpmin(dimensions.x / minLen, dimensions.y / minOctoHeight, dimensions.z / minLen, (float)model->m_uiAllIndexCount / (float)GEOM_MIN_POLYGONS_FOR_SEGMENTATION / 3.0f);
-		tmpmin.x = min(min(min(tmpmin.x, tmpmin.y), min(tmpmin.z, tmpmin.w)), (allvolume / minVol)) * 10.0;
+		tmpmin.x = min(min(min(tmpmin.x, tmpmin.y), min(tmpmin.z, tmpmin.w)), (allvolume / minVol)) * 10.0f;
 
-		CountPolyInSegment = (float)model->m_uiAllIndexCount / 3.0 / tmpmin.x / CountSplitsSys;
+		CountPolyInSegment = (float)model->m_uiAllIndexCount / 3.0f / tmpmin.x / CountSplitsSys;
 
 		if (CountPolyInSegment < GEOM_MIN_COUNT_POLY)
 		{
@@ -1738,7 +1738,7 @@ void CStaticGeom::preSegmentation(CModel* mesh, ISXDataStaticModel* model)
 	}
 
 	//если количество полигонов и текущая установка деления позволяют делить дальше
-	if (mesh->m_pArrSplits->m_uiCountAllPoly >= CountPolyInSegment && CountSplitsSys != 0)
+	if (mesh->m_pArrSplits->m_uiCountAllPoly >= (UINT)CountPolyInSegment && CountSplitsSys != 0)
 	{
 		mesh->m_pArrSplits->m_isNonEnd = true;
 		cycleSegmentation(mesh->m_pArrSplits, mesh, model, CountSplitsSys, CountPolyInSegment);
@@ -1921,9 +1921,9 @@ void CStaticGeom::segmentation(CSegment* Split, CModel* mesh, ISXDataStaticModel
 
 					CenterPoly.x = CenterPoly.y = CenterPoly.z = 0;
 
-					CenterPoly.x = (pos0.x + pos1.x + pos2.x) / 3.0;
-					CenterPoly.y = (pos0.y + pos1.y + pos2.y) / 3.0;
-					CenterPoly.z = (pos0.z + pos1.z + pos2.z) / 3.0;
+					CenterPoly.x = (pos0.x + pos1.x + pos2.x) / 3.0f;
+					CenterPoly.y = (pos0.y + pos1.y + pos2.y) / 3.0f;
+					CenterPoly.z = (pos0.z + pos1.z + pos2.z) / 3.0f;
 
 					//memset(ArrLength,0,sizeof(float) * 8);
 
@@ -2067,7 +2067,7 @@ void CStaticGeom::segmentation(CSegment* Split, CModel* mesh, ISXDataStaticModel
 			mem_delete_a(tmpCountPG);
 
 			editVolume(mesh, Split->m_aSplits[i]);
-			if (Split->m_aSplits[i]->m_uiCountAllPoly > 0 && Split->m_aSplits[i]->m_uiCountAllPoly > CountPolyInSegment)
+			if (Split->m_aSplits[i]->m_uiCountAllPoly > 0 && Split->m_aSplits[i]->m_uiCountAllPoly > (UINT)CountPolyInSegment)
 			{
 				Split->m_aSplits[i]->m_isNonEnd = true;
 			}
@@ -2148,9 +2148,9 @@ void CStaticGeom::editVolume(CModel* mesh, CSegment* Split)
 	Split->m_pBoundVolumeSys->getMinMax(&Min2, &Max2);
 
 	float3 tmpf;
-	for (int i = 0; i<Split->m_uiCountSubSet; ++i)
+	for(UINT i = 0; i<Split->m_uiCountSubSet; ++i)
 	{
-		for (int k = 0; k<Split->m_pCountPoly[i] * 3; ++k)
+		for(UINT k = 0; k<Split->m_pCountPoly[i] * 3; ++k)
 		{
 			tmpf = m_pCurrArrMeshVertex[(Split->m_ppArrPoly[i][k])];
 			if (tmpf.x > Max.x)
@@ -2186,7 +2186,7 @@ void CStaticGeom::save(const char* path)
 
 	vertex_static * pData;
 
-	for (int i = 0; i < m_aAllGroups.size(); ++i)
+	for(UINT i = 0; i < m_aAllGroups.size(); ++i)
 	{
 		int32_t tmpstrlen = m_aAllGroups[i]->m_sName.length();
 		fwrite(&tmpstrlen, sizeof(int32_t), 1, file);
@@ -2196,15 +2196,15 @@ void CStaticGeom::save(const char* path)
 		int32_t countbuffingroup = m_aAllGroups[i]->m_aVertexBuffers.size();
 		fwrite(&countbuffingroup, sizeof(int32_t), 1, file);
 
-		for (int k = 0; k < m_aAllGroups[i]->m_aCountVertex.size(); ++k)
+		for(UINT k = 0; k < m_aAllGroups[i]->m_aCountVertex.size(); ++k)
 		{
 			//записываем количество моделей, которые используют данную подгруппу
 			int32_t countusingmodels = m_aAllGroups[i]->m_aModels[k].size();
 			fwrite(&countusingmodels, sizeof(int32_t), 1, file);
 			int32_t tmpcountusingmodels = 0;
-			for (int32_t j = 0; j < m_aAllGroups[i]->m_aModels[k].size(); ++j)
+			for(UINT j = 0; j < m_aAllGroups[i]->m_aModels[k].size(); ++j)
 			{
-				for (int32_t q = 0; q < m_aAllModels.size(); ++q)
+				for(UINT q = 0; q < m_aAllModels.size(); ++q)
 				{
 					if (m_aAllModels[q] == m_aAllGroups[i]->m_aModels[k][j])
 					{
@@ -2232,7 +2232,7 @@ void CStaticGeom::save(const char* path)
 	int32_t countmodels = m_aAllModels.size();
 	fwrite(&countmodels, sizeof(int32_t), 1, file);
 
-	for (int i = 0; i < m_aAllModels.size(); ++i)
+	for(UINT i = 0; i < m_aAllModels.size(); ++i)
 	{
 		int32_t countsubset = m_aAllModels[i]->m_aSubSets.size();
 		fwrite(&countsubset, sizeof(int32_t), 1, file);
@@ -2272,7 +2272,7 @@ void CStaticGeom::save(const char* path)
 			fwrite(&countlenstr, sizeof(int32_t), 1, file);
 		}
 
-		for (int k = 0; k < m_aAllModels[i]->m_aSubSets.size(); ++k)
+		for(UINT k = 0; k < m_aAllModels[i]->m_aSubSets.size(); ++k)
 		{
 			fwrite(&(m_aAllModels[i]->m_aSubSets[k]), sizeof(CModel::CSubSet), 1, file);
 		}
@@ -2345,7 +2345,7 @@ void CStaticGeom::saveSplit(CSegment* Split, FILE* file, Array<CSegment*> * queu
 		fwrite(Split->m_pNumberGroup, sizeof(uint32_t)*Split->m_uiCountSubSet, 1, file);
 		fwrite(Split->m_pCountPoly, sizeof(uint32_t)*Split->m_uiCountSubSet, 1, file);
 
-		for (int i = 0; i < Split->m_uiCountSubSet; ++i)
+		for(UINT i = 0; i < Split->m_uiCountSubSet; ++i)
 		{
 			fwrite(Split->m_ppArrPoly[i], sizeof(uint32_t)*Split->m_pCountPoly[i] * 3, 1, file);
 		}
@@ -2546,11 +2546,11 @@ void CStaticGeom::load(const char* path)
 		m_pBoundVolume->setMinMax(&jmin2, &jmax2);
 	}
 
-	for (int i = 0; i < m_aAllGroups.size(); ++i)
+	for(UINT i = 0; i < m_aAllGroups.size(); ++i)
 	{
-		for (int k = 0; k < tmpArrIdsModels[i].size(); ++k)
+		for(UINT k = 0; k < tmpArrIdsModels[i].size(); ++k)
 		{
-			for (int j = 0; j < tmpArrIdsModels[i][k].size(); ++j)
+			for(UINT j = 0; j < tmpArrIdsModels[i][k].size(); ++j)
 			{
 				m_aAllGroups[i]->m_aModels[k][j] = m_aAllModels[tmpArrIdsModels[i][k][j]];
 			}
@@ -2621,7 +2621,7 @@ void CStaticGeom::loadSplit(CSegment** Split, FILE* file, Array<CSegment**> * qu
 
 		(*Split)->m_ppArrPoly = new uint32_t*[(*Split)->m_uiCountSubSet];
 
-		for (int i = 0; i < (*Split)->m_uiCountSubSet; ++i)
+		for(UINT i = 0; i < (*Split)->m_uiCountSubSet; ++i)
 		{
 			(*Split)->m_ppArrPoly[i] = new uint32_t[(*Split)->m_pCountPoly[i] * 3];
 			fread((*Split)->m_ppArrPoly[i], sizeof(uint32_t)*(*Split)->m_pCountPoly[i] * 3, 1, file);
@@ -2637,14 +2637,14 @@ void CStaticGeom::sortGroup(const float3* viewpos, int sort_mtl)
 	CModel* tmpmodel;
 	Array<float> arr_dist;
 
-	int tmp_index_gd = 0;
+	UINT tmp_index_gd = 0;
 
 	float tmpdist = 999999;
 
-	for (int i = 0; i < m_aAllModels.size(); ++i)
+	for(UINT i = 0, l = m_aAllModels.size(); i < l; ++i)
 	{
 		tmpmodel = m_aAllModels[i];
-		for (int k = 0; k < tmpmodel->m_aSubSets.size(); ++k)
+		for(UINT k = 0, kl = tmpmodel->m_aSubSets.size(); k < kl; ++k)
 		{
 			//if (sort_mtl == m_aAllGroups[tmpmodel->m_aSubSets[k].idgroup]->SortGroup)
 			
@@ -2665,12 +2665,12 @@ void CStaticGeom::sortGroup(const float3* viewpos, int sort_mtl)
 		}
 	}
 
-	for (int i = 0; i < m_aDistGroup.size(); ++i)
+	for(int i = 0, l = m_aDistGroup.size(); i < l; ++i)
 	{
 		CInfoGroup* tmpig = m_aDistGroup[i];
 		
 		int pos = i;
-		for (int k = i+1; k < m_aDistGroup.size(); ++k)
+		for(int k = i + 1, kl = l; k < kl; ++k)
 		{
 			CInfoGroup* tmpig2 = m_aDistGroup[k];
 			int qwert = 0;
@@ -2732,13 +2732,13 @@ bool CStaticGeom::getIntersectedRayY(float3* pos)
 	CountDist = -1000;
 	bool is_find = false;
 
-	for (int id = 0; id < m_aAllModels.size(); ++id)
+	for(UINT id = 0, idl = m_aAllModels.size(); id < idl; ++id)
 	{
 		m_aArrComFor[1]->m_aIRS[id]->m_iCountCom = 0;
 
 		getIntersectedRayY2(pos, m_aArrComFor[1]->m_aIRS[id]->m_ppSegments, &(m_aArrComFor[1]->m_aIRS[id]->m_iCountCom), m_aAllModels[id]->m_pArrSplits, m_aArrComFor[1]->m_aIRS[id]->m_iCount);
 
-		for (DWORD k = 0; k<m_aArrComFor[1]->m_aIRS[id]->m_iCountCom; ++k)
+		for(DWORD k = 0, kl = m_aArrComFor[1]->m_aIRS[id]->m_iCountCom; k<kl; ++k)
 		{
 			for (DWORD group = 0; group<m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_uiCountSubSet; group++)
 			{
@@ -2812,7 +2812,7 @@ ID CStaticGeom::addArrForCom()
 {
 	CIRSData* ttmpdata = new CIRSData();
 	
-	for (int i = 0; i < m_aAllModels.size(); ++i)
+	for(UINT i = 0, l = m_aAllModels.size(); i < l; ++i)
 	{
 		CInfoRenderSegments* tmpirs = new CInfoRenderSegments();
 		tmpirs->m_iCount = m_aAllModels[i]->m_idCountSplitsRender;
@@ -2822,7 +2822,7 @@ ID CStaticGeom::addArrForCom()
 	}
 
 	ID id_arr = -1;
-	for (int i = 0; i < m_aArrComFor.size(); ++i)
+	for(UINT i = 0, l = m_aArrComFor.size(); i < l; ++i)
 	{
 		if (m_aArrComFor[i] == 0)
 		{
@@ -2843,7 +2843,7 @@ ID CStaticGeom::addArrForCom()
 
 bool CStaticGeom::existsArrForCom(ID id)
 {
-	return (m_aArrComFor.size() > id);
+	return((ID)m_aArrComFor.size() > id);
 }
 
 void CStaticGeom::deleteArrForCom(ID id_arr)
@@ -2857,7 +2857,7 @@ void CStaticGeom::addModelInArrCom(ID id_model)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, _VOID);
 
-	for (int i = 0; i < m_aArrComFor.size(); ++i)
+	for(UINT i = 0, l = m_aArrComFor.size(); i < l; ++i)
 	{
 		CInfoRenderSegments* tmpirs = new CInfoRenderSegments();
 		tmpirs->m_iCount = m_aAllModels[id_model]->m_idCountSplitsRender;
@@ -2871,7 +2871,7 @@ void CStaticGeom::deleteModelInArrCom(ID id_model)
 {
 	STATIC_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model, _VOID);
 
-	for (int i = 0; i < m_aArrComFor.size(); ++i)
+	for(UINT i = 0, l = m_aArrComFor.size(); i < l; ++i)
 	{
 		if (!(m_aArrComFor[i]))
 			continue;
@@ -2885,7 +2885,7 @@ void CStaticGeom::deleteModelInArrCom(ID id_model)
 
 char* CStaticGeom::getModelName(ID id)
 {
-	if (id < m_aAllModels.size())
+	if (id < (ID)m_aAllModels.size())
 		return m_aAllModels[id]->m_szName;
 
 	return 0;
@@ -2893,7 +2893,7 @@ char* CStaticGeom::getModelName(ID id)
 
 const char* CStaticGeom::getModelPathName(ID id)
 {
-	if (id < m_aAllModels.size())
+	if (id < (ID)m_aAllModels.size())
 		return m_aAllModels[id]->m_szPathName;
 
 	return 0;
@@ -2901,7 +2901,7 @@ const char* CStaticGeom::getModelPathName(ID id)
 
 int CStaticGeom::getModelCountPoly(ID id)
 {
-	if (id < m_aAllModels.size())
+	if (id < (ID)m_aAllModels.size())
 		return m_aAllModels[id]->m_uiCountPoly;
 
 	return -1;
@@ -2909,7 +2909,7 @@ int CStaticGeom::getModelCountPoly(ID id)
 
 void CStaticGeom::getModelMinMax(ID id, float3* min, float3* max)
 {
-	if (id >= m_aAllModels.size())
+	if(id >= (ID)m_aAllModels.size())
 		return;
 
 	m_aAllModels[id]->m_pArrSplits->m_pBoundVolumeP->getMinMax(min, max);
@@ -2918,7 +2918,7 @@ void CStaticGeom::getModelMinMax(ID id, float3* min, float3* max)
 
 float3* CStaticGeom::getModelPosition(ID id)
 {
-	if (id < m_aAllModels.size())
+	if(id < (ID)m_aAllModels.size())
 		return &m_aAllModels[id]->m_vPosition;
 
 	return 0;
@@ -2926,7 +2926,7 @@ float3* CStaticGeom::getModelPosition(ID id)
 
 float3* CStaticGeom::getModelRotation(ID id)
 {
-	if (id < m_aAllModels.size())
+	if(id < (ID)m_aAllModels.size())
 		return &m_aAllModels[id]->m_vRotation;
 
 	return 0;
@@ -2934,7 +2934,7 @@ float3* CStaticGeom::getModelRotation(ID id)
 
 float3* CStaticGeom::getModelScale(ID id)
 {
-	if (id < m_aAllModels.size())
+	if(id < (ID)m_aAllModels.size())
 		return &m_aAllModels[id]->m_vScale;
 
 	return 0;
@@ -2942,7 +2942,7 @@ float3* CStaticGeom::getModelScale(ID id)
 
 const char* CStaticGeom::getModelLodPath(ID id)
 {
-	if (id < m_aAllModels.size())
+	if(id < (ID)m_aAllModels.size())
 		return m_aAllModels[id]->m_oLod0.m_szPathName;
 
 	return 0;
@@ -2950,7 +2950,7 @@ const char* CStaticGeom::getModelLodPath(ID id)
 
 void CStaticGeom::setModelLodPath(ID id, const char* path)
 {
-	if (id < m_aAllModels.size() && STR_VALIDATE(path))
+	if(id < (ID)m_aAllModels.size() && STR_VALIDATE(path))
 	{
 		mem_delete(m_aAllModels[id]->m_oLod0.m_pModel);
 		m_aAllModels[id]->m_oLod0.m_aIDsTextures.clear();
@@ -2979,7 +2979,7 @@ void CStaticGeom::setModelLodPath(ID id, const char* path)
 
 void CStaticGeom::applyTransform(ID id)
 {
-	if (id >= m_aAllModels.size())
+	if(id >= (ID)m_aAllModels.size())
 		return;
 	CModel* tmpmodel = m_aAllModels[id];
 
