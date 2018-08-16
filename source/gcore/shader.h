@@ -139,15 +139,19 @@ uint32_t GetTimeShaderFileCache(const char *szPath);
 
 //**************************************************************************
 
+#define LOAD_SHADER_FAIL 0
+#define LOAD_SHADER_COMPLETE 1
+#define LOAD_SHADER_CACHE 2
+
 //! загрузка вершинного шейдера
-void LoadVertexShader(
+int LoadVertexShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderVS *pShader,		//!< инициализированная структура CShaderVS
 	D3DXMACRO *aMacro = 0	//!< массив дефайнов
 	);
 
 //загрузка пиксельного шейдера
-void LoadPixelShader(
+int LoadPixelShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderPS *pShader,		//!< инициализированная структура CShaderPS
 	D3DXMACRO *aMacro = 0	//!< массив дефайнов
@@ -238,6 +242,14 @@ protected:
 
 	//! массив всех инклюдов
 	Array<CShaderInclude> m_aIncludes;
+
+	String getTextResultLoad(int iResult);
+
+	//! проверка директории кэша, если не существует то создаст
+	void testDirCache();
+
+	//! загрузка и проверка кэша инклюдов
+	void testIncludeCache();
 
 	//! загрузить текущий кэш инклюдов
 	void loadCacheInclude();

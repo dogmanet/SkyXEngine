@@ -75,6 +75,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SLevel_AmbientSndPlay();
 	SLevel_WeatherSndPlay();
 
+	SGCore_ShaderAllLoad();
+	SGCore_LoadTexAllLoad();
+
+	SetWindowPos(SGCore_GetHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
 	return result;

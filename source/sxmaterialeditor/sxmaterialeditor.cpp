@@ -498,7 +498,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXMaterialEditor::idMat = SRender_SimModelGetIDMtl();
 
 	SkyXEngine_PreviewKill();
+
 	SXMaterialEditor::pJobWindow->setVisible(true);
+	SetWindowPos(SXMaterialEditor::pJobWindow->getHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
 	SXMaterialEditor::DeleteAllElements();

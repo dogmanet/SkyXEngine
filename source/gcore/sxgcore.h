@@ -81,6 +81,9 @@ SX_LIB_API void SGCore_0Create(
 	bool isUnic = true			//!< должна ли подсистема быть уникальной на основе имени
 	);
 
+//! возвращает HWND окна рендера
+SX_LIB_API HWND SGCore_GetHWND();
+
 //! уничтожение либы
 SX_LIB_API void SGCore_AKill();	
 

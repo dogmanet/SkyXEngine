@@ -315,6 +315,11 @@ SX_LIB_API const DEVMODE* SGCore_GetModes(int *pCount)
 	return &(g_aArrModes[0]);
 }
 
+SX_LIB_API HWND SGCore_GetHWND()
+{
+	return g_oD3DAPP.hDeviceWindow;
+}
+
 SX_LIB_API void SGCore_AKill()
 {
 	SG_PRECOND(_VOID);

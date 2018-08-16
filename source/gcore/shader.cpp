@@ -19,13 +19,28 @@ CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader)
 	memcpy(pSFC->m_aVarDesc, pShader->m_aVarDesc, sizeof(D3DXCONSTANT_DESC) * SXGC_SHADER_VAR_MAX_COUNT);
 	memcpy(pSFC->m_aMacros, pShader->m_aMacros, sizeof(D3DXMACRO) * SXGC_SHADER_COUNT_MACRO);
 
+	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
+	szDir[0] = 0;
+	char szName[SXGC_SHADER_MAX_SIZE_NAME];
+	StrParsePathName(pSFC->m_szName, szDir, szName);
+	if (szDir[0] != 0)
+		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szDir, pSFC->m_szPath);
+	else
+	{
+		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), pSFC->m_szPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "unresolved shader in root directory [%s]\n", szFullPath);
+	}
+
+	pSFC->m_uiDate = FileGetTimeLastModify(szFullPath);
+
 	return pSFC;
 }
 
 void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 {
 	char szDirPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
-	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
 	szDir[0] = 0;
@@ -34,14 +49,16 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 	if (szDir[0] != 0)
 	{
 		sprintf(szDirPath, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir);
-		sprintf(szFullPath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szDir, pShaderFileCache->m_szName);
 		sprintf(szFullPathCache, "%s%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir, pShaderFileCache->m_szName);
 	}
 	else
 	{
 		sprintf(szDirPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
-		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), pShaderFileCache->m_szName);
 		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShaderFileCache->m_szName);
+
+		char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), pShaderFileCache->m_szPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "unresolved shader in root directory [%s]\n", szFullPath);
 	}
 
 	CreateDirectory(szDirPath, 0);
@@ -55,9 +72,7 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 		return;
 	}
 
-	uint32_t tLastModify = FileGetTimeLastModify(szFullPath);
-
-	fwrite(&tLastModify, sizeof(uint32_t), 1, pFile);
+	fwrite(&(pShaderFileCache->m_uiDate), sizeof(uint32_t), 1, pFile);
 
 	uint32_t iLen = strlen(pShaderFileCache->m_szName);
 	fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
@@ -195,7 +210,7 @@ uint32_t GetTimeShaderFileCache(const char *szPath)
 
 //**************************************************************************
 
-void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
+int LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -238,10 +253,11 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 		if (FAILED(hr))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating vertex shader [%s]\n", GEN_MSG_LOCATION, szPath);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		mem_delete(pSFC);
+		return LOAD_SHADER_CACHE;
 	}
 	else
 	{
@@ -267,14 +283,14 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 		if (pBufError && pBufShader == 0)
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed to load vertex shader [%s], msg: %s\n", GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		//!!!проанализировать
 		if (FAILED(hr))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - download function vertex shader fails, path [%s]\n", GEN_MSG_LOCATION, szPath);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		hr = g_pDXDevice->CreateVertexShader(
@@ -285,7 +301,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 		if (FAILED(hr))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating vertex shader [%s]\n", GEN_MSG_LOCATION, szPath);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		D3DXCONSTANTTABLE_DESC desc;
@@ -294,7 +310,7 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error, count variable in vertex shader [%s] more standart [%d]\n", GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		for (int i = 0; i < desc.Constants; i++)
@@ -316,9 +332,11 @@ void LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 		mem_delete(pSFC);
 	}
 #endif
+
+	return LOAD_SHADER_COMPLETE;
 }
 
-void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
+int LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -337,12 +355,14 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
 	}
 
-#ifndef _DEBUG
+//#ifndef _DEBUG
+	UINT uiTimeFileCahce = GetTimeShaderFileCache(szFullPathCache);
+	UINT uiTimeFileSahder = FileGetTimeLastModify(szFullPath);
 	if (
 		//если юзаем кэш и файл кэша существует
 		(g_useCache && FileExistsFile(szFullPathCache)) &&
 		//если время изменения кэша такое же как и время изменения файла шейдера или файла шейдера нет
-		(GetTimeShaderFileCache(szFullPathCache) == FileGetTimeLastModify(szFullPath) || !FileExistsFile(szFullPath))
+		(uiTimeFileCahce == uiTimeFileSahder || !FileExistsFile(szFullPath))
 		)
 	{
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
@@ -360,14 +380,16 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		if (FAILED(hr))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating pixel shader [%s]", GEN_MSG_LOCATION, szPath);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		mem_delete(pSFC);
+
+		return LOAD_SHADER_CACHE;
 	}
 	else
 	{
-#endif
+//#endif
 		ID3DXBuffer *pBufShader = 0;
 		ID3DXBuffer *pBufError = 0;
 		ID3DXConstantTable *pConstTable;
@@ -389,14 +411,14 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		if (pBufError && pBufShader == 0)
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed to load pixel shader [%s], msg: %s\n", GEN_MSG_LOCATION, szPath, (char*)pBufError->GetBufferPointer());
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		//!!!проанализировать
 		if (FAILED(hr))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - download function pixel shader fails, path [%s]\n", GEN_MSG_LOCATION, szPath);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		hr = g_pDXDevice->CreatePixelShader(
@@ -407,7 +429,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		if (FAILED(hr))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating pixel shader [%s]\n", GEN_MSG_LOCATION, szPath);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 		D3DXCONSTANTTABLE_DESC desc;
@@ -416,7 +438,7 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		if (desc.Constants > SXGC_SHADER_VAR_MAX_COUNT)
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error, count variable in pixel shader [%s] more standart [%d]\n", GEN_MSG_LOCATION, szPath, SXGC_SHADER_VAR_MAX_COUNT);
-			return;
+			return LOAD_SHADER_FAIL;
 		}
 
 
@@ -432,12 +454,14 @@ void LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		pShader->m_iCountVar = desc.Constants;
 		pShader->m_pPixelShader = pPixelShader;
 
-#ifndef _DEBUG
+//#ifndef _DEBUG
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
 		SaveShaderFileCache(pSFC);
 		mem_delete(pSFC);
 	}
-#endif
+//#endif
+
+	return LOAD_SHADER_COMPLETE;
 }
 
 //**************************************************************************
@@ -448,18 +472,23 @@ CShaderManager::CShaderManager()
 	m_iLastAllLoadVS = 0;
 	m_iLastAllLoadPS = 0;
 
-	char szFullPathCache[1024];
-	sprintf(szFullPathCache, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
+	testDirCache();
 
-	if (!FileExistsDir(szFullPathCache))
-		FileCreateDir(szFullPathCache);
+	testIncludeCache();
+}
 
+void CShaderManager::testIncludeCache()
+{
+	testDirCache();
 	loadCacheInclude();
 
 	Array<String> aIncludes = FileGetListRec(Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), FILE_LIST_TYPE_FILES, "h");
 
 	if (aIncludes.size() != m_aIncludes.size())
+	{
 		g_useCache = false;
+		LibReport(REPORT_MSG_LEVEL_WARNING, "h shaders is modified (%d!=%d), shader cache disabled\n", aIncludes.size(), m_aIncludes.size());
+	}
 	else
 	{
 		for (int i = 0, il = m_aIncludes.size(); i < il; ++i)
@@ -468,7 +497,11 @@ CShaderManager::CShaderManager()
 				!(stricmp(m_aIncludes[i].m_szFile, aIncludes[i].c_str()) == 0 &&
 				FileGetTimeLastModify((String(Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS)) + aIncludes[i]).c_str()) == m_aIncludes[i].m_uiDate)
 				)
+			{
 				g_useCache = false;
+				LibReport(REPORT_MSG_LEVEL_WARNING, "h shaders is modified, shader cache disabled\n");
+				break;
+			}
 		}
 	}
 
@@ -483,8 +516,15 @@ CShaderManager::CShaderManager()
 
 		saveCacheInclude();
 	}
+}
 
-	int qwerty = 0;
+void CShaderManager::testDirCache()
+{
+	char szFullPathCache[1024];
+	sprintf(szFullPathCache, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH);
+
+	if (!FileExistsDir(szFullPathCache))
+		FileCreateDir(szFullPathCache);
 }
 
 CShaderManager::~CShaderManager()
@@ -504,6 +544,22 @@ CShaderManager::~CShaderManager()
 	m_aPS.clear();
 }
 
+String CShaderManager::getTextResultLoad(int iResult)
+{
+	String sStr = "unknown";
+	if (iResult == LOAD_SHADER_FAIL)
+		sStr = "fail";
+	else if (iResult == LOAD_SHADER_COMPLETE)
+		sStr = "complete";
+	else if (iResult == LOAD_SHADER_CACHE)
+		sStr = "load from cache";
+	else
+		sStr = "unknown";
+
+	return sStr;
+}
+
+
 void CShaderManager::loadCacheInclude()
 {
 	char szFullPathCacheInc[1024];
@@ -511,6 +567,8 @@ void CShaderManager::loadCacheInclude()
 
 	if (!FileExistsFile(szFullPathCacheInc))
 		return;
+
+	m_aIncludes.clear();
 
 	FILE *pFile = fopen(szFullPathCacheInc, "rb");
 
@@ -549,13 +607,17 @@ void CShaderManager::saveCacheInclude()
 
 void CShaderManager::reloadAll()
 {
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "reload shaders ...\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "reload shaders, cache %s ...\n", (g_useCache ? "enable" : "disable"));
+
+	testIncludeCache();
+
+	String sResult;
 
 	for (int i = 0; i<m_aVS.size(); i++)
 	{
 		CShaderVS *pShader = m_aVS[i];
-		LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros);
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		sResult = getTextResultLoad(LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros));
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
@@ -563,8 +625,8 @@ void CShaderManager::reloadAll()
 	for (int i = 0; i<m_aPS.size(); i++)
 	{
 		CShaderPS *pShader = m_aPS[i];
-		LoadPixelShader(m_aPS[i]->m_szPath, m_aPS[i], m_aPS[i]->m_aMacros);
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		sResult = getTextResultLoad(LoadPixelShader(m_aPS[i]->m_szPath, m_aPS[i], m_aPS[i]->m_aMacros));
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "all reloaded shaders\n");
@@ -721,14 +783,15 @@ void CShaderManager::allLoad()
 		return;
 
 	DWORD dwTime = GetTickCount();
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "load shaders ...\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "load shaders, cache %s ...\n", (g_useCache ? "enable" : "disable"));
+
+	String sResult;
 	
 	for (int i = 0, il = m_aVS.size(); i < il; ++i)
 	{
 		CShaderVS *pShader = m_aVS[i];
-		LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros);
-
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		sResult = getTextResultLoad(LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros));
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
@@ -736,9 +799,8 @@ void CShaderManager::allLoad()
 	for (int i = 0, il = m_aPS.size(); i < il; ++i)
 	{
 		CShaderPS *pShader = m_aPS[i];
-		LoadPixelShader(pShader->m_szPath, pShader, pShader->m_aMacros);
-
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], \n", i, pShader->m_szPath, pShader->m_szName);
+		sResult = getTextResultLoad(LoadPixelShader(pShader->m_szPath, pShader, pShader->m_aMacros));
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
 
 	m_iLastAllLoadVS = m_aVS.size();

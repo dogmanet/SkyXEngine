@@ -550,6 +550,8 @@ bool DialogOwnSelectFileRun(char *szOutName, char *szOutPath, const char *szStar
 		}
 	}
 
+	SetForegroundWindow(hWndLock);
+
 	dialog_selfile::StaticInformationText->setText("");
 
 	if (hWndLock)
