@@ -255,7 +255,7 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 		int npoints = count * 10;
 		static Array<float3_t> pts;
 
-		if (pts.size() <= npoints)
+		if ((int)pts.size() <= npoints)
 		{
 			pts.clear();
 			pts.resize(npoints*2);

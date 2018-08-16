@@ -18,7 +18,7 @@ See the license in LICENSE
 
 extern g_aiquad_phy_navigate AIQuadPhyNavigate;
 
-#define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || m_aQuads.size() <= id) {LibReport(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", GEN_MSG_LOCATION, id); return retval;}
+#define AIGRID_QUAD_PRECOND(id,retval)  if (id < 0 || m_aQuads.size() <= (UINT)id) {LibReport(REPORT_MSG_LEVEL_ERROR, " %s - unresolved index '%d' of quad, sxaigrid", GEN_MSG_LOCATION, id); return retval;}
 
 //! int значения позиций полученные путем AIGRID_TOINT
 struct int3

@@ -1168,13 +1168,13 @@ void CAIGrid::splitBB(int xv,int yv,int zv)
 													lerpf(m_aBound[0]->m_f3Min.y,m_aBound[0]->m_f3Max.y,float(y)/float(yv)) + countyval*0.5,
 													lerpf(m_aBound[0]->m_f3Min.z,m_aBound[0]->m_f3Max.z,float(z)/float(zv)) + countzval*0.5);
 
-							tmpbb->m_f3Max.x = countxval*0.5 + center.x;
-							tmpbb->m_f3Max.y = countyval*0.5 + center.y;
-							tmpbb->m_f3Max.z = countzval*0.5 + center.z;
+							tmpbb->m_f3Max.x = countxval*0.5f + center.x;
+							tmpbb->m_f3Max.y = countyval*0.5f + center.y;
+							tmpbb->m_f3Max.z = countzval*0.5f + center.z;
 
-							tmpbb->m_f3Min.x = -(countxval*0.5) + center.x;
-							tmpbb->m_f3Min.y = -(countyval*0.5) + center.y;
-							tmpbb->m_f3Min.z = -(countzval*0.5) + center.z;
+							tmpbb->m_f3Min.x = -(countxval*0.5f) + center.x;
+							tmpbb->m_f3Min.y = -(countyval*0.5f) + center.y;
+							tmpbb->m_f3Min.z = -(countzval*0.5f) + center.z;
 
 							tmpbb->m_i3Max.x = AIGRID_TOINT(tmpbb->m_f3Max.x);
 							tmpbb->m_i3Max.y = AIGRID_TOINT(tmpbb->m_f3Max.y);
@@ -1361,7 +1361,7 @@ void CAIGrid::addUniqQuadArrag2(const CAIquad* aq, CBoundAIquad *pBB)
 
 bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 {
-	if (!m_pTreeBound)
+	if(!m_pTreeBound)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, " %s - tree bounds is not build", GEN_MSG_LOCATION);
 		return false;
@@ -1377,32 +1377,32 @@ bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 
 	/*for (UINT i = 1, il = m_aBound.size(); i<il; ++i)
 	{
-		bound = m_aBound[i];
-		//если центр квада входит в какой-либо бокс
-		if (
-			bound->m_i3Min.x <= tmpx && bound->m_i3Min.y <= tmpy && bound->m_i3Min.z <= tmpz &&
-			bound->m_i3Max.x >= tmpx && bound->m_i3Max.y >= tmpy && bound->m_i3Max.z >= tmpz
-			)
-		{
-			tmpidbb = i;
-			//анализируем все входящие в данный бокс квады
-			for (UINT k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
-			{
-				l3 = m_aLongCoordQuads[bound->m_aIdsQuads[k]];
-				if (
-					l3.x == tmpx &&
-					l3.z == tmpz &&
-					abs(l3.y - tmpy) < LAIGRID_QUADS_CENTERS_MAXHEIGHT
-					)
-				{
-					*idquad = bound->m_aIdsQuads[k];
-					
-					if (idbb)
-						*idbb = tmpidbb;
-					return false;
-				}
-			}
-		}
+	bound = m_aBound[i];
+	//если центр квада входит в какой-либо бокс
+	if (
+	bound->m_i3Min.x <= tmpx && bound->m_i3Min.y <= tmpy && bound->m_i3Min.z <= tmpz &&
+	bound->m_i3Max.x >= tmpx && bound->m_i3Max.y >= tmpy && bound->m_i3Max.z >= tmpz
+	)
+	{
+	tmpidbb = i;
+	//анализируем все входящие в данный бокс квады
+	for (UINT k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
+	{
+	l3 = m_aLongCoordQuads[bound->m_aIdsQuads[k]];
+	if (
+	l3.x == tmpx &&
+	l3.z == tmpz &&
+	abs(l3.y - tmpy) < LAIGRID_QUADS_CENTERS_MAXHEIGHT
+	)
+	{
+	*idquad = bound->m_aIdsQuads[k];
+
+	if (idbb)
+	*idbb = tmpidbb;
+	return false;
+	}
+	}
+	}
 	}*/
 
 	Array<CTreeBoundAIquad*, 64> queue;
@@ -1410,27 +1410,27 @@ bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 	queue.push_back(m_pTreeBound);
 	CTreeBoundAIquad *pFoundSplit = 0;
 
-	while (queue.size() > iCurrKey)
+	while(queue.size() > iCurrKey)
 	{
 		CTreeBoundAIquad *pSplit = queue[iCurrKey];
 
-		for (int i = 0; i<4; i++)
+		for(int i = 0; i < 4; i++)
 		{
-			if (
+			if(
 				/*pSplit->m_aSplits[i]->m_i3Min.x - LAIGRID_QUAD_SIZE <= tmpx && pSplit->m_aSplits[i]->m_i3Min.z - LAIGRID_QUAD_SIZE <= tmpz &&
 				pSplit->m_aSplits[i]->m_i3Max.x + LAIGRID_QUAD_SIZE >= tmpx && pSplit->m_aSplits[i]->m_i3Max.z + LAIGRID_QUAD_SIZE >= tmpz*/
 				pSplit->m_aSplits[i]->m_i3Min.x <= tmpx && pSplit->m_aSplits[i]->m_i3Min.y <= tmpy && pSplit->m_aSplits[i]->m_i3Min.z <= tmpz &&
 				pSplit->m_aSplits[i]->m_i3Max.x >= tmpx && pSplit->m_aSplits[i]->m_i3Max.y >= tmpy && pSplit->m_aSplits[i]->m_i3Max.z >= tmpz
 				)
 			{
-				if (pSplit->m_aSplits[i]->m_aSplits[0])
+				if(pSplit->m_aSplits[i]->m_aSplits[0])
 					queue.push_back(pSplit->m_aSplits[i]);
 				else
 				{
 					pFoundSplit = pSplit->m_aSplits[i];
 					queue.clear();
 					break;
-	}
+				}
 			}
 		}
 
@@ -1438,19 +1438,19 @@ bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 		++iCurrKey;
 	}
 
-	if (!pFoundSplit)
-		return -1;
+	if(!pFoundSplit)
+		return false;
 
-	for (int i = 0, il = pFoundSplit->m_pBounds.size(); i < il; ++i)
+	for(int i = 0, il = pFoundSplit->m_pBounds.size(); i < il; ++i)
 	{
 		bound = pFoundSplit->m_pBounds[i];
-		if (
+		if(
 			bound->m_i3Min.x <= tmpx && bound->m_i3Min.y <= tmpy && bound->m_i3Min.z <= tmpz &&
 			bound->m_i3Max.x >= tmpx && bound->m_i3Max.y >= tmpy && bound->m_i3Max.z >= tmpz
 			)
 		{
 			tmpidbb = bound;
-			for (int k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
+			for(int k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
 			{
 				l3 = m_aLongCoordQuads[bound->m_aIdsQuads[k]];
 				/*if (
@@ -1459,7 +1459,7 @@ bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 					)*/
 				{
 
-					if (
+					if(
 						l3.x == tmpx &&
 						l3.z == tmpz &&
 						abs(l3.y - tmpy) < LAIGRID_QUADS_CENTERS_MAXHEIGHT
@@ -1467,7 +1467,7 @@ bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 					{
 						*idquad = bound->m_aIdsQuads[k];
 
-	if (idbb)
+						if(idbb)
 							*idbb = bound;
 						return false;
 					}
@@ -1476,7 +1476,7 @@ bool CAIGrid::isUniqQuadArrag(CAIquad* aq, ID * idquad, CBoundAIquad ** idbb)
 		}
 	}
 
-	if (idbb)
+	if(idbb)
 		*idbb = tmpidbb;
 
 	return true;
@@ -2772,7 +2772,7 @@ int CAIGrid::CalcHCost(ID id, ID endid)
 
 int CAIGrid::CalcH2Cost(ID id1, ID id2)
 {
-	return SMVector2Length(float2(m_aQuads[id1]->m_vPos.x, m_aQuads[id1]->m_vPos.z) - float2(m_aQuads[id2]->m_vPos.x, m_aQuads[id2]->m_vPos.z)) * 100.f;
+	return((int)SMVector2Length(float2(m_aQuads[id1]->m_vPos.x, m_aQuads[id1]->m_vPos.z) - float2(m_aQuads[id2]->m_vPos.x, m_aQuads[id2]->m_vPos.z)) * 100.f);
 }
 
 ID CAIGrid::AddInOpenList(ID id)
