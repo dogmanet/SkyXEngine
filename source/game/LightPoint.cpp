@@ -18,7 +18,7 @@ BEGIN_PROPTABLE(CLightPoint)
 	//! Дальность
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
-	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Light far", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Shadow far plane", EDITOR_TEXTFIELD)
 
 	//! Тип тени
 	DEFINE_FIELD_INT(m_iShadowType, 0, "type_shadow", "Type shadow", EDITOR_COMBOBOX)
