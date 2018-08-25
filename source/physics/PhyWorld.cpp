@@ -498,8 +498,48 @@ bool CPhyWorld::importGeom(const char * file)
 				if(pmf.i64Magick == PHY_MAT_FILE_MAGICK)
 				{
 					m_iGeomFacesCount = pmf.uiGeomFaceCount;
+
+					char szTmp[1024];
+
+					AssotiativeArray<String, ID> mMatMap;
+					const AssotiativeArray<String, ID>::Node *pMatMapNode;
+					int iMatCount = SML_MtlGetCount();
+					for(int i = 0; i < iMatCount; ++i)
+					{
+						szTmp[0] = 0;
+						SML_MtlGetTexture(i, szTmp);
+						mMatMap[szTmp] = i;
+					}
+
+					ID *aidMatMap = (ID*)alloca(sizeof(ID) * pmf.uiMatCount);
+					memset(aidMatMap, 0, sizeof(ID)* pmf.uiMatCount);
+
+					uint16_t ui16NameLen;
+					for(int i = 0; i < pmf.uiMatCount; ++i)
+					{
+						fread(&ui16NameLen, sizeof(uint16_t), 1, pF);
+						if(ui16NameLen)
+						{
+							fread(szTmp, sizeof(char), ui16NameLen, pF);
+							szTmp[ui16NameLen] = 0;
+
+							if(mMatMap.KeyExists(szTmp, &pMatMapNode))
+							{
+								aidMatMap[i] = *pMatMapNode->Val;
+							}
+							else
+							{
+								ret = false;
+							}
+						}
+					}
+
 					m_pGeomMtlIDs = new ID[m_iGeomFacesCount];
 					fread(m_pGeomMtlIDs, sizeof(ID), m_iGeomFacesCount, pF);
+					for(int i = 0; i < m_iGeomFacesCount; ++i)
+					{
+						m_pGeomMtlIDs[i] = aidMatMap[m_pGeomMtlIDs[i]];
+					}
 				}
 				else
 				{
@@ -577,10 +617,61 @@ bool CPhyWorld::exportGeom(const char * _file)
 	else
 	{
 		PhyMatFile pmf;
+		char szTmp[1024];
 		pmf.uiGeomFaceCount = m_iGeomFacesCount;
+		ID idMatMax = 0;
+		for(int i = 0; i < m_iGeomFacesCount; ++i)
+		{
+			if(m_pGeomMtlIDs[i] > idMatMax)
+			{
+				idMatMax = m_pGeomMtlIDs[i];
+			}
+		}
+		++idMatMax;
+
+		pmf.uiMatCount = idMatMax;
+
+		const char ** aszMatNames = (const char**)alloca(sizeof(char*) * idMatMax);
+		memset(aszMatNames, 0, sizeof(char*)* idMatMax);
+
+		for(int i = 0; i < m_iGeomFacesCount; ++i)
+		{
+			if(!aszMatNames[m_pGeomMtlIDs[i]])
+			{
+				szTmp[0] = 0;
+				SML_MtlGetTexture(m_pGeomMtlIDs[i], szTmp);
+				aszMatNames[m_pGeomMtlIDs[i]] = _allocStr(szTmp);
+			}
+		}
+
 		fwrite(&pmf, sizeof(pmf), 1, file);
+
+		uint16_t u16NameLen;
+		for(int i = 0; i < idMatMax; ++i)
+		{
+			if(aszMatNames[i])
+			{
+				u16NameLen = strlen(aszMatNames[i]);
+			}
+			else
+			{
+				u16NameLen = 0;
+			}
+			fwrite(&u16NameLen, sizeof(u16NameLen), 1, file);
+
+			if(aszMatNames[i])
+			{
+				fwrite(aszMatNames[i], sizeof(char), u16NameLen, file);
+			}
+		}
+
 		fwrite(m_pGeomMtlIDs, sizeof(ID), m_iGeomFacesCount, file);
 		fclose(file);
+
+		for(int i = 0; i < idMatMax; ++i)
+		{
+			mem_delete_a(aszMatNames[i]);
+		}
 	}
 	return(ret);
 }

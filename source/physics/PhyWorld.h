@@ -21,13 +21,14 @@ See the license in LICENSE
 #include <common/SXMath.h>
 #include <mtllight/sxmtllight.h>
 
-#define PHY_MAT_FILE_MAGICK 8386069164979148883
+#define PHY_MAT_FILE_MAGICK 3630267958475905107
 
 #pragma pack(push,1)
 struct PhyMatFile
 {
 	int64_t i64Magick;
 	uint32_t uiGeomFaceCount;
+	uint32_t uiMatCount;
 	//uint32_t uiGreenObjCount;
 
 	PhyMatFile():
