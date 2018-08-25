@@ -19,7 +19,7 @@ See the license in LICENSE
 
 #include <process.h>
 
-#include "concurrent_queue.h"
+#include "common/ConcurrentQueue.h"
 
 #include "cvars.h"
 
@@ -36,7 +36,7 @@ SOCKET CommandSocket = INVALID_SOCKET;
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
 
-typedef ConcurrentQueue<char *> CommandBuffer;
+typedef CConcurrentQueue<char *> CommandBuffer;
 typedef std::mutex Mutex;
 CommandBuffer g_vCommandBuffer;
 Stack<CommandBuffer> g_cbufStack;
@@ -266,7 +266,7 @@ void ConsolePushBuffer()
 SX_LIB_API void Core_0ConsoleUpdate()
 {
 	char * buf;
-	while(g_vCommandBuffer.try_pop(buf))
+	while(g_vCommandBuffer.tryPop(buf))
 	{
 		ConsoleExecInternal(buf);
 		mem_delete_a(buf);
@@ -450,27 +450,32 @@ SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler()
 /*!
 @TODO: Handle this with TaskManager
 */
+void ConsoleRecvTask()
+{
+	char recvbuf[2048];
+	int iResult;
+	int recvbuflen = sizeof(recvbuf);
+
+	iResult = recv(CommandSocket, recvbuf, recvbuflen - 1, 0);
+	if(iResult > 0)
+	{
+		recvbuf[iResult] = 0;
+		Core_0ConsoleExecCmd("%s", recvbuf);
+	}
+	else if(iResult == 0)
+	{
+		//printf("Connection closed\n");
+		return;
+	}
+	//else
+	//printf("recv failed with error: %d\n", WSAGetLastError());
+}
+
 void ConsoleRecv(void*)
 {
 	while(g_bRunningCmd)
 	{
-		char recvbuf[2048];
-		int iResult;
-		int recvbuflen = sizeof(recvbuf);
-
-		iResult = recv(CommandSocket, recvbuf, recvbuflen - 1, 0);
-		if(iResult > 0)
-		{
-			recvbuf[iResult] = 0;
-			Core_0ConsoleExecCmd("%s", recvbuf);
-		}
-		else if(iResult == 0)
-		{
-			//printf("Connection closed\n");
-			return;
-		}
-		//else
-			//printf("recv failed with error: %d\n", WSAGetLastError());
+		ConsoleRecvTask();
 	}
 }
 
@@ -692,6 +697,7 @@ bool CommandConnect()
 
 	g_bRunningCmd = true;
 
+	//Core_MTaskAdd(ConsoleRecvTask, CORE_TASK_FLAG_BACKGROUND_REPEATING);
 	_beginthread(ConsoleRecv, 0, 0);
 
 	return(true);

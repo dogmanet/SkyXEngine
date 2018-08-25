@@ -170,6 +170,10 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	Core_Dbg_Set(SkyXEngine_PrintfLog);
 	Core_SetOutPtr();
 
+#ifdef _SINGLETHREADED
+	Core_MForceSinglethreaded();
+#endif
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
 	SkyXEngine_CreateLoadCVar();
@@ -369,6 +373,12 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #endif
 
 	SkyXEngind_UpdateDataCVar();
+
+
+	Core_MTaskAdd([](){
+		SXAnim_Update();
+	}, CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING);
+	Core_MTaskAdd(SXAnim_Sync, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
@@ -690,7 +700,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SXAnim_Update();
+	//SXAnim_Update();
 	DelayLibUpdateAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 #ifndef SX_PARTICLES_EDITOR
@@ -711,7 +721,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	DelayLibUpdatePhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	SXAnim_Sync();
+	//SXAnim_Sync();
 	DelayLibSyncAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1225,102 +1235,113 @@ void SkyXEngind_UpdateDataCVar()
 
 int SkyXEngine_CycleMain()
 {
-	MSG msg;
-	::ZeroMemory(&msg, sizeof(MSG));
-
-	while (msg.message != WM_QUIT && IsWindow(SRender_GetHandleWin3D()))
-	{
-		if (::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+	Core_MTaskAdd([](){
+		if(!SkyXEngine_CycleMainIteration())
 		{
-			
-			::TranslateMessage(&msg);
-			
-#if !defined(SX_GAME)
-			IMSG imsg;
-			imsg.lParam = msg.lParam;
-			imsg.wParam = msg.wParam;
-			imsg.message = msg.message;
-
-			SSInput_AddMsg(imsg);
-#endif
-			::DispatchMessage(&msg);
+			Core_MTaskStop();
 		}
-		else
-		{
-			SGCore_ShaderAllLoad();
-			SGCore_LoadTexAllLoad();
+	}, CORE_TASK_FLAG_MAINTHREAD_REPEATING);
+	
+	Core_MTaskStart();
 
-			/*if (SSInput_GetKeyState(SIK_BACKSPACE))
-				SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
-			else if (SSInput_GetKeyState(SIK_ENTER))
-				SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
+	return(0);
+}
 
-			UINT arr[] = {3000, 350, 1000, 800, 300 };
-			if (SSInput_GetKeyState(SIK_RSHIFT))
-				SSCore_SndInstancePlayDelay2d(idSnd, false, true, arr, 5, 1, 0);
+bool SkyXEngine_CycleMainIteration()
+{
+	MSG msg = {0};
 
-			if (SSInput_GetKeyState(SIK_RCONTROL))
-				SSCore_SndStop(idSnd);
+	if(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+	{
 
-			//
-			static uint64_t id2 = SOUND_SNDKIT_INSTANCE_BLOCK;
-			id2 = SSCore_SndkitPlay(0, id2);
-			if (SSInput_GetKeyState(SIK_TAB))
-				SSCore_SndkitStop(0, id2);*/
+		::TranslateMessage(&msg);
 
-			
-			Core_TimesUpdate();
-			Core_0ConsoleUpdate();
-			SSInput_Update();
-			static float3 vCamPos, vCamDir;
-			Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
-			Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
-			SSCore_Update(&vCamPos, &vCamDir);
+#if !defined(SX_GAME)
+		IMSG imsg;
+		imsg.lParam = msg.lParam;
+		imsg.wParam = msg.wParam;
+		imsg.message = msg.message;
 
-			static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-			DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-			DWORD timeDelta = (currTime - lastTime);
-			Core_RIntSet(G_RI_INT_TIME_DELTA, timeDelta);
+		SSInput_AddMsg(imsg);
+#endif
+		::DispatchMessage(&msg);
+	}
+	//@TODO: здесь не должно быть else
+	else
+	{
+		SGCore_ShaderAllLoad();
+		SGCore_LoadTexAllLoad();
+
+		/*if (SSInput_GetKeyState(SIK_BACKSPACE))
+		SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
+		else if (SSInput_GetKeyState(SIK_ENTER))
+		SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
+
+		UINT arr[] = {3000, 350, 1000, 800, 300 };
+		if (SSInput_GetKeyState(SIK_RSHIFT))
+		SSCore_SndInstancePlayDelay2d(idSnd, false, true, arr, 5, 1, 0);
+
+		if (SSInput_GetKeyState(SIK_RCONTROL))
+		SSCore_SndStop(idSnd);
+
+		//
+		static uint64_t id2 = SOUND_SNDKIT_INSTANCE_BLOCK;
+		id2 = SSCore_SndkitPlay(0, id2);
+		if (SSInput_GetKeyState(SIK_TAB))
+		SSCore_SndkitStop(0, id2);*/
+
+
+		Core_TimesUpdate();
+		Core_0ConsoleUpdate();
+		SSInput_Update();
+		static float3 vCamPos, vCamDir;
+		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
+		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
+		SSCore_Update(&vCamPos, &vCamDir);
+
+		static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+		DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+		DWORD timeDelta = (currTime - lastTime);
+		Core_RIntSet(G_RI_INT_TIME_DELTA, timeDelta);
 #ifdef SX_GAME
-			SRender_SetCamera(SXGame_GetActiveCamera());
+		SRender_SetCamera(SXGame_GetActiveCamera());
 #endif
 
 
-			static const bool * g_time_run = GET_PCVAR_BOOL("g_time_run");
-			static bool g_time_run_old = true;
+		static const bool * g_time_run = GET_PCVAR_BOOL("g_time_run");
+		static bool g_time_run_old = true;
 
-			if (g_time_run && g_time_run_old != (*g_time_run))
-			{
-				g_time_run_old = (*g_time_run);
-				Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_run_old);
-			}
+		if(g_time_run && g_time_run_old != (*g_time_run))
+		{
+			g_time_run_old = (*g_time_run);
+			Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_run_old);
+		}
 
-			static const float * g_time_speed = GET_PCVAR_FLOAT("g_time_speed");
-			static float g_time_speed_old = true;
+		static const float * g_time_speed = GET_PCVAR_FLOAT("g_time_speed");
+		static float g_time_speed_old = true;
 
-			if (g_time_speed && g_time_speed_old != (*g_time_speed))
-			{
-				g_time_speed_old = (*g_time_speed);
-				Core_TimeSpeedSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_speed_old);
-			}
+		if(g_time_speed && g_time_speed_old != (*g_time_speed))
+		{
+			g_time_speed_old = (*g_time_speed);
+			Core_TimeSpeedSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_speed_old);
+		}
 
 
-			if (Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) && 
-				(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
-				)
-			{
+		if(Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) &&
+			(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
+			)
+		{
 
 #if defined(SX_LEVEL_EDITOR)
-				SXLevelEditor_Transform(10);
+			SXLevelEditor_Transform(10);
 #endif
-				SkyXEngine_Frame(timeDelta);
-			}
-
-			lastTime = currTime;
+			SkyXEngine_Frame(timeDelta);
 		}
+
+		lastTime = currTime;
 	}
 
-	return msg.wParam;
+	return(msg.message != WM_QUIT && IsWindow(SRender_GetHandleWin3D()));
 }
 
 //#############################################################################
