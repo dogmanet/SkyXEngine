@@ -1,6 +1,7 @@
 <html onkeyup="return_ingame">
 	<head>
 		<link type="text/css" rel="stylesheet" href="settings_menu.css"/>
+		<link type="text/css" rel="stylesheet" href="settings_menu_video_ex.css"/>
 		<link type="text/css" rel="stylesheet" href="settings_menu_800x600.css" max-width="800" />
 	</head>
 	<body style="font-name: quick-junky-regular;color: #c6f0fd;">
@@ -11,6 +12,9 @@
 				<div class="menu-item">Во весь экран</div>				
 				<div class="menu-item">Сглаживание</div>				
 				<div class="menu-item">Разрешение текстур</div>				
+				<div class="menu-item">Контраст</div>				
+				<div class="menu-item">Гамма</div>				
+				<div class="menu-item">Яркость</div>				
 				
 				<div class="menu-item" onclick="engine_command" args="
 				    gui_load menu_settings_video_ex menu/settings_video_ex.html
@@ -40,6 +44,9 @@
 					<option value="1">Среднее</option>
 					<option value="2">Низкое</option>
 				</select>
+				<div style="height: 40px; position: relative; top: 10px;"><range class="set_item" min="0" max="1" step="0.01" format="%.2f" cvar="pp_contrast" /></div>
+				<div style="height: 40px; position: relative; top: 10px;"><range class="set_item" min="0" max="1" step="0.01" format="%.2f" cvar="pp_gamma" /></div>
+				<div style="height: 40px; position: relative; top: 10px;"><range class="set_item" min="0" max="1" step="0.01" format="%.2f" cvar="pp_bright" /></div>
 				
 				<div class="menu-item bottom" onclick="settings_commit" style="text-align: right;">Применить</div>
 			</div>
