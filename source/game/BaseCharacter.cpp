@@ -190,7 +190,7 @@ void CBaseCharacter::playFootstepsSound()
 	{
 		if(onGround())
 		{
-			float3 start = getPos(),
+			float3 start = getPos() + float3(0.0f, 0.5f, 0.0f),
 				end = start + float3(0.0f, -2.0f, 0.0f);
 			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
 			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);

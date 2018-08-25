@@ -571,7 +571,9 @@ void CGreen::ComputeBBtrans(ID idGreen)
 	float2_t vSinCos;
 	float3 vPosition;
 	float fMultiplier;
+	
 
+	pGreen->m_aTransW.reserve(pGreen->m_pAllTrans.size());
 	for (int i = 0, il = pGreen->m_pAllTrans.size(); i < il; ++i)
 	{
 		vMin = pGreen->m_vMin;
@@ -648,6 +650,11 @@ void CGreen::comArrIndeces(const IFrustum* frustum, const float3* viewpos, ID id
 	CSegment** tmpsegments = 0;
 	for (int i = 0; i < m_aGreens.size(); ++i)
 	{
+		if(m_aArrComFor[id_arr]->m_aVisible[i].size() < m_aGreens[i]->m_pAllTrans.size())
+		{
+			m_aArrComFor[id_arr]->m_aVisible[i].resize(m_aGreens[i]->m_pAllTrans.size());
+		}
+		assert(m_aArrComFor[id_arr]->m_aVisible[i].size() >= m_aGreens[i]->m_pAllTrans.size());
 		memset(&(m_aArrComFor[id_arr]->m_aVisible[i][0]), 0, sizeof(bool)* m_aGreens[i]->m_pAllTrans.size());
 		tmpcount = m_aArrComFor[id_arr]->m_aIRS[i]->m_iCount;
 		m_aArrComFor[id_arr]->m_aIRS[i]->m_iCountCom = 0;
@@ -1261,7 +1268,8 @@ void CGreen::genByTex(CStaticGeom* geom, CModel* model, ID idmask, float3* min, 
 	if (model->m_uiCountObj <= 0)
 		return;
 
-	model->m_pAllTrans = new CGreenDataVertex[model->m_uiCountObj];
+	//model->m_pAllTrans = new CGreenDataVertex[model->m_uiCountObj];
+	model->m_pAllTrans.reserve(model->m_uiCountObj);
 
 	for (DWORD i = 0; i<model->m_uiCountObj; i++)
 	{
@@ -1923,7 +1931,7 @@ ID CGreen::addArrForCom()
 		ttmpdata->m_aIRS.push_back(tmpirs);
 
 		Array<bool> aVisible;
-
+		aVisible.reserve(m_aGreens[i]->m_uiCountObj);
 		for (int k = 0; k < m_aGreens[i]->m_uiCountObj; ++k)
 			aVisible[k] = false;
 
