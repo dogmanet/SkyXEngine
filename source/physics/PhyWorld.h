@@ -37,42 +37,42 @@ struct PhyMatFile
 };
 #pragma pack(pop)
 
-class PhyWorld
+class CPhyWorld
 {
 public:
-	PhyWorld();
-	~PhyWorld();
+	CPhyWorld();
+	~CPhyWorld();
 
 	void setThreadNum(int tnum);
 	void update(int thread = 0);
 	void sync();
 
-	void AddShape(btRigidBody * pBody);
+	void addShape(btRigidBody * pBody);
 	void addShape(btRigidBody * pBody, int group, int mask);
-	void RemoveShape(btRigidBody * pBody);
+	void removeShape(btRigidBody * pBody);
 
 
-	void LoadGeom(const char * file=NULL);
-	void UnloadGeom();
+	void loadGeom(const char * file=NULL);
+	void unloadGeom();
 
-	bool ImportGeom(const char * file);
-	bool ExportGeom(const char * file);
+	bool importGeom(const char * file);
+	bool exportGeom(const char * file);
 
 	void disableSimulation();
 	void enableSimulation();
 
 	void render();
 
-	MTLTYPE_PHYSIC GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+	MTLTYPE_PHYSIC getMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 	
-	ID GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+	ID getMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
-	btDiscreteDynamicsWorld * GetBtWorld()
+	btDiscreteDynamicsWorld * getBtWorld()
 	{
 		return(m_pDynamicsWorld);
 	}
 
-	class DebugDrawer: public btIDebugDraw
+	class CDebugDrawer: public btIDebugDraw
 	{
 		struct render_point
 		{
@@ -84,7 +84,7 @@ public:
 
 		bool m_bExpectObject;
 	public:
-		DebugDrawer():
+		CDebugDrawer():
 			m_bExpectObject(false)
 		{
 		}
@@ -113,7 +113,7 @@ protected:
 	btGhostPairCallback * m_pGHostPairCallback;
 
 	const bool * m_bDebugDraw;
-	DebugDrawer * m_pDebugDrawer;
+	CDebugDrawer * m_pDebugDrawer;
 
 	// физические формы для статической геометрии уровня
 	btTriangleMesh * m_pGeomStaticCollideMesh;

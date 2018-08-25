@@ -35,7 +35,7 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
-PhyWorld * g_pWorld = NULL;
+CPhyWorld * g_pWorld = NULL;
 
 #define SP_PRECOND(ret) if(!g_pWorld){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
 
@@ -64,7 +64,7 @@ SX_LIB_API void SXPhysics_0Create()
 	}
 	Core_SetOutPtr();
 
-	g_pWorld = new PhyWorld();
+	g_pWorld = new CPhyWorld();
 }
 SX_LIB_API void SXPhysics_AKill()
 {
@@ -96,13 +96,13 @@ SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
 SX_LIB_API void SXPhysics_LoadGeom(const char * file)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->LoadGeom(file);
+	g_pWorld->loadGeom(file);
 }
 
 SX_LIB_API void SXPhysics_UnloadGeom()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->UnloadGeom();
+	g_pWorld->unloadGeom();
 }
 
 SX_LIB_API void SXPhysics_DebugRender()
@@ -114,7 +114,7 @@ SX_LIB_API void SXPhysics_DebugRender()
 SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->AddShape(pBody);
+	g_pWorld->addShape(pBody);
 }
 
 SX_LIB_API void SXPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask)
@@ -126,39 +126,39 @@ SX_LIB_API void SXPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask)
 SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->RemoveShape(pBody);
+	g_pWorld->removeShape(pBody);
 }
 
 SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld()
 {
 	SP_PRECOND(NULL);
-	return(g_pWorld->GetBtWorld());
+	return(g_pWorld->getBtWorld());
 }
 
 SX_LIB_API bool SXPhysics_ImportGeom(const char * file)
 {
 	SP_PRECOND(false);
-	return(g_pWorld->ImportGeom(file));
+	return(g_pWorld->importGeom(file));
 }
 
 SX_LIB_API bool SXPhysics_ExportGeom(const char * file)
 {
 	SP_PRECOND(false);
-	return(g_pWorld->ExportGeom(file));
+	return(g_pWorld->exportGeom(file));
 }
 
 SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
 	SP_PRECOND(MTLTYPE_PHYSIC_DEFAULT);
 
-	return(g_pWorld->GetMtlType(pBody, pShapeInfo));
+	return(g_pWorld->getMtlType(pBody, pShapeInfo));
 }
 
 SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
 	SP_PRECOND(-1);
 
-	return(g_pWorld->GetMtlID(pBody, pShapeInfo));
+	return(g_pWorld->getMtlID(pBody, pShapeInfo));
 }
 
 SX_LIB_API void SXPhysics_EnableSimulation()
