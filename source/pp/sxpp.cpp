@@ -615,7 +615,11 @@ SX_LIB_API void SPP_RenderCBG(float3_t* param)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG, "g_vParam", &param);
+	param->x = lerpf(0.2, 2, saturatef(param->x));
+	param->y = lerpf(0.5, 1.5, saturatef(param->y));
+	param->z = lerpf(0, 0.5, saturatef(param->z));
+
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG, "g_vParam", param);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG);

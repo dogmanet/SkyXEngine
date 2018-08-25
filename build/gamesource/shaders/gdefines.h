@@ -50,7 +50,9 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 #define F0_MIN_4_DEST_AMBIENT 0.25
 
 //! максимальнео количество слоев
-#define LAYERS_COUNT_MAX 256
+#define LAYERS_COUNT_MAX 255.0
+
+static const half g_fUnit256 = 1.0/255.0;
 
 //! слой непрозрачной геометрии
 #define LAYER_OPAQUE 1
@@ -109,6 +111,9 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 //}
 
 //##########################################################################
+
+//! регистр данных для вершинного шейдера анимационных моделей
+#define ANIM_R_DATA c16
 
 //! дистанция на которую распространяется детализированность шейдеров mtrl_land_
 #define MTRL_LAND_DIST	100.f

@@ -16,6 +16,7 @@ half4x4	g_mW;
 
 VSO_SceneCommon main(VSI_Animation IN)
 {
+	// трансформация позиции и нормали вершины
 	VSO_SceneCommon OUT = SkinAllTransform(IN);
 	
 	OUT.vPosition = mul(OUT.vPosition, g_mWVP);

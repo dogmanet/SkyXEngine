@@ -749,7 +749,7 @@ void CGreen::comRecArrIndeces(ID idGreen, ID idArr, const IFrustum* frustum, CSe
 					int iCountVisible = 1;
 					
 					//if (GetAsyncKeyState('Y'))
-					{
+					/*{
 						iCountVisible = 0;
 						float3 vMin, vMax;
 
@@ -771,7 +771,7 @@ void CGreen::comRecArrIndeces(ID idGreen, ID idArr, const IFrustum* frustum, CSe
 
 							m_aArrComFor[idArr]->m_aVisible[idGreen][comsegment->m_pArrIDs[i]] = isVisible;
 						}
-					}
+					}*/
 
 					if (iCountVisible > 0)
 					{

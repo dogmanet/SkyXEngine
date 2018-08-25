@@ -1,0 +1,40 @@
+
+/*
+mtrlgeom_mr_mr1_det1.ps
+Рендер геометрии с микрорельефом, детальной текстурой и микрорельефом для нее
+*/
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+sampler2D g_sDetails0:register(s2);
+sampler2D g_sNormals0:register(s6);
+sampler2D g_sNormals1:register(s7);
+sampler2D g_sParameters:register(s10);
+
+//##########################################################################
+
+half4 g_vParam;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
+{
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	half3 vMicroNormal = MixMicroNormal(Color2Normal(tex2D(g_sNormals0, IN.vTexUV).rgb), Color2Normal(tex2D(g_sNormals1, IN.vTexUV * g_vParam.x * MTRL_TEXUV_SCALE).rgb), g_vParam.z);
+	half3 vNormal = MixNormalMicro(IN.vNormal, vMicroNormal);
+	
+	return CreateGbuffer(
+		MixColorDetail(tex2D(g_sColor,IN.vTexUV), tex2D(g_sDetails0, IN.vTexUV * g_vParam.x * MTRL_TEXUV_SCALE), GetLerpFactorDetail(IN.vPos.z)), 
+		vNormal, 
+		tex2D(g_sParameters,IN.vTexUV), 
+		IN.vPos, 
+		g_vNearFarLayers
+		);
+}

@@ -312,7 +312,7 @@ void MLSet::MLInit()
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
 	//номрали + микрорельеф
-	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A2R10G10B10, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
+	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
 	//параметры освещени¤
 	MLSet::IDsRenderTargets::ParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
 	

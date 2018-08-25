@@ -2097,10 +2097,10 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vTimeDelta", &float2(m_uiCountTimeDelta, float(m_uiCurrTimeDelta) * 0.001f));
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWinSize)
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vWinSize", &float2_t(*r_win_width, *r_win_height));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS, "g_vWinSize", &float4_t(*r_win_width, *r_win_height, 1.f / (*r_win_width), 1.f / (*r_win_height)));
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWinSize)
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vWinSize", &float2_t(*r_win_width, *r_win_height));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vWinSize", &float4_t(*r_win_width, *r_win_height, 1.f / (*r_win_width), 1.f / (*r_win_height)));
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
@@ -2146,7 +2146,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		if (m_useCountSurface && pMtrl->m_oLightParam.m_isTransparent)
 			++(m_idCurrIdSurface);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vNearFarLayers", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface) / 255.f));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vNearFarLayers", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface)));
 	}
 }
 

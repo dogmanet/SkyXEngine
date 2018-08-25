@@ -13,12 +13,19 @@ half4x4 g_mWVP;
 
 //##########################################################################
 
-void main(in VSI_Green IN, out VSO_SceneCommon OUT) 
+VSO_SceneCommon main(in VSI_Green IN) 
 {
-	OUT.vNormal = (GreenComRotation(normalize(IN.vNormal),IN.vInstSinCosRot));
+	VSO_SceneCommon OUT;
 	
+	// расчет поворота нормали
+	OUT.vNormal = GreenComRotation(normalize(IN.vNormal), IN.vInstSinCosRot);
+	
+	// расчет поворота позиции
+	OUT.vPosition.xyz = GreenComRotation(IN.vPosition, IN.vInstSinCosRot);
+	
+	// расчет мировой позиции
 	OUT.vPosition = GreenTransformPos(
-						GreenComRotation(IN.vPosition,IN.vInstSinCosRot),
+						OUT.vPosition.xyz,
 						IN.vInstTrans.x,
 						1,
 						IN.vInstPos
@@ -29,4 +36,6 @@ void main(in VSI_Green IN, out VSO_SceneCommon OUT)
 	OUT.vPos = OUT.vPosition;
 	
 	OUT.vTexUV = IN.vTexUV;
+	
+	return OUT;
 }

@@ -209,7 +209,7 @@ SX_LIB_API void SPP_RenderMotionBlur(float coef, DWORD timeDelta);
 //! черно-белое изображение, coef - коэфициент перехода от цветного к черное-белому (0-1)
 SX_LIB_API void SPP_RenderWhiteBlack(float coef);	
 
-//! эффект сепия, , coef - коэфициент перехода от цветного к сепии (0-1)
+//! эффект сепия, coef - коэфициент перехода от цветного к сепии (0-1)
 SX_LIB_API void SPP_RenderSepia(float coef);		
 
 /*! коррекция изображения \n 

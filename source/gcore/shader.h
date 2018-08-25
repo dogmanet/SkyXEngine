@@ -249,7 +249,7 @@ protected:
 	void testDirCache();
 
 	//! загрузка и проверка кэша инклюдов
-	void testIncludeCache();
+	void testIncludeCache(bool hasReport=true);
 
 	//! загрузить текущий кэш инклюдов
 	void loadCacheInclude();

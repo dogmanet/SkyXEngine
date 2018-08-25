@@ -660,12 +660,18 @@ void SXRenderFunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0);
 	GData::DXDevice->SetRenderTarget(3, 0);	//убираем рт глубины
 
-	GData::DXDevice->GetRenderTarget(0, &BackBuf);
-	GData::DXDevice->SetRenderTarget(0, ColorSurf);
 	GData::DXDevice->SetRenderTarget(1, NormalSurf);
 	GData::DXDevice->SetRenderTarget(2, ParamSurf);
+	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	GData::DXDevice->SetRenderTarget(1, 0);
+	GData::DXDevice->SetRenderTarget(2, 0);
 
+	GData::DXDevice->GetRenderTarget(0, &BackBuf);
+	GData::DXDevice->SetRenderTarget(0, ColorSurf);
 	GData::DXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, RENDER_DEFAUL_BACKGROUND_COLOR/*D3DCOLOR_ARGB(0, 0, 0, 0)*/, 1.0f, 0);
+	
+	GData::DXDevice->SetRenderTarget(1, NormalSurf);
+	GData::DXDevice->SetRenderTarget(2, ParamSurf);
 	GData::DXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//ставим рт глубины
 
 	SML_MtlNullingCurrCountSurf();
@@ -1277,6 +1283,7 @@ void SXRenderFunc::ComLighting(DWORD timeDelta)
 	
 	GData::DXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	GData::DXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	GData::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{
@@ -1451,7 +1458,7 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	static const float * pp_fog_density = GET_PCVAR_FLOAT("pp_fog_density");
 	if (pp_fog_density && *pp_fog_density > 0.f )
 		SPP_RenderFogLinear(fog_color, *pp_fog_density);
-	//SPP_RenderWhiteBlack(1);
+	
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
 	if (pp_bloom && (*pp_bloom))
@@ -1498,6 +1505,25 @@ void SXRenderFunc::RenderPostProcess(DWORD timeDelta)
 	static const float * pp_motionblur_coef = GET_PCVAR_FLOAT("pp_motionblur_coef");
 	if (pp_motionblur && (*pp_motionblur))
 		SPP_RenderMotionBlur((pp_motionblur_coef ? (*pp_motionblur_coef) : 0.1), timeDelta);
+
+
+	static const float * pp_whiteblack_coef = GET_PCVAR_FLOAT("pp_whiteblack_coef");
+
+	if (pp_whiteblack_coef && (*pp_whiteblack_coef) > 0.f)
+		SPP_RenderWhiteBlack(*pp_whiteblack_coef);
+
+
+	static const float * pp_sepia_coef = GET_PCVAR_FLOAT("pp_sepia_coef");
+
+	if (pp_sepia_coef && (*pp_sepia_coef) > 0.f)
+		SPP_RenderSepia((*pp_sepia_coef));
+
+	static const float * pp_contrast = GET_PCVAR_FLOAT("pp_contrast");
+	static const float * pp_gamma = GET_PCVAR_FLOAT("pp_gamma");
+	static const float * pp_bright = GET_PCVAR_FLOAT("pp_bright");
+
+	if (pp_contrast && pp_gamma && pp_bright)
+		SPP_RenderCBG(&float3_t((*pp_contrast), (*pp_gamma), (*pp_bright)));
 }
 
 void SXRenderFunc::ShaderRegisterData()

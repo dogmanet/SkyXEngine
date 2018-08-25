@@ -490,6 +490,13 @@ void SkyXEngine_CreateLoadCVar()
 
 	Core_0RegisterCVarBool("pp_motionblur", true, "Рисовать ли эффект motion blur?");
 	Core_0RegisterCVarFloat("pp_motionblur_coef", 0.1, "Коэфициент для эффекта motion blur [0,1]");
+
+	Core_0RegisterCVarFloat("pp_whiteblack_coef", 0.0, "Коэфициент для эффекта white black [0,1]");
+	Core_0RegisterCVarFloat("pp_sepia_coef", 0.0, "Коэфициент для эффекта sepia [0,1]");
+
+	Core_0RegisterCVarFloat("pp_contrast", 0.5, "Коэфициент контраста [0,1]");
+	Core_0RegisterCVarFloat("pp_gamma", 0.5, "Коэфициент гаммы [0,1]");
+	Core_0RegisterCVarFloat("pp_bright", 0, "Коэфициент освещенности (простая сумма с итоговым изображением) [0,1]");
 	
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?");
 	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени");

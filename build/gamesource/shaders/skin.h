@@ -4,7 +4,7 @@ skin.h
 Функции/данные трансформации анимационных моделей
 */
 
-half4 g_BufferBoneWorld[128] : register(c16);
+half4 g_BufferBoneWorld[128] : register(ANIM_R_DATA);
 
 half3 SkinRotateVec(half4 q, half3 p)
 {

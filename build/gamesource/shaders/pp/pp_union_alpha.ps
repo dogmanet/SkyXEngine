@@ -66,10 +66,10 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 	aNormal[2] = tex2Dlod(g_sNormal, aTexUV[2]);
 	aNormal[3] = tex2Dlod(g_sNormal, aTexUV[3]);
 	
-	aIdLayer[0] = int(NormalEncodeLayer(aNormal[0].xyz) * LAYERS_COUNT_MAX);
-	aIdLayer[1] = int(NormalEncodeLayer(aNormal[1].xyz) * LAYERS_COUNT_MAX);
-	aIdLayer[2] = int(NormalEncodeLayer(aNormal[2].xyz) * LAYERS_COUNT_MAX);
-	aIdLayer[3] = int(NormalEncodeLayer(aNormal[3].xyz) * LAYERS_COUNT_MAX);
+	aIdLayer[0] = int(NormalDecodeLayer(aNormal[0].xyz) * LAYERS_COUNT_MAX);
+	aIdLayer[1] = int(NormalDecodeLayer(aNormal[1].xyz) * LAYERS_COUNT_MAX);
+	aIdLayer[2] = int(NormalDecodeLayer(aNormal[2].xyz) * LAYERS_COUNT_MAX);
+	aIdLayer[3] = int(NormalDecodeLayer(aNormal[3].xyz) * LAYERS_COUNT_MAX);
 	
 	aIsTransparency[0] = aNormal[0].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT ? 1 : 0;
 	aIsTransparency[1] = aNormal[1].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT ? 1 : 0;

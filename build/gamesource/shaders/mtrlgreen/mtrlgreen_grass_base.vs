@@ -19,21 +19,37 @@ half3 g_vBoundMin		: register(GREEN_R_BBMIN);
 
 //##########################################################################
 
-void main(in VSI_Green IN, out VSO_SceneCommon OUT) 
+VSO_SceneCommon main(in VSI_Green IN) 
 {
+	VSO_SceneCommon OUT;
+	
+	// расчет поворота нормали
 	OUT.vNormal = GreenComRotation(normalize(IN.vNormal), IN.vInstSinCosRot);
 	
+	// расчет поворота позиции
+	OUT.vPosition.xyz = GreenComRotation(IN.vPosition, IN.vInstSinCosRot);
+	
+	// расчет коэффициента уменьшения растительности по объему
+	half fMultiplier = GrassComMultiplier(IN.vInstPos, g_vViewPos, g_vDistLessening);
+	
+	// расчет мировой позиции
 	OUT.vPosition = GreenTransformPos(
-						GreenComRotation(IN.vPosition, IN.vInstSinCosRot),
+						OUT.vPosition.xyz,
 						IN.vInstTrans.x,
-						GrassComMultiplier(IN.vInstPos, g_vViewPos, g_vDistLessening),
+						fMultiplier,
 						IN.vInstPos
 					);
+	
+	// расчет затенености вершины, на основании отдаленности от центра ограничивающей сферы
+	half fShading = GreenComShadingBySphere(g_vBoundSphere, IN.vPosition.xyz);
 		
 	OUT.vPosition = mul(OUT.vPosition, g_mWVP);
 	
 	OUT.vPos = OUT.vPosition;
-	OUT.vPos.w = length(g_vBoundSphere.xyz - IN.vPosition.xyz) / g_vBoundSphere.w;
-	OUT.vPos.w *= OUT.vPos.w;
+	
+	OUT.vPos.w = fShading;
+	
 	OUT.vTexUV = IN.vTexUV;
+	
+	return OUT;
 }

@@ -23,9 +23,7 @@ half4 main(VSO_PP IN):COLOR0
 {
 	half4 vColor = tex2D(g_sColor,IN.vTexUV);
 	
-	vColor.r = pow((g_vParam.x * vColor.r) + g_vParam.z, 1.0/g_vParam.y);
-	vColor.g = pow((g_vParam.x * vColor.g) + g_vParam.z, 1.0/g_vParam.y);
-	vColor.b = pow((g_vParam.x * vColor.b) + g_vParam.z, 1.0/g_vParam.y);
+	vColor.rgb = pow((g_vParam.x * vColor.rgb) + g_vParam.z, 1.0/g_vParam.y);
 
 	return vColor;
 }

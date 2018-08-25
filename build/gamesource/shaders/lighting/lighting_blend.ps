@@ -22,7 +22,7 @@ half4 main(VSO_PP IN):COLOR0
 {
 	half4 vNormal = tex2D(g_sNormals,IN.vTexUV);
 	half fSort = vNormal.w;
-	half fLayer = NormalEncodeLayer(vNormal.xyz);
+	half fLayer = NormalDecodeLayer(vNormal.xyz);
 	
 	//цвет приводим к sRGB
 	half4 vColor = pow(tex2D(g_sColor,IN.vTexUV), 2.2);
@@ -43,7 +43,7 @@ half4 main(VSO_PP IN):COLOR0
 
 	// если материал освещаемый то надо вычислить его освещенность
 	if(!(EQUAL_LAYER(fSort, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(fSort, MTLTYPE_LAYER_TRANSPARENT_UNLIT)))
-		vColor.xyz = (vAmbientColor * vAmbient.w*vColor.xyz) + (fSpecular * 0.5 * vAmbient.xyz);
+		vColor.xyz = (vAmbientColor * vAmbient.w * vColor.xyz) + (fSpecular * 0.5 * vAmbient.xyz);
 		
 	// если слой материала относится к непрозрачной геометрии, тогда не нужна прозрачность
 	if(int(fLayer * LAYERS_COUNT_MAX) == LAYER_OPAQUE)

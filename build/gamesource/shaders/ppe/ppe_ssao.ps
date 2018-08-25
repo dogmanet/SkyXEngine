@@ -76,7 +76,7 @@ half4 main(VSO_ResPos IN):COLOR0
 		fOcclusion = lerp(1.0, fOcclusion, 0.6);
 		fOcclusion = pow(fOcclusion, 2);
 		fOcclusion = lerp(1.0, fOcclusion, saturate((fDepth * g_vNearFar.y)/PP_SSAO_DIST_EMERSION));
-		//fOcclusion = pow(fOcclusion, 2);
+		
 		return half4(fOcclusion, fOcclusion, fOcclusion, 1);
 	}
 }

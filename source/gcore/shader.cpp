@@ -355,7 +355,7 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
 	}
 
-//#ifndef _DEBUG
+#ifndef _DEBUG
 	UINT uiTimeFileCahce = GetTimeShaderFileCache(szFullPathCache);
 	UINT uiTimeFileSahder = FileGetTimeLastModify(szFullPath);
 	if (
@@ -389,7 +389,7 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 	}
 	else
 	{
-//#endif
+#endif
 		ID3DXBuffer *pBufShader = 0;
 		ID3DXBuffer *pBufError = 0;
 		ID3DXConstantTable *pConstTable;
@@ -454,12 +454,12 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
 		pShader->m_iCountVar = desc.Constants;
 		pShader->m_pPixelShader = pPixelShader;
 
-//#ifndef _DEBUG
+#ifndef _DEBUG
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
 		SaveShaderFileCache(pSFC);
 		mem_delete(pSFC);
 	}
-//#endif
+#endif
 
 	return LOAD_SHADER_COMPLETE;
 }
@@ -474,20 +474,23 @@ CShaderManager::CShaderManager()
 
 	testDirCache();
 
-	testIncludeCache();
+	testIncludeCache(false);
 }
 
-void CShaderManager::testIncludeCache()
+void CShaderManager::testIncludeCache(bool hasReport)
 {
 	testDirCache();
 	loadCacheInclude();
 
 	Array<String> aIncludes = FileGetListRec(Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), FILE_LIST_TYPE_FILES, "h");
 
+	g_useCache = true;
+
 	if (aIncludes.size() != m_aIncludes.size())
 	{
 		g_useCache = false;
-		LibReport(REPORT_MSG_LEVEL_WARNING, "h shaders is modified (%d!=%d), shader cache disabled\n", aIncludes.size(), m_aIncludes.size());
+		if (hasReport)
+			LibReport(REPORT_MSG_LEVEL_WARNING, "h shaders is modified (%d!=%d), shader cache disabled\n", aIncludes.size(), m_aIncludes.size());
 	}
 	else
 	{
@@ -499,7 +502,8 @@ void CShaderManager::testIncludeCache()
 				)
 			{
 				g_useCache = false;
-				LibReport(REPORT_MSG_LEVEL_WARNING, "h shaders is modified, shader cache disabled\n");
+				if (hasReport)
+					LibReport(REPORT_MSG_LEVEL_WARNING, "h shaders is modified, shader cache disabled\n");
 				break;
 			}
 		}
