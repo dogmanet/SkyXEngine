@@ -163,7 +163,18 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 			strcpy(g_szCoreName, name);
 			ConsoleConnect(szNameConsole);
 			ConsoleRegisterCmds();
-			g_pTaskManager = new CTaskManager();
+
+			int iThreadNum = 0;
+			if(!sscanf(Core_0GetCommandLineArg("threads", "0"), "%d", &iThreadNum) || iThreadNum < 0)
+			{
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid -threads value! Defaulting to 0\n");
+			}
+
+			g_pTaskManager = new CTaskManager(iThreadNum);
+			if(stricmp(Core_0GetCommandLineArg("no-threads", "no"), "no"))
+			{
+				g_pTaskManager->forceSinglethreaded();
+			}
 			g_pTimers = new CTimeManager();
 
 			//LibReport(REPORT_MSG_LEVEL_NOTICE, "is init\n");
@@ -224,6 +235,12 @@ void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
 	SXCORE_PRECOND(_VOID);
 	g_pTaskManager->add(func, flag);
+}
+
+void Core_MForceSinglethreaded()
+{
+	SXCORE_PRECOND(_VOID);
+	g_pTaskManager->forceSinglethreaded();
 }
 
 void Core_MTaskStart()

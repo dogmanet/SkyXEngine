@@ -87,10 +87,18 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	m_isGame = isGame;
 	
-	HMODULE hDLL = LoadLibrary("sxgui.dll");
+	HMODULE hDLL = LoadLibrary("sxgui"
+#ifdef _DEBUG
+		"_d"
+#endif
+		".dll");
 	if(!hDLL)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load sxgui.dll");
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load sxgui"
+#ifdef _DEBUG
+			"_d"
+#endif
+			".dll");
 	}
 
 	gui::PFNINITINSTANCE pfnGUIInit;

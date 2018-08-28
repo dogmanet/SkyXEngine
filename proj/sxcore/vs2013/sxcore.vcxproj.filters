@@ -65,21 +65,6 @@
     <ClInclude Include="..\..\..\source\core\time.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\concurrent_queue.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventbridge.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventchannel.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventhandler.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventhandlerqueue.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\File.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -93,6 +78,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

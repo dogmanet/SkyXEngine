@@ -35,19 +35,19 @@ typedef void(*THREAD_UPDATE_FUNCTION)();
 //! значения определющие поведение задачи
 enum CORE_TASK_FLAG
 {
-	CORE_TASK_FLAG_NONE			= 0x0,
+	CORE_TASK_FLAG_NONE        = 0x0000,
 
-	CORE_TASK_FLAG_REPEATING	= 0x1 << 0,	//!< Задача будет повторяться, если не указано - выполнится только один раз
-	CORE_TASK_FLAG_THREADSAFE	= 0x1 << 1,	//!< Задача может быть выполнена в любом потоке
-	CORE_TASK_FLAG_FRAME_SYNC	= 0x1 << 2,	//!< Задаче необходима синхронизация по границе кадра
-	CORE_TASK_FLAG_ON_SYNC		= 0x1 << 3,	//!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
+	CORE_TASK_FLAG_REPEATING   = 0x0001, //!< Задача будет повторяться, если не указано - выполнится только один раз
+	CORE_TASK_FLAG_THREADSAFE  = 0x0002, //!< Задача может быть выполнена в любом потоке
+	CORE_TASK_FLAG_FRAME_SYNC  = 0x0004, //!< Задаче необходима синхронизация по границе кадра
+	CORE_TASK_FLAG_ON_SYNC     = 0x0008, //!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
 
-	CORE_TASK_FLAG_SINGLETHREADED = CORE_TASK_FLAG_NONE,				//!< Задача выполняется в главном потоке, один раз
-	CORE_TASK_FLAG_SINGLETHREADED_REPEATING = CORE_TASK_FLAG_REPEATING, //!< Задача выполняется в главном потоке, повторяется
-	CORE_TASK_FLAG_BACKGROUND = CORE_TASK_FLAG_THREADSAFE,				//!< Задача выполняется в фоне(не ожидает синхронизации) один раз
+	CORE_TASK_FLAG_MAINTHREAD = CORE_TASK_FLAG_NONE, //!< Задача выполняется в главном потоке, один раз
+	CORE_TASK_FLAG_MAINTHREAD_REPEATING = CORE_TASK_FLAG_REPEATING, //!< Задача выполняется в главном потоке, повторяется
+	CORE_TASK_FLAG_BACKGROUND = CORE_TASK_FLAG_THREADSAFE, //!< Задача выполняется в фоне(не ожидает синхронизации) один раз
 	CORE_TASK_FLAG_BACKGROUND_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING,		//!< Задача выполняется в фоне(не ожидает синхронизации), по завершении повторяется
-	CORE_TASK_FLAG_BACKGROUND_SYNC = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_FRAME_SYNC,			//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
-	CORE_TASK_FLAG_BACKGROUND_SYNC_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING | CORE_TASK_FLAG_FRAME_SYNC,	//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
+	CORE_TASK_FLAG_THREADSAFE_SYNC = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_FRAME_SYNC,			//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
+	CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING | CORE_TASK_FLAG_FRAME_SYNC,	//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
 
 	CORE_TASK_FLAG_ALL = ~0x0
 };
@@ -96,12 +96,15 @@ SX_LIB_API void Core_AGetName(char *szName);
 
 //! добавить задачу
 SX_LIB_API void Core_MTaskAdd(	
-								THREAD_UPDATE_FUNCTION func, //!< функция обработки
-								DWORD flag = CORE_TASK_FLAG_SINGLETHREADED_REPEATING //!< флаг из #CoreTaskFlag 
-								); 
+    THREAD_UPDATE_FUNCTION func, //!< функция обработки
+    DWORD flag //!< флаг из #CoreTaskFlag 
+);
+
+//! Запретить многопоточный режим
+SX_LIB_API void Core_MForceSinglethreaded();
 
 //! стартовать обрабатывать все задачи
-SX_LIB_API void Core_MTaskStart();	
+SX_LIB_API void Core_MTaskStart();
 
 //! остановить все задачи
 SX_LIB_API void Core_MTaskStop();	

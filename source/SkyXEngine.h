@@ -504,6 +504,9 @@ void SkyXEngind_UpdateDataCVar();
 //! запуск основного цикла обработки
 int SkyXEngine_CycleMain();
 
+//! одна итерация основного цикла
+bool SkyXEngine_CycleMainIteration();
+
 //! уничтожение данных движка, освобождение памяти
 void SkyXEngine_Kill();
 
