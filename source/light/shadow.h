@@ -14,7 +14,7 @@ See the license in LICENSE
 #include <common/Array.h>
 #include <d3d9.h>
 #include <gcore/sxgcore.h>
-#include "sxmtllight.h"
+#include "sxlight.h"
 #include "ml_data.h"
 
 class PSSM

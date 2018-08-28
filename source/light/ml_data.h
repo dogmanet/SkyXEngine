@@ -15,7 +15,7 @@ See the license in LICENSE
 
 #include <GRegisterIndex.h>
 
-#include "sxmtllight.h"
+#include "sxlight.h"
 
 namespace MLSet
 {
@@ -42,7 +42,7 @@ namespace MLSet
 
 	void ReCalcSize();
 
-	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
+	//void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
 
 
 	extern bool IsHalfGenPCFShadowLocal;
@@ -51,7 +51,7 @@ namespace MLSet
 	extern float3 OrientedCube[6];
 	extern float3 UpVectorsCube[6];
 
-	extern float2 HDRSampleOffsets[16];
+	//extern float2 HDRSampleOffsets[16];
 
 	extern float4x4 RefMProjPlane;
 	extern float4x4 RefMProjCube;
@@ -103,9 +103,9 @@ namespace MLSet
 			extern ID GenShadowCube1;
 			extern ID GenShadowCube6;
 
-			extern ID CalcAdaptedLum;
+			/*extern ID CalcAdaptedLum;
 			extern ID SampleLumInit;
-			extern ID SampleLumIterative;
+			extern ID SampleLumIterative;*/
 
 			extern ID ScreenOut;
 
@@ -118,7 +118,7 @@ namespace MLSet
 		};
 	};
 
-	namespace IDsRenderTargets
+	/*namespace IDsRenderTargets
 	{
 		extern ID DSComLight;
 
@@ -150,7 +150,7 @@ namespace MLSet
 		extern ID LigthCom3;
 
 		extern ID LigthComScaled;
-	};
+	};*/
 
 	namespace IDsTexs
 	{

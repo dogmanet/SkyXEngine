@@ -2692,7 +2692,7 @@ void CStaticGeom::sortGroup(const float3* viewpos, int sort_mtl)
 }
 
 
-void CStaticGeom::getIntersectedRayY2(float3* pos, CSegment** arrsplits, int *count, CSegment* comsegment, ID curr_splits_ids_render)
+/*void CStaticGeom::getIntersectedRayY2(float3* pos, CSegment** arrsplits, int *count, CSegment* comsegment, ID curr_splits_ids_render)
 {
 	float3 jmin, jmax;
 	comsegment->m_pBoundVolumeP->getMinMax(&jmin, &jmax);
@@ -2717,9 +2717,9 @@ void CStaticGeom::getIntersectedRayY2(float3* pos, CSegment** arrsplits, int *co
 			}
 		}
 	}
-}
+}*/
 
-bool CStaticGeom::getIntersectedRayY(float3* pos)
+/*bool CStaticGeom::getIntersectedRayY(float3* pos)
 {
 	D3DXVECTOR3 jpos;
 	float3 jvec0, jvec1, jvec2;
@@ -2742,8 +2742,8 @@ bool CStaticGeom::getIntersectedRayY(float3* pos)
 		{
 			for (DWORD group = 0; group<m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_uiCountSubSet; group++)
 			{
-				/*if (m_aAllGroups[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroup[group]]->m_iSortGroup > 0)
-					continue;*/
+				//if (m_aAllGroups[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroup[group]]->m_iSortGroup > 0)
+					//continue;
 
 				ID idbuff = m_aAllModels[id]->m_aSubSets[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroupModel[group]].m_idBuff;
 				ID idgroup = m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_pNumberGroup[group];
@@ -2756,14 +2756,7 @@ bool CStaticGeom::getIntersectedRayY(float3* pos)
 				{
 					Dist = -1000.f;
 					//находим все 3 вершины
-					/*jvec0 = ArrMeshVertex2[m_aArrComFor[1].arr[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]];
-					jvec1 = ArrMeshVertex2[m_aArrComFor[1].arr[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]];
-					jvec2 = ArrMeshVertex2[m_aArrComFor[1].arr[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]];*/
 					
-					//jvec0 = m_aAllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr[m_aArrComFor[1]->arr[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]];
-					//jvec1 = m_aAllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr[m_aArrComFor[1]->arr[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]];
-					//jvec2 = m_aAllGroups[idgroup]->VertexBufferOrigin[idbuff]->arr[m_aArrComFor[1]->arr[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]];
-
 					jvec0 = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly]].Pos;
 					jvec1 = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 1]].Pos;
 					jvec2 = pData[m_aArrComFor[1]->m_aIRS[id]->m_ppSegments[k]->m_ppArrPoly[group][numpoly + 2]].Pos;
@@ -2801,7 +2794,7 @@ bool CStaticGeom::getIntersectedRayY(float3* pos)
 	}
 	pos->y = tmpy;
 	return is_find;
-}
+}*/
 
 void CStaticGeom::getMinMax(float3* min, float3* max)
 {

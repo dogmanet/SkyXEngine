@@ -26,8 +26,7 @@ namespace MLSet
 	//коэфициент размера текстур дл¤ карт глубин глобального источника света
 	float CoefSizeDepthMapForGlobal = 1;
 
-	float2_t SizeTexReflection = float2_t(MTL_REF_TEX_SIZE, MTL_REF_TEX_SIZE);
-
+	
 	void ReCalcSize()
 	{
 		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
@@ -40,7 +39,7 @@ namespace MLSet
 		SizeTexDepthLocal.y = float(*r_win_height) * CoefSizeDepthMapForLocal;
 	}
 
-	void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
+	//void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
 
 	bool IsHalfGenPCFShadowLocal = false;
 
@@ -48,7 +47,7 @@ namespace MLSet
 	float3 OrientedCube[6] = { float3(1, 0, 0), float3(-1, 0, 0), float3(0, 1, 0), float3(0, -1, 0), float3(0, 0, 1), float3(0, 0, -1) };
 	float3 UpVectorsCube[6] = { float3(0, 1, 0), float3(0, 1, 0), float3(0, 0, -1), float3(0, 0, 1), float3(0, 1, 0), float3(0, 1, 0) };
 
-	float2 HDRSampleOffsets[16];
+	//float2 HDRSampleOffsets[16];
 
 	float4x4 RefMProjPlane;
 	float4x4 RefMProjCube;
@@ -100,9 +99,9 @@ namespace MLSet
 			ID GenShadowCube1;
 			ID GenShadowCube6;
 
-			ID CalcAdaptedLum;
+			/*ID CalcAdaptedLum;
 			ID SampleLumInit;
-			ID SampleLumIterative;
+			ID SampleLumIterative;*/
 
 			ID ScreenOut;
 
@@ -115,7 +114,7 @@ namespace MLSet
 		};
 	};
 
-	namespace IDsRenderTargets
+	/*namespace IDsRenderTargets
 	{
 		ID DSComLight;
 
@@ -147,7 +146,7 @@ namespace MLSet
 		ID LigthCom3;
 
 		ID LigthComScaled;
-	};
+	};*/
 
 	namespace IDsTexs
 	{
@@ -277,10 +276,10 @@ void MLSet::MLInit()
 	MLSet::IDsShaders::PS::PPBlurDepthBased = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based.ps", SHADER_CHECKDOUBLE_PATH);
 	MLSet::IDsShaders::PS::PPBlurDepthBasedNoise = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based_noise.ps", "pp_blur_depth_based_noise.ps", SHADER_CHECKDOUBLE_PATH);
 
-	MLSet::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum.ps", SHADER_CHECKDOUBLE_PATH);
+	/*MLSet::IDsShaders::PS::CalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum.ps", SHADER_CHECKDOUBLE_PATH);
 	MLSet::IDsShaders::PS::SampleLumInit = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_init.ps", "pptm_lum_init.ps", SHADER_CHECKDOUBLE_PATH);
 	MLSet::IDsShaders::PS::SampleLumIterative = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_iterative.ps", "pptm_lum_iterative.ps", SHADER_CHECKDOUBLE_PATH);
-	
+	*/
 	MLSet::IDsShaders::VS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
 	MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
 
@@ -306,15 +305,15 @@ void MLSet::MLInit()
 
 
 	//////////
-	float tmpcoefsizert = 1;
+	/*float tmpcoefsizert = 1;
 	float2_t tmp_sizert = float2_t(float(*r_win_width) * tmpcoefsizert, (*r_win_height) * tmpcoefsizert);
 
 	//цвет (текстуры)
 	MLSet::IDsRenderTargets::ColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
 	//номрали + микрорельеф
-	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
+	MLSet::IDsRenderTargets::NormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
 	//параметры освещени¤
-	MLSet::IDsRenderTargets::ParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
+	/*MLSet::IDsRenderTargets::ParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
 	
 	MLSet::IDsRenderTargets::DepthScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth", tmpcoefsizert);
 	MLSet::IDsRenderTargets::DepthScene0 = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_0", tmpcoefsizert);
@@ -352,10 +351,10 @@ void MLSet::MLInit()
 	MLSet::IDsRenderTargets::LigthComScaled = SGCore_RTAdd(float(*r_win_width)*0.25f, float(*r_win_height)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
 
 	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
-	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);*/
 }
 
-void MLSet::GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[])
+/*void MLSet::GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[])
 {
 	if (arr == 0)
 		return;
@@ -375,4 +374,4 @@ void MLSet::GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[])
 			++index;
 		}
 	}
-}
+}*/

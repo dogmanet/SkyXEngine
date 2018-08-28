@@ -1,23 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\mtllight\sxmtllight_dll.cpp" />
-    <ClCompile Include="..\..\..\source\mtllight\ml_data.cpp">
+    <ClCompile Include="..\..\..\source\light\ml_data.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\reflection.cpp">
+    <ClCompile Include="..\..\..\source\light\shadow.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\shadow.cpp">
+    <ClCompile Include="..\..\..\source\light\sxlight.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\sxmtllight.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\light.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\material.cpp">
+    <ClCompile Include="..\..\..\source\light\light.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\string.cpp">
@@ -27,6 +20,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\light\sxlight_dll.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -39,22 +35,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\mtllight\reflection.h">
+    <ClInclude Include="..\..\..\source\light\shadow.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\mtllight\shadow.h">
+    <ClInclude Include="..\..\..\source\light\sxlight.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\mtllight\sxmtllight.h">
+    <ClInclude Include="..\..\..\source\light\light.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\mtllight\light.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\mtllight\material.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\mtllight\ml_data.h">
+    <ClInclude Include="..\..\..\source\light\ml_data.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string.h">

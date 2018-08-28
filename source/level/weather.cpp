@@ -174,8 +174,8 @@ CWeather::CWeather()
 	}
 	m_ulTimeBoltNext = m_ulTimeBoltLast = 0;
 
-	m_idLightThunderbolt = SML_LigthsCreatePoint(&float3(0, 0, 0), 200, &float3(1, 1, 1), false, true);
-	SML_LigthsSetEnable(m_idLightThunderbolt, false);
+	m_idLightThunderbolt = SLight_CreatePoint(&float3(0, 0, 0), 200, &float3(1, 1, 1), false, true);
+	SLight_SetEnable(m_idLightThunderbolt, false);
 	m_idSndRain = SSCore_SndCreate2d("nature/rain.ogg", SX_SOUND_CHANNEL_GAME, true);
 	m_idSndThunder = SSCore_SndCreate2d("nature/thunder.ogg", SX_SOUND_CHANNEL_GAME);
 
@@ -185,7 +185,7 @@ CWeather::CWeather()
 CWeather::~CWeather()
 {
 	m_aTimeSections.clear();
-	SML_LigthsDeleteLight(m_idLightThunderbolt);
+	SLight_DeleteLight(m_idLightThunderbolt);
 	SSCore_SndDelete(m_idSndRain);
 	SSCore_SndDelete(m_idSndThunder);
 }
@@ -217,7 +217,7 @@ void CWeather::load(const char *szPath)
 		SSCore_SndStop(m_idSndRain);
 
 		SPE_EffectEnableSet(m_idEffThunderbolt, false);
-		SML_LigthsSetEnable(m_idLightThunderbolt, false);
+		SLight_SetEnable(m_idLightThunderbolt, false);
 		SSCore_SndStop(m_idSndThunder);
 
 		m_aTimeSections.clear();
@@ -562,7 +562,7 @@ void CWeather::update()
 	if (m_isPlaying)
 		m_RndSnd.update();
 
-	ID gid = SML_LigthsGetGlobal();
+	ID gid = SLight_GetGlobal();
 
 	static const float * env_weather_snd_volume = GET_PCVAR_FLOAT("env_weather_snd_volume");
 
@@ -631,10 +631,10 @@ void CWeather::update()
 		if (gid >= 0)
 		{
 			//установка/сброс состояния включения
-			SML_LigthsSetEnable(gid, pStrSunTex[0] != '0');
+			SLight_SetEnable(gid, pStrSunTex[0] != '0');
 
 			//установка/сброс состояния "все в тени от глобального источника"
-			SML_LigthsSetCastGlobalShadow(pStrSunTex[0] == '1');
+			SLight_SetCastGlobalShadow(pStrSunTex[0] == '1');
 		}
 
 		m_hasUpdate = true;
@@ -720,14 +720,14 @@ void CWeather::update()
 			tmp_scolor.x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunColor.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunColor.x, lerp_factor);
 			tmp_scolor.y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunColor.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunColor.y, lerp_factor);
 			tmp_scolor.z = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunColor.z, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunColor.z, lerp_factor);
-			SML_LigthsSetColor(gid, &tmp_scolor);
+			SLight_SetColor(gid, &tmp_scolor);
 
 			//позици¤ солнца
 			float3 tmp_spos;
 			tmp_spos.x = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunPos.x, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunPos.x, lerp_factor);
 			tmp_spos.y = lerpf(m_aTimeSections[m_iSectionOld].m_DataSection.m_vSunPos.y, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vSunPos.y, lerp_factor);
 			tmp_spos.z = 0;
-			SML_LigthsSetPos(gid, &tmp_spos, false);
+			SLight_SetPos(gid, &tmp_spos, false);
 		}
 
 		//дальность видимости
@@ -774,8 +774,8 @@ void CWeather::update()
 				float3 tpos = float3(randf(m_vBoltMin.x, m_vBoltMax.x), randf(m_vBoltMin.y, m_vBoltMax.y), randf(m_vBoltMin.z, m_vBoltMax.z));
 				SPE_EffectPosSet(m_idEffThunderbolt, &tpos);
 				SPE_EffectEnableSet(m_idEffThunderbolt, true);
-				SML_LigthsSetPos(m_idLightThunderbolt, &tpos, false);
-				SML_LigthsSetEnable(m_idLightThunderbolt, true);
+				SLight_SetPos(m_idLightThunderbolt, &tpos, false);
+				SLight_SetEnable(m_idLightThunderbolt, true);
 				m_ulTimeBoltLight = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 			}
 			else
@@ -803,7 +803,7 @@ void CWeather::update()
 		if (m_ulTimeBoltLight > 0 && TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_ulTimeBoltLight > WEATHER_THUNDERBOLT_LIGHT_TIME)
 		{
 			m_ulTimeBoltLight = 0;
-			SML_LigthsSetEnable(m_idLightThunderbolt, false);
+			SLight_SetEnable(m_idLightThunderbolt, false);
 
 			//и заодно проиграть звук молнии
 			SSCore_SndSetPosPlay(m_idSndThunder, 0);

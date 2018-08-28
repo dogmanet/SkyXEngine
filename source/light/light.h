@@ -15,7 +15,7 @@ See the license in LICENSE
 #include <common/String.h>
 #include <d3d9.h>
 
-#include "sxmtllight.h"
+#include "sxlight.h"
 #include "ml_data.h"
 
 #define LIGHTS_PRE_COND_ID(id,stdval) \

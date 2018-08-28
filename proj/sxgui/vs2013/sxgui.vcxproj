@@ -68,6 +68,7 @@
       </IgnoreSpecificDefaultLibraries>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <Profile>true</Profile>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
     <Lib>
       <OutputFile>$(OutDir)$(TargetName)d$(TargetExt)</OutputFile>

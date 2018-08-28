@@ -21,14 +21,14 @@ See the license in LICENSE
 #include <common/SXMath.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxmtllight_d.lib")
+#pragma comment(lib, "sxmtrl_d.lib")
 #else
-#pragma comment(lib, "sxmtllight.lib")
+#pragma comment(lib, "sxmtrl.lib")
 #endif
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
-#include <mtllight/sxmtllight.h>
+#include <mtrl/sxmtrl.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API

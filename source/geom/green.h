@@ -18,6 +18,8 @@ See the license in LICENSE
 #include "static_geom.h"
 #include "sxgeom.h"
 
+extern g_phy_intersect g_fnIntersect;
+
 //##########################################################################
 
 #define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \

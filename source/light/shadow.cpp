@@ -444,8 +444,8 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	SGCore_SetSamplerFilter2(1, 6, D3DTEXF_LINEAR);
 	SGCore_SetSamplerAddress2(1, 6, D3DTADDRESS_CLAMP);
 
-	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
-	MLSet::DXDevice->SetTexture(6, SGCore_RTGetTexture(MLSet::IDsRenderTargets::NormalScene));
+	MLSet::DXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
+	MLSet::DXDevice->SetTexture(6, SGCore_GbufferGetRT(DS_RT_NORMAL));
 
 	float4x4 aMatrixTexture[5];
 
@@ -775,7 +775,7 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
-	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
+	MLSet::DXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
 
 	float4x4 MatrixTexture;
 
@@ -1118,7 +1118,7 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
-	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
+	MLSet::DXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
 
 	MLSet::DXDevice->SetTexture(1, DepthMap);
 	MLSet::DXDevice->SetTexture(2, SGCore_LoadTexGetTex(MLSet::IDsTexs::Tex_NoiseTex));

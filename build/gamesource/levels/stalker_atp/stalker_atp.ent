@@ -266,6 +266,7 @@ rotation = 0.000000 0.980603 0.000000 -0.196004
 team = 0
 
 [ent_21]
+skin = 0
 OnTouchStart = 
 OnTouchEndAll = 
 OnTouchEnd = 

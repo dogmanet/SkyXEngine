@@ -8,7 +8,7 @@
 #include <common/string.h>
 
 #include <sxguiwinapi/sxgui.h>
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 #include <render/sxrender.h>
 #include <sxmaterialeditor/resource.h>
 

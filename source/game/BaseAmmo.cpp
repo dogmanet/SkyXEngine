@@ -144,7 +144,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 				ID idMtl = SXPhysics_GetMtlID(aHitPoints[i].pCollisionObject, &aHitPoints[i].shapeInfo);
 				if(ID_VALID(idMtl) && !aHitPoints[i].isExit)
 				{
-					float fHitChance = SML_MtlGetHitChance(idMtl);
+					float fHitChance = SMtrl_MtlGetHitChance(idMtl);
 					if(fHitChance < randf(0.0f, 1.0f))
 					{
 						int c = 0;
@@ -271,7 +271,7 @@ void CBaseAmmo::shootDecal(const float3 &vPos, const float3 &vNormal, ID idMtl)
 {
 	if(ID_VALID(idMtl))
 	{
-		MTLTYPE_PHYSIC type = SML_MtlGetPhysicMaterial(idMtl);
+		MTLTYPE_PHYSIC type = SMtrl_MtlGetPhysicMaterial(idMtl);
 		DECAL_TYPE decalType = DECAL_TYPE_CONCRETE;
 		switch(type)
 		{
@@ -330,8 +330,8 @@ bool CBaseAmmo::shouldRecochet(const float3 &vPos, const float3 &vNormal, const 
 	bool isNewSpeedSet = false;
 	if(ID_VALID(idMtl))
 	{
-		fDurability = SML_MtlGetDurability(idMtl); // прочность
-		fDensity = SML_MtlGetDensity(idMtl); // плотность
+		fDurability = SMtrl_MtlGetDurability(idMtl); // прочность
+		fDensity = SMtrl_MtlGetDensity(idMtl); // плотность
 		if(fDurability <= 0)
 		{
 			fDurability = 10;

@@ -14,7 +14,7 @@ See the license in LICENSE
 #include <common/Array.h>
 #include <d3d9.h>
 
-#include "sxmtllight.h"
+#include "sxmtrl.h"
 #include "ml_data.h"
 
 /*! класс отражений, возможны плоские отражения и кубические

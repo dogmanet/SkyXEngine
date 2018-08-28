@@ -34,7 +34,7 @@ void CLevel::clear()
 	SGeom_ModelsClear();
 	SGeom_GreenClear();
 
-	SML_LigthsClearIDArr();
+	SLight_ClearIDArr();
 	
 	//SXGame_UnloadObjLevel();
 	Core_0ConsoleExecCmd("ent_unload_level");
@@ -189,14 +189,14 @@ void CLevel::load(const char *szName, bool isGame)
 			SGeom_ModelsGetMinMax(&vMin, &vMax);
 			SGCore_SkyCloudsSetWidthHeightPos((vMax.x - vMin.x) * 2.f, (vMax.z - vMin.z) * 2.f, &float3((vMax + vMin) * 0.5));
 
-			ID gid = SML_LigthsCreatePoint(
+			ID gid = SLight_CreatePoint(
 				&float3(60, 60, 0),
 				0,
 				&float3(1, 1, 1),
 				true,
 				true);
-			SML_LigthsSetEnable(gid, true);
-			SML_LigthsSetName(gid, "sun");
+			SLight_SetEnable(gid, true);
+			SLight_SetName(gid, "sun");
 		}
 	}
 
@@ -235,7 +235,7 @@ void CLevel::save(const char *szName)
 		SGeom_GreenSave(tmppathlevel);
 	}
 
-	if (SML_LigthsGetGlobal() > 0)
+	if (SLight_GetGlobal() > 0)
 		fprintf(file, "type = outdoor\n");
 	else
 		fprintf(file, "type = indoor\n");

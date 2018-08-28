@@ -194,7 +194,6 @@ LRESULT SXLevelEditor_ButtonGreenMask_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 
 	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture mask", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
-		StrCutName(tmppath, tmpname);
 		SXLevelEditor::EditGreenMask->setText(tmpname);
 	}
 	return 0;
@@ -342,6 +341,8 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 	}
 
 	float pos = SXLevelEditor::TrackBarGreenDensity->getPos();
+
+	SXPhysics_LoadGeom(NULL);
 
 	SGeom_GreenAddGreen(tmp_name,
 		tmp_tex,

@@ -405,6 +405,10 @@ SX_LIB_API bool SGeom_ModelsTraceBeam(
 #define GREEN_GEN_RAND_SCALE	1.f		/*!< рандомный масштаб модели при генерации (0, 1 + GREEN_GEN_RAND_SCALE) */
 #define GREEN_GEN_RAND_ROTATE_Y	SM_2PI	/*!< рандомный поворот (в радианах) модели при генерации (0, 1 + GREEN_GEN_RAND_ROTATE_Y) */
 
+typedef bool(*g_phy_intersect)(const float3 *pStart, const float3 *pFinish, float3 *pResult);
+
+SX_LIB_API void SGeom_GreenSetFncIntersect(g_phy_intersect fnFunc);
+
 //! типы растительности
 enum GREEN_TYPE
 {

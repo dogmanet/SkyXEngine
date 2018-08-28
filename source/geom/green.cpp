@@ -1201,6 +1201,10 @@ void CGreen::genByTex(CStaticGeom* geom, CModel* model, ID idmask, float3* min, 
 	float3 tmppos2;
 	bool isintersect;
 
+	float3 vGeomMin, vGeomMax;
+	SGeom_ModelsGetMinMax(&vGeomMin, &vGeomMax);
+	float3 vPosMin = vGeomMin;
+
 	for (DWORD x = 0; x<desc.Width; ++x)
 	{
 		for (DWORD y = 0; y<desc.Height; ++y)
@@ -1242,7 +1246,11 @@ void CGreen::genByTex(CStaticGeom* geom, CModel* model, ID idmask, float3* min, 
 					}
 
 					if (isintersect)
-						isintersect = geom->getIntersectedRayY(&tmppos2);
+					{
+						vPosMin.x = tmppos2.x;
+						vPosMin.z = tmppos2.z;
+						isintersect = g_fnIntersect(&tmppos2, &vPosMin, &tmppos2);
+					}
 
 					if (isintersect)
 					{

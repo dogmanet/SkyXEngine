@@ -1430,8 +1430,8 @@ void SXMaterialEditor::MaterialEditorUpdate(DWORD timeDelta)
 		char vs[1024];
 		char ps[1024];
 
-		SML_MtlGetVS(SXMaterialEditor::idMat, vs);
-		SML_MtlGetPS(SXMaterialEditor::idMat, ps);
+		SMtrl_MtlGetVS(SXMaterialEditor::idMat, vs);
+		SMtrl_MtlGetPS(SXMaterialEditor::idMat, ps);
 
 		if ((skit = SXMaterialEditor::pShaders->find(vs, ps)) >= 0)
 			SXMaterialEditor::pComboBoxShaders->setSel(skit + 1);
@@ -1441,9 +1441,9 @@ void SXMaterialEditor::MaterialEditorUpdate(DWORD timeDelta)
 
 	if (!SXMaterialEditor::pComboBoxParamL->getFocus())
 	{
-		float thikcness = SML_MtlGetThickness(SXMaterialEditor::idMat);
-		float roughness = SML_MtlGetRoughness(SXMaterialEditor::idMat);
-		float f0 = SML_MtlGetF0(SXMaterialEditor::idMat);
+		float thikcness = SMtrl_MtlGetThickness(SXMaterialEditor::idMat);
+		float roughness = SMtrl_MtlGetRoughness(SXMaterialEditor::idMat);
+		float f0 = SMtrl_MtlGetF0(SXMaterialEditor::idMat);
 
 		skit = -1;
 		if ((skit = SXMaterialEditor::pParamL->find(thikcness, roughness, f0)) >= 0)

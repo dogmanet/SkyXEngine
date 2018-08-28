@@ -356,7 +356,7 @@ public:
 	int getCountModel();
 
 	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
-	bool getIntersectedRayY(float3 *pPos);
+	//bool getIntersectedRayY(float3 *pPos);
 
 	bool sortExistsForRender(int iSortMtl, ID idArr = 0);
 	

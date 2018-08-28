@@ -33,9 +33,15 @@ See the license in LICENSE
 #endif
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxmtllight_d.lib")
+#pragma comment(lib, "sxlight_d.lib")
 #else
-#pragma comment(lib, "sxmtllight.lib")
+#pragma comment(lib, "sxlight.lib")
+#endif
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxmtrl_d.lib")
+#else
+#pragma comment(lib, "sxmtrl.lib")
 #endif
 
 #if defined(_DEBUG)
@@ -72,7 +78,8 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 #include <geom/sxgeom.h>
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
+#include <mtrl/sxmtrl.h>
 #include <anim/sxanim.h>
 #include <pp/sxpp.h>
 #include <particles/sxparticles.h>
@@ -360,15 +367,15 @@ SX_LIB_API void SRender_ComLighting(DWORD timeDelta);
 //! объединение слоев прозрачности
 SX_LIB_API void SRender_UnionLayers();
 
-//! просчет тонмаппинга
-SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta);
-
 
 //! отрисовка партиклов (эффектов)
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta);
 
-//! отрисовка постпроцесса
-SX_LIB_API void SRender_RenderPostProcess(DWORD timeDelta);
+//! отрисовка основного постпроцесса
+SX_LIB_API void SRender_RenderMainPostProcess(DWORD timeDelta);
+
+//! отрисовка финального (после gui) постпроцесса
+SX_LIB_API void SRender_RenderFinalPostProcess(DWORD timeDelta);
 
 //! очистка регистров шейдеров (были случаи когда не инициаилизировав определенный регист в шейдере, шейдер брал то что было установлено до него)
 SX_LIB_API void SRender_ShaderRegisterData();

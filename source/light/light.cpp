@@ -1328,7 +1328,7 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 	SGCore_SetSamplerFilter(1, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
 
-	MLSet::DXDevice->SetTexture(0,SGCore_RTGetTexture(MLSet::IDsRenderTargets::DepthScene));
+	MLSet::DXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
 	
 		if(HowShadow == 0)
 			MLSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(ShadowMap));
@@ -1372,128 +1372,6 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 			HowShadow = 0;
 		else
 			HowShadow = 1;
-}
-
-void CLights::toneMappingCom(DWORD timeDelta, float factor_adapted)
-{
-	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
-	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
-
-	MLSet::GetArrDownScale4x4(*r_win_width, *r_win_height, MLSet::HDRSampleOffsets);
-
-	LPDIRECT3DSURFACE9 SurfSceneScale, BackBuf;
-
-	SGCore_RTGetTexture(MLSet::IDsRenderTargets::LigthComScaled)->GetSurfaceLevel(0, &SurfSceneScale);
-
-	MLSet::DXDevice->GetRenderTarget(0, &BackBuf);
-	MLSet::DXDevice->SetRenderTarget(0, SurfSceneScale);
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative, "g_aOffsets", &(MLSet::HDRSampleOffsets));
-
-	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::LigthCom));
-	SGCore_ScreenQuadDraw();
-
-	SGCore_ShaderUnBind();
-
-	mem_release(SurfSceneScale);
-
-	MLSet::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
-	int CurrTexture = MLSet::IDsRenderTargets::CountArrToneMaps - 1;
-
-	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps; i++)
-	{
-		IDirect3DTexture9* tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[i]);
-		IDirect3DSurface9* tmpsurf = MLSet::IDsRenderTargets::SurfToneMap[i];
-		SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[i])->GetSurfaceLevel(0, &MLSet::IDsRenderTargets::SurfToneMap[i]);
-		int qwert = 0;
-	}
-
-	D3DSURFACE_DESC desc;
-	SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[CurrTexture])->GetLevelDesc(0, &desc);
-
-	MLSet::GetArrDownScale4x4(desc.Width, desc.Height, MLSet::HDRSampleOffsets);
-
-	MLSet::DXDevice->SetRenderTarget(0, MLSet::IDsRenderTargets::SurfToneMap[CurrTexture]);
-	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::LigthComScaled));
-	MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumInit);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumInit, "g_aOffsets", &(MLSet::HDRSampleOffsets));
-
-	SGCore_ScreenQuadDraw();
-
-	SGCore_ShaderUnBind();
-	mem_release(MLSet::IDsRenderTargets::SurfToneMap[CurrTexture]);
-
-	--CurrTexture;
-
-	
-
-	while (CurrTexture >= 0)
-	{
-		SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[CurrTexture + 1])->GetLevelDesc(0, &desc);
-		MLSet::GetArrDownScale4x4(desc.Width, desc.Height, MLSet::HDRSampleOffsets);
-
-		MLSet::DXDevice->SetRenderTarget(0, MLSet::IDsRenderTargets::SurfToneMap[CurrTexture]);
-		MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-		MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::SampleLumIterative, "g_aOffsets", &(MLSet::HDRSampleOffsets));
-
-		MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[CurrTexture + 1]));
-		SGCore_ScreenQuadDraw();
-
-		SGCore_ShaderUnBind();
-		CurrTexture--;
-	}
-
-	IDirect3DTexture9* tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[3]);
-
-	for (int i = 0; i < MLSet::IDsRenderTargets::CountArrToneMaps-1; i++)
-	{
-		IDirect3DSurface9* tmpsurf = MLSet::IDsRenderTargets::SurfToneMap[i];
-		mem_release(MLSet::IDsRenderTargets::SurfToneMap[i]);
-	}
-
-	tmptex = SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[3]);
-	
-	MLSet::IDsRenderTargets::IncrAdaptedLum();
-	LPDIRECT3DSURFACE9 SurfAdaptedLum = NULL;
-	SGCore_RTGetTexture(MLSet::IDsRenderTargets::GetCurrAdaptedLum())->GetSurfaceLevel(0, &SurfAdaptedLum);
-
-	MLSet::DXDevice->SetRenderTarget(0, SurfAdaptedLum);
-	MLSet::DXDevice->SetTexture(0, SGCore_RTGetTexture(MLSet::IDsRenderTargets::GetLastAdaptedLum()));
-	MLSet::DXDevice->SetTexture(1, SGCore_RTGetTexture(MLSet::IDsRenderTargets::ToneMaps[0]));
-	MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	MLSet::DXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	MLSet::DXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::ScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::CalcAdaptedLum);
-
-	float ElapsedTime = float(timeDelta) * 0.001f * (factor_adapted * 1000.f);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::CalcAdaptedLum, "g_fElapsedTime", &(ElapsedTime));
-
-	SGCore_ScreenQuadDraw();
-
-	SGCore_ShaderUnBind();
-	mem_release(SurfAdaptedLum);
-
-	MLSet::DXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
-
-	MLSet::DXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-
-	
 }
 
 void CLights::set4Or3Splits(ID id, bool is4)

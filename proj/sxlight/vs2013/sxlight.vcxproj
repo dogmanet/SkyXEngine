@@ -13,7 +13,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2B3BA583-D5EC-4DC2-91CF-42B1C7ADFD9D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>sxmtllight</RootNamespace>
+    <RootNamespace>sxlight</RootNamespace>
+    <ProjectName>sxlight</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -60,7 +61,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SXMTLLIGHT_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="MTLLIGHT"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -81,7 +82,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXMTLLIGHT_EXPORTS;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="MTLLIGHT"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -98,42 +99,32 @@
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
-    <ClCompile Include="..\..\..\source\mtllight\light.cpp">
+    <ClCompile Include="..\..\..\source\light\light.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\material.cpp">
+    <ClCompile Include="..\..\..\source\light\ml_data.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\ml_data.cpp">
+    <ClCompile Include="..\..\..\source\light\shadow.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\reflection.cpp">
+    <ClCompile Include="..\..\..\source\light\sxlight.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\shadow.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\sxmtllight.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\mtllight\sxmtllight_dll.cpp" />
+    <ClCompile Include="..\..\..\source\light\sxlight_dll.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
-    <ClInclude Include="..\..\..\source\mtllight\light.h" />
-    <ClInclude Include="..\..\..\source\mtllight\material.h" />
-    <ClInclude Include="..\..\..\source\mtllight\ml_data.h" />
-    <ClInclude Include="..\..\..\source\mtllight\reflection.h" />
-    <ClInclude Include="..\..\..\source\mtllight\shadow.h" />
-    <ClInclude Include="..\..\..\source\mtllight\sxmtllight.h" />
+    <ClInclude Include="..\..\..\source\light\light.h" />
+    <ClInclude Include="..\..\..\source\light\ml_data.h" />
+    <ClInclude Include="..\..\..\source\light\shadow.h" />
+    <ClInclude Include="..\..\..\source\light\sxlight.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -219,21 +219,21 @@ void Emitter::computeLighting()
 			{
 				Arr[i].Ambient.x = Arr[i].Ambient.y = Arr[i].Ambient.z = Arr[i].Ambient.w = 0;
 
-				for (int k = 0; k<SML_LigthsGetCount(); ++k)
+				for (int k = 0; k<SLight_GetCount(); ++k)
 				{
 					//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-					if (SML_LigthsGetVisibleForFrustum(k) && SML_LigthsGetEnable(k))
+					if (SLight_GetVisibleForFrustum(k) && SLight_GetEnable(k))
 					{
-						SML_LigthsGetColor(k, &tmpColor);
+						SLight_GetColor(k, &tmpColor);
 
 						float intens = 1;
 
-						if (SML_LigthsGetType(k) != LTYPE_LIGHT_GLOBAL)
+						if (SLight_GetType(k) != LTYPE_LIGHT_GLOBAL)
 						{
-							SML_LigthsGetPos(k, &tmpPosition, true);
+							SLight_GetPos(k, &tmpPosition, true);
 
 							float dist = SMVector3Dot(Arr[i].Pos - float3(tmpPosition.x, tmpPosition.y, tmpPosition.z));
-							float invdist = 1.f - (dist / (SML_LigthsGetDist(k)));
+							float invdist = 1.f - (dist / (SLight_GetDist(k)));
 							if (invdist > 1.f)
 								invdist = 1.f;
 							else if (invdist < 0.f)

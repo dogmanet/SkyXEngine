@@ -477,14 +477,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SRender_SimModelAdd("cube.dse");
 	SRender_SimModelAdd("plane.dse");
 
-	SML_LigthsCreatePoint(
+	SLight_CreatePoint(
 		&float3(110,110,-110),
 		LIGHTS_GLOBAL_STD_RADIUS,
 		&float3(1,1,1),
 		true,
 		true);
-	SML_LigthsSetEnable(SML_LigthsGetCount() - 1, true);
-	SML_LigthsSetName(SML_LigthsGetCount() - 1, "sun");
+	SLight_SetEnable(SLight_GetCount() - 1, true);
+	SLight_SetName(SLight_GetCount() - 1, "sun");
 
 	SXMaterialEditor::pEditLigthColorR->setText("1");
 	SXMaterialEditor::pEditLigthColorG->setText("1");

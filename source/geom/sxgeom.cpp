@@ -400,6 +400,18 @@ SX_LIB_API bool SGeom_ModelsTraceBeam(const float3 *pStart, const float3 *pDir, 
 
 //##########################################################################
 
+bool StdFuncIntersect(const float3 *pStart, const float3 *pEnd, float3 *pResult)
+{
+	return false;
+}
+
+g_phy_intersect g_fnIntersect = StdFuncIntersect;
+
+SX_LIB_API void SGeom_GreenSetFncIntersect(g_phy_intersect fnFunc)
+{
+	g_fnIntersect = fnFunc;
+}
+
 SX_LIB_API ID SGeom_GreenAddGreen(
 	const char *szName,
 	const char *szPathMask,

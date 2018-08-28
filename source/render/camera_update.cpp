@@ -11,30 +11,30 @@ void CameraUpdate::UpdateInputKeyBoard(DWORD timeDelta)
 {
 	//обработка ходьбы
 	if(SSInput_GetKeyState(SIK_W))
-		GData::ObjCamera->posFrontBack(
-		GData::CamWalkParamEditor.x *
-		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) *
+		gdata::pCamera->posFrontBack(
+		gdata::vCamWalkParamEditor.x *
+		(SSInput_GetKeyState(SIK_LSHIFT) ? gdata::vCamWalkParamEditor.y : 1) *
 		float(timeDelta) * 0.001f
 		);
 
 	if(SSInput_GetKeyState(SIK_S))
-		GData::ObjCamera->posFrontBack(
-		-GData::CamWalkParamEditor.x *
-		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.w *
+		gdata::pCamera->posFrontBack(
+		-gdata::vCamWalkParamEditor.x *
+		(SSInput_GetKeyState(SIK_LSHIFT) ? gdata::vCamWalkParamEditor.y : 1) * gdata::vCamWalkParamEditor.w *
 		float(timeDelta) * 0.001f
 		);
 
 	if(SSInput_GetKeyState(SIK_A))
-		GData::ObjCamera->posLeftRight(
-		-GData::CamWalkParamEditor.x *
-		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.z *
+		gdata::pCamera->posLeftRight(
+		-gdata::vCamWalkParamEditor.x *
+		(SSInput_GetKeyState(SIK_LSHIFT) ? gdata::vCamWalkParamEditor.y : 1) * gdata::vCamWalkParamEditor.z *
 		float(timeDelta) * 0.001f
 		);
 
 	if(SSInput_GetKeyState(SIK_D))
-		GData::ObjCamera->posLeftRight(
-		GData::CamWalkParamEditor.x *
-		(SSInput_GetKeyState(SIK_LSHIFT) ? GData::CamWalkParamEditor.y : 1) * GData::CamWalkParamEditor.z *
+		gdata::pCamera->posLeftRight(
+		gdata::vCamWalkParamEditor.x *
+		(SSInput_GetKeyState(SIK_LSHIFT) ? gdata::vCamWalkParamEditor.y : 1) * gdata::vCamWalkParamEditor.z *
 		float(timeDelta) * 0.001f
 		);
 }
@@ -50,13 +50,13 @@ void CameraUpdate::UpdateInputMouseRotate(DWORD timeDelta)
 
 	if(dx)
 	{
-		GData::ObjCamera->rotRightLeft(float(timeDelta) * *sense * float(dx));
+		gdata::pCamera->rotRightLeft(float(timeDelta) * (*sense) * float(dx));
 		//SetCursorPos(centr.x,cy);
 	}
 
 	if(dy)
 	{
-		GData::ObjCamera->rotUpDown(float(timeDelta) * *sense * float(dy));
+		gdata::pCamera->rotUpDown(float(timeDelta) * *sense * float(dy));
 		//SetCursorPos(cx,centr.y);
 	}
 }
@@ -72,7 +72,7 @@ void CameraUpdate::UpdateInputMouseUpDown(DWORD timeDelta)
 
 	if(dy)
 	{
-		GData::ObjCamera->posUpDown(5 * float(timeDelta) * *sense * float(-dy));
+		gdata::pCamera->posUpDown(5 * float(timeDelta) * *sense * float(-dy));
 	}
 }
 
