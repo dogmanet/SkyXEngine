@@ -46,13 +46,13 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic)
 			}
 			else
 			{
-				MLSet::MLInit();
+				mtrl_data::Init();
 				ArrMaterials = new CMaterials();
 			}
 		}
 		else
 		{
-			MLSet::MLInit();
+			mtrl_data::Init();
 			ArrMaterials = new CMaterials();
 		}
 	}
@@ -90,8 +90,8 @@ SX_LIB_API void SMtrl_Update(DWORD timeDelta)
 	if (ArrMaterials)
 		ArrMaterials->update(timeDelta);
 
-	MLSet::RefMProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
-	MLSet::RefMProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	mtrl_data::mRefProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+	mtrl_data::mRefProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 }
 
 //#############################################################################

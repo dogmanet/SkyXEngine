@@ -968,11 +968,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 
 #if defined(SX_LEVEL_EDITOR)
-	SXLevelEditor::LevelEditorUpdate(timeDelta);
+	level_editor::LevelEditorUpdate(timeDelta);
 #endif
 
 #if defined(SX_MATERIAL_EDITOR)
-	SXMaterialEditor::MaterialEditorUpdate(timeDelta);
+	material_editor::MaterialEditorUpdate(timeDelta);
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)

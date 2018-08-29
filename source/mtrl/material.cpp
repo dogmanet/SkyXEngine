@@ -755,7 +755,7 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 ID CMaterials::createTexParamLighting(float roughness, float f0, float thickness)
 {
 	IDirect3DTexture9* TexMaterial;
-	MLSet::DXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &TexMaterial, NULL);
+	mtrl_data::pDXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &TexMaterial, NULL);
 	D3DLOCKED_RECT LockedRect;
 	uint32_t tmpColor = D3DCOLOR_ARGB(255, DWORD(roughness*255.f), DWORD(f0*255.f), DWORD(thickness*255.f));
 
@@ -1196,9 +1196,9 @@ void CMaterials::update(UINT timeDelta)
 void CMaterials::setMainTexture(ID slot, ID id)
 {
 	if (id >= 0 && id < m_aUnitMtrls.size() && m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture != -1)
-		MLSet::DXDevice->SetTexture(slot, SGCore_LoadTexGetTex(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture));
+		mtrl_data::pDXDevice->SetTexture(slot, SGCore_LoadTexGetTex(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture));
 	else
-		MLSet::DXDevice->SetTexture(slot, 0);
+		mtrl_data::pDXDevice->SetTexture(slot, 0);
 }
 
 ID CMaterials::getID(const char* name)
@@ -1221,7 +1221,7 @@ void CMaterials::setForceblyAlphaTest(bool isat)
 {
 	m_useForceblyAlphaTest = isat;
 	if (!isat)
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 }
 
 bool CMaterials::getForceblyAlphaTest()
@@ -1828,14 +1828,14 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
 	//поэтому нужно обнулить слот в котором возможно была текстура
 	//такое явление может быть в случае когда в кадре только один материал который отражает
-	MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
+	mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 
 	if (idMtl >= 0 && idMtl < m_aUnitMtrls.size())
 		setMainTexture(idSlot, idMtl);
 
 	if (type == MTLTYPE_MODEL_STATIC)
 	{
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdGeom);
 
 		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1843,27 +1843,27 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "g_mWVP", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdGeom, "g_mW", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdGeom, "g_mWVP", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdGeom, "g_mW", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "g_vPlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeomCP, "g_vPlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP, "g_vPlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGeom);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeom);
 	}
 	else if (type == MTLTYPE_MODEL_GRASS || type == MTLTYPE_MODEL_TREE)
 	{
-		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? MLSet::IDsShaders::VS::StdGrass : MLSet::IDsShaders::VS::StdTree);
+		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? mtrl_data::shader_id::vs::idStdGrass : mtrl_data::shader_id::vs::idStdTree);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpvs);
 
 		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
@@ -1877,22 +1877,22 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "g_vPlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreenCP, "g_vPlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP, "g_vPlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdGreen);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreen);
 	}
 	else if (type == MTLTYPE_MODEL_SKIN)
 	{
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdSkin);
 
 		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1900,23 +1900,23 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 		wvpmat = SMMatrixTranspose(wmat * wvpmat);
 		wmat = SMMatrixTranspose(wmat);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "g_mWVP", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, MLSet::IDsShaders::VS::StdSkin, "g_mW", &wmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdSkin, "g_mWVP", &wvpmat);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdSkin, "g_mW", &wmat);
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP);
 
 			float3 tmpnormal, tmppoint;
 
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
 			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "g_vPlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkinCP, "g_vPlanePoint", &tmppoint);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP, "g_vPlaneNormal", &tmpnormal);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, MLSet::IDsShaders::PS::StdSkin);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkin);
 	}
 }
 
@@ -1936,47 +1936,47 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 
 	//если есть то устанавливаем текстуру материала
 	if (pMtrl->m_oMainGraphics.m_idMainTexture != -1)
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_MAIN, SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture));
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MAIN, SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture));
 
 	//если нет отражени¤ то отправл¤ем 0
 	if (pMtrl->m_oLightParam.m_type_reflect == 0)
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
 	else
 	{
 		if (m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_PLANE)
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, m_aUnitMtrls[id]->m_pReflect->getRefPlaneTex());
+			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, m_aUnitMtrls[id]->m_pReflect->getRefPlaneTex());
 		else if (m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_REFLECTION, m_aUnitMtrls[id]->m_pReflect->getRefCubeTex());
+			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, m_aUnitMtrls[id]->m_pReflect->getRefCubeTex());
 	}
 
-	MLSet::DXDevice->SetTexture(MTL_TEX_R_CURR_DEPTH, SGCore_GbufferGetRT(DS_RT_DEPTH0));
+	mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_CURR_DEPTH, SGCore_GbufferGetRT(DS_RT_DEPTH0));
 
 	//если есть рефаркци¤, а она идет вторым проходом, то отправл¤ем, иначе посылаем 0
 	/*if (pMtrl->m_oLightParam.m_type_transparency)
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFRACTION, SGCore_RTGetTexture(SML_DSGetRT_ID(DS_RT_SCENE_LIGHT_COM_REF)));
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFRACTION, SGCore_RTGetTexture(SML_DSGetRT_ID(DS_RT_SCENE_LIGHT_COM_REF)));
 	else
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_REFRACTION, 0);*/
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFRACTION, 0);*/
 
 	if (pMtrl->m_oMicroDetail.m_idMask != -1)
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_MASK, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_idMask));
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MASK, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_idMask));
 
 	for (int k = 0; k<4; k++)
 	{
 		if (pMtrl->m_oMicroDetail.m_aDetail[k] != -1)
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_DETAIL + k, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aDetail[k]));
+			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_DETAIL + k, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aDetail[k]));
 		else
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_DETAIL + k, 0);
+			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_DETAIL + k, 0);
 
 		if (pMtrl->m_oMicroDetail.m_aMicroRelief[k] != -1)
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_MICRO + k, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aMicroRelief[k]));
+			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MICRO + k, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aMicroRelief[k]));
 		else
-			MLSet::DXDevice->SetTexture(MTL_TEX_R_MICRO + k, 0);
+			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MICRO + k, 0);
 	}
 
 	//если есть текстура с параметрами освещени¤ и установлено что берем параметры из текстуры, то отправл¤ем текстуру с параметрами
 	if (pMtrl->m_oLightParam.m_idTexParam != -1 && pMtrl->m_oLightParam.m_isTextureParam)
 	{
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParam));
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParam));
 	}
 	//иначе если берем параметры из ... редактора
 	else //if (!pMtrl->m_oLightParam.m_isTextureParam)
@@ -1997,10 +1997,10 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 			pMtrl->m_oLightParam.m_fOldThickness = pMtrl->m_oLightParam.m_fThickness;
 		}
 
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand));
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand));
 	}
 	/*else
-		MLSet::DXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(MLSet::IDsTexs::NullMaterial));*/
+		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(mtrl_data::IDsTexs::NullMaterial));*/
 
 
 	if (pMtrl->m_oMainGraphics.m_idShaderVS != -1)
@@ -2105,21 +2105,21 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
 	{
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FREE_VALUE);
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FREE_VALUE);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	}
 	//если не включен принудительный альфа тест
 	else if (!m_useForceblyAlphaTest)
 	{
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	}
 	//иначе включен принудительный альфа тест
 	else
 	{
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FORCEBLY_VALUE);
-		MLSet::DXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FORCEBLY_VALUE);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	}
 
 	//почти во всех пиксельных шейдерах материалов есть данна¤ NearFar, необходима¤ д¤л записи глубины

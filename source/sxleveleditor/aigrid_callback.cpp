@@ -1,45 +1,45 @@
 
 #include "aigrid_callback.h"
 
-void SXLevelEditor::AIGridActivateAll(bool bf)
+void level_editor::AIGridActivateAll(bool bf)
 {
-	ButtonAIQuadsDelSel->setVisible(bf);
-	ButtonAIGridClear->setVisible(bf);
-	ButtonAIGridGen->setVisible(bf);
-	ButtonAIClearAll->setVisible(bf);
-	StatiAIBBDimensions->setVisible(bf);
-	StaticAIBBDimensionsWidth->setVisible(bf);
-	EditAIBBDimensionsWidth->setVisible(bf);
-	StaticAIBBDimensionsHeight->setVisible(bf);
-	EditAIBBDimensionsHeight->setVisible(bf);
-	StaticAIBBDimensionsDepth->setVisible(bf);
-	EditAIBBDimensionsDepth->setVisible(bf);
-	StaticAIBBPos->setVisible(bf);
-	StaticAIBBPosX->setVisible(bf);
-	EditAIBBPosX->setVisible(bf);
-	StaticAIBBPosY->setVisible(bf);
-	EditAIBBPosY->setVisible(bf);
-	StaticAIBBPosZ->setVisible(bf);
-	EditAIBBPosZ->setVisible(bf);
-	ButtonAIBBFinish->setVisible(bf);
-	ButtonAIGPGen->setVisible(bf);
-	ButtonAIGPClear->setVisible(bf);
-	RadioButtonAIGPAdd->setVisible(bf);
-	RadioButtonAIGPDel->setVisible(bf);
-	RadioButtonAIQuadAdd->setVisible(bf);
-	RadioButtonAIQuadsMSel->setVisible(bf);
-	RadioButtonAIQuadsSelDel->setVisible(bf);
-	ButtonAIGridValidation->setVisible(bf);
-	CheckBoxAIGridMarkedSplits->setVisible(bf);
-	StaticAIStatistics->setVisible(bf);
-	StaticAIStatsCountQuads->setVisible(bf);
-	StaticAIStatsCountGP->setVisible(bf);
-	StaticAIStatsCountSplits->setVisible(bf);
-	EditAIStatsCountQuads->setVisible(bf);
-	EditAIStatsCountGP->setVisible(bf);
-	EditAIStatsCountSplits->setVisible(bf);
+	pButtonAIQuadsDelSel->setVisible(bf);
+	pButtonAIGridClear->setVisible(bf);
+	pButtonAIGridGen->setVisible(bf);
+	pButtonAIClearAll->setVisible(bf);
+	pStaticAIBBDimensions->setVisible(bf);
+	pStaticAIBBDimensionsWidth->setVisible(bf);
+	pEditAIBBDimensionsWidth->setVisible(bf);
+	pStaticAIBBDimensionsHeight->setVisible(bf);
+	pEditAIBBDimensionsHeight->setVisible(bf);
+	pStaticAIBBDimensionsDepth->setVisible(bf);
+	pEditAIBBDimensionsDepth->setVisible(bf);
+	pStaticAIBBPos->setVisible(bf);
+	pStaticAIBBPosX->setVisible(bf);
+	pEditAIBBPosX->setVisible(bf);
+	pStaticAIBBPosY->setVisible(bf);
+	pEditAIBBPosY->setVisible(bf);
+	pStaticAIBBPosZ->setVisible(bf);
+	pEditAIBBPosZ->setVisible(bf);
+	pButtonAIBBFinish->setVisible(bf);
+	pButtonAIGPGen->setVisible(bf);
+	pButtonAIGPClear->setVisible(bf);
+	pRadioButtonAIGPAdd->setVisible(bf);
+	pRadioButtonAIGPDel->setVisible(bf);
+	pRadioButtonAIQuadAdd->setVisible(bf);
+	pRadioButtonAIQuadsMSel->setVisible(bf);
+	pRadioButtonAIQuadsSelDel->setVisible(bf);
+	pButtonAIGridValidation->setVisible(bf);
+	pCheckBoxAIGridMarkedSplits->setVisible(bf);
+	pStaticAIStatistics->setVisible(bf);
+	pStaticAIStatsCountQuads->setVisible(bf);
+	pStaticAIStatsCountGP->setVisible(bf);
+	pStaticAIStatsCountSplits->setVisible(bf);
+	pEditAIStatsCountQuads->setVisible(bf);
+	pEditAIStatsCountGP->setVisible(bf);
+	pEditAIStatsCountSplits->setVisible(bf);
 
-	SXLevelEditor::AIGridEnableBB(!(SAIG_BBIsCreatedFinish()));
+	level_editor::AIGridEnableBB(!(SAIG_BBIsCreatedFinish()));
 
 
 	float3 tmpdim;
@@ -48,57 +48,57 @@ void SXLevelEditor::AIGridActivateAll(bool bf)
 	SAIG_BBGetDimensions(&tmpdim);
 	SAIG_BBGetPos(&tmppos);
 
-	EditAIBBDimensionsWidth->setText(String(tmpdim.x).c_str());
-	EditAIBBDimensionsHeight->setText(String(tmpdim.y).c_str());
-	EditAIBBDimensionsDepth->setText(String(tmpdim.z).c_str());
+	pEditAIBBDimensionsWidth->setText(String(tmpdim.x).c_str());
+	pEditAIBBDimensionsHeight->setText(String(tmpdim.y).c_str());
+	pEditAIBBDimensionsDepth->setText(String(tmpdim.z).c_str());
 
-	EditAIBBPosX->setText(String(tmppos.x).c_str());
-	EditAIBBPosY->setText(String(tmppos.y).c_str());
-	EditAIBBPosZ->setText(String(tmppos.z).c_str());
+	pEditAIBBPosX->setText(String(tmppos.x).c_str());
+	pEditAIBBPosY->setText(String(tmppos.y).c_str());
+	pEditAIBBPosZ->setText(String(tmppos.z).c_str());
 
-	EditAIStatsCountQuads->setText(String((DWORD)SAIG_GridGetCountQuads()).c_str());
-	EditAIStatsCountGP->setText(String((DWORD)SAIG_GraphPointGetCount()).c_str());
-	EditAIStatsCountSplits->setText(String((DWORD)SAIG_GridGetCountSplits()).c_str());
+	pEditAIStatsCountQuads->setText(String((DWORD)SAIG_GridGetCountQuads()).c_str());
+	pEditAIStatsCountGP->setText(String((DWORD)SAIG_GraphPointGetCount()).c_str());
+	pEditAIStatsCountSplits->setText(String((DWORD)SAIG_GridGetCountSplits()).c_str());
 }
 
-void SXLevelEditor::AIGridEnableBB(bool bf)
+void level_editor::AIGridEnableBB(bool bf)
 {
-	StatiAIBBDimensions->setEnable(bf);
-	StaticAIBBDimensionsWidth->setEnable(bf);
-	EditAIBBDimensionsWidth->setEnable(bf);
-	StaticAIBBDimensionsHeight->setEnable(bf);
-	EditAIBBDimensionsHeight->setEnable(bf);
-	StaticAIBBDimensionsDepth->setEnable(bf);
-	EditAIBBDimensionsDepth->setEnable(bf);
-	StaticAIBBPos->setEnable(bf);
-	StaticAIBBPosX->setEnable(bf);
-	EditAIBBPosX->setEnable(bf);
-	StaticAIBBPosY->setEnable(bf);
-	EditAIBBPosY->setEnable(bf);
-	StaticAIBBPosZ->setEnable(bf);
-	EditAIBBPosZ->setEnable(bf);
-	ButtonAIBBFinish->setEnable(bf);
+	pStaticAIBBDimensions->setEnable(bf);
+	pStaticAIBBDimensionsWidth->setEnable(bf);
+	pEditAIBBDimensionsWidth->setEnable(bf);
+	pStaticAIBBDimensionsHeight->setEnable(bf);
+	pEditAIBBDimensionsHeight->setEnable(bf);
+	pStaticAIBBDimensionsDepth->setEnable(bf);
+	pEditAIBBDimensionsDepth->setEnable(bf);
+	pStaticAIBBPos->setEnable(bf);
+	pStaticAIBBPosX->setEnable(bf);
+	pEditAIBBPosX->setEnable(bf);
+	pStaticAIBBPosY->setEnable(bf);
+	pEditAIBBPosY->setEnable(bf);
+	pStaticAIBBPosZ->setEnable(bf);
+	pEditAIBBPosZ->setEnable(bf);
+	pButtonAIBBFinish->setEnable(bf);
 
-	ButtonAIGridClear->setEnable(!bf);
-	ButtonAIGPGen->setEnable(!bf);
-	ButtonAIGPClear->setEnable(!bf);
-	RadioButtonAIGPAdd->setEnable(!bf);
-	RadioButtonAIGPDel->setEnable(!bf);
-	RadioButtonAIQuadAdd->setEnable(!bf);
-	RadioButtonAIQuadsMSel->setEnable(!bf);
-	RadioButtonAIQuadsSelDel->setEnable(!bf);
-	ButtonAIGridValidation->setEnable(!bf);
-	CheckBoxAIGridMarkedSplits->setEnable(!bf);
-	StaticAIStatistics->setEnable(!bf);
-	StaticAIStatsCountQuads->setEnable(!bf);
-	StaticAIStatsCountGP->setEnable(!bf);
-	StaticAIStatsCountSplits->setEnable(!bf);
-	EditAIStatsCountQuads->setEnable(!bf);
-	EditAIStatsCountGP->setEnable(!bf);
-	EditAIStatsCountSplits->setEnable(!bf);
-	ButtonAIQuadsDelSel->setEnable(!bf);
-	ButtonAIGridGen->setEnable(!bf);
-	ButtonAIClearAll->setEnable(!bf);
+	pButtonAIGridClear->setEnable(!bf);
+	pButtonAIGPGen->setEnable(!bf);
+	pButtonAIGPClear->setEnable(!bf);
+	pRadioButtonAIGPAdd->setEnable(!bf);
+	pRadioButtonAIGPDel->setEnable(!bf);
+	pRadioButtonAIQuadAdd->setEnable(!bf);
+	pRadioButtonAIQuadsMSel->setEnable(!bf);
+	pRadioButtonAIQuadsSelDel->setEnable(!bf);
+	pButtonAIGridValidation->setEnable(!bf);
+	pCheckBoxAIGridMarkedSplits->setEnable(!bf);
+	pStaticAIStatistics->setEnable(!bf);
+	pStaticAIStatsCountQuads->setEnable(!bf);
+	pStaticAIStatsCountGP->setEnable(!bf);
+	pStaticAIStatsCountSplits->setEnable(!bf);
+	pEditAIStatsCountQuads->setEnable(!bf);
+	pEditAIStatsCountGP->setEnable(!bf);
+	pEditAIStatsCountSplits->setEnable(!bf);
+	pButtonAIQuadsDelSel->setEnable(!bf);
+	pButtonAIGridGen->setEnable(!bf);
+	pButtonAIClearAll->setEnable(!bf);
 }
 
 LRESULT SXLevelEditor_EditAIBBDimensions_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -107,19 +107,19 @@ LRESULT SXLevelEditor_EditAIBBDimensions_Enter(HWND hwnd, UINT msg, WPARAM wPara
 	float3 tmpdim;
 	SAIG_BBGetDimensions(&tmpdim);
 
-	if (hwnd == SXLevelEditor::EditAIBBDimensionsWidth->getHWND())
+	if (hwnd == level_editor::pEditAIBBDimensionsWidth->getHWND())
 	{
-		SXLevelEditor::EditAIBBDimensionsWidth->getText(txt, 64);
+		level_editor::pEditAIBBDimensionsWidth->getText(txt, 64);
 		sscanf(txt, "%f", &(tmpdim.x));
 	}
-	else if (hwnd == SXLevelEditor::EditAIBBDimensionsHeight->getHWND())
+	else if (hwnd == level_editor::pEditAIBBDimensionsHeight->getHWND())
 	{
-		SXLevelEditor::EditAIBBDimensionsHeight->getText(txt, 64);
+		level_editor::pEditAIBBDimensionsHeight->getText(txt, 64);
 		sscanf(txt, "%f", &(tmpdim.y));
 	}
-	else if (hwnd == SXLevelEditor::EditAIBBDimensionsDepth->getHWND())
+	else if (hwnd == level_editor::pEditAIBBDimensionsDepth->getHWND())
 	{
-		SXLevelEditor::EditAIBBDimensionsDepth->getText(txt, 64);
+		level_editor::pEditAIBBDimensionsDepth->getText(txt, 64);
 		sscanf(txt, "%f", &(tmpdim.z));
 	}
 
@@ -134,19 +134,19 @@ LRESULT SXLevelEditor_EditAIBBPos_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	float3 tmppos;
 	SAIG_BBGetPos(&tmppos);
 
-	if (hwnd == SXLevelEditor::EditAIBBPosX->getHWND())
+	if (hwnd == level_editor::pEditAIBBPosX->getHWND())
 	{
-		SXLevelEditor::EditAIBBPosX->getText(txt, 64);
+		level_editor::pEditAIBBPosX->getText(txt, 64);
 		sscanf(txt, "%f", &(tmppos.x));
 	}
-	else if (hwnd == SXLevelEditor::EditAIBBPosY->getHWND())
+	else if (hwnd == level_editor::pEditAIBBPosY->getHWND())
 	{
-		SXLevelEditor::EditAIBBPosY->getText(txt, 64);
+		level_editor::pEditAIBBPosY->getText(txt, 64);
 		sscanf(txt, "%f", &(tmppos.y));
 	}
-	else if (hwnd == SXLevelEditor::EditAIBBPosZ->getHWND())
+	else if (hwnd == level_editor::pEditAIBBPosZ->getHWND())
 	{
-		SXLevelEditor::EditAIBBPosZ->getText(txt, 64);
+		level_editor::pEditAIBBPosZ->getText(txt, 64);
 		sscanf(txt, "%f", &(tmppos.z));
 	}
 
@@ -158,49 +158,49 @@ LRESULT SXLevelEditor_EditAIBBPos_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 LRESULT SXLevelEditor_ButtonAIBBFinish_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_BBCreateFinish();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
 LRESULT SXLevelEditor_ButtonAIQuadsDelSel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_QuadSelectedDelete();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
 LRESULT SXLevelEditor_ButtonAIGridGen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GridGenerate();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
 LRESULT SXLevelEditor_ButtonAIGridClear_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GridClear();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
 LRESULT SXLevelEditor_ButtonAIGPGen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GraphPointGenerate();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
 LRESULT SXLevelEditor_ButtonAIGPClear_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GraphPointClear();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
 LRESULT SXLevelEditor_ButtonAIGridValidation_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GridTestValidation();
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
@@ -208,6 +208,6 @@ LRESULT SXLevelEditor_ButtonAIClearAll_Click(HWND hwnd, UINT msg, WPARAM wParam,
 {
 	SAIG_Clear();
 	SAIG_BBCreate(&float3(0, 0, 0), &float3(10, 10, 10));
-	SXLevelEditor::AIGridActivateAll(true);
+	level_editor::AIGridActivateAll(true);
 	return 0;
 }

@@ -27,213 +27,213 @@
 #include "model_callback.h"
 #include "common_callback.h"
 
-namespace SXLevelEditor
+namespace level_editor
 {
-	extern ISXGUIBaseWnd* JobWindow;
-	extern ISXGUIMenuWindow* MainMenu;
-	extern ISXGUIBaseWnd* RenderWindow;
+	extern ISXGUIBaseWnd *pJobWindow;
+	extern ISXGUIMenuWindow *pMainMenu;
+	extern ISXGUIBaseWnd *pRenderWindow;
 
-	extern ISXGUIToolBar* ToolBar1;
-	extern ISXGUIButton* ButtonTBNew;
-	extern ISXGUIButton* ButtonTBOpen;
-	extern ISXGUIButton* ButtonTBSave;
-	extern ISXGUIButton* ButtonTBSaveAs;
+	extern ISXGUIToolBar *pToolBar1;
+	extern ISXGUIButton *pButtonTBNew;
+	extern ISXGUIButton *pButtonTBOpen;
+	extern ISXGUIButton *pButtonTBSave;
+	extern ISXGUIButton *pButtonTBSaveAs;
 
-	extern ISXGUICheckBox* CheckBoxTBArrow;
-	extern ISXGUICheckBox* CheckBoxTBPos;
-	extern ISXGUICheckBox* CheckBoxTBRot;
-	extern ISXGUICheckBox* CheckBoxTBScale;
+	extern ISXGUICheckBox *pCheckBoxTBArrow;
+	extern ISXGUICheckBox *pCheckBoxTBPos;
+	extern ISXGUICheckBox *pCheckBoxTBRot;
+	extern ISXGUICheckBox *pCheckBoxTBScale;
 
-	extern ISXGUICheckBox* CheckBoxTBGrid;
-	extern ISXGUICheckBox* CheckBoxTBAxes;
+	extern ISXGUICheckBox *pCheckBoxTBGrid;
+	extern ISXGUICheckBox *pCheckBoxTBAxes;
 
-	extern ISXGUICheckBox* CheckBoxTBRColor;
-	extern ISXGUICheckBox* CheckBoxTBRNormal;
-	extern ISXGUICheckBox* CheckBoxTBRParam;
-	extern ISXGUICheckBox* CheckBoxTBRAmDiff;
-	extern ISXGUICheckBox* CheckBoxTBRSpecular;
-	extern ISXGUICheckBox* CheckBoxTBRLighting;
+	extern ISXGUICheckBox *pCheckBoxTBRColor;
+	extern ISXGUICheckBox *pCheckBoxTBRNormal;
+	extern ISXGUICheckBox *pCheckBoxTBRParam;
+	extern ISXGUICheckBox *pCheckBoxTBRAmDiff;
+	extern ISXGUICheckBox *pCheckBoxTBRSpecular;
+	extern ISXGUICheckBox *pCheckBoxTBRLighting;
 
-	extern ISXGUICheckBox* CheckBoxTBSelS;
-	extern ISXGUICheckBox* CheckBoxTBSelZTest;
-	extern ISXGUICheckBox* CheckBoxTBSelMesh;
-	extern ISXGUICheckBox* CheckBoxTBSelCullBack;
+	extern ISXGUICheckBox *pCheckBoxTBSelS;
+	extern ISXGUICheckBox *pCheckBoxTBSelZTest;
+	extern ISXGUICheckBox *pCheckBoxTBSelMesh;
+	extern ISXGUICheckBox *pCheckBoxTBSelCullBack;
 
-	extern ISXGUICheckBox* CheckBoxTBAIGBound;
-	extern ISXGUICheckBox* CheckBoxTBAIGQuad;
-	extern ISXGUICheckBox* CheckBoxTBAIGGraphPoint;
+	extern ISXGUICheckBox *pCheckBoxTBAIGBound;
+	extern ISXGUICheckBox *pCheckBoxTBAIGQuad;
+	extern ISXGUICheckBox *pCheckBoxTBAIGGraphPoint;
 
-	extern ISXGUICheckBox* CheckBoxTBLevelType;
-	extern ISXGUICheckBox* CheckBoxTBGLightEnable;
+	extern ISXGUICheckBox *pCheckBoxTBLevelType;
+	extern ISXGUICheckBox *pCheckBoxTBGLightEnable;
 
-	extern ISXGUIGroupBox* GroupBoxList;
-	extern ISXGUIGroupBox* GroupBoxData;
-	extern ISXGUIListBox* ListBoxList;
-	extern ISXGUIStatic* StaticListTextCount;
-	extern ISXGUIStatic* StaticListValCount;
+	extern ISXGUIGroupBox *pGroupBoxList;
+	extern ISXGUIGroupBox *pGroupBoxData;
+	extern ISXGUIListBox *pListBoxList;
+	extern ISXGUIStatic *pStaticListTextCount;
+	extern ISXGUIStatic *pStaticListValCount;
 
-	extern ISXGUIButton* ButtonDelete;
+	extern ISXGUIButton *pButtonDelete;
 
-	extern ISXGUIButton* ButtonGeometryOpen;
-	extern ISXGUIButton* ButtonGreenOpen;
-	extern ISXGUIButton* ButtonGameObjectOpen;
-	extern ISXGUIButton* ButtonAIGridOpen;
+	extern ISXGUIButton *pButtonGeometryOpen;
+	extern ISXGUIButton *pButtonGreenOpen;
+	extern ISXGUIButton *pButtonGameObjectOpen;
+	extern ISXGUIButton *pButtonAIGridOpen;
 
 
 	//model
 	//{{
-	extern ISXGUIStatic* StaticGeomName;
-	extern ISXGUIEdit* EditGeomName;
+	extern ISXGUIStatic *pStaticGeomName;
+	extern ISXGUIEdit *pEditGeomName;
 
-	extern ISXGUIStatic* StaticGeomModel;
-	extern ISXGUIEdit* EditGeomModel;
-	extern ISXGUIButton* ButtonGeomModel;
+	extern ISXGUIStatic *pStaticGeomModel;
+	extern ISXGUIEdit *pEditGeomModel;
+	extern ISXGUIButton *pButtonGeomModel;
 
-	extern ISXGUIStatic* StaticGeomLod1;
-	extern ISXGUIEdit* EditGeomLod1;
-	extern ISXGUIButton* ButtonGeomLod1;
+	extern ISXGUIStatic *pStaticGeomLod1;
+	extern ISXGUIEdit *pEditGeomLod1;
+	extern ISXGUIButton *pButtonGeomLod1;
 	
-	extern ISXGUIStatic* StaticGeomPos;
-	extern ISXGUIEdit* EditGeomPosX;
-	extern ISXGUIEdit* EditGeomPosY;
-	extern ISXGUIEdit* EditGeomPosZ;
-	extern ISXGUIRadioButton* RadioButtonGeomPosX;
-	extern ISXGUIRadioButton* RadioButtonGeomPosY;
-	extern ISXGUIRadioButton* RadioButtonGeomPosZ;
-	extern ISXGUIStatic* StaticGeomRot;
-	extern ISXGUIEdit* EditGeomRotX;
-	extern ISXGUIEdit* EditGeomRotY;
-	extern ISXGUIEdit* EditGeomRotZ;
-	extern ISXGUIRadioButton* RadioButtonGeomRotX;
-	extern ISXGUIRadioButton* RadioButtonGeomRotY;
-	extern ISXGUIRadioButton* RadioButtonGeomRotZ;
-	extern ISXGUIStatic* StaticGeomScale;
-	extern ISXGUIEdit* EditGeomScaleX;
-	extern ISXGUIEdit* EditGeomScaleY;
-	extern ISXGUIEdit* EditGeomScaleZ;
-	extern ISXGUIRadioButton* RadioButtonGeomScaleX;
-	extern ISXGUIRadioButton* RadioButtonGeomScaleY;
-	extern ISXGUIRadioButton* RadioButtonGeomScaleZ;
-	extern ISXGUIButton* ButtonGeomFinish;
+	extern ISXGUIStatic *pStaticGeomPos;
+	extern ISXGUIEdit *pEditGeomPosX;
+	extern ISXGUIEdit *pEditGeomPosY;
+	extern ISXGUIEdit *pEditGeomPosZ;
+	extern ISXGUIRadioButton *pRadioButtonGeomPosX;
+	extern ISXGUIRadioButton *pRadioButtonGeomPosY;
+	extern ISXGUIRadioButton *pRadioButtonGeomPosZ;
+	extern ISXGUIStatic *pStaticGeomRot;
+	extern ISXGUIEdit *pEditGeomRotX;
+	extern ISXGUIEdit *pEditGeomRotY;
+	extern ISXGUIEdit *pEditGeomRotZ;
+	extern ISXGUIRadioButton *pRadioButtonGeomRotX;
+	extern ISXGUIRadioButton *pRadioButtonGeomRotY;
+	extern ISXGUIRadioButton *pRadioButtonGeomRotZ;
+	extern ISXGUIStatic *pStaticGeomScale;
+	extern ISXGUIEdit *pEditGeomScaleX;
+	extern ISXGUIEdit *pEditGeomScaleY;
+	extern ISXGUIEdit *pEditGeomScaleZ;
+	extern ISXGUIRadioButton *pRadioButtonGeomScaleX;
+	extern ISXGUIRadioButton *pRadioButtonGeomScaleY;
+	extern ISXGUIRadioButton *pRadioButtonGeomScaleZ;
+	extern ISXGUIButton *pButtonGeomFinish;
 	//}}
 
 	//Green
 	//{{
-	extern ISXGUIStatic* StaticGreenName;
-	extern ISXGUIEdit* EditGreenName;
+	extern ISXGUIStatic *pStaticGreenName;
+	extern ISXGUIEdit *pEditGreenName;
 
-	extern ISXGUIStatic* StaticGreenModel;
-	extern ISXGUIEdit* EditGreenModel;
-	extern ISXGUIButton* ButtonGreenModel;
+	extern ISXGUIStatic *pStaticGreenModel;
+	extern ISXGUIEdit *pEditGreenModel;
+	extern ISXGUIButton *pButtonGreenModel;
 
-	extern ISXGUIStatic* StaticGreenLod1;
-	extern ISXGUIEdit* EditGreenLod1;
-	extern ISXGUIButton* ButtonGreenLod1;
+	extern ISXGUIStatic *pStaticGreenLod1;
+	extern ISXGUIEdit *pEditGreenLod1;
+	extern ISXGUIButton *pButtonGreenLod1;
 
-	extern ISXGUIStatic* StaticGreenLod2;
-	extern ISXGUIEdit* EditGreenLod2;
-	extern ISXGUIButton* ButtonGreenLod2;
+	extern ISXGUIStatic *pStaticGreenLod2;
+	extern ISXGUIEdit *pEditGreenLod2;
+	extern ISXGUIButton *pButtonGreenLod2;
 
-	extern ISXGUIStatic* StaticGreenMask;
-	extern ISXGUIEdit* EditGreenMask;
-	extern ISXGUIButton* ButtonGreenMask;
+	extern ISXGUIStatic *pStaticGreenMask;
+	extern ISXGUIEdit *pEditGreenMask;
+	extern ISXGUIButton *pButtonGreenMask;
 	
-	extern ISXGUIStatic* StaticGreenNav;
-	extern ISXGUIEdit* EditGreenNav;
-	extern ISXGUIButton* ButtonGreenNav;
+	extern ISXGUIStatic *pStaticGreenNav;
+	extern ISXGUIEdit *pEditGreenNav;
+	extern ISXGUIButton *pButtonGreenNav;
 
-	extern ISXGUITrackBar* TrackBarGreenDensity;
-	extern ISXGUIButton* ButtonGreenGenerate;
-	extern ISXGUIStatic* StaticGreenDensityText;
-	extern ISXGUIStatic* StaticGreenDensityVal;
+	extern ISXGUITrackBar *pTrackBarGreenDensity;
+	extern ISXGUIButton *pButtonGreenGenerate;
+	extern ISXGUIStatic *pStaticGreenDensityText;
+	extern ISXGUIStatic *pStaticGreenDensityVal;
 
-	extern ISXGUIEdit* EditGreenSelX;
-	extern ISXGUIEdit* EditGreenSelY;
-	extern ISXGUIEdit* EditGreenSelZ;
-	extern ISXGUIRadioButton* RadioButtonGreenSelX;
-	extern ISXGUIRadioButton* RadioButtonGreenSelY;
-	extern ISXGUIRadioButton* RadioButtonGreenSelZ;
-	extern ISXGUIComboBox* ComboBoxGreenSel;
-	extern ISXGUIStatic* StaticGreenSelX;
-	extern ISXGUIStatic* StaticGreenSelY;
-	extern ISXGUIStatic* StaticGreenSelZ;
+	extern ISXGUIEdit *pEditGreenSelX;
+	extern ISXGUIEdit *pEditGreenSelY;
+	extern ISXGUIEdit *pEditGreenSelZ;
+	extern ISXGUIRadioButton *pRadioButtonGreenSelX;
+	extern ISXGUIRadioButton *pRadioButtonGreenSelY;
+	extern ISXGUIRadioButton *pRadioButtonGreenSelZ;
+	extern ISXGUIComboBox *pComboBoxGreenSel;
+	extern ISXGUIStatic *pStaticGreenSelX;
+	extern ISXGUIStatic *pStaticGreenSelY;
+	extern ISXGUIStatic *pStaticGreenSelZ;
 	//}}
 
 	//game object
 	//{
-	extern ISXGUIStatic* StaticGameClass;
-	extern ISXGUIComboBox* ComboBoxGameClass;
-	extern ISXGUIButton* ButtonGameTab;
+	extern ISXGUIStatic *pStaticGameClass;
+	extern ISXGUIComboBox *pComboBoxGameClass;
+	extern ISXGUIButton *pButtonGameTab;
 
 	//! текущий активный раздел игровых объектов, 0 - своейства, 1 - соединения
 	extern int GameTabVal;
 
-	extern ISXGUIListView* ListViewGameClass;
-	extern ISXGUIComboBox* ComboBoxGameValue;
-	extern ISXGUIEdit* EditGameValue;
-	extern ISXGUIButton* ButtonGameValue;
-	extern ISXGUIStatic* StaticGameHelp;
-	extern ISXGUIMemo* MemoGameHelp;
-	extern ISXGUIButton* ButtonGameCreate;
+	extern ISXGUIListView *pListViewGameClass;
+	extern ISXGUIComboBox *pComboBoxGameValue;
+	extern ISXGUIEdit *pEditGameValue;
+	extern ISXGUIButton *pButtonGameValue;
+	extern ISXGUIStatic *pStaticGameHelp;
+	extern ISXGUIMemo *pMemoGameHelp;
+	extern ISXGUIButton *pButtonGameCreate;
 
-	extern ISXGUICheckBox* CheckBoxGameFlags[16];
-	extern const char* aGameObjectFlags[16];
+	extern ISXGUICheckBox *pCheckBoxGameFlags[16];
+	extern const char *aGameObjectFlags[16];
 
-	extern ISXGUIListView* ListViewGameConnections;
-	extern ISXGUIStatic* StaticGameConnectionsEvent;
-	extern ISXGUIComboBox* ComboBoxGameConnectionsEvent;
-	extern ISXGUIStatic* StaticGameConnectionsName;
-	extern ISXGUIEdit* EditGameConnectionsName;
-	extern ISXGUIStatic* StaticGameConnectionsAction;
-	extern ISXGUIComboBox* ComboBoxGameConnectionsAction;
-	extern ISXGUIStatic* StaticGameConnectionsDelay;
-	extern ISXGUIEdit* EditGameConnectionsDelay;
-	extern ISXGUIStatic* StaticGameConnectionsParameter;
-	extern ISXGUIEdit* EditGameConnectionsParameter;
-	extern ISXGUIButton* ButtonGameConnectionsCreate;
-	extern ISXGUIButton* ButtonGameConnectionsDelete;
+	extern ISXGUIListView *pListViewGameConnections;
+	extern ISXGUIStatic *pStaticGameConnectionsEvent;
+	extern ISXGUIComboBox *pComboBoxGameConnectionsEvent;
+	extern ISXGUIStatic *pStaticGameConnectionsName;
+	extern ISXGUIEdit *pEditGameConnectionsName;
+	extern ISXGUIStatic *pStaticGameConnectionsAction;
+	extern ISXGUIComboBox *pComboBoxGameConnectionsAction;
+	extern ISXGUIStatic *pStaticGameConnectionsDelay;
+	extern ISXGUIEdit *pEditGameConnectionsDelay;
+	extern ISXGUIStatic *pStaticGameConnectionsParameter;
+	extern ISXGUIEdit *pEditGameConnectionsParameter;
+	extern ISXGUIButton *pButtonGameConnectionsCreate;
+	extern ISXGUIButton *pButtonGameConnectionsDelete;
 	//}
 
 	//aigrid
 	//{
-	extern ISXGUIButton* ButtonAIQuadsDelSel;
-	extern ISXGUIButton* ButtonAIGridGen;
-	extern ISXGUIButton* ButtonAIGridClear;
-	extern ISXGUIButton* ButtonAIClearAll;
-	extern ISXGUIStatic* StatiAIBBDimensions;
-	extern ISXGUIStatic* StaticAIBBDimensionsWidth;
-	extern ISXGUIEdit* EditAIBBDimensionsWidth;
-	extern ISXGUIStatic* StaticAIBBDimensionsHeight;
-	extern ISXGUIEdit* EditAIBBDimensionsHeight;
-	extern ISXGUIStatic* StaticAIBBDimensionsDepth;
-	extern ISXGUIEdit* EditAIBBDimensionsDepth;
-	extern ISXGUIStatic* StaticAIBBPos;
-	extern ISXGUIStatic* StaticAIBBPosX;
-	extern ISXGUIEdit* EditAIBBPosX;
-	extern ISXGUIStatic* StaticAIBBPosY;
-	extern ISXGUIEdit* EditAIBBPosY;
-	extern ISXGUIStatic* StaticAIBBPosZ;
-	extern ISXGUIEdit* EditAIBBPosZ;
-	extern ISXGUIButton* ButtonAIBBFinish;
-	extern ISXGUIButton* ButtonAIGPGen;
-	extern ISXGUIButton* ButtonAIGPClear;
-	extern ISXGUIRadioButton* RadioButtonAIGPAdd;
-	extern ISXGUIRadioButton* RadioButtonAIGPDel;
-	extern ISXGUIRadioButton* RadioButtonAIQuadAdd;
-	extern ISXGUIRadioButton* RadioButtonAIQuadsMSel;
-	extern ISXGUIRadioButton* RadioButtonAIQuadsSelDel;
-	extern ISXGUIButton* ButtonAIGridValidation;
-	extern ISXGUICheckBox* CheckBoxAIGridMarkedSplits;
-	extern ISXGUIStatic* StaticAIStatistics;
-	extern ISXGUIStatic* StaticAIStatsCountQuads;
-	extern ISXGUIStatic* StaticAIStatsCountGP;
-	extern ISXGUIStatic* StaticAIStatsCountSplits;
-	extern ISXGUIEdit* EditAIStatsCountQuads;
-	extern ISXGUIEdit* EditAIStatsCountGP;
-	extern ISXGUIEdit* EditAIStatsCountSplits;
+	extern ISXGUIButton *pButtonAIQuadsDelSel;
+	extern ISXGUIButton *pButtonAIGridGen;
+	extern ISXGUIButton *pButtonAIGridClear;
+	extern ISXGUIButton *pButtonAIClearAll;
+	extern ISXGUIStatic *pStaticAIBBDimensions;
+	extern ISXGUIStatic *pStaticAIBBDimensionsWidth;
+	extern ISXGUIEdit *pEditAIBBDimensionsWidth;
+	extern ISXGUIStatic *pStaticAIBBDimensionsHeight;
+	extern ISXGUIEdit *pEditAIBBDimensionsHeight;
+	extern ISXGUIStatic *pStaticAIBBDimensionsDepth;
+	extern ISXGUIEdit *pEditAIBBDimensionsDepth;
+	extern ISXGUIStatic *pStaticAIBBPos;
+	extern ISXGUIStatic *pStaticAIBBPosX;
+	extern ISXGUIEdit *pEditAIBBPosX;
+	extern ISXGUIStatic *pStaticAIBBPosY;
+	extern ISXGUIEdit *pEditAIBBPosY;
+	extern ISXGUIStatic *pStaticAIBBPosZ;
+	extern ISXGUIEdit *pEditAIBBPosZ;
+	extern ISXGUIButton *pButtonAIBBFinish;
+	extern ISXGUIButton *pButtonAIGPGen;
+	extern ISXGUIButton *pButtonAIGPClear;
+	extern ISXGUIRadioButton *pRadioButtonAIGPAdd;
+	extern ISXGUIRadioButton *pRadioButtonAIGPDel;
+	extern ISXGUIRadioButton *pRadioButtonAIQuadAdd;
+	extern ISXGUIRadioButton *pRadioButtonAIQuadsMSel;
+	extern ISXGUIRadioButton *pRadioButtonAIQuadsSelDel;
+	extern ISXGUIButton *pButtonAIGridValidation;
+	extern ISXGUICheckBox *pCheckBoxAIGridMarkedSplits;
+	extern ISXGUIStatic *pStaticAIStatistics;
+	extern ISXGUIStatic *pStaticAIStatsCountQuads;
+	extern ISXGUIStatic *pStaticAIStatsCountGP;
+	extern ISXGUIStatic *pStaticAIStatsCountSplits;
+	extern ISXGUIEdit *pEditAIStatsCountQuads;
+	extern ISXGUIEdit *pEditAIStatsCountGP;
+	extern ISXGUIEdit *pEditAIStatsCountSplits;
 	//}
 
-	extern ISXGUIStatusBar* StatusBar1;
+	extern ISXGUIStatusBar *pStatusBar1;
 
 	//**********************************************************************
 
@@ -280,44 +280,44 @@ namespace SXLevelEditor
 	void LEcreateData();
 	void LEdeleteData();
 
-	extern ID3DXMesh* FigureBox;
-	extern CAxesHelper* ObjAxesHelper;	//!< рендер хелпера трансформаций
+	extern ID3DXMesh *pFigureBox;
+	extern CAxesHelper *pAxesHelper;	//!< рендер хелпера трансформаций
 
-	extern int ActiveGroupType;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
-	extern ID ActiveGreenSplit;		//!< текущий идентификатор сплита растительность (если выделена растительность)
-	extern ID ActiveGreenObject;		//!< текущий идентификатор объекта растительности (если выделена растительность)
+	extern int iActiveGroupType;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
+	extern ID idActiveGreenSplit;		//!< текущий идентификатор сплита растительность (если выделена растительность)
+	extern ID idActiveGreenObject;		//!< текущий идентификатор объекта растительности (если выделена растительность)
 
-	extern ID ActiveElement;			//!< текущий идентификатор выделенного элемента из списка
-	extern bool SelSelection;		//!< разрешено ли выделение?
-	extern bool SelZTest;			//!< использовать ли z-test при выделении?
-	extern bool SelMesh;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
-	extern bool SelBackFacesCull;	//!< отсекать ли задние грани при выделении?
+	extern ID idActiveElement;			//!< текущий идентификатор выделенного элемента из списка
+	extern bool canSelSelection;		//!< разрешено ли выделение?
+	extern bool canSelZTest;			//!< использовать ли z-test при выделении?
+	extern bool canSelMesh;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
+	extern bool canSelBackFacesCull;	//!< отсекать ли задние грани при выделении?
 
-	extern bool AIGBound;			//!< отрисовка боунда ai сетки
-	extern bool AIGQuad;			//!< отрисовка квадов ai сетки
-	extern bool AIGGraphPoint;		//!< отрисовка графпоинтов ai сетки
+	extern bool canAIGBound;			//!< отрисовка боунда ai сетки
+	extern bool canAIGQuad;			//!< отрисовка квадов ai сетки
+	extern bool canAIGGraphPoint;		//!< отрисовка графпоинтов ai сетки
 
 	//bound box для массового создания объектов растительности
-	extern bool GreenRenderBox;		//!< разрешено ли рисовать бокс?
-	extern float3 GreenBoxPos;		//!< позиция бокса
-	extern float3_t GreenBoxWHD;	//!< ширина, высота, длина бокса
+	extern bool canGreenRenderBox;		//!< разрешено ли рисовать бокс?
+	extern float3 vGreenBoxPos;		//!< позиция бокса
+	extern float3_t vGreenBoxWHD;	//!< ширина, высота, длина бокса
 
 
 
 
-	extern float3 HelperPos;
-	extern float3 HelperRot;
-	extern float3 HelperScale;
+	extern float3 vHelperPos;
+	extern float3 vHelperRot;
+	extern float3 vHelperScale;
 
 	/*! добавление (true) либо создание нового (false) соединения для игрового объекта 
 	 \note при добавлении все данные с редакторов записываются в новое соединеие, при создании редакторы отвязывается от таблицы и их можно спокойно изменять
 	*/
 	extern bool isAddGameConections;
 
-	extern ID IdMtl;
-	extern ID MenuWeatherCurrID;
-	extern int MenuWeatherCount;
-	extern Array<String> MenuWeatherArr;
+	extern ID idMtl;
+	extern ID idMenuWeatherCurr;
+	extern int iMenuWeatherCount;
+	extern Array<String> aMenuWeather;
 };
 
 #endif

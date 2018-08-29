@@ -17,55 +17,50 @@ See the license in LICENSE
 
 #include "sxmtrl.h"
 
-namespace MLSet
+namespace mtrl_data
 {
-	void MLInit();
+	void Init();
 
-	extern IDirect3DDevice9* DXDevice;
+	extern IDirect3DDevice9 *pDXDevice;
 
-	extern float2_t SizeTexReflection;
+	extern float2_t vSizeTexReflection;
 
 	//ориентаци¤ и верхний вектор дл¤ рендера в кубическую текстуру
-	extern float3 OrientedCube[6];
-	extern float3 UpVectorsCube[6];
+	extern float3 vOrientedCube[6];
+	extern float3 vUpVectorsCube[6];
 
-	extern float4x4 RefMProjPlane;
-	extern float4x4 RefMProjCube;
+	extern float4x4 mRefProjPlane;
+	extern float4x4 mRefProjCube;
 
-	namespace IDsShaders
+	namespace shader_id
 	{
-		namespace VS
+		namespace vs
 		{
-			extern ID ResPosDepth;
+			extern ID idResPosDepth;
 			
-			extern ID ScreenOut;
+			extern ID idScreenOut;
 
-			extern ID StdGeom;
-			extern ID StdTree;
-			extern ID StdGrass;
-			extern ID StdSkin;
+			extern ID idStdGeom;
+			extern ID idStdTree;
+			extern ID idStdGrass;
+			extern ID idStdSkin;
 		};
 
-		namespace PS
+		namespace ps
 		{
-			extern ID CalcAdaptedLum;
-			extern ID SampleLumInit;
-			extern ID SampleLumIterative;
+			extern ID idCalcAdaptedLum;
+			extern ID idSampleLumInit;
+			extern ID idSampleLumIterative;
 
-			extern ID ScreenOut;
+			extern ID idScreenOut;
 
-			extern ID StdGeom;
-			extern ID StdGeomCP;
-			extern ID StdGreen;
-			extern ID StdGreenCP;
-			extern ID StdSkin;
-			extern ID StdSkinCP;
+			extern ID idStdGeom;
+			extern ID idStdGeomCP;
+			extern ID idStdGreen;
+			extern ID idStdGreenCP;
+			extern ID idStdSkin;
+			extern ID idStdSkinCP;
 		};
-	};
-
-	namespace IDsTexs
-	{
-		extern ID Tex_NoiseTex;
 	};
 };
 

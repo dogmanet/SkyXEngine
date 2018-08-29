@@ -6,17 +6,17 @@ See the license in LICENSE
 
 /*!
 \file
-Главный файл редактора материалов SXMaterialEditor
+Главный файл редактора материалов material_editor
 */
 
 /*!
-\page material_editor Редактор материалов SXMaterialEditor
+\page material_editor Редактор материалов material_editor
 \tableofcontents
 \section material_editor_main Общее
-\b SXMaterialEditor – редактор материаловдля движка SkyXEngine. \n
+\b material_editor – редактор материаловдля движка SkyXEngine. \n
 <i>Основное окно (также как и окно рендера) не изменяемо в размерах.</i>
 
-\image html material_editor/image1.png "Скришот программы SXMaterialEditor"
+\image html material_editor/image1.png "Скришот программы material_editor"
 
 \section material_editor_window Структура окна
 <b>Окно состоит из структурных элементов (сверху вниз): </b>
@@ -425,50 +425,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXGUIinit();
 	srand((unsigned int)time(0));
 
-	SXMaterialEditor::InitAllElements();
-	SXMaterialEditor::Nulling();
+	material_editor::InitAllElements();
+	material_editor::Nulling();
 	
 
-	SkyXEngine_Init(SXMaterialEditor::pWindowRender->getHWND(), SXMaterialEditor::pJobWindow->getHWND());
+	SkyXEngine_Init(material_editor::pWindowRender->getHWND(), material_editor::pJobWindow->getHWND());
 	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 	SkyXEngine_RunGenPreview();
 	Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-	SXMaterialEditor::pCheckBoxTBRLighting->setCheck(true);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+	material_editor::pCheckBoxTBRLighting->setCheck(true);
 
-	SXMaterialEditor::pCheckBoxTBCam->setCheck(true);
-	SRender_EditorCameraSetMove(SXMaterialEditor::pCheckBoxTBCam->getCheck());
+	material_editor::pCheckBoxTBCam->setCheck(true);
+	SRender_EditorCameraSetMove(material_editor::pCheckBoxTBCam->getCheck());
 
 	char shaderskitpath[1024];
 	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\shaders_kit.cfg");
-	SXMaterialEditor::pShaders = new CShadersKit();
-	SXMaterialEditor::pShaders->load(shaderskitpath);
+	material_editor::pShaders = new CShadersKit();
+	material_editor::pShaders->load(shaderskitpath);
 
-	for (int i = 0; i < SXMaterialEditor::pShaders->getCount(); ++i)
+	for (int i = 0; i < material_editor::pShaders->getCount(); ++i)
 	{
-		SXMaterialEditor::pComboBoxShaders->addItem(SXMaterialEditor::pShaders->getName(i));
+		material_editor::pComboBoxShaders->addItem(material_editor::pShaders->getName(i));
 	}
 
-	SXMaterialEditor::pComboBoxShaders->setSel(0);
+	material_editor::pComboBoxShaders->setSel(0);
 
 
 	char paramlpath[1024];
 	sprintf(paramlpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\paraml_kit.cfg");
-	SXMaterialEditor::pParamL = new CParamLigthKit();
-	SXMaterialEditor::pParamL->load(paramlpath);
+	material_editor::pParamL = new CParamLigthKit();
+	material_editor::pParamL->load(paramlpath);
 
-	for (int i = 0; i < SXMaterialEditor::pParamL->getCount(); ++i)
+	for (int i = 0; i < material_editor::pParamL->getCount(); ++i)
 	{
-		SXMaterialEditor::pComboBoxParamL->addItem(SXMaterialEditor::pParamL->getName(i));
+		material_editor::pComboBoxParamL->addItem(material_editor::pParamL->getName(i));
 	}
 
-	SXMaterialEditor::pComboBoxParamL->setSel(0);
+	material_editor::pComboBoxParamL->setSel(0);
 
 
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SXMaterialEditor::pEditSkyBox->setText("sky_2_cube.dds");
+	material_editor::pEditSkyBox->setText("sky_2_cube.dds");
 		
 	SRender_GetCamera()->setPosition(&float3(0, 0, -100));
 
@@ -486,24 +486,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SLight_SetEnable(SLight_GetCount() - 1, true);
 	SLight_SetName(SLight_GetCount() - 1, "sun");
 
-	SXMaterialEditor::pEditLigthColorR->setText("1");
-	SXMaterialEditor::pEditLigthColorG->setText("1");
-	SXMaterialEditor::pEditLigthColorB->setText("1");
-	SXMaterialEditor::pStaticLigthColor->setColorBrush(RGB(255, 255, 255));
+	material_editor::pEditLigthColorR->setText("1");
+	material_editor::pEditLigthColorG->setText("1");
+	material_editor::pEditLigthColorB->setText("1");
+	material_editor::pStaticLigthColor->setColorBrush(RGB(255, 255, 255));
 
 
 	SGCore_LoadTexAllLoad();
 
-	SXMaterialEditor::InitMtl(SRender_SimModelGetIDMtl());
-	SXMaterialEditor::idMat = SRender_SimModelGetIDMtl();
+	material_editor::InitMtl(SRender_SimModelGetIDMtl());
+	material_editor::idMat = SRender_SimModelGetIDMtl();
 
 	SkyXEngine_PreviewKill();
 
-	SXMaterialEditor::pJobWindow->setVisible(true);
-	SetWindowPos(SXMaterialEditor::pJobWindow->getHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	material_editor::pJobWindow->setVisible(true);
+	SetWindowPos(material_editor::pJobWindow->getHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 	
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
-	SXMaterialEditor::DeleteAllElements();
+	material_editor::DeleteAllElements();
 	return result;
 }

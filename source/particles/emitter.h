@@ -13,7 +13,7 @@ See the license in LICENSE
 #include <common/SXMath.h>
 
 #include "sxparticles.h"
-#include "PESet.h"
+#include "pe_data.h"
 
 extern g_particles_phy_collision GParticlesPhyCollision;
 

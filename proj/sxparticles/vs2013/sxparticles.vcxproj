@@ -106,7 +106,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\particles\PESet.cpp" />
+    <ClCompile Include="..\..\..\source\particles\pe_data.cpp" />
     <ClCompile Include="..\..\..\source\particles\sxparticles.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -119,7 +119,7 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\particles\effect.h" />
     <ClInclude Include="..\..\..\source\particles\emitter.h" />
-    <ClInclude Include="..\..\..\source\particles\PESet.h" />
+    <ClInclude Include="..\..\..\source\particles\pe_data.h" />
     <ClInclude Include="..\..\..\source\particles\sxparticles.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

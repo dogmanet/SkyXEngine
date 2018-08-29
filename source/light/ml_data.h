@@ -17,147 +17,101 @@ See the license in LICENSE
 
 #include "sxlight.h"
 
-namespace MLSet
+namespace light_data
 {
-	void MLInit();
-
-	extern IDirect3DDevice9* DXDevice;
-	
-	//размер текстуры глубины дл¤ локальных источников света
-	extern float2_t SizeTexDepthGlobal;
-
-	//размер текстуры глубины дл¤ локальных источников света
-	extern float2_t SizeTexDepthLocal;
-
-	//дистанции дл¤ 4 сплитов дл¤ глоальных теней PSSM
-	extern float4_t DistForPSSM;
-
-	//коэфициент размера текстур дл¤ карт глубин локальных источников света
-	extern float CoefSizeDepthMapForLocal;
-
-	//коэфициент размера текстур дл¤ карт глубин глобального источника света
-	extern float CoefSizeDepthMapForGlobal;
-
-	extern float2_t SizeTexReflection;
+	void Init();
 
 	void ReCalcSize();
 
-	//void GetArrDownScale4x4(DWORD width, DWORD height, float2 arr[]);
+	extern IDirect3DDevice9 *pDXDevice;
+	
+	//размер текстуры глубины дл¤ локальных источников света
+	extern float2_t vSizeTexDepthGlobal;
 
+	//размер текстуры глубины дл¤ локальных источников света
+	extern float2_t vSizeTexDepthLocal;
 
-	extern bool IsHalfGenPCFShadowLocal;
+	//дистанции дл¤ 4 сплитов дл¤ глоальных теней PSSM
+	extern float4_t vDistForPSSM;
+
+	//коэфициент размера текстур дл¤ карт глубин локальных источников света
+	extern float fCoefSizeDepthMapForLocal;
+
+	//коэфициент размера текстур дл¤ карт глубин глобального источника света
+	extern float fCoefSizeDepthMapForGlobal;
+
+	extern float2_t vSizeTexReflection;
+
+	extern bool isHalfGenPCFShadowLocal;
 
 	//ориентаци¤ и верхний вектор дл¤ рендера в кубическую текстуру
-	extern float3 OrientedCube[6];
-	extern float3 UpVectorsCube[6];
+	extern float3 vOrientedCube[6];
+	extern float3 vUpVectorsCube[6];
 
-	//extern float2 HDRSampleOffsets[16];
+	extern float4x4 mRefProjPlane;
+	extern float4x4 mRefProjCube;
 
-	extern float4x4 RefMProjPlane;
-	extern float4x4 RefMProjCube;
-
-	namespace IDsShaders
+	namespace shader_id
 	{
-		namespace VS
+		namespace vs
 		{
-			extern ID ResPosDepth;
+			extern ID idResPosDepth;
 			
-			extern ID ScreenOut;
+			extern ID idScreenOut;
 
-			extern ID SMDepthGeomPSSMDirect;
-			extern ID SMDepthGeomCube;
+			extern ID idSMDepthGeomPSSMDirect;
+			extern ID idSMDepthGeomCube;
 
-			extern ID SMDepthGrassPSSMDirect;
-			extern ID SMDepthGrassCube;
+			extern ID idSMDepthGrassPSSMDirect;
+			extern ID idSMDepthGrassCube;
 
-			extern ID SMDepthTreePSSMDirect;
-			extern ID SMDepthTreeCube;
+			extern ID idSMDepthTreePSSMDirect;
+			extern ID idSMDepthTreeCube;
 
-			extern ID SMDepthSkinPSSMDirect;
-			extern ID SMDepthSkinCube;
+			extern ID idSMDepthSkinPSSMDirect;
+			extern ID idSMDepthSkinCube;
 
-			extern ID StdGeom;
-			extern ID StdTree;
-			extern ID StdGrass;
-			extern ID StdSkin;
+			extern ID idStdGeom;
+			extern ID idStdTree;
+			extern ID idStdGrass;
+			extern ID idStdSkin;
 		};
 
-		namespace PS
+		namespace ps
 		{
-			extern ID SMDepthGeomPSSMDirect;
-			extern ID SMDepthGeomCube;
+			extern ID idSMDepthGeomPSSMDirect;
+			extern ID idSMDepthGeomCube;
 
-			extern ID SMDepthGreenPSSMDirect;
-			extern ID SMDepthGreenCube;
+			extern ID idSMDepthGreenPSSMDirect;
+			extern ID idSMDepthGreenCube;
 
-			extern ID SMDepthSkinPSSMDirect;
-			extern ID SMDepthSkinCube;
+			extern ID idSMDepthSkinPSSMDirect;
+			extern ID idSMDepthSkinCube;
 
-			extern ID PPBlurDepthBasedNoise;
-			extern ID PSSM4;
-			extern	ID PSSM3;
-			extern ID PPBlurDepthBased;
-			extern ID GenShadowDirect4;
-			extern ID GenShadowDirect9;
+			extern ID idPPBlurDepthBasedNoise;
+			extern ID idPSSM4;
+			extern	ID idPSSM3;
+			extern ID idPPBlurDepthBased;
+			extern ID idGenShadowDirect4;
+			extern ID idGenShadowDirect9;
 			
-			extern ID GenShadowCube1;
-			extern ID GenShadowCube6;
+			extern ID idGenShadowCube1;
+			extern ID idGenShadowCube6;
 
-			/*extern ID CalcAdaptedLum;
-			extern ID SampleLumInit;
-			extern ID SampleLumIterative;*/
+			extern ID idScreenOut;
 
-			extern ID ScreenOut;
-
-			extern ID StdGeom;
-			extern ID StdGeomCP;
-			extern ID StdGreen;
-			extern ID StdGreenCP;
-			extern ID StdSkin;
-			extern ID StdSkinCP;
+			extern ID idStdGeom;
+			extern ID idStdGeomCP;
+			extern ID idStdGreen;
+			extern ID idStdGreenCP;
+			extern ID idStdSkin;
+			extern ID idStdSkinCP;
 		};
 	};
 
-	/*namespace IDsRenderTargets
+	namespace texture_id
 	{
-		extern ID DSComLight;
-
-		extern ID ColorScene;//цвет (текстуры)
-		extern ID NormalScene;//номрали + микрорельеф
-		extern ID ParamsScene;//параметры освещени¤
-		extern ID DepthScene;
-		extern ID DepthScene0;
-		extern ID DepthScene1;
-
-		extern ID LightAmbientDiff;
-		extern ID LightSpecular;
-
-		extern Array<ID> ToneMaps;
-		extern Array<LPDIRECT3DSURFACE9> SurfToneMap;
-		extern int CountArrToneMaps;
-		////
-		extern ID AdaptLumCurr;
-		extern ID AdaptLumLast;
-
-		extern int HowAdaptedLum;
-		ID GetCurrAdaptedLum();
-		ID GetLastAdaptedLum();
-		void IncrAdaptedLum();
-		////
-
-		extern ID LigthCom;
-		extern ID LigthCom2;
-		extern ID LigthCom3;
-
-		extern ID LigthComScaled;
-	};*/
-
-	namespace IDsTexs
-	{
-		extern ID Tex_NoiseTex;
-		extern ID ParamLight;
-		extern ID NullMaterial;
-		extern ID NullingTex;
+		extern ID idNoiseTex;
 	};
 };
 

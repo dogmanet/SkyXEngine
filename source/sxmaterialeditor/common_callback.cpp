@@ -9,28 +9,28 @@ LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void SXMaterialEditor::MtlOpen()
+void material_editor::MtlOpen()
 {
 	char tmppath[1024];
 	tmppath[0] = 0;
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFile(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), FILE_FILTER_TEXTURE);
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select textures", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), SXMaterialEditor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select textures", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), material_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
 	{
 		SMtrl_MtlReloadMaterial(SRender_SimModelGetIDMtl(), tmpname);
 		SMtrl_MtlSetIsTextureLighting(SRender_SimModelGetIDMtl(), false);
 		SGCore_LoadTexAllLoad();
 
 		char headertest[1024];
-		sprintf(headertest, "SXMaterialEditor - %s", tmpname);
-		SXMaterialEditor::pJobWindow->setText(headertest);
-		SXMaterialEditor::InitMtl(SRender_SimModelGetIDMtl());
+		sprintf(headertest, "material_editor - %s", tmpname);
+		material_editor::pJobWindow->setText(headertest);
+		material_editor::InitMtl(SRender_SimModelGetIDMtl());
 	}
 }
 
-void SXMaterialEditor::MtlSave()
+void material_editor::MtlSave()
 {
-	SMtrl_MtlSave(SXMaterialEditor::idMat);
+	SMtrl_MtlSave(material_editor::idMat);
 }
 
 LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -41,12 +41,12 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	//открыть
 	if (id == ID_FILE_OPEN)
 	{
-		SXMaterialEditor::MtlOpen();
+		material_editor::MtlOpen();
 	}
 	//сохранить
 	else if (id == ID_FILE_SAVE)
 	{
-		SXMaterialEditor::MtlSave();
+		material_editor::MtlSave();
 	}
 	//выход
 	else if (id == ID_FILE_EXIT)
@@ -59,43 +59,43 @@ LRESULT ComMenuId(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	else if (id == ID_FINALIMAGE_COLOR)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
-		SXMaterialEditor::FinalImageUncheckedMenu();
-		SXMaterialEditor::pMainMenu->setCheckItem(id, !SXMaterialEditor::pMainMenu->getCheckedItem(id));
+		material_editor::FinalImageUncheckedMenu();
+		material_editor::pMainMenu->setCheckItem(id, !material_editor::pMainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_NORMALS)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
-		SXMaterialEditor::FinalImageUncheckedMenu();
-		SXMaterialEditor::pMainMenu->setCheckItem(id, !SXMaterialEditor::pMainMenu->getCheckedItem(id));
+		material_editor::FinalImageUncheckedMenu();
+		material_editor::pMainMenu->setCheckItem(id, !material_editor::pMainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_PARAMETERS)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
-		SXMaterialEditor::FinalImageUncheckedMenu();
-		SXMaterialEditor::pMainMenu->setCheckItem(id, !SXMaterialEditor::pMainMenu->getCheckedItem(id));
+		material_editor::FinalImageUncheckedMenu();
+		material_editor::pMainMenu->setCheckItem(id, !material_editor::pMainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_AMBIENTDIFFUSE)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
-		SXMaterialEditor::FinalImageUncheckedMenu();
-		SXMaterialEditor::pMainMenu->setCheckItem(id, !SXMaterialEditor::pMainMenu->getCheckedItem(id));
+		material_editor::FinalImageUncheckedMenu();
+		material_editor::pMainMenu->setCheckItem(id, !material_editor::pMainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_SPECULAR)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
-		SXMaterialEditor::FinalImageUncheckedMenu();
-		SXMaterialEditor::pMainMenu->setCheckItem(id, !SXMaterialEditor::pMainMenu->getCheckedItem(id));
+		material_editor::FinalImageUncheckedMenu();
+		material_editor::pMainMenu->setCheckItem(id, !material_editor::pMainMenu->getCheckedItem(id));
 	}
 	//
 	else if (id == ID_FINALIMAGE_LIGHTINGSCENE)
 	{
 		Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
-		SXMaterialEditor::FinalImageUncheckedMenu();
-		SXMaterialEditor::pMainMenu->setCheckItem(id, !SXMaterialEditor::pMainMenu->getCheckedItem(id));
+		material_editor::FinalImageUncheckedMenu();
+		material_editor::pMainMenu->setCheckItem(id, !material_editor::pMainMenu->getCheckedItem(id));
 	}
 
 
@@ -108,65 +108,65 @@ LRESULT SXMaterialEditor_ToolBar_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPara
 	HWND handle_elem = (HWND)(lParam);
 	if (Notification == BN_CLICKED)
 	{
-		if (SXMaterialEditor::pButtonTBOpen->getHWND() == handle_elem)
+		if (material_editor::pButtonTBOpen->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::MtlOpen();
+			material_editor::MtlOpen();
 		}
-		else if (SXMaterialEditor::pButtonTBSave->getHWND() == handle_elem)
+		else if (material_editor::pButtonTBSave->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::MtlSave();
+			material_editor::MtlSave();
 		}
 
-		else if (SXMaterialEditor::pCheckBoxTBCam->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBCam->getHWND() == handle_elem)
 		{
-			SRender_EditorCameraSetMove(SXMaterialEditor::pCheckBoxTBCam->getCheck());
+			SRender_EditorCameraSetMove(material_editor::pCheckBoxTBCam->getCheck());
 		}
-		else if (SXMaterialEditor::pButtonTBView->getHWND() == handle_elem)
+		else if (material_editor::pButtonTBView->getHWND() == handle_elem)
 		{
 			SRender_GetCamera()->setPosition(&float3(0, 0, -1.2 * 100));
 			SRender_GetCamera()->setOrientation(&SMQuaternion(float3(0, 0, 1), 0));
 		}
 
-		else if (SXMaterialEditor::pCheckBoxTBRColor->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBRColor->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::FinalImageUncheckedMenu();
-			SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, true);
-			SXMaterialEditor::pCheckBoxTBRColor->setCheck(true);
+			material_editor::FinalImageUncheckedMenu();
+			material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, true);
+			material_editor::pCheckBoxTBRColor->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 		}
-		else if (SXMaterialEditor::pCheckBoxTBRNormal->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBRNormal->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::FinalImageUncheckedMenu();
-			SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, true);
-			SXMaterialEditor::pCheckBoxTBRNormal->setCheck(true);
+			material_editor::FinalImageUncheckedMenu();
+			material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, true);
+			material_editor::pCheckBoxTBRNormal->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_NORMAL);
 		}
-		else if (SXMaterialEditor::pCheckBoxTBRParam->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBRParam->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::FinalImageUncheckedMenu();
-			SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, true);
-			SXMaterialEditor::pCheckBoxTBRParam->setCheck(true);
+			material_editor::FinalImageUncheckedMenu();
+			material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, true);
+			material_editor::pCheckBoxTBRParam->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_PARAM);
 		}
-		else if (SXMaterialEditor::pCheckBoxTBRAmDiff->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBRAmDiff->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::FinalImageUncheckedMenu();
-			SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
-			SXMaterialEditor::pCheckBoxTBRAmDiff->setCheck(true);
+			material_editor::FinalImageUncheckedMenu();
+			material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, true);
+			material_editor::pCheckBoxTBRAmDiff->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 		}
-		else if (SXMaterialEditor::pCheckBoxTBRSpecular->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBRSpecular->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::FinalImageUncheckedMenu();
-			SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, true);
-			SXMaterialEditor::pCheckBoxTBRSpecular->setCheck(true);
+			material_editor::FinalImageUncheckedMenu();
+			material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, true);
+			material_editor::pCheckBoxTBRSpecular->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
 		}
-		else if (SXMaterialEditor::pCheckBoxTBRLighting->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTBRLighting->getHWND() == handle_elem)
 		{
-			SXMaterialEditor::FinalImageUncheckedMenu();
-			SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
-			SXMaterialEditor::pCheckBoxTBRLighting->setCheck(true);
+			material_editor::FinalImageUncheckedMenu();
+			material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, true);
+			material_editor::pCheckBoxTBRLighting->setCheck(true);
 			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 		}
 	}
@@ -190,165 +190,165 @@ LRESULT SXMaterialEditor_JobWindow_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 	if (Notification == BN_CLICKED)
 	{
 		HWND handle_elem = (HWND)(lParam);
-		if (SXMaterialEditor::pCheckBoxLighting->getHWND() == handle_elem)
+		if (material_editor::pCheckBoxLighting->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetLighting(SXMaterialEditor::idMat, SXMaterialEditor::pCheckBoxLighting->getCheck());
+			SMtrl_MtlSetLighting(material_editor::idMat, material_editor::pCheckBoxLighting->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxTransparent->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTransparent->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetTransparency(SXMaterialEditor::idMat, SXMaterialEditor::pCheckBoxTransparent->getCheck());
+			SMtrl_MtlSetTransparency(material_editor::idMat, material_editor::pCheckBoxTransparent->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxTexLighting->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxTexLighting->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetIsTextureLighting(SXMaterialEditor::idMat, SXMaterialEditor::pCheckBoxTexLighting->getCheck());
+			SMtrl_MtlSetIsTextureLighting(material_editor::idMat, material_editor::pCheckBoxTexLighting->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSVVS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSVVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_VIEW, SXMaterialEditor::pCheckBoxDoSVVS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_MATRIX_VIEW, material_editor::pCheckBoxDoSVVS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSWVS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_WORLD, SXMaterialEditor::pCheckBoxDoSWVS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_MATRIX_WORLD, material_editor::pCheckBoxDoSWVS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSWPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWPS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_WORLD, SXMaterialEditor::pCheckBoxDoSWPS->getCheck());
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_MATRIX_WORLD, material_editor::pCheckBoxDoSWPS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSVPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSVPS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_VIEW, SXMaterialEditor::pCheckBoxDoSVPS->getCheck());
-		}
-
-		else if (SXMaterialEditor::pCheckBoxDoSPVS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_PROJECTION, SXMaterialEditor::pCheckBoxDoSPVS->getCheck());
-		}
-		else if (SXMaterialEditor::pCheckBoxDoSPPS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_PROJECTION, SXMaterialEditor::pCheckBoxDoSPPS->getCheck());
-		}
-		else if (SXMaterialEditor::pCheckBoxDoSWVVS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEW, SXMaterialEditor::pCheckBoxDoSWVVS->getCheck());
-		}
-		else if (SXMaterialEditor::pCheckBoxDoSWVPS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEW, SXMaterialEditor::pCheckBoxDoSWVPS->getCheck());
-		}
-		else if (SXMaterialEditor::pCheckBoxDoSCamposVS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_CAMPOS, SXMaterialEditor::pCheckBoxDoSCamposVS->getCheck());
-		}
-		else if (SXMaterialEditor::pCheckBoxDoSWVPVS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ, SXMaterialEditor::pCheckBoxDoSWVPVS->getCheck());
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_MATRIX_VIEW, material_editor::pCheckBoxDoSVPS->getCheck());
 		}
 
-		else if (SXMaterialEditor::pCheckBoxDoSWVPPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSPVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ, SXMaterialEditor::pCheckBoxDoSWVPPS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_MATRIX_PROJECTION, material_editor::pCheckBoxDoSPVS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSCamposPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSPPS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_CAMPOS, SXMaterialEditor::pCheckBoxDoSCamposPS->getCheck());
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_MATRIX_PROJECTION, material_editor::pCheckBoxDoSPPS->getCheck());
 		}
-
-		else if (SXMaterialEditor::pCheckBoxUDVSInPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWVVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetUserDataVS_InPS(SXMaterialEditor::idMat, SXMaterialEditor::pCheckBoxUDVSInPS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEW, material_editor::pCheckBoxDoSWVVS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSTimeDeltaVS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWVPS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_TIMEDELTA, SXMaterialEditor::pCheckBoxDoSTimeDeltaVS->getCheck());
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEW, material_editor::pCheckBoxDoSWVPS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxDoSTimeDeltaPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSCamposVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_TIMEDELTA, SXMaterialEditor::pCheckBoxDoSTimeDeltaPS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_CAMPOS, material_editor::pCheckBoxDoSCamposVS->getCheck());
 		}
-
-		else if (SXMaterialEditor::pCheckBoxDoSWinSizeVS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWVPVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_WINSIZE, SXMaterialEditor::pCheckBoxDoSWinSizeVS->getCheck());
-		}
-		else if (SXMaterialEditor::pCheckBoxDoSWinSizePS->getHWND() == handle_elem)
-		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_WINSIZE, SXMaterialEditor::pCheckBoxDoSWinSizePS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ, material_editor::pCheckBoxDoSWVPVS->getCheck());
 		}
 
-
-		else if (SXMaterialEditor::pCheckBoxUDPSInVS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWVPPS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetUserDataPS_InVS(SXMaterialEditor::idMat, SXMaterialEditor::pCheckBoxUDPSInVS->getCheck());
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ, material_editor::pCheckBoxDoSWVPPS->getCheck());
+		}
+		else if (material_editor::pCheckBoxDoSCamposPS->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_CAMPOS, material_editor::pCheckBoxDoSCamposPS->getCheck());
 		}
 
-		else if (SXMaterialEditor::pCheckBoxUDVS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxUDVSInPS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdVS(SXMaterialEditor::idMat, MTL_SHADERSTD_USERDATA, SXMaterialEditor::pCheckBoxUDVS->getCheck());
+			SMtrl_MtlSetUserDataVS_InPS(material_editor::idMat, material_editor::pCheckBoxUDVSInPS->getCheck());
 		}
-		else if (SXMaterialEditor::pCheckBoxUDPS->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSTimeDeltaVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetStdPS(SXMaterialEditor::idMat, MTL_SHADERSTD_USERDATA, SXMaterialEditor::pCheckBoxUDPS->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_TIMEDELTA, material_editor::pCheckBoxDoSTimeDeltaVS->getCheck());
+		}
+		else if (material_editor::pCheckBoxDoSTimeDeltaPS->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_TIMEDELTA, material_editor::pCheckBoxDoSTimeDeltaPS->getCheck());
 		}
 
-		else if (SXMaterialEditor::pCheckBoxAlphaTest->getHWND() == handle_elem)
+		else if (material_editor::pCheckBoxDoSWinSizeVS->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetUsingAlphaTest(SXMaterialEditor::idMat, SXMaterialEditor::pCheckBoxAlphaTest->getCheck());
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_WINSIZE, material_editor::pCheckBoxDoSWinSizeVS->getCheck());
+		}
+		else if (material_editor::pCheckBoxDoSWinSizePS->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_WINSIZE, material_editor::pCheckBoxDoSWinSizePS->getCheck());
+		}
+
+
+		else if (material_editor::pCheckBoxUDPSInVS->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetUserDataPS_InVS(material_editor::idMat, material_editor::pCheckBoxUDPSInVS->getCheck());
+		}
+
+		else if (material_editor::pCheckBoxUDVS->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetStdVS(material_editor::idMat, MTL_SHADERSTD_USERDATA, material_editor::pCheckBoxUDVS->getCheck());
+		}
+		else if (material_editor::pCheckBoxUDPS->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetStdPS(material_editor::idMat, MTL_SHADERSTD_USERDATA, material_editor::pCheckBoxUDPS->getCheck());
+		}
+
+		else if (material_editor::pCheckBoxAlphaTest->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetUsingAlphaTest(material_editor::idMat, material_editor::pCheckBoxAlphaTest->getCheck());
 		}
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
 		HWND handle_elem = (HWND)(lParam);
-		if (SXMaterialEditor::pComboBoxTypeModel->getHWND() == handle_elem)
+		if (material_editor::pComboBoxTypeModel->getHWND() == handle_elem)
 		{
-			SRender_SimModelSetType((MTLTYPE_MODEL)SXMaterialEditor::pComboBoxTypeModel->getSel());
-			SMtrl_MtlSetTypeModel(SRender_SimModelGetIDMtl(), (MTLTYPE_MODEL)SXMaterialEditor::pComboBoxTypeModel->getSel());
+			SRender_SimModelSetType((MTLTYPE_MODEL)material_editor::pComboBoxTypeModel->getSel());
+			SMtrl_MtlSetTypeModel(SRender_SimModelGetIDMtl(), (MTLTYPE_MODEL)material_editor::pComboBoxTypeModel->getSel());
 		}
-		else if (SXMaterialEditor::pComboBoxTestModel->getHWND() == handle_elem)
+		else if (material_editor::pComboBoxTestModel->getHWND() == handle_elem)
 		{
-			SRender_SimModelSetNumCurrModel(SXMaterialEditor::pComboBoxTestModel->getSel());
+			SRender_SimModelSetNumCurrModel(material_editor::pComboBoxTestModel->getSel());
 		}
-		/*else if (SXMaterialEditor::pComboBoxTypeRefract->getHWND() == handle_elem)
+		/*else if (material_editor::pComboBoxTypeRefract->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetTypeTransparency(SXMaterialEditor::idMat, (MTLTYPE_TRANSPARENCY)SXMaterialEditor::pComboBoxTypeRefract->getSel());
+			SMtrl_MtlSetTypeTransparency(material_editor::idMat, (MTLTYPE_TRANSPARENCY)material_editor::pComboBoxTypeRefract->getSel());
 		}*/
-		else if (SXMaterialEditor::pComboBoxTypeReflect->getHWND() == handle_elem)
+		else if (material_editor::pComboBoxTypeReflect->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetTypeReflection(SXMaterialEditor::idMat, (MTLTYPE_REFLECT)SXMaterialEditor::pComboBoxTypeReflect->getSel());
+			SMtrl_MtlSetTypeReflection(material_editor::idMat, (MTLTYPE_REFLECT)material_editor::pComboBoxTypeReflect->getSel());
 		}
-		else if (SXMaterialEditor::pComboBoxPhysic->getHWND() == handle_elem)
+		else if (material_editor::pComboBoxPhysic->getHWND() == handle_elem)
 		{
-			SMtrl_MtlSetPhysicMaterial(SXMaterialEditor::idMat, (MTLTYPE_PHYSIC)SXMaterialEditor::pComboBoxPhysic->getSel());
+			SMtrl_MtlSetPhysicMaterial(material_editor::idMat, (MTLTYPE_PHYSIC)material_editor::pComboBoxPhysic->getSel());
 		}
-		else if (SXMaterialEditor::pComboBoxShaders->getHWND() == handle_elem)
+		else if (material_editor::pComboBoxShaders->getHWND() == handle_elem)
 		{
-			int sel = SXMaterialEditor::pComboBoxShaders->getSel();
+			int sel = material_editor::pComboBoxShaders->getSel();
 			if (sel > 0)
 			{
 				sel -= 1;
-				SMtrl_MtlSetVS(SXMaterialEditor::idMat, SXMaterialEditor::pShaders->getVS(sel));
-				SXMaterialEditor::pEditVS->setText(SXMaterialEditor::pShaders->getVS(sel));
+				SMtrl_MtlSetVS(material_editor::idMat, material_editor::pShaders->getVS(sel));
+				material_editor::pEditVS->setText(material_editor::pShaders->getVS(sel));
 
-				SMtrl_MtlSetPS(SXMaterialEditor::idMat, SXMaterialEditor::pShaders->getPS(sel));
-				SXMaterialEditor::pEditPS->setText(SXMaterialEditor::pShaders->getPS(sel));
+				SMtrl_MtlSetPS(material_editor::idMat, material_editor::pShaders->getPS(sel));
+				material_editor::pEditPS->setText(material_editor::pShaders->getPS(sel));
 			}
 		}
-		else if (SXMaterialEditor::pComboBoxParamL->getHWND() == handle_elem)
+		else if (material_editor::pComboBoxParamL->getHWND() == handle_elem)
 		{
-			int sel = SXMaterialEditor::pComboBoxParamL->getSel();
+			int sel = material_editor::pComboBoxParamL->getSel();
 			if (sel > 0)
 			{
 				sel -= 1;
-				SMtrl_MtlSetThickness(SXMaterialEditor::idMat, SXMaterialEditor::pParamL->getThickness(sel));
-				SXMaterialEditor::pEditThickness->setText(String(SXMaterialEditor::pParamL->getThickness(sel)).c_str());
-				SXMaterialEditor::pTrackBarThickness->setPos(SXMaterialEditor::pParamL->getThickness(sel)*100);
+				SMtrl_MtlSetThickness(material_editor::idMat, material_editor::pParamL->getThickness(sel));
+				material_editor::pEditThickness->setText(String(material_editor::pParamL->getThickness(sel)).c_str());
+				material_editor::pTrackBarThickness->setPos(material_editor::pParamL->getThickness(sel)*100);
 
-				SMtrl_MtlSetRoughness(SXMaterialEditor::idMat, SXMaterialEditor::pParamL->getRoughness(sel));
-				SXMaterialEditor::pEditRoughness->setText(String(SXMaterialEditor::pParamL->getRoughness(sel)).c_str());
-				SXMaterialEditor::pTrackBarRoughness->setPos(SXMaterialEditor::pParamL->getRoughness(sel) * 100);
+				SMtrl_MtlSetRoughness(material_editor::idMat, material_editor::pParamL->getRoughness(sel));
+				material_editor::pEditRoughness->setText(String(material_editor::pParamL->getRoughness(sel)).c_str());
+				material_editor::pTrackBarRoughness->setPos(material_editor::pParamL->getRoughness(sel) * 100);
 
-				SMtrl_MtlSetF0(SXMaterialEditor::idMat, SXMaterialEditor::pParamL->getF0(sel));
-				SXMaterialEditor::pEditF0->setText(String(SXMaterialEditor::pParamL->getF0(sel)).c_str());
-				SXMaterialEditor::pTrackBarF0->setPos(SXMaterialEditor::pParamL->getF0(sel) * 100);
+				SMtrl_MtlSetF0(material_editor::idMat, material_editor::pParamL->getF0(sel));
+				material_editor::pEditF0->setText(String(material_editor::pParamL->getF0(sel)).c_str());
+				material_editor::pTrackBarF0->setPos(material_editor::pParamL->getF0(sel) * 100);
 			}
 		}
 	}
@@ -357,233 +357,233 @@ LRESULT SXMaterialEditor_JobWindow_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 
 //////
 
-void SXMaterialEditor::Nulling()
+void material_editor::Nulling()
 {
-	SXMaterialEditor::pComboBoxTypeModel;
-	SXMaterialEditor::pComboBoxTestModel;
+	material_editor::pComboBoxTypeModel;
+	material_editor::pComboBoxTestModel;
 
-	SXMaterialEditor::pComboBoxPhysic->setSel(0);
+	material_editor::pComboBoxPhysic->setSel(0);
 
-	SXMaterialEditor::pEditTex->setText("");
-	SXMaterialEditor::pEditVS->setText("");
-	SXMaterialEditor::pEditPS->setText("");
+	material_editor::pEditTex->setText("");
+	material_editor::pEditVS->setText("");
+	material_editor::pEditPS->setText("");
 	
-	SXMaterialEditor::pCheckBoxAlphaTest->setCheck(false);
-	SXMaterialEditor::pEditRoughness->setText("0");
-	SXMaterialEditor::pEditThickness->setText("1");
-	SXMaterialEditor::pEditF0->setText("0");
-	SXMaterialEditor::pEditMR->setText("");
-	SXMaterialEditor::pCheckBoxLighting->setCheck(true);
-	SXMaterialEditor::pCheckBoxTransparent->setCheck(false);
-	SXMaterialEditor::pTrackBarRoughness->setPos(0);
-	SXMaterialEditor::pTrackBarThickness->setPos(100);
-	SXMaterialEditor::pTrackBarF0->setPos(0);
-	SXMaterialEditor::pTrackBarUDVSX->setPos(0);
-	SXMaterialEditor::pEditTexLighting->setText("");
-	SXMaterialEditor::pCheckBoxTexLighting->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSVVS->setCheck(false);
-	SXMaterialEditor::pComboBoxTypeReflect->setSel(0);
-	SXMaterialEditor::pComboBoxPhysic->setSel(0);
-	SXMaterialEditor::pEditMask->setText("");
-	SXMaterialEditor::pEditMG->setText("");
-	SXMaterialEditor::pEditMB->setText("");
-	SXMaterialEditor::pEditMA->setText("");
-	SXMaterialEditor::pEditDR->setText("");
-	SXMaterialEditor::pEditDG->setText("");
-	SXMaterialEditor::pEditDB->setText("");
-	SXMaterialEditor::pEditDA->setText("");
+	material_editor::pCheckBoxAlphaTest->setCheck(false);
+	material_editor::pEditRoughness->setText("0");
+	material_editor::pEditThickness->setText("1");
+	material_editor::pEditF0->setText("0");
+	material_editor::pEditMR->setText("");
+	material_editor::pCheckBoxLighting->setCheck(true);
+	material_editor::pCheckBoxTransparent->setCheck(false);
+	material_editor::pTrackBarRoughness->setPos(0);
+	material_editor::pTrackBarThickness->setPos(100);
+	material_editor::pTrackBarF0->setPos(0);
+	material_editor::pTrackBarUDVSX->setPos(0);
+	material_editor::pEditTexLighting->setText("");
+	material_editor::pCheckBoxTexLighting->setCheck(false);
+	material_editor::pCheckBoxDoSVVS->setCheck(false);
+	material_editor::pComboBoxTypeReflect->setSel(0);
+	material_editor::pComboBoxPhysic->setSel(0);
+	material_editor::pEditMask->setText("");
+	material_editor::pEditMG->setText("");
+	material_editor::pEditMB->setText("");
+	material_editor::pEditMA->setText("");
+	material_editor::pEditDR->setText("");
+	material_editor::pEditDG->setText("");
+	material_editor::pEditDB->setText("");
+	material_editor::pEditDA->setText("");
 
-	SXMaterialEditor::pCheckBoxDoSWVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSWPS->setCheck(false);
+	material_editor::pCheckBoxDoSWVS->setCheck(false);
+	material_editor::pCheckBoxDoSWPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSVVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSVPS->setCheck(false);
+	material_editor::pCheckBoxDoSVVS->setCheck(false);
+	material_editor::pCheckBoxDoSVPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSPVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSPPS->setCheck(false);
+	material_editor::pCheckBoxDoSPVS->setCheck(false);
+	material_editor::pCheckBoxDoSPPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSWVVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSWVPS->setCheck(false);
+	material_editor::pCheckBoxDoSWVVS->setCheck(false);
+	material_editor::pCheckBoxDoSWVPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSCamposVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSCamposPS->setCheck(false);
+	material_editor::pCheckBoxDoSCamposVS->setCheck(false);
+	material_editor::pCheckBoxDoSCamposPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSTimeDeltaVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSTimeDeltaPS->setCheck(false);
+	material_editor::pCheckBoxDoSTimeDeltaVS->setCheck(false);
+	material_editor::pCheckBoxDoSTimeDeltaPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSWVPVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSWVPPS->setCheck(false);
+	material_editor::pCheckBoxDoSWVPVS->setCheck(false);
+	material_editor::pCheckBoxDoSWVPPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxDoSWinSizeVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSWinSizePS->setCheck(false);
+	material_editor::pCheckBoxDoSWinSizeVS->setCheck(false);
+	material_editor::pCheckBoxDoSWinSizePS->setCheck(false);
 
 
-	SXMaterialEditor::pCheckBoxUDVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxUDPS->setCheck(false);
+	material_editor::pCheckBoxUDVS->setCheck(false);
+	material_editor::pCheckBoxUDPS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxUDVSInPS->setCheck(false);
+	material_editor::pCheckBoxUDVSInPS->setCheck(false);
 
-	SXMaterialEditor::pEditUDVSX->setText("0");
-	SXMaterialEditor::pEditUDVSY->setText("0");
-	SXMaterialEditor::pTrackBarUDVSY->setPos(0);
-	SXMaterialEditor::pEditUDVSZ->setText("0");
-	SXMaterialEditor::pTrackBarUDVSZ->setPos(0);
-	SXMaterialEditor::pEditUDVSW->setText("0");
-	SXMaterialEditor::pTrackBarUDVSW->setPos(0);
-	SXMaterialEditor::pCheckBoxDoSTimeDeltaVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxDoSTimeDeltaPS->setCheck(false);
-	SXMaterialEditor::pCheckBoxUDPSInVS->setCheck(false);
-	SXMaterialEditor::pEditUDPSX->setText("0");
-	SXMaterialEditor::pEditUDPSY->setText("0");
-	SXMaterialEditor::pTrackBarUDPSX->setPos(0);
-	SXMaterialEditor::pTrackBarUDPSY->setPos(0);
-	SXMaterialEditor::pEditUDPSZ->setText("0");
-	SXMaterialEditor::pTrackBarUDPSZ->setPos(0);
-	SXMaterialEditor::pEditUDPSW->setText("0");
-	SXMaterialEditor::pTrackBarUDPSW->setPos(0);
+	material_editor::pEditUDVSX->setText("0");
+	material_editor::pEditUDVSY->setText("0");
+	material_editor::pTrackBarUDVSY->setPos(0);
+	material_editor::pEditUDVSZ->setText("0");
+	material_editor::pTrackBarUDVSZ->setPos(0);
+	material_editor::pEditUDVSW->setText("0");
+	material_editor::pTrackBarUDVSW->setPos(0);
+	material_editor::pCheckBoxDoSTimeDeltaVS->setCheck(false);
+	material_editor::pCheckBoxDoSTimeDeltaPS->setCheck(false);
+	material_editor::pCheckBoxUDPSInVS->setCheck(false);
+	material_editor::pEditUDPSX->setText("0");
+	material_editor::pEditUDPSY->setText("0");
+	material_editor::pTrackBarUDPSX->setPos(0);
+	material_editor::pTrackBarUDPSY->setPos(0);
+	material_editor::pEditUDPSZ->setText("0");
+	material_editor::pTrackBarUDPSZ->setPos(0);
+	material_editor::pEditUDPSW->setText("0");
+	material_editor::pTrackBarUDPSW->setPos(0);
 
-	SXMaterialEditor::pCheckBoxUDPSInVS->setCheck(false);
-	SXMaterialEditor::pCheckBoxUDVSInPS->setCheck(false);
+	material_editor::pCheckBoxUDPSInVS->setCheck(false);
+	material_editor::pCheckBoxUDVSInPS->setCheck(false);
 }
 
-void SXMaterialEditor::InitMtl(ID id)
+void material_editor::InitMtl(ID id)
 {
 	SRender_SimModelSetType(SMtrl_MtlGetTypeModel(id));
-	SXMaterialEditor::pComboBoxTypeModel->setSel(SMtrl_MtlGetTypeModel(id));
-	SXMaterialEditor::pComboBoxTestModel;
+	material_editor::pComboBoxTypeModel->setSel(SMtrl_MtlGetTypeModel(id));
+	material_editor::pComboBoxTestModel;
 
-	SXMaterialEditor::pComboBoxPhysic->setSel(SMtrl_MtlGetPhysicMaterial(SRender_SimModelGetIDMtl()));
+	material_editor::pComboBoxPhysic->setSel(SMtrl_MtlGetPhysicMaterial(SRender_SimModelGetIDMtl()));
 
 	char tmppath[1024];
 	SMtrl_MtlGetTexture(SRender_SimModelGetIDMtl(), tmppath);
-	SXMaterialEditor::pEditTex->setText(tmppath);
+	material_editor::pEditTex->setText(tmppath);
 	SMtrl_MtlGetVS(SRender_SimModelGetIDMtl(), tmppath);
-	SXMaterialEditor::pEditVS->setText(tmppath);
+	material_editor::pEditVS->setText(tmppath);
 	SMtrl_MtlGetPS(SRender_SimModelGetIDMtl(), tmppath);
-	SXMaterialEditor::pEditPS->setText(tmppath);
+	material_editor::pEditPS->setText(tmppath);
 
-	SXMaterialEditor::pCheckBoxAlphaTest->setCheck(SMtrl_MtlGetUsingAlphaTest(SRender_SimModelGetIDMtl()));
+	material_editor::pCheckBoxAlphaTest->setCheck(SMtrl_MtlGetUsingAlphaTest(SRender_SimModelGetIDMtl()));
 
-	SXMaterialEditor::pEditRoughness->setText(String(SMtrl_MtlGetRoughness(SRender_SimModelGetIDMtl())).c_str());
-	SXMaterialEditor::pEditThickness->setText(String(SMtrl_MtlGetThickness(SRender_SimModelGetIDMtl())).c_str());
-	SXMaterialEditor::pEditF0->setText(String(SMtrl_MtlGetF0(SRender_SimModelGetIDMtl())).c_str());
-	SXMaterialEditor::pEditHitChance->setText(String(SMtrl_MtlGetHitChance(SRender_SimModelGetIDMtl())).c_str());
-	SXMaterialEditor::pEditDurability->setText(String(SMtrl_MtlGetDurability(SRender_SimModelGetIDMtl())).c_str());
-	SXMaterialEditor::pEditDensity->setText(String(SMtrl_MtlGetDensity(SRender_SimModelGetIDMtl())).c_str());
+	material_editor::pEditRoughness->setText(String(SMtrl_MtlGetRoughness(SRender_SimModelGetIDMtl())).c_str());
+	material_editor::pEditThickness->setText(String(SMtrl_MtlGetThickness(SRender_SimModelGetIDMtl())).c_str());
+	material_editor::pEditF0->setText(String(SMtrl_MtlGetF0(SRender_SimModelGetIDMtl())).c_str());
+	material_editor::pEditHitChance->setText(String(SMtrl_MtlGetHitChance(SRender_SimModelGetIDMtl())).c_str());
+	material_editor::pEditDurability->setText(String(SMtrl_MtlGetDurability(SRender_SimModelGetIDMtl())).c_str());
+	material_editor::pEditDensity->setText(String(SMtrl_MtlGetDensity(SRender_SimModelGetIDMtl())).c_str());
 	
-	SXMaterialEditor::pCheckBoxLighting->setCheck(SMtrl_MtlGetLighting(SRender_SimModelGetIDMtl()));
+	material_editor::pCheckBoxLighting->setCheck(SMtrl_MtlGetLighting(SRender_SimModelGetIDMtl()));
 
-	SXMaterialEditor::pCheckBoxTransparent->setCheck(SMtrl_MtlGetTransparency(SRender_SimModelGetIDMtl()));
+	material_editor::pCheckBoxTransparent->setCheck(SMtrl_MtlGetTransparency(SRender_SimModelGetIDMtl()));
 
-	SXMaterialEditor::pTrackBarRoughness->setPos(SMtrl_MtlGetRoughness(SRender_SimModelGetIDMtl())*100.f);
-	SXMaterialEditor::pTrackBarThickness->setPos(SMtrl_MtlGetThickness(SRender_SimModelGetIDMtl())*100.f);
-	SXMaterialEditor::pTrackBarF0->setPos(SMtrl_MtlGetF0(SRender_SimModelGetIDMtl()) * 100.f);
-	SXMaterialEditor::pTrackBarHitChance->setPos(SMtrl_MtlGetHitChance(SRender_SimModelGetIDMtl()) * 100.f);
+	material_editor::pTrackBarRoughness->setPos(SMtrl_MtlGetRoughness(SRender_SimModelGetIDMtl())*100.f);
+	material_editor::pTrackBarThickness->setPos(SMtrl_MtlGetThickness(SRender_SimModelGetIDMtl())*100.f);
+	material_editor::pTrackBarF0->setPos(SMtrl_MtlGetF0(SRender_SimModelGetIDMtl()) * 100.f);
+	material_editor::pTrackBarHitChance->setPos(SMtrl_MtlGetHitChance(SRender_SimModelGetIDMtl()) * 100.f);
 
 	SMtrl_MtlGetTextureLighting(SRender_SimModelGetIDMtl(), tmppath);
-	SXMaterialEditor::pEditTexLighting->setText(tmppath);
-	SXMaterialEditor::pCheckBoxTexLighting->setCheck(SMtrl_MtlGetIsTextureLighting(SRender_SimModelGetIDMtl()));
+	material_editor::pEditTexLighting->setText(tmppath);
+	material_editor::pCheckBoxTexLighting->setCheck(SMtrl_MtlGetIsTextureLighting(SRender_SimModelGetIDMtl()));
 	
-	SXMaterialEditor::pComboBoxTypeReflect->setSel(SMtrl_MtlGetTypeReflection(SRender_SimModelGetIDMtl()));
+	material_editor::pComboBoxTypeReflect->setSel(SMtrl_MtlGetTypeReflection(SRender_SimModelGetIDMtl()));
 
-	SXMaterialEditor::pComboBoxPhysic->setSel(0);
+	material_editor::pComboBoxPhysic->setSel(0);
 
 	SMtrl_MtlGetMaskTex(SRender_SimModelGetIDMtl(), tmppath);
-	SXMaterialEditor::pEditMask->setText(tmppath);
+	material_editor::pEditMask->setText(tmppath);
 
 	SMtrl_MtlGetMRTex(SRender_SimModelGetIDMtl(), 0, tmppath);
-	SXMaterialEditor::pEditMR->setText(tmppath);
+	material_editor::pEditMR->setText(tmppath);
 	SMtrl_MtlGetMRTex(SRender_SimModelGetIDMtl(), 1, tmppath);
-	SXMaterialEditor::pEditMG->setText(tmppath);
+	material_editor::pEditMG->setText(tmppath);
 	SMtrl_MtlGetMRTex(SRender_SimModelGetIDMtl(), 2, tmppath);
-	SXMaterialEditor::pEditMB->setText(tmppath);
+	material_editor::pEditMB->setText(tmppath);
 	SMtrl_MtlGetMRTex(SRender_SimModelGetIDMtl(), 3, tmppath);
-	SXMaterialEditor::pEditMA->setText(tmppath);
+	material_editor::pEditMA->setText(tmppath);
 
 	SMtrl_MtlGetDTex(SRender_SimModelGetIDMtl(), 0, tmppath);
-	SXMaterialEditor::pEditDR->setText(tmppath);
+	material_editor::pEditDR->setText(tmppath);
 	SMtrl_MtlGetDTex(SRender_SimModelGetIDMtl(), 1, tmppath);
-	SXMaterialEditor::pEditDG->setText(tmppath);
+	material_editor::pEditDG->setText(tmppath);
 	SMtrl_MtlGetDTex(SRender_SimModelGetIDMtl(), 2, tmppath);
-	SXMaterialEditor::pEditDB->setText(tmppath);
+	material_editor::pEditDB->setText(tmppath);
 	SMtrl_MtlGetDTex(SRender_SimModelGetIDMtl(), 3, tmppath);
-	SXMaterialEditor::pEditDA->setText(tmppath);
+	material_editor::pEditDA->setText(tmppath);
 
-	SXMaterialEditor::pCheckBoxDoSWVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLD));
-	SXMaterialEditor::pCheckBoxDoSWPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLD));
+	material_editor::pCheckBoxDoSWVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLD));
+	material_editor::pCheckBoxDoSWPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLD));
 
-	SXMaterialEditor::pCheckBoxDoSVVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_VIEW));
-	SXMaterialEditor::pCheckBoxDoSVPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_VIEW));
+	material_editor::pCheckBoxDoSVVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_VIEW));
+	material_editor::pCheckBoxDoSVPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_VIEW));
 
-	SXMaterialEditor::pCheckBoxDoSPVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_PROJECTION));
-	SXMaterialEditor::pCheckBoxDoSPPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_PROJECTION));
+	material_editor::pCheckBoxDoSPVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_PROJECTION));
+	material_editor::pCheckBoxDoSPPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_PROJECTION));
 
-	SXMaterialEditor::pCheckBoxDoSWVVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEW));
-	SXMaterialEditor::pCheckBoxDoSWVPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEW));
+	material_editor::pCheckBoxDoSWVVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEW));
+	material_editor::pCheckBoxDoSWVPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEW));
 
-	SXMaterialEditor::pCheckBoxDoSCamposVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_CAMPOS));
-	SXMaterialEditor::pCheckBoxDoSCamposPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_CAMPOS));
+	material_editor::pCheckBoxDoSCamposVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_CAMPOS));
+	material_editor::pCheckBoxDoSCamposPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_CAMPOS));
 
-	SXMaterialEditor::pCheckBoxDoSTimeDeltaVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_TIMEDELTA));
-	SXMaterialEditor::pCheckBoxDoSTimeDeltaPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_TIMEDELTA));
+	material_editor::pCheckBoxDoSTimeDeltaVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_TIMEDELTA));
+	material_editor::pCheckBoxDoSTimeDeltaPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_TIMEDELTA));
 
-	SXMaterialEditor::pCheckBoxDoSWVPVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ));
-	SXMaterialEditor::pCheckBoxDoSWVPPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ));
+	material_editor::pCheckBoxDoSWVPVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ));
+	material_editor::pCheckBoxDoSWVPPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_MATRIX_WORLDVIEWPROJ));
 
-	SXMaterialEditor::pCheckBoxDoSWinSizeVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_WINSIZE));
-	SXMaterialEditor::pCheckBoxDoSWinSizePS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_WINSIZE));
+	material_editor::pCheckBoxDoSWinSizeVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_WINSIZE));
+	material_editor::pCheckBoxDoSWinSizePS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_WINSIZE));
 
-	SXMaterialEditor::pCheckBoxUDVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_USERDATA));
-	SXMaterialEditor::pCheckBoxUDPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_USERDATA));
-
-	//
+	material_editor::pCheckBoxUDVS->setCheck(SMtrl_MtlGetStdVS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_USERDATA));
+	material_editor::pCheckBoxUDPS->setCheck(SMtrl_MtlGetStdPS(SRender_SimModelGetIDMtl(), MTL_SHADERSTD_USERDATA));
 
 	//
-	SXMaterialEditor::pCheckBoxUDVSInPS->setCheck(false);
 
-	SXMaterialEditor::pTrackBarUDVSX->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 0) * 100.f);
-	SXMaterialEditor::pEditUDVSX->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 0)).c_str());
+	//
+	material_editor::pCheckBoxUDVSInPS->setCheck(false);
 
-	SXMaterialEditor::pTrackBarUDVSY->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 1) * 100.f);
-	SXMaterialEditor::pEditUDVSY->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 1)).c_str());
-	
-	SXMaterialEditor::pTrackBarUDVSZ->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 2) * 100.f);
-	SXMaterialEditor::pEditUDVSZ->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 2)).c_str());
-	
-	SXMaterialEditor::pTrackBarUDVSW->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 3) * 100.f);
-	SXMaterialEditor::pEditUDVSW->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 3)).c_str());
-	
-	SXMaterialEditor::pCheckBoxUDPSInVS->setCheck(false);
+	material_editor::pTrackBarUDVSX->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 0) * 100.f);
+	material_editor::pEditUDVSX->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 0)).c_str());
 
-	SXMaterialEditor::pTrackBarUDPSX->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 0) * 100.f);
-	SXMaterialEditor::pEditUDPSX->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 0)).c_str());
-
-	SXMaterialEditor::pTrackBarUDPSY->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 1) * 100.f);
-	SXMaterialEditor::pEditUDPSY->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 1)).c_str());
+	material_editor::pTrackBarUDVSY->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 1) * 100.f);
+	material_editor::pEditUDVSY->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 1)).c_str());
 	
-	SXMaterialEditor::pTrackBarUDPSZ->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 2) * 100.f);
-	SXMaterialEditor::pEditUDPSZ->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 2)).c_str());
+	material_editor::pTrackBarUDVSZ->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 2) * 100.f);
+	material_editor::pEditUDVSZ->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 2)).c_str());
 	
-	SXMaterialEditor::pTrackBarUDPSW->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 3) * 100.f);
-	SXMaterialEditor::pEditUDPSW->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 3)).c_str());
+	material_editor::pTrackBarUDVSW->setPos(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 3) * 100.f);
+	material_editor::pEditUDVSW->setText(String(SMtrl_MtlGetUserDataVS(SRender_SimModelGetIDMtl(), 3)).c_str());
+	
+	material_editor::pCheckBoxUDPSInVS->setCheck(false);
 
-	SXMaterialEditor::pCheckBoxUDPSInVS->setCheck(SMtrl_MtlGetUserDataPS_InVS(SRender_SimModelGetIDMtl()));
-	SXMaterialEditor::pCheckBoxUDVSInPS->setCheck(SMtrl_MtlGetUserDataVS_InPS(SRender_SimModelGetIDMtl()));
+	material_editor::pTrackBarUDPSX->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 0) * 100.f);
+	material_editor::pEditUDPSX->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 0)).c_str());
+
+	material_editor::pTrackBarUDPSY->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 1) * 100.f);
+	material_editor::pEditUDPSY->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 1)).c_str());
+	
+	material_editor::pTrackBarUDPSZ->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 2) * 100.f);
+	material_editor::pEditUDPSZ->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 2)).c_str());
+	
+	material_editor::pTrackBarUDPSW->setPos(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 3) * 100.f);
+	material_editor::pEditUDPSW->setText(String(SMtrl_MtlGetUserDataPS(SRender_SimModelGetIDMtl(), 3)).c_str());
+
+	material_editor::pCheckBoxUDPSInVS->setCheck(SMtrl_MtlGetUserDataPS_InVS(SRender_SimModelGetIDMtl()));
+	material_editor::pCheckBoxUDVSInPS->setCheck(SMtrl_MtlGetUserDataVS_InPS(SRender_SimModelGetIDMtl()));
 }
 
-void SXMaterialEditor::FinalImageUncheckedMenu()
+void material_editor::FinalImageUncheckedMenu()
 {
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, false);
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, false);
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, false);
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, false);
-	SXMaterialEditor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, false);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, false);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, false);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, false);
+	material_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
 
-	SXMaterialEditor::pCheckBoxTBRColor->setCheck(false);
-	SXMaterialEditor::pCheckBoxTBRNormal->setCheck(false);
-	SXMaterialEditor::pCheckBoxTBRParam->setCheck(false);
-	SXMaterialEditor::pCheckBoxTBRAmDiff->setCheck(false);
-	SXMaterialEditor::pCheckBoxTBRSpecular->setCheck(false);
-	SXMaterialEditor::pCheckBoxTBRLighting->setCheck(false);
+	material_editor::pCheckBoxTBRColor->setCheck(false);
+	material_editor::pCheckBoxTBRNormal->setCheck(false);
+	material_editor::pCheckBoxTBRParam->setCheck(false);
+	material_editor::pCheckBoxTBRAmDiff->setCheck(false);
+	material_editor::pCheckBoxTBRSpecular->setCheck(false);
+	material_editor::pCheckBoxTBRLighting->setCheck(false);
 }

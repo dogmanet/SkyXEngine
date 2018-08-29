@@ -46,15 +46,15 @@ SX_LIB_API void SLight_0Create(const char *szName, bool isUnic)
 			}
 			else
 			{
-				MLSet::MLInit();
-				MLSet::ReCalcSize();
+				light_data::Init();
+				light_data::ReCalcSize();
 				ArrLights = new CLights();
 			}
 		}
 		else
 		{
-			MLSet::MLInit();
-			MLSet::ReCalcSize();
+			light_data::Init();
+			light_data::ReCalcSize();
 			ArrLights = new CLights();
 		}
 	}
@@ -77,7 +77,7 @@ SX_LIB_API void SLight_OnResetDevice()
 {
 	ML_PRECOND(_VOID);
 
-	MLSet::ReCalcSize();
+	light_data::ReCalcSize();
 	ArrLights->onResetDevice();
 }
 
@@ -87,8 +87,8 @@ SX_LIB_API void SLight_SettLCoefSizeDepth(float fCoef)
 {
 	ML_PRECOND(_VOID);
 
-	MLSet::CoefSizeDepthMapForLocal = fCoef;
-	MLSet::ReCalcSize();
+	light_data::fCoefSizeDepthMapForLocal = fCoef;
+	light_data::ReCalcSize();
 	SLight_OnLostDevice();
 	SLight_OnResetDevice();
 }
@@ -97,8 +97,8 @@ SX_LIB_API void SLight_SettGCoefSizeDepth(float fCoef)
 {
 	ML_PRECOND(_VOID);
 
-	MLSet::CoefSizeDepthMapForGlobal = fCoef;
-	MLSet::ReCalcSize();
+	light_data::fCoefSizeDepthMapForGlobal = fCoef;
+	light_data::ReCalcSize();
 	SLight_OnLostDevice();
 	SLight_OnResetDevice();
 	
@@ -108,13 +108,13 @@ SX_LIB_API float SLight_GettLCoefSizeDepth()
 {
 	ML_PRECOND(-1);
 
-	return MLSet::CoefSizeDepthMapForLocal;
+	return light_data::fCoefSizeDepthMapForLocal;
 }
 
 SX_LIB_API float SLight_GettGCoefSizeDepth()
 {
 	ML_PRECOND(-1);
-	return MLSet::CoefSizeDepthMapForGlobal;
+	return light_data::fCoefSizeDepthMapForGlobal;
 }
 
 //#############################################################################
