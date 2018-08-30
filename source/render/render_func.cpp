@@ -155,7 +155,7 @@ void rfunc::ComVisibleForLight()
 						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
-						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddArrForCom());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
@@ -164,7 +164,7 @@ void rfunc::ComVisibleForLight()
 					{
 						SLight_UpdateGFrustums(i, k, &gdata::vConstCurrCamPos, &gdata::vConstCurrCamDir);
 						SGeom_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
-						SGeom_GreenComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
+						SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
 						SXAnim_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k));
 					}
 				}
@@ -177,13 +177,13 @@ void rfunc::ComVisibleForLight()
 						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0) <= -1)
-						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
+						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, 0, SGreen_AddArrForCom());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, 0) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
 
 					SGeom_ModelsComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
-					SGeom_GreenComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
+					SGreen_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
 					SXAnim_ModelsComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, 0));
 				}
 			}
@@ -197,7 +197,7 @@ void rfunc::ComVisibleForLight()
 							SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
-							SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+							SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddArrForCom());
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k) <= -1)
 							SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
@@ -205,7 +205,7 @@ void rfunc::ComVisibleForLight()
 						if (SLight_GetCubeEdgeEnable(i, k))
 						{
 							SGeom_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
-							SGeom_GreenComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
+							SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
 							SXAnim_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k));
 						}
 					}
@@ -225,8 +225,8 @@ void rfunc::ComVisibleForLight()
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
 					SGeom_ModelsDelArrForCom(idTempArr);
 
-				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGeom_GreenExistsArrForCom(idTempArr))
-					SGeom_GreenDelArrForCom(idTempArr);
+				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsArrForCom(idTempArr))
+					SGreen_DelArrForCom(idTempArr);
 
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, k)) >= 0)
 					SXAnim_ModelsDelArrForCom(idTempArr);
@@ -237,8 +237,8 @@ void rfunc::ComVisibleForLight()
 			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, 0)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
 				SGeom_ModelsDelArrForCom(idTempArr);
 
-			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGeom_GreenExistsArrForCom(idTempArr))
-				SGeom_GreenDelArrForCom(idTempArr);
+			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGreen_ExistsArrForCom(idTempArr))
+				SGreen_DelArrForCom(idTempArr);
 
 			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, 0)) >= 0)
 				SXAnim_ModelsDelArrForCom(idTempArr);
@@ -251,8 +251,8 @@ void rfunc::ComVisibleForLight()
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
 					SGeom_ModelsDelArrForCom(idTempArr);
 
-				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGeom_GreenExistsArrForCom(idTempArr))
-					SGeom_GreenDelArrForCom(idTempArr);
+				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsArrForCom(idTempArr))
+					SGreen_DelArrForCom(idTempArr);
 
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, k)) >= 0)
 					SXAnim_ModelsDelArrForCom(idTempArr);
@@ -268,8 +268,8 @@ void rfunc::ComVisibleForCamera()
 	if (SGeom_ModelsGetCount() > 0)
 		SGeom_ModelsComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
 
-	if (SGeom_GreenGetCount() > 0)
-		SGeom_GreenComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
+	if (SGreen_GetCount() > 0)
+		SGreen_ComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
 
 	SXAnim_ModelsComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
 }
@@ -305,7 +305,7 @@ void rfunc::ComVisibleReflection()
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 				{
 					if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0) < 0)
-						SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0, SGeom_GreenAddArrForCom());
+						SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0, SGreen_AddArrForCom());
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
@@ -318,7 +318,7 @@ void rfunc::ComVisibleReflection()
 					SGeom_ModelsComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0));
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
-					SGeom_GreenComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0));
+					SGreen_ComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0));
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
 					SXAnim_ModelsComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_ANIM, 0));
@@ -341,7 +341,7 @@ void rfunc::ComVisibleReflection()
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 					{
 						if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, k) < 0)
-							SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, k, SGeom_GreenAddArrForCom());
+							SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, k, SGreen_AddArrForCom());
 					}
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
@@ -354,7 +354,7 @@ void rfunc::ComVisibleReflection()
 						SGeom_ModelsComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k));
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
-						SGeom_GreenComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k));
+						SGreen_ComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k));
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
 						SXAnim_ModelsComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_ANIM, k));
@@ -553,7 +553,7 @@ void rfunc::UpdateView()
 		gdata::idDefaultGeomArr = SGeom_ModelsAddArrForCom();
 
 	if (gdata::idDefaultGreenArr < 0)
-		gdata::idDefaultGreenArr = SGeom_GreenAddArrForCom();
+		gdata::idDefaultGreenArr = SGreen_AddArrForCom();
 
 	if (gdata::idDefaultAnimArr < 0)
 		gdata::idDefaultAnimArr = SXAnim_ModelsAddArrForCom();
@@ -679,8 +679,8 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 		SXAnim_Render();
 
-		if (SGeom_GreenGetCount() > 0)
-			SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_ALL);
+		if (SGreen_GetCount() > 0)
+			SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_ALL);
 
 		SGCore_ShaderUnBind();
 	}
@@ -882,7 +882,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 							SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
-							SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
+							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
 
 						SXAnim_Render();
 					}
@@ -923,7 +923,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 							SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0) > -1)
-							SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
+							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
 
 						SXAnim_Render();
 					}
@@ -931,8 +931,8 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 					{
 						SGeom_ModelsComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
 						SGeom_ModelsRender(timeDelta, -1, gdata::idDefaultGeomArr);
-						SGeom_GreenComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
-						SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
+						SGreen_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
+						SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
 					}
 
 					SLight_ShadowRenderEnd(i);
@@ -957,7 +957,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 								if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
-									SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
+									SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
 
 								SXAnim_Render();
 							}
@@ -965,8 +965,8 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 							{
 								SGeom_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
 								SGeom_ModelsRender(timeDelta, -1, gdata::idDefaultGeomArr);
-								SGeom_GreenComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
-								SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
+								SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
+								SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
 							}
 
 							SLight_ShadowRenderPost(i, k);
@@ -1582,7 +1582,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 				{
 					if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0) >= 0)
-						SGeom_GreenRender(timeDelta, &float3(vCenter), GREEN_TYPE_ALL, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0));
+						SGreen_Render(timeDelta, &float3(vCenter), GREEN_TYPE_ALL, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0));
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
@@ -1654,8 +1654,8 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 							{
-								SGeom_GreenComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(vCenter), gdata::idDefaultGreenArr);
-								SGeom_GreenRender(timeDelta, &float3(vCenter), GREEN_TYPE_ALL, gdata::idDefaultGreenArr);
+								SGreen_ComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(vCenter), gdata::idDefaultGreenArr);
+								SGreen_Render(timeDelta, &float3(vCenter), GREEN_TYPE_ALL, gdata::idDefaultGreenArr);
 							}
 						}
 						else
@@ -1669,7 +1669,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 							{
 								if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, k) >= 0)
-									SGeom_GreenRender(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_ALL, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, k));
+									SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_ALL, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, k));
 							}
 
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)

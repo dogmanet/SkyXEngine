@@ -7,6 +7,7 @@ See the license in LICENSE
 #include "PhyWorld.h"
 #include <core/sxcore.h>
 #include <geom/sxgeom.h>
+#include <green/sxgreen.h>
 #include <gcore/sxgcore.h>
 #include <light/sxlight.h>
 
@@ -206,7 +207,7 @@ void CPhyWorld::loadGeom(const char * file)
 	int32_t* green_arr_count_transform = 0;
 	int32_t green_arr_count_green = 0;
 
-	SGeom_GreenGetNavMeshAndTransform(&green_arr_vertex, &green_arr_count_vertex, &green_arr_index, &green_arr_mtl, &green_arr_count_index, &green_arr_transform, &green_arr_count_transform, &green_arr_count_green);
+	SGreen_GetNavMeshAndTransform(&green_arr_vertex, &green_arr_count_vertex, &green_arr_index, &green_arr_mtl, &green_arr_count_index, &green_arr_transform, &green_arr_count_transform, &green_arr_count_green);
 
 	if(green_arr_count_green > 0)
 	{
@@ -388,7 +389,7 @@ void CPhyWorld::loadGeom(const char * file)
 		}
 
 	}
-	SGeom_GreenClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
+	SGreen_ClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
 
 	if(file)
 	{

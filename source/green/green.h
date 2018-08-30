@@ -15,8 +15,7 @@ See the license in LICENSE
 
 #include <d3d9.h>
 #include <gcore/sxgcore.h>
-#include "static_geom.h"
-#include "sxgeom.h"
+#include "sxgreen.h"
 
 extern g_phy_intersect g_fnIntersect;
 
@@ -77,7 +76,7 @@ public:
 	//**********************************************************************
 
 	ID init(
-		CStaticGeom *pGeom, const char *szName,
+		const char *szName,
 		const char *szPathMask,
 		float fCountMax,
 		const char *szPath, const char *szLod1, const char *szLod2,
@@ -296,7 +295,7 @@ protected:
 	void loadSplit(CSegment **ppSplit, FILE * file, Array<CSegment**> *pQueue);
 	void render2(DWORD timeDelta, const float3 *pViewPos, ID nm, int iLod, ID idTexture);
 	void alignBound(CModel *pModel, CSegment *pSplit);
-	void genByTex(CStaticGeom *pGeom, CModel *pModel, ID idMask, float3 *pMin, float3 *pMax, float fCountMax);
+	void genByTex(CModel *pModel, ID idMask, float3 *pMin, float3 *pMax, float fCountMax);
 
 	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 	void getPartBB(float3 *pMin, float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);

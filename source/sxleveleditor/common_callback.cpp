@@ -330,11 +330,11 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 		if (level_editor::pComboBoxGreenSel->getSel() == 0)
 		{
 			float3_t pos;
-			SGeom_GreenGetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &pos);
+			SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &pos);
 			float3 helperpos = level_editor::pAxesHelper->getPosition();
 			if (pos.x != helperpos.x || pos.y != helperpos.y || pos.z != helperpos.z)
 			{
-				SGeom_GreenSetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &(float3_t)helperpos);
+				SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &(float3_t)helperpos);
 			}
 		}
 	}
@@ -425,11 +425,11 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		if (level_editor::pComboBoxGreenSel->getSel() == 0)
 		{
-			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGreen_TraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
 				level_editor::idActiveGreenSplit = idsplit;
 				level_editor::idActiveGreenObject = idobj;
-				SGeom_GreenGetPosObject(idgreen, idsplit, idobj, &pos2);
+				SGreen_GetPosObject(idgreen, idsplit, idobj, &pos2);
 
 				level_editor::pStaticGreenSelX->setText("Pos X:");
 				level_editor::pStaticGreenSelY->setText("Pos Y:");
@@ -450,7 +450,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		{
 			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
-				idobj = SGeom_GreenAddObject(level_editor::idActiveElement, &_res, &idsplit);
+				idobj = SGreen_AddObject(level_editor::idActiveElement, &_res, &idsplit);
 				level_editor::idActiveGreenSplit = idsplit;
 				level_editor::idActiveGreenObject = idobj;
 
@@ -491,7 +491,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 					npos.x = randf(min.x, max.x);
 					npos.z = randf(min.z, max.z);
 					if(SGeom_ModelsTraceBeam(&npos, &float3(0, -1, 0), &_res, &idmodel, &idmtl))
-						SGeom_GreenAddObject(level_editor::idActiveElement, &_res, 0);
+						SGreen_AddObject(level_editor::idActiveElement, &_res, 0);
 				}
 			}
 		}
@@ -500,14 +500,14 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		{
 			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
-			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_GreenTraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGreen_TraceBeam(&vCamPos, &camDir, &_res, &idgreen, &idsplit, &idobj, &idmtl))
 			{
 				level_editor::idActiveGreenSplit = -1;
 				level_editor::idActiveGreenObject = -1;
 				level_editor::pEditGreenSelX->setText("");
 				level_editor::pEditGreenSelY->setText("");
 				level_editor::pEditGreenSelZ->setText("");
-				SGeom_GreenDelObject(idgreen, idsplit, idobj);
+				SGreen_DelObject(idgreen, idsplit, idobj);
 				int qwert = 0;
 			}
 		}
@@ -645,7 +645,7 @@ LRESULT SXLevelEditor_RenderWindow_Delete(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
 	{
-		SGeom_GreenDelObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject);
+		SGreen_DelObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject);
 		level_editor::idActiveGreenSplit = -1;
 		level_editor::idActiveGreenObject = -1;
 		level_editor::pEditGreenSelX->setText("");
@@ -686,7 +686,7 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	level_editor::pListBoxList->clear();
-	long tmpcountmodel = SGeom_GreenGetCount();
+	long tmpcountmodel = SGreen_GetCount();
 	char tmptextvalcountmodel[64];
 	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
 	level_editor::pStaticListValCount->setText(tmptextvalcountmodel);
@@ -695,9 +695,9 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	for (int i = 0; i < tmpcountmodel; ++i)
 	{
 		sprintf(tmpnamecountpoly, "%s | %s | %d", 
-			SGeom_GreenMGetName(i),
-			(SGeom_GreenMGetTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
-			SGeom_GreenMGetCountGen(i));
+			SGreen_MGetName(i),
+			(SGreen_MGetTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
+			SGreen_MGetCountGen(i));
 		level_editor::pListBoxList->addItem(tmpnamecountpoly);
 	}
 
@@ -784,7 +784,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 	}
 	else if (level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GREEN || level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
-		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
+		if (SGreen_GetCount() > 0 && sel < SGreen_GetCount())
 			level_editor::GreenSel(sel);
 	}
 	else if (level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
@@ -827,15 +827,15 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	}
 	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
-		if (SGeom_GreenGetCount() > 0 && sel < SGeom_GreenGetCount())
+		if (SGreen_GetCount() > 0 && sel < SGreen_GetCount())
 		{
-			SGeom_GreenDelGreen(sel);
+			SGreen_DelGreen(sel);
 			level_editor::pListBoxList->deleteItem(sel);
-			if (SGeom_GreenGetCount() > 0)
+			if (SGreen_GetCount() > 0)
 			{
 				if (sel > 0)
 				{
-					if (SGeom_GreenGetCount() <= sel)
+					if (SGreen_GetCount() <= sel)
 						sel -= 1;
 				}
 				level_editor::pListBoxList->setSel(sel);
@@ -1544,7 +1544,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			)
 		)
 	{
-		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_GreenGetCount() > 0)
+		if (SSInput_GetKeyState(SIK_LSHIFT) && SGreen_GetCount() > 0)
 		{
 			DWORD selmodel = level_editor::pListBoxList->getSel();
 			if (level_editor::pRadioButtonGreenSelX->getCheck() || level_editor::pRadioButtonGreenSelY->getCheck() || level_editor::pRadioButtonGreenSelZ->getCheck())
@@ -1555,7 +1555,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				else
 				{
 					float3_t pos2;
-					SGeom_GreenGetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &pos2);
+					SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &pos2);
 					pos = pos2;
 				}
 
@@ -1605,7 +1605,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				if (level_editor::pComboBoxGreenSel->getSel() == 2)
 					level_editor::vGreenBoxWHD = pos;
 				else
-					SGeom_GreenSetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &float3_t(pos));
+					SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &float3_t(pos));
 			}
 		}
 	}

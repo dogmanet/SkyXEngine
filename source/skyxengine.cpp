@@ -253,7 +253,10 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	SGeom_0Create("sxgeom", false);
 	SGeom_Dbg_Set(SkyXEngine_PrintfLog);
-	SGeom_GreenSetFncIntersect(SkyXEngine_RFuncGreenIntersect);
+
+	SGreen_0Create("sxgreen", false);
+	SGreen_Dbg_Set(SkyXEngine_PrintfLog);
+	SGreen_SetFuncIntersect(SkyXEngine_RFuncGreenIntersect);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
 
@@ -1110,7 +1113,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_grass_freq_old = 100;
 			Core_0SetCVarInt("r_grass_freq", r_grass_freq_old);
 		}
-		SGeom_0SettGreenSetFreqGrass(r_grass_freq_old);
+		SGreen_0SettSetFreqGrass(r_grass_freq_old);
 	}
 
 	static const float * r_green_lod0 = GET_PCVAR_FLOAT("r_green_lod0");
@@ -1129,7 +1132,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_green_lod0_old = 100;
 			Core_0SetCVarFloat("r_green_lod0", r_green_lod0_old);
 		}
-		SGeom_0SettGreenSetDistLods1(r_green_lod0_old);
+		SGreen_0SettSetDistLods1(r_green_lod0_old);
 	}
 
 	static const float * r_green_lod1 = GET_PCVAR_FLOAT("r_green_lod1");
@@ -1148,7 +1151,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_green_lod1_old = 150;
 			Core_0SetCVarFloat("r_green_lod1", r_green_lod1_old);
 		}
-		SGeom_0SettGreenSetDistLods2(r_green_lod1_old);
+		SGreen_0SettSetDistLods2(r_green_lod1_old);
 	}
 
 	static const float * r_green_less = GET_PCVAR_FLOAT("r_green_less");
@@ -1167,7 +1170,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_green_less_old = 90;
 			Core_0SetCVarFloat("r_green_less", r_green_less_old);
 		}
-		SGeom_0SettGreenSetBeginEndLessening(r_green_less_old);
+		SGreen_0SettSetBeginEndLessening(r_green_less_old);
 	}
 
 

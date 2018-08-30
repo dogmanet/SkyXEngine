@@ -2015,9 +2015,9 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 	static const float * r_far = GET_PCVAR_FLOAT("r_far");
 
 	long count_poly_green = 0;
-	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
+	for (int i = 0; i < SGreen_GetCount(); ++i)
 	{
-		count_poly_green += SGeom_GreenMGetCountGen(i) * SGeom_GreenMGetCountPoly(i);
+		count_poly_green += SGreen_MGetCountGen(i) * SGreen_MGetCountPoly(i);
 	}
 
 	long count_poly_geom = 0;
@@ -2102,12 +2102,12 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 				if (level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
 				{
 					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-					SGeom_GreenRenderObject(timeDelta, &vCamPos, level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+					SGreen_RenderObject(timeDelta, &vCamPos, level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 				else
 				{
 					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-					SGeom_GreenRenderSingly(timeDelta, &vCamPos, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+					SGreen_RenderSingly(timeDelta, &vCamPos, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 			}
 		}

@@ -84,7 +84,7 @@ void level_editor::GreenActivateEdit(bool bf)
 
 void level_editor::GreenSel(int sel)
 {
-	if (sel >= 0 && sel < SGeom_GreenGetCount())
+	if (sel >= 0 && sel < SGreen_GetCount())
 	{
 		level_editor::idActiveElement = sel;
 		level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
@@ -93,12 +93,12 @@ void level_editor::GreenSel(int sel)
 		level_editor::GreenActivateEdit(true);
 		level_editor::pButtonGreenGenerate->setVisible(false);
 
-		level_editor::pEditGreenModel->setText(SGeom_GreenMGetModel(sel));
-		level_editor::pEditGreenLod1->setText((SGeom_GreenMGetLod1(sel) ? SGeom_GreenMGetLod1(sel) : ""));
-		level_editor::pEditGreenLod2->setText((SGeom_GreenMGetLod2(sel) ? SGeom_GreenMGetLod2(sel) : ""));
-		level_editor::pEditGreenMask->setText(SGeom_GreenMGetMask(sel));
-		level_editor::pEditGreenName->setText(SGeom_GreenMGetName(sel));
-		level_editor::pEditGreenNav->setText(SGeom_GreenMGetNav(sel));
+		level_editor::pEditGreenModel->setText(SGreen_MGetModel(sel));
+		level_editor::pEditGreenLod1->setText((SGreen_MGetLod1(sel) ? SGreen_MGetLod1(sel) : ""));
+		level_editor::pEditGreenLod2->setText((SGreen_MGetLod2(sel) ? SGreen_MGetLod2(sel) : ""));
+		level_editor::pEditGreenMask->setText(SGreen_MGetMask(sel));
+		level_editor::pEditGreenName->setText(SGreen_MGetName(sel));
+		level_editor::pEditGreenNav->setText(SGreen_MGetNav(sel));
 	}
 }
 
@@ -107,7 +107,7 @@ LRESULT SXLevelEditor_EditGreenName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LP
 	int sel = level_editor::pListBoxList->getSel();
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
-		level_editor::pEditGreenName->getText(SGeom_GreenMGetName(sel), 64);
+		level_editor::pEditGreenName->getText(SGreen_MGetName(sel), 64);
 	}
 
 	return 0;
@@ -127,8 +127,8 @@ LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam,
 		int sel = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetLod(sel, 0, sRpath.c_str());
+			if (sel >= 0 && sel < SGreen_GetCount())
+				SGreen_MSetLod(sel, 0, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -148,8 +148,8 @@ LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 		int sel = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetLod(sel, 1, sRpath.c_str());
+			if (sel >= 0 && sel < SGreen_GetCount())
+				SGreen_MSetLod(sel, 1, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -169,8 +169,8 @@ LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 		int sel = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetLod(sel, 2, sRpath.c_str());
+			if (sel >= 0 && sel < SGreen_GetCount())
+				SGreen_MSetLod(sel, 2, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -213,8 +213,8 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 		int sel = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGeom_GreenGetCount())
-				SGeom_GreenMSetNav(sel, sRpath.c_str());
+			if (sel >= 0 && sel < SGreen_GetCount())
+				SGreen_MSetNav(sel, sRpath.c_str());
 		}
 	}
 	return 0;
@@ -344,7 +344,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	SXPhysics_LoadGeom(NULL);
 
-	SGeom_GreenAddGreen(tmp_name,
+	SGreen_AddGreen(tmp_name,
 		tmp_tex,
 		pos,
 		tmp_model,
@@ -354,9 +354,9 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	char tmpnamecountpoly[1024];
 		sprintf(tmpnamecountpoly, "%s | %s | %d",
-			SGeom_GreenMGetName(SGeom_GreenGetCount() - 1),
-			(SGeom_GreenMGetTypeCountGen(SGeom_GreenGetCount() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
-			SGeom_GreenMGetCountGen(SGeom_GreenGetCount() - 1));
+			SGreen_MGetName(SGreen_GetCount() - 1),
+			(SGreen_MGetTypeCountGen(SGreen_GetCount() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
+			SGreen_MGetCountGen(SGreen_GetCount() - 1));
 		level_editor::pListBoxList->addItem(tmpnamecountpoly);
 
 	level_editor::GreenActivateCreate(false);

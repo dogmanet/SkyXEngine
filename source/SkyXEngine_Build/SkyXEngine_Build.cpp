@@ -24,7 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	//SLevel_Load("stalker_atp", true);
 	//SLevel_Load("sga", true);
 
-	SGeom_0SettGreenSetFreqGrass(100);
+	SGreen_0SettSetFreqGrass(100);
 
 	/*NPCBase* npc = new NPCBase();
 	npc->setModel("models/stalker_zombi/stalker_zombi_a.dse");

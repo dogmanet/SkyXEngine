@@ -1045,13 +1045,13 @@ void CGreen::renderObject(DWORD timeDelta, const float3* viewpos, ID id, ID spli
 	render2(timeDelta, viewpos, id, 0, id_tex);
 }
 
-ID CGreen::init(CStaticGeom* geom, const char* name,
+ID CGreen::init(const char* name,
 	const char* path_mask, 
 	float count_max, 
 	const char* path, const char* lod1, const char* lod2, 
 	const char* navmesh)
 {
-	if (geom->getCountModel() > 0 && STR_VALIDATE(path))
+	if (SGeom_ModelsGetCount() > 0 && STR_VALIDATE(path))
 	{
 		CModel* tmpnewmpdel = new CModel();
 		sprintf(tmpnewmpdel->m_szName, name);
@@ -1125,14 +1125,14 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 		mem_release(tmpbb);
 
 		float3 tmpmin, tmpmax;
-		geom->getMinMax(&tmpmin, &tmpmax);
+		SGeom_ModelsGetMinMax(&tmpmin, &tmpmax);
 
 		if (STR_VALIDATE(path_mask))
 		{
 			ID IDTexMask = SGCore_LoadTexAddName(path_mask, LOAD_TEXTURE_TYPE_LOAD);
 			SGCore_LoadTexAllLoad();
 
-			genByTex(geom, tmpnewmpdel, IDTexMask, &mmin, &mmax, count_max);
+			genByTex(tmpnewmpdel, IDTexMask, &mmin, &mmax, count_max);
 		}
 
 		preSegmentation(tmpnewmpdel, &tmpmin, &tmpmax);
@@ -1159,12 +1159,12 @@ ID CGreen::init(CStaticGeom* geom, const char* name,
 	return -1;
 }
 
-void CGreen::genByTex(CStaticGeom* geom, CModel* model, ID idmask, float3* min, float3* max, float count_max)
+void CGreen::genByTex(CModel* model, ID idmask, float3* min, float3* max, float count_max)
 {
 	float CountMaxInPixel = count_max;
 
 	float3 tmpmin, tmpmax;
-	geom->getMinMax(&tmpmin, &tmpmax);
+	SGeom_ModelsGetMinMax(&tmpmin, &tmpmax);
 
 	float r2d = 0;
 
