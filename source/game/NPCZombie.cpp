@@ -130,7 +130,7 @@ void CNPCZombie::think(float fDelta)
 
 	if(m_stateDanger == NPC_STATE_DANGER_CALM)
 	{
-		printf(COLOR_LGREEN "NPC_STATE_DANGER_CALM" COLOR_RESET "\n");
+		//printf(COLOR_LGREEN "NPC_STATE_DANGER_CALM" COLOR_RESET "\n");
 		// Игрок виден
 		if(fPlayerVisCoeff > 0.0f)
 		{
@@ -172,7 +172,7 @@ void CNPCZombie::think(float fDelta)
 
 		if((!m_isGoingToDangerPos && (isTargetMoved || fPlayerDist >= 2.0f)) || m_isPathInterrupted)
 		{
-			printf(COLOR_LRED "goTo(m_vLastDangerPos);" COLOR_RESET "\n");
+			//printf(COLOR_LRED "goTo(m_vLastDangerPos);" COLOR_RESET "\n");
 			goTo(m_vLastDangerPos, true);
 			m_vGoingToDangerPos = m_vLastDangerPos;
 			m_isGoingToDangerPos = true;
@@ -259,7 +259,7 @@ void CNPCZombie::msgKnowEnemyHere(inputdata_t *pInputdata)
 {
 	if(m_stateDanger == NPC_STATE_DANGER_CALM && randf(0.0f, 1.0f) > 0.5f)
 	{
-		printf(COLOR_YELLOW "Someone found enemy!" COLOR_RESET "\n");
+		//printf(COLOR_YELLOW "Someone found enemy!" COLOR_RESET "\n");
 		m_stateDanger = NPC_STATE_DANGER_UNVISIBLE;
 	}
 }

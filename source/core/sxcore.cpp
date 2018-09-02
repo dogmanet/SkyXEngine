@@ -22,6 +22,8 @@ See the license in LICENSE
 
 #include <shellapi.h>
 
+#include "PerfMon.h"
+
 //##########################################################################
 
 char g_szCoreName[CORE_NAME_MAX_LEN];
@@ -33,7 +35,8 @@ report_func g_fnReportf = DefReport;
 
 //**************************************************************************
 
-CTaskManager* g_pTaskManager = 0;
+static CTaskManager *g_pTaskManager = 0;
+CPerfMon *g_pPerfMon = 0;
 
 #define SXCORE_PRECOND(retval) if(!g_pTaskManager){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -164,6 +167,8 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 			ConsoleConnect(szNameConsole);
 			ConsoleRegisterCmds();
 
+			g_pPerfMon = new CPerfMon();
+
 			int iThreadNum = 0;
 			if(!sscanf(Core_0GetCommandLineArg("threads", "0"), "%d", &iThreadNum) || iThreadNum < 0)
 			{
@@ -231,28 +236,73 @@ ISXConfig*  Core_OpConfig(const char* path)
 
 //##########################################################################
 
-void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
+SX_LIB_API void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
 	SXCORE_PRECOND(_VOID);
+	assert(!(flag & CORE_TASK_FLAG_FOR_LOOP));
 	g_pTaskManager->add(func, flag);
 }
 
-void Core_MForceSinglethreaded()
+SX_LIB_API void Core_MForceSinglethreaded()
 {
 	SXCORE_PRECOND(_VOID);
 	g_pTaskManager->forceSinglethreaded();
 }
 
-void Core_MTaskStart()
+SX_LIB_API void Core_MTaskStart()
 {
 	SXCORE_PRECOND(_VOID);
 	g_pTaskManager->start();
 }
 
-void Core_MTaskStop()
+SX_LIB_API void Core_MTaskStop()
 {
 	SXCORE_PRECOND(_VOID);
 	g_pTaskManager->stop();
+}
+
+SX_LIB_API ID Core_MForLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
+{
+	SXCORE_PRECOND(-1);
+	return(g_pTaskManager->forLoop(iStart, iEnd, pBody, iMaxChunkSize));
+}
+
+SX_LIB_API void Core_MWaitFor(ID id)
+{
+	SXCORE_PRECOND(_VOID);
+	if(Core_MGetThreadID() != 0)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Core_MWaitFor() must be called from main thread!");
+		return;
+	}
+
+	g_pTaskManager->waitFor(id);
+}
+
+SX_LIB_API int Core_MGetThreadCount()
+{
+	SXCORE_PRECOND(1);
+	g_pTaskManager->getThreadCount();
+}
+
+//##########################################################################
+
+void Core_PStartSection(ID idSection)
+{
+	SXCORE_PRECOND(_VOID);
+	g_pPerfMon->startSection(idSection);
+}
+
+void Core_PEndSection(ID idSection)
+{
+	SXCORE_PRECOND(_VOID);
+	g_pPerfMon->endSection(idSection);
+}
+
+const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount)
+{
+	SXCORE_PRECOND(NULL);
+	return(g_pPerfMon->getRecords(idThread, piRecordCount));
 }
 
 //##########################################################################

@@ -34,6 +34,7 @@ See the license in LICENSE
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
 
 #define BIT(n) (1 << n)
 enum COLLISION_GROUP
@@ -124,7 +125,7 @@ SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btColl
 
 SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
-SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld();
+SX_LIB_API btDiscreteDynamicsWorldMt * SXPhysics_GetDynWorld();
 
 /*! Запускает симуляцию
 */
@@ -133,6 +134,8 @@ SX_LIB_API void SXPhysics_EnableSimulation();
 /*! Останавливает симуляцию
 */
 SX_LIB_API void SXPhysics_DisableSimulation();
+
+SX_LIB_API void SXPhysics_DumpStats();
 
 #endif
 

@@ -18,6 +18,7 @@ See the license in LICENSE
 
 #include <fstream>
 #include <gdefines.h>
+#include <chrono>
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
@@ -41,6 +42,7 @@ enum CORE_TASK_FLAG
 	CORE_TASK_FLAG_THREADSAFE  = 0x0002, //!< Задача может быть выполнена в любом потоке
 	CORE_TASK_FLAG_FRAME_SYNC  = 0x0004, //!< Задаче необходима синхронизация по границе кадра
 	CORE_TASK_FLAG_ON_SYNC     = 0x0008, //!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
+	CORE_TASK_FLAG_FOR_LOOP = 0x0010, //!< Для внутреннего использования
 
 	CORE_TASK_FLAG_MAINTHREAD = CORE_TASK_FLAG_NONE, //!< Задача выполняется в главном потоке, один раз
 	CORE_TASK_FLAG_MAINTHREAD_REPEATING = CORE_TASK_FLAG_REPEATING, //!< Задача выполняется в главном потоке, повторяется
@@ -90,15 +92,15 @@ SX_LIB_API void Core_AGetName(char *szName);
 
 //##########################################################################
 
-/*! @name Менеджер задач 
- создает потоки по количеству ядер
+/*! @name Менеджер задач
+создает потоки по количеству ядер
 @{*/
 
 //! добавить задачу
-SX_LIB_API void Core_MTaskAdd(	
-    THREAD_UPDATE_FUNCTION func, //!< функция обработки
-    DWORD flag //!< флаг из #CoreTaskFlag 
-);
+SX_LIB_API void Core_MTaskAdd(
+	THREAD_UPDATE_FUNCTION func, //!< функция обработки
+	DWORD flag //!< флаг из #CoreTaskFlag 
+	);
 
 //! Запретить многопоточный режим
 SX_LIB_API void Core_MForceSinglethreaded();
@@ -107,7 +109,119 @@ SX_LIB_API void Core_MForceSinglethreaded();
 SX_LIB_API void Core_MTaskStart();
 
 //! остановить все задачи
-SX_LIB_API void Core_MTaskStop();	
+SX_LIB_API void Core_MTaskStop();
+
+//! получает идентификатор потока
+SX_LIB_API ID Core_MGetThreadID();
+
+//! получить количество потоков
+SX_LIB_API int Core_MGetThreadCount();
+
+
+class IParallelForBody
+{
+public:
+	virtual ~IParallelForBody(){}
+
+	virtual void forLoop(int iStart, int iEnd) const = 0;
+};
+
+//! запускает в параллельную обработку pBody
+SX_LIB_API ID Core_MForLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0);
+
+//! ожидает завершения обработки, начатой Core_MForLoop
+SX_LIB_API void Core_MWaitFor(ID id);
+
+//! @}
+
+//##########################################################################
+
+/*! @name Менеджер производительности
+@{*/
+
+struct CPerfRecord
+{
+	int m_iDepth;
+	std::chrono::system_clock::time_point m_time;
+	ID m_idSection;
+	bool m_isEntry;
+};
+
+enum PERF_SECTION
+{
+	PERF_SECTION_GAME_UPDATE, // 0
+	PERF_SECTION_GAME_SYNC, // 1
+	PERF_SECTION_ANIM_UPDATE, // 2
+	PERF_SECTION_ANIM_SYNC, // 3
+	PERF_SECTION_PHYS_UPDATE, // 4
+	PERF_SECTION_PHYS_SYNC, // 5
+	PERF_SECTION_RENDER_PRESENT, // 6
+	PERF_SECTION_WEATHER_UPDATE, // 7
+	PERF_SECTION_AMBIENT_SND_UPDATE, // 8
+	PERF_SECTION_MATSORT_UPDATE, // 9
+	PERF_SECTION_OC_REPROJECTION, // A
+	PERF_SECTION_VIS_CAMERA, // B
+	PERF_SECTION_RENDER, // C
+	PERF_SECTION_SML_UPDATE, // D
+	PERF_SECTION_SHADOW_UPDATE, // E
+	PERF_SECTION_MRT, // F
+	PERF_SECTION_LIGHTING, // G
+	PERF_SECTION_SKYBOX, // H
+	PERF_SECTION_TONEMAPPING, // I
+	PERF_SECTION_RENDER_PARTICLES, // J
+	PERF_SECTION_RENDER_POSTPROCESS, // K
+	PERF_SECTION_RENDER_HUD, // L
+	PERF_SECTION_RENDER_INFO, // M
+	PERF_SECTION_RENDER_GAME, // N
+	PERF_SECTION_OC_UPDATE, // O
+	PERF_SECTION_VIS_REFLECTION, // P
+	PERF_SECTION_VIS_LIGHT, // Q
+	PERF_SECTION_VIS_PARTICLES, // R
+	PERF_SECTION_AI_PATH, // S
+	PERF_SECTION_CVAR_UPDATE, // T
+};
+
+static const char *g_szPerfSectionName[] = {
+	"Game update",
+	"Game sync",
+	"Anim update",
+	"Anim sync",
+	"Phys update",
+	"Phys sync",
+	"Render present",
+	"Weather update",
+	"Ambient sound update",
+	"Matsort update",
+	"OC reprojection",
+	"Vis camera",
+	"Render overall",
+	"SML update",
+	"Shadow update",
+	"Render MRT",
+	"Render lighting",
+	"Render skybox",
+	"Render tonemapping",
+	"Render particles",
+	"Render postprocess",
+	"Render HUD",
+	"Render INFO",
+	"Render game",
+	"OC update",
+	"Vis reflection",
+	"Vis light",
+	"Vis particles",
+	"AI path",
+	"CVars update"
+};
+
+//! Начало секции измерения
+SX_LIB_API void Core_PStartSection(ID idSection);
+
+//! Конец секции измерения
+SX_LIB_API void Core_PEndSection(ID idSection);
+
+//! Получить данные за предыдущий кадр
+SX_LIB_API const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount);
 
 //! @}
 

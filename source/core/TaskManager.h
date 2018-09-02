@@ -29,24 +29,31 @@ typedef struct tagTHREADNAME_INFO
 #pragma pack(pop)
 #endif
 
-
 // Внимание, при использовании должна быть создана хотя бы одна фоновая задача!
 class CTaskManager
 {
 public:
-	typedef std::shared_ptr<CTask> TaskPtr;
+	typedef std::shared_ptr<ITask> TaskPtr;
 	typedef CConcurrentQueue<TaskPtr> TaskList;
 
 	CTaskManager(unsigned int numThreads = 0); //< Количество рабочих потоков, 0 для автоопределения
 	~CTaskManager();
 
-	void  addTask(TaskPtr task); //< Добавляет задачу в планировщик
-	void  add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag = CORE_TASK_FLAG_MAINTHREAD_REPEATING); //< Добавляет задачу в планировщик
+	void addTask(TaskPtr task); //< Добавляет задачу в планировщик
+	void add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag = CORE_TASK_FLAG_MAINTHREAD_REPEATING); //< Добавляет задачу в планировщик
 
 	void forceSinglethreaded();
 
 	void start(); //< Запускает выполнение планировщика
 	void stop(); //< Останавливает все
+
+	ID forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0);
+	void waitFor(ID id);
+
+	int getThreadCount()
+	{
+		return(m_iNumThreads);
+	}
 	
 private:
 	void workerMain();
@@ -72,10 +79,14 @@ private:
 	typedef std::lock_guard<std::mutex> ScopedLock;
 
 	mutable std::mutex m_mutexSync;
+	mutable std::mutex m_mutexFor;
 	Condition m_Condition;
+	Condition m_ConditionFor;
 	int m_iNumTasksToWaitFor;
 
 	bool m_isSingleThreaded;
+
+	Array<int> m_aiNumWaitFor;
 };
 
 #endif

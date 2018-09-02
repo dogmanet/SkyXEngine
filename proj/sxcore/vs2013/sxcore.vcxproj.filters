@@ -37,6 +37,9 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\PerfMon.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -81,6 +84,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\PerfMon.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

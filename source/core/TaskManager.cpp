@@ -5,6 +5,9 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "TaskManager.h"
+#include "PerfMon.h"
+
+extern CPerfMon *g_pPerfMon;
 
 #if defined(_WINDOWS)
 static void SetThreadName(DWORD dwThreadID, const char *threadName)
@@ -26,6 +29,35 @@ static void SetThreadName(DWORD dwThreadID, const char *threadName)
 #pragma warning(pop)
 }
 #endif
+
+class CTaskForLoop: public ITask
+{
+public:
+	CTaskForLoop(ID id, const IParallelForBody *pBody, int iStart, int iEnd, UINT iFlags = CORE_TASK_FLAG_FOR_LOOP | CORE_TASK_FLAG_THREADSAFE):
+		ITask(iFlags),
+		m_id(id),
+		m_pBody(pBody),
+		m_iStart(iStart),
+		m_iEnd(iEnd)
+	{
+	}
+
+	void run()
+	{
+		m_pBody->forLoop(m_iStart, m_iEnd);
+	}
+
+	ID getID() const
+	{
+		return(m_id);
+	}
+
+protected:
+	ID m_id;
+	const IParallelForBody *m_pBody;
+	int m_iStart;
+	int m_iEnd;
+};
 
 CTaskManager::CTaskManager(unsigned int numThreads):
 	m_isSingleThreaded(false),
@@ -105,6 +137,9 @@ void CTaskManager::start()
 
 	char name[64];
 
+	ID idThread = Core_MGetThreadID();
+	assert(idThread == 0);
+
 	//< Инициализируем пул рабочих потоков
 	for(unsigned int i = 0; i < m_iNumThreads; ++i)
 	{
@@ -133,6 +168,8 @@ void CTaskManager::start()
 			}
 
 			synchronize();
+
+
 			std::swap(m_iReadList, m_iWriteList);
 
 			if(m_isSingleThreaded)
@@ -140,7 +177,10 @@ void CTaskManager::start()
 				worker(true);
 			}
 
+			m_aiNumWaitFor.clearFast();
+
 			sheduleNextBunch();
+
 		}
 
 		std::this_thread::yield();
@@ -156,8 +196,8 @@ void CTaskManager::synchronize()
 		m_Condition.wait(lock);
 	}
 
-	//m_iNumTasksToWaitFor = m_OnSyncTasks.size();
-
+	g_pPerfMon->syncBegin();
+	
 	while(!m_OnSyncTasks.empty())
 	{
 		m_BackgroundTasks.push(m_OnSyncTasks.pop());
@@ -174,7 +214,7 @@ void CTaskManager::sheduleNextBunch()
 		m_Condition.wait(lock);
 	}
 
-	//m_iNumTasksToWaitFor = m_SyncTasks.size();
+	g_pPerfMon->endFrame();
 
 	while(!m_SyncTasks.empty())
 	{
@@ -206,6 +246,7 @@ void CTaskManager::execute(TaskPtr t)
 
 void CTaskManager::workerMain()
 {
+	srand((UINT)time(0));
 	worker(false);
 }
 
@@ -229,6 +270,16 @@ void CTaskManager::worker(bool bOneRun)
 				m_Condition.notify_one();
 			}
 
+			if(task->getFlags() & CORE_TASK_FLAG_FOR_LOOP)
+			{
+				{
+					std::lock_guard<std::mutex> lock(m_mutexFor);
+					m_aiNumWaitFor[std::static_pointer_cast<CTaskForLoop, ITask>(task)->getID()] -= 1;
+				}
+
+				m_ConditionFor.notify_one();
+			}
+
 			std::this_thread::yield();
 		}
 		else
@@ -237,8 +288,99 @@ void CTaskManager::worker(bool bOneRun)
 			{
 				return;
 			}
-			// тут делать нечего, спим 1.667 мс (1/10 кадра при 60 FPS)
-			std::this_thread::sleep_for(std::chrono::microseconds(166));
+
+			std::this_thread::yield();
+			//std::this_thread::sleep_for(std::chrono::microseconds(166));
+			
 		}
 	}
+}
+
+ID CTaskManager::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
+{
+	int iTotal = iEnd - iStart;
+	int iChunkSize = (int)(ceilf((float)iTotal / (float)m_iNumThreads) + 0.5f);
+	if(iMaxChunkSize > 0 && iChunkSize > iMaxChunkSize)
+	{
+		iChunkSize = iMaxChunkSize;
+	}
+
+	int iTaskCount = (int)(ceilf((float)iTotal / (float)iChunkSize) + 0.5f);
+
+	ID id = -1;
+	{
+		std::lock_guard<std::mutex> lock(m_mutexFor);
+		id = m_aiNumWaitFor.size();
+		m_aiNumWaitFor.push_back(iTaskCount);
+	}
+
+	int iCur;
+
+	while(iTotal > 0)
+	{
+		iCur = (std::min)(iTotal, iChunkSize);
+		addTask(TaskPtr(new CTaskForLoop(id, pBody, iStart, iStart + iCur)));
+		iTotal -= iCur;
+		iStart += iCur;
+	}
+
+	return(id);
+}
+
+void CTaskManager::waitFor(ID id)
+{
+	assert(ID_VALID(id) && (UINT)id < m_aiNumWaitFor.size());
+
+	std::unique_lock<std::mutex> lock(m_mutexFor);
+
+	while(m_aiNumWaitFor[id] > 0)
+	{
+		m_ConditionFor.wait(lock);
+	}
+}
+
+//##########################################################################
+
+class CThreadsafeCounter
+{
+	ID m_idCounter;
+	std::mutex m_mutex;
+
+public:
+	CThreadsafeCounter()
+	{
+		m_idCounter = -1;
+	}
+
+	ID getNext()
+	{
+		m_mutex.lock();
+		++m_idCounter;
+
+		if(m_idCounter >= SX_MAX_THREAD_COUNT)
+		{
+			assert(!"thread counter exceeded");
+			// wrap back to the first worker index
+			m_idCounter = 1;
+		}
+
+		ID val = m_idCounter;
+		m_mutex.unlock();
+		return(val);
+	}
+};
+
+ID Core_MGetThreadID()
+{
+	static CThreadsafeCounter s_threadCounter;
+
+	const ID c_idNullIndex = -1;
+	__declspec(thread) static ID s_idThreadIndex = c_idNullIndex;
+	if(s_idThreadIndex == c_idNullIndex)
+	{
+		s_idThreadIndex = s_threadCounter.getNext();
+		assert(s_idThreadIndex < SX_MAX_THREAD_COUNT);
+	}
+
+	return(s_idThreadIndex);
 }

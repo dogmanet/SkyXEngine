@@ -11,6 +11,9 @@ See the license in LICENSE
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
+#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h>
+#include <BulletCollision/CollisionDispatch/btCollisionDispatcherMt.h>
 
 #include <common/AssotiativeArray.h>
 #include <common/Array.h>
@@ -68,7 +71,7 @@ public:
 	
 	ID getMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
-	btDiscreteDynamicsWorld * getBtWorld()
+	btDiscreteDynamicsWorldMt * getBtWorld()
 	{
 		return(m_pDynamicsWorld);
 	}
@@ -107,10 +110,10 @@ public:
 
 protected:
 	btDefaultCollisionConfiguration * m_pCollisionConfiguration;
-	btCollisionDispatcher * m_pDispatcher;
+	btCollisionDispatcherMt * m_pDispatcher;
 	btBroadphaseInterface * m_pBroadphase;
-	btSequentialImpulseConstraintSolver * m_pSolver;
-	btDiscreteDynamicsWorld * m_pDynamicsWorld;
+	btSequentialImpulseConstraintSolverMt * m_pSolver;
+	btDiscreteDynamicsWorldMt * m_pDynamicsWorld;
 	btGhostPairCallback * m_pGHostPairCallback;
 
 	const bool * m_bDebugDraw;
