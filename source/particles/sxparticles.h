@@ -35,12 +35,12 @@ See the license in LICENSE
 #include <gcore/sxgcore.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxmtllight_d.lib")
+#pragma comment(lib, "sxlight_d.lib")
 #else
-#pragma comment(lib, "sxmtllight.lib")
+#pragma comment(lib, "sxlight.lib")
 #endif
 
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API

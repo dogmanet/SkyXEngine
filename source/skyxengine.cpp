@@ -230,9 +230,9 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
 	SGCore_SetFunc_MtlLoad(SkyXEngine_RFuncMtlLoad);
-	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SML_MtlGetSort);
-	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SML_MtlGetTypeReflection);
-	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SML_MtlGetPhysicMaterial);
+	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SMtrl_MtlGetSort);
+	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SMtrl_MtlGetTypeReflection);
+	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SMtrl_MtlGetPhysicMaterial);
 
 	SGCore_SkyBoxCr();
 #if !defined(SX_MATERIAL_EDITOR)
@@ -254,19 +254,28 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGeom_0Create("sxgeom", false);
 	SGeom_Dbg_Set(SkyXEngine_PrintfLog);
 
+	SGreen_0Create("sxgreen", false);
+	SGreen_Dbg_Set(SkyXEngine_PrintfLog);
+	SGreen_SetFuncIntersect(SkyXEngine_RFuncGreenIntersect);
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
 
-	SML_0Create("sxml", false);
-	SML_Dbg_Set(SkyXEngine_PrintfLog);
+	SLight_0Create("sxml", false);
+	SLight_Dbg_Set(SkyXEngine_PrintfLog);
 
-	//SML_LigthsCreatePoint(&float3(100, 10, 100), 100, &float3(10, 0, 10), false, false);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB light initialized\n");
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtllight initialized\n");
+
+	SMtrl_0Create("sxml", false);
+	SMtrl_Dbg_Set(SkyXEngine_PrintfLog);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtrl initialized\n");
+
 
 	SPE_0Create("sxparticles", false);
 	SPE_Dbg_Set(SkyXEngine_PrintfLog);
 	SPE_SetFunc_ParticlesPhyCollision(SkyXEngine_RFuncParticlesPhyCollision);
-	SPE_RTDepthSet(SML_DSGetRT_ID(DS_RT_DEPTH));
+	SPE_RTDepthSet(SGCore_GbufferGetRT_ID(DS_RT_DEPTH));
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB particles initialized\n");
 
@@ -276,11 +285,11 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #if defined(SX_GAME)
 	SPP_ChangeTexSun("fx_sun.dds");
 #endif
-	SPP_RTSetInput(SML_DSGetRT_ID(DS_RT_SCENELIGHT));
-	SPP_RTSetOutput(SML_DSGetRT_ID(DS_RT_SCENELIGHT2));
-	SPP_RTSetDepth0(SML_DSGetRT_ID(DS_RT_DEPTH0));
-	SPP_RTSetDepth1(SML_DSGetRT_ID(DS_RT_DEPTH1));
-	SPP_RTSetNormal(SML_DSGetRT_ID(DS_RT_NORMAL));
+	SPP_RTSetInput(SGCore_GbufferGetRT_ID(DS_RT_SCENELIGHT));
+	SPP_RTSetOutput(SGCore_GbufferGetRT_ID(DS_RT_SCENELIGHT2));
+	SPP_RTSetDepth0(SGCore_GbufferGetRT_ID(DS_RT_DEPTH0));
+	SPP_RTSetDepth1(SGCore_GbufferGetRT_ID(DS_RT_DEPTH1));
+	SPP_RTSetNormal(SGCore_GbufferGetRT_ID(DS_RT_NORMAL));
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB pp initialized\n");
 
@@ -792,7 +801,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
 	DelayLibUpdateAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
+#ifndef SX_PARTICLES_EDITOR
 	Core_MWaitFor(idUpdateGame);
+#endif
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
@@ -876,7 +887,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_RMatrixGet(G_RI_MATRIX_LIGHT_PROJ, &mProjLight);
 
 	Core_PStartSection(PERF_SECTION_SML_UPDATE);
-	SML_Update(timeDelta);
+	SMtrl_Update(timeDelta);
 	Core_PEndSection(PERF_SECTION_SML_UPDATE);
 
 	Core_PStartSection(PERF_SECTION_RENDER);
@@ -921,7 +932,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		}
 
 		Core_PStartSection(PERF_SECTION_TONEMAPPING);
-		SRender_ComToneMapping(timeDelta);
+		static const float * r_hdr_adapted_coef = GET_PCVAR_FLOAT("r_hdr_adapted_coef");
+		SGCore_ToneMappingCom(timeDelta, (r_hdr_adapted_coef ? (*r_hdr_adapted_coef) : 0.03f));
 		Core_PEndSection(PERF_SECTION_TONEMAPPING);
 
 		Core_PEndSection(PERF_SECTION_LIGHTING);
@@ -929,16 +941,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}
 
 	SGCore_ShaderUnBind();
-
-	//Core_PStartSection(PERF_SECTION_RENDER_PARTICLES);
-	//SRender_RenderParticles(timeDelta);
-	//CTest test;
-	//ID idCycle = Core_MForLoop(0, 10, &test);
-	//printf("cycle started\n");
-	//Core_MWaitFor(idCycle);
-	//printf("cycle ended\n");
-
-	//Core_PEndSection(PERF_SECTION_RENDER_PARTICLES);
 
 	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
@@ -951,11 +953,53 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	if(!SSInput_GetKeyState(SIK_P))
 	{
 		Core_PStartSection(PERF_SECTION_RENDER_POSTPROCESS);
-		SRender_RenderPostProcess(timeDelta);
+		SRender_RenderMainPostProcess(timeDelta);
 		Core_PEndSection(PERF_SECTION_RENDER_POSTPROCESS);
 	}
+
 	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
+
+	
+	LPDIRECT3DSURFACE9 pRenderSurf, pBackBuf;
+	SGCore_RTGetTexture(SPP_RTGetCurrSend())->GetSurfaceLevel(0, &pRenderSurf);
+
+	pDXDevice->GetRenderTarget(0, &pBackBuf);
+	pDXDevice->SetRenderTarget(0, pRenderSurf);
+
+	Core_PStartSection(PERF_SECTION_RENDER_PARTICLES);
+	SRender_RenderParticles(timeDelta);
+	Core_PEndSection(PERF_SECTION_RENDER_PARTICLES);
+
+#if defined(SX_GAME)
+	Core_PStartSection(PERF_SECTION_RENDER_HUD);
+	SXGame_RenderHUD();
+	Core_PEndSection(PERF_SECTION_RENDER_HUD);
+#endif
+
+#if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
+	Core_PStartSection(PERF_SECTION_RENDER_GAME);
+	SXGame_Render();
+	Core_PEndSection(PERF_SECTION_RENDER_GAME);
+#endif
+
+	SGCore_ShaderUnBind();
+
+	pDXDevice->SetRenderTarget(0, pBackBuf);
+	mem_release(pRenderSurf);
+	mem_release(pBackBuf);
+
+
+	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+
+#if defined(SX_GAME)
+	SRender_RenderFinalPostProcess(timeDelta);
+#endif
+
 
 	SGCore_ShaderBindN(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
 	SGCore_ShaderBindN(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
@@ -963,7 +1007,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 #if !defined(SX_GAME)
-	pDXDevice->SetTexture(0, SML_DSGetRT((DS_RT)*r_final_image));
+	pDXDevice->SetTexture(0, SGCore_GbufferGetRT((DS_RT)*r_final_image));
 #else
 	pDXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
 #endif
@@ -972,31 +1016,20 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 
-	Core_PStartSection(PERF_SECTION_RENDER_PARTICLES);
-	SRender_RenderParticles(timeDelta); // ???
-	Core_PEndSection(PERF_SECTION_RENDER_PARTICLES);
 
 	pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 	pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 	pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
 	SRender_RenderEditorMain();
 
-
 #if defined(SX_GAME) && defined(SX_AIGRID_RENDER)
 	//static const float * r_far = GET_PCVAR_FLOAT("r_far");
 	SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
 #endif
 
-#if defined(SX_GAME)
-	Core_PStartSection(PERF_SECTION_RENDER_HUD);
-	SXGame_RenderHUD();
-	Core_PEndSection(PERF_SECTION_RENDER_HUD);
+#ifdef _DEBUG
+	SXPhysics_DebugRender();
 #endif
-
-	
-
-	
-	
 
 	
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
@@ -1061,22 +1094,14 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}
 	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 
-#ifdef _DEBUG
-	SXPhysics_DebugRender();
-#endif
 
-#if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
-	Core_PStartSection(PERF_SECTION_RENDER_GAME);
-	SXGame_Render();
-	Core_PEndSection(PERF_SECTION_RENDER_GAME);
-#endif
 
 #if defined(SX_LEVEL_EDITOR)
-	SXLevelEditor::LevelEditorUpdate(timeDelta);
+	level_editor::LevelEditorUpdate(timeDelta);
 #endif
 
 #if defined(SX_MATERIAL_EDITOR)
-	SXMaterialEditor::MaterialEditorUpdate(timeDelta);
+	material_editor::MaterialEditorUpdate(timeDelta);
 #endif
 
 #if defined(SX_PARTICLES_EDITOR)
@@ -1109,7 +1134,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_OC_UPDATE);
-	SGCore_OC_Update(SML_DSGetRT_ID(DS_RT_DEPTH0), SRender_GetCamera()->getFrustum());
+	SGCore_OC_Update(SGCore_GbufferGetRT_ID(DS_RT_DEPTH0), SRender_GetCamera()->getFrustum());
 	Core_PEndSection(PERF_SECTION_OC_UPDATE);
 	DelayUpdateOC += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
@@ -1148,7 +1173,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->Present(0, 0, 0, 0);
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-
+	
 	Core_PEndSection(PERF_SECTION_RENDER);
 
 	Core_PStartSection(PERF_SECTION_CVAR_UPDATE);
@@ -1158,7 +1183,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 void SkyXEngind_UpdateDataCVar()
 {
-	ID idGlobalLight = SML_LigthsGetGlobal();
+	ID idGlobalLight = SLight_GetGlobal();
 	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
 	static bool r_pssm_4or3_old = true;
 
@@ -1166,14 +1191,14 @@ void SkyXEngind_UpdateDataCVar()
 	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && idGlobalLight >= 0)
 	{
 		r_pssm_4or3_old = (*r_pssm_4or3);
-		SML_LigthsSet4Or3SplitsG(idGlobalLight, r_pssm_4or3_old);
+		SLight_Set4Or3SplitsG(idGlobalLight, r_pssm_4or3_old);
 	}
 
 	static const bool * r_pssm_shadowed = GET_PCVAR_BOOL("r_pssm_shadowed");
 
 	if (r_pssm_shadowed && idGlobalLight >= 0)
 	{
-		SML_LigthsSetTypeShadowed(idGlobalLight, ((*r_pssm_shadowed) ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
+		SLight_SetTypeShadowed(idGlobalLight, ((*r_pssm_shadowed) ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
 	}
 
 	static const float * r_pssm_quality = GET_PCVAR_FLOAT("r_pssm_quality");
@@ -1192,7 +1217,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_pssm_quality_old = 4.f;
 			Core_0SetCVarFloat("r_pssm_quality", r_pssm_quality_old);
 		}
-		SML_LigthsSettGCoefSizeDepth(r_pssm_quality_old);
+		SLight_SettGCoefSizeDepth(r_pssm_quality_old);
 	}
 
 	static const float * r_lsm_quality = GET_PCVAR_FLOAT("r_lsm_quality");
@@ -1211,7 +1236,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_lsm_quality_old = 4.f;
 			Core_0SetCVarFloat("r_lsm_quality", r_lsm_quality_old);
 		}
-		SML_LigthsSettLCoefSizeDepth(r_lsm_quality_old);
+		SLight_SettLCoefSizeDepth(r_lsm_quality_old);
 	}
 
 	static const int * r_grass_freq = GET_PCVAR_INT("r_grass_freq");
@@ -1230,7 +1255,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_grass_freq_old = 100;
 			Core_0SetCVarInt("r_grass_freq", r_grass_freq_old);
 		}
-		SGeom_0SettGreenSetFreqGrass(r_grass_freq_old);
+		SGreen_0SettSetFreqGrass(r_grass_freq_old);
 	}
 
 	static const float * r_green_lod0 = GET_PCVAR_FLOAT("r_green_lod0");
@@ -1249,7 +1274,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_green_lod0_old = 100;
 			Core_0SetCVarFloat("r_green_lod0", r_green_lod0_old);
 		}
-		SGeom_0SettGreenSetDistLods1(r_green_lod0_old);
+		SGreen_0SettSetDistLods1(r_green_lod0_old);
 	}
 
 	static const float * r_green_lod1 = GET_PCVAR_FLOAT("r_green_lod1");
@@ -1268,7 +1293,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_green_lod1_old = 150;
 			Core_0SetCVarFloat("r_green_lod1", r_green_lod1_old);
 		}
-		SGeom_0SettGreenSetDistLods2(r_green_lod1_old);
+		SGreen_0SettSetDistLods2(r_green_lod1_old);
 	}
 
 	static const float * r_green_less = GET_PCVAR_FLOAT("r_green_less");
@@ -1287,7 +1312,7 @@ void SkyXEngind_UpdateDataCVar()
 			r_green_less_old = 90;
 			Core_0SetCVarFloat("r_green_less", r_green_less_old);
 		}
-		SGeom_0SettGreenSetBeginEndLessening(r_green_less_old);
+		SGreen_0SettSetBeginEndLessening(r_green_less_old);
 	}
 
 
@@ -1379,7 +1404,7 @@ void SkyXEngind_UpdateDataCVar()
 	{
 		old_snd_main_volume = *snd_main_volume;
 		SSCore_SetMainVolume(*snd_main_volume);
-	}
+}
 }
 
 //#############################################################################
@@ -1508,7 +1533,7 @@ void SkyXEngine_Kill()
 	SXAnim_AKill();
 
 	SGeom_AKill();
-	SML_AKill();
+	SLight_AKill();
 	SSCore_AKill();
 	SGCore_AKill();
 	Core_AKill();
@@ -1609,6 +1634,7 @@ void SkyXEngine_PreviewKill()
 	g_hWinPreview = 0;
 }
 #endif
+
 //##########################################################################
 
 void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
@@ -1621,26 +1647,26 @@ void SkyXEngine_RFuncMtlSet(ID id, float4x4* world)
 	switch (Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
 	case RENDER_STATE_SHADOW:
-		SML_MtlSetMainTexture(0, id);
-		SML_LigthsShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SML_MtlGetTypeModel(id), world);
+		SMtrl_MtlSetMainTexture(0, id);
+		SLight_ShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SMtrl_MtlGetTypeModel(id), world);
 		break;
 
 	case RENDER_STATE_FREE:
-		SML_MtlSetMainTexture(0, id);
+		SMtrl_MtlSetMainTexture(0, id);
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
 		//SGCore_ShaderUnBind();
-		SML_MtlRenderStd(SML_MtlGetTypeModel(id), world, 0, id);
+		SMtrl_MtlRenderStd(SMtrl_MtlGetTypeModel(id), world, 0, id);
 		break;
 
 	case RENDER_STATE_MATERIAL:
-		SML_MtlRender(id, world);
+		SMtrl_MtlRender(id, world);
 		break;
 	}
 }
 
 ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type)
 {
-	return SML_MtlLoad(name, (MTLTYPE_MODEL)mtl_type);
+	return SMtrl_MtlLoad(name, (MTLTYPE_MODEL)mtl_type);
 }
 
 bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t *pPos)
@@ -1725,6 +1751,28 @@ bool SkyXEngine_RFuncParticlesPhyCollision(const float3 * lastpos, const float3*
 	return false;
 }
 
+bool SkyXEngine_RFuncGreenIntersect(const float3 *pStart, const float3 *pFinish, float3 *pResult)
+{
+	if (!pStart || !pFinish)
+		return false;
+
+	float3 vDir = float3(0, -1, 0);
+
+	btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(*pStart), F3_BTVEC(*pFinish));
+	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(*pStart), F3_BTVEC(*pFinish), cb);
+
+	if (cb.hasHit())
+	{
+		if (pResult)
+			*pResult = BTVEC_F3(cb.m_hitPointWorld);
+
+		return true;
+	}
+
+	return false;
+}
+
+//##########################################################################
 
 IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath)
 {

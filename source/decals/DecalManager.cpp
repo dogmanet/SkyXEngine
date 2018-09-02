@@ -320,7 +320,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		return;
 	}
 
-	pTex = SGCore_LoadTexGetTex(SML_MtlGetTextureID(pMat));
+	pTex = SGCore_LoadTexGetTex(SMtrl_MtlGetTextureID(pMat));
 	if(!pTex)
 	{
 		return;

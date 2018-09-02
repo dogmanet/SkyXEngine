@@ -7,7 +7,8 @@ See the license in LICENSE
 #include "sxparticles.h"
 #include "emitter.h"
 #include "effect.h"
-#include "PESet.h"
+#include "pe_data.h"
+
 #define SXPARTICLES_VERSION 1
 
 #if !defined(DEF_STD_REPORT)
@@ -59,13 +60,13 @@ SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
 			}
 			else
 			{
-				PESet::Init();
+				pe_data::Init();
 				ArrEffects = new Effects();
 			}
 		}
 		else
 		{
-			PESet::Init();
+			pe_data::Init();
 			ArrEffects = new Effects();
 		}
 	}
@@ -75,7 +76,7 @@ SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
 
 SX_LIB_API void SPE_RTDepthSet(ID id)
 {
-	PESet::IDsRenderTargets::DepthScene = id;
+	pe_data::rt_id::idDepthScene = id;
 }
 
 SX_LIB_API void SPE_AKill()
@@ -83,7 +84,7 @@ SX_LIB_API void SPE_AKill()
 	PE_PRECOND(_VOID);
 
 	mem_delete(ArrEffects);
-	mem_release(PESet::VertexDeclarationParticles);
+	mem_release(pe_data::pVertexDeclarationParticles);
 }
 
 SX_LIB_API void SPE_OnLostDevice()

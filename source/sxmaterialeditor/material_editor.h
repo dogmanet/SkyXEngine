@@ -8,7 +8,7 @@
 #include <common/string.h>
 
 #include <sxguiwinapi/sxgui.h>
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 #include <render/sxrender.h>
 #include <sxmaterialeditor/resource.h>
 
@@ -20,7 +20,7 @@
 #include "shaders_kit.h"
 #include "paraml_kit.h"
 
-namespace SXMaterialEditor
+namespace material_editor
 {
 	extern ISXGUIBaseWnd *pJobWindow;
 	extern ISXGUIMenuWindow *pMainMenu;
@@ -213,7 +213,7 @@ namespace SXMaterialEditor
 
 
 
-void SXMaterialEditor::InitAllElements();
-void SXMaterialEditor::DeleteAllElements();
+void material_editor::InitAllElements();
+void material_editor::DeleteAllElements();
 
 #endif

@@ -19,12 +19,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	//SGCore_SkyCloudsSetWidthHeightPos(1000, 1000, &float3(0, 0, 0));
 
-	SGCore_OC_SetEnable(false);
+	//SGCore_OC_SetEnable(false);
 
 	//SLevel_Load("stalker_atp", true);
 	//SLevel_Load("sga", true);
 
-	SGeom_0SettGreenSetFreqGrass(100);
+	SGreen_0SettSetFreqGrass(100);
 
 	/*NPCBase* npc = new NPCBase();
 	npc->setModel("models/stalker_zombi/stalker_zombi_a.dse");

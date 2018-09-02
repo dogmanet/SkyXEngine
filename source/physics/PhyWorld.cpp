@@ -7,8 +7,9 @@ See the license in LICENSE
 #include "PhyWorld.h"
 #include <core/sxcore.h>
 #include <geom/sxgeom.h>
+#include <green/sxgreen.h>
 #include <gcore/sxgcore.h>
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 
 
 #include <../Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h>
@@ -184,6 +185,9 @@ void CPhyWorld::loadGeom(const char * file)
 	{
 		return;
 	}
+
+	unloadGeom();
+
 	float3_t ** ppVertices;
 	int32_t * pVertexCount;
 	uint32_t ** ppIndices;
@@ -228,7 +232,7 @@ void CPhyWorld::loadGeom(const char * file)
 			}
 			for(int i = 0; i < pIndexCount[tc]; i += 3)
 			{
-				//m_pGeomMtlTypes[iFace++] = SML_MtlGetPhysicMaterial(ppMtls[tc][i]);
+				//m_pGeomMtlTypes[iFace++] = SMtrl_MtlGetPhysicMaterial(ppMtls[tc][i]);
 				m_pGeomMtlIDs[iFace++] = ppMtls[tc][i];
 				m_pGeomStaticCollideMesh->addTriangleIndices(ppIndices[tc][i] + VC, ppIndices[tc][i + 1] + VC, ppIndices[tc][i + 2] + VC);
 			}
@@ -269,7 +273,7 @@ void CPhyWorld::loadGeom(const char * file)
 	int32_t* green_arr_count_transform = 0;
 	int32_t green_arr_count_green = 0;
 
-	SGeom_GreenGetNavMeshAndTransform(&green_arr_vertex, &green_arr_count_vertex, &green_arr_index, &green_arr_mtl, &green_arr_count_index, &green_arr_transform, &green_arr_count_transform, &green_arr_count_green);
+	SGreen_GetNavMeshAndTransform(&green_arr_vertex, &green_arr_count_vertex, &green_arr_index, &green_arr_mtl, &green_arr_count_index, &green_arr_transform, &green_arr_count_transform, &green_arr_count_green);
 
 	if(green_arr_count_green > 0)
 	{
@@ -284,7 +288,7 @@ void CPhyWorld::loadGeom(const char * file)
 			int iIC = 0;
 			for(int i = 0; i < green_arr_count_index[num_green]; i += 3)
 			{
-				MTLTYPE_PHYSIC type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
+				MTLTYPE_PHYSIC type = SMtrl_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
 				if (type != MTLTYPE_PHYSIC_LEAF_GRASS)
 				{
 					iIC += 3;
@@ -301,7 +305,7 @@ void CPhyWorld::loadGeom(const char * file)
 				for(int i = 0; i < green_arr_count_index[num_green]; ++i)
 				{
 					idx = green_arr_index[num_green][i];
-					type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][idx]);
+					type = SMtrl_MtlGetPhysicMaterial(green_arr_mtl[num_green][idx]);
 					if (type != MTLTYPE_PHYSIC_LEAF_GRASS)
 					{
 						found = false;
@@ -325,7 +329,7 @@ void CPhyWorld::loadGeom(const char * file)
 			float3 a, b, c, x, y, z;
 			for(int i = 0; i < green_arr_count_index[num_green]; i += 3)
 			{
-				type = SML_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
+				type = SMtrl_MtlGetPhysicMaterial(green_arr_mtl[num_green][i]);
 				if (type == MTLTYPE_PHYSIC_LEAF_GRASS)
 				{
 					continue;
@@ -451,7 +455,7 @@ void CPhyWorld::loadGeom(const char * file)
 		}
 
 	}
-	SGeom_GreenClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
+	SGreen_ClearNavMeshAndTransform(green_arr_vertex, green_arr_count_vertex, green_arr_index, green_arr_mtl, green_arr_count_index, green_arr_transform, green_arr_count_transform, green_arr_count_green);
 
 	if(file)
 	{
@@ -569,11 +573,11 @@ bool CPhyWorld::importGeom(const char * file)
 
 					AssotiativeArray<String, ID> mMatMap;
 					const AssotiativeArray<String, ID>::Node *pMatMapNode;
-					int iMatCount = SML_MtlGetCount();
+					int iMatCount = SMtrl_MtlGetCount();
 					for(int i = 0; i < iMatCount; ++i)
 					{
 						szTmp[0] = 0;
-						SML_MtlGetTexture(i, szTmp);
+						SMtrl_MtlGetTexture(i, szTmp);
 						mMatMap[szTmp] = i;
 					}
 
@@ -705,7 +709,7 @@ bool CPhyWorld::exportGeom(const char * _file)
 			if(!aszMatNames[m_pGeomMtlIDs[i]])
 			{
 				szTmp[0] = 0;
-				SML_MtlGetTexture(m_pGeomMtlIDs[i], szTmp);
+				SMtrl_MtlGetTexture(m_pGeomMtlIDs[i], szTmp);
 				aszMatNames[m_pGeomMtlIDs[i]] = _allocStr(szTmp);
 			}
 		}
@@ -747,7 +751,7 @@ MTLTYPE_PHYSIC CPhyWorld::getMtlType(const btCollisionObject *pBody, const btCol
 	ID idMtl = getMtlID(pBody, pShapeInfo);
 	if(ID_VALID(idMtl))
 	{
-		return(SML_MtlGetPhysicMaterial(idMtl));
+		return(SMtrl_MtlGetPhysicMaterial(idMtl));
 	}
 	return(MTLTYPE_PHYSIC_DEFAULT);
 }

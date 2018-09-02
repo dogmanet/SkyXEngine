@@ -6,19 +6,19 @@ See the license in LICENSE
 
 /*!
 \file
-Главный файл редактора уровней SXLevelEditor
+Главный файл редактора уровней level_editor
 */
 
 /*!
-\page level_editor Редактор уровней SXLevelEditor
+\page level_editor Редактор уровней level_editor
 \tableofcontents
 \section level_editor_main Общее
-\b SXLevelEditor – редактор уровней движка SkyXEngine.\n
+\b level_editor – редактор уровней движка SkyXEngine.\n
 Редактор работает с файлом в текстовом формате .lvl который содержит всю информацию об уровне. 
 Данный файл должен находится по относительному пути (относительно программы) /gamesource/level/name_level/name_level.lvl
 при этом имя директории и имя файла .lvl должны быть идентичными\n
 
-\image html level_editor/level_editor.png "Скриншот программы SXLevelEditor"
+\image html level_editor/level_editor.png "Скриншот программы level_editor"
 
 \section level_editor_window Структура окна
 <b>Окно состоит из структурных элементов (сверху вниз):</b>
@@ -208,9 +208,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SkyXEngine_PreviewCreate();
 	SXGUIinit();
 
-	SXLevelEditor::InitAllElements();
+	level_editor::InitAllElements();
 
-	SkyXEngine_Init(SXLevelEditor::RenderWindow->getHWND(), SXLevelEditor::JobWindow->getHWND());
+	SkyXEngine_Init(level_editor::pRenderWindow->getHWND(), level_editor::pJobWindow->getHWND());
 
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
@@ -219,57 +219,57 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SkyXEngine_RunGenPreview();
 
 	SRender_GetCamera()->setPosition(&float3(0, 0.5, -2));
-	SXLevelEditor::MainMenu->insertPopupItem(4, "Weather", 4, 0);
-	SXLevelEditor::MainMenu->insertItem(4, "none", SX_LE_MMENU_WEATHER_BEGIN_ID, 4);
-	SXLevelEditor::MainMenu->setCheckItem(SX_LE_MMENU_WEATHER_BEGIN_ID, true);
+	level_editor::pMainMenu->insertPopupItem(4, "Weather", 4, 0);
+	level_editor::pMainMenu->insertItem(4, "none", SX_LE_MMENU_WEATHER_BEGIN_ID, 4);
+	level_editor::pMainMenu->setCheckItem(SX_LE_MMENU_WEATHER_BEGIN_ID, true);
 
-	SXLevelEditor::CheckBoxTBAIGBound->setCheck(false);
-	SXLevelEditor::AIGBound = false;
-	SXLevelEditor::CheckBoxTBAIGQuad->setCheck(true);
-	SXLevelEditor::AIGQuad = true;
-	SXLevelEditor::CheckBoxTBAIGGraphPoint->setCheck(true);
-	SXLevelEditor::AIGGraphPoint = true;
+	level_editor::pCheckBoxTBAIGBound->setCheck(false);
+	level_editor::canAIGBound = false;
+	level_editor::pCheckBoxTBAIGQuad->setCheck(true);
+	level_editor::canAIGQuad = true;
+	level_editor::pCheckBoxTBAIGGraphPoint->setCheck(true);
+	level_editor::canAIGGraphPoint = true;
 
-	SXLevelEditor::CheckBoxTBGrid->setCheck(true);
-	SXLevelEditor::CheckBoxTBAxes->setCheck(true);
-	SXLevelEditor::MainMenu->setCheckItem(ID_VIEW_GRID, true);
-	SXLevelEditor::MainMenu->setCheckItem(ID_VIEW_AXES, true);
+	level_editor::pCheckBoxTBGrid->setCheck(true);
+	level_editor::pCheckBoxTBAxes->setCheck(true);
+	level_editor::pMainMenu->setCheckItem(ID_VIEW_GRID, true);
+	level_editor::pMainMenu->setCheckItem(ID_VIEW_AXES, true);
 
-	SXLevelEditor::CheckBoxTBRColor->setCheck(true);
-	SXLevelEditor::MainMenu->setCheckItem(ID_FINALIMAGE_COLOR, true);
+	level_editor::pCheckBoxTBRColor->setCheck(true);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, true);
 	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 
-	SXLevelEditor::CheckBoxTBSelS->setCheck(true);
-	SXLevelEditor::SelSelection = true;
-	SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
+	level_editor::pCheckBoxTBSelS->setCheck(true);
+	level_editor::canSelSelection = true;
+	level_editor::pMainMenu->setCheckItem(ID_SELECTIONSETTINGS_SELECTION, true);
 
-	SXLevelEditor::CheckBoxTBSelCullBack->setCheck(true);
-	SXLevelEditor::SelBackFacesCull = true;
-	SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
-	SXLevelEditor::SelZTest = false;
+	level_editor::pCheckBoxTBSelCullBack->setCheck(true);
+	level_editor::canSelBackFacesCull = true;
+	level_editor::pMainMenu->setCheckItem(ID_SELECTIONSETTINGS_BACKFACESCULL, true);
+	level_editor::canSelZTest = false;
 
-	SXLevelEditor::CheckBoxTBSelMesh->setCheck(true);
-	SXLevelEditor::SelMesh = true;
-	SXLevelEditor::MainMenu->setCheckItem(ID_SELECTIONSETTINGS_MESH, true);
+	level_editor::pCheckBoxTBSelMesh->setCheck(true);
+	level_editor::canSelMesh = true;
+	level_editor::pMainMenu->setCheckItem(ID_SELECTIONSETTINGS_MESH, true);
 
 	SRender_EditorSetRenderGrid(true);
 	SRender_EditorSetRenderAxesStatic(true);
 
 
-	SXLevelEditor::LEcreateData();
+	level_editor::LEcreateData();
 
 
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
-	SXLevelEditor::MenuWeatherCount = 1;
+	level_editor::iMenuWeatherCount = 1;
 	char tpath[1024];
 	sprintf(tpath, "%sweather\\*.cfg", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS));
 	hf = FindFirstFile(tpath, &FindFileData);
 	if (hf != INVALID_HANDLE_VALUE){
 		do{
-			SXLevelEditor::MainMenu->insertItem(4, FindFileData.cFileName, SX_LE_MMENU_WEATHER_BEGIN_ID + SXLevelEditor::MenuWeatherCount, 4);
-			++SXLevelEditor::MenuWeatherCount;
-			SXLevelEditor::MenuWeatherArr.push_back(FindFileData.cFileName);
+			level_editor::pMainMenu->insertItem(4, FindFileData.cFileName, SX_LE_MMENU_WEATHER_BEGIN_ID + level_editor::iMenuWeatherCount, 4);
+			++level_editor::iMenuWeatherCount;
+			level_editor::aMenuWeather.push_back(FindFileData.cFileName);
 		} while (FindNextFile(hf, &FindFileData) != 0);
 		FindClose(hf);
 	}
@@ -282,17 +282,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SXGame_EntGetClassList(listgc, countgc);
 	for (int i = 0; i < countgc; ++i)
 	{
-		SXLevelEditor::ComboBoxGameClass->addItem(listgc[i]);
+		level_editor::pComboBoxGameClass->addItem(listgc[i]);
 	}
 	mem_delete_a(listgc);
 
 
 	SkyXEngine_PreviewKill();
-	SXLevelEditor::JobWindow->setVisible(true);
+	level_editor::pJobWindow->setVisible(true);
 
 	int result = SkyXEngine_CycleMain();
 
-	SXLevelEditor::LEdeleteData();
+	level_editor::LEdeleteData();
 
 	SkyXEngine_Kill();
 	return result;

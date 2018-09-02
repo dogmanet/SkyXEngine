@@ -6,7 +6,7 @@ See the license in LICENSE
 
 #include "LightPoint.h"
 
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 
 /*! \skydocent light_point
 Точечный источник света
@@ -50,46 +50,46 @@ BaseClass(pMgr)
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
-	m_idLight = SML_LigthsCreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
+	m_idLight = SLight_CreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
 }
 
 CLightPoint::~CLightPoint()
 {
-	SML_LigthsDeleteLight(m_idLight);
+	SLight_DeleteLight(m_idLight);
 }
 
 void CLightPoint::toggleEnable()
 {
 	m_isEnable = !m_isEnable;
-	SML_LigthsSetEnable(m_idLight, m_isEnable);
+	SLight_SetEnable(m_idLight, m_isEnable);
 }
 
 void CLightPoint::onSync()
 {
 	BaseClass::onSync();
 
-	if (SML_LigthsGetEnable(m_idLight) != m_isEnable)
-		SML_LigthsSetEnable(m_idLight, m_isEnable);
+	if (SLight_GetEnable(m_idLight) != m_isEnable)
+		SLight_SetEnable(m_idLight, m_isEnable);
 
 	static float3 vec;
-	SML_LigthsGetPos(m_idLight, &vec, false);
+	SLight_GetPos(m_idLight, &vec, false);
 
 	if (vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
-		SML_LigthsSetPos(m_idLight, &(float3)m_vPosition, false);
+		SLight_SetPos(m_idLight, &(float3)m_vPosition, false);
 
-	SML_LigthsSetColor(m_idLight, &(float3)m_vColor);
+	SLight_SetColor(m_idLight, &(float3)m_vColor);
 	
-	if (SML_LigthsGetDist(m_idLight) != m_fDist)
+	if (SLight_GetDist(m_idLight) != m_fDist)
 	{
-		SML_LigthsSetDist(m_idLight, m_fDist, true);
+		SLight_SetDist(m_idLight, m_fDist, true);
 		m_fShadowDist = m_fDist;
 	}
 
-	if (SML_LigthsGetShadowLocalFar(m_idLight) != m_fShadowDist)
-		SML_LigthsSetShadowLocalFar(m_idLight, m_fShadowDist);
+	if (SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
+		SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);
 
-	if (SML_LigthsGetTypeShadowed(m_idLight) != m_iShadowType)
-		SML_LigthsSetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
+	if (SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
+		SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 }
 
 

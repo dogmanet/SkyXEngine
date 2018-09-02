@@ -19,7 +19,7 @@ CSimulationModel::CSimulationModel()
 		D3DDECL_END()
 	};
 
-	GData::DXDevice->CreateVertexDeclaration(layoutstatic, &m_pVertexDeclarationStatic);
+	gdata::pDXDevice->CreateVertexDeclaration(layoutstatic, &m_pVertexDeclarationStatic);
 
 
 	D3DVERTEXELEMENT9 InstanceGreen[] =
@@ -33,7 +33,7 @@ CSimulationModel::CSimulationModel()
 		D3DDECL_END()
 	};
 
-	GData::DXDevice->CreateVertexDeclaration(InstanceGreen, &m_pVertexDeclarationGreen);
+	gdata::pDXDevice->CreateVertexDeclaration(InstanceGreen, &m_pVertexDeclarationGreen);
 
 	D3DVERTEXELEMENT9 layoutDynamic[] =
 	{
@@ -44,9 +44,9 @@ CSimulationModel::CSimulationModel()
 		{ 0, 36, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0 },
 		D3DDECL_END()
 	};
-	GData::DXDevice->CreateVertexDeclaration(layoutDynamic, &m_pVertexDeclarationSkin);
+	gdata::pDXDevice->CreateVertexDeclaration(layoutDynamic, &m_pVertexDeclarationSkin);
 
-	GData::DXDevice->CreateVertexBuffer(
+	gdata::pDXDevice->CreateVertexBuffer(
 		1 * sizeof(CGreenDataVertex),
 		/*D3DUSAGE_DYNAMIC | */D3DUSAGE_WRITEONLY,
 		0,
@@ -147,7 +147,7 @@ void CSimulationModel::add(const char *szPath)
 	m_aModels.push_back(new CModel(pStaticModel, &Center, &Max, &Min, &Plane));
 
 	IDirect3DVertexBuffer9* Anim;
-	GData::DXDevice->CreateVertexBuffer(
+	gdata::pDXDevice->CreateVertexBuffer(
 		pStaticModel->m_uiAllVertexCount * sizeof(vertex_animated),
 		D3DUSAGE_WRITEONLY,
 		0,
@@ -223,9 +223,9 @@ void CSimulationModel::render(DWORD timeDelta)
 
 void CSimulationModel::renderStatic(DWORD timeDelta)
 {
-	GData::DXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
-	GData::DXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
-	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclarationStatic);
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
+	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationStatic);
 
 	SGCore_MtlSet(m_idMtrl, &m_mWorld);
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
@@ -234,14 +234,14 @@ void CSimulationModel::renderStatic(DWORD timeDelta)
 
 void CSimulationModel::renderGreen(DWORD timeDelta)
 {
-	GData::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | 1));
+	gdata::pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | 1));
 
-	GData::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-	GData::DXDevice->SetStreamSource(1, m_pTransVertBufGreen, 0, sizeof(CGreenDataVertex));
+	gdata::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
+	gdata::pDXDevice->SetStreamSource(1, m_pTransVertBufGreen, 0, sizeof(CGreenDataVertex));
 
-	GData::DXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
-	GData::DXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
-	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
+	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
 
 
 	long jCountIndex = 0;
@@ -251,8 +251,8 @@ void CSimulationModel::renderGreen(DWORD timeDelta)
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3) * 1));
 	jCountIndex += m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0];
 
-	GData::DXDevice->SetStreamSourceFreq(0, 1);
-	GData::DXDevice->SetStreamSourceFreq(1, 1);
+	gdata::pDXDevice->SetStreamSourceFreq(0, 1);
+	gdata::pDXDevice->SetStreamSourceFreq(1, 1);
 }
 
 void CSimulationModel::renderSkin(DWORD timeDelta)
@@ -261,12 +261,12 @@ void CSimulationModel::renderSkin(DWORD timeDelta)
 	mbs.position = float4(0, 0, 0, 1);
 	mbs.orient = SMQuaternion();
 
-	GData::DXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pAnim, 0, sizeof(vertex_animated));
-	GData::DXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
-	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclarationSkin);
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pAnim, 0, sizeof(vertex_animated));
+	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
+	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationSkin);
 
 	SGCore_MtlSet(m_idMtrl, &m_mWorld);
-	GData::DXDevice->SetVertexShaderConstantF(16, (float*)&mbs, 2);
+	gdata::pDXDevice->SetVertexShaderConstantF(16, (float*)&mbs, 2);
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 }

@@ -21,7 +21,8 @@ See the license in LICENSE
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <geom/sxgeom.h>
-#include <mtllight/sxmtllight.h>
+#include <green/sxgreen.h>
+#include <mtrl/sxmtrl.h>
 #include <anim/sxanim.h>
 #include <render/gdata.h>
 

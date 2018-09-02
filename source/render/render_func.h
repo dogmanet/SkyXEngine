@@ -27,7 +27,8 @@ See the license in LICENSE
 #include <render/gdata.h>
 
 #include <geom/sxgeom.h>
-#include <mtllight/sxmtllight.h>
+#include <green/sxgreen.h>
+#include <light/sxlight.h>
 #include <aigrid/sxaigrid.h>
 #include <physics/sxphysics.h>
 #include <game/sxgame.h>
@@ -44,17 +45,17 @@ enum REFLECTION_RENDER
 };
 
 //! пространство имен с орагнизацией рендера
-namespace SXRenderFunc
+namespace rfunc
 {
 	//быстрая реализация фильтрации и адресации
 	//{
 	//индифидуально для регистра
-	inline void SetSamplerFilter(DWORD id, DWORD value);
-	inline void SetSamplerAddress(DWORD id, DWORD value);
+	inline void SetSamplerFilter(DWORD dwId, DWORD dwValue);
+	inline void SetSamplerAddress(DWORD dwId, DWORD dwValue);
 	
 	//для указанного промежутка групп регистров
-	inline void SetSamplerFilter(DWORD begin_id, DWORD end_id, DWORD value);
-	inline void SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD value);
+	inline void SetSamplerFilter(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
+	inline void SetSamplerAddress(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
 
 	void SetRenderSceneFilter();
 	void SetRenderSceneFilterUn();
@@ -103,19 +104,15 @@ namespace SXRenderFunc
 	
 	//! объединение слоев прозрачности
 	void UnionLayers();
-
-	//! применение тонмаппинга к рт
-	//void ApplyToneMapping();
-
-	//! просчет тонмаппинга
-	void ComToneMapping(DWORD timeDelta);
 	
 
 	//! отрисовка партиклов (эффектов)
 	void RenderParticles(DWORD timeDelta);				
 
-	//! отрисовка постпроцесса
-	void RenderPostProcess(DWORD timeDelta);			
+	//! отрисовка основного постпроцесса
+	void RenderMainPostProcess(DWORD timeDelta);
+
+	void RenderFinalPostProcess(DWORD timeDelta);
 
 	void ShaderRegisterData();
 
@@ -139,29 +136,6 @@ namespace SXRenderFunc
 	void ChangeModeWindow();	
 
 	void FullScreenChangeSizeAbs();
-
-	//! время задержек/ожидания выполнения некоторых функций рендера
-	/*namespace Delay
-	{
-		extern int64_t UpdateVisibleForCamera;
-		extern int64_t UpdateVisibleForLight;
-		extern int64_t UpdateVisibleForReflection;
-
-		extern int64_t UpdateShadow;
-		extern int64_t UpdateParticles;
-		extern int64_t RenderMRT;
-		extern int64_t ComLighting;
-		extern int64_t PostProcess;
-		extern int64_t ComReflection;
-		extern int64_t GeomSortGroup;
-
-		extern int64_t Present;
-
-		extern int64_t FreeVal;
-		extern float FreeValF1;
-		extern float FreeValF2;
-		extern float FreeValF3;
-	};*/
 };
 
 #endif

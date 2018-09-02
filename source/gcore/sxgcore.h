@@ -221,6 +221,60 @@ SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id);
 
 //!@}
 
+//#############################################################################
+
+/*! \defgroup sxgcore_ds Render targets для deferred shading
+\ingroup sxgcore
+@{*/
+
+//! типы render targets
+enum DS_RT
+{
+	//! цвет rgba8
+	DS_RT_COLOR = 0,
+
+	//! нормали (включая микрорельеф) rfb10a2
+	DS_RT_NORMAL,
+
+	//! параметры освещения rgba8
+	DS_RT_PARAM,
+
+	//! глубина r16f, непрозрачные материалы
+	DS_RT_DEPTH,
+
+	//! глубина r16f, непрозрачные материалы
+	DS_RT_DEPTH0,
+
+	//! глубина r16f, непрозрачные и полупрозрачные пиксели, однако прозрачные (если есть) будут перекрывать непрозрачные, и в этом случае их глубина будет 1 то есть максимальной(для идентификации)
+	DS_RT_DEPTH1,
+
+
+	//! эмбиент цвет (цвет света rgb) и диффузное освещение (a) rgba16f
+	DS_RT_AMBIENTDIFF,
+
+	//! блики r16f
+	DS_RT_SPECULAR,
+
+	//! освещенная сцена rgba16
+	DS_RT_SCENELIGHT,
+
+	//! освещенная сцена rgba16
+	DS_RT_SCENELIGHT2,
+
+	//! текущий rt адаптации глаза к освещению r16f
+	DS_RT_ADAPTEDLUM
+};
+
+//! id render target по его типу
+SX_LIB_API ID SGCore_GbufferGetRT_ID(DS_RT type);
+
+//! текстура render target по его типу
+SX_LIB_API IDirect3DTexture9* SGCore_GbufferGetRT(DS_RT type);
+
+SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float factor_adapted);
+
+//!@} sxgcore_ds
+
 //##########################################################################
 
 /*! \name Переопределение функций

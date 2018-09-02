@@ -19,55 +19,32 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
-#else
-#pragma comment(lib, "sxgcore.lib")
-#endif
-#include <gcore/sxgcore.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxscore_d.lib")
-#else
-#pragma comment(lib, "sxscore.lib")
-#endif
-#include <score/sxscore.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgeom_d.lib")
-#else
-#pragma comment(lib, "sxgeom.lib")
-#endif
-#include <geom/sxgeom.h>
-
-#if defined(_DEBUG)
+#pragma comment(lib, "sxgreen_d.lib")
 #pragma comment(lib, "sxaigrid_d.lib")
-#else
-#pragma comment(lib, "sxaigrid.lib")
-#endif
-#include <aigrid/sxaigrid.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxparticles_d.lib")
-#else
-#pragma comment(lib, "sxparticles.lib")
-#endif
-#include <particles/sxparticles.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxpp_d.lib")
-#else
-#pragma comment(lib, "sxpp.lib")
-#endif
-#include <pp/sxpp.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxphysics_d.lib")
 #else
+#pragma comment(lib, "sxgcore.lib")
+#pragma comment(lib, "sxscore.lib")
+#pragma comment(lib, "sxgeom.lib")
+#pragma comment(lib, "sxgreen.lib")
+#pragma comment(lib, "sxaigrid.lib")
+#pragma comment(lib, "sxparticles.lib")
+#pragma comment(lib, "sxpp.lib")
 #pragma comment(lib, "sxphysics.lib")
 #endif
+
+#include <gcore/sxgcore.h>
+#include <score/sxscore.h>
+#include <geom/sxgeom.h>
+#include <green/sxgreen.h>
+#include <aigrid/sxaigrid.h>
+#include <particles/sxparticles.h>
+#include <pp/sxpp.h>
 #include <physics/sxphysics.h>
-
-//#include <game/sxgame.h>
-
 
 #ifdef SX_DLL
 #undef SX_LIB_API

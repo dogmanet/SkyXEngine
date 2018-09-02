@@ -127,7 +127,7 @@ ID ÑLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 				}
 		}
 
-		if(!IsTruePath)
+		if (!IsTruePath || (StrFindI(name, ":") >= 0 || StrFindI(name, "/") >= 0 || StrFindI(name, "\\") >= 0))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - wrong texture name [%s]!!!", GEN_MSG_LOCATION, name);
 		}

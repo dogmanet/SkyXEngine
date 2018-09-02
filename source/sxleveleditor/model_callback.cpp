@@ -1,68 +1,68 @@
 
 #include "model_callback.h"
 
-void SXLevelEditor::GeomActivateAll(bool bf)
+void level_editor::GeomActivateAll(bool bf)
 {
-	SXLevelEditor::GeomActivateCreate(bf);
-	SXLevelEditor::GeomActivateTrans(bf);
+	level_editor::GeomActivateCreate(bf);
+	level_editor::GeomActivateTrans(bf);
 }
 
-void SXLevelEditor::GeomActivateCreate(bool bf)
+void level_editor::GeomActivateCreate(bool bf)
 {
-	SXLevelEditor::StaticGeomName->setVisible(bf);
-	SXLevelEditor::StaticGeomModel->setVisible(bf);
-	SXLevelEditor::StaticGeomLod1->setVisible(bf);
-	SXLevelEditor::EditGeomName->setVisible(bf);
-	SXLevelEditor::EditGeomName->setText("");
-	SXLevelEditor::EditGeomModel->setVisible(bf);
-	SXLevelEditor::EditGeomModel->setText("");
-	SXLevelEditor::EditGeomLod1->setVisible(bf);
-	SXLevelEditor::EditGeomLod1->setText("");
-	SXLevelEditor::ButtonGeomLod1->setVisible(bf);
-	SXLevelEditor::ButtonGeomModel->setVisible(bf);
-	SXLevelEditor::ButtonGeomFinish->setVisible(bf);
+	level_editor::pStaticGeomName->setVisible(bf);
+	level_editor::pStaticGeomModel->setVisible(bf);
+	level_editor::pStaticGeomLod1->setVisible(bf);
+	level_editor::pEditGeomName->setVisible(bf);
+	level_editor::pEditGeomName->setText("");
+	level_editor::pEditGeomModel->setVisible(bf);
+	level_editor::pEditGeomModel->setText("");
+	level_editor::pEditGeomLod1->setVisible(bf);
+	level_editor::pEditGeomLod1->setText("");
+	level_editor::pButtonGeomLod1->setVisible(bf);
+	level_editor::pButtonGeomModel->setVisible(bf);
+	level_editor::pButtonGeomFinish->setVisible(bf);
 }
 
 
-void SXLevelEditor::GeomActivateTrans(bool bf)
+void level_editor::GeomActivateTrans(bool bf)
 {
-	SXLevelEditor::StaticGeomPos->setVisible(bf);
-	SXLevelEditor::EditGeomPosX->setVisible(bf);
-	SXLevelEditor::EditGeomPosY->setVisible(bf);
-	SXLevelEditor::EditGeomPosZ->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomPosX->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomPosY->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomPosZ->setVisible(bf);
-	SXLevelEditor::StaticGeomRot->setVisible(bf);
-	SXLevelEditor::EditGeomRotX->setVisible(bf);
-	SXLevelEditor::EditGeomRotY->setVisible(bf);
-	SXLevelEditor::EditGeomRotZ->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomRotX->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomRotY->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomRotZ->setVisible(bf);
-	SXLevelEditor::StaticGeomScale->setVisible(bf);
-	SXLevelEditor::EditGeomScaleX->setVisible(bf);
-	SXLevelEditor::EditGeomScaleY->setVisible(bf);
-	SXLevelEditor::EditGeomScaleZ->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomScaleX->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomScaleY->setVisible(bf);
-	SXLevelEditor::RadioButtonGeomScaleZ->setVisible(bf);
+	level_editor::pStaticGeomPos->setVisible(bf);
+	level_editor::pEditGeomPosX->setVisible(bf);
+	level_editor::pEditGeomPosY->setVisible(bf);
+	level_editor::pEditGeomPosZ->setVisible(bf);
+	level_editor::pRadioButtonGeomPosX->setVisible(bf);
+	level_editor::pRadioButtonGeomPosY->setVisible(bf);
+	level_editor::pRadioButtonGeomPosZ->setVisible(bf);
+	level_editor::pStaticGeomRot->setVisible(bf);
+	level_editor::pEditGeomRotX->setVisible(bf);
+	level_editor::pEditGeomRotY->setVisible(bf);
+	level_editor::pEditGeomRotZ->setVisible(bf);
+	level_editor::pRadioButtonGeomRotX->setVisible(bf);
+	level_editor::pRadioButtonGeomRotY->setVisible(bf);
+	level_editor::pRadioButtonGeomRotZ->setVisible(bf);
+	level_editor::pStaticGeomScale->setVisible(bf);
+	level_editor::pEditGeomScaleX->setVisible(bf);
+	level_editor::pEditGeomScaleY->setVisible(bf);
+	level_editor::pEditGeomScaleZ->setVisible(bf);
+	level_editor::pRadioButtonGeomScaleX->setVisible(bf);
+	level_editor::pRadioButtonGeomScaleY->setVisible(bf);
+	level_editor::pRadioButtonGeomScaleZ->setVisible(bf);
 
-	SXLevelEditor::EditGeomModel->setEnable(true);
-	SXLevelEditor::ButtonGeomModel->setEnable(true);
+	level_editor::pEditGeomModel->setEnable(true);
+	level_editor::pButtonGeomModel->setEnable(true);
 }
 
-void SXLevelEditor::GeomSel(int sel)
+void level_editor::GeomSel(int sel)
 {
 	if (sel >= 0 && sel < SGeom_ModelsGetCount())
 	{
-		SXLevelEditor::ActiveElement = sel;
-		SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
+		level_editor::idActiveElement = sel;
+		level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
 
-		SXLevelEditor::GeomActivateTrans(true);
+		level_editor::GeomActivateTrans(true);
 
-		SXLevelEditor::EditGeomModel->setText(SGeom_ModelsMGetPathName(sel));
-		SXLevelEditor::EditGeomLod1->setText(SGeom_ModelsMGetLodPath(sel));
+		level_editor::pEditGeomModel->setText(SGeom_ModelsMGetPathName(sel));
+		level_editor::pEditGeomLod1->setText(SGeom_ModelsMGetLodPath(sel));
 		char* tmpname = SGeom_ModelsMGetName(sel);
 		float3* pos = SGeom_ModelsMGetPosition(sel);
 		float3* rot = SGeom_ModelsMGetRotation(sel);
@@ -71,58 +71,58 @@ void SXLevelEditor::GeomSel(int sel)
 		float3 min, max;
 		SGeom_ModelsMGetMinMax(sel, &min, &max);
 
-		SXLevelEditor::HelperPos = (max + min) * 0.5f;
-		SXLevelEditor::HelperScale = *scale;
+		level_editor::vHelperPos = (max + min) * 0.5f;
+		level_editor::vHelperScale = *scale;
 
-		SXLevelEditor::ObjAxesHelper->setPosition(SXLevelEditor::HelperPos);
-		SXLevelEditor::ObjAxesHelper->setRotation(*rot);
-		SXLevelEditor::ObjAxesHelper->setScale(float3(1,1,1));
+		level_editor::pAxesHelper->setPosition(level_editor::vHelperPos);
+		level_editor::pAxesHelper->setRotation(*rot);
+		level_editor::pAxesHelper->setScale(float3(1,1,1));
 
-		SXLevelEditor::EditGeomName->setText(tmpname);
+		level_editor::pEditGeomName->setText(tmpname);
 
 		char tmpval[64];
 
 		sprintf(tmpval, "%f", pos->x);
-		SXLevelEditor::EditGeomPosX->setText(tmpval);
+		level_editor::pEditGeomPosX->setText(tmpval);
 
 		sprintf(tmpval, "%f", pos->y);
-		SXLevelEditor::EditGeomPosY->setText(tmpval);
+		level_editor::pEditGeomPosY->setText(tmpval);
 
 		sprintf(tmpval, "%f", pos->z);
-		SXLevelEditor::EditGeomPosZ->setText(tmpval);
+		level_editor::pEditGeomPosZ->setText(tmpval);
 
 
 		sprintf(tmpval, "%f", rot->x);
-		SXLevelEditor::EditGeomRotX->setText(tmpval);
+		level_editor::pEditGeomRotX->setText(tmpval);
 
 		sprintf(tmpval, "%f", rot->y);
-		SXLevelEditor::EditGeomRotY->setText(tmpval);
+		level_editor::pEditGeomRotY->setText(tmpval);
 
 		sprintf(tmpval, "%f", rot->z);
-		SXLevelEditor::EditGeomRotZ->setText(tmpval);
+		level_editor::pEditGeomRotZ->setText(tmpval);
 
 
 		sprintf(tmpval, "%f", scale->x);
-		SXLevelEditor::EditGeomScaleX->setText(tmpval);
+		level_editor::pEditGeomScaleX->setText(tmpval);
 
 		sprintf(tmpval, "%f", scale->y);
-		SXLevelEditor::EditGeomScaleY->setText(tmpval);
+		level_editor::pEditGeomScaleY->setText(tmpval);
 
 		sprintf(tmpval, "%f", scale->z);
-		SXLevelEditor::EditGeomScaleZ->setText(tmpval);
+		level_editor::pEditGeomScaleZ->setText(tmpval);
 
-		SXLevelEditor::EditGeomModel->setEnable(false);
-		SXLevelEditor::ButtonGeomModel->setEnable(false);
-		SXLevelEditor::ButtonGeomFinish->setVisible(false);
+		level_editor::pEditGeomModel->setEnable(false);
+		level_editor::pButtonGeomModel->setEnable(false);
+		level_editor::pButtonGeomFinish->setVisible(false);
 	}
 }
 
 LRESULT SXLevelEditor_EditGeomName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int sel = SXLevelEditor::ListBoxList->getSel();
-	if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+	int sel = level_editor::pListBoxList->getSel();
+	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		SXLevelEditor::EditGeomName->getText(SGeom_ModelsMGetName(sel), 64);
+		level_editor::pEditGeomName->getText(SGeom_ModelsMGetName(sel), 64);
 	}
 
 	return 0;
@@ -135,10 +135,10 @@ LRESULT SXLevelEditor_ButtonGeomModel_Click(HWND hwnd, UINT msg, WPARAM wParam, 
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
-		SXLevelEditor::EditGeomModel->setText(sRpath.c_str());
+		level_editor::pEditGeomModel->setText(sRpath.c_str());
 	}
 	return 0;
 }
@@ -150,12 +150,12 @@ LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 	char tmpname[1024];
 	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
 
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), SXLevelEditor::JobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
 		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
-		SXLevelEditor::EditGeomLod1->setText(sRpath.c_str());
-		int sel = SXLevelEditor::ListBoxList->getSel();
-		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		level_editor::pEditGeomLod1->setText(sRpath.c_str());
+		int sel = level_editor::pListBoxList->getSel();
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{
 			if (sel >= 0 && sel < SGeom_ModelsGetCount())
 				SGeom_ModelsMSetLodPath(sel, sRpath.c_str());
@@ -174,9 +174,9 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 	char model_name[256];
 	model_name[0] = 0;
-	SXLevelEditor::EditGeomName->getText(model_name, 256);
-	SXLevelEditor::EditGeomModel->getText(path_model, 1024);
-	SXLevelEditor::EditGeomLod1->getText(path_model_lod, 1024);
+	level_editor::pEditGeomName->getText(model_name, 256);
+	level_editor::pEditGeomModel->getText(path_model, 1024);
+	level_editor::pEditGeomLod1->getText(path_model_lod, 1024);
 
 	if (!STR_VALIDATE(path_model))
 	{
@@ -224,38 +224,38 @@ LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 	char tmpnamecountpoly[1024];
 	sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelsMGetName(SGeom_ModelsGetCount() - 1), SGeom_ModelsMGetCountPoly(SGeom_ModelsGetCount() - 1));
-	SXLevelEditor::ListBoxList->addItem(tmpnamecountpoly);
+	level_editor::pListBoxList->addItem(tmpnamecountpoly);
 
-	SXLevelEditor::GeomActivateTrans(true);
-	SXLevelEditor::ListBoxList->setSel(SXLevelEditor::ListBoxList->getItemCount() - 1);
-	SXLevelEditor::GeomSel(SXLevelEditor::ListBoxList->getSel());
+	level_editor::GeomActivateTrans(true);
+	level_editor::pListBoxList->setSel(level_editor::pListBoxList->getItemCount() - 1);
+	level_editor::GeomSel(level_editor::pListBoxList->getSel());
 
-	SXLevelEditor::ActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
-	SXLevelEditor::ActiveElement = SXLevelEditor::ListBoxList->getSel();
+	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GEOM;
+	level_editor::idActiveElement = level_editor::pListBoxList->getSel();
 
 	return 0;
 }
 
 LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
-	int sel = SXLevelEditor::ListBoxList->getSel();
+	int sel = level_editor::pListBoxList->getSel();
 	float3* pos = SGeom_ModelsMGetPosition(sel);
 	char tmpstr[64];
-	if (hwnd == SXLevelEditor::EditGeomPosX->getHWND())
+	if (hwnd == level_editor::pEditGeomPosX->getHWND())
 	{
-		SXLevelEditor::EditGeomPosX->getText(tmpstr, 64);
+		level_editor::pEditGeomPosX->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(pos->x));
 	}
-	else if (hwnd == SXLevelEditor::EditGeomPosY->getHWND())
+	else if (hwnd == level_editor::pEditGeomPosY->getHWND())
 	{
-		SXLevelEditor::EditGeomPosY->getText(tmpstr, 64);
+		level_editor::pEditGeomPosY->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(pos->y));
 	}
-	else if (hwnd == SXLevelEditor::EditGeomPosZ->getHWND())
+	else if (hwnd == level_editor::pEditGeomPosZ->getHWND())
 	{
-		SXLevelEditor::EditGeomPosZ->getText(tmpstr, 64);
+		level_editor::pEditGeomPosZ->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(pos->z));
 	}
 
@@ -266,24 +266,24 @@ LRESULT SXLevelEditor_EditTransformPos_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
-	int sel = SXLevelEditor::ListBoxList->getSel();
+	int sel = level_editor::pListBoxList->getSel();
 	float3* rot = SGeom_ModelsMGetRotation(sel);
 	char tmpstr[64];
-	if (hwnd == SXLevelEditor::EditGeomRotX->getHWND())
+	if (hwnd == level_editor::pEditGeomRotX->getHWND())
 	{
-		SXLevelEditor::EditGeomRotX->getText(tmpstr, 64);
+		level_editor::pEditGeomRotX->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(rot->x));
 	}
-	else if (hwnd == SXLevelEditor::EditGeomRotY->getHWND())
+	else if (hwnd == level_editor::pEditGeomRotY->getHWND())
 	{
-		SXLevelEditor::EditGeomRotY->getText(tmpstr, 64);
+		level_editor::pEditGeomRotY->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(rot->y));
 	}
-	else if (hwnd == SXLevelEditor::EditGeomRotZ->getHWND())
+	else if (hwnd == level_editor::pEditGeomRotZ->getHWND())
 	{
-		SXLevelEditor::EditGeomRotZ->getText(tmpstr, 64);
+		level_editor::pEditGeomRotZ->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(rot->z));
 	}
 
@@ -294,24 +294,24 @@ LRESULT SXLevelEditor_EditTransformRot_Enter(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditTransformScale_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SXLevelEditor::ActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
+	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GEOM)
 		return 0;
-	int sel = SXLevelEditor::ListBoxList->getSel();
+	int sel = level_editor::pListBoxList->getSel();
 	float3* scale = SGeom_ModelsMGetScale(sel);
 	char tmpstr[64];
-	if (hwnd == SXLevelEditor::EditGeomScaleX->getHWND())
+	if (hwnd == level_editor::pEditGeomScaleX->getHWND())
 	{
-		SXLevelEditor::EditGeomScaleX->getText(tmpstr, 64);
+		level_editor::pEditGeomScaleX->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(scale->x));
 	}
-	else if (hwnd == SXLevelEditor::EditGeomScaleY->getHWND())
+	else if (hwnd == level_editor::pEditGeomScaleY->getHWND())
 	{
-		SXLevelEditor::EditGeomScaleY->getText(tmpstr, 64);
+		level_editor::pEditGeomScaleY->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(scale->y));
 	}
-	else if (hwnd == SXLevelEditor::EditGeomScaleZ->getHWND())
+	else if (hwnd == level_editor::pEditGeomScaleZ->getHWND())
 	{
-		SXLevelEditor::EditGeomScaleZ->getText(tmpstr, 64);
+		level_editor::pEditGeomScaleZ->getText(tmpstr, 64);
 		sscanf(tmpstr, "%f", &(scale->z));
 	}
 

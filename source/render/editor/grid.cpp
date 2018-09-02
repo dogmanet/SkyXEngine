@@ -19,7 +19,7 @@ CGrid::CGrid()
 		D3DDECL_END()
 	};
 
-	GData::DXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
+	gdata::pDXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
 }
 
 CGrid::~CGrid()
@@ -30,7 +30,7 @@ CGrid::~CGrid()
 
 void CGrid::create(int width, int depth, DWORD color)
 {
-	GData::DXDevice->CreateVertexBuffer(
+	gdata::pDXDevice->CreateVertexBuffer(
 		width * depth * 2 * sizeof(CVertex),
 		D3DUSAGE_WRITEONLY,
 		0,
@@ -70,11 +70,11 @@ void CGrid::create(int width, int depth, DWORD color)
 
 void CGrid::render()
 {
-	GData::DXDevice->SetTexture(0, 0);
-	//GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	gdata::pDXDevice->SetTexture(0, 0);
+
 	SGCore_ShaderUnBind();
-	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclaration);
-	//GData::DXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-	GData::DXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
-	GData::DXDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_iCountPoly);
+	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclaration);
+
+	gdata::pDXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
+	gdata::pDXDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_iCountPoly);
 }

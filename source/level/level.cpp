@@ -32,9 +32,9 @@ void CLevel::clear()
 	m_sAmbientSounds = "";
 
 	SGeom_ModelsClear();
-	SGeom_GreenClear();
+	SGreen_Clear();
 
-	SML_LigthsClearIDArr();
+	SLight_ClearIDArr();
 	
 	//SXGame_UnloadObjLevel();
 	Core_0ConsoleExecCmd("ent_unload_level");
@@ -74,7 +74,7 @@ void CLevel::load(const char *szName, bool isGame)
 		char tmppath[1024];
 		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "green"));
 		if (FileExistsFile(tmppath))
-			SGeom_GreenLoad(tmppath);
+			SGreen_Load(tmppath);
 		else
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of green '%s'", tmppath);
@@ -189,14 +189,14 @@ void CLevel::load(const char *szName, bool isGame)
 			SGeom_ModelsGetMinMax(&vMin, &vMax);
 			SGCore_SkyCloudsSetWidthHeightPos((vMax.x - vMin.x) * 2.f, (vMax.z - vMin.z) * 2.f, &float3((vMax + vMin) * 0.5));
 
-			ID gid = SML_LigthsCreatePoint(
+			ID gid = SLight_CreatePoint(
 				&float3(60, 60, 0),
 				0,
 				&float3(1, 1, 1),
 				true,
 				true);
-			SML_LigthsSetEnable(gid, true);
-			SML_LigthsSetName(gid, "sun");
+			SLight_SetEnable(gid, true);
+			SLight_SetName(gid, "sun");
 		}
 	}
 
@@ -228,14 +228,14 @@ void CLevel::save(const char *szName)
 		SGeom_ModelsSave(tmppathlevel);
 	}
 
-	if (SGeom_GreenGetCount() > 0)
+	if (SGreen_GetCount() > 0)
 	{
 		fprintf(file, "green = %s.green\n", szName);
 		sprintf(tmppathlevel, "%s%s/%s.green", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
-		SGeom_GreenSave(tmppathlevel);
+		SGreen_Save(tmppathlevel);
 	}
 
-	if (SML_LigthsGetGlobal() > 0)
+	if (SLight_GetGlobal() > 0)
 		fprintf(file, "type = outdoor\n");
 	else
 		fprintf(file, "type = indoor\n");

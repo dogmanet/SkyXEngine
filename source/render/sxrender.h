@@ -16,63 +16,38 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxinput_d.lib")
-#else
-#pragma comment(lib, "sxinput.lib")
-#endif
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
-#else
-#pragma comment(lib, "sxgcore.lib")
-#endif
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgeom_d.lib")
-#else
-#pragma comment(lib, "sxgeom.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxmtllight_d.lib")
-#else
-#pragma comment(lib, "sxmtllight.lib")
-#endif
-
-#if defined(_DEBUG)
+#pragma comment(lib, "sxgreen_d.lib")
+#pragma comment(lib, "sxlight_d.lib")
+#pragma comment(lib, "sxmtrl_d.lib")
 #pragma comment(lib, "sxparticles_d.lib")
-#else
-#pragma comment(lib, "sxparticles.lib")
-#endif
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxpp_d.lib")
-#else
-#pragma comment(lib, "sxpp.lib")
-#endif
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxanim_d.lib")
-#else
-#pragma comment(lib, "sxanim.lib")
-#endif
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxdecals_d.lib")
-#else
-#pragma comment(lib, "sxdecals.lib")
-#endif
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")
 #else
+#pragma comment(lib, "sxinput.lib")
+#pragma comment(lib, "sxgcore.lib")
+#pragma comment(lib, "sxgeom.lib")
+#pragma comment(lib, "sxgreen.lib")
+#pragma comment(lib, "sxlight.lib")
+#pragma comment(lib, "sxmtrl.lib")
+#pragma comment(lib, "sxparticles.lib")
+#pragma comment(lib, "sxpp.lib")
+#pragma comment(lib, "sxanim.lib")
+#pragma comment(lib, "sxdecals.lib")
 #pragma comment(lib, "sxgame.lib")
 #endif
+
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 #include <geom/sxgeom.h>
-#include <mtllight/sxmtllight.h>
+#include <green/sxgreen.h>
+#include <light/sxlight.h>
+#include <mtrl/sxmtrl.h>
 #include <anim/sxanim.h>
 #include <pp/sxpp.h>
 #include <particles/sxparticles.h>
@@ -360,15 +335,15 @@ SX_LIB_API void SRender_ComLighting(DWORD timeDelta);
 //! объединение слоев прозрачности
 SX_LIB_API void SRender_UnionLayers();
 
-//! просчет тонмаппинга
-SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta);
-
 
 //! отрисовка партиклов (эффектов)
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta);
 
-//! отрисовка постпроцесса
-SX_LIB_API void SRender_RenderPostProcess(DWORD timeDelta);
+//! отрисовка основного постпроцесса
+SX_LIB_API void SRender_RenderMainPostProcess(DWORD timeDelta);
+
+//! отрисовка финального (после gui) постпроцесса
+SX_LIB_API void SRender_RenderFinalPostProcess(DWORD timeDelta);
 
 //! очистка регистров шейдеров (были случаи когда не инициаилизировав определенный регист в шейдере, шейдер брал то что было установлено до него)
 SX_LIB_API void SRender_ShaderRegisterData();

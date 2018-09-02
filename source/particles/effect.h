@@ -12,7 +12,7 @@ See the license in LICENSE
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 
-#include "PESet.h"
+#include "pe_data.h"
 
 #include "emitter.h"
 #include <common/array.h>
