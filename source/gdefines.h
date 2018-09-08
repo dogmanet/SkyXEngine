@@ -268,4 +268,6 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 }
 
 
+#define SX_MAX_THREAD_COUNT 64
+
 #endif

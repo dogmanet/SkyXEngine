@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -23,6 +23,8 @@ See the license in LICENSE
 
 #include "cvars.h"
 
+#include "PerfMon.h"
+
 #pragma comment (lib, "Ws2_32.lib")
 
 AssotiativeArray<String, ConCmd> g_mCmds;
@@ -30,8 +32,8 @@ AssotiativeArray<String, ConCmd> g_mCmds;
 SOCKET ConnectSocket = INVALID_SOCKET;
 SOCKET CommandSocket = INVALID_SOCKET;
 
-#define CONSOLE_PORT g_szServerPort /*!< Ñòàíäàðòíûé ïîðò äëÿ ïîäêëþ÷åíèÿ êîíñîëè */
-#define COMMAND_PORT g_szClientPort /*!< Ñòàíäàðòíûé ïîðò äëÿ êîìàíä */
+#define CONSOLE_PORT g_szServerPort /*!< Ð¡Ñ‚Ð°Ð½Ð´Ð°Ñ€Ñ‚Ð½Ñ‹Ð¹ Ð¿Ð¾Ñ€Ñ‚ Ð´Ð»Ñ Ð¿Ð¾Ð´ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ñ ÐºÐ¾Ð½ÑÐ¾Ð»Ð¸ */
+#define COMMAND_PORT g_szClientPort /*!< Ð¡Ñ‚Ð°Ð½Ð´Ð°Ñ€Ñ‚Ð½Ñ‹Ð¹ Ð¿Ð¾Ñ€Ñ‚ Ð´Ð»Ñ ÐºÐ¾Ð¼Ð°Ð½Ð´ */
 
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
@@ -426,6 +428,150 @@ void cmd_help(int argc, const char ** argv)
 	}
 }
 
+void cmd_perf_dump()
+{
+	static const int *piConWidth = GET_PCVAR_INT("con_width");
+	//static const int *piConHeight = GET_PCVAR_INT("con_height");
+
+	extern CPerfMon *g_pPerfMon;
+
+	static const char *s_aszColors[] = {
+		COLOR_RED,
+		COLOR_GREEN,
+		COLOR_BLUE,
+		COLOR_OLIVE,
+		COLOR_MAGENTA,
+		COLOR_CYAN,
+		COLOR_GRAY,
+
+		COLOR_LRED,
+		COLOR_LGREEN,
+		COLOR_LBLUE,
+		COLOR_YELLOW,
+		COLOR_LMAGENTA,
+		COLOR_LCYAN,
+		COLOR_WHITE
+	};
+
+
+	std::chrono::system_clock::time_point tStart, tEnd, tSync;
+
+	Array<Array<const CPerfRecord*>> aaRecords;
+	Array<const CPerfRecord*> aRecords;
+
+	for(ID i = 0; i < SX_MAX_THREAD_COUNT; ++i)
+	{
+		int iRecordCount;
+		const CPerfRecord *pRecords = g_pPerfMon->getRecords(i, &iRecordCount);
+		if(pRecords)
+		{
+			aRecords.reserve(iRecordCount);
+			for(int j = 0; j < iRecordCount; ++j)
+			{
+				if(pRecords[j].m_idSection == -2)
+				{
+					(pRecords[j].m_isEntry ? tStart : tEnd) = pRecords[j].m_time;
+				}
+				else if(pRecords[j].m_idSection == -1)
+				{
+					tSync = pRecords[j].m_time;
+				}
+				else
+				{
+					aRecords.push_back(&pRecords[j]);
+				}
+			}
+			aaRecords.push_back(aRecords);
+			aRecords.clearFast();
+		}
+	}
+
+	int iMeterWidth = *piConWidth - 7;
+
+	float llOverallTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tEnd - tStart).count();
+	float llPreSyncTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tSync - tStart).count();
+	float llPostSyncTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tEnd - tSync).count();
+
+	int iSyncPos = (int)((llPreSyncTime / llOverallTime) * (float)iMeterWidth);
+
+	char *buf = (char*)alloca(sizeof(char) * (iMeterWidth + 1));
+
+	Array<float> afTimes;
+
+	for(int i = 0, l = aaRecords.size(); i < l; ++i)
+	{
+		for(int j = 0; j < iMeterWidth; ++j)
+		{
+			buf[j] = -1;
+		}
+
+		Array<const CPerfRecord*> &aRecords = aaRecords[i];
+		for(UINT j = 0; j < aRecords.size(); ++j)
+		{
+			if(aRecords[j]->m_isEntry)
+			{
+				const CPerfRecord *pStart = aRecords[j], *pEnd = NULL;
+				for(UINT k = j + 1; k < aRecords.size(); ++k)
+				{
+					if(!aRecords[k]->m_isEntry && aRecords[k]->m_idSection == pStart->m_idSection)
+					{
+						pEnd = aRecords[k];
+						break;
+					}
+				}
+				assert(pEnd);
+
+				float fDuration = (float)std::chrono::duration_cast<std::chrono::microseconds>(pEnd->m_time - pStart->m_time).count();
+				float fStartTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(pStart->m_time - tStart).count();
+
+
+				afTimes[pStart->m_idSection] = fDuration * 0.001f;
+				
+				int iBarLen = (int)((fDuration / llOverallTime) * (float)iMeterWidth);
+				int iStartPos = (int)((fStartTime / llOverallTime) * (float)iMeterWidth);
+
+				for(int k = 0; k < iBarLen; ++k)
+				{
+					buf[k + iStartPos] = pStart->m_idSection/* + (pStart->m_idSection < 10 ? '0' : 'A' - 10)*/;
+				}
+			}
+		}
+
+		buf[iSyncPos] = -2;
+		buf[iMeterWidth] = 0;
+		printf(" %2d " COLOR_DARKGRAY "[", i);
+		for(int j = 0; j < iMeterWidth; ++j)
+		{
+			if(buf[j] == -1)
+			{
+				printf(" ");
+			}
+			else if(buf[j] == -2)
+			{
+				printf(COLOR_DARKGRAY "|");
+			}
+			else
+			{
+				printf("%s%c", s_aszColors[((unsigned char)buf[j]) % ARRAYSIZE(s_aszColors)], buf[j] + (buf[j] < 10 ? '0' : 'A' - 10));
+			}
+		}
+		printf(COLOR_DARKGRAY "]" COLOR_RESET "\n");
+	}
+	printf("\n");
+	for(int i = 0, l = afTimes.size(); i < l; ++i)
+	{
+		assert(i < ARRAYSIZE(g_szPerfSectionName));
+
+		printf("%s%c: %.2f: %s" COLOR_RESET "\n", 
+			(afTimes[i] == 0.0f) ? COLOR_DARKGRAY : s_aszColors[i % ARRAYSIZE(s_aszColors)], 
+			i + (i < 10 ? '0' : 'A' - 10), 
+			afTimes[i],
+			g_szPerfSectionName[i]
+		);
+	}
+	printf(" : %.2f\n\n", llOverallTime * 0.001f);
+}
+
 void DumpCVars();
 void cmd_cvarlist(int argc, const char ** argv)
 {
@@ -440,6 +586,10 @@ void ConsoleRegisterCmds()
 	Core_0RegisterConcmdArg("cvar_handle", cvar_handle, "Handle to show or set cvar value");
 	Core_0RegisterConcmdArg("help", cmd_help, "Handle to show command description");
 	Core_0RegisterConcmdArg("cvarlist", cmd_cvarlist, "List all CVars");
+	Core_0RegisterConcmd("perf_dump", cmd_perf_dump, "Show perfMon stats");
+
+	Core_0RegisterCVarInt("con_width", 80, "Ð¨Ð¸Ñ€Ð¸Ð½Ð° Ð¾ÐºÐ½Ð° ÐºÐ¾Ð½ÑÐ¾Ð»Ð¸");
+	Core_0RegisterCVarInt("con_height", 25, "Ð’Ñ‹ÑÐ¾Ñ‚Ð° Ð¾ÐºÐ½Ð° ÐºÐ¾Ð½ÑÐ¾Ð»Ð¸");
 }
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler()

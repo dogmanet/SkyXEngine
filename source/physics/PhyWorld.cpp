@@ -14,6 +14,55 @@ See the license in LICENSE
 
 #include <../Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h>
 
+class CTaskScheduler: public btITaskScheduler
+{
+public:
+	CTaskScheduler(): btITaskScheduler("SkyXEngine parallel")
+	{
+	}
+	virtual int getMaxNumThreads() const BT_OVERRIDE{return(Core_MGetThreadCount()); }
+	virtual int getNumThreads() const BT_OVERRIDE{return(Core_MGetThreadCount()); }
+	virtual void setNumThreads(int numThreads) BT_OVERRIDE{}
+
+	class CBody: public IParallelForBody
+	{
+	public:
+		CBody(const btIParallelForBody *pBody):
+			m_pBody(pBody)
+		{
+		}
+
+		void forLoop(int iStart, int iEnd) const
+		{
+			Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
+			m_pBody->forLoop(iStart, iEnd);
+			Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
+		};
+
+	protected:
+		const btIParallelForBody *m_pBody;
+	};
+
+	virtual void parallelFor(int iBegin, int iEnd, int grainSize, const btIParallelForBody& body) BT_OVERRIDE
+	{
+		BT_PROFILE("parallelFor_SkyXEngine");
+		if(Core_MGetThreadID() == 0)
+		{
+			CBody cbody(&body);
+			Core_MWaitFor(Core_MForLoop(iBegin, iEnd, &cbody, grainSize));
+		}
+		else
+		{
+			body.forLoop(iBegin, iEnd);
+		}
+	}
+	virtual btScalar parallelSum(int iBegin, int iEnd, int grainSize, const btIParallelSumBody& body) BT_OVERRIDE
+	{
+		BT_PROFILE("parallelSum_sequential");
+		return(body.sumLoop(iBegin, iEnd));
+	}
+};
+
 CPhyWorld::CPhyWorld():
 	m_pGeomStaticCollideMesh(NULL),
 	m_pGeomStaticCollideShape(NULL),
@@ -30,11 +79,24 @@ CPhyWorld::CPhyWorld():
 	printf("Initializing physics engine...   ");
 	m_pBroadphase = new btDbvtBroadphase();
 	m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
-	m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
-	m_pSolver = new btSequentialImpulseConstraintSolver;
+	m_pDispatcher = new btCollisionDispatcherMt(m_pCollisionConfiguration);
+	m_pSolver = new btSequentialImpulseConstraintSolverMt();
 	m_pGHostPairCallback = new btGhostPairCallback();
 	m_pBroadphase->getOverlappingPairCache()->setInternalGhostPairCallback(m_pGHostPairCallback);
-	m_pDynamicsWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
+
+	btConstraintSolver *aSolvers[BT_MAX_THREAD_COUNT];
+	int maxThreadCount = BT_MAX_THREAD_COUNT;
+	for(int i = 0; i < maxThreadCount; ++i)
+	{
+		aSolvers[i] = new btSequentialImpulseConstraintSolverMt();
+	}
+	btConstraintSolverPoolMt *pSolverPool = new btConstraintSolverPoolMt(aSolvers, maxThreadCount);
+
+	m_pDynamicsWorld = new btDiscreteDynamicsWorldMt(m_pDispatcher, m_pBroadphase, pSolverPool, m_pSolver, m_pCollisionConfiguration);
+
+	//btCreateDefaultTaskScheduler();
+	static CTaskScheduler taskSheduler;
+	btSetTaskScheduler(&taskSheduler);
 	
 	Core_0RegisterCVarString("phy_world_gravity", "0 -10 0", "World gravity (x y z)");
 	m_pDynamicsWorld->setGravity(btVector3(0, -10, 0));
@@ -46,6 +108,10 @@ CPhyWorld::CPhyWorld():
 
 	Core_0RegisterCVarBool("r_physdebug", false, "Debug drawing physics shapes");
 	m_bDebugDraw = GET_PCVAR_BOOL("r_physdebug");
+
+	//btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
+	//btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
+
 	printf("Done!\n");
 }
 
@@ -519,7 +585,7 @@ bool CPhyWorld::importGeom(const char * file)
 					memset(aidMatMap, 0, sizeof(ID)* pmf.uiMatCount);
 
 					uint16_t ui16NameLen;
-					for(int i = 0; i < pmf.uiMatCount; ++i)
+					for(uint32_t i = 0; i < pmf.uiMatCount; ++i)
 					{
 						fread(&ui16NameLen, sizeof(uint16_t), 1, pF);
 						if(ui16NameLen)

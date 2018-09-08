@@ -11,22 +11,15 @@ See the license in LICENSE
 #include <memory>
 #define _NTASKMANAGER
 
-// Ѕазовый класс задачи
-class CTask
+class ITask
 {
 public:
-	typedef std::shared_ptr<CTask> TaskPtr;
+	typedef std::shared_ptr<ITask> TaskPtr;
 
-	CTask(THREAD_UPDATE_FUNCTION fnFunc, UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
-	~CTask();
+	ITask(UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
+	virtual ~ITask(){}
 
-	void run() 
-	{
-		if(m_fnUpdateFunc)
-		{
-			m_fnUpdateFunc();
-		}
-	}
+	virtual void run() = 0;
 
 	void stopRepeating()
 	{
@@ -37,6 +30,18 @@ public:
 
 private:
 	UINT m_iFlags;
+};
+
+// Ѕазовый класс задачи
+class CTask: public ITask
+{
+public:
+
+	CTask(THREAD_UPDATE_FUNCTION fnFunc, UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
+
+	void run();
+
+private:
 	THREAD_UPDATE_FUNCTION m_fnUpdateFunc;
 };
 

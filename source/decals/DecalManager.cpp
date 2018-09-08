@@ -386,12 +386,12 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	float r = sqrtf(decal->m_Size = ((sBound.x - sBound.y) * (sBound.x - sBound.y) + (tBound.x - tBound.y) * (tBound.x - tBound.y)));
 
 	{
-		struct	AllConvexResultCallback: public btDiscreteDynamicsWorld::ConvexResultCallback
+		struct	AllConvexResultCallback: public btDiscreteDynamicsWorldMt::ConvexResultCallback
 		{
 			struct part
 			{
 				const btCollisionObject * m_hitCollisionObject;
-				btDiscreteDynamicsWorld::LocalShapeInfo si;
+				btDiscreteDynamicsWorldMt::LocalShapeInfo si;
 			};
 
 			AllConvexResultCallback(const btVector3&	rayFromWorld, const btVector3&	rayToWorld)
@@ -405,7 +405,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 			btVector3	m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
 			btVector3	m_rayToWorld;
 			
-			virtual	btScalar addSingleResult(btDiscreteDynamicsWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
+			virtual	btScalar addSingleResult(btDiscreteDynamicsWorldMt::LocalConvexResult& convexResult, bool normalInWorldSpace)
 			{
 				if(convexResult.m_localShapeInfo)
 				{

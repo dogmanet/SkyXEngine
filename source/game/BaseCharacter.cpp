@@ -70,7 +70,7 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_pGhostObject->setWorldTransform(startTransform);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
-	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT | btCollisionObject::CF_KINEMATIC_OBJECT);
 	m_pGhostObject->setUserPointer(this);
 
 	m_pHeadEnt = (CPointEntity*)CREATE_ENTITY("base_point", m_pMgr);

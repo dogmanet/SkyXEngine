@@ -297,7 +297,7 @@ namespace gui
 		//		pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_NONE);
 		//		pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
 
-		m_pDevice->BeginScene();
+		//m_pDevice->BeginScene();
 		m_pDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 		m_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 		m_pDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -402,7 +402,7 @@ namespace gui
 		//	brd.Render();
 
 
-		m_pDevice->EndScene();
+		//m_pDevice->EndScene();
 
 		//		pDevice->SetDepthStencilSurface(pOldDepthStencilSurface);
 	}

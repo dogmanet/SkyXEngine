@@ -132,6 +132,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SMtrl_OnResetDevice();
 		SGreen_OnResetDevice();
 		SGeom_OnResetDevice();
+		SGreen_OnResetDevice();
 		SPE_OnResetDevice();
 		SXGame_OnResetDevice();
 		SPP_OnDeviceReset();

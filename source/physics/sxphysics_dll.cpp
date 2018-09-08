@@ -59,6 +59,11 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
+SX_LIB_API void SXPhysics_DumpStats()
+{
+	CProfileManager::dumpAll();
+}
+
 SX_LIB_API void SXPhysics_0Create()
 {
 	if(g_pWorld)
@@ -69,6 +74,8 @@ SX_LIB_API void SXPhysics_0Create()
 	Core_SetOutPtr();
 
 	g_pWorld = new CPhyWorld();
+
+	Core_0RegisterConcmd("perf_physics", SXPhysics_DumpStats);
 }
 SX_LIB_API void SXPhysics_AKill()
 {
@@ -133,7 +140,7 @@ SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody)
 	g_pWorld->removeShape(pBody);
 }
 
-SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld()
+SX_LIB_API btDiscreteDynamicsWorldMt * SXPhysics_GetDynWorld()
 {
 	SP_PRECOND(NULL);
 	return(g_pWorld->getBtWorld());

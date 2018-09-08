@@ -6,17 +6,28 @@ See the license in LICENSE
 
 #include "task.h"
 
-CTask::CTask(THREAD_UPDATE_FUNCTION func, UINT flags):
+ITask::ITask(UINT flags):
 	m_iFlags(flags)
 {
-	m_fnUpdateFunc = func;
 }
 
-CTask::~CTask()
-{
-}
-
-UINT CTask::getFlags() const
+UINT ITask::getFlags() const
 {
 	return(m_iFlags);
+}
+
+//##########################################################################
+
+CTask::CTask(THREAD_UPDATE_FUNCTION func, UINT flags):
+	ITask(flags),
+	m_fnUpdateFunc(func)
+{
+}
+
+void CTask::run()
+{
+	if(m_fnUpdateFunc)
+	{
+		m_fnUpdateFunc();
+	}
 }
