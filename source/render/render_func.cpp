@@ -107,6 +107,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 	//сбрасываем все что необходимо для восстановления устройства
 	SGCore_OnLostDevice();
 	SGeom_OnLostDevice();
+	SGreen_OnLostDevice();
 	SLight_OnLostDevice();
 	SMtrl_OnLostDevice();
 	SPE_OnLostDevice();
@@ -129,6 +130,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SGCore_OnResetDevice();
 		SLight_OnResetDevice();
 		SMtrl_OnResetDevice();
+		SGreen_OnResetDevice();
 		SGeom_OnResetDevice();
 		SPE_OnResetDevice();
 		SXGame_OnResetDevice();
@@ -155,7 +157,7 @@ void rfunc::ComVisibleForLight()
 						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
-						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddArrForCom());
+						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddVisCaclObj());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
@@ -177,7 +179,7 @@ void rfunc::ComVisibleForLight()
 						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0) <= -1)
-						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, 0, SGreen_AddArrForCom());
+						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, 0, SGreen_AddVisCaclObj());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, 0) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
@@ -197,7 +199,7 @@ void rfunc::ComVisibleForLight()
 							SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
-							SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddArrForCom());
+							SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddVisCaclObj());
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k) <= -1)
 							SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, k, SXAnim_ModelsAddArrForCom());
@@ -225,8 +227,8 @@ void rfunc::ComVisibleForLight()
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
 					SGeom_ModelsDelArrForCom(idTempArr);
 
-				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsArrForCom(idTempArr))
-					SGreen_DelArrForCom(idTempArr);
+				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsVisCaclObj(idTempArr))
+					SGreen_DelVisCaclObj(idTempArr);
 
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, k)) >= 0)
 					SXAnim_ModelsDelArrForCom(idTempArr);
@@ -237,8 +239,8 @@ void rfunc::ComVisibleForLight()
 			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, 0)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
 				SGeom_ModelsDelArrForCom(idTempArr);
 
-			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGreen_ExistsArrForCom(idTempArr))
-				SGreen_DelArrForCom(idTempArr);
+			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGreen_ExistsVisCaclObj(idTempArr))
+				SGreen_DelVisCaclObj(idTempArr);
 
 			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, 0)) >= 0)
 				SXAnim_ModelsDelArrForCom(idTempArr);
@@ -251,8 +253,8 @@ void rfunc::ComVisibleForLight()
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
 					SGeom_ModelsDelArrForCom(idTempArr);
 
-				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsArrForCom(idTempArr))
-					SGreen_DelArrForCom(idTempArr);
+				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsVisCaclObj(idTempArr))
+					SGreen_DelVisCaclObj(idTempArr);
 
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_ANIM, k)) >= 0)
 					SXAnim_ModelsDelArrForCom(idTempArr);
@@ -305,7 +307,7 @@ void rfunc::ComVisibleReflection()
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 				{
 					if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0) < 0)
-						SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0, SGreen_AddArrForCom());
+						SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0, SGreen_AddVisCaclObj());
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
@@ -341,7 +343,7 @@ void rfunc::ComVisibleReflection()
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 					{
 						if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, k) < 0)
-							SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, k, SGreen_AddArrForCom());
+							SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GREEN, k, SGreen_AddVisCaclObj());
 					}
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_ANIM)
@@ -553,7 +555,7 @@ void rfunc::UpdateView()
 		gdata::idDefaultGeomArr = SGeom_ModelsAddArrForCom();
 
 	if (gdata::idDefaultGreenArr < 0)
-		gdata::idDefaultGreenArr = SGreen_AddArrForCom();
+		gdata::idDefaultGreenArr = SGreen_AddVisCaclObj();
 
 	if (gdata::idDefaultAnimArr < 0)
 		gdata::idDefaultAnimArr = SXAnim_ModelsAddArrForCom();

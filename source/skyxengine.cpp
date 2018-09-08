@@ -748,14 +748,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SGeom_ModelsMSortGroups(&vCamPos, 2);
 	DelayGeomSortGroup += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-
-
-	/**/
-	/*if (SGeom_GreenGetOccurencessLeafGrass(&float3(vCamPos - float3(0.25, 1.8, 0.25)), &float3(vCamPos + float3(0.25, 0, 0.25)), MTLTYPE_PHYSIC_LEAF_GRASS))
-		SXRenderFunc::Delay::FreeVal = 1;
-	else
-		SXRenderFunc::Delay::FreeVal = 0;*/
-	/**/
+	SGreen_GetOccurencessLeafGrass(&float3(vCamPos - float3(0.25, 1.8, 0.25)), &float3(vCamPos + float3(0.25, 0, 0.25)), MTLTYPE_PHYSIC_LEAF_GRASS);
 
 	SRender_UpdateView();
 

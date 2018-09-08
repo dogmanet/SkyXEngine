@@ -254,6 +254,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	Core_Dbg_Set(SkyXEngine_PrintfLog);
 	Core_SetOutPtr();
 
+	SkyXEngine_CreateLoadCVar();
+
+	int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
+
+	*r_win_width = SKYXENGINE_PREVIEW_SIZE;
+	*r_win_height = SKYXENGINE_PREVIEW_SIZE;
+
 	/*ID idTimerRender = Core_TimeAdd();
 	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
 

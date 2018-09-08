@@ -346,6 +346,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	SGreen_AddGreen(tmp_name,
 		tmp_tex,
+		false,
 		pos,
 		tmp_model,
 		(tmp_lod1[0] ? tmp_lod1 : 0),

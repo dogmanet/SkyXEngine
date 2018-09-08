@@ -2726,7 +2726,7 @@ void CAIGrid::renderGraphPoints(const float3 * viewpos, float dist)
 		float4x4 wvp = SMMatrixIdentity() * float4x4(tmpview) * float4x4(tmpproj);
 		wvp = SMMatrixTranspose(wvp);
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "WorldViewProjection", &wvp);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &wvp);
 
 		m_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 

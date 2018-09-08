@@ -1,5 +1,6 @@
 [level]
 geometry = stalker_atp.geom
+green = stalker_atp.green
 type = outdoor
 entity = stalker_atp.ent
 aigrid = stalker_atp.aigrid

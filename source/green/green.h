@@ -21,13 +21,13 @@ extern g_phy_intersect g_fnIntersect;
 
 //##########################################################################
 
-#define GREEN_PRECOND_ARRCOMFOR_ERR_ID(id_arr) \
-if(!(id_arr < (ID)m_aArrComFor.size()))\
+#define GREEN_PRECOND_IDVISCALCOBJ_ERR(id_arr) \
+if (!(id_arr < (ID)m_aVisCaclObj.size()))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
 }
 
-#define GREEN_PRECOND_ARRCOMFOR_ERR_ID_MODEL(id_model) \
+#define GREEN_PRECOND_IDGREEN_ERR(id_model) \
 if(!(id_model < (ID)m_aGreens.size() && m_aGreens[id_model]))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
@@ -75,15 +75,20 @@ public:
 
 	//**********************************************************************
 
-	ID init(
+	ID generate(
 		const char *szName,
 		const char *szPathMask,
+		bool shouldAveragedRGB,
 		float fCountMax,
 		const char *szPath, const char *szLod1, const char *szLod2,
 		const char *szPhysMesh
 		);
 
-	ID getIDSplit(ID idGreen, float3 *pPos);
+	ID getIDsplit(ID idGreen, const float3 *pPos);
+
+	/*! добавить объект в текущий вид растительности, если добавляет то возвращает номер последнего записанного элемента в массив сплита
+	 \note pData может быть NULL, тогда будет создан новый объект, иначе этот объект перемещается между сплитами
+	*/
 	ID addObject(ID idGreen, float3 *pPos, CGreenDataVertex *pData, ID *pIDsplit);
 	void deleteObject(ID idGreen, ID idSplit, ID idObj);
 	void getPosObject(ID idGreen, ID idSplit, ID idObj, float3_t *pPos);
@@ -94,16 +99,16 @@ public:
 	void onLostDevice();
 	void onResetDevice();
 	
-	ID addArrForCom();
-	bool existsArrForCom(ID idGreen);
-	void deleteArrForCom(ID idArr);
+	ID addVisCaclObj();
+	bool existsVisCaclObj(ID idGreen);
+	void deleteVisCaclObj(ID idVisCaclObj);
 	
 	void save(const char *szPath);
 	void load(const char *szPath);
 	void clear();
 	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
 	void render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idArr = 0);
-	void renderSingly(DWORD timeDelta, const float3 *pViewPos, ID id, ID idTexture);
+	void renderSingly(DWORD timeDelta, const float3 *pViewPos, ID id, ID idTexture, ID idArr = 0);
 	void renderObject(DWORD timeDelta, const float3 *pViewPos, ID id, ID idSplit, ID idObj, ID idTexture);
 
 	ID getCountGreen();
@@ -120,7 +125,7 @@ public:
 	void setGreenNav(ID idGreen, const char *szPathName);
 
 	void getNavMeshAndTransform(float3_t ***pppArrVertex, int32_t **ppArrCountVertex, uint32_t ***pppArrIndex, ID ***pppArrMtl, int32_t **ppArrCountIndex, CGreenDataVertex ***pppArrTransform, int32_t **ppArrCountTransform, int32_t *pArrCountGreen);
-	bool getOccurencessLeafGrass(float3 *pMin, float3 *pMax, int iPhysicMtl);
+	bool getOccurencessLeafGrass(const float3 *pMin, const float3 *pMax, int iPhysicMtl);
 	
 	bool traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID *pIDgreen, ID *pIDsplits, ID *pIDobj, ID *pIDmtl);
 
@@ -198,21 +203,21 @@ public:
 			~CPhysMesh();
 
 			//! массив вершин
-			float3_t *m_pArrVertex;
-
-			//! количество вершин в массиве m_pArrVertex
-			int32_t m_iCountVertex;
+			Array<float3_t> m_aVertex;
 
 			//! массив индексов
-			uint32_t *m_pArrIndex;
+			Array<uint32_t> m_aIndex;
 
-			//! количество индексов в массиве m_pArrIndex
-			int32_t m_iCountIndex;
+			/*! массив id материалов, 
+			 \note Если используется как физическая модель то последовательно для каждого индекса #m_aIndex
+			 \note Если используется как данные нулевого лода то последовательно для каждой подгруппы
+			*/
+			Array<ID> m_aMtrl;
 
-			//! массив id материалов последовательно для каждого индекса их m_pArrIndex
-			ID *m_pArrMtl;
+			//! количество индексов для каждой подгруппы, для физической модели не используется
+			Array<int> m_aIndexCount;
 
-			//! путь до статической модели
+			//! путь до статической модели, только для физической модели
 			String m_sPathName;
 		};
 
@@ -231,6 +236,8 @@ public:
 		//! физическая модель
 		CPhysMesh *m_pPhysMesh;
 
+		CPhysMesh *m_pDataLod0;
+
 		//! начальный/главный сплит пространства
 		CSegment *m_pSplitsTree;
 
@@ -241,10 +248,12 @@ public:
 		float3 m_vMax, m_vMin;
 
 		//! массив трансформаций всех объектов растительности
-		//CGreenDataVertex *m_pAllTrans;
 		Array<CGreenDataVertex> m_pAllTrans;
+
+		//! ограничивающие объемы всех объектов
 		Array<CBoundBox> m_aTransW;
 
+		//! массив удаляемых объектов, удаление происходит при специальном вызове функции удаления удаленных объектов
 		Array<ID> m_aDeleteObj;
 
 		//! массив лодов
@@ -256,68 +265,100 @@ public:
 
 	//**********************************************************************
 
-	//! структура содержащая минимальную необходимую информацию о сегменте модели для рендера
-	struct CInfoRenderSegments
+	//! структура содержащая информацию о видимости отдельного вида растительности
+	struct CVisInfo
 	{
-		CInfoRenderSegments();
-		~CInfoRenderSegments();
+		CVisInfo();
+		~CVisInfo();
 
-		//!массив хранящий в себе указатели на сегменты REALTIME
+		//! массив хранящий в себе указатели на сегменты
 		CSegment **m_ppSegments;
 
-		//! размер Arr 
+		//! размер m_ppSegments 
 		int m_iCount;
 
-		//! сколько сегментов записано в Arr REALTIME 
+		//! сколько сегментов записано в #m_ppSegments
 		int m_iCountCom;
+
+		//! виден ли объект (дерево/куст)
+		Array<bool> m_aVisible;
 	};
 
 	//**********************************************************************
 
 	//! данные для просчетов видимости
-	struct CIRSData
+	struct CVisCaclObj
 	{
-		CIRSData();
-		~CIRSData();
+		CVisCaclObj();
+		~CVisCaclObj();
 
 		//! очередь обработки просчетов видимости для каждого сегмента
 		Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> m_aQueue;
 
-		//! массив информации для рендера сегментов
-		Array<CInfoRenderSegments*> m_aIRS;
-
-		Array<Array<bool>> m_aVisible;
+		//! массив информации видимости для каждого вида растительности
+		Array<CVisInfo*> m_aVisibleInfo;
 	};
 	
 protected:
+
+	//! полное удаление удаленных объектов
+	void deleteDeleted();
+
+	//! создание вершинного буфера инстансов
+	void createInstVB();
+
+	//! установка физической оболочки виду растительности
+	void setGreenNav2(CModel *pGreen, const char *szPathName);
+
 	
-	void saveSplit(CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue);
+	void initGreenDataLod0(CModel *pGreen);
+
+	//! загрузка модели для лода
+	void loadModelForLod(CModel *pGreen, int iLod, const char *szPathModel);
+
+	/*! считает данные трансформации для объекта на основании позиции
+	 \note Только эта функция должна использоваться для генерации объектов!
+	*/
+	void genDataObject(CGreenDataVertex *pGreenData, const float3_t *pPos);
+	
+	void saveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue);
 	void loadSplit(CSegment **ppSplit, FILE * file, Array<CSegment**> *pQueue);
-	void render2(DWORD timeDelta, const float3 *pViewPos, ID nm, int iLod, ID idTexture);
-	void alignBound(CModel *pModel, CSegment *pSplit);
-	void genByTex(CModel *pModel, ID idMask, float3 *pMin, float3 *pMax, float fCountMax);
 
-	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
-	void getPartBB(float3 *pMin, float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
+	//! отрисовка того что уже посчиталось
+	void render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iLod, ID idTexture);
 
-	void comRecArrIndeces(ID idGreen, ID idArr, const IFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, ID idCurrSplitRender);
+	//! выравнивание объема сплита
+	void alignBound(CModel *pGreen, CSegment *pSplit);
+	bool genByTex(CModel *pModel, ID idMask, bool shouldAveragedRGB, float3 *pMin, float3 *pMax, float fCountMax);
 
-	void addModelInArrCom(ID idModel);
-	void deleteModelInArrCom(ID idModel);
+	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, int iCountCom);
+	void getPartBB(const float3 *pMin, const float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
+
+	void comRecArrIndeces(ID idGreen, ID idArr, const IFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, int iAllCount);
+
+	void addModelInVisCaclObj(ID idModel);
+	void deleteModelInVisCaclObj(ID idModel);
 	
-	void preSegmentation(CModel *pModel, float3 *pMinLevel, float3 *pMaxLevel);
+	void preSegmentation(CModel *pGreen, const float3 *pLevelMin, const float3 *pLevelMax);
 	void cycleSegmentation(CSegment *pSplit, CModel *pMesh);
 	void segmentation(CSegment *pSplit, CModel *pMesh);
+
+	//! установка id сплитам
 	void setSplitID(CModel *pModel);
 	void setSplitID2(CModel *pModel, CSegment *pSplit, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue);
 
-	void ComputeBBtrans(ID idGreen);
-	void ComputeBB(const CGreenDataVertex &oTrans, CBoundBox &oBox);
+
+	void computeBBtrans(ID idGreen);
+
+	//! расчет ограничивающего бокса объекта на основании данных его трансформации
+	void computeBB(const CGreenDataVertex &oTrans, CBoundBox &oBox);
+
+	void sort4SplitsFront2Back(const CSegment *pParentSplit, const float3 *pViewPos, ID aSortId[GREEN_COUNT_TYPE_SEGMENTATION]);
 
 	//**********************************************************************
 
 	//! информация о сегментах для рендера
-	Array<CIRSData*> m_aArrComFor;
+	Array<CVisCaclObj*> m_aVisCaclObj;
 
 	//! количество элементов текущей растительности для отрисовки
 	int m_iCurrCountDrawObj;

@@ -155,12 +155,13 @@ SX_LIB_API void SGreen_SetFuncIntersect(g_phy_intersect fnFunc)
 SX_LIB_API ID SGreen_AddGreen(
 	const char *szName,
 	const char *szPathMask,
+	bool shouldAveragedRGB,
 	float fCountMax,
 	const char *szPathLod0, const char *szPathLod1, const char *szPathLod2,
 	const char *szNavMesh)
 {
 	GEOM_PRECOND(-1);
-	return g_pGreen->init(szName, szPathMask, fCountMax, szPathLod0, szPathLod1, szPathLod2, szNavMesh);
+	return g_pGreen->generate(szName, szPathMask, shouldAveragedRGB, fCountMax, szPathLod0, szPathLod1, szPathLod2, szNavMesh);
 }
 
 SX_LIB_API ID SGreen_AddObject(ID idGreen, float3 *pPos, ID *pIDsplit)
@@ -193,22 +194,22 @@ SX_LIB_API void SGreen_DelGreen(ID idGreen)
 	g_pGreen->deleteGreen(idGreen);
 }
 
-SX_LIB_API ID SGreen_AddArrForCom()
+SX_LIB_API ID SGreen_AddVisCaclObj()
 {
 	GEOM_PRECOND(-1);
-	return g_pGreen->addArrForCom();
+	return g_pGreen->addVisCaclObj();
 }
 
-SX_LIB_API bool SGreen_ExistsArrForCom(ID idGreen)
+SX_LIB_API bool SGreen_ExistsVisCaclObj(ID idVisCaclObj)
 {
 	GEOM_PRECOND(false);
-	return g_pGreen->existsArrForCom(idGreen);
+	return g_pGreen->existsVisCaclObj(idVisCaclObj);
 }
 
-SX_LIB_API void SGreen_DelArrForCom(ID idArr)
+SX_LIB_API void SGreen_DelVisCaclObj(ID idVisCaclObj)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGreen->deleteArrForCom(idArr);
+	g_pGreen->deleteVisCaclObj(idVisCaclObj);
 }
 
 SX_LIB_API void SGreen_Save(const char *szPath)
@@ -229,25 +230,25 @@ SX_LIB_API void SGreen_Clear()
 	g_pGreen->clear();
 }
 
-SX_LIB_API void SGreen_ComVisible(const IFrustum* frustum, float3 *pViewPos, ID idArr)
+SX_LIB_API void SGreen_ComVisible(const IFrustum* frustum, const float3 *pViewPos, ID idVisCaclObj)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGreen->comArrIndeces(frustum, pViewPos, idArr);
+	g_pGreen->comArrIndeces(frustum, pViewPos, idVisCaclObj);
 }
 
-SX_LIB_API void SGreen_Render(DWORD timeDelta, float3 *pViewPos, GREEN_TYPE type, ID idArr)
+SX_LIB_API void SGreen_Render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idVisCaclObj)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGreen->render(timeDelta, pViewPos, type, idArr);
+	g_pGreen->render(timeDelta, pViewPos, type, idVisCaclObj);
 }
 
-SX_LIB_API void SGreen_RenderSingly(DWORD timeDelta, float3 *pViewPos, ID idGreen, ID idTexture)
+SX_LIB_API void SGreen_RenderSingly(DWORD timeDelta, const float3 *pViewPos, ID idGreen, ID idTexture)
 {
 	GEOM_PRECOND(_VOID);
 	g_pGreen->renderSingly(timeDelta, pViewPos, idGreen, idTexture);
 }
 
-SX_LIB_API void SGreen_RenderObject(DWORD timeDelta, float3 *pViewPos, ID idGreen, ID idSplit, ID idObj, ID idTexture)
+SX_LIB_API void SGreen_RenderObject(DWORD timeDelta, const float3 *pViewPos, ID idGreen, ID idSplit, ID idObj, ID idTexture)
 {
 	GEOM_PRECOND(_VOID);
 	g_pGreen->renderObject(timeDelta, pViewPos, idGreen, idSplit, idObj, idTexture);
@@ -353,13 +354,13 @@ SX_LIB_API void SGreen_ClearNavMeshAndTransform(float3_t **ppArrVertex, int32_t 
 	mem_delete_a(pArrCountIndex);
 }
 
-SX_LIB_API bool SGreen_TraceBeam(float3 *pStart, float3 *pDir, float3 *pResult, ID *pIDgreen, ID *pIDsplits, ID *pIDobj, ID *pIDmtl)
+SX_LIB_API bool SGreen_TraceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID *pIDgreen, ID *pIDsplits, ID *pIDobj, ID *pIDmtl)
 {
 	GEOM_PRECOND(false);
 	return g_pGreen->traceBeam(pStart, pDir, pResult, pIDgreen, pIDsplits, pIDobj, pIDmtl);
 }
 
-SX_LIB_API bool SGreen_GetOccurencessLeafGrass(float3 *pMin, float3 *pMax, int iPhysicMtl)
+SX_LIB_API bool SGreen_GetOccurencessLeafGrass(const float3 *pMin, const float3 *pMax, int iPhysicMtl)
 {
 	GEOM_PRECOND(false);
 	return g_pGreen->getOccurencessLeafGrass(pMin, pMax, iPhysicMtl);

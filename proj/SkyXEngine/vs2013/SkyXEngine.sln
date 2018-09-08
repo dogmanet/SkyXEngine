@@ -70,10 +70,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxwincreator", "..\..\sxwin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxleveleditor", "..\..\sxleveleditor\vs2013\sxleveleditor.vcxproj", "{A2B9EACA-69C1-4E9D-AF3C-704608DB57DE}"
 	ProjectSection(ProjectDependencies) = postProject
+		{D381001E-C1FF-415F-A269-5264AD9013D5} = {D381001E-C1FF-415F-A269-5264AD9013D5}
 		{0292BE32-298E-4E18-BC42-5A39F9487EBA} = {0292BE32-298E-4E18-BC42-5A39F9487EBA}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxmaterialeditor", "..\..\sxmaterialeditor\vs2013\sxmaterialeditor.vcxproj", "{9C34362D-7FA6-4BD1-A48B-8FDE541344B0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AFBF200A-9260-4469-AE64-DCB42C796DD6} = {AFBF200A-9260-4469-AE64-DCB42C796DD6}
+		{D381001E-C1FF-415F-A269-5264AD9013D5} = {D381001E-C1FF-415F-A269-5264AD9013D5}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxconsole", "..\..\sxconsole\vs2013\sxconsole.vcxproj", "{CEFD4247-0B36-4268-B455-C1E826173005}"
 EndProject
@@ -150,6 +155,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxdecals", "..\..\sxdecals\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxparticleseditor", "..\..\sxparticleseditor\vs2013\sxparticleseditor.vcxproj", "{B66C63CA-62E0-472F-9D24-070CAC7C8B12}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AFBF200A-9260-4469-AE64-DCB42C796DD6} = {AFBF200A-9260-4469-AE64-DCB42C796DD6}
+		{D381001E-C1FF-415F-A269-5264AD9013D5} = {D381001E-C1FF-415F-A269-5264AD9013D5}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletWorldImporter", "..\..\..\sdks\bullet3\build3\vs2010\BulletWorldImporter.vcxproj", "{F2DD3789-7BC9-D241-8C8D-2179933B30DD}"
 	ProjectSection(ProjectDependencies) = postProject
