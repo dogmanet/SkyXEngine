@@ -132,7 +132,6 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SMtrl_OnResetDevice();
 		SGreen_OnResetDevice();
 		SGeom_OnResetDevice();
-		SGreen_OnResetDevice();
 		SPE_OnResetDevice();
 		SXGame_OnResetDevice();
 		SPP_OnDeviceReset();
@@ -1001,7 +1000,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 	{
 		gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
-		SGCore_SkyBoxRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 40, gdata::vConstCurrCamPos.z));
+		SGCore_SkyBoxRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + (SXGC_SKYBOX_SIZE * 0.5 - 10), gdata::vConstCurrCamPos.z));
 	}
 
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -1481,8 +1480,11 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 
 	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
 	static const bool * pp_lensflare_usebloom = GET_PCVAR_BOOL("pp_lensflare_usebloom");
+
+	//использовать ли блум, если сам блум вообще используется
+	bool useBloom = ((pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false) && (pp_bloom && (*pp_bloom)));
 	if (pp_lensflare && (*pp_lensflare) && idGlobalLight >= 0)
-		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.2f), &float4_t(vGLcolor.x, vGLcolor.y, vGLcolor.z, (SLight_GetCastGlobalShadow() ? 0 : SLight_GetPower(idGlobalLight))), (pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false));
+		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.2f), &float4_t(vGLcolor.x, vGLcolor.y, vGLcolor.z, (SLight_GetCastGlobalShadow() ? 0 : SLight_GetPower(idGlobalLight))), useBloom);
 
 	//**********************************************************************
 

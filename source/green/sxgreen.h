@@ -37,6 +37,15 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
+//! магическое слово для записи в бинарный файл растительности, для идентификации
+#define SX_GREEN_MAGIC_WORD	"sxgreens"
+
+//! магичесок число для илентификации файла растительности
+#define SX_GREEN_MAGIC_NUM	8317697048185370739
+
+//! версия формата файла растительности
+#define SX_GREEN_FILE_FORMAT_VERSION 1
+
 //##########################################################################
 
 /*! \name Стандартные функции библиотеки

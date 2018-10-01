@@ -1196,6 +1196,8 @@ SX_LIB_API ICamera* SGCore_CrCamera();
  \note Используются кубические текстуры
 @{*/
 
+#define SXGC_SKYBOX_SIZE 200.f
+
 //! создание
 SX_LIB_API void SGCore_SkyBoxCr();	
 

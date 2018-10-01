@@ -2122,6 +2122,19 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	}
 
+	/*if (pMtrl->m_oLightParam.m_fThickness < 1.f)
+	{
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+
+		mtrl_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		mtrl_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	}
+	else
+		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);*/
+
 	//почти во всех пиксельных шейдерах материалов есть данна¤ NearFar, необходима¤ д¤л записи глубины
 	if (pMtrl->m_oMainGraphics.m_idShaderPS != -1)
 	{	

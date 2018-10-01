@@ -159,7 +159,7 @@ CWeather::CWeather()
 	m_aTrackPos = 0;
 	if (m_idEffRain >= 0)
 	{
-		m_iTrackPosCount = SPE_EmitterCountGet(m_idEffRain,0);
+		m_iTrackPosCount = SPE_EmitterGetCount(m_idEffRain, 0);
 		m_aTrackPos = new float3[m_iTrackPosCount];
 	}
 	else
@@ -213,10 +213,10 @@ void CWeather::load(const char *szPath)
 		SGCore_SkyCloudsSetRot(0);
 
 		
-		SPE_EffectEnableSet(m_idEffRain, false);
+		SPE_EffectSetEnable(m_idEffRain, false);
 		SSCore_SndStop(m_idSndRain);
 
-		SPE_EffectEnableSet(m_idEffThunderbolt, false);
+		SPE_EffectSetEnable(m_idEffThunderbolt, false);
 		SLight_SetEnable(m_idLightThunderbolt, false);
 		SSCore_SndStop(m_idSndThunder);
 
@@ -571,7 +571,7 @@ void CWeather::update()
 	{
 		static float3 campos;
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &campos);
-		SPE_EffectPosSet(m_idEffRain, &float3(campos.x, campos.y - WEATHER_RAIN_MIN_Y_OBSERVER, campos.z));
+		SPE_EffectSetPos(m_idEffRain, &float3(campos.x, campos.y - WEATHER_RAIN_MIN_Y_OBSERVER, campos.z));
 		updateRainSound();
 	}
 
@@ -582,7 +582,7 @@ void CWeather::update()
 	{
 		env_default_rain_density_old = *env_default_rain_density;
 		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
-			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
+			SPE_EmitterSet(m_idEffRain, 0, m_iReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
 	}
 
 	//получаем текущую игровую дату
@@ -642,9 +642,9 @@ void CWeather::update()
 		//если плотность дожд¤ больше нул¤ тогда включаем дождь
 		if (m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity > 0.f)
 		{
-			SPE_EmitterSet(m_idEffRain, 0, Color, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vRainColor);
-			SPE_EmitterSet(m_idEffRain, 0, ReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
-			SPE_EffectEnableSet(m_idEffRain, true);
+			SPE_EmitterSet(m_idEffRain, 0, m_vColor, m_aTimeSections[m_iSectionCurr].m_DataSection.m_vRainColor);
+			SPE_EmitterSet(m_idEffRain, 0, m_iReCreateCount, env_default_rain_density_old * m_aTimeSections[m_iSectionCurr].m_DataSection.m_fRainDensity * float(WEATHER_RAIN_RECREATE_COUNT));
+			SPE_EffectSetEnable(m_idEffRain, true);
 
 			SSCore_SndSetPosPlay(m_idSndRain, 0);
 			SSCore_SndSetVolume(m_idSndRain, 0);
@@ -657,7 +657,7 @@ void CWeather::update()
 		//иначе выключаем
 		else
 		{
-			SPE_EffectEnableSet(m_idEffRain, false);
+			SPE_EffectSetEnable(m_idEffRain, false);
 			SSCore_SndStop(m_idSndRain);
 		}
 
@@ -772,8 +772,8 @@ void CWeather::update()
 				m_vBoltMax = float3_t(campos.x + WEATHER_THUNDERBOLT_WIDTH * 0.5f, m_fLevelMaxY + WEATHER_THUNDERBOLT_HEIGHT, campos.z + WEATHER_THUNDERBOLT_LENGTH * 0.5f);
 
 				float3 tpos = float3(randf(m_vBoltMin.x, m_vBoltMax.x), randf(m_vBoltMin.y, m_vBoltMax.y), randf(m_vBoltMin.z, m_vBoltMax.z));
-				SPE_EffectPosSet(m_idEffThunderbolt, &tpos);
-				SPE_EffectEnableSet(m_idEffThunderbolt, true);
+				SPE_EffectSetPos(m_idEffThunderbolt, &tpos);
+				SPE_EffectSetEnable(m_idEffThunderbolt, true);
 				SLight_SetPos(m_idLightThunderbolt, &tpos, false);
 				SLight_SetEnable(m_idLightThunderbolt, true);
 				m_ulTimeBoltLight = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -837,15 +837,15 @@ void CWeather::updateRainSound()
 		return;
 
 	//если внезапно количество оставл¤ющих след стало больше чем выделено
-	if (SPE_EmitterTrackCountGet(m_idEffRain, 0) > m_iTrackPosCount)
+	if (SPE_EmitterGetTrackCount(m_idEffRain, 0) > m_iTrackPosCount)
 	{
 		mem_delete(m_aTrackPos);
-		m_iTrackPosCount = SPE_EmitterCountGet(m_idEffRain, 0);
+		m_iTrackPosCount = SPE_EmitterGetCount(m_idEffRain, 0);
 		m_aTrackPos = new float3[m_iTrackPosCount];
 	}
 
 	//получаем массив следов
-	int tmpcount = SPE_EmitterTrackPosGet(m_idEffRain, 0, &m_aTrackPos, m_iTrackPosCount);
+	int tmpcount = SPE_EmitterGetTrackPos(m_idEffRain, 0, &m_aTrackPos, m_iTrackPosCount);
 	m_fRainVolume = 0;
 	float biger = 0.f;
 

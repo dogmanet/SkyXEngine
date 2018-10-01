@@ -40,15 +40,15 @@ CSkyBox::CSkyBox()
 			   &m_pIndeces,
                0);
 
-	float X = 1.0f * 200;
-	float Y = 1.0f * 200;
-	float Z = 1.0f * 200;
-	float tmpy = 45;
+	float X = SXGC_SKYBOX_SIZE * 0.5;
+	float Y = SXGC_SKYBOX_SIZE * 0.5;
+	float Z = SXGC_SKYBOX_SIZE * 0.5;
+	//float tmpy = 45;
 
 	CSkyBoxVertex* tmpVertices;
 	m_pVertices->Lock(0, 0, (void**)&tmpVertices, 0);
 
-	tmpVertices[0] = CSkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
+	/*tmpVertices[0] = CSkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
 	tmpVertices[1] = CSkyBoxVertex(-X,  Y-tmpy, Z,-1.0f, 1.0f, 1.0f);
 	tmpVertices[2] = CSkyBoxVertex( X, -tmpy, Z, 1.0f,-1.0f, 1.0f);
 
@@ -57,7 +57,18 @@ CSkyBox::CSkyBox()
 	tmpVertices[5] = CSkyBoxVertex( X, -tmpy,-Z, 1.0f,-1.0f,-1.0f);
 
 	tmpVertices[6] = CSkyBoxVertex(-X,  Y-tmpy,-Z,-1.0f, 1.0f,-1.0f);
-	tmpVertices[7] = CSkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);
+	tmpVertices[7] = CSkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);*/
+
+	tmpVertices[0] = CSkyBoxVertex( X,  Y,  Z, 1.0f, 1.0f, 1.0f);
+	tmpVertices[1] = CSkyBoxVertex(-X,  Y,  Z, -1.0f, 1.0f, 1.0f);
+	tmpVertices[2] = CSkyBoxVertex( X, -Y,  Z, 1.0f, -1.0f, 1.0f);
+
+	tmpVertices[3] = CSkyBoxVertex( X,  Y, -Z, 1.0f, 1.0f, -1.0f);
+	tmpVertices[4] = CSkyBoxVertex(-X, -Y,  Z, -1.0f, -1.0f, 1.0f);
+	tmpVertices[5] = CSkyBoxVertex( X, -Y, -Z, 1.0f, -1.0f, -1.0f);
+
+	tmpVertices[6] = CSkyBoxVertex(-X,  Y, -Z, -1.0f, 1.0f, -1.0f);
+	tmpVertices[7] = CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f);
 
 	m_pVertices->Unlock();
 

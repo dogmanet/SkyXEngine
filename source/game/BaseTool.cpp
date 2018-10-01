@@ -121,7 +121,7 @@ void CBaseTool::primaryAction(BOOL st)
 		playAnimation("shoot1");
 		if(ID_VALID(m_iMuzzleFlash))
 		{
-			SPE_EffectEnableSet(m_iMuzzleFlash, true);
+			SPE_EffectSetEnable(m_iMuzzleFlash, true);
 		}
 		if(ID_VALID(m_iSoundAction1))
 		{
@@ -224,9 +224,9 @@ void CBaseTool::onSync()
 	{
 		//SPE_EffectPlayByID
 		float3 pos = m_pAnimPlayer->getBoneTransformPos(m_pAnimPlayer->getBone("muzzle_rifle1"));
-		SPE_EffectPosSet(m_iMuzzleFlash, &pos);
+		SPE_EffectSetPos(m_iMuzzleFlash, &pos);
 		//pos = m_vOrientation * float3(0, 0, 1);
-		SPE_EffectRotSetQ(m_iMuzzleFlash, m_vOrientation);
+		SPE_EffectSetRotQ(m_iMuzzleFlash, m_vOrientation);
 	}
 }
 

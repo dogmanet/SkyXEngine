@@ -34,7 +34,7 @@ if (!(key >= 0 && key < ArrKey.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - uninitialized pool %d", GEN_MSG_LOCATION, id); return retval; }
 
 #define EFFECTS_PARTICLES_PRECOND(id, id_part, retval) \
-	if (id_part < 0 || id_part >= ArrID[id]->Arr.size() || !(ArrID[id]->Arr[id_part]))\
+if (id_part < 0 || id_part >= ArrID[id]->m_aEmitters.size() || !(ArrID[id]->m_aEmitters[id_part]))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles - unresolved address to particles %d in effect %d", GEN_MSG_LOCATION, id_part, id); return retval; }
 
 #define EFFECTS_PRECOND(id, id_part, retval) \
@@ -43,48 +43,49 @@ if (!(key >= 0 && key < ArrKey.size()))\
 
 
 
-class Effects
+class CEffects
 {
 public:
-	Effects();
-	~Effects();
+	CEffects();
+	~CEffects();
 
 	SX_ALIGNED_OP_MEM
 
-	struct Effect
+	struct CEffect
 	{
-		Effect();
-		Effect(Effect& eff);
-		~Effect();
-		void NullingInit();
+		CEffect();
+		CEffect(CEffect& eff);
+		~CEffect();
+
+		void nullingInit();
 
 		SX_ALIGNED_OP_MEM
 
-		char Name[OBJECT_NAME_MAX_LEN];
+		char m_szName[OBJECT_NAME_MAX_LEN];
 
-		ID Id;
-		ID Key;
+		ID m_id;
+		ID m_idKey;
 
-		float3 CurrMin;
-		float3 CurrMax;
+		float3 m_vCurrMin;
+		float3 m_vCurrMax;
 
-		float3 CurrMin2;
-		float3 CurrMax2;
+		float3 m_vCurrMin2;
+		float3 m_vCurrMax2;
 
-		float3 Position, Direction, Rotation;
-		float4x4 MatTranslation;
-		float4x4 MatRotate;
+		float3 m_vPosition, m_vDirection, m_vRotation;
+		float4x4 m_mTranslation;
+		float4x4 m_mRotate;
 
-		float ViewDist;
-		bool ViewRender;
+		float m_fViewDist;
+		bool m_isViewRender;
 
-		bool Enable;
-		bool Alife;
-		Array<Emitter*> Arr;
+		bool m_isEnable;
+		bool m_isAlife;
+		Array<CEmitter*> m_aEmitters;
 
-		ID IDPool;
-		bool Busy;
-		bool Original;
+		ID m_idPool;
+		bool m_isBusy;
+		bool m_isOriginal;
 	};
 
 	void load(const char* file);
@@ -94,11 +95,11 @@ public:
 	void onLostDevice();
 	void onResetDevice();
 
-	ID emitterAdd(ID id, ParticlesData* data);
-	void emitterReInit(ID id, ID id_part, ParticlesData* data);
+	ID emitterAdd(ID id, CParticlesData* data);
+	void emitterReInit(ID id, ID id_part, CParticlesData* data);
 	int emitterGetCount(ID id);
 	void emitterDelete(ID id, ID id_part);
-	ParticlesData* emitterGetData(ID id, ID id_part);
+	CParticlesData* emitterGetData(ID id, ID id_part);
 
 	void emitterSetCount(ID id, ID id_part, int count);
 	int emitterGetCount(ID id, ID id_part);
@@ -123,72 +124,72 @@ public:
 	int emitterGetTrackCount(ID id, ID id_part);
 	int emitterGetTrackPos(ID id, ID id_part, float3** arr, int count);
 
-	ID EffectInstanceByID(ID id);
-	ID EffectInstanceByName(const char* name);
+	ID effectInstanceByID(ID id);
+	ID effectInstanceByName(const char* name);
 	
 	ID effectGetByName(const char* name);
 	ID effectAdd(const char* name);
 	int effectGetCount();
 	ID effectGetIdOfKey(ID key);
 
-	void EffectDelete(ID id);
-	void EffectNameSet(ID id, const char* name);
-	void EffectNameGet(ID id, char* name);
+	void effectDelete(ID id);
+	void effectSetName(ID id, const char* name);
+	void effectGetName(ID id, char* name);
 
-	void EffectCompute(ID id);
-	void EffectComputeLighting(ID id);
-	void EffectRender(ID id, DWORD timeDelta);
+	void effectCompute(ID id);
+	void effectComputeLighting(ID id);
+	void effectRender(ID id, DWORD timeDelta);
 
-	void EffectComputeAll();
-	void EffectComputeLightingAll();
-	void EffectRenderAll(DWORD timeDelta);
+	void effectComputeAll();
+	void effectComputeLightingAll();
+	void effectRenderAll(DWORD timeDelta);
 
-	bool EffectEnableGet(ID id);
-	void EffectEnableSet(ID id, bool isenable);
+	bool effectGetEnable(ID id);
+	void effectSetEnable(ID id, bool isenable);
 
-	void EffectPlayByID(ID id, float3* pos, float3* dir);
-	void EffectPlayByName(const char* name, float3* pos, float3* dir);
+	void effectPlayByID(ID id, const float3* pos, const float3* dir);
+	void effectPlayByName(const char* name, const float3* pos, const float3* dir);
 
-	bool EffectAlifeGet(ID id);
-	void EffectAlifeSet(ID id, bool alife);
+	bool effectGetAlife(ID id);
+	void effectSetAlife(ID id, bool alife);
 
-	void EffectPosSet(ID id, float3* pos);
-	void EffectDirSet(ID id, float3* dir);
-	void EffectRotSet(ID id, float3* rot);
-	void EffectRotSet(ID id, const SMQuaternion & rot);
+	void effectSetPos(ID id, const float3* pos);
+	void effectSetDir(ID id, const float3* dir);
+	void effectSetRot(ID id, const float3* rot);
+	void effectSetRot(ID id, const SMQuaternion & rot);
 
-	void EffectPosGet(ID id, float3* pos);
-	void EffectDirGet(ID id, float3* dir);
-	void EffectRotGet(ID id, float3* rot);
+	void effectGetPos(ID id, float3* pos);
+	void effectGetDir(ID id, float3* dir);
+	void effectGetRot(ID id, float3* rot);
 
-	bool EffectVisibleCom(ID id, const IFrustum* frustum, float3* view);
-	void EffectVisibleComAll(const IFrustum* frustum, float3* view);
-	bool EffectVisibleGet(ID id);
-	float EffectDistToViewGet(ID id);
+	bool effectVisibleCom(ID id, const IFrustum* frustum, const float3* view);
+	void effectVisibleComAll(const IFrustum* frustum, const float3* view);
+	bool effectGetVisible(ID id);
+	float effectGetDistToView(ID id);
 
 protected:
 
-	struct Pool
+	struct CPool
 	{
-		Pool();
+		CPool();
 
 		Array<ID> arr;
 		ID ideff;
 	};
 
-	ID EffectCopyName(const char* name);
-	ID EffectCopyID(ID id);
-	void EffectDel(ID id);
+	ID effectCopyName(const char* name);
+	ID effectCopyID(ID id);
+	void effectDel(ID id);
 
-	ID AddEffect(Effect* obj);
-	ID PoolAdd(ID ideff);
-	void PoolDelete(ID id);
-	void PoolExtend(ID id);
-	ID PoolGet(ID id);
+	ID addEffect(CEffect* obj);
+	ID poolAdd(ID ideff);
+	void poolDelete(ID id);
+	void poolExtend(ID id);
+	ID poolGet(ID id);
 
-	Array<Effect*> ArrKey;	//массив всех элементов по порядку
-	Array<Effect*> ArrID;	//массив всех элементов, основанный на id
-	Array<Pool*> Pools;
+	Array<CEffect*> ArrKey;	//массив всех элементов по порядку
+	Array<CEffect*> ArrID;	//массив всех элементов, основанный на id
+	Array<CPool*> Pools;
 	Array<ID> ArrSort;
 	int ArrSortSizeCurr;	//текущий размер массива ArrSort
 };

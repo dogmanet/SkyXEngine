@@ -282,7 +282,7 @@ SX_LIB_API void Core_MWaitFor(ID id)
 SX_LIB_API int Core_MGetThreadCount()
 {
 	SXCORE_PRECOND(1);
-	g_pTaskManager->getThreadCount();
+	return g_pTaskManager->getThreadCount();
 }
 
 //##########################################################################

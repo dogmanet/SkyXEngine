@@ -275,7 +275,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SPE_0Create("sxparticles", false);
 	SPE_Dbg_Set(SkyXEngine_PrintfLog);
 	SPE_SetFunc_ParticlesPhyCollision(SkyXEngine_RFuncParticlesPhyCollision);
-	SPE_RTDepthSet(SGCore_GbufferGetRT_ID(DS_RT_DEPTH));
+	SPE_RTSetDepth(SGCore_GbufferGetRT_ID(DS_RT_DEPTH));
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB particles initialized\n");
 

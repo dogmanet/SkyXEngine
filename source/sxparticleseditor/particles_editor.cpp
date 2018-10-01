@@ -2390,9 +2390,9 @@ void SXParticlesEditor::DeleteAllElements()
 void SXParticlesEditor::ParticlesEditorUpdate(DWORD timeDelta)
 {
 	bool whyplay = false;
-	for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	for (int i = 0; i < SPE_EffectGetCount(); ++i)
 	{
-		if (SPE_EffectEnableGet(SPE_EffectIdOfKey(i)))
+		if (SPE_EffectGetEnable(SPE_EffectGetIdOfKey(i)))
 		{
 			SXParticlesEditor::CheckBoxTBPlay->setCheck(true);
 			SXParticlesEditor::CheckBoxTBPause->setCheck(false);
@@ -2416,24 +2416,24 @@ void SXParticlesEditor::ParticlesEditorUpdate(DWORD timeDelta)
 
 	if (SXParticlesEditor::SelEffID >= 0)
 	{
-		emitters_all_count = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
+		emitters_all_count = SPE_EmitterGetSCount(SXParticlesEditor::SelEffID);
 		if (SXParticlesEditor::SelEmitterID < 0)
 		{
-			for (int k = 0; k < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++k)
+			for (int k = 0; k < SPE_EmitterGetSCount(SXParticlesEditor::SelEffID); ++k)
 			{
-				if (SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, k))
+				if (SPE_EmitterGetEnable(SXParticlesEditor::SelEffID, k))
 					++emitters_count;
 
-				particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, k);
-				particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, k);
+				particles_all_count += SPE_EmitterGetCount(SXParticlesEditor::SelEffID, k);
+				particles_life_count += SPE_EmitterGetCountLife(SXParticlesEditor::SelEffID, k);
 			}
 		}
 
 		if (SXParticlesEditor::SelEmitterID >= 0)
 		{
-			emitters_count = SPE_EmitterEnableGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
-			particles_all_count += SPE_EmitterCountGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
-			particles_life_count += SPE_EmitterCountLifeGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			emitters_count = SPE_EmitterGetEnable(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			particles_all_count += SPE_EmitterGetCount(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+			particles_life_count += SPE_EmitterGetCountLife(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
 		}
 	}
 
@@ -2450,36 +2450,36 @@ void SXParticlesEditor::ParticlesEditorUpdate(DWORD timeDelta)
 
 	pDXdevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (SXParticlesEditor::canRenderBound && SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, BoundType) != PARTICLESTYPE_BOUND_NONE)
+	if (SXParticlesEditor::canRenderBound && SXParticlesEditor::SelEffID != -1 && SXParticlesEditor::SelEmitterID != -1 && SPE_EmitterGet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, m_typeBound) != PARTICLESTYPE_BOUND_NONE)
 	{
 		pDXdevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		pDXdevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
-		ParticlesData* pdata = SPE_EmitterGetData(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
+		CParticlesData* pdata = SPE_EmitterGetData(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID);
 		pDXdevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 
-		if (pdata->BoundType == PARTICLESTYPE_BOUND_BOX)
+		if (pdata->m_typeBound == PARTICLESTYPE_BOUND_BOX)
 		{
-			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(float3(pdata->BoundVec2 - pdata->BoundVec1)) * SMMatrixTranslation(float3(pdata->BoundVec2 + pdata->BoundVec1)*0.5f)));
+			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(float3(pdata->m_vBoundVec2 - pdata->m_vBoundVec1)) * SMMatrixTranslation(float3(pdata->m_vBoundVec2 + pdata->m_vBoundVec1)*0.5f)));
 			SXParticlesEditor::FigureBox->DrawSubset(0);
 		}
-		else if (pdata->BoundType == PARTICLESTYPE_BOUND_SPHERE)
+		else if (pdata->m_typeBound == PARTICLESTYPE_BOUND_SPHERE)
 		{
-			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(pdata->BoundVec1.w, pdata->BoundVec1.w, pdata->BoundVec1.w) * SMMatrixTranslation(float3(pdata->BoundVec1))));
+			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(pdata->m_vBoundVec1.w, pdata->m_vBoundVec1.w, pdata->m_vBoundVec1.w) * SMMatrixTranslation(float3(pdata->m_vBoundVec1))));
 			SXParticlesEditor::FigureSphere->DrawSubset(0);
 		}
-		else if (pdata->BoundType == PARTICLESTYPE_BOUND_CONE)
+		else if (pdata->m_typeBound == PARTICLESTYPE_BOUND_CONE)
 		{
-			if (SXParticlesEditor::FigureConeParam.x != pdata->BoundVec2.w || SXParticlesEditor::FigureConeParam.y != pdata->BoundVec1.w || SXParticlesEditor::FigureConeParam.z != pdata->BoundVec2.y - pdata->BoundVec1.y)
+			if (SXParticlesEditor::FigureConeParam.x != pdata->m_vBoundVec2.w || SXParticlesEditor::FigureConeParam.y != pdata->m_vBoundVec1.w || SXParticlesEditor::FigureConeParam.z != pdata->m_vBoundVec2.y - pdata->m_vBoundVec1.y)
 			{
-				SXParticlesEditor::FigureConeParam.x = pdata->BoundVec2.w;
-				SXParticlesEditor::FigureConeParam.y = pdata->BoundVec1.w;
-				SXParticlesEditor::FigureConeParam.z = pdata->BoundVec2.y - pdata->BoundVec1.y;
+				SXParticlesEditor::FigureConeParam.x = pdata->m_vBoundVec2.w;
+				SXParticlesEditor::FigureConeParam.y = pdata->m_vBoundVec1.w;
+				SXParticlesEditor::FigureConeParam.z = pdata->m_vBoundVec2.y - pdata->m_vBoundVec1.y;
 
 				SGCore_FCreateCone(SXParticlesEditor::FigureConeParam.x, SXParticlesEditor::FigureConeParam.y, SXParticlesEditor::FigureConeParam.z, &SXParticlesEditor::FigureCone, 20);
 			}
 
-			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(pdata->BoundVec1.x, pdata->BoundVec2.y, pdata->BoundVec1.z));
+			pDXdevice->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)SMMatrixTranslation(pdata->m_vBoundVec1.x, pdata->m_vBoundVec2.y, pdata->m_vBoundVec1.z));
 			SXParticlesEditor::FigureCone->DrawSubset(0);
 		}
 

@@ -1529,6 +1529,10 @@ void CGreen::save(const char *szPath)
 
 	FILE *pFile = fopen(szPath, "wb");
 
+	fwrite(SX_GREEN_MAGIC_WORD, sizeof(char)* strlen(SX_GREEN_MAGIC_WORD), 1, pFile);
+	uint32_t uiFmtVersion = SX_GREEN_FILE_FORMAT_VERSION;
+	fwrite(&uiFmtVersion, sizeof(uint32_t), 1, pFile);
+
 	int32_t iCountModel = m_aGreens.size();
 	fwrite(&iCountModel, sizeof(int32_t), 1, pFile);
 
@@ -1583,16 +1587,28 @@ void CGreen::save(const char *szPath)
 		fwrite(&m_aGreens[i]->m_uiCountObj, sizeof(uint32_t), 1, pFile);
 		fwrite(&(m_aGreens[i]->m_pAllTrans[0]), sizeof(CGreenDataVertex), m_aGreens[i]->m_uiCountObj, pFile);
 
+		uint32_t uiCountBytesAllSplits = 0;
 		Array<CSegment*> aQueue;
-		int iCount = 0;
+		uint32_t uiCountSplits = 0;
 		aQueue.push_back(m_aGreens[i]->m_pSplitsTree);
 
-		while (aQueue.size() > iCount)
+		while (aQueue.size() > uiCountSplits)
 		{
-			saveSplit(aQueue[iCount], pFile, &aQueue);
+			uiCountBytesAllSplits += getCountBytes4SaveSplit(aQueue[uiCountSplits], pFile, &aQueue);
+			++uiCountSplits;
+		}
 
-			//aQueue.erase(0);
-			++iCount;
+		fwrite(&uiCountBytesAllSplits, sizeof(uint32_t), 1, pFile);
+		fwrite(&uiCountSplits, sizeof(uint32_t), 1, pFile);
+
+		aQueue.clearFast();
+		uiCountSplits = 0;
+		aQueue.push_back(m_aGreens[i]->m_pSplitsTree);
+
+		while (aQueue.size() > uiCountSplits)
+		{
+			saveSplit(aQueue[uiCountSplits], pFile, &aQueue);
+			++uiCountSplits;
 		}
 	}
 
@@ -1640,11 +1656,51 @@ void CGreen::saveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQ
 	}
 }
 
+uint32_t CGreen::getCountBytes4SaveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue)
+{
+	uint32_t uiCountBytes = (sizeof(float3_t)* 4) + sizeof(uint32_t)+sizeof(int8_t);
+
+	if (pSplit->m_idNonEnd)
+	{
+		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
+		{
+			if (pSplit->m_aSplits[i])
+				pQueue->push_back(pSplit->m_aSplits[i]);
+		}
+	}
+	else
+	{
+		uiCountBytes += sizeof(ID)* pSplit->m_iCountObj;
+	}
+
+	return uiCountBytes;
+}
+
 //**************************************************************************
 
-void CGreen::load(const char *szPath)
+bool CGreen::load(const char *szPath)
 {
 	FILE *pFile = fopen(szPath, "rb");
+
+	uint64_t ui64Magic;
+	fread(&ui64Magic, sizeof(uint64_t), 1, pFile);
+
+	if (ui64Magic != SX_GREEN_MAGIC_NUM)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "file [%s] is not green\n", szPath);
+		fclose(pFile);
+		return false;
+	}
+
+	uint32_t uiFmtVersion;
+	fread(&uiFmtVersion, sizeof(uint32_t), 1, pFile);
+
+	if (uiFmtVersion != SX_GREEN_FILE_FORMAT_VERSION)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "file [%s] have unduported version %d\n", szPath, uiFmtVersion);
+		fclose(pFile);
+		return false;
+	}
 
 	char aStr[3][1024];
 	aStr[0][0] = 0;
@@ -1750,6 +1806,25 @@ void CGreen::load(const char *szPath)
 		pGreen->m_pAllTrans.resize(pGreen->m_uiCountObj);
 		fread(&(pGreen->m_pAllTrans[0]), sizeof(CGreenDataVertex), pGreen->m_uiCountObj, pFile);
 
+		uint32_t uiCountBytesAllSplits;
+		uint32_t uiCountSplits;
+
+		fread(&uiCountBytesAllSplits, sizeof(uint32_t), 1, pFile);
+		fread(&uiCountSplits, sizeof(uint32_t), 1, pFile);
+
+		long lCurrPos = ftell(pFile);
+		fseek(pFile, 0, SEEK_END);
+		long lLastSize = ftell(pFile) - lCurrPos;
+
+		if (lLastSize < uiCountBytesAllSplits)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "file [%s] damaged, lacks %d bytes \n", szPath, uiCountBytesAllSplits - lLastSize);
+			fclose(pFile);
+			return false;
+		}
+
+		fseek(pFile, lCurrPos, SEEK_SET);
+
 		Array<CSegment**> aQueue;
 		int iCount = 0;
 		aQueue.push_back(&(pGreen->m_pSplitsTree));
@@ -1775,6 +1850,8 @@ void CGreen::load(const char *szPath)
 	}
 
 	fclose(pFile);
+
+	return true;
 }
 
 void CGreen::loadSplit(CSegment **ppSplit, FILE *pFile, Array<CSegment**> *pQueue)
