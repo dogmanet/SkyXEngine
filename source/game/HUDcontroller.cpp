@@ -63,7 +63,7 @@ void CHUDcontroller::loadMap(const char *szName)
 {
 	// /hud/levels/stalker_atp.png
 	float3 vMin, vMax;
-	SGeom_ModelsGetMinMax(&vMin, &vMax);
+	SGeom_GetMinMax(&vMin, &vMax);
 
 	m_vLevelMin = vMin;
 	m_vLevelMax = vMax;

@@ -28,9 +28,9 @@ SX_LIB_API long SLevel_0GetVersion()
 	return SXLEVEL_VERSION;
 }
 
-SX_LIB_API void SLevel_Dbg_Set(report_func rf)
+SX_LIB_API void SLevel_Dbg_Set(report_func fnFunc)
 {
-	g_fnReportf = rf;
+	g_fnReportf = fnFunc;
 }
 
 SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
@@ -108,16 +108,16 @@ SX_LIB_API void SLevel_SaveParticles()
 
 //##########################################################################
 
-SX_LIB_API void SLevel_AmbientSndAdd(const char* path)
+SX_LIB_API void SLevel_AmbientSndAdd(const char *szPath)
 {
 	SL_PRECOND(_VOID);
-	g_pLevel->ambientSndAdd(path);
+	g_pLevel->ambientSndAdd(szPath);
 }
 
-SX_LIB_API void SLevel_AmbientSndGet(ID id, char* path)
+SX_LIB_API void SLevel_AmbientSndGet(ID id, char *szPath)
 {
 	SL_PRECOND(_VOID);
-	g_pLevel->ambientSndGet(id, path);
+	g_pLevel->ambientSndGet(id, szPath);
 }
 
 SX_LIB_API UINT SLevel_AmbientSndGetCount()
@@ -159,10 +159,10 @@ SX_LIB_API bool SLevel_AmbientSndGetPlaying()
 
 //#############################################################################
 
-SX_LIB_API void SLevel_WeatherLoad(const char* path)
+SX_LIB_API void SLevel_WeatherLoad(const char *szPath)
 {
 	SL_PRECOND(_VOID);
-	g_pLevel->weatherLoad(path);
+	g_pLevel->weatherLoad(szPath);
 }
 
 SX_LIB_API void SLevel_WeatherUpdate()
@@ -197,7 +197,7 @@ SX_LIB_API bool SLevel_WeatherSndIsPlaying()
 
 //#############################################################################
 
-SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo * pInfo)
+SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo *pInfo)
 {
 	WIN32_FIND_DATA fd;
 	bool bFound = false;
@@ -241,22 +241,22 @@ SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo * pInfo)
 	strncpy(pInfo->m_szName, fd.cFileName, MAX_LEVEL_STRING - 1);
 
 	{
-		char tmppathlevel[1024];
-		sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
+		char szFullPath[1024];
+		sprintf(szFullPath, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
 
-		ISXConfig *config = Core_OpConfig(tmppathlevel);
-		if(config->keyExists("level", "local_name"))
+		ISXConfig *pConfig = Core_OpConfig(szFullPath);
+		if (pConfig->keyExists("level", "local_name"))
 		{
-			strncpy(pInfo->m_szLocalName, config->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+			strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
 		}
 		else
 		{
 			strncpy(pInfo->m_szLocalName, fd.cFileName, MAX_LEVEL_STRING - 1);
 		}
-		mem_release(config);
+		mem_release(pConfig);
 
-		sprintf(tmppathlevel, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
-		pInfo->m_bHasPreview = FileExistsFile(tmppathlevel);
+		sprintf(szFullPath, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
+		pInfo->m_bHasPreview = FileExistsFile(szFullPath);
 	}
 
 	return(TRUE);

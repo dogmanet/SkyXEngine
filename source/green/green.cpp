@@ -973,7 +973,7 @@ ID CGreen::generate(const char *szName,
 	}
 
 	//! есть ли статическая геометрия на уровне
-	if (SGeom_ModelsGetCount() > 0)
+	if (SGeom_GetCountModels() > 0)
 	{
 		CModel *pGreen = new CModel();
 		sprintf(pGreen->m_szName, szName);
@@ -1019,7 +1019,7 @@ ID CGreen::generate(const char *szName,
 		mem_release(pBound);
 
 		float3 vLevelMin, vLevelMax;
-		SGeom_ModelsGetMinMax(&vLevelMin, &vLevelMax);
+		SGeom_GetMinMax(&vLevelMin, &vLevelMax);
 
 		if (STR_VALIDATE(szTexMask))
 		{
@@ -1059,7 +1059,7 @@ ID CGreen::generate(const char *szName,
 bool CGreen::genByTex(CModel *pGreen, ID idMask, bool shouldAveragedRGB, float3 *pGreenMin, float3 *pGreenMax, float fDensity)
 {
 	float3 vLeveMin, vLeveMax;
-	SGeom_ModelsGetMinMax(&vLeveMin, &vLeveMax);
+	SGeom_GetMinMax(&vLeveMin, &vLeveMax);
 	float3 vPosMin = vLeveMin;
 	float3 vPosMax = vLeveMax;
 

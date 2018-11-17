@@ -150,7 +150,7 @@ CWeather::CWeather()
 	m_ulTimeMlsecOld = m_ulTimeMlsecCurr = 0;
 
 	float3 vGeomMin, vGeomMax;
-	SGeom_ModelsGetMinMax(&vGeomMin, &vGeomMax);
+	SGeom_GetMinMax(&vGeomMin, &vGeomMax);
 	m_fLevelMaxY = vGeomMax.y + 10.f;
 
 	m_idEffRain = SPE_EffectGetByName("rain");
@@ -193,7 +193,7 @@ CWeather::~CWeather()
 void CWeather::load(const char *szPath)
 {
 	float3 vGeomMin, vGeomMax;
-	SGeom_ModelsGetMinMax(&vGeomMin, &vGeomMax);
+	SGeom_GetMinMax(&vGeomMin, &vGeomMax);
 	m_fLevelMaxY = vGeomMax.y + 10.f;
 
 	if (szPath == 0 || m_aTimeSections.size() > 0)

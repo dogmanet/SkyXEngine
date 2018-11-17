@@ -187,8 +187,8 @@ typedef void(*g_func_mtl_set) (ID id, float4x4 *pWorld);
 */
 typedef ID(*g_func_mtl_load) (const char *szName,	int iMtlType);
 
-//! получить сорт материала, по дефолту 0
-typedef int(*g_func_mtl_get_sort) (ID id);
+//! является ли материал полупрозрачным
+typedef bool(*g_func_mtl_is_transparency) (ID id);
 
 //! получить физический тип материала
 typedef int(*g_func_mtl_get_physic_type)(ID id);
@@ -210,8 +210,8 @@ SX_LIB_API void SGCore_MtlSet(ID id, float4x4 *pWorld);
 //! \copydoc g_func_mtl_load
 SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType);
 
-//! \copydoc g_func_mtl_get_sort
-SX_LIB_API int SGCore_MtlGetSort(ID id);
+//! \copydoc g_func_mtl_is_transparency
+SX_LIB_API bool SGCore_MtlIsTransparency(ID id);
 
 //! \copydoc g_func_mtl_get_physic_type
 SX_LIB_API int SGCore_MtlGetPhysicType(ID id);
@@ -280,19 +280,19 @@ SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float factor_adapted);
 /*! \name Переопределение функций
 !@{*/
 
-//! переназначение g_func_dip
+//! переназначение #g_func_dip
 SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip fnFunc);
 
-//! переназначение g_func_mtl_set
+//! переназначение #g_func_mtl_set
 SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set fnFunc);
 
-//! переназначение g_func_mtl_load
+//! переназначение #g_func_mtl_load
 SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load fnFunc);
 
-//! переназначение g_func_mtl_get_sort
-SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort fnFunc);
+//! переназначение #g_func_mtl_is_transparency
+SX_LIB_API void SGCore_SetFunc_MtlIsTransparency(g_func_mtl_is_transparency fnFunc);
 
-//! переназначение g_func_mtl_get_physic_type
+//! переназначение #g_func_mtl_get_physic_type
 SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type fnFunc);
 
 //! переназначение g_func_mtl_group_render_is_singly
@@ -680,14 +680,14 @@ struct ISXDataStaticModel : public IBaseObject
 	IDirect3DVertexBuffer9 *m_pVertexBuffer;//!< вершиный буфер
 	IDirect3DIndexBuffer9 *m_pIndexBuffer;	//!< индексный буфер
 
-	UINT m_uiSubsetCount;		//!< количество подгрупп
-	char **m_ppTextures;		//!< массив имен текстур без расширения
-	UINT *m_pStartIndex;		//!< массив стартовых позиций индексов для каждой подгруппы
-	UINT *m_pIndexCount;		//!< массив количества индексов для каждой подгруппы
-	UINT *m_pStartVertex;		//!< массив стартовых позиций вершин для каждой подгруппы
-	UINT *m_pVertexCount;		//!< массив количества вершин для каждой подгруппы
-	UINT m_uiAllIndexCount;		//!< общее количество индексов
-	UINT m_uiAllVertexCount;	//!< общее количество вершин
+	uint32_t m_uiSubsetCount;		//!< количество подгрупп
+	char **m_ppTextures;			//!< массив имен текстур без расширения
+	uint32_t *m_pStartIndex;		//!< массив стартовых позиций индексов для каждой подгруппы
+	uint32_t *m_pIndexCount;		//!< массив количества индексов для каждой подгруппы
+	uint32_t *m_pStartVertex;		//!< массив стартовых позиций вершин для каждой подгруппы
+	uint32_t *m_pVertexCount;		//!< массив количества вершин для каждой подгруппы
+	uint32_t m_uiAllIndexCount;		//!< общее количество индексов
+	uint32_t m_uiAllVertexCount;	//!< общее количество вершин
 
 	float4_t m_vBSphere;
 	float3_t m_vBBMax, m_vBBMin;
@@ -778,23 +778,34 @@ SX_LIB_API IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl();
 /*! Простой объект трансформаций с минимальным описанием.
  \note Для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
 */
-struct ISXTransObject : public IBaseObject
+struct ITransObject : public IBaseObject
 {
-	virtual ~ISXTransObject(){};
+	virtual ~ITransObject(){};
 
 	SX_ALIGNED_OP_MEM
 
 	//! просчет мировой матрицы трансформации на основе поворотов масштабирования и позиции
-	virtual inline float4x4* calcWorld() = 0;	
+	virtual const float4x4* calcWorld() = 0;	
 
+	virtual void setPosition(const float3 *pPos) = 0;
+	virtual void setRotation(const float3 *pRot) = 0;
+	virtual void setScale(const float3 *pScale) = 0;
+
+	virtual const float3* getPosition(float3 *pPos=0) = 0;
+	virtual const float3* getRotation(float3 *pRot = 0) = 0;
+	virtual const float3* getScale(float3 *pScale = 0) = 0;
+
+/*
+protected:
 	float3 m_vPosition;	//!< позиция
 	float3 m_vRotation;	//!< повороты
 	float3 m_vScale;	//!< масштабирование
 	float4x4 m_mWorld;	//!< мировая матрица на основе поворотов масштабирования и позиции
+	*/
 };
 
-//! создать ISXTransObject
-SX_LIB_API ISXTransObject* SGCore_CrTransObject();	
+//! создать ITransObject
+SX_LIB_API ITransObject* SGCore_CrTransObject();	
 
 //! структура описывающая ограничивающий квадрат (а точнее параллелепипед) в пространстве экрана
 struct SXPosBBScreen
@@ -816,9 +827,9 @@ struct CBoundBox
 
 
 /*! класс ограничивающего объема
- \warning GetMinMax, GetSphere до вызова CalcWorldAndTrans возвращают нетрансформирвоанные данные
+ \warning #setMinMax, #setSphere до вызова #calcWorldAndTrans возвращают нетрансформирвоанные данные
 */
-class ISXBound : public virtual ISXTransObject
+class ISXBound : public virtual ITransObject
 {
 public:
 	virtual ~ISXBound(){};
@@ -828,20 +839,30 @@ public:
 	/*! Просчет ограничивающего объема по вершинному буферу*/
 	virtual void calcBound(
 		IDirect3DVertexBuffer9 *pVertexBuffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
-		DWORD dwCountVertex,	//!< количество вершин
-		DWORD dwBytePerVertex	//!< количество байт в вершине
+		int iCountVertex,		//!< количество вершин
+		int iBytePerVertex		//!< количество байт в вершине
+		) = 0;
+
+	virtual void calcBoundIndex(
+		IDirect3DVertexBuffer9 *pVertexBuffer,
+		uint32_t **ppArrIndex, 
+		uint32_t *pCountIndex,
+		int iCountSubset,
+		int iBytePerVertex
 		) = 0;
 
 	//! функция просчета мировой матрицы и трансформации минимума и максимума
-	virtual float4x4*  calcWorldAndTrans() = 0;
+	//virtual float4x4*  calcWorldAndTrans() = 0;
 
-	//! просчет структуры SXPosBBScreen 
+	virtual void resetTransform() = 0;
+
+	/*//! просчет структуры SXPosBBScreen 
 	virtual void getPosBBScreen(
 		SXPosBBScreen *res,		//!< инициализированная стркутура #SXPosBBScreen для записи
 		float3* campos,			//!< позиция наблюдателя
 		float3* sizemapdepth,	//!< размер карты глубины глябины для просчета float3(ширина, высота, максильная глубина)
 		float4x4* mat			//!< произведение видовой и проекционной матриц
-		) = 0;
+		) = 0;*/
 
 	//! установить экстремум, также просчитает и сферу
 	virtual void setMinMax(const float3 *pMin, const float3 *pMax) = 0;	
@@ -1250,6 +1271,9 @@ SX_LIB_API void SGCore_SkyBoxRender(
  Положение констатно.
  Используются обычные 2д текстуры.
 @{*/
+
+//! минимальный размер плоскости облаков (по обеим сторонам)
+#define SXGC_SKYCLOUDS_MIN_SIZE 1000.f
 
 //! создание
 SX_LIB_API void SGCore_SkyCloudsCr();		

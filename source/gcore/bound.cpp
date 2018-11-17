@@ -586,69 +586,227 @@ void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbm
 
 //##########################################################################
 
-float4x4* CSXTransObject::calcWorld()
+CTransObject::CTransObject()
 {
-	m_mWorld = SMMatrixScaling(m_vScale) * /*Rotation.GetMatrix()*/SMMatrixRotationX(m_vRotation.x) * SMMatrixRotationY(m_vRotation.y) * SMMatrixRotationZ(m_vRotation.z) * SMMatrixTranslation(m_vPosition);
+	m_vPosition = float3(0, 0, 0);
+	m_vRotation = float3(0, 0, 0);
+	m_vScale = float3(1, 1, 1);
+}
+
+const float4x4* CTransObject::calcWorld()
+{
+	m_mWorld = SMMatrixScaling(m_vScale) * SMMatrixRotationX(m_vRotation.x) * SMMatrixRotationY(m_vRotation.y) * SMMatrixRotationZ(m_vRotation.z) * SMMatrixTranslation(m_vPosition);
 	return &m_mWorld;
 }
+
+void CTransObject::setPosition(const float3 *pPos)
+{
+	if (pPos)
+		m_vPosition = *pPos;
+}
+
+void CTransObject::setRotation(const float3 *pRot)
+{
+	if (pRot)
+		m_vRotation = *pRot;
+}
+
+void CTransObject::setScale(const float3 *pScale)
+{
+	if (pScale)
+		m_vScale = *pScale;
+}
+
+
+const float3* CTransObject::getPosition(float3 *pPos)
+{
+	if (pPos)
+		*pPos = m_vPosition;
+
+	return &m_vPosition;
+}
+
+const float3* CTransObject::getRotation(float3 *pRot)
+{
+	if (pRot)
+		*pRot = m_vRotation;
+
+	return &m_vRotation;
+}
+
+const float3* CTransObject::getScale(float3 *pScale)
+{
+	if (pScale)
+		*pScale = m_vScale;
+
+	return &m_vScale;
+}
+
 
 //##########################################################################
 
-void CSXBound::calcBound(IDirect3DVertexBuffer9* vertex_buffer, DWORD count_vert, DWORD bytepervert)
+void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex)
 {
-	BYTE *V = 0;
-	HRESULT hr = 0;
+	BYTE *pVertex = 0;
+
+	calcWorld();
 	
-	if (vertex_buffer && SUCCEEDED(vertex_buffer->Lock(0, 0, (void **)&V, 0)))
+	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
 	{
-		float3_t tmppos = *(float3_t*)((char*)(V)+bytepervert * 0);
-		m_vMax = tmppos;
-		m_vMin = tmppos;
+		float3_t vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * 0);
+		m_vMaxOrigin = vPos;
+		m_vMinOrigin = vPos;
 
-		for (DWORD i = 0; i<count_vert; i++)
+		for (int i = 0; i<iCountVertex; ++i)
 		{
-			float3_t pos = *(float3_t*)((char*)(V)+bytepervert * i);
+			vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * i);
+			
+			if (vPos.x > m_vMaxOrigin.x)
+				m_vMaxOrigin.x = vPos.x;
 
-			if (pos.x > m_vMax.x)
-				m_vMax.x = pos.x;
+			if (vPos.y > m_vMaxOrigin.y)
+				m_vMaxOrigin.y = vPos.y;
 
-			if (pos.y > m_vMax.y)
-				m_vMax.y = pos.y;
-
-			if (pos.z > m_vMax.z)
-				m_vMax.z = pos.z;
+			if (vPos.z > m_vMaxOrigin.z)
+				m_vMaxOrigin.z = vPos.z;
 
 
-			if (pos.x < m_vMin.x)
-				m_vMin.x = pos.x;
+			if (vPos.x < m_vMinOrigin.x)
+				m_vMinOrigin.x = vPos.x;
 
-			if (pos.y < m_vMin.y)
-				m_vMin.y = pos.y;
+			if (vPos.y < m_vMinOrigin.y)
+				m_vMinOrigin.y = vPos.y;
 
-			if (pos.z < m_vMin.z)
-				m_vMin.z = pos.z;
+			if (vPos.z < m_vMinOrigin.z)
+				m_vMinOrigin.z = vPos.z;
+
+			vPos = SMVector3Transform(vPos, m_mWorld);
+
+			if (vPos.x > m_vMaxTransform.x)
+				m_vMaxTransform.x = vPos.x;
+
+			if (vPos.y > m_vMaxTransform.y)
+				m_vMaxTransform.y = vPos.y;
+
+			if (vPos.z > m_vMaxTransform.z)
+				m_vMaxTransform.z = vPos.z;
+
+
+			if (vPos.x < m_vMinTransform.x)
+				m_vMinTransform.x = vPos.x;
+
+			if (vPos.y < m_vMinTransform.y)
+				m_vMinTransform.y = vPos.y;
+
+			if (vPos.z < m_vMinTransform.z)
+				m_vMinTransform.z = vPos.z;
 		}
-		vertex_buffer->Unlock();
+		pVertexBuffer->Unlock();
 	}
 
-	m_vCenter = (m_vMin + m_vMax) * 0.5f;
-	m_fRadius = SMVector3Length(m_vCenter - m_vMax);
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+	m_vCenterTransform = (m_vMinTransform + m_vMaxTransform) * 0.5f;
+	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
 }
 
-float4x4* CSXBound::calcWorldAndTrans()
+void CBound::calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
+{
+	if (!ppArrIndex || pCountIndex || iCountSubset <= 0)
+		return;
+
+	BYTE *pVertex = 0;
+
+	calcWorld();
+
+	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
+	{
+		float3_t vPos = *(float3_t*)((BYTE*)(pVertex)+iBytePerVertex * ppArrIndex[0][0]);
+		m_vMaxOrigin = vPos;
+		m_vMinOrigin = vPos;
+
+		for (int i = 0; i<iCountSubset; ++i)
+		{
+			for (int k = 0; k<pCountIndex[i]; ++k)
+			{
+				vPos = *(float3_t*)((BYTE*)(pVertex)+iBytePerVertex * ppArrIndex[i][k]);
+
+				if (vPos.x > m_vMaxOrigin.x)
+					m_vMaxOrigin.x = vPos.x;
+
+				if (vPos.y > m_vMaxOrigin.y)
+					m_vMaxOrigin.y = vPos.y;
+
+				if (vPos.z > m_vMaxOrigin.z)
+					m_vMaxOrigin.z = vPos.z;
+
+
+				if (vPos.x < m_vMinOrigin.x)
+					m_vMinOrigin.x = vPos.x;
+
+				if (vPos.y < m_vMinOrigin.y)
+					m_vMinOrigin.y = vPos.y;
+
+				if (vPos.z < m_vMinOrigin.z)
+					m_vMinOrigin.z = vPos.z;
+
+				vPos = SMVector3Transform(vPos, m_mWorld);
+
+				if (vPos.x > m_vMaxTransform.x)
+					m_vMaxTransform.x = vPos.x;
+
+				if (vPos.y > m_vMaxTransform.y)
+					m_vMaxTransform.y = vPos.y;
+
+				if (vPos.z > m_vMaxTransform.z)
+					m_vMaxTransform.z = vPos.z;
+
+
+				if (vPos.x < m_vMinTransform.x)
+					m_vMinTransform.x = vPos.x;
+
+				if (vPos.y < m_vMinTransform.y)
+					m_vMinTransform.y = vPos.y;
+
+				if (vPos.z < m_vMinTransform.z)
+					m_vMinTransform.z = vPos.z;
+			}
+		}
+		pVertexBuffer->Unlock();
+	}
+
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+	m_vCenterTransform = (m_vMinTransform + m_vMaxTransform) * 0.5f;
+	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
+
+}
+
+/*float4x4* CBound::calcWorldAndTrans()
 {
 	calcWorld();
 
-	m_vMax = SMVector3Transform(m_vMax, m_mWorld);
-	m_vMin = SMVector3Transform(m_vMin, m_mWorld);
+	m_vMaxTransform = SMVector3Transform(m_vMaxOrigin, m_mWorld);
+	m_vMinTransform = SMVector3Transform(m_vMinOrigin, m_mWorld);
 
-	m_vCenter = (m_vMin + m_vMax) * 0.5f;
+	m_vCenterTransform = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
 
-	m_fRadius = SMVector3Length(m_vCenter - m_vMax);
+	m_fRadiusTransform = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
 	return &m_mWorld;
+}*/
+
+void CBound::resetTransform()
+{
+	m_vMinTransform = m_vMinOrigin;
+	m_vMaxTransform = m_vMaxOrigin;
+
+	m_vCenterTransform = m_vCenterOrigin;
+	m_fRadiusTransform = m_fRadiusOrigin;
 }
 
-void CSXBound::getPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat)
+/*void CBound::getPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat)
 {
 	float3 max,min;
 	max = m_vMax;
@@ -825,54 +983,68 @@ void CSXBound::getPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizema
 
 	res->IsVisible = true;
 
-		/*if(campos->x > Min.x && campos->y > Min.y && campos->z > Min.z   &&   campos->x < Max.x && campos->y < Max.y && campos->z < Max.z)
-			res->IsIn = true;*/
-}
+		//if(campos->x > Min.x && campos->y > Min.y && campos->z > Min.z   &&   campos->x < Max.x && campos->y < Max.y && campos->z < Max.z)
+			//res->IsIn = true;
+}*/
 
-void CSXBound::setMinMax(const float3* min, const float3* max)
+void CBound::setMinMax(const float3* min, const float3* max)
 {
-	m_vMin = *min;
-	m_vMax = *max;
+	m_vMinOrigin = *min;
+	m_vMaxOrigin = *max;
 
 	/*float3 vec = (Max - Min) * 0.5f;
 	Radius = sqrt(vec.x * vec.x + vec.y * vec.y + vec.x * vec.z);*/
 
-	m_vCenter = (m_vMin + m_vMax) * 0.5f;
-	m_fRadius = SMVector3Length(m_vCenter - m_vMax);
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+
+	m_vMinTransform = m_vMinOrigin;
+	m_vMaxTransform = m_vMaxOrigin;
+
+	m_vCenterTransform = m_vCenterOrigin;
+	m_fRadiusTransform = m_fRadiusOrigin;
 };
 
-void CSXBound::getMinMax(float3* min, float3* max) const
+void CBound::getMinMax(float3* min, float3* max) const
 {
-	*min = m_vMin; *max = m_vMax;
+	*min = m_vMinTransform; *max = m_vMaxTransform;
 };
 
-void CSXBound::setSphere(const float3* center, float radius)
+void CBound::setSphere(const float3* center, float radius)
 {
-	m_vCenter = *center;
-	m_fRadius = radius;
+	m_vCenterOrigin = *center;
+	m_fRadiusOrigin = radius;
 
-	m_vMin = m_vCenter - float3(m_fRadius, m_fRadius, m_fRadius);
-	m_vMax = m_vCenter + float3(m_fRadius, m_fRadius, m_fRadius);
+	m_vMinOrigin = m_vCenterOrigin - float3(m_fRadiusOrigin, m_fRadiusOrigin, m_fRadiusOrigin);
+	m_vMaxOrigin = m_vCenterOrigin + float3(m_fRadiusOrigin, m_fRadiusOrigin, m_fRadiusOrigin);
+
+
+	m_vMinTransform = m_vMinOrigin;
+	m_vMaxTransform = m_vMaxOrigin;
+
+	m_vCenterTransform = m_vCenterOrigin;
+	m_fRadiusTransform = m_fRadiusOrigin;
 };
 
-void CSXBound::getSphere(float3* center, float* radius) const
+void CBound::getSphere(float3* center, float* radius) const
 {
-	*center = m_vCenter;
-	*radius = m_fRadius;
+	*center = m_vCenterTransform;
+	*radius = m_fRadiusTransform;
 };
 
-bool CSXBound::isPointInSphere(const float3* point) const
+bool CBound::isPointInSphere(const float3* point) const
 {
-	float distsqr = SMVector3Dot(m_vCenter - *point);
-	if (distsqr <= m_fRadius*m_fRadius)
+	float distsqr = SMVector3Dot(m_vCenterTransform - *point);
+	if (distsqr <= m_fRadiusTransform*m_fRadiusTransform)
 		return true;
 	else
 		return false;
 }
 
-bool CSXBound::isPointInBox(const float3* point) const
+bool CBound::isPointInBox(const float3* point) const
 {
-	if (point->x >= m_vMin.x && point->y >= m_vMin.y && point->z >= m_vMin.z && point->x <= m_vMax.x && point->y <= m_vMax.y && point->z <= m_vMax.z)
+	if (point->x >= m_vMinTransform.x && point->y >= m_vMinTransform.y && point->z >= m_vMinTransform.z && point->x <= m_vMaxTransform.x && point->y <= m_vMaxTransform.y && point->z <= m_vMaxTransform.z)
 		return true;
 	else
 		return false;

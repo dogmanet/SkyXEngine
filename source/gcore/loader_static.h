@@ -41,56 +41,54 @@ struct DataStaticModel : public ISXDataStaticModel
 
 	ISXDataStaticModel* getCopy()
 	{
-		ISXDataStaticModel* nm = new DataStaticModel();
-		nm->m_ppTextures = new char*[m_uiSubsetCount];
-		for (DWORD i = 0; i < m_uiSubsetCount; i++)
-		{
-			nm->m_ppTextures[i] = new char[strlen(m_ppTextures[i]) + 1];
-			sprintf(nm->m_ppTextures[i], "%s", m_ppTextures[i]);
-		}
-		nm->m_uiSubsetCount = m_uiSubsetCount;
-		nm->m_pStartIndex = new UINT[m_uiSubsetCount];
-		memcpy(nm->m_pStartIndex, m_pStartIndex, sizeof(UINT)*m_uiSubsetCount);
-		nm->m_pIndexCount = new UINT[m_uiSubsetCount];
-		memcpy(nm->m_pIndexCount, m_pIndexCount, sizeof(UINT)*m_uiSubsetCount);
-		nm->m_pStartVertex = new UINT[m_uiSubsetCount];
-		memcpy(nm->m_pStartVertex, m_pStartVertex, sizeof(UINT)*m_uiSubsetCount);
-		nm->m_pVertexCount = new UINT[m_uiSubsetCount];
-		memcpy(nm->m_pVertexCount, m_pVertexCount, sizeof(UINT)*m_uiSubsetCount);
+		ISXDataStaticModel *pModelCopy = new DataStaticModel();
 
-		DWORD tmpvert = 0;
-		DWORD tmpind = 0;
-		for (DWORD i = 0; i < m_uiSubsetCount; i++)
+		//не все данные копируюцо!!!!!!!!!!!!!
+		pModelCopy->m_uiAllVertexCount = m_uiAllVertexCount;
+		pModelCopy->m_uiAllIndexCount = m_uiAllIndexCount;
+
+		pModelCopy->m_vBBMax = m_vBBMax;
+		pModelCopy->m_vBBMin = m_vBBMin;
+		pModelCopy->m_vBSphere = m_vBSphere;
+
+		pModelCopy->m_ppTextures = new char*[m_uiSubsetCount];
+		for (int i = 0; i < m_uiSubsetCount; ++i)
 		{
-			tmpvert += nm->m_pVertexCount[i];
-			tmpind += nm->m_pIndexCount[i];
+			pModelCopy->m_ppTextures[i] = new char[strlen(m_ppTextures[i]) + 1];
+			sprintf(pModelCopy->m_ppTextures[i], "%s", m_ppTextures[i]);
 		}
 
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* tmpvert, NULL, NULL, D3DPOOL_MANAGED, &nm->m_pVertexBuffer, 0);
-		//nm->ArrVertBuf = new vertex_static[tmpvert];
-		vertex_static * dstData, *srcData;
-		nm->m_pVertexBuffer->Lock(0, 0, (void**)&dstData, 0);
-		m_pVertexBuffer->Lock(0, 0, (void**)&srcData, 0);
+		pModelCopy->m_uiSubsetCount = m_uiSubsetCount;
+		pModelCopy->m_pStartIndex = new UINT[m_uiSubsetCount];
+		memcpy(pModelCopy->m_pStartIndex, m_pStartIndex, sizeof(UINT)*m_uiSubsetCount);
+		pModelCopy->m_pIndexCount = new UINT[m_uiSubsetCount];
+		memcpy(pModelCopy->m_pIndexCount, m_pIndexCount, sizeof(UINT)*m_uiSubsetCount);
+		pModelCopy->m_pStartVertex = new UINT[m_uiSubsetCount];
+		memcpy(pModelCopy->m_pStartVertex, m_pStartVertex, sizeof(UINT)*m_uiSubsetCount);
+		pModelCopy->m_pVertexCount = new UINT[m_uiSubsetCount];
+		memcpy(pModelCopy->m_pVertexCount, m_pVertexCount, sizeof(UINT)*m_uiSubsetCount);
 
-		memcpy(dstData, srcData, sizeof(vertex_static)* tmpvert);
-		//memcpy(nm->ArrVertBuf, srcData, sizeof(vertex_static)* tmpvert);
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
+		BYTE *pDestData, *pSrcData;
+		pModelCopy->m_pVertexBuffer->Lock(0, 0, (void**)&pDestData, 0);
+		m_pVertexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
 
-		nm->m_pVertexBuffer->Unlock();
+		memcpy(pDestData, pSrcData, sizeof(vertex_static)* m_uiAllVertexCount);
+
+		pModelCopy->m_pVertexBuffer->Unlock();
 		m_pVertexBuffer->Unlock();
 
 
-		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* tmpind, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &nm->m_pIndexBuffer, 0);
-		//nm->ArrIndBuf = new UINT[tmpind];
-		nm->m_pIndexBuffer->Lock(0, 0, (void**)&dstData, 0);
-		m_pIndexBuffer->Lock(0, 0, (void**)&srcData, 0);
+		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &pModelCopy->m_pIndexBuffer, 0);
+		pModelCopy->m_pIndexBuffer->Lock(0, 0, (void**)&pDestData, 0);
+		m_pIndexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
 
-		memcpy(dstData, srcData, sizeof(UINT)* tmpind);
-		//memcpy(nm->ArrIndBuf, srcData, sizeof(UINT)* tmpind);
+		memcpy(pDestData, pSrcData, sizeof(UINT)* m_uiAllIndexCount);
 
-		nm->m_pIndexBuffer->Unlock();
+		pModelCopy->m_pIndexBuffer->Unlock();
 		m_pIndexBuffer->Unlock();
 
-		return nm;
+		return pModelCopy;
 	}
 
 	DataStaticModel::~DataStaticModel()
@@ -98,7 +96,7 @@ struct DataStaticModel : public ISXDataStaticModel
 		mem_release_del(m_pVertexBuffer);
 		mem_release_del(m_pIndexBuffer);
 
-		for (DWORD i = 0; i < m_uiSubsetCount; ++i)
+		for (int i = 0; i < m_uiSubsetCount; ++i)
 		{
 			mem_delete_a(m_ppTextures[i]);
 		}

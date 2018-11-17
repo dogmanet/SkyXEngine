@@ -25,7 +25,8 @@ half4 main(VSO_PP IN):COLOR0
 	half fLayer = NormalDecodeLayer(vNormal.xyz);
 	
 	//цвет приводим к sRGB
-	half4 vColor = pow(tex2D(g_sColor,IN.vTexUV), 2.2);
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
+	vColor.rgb = pow(vColor.rgb, 2.2);
 	half4 vParameters = tex2D(g_sParameters,IN.vTexUV);
 
 	half4 vAmbient = tex2D(g_sAmbient,IN.vTexUV);
@@ -54,5 +55,5 @@ half4 main(VSO_PP IN):COLOR0
 	vColor.rgb /= (fAdaptedLum + vColor.rgb);
 	
 	//приводим цвет к линейному пространству
-	return pow(vColor, 1.0/2.2);
+	return half4(pow(vColor.rgb, 1.0/2.2), vColor.a);
 }

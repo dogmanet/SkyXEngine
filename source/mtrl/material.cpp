@@ -1368,7 +1368,7 @@ UINT CMaterials::mtlGetSort(ID id)
 	
 	UINT uiSort = 0;
 	uiSort |= (m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isTransparent ? MTLTYPE_TRANSPARENCY : MTLSORT_OPAQUE);
-	uiSort |= (m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_isUnlit ? MTLTYPE_ULIT : MTLSORT_LIGHTED);
+	uiSort |= (m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_isUnlit ? MTLTYPE_UNLIT : MTLSORT_LIGHTED);
 	return uiSort;
 }
 

@@ -222,7 +222,7 @@ LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, L
 
 LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	if (SGeom_ModelsGetCount() == 0)
+	if (SGeom_GetCountModels() == 0)
 	{
 		MessageBox(0, "Not found geomety!", "Not found geomety", 0);
 		return 0;

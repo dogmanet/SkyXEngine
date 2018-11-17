@@ -106,7 +106,6 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 
 	//сбрасываем все что необходимо для восстановления устройства
 	SGCore_OnLostDevice();
-	SGeom_OnLostDevice();
 	SGreen_OnLostDevice();
 	SLight_OnLostDevice();
 	SMtrl_OnLostDevice();
@@ -131,7 +130,6 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SLight_OnResetDevice();
 		SMtrl_OnResetDevice();
 		SGreen_OnResetDevice();
-		SGeom_OnResetDevice();
 		SPE_OnResetDevice();
 		SXGame_OnResetDevice();
 		SPP_OnDeviceReset();
@@ -154,7 +152,7 @@ void rfunc::ComVisibleForLight()
 				for (int k = 0; k<4; ++k)
 				{
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k) <= -1)
-						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_VisCaclObjAdd());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddVisCaclObj());
@@ -165,7 +163,7 @@ void rfunc::ComVisibleForLight()
 					if (SLight_CountUpdateUpdate(i, &gdata::vConstCurrCamPos, k))
 					{
 						SLight_UpdateGFrustums(i, k, &gdata::vConstCurrCamPos, &gdata::vConstCurrCamDir);
-						SGeom_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+						SGeom_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 						SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
 						SXAnim_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k));
 					}
@@ -176,7 +174,7 @@ void rfunc::ComVisibleForLight()
 				if (SLight_GetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 				{
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0) <= -1)
-						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
+						SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, 0, SGeom_VisCaclObjAdd());
 
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, 0, SGreen_AddVisCaclObj());
@@ -184,7 +182,7 @@ void rfunc::ComVisibleForLight()
 					if (SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, 0) <= -1)
 						SLight_SetIDArr(i, RENDER_IDARRCOM_ANIM, 0, SXAnim_ModelsAddArrForCom());
 
-					SGeom_ModelsComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
+					SGeom_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
 					SGreen_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
 					SXAnim_ModelsComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, 0));
 				}
@@ -196,7 +194,7 @@ void rfunc::ComVisibleForLight()
 					for (int k = 0; k < 6; k++)
 					{
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k) <= -1)
-							SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+							SLight_SetIDArr(i, RENDER_IDARRCOM_GEOM, k, SGeom_VisCaclObjAdd());
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) <= -1)
 							SLight_SetIDArr(i, RENDER_IDARRCOM_GREEN, k, SGreen_AddVisCaclObj());
@@ -206,7 +204,7 @@ void rfunc::ComVisibleForLight()
 
 						if (SLight_GetCubeEdgeEnable(i, k))
 						{
-							SGeom_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+							SGeom_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 							SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
 							SXAnim_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, SLight_GetIDArr(i, RENDER_IDARRCOM_ANIM, k));
 						}
@@ -224,8 +222,8 @@ void rfunc::ComVisibleForLight()
 		{
 			for (int k = 0; k<4; ++k)
 			{
-				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
-					SGeom_ModelsDelArrForCom(idTempArr);
+				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_VisCaclObjExists(idTempArr))
+					SGeom_VisCaclObjDelete(idTempArr);
 
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsVisCaclObj(idTempArr))
 					SGreen_DelVisCaclObj(idTempArr);
@@ -236,8 +234,8 @@ void rfunc::ComVisibleForLight()
 		}
 		else if (SLight_DelGetType(iCurrKey) == LTYPE_LIGHT_DIR)
 		{
-			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, 0)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
-				SGeom_ModelsDelArrForCom(idTempArr);
+			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, 0)) >= 0 && SGeom_VisCaclObjExists(idTempArr))
+				SGeom_VisCaclObjDelete(idTempArr);
 
 			if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, 0)) >= 0 && SGreen_ExistsVisCaclObj(idTempArr))
 				SGreen_DelVisCaclObj(idTempArr);
@@ -250,8 +248,8 @@ void rfunc::ComVisibleForLight()
 		{
 			for (int k = 0; k<6; k++)
 			{
-				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_ModelsExistsArrForCom(idTempArr))
-					SGeom_ModelsDelArrForCom(idTempArr);
+				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GEOM, k)) >= 0 && SGeom_VisCaclObjExists(idTempArr))
+					SGeom_VisCaclObjDelete(idTempArr);
 
 				if ((idTempArr = SLight_DelGetIDArr(iCurrKey, RENDER_IDARRCOM_GREEN, k)) >= 0 && SGreen_ExistsVisCaclObj(idTempArr))
 					SGreen_DelVisCaclObj(idTempArr);
@@ -267,8 +265,13 @@ void rfunc::ComVisibleForLight()
 
 void rfunc::ComVisibleForCamera()
 {
-	if (SGeom_ModelsGetCount() > 0)
-		SGeom_ModelsComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
+	//if (SGeom_ModelsGetCount() > 0)
+	if (GetAsyncKeyState('T'))
+	{
+		int qwerty = 0;
+	}
+	else
+		SGeom_ComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
 
 	if (SGreen_GetCount() > 0)
 		SGreen_ComVisible(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
@@ -283,12 +286,12 @@ void rfunc::ComVisibleReflection()
 	if (r_reflection_render && (*r_reflection_render) == REFLECTION_RENDER_ONLY_SKY)
 		return;
 
-	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
+	for (int i = 0; i < SGeom_GetCountModels(); ++i)
 	{
-		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
+		for (int k = 0; k < SGeom_ModelGetCountGroups(i); ++k)
 		{
-			ID idMat = SGeom_ModelsMGetGroupIDMat(i, k);
-			MTLTYPE_REFLECT typeReflection = SMtrl_MtlGetTypeReflection(SGeom_ModelsMGetGroupIDMat(i, k));
+			ID idMat = SGeom_ModelGetGroupMtrlID(i, k);
+			MTLTYPE_REFLECT typeReflection = SMtrl_MtlGetTypeReflection(SGeom_ModelGetGroupMtrlID(i, k));
 			float3_t center;
 
 			if (typeReflection == MTLTYPE_REFLECT_PLANE)
@@ -296,12 +299,12 @@ void rfunc::ComVisibleReflection()
 				if (!SMtrl_RefIsAllowedRender(idMat))
 					continue;
 
-				SGeom_ModelsMGetGroupCenter(i, k, &center);
+				SGeom_ModelGetGroupCenter(i, k, &center);
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 				{
 					if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0) < 0)
-						SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0, SGeom_ModelsAddArrForCom());
+						SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0, SGeom_VisCaclObjAdd());
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
@@ -317,7 +320,7 @@ void rfunc::ComVisibleReflection()
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
-					SGeom_ModelsComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0));
+					SGeom_ComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0));
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 					SGreen_ComVisible(SMtrl_RefGetfrustum(idMat, 0), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GREEN, 0));
@@ -327,7 +330,7 @@ void rfunc::ComVisibleReflection()
 			}
 			else if (typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			{
-				SGeom_ModelsMGetGroupCenter(i, k, &center);
+				SGeom_ModelGetGroupCenter(i, k, &center);
 
 				if (!SMtrl_RefIsAllowedRender(idMat))
 					continue;
@@ -337,7 +340,7 @@ void rfunc::ComVisibleReflection()
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 					{
 						if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k) < 0)
-							SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GEOM, k, SGeom_ModelsAddArrForCom());
+							SMtrl_RefSetIDArr(idMat, RENDER_IDARRCOM_GEOM, k, SGeom_VisCaclObjAdd());
 					}
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
@@ -353,7 +356,7 @@ void rfunc::ComVisibleReflection()
 					}
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
-						SGeom_ModelsComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k));
+						SGeom_ComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k));
 
 					if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
 						SGreen_ComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(center), SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k));
@@ -552,7 +555,7 @@ void rfunc::UpdateView()
 	gdata::pCamera->updateFrustum(&gdata::mCamProj);
 
 	if (gdata::idDefaultGeomArr < 0)
-		gdata::idDefaultGeomArr = SGeom_ModelsAddArrForCom();
+		gdata::idDefaultGeomArr = SGeom_VisCaclObjAdd();
 
 	if (gdata::idDefaultGreenArr < 0)
 		gdata::idDefaultGreenArr = SGreen_AddVisCaclObj();
@@ -676,8 +679,8 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	if (!isRenderSimulation)
 	{
 		//SXDecals_Render();
-		if (SGeom_ModelsGetCount() > 0)
-			SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE);
+		if (SGeom_GetCountModels() > 0)
+			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE);
 
 		SXAnim_Render();
 
@@ -730,7 +733,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	if (!isRenderSimulation)
 	{
 		//если есть что к отрисовке из полупрозрачной геометрии
-		if (SGeom_ModelsSortExistsForRender(MTLTYPE_TRANSPARENCY))
+		if (SGeom_TransparencyExistsForRender())
 		{
 			//тут такая ситуация ... есть два рабочих варианта, причем работают чутка по разному, возможно я изработался и не могу сообразить что да как ...
 			//первый вариант, чистим в 4, метим 3 раза начиная с нуля (первый раз 0, второй 1 третий 2 НЕ ИНКРЕМЕНТ а метка)
@@ -801,12 +804,12 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 			gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_NOTEQUAL);
 			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
 
-			if (SGeom_ModelsGetCount() > 0)
+			if (SGeom_GetCountModels() > 0)
 			{
 				SMtrl_MtlSetIsIncrCountSurf(true);
 				SMtrl_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
 
-				SGeom_ModelsRender(timeDelta, MTLTYPE_TRANSPARENCY, 0, true);
+				SGeom_Render(timeDelta, GEOM_RENDER_TYPE_TRANSPARENCY, 0);
 			}
 
 
@@ -881,7 +884,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 						SLight_ShadowRenderPre(i, k);
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-							SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+							SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
 							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
@@ -922,7 +925,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 					if (SLight_GetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 					{
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0) > -1)
-							SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
+							SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
 
 						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0) > -1)
 							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
@@ -931,8 +934,8 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 					}
 					else
 					{
-						SGeom_ModelsComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
-						SGeom_ModelsRender(timeDelta, -1, gdata::idDefaultGeomArr);
+						SGeom_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
+						SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, gdata::idDefaultGeomArr);
 						SGreen_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
 						SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
 					}
@@ -956,7 +959,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 							if (SLight_GetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
 							{
 								if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+									SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
 
 								if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
 									SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
@@ -965,8 +968,8 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 							}
 							else
 							{
-								SGeom_ModelsComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
-								SGeom_ModelsRender(timeDelta, -1, gdata::idDefaultGeomArr);
+								SGeom_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
+								SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, gdata::idDefaultGeomArr);
 								SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
 								SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
 							}
@@ -1024,6 +1027,8 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idScreenOut);
+
+	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1550,12 +1555,12 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 	float3 vObserverPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
 
-	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
+	for (int i = 0; i < SGeom_GetCountModels(); ++i)
 	{
-		for (int k = 0; k < SGeom_ModelsMGetCountGroups(i); ++k)
+		for (int k = 0; k < SGeom_ModelGetCountGroups(i); ++k)
 		{
-			ID idMat = SGeom_ModelsMGetGroupIDMat(i, k);
-			MTLTYPE_REFLECT typeReflection = SMtrl_MtlGetTypeReflection(SGeom_ModelsMGetGroupIDMat(i, k));
+			ID idMat = SGeom_ModelGetGroupMtrlID(i, k);
+			MTLTYPE_REFLECT typeReflection = SMtrl_MtlGetTypeReflection(SGeom_ModelGetGroupMtrlID(i, k));
 			D3DXPLANE oPlane;
 			float3_t vCenter;
 
@@ -1567,8 +1572,8 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 					continue;
 				}
 
-				SGeom_ModelsMGetGroupPlane(i, k, &oPlane);
-				SGeom_ModelsMGetGroupCenter(i, k, &vCenter);
+				SGeom_ModelGetGroupPlane(i, k, &oPlane);
+				SGeom_ModelGetGroupCenter(i, k, &vCenter);
 				SMtrl_RefPreRenderPlane(idMat, &oPlane);
 				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
@@ -1581,7 +1586,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 				{
 					if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0) >= 0)
-						SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0), false, i, k);
+						SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, 0), i, k);
 				}
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
@@ -1623,10 +1628,9 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 			}
 			else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			{
-				SGeom_ModelsMGetGroupCenter(i, k, &vCenter);
+				SGeom_ModelGetGroupCenter(i, k, &vCenter);
 				float3_t min, max;
-				SGeom_ModelsMGetGroupMin(i, k, &min);
-				SGeom_ModelsMGetGroupMax(i, k, &max);
+				SGeom_ModelGetGroupMinMax(i, k, &min, &max);
 				SMtrl_RefSetMinMax(idMat, &min, &max);
 
 				if (!SMtrl_RefIsAllowedRender(idMat))
@@ -1653,8 +1657,8 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 							//тогда считаем в массив камеры
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 							{
-								SGeom_ModelsComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(vCenter), gdata::idDefaultGeomArr);
-								SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, gdata::idDefaultGeomArr, false, i, k);
+								SGeom_ComVisible(SMtrl_RefGetfrustum(idMat, j), &float3(vCenter), gdata::idDefaultGeomArr);
+								SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, gdata::idDefaultGeomArr, i, k);
 							}
 
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)
@@ -1668,7 +1672,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
 							{
 								if (SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k) >= 0)
-									SGeom_ModelsRender(timeDelta, MTLSORT_OPAQUE, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k), false, i, k);
+									SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SMtrl_RefGetIDArr(idMat, RENDER_IDARRCOM_GEOM, k), i, k);
 							}
 
 							if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GREEN)

@@ -217,7 +217,7 @@ enum MTLSORT
 	MTLSORT_LIGHTED = 0x00000100,
 
 	//! прозрачный
-	MTLTYPE_ULIT = 0x00001000,
+	MTLTYPE_UNLIT = 0x00001000,
 
 	//! непрозрачный освещаемый
 	/*MTLSORT_OPAQUE_LIGHTED,
@@ -379,6 +379,8 @@ SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id);
 
 //! возвращает сорт материала по id
 SX_LIB_API UINT SMtrl_MtlGetSort(ID id);
+
+SX_LIB_API bool SMtrl_MtlIsTransparency(ID id);
 
 /*! установка типа модели материала по id
  \warning меняется только внутренний флаг (определение)!!! все остальное для данного типа надо загружать вручную, сделано для больших возможностей построения материалов

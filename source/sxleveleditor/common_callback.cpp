@@ -22,7 +22,7 @@ LRESULT TrueExit(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void level_editor::LevelNew(bool mess)
 {
-	if (mess && (SGeom_ModelsGetCount() <= 0 || (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)))
+	if (mess && (SGeom_GetCountModels() <= 0 || (SGeom_GetCountModels() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)))
 		return;
 
 	SLevel_Clear();
@@ -45,7 +45,7 @@ void level_editor::LevelNew(bool mess)
 
 void level_editor::LevelOpen()
 {
-	if (SGeom_ModelsGetCount() > 0 && MessageBox(0, "Are you sure that you need to open the level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)
+	if (SGeom_GetCountModels() > 0 && MessageBox(0, "Are you sure that you need to open the level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)
 		return;
 
 	level_editor::LevelNew(false);
@@ -88,7 +88,7 @@ void level_editor::LevelSave()
 		SLevel_Save(SLevel_GetName());
 	else
 	{
-		if (SGeom_ModelsGetCount() <= 0)
+		if (SGeom_GetCountModels() <= 0)
 			MessageBox(0, "You need to create a level!", 0, 0);
 		else
 			level_editor::LevelSaveAs();
@@ -97,7 +97,7 @@ void level_editor::LevelSave()
 
 void level_editor::LevelSaveAs()
 {
-	if (SGeom_ModelsGetCount() <= 0)
+	if (SGeom_GetCountModels() <= 0)
 	{
 		MessageBox(0, "You need to create a level!", 0, 0);
 		return;
@@ -291,37 +291,39 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hwnd, UINT msg, WPARAM wParam,
 	{
 		if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
 		{
-			float3* pos = SGeom_ModelsMGetPosition(level_editor::idActiveElement);
+			const float3* pos = SGeom_ModelGetPosition(level_editor::idActiveElement);
 			float3 npos = (*pos) + (level_editor::pAxesHelper->getPosition() - level_editor::vHelperPos);
 			if ((*pos).x != npos.x || (*pos).y != npos.y || (*pos).z != npos.z)
 			{
-				*pos = npos;
-				
-				SGeom_ModelsMApplyTransform(level_editor::idActiveElement);
+				//*pos = npos;
+				SGeom_ModelSetPosition(level_editor::idActiveElement, &npos);
+				//SGeom_ModelsMApplyTransform(level_editor::idActiveElement);
 				float3 min, max;
-				SGeom_ModelsMGetMinMax(level_editor::idActiveElement, &min, &max);
+				SGeom_ModelGetMinMax(level_editor::idActiveElement, &min, &max);
 
 				level_editor::vHelperPos = (max + min) * 0.5f;
 			}
 		}
 		else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_ROTATE)
 		{
-			float3* rot = SGeom_ModelsMGetRotation(level_editor::idActiveElement);
+			const float3* rot = SGeom_ModelGetRotation(level_editor::idActiveElement);
 			float3 nrot = level_editor::pAxesHelper->getRotation();
 			if ((*rot).x != nrot.x || (*rot).y != nrot.y || (*rot).z != nrot.z)
 			{
-				*rot = level_editor::pAxesHelper->getRotation();
-				SGeom_ModelsMApplyTransform(level_editor::idActiveElement);
+				//*rot = level_editor::pAxesHelper->getRotation();
+				//SGeom_ModelsMApplyTransform(level_editor::idActiveElement);
+				SGeom_ModelSetRotation(level_editor::idActiveElement, &nrot);
 			}
 		}
 		else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_SCALE)
 		{
-			float3* scale = SGeom_ModelsMGetScale(level_editor::idActiveElement);
+			const float3* scale = SGeom_ModelGetScale(level_editor::idActiveElement);
 			float3 nscale = level_editor::pAxesHelper->getScale() - float3(1,1,1);
 			if ((*scale).x != nscale.x || (*scale).y != nscale.y || (*scale).z != nscale.z)
 			{
-				*scale += nscale;
-				SGeom_ModelsMApplyTransform(level_editor::idActiveElement);
+				//*scale += nscale;
+				//SGeom_ModelsMApplyTransform(level_editor::idActiveElement);
+				SGeom_ModelSetScale(level_editor::idActiveElement, &nscale);
 			}
 		}
 	}
@@ -410,7 +412,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		if (SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+		if (SGeom_TraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 		{
 			level_editor::pListBoxList->setSel(idmodel);
 			level_editor::GeomSel(idmodel);
@@ -448,7 +450,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 		}
 		else if (level_editor::pComboBoxGreenSel->getSel() == 1)
 		{
-			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_TraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
 				idobj = SGreen_AddObject(level_editor::idActiveElement, &_res, &idsplit);
 				level_editor::idActiveGreenSplit = idsplit;
@@ -472,7 +474,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		else if (level_editor::pComboBoxGreenSel->getSel() == 2)
 		{
-			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_TraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 			{
 				level_editor::vGreenBoxPos = _res;
 				int density = level_editor::pTrackBarGreenDensity->getPos();
@@ -490,7 +492,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 				{
 					npos.x = randf(min.x, max.x);
 					npos.z = randf(min.z, max.z);
-					if(SGeom_ModelsTraceBeam(&npos, &float3(0, -1, 0), &_res, &idmodel, &idmtl))
+					if(SGeom_TraceBeam(&npos, &float3(0, -1, 0), &_res, &idmodel, &idmtl))
 						SGreen_AddObject(level_editor::idActiveElement, &_res, 0);
 				}
 			}
@@ -606,7 +608,7 @@ LRESULT SXLevelEditor_RenderWindow_RClick(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 		if (level_editor::pComboBoxGreenSel->getSel() == 2)
 		{
-			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_ModelsTraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
+			if (pt.x <= *r_win_width && pt.y <= *r_win_height && SGeom_TraceBeam(&vCamPos, &camDir, &_res, &idmodel, &idmtl))
 				level_editor::vGreenBoxPos = _res;
 		}
 	}
@@ -659,7 +661,7 @@ LRESULT SXLevelEditor_RenderWindow_Delete(HWND hwnd, UINT msg, WPARAM wParam, LP
 LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	level_editor::pListBoxList->clear();
-	long tmpcountmodel = SGeom_ModelsGetCount();
+	long tmpcountmodel = SGeom_GetCountModels();
 	char tmptextvalcountmodel[64];
 	sprintf(tmptextvalcountmodel, "%d", tmpcountmodel);
 	level_editor::pStaticListValCount->setText(tmptextvalcountmodel);
@@ -667,7 +669,7 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hwnd, UINT msg, WPARAM wPara
 	char tmpnamecountpoly[1024];
 	for (int i = 0; i < tmpcountmodel;++i)
 	{
-		sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelsMGetName(i), SGeom_ModelsMGetCountPoly(i));
+		sprintf(tmpnamecountpoly, "%s | %d", SGeom_ModelGetName(i), SGeom_ModelGetCountPoly(i));
 		level_editor::pListBoxList->addItem(tmpnamecountpoly);
 	}
 
@@ -779,7 +781,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 
 	if (level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GEOM || level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
+		if (SGeom_GetCountModels() > 0 && sel < SGeom_GetCountModels())
 			level_editor::GeomSel(sel);
 	}
 	else if (level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GREEN || level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
@@ -805,15 +807,15 @@ LRESULT SXLevelEditor_ButtonDelete_Click(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		if (SGeom_ModelsGetCount() > 0 && sel < SGeom_ModelsGetCount())
+		if (SGeom_GetCountModels() > 0 && sel < SGeom_GetCountModels())
 		{
-			SGeom_ModelsDelModel(sel);
+			SGeom_ModelDelete(sel);
 			level_editor::pListBoxList->deleteItem(sel);
-			if (SGeom_ModelsGetCount() > 0)
+			if (SGeom_GetCountModels() > 0)
 			{
 				if (sel > 0)
 				{
-					if (SGeom_ModelsGetCount() <= sel)
+					if (SGeom_GetCountModels() <= sel)
 						sel -= 1;
 				}
 				level_editor::pListBoxList->setSel(sel);
@@ -1384,12 +1386,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 	{
-		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_ModelsGetCount() > 0)
+		if (SSInput_GetKeyState(SIK_LSHIFT) && SGeom_GetCountModels() > 0)
 		{
 			DWORD selmodel = level_editor::pListBoxList->getSel();
 			if (level_editor::pRadioButtonGeomPosX->getCheck() || level_editor::pRadioButtonGeomPosY->getCheck() || level_editor::pRadioButtonGeomPosZ->getCheck())
 			{
-				float3& pos = *(SGeom_ModelsMGetPosition(selmodel));
+				float3 pos = *(SGeom_ModelGetPosition(selmodel));
 
 				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -1433,12 +1435,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				level_editor::pEditGeomPosY->setText(tmpPosY);
 				level_editor::pEditGeomPosZ->setText(tmpPosZ);
 
-				SGeom_ModelsMApplyTransform(selmodel);
+				SGeom_ModelSetPosition(selmodel, &pos);
 			}
 
 			else if (level_editor::pRadioButtonGeomRotX->getCheck() || level_editor::pRadioButtonGeomRotY->getCheck() || level_editor::pRadioButtonGeomRotZ->getCheck())
 			{
-				float3& pos = *(SGeom_ModelsMGetRotation(selmodel));
+				float3 pos = *(SGeom_ModelGetRotation(selmodel));
 
 				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -1483,12 +1485,12 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				level_editor::pEditGeomRotY->setText(tmpPosY);
 				level_editor::pEditGeomRotZ->setText(tmpPosZ);
 
-				SGeom_ModelsMApplyTransform(selmodel);
+				SGeom_ModelSetRotation(selmodel, &pos);
 			}
 
 			else if (level_editor::pRadioButtonGeomScaleX->getCheck() || level_editor::pRadioButtonGeomScaleY->getCheck() || level_editor::pRadioButtonGeomScaleZ->getCheck())
 			{
-				float3& pos = *(SGeom_ModelsMGetScale(selmodel));
+				float3 pos = *(SGeom_ModelGetScale(selmodel));
 
 				if (SSInput_GetKeyState(SIK_UP))
 					pos[CoordinateTransformation] += timeDelta * 0.001f;
@@ -1533,7 +1535,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 				level_editor::pEditGeomScaleY->setText(tmpPosY);
 				level_editor::pEditGeomScaleZ->setText(tmpPosZ);
 
-				SGeom_ModelsMApplyTransform(selmodel);
+				SGeom_ModelSetScale(selmodel, &pos);
 			}
 		}
 	}

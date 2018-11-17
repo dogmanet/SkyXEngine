@@ -2021,9 +2021,9 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 	}
 
 	long count_poly_geom = 0;
-	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
+	for (int i = 0; i < SGeom_GetCountModels(); ++i)
 	{
-		count_poly_geom += SGeom_ModelsMGetCountPoly(i);
+		count_poly_geom += SGeom_ModelGetCountPoly(i);
 	}
 
 	char text[256];
@@ -2091,7 +2091,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 			if (level_editor::idActiveElement > -1)
 			{
 				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-				SGeom_ModelsRenderSingly(timeDelta, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
+				SGeom_RenderSingly(timeDelta, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 			}
 		}
 

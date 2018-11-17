@@ -64,7 +64,7 @@ struct CLevelInfo
 };
 
 //! Возвращает информацию об следующем уровне
-SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo * pInfo);
+SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo *pInfo);
 
 //#############################################################################
 
@@ -75,7 +75,7 @@ SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo * pInfo);
 SX_LIB_API long SLevel_0GetVersion();
 
 //! установка функции вывода сообщений
-SX_LIB_API void SLevel_Dbg_Set(report_func rf);
+SX_LIB_API void SLevel_Dbg_Set(report_func fnFunc);
 
 //! инициализация подсистемы
 SX_LIB_API void SLevel_0Create(
@@ -117,13 +117,13 @@ SX_LIB_API void SLevel_SaveParticles();
 */
 
 //! добавить звук
-SX_LIB_API void SLevel_AmbientSndAdd(const char* path);
+SX_LIB_API void SLevel_AmbientSndAdd(const char *szPath);
 
 //! возвращает общее количество загруженных звуков
 SX_LIB_API UINT SLevel_AmbientSndGetCount();
 
 //! в path записывает путь до звука по его id
-SX_LIB_API void SLevel_AmbientSndGet(ID id, char* path);
+SX_LIB_API void SLevel_AmbientSndGet(ID id, char *szPath);
 
 //! очистка списка звуков
 SX_LIB_API void SLevel_AmbientSndClear();

@@ -7,24 +7,20 @@ See the license in LICENSE
 #define SXGEOM_VERSION 1
 
 #include "sxgeom.h"
-
-#include "static_geom.h"
+#include "models.h"
 
 //##########################################################################
 
-bool CStaticGeom::m_isUseSortFrontToBackSplits = true;
-//bool CStaticGeom::m_isUseSortFrontToBackModels = true;
-IDirect3DDevice9* CStaticGeom::m_pDXDevice = 0;
-float CStaticGeom::m_fDistForLod = 200.f;
+IDirect3DDevice9 *g_pDXDevice = 0;
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
 #endif
 
-CStaticGeom *g_pGeometry = 0;
+CModels *g_pModels = 0;
 
-#define GEOM_PRECOND(retval) if(!g_pGeometry){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgeom is not init", GEN_MSG_LOCATION); return retval;}
+#define GEOM_PRECOND(retval) if(!(g_pModels)){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgeom is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -40,6 +36,8 @@ SX_LIB_API void SGeom_Dbg_Set(report_func rf)
 
 SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 {
+	g_pDXDevice = SGCore_GetDXDevice();
+
 	if (szName && strlen(szName) > 1)
 	{
 		if (isUnic)
@@ -52,14 +50,12 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 			}
 			else
 			{
-				CStaticGeom::m_pDXDevice = SGCore_GetDXDevice();
-				g_pGeometry = new CStaticGeom();
+				g_pModels = new CModels();
 			}
 		}
 		else
 		{
-			CStaticGeom::m_pDXDevice = SGCore_GetDXDevice();
-			g_pGeometry = new CStaticGeom();
+			g_pModels = new CModels();
 		}
 	}
 	else
@@ -68,249 +64,248 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 
 SX_LIB_API void SGeom_AKill()
 {
-	mem_delete(g_pGeometry);
-}
-
-SX_LIB_API void SGeom_OnLostDevice()
-{
-	GEOM_PRECOND(_VOID);
-
-	g_pGeometry->onLostDevice();
-}
-
-SX_LIB_API void SGeom_OnResetDevice()
-{
-	GEOM_PRECOND(_VOID);
-
-	g_pGeometry->onResetDevice();
+	mem_delete(g_pModels);
 }
 
 //##########################################################################
 
-SX_LIB_API void SGeom_0SettModelsSetSortFrontToBackModels(bool val)
-{
-
-}
-
-SX_LIB_API bool SGeom_0SettModelsGetSortFrontToBackModels()
-{
-	return false;
-}
-
-
-SX_LIB_API void SGeom_0SettSetSortFrontToBackSplits(bool val)
-{
-	CStaticGeom::m_isUseSortFrontToBackSplits = val;
-}
-
-SX_LIB_API bool SGeom_0SettGetSortFrontToBackSplits()
-{
-	return CStaticGeom::m_isUseSortFrontToBackSplits;
-}
-
-//##########################################################################
-
-SX_LIB_API void SGeom_ModelsClear()
+SX_LIB_API void SGeom_Clear()
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->clear();
+	g_pModels->clear();
 }
 
-SX_LIB_API void SGeom_ModelsSave(const char *szPath)
+SX_LIB_API void SGeom_Save(const char *szPath)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->save(szPath);
+	g_pModels->save(szPath);
 }
 
-SX_LIB_API void SGeom_ModelsLoad(const char *szPath)
+SX_LIB_API void SGeom_Load(const char *szPath)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->load(szPath);
+	g_pModels->load(szPath);
 }
 
-SX_LIB_API int SGeom_ModelsGetCount()
+SX_LIB_API int SGeom_GetCountModels()
 {
 	GEOM_PRECOND(-1);
-	return g_pGeometry->getCountModel();
+	return g_pModels->getCountModel();
 }
 
-SX_LIB_API void SGeom_ModelsComVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr)
+SX_LIB_API void SGeom_ComVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID idVisCalcObj)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->comArrIndeces(pFrustum, pViewPos, idArr);
+	g_pModels->comVisible(pFrustum, pViewPos, idVisCalcObj);
 }
 
-SX_LIB_API bool SGeom_ModelsSortExistsForRender(int iSort, ID idArr)
+SX_LIB_API bool SGeom_TransparencyExistsForRender(ID idVisCalcObj)
 {
 	GEOM_PRECOND(false);
-	return g_pGeometry->sortExistsForRender(iSort, idArr);
+	return g_pModels->existsTransparency4Render(idVisCalcObj);
 }
 
-SX_LIB_API void SGeom_ModelsRender(DWORD timeDelta, int iSortMtl, ID idArr, bool isSorted, ID idExcludeModel, ID idExcludeGroup)
+SX_LIB_API void SGeom_RenderSingly(DWORD timeDelta, ID idModel, ID idMtrl)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->render(timeDelta, iSortMtl, idArr, idExcludeModel, idExcludeGroup, isSorted);
+
+	g_pModels->renderSingly(timeDelta, idModel, idMtrl);
 }
 
-SX_LIB_API void SGeom_ModelsRenderSingly(DWORD timeDelta, ID idModel, ID idTexture)
+SX_LIB_API void SGeom_Render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj, ID idExcludeModel, ID idExcludeGroup)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->renderSingly(timeDelta, idModel, idTexture);
+	g_pModels->render(timeDelta, type, idVisCalcObj);
 }
 
-SX_LIB_API ID SGeom_ModelsAddModel(const char *szPath, const char *szLod1, const char *szName)
+SX_LIB_API ID SGeom_ModelAdd(const char *szPath, const char *szName, const char *szLod, const char *szPhys, bool needSegmentation)
 {
 	GEOM_PRECOND(-1);
-	return g_pGeometry->addModel(szPath, szLod1, szName);
+	return g_pModels->addModel(szPath, szName, szLod, szPhys, needSegmentation);
 }
 
-SX_LIB_API void SGeom_ModelsDelModel(ID idModel)
-{
-	GEOM_PRECOND(_VOID);
-	g_pGeometry->deleteModel(idModel);
-}
-
-SX_LIB_API void SGeom_ModelsGetMinMax(float3 *pMin, float3 *pMax)
-{
-	GEOM_PRECOND(_VOID);
-	g_pGeometry->getMinMax(pMin, pMax);
-}
-
-SX_LIB_API ID SGeom_ModelsAddArrForCom()
+SX_LIB_API ID SGeom_ModelCopy(ID idModel)
 {
 	GEOM_PRECOND(-1);
-	return g_pGeometry->addArrForCom();
+	return g_pModels->copy(idModel);
 }
 
-SX_LIB_API bool SGeom_ModelsExistsArrForCom(ID idModel)
+SX_LIB_API void SGeom_ModelDelete(ID idModel)
+{
+	GEOM_PRECOND(_VOID);
+	g_pModels->deleteModel(idModel);
+}
+
+SX_LIB_API void SGeom_GetMinMax(float3 *pMin, float3 *pMax)
+{
+	GEOM_PRECOND(_VOID);
+	g_pModels->getMinMax(pMin, pMax);
+}
+
+//**************************************************************************
+
+SX_LIB_API ID SGeom_VisCaclObjAdd()
+{
+	GEOM_PRECOND(-1);
+	return g_pModels->addVisCaclObj();
+}
+
+SX_LIB_API bool SGeom_VisCaclObjExists(ID idVisCaclObj)
 {
 	GEOM_PRECOND(false);
-	return g_pGeometry->existsArrForCom(idModel);
+	return g_pModels->existsVisCaclObj(idVisCaclObj);
 }
 
-SX_LIB_API void SGeom_ModelsDelArrForCom(ID idArr)
+SX_LIB_API void SGeom_VisCaclObjDelete(ID idVisCaclObj)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->deleteArrForCom(idArr);
+	g_pModels->deleteVisCaclObj(idVisCaclObj);
 }
 
+//**************************************************************************
 
-SX_LIB_API void SGeom_ModelsMGetMinMax(ID idModel, float3 *pMin, float3 *pMax)
+SX_LIB_API void SGeom_ModelGetMinMax(ID idModel, float3 *pMin, float3 *pMax)
 {
 	GEOM_PRECOND(_VOID);
-	return g_pGeometry->getModelMinMax(idModel, pMin, pMax);
+	g_pModels->modelGetMinMax(idModel, pMin, pMax);
 }
 
-SX_LIB_API char* SGeom_ModelsMGetName(ID idModel)
+SX_LIB_API const char* SGeom_ModelGetName(ID idModel, char *szName)
 {
 	GEOM_PRECOND(0);
-	return g_pGeometry->getModelName(idModel);
+	return g_pModels->modelGetName(idModel, szName);
 }
 
-SX_LIB_API const char* SGeom_ModelsMGetPathName(ID idModel)
+SX_LIB_API void SGeom_ModelSetName(ID idModel, const char *szName)
+{
+	GEOM_PRECOND(_VOID);
+	g_pModels->modelSetName(idModel, szName);
+}
+
+SX_LIB_API const char* SGeom_ModelGetPath4Model(ID idModel)
 {
 	GEOM_PRECOND(0);
-	return g_pGeometry->getModelPathName(idModel);
+	return g_pModels->modelGetPath4Model(idModel);
 }
 
-SX_LIB_API int SGeom_ModelsMGetCountPoly(ID idModel)
+SX_LIB_API int SGeom_ModelGetCountPoly(ID idModel)
 {
 	GEOM_PRECOND(-1);
-	return g_pGeometry->getModelCountPoly(idModel);
+	return g_pModels->modelGetCountPoly(idModel);
 }
 
-
-SX_LIB_API float3* SGeom_ModelsMGetPosition(ID idModel)
+SX_LIB_API const float3* SGeom_ModelGetPosition(ID idModel, float3 *pPos)
 {
 	GEOM_PRECOND(0);
-	return g_pGeometry->getModelPosition(idModel);
+	return g_pModels->modelGetPosition(idModel, pPos);
 }
 
-SX_LIB_API float3* SGeom_ModelsMGetRotation(ID idModel)
-{
-	GEOM_PRECOND(0);
-	return g_pGeometry->getModelRotation(idModel);
-}
-
-SX_LIB_API float3* SGeom_ModelsMGetScale(ID idModel)
-{
-	GEOM_PRECOND(0);
-	return g_pGeometry->getModelScale(idModel);
-}
-
-
-SX_LIB_API const char* SGeom_ModelsMGetLodPath(ID idModel)
-{
-	GEOM_PRECOND(0);
-	return g_pGeometry->getModelLodPath(idModel);
-}
-
-SX_LIB_API void SGeom_ModelsMSetLodPath(ID idModel, const char *szPath)
+SX_LIB_API void SGeom_ModelSetPosition(ID idModel, const float3 *pPos)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->setModelLodPath(idModel, szPath);
+
+	g_pModels->modelSetPosition(idModel, pPos);
 }
 
+SX_LIB_API const float3* SGeom_ModelGetRotation(ID idModel, float3 *pRot)
+{
+	GEOM_PRECOND(0);
+	return g_pModels->modelGetRotation(idModel, pRot);
+}
 
-SX_LIB_API void SGeom_ModelsMApplyTransform(ID idModel)
+SX_LIB_API void SGeom_ModelSetRotation(ID idModel, const float3 *pRot)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->applyTransform(idModel);
+
+	g_pModels->modelSetRotation(idModel, pRot);
 }
 
+SX_LIB_API const float3* SGeom_ModelGetScale(ID idModel, float3 *pScale)
+{
+	GEOM_PRECOND(0);
+	return g_pModels->modelGetScale(idModel, pScale);
+}
 
-SX_LIB_API void SGeom_ModelsMSortGroups(const float3 *pViewPos, int iSortMtl)
+SX_LIB_API void SGeom_ModelSetScale(ID idModel, const float3 *pScale)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->sortGroup(pViewPos, iSortMtl);
+
+	g_pModels->modelSetScale(idModel, pScale);
 }
 
 
-SX_LIB_API ID SGeom_ModelsMGetCountGroups(ID idModel)
+SX_LIB_API const char* SGeom_ModelGetPath4Lod(ID idModel)
+{
+	GEOM_PRECOND(0);
+	return g_pModels->modelGetPath4Lod(idModel);
+}
+
+SX_LIB_API void SGeom_ModelSetPath4Lod(ID idModel, const char *szPath)
+{
+	GEOM_PRECOND(_VOID);
+	g_pModels->modelSetLod(idModel, szPath);
+}
+
+SX_LIB_API const char* SGeom_ModelGetPath4Physics(ID idModel)
+{
+	GEOM_PRECOND(0);
+	return g_pModels->modelGetPath4Physics(idModel);
+}
+
+SX_LIB_API void SGeom_ModelSetPath4Physics(ID idModel, const char *szPath)
+{
+	GEOM_PRECOND(_VOID);
+	g_pModels->modelSetPhysics(idModel, szPath);
+}
+
+
+SX_LIB_API ID SGeom_ModelGetCountGroups(ID idModel)
 {
 	GEOM_PRECOND(-1);
-	return g_pGeometry->getModelCountGroups(idModel);
+	return g_pModels->modelGetCountGroups(idModel);
 }
 
-SX_LIB_API ID SGeom_ModelsMGetGroupIDMat(ID idModel, ID idGroup)
+SX_LIB_API ID SGeom_ModelGetGroupMtrlID(ID idModel, ID idGroup)
 {
 	GEOM_PRECOND(-1);
-	return g_pGeometry->getModelGroupIDMat(idModel, idGroup);
+	return g_pModels->modelGetGroupMtrlID(idModel, idGroup);
 }
 
-SX_LIB_API void SGeom_ModelsMGetGroupCenter(ID idModel, ID idGroup, float3_t *pCenter)
+SX_LIB_API void SGeom_ModelGetGroupCenter(ID idModel, ID idGroup, float3_t *pCenter)
 {
 	GEOM_PRECOND(_VOID);
-	return g_pGeometry->getModelGroupCenter(idModel, idGroup, pCenter);
+	g_pModels->modelGetGroupCenter(idModel, idGroup, pCenter);
 }
 
-SX_LIB_API void SGeom_ModelsMGetGroupMin(ID idModel, ID idGroup, float3_t *pMin)
+SX_LIB_API void SGeom_ModelGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane)
 {
 	GEOM_PRECOND(_VOID);
-	return g_pGeometry->getModelGroupMin(idModel, idGroup, pMin);
+	g_pModels->modelGetGroupPlane(idModel, idGroup, pPlane);
 }
 
-SX_LIB_API void SGeom_ModelsMGetGroupMax(ID idModel, ID idGroup, float3_t *pMax)
+SX_LIB_API void SGeom_ModelGetGroupMinMax(ID idModel, ID idGroup, float3_t *pMin, float3_t *pMax)
 {
 	GEOM_PRECOND(_VOID);
-	return g_pGeometry->getModelGroupMax(idModel, idGroup, pMax);
+	g_pModels->modelGetGroupMinMax(idModel, idGroup, pMin, pMax);
 }
 
-SX_LIB_API void SGeom_ModelsMGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane)
+//**************************************************************************
+
+SX_LIB_API void SGeom_SortTransparent(const float3 *pViewPos)
 {
 	GEOM_PRECOND(_VOID);
-	return g_pGeometry->getModelGroupPlane(idModel, idGroup, pPlane);
+	g_pModels->sortTransparency(pViewPos);
 }
 
+//**************************************************************************
 
-
-SX_LIB_API void SGeom_ModelsGetArrBuffsGeom(float3_t ***pppArrVertex, int32_t **ppArrCountVertex, uint32_t ***pppArrIndex, ID ***pppArrMtl, int32_t **ppArrCountIndex, int32_t *pCountModels)
+SX_LIB_API void SGeom_GetArrBuffsGeom(float3_t ***pppArrVertex, int32_t **ppArrCountVertex, uint32_t ***pppArrIndex, ID ***pppArrMtl, int32_t **ppArrCountIndex, int32_t *pCountModels)
 {
 	GEOM_PRECOND(_VOID);
-	g_pGeometry->getArrBuffsGeom(pppArrVertex, ppArrCountVertex, pppArrIndex, pppArrMtl, ppArrCountIndex, pCountModels);
+	g_pModels->getArrBuffsGeom(pppArrVertex, ppArrCountVertex, pppArrIndex, pppArrMtl, ppArrCountIndex, pCountModels);
 }
 
-SX_LIB_API void SGeom_ModelsClearArrBuffsGeom(float3_t **ppArrVertex, int32_t *pArrCountVertex, uint32_t **ppArrIndex, ID **ppArrMtl, int32_t *pArrCountIndex, int32_t iCountModels)
+SX_LIB_API void SGeom_ClearArrBuffsGeom(float3_t **ppArrVertex, int32_t *pArrCountVertex, uint32_t **ppArrIndex, ID **ppArrMtl, int32_t *pArrCountIndex, int32_t iCountModels)
 {
 	for (int i = 0; i < iCountModels; ++i)
 	{
@@ -325,8 +320,8 @@ SX_LIB_API void SGeom_ModelsClearArrBuffsGeom(float3_t **ppArrVertex, int32_t *p
 	mem_delete_a(pArrCountIndex);
 }
 
-SX_LIB_API bool SGeom_ModelsTraceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID *pIDmodel, ID *pIDmtl)
+SX_LIB_API bool SGeom_TraceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID *pIDmodel, ID *pIDmtl)
 {
 	GEOM_PRECOND(false);
-	return g_pGeometry->traceBeam(pStart, pDir, pResult, pIDmodel, pIDmtl);
+	return g_pModels->traceBeam(pStart, pDir, pResult, pIDmodel, pIDmtl);
 }

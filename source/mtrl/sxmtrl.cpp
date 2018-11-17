@@ -124,6 +124,13 @@ SX_LIB_API UINT SMtrl_MtlGetSort(ID id)
 	return ArrMaterials->mtlGetSort(id);
 }
 
+SX_LIB_API bool SMtrl_MtlIsTransparency(ID id)
+{
+	ML_PRECOND(false);
+
+	return ArrMaterials->mtlGetTransparency(id);
+}
+
 SX_LIB_API void SMtrl_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model)
 {
 	ML_PRECOND(_VOID);
