@@ -473,7 +473,7 @@ protected:
 	//**********************************************************************
 
 	//! создание пп модели
-	ID createTransparencyModel(ID idTex, const char *szTex, const vertex_static *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex);
+	ID createTransparencyModel(ID idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex);
 
 	//! массив пп моделей
 	Array<CTransparencyModel*> m_aTransparency;

@@ -68,12 +68,12 @@ struct DataStaticModel : public ISXDataStaticModel
 		pModelCopy->m_pVertexCount = new UINT[m_uiSubsetCount];
 		memcpy(pModelCopy->m_pVertexCount, m_pVertexCount, sizeof(UINT)*m_uiSubsetCount);
 
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
 		BYTE *pDestData, *pSrcData;
 		pModelCopy->m_pVertexBuffer->Lock(0, 0, (void**)&pDestData, 0);
 		m_pVertexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
 
-		memcpy(pDestData, pSrcData, sizeof(vertex_static)* m_uiAllVertexCount);
+		memcpy(pDestData, pSrcData, sizeof(vertex_static_ex)* m_uiAllVertexCount);
 
 		pModelCopy->m_pVertexBuffer->Unlock();
 		m_pVertexBuffer->Unlock();

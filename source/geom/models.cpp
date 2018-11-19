@@ -283,10 +283,10 @@ void CModels::save(const char *szPath)
 			//сохраняем данные вершинного и индексного буферов
 			UINT *pIndex;
 			m_aModels[i]->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-			vertex_static *pVertex;
+			vertex_static_ex *pVertex;
 			m_aModels[i]->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
-			fwrite(pVertex, sizeof(vertex_static), iAllCountVertex, pFile);
+			fwrite(pVertex, sizeof(vertex_static_ex), iAllCountVertex, pFile);
 			fwrite(pIndex, sizeof(uint32_t), iAllCountIndex, pFile);
 
 			m_aModels[i]->m_pModel->m_pVertexBuffer->Unlock();
@@ -336,10 +336,10 @@ void CModels::save(const char *szPath)
 			//сохраняем данные вершинного и индексного буферов
 			UINT *pIndexLod;
 			m_aModels[i]->m_pLod->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexLod, 0);
-			vertex_static *pVertexLod;
+			vertex_static_ex *pVertexLod;
 			m_aModels[i]->m_pLod->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertexLod, 0);
 
-			fwrite(pVertexLod, sizeof(vertex_static), iAllCountVertexLod, pFile);
+			fwrite(pVertexLod, sizeof(vertex_static_ex), iAllCountVertexLod, pFile);
 			fwrite(pIndexLod, sizeof(uint32_t), iAllCountIndexLod, pFile);
 
 			m_aModels[i]->m_pLod->m_pModel->m_pVertexBuffer->Unlock();
@@ -393,7 +393,8 @@ void CModels::save(const char *szPath)
 
 		uint32_t uiCountPtansparency = m_aModels[i]->m_aTransparency.size();
 		fwrite(&uiCountPtansparency, sizeof(uint32_t), 1, pFile);
-		fwrite(&(m_aModels[i]->m_aTransparency[0]), sizeof(ID), uiCountPtansparency, pFile);
+		if (uiCountPtansparency > 0)
+			fwrite(&(m_aModels[i]->m_aTransparency[0]), sizeof(ID), uiCountPtansparency, pFile);
 
 		//}
 
@@ -496,10 +497,10 @@ void CModels::save(const char *szPath)
 		//сохраняем данные вершинного и индексного буферов
 		UINT *pIndexTrancparency;
 		m_aTransparency[i]->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexTrancparency, 0);
-		vertex_static *pVertexTrancparency;
+		vertex_static_ex *pVertexTrancparency;
 		m_aTransparency[i]->m_pVertexBuffer->Lock(0, 0, (void **)&pVertexTrancparency, 0);
 
-		fwrite(pVertexTrancparency, sizeof(vertex_static), m_aTransparency[i]->m_iCountVertex, pFile);
+		fwrite(pVertexTrancparency, sizeof(vertex_static_ex), m_aTransparency[i]->m_iCountVertex, pFile);
 		fwrite(pIndexTrancparency, sizeof(uint32_t), m_aTransparency[i]->m_iCountIndex, pFile);
 
 		m_aTransparency[i]->m_pVertexBuffer->Unlock();
@@ -654,22 +655,22 @@ void CModels::load(const char *szPath)
 			fread(pModel->m_pModel->m_pStartVertex, sizeof(uint32_t), pModel->m_pModel->m_uiSubsetCount, pFile);
 			fread(pModel->m_pModel->m_pVertexCount, sizeof(uint32_t), pModel->m_pModel->m_uiSubsetCount, pFile);
 
-			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* pModel->m_pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pModel->m_pVertexBuffer), 0);
+			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pModel->m_pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pModel->m_pVertexBuffer), 0);
 			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* pModel->m_pModel->m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pModel->m_pModel->m_pIndexBuffer), 0);
 
 			UINT *pIndex;
 			pModel->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-			vertex_static *pVertex;
+			vertex_static_ex *pVertex;
 			pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
-			fread(pVertex, sizeof(vertex_static), pModel->m_pModel->m_uiAllVertexCount, pFile);
+			fread(pVertex, sizeof(vertex_static_ex), pModel->m_pModel->m_uiAllVertexCount, pFile);
 			fread(pIndex, sizeof(uint32_t), pModel->m_pModel->m_uiAllIndexCount, pFile);
 
 			pModel->m_pModel->m_pVertexBuffer->Unlock();
 			pModel->m_pModel->m_pIndexBuffer->Unlock();
 
 			//создаем баунд для модели
-			pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+			pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 		}
 		//}
 
@@ -716,15 +717,15 @@ void CModels::load(const char *szPath)
 			fread(pModel->m_pLod->m_pModel->m_pStartVertex, sizeof(uint32_t), pModel->m_pLod->m_pModel->m_uiSubsetCount, pFile);
 			fread(pModel->m_pLod->m_pModel->m_pVertexCount, sizeof(uint32_t), pModel->m_pLod->m_pModel->m_uiSubsetCount, pFile);
 
-			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* pModel->m_pLod->m_pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pLod->m_pModel->m_pVertexBuffer), 0);
+			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pModel->m_pLod->m_pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pLod->m_pModel->m_pVertexBuffer), 0);
 			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* pModel->m_pLod->m_pModel->m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pModel->m_pLod->m_pModel->m_pIndexBuffer), 0);
 
 			UINT *pIndexLod;
 			pModel->m_pLod->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexLod, 0);
-			vertex_static *pVertexLod;
+			vertex_static_ex *pVertexLod;
 			pModel->m_pLod->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertexLod, 0);
 
-			fread(pVertexLod, sizeof(vertex_static), pModel->m_pLod->m_pModel->m_uiAllVertexCount, pFile);
+			fread(pVertexLod, sizeof(vertex_static_ex), pModel->m_pLod->m_pModel->m_uiAllVertexCount, pFile);
 			fread(pIndexLod, sizeof(uint32_t), pModel->m_pLod->m_pModel->m_uiAllIndexCount, pFile);
 
 			pModel->m_pLod->m_pModel->m_pVertexBuffer->Unlock();
@@ -786,8 +787,11 @@ void CModels::load(const char *szPath)
 		//{
 		uint32_t uiCountTransparency = 0;
 		fread(&uiCountTransparency, sizeof(uint32_t), 1, pFile);
-		pModel->m_aTransparency.resize(uiCountTransparency);
-		fread(&(pModel->m_aTransparency[0]), sizeof(ID), uiCountTransparency, pFile);
+		if (uiCountTransparency > 0)
+		{
+			pModel->m_aTransparency.resize(uiCountTransparency);
+			fread(&(pModel->m_aTransparency[0]), sizeof(ID), uiCountTransparency, pFile);
+		}
 		//}
 
 		//считывание сегментов модели, если есть
@@ -912,15 +916,15 @@ void CModels::load(const char *szPath)
 		fread(&(pTransparency->m_iCountVertex), sizeof(int32_t), 1, pFile);
 		fread(&(pTransparency->m_iCountIndex), sizeof(int32_t), 1, pFile);
 
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* pTransparency->m_iCountVertex, NULL, NULL, D3DPOOL_MANAGED, &(pTransparency->m_pVertexBuffer), 0);
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pTransparency->m_iCountVertex, NULL, NULL, D3DPOOL_MANAGED, &(pTransparency->m_pVertexBuffer), 0);
 		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* pTransparency->m_iCountIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pTransparency->m_pIndexBuffer), 0);
 
 		UINT *pIndexTransparency;
 		pTransparency->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexTransparency, 0);
-		vertex_static *pVertexTransparency;
+		vertex_static_ex *pVertexTransparency;
 		pTransparency->m_pVertexBuffer->Lock(0, 0, (void **)&pVertexTransparency, 0);
 
-		fread(pVertexTransparency, sizeof(vertex_static), pTransparency->m_iCountVertex, pFile);
+		fread(pVertexTransparency, sizeof(vertex_static_ex), pTransparency->m_iCountVertex, pFile);
 		fread(pIndexTransparency, sizeof(uint32_t), pTransparency->m_iCountIndex, pFile);
 
 		pTransparency->m_pVertexBuffer->Unlock();
@@ -930,7 +934,7 @@ void CModels::load(const char *szPath)
 		pTransparency->m_pBoundVolume->setPosition(pModel->m_pBoundVolume->getPosition());
 		pTransparency->m_pBoundVolume->setRotation(pModel->m_pBoundVolume->getRotation());
 		pTransparency->m_pBoundVolume->setScale(pModel->m_pBoundVolume->getScale());
-		pTransparency->m_pBoundVolume->calcBound(pTransparency->m_pVertexBuffer, pTransparency->m_iCountVertex, sizeof(vertex_static));
+		pTransparency->m_pBoundVolume->calcBound(pTransparency->m_pVertexBuffer, pTransparency->m_iCountVertex, sizeof(vertex_static_ex));
 
 		modelGenGroupInfo4Transparency(pTransparency);
 
@@ -942,7 +946,7 @@ void CModels::load(const char *szPath)
 
 //##########################################################################
 
-ID CModels::createTransparencyModel(ID idTex, const char *szTex, const vertex_static *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex)
+ID CModels::createTransparencyModel(ID idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex)
 {
 	CTransparencyModel *pTransparency = new CTransparencyModel();
 	pTransparency->m_iCountVertex = iCountVertex;
@@ -950,15 +954,15 @@ ID CModels::createTransparencyModel(ID idTex, const char *szTex, const vertex_st
 	pTransparency->m_idTex = idTex;
 	pTransparency->m_sTex = szTex;
 
-	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iCountVertex, NULL, NULL, D3DPOOL_MANAGED, &(pTransparency->m_pVertexBuffer), 0);
+	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iCountVertex, NULL, NULL, D3DPOOL_MANAGED, &(pTransparency->m_pVertexBuffer), 0);
 	g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iCountIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pTransparency->m_pIndexBuffer), 0);
 
 	UINT *pIndexNew;
 	pTransparency->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexNew, 0);
-	vertex_static *pVertexNew;
+	vertex_static_ex *pVertexNew;
 	pTransparency->m_pVertexBuffer->Lock(0, 0, (void **)&pVertexNew, 0);
 
-	memcpy(pVertexNew, pArrVertex, sizeof(vertex_static)* iCountVertex);
+	memcpy(pVertexNew, pArrVertex, sizeof(vertex_static_ex)* iCountVertex);
 	memcpy(pIndexNew, pArrIndex, sizeof(UINT)* iCountIndex);
 
 	pTransparency->m_pVertexBuffer->Unlock();
@@ -1021,7 +1025,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 
 	UINT *pIndex;
 	pModel->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-	vertex_static *pVertex;
+	vertex_static_ex *pVertex;
 	pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
 	for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
@@ -1044,7 +1048,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 		Array<Array<UINT>> aIndexInBuffer;
 
 		//массивы пп вершин
-		Array<Array<vertex_static>> aVertex;
+		Array<Array<vertex_static_ex>> aVertex;
 
 		//количество пп моделей в текущей подгруппе, или текущий номер модели в aIndex aIndexInBuffer aVertex
 		int iCountSubModels = 0;
@@ -1182,12 +1186,12 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 			pStartVertex = new UINT[iCountSubsetNew];
 			pVertexCount = new UINT[iCountSubsetNew];
 
-			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iCountVertexNew, NULL, NULL, D3DPOOL_MANAGED, &pVertexBuffer, 0);
+			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iCountVertexNew, NULL, NULL, D3DPOOL_MANAGED, &pVertexBuffer, 0);
 			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iCountIndexNew, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &pIndexBuffer, 0);
 
 			UINT *pIndexNew;
 			pIndexBuffer->Lock(0, 0, (void **)&pIndexNew, 0);
-			vertex_static *pVertexNew;
+			vertex_static_ex *pVertexNew;
 			pVertexBuffer->Lock(0, 0, (void **)&pVertexNew, 0);
 
 			int iCountVertex = 0;
@@ -1214,7 +1218,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 				sprintf(ppTextures[iNumGroup], pModel->m_pModel->m_ppTextures[g]);
 
 				//копируем вершины в новый буфер
-				memcpy(pVertexNew + iCountVertex, pVertex + pModel->m_pModel->m_pStartVertex[g], sizeof(vertex_static)* pModel->m_pModel->m_pVertexCount[g]);
+				memcpy(pVertexNew + iCountVertex, pVertex + pModel->m_pModel->m_pStartVertex[g], sizeof(vertex_static_ex)* pModel->m_pModel->m_pVertexCount[g]);
 
 				//обновляем данные стартовых позиций и количества
 				pStartIndex[iNumGroup] = iCountIndex;
@@ -1270,7 +1274,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 
 
 		if (iCountSubsetNew > 0)
-			pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+			pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 		//}
 	}
 
@@ -1452,12 +1456,12 @@ ID CModels::copy(ID idModel)
 		pTransparencyModelCopy->m_pBoundVolume->setMinMax(&vMin, &vMax);
 
 
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* pTransparencyModelCopy->m_iCountVertex, NULL, NULL, D3DPOOL_MANAGED, &(pTransparencyModelCopy->m_pVertexBuffer), 0);
-		vertex_static *pVertex, *pVertexCopy;
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pTransparencyModelCopy->m_iCountVertex, NULL, NULL, D3DPOOL_MANAGED, &(pTransparencyModelCopy->m_pVertexBuffer), 0);
+		vertex_static_ex *pVertex, *pVertexCopy;
 		pTransparencyModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
 		pTransparencyModelCopy->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexCopy, 0);
 
-		memcpy(pVertexCopy, pVertex, sizeof(vertex_static)* pTransparencyModelCopy->m_iCountVertex);
+		memcpy(pVertexCopy, pVertex, sizeof(vertex_static_ex)* pTransparencyModelCopy->m_iCountVertex);
 
 		pTransparencyModel->m_pVertexBuffer->Unlock();
 		pTransparencyModelCopy->m_pVertexBuffer->Unlock();
@@ -1771,7 +1775,7 @@ void CModels::modelComBound(ID idModel)
 	CModel *pModel = m_aModels[idModel];
 
 	if (pModel->m_pModel->m_uiSubsetCount > 0)
-		pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+		pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 	
 	if (pModel->m_pArrSplits)
 		modelComBound4Segments(idModel);
@@ -1795,7 +1799,7 @@ void CModels::modelComBoundArrTransparency(ID idModel)
 		pTransparency->m_pBoundVolume->setPosition(pModel->m_pBoundVolume->getPosition());
 		pTransparency->m_pBoundVolume->setRotation(pModel->m_pBoundVolume->getRotation());
 		pTransparency->m_pBoundVolume->setScale(pModel->m_pBoundVolume->getScale());
-		pTransparency->m_pBoundVolume->calcBound(pTransparency->m_pVertexBuffer, pTransparency->m_iCountVertex, sizeof(vertex_static));
+		pTransparency->m_pBoundVolume->calcBound(pTransparency->m_pVertexBuffer, pTransparency->m_iCountVertex, sizeof(vertex_static_ex));
 		pTransparency->m_pBoundVolume->getMinMax(&vMin, &vMax);
 
 		if (vMin.x < vMinModel.x)
@@ -1831,7 +1835,7 @@ void CModels::modelComBound4Segments(ID idModel)
 
 	//копируем данные из дх буферов
 	//{
-	vertex_static *pVertex;
+	vertex_static_ex *pVertex;
 	mem_delete(m_pCurrArrMeshVertex);
 	mem_delete(m_pCurrArrMeshIndex);
 
@@ -1878,7 +1882,7 @@ void CModels::modelComBound4Segments(ID idModel)
 			pSegment->m_pBoundVolumeP->setRotation(pModel->m_pBoundVolume->getRotation());
 			pSegment->m_pBoundVolumeP->setScale(pModel->m_pBoundVolume->getScale());
 			//pSegment->m_pBoundVolumeP->calcWorldAndTrans();
-			pSegment->m_pBoundVolumeP->calcBoundIndex(pModel->m_pModel->m_pVertexBuffer, pSegment->m_ppArrPoly, pSegment->m_pCountPoly, pSegment->m_uiCountSubSet, sizeof(vertex_static));
+			pSegment->m_pBoundVolumeP->calcBoundIndex(pModel->m_pModel->m_pVertexBuffer, pSegment->m_ppArrPoly, pSegment->m_pCountPoly, pSegment->m_uiCountSubSet, sizeof(vertex_static_ex));
 
 			if (iCount >= 5)
 				int qwerty = 0;
@@ -1986,7 +1990,7 @@ void CModels::segmentation(CModel *pModel)
 {
 	//копируем данные из дх буферов
 	//{
-	vertex_static *pVertex;
+	vertex_static_ex *pVertex;
 	mem_delete_a(m_pCurrArrMeshVertex);
 	mem_delete_a(m_pCurrArrMeshIndex);
 	
@@ -2015,7 +2019,7 @@ void CModels::segmentation(CModel *pModel)
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "poly: %d, ", pModel->m_pArrSplits->m_uiCountAllPoly);
 
 	pModel->m_pArrSplits->m_pBoundVolumeP = SGCore_CrBound();
-	pModel->m_pArrSplits->m_pBoundVolumeP->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+	pModel->m_pArrSplits->m_pBoundVolumeP->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 	float3 vMin, vMax;
 	pModel->m_pArrSplits->m_pBoundVolumeP->getMinMax(&vMin, &vMax);
@@ -2538,8 +2542,6 @@ void CModels::editVolume(CModel *pModel, CSegment *pSplit)
 	{
 		for (UINT k = 0; k<pSplit->m_pCountPoly[i] * 3; ++k)
 		{
-			if (pSplit->m_ppArrPoly[i][k] > 999999)
-				int qwerty = 0;
 			vCurr = m_pCurrArrMeshVertex[(pSplit->m_ppArrPoly[i][k])] * (* (pSplit->m_pBoundVolumeP->calcWorld()));
 			if (vCurr.x > vMax.x)
 				vMax.x = vCurr.x;
@@ -2810,7 +2812,7 @@ void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex)
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 
-	g_pDXDevice->SetStreamSource(0, m_aModels[idModel]->m_pLod->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	g_pDXDevice->SetStreamSource(0, m_aModels[idModel]->m_pLod->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 
 	g_pDXDevice->SetIndices(m_aModels[idModel]->m_pLod->m_pModel->m_pIndexBuffer);
 	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
@@ -2835,7 +2837,7 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex)
 	if (m_aModels[idModel]->m_pModel->m_uiSubsetCount == 0)
 		return;
 
-	g_pDXDevice->SetStreamSource(0, m_aModels[idModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	g_pDXDevice->SetStreamSource(0, m_aModels[idModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 
 	g_pDXDevice->SetIndices(m_aModels[idModel]->m_pModel->m_pIndexBuffer);
 	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
@@ -2909,7 +2911,7 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 	pModel->m_pVisibleIndexBuffer->Unlock();
 	//}
 
-	g_pDXDevice->SetStreamSource(0, pModel->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	g_pDXDevice->SetStreamSource(0, pModel->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 	g_pDXDevice->SetIndices(pModel->m_pVisibleIndexBuffer);
 	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
 
@@ -2932,15 +2934,17 @@ void CModels::renderTransparency(DWORD timeDelta, ID idModelTransparency)
 {
 	STATIC_PRECOND_TRANSPARENCY_MODEL_ID(idModelTransparency, _VOID);
 
-	g_pDXDevice->SetStreamSource(0, m_aTransparency[idModelTransparency]->m_pVertexBuffer, 0, sizeof(vertex_static));
+	CTransparencyModel *pTransparencyModel = m_aTransparency[idModelTransparency];
 
-	g_pDXDevice->SetIndices(m_aTransparency[idModelTransparency]->m_pIndexBuffer);
+	g_pDXDevice->SetStreamSource(0, pTransparencyModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
+
+	g_pDXDevice->SetIndices(pTransparencyModel->m_pIndexBuffer);
 	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
 
-	SGCore_MtlSet(m_aTransparency[idModelTransparency]->m_idTex, (float4x4*)m_aTransparency[idModelTransparency]->m_pBoundVolume->calcWorld());
+	SGCore_MtlSet(pTransparencyModel->m_idTex, (float4x4*)pTransparencyModel->m_pBoundVolume->calcWorld());
 
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aTransparency[idModelTransparency]->m_iCountVertex, 0, m_aTransparency[idModelTransparency]->m_iCountIndex / 3);
-	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aTransparency[idModelTransparency]->m_iCountIndex / 3)));
+	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, pTransparencyModel->m_iCountVertex, 0, pTransparencyModel->m_iCountIndex / 3);
+	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((pTransparencyModel->m_iCountIndex / 3)));
 }
 
 //##########################################################################
@@ -3070,7 +3074,7 @@ void CModels::modelSetPhysics2(CModel *pModel, const char *szPath)
 	SGCore_StaticModelLoad(szFullPath, &pStatiModel);
 
 	pModel->m_pPhysics->m_aVertex.resize(pStatiModel->m_uiAllVertexCount);
-	vertex_static *pVert;
+	vertex_static_ex *pVert;
 	pStatiModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (int i = 0; i < pStatiModel->m_uiAllVertexCount; ++i)
 	{
@@ -3110,7 +3114,7 @@ void CModels::modelGenGroupInfo(CModel *pModel)
 	if (!pModel || pModel->m_pModel->m_uiSubsetCount <= 0)
 		return;
 
-	vertex_static *pVertex;
+	vertex_static_ex *pVertex;
 	pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
 
 	UINT *pIndex;
@@ -3165,7 +3169,7 @@ void CModels::modelGenGroupInfo4Transparency(CTransparencyModel *pModel)
 	if (!pModel)
 		return;
 
-	vertex_static* pVertex;
+	vertex_static_ex* pVertex;
 	pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
 
 	UINT *pIndex;
@@ -3469,7 +3473,7 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 			//блокируем индексный и вершинный буферы
 			UINT *pIndex;
 			m_aModels[i]->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-			vertex_static *pVertex;
+			vertex_static_ex *pVertex;
 			m_aModels[i]->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
 			//записываем позиции вершин
@@ -3502,7 +3506,7 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 				//блокируем индексный и вершинный буферы
 				UINT *pIndex;
 				m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-				vertex_static *pVertex;
+				vertex_static_ex *pVertex;
 				m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
 				//записываем позиции вершин
@@ -3603,7 +3607,7 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 		{
 			getPartBeam(id, SX_GEOM_TRACEBEAM_VISCALCOBJ, pStart, pDir);
 
-			vertex_static* pVertex;
+			vertex_static_ex* pVertex;
 			pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
 
 			UINT *pIndex;
@@ -3644,7 +3648,7 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 		}
 		else
 		{
-			vertex_static* pVertex;
+			vertex_static_ex* pVertex;
 			pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
 
 			UINT *pIndex;
@@ -3679,7 +3683,7 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 			pModel->m_pModel->m_pIndexBuffer->Unlock();
 		}
 
-		vertex_static* pVertex = 0;
+		vertex_static_ex* pVertex = 0;
 		UINT *pIndex = 0;
 
 		for (int i = 0; i < pModel->m_aTransparency.size(); ++i)

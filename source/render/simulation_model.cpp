@@ -98,7 +98,7 @@ void CSimulationModel::add(const char *szPath)
 	sprintf(szFullPath, "%s.dds", pStaticModel->m_ppTextures[0]);
 	m_idMtrl = SGCore_MtlLoad(szFullPath, MTL_TYPE_GEOM);
 
-	vertex_static* pData;
+	vertex_static_ex* pData;
 	pStaticModel->m_pVertexBuffer->Lock(0, 0, (void**)&pData, 0);
 
 	float3_t tmppos = pData[pStaticModel->m_pStartVertex[0]].Pos;
@@ -223,7 +223,7 @@ void CSimulationModel::render(DWORD timeDelta)
 
 void CSimulationModel::renderStatic(DWORD timeDelta)
 {
-	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
 	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationStatic);
 
@@ -239,7 +239,7 @@ void CSimulationModel::renderGreen(DWORD timeDelta)
 	gdata::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 	gdata::pDXDevice->SetStreamSource(1, m_pTransVertBufGreen, 0, sizeof(CGreenDataVertex));
 
-	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
 	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
 

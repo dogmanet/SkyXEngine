@@ -761,8 +761,8 @@ SX_LIB_API bool SGCore_DSE_IsAnimation(const char *szPath);
 //! загрузить статическую модель, data инициализируется внутри
 SX_LIB_API void SGCore_StaticModelLoad(const char *szFile, ISXDataStaticModel **ppData);	
 
-//! сохранить статическую модель
-SX_LIB_API void SGCore_StaticModelSave(const char *szFile, ISXDataStaticModel **pData);
+// сохранить статическую модель
+//SX_LIB_API void SGCore_StaticModelSave(const char *szFile, ISXDataStaticModel **pData);
 
 //! возвращает декларацию вершин статической модели
 SX_LIB_API IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl();	
@@ -794,21 +794,13 @@ struct ITransObject : public IBaseObject
 	virtual const float3* getPosition(float3 *pPos=0) = 0;
 	virtual const float3* getRotation(float3 *pRot = 0) = 0;
 	virtual const float3* getScale(float3 *pScale = 0) = 0;
-
-/*
-protected:
-	float3 m_vPosition;	//!< позиция
-	float3 m_vRotation;	//!< повороты
-	float3 m_vScale;	//!< масштабирование
-	float4x4 m_mWorld;	//!< мировая матрица на основе поворотов масштабирования и позиции
-	*/
 };
 
 //! создать ITransObject
 SX_LIB_API ITransObject* SGCore_CrTransObject();	
 
 //! структура описывающая ограничивающий квадрат (а точнее параллелепипед) в пространстве экрана
-struct SXPosBBScreen
+/*struct SXPosBBScreen
 {
 	float x;		//!< позиция по оси x в пространстве экрана
 	float y;		//!< позиция по оси y в пространстве экрана
@@ -817,7 +809,7 @@ struct SXPosBBScreen
 	float maxdepth;	//!< конец объекта глубина 0-1
 	float mindepth;	//!< начало объект глубина 0-1
 	bool IsVisible;	//!< виден ли квадрат наблюдателю
-};
+};*/
 
 struct CBoundBox
 {

@@ -195,7 +195,7 @@ void CGreen::preSegmentation(CModel *pGreen, const float3 *pLevelMin, const floa
 
 	//просчет ограничивающего бокса модели
 	pGreen->m_pSplitsTree->m_pBoundVolumeSys = SGCore_CrBound();
-	SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &(pGreen->m_pSplitsTree->m_pBoundVolumeSys), pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+	SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &(pGreen->m_pSplitsTree->m_pBoundVolumeSys), pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 	pGreen->m_pSplitsTree->m_pBoundVolumeSys->getMinMax(&vMin, &vMax);
 	pGreen->m_vMax = vMax * (1.f + GREEN_GEN_RAND_SCALE);
@@ -775,7 +775,7 @@ void CGreen::render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iL
 		CGreen::m_pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 		CGreen::m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CGreenDataVertex));
 
-		CGreen::m_pDXDevice->SetStreamSource(0, m_aGreens[idGreen]->m_aLods[iLod]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+		CGreen::m_pDXDevice->SetStreamSource(0, m_aGreens[idGreen]->m_aLods[iLod]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 		CGreen::m_pDXDevice->SetIndices(m_aGreens[idGreen]->m_aLods[iLod]->m_pModel->m_pIndexBuffer);
 		CGreen::m_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
 
@@ -1012,7 +1012,7 @@ ID CGreen::generate(const char *szName,
 		}
 
 		ISXBound *pBound = SGCore_CrBound();
-		SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &pBound, pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+		SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &pBound, pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 		float3 vGreenMax, vGreenMin;
 		pBound->getMinMax(&vGreenMin, &vGreenMax);
@@ -2111,7 +2111,7 @@ void CGreen::setGreenNav2(CModel *pGreen, const char *szPathName)
 
 	//pGreen->m_pPhysMesh->m_pArrVertex = new float3_t[pStatiModel->m_uiAllVertexCount];
 	pGreen->m_pPhysMesh->m_aVertex.resize(pStatiModel->m_uiAllVertexCount);
-	vertex_static *pVert;
+	vertex_static_ex *pVert;
 	pStatiModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (int i = 0; i < pStatiModel->m_uiAllVertexCount; ++i)
 	{
@@ -2159,7 +2159,7 @@ void CGreen::initGreenDataLod0(CModel *pGreen)
 
 	//pGreen->m_pDataLod0->m_pArrVertex = new float3_t[pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount];
 	pGreen->m_pDataLod0->m_aVertex.resize(pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount);
-	vertex_static *pVert;
+	vertex_static_ex *pVert;
 	pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (int i = 0; i < pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount; ++i)
 	{
