@@ -32,7 +32,7 @@ public:
 	void onLostDevice();
 	void onResetDevice();
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM2();
 
 	//! инициализация отражений
 	void init(MTLTYPE_REFLECT type);
@@ -85,13 +85,13 @@ public:
 	void setMinMax(const float3_t *pMin, const float3_t *pMax);
 
 	//! запись данных массива прсочетов
-	void setIDArr(ID id, ID idFace, ID idArr);
+	void setIDvisCalcObj(ID id, ID idFace, ID idVisCalcObj);
 
 	//! размер массива массивов идентификаторов просчета 
-	int getCountIDArrs();
+	int getCountIDsVisCalcObj();
 
 	//! получить идентификатор массива просчета
-	ID getIDArr(ID id, ID idFace);
+	ID getIDvisCalcObj(ID id, ID idFace);
 
 protected:
 
@@ -108,13 +108,13 @@ protected:
 	IFrustum *m_aFrustums[6];
 
 	//! массивы идентификаторов для просчета видимости
-	Array<ID*> m_aIDsArr;
+	Array<ID*> m_aIDsVisCalcObj;
 
 	//! количество обновлений отражения
 	int m_iCountUpdate;
 
 	//! тип отражений
-	MTLTYPE_REFLECT type_reflection;
+	MTLTYPE_REFLECT typeReflection;
 
 	//! предыдущие матрицы
 	float4x4 m_mOldMatProj, m_mOldMatView, m_mOldMatViewProj;

@@ -166,9 +166,9 @@ SX_LIB_API bool SRender_EditorCameraGetMove()
 
 //**************************************************************************
 
-SX_LIB_API void SRender_SimModelAdd(const char *szName)
+SX_LIB_API void SRender_SimModelAddModel(ISXDataStaticModel *pModel)
 {
-	gdata::Editors::pSimModel->add(szName);
+	gdata::Editors::pSimModel->add(pModel);
 }
 
 SX_LIB_API ID SRender_SimModelGetIDMtl()
@@ -178,12 +178,12 @@ SX_LIB_API ID SRender_SimModelGetIDMtl()
 
 SX_LIB_API MTLTYPE_MODEL SRender_SimModelGetType()
 {
-	return gdata::Editors::pSimModel->m_type_model;
+	return gdata::Editors::pSimModel->m_typeModel;
 }
 
 SX_LIB_API void SRender_SimModelSetType(MTLTYPE_MODEL type)
 {
-	gdata::Editors::pSimModel->m_type_model = type;
+	gdata::Editors::pSimModel->m_typeModel = type;
 }
 
 SX_LIB_API void SRender_SimModelSetNumCurrModel(int iCurrNumModel)

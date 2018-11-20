@@ -24,6 +24,8 @@ MTL_PRE_COND_ID(id, stdval)\
 if (!(m_aUnitMtrls[id]->m_pReflect))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, m_aUnitMtrls[id]->m_pMtrl->m_sName.c_str()); return stdval; }
 
+//##########################################################################
+
 class CMaterials
 {
 public:
@@ -56,10 +58,10 @@ public:
 	void mtlReLoad(ID id, const char *szName = 0);
 	void mtlSave(ID id);
 
-	ID getStdMtl(MTLTYPE_MODEL type_model);
+	ID getStdMtl(MTLTYPE_MODEL typeModel);
 	ID exists(const char *szName);
 	MTLTYPE_MODEL getTypeModel(ID id);
-	void setTypeModel(ID id, MTLTYPE_MODEL type_model);
+	void setTypeModel(ID id, MTLTYPE_MODEL typeModel);
 	ID getID(const char *szName);
 
 	//######################################################################
@@ -205,7 +207,7 @@ public:
 			bool m_useAlphaTest;
 
 			//! тип модели для рендера
-			MTLTYPE_MODEL type_model;
+			MTLTYPE_MODEL m_typeModel;
 
 			//! отправляемые данные в шейдеры
 			struct СDataShader
@@ -213,10 +215,10 @@ public:
 				СDataShader();
 				~СDataShader();
 
-				SX_ALIGNED_OP_MEM
+				SX_ALIGNED_OP_MEM2();
 
-					//! отправлять ли мировую матрицу
-					bool m_isTransWorld;
+				//! отправлять ли мировую матрицу
+				bool m_isTransWorld;
 
 				//! отправлять ли видову матрицу
 				bool m_isTransView;
@@ -301,7 +303,7 @@ public:
 			float m_fOldThickness;
 
 			//! тип отражений
-			MTLTYPE_REFLECT m_type_reflect;
+			MTLTYPE_REFLECT m_typeReflect;
 
 			//! прозрачный ли материал
 			bool m_isTransparent;
@@ -314,7 +316,7 @@ public:
 			~CPhysics();
 
 			//! тип физического материала
-			MTLTYPE_PHYSIC type_physics;
+			MTLTYPE_PHYSIC m_typePhysics;
 
 			//! коэффициент пробиваемости [0, ], чем больше тем сложнее пробить
 			float m_fDurability;
@@ -418,12 +420,12 @@ protected:
 	//! общее время кадров в млсек
 	UINT m_uiCountTimeDelta;
 
-	ID MtrlDefLight;
-	ID MtrlDefTree;
-	ID MtrlDefGrass;
-	ID MtrlDefStatic;
-	ID MtrlDefSkin;
-	ID BeginNonDef;
+	ID m_idMtrlDefLight;
+	ID m_idMtrlDefTree;
+	ID m_idMtrlDefGrass;
+	ID m_idMtrlDefStatic;
+	ID m_idMtrlDefSkin;
+	ID m_idBeginNonDef;
 
 	float4x4 m_mWorld, m_mViewProj, m_mWorldTrans, m_mViewTrans, m_mProjTrans;
 };

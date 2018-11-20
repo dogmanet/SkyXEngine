@@ -33,30 +33,50 @@ public:
 	CSimulationModel();
 	~CSimulationModel();
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM2();
 
-	void add(const char *szPath);
+	//! добавить модель (статическую)
+	void add(ISXDataStaticModel *pModel);
 
+	//! рендер (на основании установленного типа модели)
 	void render(DWORD timeDelta);
 
-	MTLTYPE_MODEL m_type_model;
+	//! возвращает id материала
+	ID getIdMtl();
+
+	//! записывает плоскость (на основании первого треугольника модели)
+	void getPlane(D3DXPLANE *pPlane);
+
+	//! записывает центр
+	void getCenter(float3_t *pCenter);
+
+	//**********************************************************************
+
+	//! тип модели
+	MTLTYPE_MODEL m_typeModel;
+
+	//! текущий номер модели для рендера
 	int m_iCurrRenderModel;
+
+	//! углы поворотов модели
 	float3 m_vRotation;
 
-	ID getIdMtl();
-	void getPlane(D3DXPLANE *pPlane);
-	void getCenter(float3_t *pCenter);
+	//**********************************************************************
 
 protected:
 
+	//! рисовать модель как статичекую
 	void renderStatic(DWORD timeDelta);
+
+	//! рисовать модель как растительность
 	void renderGreen(DWORD timeDelta);
+
+	//! рисовать модель как анимационную
 	void renderSkin(DWORD timeDelta);
 
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationStatic;
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationGreen;
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationSkin;
+	//**********************************************************************
 
+	//! структура модели
 	struct CModel
 	{
 		CModel(){ m_pModel = 0; }
@@ -65,16 +85,47 @@ protected:
 			m_pModel = pModel; m_vCenter = *pCenter; m_vMax = *pMax; m_vMin = *pMin; m_oPlane = *pPlane;
 		}
 
+		//! указатель на статическую модель
 		ISXDataStaticModel *m_pModel;
+
+		//! врешинный буфер для анимацонной модели
 		IDirect3DVertexBuffer9 *m_pAnim;
-		float3_t m_vMin, m_vMax, m_vCenter;
+		
+		//! минимум и максимум модели
+		float3_t m_vMin, m_vMax;
+
+		//! центр модели
+		float3_t m_vCenter;
+
+		//! плоскость (на основании первого треугольника модели)
 		D3DXPLANE m_oPlane;
 	};
 
+	//**********************************************************************
+
+	//! вершинная декларация для статической модели
+	IDirect3DVertexDeclaration9 *m_pVertexDeclarationStatic;
+
+	//! вершинная декларация для растительности
+	IDirect3DVertexDeclaration9 *m_pVertexDeclarationGreen;
+
+	//! вершинная декларация для анимационное модели
+	IDirect3DVertexDeclaration9 *m_pVertexDeclarationSkin;
+
+
+	//! массив моделей
 	Array<CModel*> m_aModels;
+
+	//! вершинный буфер с трансформациями для растительности (всего одна вершина)
 	IDirect3DVertexBuffer9 *m_pTransVertBufGreen;
+
+	//! данные о орастительности
 	CGreenDataVertex m_oGreen;
+
+	//! id материала
 	ID m_idMtrl;
+
+	//! мировая матрица
 	float4x4 m_mWorld;
 };
 
