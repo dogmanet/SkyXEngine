@@ -2,10 +2,18 @@
 #ifndef __LEVEL_EDITOR_H
 #define __LEVEL_EDITOR_H
 
+/*
+Все данные сцены отображаются в pListBoxList, 
+статическая геометрия, растительность  имеют такие же идентификаторы как они указаны в списке (нулевой элемент списка имеет нулевой идентификатор)
+игровые объекты хранят свой id в юзердате элементов списка, то есть чтобы достать id объекта, надо достать юзердату строки pListBoxList
+*/
+
 #define SX_LE_MMENU_WEATHER_BEGIN_ID 50001
 
 #define MAINWIN_SIZE_X	820
 #define MAINWIN_SIZE_Y	690
+
+#define SX_LEVEL_EDITOR_NAME "LevelEditor"
 
 #include <common/string.h>
 #include <common/array.h>
@@ -26,6 +34,13 @@
 #include "green_callback.h"
 #include "model_callback.h"
 #include "common_callback.h"
+
+//##########################################################################
+
+//! обработчик для получения превью уровня в диалоге выбора
+bool HandlerGetPreviewLevel(const char *szPath, char *szBuff);
+
+//##########################################################################
 
 namespace level_editor
 {
@@ -92,6 +107,12 @@ namespace level_editor
 	extern ISXGUIStatic *pStaticGeomLod1;
 	extern ISXGUIEdit *pEditGeomLod1;
 	extern ISXGUIButton *pButtonGeomLod1;
+
+	extern ISXGUIStatic *pStaticGeomPhysics;
+	extern ISXGUIEdit *pEditGeomPhysics;
+	extern ISXGUIButton *pButtonGeomPhysics;
+
+	extern ISXGUICheckBox *pCheckBoxSegmentation;
 	
 	extern ISXGUIStatic *pStaticGeomPos;
 	extern ISXGUIEdit *pEditGeomPosX;
@@ -137,6 +158,8 @@ namespace level_editor
 	extern ISXGUIStatic *pStaticGreenMask;
 	extern ISXGUIEdit *pEditGreenMask;
 	extern ISXGUIButton *pButtonGreenMask;
+
+	extern ISXGUICheckBox *pCheckBoxGreenAveragedRGB;
 	
 	extern ISXGUIStatic *pStaticGreenNav;
 	extern ISXGUIEdit *pEditGreenNav;
@@ -235,33 +258,115 @@ namespace level_editor
 
 	extern ISXGUIStatusBar *pStatusBar1;
 
+	//######################################################################
+
+	//! есть ли модель по относительнмоу пути
+	bool existsFileStaticGeom(const char *szRelPath);
+
 	//**********************************************************************
 
+	//! инициализация всех элементов интерфейса
 	void InitAllElements();
 
+	//! удаление всех элементов интерфейса
 	void DeleteAllElements();
 
-	void LevelNew(bool mess = true);
+	//**********************************************************************
+
+	//! обновление данных в редакторе уровней
+	void LevelEditorUpdate(DWORD timeDelta);
+
+	//! создание рендерных данных для редактора
+	void LEcreateRenderData();
+
+	//! удаление рендерных данных редактора
+	void LEdeleteRenderData();
+
+	//**********************************************************************
+
+	//! создать новый уровень (удаляет все что было), useMessage - выдавать ли сообщение если есть загруженные ресурсы
+	void LevelNew(bool useMessage = true);
+	
+	//! открыть диалог выбора уровеня, если будет выбран уровень то открыть уровень
 	void LevelOpen();
+
+	//! сохранить уровень
 	void LevelSave();
+
+	//! сохранить уровень как
 	void LevelSaveAs();
 
+	//**********************************************************************
+
+	//! убирает отметки с элементво меню опции "финальное изображение"
 	void FinalImageUncheckedMenu();
+
+	//! заполнить листбокс информацией о статической геометрии, iSelect - выделить элемент
+	void FillListBoxGeom(int iSelect=-1);
+
+	void FillListBoxGreen(int iSelect = -1);
+
+	void FillListBoxAIgrid();
+
+	void FillListBoxGameObj(int iSelect = -1);
 	
+	//**********************************************************************
 
 	void GeomActivateAll(bool bf);
 	void GeomActivateCreate(bool bf);
 	void GeomActivateTrans(bool bf);
 	void GeomSel(int sel);
 
+	//! обработка возможностей при трассировке луча для статической геометрии
+	void GeomTraceSelect();
+
+	void GeomTraceSetPos();
+
+	void GeomTraceCreate();
+	
+	//! обновление временной позиции копирования
+	void GeomUpdateCopyPos();
+
+	//! копирование модели
+	void GeomCopy();
+
+	//! трансформация статики по данным хелпера
+	void GeomTransformByHelper();
+
+	void GeomDelete(int iSelected);
+
+	//**********************************************************************
+
 	void GreenActivateAll(bool bf);
 	void GreenActivateMain(bool bf);
 	void GreenActivateCreate(bool bf);
 	void GreenActivateEdit(bool bf);
-	void GreenSel(int sel);
+	void GreenSel(int iSelect);
+
+	//! обработка возможностей при трассировке луча для растительности
+	void GreenTraceSelect();
+
+	void GreenTraceSetPos();
+
+	//! трансформация растительности по данным хелпера
+	void GreenTransformByHelper();
+
+	void GreenSetPos4Box();
+
+	void GreenDelete(int iSelected);
+
+	//**********************************************************************
 
 	void GameActivateAll(bool bf);
 	void GameSel(int sel);
+
+	void GameTraceSetPos();
+
+	void GameTraceCreate();
+
+	void GameRestoreListViewObject();
+
+	//! обновить позицию или повороты в таблице редактора
 	void GameUpdatePosRot();
 
 	//! установка видимости раздела свойств
@@ -270,44 +375,97 @@ namespace level_editor
 	//! установка видимости раздела соединений
 	void GameVisibleConnections(bool bf);
 
+	//! трансформация игровых объектов по данным хелпера
+	void GameTransformByHelper();
+
+	void GameDelete(int iSelected);
+
+	//**********************************************************************
 
 	void AIGridActivateAll(bool bf);
 	void AIGridEnableBB(bool bf);
 
+	//! обработка возможностей при трассировке луча для аи сетки
+	void AIGridTraceSelect();
 
-	void LevelEditorUpdate(DWORD timeDelta);		//!< обновление данных в редакторе уровней
+	void AIGridMultiSelect();
 
-	void LEcreateData();
-	void LEdeleteData();
+	//######################################################################
+
+	/*! \name Луч
+	@{*/
+
+	//! стартовая точка луча (позиция наблюдателя)
+	extern float3 vRayOrigin;
+
+	//! направление луча
+	extern float3 vRayDir;
+
+	//! прямое направление луча (направление наблюдателя)
+	extern float3 vRayDirDirect;
+
+	//! позиция мыши отнросительно окна рендера
+	extern POINT oPointMouse;
+
+	//!@}
+
+	//**********************************************************************
+
+	/*! \name Копирование сущностей
+	@{*/
+
+	//! используется ли копирование
+	extern bool useCopyData;
+
+	//! id элемента сущности, который надо скопировать
+	extern ID idCopy;
+
+	//! временная позиция копии (при визуальном перемещении)
+	extern float3 vCopyPos;
+
+	//!@}
+
+	//**********************************************************************
 
 	extern ID3DXMesh *pFigureBox;
-	extern CAxesHelper *pAxesHelper;	//!< рендер хелпера трансформаций
+
+	//! рендер хелпера трансформаций
+	extern CAxesHelper *pAxesHelper;	
+
+
+	extern float3 vHelperPos;
+	extern float3 vHelperRot;
+	extern float3 vHelperScale;
+
+	//**********************************************************************
 
 	extern int iActiveGroupType;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
 	extern ID idActiveGreenSplit;		//!< текущий идентификатор сплита растительность (если выделена растительность)
 	extern ID idActiveGreenObject;		//!< текущий идентификатор объекта растительности (если выделена растительность)
 
 	extern ID idActiveElement;			//!< текущий идентификатор выделенного элемента из списка
+
+	//**********************************************************************
+
 	extern bool canSelSelection;		//!< разрешено ли выделение?
 	extern bool canSelZTest;			//!< использовать ли z-test при выделении?
-	extern bool canSelMesh;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
+	extern bool canSelMesh;				//!< рисовать сеткой (true) или целиком модель выделения (false)?
 	extern bool canSelBackFacesCull;	//!< отсекать ли задние грани при выделении?
 
+	//**********************************************************************
+
 	extern bool canAIGBound;			//!< отрисовка боунда ai сетки
-	extern bool canAIGQuad;			//!< отрисовка квадов ai сетки
+	extern bool canAIGQuad;				//!< отрисовка квадов ai сетки
 	extern bool canAIGGraphPoint;		//!< отрисовка графпоинтов ai сетки
+
+	//**********************************************************************
 
 	//bound box для массового создания объектов растительности
 	extern bool canGreenRenderBox;		//!< разрешено ли рисовать бокс?
-	extern float3 vGreenBoxPos;		//!< позиция бокса
-	extern float3_t vGreenBoxWHD;	//!< ширина, высота, длина бокса
+	extern float3 vGreenBoxPos;			//!< позиция бокса
+	extern float3_t vGreenBoxWHD;		//!< ширина, высота, длина бокса
 
-
-
-
-	extern float3 vHelperPos;
-	extern float3 vHelperRot;
-	extern float3 vHelperScale;
+	//**********************************************************************
 
 	/*! добавление (true) либо создание нового (false) соединения для игрового объекта 
 	 \note при добавлении все данные с редакторов записываются в новое соединеие, при создании редакторы отвязывается от таблицы и их можно спокойно изменять

@@ -99,7 +99,7 @@ ID CLights::createCopy(ID id)
 			tmplight2->m_pShadowCube = new ShadowMapCubeTech();
 			tmplight2->m_pShadowCube->init();
 			tmplight2->m_pShadowCube->setPosition(&float3(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z));
-			tmplight2->m_pShadowCube->setNearFar(&float2(0.1f, tmplight->m_fDist));
+			tmplight2->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->m_fDist));
 			tmplight2->m_pShadowCube->setNear(tmplight2->m_pShadowCube->getNear());
 			tmplight2->m_pShadowCube->setFar(tmplight2->m_pShadowCube->getFar());
 			tmplight2->m_pShadowCube->setBias(tmplight->m_pShadowCube->getBias());
@@ -122,6 +122,8 @@ CLights::CLight::CLight()
 {
 	m_typeLight = LTYPE_LIGHT_NONE;
 	m_szName[0] = 0;
+
+	m_fShadowCoef = 0.01;
 
 	m_id = -1;
 	
@@ -552,7 +554,7 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 	}
 
 	if (m_aLights[id]->m_pShadowCube)
-		m_aLights[id]->m_pShadowCube->setNearFar(&float2(0.1, m_aLights[id]->m_fDist));
+		m_aLights[id]->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, m_aLights[id]->m_fDist));
 
 	if (m_aLights[id]->m_pMesh)
 	{
@@ -563,6 +565,17 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 	}
 
 	lightCountUpdateNull(id);
+}
+
+void CLights::setLightShadowCoef(ID id, float fShadowCoef)
+{
+	LIGHTS_PRE_COND_ID(id, _VOID);
+	m_aLights[id]->m_fShadowCoef = fShadowCoef;
+}
+
+float CLights::getLightShadowCoef(ID id)
+{
+	return m_aLights[id]->m_fShadowCoef;
 }
 
 void CLights::setLightPos(ID id, const float3* vec, bool greal)
@@ -1180,7 +1193,7 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 			m_aLights[id]->m_pShadowCube = new ShadowMapCubeTech();
 			m_aLights[id]->m_pShadowCube->init();
 			m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			m_aLights[id]->m_pShadowCube->setNearFar(&float2(0.1f, m_aLights[id]->m_fDist));
+			m_aLights[id]->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, m_aLights[id]->m_fDist));
 		}
 	}
 

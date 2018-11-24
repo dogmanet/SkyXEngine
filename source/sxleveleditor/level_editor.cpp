@@ -66,6 +66,12 @@ namespace level_editor
 	ISXGUIStatic *pStaticGeomLod1;
 	ISXGUIEdit *pEditGeomLod1;
 	ISXGUIButton *pButtonGeomLod1;
+
+	ISXGUIStatic *pStaticGeomPhysics;
+	ISXGUIEdit *pEditGeomPhysics;
+	ISXGUIButton *pButtonGeomPhysics;
+
+	ISXGUICheckBox *pCheckBoxSegmentation;
 	
 	ISXGUIStatic *pStaticGeomPos;
 	ISXGUIEdit *pEditGeomPosX;
@@ -111,6 +117,8 @@ namespace level_editor
 	ISXGUIStatic *pStaticGreenMask;
 	ISXGUIEdit *pEditGreenMask;
 	ISXGUIButton *pButtonGreenMask;
+
+	ISXGUICheckBox *pCheckBoxGreenAveragedRGB;
 	
 	ISXGUIStatic *pStaticGreenNav;
 	ISXGUIEdit *pEditGreenNav;
@@ -206,38 +214,17 @@ namespace level_editor
 
 	ISXGUIStatusBar *pStatusBar1;
 
-	void InitAllElements();
-
-	void DeleteAllElements();
-
-	void LevelNew(bool mess);
-	void LevelOpen();
-	void LevelSave();
-	void LevelSaveAs();
-
-	void FinalImageUncheckedMenu();
 	
 
-	void GeomActivateAll(bool bf);
-	void GeomActivateCreate(bool bf);
-	void GeomActivateTrans(bool bf);
-	void GeomSel(int sel);
 
-	void GreenActivateAll(bool bf);
-	void GreenActivateMain(bool bf);
-	void GreenActivateCreate(bool bf);
-	void GreenActivateEdit(bool bf);
-	void GreenSel(int sel);
+	float3 vRayOrigin;
+	float3 vRayDir;
+	float3 vRayDirDirect;
+	POINT oPointMouse;
 
-	void GameActivateAll(bool bf);
-	void GameSel(int sel);
-	void GameUpdatePosRot();
-	void GameVisibleProperties(bool bf);
-	void GameVisibleConnections(bool bf);
-
-	void AIGridActivateAll(bool bf);
-	void AIGridEnableBB(bool bf);
-
+	bool useCopyData = false;
+	ID idCopy = -1;
+	float3 vCopyPos;
 
 	ID3DXMesh *pFigureBox = 0;
 	CAxesHelper *pAxesHelper = 0;
@@ -273,7 +260,14 @@ namespace level_editor
 	Array<String> aMenuWeather;
 };
 
-//
+//##########################################################################
+
+bool level_editor::existsFileStaticGeom(const char *szRelPath)
+{
+	char szPath[1024];
+	sprintf(szPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), szRelPath);
+	return FileExistsFile(szPath);
+}
 
 void level_editor::InitAllElements()
 {
@@ -300,19 +294,14 @@ void level_editor::InitAllElements()
 
 	level_editor::pRenderWindow = SXGUICrBaseWndEx("RenderWindow", "RenderWindow", 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_VISIBLE | WS_BORDER, level_editor::pJobWindow->getHWND(), WndProcAllDefault);
 	level_editor::pRenderWindow->setFollowParentSides(true, true, true, true);
-	/*level_editor::pRenderWindow->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pRenderWindow->setFollowParentSide(SXGUI_SIDE_RIGHT, true);
-	level_editor::pRenderWindow->setFollowParentSide(SXGUI_SIDE_TOP, true);
-	level_editor::pRenderWindow->setFollowParentSide(SXGUI_SIDE_BOTTOM, true);*/
 	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_MouseMove, WM_MOUSEMOVE);
 	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_LDown, WM_LBUTTONDOWN);
 	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_LClick, WM_LBUTTONUP);
 	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_RClick, WM_RBUTTONUP);
 	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_MBUp, WM_MBUTTONUP);
-	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYDOWN, VK_DELETE, 1, 0, 0, 0);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYUP, VK_DELETE, 1, 0, 0, 0);
 
 	level_editor::pToolBar1 = SXGUICrToolBar(0, 1, 810, 26, level_editor::pJobWindow->getHWND(), WndProcAllDefault, 0);
-	//level_editor::pToolBar1->setFollowParentSides(true, true, true, false);
 	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
 	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_RIGHT, true);
 	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_TOP, true);
@@ -322,36 +311,26 @@ void level_editor::InitAllElements()
 	level_editor::pButtonTBNew = SXGUICrButtonEx("", 2, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBNew->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBNew->setFollowParentSides(true, false, false, true);
-	/*level_editor::pButtonTBNew->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pButtonTBNew->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pButtonTBNew->setBmpFromResourse(IDB_BITMAP1);
 
 	level_editor::pButtonTBOpen = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBOpen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBOpen->setFollowParentSides(true, false, false, true);
-	/*level_editor::pButtonTBOpen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pButtonTBOpen->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pButtonTBOpen->setBmpFromResourse(IDB_BITMAP2);
 
 	level_editor::pButtonTBSave = SXGUICrButtonEx("", 50, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBSave->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBSave->setFollowParentSides(true, false, false, true);
-	/*level_editor::pButtonTBSave->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pButtonTBSave->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pButtonTBSave->setBmpFromResourse(IDB_BITMAP4);
 
 	level_editor::pButtonTBSaveAs = SXGUICrButtonEx("", 74, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBSaveAs->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBSaveAs->setFollowParentSides(true, false, false, true);
-	/*level_editor::pButtonTBSaveAs->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pButtonTBSaveAs->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pButtonTBSaveAs->setBmpFromResourse(IDB_BITMAP3);
 
 	level_editor::pCheckBoxTBArrow = SXGUICrCheckBoxEx("", 104, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBArrow->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBArrow->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBArrow->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBArrow->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBArrow->setBmpFromResourse(IDB_BITMAP5);
 
 	level_editor::pCheckBoxTBPos = SXGUICrCheckBoxEx("", 128, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
@@ -678,7 +657,45 @@ void level_editor::InitAllElements()
 	level_editor::pButtonGeomLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
 	level_editor::pButtonGeomLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
 	level_editor::pButtonGeomLod1->setVisible(false);
-	level_editor::pButtonGeomLod1->addHandler(SXLevelEditor_ButtonGeomLod1_Click, WM_LBUTTONUP);
+	level_editor::pButtonGeomLod1->addHandler(SXLevelEditor_ButtonGeomLod1OrPhysics_Click, WM_LBUTTONUP);
+
+	level_editor::pStaticGeomPhysics = SXGUICrStatic("Physics", 5, 80, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomPhysics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomPhysics->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomPhysics->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomPhysics->setTransparentTextBk(true);
+	level_editor::pStaticGeomPhysics->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomPhysics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomPhysics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomPhysics->setVisible(false);
+
+	level_editor::pEditGeomPhysics = SXGUICrEdit("0", 80, 80, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomPhysics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomPhysics->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomPhysics->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomPhysics->setTransparentTextBk(true);
+	level_editor::pEditGeomPhysics->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomPhysics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomPhysics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomPhysics->setVisible(false);
+
+	level_editor::pButtonGeomPhysics = SXGUICrButton("...", 285, 80, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGeomPhysics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGeomPhysics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGeomPhysics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGeomPhysics->setVisible(false);
+	level_editor::pButtonGeomPhysics->addHandler(SXLevelEditor_ButtonGeomLod1OrPhysics_Click, WM_LBUTTONUP);
+
+
+	level_editor::pCheckBoxSegmentation = SXGUICrCheckBox("Segmentation", 80, 100, 100, 20, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+	level_editor::pCheckBoxSegmentation->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxSegmentation->setColorText(RGB(0, 0, 0));
+	level_editor::pCheckBoxSegmentation->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pCheckBoxSegmentation->setTransparentTextBk(true);
+	level_editor::pCheckBoxSegmentation->setColorBrush(RGB(220, 220, 220));
+	level_editor::pCheckBoxSegmentation->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pCheckBoxSegmentation->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pCheckBoxSegmentation->setVisible(false);
 	
 	level_editor::pStaticGeomPos = SXGUICrStatic("Position:", 320, 35, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
 	level_editor::pStaticGeomPos->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -908,7 +925,7 @@ void level_editor::InitAllElements()
 	level_editor::pRadioButtonGeomScaleZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
 	level_editor::pRadioButtonGeomScaleZ->setVisible(false);
 
-	level_editor::pButtonGeomFinish = SXGUICrButton("Finish", 100, 95, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGeomFinish = SXGUICrButton("Finish", 100, 135, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
 	level_editor::pButtonGeomFinish->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonGeomFinish->setFollowParentSide(SXGUI_SIDE_LEFT, true);
 	level_editor::pButtonGeomFinish->setFollowParentSide(SXGUI_SIDE_TOP, true);
@@ -1029,6 +1046,16 @@ void level_editor::InitAllElements()
 	level_editor::pButtonGreenMask->setFollowParentSide(SXGUI_SIDE_TOP, true);
 	level_editor::pButtonGreenMask->setVisible(false);
 	level_editor::pButtonGreenMask->addHandler(SXLevelEditor_ButtonGreenMask_Click, WM_LBUTTONUP);
+
+	level_editor::pCheckBoxGreenAveragedRGB = SXGUICrCheckBox("Use averaged RGB (default use alpha-channel)", 5, 120, 250, 20, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+	level_editor::pCheckBoxGreenAveragedRGB->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxGreenAveragedRGB->setColorText(RGB(0, 0, 0));
+	level_editor::pCheckBoxGreenAveragedRGB->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pCheckBoxGreenAveragedRGB->setTransparentTextBk(true);
+	level_editor::pCheckBoxGreenAveragedRGB->setColorBrush(RGB(220, 220, 220));
+	level_editor::pCheckBoxGreenAveragedRGB->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pCheckBoxGreenAveragedRGB->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pCheckBoxGreenAveragedRGB->setVisible(false);
 
 	level_editor::pStaticGreenMask = SXGUICrStatic("Mask texture", 5, 100, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
 	level_editor::pStaticGreenMask->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
@@ -1894,6 +1921,10 @@ void level_editor::DeleteAllElements()
 	mem_release(level_editor::pEditGeomModel);
 	mem_release(level_editor::pEditGeomLod1);
 	mem_release(level_editor::pButtonGeomLod1);
+	mem_release(level_editor::pStaticGeomPhysics);
+	mem_release(level_editor::pEditGeomPhysics);
+	mem_release(level_editor::pButtonGeomPhysics);
+	mem_release(level_editor::pCheckBoxSegmentation);
 	mem_release(level_editor::pButtonGeomModel);
 	
 	mem_release(level_editor::pStaticGeomPos);
@@ -1932,6 +1963,7 @@ void level_editor::DeleteAllElements()
 	mem_release(level_editor::pButtonGreenModel);
 	mem_release(level_editor::pButtonGreenLod2);
 	mem_release(level_editor::pButtonGreenMask);
+	mem_release(level_editor::pCheckBoxGreenAveragedRGB);
 	mem_release(level_editor::pStaticGreenMask);
 	mem_release(level_editor::pEditGreenMask);
 	mem_release(level_editor::pStaticGreenNav);
@@ -2007,10 +2039,45 @@ void level_editor::DeleteAllElements()
 
 //##########################################################################
 
+void level_editor::LEcreateRenderData()
+{
+	level_editor::pAxesHelper = new CAxesHelper();
+	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &level_editor::pFigureBox, 0);
+}
+
+void level_editor::LEdeleteRenderData()
+{
+	mem_delete(level_editor::pAxesHelper);
+	mem_release(level_editor::pFigureBox);
+}
+
 void level_editor::LevelEditorUpdate(DWORD timeDelta)
 {
-	static float3 vCamPos;
-	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
+	static float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
+	level_editor::vRayOrigin = vObserverPos;
+	
+	static float4x4 mObserverView, mObserverProj;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mObserverView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mObserverProj);
+
+	float fDeterminant=0;
+	SMMATRIX mInvObserverView = SMMatrixInverse(&fDeterminant, mObserverView);
+	GetCursorPos(&level_editor::oPointMouse);
+	ScreenToClient(SRender_GetHandleWin3D(), &level_editor::oPointMouse);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	level_editor::vRayDirDirect = float3(
+		(2.0f * (float)level_editor::oPointMouse.x / float(*r_win_width) - 1.0f) / mObserverProj._11,
+		-(2.0f * (float)level_editor::oPointMouse.y / float(*r_win_height) - 1.0f) / mObserverProj._22,
+		1.0f
+		) * mInvObserverView;
+	level_editor::vRayDir = level_editor::vRayDirDirect - vObserverPos;
+	
+	//**********************************************************************
 
 	static const float * r_far = GET_PCVAR_FLOAT("r_far");
 
@@ -2095,6 +2162,14 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 			}
 		}
 
+		if (level_editor::useCopyData && level_editor::idCopy >= 0)
+		{
+			if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+			{
+				SGeom_RenderSingly(timeDelta, level_editor::idCopy, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC), &(level_editor::vCopyPos));
+			}
+		}
+
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
 			if (level_editor::idActiveElement > -1)
@@ -2102,12 +2177,12 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 				if (level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
 				{
 					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-					SGreen_RenderObject(timeDelta, &vCamPos, level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+					SGreen_RenderObject(timeDelta, &vObserverPos, level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 				else
 				{
 					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-					SGreen_RenderSingly(timeDelta, &vCamPos, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+					SGreen_RenderSingly(timeDelta, &vObserverPos, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 			}
 		}
@@ -2134,10 +2209,10 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	if (level_editor::canAIGQuad)
-		SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
+		SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vObserverPos, *r_far);
 
 	if (level_editor::canAIGGraphPoint)
-		SAIG_RenderGraphPoints(&vCamPos, *r_far);
+		SAIG_RenderGraphPoints(&vObserverPos, *r_far);
 
 	if (level_editor::canAIGBound)
 	{
@@ -2162,18 +2237,152 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	}
+
+	if (!level_editor::useCopyData && SSInput_GetKeyState(SIK_LCONTROL) && SSInput_GetKeyState(SIK_C))
+	{
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		{
+			int iSelected = level_editor::pListBoxList->getSel();
+			if (iSelected < 0)
+				return;
+
+			level_editor::useCopyData = true;
+			level_editor::idCopy = iSelected;
+			SGeom_ModelGetPosition(level_editor::idCopy, &(level_editor::vCopyPos));
+		}
+	}
+
+	//! если ПКМ либо данные копирования не валидны, то обнуляем данные копирования
+	if (SSInput_GetKeyState(SIM_RBUTTON) || (level_editor::useCopyData && level_editor::idCopy < 0))
+	{
+		level_editor::useCopyData = false;
+		level_editor::idCopy = -1;
+	}
 }
 
 //##########################################################################
 
-void level_editor::LEcreateData()
+void level_editor::FinalImageUncheckedMenu()
 {
-	level_editor::pAxesHelper = new CAxesHelper();
-	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &level_editor::pFigureBox, 0);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
+
+	level_editor::pCheckBoxTBRColor->setCheck(false);
+	level_editor::pCheckBoxTBRNormal->setCheck(false);
+	level_editor::pCheckBoxTBRParam->setCheck(false);
+	level_editor::pCheckBoxTBRAmDiff->setCheck(false);
+	level_editor::pCheckBoxTBRSpecular->setCheck(false);
+	level_editor::pCheckBoxTBRLighting->setCheck(false);
 }
 
-void level_editor::LEdeleteData()
+//##########################################################################
+
+void level_editor::LevelNew(bool mess)
 {
-	mem_delete(level_editor::pAxesHelper);
-	mem_release(level_editor::pFigureBox);
+	if (mess && (SGeom_GetCountModels() <= 0 || (SGeom_GetCountModels() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)))
+		return;
+
+	SLevel_Clear();
+	char tmpcaption[256];
+	sprintf(tmpcaption, "%s: new level ** ", SX_LEVEL_EDITOR_NAME);
+	level_editor::pJobWindow->setText(tmpcaption);
+	level_editor::iActiveGroupType = 0;
+	level_editor::idActiveElement = -1;
+	level_editor::idActiveGreenSplit = -1;
+	level_editor::idActiveGreenObject = -1;
+
+	ID gid = SLight_GetGlobal();
+	if (gid >= 0)
+		SLight_DeleteLight(gid);
+
+	level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+	level_editor::pCheckBoxTBLevelType->setCheck(false);
+	level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+}
+
+void level_editor::LevelOpen()
+{
+	if (SGeom_GetCountModels() > 0 && MessageBox(0, "Are you sure that you need to open the level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)
+		return;
+
+	level_editor::LevelNew(false);
+
+	char szSelName[MAX_PATH];
+	char szSelPath[1024];
+	szSelName[0] = szSelPath[0] = 0;
+	gui_func::dialogs::SelectDirOwn(szSelName, szSelPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false, 0, HandlerGetPreviewLevel);
+
+	if (STR_VALIDATE(szSelPath))
+	{
+		SLevel_Load(szSelName, false);
+		char szCaption[256];
+		sprintf(szCaption, "%s: %s", SX_LEVEL_EDITOR_NAME, szSelName);
+		level_editor::pJobWindow->setText(szCaption);
+
+		ID idGlobalLight = SLight_GetGlobal();
+		if (idGlobalLight >= 0)
+		{
+			level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP26);
+			level_editor::pCheckBoxTBLevelType->setCheck(true);
+			level_editor::pCheckBoxTBGLightEnable->setCheck(true);
+		}
+		else
+		{
+			level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+			level_editor::pCheckBoxTBLevelType->setCheck(false);
+			level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+		}
+	}
+}
+
+void level_editor::LevelSave()
+{
+	if (SLevel_GetName()[0])
+		SLevel_Save(SLevel_GetName());
+	else
+	{
+		if (SGeom_GetCountModels() <= 0)
+			MessageBox(0, "You need to create a level!", 0, 0);
+		else
+			level_editor::LevelSaveAs();
+	}
+}
+
+void level_editor::LevelSaveAs()
+{
+	if (SGeom_GetCountModels() <= 0)
+	{
+		MessageBox(0, "You need to create a level!", 0, 0);
+		return;
+	}
+
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
+
+	gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0/*, HandlerPreviewLevel*/);
+	if (STR_VALIDATE(szPath))
+	{
+		SLevel_Save(szName);
+		char szCaption[256];
+		sprintf(szCaption, "%s: %s", "level_editor", szName);
+		level_editor::pJobWindow->setText(szCaption);
+	}
+}
+
+//##########################################################################
+
+bool HandlerGetPreviewLevel(const char *szPath, char *szBuff)
+{
+	String sPathImg = FileAppendSlash(szPath) + "preview.bmp";
+	if (FileExistsFile(sPathImg.c_str()))
+	{
+		sprintf(szBuff, "%s", sPathImg.c_str());
+		return true;
+	}
+	return false;
 }

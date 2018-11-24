@@ -894,7 +894,7 @@ ShadowMapCubeTech::ShadowMapCubeTech()
 	EnableEdge[0] = EnableEdge[1] = EnableEdge[2] = EnableEdge[3] = EnableEdge[4] = EnableEdge[5] = true;
 	EnableEdgeNulled[0] = EnableEdgeNulled[1] = EnableEdgeNulled[2] = EnableEdgeNulled[3] = EnableEdgeNulled[4] = EnableEdgeNulled[5] = false;
 
-	Bias = 0.1f;
+	Bias = 0.001f;
 	BlurPixel = 16.0f;
 
 	DepthMap = 0;
@@ -1141,7 +1141,7 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1, "g_vPosCam", &observerpos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1, "g_vLightPos", &Position);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1, "g_vSizeMapBias", &float2(light_data::vSizeTexDepthLocal.x, Bias));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1, "g_fPixelSize", &pixel_size);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1, "g_fPixelSize", &pixel_size);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1, "g_vLightPos", &Position);
 	}
 	else

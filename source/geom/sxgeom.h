@@ -168,7 +168,7 @@ SX_LIB_API void SGeom_ComVisible(
 SX_LIB_API bool SGeom_TransparencyExistsForRender(ID idVisCalcObj = SX_GEOM_DEFAULT_VISCALCOBJ);
 
 //! рендер одной модели
-SX_LIB_API void SGeom_RenderSingly(DWORD timeDelta, ID idModel, ID idMtrl = -1);
+SX_LIB_API void SGeom_RenderSingly(DWORD timeDelta, ID idModel, ID idMtrl = -1, const float3 *pPos = 0);
 
 //! отрисовка всех моделей, на основе информации о видимости из массива видимости idVisCalcObj
 SX_LIB_API void SGeom_Render(
@@ -301,6 +301,9 @@ SX_LIB_API void SGeom_ModelGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPla
 
 //! записывает максимум и минимум подгруппы idGroup
 SX_LIB_API void SGeom_ModelGetGroupMinMax(ID idModel, ID idGroup, float3_t *pMin, float3_t *pMax);
+
+//! сегментирована ли модель
+SX_LIB_API bool SGeom_ModelGetSegmentation(ID idModel);
 
 //!@}
 

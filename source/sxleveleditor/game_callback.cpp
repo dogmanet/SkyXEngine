@@ -4,39 +4,42 @@
 void level_editor::GameActivateAll(bool bf)
 {
 	level_editor::pStaticGameClass->setVisible(bf);
+
 	level_editor::pComboBoxGameClass->setVisible(bf);
 	level_editor::pComboBoxGameClass->setSel(0);
+
 	level_editor::pButtonGameTab->setVisible(bf);
 	level_editor::pButtonGameTab->setText("Connections");
+
 	level_editor::pListViewGameClass->setVisible(bf);
 	level_editor::pListViewGameClass->clearStrings();
+
 	level_editor::pComboBoxGameValue->setVisible(false);
 	level_editor::pComboBoxGameValue->clear();
+
 	level_editor::pEditGameValue->setVisible(false);
 	level_editor::pEditGameValue->setText("");
+
 	level_editor::pButtonGameValue->setVisible(false);
+
 	level_editor::pListViewGameClass->setEnable(false);
 
 	level_editor::pStaticGameHelp->setVisible(bf);
 	level_editor::pMemoGameHelp->setText("");
 	level_editor::pMemoGameHelp->setVisible(bf);
+
 	level_editor::pButtonGameCreate->setVisible(bf);
 
 	for (int i = 0; i < 16; ++i)
-	{
 		level_editor::pCheckBoxGameFlags[i]->setVisible(false);
-	}
 
-	if (!bf)
-		level_editor::GameVisibleConnections(false);
+	level_editor::GameVisibleConnections(false);
 }
 
 void level_editor::GameSel(int sel)
 {
 	for (int i = 0; i < 16; ++i)
-	{
 		level_editor::pCheckBoxGameFlags[i]->setVisible(false);
-	}
 
 	level_editor::pComboBoxGameValue->setVisible(false);
 	level_editor::pComboBoxGameValue->clear();
@@ -45,80 +48,94 @@ void level_editor::GameSel(int sel)
 	level_editor::pButtonGameCreate->setVisible(false);
 	level_editor::pListViewGameClass->setEnable(true);
 	level_editor::pListViewGameClass->clearStrings();
-	ID seldata = level_editor::pListBoxList->getItemData(sel);
-	level_editor::idActiveElement = seldata;
-	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
-	CBaseEntity* bEnt = SXGame_EntGet(seldata);
-	proptable_t* pt = SXGame_EntGetProptable(bEnt->getClassName());
 
-	char txtclasscb[256];
-	const char* txtclassent = bEnt->getClassName();
+	//получение id игрового объекта
+	ID isSelected = level_editor::pListBoxList->getItemData(sel);
+	level_editor::idActiveElement = isSelected;
+	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+	CBaseEntity *pEntity = SXGame_EntGet(isSelected);
+	proptable_t *pPropertyTable = SXGame_EntGetProptable(pEntity->getClassName());
+
+	//определяем класс
+	char szComboBoxClass[256];
+	const char *szClassObj = pEntity->getClassName();
 	for (int i = 0; i < level_editor::pComboBoxGameClass->getCount(); ++i)
 	{
-		level_editor::pComboBoxGameClass->getItemText(i, txtclasscb);
-		if (strcmp(txtclasscb, txtclassent) == 0)
+		level_editor::pComboBoxGameClass->getItemText(i, szComboBoxClass);
+		if (strcmp(szComboBoxClass, szClassObj) == 0)
+		{
 			level_editor::pComboBoxGameClass->setSel(i);
+			break;
+		}
 	}
 	
-	propdata_t* pd;
-	char txtkey[256];
-	char txtval[256];
+	propdata_t *pPropertyData;
+	char szKey[256];
+	char szVal[256];
 
-	Array<proptable_t*> tmparr;
+	Array<proptable_t*> aPropTable;
 
-	proptable_t* ptparent = pt->pBaseProptable;
-	while (ptparent)
+	proptable_t *pPropTableBase = pPropertyTable->pBaseProptable;
+	while (pPropTableBase)
 	{
-		tmparr.push_back(ptparent);
-		ptparent = ptparent->pBaseProptable;
+		aPropTable.push_back(pPropTableBase);
+		pPropTableBase = pPropTableBase->pBaseProptable;
 	}
 
 	
 	memset(level_editor::aGameObjectFlags, 0, sizeof(const char*)* 16);
 
-	for (int k = 0; k < tmparr.size(); ++k)
+	//проход по всем родительским таблицам свойств и вставка их в таблицу 
+	for (int k = 0; k < aPropTable.size(); ++k)
 	{
-		ptparent = tmparr[(tmparr.size() - 1) - k];
-		for (int i = 0; i < ptparent->numFields; ++i)
+		pPropTableBase = aPropTable[(aPropTable.size() - 1) - k];
+		
+		//проход по всему списку свойств родительской таблицы
+		for (int i = 0; i < pPropTableBase->numFields; ++i)
 		{
-			pd = &ptparent->pData[i];
-			if (pd->szKey && pd->szEdName && !(pd->flags & PDFF_NOEDIT) && pd->editor.type != PDE_NONE)
+			pPropertyData = &pPropTableBase->pData[i];
+			
+			if (pPropertyData->szKey && pPropertyData->szEdName && !(pPropertyData->flags & PDFF_NOEDIT) && pPropertyData->editor.type != PDE_NONE)
 			{
-				sprintf(txtkey, "%s", pd->szEdName);
-				bEnt->getKV(pd->szKey, txtval, 256);
-				int str = level_editor::pListViewGameClass->addString((long)pd);
-				level_editor::pListViewGameClass->setItemText(txtkey, 0, str);
-				//propdata_t* pd2 = (propdata_t*)level_editor::pListViewGameClass->getItemData(str);
-				level_editor::pListViewGameClass->setItemText(txtval, 1, str);
+				sprintf(szKey, "%s", pPropertyData->szEdName);
+				pEntity->getKV(pPropertyData->szKey, szVal, 256);
+
+				//вставляем новую строку
+				int iString = level_editor::pListViewGameClass->addString((long)pPropertyData);
+
+				//вставляем название в первую ячейку, а во вторую значение
+				level_editor::pListViewGameClass->setItemText(szKey, 0, iString);
+				level_editor::pListViewGameClass->setItemText(szVal, 1, iString);
 			}
 
-			if (pd->szEdName && pd->type == PDF_FLAG)
+			if (pPropertyData->szEdName && pPropertyData->type == PDF_FLAG)
 			{
-				int index = log2(pd->flags) - 16;
-				level_editor::aGameObjectFlags[index] = pd->szEdName;
+				int index = log2(pPropertyData->flags) - 16;
+				level_editor::aGameObjectFlags[index] = pPropertyData->szEdName;
 			}
 		}
 	}
 
-	tmparr.clear();
+	aPropTable.clear();
 
-	for (int i = 0; i < pt->numFields; ++i)
+	//проход по всей собственной таблице свойств и вставка ее значений в таблицу
+	for (int i = 0; i < pPropertyTable->numFields; ++i)
 	{
-		pd = &pt->pData[i];
-		if (pd->szKey && pd->szEdName && !(pd->flags & PDFF_NOEDIT) && pd->editor.type != PDE_NONE)
+		pPropertyData = &pPropertyTable->pData[i];
+		if (pPropertyData->szKey && pPropertyData->szEdName && !(pPropertyData->flags & PDFF_NOEDIT) && pPropertyData->editor.type != PDE_NONE)
 		{
-			sprintf(txtkey, "%s", pd->szEdName);
-			bEnt->getKV(pd->szKey, txtval, 256);
-			int str = level_editor::pListViewGameClass->addString((long)pd);
-			level_editor::pListViewGameClass->setItemText(txtkey, 0, str);
-			//propdata_t* pd2 = (propdata_t*)level_editor::pListViewGameClass->getItemData(str);
-			level_editor::pListViewGameClass->setItemText(txtval, 1, str);
+			sprintf(szKey, "%s", pPropertyData->szEdName);
+			pEntity->getKV(pPropertyData->szKey, szVal, 256);
+			int iString = level_editor::pListViewGameClass->addString((long)pPropertyData);
+
+			level_editor::pListViewGameClass->setItemText(szKey, 0, iString);
+			level_editor::pListViewGameClass->setItemText(szVal, 1, iString);
 		}
 
-		if (pd->szEdName && pd->type == PDF_FLAG)
+		if (pPropertyData->szEdName && pPropertyData->type == PDF_FLAG)
 		{
-			int index = log2(pd->flags) - 16;
-			level_editor::aGameObjectFlags[index] = pd->szEdName;
+			int index = log2(pPropertyData->flags) - 16;
+			level_editor::aGameObjectFlags[index] = pPropertyData->szEdName;
 		}
 	}
 
@@ -133,63 +150,114 @@ void level_editor::GameSel(int sel)
 	char szBuffer4096[4096];
 
 	//проходимся по всей таблице свойств класса объекта
-	for (int i = 0; i < pt->numFields; ++i)
+	for (int i = 0; i < pPropertyTable->numFields; ++i)
 	{
-		pd = &pt->pData[i];
+		pPropertyData = &pPropertyTable->pData[i];
 		
 		//если поле класса то что нам надо
-		if (pd->flags & PDFF_OUTPUT)
+		if (pPropertyData->flags & PDFF_OUTPUT)
 		{
 			//получаем строку с запакованными данными
-			bEnt->getKV(pd->szKey, szBuffer4096, 4096);
+			pEntity->getKV(pPropertyData->szKey, szBuffer4096, 4096);
 
-			//парсим строку
-			int iConns = parse_str(szBuffer4096, NULL, 0, ',');
-			char ** parts = (char**)alloca(sizeof(char*)*iConns);
-			iConns = parse_str(szBuffer4096, parts, iConns, ',');
+			//парсим строку вида Имя:действие:задержка:параметр[,и т.д]
+			int iCountConnections = parse_str(szBuffer4096, NULL, 0, ',');
+			char **ppConnections = (char**)alloca(sizeof(char*)*iCountConnections);
+			iCountConnections = parse_str(szBuffer4096, ppConnections, iCountConnections, ',');
 
-			for (int k = 0; k < iConns; ++k)
+			//разбор соеднинений
+			for (int k = 0; k < iCountConnections; ++k)
 			{
-				int iConns2 = parse_str(parts[k], NULL, 0, ':');
-				char ** parts2 = (char**)alloca(sizeof(char*)*iConns2);
-				iConns2 = parse_str(parts[k], parts2, iConns2, ':');
+				//парсим строку соединения на части
+				int iCountParts = parse_str(ppConnections[k], NULL, 0, ':');
+				char **ppParts = (char**)alloca(sizeof(char*)*iCountParts);
+				iCountParts = parse_str(ppConnections[k], ppParts, iCountParts, ':');
 
-				if (iConns2 > 0)
+				//разбор частей соединения
+				if (iCountParts > 0)
 				{
-					int iNumStr = level_editor::pListViewGameConnections->addString((long)pd);
-					sprintf(txtkey, "%s", pd->szEdName);
-					level_editor::pListViewGameConnections->setItemText(txtkey, 0, iNumStr);
+					int iNumStr = level_editor::pListViewGameConnections->addString((long)pPropertyData);
+					sprintf(szKey, "%s", pPropertyData->szEdName);
+					level_editor::pListViewGameConnections->setItemText(szKey, 0, iNumStr);
 
-					for (int j = 0; j < iConns2; ++j)
-						level_editor::pListViewGameConnections->setItemText(parts2[j], j + 1, iNumStr);
+					for (int j = 0; j < iCountParts; ++j)
+						level_editor::pListViewGameConnections->setItemText(ppParts[j], j + 1, iNumStr);
 
-					CBaseEntity *pEnt2 = SXGame_EntGetByName(parts2[0], 0);
-					if (pEnt2)
+					CBaseEntity *pEntity2 = SXGame_EntGetByName(ppParts[0], 0);
+					if (pEntity2)
 					{
-						proptable_t *pPropTable2 = SXGame_EntGetProptable(pEnt2->getClassName());
+						proptable_t *pPropTable2 = SXGame_EntGetProptable(pEntity2->getClassName());
 						propdata_t *pPropData2 = 0;
 						for (int j = 0; j < pPropTable2->numFields; ++j)
 						{
 							pPropData2 = &pPropTable2->pData[j];
-							if (pPropData2->flags & PDFF_INPUT && strcmp(pPropData2->szKey, parts2[1])==0)
+							if (pPropData2->flags & PDFF_INPUT && strcmp(pPropData2->szKey, ppParts[1]) == 0)
 							{
-								sprintf(txtkey, "%s", pPropData2->szEdName);
-								level_editor::pListViewGameConnections->setItemText(txtkey, 2, iNumStr);
+								sprintf(szKey, "%s", pPropData2->szEdName);
+								level_editor::pListViewGameConnections->setItemText(szKey, 2, iNumStr);
 							}
 						}
 					}
 				}
 			}
 
-			level_editor::pComboBoxGameConnectionsEvent->addItem(pd->szEdName);
-			level_editor::pComboBoxGameConnectionsEvent->setItemData(level_editor::pComboBoxGameConnectionsEvent->getCount()-1, (LPARAM)(pd->szKey));
+			level_editor::pComboBoxGameConnectionsEvent->addItem(pPropertyData->szEdName);
+			level_editor::pComboBoxGameConnectionsEvent->setItemData(level_editor::pComboBoxGameConnectionsEvent->getCount()-1, (LPARAM)(pPropertyData->szKey));
 		}
 	}
-	//-------
-	
-	level_editor::pAxesHelper->setPosition(bEnt->getPos());
-	level_editor::pAxesHelper->setRotation(bEnt->getOrient());
+		
+	level_editor::pAxesHelper->setPosition(pEntity->getPos());
+	level_editor::pAxesHelper->setRotation(pEntity->getOrient());
 	level_editor::pAxesHelper->setScale(float3(1, 1, 1));
+}
+
+void level_editor::GameTraceSetPos()
+{
+	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::idActiveElement < 0)
+		return;
+
+	CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(level_editor::pListBoxList->getItemData(level_editor::idActiveElement)));
+	
+	float3 vResult;
+	if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))
+	{
+		pEntity->setPos(vResult);
+		level_editor::pAxesHelper->setPosition(vResult);
+		level_editor::GameRestoreListViewObject();
+	}
+}
+
+void level_editor::GameTraceCreate()
+{
+	if (level_editor::iActiveGroupType != -EDITORS_LEVEL_GROUPTYPE_GAME)
+		return;
+
+	float3 vResult;
+	if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))
+	{
+		SXLevelEditor_ButtonGameCreate_Click(0, 0, 0, 0);
+		CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(level_editor::idActiveElement));
+		pEntity->setPos(vResult);
+		level_editor::pAxesHelper->setPosition(vResult);
+	}
+}
+
+void level_editor::GameRestoreListViewObject()
+{
+	int iSelected = level_editor::pListBoxList->getSel();
+
+	if (iSelected < 0)
+		return;
+
+	CBaseEntity* bEnt = SXGame_EntGet(level_editor::pListBoxList->getItemData(iSelected));
+	char szStr4096[4096];
+
+	for (int i = 0; i < level_editor::pListViewGameClass->getStringCount(); ++i)
+	{
+		propdata_t* pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(i);
+		bEnt->getKV(pd->szKey, szStr4096, 4096);
+		level_editor::pListViewGameClass->setItemText(szStr4096, 1, i);
+	}
 }
 
 void level_editor::GameUpdatePosRot()
@@ -197,36 +265,139 @@ void level_editor::GameUpdatePosRot()
 	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::idActiveElement < 0)
 		return;
 
-	CBaseEntity* bEnt = SXGame_EntGet(level_editor::idActiveElement);
-	propdata_t* pd = 0;
-	char txtval[256];
+	CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(level_editor::idActiveElement));
+	propdata_t *pPropData = 0;
+	char szVal[256];
 
 	for (int i = 0; i < level_editor::pListViewGameClass->getStringCount(); ++i)
 	{
-		pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(i);
+		pPropData = (propdata_t*)level_editor::pListViewGameClass->getItemData(i);
 
-		if (pd)
+		if (pPropData)
 		{
-			if (stricmp(pd->szKey, "origin") == 0 || stricmp(pd->szKey, "rotation") == 0)
+			if (stricmp(pPropData->szKey, "origin") == 0 || stricmp(pPropData->szKey, "rotation") == 0)
 			{
-				bEnt->getKV(pd->szKey, txtval, 256);
-				level_editor::pListViewGameClass->setItemText(txtval, 1, i);
+				pEntity->getKV(pPropData->szKey, szVal, 256);
+				level_editor::pListViewGameClass->setItemText(szVal, 1, i);
 			}
 		}
 	}
 }
 
+void level_editor::GameVisibleProperties(bool bf)
+{
+	level_editor::pStaticGameClass->setVisible(bf);
+	level_editor::pComboBoxGameClass->setVisible(bf);
+	level_editor::pListViewGameClass->setVisible(bf);
+	level_editor::pComboBoxGameValue->setVisible(false);
+	level_editor::pEditGameValue->setVisible(false);
+	level_editor::pButtonGameValue->setVisible(false);
+	level_editor::pStaticGameHelp->setVisible(bf);
+	level_editor::pMemoGameHelp->setVisible(bf);
+	level_editor::pButtonGameCreate->setVisible(bf);
+
+	for (int i = 0; i < 16; ++i)
+	{
+		level_editor::pCheckBoxGameFlags[i]->setVisible(false);
+	}
+}
+
+void level_editor::GameVisibleConnections(bool bf)
+{
+	level_editor::pListViewGameConnections->setVisible(bf);
+	level_editor::pStaticGameConnectionsEvent->setVisible(bf);
+	level_editor::pComboBoxGameConnectionsEvent->setVisible(bf);
+	level_editor::pStaticGameConnectionsName->setVisible(bf);
+	level_editor::pEditGameConnectionsName->setVisible(bf);
+	level_editor::pStaticGameConnectionsAction->setVisible(bf);
+	level_editor::pComboBoxGameConnectionsAction->setVisible(bf);
+	level_editor::pStaticGameConnectionsDelay->setVisible(bf);
+	level_editor::pEditGameConnectionsDelay->setVisible(bf);
+	level_editor::pStaticGameConnectionsParameter->setVisible(bf);
+	level_editor::pEditGameConnectionsParameter->setVisible(bf);
+	level_editor::pButtonGameConnectionsCreate->setVisible(bf);
+	level_editor::pButtonGameConnectionsDelete->setVisible(false);
+}
+
+void level_editor::GameTransformByHelper()
+{
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0))
+		return;
+
+	CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(level_editor::idActiveElement));
+
+	if (!pEntity)
+		return;
+
+	if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
+		pEntity->setPos(level_editor::pAxesHelper->getPosition());
+	else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_ROTATE)
+		pEntity->setOrient(level_editor::pAxesHelper->getRotationQ());
+
+	level_editor::GameUpdatePosRot();
+}
+
+void level_editor::GameDelete(int iSelected)
+{
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && iSelected >= 0))
+		return;
+
+	if (SXGame_EntGetCount() > 0 && iSelected < SXGame_EntGetCount())
+	{
+		SXGame_RemoveEntity(SXGame_EntGet(level_editor::pListBoxList->getItemData(iSelected)));
+		level_editor::pListBoxList->deleteItem(iSelected);
+	}
+}
+
+void level_editor::FillListBoxGameObj(int iSelect)
+{
+	level_editor::pListBoxList->clear();
+
+	int iCountGameObj = SXGame_EntGetCount();
+	int iCountGameObj2 = 0;
+	char szNote[1024];
+	for (int i = 0; i < iCountGameObj; ++i)
+	{
+		CBaseEntity *pEntity = SXGame_EntGet(i);
+		if (pEntity)
+		{
+			sprintf(szNote, "%s / %s", pEntity->getName(), pEntity->getClassName());
+			level_editor::pListBoxList->addItem(szNote);
+			level_editor::pListBoxList->setItemData(level_editor::pListBoxList->getItemCount() - 1, i);
+			++iCountGameObj2;
+		}
+	}
+
+	level_editor::pStaticListValCount->setText(String(iCountGameObj2).c_str());
+
+	if (iSelect < 0)
+	{
+		level_editor::iActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GAME;
+		level_editor::idActiveElement = -1;
+	}
+	else
+	{
+		level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
+		level_editor::idActiveElement = iSelect;
+		level_editor::pListBoxList->setSel(iSelect);
+		level_editor::GameSel(iSelect);
+	}
+}
+
+//##########################################################################
+
 LRESULT SXLevelEditor_ListViewGameClass_Click()
 {
-	int str = level_editor::pListViewGameClass->getSelString();
-	if (str < 0)
+	int iSelString = level_editor::pListViewGameClass->getSelString();
+	if (iSelString < 0)
 	{
 		level_editor::pEditGameValue->setVisible(false);
 		level_editor::pButtonGameValue->setVisible(false);
 		level_editor::pComboBoxGameValue->setVisible(false);
 		return 0;
 	}
-	propdata_t* pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(str);
+
+	propdata_t *pPropData = (propdata_t*)level_editor::pListViewGameClass->getItemData(iSelString);
 
 	level_editor::pEditGameValue->setVisible(false);
 	level_editor::pButtonGameValue->setVisible(false);
@@ -239,33 +410,33 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 		level_editor::pCheckBoxGameFlags[i]->setVisible(false);
 	}
 
-	if (pd->editor.type == PDE_TEXTFIELD)
+	if (pPropData->editor.type == PDE_TEXTFIELD)
 	{
 		level_editor::pEditGameValue->setVisible(true);
-		level_editor::pListViewGameClass->getItemText(txtval, 1, str, 256);
+		level_editor::pListViewGameClass->getItemText(txtval, 1, iSelString, 256);
 		level_editor::pEditGameValue->setText(txtval);
 
 		level_editor::pStaticGameHelp->setVisible(true);
 		level_editor::pMemoGameHelp->setVisible(true);
 	}
-	else if (pd->editor.type == PDE_FILEFIELD)
+	else if (pPropData->editor.type == PDE_FILEFIELD)
 	{
 		level_editor::pEditGameValue->setVisible(true);
 		level_editor::pButtonGameValue->setVisible(true);
-		level_editor::pListViewGameClass->getItemText(txtval, 1, str, 256);
+		level_editor::pListViewGameClass->getItemText(txtval, 1, iSelString, 256);
 		level_editor::pEditGameValue->setText(txtval);
 
 		level_editor::pStaticGameHelp->setVisible(true);
 		level_editor::pMemoGameHelp->setVisible(true);
 	}
-	else if (pd->editor.type == PDE_COMBOBOX)
+	else if (pPropData->editor.type == PDE_COMBOBOX)
 	{
 		level_editor::pStaticGameHelp->setVisible(true);
 		level_editor::pMemoGameHelp->setVisible(true);
 
 		level_editor::pComboBoxGameValue->clear();
 		level_editor::pComboBoxGameValue->setVisible(true);
-		editor_kv* ekv = (editor_kv*)pd->editor.pData;
+		editor_kv* ekv = (editor_kv*)pPropData->editor.pData;
 		int elem = 0;
 		while (ekv)
 		{
@@ -282,7 +453,7 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 
 		static char tval[256];
 		tval[0] = 0;
-		level_editor::pListViewGameClass->getItemText(tval, 1, str, 256);
+		level_editor::pListViewGameClass->getItemText(tval, 1, iSelString, 256);
 
 		const char* tval2;
 		char tval3[256];
@@ -321,14 +492,15 @@ LRESULT SXLevelEditor_ListViewGameClass_Click()
 			level_editor::pComboBoxGameValue->setSel(level_editor::pComboBoxGameValue->getCount()-1);
 		}
 	}
-	else if (pd->editor.type == PDE_FLAGS)
+	else if (pPropData->editor.type == PDE_FLAGS)
 	{
 		level_editor::pStaticGameHelp->setVisible(false);
 		level_editor::pMemoGameHelp->setVisible(false);
-		char txtval[256];
-		level_editor::pListViewGameClass->getItemText(txtval, 1, str, 256);
+		
+		char szVal[256];
+		level_editor::pListViewGameClass->getItemText(szVal, 1, iSelString, 256);
 		UINT uiFlags;
-		sscanf(txtval, "%d", &uiFlags);
+		sscanf(szVal, "%d", &uiFlags);
 		for (int i = 0; i < 16; ++i)
 		{
 			if (level_editor::aGameObjectFlags[i])
@@ -352,20 +524,22 @@ LRESULT SXLevelEditor_EditGameValue_Enter(HWND hwnd, UINT msg, WPARAM wParam, LP
 	if (sel < 0)
 		return 0;
 
-	int str = level_editor::pListViewGameClass->getSelString();
+	int iSelString = level_editor::pListViewGameClass->getSelString();
 	
-	if (str < 0)
+	if (iSelString < 0)
 		return 0;
 
 	char txt[256];
 	level_editor::pEditGameValue->getText(txt, 256);
-	level_editor::pListViewGameClass->setItemText(txt, 1, str);
+	level_editor::pListViewGameClass->setItemText(txt, 1, iSelString);
 	CBaseEntity* bEnt = SXGame_EntGet(level_editor::pListBoxList->getItemData(sel));
 	if (bEnt)
 	{
-		propdata_t* pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(str);
+		propdata_t* pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(iSelString);
 		bool bf = bEnt->setKV(pd->szKey, txt);
-		int qwerty = 0;
+		/*const char *szcName = bEnt->getName();
+		char* szName = (char*)(bEnt->getName());
+		level_editor::pListViewGameClass->setItemText(szName, 1, iSelString);*/
 
 		if (strcmp(pd->szKey, "name") == 0)
 		{
@@ -380,71 +554,63 @@ LRESULT SXLevelEditor_EditGameValue_Enter(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 LRESULT SXLevelEditor_ButtonGameValue_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int str = level_editor::pListViewGameClass->getSelString();
-	propdata_t* pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(str);
+	int iSelString = level_editor::pListViewGameClass->getSelString();
+	propdata_t *pPropData = (propdata_t*)level_editor::pListViewGameClass->getItemData(iSelString);
 
-	int len = 0;
-	editor_kv* ekv = (editor_kv*)pd->editor.pData;
+	int iLength = 0;
+	editor_kv *pEkv = (editor_kv*)pPropData->editor.pData;
 
-	while (ekv)
+	while (pEkv)
 	{
-		if (ekv->key && ekv->value)
+		if (pEkv->key && pEkv->value)
 		{
-			len += strlen(ekv->key) + strlen(ekv->value) + 2;
-			ekv++;
+			iLength += strlen(pEkv->key) + strlen(pEkv->value) + 2;
+			pEkv++;
 		}
 		else
 			break;
 	}
 
-	len += 2;
+	iLength += 2;
 
-	char* txtfmt = new char[len];
+	char* txtfmt = new char[iLength];
 
-	len = 0;
-	ekv = (editor_kv*)pd->editor.pData;
+	iLength = 0;
+	pEkv = (editor_kv*)pPropData->editor.pData;
 
-	while (ekv)
+	while (pEkv)
 	{
-		if (ekv->key && ekv->value)
+		if (pEkv->key && pEkv->value)
 		{
-			memcpy(txtfmt + len, ekv->key, strlen(ekv->key));
-			len += strlen(ekv->key);
-			txtfmt[len++] = 0;
-			memcpy(txtfmt + len, ekv->value, strlen(ekv->value));
-			len += strlen(ekv->value);
-			txtfmt[len++] = 0;
-			ekv++;
+			memcpy(txtfmt + iLength, pEkv->key, strlen(pEkv->key));
+			iLength += strlen(pEkv->key);
+			txtfmt[iLength++] = 0;
+			memcpy(txtfmt + iLength, pEkv->value, strlen(pEkv->value));
+			iLength += strlen(pEkv->value);
+			txtfmt[iLength++] = 0;
+			pEkv++;
 		}
 		else
 			break;
 	}
 
-	txtfmt[len++] = 0;
+	txtfmt[iLength++] = 0;
 
-	//char tmpstr[1024];
-	//memcpy(tmpstr, txtfmt, len);
 
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), txtfmt);
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
 	
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	if (gui_func::dialogs::SelectFileOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MODELS));
-		/*String tmpstr = tmppath + strlen(Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
-		tmpstr.replaceAll("\\", "/");
-		sprintf(tmpname, "%s", tmpstr.c_str());*/
+		String sRpath = StrCutStrI(szPath, Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE));
 		level_editor::pEditGameValue->setText(sRpath.c_str());
 
-		int sel = level_editor::pListBoxList->getSel();
-		level_editor::pListViewGameClass->setItemText((char*)sRpath.c_str(), 1, str);
-		CBaseEntity* bEnt = SXGame_EntGet(level_editor::pListBoxList->getItemData(sel));
-		if (bEnt)
-		{
-			bEnt->setKV(pd->szKey, sRpath.c_str());
-		}
+		int iSelected = level_editor::pListBoxList->getSel();
+		level_editor::pListViewGameClass->setItemText((char*)sRpath.c_str(), 1, iSelString);
+		CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(iSelected));
+		if (pEntity)
+			pEntity->setKV(pPropData->szKey, sRpath.c_str());
 	}
 
 	return 0;
@@ -457,17 +623,18 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 		MessageBox(0, "Class of game object is not selected!", 0, 0);
 		return 0;
 	}
-	char txt[256];
-	level_editor::pComboBoxGameClass->getItemText(level_editor::pComboBoxGameClass->getSel(), txt);
 
-	CBaseEntity* bEnt = SXGame_CreateEntity(txt);
-	bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
+	char szText[256];
+	level_editor::pComboBoxGameClass->getItemText(level_editor::pComboBoxGameClass->getSel(), szText);
+
+	CBaseEntity *pEntity = SXGame_CreateEntity(szText);
+	pEntity->setFlags(pEntity->getFlags() | EF_EXPORT | EF_LEVEL);
 
 	SXLevelEditor_ButtonGameObjectOpen_Click(hwnd, msg, wParam, lParam);
-	int sel = level_editor::pListBoxList->getItemCount() - 1;
-	level_editor::pListBoxList->setSel(sel);
-	level_editor::GameSel(sel);
-	level_editor::idActiveElement = sel;
+	int iSelected = level_editor::pListBoxList->getItemCount() - 1;
+	level_editor::pListBoxList->setSel(iSelected);
+	level_editor::GameSel(iSelected);
+	level_editor::idActiveElement = iSelected;
 	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
 
 	return 0;
@@ -475,36 +642,35 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 LRESULT SXLevelEditor_EditGameConnectionsName_IN(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	char edit_text[256];
-	level_editor::pEditGameConnectionsName->getText(edit_text, 256);
-	if (edit_text[0] == 0)
+	char szEditText[256];
+	level_editor::pEditGameConnectionsName->getText(szEditText, 256);
+	if (szEditText[0] == 0)
 		return 0;
 
 	if (!(isalpha(wParam) || isdigit(wParam) || (char)wParam == '_'))
 		return 0;
 
-	char* lower_text = CharLower(edit_text);
-	int tmpcoungo = SXGame_EntGetCount();
-	int tmpcoungo2 = 0;
-	char tmpname[256];
-	char* lower_name = 0;
-	char* found = 0;
-	for (int i = 0; i < tmpcoungo; ++i)
+	char *szEditTextLower = CharLower(szEditText);
+	int iCountObj = SXGame_EntGetCount();
+	char szName[256];
+	char *szNameLower = 0;
+	char *szFound = 0;
+	for (int i = 0; i < iCountObj; ++i)
 	{
-		CBaseEntity* bEnt = SXGame_EntGet(i);
-		if (bEnt)
+		CBaseEntity *pEntity = SXGame_EntGet(i);
+		if (pEntity)
 		{
-			strcpy(tmpname, bEnt->getName());
-			if (tmpname[0] == 0)
+			strcpy(szName, pEntity->getName());
+			if (szName[0] == 0)
 				continue;
-			lower_name = CharLower(tmpname);
-			if (found = strstr(lower_name, lower_text))
+			szNameLower = CharLower(szName);
+			if (szFound = strstr(szNameLower, szEditTextLower))
 			{
-				int qq = found - lower_name;
+				int qq = szFound - szNameLower;
 				if (qq == 0)
 				{
-					level_editor::pEditGameConnectionsName->setText(lower_name);
-					PostMessage(level_editor::pEditGameConnectionsName->getHWND(), EM_SETSEL, strlen(edit_text), strlen(lower_name));
+					level_editor::pEditGameConnectionsName->setText(szNameLower);
+					PostMessage(level_editor::pEditGameConnectionsName->getHWND(), EM_SETSEL, strlen(szEditText), strlen(szNameLower));
 					return 0;
 				}
 			}
@@ -512,41 +678,6 @@ LRESULT SXLevelEditor_EditGameConnectionsName_IN(HWND hwnd, UINT msg, WPARAM wPa
 	}
 
 	return 0;
-}
-
-void level_editor::GameVisibleProperties(bool bf)
-{
-	level_editor::pStaticGameClass->setVisible(bf);
-	level_editor::pComboBoxGameClass->setVisible(bf);
-	level_editor::pListViewGameClass->setVisible(bf);
-	//level_editor::pComboBoxGameValue->setVisible(bf);
-	//level_editor::pEditGameValue->setVisible(bf);
-	//level_editor::pButtonGameValue->setVisible(bf);
-	level_editor::pStaticGameHelp->setVisible(bf);
-	level_editor::pMemoGameHelp->setVisible(bf);
-	level_editor::pButtonGameCreate->setVisible(bf);
-
-	for (int i = 0; i < 16; ++i)
-	{
-		level_editor::pCheckBoxGameFlags[i]->setVisible(false);
-	}
-}
-
-void level_editor::GameVisibleConnections(bool bf)
-{
-	level_editor::pListViewGameConnections->setVisible(bf);
-	level_editor::pStaticGameConnectionsEvent->setVisible(bf);
-	level_editor::pComboBoxGameConnectionsEvent->setVisible(bf);
-	level_editor::pStaticGameConnectionsName->setVisible(bf);
-	level_editor::pEditGameConnectionsName->setVisible(bf);
-	level_editor::pStaticGameConnectionsAction->setVisible(bf);
-	level_editor::pComboBoxGameConnectionsAction->setVisible(bf);
-	level_editor::pStaticGameConnectionsDelay->setVisible(bf);
-	level_editor::pEditGameConnectionsDelay->setVisible(bf);
-	level_editor::pStaticGameConnectionsParameter->setVisible(bf);
-	level_editor::pEditGameConnectionsParameter->setVisible(bf);
-	level_editor::pButtonGameConnectionsCreate->setVisible(bf);
-	level_editor::pButtonGameConnectionsDelete->setVisible(false);
 }
 
 LRESULT SXLevelEditor_ButtonGameTab_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -557,6 +688,8 @@ LRESULT SXLevelEditor_ButtonGameTab_Click(HWND hwnd, UINT msg, WPARAM wParam, LP
 		level_editor::GameVisibleProperties(true);
 		level_editor::GameVisibleConnections(false);
 		level_editor::GameTabVal = 0;
+		level_editor::GameRestoreListViewObject();
+		level_editor::pListViewGameConnections->setSelString(-1);
 	}
 	else
 	{
@@ -564,12 +697,11 @@ LRESULT SXLevelEditor_ButtonGameTab_Click(HWND hwnd, UINT msg, WPARAM wParam, LP
 		level_editor::GameVisibleProperties(false);
 		level_editor::GameVisibleConnections(true);
 		level_editor::GameTabVal = 1;
+		level_editor::pListViewGameClass->setSelString(-1);
 	}
 
 	return 0;
 }
-
-//##########################################################################
 
 LRESULT SXLevelEditor_ListViewGameConnections_Click()
 {
@@ -687,7 +819,14 @@ LRESULT SXLevelEditor_EditGameConnectionsName_Enter(HWND hwnd, UINT msg, WPARAM 
 
 	level_editor::pEditGameConnectionsName->getText(szBuffer256, 256);
 
-	CBaseEntity *pEnt2 = SXGame_EntGetByName(szBuffer256, 0);
+	CBaseEntity *pEnt2 = 0;
+
+	if (stricmp(szBuffer256, "!this") == 0)
+		pEnt2 = pEnt;
+	else if (stricmp(szBuffer256, "!parent") == 0)
+		pEnt2 = pEnt->getParent();
+	else
+		pEnt2 = SXGame_EntGetByName(szBuffer256, 0);
 
 	//записываем в szBuffer256 текущее имя action
 	szBuffer256[0] = 0;

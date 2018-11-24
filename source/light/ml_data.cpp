@@ -179,8 +179,8 @@ void light_data::Init()
 	D3DXMACRO Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
 	light_data::shader_id::ps::idGenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSD_9);
 	light_data::shader_id::ps::idGenShadowCube1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point.ps", SHADER_CHECKDOUBLE_NAME);
-	D3DXMACRO Defines_GSC_9[] = { { "GSC_9", "" }, { 0, 0 } };
-	light_data::shader_id::ps::idGenShadowCube6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_9.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSC_9);
+	D3DXMACRO Defines_GSC_6[] = { { "GSC_6", "" }, { 0, 0 } };
+	light_data::shader_id::ps::idGenShadowCube6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_6.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSC_6);
 
 	light_data::shader_id::ps::idPPBlurDepthBased = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based.ps", SHADER_CHECKDOUBLE_PATH);
 	light_data::shader_id::ps::idPPBlurDepthBasedNoise = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based_noise.ps", "pp_blur_depth_based_noise.ps", SHADER_CHECKDOUBLE_PATH);

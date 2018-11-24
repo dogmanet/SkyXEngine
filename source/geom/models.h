@@ -28,6 +28,8 @@ See the license in LICENSE
 
 //!@}
 
+#define GEOM_COPY_POSTFIX "-copy"
+
 extern IDirect3DDevice9 *g_pDXDevice;
 
 //##########################################################################
@@ -439,6 +441,9 @@ public:
 	//! записывает точку центра подгруппы модели
 	void modelGetGroupCenter(ID idModel, ID idGroup, float3_t *pCenter);
 
+	//! сегментирована ли модель
+	bool modelGerSegmentation(ID idModel);
+
 	//**********************************************************************
 
 	//! расчет видимости
@@ -447,10 +452,10 @@ public:
 	//**********************************************************************
 
 	//! рендер одной модели
-	void renderSingly(DWORD timeDelta, ID idModel, ID idMtrl = -1);
+	void renderSingly(DWORD timeDelta, ID idModel, ID idMtrl = -1, const float3 *pPos = 0);
 
 	//! рендер моделей
-	void render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idTex = -1, ID idVisCalcObj = SX_GEOM_DEFAULT_VISCALCOBJ);
+	void render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj = SX_GEOM_DEFAULT_VISCALCOBJ);
 
 	//**********************************************************************
 
@@ -567,10 +572,10 @@ protected:
 	//**********************************************************************
 
 	//! рендер лода модели
-	void renderLod(DWORD timeDelta, ID idModel, ID idTex = -1);
+	void renderLod(DWORD timeDelta, ID idModel, ID idTex = -1, const float3 *pPos = 0);
 
 	//! рендер модели
-	void renderObject(DWORD timeDelta, ID idModel, ID idTex = -1);
+	void renderObject(DWORD timeDelta, ID idModel, ID idTex = -1, const float3 *pPos = 0);
 
 	//! рендер сегментов модели
 	void renderSegmets(DWORD timeDelta, ID idModel, ID idTex = -1, ID idVisCalcObj = SX_GEOM_DEFAULT_VISCALCOBJ);

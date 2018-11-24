@@ -105,11 +105,11 @@ SX_LIB_API bool SGeom_TransparencyExistsForRender(ID idVisCalcObj)
 	return g_pModels->existsTransparency4Render(idVisCalcObj);
 }
 
-SX_LIB_API void SGeom_RenderSingly(DWORD timeDelta, ID idModel, ID idMtrl)
+SX_LIB_API void SGeom_RenderSingly(DWORD timeDelta, ID idModel, ID idMtrl, const float3 *pPos)
 {
 	GEOM_PRECOND(_VOID);
 
-	g_pModels->renderSingly(timeDelta, idModel, idMtrl);
+	g_pModels->renderSingly(timeDelta, idModel, idMtrl, pPos);
 }
 
 SX_LIB_API void SGeom_Render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj, ID idExcludeModel, ID idExcludeGroup)
@@ -287,6 +287,12 @@ SX_LIB_API void SGeom_ModelGetGroupMinMax(ID idModel, ID idGroup, float3_t *pMin
 {
 	GEOM_PRECOND(_VOID);
 	g_pModels->modelGetGroupMinMax(idModel, idGroup, pMin, pMax);
+}
+
+SX_LIB_API bool SGeom_ModelGetSegmentation(ID idModel)
+{
+	GEOM_PRECOND(false);
+	return g_pModels->modelGerSegmentation(idModel);
 }
 
 //**************************************************************************

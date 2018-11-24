@@ -33,6 +33,9 @@ void level_editor::GreenActivateMain(bool bf)
 	level_editor::pEditGreenMask->setVisible(bf);
 	level_editor::pEditGreenMask->setText("");
 	level_editor::pButtonGreenMask->setVisible(bf);
+	level_editor::pCheckBoxGreenAveragedRGB->setCheck(false);
+
+	level_editor::pCheckBoxGreenAveragedRGB->setVisible(bf);
 
 	level_editor::pStaticGreenNav->setVisible(bf);
 	level_editor::pEditGreenNav->setVisible(bf);
@@ -45,6 +48,8 @@ void level_editor::GreenActivateCreate(bool bf)
 	level_editor::pStaticGreenMask->setEnable(bf);
 	level_editor::pEditGreenMask->setEnable(bf);
 	level_editor::pButtonGreenMask->setEnable(bf);
+	level_editor::pCheckBoxGreenAveragedRGB->setEnable(bf);
+	level_editor::pCheckBoxGreenAveragedRGB->setCheck(false);
 
 	level_editor::pButtonGreenGenerate->setVisible(bf);
 
@@ -82,291 +87,433 @@ void level_editor::GreenActivateEdit(bool bf)
 	level_editor::pStaticGreenSelZ->setVisible(bf);
 }
 
-void level_editor::GreenSel(int sel)
+void level_editor::GreenSel(int iSelect)
 {
-	if (sel >= 0 && sel < SGreen_GetCount())
+	if (iSelect >= 0 && iSelect < SGreen_GetCount())
 	{
-		level_editor::idActiveElement = sel;
+		level_editor::idActiveElement = iSelect;
 		level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
 
 		level_editor::GreenActivateCreate(false);
 		level_editor::GreenActivateEdit(true);
 		level_editor::pButtonGreenGenerate->setVisible(false);
 
-		level_editor::pEditGreenModel->setText(SGreen_MGetModel(sel));
-		level_editor::pEditGreenLod1->setText((SGreen_MGetLod1(sel) ? SGreen_MGetLod1(sel) : ""));
-		level_editor::pEditGreenLod2->setText((SGreen_MGetLod2(sel) ? SGreen_MGetLod2(sel) : ""));
-		level_editor::pEditGreenMask->setText(SGreen_MGetMask(sel));
-		level_editor::pEditGreenName->setText(SGreen_MGetName(sel));
-		level_editor::pEditGreenNav->setText(SGreen_MGetNav(sel));
+		level_editor::pEditGreenModel->setText(SGreen_MGetModel(iSelect));
+		level_editor::pEditGreenLod1->setText((SGreen_MGetLod1(iSelect) ? SGreen_MGetLod1(iSelect) : ""));
+		level_editor::pEditGreenLod2->setText((SGreen_MGetLod2(iSelect) ? SGreen_MGetLod2(iSelect) : ""));
+		level_editor::pEditGreenMask->setText(SGreen_MGetMask(iSelect));
+		level_editor::pEditGreenName->setText(SGreen_MGetName(iSelect));
+		level_editor::pEditGreenNav->setText(SGreen_MGetNav(iSelect));
 	}
 }
 
-LRESULT SXLevelEditor_EditGreenName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+void level_editor::GreenTraceSelect()
 {
-	int sel = level_editor::pListBoxList->getSel();
+	float3 vResult;
+	ID idGreen = -1;
+	ID idSplit = -1;
+	ID idObj = -1;
+	ID idMtrl = -1;
+	ID idModel = -1;
+
+	//если выделение объектов
+	if (level_editor::pComboBoxGreenSel->getSel() == 0)
+	{
+		if (SGreen_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idGreen, &idSplit, &idObj, &idMtrl))
+		{
+			float3_t vResult2;
+			level_editor::idActiveGreenSplit = idSplit;
+			level_editor::idActiveGreenObject = idObj;
+			SGreen_GetPosObject(idGreen, idSplit, idObj, &vResult2);
+
+			level_editor::pStaticGreenSelX->setText("Pos X:");
+			level_editor::pStaticGreenSelY->setText("Pos Y:");
+			level_editor::pStaticGreenSelZ->setText("Pos Z:");
+
+			level_editor::pEditGreenSelX->setText(String(vResult2.x).c_str());
+			level_editor::pEditGreenSelY->setText(String(vResult2.y).c_str());
+			level_editor::pEditGreenSelZ->setText(String(vResult2.z).c_str());
+
+			level_editor::pAxesHelper->setPosition(vResult2);
+			level_editor::pAxesHelper->setRotation(float3(0, 0, 0));
+			level_editor::pAxesHelper->setScale(float3(1, 1, 1));
+
+			level_editor::idMtl = idMtrl;
+		}
+	}
+	//если единичная генерация
+	else if (level_editor::pComboBoxGreenSel->getSel() == 1)
+	{
+		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idModel, &idMtrl))
+		{
+			idObj = SGreen_AddObject(level_editor::idActiveElement, &vResult, &idSplit);
+			level_editor::idActiveGreenSplit = idSplit;
+			level_editor::idActiveGreenObject = idObj;
+
+			level_editor::pStaticGreenSelX->setText("Pos X:");
+			level_editor::pStaticGreenSelY->setText("Pos Y:");
+			level_editor::pStaticGreenSelZ->setText("Pos Z:");
+
+			level_editor::pEditGreenSelX->setText(String(vResult.x).c_str());
+			level_editor::pEditGreenSelY->setText(String(vResult.y).c_str());
+			level_editor::pEditGreenSelZ->setText(String(vResult.z).c_str());
+
+			level_editor::pAxesHelper->setPosition(vResult);
+			level_editor::pAxesHelper->setRotation(float3(0, 0, 0));
+			level_editor::pAxesHelper->setScale(float3(1, 1, 1));
+		}
+	}
+
+	//если генерация в ограничивающем объеме
+	else if (level_editor::pComboBoxGreenSel->getSel() == 2)
+	{
+		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idModel, &idMtrl))
+		{
+			level_editor::vGreenBoxPos = vResult;
+			int iDensity = level_editor::pTrackBarGreenDensity->getPos();
+
+			float3 vMin, vMax, vPos;
+			vMin.x = vResult.x - level_editor::vGreenBoxWHD.x * 0.5f;
+			vMin.z = vResult.z - level_editor::vGreenBoxWHD.z * 0.5f;
+
+			vMax.x = vResult.x + level_editor::vGreenBoxWHD.x * 0.5f;
+			vMax.z = vResult.z + level_editor::vGreenBoxWHD.z * 0.5f;
+
+			vPos.y = vResult.y + level_editor::vGreenBoxWHD.y;
+
+			for (int i = 0; i < iDensity; ++i)
+			{
+				vPos.x = randf(vMin.x, vMax.x);
+				vPos.z = randf(vMin.z, vMax.z);
+				if (SGeom_TraceBeam(&vPos, &float3(0, -1, 0), &vResult, &idModel, &idMtrl))
+					SGreen_AddObject(level_editor::idActiveElement, &vResult, 0);
+			}
+		}
+	}
+	//если удаление
+	else if (level_editor::pComboBoxGreenSel->getSel() == 3)
+	{
+		if (SGreen_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idGreen, &idSplit, &idObj, &idMtrl))
+		{
+			level_editor::idActiveGreenSplit = -1;
+			level_editor::idActiveGreenObject = -1;
+			level_editor::pEditGreenSelX->setText("");
+			level_editor::pEditGreenSelY->setText("");
+			level_editor::pEditGreenSelZ->setText("");
+			SGreen_DelObject(idGreen, idSplit, idObj);
+		}
+	}
+}
+
+void level_editor::GreenTraceSetPos()
+{
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0))
+		return;
+
+	//если включено индивидуальное выделение, то перемещаем объект растительности
+	if (level_editor::pComboBoxGreenSel->getSel() == 0)
+	{
+		float3_t vCurrPos;
+		SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &vCurrPos);
+		float3 vResult;
+		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))
+		{
+			if (vCurrPos.x != vResult.x || vCurrPos.y != vResult.y || vCurrPos.z != vResult.z)
+			{
+				SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &(float3_t)vResult);
+				level_editor::pAxesHelper->setPosition(vResult);
+			}
+		}
+		
+	}
+}
+
+void level_editor::GreenTransformByHelper()
+{
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0))
+		return;
+
+	//если включено индивидуальное выделение, то перемещаем объект растительности
+	if (level_editor::pComboBoxGreenSel->getSel() == 0)
+	{
+		float3_t vCurrPos;
+		SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &vCurrPos);
+		float3 vNewPos = level_editor::pAxesHelper->getPosition();
+		if (vCurrPos.x != vNewPos.x || vCurrPos.y != vNewPos.y || vCurrPos.z != vNewPos.z)
+			SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &(float3_t)vNewPos);
+	}
+}
+
+void level_editor::GreenSetPos4Box()
+{
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0))
+		return;
+
+	float3 vResult;
+
+	//если включена генерация в ограничивающем объеме, значит перемещаем этот объем
+	if (level_editor::pComboBoxGreenSel->getSel() == 2)
+	{
+		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))
+			level_editor::vGreenBoxPos = vResult;
+	}
+}
+
+void level_editor::GreenDelete(int iSelected)
+{
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && iSelected >= 0))
+		return;
+
+	if (SGreen_GetCount() > 0 && iSelected < SGreen_GetCount())
+	{
+		SGreen_DelGreen(iSelected);
+		level_editor::pListBoxList->deleteItem(iSelected);
+	}
+}
+
+void level_editor::FillListBoxGreen(int iSelect)
+{
+	level_editor::pListBoxList->clear();
+	int iCountGreens = SGreen_GetCount();
+
+	level_editor::pStaticListValCount->setText(String(iCountGreens).c_str());
+
+	char szNote[1024];
+	for (int i = 0; i < iCountGreens; ++i)
+	{
+		sprintf(szNote, "%s | %s | %d",
+			SGreen_MGetName(i),
+			(SGreen_MGetTypeCountGen(i) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
+			SGreen_MGetCountGen(i));
+		level_editor::pListBoxList->addItem(szNote);
+	}
+
+	if (iSelect >= 0 && iCountGreens > iSelect)
+	{
+		level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
+		level_editor::idActiveElement = iSelect;
+		level_editor::pListBoxList->setSel(iSelect);
+		level_editor::GreenSel(iSelect);
+	}
+	else
+	{
+		level_editor::iActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GREEN;
+		level_editor::idActiveElement = -1;
+	}
+}
+
+//##########################################################################
+
+LRESULT SXLevelEditor_EditGreenName_Enter(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+{
+	int iSelected = level_editor::pListBoxList->getSel();
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 	{
-		level_editor::pEditGreenName->getText(SGreen_MGetName(sel), 64);
+		level_editor::pEditGreenName->getText(SGreen_MGetName(iSelected), 64);
 	}
 
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonGreenModel_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
 	
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	if (gui_func::dialogs::SelectFileOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		String sRpath = StrCutStrI(szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
 		level_editor::pEditGreenModel->setText(sRpath.c_str());
-		int sel = level_editor::pListBoxList->getSel();
+		int iSelected = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGreen_GetCount())
-				SGreen_MSetLod(sel, 0, sRpath.c_str());
+			if (iSelected >= 0 && iSelected < SGreen_GetCount())
+				SGreen_MSetLod(iSelected, 0, sRpath.c_str());
 		}
 	}
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonGreenLod1_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
+	
+	if (gui_func::dialogs::SelectFileOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		String sRpath = StrCutStrI(szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
 		level_editor::pEditGreenLod1->setText(sRpath.c_str());
-		int sel = level_editor::pListBoxList->getSel();
+		int iSelected = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGreen_GetCount())
-				SGreen_MSetLod(sel, 1, sRpath.c_str());
+			if (iSelected >= 0 && iSelected < SGreen_GetCount())
+				SGreen_MSetLod(iSelected, 1, sRpath.c_str());
 		}
 	}
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonGreenLod2_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
+	
+	if (gui_func::dialogs::SelectFileOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		String sRpath = StrCutStrI(szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
 		level_editor::pEditGreenLod2->setText(sRpath.c_str());
-		int sel = level_editor::pListBoxList->getSel();
+		int iSelected = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGreen_GetCount())
-				SGreen_MSetLod(sel, 2, sRpath.c_str());
+			if (iSelected >= 0 && iSelected < SGreen_GetCount())
+				SGreen_MSetLod(iSelected, 2, sRpath.c_str());
 		}
 	}
 	return 0;
 }
 
-LRESULT SXLevelEditor_TrackBarGreenDensity_MouseMove(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_TrackBarGreenDensity_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char freqstr[64];
-	int pos = level_editor::pTrackBarGreenDensity->getPos();
-	sprintf(freqstr, "%d%", pos);
-	level_editor::pStaticGreenDensityVal->setText(freqstr);
+	char szFreq[64];
+	int iPos = level_editor::pTrackBarGreenDensity->getPos();
+	sprintf(szFreq, "%d%", iPos);
+	level_editor::pStaticGreenDensityVal->setText(szFreq);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonGreenMask_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonGreenMask_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_TEXTURE);
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
+	
+	if (gui_func::dialogs::SelectFileOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture mask", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
+		level_editor::pEditGreenMask->setText(szName);
 
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), "dds", "Select texture mask", true, Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetTextureInfo))
-	{
-		level_editor::pEditGreenMask->setText(tmpname);
-	}
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonGreenNav_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char tmppath[1024];
-	tmppath[0] = 0;
-	char tmpname[1024];
-	//gui_func::dialogs::SelectFileStd(SXGUI_DIALOG_FILE_OPEN, tmppath, 0, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), FILE_FILTER_MODEL);
-
-	if (gui_func::dialogs::SelectFileOwn(tmpname, tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
+	
+	if (gui_func::dialogs::SelectFileOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), "dse", "Select model", true, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), level_editor::pJobWindow->getHWND(), SkyXEngine_EditorHandlerGetPreviewData, SkyXEngine_EditorHandlerGetDSEinfo))
 	{
-		String sRpath = StrCutStrI(tmppath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
+		String sRpath = StrCutStrI(szPath, Core_RStringGet(G_RI_STRING_PATH_GS_MESHES));
 		level_editor::pEditGreenNav->setText(sRpath.c_str());
-		int sel = level_editor::pListBoxList->getSel();
+		int iSelected = level_editor::pListBoxList->getSel();
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
 		{
-			if (sel >= 0 && sel < SGreen_GetCount())
-				SGreen_MSetNav(sel, sRpath.c_str());
+			if (iSelected >= 0 && iSelected < SGreen_GetCount())
+				SGreen_MSetNav(iSelected, sRpath.c_str());
 		}
 	}
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (SGeom_GetCountModels() == 0)
 	{
-		MessageBox(0, "Not found geomety!", "Not found geomety", 0);
+		MessageBox(0, "Not found geometry!", "Not found geometry", 0);
 		return 0;
 	}
 
-	char tmp_name[1024];
-	tmp_name[0] = 0;
-	char path_tex[1024];
-	path_tex[0] = 0;
-	char path_model[1024];
-	path_model[0] = 0;
-	char path_lod1[1024];
-	path_lod1[0] = 0;
-	char path_lod2[1024];
-	path_lod2[0] = 0;
-	char path_navmesh[1024];
-	path_navmesh[0] = 0;
+	char szName[1024];
+	szName[0] = 0;
 
-	char tmp_tex[1024];
-	tmp_tex[0] = 0;
-	char tmp_model[1024];
-	tmp_model[0] = 0;
-	char tmp_lod1[1024];
-	tmp_lod1[0] = 0;
-	char tmp_lod2[1024];
-	tmp_lod2[0] = 0;
+	char szMask[1024];
+	szMask[0] = 0;
 
-	char tmp_navmesh[1024];
-	tmp_navmesh[0] = 0;
+	char szPath4Model[1024];
+	szPath4Model[0] = 0;
 
-	int greentype = GREEN_TYPE_TREE;
+	char szPath4Lod1[1024];
+	szPath4Lod1[0] = 0;
 
-	level_editor::pEditGreenName->getText(tmp_name, 1024);
-	level_editor::pEditGreenMask->getText(tmp_tex, 1024);
-	level_editor::pEditGreenModel->getText(tmp_model, 1024);
-	level_editor::pEditGreenLod1->getText(tmp_lod1, 1024);
-	level_editor::pEditGreenLod2->getText(tmp_lod2, 1024);
-	level_editor::pEditGreenNav->getText(tmp_navmesh, 1024);
+	char szPath4Lod2[1024];
+	szPath4Lod2[0] = 0;
 
-	if (tmp_lod1[0] == 0 && tmp_lod2[0] == 0)
-		greentype = GREEN_TYPE_GRASS;
+	char szPath4Physics[1024];
+	szPath4Physics[0] = 0;
 
-	if (tmp_tex[0] != 0)
-		sprintf(path_tex, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), tmp_tex);
+	GREEN_TYPE typeGreen = GREEN_TYPE_TREE;
 
-	if (tmp_model[0] != 0)
-		sprintf(path_model, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_model);
+	level_editor::pEditGreenName->getText(szName, 1024);
+	level_editor::pEditGreenMask->getText(szMask, 1024);
+	level_editor::pEditGreenModel->getText(szPath4Model, 1024);
+	level_editor::pEditGreenLod1->getText(szPath4Lod1, 1024);
+	level_editor::pEditGreenLod2->getText(szPath4Lod2, 1024);
+	level_editor::pEditGreenNav->getText(szPath4Physics, 1024);
 
-	if (tmp_lod1[0] != 0)
-		sprintf(path_lod1, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_lod1);
-
-	if (tmp_lod2[0] != 0)
-		sprintf(path_lod2, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_lod2);
-
-	if (tmp_navmesh[0] != 0)
-		sprintf(path_navmesh, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), tmp_navmesh);
-	
-	/*if (!Core_0FileExists(path_tex))
+	if (!STR_VALIDATE(szPath4Lod2))
 	{
-		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Текстура [", path_tex, "] не существует");
-		MessageBox(0, tmpstr, 0, 0);
-		return 0;
-	}*/
+		typeGreen = GREEN_TYPE_GRASS;
+		szPath4Lod1[0] = szPath4Lod2[0] = 0;
+	}
 
-	if (!FileExistsFile(path_model))
+	char szError[2048];
+
+	if (!level_editor::existsFileStaticGeom(szPath4Model))
 	{
-		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Model [", path_model, "] not found");
-		MessageBox(0, tmpstr, 0, 0);
+		sprintf(szError, "%s%s%s", "Model [", szPath4Model, "] not found");
+		MessageBox(0, szError, 0, 0);
 		return 0;
 	}
 
-	if (STR_VALIDATE(tmp_navmesh) && !FileExistsFile(path_navmesh))
+	if (STR_VALIDATE(szPath4Physics) && !level_editor::existsFileStaticGeom(szPath4Physics))
 	{
-		char tmpstr[2048];
-		sprintf(tmpstr, "%s%s%s", "Model [", path_navmesh, "] not found");
-		MessageBox(0, tmpstr, 0, 0);
+		sprintf(szError, "%s%s%s", "Model [", szPath4Physics, "] not found");
+		MessageBox(0, szError, 0, 0);
 		return 0;
 	}
 
-	if (greentype == GREEN_TYPE_TREE)
+	if (typeGreen == GREEN_TYPE_TREE)
 	{
-		if (!FileExistsFile(path_lod1))
+		if (!level_editor::existsFileStaticGeom(szPath4Lod1))
 		{
-			char tmpstr[2048];
-			sprintf(tmpstr, "%s%s%s", "Model [", path_lod1, "] not found");
-			MessageBox(0, tmpstr, 0, 0);
+			sprintf(szError, "%s%s%s", "Model [", szPath4Lod1, "] not found");
+			MessageBox(0, szError, 0, 0);
 			return 0;
 		}
 
-		if (!FileExistsFile(path_lod2))
+		if (!level_editor::existsFileStaticGeom(szPath4Lod2))
 		{
-			char tmpstr[2048];
-			sprintf(tmpstr, "%s%s%s", "Model [", path_lod2, "] not found");
-			MessageBox(0, tmpstr, 0, 0);
+			sprintf(szError, "%s%s%s", "Model [", szPath4Lod2, "] not found");
+			MessageBox(0, szError, 0, 0);
 			return 0;
 		}
 	}
 
-	if (!STR_VALIDATE(tmp_name))
+	if (!STR_VALIDATE(szName))
 	{
 		if (MessageBox(0, "No name for the model, enter the file name automatically?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDYES)
-		{
-			for (int i = 0; i<strlen(path_model); i++)
-			{
-				if (path_model[strlen(path_model) - i] == '\\')
-				{
-					sprintf(tmp_name, "%s", path_model + strlen(path_model) - (i - 1));
-					break;
-				}
-			}
-		}
+			sprintf(szName, "%s", FileSetStrExt(FileBaseName(szPath4Model), "").c_str());
 		else
 			return 0;
 	}
 
-	float pos = level_editor::pTrackBarGreenDensity->getPos();
+	float fDensity = level_editor::pTrackBarGreenDensity->getPos();
 
 	SXPhysics_LoadGeom(NULL);
 
-	SGreen_AddGreen(tmp_name,
-		tmp_tex,
-		false,
-		pos,
-		tmp_model,
-		(tmp_lod1[0] ? tmp_lod1 : 0),
-		(tmp_lod2[0] ? tmp_lod2 : 0),
-		(tmp_navmesh[0] ? tmp_navmesh : 0));
-
-	char tmpnamecountpoly[1024];
-		sprintf(tmpnamecountpoly, "%s | %s | %d",
-			SGreen_MGetName(SGreen_GetCount() - 1),
-			(SGreen_MGetTypeCountGen(SGreen_GetCount() - 1) == GREEN_TYPE_GRASS ? "grass" : "tree/shrub"),
-			SGreen_MGetCountGen(SGreen_GetCount() - 1));
-		level_editor::pListBoxList->addItem(tmpnamecountpoly);
+	ID idGreen = SGreen_AddGreen(szName,
+		szMask,
+		level_editor::pCheckBoxGreenAveragedRGB->getCheck(),
+		fDensity,
+		szPath4Model,
+		szPath4Lod1,
+		szPath4Lod2,
+		szPath4Physics
+		);
 
 	level_editor::GreenActivateCreate(false);
-	level_editor::pListBoxList->setSel(level_editor::pListBoxList->getItemCount() - 1);
-
-	level_editor::GreenSel(level_editor::pListBoxList->getItemCount() - 1);
-
-	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GREEN;
-	level_editor::idActiveElement = level_editor::pListBoxList->getSel();
+	level_editor::FillListBoxGreen(idGreen);
 
 	return 0;
 }

@@ -554,10 +554,10 @@ void rfunc::UpdateView()
 
 	gdata::pCamera->updateFrustum(&gdata::mCamProj);
 
-	if (gdata::idDefaultGeomArr < 0)
+	if (gdata::idDefaultGeomArr < 0 || !SGeom_VisCaclObjExists(gdata::idDefaultGeomArr))
 		gdata::idDefaultGeomArr = SGeom_VisCaclObjAdd();
 
-	if (gdata::idDefaultGreenArr < 0)
+	if (gdata::idDefaultGreenArr < 0 || !SGreen_ExistsVisCaclObj(gdata::idDefaultGreenArr))
 		gdata::idDefaultGreenArr = SGreen_AddVisCaclObj();
 
 	if (gdata::idDefaultAnimArr < 0)
@@ -1217,12 +1217,13 @@ void rfunc::ComLighting(DWORD timeDelta)
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, gdata::fProjFov));
 
 			float3 tmpPosition;
-			float2 tmpPowerDist;
+			float3 tmpPowerDistShadow;
 			float3 tmpColor;
 			SLight_GetColor(i, &tmpColor);
 			SLight_GetPos(i, &tmpPosition, true);
-			tmpPowerDist.x = SLight_GetPower(i);
-			tmpPowerDist.y = SLight_GetDist(i);
+			tmpPowerDistShadow.x = SLight_GetPower(i);
+			tmpPowerDistShadow.y = SLight_GetDist(i);
+			tmpPowerDistShadow.z = SLight_GetShadowCoef(i);
 
 			if (SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
 			{
@@ -1235,8 +1236,8 @@ void rfunc::ComLighting(DWORD timeDelta)
 						gl_power = SLight_GetPower(gl_id);
 
 					float f_dep_coef = clampf(1.f - gl_power, 0.25f, 1.f);
-					tmpPowerDist.x *= f_dep_coef;
-					tmpPowerDist.y *= f_dep_coef;
+					tmpPowerDistShadow.x *= f_dep_coef;
+					tmpPowerDistShadow.y *= f_dep_coef;
 				}
 			}
 			else
@@ -1244,7 +1245,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPos", &(tmpPosition));
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPowerDist", &(tmpPowerDist));
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPowerDistShadow", &(tmpPowerDistShadow));
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightColor", &tmpColor);
 			//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "vNearFar", &gdata::vNearFar);
 

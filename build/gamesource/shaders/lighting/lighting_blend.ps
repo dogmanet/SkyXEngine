@@ -34,7 +34,7 @@ half4 main(VSO_PP IN):COLOR0
 	/* расчет фонового цвета
 	1) интерполяция от чернобелого до цветного, на основании затенения, то есть чем больше тень тем меньше там фонового цвета
 	*/
-	half3 vAmbientColor = lerp((vAmbient.x + vAmbient.y + vAmbient.z)/3.0, vAmbient.xyz, vAmbient.w*2);
+	half3 vAmbientColor = lerp((vAmbient.x + vAmbient.y + vAmbient.z)/3.0, vAmbient.xyz, saturate(vAmbient.w+0.5));
 	
 	/* 2) интерполяция приема цвета материалом, чем больше отражательная способность (f0) тем меньше примет цвета материал*/
 	vAmbientColor = lerp(vAmbientColor.xyz, 1.0, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, vParameters.y));

@@ -657,6 +657,11 @@ void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, 
 		m_vMaxOrigin = vPos;
 		m_vMinOrigin = vPos;
 
+		vPos = SMVector3Transform(vPos, m_mWorld);
+
+		m_vMaxTransform = vPos;
+		m_vMinTransform = vPos;
+
 		for (int i = 0; i<iCountVertex; ++i)
 		{
 			vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * i);

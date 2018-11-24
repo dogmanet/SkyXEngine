@@ -1276,12 +1276,11 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 		pModel->m_pModel->m_uiSubsetCount = iCountSubsetNew;
 		pModel->m_pModel->m_uiAllVertexCount = iCountVertexNew;
 		pModel->m_pModel->m_uiAllIndexCount = iCountIndexNew;
-
-
-		if (iCountSubsetNew > 0)
-			pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 		//}
 	}
+
+	if (iCountSubsetNew > 0)
+		pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertexBuffer, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 	//если для модели нужно деление, то делим
 	if (pModel->m_pModel->m_uiSubsetCount > 0 && needSegmentation)
@@ -1395,9 +1394,22 @@ ID CModels::copy(ID idModel)
 	CModel *pModel = m_aModels[idModel];
 	CModel *pCopy = new CModel();
 
-	pCopy->m_sName = pModel->m_sName + "-copy";
-	pCopy->m_sPath = pModel->m_sPath;
+	int iPos = StrFindI(pModel->m_sName.c_str(), GEOM_COPY_POSTFIX);
+	if (iPos >= 0)
+	{
+		if (pModel->m_sName.length() == iPos + strlen(GEOM_COPY_POSTFIX))
+			pCopy->m_sName = pModel->m_sName + "1";
+		else
+		{
+			String sName = StrSubstr(pModel->m_sName.c_str(), 0, iPos + strlen(GEOM_COPY_POSTFIX));
+			String sNum = StrSubstr(pModel->m_sName.c_str(), iPos + strlen(GEOM_COPY_POSTFIX));
+			pCopy->m_sName = sName + (sNum.toInt() + 1);
+		}
+	}
+	else
+		pCopy->m_sName = pModel->m_sName + GEOM_COPY_POSTFIX;
 
+	pCopy->m_sPath = pModel->m_sPath;
 
 	pCopy->m_pModel = pModel->m_pModel->getCopy();
 
@@ -2748,22 +2760,22 @@ void CModels::comVisibleTransparency(const IFrustum *pFrustum, const float3 *pVi
 
 //##########################################################################
 
-void CModels::renderSingly(DWORD timeDelta, ID idModel, ID idMtrl)
+void CModels::renderSingly(DWORD timeDelta, ID idModel, ID idMtrl, const float3 *pPos)
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 
 	CModel *pModel = m_aModels[idModel];
 
 	if (pModel->m_isRenderLod && pModel->m_pLod)
-		renderLod(timeDelta, idModel, idMtrl);
+		renderLod(timeDelta, idModel, idMtrl, pPos);
 	else
 	{
-		if (pModel->m_pModel->m_uiSubsetCount == 0)
-			renderObject(timeDelta, idModel, idMtrl);
+		if (pModel->m_pModel->m_uiSubsetCount > 0)
+			renderObject(timeDelta, idModel, idMtrl, pPos);
 	}
 }
 
-void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idTex, ID idVisCalcObj)
+void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj)
 {
 	STATIC_PRECOND_VISCALCOBJ_ID(idVisCalcObj, _VOID);
 
@@ -2775,7 +2787,7 @@ void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idTex, ID idVisC
 			{
 				if (m_aModels[i]->m_isRenderLod && m_aModels[i]->m_pLod)
 				{
-					renderLod(timeDelta, i, idTex);
+					renderLod(timeDelta, i);
 				}
 				else
 				{
@@ -2783,9 +2795,9 @@ void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idTex, ID idVisC
 						continue;
 
 					if (m_aModels[i]->m_pArrSplits)
-						renderSegmets(timeDelta, i, idTex, idVisCalcObj);
+						renderSegmets(timeDelta, i, -1, idVisCalcObj);
 					else
-						renderObject(timeDelta, i, idTex);
+						renderObject(timeDelta, i);
 				}
 			}
 		}
@@ -2813,7 +2825,7 @@ void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idTex, ID idVisC
 	}
 }
 
-void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex)
+void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex, const float3 *pPos)
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 
@@ -2824,9 +2836,20 @@ void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex)
 
 	int iCountIndex = 0;
 
+	float4x4 mWorld;
+
+	if (pPos)
+	{
+		const float3 *pScale = m_aModels[idModel]->m_pBoundVolume->getScale();
+		const float3 *pRot = m_aModels[idModel]->m_pBoundVolume->getRotation();
+		mWorld = SMMatrixScaling(*pScale) * SMMatrixRotationX(pRot->x) * SMMatrixRotationY(pRot->y) * SMMatrixRotationZ(pRot->z) * SMMatrixTranslation(*pPos);
+	}
+	else
+		mWorld = *(m_aModels[idModel]->m_pBoundVolume->calcWorld());
+
 	for (int g = 0; g < m_aModels[idModel]->m_pLod->m_pModel->m_uiSubsetCount; g++)
 	{
-		SGCore_MtlSet((idTex > 0 ? idTex : m_aModels[idModel]->m_pLod->m_aIDsTextures[g]), (float4x4*)m_aModels[idModel]->m_pBoundVolume->calcWorld());
+		SGCore_MtlSet((idTex > 0 ? idTex : m_aModels[idModel]->m_pLod->m_aIDsTextures[g]), &mWorld);
 
 		SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pLod->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pLod->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pLod->m_pModel->m_pIndexCount[g] / 3)));
@@ -2834,7 +2857,7 @@ void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex)
 	}
 }
 
-void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex)
+void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *pPos)
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 
@@ -2849,9 +2872,20 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex)
 
 	int iCountIndex = 0;
 
+	float4x4 mWorld;
+
+	if (pPos)
+	{
+		const float3 *pScale = m_aModels[idModel]->m_pBoundVolume->getScale();
+		const float3 *pRot = m_aModels[idModel]->m_pBoundVolume->getRotation();
+		mWorld = SMMatrixScaling(*pScale) * SMMatrixRotationX(pRot->x) * SMMatrixRotationY(pRot->y) * SMMatrixRotationZ(pRot->z) * SMMatrixTranslation(*pPos);
+	}
+	else
+		mWorld = *(m_aModels[idModel]->m_pBoundVolume->calcWorld());
+
 	for (int g = 0; g < m_aModels[idModel]->m_pModel->m_uiSubsetCount; g++)
 	{
-		SGCore_MtlSet((idTex > 0 ? idTex : m_aModels[idModel]->m_aIDsTextures[g]), (float4x4*)m_aModels[idModel]->m_pBoundVolume->calcWorld());
+		SGCore_MtlSet((idTex >= 0 ? idTex : m_aModels[idModel]->m_aIDsTextures[g]), &mWorld);
 
 		SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3)));
@@ -3407,6 +3441,13 @@ void CModels::modelGetGroupCenter(ID idModel, ID idGroup, float3_t *pCenter)
 	}
 }
 
+bool CModels::modelGerSegmentation(ID idModel)
+{
+	STATIC_PRECOND_MODEL_ID(idModel, false);
+
+	return (m_aModels[idModel]->m_pArrSplits != NULL);
+}
+
 //##########################################################################
 
 void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVertex, uint32_t ***pppArrIndex, ID ***pppArrMtl, int32_t **ppArrCountIndex, int32_t *pCountModels)
@@ -3605,9 +3646,17 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 	il = (*pDir) * 10000.0f;
 	bool isFound = false;
 
+	float3 vMin, vMax;
+
 	for (int id = 0; id < m_aModels.size(); ++id)
 	{
 		CModel *pModel = m_aModels[id];
+		pModel->m_pBoundVolume->getMinMax(&vMin, &vMax);
+
+		if (!SMBoxRayIntersection(vMin, vMax, *pStart, *pDir))
+			continue;
+
+		float4x4 mWorld = *(pModel->m_pBoundVolume->calcWorld());
 		if (pModel->m_pArrSplits)
 		{
 			getPartBeam(id, SX_GEOM_TRACEBEAM_VISCALCOBJ, pStart, pDir);
@@ -3626,9 +3675,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 
 					for (int p = 0; p<m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_pCountPoly[g] * 3; p += 3)
 					{
-						oTriangle.m_vA = pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p]].Pos;
-						oTriangle.m_vB = pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p + 1]].Pos;
-						oTriangle.m_vC = pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p + 2]].Pos;
+						oTriangle.m_vA = SMVector3Transform(pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p]].Pos, mWorld);
+						oTriangle.m_vB = SMVector3Transform(pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p + 1]].Pos, mWorld);
+						oTriangle.m_vC = SMVector3Transform(pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p + 2]].Pos, mWorld);
 
 						if (oTriangle.IntersectLine((*pStart), il, &ip))
 						{
@@ -3654,18 +3703,18 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 		else
 		{
 			vertex_static_ex* pVertex;
-			pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
+			pModel->m_pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, D3DLOCK_READONLY);
 
 			UINT *pIndex;
-			pModel->m_pModel->m_pIndexBuffer->Lock(0, 0, (void**)&pIndex, 0);
+			pModel->m_pModel->m_pIndexBuffer->Lock(0, 0, (void**)&pIndex, D3DLOCK_READONLY);
 
 			for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
 			{
-				for (int k = 0; k<pModel->m_pModel->m_pIndexCount[g]/3; k+=3)
+				for (int k = 0; k<pModel->m_pModel->m_pIndexCount[g]; k+=3)
 				{
-					oTriangle.m_vA = pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k]].Pos;
-					oTriangle.m_vB = pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k + 1]].Pos;
-					oTriangle.m_vC = pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k + 2]].Pos;
+					oTriangle.m_vA = SMVector3Transform(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k]].Pos, mWorld);
+					oTriangle.m_vB = SMVector3Transform(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k + 1]].Pos, mWorld);
+					oTriangle.m_vC = SMVector3Transform(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k + 2]].Pos, mWorld);
 
 					if (oTriangle.IntersectLine((*pStart), il, &ip))
 					{
@@ -3698,7 +3747,7 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 			pTransparencyModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertex, 0);
 			pTransparencyModel->m_pIndexBuffer->Lock(0, 0, (void**)&pIndex, 0);
 
-			for (int k = 0; k<pTransparencyModel->m_iCountIndex / 3; k += 3)
+			for (int k = 0; k<pTransparencyModel->m_iCountIndex; k += 3)
 			{
 				oTriangle.m_vA = pVertex[pIndex[k]].Pos;
 				oTriangle.m_vB = pVertex[pIndex[k + 1]].Pos;

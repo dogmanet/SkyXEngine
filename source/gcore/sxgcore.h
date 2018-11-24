@@ -776,7 +776,7 @@ SX_LIB_API IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl();
 @{*/
 
 /*! Простой объект трансформаций с минимальным описанием.
- \note Для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
+ \note Для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего calcWorld
 */
 struct ITransObject : public IBaseObject
 {
