@@ -360,21 +360,21 @@ void level_editor::FillListBoxGameObj(int iSelect)
 	int iCountGameObj = SXGame_EntGetCount();
 	int iCountGameObj2 = 0;
 	char szNote[1024];
-	for (int i = 0; i < iCountGameObj; ++i)
+	for(int i = 0; i < iCountGameObj; ++i)
 	{
 		CBaseEntity *pEntity = SXGame_EntGet(i);
-		if (pEntity)
+		if(pEntity && pEntity->getFlags() & EF_LEVEL)
 		{
 			sprintf(szNote, "%s / %s", pEntity->getName(), pEntity->getClassName());
 			level_editor::pListBoxList->addItem(szNote);
 			level_editor::pListBoxList->setItemData(level_editor::pListBoxList->getItemCount() - 1, i);
 			++iCountGameObj2;
+		}
 	}
-}
 
 	level_editor::pStaticListValCount->setText(String(iCountGameObj2).c_str());
 
-	if (iSelect < 0)
+	if(iSelect < 0)
 	{
 		level_editor::iActiveGroupType = -EDITORS_LEVEL_GROUPTYPE_GAME;
 		level_editor::idActiveElement = -1;

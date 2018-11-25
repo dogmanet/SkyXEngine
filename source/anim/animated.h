@@ -78,7 +78,6 @@ protected:
 	MBERR AppendBones(const ModelFile * mdl, char * root=NULL);
 	//void BuildHitboxes();
 	void Load(const char * name);
-	void Load6(const char * name);
 
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;

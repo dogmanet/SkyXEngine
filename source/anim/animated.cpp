@@ -68,12 +68,6 @@ void ModelFile::Load(const char * name)
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION)
 	{
-		if(m_hdr.iVersion == SX_MODEL_VERSION_OLD)
-		{
-			Load6(name);
-			fclose(fp);
-			return;
-		}
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
 		fclose(fp);
 		return;
@@ -196,13 +190,43 @@ void ModelFile::Load(const char * name)
 				m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
 				if(m_hdr.iFlags & MODEL_FLAG_STATIC)
 				{
-					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
-					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static_ex[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+					if(m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM)
+					{
+						fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static_ex), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+					}
+					else
+					{
+						vertex_static *pSource = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+						fread(pSource, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+						vertex_static_ex *pTarget = (vertex_static_ex*)m_pLods[i].pSubLODmeshes[j].pVertices;
+						for(int vi = 0; vi < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++vi)
+						{
+							memcpy(&(pTarget[vi]), &(pSource[vi]), sizeof(vertex_static));
+						}
+						delete[] pSource;
+					}
 				}
 				else
 				{
-					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
-					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated_ex[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+					if(m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM)
+					{
+						fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated_ex), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+					}
+					else
+					{
+						vertex_animated *pSource = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+						fread(pSource, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+						vertex_animated_ex *pTarget = (vertex_animated_ex*)m_pLods[i].pSubLODmeshes[j].pVertices;
+						for(int vi = 0; vi < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++vi)
+						{
+							memcpy(&(pTarget[vi]), &(pSource[vi]), sizeof(vertex_static)); //!< Copy only first three fields
+							memcpy(pTarget[vi].BoneIndices, pSource[vi].BoneIndices, sizeof(pSource[vi].BoneIndices));
+							pTarget[vi].BoneWeights = pSource[vi].BoneWeights;
+						}
+						delete[] pSource;
+					}
 				}
 				fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, fp);
 
@@ -210,190 +234,6 @@ void ModelFile::Load(const char * name)
 			}
 		}
 	}
-
-	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
-	{
-		_fseeki64(fp, m_hdr2.iHitboxesOffset, SEEK_SET);
-		m_pHitboxes = new ModelHitbox[m_hdr2.iHitboxCount];
-		fread(m_pHitboxes, sizeof(ModelHitbox), m_hdr2.iHitboxCount, fp);
-	}
-
-	fclose(fp);
-	m_bLoaded = true;
-}
-
-
-void ModelFile::Load6(const char * name)
-{
-	strncpy(m_szFileName, name, MODEL_MAX_FILE);
-	m_szFileName[MODEL_MAX_FILE - 1] = 0;
-	FILE * fp = fopen(name, "rb");
-	if(!fp)
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to open \"%s\"\n", name);
-	}
-
-	fread(&m_hdr, sizeof(ModelHeader), 1, fp);
-
-	if(m_hdr.Magick != SX_MODEL_MAGICK)
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", name);
-		fclose(fp);
-		return;
-	}
-
-	if(m_hdr.iVersion != SX_MODEL_VERSION_OLD)
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, name);
-		fclose(fp);
-		return;
-	}
-
-	if(m_hdr.iSecondHeaderOffset)
-	{
-		_fseeki64(fp, m_hdr.iSecondHeaderOffset, SEEK_SET);
-		fread(&m_hdr2, sizeof(ModelHeader2), 1, fp);
-	}
-
-	if(m_hdr2.iDepsCount && m_hdr2.iDependensiesOffset)
-	{
-		_fseeki64(fp, m_hdr2.iDependensiesOffset, SEEK_SET);
-		if(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS)
-		{
-			m_pParts = new ModelPart[m_hdr2.iDepsCount];
-			fread(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
-
-		}
-		else
-		{
-			ModelDependensy md;
-
-			m_pDeps = new const ModelFile*[m_hdr2.iDepsCount];
-
-			for(uint32_t i = 0; i < m_hdr2.iDepsCount; i++)
-			{
-				fread(&md, sizeof(ModelDependensy), 1, fp);
-				m_pDeps[i] = m_pMgr->loadModel(md.szName);
-			}
-		}
-	}
-
-	if(m_hdr2.iBoneTableOffset)
-	{
-		_fseeki64(fp, m_hdr2.iBoneTableOffset, SEEK_SET);
-		m_pBones = new ModelBoneName[m_hdr2.iBoneTableCount];
-		fread(m_pBones, sizeof(ModelBoneName), m_hdr2.iBoneTableCount, fp);
-	}
-	else
-	{
-		m_hdr.iBoneCount = 0;
-		m_hdr.iBonesOffset = 0;
-	}
-
-	if(m_hdr2.iActivitiesTableCount && m_hdr2.iActivitiesTableOffset)
-	{
-		_fseeki64(fp, m_hdr2.iActivitiesTableOffset, SEEK_SET);
-		pActivities = new ModelActivity[m_hdr2.iActivitiesTableCount];
-		fread(pActivities, sizeof(ModelActivity), m_hdr2.iActivitiesTableCount, fp);
-	}
-
-	if(m_hdr2.iControllersCount && m_hdr2.iControllersOffset)
-	{
-		_fseeki64(fp, m_hdr2.iControllersOffset, SEEK_SET);
-		m_pControllers = new ModelBoneController[m_hdr2.iControllersCount];
-		fread(m_pControllers, sizeof(ModelBoneController), m_hdr2.iControllersCount, fp);
-	}
-
-	if(m_hdr.iMaterialsOffset)
-	{
-		_fseeki64(fp, m_hdr.iMaterialsOffset, SEEK_SET);
-
-		m_iMaterials = new ModelMatrial*[m_hdr.iSkinCount];
-
-		for(UINT j = 0; j < m_hdr.iSkinCount; j++)
-		{
-			m_iMaterials[j] = new ModelMatrial[m_hdr.iMaterialCount];
-			for(uint32_t i = 0; i < m_hdr.iMaterialCount; i++)
-			{
-				int c = 0;
-				while(fread(&(m_iMaterials[j][i].szName[c]), 1, 1, fp) && m_iMaterials[j][i].szName[c++])
-				{
-				}
-				//fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
-
-				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, true); //3
-
-			}
-		}
-	}
-
-	//SGCore_LoadTexLoadTextures();
-
-	if(m_hdr.iAnimationsOffset)
-	{
-		_fseeki64(fp, m_hdr.iAnimationsOffset, SEEK_SET);
-		m_pSequences = new ModelSequence[m_hdr.iAnimationCount];
-
-		for(UINT i = 0; i < m_hdr.iAnimationCount; i++)
-		{
-			if(m_hdr.iFlags & MODEL_FLAG_NEW_PACKED_ANIMS)
-			{
-				fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE, 1, fp);
-			}
-			else
-			{
-				fread(&m_pSequences[i], MODEL_SEQUENCE_STRUCT_SIZE_OLD, 1, fp);
-			}
-			m_pSequences[i].m_vmAnimData = new ModelBone*[m_pSequences[i].iNumFrames];
-
-			for(UINT j = 0; j < m_pSequences[i].iNumFrames; j++)
-			{
-				m_pSequences[i].m_vmAnimData[j] = new ModelBone[m_hdr.iBoneCount];
-				fread(m_pSequences[i].m_vmAnimData[j], sizeof(ModelBone), m_hdr.iBoneCount, fp);
-			}
-			//m_mSeqNames[m_pSequences[i].name] = i;
-		}
-	}
-
-	if((m_hdr.iLODcount || (m_hdr.iFlags & MODEL_FLAG_STATIC)) && m_hdr.iLODoffset)
-	{
-		if(!m_hdr.iLODcount)
-		{
-			m_hdr.iLODcount = 1;
-		}
-		_fseeki64(fp, m_hdr.iLODoffset, SEEK_SET);
-
-		m_pLods = new ModelLoD[m_hdr.iLODcount];
-
-		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
-		{
-			fread(&m_pLods[i], MODEL_LOD_STRUCT_SIZE, 1, fp);
-			int iVC = 0;
-			m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pLods[i].iSubMeshCount];
-			for(uint32_t j = 0; j < m_pLods[i].iSubMeshCount; j++)
-			{
-
-				fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(uint32_t), 1, fp);
-				fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(uint32_t), 1, fp);
-				fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(uint32_t), 1, fp);
-				m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
-				m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
-				vertex_animated_ex va;
-				for(int k = 0; k < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++k)
-				{
-					fread(&va, sizeof(vertex_animated_ex), 1, fp);
-					((vertex_static*)m_pLods[i].pSubLODmeshes[j].pVertices)[k].Norm = va.Norm;
-					((vertex_static*)m_pLods[i].pSubLODmeshes[j].pVertices)[k].Pos = va.Pos;
-					((vertex_static*)m_pLods[i].pSubLODmeshes[j].pVertices)[k].Tex = va.Tex;
-				}
-				fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, fp);
-
-				iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
-			}
-		}
-	}
-
-	m_hdr.iFlags |= MODEL_FLAG_STATIC; // Force static model
 
 	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
 	{
@@ -581,7 +421,7 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 		sizeof(vertex_animated_ex)
 	};
 
-	MODEL_VERTEX_TYPE vtype = (m_hdr.iFlags & MODEL_FLAG_STATIC) ? MVT_STATIC : MVT_DYNAMIC;
+	MODEL_VERTEX_TYPE vtype = (m_hdr.iFlags & MODEL_FLAG_STATIC) ? MVT_STATIC_EX : MVT_DYNAMIC_EX;
 
 	m_pMgr->m_pd3dDevice->SetIndices(m_ppIndexBuffer[nLod]);
 	m_pMgr->m_pd3dDevice->SetStreamSource(0, m_ppVertexBuffer[nLod], 0, iVertSize[vtype]);
@@ -792,14 +632,14 @@ void ModelFile::BuildMeshBuffers()
 		bool isStatic = m_hdr.iFlags & MODEL_FLAG_STATIC;
 		if(isStatic)
 		{
-			pVertices = new vertex_static[iStartVertex];
+			pVertices = new vertex_static_ex[iStartVertex];
 		}
 		else
 		{
-			pVertices = new vertex_animated[iStartVertex];
+			pVertices = new vertex_animated_ex[iStartVertex];
 		}
 		ModelLoDSubset * pSM;
-		int vsize = (isStatic ? sizeof(vertex_static) : sizeof(vertex_animated));
+		int vsize = (isStatic ? sizeof(vertex_static_ex) : sizeof(vertex_animated_ex));
 		for(uint32_t i = 0; i < m_pLods[j].iSubMeshCount; ++i)
 		{
 			pSM = &m_pLods[j].pSubLODmeshes[i];
@@ -974,7 +814,7 @@ bool ModelFile::Save(const char * file)
 				fwrite(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(uint32_t), 1, fp);
 				fwrite(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(uint32_t), 1, fp);
 				
-				fwrite(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
+				fwrite(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated_ex), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
 				fwrite(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, fp);
 			}
 		}
@@ -994,7 +834,7 @@ bool ModelFile::Save(const char * file)
 		fwrite(m_pParts, sizeof(ModelPart), m_hdr2.iDepsCount, fp);
 	}
 
-	m_hdr.iFlags |= MODEL_FLAG_COMPILED | MODEL_FLAG_NEW_STYLE_DEPS | MODEL_FLAG_NEW_PACKED_ANIMS;
+	m_hdr.iFlags |= MODEL_FLAG_COMPILED | MODEL_FLAG_NEW_STYLE_DEPS | MODEL_FLAG_NEW_PACKED_ANIMS | MODEL_FLAG_HAS_TANGENT_BINORM;
 
 	fseek(fp, 0, SEEK_SET);
 	fwrite(&m_hdr, sizeof(ModelHeader), 1, fp);
@@ -2231,13 +2071,13 @@ void Animation::AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int
 	model_vertex * vtx;
 	if(isStatic)
 	{
-		vtx = new vertex_static[iNewVtxC];
+		vtx = new vertex_static_ex[iNewVtxC];
 	}
 	else
 	{
-		vtx = new vertex_animated[iNewVtxC];
+		vtx = new vertex_animated_ex[iNewVtxC];
 	}
-	int vsize = isStatic ? sizeof(vertex_static) : sizeof(vertex_animated);
+	int vsize = isStatic ? sizeof(vertex_static_ex) : sizeof(vertex_animated_ex);
 
 	memcpy(idx, to->pIndices, sizeof(UINT) * to->iIndexCount);
 	memcpy(vtx, to->pVertices, vsize * to->iVectexCount);
@@ -2252,7 +2092,7 @@ void Animation::AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int
 
 	if(!isStatic)
 	{
-		vertex_animated * vtxa = (vertex_animated*)vtx;
+		vertex_animated_ex * vtxa = (vertex_animated_ex*)vtx;
 		for(uint32_t i = 0; i < from->iVectexCount; ++i)
 		{
 			for(int j = 0; j < 4; ++j)
@@ -2329,11 +2169,11 @@ void Animation::getPhysData(
 		{
 			if(m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC)
 			{
-				(*pppfData)[0][vc++] = (float3)(((vertex_static*)pSM->pVertices)[k].Pos * m_fScale);
+				(*pppfData)[0][vc++] = (float3)(((vertex_static_ex*)pSM->pVertices)[k].Pos * m_fScale);
 			}
 			else
 			{
-				(*pppfData)[0][vc++] = (float3)(((vertex_animated*)pSM->pVertices)[k].Pos * m_fScale);
+				(*pppfData)[0][vc++] = (float3)(((vertex_animated_ex*)pSM->pVertices)[k].Pos * m_fScale);
 			}
 		}
 	}

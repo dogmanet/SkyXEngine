@@ -739,7 +739,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 			Array<proptable_t*> aPropTable;
 
 			proptable_t *pPropTableParent = pPropTable->pBaseProptable;
-			while (pPropTable)
+			while(pPropTableParent)
 			{
 				aPropTable.push_back(pPropTableParent);
 				pPropTableParent = pPropTableParent->pBaseProptable;

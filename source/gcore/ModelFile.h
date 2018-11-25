@@ -17,10 +17,6 @@ See the license in LICENSE
 #ifndef __MODEL_FILE_H
 #define __MODEL_FILE_H
 
-/*! Старая версия формата
- \todo убрать поддержку старой версии формата моделей
-*/
-#define SX_MODEL_VERSION_OLD 6
 #define SX_MODEL_VERSION 7     /*!< Актуальная версия файла модели */
 #define SX_MODEL_MAGICK 30510779525321540 /*!< Магическая константа для определения файла */
 
