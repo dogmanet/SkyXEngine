@@ -311,32 +311,32 @@ SX_LIB_API void SPP_RTSetDepth0(ID rt)
 	pp_data::rt_id::idDepth0 = rt;
 }
 
-SX_LIB_API void SPP_RTSetDepth1(ID rt)
+SX_LIB_API void SPP_RTSetDepth1(ID idRT)
 {
 	PP_PRECOND(_VOID);
 
-	pp_data::rt_id::idDepth1 = rt;
+	pp_data::rt_id::idDepth1 = idRT;
 }
 
-SX_LIB_API void SPP_RTSetNormal(ID rt)
+SX_LIB_API void SPP_RTSetNormal(ID idRT)
 {
 	PP_PRECOND(_VOID);
 
-	pp_data::rt_id::idNormal = rt;
+	pp_data::rt_id::idNormal = idRT;
 }
 
-SX_LIB_API void SPP_RTSetInput(ID rt)
+SX_LIB_API void SPP_RTSetInput(ID idRT)
 {
 	PP_PRECOND(_VOID);
 
-	pp_data::rt_id::idInput = rt;
+	pp_data::rt_id::idInput = idRT;
 }
 
-SX_LIB_API void SPP_RTSetOutput(ID rt)
+SX_LIB_API void SPP_RTSetOutput(ID idRT)
 {
 	PP_PRECOND(_VOID);
 
-	pp_data::rt_id::idOutput = rt;
+	pp_data::rt_id::idOutput = idRT;
 }
 
 SX_LIB_API ID SPP_RTGetCurrRender()
@@ -407,7 +407,7 @@ SX_LIB_API void SPP_Update()
 
 //##########################################################################
 
-SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float density)
+SX_LIB_API void SPP_RenderFogLinear(const float3_t *pColor, float fDensity)
 {
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
@@ -427,8 +427,8 @@ SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float density)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_vFogColor", color);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_fFogDenisty", &density);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_vFogColor", &float3_t(pColor->x, pColor->y, pColor->z));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_fFogDenisty", &fDensity);
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::FogLinear, "vNearFar", &pp_data::vNearFar);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
@@ -446,7 +446,7 @@ SX_LIB_API void SPP_RenderFogLinear(float3_t* color, float density)
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
-SX_LIB_API void SPP_RenderSSAO(float4_t* param, int quality)
+SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 {
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
@@ -471,13 +471,13 @@ SX_LIB_API void SPP_RenderSSAO(float4_t* param, int quality)
 
 	ID idpsshader = pp_data::shaders_id::ps::idSSAO_Q_1;
 
-	if (quality == 3)
+	if (iQuality == 3)
 		idpsshader = pp_data::shaders_id::ps::idSSAO_Q_3;
-	else if (quality == 2)
+	else if (iQuality == 2)
 		idpsshader = pp_data::shaders_id::ps::idSSAO_Q_2;
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_vNearFar", &pp_data::vNearFar);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_vParams", &float4(param->x, param->y, param->z, param->w));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_vParams", &float4(pParam->x, pParam->y, pParam->z, pParam->w));
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_aRndVectors", &pp_data::aRndVecSSAO);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_vViewPos", &pp_data::vConstCurrCamPos);
@@ -537,7 +537,7 @@ SX_LIB_API void SPP_RenderSSAO(float4_t* param, int quality)
 }
 
 
-SX_LIB_API void SPP_RenderWhiteBlack(float coef)
+SX_LIB_API void SPP_RenderWhiteBlack(float fCoef)
 {
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
@@ -551,7 +551,7 @@ SX_LIB_API void SPP_RenderWhiteBlack(float coef)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idWhiteBlack, "g_fCoef", &coef);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idWhiteBlack, "g_fCoef", &fCoef);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idWhiteBlack);
@@ -567,7 +567,7 @@ SX_LIB_API void SPP_RenderWhiteBlack(float coef)
 	pp_data::rt_id::IncrRT();
 }
 
-SX_LIB_API void SPP_RenderSepia(float coef)
+SX_LIB_API void SPP_RenderSepia(float fCoef)
 {
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
@@ -581,7 +581,7 @@ SX_LIB_API void SPP_RenderSepia(float coef)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vCountSepia", &coef);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vCountSepia", &fCoef);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vLightColor", &PP_SEPIA_LIGHT_COLOR);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vDarkColor", &PP_SEPIA_DARK_COLOR);
@@ -601,7 +601,7 @@ SX_LIB_API void SPP_RenderSepia(float coef)
 	pp_data::rt_id::IncrRT();
 }
 
-SX_LIB_API void SPP_RenderCBG(float3_t* param)
+SX_LIB_API void SPP_RenderCBG(const float3_t *pParam)
 {
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
@@ -615,11 +615,12 @@ SX_LIB_API void SPP_RenderCBG(float3_t* param)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	param->x = lerpf(0.2, 2, saturatef(param->x));
-	param->y = lerpf(0.5, 1.5, saturatef(param->y));
-	param->z = lerpf(0, 0.5, saturatef(param->z));
+	float3_t vParam = *pParam;
+	vParam.x = lerpf(0.2, 2, saturatef(pParam->x));
+	vParam.y = lerpf(0.5, 1.5, saturatef(pParam->y));
+	vParam.z = lerpf(0, 0.5, saturatef(pParam->z));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG, "g_vParam", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG, "g_vParam", &vParam);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG);
@@ -637,7 +638,7 @@ SX_LIB_API void SPP_RenderCBG(float3_t* param)
 
 //##########################################################################
 
-SX_LIB_API void SPP_RenderDOF(float4_t* param, float sky_blur)
+SX_LIB_API void SPP_RenderDOF(const float4_t *pParam, float fSkyBlur)
 {
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 
@@ -708,8 +709,8 @@ SX_LIB_API void SPP_RenderDOF(float4_t* param, float sky_blur)
 	pp_data::pDXDevice->SetTexture(2, SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize));
 
 	float tmpskyblur = 0.0f;
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_vParam", param);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_fSkyBlur", &sky_blur);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_vParam", (void*)pParam);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_fSkyBlur", &fSkyBlur);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_vNearFar", &pp_data::vNearFar);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
@@ -727,9 +728,9 @@ SX_LIB_API void SPP_RenderDOF(float4_t* param, float sky_blur)
 }
 
 
-SX_LIB_API void SPP_UpdateSun(float3* sunpos)
+SX_LIB_API void SPP_UpdateSun(const float3 *pSunPos)
 {
-	if (sunpos == 0)
+	if (pSunPos == 0)
 	{
 		pp_data::existsSun = false;
 		return;
@@ -737,7 +738,7 @@ SX_LIB_API void SPP_UpdateSun(float3* sunpos)
 	else
 		pp_data::existsSun = true;
 
-	float3 sunPos = *sunpos;
+	float3 sunPos = *pSunPos;
 
 	sunPos = SMVector4Transform(sunPos, pp_data::mCamView * pp_data::mCamProj);
 
@@ -755,7 +756,7 @@ SX_LIB_API void SPP_UpdateSun(float3* sunpos)
 	float3 tmpVec(pp_data::vConstCurrCamDir.x, pp_data::vConstCurrCamDir.y, pp_data::vConstCurrCamDir.z);
 	tmpVec = SMVector3Normalize(tmpVec);
 
-	float3 dirVec = (*sunpos) - pp_data::vConstCurrCamPos;
+	float3 dirVec = (*pSunPos) - pp_data::vConstCurrCamPos;
 
 	dirVec = SMVector3Normalize(dirVec);
 	sunPos.w = abs(acosf(SMVector3Dot(tmpVec, dirVec)) * sign(SMVector3Cross(tmpVec, dirVec).y));
@@ -763,12 +764,12 @@ SX_LIB_API void SPP_UpdateSun(float3* sunpos)
 	pp_data::vSunPos = sunPos;
 }
 
-SX_LIB_API void SPP_ChangeTexSun(const char* str)
+SX_LIB_API void SPP_ChangeTexSun(const char *szTexture)
 {
-	pp_data::tex_id::idSun = SGCore_LoadTexAddName(str, LOAD_TEXTURE_TYPE_CONST);
+	pp_data::tex_id::idSun = SGCore_LoadTexAddName(szTexture, LOAD_TEXTURE_TYPE_CONST);
 }
 
-SX_LIB_API void SPP_RenderSun(float4_t* sun_color)
+SX_LIB_API void SPP_RenderSun(const float4_t *pSunColor)
 {
 	if (!pp_data::existsSun)
 		return;
@@ -839,7 +840,7 @@ SX_LIB_API void SPP_RenderSun(float4_t* sun_color)
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vSizeMap", &(pp_data::vWinSize));
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vSizeTexSun", &SizeMapSun);
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::SunRender, "PixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vLightColor", sun_color);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vLightColor", (void*)pSunColor);
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::SunRender, "vNearFar", &pp_data::vNearFar);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
@@ -861,8 +862,10 @@ SX_LIB_API void SPP_RenderSun(float4_t* sun_color)
 	//pp_data::rt_id::IncrRT();
 }
 
-SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool use_bloom)
+SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSunColor, bool useBloom)
 {
+	//при отключенном блуме будет баг, так как текстура не будет очищаться, надо это проверять, в рендере сделал проверку
+
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
@@ -875,9 +878,9 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
 	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
 
-	if (pp_data::existsSun && pp_data::vSunPos.w < PP_MAX_ANGLE_VISIBLE_SUN && sun_color->w > 0.3)
+	if (pp_data::existsSun && pp_data::vSunPos.w < PP_MAX_ANGLE_VISIBLE_SUN && pSunColor->w > 0.3)
 	{
-		if (!use_bloom)
+		if (!useBloom)
 			pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
 		SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
@@ -891,7 +894,7 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_vLightPos", &pp_data::vSunPos);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_vSizeMap", &tmpSizeMap);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_fRadiusSun", &LensFlareSunRadius);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_vColor", sun_color);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_vColor", (void*)pSunColor);
 		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::LensFlare0, "vNearFar", &pp_data::vNearFar);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0);
@@ -902,7 +905,7 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 	}
 	else
 	{
-		if (!use_bloom)
+		if (!useBloom)
 			pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 	}
 
@@ -928,7 +931,7 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idBright));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare2, "g_vLensFlareParam", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare2, "g_vLensFlareParam", (void*)pParam);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare2);
@@ -944,7 +947,7 @@ SX_LIB_API void SPP_RenderLensFlare(float3_t* param, float4_t* sun_color, bool u
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
-SX_LIB_API void SPP_RenderBloom(float3_t* param)
+SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 {
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
@@ -957,7 +960,7 @@ SX_LIB_API void SPP_RenderBloom(float3_t* param)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomBP, "g_vParam", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomBP, "g_vParam", (void*)pParam);
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomBP);
 
@@ -1167,7 +1170,7 @@ void SPP_ComEdgeDetected()
 	}
 }
 
-SX_LIB_API void SPP_RenderNFAA(float3_t* param)
+SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam)
 {
 	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
@@ -1193,7 +1196,7 @@ SX_LIB_API void SPP_RenderNFAA(float3_t* param)
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idNFAA, "g_vParam", param);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idNFAA, "g_vParam", (void*)pParam);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idNFAA, "g_vPixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
@@ -1281,7 +1284,7 @@ SX_LIB_API void SPP_RenderDLAA()
 
 //##########################################################################
 
-SX_LIB_API void SPP_RenderMotionBlur(float coef, DWORD timeDelta)
+SX_LIB_API void SPP_RenderMotionBlur(float fCoef, DWORD timeDelta)
 {
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
@@ -1309,7 +1312,7 @@ SX_LIB_API void SPP_RenderMotionBlur(float coef, DWORD timeDelta)
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idResPos, "g_vParamProj", &float3_t(pp_data::vWinSize.x, pp_data::vWinSize.y, pp_data::fProjFov));
 	
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idMotionBlur, "g_vViewPos", &pp_data::vConstCurrCamPos);
-	float tmpcoefblur = float(timeDelta) * 0.001f * ((coef)*10.f);// 0.3f;// *(float(timeDelta) * 0.001f);
+	float tmpcoefblur = float(timeDelta) * 0.001f * ((fCoef)*10.f);// 0.3f;// *(float(timeDelta) * 0.001f);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idMotionBlur, "g_fCoefBlur", &tmpcoefblur);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idMotionBlur, "g_vNearFar", &pp_data::vNearFar);
 

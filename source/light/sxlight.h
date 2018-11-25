@@ -103,7 +103,7 @@ Cчитается: LIGHTS_UPDATE_PSSM_SPLIT*number_split
 #define LIGHTS_LOCAL_STD_TOP_RADIUS 0.1	
 
 /*! стандартное значение ближней плоскости отсечения для теней локального света  */
-#define LIGHTS_LOCAL_STD_NEAR 0.1		
+#define LIGHTS_LOCAL_STD_NEAR 0.0025		
 
 /*! максимальная дистанция локального света */
 #define LIGHTS_LOCAL_MAX_DIST 200.f		
@@ -272,6 +272,11 @@ SX_LIB_API bool SLight_GetCastGlobalShadow();
 
 //! установить общую тень для всего от глобального источника (все в тень)
 SX_LIB_API void SLight_SetCastGlobalShadow(bool isShadowed);
+
+
+SX_LIB_API void SLight_SetShadowCoef(ID id, float m_fShadowCoef);
+
+SX_LIB_API float SLight_GetShadowCoef(ID id);
 
 //-----------------------------------------------------------------------------
 

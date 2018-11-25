@@ -66,9 +66,9 @@ ID StdMtlLoad(const char *szName, int iMtlType)
 	return SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
 }
 
-int StdMtlGetSort(ID id)
+bool StdMtlIsTransparency(ID id)
 {
-	return 0;
+	return false;
 }
 
 int StdMtlGetPhysicType(ID id)
@@ -84,7 +84,7 @@ bool StdMtlGroupIsSyngly(ID id)
 g_func_dip g_fnDIP = StdDrawIndexedPrimitive;
 g_func_mtl_set g_fnMtlSet = StdMtlSet;
 g_func_mtl_load g_fnMtlLoad = StdMtlLoad;
-g_func_mtl_get_sort g_fnMtlGetSort = StdMtlGetSort;
+g_func_mtl_is_transparency g_fnMtlIsTransparency = StdMtlIsTransparency;
 g_func_mtl_get_physic_type g_fnMtlGetPhysicType = StdMtlGetPhysicType;
 g_func_mtl_group_render_is_singly g_fnMtlGroupRenderIsSingly = StdMtlGroupIsSyngly;
 
@@ -114,6 +114,8 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+		{ 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{ 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
 		D3DDECL_END()
 	};
 
@@ -346,10 +348,10 @@ SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType)
 	return g_fnMtlLoad(szName, iMtlType);
 }
 
-SX_LIB_API int SGCore_MtlGetSort(ID id)
+SX_LIB_API bool SGCore_MtlIsTransparency(ID id)
 {
-	SG_PRECOND(-1);
-	return g_fnMtlGetSort(id);
+	SG_PRECOND(false);
+	return g_fnMtlIsTransparency(id);
 }
 
 SX_LIB_API int SGCore_MtlGetPhysicType(ID id)
@@ -383,10 +385,10 @@ SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load fnFunc)
 	g_fnMtlLoad = fnFunc;
 }
 
-SX_LIB_API void SGCore_SetFunc_MtlGetSort(g_func_mtl_get_sort fnFunc)
+SX_LIB_API void SGCore_SetFunc_MtlIsTransparency(g_func_mtl_is_transparency fnFunc)
 {
 	SG_PRECOND(_VOID);
-	g_fnMtlGetSort = fnFunc;
+	g_fnMtlIsTransparency = fnFunc;
 }
 
 SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type fnFunc)
@@ -852,14 +854,14 @@ SX_LIB_API ICamera* SGCore_CrCamera()
 	return new CCamera();
 }
 
-SX_LIB_API ISXTransObject* SGCore_CrTransObject()
+SX_LIB_API ITransObject* SGCore_CrTransObject()
 {
-	return new CSXTransObject();
+	return new CTransObject();
 }
 
 SX_LIB_API ISXBound* SGCore_CrBound()
 {
-	return new CSXBound();
+	return new CBound();
 }
 
 //##########################################################################

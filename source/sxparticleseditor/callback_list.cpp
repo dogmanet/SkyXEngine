@@ -8,7 +8,7 @@ LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wPara
 		return 0;
 
 	SXParticlesEditor::ListBoxEmitters->clear();
-	if (SPE_EffectCountGet() == 0)
+	if (SPE_EffectGetCount() == 0)
 	{
 		SXParticlesEditor::ListBoxEffects->clear();
 		SXParticlesEditor::EffVisible(true, true);
@@ -16,14 +16,14 @@ LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wPara
 		return 0;
 	}
 	
-	SXParticlesEditor::SelEffID = SPE_EffectIdOfKey(sel);
-	int partcount = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
+	SXParticlesEditor::SelEffID = SPE_EffectGetIdOfKey(sel);
+	int partcount = SPE_EmitterGetSCount(SXParticlesEditor::SelEffID);
 	char partname[OBJECT_NAME_MAX_LEN];
 	for (int i = 0; i < partcount; ++i)
 	{
 		partname[0] = '!';
 		partname[1] = 0;
-		SPE_EmitterNameGet(SXParticlesEditor::SelEffID, i, partname);
+		SPE_EmitterGetName(SXParticlesEditor::SelEffID, i, partname);
 		if (partname[0] == 0)
 			partname[0] = '!';
 		SXParticlesEditor::ListBoxEmitters->addItem(partname);
@@ -34,12 +34,12 @@ LRESULT SXParticlesEditor_ListBoxEffects_Click(HWND hwnd, UINT msg, WPARAM wPara
 	if (hwnd != 0)
 		SXParticlesEditor::TabsVisible(false);
 
-	for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	for (int i = 0; i < SPE_EffectGetCount(); ++i)
 	{
-		SPE_EffectEnableSet(SPE_EffectIdOfKey(i), false);
+		SPE_EffectSetEnable(SPE_EffectGetIdOfKey(i), false);
 	}
 
-	SPE_EffectEnableSet(SXParticlesEditor::SelEffID, true);
+	SPE_EffectSetEnable(SXParticlesEditor::SelEffID, true);
 
 	if (hwnd != 0)
 	{
@@ -59,18 +59,18 @@ LRESULT SXParticlesEditor_ListBoxEmitters_Click(HWND hwnd, UINT msg, WPARAM wPar
 		return 0;
 
 	SXParticlesEditor::SelEmitterID = SXParticlesEditor::ListBoxEmitters->getSel();
-	int countemitters = SPE_EmitterSCountGet(SXParticlesEditor::SelEffID);
-	if (SXParticlesEditor::SelEmitterID < 0 || countemitters <= 0 || SPE_EmitterSCountGet(SXParticlesEditor::SelEffID) <= SXParticlesEditor::SelEmitterID)
+	int countemitters = SPE_EmitterGetSCount(SXParticlesEditor::SelEffID);
+	if (SXParticlesEditor::SelEmitterID < 0 || countemitters <= 0 || SPE_EmitterGetSCount(SXParticlesEditor::SelEffID) <= SXParticlesEditor::SelEmitterID)
 		return 0;
 
-	SPE_EffectEnableSet(SXParticlesEditor::SelEffID, true);
+	SPE_EffectSetEnable(SXParticlesEditor::SelEffID, true);
 
-	for (int i = 0; i < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++i)
+	for (int i = 0; i < SPE_EmitterGetSCount(SXParticlesEditor::SelEffID); ++i)
 	{
-		SPE_EmitterEnableSet(SXParticlesEditor::SelEffID, i, false);
+		SPE_EmitterSetEnable(SXParticlesEditor::SelEffID, i, false);
 	}
 	
-	SPE_EmitterEnableSet(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, true);
+	SPE_EmitterSetEnable(SXParticlesEditor::SelEffID, SXParticlesEditor::SelEmitterID, true);
 	
 	SXParticlesEditor::EffVisible(false, false);
 	SXParticlesEditor::AllInTabsVisible(false);
@@ -95,9 +95,9 @@ LRESULT SXParticlesEditor_ButtonEffectsCreate_Click(HWND hwnd, UINT msg, WPARAM 
 
 	SXParticlesEditor::TabsVisible(false);
 
-	for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	for (int i = 0; i < SPE_EffectGetCount(); ++i)
 	{
-		SPE_EffectEnableSet(SPE_EffectIdOfKey(i), false);
+		SPE_EffectSetEnable(SPE_EffectGetIdOfKey(i), false);
 	}
 
 	return 0;
@@ -118,9 +118,9 @@ LRESULT SXParticlesEditor_ButtonEffectsDelete_Click(HWND hwnd, UINT msg, WPARAM 
 
 	int sel = SXParticlesEditor::ListBoxEffects->getSel();
 	SXParticlesEditor::ListBoxEffects->deleteItem(SXParticlesEditor::ListBoxEffects->getSel());
-	SXParticlesEditor::StaticEffectsCount->setText(String(SPE_EffectCountGet()).c_str());
+	SXParticlesEditor::StaticEffectsCount->setText(String(SPE_EffectGetCount()).c_str());
 
-	if (SPE_EffectCountGet() > 0)
+	if (SPE_EffectGetCount() > 0)
 	{
 		SXParticlesEditor::ListBoxEffects->setSel((sel < SXParticlesEditor::ListBoxEffects->getItemCount() ? sel : sel - 1));
 		SXParticlesEditor_ListBoxEffects_Click(hwnd, msg, wParam, lParam);
@@ -129,7 +129,7 @@ LRESULT SXParticlesEditor_ButtonEffectsDelete_Click(HWND hwnd, UINT msg, WPARAM 
 		SXParticlesEditor_ButtonEffectsCreate_Click(hwnd, msg, wParam, lParam);
 
 	if (SXParticlesEditor::SelEffID >= 0)
-		SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
+		SPE_EffectSetEnable(SXParticlesEditor::SelEffID, false);
 
 	return 0;
 }
@@ -147,9 +147,9 @@ LRESULT SXParticlesEditor_ButtonEmittersCreate_Click(HWND hwnd, UINT msg, WPARAM
 	SXParticlesEditor::EmitterCreateVisible(true);
 	SXParticlesEditor::BaseVisible(true);
 
-	for (int i = 0; i < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++i)
+	for (int i = 0; i < SPE_EmitterGetSCount(SXParticlesEditor::SelEffID); ++i)
 	{
-		SPE_EmitterEnableSet(SXParticlesEditor::SelEffID, i, false);
+		SPE_EmitterSetEnable(SXParticlesEditor::SelEffID, i, false);
 	}
 
 	SXParticlesEditor::SelEmitterID = -1;
@@ -167,9 +167,9 @@ LRESULT SXParticlesEditor_ButtonEmittersBasis_Click(HWND hwnd, UINT msg, WPARAM 
 	SXParticlesEditor::EmitterCreateVisible(true);
 	SXParticlesEditor::BaseVisible(true);
 
-	for (int i = 0; i < SPE_EmitterSCountGet(SXParticlesEditor::SelEffID); ++i)
+	for (int i = 0; i < SPE_EmitterGetSCount(SXParticlesEditor::SelEffID); ++i)
 	{
-		SPE_EmitterEnableSet(SXParticlesEditor::SelEffID, i, false);
+		SPE_EmitterSetEnable(SXParticlesEditor::SelEffID, i, false);
 	}
 
 	SXParticlesEditor::SelEmitterID = -1;
@@ -188,9 +188,9 @@ LRESULT SXParticlesEditor_ButtonEmittersDelete_Click(HWND hwnd, UINT msg, WPARAM
 	SXParticlesEditor::SelEmitterID = -1;
 	int sel = SXParticlesEditor::ListBoxEmitters->getSel();
 	SXParticlesEditor::ListBoxEmitters->deleteItem(sel);
-	SXParticlesEditor::StaticEmittersCount->setText(String(SPE_EmitterSCountGet(SXParticlesEditor::SelEffID)).c_str());
+	SXParticlesEditor::StaticEmittersCount->setText(String(SPE_EmitterGetSCount(SXParticlesEditor::SelEffID)).c_str());
 
-	if (SPE_EmitterSCountGet(SXParticlesEditor::SelEffID))
+	if (SPE_EmitterGetSCount(SXParticlesEditor::SelEffID))
 	{
 		SXParticlesEditor::ListBoxEmitters->setSel((sel < SXParticlesEditor::ListBoxEmitters->getItemCount() ? sel : sel - 1));
 		SXParticlesEditor_ListBoxEmitters_Click(hwnd, msg, wParam, lParam);
@@ -199,7 +199,7 @@ LRESULT SXParticlesEditor_ButtonEmittersDelete_Click(HWND hwnd, UINT msg, WPARAM
 		SXParticlesEditor_ButtonEmittersCreate_Click(hwnd, msg, wParam, lParam);
 
 	if (SXParticlesEditor::SelEffID >= 0)
-		SPE_EffectEnableSet(SXParticlesEditor::SelEffID, false);
+		SPE_EffectSetEnable(SXParticlesEditor::SelEffID, false);
 
 	return 0;
 }
@@ -208,9 +208,9 @@ LRESULT SXParticlesEditor_ButtonEmittersDelete_Click(HWND hwnd, UINT msg, WPARAM
 
 LRESULT SXParticlesEditor_ButtonEffCreate_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	for (int i = 0; i < SPE_EffectCountGet(); ++i)
+	for (int i = 0; i < SPE_EffectGetCount(); ++i)
 	{
-		SPE_EffectEnableSet(SPE_EffectIdOfKey(i), false);
+		SPE_EffectSetEnable(SPE_EffectGetIdOfKey(i), false);
 	}
 
 	char effname[OBJECT_NAME_MAX_LEN];
@@ -220,7 +220,7 @@ LRESULT SXParticlesEditor_ButtonEffCreate_Click(HWND hwnd, UINT msg, WPARAM wPar
 
 	SXParticlesEditor::ListBoxEffects->addItem(effname);
 	SXParticlesEditor::ListBoxEffects->setSel(SXParticlesEditor::ListBoxEffects->getItemCount() - 1);
-	SXParticlesEditor::StaticEffectsCount->setText(String(SPE_EffectCountGet()).c_str());
+	SXParticlesEditor::StaticEffectsCount->setText(String(SPE_EffectGetCount()).c_str());
 	SXParticlesEditor::EffVisible(true, false);
 
 	return 0;
@@ -233,7 +233,7 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 	char partname[OBJECT_NAME_MAX_LEN];
 	SXParticlesEditor::EditName->getText(partname, OBJECT_NAME_MAX_LEN);
 
-	if (!def_str_validate(partname))
+	if (!STR_VALIDATE(partname))
 	{
 		MessageBox(0,"unresolved name for particles",0,0);
 		return 0;
@@ -251,177 +251,177 @@ LRESULT SXParticlesEditor_ButtonEmitterCreate_Click(HWND hwnd, UINT msg, WPARAM 
 
 	char tmptxt[64];
 
-	ParticlesData pdata;
+	CParticlesData pdata;
 
 	SXParticlesEditor::EditAccelerationX->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Acceleration.x));
+	sscanf(tmptxt, "%f", &(pdata.m_vAcceleration.x));
 	SXParticlesEditor::EditAccelerationY->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Acceleration.y));
+	sscanf(tmptxt, "%f", &(pdata.m_vAcceleration.y));
 	SXParticlesEditor::EditAccelerationZ->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Acceleration.z));
+	sscanf(tmptxt, "%f", &(pdata.m_vAcceleration.z));
 
 	SXParticlesEditor::EditAccelerationDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.AccelerationDisp));
+	sscanf(tmptxt, "%f", &(pdata.m_fAccelerationDisp));
 
-	pdata.AccelerationDispXNeg = SXParticlesEditor::CheckBoxAccelerationDispXNeg->getCheck();
-	pdata.AccelerationDispYNeg = SXParticlesEditor::CheckBoxAccelerationDispYNeg->getCheck();
-	pdata.AccelerationDispZNeg = SXParticlesEditor::CheckBoxAccelerationDispZNeg->getCheck();
+	pdata.m_shouldAccelerationDispXNeg = SXParticlesEditor::CheckBoxAccelerationDispXNeg->getCheck();
+	pdata.m_shouldAccelerationDispYNeg = SXParticlesEditor::CheckBoxAccelerationDispYNeg->getCheck();
+	pdata.m_shouldAccelerationDispZNeg = SXParticlesEditor::CheckBoxAccelerationDispZNeg->getCheck();
 
 
 	SXParticlesEditor::EditVelocityX->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Velocity.x));
+	sscanf(tmptxt, "%f", &(pdata.m_vVelocity.x));
 	SXParticlesEditor::EditVelocityY->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Velocity.y));
+	sscanf(tmptxt, "%f", &(pdata.m_vVelocity.y));
 	SXParticlesEditor::EditVelocityZ->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Velocity.z));
+	sscanf(tmptxt, "%f", &(pdata.m_vVelocity.z));
 
 	SXParticlesEditor::EditVelocityDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.VelocityDisp));
+	sscanf(tmptxt, "%f", &(pdata.m_fVelocityDisp));
 
-	pdata.VelocityDispXNeg = SXParticlesEditor::CheckBoxVelocityDispXNeg->getCheck();
-	pdata.VelocityDispYNeg = SXParticlesEditor::CheckBoxVelocityDispYNeg->getCheck();
-	pdata.VelocityDispZNeg = SXParticlesEditor::CheckBoxVelocityDispZNeg->getCheck();
+	pdata.m_shouldVelocityDispXNeg = SXParticlesEditor::CheckBoxVelocityDispXNeg->getCheck();
+	pdata.m_shouldVelocityDispYNeg = SXParticlesEditor::CheckBoxVelocityDispYNeg->getCheck();
+	pdata.m_shouldVelocityDispZNeg = SXParticlesEditor::CheckBoxVelocityDispZNeg->getCheck();
 
 
-	pdata.BoundType = (PARTICLESTYPE_BOUND)SXParticlesEditor::ComboBoxBoundType->getSel();
+	pdata.m_typeBound = (PARTICLESTYPE_BOUND)SXParticlesEditor::ComboBoxBoundType->getSel();
 
 	SXParticlesEditor::EditBoundVec1X->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.BoundVec1.x));
+	sscanf(tmptxt, "%f", &(pdata.m_vBoundVec1.x));
 	SXParticlesEditor::EditBoundVec1Y->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.BoundVec1.y));
+	sscanf(tmptxt, "%f", &(pdata.m_vBoundVec1.y));
 	SXParticlesEditor::EditBoundVec1Z->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.BoundVec1.z));
+	sscanf(tmptxt, "%f", &(pdata.m_vBoundVec1.z));
 
 	SXParticlesEditor::EditBoundVec2X->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.BoundVec2.x));
+	sscanf(tmptxt, "%f", &(pdata.m_vBoundVec2.x));
 	SXParticlesEditor::EditBoundVec2Y->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.BoundVec2.y));
+	sscanf(tmptxt, "%f", &(pdata.m_vBoundVec2.y));
 	SXParticlesEditor::EditBoundVec2Z->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.BoundVec2.z));
+	sscanf(tmptxt, "%f", &(pdata.m_vBoundVec2.z));
 
 
-	pdata.SpawnPosType = (PARTICLESTYPE_SPAWNPOS)SXParticlesEditor::ComboBoxSpawnPosType->getSel();
+	pdata.m_typeSpawnPos = (PARTICLESTYPE_SPAWNPOS)SXParticlesEditor::ComboBoxSpawnPosType->getSel();
 	SXParticlesEditor::EditSpawnOriginX->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.SpawnOrigin.x));
+	sscanf(tmptxt, "%f", &(pdata.m_vSpawnOrigin.x));
 	SXParticlesEditor::EditSpawnOriginY->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.SpawnOrigin.y));
+	sscanf(tmptxt, "%f", &(pdata.m_vSpawnOrigin.y));
 	SXParticlesEditor::EditSpawnOriginZ->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.SpawnOrigin.z));
+	sscanf(tmptxt, "%f", &(pdata.m_vSpawnOrigin.z));
 
 	SXParticlesEditor::EditSpawnOriginDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.SpawnOriginDisp));
+	sscanf(tmptxt, "%f", &(pdata.m_fSpawnOriginDisp));
 
-	pdata.SpawnBoundBindCreateXNeg = SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->getCheck();
-	pdata.SpawnBoundBindCreateXPos = SXParticlesEditor::CheckBoxSpawnOriginDispXPos->getCheck();
-	pdata.SpawnBoundBindCreateYNeg = SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->getCheck();
-	pdata.SpawnBoundBindCreateYPos = SXParticlesEditor::CheckBoxSpawnOriginDispYPos->getCheck();
-	pdata.SpawnBoundBindCreateZNeg = SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->getCheck();
-	pdata.SpawnBoundBindCreateZPos = SXParticlesEditor::CheckBoxSpawnOriginDispZPos->getCheck();
+	pdata.m_shouldSpawnBoundBindCreateXNeg = SXParticlesEditor::CheckBoxSpawnOriginDispXNeg->getCheck();
+	pdata.m_shouldSpawnBoundBindCreateXPos = SXParticlesEditor::CheckBoxSpawnOriginDispXPos->getCheck();
+	pdata.m_shouldSpawnBoundBindCreateYNeg = SXParticlesEditor::CheckBoxSpawnOriginDispYNeg->getCheck();
+	pdata.m_shouldSpawnBoundBindCreateYPos = SXParticlesEditor::CheckBoxSpawnOriginDispYPos->getCheck();
+	pdata.m_shouldSpawnBoundBindCreateZNeg = SXParticlesEditor::CheckBoxSpawnOriginDispZNeg->getCheck();
+	pdata.m_shouldSpawnBoundBindCreateZPos = SXParticlesEditor::CheckBoxSpawnOriginDispZPos->getCheck();
 
 	SXParticlesEditor::EditSpawnNextTime->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.SpawnNextTime));
+	sscanf(tmptxt, "%d", &(pdata.m_uiSpawnNextTime));
 
 	SXParticlesEditor::EditSpawnNextTimeDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.SpawnNextTimeDisp));
+	sscanf(tmptxt, "%d", &(pdata.m_uiSpawnNextTimeDisp));
 
 
 	SXParticlesEditor::EditAnimTexCountCadrsX->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.AnimTexCountCadrsX));
+	sscanf(tmptxt, "%d", &(pdata.m_iAnimTexCountCadrsX));
 	SXParticlesEditor::EditAnimTexCountCadrsY->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.AnimTexCountCadrsY));
+	sscanf(tmptxt, "%d", &(pdata.m_iAnimTexCountCadrsY));
 
 	SXParticlesEditor::EditAnimTexRate->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.AnimTexRate));
+	sscanf(tmptxt, "%d", &(pdata.m_iAnimTexRate));
 	SXParticlesEditor::EditAnimTexRateDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.AnimTexRateDisp));
+	sscanf(tmptxt, "%d", &(pdata.m_iAnimTexRateDisp));
 
 	SXParticlesEditor::EditAnimTexStartCadr->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.AnimTexStartCadr));
+	sscanf(tmptxt, "%d", &(pdata.m_iAnimTexStartCadr));
 	SXParticlesEditor::EditAnimTexStartCadrDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.AnimTexStartCadrDisp));
+	sscanf(tmptxt, "%d", &(pdata.m_iAnimTexStartCadrDisp));
 
 
 	SXParticlesEditor::EditReCreateCount->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.ReCreateCount));
+	sscanf(tmptxt, "%d", &(pdata.m_iReCreateCount));
 	SXParticlesEditor::EditSoftCoef->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.SoftCoef));
+	sscanf(tmptxt, "%f", &(pdata.m_fSoftCoef));
 	SXParticlesEditor::EditRefractionCoef->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.RefractionCoef));
+	sscanf(tmptxt, "%f", &(pdata.m_fRefractionCoef));
 	SXParticlesEditor::EditTransparencyCoef->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.TransparencyCoef));
+	sscanf(tmptxt, "%f", &(pdata.m_fTransparencyCoef));
 	SXParticlesEditor::EditColorCoef->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.ColorCoef));
+	sscanf(tmptxt, "%f", &(pdata.m_fColorCoef));
 
-	pdata.Lighting = SXParticlesEditor::CheckBoxLighting->getCheck();
+	pdata.m_isLighting = SXParticlesEditor::CheckBoxLighting->getCheck();
 
-	pdata.FigureType = (PARTICLESTYPE_FIGURE)SXParticlesEditor::ComboBoxFigureType->getSel();
+	pdata.m_typeFigure = (PARTICLESTYPE_FIGURE)SXParticlesEditor::ComboBoxFigureType->getSel();
 	SXParticlesEditor::EditFigureCountQuads->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.FigureCountQuads));
-	pdata.FigureRotRand = SXParticlesEditor::CheckBoxFigureRotRand->getCheck();
-	pdata.FigureTapX = SXParticlesEditor::CheckBoxFigureTapX->getCheck();
-	pdata.FigureTapY = SXParticlesEditor::CheckBoxFigureTapY->getCheck();
-	pdata.FigureTapZ = SXParticlesEditor::CheckBoxFigureTapZ->getCheck();
+	sscanf(tmptxt, "%d", &(pdata.m_iFigureCountQuads));
+	pdata.m_useFigureRotRand = SXParticlesEditor::CheckBoxFigureRotRand->getCheck();
+	pdata.m_useFigureTapX = SXParticlesEditor::CheckBoxFigureTapX->getCheck();
+	pdata.m_useFigureTapY = SXParticlesEditor::CheckBoxFigureTapY->getCheck();
+	pdata.m_useFigureTapZ = SXParticlesEditor::CheckBoxFigureTapZ->getCheck();
 
-	pdata.AlphaBlendType = (PARTICLESTYPE_ALPHABLEND)SXParticlesEditor::ComboBoxAlphaBlendType->getSel();
+	pdata.m_typeAlphaBlend = (PARTICLESTYPE_ALPHABLEND)SXParticlesEditor::ComboBoxAlphaBlendType->getSel();
 
 	SXParticlesEditor::EditTimeLife->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.TimeLife));
+	sscanf(tmptxt, "%d", &(pdata.m_uiTimeLife));
 	SXParticlesEditor::EditTimeLifeDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%d", &(pdata.TimeLifeDisp));
+	sscanf(tmptxt, "%d", &(pdata.m_uiTimeLifeDisp));
 
-	pdata.AlphaDependAge = (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxAlphaDependAge->getSel();
-	pdata.SizeDependAge = (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxSizeDependAge->getSel();
-	pdata.CollisionDelete = (PARTICLESTYPE_DEPEND)SXParticlesEditor::CheckBoxCollisionDelete->getCheck();
+	pdata.m_typeAlphaDependAge = (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxAlphaDependAge->getSel();
+	pdata.m_typeSizeDependAge = (PARTICLESTYPE_DEPEND)SXParticlesEditor::ComboBoxSizeDependAge->getSel();
+	pdata.m_useCollisionDelete = (PARTICLESTYPE_DEPEND)SXParticlesEditor::CheckBoxCollisionDelete->getCheck();
 
 	SXParticlesEditor::EditSizeX->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Size.x));
+	sscanf(tmptxt, "%f", &(pdata.m_vSize.x));
 	SXParticlesEditor::EditSizeY->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.Size.y));
+	sscanf(tmptxt, "%f", &(pdata.m_vSize.y));
 	SXParticlesEditor::EditSizeDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.SizeDisp));
+	sscanf(tmptxt, "%f", &(pdata.m_fSizeDisp));
 
 
-	pdata.CharacterCircle = SXParticlesEditor::CheckBoxCircle->getCheck();
-	pdata.CharacterCircleAxis = (PARTICLES_AXIS)SXParticlesEditor::ComboBoxCircleAxis->getSel();
+	pdata.m_useCharacterCircle = SXParticlesEditor::CheckBoxCircle->getCheck();
+	pdata.m_typeCharacterCircleAxis = (PARTICLES_AXIS)SXParticlesEditor::ComboBoxCircleAxis->getSel();
 	SXParticlesEditor::EditCircleAngle->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterCircleAngle));
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterCircleAngle));
 	SXParticlesEditor::EditCircleAngleDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterCircleAngleDisp));
-	pdata.CharacterCircleAngleDispNeg = SXParticlesEditor::CheckBoxCircleAngleDispNeg->getCheck();
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterCircleAngleDisp));
+	pdata.m_useCharacterCircleAngleDispNeg = SXParticlesEditor::CheckBoxCircleAngleDispNeg->getCheck();
 
 
-	pdata.CharacterRotate = SXParticlesEditor::CheckBoxRotate->getCheck();
+	pdata.m_useCharacterRotate = SXParticlesEditor::CheckBoxRotate->getCheck();
 	SXParticlesEditor::EditRotateAngle->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterRotateAngle));
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterRotateAngle));
 	SXParticlesEditor::EditRotateAngleDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterRotateAngleDisp));
-	pdata.CharacterRotateAngleDispNeg = SXParticlesEditor::CheckBoxRotateAngleDispNeg->getCheck();
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterRotateAngleDisp));
+	pdata.m_useCharacterRotateAngleDispNeg = SXParticlesEditor::CheckBoxRotateAngleDispNeg->getCheck();
 
 
-	pdata.CharacterDeviation = SXParticlesEditor::CheckBoxDeviation->getCheck();
-	pdata.CharacterDeviationType = (PARTICLESTYPE_DEVIATION)SXParticlesEditor::ComboBoxDeviationType->getSel();
+	pdata.m_useCharacterDeviation = SXParticlesEditor::CheckBoxDeviation->getCheck();
+	pdata.m_typeCharacterDeviation = (PARTICLESTYPE_DEVIATION)SXParticlesEditor::ComboBoxDeviationType->getSel();
 	SXParticlesEditor::EditDeviationAmplitude->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterDeviationAmplitude));
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterDeviationAmplitude));
 	SXParticlesEditor::EditDeviationCoefAngle->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterDeviationCoefAngle));
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterDeviationCoefAngle));
 	SXParticlesEditor::EditDeviationCoefAngleDisp->getText(tmptxt, 64);
-	sscanf(tmptxt, "%f", &(pdata.CharacterDeviationCoefAngleDisp));
-	pdata.CharacterDeviationCoefAngleDispNeg = SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->getCheck();
-	pdata.CharacterDeviationAxis = (PARTICLES_AXIS)SXParticlesEditor::ComboBoxDeviationAxis->getSel();
-	pdata.CharacterDeviationTapX = SXParticlesEditor::CheckBoxDeviationTapX->getCheck();
-	pdata.CharacterDeviationTapY = SXParticlesEditor::CheckBoxDeviationTapY->getCheck();
-	pdata.CharacterDeviationTapZ = SXParticlesEditor::CheckBoxDeviationTapZ->getCheck();
+	sscanf(tmptxt, "%f", &(pdata.m_fCharacterDeviationCoefAngleDisp));
+	pdata.m_useCharacterDeviationCoefAngleDispNeg = SXParticlesEditor::CheckBoxDeviationCoefAngleDispNeg->getCheck();
+	pdata.m_typeCharacterDeviationAxis = (PARTICLES_AXIS)SXParticlesEditor::ComboBoxDeviationAxis->getSel();
+	pdata.m_useCharacterDeviationTapX = SXParticlesEditor::CheckBoxDeviationTapX->getCheck();
+	pdata.m_useCharacterDeviationTapY = SXParticlesEditor::CheckBoxDeviationTapY->getCheck();
+	pdata.m_useCharacterDeviationTapZ = SXParticlesEditor::CheckBoxDeviationTapZ->getCheck();
 	
 
 	ID partid = SPE_EmitterAdd(SXParticlesEditor::SelEffID, &pdata);
-	SPE_EmitterNameSet(SXParticlesEditor::SelEffID, partid, partname);
+	SPE_EmitterSetName(SXParticlesEditor::SelEffID, partid, partname);
 
-	SPE_EmitterTextureSet(SXParticlesEditor::SelEffID, partid, tmptex);
+	SPE_EmitterSetTexture(SXParticlesEditor::SelEffID, partid, tmptex);
 
 	SXParticlesEditor::EditCount->getText(tmptxt, 64);
 	int partcount;
 	sscanf(tmptxt, "%d", &partcount);
-	SPE_EmitterCountSet(SXParticlesEditor::SelEffID, partid, partcount);
+	SPE_EmitterSetCount(SXParticlesEditor::SelEffID, partid, partcount);
 
 	SXParticlesEditor::ListBoxEmitters->addItem(partname);
 	SXParticlesEditor::ListBoxEmitters->setSel(SXParticlesEditor::ListBoxEmitters->getItemCount() - 1);

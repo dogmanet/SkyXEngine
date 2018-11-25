@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -72,13 +72,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SSCore_SndInstancePlay2d(tmpidsnd);
 	//SSCore_SndInstancePlay2d(tmpidsnd);*/
 
-	SLevel_AmbientSndPlay();
-	SLevel_WeatherSndPlay();
+	
+
+	//SGeom_ModelsAddModel("tt.dse", "tt.dse", 0, false);
+	/*SGeom_ModelsAddModel("stalker_atp.dse", "stalker_atp.dse", "stalker_atp.dse", "stalker_atp.dse", true);
+	SGeom_ModelsMsetScale(0, &float3(0.1, 0.1, 0.1));
+	SGeom_ModelsMsetRotation(0, &float3(0, 1, 0));
+	SGeom_ModelsMsetPosition(0, &float3(10, -11, 10));
+
+	ID idModel = SGeom_ModelsCopy(0);
+	SGeom_ModelsMsetScale(idModel, &float3(0.1, 0.1, 0.1));
+	SGeom_ModelsMsetRotation(idModel, &float3(0, 1, 0));
+	SGeom_ModelsMsetPosition(idModel, &float3(50, 11, 50));
+	//SGeom_ModelsReComBound(0);
+	ID idGlobal = SLight_CreatePoint(
+		&float3(60, 60, 0),
+		0,
+		&float3(1, 1, 1),
+		true,
+		true);
+
+	//SGeom_ModelsDelModel(0);
+
+	SXPhysics_LoadGeom();
+	//SXGame_OnLevelLoad("stalker_atp");
+	Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", "D:\\project\\engine\\build\\gamesource\\levels\\stalker_atp\\stalker_atp.ent", "stalker_atp");
+	SLevel_Save("new_test");
+
+	SLight_SetEnable(idGlobal, true);
+
+	//SLevel_Load("new_test", false);*/
 
 	SGCore_ShaderAllLoad();
 	SGCore_LoadTexAllLoad();
 
 	SetWindowPos(SGCore_GetHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+
+	SLevel_AmbientSndPlay();
+	SLevel_WeatherSndPlay();
 
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();

@@ -51,6 +51,9 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\models.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\sxmaterialeditor\SXMaterialEditor.rc">
@@ -101,6 +104,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\models.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

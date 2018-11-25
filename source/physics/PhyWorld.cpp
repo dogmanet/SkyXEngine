@@ -204,7 +204,7 @@ void CPhyWorld::loadGeom(const char * file)
 
 	int32_t iModelCount;
 
-	SGeom_ModelsGetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
+	SGeom_GetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 	if(iModelCount > 0)
 	{
 		m_iGeomFacesCount = 0;
@@ -266,7 +266,7 @@ void CPhyWorld::loadGeom(const char * file)
 			addShape(m_pGeomStaticRigidBody, CG_STATIC, CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_NPCVIEW | CG_STATIC | CG_TRIGGER | CG_WATER));
 		}
 	}
-	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
+	SGeom_ClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
 
 
 

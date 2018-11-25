@@ -184,6 +184,18 @@ SX_LIB_API void SLight_SetCastGlobalShadow(bool isShadowed)
 	return ArrLights->setCastGlobalShadow(isShadowed);
 }
 
+SX_LIB_API void SLight_SetShadowCoef(ID id, float m_fShadowCoef)
+{
+	ML_PRECOND(_VOID);
+	ArrLights->setLightShadowCoef(id, m_fShadowCoef);
+}
+
+SX_LIB_API float SLight_GetShadowCoef(ID id)
+{
+	ML_PRECOND(0);
+	return ArrLights->getLightShadowCoef(id);
+}
+
 SX_LIB_API void SLight_GetColor(ID id, float3 *pColor)
 {
 	ML_PRECOND(_VOID);

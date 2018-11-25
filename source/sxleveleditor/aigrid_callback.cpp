@@ -42,19 +42,19 @@ void level_editor::AIGridActivateAll(bool bf)
 	level_editor::AIGridEnableBB(!(SAIG_BBIsCreatedFinish()));
 
 
-	float3 tmpdim;
-	float3 tmppos;
+	float3 vDimensions;
+	float3 vPosition;
 
-	SAIG_BBGetDimensions(&tmpdim);
-	SAIG_BBGetPos(&tmppos);
+	SAIG_BBGetDimensions(&vDimensions);
+	SAIG_BBGetPos(&vPosition);
 
-	pEditAIBBDimensionsWidth->setText(String(tmpdim.x).c_str());
-	pEditAIBBDimensionsHeight->setText(String(tmpdim.y).c_str());
-	pEditAIBBDimensionsDepth->setText(String(tmpdim.z).c_str());
+	pEditAIBBDimensionsWidth->setText(String(vDimensions.x).c_str());
+	pEditAIBBDimensionsHeight->setText(String(vDimensions.y).c_str());
+	pEditAIBBDimensionsDepth->setText(String(vDimensions.z).c_str());
 
-	pEditAIBBPosX->setText(String(tmppos.x).c_str());
-	pEditAIBBPosY->setText(String(tmppos.y).c_str());
-	pEditAIBBPosZ->setText(String(tmppos.z).c_str());
+	pEditAIBBPosX->setText(String(vPosition.x).c_str());
+	pEditAIBBPosY->setText(String(vPosition.y).c_str());
+	pEditAIBBPosZ->setText(String(vPosition.z).c_str());
 
 	pEditAIStatsCountQuads->setText(String((DWORD)SAIG_GridGetCountQuads()).c_str());
 	pEditAIStatsCountGP->setText(String((DWORD)SAIG_GraphPointGetCount()).c_str());
@@ -101,110 +101,170 @@ void level_editor::AIGridEnableBB(bool bf)
 	pButtonAIClearAll->setEnable(!bf);
 }
 
-LRESULT SXLevelEditor_EditAIBBDimensions_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+void level_editor::AIGridTraceSelect()
 {
-	char txt[64];
-	float3 tmpdim;
-	SAIG_BBGetDimensions(&tmpdim);
+	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_AIGRID)
+		return;
 
-	if (hwnd == level_editor::pEditAIBBDimensionsWidth->getHWND())
+	if (level_editor::pRadioButtonAIQuadAdd->getCheck())
 	{
-		level_editor::pEditAIBBDimensionsWidth->getText(txt, 64);
-		sscanf(txt, "%f", &(tmpdim.x));
+		float3 vEndPos = level_editor::vRayDirDirect + level_editor::vRayDir * 10000.0f;
+		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(level_editor::vRayDirDirect), F3_BTVEC(vEndPos));
+		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(level_editor::vRayDirDirect), F3_BTVEC(vEndPos), cb);
+
+		if (cb.hasHit())
+			SAIG_QuadAdd(&BTVEC_F3(cb.m_hitPointWorld));
 	}
-	else if (hwnd == level_editor::pEditAIBBDimensionsHeight->getHWND())
+	else if (level_editor::pRadioButtonAIQuadsMSel->getCheck())
 	{
-		level_editor::pEditAIBBDimensionsHeight->getText(txt, 64);
-		sscanf(txt, "%f", &(tmpdim.y));
+		ID idQuad = SAIG_GridTraceBeam(&(level_editor::vRayDirDirect), &(level_editor::vRayDir));
+
+		if (idQuad > -1)
+			SAIG_QuadSelect(idQuad, true);
 	}
-	else if (hwnd == level_editor::pEditAIBBDimensionsDepth->getHWND())
+	else if (level_editor::pRadioButtonAIQuadsSelDel->getCheck())
 	{
-		level_editor::pEditAIBBDimensionsDepth->getText(txt, 64);
-		sscanf(txt, "%f", &(tmpdim.z));
+		ID idQuad = SAIG_GridTraceBeam(&(level_editor::vRayDirDirect), &(level_editor::vRayDir));
+
+		if (idQuad > -1)
+			SAIG_QuadDelete(idQuad);
+	}
+	else if (level_editor::pRadioButtonAIGPAdd->getCheck())
+	{
+		ID idQuad = SAIG_GridTraceBeam(&(level_editor::vRayDirDirect), &(level_editor::vRayDir));
+
+		if (idQuad > -1)
+			SAIG_GraphPointAdd(idQuad);
+	}
+	else if (level_editor::pRadioButtonAIGPDel->getCheck())
+	{
+		ID idQuad = SAIG_GridTraceBeam(&(level_editor::vRayDirDirect), &(level_editor::vRayDir));
+
+		if (idQuad > -1)
+			SAIG_GraphPointDelete(idQuad);
+	}
+}
+
+void level_editor::AIGridMultiSelect()
+{
+	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_AIGRID)
+		return;
+
+	if (level_editor::pRadioButtonAIQuadsMSel->getCheck())
+	{
+		ID idQuad = SAIG_GridTraceBeam(&(level_editor::vRayDirDirect), &(level_editor::vRayDir));
+
+		if (idQuad > -1)
+			SAIG_QuadSelect(idQuad, false);
+	}
+}
+
+//##########################################################################
+
+LRESULT SXLevelEditor_EditAIBBDimensions_Enter(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+{
+	char szStr[64];
+	float3 vDimensions;
+	SAIG_BBGetDimensions(&vDimensions);
+
+	if (hWnd == level_editor::pEditAIBBDimensionsWidth->getHWND())
+	{
+		level_editor::pEditAIBBDimensionsWidth->getText(szStr, 64);
+		sscanf(szStr, "%f", &(vDimensions.x));
+	}
+	else if (hWnd == level_editor::pEditAIBBDimensionsHeight->getHWND())
+	{
+		level_editor::pEditAIBBDimensionsHeight->getText(szStr, 64);
+		sscanf(szStr, "%f", &(vDimensions.y));
+	}
+	else if (hWnd == level_editor::pEditAIBBDimensionsDepth->getHWND())
+	{
+		level_editor::pEditAIBBDimensionsDepth->getText(szStr, 64);
+		sscanf(szStr, "%f", &(vDimensions.z));
 	}
 
-	SAIG_BBSetDimensions(&tmpdim);
+	SAIG_BBSetDimensions(&vDimensions);
 
 	return 0;
 }
 
-LRESULT SXLevelEditor_EditAIBBPos_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_EditAIBBPos_Enter(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
-	char txt[64];
-	float3 tmppos;
-	SAIG_BBGetPos(&tmppos);
+	char szStr[64];
+	float3 vPos;
+	SAIG_BBGetPos(&vPos);
 
-	if (hwnd == level_editor::pEditAIBBPosX->getHWND())
+	if (hWnd == level_editor::pEditAIBBPosX->getHWND())
 	{
-		level_editor::pEditAIBBPosX->getText(txt, 64);
-		sscanf(txt, "%f", &(tmppos.x));
+		level_editor::pEditAIBBPosX->getText(szStr, 64);
+		sscanf(szStr, "%f", &(vPos.x));
 	}
-	else if (hwnd == level_editor::pEditAIBBPosY->getHWND())
+	else if (hWnd == level_editor::pEditAIBBPosY->getHWND())
 	{
-		level_editor::pEditAIBBPosY->getText(txt, 64);
-		sscanf(txt, "%f", &(tmppos.y));
+		level_editor::pEditAIBBPosY->getText(szStr, 64);
+		sscanf(szStr, "%f", &(vPos.y));
 	}
-	else if (hwnd == level_editor::pEditAIBBPosZ->getHWND())
+	else if (hWnd == level_editor::pEditAIBBPosZ->getHWND())
 	{
-		level_editor::pEditAIBBPosZ->getText(txt, 64);
-		sscanf(txt, "%f", &(tmppos.z));
+		level_editor::pEditAIBBPosZ->getText(szStr, 64);
+		sscanf(szStr, "%f", &(vPos.z));
 	}
 
-	SAIG_BBSetPos(&tmppos);
+	SAIG_BBSetPos(&vPos);
 
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIBBFinish_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIBBFinish_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_BBCreateFinish();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIQuadsDelSel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIQuadsDelSel_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_QuadSelectedDelete();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIGridGen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIGridGen_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GridGenerate();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIGridClear_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIGridClear_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GridClear();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIGPGen_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIGPGen_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GraphPointGenerate();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIGPClear_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIGPClear_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GraphPointClear();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIGridValidation_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIGridValidation_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_GridTestValidation();
 	level_editor::AIGridActivateAll(true);
 	return 0;
 }
 
-LRESULT SXLevelEditor_ButtonAIClearAll_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT SXLevelEditor_ButtonAIClearAll_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	SAIG_Clear();
 	SAIG_BBCreate(&float3(0, 0, 0), &float3(10, 10, 10));

@@ -6,12 +6,12 @@ See the license in LICENSE
 
 #include "effect.h"
 
-Effects::Effects()
+CEffects::CEffects()
 {
 	ArrSortSizeCurr = 0;
 }
 
-Effects::~Effects()
+CEffects::~CEffects()
 {
 	for (int i = 0; i < ArrID.size(); ++i)
 	{
@@ -24,86 +24,86 @@ Effects::~Effects()
 	ArrID.clear();
 }
 
-Effects::Effect::Effect()
+CEffects::CEffect::CEffect()
 {
-	NullingInit();
+	nullingInit();
 }
 
-Effects::Effect::Effect(Effect& eff)
+CEffects::CEffect::CEffect(CEffect &oEffect)
 {
-	NullingInit();
-	Position = eff.Position;
-	Direction = eff.Direction;
-	Rotation = eff.Rotation;
+	nullingInit();
+	m_vPosition = oEffect.m_vPosition;
+	m_vDirection = oEffect.m_vDirection;
+	m_vRotation = oEffect.m_vRotation;
 	
-	Enable = eff.Enable;
+	m_isEnable = oEffect.m_isEnable;
 
-	for (int i = 0; i < eff.Arr.size(); ++i)
+	for (int i = 0; i < oEffect.m_aEmitters.size(); ++i)
 	{
-		Emitter* part = new Emitter(*eff.Arr[i]);
-		Arr.push_back(part);
+		CEmitter* part = new CEmitter(*oEffect.m_aEmitters[i]);
+		m_aEmitters.push_back(part);
 	}
-	IDPool = eff.IDPool;
+	m_idPool = oEffect.m_idPool;
 }
 
-Effects::Effect::~Effect()
+CEffects::CEffect::~CEffect()
 {
-	for (int i = 0; i < Arr.size(); ++i)
+	for (int i = 0; i < m_aEmitters.size(); ++i)
 	{
-		mem_delete(Arr[i]);
+		mem_delete(m_aEmitters[i]);
 	}
 
-	Arr.clear();
+	m_aEmitters.clear();
 }
 
-Effects::Pool::Pool()
+CEffects::CPool::CPool()
 {
 	ideff = -1;
 }
 
-void Effects::Effect::NullingInit()
+void CEffects::CEffect::nullingInit()
 {
-	Id = Key = -1;
-	ViewDist = 0.0f;
-	ViewRender = false;
+	m_id = m_idKey = -1;
+	m_fViewDist = 0.0f;
+	m_isViewRender = false;
 
-	Enable = false;
-	Busy = false;
-	IDPool = -1;
-	Original = true;
+	m_isEnable = false;
+	m_isBusy = false;
+	m_idPool = -1;
+	m_isOriginal = true;
 }
 
-void Effects::onLostDevice()
-{
-	for (int i = 0; i < ArrID.size(); ++i)
-	{
-		if (ArrID[i])
-		{
-			for (int k = 0; k < ArrID[i]->Arr.size(); ++k)
-			{
-				if (ArrID[i]->Arr[k])
-					ArrID[i]->Arr[k]->onLostDevice();
-			}
-		}
-	}
-}
-
-void Effects::onResetDevice()
+void CEffects::onLostDevice()
 {
 	for (int i = 0; i < ArrID.size(); ++i)
 	{
 		if (ArrID[i])
 		{
-			for (int k = 0; k < ArrID[i]->Arr.size(); ++k)
+			for (int k = 0; k < ArrID[i]->m_aEmitters.size(); ++k)
 			{
-				if (ArrID[i]->Arr[k])
-					ArrID[i]->Arr[k]->onResetDevice();
+				if (ArrID[i]->m_aEmitters[k])
+					ArrID[i]->m_aEmitters[k]->onLostDevice();
 			}
 		}
 	}
 }
 
-void Effects::clear()
+void CEffects::onResetDevice()
+{
+	for (int i = 0; i < ArrID.size(); ++i)
+	{
+		if (ArrID[i])
+		{
+			for (int k = 0; k < ArrID[i]->m_aEmitters.size(); ++k)
+			{
+				if (ArrID[i]->m_aEmitters[k])
+					ArrID[i]->m_aEmitters[k]->onResetDevice();
+			}
+		}
+	}
+}
+
+void CEffects::clear()
 {
 	for (int i = 0; i < ArrKey.size(); ++i)
 	{
@@ -121,7 +121,7 @@ void Effects::clear()
 	Pools.clear();
 }
 
-void Effects::save(const char* path)
+void CEffects::save(const char* path)
 {
 	FILE* file = 0;
 	file = fopen(path, "w");
@@ -139,15 +139,15 @@ void Effects::save(const char* path)
 
 	for (int i = 0; i < eff_count; ++i)
 	{
-		int part_count = ArrKey[i]->Arr.size();
+		int part_count = ArrKey[i]->m_aEmitters.size();
 		
 		fprintf(file, "[effect_%d]\n", i);
-		fprintf(file, "name = %s\n", ArrKey[i]->Name);
+		fprintf(file, "name = %s\n", ArrKey[i]->m_szName);
 		fprintf(file, "emitters_count = %d\n\n", part_count);
 
 		for (int k = 0; k < part_count; ++k)
 		{
-			Emitter* part = ArrKey[i]->Arr[k];
+			CEmitter* part = ArrKey[i]->m_aEmitters[k];
 			char tmpname[CONFIG_SECTION_MAX_LEN];
 			part->getName(tmpname);
 			char tmptex[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
@@ -169,131 +169,131 @@ void Effects::save(const char* path)
 			if (tmptex[0] != 0)
 				fprintf(file, "texture_track = %s\n", tmptex);
 
-			fprintf(file, "Track = %d\n", part->getData()->Track);
-			fprintf(file, "TrackSize = %f\n", part->getData()->TrackSize);
-			fprintf(file, "TrackTime = %d\n", part->getData()->TrackTime);
+			fprintf(file, "Track = %d\n", part->getData()->m_useTrack);
+			fprintf(file, "TrackSize = %f\n", part->getData()->m_fTrackSize);
+			fprintf(file, "TrackTime = %d\n", part->getData()->m_uiTrackTime);
 
-			fprintf(file, "BoundType = %d\n", part->getData()->BoundType);
+			fprintf(file, "m_typeBound = %d\n", part->getData()->m_typeBound);
 
-			fprintf(file, "BoundVec1X = %f\n", part->getData()->BoundVec1.x);
-			fprintf(file, "BoundVec1Y = %f\n", part->getData()->BoundVec1.y);
-			fprintf(file, "BoundVec1Z = %f\n", part->getData()->BoundVec1.z);
-			fprintf(file, "BoundVec1W = %f\n", part->getData()->BoundVec1.w);
+			fprintf(file, "BoundVec1X = %f\n", part->getData()->m_vBoundVec1.x);
+			fprintf(file, "BoundVec1Y = %f\n", part->getData()->m_vBoundVec1.y);
+			fprintf(file, "BoundVec1Z = %f\n", part->getData()->m_vBoundVec1.z);
+			fprintf(file, "BoundVec1W = %f\n", part->getData()->m_vBoundVec1.w);
 
-			fprintf(file, "BoundVec2X = %f\n", part->getData()->BoundVec2.x);
-			fprintf(file, "BoundVec2Y = %f\n", part->getData()->BoundVec2.y);
-			fprintf(file, "BoundVec2Z = %f\n", part->getData()->BoundVec2.z);
-			fprintf(file, "BoundVec2W = %f\n", part->getData()->BoundVec2.w);
-
-
-			fprintf(file, "SpawnPosType = %d\n", part->getData()->SpawnPosType);
-			fprintf(file, "SpawnOriginX = %f\n", part->getData()->SpawnOrigin.x);
-			fprintf(file, "SpawnOriginY = %f\n", part->getData()->SpawnOrigin.y);
-			fprintf(file, "SpawnOriginZ = %f\n", part->getData()->SpawnOrigin.z);
-
-			fprintf(file, "SpawnOriginDisp = %f\n", part->getData()->SpawnOriginDisp);
-
-			fprintf(file, "SpawnBoundBindCreateXNeg = %d\n", part->getData()->SpawnBoundBindCreateXNeg);
-			fprintf(file, "SpawnBoundBindCreateXPos = %d\n", part->getData()->SpawnBoundBindCreateXPos);
-			fprintf(file, "SpawnBoundBindCreateYNeg = %d\n", part->getData()->SpawnBoundBindCreateYNeg);
-			fprintf(file, "SpawnBoundBindCreateYPos = %d\n", part->getData()->SpawnBoundBindCreateYPos);
-			fprintf(file, "SpawnBoundBindCreateZNeg = %d\n", part->getData()->SpawnBoundBindCreateZNeg);
-			fprintf(file, "SpawnBoundBindCreateZPos = %d\n", part->getData()->SpawnBoundBindCreateZPos);
-
-			fprintf(file, "SpawnNextTime = %d\n", part->getData()->SpawnNextTime);
-			fprintf(file, "SpawnNextTimeDisp = %d\n", part->getData()->SpawnNextTimeDisp);
+			fprintf(file, "BoundVec2X = %f\n", part->getData()->m_vBoundVec2.x);
+			fprintf(file, "BoundVec2Y = %f\n", part->getData()->m_vBoundVec2.y);
+			fprintf(file, "BoundVec2Z = %f\n", part->getData()->m_vBoundVec2.z);
+			fprintf(file, "BoundVec2W = %f\n", part->getData()->m_vBoundVec2.w);
 
 
-			fprintf(file, "AnimTexCountCadrsX = %d\n", part->getData()->AnimTexCountCadrsX);
-			fprintf(file, "AnimTexCountCadrsY = %d\n", part->getData()->AnimTexCountCadrsY);
+			fprintf(file, "SpawnPosType = %d\n", part->getData()->m_typeSpawnPos);
+			fprintf(file, "SpawnOriginX = %f\n", part->getData()->m_vSpawnOrigin.x);
+			fprintf(file, "SpawnOriginY = %f\n", part->getData()->m_vSpawnOrigin.y);
+			fprintf(file, "SpawnOriginZ = %f\n", part->getData()->m_vSpawnOrigin.z);
 
-			fprintf(file, "AnimTexRate = %d\n", part->getData()->AnimTexRate);
-			fprintf(file, "AnimTexRateDisp = %d\n", part->getData()->AnimTexRateDisp);
-			fprintf(file, "AnimTexStartCadr = %d\n", part->getData()->AnimTexStartCadr);
-			fprintf(file, "AnimTexStartCadrDisp = %d\n", part->getData()->AnimTexStartCadrDisp);
+			fprintf(file, "SpawnOriginDisp = %f\n", part->getData()->m_fSpawnOriginDisp);
 
+			fprintf(file, "SpawnBoundBindCreateXNeg = %d\n", part->getData()->m_shouldSpawnBoundBindCreateXNeg);
+			fprintf(file, "SpawnBoundBindCreateXPos = %d\n", part->getData()->m_shouldSpawnBoundBindCreateXPos);
+			fprintf(file, "SpawnBoundBindCreateYNeg = %d\n", part->getData()->m_shouldSpawnBoundBindCreateYNeg);
+			fprintf(file, "SpawnBoundBindCreateYPos = %d\n", part->getData()->m_shouldSpawnBoundBindCreateYPos);
+			fprintf(file, "SpawnBoundBindCreateZNeg = %d\n", part->getData()->m_shouldSpawnBoundBindCreateZNeg);
+			fprintf(file, "SpawnBoundBindCreateZPos = %d\n", part->getData()->m_shouldSpawnBoundBindCreateZPos);
 
-			fprintf(file, "TimeLife = %d\n", part->getData()->TimeLife);
-			fprintf(file, "TimeLifeDisp = %d\n", part->getData()->TimeLifeDisp);
-			fprintf(file, "AlphaDependAge = %d\n", part->getData()->AlphaDependAge);
-
-			fprintf(file, "SizeX = %f\n", part->getData()->Size.x);
-			fprintf(file, "SizeY = %f\n", part->getData()->Size.y);
-			fprintf(file, "SizeDisp = %f\n", part->getData()->SizeDisp);
-
-			fprintf(file, "SizeDependAge = %d\n", part->getData()->SizeDependAge);
+			fprintf(file, "SpawnNextTime = %d\n", part->getData()->m_uiSpawnNextTime);
+			fprintf(file, "SpawnNextTimeDisp = %d\n", part->getData()->m_uiSpawnNextTimeDisp);
 
 
-			fprintf(file, "VelocityX = %f\n", part->getData()->Velocity.x);
-			fprintf(file, "VelocityY = %f\n", part->getData()->Velocity.y);
-			fprintf(file, "VelocityZ = %f\n", part->getData()->Velocity.z);
-			fprintf(file, "VelocityDisp = %f\n", part->getData()->VelocityDisp);
+			fprintf(file, "AnimTexCountCadrsX = %d\n", part->getData()->m_iAnimTexCountCadrsX);
+			fprintf(file, "AnimTexCountCadrsY = %d\n", part->getData()->m_iAnimTexCountCadrsY);
 
-			fprintf(file, "VelocityDispXNeg = %d\n", part->getData()->VelocityDispXNeg);
-			fprintf(file, "VelocityDispYNeg = %d\n", part->getData()->VelocityDispYNeg);
-			fprintf(file, "VelocityDispZNeg = %d\n", part->getData()->VelocityDispZNeg);
-
-
-			fprintf(file, "AccelerationX = %f\n", part->getData()->Acceleration.x);
-			fprintf(file, "AccelerationY = %f\n", part->getData()->Acceleration.y);
-			fprintf(file, "AccelerationZ = %f\n", part->getData()->Acceleration.z);
-			fprintf(file, "AccelerationDisp = %f\n", part->getData()->AccelerationDisp);
-
-			fprintf(file, "AccelerationDispXNeg = %d\n", part->getData()->AccelerationDispXNeg);
-			fprintf(file, "AccelerationDispYNeg = %d\n", part->getData()->AccelerationDispYNeg);
-			fprintf(file, "AccelerationDispZNeg = %d\n", part->getData()->AccelerationDispZNeg);
+			fprintf(file, "AnimTexRate = %d\n", part->getData()->m_iAnimTexRate);
+			fprintf(file, "AnimTexRateDisp = %d\n", part->getData()->m_iAnimTexRateDisp);
+			fprintf(file, "AnimTexStartCadr = %d\n", part->getData()->m_iAnimTexStartCadr);
+			fprintf(file, "AnimTexStartCadrDisp = %d\n", part->getData()->m_iAnimTexStartCadrDisp);
 
 
-			fprintf(file, "CharacterCircle = %d\n", part->getData()->CharacterCircle);
-			fprintf(file, "CharacterCircleAxis = %d\n", part->getData()->CharacterCircleAxis);
-			fprintf(file, "CharacterCircleAngle = %f\n", part->getData()->CharacterCircleAngle);
-			fprintf(file, "CharacterCircleAngleDisp = %f\n", part->getData()->CharacterCircleAngleDisp);
-			fprintf(file, "CharacterCircleAngleDispNeg = %d\n", part->getData()->CharacterCircleAngleDispNeg);
+			fprintf(file, "TimeLife = %d\n", part->getData()->m_uiTimeLife);
+			fprintf(file, "TimeLifeDisp = %d\n", part->getData()->m_uiTimeLifeDisp);
+			fprintf(file, "AlphaDependAge = %d\n", part->getData()->m_typeAlphaDependAge);
+
+			fprintf(file, "SizeX = %f\n", part->getData()->m_vSize.x);
+			fprintf(file, "SizeY = %f\n", part->getData()->m_vSize.y);
+			fprintf(file, "SizeDisp = %f\n", part->getData()->m_fSizeDisp);
+
+			fprintf(file, "SizeDependAge = %d\n", part->getData()->m_typeSizeDependAge);
 
 
-			fprintf(file, "CharacterRotate = %d\n", part->getData()->CharacterRotate);
-			fprintf(file, "CharacterRotateAngle = %f\n", part->getData()->CharacterRotateAngle);
-			fprintf(file, "CharacterRotateAngleDisp = %f\n", part->getData()->CharacterRotateAngleDisp);
-			fprintf(file, "CharacterRotateAngleDispNeg = %d\n", part->getData()->CharacterRotateAngleDispNeg);
+			fprintf(file, "VelocityX = %f\n", part->getData()->m_vVelocity.x);
+			fprintf(file, "VelocityY = %f\n", part->getData()->m_vVelocity.y);
+			fprintf(file, "VelocityZ = %f\n", part->getData()->m_vVelocity.z);
+			fprintf(file, "VelocityDisp = %f\n", part->getData()->m_fVelocityDisp);
+
+			fprintf(file, "VelocityDispXNeg = %d\n", part->getData()->m_shouldVelocityDispXNeg);
+			fprintf(file, "VelocityDispYNeg = %d\n", part->getData()->m_shouldVelocityDispYNeg);
+			fprintf(file, "VelocityDispZNeg = %d\n", part->getData()->m_shouldVelocityDispZNeg);
 
 
-			fprintf(file, "CharacterDeviation = %d\n", part->getData()->CharacterDeviation);
-			fprintf(file, "CharacterDeviationType = %d\n", part->getData()->CharacterDeviationType);
-			fprintf(file, "CharacterDeviationAmplitude = %f\n", part->getData()->CharacterDeviationAmplitude);
-			fprintf(file, "CharacterDeviationCoefAngle = %f\n", part->getData()->CharacterDeviationCoefAngle);
-			fprintf(file, "CharacterDeviationAxis = %d\n", part->getData()->CharacterDeviationAxis);
-			fprintf(file, "CharacterDeviationCountDelayMls = %d\n", part->getData()->CharacterDeviationCountDelayMls);
-			fprintf(file, "CharacterDeviationCoefAngleDisp = %f\n", part->getData()->CharacterDeviationCoefAngleDisp);
-			fprintf(file, "CharacterDeviationCoefAngleDispNeg = %d\n", part->getData()->CharacterDeviationCoefAngleDispNeg);
+			fprintf(file, "AccelerationX = %f\n", part->getData()->m_vAcceleration.x);
+			fprintf(file, "AccelerationY = %f\n", part->getData()->m_vAcceleration.y);
+			fprintf(file, "AccelerationZ = %f\n", part->getData()->m_vAcceleration.z);
+			fprintf(file, "AccelerationDisp = %f\n", part->getData()->m_fAccelerationDisp);
 
-			fprintf(file, "CharacterDeviationTapX = %d\n", part->getData()->CharacterDeviationTapX);
-			fprintf(file, "CharacterDeviationTapY = %d\n", part->getData()->CharacterDeviationTapY);
-			fprintf(file, "CharacterDeviationTapZ = %d\n", part->getData()->CharacterDeviationTapZ);
+			fprintf(file, "AccelerationDispXNeg = %d\n", part->getData()->m_shouldAccelerationDispXNeg);
+			fprintf(file, "AccelerationDispYNeg = %d\n", part->getData()->m_shouldAccelerationDispYNeg);
+			fprintf(file, "AccelerationDispZNeg = %d\n", part->getData()->m_shouldAccelerationDispZNeg);
 
 
-			fprintf(file, "FigureType = %d\n", part->getData()->FigureType);
-			fprintf(file, "FigureCountQuads = %d\n", part->getData()->FigureCountQuads);
-			fprintf(file, "FigureRotRand = %d\n", part->getData()->FigureRotRand);
+			fprintf(file, "CharacterCircle = %d\n", part->getData()->m_useCharacterCircle);
+			fprintf(file, "CharacterCircleAxis = %d\n", part->getData()->m_typeCharacterCircleAxis);
+			fprintf(file, "CharacterCircleAngle = %f\n", part->getData()->m_fCharacterCircleAngle);
+			fprintf(file, "CharacterCircleAngleDisp = %f\n", part->getData()->m_fCharacterCircleAngleDisp);
+			fprintf(file, "CharacterCircleAngleDispNeg = %d\n", part->getData()->m_useCharacterCircleAngleDispNeg);
 
-			fprintf(file, "FigureTapX = %d\n", part->getData()->FigureTapX);
-			fprintf(file, "FigureTapY = %d\n", part->getData()->FigureTapY);
-			fprintf(file, "FigureTapZ = %d\n", part->getData()->FigureTapZ);
 
-			fprintf(file, "ReCreateCount = %d\n", part->getData()->ReCreateCount);
+			fprintf(file, "CharacterRotate = %d\n", part->getData()->m_useCharacterRotate);
+			fprintf(file, "CharacterRotateAngle = %f\n", part->getData()->m_fCharacterRotateAngle);
+			fprintf(file, "CharacterRotateAngleDisp = %f\n", part->getData()->m_fCharacterRotateAngleDisp);
+			fprintf(file, "CharacterRotateAngleDispNeg = %d\n", part->getData()->m_useCharacterRotateAngleDispNeg);
 
-			fprintf(file, "AlphaBlendType = %d\n", part->getData()->AlphaBlendType);
 
-			fprintf(file, "ColorCoef = %f\n", part->getData()->ColorCoef);
+			fprintf(file, "CharacterDeviation = %d\n", part->getData()->m_useCharacterDeviation);
+			fprintf(file, "CharacterDeviationType = %d\n", part->getData()->m_typeCharacterDeviation);
+			fprintf(file, "CharacterDeviationAmplitude = %f\n", part->getData()->m_fCharacterDeviationAmplitude);
+			fprintf(file, "CharacterDeviationCoefAngle = %f\n", part->getData()->m_fCharacterDeviationCoefAngle);
+			fprintf(file, "CharacterDeviationAxis = %d\n", part->getData()->m_typeCharacterDeviationAxis);
+			fprintf(file, "CharacterDeviationCountDelayMls = %d\n", part->getData()->m_uiCharacterDeviationCountDelayMls);
+			fprintf(file, "CharacterDeviationCoefAngleDisp = %f\n", part->getData()->m_fCharacterDeviationCoefAngleDisp);
+			fprintf(file, "CharacterDeviationCoefAngleDispNeg = %d\n", part->getData()->m_useCharacterDeviationCoefAngleDispNeg);
 
-			fprintf(file, "Soft = %d\n", part->getData()->Soft);
-			fprintf(file, "SoftCoef = %f\n", part->getData()->SoftCoef);
+			fprintf(file, "CharacterDeviationTapX = %d\n", part->getData()->m_useCharacterDeviationTapX);
+			fprintf(file, "CharacterDeviationTapY = %d\n", part->getData()->m_useCharacterDeviationTapY);
+			fprintf(file, "CharacterDeviationTapZ = %d\n", part->getData()->m_useCharacterDeviationTapZ);
 
-			fprintf(file, "Refraction = %d\n", part->getData()->Refraction);
-			fprintf(file, "RefractionCoef = %f\n", part->getData()->RefractionCoef);
 
-			fprintf(file, "TransparencyCoef = %f\n", part->getData()->TransparencyCoef);
-			fprintf(file, "Lighting = %d\n", part->getData()->Lighting);
-			fprintf(file, "CollisionDelete = %d\n", part->getData()->CollisionDelete);
+			fprintf(file, "FigureType = %d\n", part->getData()->m_typeFigure);
+			fprintf(file, "FigureCountQuads = %d\n", part->getData()->m_iFigureCountQuads);
+			fprintf(file, "FigureRotRand = %d\n", part->getData()->m_useFigureRotRand);
+
+			fprintf(file, "FigureTapX = %d\n", part->getData()->m_useFigureTapX);
+			fprintf(file, "FigureTapY = %d\n", part->getData()->m_useFigureTapY);
+			fprintf(file, "FigureTapZ = %d\n", part->getData()->m_useFigureTapZ);
+
+			fprintf(file, "ReCreateCount = %d\n", part->getData()->m_iReCreateCount);
+
+			fprintf(file, "AlphaBlendType = %d\n", part->getData()->m_typeAlphaBlend);
+
+			fprintf(file, "ColorCoef = %f\n", part->getData()->m_fColorCoef);
+
+			fprintf(file, "Soft = %d\n", part->getData()->m_isSoft);
+			fprintf(file, "SoftCoef = %f\n", part->getData()->m_fSoftCoef);
+
+			fprintf(file, "Refraction = %d\n", part->getData()->m_useRefraction);
+			fprintf(file, "RefractionCoef = %f\n", part->getData()->m_fRefractionCoef);
+
+			fprintf(file, "TransparencyCoef = %f\n", part->getData()->m_fTransparencyCoef);
+			fprintf(file, "Lighting = %d\n", part->getData()->m_isLighting);
+			fprintf(file, "CollisionDelete = %d\n", part->getData()->m_useCollisionDelete);
 			fprintf(file, "\n");
 		}
 		fprintf(file, "----------------------------------------------------------------------\n\n");
@@ -302,7 +302,7 @@ void Effects::save(const char* path)
 	fclose(file);
 }
 
-void Effects::load(const char* path)
+void CEffects::load(const char* path)
 {
 	if (!FileExistsFile(path))
 	{
@@ -338,11 +338,11 @@ void Effects::load(const char* path)
 		}
 
 		ID eff_id = this->effectAdd(0);
-		ArrID[eff_id]->Original = true;
+		ArrID[eff_id]->m_isOriginal = true;
 		int eff_count_part = 0;
 
 		if (config->keyExists(eff_section_name, "name"))
-			EffectNameSet(eff_id, config->getKey(eff_section_name, "name"));
+			effectSetName(eff_id, config->getKey(eff_section_name, "name"));
 
 		if (config->keyExists(eff_section_name, "emitters_count"))
 			eff_count_part = String(config->getKey(eff_section_name, "emitters_count")).toInt();
@@ -356,230 +356,230 @@ void Effects::load(const char* path)
 				return;
 			}
 
-			ParticlesData part;
+			CParticlesData part;
 
 
-			if (config->keyExists(part_section_name, "BoundType"))
-				part.BoundType = (PARTICLESTYPE_BOUND)String(config->getKey(part_section_name, "BoundType")).toInt();
+			if (config->keyExists(part_section_name, "m_typeBound"))
+				part.m_typeBound = (PARTICLESTYPE_BOUND)String(config->getKey(part_section_name, "m_typeBound")).toInt();
 
 			if (config->keyExists(part_section_name, "BoundVec1X"))
-				part.BoundVec1.x = String(config->getKey(part_section_name, "BoundVec1X")).toDouble();
+				part.m_vBoundVec1.x = String(config->getKey(part_section_name, "BoundVec1X")).toDouble();
 			if (config->keyExists(part_section_name, "BoundVec1Y"))
-				part.BoundVec1.y = String(config->getKey(part_section_name, "BoundVec1Y")).toDouble();
+				part.m_vBoundVec1.y = String(config->getKey(part_section_name, "BoundVec1Y")).toDouble();
 			if (config->keyExists(part_section_name, "BoundVec1Z"))
-				part.BoundVec1.z = String(config->getKey(part_section_name, "BoundVec1Z")).toDouble();
+				part.m_vBoundVec1.z = String(config->getKey(part_section_name, "BoundVec1Z")).toDouble();
 			if (config->keyExists(part_section_name, "BoundVec1W"))
-				part.BoundVec1.w = String(config->getKey(part_section_name, "BoundVec1W")).toDouble();
+				part.m_vBoundVec1.w = String(config->getKey(part_section_name, "BoundVec1W")).toDouble();
 
 			if (config->keyExists(part_section_name, "BoundVec2X"))
-				part.BoundVec2.x = String(config->getKey(part_section_name, "BoundVec2X")).toDouble();
+				part.m_vBoundVec2.x = String(config->getKey(part_section_name, "BoundVec2X")).toDouble();
 			if (config->keyExists(part_section_name, "BoundVec2Y"))
-				part.BoundVec2.y = String(config->getKey(part_section_name, "BoundVec2Y")).toDouble();
+				part.m_vBoundVec2.y = String(config->getKey(part_section_name, "BoundVec2Y")).toDouble();
 			if (config->keyExists(part_section_name, "BoundVec2Z"))
-				part.BoundVec2.z = String(config->getKey(part_section_name, "BoundVec2Z")).toDouble();
+				part.m_vBoundVec2.z = String(config->getKey(part_section_name, "BoundVec2Z")).toDouble();
 			if (config->keyExists(part_section_name, "BoundVec2W"))
-				part.BoundVec2.w = String(config->getKey(part_section_name, "BoundVec2W")).toDouble();
+				part.m_vBoundVec2.w = String(config->getKey(part_section_name, "BoundVec2W")).toDouble();
 
 
 			if (config->keyExists(part_section_name, "SpawnPosType"))
-				part.SpawnPosType = (PARTICLESTYPE_SPAWNPOS)String(config->getKey(part_section_name, "SpawnPosType")).toInt();
+				part.m_typeSpawnPos = (PARTICLESTYPE_SPAWNPOS)String(config->getKey(part_section_name, "SpawnPosType")).toInt();
 
 			if (config->keyExists(part_section_name, "SpawnOriginX"))
-				part.SpawnOrigin.x = String(config->getKey(part_section_name, "SpawnOriginX")).toDouble();
+				part.m_vSpawnOrigin.x = String(config->getKey(part_section_name, "SpawnOriginX")).toDouble();
 			if (config->keyExists(part_section_name, "SpawnOriginY"))
-				part.SpawnOrigin.y = String(config->getKey(part_section_name, "SpawnOriginY")).toDouble();
+				part.m_vSpawnOrigin.y = String(config->getKey(part_section_name, "SpawnOriginY")).toDouble();
 			if (config->keyExists(part_section_name, "SpawnOriginZ"))
-				part.SpawnOrigin.z = String(config->getKey(part_section_name, "SpawnOriginZ")).toDouble();
+				part.m_vSpawnOrigin.z = String(config->getKey(part_section_name, "SpawnOriginZ")).toDouble();
 
 			if (config->keyExists(part_section_name, "SpawnOriginDisp"))
-				part.SpawnOriginDisp = String(config->getKey(part_section_name, "SpawnOriginDisp")).toDouble();
+				part.m_fSpawnOriginDisp = String(config->getKey(part_section_name, "SpawnOriginDisp")).toDouble();
 
 			if (config->keyExists(part_section_name, "SpawnBoundBindCreateXNeg"))
-				part.SpawnBoundBindCreateXNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateXNeg")).toBool();
+				part.m_shouldSpawnBoundBindCreateXNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateXNeg")).toBool();
 			if (config->keyExists(part_section_name, "SpawnBoundBindCreateXPos"))
-				part.SpawnBoundBindCreateXPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateXPos")).toBool();
+				part.m_shouldSpawnBoundBindCreateXPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateXPos")).toBool();
 			if (config->keyExists(part_section_name, "SpawnBoundBindCreateYNeg"))
-				part.SpawnBoundBindCreateYNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateYNeg")).toBool();
+				part.m_shouldSpawnBoundBindCreateYNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateYNeg")).toBool();
 			if (config->keyExists(part_section_name, "SpawnBoundBindCreateYPos"))
-				part.SpawnBoundBindCreateYPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateYPos")).toBool();
+				part.m_shouldSpawnBoundBindCreateYPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateYPos")).toBool();
 			if (config->keyExists(part_section_name, "SpawnBoundBindCreateZNeg"))
-				part.SpawnBoundBindCreateZNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateZNeg")).toBool();
+				part.m_shouldSpawnBoundBindCreateZNeg = String(config->getKey(part_section_name, "SpawnBoundBindCreateZNeg")).toBool();
 			if (config->keyExists(part_section_name, "SpawnBoundBindCreateZPos"))
-				part.SpawnBoundBindCreateZPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateZPos")).toBool();
+				part.m_shouldSpawnBoundBindCreateZPos = String(config->getKey(part_section_name, "SpawnBoundBindCreateZPos")).toBool();
 
 			if (config->keyExists(part_section_name, "SpawnNextTime"))
-				part.SpawnNextTime = String(config->getKey(part_section_name, "SpawnNextTime")).toUnsLongInt();
+				part.m_uiSpawnNextTime = String(config->getKey(part_section_name, "SpawnNextTime")).toUnsLongInt();
 			if (config->keyExists(part_section_name, "SpawnNextTimeDisp"))
-				part.SpawnNextTimeDisp = String(config->getKey(part_section_name, "SpawnNextTimeDisp")).toUnsLongInt();
+				part.m_uiSpawnNextTimeDisp = String(config->getKey(part_section_name, "SpawnNextTimeDisp")).toUnsLongInt();
 
 
 			if (config->keyExists(part_section_name, "AnimTexCountCadrsX"))
-				part.AnimTexCountCadrsX = String(config->getKey(part_section_name, "AnimTexCountCadrsX")).toInt();
+				part.m_iAnimTexCountCadrsX = String(config->getKey(part_section_name, "AnimTexCountCadrsX")).toInt();
 			if (config->keyExists(part_section_name, "AnimTexCountCadrsY"))
-				part.AnimTexCountCadrsY = String(config->getKey(part_section_name, "AnimTexCountCadrsY")).toInt();
+				part.m_iAnimTexCountCadrsY = String(config->getKey(part_section_name, "AnimTexCountCadrsY")).toInt();
 			if (config->keyExists(part_section_name, "AnimTexRate"))
-				part.AnimTexRate = String(config->getKey(part_section_name, "AnimTexRate")).toInt();
+				part.m_iAnimTexRate = String(config->getKey(part_section_name, "AnimTexRate")).toInt();
 			if (config->keyExists(part_section_name, "AnimTexRateDisp"))
-				part.AnimTexRateDisp = String(config->getKey(part_section_name, "AnimTexRateDisp")).toInt();
+				part.m_iAnimTexRateDisp = String(config->getKey(part_section_name, "AnimTexRateDisp")).toInt();
 			if (config->keyExists(part_section_name, "AnimTexStartCadr"))
-				part.AnimTexStartCadr = String(config->getKey(part_section_name, "AnimTexStartCadr")).toInt();
+				part.m_iAnimTexStartCadr = String(config->getKey(part_section_name, "AnimTexStartCadr")).toInt();
 			if (config->keyExists(part_section_name, "AnimTexStartCadrDisp"))
-				part.AnimTexStartCadrDisp = String(config->getKey(part_section_name, "AnimTexStartCadrDisp")).toInt();
+				part.m_iAnimTexStartCadrDisp = String(config->getKey(part_section_name, "AnimTexStartCadrDisp")).toInt();
 
 
 			if (config->keyExists(part_section_name, "TimeLife"))
-				part.TimeLife = String(config->getKey(part_section_name, "TimeLife")).toUnsLongInt();
+				part.m_uiTimeLife = String(config->getKey(part_section_name, "TimeLife")).toUnsLongInt();
 			if (config->keyExists(part_section_name, "TimeLifeDisp"))
-				part.TimeLifeDisp = String(config->getKey(part_section_name, "TimeLifeDisp")).toUnsLongInt();
+				part.m_uiTimeLifeDisp = String(config->getKey(part_section_name, "TimeLifeDisp")).toUnsLongInt();
 
 			if (config->keyExists(part_section_name, "AlphaDependAge"))
-				part.AlphaDependAge = (PARTICLESTYPE_DEPEND)String(config->getKey(part_section_name, "AlphaDependAge")).toInt();
+				part.m_typeAlphaDependAge = (PARTICLESTYPE_DEPEND)String(config->getKey(part_section_name, "AlphaDependAge")).toInt();
 
 			if (config->keyExists(part_section_name, "SizeX"))
-				part.Size.x = String(config->getKey(part_section_name, "SizeX")).toDouble();
+				part.m_vSize.x = String(config->getKey(part_section_name, "SizeX")).toDouble();
 			if (config->keyExists(part_section_name, "SizeY"))
-				part.Size.y = String(config->getKey(part_section_name, "SizeY")).toDouble();
+				part.m_vSize.y = String(config->getKey(part_section_name, "SizeY")).toDouble();
 
 			if (config->keyExists(part_section_name, "SizeDisp"))
-				part.SizeDisp = String(config->getKey(part_section_name, "SizeDisp")).toDouble();
+				part.m_fSizeDisp = String(config->getKey(part_section_name, "SizeDisp")).toDouble();
 
 			if (config->keyExists(part_section_name, "SizeDependAge"))
-				part.SizeDependAge = (PARTICLESTYPE_DEPEND)String(config->getKey(part_section_name, "SizeDependAge")).toInt();
+				part.m_typeSizeDependAge = (PARTICLESTYPE_DEPEND)String(config->getKey(part_section_name, "SizeDependAge")).toInt();
 
 
 			if (config->keyExists(part_section_name, "VelocityX"))
-				part.Velocity.x = String(config->getKey(part_section_name, "VelocityX")).toDouble();
+				part.m_vVelocity.x = String(config->getKey(part_section_name, "VelocityX")).toDouble();
 			if (config->keyExists(part_section_name, "VelocityY"))
-				part.Velocity.y = String(config->getKey(part_section_name, "VelocityY")).toDouble();
+				part.m_vVelocity.y = String(config->getKey(part_section_name, "VelocityY")).toDouble();
 			if (config->keyExists(part_section_name, "VelocityZ"))
-				part.Velocity.z = String(config->getKey(part_section_name, "VelocityZ")).toDouble();
+				part.m_vVelocity.z = String(config->getKey(part_section_name, "VelocityZ")).toDouble();
 
 			if (config->keyExists(part_section_name, "VelocityDisp"))
-				part.VelocityDisp = String(config->getKey(part_section_name, "VelocityDisp")).toDouble();
+				part.m_fVelocityDisp = String(config->getKey(part_section_name, "VelocityDisp")).toDouble();
 
 			if (config->keyExists(part_section_name, "VelocityDispXNeg"))
-				part.VelocityDispXNeg = String(config->getKey(part_section_name, "VelocityDispXNeg")).toDouble();
+				part.m_shouldVelocityDispXNeg = String(config->getKey(part_section_name, "VelocityDispXNeg")).toDouble();
 			if (config->keyExists(part_section_name, "VelocityDispYNeg"))
-				part.VelocityDispYNeg = String(config->getKey(part_section_name, "VelocityDispYNeg")).toDouble();
+				part.m_shouldVelocityDispYNeg = String(config->getKey(part_section_name, "VelocityDispYNeg")).toDouble();
 			if (config->keyExists(part_section_name, "VelocityDispZNeg"))
-				part.VelocityDispZNeg = String(config->getKey(part_section_name, "VelocityDispZNeg")).toDouble();
+				part.m_shouldVelocityDispZNeg = String(config->getKey(part_section_name, "VelocityDispZNeg")).toDouble();
 
 
 			if (config->keyExists(part_section_name, "AccelerationX"))
-				part.Acceleration.x = String(config->getKey(part_section_name, "AccelerationX")).toDouble();
+				part.m_vAcceleration.x = String(config->getKey(part_section_name, "AccelerationX")).toDouble();
 			if (config->keyExists(part_section_name, "AccelerationY"))
-				part.Acceleration.y = String(config->getKey(part_section_name, "AccelerationY")).toDouble();
+				part.m_vAcceleration.y = String(config->getKey(part_section_name, "AccelerationY")).toDouble();
 			if (config->keyExists(part_section_name, "AccelerationZ"))
-				part.Acceleration.z = String(config->getKey(part_section_name, "AccelerationZ")).toDouble();
+				part.m_vAcceleration.z = String(config->getKey(part_section_name, "AccelerationZ")).toDouble();
 
 			if (config->keyExists(part_section_name, "AccelerationDisp"))
-				part.AccelerationDisp = String(config->getKey(part_section_name, "AccelerationDisp")).toDouble();
+				part.m_fAccelerationDisp = String(config->getKey(part_section_name, "AccelerationDisp")).toDouble();
 
 			if (config->keyExists(part_section_name, "AccelerationDispXNeg"))
-				part.AccelerationDispXNeg = String(config->getKey(part_section_name, "AccelerationDispXNeg")).toBool();
+				part.m_shouldAccelerationDispXNeg = String(config->getKey(part_section_name, "AccelerationDispXNeg")).toBool();
 			if (config->keyExists(part_section_name, "AccelerationDispYNeg"))
-				part.AccelerationDispYNeg = String(config->getKey(part_section_name, "AccelerationDispYNeg")).toBool();
+				part.m_shouldAccelerationDispYNeg = String(config->getKey(part_section_name, "AccelerationDispYNeg")).toBool();
 			if (config->keyExists(part_section_name, "AccelerationDispZNeg"))
-				part.AccelerationDispZNeg = String(config->getKey(part_section_name, "AccelerationDispZNeg")).toBool();
+				part.m_shouldAccelerationDispZNeg = String(config->getKey(part_section_name, "AccelerationDispZNeg")).toBool();
 
 
 			if (config->keyExists(part_section_name, "CharacterCircle"))
-				part.CharacterCircle = String(config->getKey(part_section_name, "CharacterCircle")).toBool();
+				part.m_useCharacterCircle = String(config->getKey(part_section_name, "CharacterCircle")).toBool();
 			if (config->keyExists(part_section_name, "CharacterCircleAxis"))
-				part.CharacterCircleAxis = (PARTICLES_AXIS)String(config->getKey(part_section_name, "CharacterCircleAxis")).toInt();
+				part.m_typeCharacterCircleAxis = (PARTICLES_AXIS)String(config->getKey(part_section_name, "CharacterCircleAxis")).toInt();
 			if (config->keyExists(part_section_name, "CharacterCircleAngle"))
-				part.CharacterCircleAngle = String(config->getKey(part_section_name, "CharacterCircleAngle")).toDouble();
+				part.m_fCharacterCircleAngle = String(config->getKey(part_section_name, "CharacterCircleAngle")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterCircleAngleDisp"))
-				part.CharacterCircleAngleDisp = String(config->getKey(part_section_name, "CharacterCircleAngleDisp")).toDouble();
+				part.m_fCharacterCircleAngleDisp = String(config->getKey(part_section_name, "CharacterCircleAngleDisp")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterCircleAngleDispNeg"))
-				part.CharacterCircleAngleDispNeg = String(config->getKey(part_section_name, "CharacterCircleAngleDispNeg")).toBool();
+				part.m_useCharacterCircleAngleDispNeg = String(config->getKey(part_section_name, "CharacterCircleAngleDispNeg")).toBool();
 
 
 			if (config->keyExists(part_section_name, "CharacterRotate"))
-				part.CharacterRotate = String(config->getKey(part_section_name, "CharacterRotate")).toBool();
+				part.m_useCharacterRotate = String(config->getKey(part_section_name, "CharacterRotate")).toBool();
 			if (config->keyExists(part_section_name, "CharacterRotateAngle"))
-				part.CharacterRotateAngle = String(config->getKey(part_section_name, "CharacterRotateAngle")).toDouble();
+				part.m_fCharacterRotateAngle = String(config->getKey(part_section_name, "CharacterRotateAngle")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterRotateAngleDisp"))
-				part.CharacterRotateAngleDisp = String(config->getKey(part_section_name, "CharacterRotateAngleDisp")).toDouble();
+				part.m_fCharacterRotateAngleDisp = String(config->getKey(part_section_name, "CharacterRotateAngleDisp")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterRotateAngleDispNeg"))
-				part.CharacterRotateAngleDispNeg = String(config->getKey(part_section_name, "CharacterRotateAngleDispNeg")).toBool();
+				part.m_useCharacterRotateAngleDispNeg = String(config->getKey(part_section_name, "CharacterRotateAngleDispNeg")).toBool();
 
 
 			if (config->keyExists(part_section_name, "CharacterDeviation"))
-				part.CharacterDeviation = String(config->getKey(part_section_name, "CharacterDeviation")).toBool();
+				part.m_useCharacterDeviation = String(config->getKey(part_section_name, "CharacterDeviation")).toBool();
 			if (config->keyExists(part_section_name, "CharacterDeviationType"))
-				part.CharacterDeviationType = (PARTICLESTYPE_DEVIATION)String(config->getKey(part_section_name, "CharacterDeviationType")).toInt();
+				part.m_typeCharacterDeviation = (PARTICLESTYPE_DEVIATION)String(config->getKey(part_section_name, "CharacterDeviationType")).toInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationAmplitude"))
-				part.CharacterDeviationAmplitude = String(config->getKey(part_section_name, "CharacterDeviationAmplitude")).toDouble();
+				part.m_fCharacterDeviationAmplitude = String(config->getKey(part_section_name, "CharacterDeviationAmplitude")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngle"))
-				part.CharacterDeviationCoefAngle = String(config->getKey(part_section_name, "CharacterDeviationCoefAngle")).toDouble();
+				part.m_fCharacterDeviationCoefAngle = String(config->getKey(part_section_name, "CharacterDeviationCoefAngle")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterDeviationAxis"))
-				part.CharacterDeviationAxis = (PARTICLES_AXIS)String(config->getKey(part_section_name, "CharacterDeviationAxis")).toInt();
+				part.m_typeCharacterDeviationAxis = (PARTICLES_AXIS)String(config->getKey(part_section_name, "CharacterDeviationAxis")).toInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationCountDelayMls"))
-				part.CharacterDeviationCountDelayMls = String(config->getKey(part_section_name, "CharacterDeviationCountDelayMls")).toUnsLongInt();
+				part.m_uiCharacterDeviationCountDelayMls = String(config->getKey(part_section_name, "CharacterDeviationCountDelayMls")).toUnsLongInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngleDisp"))
-				part.CharacterDeviationCoefAngleDisp = String(config->getKey(part_section_name, "CharacterDeviationCoefAngleDisp")).toDouble();
+				part.m_fCharacterDeviationCoefAngleDisp = String(config->getKey(part_section_name, "CharacterDeviationCoefAngleDisp")).toDouble();
 			if (config->keyExists(part_section_name, "CharacterDeviationCoefAngleDispNeg"))
-				part.CharacterDeviationCoefAngleDispNeg = String(config->getKey(part_section_name, "CharacterDeviationCoefAngleDispNeg")).toBool();
+				part.m_useCharacterDeviationCoefAngleDispNeg = String(config->getKey(part_section_name, "CharacterDeviationCoefAngleDispNeg")).toBool();
 
 			if (config->keyExists(part_section_name, "CharacterDeviationTapX"))
-				part.CharacterDeviationTapX = String(config->getKey(part_section_name, "CharacterDeviationTapX")).toBool();
+				part.m_useCharacterDeviationTapX = String(config->getKey(part_section_name, "CharacterDeviationTapX")).toBool();
 			if (config->keyExists(part_section_name, "CharacterDeviationTapY"))
-				part.CharacterDeviationTapY = String(config->getKey(part_section_name, "CharacterDeviationTapY")).toBool();
+				part.m_useCharacterDeviationTapY = String(config->getKey(part_section_name, "CharacterDeviationTapY")).toBool();
 			if (config->keyExists(part_section_name, "CharacterDeviationTapZ"))
-				part.CharacterDeviationTapZ = String(config->getKey(part_section_name, "CharacterDeviationTapZ")).toBool();
+				part.m_useCharacterDeviationTapZ = String(config->getKey(part_section_name, "CharacterDeviationTapZ")).toBool();
 
 
 			if (config->keyExists(part_section_name, "FigureType"))
-				part.FigureType = (PARTICLESTYPE_FIGURE)String(config->getKey(part_section_name, "FigureType")).toInt();
+				part.m_typeFigure = (PARTICLESTYPE_FIGURE)String(config->getKey(part_section_name, "FigureType")).toInt();
 			if (config->keyExists(part_section_name, "CharacterDeviationAxis"))
-				part.FigureCountQuads = String(config->getKey(part_section_name, "FigureCountQuads")).toInt();
+				part.m_iFigureCountQuads = String(config->getKey(part_section_name, "FigureCountQuads")).toInt();
 
 			if (config->keyExists(part_section_name, "FigureRotRand"))
-				part.FigureRotRand = String(config->getKey(part_section_name, "FigureRotRand")).toBool();
+				part.m_useFigureRotRand = String(config->getKey(part_section_name, "FigureRotRand")).toBool();
 
 			if (config->keyExists(part_section_name, "FigureTapX"))
-				part.FigureTapX = String(config->getKey(part_section_name, "FigureTapX")).toBool();
+				part.m_useFigureTapX = String(config->getKey(part_section_name, "FigureTapX")).toBool();
 			if (config->keyExists(part_section_name, "FigureTapY"))
-				part.FigureTapY = String(config->getKey(part_section_name, "FigureTapY")).toBool();
+				part.m_useFigureTapY = String(config->getKey(part_section_name, "FigureTapY")).toBool();
 			if (config->keyExists(part_section_name, "FigureTapZ"))
-				part.FigureTapZ = String(config->getKey(part_section_name, "FigureTapZ")).toBool();
+				part.m_useFigureTapZ = String(config->getKey(part_section_name, "FigureTapZ")).toBool();
 
 			if (config->keyExists(part_section_name, "ReCreateCount"))
-				part.ReCreateCount = String(config->getKey(part_section_name, "ReCreateCount")).toInt();
+				part.m_iReCreateCount = String(config->getKey(part_section_name, "ReCreateCount")).toInt();
 
 			if (config->keyExists(part_section_name, "AlphaBlendType"))
-				part.AlphaBlendType = (PARTICLESTYPE_ALPHABLEND)String(config->getKey(part_section_name, "AlphaBlendType")).toInt();
+				part.m_typeAlphaBlend = (PARTICLESTYPE_ALPHABLEND)String(config->getKey(part_section_name, "AlphaBlendType")).toInt();
 
 			if (config->keyExists(part_section_name, "ColorCoef"))
-				part.ColorCoef = String(config->getKey(part_section_name, "ColorCoef")).toDouble();
+				part.m_fColorCoef = String(config->getKey(part_section_name, "ColorCoef")).toDouble();
 
 			if (config->keyExists(part_section_name, "Soft"))
-				part.Soft = String(config->getKey(part_section_name, "Soft")).toBool();
+				part.m_isSoft = String(config->getKey(part_section_name, "Soft")).toBool();
 			if (config->keyExists(part_section_name, "SoftCoef"))
-				part.SoftCoef = String(config->getKey(part_section_name, "SoftCoef")).toDouble();
+				part.m_fSoftCoef = String(config->getKey(part_section_name, "SoftCoef")).toDouble();
 
 			if (config->keyExists(part_section_name, "Refraction"))
-				part.Refraction = String(config->getKey(part_section_name, "Refraction")).toBool();
+				part.m_useRefraction = String(config->getKey(part_section_name, "Refraction")).toBool();
 			if (config->keyExists(part_section_name, "RefractionCoef"))
-				part.RefractionCoef = String(config->getKey(part_section_name, "RefractionCoef")).toDouble();
+				part.m_fRefractionCoef = String(config->getKey(part_section_name, "RefractionCoef")).toDouble();
 
 			if (config->keyExists(part_section_name, "TransparencyCoef"))
-				part.TransparencyCoef = String(config->getKey(part_section_name, "TransparencyCoef")).toDouble();
+				part.m_fTransparencyCoef = String(config->getKey(part_section_name, "TransparencyCoef")).toDouble();
 			if (config->keyExists(part_section_name, "Lighting"))
-				part.Lighting = String(config->getKey(part_section_name, "Lighting")).toBool();
+				part.m_isLighting = String(config->getKey(part_section_name, "Lighting")).toBool();
 			if (config->keyExists(part_section_name, "CollisionDelete"))
-				part.CollisionDelete = String(config->getKey(part_section_name, "CollisionDelete")).toBool();
+				part.m_useCollisionDelete = String(config->getKey(part_section_name, "CollisionDelete")).toBool();
 
 
 			if (config->keyExists(part_section_name, "Track"))
-				part.Track = String(config->getKey(part_section_name, "Track")).toBool();
+				part.m_useTrack = String(config->getKey(part_section_name, "Track")).toBool();
 
 			if (config->keyExists(part_section_name, "TrackSize"))
-				part.TrackSize = String(config->getKey(part_section_name, "TrackSize")).toDouble();
+				part.m_fTrackSize = String(config->getKey(part_section_name, "TrackSize")).toDouble();
 
 			if (config->keyExists(part_section_name, "TrackTime"))
-				part.TrackTime = String(config->getKey(part_section_name, "TrackTime")).toUnsLongInt();
+				part.m_uiTrackTime = String(config->getKey(part_section_name, "TrackTime")).toUnsLongInt();
 
 			
 			ID part_id = this->emitterAdd(eff_id, &part);
@@ -602,207 +602,207 @@ void Effects::load(const char* path)
 }
 
 
-int Effects::emitterGetTrackCount(ID id, ID id_part)
+int CEffects::emitterGetTrackCount(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->getTrackCount();
+	return ArrID[id]->m_aEmitters[id_part]->getTrackCount();
 }
 
-int Effects::emitterGetTrackPos(ID id, ID id_part, float3** arr, int count)
+int CEffects::emitterGetTrackPos(ID id, ID id_part, float3** arr, int count)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->getTrackPos(arr, count);
+	return ArrID[id]->m_aEmitters[id_part]->getTrackPos(arr, count);
 }
 
 
-void Effects::emitterSetName(ID id, ID id_part, const char* name)
+void CEffects::emitterSetName(ID id, ID id_part, const char* name)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setName(name);
+	ArrID[id]->m_aEmitters[id_part]->setName(name);
 }
 
-void Effects::emitterGetName(ID id, ID id_part, char* name)
+void CEffects::emitterGetName(ID id, ID id_part, char* name)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->getName(name);
+	ArrID[id]->m_aEmitters[id_part]->getName(name);
 }
 
-ID Effects::emitterAdd(ID id, ParticlesData* data)
+ID CEffects::emitterAdd(ID id, CParticlesData* data)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 
-	Emitter* tmppart = new Emitter();
+	CEmitter* tmppart = new CEmitter();
 	tmppart->init(data);
-	ArrID[id]->Arr.push_back(tmppart);
-	return ArrID[id]->Arr.size() - 1;
+	ArrID[id]->m_aEmitters.push_back(tmppart);
+	return ArrID[id]->m_aEmitters.size() - 1;
 }
 
-void Effects::emitterReInit(ID id, ID id_part, ParticlesData* data)
+void CEffects::emitterReInit(ID id, ID id_part, CParticlesData* data)
 {
 	EFFECTS_PARTICLES_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->init(data);
+	ArrID[id]->m_aEmitters[id_part]->init(data);
 }
 
-int Effects::emitterGetCount(ID id)
+int CEffects::emitterGetCount(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
-	return ArrID[id]->Arr.size();
+	return ArrID[id]->m_aEmitters.size();
 }
 
-void Effects::emitterDelete(ID id, ID id_part)
+void CEffects::emitterDelete(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
-	mem_delete(ArrID[id]->Arr[id_part]);
-	ArrID[id]->Arr.erase(id_part);
+	mem_delete(ArrID[id]->m_aEmitters[id_part]);
+	ArrID[id]->m_aEmitters.erase(id_part);
 }
 
-ParticlesData* Effects::emitterGetData(ID id, ID id_part)
+CParticlesData* CEffects::emitterGetData(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->getData();
+	return ArrID[id]->m_aEmitters[id_part]->getData();
 }
 
-void Effects::emitterSetCount(ID id, ID id_part, int count)
+void CEffects::emitterSetCount(ID id, ID id_part, int count)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setCount(count);
+	ArrID[id]->m_aEmitters[id_part]->setCount(count);
 }
 
-int Effects::emitterGetCount(ID id, ID id_part)
+int CEffects::emitterGetCount(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->getCount();
+	return ArrID[id]->m_aEmitters[id_part]->getCount();
 }
 
-int Effects::emitterGetCountLife(ID id, ID id_part)
+int CEffects::emitterGetCountLife(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, 0);
 
-	return ArrID[id]->Arr[id_part]->getCountLife();
+	return ArrID[id]->m_aEmitters[id_part]->getCountLife();
 }
 
-void Effects::emitterSetEnable(ID id, ID id_part, bool enable)
+void CEffects::emitterSetEnable(ID id, ID id_part, bool enable)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setEnable(enable);
+	ArrID[id]->m_aEmitters[id_part]->setEnable(enable);
 }
 
-bool Effects::emitterGetEnable(ID id, ID id_part)
+bool CEffects::emitterGetEnable(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, false);
 
-	return ArrID[id]->Arr[id_part]->getEnable();
+	return ArrID[id]->m_aEmitters[id_part]->getEnable();
 }
 
 
-void Effects::emitterSetTexture(ID id, ID id_part, const char* tex)
+void CEffects::emitterSetTexture(ID id, ID id_part, const char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setTexture(tex);
+	ArrID[id]->m_aEmitters[id_part]->setTexture(tex);
 }
 
-void Effects::emitterSetTextureID(ID id, ID id_part, ID tex)
+void CEffects::emitterSetTextureID(ID id, ID id_part, ID tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setTextureID(tex);
+	ArrID[id]->m_aEmitters[id_part]->setTextureID(tex);
 }
 
-ID Effects::emitterGetTextureID(ID id, ID id_part)
+ID CEffects::emitterGetTextureID(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, -1);
 
-	return ArrID[id]->Arr[id_part]->getTextureID();
+	return ArrID[id]->m_aEmitters[id_part]->getTextureID();
 }
 
-void Effects::emitterGetTexture(ID id, ID id_part, char* tex)
+void CEffects::emitterGetTexture(ID id, ID id_part, char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->getTexture(tex);
+	ArrID[id]->m_aEmitters[id_part]->getTexture(tex);
 }
 
 
-void Effects::emitterSetTextureTrack(ID id, ID id_part, const char* tex)
+void CEffects::emitterSetTextureTrack(ID id, ID id_part, const char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setTextureTrack(tex);
+	ArrID[id]->m_aEmitters[id_part]->setTextureTrack(tex);
 }
 
-void Effects::emitterSetTextureTrackID(ID id, ID id_part, ID tex)
+void CEffects::emitterSetTextureTrackID(ID id, ID id_part, ID tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->setTextureTrackID(tex);
+	ArrID[id]->m_aEmitters[id_part]->setTextureTrackID(tex);
 }
 
-ID Effects::emitterGetTextureTrackID(ID id, ID id_part)
+ID CEffects::emitterGetTextureTrackID(ID id, ID id_part)
 {
 	EFFECTS_PRECOND(id, id_part, -1);
 
-	return ArrID[id]->Arr[id_part]->getTextureTrackID();
+	return ArrID[id]->m_aEmitters[id_part]->getTextureTrackID();
 }
 
-void Effects::emitterGetTextureTrack(ID id, ID id_part, char* tex)
+void CEffects::emitterGetTextureTrack(ID id, ID id_part, char* tex)
 {
 	EFFECTS_PRECOND(id, id_part, _VOID);
 
-	ArrID[id]->Arr[id_part]->getTextureTrack(tex);
+	ArrID[id]->m_aEmitters[id_part]->getTextureTrack(tex);
 }
 
 
 
 
-ID Effects::EffectCopyID(ID id)
+ID CEffects::effectCopyID(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 
-	Effect* efforigin = ArrID[id];
-	Effect* tmpeffect = new Effect(*efforigin);
+	CEffect* efforigin = ArrID[id];
+	CEffect* tmpeffect = new CEffect(*efforigin);
 
-	return AddEffect(tmpeffect);
+	return addEffect(tmpeffect);
 }
 
-ID Effects::EffectCopyName(const char* name)
+ID CEffects::effectCopyName(const char* name)
 {
-	return EffectCopyID(effectGetByName(name));
+	return effectCopyID(effectGetByName(name));
 }
 
-ID Effects::effectGetByName(const char* name)
+ID CEffects::effectGetByName(const char* name)
 {
 	for (int i = 0; i < ArrKey.size(); ++i)
 	{
-		if (strcmp(name, ArrKey[i]->Name) == 0)
-			return ArrKey[i]->Id;
+		if (strcmp(name, ArrKey[i]->m_szName) == 0)
+			return ArrKey[i]->m_id;
 	}
 
 	return -1;
 }
 
-ID Effects::effectAdd(const char* name)
+ID CEffects::effectAdd(const char* name)
 {
-	Effect* tmpeffect = new Effect();
+	CEffect* tmpeffect = new CEffect();
 	if (name)
-		strcpy(tmpeffect->Name, name);
+		strcpy(tmpeffect->m_szName, name);
 
-	ID id = AddEffect(tmpeffect);
-	tmpeffect->IDPool = PoolAdd(id);
+	ID id = addEffect(tmpeffect);
+	tmpeffect->m_idPool = poolAdd(id);
 	//PoolExtend(tmpeffect->Pool);
 	return id;
 }
 
-ID Effects::PoolAdd(ID ideff)
+ID CEffects::poolAdd(ID ideff)
 {
 	EFFECTS_EFFECT_PRECOND(ideff, -1);
 
@@ -819,7 +819,7 @@ ID Effects::PoolAdd(ID ideff)
 
 	if (id < 0)
 	{
-		Pool* tmparr = new Pool();
+		CPool* tmparr = new CPool();
 		tmparr->ideff = ideff;
 		Pools.push_back(tmparr);
 		id = Pools.size() - 1;
@@ -828,83 +828,83 @@ ID Effects::PoolAdd(ID ideff)
 	return Pools.size() - 1;
 }
 
-void Effects::PoolExtend(ID id)
+void CEffects::poolExtend(ID id)
 {
 	EFFECTS_POOL_PRECOND(id, _VOID);
 	for (int i = 0; i < SXPARTICLES_POOL_RESERVE; ++i)
 	{
-		ID tmpid = EffectCopyID(Pools[id]->ideff);
-		ArrID[tmpid]->Busy = false;
-		ArrID[tmpid]->Original = false;
+		ID tmpid = effectCopyID(Pools[id]->ideff);
+		ArrID[tmpid]->m_isBusy = false;
+		ArrID[tmpid]->m_isOriginal = false;
 		Pools[id]->arr.push_back(tmpid);
 	}
 }
 
-void Effects::PoolDelete(ID id)
+void CEffects::poolDelete(ID id)
 {
 	EFFECTS_POOL_PRECOND(id, _VOID);
 
 	for (int i = 0; i < Pools[id]->arr.size(); ++i)
 	{
-		EffectDel(Pools[id]->arr[i]);
+		effectDel(Pools[id]->arr[i]);
 	}
 
 	Pools[id]->ideff = -1;
 	Pools[id]->arr.clear();
 }
 
-ID Effects::PoolGet(ID id)
+ID CEffects::poolGet(ID id)
 {
 	EFFECTS_POOL_PRECOND(id, -1);
 
 	for (int i = 0; i < Pools[id]->arr.size(); ++i)
 	{
-		if (!(ArrID[Pools[id]->arr[i]]->Busy) && !(ArrID[Pools[id]->arr[i]]->Enable))
-			return ArrID[Pools[id]->arr[i]]->Id;
+		if (!(ArrID[Pools[id]->arr[i]]->m_isBusy) && !(ArrID[Pools[id]->arr[i]]->m_isEnable))
+			return ArrID[Pools[id]->arr[i]]->m_id;
 	}
 	
 	int oldsize = Pools[id]->arr.size();
 
-	PoolExtend(id);
-	return ArrID[Pools[id]->arr[oldsize]]->Id;
+	poolExtend(id);
+	return ArrID[Pools[id]->arr[oldsize]]->m_id;
 }
 
-ID Effects::EffectInstanceByID(ID id)
+ID CEffects::effectInstanceByID(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, -1);
 
-	ID ideff = PoolGet(ArrID[id]->IDPool);
-	ArrID[ideff]->Busy = true;
+	ID ideff = poolGet(ArrID[id]->m_idPool);
+	ArrID[ideff]->m_isBusy = true;
 
 	return ideff;
 }
 
-ID Effects::EffectInstanceByName(const char* name)
+ID CEffects::effectInstanceByName(const char* name)
 {
-	return EffectInstanceByID(effectGetByName(name));
+	return effectInstanceByID(effectGetByName(name));
 }
 
-void Effects::EffectPlayByID(ID id, float3* pos, float3* dir)
+void CEffects::effectPlayByID(ID id, const float3* pos, const float3* dir)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ID ideff = PoolGet(ArrID[id]->IDPool);
+	ID ideff = poolGet(ArrID[id]->m_idPool);
 
 	if (pos)
-		EffectPosSet(ideff, pos);
+		effectSetPos(ideff, pos);
 
 	if (dir)
-		EffectDirSet(ideff, dir);
+		effectSetDir(ideff, dir);
 
-	EffectEnableSet(ideff, true);
+	effectSetEnable(ideff, true);
 }
 
-void Effects::EffectPlayByName(const char* name, float3* pos, float3* dir)
+void CEffects::effectPlayByName(const char* name, const float3* pos, const float3* dir)
 {
-	EffectPlayByID(effectGetByName(name), pos, dir);
+	effectPlayByID(effectGetByName(name), pos, dir);
 }
 
-ID Effects::AddEffect(Effect* obj)
+ID CEffects::addEffect(CEffect* obj)
 {
 	ID idadd = -1;
 	for (long i = 0; i < ArrID.size(); ++i)
@@ -923,197 +923,197 @@ ID Effects::AddEffect(Effect* obj)
 		idadd = ArrID.size() - 1;
 	}
 
-	obj->Id = idadd;
+	obj->m_id = idadd;
 	ArrKey.push_back(obj);
-	obj->Key = ArrKey.size() - 1;
+	obj->m_idKey = ArrKey.size() - 1;
 	return idadd;
 }
 
-int Effects::effectGetCount()
+int CEffects::effectGetCount()
 {
 	return ArrKey.size();
 }
 
-ID Effects::effectGetIdOfKey(ID key)
+ID CEffects::effectGetIdOfKey(ID key)
 {
 	EFFECTS_EFFECT_PRECOND_KEY(key, -1);
 
-	return ArrKey[key]->Id;
+	return ArrKey[key]->m_id;
 }
 
-void Effects::EffectDelete(ID id)
+void CEffects::effectDelete(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	if (ArrID[id]->Original)
+	if (ArrID[id]->m_isOriginal)
 	{
-		PoolDelete(ArrID[id]->IDPool);
-		EffectDel(id);
+		poolDelete(ArrID[id]->m_idPool);
+		effectDel(id);
 	}
 	else
 	{
-		ArrID[id]->Busy = false;
-		EffectEnableSet(id, false);
+		ArrID[id]->m_isBusy = false;
+		effectSetEnable(id, false);
 	}
 }
 
-void Effects::EffectDel(ID id)
+void CEffects::effectDel(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	for (long i = ArrID[id]->Key + 1; i < ArrKey.size(); ++i)
+	for (long i = ArrID[id]->m_idKey + 1; i < ArrKey.size(); ++i)
 	{
-		--(ArrKey[i]->Key);
+		--(ArrKey[i]->m_idKey);
 	}
 
-	ArrID[id]->Enable = false;
-	ArrKey.erase(ArrID[id]->Key);
+	ArrID[id]->m_isEnable = false;
+	ArrKey.erase(ArrID[id]->m_idKey);
 	mem_delete(ArrID[id]);
 }
 
-void Effects::EffectNameSet(ID id, const char* name)
+void CEffects::effectSetName(ID id, const char* name)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
 	if (name)
-		strcpy(ArrID[id]->Name, name);
+		strcpy(ArrID[id]->m_szName, name);
 }
 
-void Effects::EffectNameGet(ID id, char* name)
+void CEffects::effectGetName(ID id, char* name)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
 	if (name)
-		strcpy(name, ArrID[id]->Name);
+		strcpy(name, ArrID[id]->m_szName);
 }
 
-void Effects::EffectCompute(ID id)
+void CEffects::effectCompute(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	if (!ArrID[id]->Enable)
+	if (!ArrID[id]->m_isEnable)
 		return;
 
-	Effect* eff = ArrID[id];
+	CEffect* eff = ArrID[id];
 	int countlife = 0;
 
 	static float4x4 mattrans;
-	mattrans = eff->MatRotate * eff->MatTranslation;
+	mattrans = eff->m_mRotate * eff->m_mTranslation;
 
 	int countdead = 0;	//счетик живых партиклов
-	for (int i = 0, l = eff->Arr.size(); i < l; ++i)
+	for (int i = 0, l = eff->m_aEmitters.size(); i < l; ++i)
 	{
-		if (eff->Arr[i])
-			eff->Arr[i]->compute(&mattrans);
+		if (eff->m_aEmitters[i])
+			eff->m_aEmitters[i]->compute(&mattrans);
 
 		//если партиклы метрвы то инкрементируем счетчик
-		if (!eff->Arr[i]->getEnable())
+		if (!eff->m_aEmitters[i]->getEnable())
 			++countdead;
 		else //иначе партиклы живы, считаем объем эффекта
 		{
 			++countlife;
 			if (countlife == 1)
 			{
-				eff->CurrMax = eff->Arr[i]->CurrMax;
-				eff->CurrMin = eff->Arr[i]->CurrMin;
+				eff->m_vCurrMax = eff->m_aEmitters[i]->m_vCurrMax;
+				eff->m_vCurrMin = eff->m_aEmitters[i]->m_vCurrMin;
 			}
 			else
 			{
-				if (eff->Arr[i]->CurrMax.x > eff->CurrMax.x)
-					eff->CurrMax.x = eff->Arr[i]->CurrMax.x;
+				if (eff->m_aEmitters[i]->m_vCurrMax.x > eff->m_vCurrMax.x)
+					eff->m_vCurrMax.x = eff->m_aEmitters[i]->m_vCurrMax.x;
 
-				if (eff->Arr[i]->CurrMax.y > eff->CurrMax.y)
-					eff->CurrMax.y = eff->Arr[i]->CurrMax.y;
+				if (eff->m_aEmitters[i]->m_vCurrMax.y > eff->m_vCurrMax.y)
+					eff->m_vCurrMax.y = eff->m_aEmitters[i]->m_vCurrMax.y;
 
-				if (eff->Arr[i]->CurrMax.z > eff->CurrMax.z)
-					eff->CurrMax.z = eff->Arr[i]->CurrMax.z;
+				if (eff->m_aEmitters[i]->m_vCurrMax.z > eff->m_vCurrMax.z)
+					eff->m_vCurrMax.z = eff->m_aEmitters[i]->m_vCurrMax.z;
 
-				if (eff->Arr[i]->CurrMin.x < eff->CurrMin.x)
-					eff->CurrMin.x = eff->Arr[i]->CurrMin.x;
+				if (eff->m_aEmitters[i]->m_vCurrMin.x < eff->m_vCurrMin.x)
+					eff->m_vCurrMin.x = eff->m_aEmitters[i]->m_vCurrMin.x;
 
-				if (eff->Arr[i]->CurrMin.y < eff->CurrMin.y)
-					eff->CurrMin.y = eff->Arr[i]->CurrMin.y;
+				if (eff->m_aEmitters[i]->m_vCurrMin.y < eff->m_vCurrMin.y)
+					eff->m_vCurrMin.y = eff->m_aEmitters[i]->m_vCurrMin.y;
 
-				if (eff->Arr[i]->CurrMin.z < eff->CurrMin.z)
-					eff->CurrMin.z = eff->Arr[i]->CurrMin.z;
+				if (eff->m_aEmitters[i]->m_vCurrMin.z < eff->m_vCurrMin.z)
+					eff->m_vCurrMin.z = eff->m_aEmitters[i]->m_vCurrMin.z;
 			}
 			
-			eff->CurrMin2 = SMVector3Transform(eff->CurrMin, mattrans);
-			eff->CurrMax2 = SMVector3Transform(eff->CurrMax, mattrans);
+			eff->m_vCurrMin2 = SMVector3Transform(eff->m_vCurrMin, mattrans);
+			eff->m_vCurrMax2 = SMVector3Transform(eff->m_vCurrMax, mattrans);
 		}
 	}
 
 	//если количество мертвых объектов партиклов равно общему количесву объектов партиклов
-	if (countdead == eff->Arr.size())
+	if (countdead == eff->m_aEmitters.size())
 	{
-		eff->Enable = false;	//эффект мертв
-		eff->Alife = false;
+		eff->m_isEnable = false;	//эффект мертв
+		eff->m_isAlife = false;
 	}
 	else
-		eff->Enable = true;
+		eff->m_isEnable = true;
 }
 
-void Effects::EffectComputeLighting(ID id)
+void CEffects::effectComputeLighting(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	Effect* eff = ArrID[id];
+	CEffect* eff = ArrID[id];
 
-	if (!eff->ViewRender)
+	if (!eff->m_isViewRender)
 		return;
 
-	if (!eff->Enable)
+	if (!eff->m_isEnable)
 		return;
 
-	for(int i = 0, l = eff->Arr.size(); i < l; ++i)
+	for(int i = 0, l = eff->m_aEmitters.size(); i < l; ++i)
 	{
-		if (eff->Arr[i] && eff->Arr[i]->getEnable())
+		if (eff->m_aEmitters[i] && eff->m_aEmitters[i]->getEnable())
 		{
-			eff->Arr[i]->computeLighting();
+			eff->m_aEmitters[i]->computeLighting();
 		}
 	}
 }
 
-void Effects::EffectRender(ID id, DWORD timeDelta)
+void CEffects::effectRender(ID id, DWORD timeDelta)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	Effect* eff = ArrID[id];
+	CEffect* eff = ArrID[id];
 
-	if (!eff->ViewRender)
+	if (!eff->m_isViewRender)
 		return;
 
-	if (!eff->Enable)
+	if (!eff->m_isEnable)
 		return;
 
-	for(int i = 0, l = eff->Arr.size(); i < l; ++i)
+	for(int i = 0, l = eff->m_aEmitters.size(); i < l; ++i)
 	{
-		if(eff->Arr[i] && eff->Arr[i]->getEnable())
+		if(eff->m_aEmitters[i] && eff->m_aEmitters[i]->getEnable())
 		{
-			eff->Arr[i]->render(timeDelta, &eff->MatRotate, &eff->MatTranslation);
+			eff->m_aEmitters[i]->render(timeDelta, &eff->m_mRotate, &eff->m_mTranslation);
 		}
 	}
 }
 
-void Effects::EffectComputeAll()
+void CEffects::effectComputeAll()
 {
 	for (int i = 0, l = ArrID.size(); i < l; ++i)
 	{
 		if (ArrID[i])
-			EffectCompute(ArrID[i]->Id);
+			effectCompute(ArrID[i]->m_id);
 	}
 }
 
-void Effects::EffectComputeLightingAll()
+void CEffects::effectComputeLightingAll()
 {
 	for (int i = 0, l = ArrID.size(); i < l; ++i)
 	{
 		if (ArrID[i])
-			EffectComputeLighting(ArrID[i]->Id);
+			effectComputeLighting(ArrID[i]->m_id);
 	}
 }
 
-void Effects::EffectRenderAll(DWORD timeDelta)
+void CEffects::effectRenderAll(DWORD timeDelta)
 {
 	ID tmpid = -1;
 	if (ArrSortSizeCurr <= 0)
@@ -1123,42 +1123,42 @@ void Effects::EffectRenderAll(DWORD timeDelta)
 	{
 		tmpid = ArrSort[i];
 		if (tmpid >= 0 && tmpid < ArrID.size() && ArrID[tmpid])
-			EffectRender(tmpid, timeDelta);
+			effectRender(tmpid, timeDelta);
 	}
 }
 
-bool Effects::EffectVisibleCom(ID id, const IFrustum* frustum, float3* view)
+bool CEffects::effectVisibleCom(ID id, const IFrustum* frustum, const float3* view)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	Effect* eff = ArrID[id];
-	if (!eff || !eff->Enable)
+	CEffect* eff = ArrID[id];
+	if (!eff || !eff->m_isEnable)
 		return false;
 
 	float3 scenter;
 	float sradius;
 
-	scenter = (eff->CurrMin2 + eff->CurrMax2) * 0.5f;
-	sradius = SMVector3Length(scenter - eff->CurrMax2);
+	scenter = (eff->m_vCurrMin2 + eff->m_vCurrMax2) * 0.5f;
+	sradius = SMVector3Length(scenter - eff->m_vCurrMax2);
 	
-	eff->ViewRender = frustum->sphereInFrustum(&scenter, sradius);
+	eff->m_isViewRender = frustum->sphereInFrustum(&scenter, sradius);
 
-	if (eff->ViewRender)
-		eff->ViewRender = SGCore_OC_IsVisible(&(eff->CurrMin2), &(eff->CurrMax2));
+	if (eff->m_isViewRender)
+		eff->m_isViewRender = SGCore_OC_IsVisible(&(eff->m_vCurrMin2), &(eff->m_vCurrMax2));
 
-	eff->ViewDist = SMVector3Length((scenter - (*view))) - sradius;
+	eff->m_fViewDist = SMVector3Length((scenter - (*view))) - sradius;
 
-	return eff->ViewRender;
+	return eff->m_isViewRender;
 }
 
-void Effects::EffectVisibleComAll(const IFrustum* frustum, float3* view)
+void CEffects::effectVisibleComAll(const IFrustum* frustum, const float3* view)
 {
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
 	for(int i = 0, l = ArrID.size(); i < l; ++i)
 	{
 		if (ArrID[i])
-			EffectVisibleCom(i, frustum, view);
+			effectVisibleCom(i, frustum, view);
 	}
 
 	for (int i = 0; i < /*ArrSort.size()*/ArrKey.size(); ++i)
@@ -1172,18 +1172,18 @@ void Effects::EffectVisibleComAll(const IFrustum* frustum, float3* view)
 	int pos;
 	for (int i = 0; i < ArrKey.size(); ++i)
 	{
-		if (!ArrKey[i]->ViewRender)
+		if (!ArrKey[i]->m_isViewRender)
 			continue;
 
 		pos = 0;
-		tmpdist = ArrKey[i]->ViewDist;
+		tmpdist = ArrKey[i]->m_fViewDist;
 		for (int j = 0; j < ArrKey.size(); ++j)
 		{
-			if (i != j && ArrKey[j]->ViewRender && ArrKey[j]->ViewDist < tmpdist)
+			if (i != j && ArrKey[j]->m_isViewRender && ArrKey[j]->m_fViewDist < tmpdist)
 				++pos;
 		}
 
-		ArrSort[pos] = ArrKey[i]->Id;
+		ArrSort[pos] = ArrKey[i]->m_id;
 
 		if (ArrSortSizeCurr <= pos)
 			ArrSortSizeCurr = pos+1;
@@ -1202,136 +1202,136 @@ void Effects::EffectVisibleComAll(const IFrustum* frustum, float3* view)
 	}*/
 }
 
-bool Effects::EffectVisibleGet(ID id)
+bool CEffects::effectGetVisible(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	return ArrID[id]->ViewRender;
+	return ArrID[id]->m_isViewRender;
 }
 
-float Effects::EffectDistToViewGet(ID id)
+float CEffects::effectGetDistToView(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, 0);
 
-	return ArrID[id]->ViewDist;
+	return ArrID[id]->m_fViewDist;
 }
 
 
-bool Effects::EffectEnableGet(ID id)
+bool CEffects::effectGetEnable(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	return ArrID[id]->Enable;
+	return ArrID[id]->m_isEnable;
 }
 
-void Effects::EffectEnableSet(ID id, bool isenable)
+void CEffects::effectSetEnable(ID id, bool isenable)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
-	Effect* eff = ArrID[id];
+	CEffect* eff = ArrID[id];
 	
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	for (int i = 0; i < eff->m_aEmitters.size(); ++i)
 	{
-		eff->Arr[i]->setEnable(isenable);
+		eff->m_aEmitters[i]->setEnable(isenable);
 	}
 
-	eff->Enable = isenable;
+	eff->m_isEnable = isenable;
 	
 	if (!isenable)
-		eff->Alife = isenable;
+		eff->m_isAlife = isenable;
 }
 
-bool Effects::EffectAlifeGet(ID id)
+bool CEffects::effectGetAlife(ID id)
 {
 	EFFECTS_EFFECT_PRECOND(id, false);
 
-	return ArrID[id]->Alife;
+	return ArrID[id]->m_isAlife;
 }
 
-void Effects::EffectAlifeSet(ID id, bool alife)
+void CEffects::effectSetAlife(ID id, bool alife)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ArrID[id]->Alife = alife;
-	Effect* eff = ArrID[id];
+	ArrID[id]->m_isAlife = alife;
+	CEffect* eff = ArrID[id];
 
-	if (!eff->Enable && eff->Alife)
-		eff->Enable = eff->Alife;
+	if (!eff->m_isEnable && eff->m_isAlife)
+		eff->m_isEnable = eff->m_isAlife;
 
-	for (int i = 0; i < eff->Arr.size(); ++i)
+	for (int i = 0; i < eff->m_aEmitters.size(); ++i)
 	{
-		eff->Arr[i]->setAlife(alife);
+		eff->m_aEmitters[i]->setAlife(alife);
 	}
 }
 
-void Effects::EffectPosSet(ID id, float3* pos)
+void CEffects::effectSetPos(ID id, const float3* pos)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ArrID[id]->Position = *pos;
-	ArrID[id]->MatTranslation = SMMatrixTranslation(ArrID[id]->Position);
+	ArrID[id]->m_vPosition = *pos;
+	ArrID[id]->m_mTranslation = SMMatrixTranslation(ArrID[id]->m_vPosition);
 }
 
-void Effects::EffectDirSet(ID id, float3* dir)
+void CEffects::effectSetDir(ID id, const float3* dir)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 	float3 tmpdir = *dir;
 	//tmpdir.y = 0;
 	tmpdir = SMVector3Normalize(tmpdir);
-	ArrID[id]->Direction = tmpdir;
+	ArrID[id]->m_vDirection = tmpdir;
 
 	//static float3 f = SXPARTICLES_BASIS_DIR;
 	static float3 f(0, 1, 0);
 	//float3 f(0, 1, 0);
 	float3 a = SMVector3Cross(f, tmpdir);
 	float ang = acosf(SMVector3Dot(f, tmpdir));
-	ArrID[id]->MatRotate = SMMatrixRotationAxis(a, ang)/*SMQuaternion(a, ang).GetMatrix()*//*SMMatrixRotationX(SM_PIDIV2) * *//*SMMatrixRotationAxis(a, ang)*/;
+	ArrID[id]->m_mRotate = SMMatrixRotationAxis(a, ang)/*SMQuaternion(a, ang).GetMatrix()*//*SMMatrixRotationX(SM_PIDIV2) * *//*SMMatrixRotationAxis(a, ang)*/;
 
-	ArrID[id]->Rotation = SMMatrixToEuler(ArrID[id]->MatRotate);
+	ArrID[id]->m_vRotation = SMMatrixToEuler(ArrID[id]->m_mRotate);
 }
 
-void Effects::EffectRotSet(ID id, float3* rot)
+void CEffects::effectSetRot(ID id, const float3* rot)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ArrID[id]->Rotation = *rot;
+	ArrID[id]->m_vRotation = *rot;
 
-	ArrID[id]->Direction = SMEulerToVec(ArrID[id]->Rotation, SXPARTICLES_BASE_DIR);
+	ArrID[id]->m_vDirection = SMEulerToVec(ArrID[id]->m_vRotation, SXPARTICLES_BASE_DIR);
 
 	static float3 f = SXPARTICLES_BASE_DIR;
 	//float3 f(0, -1, 0);
-	float3 a = SMVector3Cross(f, ArrID[id]->Direction);
-	float ang = acosf(SMVector3Dot(f, ArrID[id]->Direction));
-	ArrID[id]->MatRotate = SMMatrixRotationAxis(a, ang);
+	float3 a = SMVector3Cross(f, ArrID[id]->m_vDirection);
+	float ang = acosf(SMVector3Dot(f, ArrID[id]->m_vDirection));
+	ArrID[id]->m_mRotate = SMMatrixRotationAxis(a, ang);
 }
 
-void Effects::EffectRotSet(ID id, const SMQuaternion & rot)
+void CEffects::effectSetRot(ID id, const SMQuaternion & rot)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	ArrID[id]->MatRotate = rot.GetMatrix();
+	ArrID[id]->m_mRotate = rot.GetMatrix();
 
-	ArrID[id]->Direction = rot * float3(0, 1, 0);
+	ArrID[id]->m_vDirection = rot * float3(0, 1, 0);
 
-	ArrID[id]->Rotation = SMMatrixToEuler(ArrID[id]->MatRotate);
+	ArrID[id]->m_vRotation = SMMatrixToEuler(ArrID[id]->m_mRotate);
 }
 
-void Effects::EffectPosGet(ID id, float3* pos)
+void CEffects::effectGetPos(ID id, float3* pos)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	*pos = ArrID[id]->Position;
+	*pos = ArrID[id]->m_vPosition;
 }
 
-void Effects::EffectDirGet(ID id, float3* dir)
+void CEffects::effectGetDir(ID id, float3* dir)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	*dir = ArrID[id]->Direction;
+	*dir = ArrID[id]->m_vDirection;
 }
 
-void Effects::EffectRotGet(ID id, float3* rot)
+void CEffects::effectGetRot(ID id, float3* rot)
 {
 	EFFECTS_EFFECT_PRECOND(id, _VOID);
 
-	*rot = ArrID[id]->Rotation;
+	*rot = ArrID[id]->m_vRotation;
 }

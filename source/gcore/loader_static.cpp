@@ -30,7 +30,7 @@ bool SGCore_DSE_IsDSE(const char *szPath)
 	if (header.Magick != SX_MODEL_MAGICK)
 		return false;
 
-	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+	if (header.iVersion != SX_MODEL_VERSION)
 		return false;
 
 	return true;
@@ -50,7 +50,7 @@ SX_LIB_API bool SGCore_DSE_IsModel(const char *szPath)
 	if (header.Magick != SX_MODEL_MAGICK)
 		return false;
 
-	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+	if (header.iVersion != SX_MODEL_VERSION)
 		return false;
 
 	return !(header.iFlags & MODEL_FLAG_SOURCE_ANIMATION);
@@ -71,7 +71,7 @@ SX_LIB_API bool SGCore_DSE_IsAnimation(const char *szPath)
 	if (header.Magick != SX_MODEL_MAGICK)
 		return false;
 
-	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+	if (header.iVersion != SX_MODEL_VERSION)
 		return false;
 
 	return (header.iFlags & MODEL_FLAG_SOURCE_ANIMATION);
@@ -93,7 +93,7 @@ SX_LIB_API bool SGCore_DSEgetInfo(const char *szPath, CDSEinfo *pInfo)
 		return false;
 	}
 
-	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+	if (header.iVersion != SX_MODEL_VERSION)
 	{
 		fclose(pf);
 		return false;
@@ -131,196 +131,110 @@ SX_LIB_API bool SGCore_DSEgetInfo(const char *szPath, CDSEinfo *pInfo)
 	}
 
 
-	if (header.iVersion == SX_MODEL_VERSION_OLD)
+	
+	if (header.iMaterialsOffset)
 	{
-		if (header.iMaterialsOffset)
-		{
-			fseek(pf, header.iMaterialsOffset, SEEK_SET);
-			for (int i = 0; i < header.iMaterialCount; i++)
-			{
-				char c;
-				while (c = getc(pf))
-				{
-					
-				}
-			}
-		}
+		fseek(pf, header.iMaterialsOffset, SEEK_SET);
+		fseek(pf, header.iMaterialCount * MODEL_MAX_NAME, SEEK_CUR);
+	}
 
-		if (header.iFlags & (MODEL_FLAG_SOURCE_MESH | MODEL_FLAG_COMPILED))
-		{
-			ModelLoD lh;
+	ModelLoD *m_pLods;
+	if (header.iLODcount && header.iLODoffset)
+	{
 
-			fread(&lh.iSubMeshCount, sizeof(int), 1, pf);
-			lh.pSubLODmeshes = new ModelLoDSubset[lh.iSubMeshCount];
-			
+		fseek(pf, header.iLODoffset, SEEK_SET);
+
+		m_pLods = new ModelLoD[header.iLODcount];
+
+		for (int i = 0; i < header.iLODcount; i++)
+		{
+			fread(&m_pLods[i], MODEL_LOD_STRUCT_SIZE, 1, pf);
 			int iVC = 0;
 			int iIC = 0;
 			float3 vMin, vMax;
 
-			for (int i = 0; i < lh.iSubMeshCount; i++)
-			{
-				fread(&lh.pSubLODmeshes[i].iMaterialID, sizeof(int), 1, pf);
-				fread(&lh.pSubLODmeshes[i].iVectexCount, sizeof(int), 1, pf);
-				fread(&lh.pSubLODmeshes[i].iIndexCount, sizeof(int), 1, pf);
-				lh.pSubLODmeshes[i].pVertices = new vertex_animated_ex[lh.pSubLODmeshes[i].iVectexCount];
-				lh.pSubLODmeshes[i].pIndices = new UINT[lh.pSubLODmeshes[i].iIndexCount];
-				fread(lh.pSubLODmeshes[i].pVertices, sizeof(vertex_animated_ex), lh.pSubLODmeshes[i].iVectexCount, pf);
-				fread(lh.pSubLODmeshes[i].pIndices, sizeof(UINT), lh.pSubLODmeshes[i].iIndexCount, pf);
-
-				iVC += lh.pSubLODmeshes[i].iVectexCount;
-				iIC += lh.pSubLODmeshes[i].iIndexCount;
-
-				vertex_animated_ex* pArrVertex = (vertex_animated_ex*)lh.pSubLODmeshes[i].pVertices;
-
-				if (i == 0)
-				{
-					vMin = pArrVertex[0].Pos;
-					vMax = pArrVertex[0].Pos;
-				}
-
-				for (int k = 0; k < lh.pSubLODmeshes[i].iVectexCount; ++k)
-				{
-					if (pArrVertex[k].Pos.x > vMax.x)
-						vMax.x = pArrVertex[k].Pos.x;
-
-					if (pArrVertex[k].Pos.y > vMax.y)
-						vMax.y = pArrVertex[k].Pos.y;
-
-					if (pArrVertex[k].Pos.z > vMax.z)
-						vMax.z = pArrVertex[k].Pos.z;
-
-
-					if (pArrVertex[k].Pos.x < vMin.x)
-						vMin.x = pArrVertex[k].Pos.x;
-
-					if (pArrVertex[k].Pos.y < vMin.y)
-						vMin.y = pArrVertex[k].Pos.y;
-
-					if (pArrVertex[k].Pos.z < vMin.z)
-						vMin.z = pArrVertex[k].Pos.z;
-				}
-			}
-
-			pInfo->iCountVertex = iVC;
-			pInfo->iCountIndex = iIC;
-			pInfo->vDimensions = float3_t(vMax - vMin);
-			pInfo->vCenter = float3_t((vMax + vMin) * 0.5f);
-
-			for (int i = 0; i < lh.iSubMeshCount; i++)
-			{
-				mem_delete_a(lh.pSubLODmeshes[i].pVertices);
-				mem_delete_a(lh.pSubLODmeshes[i].pIndices);
-			}
-
-			mem_delete_a(lh.pSubLODmeshes);
-		}
-	}
-	else if (header.iVersion == SX_MODEL_VERSION)
-	{
-		if (header.iMaterialsOffset)
-		{
-			fseek(pf, header.iMaterialsOffset, SEEK_SET);
-			fseek(pf, header.iMaterialCount * MODEL_MAX_NAME, SEEK_CUR);
-		}
-
-		ModelLoD *m_pLods;
-		if (header.iLODcount && header.iLODoffset)
-		{
-
-			fseek(pf, header.iLODoffset, SEEK_SET);
-
-			m_pLods = new ModelLoD[header.iLODcount];
-
-			for (int i = 0; i < header.iLODcount; i++)
-			{
-				fread(&m_pLods[i], MODEL_LOD_STRUCT_SIZE, 1, pf);
-				int iVC = 0;
-				int iIC = 0;
-				float3 vMin, vMax;
-
-				m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pLods[i].iSubMeshCount];
-				for (int j = 0; j < m_pLods[i].iSubMeshCount; j++)
-				{
-
-					fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(int), 1, pf);
-					fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(int), 1, pf);
-					fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(int), 1, pf);
-
-					if (header.iFlags & MODEL_FLAG_STATIC)
-						m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
-					else
-						m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
-
-					m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
-
-					if (header.iFlags & MODEL_FLAG_STATIC)
-						fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
-					else
-						fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
-
-					fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, pf);
-
-					iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
-					iIC += m_pLods[i].pSubLODmeshes[j].iIndexCount;
-
-					
-					if (j == 0)
-					{
-						vMin = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices);
-						vMax = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices);
-					}
-
-					float3_t vPos;
-					int iSizeVertex = sizeof(vertex_animated);
-
-					if (header.iFlags & MODEL_FLAG_STATIC)
-						iSizeVertex = sizeof(vertex_static);
-
-					for (int k = 0; k < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++k)
-					{
-						vPos = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices + k*iSizeVertex);
-						if (vPos.x > vMax.x)
-							vMax.x = vPos.x;
-
-						if (vPos.y > vMax.y)
-							vMax.y = vPos.y;
-
-						if (vPos.z > vMax.z)
-							vMax.z = vPos.z;
-
-
-						if (vPos.x < vMin.x)
-							vMin.x = vPos.x;
-
-						if (vPos.y < vMin.y)
-							vMin.y = vPos.y;
-
-						if (vPos.z < vMin.z)
-							vMin.z = vPos.z;
-					}
-				}
-
-				if (i == 0)
-				{
-					pInfo->iCountVertex = iVC;
-					pInfo->iCountIndex = iIC;
-					pInfo->vDimensions = float3_t(vMax - vMin);
-					pInfo->vCenter = float3_t((vMax +vMin) * 0.5f);
-				}
-			}
-		}
-
-		for (int i = 0; i < header.iLODcount; i++)
-		{
+			m_pLods[i].pSubLODmeshes = new ModelLoDSubset[m_pLods[i].iSubMeshCount];
 			for (int j = 0; j < m_pLods[i].iSubMeshCount; j++)
 			{
-				mem_delete_a(m_pLods[i].pSubLODmeshes[j].pVertices);
-				mem_delete_a(m_pLods[i].pSubLODmeshes[j].pIndices);
+
+				fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(int), 1, pf);
+				fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(int), 1, pf);
+				fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(int), 1, pf);
+
+				if (header.iFlags & MODEL_FLAG_STATIC)
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static_ex[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+				else
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+
+				m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
+
+				if (header.iFlags & MODEL_FLAG_STATIC)
+					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static_ex), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
+				else
+					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
+
+				fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, pf);
+
+				iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
+				iIC += m_pLods[i].pSubLODmeshes[j].iIndexCount;
+
+
+				if (j == 0)
+				{
+					vMin = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices);
+					vMax = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices);
+				}
+
+				float3_t vPos;
+				int iSizeVertex = sizeof(vertex_animated);
+
+				if (header.iFlags & MODEL_FLAG_STATIC)
+					iSizeVertex = sizeof(vertex_static_ex);
+
+				for (int k = 0; k < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++k)
+				{
+					vPos = *(float3_t*)(m_pLods[i].pSubLODmeshes[j].pVertices + k*iSizeVertex);
+					if (vPos.x > vMax.x)
+						vMax.x = vPos.x;
+
+					if (vPos.y > vMax.y)
+						vMax.y = vPos.y;
+
+					if (vPos.z > vMax.z)
+						vMax.z = vPos.z;
+
+
+					if (vPos.x < vMin.x)
+						vMin.x = vPos.x;
+
+					if (vPos.y < vMin.y)
+						vMin.y = vPos.y;
+
+					if (vPos.z < vMin.z)
+						vMin.z = vPos.z;
+				}
 			}
-			mem_delete_a(m_pLods[i].pSubLODmeshes);
+
+			if (i == 0)
+			{
+				pInfo->iCountVertex = iVC;
+				pInfo->iCountIndex = iIC;
+				pInfo->vDimensions = float3_t(vMax - vMin);
+				pInfo->vCenter = float3_t((vMax + vMin) * 0.5f);
+			}
 		}
-		mem_delete(m_pLods);
 	}
+
+	for (int i = 0; i < header.iLODcount; i++)
+	{
+		for (int j = 0; j < m_pLods[i].iSubMeshCount; j++)
+		{
+			mem_delete_a(m_pLods[i].pSubLODmeshes[j].pVertices);
+			mem_delete_a(m_pLods[i].pSubLODmeshes[j].pIndices);
+		}
+		mem_delete_a(m_pLods[i].pSubLODmeshes);
+	}
+	mem_delete(m_pLods);
 
 	fclose(pf);
 
@@ -354,135 +268,14 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		return;
 	}
 
-	if (!(header.iVersion == SX_MODEL_VERSION_OLD || header.iVersion == SX_MODEL_VERSION))
+	if (header.iVersion != SX_MODEL_VERSION)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unsupported file '%s' version %d'\n", GEN_MSG_LOCATION, header.iVersion, file);
 		fclose(pf);
 		return;
 	}
 
-	if (header.iVersion == SX_MODEL_VERSION_OLD)
-	{
-		(*data)->m_ppTextures = NULL;
-		Array<String> tex;
-		if (header.iMaterialsOffset)
-		{
-			fseek(pf, header.iMaterialsOffset, SEEK_SET);
-			(*data)->m_ppTextures = new char*[header.iMaterialCount];
-			for (int i = 0; i < header.iMaterialCount; i++)
-			{
-				char c;
-				tex[i] = "";
-				while (c = getc(pf))
-				{
-					tex[i] += c;
-				}
-				UINT pos = tex[i].find_last_of('/');
-				tex[i] = tex[i].substr(pos + 1);
-			}
-		}
-
-		if (header.iFlags & (MODEL_FLAG_SOURCE_MESH | MODEL_FLAG_COMPILED))
-		{
-			ModelLoD lh;
-
-			fread(&lh.iSubMeshCount, sizeof(int), 1, pf);
-			lh.pSubLODmeshes = new ModelLoDSubset[lh.iSubMeshCount];
-			(*data)->m_uiSubsetCount = lh.iSubMeshCount;
-			(*data)->m_pStartIndex = new UINT[lh.iSubMeshCount];
-			(*data)->m_pIndexCount = new UINT[lh.iSubMeshCount];
-			(*data)->m_pStartVertex = new UINT[lh.iSubMeshCount];
-			(*data)->m_pVertexCount = new UINT[lh.iSubMeshCount];
-			int iVC = 0;
-			for (int i = 0; i < lh.iSubMeshCount; i++)
-			{
-				fread(&lh.pSubLODmeshes[i].iMaterialID, sizeof(int), 1, pf);
-				fread(&lh.pSubLODmeshes[i].iVectexCount, sizeof(int), 1, pf);
-				fread(&lh.pSubLODmeshes[i].iIndexCount, sizeof(int), 1, pf);
-				lh.pSubLODmeshes[i].pVertices = new vertex_animated_ex[lh.pSubLODmeshes[i].iVectexCount];
-				lh.pSubLODmeshes[i].pIndices = new UINT[lh.pSubLODmeshes[i].iIndexCount];
-				fread(lh.pSubLODmeshes[i].pVertices, sizeof(vertex_animated_ex), lh.pSubLODmeshes[i].iVectexCount, pf);
-				fread(lh.pSubLODmeshes[i].pIndices, sizeof(UINT), lh.pSubLODmeshes[i].iIndexCount, pf);
-
-				iVC += lh.pSubLODmeshes[i].iVectexCount;
-
-				(*data)->m_ppTextures[i] = new char[tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1];
-				memcpy((*data)->m_ppTextures[i], tex[lh.pSubLODmeshes[i].iMaterialID].c_str(), (tex[lh.pSubLODmeshes[i].iMaterialID].length() + 1) * sizeof(char));
-			}
-
-			UINT iStartIndex = 0;
-			UINT iStartVertex = 0;
-
-			for (int i = 0; i < lh.iSubMeshCount; i++)
-			{
-				(*data)->m_pStartIndex[i] = iStartIndex;
-				(*data)->m_pStartVertex[i] = iStartVertex;
-				(*data)->m_pIndexCount[i] = lh.pSubLODmeshes[i].iIndexCount;
-				(*data)->m_pVertexCount[i] = lh.pSubLODmeshes[i].iVectexCount;
-				lh.pSubLODmeshes[i].iStartIndex = iStartIndex;
-				lh.pSubLODmeshes[i].iStartVertex = iStartVertex;
-
-				for (int j = 0; j < lh.pSubLODmeshes[i].iIndexCount; j++)
-				{
-					lh.pSubLODmeshes[i].pIndices[j] += iStartIndex;
-					//Core::InLog("%d | %d\n",i,lh.pSubLODmeshes[i].pIndices[j]);
-				}
-
-				iStartIndex += lh.pSubLODmeshes[i].iIndexCount;
-				iStartVertex += lh.pSubLODmeshes[i].iVectexCount;
-			}
-
-			UINT * pIndices = new UINT[iStartIndex];
-			vertex_animated_ex * pVertices = new vertex_animated_ex[iStartVertex];
-			ModelLoDSubset * pSM;
-			for (int i = 0; i < lh.iSubMeshCount; i++)
-			{
-				pSM = &lh.pSubLODmeshes[i];
-				memcpy(pIndices + lh.pSubLODmeshes[i].iStartIndex, lh.pSubLODmeshes[i].pIndices, sizeof(UINT)* lh.pSubLODmeshes[i].iIndexCount);
-				memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_animated_ex)* lh.pSubLODmeshes[i].iVectexCount);
-			}
-
-			(*data)->m_uiAllVertexCount = iStartVertex;
-			g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
-			//(*data)->ArrVertBuf = new vertex_static[iStartVertex];
-			vertex_static * pData;
-			if (!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
-			{
-				for (DWORD i = 0; i < lh.iSubMeshCount; i++)
-				{
-					for (DWORD k = 0; k < lh.pSubLODmeshes[i].iVectexCount; k++)
-					{
-						memcpy(pData + lh.pSubLODmeshes[i].iStartVertex + k, pVertices + lh.pSubLODmeshes[i].iStartVertex + k, sizeof(vertex_static));
-						//memcpy((*data)->ArrVertBuf + lh.pSubLODmeshes[i].iStartVertex + k, pVertices + lh.pSubLODmeshes[i].iStartVertex + k, sizeof(vertex_static));
-					}
-				}
-				(*data)->m_pVertexBuffer->Unlock();
-			}
-
-			(*data)->m_uiAllIndexCount = iStartIndex;
-			DWORD tmpCountIndecex = 0;
-			g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
-			//(*data)->ArrIndBuf = new UINT[iStartIndex];
-			if (!FAILED((*data)->m_pIndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
-			{
-				memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
-				//memcpy((*data)->ArrIndBuf, pIndices, sizeof(UINT)* iStartIndex);
-				(*data)->m_pIndexBuffer->Unlock();
-			}
-
-			for (int i = 0; i < lh.iSubMeshCount; i++)
-			{
-				mem_delete_a(lh.pSubLODmeshes[i].pVertices);
-				mem_delete_a(lh.pSubLODmeshes[i].pIndices);
-			}
-
-			mem_delete_a(lh.pSubLODmeshes);
-			mem_delete_a(pVertices);
-			mem_delete_a(pIndices);
-		}
-	}
-	else if (header.iVersion == SX_MODEL_VERSION)
-	{
+	
 		(*data)->m_ppTextures = NULL;
 		Array<String> tex;
 		if (header.iMaterialsOffset)
@@ -518,9 +311,9 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 					fread(&m_pLods[i].pSubLODmeshes[j].iMaterialID, sizeof(int), 1, pf);
 					fread(&m_pLods[i].pSubLODmeshes[j].iVectexCount, sizeof(int), 1, pf);
 					fread(&m_pLods[i].pSubLODmeshes[j].iIndexCount, sizeof(int), 1, pf);
-					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
+					m_pLods[i].pSubLODmeshes[j].pVertices = new vertex_static_ex[m_pLods[i].pSubLODmeshes[j].iVectexCount];
 					m_pLods[i].pSubLODmeshes[j].pIndices = new UINT[m_pLods[i].pSubLODmeshes[j].iIndexCount];
-					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
+					fread(m_pLods[i].pSubLODmeshes[j].pVertices, sizeof(vertex_static_ex), m_pLods[i].pSubLODmeshes[j].iVectexCount, pf);
 					fread(m_pLods[i].pSubLODmeshes[j].pIndices, sizeof(UINT), m_pLods[i].pSubLODmeshes[j].iIndexCount, pf);
 
 					iVC += m_pLods[i].pSubLODmeshes[j].iVectexCount;
@@ -560,22 +353,22 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		}
 
 		UINT * pIndices = new UINT[iStartIndex];
-		vertex_static * pVertices = new vertex_static[iStartVertex];
+		vertex_static_ex * pVertices = new vertex_static_ex[iStartVertex];
 
 		for (int i = 0; i < lh.iSubMeshCount; i++)
 		{
 			memcpy(pIndices + lh.pSubLODmeshes[i].iStartIndex, lh.pSubLODmeshes[i].pIndices, sizeof(UINT)* lh.pSubLODmeshes[i].iIndexCount);
-			memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_static)* lh.pSubLODmeshes[i].iVectexCount);
+			memcpy(pVertices + lh.pSubLODmeshes[i].iStartVertex, lh.pSubLODmeshes[i].pVertices, sizeof(vertex_static_ex)* lh.pSubLODmeshes[i].iVectexCount);
 		}
 
 		(*data)->m_uiAllVertexCount = iStartVertex;
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
-		//(*data)->ArrVertBuf = new vertex_static[iStartVertex];
-		vertex_static * pData;
-		if (!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static)* iStartVertex, (void**)&pData, 0)))
+		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
+		//(*data)->ArrVertBuf = new vertex_static_ex[iStartVertex];
+		vertex_static_ex * pData;
+		if (!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* iStartVertex, (void**)&pData, 0)))
 		{
-			memcpy(pData, pVertices, sizeof(vertex_static)* iStartVertex);
-			//memcpy((*data)->ArrVertBuf, pVertices, sizeof(vertex_static)* iStartVertex);
+			memcpy(pData, pVertices, sizeof(vertex_static_ex)* iStartVertex);
+			//memcpy((*data)->ArrVertBuf, pVertices, sizeof(vertex_static_ex)* iStartVertex);
 
 			(*data)->m_pVertexBuffer->Unlock();
 		}
@@ -604,7 +397,6 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 		mem_delete_a(pVertices);
 		mem_delete_a(pIndices);
-	}
 
 	fclose(pf);
 
@@ -615,7 +407,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	tmpmodel->m_ppTextures = new char*[(*data)->m_uiSubsetCount];
 	memset(tmpmodel->m_ppTextures, 0, (*data)->m_uiSubsetCount * sizeof(char));
 
-	vertex_static* ArrVertBuf = new vertex_static[(*data)->m_uiAllVertexCount];
+	vertex_static_ex* ArrVertBuf = new vertex_static_ex[(*data)->m_uiAllVertexCount];
 	UINT* ArrIndBuf = new UINT[(*data)->m_uiAllIndexCount];
 
 	tmpmodel->m_pStartIndex = new UINT[(*data)->m_uiSubsetCount];
@@ -629,7 +421,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	long countvertex = 0;
 	//long countsubset = 0;
 
-	vertex_static* pVert;
+	vertex_static_ex* pVert;
 	UINT* pInd;
 
 	(*data)->m_pVertexBuffer->Lock(0, 0, (void**)&pVert, 0);
@@ -650,7 +442,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		tmpmodel->m_pStartIndex[tmpmodel->m_uiSubsetCount] = startindex;
 		tmpmodel->m_pStartVertex[tmpmodel->m_uiSubsetCount] = startvertex;
 
-		memcpy(ArrVertBuf + startvertex, pVert + (*data)->m_pStartVertex[i], sizeof(vertex_static)* (*data)->m_pVertexCount[i]);
+		memcpy(ArrVertBuf + startvertex, pVert + (*data)->m_pStartVertex[i], sizeof(vertex_static_ex)* (*data)->m_pVertexCount[i]);
 		memcpy(ArrIndBuf + startindex, pInd + (*data)->m_pStartIndex[i], sizeof(UINT)* (*data)->m_pIndexCount[i]);
 
 		for (long j = 0; j < (*data)->m_pIndexCount[i]; ++j)
@@ -666,7 +458,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 			if (strcmp((*data)->m_ppTextures[i], (*data)->m_ppTextures[k]) == 0)
 			{
 				(*data)->m_ppTextures[k][0] = 0;
-				memcpy(ArrVertBuf + countvertex, pVert + (*data)->m_pStartVertex[k], sizeof(vertex_static)* (*data)->m_pVertexCount[k]);
+				memcpy(ArrVertBuf + countvertex, pVert + (*data)->m_pStartVertex[k], sizeof(vertex_static_ex)* (*data)->m_pVertexCount[k]);
 
 				memcpy(ArrIndBuf + countindex, pInd + (*data)->m_pStartIndex[k], sizeof(UINT)* (*data)->m_pIndexCount[k]);
 
@@ -692,12 +484,12 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	tmpmodel->m_uiAllIndexCount = countindex;
 	tmpmodel->m_uiAllVertexCount = countvertex;
 
-	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
+	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
 
-	vertex_static * pData;
-	if (!FAILED(tmpmodel->m_pVertexBuffer->Lock(0, sizeof(vertex_static)* countvertex, (void**)&pData, 0)))
+	//vertex_static_ex * pData;
+	if (!FAILED(tmpmodel->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* countvertex, (void**)&pData, 0)))
 	{
-		memcpy(pData, ArrVertBuf, sizeof(vertex_static)* countvertex);
+		memcpy(pData, ArrVertBuf, sizeof(vertex_static_ex)* countvertex);
 
 		float3_t tmppos = pData[0].Pos;
 		tmpmodel->m_vBBMax = tmppos;
@@ -755,7 +547,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	//Core::InLog("mesh is loaded [%s]\n", file);
 };
 
-void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
+/*void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 {
 	ModelHeader hdr;
 	memset(&hdr, 0, sizeof(hdr));
@@ -828,138 +620,4 @@ void SGCore_StaticModelSave(const char * file, DataStaticModel** data)
 	(*data)->m_pIndexBuffer->Unlock();
 	fclose(pF);
 }
-
-/*void SGCore_ConvertX2DSE(const char* pathx, const char* pathdse)
-{
-	ID3DXMesh* Mesh;
-	ID3DXBuffer* Mtrl;
-	ID3DXBuffer *Adj;
-	DWORD CountMtrl;
-	if (FAILED(D3DXLoadMeshFromX(
-		pathx,
-		D3DXMESH_32BIT,
-		DXDevice,
-		&Adj,
-		&Mtrl,
-		0,
-		&CountMtrl,
-		&Mesh))
-		)
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "failed loaded X mesh '%s'\n", pathx);
-		return;
-	}
-
-	D3DVERTEXELEMENT9 layoutstaticdynamic[] =
-	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		D3DDECL_END()
-	};
-
-	ID3DXMesh* pMesh = 0;
-	Mesh->CloneMesh(Mesh->GetOptions(), layoutstaticdynamic, DXDevice, &pMesh);
-
-	Mesh->Release();
-
-	D3DXComputeNormals(pMesh, NULL);
-
-
-	DWORD* adjacencyInfo = new DWORD[pMesh->GetNumFaces() * 3];
-	pMesh->GenerateAdjacency(0.0f, adjacencyInfo);
-
-	// Массив для хранения информации о смежности граней
-	// оптимизированной сетки
-	DWORD* optimizedAdjacencyInfo = new DWORD[pMesh->GetNumFaces() * 3];
-
-
-	HRESULT hr = pMesh->OptimizeInplace(D3DXMESHOPT_ATTRSORT, adjacencyInfo, optimizedAdjacencyInfo, 0, 0);
-
-	DWORD numSubsets = 0;
-	pMesh->GetAttributeTable(0, &numSubsets);
-
-	D3DXATTRIBUTERANGE* tableAtt = new D3DXATTRIBUTERANGE[numSubsets];
-	pMesh->GetAttributeTable(tableAtt, &numSubsets);
-	Mesh = pMesh;
-
-	DWORD numSubsets22 = 0;
-	Mesh->GetAttributeTable(0, &numSubsets22);
-
-	D3DXATTRIBUTERANGE* table = new D3DXATTRIBUTERANGE[numSubsets22];
-	Mesh->GetAttributeTable(table, &numSubsets22);
-
-
-
-
-	DataStaticModel* DataModel = new DataStaticModel();
-
-	DataModel->SubsetCount = CountMtrl;
-	DataModel->StartIndex = new UINT[DataModel->SubsetCount];
-	DataModel->IndexCount = new UINT[DataModel->SubsetCount];
-	DataModel->StartVertex = new UINT[DataModel->SubsetCount];
-	DataModel->VertexCount = new UINT[DataModel->SubsetCount];
-	DataModel->ArrTextures = new char*[DataModel->SubsetCount];
-
-
-
-	D3DXMATERIAL* mtrls = (D3DXMATERIAL*)Mtrl->GetBufferPointer();
-	int NumP = 0;
-	for (DWORD i = 0; i<DataModel->SubsetCount; i++)
-	{
-		for (int k = strlen(mtrls[i].pTextureFilename); k >= 0; k--)
-		{
-			if (mtrls[i].pTextureFilename[k] == '.')
-			{
-				NumP = k;
-				break;
-			}
-		}
-		DataModel->ArrTextures[i] = new char[NumP + 1];
-		//sprintf(DataModel->ArrTextures[i],"%s",NumP);
-		memcpy(DataModel->ArrTextures[i], mtrls[i].pTextureFilename, sizeof(char)* NumP);
-		DataModel->ArrTextures[i][NumP] = 0;
-
-		DataModel->StartIndex[i] = tableAtt[i].FaceStart * 3;
-		DataModel->IndexCount[i] = tableAtt[i].FaceCount * 3;
-		DataModel->StartVertex[i] = tableAtt[i].VertexStart;
-		DataModel->VertexCount[i] = tableAtt[i].VertexCount;
-	}
-
-	DXDevice->CreateVertexBuffer(sizeof(vertex_static)* Mesh->GetNumVertices(), 0, 0, D3DPOOL_DEFAULT, &(DataModel->VertexBuffer), 0);
-
-	void * pData;
-	void * srcpData;
-	DataModel->VertexBuffer->Lock(0, 0, (void**)&pData, 0);
-	Mesh->LockVertexBuffer(0, (void**)&srcpData);
-
-	memcpy(pData, srcpData, sizeof(vertex_static)* Mesh->GetNumVertices());
-
-	DataModel->VertexBuffer->Unlock();
-	Mesh->UnlockVertexBuffer();
-
-
-	DXDevice->CreateIndexBuffer(sizeof(UINT)* Mesh->GetNumFaces() * 3, NULL, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &DataModel->IndexBuffer, 0);
-
-	UINT* tmpIndD, *tmpIndS;
-	Mesh->LockIndexBuffer(0, (void**)&tmpIndS);
-	DataModel->IndexBuffer->Lock(0, 0, (void**)&tmpIndD, 0);
-	//memcpy(pData,srcpData,sizeof(DWORD) * Mesh->GetNumFaces() * 3);
-	DWORD tmpCountCPoly = 0;
-	for (DWORD i = 0; i<DataModel->SubsetCount; i++)
-	{
-		for (DWORD k = 0; k<DataModel->IndexCount[i]; k++)
-		{
-			tmpIndD[tmpCountCPoly] = tmpIndS[tmpCountCPoly] - DataModel->StartIndex[i];
-			tmpCountCPoly++;
-		}
-	}
-
-	DataModel->IndexBuffer->Unlock();
-
-
-	SGCore_SaveStaticModel(pathdse, &DataModel);
-
-	mem_release(Mesh);
-	mem_release(DataModel);
-}*/
+*/

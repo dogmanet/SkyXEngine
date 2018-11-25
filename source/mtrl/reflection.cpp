@@ -34,36 +34,36 @@ CReflection::~CReflection()
 	mem_release_del(m_pTexCubeRef);
 }
 
-void CReflection::setIDArr(ID id, ID idFace, ID idArr)
+void CReflection::setIDvisCalcObj(ID id, ID idFace, ID idArr)
 {
 	if (!(idFace >= 0 && idFace < 6))
 		return;
 
-	if (id >= m_aIDsArr.size())
+	if (id >= m_aIDsVisCalcObj.size())
 	{
 		ID* tmparr = new ID[6];
 		for (int i = 0; i < 6; ++i)
 			tmparr[i] = -1;
-		m_aIDsArr[id] = tmparr;
+		m_aIDsVisCalcObj[id] = tmparr;
 	}
 
-	m_aIDsArr[id][idFace] = idArr;
+	m_aIDsVisCalcObj[id][idFace] = idArr;
 }
 
-int CReflection::getCountIDArrs()
+int CReflection::getCountIDsVisCalcObj()
 {
-	return m_aIDsArr.size();
+	return m_aIDsVisCalcObj.size();
 }
 
-ID CReflection::getIDArr(ID id, ID idFace)
+ID CReflection::getIDvisCalcObj(ID id, ID idFace)
 {
 	if (!(idFace >= 0 && idFace < 6))
 		return -1;
 
-	if (id < 0 || !(idFace >= 0 && idFace < 6) || !(id < m_aIDsArr.size()))
+	if (id < 0 || !(idFace >= 0 && idFace < 6) || !(id < m_aIDsVisCalcObj.size()))
 		return -2;
 
-	return m_aIDsArr[id][idFace];
+	return m_aIDsVisCalcObj[id][idFace];
 }
 
 void CReflection::onLostDevice()
@@ -79,11 +79,11 @@ void CReflection::onResetDevice()
 {
 	D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexWork);
 
-	if (type_reflection == MTLTYPE_REFLECT_PLANE)
+	if (typeReflection == MTLTYPE_REFLECT_PLANE)
 	{
 		D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
 	}
-	else if (type_reflection == MTLTYPE_REFLECT_CUBE_STATIC || type_reflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
+	else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexCubeRef);
 		m_pTexCubeRef->SetAutoGenFilterType(D3DTEXF_LINEAR);
@@ -94,11 +94,11 @@ void CReflection::onResetDevice()
 
 void CReflection::init(MTLTYPE_REFLECT howref)
 {
-	type_reflection = howref;
+	typeReflection = howref;
 
 	D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexWork);
 
-	if (type_reflection == MTLTYPE_REFLECT_PLANE)
+	if (typeReflection == MTLTYPE_REFLECT_PLANE)
 	{
 		if (!m_aFrustums[0])
 			m_aFrustums[0] = SGCore_CrFrustum();
@@ -106,7 +106,7 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 		if (!m_pTexPlaneRef)
 			D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
 	}
-	else if (type_reflection == MTLTYPE_REFLECT_CUBE_STATIC || type_reflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
+	else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
 		for (int i = 0; i < 6; ++i)
 		{
@@ -127,7 +127,7 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 
 MTLTYPE_REFLECT CReflection::getTypeReflect()
 { 
-	return type_reflection; 
+	return typeReflection; 
 }
 
 const IFrustum* CReflection::getFrustum(ID id)
@@ -140,7 +140,7 @@ bool CReflection::updateCountUpdate(const float3_t* viewpos)
 	if (!viewpos)
 		return false;
 
-	if (type_reflection == MTLTYPE_REFLECT_CUBE_STATIC)
+	if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC)
 	{
 		if (m_iCountUpdate < MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC)
 		{
@@ -176,7 +176,7 @@ bool CReflection::updateCountUpdate(const float3_t* viewpos)
 
 bool CReflection::allowedRender()
 {
-	if (type_reflection == MTLTYPE_REFLECT_CUBE_STATIC)
+	if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC)
 	{
 		if (m_iCountUpdate <= MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC)
 		{

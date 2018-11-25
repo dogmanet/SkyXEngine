@@ -19,13 +19,13 @@ See the license in LICENSE
 #include "ml_data.h"
 
 #define LIGHTS_PRE_COND_ID(id,stdval) \
-if (!(id >= 0 && id < ArrLights.size()))\
+if (!(id >= 0 && id < m_aLights.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
-	else if (!ArrLights[id]) \
+	else if (!m_aLights[id]) \
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", GEN_MSG_LOCATION, id); return stdval; }
 
 #define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
-if (!(key >= 0 && key < ArrDelLights.size()))\
+if (!(key >= 0 && key < m_aDelLights.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return stdval; }
 
 #include "shadow.h"
@@ -51,8 +51,8 @@ public:
 
 	bool getExists(ID id) const;
 
-	ID createPoint(ID id, const  float3* center, float dist, const  float3* color, bool isglobal, bool is_shadow/*, const char* bound_volume*/);
-	ID createDirection(ID id, const  float3* pos, float dist, const  float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/);
+	ID createPoint(ID id, const  float3 *pCenter, float fDist, const  float3 *pColor, bool isGlobal, bool isShadow);
+	ID createDirection(ID id, const float3 *pPos, float fDist, const  float3 *pColor, const SMQuaternion *pOrient, float fTopRadius, float fAngle, bool isShadow);
 
 	void deleteLight(ID id);
 
@@ -66,54 +66,57 @@ public:
 	//-----------------------------------------------------------------------------
 
 	char* getLightName(ID id);
-	void setLightName(ID id, const char* name);
+	void setLightName(ID id, const char *szName);
 
-	void getLightColor(ID id, float3* vec) const;
-	void setLightColor(ID id, const float3* vec);
+	void getLightColor(ID id, float3 *pVec) const;
+	void setLightColor(ID id, const float3 *pVec);
 
-	void getLightPos(ID id, float3* vec, bool greal = false) const;
-	void setLightPos(ID id, const float3* vec, bool greal = false);
+	void getLightPos(ID id, float3 *pVec, bool isGreal = false) const;
+	void setLightPos(ID id, const float3 *pVec, bool isGreal = false);
 
 	float getLightPower(ID id) const;
 
 	float getLightDist(ID id) const;
-	void setLightDist(ID id, float radius_height, bool is_create);
+	void setLightDist(ID id, float fRadiusHeight, bool isCreate);
+
+	void setLightShadowCoef(ID id, float fShadowCoef);
+	float getLightShadowCoef(ID id);
 
 	//-----------------------------------------------------------------------------
 	
-	void getLightOrient(ID id, SMQuaternion* q) const;
-	void setLightOrient(ID id, const  SMQuaternion* q);
+	void getLightOrient(ID id, SMQuaternion *pQ) const;
+	void setLightOrient(ID id, const  SMQuaternion *pQ);
 
 	float getLightTopRadius(ID id) const;
-	void setLightTopRadius(ID id, float top_radius);
+	void setLightTopRadius(ID id, float fTopRadius);
 
 	float getLightAngle(ID id) const;
-	void setLightAngle(ID id, float angle, bool is_create);
+	void setLightAngle(ID id, float fAngle, bool isCreate);
 
-	void setLightCubeEdgeEnable(ID id, int edge, bool enable);
-	bool getLightCubeEdgeEnable(ID id, int edge) const;
+	void setLightCubeEdgeEnable(ID id, int iEdge, bool isEnable);
+	bool getLightCubeEdgeEnable(ID id, int iEdge) const;
 	
 	//-----------------------------------------------------------------------------
 	
-	void setShadowBias(ID id, float val);
+	void setShadowBias(ID id, float fVal);
 	float getShadowBias(ID id) const;
 	
-	void setShadowBlurPixel(ID id, float blur_pixel);
+	void setShadowBlurPixel(ID id, float fBlurPixel);
 	float getShadowBlurPixel(ID id) const;
 
-	void setShadowLocalNear(ID id, float slnear);
+	void setShadowLocalNear(ID id, float fSlnear);
 	float getShadowLocalNear(ID id) const;
 
-	void setShadowLocalFar(ID id, float slfar);
+	void setShadowLocalFar(ID id, float fSlfar);
 	float getShadowLocalFar(ID id) const;
 
 	//-----------------------------------------------------------------------------
 	
-	bool comVisibleForFrustum(ID id, const IFrustum* frustum);
+	bool comVisibleForFrustum(ID id, const IFrustum *pFrustum);
 	bool getVisibleForFrustum(ID id);
-	float comDistFor(ID id, const float3* vec);
+	float comDistFor(ID id, const float3 *pVec);
 	float getDistFor(ID id);
-	void comVisibleFrustumDistFor(const IFrustum* frustum, const float3* vec);
+	void comVisibleFrustumDistFor(const IFrustum *pFrustum, const float3 *pVec);
 
 	//-----------------------------------------------------------------------------
 
@@ -121,7 +124,7 @@ public:
 	void setLightEnable(ID id, bool val);
 	bool getLightShadowed(ID id) const;
 	LTYPE_LIGHT getLightType(ID id) const;
-	void setLightTypeShadowed(ID id, LTYPE_SHADOW type);
+	void setLightTypeShadowed(ID id, LTYPE_SHADOW typeShadow);
 	LTYPE_SHADOW getLightTypeShadowed(ID id) const;
 
 	//-----------------------------------------------------------------------------
@@ -130,34 +133,34 @@ public:
 
 	void shadowRenderBegin(ID id);
 	void shadowRenderEnd(ID id);
-	void shadowRenderPre(ID id, int cube);
-	void shadowRenderPost(ID id, int cube);
+	void shadowRenderPre(ID id, int iCube);
+	void shadowRenderPost(ID id, int iCube);
 
 	//-----------------------------------------------------------------------------
 
-	void initShaderOfTypeMaterial(ID id, int typemat, const float4x4* wmat);
+	void initShaderOfTypeMaterial(ID id, int iTypeMat, const float4x4 *pWorldMat);
 
 	//-----------------------------------------------------------------------------
 
-	IFrustum* getLightFrustum(ID id, int how) const;
-	IFrustum* getLightFrustumG(ID id, int split) const;
+	IFrustum* getLightFrustum(ID id, int iHow) const;
+	IFrustum* getLightFrustumG(ID id, int iSplit) const;
 
-	void updateLightGFrustums(ID id, int split, const float3* pos, const float3* dir);
-
-	//-----------------------------------------------------------------------------
-
-	ID getLightIDArr(ID id, ID inid, int how);
-	void setLightIDArr(ID id, ID inid, int how, ID id_arr);
+	void updateLightGFrustums(ID id, int iSplit, const float3 *pPos, const float3 *pDir);
 
 	//-----------------------------------------------------------------------------
 
-	bool lightCountUpdateUpdate(ID id, const float3* viewpos, int ghow = -1);
-	bool lightCountUpdateAllowed(ID id, int ghow = -1) const;
+	ID getLightIDArr(ID id, ID inid, int iHow);
+	void setLightIDArr(ID id, ID inid, int iHow, ID idArr);
+
+	//-----------------------------------------------------------------------------
+
+	bool lightCountUpdateUpdate(ID id, const float3 *pViewPos, int iGhow = -1);
+	bool lightCountUpdateAllowed(ID id, int iGhow = -1) const;
 	void lightCountUpdateNull(ID id);
 
 	//-----------------------------------------------------------------------------
 
-	void toneMappingCom(DWORD timeDelta, float factor_adapted = 10);
+	void toneMappingCom(DWORD timeDelta, float fFactorAdapted = 10);
 
 	//-----------------------------------------------------------------------------
 
@@ -169,72 +172,78 @@ public:
 	void shadowGen(ID id);
 	void shadowNull();
 	void shadowGen2(ID id);
-	void shadowSoft(bool randomsam, float size, bool isfirst = false);
+	void shadowSoft(bool useRandomSam, float fSize, bool isFirst = false);
 
 	//-----------------------------------------------------------------------------
 
 	int delGetCount();
-	LTYPE_LIGHT delGetType(ID key);
-	void delDel(ID key);
-	ID delGetIDArr(ID key, ID inid, int how);
+	LTYPE_LIGHT delGetType(ID idKey);
+	void delDel(ID idKey);
+	ID delGetIDArr(ID idKey, ID inid, int iHow);
 
 	//-----------------------------------------------------------------------------
 
-	struct Light
+	struct CLight
 	{
-		Light();
-		~Light();
+		CLight();
+		~CLight();
 
 		SX_ALIGNED_OP_MEM;
 
-		ID Id;
+		ID m_id;
 		
-		LTYPE_LIGHT TypeLight;
-		char Name[OBJECT_NAME_MAX_LEN];
+		LTYPE_LIGHT m_typeLight;
+		char m_szName[OBJECT_NAME_MAX_LEN];
 
-		bool IsVisible;
-		bool IsEnable;
-		bool IsGlobal;
+		bool m_isVisible;
+		bool m_isEnable;
+		bool m_isGlobal;
 
-		LTYPE_SHADOW TypeShadowed;
-		int CountUpdate;
+		LTYPE_SHADOW m_typeShadowed;
+		int m_iCountUpdate;
 		
-		ID3DXMesh* Mesh;
+		ID3DXMesh *m_pMesh;
 
-		float3 Position;
-		float Power;
-		float Dist;
-		float GAngleX, GAngleY; //sun pos
-		SMQuaternion Quaternion;
-		float3 Color;
+		float3 m_vPosition;
+		float m_fPower;
+		float m_fDist;
+		float m_fGAngleX, m_fGAngleY; //sun pos
+		SMQuaternion m_qQuaternion;
+		float3 m_vColor;
 
-		float2_t TopBottomRadius;
-		float Angle;
+		float2_t m_vTopBottomRadius;
+		float m_fAngle;
 
-		ISXBound* BoundVolume;
-		float4x4 WorldMat;
-		//float4x4 MatRot;
+		float m_fShadowCoef;
+
+		ISXBound *m_pBoundVolume;
+		float4x4 m_mWorldMat;
 		
-		bool IsVisibleFor;
-		float DistFor;
+		bool m_isVisibleFor;
+		float m_fDistFor;
 
-		PSSM* ShadowPSSM;
-		ShadowMapTech* ShadowSM;
-		ShadowMapCubeTech* ShadowCube;
+		PSSM *m_pShadowPSSM;
+		ShadowMapTech *m_pShadowSM;
+		ShadowMapCubeTech *m_pShadowCube;
 	};
 
 protected:
-	ID addLight(Light* obj);
+	ID addLight(CLight *pObj);
 
-	Array<Light*> ArrLights;	//массив всех элементов, основанный на id
-	Array<Light*> ArrDelLights;	//массив света который надо удалить
-	Array<ID> ArrFreeIDs;		//массив света который надо удалить
+	//! массив всех элементов, основанный на id
+	Array<CLight*> m_aLights;	
 
-	ID ShadowMap;
-	ID ShadowMap2;
-	int HowShadow;
+	//! массив света который надо удалить
+	Array<CLight*> m_aDelLights;	
 
-	ID GlobalLight;
+	//! массив света который надо удалить
+	Array<ID> m_aFreeIDs;		
+
+	ID m_idShadowMap;
+	ID m_idShadowMap2;
+	int m_iHowShadow;
+
+	ID m_idGlobalLight;
 	bool m_isCastGlobalShadow;
 };
 

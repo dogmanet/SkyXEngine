@@ -202,7 +202,6 @@ CTRL + ЛКМ – вращение \n
 #include "level_editor.h"
 #include <io.h>
 
-
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
@@ -256,7 +255,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SRender_EditorSetRenderAxesStatic(true);
 
 
-	level_editor::LEcreateData();
+	level_editor::LEcreateRenderData();
 
 
 	WIN32_FIND_DATA FindFileData;
@@ -292,7 +291,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	int result = SkyXEngine_CycleMain();
 
-	level_editor::LEdeleteData();
+	level_editor::LEdeleteRenderData();
 
 	SkyXEngine_Kill();
 	return result;

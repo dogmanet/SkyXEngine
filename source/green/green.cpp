@@ -195,7 +195,7 @@ void CGreen::preSegmentation(CModel *pGreen, const float3 *pLevelMin, const floa
 
 	//просчет ограничивающего бокса модели
 	pGreen->m_pSplitsTree->m_pBoundVolumeSys = SGCore_CrBound();
-	SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &(pGreen->m_pSplitsTree->m_pBoundVolumeSys), pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+	SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &(pGreen->m_pSplitsTree->m_pBoundVolumeSys), pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 	pGreen->m_pSplitsTree->m_pBoundVolumeSys->getMinMax(&vMin, &vMax);
 	pGreen->m_vMax = vMax * (1.f + GREEN_GEN_RAND_SCALE);
@@ -775,7 +775,7 @@ void CGreen::render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iL
 		CGreen::m_pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 		CGreen::m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CGreenDataVertex));
 
-		CGreen::m_pDXDevice->SetStreamSource(0, m_aGreens[idGreen]->m_aLods[iLod]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+		CGreen::m_pDXDevice->SetStreamSource(0, m_aGreens[idGreen]->m_aLods[iLod]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 		CGreen::m_pDXDevice->SetIndices(m_aGreens[idGreen]->m_aLods[iLod]->m_pModel->m_pIndexBuffer);
 		CGreen::m_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
 
@@ -973,7 +973,7 @@ ID CGreen::generate(const char *szName,
 	}
 
 	//! есть ли статическая геометрия на уровне
-	if (SGeom_ModelsGetCount() > 0)
+	if (SGeom_GetCountModels() > 0)
 	{
 		CModel *pGreen = new CModel();
 		sprintf(pGreen->m_szName, szName);
@@ -1012,14 +1012,14 @@ ID CGreen::generate(const char *szName,
 		}
 
 		ISXBound *pBound = SGCore_CrBound();
-		SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &pBound, pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static));
+		SGCore_FCompBoundBox(pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer, &pBound, pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 		float3 vGreenMax, vGreenMin;
 		pBound->getMinMax(&vGreenMin, &vGreenMax);
 		mem_release(pBound);
 
 		float3 vLevelMin, vLevelMax;
-		SGeom_ModelsGetMinMax(&vLevelMin, &vLevelMax);
+		SGeom_GetMinMax(&vLevelMin, &vLevelMax);
 
 		if (STR_VALIDATE(szTexMask))
 		{
@@ -1059,7 +1059,7 @@ ID CGreen::generate(const char *szName,
 bool CGreen::genByTex(CModel *pGreen, ID idMask, bool shouldAveragedRGB, float3 *pGreenMin, float3 *pGreenMax, float fDensity)
 {
 	float3 vLeveMin, vLeveMax;
-	SGeom_ModelsGetMinMax(&vLeveMin, &vLeveMax);
+	SGeom_GetMinMax(&vLeveMin, &vLeveMax);
 	float3 vPosMin = vLeveMin;
 	float3 vPosMax = vLeveMax;
 
@@ -1529,6 +1529,10 @@ void CGreen::save(const char *szPath)
 
 	FILE *pFile = fopen(szPath, "wb");
 
+	fwrite(SX_GREEN_MAGIC_WORD, sizeof(char)* strlen(SX_GREEN_MAGIC_WORD), 1, pFile);
+	uint32_t uiFmtVersion = SX_GREEN_FILE_FORMAT_VERSION;
+	fwrite(&uiFmtVersion, sizeof(uint32_t), 1, pFile);
+
 	int32_t iCountModel = m_aGreens.size();
 	fwrite(&iCountModel, sizeof(int32_t), 1, pFile);
 
@@ -1583,16 +1587,28 @@ void CGreen::save(const char *szPath)
 		fwrite(&m_aGreens[i]->m_uiCountObj, sizeof(uint32_t), 1, pFile);
 		fwrite(&(m_aGreens[i]->m_pAllTrans[0]), sizeof(CGreenDataVertex), m_aGreens[i]->m_uiCountObj, pFile);
 
+		uint32_t uiCountBytesAllSplits = 0;
 		Array<CSegment*> aQueue;
-		int iCount = 0;
+		uint32_t uiCountSplits = 0;
 		aQueue.push_back(m_aGreens[i]->m_pSplitsTree);
 
-		while (aQueue.size() > iCount)
+		while (aQueue.size() > uiCountSplits)
 		{
-			saveSplit(aQueue[iCount], pFile, &aQueue);
+			uiCountBytesAllSplits += getCountBytes4SaveSplit(aQueue[uiCountSplits], pFile, &aQueue);
+			++uiCountSplits;
+		}
 
-			//aQueue.erase(0);
-			++iCount;
+		fwrite(&uiCountBytesAllSplits, sizeof(uint32_t), 1, pFile);
+		fwrite(&uiCountSplits, sizeof(uint32_t), 1, pFile);
+
+		aQueue.clearFast();
+		uiCountSplits = 0;
+		aQueue.push_back(m_aGreens[i]->m_pSplitsTree);
+
+		while (aQueue.size() > uiCountSplits)
+		{
+			saveSplit(aQueue[uiCountSplits], pFile, &aQueue);
+			++uiCountSplits;
 		}
 	}
 
@@ -1640,11 +1656,51 @@ void CGreen::saveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQ
 	}
 }
 
+uint32_t CGreen::getCountBytes4SaveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue)
+{
+	uint32_t uiCountBytes = (sizeof(float3_t)* 4) + sizeof(uint32_t)+sizeof(int8_t);
+
+	if (pSplit->m_idNonEnd)
+	{
+		for (int i = 0; i<GREEN_COUNT_TYPE_SEGMENTATION; i++)
+		{
+			if (pSplit->m_aSplits[i])
+				pQueue->push_back(pSplit->m_aSplits[i]);
+		}
+	}
+	else
+	{
+		uiCountBytes += sizeof(ID)* pSplit->m_iCountObj;
+	}
+
+	return uiCountBytes;
+}
+
 //**************************************************************************
 
-void CGreen::load(const char *szPath)
+bool CGreen::load(const char *szPath)
 {
 	FILE *pFile = fopen(szPath, "rb");
+
+	uint64_t ui64Magic;
+	fread(&ui64Magic, sizeof(uint64_t), 1, pFile);
+
+	if (ui64Magic != SX_GREEN_MAGIC_NUM)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "file [%s] is not green\n", szPath);
+		fclose(pFile);
+		return false;
+	}
+
+	uint32_t uiFmtVersion;
+	fread(&uiFmtVersion, sizeof(uint32_t), 1, pFile);
+
+	if (uiFmtVersion != SX_GREEN_FILE_FORMAT_VERSION)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "file [%s] have unduported version %d\n", szPath, uiFmtVersion);
+		fclose(pFile);
+		return false;
+	}
 
 	char aStr[3][1024];
 	aStr[0][0] = 0;
@@ -1750,6 +1806,25 @@ void CGreen::load(const char *szPath)
 		pGreen->m_pAllTrans.resize(pGreen->m_uiCountObj);
 		fread(&(pGreen->m_pAllTrans[0]), sizeof(CGreenDataVertex), pGreen->m_uiCountObj, pFile);
 
+		uint32_t uiCountBytesAllSplits;
+		uint32_t uiCountSplits;
+
+		fread(&uiCountBytesAllSplits, sizeof(uint32_t), 1, pFile);
+		fread(&uiCountSplits, sizeof(uint32_t), 1, pFile);
+
+		long lCurrPos = ftell(pFile);
+		fseek(pFile, 0, SEEK_END);
+		long lLastSize = ftell(pFile) - lCurrPos;
+
+		if (lLastSize < uiCountBytesAllSplits)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "file [%s] damaged, lacks %d bytes \n", szPath, uiCountBytesAllSplits - lLastSize);
+			fclose(pFile);
+			return false;
+		}
+
+		fseek(pFile, lCurrPos, SEEK_SET);
+
 		Array<CSegment**> aQueue;
 		int iCount = 0;
 		aQueue.push_back(&(pGreen->m_pSplitsTree));
@@ -1775,6 +1850,8 @@ void CGreen::load(const char *szPath)
 	}
 
 	fclose(pFile);
+
+	return true;
 }
 
 void CGreen::loadSplit(CSegment **ppSplit, FILE *pFile, Array<CSegment**> *pQueue)
@@ -2034,7 +2111,7 @@ void CGreen::setGreenNav2(CModel *pGreen, const char *szPathName)
 
 	//pGreen->m_pPhysMesh->m_pArrVertex = new float3_t[pStatiModel->m_uiAllVertexCount];
 	pGreen->m_pPhysMesh->m_aVertex.resize(pStatiModel->m_uiAllVertexCount);
-	vertex_static *pVert;
+	vertex_static_ex *pVert;
 	pStatiModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (int i = 0; i < pStatiModel->m_uiAllVertexCount; ++i)
 	{
@@ -2082,7 +2159,7 @@ void CGreen::initGreenDataLod0(CModel *pGreen)
 
 	//pGreen->m_pDataLod0->m_pArrVertex = new float3_t[pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount];
 	pGreen->m_pDataLod0->m_aVertex.resize(pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount);
-	vertex_static *pVert;
+	vertex_static_ex *pVert;
 	pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (int i = 0; i < pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount; ++i)
 	{

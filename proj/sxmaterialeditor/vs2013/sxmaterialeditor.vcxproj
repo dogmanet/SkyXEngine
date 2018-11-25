@@ -113,6 +113,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\sxmaterialeditor\models.cpp" />
     <ClCompile Include="..\..\..\source\sxmaterialeditor\paraml_kit.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
@@ -142,6 +143,7 @@
     <ClInclude Include="..\..\..\source\sxmaterialeditor\common_callback.h" />
     <ClInclude Include="..\..\..\source\sxmaterialeditor\edits_callback.h" />
     <ClInclude Include="..\..\..\source\sxmaterialeditor\material_editor.h" />
+    <ClInclude Include="..\..\..\source\sxmaterialeditor\models.h" />
     <ClInclude Include="..\..\..\source\sxmaterialeditor\paraml_kit.h" />
     <ClInclude Include="..\..\..\source\sxmaterialeditor\resource.h" />
     <ClInclude Include="..\..\..\source\sxmaterialeditor\shaders_kit.h" />

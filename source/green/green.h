@@ -104,7 +104,7 @@ public:
 	void deleteVisCaclObj(ID idVisCaclObj);
 	
 	void save(const char *szPath);
-	void load(const char *szPath);
+	bool load(const char *szPath);
 	void clear();
 	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
 	void render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idArr = 0);
@@ -320,6 +320,8 @@ protected:
 	 \note Только эта функция должна использоваться для генерации объектов!
 	*/
 	void genDataObject(CGreenDataVertex *pGreenData, const float3_t *pPos);
+
+	uint32_t getCountBytes4SaveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue);
 	
 	void saveSplit(const CSegment *pSplit, FILE *pFile, Array<CSegment*> *pQueue);
 	void loadSplit(CSegment **ppSplit, FILE * file, Array<CSegment**> *pQueue);

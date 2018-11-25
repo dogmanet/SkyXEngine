@@ -230,7 +230,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
 	SGCore_SetFunc_MtlLoad(SkyXEngine_RFuncMtlLoad);
-	SGCore_SetFunc_MtlGetSort((g_func_mtl_get_sort)SMtrl_MtlGetSort);
+	SGCore_SetFunc_MtlIsTransparency((g_func_mtl_is_transparency)SMtrl_MtlIsTransparency);
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SMtrl_MtlGetTypeReflection);
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SMtrl_MtlGetPhysicMaterial);
 
@@ -241,7 +241,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGCore_LoadTexAddConstAllInDir("sky");
 
 //#if defined(SX_GAME)
-	SGCore_OC_SetEnable(true);
+	SGCore_OC_SetEnable(false);
 //#endif
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
@@ -275,7 +275,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SPE_0Create("sxparticles", false);
 	SPE_Dbg_Set(SkyXEngine_PrintfLog);
 	SPE_SetFunc_ParticlesPhyCollision(SkyXEngine_RFuncParticlesPhyCollision);
-	SPE_RTDepthSet(SGCore_GbufferGetRT_ID(DS_RT_DEPTH));
+	SPE_RTSetDepth(SGCore_GbufferGetRT_ID(DS_RT_DEPTH));
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB particles initialized\n");
 
@@ -853,7 +853,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
-	SGeom_ModelsMSortGroups(&vCamPos, 2);
+	SGeom_SortTransparent(&vCamPos);
 	Core_PEndSection(PERF_SECTION_MATSORT_UPDATE);
 	DelayGeomSortGroup += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
@@ -1019,7 +1019,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 
 #if defined(SX_GAME)
-	SRender_RenderFinalPostProcess(timeDelta);
+	if (!SSInput_GetKeyState(SIK_P))
+		SRender_RenderFinalPostProcess(timeDelta);
 #endif
 
 	FlushCommandBuffer();

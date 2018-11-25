@@ -17,7 +17,10 @@ See the license in LICENSE
 #ifndef __MODEL_FILE_H
 #define __MODEL_FILE_H
 
-#define SX_MODEL_VERSION_OLD 6 /*!< Старая версия файла модели (для совместимости) */
+/*! Старая версия формата
+ \todo убрать поддержку старой версии формата моделей
+*/
+#define SX_MODEL_VERSION_OLD 6
 #define SX_MODEL_VERSION 7     /*!< Актуальная версия файла модели */
 #define SX_MODEL_MAGICK 30510779525321540 /*!< Магическая константа для определения файла */
 
@@ -43,6 +46,11 @@ struct vertex_static: public model_vertex
 */
 struct vertex_static_ex: public model_vertex
 {
+	vertex_static_ex(){}
+	vertex_static_ex(float3_t vPos, float2_t vTex, float3_t vNormal, float3_t vTangent, float3_t vBinormal)
+	{
+		Pos = vPos; Tex = vTex; Norm = vNormal; Tangent = vTangent; Binorm = vBinormal;
+	}
 	float3_t Pos;      /*!< Позиция */
 	float2_t Tex;      /*!< Текстурные координаты */
 	float3_t Norm;     /*!< Нормаль */

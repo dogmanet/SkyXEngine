@@ -9,13 +9,15 @@ See the license in LICENSE
 CSimulationModel::CSimulationModel()
 {
 	m_iCurrRenderModel = 0;
-	m_type_model = MTLTYPE_MODEL_STATIC;
+	m_typeModel = MTLTYPE_MODEL_STATIC;
 
 	D3DVERTEXELEMENT9 layoutstatic[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+		{ 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{ 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
 		D3DDECL_END()
 	};
 
@@ -27,6 +29,8 @@ CSimulationModel::CSimulationModel()
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+		{ 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{ 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
 		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
 		{ 1, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
 		{ 1, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
@@ -40,17 +44,19 @@ CSimulationModel::CSimulationModel()
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, 32, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0 },
-		{ 0, 36, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0 },
+		{ 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{ 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
+		{ 0, 56, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0 },
+		{ 0, 64, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0 },
 		D3DDECL_END()
 	};
 	gdata::pDXDevice->CreateVertexDeclaration(layoutDynamic, &m_pVertexDeclarationSkin);
 
 	gdata::pDXDevice->CreateVertexBuffer(
 		1 * sizeof(CGreenDataVertex),
-		/*D3DUSAGE_DYNAMIC | */D3DUSAGE_WRITEONLY,
+		D3DUSAGE_WRITEONLY,
 		0,
-		/*D3DPOOL_DEFAULT*/D3DPOOL_MANAGED,
+		D3DPOOL_MANAGED,
 		&m_pTransVertBufGreen,
 		0);
 
@@ -83,96 +89,87 @@ CSimulationModel::~CSimulationModel()
 	}
 }
 
-void CSimulationModel::add(const char *szPath)
+void CSimulationModel::add(ISXDataStaticModel *pModel)
 {
 	char szFullPath[1024];
-	ISXDataStaticModel *pStaticModel = 0;
-	sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), szPath);
-	SGCore_StaticModelLoad(szFullPath, &pStaticModel);
-
-	if (pStaticModel->m_uiSubsetCount > 1)
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "unresolved more than one group for simulation model\n");
-	}
-
-	sprintf(szFullPath, "%s.dds", pStaticModel->m_ppTextures[0]);
+	sprintf(szFullPath, "%s.dds", pModel->m_ppTextures[0]);
 	m_idMtrl = SGCore_MtlLoad(szFullPath, MTL_TYPE_GEOM);
 
-	vertex_static* pData;
-	pStaticModel->m_pVertexBuffer->Lock(0, 0, (void**)&pData, 0);
+	vertex_static_ex *pVertexStatic;
+	pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0);
 
-	float3_t tmppos = pData[pStaticModel->m_pStartVertex[0]].Pos;
-	float3 tmpMax = tmppos;
-	float3 tmpMin = tmppos;
-	for (DWORD k = 0; k<pStaticModel->m_pVertexCount[0]; k++)
+	float3_t vPos = pVertexStatic[pModel->m_pStartVertex[0]].Pos;
+	float3 vMax = vPos;
+	float3 vMin = vPos;
+	for (int k = 0; k<pModel->m_pVertexCount[0]; k++)
 	{
-		tmppos = pData[pStaticModel->m_pStartVertex[0] + k].Pos;
+		vPos = pVertexStatic[pModel->m_pStartVertex[0] + k].Pos;
 
-		if (tmppos.x > tmpMax.x)
-			tmpMax.x = tmppos.x;
+		if (vPos.x > vMax.x)
+			vMax.x = vPos.x;
 
-		if (tmppos.y > tmpMax.y)
-			tmpMax.y = tmppos.y;
+		if (vPos.y > vMax.y)
+			vMax.y = vPos.y;
 
-		if (tmppos.z > tmpMax.z)
-			tmpMax.z = tmppos.z;
+		if (vPos.z > vMax.z)
+			vMax.z = vPos.z;
 
 
-		if (tmppos.x < tmpMin.x)
-			tmpMin.x = tmppos.x;
+		if (vPos.x < vMin.x)
+			vMin.x = vPos.x;
 
-		if (tmppos.y < tmpMin.y)
-			tmpMin.y = tmppos.y;
+		if (vPos.y < vMin.y)
+			vMin.y = vPos.y;
 
-		if (tmppos.z < tmpMin.z)
-			tmpMin.z = tmppos.z;
+		if (vPos.z < vMin.z)
+			vMin.z = vPos.z;
 	}
 
-	DWORD* indeces;
-	pStaticModel->m_pIndexBuffer->Lock(0, 0, (void **)&indeces, 0);
+	UINT *pIndex;
+	pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
 
-	float3 tmpMM = SMVectorLerp(tmpMax, tmpMin, 0.5f);
-	D3DXPLANE Plane;
-	D3DXPlaneFromPoints(&Plane,
-		&D3DXVECTOR3(pData[indeces[pStaticModel->m_pStartIndex[0] + 0]].Pos.x, pData[indeces[pStaticModel->m_pStartIndex[0] + 0]].Pos.y, pData[indeces[pStaticModel->m_pStartIndex[0] + 0]].Pos.z),
-		&D3DXVECTOR3(pData[indeces[pStaticModel->m_pStartIndex[0] + 1]].Pos.x, pData[indeces[pStaticModel->m_pStartIndex[0] + 1]].Pos.y, pData[indeces[pStaticModel->m_pStartIndex[0] + 1]].Pos.z),
-		&D3DXVECTOR3(pData[indeces[pStaticModel->m_pStartIndex[0] + 2]].Pos.x, pData[indeces[pStaticModel->m_pStartIndex[0] + 2]].Pos.y, pData[indeces[pStaticModel->m_pStartIndex[0] + 2]].Pos.z));
-	pStaticModel->m_pVertexBuffer->Unlock();
-	pStaticModel->m_pIndexBuffer->Unlock();
+	D3DXPLANE oPlane;
+	D3DXPlaneFromPoints(&oPlane,
+		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.z),
+		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.z),
+		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.z));
+	pModel->m_pVertexBuffer->Unlock();
+	pModel->m_pIndexBuffer->Unlock();
 
-	float3_t Center = (float3_t)((tmpMax + tmpMin) * 0.5);
-	float3_t Min = tmpMin;
-	float3_t Max = tmpMax;
+	float3_t vCenter = (float3_t)((vMax + vMin) * 0.5);
 
-	m_aModels.push_back(new CModel(pStaticModel, &Center, &Max, &Min, &Plane));
+	m_aModels.push_back(new CModel(pModel, &vCenter, &float3_t(vMax), &float3_t(vMin), &oPlane));
 
-	IDirect3DVertexBuffer9* Anim;
+
+	IDirect3DVertexBuffer9 *pVertexBufferAnim;
 	gdata::pDXDevice->CreateVertexBuffer(
-		pStaticModel->m_uiAllVertexCount * sizeof(vertex_animated),
+		pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex),
 		D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_MANAGED,
-		&Anim,
+		&pVertexBufferAnim,
 		0);
 
-	vertex_animated* pDataAnim;
-	Anim->Lock(0, 0, (void**)&pDataAnim, 0);
-	pStaticModel->m_pVertexBuffer->Lock(0, 0, (void**)&pData, 0);
+	vertex_animated_ex *pVertexAnim;
+	pVertexBufferAnim->Lock(0, 0, (void**)&pVertexAnim, 0);
+	pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0);
 	
-	for (UINT i = 0; i < pStaticModel->m_uiAllVertexCount; ++i)
+	for (UINT i = 0; i < pModel->m_uiAllVertexCount; ++i)
 	{
-		pDataAnim[i].Pos = pData[i].Pos;
-		pDataAnim[i].Norm = pData[i].Norm;
-		pDataAnim[i].Tex = pData[i].Tex;
-		pDataAnim[i].BoneIndices[0] = pDataAnim[i].BoneIndices[1] = pDataAnim[i].BoneIndices[2] = pDataAnim[i].BoneIndices[3] = 0;
-		pDataAnim[i].BoneWeights.x = 1;
-		pDataAnim[i].BoneWeights.y = pDataAnim[i].BoneWeights.z = pDataAnim[i].BoneWeights.w = 0;
+		pVertexAnim[i].Pos = pVertexStatic[i].Pos;
+		pVertexAnim[i].Norm = pVertexStatic[i].Norm;
+		pVertexAnim[i].Tex = pVertexStatic[i].Tex;
+		pVertexAnim[i].Tangent = pVertexStatic[i].Tangent;
+		pVertexAnim[i].Binorm = pVertexStatic[i].Binorm;
+		pVertexAnim[i].BoneIndices[0] = pVertexAnim[i].BoneIndices[1] = pVertexAnim[i].BoneIndices[2] = pVertexAnim[i].BoneIndices[3] = 0;
+		pVertexAnim[i].BoneWeights.x = 1;
+		pVertexAnim[i].BoneWeights.y = pVertexAnim[i].BoneWeights.z = pVertexAnim[i].BoneWeights.w = 0;
 	}
 
-	Anim->Unlock();
-	pStaticModel->m_pVertexBuffer->Unlock();
+	pVertexBufferAnim->Unlock();
+	pModel->m_pVertexBuffer->Unlock();
 
-	m_aModels[m_aModels.size() - 1]->m_pAnim = Anim;
+	m_aModels[m_aModels.size() - 1]->m_pAnim = pVertexBufferAnim;
 }
 
 ID CSimulationModel::getIdMtl()
@@ -182,18 +179,14 @@ ID CSimulationModel::getIdMtl()
 
 void CSimulationModel::getPlane(D3DXPLANE* plane)
 {
-	if (m_type_model == MTLTYPE_MODEL_STATIC || m_type_model == MTLTYPE_MODEL_TREE || m_type_model == MTLTYPE_MODEL_GRASS)
-	{
+	if (m_typeModel == MTLTYPE_MODEL_STATIC || m_typeModel == MTLTYPE_MODEL_TREE || m_typeModel == MTLTYPE_MODEL_GRASS)
 		D3DXPlaneTransform(plane, &m_aModels[m_iCurrRenderModel]->m_oPlane, &((D3DXMATRIX)m_mWorld));
-	}
 }
 
 void CSimulationModel::getCenter(float3_t* center)
 {
-	if (m_type_model == MTLTYPE_MODEL_STATIC || m_type_model == MTLTYPE_MODEL_TREE || m_type_model == MTLTYPE_MODEL_GRASS)
-	{
+	if (m_typeModel == MTLTYPE_MODEL_STATIC || m_typeModel == MTLTYPE_MODEL_TREE || m_typeModel == MTLTYPE_MODEL_GRASS)
 		*center = SMVector3Transform(m_aModels[m_iCurrRenderModel]->m_vCenter, m_mWorld);
-	}
 }
 
 void CSimulationModel::render(DWORD timeDelta)
@@ -202,28 +195,28 @@ void CSimulationModel::render(DWORD timeDelta)
 		return;
 
 	m_mWorld = SMMatrixRotationX(m_vRotation.x) * SMMatrixRotationY(m_vRotation.y) * SMMatrixRotationZ(m_vRotation.z);
-	if (m_type_model == MTLTYPE_MODEL_STATIC)
+	if (m_typeModel == MTLTYPE_MODEL_STATIC)
 		renderStatic(timeDelta);
-	else if (m_type_model == MTLTYPE_MODEL_TREE || m_type_model == MTLTYPE_MODEL_GRASS)
+	else if (m_typeModel == MTLTYPE_MODEL_TREE || m_typeModel == MTLTYPE_MODEL_GRASS)
 	{
 		m_oGreen.m_vTexCoord.y = m_vRotation.y;
 		m_oGreen.m_vSinCosRot.x = sinf(m_oGreen.m_vTexCoord.y);
 		m_oGreen.m_vSinCosRot.y = cosf(m_oGreen.m_vTexCoord.y);
 
-		CGreenDataVertex* RTGPUArrVerteces = 0;
-		m_pTransVertBufGreen->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
-		memcpy(RTGPUArrVerteces, &m_oGreen, sizeof(CGreenDataVertex));
+		CGreenDataVertex *pVertex = 0;
+		m_pTransVertBufGreen->Lock(0, 0, (void**)&pVertex, D3DLOCK_DISCARD);
+		memcpy(pVertex, &m_oGreen, sizeof(CGreenDataVertex));
 		m_pTransVertBufGreen->Unlock();
 
 		renderGreen(timeDelta);
 	}
-	else if (m_type_model == MTLTYPE_MODEL_SKIN)
+	else if (m_typeModel == MTLTYPE_MODEL_SKIN)
 		renderSkin(timeDelta);
 }
 
 void CSimulationModel::renderStatic(DWORD timeDelta)
 {
-	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
 	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationStatic);
 
@@ -239,17 +232,17 @@ void CSimulationModel::renderGreen(DWORD timeDelta)
 	gdata::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 	gdata::pDXDevice->SetStreamSource(1, m_pTransVertBufGreen, 0, sizeof(CGreenDataVertex));
 
-	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static));
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
 	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
 
 
-	long jCountIndex = 0;
+	int iCountIndex = 0;
 
 	SGCore_MtlSet(m_idMtrl, &SMMatrixIdentity());
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], jCountIndex, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
+	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], iCountIndex, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3) * 1));
-	jCountIndex += m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0];
+	iCountIndex += m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0];
 
 	gdata::pDXDevice->SetStreamSourceFreq(0, 1);
 	gdata::pDXDevice->SetStreamSourceFreq(1, 1);
@@ -257,16 +250,16 @@ void CSimulationModel::renderGreen(DWORD timeDelta)
 
 void CSimulationModel::renderSkin(DWORD timeDelta)
 {
-	ModelBoneShader mbs;
-	mbs.position = float4(0, 0, 0, 1);
-	mbs.orient = SMQuaternion();
+	ModelBoneShader oModelBoneShader;
+	oModelBoneShader.position = float4(0, 0, 0, 1);
+	oModelBoneShader.orient = SMQuaternion();
 
-	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pAnim, 0, sizeof(vertex_animated));
+	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pAnim, 0, sizeof(vertex_animated_ex));
 	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
 	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationSkin);
 
 	SGCore_MtlSet(m_idMtrl, &m_mWorld);
-	gdata::pDXDevice->SetVertexShaderConstantF(16, (float*)&mbs, 2);
+	gdata::pDXDevice->SetVertexShaderConstantF(16, (float*)&oModelBoneShader, 2);
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 }

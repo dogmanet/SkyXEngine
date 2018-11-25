@@ -71,10 +71,10 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 	aIdLayer[2] = int(NormalDecodeLayer(aNormal[2].xyz) * LAYERS_COUNT_MAX);
 	aIdLayer[3] = int(NormalDecodeLayer(aNormal[3].xyz) * LAYERS_COUNT_MAX);
 	
-	aIsTransparency[0] = aNormal[0].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT ? 1 : 0;
-	aIsTransparency[1] = aNormal[1].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT ? 1 : 0;
-	aIsTransparency[2] = aNormal[2].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT ? 1 : 0;
-	aIsTransparency[3] = aNormal[3].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT ? 1 : 0;
+	aIsTransparency[0] = (aNormal[0].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
+	aIsTransparency[1] = (aNormal[1].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
+	aIsTransparency[2] = (aNormal[2].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
+	aIsTransparency[3] = (aNormal[3].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
 	
 	//в случае если у нас нет ппрозрачных слоев то возвращаем текущий цвет
 	[branch] if((aIsTransparency[0] == 0 && aIsTransparency[1] == 0 && aIsTransparency[2] == 0 && aIsTransparency[3] == 0))
@@ -124,7 +124,7 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 		{
 			fAlpha2 = aColor[aSort2[2]].a;
 			vCountColor = aColor[aSort2[2]] * fAlpha2 + vCountColor * (1.f - fAlpha2);
-			vCountColor.a = max(fAlpha2,fAlpha);
+			vCountColor.a = max(fAlpha2,fAlpha) * 1.1;
 			fAlpha = vCountColor.a;
 			g_aExistsIDs[1] = aIdLayer[aSort2[2]];
 		}
@@ -133,7 +133,7 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 		{
 			fAlpha2 = aColor[aSort2[1]].a;
 			vCountColor = aColor[aSort2[1]] * fAlpha2 + vCountColor.rgba * (1.f - fAlpha2);
-			vCountColor.a = max(fAlpha2,fAlpha);
+			vCountColor.a = max(fAlpha2,fAlpha) * 1.1;
 			fAlpha = vCountColor.a;
 			g_aExistsIDs[2] = aIdLayer[aSort2[1]];
 		}
@@ -142,7 +142,7 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 		{
 			fAlpha2 = aColor[aSort2[0]].a;
 			vCountColor = aColor[aSort2[0]] * fAlpha2 + vCountColor * (1.f - fAlpha2);
-			vCountColor.a = max(fAlpha2,fAlpha);
+			vCountColor.a = max(fAlpha2,fAlpha) * 1.1;
 		}
 		
 		OUT.vColor = vCountColor;
@@ -150,8 +150,8 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 		OUT.vDepth1 = aDepth[aSort2[0]];
 		
 		//если есть хотя бы один не прозрачный материал
-		[branch] if(!aIsTransparency[0] || !aIsTransparency[1] || !aIsTransparency[2] || !aIsTransparency[3])
-			 OUT.vColor.a = 1;
+		/*[branch] if((!aIsTransparency[0] && aDepth[0] > 0.0) || (!aIsTransparency[1]  && aDepth[1] > 0.0) || (!aIsTransparency[2] && aDepth[2] > 0.0) || (!aIsTransparency[3] && aDepth[3] > 0.0))
+			 OUT.vColor.a = 1;*/
 		
 		//если хотя бы один слой полупрозрачный
 		[branch] if(aIsTransparency[0] || aIsTransparency[1] || aIsTransparency[2] || aIsTransparency[3])

@@ -19,6 +19,8 @@ BEGIN_PROPTABLE(CLightPoint)
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
 	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Shadow far plane", EDITOR_TEXTFIELD)
+	//! Коэффициент теней - на сколько тень черная
+	DEFINE_FIELD_FLOAT(m_fShadowCoef, 0, "shadow_coef", "Shadow coefficient", EDITOR_TEXTFIELD)
 
 	//! Тип тени
 	DEFINE_FIELD_INT(m_iShadowType, 0, "type_shadow", "Type shadow", EDITOR_COMBOBOX)
@@ -50,6 +52,7 @@ BaseClass(pMgr)
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
+	m_fShadowCoef = 0;
 	m_idLight = SLight_CreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
 }
 
@@ -84,6 +87,8 @@ void CLightPoint::onSync()
 		SLight_SetDist(m_idLight, m_fDist, true);
 		m_fShadowDist = m_fDist;
 	}
+
+	SLight_SetShadowCoef(m_idLight, m_fShadowCoef);
 
 	if (SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
 		SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);

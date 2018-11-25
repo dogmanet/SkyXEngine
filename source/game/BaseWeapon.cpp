@@ -466,7 +466,7 @@ void CBaseWeapon::taskShoot(float dt)
 	playAnimation("shoot1");
 	if(ID_VALID(m_iMuzzleFlash))
 	{
-		SPE_EffectEnableSet(m_iMuzzleFlash, true);
+		SPE_EffectSetEnable(m_iMuzzleFlash, true);
 	}
 	if(ID_VALID(m_idSndShoot))
 	{

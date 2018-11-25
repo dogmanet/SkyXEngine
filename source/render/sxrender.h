@@ -224,8 +224,8 @@ SX_LIB_API ICamera* SRender_GetCamera();
  \warning Добавить в симуляционную модель рендера возможно только статическую модель, у которой может быть только одна подгруппа с одной текстурой
 @{*/
 
-//! добавить статическую модель в симуляционноую модель рендера, szName - путь до статической модели относительно папки местонахождения
-SX_LIB_API void SRender_SimModelAdd(const char *szName);
+//! добавить статическую модель в симуляционноую модель рендера, szPath - путь до статической модели относительно папки местонахождения
+SX_LIB_API void SRender_SimModelAddModel(ISXDataStaticModel *pModel);
 
 //! возвращает id материала
 SX_LIB_API ID SRender_SimModelGetIDMtl();
