@@ -260,6 +260,8 @@ SX_LIB_API void SXGame_OnResetDevice();
 
 SX_LIB_API void SXGame_OnLevelLoad(const char *szName);
 
+SX_LIB_API void SXGame_SetDebugText(const char *szText);
+
 
 #endif
 

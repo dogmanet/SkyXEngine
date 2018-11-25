@@ -743,7 +743,8 @@ CBaseEntity * CEntityManager::getById(ID id)
 	{
 		return(NULL);
 	}
-	return(m_vEntList[id]);
+	CBaseEntity *pEnt = m_vEntList[id];
+	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
 }
 
 void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
@@ -761,5 +762,6 @@ void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pD
 
 void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
 {
+	pEnt->setFlags(pEnt->getFlags() | EF_REMOVED);
 	m_vEntRemoveList.push_back(pEnt);
 }

@@ -179,6 +179,8 @@ enum PERF_SECTION
 	PERF_SECTION_VIS_PARTICLES, // R
 	PERF_SECTION_AI_PATH, // S
 	PERF_SECTION_CVAR_UPDATE, // T
+
+	PERF_SECTION_COUNT
 };
 
 static const char *g_szPerfSectionName[] = {
@@ -427,7 +429,7 @@ struct ISXConfig : public IBaseObject
 SX_LIB_API ISXConfig* Core_CrConfig(); 
 
 //! открыть файл конфигов
-SX_LIB_API ISXConfig* Core_OpConfig(const char* path); 
+SX_LIB_API ISXConfig* Core_OpConfig(const char* path);
 
 //!@}
 

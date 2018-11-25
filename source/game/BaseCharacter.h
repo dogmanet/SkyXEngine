@@ -1,12 +1,12 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 /*!
 \file
-Базовый класс персонажа
+Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РїРµСЂСЃРѕРЅР°Р¶Р°
 */
 
 /*! \ingroup cbaseanimating
@@ -23,26 +23,26 @@ See the license in LICENSE
 
 class CBaseTool;
 
-//! Типы движения игрока
+//! РўРёРїС‹ РґРІРёР¶РµРЅРёСЏ РёРіСЂРѕРєР°
 enum PLAYER_MOVE
 {
 	PM_NONE = 0,
-	PM_FORWARD = 0x01,   //!< вперед
-	PM_BACKWARD = 0x02,  //!< назад
-	PM_LEFT = 0x04,      //!< влево
-	PM_RIGHT = 0x08,     //!< вправо
-	PM_CROUCH = 0x10,    //!< присесть
-	PM_JUMP = 0x20,      //!< прыгнуть
-	PM_RUN = 0x40,       //!< бежать
-	PM_CRAWL = 0x80,     //!< лежать
-	PM_OBSERVER = 0x100, //!< наблюдатель
+	PM_FORWARD = 0x01,   //!< РІРїРµСЂРµРґ
+	PM_BACKWARD = 0x02,  //!< РЅР°Р·Р°Рґ
+	PM_LEFT = 0x04,      //!< РІР»РµРІРѕ
+	PM_RIGHT = 0x08,     //!< РІРїСЂР°РІРѕ
+	PM_CROUCH = 0x10,    //!< РїСЂРёСЃРµСЃС‚СЊ
+	PM_JUMP = 0x20,      //!< РїСЂС‹РіРЅСѓС‚СЊ
+	PM_RUN = 0x40,       //!< Р±РµР¶Р°С‚СЊ
+	PM_CRAWL = 0x80,     //!< Р»РµР¶Р°С‚СЊ
+	PM_OBSERVER = 0x100, //!< РЅР°Р±Р»СЋРґР°С‚РµР»СЊ
 
 	PM_STOP = 0xFFFF
 };
 
 class CHUDcontroller;
 
-//! Класс игрока  \ingroup cbaseanimating
+//! РљР»Р°СЃСЃ РёРіСЂРѕРєР°  \ingroup cbaseanimating
 class CBaseCharacter: public CBaseAnimating
 {
 	DECLARE_CLASS(CBaseCharacter, CBaseAnimating);
@@ -51,27 +51,27 @@ public:
 	CBaseCharacter(CEntityManager * pMgr);
 	~CBaseCharacter();
 
-	//! Запускает/останавливает первичную атаку
+	//! Р—Р°РїСѓСЃРєР°РµС‚/РѕСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРµСЂРІРёС‡РЅСѓСЋ Р°С‚Р°РєСѓ
 	void attack(BOOL state);
-	//! Запускает/останавливает вторичную атаку
+	//! Р—Р°РїСѓСЃРєР°РµС‚/РѕСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІС‚РѕСЂРёС‡РЅСѓСЋ Р°С‚Р°РєСѓ
 	void attack2(BOOL state);
-	//! Запускает перезарядку активного оружия
+	//! Р—Р°РїСѓСЃРєР°РµС‚ РїРµСЂРµР·Р°СЂСЏРґРєСѓ Р°РєС‚РёРІРЅРѕРіРѕ РѕСЂСѓР¶РёСЏ
 	void reload();
-	//! Включает/выключает фонарь
+	//! Р’РєР»СЋС‡Р°РµС‚/РІС‹РєР»СЋС‡Р°РµС‚ С„РѕРЅР°СЂСЊ
 	void toggleFlashlight();
-	//! Переключает режим стрельбы активного оружия
+	//! РџРµСЂРµРєР»СЋС‡Р°РµС‚ СЂРµР¶РёРј СЃС‚СЂРµР»СЊР±С‹ Р°РєС‚РёРІРЅРѕРіРѕ РѕСЂСѓР¶РёСЏ
 	void nextFireMode();
 
-	//! Находится ли игрок на земле
+	//! РќР°С…РѕРґРёС‚СЃСЏ Р»Рё РёРіСЂРѕРє РЅР° Р·РµРјР»Рµ
 	bool onGround();
 
-	//! Воспроизводит звук шагов с учетом материала на котором стоит игрок
+	//! Р’РѕСЃРїСЂРѕРёР·РІРѕРґРёС‚ Р·РІСѓРє С€Р°РіРѕРІ СЃ СѓС‡РµС‚РѕРј РјР°С‚РµСЂРёР°Р»Р° РЅР° РєРѕС‚РѕСЂРѕРј СЃС‚РѕРёС‚ РёРіСЂРѕРє
 	void playFootstepsSound();
 
 	float getAimRange();
 
 
-	//! Получает рассчитанный для текущего оружия коэффициент разброса (с учетом задержки сведения)
+	//! РџРѕР»СѓС‡Р°РµС‚ СЂР°СЃСЃС‡РёС‚Р°РЅРЅС‹Р№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РѕСЂСѓР¶РёСЏ РєРѕСЌС„С„РёС†РёРµРЅС‚ СЂР°Р·Р±СЂРѕСЃР° (СЃ СѓС‡РµС‚РѕРј Р·Р°РґРµСЂР¶РєРё СЃРІРµРґРµРЅРёСЏ)
 	float getCurrentSpread();
 
 	btCollisionObject *getBtCollisionObject() const
@@ -87,7 +87,7 @@ public:
 	void initPhysics();
 	void releasePhysics();
 
-	//! Устанавливает положение в мире
+	//! РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРѕР»РѕР¶РµРЅРёРµ РІ РјРёСЂРµ
 	void setPos(const float3 & pos);
 
 	//void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
@@ -99,26 +99,30 @@ public:
 
 	virtual CHUDcontroller * getHUDcontroller();
 
-	void onDeath();
+	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	CBaseEntity *getHead();
 
+	virtual bool isBloody()
+	{
+		return(true);
+	}
 
 	bool isObserver();
 
 	void use(bool start);
 
 protected:
-	//! Фонарик
+	//! Р¤РѕРЅР°СЂРёРє
 	CLightDirectional* m_flashlight;
 
-	//! Текущее движение
+	//! РўРµРєСѓС‰РµРµ РґРІРёР¶РµРЅРёРµ
 	UINT m_uMoveDir;
 
-	//! Текущий инструмент в руках
+	//! РўРµРєСѓС‰РёР№ РёРЅСЃС‚СЂСѓРјРµРЅС‚ РІ СЂСѓРєР°С…
 	CBaseTool * m_pActiveTool;
 
-	//! Для физики @{
+	//! Р”Р»СЏ С„РёР·РёРєРё @{
 	btCollisionShape * m_pCollideShape;
 	btRigidBody * m_pRigidBody;
 	btPairCachingGhostObject * m_pGhostObject;
@@ -126,30 +130,33 @@ protected:
 	btRigidBody ** m_pHitboxBodies;
 	//! @}
 
-	//! Углы вращения игрока
+	//! РЈРіР»С‹ РІСЂР°С‰РµРЅРёСЏ РёРіСЂРѕРєР°
 	float3_t m_vPitchYawRoll;
 
-	//! Мгновенное значение коэффициента разброса
+	//! РњРіРЅРѕРІРµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РєРѕСЌС„С„РёС†РёРµРЅС‚Р° СЂР°Р·Р±СЂРѕСЃР°
 	float getMomentSpread();
 
-	//! Задача обновления разброса
+	//! Р—Р°РґР°С‡Р° РѕР±РЅРѕРІР»РµРЅРёСЏ СЂР°Р·Р±СЂРѕСЃР°
 	ID m_idTaskSpread;
 
-	//! Обновляет разброса значение
+	//! РћР±РЅРѕРІР»СЏРµС‚ СЂР°Р·Р±СЂРѕСЃР° Р·РЅР°С‡РµРЅРёРµ
 	virtual void updateSpread(float dt);
 
-	//! Действующее значение разброса
+	//! Р”РµР№СЃС‚РІСѓСЋС‰РµРµ Р·РЅР°С‡РµРЅРёРµ СЂР°Р·Р±СЂРѕСЃР°
 	float m_fCurrentSpread;
 
 	CCharacterInventory * m_pInventory;
 
-	ID m_idQuadCurr;	//!< текущий квад аи сетки на котором стоит игрок
-	ID m_idQuadLast;	//!< Последний валидный квад аи сетки на котором стоял игрок
+	ID m_idQuadCurr;	//!< С‚РµРєСѓС‰РёР№ РєРІР°Рґ Р°Рё СЃРµС‚РєРё РЅР° РєРѕС‚РѕСЂРѕРј СЃС‚РѕРёС‚ РёРіСЂРѕРє
+	ID m_idQuadLast;	//!< РџРѕСЃР»РµРґРЅРёР№ РІР°Р»РёРґРЅС‹Р№ РєРІР°Рґ Р°Рё СЃРµС‚РєРё РЅР° РєРѕС‚РѕСЂРѕРј СЃС‚РѕСЏР» РёРіСЂРѕРє
 
 	float m_fCapsHeight;
+	float m_fCapsHeightCrouch;
 	float m_fCapsRadius;
 
 	CPointEntity * m_pHeadEnt;
+
+	float m_fCurrentHeight;
 };
 
 #endif

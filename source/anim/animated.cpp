@@ -142,7 +142,7 @@ void ModelFile::Load(const char * name)
 			{
 				fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
 
-				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName); //3
+				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, m_hdr.iFlags & MODEL_FLAG_STATIC); //3
 
 			}
 		}
@@ -1060,6 +1060,8 @@ Animation::Animation(AnimationManager * pMgr):
 		m_pIsBoneWorld[i] = NULL;
 	}
 
+	m_pBoundBox = SGCore_CrBound();
+
 	myId = pMgr->reg(this);
 }
 
@@ -1076,6 +1078,7 @@ Animation::~Animation()
 	mem_delete_a(m_FinalBones);
 	mem_delete_a(m_pBoneMatrixRender);
 	m_pMgr->unreg(myId);
+	mem_release(m_pBoundBox);
 
 	if(!m_isMdlManaged)
 	{
@@ -1970,7 +1973,17 @@ UINT Animation::GetPartCount()
 
 const ISXBound * Animation::getBound() const
 {
-	return(m_pMdl->getBound());
+	const ISXBound *pBound = m_pMdl->getBound();
+	//if(m_fScale == 1.0f)
+	{
+		return(pBound);
+	}
+	float3 vCenter, vMax;
+	pBound->getSphere(&vCenter, NULL);
+	pBound->getMinMax(NULL, &vMax);
+	float3 vDelta = (vMax - vCenter) * m_fScale;
+	m_pBoundBox->setMinMax(&((float3)(vCenter - vDelta)), &((float3)(vCenter + vDelta)));
+	return(m_pBoundBox);
 }
 
 void Animation::assembly()
@@ -2340,6 +2353,10 @@ void Animation::freePhysData(
 	}
 }
 
+bool Animation::isVisibleFor(ID id)
+{
+	return(m_vIsVisibleFor[id]);
+}
 
 /**
 *

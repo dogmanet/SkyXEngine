@@ -97,11 +97,11 @@ void CNPCBase::setModel(const char * mdl)
 	m_pHeadEnt->setOffsetPos(float3());
 }
 
-void CNPCBase::onDeath()
+void CNPCBase::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
 	stopMotion(false);
 	playActivity("ACT_DEATH", 300);
-	BaseClass::onDeath();
+	BaseClass::onDeath(pAttacker, pInflictor);
 }
 
 void CNPCBase::setPos(const float3 &pos)

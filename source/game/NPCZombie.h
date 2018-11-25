@@ -36,7 +36,7 @@ public:
 	CNPCZombie(CEntityManager * pMgr);
 	~CNPCZombie();
 
-	void onDeath();
+	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
 

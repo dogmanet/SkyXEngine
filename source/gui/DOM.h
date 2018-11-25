@@ -55,6 +55,7 @@ namespace gui
 			~CDOMnode();
 			void appendChild(IDOMnode * pEl, bool regen = true, IDOMnode *pInsertBefore = NULL);
 			void appendHTML(const StringW &wsHTML, bool regen = true, IDOMnode *pInsertBefore = NULL);
+			void setHTML(const StringW &wsHTML, bool regen = true);
 			void removeChild(IDOMnode * pEl, bool regen = true);
 			IDOMnode * parentNode();
 

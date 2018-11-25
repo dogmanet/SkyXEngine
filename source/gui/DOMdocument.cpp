@@ -1600,6 +1600,15 @@ namespace gui
 			}
 		}
 
+		void CDOMnode::setHTML(const StringW &wsHTML, bool regen)
+		{
+			for(int i = (int)m_vChilds.size() - 1; i >= 0; --i)
+			{
+				removeChild(m_vChilds[i], regen);
+			}
+			appendHTML(wsHTML, regen);
+		}
+
 		void CDOMnode::appendChild(IDOMnode * _pEl, bool regen, IDOMnode *pInsertBefore)
 		{
 			CDOMnode * pEl = (CDOMnode*)_pEl;

@@ -26,6 +26,7 @@ See the license in LICENSE
 #pragma comment(lib, "sxparticles_d.lib")
 #pragma comment(lib, "sxpp_d.lib")
 #pragma comment(lib, "sxphysics_d.lib")
+#pragma comment(lib, "sxdecals_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
 #pragma comment(lib, "sxscore.lib")
@@ -35,6 +36,7 @@ See the license in LICENSE
 #pragma comment(lib, "sxparticles.lib")
 #pragma comment(lib, "sxpp.lib")
 #pragma comment(lib, "sxphysics.lib")
+#pragma comment(lib, "sxdecals.lib")
 #endif
 
 #include <gcore/sxgcore.h>

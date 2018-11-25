@@ -230,6 +230,8 @@ public:
 
 	virtual void setRagdoll(IAnimRagdoll * pRagdoll);
 
+	virtual bool isVisibleFor(ID id);
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 
@@ -315,6 +317,7 @@ protected:
 	bool m_isMdlManaged;
 
 private:
+	ISXBound * m_pBoundBox;
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink, bool isStatic=false);
 };
 

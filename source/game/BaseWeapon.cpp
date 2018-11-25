@@ -213,7 +213,7 @@ void CBaseWeapon::primaryAction(BOOL st)
 		{
 			m_bInPrimaryAction = true;
 			switch(m_fireMode)
-		{
+			{
 			case FIRE_MODE_BURST:
 				m_idTaskShoot = SET_INTERVAL(taskShoot, 60.0f / (float)m_iBurstRate);
 				break;
@@ -224,7 +224,7 @@ void CBaseWeapon::primaryAction(BOOL st)
 			case FIRE_MODE_SINGLE:
 				setNextUse(60.0f / (float)m_iSingleRate);
 				break;
-		}
+			}
 			taskShoot(0.0f);
 		}
 	}

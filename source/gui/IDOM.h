@@ -21,6 +21,7 @@ namespace gui
 			};
 			virtual void appendChild(IDOMnode * pEl, bool regen = true, IDOMnode *pInsertBefore=NULL) = 0;
 			virtual void appendHTML(const StringW &wsHTML, bool regen = true, IDOMnode *pInsertBefore = NULL) = 0;
+			virtual void setHTML(const StringW &wsHTML, bool regen = true) = 0;
 			virtual void removeChild(IDOMnode * pEl, bool regen = true) = 0;
 			virtual IDOMnode * parentNode() = 0;
 

@@ -68,7 +68,7 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 
 	m_pCrosshair = new CCrosshair();
 
-	m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 }
 
 CPlayer::~CPlayer()
@@ -169,6 +169,25 @@ void CPlayer::updateInput(float dt)
 			dir.x += 1.0f;
 			mov = true;
 		}
+
+		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 1.0f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
+		{
+			m_fCurrentHeight -= dt;
+			float fMinHeight = (m_fCapsHeightCrouch - m_fCapsRadius * 2.0f) / (m_fCapsHeight - m_fCapsRadius * 2.0f);
+			if(m_fCurrentHeight < fMinHeight)
+			{
+				m_fCurrentHeight = fMinHeight;
+			}
+		}
+		else
+		{
+			m_fCurrentHeight += dt;
+			if(m_fCurrentHeight > 1.0f)
+			{
+				m_fCurrentHeight = 1.0f;
+			}
+		}
+		m_pCollideShape->setLocalScaling(btVector3(1.0f, m_fCurrentHeight, 1.0f));
 
 		if(m_uMoveDir & PM_OBSERVER)
 		{
@@ -443,9 +462,9 @@ void CPlayer::respawn()
 	}
 }
 
-void CPlayer::onDeath()
+void CPlayer::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
-	BaseClass::onDeath();
+	BaseClass::onDeath(pAttacker, pInflictor);
 
 	observe();
 

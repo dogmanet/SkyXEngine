@@ -54,8 +54,10 @@ public:
 	void setOrient(const SMQuaternion & q);
 
 	void setSkin(int iSkin);
-
 	
+	void setCollisionGroup(COLLISION_GROUP group);
+	COLLISION_GROUP getCollisionGroup(COLLISION_GROUP);
+
 protected:
 
 	void inputPlayAnim(inputdata_t * pInputdata);
@@ -72,8 +74,8 @@ protected:
 	bool m_isStatic;
 
 	virtual void initPhysics();
-	virtual void createPhysBody();
 	virtual void releasePhysics();
+	virtual void createPhysBody();
 	virtual void removePhysBody();
 
 	btCollisionShape * m_pCollideShape;
@@ -93,6 +95,9 @@ protected:
 		UINT uFadeTime;
 		bool isActivity;
 	} m_vNextAnim[BLEND_MAX];
+
+private:
+	COLLISION_GROUP m_collisionGroup;
 };
 
 #endif

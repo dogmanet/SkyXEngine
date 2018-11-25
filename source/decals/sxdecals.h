@@ -83,6 +83,10 @@ SX_LIB_API void SXDecals_Render();
 SX_LIB_API void SXDecals_ShootDecal(DECAL_TYPE type, const float3 & fWorldPos, const float3 & normal);
 SX_LIB_API void SXDecals_ShootDecalEx(DECAL_TYPE type, const float3 & fWorldPos, const float3 & normal, int flags, ID material = -1, float fScale = 1.0f, const float3 * saxis = NULL);
 
+/*! Удаляет все декали
+*/
+SX_LIB_API void SXDecals_Clear();
+
 
 #endif
 

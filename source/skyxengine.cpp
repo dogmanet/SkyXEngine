@@ -673,6 +673,21 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 
 //#############################################################################
 
+
+static void FlushCommandBuffer()
+{
+	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
+
+	IDirect3DQuery9* pQuery;
+	pDXDevice->CreateQuery(D3DQUERYTYPE_EVENT, &pQuery);
+
+	pQuery->Issue(D3DISSUE_END);
+	pQuery->GetData(NULL, 0, D3DGETDATA_FLUSH);
+
+	pQuery->Release();
+}
+
+
 class CLibUpdate: public IParallelForBody
 {
 public:
@@ -857,6 +872,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		Core_PStartSection(PERF_SECTION_VIS_CAMERA);
 		SRender_ComVisibleForCamera();
+		// parallelle that
 		Core_PEndSection(PERF_SECTION_VIS_CAMERA);
 		DelayUpdateVisibleForCamera += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
@@ -884,6 +900,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_SML_UPDATE);
 
 	Core_PStartSection(PERF_SECTION_RENDER);
+
+	Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
+	pDXDevice->Present(0, 0, 0, 0);
+	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
+
 	pDXDevice->BeginScene();
 	pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -898,13 +919,15 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		SRender_UpdateShadow(timeDelta);
 		Core_PEndSection(PERF_SECTION_SHADOW_UPDATE);
 		DelayUpdateShadow += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-	}
 
+		FlushCommandBuffer();
+	}
 
 	//рисуем сцену и заполняем mrt данными
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_MRT);
 	SRender_BuildMRT(timeDelta, isSimulationRender);
+	FlushCommandBuffer();
 	Core_PEndSection(PERF_SECTION_MRT);
 	DelayRenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
@@ -931,6 +954,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 		Core_PEndSection(PERF_SECTION_LIGHTING);
 		DelayComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+
+		FlushCommandBuffer();
 	}
 
 	SGCore_ShaderUnBind();
@@ -948,6 +973,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		Core_PStartSection(PERF_SECTION_RENDER_POSTPROCESS);
 		SRender_RenderMainPostProcess(timeDelta);
 		Core_PEndSection(PERF_SECTION_RENDER_POSTPROCESS);
+
+		FlushCommandBuffer();
 	}
 
 	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
@@ -976,6 +1003,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_RENDER_GAME);
 #endif
 
+	FlushCommandBuffer();
+
 	SGCore_ShaderUnBind();
 
 	pDXDevice->SetRenderTarget(0, pBackBuf);
@@ -993,6 +1022,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SRender_RenderFinalPostProcess(timeDelta);
 #endif
 
+	FlushCommandBuffer();
 
 	SGCore_ShaderBindN(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
 	SGCore_ShaderBindN(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
@@ -1066,6 +1096,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		sprintf(debugstr + strlen(debugstr), "\n Present.........: %.3f\n", float(DelayPresent) / float(FrameCount) * 0.001f);
 
 		sprintf(debugstr + strlen(debugstr), "\n### Engine version %s\n", SKYXENGINE_VERSION);
+
+		//SXGame_SetDebugText(debugstr);
 
 		Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
 		Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
@@ -1162,9 +1194,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_AI_PATH);
 	
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
-	pDXDevice->Present(0, 0, 0, 0);
-	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
+	//Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
+	//pDXDevice->Present(0, 0, 0, 0);
+	//Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
 	Core_PEndSection(PERF_SECTION_RENDER);
@@ -1172,6 +1204,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PStartSection(PERF_SECTION_CVAR_UPDATE);
 	SkyXEngind_UpdateDataCVar();
 	Core_PEndSection(PERF_SECTION_CVAR_UPDATE);
+
+	SGCore_OC_UpdateEnsureDone();
 }
 
 void SkyXEngind_UpdateDataCVar()

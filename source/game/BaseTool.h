@@ -14,7 +14,6 @@ See the license in LICENSE
 
 #include "BaseItem.h"
 #include "BaseSupply.h"
-#include <score/sxscore.h>
 
 enum
 {

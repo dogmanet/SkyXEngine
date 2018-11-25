@@ -319,6 +319,9 @@ SX_LIB_API void SGCore_OC_SetEnable(bool isEnable);
 //! обновление буфера глубины для теста, должна вызываться в старом кадре, к примеру после всего рендера (глубина и матрицы для текущего)
 SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum);
 
+//! Ожидает завершение обновления (для многопоточного режима)
+SX_LIB_API void SGCore_OC_UpdateEnsureDone();
+
 //! репроекция глубины, должна вызываться в новом кадре до основного рендера всего того, что подвергается тесту на загороженность, матрицы должны быть от нового кадра
 SX_LIB_API void SGCore_OC_Reprojection();
 

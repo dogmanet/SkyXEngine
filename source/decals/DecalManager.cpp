@@ -93,7 +93,8 @@ DecalManager::DecalManager():
 
 DecalManager::~DecalManager()
 {
-
+	clear();
+	mem_release(m_pVertexBuffer);
 }
 
 int DecalManager::addDecal(Decal * pDecal)
@@ -169,6 +170,22 @@ void DecalManager::removeDecal(UINT iDecal)
 	m_vDecals.erase(iDecal);
 	m_bNeedUpdate = true;
 	//printf("removeDecal(); end; c = %d\n", m_vDecals.size());
+}
+
+void DecalManager::clear()
+{
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+	{
+		for(int j = 0, lj = i.second->size(); j < lj; ++j)
+		{
+			mem_delete_a(i.second[0][j].m_pDecal->m_pVerts);
+		}
+	}
+
+	m_aDecals.clear();
+	m_vDecals.clearFast();
+	m_MaterialSort.clear();
+	m_bNeedUpdate = true;
 }
 
 bool DecalManager::inside(const float3_t * p, char axis, float coord)
@@ -638,15 +655,11 @@ void DecalManager::updateBuffer()
 	}
 
 	
-
-	if(m_pVertexBuffer)
-	{
-		m_pVertexBuffer->Release();
-		m_pVertexBuffer = NULL;
-	}
+	mem_release(m_pVertexBuffer);
 
 	if(iVC == 0)
 	{
+		m_bNeedUpdate = false;
 		return;
 	}
 

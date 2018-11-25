@@ -52,11 +52,11 @@ CNPCZombie::~CNPCZombie()
 	REMOVE_ENTITY(m_pActiveTool);
 }
 
-void CNPCZombie::onDeath()
+void CNPCZombie::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
 	SSCore_SndPlay(m_idSndDeath);
 
-	BaseClass::onDeath();
+	BaseClass::onDeath(pAttacker, pInflictor);
 
 	SET_TIMEOUT(removeThis, randf(10.0f, 30.0f));
 

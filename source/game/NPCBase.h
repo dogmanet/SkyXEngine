@@ -62,7 +62,7 @@ public:
 	//! Остановить моторику!
 	void stopMotion(bool runIdleAnim=true);
 
-	void onDeath();
+	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	//! Степень видимости объекта pOther. 0 - не виден, 1 - полностью виден
 	float canSee(CBaseEntity *pOther);

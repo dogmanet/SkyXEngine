@@ -70,7 +70,7 @@ public:
 
 	void attack(BOOL state);
 
-	void onDeath();
+	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	void respawn();
 	

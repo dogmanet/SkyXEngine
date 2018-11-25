@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -64,6 +64,7 @@ COcclusionCulling::COcclusionCulling()
 	m_pArrWorldPos = 0;
 	m_pArrDepthBufferReProjection = 0;
 	m_pArrDepthBufferRasterize = 0;
+	m_pArrDepthBufferMutex = 0;
 
 	m_aRTdepth[0] = -1;
 	m_aRTdepth[1] = -1;
@@ -83,6 +84,7 @@ COcclusionCulling::~COcclusionCulling()
 	mem_release(m_pSurfDepthBuffer[1]);
 	mem_release(m_pSurfDepthBuffer[2]);
 	mem_delete_a(m_pArrDepthBuffer);
+	mem_delete_a(m_pArrDepthBufferMutex);
 	mem_delete_a(m_pArrDepthBufferReProjection);
 	mem_delete_a(m_pArrWorldPos);
 	mem_delete_a(m_pArrDepthBufferRasterize);
@@ -102,6 +104,7 @@ void COcclusionCulling::init(int iWidth, int iHeight)
 	m_pArrWorldPos = new float4[m_iCountPixels + 1];
 	m_pArrDepthBufferReProjection = new float[m_iCountPixels + 1];
 	m_pArrDepthBufferRasterize = new float[m_iCountPixels + 1];
+	m_pArrDepthBufferMutex = new std::mutex[OC_MAX_MUTEX_COUNT];
 
 	m_aRTdepth[0] = SGCore_RTAdd(m_iWidth, m_iHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc", 0.25f);
 	m_aRTdepth[1] = SGCore_RTAdd(m_iWidth, m_iHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc2", 0.25f);
@@ -162,7 +165,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	// если нет кваров плоскостей отсечения значит что-то не так
+	// РµСЃР»Рё РЅРµС‚ РєРІР°СЂРѕРІ РїР»РѕСЃРєРѕСЃС‚РµР№ РѕС‚СЃРµС‡РµРЅРёСЏ Р·РЅР°С‡РёС‚ С‡С‚Рѕ-С‚Рѕ РЅРµ С‚Р°Рє
 	if (!r_near || !r_far)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - cvar r_near or r_far is not found!", GEN_MSG_LOCATION);
@@ -171,7 +174,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-	//если нет квара fov значит что-то не так
+	//РµСЃР»Рё РЅРµС‚ РєРІР°СЂР° fov Р·РЅР°С‡РёС‚ С‡С‚Рѕ-С‚Рѕ РЅРµ С‚Р°Рє
 	if (!r_default_fov)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - cvar r_default_fov is not found!", GEN_MSG_LOCATION);
@@ -183,7 +186,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 	IDirect3DTexture9 *pTexDepth = SGCore_RTGetTexture(idDepthMap);
 	IDirect3DTexture9 *pTexDepthOC = SGCore_RTGetTexture(m_aRTdepth[m_iCurrRTdepth]);
 
-	//рисуем глубину с максимальной выборкой в уменьшенный буфер
+	//СЂРёСЃСѓРµРј РіР»СѓР±РёРЅСѓ СЃ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ РІС‹Р±РѕСЂРєРѕР№ РІ СѓРјРµРЅСЊС€РµРЅРЅС‹Р№ Р±СѓС„РµСЂ
 	g_pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	g_pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 	g_pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -215,7 +218,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 
 	//**********************************************************************
 
-	//копируем отрисованную глубину в массив
+	//РєРѕРїРёСЂСѓРµРј РѕС‚СЂРёСЃРѕРІР°РЅРЅСѓСЋ РіР»СѓР±РёРЅСѓ РІ РјР°СЃСЃРёРІ
 	LPDIRECT3DSURFACE9 pDepthSurf;
 
 	int iCurrOld = 1 - m_iCurrRTdepth;
@@ -266,7 +269,12 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 
 	float4 vWorldRay0, vWorldRay1;
 
-	for (int x = 0; x < m_iWidth; ++x)
+	ensureReprojectionDone();
+
+	mem_delete(m_pUpdateCycle);
+	m_pUpdateCycle = new COCUpdate(aWorldRays, m_iWidth, m_iHeight, &vObserverPos, m_pArrWorldPos, m_pArrDepthBuffer); 
+	m_idUpdateCycle = Core_MForLoop(0, m_iWidth, m_pUpdateCycle/*, m_iCountPixels / (Core_MGetThreadCount() * 3)*/);
+	/*for (int x = 0; x < m_iWidth; ++x)
 	{
 		vWorldRay0 = SMVectorLerp(aWorldRays[0], aWorldRays[1], float(x) / m_iWidth);
 		vWorldRay1 = SMVectorLerp(aWorldRays[3], aWorldRays[2], float(x) / m_iWidth);
@@ -278,7 +286,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 			vWorldPos.w = 1.f;
 			m_pArrWorldPos[iPosPixel] = vWorldPos;
 		}
-	}
+	}*/
 
 	m_mOldView = mView;
 	m_mOldProj = mProjection;
@@ -299,7 +307,6 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 		D3DXSaveSurfaceToFile("C:/1/m_pSurfDepthBuffer.jpg", D3DXIFF_JPG, m_pSurfDepthBuffer[2], NULL, NULL);
 	}*/
 }
-
 
 void COcclusionCulling::reprojection()
 {
@@ -329,12 +336,16 @@ void COcclusionCulling::reprojection()
 		m_pArrDepthBufferRasterize[i] = 1.f;
 	}
 
-	float3 vObserverPos;
-	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+	//float3 vObserverPos;
+	//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
 
-	float2 vNewPos2;
+	mem_delete(m_pReprojectionCycle);
+	m_pReprojectionCycle = new COCReprojection(m_pArrWorldPos, &mViewProj, *r_near, *r_far, m_iWidth, m_iHeight, m_iCountPixels, m_pArrDepthBufferReProjection, m_pArrDepthBufferRasterize, m_pArrDepthBufferMutex);
+	m_idReprojectionCycle = Core_MForLoop(0, m_iCountPixels, m_pReprojectionCycle, m_iCountPixels / (Core_MGetThreadCount() * 3));
+	
+	/*float2 vNewPos2;
 
-	//цикл репроекции каждого пикселя, расчет новой позиции в screen-space и новой глубины
+	//С†РёРєР» СЂРµРїСЂРѕРµРєС†РёРё РєР°Р¶РґРѕРіРѕ РїРёРєСЃРµР»СЏ, СЂР°СЃС‡РµС‚ РЅРѕРІРѕР№ РїРѕР·РёС†РёРё РІ screen-space Рё РЅРѕРІРѕР№ РіР»СѓР±РёРЅС‹
 	for (int i = 0; i < m_iCountPixels; ++i)
 	{
 		vNewPos = SMVector4Transform(m_pArrWorldPos[i], mViewProj);
@@ -346,7 +357,7 @@ void COcclusionCulling::reprojection()
 		vNewPos.x = vNewPos.x * 0.5f + 0.5f;
 		vNewPos.y = (vNewPos.y * (-0.5f) + 0.5f);
 
-		//костыль решения проблем округления, без этого будут белые линии
+		//РєРѕСЃС‚С‹Р»СЊ СЂРµС€РµРЅРёСЏ РїСЂРѕР±Р»РµРј РѕРєСЂСѓРіР»РµРЅРёСЏ, Р±РµР· СЌС‚РѕРіРѕ Р±СѓРґСѓС‚ Р±РµР»С‹Рµ Р»РёРЅРёРё
 
 		vNewPos2.x = float(int(vNewPos.x * 10000.f) / 10000.f);
 		vNewPos2.y = float(int(vNewPos.y * 10000.f) / 10000.f);
@@ -369,13 +380,13 @@ void COcclusionCulling::reprojection()
 				int qwerty = 0;
 			else
 			{
-				//если в буфере репроекции нет записей для текущего пикселя, либо записанная глубина меньше чем новая
+				//РµСЃР»Рё РІ Р±СѓС„РµСЂРµ СЂРµРїСЂРѕРµРєС†РёРё РЅРµС‚ Р·Р°РїРёСЃРµР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РїРёРєСЃРµР»СЏ, Р»РёР±Рѕ Р·Р°РїРёСЃР°РЅРЅР°СЏ РіР»СѓР±РёРЅР° РјРµРЅСЊС€Рµ С‡РµРј РЅРѕРІР°СЏ
 				if (m_pArrDepthBufferReProjection[iPosPixel] >= 1.f || vNewPos.z > m_pArrDepthBufferReProjection[iPosPixel])
 					m_pArrDepthBufferReProjection[iPosPixel] = vNewPos.z;
 			}
 		}
-	}
-
+	}*/
+	//ensureReprojectionDone();
 
 	/*if (GetKeyState('N'))
 	{
@@ -398,7 +409,7 @@ bool COcclusionCulling::comVisible(const float3 *pMax, const float3 *pMin)
 
 	if (!m_isEnable)
 		return true;
-
+	
 	float3 vObserverPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
 
@@ -415,23 +426,23 @@ bool COcclusionCulling::comVisible(const float3 *pMax, const float3 *pMin)
 	vMax = *pMax;
 	vMin = *pMin;
 
-	//вычисление центра и радиуса по xz чтобы определить дистанцию до наблюдателя
+	//РІС‹С‡РёСЃР»РµРЅРёРµ С†РµРЅС‚СЂР° Рё СЂР°РґРёСѓСЃР° РїРѕ xz С‡С‚РѕР±С‹ РѕРїСЂРµРґРµР»РёС‚СЊ РґРёСЃС‚Р°РЅС†РёСЋ РґРѕ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ
 	float3 vCenter = (vMin + vMax) * 0.5f;
 	float fRadius = SMVector3Length2(float3(vCenter.x, 0.f, vCenter.z) - float3(vMax.x, 0, vMax.z));
 
 	float fDist = SMVector3Length2(vObserverPos - vCenter);
 
-	//если дистанция до наблюдаеля меньше либо равна радиусу бокса по xz значит наблюдатель в боксе
+	//РµСЃР»Рё РґРёСЃС‚Р°РЅС†РёСЏ РґРѕ РЅР°Р±Р»СЋРґР°РµР»СЏ РјРµРЅСЊС€Рµ Р»РёР±Рѕ СЂР°РІРЅР° СЂР°РґРёСѓСЃСѓ Р±РѕРєСЃР° РїРѕ xz Р·РЅР°С‡РёС‚ РЅР°Р±Р»СЋРґР°С‚РµР»СЊ РІ Р±РѕРєСЃРµ
 	if (fDist <= fRadius)
 		return true;
 
 	fDist -= fRadius;
 
-	//если бокс в пределах ближнего расстояния неотсечения от наблюдателя, значит он виден
+	//РµСЃР»Рё Р±РѕРєСЃ РІ РїСЂРµРґРµР»Р°С… Р±Р»РёР¶РЅРµРіРѕ СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РЅРµРѕС‚СЃРµС‡РµРЅРёСЏ РѕС‚ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ, Р·РЅР°С‡РёС‚ РѕРЅ РІРёРґРµРЅ
 	if (fDist >= 0.f && fDist <= OC_DIST_NEAR_NOT_CULL*OC_DIST_NEAR_NOT_CULL)
 		return true;
 
-	//закрывало много багов ложного отсечения, однако на дальних дистанциях не отсекает как надо, возможно просто буфер глубины слишком уменьшенный
+	//Р·Р°РєСЂС‹РІР°Р»Рѕ РјРЅРѕРіРѕ Р±Р°РіРѕРІ Р»РѕР¶РЅРѕРіРѕ РѕС‚СЃРµС‡РµРЅРёСЏ, РѕРґРЅР°РєРѕ РЅР° РґР°Р»СЊРЅРёС… РґРёСЃС‚Р°РЅС†РёСЏС… РЅРµ РѕС‚СЃРµРєР°РµС‚ РєР°Рє РЅР°РґРѕ, РІРѕР·РјРѕР¶РЅРѕ РїСЂРѕСЃС‚Рѕ Р±СѓС„РµСЂ РіР»СѓР±РёРЅС‹ СЃР»РёС€РєРѕРј СѓРјРµРЅСЊС€РµРЅРЅС‹Р№
 	vMax += g_cvOCext;
 	vMin -= g_cvOCext;
 
@@ -462,7 +473,7 @@ bool COcclusionCulling::comVisible(const float3 *pMax, const float3 *pMin)
 		aSSPoints[i].y /= abs(aSSPoints[i].w);
 		aSSPoints[i].z = ((aSSPoints[i].z + (*r_near)) / (*r_far));// *sign(aSSPoints[i].w);
 
-		//просчет линейной глубины из нелинейной
+		//РїСЂРѕСЃС‡РµС‚ Р»РёРЅРµР№РЅРѕР№ РіР»СѓР±РёРЅС‹ РёР· РЅРµР»РёРЅРµР№РЅРѕР№
 		//float fLinearDepth = (*r_near) / ((*r_far) + (*r_near) - aPoints[i].w * ((*r_far) - (*r_near)));
 
 		aSSPoints[i].x = aSSPoints[i].x * 0.5 + 0.5;
@@ -476,6 +487,8 @@ bool COcclusionCulling::comVisible(const float3 *pMax, const float3 *pMin)
 	}
 
 	float2 vNearFar((*r_near), (*r_far));
+
+	ensureReprojectionDone();
 
 	bool isVisible = (
 		(triFrustumCulling(aWPoints[7], aWPoints[6], aWPoints[1]) && triRasterize(aSSPoints[7], aSSPoints[6], aSSPoints[1], false, aSSPoints[0], vNearFar)) ||
@@ -495,6 +508,25 @@ bool COcclusionCulling::comVisible(const float3 *pMax, const float3 *pMin)
 	return isVisible;
 }
 
+void COcclusionCulling::ensureReprojectionDone()
+{
+	if(ID_VALID(m_idReprojectionCycle))
+	{
+		Core_MWaitFor(m_idReprojectionCycle);
+		mem_delete(m_pReprojectionCycle);
+		m_idReprojectionCycle = -1;
+	}
+}
+
+void COcclusionCulling::ensureUpdateDone()
+{
+	if(ID_VALID(m_idUpdateCycle))
+	{
+		Core_MWaitFor(m_idUpdateCycle);
+		mem_delete(m_pUpdateCycle);
+		m_idUpdateCycle = -1;
+	}
+}
 
 bool COcclusionCulling::triFrustumCulling(const float3 &vA, const float3 &vB, const float3 &vC)
 {
@@ -522,16 +554,16 @@ bool COcclusionCulling::triRasterize(const float4 &vA, const float4 &vB, const f
 	float3 vPointB = vB;
 	float3 vPointC = vC;
 
-	//для нахождения D достаточно использовать произвольюную точку треугольника
+	//РґР»СЏ РЅР°С…РѕР¶РґРµРЅРёСЏ D РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РїСЂРѕРёР·РІРѕР»СЊСЋРЅСѓСЋ С‚РѕС‡РєСѓ С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°
 	float fD = -(vNormal.x * vPointA.x + vNormal.y * vPointA.y + vNormal.z * vPointA.z);
 
 	/*
-	получить интерполированное значение глубины можно так: -(N.x * x + N.y * y + D) / N.z
-	N - нормаль
-	x и y - текущие координаты на треугольнике
+	РїРѕР»СѓС‡РёС‚СЊ РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РіР»СѓР±РёРЅС‹ РјРѕР¶РЅРѕ С‚Р°Рє: -(N.x * x + N.y * y + D) / N.z
+	N - РЅРѕСЂРјР°Р»СЊ
+	x Рё y - С‚РµРєСѓС‰РёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР° С‚СЂРµСѓРіРѕР»СЊРЅРёРєРµ
 	*/
 
-	//сортировка точек по убыванию координаты Y
+	//СЃРѕСЂС‚РёСЂРѕРІРєР° С‚РѕС‡РµРє РїРѕ СѓР±С‹РІР°РЅРёСЋ РєРѕРѕСЂРґРёРЅР°С‚С‹ Y
 	if (vPointB.y < vPointA.y)
 		SwapFloat3(vPointA, vPointB);
 
@@ -544,7 +576,7 @@ bool COcclusionCulling::triRasterize(const float4 &vA, const float4 &vB, const f
 
 	bool isVisible = false;
 
-	//расширение треугольника, на случай неправильно округления, закрыло много багов
+	//СЂР°СЃС€РёСЂРµРЅРёРµ С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°, РЅР° СЃР»СѓС‡Р°Р№ РЅРµРїСЂР°РІРёР»СЊРЅРѕ РѕРєСЂСѓРіР»РµРЅРёСЏ, Р·Р°РєСЂС‹Р»Рѕ РјРЅРѕРіРѕ Р±Р°РіРѕРІ
 	vPointA.y -= g_fOCextTriangle;
 	vPointC.y += g_fOCextTriangle;
 
@@ -574,7 +606,7 @@ bool COcclusionCulling::triRasterize(const float4 &vA, const float4 &vB, const f
 		fA = clampf(fA - g_fOCextTriangle, 0, m_iWidth - 1);
 		fB = clampf(fB + g_fOCextTriangle, 0, m_iWidth - 1);
 
-		//в оригинале отнимать и прибавлять единицу не надо, но пришлось сделать чтобы закрыть баги отсечения
+		//РІ РѕСЂРёРіРёРЅР°Р»Рµ РѕС‚РЅРёРјР°С‚СЊ Рё РїСЂРёР±Р°РІР»СЏС‚СЊ РµРґРёРЅРёС†Сѓ РЅРµ РЅР°РґРѕ, РЅРѕ РїСЂРёС€Р»РѕСЃСЊ СЃРґРµР»Р°С‚СЊ С‡С‚РѕР±С‹ Р·Р°РєСЂС‹С‚СЊ Р±Р°РіРё РѕС‚СЃРµС‡РµРЅРёСЏ
 		for (int x = fA; x <= fB; ++x)
 		{
 			int iPosPixel = (y * m_iWidth) + x;
@@ -612,7 +644,7 @@ bool COcclusionCulling::triRasterize(const float4 &vA, const float4 &vB, const f
 		fA = clampf(fA - g_fOCextTriangle, 0, m_iWidth - 1);
 		fB = clampf(fB + g_fOCextTriangle, 0, m_iWidth - 1);
 
-		//в оригинале отнимать и прибавлять единицу не надо, но пришлось сделать чтобы закрыть баги отсечения
+		//РІ РѕСЂРёРіРёРЅР°Р»Рµ РѕС‚РЅРёРјР°С‚СЊ Рё РїСЂРёР±Р°РІР»СЏС‚СЊ РµРґРёРЅРёС†Сѓ РЅРµ РЅР°РґРѕ, РЅРѕ РїСЂРёС€Р»РѕСЃСЊ СЃРґРµР»Р°С‚СЊ С‡С‚РѕР±С‹ Р·Р°РєСЂС‹С‚СЊ Р±Р°РіРё РѕС‚СЃРµС‡РµРЅРёСЏ
 		for (int x = fA; x <= fB; ++x)
 		{
 			int iPosPixel = (y * m_iWidth) + x;

@@ -134,6 +134,8 @@ public:
 
 	void render();
 
+	void clear();
+
 	void update();
 	void sync();
 

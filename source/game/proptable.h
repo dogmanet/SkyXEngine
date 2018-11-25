@@ -72,6 +72,7 @@ enum ENT_FLAG
 	EF_NONE           = 0x0000,
 	EF_EXPORT         = 0x0001,
 	EF_LEVEL          = 0x0002,
+	EF_REMOVED        = 0x0004,
 
 	EF_LAST           = 0x8000
 };
@@ -350,6 +351,8 @@ const char * GetEmptyString();
 
 #define EDITOR_NONE {PDE_NONE, NULL}}
 #define EDITOR_TEXTFIELD {PDE_TEXTFIELD, NULL}}
+#define EDITOR_TIMEFIELD EDITOR_TEXTFIELD
+#define EDITOR_ANGLES EDITOR_TEXTFIELD
 #define EDITOR_FLAGS {PDE_FLAGS, NULL}}
 
 #define EDITOR_COMBOBOX _GetEditorCombobox(0

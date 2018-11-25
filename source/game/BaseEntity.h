@@ -21,6 +21,7 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/SXMath.h>
 #include <physics/sxphysics.h>
+#include <score/sxscore.h>
 
 #include "EntityFactory.h"
 #include "EntityManager.h"
@@ -65,6 +66,7 @@ public:
 	virtual void setOffsetPos(const float3 & pos);
 	//! Получает мировую позицию объекта
 	float3 getPos();
+	float3 getOffsetPos();
 
 	//! Получает ID объекта в системе
 	ID getId();
@@ -107,7 +109,7 @@ public:
 
 	virtual void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
 
-	virtual void onDeath();
+	virtual void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	void broadcastMessage(const char * szInputName, inputdata_t inputData, float fRadius);
 	void broadcastMessage(const char * szInputName, float fArg, float fRadius);
@@ -118,6 +120,11 @@ public:
 	void broadcastMessage(const char * szInputName, float fRadius);
 
 	virtual void onUse(CBaseEntity *pUser);
+
+	virtual bool isBloody()
+	{
+		return(false);
+	}
 
 private:
 	void setClassName(const char * name);
@@ -188,7 +195,7 @@ protected:
 	//! здоровье [0,+inf]
 	float m_fHealth;
 
-	void takeHealth(float fVal);
+	void takeHealth(float fVal, CBaseEntity *pAttacker, CBaseEntity *pInflictor=NULL);
 
 	bool m_bSynced;
 };

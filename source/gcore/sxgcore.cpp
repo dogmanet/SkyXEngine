@@ -416,6 +416,13 @@ SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum)
 	g_pOC->update(idDepthMap, pFrustum);
 }
 
+SX_LIB_API void SGCore_OC_UpdateEnsureDone()
+{
+	SG_PRECOND_SKY_OC(_VOID);
+
+	g_pOC->ensureUpdateDone();
+}
+
 SX_LIB_API void SGCore_OC_Reprojection()
 {
 	SG_PRECOND_SKY_OC(_VOID);

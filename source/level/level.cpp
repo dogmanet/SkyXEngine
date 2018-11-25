@@ -5,6 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "level.h"
+#include <decals/sxdecals.h>
 
 CLevel::CLevel()
 {
@@ -40,6 +41,7 @@ void CLevel::clear()
 	Core_0ConsoleExecCmd("ent_unload_level");
 	SXPhysics_UnloadGeom();
 	SAIG_Clear();
+	SXDecals_Clear();
 }
 
 void CLevel::load(const char *szName, bool isGame)

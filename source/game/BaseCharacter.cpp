@@ -52,13 +52,22 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_pActiveTool(NULL),
 	m_fCurrentSpread(0.0f),
 	m_pHitboxBodies(NULL),
-	m_fCapsHeight(1.7f),
+	m_fCapsHeight(1.8f),
+	m_fCapsHeightCrouch(1.2f),
 	m_fCapsRadius(0.4f),
-	m_idQuadLast(-1)
+	m_idQuadLast(-1),
+	m_fCurrentHeight(1.0f)
 {
 	m_pCollideShape = new btCapsuleShape(m_fCapsRadius, m_fCapsHeight - m_fCapsRadius * 2.0f);
 
 	btTransform startTransform;
+	startTransform.setIdentity();
+
+	//((btCompoundShape*)m_pCollideShape)->addChildShape(startTransform, m_pCollideShapeBottom);
+	//startTransform.setOrigin(btVector3(0.0f, m_fCapsHeight * 0.5f, 0.0f));
+	//((btCompoundShape*)m_pCollideShape)->addChildShape(startTransform, m_pCollideShapeTop);
+
+	//btTransform startTransform;
 	startTransform.setIdentity();
 	startTransform.setOrigin(F3_BTVEC(m_vPosition + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f)));
 	//startTransform.setOrigin(btVector3(0, 12, 10));
@@ -87,6 +96,7 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	//m_pCharacter->setGravity(1.0f);
 	m_pCharacter->setFallSpeed(300.0f);
 	//m_pCharacter->setFallSpeed(30.0f);
+	m_pCharacter->setMaxPenetrationDepth(0.1f);
 
 	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
 
@@ -118,6 +128,10 @@ CBaseCharacter::~CBaseCharacter()
 	REMOVE_ENTITY(m_pHeadEnt);
 	REMOVE_ENTITY(m_flashlight);
 	mem_delete(m_pInventory);
+
+	mem_delete(m_pCharacter);
+	mem_delete(m_pGhostObject);
+	mem_delete(m_pCollideShape);
 
 	if(m_idQuadCurr >= 0)
 	{
@@ -207,7 +221,7 @@ void CBaseCharacter::playFootstepsSound()
 void CBaseCharacter::setPos(const float3 & pos)
 {
 	BaseClass::setPos(pos);
-	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f)));
+	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos + float3(0.0f, (m_fCurrentHeight * m_fCapsHeight) * 0.5f, 0.0f)));
 }
 
 float CBaseCharacter::getAimRange()
@@ -414,8 +428,11 @@ void CBaseCharacter::onSync()
 		return;
 	}
 	btTransform &trans = m_pGhostObject->getWorldTransform();
-	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() - m_fCapsHeight * 0.5f, trans.getOrigin().z()));
+	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() - m_fCapsHeight * m_fCurrentHeight * 0.5f, trans.getOrigin().z()));
 
+	float3 vHeadOffset = m_pHeadEnt->getOffsetPos();
+	vHeadOffset.y = m_fCapsHeight * m_fCurrentHeight - 0.1f;
+	m_pHeadEnt->setOffsetPos(vHeadOffset);
 
 
 	//находим текущий квад аи сетки на котором находится игрок
@@ -457,7 +474,7 @@ CHUDcontroller * CBaseCharacter::getHUDcontroller()
 	return(NULL);
 }
 
-void CBaseCharacter::onDeath()
+void CBaseCharacter::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
 	if(m_idQuadCurr >= 0)
 	{
@@ -470,7 +487,7 @@ void CBaseCharacter::onDeath()
 
 	cancelNextAnimation();
 
-	BaseClass::onDeath();
+	BaseClass::onDeath(pAttacker, pInflictor);
 }
 
 /*void CBaseCharacter::dispatchDamage(CTakeDamageInfo &takeDamageInfo)

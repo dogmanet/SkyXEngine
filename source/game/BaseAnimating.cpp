@@ -44,7 +44,8 @@ CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
 	m_fBaseScale(1.0f),
 	m_pCollideShape(NULL),
 	m_pRigidBody(NULL),
-	m_isStatic(false)
+	m_isStatic(false),
+	m_collisionGroup(CG_DEFAULT)
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
 }
@@ -114,6 +115,7 @@ void CBaseAnimating::setModel(const char * mdl)
 		m_pAnimPlayer->setModel(mdl);
 	}
 	m_pAnimPlayer->setSkin(m_iSkin);
+	m_pAnimPlayer->setScale(m_fBaseScale);
 	initPhysics();
 }
 
@@ -235,7 +237,7 @@ void CBaseAnimating::createPhysBody()
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
-		SXPhysics_AddShape(m_pRigidBody);
+		SXPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, CG_ALL);
 
 		if(m_isStatic)
 		{
@@ -255,6 +257,24 @@ void CBaseAnimating::releasePhysics()
 {
 	removePhysBody();
 	mem_delete(m_pCollideShape);
+}
+
+void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group)
+{
+	if(m_collisionGroup == group)
+	{
+		return;
+	}
+	m_collisionGroup = group;
+	if(m_pRigidBody)
+	{
+		SXPhysics_RemoveShape(m_pRigidBody);
+		SXPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, CG_ALL);
+	}
+}
+COLLISION_GROUP CBaseAnimating::getCollisionGroup(COLLISION_GROUP)
+{
+	return(m_collisionGroup);
 }
 
 void CBaseAnimating::setPos(const float3 & pos)

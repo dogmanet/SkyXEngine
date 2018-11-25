@@ -30,12 +30,15 @@ CEntityManager * GameData::m_pMgr;
 CHUDcontroller * GameData::m_pHUDcontroller;
 CGameStateManager * GameData::m_pGameStateManager;
 gui::dom::IDOMnode *GameData::m_pCell;
+//gui::IDesktop *GameData::m_pStatsUI;
 
 CRagdoll * g_pRagdoll;
 IAnimPlayer * pl;
 
 CTracer *g_pTracer;
 CTracer *g_pTracer2;
+
+
 
 //##########################################################################
 
@@ -250,6 +253,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterCVarFloat("cl_bob_run_x", 0.15f, "View bobbing run strafe amplitude");
 	Core_0RegisterCVarFloat("cl_bob_walk", 0.5f, "View bobbing walk period");
 	Core_0RegisterCVarFloat("cl_bob_run", 1.0f, "View bobbing run period");
+
+	Core_0RegisterCVarFloat("lvl_debris_remove_time_min", 120.0f, "Debris collector time min");
+	Core_0RegisterCVarFloat("lvl_debris_remove_time_max", 200.0f, "Debris collector time max");
 
 	Core_0RegisterCVarBool("hud_crosshair", true, "Отображать метку прицела");
 	Core_0RegisterCVarBool("hud_rangefinder", true, "Отображать дальномер");
@@ -708,6 +714,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
 
+	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
+
 	if(m_isGame)
 	{
 		CBaseTool *pTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
@@ -791,6 +799,7 @@ void GameData::render()
 	{
 		m_pGUI->render();
 	}
+	//m_pStatsUI->render(0.1f);
 }
 void GameData::renderHUD()
 {

@@ -418,3 +418,9 @@ SX_LIB_API void SXGame_OnLevelLoad(const char *szName)
 {
 	GameData::m_pHUDcontroller->loadMap(szName);
 }
+
+SX_LIB_API void SXGame_SetDebugText(const char *szText)
+{
+	//static gui::dom::IDOMnode * pNode = GameData::m_pStatsUI->getDocument()->getElementById(L"wrapper");
+	//pNode->setHTML(StringW(String(szText)).c_str());
+}

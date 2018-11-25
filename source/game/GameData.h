@@ -40,6 +40,7 @@ public:
 	void playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos);
 
 	static gui::dom::IDOMnode *m_pCell;
+	//static gui::IDesktop *m_pStatsUI;
 
 protected:
 

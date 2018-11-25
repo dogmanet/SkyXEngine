@@ -207,9 +207,10 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 						CTakeDamageInfo takeDamageInfo(pAttacker, fEnergyDelta);
 						takeDamageInfo.m_pInflictor = getParent();
 
-						isBloody = true;
+						CBaseEntity *pEnt = ((CBaseEntity*)aHitPoints[i].pCollisionObject->getUserPointer());
+						isBloody = pEnt->isBloody();
 
-						((CBaseEntity*)aHitPoints[i].pCollisionObject->getUserPointer())->dispatchDamage(takeDamageInfo);
+						pEnt->dispatchDamage(takeDamageInfo);
 					}
 					
 

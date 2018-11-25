@@ -27,6 +27,8 @@ See the license in LICENSE
 #define SX_DLL
 #endif
 
+#define SX_ANIM_DEFAULT_VISCALCOBJ 0
+
 #include <gdefines.h>
 
 #undef SX_LIB_API
@@ -292,6 +294,8 @@ public:
 	virtual void enable(bool enable) = 0;
 
 	virtual void setRagdoll(IAnimRagdoll * pRagdoll) = 0;
+
+	virtual bool isVisibleFor(ID id) = 0;
 };
 
 //! \name Функции управления анимацией

@@ -170,6 +170,11 @@ void CBaseEntity::setOffsetPos(const float3 & pos)
 	m_vOffsetPos = pos;
 }
 
+float3 CBaseEntity::getOffsetPos()
+{
+	return(m_vOffsetPos);
+}
+
 SMQuaternion CBaseEntity::getOrient()
 {
 	return(m_vOrientation);
@@ -726,10 +731,10 @@ void CBaseEntity::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "%s damaged (" COLOR_LRED "%.2f" COLOR_RESET ")\n", getClassName(), fHealth);
 	}
-	takeHealth(fHealth);
+	takeHealth(fHealth, takeDamageInfo.m_pAttacker, takeDamageInfo.m_pInflictor);
 }
 
-void CBaseEntity::takeHealth(float fVal)
+void CBaseEntity::takeHealth(float fVal, CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
 	if(m_fHealth <= 0.0f)
 	{
@@ -738,11 +743,15 @@ void CBaseEntity::takeHealth(float fVal)
 	m_fHealth -= fVal;
 	if(m_fHealth <= 0.0f)
 	{
-		onDeath();
+		if(!pInflictor)
+		{
+			pInflictor = pAttacker;
+		}
+		onDeath(pAttacker, pInflictor);
 	}
 }
 
-void CBaseEntity::onDeath()
+void CBaseEntity::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Entity %s died!\n", getClassName());
 	// do nothing

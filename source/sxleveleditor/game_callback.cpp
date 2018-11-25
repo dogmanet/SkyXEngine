@@ -168,14 +168,18 @@ void level_editor::GameSel(int sel)
 					{
 						proptable_t *pPropTable2 = SXGame_EntGetProptable(pEnt2->getClassName());
 						propdata_t *pPropData2 = 0;
-						for (int j = 0; j < pPropTable2->numFields; ++j)
+						while(pPropTable2)
 						{
-							pPropData2 = &pPropTable2->pData[j];
-							if (pPropData2->flags & PDFF_INPUT && strcmp(pPropData2->szKey, parts2[1])==0)
+							for(int j = 0; j < pPropTable2->numFields; ++j)
 							{
-								sprintf(txtkey, "%s", pPropData2->szEdName);
-								level_editor::pListViewGameConnections->setItemText(txtkey, 2, iNumStr);
+								pPropData2 = &pPropTable2->pData[j];
+								if(pPropData2->flags & PDFF_INPUT && strcmp(pPropData2->szKey, parts2[1]) == 0)
+								{
+									sprintf(txtkey, "%s", pPropData2->szEdName);
+									level_editor::pListViewGameConnections->setItemText(txtkey, 2, iNumStr);
+								}
 							}
+							pPropTable2 = pPropTable2->pBaseProptable;
 						}
 					}
 				}
@@ -624,10 +628,9 @@ LRESULT SXLevelEditor_ListViewGameConnections_Click()
 		if (pEnt2 && strcmp(pEnt2->getName(), szStr) == 0)
 		{
 			proptable_t *pPropTable = SXGame_EntGetProptable(pEnt2->getClassName());
+			propdata_t *pPropData = 0;
 			while(pPropTable)
 			{
-				propdata_t *pPropData = 0;
-
 				//проходимся по всем полям класса
 				for(int k = 0; k < pPropTable->numFields; ++k)
 				{

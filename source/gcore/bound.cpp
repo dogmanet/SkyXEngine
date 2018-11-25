@@ -843,7 +843,14 @@ void CSXBound::setMinMax(const float3* min, const float3* max)
 
 void CSXBound::getMinMax(float3* min, float3* max) const
 {
-	*min = m_vMin; *max = m_vMax;
+	if(min)
+	{
+		*min = m_vMin;
+	}
+	if(max)
+	{
+		*max = m_vMax;
+	}
 };
 
 void CSXBound::setSphere(const float3* center, float radius)
@@ -857,8 +864,14 @@ void CSXBound::setSphere(const float3* center, float radius)
 
 void CSXBound::getSphere(float3* center, float* radius) const
 {
-	*center = m_vCenter;
-	*radius = m_fRadius;
+	if(center)
+	{
+		*center = m_vCenter;
+	}
+	if(radius)
+	{
+		*radius = m_fRadius;
+	}
 };
 
 bool CSXBound::isPointInSphere(const float3* point) const

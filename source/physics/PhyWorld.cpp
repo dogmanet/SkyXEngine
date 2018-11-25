@@ -11,6 +11,10 @@ See the license in LICENSE
 #include <gcore/sxgcore.h>
 #include <light/sxlight.h>
 
+#include "sxphysics.h"
+
+//#include <BulletDynamics/MLCPSolvers/btDantzigSolver.h>
+//#include <BulletDynamics/MLCPSolvers/btMLCPSolver.h>
 
 #include <../Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h>
 
@@ -88,11 +92,15 @@ CPhyWorld::CPhyWorld():
 	int maxThreadCount = BT_MAX_THREAD_COUNT;
 	for(int i = 0; i < maxThreadCount; ++i)
 	{
+		//btDantzigSolver* mlcp = new btDantzigSolver();
+		//btMLCPSolver* sol = new btMLCPSolver(mlcp);
 		aSolvers[i] = new btSequentialImpulseConstraintSolverMt();
 	}
 	btConstraintSolverPoolMt *pSolverPool = new btConstraintSolverPoolMt(aSolvers, maxThreadCount);
-
+	
 	m_pDynamicsWorld = new btDiscreteDynamicsWorldMt(m_pDispatcher, m_pBroadphase, pSolverPool, m_pSolver, m_pCollisionConfiguration);
+
+	m_pDynamicsWorld->getSolverInfo().m_numIterations = 30;
 
 	//btCreateDefaultTaskScheduler();
 	static CTaskScheduler taskSheduler;
@@ -102,7 +110,7 @@ CPhyWorld::CPhyWorld():
 	m_pDynamicsWorld->setGravity(btVector3(0, -10, 0));
 			
 	m_pDebugDrawer = new CDebugDrawer();
-	m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+	m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits);
 	//m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
 	m_pDynamicsWorld->setDebugDrawer(m_pDebugDrawer);
 
@@ -255,7 +263,7 @@ void CPhyWorld::loadGeom(const char * file)
 			m_pGeomStaticRigidBody->setCollisionFlags(m_pGeomStaticRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 			m_pGeomStaticRigidBody->setFriction(100.0f);
 
-			addShape(m_pGeomStaticRigidBody);
+			addShape(m_pGeomStaticRigidBody, CG_STATIC, CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_NPCVIEW | CG_STATIC | CG_TRIGGER | CG_WATER));
 		}
 	}
 	SGeom_ModelsClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
@@ -449,7 +457,7 @@ void CPhyWorld::loadGeom(const char * file)
 					body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 					body->setFriction(100.0f);
 
-					addShape(body);
+					addShape(body, CG_STATIC, CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_NPCVIEW | CG_STATIC | CG_TRIGGER | CG_WATER));
 				}
 			}
 		}

@@ -103,3 +103,9 @@ SX_LIB_API void SXDecals_ShootDecalEx(DECAL_TYPE type, const float3 & fWorldPos,
 	SP_PRECOND(_VOID);
 	g_pMgr->shootDecal(type, fWorldPos, material, 0, saxis, fScale, flags, &normal);
 }
+
+SX_LIB_API void SXDecals_Clear()
+{
+	SP_PRECOND(_VOID);
+	g_pMgr->clear();
+}
