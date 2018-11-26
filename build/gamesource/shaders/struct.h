@@ -73,6 +73,8 @@ struct VSI_Animation
 	half3 vPosition	: POSITION0;
 	half2 vTexUV	: TEXCOORD0;
 	half3 vNormal	: NORMAL0;
+	half3 vTangent	: TANGENT0;
+	half3 vBinormal	: BINORMAL0;
 	uint4 vBones	: BLENDINDICES0;
 	half4 vWeights	: BLENDWEIGHT0;
 };

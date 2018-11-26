@@ -23,7 +23,7 @@ BEGIN_PROPTABLE(CPropBreakable)
 
 	DEFINE_FIELD_FLOAT(m_fHealth, PDFF_NONE, "health", "Health", EDITOR_TEXTFIELD)
 	DEFINE_FIELD_STRING(m_szSndBreak, PDFF_NONE, "snd_break", "Break sound", EDITOR_FILEFIELD)
-		FILE_OPTION("Sound (*.ogg)", "*.ogg")
+		FILE_OPTION("Select sound", "ogg")
 	EDITOR_FILE_END()
 END_PROPTABLE()
 

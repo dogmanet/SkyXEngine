@@ -616,6 +616,34 @@ CEntityManager * CBaseEntity::getManager()
 	return(m_vDiscreteLinearVelocity);
 }*/
 
+CBaseEntity *CBaseEntity::getEntByName(const char *szName, CBaseEntity *pStartFrom)
+{
+	if(!strcmp(szName, "!this"))
+	{
+		return(pStartFrom ? NULL : this);
+	}
+	if(!strcmp(szName, "!parent"))
+	{
+		return(pStartFrom ? NULL : getParent());
+	}
+
+	return(m_pMgr->findEntityByName(szName, pStartFrom));
+}
+
+int CBaseEntity::countEntByName(const char *szName)
+{
+	if(!strcmp(szName, "!this"))
+	{
+		return(1);
+	}
+	if(!strcmp(szName, "!parent"))
+	{
+		return(getParent() ? 1 : 0);
+	}
+
+	return(m_pMgr->countEntityByName(szName));
+}
+
 void CBaseEntity::updateOutputs()
 {
 	proptable_t * pt = getPropTable();
@@ -632,7 +660,7 @@ void CBaseEntity::updateOutputs()
 					named_output_t * pOut = &pOutput->pOutputs[j];
 					mem_delete_a(pOut->pOutputs);
 
-					pOut->iOutCount = m_pMgr->countEntityByName(pOut->szTargetName);
+					pOut->iOutCount = countEntByName(pOut->szTargetName);
 					if(!pOut->iOutCount)
 					{
 						printf(COLOR_CYAN "Broken output target '%s' source '%s'.'%s'\n" COLOR_RESET, pOut->szTargetName, getClassName(), m_szName);
@@ -644,7 +672,7 @@ void CBaseEntity::updateOutputs()
 
 					CBaseEntity * pEnt = NULL;
 					int c = 0;
-					while((pEnt = m_pMgr->findEntityByName(pOut->szTargetName, pEnt)))
+					while((pEnt = getEntByName(pOut->szTargetName, pEnt)))
 					{
 						propdata_t * pField = pEnt->getField(pOut->szTargetInput);
 						if(!pField || !(pField->flags & PDFF_INPUT))

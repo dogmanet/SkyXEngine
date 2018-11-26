@@ -14,7 +14,7 @@ See the license in LICENSE
 BEGIN_PROPTABLE(CBaseAnimating)
 	//! Файл модели. Поддерживаются статические и анимированные модели
 	DEFINE_FIELD_STRING(m_szModelFile, 0, "model", "Model file", EDITOR_FILEFIELD)
-		FILE_OPTION("Model file (*.dse)", "*.dse")
+		FILE_OPTION("Select model", "dse")
 	EDITOR_FILE_END()
 
 	//! Масштаб модели

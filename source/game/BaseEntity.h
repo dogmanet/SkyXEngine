@@ -132,6 +132,9 @@ private:
 
 	const char * m_szClassName;
 
+	CBaseEntity *getEntByName(const char *szName, CBaseEntity *pStartFrom);
+	int countEntByName(const char *szName);
+
 protected:
 	virtual void _cleanup();
 
