@@ -1,68 +1,68 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "PropDoor.h"
 
 /*! \skydocent prop_door
-Дверь
+Р”РІРµСЂСЊ
 */
 
 BEGIN_PROPTABLE(CPropDoor)
-	//! Открыть
+	//! РћС‚РєСЂС‹С‚СЊ
 	DEFINE_INPUT(inputOpen, "open", "Open", PDF_NONE)
-	//! Закрыть
+	//! Р—Р°РєСЂС‹С‚СЊ
 	DEFINE_INPUT(inputClose, "close", "Close", PDF_NONE)
-	//! Заблокировать
+	//! Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ
 	DEFINE_INPUT(inputLock, "lock", "Lock", PDF_NONE)
-	//! Разблокировать
+	//! Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ
 	DEFINE_INPUT(inputUnlock, "unlock", "Unlock", PDF_NONE)
-	//! Переключить
+	//! РџРµСЂРµРєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(inputToggle, "toggle", "Toggle", PDF_NONE)
 
-	//! При начале закрытия
+	//! РџСЂРё РЅР°С‡Р°Р»Рµ Р·Р°РєСЂС‹С‚РёСЏ
 	DEFINE_OUTPUT(m_onClose, "OnClose", "On close")
-	//! При завершении закрытия
+	//! РџСЂРё Р·Р°РІРµСЂС€РµРЅРёРё Р·Р°РєСЂС‹С‚РёСЏ
 	DEFINE_OUTPUT(m_onClosed, "OnClosed", "On closed")
-	//! При начале открытия
+	//! РџСЂРё РЅР°С‡Р°Р»Рµ РѕС‚РєСЂС‹С‚РёСЏ
 	DEFINE_OUTPUT(m_onOpen, "OnOpen", "On open")
-	//! При завершении открытия
+	//! РџСЂРё Р·Р°РІРµСЂС€РµРЅРёРё РѕС‚РєСЂС‹С‚РёСЏ
 	DEFINE_OUTPUT(m_onOpened, "OnOpened", "On opened")
-	//! При попытке использовать заблокированную
+	//! РџСЂРё РїРѕРїС‹С‚РєРµ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅРЅСѓСЋ
 	DEFINE_OUTPUT(m_onUseLocked, "OnUseLocked", "On use locked")
 
-	//! Время до автозакрытия
+	//! Р’СЂРµРјСЏ РґРѕ Р°РІС‚РѕР·Р°РєСЂС‹С‚РёСЏ
 	DEFINE_FIELD_FLOAT(m_fAutoCloseTime, PDFF_NONE, "autoclose_time", "Autoclose time", EDITOR_TIMEFIELD)
-	//! Повреждение при блокировке
+	//! РџРѕРІСЂРµР¶РґРµРЅРёРµ РїСЂРё Р±Р»РѕРєРёСЂРѕРІРєРµ
 	DEFINE_FIELD_FLOAT(m_fBlockDamage, PDFF_NONE, "block_damage", "Block damage", EDITOR_TEXTFIELD)
-	//! Величина смещение (0-авто)
+	//! Р’РµР»РёС‡РёРЅР° СЃРјРµС‰РµРЅРёРµ (0-Р°РІС‚Рѕ)
 	DEFINE_FIELD_FLOAT(m_fDistanceOverride, PDFF_NONE, "distance_override", "Distance override", EDITOR_TEXTFIELD)
-	//! Скорость, м/с
+	//! РЎРєРѕСЂРѕСЃС‚СЊ, Рј/СЃ
 	DEFINE_FIELD_FLOAT(m_fSpeed, PDFF_NONE, "speed", "Speed", EDITOR_TEXTFIELD)
-	//! Направление открытия
+	//! РќР°РїСЂР°РІР»РµРЅРёРµ РѕС‚РєСЂС‹С‚РёСЏ
 	DEFINE_FIELD_ANGLES(m_qAngle, PDFF_NONE, "open_angle", "Open angle", EDITOR_ANGLES)
 
 	DEFINE_FIELD_STRING(m_szSndClose, PDFF_NONE, "snd_close", "Close sound", EDITOR_FILEFIELD)
-		FILE_OPTION("Sound (*.ogg)", "*.ogg")
+		FILE_OPTION("Select sound", "ogg")
 		EDITOR_FILE_END()
 	DEFINE_FIELD_STRING(m_szSndOpen, PDFF_NONE, "snd_open", "Open sound", EDITOR_FILEFIELD)
-		FILE_OPTION("Sound (*.ogg)", "*.ogg")
+		FILE_OPTION("Select sound", "ogg")
 		EDITOR_FILE_END()
 	DEFINE_FIELD_STRING(m_szSndLocked, PDFF_NONE, "snd_locked", "Locked sound", EDITOR_FILEFIELD)
-		FILE_OPTION("Sound (*.ogg)", "*.ogg")
+		FILE_OPTION("Select sound", "ogg")
 		EDITOR_FILE_END()
 
-	//! Изначально заблокирована
+	//! РР·РЅР°С‡Р°Р»СЊРЅРѕ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅР°
 	DEFINE_FLAG(DOOR_START_LOCKED, "Start locked")
-	//! Запрет открытия игроком
+	//! Р—Р°РїСЂРµС‚ РѕС‚РєСЂС‹С‚РёСЏ РёРіСЂРѕРєРѕРј
 	DEFINE_FLAG(DOOR_NO_USE, "Disable player USE")
-	//! Изначально открыта
+	//! РР·РЅР°С‡Р°Р»СЊРЅРѕ РѕС‚РєСЂС‹С‚Р°
 	DEFINE_FLAG(DOOR_START_OPENED, "Start opened")
-	//! Автозакрытие по таймеру
+	//! РђРІС‚РѕР·Р°РєСЂС‹С‚РёРµ РїРѕ С‚Р°Р№РјРµСЂСѓ
 	DEFINE_FLAG(DOOR_AUTOCLOSE, "Autoclose")
-	//! Форсированное закрытие двери
+	//! Р¤РѕСЂСЃРёСЂРѕРІР°РЅРЅРѕРµ Р·Р°РєСЂС‹С‚РёРµ РґРІРµСЂРё
 	DEFINE_FLAG(DOOR_FORCE, "Force close")
 END_PROPTABLE()
 
@@ -313,7 +313,16 @@ void CPropDoor::think(float fDT)
 			stop();
 		}
 	}
-	setPos(SMVectorLerp(m_vStartPos, m_vEndPos, m_fPositionFrac));
+
+	float2 p1(0.0f, 0.0f);
+	float2 p2(0.42f, 0.0f);
+	float2 p3(0.58f, 1.0f);
+	float2 p4(1.0f, 1.0f);
+	float t = m_fPositionFrac;
+	float2 p = powf(1.0f - t, 3.0f) * p1 + 3.0f * powf(1.0f - t, 2.0f) * t * p2 + 3.0f * (1.0f - t) * powf(t, 2.0f) * p3 + powf(t, 3.0f) * p4;
+	t = p.y;
+
+	setPos(SMVectorLerp(m_vStartPos, m_vEndPos, t));
 }
 
 void CPropDoor::stop()

@@ -224,8 +224,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 		
 		SLevel_Load(argv[1], true);
 
-		GameData::m_pGameStateManager->activate("ingame");
+		//GameData::m_pGameStateManager->activate("ingame");
 
+		Core_0ConsoleExecCmd("gmode ingame");
 		Core_0ConsoleExecCmd("spawn");
 
 		for(int i = 0; i < 0; ++i)
@@ -234,6 +235,17 @@ GameData::GameData(HWND hWnd, bool isGame):
 			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 			bEnt->setKV("origin", "0 1 0");
 		}
+	});
+
+	Core_0RegisterConcmdArg("gmode", [](int argc, const char ** argv)
+	{
+		if(argc != 2)
+		{
+			printf("Usage: gmode <mode>");
+			return;
+		}
+
+		GameData::m_pGameStateManager->activate(argv[1]);
 	});
 
 	Core_0RegisterConcmd("game_menu", ccmd_game_menu);

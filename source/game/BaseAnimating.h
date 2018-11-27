@@ -55,8 +55,8 @@ public:
 
 	void setSkin(int iSkin);
 	
-	void setCollisionGroup(COLLISION_GROUP group);
-	COLLISION_GROUP getCollisionGroup(COLLISION_GROUP);
+	void setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask = CG_ALL);
+	COLLISION_GROUP getCollisionGroup();
 
 protected:
 
@@ -98,6 +98,7 @@ protected:
 
 private:
 	COLLISION_GROUP m_collisionGroup;
+	COLLISION_GROUP m_collisionMask = CG_ALL;
 };
 
 #endif

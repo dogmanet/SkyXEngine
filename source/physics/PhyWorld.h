@@ -134,6 +134,7 @@ protected:
 	int * m_piGreenTotal;
 
 	bool m_isRunning;
+	int m_iSkipFrames = 3;
 };
 
 #endif

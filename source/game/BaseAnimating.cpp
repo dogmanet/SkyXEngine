@@ -221,7 +221,6 @@ void CBaseAnimating::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
-
 		btVector3 vInertia;
 		const float fMass = 1.0f;
 		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
@@ -234,10 +233,18 @@ void CBaseAnimating::createPhysBody()
 			vInertia  // local inertia
 			);
 		m_pRigidBody = new btRigidBody(rigidBodyCI);
+		m_pRigidBody->getInvMass();
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
-		SXPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, CG_ALL);
+		int colGroup = m_collisionGroup;
+		int colMask = m_collisionMask;
+		if(m_isStatic)
+		{
+			colGroup = CG_STATIC;
+			colMask = CG_STATIC_MASK;
+		}
+		SXPhysics_AddShapeEx(m_pRigidBody, colGroup, colMask);
 
 		if(m_isStatic)
 		{
@@ -259,20 +266,21 @@ void CBaseAnimating::releasePhysics()
 	mem_delete(m_pCollideShape);
 }
 
-void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group)
+void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask)
 {
-	if(m_collisionGroup == group)
+	if(m_collisionGroup == group && m_collisionMask == mask)
 	{
 		return;
 	}
 	m_collisionGroup = group;
+	m_collisionMask = mask;
 	if(m_pRigidBody)
 	{
 		SXPhysics_RemoveShape(m_pRigidBody);
-		SXPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, CG_ALL);
+		SXPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, m_collisionMask);
 	}
 }
-COLLISION_GROUP CBaseAnimating::getCollisionGroup(COLLISION_GROUP)
+COLLISION_GROUP CBaseAnimating::getCollisionGroup()
 {
 	return(m_collisionGroup);
 }
@@ -364,11 +372,17 @@ void CBaseAnimating::onIsStaticChange(bool isStatic)
 		{
 			m_pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
 			m_pRigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+
+			SXPhysics_RemoveShape(m_pRigidBody);
+			SXPhysics_AddShapeEx(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
 		}
 		else
 		{
 			m_pRigidBody->setLinearFactor(btVector3(1.0f, 1.0f, 1.0f));
 			m_pRigidBody->setAngularFactor(btVector3(1.0f, 1.0f, 1.0f));
+
+			SXPhysics_RemoveShape(m_pRigidBody);
+			SXPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, m_collisionMask);
 		}
 	}
 	m_isStatic = isStatic;

@@ -57,6 +57,8 @@ enum COLLISION_GROUP
 	CG_ALL = 0xFFFFFFFF
 };
 
+#define CG_STATIC_MASK (CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_STATIC | CG_TRIGGER | CG_WATER))
+
 //! Описатель физических свойств поверхности
 struct SurfaceInfo
 {

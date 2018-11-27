@@ -153,14 +153,20 @@ void CPhyWorld::update(int thread)
 	{
 		return;
 	}
+	if(--m_iSkipFrames >= 0)
+	{
+		return;
+	}
 
 	static UINT time0 = GetTickCount();
 	UINT time1 = GetTickCount();
 
-	if(time1 - time0 > 5000)
+	if(time1 == time0)
 	{
-		time0 = time1;
+		return;
 	}
+
+	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
 	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 0, 1.0f / 60.0f);
 
 	time0 = time1;
@@ -262,8 +268,13 @@ void CPhyWorld::loadGeom(const char * file)
 
 			m_pGeomStaticRigidBody->setCollisionFlags(m_pGeomStaticRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 			m_pGeomStaticRigidBody->setFriction(100.0f);
+			//abcdef0123456789
+			//--------
+			//worldptr
+			//1071d577
+			m_pGeomStaticRigidBody->setUserPointer((void*)0x00000001);
 
-			addShape(m_pGeomStaticRigidBody, CG_STATIC, CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_NPCVIEW | CG_STATIC | CG_TRIGGER | CG_WATER));
+			addShape(m_pGeomStaticRigidBody, CG_STATIC, CG_STATIC_MASK);
 		}
 	}
 	SGeom_ClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
@@ -457,7 +468,7 @@ void CPhyWorld::loadGeom(const char * file)
 					body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 					body->setFriction(100.0f);
 
-					addShape(body, CG_STATIC, CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_NPCVIEW | CG_STATIC | CG_TRIGGER | CG_WATER));
+					addShape(body, CG_STATIC, CG_STATIC_MASK);
 				}
 			}
 		}
@@ -780,6 +791,7 @@ void CPhyWorld::disableSimulation()
 void CPhyWorld::enableSimulation()
 {
 	m_isRunning = true;
+	m_iSkipFrames = 3;
 }
 
 //##############################################################
