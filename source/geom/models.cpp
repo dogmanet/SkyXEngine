@@ -916,7 +916,7 @@ void CModels::load(const char *szPath)
 		szStr[iStrLen] = 0;
 		pTransparency->m_sTex = szStr;
 		pTransparency->m_sTex += ".dds";
-		pTransparency->m_idTex = SGCore_MtlLoad(pTransparency->m_sTex.c_str(), MTL_TYPE_GEOM);
+		pTransparency->m_idTex = SGCore_MtlLoad((pTransparency->m_sTex + ".dds").c_str(), MTL_TYPE_GEOM);
 
 		fread(&(pTransparency->m_iCountVertex), sizeof(int32_t), 1, pFile);
 		fread(&(pTransparency->m_iCountIndex), sizeof(int32_t), 1, pFile);
@@ -2810,16 +2810,15 @@ void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj)
 			for (int k = 0, kl = m_aTransparency.size(); k < kl; ++k)
 			{
 				if (m_aTransparency[k] && m_aVisInfo[idVisCalcObj]->m_aVisible4Transparency[k])
-					renderTransparency(timeDelta, k);
+					renderTransparency(timeDelta, m_aTransparency[k]);
 			}
 		}
 		else if (idVisCalcObj == SX_GEOM_DEFAULT_VISCALCOBJ)
 		{
-
 			for (int k = 0, kl = m_aSortTransparency.size(); k < kl; ++k)
 			{
 				if (m_aSortTransparency[k] && m_aSortTransparency[k]->m_isVisible4Observer)
-					renderTransparency(timeDelta, k);
+					renderTransparency(timeDelta, m_aSortTransparency[k]);
 			}
 		}
 	}
@@ -2969,11 +2968,10 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 	}
 }
 
-void CModels::renderTransparency(DWORD timeDelta, ID idModelTransparency)
+void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTransparencyModel)
 {
-	STATIC_PRECOND_TRANSPARENCY_MODEL_ID(idModelTransparency, _VOID);
-
-	CTransparencyModel *pTransparencyModel = m_aTransparency[idModelTransparency];
+	if (!pTransparencyModel)
+		return;
 
 	g_pDXDevice->SetStreamSource(0, pTransparencyModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 

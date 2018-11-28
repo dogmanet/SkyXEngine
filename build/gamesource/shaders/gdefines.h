@@ -54,6 +54,8 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 
 static const half g_fUnit256 = 1.0/255.0;
 
+static const half g_fUnit128 = 1.0/127.0;
+
 //! слой непрозрачной геометрии
 #define LAYER_OPAQUE 1
 
@@ -63,20 +65,14 @@ static const half g_fUnit256 = 1.0/255.0;
 @{*/
 
 //! непрозрачные неосвещаемые
-#define MTLTYPE_LAYER_OPAQUE_UNLIT		0.0
-
-//! прозрачные неосвещаемые
-#define MTLTYPE_LAYER_TRANSPARENT_UNLIT	0.666667
-
-//! непрозрачные освещаемые
-#define MTLTYPE_LAYER_OPAQUE_LIGHT		0.333333
+#define MTLTYPE_UNLIT	0
 
 //! прозрачные освещаемые
-#define MTLTYPE_LAYER_TRANSPARENT_LIGHT	1.0
+#define MTLTYPE_LIGHT	1
 
 
 //! сравнение слоев
-#define EQUAL_LAYER(layer1, layer2) (abs(layer1 - layer2) < 0.1)
+//#define EQUAL_LAYER(layer1, layer2) (abs(layer1 - layer2) < 0.1)
 
 //!@}
 

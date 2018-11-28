@@ -68,16 +68,27 @@ int CGUIListView::insertColumn(const char* text, int col, int width)
 
 	//delete[] szIStr;
 
+	if (col < m_aStrings.size() - 1)
+	{
+		m_aStrings[m_aStrings.size()] = m_aStrings[col];
+		Array<String> aNewStrings;
+		m_aStrings[col] = aNewStrings;
+	}
+	else
+		m_aStrings[m_aStrings.size()];
+
 	return iRes;
 }
 
 int CGUIListView::addColumn(const char* text, int width)
 {
+	m_aStrings[m_aStrings.size()];
 	return insertColumn(text, getColumnsCount(), width);
 }
 
 void CGUIListView::deleteColumn(int col)
 {
+	m_aStrings.erase(col);
 	ListView_DeleteColumn(m_hWindow, col);
 }
 
@@ -95,6 +106,7 @@ int CGUIListView::addString(LPARAM data)
 	lvi.iItem = getStringCount();
 	lvi.iSubItem = 0;
 	lvi.lParam = data;
+	m_aStringData.push_back(data);
 	return ListView_InsertItem(m_hWindow, &lvi);
 }
 
@@ -108,9 +120,10 @@ int CGUIListView::getStringCount()
 	return ListView_GetItemCount(m_hWindow);
 }
 
-void CGUIListView::setItemText(char* text, int col, int str)
+void CGUIListView::setItemText(const char* text, int col, int str)
 {
-	ListView_SetItemText(m_hWindow, str, col, text);
+	m_aStrings[col][str] = text;
+	ListView_SetItemText(m_hWindow, str, col, (char*)m_aStrings[col][str].c_str());
 }
 
 void CGUIListView::getItemText(char* text, int col, int str, int sizebuff)
@@ -130,6 +143,7 @@ void CGUIListView::setItemData(int str, LPARAM data)
 	lvi.iSubItem = 0;
 	lvi.lParam = data;
 	BOOL res = ListView_SetItem(m_hWindow, &lvi);
+	m_aStringData[str] = data;
 	int qwerty = 0;
 }
 
@@ -140,7 +154,7 @@ LPARAM CGUIListView::getItemData(int str)
 	lvi.iSubItem = 0;
 
 	BOOL res = ListView_GetItem(m_hWindow, &lvi);
-	return lvi.lParam;
+	return m_aStringData[str];// lvi.lParam;
 }
 
 int CGUIListView::getSelString(int start)
@@ -150,7 +164,13 @@ int CGUIListView::getSelString(int start)
 
 void CGUIListView::setSelString(int str)
 {
-	ListView_SetItemState(m_hWindow, str, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+	if (str < 0)
+	{
+		for (int i = 0; i < this->getStringCount(); ++i)
+			ListView_SetItemState(m_hWindow, i, 0x0, LVIS_SELECTED | LVIS_FOCUSED);
+	}
+	else
+		ListView_SetItemState(m_hWindow, str, 0xF, LVIS_SELECTED | LVIS_FOCUSED);
 	this->setFocus();
 }
 
@@ -179,9 +199,10 @@ void CGUIListView::clearStrings()
 {
 	int countstr = getStringCount();
 	for (int i = 0; i < countstr; ++i)
-	{
 		deleteString(0);
-	}
-	//BOOL bf = TabCtrl_DeleteAllItems(m_hWindow);
-	//int qwerty = 0;
+
+	for (int i = 0; i < m_aStrings.size(); ++i)
+		m_aStrings[i].clear();
+
+	m_aStringData.clear();
 }

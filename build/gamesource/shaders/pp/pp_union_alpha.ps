@@ -66,15 +66,20 @@ PSO_UnionAlpha main(VSO_PP IN):COLOR0
 	aNormal[2] = tex2Dlod(g_sNormal, aTexUV[2]);
 	aNormal[3] = tex2Dlod(g_sNormal, aTexUV[3]);
 	
-	aIdLayer[0] = int(NormalDecodeLayer(aNormal[0].xyz) * LAYERS_COUNT_MAX);
-	aIdLayer[1] = int(NormalDecodeLayer(aNormal[1].xyz) * LAYERS_COUNT_MAX);
-	aIdLayer[2] = int(NormalDecodeLayer(aNormal[2].xyz) * LAYERS_COUNT_MAX);
-	aIdLayer[3] = int(NormalDecodeLayer(aNormal[3].xyz) * LAYERS_COUNT_MAX);
+	half2 vLayerType0 = LayerDecode(aNormal[0].w);
+	half2 vLayerType1 = LayerDecode(aNormal[1].w);
+	half2 vLayerType2 = LayerDecode(aNormal[2].w);
+	half2 vLayerType3 = LayerDecode(aNormal[3].w);
 	
-	aIsTransparency[0] = (aNormal[0].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
-	aIsTransparency[1] = (aNormal[1].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
-	aIsTransparency[2] = (aNormal[2].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
-	aIsTransparency[3] = (aNormal[3].w >= MTLTYPE_LAYER_TRANSPARENT_UNLIT) ? 1 : 0;
+	aIdLayer[0] = vLayerType0.x;
+	aIdLayer[1] = vLayerType1.x;
+	aIdLayer[2] = vLayerType2.x;
+	aIdLayer[3] = vLayerType3.x;
+	
+	aIsTransparency[0] = (aIdLayer[0] > LAYER_OPAQUE) ? 1 : 0;
+	aIsTransparency[1] = (aIdLayer[1] > LAYER_OPAQUE) ? 1 : 0;
+	aIsTransparency[2] = (aIdLayer[2] > LAYER_OPAQUE) ? 1 : 0;
+	aIsTransparency[3] = (aIdLayer[3] > LAYER_OPAQUE) ? 1 : 0;
 	
 	//в случае если у нас нет ппрозрачных слоев то возвращаем текущий цвет
 	[branch] if((aIsTransparency[0] == 0 && aIsTransparency[1] == 0 && aIsTransparency[2] == 0 && aIsTransparency[3] == 0))

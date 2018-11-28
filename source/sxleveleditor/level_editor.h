@@ -357,14 +357,28 @@ namespace level_editor
 
 	//**********************************************************************
 
-	void GameActivateAll(bool bf);
-	void GameSel(int sel);
+	/*! активировать все элементы интерфейса работы с игровыми объектами
+	 \note Раздел видимости соединений скрывается при любом раскладе
+	*/
+	void GameVisible4Properties(bool bf);
 
+	//! установка видимости раздела соединений
+	void GameVisible4Connections(bool bf);
+
+	//! выделение игрового объекта по номеру из списка listbox
+	void GameSel(int iSelect);
+
+	//! трассировка луча и установка позиции в месте пересечения
 	void GameTraceSetPos();
 
+	//! трассировка луча и создание в месте пересечения
 	void GameTraceCreate();
 
-	void GameRestoreListViewObject();
+	//! поиск объекта по имени для соединения
+	CBaseEntity* GameGetObj4Connect(CBaseEntity* pEntity, const char *szName);
+
+	//! выдача сообщения в случае если не найден игровой объект по имени (для #GameGetObj4Connect)
+	void GameMessageNotFoundName(const char *szName);
 
 	//! обновить позицию или повороты в таблице редактора
 	void GameUpdatePosRot();
@@ -372,12 +386,10 @@ namespace level_editor
 	//! установка видимости раздела свойств
 	void GameVisibleProperties(bool bf);
 
-	//! установка видимости раздела соединений
-	void GameVisibleConnections(bool bf);
-
 	//! трансформация игровых объектов по данным хелпера
 	void GameTransformByHelper();
 
+	//! удалить игровой объект по номеру в списке
 	void GameDelete(int iSelected);
 
 	//**********************************************************************
@@ -433,9 +445,9 @@ namespace level_editor
 	extern CAxesHelper *pAxesHelper;	
 
 
-	extern float3 vHelperPos;
+	/*extern float3 vHelperPos;
 	extern float3 vHelperRot;
-	extern float3 vHelperScale;
+	extern float3 vHelperScale;*/
 
 	//**********************************************************************
 
@@ -443,7 +455,7 @@ namespace level_editor
 	extern ID idActiveGreenSplit;		//!< текущий идентификатор сплита растительность (если выделена растительность)
 	extern ID idActiveGreenObject;		//!< текущий идентификатор объекта растительности (если выделена растительность)
 
-	extern ID idActiveElement;			//!< текущий идентификатор выделенного элемента из списка
+	extern ID idActiveElement;			//!< текущий идентификатор выделенного элемента из списка listbox
 
 	//**********************************************************************
 

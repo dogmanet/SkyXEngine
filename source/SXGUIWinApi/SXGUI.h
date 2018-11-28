@@ -926,7 +926,7 @@ struct ISXGUIListView : public virtual ISXGUIComponent
 
 
 	//! установить текст в ячейку
-	virtual void setItemText(char *szText, int iColumn, int iString) = 0;
+	virtual void setItemText(const char *szText, int iColumn, int iString) = 0;
 
 	//! получить текст из ячейки
 	virtual void getItemText(char *szText, int iColumn, int iString, int iSizeBuff) = 0;

@@ -237,7 +237,7 @@ enum MTLSORT
 @{*/
 
 //! непрозрачные неосвещаемые
-#define MTLTYPE_LAYER_OPAQUE_UNLIT		0.0f
+/*#define MTLTYPE_LAYER_OPAQUE_UNLIT		0.0f
 
 //! прозрачные неосвещаемые
 #define MTLTYPE_LAYER_TRANSPARENT_UNLIT	0.666667f
@@ -246,7 +246,13 @@ enum MTLSORT
 #define MTLTYPE_LAYER_OPAQUE_LIGHT		0.333333f
 
 //! прозрачные освещаемые
-#define MTLTYPE_LAYER_TRANSPARENT_LIGHT	1.0f
+#define MTLTYPE_LAYER_TRANSPARENT_LIGHT	1.0f*/
+
+//! прозрачные неосвещаемые
+#define MTLTYPE_UNLIT	0
+
+//! непрозрачные освещаемые
+#define MTLTYPE_LIGHT	1
 
 //!@}
 

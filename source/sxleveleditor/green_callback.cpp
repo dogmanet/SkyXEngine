@@ -233,6 +233,9 @@ void level_editor::GreenTransformByHelper()
 	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0))
 		return;
 
+	if (level_editor::pAxesHelper->m_bIsDragging == false)
+		return;
+
 	//если включено индивидуальное выделение, то перемещаем объект растительности
 	if (level_editor::pComboBoxGreenSel->getSel() == 0)
 	{

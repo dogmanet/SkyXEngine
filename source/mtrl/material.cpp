@@ -2096,20 +2096,25 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 		if (pMtrl->m_oMainGraphics.m_isUnlit)
 		{
 			if (!(pMtrl->m_oLightParam.m_isTransparent))
-				fLayer = MTLTYPE_LAYER_OPAQUE_UNLIT;
+				fLayer = MTLTYPE_UNLIT;
 			else
-				fLayer = MTLTYPE_LAYER_TRANSPARENT_UNLIT;
+				fLayer = MTLTYPE_UNLIT;
 		}
 		else
 		{
 			if (!(pMtrl->m_oLightParam.m_isTransparent))
-				fLayer = MTLTYPE_LAYER_OPAQUE_LIGHT;
+				fLayer = MTLTYPE_LIGHT;
 			else
-				fLayer = MTLTYPE_LAYER_TRANSPARENT_LIGHT;
+				fLayer = MTLTYPE_LIGHT;
 		}
 
 		if (m_useCountSurface && pMtrl->m_oLightParam.m_isTransparent)
-			++(m_idCurrIdSurface);
+		{
+			if (m_idCurrIdSurface == 1)
+				m_idCurrIdSurface += 2;
+			else
+				++(m_idCurrIdSurface);
+		}
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vNearFarLayers", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface)));
 	}

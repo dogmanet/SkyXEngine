@@ -65,8 +65,9 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	PSO_Lbuffer OUT;
 
 	half4 vNormals = tex2D(g_sNormals, IN.vTexUV);
+	half2 vLayerType = LayerDecode(vNormals.w);
 	
-	[branch]if(EQUAL_LAYER(vNormals.w, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(vNormals.w, MTLTYPE_LAYER_TRANSPARENT_UNLIT))
+	[branch]if(vLayerType.y == MTLTYPE_UNLIT)
 	{
 		OUT.vAmdient.xyz = 0;
 		OUT.vAmdient.w = 0;
@@ -93,7 +94,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 	half4 vParam = tex2D(g_sParameters, IN.vTexUV);
 	
-	half3 vNormalPixel = normalize(/*vNormals.xyz * 2 - 1*/NormalDecode(vNormals.xyz).xyz);
+	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	half3 vLigth  = normalize(g_vLightPos.xyz - vPosition.xyz); 
 	half3 vVertexToEye = normalize(g_vViewPos.xyz - vPosition.xyz);
 	half3 vHalfVector = normalize(vVertexToEye + vLigth.xyz);
@@ -112,7 +113,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 	//закрываем баг с отставанием теней
 	#ifdef IS_SHADOWED
-	fShadow = saturate(min(fShadow, fAbsDiffuse - 0.02));// + (vNormals.w == 1 ? 0.2 : 0));//+0.01;
+	fShadow = saturate(min(fShadow, fAbsDiffuse - 0.02));
 	fAbsDiffuse = fShadow;
 	#endif
 

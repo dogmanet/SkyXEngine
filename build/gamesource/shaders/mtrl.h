@@ -78,22 +78,22 @@ half GetTextureLod4Scene(half2 vTexUV)
 //##########################################################################
 
 //! кодирование xyz нормали в xy
-half3 NormalEncode(half3 vNormal, half fLayer)
+half3 NormalEncode(half3 vNormal)
 {
-	vNormal.xy = vNormal.xy * 0.5 + 0.5;
+	/*vNormal.xy = vNormal.xy * 0.5 + 0.5;
 	
 	[branch]if(vNormal.z >= 0.0)
 		vNormal.z = 0.5 + fLayer * g_fUnit256;
 	else
-		vNormal.z = fLayer * g_fUnit256;
+		vNormal.z = fLayer * g_fUnit256;*/
 	
-	return vNormal;
+	return vNormal * 0.5 + 0.5;
 }
 
 //! декодирование нормали xy в xyz
-half4 NormalDecode(half3 vNormal)
+half3 NormalDecode(half3 vNormal)
 {
-	half fLayer = 0;
+	/*half fLayer = 0;
 	
 	if(vNormal.z >= 0.5)
 		fLayer = (floor((vNormal.z - 0.5) * 255.0 + 0.5)) * g_fUnit256;
@@ -104,10 +104,44 @@ half4 NormalDecode(half3 vNormal)
 	vNormal.z = sign(vNormal.z * 2.0 - 1.0);
 	vNormal.z = sqrt(1 - pow(vNormal.x, 2) - pow(vNormal.y, 2)) * vNormal.z;
 	
-	return half4(vNormal, fLayer);
+	return half4(vNormal, fLayer);*/
+	
+	return vNormal * 2.0 - 1.0;
 }
 
-#define NormalDecodeLayer(vNormal)(NormalDecode(vNormal).w)
+half LayerEncode(half fLayer, int iLighted)
+{
+	half fResult = 0;
+	[branch]if(iLighted == MTLTYPE_LIGHT)
+		fResult = 0.5 + fLayer * g_fUnit256;
+	else
+		fResult = fLayer * g_fUnit256;
+	
+	return fResult;
+}
+
+
+half2 LayerDecode(half fCode)
+{
+	half fLayer = 0;
+	int iLighted = MTLTYPE_UNLIT;
+	
+	if(fCode >= 0.5)
+	{
+		fLayer = /*fCode - 0.5;//*/(floor((fCode - 0.5) * 255.0 + 0.5)) * g_fUnit256;
+		iLighted = MTLTYPE_LIGHT;
+	}
+	else
+	{
+		fLayer = /*fCode;//*/floor(fCode * 255.0 + 0.5) * g_fUnit256;
+		iLighted = MTLTYPE_UNLIT;
+	}
+	
+	return half2(int(fLayer * LAYERS_COUNT_MAX), iLighted);
+}
+
+#define LayerDecodeLayer(fCode)(LayerDecode(fCode).x)
+#define LayerDecodeType(fCode)(LayerDecode(fCode).y)
 
 //! преобразвоание цвета в нормаль (если конечно цвет содержит нормаль)
 half3 Color2Normal(half3 vColor)
@@ -130,9 +164,13 @@ PSO_Gbuffer CreateGbuffer(half4 vColor, half3 vNormal, half4 vParam, half4 vWVPp
 	
 	OUT.vColor = vColor;
 	
-	vNormal = normalize(vNormal);
+	/*vNormal = normalize(vNormal);
 	OUT.vNormal.xyz = NormalEncode(vNormal, vNearFarLayers.w);
-	OUT.vNormal.w = vNearFarLayers.z;
+	OUT.vNormal.w = vNearFarLayers.z;*/
+	
+	vNormal = normalize(vNormal);
+	OUT.vNormal.xyz = NormalEncode(vNormal);
+	OUT.vNormal.w = LayerEncode(vNearFarLayers.w, vNearFarLayers.z);
 	
 	OUT.vParam = vParam;
 	

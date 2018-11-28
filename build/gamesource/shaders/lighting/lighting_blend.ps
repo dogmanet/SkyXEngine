@@ -21,8 +21,11 @@ sampler2D g_sParameters:register(s5);
 half4 main(VSO_PP IN):COLOR0
 {
 	half4 vNormal = tex2D(g_sNormals,IN.vTexUV);
-	half fSort = vNormal.w;
-	half fLayer = NormalDecodeLayer(vNormal.xyz);
+	half2 vLayerType = LayerDecode(vNormal.w);
+	//vLayerType.x *= LAYERS_COUNT_MAX;
+	//return half4(vLayerType.x, vLayerType.x, vLayerType.x, 1);
+	//half fSort = LayerDecodeType(vNormal.w);
+	//half fLayer = LayerDecodeLayer(vNormal.w);
 	
 	//цвет приводим к sRGB
 	half4 vColor = tex2D(g_sColor,IN.vTexUV);
@@ -43,11 +46,11 @@ half4 main(VSO_PP IN):COLOR0
 	half fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
 
 	// если материал освещаемый то надо вычислить его освещенность
-	if(!(EQUAL_LAYER(fSort, MTLTYPE_LAYER_OPAQUE_UNLIT) || EQUAL_LAYER(fSort, MTLTYPE_LAYER_TRANSPARENT_UNLIT)))
+	if(vLayerType.y == MTLTYPE_LIGHT)
 		vColor.xyz = (vAmbientColor * vAmbient.w * vColor.xyz) + (fSpecular * 0.5 * vAmbient.xyz);
 		
 	// если слой материала относится к непрозрачной геометрии, тогда не нужна прозрачность
-	if(int(fLayer * LAYERS_COUNT_MAX) == LAYER_OPAQUE)
+	if(vLayerType.x == LAYER_OPAQUE)
 		vColor.a = 1.0;
 
 	//применение тонмапинга

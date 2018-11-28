@@ -190,9 +190,6 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wPara
 	//сообщаем хелперу о движениях мыши
 	level_editor::pAxesHelper->onMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
-	if (level_editor::pAxesHelper->m_bIsDragging == false)
-		return 0;
-
 	//если активна статическая геометрия
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0)
 		level_editor::GeomTransformByHelper();
@@ -357,7 +354,7 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hWnd, UINT uiMsg, WPARAM wPa
 	level_editor::FillListBoxGeom();
 
 	level_editor::GreenActivateAll(false);
-	level_editor::GameActivateAll(false);
+	level_editor::GameVisible4Properties(false);
 	level_editor::AIGridActivateAll(false);
 	level_editor::GeomActivateAll(false);
 	level_editor::GeomActivateCreate(true);
@@ -371,7 +368,7 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hWnd, UINT uiMsg, WPARAM wParam
 	level_editor::FillListBoxGreen();
 
 	level_editor::GeomActivateAll(false);
-	level_editor::GameActivateAll(false);
+	level_editor::GameVisible4Properties(false);
 
 	level_editor::GreenActivateAll(false);
 	level_editor::GreenActivateCreate(true);
@@ -388,7 +385,7 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hWnd, UINT uiMsg, WPARAM w
 	level_editor::GeomActivateAll(false);
 	level_editor::GreenActivateAll(false);
 	level_editor::AIGridActivateAll(false);
-	level_editor::GameActivateAll(true);
+	level_editor::GameVisible4Properties(true);
 
 	return 0;
 }
@@ -401,7 +398,7 @@ LRESULT SXLevelEditor_ButtonAIGridOpen_Click(HWND hWnd, UINT uiMsg, WPARAM wPara
 
 	level_editor::GeomActivateAll(false);
 	level_editor::GreenActivateAll(false);
-	level_editor::GameActivateAll(false);
+	level_editor::GameVisible4Properties(false);
 
 	level_editor::AIGridActivateAll(true);
 

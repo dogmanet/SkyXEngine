@@ -26,11 +26,10 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hwnd, UINT msg, WPARAM wParam,
 
 //! склейка значений из таблицы значений
 void SXLevelEditor_VeldStringGameConnections(
-	proptable_t *pPropTable,	//!< таблица данных которая содержит pPropData (возможно надо убрать)
-	propdata_t *pPropData,		//!< брать сроки из таблицы только если в юзердате записано это
-	int iNumExclude,			//!< исключить строку таблицы с этим номером
-	char *szStrOut,				//!< строка в которую записываеются все склееные данные
-	int iSize					//!< размер szStrOut	(возможно надо убрать)
+	CBaseEntity *pEntity,	//!< текущий игровой объект
+	propdata_t *pPropData,	//!< брать строки из таблицы только если в юзердате записано это
+	int iNumExclude,		//!< исключить строку таблицы с этим номером
+	char *szStrOut			//!< строка в которую записываеются все склееные данные
 	);
 
 //! клик по таблице соединений

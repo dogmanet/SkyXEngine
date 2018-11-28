@@ -107,10 +107,10 @@ void level_editor::GeomSel(int iSelected)
 		float3 vMin, vMax;
 		SGeom_ModelGetMinMax(iSelected, &vMin, &vMax);
 
-		level_editor::vHelperPos = (vMax + vMin) * 0.5f;
-		level_editor::vHelperScale = *pScale;
+		/*level_editor::vHelperPos = (vMax + vMin) * 0.5f;
+		level_editor::vHelperScale = *pScale;*/
 
-		level_editor::pAxesHelper->setPosition(level_editor::vHelperPos);
+		level_editor::pAxesHelper->setPosition((vMax + vMin) * 0.5f);
 		level_editor::pAxesHelper->setRotation(*pRot);
 		level_editor::pAxesHelper->setScale(float3(1,1,1));
 
@@ -246,13 +246,28 @@ void level_editor::GeomTransformByHelper()
 	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0))
 		return;
 
+	static float3 vStartScale;
+	static bool isStartScale = true;
+
+	if (level_editor::pAxesHelper->m_bIsDragging == false)
+	{
+		isStartScale = true;
+		return;
+	}
+
 	//перемещение
 	if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
 	{
 		float3 vCurrPos = *SGeom_ModelGetPosition(level_editor::idActiveElement);
-		float3 vNewPos = vCurrPos + (level_editor::pAxesHelper->getPosition() - level_editor::vHelperPos);
+		float3 vMin, vMax;
+		SGeom_ModelGetMinMax(level_editor::idActiveElement, &vMin, &vMax);
+
+		float3 vCenterModel = (vMax + vMin) * 0.5f;
+		float3 vNewPos = vCurrPos + (level_editor::pAxesHelper->getPosition() - vCenterModel);
 		if (vCurrPos.x != vNewPos.x || vCurrPos.y != vNewPos.y || vCurrPos.z != vNewPos.z)
 			SGeom_ModelSetPosition(level_editor::idActiveElement, &vNewPos);
+
+		isStartScale = true;
 	}
 	//повороты
 	else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_ROTATE)
@@ -261,19 +276,34 @@ void level_editor::GeomTransformByHelper()
 		float3 vNewRot = level_editor::pAxesHelper->getRotation();
 		if (vCurrRot.x != vNewRot.x || vCurrRot.y != vNewRot.y || vCurrRot.z != vNewRot.z)
 			SGeom_ModelSetRotation(level_editor::idActiveElement, &vNewRot);
+
+		isStartScale = true;
 	}
 	//масштаб
 	else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_SCALE)
 	{
-		float3 vCurrcale = *SGeom_ModelGetScale(level_editor::idActiveElement);
-		float3 vNewScale = level_editor::pAxesHelper->getScale() - float3(1, 1, 1);
-		if (vCurrcale.x != vNewScale.x || vCurrcale.y != vNewScale.y || vCurrcale.z != vNewScale.z)
+		float3 vCurrScale = *SGeom_ModelGetScale(level_editor::idActiveElement);
+		float3 vNewScale;
+
+		if (isStartScale)
+		{
+			isStartScale = false;
+			vStartScale = vCurrScale;
+			vNewScale = vCurrScale;
+		}
+		else
+		{
+			vNewScale = vStartScale + (level_editor::pAxesHelper->getScale() - float3(1, 1, 1));
+		}
+		
+		//float3 vNewScale = vCurrScale + (level_editor::pAxesHelper->getScale() - float3(1, 1, 1));
+		if (vCurrScale.x != vNewScale.x || vCurrScale.y != vNewScale.y || vCurrScale.z != vNewScale.z)
 			SGeom_ModelSetScale(level_editor::idActiveElement, &vNewScale);
 	}
 
-	float3 vMin, vMax;
+	/*float3 vMin, vMax;
 	SGeom_ModelGetMinMax(level_editor::idActiveElement, &vMin, &vMax);
-	level_editor::vHelperPos = (vMax + vMin) * 0.5f;
+	level_editor::vHelperPos = (vMax + vMin) * 0.5f;*/
 }
 
 void level_editor::GeomDelete(int iSelected)

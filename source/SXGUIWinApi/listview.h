@@ -26,7 +26,7 @@ public:
 	void deleteString(int str);
 	int getStringCount();
 
-	void setItemText(char* text, int col, int str);
+	void setItemText(const char* text, int col, int str);
 	void getItemText(char* text, int col, int str, int sizebuff);
 
 	void setItemData(int str, LPARAM data);
@@ -40,6 +40,10 @@ public:
 
 	void clear();
 	void clearStrings();
+
+private:
+	Array<Array<String>> m_aStrings;
+	Array<long> m_aStringData;
 };
 
 #endif

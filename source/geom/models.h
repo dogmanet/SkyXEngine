@@ -581,7 +581,7 @@ protected:
 	void renderSegmets(DWORD timeDelta, ID idModel, ID idTex = -1, ID idVisCalcObj = SX_GEOM_DEFAULT_VISCALCOBJ);
 
 	//! рендер пп модели
-	void renderTransparency(DWORD timeDelta, ID idModelTransparency);
+	void renderTransparency(DWORD timeDelta, CTransparencyModel *pTransparencyModel);
 };
 
 #endif
