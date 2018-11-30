@@ -217,19 +217,6 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 		if (!pStartPoint)
 			return;
 
-		/*CFuncTrain * pTrain = (CFuncTrain*)(GameData::m_pMgr->findEntityByClass("func_train"));
-		if (pTrain)
-		{
-			pTrain->start();
-		}
-
-		CPointCamera * cam = (CPointCamera*)(GameData::m_pMgr->findEntityByName("train_camera"));
-		if (cam)
-		{
-			GameData::m_pActiveCamera = cam;
-			cam->setParent();
-		}*/
-
 		CPathCorner * pCur = pStartPoint;
 		while ((pCur = pCur->GetPrev()))
 		{
@@ -286,19 +273,13 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 	}
 	else
 	{
-		float3 min, max;
-		bEnt->getMinMax(&min, &max);
-
-		if (min.x == 0.0f && min.y == 0.0f && min.z == 0.0f && max.x == 0.0f && max.y == 0.0f && max.z == 0.0f)
-			max.x = max.y = max.z = 0.5f;
 		SMMATRIX mView, mProj;
 		Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
 		Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
 
 		SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 		SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
-		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling((max.x - min.x), (max.y - min.y), (max.z - min.z)) * SMMatrixTranslation(bEnt->getPos())));
-		//SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&bEnt->getWorldTM());
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(bEnt->getOrient().GetMatrix() * SMMatrixTranslation(bEnt->getPos()))/*bEnt->getWorldTM()*/);
 
 		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
 		g_pFigureBox->DrawSubset(0);

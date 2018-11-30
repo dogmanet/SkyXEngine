@@ -360,6 +360,8 @@ LRESULT SXLevelEditor_ButtonGeometryOpen_Click(HWND hWnd, UINT uiMsg, WPARAM wPa
 	level_editor::GeomActivateCreate(true);
 	//level_editor::GeomActivateTrans(false);
 
+	level_editor::NullingButtonSelTransform();
+
 	return 0;
 }
 
@@ -374,6 +376,8 @@ LRESULT SXLevelEditor_ButtonGreenOpen_Click(HWND hWnd, UINT uiMsg, WPARAM wParam
 	level_editor::GreenActivateCreate(true);
 	level_editor::AIGridActivateAll(false);
 	level_editor::GreenActivateMain(true);
+
+	level_editor::NullingButtonSelTransform();
 	
 	return 0;
 }
@@ -386,6 +390,8 @@ LRESULT SXLevelEditor_ButtonGameObjectOpen_Click(HWND hWnd, UINT uiMsg, WPARAM w
 	level_editor::GreenActivateAll(false);
 	level_editor::AIGridActivateAll(false);
 	level_editor::GameVisible4Properties(true);
+
+	level_editor::NullingButtonSelTransform();
 
 	return 0;
 }
@@ -404,6 +410,8 @@ LRESULT SXLevelEditor_ButtonAIGridOpen_Click(HWND hWnd, UINT uiMsg, WPARAM wPara
 
 	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_AIGRID;
 	level_editor::idActiveElement = -1;
+
+	level_editor::NullingButtonSelTransform();
 	return 0;
 }
 

@@ -312,170 +312,155 @@ void level_editor::InitAllElements()
 	level_editor::pButtonTBNew->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBNew->setFollowParentSides(true, false, false, true);
 	level_editor::pButtonTBNew->setBmpFromResourse(IDB_BITMAP1);
+	level_editor::pButtonTBNew->setHintText("Create a new level");
 
 	level_editor::pButtonTBOpen = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBOpen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBOpen->setFollowParentSides(true, false, false, true);
 	level_editor::pButtonTBOpen->setBmpFromResourse(IDB_BITMAP2);
+	level_editor::pButtonTBOpen->setHintText("Open level");
 
 	level_editor::pButtonTBSave = SXGUICrButtonEx("", 50, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBSave->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBSave->setFollowParentSides(true, false, false, true);
 	level_editor::pButtonTBSave->setBmpFromResourse(IDB_BITMAP4);
+	level_editor::pButtonTBSave->setHintText("Save level");
 
 	level_editor::pButtonTBSaveAs = SXGUICrButtonEx("", 74, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pButtonTBSaveAs->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pButtonTBSaveAs->setFollowParentSides(true, false, false, true);
 	level_editor::pButtonTBSaveAs->setBmpFromResourse(IDB_BITMAP3);
+	level_editor::pButtonTBSaveAs->setHintText("Save level as ...");
 
 	level_editor::pCheckBoxTBArrow = SXGUICrCheckBoxEx("", 104, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBArrow->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBArrow->setFollowParentSides(true, false, false, true);
 	level_editor::pCheckBoxTBArrow->setBmpFromResourse(IDB_BITMAP5);
+	level_editor::pCheckBoxTBArrow->setHintText("Select object");
 
 	level_editor::pCheckBoxTBPos = SXGUICrCheckBoxEx("", 128, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBPos->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBPos->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBPos->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBPos->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBPos->setBmpFromResourse(IDB_BITMAP6);
+	level_editor::pCheckBoxTBPos->setHintText("Change position (helper)");
 
 	level_editor::pCheckBoxTBRot = SXGUICrCheckBoxEx("", 152, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRot->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRot->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRot->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRot->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRot->setBmpFromResourse(IDB_BITMAP7);
+	level_editor::pCheckBoxTBRot->setHintText("Change rotation (helper)");
 
 	level_editor::pCheckBoxTBScale = SXGUICrCheckBoxEx("", 176, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBScale->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBScale->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBScale->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBScale->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBScale->setBmpFromResourse(IDB_BITMAP8);
+	level_editor::pCheckBoxTBScale->setHintText("Change scale (helper)");
 
 
 	level_editor::pCheckBoxTBGrid = SXGUICrCheckBoxEx("", 206, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBGrid->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBGrid->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBGrid->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBGrid->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBGrid->setBmpFromResourse(IDB_BITMAP9);
+	level_editor::pCheckBoxTBGrid->setHintText("Show grid");
 
 	level_editor::pCheckBoxTBAxes = SXGUICrCheckBoxEx("", 230, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBAxes->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBAxes->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBAxes->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBAxes->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBAxes->setBmpFromResourse(IDB_BITMAP10);
+	level_editor::pCheckBoxTBAxes->setHintText("Show axes");
 
 
 	level_editor::pCheckBoxTBRColor = SXGUICrCheckBoxEx("", 260, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRColor->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRColor->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRColor->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRColor->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRColor->setBmpFromResourse(IDB_BITMAP11);
+	level_editor::pCheckBoxTBRColor->setHintText("Show color of scene");
 
 	level_editor::pCheckBoxTBRNormal = SXGUICrCheckBoxEx("", 284, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRNormal->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRNormal->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRNormal->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRNormal->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRNormal->setBmpFromResourse(IDB_BITMAP12);
+	level_editor::pCheckBoxTBRNormal->setHintText("Show normals of scene");
 
 	level_editor::pCheckBoxTBRParam = SXGUICrCheckBoxEx("", 308, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRParam->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRParam->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRParam->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRParam->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRParam->setBmpFromResourse(IDB_BITMAP13);
+	level_editor::pCheckBoxTBRParam->setHintText("Show parameters lighting of scene");
 
 	level_editor::pCheckBoxTBRAmDiff = SXGUICrCheckBoxEx("", 332, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRAmDiff->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRAmDiff->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRAmDiff->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRAmDiff->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRAmDiff->setBmpFromResourse(IDB_BITMAP14);
+	level_editor::pCheckBoxTBRAmDiff->setHintText("Show ambient/diffuse components of scene");
 
 	level_editor::pCheckBoxTBRSpecular = SXGUICrCheckBoxEx("", 356, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRSpecular->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRSpecular->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRSpecular->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRSpecular->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRSpecular->setBmpFromResourse(IDB_BITMAP15);
+	level_editor::pCheckBoxTBRSpecular->setHintText("Show specular of scene");
 
 	level_editor::pCheckBoxTBRLighting = SXGUICrCheckBoxEx("", 380, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBRLighting->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBRLighting->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBRLighting->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBRLighting->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBRLighting->setBmpFromResourse(IDB_BITMAP16);
+	level_editor::pCheckBoxTBRLighting->setHintText("Show lighting of scene");
 
 	
 	level_editor::pCheckBoxTBSelS = SXGUICrCheckBoxEx("", 410, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBSelS->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBSelS->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBSelS->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBSelS->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBSelS->setBmpFromResourse(IDB_BITMAP17);
+	level_editor::pCheckBoxTBSelS->setHintText("Show selected object");
 
 	level_editor::pCheckBoxTBSelZTest = SXGUICrCheckBoxEx("", 434, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBSelZTest->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBSelZTest->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBSelZTest->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBSelZTest->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBSelZTest->setBmpFromResourse(IDB_BITMAP18);
+	level_editor::pCheckBoxTBSelZTest->setHintText("Use Z-test for show selected object");
 
 	level_editor::pCheckBoxTBSelMesh = SXGUICrCheckBoxEx("", 458, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBSelMesh->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBSelMesh->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBSelMesh->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBSelMesh->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBSelMesh->setBmpFromResourse(IDB_BITMAP19);
+	level_editor::pCheckBoxTBSelMesh->setHintText("Draw mesh for show selected object");
 
 	level_editor::pCheckBoxTBSelCullBack = SXGUICrCheckBoxEx("", 482, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBSelCullBack->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBSelCullBack->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBSelCullBack->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBSelCullBack->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBSelCullBack->setBmpFromResourse(IDB_BITMAP20);
+	level_editor::pCheckBoxTBSelCullBack->setHintText("Use cullback edges for show selected object");
 
 
 	level_editor::pCheckBoxTBAIGBound = SXGUICrCheckBoxEx("", 512, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBAIGBound->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBAIGBound->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBAIGBound->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBAIGBound->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBAIGBound->setBmpFromResourse(IDB_BITMAP22);
+	level_editor::pCheckBoxTBAIGBound->setHintText("Show boxes for AI grid");
 
 	level_editor::pCheckBoxTBAIGQuad = SXGUICrCheckBoxEx("", 536, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBAIGQuad->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBAIGQuad->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBAIGQuad->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBAIGQuad->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBAIGQuad->setBmpFromResourse(IDB_BITMAP23);
+	level_editor::pCheckBoxTBAIGQuad->setHintText("Show quads for AI grid");
 
 	level_editor::pCheckBoxTBAIGGraphPoint = SXGUICrCheckBoxEx("", 560, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBAIGGraphPoint->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBAIGGraphPoint->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBAIGGraphPoint->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBAIGGraphPoint->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBAIGGraphPoint->setBmpFromResourse(IDB_BITMAP24);
+	level_editor::pCheckBoxTBAIGGraphPoint->setHintText("Show graphpoints for AI grid");
 
 	level_editor::pCheckBoxTBLevelType = SXGUICrCheckBoxEx("", 588, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBLevelType->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBLevelType->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBLevelType->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBLevelType->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+	level_editor::pCheckBoxTBLevelType->setHintText("Indoor/outdoor type of level");
 
 	level_editor::pCheckBoxTBGLightEnable = SXGUICrCheckBoxEx("", 612, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
 	level_editor::pCheckBoxTBGLightEnable->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	level_editor::pCheckBoxTBGLightEnable->setFollowParentSides(true, false, false, true);
-	/*level_editor::pCheckBoxTBGLightEnable->setFollowParentSide(SXGUI_SIDE_LEFT, true);
-	level_editor::pCheckBoxTBGLightEnable->setFollowParentSide(SXGUI_SIDE_TOP, true);*/
 	level_editor::pCheckBoxTBGLightEnable->setBmpFromResourse(IDB_BITMAP27);
+	level_editor::pCheckBoxTBGLightEnable->setHintText("Enable/disable global light (sun)");
 
 
 	
@@ -2051,6 +2036,14 @@ void level_editor::LEdeleteRenderData()
 	mem_release(level_editor::pFigureBox);
 }
 
+void level_editor::NullingButtonSelTransform()
+{
+	level_editor::pCheckBoxTBPos->setCheck(false);
+	level_editor::pCheckBoxTBRot->setCheck(false);
+	level_editor::pCheckBoxTBScale->setCheck(false);
+	level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_NONE);
+}
+
 void level_editor::LevelEditorUpdate(DWORD timeDelta)
 {
 	static float3 vObserverPos;
@@ -2189,7 +2182,8 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 		{
-			SXGame_EditorRender(level_editor::idActiveElement, SRender_EditorGetSelectTex());
+			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
+			SXGame_EditorRender(idGameObj, SRender_EditorGetSelectTex());
 		}
 
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);

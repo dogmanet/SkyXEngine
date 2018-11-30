@@ -645,7 +645,11 @@ void CLights::setLightOrient(ID id, const SMQuaternion* q)
 	m_aLights[id]->m_qQuaternion = *q;
 
 	if (m_aLights[id]->m_pShadowSM)
+	{
+		float4x4 mpos = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
+		m_aLights[id]->m_mWorldMat = m_aLights[id]->m_qQuaternion.GetMatrix() * mpos;
 		m_aLights[id]->m_pShadowSM->setDirection(&(m_aLights[id]->m_qQuaternion * LIGHTS_DIR_BASE));
+	}
 
 	lightCountUpdateNull(id);
 }

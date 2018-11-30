@@ -150,6 +150,7 @@ LRESULT ButtonCreateNew_Click(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			dialog_seldir::pEditCreateNew->setText("");
 			dialog_seldir::InitDataListBox(dialog_seldir::sCurrPath.c_str());
 		}
+		dialog_seldir::pListBox->setFocus();
 	}
 
 	return 0;

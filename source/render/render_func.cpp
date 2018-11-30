@@ -1461,7 +1461,7 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
 	if (pp_bloom && (*pp_bloom))
-		SPP_RenderBloom(&float3_t(1, 0.7, 1.0));
+		SPP_RenderBloom(&float3_t(1, 0.2, 1.5));
 
 	//**********************************************************************
 
