@@ -535,6 +535,11 @@ namespace gui
 		m_iScreenHeight = rect.bottom - rect.top;
 		m_iScreenWidth = rect.right - rect.left;
 
+		if(!m_iScreenHeight || !m_iScreenWidth)
+		{
+			return;
+		}
+
 		for(auto i = m_mDesktops.begin(); i; i++)
 		{
 			CDesktop * pDsk = ((CDesktop*)(*i.second));
