@@ -273,10 +273,11 @@ SX_LIB_API bool SLight_GetCastGlobalShadow();
 //! установить общую тень для всего от глобального источника (все в тень)
 SX_LIB_API void SLight_SetCastGlobalShadow(bool isShadowed);
 
+//! установить интенсивность тени для локального источника света [0 - нет тени, 1 - черная тень]
+SX_LIB_API void SLight_SetShadowIntensity(ID id, float m_fShadowCoef);
 
-SX_LIB_API void SLight_SetShadowCoef(ID id, float m_fShadowCoef);
-
-SX_LIB_API float SLight_GetShadowCoef(ID id);
+//! возвращает интенсивность тени локального источника света
+SX_LIB_API float SLight_GetShadowIntensity(ID id);
 
 //-----------------------------------------------------------------------------
 

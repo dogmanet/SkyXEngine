@@ -123,7 +123,7 @@ CLights::CLight::CLight()
 	m_typeLight = LTYPE_LIGHT_NONE;
 	m_szName[0] = 0;
 
-	m_fShadowCoef = 0.01;
+	m_fShadowIntensity = 0.0;
 
 	m_id = -1;
 	
@@ -573,15 +573,15 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 	lightCountUpdateNull(id);
 }
 
-void CLights::setLightShadowCoef(ID id, float fShadowCoef)
+void CLights::setLightShadowIntensity(ID id, float fShadowIntensity)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
-	m_aLights[id]->m_fShadowCoef = fShadowCoef;
+	m_aLights[id]->m_fShadowIntensity = fShadowIntensity;
 }
 
-float CLights::getLightShadowCoef(ID id)
+float CLights::getLightShadowIntensity(ID id)
 {
-	return m_aLights[id]->m_fShadowCoef;
+	return m_aLights[id]->m_fShadowIntensity;
 }
 
 void CLights::setLightPos(ID id, const float3* vec, bool greal)

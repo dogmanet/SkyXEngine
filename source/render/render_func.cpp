@@ -1222,7 +1222,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 			SLight_GetPos(i, &tmpPosition, true);
 			tmpPowerDistShadow.x = SLight_GetPower(i);
 			tmpPowerDistShadow.y = SLight_GetDist(i);
-			tmpPowerDistShadow.z = SLight_GetShadowCoef(i);
+			tmpPowerDistShadow.z = SLight_GetShadowIntensity(i);
 
 			if (SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
 			{

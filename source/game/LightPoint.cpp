@@ -88,7 +88,7 @@ void CLightPoint::onSync()
 		m_fShadowDist = m_fDist;
 	}
 
-	SLight_SetShadowCoef(m_idLight, m_fShadowIntensity);
+	SLight_SetShadowIntensity(m_idLight, m_fShadowIntensity);
 
 	if (SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
 		SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);

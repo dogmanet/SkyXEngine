@@ -96,7 +96,7 @@ void CLightDirectional::onSync()
 	if (SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
 		SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 
-	SLight_SetShadowCoef(m_idLight, m_fShadowIntensity);
+	SLight_SetShadowIntensity(m_idLight, m_fShadowIntensity);
 
 	static SMQuaternion curr_rot;
 	SLight_GetOrient(m_idLight, &curr_rot);

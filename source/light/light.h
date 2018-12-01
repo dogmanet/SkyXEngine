@@ -79,8 +79,8 @@ public:
 	float getLightDist(ID id) const;
 	void setLightDist(ID id, float fRadiusHeight, bool isCreate);
 
-	void setLightShadowCoef(ID id, float fShadowCoef);
-	float getLightShadowCoef(ID id);
+	void setLightShadowIntensity(ID id, float fShadowCoef);
+	float getLightShadowIntensity(ID id);
 
 	//-----------------------------------------------------------------------------
 	
@@ -214,7 +214,7 @@ public:
 		float2_t m_vTopBottomRadius;
 		float m_fAngle;
 
-		float m_fShadowCoef;
+		float m_fShadowIntensity;
 
 		ISXBound *m_pBoundVolume;
 		float4x4 m_mWorldMat;
