@@ -926,6 +926,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//рисуем сцену и заполняем mrt данными
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_MRT);
+
 	SRender_BuildMRT(timeDelta, isSimulationRender);
 	FlushCommandBuffer();
 	Core_PEndSection(PERF_SECTION_MRT);

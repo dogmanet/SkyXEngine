@@ -281,7 +281,7 @@ void level_editor::InitAllElements()
 	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
 	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
 
-	level_editor::pJobWindow = SXGUICrBaseWndEx("LevelEditor", "LevelEditor", cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	level_editor::pJobWindow = SXGUICrBaseWndEx("LevelEditor", (String(SX_LEVEL_EDITOR_NAME) + " | " + SKYXENGINE_VERSION4EDITORS).c_str(), cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	//level_editor::pJobWindow->setVisible(false);
 	gui_func::base_handlers::InitHandlerMsg(level_editor::pJobWindow);
 
@@ -464,7 +464,7 @@ void level_editor::InitAllElements()
 
 
 	
-	level_editor::pGroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 28, 200, 400, level_editor::pJobWindow->getHWND(), WndProcAllDefault, 0);
+	level_editor::pGroupBoxList = SXGUICrGroupBox("List of objects", 601, 28, 200, 400, level_editor::pJobWindow->getHWND(), WndProcAllDefault, 0);
 	gui_func::base_handlers::InitHandlerMsg(level_editor::pGroupBoxList);
 	level_editor::pGroupBoxList->addHandler(SXLevelEditor_GroupBoxList_CallWmCommand, WM_COMMAND);
 	level_editor::pGroupBoxList->setFont("MS Shell Dlg",-11,0,400,0,0,0);
@@ -2096,7 +2096,15 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 	sprintf(text, "%s%d", "Green poly: ", count_poly_green);
 	level_editor::pStatusBar1->setPartText(2, text);
 
-	sprintf(text, "%s%d", "Count game object: ", SXGame_EntGetCount());
+	int iCountGameObjects = 0;
+
+	for (int i = 0, il = SXGame_EntGetCount(); i < il; ++i)
+	{
+		if (SXGame_EntGet(i))
+			++iCountGameObjects;
+	}
+
+	sprintf(text, "%s%d", "Count game object: ", iCountGameObjects);
 	level_editor::pStatusBar1->setPartText(3, text);
 
 	if (level_editor::idMtl >= 0)
@@ -2282,7 +2290,7 @@ void level_editor::LevelNew(bool mess)
 
 	SLevel_Clear();
 	char tmpcaption[256];
-	sprintf(tmpcaption, "%s: new level ** ", SX_LEVEL_EDITOR_NAME);
+	sprintf(tmpcaption, "%s: new level ** | %s", SX_LEVEL_EDITOR_NAME, SKYXENGINE_VERSION4EDITORS);
 	level_editor::pJobWindow->setText(tmpcaption);
 	level_editor::iActiveGroupType = 0;
 	level_editor::idActiveElement = -1;
@@ -2296,6 +2304,8 @@ void level_editor::LevelNew(bool mess)
 	level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
 	level_editor::pCheckBoxTBLevelType->setCheck(false);
 	level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+
+	SXLevelEditor_ButtonGeometryOpen_Click(0,0,0,0);
 }
 
 void level_editor::LevelOpen()
@@ -2314,7 +2324,7 @@ void level_editor::LevelOpen()
 	{
 		SLevel_Load(szSelName, false);
 		char szCaption[256];
-		sprintf(szCaption, "%s: %s", SX_LEVEL_EDITOR_NAME, szSelName);
+		sprintf(szCaption, "%s: %s | %s", SX_LEVEL_EDITOR_NAME, szSelName, SKYXENGINE_VERSION4EDITORS);
 		level_editor::pJobWindow->setText(szCaption);
 
 		ID idGlobalLight = SLight_GetGlobal();
@@ -2363,7 +2373,7 @@ void level_editor::LevelSaveAs()
 	{
 		SLevel_Save(szName);
 		char szCaption[256];
-		sprintf(szCaption, "%s: %s", "level_editor", szName);
+		sprintf(szCaption, "%s: %s | %s", SX_LEVEL_EDITOR_NAME, szName, SKYXENGINE_VERSION4EDITORS);
 		level_editor::pJobWindow->setText(szCaption);
 	}
 }

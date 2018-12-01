@@ -71,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	material_editor::pEditSkyBox->setText("sky_2_cube.dds");
 		
-	SRender_GetCamera()->setPosition(&float3(0, 0, -150));
+	SRender_GetCamera()->setPosition(&(ME_DEFAULT_OBSERVER_POS));
 	
 	//этот код не надо удалять, при помощи него вывел данные буферов модели в текстовый файл и таким образом избавились от внешних моделей для редактора
 	/*

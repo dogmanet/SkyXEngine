@@ -162,10 +162,10 @@ LRESULT MsgEditSize(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 
 	if (!r_resize)
+	{
 		r_resize = (int*)GET_PCVAR_INT("r_resize");
-
-	if (!r_resize)
 		return 0;
+	}
 
 	*r_resize = RENDER_RESIZE_RESIZE;
 	return 0;

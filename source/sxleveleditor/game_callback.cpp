@@ -126,7 +126,6 @@ void level_editor::GameSel(int iSelected)
 				//вставляем новую строку
 				int iString = level_editor::pListViewGameClass->addString((long)pPropertyData);
 
-				LibReport(0, "%d - %d\n", iCountProperties, (long)pPropertyData);
 				++iCountProperties;
 
 				//вставляем название в первую ячейку, а во вторую значение
@@ -154,7 +153,6 @@ void level_editor::GameSel(int iSelected)
 			pEntity->getKV(pPropertyData->szKey, szVal, 256);
 			int iString = level_editor::pListViewGameClass->addString((long)pPropertyData);
 
-			LibReport(0, "%d - %d\n", iCountProperties, (long)pPropertyData);
 			++iCountProperties;
 
 			level_editor::pListViewGameClass->setItemText(szKey, 0, iString);
@@ -207,7 +205,6 @@ void level_editor::GameSel(int iSelected)
 				{
 					int iNumStr = level_editor::pListViewGameConnections->addString((long)pPropertyData);
 
-					LibReport(0, "%d - %d\n", iCountProperties, (long)pPropertyData);
 					++iCountProperties;
 
 					sprintf(szKey, "%s", pPropertyData->szEdName);

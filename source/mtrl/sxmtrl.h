@@ -384,7 +384,7 @@ SX_LIB_API long SMtrl_MtlGetCount();
 SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id);
 
 //! возвращает сорт материала по id
-SX_LIB_API UINT SMtrl_MtlGetSort(ID id);
+//SX_LIB_API UINT SMtrl_MtlGetSort(ID id);
 
 SX_LIB_API bool SMtrl_MtlIsTransparency(ID id);
 

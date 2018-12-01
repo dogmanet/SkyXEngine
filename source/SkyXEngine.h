@@ -293,7 +293,9 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #ifndef __SKYXENGINE_H
 #define __SKYXENGINE_H
 
-#define SKYXENGINE_VERSION "0.9.3"
+#define SKYXENGINE_VERSION "0.10.0"
+
+#define SKYXENGINE_VERSION4EDITORS "SkyXEngine version " ## SKYXENGINE_VERSION
 
 #define SKYXENGINE_PREVIEW_SIZE 256
 

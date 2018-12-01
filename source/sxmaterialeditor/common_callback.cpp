@@ -22,7 +22,7 @@ void material_editor::MtlOpen()
 		SGCore_LoadTexAllLoad();
 
 		char headertest[1024];
-		sprintf(headertest, "material_editor - %s", tmpname);
+		sprintf(headertest, "%s - %s | %s", SX_MATERIAL_EDITOR_NAME, tmpname, SKYXENGINE_VERSION4EDITORS);
 		material_editor::pJobWindow->setText(headertest);
 		material_editor::InitMtl(SRender_SimModelGetIDMtl());
 	}
@@ -123,7 +123,7 @@ LRESULT SXMaterialEditor_ToolBar_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPara
 		}
 		else if (material_editor::pButtonTBView->getHWND() == handle_elem)
 		{
-			SRender_GetCamera()->setPosition(&float3(0, 0, -1.2 * 100));
+			SRender_GetCamera()->setPosition(&(ME_DEFAULT_OBSERVER_POS));
 			SRender_GetCamera()->setOrientation(&SMQuaternion(float3(0, 0, 1), 0));
 		}
 
@@ -177,7 +177,14 @@ LRESULT SXMaterialEditor_ToolBar_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPara
 LRESULT MsgEditSize(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
-	*r_resize = RENDER_RESIZE_RESIZE;
+
+	if (!r_resize)
+	{
+		r_resize = (int*)GET_PCVAR_INT("r_resize");
+		return 0;
+	}
+
+	//*r_resize = RENDER_RESIZE_RESIZE;
 	return 0;
 }
 

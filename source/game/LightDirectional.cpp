@@ -19,8 +19,8 @@ BEGIN_PROPTABLE(CLightDirectional)
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
 	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "shadow_dist", "Shadow distance", EDITOR_TEXTFIELD)
-	//! Коэффициент теней - на сколько тень черная
-	DEFINE_FIELD_FLOAT(m_fShadowCoef, 0, "shadow_coef", "Shadow coefficient", EDITOR_TEXTFIELD)
+	//! Интенсивность теней
+	DEFINE_FIELD_FLOAT(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", EDITOR_TEXTFIELD)
 
 	//! Тип тени
 	DEFINE_FIELD_INT(m_iShadowType, 0, "shadow_type", "Shadow type", EDITOR_COMBOBOX)
@@ -46,7 +46,7 @@ BaseClass(pMgr)
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
-	m_fShadowCoef = 0;
+	m_fShadowIntensity = 0;
 	m_fAngle = SM_PI * 0.4f;
 	m_fRadiusTop = 0.01f;
 	m_idLight = SLight_CreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
@@ -96,7 +96,7 @@ void CLightDirectional::onSync()
 	if (SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
 		SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 
-	SLight_SetShadowCoef(m_idLight, m_fShadowCoef);
+	SLight_SetShadowCoef(m_idLight, m_fShadowIntensity);
 
 	static SMQuaternion curr_rot;
 	SLight_GetOrient(m_idLight, &curr_rot);

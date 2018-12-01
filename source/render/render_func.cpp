@@ -730,10 +730,10 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	mem_release_del(DepthSurf2);
 	//}}
 
-	if (!isRenderSimulation)
+	if (!isRenderSimulation || SMtrl_MtlIsTransparency(gdata::Editors::pSimModel->getIdMtl()))
 	{
 		//если есть что к отрисовке из полупрозрачной геометрии
-		if (SGeom_TransparencyExistsForRender())
+		if (SGeom_TransparencyExistsForRender() || (isRenderSimulation && SMtrl_MtlIsTransparency(gdata::Editors::pSimModel->getIdMtl())))
 		{
 			//тут такая ситуация ... есть два рабочих варианта, причем работают чутка по разному, возможно я изработался и не могу сообразить что да как ...
 			//первый вариант, чистим в 4, метим 3 раза начиная с нуля (первый раз 0, второй 1 третий 2 НЕ ИНКРЕМЕНТ а метка)
@@ -804,14 +804,17 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 			gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_NOTEQUAL);
 			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
 
-			if (SGeom_GetCountModels() > 0)
+
+			SMtrl_MtlSetIsIncrCountSurf(true);
+			SMtrl_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
+
+			if (isRenderSimulation)
+				gdata::Editors::pSimModel->render(timeDelta);
+			else
 			{
-				SMtrl_MtlSetIsIncrCountSurf(true);
-				SMtrl_MtlSetCurrCountSurf(RENDER_LAYER_TRANSPARENT);
-
-				SGeom_Render(timeDelta, GEOM_RENDER_TYPE_TRANSPARENCY, 0);
+				if (SGeom_GetCountModels() > 0)
+					SGeom_Render(timeDelta, GEOM_RENDER_TYPE_TRANSPARENCY, 0);
 			}
-
 
 			SMtrl_MtlSetForceblyAlphaTest(false);
 			gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
@@ -826,11 +829,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	}
 	else
 	{
-		if (SMtrl_MtlGetSort(gdata::Editors::pSimModel->getIdMtl()) != MTLSORT_OPAQUE)
-			SMtrl_MtlSetForceblyAlphaTest(true);
 		gdata::Editors::pSimModel->render(timeDelta);
-		if (SMtrl_MtlGetSort(gdata::Editors::pSimModel->getIdMtl()) != MTLSORT_OPAQUE)
-			SMtrl_MtlSetForceblyAlphaTest(false);
 	}
 
 	gdata::pDXDevice->SetRenderTarget(0, BackBuf);
@@ -1329,13 +1328,7 @@ void rfunc::UnionLayers()
 	LPDIRECT3DSURFACE9 pBackBuf, pComLightSurf;
 	gdata::pDXDevice->GetRenderTarget(0, &pBackBuf);
 
-	static int iCurrCountTransparencySurf;
-
-#if defined(SXMATERIAL_EDITOR)
-	iCurrCountTransparencySurf = 3;
-#else
-	iCurrCountTransparencySurf = SMtrl_MtlGetCurrCountSurf();
-#endif
+	int iCurrCountTransparencySurf = SMtrl_MtlGetCurrCountSurf();
 
 	if (iCurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT)
 	{
@@ -1461,7 +1454,7 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
 	if (pp_bloom && (*pp_bloom))
-		SPP_RenderBloom(&float3_t(1, 0.2, 1.5));
+		SPP_RenderBloom(&float3_t(1, 0.7, 1.2));
 
 	//**********************************************************************
 

@@ -117,12 +117,12 @@ SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id)
 	return ArrMaterials->getTypeModel(id);
 }
 
-SX_LIB_API UINT SMtrl_MtlGetSort(ID id)
+/*SX_LIB_API UINT SMtrl_MtlGetSort(ID id)
 {
 	ML_PRECOND(0);
 
 	return ArrMaterials->mtlGetSort(id);
-}
+}*/
 
 SX_LIB_API bool SMtrl_MtlIsTransparency(ID id)
 {

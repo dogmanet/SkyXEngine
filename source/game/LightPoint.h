@@ -38,8 +38,8 @@ public:
 	void setShadowDist(float fShadowDist) { m_fShadowDist = fShadowDist; };
 	float getShadowDist() const { return m_fShadowDist; };
 
-	void setShadowCoef(float fShadowCoef) { m_fShadowCoef = fShadowCoef; };
-	float getShadowCoef() const { return m_fShadowCoef; };
+	void setShadowIntensity(float fShadowIntensity) { m_fShadowIntensity = fShadowIntensity; };
+	float getShadowIntensity() const { return m_fShadowIntensity; };
 
 	void setShadowType(int iShadowType) { m_iShadowType = iShadowType; };
 	int getShadowType() const { return m_iShadowType; };
@@ -57,7 +57,7 @@ protected:
 	float m_fShadowDist;
 	int m_iShadowType;
 	bool m_isEnable;
-	float m_fShadowCoef;
+	float m_fShadowIntensity;
 
 	void onSync();
 

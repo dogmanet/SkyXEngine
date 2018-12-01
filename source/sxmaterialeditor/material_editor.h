@@ -5,6 +5,11 @@
 #define MAINWIN_SIZE_X	645
 #define MAINWIN_SIZE_Y	700
 
+//! позиция наблюдателя по умолчанию
+#define ME_DEFAULT_OBSERVER_POS float3(0,0,-150)
+
+#define SX_MATERIAL_EDITOR_NAME "MaterialEditor"
+
 #include <common/string.h>
 
 #include <sxguiwinapi/sxgui.h>

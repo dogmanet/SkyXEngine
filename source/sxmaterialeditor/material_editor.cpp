@@ -200,7 +200,7 @@ void material_editor::InitAllElements()
 	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
 	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
 
-	material_editor::pJobWindow = SXGUICrBaseWndEx("material_editor", "material_editor", cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	material_editor::pJobWindow = SXGUICrBaseWndEx("material_editor", (String(SX_MATERIAL_EDITOR_NAME) + " | " + SKYXENGINE_VERSION4EDITORS).c_str(), cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
 	material_editor::pJobWindow->setVisible(false);
 	gui_func::base_handlers::InitHandlerMsg(material_editor::pJobWindow);
 	material_editor::pJobWindow->addHandler(SXMaterialEditor_JobWindow_CallWmCommand, WM_COMMAND);

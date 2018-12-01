@@ -163,6 +163,9 @@ void CLights::onLostDevice()
 {
 	for (int i = 0; i < m_aLights.size(); ++i)
 	{
+		if (!(m_aLights[i]))
+			continue;
+
 		if (m_aLights[i]->m_pShadowSM)
 			m_aLights[i]->m_pShadowSM->onLostDevice();
 		else if (m_aLights[i]->m_pShadowCube)
@@ -176,6 +179,9 @@ void CLights::onResetDevice()
 {
 	for (int i = 0; i < m_aLights.size(); ++i)
 	{
+		if (!(m_aLights[i]))
+			continue;
+
 		if (m_aLights[i]->m_pShadowSM)
 			m_aLights[i]->m_pShadowSM->onResetDevice();
 		else if (m_aLights[i]->m_pShadowCube)
