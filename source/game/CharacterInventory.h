@@ -16,6 +16,7 @@ public:
 	int getItemCount(const char *szClassName);
 
 	void putItems(const char *szClassName, int iCount = 1);
+	void putItem(CBaseItem *pItem);
 	//void putItems(CBaseItem *pItem);
 	
 	int getSlotCount() const;

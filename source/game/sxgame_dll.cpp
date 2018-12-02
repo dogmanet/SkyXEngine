@@ -196,7 +196,7 @@ SX_LIB_API void SXGame_PlayerSpawn()
 	GameData::m_pPlayer->spawn();
 }
 
-SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
+SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos)
 {
 	SG_PRECOND(_VOID);
 
@@ -211,7 +211,7 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
 
-	if (strcmp(bEnt->getClassName(), "path_corner") == 0)
+	if(strcmp(bEnt->getClassName(), "path_corner") == 0)
 	{
 		CPathCorner * pStartPoint = (CPathCorner*)bEnt;
 		if (!pStartPoint)
@@ -279,7 +279,7 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex)
 
 		SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 		SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
-		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(bEnt->getOrient().GetMatrix() * SMMatrixTranslation(bEnt->getPos()))/*bEnt->getWorldTM()*/);
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(bEnt->getOrient().GetMatrix() * SMMatrixTranslation(pvRenderPos ? *pvRenderPos : bEnt->getPos()))/*bEnt->getWorldTM()*/);
 
 		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
 		g_pFigureBox->DrawSubset(0);
@@ -404,4 +404,17 @@ SX_LIB_API void SXGame_SetDebugText(const char *szText)
 {
 	//static gui::dom::IDOMnode * pNode = GameData::m_pStatsUI->getDocument()->getElementById(L"wrapper");
 	//pNode->setHTML(StringW(String(szText)).c_str());
+}
+
+SX_LIB_API ID SXGame_EntClone(ID idSrc)
+{
+	SG_PRECOND(NULL);
+	CBaseEntity *pEnt = GameData::m_pMgr->cloneEntity(GameData::m_pMgr->getById(idSrc));
+
+	if(!pEnt)
+	{
+		return(-1);
+	}
+
+	return(pEnt->getId());
 }

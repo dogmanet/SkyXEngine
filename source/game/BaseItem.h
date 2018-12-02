@@ -24,9 +24,18 @@ class CBaseItem: public CBaseAnimating
 {
 	DECLARE_CLASS(CBaseItem, CBaseAnimating);
 	DECLARE_PROPTABLE();
+	friend class CCharacterInventory;
 public:
 	DECLARE_CONSTRUCTOR();
 
+	//! Масса объекта
+	virtual float getWeight();
+	void onUse(CBaseEntity *pUser);
+
+	void setModeInventory();
+	void setModeWorld();
+
+protected:
 	const char * m_szInvName; //!< Имя, отображаемое в инвентаре
 	bool m_bInvStackable; //!< Можно ли хранить несколько итемов в одной ячейке
 	int m_iInvStackCurSize; //!< Количество итемов в стеке
@@ -34,9 +43,11 @@ public:
 	float m_iInvWeight; //!< Масса объекта
 	bool m_bPickable; //!< Можно ли поднять объект
 
+	output_t m_onPickUp;
+	output_t m_onDrop;
 
-	//! Масса объекта
-	virtual float getWeight();
+	bool m_bWorldMode = true;
+
 };
 
 #endif

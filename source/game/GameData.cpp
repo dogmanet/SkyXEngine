@@ -269,6 +269,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterCVarFloat("lvl_debris_remove_time_min", 120.0f, "Debris collector time min");
 	Core_0RegisterCVarFloat("lvl_debris_remove_time_max", 200.0f, "Debris collector time max");
 
+	Core_0RegisterCVarFloat("hud_chat_time", 5.0f, "Chat hide time");
+	Core_0RegisterCVarInt("hud_chat_lines", 5, "Chat lines limit");
+
 	Core_0RegisterCVarBool("hud_crosshair", true, "Отображать метку прицела");
 	Core_0RegisterCVarBool("hud_rangefinder", true, "Отображать дальномер");
 
@@ -789,6 +792,7 @@ void GameData::update()
 	{
 		m_pHUDcontroller->setAimRange(-1.0f);
 	}
+	m_pHUDcontroller->update();
 	/*
 	float3 start(-10.0f, 100.0f, -10.0f),
 		end = start + float3(10.0f, -200.0f, 10.0f);

@@ -359,7 +359,7 @@ bool CEntityManager::exportList(const char * file)
 		{
 			for(int j = 0; j < pTbl->numFields; ++j)
 			{
-				if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & PDFF_INPUT) && !conf->keyExists(sect, pTbl->pData[j].szKey))
+				if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & (PDFF_INPUT | PDFF_NOEXPORT)) && !conf->keyExists(sect, pTbl->pData[j].szKey))
 				{
 					pEnt->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
 					conf->set(sect, pTbl->pData[j].szKey, buf);
@@ -745,6 +745,49 @@ CBaseEntity * CEntityManager::getById(ID id)
 	}
 	CBaseEntity *pEnt = m_vEntList[id];
 	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
+}
+
+CBaseEntity * CEntityManager::cloneEntity(CBaseEntity *pOther)
+{
+	if(!pOther)
+	{
+		return(NULL);
+	}
+	CBaseEntity *pEnt = CREATE_ENTITY_NOPOST(pOther->getClassName(), this);
+
+	pEnt->setKV("name", pOther->getName());
+	pEnt->setPos(pOther->getPos());
+	pEnt->setOrient(pOther->getOrient());
+	pEnt->setParent(pOther->getParent());
+	pEnt->setOwner(pOther->getOwner());
+	char buf[4096];
+
+	proptable_t *pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pOther->getClassName());
+	do
+	{
+		for(int j = 0; j < pTbl->numFields; ++j)
+		{
+			if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & PDFF_INPUT))
+			{
+				if(fstrcmp(pTbl->pData[j].szKey, "origin") 
+					&& fstrcmp(pTbl->pData[j].szKey, "name") 
+					&& fstrcmp(pTbl->pData[j].szKey, "rotation") 
+					&& fstrcmp(pTbl->pData[j].szKey, "parent") 
+					&& fstrcmp(pTbl->pData[j].szKey, "owner"))
+				{
+					pOther->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
+					pEnt->setKV(pTbl->pData[j].szKey, buf);
+				}
+			}
+		}
+	}
+	while((pTbl = pTbl->pBaseProptable));
+
+	pEnt->setFlags(pOther->getFlags());
+
+	pEnt->onPostLoad();
+
+	return(pEnt);
 }
 
 void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)

@@ -46,3 +46,22 @@
 	
 	transform: rotateY(15deg);
 }
+
+#chatlog
+{
+	position: fixed; 
+	width: 400px; 
+	height: 150px; 
+	bottom: 300px;
+	left:8%;
+	font-size: 18px;
+	font-name: default;
+	transform: rotateY(10deg);
+	transition-property: color;
+	transition-duration: 0.3s;
+	color: #c6f0fdFF;
+}
+#chatlog:disabled
+{
+	color: #c6f0fd00;
+}

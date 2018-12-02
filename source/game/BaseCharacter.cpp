@@ -384,6 +384,7 @@ void CBaseCharacter::updateHitboxes()
 		
 		//SMMATRIX mBone = m_pAnimPlayer->getBoneTransformPos(hb->bone_id);
 
+		//@TODO: Cache hitbox transform
 		m_pHitboxBodies[i]->getWorldTransform().setFromOpenGLMatrix((btScalar*)&(SMMatrixRotationX(hb->rot.x)
 			* SMMatrixRotationY(hb->rot.y)
 			* SMMatrixRotationZ(hb->rot.z)

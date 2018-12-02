@@ -1,6 +1,7 @@
 #include "CharacterInventory.h"
 
 #include "BaseCharacter.h"
+#include "HUDcontroller.h"
 
 CCharacterInventory::CCharacterInventory(CBaseCharacter * pOwner, int iSlotCount):
 	m_pOwner(pOwner),
@@ -131,6 +132,82 @@ void CCharacterInventory::putItems(const char *szClassName, int iCount)
 				}
 			}
 		}
+	}
+}
+
+void CCharacterInventory::putItem(CBaseItem *pItem)
+{
+	assert(pItem);
+
+	for(int i = 0; i < m_iSlotCount; ++i)
+	{
+		if(m_ppSlots[i] && pItem->m_bInvStackable && !fstrcmp(m_ppSlots[i]->getClassName(), pItem->getClassName()))
+		{
+			int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
+			if(iCanAdd > 0)
+			{
+				if(iCanAdd >= pItem->m_iInvStackCurSize)
+				{
+					m_ppSlots[i]->m_iInvStackCurSize += pItem->m_iInvStackCurSize;
+					pItem->m_iInvStackCurSize = 0;
+					break;
+				}
+				else
+				{
+					pItem->m_iInvStackCurSize -= iCanAdd;
+					m_ppSlots[i]->m_iInvStackCurSize += iCanAdd;
+				}
+			}
+		}
+	}
+
+	if(pItem->m_iInvStackCurSize > 0 || !pItem->m_bInvStackable)
+	{
+		for(int i = 0; i < m_iSlotCount; ++i)
+		{
+			if(!m_ppSlots[i])
+			{
+				if(pItem->m_bInvStackable)
+				{
+					if((m_ppSlots[i] = (CBaseItem*)CREATE_ENTITY(pItem->getClassName(), m_pOwner->getManager())))
+					{
+						int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
+						if(iCanAdd > 0)
+						{
+							if(iCanAdd >= pItem->m_iInvStackCurSize)
+							{
+								m_ppSlots[i]->m_iInvStackCurSize += pItem->m_iInvStackCurSize;
+								pItem->m_iInvStackCurSize = 0;
+								break;
+							}
+							else
+							{
+								pItem->m_iInvStackCurSize -= iCanAdd;
+								m_ppSlots[i]->m_iInvStackCurSize += iCanAdd;
+							}
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+				else
+				{
+					m_ppSlots[i] = pItem;
+					break;
+				}
+			}
+		}
+	}
+
+	CHUDcontroller *pHUD = m_pOwner->getHUDcontroller();
+
+	if(pHUD)
+	{
+		char str[128];
+		sprintf(str, "Найден предмет: %s", pItem->m_szInvName);
+		pHUD->chatMsg(str);
 	}
 }
 

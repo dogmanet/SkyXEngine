@@ -213,7 +213,7 @@ SX_LIB_API void SXGame_PlayerSpawn();
 SX_LIB_API void SXGame_Render();
 SX_LIB_API void SXGame_RenderHUD();
 
-SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex);
+SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos=NULL);
 
 SX_LIB_API ICamera * SXGame_GetActiveCamera();
 
@@ -261,6 +261,10 @@ SX_LIB_API void SXGame_OnResetDevice();
 SX_LIB_API void SXGame_OnLevelLoad(const char *szName);
 
 SX_LIB_API void SXGame_SetDebugText(const char *szText);
+
+/*! Копирует объект, возвращает ID копии
+*/
+SX_LIB_API ID SXGame_EntClone(ID idSrc);
 
 
 #endif

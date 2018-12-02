@@ -340,7 +340,7 @@ SX_LIB_API int64_t Core_TimeTotalMcsGet(ID id);
 SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);					
 
 
-//! возвращает общее время работы таймера в микросекундах (независимо от обновления)
+//! возвращает общее время работы таймера в миллисекундах (независимо от обновления)
 #define Core_TimeTotalMlsGetU(id) Core_TimeTotalMcsGetU(id)/1000	
 
 //! возвращает общее время работы таймера в миллисекундах (независимо от обновления)
