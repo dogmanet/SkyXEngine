@@ -197,8 +197,11 @@ void level_editor::GeomTraceCreate()
 	if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))
 	{
 		SXLevelEditor_ButtonGeomFinish_Click(0,0,0,0);
-		SGeom_ModelSetPosition(level_editor::idActiveElement, &vResult);
-		level_editor::pAxesHelper->setPosition(vResult);
+		if (level_editor::idActiveElement >= 0)
+		{
+			SGeom_ModelSetPosition(level_editor::idActiveElement, &vResult);
+			level_editor::pAxesHelper->setPosition(vResult);
+		}
 	}
 }
 

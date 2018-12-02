@@ -924,6 +924,18 @@ SX_LIB_API bool SGCore_SkyBoxIsCr()
 	return (g_pSkyBox != 0);
 }
 
+SX_LIB_API bool SGCore_SkyBoxGetUse()
+{
+	SG_PRECOND(false);
+	return g_pSkyBox->getUse();
+}
+
+SX_LIB_API void SGCore_SkyBoxSetUse(bool isUse)
+{
+	SG_PRECOND(_VOID);
+	g_pSkyBox->setUse(isUse);
+}
+
 SX_LIB_API bool SGCore_SkyBoxIsLoadTex()
 {
 	SG_PRECOND_SKY_BOX(false);
@@ -1001,6 +1013,18 @@ SX_LIB_API bool SGCore_SkyCloudsIsCr()
 	SG_PRECOND(false);
 
 	return (g_pSkyClouds != 0);
+}
+
+SX_LIB_API bool SGCore_SkyCloudsGetUse()
+{
+	SG_PRECOND(false);
+	return g_pSkyClouds->getUse();
+}
+
+SX_LIB_API void SGCore_SkyCloudsSetUse(bool isUse)
+{
+	SG_PRECOND(_VOID);
+	g_pSkyClouds->setUse(isUse);
 }
 
 SX_LIB_API bool SGCore_SkyCloudsIsLoadTex()

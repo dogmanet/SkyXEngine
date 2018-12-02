@@ -177,6 +177,9 @@ SX_LIB_API void SLight_ClearIDArr();
 //! общее количество света
 SX_LIB_API int SLight_GetCount();	
 
+//! сброс информации об обновлении локальных источников света, для перестройки карт глубин
+SX_LIB_API void SLight_ResetUpdate4Local();
+
 //! возвращает true если свет с id существует
 SX_LIB_API bool SLight_GetExists(ID id);
 

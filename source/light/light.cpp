@@ -123,7 +123,7 @@ CLights::CLight::CLight()
 	m_typeLight = LTYPE_LIGHT_NONE;
 	m_szName[0] = 0;
 
-	m_fShadowIntensity = 0.0;
+	m_fShadowIntensity = 1.0;
 
 	m_id = -1;
 	
@@ -226,6 +226,17 @@ void CLights::clear()
 
 	m_aLights.clear();
 	m_idGlobalLight = -1;
+}
+
+void CLights::resetUpdate4Local()
+{
+	for (int i = 0; i < m_aLights.size(); ++i)
+	{
+		if (m_aLights[i])
+		{
+			lightCountUpdateNull(i);
+		}
+	}
 }
 
 void CLights::clearIDArr()

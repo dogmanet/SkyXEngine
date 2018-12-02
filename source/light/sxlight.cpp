@@ -140,6 +140,13 @@ SX_LIB_API int SLight_GetCount()
 	return ArrLights->getCountLights();
 }
 
+SX_LIB_API void SLight_ResetUpdate4Local()
+{
+	ML_PRECOND(_VOID);
+
+	ArrLights->resetUpdate4Local();
+}
+
 SX_LIB_API bool SLight_GetExists(ID id)
 {
 	ML_PRECOND(false);

@@ -258,5 +258,11 @@
     <Image Include="..\..\..\source\favicon.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resource\reset_update_local_light.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\reset_update_local_light.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

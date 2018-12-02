@@ -81,6 +81,8 @@ namespace level_editor
 	extern ISXGUICheckBox *pCheckBoxTBLevelType;
 	extern ISXGUICheckBox *pCheckBoxTBGLightEnable;
 
+	extern ISXGUICheckBox *pCheckBoxTBNullingStaticLight;
+
 	extern ISXGUIGroupBox *pGroupBoxList;
 	extern ISXGUIGroupBox *pGroupBoxData;
 	extern ISXGUIListBox *pListBoxList;

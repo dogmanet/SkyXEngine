@@ -152,6 +152,7 @@
     <Image Include="..\..\..\source\sxleveleditor\resource\new.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\open.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\pos.bmp" />
+    <Image Include="..\..\..\source\sxleveleditor\resource\reset_update_local_light.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\rot.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\r_ad.bmp" />
     <Image Include="..\..\..\source\sxleveleditor\resource\r_c.bmp" />
@@ -177,6 +178,7 @@
     <Image Include="resource\lvl_out.bmp" />
     <Image Include="resource\open.bmp" />
     <Image Include="resource\pos.bmp" />
+    <Image Include="resource\reset_update_local_light.bmp" />
     <Image Include="resource\rot.bmp" />
     <Image Include="resource\r_ad.bmp" />
     <Image Include="resource\r_c.bmp" />

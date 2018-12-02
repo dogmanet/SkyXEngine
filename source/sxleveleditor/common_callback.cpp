@@ -176,7 +176,11 @@ LRESULT MsgEditSize(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
+	{
+		level_editor::pAxesHelper->m_bIsDragging = false;
+		level_editor::pAxesHelper->m_bIsDraggingStop = true;
 		return 0;
+	}
 
 	//если включено копирование и id копирования валидный
 	if (level_editor::useCopyData && level_editor::idCopy >= 0)
@@ -216,7 +220,11 @@ LRESULT SXLevelEditor_RenderWindow_LDown(HWND hWnd, UINT uiMsg, WPARAM wParam, L
 LRESULT SXLevelEditor_RenderWindow_LClick(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
+	{
+		level_editor::pAxesHelper->m_bIsDragging = false;
+		level_editor::pAxesHelper->m_bIsDraggingStop = true;
 		return 0;
+	}
 
 	// если включено копирование
 	if (level_editor::useCopyData && level_editor::idCopy >= 0)
@@ -471,6 +479,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 			level_editor::pCheckBoxTBRot->setCheck(false);
 			level_editor::pCheckBoxTBScale->setCheck(false);
 			level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_NONE);
+			level_editor::pAxesHelper->m_bIsDragging = false;
+			level_editor::pAxesHelper->m_bIsDraggingStop = true;
 		}
 		else if (level_editor::pCheckBoxTBPos->getHWND() == hElement)
 		{
@@ -487,6 +497,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				level_editor::pCheckBoxTBRot->setCheck(false);
 				level_editor::pCheckBoxTBScale->setCheck(false);
 				level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_MOVE);
+				level_editor::pAxesHelper->m_bIsDragging = false;
+				level_editor::pAxesHelper->m_bIsDraggingStop = true;
 			}
 			else
 				level_editor::pCheckBoxTBPos->setCheck(false);
@@ -499,6 +511,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				level_editor::pCheckBoxTBPos->setCheck(false);
 				level_editor::pCheckBoxTBScale->setCheck(false);
 				level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_ROTATE);
+				level_editor::pAxesHelper->m_bIsDragging = false;
+				level_editor::pAxesHelper->m_bIsDraggingStop = true;
 			}
 			else
 				level_editor::pCheckBoxTBRot->setCheck(false);
@@ -511,6 +525,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				level_editor::pCheckBoxTBRot->setCheck(false);
 				level_editor::pCheckBoxTBArrow->setCheck(false);
 				level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_SCALE);
+				level_editor::pAxesHelper->m_bIsDragging = false;
+				level_editor::pAxesHelper->m_bIsDraggingStop = true;
 			}
 			else
 				level_editor::pCheckBoxTBScale->setCheck(false);
@@ -632,6 +648,9 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 					SLight_SetName(idGlobalLight, "sun");
 				}
 				level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP26);
+
+				SGCore_SkyBoxSetUse(true);
+				SGCore_SkyCloudsSetUse(true);
 			}
 			else
 			{
@@ -640,6 +659,9 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 					SLight_DeleteLight(idGlobalLight);
 				level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
 				level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+
+				SGCore_SkyBoxSetUse(false);
+				SGCore_SkyCloudsSetUse(false);
 			}
 		}
 		else if (level_editor::pCheckBoxTBGLightEnable->getHWND() == hElement)
@@ -649,6 +671,11 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				SLight_SetEnable(idGlobalLight, level_editor::pCheckBoxTBGLightEnable->getCheck());
 			else
 				level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+		}
+		else if (level_editor::pCheckBoxTBNullingStaticLight->getHWND() == hElement)
+		{
+			SLight_ResetUpdate4Local();
+			level_editor::pCheckBoxTBNullingStaticLight->setCheck(false);
 		}
 	}
 

@@ -998,7 +998,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
 
-	if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxIsLoadTex())
+	if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse() && SGCore_SkyBoxIsLoadTex())
 	{
 		gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
@@ -1016,7 +1016,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	if (SGCore_SkyCloudsIsCr() && SGCore_SkyCloudsIsLoadTex())
+	if (SGCore_SkyCloudsIsCr() && SGCore_SkyCloudsGetUse() && SGCore_SkyCloudsIsLoadTex())
 	{
 		SetSamplerAddress(0, 2, D3DTADDRESS_MIRROR);
 		SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), false);
@@ -1596,7 +1596,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 
 				SGCore_ShaderUnBind();
 
-				if (SGCore_SkyBoxIsCr())
+				if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse())
 				{
 					gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -1682,7 +1682,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 						}
 					}
 
-					if (SGCore_SkyBoxIsCr())
+					if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse())
 					{
 						gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 

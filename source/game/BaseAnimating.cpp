@@ -100,7 +100,7 @@ void CBaseAnimating::setModel(const char * mdl)
 {
 	_setStrVal(&m_szModelFile, mdl);
 	releasePhysics();
-	if(!mdl[0] && m_pAnimPlayer)
+	if(!mdl[0] /*&& m_pAnimPlayer*/)
 	{
 		mem_release(m_pAnimPlayer);
 		return;

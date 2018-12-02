@@ -46,7 +46,7 @@ BaseClass(pMgr)
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
-	m_fShadowIntensity = 0;
+	m_fShadowIntensity = 1;
 	m_fAngle = SM_PI * 0.4f;
 	m_fRadiusTop = 0.01f;
 	m_idLight = SLight_CreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);

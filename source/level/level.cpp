@@ -188,6 +188,9 @@ void CLevel::load(const char *szName, bool isGame)
 			SGCore_SkyBoxCr();
 			SGCore_SkyCloudsCr();
 
+			SGCore_SkyBoxSetUse(true);
+			SGCore_SkyCloudsSetUse(true);
+
 			float3 vMin, vMax;
 			SGeom_GetMinMax(&vMin, &vMax);
 			float fWidth = (vMax.x - vMin.x) * 2.f;
@@ -204,6 +207,11 @@ void CLevel::load(const char *szName, bool isGame)
 				true);
 			SLight_SetEnable(gid, true);
 			SLight_SetName(gid, "sun");
+		}
+		else
+		{
+			SGCore_SkyBoxSetUse(false);
+			SGCore_SkyCloudsSetUse(false);
 		}
 	}
 

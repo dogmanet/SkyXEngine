@@ -107,6 +107,8 @@ CSkyBox::CSkyBox()
 	m_isChange = false;
 	//m_isChangeMainTex = false;
 	m_fFactorBlend = 0.0f;
+
+	m_isUse = true;
 };
 
 CSkyBox::~CSkyBox()
@@ -140,6 +142,16 @@ void CSkyBox::loadTexture(const char *texture)
 bool CSkyBox::isLoadTex()
 {
 	return (m_idTex1 != -1 || m_idTex2 != -1);
+}
+
+bool CSkyBox::getUse()
+{
+	return m_isUse;
+}
+
+void CSkyBox::setUse(bool isUse)
+{
+	m_isUse = isUse;
 }
 
 void CSkyBox::changeTexture(const char *texture)
@@ -322,6 +334,8 @@ CSkyClouds::CSkyClouds()
 	m_isChange = false;
 	//m_isChangeMainTex = false;
 	m_fFactorBlend = 0.0f;
+
+	m_isUse = true;
 }
 
 CSkyClouds::~CSkyClouds()
@@ -330,6 +344,16 @@ CSkyClouds::~CSkyClouds()
 	mem_release_del(m_pIndeces);
 
 	mem_release_del(m_pVertexDeclarationClouds);
+}
+
+bool CSkyClouds::getUse()
+{
+	return m_isUse;
+}
+
+void CSkyClouds::setUse(bool isUse)
+{
+	m_isUse = isUse;
 }
 
 void CSkyClouds::changeTexture(const char *texture)

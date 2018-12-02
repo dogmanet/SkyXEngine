@@ -52,7 +52,7 @@ BaseClass(pMgr)
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
-	m_fShadowIntensity = 0;
+	m_fShadowIntensity = 1;
 	m_idLight = SLight_CreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
 }
 

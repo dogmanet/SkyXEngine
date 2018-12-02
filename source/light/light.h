@@ -46,6 +46,8 @@ public:
 	int getCountLights() const;
 	void clear();
 
+	void resetUpdate4Local();
+
 	//очистка массивов идентификацторов (просчетов видимости)
 	void clearIDArr();
 

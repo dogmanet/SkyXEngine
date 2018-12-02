@@ -40,6 +40,8 @@ namespace level_editor
 	ISXGUICheckBox *pCheckBoxTBLevelType;
 	ISXGUICheckBox *pCheckBoxTBGLightEnable;
 
+	ISXGUICheckBox *pCheckBoxTBNullingStaticLight;
+
 	ISXGUIGroupBox *pGroupBoxList;
 	ISXGUIGroupBox *pGroupBoxData;
 	ISXGUIListBox *pListBoxList;
@@ -461,6 +463,12 @@ void level_editor::InitAllElements()
 	level_editor::pCheckBoxTBGLightEnable->setFollowParentSides(true, false, false, true);
 	level_editor::pCheckBoxTBGLightEnable->setBmpFromResourse(IDB_BITMAP27);
 	level_editor::pCheckBoxTBGLightEnable->setHintText("Enable/disable global light (sun)");
+
+	level_editor::pCheckBoxTBNullingStaticLight = SXGUICrCheckBoxEx("", 640, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBNullingStaticLight->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBNullingStaticLight->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBNullingStaticLight->setBmpFromResourse(IDB_BITMAP28);
+	level_editor::pCheckBoxTBNullingStaticLight->setHintText("Reset depth maps for static light (update)");
 
 
 	
@@ -2055,8 +2063,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mObserverView);
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mObserverProj);
 
-	float fDeterminant=0;
-	SMMATRIX mInvObserverView = SMMatrixInverse(&fDeterminant, mObserverView);
+	SMMATRIX mInvObserverView = SMMatrixInverse(0, mObserverView);
 	GetCursorPos(&level_editor::oPointMouse);
 	ScreenToClient(SRender_GetHandleWin3D(), &level_editor::oPointMouse);
 

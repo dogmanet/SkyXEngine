@@ -126,7 +126,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 		fDiffuse *= max(fOriginShadow, 0.2);
 	else
 		//иначе выбираем значения тени из диапазона, на основании силы света
-		fDiffuse *= max(fShadow, lerp(0.01, 0.09, g_vLightColor.w));
+		fDiffuse *= max(fShadow, lerp(0.01, 0.09, g_vLightColor.w) * g_vLightPowerDistShadow.z);
 	#endif
 	
 	fDiffuse = lerp(1.0, fDiffuse, g_vLightPowerDistShadow.z);

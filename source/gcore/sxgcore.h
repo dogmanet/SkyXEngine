@@ -1220,6 +1220,12 @@ SX_LIB_API void SGCore_SkyBoxCr();
 //! инициализирован ли skybox
 SX_LIB_API bool SGCore_SkyBoxIsCr();
 
+//! используется ли SkyBox
+SX_LIB_API bool SGCore_SkyBoxGetUse();
+
+//! установить должен ли использоваться SkyBox
+SX_LIB_API void SGCore_SkyBoxSetUse(bool isUse);
+
 //! загружена ли текстура?
 SX_LIB_API bool SGCore_SkyBoxIsLoadTex();
 
@@ -1275,6 +1281,12 @@ SX_LIB_API void SGCore_SkyCloudsCr();
 
 //! инициализирован ли sky clouds
 SX_LIB_API bool SGCore_SkyCloudsIsCr();		
+
+//! используется ли SkyClouds
+SX_LIB_API bool SGCore_SkyCloudsGetUse();
+
+//! установить должен ли использоваться SkyClouds
+SX_LIB_API void SGCore_SkyCloudsSetUse(bool isUse);
 
 //! загружена ли текстура
 SX_LIB_API bool SGCore_SkyCloudsIsLoadTex();

@@ -46,6 +46,12 @@ public:
 	//! загружена ли текстура
 	bool isLoadTex();
 
+	//! используется ли?
+	bool getUse();
+
+	//! установить использование
+	void setUse(bool isUse);
+
 	//! замена текстуры
 	void changeTexture(const char *szTexture);
 
@@ -89,6 +95,9 @@ protected:
 
 	//! происходит ли смена текстур
 	bool m_isChange;
+
+	//! используется ли?
+	bool m_isUse;
 
 	
 	//bool m_isChangeMainTex;
@@ -145,6 +154,12 @@ public:
 	//! загружены ли текстура
 	bool isLoadTex();
 
+	//! используется ли?
+	bool getUse();
+
+	//! установить использование
+	void setUse(bool isUse);
+
 	//! заменить текстуру
 	void changeTexture(const char *szTexture);
 
@@ -188,6 +203,9 @@ private:
 
 	//! матрица поворота
 	float4x4 m_mMatRotation;
+
+	//! используется ли?
+	bool m_isUse;
 
 	//! цвет облаков
 	float4_t m_vColor;
