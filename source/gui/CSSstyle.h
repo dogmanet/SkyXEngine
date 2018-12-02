@@ -797,6 +797,8 @@ namespace gui
 			void setupTransitions(const CCSSstyle *pStyle);
 			void cancelTransitions();
 
+			void inheritTransitions(const CCSSstyle *pOther);
+
 		protected:
 
 			struct CPropPtr

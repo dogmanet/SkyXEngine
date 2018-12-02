@@ -26,6 +26,12 @@ CHUDcontroller::CHUDcontroller():
 	m_pHealthSpin = m_pDesktop->getDocument()->getElementById(L"health_spin");
 
 	m_pDeadOverlay = m_pDesktop->getDocument()->getElementById(L"dmg_overlay");
+
+	m_pChatLog = m_pDesktop->getDocument()->getElementById(L"chatlog");
+	if(m_pChatLog)
+	{
+		m_pChatLog->addPseudoclass(0x00004);
+	}
 	
 	Core_0RegisterCVarBool("hud_draw", true, "Включает отображение HUD");
 }
@@ -174,4 +180,30 @@ void CHUDcontroller::setPlayerHealth(float fHealth, float fHealthMax)
 
 void CHUDcontroller::fadeScreenDmg()
 {
+}
+
+void CHUDcontroller::chatMsg(const char *msg)
+{
+	static const float *s_fChatTime = GET_PCVAR_FLOAT("hud_chat_time");
+	static const int *s_fChatLines = GET_PCVAR_INT("hud_chat_lines");
+	
+	if(m_pChatLog)
+	{
+		m_pChatLog->appendHTML(StringW(L"<div>")+StringW(String(msg))+L"</div>");
+		while(m_pChatLog->getChilds()->size() > *s_fChatLines)
+		{
+			m_pChatLog->removeChild(m_pChatLog->getChilds()[0][0]);
+		}
+		m_pChatLog->removePseudoclass(0x00004);
+		m_i64TimeHideChat = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + *s_fChatTime * 1000000.0f;
+	}
+}
+
+void CHUDcontroller::update()
+{
+	if(m_i64TimeHideChat != 0 && TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) > m_i64TimeHideChat)
+	{
+		m_i64TimeHideChat = 0;
+		m_pChatLog->addPseudoclass(0x00004);
+	}
 }

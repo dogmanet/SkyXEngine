@@ -104,6 +104,8 @@ public:
 	int getCount();
 	CBaseEntity * getById(ID id);
 
+	CBaseEntity * cloneEntity(CBaseEntity *pEnt);
+
 	void sheduleDestroy(CBaseEntity *pEnt);
 
 protected:

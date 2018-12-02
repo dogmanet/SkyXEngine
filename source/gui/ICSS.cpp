@@ -3048,7 +3048,7 @@ namespace gui
 			}
 			else if(key == L"transition")
 			{
-				printf(COLOR_LRED "transition property is not supperter, use 'transition-duration', 'transition-property', 'transition-timing-function', 'transition-delay' instead\n" COLOR_RESET);
+				printf(COLOR_LRED "transition property is not supporter, use 'transition-duration', 'transition-property', 'transition-timing-function', 'transition-delay' instead\n" COLOR_RESET);
 			}
 			else if(key == L"transition-duration")
 			{

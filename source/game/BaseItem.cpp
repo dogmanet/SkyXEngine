@@ -5,6 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "BaseItem.h"
+#include "BaseCharacter.h"
 
 /*! \skydocent base_item
 Базовый объект элемента инвентаря игрока
@@ -23,6 +24,9 @@ BEGIN_PROPTABLE(CBaseItem)
 	DEFINE_FIELD_FLOAT(m_iInvWeight, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_weight", "", EDITOR_NONE)
 	//! Можно ли поднимать объект
 	DEFINE_FIELD_BOOL(m_bPickable, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_pickable", "", EDITOR_NONE)
+
+	DEFINE_OUTPUT(m_onPickUp, "OnPickUp", "On pickup")
+	DEFINE_OUTPUT(m_onDrop, "OnDrop", "On drop")
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseItem, base_item);
@@ -40,4 +44,52 @@ CBaseItem::CBaseItem(CEntityManager * pMgr):
 float CBaseItem::getWeight()
 {
 	return(m_iInvWeight);
+}
+
+void CBaseItem::onUse(CBaseEntity *pUser)
+{
+	BaseClass::onUse(pUser);
+	if(!m_bPickable)
+	{
+		return;
+	}
+
+	CBaseCharacter *pCharacter = (CBaseCharacter*)pUser;
+	pCharacter->getInventory()->putItem(this);
+	FIRE_OUTPUT(m_onPickUp, pUser);
+
+	if(m_bInvStackable)
+	{
+		REMOVE_ENTITY(this);
+	}
+	else
+	{
+		setModeInventory();
+	}
+}
+
+void CBaseItem::setModeInventory()
+{
+	if(!m_bWorldMode)
+	{
+		return;
+	}
+	m_bWorldMode = false;
+
+	releasePhysics();
+	if(m_pAnimPlayer)
+	{
+		mem_release(m_pAnimPlayer);
+	}
+}
+
+void CBaseItem::setModeWorld()
+{
+	if(m_bWorldMode)
+	{
+		return;
+	}
+	m_bWorldMode = true;
+
+	setModel(m_szModelFile);
 }

@@ -30,6 +30,12 @@ show_in_listing = 1
 ;model = "models/mag/mag_ak74_30.dse"
 capacity = 30
 
+[item_keycard]
+base_class = base_item
+show_in_listing = 1
+inv_name = "Ключ-карта"
+inv_stackable = 0
+
 [weapon_ak74]
 base_class = base_riffle
 show_in_listing = 1

@@ -313,6 +313,11 @@ namespace gui
 				}
 			}*/
 
+			if(pStyle != this)
+			{
+				inheritTransitions(pStyle);
+			}
+
 			for(int i = 0, l = pStyle->m_aTransitions.size(); i < l; ++i)
 			{
 				const CTransitionItem * pTI = &pStyle->m_aTransitions[i];
@@ -347,6 +352,29 @@ namespace gui
 				if(pProp->getFlags() & ICSSproperty::FLAG_DO_TRANSITION)
 				{
 					pProp->cancelTransitions(m_pDoc);
+				}
+			}
+		}
+
+		void CCSSstyle::inheritTransitions(const CCSSstyle *pOther)
+		{
+			const CTransitionItem *pTransition;
+			bool bFound;
+			for(int i = 0, l = pOther->m_aTransitions.size(); i < l; ++i)
+			{
+				pTransition = &pOther->m_aTransitions[i];
+				bFound = false;
+				for(int j = 0, jl = m_aTransitions.size(); j < jl; ++j)
+				{
+					if(pTransition->m_szProperty == m_aTransitions[j].m_szProperty)
+					{
+						bFound = true;
+						break;
+					}
+				}
+				if(!bFound)
+				{
+					m_aTransitions.push_back(*pTransition);
 				}
 			}
 		}

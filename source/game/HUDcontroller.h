@@ -43,6 +43,10 @@ public:
 	void setPlayerHealth(float fHealth, float fHealthMax = 100.0f);
 	void fadeScreenDmg();
 
+	void chatMsg(const char *msg);
+
+	void update();
+
 protected:
 	gui::IDesktop * m_pDesktop;
 
@@ -57,6 +61,7 @@ protected:
 	gui::dom::IDOMnode * m_pAimRange;
 	gui::dom::IDOMnode * m_pHealthSpin;
 	gui::dom::IDOMnode * m_pDeadOverlay;
+	gui::dom::IDOMnode * m_pChatLog;
 
 	float3_t m_vLevelMin, m_vLevelMax;
 
@@ -66,6 +71,8 @@ protected:
 	int m_iWeaponCurrentLoad;
 
 	float m_fAimRange;
+
+	int64_t m_i64TimeHideChat = 0;
 };
 
 #endif

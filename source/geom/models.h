@@ -42,14 +42,14 @@ if (!(idVisCalcObj >= 0 && m_aVisInfo.size() > idVisCalcObj && m_aVisInfo[idVisC
 }
 
 #define STATIC_PRECOND_MODEL_ID(idModel, retVal) \
-if (!(idModel < (int)m_aModels.size() && m_aModels[idModel]))\
+if(!(idModel >= 0 && idModel < (int)m_aModels.size() && m_aModels[idModel]))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of models", GEN_MSG_LOCATION, idModel); \
 	return retVal; \
 }
 
 #define STATIC_PRECOND_TRANSPARENCY_MODEL_ID(idModel, retVal) \
-if (!(idModel < (int)m_aTransparency.size() && m_aTransparency[idModel]))\
+if(!(idModel >= 0 &&idModel < (int)m_aTransparency.size() && m_aTransparency[idModel]))\
 {\
 	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - static: unresolved id '%d' for array of transparency models", GEN_MSG_LOCATION, idModel); \
 	return retVal; \
