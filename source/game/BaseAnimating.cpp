@@ -20,6 +20,11 @@ BEGIN_PROPTABLE(CBaseAnimating)
 	//! Масштаб модели
 	DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
 
+	//! Объект референса для цвета свечения
+	DEFINE_FIELD_ENTITY(m_pEntColorRef, 0, "glow_color_ref", "Glow color reference", EDITOR_TEXTFIELD)
+	//! Цвет свечения
+	DEFINE_FIELD_VECTOR(m_vGlowColor, 0, "glow_color", "Glow color", EDITOR_TEXTFIELD)
+
 	DEFINE_FIELD_BOOLFN(m_isStatic, 0, "is_static", "Is static", onIsStaticChange, EDITOR_COMBOBOX)
 		COMBO_OPTION("Yes", "1")
 		COMBO_OPTION("No", "0")
@@ -159,6 +164,11 @@ void CBaseAnimating::onSync()
 		m_pAnimPlayer->setScale(m_fBaseScale);
 		m_pAnimPlayer->setPos(getPos());
 		m_pAnimPlayer->setOrient(getOrient());
+
+		float3_t vGlowColor = m_vGlowColor;
+		bool isGlowEnabled = m_pEntColorRef ? m_pEntColorRef->getMainColor(&vGlowColor) : m_vGlowColor.x != 0.0f || m_vGlowColor.y != 0.0f || m_vGlowColor.z != 0.0f;
+		m_pAnimPlayer->setGlowColor(vGlowColor);
+		m_pAnimPlayer->setGlowEnabled(isGlowEnabled);
 	}
 }
 

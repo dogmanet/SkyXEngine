@@ -14,6 +14,10 @@ See the license in LICENSE
 
 #include "PointEntity.h"
 
+#ifndef LIGHT_INITIALLY_DARK
+#define LIGHT_INITIALLY_DARK ENT_FLAG_0
+#endif
+
 /*! Направленный свет
 \ingroup clight
 */
@@ -50,6 +54,10 @@ public:
 
 	void setRadiusTop(float fRadiusTop) { m_fRadiusTop = fRadiusTop; };
 	float getRadiusTop() const { return m_fRadiusTop; };
+
+	bool getMainColor(float3_t *pOut);
+
+	void updateFlags();
 
 protected:
 

@@ -51,8 +51,10 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
+#pragma comment(lib, "sxmtrl_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
+#pragma comment(lib, "sxmtrl.lib")
 #endif
 
 class IAnimPlayer;
@@ -296,6 +298,9 @@ public:
 	virtual void setRagdoll(IAnimRagdoll * pRagdoll) = 0;
 
 	virtual bool isVisibleFor(ID id) = 0;
+
+	virtual void setGlowColor(const float3_t &vColor) = 0;
+	virtual void setGlowEnabled(bool isEnabled) = 0;
 };
 
 //! \name Функции управления анимацией

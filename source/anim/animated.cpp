@@ -9,6 +9,7 @@ See the license in LICENSE
 #include <cstdio>
 #include <common/sxtypes.h>
 #include <gcore/sxgcore.h>
+#include <mtrl/sxmtrl.h>
 
 /**
 *
@@ -136,7 +137,7 @@ void ModelFile::Load(const char * name)
 			{
 				fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
 
-				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, m_hdr.iFlags & MODEL_FLAG_STATIC); //3
+				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, (m_hdr.iFlags & MODEL_FLAG_STATIC) != 0); //3
 
 			}
 		}
@@ -200,7 +201,7 @@ void ModelFile::Load(const char * name)
 						vertex_static *pSource = new vertex_static[m_pLods[i].pSubLODmeshes[j].iVectexCount];
 						fread(pSource, sizeof(vertex_static), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
 						vertex_static_ex *pTarget = (vertex_static_ex*)m_pLods[i].pSubLODmeshes[j].pVertices;
-						for(int vi = 0; vi < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++vi)
+						for(uint32_t vi = 0; vi < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++vi)
 						{
 							memcpy(&(pTarget[vi]), &(pSource[vi]), sizeof(vertex_static));
 						}
@@ -219,7 +220,7 @@ void ModelFile::Load(const char * name)
 						vertex_animated *pSource = new vertex_animated[m_pLods[i].pSubLODmeshes[j].iVectexCount];
 						fread(pSource, sizeof(vertex_animated), m_pLods[i].pSubLODmeshes[j].iVectexCount, fp);
 						vertex_animated_ex *pTarget = (vertex_animated_ex*)m_pLods[i].pSubLODmeshes[j].pVertices;
-						for(int vi = 0; vi < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++vi)
+						for(uint32_t vi = 0; vi < m_pLods[i].pSubLODmeshes[j].iVectexCount; ++vi)
 						{
 							memcpy(&(pTarget[vi]), &(pSource[vi]), sizeof(vertex_static)); //!< Copy only first three fields
 							memcpy(pTarget[vi].BoneIndices, pSource[vi].BoneIndices, sizeof(pSource[vi].BoneIndices));
@@ -402,7 +403,7 @@ UINT ModelFile::GetControllersCount() const
 	return(m_hdr2.iControllersCount);
 }
 #ifndef _SERVER
-void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMaterial)
+void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMaterial, const float3_t *pGlowColor, bool bUseGlow)
 {
 	if(nSkin >= m_hdr.iSkinCount)
 	{
@@ -428,13 +429,23 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 
 	m_pMgr->setVertexDeclaration(vtype);
 
+	ID idMat;
 	for(UINT i = 0; i < m_pLods[nLod].iSubMeshCount; i++)
 	{
-		//m_pMgr->SetMaterial(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat);
+		idMat = ID_VALID(idOverrideMaterial) ? idOverrideMaterial : m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat;
 		
-		SGCore_MtlSet(ID_VALID(idOverrideMaterial) ? idOverrideMaterial : m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat, mWorld);
-		
-
+		if(SMtrl_MtlGetUseDestColor(idMat))
+		{
+			if(bUseGlow)
+			{
+				SMtrl_MtlSetLighting(idMat, false);
+			}
+			else
+			{
+				SMtrl_MtlSetLighting(idMat, true);
+			}
+		}
+		SGCore_MtlSet(idMat, mWorld, pGlowColor ? &float4(*pGlowColor, 1.0f) : 0);
 		SGCore_DIP(
 			D3DPT_TRIANGLELIST,
 			m_pLods[nLod].pSubLODmeshes[i].iStartVertex,
@@ -629,7 +640,7 @@ void ModelFile::BuildMeshBuffers()
 
 		UINT * pIndices = new UINT[iStartIndex];
 		model_vertex * pVertices;
-		bool isStatic = m_hdr.iFlags & MODEL_FLAG_STATIC;
+		bool isStatic = (m_hdr.iFlags & MODEL_FLAG_STATIC) != 0;
 		if(isStatic)
 		{
 			pVertices = new vertex_static_ex[iStartVertex];
@@ -930,7 +941,7 @@ SMMATRIX Animation::getBoneTransform(UINT _id, bool bWithScale)
 {
 	//id *= 2;
 	int id = m_FinalBones[_id].pid;
-	if(id < 0 || id >= m_pMdl->m_hdr2.iBoneTableCount)
+	if(id < 0 || (uint32_t)id >= m_pMdl->m_hdr2.iBoneTableCount)
 	{
 		return(SMMatrixIdentity());
 	}
@@ -1693,7 +1704,16 @@ void Animation::render()
 		m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
 	}
 
-	m_pMdl->render(&(getWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial);
+	m_pMdl->render(&(getWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial, &m_vGlowColor, m_isGlowEnabled);
+}
+
+void Animation::setGlowColor(const float3_t &vColor)
+{
+	m_vGlowColor = vColor;
+}
+void Animation::setGlowEnabled(bool isEnabled)
+{
+	m_isGlowEnabled = isEnabled;
 }
 
 void Animation::setOverrideMaterial(const char *name)
@@ -1943,7 +1963,7 @@ void Animation::assembly()
 					vszMats.push_back(mdl->m_iMaterials[0][ii].szName);
 				}
 			}
-			bool isStatic = mdl->m_hdr.iFlags & MODEL_FLAG_STATIC;
+			bool isStatic = (mdl->m_hdr.iFlags & MODEL_FLAG_STATIC) != 0;
 			if(isStatic)
 			{
 				m_pMdl->m_hdr.iFlags |= MODEL_FLAG_STATIC;

@@ -131,9 +131,9 @@ void CPropButton::toggle(inputdata_t * pInputdata)
 
 void CPropButton::onPostLoad()
 {
-	m_isEnabled = !(getFlags() & BUTTON_START_DISABLED);
-	m_isToggleable = (getFlags() & BUTTON_TOGGLEABLE);
-	m_bState = (getFlags() & BUTTON_START_PRESSED);
+	m_isEnabled = (getFlags() & BUTTON_START_DISABLED) == 0;
+	m_isToggleable = (getFlags() & BUTTON_TOGGLEABLE) != 0;
+	m_bState = (getFlags() & BUTTON_START_PRESSED) != 0;
 
 	BaseClass::onPostLoad();
 }

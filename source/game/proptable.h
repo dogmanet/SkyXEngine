@@ -69,12 +69,13 @@ enum PDF_FLAG
 
 enum ENT_FLAG
 {
-	EF_NONE           = 0x0000,
-	EF_EXPORT         = 0x0001,
-	EF_LEVEL          = 0x0002,
-	EF_REMOVED        = 0x0004,
+	EF_NONE            = 0x0000,
+	EF_EXPORT          = 0x0001,
+	EF_LEVEL           = 0x0002,
+	EF_REMOVED         = 0x0004,
+	EF_NO_WORLD_LOOKUP = 0x0008,
 
-	EF_LAST           = 0x8000
+	EF_LAST            = 0x8000
 };
 
 typedef int CBaseEntity::*fieldtype;

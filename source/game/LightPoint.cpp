@@ -130,9 +130,18 @@ void CLightPoint::setEnable(bool isEnable)
 	}
 }
 
-void CLightPoint::onPostLoad()
+void CLightPoint::updateFlags()
 {
-	m_isEnable = !(getFlags() & LIGHT_INITIALLY_DARK);
+	BaseClass::updateFlags();
 
-	BaseClass::onPostLoad();
+	m_isEnable = !(getFlags() & LIGHT_INITIALLY_DARK);
+}
+
+bool CLightPoint::getMainColor(float3_t *pOut)
+{
+	if(pOut)
+	{
+		*pOut = m_vColor;
+	}
+	return(m_isEnable);
 }

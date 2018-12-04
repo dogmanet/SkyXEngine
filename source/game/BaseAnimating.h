@@ -73,6 +73,9 @@ protected:
 	float m_fBaseScale;
 	bool m_isStatic;
 
+	CBaseEntity *m_pEntColorRef = NULL;
+	float3_t m_vGlowColor;
+
 	virtual void initPhysics();
 	virtual void releasePhysics();
 	virtual void createPhysBody();

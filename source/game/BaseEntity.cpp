@@ -331,6 +331,7 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			UINT * f = &(this->*((UINT ThisClass::*)field->pField));
 			*f &= 0xFFFF;
 			*f |= d & 0xFFFF0000;
+			updateFlags();
 			return(true);
 		}
 		return(false);
@@ -553,6 +554,7 @@ void CBaseEntity::onSync()
 void CBaseEntity::onPostLoad()
 {
 	updateOutputs();
+	updateFlags();
 }
 
 float3 CBaseEntity::getAttachmentPos(int id)

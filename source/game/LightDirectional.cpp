@@ -34,6 +34,8 @@ BEGIN_PROPTABLE(CLightDirectional)
 	//! Верхний радиус
 	DEFINE_FIELD_FLOAT(m_fRadiusTop, 0, "radius_top", "Radius top", EDITOR_TEXTFIELD)
 
+	//! Изначально выключена
+	DEFINE_FLAG(LIGHT_INITIALLY_DARK, "Initially dark")
 END_PROPTABLE()
 
 REGISTER_ENTITY(CLightDirectional, light_directional);
@@ -110,3 +112,21 @@ void CLightDirectional::onSync()
 	if (SLight_GetTopRadius(m_idLight) != m_fRadiusTop)
 		SLight_SetTopRadius(m_idLight, m_fRadiusTop);
 }
+
+bool CLightDirectional::getMainColor(float3_t *pOut)
+{
+	if(pOut)
+	{
+		*pOut = m_vColor;
+	}
+	return(m_isEnable);
+}
+
+
+void CLightDirectional::updateFlags()
+{
+	BaseClass::updateFlags();
+
+	m_isEnable = !(getFlags() & LIGHT_INITIALLY_DARK);
+}
+

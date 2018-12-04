@@ -185,17 +185,17 @@ void CHUDcontroller::fadeScreenDmg()
 void CHUDcontroller::chatMsg(const char *msg)
 {
 	static const float *s_fChatTime = GET_PCVAR_FLOAT("hud_chat_time");
-	static const int *s_fChatLines = GET_PCVAR_INT("hud_chat_lines");
+	static const int *s_iChatLines = GET_PCVAR_INT("hud_chat_lines");
 	
 	if(m_pChatLog)
 	{
 		m_pChatLog->appendHTML(StringW(L"<div>")+StringW(String(msg))+L"</div>");
-		while(m_pChatLog->getChilds()->size() > *s_fChatLines)
+		while((int)m_pChatLog->getChilds()->size() > *s_iChatLines)
 		{
 			m_pChatLog->removeChild(m_pChatLog->getChilds()[0][0]);
 		}
 		m_pChatLog->removePseudoclass(0x00004);
-		m_i64TimeHideChat = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + *s_fChatTime * 1000000.0f;
+		m_i64TimeHideChat = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + (int64_t)(*s_fChatTime * 1000000.0f);
 	}
 }
 

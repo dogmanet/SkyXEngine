@@ -47,10 +47,12 @@ public:
 	void setEnable(bool isEnable);
 	bool getEnable() const { return m_isEnable; };
 
+	bool getMainColor(float3_t *pOut); 
+	
+	void updateFlags();
+
 protected:
 	ID m_idLight;
-
-	void onPostLoad();
 
 	float3_t m_vColor;
 	float m_fDist;

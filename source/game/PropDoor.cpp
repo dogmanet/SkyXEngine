@@ -79,8 +79,8 @@ CPropDoor::~CPropDoor()
 
 void CPropDoor::onPostLoad()
 {
-	m_isLocked = (getFlags() & DOOR_START_LOCKED);
-	m_bState = (getFlags() & DOOR_START_OPENED);
+	m_isLocked = (getFlags() & DOOR_START_LOCKED) != 0;
+	m_bState = (getFlags() & DOOR_START_OPENED) != 0;
 
 	BaseClass::onPostLoad();
 

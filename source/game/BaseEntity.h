@@ -126,6 +126,14 @@ public:
 		return(false);
 	}
 
+	virtual bool getMainColor(float3_t *pOut)
+	{
+		return(false);
+	}
+
+	//! Обновляет действие флагов в режиме редактора уровня
+	virtual void updateFlags(){}
+
 private:
 	void setClassName(const char * name);
 	void setDefaults();

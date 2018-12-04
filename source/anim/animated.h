@@ -43,7 +43,7 @@ public:
 
 	bool Save(const char * name);
 #ifndef _SERVER
-	void render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0, ID idOverrideMaterial=-1);
+	void render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0, ID idOverrideMaterial=-1, const float3_t *pGlowColor=NULL, bool bUseGlow=false);
 #endif
 
 	void BuildMeshBuffers();
@@ -231,6 +231,9 @@ public:
 
 	virtual bool isVisibleFor(ID id);
 
+	virtual void setGlowColor(const float3_t &vColor);
+	virtual void setGlowEnabled(bool isEnabled);
+
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
 
@@ -314,6 +317,9 @@ protected:
 	UINT m_iCurrentActivityFadeTime[BLEND_MAX];
 
 	bool m_isMdlManaged;
+
+	bool m_isGlowEnabled = false;
+	float3_t m_vGlowColor;
 
 private:
 	ISXBound * m_pBoundBox;
