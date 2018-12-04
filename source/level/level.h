@@ -102,7 +102,7 @@ protected:
 	//! текущее имя уровня
 	char m_szName[OBJECT_NAME_MAX_LEN];
 
-	String m_sTitle;
+	String m_sLocalName;
 
 	String m_sAmbientSounds;
 	String m_sWeather;

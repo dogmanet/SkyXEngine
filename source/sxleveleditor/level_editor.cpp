@@ -2247,7 +2247,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	}
 
-	if (!level_editor::useCopyData && SSInput_GetKeyState(SIK_LCONTROL) && SSInput_GetKeyState(SIK_C))
+	if (!level_editor::useCopyData && SSInput_GetKeyState(SIK_LCONTROL) && SSInput_GetKeyState(SIK_C) && level_editor::pRenderWindow->getFocus())
 	{
 		int iSelected = level_editor::pListBoxList->getSel();
 		if (iSelected < 0)

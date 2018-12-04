@@ -33,14 +33,16 @@ half4 main(VSO_PP IN):COLOR0
 	half4 vParameters = tex2D(g_sParameters,IN.vTexUV);
 
 	half4 vAmbient = tex2D(g_sAmbient,IN.vTexUV);
+	//vAmbient.xyz *= 2;
+	half fAverage = (vAmbient.x + vAmbient.y + vAmbient.z)/3.0;
 	
 	/* расчет фонового цвета
 	1) интерполяция от чернобелого до цветного, на основании затенения, то есть чем больше тень тем меньше там фонового цвета
 	*/
-	half3 vAmbientColor = lerp((vAmbient.x + vAmbient.y + vAmbient.z)/3.0, vAmbient.xyz, saturate(vAmbient.w+0.5));
+	half3 vAmbientColor = lerp(fAverage, vAmbient.xyz, saturate(vAmbient.w+0.5));
 	
 	/* 2) интерполяция приема цвета материалом, чем больше отражательная способность (f0) тем меньше примет цвета материал*/
-	vAmbientColor = lerp(vAmbientColor.xyz, 1.0, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, vParameters.y));
+	//vAmbientColor = lerp(vAmbientColor.xyz, fAverage, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, F0_MAX_4_DEST_AMBIENT));
 	
 	half fSpecular = tex2D(g_sSpecDiff,IN.vTexUV).r;
 	half fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);

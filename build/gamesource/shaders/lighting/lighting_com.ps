@@ -131,7 +131,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 	fDiffuse = lerp(1.0, fDiffuse, g_vLightPowerDistShadow.z);
 	
-	OUT.vAmdient.xyz = g_vLightColor.xyz * g_vLightColor.xyz * g_vLightPowerDistShadow.x * fAttenuation;
+	OUT.vAmdient.xyz = g_vLightColor.xyz * fAttenuation;
 	OUT.vAmdient.w = fDiffuse * fMdiffuse * vParam.w * g_vLightPowerDistShadow.x * 2.0 * fAttenuation;
 	
 	OUT.vSpecular = fSpecular * fAbsDiffuse * fAttenuation * g_vLightPowerDistShadow.x;

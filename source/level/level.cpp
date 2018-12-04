@@ -12,7 +12,7 @@ CLevel::CLevel()
 	m_sAmbientSounds = "";
 	m_sWeather = "";
 	m_szName[0] = 0;
-	m_sTitle = "";
+	m_sLocalName = "";
 
 	loadParticles();
 	m_pWeather = new CWeather();
@@ -30,7 +30,7 @@ CLevel::~CLevel()
 void CLevel::clear()
 {
 	m_szName[0] = 0;
-	m_sTitle = "";
+	m_sLocalName = "";
 	m_sWeather = "";
 	m_sAmbientSounds = "";
 
@@ -64,8 +64,8 @@ void CLevel::load(const char *szName, bool isGame)
 
 	ISXConfig *pConfig = Core_OpConfig(szFullPath);
 
-	if (pConfig->keyExists("level", "title"))
-		m_sTitle = pConfig->getKey("level", "title");
+	if (pConfig->keyExists("level", "local_name"))
+		m_sLocalName = pConfig->getKey("level", "local_name");
 
 	if (pConfig->keyExists("level", "geometry"))
 	{
@@ -246,7 +246,7 @@ void CLevel::save(const char *szName)
 	file = fopen(szPathLevel, "w");
 
 	fprintf(file, "%s", "[level]\n");
-	fprintf(file, "title = %s\n", m_sTitle.c_str());
+	fprintf(file, "local_name = %s\n", m_sLocalName.c_str());
 
 	if (SGeom_GetCountModels() > 0)
 	{

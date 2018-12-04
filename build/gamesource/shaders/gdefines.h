@@ -47,7 +47,9 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 
 
 //! минимально допустимое значение отражательной способности материала для принятия ambient цвета
-#define F0_MIN_4_DEST_AMBIENT 0.25
+#define F0_MIN_4_DEST_AMBIENT 0.025
+
+#define F0_MAX_4_DEST_AMBIENT 0.5
 
 //! максимальнео количество слоев
 #define LAYERS_COUNT_MAX 255.0

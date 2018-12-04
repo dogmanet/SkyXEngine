@@ -401,6 +401,14 @@ void level_editor::GameCopy()
 		return;
 
 	ID idCopy = SXGame_EntClone(level_editor::idCopy);
+
+	if (idCopy < 0)
+	{
+		level_editor::useCopyData = false;
+		level_editor::idCopy = -1;
+		return;
+	}
+
 	CBaseEntity *pEntity = SXGame_EntGet(idCopy);
 	pEntity->setPos(level_editor::vCopyPos);
 
