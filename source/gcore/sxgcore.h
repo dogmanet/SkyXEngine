@@ -176,9 +176,9 @@ SX_LIB_API void SGCore_SetSamplerAddress2(DWORD dwNumStart, DWORD dwCount, DWORD
 typedef void(*g_func_dip) (UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount);
 
 /*! установка материала id, world - мировая матрица.
-По умолчанию установка текстуры в нулевой текстурный слот, id – идентификатор материала (по умолчанию - текстуры), world – матрица трансформации модели
+По умолчанию установка текстуры в нулевой текстурный слот, id – идентификатор материала (по умолчанию - текстуры), pWorld – матрица трансформации модели, pColor - цвет, если материал принимает
 */
-typedef void(*g_func_mtl_set) (ID id, float4x4 *pWorld);
+typedef void(*g_func_mtl_set) (ID id, const float4x4 *pWorld, const float4 *pColor);
 
 /*! загрузка материала, szName - имя текстуры с расширением, iMtlType - тип материала на случай провала загрузки.
 Загрузка материала (по умолчанию – текстуры) с именем name, iMtlType – типа материала, 
@@ -205,7 +205,7 @@ typedef bool(*g_func_mtl_group_render_is_singly) (ID id);
 SX_LIB_API void SGCore_DIP(UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount);
 
 //! \copydoc g_func_mtl_set
-SX_LIB_API void SGCore_MtlSet(ID id, float4x4 *pWorld);
+SX_LIB_API void SGCore_MtlSet(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
 
 //! \copydoc g_func_mtl_load
 SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType);

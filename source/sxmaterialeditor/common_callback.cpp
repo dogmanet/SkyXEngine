@@ -301,6 +301,10 @@ LRESULT SXMaterialEditor_JobWindow_CallWmCommand(HWND hwnd, UINT msg, WPARAM wPa
 		{
 			SMtrl_MtlSetUsingAlphaTest(material_editor::idMat, material_editor::pCheckBoxAlphaTest->getCheck());
 		}
+		else if (material_editor::pCheckBoxDestColor->getHWND() == handle_elem)
+		{
+			SMtrl_MtlSetUseDestColor(material_editor::idMat, material_editor::pCheckBoxDestColor->getCheck());
+		}
 	}
 	else if (Notification == CBN_SELCHANGE)
 	{
@@ -376,6 +380,7 @@ void material_editor::Nulling()
 	material_editor::pEditPS->setText("");
 	
 	material_editor::pCheckBoxAlphaTest->setCheck(false);
+	material_editor::pCheckBoxDestColor->setCheck(false);
 	material_editor::pEditRoughness->setText("0");
 	material_editor::pEditThickness->setText("1");
 	material_editor::pEditF0->setText("0");
@@ -470,6 +475,7 @@ void material_editor::InitMtl(ID id)
 	material_editor::pEditPS->setText(tmppath);
 
 	material_editor::pCheckBoxAlphaTest->setCheck(SMtrl_MtlGetUsingAlphaTest(SRender_SimModelGetIDMtl()));
+	material_editor::pCheckBoxDestColor->setCheck(SMtrl_MtlGetUseDestColor(SRender_SimModelGetIDMtl()));
 
 	material_editor::pEditRoughness->setText(String(SMtrl_MtlGetRoughness(SRender_SimModelGetIDMtl())).c_str());
 	material_editor::pEditThickness->setText(String(SMtrl_MtlGetThickness(SRender_SimModelGetIDMtl())).c_str());

@@ -117,6 +117,13 @@ SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id)
 	return ArrMaterials->getTypeModel(id);
 }
 
+SX_LIB_API ID SMtrl_MtlGetLightMtrl()
+{
+	ML_PRECOND(-1);
+
+	return ArrMaterials->getLightMtrl();
+}
+
 /*SX_LIB_API UINT SMtrl_MtlGetSort(ID id)
 {
 	ML_PRECOND(0);
@@ -145,10 +152,10 @@ SX_LIB_API long SMtrl_MtlGetCount()
 	return ArrMaterials->getCount();
 }
 
-SX_LIB_API void SMtrl_MtlRender(ID id, const float4x4 *pWorld)
+SX_LIB_API void SMtrl_MtlRender(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->render(id, pWorld);
+	ArrMaterials->render(id, pWorld, pColor);
 }
 
 SX_LIB_API void SMtrl_MtlRenderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)
@@ -386,6 +393,20 @@ SX_LIB_API ID SMtrl_MtlGetTextureID(ID id)
 	ML_PRECOND(-1);
 	return ArrMaterials->mtlGetTextureID(id);
 }
+
+
+SX_LIB_API void SMtrl_MtlSetUseDestColor(ID id, bool useDestColor)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->mtlSetUseDestColor(id, useDestColor);
+}
+
+SX_LIB_API bool SMtrl_MtlGetUseDestColor(ID id)
+{
+	ML_PRECOND(false);
+	return ArrMaterials->mtlGetUseDestColor(id);
+}
+
 
 SX_LIB_API void SMtrl_MtlSetVS(ID id, const char *szPath)
 {

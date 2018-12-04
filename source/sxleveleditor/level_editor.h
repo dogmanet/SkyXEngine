@@ -387,6 +387,10 @@ namespace level_editor
 	//! обновить позицию или повороты в таблице редактора
 	void GameUpdatePosRot();
 
+	void GameUpdateCopyPos();
+
+	void GameCopy();
+
 	//! установка видимости раздела свойств
 	void GameVisibleProperties(bool bf);
 

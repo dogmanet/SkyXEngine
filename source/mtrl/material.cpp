@@ -37,7 +37,9 @@ CMaterials::CMaterials()
 
 	tmpMtlDefaultLight->m_oMainGraphics.m_idMainTexture = -1;
 	tmpMtlDefaultLight->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+	tmpMtlDefaultLight->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
+	tmpMtlDefaultLight->m_oMainGraphics.m_isUnlit = true;
 	tmpMtlDefaultLight->m_oLightParam.m_idTexParam = -1;
 	tmpMtlDefaultLight->m_oLightParam.m_isTextureParam = false;
 	tmpMtlDefaultLight->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
@@ -58,6 +60,7 @@ CMaterials::CMaterials()
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
 	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
@@ -104,6 +107,27 @@ CMaterials::CMaterials()
 	m_idMtrlDefGrass = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefGrass);
 
+
+
+	tmpumtl = new CUnitMaterial();
+	tmpMtlDefaultLight = new CMaterial();
+	addMaterial(tmpMtlDefaultLight);
+	tmpumtl->m_pMtrl = tmpMtlDefaultLight;
+	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_skin";
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
+
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
+
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
+	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+
+	m_idMtrlDefSkin = addUnitMaterial(tmpumtl);
+	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefSkin);
+
 	m_idBeginNonDef = m_aUnitMtrls.size();
 }
 
@@ -146,6 +170,7 @@ void CMaterials::CMaterial::nulling()
 	m_oMainGraphics.m_idMainTexture = -1;
 	m_oMainGraphics.m_idShaderVS = -1;
 	m_oMainGraphics.m_idShaderPS = -1;
+	m_oMainGraphics.m_useDestColor = false;
 	
 	m_oMicroDetail = CMaskDetailMicroRelief();
 	m_oLightParam = CLightParam();
@@ -188,6 +213,7 @@ CMaterials::CMaterial::CMainGraphics::CMainGraphics()
 	m_idShaderPS = -1;
 	m_isUnlit = false;
 	m_useAlphaTest = false;
+	m_useDestColor = false;
 	m_typeModel = MTLTYPE_MODEL::MTLTYPE_MODEL_DEFAULT;
 	m_oDataVS = CMainGraphics::СDataShader();
 	m_oDataPS = CMainGraphics::СDataShader();
@@ -442,6 +468,11 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 			pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
 
 		pMtrl->m_sName = sName.c_str();
+
+		if (pConfig->keyExists(sName.c_str(), "use_dest_color"))
+			pMtrl->m_oMainGraphics.m_useDestColor = String(pConfig->getKey(sName.c_str(), "use_dest_color")).toBool();
+		else 
+			pMtrl->m_oMainGraphics.m_useDestColor = false;
 
 		if (pConfig->keyExists(sName.c_str(), "vs"))
 			sVS = pConfig->getKey(sName.c_str(), "vs");
@@ -926,7 +957,8 @@ void CMaterials::mtlSave(ID id)
 	namebasetex[0] = '0';
 	namebasetex[1] = '\0';
 	SGCore_LoadTexGetName(mtrl->m_oMainGraphics.m_idMainTexture, namebasetex);
-	fprintf(file, "texture = %s\n\n", namebasetex);
+	fprintf(file, "texture = %s\n", namebasetex);
+	fprintf(file, "use_dest_color = %d\n\n", mtrl->m_oMainGraphics.m_useDestColor);
 
 	if (mtrl->m_oMicroDetail.m_idMask == -1)
 	{
@@ -1145,6 +1177,11 @@ MTLTYPE_MODEL CMaterials::getTypeModel(ID id)
 	return m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_typeModel;
 }
 
+ID CMaterials::getLightMtrl()
+{
+	return m_idMtrlDefLight;
+}
+
 void CMaterials::setTypeModel(ID id, MTLTYPE_MODEL typeModel)
 {
 	MTL_PRE_COND_ID(id, _VOID);
@@ -1348,6 +1385,20 @@ void CMaterials::mtlGetTexture(ID id, char* name)
 
 	if (name && m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture >= 0)
 		SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture, name);
+}
+
+void CMaterials::mtlSetUseDestColor(ID id, bool useDestColor)
+{
+	MTL_PRE_COND_ID(id, _VOID);
+
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_useDestColor = useDestColor;
+}
+
+bool CMaterials::mtlGetUseDestColor(ID id)
+{
+	MTL_PRE_COND_ID(id, false);
+
+	return m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_useDestColor;
 }
 
 ID CMaterials::mtlGetTextureID(ID id)
@@ -1872,7 +1923,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 	}
 }
 
-void CMaterials::render(ID id, const float4x4 *pWorld)
+void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 
@@ -2053,6 +2104,9 @@ void CMaterials::render(ID id, const float4x4 *pWorld)
 
 	if (pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWinSize)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vWinSize", &float4_t(*r_win_width, *r_win_height, 1.f / (*r_win_width), 1.f / (*r_win_height)));
+
+	if (pMtrl->m_oMainGraphics.m_useDestColor && pMtrl->m_oMainGraphics.m_idShaderPS >= 0 && pColor)
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vDestColor", (void*)pColor);
 
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)

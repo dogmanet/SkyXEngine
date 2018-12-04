@@ -100,7 +100,9 @@ public:
 protected:
 
 	//! текущее имя уровня
-	char m_szName[OBJECT_NAME_MAX_LEN];	
+	char m_szName[OBJECT_NAME_MAX_LEN];
+
+	String m_sTitle;
 
 	String m_sAmbientSounds;
 	String m_sWeather;

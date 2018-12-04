@@ -87,6 +87,7 @@ namespace material_editor
 	extern ISXGUIButton *pButtonPS;
 	extern ISXGUICheckBox *pCheckBoxAlphaTest;
 	extern ISXGUICheckBox *pCheckBoxTransparent;
+	extern ISXGUICheckBox *pCheckBoxDestColor;
 	extern ISXGUIStatic *pStaticMR;
 	extern ISXGUIStatic *pStaticRoughness;
 	extern ISXGUIStatic *pStaticF0;

@@ -40,7 +40,7 @@ public:
 	void clear(bool isClearRefDel);
 	void update(UINT timeDelta);
 	void setMainTexture(ID idSlot, ID idTexure);
-	void render(ID id, const float4x4 *pWorld);
+	void render(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
 	void renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl);
 	void renderLight(const float4_t *pColor, const float4x4 *pWorld);
 	int getCount();
@@ -61,6 +61,7 @@ public:
 	ID getStdMtl(MTLTYPE_MODEL typeModel);
 	ID exists(const char *szName);
 	MTLTYPE_MODEL getTypeModel(ID id);
+	ID getLightMtrl();
 	void setTypeModel(ID id, MTLTYPE_MODEL typeModel);
 	ID getID(const char *szName);
 
@@ -77,6 +78,10 @@ public:
 
 	void mtlSetTexture(ID id, const char *szTexture);
 	void mtlGetTexture(ID id, char *szName);
+
+	void mtlSetUseDestColor(ID id, bool useDestColor);
+	bool mtlGetUseDestColor(ID id);
+
 	ID mtlGetTextureID(ID id);
 	void mtlSetVS(ID id, const char *szNameVS);
 	void mtlGetVS(ID id, char *szNamePS);
@@ -205,6 +210,9 @@ public:
 
 			//! использовать ли альфа тест
 			bool m_useAlphaTest;
+
+			//! используется ли принимаемый цвет?
+			bool m_useDestColor;
 
 			//! тип модели для рендера
 			MTLTYPE_MODEL m_typeModel;

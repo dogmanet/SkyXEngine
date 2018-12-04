@@ -55,7 +55,7 @@ void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT mi
 	g_pDXDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
 }
 
-void StdMtlSet(ID id, float4x4 *pWorld)
+void StdMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 
 	g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(id));
@@ -336,10 +336,10 @@ SX_LIB_API void SGCore_DIP(UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiM
 	g_fnDIP(uiTypePrimitive, lBaseVertexIndex, uiMinVertexIndex, uiNumVertices, uiStartIndex, uiPrimitiveCount);
 }
 
-SX_LIB_API void SGCore_MtlSet(ID id, float4x4 *pWorld)
+SX_LIB_API void SGCore_MtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 	SG_PRECOND(_VOID);
-	g_fnMtlSet(id, pWorld);
+	g_fnMtlSet(id, pWorld, pColor);
 }
 
 SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType)

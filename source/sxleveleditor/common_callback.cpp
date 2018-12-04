@@ -187,6 +187,8 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wPara
 	{
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 			level_editor::GeomUpdateCopyPos();
+		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+			level_editor::GameUpdateCopyPos();
 
 		return 0;
 	}
@@ -231,6 +233,8 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 	{
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 			level_editor::GeomCopy();
+		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+			level_editor::GameCopy();
 
 		return 0;
 	}
@@ -297,7 +301,7 @@ LRESULT SXLevelEditor_RenderWindow_MBUp(HWND hWnd, UINT uiMsg, WPARAM wParam, LP
 	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0)
 		level_editor::GeomTraceSetPos();
 	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0)
-		level_editor::GeomTraceSetPos();
+		level_editor::GreenTraceSetPos();
 	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0)
 		level_editor::GameTraceSetPos();
 
@@ -909,226 +913,3 @@ LRESULT SXLevelEditor_GroupBoxList_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM w
 	return 0;
 }
 
-//##########################################################################
-
-void SXLevelEditor_Transform(DWORD timeDelta)
-{
-	static bool isFirstLBMTransform = false;
-	static bool isFirstRBMTransform = false;
-	static int iNumComponent = -1;
-
-	if (!SSInput_GetKeyState(SIK_LSHIFT))
-		return;
-
-	if (level_editor::pRadioButtonGeomPosX->getCheck() || level_editor::pRadioButtonGeomRotX->getCheck() || level_editor::pRadioButtonGeomScaleX->getCheck() || level_editor::pRadioButtonGreenSelX->getCheck())
-		iNumComponent = 0;
-	else if (level_editor::pRadioButtonGeomPosY->getCheck() || level_editor::pRadioButtonGeomRotY->getCheck() || level_editor::pRadioButtonGeomScaleY->getCheck() || level_editor::pRadioButtonGreenSelY->getCheck())
-		iNumComponent = 1;
-	else if (level_editor::pRadioButtonGeomPosZ->getCheck() || level_editor::pRadioButtonGeomRotZ->getCheck() || level_editor::pRadioButtonGeomScaleZ->getCheck() || level_editor::pRadioButtonGreenSelZ->getCheck())
-		iNumComponent = 2;
-
-	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
-	{
-		if (SGeom_GetCountModels() <= 0)
-			return;
-
-		int iSelected = level_editor::pListBoxList->getSel();
-
-		float3 vTransform;
-		ISXGUIEdit *pEditX = 0, *pEditY = 0, *pEditZ = 0;
-		int iTypeTransform = -1;
-
-		//если отмечена радиокнопка на позиции
-		if (level_editor::pRadioButtonGeomPosX->getCheck() || level_editor::pRadioButtonGeomPosY->getCheck() || level_editor::pRadioButtonGeomPosZ->getCheck())
-		{
-			vTransform = *(SGeom_ModelGetPosition(iSelected));
-
-			pEditX = level_editor::pEditGeomPosX;
-			pEditY = level_editor::pEditGeomPosY;
-			pEditZ = level_editor::pEditGeomPosZ;
-			iTypeTransform = 0;
-		}
-		//если отмечена радиокнопка на поворотах
-		else if (level_editor::pRadioButtonGeomRotX->getCheck() || level_editor::pRadioButtonGeomRotY->getCheck() || level_editor::pRadioButtonGeomRotZ->getCheck())
-		{
-			vTransform = *(SGeom_ModelGetRotation(iSelected));
-
-			pEditX = level_editor::pEditGeomRotX;
-			pEditY = level_editor::pEditGeomRotY;
-			pEditZ = level_editor::pEditGeomRotZ;
-			iTypeTransform = 1;
-		}
-		//если отмечена радиокнопка на масштабировании
-		else if (level_editor::pRadioButtonGeomScaleX->getCheck() || level_editor::pRadioButtonGeomScaleY->getCheck() || level_editor::pRadioButtonGeomScaleZ->getCheck())
-		{
-			vTransform = *(SGeom_ModelGetScale(iSelected));
-
-			pEditX = level_editor::pEditGeomScaleX;
-			pEditY = level_editor::pEditGeomScaleY;
-			pEditZ = level_editor::pEditGeomScaleZ;
-			iTypeTransform = 2;
-		}
-		else
-			return;
-
-		//управление стрелками
-		if (SSInput_GetKeyState(SIK_UP))
-			vTransform[iNumComponent] += timeDelta * 0.001f;
-		if (SSInput_GetKeyState(SIK_DOWN))
-			vTransform[iNumComponent] -= timeDelta * 0.001f;
-
-		//управление мышью
-		if (SSInput_GetKeyState(SIM_LBUTTON))
-		{
-			if (isFirstRBMTransform)
-			{
-				RECT oRect;
-				GetWindowRect(GetForegroundWindow(), &oRect);
-				long lCenterX = (oRect.right + oRect.left) / 2;
-				long lCenterY = (oRect.bottom + oRect.top) / 2;
-				POINT oPoint;
-				GetCursorPos(&oPoint);
-
-				if (lCenterY != UINT(oPoint.y))
-					vTransform[iNumComponent] += timeDelta * 0.001f * float(-int(oPoint.y - lCenterY));
-			}
-			else
-				isFirstRBMTransform = true;
-			SRender_CentererCursor();
-		}
-		else
-		{
-			isFirstLBMTransform = false;
-			isFirstRBMTransform = false;
-		}
-
-		//обновляем данные в интерфейсе редактора
-		char szStr[32];
-
-		sprintf(szStr, "%f", vTransform.x);
-		pEditX->setText(szStr);
-
-		sprintf(szStr, "%f", vTransform.y);
-		pEditY->setText(szStr);
-
-		sprintf(szStr, "%f", vTransform.z);
-		pEditZ->setText(szStr);
-
-		//обновляем трансформацию
-		if (iTypeTransform == 0)
-			SGeom_ModelSetPosition(iSelected, &vTransform);
-		else if (iTypeTransform == 1)
-			SGeom_ModelSetRotation(iSelected, &vTransform);
-		else if (iTypeTransform == 2)
-			SGeom_ModelSetScale(iSelected, &vTransform);
-	}
-	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN &&
-		(
-		(level_editor::pComboBoxGreenSel->getSel() == 0 && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0) ||
-		(level_editor::pComboBoxGreenSel->getSel() == 2)
-		)
-		)
-	{
-		if (SGreen_GetCount() <= 0)
-			return;
-
-		int iSelected = level_editor::pListBoxList->getSel();
-		if (level_editor::pRadioButtonGreenSelX->getCheck() || level_editor::pRadioButtonGreenSelY->getCheck() || level_editor::pRadioButtonGreenSelZ->getCheck())
-		{
-			float3 pos;
-			if (level_editor::pComboBoxGreenSel->getSel() == 2)
-				pos = level_editor::vGreenBoxWHD;
-			else
-			{
-				float3_t pos2;
-				SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &pos2);
-				pos = pos2;
-			}
-
-			if (SSInput_GetKeyState(SIK_UP))
-				pos[iNumComponent] += float(timeDelta) * 0.001f;
-			if (SSInput_GetKeyState(SIK_DOWN))
-				pos[iNumComponent] -= float(timeDelta) * 0.001f;
-
-			if (SSInput_GetKeyState(SIM_LBUTTON))
-			{
-				if (isFirstRBMTransform)
-				{
-					RECT rc;
-					GetWindowRect(GetForegroundWindow(), &rc);
-					UINT cx = (rc.right + rc.left) / 2;
-					UINT cy = (rc.bottom + rc.top) / 2;
-					POINT p;
-					GetCursorPos(&p);
-					POINT centr;
-					centr.x = cx; centr.y = cy;
-
-					if (cy != UINT(p.y))
-						pos[iNumComponent] += float(timeDelta) * 0.001f * float(-int(p.y - cy));
-				}
-				else
-					isFirstRBMTransform = true;
-				SRender_CentererCursor();
-			}
-			else
-			{
-				isFirstLBMTransform = false;
-				isFirstRBMTransform = false;
-			}
-
-			char tmpPosX[32];
-			char tmpPosY[32];
-			char tmpPosZ[32];
-
-			sprintf(tmpPosX, "%f", pos.x);
-			sprintf(tmpPosY, "%f", pos.y);
-			sprintf(tmpPosZ, "%f", pos.z);
-
-			level_editor::pEditGreenSelX->setText(tmpPosX);
-			level_editor::pEditGreenSelY->setText(tmpPosY);
-			level_editor::pEditGreenSelZ->setText(tmpPosZ);
-
-			if (level_editor::pComboBoxGreenSel->getSel() == 2)
-				level_editor::vGreenBoxWHD = pos;
-			else
-				SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &float3_t(pos));
-		}
-	}
-
-	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
-	{
-		float fBiasY = 0.f;
-
-		if (SSInput_GetKeyState(SIK_UP))
-			fBiasY += float(timeDelta) * 0.001f;
-		if (SSInput_GetKeyState(SIK_DOWN))
-			fBiasY -= float(timeDelta) * 0.001f;
-
-		//управление мышью
-		if (SSInput_GetKeyState(SIM_LBUTTON))
-		{
-			if (isFirstRBMTransform)
-			{
-				RECT oRect;
-				GetWindowRect(GetForegroundWindow(), &oRect);
-				long lCenterX = (oRect.right + oRect.left) / 2;
-				long lCenterY = (oRect.bottom + oRect.top) / 2;
-				POINT oPoint;
-				GetCursorPos(&oPoint);
-
-				if (lCenterY != UINT(oPoint.y))
-					fBiasY += timeDelta * 0.001f * float(-int(oPoint.y - lCenterY));
-			}
-			else
-				isFirstRBMTransform = true;
-			SRender_CentererCursor();
-		}
-		else
-		{
-			isFirstLBMTransform = false;
-			isFirstRBMTransform = false;
-		}
-
-		SAIG_QuadSelectedAddPosY(fBiasY);
-	}
-}

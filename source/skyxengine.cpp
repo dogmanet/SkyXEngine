@@ -1536,10 +1536,6 @@ bool SkyXEngine_CycleMainIteration()
 			(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
 			)
 		{
-
-#if defined(SX_LEVEL_EDITOR)
-			SXLevelEditor_Transform(10);
-#endif
 			SkyXEngine_Frame(timeDelta);
 		}
 
@@ -1671,24 +1667,24 @@ void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_ve
 
 }
 
-void SkyXEngine_RFuncMtlSet(ID id, float4x4* world)
+void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 	switch (Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
 	case RENDER_STATE_SHADOW:
 		SMtrl_MtlSetMainTexture(0, id);
-		SLight_ShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SMtrl_MtlGetTypeModel(id), world);
+		SLight_ShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SMtrl_MtlGetTypeModel(id), pWorld);
 		break;
 
 	case RENDER_STATE_FREE:
 		SMtrl_MtlSetMainTexture(0, id);
-		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(world ? (*world) : SMMatrixIdentity()));
+		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(pWorld ? (*pWorld) : SMMatrixIdentity()));
 		//SGCore_ShaderUnBind();
-		SMtrl_MtlRenderStd(SMtrl_MtlGetTypeModel(id), world, 0, id);
+		SMtrl_MtlRenderStd(SMtrl_MtlGetTypeModel(id), pWorld, 0, id);
 		break;
 
 	case RENDER_STATE_MATERIAL:
-		SMtrl_MtlRender(id, world);
+		SMtrl_MtlRender(id, pWorld, pColor);
 		break;
 	}
 }

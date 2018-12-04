@@ -254,16 +254,20 @@ void level_editor::GameTraceSetPos()
 	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::idActiveElement < 0)
 		return;
 
-	ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
-
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
-	
 	float3 vResult;
 	if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))
 	{
-		pEntity->setPos(vResult);
-		level_editor::pAxesHelper->setPosition(vResult);
-		//level_editor::GameRestoreListViewObject();
+		if (level_editor::useCopyData && level_editor::idCopy >= 0)
+			level_editor::vCopyPos = vResult;
+		else
+		{
+			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
+
+			CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+			pEntity->setPos(vResult);
+			level_editor::pAxesHelper->setPosition(vResult);
+			//level_editor::GameRestoreListViewObject();
+		}
 	}
 }
 
@@ -354,6 +358,57 @@ void level_editor::GameUpdatePosRot()
 	}
 }
 
+void level_editor::GameUpdateCopyPos()
+{
+	if (!(level_editor::useCopyData && level_editor::idCopy >= 0))
+		return;
+
+	float3 vMin, vMax, vPos;
+	CBaseEntity *pEntity = SXGame_EntGet(level_editor::idCopy);
+	
+	if (!pEntity)
+		return;
+
+	pEntity->getMinMax(&vMin, &vMax);
+	vPos = pEntity->getPos();
+
+	if (vMin.x == 0 && vMin.y == 0 && vMin.z == 0 && vMax.x == 0 && vMax.y == 0 && vMax.z == 0)
+	{
+		vMin = float3(-0.5, -0.5, -0.5);
+		vMax = float3(0.5, 0.5, 0.5);
+	}
+
+	vMin = SMVector3Transform(vMin, (pEntity->getOrient().GetMatrix() * SMMatrixTranslation(vPos)));
+	vMax = SMVector3Transform(vMax, (pEntity->getOrient().GetMatrix() * SMMatrixTranslation(vPos)));
+
+	D3DXPLANE oPlane;
+	D3DXPlaneFromPoints(&oPlane,
+		&D3DXVECTOR3(vMin),
+		&D3DXVECTOR3(vMax.x, vMin.y, vMin.z),
+		&D3DXVECTOR3(vMin.x, vMin.y, vMax.z));
+
+	D3DXVECTOR3 vResult;
+	D3DXPlaneIntersectLine(&vResult, &oPlane, &D3DXVECTOR3(level_editor::vRayOrigin), &D3DXVECTOR3(float3(level_editor::vRayOrigin + level_editor::vRayDir * 10000.f)));
+
+	level_editor::vCopyPos.x = vResult.x;
+	level_editor::vCopyPos.y = vPos.y;
+	level_editor::vCopyPos.z = vResult.z;
+}
+
+void level_editor::GameCopy()
+{
+	if (!(level_editor::useCopyData && level_editor::idCopy >= 0))
+		return;
+
+	ID idCopy = SXGame_EntClone(level_editor::idCopy);
+	CBaseEntity *pEntity = SXGame_EntGet(idCopy);
+	pEntity->setPos(level_editor::vCopyPos);
+
+	level_editor::FillListBoxGameObj(level_editor::pListBoxList->getItemCount());
+
+	level_editor::idCopy = idCopy;
+}
+
 void level_editor::GameVisibleProperties(bool bf)
 {
 	level_editor::pStaticGameClass->setVisible(bf);
@@ -435,6 +490,8 @@ void level_editor::FillListBoxGameObj(int iSelect)
 	}
 	else
 	{
+		if (iSelect >= level_editor::pListBoxList->getItemCount())
+			iSelect = level_editor::pListBoxList->getItemCount() - 1;
 		level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
 		level_editor::idActiveElement = iSelect;
 		level_editor::pListBoxList->setSel(iSelect);

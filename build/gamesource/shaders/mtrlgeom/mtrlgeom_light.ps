@@ -18,5 +18,5 @@ half4 g_vNearFarLayers;
 PSO_Gbuffer main(VSO_SceneCommon IN)
 {
 	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
-	return CreateGbuffer(g_vParam, half3(1.0, 1.0, 1.0), half4(0.0, 0.0, 0.0, 1.0), IN.vPos, g_vNearFarLayers);
+	return CreateGbuffer(g_vParam, normalize(IN.vNormal), half4(0.0, 0.0, 0.0, 1.0), IN.vPos, g_vNearFarLayers);
 }

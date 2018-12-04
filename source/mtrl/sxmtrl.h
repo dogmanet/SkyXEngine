@@ -236,18 +236,6 @@ enum MTLSORT
 /*! \name Возможные слои
 @{*/
 
-//! непрозрачные неосвещаемые
-/*#define MTLTYPE_LAYER_OPAQUE_UNLIT		0.0f
-
-//! прозрачные неосвещаемые
-#define MTLTYPE_LAYER_TRANSPARENT_UNLIT	0.666667f
-
-//! непрозрачные освещаемые
-#define MTLTYPE_LAYER_OPAQUE_LIGHT		0.333333f
-
-//! прозрачные освещаемые
-#define MTLTYPE_LAYER_TRANSPARENT_LIGHT	1.0f*/
-
 //! прозрачные неосвещаемые
 #define MTLTYPE_UNLIT	0
 
@@ -383,6 +371,9 @@ SX_LIB_API long SMtrl_MtlGetCount();
 //! возвращает тип модели материала по id
 SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id);
 
+//! возвращает id дефолтного материала света
+SX_LIB_API ID SMtrl_MtlGetLightMtrl();
+
 //! возвращает сорт материала по id
 //SX_LIB_API UINT SMtrl_MtlGetSort(ID id);
 
@@ -395,8 +386,9 @@ SX_LIB_API void SMtrl_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model);
 
 //! установка параметров материала по id, вызывается перед DIP
 SX_LIB_API void SMtrl_MtlRender(
-	ID id,					//!< идентификатор материала
-	const float4x4 *pWorld	//!< указатель на мировую матрицу модели, либо 0 - тогда будет принята единичная матрица
+	ID id,						//!< идентификатор материала
+	const float4x4 *pWorld=0,	//!< указатель на мировую матрицу модели, либо 0 - тогда будет принята единичная матрица
+	const float4 *pColor=0		//!< указатель на принимаемый цвет
 	);
 
 //! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
@@ -605,7 +597,14 @@ SX_LIB_API void SMtrl_MtlSetTexture(ID id, const char *szPathTex);
 SX_LIB_API void SMtrl_MtlGetTexture(ID id, char *szName);			
 
 //! возвращает id текстуры материала
-SX_LIB_API ID SMtrl_MtlGetTextureID(ID id);						
+SX_LIB_API ID SMtrl_MtlGetTextureID(ID id);		
+
+
+//! установка свойства окрашивания в принимаемый цвет
+SX_LIB_API void SMtrl_MtlSetUseDestColor(ID id, bool useDestColor);
+
+//! возвращает значение свойства окрашивания в принимаемый цвет
+SX_LIB_API bool SMtrl_MtlGetUseDestColor(ID id);
 
 
 /*! \name Шейдеры для рендера материала

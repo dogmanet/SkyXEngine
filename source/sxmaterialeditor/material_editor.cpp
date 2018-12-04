@@ -64,6 +64,7 @@ namespace material_editor
 	ISXGUIButton *pButtonPS = 0;
 	ISXGUICheckBox *pCheckBoxAlphaTest = 0;
 	ISXGUICheckBox *pCheckBoxTransparent = 0;
+	ISXGUICheckBox *pCheckBoxDestColor;
 	ISXGUIStatic *pStaticMR = 0;
 	ISXGUIStatic *pStaticRoughness = 0;
 	ISXGUIStatic *pStaticF0 = 0;
@@ -461,19 +462,26 @@ void material_editor::InitAllElements()
 	material_editor::pCheckBoxLighting->setTransparentTextBk(true);
 	material_editor::pCheckBoxLighting->setColorBrush(RGB(220, 220, 220));
 
-	material_editor::pCheckBoxAlphaTest = SXGUICrCheckBox("Use AlphaTest", 65, 460, 90, 15, material_editor::pJobWindow->getHWND(), 0, 0, false);
+	material_editor::pCheckBoxAlphaTest = SXGUICrCheckBox("AlphaTest", 70, 460, 90, 15, material_editor::pJobWindow->getHWND(), 0, 0, false);
 	material_editor::pCheckBoxAlphaTest->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	material_editor::pCheckBoxAlphaTest->setColorText(RGB(0, 0, 0));
 	material_editor::pCheckBoxAlphaTest->setColorTextBk(RGB(255, 255, 255));
 	material_editor::pCheckBoxAlphaTest->setTransparentTextBk(true);
 	material_editor::pCheckBoxAlphaTest->setColorBrush(RGB(220, 220, 220));
 
-	material_editor::pCheckBoxTransparent = SXGUICrCheckBox("Transparent", 160, 460, 90, 15, material_editor::pJobWindow->getHWND(), 0, 0, false);
+	material_editor::pCheckBoxTransparent = SXGUICrCheckBox("Transparent", 145, 460, 90, 15, material_editor::pJobWindow->getHWND(), 0, 0, false);
 	material_editor::pCheckBoxTransparent->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	material_editor::pCheckBoxTransparent->setColorText(RGB(0, 0, 0));
 	material_editor::pCheckBoxTransparent->setColorTextBk(RGB(255, 255, 255));
 	material_editor::pCheckBoxTransparent->setTransparentTextBk(true);
 	material_editor::pCheckBoxTransparent->setColorBrush(RGB(220, 220, 220));
+
+	material_editor::pCheckBoxDestColor = SXGUICrCheckBox("DestColor", 230, 460, 90, 15, material_editor::pJobWindow->getHWND(), 0, 0, false);
+	material_editor::pCheckBoxDestColor->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	material_editor::pCheckBoxDestColor->setColorText(RGB(0, 0, 0));
+	material_editor::pCheckBoxDestColor->setColorTextBk(RGB(255, 255, 255));
+	material_editor::pCheckBoxDestColor->setTransparentTextBk(true);
+	material_editor::pCheckBoxDestColor->setColorBrush(RGB(220, 220, 220));
 
 
 	material_editor::pStaticTypeReflect = SXGUICrStatic("Reflection:", 5, 480, 60, 15, material_editor::pJobWindow->getHWND(), 0, 0);
@@ -1409,6 +1417,7 @@ void material_editor::DeleteAllElements()
 	mem_delete(material_editor::pCheckBoxDoSWinSizeVS);
 	mem_delete(material_editor::pCheckBoxDoSWinSizePS);
 	mem_delete(material_editor::pCheckBoxAlphaTest);
+	mem_delete(material_editor::pCheckBoxDestColor);
 	mem_delete(material_editor::pButtonSkyBox);
 	mem_delete(material_editor::pEditSkyBox);
 	mem_delete(material_editor::pCheckBoxModelRot);

@@ -539,7 +539,7 @@ void SkyXEngine_PreviewKill();
 void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
 
 //! функция установки материала по id, world - мировая матрица
-void SkyXEngine_RFuncMtlSet(ID id, float4x4* world);
+void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
 
 //! функция загрузки материала
 ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type);
