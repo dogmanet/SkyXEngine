@@ -51,6 +51,9 @@ SX_LIB_API void SMtrl_0Create(
 //! уничтожить подсистему
 SX_LIB_API void SMtrl_AKill();
 
+//! возвращает статус инициализации библиотеки?
+SX_LIB_API bool SMtrl_AisInit();
+
 //!@}
 
 /*! \name Обработка потери/восстановления устройства

@@ -48,6 +48,8 @@ void CLevel::clear()
 
 void CLevel::load(const char *szName, bool isGame)
 {
+	clear();
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "load level '%s' ...\n", szName);
 	sprintf(m_szName, "%s", szName);
 

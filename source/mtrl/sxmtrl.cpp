@@ -65,6 +65,11 @@ SX_LIB_API void SMtrl_AKill()
 	mem_delete(ArrMaterials);
 }
 
+SX_LIB_API bool SMtrl_AisInit()
+{
+	return (ArrMaterials ? true : false);
+}
+
 SX_LIB_API void SMtrl_OnLostDevice()
 {
 	ML_PRECOND(_VOID);

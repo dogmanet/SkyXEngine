@@ -434,7 +434,7 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 	{
 		idMat = ID_VALID(idOverrideMaterial) ? idOverrideMaterial : m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat;
 		
-		if(SMtrl_MtlGetUseDestColor(idMat))
+		if (SMtrl_AisInit() && SMtrl_MtlGetUseDestColor(idMat))
 		{
 			if(bUseGlow)
 			{
