@@ -43,7 +43,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SRender_EditorCameraSetMove(material_editor::pCheckBoxTBCam->getCheck());
 
 	char shaderskitpath[1024];
-	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\shaders_kit.cfg");
+	sprintf(shaderskitpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "/shaders_kit.cfg");
 	material_editor::pShaders = new CShadersKit();
 	material_editor::pShaders->load(shaderskitpath);
 
@@ -56,7 +56,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 	char paramlpath[1024];
-	sprintf(paramlpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "\\paraml_kit.cfg");
+	sprintf(paramlpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_EXE), "/paraml_kit.cfg");
 	material_editor::pParamL = new CParamLigthKit();
 	material_editor::pParamL->load(paramlpath);
 

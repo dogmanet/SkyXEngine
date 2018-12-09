@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
@@ -52,7 +52,7 @@
     <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

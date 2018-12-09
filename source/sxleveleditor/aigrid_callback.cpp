@@ -41,24 +41,26 @@ void level_editor::AIGridActivateAll(bool bf)
 
 	level_editor::AIGridEnableBB(!(SAIG_BBIsCreatedFinish()));
 
+	if (bf)
+	{
+		float3 vDimensions;
+		float3 vPosition;
 
-	float3 vDimensions;
-	float3 vPosition;
+		SAIG_BBGetDimensions(&vDimensions);
+		SAIG_BBGetPos(&vPosition);
 
-	SAIG_BBGetDimensions(&vDimensions);
-	SAIG_BBGetPos(&vPosition);
+		pEditAIBBDimensionsWidth->setText(String(vDimensions.x).c_str());
+		pEditAIBBDimensionsHeight->setText(String(vDimensions.y).c_str());
+		pEditAIBBDimensionsDepth->setText(String(vDimensions.z).c_str());
 
-	pEditAIBBDimensionsWidth->setText(String(vDimensions.x).c_str());
-	pEditAIBBDimensionsHeight->setText(String(vDimensions.y).c_str());
-	pEditAIBBDimensionsDepth->setText(String(vDimensions.z).c_str());
+		pEditAIBBPosX->setText(String(vPosition.x).c_str());
+		pEditAIBBPosY->setText(String(vPosition.y).c_str());
+		pEditAIBBPosZ->setText(String(vPosition.z).c_str());
 
-	pEditAIBBPosX->setText(String(vPosition.x).c_str());
-	pEditAIBBPosY->setText(String(vPosition.y).c_str());
-	pEditAIBBPosZ->setText(String(vPosition.z).c_str());
-
-	pEditAIStatsCountQuads->setText(String((DWORD)SAIG_GridGetCountQuads()).c_str());
-	pEditAIStatsCountGP->setText(String((DWORD)SAIG_GraphPointGetCount()).c_str());
-	pEditAIStatsCountSplits->setText(String((DWORD)SAIG_GridGetCountSplits()).c_str());
+		pEditAIStatsCountQuads->setText(String((DWORD)SAIG_GridGetCountQuads()).c_str());
+		pEditAIStatsCountGP->setText(String((DWORD)SAIG_GraphPointGetCount()).c_str());
+		pEditAIStatsCountSplits->setText(String((DWORD)SAIG_GridGetCountSplits()).c_str());
+	}
 }
 
 void level_editor::AIGridEnableBB(bool bf)
