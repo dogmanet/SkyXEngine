@@ -62,7 +62,7 @@ void CIngameGameState::activate()
 	Core_TimeWorkingSet(idTimerRender, true);
 	SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(true);
-	SXPhysics_EnableSimulation();
+	SPhysics_EnableSimulation();
 }
 
 void CIngameGameState::deactivate()
@@ -71,7 +71,7 @@ void CIngameGameState::deactivate()
 	Core_TimeWorkingSet(idTimerRender, false);
 	SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(false);
-	SXPhysics_DisableSimulation();
+	SPhysics_DisableSimulation();
 }
 
 //##########################################################################

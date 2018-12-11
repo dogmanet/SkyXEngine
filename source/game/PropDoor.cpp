@@ -221,7 +221,7 @@ void CPropDoor::createPhysBody()
 		m_pGhostObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
 		m_pGhostObject->setUserPointer(this);
 		
-		SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_DOOR, CG_CHARACTER | CG_DEFAULT);
+		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_DOOR, CG_CHARACTER | CG_DEFAULT);
 
 		//m_pGhostObject->activate();
 		//m_pGhostObject->setActivationState(DISABLE_DEACTIVATION);
@@ -277,7 +277,7 @@ void CPropDoor::removePhysBody()
 {
 	if(m_pGhostObject)
 	{
-		SXPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+		SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
 		mem_delete(m_pGhostObject);
 	}
 
@@ -369,7 +369,7 @@ bool CPropDoor::testPenetration()
 		if(!needsCollision(obj0, obj1))
 			continue;
 
-		btBroadphasePair *pCollisionPair = SXPhysics_GetDynWorld()->getPairCache()->findPair(collisionPair->m_pProxy0, collisionPair->m_pProxy1);
+		btBroadphasePair *pCollisionPair = SPhysics_GetDynWorld()->getPairCache()->findPair(collisionPair->m_pProxy0, collisionPair->m_pProxy1);
 
 		if(pCollisionPair->m_algorithm)
 			pCollisionPair->m_algorithm->getAllContactManifolds(manifoldArray);

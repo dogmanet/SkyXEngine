@@ -503,7 +503,7 @@ LRESULT SXLevelEditor_ButtonGreenGenerate_Click(HWND hWnd, UINT uiMsg, WPARAM wP
 
 	float fDensity = level_editor::pTrackBarGreenDensity->getPos();
 
-	SXPhysics_LoadGeom(NULL);
+	SPhysics_LoadGeom(NULL);
 
 	ID idGreen = SGreen_AddGreen(szName,
 		szMask,

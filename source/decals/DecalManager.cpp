@@ -451,7 +451,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		btTransform xForm2;
 		xForm2.setOrigin(vec + offs);
 		xForm2.getBasis().setIdentity();
-		SXPhysics_GetDynWorld()->convexSweepTest(&sphere, xForm, xForm2, cb);
+		SPhysics_GetDynWorld()->convexSweepTest(&sphere, xForm, xForm2, cb);
 		AllConvexResultCallback::part * part;
 		if(cb.hasHit())
 		{
@@ -583,9 +583,9 @@ void DecalManager::render()
 {
 	/*for(int i = 0, l = m_dbgRender.size(); i < l; i += 3)
 	{
-		SXPhysics_GetDynWorld()->getDebugDrawer()->drawTriangle(F3_BTVEC(m_dbgRender[i]), F3_BTVEC(m_dbgRender[i + 1]), F3_BTVEC(m_dbgRender[i + 2]), btVector3(1.0f, 1.0f, 1.0f), 1.0f);
+		SPhysics_GetDynWorld()->getDebugDrawer()->drawTriangle(F3_BTVEC(m_dbgRender[i]), F3_BTVEC(m_dbgRender[i + 1]), F3_BTVEC(m_dbgRender[i + 2]), btVector3(1.0f, 1.0f, 1.0f), 1.0f);
 	}*/
-	//SXPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(spherePos), spherePos.w, btVector3(1, 1, 1));
+	//SPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(spherePos), spherePos.w, btVector3(1, 1, 1));
 	
 	updateBuffer();
 

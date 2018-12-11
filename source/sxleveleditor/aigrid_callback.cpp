@@ -112,7 +112,7 @@ void level_editor::AIGridTraceSelect()
 	{
 		float3 vEndPos = level_editor::vRayDirDirect + level_editor::vRayDir * 10000.0f;
 		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(level_editor::vRayDirDirect), F3_BTVEC(vEndPos));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(level_editor::vRayDirDirect), F3_BTVEC(vEndPos), cb);
+		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(level_editor::vRayDirDirect), F3_BTVEC(vEndPos), cb);
 
 		if (cb.hasHit())
 			SAIG_QuadAdd(&BTVEC_F3(cb.m_hitPointWorld));

@@ -64,7 +64,7 @@ void CBaseTrigger::enable()
 		m_idUpdateInterval = SET_INTERVAL(update, 0);
 		if(m_pGhostObject)
 		{
-			SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
+			SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
 		}
 	}
 }
@@ -76,7 +76,7 @@ void CBaseTrigger::disable()
 		CLEAR_INTERVAL(m_idUpdateInterval);
 		if(m_pGhostObject)
 		{
-			SXPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+			SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
 		}
 	}
 }
@@ -115,7 +115,7 @@ void CBaseTrigger::createPhysBody()
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
-		SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
+		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
 	}
 }
 
@@ -123,7 +123,7 @@ void CBaseTrigger::removePhysBody()
 {
 	if(m_pGhostObject)
 	{
-		SXPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+		SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
 		mem_delete(m_pGhostObject);
 	}
 }
@@ -157,7 +157,7 @@ void CBaseTrigger::onSync()
 	for(int i = 0; i < iTouches; ++i)
 	{
 		const btBroadphasePair &pair = pairArray[i];
-		btBroadphasePair *pCollisionPair = SXPhysics_GetDynWorld()->getPairCache()->findPair(pair.m_pProxy0, pair.m_pProxy1);
+		btBroadphasePair *pCollisionPair = SPhysics_GetDynWorld()->getPairCache()->findPair(pair.m_pProxy0, pair.m_pProxy1);
 		if(!pCollisionPair)
 		{
 			continue;

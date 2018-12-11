@@ -298,8 +298,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
 
-	SXPhysics_0Create();
-	SXPhysics_Dbg_Set(SkyXEngine_PrintfLog);
+	SPhysics_0Create();
+	SPhysics_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB physics initialized\n");
 
@@ -327,14 +327,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 
 #ifndef SX_PARTICLES_EDITOR
-	SXGame_0Create(hWnd3DCurr, 
+	SGame_0Create(hWnd3DCurr, 
 #ifdef SX_GAME
 		true
 #else
 		false
 #endif
 		);
-	SXGame_Dbg_Set(SkyXEngine_PrintfLog);
+	SGame_Dbg_Set(SkyXEngine_PrintfLog);
 #endif
 	
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
@@ -354,7 +354,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #endif
 
 #ifdef SX_GAME
-	SRender_SetCamera(SXGame_GetActiveCamera());
+	SRender_SetCamera(SGame_GetActiveCamera());
 #endif
 
 
@@ -393,14 +393,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #ifndef SX_PARTICLES_EDITOR
 	Core_MTaskAdd([](){
 		Core_PStartSection(PERF_SECTION_GAME_UPDATE);
-		SXGame_Update();
+		SGame_Update();
 		Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 	}, CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING);
 #endif
 
 	Core_MTaskAdd([](){
 		Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
-		SXPhysics_Update();
+		SPhysics_Update();
 		Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 	}, CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING);
 
@@ -412,14 +412,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #ifndef SX_PARTICLES_EDITOR
 	Core_MTaskAdd([](){
 		Core_PStartSection(PERF_SECTION_GAME_SYNC);
-		SXGame_Sync();
+		SGame_Sync();
 		Core_PEndSection(PERF_SECTION_GAME_SYNC);
 	}, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
 #endif
 	Core_MTaskAdd([]()
 	{
 		Core_PStartSection(PERF_SECTION_PHYS_SYNC);
-		SXPhysics_Sync();
+		SPhysics_Sync();
 		Core_PEndSection(PERF_SECTION_PHYS_SYNC);
 	}, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
 */
@@ -427,7 +427,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
 
 #ifndef SX_PARTICLES_EDITOR
-	SXGame_UpdateSetThreadNum(Core_MGetThreadCount());
+	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
 #endif
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
@@ -597,7 +597,7 @@ LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LP
 		break;
 	}
 
-	if(!SXGame_AddWMsg(uiMessage, wParam, lParam))
+	if(!SGame_AddWMsg(uiMessage, wParam, lParam))
 	{
 		return(TRUE);
 	}
@@ -783,9 +783,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_GAME_UPDATE);
-	CLibUpdate updateGame(SXGame_Update, PERF_SECTION_GAME_UPDATE);
+	CLibUpdate updateGame(SGame_Update, PERF_SECTION_GAME_UPDATE);
 	ID idUpdateGame = Core_MForLoop(0, Core_MGetThreadCount(), &updateGame, 1);
-	//SXGame_Update();
+	//SGame_Update();
 	Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 	DelayLibUpdateGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
@@ -815,7 +815,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
-	SXPhysics_Update();
+	SPhysics_Update();
 	Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 	DelayLibUpdatePhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
@@ -831,7 +831,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_PHYS_SYNC);
-	SXPhysics_Sync();
+	SPhysics_Sync();
 	Core_PEndSection(PERF_SECTION_PHYS_SYNC);
 	DelayLibSyncPhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
@@ -839,7 +839,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_GAME_SYNC);
-	SXGame_Sync();
+	SGame_Sync();
 	Core_PEndSection(PERF_SECTION_GAME_SYNC);
 	DelayLibSyncGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
@@ -987,13 +987,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #if defined(SX_GAME)
 	Core_PStartSection(PERF_SECTION_RENDER_HUD);
-	SXGame_RenderHUD();
+	SGame_RenderHUD();
 	Core_PEndSection(PERF_SECTION_RENDER_HUD);
 #endif
 
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
 	Core_PStartSection(PERF_SECTION_RENDER_GAME);
-	SXGame_Render();
+	SGame_Render();
 	Core_PEndSection(PERF_SECTION_RENDER_GAME);
 #endif
 
@@ -1046,7 +1046,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 
 #ifdef _DEBUG
-	SXPhysics_DebugRender();
+	SPhysics_DebugRender();
 #endif
 
 	
@@ -1092,7 +1092,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 		sprintf(debugstr + strlen(debugstr), "\n### Engine version %s\n", SKYXENGINE_VERSION);
 
-		//SXGame_SetDebugText(debugstr);
+		//SGame_SetDebugText(debugstr);
 
 		Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
 		Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
@@ -1502,7 +1502,7 @@ bool SkyXEngine_CycleMainIteration()
 		DWORD timeDelta = (currTime - lastTime);
 		Core_RIntSet(G_RI_INT_TIME_DELTA, timeDelta);
 #ifdef SX_GAME
-		SRender_SetCamera(SXGame_GetActiveCamera());
+		SRender_SetCamera(SGame_GetActiveCamera());
 #endif
 
 
@@ -1543,11 +1543,11 @@ bool SkyXEngine_CycleMainIteration()
 void SkyXEngine_Kill()
 {
 #if !defined(SX_PARTICLES_EDITOR)
-	SXGame_AKill();
+	SGame_AKill();
 #endif
 	SPE_AKill();
 	SXDecals_AKill();
-	SXPhysics_AKill();
+	SPhysics_AKill();
 	SXAnim_AKill();
 
 	SGeom_AKill();
@@ -1703,7 +1703,7 @@ bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t *pPos)
 	static btTransform xForm2;
 	xForm2.setOrigin(F3_BTVEC(end));
 	xForm2.getBasis().setIdentity();
-	SXPhysics_GetDynWorld()->convexSweepTest(&boxfull, xForm, xForm2, cb);
+	SPhysics_GetDynWorld()->convexSweepTest(&boxfull, xForm, xForm2, cb);
 
 	if (cb.hasHit())
 	{
@@ -1729,7 +1729,7 @@ bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t *pPos)
 				xForm.getBasis().setIdentity();
 				xForm2.setOrigin(vec + offs);
 				xForm2.getBasis().setIdentity();
-				SXPhysics_GetDynWorld()->convexSweepTest(&boxoff, xForm, xForm2, cb);
+				SPhysics_GetDynWorld()->convexSweepTest(&boxoff, xForm, xForm2, cb);
 
 				if (cb.hasHit())
 				{
@@ -1753,7 +1753,7 @@ bool SkyXEngine_RFuncParticlesPhyCollision(const float3 * lastpos, const float3*
 		return false;
 
 	btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos));
-	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos), cb);
+	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(*lastpos), F3_BTVEC(*nextpos), cb);
 
 	if (cb.hasHit())
 	{
@@ -1777,7 +1777,7 @@ bool SkyXEngine_RFuncGreenIntersect(const float3 *pStart, const float3 *pFinish,
 	float3 vDir = float3(0, -1, 0);
 
 	btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(*pStart), F3_BTVEC(*pFinish));
-	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(*pStart), F3_BTVEC(*pFinish), cb);
+	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(*pStart), F3_BTVEC(*pFinish), cb);
 
 	if (cb.hasHit())
 	{

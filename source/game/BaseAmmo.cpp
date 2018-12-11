@@ -112,7 +112,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 		cb.m_collisionFilterGroup = CG_BULLETFIRE;
 		cb.m_collisionFilterMask = CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER);
 		cb.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(vStart), F3_BTVEC(end), cb);
+		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(vStart), F3_BTVEC(end), cb);
 
 		g_pTracer->lineTo(vStart, 0.0f);
 		//g_pTracer->begin(vStart);
@@ -120,7 +120,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 		{
 			AllHitsNotMeRayResultCallback cbBack(pAttacker ? pAttacker->getBtCollisionObject() : NULL, F3_BTVEC(end), F3_BTVEC(vStart));
 			cbBack.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
-			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(end), F3_BTVEC(vStart), cbBack);
+			SPhysics_GetDynWorld()->rayTest(F3_BTVEC(end), F3_BTVEC(vStart), cbBack);
 
 			Array<HitPoint> aHitPoints;
 			aHitPoints.reserve(cb.m_hitFractions.size() + cbBack.m_hitFractions.size());
@@ -141,7 +141,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 			for(int i = 0, l = aHitPoints.size(); i < l; ++i)
 			{
 
-				ID idMtl = SXPhysics_GetMtlID(aHitPoints[i].pCollisionObject, &aHitPoints[i].shapeInfo);
+				ID idMtl = SPhysics_GetMtlID(aHitPoints[i].pCollisionObject, &aHitPoints[i].shapeInfo);
 				if(ID_VALID(idMtl) && !aHitPoints[i].isExit)
 				{
 					float fHitChance = SMtrl_MtlGetHitChance(idMtl);

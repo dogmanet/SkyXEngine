@@ -456,8 +456,8 @@ void CPlayer::respawn()
 	{
 		m_fHealth = 100.0f;
 
-		SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
-		SXPhysics_GetDynWorld()->addAction(m_pCharacter);
+		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+		SPhysics_GetDynWorld()->addAction(m_pCharacter);
 		spawn();
 	}
 }

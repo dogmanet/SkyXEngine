@@ -111,7 +111,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 	SMtrl_OnLostDevice();
 	SPE_OnLostDevice();
 	SPP_OnLostDevice();
-	SXGame_OnLostDevice();
+	SGame_OnLostDevice();
 
 	rfunc::InitModeWindow();
 	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
@@ -131,7 +131,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SMtrl_OnResetDevice();
 		SGreen_OnResetDevice();
 		SPE_OnResetDevice();
-		SXGame_OnResetDevice();
+		SGame_OnResetDevice();
 		SPP_OnDeviceReset();
 
 		gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);

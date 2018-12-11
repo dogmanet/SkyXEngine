@@ -276,10 +276,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	
 
-	int countgc = SXGame_EntGetClassListCount();
+	int countgc = SGame_EntGetClassListCount();
 	const char** listgc = new const char*[countgc];
 
-	SXGame_EntGetClassList(listgc, countgc);
+	SGame_EntGetClassList(listgc, countgc);
 	for (int i = 0; i < countgc; ++i)
 	{
 		level_editor::pComboBoxGameClass->addItem(listgc[i]);

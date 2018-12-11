@@ -71,77 +71,77 @@ struct SurfaceInfo
 
 /*! Инициализирует библиотеку
 */
-SX_LIB_API void SXPhysics_0Create();
+SX_LIB_API void SPhysics_0Create();
 
 /*! Деинициализирует библиотеку
 */
-SX_LIB_API void SXPhysics_AKill();
+SX_LIB_API void SPhysics_AKill();
 
 /*! Устанавливает функцию сообщений
 */
-SX_LIB_API void SXPhysics_Dbg_Set(report_func rf);
+SX_LIB_API void SPhysics_Dbg_Set(report_func rf);
 
 /*! Устанавливает количество потоков обновления физики
 */
-SX_LIB_API void SXPhysics_UpdateSetThreadNum(int num);
+SX_LIB_API void SPhysics_UpdateSetThreadNum(int num);
 
 /*! Выполняет обновление физики
 	@param[in] thread Номер потока, выполняющего обновление
 */
-SX_LIB_API void SXPhysics_Update(int thread = 0);
+SX_LIB_API void SPhysics_Update(int thread = 0);
 
 /*! Выполняет синхронизацию. Для многопоточного обновления
 */
-SX_LIB_API void SXPhysics_Sync();
+SX_LIB_API void SPhysics_Sync();
 
 /*! Загружает информацию о геометрии уровня
 */
-SX_LIB_API void SXPhysics_LoadGeom(const char * file = NULL);
+SX_LIB_API void SPhysics_LoadGeom(const char * file = NULL);
 
 /*! Выгружает информацию о геометрии уровня
 */
-SX_LIB_API void SXPhysics_UnloadGeom();
+SX_LIB_API void SPhysics_UnloadGeom();
 
 /*! Загружает информацию о геометрии уровня
 */
-SX_LIB_API bool SXPhysics_ImportGeom(const char * file);
+SX_LIB_API bool SPhysics_ImportGeom(const char * file);
 
 /*! Выгружает информацию о геометрии уровня
 */
-SX_LIB_API bool SXPhysics_ExportGeom(const char * file);
+SX_LIB_API bool SPhysics_ExportGeom(const char * file);
 
 /*! Выполняет отрисовку физических объектов
 */
-SX_LIB_API void SXPhysics_DebugRender();
+SX_LIB_API void SPhysics_DebugRender();
 
 /*! Добавляет объект в симуляцию
 */
-SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody);
-SX_LIB_API void SXPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask);
+SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody);
+SX_LIB_API void SPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask);
 
 /*! Удаляет объект из симуляции
 */
-SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody);
+SX_LIB_API void SPhysics_RemoveShape(btRigidBody * pBody);
 
-SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+SX_LIB_API int SPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
-SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+SX_LIB_API ID SPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
-SX_LIB_API btDiscreteDynamicsWorldMt * SXPhysics_GetDynWorld();
+SX_LIB_API btDiscreteDynamicsWorldMt * SPhysics_GetDynWorld();
 
 /*! Запускает симуляцию
 */
-SX_LIB_API void SXPhysics_EnableSimulation();
+SX_LIB_API void SPhysics_EnableSimulation();
 
 /*! Останавливает симуляцию
 */
-SX_LIB_API void SXPhysics_DisableSimulation();
+SX_LIB_API void SPhysics_DisableSimulation();
 
-SX_LIB_API void SXPhysics_DumpStats();
+SX_LIB_API void SPhysics_DumpStats();
 
-SX_LIB_API void SXPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices);
+SX_LIB_API void SPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices);
 
-SX_LIB_API void SXPhysics_ReleaseHull(btVector3 *pData, int iNumVertices);
+SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices);
 
 #endif
 

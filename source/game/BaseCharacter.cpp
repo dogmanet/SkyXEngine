@@ -98,11 +98,11 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	//m_pCharacter->setFallSpeed(30.0f);
 	m_pCharacter->setMaxPenetrationDepth(0.1f);
 
-	SXPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+	SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
 
 	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
-	SXPhysics_GetDynWorld()->addAction(m_pCharacter);
+	SPhysics_GetDynWorld()->addAction(m_pCharacter);
 
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
@@ -207,11 +207,11 @@ void CBaseCharacter::playFootstepsSound()
 			float3 start = getPos() + float3(0.0f, 0.5f, 0.0f),
 				end = start + float3(0.0f, -2.0f, 0.0f);
 			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-			SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+			SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 			if(cb.hasHit()/* && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0*/)
 			{
-				MTLTYPE_PHYSIC type = (MTLTYPE_PHYSIC)SXPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
+				MTLTYPE_PHYSIC type = (MTLTYPE_PHYSIC)SPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
 				g_pGameData->playFootstepSound(type, BTVEC_F3(cb.m_hitPointWorld));
 			}
 		}
@@ -231,7 +231,7 @@ float CBaseCharacter::getAimRange()
 	float3 end = start + dir * 1000.0f;
 
 	btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 	if(cb.hasHit())
 	{
@@ -363,7 +363,7 @@ void CBaseCharacter::initHitboxes()
 
 		pRigidBody->setCollisionFlags(pRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
-		SXPhysics_AddShapeEx(pRigidBody, CG_HITBOX, CG_BULLETFIRE);
+		SPhysics_AddShapeEx(pRigidBody, CG_HITBOX, CG_BULLETFIRE);
 		m_pHitboxBodies[i] = pRigidBody;
 	}
 
@@ -404,7 +404,7 @@ void CBaseCharacter::releaseHitboxes()
 
 	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
 	{
-		SXPhysics_RemoveShape(m_pHitboxBodies[i]);
+		SPhysics_RemoveShape(m_pHitboxBodies[i]);
 
 		btMotionState * motionState = m_pHitboxBodies[i]->getMotionState();
 
@@ -483,8 +483,8 @@ void CBaseCharacter::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 		m_idQuadCurr = -1;
 	}
 
-	SXPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
-	SXPhysics_GetDynWorld()->removeAction(m_pCharacter);
+	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
 
 	cancelNextAnimation();
 
@@ -521,7 +521,7 @@ void CBaseCharacter::use(bool start)
 		float3 end = start + dir * 1.5f;
 
 		btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 		if(cb.hasHit())
 		{

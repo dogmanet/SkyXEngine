@@ -184,11 +184,11 @@ GameData::GameData(HWND hWnd, bool isGame):
 			return;
 		}
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "load entity\n");
-		SXGame_LoadEnts(argv[1]);
-		SXGame_OnLevelLoad(argv[2]);
+		SGame_LoadEnts(argv[1]);
+		SGame_OnLevelLoad(argv[2]);
 	});
 	Core_0RegisterConcmd("ent_unload_level", [](){
-		SXGame_UnloadObjLevel();
+		SGame_UnloadObjLevel();
 	});
 	Core_0RegisterConcmdArg("ent_save_level", [](int argc, const char ** argv){
 		if(argc != 2)
@@ -196,7 +196,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: ent_save_level <entfile>");
 			return;
 		}
-		SXGame_SaveEnts(argv[1]);
+		SGame_SaveEnts(argv[1]);
 	});
 
 	Core_0RegisterConcmdArg("ent_dump_info", [](int argc, const char ** argv)
@@ -231,7 +231,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		for(int i = 0; i < 0; ++i)
 		{
-			CBaseEntity* bEnt = SXGame_CreateEntity("npc_zombie");
+			CBaseEntity* bEnt = SGame_CreateEntity("npc_zombie");
 			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 			bEnt->setKV("origin", "0 1 0");
 		}
@@ -801,7 +801,7 @@ void GameData::update()
 	for(int i = 0; i < 60000; ++i)
 	{
 		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 	}
 	DWORD t1 = GetTickCount();
 	printf(COLOR_LRED "TIME: %.3fs\n" COLOR_RESET, (float)(t1 - t0) / 1000.0f);*/

@@ -74,8 +74,8 @@ void level_editor::GameSel(int iSelected)
 	ID idGameObj = level_editor::pListBoxList->getItemData(iSelected);
 	level_editor::idActiveElement = iSelected;
 	level_editor::iActiveGroupType = EDITORS_LEVEL_GROUPTYPE_GAME;
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
-	proptable_t *pPropertyTable = SXGame_EntGetProptable(pEntity->getClassName());
+	CBaseEntity *pEntity = SGame_EntGet(idGameObj);
+	proptable_t *pPropertyTable = SGame_EntGetProptable(pEntity->getClassName());
 
 	//определяем класс
 	char szComboBoxClass[256];
@@ -216,7 +216,7 @@ void level_editor::GameSel(int iSelected)
 					CBaseEntity *pEntity2 = level_editor::GameGetObj4Connect(pEntity, ppParts[0]);
 					if (pEntity2)
 					{
-						proptable_t *pPropTable2 = SXGame_EntGetProptable(pEntity2->getClassName());
+						proptable_t *pPropTable2 = SGame_EntGetProptable(pEntity2->getClassName());
 						propdata_t *pPropData2 = 0;
 						while(pPropTable2)
 						{
@@ -263,7 +263,7 @@ void level_editor::GameTraceSetPos()
 		{
 			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
 
-			CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+			CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 			pEntity->setPos(vResult);
 			level_editor::pAxesHelper->setPosition(vResult);
 			//level_editor::GameRestoreListViewObject();
@@ -286,7 +286,7 @@ void level_editor::GameTraceCreate()
 		if (idOld != level_editor::idActiveElement)
 		{
 			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
-			CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+			CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 			pEntity->setPos(vResult);
 			level_editor::pAxesHelper->setPosition(vResult);
 		}
@@ -301,7 +301,7 @@ void level_editor::GameTraceCreate()
 		return;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(iSelected);
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+	CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 	char szStr4096[4096];
 
 	for (int i = 0; i < level_editor::pListViewGameClass->getStringCount(); ++i)
@@ -321,7 +321,7 @@ CBaseEntity* level_editor::GameGetObj4Connect(CBaseEntity* pEntity, const char *
 	else if (stricmp(szName, "!parent") == 0)
 		pEnt2 = pEntity->getParent();
 	else
-		pEnt2 = SXGame_EntGetByName(szName, 0);
+		pEnt2 = SGame_EntGetByName(szName, 0);
 
 	return pEnt2;
 }
@@ -339,7 +339,7 @@ void level_editor::GameUpdatePosRot()
 		return;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+	CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 	propdata_t *pPropData = 0;
 	char szVal[256];
 
@@ -364,7 +364,7 @@ void level_editor::GameUpdateCopyPos()
 		return;
 
 	float3 vMin, vMax, vPos;
-	CBaseEntity *pEntity = SXGame_EntGet(level_editor::idCopy);
+	CBaseEntity *pEntity = SGame_EntGet(level_editor::idCopy);
 	
 	if (!pEntity)
 		return;
@@ -400,7 +400,7 @@ void level_editor::GameCopy()
 	if (!(level_editor::useCopyData && level_editor::idCopy >= 0))
 		return;
 
-	ID idCopy = SXGame_EntClone(level_editor::idCopy);
+	ID idCopy = SGame_EntClone(level_editor::idCopy);
 
 	if (idCopy < 0)
 	{
@@ -409,7 +409,7 @@ void level_editor::GameCopy()
 		return;
 	}
 
-	CBaseEntity *pEntity = SXGame_EntGet(idCopy);
+	CBaseEntity *pEntity = SGame_EntGet(idCopy);
 	pEntity->setPos(level_editor::vCopyPos);
 
 	level_editor::FillListBoxGameObj(level_editor::pListBoxList->getItemCount());
@@ -444,7 +444,7 @@ void level_editor::GameTransformByHelper()
 		return;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+	CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 
 	if (!pEntity)
 		return;
@@ -462,10 +462,10 @@ void level_editor::GameDelete(int iSelected)
 	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && iSelected >= 0))
 		return;
 
-	if (SXGame_EntGetCount() > 0 && iSelected < SXGame_EntGetCount())
+	if (SGame_EntGetCount() > 0 && iSelected < SGame_EntGetCount())
 	{
 		ID idGameObj = level_editor::pListBoxList->getItemData(iSelected);
-		SXGame_RemoveEntity(SXGame_EntGet(idGameObj));
+		SGame_RemoveEntity(SGame_EntGet(idGameObj));
 		level_editor::pListBoxList->deleteItem(iSelected);
 	}
 }
@@ -474,12 +474,12 @@ void level_editor::FillListBoxGameObj(int iSelect)
 {
 	level_editor::pListBoxList->clear();
 
-	int iCountGameObj = SXGame_EntGetCount();
+	int iCountGameObj = SGame_EntGetCount();
 	int iCountGameObj2 = 0;
 	char szNote[1024];
 	for(int i = 0; i < iCountGameObj; ++i)
 	{
-		CBaseEntity *pEntity = SXGame_EntGet(i);
+		CBaseEntity *pEntity = SGame_EntGet(i);
 		if(pEntity && pEntity->getFlags() & EF_LEVEL)
 		{
 			sprintf(szNote, "%s / %s", pEntity->getName(), pEntity->getClassName());
@@ -656,7 +656,7 @@ LRESULT SXLevelEditor_EditGameValue_Enter(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 	level_editor::pEditGameValue->getText(txt, 256);
 	level_editor::pListViewGameClass->setItemText(txt, 1, iSelString);
 	ID idGameObj = level_editor::pListBoxList->getItemData(iSelected);
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+	CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 	if (pEntity)
 	{
 		propdata_t* pd = (propdata_t*)level_editor::pListViewGameClass->getItemData(iSelString);
@@ -696,7 +696,7 @@ LRESULT SXLevelEditor_ButtonGameValue_Click(HWND hWnd, UINT uiMsg, WPARAM wParam
 		int iSelected = level_editor::pListBoxList->getSel();
 		level_editor::pListViewGameClass->setItemText((char*)sRpath.c_str(), 1, iSelString);
 		ID idGameObj = level_editor::pListBoxList->getItemData(iSelected);
-		CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+		CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 		if (pEntity)
 			pEntity->setKV(pPropData->szKey, sRpath.c_str());
 	}
@@ -715,7 +715,7 @@ LRESULT SXLevelEditor_ButtonGameCreate_Click(HWND hWnd, UINT uiMsg, WPARAM wPara
 	char szText[256];
 	level_editor::pComboBoxGameClass->getItemText(level_editor::pComboBoxGameClass->getSel(), szText);
 
-	CBaseEntity *pEntity = SXGame_CreateEntity(szText);
+	CBaseEntity *pEntity = SGame_CreateEntity(szText);
 	pEntity->setFlags(pEntity->getFlags() | EF_EXPORT | EF_LEVEL);
 
 	SXLevelEditor_ButtonGameObjectOpen_Click(hWnd, uiMsg, wParam, lParam);
@@ -739,13 +739,13 @@ LRESULT SXLevelEditor_EditGameConnectionsName_IN(HWND hWnd, UINT uiMsg, WPARAM w
 		return 0;
 
 	char *szEditTextLower = CharLower(szEditText);
-	int iCountObj = SXGame_EntGetCount();
+	int iCountObj = SGame_EntGetCount();
 	char szName[256];
 	char *szNameLower = 0;
 	char *szFound = 0;
 	for (int i = 0; i < iCountObj; ++i)
 	{
-		CBaseEntity *pEntity = SXGame_EntGet(i);
+		CBaseEntity *pEntity = SGame_EntGet(i);
 		if (pEntity)
 		{
 			strcpy(szName, pEntity->getName());
@@ -795,7 +795,7 @@ LRESULT SXLevelEditor_ButtonGameTab_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 LRESULT SXLevelEditor_ListViewGameConnections_Click()
 {
 	ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
-	CBaseEntity *pEntity = SXGame_EntGet(idGameObj);
+	CBaseEntity *pEntity = SGame_EntGet(idGameObj);
 
 	char szStr[256];
 	char szStr2[256];
@@ -845,7 +845,7 @@ LRESULT SXLevelEditor_ListViewGameConnections_Click()
 
 	//устанавилваем данные в ComboBoxGameConnectionsAction и выделяем используемый
 
-	proptable_t *pPropTable = SXGame_EntGetProptable(pEnt2->getClassName());
+	proptable_t *pPropTable = SGame_EntGetProptable(pEnt2->getClassName());
 	propdata_t *pPropData = 0;
 	while (pPropTable)
 	{
@@ -901,7 +901,7 @@ LRESULT SXLevelEditor_EditGameConnectionsName_Enter(HWND hWnd, UINT uiMsg, WPARA
 		return 0;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(idSelListBoxList);
-	CBaseEntity *pEnt = SXGame_EntGet(idGameObj);
+	CBaseEntity *pEnt = SGame_EntGet(idGameObj);
 
 	char szBuffer256[256];
 	szBuffer256[0] = 0;
@@ -923,7 +923,7 @@ LRESULT SXLevelEditor_EditGameConnectionsName_Enter(HWND hWnd, UINT uiMsg, WPARA
 	// если энтить с введенным именем существует
 	if (pEnt2)
 	{
-		proptable_t *pPropTable2 = SXGame_EntGetProptable(pEnt2->getClassName());
+		proptable_t *pPropTable2 = SGame_EntGetProptable(pEnt2->getClassName());
 		propdata_t *pPropData2 = 0;
 		level_editor::pComboBoxGameConnectionsAction->clear();
 
@@ -980,8 +980,8 @@ LRESULT SXLevelEditor_EditGameConnections_Enter(HWND hWnd, UINT uiMsg, WPARAM wP
 		return 0;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(idSelListBoxList);
-	CBaseEntity *pEnt = SXGame_EntGet(idGameObj);
-	proptable_t *pPropTable = SXGame_EntGetProptable(pEnt->getClassName());
+	CBaseEntity *pEnt = SGame_EntGet(idGameObj);
+	proptable_t *pPropTable = SGame_EntGetProptable(pEnt->getClassName());
 	propdata_t *pPropData = (propdata_t*)(level_editor::pListViewGameConnections->getItemData(idSelStrTable));
 
 	//устанавливаем в выделенную в таблице строку данные из редакторов
@@ -1048,7 +1048,7 @@ void SXLevelEditor_VeldStringGameConnections(CBaseEntity *pEntity, propdata_t *p
 		proptable_t *pPropTable2 = 0;
 
 		if (pEnt2)
-			pPropTable2 = SXGame_EntGetProptable(pEnt2->getClassName());
+			pPropTable2 = SGame_EntGetProptable(pEnt2->getClassName());
 
 		szBuffer256[0] = 0;
 		level_editor::pListViewGameConnections->getItemText(szBuffer256, 2, i, 256);
@@ -1108,8 +1108,8 @@ LRESULT SXLevelEditor_ButtonGameConnectionsCreate_Click(HWND hWnd, UINT uiMsg, W
 	}
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(idSelListBoxList);
-	CBaseEntity *pEnt = SXGame_EntGet(idGameObj);
-	proptable_t *pPropTable = SXGame_EntGetProptable(pEnt->getClassName());
+	CBaseEntity *pEnt = SGame_EntGet(idGameObj);
+	proptable_t *pPropTable = SGame_EntGetProptable(pEnt->getClassName());
 
 	if (!pEnt)
 		return 0;
@@ -1187,8 +1187,8 @@ LRESULT SXLevelEditor_ButtonGameConnectionsDelete_Click(HWND hWnd, UINT uiMsg, W
 		return 0;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(idSelListBoxList);
-	CBaseEntity *pEnt = SXGame_EntGet(idGameObj);
-	proptable_t *pPropTable = SXGame_EntGetProptable(pEnt->getClassName());
+	CBaseEntity *pEnt = SGame_EntGet(idGameObj);
+	proptable_t *pPropTable = SGame_EntGetProptable(pEnt->getClassName());
 	propdata_t *pPropData = (propdata_t*)(level_editor::pListViewGameConnections->getItemData(idSelStrTable));
 
 	if (!pEnt)

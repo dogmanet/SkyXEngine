@@ -102,13 +102,13 @@ void ccmd_save_as(int argc, const char ** argv)
 	}
 }
 
-SX_LIB_API ICamera * SXGame_GetActiveCamera()
+SX_LIB_API ICamera * SGame_GetActiveCamera()
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pActiveCamera->getCamera());
 }
 
-SX_LIB_API void SXGame_0Create(HWND hWnd, bool isGame)
+SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame)
 {
 	if(g_pGameData)
 	{
@@ -125,14 +125,14 @@ SX_LIB_API void SXGame_0Create(HWND hWnd, bool isGame)
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);
 }
-SX_LIB_API void SXGame_AKill()
+SX_LIB_API void SGame_AKill()
 {
 	SG_PRECOND(_VOID);
 	mem_delete(g_pGameData);
 	mem_release(g_pFigureBox);
 }
 
-SX_LIB_API void SXGame_Update(int thread)
+SX_LIB_API void SGame_Update(int thread)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->update(thread);
@@ -141,66 +141,66 @@ SX_LIB_API void SXGame_Update(int thread)
 		g_pGameData->update();
 	}
 }
-SX_LIB_API void SXGame_UpdateSetThreadNum(int num)
+SX_LIB_API void SGame_UpdateSetThreadNum(int num)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->setThreadNum(num);
 }
-SX_LIB_API void SXGame_Sync()
+SX_LIB_API void SGame_Sync()
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->sync();
 	g_pGameData->sync();
 }
 
-SX_LIB_API void SXGame_Render()
+SX_LIB_API void SGame_Render()
 {
 	SG_PRECOND(_VOID);
 	//GameData::m_pMgr->render();
 	g_pGameData->render();
 }
 
-SX_LIB_API void SXGame_RenderHUD()
+SX_LIB_API void SGame_RenderHUD()
 {
 	SG_PRECOND(_VOID);
 	g_pGameData->renderHUD();
 }
 
 
-SX_LIB_API void SXGame_Dbg_Set(report_func rf)
+SX_LIB_API void SGame_Dbg_Set(report_func rf)
 {
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SXGame_LoadEnts(const char * file)
+SX_LIB_API void SGame_LoadEnts(const char * file)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->import(file);
 }
 
-SX_LIB_API void SXGame_UnloadObjLevel()
+SX_LIB_API void SGame_UnloadObjLevel()
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->unloadObjLevel();
 }
 
-SX_LIB_API void SXGame_SaveEnts(const char * file)
+SX_LIB_API void SGame_SaveEnts(const char * file)
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->exportList(file);
 }
 
-SX_LIB_API void SXGame_PlayerSpawn()
+SX_LIB_API void SGame_PlayerSpawn()
 {
 	SG_PRECOND(_VOID);
 	GameData::m_pPlayer->spawn();
 }
 
-SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos)
+SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos)
 {
 	SG_PRECOND(_VOID);
 
-	CBaseEntity* bEnt = SXGame_EntGet(id);
+	CBaseEntity* bEnt = SGame_EntGet(id);
 	if (!bEnt)
 		return;
 
@@ -286,42 +286,42 @@ SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRender
 	}
 }
 
-SX_LIB_API int SXGame_EntGetClassListCount()
+SX_LIB_API int SGame_EntGetClassListCount()
 {
 	SG_PRECOND(-1);
 
 	return(CEntityFactoryMap::GetInstance()->getListCount());
 }
 
-SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count)
+SX_LIB_API void SGame_EntGetClassList(const char ** pszClassList, int count)
 {
 	SG_PRECOND(_VOID);
 
 	CEntityFactoryMap::GetInstance()->getListing(pszClassList, count);
 }
 
-SX_LIB_API CBaseEntity * SXGame_CreateEntity(const char * classname)
+SX_LIB_API CBaseEntity * SGame_CreateEntity(const char * classname)
 {
 	SG_PRECOND(NULL);
 
 	return(CREATE_ENTITY(classname, GameData::m_pMgr));
 }
 
-SX_LIB_API void SXGame_RemoveEntity(CBaseEntity * pEnt)
+SX_LIB_API void SGame_RemoveEntity(CBaseEntity * pEnt)
 {
 	SG_PRECOND(_VOID);
 
 	REMOVE_ENTITY(pEnt);
 }
 
-SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname)
+SX_LIB_API proptable_t * SGame_EntGetProptable(const char * classname)
 {
 	SG_PRECOND(NULL);
 
 	return(CEntityFactoryMap::GetInstance()->getPropTable(classname));
 }
 
-SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key)
+SX_LIB_API const char * SGame_EntGetDefault(const char * classname, const char * key)
 {
 	SG_PRECOND(NULL);
 
@@ -339,27 +339,27 @@ SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char 
 	return(*pNode->Val);
 }
 
-SX_LIB_API int SXGame_EntGetCount()
+SX_LIB_API int SGame_EntGetCount()
 {
 	SG_PRECOND(0);
 	return(GameData::m_pMgr->getCount());
 }
 
-SX_LIB_API CBaseEntity *SXGame_EntGet(ID id)
+SX_LIB_API CBaseEntity *SGame_EntGet(ID id)
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pMgr->getById(id));
 }
 
-SX_LIB_API CBaseEntity *SXGame_EntGetByName(const char *szName, ID idStart)
+SX_LIB_API CBaseEntity *SGame_EntGetByName(const char *szName, ID idStart)
 {
 	SG_PRECOND(NULL);
 
 	CBaseEntity *pEnt = 0;
 
-	for (int i = 0, il = SXGame_EntGetCount(); i < il; ++i)
+	for (int i = 0, il = SGame_EntGetCount(); i < il; ++i)
 	{
-		pEnt = SXGame_EntGet(i);
+		pEnt = SGame_EntGet(i);
 		if (pEnt && strcmp(szName, pEnt->getName()) == 0)
 		{
 			return pEnt;
@@ -369,7 +369,7 @@ SX_LIB_API CBaseEntity *SXGame_EntGetByName(const char *szName, ID idStart)
 	return 0;
 }
 
-SX_LIB_API BOOL SXGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
+SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if(!GameData::m_pGUI)
 	{
@@ -379,7 +379,7 @@ SX_LIB_API BOOL SXGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 	return(GameData::m_pGUI->putMessage(message, wParam, lParam));
 }
 
-SX_LIB_API void SXGame_OnLostDevice()
+SX_LIB_API void SGame_OnLostDevice()
 {
 	if(GameData::m_pGUI)
 	{
@@ -387,7 +387,7 @@ SX_LIB_API void SXGame_OnLostDevice()
 	}
 }
 
-SX_LIB_API void SXGame_OnResetDevice()
+SX_LIB_API void SGame_OnResetDevice()
 {
 	if(GameData::m_pGUI)
 	{
@@ -395,18 +395,18 @@ SX_LIB_API void SXGame_OnResetDevice()
 	}
 }
 
-SX_LIB_API void SXGame_OnLevelLoad(const char *szName)
+SX_LIB_API void SGame_OnLevelLoad(const char *szName)
 {
 	GameData::m_pHUDcontroller->loadMap(szName);
 }
 
-SX_LIB_API void SXGame_SetDebugText(const char *szText)
+SX_LIB_API void SGame_SetDebugText(const char *szText)
 {
 	//static gui::dom::IDOMnode * pNode = GameData::m_pStatsUI->getDocument()->getElementById(L"wrapper");
 	//pNode->setHTML(StringW(String(szText)).c_str());
 }
 
-SX_LIB_API ID SXGame_EntClone(ID idSrc)
+SX_LIB_API ID SGame_EntClone(ID idSrc)
 {
 	SG_PRECOND(NULL);
 	CBaseEntity *pEnt = GameData::m_pMgr->cloneEntity(GameData::m_pMgr->getById(idSrc));

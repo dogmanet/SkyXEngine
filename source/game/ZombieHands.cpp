@@ -70,7 +70,7 @@ void CZombieHands::actualShoot(float dt)
 
 	float3 end = start + dir * m_fEffectiveDistance;
 	btKinematicClosestNotMeRayResultCallback cb(pOwner->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
-	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 	//g_pTracer->begin(start);
 	//g_pTracer->lineTo(end);

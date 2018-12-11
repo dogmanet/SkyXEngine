@@ -181,7 +181,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV4, SM_PIDIV4, SM_PIDIV2);
 
 		m_ppJoints[0] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[0], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[0], true);
 	}
 	{
 		btTransform localA, localB;
@@ -202,7 +202,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV2, SM_PIDIV2, 0);
 
 		m_ppJoints[1] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[1], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[1], true);
 	}
 	{
 		btTransform localA, localB;
@@ -223,7 +223,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV2, SM_PIDIV2, 0);
 
 		m_ppJoints[2] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[2], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[2], true);
 	}
 
 	{
@@ -247,7 +247,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[3] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[3], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[3], true);
 	}
 	{
 		btTransform localA, localB;
@@ -270,7 +270,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[4] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[4], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[4], true);
 	}
 	{
 		btTransform localA, localB;
@@ -293,7 +293,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//joint6DOF->setAngularUpperLimit(btVector3(SIMD_PI*0.2, SIMD_EPSILON, SIMD_PI*0.6));
 
 		m_ppJoints[5] = joint6DOF;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[5], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[5], true);
 	}
 	{
 		btTransform localA, localB;
@@ -316,7 +316,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		joint6DOF->setAngularUpperLimit(btVector3(SIMD_PI*0.2, SIMD_EPSILON, SIMD_PI*0.6));
 
 		m_ppJoints[6] = joint6DOF;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[6], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[6], true);
 	}
 
 	{
@@ -338,7 +338,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV4, SM_PIDIV4, 0);
 
 		m_ppJoints[7] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[7], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[7], true);
 	}
 	{
 		btTransform localA, localB;
@@ -359,7 +359,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV4, SM_PIDIV4, 0);
 
 		m_ppJoints[8] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[8], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[8], true);
 	}
 	{
 		btTransform localA, localB;
@@ -382,7 +382,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[9] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[9], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[9], true);
 	}
 	{
 		btTransform localA, localB;
@@ -405,13 +405,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[10] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[10], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[10], true);
 	}
 
 
 
-	/*SXPhysics_GetDynWorld()->getDebugDrawer()->setDebugMode(
-		SXPhysics_GetDynWorld()->getDebugDrawer()->getDebugMode()
+	/*SPhysics_GetDynWorld()->getDebugDrawer()->setDebugMode(
+		SPhysics_GetDynWorld()->getDebugDrawer()->getDebugMode()
 		| btIDebugDraw::DBG_DrawConstraintLimits | btIDebugDraw::DBG_DrawConstraints
 	);*/
 
@@ -426,7 +426,7 @@ CRagdoll::~CRagdoll()
 	// Remove all constraints
 	for(i = 0; i < m_iJointsCount; ++i)
 	{
-		SXPhysics_GetDynWorld()->removeConstraint(m_ppJoints[i]);
+		SPhysics_GetDynWorld()->removeConstraint(m_ppJoints[i]);
 		mem_delete(m_ppJoints[i]);
 	}
 	mem_delete_a(m_ppJoints);
@@ -434,7 +434,7 @@ CRagdoll::~CRagdoll()
 	// Remove all bodies and shapes
 	for(i = 0; i < m_iBodiesCount; ++i)
 	{
-		SXPhysics_GetDynWorld()->removeRigidBody(m_bodies[i]);
+		SPhysics_GetDynWorld()->removeRigidBody(m_bodies[i]);
 
 		delete m_bodies[i]->getMotionState();
 
@@ -477,7 +477,7 @@ btRigidBody *CRagdoll::localCreateRigidBody(btScalar mass, const btTransform& st
 	rbInfo.m_additionalDamping = true;
 	btRigidBody* body = new btRigidBody(rbInfo);
 
-	SXPhysics_GetDynWorld()->addRigidBody(body);
+	SPhysics_GetDynWorld()->addRigidBody(body);
 
 	return body;
 }

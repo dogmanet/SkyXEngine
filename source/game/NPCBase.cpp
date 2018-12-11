@@ -309,7 +309,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	//g_pTracer2->begin(m_vPosition, 1);
 	//g_pTracer2->lineTo(m_vPosition + vDir * fMovDirLen, 1);
 	//g_pTracer2->end();
-	//SXPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_vLastPathPos), F3_BTVEC(m_vPosition), btVector3(0, 1, 0));
+	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_vLastPathPos), F3_BTVEC(m_vPosition), btVector3(0, 1, 0));
 
 	m_qOrientTo = SMQuaternion(NPC_BASE_DIR, vDir);
 	setOrient(SMquaternionSlerp(m_vOrientation, m_qOrientTo, clampf(fDelta, 0.1f, 1.0f)));
@@ -402,7 +402,7 @@ float CNPCBase::canSee(CBaseEntity *pOther)
 	CClosestNotMeRayResultCallback cb(getBtCollisionObject(), F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()));
 	cb.m_collisionFilterGroup = CG_NPCVIEW;
 	cb.m_collisionFilterMask = CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER);
-	SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()), cb);
+	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()), cb);
 
 	if(cb.hasHit())
 	{
@@ -580,11 +580,11 @@ void CNPCBase::onSync()
 	rot = SMQuaternion(SM_PI, 'y') * rot;
 
 	transform.getBasis().setRotation(Q4_BTQUAT(rot));
-	SXPhysics_GetDynWorld()->getDebugDrawer()->drawCone(m_fViewDistance * tanf(m_fViewConeAngle), m_fViewDistance, 2, transform, btVector3(1, 1, 1));
+	SPhysics_GetDynWorld()->getDebugDrawer()->drawCone(m_fViewDistance * tanf(m_fViewConeAngle), m_fViewDistance, 2, transform, btVector3(1, 1, 1));
 	*/
 
 	//SMQuaternion rot = m_pHeadEnt->getOrient();
-	//SXPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(m_pHeadEnt->getPos() + (rot * float3(0,0,1))), btVector3(1,1,1));
+	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(m_pHeadEnt->getPos() + (rot * float3(0,0,1))), btVector3(1,1,1));
 }
 #if 0
 void CNPCBase::gridCheckBeyond()

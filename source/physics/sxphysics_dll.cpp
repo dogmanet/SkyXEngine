@@ -60,12 +60,12 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
-SX_LIB_API void SXPhysics_DumpStats()
+SX_LIB_API void SPhysics_DumpStats()
 {
 	CProfileManager::dumpAll();
 }
 
-SX_LIB_API void SXPhysics_0Create()
+SX_LIB_API void SPhysics_0Create()
 {
 	if(g_pWorld)
 	{
@@ -76,118 +76,118 @@ SX_LIB_API void SXPhysics_0Create()
 
 	g_pWorld = new CPhyWorld();
 
-	Core_0RegisterConcmd("perf_physics", SXPhysics_DumpStats);
+	Core_0RegisterConcmd("perf_physics", SPhysics_DumpStats);
 }
-SX_LIB_API void SXPhysics_AKill()
+SX_LIB_API void SPhysics_AKill()
 {
 	SP_PRECOND(_VOID);
 	mem_delete(g_pWorld);
 }
 
-SX_LIB_API void SXPhysics_Update(int thread)
+SX_LIB_API void SPhysics_Update(int thread)
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->update(thread);
 }
-SX_LIB_API void SXPhysics_UpdateSetThreadNum(int num)
+SX_LIB_API void SPhysics_UpdateSetThreadNum(int num)
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->setThreadNum(num);
 }
-SX_LIB_API void SXPhysics_Sync()
+SX_LIB_API void SPhysics_Sync()
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->sync();
 }
 
-SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
+SX_LIB_API void SPhysics_Dbg_Set(report_func rf)
 {
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SXPhysics_LoadGeom(const char * file)
+SX_LIB_API void SPhysics_LoadGeom(const char * file)
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->loadGeom(file);
 }
 
-SX_LIB_API void SXPhysics_UnloadGeom()
+SX_LIB_API void SPhysics_UnloadGeom()
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->unloadGeom();
 }
 
-SX_LIB_API void SXPhysics_DebugRender()
+SX_LIB_API void SPhysics_DebugRender()
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->render();
 }
 
-SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody)
+SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->addShape(pBody);
 }
 
-SX_LIB_API void SXPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask)
+SX_LIB_API void SPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask)
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->addShape(pBody, group, mask);
 }
 
-SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody)
+SX_LIB_API void SPhysics_RemoveShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);
 	g_pWorld->removeShape(pBody);
 }
 
-SX_LIB_API btDiscreteDynamicsWorldMt * SXPhysics_GetDynWorld()
+SX_LIB_API btDiscreteDynamicsWorldMt * SPhysics_GetDynWorld()
 {
 	SP_PRECOND(NULL);
 	return(g_pWorld->getBtWorld());
 }
 
-SX_LIB_API bool SXPhysics_ImportGeom(const char * file)
+SX_LIB_API bool SPhysics_ImportGeom(const char * file)
 {
 	SP_PRECOND(false);
 	return(g_pWorld->importGeom(file));
 }
 
-SX_LIB_API bool SXPhysics_ExportGeom(const char * file)
+SX_LIB_API bool SPhysics_ExportGeom(const char * file)
 {
 	SP_PRECOND(false);
 	return(g_pWorld->exportGeom(file));
 }
 
-SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+SX_LIB_API int SPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
 	SP_PRECOND(MTLTYPE_PHYSIC_DEFAULT);
 
 	return(g_pWorld->getMtlType(pBody, pShapeInfo));
 }
 
-SX_LIB_API ID SXPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+SX_LIB_API ID SPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
 	SP_PRECOND(-1);
 
 	return(g_pWorld->getMtlID(pBody, pShapeInfo));
 }
 
-SX_LIB_API void SXPhysics_EnableSimulation()
+SX_LIB_API void SPhysics_EnableSimulation()
 {
 	SP_PRECOND(_VOID);
 
 	g_pWorld->enableSimulation();
 }
 
-SX_LIB_API void SXPhysics_DisableSimulation()
+SX_LIB_API void SPhysics_DisableSimulation()
 {
 	SP_PRECOND(_VOID);
 
 	g_pWorld->disableSimulation();
 }
 
-SX_LIB_API void SXPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices)
+SX_LIB_API void SPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices)
 {
 	btShapeHull tmpHull(pIn);
 	tmpHull.buildHull(0);
@@ -197,7 +197,7 @@ SX_LIB_API void SXPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, i
 	//return(new btConvexHullShape((const btScalar*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3)));
 }
 
-SX_LIB_API void SXPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)
+SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)
 {
 	mem_delete_a(pData);
 }

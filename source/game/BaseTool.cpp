@@ -135,7 +135,7 @@ void CBaseTool::primaryAction(BOOL st)
 		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * m_fMaxDistance;
 		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
-		SXPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 		if(cb.hasHit())
 		{

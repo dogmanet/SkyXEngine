@@ -449,7 +449,7 @@ LRESULT SXLevelEditor_ListBoxList_Click(HWND hWnd, UINT uiMsg, WPARAM wParam, LP
 	}
 	else if (level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 	{
-		if (SXGame_EntGetCount() > 0 && sel < SXGame_EntGetCount())
+		if (SGame_EntGetCount() > 0 && sel < SGame_EntGetCount())
 			level_editor::GameSel(sel);
 	}
 
@@ -697,7 +697,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 		else
 		{
 			ID iSelData = level_editor::pListBoxList->getItemData(level_editor::pListBoxList->getSel());
-			CBaseEntity *pEntity = SXGame_EntGet(iSelData);
+			CBaseEntity *pEntity = SGame_EntGet(iSelData);
 			int iSelString = level_editor::pListViewGameClass->getSelString();
 
 			if (iSelData < 0 || iSelString < 0)
@@ -732,7 +732,7 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 			char szStr[256];
 			level_editor::pComboBoxGameValue->getItemText(level_editor::pComboBoxGameValue->getSel(), szStr);
 			level_editor::pListViewGameClass->setItemText(szStr, 1, level_editor::pListViewGameClass->getSelString());
-			CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(iSelected));
+			CBaseEntity *pEntity = SGame_EntGet(level_editor::pListBoxList->getItemData(iSelected));
 			if (pEntity)
 			{
 				propdata_t *pPropData = (propdata_t*)level_editor::pListViewGameClass->getItemData(level_editor::pListViewGameClass->getSelString());
@@ -750,8 +750,8 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 			if (iSelected < 0)
 				return 0;
 
-			CBaseEntity *pEntity = SXGame_EntGet(level_editor::pListBoxList->getItemData(iSelected));
-			proptable_t *pPropTable = SXGame_EntGetProptable(pEntity->getClassName());
+			CBaseEntity *pEntity = SGame_EntGet(level_editor::pListBoxList->getItemData(iSelected));
+			proptable_t *pPropTable = SGame_EntGetProptable(pEntity->getClassName());
 
 			propdata_t *pPropData;
 			char szKey[256];
@@ -811,9 +811,9 @@ LRESULT SXLevelEditor_GroupBox_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 
 			char szStr[256];
 			level_editor::pComboBoxGameClass->getItemText(level_editor::pComboBoxGameClass->getSel(), szStr);
-			SXGame_RemoveEntity(pEntity);
+			SGame_RemoveEntity(pEntity);
 
-			pEntity = SXGame_CreateEntity(szStr);
+			pEntity = SGame_CreateEntity(szStr);
 			pEntity->setFlags(pEntity->getFlags() | EF_EXPORT | EF_LEVEL);
 
 			for (int i = 0; i < aKeyVal.size(); ++i)

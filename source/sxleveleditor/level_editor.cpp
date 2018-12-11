@@ -2105,9 +2105,9 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 	int iCountGameObjects = 0;
 
-	for (int i = 0, il = SXGame_EntGetCount(); i < il; ++i)
+	for (int i = 0, il = SGame_EntGetCount(); i < il; ++i)
 	{
-		if (SXGame_EntGet(i))
+		if (SGame_EntGet(i))
 			++iCountGameObjects;
 	}
 
@@ -2116,7 +2116,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 	if (level_editor::idMtl >= 0)
 	{
-		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
+		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SGame_EntGetCount());
 		SMtrl_MtlGetTexture(level_editor::idMtl, text);
 		level_editor::pStatusBar1->setPartText(4, text);
 	}
@@ -2175,7 +2175,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 			if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 				SGeom_RenderSingly(timeDelta, level_editor::idCopy, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC), &(level_editor::vCopyPos));
 			else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
-				SXGame_EditorRender(level_editor::idCopy, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_SKIN), &(level_editor::vCopyPos));
+				SGame_EditorRender(level_editor::idCopy, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_SKIN), &(level_editor::vCopyPos));
 		}
 
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
@@ -2198,7 +2198,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 		{
 			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
-			SXGame_EditorRender(idGameObj, SRender_EditorGetSelectTex());
+			SGame_EditorRender(idGameObj, SRender_EditorGetSelectTex());
 		}
 
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
@@ -2265,7 +2265,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		{
 			level_editor::useCopyData = true;
 			level_editor::idCopy = level_editor::pListBoxList->getItemData(iSelected);
-			CBaseEntity *pEntity = SXGame_EntGet(level_editor::idCopy);
+			CBaseEntity *pEntity = SGame_EntGet(level_editor::idCopy);
 			if (pEntity)
 				level_editor::vCopyPos = pEntity->getPos();
 			else

@@ -39,9 +39,9 @@ void CLevel::clear()
 
 	SLight_ClearIDArr();
 	
-	//SXGame_UnloadObjLevel();
+	//SGame_UnloadObjLevel();
 	Core_0ConsoleExecCmd("ent_unload_level");
-	SXPhysics_UnloadGeom();
+	SPhysics_UnloadGeom();
 	SAIG_Clear();
 	SXDecals_Clear();
 }
@@ -100,7 +100,7 @@ void CLevel::load(const char *szName, bool isGame)
 		FileCanonizePath(szFullPathEntity);
 		if (FileExistsFile(szFullPathEntity))
 		{
-			//SXGame_LoadEnts(szFullPathEntity);
+			//SGame_LoadEnts(szFullPathEntity);
 		}
 		else
 		{
@@ -115,21 +115,21 @@ void CLevel::load(const char *szName, bool isGame)
 		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "physic"));
 		if (FileExistsFile(szFullPath))
 		{
-			SXPhysics_ImportGeom(szFullPath);
+			SPhysics_ImportGeom(szFullPath);
 		}
 		else
 		{
 			if (isGame)
 			{
-				SXPhysics_LoadGeom(szFullPath);
-				//SXPhysics_ExportGeom(tmppath);
+				SPhysics_LoadGeom(szFullPath);
+				//SPhysics_ExportGeom(tmppath);
 			}
 		}
 	}
 	else
 	{
 		if (isGame)
-			SXPhysics_LoadGeom();
+			SPhysics_LoadGeom();
 	}
 
 	if (pConfig->keyExists("level", "aigrid"))
@@ -225,7 +225,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 	Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", szFullPathEntity, szName);
 
-	//SXGame_OnLevelLoad(szName);
+	//SGame_OnLevelLoad(szName);
 
 	mem_release(pConfig);
 
@@ -272,13 +272,13 @@ void CLevel::save(const char *szName)
 
 	
 
-	//if (SXGame_EntGetCount() > 0)
+	//if (SGame_EntGetCount() > 0)
 	{
 		sprintf(szFullPath, "%s%s/%s.ent", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 		fprintf(file, "entity = %s.ent\n", szName);
 		FileCanonizePath(szFullPath);
 		Core_0ConsoleExecCmd("ent_save_level \"%s\"", szFullPath);
-		//SXGame_SaveEnts(tmppathlevel);
+		//SGame_SaveEnts(tmppathlevel);
 	}
 
 	if (SAIG_GridGetCountSplits() > 0)
@@ -288,10 +288,10 @@ void CLevel::save(const char *szName)
 		SAIG_GridSave(szFullPath);
 	}
 
-	SXPhysics_LoadGeom();
+	SPhysics_LoadGeom();
 	sprintf(szFullPath, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 	fprintf(file, "physic = %s.phy\n", szName);
-	SXPhysics_ExportGeom(szFullPath);
+	SPhysics_ExportGeom(szFullPath);
 
 	if (m_sAmbientSounds[0])
 	{
