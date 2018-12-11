@@ -98,7 +98,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>../../../source;$(IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
@@ -106,7 +106,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
     <IncludePath>../../../source;$(IncludePath)</IncludePath>
     <SourcePath>../../../source;$(VC_SourcePath);</SourcePath>

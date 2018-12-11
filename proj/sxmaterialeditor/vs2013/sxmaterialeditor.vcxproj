@@ -44,12 +44,12 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/dx9sdk/Include;../../../sdks/bullet3/src</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/lib;</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include;</SourcePath>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/dx9sdk/Include;../../../sdks/bullet3/src</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/lib;</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include;</SourcePath>

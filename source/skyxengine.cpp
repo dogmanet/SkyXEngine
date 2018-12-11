@@ -425,7 +425,10 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 */
 
 	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
+
+#ifndef SX_PARTICLES_EDITOR
 	SXGame_UpdateSetThreadNum(Core_MGetThreadCount());
+#endif
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
@@ -434,68 +437,58 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 void SkyXEngine_InitPaths()
 {
-	char tmppath[MAX_PATH];
-	char tmppathexe[MAX_PATH];
-	GetModuleFileName(NULL, tmppath, MAX_PATH);
-	int len = strlen(tmppath);
-	while (tmppath[len--] != '\\')
-	{
-		if (tmppath[len - 1] == '\\')
-		{
-			len--;
-			memcpy(tmppathexe, tmppath, len);
-			tmppathexe[len] = 0;
-		}
-	}
+	char szPath[MAX_PATH];
+	GetModuleFileName(NULL, szPath, MAX_PATH);
 
-	const char *szPathToExe = FileCanonizePath(tmppathexe);
+	String sPathExe = FileCanonizePathS(FileGetPrevDir(szPath).c_str());
+	Core_RStringSet(G_RI_STRING_PATH_EXE, sPathExe.c_str());
 
-	Core_RStringSet(G_RI_STRING_PATH_EXE, szPathToExe);
+	String sPrevPathExe = FileGetPrevDir(sPathExe.c_str());
 
-	sprintf(tmppath, "%s%s", szPathToExe, "/worktex/");
-	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, tmppath);
-	FileCreateDir(tmppath);
+	sprintf(szPath, "%s%s", sPrevPathExe.c_str(), "/worktex/");
+	Core_RStringSet(G_RI_STRING_PATH_WORKTEX, szPath);
+	FileCreateDir(szPath);
 
-	sprintf(tmppath, "%s/%s/", szPathToExe, SKYXENGINE_RELPATH_GAMESOURCE);
-	Core_RStringSet(G_RI_STRING_PATH_GAMESOURCE, tmppath);
-	SetCurrentDirectoryA(tmppath);
+	sprintf(szPath, "%s/%s/", sPrevPathExe.c_str(), SKYXENGINE_RELPATH_GAMESOURCE);
+	Core_RStringSet(G_RI_STRING_PATH_GAMESOURCE, szPath);
+	SetCurrentDirectoryA(szPath);
 
-	sprintf(tmppath, "%s/%s/", szPathToExe, SKYXENGINE_RELPATH_EDITOR_CACHE);
-	Core_RStringSet(G_RI_STRING_PATH_EDITOR_CACHE, tmppath);
+	sprintf(szPath, "%s/%s/", sPrevPathExe.c_str(), SKYXENGINE_RELPATH_EDITOR_CACHE);
+	Core_RStringSet(G_RI_STRING_PATH_EDITOR_CACHE, szPath);
 
-	sprintf(tmppath, "%s%s", szPathToExe, "/screenshots/");
-	Core_RStringSet(G_RI_STRING_PATH_SCREENSHOTS, tmppath);
-	FileCreateDir(tmppath);
+	sprintf(szPath, "%s%s", sPrevPathExe.c_str(), "/screenshots/");
+	Core_RStringSet(G_RI_STRING_PATH_SCREENSHOTS, szPath);
+	FileCreateDir(szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "config");
-	Core_RStringSet(G_RI_STRING_PATH_GS_CONFIGS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "config");
+	Core_RStringSet(G_RI_STRING_PATH_GS_CONFIGS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "levels");
-	Core_RStringSet(G_RI_STRING_PATH_GS_LEVELS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "levels");
+	Core_RStringSet(G_RI_STRING_PATH_GS_LEVELS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "meshes");
-	Core_RStringSet(G_RI_STRING_PATH_GS_MESHES, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "meshes");
+	Core_RStringSet(G_RI_STRING_PATH_GS_MESHES, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "models");
-	Core_RStringSet(G_RI_STRING_PATH_GS_MODELS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "models");
+	Core_RStringSet(G_RI_STRING_PATH_GS_MODELS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "shaders");
-	Core_RStringSet(G_RI_STRING_PATH_GS_SHADERS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "shaders");
+	Core_RStringSet(G_RI_STRING_PATH_GS_SHADERS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "sounds");
-	Core_RStringSet(G_RI_STRING_PATH_GS_SOUNDS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "sounds");
+	Core_RStringSet(G_RI_STRING_PATH_GS_SOUNDS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "scripts");
-	Core_RStringSet(G_RI_STRING_PATH_GS_SCRIPTS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "scripts");
+	Core_RStringSet(G_RI_STRING_PATH_GS_SCRIPTS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "textures");
-	Core_RStringSet(G_RI_STRING_PATH_GS_TEXTURES, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "textures");
+	Core_RStringSet(G_RI_STRING_PATH_GS_TEXTURES, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "materials");
-	Core_RStringSet(G_RI_STRING_PATH_GS_MTRLS, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "materials");
+	Core_RStringSet(G_RI_STRING_PATH_GS_MTRLS, szPath);
 
-	sprintf(tmppath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "resource");
-	Core_RStringSet(G_RI_STRING_PATH_GS_GUI, tmppath);
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "resource");
+	Core_RStringSet(G_RI_STRING_PATH_GS_GUI, szPath);
 }
 
 void SkyXEngine_CreateLoadCVar()

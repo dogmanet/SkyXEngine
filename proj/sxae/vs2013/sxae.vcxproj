@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/;../../../sdks/bullet3/src</IncludePath>
     <LibraryPath>../../../libs/;../../../sdks/dx9sdk/Lib/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include/;../../../sdks/bullet3/src</IncludePath>
     <LibraryPath>../../../libs/;../../../sdks/dx9sdk/Lib/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
