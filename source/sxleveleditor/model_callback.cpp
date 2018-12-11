@@ -110,9 +110,10 @@ void level_editor::GeomSel(int iSelected)
 		/*level_editor::vHelperPos = (vMax + vMin) * 0.5f;
 		level_editor::vHelperScale = *pScale;*/
 
-		level_editor::pAxesHelper->setPosition((vMax + vMin) * 0.5f);
+		//level_editor::pAxesHelper->setPosition((vMax + vMin) * 0.5f);
+		level_editor::pAxesHelper->setPosition(*pPos);
 		level_editor::pAxesHelper->setRotation(*pRot);
-		level_editor::pAxesHelper->setScale(float3(1,1,1));
+		//level_editor::pAxesHelper->setScale(float3(1,1,1));
 
 		level_editor::pEditGeomName->setText(szName);
 

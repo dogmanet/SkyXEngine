@@ -5,6 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include <input/sxinput.h>
+#include <physics/sxphysics.h>
 #include "axes_helper.h"
 
 CAxesHelper::CAxesHelper()
@@ -38,6 +39,7 @@ void CAxesHelper::setPosition(const float3 & pos)
 void CAxesHelper::setRotation(const SMQuaternion & rot)
 {
 	m_qRotation = rot;
+	//m_vRotation = QuatToEuler(rot);
 	m_vRotation = SMMatrixToEuler(rot.GetMatrix());
 	//m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
@@ -45,7 +47,9 @@ void CAxesHelper::setRotation(const SMQuaternion & rot)
 void CAxesHelper::setRotation(const float3 & rot)
 {
 	m_vRotation = rot;
-	m_qRotation = SMQuaternion(rot.x, 'x') * SMQuaternion(rot.y, 'y') * SMQuaternion(rot.z, 'z');
+	m_qRotation = SMQuaternion(-rot.x, 'x') * SMQuaternion(-rot.y, 'y') * SMQuaternion(-rot.z, 'z');
+	//m_qRotation.w *= -1.0f;
+	//m_qRotation = SMQuaternion(rot.z, 'z') * SMQuaternion(rot.y, 'y') * SMQuaternion(rot.x, 'x');
 	//m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
@@ -626,12 +630,15 @@ void CAxesHelper::update()
 				return;
 			}
 			m_vTransOffset = m_vPosition - vPlanePos;
+			//printf("%.2f %.2f %.2f\n", m_vTransOffset.x, m_vTransOffset.y, m_vTransOffset.z);
 		}
 		return;
 	}
 
 	static float3 vCamPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
+
+	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(posw), F3_BTVEC(posw + dirw * 10000.0f), btVector3(1.0f, 1.0f, 1.0f));
 
 	if(m_bIsDragging)
 	{
@@ -650,11 +657,14 @@ void CAxesHelper::update()
 			else
 			{
 				float3 vPlanePos;
-				if(!m_movementPlane.intersectLine(&vPlanePos, posw, posw + dirw * 10000.0f))
+				if(!m_movementPlane.intersectLine(&vPlanePos, vCamPos, vCamPos + dirw * 10000.0f))
 				{
 					return;
 				}
+				//SPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(vPlanePos), 0.05f, btVector3(1.0f, 1.0f, 1.0f));
+				
 				m_vPosition = m_vTransOffset + vPlanePos;
+				//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(vPlanePos), F3_BTVEC(m_vPosition), btVector3(1.0f, 1.0f, 1.0f));
 			}
 		}
 		else if(m_htype == HANDLER_TYPE_ROTATE)
@@ -679,7 +689,10 @@ void CAxesHelper::update()
 			}
 
 			m_qRotation = m_qRotation * SMQuaternion(m_qRotation * vAxis, fDelta);
+			//m_vRotation = QuatToEuler(m_qRotation);
 			m_vRotation = SMMatrixToEuler(m_qRotation.GetMatrix());
+			m_vRotation.x *= -1.0f;
+			m_vRotation.z *= -1.0f;
 		}
 		else if(m_htype == HANDLER_TYPE_SCALE)
 		{

@@ -136,7 +136,7 @@ void level_editor::GreenTraceSelect()
 
 			level_editor::pAxesHelper->setPosition(vResult2);
 			level_editor::pAxesHelper->setRotation(float3(0, 0, 0));
-			level_editor::pAxesHelper->setScale(float3(1, 1, 1));
+			//level_editor::pAxesHelper->setScale(float3(1, 1, 1));
 
 			level_editor::idMtl = idMtrl;
 		}
@@ -160,7 +160,7 @@ void level_editor::GreenTraceSelect()
 
 			level_editor::pAxesHelper->setPosition(vResult);
 			level_editor::pAxesHelper->setRotation(float3(0, 0, 0));
-			level_editor::pAxesHelper->setScale(float3(1, 1, 1));
+			//level_editor::pAxesHelper->setScale(float3(1, 1, 1));
 		}
 	}
 

@@ -231,24 +231,24 @@ namespace level_editor
 	ID3DXMesh *pFigureBox = 0;
 	CAxesHelper *pAxesHelper = 0;
 
-	int iActiveGroupType = 0;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
-	ID idActiveGreenSplit = -1;		//!< текущий идентификатор сплита растительность (если выделена растительность)
-	ID idActiveGreenObject = -1;		//!< текущий идентификатор объекта растительности (если выделена растительность)
+	int iActiveGroupType = 0;		//!< С‚РµРєСѓС‰Р°СЏ РІС‹РґРµР»РµРЅРЅР°СЏ РіСЂСѓРїРїР° РјРёСЂРѕРІС‹С… СЃСѓС‰РЅРѕСЃС‚РµР№ EDITORS_LEVEL_GROUPTYPE_
+	ID idActiveGreenSplit = -1;		//!< С‚РµРєСѓС‰РёР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ СЃРїР»РёС‚Р° СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚СЊ (РµСЃР»Рё РІС‹РґРµР»РµРЅР° СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚СЊ)
+	ID idActiveGreenObject = -1;		//!< С‚РµРєСѓС‰РёР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕР±СЉРµРєС‚Р° СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚Рё (РµСЃР»Рё РІС‹РґРµР»РµРЅР° СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚СЊ)
 
-	ID idActiveElement = -1;			//!< текущий идентификатор выделенного элемента из списка
-	bool canSelSelection = false;		//!< разрешено ли выделение?
-	bool canSelZTest = false;			//!< использовать ли z-test при выделении?
-	bool canSelMesh = false;			//!< рисовать сеткой (true) или целиком модель выделения (false)?
-	bool canSelBackFacesCull = false;	//!< отсекать ли задние грани при выделении?
+	ID idActiveElement = -1;			//!< С‚РµРєСѓС‰РёР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РІС‹РґРµР»РµРЅРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РёР· СЃРїРёСЃРєР°
+	bool canSelSelection = false;		//!< СЂР°Р·СЂРµС€РµРЅРѕ Р»Рё РІС‹РґРµР»РµРЅРёРµ?
+	bool canSelZTest = false;			//!< РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Р»Рё z-test РїСЂРё РІС‹РґРµР»РµРЅРёРё?
+	bool canSelMesh = false;			//!< СЂРёСЃРѕРІР°С‚СЊ СЃРµС‚РєРѕР№ (true) РёР»Рё С†РµР»РёРєРѕРј РјРѕРґРµР»СЊ РІС‹РґРµР»РµРЅРёСЏ (false)?
+	bool canSelBackFacesCull = false;	//!< РѕС‚СЃРµРєР°С‚СЊ Р»Рё Р·Р°РґРЅРёРµ РіСЂР°РЅРё РїСЂРё РІС‹РґРµР»РµРЅРёРё?
 
-	bool canAIGBound = true;			//!< отрисовка боунда ai сетки
-	bool canAIGQuad = true;			//!< отрисовка квадов ai сетки
-	bool canAIGGraphPoint = true;		//!< отрисовка графпоинтов ai сетки
+	bool canAIGBound = true;			//!< РѕС‚СЂРёСЃРѕРІРєР° Р±РѕСѓРЅРґР° ai СЃРµС‚РєРё
+	bool canAIGQuad = true;			//!< РѕС‚СЂРёСЃРѕРІРєР° РєРІР°РґРѕРІ ai СЃРµС‚РєРё
+	bool canAIGGraphPoint = true;		//!< РѕС‚СЂРёСЃРѕРІРєР° РіСЂР°С„РїРѕРёРЅС‚РѕРІ ai СЃРµС‚РєРё
 
-	//bound box для массового создания объектов растительности
-	bool canGreenRenderBox = false;	//!< разрешено ли рисовать бокс?
-	float3 vGreenBoxPos;				//!< позиция бокса
-	float3_t vGreenBoxWHD(1, 1, 1);	//!< ширина, высота, длина бокса
+	//bound box РґР»СЏ РјР°СЃСЃРѕРІРѕРіРѕ СЃРѕР·РґР°РЅРёСЏ РѕР±СЉРµРєС‚РѕРІ СЂР°СЃС‚РёС‚РµР»СЊРЅРѕСЃС‚Рё
+	bool canGreenRenderBox = false;	//!< СЂР°Р·СЂРµС€РµРЅРѕ Р»Рё СЂРёСЃРѕРІР°С‚СЊ Р±РѕРєСЃ?
+	float3 vGreenBoxPos;				//!< РїРѕР·РёС†РёСЏ Р±РѕРєСЃР°
+	float3_t vGreenBoxWHD(1, 1, 1);	//!< С€РёСЂРёРЅР°, РІС‹СЃРѕС‚Р°, РґР»РёРЅР° Р±РѕРєСЃР°
 
 	float3 vHelperPos;
 	float3 vHelperRot;
@@ -2276,7 +2276,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		}
 	}
 
-	//! если ПКМ либо данные копирования не валидны, то обнуляем данные копирования
+	//! РµСЃР»Рё РџРљРњ Р»РёР±Рѕ РґР°РЅРЅС‹Рµ РєРѕРїРёСЂРѕРІР°РЅРёСЏ РЅРµ РІР°Р»РёРґРЅС‹, С‚Рѕ РѕР±РЅСѓР»СЏРµРј РґР°РЅРЅС‹Рµ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 	if (SSInput_GetKeyState(SIM_RBUTTON) || (level_editor::useCopyData && level_editor::idCopy < 0))
 	{
 		level_editor::useCopyData = false;
@@ -2444,7 +2444,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 		ISXGUIEdit *pEditX = 0, *pEditY = 0, *pEditZ = 0;
 		int iTypeTransform = -1;
 
-		//если отмечена радиокнопка на позиции
+		//РµСЃР»Рё РѕС‚РјРµС‡РµРЅР° СЂР°РґРёРѕРєРЅРѕРїРєР° РЅР° РїРѕР·РёС†РёРё
 		if (level_editor::pRadioButtonGeomPosX->getCheck() || level_editor::pRadioButtonGeomPosY->getCheck() || level_editor::pRadioButtonGeomPosZ->getCheck())
 		{
 			vTransform = *(SGeom_ModelGetPosition(iSelected));
@@ -2454,7 +2454,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			pEditZ = level_editor::pEditGeomPosZ;
 			iTypeTransform = 0;
 		}
-		//если отмечена радиокнопка на поворотах
+		//РµСЃР»Рё РѕС‚РјРµС‡РµРЅР° СЂР°РґРёРѕРєРЅРѕРїРєР° РЅР° РїРѕРІРѕСЂРѕС‚Р°С…
 		else if (level_editor::pRadioButtonGeomRotX->getCheck() || level_editor::pRadioButtonGeomRotY->getCheck() || level_editor::pRadioButtonGeomRotZ->getCheck())
 		{
 			vTransform = *(SGeom_ModelGetRotation(iSelected));
@@ -2464,7 +2464,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			pEditZ = level_editor::pEditGeomRotZ;
 			iTypeTransform = 1;
 		}
-		//если отмечена радиокнопка на масштабировании
+		//РµСЃР»Рё РѕС‚РјРµС‡РµРЅР° СЂР°РґРёРѕРєРЅРѕРїРєР° РЅР° РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРё
 		else if (level_editor::pRadioButtonGeomScaleX->getCheck() || level_editor::pRadioButtonGeomScaleY->getCheck() || level_editor::pRadioButtonGeomScaleZ->getCheck())
 		{
 			vTransform = *(SGeom_ModelGetScale(iSelected));
@@ -2477,13 +2477,13 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 		else
 			return;
 
-		//управление стрелками
+		//СѓРїСЂР°РІР»РµРЅРёРµ СЃС‚СЂРµР»РєР°РјРё
 		if (SSInput_GetKeyState(SIK_UP))
 			vTransform[iNumComponent] += timeDelta * 0.001f;
 		if (SSInput_GetKeyState(SIK_DOWN))
 			vTransform[iNumComponent] -= timeDelta * 0.001f;
 
-		//управление мышью
+		//СѓРїСЂР°РІР»РµРЅРёРµ РјС‹С€СЊСЋ
 		if (SSInput_GetKeyState(SIM_LBUTTON))
 		{
 			if (isFirstRBMTransform)
@@ -2508,7 +2508,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 			isFirstRBMTransform = false;
 		}
 
-		//обновляем данные в интерфейсе редактора
+		//РѕР±РЅРѕРІР»СЏРµРј РґР°РЅРЅС‹Рµ РІ РёРЅС‚РµСЂС„РµР№СЃРµ СЂРµРґР°РєС‚РѕСЂР°
 		char szStr[32];
 
 		sprintf(szStr, "%f", vTransform.x);
@@ -2520,11 +2520,17 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 		sprintf(szStr, "%f", vTransform.z);
 		pEditZ->setText(szStr);
 
-		//обновляем трансформацию
-		if (iTypeTransform == 0)
+		//РѕР±РЅРѕРІР»СЏРµРј С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёСЋ
+		if(iTypeTransform == 0)
+		{
 			SGeom_ModelSetPosition(iSelected, &vTransform);
-		else if (iTypeTransform == 1)
+			level_editor::pAxesHelper->setPosition(vTransform);
+		}
+		else if(iTypeTransform == 1)
+		{
 			SGeom_ModelSetRotation(iSelected, &vTransform);
+			level_editor::pAxesHelper->setRotation(vTransform);
+		}
 		else if (iTypeTransform == 2)
 			SGeom_ModelSetScale(iSelected, &vTransform);
 	}
@@ -2610,7 +2616,7 @@ void SXLevelEditor_Transform(DWORD timeDelta)
 		if (SSInput_GetKeyState(SIK_DOWN))
 			fBiasY -= float(timeDelta) * 0.001f;
 
-		//управление мышью
+		//СѓРїСЂР°РІР»РµРЅРёРµ РјС‹С€СЊСЋ
 		if (SSInput_GetKeyState(SIM_LBUTTON))
 		{
 			if (isFirstRBMTransform)
