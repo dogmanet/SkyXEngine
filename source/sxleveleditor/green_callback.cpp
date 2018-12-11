@@ -116,7 +116,7 @@ void level_editor::GreenTraceSelect()
 	ID idMtrl = -1;
 	ID idModel = -1;
 
-	//åñëè âûäåëåíèå îáúåêòîâ
+	//ÐµÑÐ»Ð¸ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð²
 	if (level_editor::pComboBoxGreenSel->getSel() == 0)
 	{
 		if (SGreen_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idGreen, &idSplit, &idObj, &idMtrl))
@@ -141,7 +141,7 @@ void level_editor::GreenTraceSelect()
 			level_editor::idMtl = idMtrl;
 		}
 	}
-	//åñëè åäèíè÷íàÿ ãåíåðàöèÿ
+	//ÐµÑÐ»Ð¸ ÐµÐ´Ð¸Ð½Ð¸Ñ‡Ð½Ð°Ñ Ð³ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ
 	else if (level_editor::pComboBoxGreenSel->getSel() == 1)
 	{
 		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idModel, &idMtrl))
@@ -164,7 +164,7 @@ void level_editor::GreenTraceSelect()
 		}
 	}
 
-	//åñëè ãåíåðàöèÿ â îãðàíè÷èâàþùåì îáúåìå
+	//ÐµÑÐ»Ð¸ Ð³ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ Ð² Ð¾Ð³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°ÑŽÑ‰ÐµÐ¼ Ð¾Ð±ÑŠÐµÐ¼Ðµ
 	else if (level_editor::pComboBoxGreenSel->getSel() == 2)
 	{
 		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idModel, &idMtrl))
@@ -190,7 +190,7 @@ void level_editor::GreenTraceSelect()
 			}
 		}
 	}
-	//åñëè óäàëåíèå
+	//ÐµÑÐ»Ð¸ ÑƒÐ´Ð°Ð»ÐµÐ½Ð¸Ðµ
 	else if (level_editor::pComboBoxGreenSel->getSel() == 3)
 	{
 		if (SGreen_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, &idGreen, &idSplit, &idObj, &idMtrl))
@@ -210,7 +210,7 @@ void level_editor::GreenTraceSetPos()
 	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0))
 		return;
 
-	//åñëè âêëþ÷åíî èíäèâèäóàëüíîå âûäåëåíèå, òî ïåðåìåùàåì îáúåêò ðàñòèòåëüíîñòè
+	//ÐµÑÐ»Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾ Ð¸Ð½Ð´Ð¸Ð²Ð¸Ð´ÑƒÐ°Ð»ÑŒÐ½Ð¾Ðµ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ, Ñ‚Ð¾ Ð¿ÐµÑ€ÐµÐ¼ÐµÑ‰Ð°ÐµÐ¼ Ð¾Ð±ÑŠÐµÐºÑ‚ Ñ€Ð°ÑÑ‚Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚Ð¸
 	if (level_editor::pComboBoxGreenSel->getSel() == 0)
 	{
 		float3_t vCurrPos;
@@ -230,31 +230,31 @@ void level_editor::GreenTraceSetPos()
 
 void level_editor::GreenTransformByHelper()
 {
-	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0))
+	if(!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && ID_VALID(level_editor::idActiveElement) && ID_VALID(level_editor::idActiveGreenSplit) && ID_VALID(level_editor::idActiveGreenObject)))
 		return;
 
-	if (level_editor::pAxesHelper->m_bIsDragging == false)
+	if(!level_editor::pAxesHelper->isDragging())
 		return;
 
-	//åñëè âêëþ÷åíî èíäèâèäóàëüíîå âûäåëåíèå, òî ïåðåìåùàåì îáúåêò ðàñòèòåëüíîñòè
-	if (level_editor::pComboBoxGreenSel->getSel() == 0)
+	//ÐµÑÐ»Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾ Ð¸Ð½Ð´Ð¸Ð²Ð¸Ð´ÑƒÐ°Ð»ÑŒÐ½Ð¾Ðµ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ, Ñ‚Ð¾ Ð¿ÐµÑ€ÐµÐ¼ÐµÑ‰Ð°ÐµÐ¼ Ð¾Ð±ÑŠÐµÐºÑ‚ Ñ€Ð°ÑÑ‚Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚Ð¸
+	if(level_editor::pComboBoxGreenSel->getSel() == 0)
 	{
 		float3_t vCurrPos;
 		SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &vCurrPos);
 		float3 vNewPos = level_editor::pAxesHelper->getPosition();
-		if (vCurrPos.x != vNewPos.x || vCurrPos.y != vNewPos.y || vCurrPos.z != vNewPos.z)
+		if(vCurrPos.x != vNewPos.x || vCurrPos.y != vNewPos.y || vCurrPos.z != vNewPos.z)
 			SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &(float3_t)vNewPos);
 	}
 }
 
 void level_editor::GreenSetPos4Box()
 {
-	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0))
+	if(!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && ID_VALID(level_editor::idActiveElement)))
 		return;
 
 	float3 vResult;
 
-	//åñëè âêëþ÷åíà ãåíåðàöèÿ â îãðàíè÷èâàþùåì îáúåìå, çíà÷èò ïåðåìåùàåì ýòîò îáúåì
+	//ÐµÑÐ»Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð³ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ Ð² Ð¾Ð³Ñ€Ð°Ð½Ð¸Ñ‡Ð¸Ð²Ð°ÑŽÑ‰ÐµÐ¼ Ð¾Ð±ÑŠÐµÐ¼Ðµ, Ð·Ð½Ð°Ñ‡Ð¸Ñ‚ Ð¿ÐµÑ€ÐµÐ¼ÐµÑ‰Ð°ÐµÐ¼ ÑÑ‚Ð¾Ñ‚ Ð¾Ð±ÑŠÐµÐ¼
 	if (level_editor::pComboBoxGreenSel->getSel() == 2)
 	{
 		if (SGeom_TraceBeam(&(level_editor::vRayOrigin), &(level_editor::vRayDir), &vResult, 0, 0))

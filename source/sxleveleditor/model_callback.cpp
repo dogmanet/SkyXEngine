@@ -246,13 +246,13 @@ void level_editor::GeomCopy()
 
 void level_editor::GeomTransformByHelper()
 {
-	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0))
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && ID_VALID(level_editor::idActiveElement)))
 		return;
 
 	static float3 vStartScale;
 	static bool isStartScale = true;
 
-	if (level_editor::pAxesHelper->m_bIsDragging == false)
+	if(!level_editor::pAxesHelper->isDragging())
 	{
 		isStartScale = true;
 		return;

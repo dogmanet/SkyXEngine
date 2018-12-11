@@ -2240,6 +2240,8 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 	if (level_editor::pAxesHelper)
 	{
+		level_editor::pAxesHelper->update();
+
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 		level_editor::pAxesHelper->render();

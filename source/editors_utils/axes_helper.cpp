@@ -1,14 +1,15 @@
 
 /***********************************************************
-Copyright � Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
+#include <input/sxinput.h>
 #include "axes_helper.h"
 
 CAxesHelper::CAxesHelper()
 {
-	m_bIsDragging = m_bIsDraggingStart = m_bIsDraggingStop = false;
+	m_bIsDragging = /*m_bIsDraggingStart = m_bIsDraggingStop = */false;
 	m_vScale = float3(1, 1, 1);
 	m_htype = HANDLER_TYPE_NONE;
 }
@@ -31,28 +32,28 @@ CAxesHelper::HANDLER_TYPE CAxesHelper::getType()
 void CAxesHelper::setPosition(const float3 & pos)
 {
 	m_vPosition = pos;
-	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
+	//m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
 void CAxesHelper::setRotation(const SMQuaternion & rot)
 {
 	m_qRotation = rot;
 	m_vRotation = SMMatrixToEuler(rot.GetMatrix());
-	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
+	//m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
 void CAxesHelper::setRotation(const float3 & rot)
 {
 	m_vRotation = rot;
 	m_qRotation = SMQuaternion(rot.x, 'x') * SMQuaternion(rot.y, 'y') * SMQuaternion(rot.z, 'z');
-	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
+	//m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
 }
 
-void CAxesHelper::setScale(const float3 & scale)
-{
-	m_vScale = scale;
-	m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
-}
+//void CAxesHelper::setScale(const float3 & scale)
+//{
+//	m_vScale = scale;
+//	//m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
+//}
 
 
 const float3 & CAxesHelper::getPosition()
@@ -83,6 +84,7 @@ void CAxesHelper::render()
 	static float3 vCamPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 	SGCore_GetDXDevice()->SetTexture(0, 0);
+	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	SGCore_ShaderUnBind();
 
 	if(!m_bIsDragging)
@@ -283,7 +285,7 @@ void CAxesHelper::drawCylinder(float3_t lwh, DWORD color)
 
 void CAxesHelper::drawRotate()
 {
-	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_mHelperMat));
+	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
 	DWORD color_act = 0xFFFFFF00;
 
 	SMMATRIX mOld;
@@ -301,7 +303,7 @@ void CAxesHelper::drawRotate()
 
 void CAxesHelper::drawScale()
 {
-	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_mHelperMat));
+	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, 0);
 	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	SGCore_GetDXDevice()->SetTexture(0, NULL);
@@ -465,24 +467,99 @@ void CAxesHelper::drawScale()
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
 }
 
-void CAxesHelper::onMouseMove(int x, int y)
+void CAxesHelper::update()
 {
-	if (m_htype == HANDLER_TYPE_NONE)
+	if(m_htype == HANDLER_TYPE_NONE)
 		return;
+
+	bool isDraggingStart = false;
+	bool isMouseDown = SSInput_GetKeyState(SIM_LBUTTON);
+	if(!m_bIsDragging && isMouseDown)
+	{ // start dragging
+		m_bIsDragging = true;
+		if(m_currentAxe == HANDLER_AXE_NONE)
+		{
+			return;
+		}
+		m_vScaleOld = m_vScale;
+		// build plane
+		float3 vNormal;
+		if((m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY || m_currentAxe == HANDLER_AXE_Z)
+		{
+			vNormal = float3(0.0f, 0.0f, 1.0f);
+		}
+		else if((m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ || m_currentAxe == HANDLER_AXE_X)
+		{
+			vNormal = float3(1.0f, 0.0f, 0.0f);
+		}
+		else if((m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ || m_currentAxe == HANDLER_AXE_Y)
+		{
+			vNormal = float3(0.0f, 1.0f, 0.0f);
+		}
+
+		m_movementPlane = SMPLANE(vNormal, m_vPosition);
+		if(m_htype == HANDLER_TYPE_MOVE)
+		{
+			m_vMovementLineDir = vNormal;
+			m_vMovementLinePos = m_vPosition;
+		}
+		else if(m_htype == HANDLER_TYPE_SCALE)
+		{
+			m_vMovementLinePos = m_vPosition;
+
+			if((m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY)
+			{
+				vNormal = m_qRotation * float3(1.0f, 1.0f, 0.0f);
+			}
+			else if((m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ)
+			{
+				vNormal = m_qRotation * float3(0.0f, 1.0f, 1.0f);
+			}
+			else if((m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ)
+			{
+				vNormal = m_qRotation * float3(1.0f, 0.0f, 1.0f);
+			}
+			else if((m_currentAxe & HANDLER_AXE_XYZ) == HANDLER_AXE_XYZ)
+			{
+				vNormal = float3(0.0f, 1.0f, 0.0f);
+			}
+			m_vMovementLineDir = vNormal;
+		}
+		isDraggingStart = true;
+		//return;
+	}
+	else if(m_bIsDragging && !isMouseDown)
+	{ // mouse released
+		m_bIsDragging = false;
+		if(m_htype == HANDLER_TYPE_SCALE)
+		{
+			m_vScale = float3(1, 1, 1);
+		}
+		return;
+	}
+
+
+	POINT pt;
+	GetCursorPos(&pt);
+	ScreenToClient(SGCore_GetHWND(), &pt);
+	int x = pt.x;
+	int y = pt.y;
 
 	static float4x4 mCamView, mCamProj;
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mCamProj);
 
 	float det = 0;
-	SMMATRIX mat = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMat : m_mHelperMat) * mCamView * mCamProj);
-	SMMATRIX mat2 = SMMatrixInverse(&det, m_mHelperMatScale2 * (m_bIsDragging && !m_bIsDraggingStart ? m_mOldDragMatPos : SMMatrixTranslation(m_vPosition)) * mCamView * mCamProj);
+	SMMATRIX mat = SMMatrixInverse(&det, m_mHelperMatScale2 * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition) * mCamView * mCamProj);
+	SMMATRIX mat2 = SMMatrixInverse(&det, m_mHelperMatScale2 * SMMatrixTranslation(m_vPosition) * mCamView * mCamProj);
+	SMMATRIX matw = SMMatrixInverse(&det, mCamView * mCamProj);
 	D3DVIEWPORT9 vp;
 	SGCore_GetDXDevice()->GetViewport(&vp);
 
 	float px = (((2.0f*x) / vp.Width) - 1.0f);
 	float py = (((-2.0f*y) / vp.Height) + 1.0f);
 
+	// В пространстве геометрии хелпера
 	float3 pos(px, py, -1);
 	float3 dir(px, py, 1);
 	pos = SMVector3Transform(pos, mat);
@@ -490,6 +567,7 @@ void CAxesHelper::onMouseMove(int x, int y)
 	pos /= pos.w;
 	dir /= dir.w;
 
+	// В пространстве геометрии хелпера без учета масштабирования и поворота (для хелпера перемещения)
 	float3 pos2(px, py, -1);
 	float3 dir2(px, py, 1);
 	pos2 = SMVector3Transform(pos2, mat2);
@@ -497,69 +575,153 @@ void CAxesHelper::onMouseMove(int x, int y)
 	pos2 /= pos2.w;
 	dir2 /= dir2.w;
 
-	if (m_htype == HANDLER_TYPE_MOVE)
-		intersectMove(pos2, dir2);
-	else if (m_htype == HANDLER_TYPE_ROTATE)
-		intersectRotate(pos, dir);
-	else if (m_htype == HANDLER_TYPE_SCALE)
-		intersectScale(pos, dir);
+	// В пространстве мира
+	float3 posw(px, py, -1);
+	float3 dirw(px, py, 1);
+	posw = SMVector3Transform(posw, matw);
+	dirw = SMVector3Transform(dirw, matw);
+	posw /= posw.w;
+	dirw /= dirw.w;
 
-	if (m_bIsDraggingStart)
+	switch(m_htype)
 	{
-		m_bIsDraggingStart = false;
-		m_fStartDragPos = pos;
-		m_mOldDragMat = m_mHelperMat;
-		m_mOldDragMatPos = SMMatrixTranslation(m_vPosition);
-		m_mOldHelperMat = m_mHelperMat;
-		m_vScaleOld = m_vScale;
+	case HANDLER_TYPE_MOVE:
+		intersectMove(pos2, dir2);
+		break;
+	case HANDLER_TYPE_ROTATE:
+		intersectRotate(pos, dir);
+		break;
+	case HANDLER_TYPE_SCALE:
+		intersectScale(pos, dir);
+		break;
+	}
+
+	if(m_currentAxe == HANDLER_AXE_NONE)
+	{
+		return;
+	}
+
+	if(isDraggingStart)
+	{
+		isDraggingStart = false;
+		if(m_currentAxe == HANDLER_AXE_X || m_currentAxe == HANDLER_AXE_Y || m_currentAxe == HANDLER_AXE_Z || (m_htype == HANDLER_TYPE_SCALE))
+		{
+			float3 vLinePos;
+			SMCrossLines(m_vMovementLinePos, m_vMovementLineDir, posw, dirw, &vLinePos);
+			if(m_htype == HANDLER_TYPE_MOVE)
+			{
+				m_vTransOffset = m_vPosition - vLinePos;
+			}
+			else
+			{
+				m_vTransOffset = vLinePos;
+			}
+		}
+		else
+		{
+			float3 vPlanePos;
+			if(!m_movementPlane.intersectLine(&vPlanePos, posw, posw + dirw * 10000.0f))
+			{
+				m_bIsDragging = false;
+				return;
+			}
+			m_vTransOffset = m_vPosition - vPlanePos;
+		}
+		return;
 	}
 
 	static float3 vCamPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 
-	if (m_bIsDragging)
+	if(m_bIsDragging)
 	{
-		float3 dv = (pos - m_fStartDragPos) * (1000.f + SMVector3Length(vCamPos - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * AXES_HELPER_MOVE_SPEED);
-		float4x4 m_res;
+		//float3 dv = (pos - m_fStartDragPos) * (1000.f + SMVector3Length(vCamPos - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * AXES_HELPER_MOVE_SPEED);
+		//float4x4 m_res;
+		
 
-		if (m_htype == HANDLER_TYPE_MOVE)
+		if(m_htype == HANDLER_TYPE_MOVE)
 		{
-			m_res = SMMatrixTranslation((m_currentAxe & HANDLER_AXE_X) ? dv.x : 0, (m_currentAxe & HANDLER_AXE_Y) ? dv.y : 0, (m_currentAxe & HANDLER_AXE_Z) ? dv.z : 0);
-			m_mHelperMat = m_mOldHelperMat * m_res;
-			m_vPosition = m_mHelperMat.r[3];
+			if(m_currentAxe == HANDLER_AXE_X || m_currentAxe == HANDLER_AXE_Y || m_currentAxe == HANDLER_AXE_Z)
+			{
+				float3 vLinePos;
+				SMCrossLines(m_vMovementLinePos, m_vMovementLineDir, posw, dirw, &vLinePos);
+				m_vPosition = m_vTransOffset + vLinePos;
+			}
+			else
+			{
+				float3 vPlanePos;
+				if(!m_movementPlane.intersectLine(&vPlanePos, posw, posw + dirw * 10000.0f))
+				{
+					return;
+				}
+				m_vPosition = m_vTransOffset + vPlanePos;
+			}
 		}
-		else if (m_htype == HANDLER_TYPE_ROTATE)
+		else if(m_htype == HANDLER_TYPE_ROTATE)
 		{
-			m_res = SMMatrixRotationX((m_currentAxe & HANDLER_AXE_X) ? dv.x : 0) * SMMatrixRotationY((m_currentAxe & HANDLER_AXE_Y) ? dv.y : 0) * SMMatrixRotationZ((m_currentAxe & HANDLER_AXE_Z) ? dv.z : 0);
-			m_mHelperMat = m_res * m_mOldHelperMat;
-			m_qRotation = SMQuaternion(m_mHelperMat);
+			float3 vLinePos;
+			SMCrossLines(m_vMovementLinePos, m_vMovementLineDir, posw, dirw, &vLinePos);
+			float3 vDelta = m_vTransOffset - vLinePos;
+			float fDelta = SMVector3Length(vDelta) * -sign(SMVector3Dot(vDelta, m_vMovementLineDir));
+			m_vTransOffset = vLinePos;
+			float3 vAxis;
+			switch(m_currentAxe)
+			{
+			case HANDLER_AXE_X:
+				vAxis = float3(1.0f, 0.0f, 0.0f);
+				break;
+			case HANDLER_AXE_Y:
+				vAxis = float3(0.0f, 1.0f, 0.0f);
+				break;
+			case HANDLER_AXE_Z:
+				vAxis = float3(0.0f, 0.0f, 1.0f);
+				break;
+			}
+
+			m_qRotation = m_qRotation * SMQuaternion(m_qRotation * vAxis, fDelta);
 			m_vRotation = SMMatrixToEuler(m_qRotation.GetMatrix());
 		}
-		else if (m_htype == HANDLER_TYPE_SCALE)
+		else if(m_htype == HANDLER_TYPE_SCALE)
 		{
-			//dv = (pos - m_fStartDragPos) * (1000.0f + SMVector3Length(GData::ConstCurrCamPos - float3(m_mHelperMat._41, m_mHelperMat._42, m_mHelperMat._43)) * AXES_HELPER_SCALE_SPEED);
-			//dv /= 10.0f;
-			dv += float3(1.0f, 1.0f, 1.0f);
-			if ((m_currentAxe & HANDLER_AXE_XY) == HANDLER_AXE_XY)
-				dv.x = dv.z = dv.y;
-			else if ((m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ)
-				dv.y = dv.z;
-			else if ((m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ)
-				dv.x = dv.z;
+			float3 vLinePos;
+			SMCrossLines(m_vMovementLinePos, m_vMovementLineDir, posw, dirw, &vLinePos);
 
-			m_mHelperMat = SMMatrixScaling((m_currentAxe & HANDLER_AXE_X) ? dv.x : 1, (m_currentAxe & HANDLER_AXE_Y) ? dv.y : 1, (m_currentAxe & HANDLER_AXE_Z) ? dv.z : 1) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
-			m_vScale = (SMVECTOR)m_vScaleOld * float3(SMVector3Length(float3(m_mHelperMat._11, m_mHelperMat._12, m_mHelperMat._13)),
-				SMVector3Length(float3(m_mHelperMat._21, m_mHelperMat._22, m_mHelperMat._23)),
-				SMVector3Length(float3(m_mHelperMat._31, m_mHelperMat._32, m_mHelperMat._33)));
-		}
-	}
-	if (m_bIsDraggingStop)
-	{
-		m_bIsDraggingStop = false;
-		if (m_htype == HANDLER_TYPE_SCALE)
-		{
-			m_vScale = float3(1, 1, 1);
-			m_mHelperMat = SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition);
+			float3 vDelta = m_vTransOffset - vLinePos;
+			float fDelta = SMVector3Length(vDelta) + 1.0f;
+			if(sign(SMVector3Dot(vDelta, m_vMovementLineDir)) > 0)
+			{
+				fDelta = 1.0f / fDelta;
+			}
+				
+			switch(m_currentAxe)
+			{
+			case HANDLER_AXE_X:
+				m_vScale.x = fDelta;
+				break;
+			case HANDLER_AXE_Y:
+				m_vScale.y = fDelta;
+				break;
+			case HANDLER_AXE_Z:
+				m_vScale.z = fDelta;
+				break;
+			case HANDLER_AXE_XY:
+				m_vScale.x = fDelta;
+				m_vScale.y = fDelta;
+				break;
+			case HANDLER_AXE_XZ:
+				m_vScale.x = fDelta;
+				m_vScale.z = fDelta;
+				break; 
+			case HANDLER_AXE_YZ:
+				m_vScale.y = fDelta;
+				m_vScale.z = fDelta;
+				break; 
+			case HANDLER_AXE_XYZ:
+				m_vScale.x = fDelta;
+				m_vScale.y = fDelta;
+				m_vScale.z = fDelta;
+				break;
+			}
 		}
 	}
 }
@@ -783,6 +945,8 @@ void CAxesHelper::intersectRotate(const float3 & start, const float3 & dir)
 	3--4
 	*/
 
+	float3 vIntersectPoint;
+
 	//Y
 	for (int i = 0; i < segs; ++i)
 	{
@@ -802,6 +966,7 @@ void CAxesHelper::intersectRotate(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
+				vIntersectPoint = p;
 				m_currentAxe = HANDLER_AXE_Y;
 				break;
 			}
@@ -827,6 +992,7 @@ void CAxesHelper::intersectRotate(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
+				vIntersectPoint = p;
 				m_currentAxe = HANDLER_AXE_X;
 				break;
 			}
@@ -852,11 +1018,31 @@ void CAxesHelper::intersectRotate(const float3 & start, const float3 & dir)
 			if (d < mind)
 			{
 				mind = d;
+				vIntersectPoint = p;
 				m_currentAxe = HANDLER_AXE_Z;
 				break;
 			}
 		}
 	}
+
+	float3 vAxis;
+	switch(m_currentAxe)
+	{
+	case HANDLER_AXE_X:
+		vAxis = float3(1.0f, 0.0f, 0.0f);
+		break;
+	case HANDLER_AXE_Y:
+		vAxis = float3(0.0f, 1.0f, 0.0f);
+		break;
+	case HANDLER_AXE_Z:
+		vAxis = float3(0.0f, 0.0f, 1.0f);
+		break;
+	default:
+		return;
+	}
+
+	m_vMovementLinePos = m_vPosition;
+	m_vMovementLineDir = SMVector3Cross(vAxis, m_vPosition - SMVector3Transform(p, m_mHelperMatScale2 * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
 }
 
 void CAxesHelper::intersectScale(const float3 & start, const float3 & dir)

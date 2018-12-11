@@ -139,6 +139,10 @@ SX_LIB_API void SXPhysics_DisableSimulation();
 
 SX_LIB_API void SXPhysics_DumpStats();
 
+SX_LIB_API void SXPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices);
+
+SX_LIB_API void SXPhysics_ReleaseHull(btVector3 *pData, int iNumVertices);
+
 #endif
 
 /*! @} */

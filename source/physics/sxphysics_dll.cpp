@@ -11,6 +11,7 @@ See the license in LICENSE
 #include "PhyWorld.h"
 
 #include <core/sxcore.h>
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
@@ -184,4 +185,19 @@ SX_LIB_API void SXPhysics_DisableSimulation()
 	SP_PRECOND(_VOID);
 
 	g_pWorld->disableSimulation();
+}
+
+SX_LIB_API void SXPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices)
+{
+	btShapeHull tmpHull(pIn);
+	tmpHull.buildHull(0);
+	*pNumVertices = tmpHull.numVertices();
+	*ppOut = new btVector3[*pNumVertices];
+	memcpy(*ppOut, tmpHull.getVertexPointer(), sizeof(btVector3)* *pNumVertices);
+	//return(new btConvexHullShape((const btScalar*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3)));
+}
+
+SX_LIB_API void SXPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)
+{
+	mem_delete_a(pData);
 }

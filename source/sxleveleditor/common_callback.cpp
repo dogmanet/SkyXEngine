@@ -13,28 +13,28 @@ LRESULT ComMenuId(HWND hWnd, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	WORD id = LOWORD(wParam);
 
-	//ôàéë
-	//íîâûé
+	//Ñ„Ð°Ð¹Ð»
+	//Ð½Ð¾Ð²Ñ‹Ð¹
 	if (id == ID_FILE_NEW)
 	{
 		level_editor::LevelNew(true);
 	}
-	//îòêðûòü
+	//Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ
 	else if (id == ID_FILE_OPEN)
 	{
 		level_editor::LevelOpen();
 	}
-	//ñîõðàíèòü
+	//ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ
 	else if (id == ID_FILE_SAVE)
 	{
 		level_editor::LevelSave();
 	}
-	//ñîõðàíèòü êàê
+	//ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ ÐºÐ°Ðº
 	else if (id == ID_FILE_SAVEAS)
 	{
 		level_editor::LevelSaveAs();
 	}
-	//âûõîä
+	//Ð²Ñ‹Ñ…Ð¾Ð´
 	else if (id == ID_FILE_EXIT)
 	{
 		return TrueExit(hWnd, uiMsg, wParam, lParam);
@@ -177,12 +177,12 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wPara
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 	{
-		level_editor::pAxesHelper->m_bIsDragging = false;
-		level_editor::pAxesHelper->m_bIsDraggingStop = true;
+		//level_editor::pAxesHelper->m_bIsDragging = false;
+		//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 		return 0;
 	}
 
-	//åñëè âêëþ÷åíî êîïèðîâàíèå è id êîïèðîâàíèÿ âàëèäíûé
+	//ÐµÑÐ»Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾ ÐºÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð¸ id ÐºÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ñ Ð²Ð°Ð»Ð¸Ð´Ð½Ñ‹Ð¹
 	if (level_editor::useCopyData && level_editor::idCopy >= 0)
 	{
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
@@ -193,16 +193,16 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wPara
 		return 0;
 	}
 
-	//ñîîáùàåì õåëïåðó î äâèæåíèÿõ ìûøè
-	level_editor::pAxesHelper->onMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
+	//ÑÐ¾Ð¾Ð±Ñ‰Ð°ÐµÐ¼ Ñ…ÐµÐ»Ð¿ÐµÑ€Ñƒ Ð¾ Ð´Ð²Ð¸Ð¶ÐµÐ½Ð¸ÑÑ… Ð¼Ñ‹ÑˆÐ¸
+	//level_editor::pAxesHelper->onMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
-	//åñëè àêòèâíà ñòàòè÷åñêàÿ ãåîìåòðèÿ
+	//ÐµÑÐ»Ð¸ Ð°ÐºÑ‚Ð¸Ð²Ð½Ð° ÑÑ‚Ð°Ñ‚Ð¸Ñ‡ÐµÑÐºÐ°Ñ Ð³ÐµÐ¾Ð¼ÐµÑ‚Ñ€Ð¸Ñ
 	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0)
 		level_editor::GeomTransformByHelper();
-	//åñëè âûäåëåíà ðàñòèòåëüíîñòü è âûäåëåí êîíêðåòíûé îáúåêò
+	//ÐµÑÐ»Ð¸ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð° Ñ€Ð°ÑÑ‚Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾ÑÑ‚ÑŒ Ð¸ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½ ÐºÐ¾Ð½ÐºÑ€ÐµÑ‚Ð½Ñ‹Ð¹ Ð¾Ð±ÑŠÐµÐºÑ‚
 	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
 		level_editor::GreenTransformByHelper();
-	//åñëè âûäåëåí èãðîâîé îáúåêò
+	//ÐµÑÐ»Ð¸ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½ Ð¸Ð³Ñ€Ð¾Ð²Ð¾Ð¹ Ð¾Ð±ÑŠÐµÐºÑ‚
 	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0)
 		level_editor::GameTransformByHelper();
 
@@ -214,8 +214,8 @@ LRESULT SXLevelEditor_RenderWindow_LDown(HWND hWnd, UINT uiMsg, WPARAM wParam, L
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 		return 0;
 
-	level_editor::pAxesHelper->m_bIsDragging = true;
-	level_editor::pAxesHelper->m_bIsDraggingStart = true;
+	//level_editor::pAxesHelper->m_bIsDragging = true;
+	//level_editor::pAxesHelper->m_bIsDraggingStart = true;
 	return 0;
 }
 
@@ -223,12 +223,12 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 {
 	if (SSInput_GetKeyState(SIK_LCONTROL) || SSInput_GetKeyState(SIK_LSHIFT))
 	{
-		level_editor::pAxesHelper->m_bIsDragging = false;
-		level_editor::pAxesHelper->m_bIsDraggingStop = true;
+		//level_editor::pAxesHelper->m_bIsDragging = false;
+		//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 		return 0;
 	}
 
-	// åñëè âêëþ÷åíî êîïèðîâàíèå
+	// ÐµÑÐ»Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾ ÐºÐ¾Ð¿Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ
 	if (level_editor::useCopyData && level_editor::idCopy >= 0)
 	{
 		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
@@ -239,13 +239,13 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 		return 0;
 	}
 
-	level_editor::pAxesHelper->m_bIsDragging = false;
-	level_editor::pAxesHelper->m_bIsDraggingStop = true;
+	//level_editor::pAxesHelper->m_bIsDragging = false;
+	//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	//åñëè âêëþ÷åíî âûäåëåíèå, òîãäà íàõîäèì 
+	//ÐµÑÐ»Ð¸ Ð²ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ, Ñ‚Ð¾Ð³Ð´Ð° Ð½Ð°Ñ…Ð¾Ð´Ð¸Ð¼ 
 	if (level_editor::pCheckBoxTBArrow->getCheck())
 	{
 
@@ -483,8 +483,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 			level_editor::pCheckBoxTBRot->setCheck(false);
 			level_editor::pCheckBoxTBScale->setCheck(false);
 			level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_NONE);
-			level_editor::pAxesHelper->m_bIsDragging = false;
-			level_editor::pAxesHelper->m_bIsDraggingStop = true;
+			//level_editor::pAxesHelper->m_bIsDragging = false;
+			//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 		}
 		else if (level_editor::pCheckBoxTBPos->getHWND() == hElement)
 		{
@@ -501,8 +501,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				level_editor::pCheckBoxTBRot->setCheck(false);
 				level_editor::pCheckBoxTBScale->setCheck(false);
 				level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_MOVE);
-				level_editor::pAxesHelper->m_bIsDragging = false;
-				level_editor::pAxesHelper->m_bIsDraggingStop = true;
+				//level_editor::pAxesHelper->m_bIsDragging = false;
+				//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 			}
 			else
 				level_editor::pCheckBoxTBPos->setCheck(false);
@@ -515,8 +515,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				level_editor::pCheckBoxTBPos->setCheck(false);
 				level_editor::pCheckBoxTBScale->setCheck(false);
 				level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_ROTATE);
-				level_editor::pAxesHelper->m_bIsDragging = false;
-				level_editor::pAxesHelper->m_bIsDraggingStop = true;
+				//level_editor::pAxesHelper->m_bIsDragging = false;
+				//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 			}
 			else
 				level_editor::pCheckBoxTBRot->setCheck(false);
@@ -529,8 +529,8 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 				level_editor::pCheckBoxTBRot->setCheck(false);
 				level_editor::pCheckBoxTBArrow->setCheck(false);
 				level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_SCALE);
-				level_editor::pAxesHelper->m_bIsDragging = false;
-				level_editor::pAxesHelper->m_bIsDraggingStop = true;
+				//level_editor::pAxesHelper->m_bIsDragging = false;
+				//level_editor::pAxesHelper->m_bIsDraggingStop = true;
 			}
 			else
 				level_editor::pCheckBoxTBScale->setCheck(false);

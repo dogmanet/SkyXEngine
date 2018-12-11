@@ -38,7 +38,7 @@ inline bool line_intersect_triangle(const float3 &t1, const float3 &t2, const fl
 #define AXES_HELPER_SCALE_LENGTH 1.f		/*!< */
 #define AXES_HELPER_SCALE_ASIZE 0.05f		/*!< */
 #define AXES_HELPER_SCALE_A2SIZE 0.15f		/*!< */
-#define AXES_HELPER_SCALE_SPEED 1.f			/*!< */
+//#define AXES_HELPER_SCALE_SPEED 1.f			/*!< */
 
 class CAxesHelper
 {
@@ -64,18 +64,19 @@ public:
 	void setPosition(const float3 & pos);
 	void setRotation(const float3 & rot);
 	void setRotation(const SMQuaternion & rot);
-	void setScale(const float3 & scale);
+	//void setScale(const float3 & scale);
 
 	const float3 & getPosition();
 	const float3 & getRotation();
 	const float3 & getScale();
 	const SMQuaternion & getRotationQ();
 
-	void onMouseMove(int x, int y);
+	void update();
 
-	bool m_bIsDragging;
-	bool m_bIsDraggingStart;
-	bool m_bIsDraggingStop;
+	bool isDragging()
+	{
+		return(m_bIsDragging);
+	}
 
 private:
 
@@ -83,6 +84,11 @@ private:
 	float3 m_vRotation;
 	SMQuaternion m_qRotation;
 	float3 m_vScale, m_vScaleOld;
+	bool m_bIsDragging;
+	SMPLANE m_movementPlane;
+	float3 m_vMovementLinePos;
+	float3 m_vMovementLineDir;
+	float3 m_vTransOffset;
 
 	void drawMove();
 	void drawCylinder(float3_t lwh, DWORD color = 0xFFFFFFFF);
@@ -114,12 +120,8 @@ private:
 	HANDLER_AXE m_currentAxe;
 	HANDLER_TYPE m_htype;
 	
-	float3 m_fStartDragPos;
-	SMMATRIX m_mHelperMat;
-	SMMATRIX m_mOldHelperMat;
+	//float3 m_fStartDragPos;
 	SMMATRIX m_mHelperMatScale2;
-	SMMATRIX m_mOldDragMat;
-	SMMATRIX m_mOldDragMatPos;
 };
 
 #endif

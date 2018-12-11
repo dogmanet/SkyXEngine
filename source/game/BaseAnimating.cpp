@@ -216,7 +216,15 @@ void CBaseAnimating::initPhysics()
 	{
 		if(phTypes[i] == HT_CONVEX)
 		{
-			m_pCollideShape = new btConvexHullShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
+			//m_pCollideShape = new btConvexHullShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
+			btConvexHullShape tmpShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
+			tmpShape.setMargin(0);
+			btVector3 *pData;
+			int iVertexCount;
+			SXPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+			m_pCollideShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+			SXPhysics_ReleaseHull(pData, iVertexCount);
+			
 		}
 		break;
 	}
@@ -478,3 +486,4 @@ void CBaseAnimating::setSkin(int iSkin)
 	}
 	m_iSkin = iSkin;
 }
+

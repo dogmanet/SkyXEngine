@@ -246,7 +246,7 @@ void level_editor::GameSel(int iSelected)
 	
 	level_editor::pAxesHelper->setPosition(pEntity->getPos());
 	level_editor::pAxesHelper->setRotation(pEntity->getOrient());
-	level_editor::pAxesHelper->setScale(float3(1, 1, 1));
+	//level_editor::pAxesHelper->setScale(float3(1, 1, 1));
 }
 
 void level_editor::GameTraceSetPos()
@@ -437,10 +437,10 @@ void level_editor::GameVisibleProperties(bool bf)
 
 void level_editor::GameTransformByHelper()
 {
-	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0))
+	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && ID_VALID(level_editor::idActiveElement)))
 		return;
 
-	if (level_editor::pAxesHelper->m_bIsDragging == false)
+	if(!level_editor::pAxesHelper->isDragging())
 		return;
 
 	ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
