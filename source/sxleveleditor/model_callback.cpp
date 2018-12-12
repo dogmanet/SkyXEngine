@@ -268,11 +268,8 @@ void level_editor::GeomTransformByHelper()
 	if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
 	{
 		float3 vCurrPos = *SGeom_ModelGetPosition(level_editor::idActiveElement);
-		/*float3 vMin, vMax;
-		SGeom_ModelGetMinMax(level_editor::idActiveElement, &vMin, &vMax);
 
-		float3 vCenterModel = (vMax + vMin) * 0.5f;*/
-		float3 vNewPos = level_editor::pAxesHelper->getPosition();// vCurrPos + (level_editor::pAxesHelper->getPosition() - vCenterModel);
+		float3 vNewPos = level_editor::pAxesHelper->getPosition();
 		if (vCurrPos.x != vNewPos.x || vCurrPos.y != vNewPos.y || vCurrPos.z != vNewPos.z)
 		{
 			SGeom_ModelSetPosition(level_editor::idActiveElement, &vNewPos);
@@ -327,10 +324,6 @@ void level_editor::GeomTransformByHelper()
 			level_editor::pEditGeomScaleZ->setText(String(vNewScale.z).c_str());
 		}
 	}
-
-	/*float3 vMin, vMax;
-	SGeom_ModelGetMinMax(level_editor::idActiveElement, &vMin, &vMax);
-	level_editor::vHelperPos = (vMax + vMin) * 0.5f;*/
 }
 
 void level_editor::GeomDelete(int iSelected)
