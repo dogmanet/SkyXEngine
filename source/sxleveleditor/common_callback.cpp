@@ -196,15 +196,18 @@ LRESULT SXLevelEditor_RenderWindow_MouseMove(HWND hWnd, UINT uiMsg, WPARAM wPara
 	//сообщаем хелперу о движениях мыши
 	//level_editor::pAxesHelper->onMouseMove(((int)(short)LOWORD(lParam)), ((int)(short)HIWORD(lParam)));
 
-	//если активна статическая геометрия
-	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0)
-		level_editor::GeomTransformByHelper();
-	//если выделена растительность и выделен конкретный объект
-	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
-		level_editor::GreenTransformByHelper();
-	//если выделен игровой объект
-	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0)
-		level_editor::GameTransformByHelper();
+	if (level_editor::pAxesHelper->isDragging())
+	{
+		//если активна статическая геометрия
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0)
+			level_editor::GeomTransformByHelper();
+		//если выделена растительность и выделен конкретный объект
+		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
+			level_editor::GreenTransformByHelper();
+		//если выделен игровой объект
+		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0)
+			level_editor::GameTransformByHelper();
+	}
 
 	return 0;
 }
@@ -255,7 +258,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 			level_editor::GeomTraceSelect();
 		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN && level_editor::idActiveElement >= 0)
 			level_editor::GreenTraceSelect();
-		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0)
+		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::iActiveGroupType == -EDITORS_LEVEL_GROUPTYPE_GAME)
 		{
 			level_editor::GameTraceSelect();
 		}
@@ -523,7 +526,7 @@ LRESULT SXLevelEditor_ToolBar1_CallWmCommand(HWND hWnd, UINT uiMsg, WPARAM wPara
 		}
 		else if (level_editor::pCheckBoxTBScale->getHWND() == hElement)
 		{
-			if ((level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM || level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME) && level_editor::idActiveElement >= 0)
+			if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && level_editor::idActiveElement >= 0)
 			{
 				level_editor::pCheckBoxTBPos->setCheck(false);
 				level_editor::pCheckBoxTBRot->setCheck(false);

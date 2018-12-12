@@ -185,6 +185,10 @@ void level_editor::GeomTraceSetPos()
 		{
 			SGeom_ModelSetPosition(level_editor::idActiveElement, &vResult);
 			level_editor::pAxesHelper->setPosition(vResult);
+
+			level_editor::pEditGeomPosX->setText(String(vResult.x).c_str());
+			level_editor::pEditGeomPosY->setText(String(vResult.y).c_str());
+			level_editor::pEditGeomPosZ->setText(String(vResult.z).c_str());
 		}
 	}
 }
@@ -202,6 +206,10 @@ void level_editor::GeomTraceCreate()
 		{
 			SGeom_ModelSetPosition(level_editor::idActiveElement, &vResult);
 			level_editor::pAxesHelper->setPosition(vResult);
+
+			level_editor::pEditGeomPosX->setText(String(vResult.x).c_str());
+			level_editor::pEditGeomPosY->setText(String(vResult.y).c_str());
+			level_editor::pEditGeomPosZ->setText(String(vResult.z).c_str());
 		}
 	}
 }
@@ -250,12 +258,9 @@ void level_editor::GeomTransformByHelper()
 	if (!(level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM && ID_VALID(level_editor::idActiveElement)))
 		return;
 
-	static float3 vStartScale;
-	static bool isStartScale = true;
-
 	if(!level_editor::pAxesHelper->isDragging())
 	{
-		isStartScale = true;
+		level_editor::isStartScale = true;
 		return;
 	}
 
@@ -263,15 +268,21 @@ void level_editor::GeomTransformByHelper()
 	if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_MOVE)
 	{
 		float3 vCurrPos = *SGeom_ModelGetPosition(level_editor::idActiveElement);
-		float3 vMin, vMax;
+		/*float3 vMin, vMax;
 		SGeom_ModelGetMinMax(level_editor::idActiveElement, &vMin, &vMax);
 
-		float3 vCenterModel = (vMax + vMin) * 0.5f;
-		float3 vNewPos = vCurrPos + (level_editor::pAxesHelper->getPosition() - vCenterModel);
+		float3 vCenterModel = (vMax + vMin) * 0.5f;*/
+		float3 vNewPos = level_editor::pAxesHelper->getPosition();// vCurrPos + (level_editor::pAxesHelper->getPosition() - vCenterModel);
 		if (vCurrPos.x != vNewPos.x || vCurrPos.y != vNewPos.y || vCurrPos.z != vNewPos.z)
+		{
 			SGeom_ModelSetPosition(level_editor::idActiveElement, &vNewPos);
 
-		isStartScale = true;
+			level_editor::pEditGeomPosX->setText(String(vNewPos.x).c_str());
+			level_editor::pEditGeomPosY->setText(String(vNewPos.y).c_str());
+			level_editor::pEditGeomPosZ->setText(String(vNewPos.z).c_str());
+		}
+
+		level_editor::isStartScale = true;
 	}
 	//повороты
 	else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_ROTATE)
@@ -279,9 +290,15 @@ void level_editor::GeomTransformByHelper()
 		float3 vCurrRot = *SGeom_ModelGetRotation(level_editor::idActiveElement);
 		float3 vNewRot = level_editor::pAxesHelper->getRotation();
 		if (vCurrRot.x != vNewRot.x || vCurrRot.y != vNewRot.y || vCurrRot.z != vNewRot.z)
+		{
 			SGeom_ModelSetRotation(level_editor::idActiveElement, &vNewRot);
 
-		isStartScale = true;
+			level_editor::pEditGeomRotX->setText(String(vNewRot.x).c_str());
+			level_editor::pEditGeomRotY->setText(String(vNewRot.y).c_str());
+			level_editor::pEditGeomRotZ->setText(String(vNewRot.z).c_str());
+		}
+
+		level_editor::isStartScale = true;
 	}
 	//масштаб
 	else if (level_editor::pAxesHelper->getType() == CAxesHelper::HANDLER_TYPE_SCALE)
@@ -302,7 +319,13 @@ void level_editor::GeomTransformByHelper()
 		
 		//float3 vNewScale = vCurrScale + (level_editor::pAxesHelper->getScale() - float3(1, 1, 1));
 		if (vCurrScale.x != vNewScale.x || vCurrScale.y != vNewScale.y || vCurrScale.z != vNewScale.z)
+		{
 			SGeom_ModelSetScale(level_editor::idActiveElement, &vNewScale);
+
+			level_editor::pEditGeomScaleX->setText(String(vNewScale.x).c_str());
+			level_editor::pEditGeomScaleY->setText(String(vNewScale.y).c_str());
+			level_editor::pEditGeomScaleZ->setText(String(vNewScale.z).c_str());
+		}
 	}
 
 	/*float3 vMin, vMax;

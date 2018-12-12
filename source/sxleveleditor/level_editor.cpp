@@ -260,6 +260,9 @@ namespace level_editor
 	ID idMenuWeatherCurr = -1;
 	int iMenuWeatherCount = 0;
 	Array<String> aMenuWeather;
+
+	bool isStartScale = true;
+	float3 vStartScale;
 };
 
 //##########################################################################
@@ -2282,6 +2285,9 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		level_editor::useCopyData = false;
 		level_editor::idCopy = -1;
 	}
+
+	if (!SSInput_GetKeyState(SIM_LBUTTON))
+		level_editor::isStartScale = true;
 
 	SXLevelEditor_Transform(10);
 }

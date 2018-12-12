@@ -498,6 +498,9 @@ namespace level_editor
 	extern ID idMenuWeatherCurr;
 	extern int iMenuWeatherCount;
 	extern Array<String> aMenuWeather;
+
+	extern bool isStartScale;
+	extern float3 vStartScale;
 };
 
 #endif
