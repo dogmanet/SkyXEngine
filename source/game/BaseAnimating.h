@@ -59,6 +59,8 @@ public:
 	COLLISION_GROUP getCollisionGroup();
 
 protected:
+	virtual void _initEditorBoxes();
+	virtual void _releaseEditorBoxes();
 
 	void inputPlayAnim(inputdata_t * pInputdata);
 	void inputPlayAnimNext(inputdata_t * pInputdata);

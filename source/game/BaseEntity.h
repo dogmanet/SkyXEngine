@@ -134,6 +134,9 @@ public:
 	//! Обновляет действие флагов в режиме редактора уровня
 	virtual void updateFlags(){}
 
+
+	virtual float3 getEditorBoxSize();
+
 private:
 	void setClassName(const char * name);
 	void setDefaults();
@@ -145,6 +148,8 @@ private:
 
 protected:
 	virtual void _cleanup();
+	virtual void _initEditorBoxes();
+	virtual void _releaseEditorBoxes();
 
 	CEntityManager * m_pMgr;
 
@@ -209,6 +214,14 @@ protected:
 	void takeHealth(float fVal, CBaseEntity *pAttacker, CBaseEntity *pInflictor=NULL);
 
 	bool m_bSynced;
+
+
+	//! Для редактора
+	//@{
+	float3_t m_vEditorBoxSize = float3_t(0.16f, 0.16f, 0.16f);
+	btCollisionShape * m_pEditorCollideShape = NULL;
+	btRigidBody * m_pEditorRigidBody = NULL;
+	//@}
 };
 
 #pragma warning(pop)

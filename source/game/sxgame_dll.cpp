@@ -10,6 +10,7 @@ See the license in LICENSE
 #include "sxgame.h"
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
+#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 
 #include "EntityManager.h"
 
@@ -200,8 +201,8 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 {
 	SG_PRECOND(_VOID);
 
-	CBaseEntity* bEnt = SGame_EntGet(id);
-	if (!bEnt)
+	CBaseEntity* pEnt = SGame_EntGet(id);
+	if (!pEnt)
 		return;
 
 	SMMATRIX mView, mProj;
@@ -211,9 +212,11 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
 
-	if(strcmp(bEnt->getClassName(), "path_corner") == 0)
+	float3 vBoxSize = pEnt->getEditorBoxSize();
+
+	if(strcmp(pEnt->getClassName(), "path_corner") == 0)
 	{
-		CPathCorner * pStartPoint = (CPathCorner*)bEnt;
+		CPathCorner * pStartPoint = (CPathCorner*)pEnt;
 		if (!pStartPoint)
 			return;
 
@@ -230,7 +233,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		{
 			len += pCur->GetLength();
 			++count;
-			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixTranslation(pCur->getPos()));
+			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixTranslation(SMMatrixScaling(vBoxSize) * pCur->getPos()));
 
 			if (id == pCur->getId())
 				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
@@ -279,7 +282,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 
 		SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 		SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
-		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(bEnt->getOrient().GetMatrix() * SMMatrixTranslation(pvRenderPos ? *pvRenderPos : bEnt->getPos()))/*bEnt->getWorldTM()*/);
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling(vBoxSize) * pEnt->getOrient().GetMatrix() * SMMatrixTranslation(pvRenderPos ? *pvRenderPos : pEnt->getPos()))/*bEnt->getWorldTM()*/);
 
 		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
 		g_pFigureBox->DrawSubset(0);
@@ -408,7 +411,7 @@ SX_LIB_API void SGame_SetDebugText(const char *szText)
 
 SX_LIB_API ID SGame_EntClone(ID idSrc)
 {
-	SG_PRECOND(NULL);
+	SG_PRECOND(-1);
 	CBaseEntity *pEnt = GameData::m_pMgr->cloneEntity(GameData::m_pMgr->getById(idSrc));
 
 	if(!pEnt)
@@ -417,4 +420,29 @@ SX_LIB_API ID SGame_EntClone(ID idSrc)
 	}
 
 	return(pEnt->getId());
+}
+
+SX_LIB_API ID SGame_EntGetByRay(const float3 &vStart, const float3 &vDir, float3 *pHitPos)
+{
+	SG_PRECOND(-1);
+	float3 vEnd = vStart + vDir * 10000.0f;
+	btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(vStart), F3_BTVEC(vEnd));
+	cb.m_collisionFilterGroup = CG_BULLETFIRE;
+	cb.m_collisionFilterMask = CG_ALL;
+	cb.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
+	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(vStart), F3_BTVEC(vEnd), cb);
+
+	if(cb.hasHit())
+	{
+		CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
+		if(pEnt)
+		{
+			if(pHitPos)
+			{
+				*pHitPos = BTVEC_F3(cb.m_hitPointWorld);
+			}
+			return(pEnt->getId());
+		}
+	}
+	return(-1);
 }

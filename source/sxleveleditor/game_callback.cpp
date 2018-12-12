@@ -249,6 +249,29 @@ void level_editor::GameSel(int iSelected)
 	//level_editor::pAxesHelper->setScale(float3(1, 1, 1));
 }
 
+void level_editor::GameTraceSelect()
+{
+	float3 vResult;
+	ID idEnt = -1;
+	ID idMtrl = -1;
+
+	idEnt = SGame_EntGetByRay(vRayOrigin, vRayDir, &vResult);
+
+	if(ID_VALID(idEnt))
+	{
+		for(int i = 0, l = pListBoxList->getItemCount(); i < l; ++i)
+		{
+			if(pListBoxList->getItemData(i) == idEnt)
+			{
+				pListBoxList->setSel(i);
+				GameSel(i);
+				idMtl = idMtrl;
+				return;
+			}
+		}
+	}
+}
+
 void level_editor::GameTraceSetPos()
 {
 	if (level_editor::iActiveGroupType != EDITORS_LEVEL_GROUPTYPE_GAME || level_editor::idActiveElement < 0)

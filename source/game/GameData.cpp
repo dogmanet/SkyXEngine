@@ -752,6 +752,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		m_pPlayer->setActiveTool(pTool);
 	}
+	else
+	{
+		m_pMgr->setEditorMode(true);
+	}
 }
 GameData::~GameData()
 {

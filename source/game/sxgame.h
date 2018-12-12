@@ -266,6 +266,9 @@ SX_LIB_API void SGame_SetDebugText(const char *szText);
 */
 SX_LIB_API ID SGame_EntClone(ID idSrc);
 
+/*! Находит объект по пересечению с лучем, в режиме редактора так же находит точечные объекты, в режиме игры - нет
+*/
+SX_LIB_API ID SGame_EntGetByRay(const float3 &vStart, const float3 &vDir, float3 *pHitPos = NULL);
 
 #endif
 

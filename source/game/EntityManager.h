@@ -108,6 +108,9 @@ public:
 
 	void sheduleDestroy(CBaseEntity *pEnt);
 
+	void setEditorMode(bool isEditor = true);
+	bool isEditorMode();
+
 protected:
 	ID reg(CBaseEntity * pEnt);
 	void unreg(ID ent);
@@ -127,6 +130,8 @@ protected:
 	//! @warning это нужно хранить в течение работы проги, т.к. таблицы дефолтов ссылаются напрямую на этот объект
 	ISXConfig * m_pDefaultsConf;
 	ISXConfig * m_pDynClassConf;
+
+	bool m_isEditorMode = false;
 };
 
 #endif

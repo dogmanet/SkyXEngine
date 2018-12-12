@@ -372,6 +372,8 @@ namespace level_editor
 	//! выделение игрового объекта по номеру из списка listbox
 	void GameSel(int iSelect);
 
+	void GameTraceSelect();
+
 	//! трассировка луча и установка позиции в месте пересечения
 	void GameTraceSetPos();
 

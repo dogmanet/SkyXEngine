@@ -257,7 +257,7 @@ LRESULT SXLevelEditor_RenderWindow_LClick(HWND hWnd, UINT uiMsg, WPARAM wParam, 
 			level_editor::GreenTraceSelect();
 		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME && level_editor::idActiveElement >= 0)
 		{
-
+			level_editor::GameTraceSelect();
 		}
 		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
 			level_editor::AIGridTraceSelect();
