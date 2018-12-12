@@ -1340,9 +1340,10 @@ void CModels::deleteModel(ID idModel)
 
 void CModels::clear()
 {
-	for (int i = 0; i < m_aModels.size(); ++i)
+	while(m_aModels.size() > 0)
 	{
-		deleteModel((m_aModels.size() - 1) - i);
+		//удаляем каждую модель, так как модель удаляется из массива erase то можно за последний id брать (размер массива - 1)
+		deleteModel((m_aModels.size() - 1));
 	}
 }
 

@@ -303,15 +303,15 @@ void level_editor::GeomTransformByHelper()
 		float3 vCurrScale = *SGeom_ModelGetScale(level_editor::idActiveElement);
 		float3 vNewScale;
 
-		if (isStartScale)
+		if (level_editor::isStartScale)
 		{
-			isStartScale = false;
-			vStartScale = vCurrScale;
+			level_editor::isStartScale = false;
+			level_editor::vStartScale = vCurrScale;
 			vNewScale = vCurrScale;
 		}
 		else
 		{
-			vNewScale = vStartScale + (level_editor::pAxesHelper->getScale() - float3(1, 1, 1));
+			vNewScale = level_editor::vStartScale + (level_editor::pAxesHelper->getScale() - float3(1, 1, 1));
 		}
 		
 		//float3 vNewScale = vCurrScale + (level_editor::pAxesHelper->getScale() - float3(1, 1, 1));
