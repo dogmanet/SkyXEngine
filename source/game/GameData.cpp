@@ -367,7 +367,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			StringW sLevelName = ev->target->getAttribute(L"level_name");
 			if(ev->target->getAttribute(L"has_preview")[0] == L'1')
 			{
-				StringW sPreview = StringW(L"../../levels/") + sLevelName + L"/preview.png";
+				StringW sPreview = StringW(L"../../levels/") + sLevelName + L"/preview.bmp";
 				pNode->getStyleSelf()->background_image->set(sPreview);
 			}
 			else
