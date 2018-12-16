@@ -209,6 +209,7 @@ build/gamesource/*
 docs/html/*
 !docs/html/material_editor/
 !docs/html/particles_editor/
+!build/maxplugin/
 
 /source/game/ents_doc.h
 
