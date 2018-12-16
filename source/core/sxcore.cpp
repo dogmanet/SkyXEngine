@@ -24,6 +24,10 @@ See the license in LICENSE
 
 #include "PerfMon.h"
 
+#include <common/file_utils.h>
+
+#include "GRegisterIndex.h"
+
 //##########################################################################
 
 char g_szCoreName[CORE_NAME_MAX_LEN];
@@ -220,6 +224,66 @@ IFile* Core_OpFile(const char *szPath, int iType)
 	pFile->open(szPath, iType);
 	return pFile;
 }
+
+
+//##########################################################################
+/*
+Array<String> g_aResourcePathes;
+
+SX_LIB_API void Core_ResPathAdd(const char *szPath)
+{
+	if (szPath)
+		g_aResourcePathes.push_back(String(Core_RStringGet(G_RI_STRING_PATH_EXE)) + szPath + "/");
+}
+
+SX_LIB_API void Core_ResPathClear()
+{
+	g_aResourcePathes.clear();
+}
+
+SX_LIB_API const char* Core_ResPathGetLast(int iRegisterPath)
+{
+	if (g_aResourcePathes.size() > 0)
+	{
+		if (iRegisterPath >= 0)
+			return (g_aResourcePathes[g_aResourcePathes.size() - 1] + Core_RStringGet(iRegisterPath)).c_str();
+		else
+			return g_aResourcePathes[g_aResourcePathes.size() - 1].c_str();
+	}
+
+	return 0;
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRel(const char *szRelPath)
+{
+	for (int i = 0, il = g_aResourcePathes.size(); i < il; ++i)
+	{
+		String sResPath = g_aResourcePathes[(il - 1) - i];
+		String sFullPath = sResPath + szRelPath;
+
+		if (FileExistsFile(sFullPath.c_str()))
+			return sFullPath.c_str();
+	}
+
+	return 0;
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRel2(const char *szRelPathPart1, const char *szRelPathPart2)
+{
+	return Core_ResPathGetFullPathByRel((String(szRelPathPart1) + szRelPathPart2).c_str());
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex(int iRegisterPath, const char *szRelPath)
+{
+	return Core_ResPathGetFullPathByRel((String(Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS)) + szRelPath).c_str());
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex2(int iRegisterPath, const char *szRelPathPart1, const char *szRelPathPart2)
+{
+	return Core_ResPathGetFullPathByRelIndex(G_RI_STRING_PATH_GS_CONFIGS, (String(szRelPathPart1) + szRelPathPart2).c_str());
+}
+*/
+//##########################################################################
 
 
 ISXConfig*  Core_CrConfig()

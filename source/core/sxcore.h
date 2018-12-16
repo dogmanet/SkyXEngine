@@ -402,6 +402,18 @@ SX_LIB_API IFile* Core_OpFile(const char* szPath, int iType);
 
 //##########################################################################
 
+/*SX_LIB_API void Core_ResPathAdd(const char *szPath);
+SX_LIB_API void Core_ResPathClear();
+
+SX_LIB_API const char* Core_ResPathGetLast(int iRegisterPath=-1);
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRel(const char *szRelPath);
+SX_LIB_API const char* Core_ResPathGetFullPathByRel2(const char *szRelPathPart1, const char *szRelPathPart2);
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex(int iRegisterPath, const char *szRelPath);
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex2(int iRegisterPath, const char *szRelPathPart1, const char *szRelPathPart2);*/
+
+//##########################################################################
+
 /*! интерфейс для работы с файлами конфигурации (ini) 
  \warning секции и ключи хранятся в виде дерева, и нет гарантии что может быть доступ по порядковому номеру, 
 можно получить общее количество секций/ключей, дальше плясать */
