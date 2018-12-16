@@ -31,7 +31,7 @@ void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFla
 	g_oD3DAPP.Windowed = isWindowed;
 	g_oD3DAPP.EnableAutoDepthStencil = true;
 	g_oD3DAPP.AutoDepthStencilFormat = D3DFMT_D24S8;
-	g_oD3DAPP.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | dwFlags | D3DCREATE_MULTITHREADED;
+	g_oD3DAPP.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | dwFlags;
 	g_oD3DAPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	g_oD3DAPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
