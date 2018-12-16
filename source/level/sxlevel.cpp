@@ -221,9 +221,16 @@ SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo *pInfo)
 		while(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")))
 		{
 			bFound = false;
-			if(::FindNextFile(pInfo->m_hFind, &fd) && (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
+			if(::FindNextFile(pInfo->m_hFind, &fd))
 			{
-				bFound = true;
+				if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
+				{
+					bFound = true;
+					break;
+				}
+			}
+			else
+			{
 				break;
 			}
 		}
