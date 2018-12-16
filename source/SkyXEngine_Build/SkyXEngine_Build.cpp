@@ -11,6 +11,7 @@ See the license in LICENSE
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
+	//MessageBox(0, 0, 0, 0);
 	SkyXEngine_PreviewCreate();
 	SkyXEngine_Init(0, 0, lpCmdLine);
 	SkyXEngine_PreviewKill();
