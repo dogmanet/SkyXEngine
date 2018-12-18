@@ -27,7 +27,7 @@ BEGIN_PROPTABLE(CPlayer)
 // empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPlayer, player);
+REGISTER_ENTITY_NOLISTING(CPlayer, player);
 
 CPlayer::CPlayer(CEntityManager * pMgr):
 	BaseClass(pMgr),
