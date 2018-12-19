@@ -580,6 +580,8 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterConcmd("change_mode_window_abs", SRender_FullScreenChangeSizeAbs);
 #endif
 
+	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "CVar initialized\n");
 }
 

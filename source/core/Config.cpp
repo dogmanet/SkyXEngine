@@ -5,6 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "Config.h"
+#include "sxcore.h"
 
 /*
 1. Проверить обработку циклических зависимостей
@@ -478,41 +479,94 @@ void CConfig::set(const char * sectionp, const char * key, const char * val)
 
 int CConfig::save()
 {
-	int terror = 0;
-	for (AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
+	static const bool *s_pbDebug = GET_PCVAR_BOOL("dbg_config_save");
+	if(*s_pbDebug)
 	{
+		printf(COLOR_GRAY "====== " COLOR_CYAN "CConfig::save() " COLOR_GRAY "======" COLOR_RESET "\n");
+	}
+	int terror = 0;
+	for(AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
+	{
+		if(*s_pbDebug)
+		{
+			printf("Testing section: " COLOR_LGREEN "%s" COLOR_RESET "...", i.first->c_str());
+		}
 		if(i.second->isModified)
 		{
+			if(*s_pbDebug)
+			{
+				printf(COLOR_YELLOW " modified" COLOR_RESET "\n", i.first->c_str());
+			}
 			for(AssotiativeArray<CConfigString, CValue>::Iterator j = i.second->mValues.begin(); j; j++)
 			{
+				if(*s_pbDebug)
+				{
+					printf("  testing key: " COLOR_LGREEN "%s" COLOR_RESET "...", j.first->c_str());
+				}
 				if(j.second->isModified)
 				{
+					if(*s_pbDebug)
+					{
+						printf(COLOR_YELLOW " modified" COLOR_RESET "\n", i.first->c_str());
+					}
 					if(i.second->native) // Write to BaseFile
 					{
+						if(*s_pbDebug)
+						{
+							printf("    writing to base file " COLOR_CYAN "%s" COLOR_RESET "...\n", BaseFile.c_str());
+						}
 						terror = writeFile(BaseFile, *i.first, *j.first, j.second->val);
-							if(terror!=0)
-								return terror;
+						if(terror != 0)
+							goto end;
 					}
 					else // Write to i.second->Include
 					{
+						if(*s_pbDebug)
+						{
+							printf("    writing to include file " COLOR_CYAN "%s" COLOR_RESET "...\n", i.second->Include.c_str());
+						}
 						terror = writeFile(i.second->Include, *i.first, *j.first, j.second->val);
-							if(terror!=0)
-								return terror;
+						if(terror != 0)
+							goto end;
+					}
+				}
+				else
+				{
+					if(*s_pbDebug)
+					{
+						printf(COLOR_GRAY " not modified" COLOR_RESET "\n", i.first->c_str());
 					}
 				}
 			}
 		}
+		else
+		{
+			if(*s_pbDebug)
+			{
+				printf(COLOR_GRAY " not modified" COLOR_RESET "\n", i.first->c_str());
+			}
+		}
 	}
-
-	return 0;
+end:
+	if(*s_pbDebug)
+	{
+		printf(COLOR_GRAY "=============================" COLOR_RESET "\n");
+	}
+	return(terror);
 }
 
 int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfigString key, const CConfigString & val)
 {
+	static const bool *s_pbDebug = GET_PCVAR_BOOL("dbg_config_save");
 	//printf("W: %s\t[%s]: %s = %s\n", name.c_str(), section.c_str(), key.c_str(), val.c_str());
 	FILE * pF = fopen(name.c_str(), "rb");
 	if(pF)
 	{
+		if(*s_pbDebug)
+		{
+			printf("    file opened\n");
+		}
+
 		fseek(pF, 0, SEEK_END);
 		UINT fl = ftell(pF);
 		fseek(pF, 0, SEEK_SET);
