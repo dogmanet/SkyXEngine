@@ -96,6 +96,7 @@
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
