@@ -462,33 +462,43 @@ void SkyXEngine_InitPaths()
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "config");
 	Core_RStringSet(G_RI_STRING_PATH_GS_CONFIGS, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "levels");
 	Core_RStringSet(G_RI_STRING_PATH_GS_LEVELS, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "meshes");
 	Core_RStringSet(G_RI_STRING_PATH_GS_MESHES, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "models");
 	Core_RStringSet(G_RI_STRING_PATH_GS_MODELS, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "shaders");
 	Core_RStringSet(G_RI_STRING_PATH_GS_SHADERS, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "sounds");
 	Core_RStringSet(G_RI_STRING_PATH_GS_SOUNDS, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "scripts");
 	Core_RStringSet(G_RI_STRING_PATH_GS_SCRIPTS, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "textures");
 	Core_RStringSet(G_RI_STRING_PATH_GS_TEXTURES, szPath);
+	FileCreateDir(szPath);
 
 	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "materials");
 	Core_RStringSet(G_RI_STRING_PATH_GS_MTRLS, szPath);
+	FileCreateDir(szPath);
 
-	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "resource");
+	sprintf(szPath, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GAMESOURCE), "gui");
 	Core_RStringSet(G_RI_STRING_PATH_GS_GUI, szPath);
+	FileCreateDir(szPath);
 }
 
 void SkyXEngine_CreateLoadCVar()

@@ -62,6 +62,7 @@ void level_editor::GameSel(int iSelected)
 	level_editor::pComboBoxGameValue->clear();
 	level_editor::pEditGameValue->setVisible(false);
 	level_editor::pEditGameValue->setText("");
+	level_editor::pButtonGameValue->setVisible(false);
 	level_editor::pButtonGameCreate->setVisible(false);
 	level_editor::pListViewGameClass->setEnable(true);
 	level_editor::pListViewGameClass->clearStrings();

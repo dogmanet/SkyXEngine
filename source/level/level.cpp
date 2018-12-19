@@ -248,7 +248,9 @@ void CLevel::save(const char *szName)
 	file = fopen(szPathLevel, "w");
 
 	fprintf(file, "%s", "[level]\n");
-	fprintf(file, "local_name = %s\n", m_sLocalName.c_str());
+
+	if (m_sLocalName.length() > 0)
+		fprintf(file, "local_name = %s\n", m_sLocalName.c_str());
 
 	if (SGeom_GetCountModels() > 0)
 	{
