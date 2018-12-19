@@ -542,7 +542,10 @@ bool CPhyWorld::importGeom(const char * file)
 	{
 		m_pGeomStaticCollideShape = importer->getCollisionShapeByName("m_pGeomStaticCollideShape");
 		m_pGeomStaticRigidBody = importer->getRigidBodyByName("m_pGeomStaticRigidBody");
-		m_pGeomStaticRigidBody->setCollisionFlags(m_pGeomStaticRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+		if(m_pGeomStaticRigidBody)
+		{
+			m_pGeomStaticRigidBody->setCollisionFlags(m_pGeomStaticRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+		}
 
 		m_iGreenShapes = -1;
 		char str[64];
@@ -666,11 +669,14 @@ bool CPhyWorld::exportGeom(const char * _file)
 	btDefaultSerializer * serializer = new btDefaultSerializer();
 	serializer->startSerialization();
 
-	serializer->registerNameForPointer(m_pGeomStaticCollideShape, _allocStr("m_pGeomStaticCollideShape"));
-	serializer->registerNameForPointer(m_pGeomStaticRigidBody, _allocStr("m_pGeomStaticRigidBody"));
+	if(m_pGeomStaticCollideShape && m_pGeomStaticRigidBody)
+	{
+		serializer->registerNameForPointer(m_pGeomStaticCollideShape, _allocStr("m_pGeomStaticCollideShape"));
+		serializer->registerNameForPointer(m_pGeomStaticRigidBody, _allocStr("m_pGeomStaticRigidBody"));
 
-	m_pGeomStaticCollideShape->serializeSingleShape(serializer);
-	m_pGeomStaticRigidBody->serializeSingleObject(serializer);
+		m_pGeomStaticCollideShape->serializeSingleShape(serializer);
+		m_pGeomStaticRigidBody->serializeSingleObject(serializer);
+	}
 	char str[64];
 	for(int i = 0; i < m_iGreenShapes; ++i)
 	{
