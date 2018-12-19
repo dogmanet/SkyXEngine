@@ -605,7 +605,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 							break;
 						}
 					}
-					while(szData[i] == '\r' || szData[i] == '\n')
+					while(i < fl && (szData[i] == '\r' || szData[i] == '\n'))
 					{
 						++i;
 					}
@@ -620,7 +620,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 							se = true;
 							break;
 						}
-						while((szData[i] == ' ' || szData[i] == '\t') && i < fl)
+						while(i < fl && (szData[i] == ' ' || szData[i] == '\t'))
 						{
 							++i;
 						}
@@ -674,7 +674,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 									break;
 								}
 							}
-							while(szData[i] == '\r' || szData[i] == '\n')
+							while(i < fl && (szData[i] == '\r' || szData[i] == '\n'))
 							{
 								++i;
 							}
