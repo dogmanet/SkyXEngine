@@ -570,7 +570,13 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 		fseek(pF, 0, SEEK_END);
 		UINT fl = ftell(pF);
 		fseek(pF, 0, SEEK_SET);
-		char * szData = new char[fl];
+		char * szData = new char[fl + 1];
+		if(!szData)
+		{
+			printf(COLOR_LRED "Unable to allocate memory (%d) in CConfig::writeFile()" COLOR_RESET "\n", fl + 1);
+			fclose(pF);
+			return(-1);
+		}
 		fread(szData, 1, fl, pF);
 		szData[fl] = 0;
 		fclose(pF);
@@ -633,7 +639,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 								break;
 							}
 						}
-						if (f && (isspace((unsigned char)szData[j]) || szData[j] == '='))//KeyFound!
+						if(f && (isspace((unsigned char)szData[j]) || szData[j] == '='))//KeyFound!
 						{
 							i = j;
 							kf = true;
@@ -690,10 +696,15 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 		}
 		if(sf && !kf)
 		{
+			if(*s_pbDebug)
+			{
+				printf("    adding key to section(sp=" COLOR_LCYAN "%d" COLOR_RESET ")\n", sp);
+			}
 			FILE * pF = fopen(name.c_str(), "wb");
 			if(!pF)
 			{
 				ErrorFile = name;
+				mem_delete_a(szData);
 				return -1;
 			}
 			fwrite(szData, 1, sp, pF); // First file part
@@ -703,6 +714,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 			fwrite("\n", 1, 1, pF);
 			fwrite(&szData[sp], 1, fl - sp, pF);
 			fclose(pF);
+			mem_delete_a(szData);
 			return 0;
 		}
 		if(!sf)//!(Section found) == Add new
@@ -715,6 +727,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 			}
 			fwrite((CConfigString("\n[") + section + "]\n" + key + " = " + val + "\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 8, pF);
 			fclose(pF);
+			mem_delete_a(szData);
 			return 0;
 		}
 	}
@@ -726,11 +739,11 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 			ErrorFile = name;
 			return -1;
 		}
-		fwrite((CConfigString("[")+section+"]\n"+key+" = "+val+"\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 7, pF);
+		fwrite((CConfigString("[") + section + "]\n" + key + " = " + val + "\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 7, pF);
 		fclose(pF);
 		return 0;
 	}
-return 0;
+	return 0;
 }
 
 int CConfig::getSectionCount()
