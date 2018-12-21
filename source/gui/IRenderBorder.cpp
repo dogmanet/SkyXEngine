@@ -124,8 +124,8 @@ namespace gui
 				if(need)
 				{
 					GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
-					GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(float3_t));
-					GetGUI()->getDevice()->SetIndices(m_pIndexBuffer);
+					DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(float3_t)));
+					DX_CALL(GetGUI()->getDevice()->SetIndices(m_pIndexBuffer));
 				}
 
 				//	UINT iVC = 0;
@@ -134,8 +134,8 @@ namespace gui
 				{
 					if(m_iWidth[i] != 0)
 					{
-						GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pColor[i], 1);
-						GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, m_iVertexStart[i], 0, m_iVertexCount[i], m_iIndexStart[i], m_iIndexCount[i] / 3);
+						DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pColor[i], 1));
+						DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, m_iVertexStart[i], 0, m_iVertexCount[i], m_iIndexStart[i], m_iIndexCount[i] / 3));
 					}
 					//		iVC += m_iVertexCount[i];
 					//		iIC += m_iIndexCount[i];
@@ -145,14 +145,14 @@ namespace gui
 					//		GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 1.0f, 0.0f, 0.4f), 1);
 					//		GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3);
 				}
-				GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 0.0f, 0.0f, 0.0f), 1);
+				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 0.0f, 0.0f, 0.0f), 1));
 			}
 
 			void IRenderBorder::renderInnerFill()
 			{
 				GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
-				GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(float3_t));
-				GetGUI()->getDevice()->SetIndices(m_pIndexBuffer);
+				DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(float3_t)));
+				DX_CALL(GetGUI()->getDevice()->SetIndices(m_pIndexBuffer));
 
 				static CSHADER shText = CTextureManager::loadShader(L"text");
 
@@ -165,8 +165,8 @@ namespace gui
 				}
 
 				CTextureManager::bindShader(shText);
-				GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
-				GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3);
+				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
+				DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3));
 			}
 
 			void IRenderBorder::build()
@@ -381,8 +381,8 @@ namespace gui
 				UINT iCV = 0;
 				UINT iCI = 0;
 				VOID * pData;
-				GetGUI()->getDevice()->CreateVertexBuffer(sizeof(float3_t) * iVertexCount, NULL, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0);
-				if(!FAILED(m_pVertexBuffer->Lock(0, sizeof(float3_t) * iVertexCount, (void**)&pData, 0)))
+				DX_CALL(GetGUI()->getDevice()->CreateVertexBuffer(sizeof(float3_t)* iVertexCount, NULL, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0));
+				if(!FAILED(DX_CALL(m_pVertexBuffer->Lock(0, sizeof(float3_t)* iVertexCount, (void**)&pData, 0))))
 				{
 					memcpy((float3_t*)pData + iCV, t->vb[0], sizeof(float3_t) * t->iVC[0]);
 					iCV += t->iVC[0];
@@ -396,8 +396,8 @@ namespace gui
 					m_pVertexBuffer->Unlock();
 				}
 
-				GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT) * iIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, 0);
-				if(!FAILED(m_pIndexBuffer->Lock(0, sizeof(UINT) * iIndexCount, (void**)&pData, 0)))
+				DX_CALL(GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT)* iIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, 0));
+				if(!FAILED(DX_CALL(m_pIndexBuffer->Lock(0, sizeof(UINT)* iIndexCount, (void**)&pData, 0))))
 				{
 					memcpy((UINT*)pData + iCI, t->ib[0], sizeof(UINT) * t->iIC[0]);
 					iCI += t->iIC[0];

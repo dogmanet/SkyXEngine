@@ -2,7 +2,6 @@
 #include "IHTMLparser.h"
 #include "IRenderFrame.h"
 
-#include <gcore/sxgcore.h>
 //#include "CDOM.h"
 
 namespace gui
@@ -59,8 +58,8 @@ namespace gui
 
 	void CDesktop::createRenderTarget()
 	{
-		GetGUI()->getDevice()->CreateRenderTarget(m_iWidth, m_iHeight, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pRenderSurface, NULL);
-		GetGUI()->getDevice()->CreateDepthStencilSurface(m_iWidth, m_iHeight, D3DFMT_D24S8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pDepthStencilSurface, NULL);
+		DX_CALL(GetGUI()->getDevice()->CreateRenderTarget(m_iWidth, m_iHeight, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pRenderSurface, NULL));
+		DX_CALL(GetGUI()->getDevice()->CreateDepthStencilSurface(m_iWidth, m_iHeight, D3DFMT_D24S8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pDepthStencilSurface, NULL));
 
 		
 		m_txFinal = CTextureManager::createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true);
@@ -98,12 +97,12 @@ namespace gui
 			CTextureManager::bindTexture(NULL);
 			IDirect3DSurface9 *pOldRT;
 			IDirect3DSurface9 *pOldDS;
-			GetGUI()->getDevice()->GetRenderTarget(0, &pOldRT);
-			GetGUI()->getDevice()->SetRenderTarget(0, m_pRenderSurface);
-			GetGUI()->getDevice()->GetDepthStencilSurface(&pOldDS);
-			GetGUI()->getDevice()->SetDepthStencilSurface(m_pDepthStencilSurface);
+			DX_CALL(GetGUI()->getDevice()->GetRenderTarget(0, &pOldRT));
+			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, m_pRenderSurface));
+			DX_CALL(GetGUI()->getDevice()->GetDepthStencilSurface(&pOldDS));
+			DX_CALL(GetGUI()->getDevice()->SetDepthStencilSurface(m_pDepthStencilSurface));
 
-			GetGUI()->getDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+			DX_CALL(GetGUI()->getDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
@@ -115,8 +114,8 @@ namespace gui
 			m_pDoc->render();
 			GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
 
-			GetGUI()->getDevice()->SetRenderTarget(0, pOldRT);
-			GetGUI()->getDevice()->SetDepthStencilSurface(pOldDS);
+			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, pOldRT));
+			DX_CALL(GetGUI()->getDevice()->SetDepthStencilSurface(pOldDS));
 			pOldRT->Release();
 			pOldDS->Release();
 
@@ -124,9 +123,9 @@ namespace gui
 			
 			
 			IDirect3DSurface9 *pNewSurface;
-			m_txFinal->getAPItexture()->GetSurfaceLevel(0, &pNewSurface);
+			DX_CALL(m_txFinal->getAPItexture()->GetSurfaceLevel(0, &pNewSurface));
 
-			HRESULT hr = GetGUI()->getDevice()->StretchRect(m_pRenderSurface, NULL, pNewSurface, NULL, D3DTEXF_NONE);
+			DX_CALL(GetGUI()->getDevice()->StretchRect(m_pRenderSurface, NULL, pNewSurface, NULL, D3DTEXF_NONE));
 
 			pNewSurface->Release();
 
@@ -195,8 +194,8 @@ namespace gui
 
 			GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 			CTextureManager::bindShader(def_sh);
-			GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
-			GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point));
+			DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
+			DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 
 			GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
 			GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));

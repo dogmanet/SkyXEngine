@@ -37,7 +37,7 @@ namespace gui
 	CTexture * CTextureManager::createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT)
 	{
 		CTexture bt;
-		if(FAILED(GetGUI()->getDevice()->CreateTexture(w, h, isRT ? 1 : 0, isRT ? D3DUSAGE_RENDERTARGET : 0, D3DFMT_A8R8G8B8, isRT ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &bt.m_pTexture, NULL)))
+		if(FAILED(DX_CALL(GetGUI()->getDevice()->CreateTexture(w, h, isRT ? 1 : 0, isRT ? D3DUSAGE_RENDERTARGET : 0, D3DFMT_A8R8G8B8, isRT ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &bt.m_pTexture, NULL))))
 		{
 			return(NULL);
 		}
@@ -71,14 +71,14 @@ namespace gui
 		if(!tex)
 		{
 			//FIXME: Set fallback texture
-			GetGUI()->getDevice()->SetTexture(0, NULL);
+			DX_CALL(GetGUI()->getDevice()->SetTexture(0, NULL));
 			m_pCurrentTex = NULL;
 			return;
 		}
 		if(m_pCurrentTex != tex)
 		{
 			m_pCurrentTex = tex;
-			GetGUI()->getDevice()->SetTexture(0, m_pCurrentTex->m_pTexture);
+			DX_CALL(GetGUI()->getDevice()->SetTexture(0, m_pCurrentTex->m_pTexture));
 		}
 
 
@@ -143,7 +143,7 @@ namespace gui
 					fclose(pF);
 				}
 			}
-			GetGUI()->getDevice()->CreatePixelShader((DWORD *)pShader->GetBufferPointer(), &sh.ps);
+			DX_CALL(GetGUI()->getDevice()->CreatePixelShader((DWORD *)pShader->GetBufferPointer(), &sh.ps));
 			mem_release(pShader);
 			m_mShaders[name] = sh;
 		}
@@ -177,7 +177,7 @@ namespace gui
 		{
 			if(i.second->m_isRT)
 			{
-				GetGUI()->getDevice()->CreateTexture(i.second->m_iWidth, i.second->m_iHeight, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &(i.second->m_pTexture), NULL);
+				DX_CALL(GetGUI()->getDevice()->CreateTexture(i.second->m_iWidth, i.second->m_iHeight, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &(i.second->m_pTexture), NULL));
 			}
 		}
 	}
@@ -197,7 +197,7 @@ namespace gui
 			return;
 		}
 		D3DLOCKED_RECT lr;
-		if(!FAILED(m_pTexture->LockRect(0, &lr, NULL, NULL)))
+		if(!FAILED(DX_CALL(m_pTexture->LockRect(0, &lr, NULL, NULL))))
 		{
 			memcpy(lr.pBits, pData, m_iWidth * m_iHeight * 4);
 			m_pTexture->UnlockRect(0);
@@ -206,7 +206,7 @@ namespace gui
 		{
 		D3DLOCKED_RECT lr;
 
-		if(!FAILED(tex->LockRect(0, &lr, NULL, NULL)))
+		if(!FAILED(DX_CALL(tex->LockRect(0, &lr, NULL, NULL))))
 		{
 		memcpy(lr.pBits, pData, m_iWidth * m_iHeight * 4);
 		tex->UnlockRect(0);
@@ -224,7 +224,7 @@ namespace gui
 	{
 		StringW path = StringW(GetGUI()->getResourceDir()) + L"/textures/" + pName;
 		D3DXIMAGE_INFO info;
-		if(FAILED(D3DXCreateTextureFromFileExW(GetGUI()->getDevice(), path.c_str(), D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT, 0, D3DFMT_FROM_FILE, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &m_pTexture)))
+		if(FAILED(DX_CALL(D3DXCreateTextureFromFileExW(GetGUI()->getDevice(), path.c_str(), D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT, 0, D3DFMT_FROM_FILE, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &m_pTexture))))
 			//if(FAILED(D3DXCreateTextureFromFileW(GetGUI()->GetDevice(), path.c_str(), &m_pTexture)))
 		{
 			printf("Unable to load texture \"%s\"\n", String(path).c_str());
@@ -234,7 +234,7 @@ namespace gui
 		else
 		{
 			D3DSURFACE_DESC _info;
-			m_pTexture->GetLevelDesc(0, &_info);
+			DX_CALL(m_pTexture->GetLevelDesc(0, &_info));
 			m_iWidth = info.Width;
 			m_iHeight = info.Height;
 		}

@@ -94,7 +94,7 @@ namespace gui
 
 		m_pAviFrame = AVIStreamGetFrameOpen(m_pAviStream, PBITMAPINFOHEADER(AVIGETFRAMEF_BESTDISPLAYFMT));
 
-		if(FAILED(GetGUI()->getDevice()->CreateTexture(m_iWidth, m_iHeight, 0, NULL, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &m_texture.m_pTexture, NULL)))
+		if(FAILED(DX_CALL(GetGUI()->getDevice()->CreateTexture(m_iWidth, m_iHeight, 0, NULL, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &m_texture.m_pTexture, NULL))))
 		{
 			return;
 		}

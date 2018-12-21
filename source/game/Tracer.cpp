@@ -89,12 +89,12 @@ void CTracer::render()
 
 	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 
-	SGCore_GetDXDevice()->SetTexture(0, 0);
+	DX_CALL(SGCore_GetDXDevice()->SetTexture(0, 0));
 
 	// render m_iLineCount traces
 	for(int i = 0; i < m_iLineCount; ++i)
 	{
-		SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINESTRIP, m_vpPoints[i].size() - 1, &(m_vpPoints[i][0]), sizeof(Point));
+		DX_CALL(SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINESTRIP, m_vpPoints[i].size() - 1, &(m_vpPoints[i][0]), sizeof(Point)));
 	}
 }
 

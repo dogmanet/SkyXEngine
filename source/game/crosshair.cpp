@@ -37,8 +37,8 @@ CCrosshair::CCrosshair():
 	m_pVertices[1] = (Vertex*)&m_pMemoryBlob[(sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
 	m_pIndices[1] = (UINT*)&m_pMemoryBlob[sizeof(Vertex)* iVC + (sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
 
-	m_pDev->CreateVertexBuffer(sizeof(Vertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, NULL);
-	m_pDev->CreateIndexBuffer(sizeof(UINT)* iIC, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, NULL);
+	DX_CALL(m_pDev->CreateVertexBuffer(sizeof(Vertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, NULL));
+	DX_CALL(m_pDev->CreateIndexBuffer(sizeof(UINT)* iIC, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, NULL));
 }
 
 CCrosshair::~CCrosshair()
@@ -356,8 +356,8 @@ void CCrosshair::render()
 	m_pDev->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetRenderState(D3DRS_ZENABLE, FALSE);
-	m_pDev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(Vertex));
-	m_pDev->SetIndices(m_pIndexBuffer);
+	DX_CALL(m_pDev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(Vertex)));
+	DX_CALL(m_pDev->SetIndices(m_pIndexBuffer));
 	m_pDev->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 	m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	SGCore_ShaderUnBind();
